@@ -39,6 +39,11 @@ on:
         required: false
         default: ''
 
+# Cancel redundant builds
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   # Make sure no commits are prefixed with `fixup` or similar keywords. See
   # `tools/CheckCommits.sh` for details.
