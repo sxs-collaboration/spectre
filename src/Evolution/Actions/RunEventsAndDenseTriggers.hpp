@@ -8,6 +8,7 @@
 #include <tuple>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "Evolution/DiscontinuousGalerkin/Actions/ApplyBoundaryCorrections.hpp"
 #include "Evolution/EventsAndDenseTriggers/EventsAndDenseTriggers.hpp"
 #include "Evolution/EventsAndDenseTriggers/Tags.hpp"
 #include "Parallel/AlgorithmMetafunctions.hpp"
@@ -88,7 +89,7 @@ struct RunEventsAndDenseTriggers {
             typename ParallelComponent>
   static std::tuple<db::DataBox<DbTags>&&, Parallel::AlgorithmExecution> apply(
       db::DataBox<DbTags>& box,
-      tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      tuples::TaggedTuple<InboxTags...>& inboxes,
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index, const ActionList /*meta*/,
       const ParallelComponent* const component) noexcept {
@@ -145,6 +146,14 @@ struct RunEventsAndDenseTriggers {
           return {std::move(box), Parallel::AlgorithmExecution::Retry};
         case TriggeringState::NeedsEvolvedVariables:
           {
+            if constexpr (Metavariables::local_time_stepping) {
+              if (not dg::Actions::ApplyBoundaryCorrections<Metavariables>::
+                      template receive_local_time_stepping<true>(
+                          make_not_null(&box), make_not_null(&inboxes))) {
+                return {std::move(box), Parallel::AlgorithmExecution::Retry};
+              }
+            }
+
             using history_tag = ::Tags::HistoryEvolvedVariables<variables_tag>;
             bool dense_output_succeeded = false;
             variables_restorer.save();
@@ -159,14 +168,13 @@ struct RunEventsAndDenseTriggers {
                 },
                 db::get<::Tags::TimeStepper<>>(box), db::get<history_tag>(box));
             if (not dense_output_succeeded) {
-              // With LTS, we may need to wait for neighbor data
-              // rather than take another step.
-              static_assert(not Metavariables::local_time_stepping,
-                            "LTS support for RunDenseEventsAndTriggers is not "
-                            "implemented.");
-
               // Need to take another time step
               return {std::move(box), Parallel::AlgorithmExecution::Continue};
+            }
+
+            if constexpr (Metavariables::local_time_stepping) {
+              dg::Actions::ApplyBoundaryCorrections<Metavariables>::
+                  template complete_time_step<true>(make_not_null(&box));
             }
 
             static_assert(system::has_primitive_and_conservative_vars !=
