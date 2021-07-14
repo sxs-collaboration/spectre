@@ -56,6 +56,8 @@ namespace TimeSteppers {
  * Note that in the implementation, the expression for \f$u^{n+1}\f$ is
  * computed simultaneously with \f$v^{(4)}\f$, so that there are
  * actually only four substeps per step.
+ *
+ * The CFL factor/stable step size is 1.3926467817026411.
  */
 class RungeKutta4 : public TimeStepper::Inherit {
  public:

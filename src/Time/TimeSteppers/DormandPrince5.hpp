@@ -57,6 +57,7 @@ namespace TimeSteppers {
  * Here the coefficients \f$a_{ij}\f$, \f$b_i\f$, and \f$c_i\f$ are given
  * in e.g. Sec. 7.2 of \cite NumericalRecipes. Note that \f$c_1 = 0\f$.
  *
+ * The CFL factor/stable step size is 1.6532839463174733.
  */
 class DormandPrince5 : public TimeStepper::Inherit {
  public:
