@@ -12,6 +12,7 @@
 #include "Evolution/Initialization/Tags.hpp"
 #include "Evolution/Systems/Cce/OptionTags.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
+#include "Time/StepChoosers/ErrorControl.hpp"
 #include "Time/Tags.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Rational.hpp"
@@ -60,25 +61,24 @@ namespace Actions {
 template <typename EvolvedCoordinatesVariablesTag, typename EvolvedSwshTag,
           bool local_time_stepping>
 struct InitializeCharacteristicEvolutionTime {
-  using initialization_tags = tmpl::flatten<tmpl::list<
-      Tags::CceEvolutionPrefix<
-          Initialization::Tags::InitialSlabSize<local_time_stepping>>,
-      tmpl::conditional_t<
+  using initialization_tags_to_keep =
+      tmpl::flatten<tmpl::list<tmpl::conditional_t<
           local_time_stepping,
           tmpl::list<
+              ::Tags::IsUsingTimeSteppingErrorControl<
+                  OptionTags::CceEvolutionPrefix>,
               Tags::CceEvolutionPrefix<::Tags::TimeStepper<LtsTimeStepper>>,
               Tags::CceEvolutionPrefix<::Tags::StepChoosers>,
               Tags::CceEvolutionPrefix<::Tags::StepController>,
               ::Initialization::Tags::InitialTimeDelta>,
-          Tags::CceEvolutionPrefix<::Tags::TimeStepper<TimeStepper>>>>>;
+          tmpl::list<
+              ::Tags::NeverUsingTimeSteppingErrorControl,
+              Tags::CceEvolutionPrefix<::Tags::TimeStepper<TimeStepper>>>>>>;
 
-  using initialization_tags_to_keep = tmpl::conditional_t<
-      local_time_stepping,
-      tmpl::list<Tags::CceEvolutionPrefix<::Tags::TimeStepper<LtsTimeStepper>>,
-                 Tags::CceEvolutionPrefix<::Tags::StepChoosers>,
-                 Tags::CceEvolutionPrefix<::Tags::StepController>,
-                 ::Initialization::Tags::InitialTimeDelta>,
-      tmpl::list<Tags::CceEvolutionPrefix<::Tags::TimeStepper<TimeStepper>>>>;
+  using initialization_tags = tmpl::push_front<
+      initialization_tags_to_keep,
+      Tags::CceEvolutionPrefix<
+          Initialization::Tags::InitialSlabSize<local_time_stepping>>>;
 
   using const_global_cache_tags = tmpl::list<>;
 
@@ -88,7 +88,8 @@ struct InitializeCharacteristicEvolutionTime {
       ::Tags::TimeStepId, ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep,
       ::Tags::Next<::Tags::TimeStep>, ::Tags::Time,
       ::Tags::HistoryEvolvedVariables<EvolvedCoordinatesVariablesTag>,
-      ::Tags::HistoryEvolvedVariables<evolved_swsh_variables_tag>>;
+      ::Tags::HistoryEvolvedVariables<evolved_swsh_variables_tag>,
+      ::Tags::StepperErrorUpdated>;
   using compute_tags = tmpl::list<::Tags::SubstepTimeCompute>;
 
   template <typename DbTags, typename... InboxTags, typename Metavariables,
@@ -135,7 +136,7 @@ struct InitializeCharacteristicEvolutionTime {
                    -static_cast<int64_t>(time_stepper.number_of_past_steps()),
                    initial_time},
         initial_time_step, initial_time_step, initial_time_value,
-        std::move(coordinate_history), std::move(swsh_history));
+        std::move(coordinate_history), std::move(swsh_history), false);
     return std::make_tuple(std::move(box));
   }
 };

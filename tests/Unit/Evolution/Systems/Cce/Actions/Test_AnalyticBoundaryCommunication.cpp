@@ -27,12 +27,15 @@
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
 #include "NumericalAlgorithms/Spectral/SwshTags.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
+#include "Time/StepChoosers/Factory.hpp"
 #include "Time/Tags.hpp"
 #include "Time/TimeSteppers/DormandPrince5.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace Cce {
@@ -121,6 +124,13 @@ struct test_metavariables {
       Tags::Du<Tags::GaugeOmega>,
       Spectral::Swsh::Tags::Derivative<Tags::GaugeOmega,
                                        Spectral::Swsh::Tags::Eth>>>;
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes = tmpl::map<tmpl::pair<
+        StepChooser<StepChooserUse::LtsStep>,
+        tmpl::list<StepChoosers::Constant<StepChooserUse::LtsStep>,
+                   StepChoosers::Increase<StepChooserUse::LtsStep>>>>;
+  };
 
   using scri_values_to_observe = tmpl::list<>;
   using cce_integrand_tags = tmpl::flatten<tmpl::transform<
@@ -183,7 +193,7 @@ SPECTRE_TEST_CASE(
                                                               1.0, frequency)};
   runner.set_phase(test_metavariables::Phase::Initialization);
   ActionTesting::emplace_component<evolution_component>(
-      &runner, 0, target_step_size,
+      &runner, 0, target_step_size, false,
       static_cast<std::unique_ptr<TimeStepper>>(
           std::make_unique<::TimeSteppers::DormandPrince5>()),
       scri_plus_interpolation_order,

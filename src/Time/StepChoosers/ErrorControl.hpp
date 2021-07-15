@@ -26,6 +26,14 @@ class GlobalCache;
 
 namespace StepChoosers {
 namespace Tags {
+/// \brief The stepper error measure computed in the previous application of the
+/// `StepChooser::ErrorControl` step chooser.
+///
+/// \details This tag is templated on `EvolvedVariableTag`, as a separate error
+/// measure should be stored for each evolved variables and corresponding
+/// `TimeSteppers::History` in the system, because the stepper is separately
+/// applied to each `TimeSteppers::History` object.
+template <typename EvolvedVariableTag>
 struct PreviousStepError : db::SimpleTag {
   using type = std::optional<double>;
 };
@@ -72,9 +80,11 @@ struct PreviousStepError : db::SimpleTag {
  * calculation. Intuitively, we should change the step less drastically for a
  * higher order stepper.
  *
- * After the first error calculation, the error \f$E\f$ is recorded, and
- * subsequent error calculations use a simple PI scheme suggested in
- * \cite NumericalRecipes section 17.2.1:
+ * After the first error calculation, the error \f$E\f$ is recorded in the \ref
+ * DataBoxGroup "DataBox" using tag
+ * `StepChoosers::Tags::PreviousStepError<EvolvedVariablesTag>`, and subsequent
+ * error calculations use a simple PI scheme suggested in \cite NumericalRecipes
+ * section 17.2.1:
  *
  * \f[
  * h_{\text{new}} = h \cdot \min\left(F_{\text{max}},
@@ -169,9 +179,9 @@ class ErrorControl : public StepChooser<StepChooserUse::LtsStep> {
                  db::add_tag_prefix<::Tags::StepperError, EvolvedVariableTag>,
                  ::Tags::StepperErrorUpdated, ::Tags::TimeStepper<>>;
 
-  using return_tags = tmpl::list<Tags::PreviousStepError>;
+  using return_tags = tmpl::list<Tags::PreviousStepError<EvolvedVariableTag>>;
 
-  using simple_tags = tmpl::list<Tags::PreviousStepError>;
+  using simple_tags = tmpl::list<Tags::PreviousStepError<EvolvedVariableTag>>;
 
   template <typename Metavariables, typename History, typename TimeStepper>
   std::pair<double, bool> operator()(
@@ -259,6 +269,9 @@ class ErrorControl : public StepChooser<StepChooserUse::LtsStep> {
             }
           });
       return result;
+    } else if constexpr (is_any_spin_weighted_v<
+                             std::remove_cv_t<EvolvedType>>) {
+      return error_calc_impl(values.data(), errors.data());
     }
   }
 
@@ -277,13 +290,25 @@ PUP::able::PUP_ID
 }  // namespace StepChoosers
 
 namespace Tags {
+namespace detail {
+template <typename Tag>
+using NoPrefix = Tag;
+}  // detail
+
+/// \ingroup TimeGroup
+/// \brief Base tag for reporting whether the `ErrorControl` step chooser is in
+/// use.
+struct IsUsingTimeSteppingErrorControlBase : db::BaseTag {};
+
 /// \ingroup TimeGroup
 /// \brief A tag that is true if the `ErrorControl` step chooser is one of the
 /// option-created `Event`s.
-struct IsUsingTimeSteppingErrorControl : db::SimpleTag {
+template <template <typename> typename Prefix = detail::NoPrefix>
+struct IsUsingTimeSteppingErrorControl : db::SimpleTag,
+                                         IsUsingTimeSteppingErrorControlBase {
   using type = bool;
   template <typename Metavariables>
-  using option_tags = tmpl::list<::OptionTags::StepChoosers>;
+  using option_tags = tmpl::list<Prefix<::OptionTags::StepChoosers>>;
 
   static constexpr bool pass_metavariables = true;
   template <typename Metavariables>
@@ -317,5 +342,21 @@ struct IsUsingTimeSteppingErrorControl : db::SimpleTag {
         });
     return is_using_error_control;
   }
+};
+
+/// \ingroup TimeGroup
+/// \brief Tag indicating that the `ErrorControl` step chooser will not be used.
+///
+/// \details This can be useful when e.g. local time stepping is disabled and it
+/// is known at compile-time that the `ErrorControl` step chooser cannot be
+/// used.
+struct NeverUsingTimeSteppingErrorControl
+    : db::SimpleTag,
+      IsUsingTimeSteppingErrorControlBase {
+  using type = bool;
+  using option_tags = tmpl::list<>;
+
+  static constexpr bool pass_metavariables = false;
+  static bool create_from_options() noexcept { return false; }
 };
 }  // namespace Tags

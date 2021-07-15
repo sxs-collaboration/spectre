@@ -19,6 +19,7 @@
 #include "Time/History.hpp"
 #include "Time/Slab.hpp"
 #include "Time/StepChoosers/Constant.hpp"
+#include "Time/StepChoosers/ErrorControl.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/StepControllers/BinaryFraction.hpp"
 #include "Time/Tags.hpp"
@@ -79,10 +80,12 @@ struct Component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
-  using const_global_cache_tags = tmpl::list<Tags::TimeStepper<LtsTimeStepper>>;
+  using const_global_cache_tags =
+      tmpl::list<Tags::TimeStepper<LtsTimeStepper>>;
   using simple_tags = tmpl::list<Tags::TimeStepId, Tags::Next<Tags::TimeStepId>,
                                  Tags::TimeStep, Tags::Next<Tags::TimeStep>,
                                  ::Tags::StepChoosers, ::Tags::StepController,
+                                 Tags::IsUsingTimeSteppingErrorControl<>,
                                  history_tag, typename System::variables_tag>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
@@ -143,7 +146,7 @@ void check(const bool time_runs_forward,
                  std::make_unique<Constant>(2. * request),
                  std::make_unique<Constant>(request),
                  std::make_unique<Constant>(2. * request)),
-       std::make_unique<StepControllers::BinaryFraction>(),
+       std::make_unique<StepControllers::BinaryFraction>(), false,
        typename history_tag::type{}, 1.});
 
   ActionTesting::set_phase(make_not_null(&runner),
