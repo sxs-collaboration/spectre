@@ -374,30 +374,12 @@ void test_coordinate_map_argument_types(
     return nullptr;
   };
 
-  const auto jac_overloader = make_overloader(
-      // The first two functions are passed through the jacobian
-      // overloader and the check_jac function due to gcc failing to deduce auto
-      [&check_jac](const auto& make_array_data_vec, const auto& add_ref_wrapper,
-                   const Map& this_map,
-                   const std::array<double, Map::dim>& this_point,
-                   const std::false_type /*is_time_independent*/,
-                   const Args&... /*the_args*/) noexcept {
-        check_jac(make_array_data_vec, add_ref_wrapper, this_map, this_point);
-        return nullptr;
-      },
-      [&check_jac](const auto& make_array_data_vec, const auto& add_ref_wrapper,
-                   const Map& this_map,
-                   const std::array<double, Map::dim>& this_point,
-                   const std::true_type /*is_time_dependent*/,
-                   const Args&... the_args) noexcept {
-        check_jac(make_array_data_vec, add_ref_wrapper, this_map, this_point,
-                  the_args...);
-        return nullptr;
-      });
-
-  jac_overloader(make_array_data_vector, add_reference_wrapper, map, test_point,
-                 domain::is_jacobian_time_dependent_t<decltype(map), double>{},
-                 args...);
+  if constexpr (domain::is_jacobian_time_dependent_t<decltype(map), double>{}) {
+    check_jac(make_array_data_vector, add_reference_wrapper, map, test_point,
+              args...);
+  } else {
+    check_jac(make_array_data_vector, add_reference_wrapper, map, test_point);
+  }
 }
 
 /// @{
