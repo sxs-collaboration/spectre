@@ -222,7 +222,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticData.GrMhd.BlastWave",
 
 // [[OutputRegex, BlastWave expects InnerRadius < OuterRadius]]
 [[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.PointwiseFunctions.AnalyticData.GrMhd.CylBlastWaveInRadLess",
+    "Unit.PointwiseFunctions.AnalyticData.GrMhd.BlastWaveInRadLess",
     "[Unit][PointwiseFunctions]") {
   ERROR_TEST();
   grmhd::AnalyticData::BlastWave cylindrical_blast_wave(
