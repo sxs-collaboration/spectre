@@ -14,6 +14,7 @@
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/PointwiseFunctions/AnalyticData/TestHelpers.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
 #include "PointwiseFunctions/AnalyticData/CurvedWaveEquation/ScalarWaveGr.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/WaveEquation/PlaneWave.hpp"
@@ -21,10 +22,20 @@
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/MathFunctions/Gaussian.hpp"
 #include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 namespace {
+struct Metavariables {
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes = tmpl::map<
+        tmpl::pair<MathFunction<1, Frame::Inertial>,
+                   tmpl::list<MathFunctions::Gaussian<1, Frame::Inertial>>>>;
+  };
+};
+
 template <typename ScalarFieldData>
 void test_tag_retrieval(const CurvedScalarWave::AnalyticData::ScalarWaveGr<
                         ScalarFieldData, gr::Solutions::KerrSchild>&
@@ -135,9 +146,11 @@ void test_kerr_schild_vars(
 void test_construct_from_options() noexcept {
   {  // test with wave profile = spherical
     const auto curved_wave_data_constructed_from_opts =
-        TestHelpers::test_creation<CurvedScalarWave::AnalyticData::ScalarWaveGr<
-            ScalarWave::Solutions::RegularSphericalWave,
-            gr::Solutions::KerrSchild>>(
+        TestHelpers::test_creation<
+            CurvedScalarWave::AnalyticData::ScalarWaveGr<
+                ScalarWave::Solutions::RegularSphericalWave,
+                gr::Solutions::KerrSchild>,
+            Metavariables>(
             "Background:\n"
             "  Mass: 0.7\n"
             "  Spin: [0.1, -0.2, 0.3]\n"
@@ -172,8 +185,10 @@ void test_construct_from_options() noexcept {
   }
   {  // test with wave profile = plane
     const auto curved_wave_data_constructed_from_opts =
-        TestHelpers::test_creation<CurvedScalarWave::AnalyticData::ScalarWaveGr<
-            ScalarWave::Solutions::PlaneWave<3>, gr::Solutions::KerrSchild>>(
+        TestHelpers::test_creation<
+            CurvedScalarWave::AnalyticData::ScalarWaveGr<
+                ScalarWave::Solutions::PlaneWave<3>, gr::Solutions::KerrSchild>,
+            Metavariables>(
             "Background:\n"
             "  Mass: 0.7\n"
             "  Spin: [0.1, -0.2, 0.3]\n"
@@ -214,6 +229,7 @@ void test_construct_from_options() noexcept {
 
 void test_serialize(const double mass, const std::array<double, 3>& spin,
                     const std::array<double, 3>& center) noexcept {
+  Parallel::register_factory_classes_with_charm<Metavariables>();
   {  // test with wave profile = spherical
     CurvedScalarWave::AnalyticData::ScalarWaveGr<
         ScalarWave::Solutions::RegularSphericalWave, gr::Solutions::KerrSchild>
@@ -222,8 +238,6 @@ void test_serialize(const double mass, const std::array<double, 3>& spin,
             ScalarWave::Solutions::RegularSphericalWave(
                 std::make_unique<MathFunctions::Gaussian<1, Frame::Inertial>>(
                     11., 1.4, 0.3)));
-    Parallel::register_derived_classes_with_charm<
-        MathFunction<1, Frame::Inertial>>();
     const auto snd_curved_wave_data =
         serialize_and_deserialize(curved_wave_data);
     CHECK(curved_wave_data == snd_curved_wave_data);
@@ -245,8 +259,6 @@ void test_serialize(const double mass, const std::array<double, 3>& spin,
                 {{1.0, 1.0, 1.0}}, {{0.0, 0.0, 0.0}},
                 std::make_unique<MathFunctions::Gaussian<1, Frame::Inertial>>(
                     11., 1.4, 0.3)));
-    Parallel::register_derived_classes_with_charm<
-        MathFunction<1, Frame::Inertial>>();
     const auto snd_curved_wave_data =
         serialize_and_deserialize(curved_wave_data);
     CHECK(curved_wave_data == snd_curved_wave_data);
@@ -395,7 +407,9 @@ SPECTRE_TEST_CASE("Unit.AnalyticData.CurvedWaveEquation.ScalarWaveGrOptM",
                   "[PointwiseFunctions][Unit]") {
   ERROR_TEST();
   TestHelpers::test_creation<CurvedScalarWave::AnalyticData::ScalarWaveGr<
-      ScalarWave::Solutions::RegularSphericalWave, gr::Solutions::KerrSchild>>(
+                                 ScalarWave::Solutions::RegularSphericalWave,
+                                 gr::Solutions::KerrSchild>,
+                             Metavariables>(
       "Background:\n"
       "  Mass: -0.5\n"
       "  Spin: [0.1, -0.2, 0.3]\n"

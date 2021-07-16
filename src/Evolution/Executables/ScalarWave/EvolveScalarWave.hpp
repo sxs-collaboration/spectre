@@ -68,6 +68,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/WaveEquation/PlaneWave.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/AnalyticSolutions/WaveEquation/RegularSphericalWave.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/MathFunctions/Factory.hpp"
 #include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
 #include "Time/Actions/AdvanceTime.hpp"                // IWYU pragma: keep
 #include "Time/Actions/ChangeSlabSize.hpp"             // IWYU pragma: keep
@@ -138,6 +139,8 @@ struct EvolutionMetavars {
                                   volume_dim, Tags::Time, observe_fields,
                                   analytic_solution_fields>,
                               Events::time_events<system>>>>,
+        tmpl::pair<MathFunction<1, Frame::Inertial>,
+                   MathFunctions::all_math_functions<1, Frame::Inertial>>,
         tmpl::pair<
             StepChooser<StepChooserUse::LtsStep>,
             tmpl::push_back<
@@ -321,8 +324,6 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &domain::FunctionsOfTime::register_derived_with_charm,
     &ScalarWave::BoundaryConditions::register_derived_with_charm,
     &ScalarWave::BoundaryCorrections::register_derived_with_charm,
-    &Parallel::register_derived_classes_with_charm<
-        MathFunction<1, Frame::Inertial>>,
     &Parallel::register_derived_classes_with_charm<TimeStepper>,
     &Parallel::register_derived_classes_with_charm<
         PhaseChange<metavariables::phase_changes>>,

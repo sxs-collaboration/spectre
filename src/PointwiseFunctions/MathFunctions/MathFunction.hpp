@@ -15,14 +15,7 @@
 
 /// \ingroup MathFunctionsGroup
 /// Holds classes implementing MathFunction (functions \f$R^n \to R\f$).
-namespace MathFunctions {
-template <size_t VolumeDim, typename Fr>
-class Gaussian;
-template <size_t VolumeDim, typename Fr>
-class PowX;
-template <size_t VolumeDim, typename Fr>
-class Sinusoid;
-}  // namespace MathFunctions
+namespace MathFunctions {}
 
 /*!
  * \ingroup MathFunctionsGroup
@@ -39,7 +32,6 @@ class MathFunction;
 template <size_t VolumeDim, typename Fr>
 class MathFunction : public PUP::able {
  public:
-  using creatable_classes = tmpl::list<MathFunctions::Gaussian<VolumeDim, Fr>>;
   constexpr static size_t volume_dim = VolumeDim;
   using frame = Fr;
 
@@ -94,9 +86,6 @@ class MathFunction : public PUP::able {
 template <typename Fr>
 class MathFunction<1, Fr> : public PUP::able {
  public:
-  using creatable_classes =
-      tmpl::list<MathFunctions::Gaussian<1, Fr>, MathFunctions::PowX<1, Fr>,
-                 MathFunctions::Sinusoid<1, Fr>>;
   constexpr static size_t volume_dim = 1;
   using frame = Fr;
 
@@ -168,7 +157,3 @@ class MathFunction<1, Fr> : public PUP::able {
     return result;
   }
 };
-
-#include "PointwiseFunctions/MathFunctions/Gaussian.hpp"
-#include "PointwiseFunctions/MathFunctions/PowX.hpp"
-#include "PointwiseFunctions/MathFunctions/Sinusoid.hpp"

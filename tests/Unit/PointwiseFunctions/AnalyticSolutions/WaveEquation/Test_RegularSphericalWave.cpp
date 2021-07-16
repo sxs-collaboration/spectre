@@ -11,11 +11,24 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/Systems/ScalarWave/Tags.hpp"  // IWYU pragma: keep
 #include "Framework/TestCreation.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/WaveEquation/RegularSphericalWave.hpp"
 #include "PointwiseFunctions/MathFunctions/Gaussian.hpp"
 #include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
+
+namespace {
+struct Metavariables {
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes = tmpl::map<
+        tmpl::pair<MathFunction<1, Frame::Inertial>,
+                   tmpl::list<MathFunctions::Gaussian<1, Frame::Inertial>>>>;
+  };
+};
+}  // namespace
 
 SPECTRE_TEST_CASE("Unit.AnalyticSolutions.WaveEquation.RegularSphericalWave",
                   "[PointwiseFunctions][Unit]") {
@@ -65,7 +78,8 @@ SPECTRE_TEST_CASE("Unit.AnalyticSolutions.WaveEquation.RegularSphericalWave",
                         DataVector({{0., 0., 0., 0.}}));
 
   const auto created_solution =
-      TestHelpers::test_creation<ScalarWave::Solutions::RegularSphericalWave>(
+      TestHelpers::test_creation<ScalarWave::Solutions::RegularSphericalWave,
+                                 Metavariables>(
           "Profile:\n"
           "  Gaussian:\n"
           "    Amplitude: 1.\n"

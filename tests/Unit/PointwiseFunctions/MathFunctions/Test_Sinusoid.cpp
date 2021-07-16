@@ -27,7 +27,7 @@ struct Inertial;
 namespace {
 template <size_t VolumeDim, typename DataType, typename Fr>
 void test_sinusoid_random(const DataType& used_for_size) noexcept {
-  Parallel::register_derived_classes_with_charm<
+  Parallel::register_classes_with_charm<
       MathFunctions::Sinusoid<VolumeDim, Fr>>();
 
   // Generate the amplitude and width
@@ -67,12 +67,16 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.Sinusoid",
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.Sinusoid.Factory",
                   "[PointwiseFunctions][Unit]") {
-  TestHelpers::test_creation<std::unique_ptr<MathFunction<1, Frame::Inertial>>>(
+  TestHelpers::test_factory_creation<
+      MathFunction<1, Frame::Inertial>,
+      MathFunctions::Sinusoid<1, Frame::Inertial>>(
       "Sinusoid:\n"
       "  Amplitude: 3\n"
       "  Wavenumber: 2\n"
       "  Phase: -9");
-  TestHelpers::test_creation<std::unique_ptr<MathFunction<1, Frame::Inertial>>>(
+  TestHelpers::test_factory_creation<
+      MathFunction<1, Frame::Inertial>,
+      MathFunctions::Sinusoid<1, Frame::Inertial>>(
       "Sinusoid:\n"
       "  Amplitude: 3\n"
       "  Wavenumber: 2\n"
