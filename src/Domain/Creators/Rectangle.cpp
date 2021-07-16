@@ -25,7 +25,7 @@
 
 namespace Frame {
 struct Inertial;
-struct Logical;
+struct BlockLogical;
 }  // namespace Frame
 
 namespace domain::creators {
@@ -115,7 +115,7 @@ Domain<2> Rectangle::create_domain() const noexcept {
   }
 
   Domain<2> domain{
-      make_vector_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      make_vector_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
           Affine2D{Affine{-1., 1., lower_xy_[0], upper_xy_[0]},
                    Affine{-1., 1., lower_xy_[1], upper_xy_[1]}}),
       std::vector<std::array<size_t, 4>>{{{0, 1, 2, 3}}}, identifications,

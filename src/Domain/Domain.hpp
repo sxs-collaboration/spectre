@@ -19,7 +19,7 @@
 #include "Utilities/ConstantExpressions.hpp"
 
 namespace Frame {
-struct Logical;
+struct BlockLogical;
 }  // namespace Frame
 namespace PUP {
 class er;
@@ -59,7 +59,7 @@ class Domain {
    */
   explicit Domain(
       std::vector<std::unique_ptr<domain::CoordinateMapBase<
-          Frame::Logical, Frame::Inertial, VolumeDim>>>
+          Frame::BlockLogical, Frame::Inertial, VolumeDim>>>
           maps,
       std::vector<DirectionMap<
           VolumeDim,
@@ -87,7 +87,7 @@ class Domain {
    * boundary conditions at all.
    */
   Domain(std::vector<std::unique_ptr<domain::CoordinateMapBase<
-             Frame::Logical, Frame::Inertial, VolumeDim>>>
+             Frame::BlockLogical, Frame::Inertial, VolumeDim>>>
              maps,
          const std::vector<std::array<size_t, two_to_the(VolumeDim)>>&
              corners_of_all_blocks,

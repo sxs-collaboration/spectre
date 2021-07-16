@@ -308,7 +308,7 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const noexcept {
       3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>;
 
   std::vector<std::unique_ptr<
-      domain::CoordinateMapBase<Frame::Logical, Frame::Inertial, 3>>>
+      domain::CoordinateMapBase<Frame::BlockLogical, Frame::Inertial, 3>>>
       coordinate_maps{};
 
   std::vector<BcMap> boundary_conditions_all_blocks{};
@@ -398,7 +398,7 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const noexcept {
              const CylindricalDomainParityFlip parity_flip =
                  CylindricalDomainParityFlip::none) noexcept {
         auto new_logical_to_cylinder_center_maps =
-            domain::make_vector_coordinate_map_base<Frame::Logical,
+            domain::make_vector_coordinate_map_base<Frame::BlockLogical,
                                                     Frame::Inertial, 3>(
                 parity_flip == CylindricalDomainParityFlip::z_direction
                     ? logical_to_cylinder_center_maps_flip_z
@@ -410,7 +410,7 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const noexcept {
                 new_logical_to_cylinder_center_maps.begin()),
             std::make_move_iterator(new_logical_to_cylinder_center_maps.end()));
         auto new_logical_to_cylinder_surrounding_maps =
-            domain::make_vector_coordinate_map_base<Frame::Logical,
+            domain::make_vector_coordinate_map_base<Frame::BlockLogical,
                                                     Frame::Inertial, 3>(
                 parity_flip == CylindricalDomainParityFlip::z_direction
                     ? logical_to_cylinder_surrounding_maps_flip_z
@@ -460,7 +460,7 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const noexcept {
        this](const CoordinateMaps::CylindricalFlatEndcap& endcap_map,
              const CoordinateMaps::DiscreteRotation<3>& rotation_map) noexcept {
         auto new_logical_to_cylinder_center_maps =
-            domain::make_vector_coordinate_map_base<Frame::Logical,
+            domain::make_vector_coordinate_map_base<Frame::BlockLogical,
                                                     Frame::Inertial, 3>(
                 logical_to_cylinder_center_maps, endcap_map, rotation_map);
         coordinate_maps.insert(
@@ -469,7 +469,7 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const noexcept {
                 new_logical_to_cylinder_center_maps.begin()),
             std::make_move_iterator(new_logical_to_cylinder_center_maps.end()));
         auto new_logical_to_cylinder_surrounding_maps =
-            domain::make_vector_coordinate_map_base<Frame::Logical,
+            domain::make_vector_coordinate_map_base<Frame::BlockLogical,
                                                     Frame::Inertial, 3>(
                 logical_to_cylinder_surrounding_maps, endcap_map, rotation_map);
         coordinate_maps.insert(
@@ -534,7 +534,7 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const noexcept {
              const CylindricalDomainParityFlip parity_flip =
                  CylindricalDomainParityFlip::none) noexcept {
         auto new_logical_to_cylindrical_shell_maps =
-            domain::make_vector_coordinate_map_base<Frame::Logical,
+            domain::make_vector_coordinate_map_base<Frame::BlockLogical,
                                                     Frame::Inertial, 3>(
                 parity_flip == CylindricalDomainParityFlip::z_direction
                     ? logical_to_cylindrical_shell_maps_flip_z

@@ -63,24 +63,24 @@ void test_rotated_rectangles_construction(
   const Affine upper_x_map(-1.0, 1.0, midpoint[0], upper_bound[0]);
   const Affine lower_y_map(-1.0, 1.0, lower_bound[1], midpoint[1]);
   const Affine upper_y_map(-1.0, 1.0, midpoint[1], upper_bound[1]);
-  std::vector<
-      std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Inertial, 2>>>
+  std::vector<std::unique_ptr<
+      CoordinateMapBase<Frame::BlockLogical, Frame::Inertial, 2>>>
       coord_maps;
   coord_maps.emplace_back(
-      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
           Affine2D(lower_x_map, lower_y_map)));
   coord_maps.emplace_back(
-      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
           DiscreteRotation2D{OrientationMap<2>{std::array<Direction<2>, 2>{
               {Direction<2>::lower_xi(), Direction<2>::lower_eta()}}}},
           Affine2D(upper_x_map, lower_y_map)));
   coord_maps.emplace_back(
-      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
           DiscreteRotation2D{OrientationMap<2>{std::array<Direction<2>, 2>{
               {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}}},
           Affine2D(lower_x_map, upper_y_map)));
   coord_maps.emplace_back(
-      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
           DiscreteRotation2D{OrientationMap<2>{std::array<Direction<2>, 2>{
               {Direction<2>::upper_eta(), Direction<2>::lower_xi()}}}},
           Affine2D(upper_x_map, upper_y_map)));

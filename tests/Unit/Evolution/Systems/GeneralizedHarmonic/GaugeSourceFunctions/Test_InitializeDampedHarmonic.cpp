@@ -118,7 +118,7 @@ void test(const gsl::not_null<std::mt19937*> generator) noexcept {
       SINGLE_ARG(domain::CoordinateMap<Frame::Grid, Frame::Inertial,
                                        domain::CoordinateMaps::Identity<Dim>>));
   PUPable_reg(
-      SINGLE_ARG(domain::CoordinateMap<Frame::Logical, Frame::Grid,
+      SINGLE_ARG(domain::CoordinateMap<Frame::BlockLogical, Frame::Grid,
                                        domain::CoordinateMaps::Identity<Dim>>));
 
   std::uniform_real_distribution<> pdist(0.1, 1.);
@@ -251,7 +251,7 @@ void test(const gsl::not_null<std::mt19937*> generator) noexcept {
         {time, time, mesh, logical_coords, inertial_coords,
          ElementMap<Dim, Frame::Grid>{
              ElementId<Dim>{0},
-             domain::make_coordinate_map_base<Frame::Logical, Frame::Grid>(
+             domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
                  domain::CoordinateMaps::Identity<Dim>{})},
          domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
              domain::CoordinateMaps::Identity<Dim>{}),

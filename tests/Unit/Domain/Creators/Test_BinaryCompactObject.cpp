@@ -226,7 +226,7 @@ void test_connectivity() {
                              .blocks()[44]
                              .stationary_map()
                              .get_clone()};
-          tnsr::I<double, 3, Frame::Logical> logical_point(
+          tnsr::I<double, 3, Frame::BlockLogical> logical_point(
               std::array<double, 3>{{0.0, 0.0, -1.0}});
           const double layer_5_inner_radius =
               get(magnitude(std::move(map)->operator()(logical_point)));

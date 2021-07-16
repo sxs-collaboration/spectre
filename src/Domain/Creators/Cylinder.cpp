@@ -21,7 +21,6 @@
 #include "Utilities/MakeArray.hpp"
 
 namespace Frame {
-struct Logical;
 struct Inertial;
 }  // namespace Frame
 

@@ -37,7 +37,7 @@ namespace creators {
 class Interval : public DomainCreator<1> {
  public:
   using maps_list =
-      tmpl::list<domain::CoordinateMap<Frame::Logical, Frame::Inertial,
+      tmpl::list<domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial,
                                        CoordinateMaps::Affine>>;
 
   struct LowerBound {

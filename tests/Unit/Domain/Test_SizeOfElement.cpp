@@ -36,8 +36,9 @@
 namespace {
 void test_1d() noexcept {
   INFO("1d");
-  auto map = domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-      domain::CoordinateMaps::Affine(-1.0, 1.0, 0.3, 1.2));
+  auto map =
+      domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
+          domain::CoordinateMaps::Affine(-1.0, 1.0, 0.3, 1.2));
   const ElementId<1> element_id(0, {{{2, 3}}});
   const ElementMap<1, Frame::Inertial> element_map(element_id, std::move(map));
   const auto size = size_of_element(element_map);
@@ -50,11 +51,12 @@ void test_2d() noexcept {
   INFO("2d");
   using Affine = domain::CoordinateMaps::Affine;
   using Affine2D = domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>;
-  auto map = domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-      Affine2D{Affine(-1.0, 1.0, 0.3, 0.4), Affine(-1.0, 1.0, -0.5, 1.2)},
-      domain::CoordinateMaps::DiscreteRotation<2>(
-          OrientationMap<2>{std::array<Direction<2>, 2>{
-              {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}}));
+  auto map =
+      domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
+          Affine2D{Affine(-1.0, 1.0, 0.3, 0.4), Affine(-1.0, 1.0, -0.5, 1.2)},
+          domain::CoordinateMaps::DiscreteRotation<2>(
+              OrientationMap<2>{std::array<Direction<2>, 2>{
+                  {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}}));
   const ElementId<2> element_id(0, {{{1, 1}, {2, 0}}});
   const ElementMap<2, Frame::Inertial> element_map(element_id, std::move(map));
   const auto size = size_of_element(element_map);
@@ -67,10 +69,11 @@ void test_3d() noexcept {
   using Affine = domain::CoordinateMaps::Affine;
   using Affine3D =
       domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
-  auto map = domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-      Affine3D{Affine(-1.0, 1.0, 0.3, 0.4), Affine(-1.0, 1.0, -0.5, 1.2),
-               Affine(-1.0, 1.0, 12.0, 12.5)},
-      domain::CoordinateMaps::Rotation<3>(0.7, 2.3, -0.4));
+  auto map =
+      domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
+          Affine3D{Affine(-1.0, 1.0, 0.3, 0.4), Affine(-1.0, 1.0, -0.5, 1.2),
+                   Affine(-1.0, 1.0, 12.0, 12.5)},
+          domain::CoordinateMaps::Rotation<3>(0.7, 2.3, -0.4));
   const ElementId<3> element_id(0, {{{3, 5}, {1, 0}, {2, 3}}});
   const ElementMap<3, Frame::Inertial> element_map(element_id, std::move(map));
   const auto size = size_of_element(element_map);
@@ -99,7 +102,7 @@ make_single_expansion_functions_of_time() noexcept {
 
 void test_1d_moving_mesh(const std::array<double, 4>& times_to_check) noexcept {
   INFO("1d with moving mesh");
-  auto map = domain::make_coordinate_map_base<Frame::Logical, Frame::Grid>(
+  auto map = domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
       domain::CoordinateMaps::Affine(-1.0, 1.0, 0.3, 1.2));
   const ElementId<1> element_id(0, {{{2, 3}}});
   const ElementMap<1, Frame::Grid> logical_to_grid_map(element_id,
@@ -125,7 +128,7 @@ void test_2d_moving_mesh(const std::array<double, 4>& times_to_check) noexcept {
   INFO("2d with moving mesh");
   using Affine = domain::CoordinateMaps::Affine;
   using Affine2D = domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>;
-  auto map = domain::make_coordinate_map_base<Frame::Logical, Frame::Grid>(
+  auto map = domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
       Affine2D{Affine(-1.0, 1.0, 0.3, 0.4), Affine(-1.0, 1.0, -0.5, 1.2)},
       domain::CoordinateMaps::DiscreteRotation<2>(
           OrientationMap<2>{std::array<Direction<2>, 2>{
@@ -153,7 +156,7 @@ void test_3d_moving_mesh(const std::array<double, 4>& times_to_check) noexcept {
   using Affine = domain::CoordinateMaps::Affine;
   using Affine3D =
       domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
-  auto map = domain::make_coordinate_map_base<Frame::Logical, Frame::Grid>(
+  auto map = domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
       Affine3D{Affine(-1.0, 1.0, 0.3, 0.4), Affine(-1.0, 1.0, -0.5, 1.2),
                Affine(-1.0, 1.0, 12.0, 12.5)},
       domain::CoordinateMaps::Rotation<3>(0.7, 2.3, -0.4));
@@ -180,7 +183,7 @@ void test_compute_tag(const std::array<double, 4>& times_to_check) noexcept {
   INFO("compute tag in 2d, with moving mesh");
   using Affine = domain::CoordinateMaps::Affine;
   using Affine2D = domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>;
-  auto map = domain::make_coordinate_map_base<Frame::Logical, Frame::Grid>(
+  auto map = domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
       Affine2D{Affine(-1.0, 1.0, 0.3, 0.4), Affine(-1.0, 1.0, -0.5, 1.2)},
       domain::CoordinateMaps::DiscreteRotation<2>(
           OrientationMap<2>{std::array<Direction<2>, 2>{

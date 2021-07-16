@@ -233,8 +233,9 @@ template <typename TargetFrame>
 void test_face_normal_element_map() {
   const Mesh<0> mesh_0d;
   const auto map_1d = ElementMap<1, TargetFrame>(
-      ElementId<1>{0}, make_coordinate_map_base<Frame::Logical, TargetFrame>(
-                           CoordinateMaps::Affine(-1.0, 1.0, -3.0, 7.0)));
+      ElementId<1>{0},
+      make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(
+          CoordinateMaps::Affine(-1.0, 1.0, -3.0, 7.0)));
   const auto normal_1d_lower =
       unnormalized_face_normal(mesh_0d, map_1d, Direction<1>::lower_xi());
 
@@ -247,13 +248,13 @@ void test_face_normal_element_map() {
 
   check(ElementMap<2, TargetFrame>(
             ElementId<2>(0),
-            make_coordinate_map_base<Frame::Logical, TargetFrame>(
+            make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(
                 CoordinateMaps::Rotation<2>(atan2(4., 3.)))),
         {{{{0.6, 0.8}}, {{-0.8, 0.6}}}});
 
   check(ElementMap<3, TargetFrame>(
             ElementId<3>(0),
-            make_coordinate_map_base<Frame::Logical, TargetFrame>(
+            make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(
                 CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
                                                CoordinateMaps::Rotation<2>>(
                     {-1., 1., 2., 7.},
@@ -284,8 +285,9 @@ void test_face_normal_moving_mesh() {
   {
     INFO("1d");
     const ElementMap<1, Frame::Grid> logical_to_grid_map(
-        ElementId<1>(0), make_coordinate_map_base<Frame::Logical, Frame::Grid>(
-                             CoordinateMaps::Affine(-1.0, 1.0, 2.0, 7.8)));
+        ElementId<1>(0),
+        make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
+            CoordinateMaps::Affine(-1.0, 1.0, 2.0, 7.8)));
     const auto grid_to_inertial_map =
         make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
             CoordinateMaps::TimeDependent::CubicScale<1>{
@@ -306,8 +308,9 @@ void test_face_normal_moving_mesh() {
   {
     INFO("2d");
     const ElementMap<2, Frame::Grid> logical_to_grid_map(
-        ElementId<2>(0), make_coordinate_map_base<Frame::Logical, Frame::Grid>(
-                             CoordinateMaps::Rotation<2>(atan2(4., 3.))));
+        ElementId<2>(0),
+        make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
+            CoordinateMaps::Rotation<2>(atan2(4., 3.))));
     const auto grid_to_inertial_map =
         make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
             CoordinateMaps::TimeDependent::CubicScale<2>{
@@ -329,7 +332,7 @@ void test_face_normal_moving_mesh() {
     INFO("3d");
     const ElementMap<3, Frame::Grid> logical_to_grid_map(
         ElementId<3>(0),
-        make_coordinate_map_base<Frame::Logical, Frame::Grid>(
+        make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
             CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
                                            CoordinateMaps::Rotation<2>>(
                 {-1., 1., 2., 7.},
@@ -378,7 +381,7 @@ void test_compute_item() {
       Mesh<2>{2, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto},
       ElementMap<2, Frame::Inertial>(
           ElementId<2>(0),
-          make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+          make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
               CoordinateMaps::Rotation<2>(atan2(4., 3.)))));
 
   TestHelpers::db::test_compute_tag<
@@ -435,7 +438,7 @@ void test_compute_item() {
       Mesh<2>{2, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto},
       ElementMap<2, Frame::Inertial>(
           ElementId<2>(0),
-          make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+          make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
               CoordinateMaps::Wedge<2>(1., 2., 0., 1., OrientationMap<2>{},
                                        false))));
 

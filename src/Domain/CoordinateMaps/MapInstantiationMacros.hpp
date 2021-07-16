@@ -58,7 +58,7 @@
  *                                             domain::CoordinateMaps::Affine>;
  *
  *  GENERATE_INSTANTIATIONS(INSTANTIATE_MAPS_SIMPLE_FUNCTIONS,
- *                          ((Affine2d), (Affine3d)), (Frame::Logical),
+ *                          ((Affine2d), (Affine3d)), (Frame::BlockLogical),
  *                          (Frame::Grid, Frame::Inertial))
  * \endcode
  *
@@ -126,7 +126,7 @@
  *                                             domain::CoordinateMaps::Affine>;
  *
  *  GENERATE_INSTANTIATIONS(INSTANTIATE_MAPS_DATA_TYPE_FUNCTIONS,
- *                          ((Affine2d), (Affine3d)), (Frame::Logical),
+ *                          ((Affine2d), (Affine3d)), (Frame::BlockLogical),
  *                          (Frame::Grid, Frame::Inertial),
  *                          (double, DataVector))
  * \endcode
@@ -242,7 +242,7 @@
  *                                             domain::CoordinateMaps::Affine,
  *                                             domain::CoordinateMaps::Affine>;
  *
- *  INSTANTIATE_MAPS_FUNCTIONS(((Affine2d), (Affine3d)), (Frame::Logical),
+ *  INSTANTIATE_MAPS_FUNCTIONS(((Affine2d), (Affine3d)), (Frame::BlockLogical),
  *                             (Frame::Grid, Frame::Inertial),
  *                             (double, DataVector))
  * \endcode

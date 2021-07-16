@@ -70,7 +70,7 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
         {{-0.5}}, {{1.5}}, {{2}}, {{4}}, {{false}}, nullptr};
     // Register the coordinate map for serialization
     PUPable_reg(
-        SINGLE_ARG(domain::CoordinateMap<Frame::Logical, Frame::Inertial,
+        SINGLE_ARG(domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial,
                                          domain::CoordinateMaps::Affine>));
 
     using metavariables = Metavariables<1>;
@@ -137,7 +137,7 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
         {{-0.5, 0.}}, {{1.5, 2.}}, {{2, 0}}, {{4, 3}}, {{false, false}}};
     // Register the coordinate map for serialization
     PUPable_reg(
-        SINGLE_ARG(domain::CoordinateMap<Frame::Logical, Frame::Inertial,
+        SINGLE_ARG(domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial,
                                          domain::CoordinateMaps::ProductOf2Maps<
                                              domain::CoordinateMaps::Affine,
                                              domain::CoordinateMaps::Affine>>));
@@ -209,7 +209,7 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
     // Register the coordinate map for serialization
     PUPable_reg(SINGLE_ARG(
         domain::CoordinateMap<
-            Frame::Logical, Frame::Inertial,
+            Frame::BlockLogical, Frame::Inertial,
             domain::CoordinateMaps::ProductOf3Maps<
                 domain::CoordinateMaps::Affine, domain::CoordinateMaps::Affine,
                 domain::CoordinateMaps::Affine>>));

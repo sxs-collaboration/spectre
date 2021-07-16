@@ -67,8 +67,9 @@ struct SendNextTimeToCce {
             db::get<intrp::Tags::InterpPointInfo<Metavariables>>(box));
     const std::vector<ElementId<Metavariables::volume_dim>> element_ids{
         {array_index}};
-    std::vector<std::optional<IdPair<
-        domain::BlockId, tnsr::I<double, 3_st, typename ::Frame::Logical>>>>
+    std::vector<std::optional<
+        IdPair<domain::BlockId,
+               tnsr::I<double, 3_st, typename ::Frame::BlockLogical>>>>
         first_valid_block_logical_coords;
     for (const auto& coordinate : block_logical_coords) {
       if (coordinate.has_value()) {

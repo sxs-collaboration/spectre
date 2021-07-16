@@ -186,8 +186,9 @@ void test(const bool always_use_subcell, const bool interior_element) {
   const Element<Dim> element{self_id, neighbors};
   const auto logical_coords = logical_coordinates(dg_mesh);
   ElementMap<Dim, Frame::Grid> logical_to_grid_map{
-      self_id, domain::make_coordinate_map_base<Frame::Logical, Frame::Grid>(
-                   domain::CoordinateMaps::Identity<Dim>{})};
+      self_id,
+      domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
+          domain::CoordinateMaps::Identity<Dim>{})};
   const auto grid_to_inertial_map =
       domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
           domain::CoordinateMaps::Identity<Dim>{});
@@ -286,11 +287,11 @@ void test(const bool always_use_subcell, const bool interior_element) {
 SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Actions.Initialize",
                   "[Evolution][Unit]") {
   Parallel::register_classes_with_charm<
-      domain::CoordinateMap<Frame::Logical, Frame::Grid,
+      domain::CoordinateMap<Frame::BlockLogical, Frame::Grid,
                             domain::CoordinateMaps::Identity<1>>,
-      domain::CoordinateMap<Frame::Logical, Frame::Grid,
+      domain::CoordinateMap<Frame::BlockLogical, Frame::Grid,
                             domain::CoordinateMaps::Identity<2>>,
-      domain::CoordinateMap<Frame::Logical, Frame::Grid,
+      domain::CoordinateMap<Frame::BlockLogical, Frame::Grid,
                             domain::CoordinateMaps::Identity<3>>,
       domain::CoordinateMap<Frame::Grid, Frame::Inertial,
                             domain::CoordinateMaps::Identity<1>>,

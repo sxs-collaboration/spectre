@@ -19,7 +19,7 @@
 
 /// \cond
 namespace Frame {
-struct Logical;
+struct BlockLogical;
 struct Inertial;
 }  // namespace Frame
 namespace PUP {
@@ -51,7 +51,7 @@ class Block {
   ///        at external boundaries. Can be either empty or one per each
   ///        external boundary
   Block(std::unique_ptr<domain::CoordinateMapBase<
-            Frame::Logical, Frame::Inertial, VolumeDim>>&& stationary_map,
+            Frame::BlockLogical, Frame::Inertial, VolumeDim>>&& stationary_map,
         size_t id, DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>> neighbors,
         DirectionMap<
             VolumeDim,
@@ -68,14 +68,15 @@ class Block {
   /// \brief The map used when the coordinate map is time-independent.
   ///
   /// \see is_time_dependent()
-  const domain::CoordinateMapBase<Frame::Logical, Frame::Inertial, VolumeDim>&
+  const domain::CoordinateMapBase<Frame::BlockLogical, Frame::Inertial,
+                                  VolumeDim>&
   stationary_map() const noexcept;
 
   /// \brief The map going from the block logical frame to the last time
   /// independent frame. Only used when the coordinate map is time-dependent.
   ///
   /// \see is_time_dependent() moving_mesh_grid_to_inertial_map()
-  const domain::CoordinateMapBase<Frame::Logical, Frame::Grid, VolumeDim>&
+  const domain::CoordinateMapBase<Frame::BlockLogical, Frame::Grid, VolumeDim>&
   moving_mesh_logical_to_grid_map() const noexcept;
 
   /// \brief The map going from the last time independent frame to the frame in
@@ -130,11 +131,11 @@ class Block {
   friend bool operator==(const Block<LocalVolumeDim>& lhs,
                          const Block<LocalVolumeDim>& rhs) noexcept;
 
-  std::unique_ptr<
-      domain::CoordinateMapBase<Frame::Logical, Frame::Inertial, VolumeDim>>
+  std::unique_ptr<domain::CoordinateMapBase<Frame::BlockLogical,
+                                            Frame::Inertial, VolumeDim>>
       stationary_map_{nullptr};
   std::unique_ptr<
-      domain::CoordinateMapBase<Frame::Logical, Frame::Grid, VolumeDim>>
+      domain::CoordinateMapBase<Frame::BlockLogical, Frame::Grid, VolumeDim>>
       moving_mesh_grid_map_{nullptr};
   std::unique_ptr<
       domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, VolumeDim>>

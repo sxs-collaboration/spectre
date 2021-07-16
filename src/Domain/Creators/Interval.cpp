@@ -22,7 +22,7 @@
 
 namespace Frame {
 struct Inertial;
-struct Logical;
+struct BlockLogical;
 }  // namespace Frame
 
 namespace domain::creators {
@@ -117,7 +117,7 @@ Domain<1> Interval::create_domain() const noexcept {
   }
 
   Domain<1> domain{
-      make_vector_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      make_vector_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
           CoordinateMaps::Affine{-1., 1., lower_x_[0], upper_x_[0]}),
       std::vector<std::array<size_t, 2>>{{{1, 2}}},
       is_periodic_in_x_[0] ? std::vector<PairOfFaces>{{{1}, {2}}}

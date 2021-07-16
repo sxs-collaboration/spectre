@@ -83,7 +83,7 @@ SPECTRE_TEST_CASE(
       time, subcell_mesh,
       ElementMap<3, Frame::Grid>{
           ElementId<3>{0},
-          domain::make_coordinate_map_base<Frame::Logical, Frame::Grid>(
+          domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
               domain::CoordinateMaps::Identity<3>{})},
       domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
           domain::CoordinateMaps::TimeDependent::ProductOf2Maps<Translation,
@@ -98,7 +98,7 @@ SPECTRE_TEST_CASE(
 
   const ElementMap<3, Frame::Grid> logical_to_grid_map{
       ElementId<3>{0},
-      domain::make_coordinate_map_base<Frame::Logical, Frame::Grid>(
+      domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
           domain::CoordinateMaps::Identity<3>{})};
   const auto grid_to_inertial_map =
       domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(

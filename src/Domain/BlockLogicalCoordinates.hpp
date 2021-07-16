@@ -49,4 +49,4 @@ auto block_logical_coordinates(
             std::unique_ptr<
                 domain::FunctionsOfTime::FunctionOfTime>>{}) noexcept
     -> std::vector<std::optional<
-        IdPair<domain::BlockId, tnsr::I<double, Dim, ::Frame::Logical>>>>;
+        IdPair<domain::BlockId, tnsr::I<double, Dim, ::Frame::BlockLogical>>>>;

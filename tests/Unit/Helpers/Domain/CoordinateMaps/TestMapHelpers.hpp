@@ -42,8 +42,8 @@
 template <typename Map>
 bool are_maps_equal(
     const Map& map,
-    const domain::CoordinateMapBase<Frame::Logical, Frame::Inertial, Map::dim>&
-        map_base) noexcept {
+    const domain::CoordinateMapBase<Frame::BlockLogical, Frame::Inertial,
+                                    Map::dim>& map_base) noexcept {
   const auto* map_derived = dynamic_cast<const Map*>(&map_base);
   return map_derived == nullptr ? false : (*map_derived == map);
 }

@@ -168,12 +168,12 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.LimiterActions.Generic",
   using Affine = domain::CoordinateMaps::Affine;
   using Affine2D = domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>;
   PUPable_reg(SINGLE_ARG(
-      domain::CoordinateMap<Frame::Logical, Frame::Inertial, Affine2D>));
+      domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial, Affine2D>));
   const Affine xi_map{-1., 1., 3., 7.};
   const Affine eta_map{-1., 1., 7., 3.};
 
   const auto coordmap =
-      domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
           Affine2D(xi_map, eta_map));
 
   const struct {
@@ -319,12 +319,12 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.LimiterActions.NoNeighbors",
   using Affine = domain::CoordinateMaps::Affine;
   using Affine2D = domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>;
   PUPable_reg(SINGLE_ARG(
-      domain::CoordinateMap<Frame::Logical, Frame::Inertial, Affine2D>));
+      domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial, Affine2D>));
   const Affine xi_map{-1., 1., 3., 7.};
   const Affine eta_map{-1., 1., 7., 3.};
   auto map = ElementMap<2, Frame::Inertial>(
       self_id,
-      domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
           Affine2D(xi_map, eta_map)));
 
   ActionTesting::MockRuntimeSystem<metavariables> runner{

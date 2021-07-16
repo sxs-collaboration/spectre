@@ -41,12 +41,12 @@ class ElementMap {
   /// \endcond
 
   ElementMap(ElementId<Dim> element_id,
-             std::unique_ptr<
-                 domain::CoordinateMapBase<Frame::Logical, TargetFrame, Dim>>
+             std::unique_ptr<domain::CoordinateMapBase<Frame::BlockLogical,
+                                                       TargetFrame, Dim>>
                  block_map) noexcept;
 
-  const domain::CoordinateMapBase<Frame::Logical, TargetFrame, Dim>& block_map()
-      const noexcept {
+  const domain::CoordinateMapBase<Frame::BlockLogical, TargetFrame, Dim>&
+  block_map() const noexcept {
     return *block_map_;
   }
 
@@ -54,20 +54,22 @@ class ElementMap {
 
   template <typename T>
   tnsr::I<T, Dim, TargetFrame> operator()(
-      tnsr::I<T, Dim, Frame::Logical> source_point) const noexcept {
-    apply_affine_transformation_to_point(source_point);
-    return block_map_->operator()(std::move(source_point));
+      const tnsr::I<T, Dim, Frame::Logical>& source_point) const noexcept {
+    auto block_source_point =
+        apply_affine_transformation_to_point(source_point);
+    return block_map_->operator()(std::move(block_source_point));
   }
 
   template <typename T>
   tnsr::I<T, Dim, Frame::Logical> inverse(
       tnsr::I<T, Dim, TargetFrame> target_point) const noexcept {
-    auto source_point{
+    auto block_source_point{
         block_map_->inverse(std::move(target_point)).value()};
     // Apply the affine map to the points
+    tnsr::I<T, Dim, Frame::Logical> source_point;
     for (size_t d = 0; d < Dim; ++d) {
       source_point.get(d) =
-          source_point.get(d) * gsl::at(map_inverse_slope_, d) +
+          block_source_point.get(d) * gsl::at(map_inverse_slope_, d) +
           gsl::at(map_inverse_offset_, d);
     }
     return source_point;
@@ -75,12 +77,16 @@ class ElementMap {
 
   template <typename T>
   InverseJacobian<T, Dim, Frame::Logical, TargetFrame> inv_jacobian(
-      tnsr::I<T, Dim, Frame::Logical> source_point) const noexcept {
-    apply_affine_transformation_to_point(source_point);
-    auto inv_jac = block_map_->inv_jacobian(std::move(source_point));
+      const tnsr::I<T, Dim, Frame::Logical>& source_point) const noexcept {
+    auto block_source_point =
+        apply_affine_transformation_to_point(source_point);
+    auto block_inv_jac =
+        block_map_->inv_jacobian(std::move(block_source_point));
+    InverseJacobian<T, Dim, Frame::Logical, TargetFrame> inv_jac;
     for (size_t d = 0; d < Dim; ++d) {
       for (size_t i = 0; i < Dim; ++i) {
-        inv_jac.get(d, i) *= gsl::at(inverse_jacobian_, d);
+        inv_jac.get(d, i) =
+            block_inv_jac.get(d, i) * gsl::at(inverse_jacobian_, d);
       }
     }
     return inv_jac;
@@ -88,12 +94,14 @@ class ElementMap {
 
   template <typename T>
   Jacobian<T, Dim, Frame::Logical, TargetFrame> jacobian(
-      tnsr::I<T, Dim, Frame::Logical> source_point) const noexcept {
-    apply_affine_transformation_to_point(source_point);
-    auto jac = block_map_->jacobian(std::move(source_point));
+      const tnsr::I<T, Dim, Frame::Logical>& source_point) const noexcept {
+    auto block_source_point =
+        apply_affine_transformation_to_point(source_point);
+    auto block_jac = block_map_->jacobian(std::move(block_source_point));
+    Jacobian<T, Dim, Frame::Logical, TargetFrame> jac;
     for (size_t d = 0; d < Dim; ++d) {
       for (size_t i = 0; i < Dim; ++i) {
-        jac.get(i, d) *= gsl::at(jacobian_, d);
+        jac.get(i, d) = block_jac.get(i, d) * gsl::at(jacobian_, d);
       }
     }
     return jac;
@@ -104,15 +112,18 @@ class ElementMap {
 
  private:
   template <typename T>
-  void apply_affine_transformation_to_point(
-      tnsr::I<T, Dim, Frame::Logical>& source_point) const noexcept {
+  tnsr::I<T, Dim, Frame::BlockLogical> apply_affine_transformation_to_point(
+      const tnsr::I<T, Dim, Frame::Logical>& source_point) const noexcept {
+    tnsr::I<T, Dim, Frame::BlockLogical> block_source_point;
     for (size_t d = 0; d < Dim; ++d) {
-      source_point.get(d) = source_point.get(d) * gsl::at(map_slope_, d) +
-                            gsl::at(map_offset_, d);
+      block_source_point.get(d) = source_point.get(d) * gsl::at(map_slope_, d) +
+                                  gsl::at(map_offset_, d);
     }
+    return block_source_point;
   }
 
-  std::unique_ptr<domain::CoordinateMapBase<Frame::Logical, TargetFrame, Dim>>
+  std::unique_ptr<
+      domain::CoordinateMapBase<Frame::BlockLogical, TargetFrame, Dim>>
       block_map_{nullptr};
   ElementId<Dim> element_id_{};
   // map_slope_[i] = 0.5 * (segment_ids[i].endpoint(Side::Upper) -

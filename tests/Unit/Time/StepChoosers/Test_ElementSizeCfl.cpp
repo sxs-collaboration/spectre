@@ -130,8 +130,9 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ElementSizeCfl", "[Unit][Time]") {
 
   {
     INFO("Test 1D element size CFL step chooser");
-    auto map = domain::make_coordinate_map_base<Frame::Logical, Frame::Grid>(
-        domain::CoordinateMaps::Affine(-1.0, 1.0, 0.3, 1.1));
+    auto map =
+        domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
+            domain::CoordinateMaps::Affine(-1.0, 1.0, 0.3, 1.1));
     const ElementId<1> element_id(0, {{{2, 3}}});
     ElementMap<1, Frame::Grid> logical_to_grid_map(element_id, std::move(map));
     CHECK(approx(
@@ -142,8 +143,10 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ElementSizeCfl", "[Unit][Time]") {
     INFO("Test 2D element size CFL step chooser");
     using Affine = domain::CoordinateMaps::Affine;
     using Affine2D = domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>;
-    auto map = domain::make_coordinate_map_base<Frame::Logical, Frame::Grid>(
-        Affine2D{Affine(-1.0, 1.0, 0.3, 0.4), Affine(-1.0, 1.0, -0.5, 1.1)});
+    auto map =
+        domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
+            Affine2D{Affine(-1.0, 1.0, 0.3, 0.4),
+                     Affine(-1.0, 1.0, -0.5, 1.1)});
     const ElementId<2> element_id(0, {{{1, 0}, {2, 3}}});
     ElementMap<2, Frame::Grid> logical_to_grid_map(element_id, std::move(map));
     CHECK(approx(
@@ -155,9 +158,10 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ElementSizeCfl", "[Unit][Time]") {
     using Affine = domain::CoordinateMaps::Affine;
     using Affine3D =
         domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
-    auto map = domain::make_coordinate_map_base<Frame::Logical, Frame::Grid>(
-        Affine3D{Affine(-1.0, 1.0, 0.3, 0.4), Affine(-1.0, 1.0, -0.5, 1.1),
-                 Affine(-1.0, 1.0, 12.0, 12.4)});
+    auto map =
+        domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
+            Affine3D{Affine(-1.0, 1.0, 0.3, 0.4), Affine(-1.0, 1.0, -0.5, 1.1),
+                     Affine(-1.0, 1.0, 12.0, 12.4)});
     const ElementId<3> element_id(0, {{{2, 3}, {1, 0}, {3, 4}}});
     ElementMap<3, Frame::Grid> logical_to_grid_map(element_id, std::move(map));
     CHECK(approx(

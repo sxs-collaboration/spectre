@@ -212,7 +212,7 @@ auto emplace_component(
       5, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto});
   ElementMap<Dim, Frame::Grid> logical_to_grid_map{
       ElementId<Dim>{0},
-      domain::make_coordinate_map_base<Frame::Logical, Frame::Grid>(
+      domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
           domain::CoordinateMaps::Identity<Dim>{})};
   const std::string expansion_factor = "Expansion";
   const auto grid_to_inertial_map =
@@ -348,11 +348,11 @@ SPECTRE_TEST_CASE("Unit.Evolution.Initialization.SetVariables",
                   "[Unit][Evolution][Actions]") {
   domain::FunctionsOfTime::register_derived_with_charm();
   Parallel::register_classes_with_charm<
-      domain::CoordinateMap<Frame::Logical, Frame::Grid,
+      domain::CoordinateMap<Frame::BlockLogical, Frame::Grid,
                             domain::CoordinateMaps::Identity<1>>,
-      domain::CoordinateMap<Frame::Logical, Frame::Grid,
+      domain::CoordinateMap<Frame::BlockLogical, Frame::Grid,
                             domain::CoordinateMaps::Identity<2>>,
-      domain::CoordinateMap<Frame::Logical, Frame::Grid,
+      domain::CoordinateMap<Frame::BlockLogical, Frame::Grid,
                             domain::CoordinateMaps::Identity<3>>,
       domain::CoordinateMap<
           Frame::Grid, Frame::Inertial,

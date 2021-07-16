@@ -292,7 +292,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
       const auto location =
           blocks[i]
               .stationary_map()(
-                  tnsr::I<double, 2, Frame::Logical>{{{-1.0, -1.0}}})
+                  tnsr::I<double, 2, Frame::BlockLogical>{{{-1.0, -1.0}}})
               .get_vector_of_data()
               .second;
       INFO("Unexpected block");
@@ -345,7 +345,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
       const auto location =
           blocks[i]
               .stationary_map()(
-                  tnsr::I<double, 2, Frame::Logical>{{{-1.0, -1.0}}})
+                  tnsr::I<double, 2, Frame::BlockLogical>{{{-1.0, -1.0}}})
               .get_vector_of_data()
               .second;
       INFO("Unexpected block");

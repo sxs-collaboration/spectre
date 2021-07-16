@@ -987,11 +987,11 @@ void test_impl(const Spectral::Quadrature quadrature,
       }
     }
     blocks[0] = Block<Dim>{
-        domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+        domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
             domain::CoordinateMaps::Identity<Dim>{}),
         0, neighbors_block0, std::move(boundary_conditions[0])};
     blocks[1] = Block<Dim>{
-        domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+        domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
             domain::CoordinateMaps::Identity<Dim>{}),
         1, neighbors_block1, std::move(boundary_conditions[1])};
     Domain<Dim> domain{std::move(blocks)};
@@ -1183,7 +1183,7 @@ void test_impl(const Spectral::Quadrature quadrature,
          div_mesh_velocity,
          ElementMap<Dim, Frame::Grid>{
              self_id,
-             domain::make_coordinate_map_base<Frame::Logical, Frame::Grid>(
+             domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
                  domain::CoordinateMaps::Identity<Dim>{})},
          false,
          static_cast<std::unique_ptr<StepController>>(
@@ -1216,7 +1216,8 @@ void test_impl(const Spectral::Quadrature quadrature,
              div_mesh_velocity,
              ElementMap<Dim, Frame::Grid>{
                  neighbor_id,
-                 domain::make_coordinate_map_base<Frame::Logical, Frame::Grid>(
+                 domain::make_coordinate_map_base<Frame::BlockLogical,
+                                                  Frame::Grid>(
                      domain::CoordinateMaps::Identity<Dim>{})},
              false,
              static_cast<std::unique_ptr<StepController>>(
@@ -1249,7 +1250,7 @@ void test_impl(const Spectral::Quadrature quadrature,
          div_mesh_velocity,
          ElementMap<Dim, Frame::Grid>{
              self_id,
-             domain::make_coordinate_map_base<Frame::Logical, Frame::Grid>(
+             domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
                  domain::CoordinateMaps::Identity<Dim>{})},
          false,
          static_cast<std::unique_ptr<LtsTimeStepper>>(
@@ -1279,7 +1280,8 @@ void test_impl(const Spectral::Quadrature quadrature,
              div_mesh_velocity,
              ElementMap<Dim, Frame::Grid>{
                  neighbor_id,
-                 domain::make_coordinate_map_base<Frame::Logical, Frame::Grid>(
+                 domain::make_coordinate_map_base<Frame::BlockLogical,
+                                                  Frame::Grid>(
                      domain::CoordinateMaps::Identity<Dim>{})},
              false,
              static_cast<std::unique_ptr<LtsTimeStepper>>(

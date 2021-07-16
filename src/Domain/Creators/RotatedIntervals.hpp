@@ -41,7 +41,7 @@ namespace creators {
 class RotatedIntervals : public DomainCreator<1> {
  public:
   using maps_list = tmpl::list<domain::CoordinateMap<
-      Frame::Logical, Frame::Inertial,
+      Frame::BlockLogical, Frame::Inertial,
       domain::CoordinateMaps::DiscreteRotation<1>, CoordinateMaps::Affine>>;
 
   struct LowerBound {

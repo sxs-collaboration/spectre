@@ -39,14 +39,14 @@ class Disk : public DomainCreator<2> {
  public:
   using maps_list =
       tmpl::list<domain::CoordinateMap<
-                     Frame::Logical, Frame::Inertial,
+                     Frame::BlockLogical, Frame::Inertial,
                      CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
                                                     CoordinateMaps::Affine>>,
-                 domain::CoordinateMap<Frame::Logical, Frame::Inertial,
+                 domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial,
                                        CoordinateMaps::ProductOf2Maps<
                                            CoordinateMaps::Equiangular,
                                            CoordinateMaps::Equiangular>>,
-                 domain::CoordinateMap<Frame::Logical, Frame::Inertial,
+                 domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial,
                                        CoordinateMaps::Wedge<2>>>;
 
   struct InnerRadius {

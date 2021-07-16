@@ -97,7 +97,7 @@ struct MockReceivePoints {
           temporal_id,
       std::vector<std::optional<
           IdPair<domain::BlockId,
-                 tnsr::I<double, VolumeDim, typename Frame::Logical>>>>&&
+                 tnsr::I<double, VolumeDim, typename Frame::BlockLogical>>>>&&
           block_coord_holders) noexcept {
     db::mutate<intrp::Tags::InterpolatedVarsHolders<Metavariables>>(
         make_not_null(&box),

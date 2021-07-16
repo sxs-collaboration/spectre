@@ -75,7 +75,7 @@ void test_rectangle_construction(
   test_domain_construction(
       domain, expected_block_neighbors, expected_external_boundaries,
       make_vector(make_coordinate_map_base<
-                  Frame::Logical,
+                  Frame::BlockLogical,
                   tmpl::conditional_t<sizeof...(FuncsOfTime) == 0,
                                       Frame::Inertial, Frame::Grid>>(
           Affine2D{Affine{-1., 1., lower_bound[0], upper_bound[0]},

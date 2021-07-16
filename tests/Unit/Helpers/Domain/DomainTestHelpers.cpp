@@ -221,7 +221,7 @@ Direction<VolumeDim> find_direction_to_neighbor(
 // Convert Point to Directions, for use with OrientationMap
 template <size_t VolumeDim>
 std::array<Direction<VolumeDim>, VolumeDim> get_orthant(
-    const tnsr::I<double, VolumeDim, Frame::Logical>& point) noexcept {
+    const tnsr::I<double, VolumeDim, Frame::BlockLogical>& point) noexcept {
   std::array<Direction<VolumeDim>, VolumeDim> result;
   for (size_t i = 0; i < VolumeDim; i++) {
     gsl::at(result, i) =
@@ -232,9 +232,9 @@ std::array<Direction<VolumeDim>, VolumeDim> get_orthant(
 
 // Convert Directions to Point, for use with CoordinateMap
 template <size_t VolumeDim>
-tnsr::I<double, VolumeDim, Frame::Logical> get_corner_of_orthant(
+tnsr::I<double, VolumeDim, Frame::BlockLogical> get_corner_of_orthant(
     const std::array<Direction<VolumeDim>, VolumeDim>& directions) noexcept {
-  tnsr::I<double, VolumeDim, Frame::Logical> result{};
+  tnsr::I<double, VolumeDim, Frame::BlockLogical> result{};
   for (size_t i = 0; i < VolumeDim; i++) {
     result[gsl::at(directions, i).dimension()] =
         gsl::at(directions, i).side() == Side::Upper ? 1.0 : -1.0;
@@ -245,9 +245,9 @@ tnsr::I<double, VolumeDim, Frame::Logical> get_corner_of_orthant(
 // The relative OrientationMap between Blocks induces a map that takes
 // Points in the host Block to Points in the neighbor Block.
 template <size_t VolumeDim>
-tnsr::I<double, VolumeDim, Frame::Logical> point_in_neighbor_frame(
+tnsr::I<double, VolumeDim, Frame::BlockLogical> point_in_neighbor_frame(
     const OrientationMap<VolumeDim>& orientation,
-    const tnsr::I<double, VolumeDim, Frame::Logical>& point) noexcept {
+    const tnsr::I<double, VolumeDim, Frame::BlockLogical>& point) noexcept {
   auto point_get_orthant = get_orthant(point);
   std::for_each(
       point_get_orthant.begin(), point_get_orthant.end(),
@@ -268,10 +268,10 @@ double physical_separation(
   double max_separation = 0;
   const auto direction = find_direction_to_neighbor(block1, block2);
   const auto orientation = find_neighbor_orientation(block1, block2);
-  std::array<tnsr::I<double, VolumeDim, Frame::Logical>,
+  std::array<tnsr::I<double, VolumeDim, Frame::BlockLogical>,
              two_to_the(VolumeDim - 1)>
       shared_points1{};
-  std::array<tnsr::I<double, VolumeDim, Frame::Logical>,
+  std::array<tnsr::I<double, VolumeDim, Frame::BlockLogical>,
              two_to_the(VolumeDim - 1)>
       shared_points2{};
   for (FaceCornerIterator<VolumeDim> fci(direction); fci; ++fci) {
@@ -329,7 +329,7 @@ namespace {
 template <size_t Dim>
 void dispatch_check_if_maps_are_equal(
     const Block<Dim>& block,
-    const domain::CoordinateMapBase<Frame::Logical, Frame::Inertial, Dim>&
+    const domain::CoordinateMapBase<Frame::BlockLogical, Frame::Inertial, Dim>&
         expected_map,
     const double time,
     const std::unordered_map<
@@ -356,7 +356,7 @@ void dispatch_check_if_maps_are_equal(
 template <size_t Dim>
 void dispatch_check_if_maps_are_equal(
     const Block<Dim>& block,
-    const domain::CoordinateMapBase<Frame::Logical, Frame::Grid, Dim>&
+    const domain::CoordinateMapBase<Frame::BlockLogical, Frame::Grid, Dim>&
         expected_map,
     const double time,
     const std::unordered_map<
@@ -375,7 +375,8 @@ void test_domain_construction(
     const std::vector<std::unordered_set<Direction<VolumeDim>>>&
         expected_external_boundaries,
     const std::vector<std::unique_ptr<domain::CoordinateMapBase<
-        Frame::Logical, TargetFrameGridOrInertial, VolumeDim>>>& expected_maps,
+        Frame::BlockLogical, TargetFrameGridOrInertial, VolumeDim>>>&
+        expected_maps,
     const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
@@ -482,12 +483,13 @@ void test_det_jac_positive(
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) noexcept {
-  std::array<tnsr::I<double, VolumeDim, Frame::Logical>, two_to_the(VolumeDim)>
+  std::array<tnsr::I<double, VolumeDim, Frame::BlockLogical>,
+             two_to_the(VolumeDim)>
       corner_points{};
   size_t index = 0;
   for (VolumeCornerIterator<VolumeDim> vci; vci; ++vci, ++index) {
     gsl::at(corner_points, index) =
-        tnsr::I<double, VolumeDim, Frame::Logical>(vci.coords_of_corner());
+        tnsr::I<double, VolumeDim, Frame::BlockLogical>(vci.coords_of_corner());
   }
   for(const auto& block: blocks) {
     CAPTURE(block.id());
@@ -598,26 +600,26 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
 #define GET_FRAME(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATE(_, data)                                                \
-  template void test_domain_construction<DIM(data), GET_FRAME(data)>(       \
-      const Domain<DIM(data)>& domain,                                      \
-      const std::vector<DirectionMap<DIM(data), BlockNeighbor<DIM(data)>>>& \
-          expected_block_neighbors,                                         \
-      const std::vector<std::unordered_set<Direction<DIM(data)>>>&          \
-          expected_external_boundaries,                                     \
-      const std::vector<std::unique_ptr<domain::CoordinateMapBase<          \
-          Frame::Logical, GET_FRAME(data), DIM(data)>>>& expected_maps,     \
-      const double time,                                                    \
-      const std::unordered_map<                                             \
-          std::string,                                                      \
-          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&        \
-          functions_of_time,                                                \
-      const std::vector<std::unique_ptr<domain::CoordinateMapBase<          \
-          Frame::Grid, Frame::Inertial, DIM(data)>>>&                       \
-          expected_logical_to_grid_maps,                                    \
-      const std::vector<DirectionMap<                                       \
-          DIM(data),                                                        \
-          std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>& \
+#define INSTANTIATE(_, data)                                                 \
+  template void test_domain_construction<DIM(data), GET_FRAME(data)>(        \
+      const Domain<DIM(data)>& domain,                                       \
+      const std::vector<DirectionMap<DIM(data), BlockNeighbor<DIM(data)>>>&  \
+          expected_block_neighbors,                                          \
+      const std::vector<std::unordered_set<Direction<DIM(data)>>>&           \
+          expected_external_boundaries,                                      \
+      const std::vector<std::unique_ptr<domain::CoordinateMapBase<           \
+          Frame::BlockLogical, GET_FRAME(data), DIM(data)>>>& expected_maps, \
+      const double time,                                                     \
+      const std::unordered_map<                                              \
+          std::string,                                                       \
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&         \
+          functions_of_time,                                                 \
+      const std::vector<std::unique_ptr<domain::CoordinateMapBase<           \
+          Frame::Grid, Frame::Inertial, DIM(data)>>>&                        \
+          expected_logical_to_grid_maps,                                     \
+      const std::vector<DirectionMap<                                        \
+          DIM(data),                                                         \
+          std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>&  \
           expected_boundary_conditions);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Grid, Frame::Inertial))

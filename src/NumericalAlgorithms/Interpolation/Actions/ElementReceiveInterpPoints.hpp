@@ -35,12 +35,11 @@ struct ElementReceiveInterpPoints {
             Requires<tmpl::list_contains_v<
                 DbTags, intrp::Tags::InterpPointInfo<Metavariables>>> = nullptr>
   static void apply(
-      db::DataBox<DbTags>& box,
-      Parallel::GlobalCache<Metavariables>& /*cache*/,
+      db::DataBox<DbTags>& box, Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/,
       std::vector<std::optional<
           IdPair<domain::BlockId, tnsr::I<double, Metavariables::volume_dim,
-                                          typename ::Frame::Logical>>>>&&
+                                          typename ::Frame::BlockLogical>>>>&&
           block_logical_coords) noexcept {
     db::mutate<intrp::Tags::InterpPointInfo<Metavariables>>(
         make_not_null(&box),

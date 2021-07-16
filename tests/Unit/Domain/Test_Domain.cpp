@@ -45,37 +45,37 @@ namespace helpers = ::TestHelpers::domain::BoundaryConditions;
 void test_1d_domains() {
   using Translation = domain::CoordinateMaps::TimeDependent::Translation;
   {
-    PUPable_reg(SINGLE_ARG(CoordinateMap<Frame::Logical, Frame::Inertial,
+    PUPable_reg(SINGLE_ARG(CoordinateMap<Frame::BlockLogical, Frame::Inertial,
                                          CoordinateMaps::Affine>));
-    PUPable_reg(SINGLE_ARG(
-        CoordinateMap<Frame::Logical, Frame::Grid, CoordinateMaps::Affine>));
+    PUPable_reg(SINGLE_ARG(CoordinateMap<Frame::BlockLogical, Frame::Grid,
+                                         CoordinateMaps::Affine>));
     PUPable_reg(
         SINGLE_ARG(CoordinateMap<Frame::Grid, Frame::Inertial, Translation>));
 
     // Test construction of two intervals which have anti-aligned logical axes.
     Domain<1> domain_from_corners(
         make_vector<std::unique_ptr<
-            CoordinateMapBase<Frame::Logical, Frame::Inertial, 1>>>(
-            std::make_unique<CoordinateMap<Frame::Logical, Frame::Inertial,
+            CoordinateMapBase<Frame::BlockLogical, Frame::Inertial, 1>>>(
+            std::make_unique<CoordinateMap<Frame::BlockLogical, Frame::Inertial,
                                            CoordinateMaps::Affine>>(
-                make_coordinate_map<Frame::Logical, Frame::Inertial>(
+                make_coordinate_map<Frame::BlockLogical, Frame::Inertial>(
                     CoordinateMaps::Affine{-1., 1., -2., 0.})),
-            std::make_unique<CoordinateMap<Frame::Logical, Frame::Inertial,
+            std::make_unique<CoordinateMap<Frame::BlockLogical, Frame::Inertial,
                                            CoordinateMaps::Affine>>(
-                make_coordinate_map<Frame::Logical, Frame::Inertial>(
+                make_coordinate_map<Frame::BlockLogical, Frame::Inertial>(
                     CoordinateMaps::Affine{-1., 1., 0., 2.}))),
         std::vector<std::array<size_t, 2>>{{{1, 2}}, {{3, 2}}});
 
     Domain<1> domain_no_corners(
         make_vector<std::unique_ptr<
-            CoordinateMapBase<Frame::Logical, Frame::Inertial, 1>>>(
-            std::make_unique<CoordinateMap<Frame::Logical, Frame::Inertial,
+            CoordinateMapBase<Frame::BlockLogical, Frame::Inertial, 1>>>(
+            std::make_unique<CoordinateMap<Frame::BlockLogical, Frame::Inertial,
                                            CoordinateMaps::Affine>>(
-                make_coordinate_map<Frame::Logical, Frame::Inertial>(
+                make_coordinate_map<Frame::BlockLogical, Frame::Inertial>(
                     CoordinateMaps::Affine{-1., 1., -2., 0.})),
-            std::make_unique<CoordinateMap<Frame::Logical, Frame::Inertial,
+            std::make_unique<CoordinateMap<Frame::BlockLogical, Frame::Inertial,
                                            CoordinateMaps::Affine>>(
-                make_coordinate_map<Frame::Logical, Frame::Inertial>(
+                make_coordinate_map<Frame::BlockLogical, Frame::Inertial>(
                     CoordinateMaps::Affine{-1., 1., 2., 0.}))));
 
     const OrientationMap<1> unaligned_orientation{{{Direction<1>::lower_xi()}},
@@ -90,17 +90,17 @@ void test_1d_domains() {
     const std::vector<std::unordered_set<Direction<1>>> expected_boundaries{
         {Direction<1>::lower_xi()}, {Direction<1>::lower_xi()}};
 
-    const auto expected_stationary_maps =
-        make_vector(make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-                        CoordinateMaps::Affine{-1., 1., -2., 0.}),
-                    make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-                        CoordinateMaps::Affine{-1., 1., 0., 2.}));
+    const auto expected_stationary_maps = make_vector(
+        make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
+            CoordinateMaps::Affine{-1., 1., -2., 0.}),
+        make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
+            CoordinateMaps::Affine{-1., 1., 0., 2.}));
 
-    const auto expected_stationary_maps_no_corners =
-        make_vector(make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-                        CoordinateMaps::Affine{-1., 1., -2., 0.}),
-                    make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-                        CoordinateMaps::Affine{-1., 1., 2., 0.}));
+    const auto expected_stationary_maps_no_corners = make_vector(
+        make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
+            CoordinateMaps::Affine{-1., 1., -2., 0.}),
+        make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
+            CoordinateMaps::Affine{-1., 1., 2., 0.}));
 
     test_domain_construction(domain_from_corners, expected_neighbors,
                              expected_boundaries, expected_stationary_maps);
@@ -135,14 +135,14 @@ void test_1d_domains() {
                Translation{"Translation1"}));
 
     const auto expected_logical_to_grid_maps =
-        make_vector(make_coordinate_map_base<Frame::Logical, Frame::Grid>(
+        make_vector(make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
                         CoordinateMaps::Affine{-1., 1., -2., 0.}),
-                    make_coordinate_map_base<Frame::Logical, Frame::Grid>(
+                    make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
                         CoordinateMaps::Affine{-1., 1., 0., 2.}));
     const auto expected_logical_to_grid_maps_no_corners =
-        make_vector(make_coordinate_map_base<Frame::Logical, Frame::Grid>(
+        make_vector(make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
                         CoordinateMaps::Affine{-1., 1., -2., 0.}),
-                    make_coordinate_map_base<Frame::Logical, Frame::Grid>(
+                    make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
                         CoordinateMaps::Affine{-1., 1., 2., 0.}));
     const auto expected_grid_to_inertial_maps =
         make_vector_coordinate_map_base<Frame::Grid, Frame::Inertial>(
@@ -180,15 +180,15 @@ void test_1d_domains() {
     auto vector_of_blocks = [&expected_neighbors]() {
       std::vector<Block<1>> vec;
       vec.emplace_back(Block<1>{
-          std::make_unique<CoordinateMap<Frame::Logical, Frame::Inertial,
+          std::make_unique<CoordinateMap<Frame::BlockLogical, Frame::Inertial,
                                          CoordinateMaps::Affine>>(
-              make_coordinate_map<Frame::Logical, Frame::Inertial>(
+              make_coordinate_map<Frame::BlockLogical, Frame::Inertial>(
                   CoordinateMaps::Affine{-1., 1., -2., 0.})),
           0, expected_neighbors[0]});
       vec.emplace_back(Block<1>{
-          std::make_unique<CoordinateMap<Frame::Logical, Frame::Inertial,
+          std::make_unique<CoordinateMap<Frame::BlockLogical, Frame::Inertial,
                                          CoordinateMaps::Affine>>(
-              make_coordinate_map<Frame::Logical, Frame::Inertial>(
+              make_coordinate_map<Frame::BlockLogical, Frame::Inertial>(
                   CoordinateMaps::Affine{-1., 1., 0., 2.})),
           1, expected_neighbors[1]});
       return vec;
@@ -211,16 +211,16 @@ void test_1d_domains() {
 
   {
     // Test construction of a periodic domain
-    const auto expected_maps =
-        make_vector(make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+    const auto expected_maps = make_vector(
+        make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
             CoordinateMaps::Affine{-1., 1., -2., 2.}));
 
     const Domain<1> domain{
         make_vector<std::unique_ptr<
-            CoordinateMapBase<Frame::Logical, Frame::Inertial, 1>>>(
-            std::make_unique<CoordinateMap<Frame::Logical, Frame::Inertial,
+            CoordinateMapBase<Frame::BlockLogical, Frame::Inertial, 1>>>(
+            std::make_unique<CoordinateMap<Frame::BlockLogical, Frame::Inertial,
                                            CoordinateMaps::Affine>>(
-                make_coordinate_map<Frame::Logical, Frame::Inertial>(
+                make_coordinate_map<Frame::BlockLogical, Frame::Inertial>(
                     CoordinateMaps::Affine{-1., 1., -2., 2.}))),
         std::vector<std::array<size_t, 2>>{{{1, 2}}},
         std::vector<PairOfFaces>{{{1}, {2}}}};
@@ -428,12 +428,12 @@ SPECTRE_TEST_CASE("Unit.Domain.Domain", "[Domain][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   // NOLINTNEXTLINE(bugprone-unused-raii)
-  Domain<1>(
-      make_vector(make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-                      CoordinateMaps::Affine{-1., 1., -1., 1.}),
-                  make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-                      CoordinateMaps::Affine{-1., 1., -1., 1.})),
-      std::vector<std::array<size_t, 2>>{{{1, 2}}});
+  Domain<1>(make_vector(
+                make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
+                    CoordinateMaps::Affine{-1., 1., -1., 1.}),
+                make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
+                    CoordinateMaps::Affine{-1., 1., -1., 1.})),
+            std::vector<std::array<size_t, 2>>{{{1, 2}}});
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }

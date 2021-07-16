@@ -50,15 +50,16 @@ namespace creators {
 /// unaligned blocks.
 class RotatedRectangles : public DomainCreator<2> {
  public:
-  using maps_list = tmpl::list<
-      domain::CoordinateMap<
-          Frame::Logical, Frame::Inertial,
-          CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
-                                         CoordinateMaps::Affine>>,
-      domain::CoordinateMap<
-          Frame::Logical, Frame::Inertial, CoordinateMaps::DiscreteRotation<2>,
-          CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
-                                         CoordinateMaps::Affine>>>;
+  using maps_list =
+      tmpl::list<domain::CoordinateMap<
+                     Frame::BlockLogical, Frame::Inertial,
+                     CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
+                                                    CoordinateMaps::Affine>>,
+                 domain::CoordinateMap<
+                     Frame::BlockLogical, Frame::Inertial,
+                     CoordinateMaps::DiscreteRotation<2>,
+                     CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
+                                                    CoordinateMaps::Affine>>>;
 
   struct LowerBound {
     using type = std::array<double, 2>;

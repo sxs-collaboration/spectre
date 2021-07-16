@@ -50,10 +50,10 @@ auto create_external_bcs() {
 template <size_t Dim>
 void test_block_time_independent() {
   CAPTURE(Dim);
-  PUPable_reg(SINGLE_ARG(CoordinateMap<Frame::Logical, Frame::Inertial,
+  PUPable_reg(SINGLE_ARG(CoordinateMap<Frame::BlockLogical, Frame::Inertial,
                                        CoordinateMaps::Identity<Dim>>));
 
-  using coordinate_map = CoordinateMap<Frame::Logical, Frame::Inertial,
+  using coordinate_map = CoordinateMap<Frame::BlockLogical, Frame::Inertial,
                                        CoordinateMaps::Identity<Dim>>;
   const coordinate_map identity_map{CoordinateMaps::Identity<Dim>{}};
 
@@ -73,7 +73,7 @@ void test_block_time_independent() {
 
     // Test that the block's coordinate_map is Identity:
     const auto& map = block.stationary_map();
-    const tnsr::I<double, Dim, Frame::Logical> xi(1.0);
+    const tnsr::I<double, Dim, Frame::BlockLogical> xi(1.0);
     const tnsr::I<double, Dim, Frame::Inertial> x(1.0);
     CHECK(map(xi) == x);
     CHECK(map.inverse(x).value() == xi);
@@ -146,11 +146,11 @@ void test_block_time_dependent() {
               domain::CoordinateMaps::TimeDependent::ProductOf3Maps<
                   Translation, Translation, Translation>>>>;
   using logical_to_grid_coordinate_map =
-      CoordinateMap<Frame::Logical, Frame::Inertial,
+      CoordinateMap<Frame::BlockLogical, Frame::Inertial,
                     CoordinateMaps::Identity<Dim>>;
   using grid_to_inertial_coordinate_map = TranslationDimD;
   PUPable_reg(logical_to_grid_coordinate_map);
-  PUPable_reg(SINGLE_ARG(CoordinateMap<Frame::Logical, Frame::Grid,
+  PUPable_reg(SINGLE_ARG(CoordinateMap<Frame::BlockLogical, Frame::Grid,
                                        CoordinateMaps::Identity<Dim>>));
   PUPable_reg(grid_to_inertial_coordinate_map);
   const logical_to_grid_coordinate_map identity_map{
@@ -186,7 +186,7 @@ void test_block_time_dependent() {
     // Test that the block's coordinate_map is Identity:
     const auto& grid_to_inertial_map = block.moving_mesh_grid_to_inertial_map();
     const auto& logical_to_grid_map = block.moving_mesh_logical_to_grid_map();
-    const tnsr::I<double, Dim, Frame::Logical> xi(1.0);
+    const tnsr::I<double, Dim, Frame::BlockLogical> xi(1.0);
     const tnsr::I<double, Dim, Frame::Inertial> x(1.0 + time);
     CHECK(grid_to_inertial_map(logical_to_grid_map(xi), time,
                                functions_of_time) == x);
@@ -241,7 +241,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Block", "[Domain][Unit]") {
   DirectionMap<2, BlockNeighbor<2>> neighbors = {
       {Direction<2>::upper_xi(), block_neighbor1},
       {Direction<2>::lower_eta(), block_neighbor2}};
-  using coordinate_map = CoordinateMap<Frame::Logical, Frame::Inertial,
+  using coordinate_map = CoordinateMap<Frame::BlockLogical, Frame::Inertial,
                                        CoordinateMaps::Identity<2>>;
   const coordinate_map identity_map{CoordinateMaps::Identity<2>{}};
   auto external_boundary_conditions = create_external_bcs<2>();

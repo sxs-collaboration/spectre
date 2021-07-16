@@ -40,7 +40,7 @@ namespace creators {
 class FrustalCloak : public DomainCreator<3> {
  public:
   using maps_list =
-      tmpl::list<domain::CoordinateMap<Frame::Logical, Frame::Inertial,
+      tmpl::list<domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial,
                                        domain::CoordinateMaps::Frustum>>;
 
   struct InitialRefinement {

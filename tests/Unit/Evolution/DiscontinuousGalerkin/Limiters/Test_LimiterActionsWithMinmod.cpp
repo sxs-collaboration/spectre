@@ -119,8 +119,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.LimiterActions.Minmod",
   using Affine = domain::CoordinateMaps::Affine;
   using Affine2D = domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>;
   using CubicScaleMap = domain::CoordinateMaps::TimeDependent::CubicScale<2>;
-  PUPable_reg(
-      SINGLE_ARG(domain::CoordinateMap<Frame::Logical, Frame::Grid, Affine2D>));
+  PUPable_reg(SINGLE_ARG(
+      domain::CoordinateMap<Frame::BlockLogical, Frame::Grid, Affine2D>));
   PUPable_reg(SINGLE_ARG(
       domain::CoordinateMap<Frame::Grid, Frame::Inertial, CubicScaleMap>));
   domain::FunctionsOfTime::register_derived_with_charm();
@@ -128,8 +128,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.LimiterActions.Minmod",
   const Affine xi_map{-1., 1., 3., 7.};
   const Affine eta_map{-1., 1., 7., 3.};
   auto logical_to_grid_map = ElementMap<2, Frame::Grid>(
-      self_id, domain::make_coordinate_map_base<Frame::Logical, Frame::Grid>(
-                   Affine2D(xi_map, eta_map)));
+      self_id,
+      domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
+          Affine2D(xi_map, eta_map)));
   std::unique_ptr<domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, 2>>
       grid_to_inertial_map =
           domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
