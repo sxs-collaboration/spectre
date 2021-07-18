@@ -55,7 +55,7 @@ if(COVERAGE AND GCOV AND LCOV AND GENHTML AND SED)
   # Make flag enabling code coverage analysis available in parent cmake scope
   mark_as_advanced(CODE_COVERAGE)
 
-  # Only include code coverage cmake functions if all prerequsites are met
+  # Only include code coverage cmake functions if all prerequisites are met
   include(CodeCoverage)
 elseif(COVERAGE)
   message(FATAL_ERROR "Failed to enable code coverage analysis. Not all "
