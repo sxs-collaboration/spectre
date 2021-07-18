@@ -67,13 +67,14 @@ void characteristic_fields(
         Variables<tmpl::list<Tags::VPsi, Tags::VZero<SpatialDim>, Tags::VPlus,
                              Tags::VMinus>>(get_size(get(gamma_2)));
   }
-  const auto phi_dot_normal = dot_product(
-      raise_or_lower_index(unit_normal_one_form, inverse_spatial_metric), phi);
+  get(get<Tags::VMinus>(*char_fields)) = get(dot_product(
+      raise_or_lower_index(unit_normal_one_form, inverse_spatial_metric), phi));
 
   // Eq.(34) of Holst+ (2004) for VZero
   for (size_t i = 0; i < SpatialDim; ++i) {
     get<Tags::VZero<SpatialDim>>(*char_fields).get(i) =
-        phi.get(i) - unit_normal_one_form.get(i) * get(phi_dot_normal);
+        phi.get(i) -
+        unit_normal_one_form.get(i) * get(get<Tags::VMinus>(*char_fields));
   }
 
   // Eq.(33) of Holst+ (2004) for VPsi
@@ -81,9 +82,9 @@ void characteristic_fields(
 
   // Eq.(35) of Holst+ (2004) for VPlus and VMinus
   get(get<Tags::VPlus>(*char_fields)) =
-      get(pi) + get(phi_dot_normal) - get(gamma_2) * get(psi);
+      get(pi) + get(get<Tags::VMinus>(*char_fields)) - get(gamma_2) * get(psi);
   get(get<Tags::VMinus>(*char_fields)) =
-      get(pi) - get(phi_dot_normal) - get(gamma_2) * get(psi);
+      get(pi) - get(get<Tags::VMinus>(*char_fields)) - get(gamma_2) * get(psi);
 }
 
 template <size_t SpatialDim>
