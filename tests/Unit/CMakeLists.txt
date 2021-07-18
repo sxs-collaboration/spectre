@@ -84,12 +84,16 @@ if(COVERAGE)
       ${CMAKE_BINARY_DIR}/docs/html
       unit-test-coverage
       ${CMAKE_CTEST_COMMAND}
-      DEPENDS ${executable}
+      DEPENDS unit-tests
       TESTRUNNER_ARGS
-      "--output-on-failure"
+      -j2 -L unit --output-on-failure --repeat after-timeout:3
       IGNORE_COV
       '${CMAKE_BINARY_DIR}/Informer/InfoAtLink.cpp'
       '${CMAKE_SOURCE_DIR}/tests/*'
+      # The functions in CharmCompatibility.cpp are not intended to be called
+      '${CMAKE_SOURCE_DIR}/src/PythonBindings/CharmCompatibility.cpp'
+      # Ignore generated source files in build directory in coverage reporting
+      '${CMAKE_BINARY_DIR}/*'
   )
 endif()
 

@@ -9,6 +9,8 @@
 # Modifications:
 # 1) Change "Quinoa" to "SpECTRE" and "quinoa" to "spectre"
 # 2) Split lines to make commands more legible
+# 3) Silence CMake warnings on uninitialized variables in
+#    `cmake_parse_arguments`
 ################################################################################
 
 # ##############################################################################
@@ -57,7 +59,7 @@ function(SETUP_TARGET_FOR_COVERAGE
 
   set(multiValueArgs TESTRUNNER_ARGS DEPENDS IGNORE_COV)
   cmake_parse_arguments(
-      ARG "${options}" "${oneValueArgs}" "${multiValueArgs}"
+      ARG "" "" "${multiValueArgs}"
       ${ARGN})
 
   if(NOT LCOV)
