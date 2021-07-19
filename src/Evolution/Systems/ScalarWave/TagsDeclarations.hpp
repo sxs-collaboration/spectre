@@ -32,5 +32,7 @@ template <size_t Dim>
 struct CharacteristicFields;
 template <size_t Dim>
 struct EvolvedFieldsFromCharacteristicFields;
+template <size_t Dim>
+struct EnergyDensity;
 }  // namespace Tags
 }  // namespace ScalarWave
