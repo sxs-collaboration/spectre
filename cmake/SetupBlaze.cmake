@@ -11,7 +11,7 @@ message(STATUS "Blaze vers: ${BLAZE_VERSION}")
 
 file(APPEND
   "${CMAKE_BINARY_DIR}/BuildInfo.txt"
-  "Blaze Version:  ${BLAZE_VERSION}\n"
+  "Blaze version: ${BLAZE_VERSION}\n"
   )
 
 add_library(Blaze INTERFACE IMPORTED)

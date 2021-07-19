@@ -6,12 +6,13 @@ find_package(Boost 1.60.0 REQUIRED COMPONENTS program_options)
 # CMake versions don't set this consistently
 set(Boost_VERSION "${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}")
 
-message(STATUS "Boost include: ${Boost_INCLUDE_DIRS}")
 message(STATUS "Boost libraries: ${Boost_LIBRARIES}")
+message(STATUS "Boost include: ${Boost_INCLUDE_DIRS}")
+message(STATUS "Boost version: ${Boost_VERSION}")
 
 file(APPEND
   "${CMAKE_BINARY_DIR}/BuildInfo.txt"
-  "Boost Version:  ${Boost_VERSION}\n"
+  "Boost version: ${Boost_VERSION}\n"
   )
 
 # Boost organizes targets as:

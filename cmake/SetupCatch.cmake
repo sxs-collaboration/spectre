@@ -9,5 +9,5 @@ message(STATUS "Catch version: ${CATCH_VERSION}")
 
 file(APPEND
   "${CMAKE_BINARY_DIR}/BuildInfo.txt"
-  "Catch Version:  ${CATCH_VERSION}\n"
+  "Catch version: ${CATCH_VERSION}\n"
   )

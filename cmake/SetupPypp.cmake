@@ -17,7 +17,7 @@ message(STATUS "NumPy vers: " ${NUMPY_VERSION})
 
 file(APPEND
   "${CMAKE_BINARY_DIR}/BuildInfo.txt"
-  "NumPy Version: ${NUMPY_VERSION}\n"
+  "NumPy version: ${NUMPY_VERSION}\n"
   )
 
 # Also check that SciPy is installed

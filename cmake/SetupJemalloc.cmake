@@ -9,7 +9,7 @@ message(STATUS "jemalloc vers: " ${JEMALLOC_VERSION})
 
 file(APPEND
   "${CMAKE_BINARY_DIR}/BuildInfo.txt"
-  "jemalloc Version:  ${JEMALLOC_VERSION}\n"
+  "jemalloc version: ${JEMALLOC_VERSION}\n"
   )
 
 add_library(Jemalloc INTERFACE IMPORTED)

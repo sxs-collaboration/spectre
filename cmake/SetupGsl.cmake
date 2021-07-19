@@ -9,7 +9,7 @@ message(STATUS "GSL vers: ${GSL_VERSION}")
 
 file(APPEND
   "${CMAKE_BINARY_DIR}/BuildInfo.txt"
-  "GSL Version:  ${GSL_VERSION}\n"
+  "GSL version: ${GSL_VERSION}\n"
   )
 
 set_property(

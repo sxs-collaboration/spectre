@@ -10,7 +10,7 @@ if (${GoogleBenchmark_FOUND})
 
   file(APPEND
     "${CMAKE_BINARY_DIR}/BuildInfo.txt"
-    "Google Benchmark Found\n"
+    "Google Benchmark found\n"
     )
 
   add_library(GoogleBenchmark INTERFACE IMPORTED)

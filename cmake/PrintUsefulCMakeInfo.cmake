@@ -4,7 +4,7 @@
 # First append useful info to BuildInfo.txt
 file(APPEND
   "${CMAKE_BINARY_DIR}/BuildInfo.txt"
-  "CMake Version: ${CMAKE_VERSION}\n"
+  "CMake version: ${CMAKE_VERSION}\n"
   "CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}\n"
   "CMAKE_CXX_LINK_FLAGS: ${CMAKE_CXX_LINK_FLAGS}\n"
   "CMAKE_CXX_FLAGS_DEBUG: ${CMAKE_CXX_FLAGS_DEBUG}\n"
@@ -23,18 +23,18 @@ file(APPEND
   "CMAKE_C_COMPILER_VERSION: ${CMAKE_C_COMPILER_VERSION}\n"
   "CMAKE_Fortran_COMPILER: ${CMAKE_Fortran_COMPILER}\n"
   "CMAKE_Fortran_COMPILER_VERSION: ${CMAKE_Fortran_COMPILER_VERSION}\n"
-  "Python Version: ${Python_VERSION}\n"
+  "Python version: ${Python_VERSION}\n"
   )
 
 # Then write (slightly expanded) useful info to command line
 message(STATUS "\nUseful Information:")
-message(STATUS "Git Branch: " ${GIT_BRANCH})
-message(STATUS "Git Description: " ${GIT_DESCRIPTION})
-message(STATUS "Git Hash: " ${GIT_HASH})
-message(STATUS "Build Directory: " ${CMAKE_BINARY_DIR})
-message(STATUS "Source Directory: " ${CMAKE_SOURCE_DIR})
-message(STATUS "Bin Directory: " ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
-message(STATUS "CMake Modules Path: " ${CMAKE_MODULE_PATH})
+message(STATUS "Git description: " ${GIT_DESCRIPTION})
+message(STATUS "Git branch: " ${GIT_BRANCH})
+message(STATUS "Git hash: " ${GIT_HASH})
+message(STATUS "Build directory: " ${CMAKE_BINARY_DIR})
+message(STATUS "Source directory: " ${CMAKE_SOURCE_DIR})
+message(STATUS "Bin directory: " ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+message(STATUS "CMake modules path: " ${CMAKE_MODULE_PATH})
 message(STATUS "CMAKE_CXX_FLAGS: " ${CMAKE_CXX_FLAGS})
 message(STATUS "CMAKE_CXX_LINK_FLAGS: " ${CMAKE_CXX_LINK_FLAGS})
 message(STATUS "CMAKE_CXX_FLAGS_DEBUG: " ${CMAKE_CXX_FLAGS_DEBUG})
@@ -51,7 +51,7 @@ message(STATUS "USE_SYSTEM_INCLUDE: ${USE_SYSTEM_INCLUDE}")
 
 if (Python_FOUND)
   message(STATUS "Python: " ${Python_EXECUTABLE})
-  message(STATUS "Python Version: ${Python_VERSION}")
+  message(STATUS "Python version: ${Python_VERSION}")
 else()
   message(STATUS "Python: Not found")
 endif()
