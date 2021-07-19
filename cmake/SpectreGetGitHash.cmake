@@ -45,3 +45,10 @@ if(EXISTS ${CMAKE_SOURCE_DIR}/.git)
 else()
   message(STATUS "Not running in a git repository. Some features are disabled.")
 endif()
+
+file(APPEND
+  "${CMAKE_BINARY_DIR}/LibraryVersions.txt"
+  "Git description: ${GIT_DESCRIPTION}\n"
+  "Git branch: ${GIT_BRANCH}\n"
+  "Git hash: ${GIT_HASH}\n"
+  )
