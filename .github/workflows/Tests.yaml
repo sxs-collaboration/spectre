@@ -312,6 +312,15 @@ jobs:
           - compiler: clang-9
             build_type: Debug
             use_pch: OFF
+          # Configure ccache sizes. The cache becomes ineffective if it can't
+          # hold at least one full build. The sizes for the build configurations
+          # are determined empirically by running the workflow with no cache
+          # size limit. Note that the cache is automatically cleaned up to
+          # remain below 80% of the size configured here.
+          - build_type: Debug
+            ccache_max_size: 800M
+          - build_type: Release
+            ccache_max_size: 400M
 
     container:
       image: sxscollaboration/spectrebuildenv:latest
@@ -324,9 +333,8 @@ jobs:
         CXXFLAGS: "-Werror"
         # We make sure to use a fixed absolute path for the ccache directory
         CCACHE_DIR: /work/ccache
-        # GitHub Actions currently limits the size of individual caches
-        # to 400 MB.
-        CCACHE_MAXSIZE: 400M
+        # Control the cache size
+        CCACHE_MAXSIZE: ${{ matrix.ccache_max_size }}
         CCACHE_COMPRESS: 1
         CCACHE_COMPRESSLEVEL: 6
         # We hash the content of the compiler rather than the location and mtime
@@ -335,13 +343,28 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
+      # Assign a unique cache key for every run. Restoring the cache for this
+      # exact key will always fail, ensuring that the cache gets updated when
+      # the run succeeds. The partially-matched 'restore-keys' ensure that the
+      # cache from previous runs gets used even though it has a different
+      # suffix. By including the branch name in the key we make sure to only use
+      # caches from the 'develop' branch. Caches on other branches are cleared
+      # in a later step to avoid filling up the storage space (see below).
+      - name: Determine unique cache key
+        run: |
+          CACHE_KEY_SUFFIX=$(date +%s)
+          echo "CACHE_KEY_SUFFIX=$CACHE_KEY_SUFFIX" >> $GITHUB_ENV
       - name: Restore ccache
         uses: actions/cache@v2
+        env:
+          CACHE_KEY_PREFIX: "ccache-${{ matrix.compiler }}-\
+${{ matrix.build_type }}-pch-${{ matrix.use_pch }}"
         with:
           path: /work/ccache
-          key:
-            "ccache-${{ matrix.compiler }}-${{ matrix.build_type }}-pch-${{
-            matrix.use_pch }}"
+          key: "${{ env.CACHE_KEY_PREFIX }}-${{ github.ref }}-\
+${{ env.CACHE_KEY_SUFFIX }}"
+          restore-keys: |
+            ${{ env.CACHE_KEY_PREFIX }}-refs/heads/develop-
       - name: Configure ccache
         # Print the ccache configuration and reset statistics
         run: |
@@ -512,6 +535,13 @@ jobs:
           make EvolveBurgersStep -j2
 
           ctest -j2 -R InputFiles.Burgers.Step.yaml
+      # Retain the cache only on the 'develop' branch. We discard caches on
+      # other branches so they don't fill up the available storage space. This
+      # means that all jobs share the caches from 'develop'.
+      - name: Clear ccache
+        if: github.ref != 'refs/heads/develop'
+        run: |
+          rm -rf $CCACHE_DIR
 
   # Release a new version on manual events when requested and the tests pass.
   # Only enable this on the `sxs-collaboration/spectre` repository (not on
