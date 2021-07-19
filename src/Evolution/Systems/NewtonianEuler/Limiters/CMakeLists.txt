@@ -12,6 +12,7 @@ spectre_target_sources(
   Flattener.cpp
   Minmod.cpp
   VariablesToLimit.cpp
+  Weno.cpp
   )
 
 spectre_target_headers(
@@ -23,6 +24,7 @@ spectre_target_headers(
   KxrcfTci.hpp
   Minmod.hpp
   VariablesToLimit.hpp
+  Weno.hpp
   )
 
 target_link_libraries(
