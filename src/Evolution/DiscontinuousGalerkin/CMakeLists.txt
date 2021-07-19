@@ -24,5 +24,6 @@ spectre_target_sources(
   MortarData.cpp
   )
 
+add_subdirectory(Actions)
 add_subdirectory(Initialization)
 add_subdirectory(Limiters)
