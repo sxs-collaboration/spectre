@@ -8,7 +8,7 @@
 
 namespace sys {
 
-/// \ingroup SystemUtilitiesGroup
+/// \ingroup UtilitiesGroup
 /// \brief Exit the program normally.
 /// This should only be called once over all processors.
 [[noreturn]] inline void exit() {
