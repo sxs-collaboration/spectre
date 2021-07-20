@@ -541,6 +541,9 @@ ${{ env.CACHE_KEY_SUFFIX }}"
           make EvolveBurgersStep -j2
 
           ctest -j2 -R InputFiles.Burgers.Step.yaml
+      - name: Diagnose ccache
+        run: |
+          ccache -s
       # Retain the cache only on the 'develop' branch. We discard caches on
       # other branches so they don't fill up the available storage space. This
       # means that all jobs share the caches from 'develop'.
