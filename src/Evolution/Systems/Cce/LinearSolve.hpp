@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "DataStructures/Matrix.hpp"
 #include "DataStructures/SpinWeighted.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/Cce/OptionTags.hpp"
@@ -11,7 +12,6 @@
 
 /// \cond
 class ComplexDataVector;
-class Matrix;
 /// \endcond
 
 namespace Cce {

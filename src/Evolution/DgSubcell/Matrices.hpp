@@ -4,11 +4,12 @@
 
 #include <cstddef>
 
+#include "DataStructures/Matrix.hpp"
+
 /// \cond
 class DataVector;
 template <size_t Dim>
 class Index;
-class Matrix;
 template <size_t Dim>
 class Mesh;
 /// \endcond

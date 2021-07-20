@@ -6,9 +6,10 @@
 
 #pragma once
 
+#include "DataStructures/Matrix.hpp"
+
 /// \cond
 class DataVector;
-class Matrix;
 namespace gsl {
 template <typename T>
 class not_null;

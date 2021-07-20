@@ -5,8 +5,9 @@
 
 #include <cstddef>
 
+#include "DataStructures/Matrix.hpp"
+
 /// \cond
-class Matrix;
 template <size_t>
 class Mesh;
 /// \endcond

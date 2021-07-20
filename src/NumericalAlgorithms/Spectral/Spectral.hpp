@@ -14,8 +14,9 @@
 #include <limits>
 #include <utility>
 
+#include "DataStructures/Matrix.hpp"
+
 /// \cond
-class Matrix;
 class DataVector;
 template <size_t>
 class Mesh;

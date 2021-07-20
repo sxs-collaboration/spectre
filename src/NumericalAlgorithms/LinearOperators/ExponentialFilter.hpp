@@ -7,14 +7,13 @@
 #include <pup.h>
 #include <string>
 
+#include "DataStructures/Matrix.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
-class Matrix;
 template <size_t Dim>
 class Mesh;
-
 /// \endcond
 
 namespace Filters {

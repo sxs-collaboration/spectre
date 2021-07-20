@@ -16,8 +16,4 @@
  * [Blaze documentation](https://bitbucket.org/blaze-lib/blaze/wiki/Matrices)
  * for information on how to use it.
  */
-class Matrix : public DenseMatrix<double, blaze::columnMajor> {
- public:
-  // Inherit constructors
-  using DenseMatrix<double, blaze::columnMajor>::DenseMatrix;
-};
+using Matrix = DenseMatrix<double, blaze::columnMajor>;

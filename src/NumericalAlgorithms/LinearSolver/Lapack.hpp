@@ -3,11 +3,11 @@
 
 #pragma once
 
+#include "DataStructures/Matrix.hpp"
 #include "Utilities/Gsl.hpp"
 
 /// \cond
 class DataVector;
-class Matrix;
 /// \endcond
 
 /// LAPACK wrappers

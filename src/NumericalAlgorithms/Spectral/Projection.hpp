@@ -8,8 +8,9 @@
 #include <functional>
 #include <ostream>
 
+#include "DataStructures/Matrix.hpp"
+
 /// \cond
-class Matrix;
 template <size_t Dim>
 class Mesh;
 /// \endcond
