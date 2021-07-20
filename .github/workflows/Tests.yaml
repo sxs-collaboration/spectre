@@ -317,6 +317,7 @@ jobs:
           - compiler: clang-9
             build_type: Debug
             use_pch: OFF
+            ccache_max_size: 350M
           # Configure ccache sizes. The cache becomes ineffective if it can't
           # hold at least one full build. The sizes for the build configurations
           # are determined empirically by running the workflow with no cache
