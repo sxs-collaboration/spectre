@@ -303,12 +303,11 @@ jobs:
           - compiler: gcc-8
             build_type: Debug
             PYTHON_EXECUTABLE: /usr/bin/python2
-          # Test a single build with shared libs
+          # Test building with static libraries. Do so with clang in release
+          # mode because these builds use up little disk space compared to GCC
+          # builds or clang Debug builds
           - compiler: clang-9
             build_type: Release
-            # Test building with static libraries. Do so with clang in release
-            # mode because these builds use up little disk space compared to GCC
-            # builds or clang Debug builds
             BUILD_SHARED_LIBS: OFF
             MEMORY_ALLOCATOR: JEMALLOC
           # Add a test without PCH to the build matrix, which only builds core
