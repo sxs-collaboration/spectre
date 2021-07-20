@@ -40,10 +40,13 @@ on:
         default: ''
 
 # Cancel all other queued or in-progress runs of this workflow when it is
-# scheduled, so repeated pushes to a branch or a PR don't block CI.
+# scheduled, so repeated pushes to a branch or a PR don't block CI. Repeated
+# pushes to 'develop' and 'release' are not canceled, so every merge commit is
+# tested.
 concurrency:
   group: ${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.ref != 'refs/heads/develop'
+    && github.ref != 'refs/heads/release' }}
 
 jobs:
   # Make sure no commits are prefixed with `fixup` or similar keywords. See
