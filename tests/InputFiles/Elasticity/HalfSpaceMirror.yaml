@@ -2,7 +2,8 @@
 # See LICENSE.txt for details.
 
 # Executable: SolveElasticity3D
-# Check: parse;execute
+# Check: parse;execute_check_output
+# Timeout: 10
 # ExpectedOutput:
 #   ElasticHalfSpaceMirrorReductions.h5
 #   ElasticHalfSpaceMirrorVolume0.h5
@@ -62,21 +63,35 @@ Observers:
 LinearSolver:
   GMRES:
     ConvergenceCriteria:
-      MaxIterations: 34
+      MaxIterations: 1
       RelativeResidual: 1.e-4
       AbsoluteResidual: 1.e-12
     Verbosity: Verbose
 
+  SchwarzSmoother:
+    Iterations: 3
+    MaxOverlap: 2
+    Verbosity: Verbose
+    SubdomainSolver:
+      Gmres:
+        ConvergenceCriteria:
+          MaxIterations: 50
+          RelativeResidual: 1.e-3
+          AbsoluteResidual: 1.e-12
+        Verbosity: Silent
+        Restart: None
+        Preconditioner: None
+
 EventsAndTriggers:
   ? EveryNIterations:
       N: 1
-      Offset: 27
+      Offset: 1
   : - ObserveErrorNorms:
         SubfileName: ErrorNorms
     - ObserveVolumeIntegrals:
         SubfileName: VolumeIntegrals
   ? EveryNIterations:
-      N: 2
+      N: 1
       Offset: 0
   : - ObserveFields:
         SubfileName: VolumeData

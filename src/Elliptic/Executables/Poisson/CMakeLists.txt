@@ -8,6 +8,7 @@ set(LIBS_TO_LINK
   DomainCreators
   Elliptic
   EllipticDg
+  EllipticDgSubdomainOperator
   Events
   EventsAndTriggers
   Informer
@@ -17,6 +18,7 @@ set(LIBS_TO_LINK
   Options
   Parallel
   ParallelLinearSolver
+  ParallelSchwarz
   Poisson
   PoissonBoundaryConditions
   PoissonSolutions
