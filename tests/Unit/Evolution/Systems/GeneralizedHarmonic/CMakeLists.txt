@@ -10,6 +10,7 @@ set(LIBRARY_SOURCES
   BoundaryConditions/Test_Bjorhus.cpp
   BoundaryConditions/Test_BjorhusImpl.cpp
   BoundaryConditions/Test_DirichletAnalytic.cpp
+  BoundaryConditions/Test_Freezing.cpp
   BoundaryConditions/Test_Outflow.cpp
   BoundaryConditions/Test_Periodic.cpp
   BoundaryCorrections/Test_UpwindPenalty.cpp

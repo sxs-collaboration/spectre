@@ -8,6 +8,7 @@ spectre_target_sources(
   BjorhusImpl.cpp
   BoundaryCondition.cpp
   DirichletAnalytic.cpp
+  Freezing.cpp
   Outflow.cpp
   RegisterDerivedWithCharm.cpp
   )
@@ -21,6 +22,7 @@ spectre_target_headers(
   BoundaryCondition.hpp
   DirichletAnalytic.hpp
   Factory.hpp
+  Freezing.hpp
   Outflow.hpp
   RegisterDerivedWithCharm.hpp
   )

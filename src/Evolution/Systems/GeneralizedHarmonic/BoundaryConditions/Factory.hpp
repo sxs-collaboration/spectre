@@ -6,4 +6,5 @@
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/Bjorhus.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/BoundaryCondition.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/DirichletAnalytic.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/Freezing.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/Outflow.hpp"
