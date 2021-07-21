@@ -306,12 +306,11 @@ jobs:
           - compiler: gcc-8
             build_type: Debug
             PYTHON_EXECUTABLE: /usr/bin/python2
-          # Test a single build with shared libs
+          # Test building with static libraries. Do so with clang in release
+          # mode because these builds use up little disk space compared to GCC
+          # builds or clang Debug builds
           - compiler: clang-9
             build_type: Release
-            # Test building with static libraries. Do so with clang in release
-            # mode because these builds use up little disk space compared to GCC
-            # builds or clang Debug builds
             BUILD_SHARED_LIBS: OFF
             MEMORY_ALLOCATOR: JEMALLOC
           # Add a test without PCH to the build matrix, which only builds core
@@ -321,6 +320,7 @@ jobs:
           - compiler: clang-9
             build_type: Debug
             use_pch: OFF
+            ccache_max_size: 350M
           # Configure ccache sizes. The cache becomes ineffective if it can't
           # hold at least one full build. The sizes for the build configurations
           # are determined empirically by running the workflow with no cache
@@ -544,6 +544,9 @@ ${{ env.CACHE_KEY_SUFFIX }}"
           make EvolveBurgersStep -j2
 
           ctest -j2 -R InputFiles.Burgers.Step.yaml
+      - name: Diagnose ccache
+        run: |
+          ccache -s
       # Retain the cache only on the 'develop' branch. We discard caches on
       # other branches so they don't fill up the available storage space. This
       # means that all jobs share the caches from 'develop'.
