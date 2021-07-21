@@ -19,6 +19,24 @@
 namespace CurvedScalarWave {
 template <size_t SpatialDim>
 void characteristic_speeds(
+    const gsl::not_null<tnsr::a<DataVector, 3, Frame::Inertial>*> char_speeds,
+    const Scalar<DataVector>& gamma_1, const Scalar<DataVector>& lapse,
+    const tnsr::I<DataVector, SpatialDim, Frame::Inertial>& shift,
+    const tnsr::i<DataVector, SpatialDim, Frame::Inertial>&
+        unit_normal_one_form) noexcept {
+  if (UNLIKELY(get_size(get<0>(*char_speeds)) != get_size(get(gamma_1)))) {
+    *char_speeds = make_with_value<tnsr::a<DataVector, 3, Frame::Inertial>>(
+        get(gamma_1), std::numeric_limits<double>::signaling_NaN());
+  }
+  const auto shift_dot_normal = get(dot_product(shift, unit_normal_one_form));
+  get<0>(*char_speeds) = -(1. + get(gamma_1)) * shift_dot_normal;  // v(VPsi)
+  get<1>(*char_speeds) = -shift_dot_normal;                        // v(VZero)
+  get<2>(*char_speeds) = -shift_dot_normal + get(lapse);           // v(VPlus)
+  get<3>(*char_speeds) = -shift_dot_normal - get(lapse);           // v(VMinus)
+}
+
+template <size_t SpatialDim>
+void characteristic_speeds(
     const gsl::not_null<std::array<DataVector, 4>*> char_speeds,
     const Scalar<DataVector>& gamma_1, const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, SpatialDim, Frame::Inertial>& shift,
@@ -172,6 +190,13 @@ void ComputeLargestCharacteristicSpeed<SpatialDim>::function(
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATE(_, data)                                                  \
+  template void CurvedScalarWave::characteristic_speeds(                      \
+      const gsl::not_null<tnsr::a<DataVector, 3, Frame::Inertial>*>           \
+          char_speeds,                                                        \
+      const Scalar<DataVector>& gamma_1, const Scalar<DataVector>& lapse,     \
+      const tnsr::I<DataVector, DIM(data), Frame::Inertial>& shift,           \
+      const tnsr::i<DataVector, DIM(data), Frame::Inertial>&                  \
+          unit_normal_one_form) noexcept;                                     \
   template void CurvedScalarWave::characteristic_speeds(                      \
       const gsl::not_null<std::array<DataVector, 4>*> char_speeds,            \
       const Scalar<DataVector>& gamma_1, const Scalar<DataVector>& lapse,     \
