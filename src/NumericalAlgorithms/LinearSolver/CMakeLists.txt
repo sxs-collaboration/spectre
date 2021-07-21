@@ -29,6 +29,7 @@ target_link_libraries(
   Blas
   Convergence
   DataStructures
+  ErrorHandling
   Logging
   Options
   Parallel

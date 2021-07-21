@@ -15,6 +15,7 @@
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Parallel/PupStlCpp17.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/FakeVirtual.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Registration.hpp"

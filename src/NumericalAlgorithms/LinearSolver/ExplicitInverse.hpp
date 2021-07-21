@@ -13,6 +13,7 @@
 #include "NumericalAlgorithms/LinearSolver/LinearSolver.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits/CreateIsCallable.hpp"
