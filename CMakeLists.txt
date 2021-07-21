@@ -67,7 +67,7 @@ include(SetCxxStandard)
 include(StripSymbols)
 # We need Boost for InfoAtLink
 include(SetupBoost)
-include(SetupBuildInfo)
+include(SetupInformer)
 include(SetupCCache)
 include(SetupCraySupport)
 include(SetupCharm)
