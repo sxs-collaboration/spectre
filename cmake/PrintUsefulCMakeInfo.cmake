@@ -1,9 +1,9 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# First append useful info to LibraryVersions.txt
+# First append useful info to BuildInfo.txt
 file(APPEND
-  "${CMAKE_BINARY_DIR}/LibraryVersions.txt"
+  "${CMAKE_BINARY_DIR}/BuildInfo.txt"
   "CMake Version: ${CMAKE_VERSION}\n"
   "CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}\n"
   "CMAKE_CXX_LINK_FLAGS: ${CMAKE_CXX_LINK_FLAGS}\n"

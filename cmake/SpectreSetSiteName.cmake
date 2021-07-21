@@ -4,7 +4,7 @@
 site_name(HOSTNAME)
 
 file(APPEND
-  "${CMAKE_BINARY_DIR}/LibraryVersions.txt"
+  "${CMAKE_BINARY_DIR}/BuildInfo.txt"
   "Hostname: ${HOSTNAME}\n"
   "Host system: ${CMAKE_HOST_SYSTEM}\n"
   "Host system version: ${CMAKE_HOST_SYSTEM_VERSION}\n"

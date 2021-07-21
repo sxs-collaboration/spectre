@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.12.0)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
 # Create a new (or overwrite existing) info file at start of configuration
-file(WRITE "${CMAKE_BINARY_DIR}/LibraryVersions.txt" "")
+file(WRITE "${CMAKE_BINARY_DIR}/BuildInfo.txt" "")
 
 # Determine the project version and other metadata
 include(SpectreLoadMetadata)

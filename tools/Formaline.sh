@@ -54,9 +54,9 @@ std::string get_environment_variables() noexcept {
 )AZBYCXDWEVFU";
 }
 
-std::string get_library_versions() noexcept {
+std::string get_build_info() noexcept {
   return R"AZBYCXDWEVFU(
-`cat @CMAKE_BINARY_DIR@/LibraryVersions.txt`
+`cat @CMAKE_BINARY_DIR@/BuildInfo.txt`
 )AZBYCXDWEVFU";
 }
 

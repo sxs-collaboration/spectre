@@ -7,7 +7,7 @@ message(STATUS "tcmalloc libs: " ${TCMALLOC_LIBRARIES})
 message(STATUS "tcmalloc incl: " ${TCMALLOC_INCLUDE_DIRS})
 
 file(APPEND
-  "${CMAKE_BINARY_DIR}/LibraryVersions.txt"
+  "${CMAKE_BINARY_DIR}/BuildInfo.txt"
   "tcmalloc Version:  ${TCMALLOC_VERSION}\n"
   )
 

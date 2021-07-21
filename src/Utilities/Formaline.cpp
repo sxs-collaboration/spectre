@@ -9,7 +9,7 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 
 // NOTE: The definitions of the functions `formaline::get_archive`,
-// `formaline::get_environment_variables`, `formaline::get_library_versions`,
+// `formaline::get_environment_variables`, `formaline::get_build_info`,
 // and `formaline::get_paths` are generated at link time and defined in the
 // script `tools/Formaline.sh` for non-macOS builds.
 namespace formaline {
@@ -35,7 +35,7 @@ std::string get_environment_variables() noexcept {
   return "Not supported on macOS";
 }
 
-std::string get_library_versions() noexcept { return "Not supported on macOS"; }
+std::string get_build_info() noexcept { return "Not supported on macOS"; }
 
 std::string get_paths() noexcept { return "Not supported on macOS"; }
 #endif  // defined(__APPLE__)

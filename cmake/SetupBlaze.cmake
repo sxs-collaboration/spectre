@@ -10,7 +10,7 @@ message(STATUS "Blaze incl: ${BLAZE_INCLUDE_DIR}")
 message(STATUS "Blaze vers: ${BLAZE_VERSION}")
 
 file(APPEND
-  "${CMAKE_BINARY_DIR}/LibraryVersions.txt"
+  "${CMAKE_BINARY_DIR}/BuildInfo.txt"
   "Blaze Version:  ${BLAZE_VERSION}\n"
   )
 

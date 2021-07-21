@@ -23,9 +23,9 @@ std::vector<char> get_archive() noexcept;
 std::string get_environment_variables() noexcept;
 
 /*!
- * \brief Returns the contents of SpECTRE's LibraryVersions.txt file.
+ * \brief Returns the contents of SpECTRE's BuildInfo.txt file.
  */
-std::string get_library_versions() noexcept;
+std::string get_build_info() noexcept;
 
 /*!
  * \brief Returns the PATH, CPATH, LD_LIBRARY_PATH, LIBRARY_PATH, and

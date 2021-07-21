@@ -8,7 +8,7 @@ message(STATUS "LIBXSMM incl: " ${LIBXSMM_INCLUDE_DIRS})
 message(STATUS "LIBXSMM vers: " ${LIBXSMM_VERSION})
 
 file(APPEND
-  "${CMAKE_BINARY_DIR}/LibraryVersions.txt"
+  "${CMAKE_BINARY_DIR}/BuildInfo.txt"
   "LIBXSMM Version:  ${LIBXSMM_VERSION}\n"
   )
 

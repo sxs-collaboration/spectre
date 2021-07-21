@@ -14,7 +14,7 @@ describe the current behavior and how to reproduce
 
 ### Environment:
 
-Add as an attachment `$SPECTRE_BUILD_DIR/LibraryVersions.txt` or
+Add as an attachment `$SPECTRE_BUILD_DIR/BuildInfo.txt` or
 add its contents here.
 
 # Feature request:

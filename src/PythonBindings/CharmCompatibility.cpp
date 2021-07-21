@@ -14,7 +14,6 @@
 // linked is non-trivial since Charm++ generally wants you to use their `charmc`
 // script, but we want to avoid that.
 
-
 __attribute__ ((format (printf, 1, 2)))
 // NOLINTNEXTLINE(cert-dcl50-cpp)
 void CmiPrintf(const char* fmt, ...) {
@@ -113,9 +112,7 @@ std::string get_environment_variables() noexcept {
   return "Not supported on macOS";
 }
 
-std::string get_library_versions() noexcept {
-  return "Not supported in python";
-}
+std::string get_build_info() noexcept { return "Not supported in python"; }
 
 std::string get_paths() noexcept { return "Not supported in python."; }
 }  // namespace formaline
@@ -169,4 +166,3 @@ void pup_bytes(pup_er /*p*/, void* /*ptr*/, size_t /*nBytes*/) {
 }
 
 #pragma GCC diagnostic pop
-

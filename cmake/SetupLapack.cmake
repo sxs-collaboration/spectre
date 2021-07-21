@@ -5,7 +5,7 @@ find_package(LAPACK REQUIRED)
 message(STATUS "LAPACK libs: " ${LAPACK_LIBRARIES})
 
 file(APPEND
-  "${CMAKE_BINARY_DIR}/LibraryVersions.txt"
+  "${CMAKE_BINARY_DIR}/BuildInfo.txt"
   "LAPACK_LIBRARIES:  ${LAPACK_LIBRARIES}\n"
   )
 

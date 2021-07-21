@@ -296,13 +296,13 @@ collisions) to generate an object file with the source file encoded from
 `_binary_src_tar_gz_start` to `_binary_src_tar_gz_end`. Next we write a C++
 source file that defines a function `get_archive` to convert the byte stream
 into a `std::vector<char>`. We also encode the output of `printenv`, the various
-`PATH` environment variables, and the CMake generated `LibraryVersions.txt` file
+`PATH` environment variables, and the CMake generated `BuildInfo.txt` file
 into the source file. Finally, the generated source file is built during the
 linking phase and the object file containing the source archive is linked into
 the executable.
 
 To further aid in reproducibility, the `printenv` output and
-`LibraryVersions.txt` contents are written to HDF5 files as part of the
+`BuildInfo.txt` contents are written to HDF5 files as part of the
 `h5::Header` object. The archive of the source tree is written using the
 `h5::SourceArchive` object and can be extracted by running
 ```

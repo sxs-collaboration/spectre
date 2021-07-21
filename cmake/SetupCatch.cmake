@@ -8,6 +8,6 @@ message(STATUS "Catch include: ${CATCH_INCLUDE_DIR}")
 message(STATUS "Catch version: ${CATCH_VERSION}")
 
 file(APPEND
-  "${CMAKE_BINARY_DIR}/LibraryVersions.txt"
+  "${CMAKE_BINARY_DIR}/BuildInfo.txt"
   "Catch Version:  ${CATCH_VERSION}\n"
   )

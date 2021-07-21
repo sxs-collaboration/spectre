@@ -8,7 +8,7 @@ message(STATUS "jemalloc incl: " ${JEMALLOC_INCLUDE_DIRS})
 message(STATUS "jemalloc vers: " ${JEMALLOC_VERSION})
 
 file(APPEND
-  "${CMAKE_BINARY_DIR}/LibraryVersions.txt"
+  "${CMAKE_BINARY_DIR}/BuildInfo.txt"
   "jemalloc Version:  ${JEMALLOC_VERSION}\n"
   )
 

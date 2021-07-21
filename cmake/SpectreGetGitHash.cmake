@@ -47,7 +47,7 @@ else()
 endif()
 
 file(APPEND
-  "${CMAKE_BINARY_DIR}/LibraryVersions.txt"
+  "${CMAKE_BINARY_DIR}/BuildInfo.txt"
   "Git description: ${GIT_DESCRIPTION}\n"
   "Git branch: ${GIT_BRANCH}\n"
   "Git hash: ${GIT_HASH}\n"

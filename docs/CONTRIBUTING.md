@@ -101,7 +101,7 @@ Include details about your configuration and environment:
 * **Add as an attachment** (or add the contents of) the following:
   - The text output by SpECTRE (including any stack trace)
   - The input file(s)
-  - $SPECTRE_BUILD_DIR/LibraryVersions.txt
+  - $SPECTRE_BUILD_DIR/BuildInfo.txt
 * **What is the name and version of the OS you're using**?
 * If possible (for SXS computers or HPC systems), a **path to a run
   directory** that is accessible by SpECTRE core developers.

@@ -9,7 +9,7 @@ if (${GoogleBenchmark_FOUND})
   message(STATUS "Google Benchmark incl: " ${GoogleBenchmark_INCLUDE_DIRS})
 
   file(APPEND
-    "${CMAKE_BINARY_DIR}/LibraryVersions.txt"
+    "${CMAKE_BINARY_DIR}/BuildInfo.txt"
     "Google Benchmark Found\n"
     )
 

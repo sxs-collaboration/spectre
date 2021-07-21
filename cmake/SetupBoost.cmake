@@ -10,7 +10,7 @@ message(STATUS "Boost include: ${Boost_INCLUDE_DIRS}")
 message(STATUS "Boost libraries: ${Boost_LIBRARIES}")
 
 file(APPEND
-  "${CMAKE_BINARY_DIR}/LibraryVersions.txt"
+  "${CMAKE_BINARY_DIR}/BuildInfo.txt"
   "Boost Version:  ${Boost_VERSION}\n"
   )
 
