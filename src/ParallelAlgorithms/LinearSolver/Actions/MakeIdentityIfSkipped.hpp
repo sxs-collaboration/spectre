@@ -10,6 +10,7 @@
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 #include "NumericalAlgorithms/Convergence/Reason.hpp"
 #include "NumericalAlgorithms/Convergence/Tags.hpp"
+#include "Parallel/Actions/Goto.hpp"
 #include "Utilities/Gsl.hpp"
 
 /// \cond
@@ -50,6 +51,14 @@ namespace Actions {
  * `Convergence::Reason::MaxIterations` without actually having performed any
  * iterations.
  *
+ * To run additional actions after this action has triggered, i.e. when the
+ * linear solver is skipped, place them after this action and follow them by an
+ * `::Actions::Label<ProceedLabel>`, where `ProceedLabel` is a type used for
+ * identification. Pass the `ProceedLabel` as the second template parameter to
+ * this action. Then, the actions between this action and the label will run
+ * only when the linear solver is skipped. This is useful to set DataBox tags
+ * that are usually updated by the linear solver.
+ *
  * \par Details:
  * The standard behaviour of most linear solvers (i.e. when _not_ using this
  * action) is to keep the fields at their initial guess \f$x=x_0\f$ when it
@@ -62,17 +71,26 @@ namespace Actions {
  * unpreconditioned solve with some runtime and memory overhead associated with
  * initializing the preconditioner.
  */
-template <typename LinearSolverType>
+template <typename LinearSolverType, typename ProceedLabel = void>
 struct MakeIdentityIfSkipped {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagsList>&&> apply(
-      db::DataBox<DbTagsList>& box,
-      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+  static std::tuple<db::DataBox<DbTagsList>&&, Parallel::AlgorithmExecution,
+                    size_t>
+  apply(db::DataBox<DbTagsList>& box,
+        const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+        const Parallel::GlobalCache<Metavariables>& /*cache*/,
+        const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+        const ParallelComponent* const /*meta*/) noexcept {
+    constexpr size_t this_action_index =
+        tmpl::index_of<ActionList, MakeIdentityIfSkipped>::value;
+    constexpr size_t proceed_action_index =
+        tmpl::conditional_t<
+            std::is_same_v<ProceedLabel, void>, tmpl::size_t<this_action_index>,
+            tmpl::index_of<ActionList, ::Actions::Label<ProceedLabel>>>::value +
+        1;
+
     const auto& has_converged = get<Convergence::Tags::HasConverged<
         typename LinearSolverType::options_group>>(box);
     if (has_converged and
@@ -85,10 +103,30 @@ struct MakeIdentityIfSkipped {
             *fields = source;
           },
           get<typename LinearSolverType::source_tag>(box));
+      return {std::move(box), Parallel::AlgorithmExecution::Continue,
+              this_action_index + 1};
     }
-    return {std::move(box)};
+    return {std::move(box), Parallel::AlgorithmExecution::Continue,
+            proceed_action_index};
   }
 };
+
+namespace detail {
+template <typename Tag>
+struct ProceedLabel {};
+}  // namespace detail
+
+/// Run `MakeIdentityIfSkipped`, and also run the `BuildOperatorActions` if
+/// the linear solver is skipped. See `MakeIdentityIfSkipped` for details.
+template <typename LinearSolverType,
+          typename BuildOperatorActions = tmpl::list<>,
+          typename Label = typename LinearSolverType::options_group>
+using make_identity_if_skipped = tmpl::conditional_t<
+    std::is_same_v<BuildOperatorActions, tmpl::list<>>,
+    MakeIdentityIfSkipped<LinearSolverType>,
+    tmpl::list<
+        MakeIdentityIfSkipped<LinearSolverType, detail::ProceedLabel<Label>>,
+        BuildOperatorActions, ::Actions::Label<detail::ProceedLabel<Label>>>>;
 
 }  // namespace Actions
 }  // namespace LinearSolver
