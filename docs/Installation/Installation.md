@@ -17,6 +17,12 @@ environment differently, read on!
 
 ### Dependencies
 
+**Note**: You don't need to install any of these dependencies by hand,
+or by using yum, apt, or other package managers; it is much easier
+to instead use Singularity, Docker, or Spack (see the corresponding
+sections below) to obtain an environment that includes
+all of these dependencies.
+
 #### Required:
 
 * [GCC](https://gcc.gnu.org/) 7.0 or later,
@@ -76,10 +82,11 @@ A [Docker](https://www.docker.com/) image is available from
 [DockerHub](https://hub.docker.com/r/sxscollaboration/spectrebuildenv/) and can
 be used to build SpECTRE on a personal machine.
 
-**Note**: The Docker image is the recommended way of using SpECTRE on a personal
+**Note**: The Docker image or the Singularity image (see below) are
+the recommended ways of using SpECTRE on a personal
 Linux machine. Because of the wide variety of operating systems available today
 it is not possible for us to support all configurations. However, using Spack
-as outlined below is a supported alternative to Docker images.
+as outlined below is a supported alternative to Docker or Singularity images.
 
 **Note**: If you have SELinux active
 on your system you must figure out how to enable sharing files with the host
