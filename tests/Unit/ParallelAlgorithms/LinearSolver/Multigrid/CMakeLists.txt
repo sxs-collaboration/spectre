@@ -49,6 +49,7 @@ target_link_libraries(
   Test_MultigridPreconditionedGmresAlgorithm
   PRIVATE
   ParallelMultigrid
+  ParallelNonlinearSolver
   )
 
 add_subdirectory(Actions)

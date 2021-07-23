@@ -129,14 +129,12 @@ struct InitializeElement {
 // operand data. They apply a chunk of the full matrix on each element and
 // perform a reduction to obtain the full matrix-vector product.
 
-template <typename OperandTag>
+template <typename OperandTag, typename OperatorAppliedToOperandTag>
 struct CollectOperatorAction;
 
-template <typename OperandTag>
+template <typename OperandTag, typename OperatorAppliedToOperandTag>
 struct ComputeOperatorAction {
   using const_global_cache_tags = tmpl::list<LinearOperator>;
-  using local_operator_applied_to_operand_tag =
-      db::add_tag_prefix<::LinearSolver::Tags::OperatorAppliedTo, OperandTag>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent>
@@ -165,7 +163,8 @@ struct ComputeOperatorAction {
     auto& section = *db::get_mutable_reference<Parallel::Tags::Section<
         ParallelComponent, ::LinearSolver::multigrid::Tags::MultigridLevel>>(
         make_not_null(&box));
-    Parallel::contribute_to_reduction<CollectOperatorAction<OperandTag>>(
+    Parallel::contribute_to_reduction<
+        CollectOperatorAction<OperandTag, OperatorAppliedToOperandTag>>(
         Parallel::ReductionData<
             Parallel::ReductionDatum<typename OperandTag::type, funcl::Plus<>>,
             Parallel::ReductionDatum<size_t, funcl::AssertEqual<>>>{
@@ -178,52 +177,38 @@ struct ComputeOperatorAction {
   }
 };
 
-template <typename OperandTag>
+template <typename OperandTag, typename OperatorAppliedToOperandTag>
 struct CollectOperatorAction {
-  using local_operator_applied_to_operand_tag =
-      db::add_tag_prefix<::LinearSolver::Tags::OperatorAppliedTo, OperandTag>;
-
-  template <typename ParallelComponent, typename DbTagsList,
-            typename Metavariables, typename ScalarFieldOperandTag,
-            Requires<tmpl::list_contains_v<
-                DbTagsList, local_operator_applied_to_operand_tag>> = nullptr>
-  static void apply(db::DataBox<DbTagsList>& box,
-                    Parallel::GlobalCache<Metavariables>& cache,
-                    const ElementId<1>& element_id,
-                    const Variables<tmpl::list<ScalarFieldOperandTag>>&
-                        operator_applied_to_operand_global_data,
-                    const size_t broadcasting_multigrid_level) noexcept {
+  template <
+      typename ParallelComponent, typename DbTagsList, typename Metavariables,
+      Requires<tmpl::list_contains_v<DbTagsList, OperatorAppliedToOperandTag>> =
+          nullptr>
+  static void apply(
+      db::DataBox<DbTagsList>& box, Parallel::GlobalCache<Metavariables>& cache,
+      const ElementId<1>& element_id,
+      const typename OperandTag::type& operator_applied_to_operand_global_data,
+      const size_t broadcasting_multigrid_level) noexcept {
     // We're receiving broadcasts also from reductions over other sections. See
     // issue: https://github.com/sxs-collaboration/spectre/issues/3220
     const size_t multigrid_level = element_id.grid_index();
     if (multigrid_level != broadcasting_multigrid_level) {
       return;
     }
+    // Copy the slice of the global result corresponding to this element into
+    // the DataBox
     const size_t element_index = helpers_distributed::get_index(element_id);
-    // This could be generalized to work on the Variables instead of the
-    // Scalar, but it's only for the purpose of this test.
     const size_t number_of_grid_points =
         get<LinearOperator>(box)[multigrid_level][0].columns();
-    const auto& operator_applied_to_operand_global =
-        get<ScalarFieldOperandTag>(operator_applied_to_operand_global_data)
-            .get();
-    DataVector operator_applied_to_operand_local{number_of_grid_points};
-    std::copy(operator_applied_to_operand_global.begin() +
-                  static_cast<int>(element_index * number_of_grid_points),
-              operator_applied_to_operand_global.begin() +
-                  static_cast<int>((element_index + 1) * number_of_grid_points),
-              operator_applied_to_operand_local.begin());
-    db::mutate<local_operator_applied_to_operand_tag>(
+    db::mutate<OperatorAppliedToOperandTag>(
         make_not_null(&box),
-        [&operator_applied_to_operand_local,
-         &number_of_grid_points](auto operator_applied_to_operand) noexcept {
-          *operator_applied_to_operand =
-              typename local_operator_applied_to_operand_tag::type{
-                  number_of_grid_points};
-          get(get<
-              ::LinearSolver::Tags::OperatorAppliedTo<ScalarFieldOperandTag>>(
-              *operator_applied_to_operand)) =
-              operator_applied_to_operand_local;
+        [&operator_applied_to_operand_global_data, &number_of_grid_points,
+         &element_index](auto operator_applied_to_operand) noexcept {
+          operator_applied_to_operand->initialize(number_of_grid_points);
+          for (size_t i = 0; i < number_of_grid_points; ++i) {
+            operator_applied_to_operand->data()[i] =
+                operator_applied_to_operand_global_data
+                    .data()[i + element_index * number_of_grid_points];
+          }
         });
     // Proceed with algorithm
     Parallel::get_parallel_component<ParallelComponent>(cache)[element_id]

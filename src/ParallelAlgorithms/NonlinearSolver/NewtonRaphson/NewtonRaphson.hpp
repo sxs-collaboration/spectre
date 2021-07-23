@@ -66,10 +66,22 @@ namespace newton_raphson {
  * line-search globalization, such as a trust-region globalization or more
  * sophisticated nonlinear preconditioning techniques (see e.g. \cite Brune2015
  * for an overview), are not currently implemented.
+ *
+ * \par Array sections
+ * This nonlinear solver supports running over a subset of the elements in the
+ * array parallel component (see `Parallel::Section`). Set the
+ * `ArraySectionIdTag` template parameter to restrict the solver to elements in
+ * that section. Only a single section must be associated with the
+ * `ArraySectionIdTag`. The default is `void`, which means running over all
+ * elements in the array. Note that the actions in the `SolveLinearization`
+ * list passed to `solve` will _not_ be restricted to run only on section
+ * elements, so all elements in the array may participate in preconditioning
+ * (see LinearSolver::multigrid::Multigrid).
  */
 template <typename Metavariables, typename FieldsTag, typename OptionsGroup,
           typename SourceTag =
-              db::add_tag_prefix<::Tags::FixedSource, FieldsTag>>
+              db::add_tag_prefix<::Tags::FixedSource, FieldsTag>,
+          typename ArraySectionIdTag = void>
 struct NewtonRaphson {
   using fields_tag = FieldsTag;
   using options_group = OptionsGroup;
@@ -96,16 +108,21 @@ struct NewtonRaphson {
             typename ObserveActions = tmpl::list<>,
             typename Label = OptionsGroup>
   using solve = tmpl::list<
-      ApplyNonlinearOperator,
-      detail::PrepareSolve<FieldsTag, OptionsGroup, Label>, ObserveActions,
-      detail::ReceiveInitialHasConverged<FieldsTag, OptionsGroup, Label>,
-      detail::PrepareStep<FieldsTag, OptionsGroup, Label>, SolveLinearization,
-      detail::PerformStep<FieldsTag, OptionsGroup, Label>,
+      detail::PrepareSolve<FieldsTag, OptionsGroup, Label, ArraySectionIdTag>,
+      ApplyNonlinearOperator, ObserveActions,
+      detail::SendInitialResidualMagnitude<FieldsTag, OptionsGroup, Label,
+                                           ArraySectionIdTag>,
+      detail::ReceiveInitialHasConverged<FieldsTag, OptionsGroup, Label,
+                                         ArraySectionIdTag>,
+      detail::PrepareStep<FieldsTag, OptionsGroup, Label, ArraySectionIdTag>,
+      SolveLinearization,
+      detail::PerformStep<FieldsTag, OptionsGroup, Label, ArraySectionIdTag>,
       ApplyNonlinearOperator,
       detail::ContributeToResidualMagnitudeReduction<FieldsTag, OptionsGroup,
-                                                     Label>,
-      detail::Globalize<FieldsTag, OptionsGroup, Label>, ObserveActions,
-      detail::CompleteStep<FieldsTag, OptionsGroup, Label>>;
+                                                     Label, ArraySectionIdTag>,
+      detail::Globalize<FieldsTag, OptionsGroup, Label, ArraySectionIdTag>,
+      ObserveActions,
+      detail::CompleteStep<FieldsTag, OptionsGroup, Label, ArraySectionIdTag>>;
 };
 
 }  // namespace newton_raphson

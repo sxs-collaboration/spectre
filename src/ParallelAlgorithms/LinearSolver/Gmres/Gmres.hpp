@@ -88,7 +88,7 @@ namespace LinearSolver::gmres {
  * elements in the array. Note that the actions in the `ApplyOperatorActions`
  * list passed to `solve` will _not_ be restricted to run only on section
  * elements, so all elements in the array may participate in preconditioning
- * (see LinearSolver::Multigrid::Multigrid).
+ * (see LinearSolver::multigrid::Multigrid).
  *
  * \see ConjugateGradient for a linear solver that is more efficient when the
  * linear operator \f$A\f$ is symmetric.
