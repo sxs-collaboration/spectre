@@ -39,3 +39,5 @@ target_link_libraries(
   GeneralRelativity
   Utilities
   )
+
+add_subdirectory(BoundaryCorrections)

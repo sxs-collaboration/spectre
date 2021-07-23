@@ -4,6 +4,7 @@
 set(LIBRARY "Test_CurvedScalarWave")
 
 set(LIBRARY_SOURCES
+  BoundaryCorrections/Test_UpwindPenalty.cpp
   Test_Constraints.cpp
   Test_Characteristics.cpp
   Test_Tags.cpp
@@ -15,5 +16,15 @@ add_test_library(
   ${LIBRARY}
   "Evolution/Systems/CurvedScalarWave/"
   "${LIBRARY_SOURCES}"
-  "CurvedScalarWave;CurvedScalarWaveHelpers;GeneralRelativityHelpers"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  DataStructures
+  CurvedScalarWave
+  CurvedScalarWaveHelpers
+  GeneralRelativityHelpers
+  Utilities
   )

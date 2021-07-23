@@ -6,6 +6,7 @@
 #include <cstddef>
 
 #include "DataStructures/VariablesTag.hpp"
+#include "Evolution/Systems/CurvedScalarWave/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Characteristics.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Equations.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Tags.hpp"
@@ -25,6 +26,8 @@ struct System {
   static constexpr bool has_primitive_and_conservative_vars = false;
   static constexpr size_t volume_dim = Dim;
   static constexpr bool is_euclidean = false;
+
+  using boundary_correction_base = BoundaryCorrections::BoundaryCorrection<Dim>;
 
   using variables_tag = ::Tags::Variables<tmpl::list<Pi, Phi<Dim>, Psi>>;
   using flux_variables = tmpl::list<>;
