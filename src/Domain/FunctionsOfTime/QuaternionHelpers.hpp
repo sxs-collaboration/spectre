@@ -10,15 +10,17 @@
 #include <boost/math/quaternion.hpp>
 
 #include "DataStructures/DataVector.hpp"
-#include "Utilities/ErrorHandling/Assert.hpp"
-#include "Utilities/Gsl.hpp"
+
+/// \cond
+namespace gsl {
+template <class T>
+class not_null;
+}  // namespace gsl
+/// \endcond
 
 /// Convert a `boost::math::quaternion` to a `DataVector`
 DataVector quaternion_to_datavector(
-    const boost::math::quaternion<double>& input) noexcept {
-  return DataVector{input.R_component_1(), input.R_component_2(),
-                    input.R_component_3(), input.R_component_4()};
-}
+    const boost::math::quaternion<double>& input) noexcept;
 
 /// \brief Convert a `DataVector` to a `boost::math::quaternion`
 ///
@@ -27,21 +29,8 @@ DataVector quaternion_to_datavector(
 /// 0 scalar part while the vector part is the `DataVector`. If the `DataVector`
 /// has 4 components, the quaternion is just the `DataVector` itself.
 boost::math::quaternion<double> datavector_to_quaternion(
-    const DataVector& input) noexcept {
-  ASSERT(input.size() == 3 or input.size() == 4,
-         "To form a quaternion, a DataVector can either have 3 or 4 components "
-         "only. This DataVector has "
-             << input.size() << " components.");
-  if (input.size() == 3) {
-    return boost::math::quaternion<double>(0.0, input[0], input[1], input[2]);
-  } else {
-    return boost::math::quaternion<double>(input[0], input[1], input[2],
-                                           input[3]);
-  }
-}
+    const DataVector& input) noexcept;
+
 /// Normalize a `boost::math::quaternion`
-template <typename T>
 void normalize_quaternion(
-    const gsl::not_null<boost::math::quaternion<T>*> input) noexcept {
-  *input /= abs(*input);
-}
+    gsl::not_null<boost::math::quaternion<double>*> input) noexcept;

@@ -10,6 +10,7 @@ spectre_target_sources(
   PRIVATE
   FixedSpeedCubic.cpp
   PiecewisePolynomial.cpp
+  QuaternionHelpers.cpp
   ReadSpecPiecewisePolynomial.cpp
   RegisterDerivedWithCharm.cpp
   SettleToConstant.cpp
