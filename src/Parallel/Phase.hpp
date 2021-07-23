@@ -80,6 +80,8 @@ enum class Phase {
   Solve,
   ///  phase in which something is tested
   Testing,
+  ///  phase in which options are changed after restart
+  UpdateOptionsAtRestartFromCheckpoint,
   ///  phase in which checkpoint files are written to disk
   WriteCheckpoint
 };
