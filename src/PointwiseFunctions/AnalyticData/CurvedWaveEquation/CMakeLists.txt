@@ -18,8 +18,6 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   AnalyticData.hpp
-  PlaneWave3DKerrSchild.hpp
-  RegularSphericalWave3DKerrSchild.hpp
   ScalarWaveGr.hpp
   ScalarWaveGr.tpp
   )
