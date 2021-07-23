@@ -32,6 +32,10 @@ module GlobalCache {
         const CkCallback&);
     template <typename GlobalCacheTag, typename Function, typename... Args>
     entry void mutate(std::tuple<Args...> & args);
+
+    entry void overlay_cache_data(
+        tuples::tagged_tuple_from_typelist<
+            Parallel::get_overlayable_option_list<Metavariables>>&);
   }
   }
 }
