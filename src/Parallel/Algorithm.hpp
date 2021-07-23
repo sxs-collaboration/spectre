@@ -12,6 +12,8 @@
 #include <limits>
 #include <ostream>
 #include <pup.h>
+#include <sstream>
+#include <string>
 #include <tuple>
 #include <unordered_map>
 #include <unordered_set>
@@ -195,6 +197,18 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
 
   /// Charm++ migration constructor, used after a chare is migrated
   explicit AlgorithmImpl(CkMigrateMessage* /*msg*/) noexcept;
+
+  /// Print the expanded type aliases
+  std::string print_types() const noexcept;
+
+  /// Print the current state of the algorithm
+  std::string print_state() const noexcept;
+
+  /// Print the current contents of the inboxes
+  std::string print_inbox() const noexcept;
+
+  /// Print the current contents of the DataBox
+  std::string print_databox() const noexcept;
 
   void pup(PUP::er& p) noexcept override {  // NOLINT
 #ifdef SPECTRE_CHARM_PROJECTIONS
@@ -702,6 +716,77 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
 
 /// \cond
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
+std::string AlgorithmImpl<ParallelComponent,
+                          tmpl::list<PhaseDepActionListsPack...>>::print_types()
+    const noexcept {
+  std::ostringstream os;
+  os << "Algorithm type aliases:\n";
+  os << "using all_actions_list = " << pretty_type::get_name<all_actions_list>()
+     << ";\n";
+
+  os << "using metavariables = " << pretty_type::get_name<metavariables>()
+     << ";\n";
+  os << "using inbox_tags_list = " << pretty_type::get_name<inbox_tags_list>()
+     << ";\n";
+  os << "using array_index = " << pretty_type::get_name<array_index>() << ";\n";
+  os << "using parallel_component = "
+     << pretty_type::get_name<parallel_component>() << ";\n";
+  os << "using chare_type = " << pretty_type::get_name<chare_type>() << ";\n";
+  os << "using cproxy_type = " << pretty_type::get_name<cproxy_type>() << ";\n";
+  os << "using cbase_type = " << pretty_type::get_name<cbase_type>() << ";\n";
+  os << "using PhaseType = " << pretty_type::get_name<PhaseType>() << ";\n";
+  os << "using phase_dependent_action_lists = "
+     << pretty_type::get_name<phase_dependent_action_lists>() << ";\n";
+  os << "using all_cache_tags = " << pretty_type::get_name<all_cache_tags>()
+     << ";\n";
+  os << "using initial_databox = " << pretty_type::get_name<initial_databox>()
+     << ";\n";
+  os << "using databox_phase_types = "
+     << pretty_type::get_name<databox_phase_types>() << ";\n";
+  os << "using databox_types = " << pretty_type::get_name<databox_types>()
+     << ";\n";
+  os << "using variant_boxes = " << pretty_type::get_name<variant_boxes>()
+     << ";\n";
+  return os.str();
+}
+
+template <typename ParallelComponent, typename... PhaseDepActionListsPack>
+std::string AlgorithmImpl<ParallelComponent,
+                          tmpl::list<PhaseDepActionListsPack...>>::print_state()
+    const noexcept {
+  std::ostringstream os;
+  os << "State:\n";
+  os << "performing_action_ = " << std::boolalpha << performing_action_
+     << ";\n";
+  os << "phase_ = " << phase_ << ";\n";
+  os << "phase_bookmarks_ = " << phase_bookmarks_ << ";\n";
+  os << "algorithm_step_ = " << algorithm_step_ << ";\n";
+  os << "terminate_ = " << terminate_ << ";\n";
+  os << "halt_algorithm_until_next_phase_ = "
+     << halt_algorithm_until_next_phase_ << ";\n";
+  os << "array_index_ = " << array_index_ << ";\n";
+  return os.str();
+}
+
+template <typename ParallelComponent, typename... PhaseDepActionListsPack>
+std::string AlgorithmImpl<ParallelComponent,
+                          tmpl::list<PhaseDepActionListsPack...>>::print_inbox()
+    const noexcept {
+  std::ostringstream os;
+  os << "inboxes_ = " << inboxes_ << ";\n";
+  return os.str();
+}
+
+template <typename ParallelComponent, typename... PhaseDepActionListsPack>
+std::string AlgorithmImpl<
+    ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::print_databox()
+    const noexcept {
+  std::ostringstream os;
+  os << "box_:\n" << box_;
+  return os.str();
+}
+
+  template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
     AlgorithmImpl() noexcept {
   set_array_index();
@@ -974,5 +1059,17 @@ AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
   // This is a template for loop for Is
   EXPAND_PACK_LEFT_TO_RIGHT(helper(std::integral_constant<size_t, Is>{}));
   return take_next_action;
+}
+
+template <typename ParallelComponent, typename PhaseDepActionLists>
+std::ostream& operator<<(
+    std::ostream& os,
+    const AlgorithmImpl<ParallelComponent, PhaseDepActionLists>&
+        algorithm_impl) noexcept {
+  os << algorithm_impl.print_types() << "\n";
+  os << algorithm_impl.print_state() << "\n";
+  os << algorithm_impl.print_inbox() << "\n";
+  os << algorithm_impl.print_databox() << "\n";
+  return os;
 }
 }  // namespace Parallel
