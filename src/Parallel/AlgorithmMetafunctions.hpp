@@ -164,6 +164,8 @@ CREATE_HAS_STATIC_MEMBER_VARIABLE(LoadBalancing)
 CREATE_HAS_STATIC_MEMBER_VARIABLE_V(LoadBalancing)
 CREATE_HAS_STATIC_MEMBER_VARIABLE(WriteCheckpoint)
 CREATE_HAS_STATIC_MEMBER_VARIABLE_V(WriteCheckpoint)
+CREATE_HAS_STATIC_MEMBER_VARIABLE(UpdateOptionsAtRestartFromCheckpoint)
+CREATE_HAS_STATIC_MEMBER_VARIABLE_V(UpdateOptionsAtRestartFromCheckpoint)
 
 // for checking the DataBox return of an iterable action
 template <typename FirstIterableActionType>

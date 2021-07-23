@@ -125,6 +125,10 @@ class Main : public CBase_Main<Metavariables> {
   // Check if future checkpoint dirs are available; error if any already exist.
   void check_future_checkpoint_dirs_available() const noexcept;
 
+  // After a restart, update the const global cache with new values constructed
+  // from parsing an overlay input file.
+  void update_const_global_cache_from_input_file() noexcept;
+
   template <typename ParallelComponent>
   using parallel_component_options =
       Parallel::get_option_tags<typename ParallelComponent::initialization_tags,
@@ -134,6 +138,8 @@ class Main : public CBase_Main<Metavariables> {
       Parallel::get_option_tags<mutable_global_cache_tags, Metavariables>,
       tmpl::transform<component_list,
                       tmpl::bind<parallel_component_options, tmpl::_1>>>>>;
+  using overlayable_option_list =
+      Parallel::get_overlayable_option_list<Metavariables>;
   using parallel_component_tag_list = tmpl::transform<
       component_list,
       tmpl::bind<
@@ -644,6 +650,16 @@ void Main<Metavariables>::execute_next_phase() noexcept {
     }
   }
 
+  // We skip the reparsing and overlaying if there are no eligible tags
+  if constexpr (Algorithm_detail::has_UpdateOptionsAtRestartFromCheckpoint_v<
+                    typename Metavariables::Phase> and
+                tmpl::size<overlayable_option_list>::value > 0) {
+    if (current_phase_ ==
+        Metavariables::Phase::UpdateOptionsAtRestartFromCheckpoint) {
+      update_const_global_cache_from_input_file();
+    }
+  }
+
   // The general case simply returns to execute_next_phase
   CkStartQD(CkCallback(CkIndex_Main<Metavariables>::execute_next_phase(),
                        this->thisProxy));
@@ -821,7 +837,53 @@ void Main<Metavariables>::check_future_checkpoint_dirs_available()
   if (not found_older_checkpoints_only) {
     ERROR(
         "Can't start run: found checkpoints that may be overwritten!\n"
-        "Dirs from " << checkpoint_dir << " onward must not exist.\n");
+        "Dirs from "
+        << checkpoint_dir << " onward must not exist.\n");
+  }
+}
+
+template <typename Metavariables>
+void Main<Metavariables>::update_const_global_cache_from_input_file() noexcept {
+  if (checkpoint_dir_counter_ < 1) {
+    ERROR("Executable is unaware of previous checkpoints, so can't reparse.");
+  }
+
+  // Get the padded counter (e.g., 000XYZ) of the checkpoint we restarted from
+  const size_t restart_checkpoint = checkpoint_dir_counter_ - 1;
+  const std::string counter = std::to_string(restart_checkpoint);
+  const auto [checkpoint_dir, basename, pad] = checkpoint_dir_basename_pad();
+  const std::string padded_counter =
+      std::string(pad - counter.size(), '0').append(counter);
+  (void)checkpoint_dir;
+  (void)basename;
+
+  // Given input file "Input.yaml", overlay file is "Input.overlay000XYZ.yaml"
+  const std::string dot_yaml = ".yaml";
+  const std::string overlay_counter = ".overlay" + padded_counter;
+  const auto found = input_file_.find(dot_yaml);
+  std::string input_file_for_reparse = input_file_;
+  if (found != std::string::npos) {
+    input_file_for_reparse.insert(found, overlay_counter);
+  } else {
+    ERROR("Overlaying assumes the input file has a .yaml extension");
+  }
+
+  Parallel::printf("Attempting to overlay input file: %s\n",
+                   input_file_for_reparse);
+  if (file_system::check_if_file_exists(input_file_for_reparse)) {
+    parser_.template overlay_file<overlayable_option_list>(
+        input_file_for_reparse);
+    const auto data_to_overlay =
+        parser_.template apply<overlayable_option_list,
+                               Metavariables>([](auto... args) noexcept {
+          return tuples::tagged_tuple_from_typelist<overlayable_option_list>(
+              std::move(args)...);
+        });
+    global_cache_proxy_.overlay_cache_data(data_to_overlay);
+    Parallel::printf("... success!\n");
+  } else {
+    Parallel::printf(
+        "... file not found. Continuing with values from previous run.\n");
   }
 }
 
