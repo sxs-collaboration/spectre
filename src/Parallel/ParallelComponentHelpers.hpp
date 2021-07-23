@@ -11,6 +11,7 @@
 #include "Parallel/Callback.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits.hpp"
@@ -321,6 +322,47 @@ using get_option_tags = tmpl::remove_duplicates<tmpl::flatten<tmpl::transform<
     SimpleTagsList, tmpl::bind<detail::get_option_tags_from_simple_tag<
                                    Metavariables>::template f,
                                tmpl::_1>>>>;
+
+namespace detail {
+template <typename Tag, typename = std::void_t<>>
+struct is_tag_overlayable : std::false_type {};
+
+template <typename Tag>
+struct is_tag_overlayable<Tag, std::void_t<decltype(Tag::is_overlayable)>>
+    : std::bool_constant<Tag::is_overlayable> {};
+
+template <typename Tag>
+struct GetUniqueOptionTag {
+  using type = tmpl::front<typename Tag::option_tags>;
+};
+}  // namespace detail
+
+/// Get the subset of `const_global_cache_tags` that are overlayable.
+///
+/// Note this is a list of tags in the GlobalCache, but is not a list of option
+/// tags. However, each tag in the list will have a corresponding option tag.
+//
+/// By default, tags are not overlayable, i.e., can not be reparsed to update
+/// a simulation value after a restart from checkpoint. Any tag can "opt in"
+/// and become overlayable by specifying a member variable
+/// `static constexpr bool is_overlayable = true`.
+/// This should be done with caution: changing the value of this tag
+/// must not have any side effects that might invalidate past of current
+/// simulation data. For example, parameters determining the timesteppers and
+/// dense output should not be overlayable, because these parameters interact
+/// with the timestepper history data. But parameters determining the frequency
+/// for (non-dense) reductions to file can be updated on restarts.
+template <typename Metavariables>
+using get_overlayable_tag_list =
+    tmpl::filter<get_const_global_cache_tags<Metavariables>,
+                 detail::is_tag_overlayable<tmpl::_1>>;
+
+/// Get the option tags corresponding to the output of
+/// `get_overlayable_tag_list`.
+template <typename Metavariables>
+using get_overlayable_option_list =
+    tmpl::transform<get_overlayable_tag_list<Metavariables>,
+                    detail::GetUniqueOptionTag<tmpl::_1>>;
 
 /// \cond
 namespace Algorithms {
