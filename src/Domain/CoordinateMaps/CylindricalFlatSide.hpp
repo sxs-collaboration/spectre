@@ -69,7 +69,7 @@ namespace domain::CoordinateMaps {
  *   percent of the sphere radius) than the plane containing the
  *   annulus.
  * - The projection point \f$z_\mathrm{P}\f$ is
- *   inside the sphere and more than 5 percent away from the boundary
+ *   inside the sphere and more than 15 percent away from the boundary
  *   of the sphere.
  * - The center of the annulus is contained in the circle that results from
  *   projecting the sphere into the \f$xy\f$ plane.
