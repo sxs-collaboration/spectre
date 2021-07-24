@@ -27,7 +27,12 @@ struct Metavariables {
         tmpl::map<tmpl::pair<Trigger, tmpl::list<Triggers::Always>>>;
   };
 
-  enum class Phase { PhaseA, WriteCheckpoint, Exit };
+  enum class Phase {
+    PhaseA,
+    WriteCheckpoint,
+    UpdateOptionsAtRestartFromCheckpoint,
+    Exit
+  };
 };
 
 SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.CheckpointAndExitAfterWallclock",
@@ -110,13 +115,25 @@ SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.CheckpointAndExitAfterWallclock",
 
     // Check behavior following the checkpoint phase
     // First check case where wallclock time < recorded time, which corresponds
-    // to restarting from a checkpoint.
+    // to restarting from a checkpoint. Should update options next.
     // (this assumes the test doesn't take 1h to get here)
     phase_change_decision_data = phase_change_decision_data_type{
         Metavariables::Phase::PhaseA, 1.0, false, true};
     decision_result = phase_change0.arbitrate_phase_change(
         make_not_null(&phase_change_decision_data),
         Metavariables::Phase::WriteCheckpoint, cache);
+    CHECK((decision_result ==
+           std::make_pair(
+               Metavariables::Phase::UpdateOptionsAtRestartFromCheckpoint,
+               PhaseControl::ArbitrationStrategy::PermitAdditionalJumps)));
+    CHECK((phase_change_decision_data ==
+           phase_change_decision_data_type{Metavariables::Phase::PhaseA, 1.0,
+                                           false, true}));
+
+    // Now, from update phase, go back to PhaseA
+    decision_result = phase_change0.arbitrate_phase_change(
+        make_not_null(&phase_change_decision_data),
+        Metavariables::Phase::UpdateOptionsAtRestartFromCheckpoint, cache);
     CHECK((decision_result ==
            std::make_pair(
                Metavariables::Phase::PhaseA,
