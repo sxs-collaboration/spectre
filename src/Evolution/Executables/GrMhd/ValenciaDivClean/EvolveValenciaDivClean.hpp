@@ -249,6 +249,7 @@ struct EvolutionMetavars {
     Register,
     LoadBalancing,
     WriteCheckpoint,
+    UpdateOptionsAtRestartFromCheckpoint,
     Evolve,
     Exit
   };

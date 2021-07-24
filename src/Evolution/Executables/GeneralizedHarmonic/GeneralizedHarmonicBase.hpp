@@ -169,6 +169,7 @@ struct GeneralizedHarmonicDefaults {
     Register,
     LoadBalancing,
     WriteCheckpoint,
+    UpdateOptionsAtRestartFromCheckpoint,
     Evolve,
     Exit
   };

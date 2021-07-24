@@ -195,6 +195,7 @@ struct EvolutionMetavars {
     InitializeTimeStepperHistory,
     LoadBalancing,
     WriteCheckpoint,
+    UpdateOptionsAtRestartFromCheckpoint,
     Evolve,
     Exit
   };

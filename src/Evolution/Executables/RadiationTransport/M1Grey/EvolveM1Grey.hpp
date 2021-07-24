@@ -196,6 +196,7 @@ struct EvolutionMetavars {
     RegisterWithObserver,
     LoadBalancing,
     WriteCheckpoint,
+    UpdateOptionsAtRestartFromCheckpoint,
     Evolve,
     Exit
   };
