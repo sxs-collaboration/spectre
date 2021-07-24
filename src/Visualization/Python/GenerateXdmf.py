@@ -214,7 +214,11 @@ def generate_xdmf(file_prefix, output, subfile_name, start_time, stop_time,
                         "AttributeType=\"Vector\" Center=\"Node\">\n" %
                         (vector))
                     xdmf_output += data_item_vec
-                    for index in ["_x", "_y", "_z"]:
+
+                    index_list = ["_x", "_y"]
+                    if dimensionality == 3:
+                        index_list.append("_z")
+                    for index in index_list:
                         xdmf_output += (
                             data_item(h5temporal.get(vector + index).dtype) +
                             Grid_path + "/%s" % (vector) + index + "\n" +
