@@ -21,7 +21,7 @@ InitialData: &InitialData
 
 Evolution:
   InitialTime: 0.0
-  InitialTimeStep: 0.001
+  InitialTimeStep: 0.0001
   TimeStepper:
     AdamsBashforth:
       Order: 3
@@ -33,7 +33,8 @@ PhaseChangeAndTriggers:
           Interval: 10
           Offset: 0
     PhaseChanges:
-      - VisitAndReturn(LoadBalancing)
+      - CheckpointAndExitAfterWallclock:
+          WallclockHours: 0.01667  # 1 min
 
 DomainCreator:
   Interval:
@@ -41,7 +42,7 @@ DomainCreator:
     UpperBound: [1.0]
     Distribution: Linear
     Singularity: None
-    InitialRefinement: [2]
+    InitialRefinement: [5]
     InitialGridPoints: [7]
     TimeDependence: None
     BoundaryConditions:
@@ -75,23 +76,27 @@ SpatialDiscretization:
     Reconstructor: MonotonisedCentral
 
 EventsAndTriggers:
-  - Trigger: Always
+  # - Trigger: Always
+  #   Events:
+  #     - ChangeSlabSize:
+  #         DelayChange: 5
+  #         StepChoosers:
+  #           - Cfl:
+  #               SafetyFactor: 0.5
+  #           - Increase:
+  #               Factor: 2.0
+  - Trigger:
+      Slabs:
+        EvenlySpaced:
+          Interval: 10
+          Offset: 0
     Events:
-      - ChangeSlabSize:
-          DelayChange: 5
-          StepChoosers:
-            - Cfl:
-                SafetyFactor: 0.5
-            - Increase:
-                Factor: 2.0
+      - ObserveTimeStep:
+          SubfileName: TimeStep
+          ObservePerCore: false
+          PrintTimeToTerminal: false
 
 EventsAndDenseTriggers:
-  - Trigger:
-      Times:
-        Specified:
-          Values: [0.123456]
-    Events:
-      - Completion
 
 Observers:
   VolumeFileName: "BurgersStepVolume"

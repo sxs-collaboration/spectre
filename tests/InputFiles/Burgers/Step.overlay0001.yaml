@@ -1,0 +1,21 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+EventsAndTriggers:
+  - Trigger:
+      Slabs:
+        EvenlySpaced:
+          Interval: 10
+          Offset: 0
+    Events:
+      - ObserveTimeStep:
+          SubfileName: TimeStep
+          ObservePerCore: false
+          PrintTimeToTerminal: false
+  - Trigger:
+      Slabs:
+        EvenlySpaced:
+          Interval: 400
+          Offset: 0
+    Events:
+      - Completion
