@@ -583,17 +583,18 @@ class CheckWrappedOperandsVisitor {
 
     auto original_arguments = std::make_tuple(operands...);
     const auto result = function_(operands...);
+    Approx custom_approx = Approx::custom().epsilon(1.e-13).scale(1.0);
     for (size_t i = 0; i < size_value; ++i) {
       // the arguments which modify their arguments must be passed lvalues
       auto element_of_arguments = std::make_tuple(get_element(
           std::get<Is>(original_arguments), i, VectorOrArrayAt{})...);
       call_check_approx(get_element(result, i, VectorOrArrayAt{}),
                         function_(std::get<Is>(element_of_arguments)...),
-                        approx);
+                        custom_approx);
       // ensure that the final state of the arguments matches
       expand_pack(call_check_approx(get_element(operands, i, VectorOrArrayAt{}),
                                     std::get<Is>(element_of_arguments),
-                                    approx)...);
+                                    custom_approx)...);
     }
   }
 
