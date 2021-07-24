@@ -262,7 +262,8 @@ ENV PATH="${PATH}:/work/texlive/bin/x86_64-linux"
 WORKDIR /work
 RUN wget https://software.intel.com/content/dam/develop/external/us/en/documents/downloads/sde-external-8.59.0-2020-10-05-lin.tar.bz2 \
     && tar -xvjf sde-external-8.59.0-2020-10-05-lin.tar.bz2 \
-    && mv sde-external-8.59.0-2020-10-05-lin sde
+    && mv sde-external-8.59.0-2020-10-05-lin sde \
+    && rm sde-*
 
 # Remove the apt-get cache in order to reduce image size
 RUN apt-get -y clean
