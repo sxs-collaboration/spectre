@@ -24,26 +24,25 @@ Header::Header(const bool exists, detail::OpenGroup&& group,
     if (header_info_.find(printenv_delimiter_) != std::string::npos) {
       const auto printenv_location =
           header_info_.find(printenv_delimiter_) + printenv_delimiter_.size();
-      const auto library_versions_location =
-          header_info_.find(library_versions_delimiter_);
+      const auto build_info_location = header_info_.find(build_info_delimiter_);
       environment_variables_ = header_info_.substr(
-          printenv_location, library_versions_location - printenv_location);
-      library_versions_ = header_info_.substr(
-          library_versions_location + library_versions_delimiter_.size());
+          printenv_location, build_info_location - printenv_location);
+      build_info_ = header_info_.substr(
+          build_info_location + build_info_delimiter_.size());
       header_info_.erase(printenv_location - printenv_delimiter_.size());
     }
 
     else {
-      //If we cannot find the Formaline delimiter in the file then the file
-      //was written without Formaline support and so we fill in fake info.
+      // If we cannot find the Formaline delimiter in the file then the file
+      // was written without Formaline support and so we fill in fake info.
       environment_variables_ =
           "Formaline was not supported when file was written";
-      library_versions_ = "Formaline was not supported when file was written";
+      build_info_ = "Formaline was not supported when file was written";
     }
   } else {
     auto build_info = info_from_build();
     environment_variables_ = formaline::get_environment_variables();
-    library_versions_ = formaline::get_library_versions();
+    build_info_ = formaline::get_build_info();
     header_info_ = MakeString{}
                    << "#\n# File created on " << current_date_and_time() << "# "
                    << std::regex_replace(build_info, std::regex{"\n"}, "\n# ");
@@ -52,7 +51,7 @@ Header::Header(const bool exists, detail::OpenGroup&& group,
         std::vector<std::string>{
             MakeString{} << header_info_ << printenv_delimiter_
                          << environment_variables_
-                         << library_versions_delimiter_ << library_versions_});
+                         << build_info_delimiter_ << build_info_});
   }
 }
 
@@ -60,12 +59,10 @@ std::string Header::get_env_variables() const noexcept {
   return environment_variables_;
 }
 
-std::string Header::get_library_versions() const noexcept {
-  return library_versions_;
-}
+std::string Header::get_build_info() const noexcept { return build_info_; }
 
 const std::string Header::printenv_delimiter_{
     "############### printenv ###############\n"};
-const std::string Header::library_versions_delimiter_{
+const std::string Header::build_info_delimiter_{
     "############### library versions ###############\n"};
 }  // namespace h5

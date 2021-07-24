@@ -8,8 +8,8 @@ message(STATUS "LIBXSMM incl: " ${LIBXSMM_INCLUDE_DIRS})
 message(STATUS "LIBXSMM vers: " ${LIBXSMM_VERSION})
 
 file(APPEND
-  "${CMAKE_BINARY_DIR}/LibraryVersions.txt"
-  "LIBXSMM Version:  ${LIBXSMM_VERSION}\n"
+  "${CMAKE_BINARY_DIR}/BuildInfo.txt"
+  "LIBXSMM version: ${LIBXSMM_VERSION}\n"
   )
 
 add_library(Libxsmm INTERFACE IMPORTED)

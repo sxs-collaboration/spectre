@@ -221,7 +221,7 @@ there is now a list of available command-line options:
                             LIBRARY_PATH, and CMAKE_PREFIX_PATH at compile
                             time.
   --dump-environment        Dump the result of printenv at compile time.
-  --dump-library-versions   Dump the contents of SpECTRE's LibraryVersions.txt
+  --dump-build-info         Dump the contents of SpECTRE's BuildInfo.txt
   --dump-only               Exit after dumping requested information.
 ```
 
@@ -277,8 +277,8 @@ In addition to dumping the entire source tree there are the following options:
 - `--dump-environment` will print the results of `printenv`
   (i.e. all of the environment variables) from when the executable was
   compiled
-- `--dump-library-versions` will print the contents of SpECTRE's
-  `LibraryVersions.txt` which will contain the versions of libraries
+- `--dump-build-info` will print the contents of SpECTRE's
+  `BuildInfo.txt` which will contain the versions of libraries
   that SpECTRE linked against, as well as various `CMake` variables
 
 Also note that the option `--dump-only` can be used to have the

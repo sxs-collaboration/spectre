@@ -19,6 +19,6 @@ set_property(
   )
 
 file(APPEND
-  "${CMAKE_BINARY_DIR}/LibraryVersions.txt"
-  "HDF5 Version:  ${HDF5_VERSION}\n"
+  "${CMAKE_BINARY_DIR}/BuildInfo.txt"
+  "HDF5 version: ${HDF5_VERSION}\n"
   )

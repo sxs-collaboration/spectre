@@ -4,8 +4,8 @@
 find_package(BLAS REQUIRED)
 message(STATUS "BLAS libs: " ${BLAS_LIBRARIES})
 file(APPEND
-  "${CMAKE_BINARY_DIR}/LibraryVersions.txt"
-  "BLAS_LIBRARIES:  ${BLAS_LIBRARIES}\n"
+  "${CMAKE_BINARY_DIR}/BuildInfo.txt"
+  "BLAS_LIBRARIES: ${BLAS_LIBRARIES}\n"
   )
 
 add_library(Blas INTERFACE IMPORTED)

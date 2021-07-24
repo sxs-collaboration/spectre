@@ -7,8 +7,8 @@ message(STATUS "tcmalloc libs: " ${TCMALLOC_LIBRARIES})
 message(STATUS "tcmalloc incl: " ${TCMALLOC_INCLUDE_DIRS})
 
 file(APPEND
-  "${CMAKE_BINARY_DIR}/LibraryVersions.txt"
-  "tcmalloc Version:  ${TCMALLOC_VERSION}\n"
+  "${CMAKE_BINARY_DIR}/BuildInfo.txt"
+  "tcmalloc version: ${TCMALLOC_VERSION}\n"
   )
 
 add_library(Tcmalloc INTERFACE IMPORTED)

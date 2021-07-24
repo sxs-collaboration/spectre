@@ -65,3 +65,8 @@ if(NOT SPECTRE_ZENODO_ID)
 endif()
 
 message(STATUS "${SPECTRE_NAME} release version: ${SPECTRE_VERSION}")
+
+file(APPEND
+  "${CMAKE_BINARY_DIR}/BuildInfo.txt"
+  "SpECTRE Version: ${SPECTRE_VERSION}\n"
+  )

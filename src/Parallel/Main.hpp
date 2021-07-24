@@ -241,8 +241,8 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept {
          "CMAKE_PREFIX_PATH at compile time.")
         ("dump-environment",
          "Dump the result of printenv at compile time.")
-        ("dump-library-versions",
-         "Dump the contents of SpECTRE's LibraryVersions.txt")
+        ("dump-build-info",
+         "Dump the contents of SpECTRE's BuildInfo.txt")
         ("dump-only",
          "Exit after dumping requested information.")
         ;
@@ -327,9 +327,9 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept {
       Parallel::printf("Environment variables at link time were:\n%s\n",
                        formaline::get_environment_variables());
     }
-    if (parsed_command_line_options.count("dump-library-versions") != 0) {
-      Parallel::printf("LibraryVersions.txt at link time was:\n%s\n",
-                       formaline::get_library_versions());
+    if (parsed_command_line_options.count("dump-build-info") != 0) {
+      Parallel::printf("BuildInfo.txt at link time was:\n%s\n",
+                       formaline::get_build_info());
     }
     if (parsed_command_line_options.count("dump-only") != 0) {
       sys::exit();

@@ -82,7 +82,7 @@ else()
 endif()
 
 file(APPEND
-  "${CMAKE_BINARY_DIR}/LibraryVersions.txt"
-  "Charm Version:  ${CHARM_VERSION}\n"
-  "Charm SMP:  ${SPECTRE_SHARED_MEMORY_PARALLELISM_BUILD}\n"
+  "${CMAKE_BINARY_DIR}/BuildInfo.txt"
+  "Charm version: ${CHARM_VERSION}\n"
+  "Charm SMP: ${SPECTRE_SHARED_MEMORY_PARALLELISM_BUILD}\n"
   )

@@ -8,8 +8,8 @@ message(STATUS "jemalloc incl: " ${JEMALLOC_INCLUDE_DIRS})
 message(STATUS "jemalloc vers: " ${JEMALLOC_VERSION})
 
 file(APPEND
-  "${CMAKE_BINARY_DIR}/LibraryVersions.txt"
-  "jemalloc Version:  ${JEMALLOC_VERSION}\n"
+  "${CMAKE_BINARY_DIR}/BuildInfo.txt"
+  "jemalloc version: ${JEMALLOC_VERSION}\n"
   )
 
 add_library(Jemalloc INTERFACE IMPORTED)

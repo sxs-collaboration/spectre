@@ -5,6 +5,9 @@ cmake_minimum_required(VERSION 3.12.0)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
+# Create a new (or overwrite existing) info file at start of configuration
+file(WRITE "${CMAKE_BINARY_DIR}/BuildInfo.txt" "")
+
 # Determine the project version and other metadata
 include(SpectreLoadMetadata)
 
@@ -32,10 +35,8 @@ endif ()
 
 set(CMAKE_VERBOSE_MAKEFILE OFF)
 
-site_name(HOSTNAME)
-
-include(SpectreInitializeVariables)
 include(SpectreGetGitHash)
+include(SpectreSetSiteName)
 
 option(
   DOCS_ONLY
@@ -45,6 +46,8 @@ if (DOCS_ONLY)
   include(SetupDoxygen)
   return()
 endif (DOCS_ONLY)
+
+include(SpectreInitializeVariables)
 
 include(CheckCompilerVersion)
 include(ProhibitInSourceBuild)
@@ -64,7 +67,7 @@ include(SetCxxStandard)
 include(StripSymbols)
 # We need Boost for InfoAtLink
 include(SetupBoost)
-include(SetupBuildInfo)
+include(SetupInformer)
 include(SetupCCache)
 include(SetupCraySupport)
 include(SetupCharm)
@@ -149,6 +152,5 @@ add_subdirectory(src)
 add_subdirectory(tests)
 
 include(PrintUsefulCMakeInfo)
-include(SetupVersionFile)
 
 include(SpectreCheckDependencies)

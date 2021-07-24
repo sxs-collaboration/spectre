@@ -81,8 +81,8 @@ SPECTRE_TEST_CASE("Unit.IO.H5.File", "[Unit][IO][H5]") {
                                             "\n# ")});
     CHECK(my_file.template get<h5::Header>("/header").get_env_variables() ==
           formaline::get_environment_variables());
-    CHECK(my_file.template get<h5::Header>("/header").get_library_versions() ==
-          formaline::get_library_versions());
+    CHECK(my_file.template get<h5::Header>("/header").get_build_info() ==
+          formaline::get_build_info());
   };
   check_header(my_file0);
   check_header(h5::H5File<h5::AccessType::ReadOnly>(h5_file_name));
