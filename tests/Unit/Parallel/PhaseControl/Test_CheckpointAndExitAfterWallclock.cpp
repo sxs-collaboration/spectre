@@ -113,14 +113,26 @@ SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.CheckpointAndExitAfterWallclock",
     INFO("Restarting from checkpoint");
     // Check behavior following the checkpoint phase
     // First check case where wallclock time < recorded time, which corresponds
-    // to restarting from a checkpoint.
+    // to restarting from a checkpoint. Should update options next.
     // (this assumes the test doesn't take 1h to get here)
     PhaseChangeDecisionData phase_change_decision_data{
         Parallel::Phase::Execute, 1.0, false, true,
         Parallel::ExitCode::Complete};
-    const auto decision_result = phase_change0.arbitrate_phase_change(
+    auto decision_result = phase_change0.arbitrate_phase_change(
         make_not_null(&phase_change_decision_data),
         Parallel::Phase::WriteCheckpoint, cache);
+    CHECK((decision_result ==
+           std::make_pair(
+               Parallel::Phase::UpdateOptionsAtRestartFromCheckpoint,
+               PhaseControl::ArbitrationStrategy::PermitAdditionalJumps)));
+    CHECK((phase_change_decision_data ==
+           PhaseChangeDecisionData{Parallel::Phase::Execute, 1.0, false, true,
+                                   Parallel::ExitCode::Complete}));
+
+    // Now, from update phase, go back to Execute
+    decision_result = phase_change0.arbitrate_phase_change(
+        make_not_null(&phase_change_decision_data),
+        Parallel::Phase::UpdateOptionsAtRestartFromCheckpoint, cache);
     CHECK((decision_result ==
            std::make_pair(
                Parallel::Phase::Execute,
