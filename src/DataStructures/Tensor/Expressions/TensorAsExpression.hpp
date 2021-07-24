@@ -8,14 +8,12 @@
 
 #include <array>
 #include <cstddef>
-#include <iterator>
 #include <type_traits>
 
 #include "DataStructures/Tensor/Expressions/TensorExpression.hpp"
+#include "DataStructures/Tensor/Expressions/TensorIndexTransformation.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Utilities/Algorithm.hpp"
 #include "Utilities/ForceInline.hpp"
-#include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace TensorExpressions {
@@ -57,87 +55,6 @@ struct TensorAsExpression<Tensor<X, Symm, IndexList<Indices...>>,
       : t_(&t) {}
   ~TensorAsExpression() override = default;
 
-  /// \brief Computes a transformation from the LHS tensor's multi-indices to
-  /// the equivalent RHS tensor's multi-indices, according to the differences in
-  /// the orderings of their generic indices
-  ///
-  /// \details
-  /// The elements of the transformation are the positions of the RHS generic
-  /// indices in the LHS generic indices. Put another way, for some `i`,
-  /// `rhs_tensorindices[i] == lhs_tensorindices[index_transformation[i]]`.
-  ///
-  /// Here is an example of what the algorithm does:
-  ///
-  /// Tensor equation: \f$L_{cab} = R_{abc}\f$
-  /// `lhs_tensorindices`:
-  /// \code
-  /// {2, 0, 1} // i.e. {c, a, b}
-  /// \endcode
-  /// `rhs_tensorindices`:
-  /// \code
-  /// {0, 1, 2} // i.e. {a, b, c}
-  /// \endcode
-  /// returned `index_transformation`:
-  /// \code
-  /// {1, 2, 0} // positions of RHS indices {a, b, c} in LHS indices {c, a, b}
-  /// \endcode
-  ///
-  /// \param lhs_tensorindices the TensorIndexs of the LHS tensor
-  /// \return a transformation from the LHS tensor's multi-indices to the
-  /// equivalent RHS tensor's multi-indices
-  SPECTRE_ALWAYS_INLINE static constexpr std::array<size_t, num_tensor_indices>
-  compute_index_transformation(const std::array<size_t, num_tensor_indices>&
-                                   lhs_tensorindices) noexcept {
-    constexpr std::array<size_t, num_tensor_indices> rhs_tensorindices = {
-        {Args::value...}};
-    std::array<size_t, num_tensor_indices> index_transformation{};
-    for (size_t i = 0; i < num_tensor_indices; i++) {
-      gsl::at(index_transformation, i) = static_cast<size_t>(std::distance(
-          lhs_tensorindices.begin(),
-          alg::find(lhs_tensorindices, gsl::at(rhs_tensorindices, i))));
-    }
-    return index_transformation;
-  }
-
-  /// \brief Computes the RHS tensor multi-index that is equivalent to a given
-  /// LHS tensor multi-index, according to the differences in the orderings of
-  /// their generic indices
-  ///
-  /// \details
-  /// Here is an example of what the algorithm does:
-  ///
-  /// Tensor equation: \f$L_{cab} = R_{abc}\f$
-  /// `index_transformation`:
-  /// \code
-  /// {1, 2, 0} // positions of RHS indices {a, b, c} in LHS indices {c, a, b}
-  /// \endcode
-  /// `lhs_multi_index`:
-  /// \code
-  /// {3, 4, 5} // i.e. c = 3, a = 4, b = 5
-  /// \endcode
-  /// returned equivalent `rhs_multi_index`:
-  /// \code
-  /// {4, 5, 3} // i.e. a = 4, b = 5, c = 3
-  /// \endcode
-  ///
-  /// \param lhs_multi_index the multi-index of the LHS tensor
-  /// \param index_transformation the list of the positions of the RHS indices
-  /// in the LHS indices
-  /// \return the RHS tensor multi-index that is equivalent to
-  /// `lhs_tensor_index`
-  SPECTRE_ALWAYS_INLINE static constexpr std::array<size_t, num_tensor_indices>
-  compute_rhs_multi_index(
-      const std::array<size_t, num_tensor_indices>& lhs_multi_index,
-      const std::array<size_t, num_tensor_indices>&
-          index_transformation) noexcept {
-    std::array<size_t, num_tensor_indices> rhs_multi_index{};
-    for (size_t i = 0; i < num_tensor_indices; i++) {
-      gsl::at(rhs_multi_index, i) =
-          gsl::at(lhs_multi_index, gsl::at(index_transformation, i));
-    }
-    return rhs_multi_index;
-  }
-
   /// \brief Returns the value of a left hand side tensor's multi-index
   ///
   /// \details
@@ -163,9 +80,10 @@ struct TensorAsExpression<Tensor<X, Symm, IndexList<Indices...>>,
       return t_->get(lhs_multi_index);
     } else {
       constexpr std::array<size_t, num_tensor_indices> index_transformation =
-          compute_index_transformation({{LhsIndices::value...}});
+          compute_tensorindex_transformation<num_tensor_indices>(
+              {{LhsIndices::value...}}, {{Args::value...}});
       return t_->get(
-          compute_rhs_multi_index(lhs_multi_index, index_transformation));
+          transform_multi_index(lhs_multi_index, index_transformation));
     }
   }
 
