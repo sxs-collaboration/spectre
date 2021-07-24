@@ -18,6 +18,7 @@ add_subdirectory(NewtonianEuler)
 add_subdirectory(Poisson)
 add_subdirectory(RadiationTransport)
 add_subdirectory(RelativisticEuler)
+add_subdirectory(ScalarAdvection)
 add_subdirectory(WaveEquation)
 add_subdirectory(Xcts)
 
