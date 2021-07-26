@@ -33,6 +33,18 @@ Scalar<DataVector> speed_with_index(
       gamma_1, lapse, shift, normal)[Index]};
 }
 
+template <size_t Index, size_t SpatialDim>
+Scalar<DataVector> speed_with_index_from_tnsr(
+    const Scalar<DataVector>& gamma_1, const Scalar<DataVector>& lapse,
+    const tnsr::I<DataVector, SpatialDim, Frame::Inertial>& shift,
+    const tnsr::i<DataVector, SpatialDim, Frame::Inertial>& normal) {
+  auto char_speeds =
+      tnsr::a<DataVector, 3, Frame::Inertial>(get_size(get(lapse)));
+  CurvedScalarWave::characteristic_speeds(make_not_null(&char_speeds), gamma_1,
+                                          lapse, shift, normal);
+  return Scalar<DataVector>{char_speeds.get(Index)};
+}
+
 template <size_t SpatialDim>
 void test_characteristic_speeds() noexcept {
   const DataVector used_for_size(5);
@@ -46,6 +58,18 @@ void test_characteristic_speeds() noexcept {
                                     "Characteristics", "char_speed_vminus",
                                     {{{-2.0, 2.0}}}, used_for_size);
   pypp::check_with_random_values<1>(speed_with_index<2, SpatialDim>,
+                                    "Characteristics", "char_speed_vplus",
+                                    {{{-2.0, 2.0}}}, used_for_size);
+  pypp::check_with_random_values<1>(speed_with_index_from_tnsr<0, SpatialDim>,
+                                    "Characteristics", "char_speed_vpsi",
+                                    {{{-2.0, 2.0}}}, used_for_size);
+  pypp::check_with_random_values<1>(speed_with_index_from_tnsr<1, SpatialDim>,
+                                    "Characteristics", "char_speed_vzero",
+                                    {{{-2.0, 2.0}}}, used_for_size);
+  pypp::check_with_random_values<1>(speed_with_index_from_tnsr<3, SpatialDim>,
+                                    "Characteristics", "char_speed_vminus",
+                                    {{{-2.0, 2.0}}}, used_for_size);
+  pypp::check_with_random_values<1>(speed_with_index_from_tnsr<2, SpatialDim>,
                                     "Characteristics", "char_speed_vplus",
                                     {{{-2.0, 2.0}}}, used_for_size);
 }

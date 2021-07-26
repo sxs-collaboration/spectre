@@ -60,6 +60,14 @@ void characteristic_speeds(
         unit_normal_one_form) noexcept;
 
 template <size_t SpatialDim>
+void characteristic_speeds(
+    gsl::not_null<tnsr::a<DataVector, 3, Frame::Inertial>*> char_speeds,
+    const Scalar<DataVector>& gamma_1, const Scalar<DataVector>& lapse,
+    const tnsr::I<DataVector, SpatialDim, Frame::Inertial>& shift,
+    const tnsr::i<DataVector, SpatialDim, Frame::Inertial>&
+        unit_normal_one_form) noexcept;
+
+template <size_t SpatialDim>
 struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds<SpatialDim>,
                                      db::ComputeTag {
   using base = Tags::CharacteristicSpeeds<SpatialDim>;

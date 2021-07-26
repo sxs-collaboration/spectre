@@ -19,6 +19,24 @@
 namespace CurvedScalarWave {
 template <size_t SpatialDim>
 void characteristic_speeds(
+    const gsl::not_null<tnsr::a<DataVector, 3, Frame::Inertial>*> char_speeds,
+    const Scalar<DataVector>& gamma_1, const Scalar<DataVector>& lapse,
+    const tnsr::I<DataVector, SpatialDim, Frame::Inertial>& shift,
+    const tnsr::i<DataVector, SpatialDim, Frame::Inertial>&
+        unit_normal_one_form) noexcept {
+  if (UNLIKELY(get_size(get<0>(*char_speeds)) != get_size(get(gamma_1)))) {
+    *char_speeds = make_with_value<tnsr::a<DataVector, 3, Frame::Inertial>>(
+        get(gamma_1), std::numeric_limits<double>::signaling_NaN());
+  }
+  const auto shift_dot_normal = get(dot_product(shift, unit_normal_one_form));
+  get<0>(*char_speeds) = -(1. + get(gamma_1)) * shift_dot_normal;  // v(VPsi)
+  get<1>(*char_speeds) = -shift_dot_normal;                        // v(VZero)
+  get<2>(*char_speeds) = -shift_dot_normal + get(lapse);           // v(VPlus)
+  get<3>(*char_speeds) = -shift_dot_normal - get(lapse);           // v(VMinus)
+}
+
+template <size_t SpatialDim>
+void characteristic_speeds(
     const gsl::not_null<std::array<DataVector, 4>*> char_speeds,
     const Scalar<DataVector>& gamma_1, const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, SpatialDim, Frame::Inertial>& shift,
@@ -67,13 +85,14 @@ void characteristic_fields(
         Variables<tmpl::list<Tags::VPsi, Tags::VZero<SpatialDim>, Tags::VPlus,
                              Tags::VMinus>>(get_size(get(gamma_2)));
   }
-  const auto phi_dot_normal = dot_product(
-      raise_or_lower_index(unit_normal_one_form, inverse_spatial_metric), phi);
+  get(get<Tags::VMinus>(*char_fields)) = get(dot_product(
+      raise_or_lower_index(unit_normal_one_form, inverse_spatial_metric), phi));
 
   // Eq.(34) of Holst+ (2004) for VZero
   for (size_t i = 0; i < SpatialDim; ++i) {
     get<Tags::VZero<SpatialDim>>(*char_fields).get(i) =
-        phi.get(i) - unit_normal_one_form.get(i) * get(phi_dot_normal);
+        phi.get(i) -
+        unit_normal_one_form.get(i) * get(get<Tags::VMinus>(*char_fields));
   }
 
   // Eq.(33) of Holst+ (2004) for VPsi
@@ -81,9 +100,9 @@ void characteristic_fields(
 
   // Eq.(35) of Holst+ (2004) for VPlus and VMinus
   get(get<Tags::VPlus>(*char_fields)) =
-      get(pi) + get(phi_dot_normal) - get(gamma_2) * get(psi);
+      get(pi) + get(get<Tags::VMinus>(*char_fields)) - get(gamma_2) * get(psi);
   get(get<Tags::VMinus>(*char_fields)) =
-      get(pi) - get(phi_dot_normal) - get(gamma_2) * get(psi);
+      get(pi) - get(get<Tags::VMinus>(*char_fields)) - get(gamma_2) * get(psi);
 }
 
 template <size_t SpatialDim>
@@ -171,6 +190,13 @@ void ComputeLargestCharacteristicSpeed<SpatialDim>::function(
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATE(_, data)                                                  \
+  template void CurvedScalarWave::characteristic_speeds(                      \
+      const gsl::not_null<tnsr::a<DataVector, 3, Frame::Inertial>*>           \
+          char_speeds,                                                        \
+      const Scalar<DataVector>& gamma_1, const Scalar<DataVector>& lapse,     \
+      const tnsr::I<DataVector, DIM(data), Frame::Inertial>& shift,           \
+      const tnsr::i<DataVector, DIM(data), Frame::Inertial>&                  \
+          unit_normal_one_form) noexcept;                                     \
   template void CurvedScalarWave::characteristic_speeds(                      \
       const gsl::not_null<std::array<DataVector, 4>*> char_speeds,            \
       const Scalar<DataVector>& gamma_1, const Scalar<DataVector>& lapse,     \

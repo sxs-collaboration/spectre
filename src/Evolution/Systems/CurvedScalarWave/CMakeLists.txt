@@ -12,7 +12,6 @@ spectre_target_sources(
   Constraints.cpp
   Equations.cpp
   TimeDerivative.cpp
-  UpwindPenaltyCorrection.cpp
   VolumeTermsInstantiation.cpp
   )
 
@@ -27,7 +26,6 @@ spectre_target_headers(
   Tags.hpp
   TagsDeclarations.hpp
   TimeDerivative.hpp
-  UpwindPenaltyCorrection.hpp
   )
 
 target_link_libraries(
@@ -39,3 +37,5 @@ target_link_libraries(
   GeneralRelativity
   Utilities
   )
+
+add_subdirectory(BoundaryCorrections)
