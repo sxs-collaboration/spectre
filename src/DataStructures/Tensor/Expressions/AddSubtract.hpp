@@ -243,14 +243,6 @@ struct AddSub<T1, T2, ArgsList1<Args1...>, ArgsList2<Args2...>, Sign>
     }
   }
 
-  SPECTRE_ALWAYS_INLINE typename T1::type operator[](size_t i) const {
-    if constexpr (Sign == 1) {
-      return t1_[i] + t2_[i];
-    } else {
-      return t1_[i] - t2_[i];
-    }
-  }
-
  private:
   T1 t1_;
   T2 t2_;
