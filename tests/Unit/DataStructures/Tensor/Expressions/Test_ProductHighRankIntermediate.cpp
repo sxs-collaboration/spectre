@@ -37,14 +37,26 @@ void assign_unique_values_to_tensor(
   }
 }
 
-// \brief Test the product of three rank 4 tensors involving both inner and
-// outer products of indices is correctly evaluated
+// \brief Test the evaluation of the product of three tensors involving inner
+// products, outer products, and an intermediate tensor expression that
+// represents a high rank tensor
 //
 // \details
 // The product case tested is:
-// - \f$L^{c}{}_{dkl} = R_{ijb}{}^{a} * (S_{da}{}^{BC} * T^{j}{}_{kl}{}^{i})\f$
+// - \f$L^{c}{}_{dkl} = R_{jb}{}^{a} * (S_{da}{}^{BC} * T^{j}{}_{kl})\f$
 //
-// This is intended as a stress test for TensorContract and OuterProduct.
+// This is intended as a stress test for TensorContract and OuterProduct,
+// as the product of the 2nd and 3rd operands represents a rank 7 tensor
+// and 3 of its indices are contracted in the inner product with the first
+// operand.
+//
+// Note: When the following expression is tested instead, a segfault occurs
+// for gcc-9 Release mode:
+// - \f$L^{c}{}_{dkl} = R_{ijb}{}^{a} * (S_{da}{}^{BC} * T^{j}{}_{kl}{}^{i})\f$
+// For unknown reasons, the internal vectors of a blaze::DVecDVecMultExpr
+// (lhs and rhs) live at 0x0, and iterating with begin() causes a segfault.
+// The most likely cause is thought to be a bug either in the optimizer or
+// blaze.
 //
 // \tparam DataType the type of data being stored in the product operands
 template <typename DataType>
@@ -56,32 +68,28 @@ void test_high_rank_intermediate(const DataType& used_for_size) noexcept {
   using b_index = SpacetimeIndex<3, UpLo::Lo, frame>;
   using C_index = B_index;
   using d_index = SpacetimeIndex<3, UpLo::Lo, frame>;
-  using I_index = SpatialIndex<3, UpLo::Up, frame>;
-  using i_index = SpatialIndex<3, UpLo::Lo, frame>;
   using J_index = SpatialIndex<3, UpLo::Up, frame>;
-  using j_index = i_index;
+  using j_index = SpatialIndex<3, UpLo::Lo, frame>;
   using k_index = SpatialIndex<3, UpLo::Lo, frame>;
   using l_index = SpatialIndex<3, UpLo::Lo, frame>;
 
-  Tensor<DataType, Symmetry<3, 3, 2, 1>,
-         index_list<i_index, j_index, b_index, A_index>>
-      R(used_for_size);
+  Tensor<DataType, Symmetry<3, 2, 1>, index_list<j_index, b_index, A_index>> R(
+      used_for_size);
   assign_unique_values_to_tensor(make_not_null(&R));
   Tensor<DataType, Symmetry<3, 2, 1, 1>,
          index_list<d_index, a_index, B_index, C_index>>
       S(used_for_size);
   assign_unique_values_to_tensor(make_not_null(&S));
-  Tensor<DataType, Symmetry<4, 3, 2, 1>,
-         index_list<J_index, k_index, l_index, I_index>>
-      T(used_for_size);
+  Tensor<DataType, Symmetry<3, 2, 1>, index_list<J_index, k_index, l_index>> T(
+      used_for_size);
   assign_unique_values_to_tensor(make_not_null(&T));
 
-  // \f$L^{c}{}_{dkl} = R_{ijb}{}^{a} * (S_{da}{}^{BC} * T^{j}{}_{kl}{}^{i})\f$
+  // \f$L^{c}{}_{dkl} = R_{jb}{}^{a} * (S_{da}{}^{BC} * T^{j}{}_{kl})\f$
   const Tensor<DataType, Symmetry<4, 3, 2, 1>,
                index_list<C_index, d_index, k_index, l_index>>
       actual_result = TensorExpressions::evaluate<ti_C, ti_d, ti_k, ti_l>(
-          R(ti_i, ti_j, ti_b, ti_A) *
-          (S(ti_d, ti_a, ti_B, ti_C) * T(ti_J, ti_k, ti_l, ti_I)));
+          R(ti_j, ti_b, ti_A) *
+          (S(ti_d, ti_a, ti_B, ti_C) * T(ti_J, ti_k, ti_l)));
 
   for (size_t c = 0; c < C_index::dim; c++) {
     for (size_t d = 0; d < d_index::dim; d++) {
@@ -89,16 +97,14 @@ void test_high_rank_intermediate(const DataType& used_for_size) noexcept {
         for (size_t l = 0; l < l_index::dim; l++) {
           DataType expected_product_component =
               make_with_value<DataType>(used_for_size, 0.0);
-          for (size_t i = 0; i < i_index::dim; i++) {
             for (size_t j = 0; j < j_index::dim; j++) {
               for (size_t b = 0; b < b_index::dim; b++) {
                 for (size_t a = 0; a < a_index::dim; a++) {
                   expected_product_component +=
-                      R.get(i, j, b, a) * S.get(d, a, b, c) * T.get(j, k, l, i);
+                      R.get(j, b, a) * S.get(d, a, b, c) * T.get(j, k, l);
                 }
               }
             }
-          }
           CHECK_ITERABLE_APPROX(actual_result.get(c, d, k, l),
                                 expected_product_component);
         }

@@ -11,7 +11,6 @@
 
 #include "DataStructures/Tensor/Expressions/TensorExpression.hpp"
 #include "Utilities/ForceInline.hpp"
-#include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace TensorExpressions {
@@ -41,24 +40,20 @@ struct SquareRoot
   ~SquareRoot() override = default;
 
   /// \brief Returns the square root of the component of the tensor evaluated
-  /// from the RHS tensor expression
+  /// from the contained tensor expression
   ///
   /// \details
   /// SquareRoot only supports tensor expressions that evaluate to a rank 0
-  /// Tensor. This is why this template is only defined for the case where
-  /// `TensorIndices` is empty.
+  /// Tensor. This is why `multi_index` is always an array of size 0.
   ///
-  /// \tparam TensorIndices the TensorIndexs of the LHS tensor and RHS tensor
-  /// expression
   /// \param multi_index the multi-index of the component of which to take the
   /// square root
   /// \return the square root of the component of the tensor evaluated from the
-  /// RHS tensor expression
-  template <typename... TensorIndices,
-            Requires<sizeof...(TensorIndices) == 0> = nullptr>
+  /// contained tensor expression
   SPECTRE_ALWAYS_INLINE decltype(auto) get(
-      const std::array<size_t, 0>& multi_index) const noexcept {
-    return sqrt(t_.template get(multi_index));
+      const std::array<size_t, num_tensor_indices>& multi_index)
+      const noexcept {
+    return sqrt(t_.get(multi_index));
   }
 
  private:

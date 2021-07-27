@@ -231,9 +231,7 @@ void evaluate(
                 gsl::at(rhs_spatial_spacetime_index_positions, j)) += 1;
       }
 
-      (*lhs_tensor)[i] =
-          (~rhs_tensorexpression)
-              .template get<RhsTensorIndices...>(rhs_multi_index);
+      (*lhs_tensor)[i] = (~rhs_tensorexpression).get(rhs_multi_index);
 
     } else {
       // either:
@@ -260,9 +258,7 @@ void evaluate(
                   gsl::at(rhs_spatial_spacetime_index_positions, j)) += 1;
         }
 
-        (*lhs_tensor)[i] =
-            (~rhs_tensorexpression)
-                .template get<RhsTensorIndices...>(rhs_multi_index);
+        (*lhs_tensor)[i] = (~rhs_tensorexpression).get(rhs_multi_index);
       }
     }
   }

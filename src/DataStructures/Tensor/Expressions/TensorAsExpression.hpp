@@ -11,7 +11,6 @@
 #include <type_traits>
 
 #include "DataStructures/Tensor/Expressions/TensorExpression.hpp"
-#include "DataStructures/Tensor/Expressions/TensorIndexTransformation.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/TMPL.hpp"
@@ -55,36 +54,14 @@ struct TensorAsExpression<Tensor<X, Symm, IndexList<Indices...>>,
       : t_(&t) {}
   ~TensorAsExpression() override = default;
 
-  /// \brief Returns the value of a left hand side tensor's multi-index
+  /// \brief Returns the value of the contained tensor's multi-index
   ///
-  /// \details
-  /// One big challenge with TensorExpression implementation is the reordering
-  /// of the indices on the left hand side (LHS) and right hand side (RHS) of
-  /// the expression. The algorithms implemented in
-  /// `compute_index_transformation` and `compute_rhs_multi_index` handle the
-  /// index sorting by mapping between the generic index orders of the LHS and
-  /// RHS tensors.
-  ///
-  /// \tparam LhsIndices the TensorIndexs of the Tensor on the LHS of the tensor
-  /// expression
-  /// \param lhs_multi_index the multi-index of the LHS tensor component to
-  /// retrieve
-  /// \return the value of the DataType of the component at `lhs_multi_index` in
-  /// the LHS tensor
-  template <typename... LhsIndices>
+  /// \param multi_index the multi-index of the tensor component to retrieve
+  /// \return the value of the component at `multi_index` in the tensor
   SPECTRE_ALWAYS_INLINE decltype(auto) get(
-      const std::array<size_t, num_tensor_indices>& lhs_multi_index)
+      const std::array<size_t, num_tensor_indices>& multi_index)
       const noexcept {
-    if constexpr (std::is_same_v<tmpl::list<LhsIndices...>,
-                                 tmpl::list<Args...>>) {
-      return t_->get(lhs_multi_index);
-    } else {
-      constexpr std::array<size_t, num_tensor_indices> index_transformation =
-          compute_tensorindex_transformation<num_tensor_indices>(
-              {{LhsIndices::value...}}, {{Args::value...}});
-      return t_->get(
-          transform_multi_index(lhs_multi_index, index_transformation));
-    }
+    return t_->get(multi_index);
   }
 
   /// Retrieve the i'th entry of the Tensor being held
