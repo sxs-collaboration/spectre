@@ -19,6 +19,7 @@
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MakeVector.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -109,21 +110,33 @@ struct Metavariables {
   };
 };
 
-void do_test(const bool time_runs_forward) noexcept {
+void do_test(const bool time_runs_forward, const bool add_event) noexcept {
   const double time_sign = time_runs_forward ? 1.0 : -1.0;
 
   Parallel::GlobalCache<Metavariables> cache{};
   const int array_index = 0;
   const int* component = nullptr;
 
+  std::string creation_string =
+      "BoxTrigger<A>:\n"
+      "  - TestEvent<A>\n";
+  if (not add_event) {
+    creation_string +=
+        "BoxTrigger<B>:\n"
+        "  - TestEvent<B>\n"
+        "  - TestEvent<C>\n";
+  }
+
   auto events_and_dense_triggers =
       TestHelpers::test_creation<evolution::EventsAndDenseTriggers,
-                                 Metavariables>(
-          "BoxTrigger<A>:\n"
-          "  - TestEvent<A>\n"
-          "BoxTrigger<B>:\n"
-          "  - TestEvent<B>\n"
-          "  - TestEvent<C>\n");
+                                 Metavariables>(creation_string);
+  if (add_event) {
+    events_and_dense_triggers.add_trigger_and_events(
+        std::make_unique<TriggerB>(),
+        make_vector<std::unique_ptr<Event>>(
+            std::make_unique<TestEvent<EventLabels::B>>(),
+            std::make_unique<TestEvent<EventLabels::C>>()));
+  }
 
   auto box = db::create<db::AddSimpleTags<
       Parallel::Tags::MetavariablesImpl<Metavariables>, Tags::TimeStepId,
@@ -228,6 +241,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.EventsAndDenseTriggers",
                   "[Unit][Evolution]") {
   Parallel::register_factory_classes_with_charm<Metavariables>();
 
-  do_test(true);
-  do_test(false);
+  do_test(true, false);
+  do_test(false, false);
+  do_test(true, true);
+  do_test(false, true);
 }
