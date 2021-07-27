@@ -15,9 +15,11 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  ElementActions.hpp
   ElementsAllocator.hpp
   Hierarchy.hpp
   Multigrid.hpp
+  ObserveVolumeData.hpp
   Tags.hpp
   )
 

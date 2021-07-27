@@ -162,8 +162,8 @@ struct ElementsAllocator
       const domain::BlockZCurveProcDistribution<Dim> element_distribution{
           static_cast<size_t>(number_of_procs), initial_refinement_levels};
       for (const auto& element_id : element_ids) {
-        const size_t target_proc = element_distribution.get_proc_for_element(
-            element_id.block_id(), element_id);
+        const size_t target_proc =
+            element_distribution.get_proc_for_element(element_id);
         element_array(element_id)
             .insert(global_cache, initialization_items, target_proc);
       }
