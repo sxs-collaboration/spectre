@@ -42,6 +42,7 @@
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
+#include "ParallelAlgorithms/LinearSolver/Actions/MakeIdentityIfSkipped.hpp"
 #include "ParallelAlgorithms/LinearSolver/Gmres/Gmres.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/Actions/ResetSubdomainSolver.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/Schwarz.hpp"
@@ -246,9 +247,11 @@ struct Metavariables {
                          typename schwarz_smoother::options_group>,
                      LinearSolver::Schwarz::Actions::ResetSubdomainSolver<
                          typename schwarz_smoother::options_group>,
-                     typename linear_solver::template solve<
+                     typename linear_solver::template solve<tmpl::list<
                          typename schwarz_smoother::template solve<
-                             build_operator_actions<true>>>>,
+                             build_operator_actions<true>>,
+                         ::LinearSolver::Actions::make_identity_if_skipped<
+                             schwarz_smoother, build_operator_actions<true>>>>>,
           Actions::RunEventsAndTriggers>,
       Parallel::Actions::TerminatePhase>;
 

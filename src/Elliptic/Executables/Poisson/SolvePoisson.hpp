@@ -43,6 +43,7 @@
 #include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
+#include "ParallelAlgorithms/LinearSolver/Actions/MakeIdentityIfSkipped.hpp"
 #include "ParallelAlgorithms/LinearSolver/Gmres/Gmres.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/Schwarz.hpp"
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
@@ -219,13 +220,14 @@ struct Metavariables {
                  typename schwarz_smoother::register_element,
                  Parallel::Actions::TerminatePhase>;
 
-  using solve_actions =
-      tmpl::list<typename linear_solver::template solve<
-                     tmpl::list<Actions::RunEventsAndTriggers,
-                                typename schwarz_smoother::template solve<
-                                    build_linear_operator_actions>>>,
-                 Actions::RunEventsAndTriggers,
-                 Parallel::Actions::TerminatePhase>;
+  using solve_actions = tmpl::list<
+      typename linear_solver::template solve<
+          tmpl::list<Actions::RunEventsAndTriggers,
+                     typename schwarz_smoother::template solve<
+                         build_linear_operator_actions>,
+                     ::LinearSolver::Actions::make_identity_if_skipped<
+                         schwarz_smoother, build_linear_operator_actions>>>,
+      Actions::RunEventsAndTriggers, Parallel::Actions::TerminatePhase>;
 
   using dg_element_array = elliptic::DgElementArray<
       Metavariables,
