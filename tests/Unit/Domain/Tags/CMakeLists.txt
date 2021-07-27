@@ -4,6 +4,7 @@
 set(LIBRARY "Test_DomainTags")
 
 set(LIBRARY_SOURCES
+  Test_BlockNamesAndGroups.cpp
   Test_Faces.cpp
   )
 
