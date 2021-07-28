@@ -28,6 +28,7 @@ spectre_target_headers(
   CharmPupable.hpp
   CharmRegistration.hpp
   CreateFromOptions.hpp
+  GetSection.hpp
   GlobalCache.hpp
   InboxInserters.hpp
   Info.hpp
@@ -73,4 +74,5 @@ add_dependencies(
 add_subdirectory(Actions)
 add_subdirectory(Algorithms)
 add_subdirectory(PhaseControl)
+add_subdirectory(Protocols)
 add_subdirectory(Tags)

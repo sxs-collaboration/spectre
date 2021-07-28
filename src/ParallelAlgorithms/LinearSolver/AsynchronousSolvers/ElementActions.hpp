@@ -5,6 +5,7 @@
 
 #include <cstddef>
 #include <limits>
+#include <optional>
 #include <string>
 #include <tuple>
 #include <utility>
@@ -16,11 +17,13 @@
 #include "IO/Logging/Verbosity.hpp"
 #include "IO/Observer/Actions/RegisterWithObservers.hpp"
 #include "IO/Observer/ArrayComponentId.hpp"
+#include "IO/Observer/GetSectionObservationKey.hpp"
 #include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/Protocols/ReductionDataFormatter.hpp"
 #include "IO/Observer/ReductionActions.hpp"
+#include "IO/Observer/Tags.hpp"
 #include "IO/Observer/TypeOfObservation.hpp"
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 #include "NumericalAlgorithms/Convergence/Tags.hpp"
@@ -47,7 +50,8 @@ class TaggedTuple;
 }  // namespace tuples
 namespace LinearSolver::async_solvers {
 template <typename FieldsTag, typename OptionsGroup, typename SourceTag,
-          typename Label>
+          typename Label, typename ArraySectionIdTag,
+          bool ObserveInitialResidual>
 struct CompleteStep;
 }  // namespace LinearSolver::async_solvers
 /// \endcond
@@ -66,27 +70,32 @@ template <typename OptionsGroup>
 struct ResidualReductionFormatter
     : tt::ConformsTo<observers::protocols::ReductionDataFormatter> {
   using reduction_data = async_solvers::reduction_data;
-  std::string operator()(const size_t iteration_id, const double residual) const
-      noexcept {
+  ResidualReductionFormatter() noexcept = default;
+  ResidualReductionFormatter(std::string local_section_observation_key) noexcept
+      : section_observation_key(std::move(local_section_observation_key)) {}
+  std::string operator()(const size_t iteration_id,
+                         const double residual) const noexcept {
     if (iteration_id == 0) {
-      return Options::name<OptionsGroup>() +
+      return Options::name<OptionsGroup>() + section_observation_key +
              " initialized with residual: " + get_output(residual);
     } else {
-      return Options::name<OptionsGroup>() + "(" + get_output(iteration_id) +
+      return Options::name<OptionsGroup>() + section_observation_key + "(" +
+             get_output(iteration_id) +
              ") iteration complete. Remaining residual: " +
              get_output(residual);
     }
   }
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& /*p*/) noexcept {}
+  void pup(PUP::er& p) noexcept { p | section_observation_key; }
+  std::string section_observation_key{};
 };
 
 template <typename OptionsGroup, typename ParallelComponent,
           typename Metavariables, typename ArrayIndex>
 void contribute_to_residual_observation(
     const size_t iteration_id, const double residual_magnitude_square,
-    Parallel::GlobalCache<Metavariables>& cache,
-    const ArrayIndex& array_index) noexcept {
+    Parallel::GlobalCache<Metavariables>& cache, const ArrayIndex& array_index,
+    const std::string& section_observation_key) noexcept {
   auto& local_observer =
       *Parallel::get_parallel_component<observers::Observer<Metavariables>>(
            cache)
@@ -94,16 +103,19 @@ void contribute_to_residual_observation(
   auto formatter =
       UNLIKELY(get<logging::Tags::Verbosity<OptionsGroup>>(cache) >=
                ::Verbosity::Quiet)
-          ? std::make_optional(ResidualReductionFormatter<OptionsGroup>{})
+          ? std::make_optional(ResidualReductionFormatter<OptionsGroup>{
+                section_observation_key})
           : std::nullopt;
   Parallel::simple_action<observers::Actions::ContributeReductionData>(
       local_observer,
-      observers::ObservationId(iteration_id,
-                               pretty_type::get_name<OptionsGroup>()),
+      observers::ObservationId(
+          iteration_id,
+          pretty_type::get_name<OptionsGroup>() + section_observation_key),
       observers::ArrayComponentId{
           std::add_pointer_t<ParallelComponent>{nullptr},
           Parallel::ArrayIndex<ArrayIndex>(array_index)},
-      std::string{"/" + Options::name<OptionsGroup>() + "Residuals"},
+      std::string{"/" + Options::name<OptionsGroup>() +
+                  section_observation_key + "Residuals"},
       std::vector<std::string>{"Iteration", "Residual"},
       reduction_data{iteration_id, residual_magnitude_square},
       std::move(formatter));
@@ -111,12 +123,14 @@ void contribute_to_residual_observation(
                ::Verbosity::Debug)) {
     if (iteration_id == 0) {
       Parallel::printf("%s %s initialized with local residual: %e\n",
-                       get_output(array_index), Options::name<OptionsGroup>(),
+                       get_output(array_index),
+                       Options::name<OptionsGroup>() + section_observation_key,
                        sqrt(residual_magnitude_square));
     } else {
       Parallel::printf(
           "%s %s(%zu) iteration complete. Remaining local residual: %e\n",
-          get_output(array_index), Options::name<OptionsGroup>(), iteration_id,
+          get_output(array_index),
+          Options::name<OptionsGroup>() + section_observation_key, iteration_id,
           sqrt(residual_magnitude_square));
     }
   }
@@ -163,24 +177,66 @@ struct InitializeElement {
   }
 };
 
-template <typename OptionsGroup>
+template <typename OptionsGroup, typename ArraySectionIdTag = void>
 struct RegisterObservers {
   template <typename ParallelComponent, typename DbTagsList,
             typename ArrayIndex>
   static std::pair<observers::TypeOfObservation, observers::ObservationKey>
-  register_info(const db::DataBox<DbTagsList>& /*box*/,
+  register_info(const db::DataBox<DbTagsList>& box,
                 const ArrayIndex& /*array_index*/) noexcept {
-    return {observers::TypeOfObservation::Reduction,
-            observers::ObservationKey{pretty_type::get_name<OptionsGroup>()}};
+    // Get the observation key, or "Unused" if the element does not belong
+    // to a section with this tag. In the latter case, no observations will
+    // ever be contributed.
+    const std::optional<std::string>& section_observation_key =
+        observers::get_section_observation_key<ArraySectionIdTag>(box);
+    ASSERT(section_observation_key != "Unused",
+           "The identifier 'Unused' is reserved to indicate that no "
+           "observations with this key will be contributed. Use a different "
+           "key, or change the identifier 'Unused' to something else.");
+    return {
+        observers::TypeOfObservation::Reduction,
+        observers::ObservationKey{pretty_type::get_name<OptionsGroup>() +
+                                  section_observation_key.value_or("Unused")}};
   }
 };
 
-template <typename FieldsTag, typename OptionsGroup, typename SourceTag>
-using RegisterElement =
-    observers::Actions::RegisterWithObservers<RegisterObservers<OptionsGroup>>;
-
 template <typename FieldsTag, typename OptionsGroup, typename SourceTag,
-          typename Label>
+          typename ArraySectionIdTag = void>
+using RegisterElement = observers::Actions::RegisterWithObservers<
+    RegisterObservers<OptionsGroup, ArraySectionIdTag>>;
+
+/*!
+ * \brief Prepare the asynchronous linear solver for a solve
+ *
+ * This action resets the asynchronous linear solver to its initial state, and
+ * optionally observes the initial residual. If the initial residual should be
+ * observed, both the `SourceTag` as well as the
+ * `db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, FieldsTag>`
+ * must be up-to-date at the time this action is invoked.
+ *
+ * This action also provides an anchor point in the action list for looping the
+ * linear solver, in the sense that the algorithm jumps back to the action
+ * immediately following this one when a step is complete and the solver hasn't
+ * yet converged (see `LinearSolver::async_solvers::CompleteStep`).
+ *
+ * \tparam FieldsTag The data `x` in the linear equation `Ax = b` to be solved.
+ * Should hold the initial guess `x_0` at this point in the algorithm.
+ * \tparam OptionsGroup An options group identifying the linear solver
+ * \tparam SourceTag The data `b` in `Ax = b`
+ * \tparam Label An optional compile-time label for the solver to distinguish
+ * different solves with the same solver in the action list
+ * \tparam ArraySectionIdTag Observe the residual norm separately for each
+ * array section identified by this tag (see `Parallel::Section`). Set to `void`
+ * to observe the residual norm over all elements of the array (default). The
+ * section only affects observations of residuals and has no effect on the
+ * solver algorithm.
+ * \tparam ObserveInitialResidual Whether or not to observe the initial residual
+ * `b - A x_0` (default: `true`). Disable when `b` or `A x_0` are not yet
+ * available at the preparation stage.
+ */
+template <typename FieldsTag, typename OptionsGroup, typename SourceTag,
+          typename Label = OptionsGroup, typename ArraySectionIdTag = void,
+          bool ObserveInitialResidual = true>
 struct PrepareSolve {
  private:
   using fields_tag = FieldsTag;
@@ -202,6 +258,12 @@ struct PrepareSolve {
       const ParallelComponent* const /*meta*/) noexcept {
     constexpr size_t iteration_id = 0;
 
+    if (UNLIKELY(get<logging::Tags::Verbosity<OptionsGroup>>(box) >=
+                 ::Verbosity::Debug)) {
+      Parallel::printf("%s %s: Prepare solve\n", get_output(array_index),
+                       Options::name<OptionsGroup>());
+    }
+
     db::mutate<Convergence::Tags::IterationId<OptionsGroup>,
                Convergence::Tags::HasConverged<OptionsGroup>>(
         make_not_null(&box),
@@ -214,16 +276,25 @@ struct PrepareSolve {
         },
         get<Convergence::Tags::Iterations<OptionsGroup>>(box));
 
-    // Observe the initial residual even if no steps are going to be performed
-    const auto& residual = get<residual_tag>(box);
-    const double residual_magnitude_square = inner_product(residual, residual);
-    contribute_to_residual_observation<OptionsGroup, ParallelComponent>(
-        iteration_id, residual_magnitude_square, cache, array_index);
+    if constexpr (ObserveInitialResidual) {
+      // Observe the initial residual even if no steps are going to be performed
+      const std::optional<std::string> section_observation_key =
+          observers::get_section_observation_key<ArraySectionIdTag>(box);
+      if (section_observation_key.has_value()) {
+        const auto& residual = get<residual_tag>(box);
+        const double residual_magnitude_square =
+            inner_product(residual, residual);
+        contribute_to_residual_observation<OptionsGroup, ParallelComponent>(
+            iteration_id, residual_magnitude_square, cache, array_index,
+            *section_observation_key);
+      }
+    }
 
     // Skip steps entirely if the solve has already converged
-    constexpr size_t step_end_index =
-        tmpl::index_of<ActionList, CompleteStep<FieldsTag, OptionsGroup,
-                                                SourceTag, Label>>::value;
+    constexpr size_t step_end_index = tmpl::index_of<
+        ActionList,
+        CompleteStep<FieldsTag, OptionsGroup, SourceTag, Label,
+                     ArraySectionIdTag, ObserveInitialResidual>>::value;
     constexpr size_t this_action_index =
         tmpl::index_of<ActionList, PrepareSolve>::value;
     return {std::move(box), false,
@@ -233,8 +304,37 @@ struct PrepareSolve {
   }
 };
 
+/*!
+ * \brief Complete a step of the asynchronous linear solver
+ *
+ * This action prepares the next step of the asynchronous linear solver, and
+ * observes the residual. To observe the correct residual, make sure the
+ * `db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, FieldsTag>` is
+ * up-to-date at the time this action is invoked.
+ *
+ * This action checks if the algorithm has converged, i.e. it has completed the
+ * requested number of steps. If it hasn't, the algorithm jumps back to the
+ * action immediately following the `LinearSolver::async_solvers::PrepareSolve`
+ * to perform another iteration. Make sure both actions use the same template
+ * parameters.
+ *
+ * \tparam FieldsTag The data `x` in the linear equation `Ax = b` to be solved.
+ * \tparam OptionsGroup An options group identifying the linear solver
+ * \tparam SourceTag The data `b` in `Ax = b`
+ * \tparam Label An optional compile-time label for the solver to distinguish
+ * different solves with the same solver in the action list
+ * \tparam ArraySectionIdTag Observe the residual norm separately for each
+ * array section identified by this tag (see `Parallel::Section`). Set to `void`
+ * to observe the residual norm over all elements of the array (default). The
+ * section only affects observations of residuals and has no effect on the
+ * solver algorithm.
+ * \tparam ObserveInitialResidual Whether or not to observe the _initial_
+ * residual `b - A x_0`. This parameter should match the one passed to
+ * `PrepareSolve`.
+ */
 template <typename FieldsTag, typename OptionsGroup, typename SourceTag,
-          typename Label>
+          typename Label = OptionsGroup, typename ArraySectionIdTag = void,
+          bool ObserveInitialResidual = true>
 struct CompleteStep {
  private:
   using fields_tag = FieldsTag;
@@ -268,17 +368,25 @@ struct CompleteStep {
         get<Convergence::Tags::Iterations<OptionsGroup>>(box));
 
     // Observe element-local residual magnitude
-    const size_t completed_iterations =
-        get<Convergence::Tags::IterationId<OptionsGroup>>(box);
-    const auto& residual = get<residual_tag>(box);
-    const double residual_magnitude_square = inner_product(residual, residual);
-    contribute_to_residual_observation<OptionsGroup, ParallelComponent>(
-        completed_iterations, residual_magnitude_square, cache, array_index);
+    const std::optional<std::string> section_observation_key =
+        observers::get_section_observation_key<ArraySectionIdTag>(box);
+    if (section_observation_key.has_value()) {
+      const size_t completed_iterations =
+          get<Convergence::Tags::IterationId<OptionsGroup>>(box);
+      const auto& residual = get<residual_tag>(box);
+      const double residual_magnitude_square =
+          inner_product(residual, residual);
+      contribute_to_residual_observation<OptionsGroup, ParallelComponent>(
+          completed_iterations, residual_magnitude_square, cache, array_index,
+          *section_observation_key);
+    }
 
     // Repeat steps until the solve has converged
     constexpr size_t step_begin_index =
-        tmpl::index_of<ActionList, PrepareSolve<FieldsTag, OptionsGroup,
-                                                SourceTag, Label>>::value +
+        tmpl::index_of<
+            ActionList,
+            PrepareSolve<FieldsTag, OptionsGroup, SourceTag, Label,
+                         ArraySectionIdTag, ObserveInitialResidual>>::value +
         1;
     constexpr size_t this_action_index =
         tmpl::index_of<ActionList, CompleteStep>::value;

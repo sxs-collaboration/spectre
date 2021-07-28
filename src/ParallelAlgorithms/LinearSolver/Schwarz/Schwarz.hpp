@@ -135,6 +135,14 @@ namespace LinearSolver::Schwarz {
  * corner- and edge-neighbors when constructing the weights. See
  * `LinearSolver::Schwarz::intruding_weight` for a discussion.
  *
+ * \par Array sections
+ * This linear solver requires no synchronization between elements, so it runs
+ * on all elements in the array parallel component. Partitioning of the elements
+ * in sections is only relevant for observing residual norms. Pass the section
+ * ID tag for the `ArraySectionIdTag` template parameter if residual norms
+ * should be computed over a section. Pass `void` (default) to compute residual
+ * norms over all elements in the array.
+ *
  * \par Possible improvements:
  * - Specify the number of overlap points as a fraction of the element width
  * instead of a fixed number. This was shown in \cite Stiller2016b to achieve
@@ -143,7 +151,8 @@ namespace LinearSolver::Schwarz {
  */
 template <typename FieldsTag, typename OptionsGroup, typename SubdomainOperator,
           typename SourceTag =
-              db::add_tag_prefix<::Tags::FixedSource, FieldsTag>>
+              db::add_tag_prefix<::Tags::FixedSource, FieldsTag>,
+          typename ArraySectionIdTag = void>
 struct Schwarz {
   using operand_tag = FieldsTag;
   using fields_tag = FieldsTag;
@@ -160,19 +169,24 @@ struct Schwarz {
       async_solvers::InitializeElement<FieldsTag, OptionsGroup, SourceTag>,
       detail::InitializeElement<FieldsTag, OptionsGroup, SubdomainOperator>>;
 
-  using register_element = tmpl::list<
-      async_solvers::RegisterElement<FieldsTag, OptionsGroup, SourceTag>,
-      detail::RegisterElement<FieldsTag, OptionsGroup, SourceTag>>;
+  using register_element =
+      tmpl::list<async_solvers::RegisterElement<FieldsTag, OptionsGroup,
+                                                SourceTag, ArraySectionIdTag>,
+                 detail::RegisterElement<FieldsTag, OptionsGroup, SourceTag,
+                                         ArraySectionIdTag>>;
 
   template <typename ApplyOperatorActions, typename Label = OptionsGroup>
   using solve = tmpl::list<
-      async_solvers::PrepareSolve<FieldsTag, OptionsGroup, SourceTag, Label>,
+      async_solvers::PrepareSolve<FieldsTag, OptionsGroup, SourceTag, Label,
+                                  ArraySectionIdTag>,
       detail::SendOverlapData<FieldsTag, OptionsGroup, SubdomainOperator>,
-      detail::SolveSubdomain<FieldsTag, OptionsGroup, SubdomainOperator>,
+      detail::SolveSubdomain<FieldsTag, OptionsGroup, SubdomainOperator,
+                             ArraySectionIdTag>,
       detail::ReceiveOverlapSolution<FieldsTag, OptionsGroup,
                                      SubdomainOperator>,
       ApplyOperatorActions,
-      async_solvers::CompleteStep<FieldsTag, OptionsGroup, SourceTag, Label>>;
+      async_solvers::CompleteStep<FieldsTag, OptionsGroup, SourceTag, Label,
+                                  ArraySectionIdTag>>;
 };
 
 }  // namespace LinearSolver::Schwarz

@@ -343,6 +343,11 @@ struct CleanOutput {
       ERROR("Expected reductions file '" << reductions_file_name
                                          << "' does not exist");
     }
+    const auto& volume_file_name =
+        get<observers::Tags::VolumeFileName>(box) + "0.h5";
+    if (file_system::check_if_file_exists(volume_file_name)) {
+      file_system::rm(volume_file_name, true);
+    }
     return {std::move(box), true};
   }
 };

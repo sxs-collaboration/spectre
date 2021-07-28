@@ -79,13 +79,25 @@ namespace LinearSolver::gmres {
  * the new orthogonal vector and normalize. Use the residual vector and the set
  * of orthogonal vectors to determine the solution \f$x\f$.
  *
+ * \par Array sections
+ * This linear solver supports running over a subset of the elements in the
+ * array parallel component (see `Parallel::Section`). Set the
+ * `ArraySectionIdTag` template parameter to restrict the solver to elements in
+ * that section. Only a single section must be associated with the
+ * `ArraySectionIdTag`. The default is `void`, which means running over all
+ * elements in the array. Note that the actions in the `ApplyOperatorActions`
+ * list passed to `solve` will _not_ be restricted to run only on section
+ * elements, so all elements in the array may participate in preconditioning
+ * (see LinearSolver::Multigrid::Multigrid).
+ *
  * \see ConjugateGradient for a linear solver that is more efficient when the
  * linear operator \f$A\f$ is symmetric.
  */
 template <typename Metavariables, typename FieldsTag, typename OptionsGroup,
           bool Preconditioned,
           typename SourceTag =
-              db::add_tag_prefix<::Tags::FixedSource, FieldsTag>>
+              db::add_tag_prefix<::Tags::FixedSource, FieldsTag>,
+          typename ArraySectionIdTag = void>
 struct Gmres {
   using fields_tag = FieldsTag;
   using options_group = OptionsGroup;
@@ -122,16 +134,18 @@ struct Gmres {
   template <typename ApplyOperatorActions, typename Label = OptionsGroup>
   using solve = tmpl::list<
       detail::PrepareSolve<FieldsTag, OptionsGroup, Preconditioned, Label,
-                           SourceTag>,
+                           SourceTag, ArraySectionIdTag>,
       detail::NormalizeInitialOperand<FieldsTag, OptionsGroup, Preconditioned,
-                                      Label>,
-      detail::PrepareStep<FieldsTag, OptionsGroup, Preconditioned, Label>,
+                                      Label, ArraySectionIdTag>,
+      detail::PrepareStep<FieldsTag, OptionsGroup, Preconditioned, Label,
+                          ArraySectionIdTag>,
       ApplyOperatorActions,
-      detail::PerformStep<FieldsTag, OptionsGroup, Preconditioned, Label>,
+      detail::PerformStep<FieldsTag, OptionsGroup, Preconditioned, Label,
+                          ArraySectionIdTag>,
       detail::OrthogonalizeOperand<FieldsTag, OptionsGroup, Preconditioned,
-                                   Label>,
-      detail::NormalizeOperandAndUpdateField<FieldsTag, OptionsGroup,
-                                             Preconditioned, Label>>;
+                                   Label, ArraySectionIdTag>,
+      detail::NormalizeOperandAndUpdateField<
+          FieldsTag, OptionsGroup, Preconditioned, Label, ArraySectionIdTag>>;
 };
 
 }  // namespace LinearSolver::gmres

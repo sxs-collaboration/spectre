@@ -139,6 +139,27 @@ struct ReductionDataNames : db::SimpleTag {
 struct H5FileLock : db::SimpleTag {
   using type = Parallel::NodeLock;
 };
+
+/*!
+ * \brief A string identifying observations related to the `Tag`.
+ *
+ * For example, the `Tag` could refer to the block in the computational domain
+ * and the `ObservationKey` holds the name of the block, so reduction
+ * observations can be registered per-block. A value of `std::nullopt` means
+ * that the element doesn't participate in observations related to the `Tag`.
+ *
+ * This tag only provides a way to store and share the observation key related
+ * to the `Tag`. How it is used to construct composite observation keys or
+ * subfile paths is up to the code that performs the observations.
+ */
+template <typename Tag>
+struct ObservationKey : db::SimpleTag {
+  using type = std::optional<std::string>;
+  static std::string name() noexcept {
+    return "ObservationKey(" + Options::name<Tag>() + ")";
+  }
+};
+
 }  // namespace Tags
 
 /// \ingroup ObserversGroup

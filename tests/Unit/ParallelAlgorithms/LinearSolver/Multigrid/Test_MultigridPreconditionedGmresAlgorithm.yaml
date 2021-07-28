@@ -1,0 +1,63 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# This test problem is the same as detailed in `Test_MultigridAlgorithmMassive.yaml`,
+# but the multigrid solver is used to precondition a GMRES solver.
+
+DomainCreator:
+  Interval:
+    LowerBound: [0]
+    UpperBound: [3.141592653589793]
+    IsPeriodicIn: [false]
+    InitialRefinement: [1]
+    InitialGridPoints: [3]
+    TimeDependence: None
+
+LinearOperator:
+  - [[[4.485446135524357, 0.8488263631567751, -0.7427230677621782],
+      [0.8488263631567755, 3.395305452627101, -0.4244131815783874],
+      [-0.7427230677621782, -0.4244131815783877, 2.9854461355243567],
+      [0.31830988618379064, -1.2732395447351628, -1.5],
+      [0.0, 0.0, -1.273239544735163],
+      [0.0, 0.0, 0.31830988618379064]],
+     [[0.31830988618379064, 0.0, 0.0],
+      [-1.273239544735163, 0.0, 0.0],
+      [-1.5, -1.2732395447351628, 0.31830988618379064],
+      [2.9854461355243567, -0.4244131815783877, -0.7427230677621782],
+      [-0.4244131815783874, 3.395305452627101, 0.8488263631567755],
+      [-0.7427230677621783, 0.8488263631567751, 4.485446135524357]]]
+  - [[[3.7427230677621783, 0.42441318157838753, -0.5305164769729844],
+      [0.42441318157838775, 1.6976527263135506, 0.42441318157838775],
+      [-0.5305164769729844, 0.42441318157838753, 3.7427230677621783]]]
+
+Source:
+  - [0.0, 0.7404804896930609, 0.2617993877991494]
+  - [0.26179938779914935, 0.7404804896930614, 0.0]
+
+ExpectedResult:
+  - [-0.04332079221988435, 0.7253224709680011, 0.9928055333486303]
+  - [0.9928055333486303, 0.7253224709680011, -0.04332079221988417]
+
+OperatorIsMassive: True
+
+Observers:
+  VolumeFileName: "Test_MultigridPreconditionedGmresAlgorithm_Volume"
+  ReductionFileName: "Test_MultigridPreconditionedGmresAlgorithm_Reductions"
+
+KrylovSolver:
+  ConvergenceCriteria:
+    MaxIterations: 2
+    AbsoluteResidual: 1e-14
+    RelativeResidual: 0
+  Verbosity: Verbose
+
+MultigridSolver:
+  Iterations: 2
+  Verbosity: Verbose
+  MaxLevels: Auto
+  OutputVolumeData: True
+
+RichardsonSmoother:
+  Iterations: 20
+  RelaxationParameter: 0.33123384064827677
+  Verbosity: Silent
