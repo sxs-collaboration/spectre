@@ -536,7 +536,7 @@ struct NormalizeOperandAndUpdateField {
         });
 
     // Elements that are not part of the section jump directly to the
-    // `ApplyOperationActions` for the next step.`
+    // `ApplyOperationActions` for the next step.
     constexpr size_t this_action_index =
         tmpl::index_of<ActionList, NormalizeOperandAndUpdateField>::value;
     constexpr size_t prepare_step_index =
