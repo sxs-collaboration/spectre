@@ -477,6 +477,85 @@ Matrix left_eigenvectors<3>(const tnsr::I<double, 3>& velocity,
   return result;
 }
 
+template <size_t Dim>
+std::pair<DataVector, std::pair<Matrix, Matrix>> numerical_eigensystem(
+    const tnsr::I<double, Dim>& velocity,
+    const Scalar<double>& sound_speed_squared,
+    const Scalar<double>& specific_enthalpy,
+    const Scalar<double>& kappa_over_density,
+    const tnsr::i<double, Dim>& unit_normal) noexcept {
+  ASSERT(equal_within_roundoff(get(magnitude(unit_normal)), 1.),
+         "Expected unit normal, but got normal with magnitude "
+             << get(magnitude(unit_normal)));
+
+  const double b_times_theta =
+      get(kappa_over_density) *
+          (get(dot_product(velocity, velocity)) - get(specific_enthalpy)) +
+      get(sound_speed_squared);
+
+  const Matrix a = detail::flux_jacobian<Dim>(
+      velocity, get(kappa_over_density), b_times_theta, get(specific_enthalpy),
+      unit_normal);
+
+  const double vn = get(dot_product(velocity, unit_normal));
+  const double cs = sqrt(get(sound_speed_squared));
+  DataVector eigenvalues(Dim + 2, vn);
+  eigenvalues[0] -= cs;
+  eigenvalues[Dim + 1] += cs;
+
+  Matrix right(Dim + 2, Dim + 2);
+
+  // We'd like to use `blaze::eigen` to get the eigenvalues and eigenvectors
+  // of the flux Jacobian matrix `a`... but because `a` is not symmetric,
+  // blaze generically produces complex eigenvectors. So instead we find the
+  // nullspace of `a - \lambda I` using `blaze::svd`.
+  blaze::DynamicMatrix<double, blaze::rowMajor> a_minus_lambda;
+  blaze::DynamicMatrix<double, blaze::rowMajor> U;      // left singular vectors
+  blaze::DynamicVector<double, blaze::columnVector> s;  // singular values
+  blaze::DynamicMatrix<double, blaze::rowMajor> V;  // right singular vectors
+
+  const auto find_group_of_eigenvectors =
+      [&a_minus_lambda, &a, &U, &s, &V, &eigenvalues, &right](
+          const size_t index, const size_t degeneracy) noexcept {
+        a_minus_lambda = a;
+        for (size_t i = 0; i < Dim + 2; ++i) {
+          a_minus_lambda(i, i) -= eigenvalues[index];
+        }
+        blaze::svd(a_minus_lambda, U, s, V);
+
+        // Check the null space has the expected size: the last degeneracy
+        // singular values should vanish
+#ifdef SPECTRE_DEBUG
+        for (size_t i = 0; i < Dim + 2 - degeneracy; ++i) {
+          ASSERT(fabs(s[i]) > 1e-14, "Bad SVD");
+        }
+        for (size_t i = Dim + 2 - degeneracy; i < Dim + 2; ++i) {
+          ASSERT(fabs(s[i]) < 1e-14, "Bad SVD");
+        }
+#endif  // ifdef SPECTRE_DEBUG
+
+        // Copy the last degeneracy rows of V into the
+        // (index, index+degeneracy) columns of right
+        for (size_t i = 0; i < Dim + 2; ++i) {
+          for (size_t j = 0; j < degeneracy; ++j) {
+            right(i, index + j) = V(Dim + 2 - degeneracy + j, i);
+          }
+        }
+      };
+
+  // lambda = vn - cs
+  find_group_of_eigenvectors(0, 1);
+  // Dim-degenerate eigenvalues, lambda = vn
+  find_group_of_eigenvectors(1, Dim);
+  // lambda = vn + cs
+  find_group_of_eigenvectors(Dim + 1, 1);
+
+  Matrix left = right;
+  blaze::invert<blaze::asGeneral>(left);
+
+  return std::make_pair(eigenvalues, std::make_pair(right, left));
+}
+
 }  // namespace NewtonianEuler
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
@@ -493,7 +572,12 @@ Matrix left_eigenvectors<3>(const tnsr::I<double, 3>& velocity,
       const Scalar<DataVector>& sound_speed,                                   \
       const tnsr::i<DataVector, DIM(data)>& normal) noexcept;                  \
   template struct NewtonianEuler::Tags::ComputeLargestCharacteristicSpeed<DIM( \
-      data)>;
+      data)>;                                                                  \
+  template std::pair<DataVector, std::pair<Matrix, Matrix>>                    \
+  NewtonianEuler::numerical_eigensystem(                                       \
+      const tnsr::I<double, DIM(data)>&, const Scalar<double>&,                \
+      const Scalar<double>&, const Scalar<double>&,                            \
+      const tnsr::i<double, DIM(data)>&) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 

@@ -130,6 +130,25 @@ Matrix left_eigenvectors(const tnsr::I<double, Dim>& velocity,
                          const tnsr::i<double, Dim>& unit_normal) noexcept;
 /// @}
 
+/*!
+ * \brief Compute the transform matrices between the conserved variables and
+ * the characteristic variables of the NewtonianEuler system.
+ *
+ * See `right_eigenvectors` and `left_eigenvectors` for more details.
+ *
+ * However, note that this function computes the transformation (i.e., the
+ * eigenvectors of the flux Jacobian) numerically, instead of using the analytic
+ * expressions. This is useful as a proof-of-concept for more complicated
+ * systems where the analytic expressions may not be known.
+ */
+template <size_t Dim>
+std::pair<DataVector, std::pair<Matrix, Matrix>> numerical_eigensystem(
+    const tnsr::I<double, Dim>& velocity,
+    const Scalar<double>& sound_speed_squared,
+    const Scalar<double>& specific_enthalpy,
+    const Scalar<double>& kappa_over_density,
+    const tnsr::i<double, Dim>& unit_normal) noexcept;
+
 namespace Tags {
 
 template <size_t Dim>
