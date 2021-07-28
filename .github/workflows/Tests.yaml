@@ -289,6 +289,11 @@ jobs:
         build_type: [Debug, Release]
         use_pch: [ON]
         include:
+          # Generate code coverage report for a single build
+          - compiler: gcc-10
+            build_type: Debug
+            COVERAGE: ON
+            TEST_TIMEOUT_FACTOR: 3
           # Test with ASAN
           - compiler: clang-8
             build_type: Debug
@@ -406,6 +411,8 @@ ${{ env.CACHE_KEY_SUFFIX }}"
           UBSAN_UNDEFINED=${{ matrix.UBSAN_UNDEFINED }}
           UBSAN_INTEGER=${{ matrix.UBSAN_INTEGER }}
           USE_PCH=${{ matrix.use_pch }}
+          COVERAGE=${{ matrix.COVERAGE }}
+          TEST_TIMEOUT_FACTOR=${{ matrix.TEST_TIMEOUT_FACTOR }}
 
           cmake
           -D CMAKE_C_COMPILER=${CC}
@@ -422,6 +429,7 @@ ${{ env.CACHE_KEY_SUFFIX }}"
           -D STUB_LIBRARY_OBJECT_FILES=ON
           -D USE_PCH=${USE_PCH}
           -D USE_CCACHE=ON
+          -D COVERAGE=${COVERAGE:-'OFF'}
           -D BUILD_PYTHON_BINDINGS=${BUILD_PYTHON_BINDINGS:-'ON'}
           -D Python_EXECUTABLE=${PYTHON_EXECUTABLE:-'/usr/bin/python3'}
           -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS:-'ON'}
@@ -429,19 +437,22 @@ ${{ env.CACHE_KEY_SUFFIX }}"
           -D UBSAN_UNDEFINED=${UBSAN_UNDEFINED:-'OFF'}
           -D UBSAN_INTEGER=${UBSAN_INTEGER:-'OFF'}
           -D MEMORY_ALLOCATOR=${MEMORY_ALLOCATOR:-'SYSTEM'}
+          -D SPECTRE_UNIT_TEST_TIMEOUT_FACTOR=${TEST_TIMEOUT_FACTOR:-'1'}
+          -D SPECTRE_INPUT_FILE_TEST_TIMEOUT_FACTOR=${TEST_TIMEOUT_FACTOR:-'1'}
+          -D SPECTRE_PYTHON_TEST_TIMEOUT_FACTOR=${TEST_TIMEOUT_FACTOR:-'1'}
           --warn-uninitialized
           $GITHUB_WORKSPACE 2>&1 | tee CMakeOutput.txt 2>&1
       - name: Check for CMake warnings
         working-directory: /work/build
         run: |
           ! grep -A 6 "CMake Warning" ./CMakeOutput.txt
-      - name: Build tests
+      - name: Build unit tests
         if: matrix.use_pch == 'ON'
         working-directory: /work/build
         run: |
           make -j2 unit-tests
       - name: Run unit tests
-        if: matrix.use_pch == 'ON'
+        if: matrix.use_pch == 'ON' && matrix.COVERAGE != 'ON'
         working-directory: /work/build
         run: |
           # We get occasional random timeouts, repeat tests to see if
@@ -451,6 +462,22 @@ ${{ env.CACHE_KEY_SUFFIX }}"
           # sure that all the unit tests are actually built by the
           # unit-tests target.
           ctest -j2 -L unit --output-on-failure --repeat after-timeout:3
+      - name: Run unit tests with coverage reporting
+        if: matrix.COVERAGE == 'ON'
+        working-directory: /work/build
+        run: |
+          make unit-test-coverage
+      - name: Upload coverage report to codecov.io
+        if: matrix.COVERAGE == 'ON'
+        uses: codecov/codecov-action@v1
+        with:
+          file: /work/build/tmp/coverage.info
+      - name: Upload coverage report to coveralls.io
+        if: matrix.COVERAGE == 'ON'
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path-to-lcov: /work/build/tmp/coverage.info
       # Build the executables in a single thread to reduce memory usage
       # sufficiently so they compile on the GitHub-hosted runners
       - name: Build executables
