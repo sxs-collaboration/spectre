@@ -37,7 +37,8 @@ std::pair<Matrix, Matrix> right_and_left_eigenvectors(
     const Scalar<double>& mean_energy,
     const EquationsOfState::EquationOfState<false, ThermodynamicDim>&
         equation_of_state,
-    const tnsr::i<double, VolumeDim>& unit_vector) noexcept {
+    const tnsr::i<double, VolumeDim>& unit_vector,
+    const bool compute_char_transformation_numerically) noexcept {
   // Compute fluid primitives from mean conserved state
   const auto velocity = [&mean_density, &mean_momentum]() noexcept {
     auto result = mean_momentum;
@@ -79,12 +80,19 @@ std::pair<Matrix, Matrix> right_and_left_eigenvectors(
       NewtonianEuler::sound_speed_squared(
           mean_density, specific_internal_energy, equation_of_state);
 
-  return std::make_pair(right_eigenvectors<VolumeDim>(
-                            velocity, sound_speed_squared, specific_enthalpy,
-                            kappa_over_density, unit_vector),
-                        left_eigenvectors<VolumeDim>(
-                            velocity, sound_speed_squared, specific_enthalpy,
-                            kappa_over_density, unit_vector));
+  if (compute_char_transformation_numerically) {
+    return numerical_eigensystem(velocity, sound_speed_squared,
+                                 specific_enthalpy, kappa_over_density,
+                                 unit_vector)
+        .second;
+  } else {
+    return std::make_pair(right_eigenvectors<VolumeDim>(
+                              velocity, sound_speed_squared, specific_enthalpy,
+                              kappa_over_density, unit_vector),
+                          left_eigenvectors<VolumeDim>(
+                              velocity, sound_speed_squared, specific_enthalpy,
+                              kappa_over_density, unit_vector));
+  }
 }
 
 template <size_t VolumeDim>
@@ -236,7 +244,7 @@ void conserved_fields_from_characteristic_fields(
       const Scalar<double>&, const tnsr::I<double, DIM(data)>&,         \
       const Scalar<double>&,                                            \
       const EquationsOfState::EquationOfState<false, THERMODIM(data)>&, \
-      const tnsr::i<double, DIM(data)>&) noexcept;
+      const tnsr::i<double, DIM(data)>&, const bool) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (1, 2))
 

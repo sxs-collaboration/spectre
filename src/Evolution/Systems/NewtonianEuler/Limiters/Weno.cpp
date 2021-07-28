@@ -55,7 +55,8 @@ bool characteristic_simple_weno_impl(
         std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
         typename NewtonianEuler::Limiters::Weno<VolumeDim>::PackagedData,
         boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
-        neighbor_data) noexcept {
+        neighbor_data,
+    const bool compute_char_transformation_numerically) noexcept {
   // Storage for transforming neighbor_data into char variables
   using CharacteristicVarsWeno =
       Limiters::Weno<VolumeDim,
@@ -164,7 +165,8 @@ bool characteristic_simple_weno_impl(
   return NewtonianEuler::Limiters::
       apply_limiter_to_characteristic_fields_in_all_directions(
           mass_density_cons, momentum_density, energy_density, mesh,
-          equation_of_state, simple_weno_convert_neighbor_data_then_limit);
+          equation_of_state, simple_weno_convert_neighbor_data_then_limit,
+          compute_char_transformation_numerically);
 }
 
 template <size_t VolumeDim, size_t ThermodynamicDim>
@@ -184,7 +186,8 @@ bool characteristic_hweno_impl(
         std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
         typename NewtonianEuler::Limiters::Weno<VolumeDim>::PackagedData,
         boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
-        neighbor_data) noexcept {
+        neighbor_data,
+    const bool compute_char_transformation_numerically) noexcept {
   // Hweno checks TCI before limiting any tensors
   const bool cell_is_troubled = NewtonianEuler::Limiters::Tci::kxrcf_indicator(
       kxrcf_constant, *mass_density_cons, *momentum_density, *energy_density,
@@ -259,7 +262,8 @@ bool characteristic_hweno_impl(
   NewtonianEuler::Limiters::
       apply_limiter_to_characteristic_fields_in_all_directions(
           mass_density_cons, momentum_density, energy_density, mesh,
-          equation_of_state, hweno_convert_neighbor_data_then_limit);
+          equation_of_state, hweno_convert_neighbor_data_then_limit,
+          compute_char_transformation_numerically);
   return true;  // all components were limited
 }
 
@@ -447,13 +451,19 @@ bool Weno<VolumeDim>::operator()(
 
   if (weno_type_ == ::Limiters::WenoType::Hweno) {
     if (vars_to_limit_ ==
-        NewtonianEuler::Limiters::VariablesToLimit::Characteristic) {
+            NewtonianEuler::Limiters::VariablesToLimit::Characteristic or
+        vars_to_limit_ == NewtonianEuler::Limiters::VariablesToLimit::
+                              NumericalCharacteristic) {
+      const bool compute_char_transformation_numerically =
+          (vars_to_limit_ ==
+           NewtonianEuler::Limiters::VariablesToLimit::NumericalCharacteristic);
       // impl function handles specialized TCI + char transform
       limiter_activated = characteristic_hweno_impl(
           mass_density_cons, momentum_density, energy_density,
           kxrcf_constant_.value(), neighbor_linear_weight_, mesh, element,
           element_size, det_logical_to_inertial_jacobian,
-          normals_and_magnitudes, equation_of_state, neighbor_data);
+          normals_and_magnitudes, equation_of_state, neighbor_data,
+          compute_char_transformation_numerically);
     } else {
       // impl function handles specialized TCI
       limiter_activated = conservative_hweno_impl(
@@ -464,12 +474,18 @@ bool Weno<VolumeDim>::operator()(
     }
   } else if (weno_type_ == ::Limiters::WenoType::SimpleWeno) {
     if (vars_to_limit_ ==
-        NewtonianEuler::Limiters::VariablesToLimit::Characteristic) {
+            NewtonianEuler::Limiters::VariablesToLimit::Characteristic or
+        vars_to_limit_ == NewtonianEuler::Limiters::VariablesToLimit::
+                              NumericalCharacteristic) {
+      const bool compute_char_transformation_numerically =
+          (vars_to_limit_ ==
+           NewtonianEuler::Limiters::VariablesToLimit::NumericalCharacteristic);
       // impl function handles char transform
       limiter_activated = characteristic_simple_weno_impl(
           mass_density_cons, momentum_density, energy_density,
           tvb_constant_.value(), neighbor_linear_weight_, mesh, element,
-          element_size, equation_of_state, neighbor_data);
+          element_size, equation_of_state, neighbor_data,
+          compute_char_transformation_numerically);
     } else {
       // Fall back to generic SimpleWeno
       limiter_activated = conservative_vars_weno_(

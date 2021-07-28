@@ -18,6 +18,8 @@ std::ostream& NewtonianEuler::Limiters::operator<<(
       return os << "Conserved";
     case NewtonianEuler::Limiters::VariablesToLimit::Characteristic:
       return os << "Characteristic";
+    case NewtonianEuler::Limiters::VariablesToLimit::NumericalCharacteristic:
+      return os << "NumericalCharacteristic";
     default:  // LCOV_EXCL_LINE
       // LCOV_EXCL_START
       ERROR("Missing a case for operator<<(VariablesToLimit)");
@@ -34,10 +36,12 @@ Options::create_from_yaml<NewtonianEuler::Limiters::VariablesToLimit>::create<
     return NewtonianEuler::Limiters::VariablesToLimit::Conserved;
   } else if (vars_to_limit_read_type == "Characteristic") {
     return NewtonianEuler::Limiters::VariablesToLimit::Characteristic;
+  } else if (vars_to_limit_read_type == "NumericalCharacteristic") {
+    return NewtonianEuler::Limiters::VariablesToLimit::NumericalCharacteristic;
   }
   PARSE_ERROR(options.context(),
               "Failed to convert \""
                   << vars_to_limit_read_type
                   << "\" to VariablesToLimit. Expected one of: "
-                     "{Conserved, Characteristic}.");
+                     "{Conserved, Characteristic, NumericalCharacteristic}.");
 }
