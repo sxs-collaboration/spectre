@@ -7,6 +7,7 @@ set(LIBRARY_SOURCES
   Test_FixedSpeedCubic.cpp
   Test_FunctionOfTimeHelpers.cpp
   Test_PiecewisePolynomial.cpp
+  Test_QuaternionFunctionOfTime.cpp
   Test_QuaternionHelpers.cpp
   Test_ReadSpecPiecewisePolynomial.cpp
   Test_SettleToConstant.cpp
