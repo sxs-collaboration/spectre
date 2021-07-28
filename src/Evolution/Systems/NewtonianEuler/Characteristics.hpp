@@ -32,6 +32,22 @@ class DataVector;
 
 namespace NewtonianEuler {
 
+namespace detail {
+// Compute the flux Jacobian for the NewtonianEuler system
+//
+// The flux Jacobian is \f$n_i A^i = n_i \partial F^i / \partial U\f$.
+// The input `b_times_theta` is \f$b\theta = \kappa/\rho (v^2 - h) + c_s^2\f$.
+//
+// This is used for:
+// - testing the analytic characteristic transformation
+// - as input for the numerical characteristic transformation
+template <size_t Dim>
+Matrix flux_jacobian(const tnsr::I<double, Dim>& velocity,
+                     double kappa_over_density, double b_times_theta,
+                     double specific_enthalpy,
+                     const tnsr::i<double, Dim>& unit_normal) noexcept;
+}  // namespace detail
+
 /// @{
 /*!
  * \brief Compute the characteristic speeds of NewtonianEuler system
