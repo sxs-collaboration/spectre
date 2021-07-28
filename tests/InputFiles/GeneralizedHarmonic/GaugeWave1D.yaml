@@ -1,16 +1,16 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Executable: EvolveGhGaugeWave
+# Executable: EvolveGhGaugeWave1D
 # Check: parse;execute
 # Timeout: 8
 # ExpectedOutput:
-#   GhGaugeWaveVolume0.h5
-#   GhGaugeWaveReductions.h5
+#   GhGaugeWave1DVolume0.h5
+#   GhGaugeWave1DReductions.h5
 
 Evolution:
   InitialTime: 0.0
-  InitialTimeStep: 0.0002
+  InitialTimeStep: 0.002
   TimeStepper:
     AdamsBashforthN:
       Order: 3
@@ -25,13 +25,15 @@ PhaseChangeAndTriggers:
           WallclockHours: None
 
 DomainCreator:
-  Brick:
-    LowerBound: [0.0, 0.0, 0.0]
-    UpperBound: [1.0, 1.0, 1.0]
-    InitialRefinement: [1, 1, 1]
-    InitialGridPoints: [5, 5, 5]
+  Interval:
+    LowerBound: [0.0]
+    UpperBound: [1.0]
+    InitialRefinement: [1]
+    InitialGridPoints: [7]
     TimeDependence: None
-    BoundaryCondition: Periodic
+    BoundaryConditions:
+      LowerBoundary:  Periodic
+      UpperBoundary:  Periodic
 
 AnalyticSolution:
   GaugeWave:
@@ -51,19 +53,19 @@ EvolutionSystem:
         Constant: 1.0
         Amplitude: 0.0
         Width: 1.0
-        Center: [0.0, 0.0, 0.0]
+        Center: [0.0]
     DampingFunctionGamma1:
       GaussianPlusConstant:
         Constant: -1.0
         Amplitude: 0.0
         Width: 1.0
-        Center: [0.0, 0.0, 0.0]
+        Center: [0.0]
     DampingFunctionGamma2:
       GaussianPlusConstant:
         Constant: 1.0
         Amplitude: 0.0
         Width: 1.0
-        Center: [0.0, 0.0, 0.0]
+        Center: [0.0]
 
 SpatialDiscretization:
   DiscontinuousGalerkin:
@@ -91,17 +93,16 @@ EventsAndTriggers:
           - Phi
           - PointwiseL2Norm(GaugeConstraint)
           - PointwiseL2Norm(ThreeIndexConstraint)
-          - PointwiseL2Norm(FourIndexConstraint)
         InterpolateToMesh: None
         CoordinatesFloatingPointType: Double
         FloatingPointTypes: [Double]
   ? Slabs:
       Specified:
-        Values: [2]
+        Values: [5]
   : - Completion
 
 EventsAndDenseTriggers:
 
 Observers:
-  VolumeFileName: "GhGaugeWaveVolume"
-  ReductionFileName: "GhGaugeWaveReductions"
+  VolumeFileName: "GhGaugeWave1DVolume"
+  ReductionFileName: "GhGaugeWave1DReductions"

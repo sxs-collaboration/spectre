@@ -1,0 +1,107 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Executable: EvolveGhGaugeWave3D
+# Check: parse;execute
+# Timeout: 8
+# ExpectedOutput:
+#   GhGaugeWave3DVolume0.h5
+#   GhGaugeWave3DReductions.h5
+
+Evolution:
+  InitialTime: 0.0
+  InitialTimeStep: 0.0002
+  TimeStepper:
+    AdamsBashforthN:
+      Order: 3
+
+PhaseChangeAndTriggers:
+  - - Slabs:
+       EvenlySpaced:
+         # Current implementation checks wallclock at these global syncs
+         Interval: 100
+         Offset: 0
+    - - CheckpointAndExitAfterWallclock:
+          WallclockHours: None
+
+DomainCreator:
+  Brick:
+    LowerBound: [0.0, 0.0, 0.0]
+    UpperBound: [1.0, 1.0, 1.0]
+    InitialRefinement: [1, 1, 1]
+    InitialGridPoints: [5, 5, 5]
+    TimeDependence: None
+    BoundaryCondition: Periodic
+
+AnalyticSolution:
+  GaugeWave:
+    Amplitude: 0.1
+    Wavelength: 1.0
+
+EvolutionSystem:
+  GeneralizedHarmonic:
+    DhGaugeParameters:
+      RollOnStartTime: 100000.0
+      RollOnTimeWindow: 100.0
+      SpatialDecayWidth: 50.0
+      Amplitudes: [1.0, 1.0, 1.0]
+      Exponents: [4, 4, 4]
+    DampingFunctionGamma0:
+      GaussianPlusConstant:
+        Constant: 1.0
+        Amplitude: 0.0
+        Width: 1.0
+        Center: [0.0, 0.0, 0.0]
+    DampingFunctionGamma1:
+      GaussianPlusConstant:
+        Constant: -1.0
+        Amplitude: 0.0
+        Width: 1.0
+        Center: [0.0, 0.0, 0.0]
+    DampingFunctionGamma2:
+      GaussianPlusConstant:
+        Constant: 1.0
+        Amplitude: 0.0
+        Width: 1.0
+        Center: [0.0, 0.0, 0.0]
+
+SpatialDiscretization:
+  DiscontinuousGalerkin:
+    Formulation: StrongInertial
+    Quadrature: GaussLobatto
+  BoundaryCorrection:
+    UpwindPenalty:
+
+EventsAndTriggers:
+  ? Slabs:
+      EvenlySpaced:
+        Interval: 2
+        Offset: 0
+  : - ObserveErrorNorms:
+        SubfileName: Errors
+  ? Slabs:
+      EvenlySpaced:
+        Interval: 5
+        Offset: 0
+  : - ObserveFields:
+        SubfileName: VolumeData
+        VariablesToObserve:
+          - SpacetimeMetric
+          - Pi
+          - Phi
+          - PointwiseL2Norm(GaugeConstraint)
+          - PointwiseL2Norm(ThreeIndexConstraint)
+          - PointwiseL2Norm(FourIndexConstraint)
+        InterpolateToMesh: None
+        CoordinatesFloatingPointType: Double
+        FloatingPointTypes: [Double]
+  ? Slabs:
+      Specified:
+        Values: [2]
+  : - Completion
+
+EventsAndDenseTriggers:
+
+Observers:
+  VolumeFileName: "GhGaugeWave3DVolume"
+  ReductionFileName: "GhGaugeWave3DReductions"

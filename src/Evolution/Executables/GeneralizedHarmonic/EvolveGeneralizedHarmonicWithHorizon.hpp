@@ -50,10 +50,17 @@
 // Second template parameter specifies the analytic solution used when imposing
 // dirichlet boundary conditions or against which to compute error norms.
 template <typename InitialData, typename BoundaryConditions>
-struct EvolutionMetavars
-    : public virtual GeneralizedHarmonicDefaults,
-      public GeneralizedHarmonicTemplateBase<
-          EvolutionMetavars<InitialData, BoundaryConditions>> {
+struct EvolutionMetavars<3, InitialData, BoundaryConditions>
+    : public GeneralizedHarmonicTemplateBase<
+          EvolutionMetavars<3, InitialData, BoundaryConditions>> {
+  using gh_base = GeneralizedHarmonicTemplateBase<
+      EvolutionMetavars<3, InitialData, BoundaryConditions>>;
+  using typename gh_base::frame;
+  using typename gh_base::initialize_initial_data_dependent_quantities_actions;
+  using typename gh_base::Phase;
+  using typename gh_base::system;
+  static constexpr size_t volume_dim = 3;
+
   static constexpr Options::String help{
       "Evolve the Einstein field equations using the Generalized Harmonic "
       "formulation,\n"
