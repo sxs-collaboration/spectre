@@ -532,11 +532,8 @@ void Main<Metavariables>::pup(PUP::er& p) noexcept {  // NOLINT
   p | at_sync_indicator_proxy_;
   p | input_file_;
   p | parser_;
-  // Note: we do NOT serialize the options.
-  // This is because options are only used in the initialization phase when
-  // the executable first starts up. Thereafter, the information from the
-  // options will be held in various code objects that will themselves be
-  // serialized.
+  // Note: we don't serialize options_, because it's used as a temporary in
+  // startup only (see comment in class definition).
   p | phase_change_decision_data_;
 
   p | checkpoint_dir_counter_;
