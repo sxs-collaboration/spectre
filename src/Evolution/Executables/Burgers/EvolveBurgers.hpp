@@ -171,6 +171,7 @@ struct EvolutionMetavars {
     Initialization,
     LoadBalancing,
     WriteCheckpoint,
+    UpdateOptionsAtRestartFromCheckpoint,
     RegisterWithObserver,
     InitializeTimeStepperHistory,
     Evolve,

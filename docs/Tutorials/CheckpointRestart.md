@@ -40,9 +40,7 @@ and restarting:
 2. The code must be restarted on the same hardware configuration used when
    writing the checkpoint --- this means the same number of nodes with the same
    number of processors per node.
-3. Currently, there is no support for modifying any parameters during a restart.
-   The restart only extends a simulation's runtime beyond wallclock limits.
-4. When using `CheckpointAndExitAfterWallclock` to trigger checkpoints, note
+3. When using `CheckpointAndExitAfterWallclock` to trigger checkpoints, note
    that the elapsed wallclock time is checked only when the `PhaseControl` is
    run, i.e., at global synchronization points defined in the input file.
    This means that to write a checkpoint in the 30 minutes before the end of a
@@ -53,3 +51,39 @@ and restarting:
    (that slow the code) and too-infrequent synchronizations (that won't allow
    checkpoints to be written).
 
+Certain simulation parameters can be modified when restarting from a checkpoint
+file. This is done by parsing a new input file containing just those options to
+modify; all other options will preserve their value from the original run.
+
+Note, however, that not all tags are permitted to be modified: in the current
+implementation, only tags from the `const_global_cache_tags` that also have a
+member variable `static constexpr bool is_overlayable = true;` can be modified.
+The reason for this "opt-in" design is that in general, most tags interact with
+past or current simulation data in a way that would invalidate the simulation
+state if the tag were modified on restart (example: changing the domain
+invalidates all spatial data, changing the timestepper invalidates the history).
+Only tags that do not interact with the state should be permitted to be updated.
+For example: activation thresholds on various algorithms, or frequency of data
+observation, are safe parameters to modify.
+
+The executable will update the global cache with new input file values during
+the phase `UpdateOptionsAtRestartFromCheckpoint`. The
+`CheckpointAndExitAfterWallclock` phase control automatically directs code flow
+to this phase after a restart.
+
+TODO FOR CODE REVIEW: If someone uses a
+`VisitAndReturn(UpdateOptionsAtRestartFromCheckpoint)` just after a
+`VisitAndReturn(WriteCheckpoint)`, the code will try to parse the overlay files
+during evolution, even if no restarts occur. In other words, the code might
+write a checkpoint every 100 slabs, and will try to reparse the input file after
+each one. Since it's hard to know if there was a restart in your past (except
+perhaps by making guesses from the wallclock time?), it's hard to handle this
+sanely...
+
+In this option-updating phase, the code tries to read an "overlay" input file
+whose name is computed from the original input file and the number of the
+checkpoint used to restart. Say the original input file is `path/to/Input.yaml`
+and the code is restarted using a checkpoint `+restart SpectreCheckpoint000123`,
+then the overlay input file to read has name `path/to/Input.overlay000123.yaml`.
+If this file does not exist, the executable continues with previous parameter
+values.

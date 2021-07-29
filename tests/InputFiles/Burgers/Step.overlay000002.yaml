@@ -1,0 +1,15 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Executable: EvolveBurgersStep
+# CommandLineArgs: +balancer RandCentLB +p2
+# Timeout: 5
+# Check: parse;execute
+
+EventsAndTriggers:
+  ? Slabs:
+      EvenlySpaced:
+        Interval: 50
+        Offset: 0
+  : - ObserveErrorNorms:
+        SubfileName: Errors

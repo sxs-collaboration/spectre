@@ -14,7 +14,7 @@ AnalyticSolution:
 
 Evolution:
   InitialTime: 0.0
-  InitialTimeStep: 0.001
+  InitialTimeStep: 0.0001
   TimeStepper:
     AdamsBashforthN:
       Order: 3
@@ -24,13 +24,14 @@ PhaseChangeAndTriggers:
         EvenlySpaced:
           Interval: 10
           Offset: 0
-    - - VisitAndReturn(LoadBalancing)
+    - - CheckpointAndExitAfterWallclock:
+          WallclockHours: 0.01667  # 1 min
 
 DomainCreator:
   Interval:
     LowerBound: [-1.0]
     UpperBound: [1.0]
-    InitialRefinement: [2]
+    InitialRefinement: [10]
     InitialGridPoints: [7]
     TimeDependence: None
     BoundaryConditions:
@@ -53,19 +54,17 @@ Limiter:
     DisableForDebugging: false
 
 EventsAndTriggers:
-  ? Always
-  : - ChangeSlabSize:
-        DelayChange: 5
-        StepChoosers:
-          - Cfl:
-              SafetyFactor: 0.5
-          - Increase:
-              Factor: 2.0
+  ? Slabs:
+      EvenlySpaced:
+        Interval: 100
+        Offset: 0
+  : - ObserveErrorNorms:
+        SubfileName: Errors
 
 EventsAndDenseTriggers:
   ? Times:
       Specified:
-        Values: [0.123456]
+        Values: [1.0]
   : - Completion
 
 Observers:

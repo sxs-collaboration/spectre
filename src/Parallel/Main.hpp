@@ -125,6 +125,10 @@ class Main : public CBase_Main<Metavariables> {
   // Check if future checkpoint dirs are available; error if any already exist.
   void check_future_checkpoint_dirs_available() const noexcept;
 
+  // After a restart, update the const global cache with new values constructed
+  // from parsing an overlay input file.
+  void update_const_global_cache_from_input_file() noexcept;
+
   template <typename ParallelComponent>
   using parallel_component_options =
       Parallel::get_option_tags<typename ParallelComponent::initialization_tags,
@@ -134,6 +138,8 @@ class Main : public CBase_Main<Metavariables> {
       Parallel::get_option_tags<mutable_global_cache_tags, Metavariables>,
       tmpl::transform<component_list,
                       tmpl::bind<parallel_component_options, tmpl::_1>>>>>;
+  using overlayable_option_list =
+      Parallel::get_overlayable_option_list<Metavariables>;
   using parallel_component_tag_list = tmpl::transform<
       component_list,
       tmpl::bind<
@@ -145,6 +151,8 @@ class Main : public CBase_Main<Metavariables> {
   CProxy_MutableGlobalCache<Metavariables> mutable_global_cache_proxy_;
   CProxy_GlobalCache<Metavariables> global_cache_proxy_;
   detail::CProxy_AtSyncIndicator<Metavariables> at_sync_indicator_proxy_;
+  std::string input_file_{};
+  Options::Parser<option_list> parser_{Metavariables::help};
   // This is only used during startup, and will be cleared after all
   // the chares are created.  It is a member variable because passing
   // local state through charm callbacks is painful.
@@ -154,6 +162,7 @@ class Main : public CBase_Main<Metavariables> {
   tuples::tagged_tuple_from_typelist<phase_change_tags_and_combines_list>
       phase_change_decision_data_;
   size_t checkpoint_dir_counter_ = 0_st;
+  bool just_restored_from_checkpoint_ = false;
 };
 
 namespace detail {
@@ -307,10 +316,8 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept {
     bpo::store(command_line_parser.run(), parsed_command_line_options);
     bpo::notify(parsed_command_line_options);
 
-    Options::Parser<option_list> options(Metavariables::help);
-
     if (parsed_command_line_options.count("help") != 0) {
-      Parallel::printf("%s\n%s", command_line_options, options.help());
+      Parallel::printf("%s\n%s", command_line_options, parser_.help());
       sys::exit();
     }
 
@@ -335,24 +342,23 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept {
       sys::exit();
     }
 
-    std::string input_file;
     if (has_options) {
       if (parsed_command_line_options.count("input-file") == 0) {
         ERROR("No default input file name.  Pass --input-file.");
       }
-      input_file = parsed_command_line_options["input-file"].as<std::string>();
-      options.parse_file(input_file);
+      input_file_ = parsed_command_line_options["input-file"].as<std::string>();
+      parser_.parse_file(input_file_);
     } else {
-      options.parse("");
+      parser_.parse("");
     }
 
     if (parsed_command_line_options.count("check-options") != 0) {
       // Force all the options to be created.
-      options.template apply<option_list, Metavariables>([](auto... args) {
+      parser_.template apply<option_list, Metavariables>([](auto... args) {
         (void)std::initializer_list<char>{((void)args, '0')...};
       });
       if (has_options) {
-        Parallel::printf("\n%s parsed successfully!\n", input_file);
+        Parallel::printf("\n%s parsed successfully!\n", input_file_);
       } else {
         // This is still considered successful, since it means the
         // program would have started.
@@ -376,7 +382,7 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept {
       sys::exit();
     }
 
-    options_ = options.template apply<option_list, Metavariables>(
+    options_ = parser_.template apply<option_list, Metavariables>(
         [](auto... args) noexcept {
           return tuples::tagged_tuple_from_typelist<option_list>(
               std::move(args)...);
@@ -525,11 +531,10 @@ void Main<Metavariables>::pup(PUP::er& p) noexcept {  // NOLINT
   p | mutable_global_cache_proxy_;
   p | global_cache_proxy_;
   p | at_sync_indicator_proxy_;
-  // Note: we do NOT serialize the options.
-  // This is because options are only used in the initialization phase when
-  // the executable first starts up. Thereafter, the information from the
-  // options will be held in various code objects that will themselves be
-  // serialized.
+  p | input_file_;
+  p | parser_;
+  // Note: we don't serialize options_, because it's used as a temporary in
+  // startup only (see comment in class definition).
   p | phase_change_decision_data_;
 
   p | checkpoint_dir_counter_;
@@ -537,6 +542,9 @@ void Main<Metavariables>::pup(PUP::er& p) noexcept {  // NOLINT
                     typename Metavariables::Phase>) {
     if (p.isUnpacking()) {
       check_future_checkpoint_dirs_available();
+      // Main doesn't migrate unless checkpointing or restarting, so we can
+      // indicate here that we've just restored from checkpoint.
+      just_restored_from_checkpoint_ = true;
     }
   }
 
@@ -640,6 +648,22 @@ void Main<Metavariables>::execute_next_phase() noexcept {
           CkCallback(CkIndex_Main<Metavariables>::start_write_checkpoint(),
                      this->thisProxy));
       return;
+    }
+  }
+
+  // We skip the reparsing and overlaying if there are no eligible tags
+  if constexpr (Algorithm_detail::has_UpdateOptionsAtRestartFromCheckpoint_v<
+                    typename Metavariables::Phase> and
+                tmpl::size<overlayable_option_list>::value > 0) {
+    // Make sure we only update the options the first time we run the phase
+    // UpdateOptionsAtRestartFromCheckpoint after restoring from checkpoint.
+    // Else, the code might try to update options each time the phase was
+    // encountered, even if there was no checkpoint/restart...
+    if (just_restored_from_checkpoint_
+        and current_phase_ ==
+        Metavariables::Phase::UpdateOptionsAtRestartFromCheckpoint) {
+      update_const_global_cache_from_input_file();
+      just_restored_from_checkpoint_ = false;
     }
   }
 
@@ -767,6 +791,7 @@ void contribute_to_phase_change_reduction(
         "reduction.");
   }
 }
+/// @}
 
 template <typename Metavariables>
 std::tuple<std::string, std::string, size_t>
@@ -819,11 +844,56 @@ void Main<Metavariables>::check_future_checkpoint_dirs_available()
   if (not found_older_checkpoints_only) {
     ERROR(
         "Can't start run: found checkpoints that may be overwritten!\n"
-        "Dirs from " << checkpoint_dir << " onward must not exist.\n");
+        "Dirs from "
+        << checkpoint_dir << " onward must not exist.\n");
   }
 }
 
-/// @}
+template <typename Metavariables>
+void Main<Metavariables>::update_const_global_cache_from_input_file() noexcept {
+  if (checkpoint_dir_counter_ < 1) {
+    ERROR("Executable is unaware of previous checkpoints, so can't reparse.");
+  }
+
+  // Get the padded counter (e.g., 000XYZ) of the checkpoint we restarted from
+  const size_t restart_checkpoint = checkpoint_dir_counter_ - 1;
+  const std::string counter = std::to_string(restart_checkpoint);
+  const auto [checkpoint_dir, basename, pad] = checkpoint_dir_basename_pad();
+  const std::string padded_counter =
+      std::string(pad - counter.size(), '0').append(counter);
+  (void)checkpoint_dir;
+  (void)basename;
+
+  // Given input file "Input.yaml", overlay file is "Input.overlay000XYZ.yaml"
+  const std::string dot_yaml = ".yaml";
+  const std::string overlay_counter = ".overlay" + padded_counter;
+  const auto found = input_file_.find(dot_yaml);
+  std::string input_file_for_reparse = input_file_;
+  if (found != std::string::npos) {
+    input_file_for_reparse.insert(found, overlay_counter);
+  } else {
+    ERROR("Overlaying assumes the input file has a .yaml extension");
+  }
+
+  Parallel::printf("Attempting to overlay input file: %s\n",
+                   input_file_for_reparse);
+  if (file_system::check_if_file_exists(input_file_for_reparse)) {
+    parser_.template overlay_file<overlayable_option_list>(
+        input_file_for_reparse);
+    const auto data_to_overlay =
+        parser_.template apply<overlayable_option_list,
+                               Metavariables>([](auto... args) noexcept {
+          return tuples::tagged_tuple_from_typelist<overlayable_option_list>(
+              std::move(args)...);
+        });
+    global_cache_proxy_.overlay_cache_data(data_to_overlay);
+    Parallel::printf("... success!\n");
+  } else {
+    Parallel::printf(
+        "... file not found. Continuing with values from previous run.\n");
+  }
+}
+
 }  // namespace Parallel
 
 #define CK_TEMPLATES_ONLY
