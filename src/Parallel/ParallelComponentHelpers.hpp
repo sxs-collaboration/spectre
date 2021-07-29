@@ -300,11 +300,7 @@ struct is_tag_overlayable : std::false_type {};
 
 template <typename Tag>
 struct is_tag_overlayable<Tag, std::void_t<decltype(Tag::is_overlayable)>>
-    : std::bool_constant<Tag::is_overlayable> {
-  static_assert(tmpl::size<typename Tag::option_tags>::value == 1,
-                "The current implementation can only reparse tags constructed "
-                "from a single option tag.");
-};
+    : std::bool_constant<Tag::is_overlayable> {};
 
 template <typename Tag>
 struct GetUniqueOptionTag {
