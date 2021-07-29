@@ -162,6 +162,7 @@ class Main : public CBase_Main<Metavariables> {
   tuples::tagged_tuple_from_typelist<phase_change_tags_and_combines_list>
       phase_change_decision_data_;
   size_t checkpoint_dir_counter_ = 0_st;
+  bool just_restored_from_checkpoint_ = false;
 };
 
 namespace detail {
@@ -541,6 +542,9 @@ void Main<Metavariables>::pup(PUP::er& p) noexcept {  // NOLINT
                     typename Metavariables::Phase>) {
     if (p.isUnpacking()) {
       check_future_checkpoint_dirs_available();
+      // Main doesn't migrate unless checkpointing or restarting, so we can
+      // indicate here that we've just restored from checkpoint.
+      just_restored_from_checkpoint_ = true;
     }
   }
 
@@ -651,9 +655,15 @@ void Main<Metavariables>::execute_next_phase() noexcept {
   if constexpr (Algorithm_detail::has_UpdateOptionsAtRestartFromCheckpoint_v<
                     typename Metavariables::Phase> and
                 tmpl::size<overlayable_option_list>::value > 0) {
-    if (current_phase_ ==
+    // Make sure we only update the options the first time we run the phase
+    // UpdateOptionsAtRestartFromCheckpoint after restoring from checkpoint.
+    // Else, the code might try to update options each time the phase was
+    // encountered, even if there was no checkpoint/restart...
+    if (just_restored_from_checkpoint_
+        and current_phase_ ==
         Metavariables::Phase::UpdateOptionsAtRestartFromCheckpoint) {
       update_const_global_cache_from_input_file();
+      just_restored_from_checkpoint_ = false;
     }
   }
 
