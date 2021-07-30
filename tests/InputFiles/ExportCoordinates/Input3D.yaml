@@ -5,6 +5,7 @@
 # Check: parse;execute
 # ExpectedOutput:
 #   ExportCoordinates3DVolume0.h5
+#   ExportCoordinates3DReductions.h5
 
 DomainCreator:
   Brick:

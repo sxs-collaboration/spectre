@@ -5,6 +5,7 @@
 # Check: parse;execute
 # ExpectedOutput:
 #   ExportCoordinates2DVolume0.h5
+#   ExportCoordinates2DReductions.h5
 
 DomainCreator:
   Rectangle:
