@@ -139,6 +139,13 @@ struct EvolutionMetavars {
                          tmpl::list<Cce::Tags::CauchyAngularCoords,
                                     Cce::Tags::PartiallyFlatAngularCoords>,
                          tmpl::list<Cce::Tags::CauchyAngularCoords>>;
+  using cce_step_choosers = tmpl::list<
+      StepChoosers::Constant<StepChooserUse::LtsStep>,
+      StepChoosers::Increase<StepChooserUse::LtsStep>,
+      StepChoosers::ErrorControl<Tags::Variables<tmpl::list<evolved_swsh_tag>>,
+                                 swsh_vars_selector>,
+      StepChoosers::ErrorControl<evolved_coordinates_variables_tag,
+                                 coord_vars_selector>>;
 
   using cce_boundary_component = BoundaryComponent<EvolutionMetavars>;
 
