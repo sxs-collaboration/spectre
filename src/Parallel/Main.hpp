@@ -767,6 +767,7 @@ void contribute_to_phase_change_reduction(
         "reduction.");
   }
 }
+/// @}
 
 template <typename Metavariables>
 std::tuple<std::string, std::string, size_t>
@@ -823,7 +824,6 @@ void Main<Metavariables>::check_future_checkpoint_dirs_available()
   }
 }
 
-/// @}
 }  // namespace Parallel
 
 #define CK_TEMPLATES_ONLY

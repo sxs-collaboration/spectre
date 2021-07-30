@@ -2,6 +2,7 @@
 // See LICENSE.txt for details.
 
 module AlgorithmArray {
+
   include "Utilities/TaggedTuple.hpp";
   include "Parallel/GlobalCache.decl.h";
   include "Parallel/MaxInlineMethodsReached.hpp";
@@ -18,7 +19,7 @@ module AlgorithmArray {
   //   `SpectreIndex_detail::ArrayIndex<SpectreArrayIndex>`, which also refers
   //   to one of our type aliases in `Parallel/ArrayIndex.hpp`
   template <typename ParallelComponent, typename SpectreArrayIndex>
-  array[SpectreIndex_detail::ArrayIndex<SpectreArrayIndex>] AlgorithmArray {
+  array [SpectreIndex_detail::ArrayIndex<SpectreArrayIndex>] AlgorithmArray {
     entry AlgorithmArray(
         Parallel::CProxy_GlobalCache<typename ParallelComponent::metavariables>,
         tuples::tagged_tuple_from_typelist<
@@ -54,7 +55,7 @@ module AlgorithmArray {
     entry void simple_action();
 
     template <typename Action, typename Arg>
-    entry[reductiontarget] void reduction_action(Arg arg);
+    entry [reductiontarget] void reduction_action(Arg arg);
 
     entry void perform_algorithm();
 

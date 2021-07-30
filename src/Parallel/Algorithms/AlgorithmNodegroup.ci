@@ -2,11 +2,12 @@
 // See LICENSE.txt for details.
 
 module AlgorithmNodegroup {
+
   include "Utilities/TaggedTuple.hpp";
   include "Parallel/GlobalCache.decl.h";
 
   template <typename ParallelComponent, typename SpectreArrayIndex>
-  nodegroup[migratable] AlgorithmNodegroup {
+  nodegroup [migratable] AlgorithmNodegroup {
     entry AlgorithmNodegroup(
         Parallel::CProxy_GlobalCache<typename ParallelComponent::metavariables>,
         tuples::tagged_tuple_from_typelist<
@@ -20,7 +21,7 @@ module AlgorithmNodegroup {
     entry void simple_action();
 
     template <typename Action, typename Arg>
-    entry[reductiontarget] void reduction_action(Arg arg);
+    entry [reductiontarget] void reduction_action(Arg arg);
 
     entry void perform_algorithm();
 

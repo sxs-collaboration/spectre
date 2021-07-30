@@ -12,7 +12,7 @@
 #include "Parallel/Tags/Metavariables.hpp"
 #include "Utilities/FakeVirtual.hpp"
 
-/// \ingroup EventsAndDenseTriggersGroup
+/// \ingroup EventsAndTriggersGroup
 namespace DenseTriggers {}
 
 /// \ingroup EventsAndTriggersGroup

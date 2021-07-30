@@ -67,4 +67,5 @@ target_link_libraries(
 
 add_subdirectory(DataBox)
 add_subdirectory(Python)
+add_subdirectory(Tags)
 add_subdirectory(Tensor)

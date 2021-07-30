@@ -20,7 +20,6 @@
 // IWYU pragma: no_forward_declare EquationsOfState::EquationOfState
 // IWYU pragma: no_forward_declare Tensor
 
-
 namespace {
 void compute_characteristic_speeds(
     const gsl::not_null<std::array<DataVector, 9>*> pchar_speeds,
