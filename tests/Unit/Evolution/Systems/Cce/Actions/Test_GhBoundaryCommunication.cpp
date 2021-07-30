@@ -12,6 +12,7 @@
 #include "DataStructures/ComplexModalVector.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
+#include "DataStructures/LinkedMessageId.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/Cce/Actions/BoundaryComputeAndSendToEvolution.hpp"
@@ -33,7 +34,7 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/Evolution/Systems/Cce/BoundaryTestHelpers.hpp"
-#include "NumericalAlgorithms/Interpolation/BarycentricRationalSpanInterpolator.hpp"
+#include "NumericalAlgorithms/Interpolation/LinearSpanInterpolator.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCoefficients.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
 #include "NumericalAlgorithms/Spectral/SwshTags.hpp"
@@ -226,10 +227,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.GhBoundaryCommunication",
       scri_plus_interpolation_order);
   ActionTesting::emplace_component<worldtube_component>(
       &runner, 0,
-      Tags::GhInterfaceManager::create_from_options(
-          std::make_unique<InterfaceManagers::GhLockstep>()),
-      Tags::GhInterfaceManager::create_from_options(
-          std::make_unique<InterfaceManagers::GhLockstep>()));
+      InterfaceManagers::GhLocalTimeStepping{
+          std::make_unique<intrp::LinearSpanInterpolator>()},
+      InterfaceManagers::GhLockstep{});
 
   // this should run the initializations
   for (size_t i = 0; i < 5; ++i) {
@@ -247,9 +247,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.GhBoundaryCommunication",
       make_not_null(&runner), 0));
 
   // send the current timestep data to the boundary component
-  const auto current_time =
-      ActionTesting::get_databox_tag<evolution_component, ::Tags::TimeStepId>(
-          runner, 0);
   tnsr::aa<DataVector, 3> spacetime_metric{
       Spectral::Swsh::number_of_swsh_collocation_points(l_max)};
   tnsr::iaa<DataVector, 3> phi{
@@ -261,8 +258,20 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.GhBoundaryCommunication",
       solution, extraction_radius, amplitude, frequency, target_time, l_max);
   ActionTesting::simple_action<
       worldtube_component,
-      Actions::ReceiveGhWorldtubeData<evolution_component>>(
-      make_not_null(&runner), 0, current_time, spacetime_metric, phi, pi);
+      Actions::ReceiveGhWorldtubeData<evolution_component, false>>(
+      make_not_null(&runner), 0,
+      LinkedMessageId<double>{target_time, std::nullopt}, spacetime_metric, phi,
+      pi);
+
+  TestHelpers::create_fake_time_varying_gh_nodal_data(
+      make_not_null(&spacetime_metric), make_not_null(&phi), make_not_null(&pi),
+      solution, extraction_radius, amplitude, frequency, target_time, l_max);
+  ActionTesting::simple_action<
+      worldtube_component,
+      Actions::ReceiveGhWorldtubeData<evolution_component, false>>(
+      make_not_null(&runner), 0,
+      LinkedMessageId<double>{target_time + target_step_size, target_time},
+      spacetime_metric, phi, pi);
 
   // the first response (`BoundaryComputeAndSendToEvolution`)
   ActionTesting::invoke_queued_simple_action<worldtube_component>(

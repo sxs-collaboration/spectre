@@ -26,7 +26,6 @@ spectre_target_headers(
   ReceiveWorldtubeData.hpp
   RequestBoundaryData.hpp
   ScriObserveInterpolated.hpp
-  SendNextTimeToCce.hpp
   TimeManagement.hpp
   UpdateGauge.hpp
   )

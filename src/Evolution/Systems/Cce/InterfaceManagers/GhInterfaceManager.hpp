@@ -57,21 +57,9 @@ class GhInterfaceManager : public PUP::able {
               GeneralizedHarmonic::Tags::Pi<3, ::Frame::Inertial>,
               GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>>>;
 
-  using creatable_classes = tmpl::list<GhLocalTimeStepping, GhLockstep>;
-
   WRAPPED_PUPable_abstract(GhInterfaceManager);  // NOLINT
 
   virtual std::unique_ptr<GhInterfaceManager> get_clone() const = 0;
-
-  virtual void insert_gh_data(
-      TimeStepId time_id, const tnsr::aa<DataVector, 3>& spacetime_metric,
-      const tnsr::iaa<DataVector, 3>& phi, const tnsr::aa<DataVector, 3>& pi,
-      const tnsr::aa<DataVector, 3>& dt_spacetime_metric,
-      const tnsr::iaa<DataVector, 3>& dt_phi,
-      const tnsr::aa<DataVector, 3>& dt_pi) = 0;
-
-  virtual void insert_next_gh_time(TimeStepId time_id,
-                                   TimeStepId next_time_id) = 0;
 
   virtual void request_gh_data(const TimeStepId&) = 0;
 
