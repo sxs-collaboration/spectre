@@ -193,5 +193,34 @@ std::array<DataVector, DerivOrder + 1> Averager<DerivOrder>::get_derivs() const
   return result;
 }
 
+template <size_t DerivOrder>
+void Averager<DerivOrder>::pup(PUP::er& p) noexcept {
+  p | avg_tscale_frac_;
+  p | average_0th_deriv_of_q_;
+  p | averaged_values_;
+  p | times_;
+  p | raw_qs_;
+  p | weight_k_;
+  p | tau_k_;
+}
+
+template <size_t DerivOrder>
+bool operator==(const Averager<DerivOrder>& avg1,
+                const Averager<DerivOrder>& avg2) {
+  return (avg1.avg_tscale_frac_ == avg2.avg_tscale_frac_) and
+         (avg1.average_0th_deriv_of_q_ == avg2.average_0th_deriv_of_q_) and
+         (avg1.averaged_values_ == avg2.averaged_values_) and
+         (avg1.times_ == avg2.times_) and (avg1.raw_qs_ == avg2.raw_qs_) and
+         (avg1.weight_k_ == avg2.weight_k_) and (avg1.tau_k_ == avg2.tau_k_);
+}
+
+template <size_t DerivOrder>
+bool operator!=(const Averager<DerivOrder>& avg1,
+                const Averager<DerivOrder>& avg2) {
+  return not(avg1 == avg2);
+}
+
 // explicit instantiations
 template class Averager<2>;
+template bool operator==(const Averager<2>& avg1, const Averager<2>& avg2);
+template bool operator!=(const Averager<2>& avg1, const Averager<2>& avg2);

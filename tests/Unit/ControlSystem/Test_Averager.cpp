@@ -248,6 +248,21 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Averager.BadCallToAverageTime",
   averager.average_time(0.0);
 }
 
+SPECTRE_TEST_CASE("Unit.ControlSystem.Averager.EqualityAndSerialization") {
+  Averager<2> averager1(1.0, true);
+  Averager<2> averager2(1.0, true);
+  Averager<2> averager3(2.0, false);
+
+  CHECK(averager1 == averager2);
+  CHECK(averager1 != averager3);
+  CHECK_FALSE(averager1 == averager3);
+
+  averager2.update(0.1, {0.2}, {0.3});
+  CHECK_FALSE(averager1 == averager2);
+
+  CHECK(serialize_and_deserialize(averager1) == averager1);
+}
+
 SPECTRE_TEST_CASE("Unit.ControlSystem.Averager.TestMove",
                   "[ControlSystem][Unit]") {
   Averager<2> averager(0.25, false);

@@ -7,8 +7,13 @@
 #include <cstddef>
 #include <deque>
 #include <optional>
+#include <pup.h>
+#include <pup_stl.h>
 
 #include "DataStructures/DataVector.hpp"
+#include "Options/Options.hpp"
+#include "Parallel/PupStlCpp17.hpp"
+#include "Utilities/BoostHelpers.hpp"
 
 /// \ingroup ControlSystemGroup
 /// A weighted exponential averager of \f$Q\f$ and its derivatives
@@ -46,13 +51,18 @@ class Averager {
   /// function.
   Averager(double avg_timescale_frac, bool average_0th_deriv_of_q) noexcept;
 
+  Averager() = default;
   // Explicitly defined move constructor due to the fact that the std::deque
   // move constructor is not marked noexcept
   Averager(Averager&& rhs) noexcept;
   Averager& operator=(Averager&& rhs) noexcept;
-  Averager(const Averager&) = delete;
-  Averager& operator=(const Averager&) = delete;
+  Averager(const Averager&) = default;
+  Averager& operator=(const Averager&) = default;
   ~Averager() = default;
+
+  template <size_t DDerivOrder>                          // NOLINT
+  friend bool operator==(const Averager<DDerivOrder>&,   // NOLINT
+                         const Averager<DDerivOrder>&);  // NOLINT
 
   /// Returns \f$Q\f$ and its derivatives at \f$t=\f$`time`, provided there is
   /// sufficient data. The averager is limited by the need for at least
@@ -86,6 +96,8 @@ class Averager {
     return average_0th_deriv_of_q_;
   };
 
+  void pup(PUP::er& p) noexcept;
+
  private:
   /// Returns the function and numerical derivatives up to the
   /// `DerivOrder`'th derivative using backward finite differencing that
@@ -109,3 +121,6 @@ class Averager {
   double weight_k_ = 0.0;
   double tau_k_ = 0.0;
 };
+
+template <size_t DDerivOrder>
+bool operator!=(const Averager<DDerivOrder>&, const Averager<DDerivOrder>&);
