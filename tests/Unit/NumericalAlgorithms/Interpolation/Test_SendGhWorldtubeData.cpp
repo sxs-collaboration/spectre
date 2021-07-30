@@ -32,9 +32,8 @@ struct dispatch_to_send_gh_worldtube_data {
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/) noexcept {
     intrp::callbacks::SendGhWorldtubeData<
-        Cce::CharacteristicEvolution<Metavariables>,
-        ::Tags::TimeStepId>::apply(box, cache,
-                                   db::get<::Tags::TimeStepId>(box));
+        Cce::CharacteristicEvolution<Metavariables>, ::Tags::TimeStepId,
+        false>::apply(box, cache, db::get<::Tags::TimeStepId>(box));
   }
 };
 
@@ -93,7 +92,7 @@ struct mock_gh_worldtube_boundary {
   using component_being_mocked = Cce::GhWorldtubeBoundary<Metavariables>;
   using replace_these_simple_actions =
       tmpl::list<Cce::Actions::ReceiveGhWorldtubeData<
-          Cce::CharacteristicEvolution<Metavariables>>>;
+          Cce::CharacteristicEvolution<Metavariables>, false>>;
   using with_these_simple_actions = tmpl::list<test_receive_gh_data>;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;

@@ -46,7 +46,7 @@ namespace Actions {
  * - Modifies:
  *   - `Tags::GhInterfaceManager`
  */
-template <typename EvolutionComponent>
+template <typename EvolutionComponent, bool DuringSelfStart>
 struct ReceiveGhWorldtubeData {
   template <typename ParallelComponent, typename... DbTags,
             typename Metavariables, typename ArrayIndex>
