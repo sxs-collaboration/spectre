@@ -29,9 +29,17 @@ struct Next;
 // IWYU pragma: no_forward_declare db::DataBox
 /// \endcond
 
-/// Adjust the step size for local time stepping, returning true if the step
-/// just completed is accepted, and false if it is rejected.
-template <typename DbTags, typename Metavariables>
+/// \brief Adjust the step size for local time stepping, returning true if the
+/// step just completed is accepted, and false if it is rejected.
+///
+/// \details The optional template parameter `StepChoosersToUse` may be used to
+/// indicate a subset of the constructable step choosers to use for the current
+/// application of `ChangeStepSize`. Passing `AllStepChoosers` (default)
+/// indicates that any constructible step chooser may be used. This option is
+/// used when multiple components need to invoke `ChangeStepSize` with step
+/// choosers that may not be compatible with all components.
+template <typename StepChoosersToUse = AllStepChoosers, typename DbTags,
+          typename Metavariables>
 bool change_step_size(
     const gsl::not_null<db::DataBox<DbTags>*> box,
     const Parallel::GlobalCache<Metavariables>& cache) noexcept {
@@ -67,7 +75,8 @@ bool change_step_size(
   bool step_accepted = true;
   for (const auto& step_chooser : step_choosers) {
     const auto [step_choice, step_choice_accepted] =
-        step_chooser->desired_step(box, last_step_size, cache);
+        step_chooser->template desired_step<StepChoosersToUse>(
+            box, last_step_size, cache);
     desired_step = std::min(desired_step, step_choice);
     step_accepted = step_accepted and step_choice_accepted;
   }
@@ -115,6 +124,13 @@ namespace Actions {
 /// \ingroup TimeGroup
 /// \brief Adjust the step size for local time stepping
 ///
+/// \details The optional template parameter `StepChoosersToUse` may be used to
+/// indicate a subset of the constructable step choosers to use for the current
+/// application of `ChangeStepSize`. Passing `AllStepChoosers` (default)
+/// indicates that any constructible step chooser may be used. This option is
+/// used when multiple components need to invoke `ChangeStepSize` with step
+/// choosers that may not be compatible with all components.
+///
 /// Uses:
 /// - DataBox:
 ///   - Tags::StepChoosers<StepChooserRegistrars>
@@ -128,6 +144,7 @@ namespace Actions {
 /// - Adds: nothing
 /// - Removes: nothing
 /// - Modifies: Tags::Next<Tags::TimeStepId>, Tags::TimeStep
+template <typename StepChoosersToUse = AllStepChoosers>
 struct ChangeStepSize {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -137,8 +154,6 @@ struct ChangeStepSize {
       const Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
-    static_assert(Metavariables::local_time_stepping,
-                  "ChangeStepSize can only be used with local time-stepping.");
     static_assert(
         tmpl::any<ActionList,
                   tt::is_a_lambda<Actions::UpdateU, tmpl::_1>>::value,
@@ -147,7 +162,8 @@ struct ChangeStepSize {
         "an action that is not UpdateU, consider using the take_step function "
         "to handle both stepping and step-choosing instead of the "
         "ChangeStepSize action.");
-    const bool step_successful = change_step_size(make_not_null(&box), cache);
+    const bool step_successful =
+        change_step_size<StepChoosersToUse>(make_not_null(&box), cache);
     if (step_successful) {
       return {std::move(box), false,
               tmpl::index_of<ActionList, ChangeStepSize>::value + 1};

@@ -139,6 +139,11 @@ class StepChooser<StepChooserUse::Slab> : public PUP::able {
   }
 };
 
+/// A placeholder type to indicate that all constructible step choosers should
+/// be used in step chooser utilities that permit a list of choosers to be
+/// specified.
+struct AllStepChoosers {};
+
 template <>
 class StepChooser<StepChooserUse::LtsStep> : public PUP::able {
  protected:
@@ -167,7 +172,14 @@ class StepChooser<StepChooserUse::LtsStep> : public PUP::able {
   /// return a strictly smaller step than the `last_step_magnitude` when they
   /// return `false` for the second member of the pair (indicating step
   /// rejection).
-  template <typename Metavariables, typename DbTags>
+  /// The optional template parameter `StepChoosersToUse` may be used to
+  /// indicate a subset of the constructable step choosers to use for the
+  /// current application of `ChangeStepSize`. Passing `AllStepChoosers`
+  /// (default) indicates that any constructible step chooser may be used. This
+  /// option is used when multiple components need to invoke `ChangeStepSize`
+  /// with step choosers that may not be compatible with all components.
+  template <typename StepChoosersToUse = AllStepChoosers,
+            typename Metavariables, typename DbTags>
   std::pair<double, bool> desired_step(
       const gsl::not_null<db::DataBox<DbTags>*> box,
       const double last_step_magnitude,
@@ -177,9 +189,12 @@ class StepChooser<StepChooserUse::LtsStep> : public PUP::able {
     using factory_classes =
         typename std::decay_t<decltype(db::get<Parallel::Tags::Metavariables>(
             *box))>::factory_creation::factory_classes;
+    using step_choosers =
+        tmpl::conditional_t<std::is_same_v<StepChoosersToUse, AllStepChoosers>,
+                            tmpl::at<factory_classes, StepChooser>,
+                            StepChoosersToUse>;
     const auto result =
-        call_with_dynamic_type<std::pair<double, bool>,
-                               tmpl::at<factory_classes, StepChooser>>(
+        call_with_dynamic_type<std::pair<double, bool>, step_choosers>(
             this, [&last_step_magnitude, &box,
                    &cache](const auto* const chooser) noexcept {
               using chooser_type = typename std::decay_t<decltype(*chooser)>;

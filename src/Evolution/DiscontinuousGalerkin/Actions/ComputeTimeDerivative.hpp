@@ -65,6 +65,11 @@ class TaggedTuple;
 /// \endcond
 
 namespace evolution::dg::Actions {
+namespace detail {
+CREATE_HAS_TYPE_ALIAS(dg_step_choosers)
+CREATE_HAS_TYPE_ALIAS_V(dg_step_choosers)
+CREATE_GET_TYPE_ALIAS_OR_DEFAULT(dg_step_choosers)
+}  // namespace detail
 /*!
  * \brief Computes the time derivative for a DG time step.
  *
@@ -463,7 +468,9 @@ ComputeTimeDerivative<Metavariables>::apply(
       });
 
   if constexpr (Metavariables::local_time_stepping) {
-    take_step(make_not_null(&box), cache);
+    take_step<detail::get_dg_step_choosers_or_default_t<Metavariables,
+                                                        AllStepChoosers>>(
+        make_not_null(&box), cache);
   }
 
   send_data_for_fluxes<ParallelComponent>(make_not_null(&cache),

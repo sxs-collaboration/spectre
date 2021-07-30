@@ -93,13 +93,17 @@ struct Component {
           tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>,
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Testing,
-          tmpl::list<Actions::ChangeStepSize, ::Actions::Label<NoOpLabel>,
+          tmpl::list<Actions::ChangeStepSize<
+                         typename Metavariables::step_choosers_to_use>,
+                     ::Actions::Label<NoOpLabel>,
                      /*UpdateU action is required to satisfy internal checks of
                        `ChangeStepSize`. It is not used in the test.*/
                      Actions::UpdateU<>>>>;
 };
 
+template <typename StepChoosersToUse = AllStepChoosers>
 struct Metavariables {
+  using step_choosers_to_use = StepChoosersToUse;
   using system = System;
   static constexpr bool local_time_stepping = true;
   struct factory_creation
@@ -113,6 +117,7 @@ struct Metavariables {
   enum class Phase { Initialization, Testing, Exit };
 };
 
+template <typename StepChoosersToUse = AllStepChoosers>
 void check(const bool time_runs_forward,
            std::unique_ptr<LtsTimeStepper> time_stepper, const Time& time,
            const double request, const TimeDelta& expected_step,
@@ -123,8 +128,9 @@ void check(const bool time_runs_forward,
   const TimeDelta initial_step_size =
       (time_runs_forward ? 1 : -1) * time.slab().duration();
 
-  using component = Component<Metavariables>;
-  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
+  using component = Component<Metavariables<StepChoosersToUse>>;
+  using MockRuntimeSystem =
+      ActionTesting::MockRuntimeSystem<Metavariables<StepChoosersToUse>>;
   using Constant = StepChoosers::Constant<StepChooserUse::LtsStep>;
   MockRuntimeSystem runner{{std::move(time_stepper)}};
 
@@ -150,8 +156,8 @@ void check(const bool time_runs_forward,
        typename history_tag::type{}, 1.});
 
   ActionTesting::set_phase(make_not_null(&runner),
-                           Metavariables::Phase::Testing);
-  runner.next_action<component>(0);
+                           Metavariables<StepChoosersToUse>::Phase::Testing);
+  runner.template next_action<component>(0);
   const auto& box =
       ActionTesting::get_databox<component, typename component::simple_tags>(
           runner, 0);
@@ -171,7 +177,7 @@ void check(const bool time_runs_forward,
 SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeStepSize", "[Unit][Time][Actions]") {
   Parallel::register_derived_classes_with_charm<TimeStepper>();
   Parallel::register_classes_with_charm<StepControllers::BinaryFraction>();
-  Parallel::register_factory_classes_with_charm<Metavariables>();
+  Parallel::register_factory_classes_with_charm<Metavariables<>>();
   const Slab slab(-5., -2.);
   const double slab_length = slab.duration().value();
   for (auto reject_step : {true, false}) {
@@ -188,4 +194,22 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeStepSize", "[Unit][Time][Actions]") {
           slab.end() - slab.duration() / 4, slab_length, -slab.duration() / 4,
           reject_step);
   }
+}
+
+// [[OutputRegex, is not registered]]
+SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeStepSize.subset_error",
+                  "[Unit][Time][Actions]") {
+  ERROR_TEST();
+  Parallel::register_derived_classes_with_charm<TimeStepper>();
+  Parallel::register_classes_with_charm<StepControllers::BinaryFraction>();
+  Parallel::register_factory_classes_with_charm<Metavariables<>>();
+  // tests that the `ChangeStepSize` action generates a runtime error if the
+  // constructed step chooser is not one of the step choosers explicitly
+  // specified in the template argument
+  const Slab slab(-5., -2.);
+  const double slab_length = slab.duration().value();
+  check<tmpl::list<StepChoosers::Constant<StepChooserUse::LtsStep>>>(
+      true, std::make_unique<TimeSteppers::AdamsBashforthN>(1),
+      slab.start() + slab.duration() / 4, slab_length / 5., slab.duration() / 8,
+      true);
 }
