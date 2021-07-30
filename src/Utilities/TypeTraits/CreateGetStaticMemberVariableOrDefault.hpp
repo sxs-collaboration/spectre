@@ -15,6 +15,11 @@
  * `CREATE_HAS_STATIC_MEMBER_VARIABLE_V` but does not create them --
  * both of those macros should be called before this macro to generate
  * the needed type traits.
+ *
+ * \warning Please use defaults responsibly.  In many cases it is
+ * better to require the static member variable is present so the
+ * functionality isn't hidden.  Also make sure to document the
+ * compile-time interface, e.g. with a \ref protocols "protocol".
  */
 #define CREATE_GET_STATIC_MEMBER_VARIABLE_OR_DEFAULT(ALIAS_NAME)          \
   template <typename CheckingType, auto Default,                          \
