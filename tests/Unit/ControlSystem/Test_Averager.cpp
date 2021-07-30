@@ -11,6 +11,8 @@
 
 #include "ControlSystem/Averager.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "Framework/TestCreation.hpp"
+#include "Framework/TestHelpers.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 
 SPECTRE_TEST_CASE("Unit.ControlSystem.Averager.Linear",
@@ -248,10 +250,11 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Averager.BadCallToAverageTime",
   averager.average_time(0.0);
 }
 
-SPECTRE_TEST_CASE("Unit.ControlSystem.Averager.EqualityAndSerialization") {
+SPECTRE_TEST_CASE("Unit.ControlSystem.Averager.EqualityAndSerialization",
+                  "[ControlSystem][Unit]") {
   Averager<2> averager1(1.0, true);
   Averager<2> averager2(1.0, true);
-  Averager<2> averager3(2.0, false);
+  Averager<2> averager3(0.5, false);
 
   CHECK(averager1 == averager2);
   CHECK(averager1 != averager3);
@@ -261,6 +264,16 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Averager.EqualityAndSerialization") {
   CHECK_FALSE(averager1 == averager2);
 
   CHECK(serialize_and_deserialize(averager1) == averager1);
+}
+
+SPECTRE_TEST_CASE("Unit.ControlSystem.Averager.CreateFromOptions",
+                  "[ControlSystem][Unit]") {
+  Averager<2> averager(0.5, true);
+  auto averager2 = TestHelpers::test_creation<Averager<2>>(
+      "AverageTimescaleFraction: 0.5\n"
+      "Average0thDeriv: True");
+
+  CHECK(averager == averager2);
 }
 
 SPECTRE_TEST_CASE("Unit.ControlSystem.Averager.TestMove",
