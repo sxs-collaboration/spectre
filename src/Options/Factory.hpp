@@ -20,6 +20,7 @@
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TypeTraits/CreateGetStaticMemberVariableOrDefault.hpp"
 
 namespace Options {
 namespace Factory_detail {
@@ -80,10 +81,17 @@ struct get_creatable_classes<
   using type = typename BaseClass::creatable_classes;
 };
 
+CREATE_GET_STATIC_MEMBER_VARIABLE_OR_DEFAULT(factory_creatable)
+
+template <typename T>
+struct is_factory_creatable
+    : std::bool_constant<get_factory_creatable_or_default_v<T, true>> {};
+
 template <typename BaseClass, typename Metavariables>
 std::unique_ptr<BaseClass> create(const Option& options) {
-  using creatable_classes =
-      typename get_creatable_classes<BaseClass, Metavariables>::type;
+  using creatable_classes = tmpl::filter<
+      typename get_creatable_classes<BaseClass, Metavariables>::type,
+      is_factory_creatable<tmpl::_1>>;
   static_assert(not std::is_same_v<creatable_classes, tmpl::no_such_type_>,
                 "List of creatable derived types for this class is missing "
                 "from Metavariables::factory_classes.");

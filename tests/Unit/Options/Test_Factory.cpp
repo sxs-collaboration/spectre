@@ -5,6 +5,7 @@
 
 #include <map>
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -262,6 +263,96 @@ void test_factory_object_map() {
   CHECK(arg.at("B")->derived_name() == "Test2");
   CHECK(arg.at("C")->derived_name() == "Test1");
 }
+
+class IsCreatableBase {
+ public:
+  IsCreatableBase() = default;
+  IsCreatableBase(const IsCreatableBase&) = default;
+  IsCreatableBase(IsCreatableBase&&) = default;
+  IsCreatableBase& operator=(const IsCreatableBase&) = default;
+  IsCreatableBase& operator=(IsCreatableBase&&) = default;
+  virtual ~IsCreatableBase() = default;
+};
+
+class NotCreatable : public IsCreatableBase {
+ public:
+  static constexpr bool factory_creatable = false;
+  // Test with no `help` or `options`.
+};
+
+template <bool FactoryCreatable>
+class MaybeCreatable : public IsCreatableBase {
+ public:
+  static constexpr bool factory_creatable = FactoryCreatable;
+  static constexpr Options::String help = {"halp"};
+  using options = tmpl::list<>;
+};
+
+// Hack to capture option parser errors
+struct IsCreatableMessageHack {
+  std::optional<std::string> message;
+};
+}  // namespace
+
+template <>
+struct Options::create_from_yaml<IsCreatableMessageHack> {
+  template <typename Metavariables>
+  static IsCreatableMessageHack create(const Options::Option& options) {
+    try {
+      options.parse_as<std::unique_ptr<IsCreatableBase>, Metavariables>();
+      return {};
+    } catch (const Options::Options_detail::propagate_context& e) {
+      return {e.message()};
+    }
+  }
+};
+
+namespace {
+struct IsCreatableTag {
+  using type = IsCreatableMessageHack;
+  static constexpr Options::String help = {"halp"};
+};
+
+template <bool MaybeCreatableCreatable>
+struct IsCreatableMetavars {
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes = tmpl::map<tmpl::pair<
+        IsCreatableBase,
+        tmpl::list<NotCreatable, MaybeCreatable<MaybeCreatableCreatable>>>>;
+  };
+};
+
+void test_factory_not_creatable() {
+  const auto check_error_string = [](const auto creatable) {
+    Options::Parser<tmpl::list<IsCreatableTag>> parser("");
+    parser.parse("IsCreatableTag: BadValue");
+    const auto error =
+        parser.get<IsCreatableTag, IsCreatableMetavars<creatable>>();
+    REQUIRE(error.message.has_value());
+    const auto& message = *error.message;
+    CAPTURE(message);
+    CHECK(message.find("NotCreatable") == std::string::npos);
+    CHECK((message.find("MaybeCreatable") != std::string::npos) == creatable);
+  };
+  check_error_string(std::true_type{});
+  check_error_string(std::false_type{});
+
+  const auto check_creation = [](const auto creatable) {
+    Options::Parser<tmpl::list<IsCreatableTag>> parser("");
+    parser.parse("IsCreatableTag: MaybeCreatable");
+    const auto error =
+        parser.get<IsCreatableTag, IsCreatableMetavars<creatable>>();
+    REQUIRE(error.message.has_value() != creatable);
+    if (not creatable) {
+      CAPTURE(*error.message);
+      CHECK(error.message->find("Unknown Id 'MaybeCreatable'") !=
+            std::string::npos);
+    }
+  };
+  check_creation(std::true_type{});
+  check_creation(std::false_type{});
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Options.Factory", "[Unit][Options]") {
@@ -272,6 +363,7 @@ SPECTRE_TEST_CASE("Unit.Options.Factory", "[Unit][Options]") {
   test_factory_with_metavars();
   test_factory_object_vector();
   test_factory_object_map();
+  test_factory_not_creatable();
 }
 
 // [[OutputRegex, In string:.*At line 1 column 1:.Expected a class to
