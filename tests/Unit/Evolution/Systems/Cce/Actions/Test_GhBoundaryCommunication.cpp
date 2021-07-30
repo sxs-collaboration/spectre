@@ -43,11 +43,13 @@
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/StepChoosers/Factory.hpp"
+#include "Time/StepControllers/BinaryFraction.hpp"
 #include "Time/Tags.hpp"
 #include "Time/TimeSteppers/RungeKutta3.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MakeVector.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -126,6 +128,7 @@ struct mock_characteristic_evolution {
 struct test_metavariables {
   using evolved_swsh_tag = Tags::BondiJ;
   using evolved_swsh_dt_tag = Tags::BondiH;
+  using cce_step_choosers = tmpl::list<>;
   using evolved_coordinates_variables_tag = ::Tags::Variables<
       tmpl::list<Tags::CauchyCartesianCoords, Tags::InertialRetardedTime>>;
   using cce_boundary_communication_tags =
@@ -221,9 +224,12 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.GhBoundaryCommunication",
   runner.set_phase(test_metavariables::Phase::Initialization);
   ActionTesting::emplace_component<evolution_component>(
       &runner, 0, target_step_size, false,
-      static_cast<std::unique_ptr<TimeStepper>>(
-          std::make_unique<::TimeSteppers::DormandPrince5>()),
-      scri_plus_interpolation_order);
+      static_cast<std::unique_ptr<LtsTimeStepper>>(
+          std::make_unique<::TimeSteppers::AdamsBashforthN>(3)),
+      make_vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>(),
+      static_cast<std::unique_ptr<StepController>>(
+          std::make_unique<StepControllers::BinaryFraction>()),
+      target_step_size, scri_plus_interpolation_order);
   ActionTesting::emplace_component<worldtube_component>(
       &runner, 0,
       InterfaceManagers::GhLocalTimeStepping{
@@ -257,16 +263,10 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.GhBoundaryCommunication",
       solution, extraction_radius, amplitude, frequency, target_time, l_max);
   ActionTesting::simple_action<
       worldtube_component,
-      Actions::ReceiveGhWorldtubeData<evolution_component, false>>(
-      make_not_null(&runner), 0, target_time, spacetime_metric, phi, pi);
-
-  TestHelpers::create_fake_time_varying_gh_nodal_data(
-      make_not_null(&spacetime_metric), make_not_null(&phi), make_not_null(&pi),
-      solution, extraction_radius, amplitude, frequency, target_time, l_max);
-  ActionTesting::simple_action<
-      worldtube_component,
-      Actions::ReceiveGhWorldtubeData<evolution_component, false>>(
-      make_not_null(&runner), 0, target_time + target_step_size,
+      Actions::ReceiveGhWorldtubeData<evolution_component, true>>(
+      make_not_null(&runner), 0,
+      TimeStepId{true, -2,
+                 Time{{target_time, target_time + target_step_size}, {0, 1}}},
       spacetime_metric, phi, pi);
 
   // the first response (`BoundaryComputeAndSendToEvolution`)

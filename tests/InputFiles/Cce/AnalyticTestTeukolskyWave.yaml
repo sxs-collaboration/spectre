@@ -15,6 +15,7 @@
 
 Evolution:
   InitialTimeStep: 0.1
+  InitialSlabSize: 1.0
 
 Observers:
   VolumeFileName: "CharacteristicExtractVolume"
@@ -25,7 +26,6 @@ Cce:
     TimeStepper:
       AdamsBashforthN:
         Order: 3
-    InitialSlabSize: 1.0
     StepChoosers:
       - Constant: 0.5
       - Increase:

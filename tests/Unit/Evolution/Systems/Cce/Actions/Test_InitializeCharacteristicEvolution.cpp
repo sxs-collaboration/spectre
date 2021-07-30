@@ -33,11 +33,13 @@
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/StepChoosers/Factory.hpp"
+#include "Time/StepControllers/BinaryFraction.hpp"
 #include "Time/Tags.hpp"
 #include "Time/TimeSteppers/RungeKutta3.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MakeVector.hpp"
 #include "Utilities/NoSuchType.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
@@ -85,6 +87,7 @@ struct mock_characteristic_evolution {
 struct metavariables {
   using evolved_swsh_tag = Tags::BondiJ;
   using evolved_swsh_dt_tag = Tags::BondiH;
+  using cce_step_choosers = tmpl::list<>;
   using evolved_coordinates_variables_tag = ::Tags::Variables<
       tmpl::list<Tags::CauchyCartesianCoords, Tags::InertialRetardedTime>>;
   using cce_boundary_communication_tags =
@@ -187,10 +190,13 @@ SPECTRE_TEST_CASE(
   ActionTesting::set_phase(make_not_null(&runner),
                            metavariables::Phase::Initialization);
   ActionTesting::emplace_component<component>(
-      &runner, 0, target_step_size, false,
-      static_cast<std::unique_ptr<TimeStepper>>(
-          std::make_unique<::TimeSteppers::RungeKutta3>()),
-      scri_plus_interpolation_order);
+      &runner, 0, target_step_size * 0.75, false,
+      static_cast<std::unique_ptr<LtsTimeStepper>>(
+          std::make_unique<::TimeSteppers::AdamsBashforthN>(3)),
+      make_vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>(),
+      static_cast<std::unique_ptr<StepController>>(
+          std::make_unique<StepControllers::BinaryFraction>()),
+      target_step_size, scri_plus_interpolation_order);
 
   // this should run the initialization
   for (size_t i = 0; i < 6; ++i) {
@@ -208,10 +214,10 @@ SPECTRE_TEST_CASE(
                                      ::Tags::Next<::Tags::TimeStepId>>(runner,
                                                                        0);
   CHECK(next_time_step_id.substep_time().value() ==
-        approx(start_time + target_step_size));
+        approx(start_time + target_step_size * 0.75));
   const auto& time_step =
       ActionTesting::get_databox_tag<component, ::Tags::TimeStep>(runner, 0);
-  CHECK(time_step.value() == approx(target_step_size));
+  CHECK(time_step.value() == approx(target_step_size * 0.75));
   const auto& coordinates_history = ActionTesting::get_databox_tag<
       component,
       ::Tags::HistoryEvolvedVariables<

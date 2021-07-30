@@ -39,10 +39,12 @@
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/StepChoosers/Factory.hpp"
+#include "Time/StepControllers/BinaryFraction.hpp"
 #include "Time/Tags.hpp"
 #include "Time/TimeSteppers/RungeKutta3.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MakeVector.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -101,6 +103,7 @@ struct mock_characteristic_evolution {
 struct metavariables {
   using evolved_swsh_tag = Tags::BondiJ;
   using evolved_swsh_dt_tag = Tags::BondiH;
+  using cce_step_choosers = tmpl::list<>;
   using evolved_coordinates_variables_tag = ::Tags::Variables<
       tmpl::list<Tags::CauchyCartesianCoords, Tags::InertialRetardedTime>>;
   using cce_boundary_communication_tags =
@@ -214,8 +217,12 @@ SPECTRE_TEST_CASE(
                            metavariables::Phase::Initialization);
   ActionTesting::emplace_component<component>(
       &runner, 0, target_step_size, false,
-      static_cast<std::unique_ptr<TimeStepper>>(
-          std::make_unique<::TimeSteppers::RungeKutta3>()));
+      static_cast<std::unique_ptr<LtsTimeStepper>>(
+          std::make_unique<::TimeSteppers::AdamsBashforthN>(3)),
+      make_vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>(),
+      static_cast<std::unique_ptr<StepController>>(
+          std::make_unique<StepControllers::BinaryFraction>()),
+      target_step_size);
 
   // this should run the initialization
   for(size_t i = 0; i < 2; ++i) {

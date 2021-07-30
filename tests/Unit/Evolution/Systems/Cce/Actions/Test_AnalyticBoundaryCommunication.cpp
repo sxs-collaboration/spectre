@@ -31,10 +31,12 @@
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/StepChoosers/Factory.hpp"
+#include "Time/StepControllers/BinaryFraction.hpp"
 #include "Time/Tags.hpp"
 #include "Time/TimeSteppers/DormandPrince5.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MakeVector.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -109,6 +111,7 @@ struct test_metavariables {
   using evolved_swsh_tag = Tags::BondiJ;
   static constexpr bool local_time_stepping = false;
   using evolved_swsh_dt_tag = Tags::BondiH;
+  using cce_step_choosers = tmpl::list<>;
   using evolved_coordinates_variables_tag = ::Tags::Variables<
       tmpl::list<Tags::CauchyCartesianCoords, Tags::InertialRetardedTime>>;
   using cce_boundary_communication_tags =
@@ -194,9 +197,12 @@ SPECTRE_TEST_CASE(
   runner.set_phase(test_metavariables::Phase::Initialization);
   ActionTesting::emplace_component<evolution_component>(
       &runner, 0, target_step_size, false,
-      static_cast<std::unique_ptr<TimeStepper>>(
-          std::make_unique<::TimeSteppers::DormandPrince5>()),
-      scri_plus_interpolation_order,
+      static_cast<std::unique_ptr<LtsTimeStepper>>(
+          std::make_unique<::TimeSteppers::AdamsBashforthN>(3)),
+      make_vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>(),
+      static_cast<std::unique_ptr<StepController>>(
+          std::make_unique<StepControllers::BinaryFraction>()),
+      target_step_size, scri_plus_interpolation_order,
       serialize_and_deserialize(analytic_manager));
   // Serialize and deserialize to get around the lack of implicit copy
   // constructor.

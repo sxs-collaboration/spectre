@@ -29,12 +29,14 @@
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/StepChoosers/Factory.hpp"
+#include "Time/StepControllers/BinaryFraction.hpp"
 #include "Time/Tags.hpp"
 #include "Time/TimeSteppers/RungeKutta3.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
+#include "Utilities/MakeVector.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -105,6 +107,7 @@ struct mock_characteristic_evolution {
 struct test_metavariables {
   using evolved_swsh_tag = Tags::BondiJ;
   using evolved_swsh_dt_tag = Tags::BondiH;
+  using cce_step_choosers = tmpl::list<>;
   using evolved_coordinates_variables_tag = ::Tags::Variables<
       tmpl::list<Tags::CauchyCartesianCoords, Tags::InertialRetardedTime>>;
   using cce_boundary_communication_tags =
@@ -206,10 +209,17 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.RequestBoundaryData",
 
   ActionTesting::set_phase(make_not_null(&runner),
                            test_metavariables::Phase::Initialization);
+  // requested step size and slab size chosen to be sure that the step
+  // controller gives a predictable value (not subject to roundoff fluctuations
+  // in the generated value)
   ActionTesting::emplace_component<evolution_component>(
-      &runner, 0, target_step_size, false,
-      static_cast<std::unique_ptr<TimeStepper>>(
-          std::make_unique<::TimeSteppers::RungeKutta3>()));
+      &runner, 0, target_step_size * 0.75, false,
+      static_cast<std::unique_ptr<LtsTimeStepper>>(
+          std::make_unique<::TimeSteppers::AdamsBashforthN>(3)),
+      make_vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>(),
+      static_cast<std::unique_ptr<StepController>>(
+          std::make_unique<StepControllers::BinaryFraction>()),
+      target_step_size);
   ActionTesting::emplace_component<worldtube_component>(
       &runner, 0,
       Tags::H5WorldtubeBoundaryDataManager::create_from_options(
@@ -242,7 +252,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.RequestBoundaryData",
   ActionTesting::invoke_queued_simple_action<worldtube_component>(
       make_not_null(&runner), 0);
   CHECK(Actions::times_requested.size() == 2);
-  CHECK(Actions::times_requested[1] == start_time + target_step_size);
+  CHECK(Actions::times_requested[1] == start_time + target_step_size * 0.75);
   if (file_system::check_if_file_exists(filename)) {
     file_system::rm(filename, true);
   }
