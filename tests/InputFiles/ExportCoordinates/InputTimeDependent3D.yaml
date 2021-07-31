@@ -5,6 +5,7 @@
 # Check: parse;execute
 # ExpectedOutput:
 #   ExportTimeDependentCoordinates3DVolume0.h5
+#   ExportTimeDependentCoordinates3DReductions.h5
 
 DomainCreator:
   # Parameters are chosen for an equal-mass, non-spinning binary black hole

@@ -5,6 +5,7 @@
 # Check: parse;execute
 # ExpectedOutput:
 #   ExportCoordinates1DVolume0.h5
+#   ExportCoordinates1DReductions.h5
 
 DomainCreator:
   Interval:
