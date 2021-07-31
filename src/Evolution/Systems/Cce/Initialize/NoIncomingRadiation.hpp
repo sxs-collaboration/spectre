@@ -32,7 +32,7 @@ namespace InitializeJ {
  * iterative procedure are determined by options
  * `AngularCoordinateTolerance` and `MaxIterations`.
  */
-struct NoIncomingRadiation : InitializeJ {
+struct NoIncomingRadiation : InitializeJ<false> {
   struct AngularCoordinateTolerance {
     using type = double;
     static std::string name() noexcept { return "AngularCoordTolerance"; }

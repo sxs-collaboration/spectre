@@ -113,7 +113,7 @@ void LinearizedBondiSachs::pup(PUP::er& p) noexcept {
   p | time_;
 }
 
-std::unique_ptr<::Cce::InitializeJ::InitializeJ>
+std::unique_ptr<::Cce::InitializeJ::InitializeJ<false>>
 LinearizedBondiSachs::get_clone() const noexcept {
   return std::make_unique<LinearizedBondiSachs>(*this);
 }
@@ -599,7 +599,7 @@ void LinearizedBondiSachs::variables_impl(
       frequency_, time);
 }
 
-std::unique_ptr<Cce::InitializeJ::InitializeJ>
+std::unique_ptr<Cce::InitializeJ::InitializeJ<false>>
 LinearizedBondiSachs::get_initialize_j(const double start_time) const noexcept {
   return std::make_unique<
       LinearizedBondiSachs_detail::InitializeJ::LinearizedBondiSachs>(

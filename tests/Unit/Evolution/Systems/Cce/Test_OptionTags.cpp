@@ -70,7 +70,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
       "InterfaceManagerInterpolationStrategy");
   TestHelpers::db::test_simple_tag<Cce::Tags::AnalyticBoundaryDataManager>(
       "AnalyticBoundaryDataManager");
-  TestHelpers::db::test_simple_tag<Cce::Tags::InitializeJ>("InitializeJ");
+  TestHelpers::db::test_simple_tag<Cce::Tags::InitializeJ<true>>("InitializeJ");
+  TestHelpers::db::test_simple_tag<Cce::Tags::InitializeJ<false>>(
+      "InitializeJ");
   TestHelpers::db::test_simple_tag<Cce::Tags::AnalyticInitializeJ>(
       "AnalyticInitializeJ");
   TestHelpers::db::test_simple_tag<Cce::Tags::OutputNoninertialNews>(
@@ -117,7 +119,10 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
   CHECK(TestHelpers::test_option_tag<Cce::OptionTags::ScriOutputDensity>("6") ==
         6_st);
 
-  TestHelpers::test_option_tag<Cce::OptionTags::InitializeJ>("InverseCubic");
+  TestHelpers::test_option_tag<Cce::OptionTags::InitializeJ<true>>(
+      "InverseCubic");
+  TestHelpers::test_option_tag<Cce::OptionTags::InitializeJ<false>>(
+      "InverseCubic");
   TestHelpers::test_option_tag<Cce::OptionTags::AnalyticSolution>(
       "BouncingBlackHole:\n"
       "  Period: 40.0\n"

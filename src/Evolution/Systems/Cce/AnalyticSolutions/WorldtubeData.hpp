@@ -124,9 +124,9 @@ struct WorldtubeData : public PUP::able {
 
   void pup(PUP::er& p) noexcept override;
 
-  virtual std::unique_ptr<Cce::InitializeJ::InitializeJ> get_initialize_j(
-      const double /*start_time*/) const noexcept {
-    return std::make_unique<Cce::InitializeJ::InverseCubic>();
+  virtual std::unique_ptr<Cce::InitializeJ::InitializeJ<false>>
+  get_initialize_j(const double /*start_time*/) const noexcept {
+    return std::make_unique<Cce::InitializeJ::InverseCubic<false>>();
   };
 
   virtual bool use_noninertial_news() const noexcept { return false; }

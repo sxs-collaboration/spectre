@@ -524,6 +524,103 @@ void GaugeUpdateTimeDerivatives::apply(
              conj(get(*evolution_gauge_u_at_scri)) * get(eth_omega));
 }
 
+void GaugeUpdateInertialTimeDerivatives::apply(
+    const gsl::not_null<tnsr::i<DataVector, 3>*> cartesian_inertial_du_x,
+    const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 1>>*>
+        evolution_gauge_u_at_scri,
+    const tnsr::i<DataVector, 3>& cartesian_inertial_coordinates,
+    const Scalar<SpinWeighted<ComplexDataVector, 2>>& gauge_cauchy_c,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& omega,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& gauge_cauchy_d,
+    const size_t l_max,
+    const Spectral::Swsh::SwshInterpolator& interpolator) noexcept {
+  const size_t number_of_angular_points =
+      Spectral::Swsh::number_of_swsh_collocation_points(l_max);
+
+  Variables<
+      tmpl::list<::Tags::SpinWeighted<::Tags::TempScalar<0, ComplexDataVector>,
+                                      std::integral_constant<int, 0>>,
+                 ::Tags::SpinWeighted<::Tags::TempScalar<1, ComplexDataVector>,
+                                      std::integral_constant<int, 0>>,
+                 ::Tags::SpinWeighted<::Tags::TempScalar<2, ComplexDataVector>,
+                                      std::integral_constant<int, 0>>,
+                 ::Tags::SpinWeighted<::Tags::TempScalar<3, ComplexDataVector>,
+                                      std::integral_constant<int, 1>>,
+                 ::Tags::SpinWeighted<::Tags::TempScalar<4, ComplexDataVector>,
+                                      std::integral_constant<int, 1>>,
+                 ::Tags::SpinWeighted<::Tags::TempScalar<5, ComplexDataVector>,
+                                      std::integral_constant<int, 1>>,
+                 ::Tags::SpinWeighted<::Tags::TempScalar<6, ComplexDataVector>,
+                                      std::integral_constant<int, 1>>,
+                 ::Tags::SpinWeighted<::Tags::TempScalar<7, ComplexDataVector>,
+                                      std::integral_constant<int, 0>>>>
+      computation_buffers{number_of_angular_points};
+
+  auto& x_inertial =
+      get(get<::Tags::SpinWeighted<::Tags::TempScalar<0, ComplexDataVector>,
+                                   std::integral_constant<int, 0>>>(
+          computation_buffers));
+  auto& y_inertial =
+      get(get<::Tags::SpinWeighted<::Tags::TempScalar<1, ComplexDataVector>,
+                                   std::integral_constant<int, 0>>>(
+          computation_buffers));
+  auto& z_inertial =
+      get(get<::Tags::SpinWeighted<::Tags::TempScalar<2, ComplexDataVector>,
+                                   std::integral_constant<int, 0>>>(
+          computation_buffers));
+
+  x_inertial.data() =
+      std::complex<double>(1.0, 0.0) * get<0>(cartesian_inertial_coordinates);
+  y_inertial.data() =
+      std::complex<double>(1.0, 0.0) * get<1>(cartesian_inertial_coordinates);
+  z_inertial.data() =
+      std::complex<double>(1.0, 0.0) * get<2>(cartesian_inertial_coordinates);
+
+  auto& eth_x_inertial =
+      get(get<::Tags::SpinWeighted<::Tags::TempScalar<3, ComplexDataVector>,
+                                   std::integral_constant<int, 1>>>(
+          computation_buffers));
+  auto& eth_y_inertial =
+      get(get<::Tags::SpinWeighted<::Tags::TempScalar<4, ComplexDataVector>,
+                                   std::integral_constant<int, 1>>>(
+          computation_buffers));
+  auto& eth_z_inertial =
+      get(get<::Tags::SpinWeighted<::Tags::TempScalar<5, ComplexDataVector>,
+                                   std::integral_constant<int, 1>>>(
+          computation_buffers));
+  Spectral::Swsh::angular_derivatives<
+      tmpl::list<Spectral::Swsh::Tags::Eth, Spectral::Swsh::Tags::Eth,
+                 Spectral::Swsh::Tags::Eth>>(
+      l_max, 1, make_not_null(&eth_x_inertial), make_not_null(&eth_y_inertial),
+      make_not_null(&eth_z_inertial), x_inertial, y_inertial, z_inertial);
+
+  // Interpolate evolution_gauge_u_at_scri and omega to the partially flat
+  // Bondi-like coordinates
+  auto& original_u_at_scri =
+      get(get<::Tags::SpinWeighted<::Tags::TempScalar<6, ComplexDataVector>,
+                                   std::integral_constant<int, 1>>>(
+          computation_buffers));
+  auto& ome_inte =
+      get(get<::Tags::SpinWeighted<::Tags::TempScalar<7, ComplexDataVector>,
+                                   std::integral_constant<int, 0>>>(
+          computation_buffers));
+  interpolator.interpolate(make_not_null(&original_u_at_scri),
+                           get(*evolution_gauge_u_at_scri));
+  interpolator.interpolate(make_not_null(&ome_inte), get(omega));
+
+  // Eq. (79) of \cite Moxon2020gha
+  original_u_at_scri = 0.5 * (-get(gauge_cauchy_c) * conj(original_u_at_scri) +
+                              conj(get(gauge_cauchy_d)) * original_u_at_scri);
+  original_u_at_scri.data() *= square(ome_inte.data());
+
+  get<0>(*cartesian_inertial_du_x) =
+      -real(conj(original_u_at_scri.data()) * eth_x_inertial.data());
+  get<1>(*cartesian_inertial_du_x) =
+      -real(conj(original_u_at_scri.data()) * eth_y_inertial.data());
+  get<2>(*cartesian_inertial_du_x) =
+      -real(conj(original_u_at_scri.data()) * eth_z_inertial.data());
+}
+
 namespace detail {
 void gauge_update_jacobian_from_coordinates_apply_impl(
     const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 2>>*>
@@ -648,7 +745,8 @@ void gauge_update_jacobian_from_coordinates_apply_impl(
 }
 }  // namespace detail
 
-void GaugeUpdateOmega::apply(
+template <typename GaugeC, typename GaugeD, typename GaugeOmega>
+void GaugeUpdateOmega<GaugeC, GaugeD, GaugeOmega>::apply(
     const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*> omega,
     const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 1>>*> eth_omega,
     const Scalar<SpinWeighted<ComplexDataVector, 2>>& gauge_c,
@@ -691,5 +789,10 @@ void InitializeGauge::apply(
   get(*gauge_d).data() = 2.0;
 }
 
+template struct GaugeUpdateOmega<Tags::PartiallyFlatGaugeC,
+                                 Tags::PartiallyFlatGaugeD,
+                                 Tags::PartiallyFlatGaugeOmega>;
+template struct GaugeUpdateOmega<Tags::CauchyGaugeC, Tags::CauchyGaugeD,
+                                 Tags::CauchyGaugeOmega>;
 }  // namespace Cce
 

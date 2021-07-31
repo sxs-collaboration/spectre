@@ -36,7 +36,7 @@ namespace InitializeJ {
 // as a consequence, this initial data generator is deliberately not
 // option-creatable; it should only be obtained from the `get_initialize_j`
 // function of `Cce::InitializeJ::LinearizedBondiSachs`.
-struct LinearizedBondiSachs : ::Cce::InitializeJ::InitializeJ {
+struct LinearizedBondiSachs : ::Cce::InitializeJ::InitializeJ<false> {
   WRAPPED_PUPable_decl_template(LinearizedBondiSachs);  // NOLINT
   explicit LinearizedBondiSachs(CkMigrateMessage* /*unused*/) noexcept {}
 
@@ -151,7 +151,7 @@ struct LinearizedBondiSachs : public SphericalMetricData {
 
   void pup(PUP::er& p) noexcept override;
 
-  std::unique_ptr<Cce::InitializeJ::InitializeJ> get_initialize_j(
+  std::unique_ptr<Cce::InitializeJ::InitializeJ<false>> get_initialize_j(
       double start_time) const noexcept override;
 
  protected:

@@ -41,6 +41,7 @@ namespace Actions {
  * boundary component, as the type of initial data is decided by the type of the
  * worldtube boundary data.
  */
+template <bool uses_partially_flat_cartesian_coordinates>
 struct InitializeFirstHypersurface {
   using const_global_cache_tags =
       tmpl::list<Tags::LMax, Tags::NumberOfRadialPoints>;
@@ -62,8 +63,11 @@ struct InitializeFirstHypersurface {
         db::get<::Tags::TimeStepId>(box).substep_time().fraction() != 0) {
       return {std::move(box)};
     }
-    db::mutate_apply<InitializeJ::InitializeJ::mutate_tags,
-                     InitializeJ::InitializeJ::argument_tags>(
+    db::mutate_apply<
+        typename InitializeJ::InitializeJ<
+            uses_partially_flat_cartesian_coordinates>::mutate_tags,
+        typename InitializeJ::InitializeJ<
+            uses_partially_flat_cartesian_coordinates>::argument_tags>(
         db::get<Tags::InitializeJBase>(box), make_not_null(&box));
     db::mutate_apply<InitializeScriPlusValue<Tags::InertialRetardedTime>>(
         make_not_null(&box),

@@ -50,7 +50,8 @@
  * `Cce::GaugeAdjustedBoundaryValue` (see template specializations),
  * `Cce::GaugeUpdateTimeDerivatives`, `Cce::GaugeUpdateAngularFromCartesian`,
  * `Cce::GaugeUpdateJacobianFromCoordinates`, `Cce::GaugeUpdateInterpolator`,
- * `Cce::GaugeUpdateOmega`, and `Cce::InitializeGauge`.
+ * `Cce::GaugeUpdateOmega`, `Cce::GaugeUpdateInertialTimeDerivatives`, and
+ * `Cce::InitializeGauge`.
  *
  * Next, the CCE system must evaluate the hypersurface differential equations.
  * There are five, in sequence, deriving \f$\beta, Q, U, W,\f$ and \f$H\f$. For

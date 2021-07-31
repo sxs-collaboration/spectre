@@ -120,9 +120,9 @@ struct test_metavariables {
                      Tags::Dr<Tags::BondiJ>, Tags::BondiBeta, Tags::BondiQ,
                      Tags::BondiU, Tags::BondiW, Tags::BondiH>,
           tmpl::bind<Tags::EvolutionGaugeBoundaryValue, tmpl::_1>>,
-      Tags::BondiUAtScri, Tags::GaugeC, Tags::GaugeD, Tags::GaugeOmega,
-      Tags::Du<Tags::GaugeOmega>,
-      Spectral::Swsh::Tags::Derivative<Tags::GaugeOmega,
+      Tags::BondiUAtScri, Tags::PartiallyFlatGaugeC, Tags::PartiallyFlatGaugeD,
+      Tags::PartiallyFlatGaugeOmega, Tags::Du<Tags::PartiallyFlatGaugeOmega>,
+      Spectral::Swsh::Tags::Derivative<Tags::PartiallyFlatGaugeOmega,
                                        Spectral::Swsh::Tags::Eth>>>;
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {

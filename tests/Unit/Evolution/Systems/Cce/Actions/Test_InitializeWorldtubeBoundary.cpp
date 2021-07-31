@@ -67,6 +67,7 @@ struct H5Metavariables {
       Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>;
   using component_list =
       tmpl::list<mock_h5_worldtube_boundary<H5Metavariables>>;
+  static constexpr bool uses_partially_flat_cartesian_coordinates = false;
   enum class Phase { Initialization, Evolve, Exit };
 };
 
@@ -75,6 +76,7 @@ struct GhMetavariables {
       Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>;
   using component_list =
       tmpl::list<mock_gh_worldtube_boundary<GhMetavariables>>;
+  static constexpr bool uses_partially_flat_cartesian_coordinates = false;
   enum class Phase { Initialization, Evolve, Exit };
 };
 

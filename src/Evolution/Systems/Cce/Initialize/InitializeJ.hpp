@@ -64,8 +64,9 @@ double adjust_angular_coordinates_for_j(
  */
 struct GaugeAdjustInitialJ {
   using boundary_tags =
-      tmpl::list<Tags::GaugeC, Tags::GaugeD, Tags::GaugeOmega,
-                 Tags::CauchyAngularCoords, Spectral::Swsh::Tags::LMax>;
+      tmpl::list<Tags::PartiallyFlatGaugeC, Tags::PartiallyFlatGaugeD,
+                 Tags::PartiallyFlatGaugeOmega, Tags::CauchyAngularCoords,
+                 Spectral::Swsh::Tags::LMax>;
   using return_tags = tmpl::list<Tags::BondiJ>;
   using argument_tags = tmpl::append<boundary_tags>;
 
@@ -80,28 +81,86 @@ struct GaugeAdjustInitialJ {
 };
 
 /// \cond
-struct InverseCubic;
 struct NoIncomingRadiation;
 struct ZeroNonSmooth;
+template <bool uses_partially_flat_cartesian_coordinates>
+struct InverseCubic;
+template <bool uses_partially_flat_cartesian_coordinates>
+struct InitializeJ;
 /// \endcond
 
 /*!
  * \brief Abstract base class for an initial hypersurface data generator for
- * Cce.
+ * Cce, when the partially flat Bondi-like coordinates are evolved.
  *
- * \details The functions that are required to be overriden in the derived
- * classes are:
+ * \details The algorithm is same as `InitializeJ<false>`, but with an
+ * additional initialization for the partially flat Bondi-like coordinates. The
+ * functions that are required to be overriden in the derived classes are:
  * - `InitializeJ::get_clone()`: should return a
- * `std::unique_ptr<InitializeJ>` with cloned state.
- * - `InitializeJ::operator() const`: should take as arguments, first a set of
- * `gsl::not_null` pointers represented by `mutate_tags`, followed by a set of
- * `const` references to quantities represented by `argument_tags`.
- * \note The `InitializeJ::operator()` should be const, and therefore not alter
+ * `std::unique_ptr<InitializeJ<true>>` with cloned state.
+ * - `InitializeJ::operator() const`: should take as arguments, first a
+ * set of `gsl::not_null` pointers represented by `mutate_tags`, followed by a
+ * set of `const` references to quantities represented by `argument_tags`. \note
+ * The `InitializeJ::operator()` should be const, and therefore not alter
  * the internal state of the generator. This is compatible with all known
  * use-cases and permits the `InitializeJ` generator to be placed in the
  * `GlobalCache`.
  */
-struct InitializeJ : public PUP::able {
+template <>
+struct InitializeJ<true> : public PUP::able {
+  using boundary_tags = tmpl::list<Tags::BoundaryValue<Tags::BondiJ>,
+                                   Tags::BoundaryValue<Tags::Dr<Tags::BondiJ>>,
+                                   Tags::BoundaryValue<Tags::BondiR>>;
+
+  using mutate_tags =
+      tmpl::list<Tags::BondiJ, Tags::CauchyCartesianCoords,
+                 Tags::CauchyAngularCoords, Tags::PartiallyFlatCartesianCoords,
+                 Tags::PartiallyFlatAngularCoords>;
+  using argument_tags =
+      tmpl::push_back<boundary_tags, Tags::LMax, Tags::NumberOfRadialPoints>;
+
+  // The evolution of inertial coordinates are allowed only when InverseCubic is
+  // used
+  using creatable_classes = tmpl::list<InverseCubic<true>>;
+
+  WRAPPED_PUPable_abstract(InitializeJ);  // NOLINT
+
+  virtual std::unique_ptr<InitializeJ<true>> get_clone() const noexcept = 0;
+
+  virtual void operator()(
+      gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 2>>*> j,
+      gsl::not_null<tnsr::i<DataVector, 3>*> cartesian_cauchy_coordinates,
+      gsl::not_null<
+          tnsr::i<DataVector, 2, ::Frame::Spherical<::Frame::Inertial>>*>
+          angular_cauchy_coordinates,
+      gsl::not_null<tnsr::i<DataVector, 3>*> cartesian_inertial_coordinates,
+      gsl::not_null<
+          tnsr::i<DataVector, 2, ::Frame::Spherical<::Frame::Inertial>>*>
+          angular_inertial_coordinates,
+      const Scalar<SpinWeighted<ComplexDataVector, 2>>& boundary_j,
+      const Scalar<SpinWeighted<ComplexDataVector, 2>>& boundary_dr_j,
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>& r, size_t l_max,
+      size_t number_of_radial_points) const noexcept = 0;
+};
+
+/*!
+ * \brief Abstract base class for an initial hypersurface data generator for
+ * Cce, when the partially flat Bondi-like coordinates are not evolved.
+ *
+ * \details The functions that are required to be overriden in the derived
+ * classes are:
+ * - `InitializeJ::get_clone()`: should return a
+ * `std::unique_ptr<InitializeJ<false>>` with cloned state.
+ * - `InitializeJ::operator() const`: should take as arguments, first a
+ * set of `gsl::not_null` pointers represented by `mutate_tags`, followed by a
+ * set of `const` references to quantities represented by `argument_tags`. \note
+ * The `InitializeJ::operator()` should be const, and therefore not alter
+ * the internal state of the generator. This is compatible with all known
+ * use-cases and permits the `InitializeJ` generator to be placed in the
+ * `GlobalCache`.
+ */
+template <>
+struct InitializeJ<false> : public PUP::able {
   using boundary_tags = tmpl::list<Tags::BoundaryValue<Tags::BondiJ>,
                                    Tags::BoundaryValue<Tags::Dr<Tags::BondiJ>>,
                                    Tags::BoundaryValue<Tags::BondiR>>;
@@ -112,11 +171,11 @@ struct InitializeJ : public PUP::able {
       tmpl::push_back<boundary_tags, Tags::LMax, Tags::NumberOfRadialPoints>;
 
   using creatable_classes =
-      tmpl::list<InverseCubic, NoIncomingRadiation, ZeroNonSmooth>;
+      tmpl::list<InverseCubic<false>, NoIncomingRadiation, ZeroNonSmooth>;
 
   WRAPPED_PUPable_abstract(InitializeJ);  // NOLINT
 
-  virtual std::unique_ptr<InitializeJ> get_clone() const noexcept = 0;
+  virtual std::unique_ptr<InitializeJ<false>> get_clone() const noexcept = 0;
 
   virtual void operator()(
       gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 2>>*> j,

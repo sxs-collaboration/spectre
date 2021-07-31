@@ -56,11 +56,17 @@ struct EvolutionMetavars {
   using system = Cce::System;
   static constexpr bool local_time_stepping = true;
 
+  static constexpr bool uses_partially_flat_cartesian_coordinates = false;
+
   using evolved_swsh_tag = Cce::Tags::BondiJ;
   using evolved_swsh_dt_tag = Cce::Tags::BondiH;
-  using evolved_coordinates_variables_tag =
-      Tags::Variables<tmpl::list<Cce::Tags::CauchyCartesianCoords,
-                                 Cce::Tags::InertialRetardedTime>>;
+  using evolved_coordinates_variables_tag = Tags::Variables<
+      std::conditional_t<uses_partially_flat_cartesian_coordinates,
+                         tmpl::list<Cce::Tags::CauchyCartesianCoords,
+                                    Cce::Tags::PartiallyFlatCartesianCoords,
+                                    Cce::Tags::InertialRetardedTime>,
+                         tmpl::list<Cce::Tags::CauchyCartesianCoords,
+                                    Cce::Tags::InertialRetardedTime>>>;
 
   struct swsh_vars_selector {
     static std::string name() noexcept { return "SwshVars"; }
@@ -81,9 +87,18 @@ struct EvolutionMetavars {
                      Cce::Tags::BondiBeta, Cce::Tags::BondiQ, Cce::Tags::BondiU,
                      Cce::Tags::BondiW, Cce::Tags::BondiH>,
           tmpl::bind<Cce::Tags::EvolutionGaugeBoundaryValue, tmpl::_1>>,
-      Cce::Tags::BondiUAtScri, Cce::Tags::GaugeC, Cce::Tags::GaugeD,
-      Cce::Tags::GaugeOmega, Cce::Tags::Du<Cce::Tags::GaugeOmega>,
-      Spectral::Swsh::Tags::Derivative<Cce::Tags::GaugeOmega,
+      Cce::Tags::BondiUAtScri, Cce::Tags::PartiallyFlatGaugeC,
+      Cce::Tags::PartiallyFlatGaugeD, Cce::Tags::PartiallyFlatGaugeOmega,
+      Cce::Tags::Du<Cce::Tags::PartiallyFlatGaugeOmega>,
+      std::conditional_t<
+          uses_partially_flat_cartesian_coordinates,
+          tmpl::list<
+              Cce::Tags::CauchyGaugeC, Cce::Tags::CauchyGaugeD,
+              Cce::Tags::CauchyGaugeOmega,
+              Spectral::Swsh::Tags::Derivative<Cce::Tags::CauchyGaugeOmega,
+                                               Spectral::Swsh::Tags::Eth>>,
+          tmpl::list<>>,
+      Spectral::Swsh::Tags::Derivative<Cce::Tags::PartiallyFlatGaugeOmega,
                                        Spectral::Swsh::Tags::Eth>,
       Cce::all_boundary_pre_swsh_derivative_tags_for_scri,
       Cce::all_boundary_swsh_derivative_tags_for_scri>>;
@@ -119,7 +134,10 @@ struct EvolutionMetavars {
   using cce_transform_buffer_tags = Cce::all_transform_buffer_tags;
   using cce_swsh_derivative_tags = Cce::all_swsh_derivative_tags;
   using cce_angular_coordinate_tags =
-      tmpl::list<Cce::Tags::CauchyAngularCoords>;
+      std::conditional_t<uses_partially_flat_cartesian_coordinates,
+                         tmpl::list<Cce::Tags::CauchyAngularCoords,
+                                    Cce::Tags::PartiallyFlatAngularCoords>,
+                         tmpl::list<Cce::Tags::CauchyAngularCoords>>;
 
   using cce_boundary_component = BoundaryComponent<EvolutionMetavars>;
 
@@ -184,7 +202,8 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &setup_error_handling,
     &setup_memory_allocation_failure_reporting,
     &disable_openblas_multithreading,
-    &Cce::register_initialize_j_with_charm,
+    &Cce::register_initialize_j_with_charm<
+        metavariables::uses_partially_flat_cartesian_coordinates>,
     &Parallel::register_derived_classes_with_charm<
         Cce::WorldtubeBufferUpdater<Cce::cce_metric_input_tags>>,
     &Parallel::register_derived_classes_with_charm<
