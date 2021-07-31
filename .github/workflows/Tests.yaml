@@ -289,11 +289,22 @@ jobs:
         build_type: [Debug, Release]
         use_pch: [ON]
         include:
+          # Configure ccache sizes. The cache becomes ineffective if it can't
+          # hold at least one full build. The sizes for the build configurations
+          # are determined empirically by running the workflow with no cache
+          # size limit. Note that the cache is automatically cleaned up to
+          # remain below 80% of the size configured here. Configurations further
+          # down in the `include` list can override these default settings.
+          - build_type: Debug
+            ccache_max_size: 900M
+          - build_type: Release
+            ccache_max_size: 400M
           # Generate code coverage report for a single build
           - compiler: gcc-10
             build_type: Debug
             COVERAGE: ON
             TEST_TIMEOUT_FACTOR: 3
+            ccache_max_size: 2.3G
           # Test with ASAN
           - compiler: clang-8
             build_type: Debug
@@ -305,6 +316,7 @@ jobs:
             ASAN: ON
             BUILD_PYTHON_BINDINGS: OFF
             MEMORY_ALLOCATOR: JEMALLOC
+            ccache_max_size: 1.3G
           # Test with Python 2 so that we retain backwards compatibility. We
           # keep track of Python versions on supercomputers in this issue:
           # https://github.com/sxs-collaboration/spectre/issues/442
@@ -325,15 +337,6 @@ jobs:
           - compiler: clang-9
             build_type: Debug
             use_pch: OFF
-            ccache_max_size: 350M
-          # Configure ccache sizes. The cache becomes ineffective if it can't
-          # hold at least one full build. The sizes for the build configurations
-          # are determined empirically by running the workflow with no cache
-          # size limit. Note that the cache is automatically cleaned up to
-          # remain below 80% of the size configured here.
-          - build_type: Debug
-            ccache_max_size: 800M
-          - build_type: Release
             ccache_max_size: 400M
 
     container:
