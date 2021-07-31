@@ -7,6 +7,7 @@ spectre_target_headers(
   HEADERS
   ArraySize.hpp
   CanBeCopyConstructed.hpp
+  CreateGetStaticMemberVariableOrDefault.hpp
   CreateGetTypeAliasOrDefault.hpp
   CreateHasStaticMemberVariable.hpp
   CreateHasTypeAlias.hpp

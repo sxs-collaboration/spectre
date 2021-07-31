@@ -5,6 +5,7 @@ set(LIBRARY "Test_TypeTraits")
 
 set(LIBRARY_SOURCES
   Test_ArraySize.cpp
+  Test_CreateGetStaticMemberVariableOrDefault.cpp
   Test_CreateGetTypeAliasOrDefault.cpp
   Test_CreateHasStaticMemberVariable.cpp
   Test_CreateHasTypeAlias.cpp
