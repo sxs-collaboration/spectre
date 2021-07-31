@@ -7,7 +7,10 @@
 
 #pragma once
 
+#include "DataStructures/BoostMultiArray.hpp"
+
 #include <boost/math/quaternion.hpp>
+#include <boost/numeric/odeint.hpp>
 
 #include "DataStructures/DataVector.hpp"
 
@@ -34,3 +37,14 @@ boost::math::quaternion<double> datavector_to_quaternion(
 /// Normalize a `boost::math::quaternion`
 void normalize_quaternion(
     gsl::not_null<boost::math::quaternion<double>*> input) noexcept;
+
+// Necessary for odeint to be able to integrate boost quaternions
+namespace boost::numeric::odeint {
+template <>
+struct vector_space_norm_inf<boost::math::quaternion<double>> {
+  using result_type = double;
+  result_type operator()(const boost::math::quaternion<double>& q) const {
+    return sup(q);
+  }
+};
+}  // namespace boost::numeric::odeint
