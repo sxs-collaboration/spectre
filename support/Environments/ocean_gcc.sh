@@ -35,13 +35,13 @@ spectre_unload_modules() {
     module unload boost-1.68.0-gcc-7.3.0-vgl6ofr
     module unload hdf5-1.12.0-gcc-7.3.0-mknp6xv
     module unload openblas-0.3.4-gcc-7.3.0-tt2coe7
-    module unload python/3.7.0
+    module unload python/3.9.5
     module unload charm-6.10.2-libs
 }
 
 spectre_load_modules() {
     module load ohpc
-    module load python/3.7.0
+    module load python/3.9.5
     module load gnu7/7.3.0
     module load openmpi/1.10.7
     module load prun/1.2
