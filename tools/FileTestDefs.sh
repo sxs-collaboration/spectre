@@ -196,6 +196,7 @@ long_lines() {
               '.min.js$' \
               '.patch' \
               '.travis.yml$' \
+              'CITATION.cff' \
               'CMakeLists.txt$' \
               'Doxyfile.in$' \
               'containers/Dockerfile.buildenv$' \
