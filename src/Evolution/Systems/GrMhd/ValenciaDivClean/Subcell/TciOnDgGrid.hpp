@@ -8,6 +8,7 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "Domain/Tags.hpp"
+#include "Evolution/DgSubcell/Tags/Inactive.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/TciOptions.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
@@ -69,7 +70,9 @@ class TciOnDgGrid {
   using return_tags =
       tmpl::list<::Tags::Variables<hydro::grmhd_tags<DataVector>>>;
   using argument_tags =
-      tmpl::list<grmhd::ValenciaDivClean::Tags::TildeD,
+      tmpl::list<evolution::dg::subcell::Tags::Inactive<
+                     grmhd::ValenciaDivClean::Tags::TildeD>,
+                 grmhd::ValenciaDivClean::Tags::TildeD,
                  grmhd::ValenciaDivClean::Tags::TildeTau,
                  grmhd::ValenciaDivClean::Tags::TildeS<>,
                  grmhd::ValenciaDivClean::Tags::TildeB<>,
@@ -82,6 +85,7 @@ class TciOnDgGrid {
   template <size_t ThermodynamicDim>
   static bool apply(
       gsl::not_null<Variables<hydro::grmhd_tags<DataVector>>*> dg_prim_vars,
+      const Scalar<DataVector>& subcell_tilde_d,
       const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau,
       const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,
       const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
