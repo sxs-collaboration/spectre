@@ -198,7 +198,6 @@ struct MockInterpolator {
 
 struct MockMetavariables {
   struct SurfaceA {
-    using compute_items_on_source = tmpl::list<>;
     using vars_to_interpolate_to_target =
         tmpl::list<Tags::TestSolution,
                    gr::Tags::SpatialMetric<3, Frame::Inertial>>;
@@ -216,7 +215,6 @@ struct MockMetavariables {
             SurfaceA, SurfaceA>;
   };
   struct SurfaceB {
-    using compute_items_on_source = tmpl::list<>;
     using vars_to_interpolate_to_target =
         tmpl::list<Tags::TestSolution,
                    gr::Tags::SpatialMetric<3, Frame::Inertial>>;
@@ -238,7 +236,6 @@ struct MockMetavariables {
             SurfaceB, SurfaceB>;
   };
   struct SurfaceC {
-    using compute_items_on_source = tmpl::list<>;
     using vars_to_interpolate_to_target =
         tmpl::list<Tags::TestSolution,
                    gr::Tags::SpatialMetric<3, Frame::Inertial>>;

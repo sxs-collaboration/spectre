@@ -89,16 +89,32 @@ struct InterpolatedVars : db::SimpleTag {
           typename InterpolationTargetTag::vars_to_interpolate_to_target>>;
 };
 
+template <typename InterpolationTargetTag>
+struct VarsToInterpolateToTarget {
+  using type =
+      Variables<typename InterpolationTargetTag::vars_to_interpolate_to_target>;
+};
+
 /// Volume variables at all `temporal_id`s for all local `Element`s.
+/// Held by the Interpolator.
 template <typename Metavariables>
 struct VolumeVarsInfo : db::SimpleTag {
   struct Info {
     Mesh<Metavariables::volume_dim> mesh;
-    Variables<typename Metavariables::interpolator_source_vars> vars;
-
+    // Variables that have been sent from the Elements.
+    Variables<typename Metavariables::interpolator_source_vars>
+        vars_from_element;
+    // Variables, for each InterpolationTargetTag, that have been
+    // computed in the volume before interpolation, and that will
+    // be interpolated.
+    tuples::tagged_tuple_from_typelist<
+        db::wrap_tags_in<VarsToInterpolateToTarget,
+                         typename Metavariables::interpolation_target_tags>>
+        vars_to_interpolate;
     void pup(PUP::er& p) noexcept {  // NOLINT
       p | mesh;
-      p | vars;
+      p | vars_from_element;
+      p | vars_to_interpolate;
     }
   };
   using type = std::unordered_map<

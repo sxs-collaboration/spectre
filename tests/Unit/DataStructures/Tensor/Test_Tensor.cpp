@@ -74,6 +74,25 @@ static_assert(std::is_same_v<tnsr::iJ<double, 3, Frame::Grid>,
                                  Frame::Grid>>,
               "Failed testing prepend_spatial_index");
 
+// Test any_index_in_frame_v
+static_assert(TensorMetafunctions::any_index_in_frame_v<
+                  tnsr::iJ<double, 3, Frame::Grid>, Frame::Grid>,
+              "Failed testing any_index_in_frame_v where it should match");
+static_assert(not TensorMetafunctions::any_index_in_frame_v<
+                  tnsr::iJ<double, 3, Frame::Grid>, Frame::Inertial>,
+              "Failed testing any_index_in_frame_v where it should not match");
+static_assert(
+    TensorMetafunctions::any_index_in_frame_v<
+        Tensor<
+            double, tmpl::integral_list<std::int32_t, 2, 1>,
+            index_list<Tensor_detail::TensorIndexType<
+                           3, UpLo::Lo, Frame::Inertial, IndexType::Spacetime>,
+                       Tensor_detail::TensorIndexType<3, UpLo::Lo, Frame::Grid,
+                                                      IndexType::Spacetime>>>,
+        Frame::Inertial>,
+    "Failed testing any_index_in_frame_v for a tensor with different frames "
+    "for different indices");
+
 // Test remove_first_index
 static_assert(
     std::is_same_v<Scalar<double>, TensorMetafunctions::remove_first_index<
