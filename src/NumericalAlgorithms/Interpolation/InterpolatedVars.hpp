@@ -72,20 +72,17 @@ void operator|(PUP::er& p, Info<VolumeDim, TagList>& t) noexcept {  // NOLINT
   pup(p, t);
 }
 
-/// Holds `Info`s at all `temporal_id`s for a given
-/// `InterpolationTargetTag`.  Also holds `temporal_id`s when data has
+/// Holds `Info`s at all times for a given
+/// `InterpolationTargetTag`.  Also holds times when data has
 /// been interpolated; this is used for cleanup purposes.  All
 /// `Holder`s for all `InterpolationTargetTags` are held in a single
 /// `TaggedTuple` that is in the `Interpolator`'s `DataBox` with the
 /// tag `Tags::InterpolatedVarsHolders`.
-template <typename Metavariables,
-          typename InterpolationTargetTag, typename TagList>
+template <typename Metavariables, typename InterpolationTargetTag,
+          typename TagList>
 struct Holder {
-  std::unordered_map<typename Metavariables::temporal_id::type,
-                     Info<Metavariables::volume_dim, TagList>>
-      infos;
-  std::unordered_set<typename Metavariables::temporal_id::type>
-      temporal_ids_when_data_has_been_interpolated;
+  std::unordered_map<double, Info<Metavariables::volume_dim, TagList>> infos;
+  std::unordered_set<double> times_when_data_has_been_interpolated;
 };
 
 template <typename Metavariables, typename InterpolationTargetTag,
@@ -94,7 +91,7 @@ void pup(PUP::er& p,                                              // NOLINT
          Holder<Metavariables, InterpolationTargetTag, TagList>&  // NOLINT
              t) noexcept {                                        // NOLINT
   p | t.infos;
-  p | t.temporal_ids_when_data_has_been_interpolated;
+  p | t.times_when_data_has_been_interpolated;
 }
 
 template <typename Metavariables, typename InterpolationTargetTag,

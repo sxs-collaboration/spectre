@@ -13,77 +13,70 @@
 namespace intrp::Actions {
 
 template <typename InterpolationTargetTag>
-struct VerifyTemporalIdsAndSendPoints;
+struct VerifyTimesAndSendPoints;
 
 namespace detail {
 template <typename InterpolationTargetTag, typename ParallelComponent,
           typename DbTags, typename Metavariables>
-void verify_temporal_ids_and_send_points_time_independent(
+void verify_times_and_send_points_time_independent(
     const gsl::not_null<db::DataBox<DbTags>*> box,
     Parallel::GlobalCache<Metavariables>& cache) noexcept {
-  using TemporalId = typename Metavariables::temporal_id::type;
-
-  // Move all PendingTemporalIds to TemporalIds, provided
-  // that they are not already there, and fill new_temporal_ids
-  // with the temporal_ids that were so moved.
-  std::vector<TemporalId> new_temporal_ids{};
-  db::mutate_apply<tmpl::list<Tags::TemporalIds<TemporalId>,
-                              Tags::PendingTemporalIds<TemporalId>>,
-                   tmpl::list<Tags::CompletedTemporalIds<TemporalId>>>(
-      [&new_temporal_ids](
-          const gsl::not_null<std::deque<TemporalId>*> ids,
-          const gsl::not_null<std::deque<TemporalId>*> pending_ids,
-          const std::deque<TemporalId>& completed_ids) noexcept {
+  // Move all PendingTimes to Times, provided
+  // that they are not already there, and fill new_times
+  // with the times that were so moved.
+  std::vector<double> new_times{};
+  db::mutate_apply<tmpl::list<Tags::Times, Tags::PendingTimes>,
+                   tmpl::list<Tags::CompletedTimes>>(
+      [&new_times](const gsl::not_null<std::deque<double>*> ids,
+                   const gsl::not_null<std::deque<double>*> pending_ids,
+                   const std::deque<double>& completed_ids) noexcept {
         for (auto& id : *pending_ids) {
           if (std::find(completed_ids.begin(), completed_ids.end(), id) ==
                   completed_ids.end() and
               std::find(ids->begin(), ids->end(), id) == ids->end()) {
             ids->push_back(id);
-            new_temporal_ids.push_back(id);
+            new_times.push_back(id);
           }
         }
         pending_ids->clear();
       },
       box);
   if (InterpolationTargetTag::compute_target_points::is_sequential::value) {
-    // Sequential: start interpolation only for the first new_temporal_id.
-    if (not new_temporal_ids.empty()) {
+    // Sequential: start interpolation only for the first new_time.
+    if (not new_times.empty()) {
       auto& my_proxy =
           Parallel::get_parallel_component<ParallelComponent>(cache);
       Parallel::simple_action<
           Actions::SendPointsToInterpolator<InterpolationTargetTag>>(
-          my_proxy, new_temporal_ids.front());
+          my_proxy, new_times.front());
     }
   } else {
-    // Non-sequential: start interpolation for all new_temporal_ids.
+    // Non-sequential: start interpolation for all new_times.
     auto& my_proxy = Parallel::get_parallel_component<ParallelComponent>(cache);
-    for (const auto& id : new_temporal_ids) {
+    for (const auto& time : new_times) {
       Parallel::simple_action<
           Actions::SendPointsToInterpolator<InterpolationTargetTag>>(my_proxy,
-                                                                     id);
+                                                                     time);
     }
   }
 }
 
 template <typename InterpolationTargetTag, typename ParallelComponent,
           typename DbTags, typename Metavariables>
-void verify_temporal_ids_and_send_points_time_dependent(
+void verify_times_and_send_points_time_dependent(
     const gsl::not_null<db::DataBox<DbTags>*> box,
     Parallel::GlobalCache<Metavariables>& cache) noexcept {
-  using TemporalId = typename Metavariables::temporal_id::type;
-
-  const auto& pending_temporal_ids =
-      db::get<Tags::PendingTemporalIds<TemporalId>>(*box);
-  if (pending_temporal_ids.empty()) {
-    return; // Nothing to do if there are no pending temporal_ids.
+  const auto& pending_times = db::get<Tags::PendingTimes>(*box);
+  if (pending_times.empty()) {
+    return;  // Nothing to do if there are no pending times.
   }
 
   auto& this_proxy = Parallel::get_parallel_component<ParallelComponent>(cache);
   double min_expiration_time = std::numeric_limits<double>::max();
-  const bool at_least_one_pending_temporal_id_is_ready =
+  const bool at_least_one_pending_time_is_ready =
       ::Parallel::mutable_cache_item_is_ready<domain::Tags::FunctionsOfTime>(
           cache,
-          [&this_proxy, &pending_temporal_ids, &min_expiration_time](
+          [&this_proxy, &pending_times, &min_expiration_time](
               const std::unordered_map<
                   std::string,
                   std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
@@ -96,44 +89,43 @@ void verify_temporal_ids_and_send_points_time_dependent(
                                           b.second->time_bounds()[1];
                                  })
                     ->second->time_bounds()[1];
-            for (const auto& pending_id : pending_temporal_ids) {
-              if (pending_id.step_time().value() <= min_expiration_time) {
-                // Success: at least one pending_temporal_id is ok.
+            for (const auto& pending_id : pending_times) {
+              if (pending_id <= min_expiration_time) {
+                // Success: at least one pending_time is ok.
                 return std::unique_ptr<Parallel::Callback>{};
               }
             }
-            // Failure: none of the pending_temporal_ids are ok.
+            // Failure: none of the pending_times are ok.
             return std::unique_ptr<Parallel::Callback>(
                 new Parallel::SimpleActionCallback<
-                    VerifyTemporalIdsAndSendPoints<InterpolationTargetTag>,
+                    VerifyTimesAndSendPoints<InterpolationTargetTag>,
                     decltype(this_proxy)>(this_proxy));
           });
 
-  if (not at_least_one_pending_temporal_id_is_ready) {
-    // A callback has been set so that VerifyTemporalIdsAndSendPoints will
+  if (not at_least_one_pending_time_is_ready) {
+    // A callback has been set so that VerifyTimesAndSendPoints will
     // be called by MutableGlobalCache when domain::Tags::FunctionsOfTime
     // is updated.  So we can exit now.
     return;
   }
 
-  // Move up-to-date PendingTemporalIds to TemporalIds, provided
-  // that they are not already there, and fill new_temporal_ids
-  // with the temporal_ids that were so moved.
-  std::vector<TemporalId> new_temporal_ids{};
-  db::mutate_apply<tmpl::list<Tags::TemporalIds<TemporalId>,
-                              Tags::PendingTemporalIds<TemporalId>>,
-                   tmpl::list<Tags::CompletedTemporalIds<TemporalId>>>(
-      [&min_expiration_time, &new_temporal_ids](
-          const gsl::not_null<std::deque<TemporalId>*> ids,
-          const gsl::not_null<std::deque<TemporalId>*> pending_ids,
-          const std::deque<TemporalId>& completed_ids) noexcept {
+  // Move up-to-date PendingTimes to Times, provided
+  // that they are not already there, and fill new_times
+  // with the times that were so moved.
+  std::vector<double> new_times{};
+  db::mutate_apply<tmpl::list<Tags::Times, Tags::PendingTimes>,
+                   tmpl::list<Tags::CompletedTimes>>(
+      [&min_expiration_time, &new_times](
+          const gsl::not_null<std::deque<double>*> ids,
+          const gsl::not_null<std::deque<double>*> pending_ids,
+          const std::deque<double>& completed_ids) noexcept {
         for (auto it = pending_ids->begin(); it != pending_ids->end();) {
-          if (it->step_time().value() <= min_expiration_time and
+          if (*it <= min_expiration_time and
               std::find(completed_ids.begin(), completed_ids.end(), *it) ==
                   completed_ids.end() and
               std::find(ids->begin(), ids->end(), *it) == ids->end()) {
             ids->push_back(*it);
-            new_temporal_ids.push_back(*it);
+            new_times.push_back(*it);
             it = pending_ids->erase(it);
           } else {
             ++it;
@@ -143,64 +135,64 @@ void verify_temporal_ids_and_send_points_time_dependent(
       box);
 
   if (InterpolationTargetTag::compute_target_points::is_sequential::value) {
-    // Sequential: start interpolation only for the first new_temporal_id.
-    if (not new_temporal_ids.empty()) {
+    // Sequential: start interpolation only for the first new_time.
+    if (not new_times.empty()) {
       auto& my_proxy =
           Parallel::get_parallel_component<ParallelComponent>(cache);
       Parallel::simple_action<
           Actions::SendPointsToInterpolator<InterpolationTargetTag>>(
-          my_proxy, new_temporal_ids.front());
+          my_proxy, new_times.front());
     }
   } else {
-    // Non-sequential: start interpolation for all new_temporal_ids.
+    // Non-sequential: start interpolation for all new_times.
     auto& my_proxy = Parallel::get_parallel_component<ParallelComponent>(cache);
-    for (const auto& id : new_temporal_ids) {
+    for (const auto& time : new_times) {
       Parallel::simple_action<
           Actions::SendPointsToInterpolator<InterpolationTargetTag>>(my_proxy,
-                                                                     id);
+                                                                     time);
     }
-    // If there are still pending temporal_ids, call
-    // VerifyTemporalIdsAndSendPoints again, so that those pending
-    // temporal_ids can be waited for.
-    if (not db::get<Tags::PendingTemporalIds<TemporalId>>(*box).empty()) {
-      Parallel::simple_action<
-          VerifyTemporalIdsAndSendPoints<InterpolationTargetTag>>(my_proxy);
+    // If there are still pending times, call
+    // VerifyTimesAndSendPoints again, so that those pending
+    // times can be waited for.
+    if (not db::get<Tags::PendingTimes>(*box).empty()) {
+      Parallel::simple_action<VerifyTimesAndSendPoints<InterpolationTargetTag>>(
+          my_proxy);
     }
   }
 }
 }  // namespace detail
 
 /// \ingroup ActionsGroup
-/// \brief Sends points to an Interpolator for verified temporal_ids.
+/// \brief Sends points to an Interpolator for verified times.
 ///
-/// VerifyTemporalIdsAndSendPoints is invoked on an InterpolationTarget.
+/// VerifyTimesAndSendPoints is invoked on an InterpolationTarget.
 ///
 /// In more detail, does the following:
 /// - If any map is time-dependent:
-///   - Moves verified PendingTemporalIds to TemporalIds, where
+///   - Moves verified PendingTimes to Times, where
 ///     verified means that the FunctionsOfTime in the GlobalCache
-///     are up-to-date for that TemporalId.  If no PendingTemporalIds are
-///     moved, then VerifyTemporalIdsAndSendPoints sets itself as a
+///     are up-to-date for that time.  If no PendingTimes are
+///     moved, then VerifyTimesAndSendPoints sets itself as a
 ///     callback in the GlobalCache so that it is called again when the
 ///     FunctionsOfTime are mutated.
 ///   - If the InterpolationTarget is sequential, invokes
-///     intrp::Actions::SendPointsToInterpolator for the first TemporalId.
+///     intrp::Actions::SendPointsToInterpolator for the first Time.
 ///     (when interpolation is complete,
 ///      intrp::Actions::InterpolationTargetReceiveVars will begin interpolation
-///     on the next TemporalId)
+///     on the next Time)
 ///   - If the InterpolationTarget is not sequential, invokes
-///     intrp::Actions::SendPointsToInterpolator for all valid TemporalIds,
-///     and then if PendingTemporalIds is non-empty it invokes itself.
+///     intrp::Actions::SendPointsToInterpolator for all valid times,
+///     and then if PendingTimes is non-empty it invokes itself.
 ///
 /// - If all maps are time-independent:
-///   - Moves all PendingTemporalIds to TemporalIds
+///   - Moves all PendingTimes to Times
 ///   - If the InterpolationTarget is sequential, invokes
-///     intrp::Actions::SendPointsToInterpolator for the first TemporalId.
+///     intrp::Actions::SendPointsToInterpolator for the first Time.
 ///     (when interpolation is complete,
 ///      intrp::Actions::InterpolationTargetReceiveVars will begin interpolation
-///     on the next TemporalId)
+///     on the next Time)
 ///   - If the InterpolationTarget is not sequential, invokes
-///     intrp::Actions::SendPointsToInterpolator for all TemporalIds.
+///     intrp::Actions::SendPointsToInterpolator for all Times.
 ///
 /// Uses:
 /// - DataBox:
@@ -216,20 +208,17 @@ void verify_temporal_ids_and_send_points_time_dependent(
 ///
 /// For requirements on InterpolationTargetTag, see InterpolationTarget
 template <typename InterpolationTargetTag>
-struct VerifyTemporalIdsAndSendPoints {
+struct VerifyTimesAndSendPoints {
   template <typename ParallelComponent, typename DbTags, typename Metavariables,
             typename ArrayIndex,
-            Requires<tmpl::list_contains_v<
-                DbTags,
-                Tags::TemporalIds<typename Metavariables::temporal_id::type>>> =
-                nullptr>
+            Requires<tmpl::list_contains_v<DbTags, Tags::Times>> = nullptr>
   static void apply(db::DataBox<DbTags>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/) noexcept {
     if constexpr (std::is_same_v<typename InterpolationTargetTag::
                                      compute_target_points::frame,
                                  ::Frame::Grid>) {
-      detail::verify_temporal_ids_and_send_points_time_independent<
+      detail::verify_times_and_send_points_time_independent<
           InterpolationTargetTag, ParallelComponent>(make_not_null(&box),
                                                      cache);
     } else {
@@ -238,7 +227,7 @@ struct VerifyTemporalIdsAndSendPoints {
         if constexpr (InterpolationTarget_detail::
                           cache_contains_functions_of_time<
                               Metavariables>::value) {
-          detail::verify_temporal_ids_and_send_points_time_dependent<
+          detail::verify_times_and_send_points_time_dependent<
               InterpolationTargetTag, ParallelComponent>(make_not_null(&box),
                                                          cache);
         } else {
@@ -256,7 +245,7 @@ struct VerifyTemporalIdsAndSendPoints {
               "CoordinateMap, please add FunctionsOfTime to the GlobalCache.");
         }
       } else {
-        detail::verify_temporal_ids_and_send_points_time_independent<
+        detail::verify_times_and_send_points_time_independent<
             InterpolationTargetTag, ParallelComponent>(make_not_null(&box),
                                                        cache);
       }

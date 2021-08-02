@@ -50,7 +50,6 @@
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/Tags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
-#include "NumericalAlgorithms/Interpolation/AddTemporalIdsToInterpolationTarget.hpp"
 #include "NumericalAlgorithms/Interpolation/Callbacks/FindApparentHorizon.hpp"
 #include "NumericalAlgorithms/Interpolation/Callbacks/ObserveTimeSeriesOnSurface.hpp"
 #include "NumericalAlgorithms/Interpolation/CleanUpInterpolator.hpp"

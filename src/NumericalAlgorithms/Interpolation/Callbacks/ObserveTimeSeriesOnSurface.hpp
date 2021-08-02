@@ -12,6 +12,7 @@
 #include "DataStructures/DataBox/TagName.hpp"
 #include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObservationId.hpp"
+#include "NumericalAlgorithms/Interpolation/InterpolationTarget.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
@@ -75,8 +76,6 @@ auto make_reduction_data(const db::DataBox<DbTags>& box, double time,
 /// a time series on a surface.
 ///
 /// Uses:
-/// - Metavariables
-///   - `temporal_id`
 /// - DataBox:
 ///   - `TagsToObserve`
 ///
@@ -97,10 +96,9 @@ struct ObserveTimeSeriesOnSurface {
       std::numeric_limits<double>::quiet_NaN();
 
   template <typename DbTags, typename Metavariables>
-  static void apply(
-      const db::DataBox<DbTags>& box,
-      Parallel::GlobalCache<Metavariables>& cache,
-      const typename Metavariables::temporal_id::type& temporal_id) noexcept {
+  static void apply(const db::DataBox<DbTags>& box,
+                    Parallel::GlobalCache<Metavariables>& cache,
+                    const double time) noexcept {
     auto& proxy = Parallel::get_parallel_component<
         observers::ObserverWriter<Metavariables>>(cache);
 
@@ -111,13 +109,12 @@ struct ObserveTimeSeriesOnSurface {
     auto& my_proxy = Parallel::get_parallel_component<ParallelComponent>(cache);
     Parallel::threaded_action<observers::ThreadedActions::WriteReductionData>(
         proxy[0],
-        observers::ObservationId(temporal_id.substep_time().value(),
+        observers::ObservationId(time,
                                  pretty_type::get_name<ObservationType>()),
         static_cast<size_t>(Parallel::my_node(*my_proxy.ckLocal())),
         std::string{"/" + pretty_type::short_name<InterpolationTargetTag>()},
         detail::make_legend(TagsToObserve{}),
-        detail::make_reduction_data(box, temporal_id.substep_time().value(),
-                                    TagsToObserve{}));
+        detail::make_reduction_data(box, time, TagsToObserve{}));
   }
 };
 }  // namespace callbacks

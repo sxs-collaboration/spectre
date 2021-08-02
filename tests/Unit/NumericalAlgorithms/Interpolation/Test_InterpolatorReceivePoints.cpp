@@ -30,12 +30,7 @@
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
-#include "Time/Slab.hpp"
-#include "Time/Tags.hpp"
-#include "Time/Time.hpp"
-#include "Time/TimeStepId.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/Rational.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
@@ -58,8 +53,7 @@ class DataBox;
 namespace intrp::Tags {
 template <typename Metavariables>
 struct InterpolatedVarsHolders;
-template <typename Metavariables>
-struct TemporalIds;
+struct Times;
 }  // namespace intrp::Tags
 namespace Tags {
 template <typename TagsList>
@@ -71,10 +65,10 @@ namespace {
 size_t num_calls_of_target_receive_vars = 0;
 template <typename InterpolationTargetTag>
 struct MockInterpolationTargetReceiveVars {
-  template <typename ParallelComponent, typename DbTags, typename Metavariables,
-            typename ArrayIndex,
-            Requires<tmpl::list_contains_v<
-                DbTags, intrp::Tags::TemporalIds<Metavariables>>> = nullptr>
+  template <
+      typename ParallelComponent, typename DbTags, typename Metavariables,
+      typename ArrayIndex,
+      Requires<tmpl::list_contains_v<DbTags, intrp::Tags::Times>> = nullptr>
   static void apply(
       db::DataBox<DbTags>& /*box*/,
       Parallel::GlobalCache<Metavariables>& /*cache*/,
@@ -152,7 +146,6 @@ struct Metavariables {
   };
   using interpolator_source_vars = tmpl::list<gr::Tags::Lapse<DataVector>>;
   using interpolation_target_tags = tmpl::list<InterpolationTargetA>;
-  using temporal_id = ::Tags::TimeStepId;
   static constexpr size_t volume_dim = 3;
   using component_list =
       tmpl::list<mock_interpolation_target<Metavariables, InterpolationTargetA>,
@@ -200,15 +193,13 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceivePoints",
       }
     }
     return block_logical_coordinates(domain, points);
-  }
-  ();
-  Slab slab(0.0, 1.0);
-  TimeStepId temporal_id(true, 0, Time(slab, Rational(11, 15)));
+  }();
+  double time = 11.0 / 15.0;
 
   runner.simple_action<
       mock_interpolator<metavars>,
       intrp::Actions::ReceivePoints<metavars::InterpolationTargetA>>(
-      0, temporal_id, block_logical_coords);
+      0, time, block_logical_coords);
 
   const auto& holders = ActionTesting::get_databox_tag<
       interp_component, intrp::Tags::InterpolatedVarsHolders<metavars>>(runner,
@@ -217,13 +208,13 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceivePoints",
       get<intrp::Vars::HolderTag<metavars::InterpolationTargetA, metavars>>(
           holders);
 
-  // Should now be a single info in holder, indexed by temporal_id.
+  // Should now be a single info in holder, indexed by time.
   CHECK(holder.infos.size() == 1);
-  const auto& vars_info = holder.infos.at(temporal_id);
+  const auto& vars_info = holder.infos.at(time);
 
   // We haven't done any interpolation because we never received
   // volume data from any Elements, so these fields should be empty.
-  CHECK(holder.temporal_ids_when_data_has_been_interpolated.empty());
+  CHECK(holder.times_when_data_has_been_interpolated.empty());
   CHECK(vars_info.interpolation_is_done_for_these_elements.empty());
   CHECK(vars_info.global_offsets.empty());
   CHECK(vars_info.vars.empty());

@@ -23,7 +23,8 @@ namespace Tags {
 struct NumberOfElements;
 template <typename Metavariables>
 struct InterpolatedVarsHolders;
-template <typename Metavariables> struct VolumeVarsInfo;
+template <typename Metavariables>
+struct VolumeVarsInfo;
 }  // namespace Tags
 namespace Vars {
 template <typename InterpolationTargetTag, typename Metavariables>
@@ -59,61 +60,57 @@ struct CleanUpInterpolator {
       typename ParallelComponent, typename DbTags, typename Metavariables,
       typename ArrayIndex,
       Requires<tmpl::list_contains_v<DbTags, Tags::NumberOfElements>> = nullptr>
-  static void apply(
-      db::DataBox<DbTags>& box,  // HorizonManager's box
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/,
-      const typename Metavariables::temporal_id::type& temporal_id) noexcept {
+  static void apply(db::DataBox<DbTags>& box,  // HorizonManager's box
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
+                    const ArrayIndex& /*array_index*/,
+                    const double time) noexcept {
     // Signal that this InterpolationTarget is done at this time.
     db::mutate<Tags::InterpolatedVarsHolders<Metavariables>>(
         make_not_null(&box),
-        [&temporal_id](
-            const gsl::not_null<
-            typename Tags::InterpolatedVarsHolders<Metavariables>::type*>
-                holders) noexcept {
+        [&time](const gsl::not_null<
+                typename Tags::InterpolatedVarsHolders<Metavariables>::type*>
+                    holders) noexcept {
           get<Vars::HolderTag<InterpolationTargetTag, Metavariables>>(*holders)
-              .temporal_ids_when_data_has_been_interpolated.insert(temporal_id);
+              .times_when_data_has_been_interpolated.insert(time);
         });
 
     // If we don't need any of the volume data anymore for this
-    // temporal_id, we will remove them.
-    bool this_temporal_id_is_done = true;
+    // time, we will remove them.
+    bool this_time_is_done = true;
     const auto& holders =
         db::get<Tags::InterpolatedVarsHolders<Metavariables>>(box);
     tmpl::for_each<typename Metavariables::interpolation_target_tags>(
         [&](auto tag) noexcept {
           using Tag = typename decltype(tag)::type;
           const auto& found = get<Vars::HolderTag<Tag, Metavariables>>(holders)
-                                  .temporal_ids_when_data_has_been_interpolated;
-          if (found.count(temporal_id) == 0) {
-            this_temporal_id_is_done = false;
+                                  .times_when_data_has_been_interpolated;
+          if (found.count(time) == 0) {
+            this_time_is_done = false;
           }
         });
 
-    // We don't need any more volume data for this temporal_id,
+    // We don't need any more volume data for this time,
     // so remove it.
-    if (this_temporal_id_is_done) {
+    if (this_time_is_done) {
       db::mutate<Tags::VolumeVarsInfo<Metavariables>>(
           make_not_null(&box),
-          [&temporal_id](const gsl::not_null<
-                         typename Tags::VolumeVarsInfo<Metavariables>::type*>
-                             volume_vars_info) noexcept {
-            volume_vars_info->erase(temporal_id);
+          [&time](const gsl::not_null<
+                  typename Tags::VolumeVarsInfo<Metavariables>::type*>
+                      volume_vars_info) noexcept {
+            volume_vars_info->erase(time);
           });
 
-      // Clean up temporal_ids_when_data_has_been_interpolated
+      // Clean up times_when_data_has_been_interpolated
       db::mutate<Tags::InterpolatedVarsHolders<Metavariables>>(
           make_not_null(&box),
-          [&temporal_id](
-              const gsl::not_null<
-              typename Tags::InterpolatedVarsHolders<Metavariables>::type*>
-                  holders_l) noexcept {
+          [&time](const gsl::not_null<
+                  typename Tags::InterpolatedVarsHolders<Metavariables>::type*>
+                      holders_l) noexcept {
             tmpl::for_each<typename Metavariables::interpolation_target_tags>(
                 [&](auto tag) noexcept {
                   using Tag = typename decltype(tag)::type;
                   get<Vars::HolderTag<Tag, Metavariables>>(*holders_l)
-                      .temporal_ids_when_data_has_been_interpolated.erase(
-                          temporal_id);
+                      .times_when_data_has_been_interpolated.erase(time);
                 });
           });
     }

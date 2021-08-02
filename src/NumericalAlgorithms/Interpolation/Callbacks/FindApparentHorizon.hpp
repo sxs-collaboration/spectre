@@ -13,6 +13,7 @@
 #include "DataStructures/VariablesTag.hpp"
 #include "IO/Logging/Tags.hpp"
 #include "IO/Logging/Verbosity.hpp"
+#include "NumericalAlgorithms/Interpolation/Actions/SendPointsToInterpolator.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Printf.hpp"
@@ -34,8 +35,8 @@ namespace intrp {
 template <class Metavariables, typename InterpolationTargetTag>
 struct InterpolationTarget;
 namespace Tags {
-template <typename Metavariables>
-struct TemporalIds;
+struct IndicesOfInvalidInterpPoints;
+struct Times;
 }  // namespace Tags
 }  // namespace intrp
 template <typename Frame>
@@ -62,8 +63,6 @@ namespace callbacks {
 /// failed.
 ///
 /// Uses:
-/// - Metavariables:
-///   - `temporal_id`
 /// - DataBox:
 ///   - `logging::Tags::Verbosity<InterpolationTargetTag>`
 ///   - `::gr::Tags::InverseSpatialMetric<3,Frame>`
@@ -125,21 +124,21 @@ template <typename InterpolationTargetTag, typename Frame>
 struct FindApparentHorizon {
   using observation_types = typename InterpolationTargetTag::
       post_horizon_find_callback::observation_types;
-  template <typename DbTags, typename Metavariables, typename TemporalId>
+  template <typename DbTags, typename Metavariables>
   static bool apply(
       const gsl::not_null<db::DataBox<DbTags>*> box,
       const gsl::not_null<Parallel::GlobalCache<Metavariables>*> cache,
-      const TemporalId& temporal_id) noexcept {
+      const double time) noexcept {
     bool horizon_finder_failed = false;
 
     // Before doing anything else, deal with the possibility that some
     // of the points might be outside of the Domain.
     const auto& indices_of_invalid_pts =
-        db::get<Tags::IndicesOfInvalidInterpPoints<TemporalId>>(*box);
-    if (indices_of_invalid_pts.count(temporal_id) > 0 and
-        not indices_of_invalid_pts.at(temporal_id).empty()) {
+        db::get<Tags::IndicesOfInvalidInterpPoints>(*box);
+    if (indices_of_invalid_pts.count(time) > 0 and
+        not indices_of_invalid_pts.at(time).empty()) {
       InterpolationTargetTag::horizon_find_failure_callback::template apply<
-          InterpolationTargetTag>(*box, *cache, temporal_id,
+          InterpolationTargetTag>(*box, *cache, time,
                                   FastFlow::Status::InterpolationFailure);
       horizon_finder_failed = true;
     }
@@ -185,21 +184,20 @@ struct FindApparentHorizon {
 
       if (status == FastFlow::Status::SuccessfulIteration) {
         // Do another iteration of the same horizon search.
-        const auto& temporal_ids =
-            db::get<intrp::Tags::TemporalIds<TemporalId>>(*box);
+        const auto& times = db::get<intrp::Tags::Times>(*box);
         auto& interpolation_target = Parallel::get_parallel_component<
             intrp::InterpolationTarget<Metavariables, InterpolationTargetTag>>(
             *cache);
         Parallel::simple_action<
             Actions::SendPointsToInterpolator<InterpolationTargetTag>>(
-            interpolation_target, temporal_ids.front());
+            interpolation_target, times.front());
         // We return false because we don't want this iteration to clean
         // up the volume data, since we are using it for the next iteration
         // (i.e. the simple_action that we just called).
         return false;
       } else if (not has_converged) {
         InterpolationTargetTag::horizon_find_failure_callback::template apply<
-            InterpolationTargetTag>(*box, *cache, temporal_id, status);
+            InterpolationTargetTag>(*box, *cache, time, status);
         horizon_finder_failed = true;
       }
     }
@@ -248,7 +246,7 @@ struct FindApparentHorizon {
           box);
 
       InterpolationTargetTag::post_horizon_find_callback::apply(*box, *cache,
-                                                                temporal_id);
+                                                                time);
     }
 
     // Prepare for finding horizon at a new time.  If the horizon
@@ -275,7 +273,7 @@ struct FindApparentHorizon {
           fast_flow->reset_for_next_find();
         });
     // We return true because we are now done with all the volume data
-    // at this temporal_id, so we want it cleaned up.
+    // at this time, so we want it cleaned up.
     return true;
   }
 };

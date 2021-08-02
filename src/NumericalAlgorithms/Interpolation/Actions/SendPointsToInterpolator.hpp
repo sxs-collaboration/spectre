@@ -15,7 +15,7 @@
 namespace intrp {
 namespace Actions {
 /// \ingroup ActionsGroup
-/// \brief Sets up points on an `InterpolationTarget` at a new `temporal_id`
+/// \brief Sets up points on an `InterpolationTarget` at a new time
 /// and sends these points to an `Interpolator`.
 ///
 /// Uses:
@@ -28,28 +28,26 @@ namespace Actions {
 /// - Modifies:
 ///   - `Tags::IndicesOfFilledInterpPoints`
 ///   - `Tags::IndicesOfInvalidInterpPoints`
-///   - `Tags::InterpolatedVars<InterpolationTargetTag, TemporalId>`
+///   - `Tags::InterpolatedVars<InterpolationTargetTag>`
 ///
 /// For requirements on InterpolationTargetTag, see InterpolationTarget
 template <typename InterpolationTargetTag>
 struct SendPointsToInterpolator {
-  template <
-      typename ParallelComponent, typename DbTags, typename Metavariables,
-      typename ArrayIndex, typename TemporalId,
-      Requires<tmpl::list_contains_v<DbTags, Tags::TemporalIds<TemporalId>>> =
-          nullptr>
+  template <typename ParallelComponent, typename DbTags, typename Metavariables,
+            typename ArrayIndex,
+            Requires<tmpl::list_contains_v<DbTags, Tags::Times>> = nullptr>
   static void apply(db::DataBox<DbTags>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
-                    const TemporalId& temporal_id) noexcept {
+                    const double time) noexcept {
     auto coords = InterpolationTarget_detail::block_logical_coords<
-        InterpolationTargetTag>(box, cache, temporal_id);
+        InterpolationTargetTag>(box, cache, time);
     InterpolationTarget_detail::set_up_interpolation<InterpolationTargetTag>(
-        make_not_null(&box), temporal_id, coords);
+        make_not_null(&box), time, coords);
     auto& receiver_proxy =
         Parallel::get_parallel_component<Interpolator<Metavariables>>(cache);
     Parallel::simple_action<Actions::ReceivePoints<InterpolationTargetTag>>(
-        receiver_proxy, temporal_id, std::move(coords));
+        receiver_proxy, time, std::move(coords));
   }
 };
 
