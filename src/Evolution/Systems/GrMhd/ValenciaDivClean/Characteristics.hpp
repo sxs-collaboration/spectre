@@ -34,6 +34,15 @@ struct Normalized;
 namespace grmhd {
 namespace ValenciaDivClean {
 
+namespace detail {
+// Compute the flux Jacobian for the Valencia formulation of GRMHD with
+// divergence cleaning.
+//
+// The flux Jacobian is n_i A^i = n_i \partial F^i / \partial U, and the
+// ordering of fields in U is {tD, tTau, tS, tB, tPhi}.
+Matrix flux_jacobian(const tnsr::i<double, 3>& unit_normal) noexcept;
+}  // namespace detail
+
 /// @{
 /*!
  * \brief Compute the characteristic speeds for the Valencia formulation of

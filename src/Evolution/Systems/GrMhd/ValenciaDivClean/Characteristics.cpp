@@ -20,6 +20,17 @@
 // IWYU pragma: no_forward_declare EquationsOfState::EquationOfState
 // IWYU pragma: no_forward_declare Tensor
 
+namespace grmhd::ValenciaDivClean::detail {
+Matrix flux_jacobian(const tnsr::i<double, 3>& /*unit_normal*/) noexcept {
+  // TODO: Implement this following the example of the NewtonianEuler case.
+  // A starting point for deriving the matrix: https://arxiv.org/abs/1503.00978
+  // But note that this reference does not have the div-cleaning field, so
+  // we will need a 9x9 matrix here (and not 8x8 as in the reference).
+  // We will also need a lot of additional function arguments.
+  return Matrix(9, 9, 0.0);
+}
+}  // namespace grmhd::ValenciaDivClean::detail
+
 namespace {
 void compute_characteristic_speeds(
     const gsl::not_null<std::array<DataVector, 9>*> pchar_speeds,
