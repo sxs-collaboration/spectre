@@ -116,6 +116,14 @@ void scale_factor(const gsl::not_null<tt::remove_cvref_wrap_t<T>*>& result,
  *  `pick_root_greater_than_one` that allow the caller to choose which
  *  root to return.
  *
+ *  Furthermore, to reduce roundoff errors near
+ *  \f$\tilde{\lambda}=1\f$, the default behavior is to solve the
+ *  quadratic equation for \f$\tilde{\lambda}-1\f$ (and then add
+ *  \f$1\f$ to the solution). If instead one wants to solve the
+ *  quadratic equation directly for \f$\tilde{\lambda}\f$ so as to
+ *  obtain slightly different roundoff behavior, then one should
+ *  specify the argument `solve_for_root_minus_one` to be `false`.
+ *
  * `try_scale_factor` is not templated
  *  on type because it is used only by the inverse function, which
  *  works only on doubles.
@@ -125,7 +133,8 @@ std::optional<double> try_scale_factor(
     const std::array<double, 3>& src_point,
     const std::array<double, 3>& proj_center,
     const std::array<double, 3>& sphere_center, double radius,
-    bool pick_larger_root, bool pick_root_greater_than_one) noexcept;
+    bool pick_larger_root, bool pick_root_greater_than_one,
+    bool solve_for_root_minus_one = true) noexcept;
 
 /*!
  * Computes \f$\partial \lambda/\partial x_0^i\f$, where \f$\lambda\f$
