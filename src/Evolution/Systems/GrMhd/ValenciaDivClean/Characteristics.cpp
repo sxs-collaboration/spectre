@@ -7,6 +7,7 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
+#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Evolution/Systems/RelativisticEuler/Valencia/Characteristics.hpp"
@@ -14,6 +15,7 @@
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/Hydro/Tags.hpp"              // IWYU pragma: keep
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -212,6 +214,133 @@ std::array<DataVector, 9> characteristic_speeds(
   return char_speeds;
 }
 
+template <size_t ThermodynamicDim>
+std::pair<DataVector, std::pair<Matrix, Matrix>> numerical_eigensystem(
+    const Scalar<double>& rest_mass_density,
+    const Scalar<double>& specific_internal_energy,
+    const Scalar<double>& specific_enthalpy,
+    const tnsr::I<double, 3, Frame::Inertial>& spatial_velocity,
+    const Scalar<double>& lorentz_factor,
+    const tnsr::I<double, 3, Frame::Inertial>& magnetic_field,
+    const Scalar<double>& lapse, const tnsr::I<double, 3>& shift,
+    const tnsr::ii<double, 3, Frame::Inertial>& spatial_metric,
+    const tnsr::i<double, 3>& unit_normal,
+    const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
+        equation_of_state) noexcept {
+  ASSERT(equal_within_roundoff(get(magnitude(unit_normal)), 1.),
+         "Expected unit normal, but got normal with magnitude "
+             << get(magnitude(unit_normal)));
+
+  // TODO: Fill in arguments for this call. May require adding new arguments to
+  // the numerical_eigensystem function.
+  const Matrix a = detail::flux_jacobian(unit_normal);
+
+  // TODO: The code block below is a hack to call the characteristic_speeds
+  // function with Tensor<DataVector> types when here we are working instead
+  // with Tensor<double> types (because this funtion is designed for
+  // cell-average char transforms for limiter testing).
+  // A better solution may be to template characteristic_speeds on DataType?
+  Scalar<DataVector> dv_rest_mass_density;
+  Scalar<DataVector> dv_specific_internal_energy;
+  Scalar<DataVector> dv_specific_enthalpy;
+  tnsr::I<DataVector, 3> dv_spatial_velocity;
+  Scalar<DataVector> dv_lorentz_factor;
+  tnsr::I<DataVector, 3> dv_magnetic_field;
+  Scalar<DataVector> dv_lapse;
+  tnsr::I<DataVector, 3> dv_shift;
+  tnsr::ii<DataVector, 3> dv_spatial_metric;
+  tnsr::i<DataVector, 3> dv_unit_normal;
+  get(dv_rest_mass_density) = DataVector(1, get(rest_mass_density));
+  get(dv_specific_internal_energy) =
+      DataVector(1, get(specific_internal_energy));
+  get(dv_specific_enthalpy) = DataVector(1, get(specific_enthalpy));
+  for (size_t i = 0; i < 3; ++i) {
+    dv_spatial_velocity.get(i) = DataVector(1, spatial_velocity.get(i));
+  }
+  get(dv_lorentz_factor) = DataVector(1, get(lorentz_factor));
+  for (size_t i = 0; i < 3; ++i) {
+    dv_magnetic_field.get(i) = DataVector(1, magnetic_field.get(i));
+  }
+  get(dv_lapse) = DataVector(1, get(lapse));
+  for (size_t i = 0; i < 3; ++i) {
+    dv_shift.get(i) = DataVector(1, shift.get(i));
+  }
+  for (size_t i = 0; i < 3; ++i) {
+    for (size_t j = 0; j < 3; ++j) {
+      dv_spatial_metric.get(i, j) = DataVector(1, spatial_metric.get(i, j));
+    }
+  }
+  for (size_t i = 0; i < 3; ++i) {
+    dv_unit_normal.get(i) = DataVector(1, unit_normal.get(i));
+  }
+  const auto char_speeds = characteristic_speeds(
+      dv_rest_mass_density, dv_specific_internal_energy, dv_specific_enthalpy,
+      dv_spatial_velocity, dv_lorentz_factor, dv_magnetic_field, dv_lapse,
+      dv_shift, dv_spatial_metric, dv_unit_normal, equation_of_state);
+  // This is the end of the hacky code block
+
+  DataVector eigenvalues(9);
+  for (size_t i = 0; i < 9; ++i) {
+    eigenvalues[i] = gsl::at(char_speeds, i)[0];
+  }
+
+  Matrix right(9, 9);
+
+  // We'd like to use `blaze::eigen` to get the eigenvalues and eigenvectors
+  // of the flux Jacobian matrix `a`... but because `a` is not symmetric,
+  // blaze generically produces complex eigenvectors. So instead we find the
+  // nullspace of `a - \lambda I` using `blaze::svd`.
+  blaze::DynamicMatrix<double, blaze::rowMajor> a_minus_lambda;
+  blaze::DynamicMatrix<double, blaze::rowMajor> U;      // left singular vectors
+  blaze::DynamicVector<double, blaze::columnVector> s;  // singular values
+  blaze::DynamicMatrix<double, blaze::rowMajor> V;  // right singular vectors
+
+  const auto find_group_of_eigenvectors =
+      [&a_minus_lambda, &a, &U, &s, &V, &eigenvalues, &right](
+          const size_t index, const size_t degeneracy) noexcept {
+        a_minus_lambda = a;
+        for (size_t i = 0; i < 9; ++i) {
+          a_minus_lambda(i, i) -= eigenvalues[index];
+        }
+        blaze::svd(a_minus_lambda, U, s, V);
+
+        // Check the null space has the expected size: the last degeneracy
+        // singular values should vanish
+#ifdef SPECTRE_DEBUG
+        for (size_t i = 0; i < 9 - degeneracy; ++i) {
+          ASSERT(fabs(s[i]) > 1e-14, "Bad SVD");
+        }
+        for (size_t i = 9 - degeneracy; i < 9; ++i) {
+          ASSERT(fabs(s[i]) < 1e-14, "Bad SVD");
+        }
+#endif  // ifdef SPECTRE_DEBUG
+
+        // Copy the last degeneracy rows of V into the
+        // (index, index+degeneracy) columns of right
+        for (size_t i = 0; i < 9; ++i) {
+          for (size_t j = 0; j < degeneracy; ++j) {
+            right(i, index + j) = V(9 - degeneracy + j, i);
+          }
+        }
+      };
+
+  // lambda = inward div-clean mode
+  find_group_of_eigenvectors(0, 1);
+  // lambda = inward fast mode
+  find_group_of_eigenvectors(1, 1);
+  // 5 degenerate eigenvalues, lambda = alfven/slow modes
+  find_group_of_eigenvectors(2, 5);
+  // lambda = outward fast mode
+  find_group_of_eigenvectors(7, 1);
+  // lambda = outward div-clean mode
+  find_group_of_eigenvectors(8, 1);
+
+  Matrix left = right;
+  blaze::invert<blaze::asGeneral>(left);
+
+  return std::make_pair(eigenvalues, std::make_pair(right, left));
+}
+
 #define GET_DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATION(r, data)                                              \
@@ -238,6 +367,19 @@ std::array<DataVector, 9> characteristic_speeds(
       const Scalar<DataVector>& lapse, const tnsr::I<DataVector, 3>& shift, \
       const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,       \
       const tnsr::i<DataVector, 3>& unit_normal,                            \
+      const EquationsOfState::EquationOfState<true, GET_DIM(data)>&         \
+          equation_of_state) noexcept;                                      \
+  template std::pair<DataVector, std::pair<Matrix, Matrix>>                 \
+  numerical_eigensystem<GET_DIM(data)>(                                     \
+      const Scalar<double>& rest_mass_density,                              \
+      const Scalar<double>& specific_internal_energy,                       \
+      const Scalar<double>& specific_enthalpy,                              \
+      const tnsr::I<double, 3, Frame::Inertial>& spatial_velocity,          \
+      const Scalar<double>& lorentz_factor,                                 \
+      const tnsr::I<double, 3, Frame::Inertial>& magnetic_field,            \
+      const Scalar<double>& lapse, const tnsr::I<double, 3>& shift,         \
+      const tnsr::ii<double, 3, Frame::Inertial>& spatial_metric,           \
+      const tnsr::i<double, 3>& unit_normal,                                \
       const EquationsOfState::EquationOfState<true, GET_DIM(data)>&         \
           equation_of_state) noexcept;
 

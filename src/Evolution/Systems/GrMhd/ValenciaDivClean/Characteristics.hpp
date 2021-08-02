@@ -7,6 +7,7 @@
 #include <cstddef>
 
 #include "DataStructures/DataBox/Tag.hpp"
+#include "DataStructures/Matrix.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/FaceNormal.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
@@ -130,6 +131,25 @@ void characteristic_speeds(
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
         equation_of_state) noexcept;
 /// @}
+
+/*!
+ * \brief Compute the transform matrices between the conserved variables and
+ * the characteristic variables of the Valencia formulation of GRMHD with
+ * divergence cleaning.
+ */
+template <size_t ThermodynamicDim>
+std::pair<DataVector, std::pair<Matrix, Matrix>> numerical_eigensystem(
+    const Scalar<double>& rest_mass_density,
+    const Scalar<double>& specific_internal_energy,
+    const Scalar<double>& specific_enthalpy,
+    const tnsr::I<double, 3, Frame::Inertial>& spatial_velocity,
+    const Scalar<double>& lorentz_factor,
+    const tnsr::I<double, 3, Frame::Inertial>& magnetic_field,
+    const Scalar<double>& lapse, const tnsr::I<double, 3>& shift,
+    const tnsr::ii<double, 3, Frame::Inertial>& spatial_metric,
+    const tnsr::i<double, 3>& unit_normal,
+    const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
+        equation_of_state) noexcept;
 
 namespace Tags {
 /// \brief Compute the characteristic speeds for the Valencia formulation of

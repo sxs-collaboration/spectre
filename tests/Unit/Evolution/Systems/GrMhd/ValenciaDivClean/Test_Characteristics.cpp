@@ -8,6 +8,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
+#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Characteristics.hpp"
@@ -15,11 +16,14 @@
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
+#include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/Domain/DomainTestHelpers.hpp"
 #include "Helpers/PointwiseFunctions/GeneralRelativity/TestHelpers.hpp"
 #include "Helpers/PointwiseFunctions/Hydro/TestHelpers.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/Hydro/LorentzFactor.hpp"
+#include "PointwiseFunctions/Hydro/SpecificEnthalpy.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -111,6 +115,103 @@ struct SomeEosType {
   static constexpr size_t thermodynamic_dim = 3;
 };
 
+void test_numerical_eigenvectors() noexcept {
+  // This test verifies that the eigenvectors satisfy the conditions by which
+  // they are defined:
+  // - the right and left eigenvectors are matrix inverses of each other, i.e.,
+  //   left * right == right * left == identity
+  // - the right and left eigenvectors diagonalize the flux Jacobian, i.e.
+  //   right * eigenvalues * left == flux
+  MAKE_GENERATOR(generator);
+  std::uniform_real_distribution<> distribution(-1., 1.);
+  std::uniform_real_distribution<> distribution_positive(1e-3, 1.);
+
+  const auto nn_generator = make_not_null(&generator);
+  const auto nn_distribution = make_not_null(&distribution);
+  const auto nn_distribution_positive = make_not_null(&distribution_positive);
+
+  const double used_for_size = 0.;
+  // This computes a unit normal. It is NOT uniformly distributed in angle,
+  // but for this test the distribution is not important.
+  const auto unit_normal = [&]() noexcept {
+    auto result = make_with_random_values<tnsr::i<double, 3>>(
+        nn_generator, nn_distribution, used_for_size);
+    const double normal_magnitude = get(magnitude(result));
+    for (auto& n_i : result) {
+      n_i /= normal_magnitude;
+    }
+    return result;
+  }();
+
+  // To check the diagonalization of the Jacobian, we need a self consistent set
+  // of primitive and derived-from-primitive variables -- so generate everything
+  // from the primitives
+  const auto rest_mass_density = make_with_random_values<Scalar<double>>(
+      nn_generator, nn_distribution_positive, used_for_size);
+  const auto specific_internal_energy = make_with_random_values<Scalar<double>>(
+      nn_generator, nn_distribution_positive, used_for_size);
+  const auto spatial_velocity = make_with_random_values<tnsr::I<double, 3>>(
+      nn_generator, nn_distribution, used_for_size);
+  const auto magnetic_field = make_with_random_values<tnsr::I<double, 3>>(
+      nn_generator, nn_distribution, used_for_size);
+
+  auto lapse = make_with_random_values<Scalar<double>>(
+      nn_generator, nn_distribution, used_for_size);
+  auto shift = make_with_random_values<tnsr::I<double, 3>>(
+      nn_generator, nn_distribution, used_for_size);
+  auto spatial_metric = make_with_random_values<tnsr::ii<double, 3>>(
+      nn_generator, nn_distribution, used_for_size);
+  get(lapse) = 1. + 1e-3 * get(lapse);
+  for (size_t i = 0; i < 3; ++i) {
+    shift.get(i) *= 1e-3 * shift.get(i);
+    for (size_t j = 0; j < 3; ++j) {
+      spatial_metric.get(i, j) *= 1e-3 * spatial_metric.get(i, j);
+    }
+    spatial_metric.get(i, i) += 1.;
+  }
+
+  const Scalar<double> v_squared{
+      {{get(dot_product(spatial_velocity, spatial_velocity, spatial_metric))}}};
+  const Scalar<double> lorentz_factor = hydro::lorentz_factor(v_squared);
+
+  const EquationsOfState::IdealFluid<true> equation_of_state{5. / 3.};
+  const auto pressure = equation_of_state.pressure_from_density_and_energy(
+      rest_mass_density, specific_internal_energy);
+  const Scalar<double> specific_enthalpy =
+      hydro::relativistic_specific_enthalpy(rest_mass_density,
+                                            specific_internal_energy, pressure);
+
+  // TODO: fill in
+  const auto expected_flux_jacobian =
+      grmhd::ValenciaDivClean::detail::flux_jacobian(unit_normal);
+
+  const auto vals_and_vecs = grmhd::ValenciaDivClean::numerical_eigensystem(
+      rest_mass_density, specific_internal_energy, specific_enthalpy,
+      spatial_velocity, lorentz_factor, magnetic_field, lapse, shift,
+      spatial_metric, unit_normal, equation_of_state);
+  const Matrix num_eigenvalues = [&vals_and_vecs]() noexcept {
+    Matrix result(9, 9, 0.);
+    for (size_t i = 0; i < 9; ++i) {
+      result(i, i) = vals_and_vecs.first[i];
+    }
+    return result;
+  }();
+  const Matrix& num_right = vals_and_vecs.second.first;
+  const Matrix& num_left = vals_and_vecs.second.second;
+  const Matrix id1 = num_right * num_left;
+  const Matrix id2 = num_left * num_right;
+  const Matrix num_flux_jacobian = num_right * num_eigenvalues * num_left;
+
+  for (size_t i = 0; i < 9; ++i) {
+    for (size_t j = 0; j < 9; ++j) {
+      const double delta_ij = (i == j) ? 1. : 0.;
+      CHECK(id1(i, j) == approx(delta_ij));
+      CHECK(id2(i, j) == approx(delta_ij));
+      CHECK(num_flux_jacobian(i, j) == approx(expected_flux_jacobian(i, j)));
+    }
+  }
+}
+
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.Characteristics",
@@ -127,4 +228,6 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.Characteristics",
   TestHelpers::db::test_compute_tag<
       grmhd::ValenciaDivClean::Tags::CharacteristicSpeedsCompute<SomeEosType>>(
       "CharacteristicSpeeds");
+
+  test_numerical_eigenvectors();
 }
