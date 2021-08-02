@@ -262,6 +262,8 @@ struct EvolutionMetavars {
   static std::string phase_name(Phase phase) noexcept {
     if (phase == Phase::LoadBalancing) {
       return "LoadBalancing";
+    } else if (phase == Phase::WriteCheckpoint) {
+      return "WriteCheckpoint";
     }
     ERROR(
         "Passed phase that should not be used in input file. Integer "
@@ -272,6 +274,8 @@ struct EvolutionMetavars {
   using phase_changes =
       tmpl::list<PhaseControl::Registrars::VisitAndReturn<EvolutionMetavars,
                                                           Phase::LoadBalancing>,
+                 PhaseControl::Registrars::VisitAndReturn<
+                     EvolutionMetavars, Phase::WriteCheckpoint>,
                  PhaseControl::Registrars::CheckpointAndExitAfterWallclock<
                      EvolutionMetavars>>;
 
