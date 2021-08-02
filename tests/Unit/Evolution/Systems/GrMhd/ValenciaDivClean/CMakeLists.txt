@@ -32,7 +32,6 @@ set(LIBRARY_SOURCES
   Test_Sources.cpp
   Test_Tags.cpp
   Test_TimeDerivativeTerms.cpp
-  Test_ValenciaDivClean.cpp
   )
 
 add_test_library(
