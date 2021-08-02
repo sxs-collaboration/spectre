@@ -25,12 +25,22 @@ bool DgInitialDataTci::apply(
                                Inactive<ValenciaDivClean::Tags::TildePhi>>>&
         subcell_vars,
     double rdmp_delta0, double rdmp_epsilon, double persson_exponent,
-    const Mesh<3>& dg_mesh) noexcept {
-  return evolution::dg::subcell::two_mesh_rdmp_tci(dg_vars, subcell_vars,
+    const Mesh<3>& dg_mesh, const TciOptions& tci_options) noexcept {
+  return min(get(get<ValenciaDivClean::Tags::TildeD>(dg_vars))) <
+             tci_options.minimum_rest_mass_density_times_lorentz_factor or
+         min(get(get<Inactive<ValenciaDivClean::Tags::TildeD>>(subcell_vars))) <
+             tci_options.minimum_rest_mass_density_times_lorentz_factor or
+         min(get(get<ValenciaDivClean::Tags::TildeTau>(dg_vars))) <
+             tci_options.minimum_tilde_tau or
+         min(get(get<Inactive<ValenciaDivClean::Tags::TildeTau>>(
+             subcell_vars))) < tci_options.minimum_tilde_tau or
+         evolution::dg::subcell::two_mesh_rdmp_tci(dg_vars, subcell_vars,
                                                    rdmp_delta0, rdmp_epsilon) or
          evolution::dg::subcell::persson_tci(
-             get<Tags::TildeD>(dg_vars), dg_mesh, persson_exponent, 1.0e-18) or
+             get<ValenciaDivClean::Tags::TildeD>(dg_vars), dg_mesh,
+             persson_exponent, 1.0e-18) or
          evolution::dg::subcell::persson_tci(
-             get<Tags::TildeTau>(dg_vars), dg_mesh, persson_exponent, 1.0e-18);
+             get<ValenciaDivClean::Tags::TildeTau>(dg_vars), dg_mesh,
+             persson_exponent, 1.0e-18);
 }
 }  // namespace grmhd::ValenciaDivClean::subcell

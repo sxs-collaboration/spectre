@@ -35,13 +35,16 @@ SPECTRE_TEST_CASE(
   const double delta0 = 1.0e-4;
   const double epsilon = 1.0e-3;
   const double exponent = 4.0;
+  const grmhd::ValenciaDivClean::subcell::TciOptions tci_options{
+      1.0e-20, 1.0e-40, 1.1e-12, 1.0e-12};
 
   {
     INFO("TCI is happy");
     const InactiveConsVars subcell_vars{subcell_mesh.number_of_grid_points(),
                                         1.0};
     CHECK_FALSE(grmhd::ValenciaDivClean::subcell::DgInitialDataTci::apply(
-        dg_vars, subcell_vars, delta0, epsilon, exponent, dg_mesh));
+        dg_vars, subcell_vars, delta0, epsilon, exponent, dg_mesh,
+        tci_options));
   }
 
   {
@@ -49,7 +52,8 @@ SPECTRE_TEST_CASE(
     const InactiveConsVars subcell_vars{subcell_mesh.number_of_grid_points(),
                                         2.0};
     CHECK(grmhd::ValenciaDivClean::subcell::DgInitialDataTci::apply(
-        dg_vars, subcell_vars, delta0, epsilon, exponent, dg_mesh));
+        dg_vars, subcell_vars, delta0, epsilon, exponent, dg_mesh,
+        tci_options));
   }
 
   {
@@ -59,7 +63,8 @@ SPECTRE_TEST_CASE(
     get(get<grmhd::ValenciaDivClean::Tags::TildeD>(
         dg_vars))[dg_mesh.number_of_grid_points() / 2] += 2.0e10;
     CHECK(grmhd::ValenciaDivClean::subcell::DgInitialDataTci::apply(
-        dg_vars, subcell_vars, 1.0e100, epsilon, exponent, dg_mesh));
+        dg_vars, subcell_vars, 1.0e100, epsilon, exponent, dg_mesh,
+        tci_options));
     get(get<grmhd::ValenciaDivClean::Tags::TildeD>(
         dg_vars))[dg_mesh.number_of_grid_points() / 2] = 1.0;
   }
@@ -71,8 +76,51 @@ SPECTRE_TEST_CASE(
     get(get<grmhd::ValenciaDivClean::Tags::TildeTau>(
         dg_vars))[dg_mesh.number_of_grid_points() / 2] += 2.0e10;
     CHECK(grmhd::ValenciaDivClean::subcell::DgInitialDataTci::apply(
-        dg_vars, subcell_vars, 1.0e100, epsilon, exponent, dg_mesh));
+        dg_vars, subcell_vars, 1.0e100, epsilon, exponent, dg_mesh,
+        tci_options));
     get(get<grmhd::ValenciaDivClean::Tags::TildeTau>(
         dg_vars))[dg_mesh.number_of_grid_points() / 2] = 1.0;
+  }
+
+  {
+    INFO("Negative TildeD");
+    InactiveConsVars subcell_vars{subcell_mesh.number_of_grid_points(), 1.0};
+
+    get(get<grmhd::ValenciaDivClean::Tags::TildeD>(
+        dg_vars))[dg_mesh.number_of_grid_points() / 2] = -1.0e-20;
+    CHECK(grmhd::ValenciaDivClean::subcell::DgInitialDataTci::apply(
+        dg_vars, subcell_vars, 1.0e100, epsilon, exponent, dg_mesh,
+        tci_options));
+    get(get<grmhd::ValenciaDivClean::Tags::TildeD>(
+        dg_vars))[dg_mesh.number_of_grid_points() / 2] = 1.0;
+
+    get(get<Inactive<grmhd::ValenciaDivClean::Tags::TildeD>>(
+        subcell_vars))[subcell_mesh.number_of_grid_points() / 2] = -1.0e-20;
+    CHECK(grmhd::ValenciaDivClean::subcell::DgInitialDataTci::apply(
+        dg_vars, subcell_vars, 1.0e100, epsilon, exponent, dg_mesh,
+        tci_options));
+    get(get<Inactive<grmhd::ValenciaDivClean::Tags::TildeD>>(
+        subcell_vars))[subcell_mesh.number_of_grid_points() / 2] = 1.0;
+  }
+
+  {
+    INFO("Negative TildeTau");
+    InactiveConsVars subcell_vars{subcell_mesh.number_of_grid_points(), 1.0};
+
+    get(get<grmhd::ValenciaDivClean::Tags::TildeTau>(
+        dg_vars))[dg_mesh.number_of_grid_points() / 2] = -1.0e-20;
+    CHECK(grmhd::ValenciaDivClean::subcell::DgInitialDataTci::apply(
+        dg_vars, subcell_vars, 1.0e100, epsilon, exponent, dg_mesh,
+        tci_options));
+    get(get<grmhd::ValenciaDivClean::Tags::TildeTau>(
+        dg_vars))[dg_mesh.number_of_grid_points() / 2] = 1.0;
+
+    get(get<Inactive<grmhd::ValenciaDivClean::Tags::TildeTau>>(
+        subcell_vars))[subcell_mesh.number_of_grid_points() / 2] = -1.0e-20;
+    CHECK(grmhd::ValenciaDivClean::subcell::DgInitialDataTci::apply(
+        dg_vars, subcell_vars, 1.0e100, epsilon, exponent, dg_mesh,
+        tci_options));
+    get(get<Inactive<grmhd::ValenciaDivClean::Tags::TildeTau>>(
+        subcell_vars))[subcell_mesh.number_of_grid_points() / 2] = 1.0;
   }
 }
