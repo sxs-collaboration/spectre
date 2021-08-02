@@ -10,6 +10,8 @@ coverage:
     project:
       default:
         target: auto
+        # Account for random-value tests sometimes taking different code paths
+        threshold: 0.3%
     # Check that PRs are fully tested
     patch:
       default:
