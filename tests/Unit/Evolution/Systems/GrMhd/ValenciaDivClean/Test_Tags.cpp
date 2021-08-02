@@ -11,9 +11,6 @@
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.ValenciaDivClean.Tags",
                   "[Unit][Evolution]") {
-  TestHelpers::db::test_simple_tag<
-      grmhd::ValenciaDivClean::Tags::CharacteristicSpeeds>(
-      "CharacteristicSpeeds");
   TestHelpers::db::test_simple_tag<grmhd::ValenciaDivClean::Tags::TildeD>(
       "TildeD");
   TestHelpers::db::test_simple_tag<grmhd::ValenciaDivClean::Tags::TildeTau>(
@@ -28,6 +25,20 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ValenciaDivClean.Tags",
   TestHelpers::db::test_simple_tag<
       grmhd::ValenciaDivClean::Tags::ConstraintDampingParameter>(
       "ConstraintDampingParameter");
+
+  TestHelpers::db::test_simple_tag<
+      grmhd::ValenciaDivClean::Tags::CharacteristicSpeeds>(
+      "CharacteristicSpeeds");
+  TestHelpers::db::test_simple_tag<
+      grmhd::ValenciaDivClean::Tags::VDivCleanMinus>("VDivCleanMinus");
+  TestHelpers::db::test_simple_tag<
+      grmhd::ValenciaDivClean::Tags::VMinus>("VMinus");
+  TestHelpers::db::test_simple_tag<
+      grmhd::ValenciaDivClean::Tags::VMomentum>("VMomentum");
+  TestHelpers::db::test_simple_tag<
+      grmhd::ValenciaDivClean::Tags::VPlus>("VPlus");
+  TestHelpers::db::test_simple_tag<
+      grmhd::ValenciaDivClean::Tags::VDivCleanPlus>("VDivCleanPlus");
 
   TestHelpers::db::test_simple_tag<
       grmhd::ValenciaDivClean::Tags::VariablesNeededFixing>(
