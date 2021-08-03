@@ -53,10 +53,9 @@ class er;
 
 template <template <typename> class BoundaryComponent>
 struct EvolutionMetavars {
-  using system = Cce::System;
-  static constexpr bool local_time_stepping = true;
-
   static constexpr bool uses_partially_flat_cartesian_coordinates = false;
+  using system = Cce::System<uses_partially_flat_cartesian_coordinates>;
+  static constexpr bool local_time_stepping = true;
 
   using evolved_swsh_tag = Cce::Tags::BondiJ;
   using evolved_swsh_dt_tag = Cce::Tags::BondiH;

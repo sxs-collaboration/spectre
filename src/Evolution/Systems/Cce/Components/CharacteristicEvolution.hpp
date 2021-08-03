@@ -219,10 +219,13 @@ struct CharacteristicEvolution {
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::Initialization,
                              initialize_action_list>,
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::InitializeTimeStepperHistory,
-                             SelfStart::self_start_procedure<
-                                 self_start_extract_action_list, Cce::System>>,
+      Parallel::PhaseActions<
+          typename Metavariables::Phase,
+          Metavariables::Phase::InitializeTimeStepperHistory,
+          SelfStart::self_start_procedure<
+              self_start_extract_action_list,
+              Cce::System<
+                  Metavariables::uses_partially_flat_cartesian_coordinates>>>,
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::Evolve,
                              extract_action_list>>;
