@@ -11,6 +11,7 @@ set(LIBRARY_SOURCES
   BoundaryCorrections/Test_Rusanov.cpp
   FiniteDifference/Test_MonotisedCentral.cpp
   FiniteDifference/Test_Tag.cpp
+  Limiters/Test_VariablesToLimit.cpp
   Subcell/Test_ComputeFluxes.cpp
   Subcell/Test_FixConservativesAndComputePrims.cpp
   Subcell/Test_GrTagsForHydro.cpp
@@ -50,4 +51,5 @@ target_link_libraries(
   GeneralRelativityHelpers
   HydroHelpers
   ValenciaDivClean
+  ValenciaDivCleanLimiters
   )
