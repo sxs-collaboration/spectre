@@ -82,7 +82,7 @@ void test(const TestThis test_this) {
                                                    1.0};
 
   const grmhd::ValenciaDivClean::subcell::TciOptions tci_options{
-      1.0e-20, 1.1e-12, 1.0e-12};
+      1.0e-20, 1.0e-40, 1.1e-12, 1.0e-12};
 
   auto box = db::create<db::AddSimpleTags<
       ::Tags::Variables<typename ConsVars::tags_list>,
