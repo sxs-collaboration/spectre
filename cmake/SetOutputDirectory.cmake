@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Set the directory where the library and executables are placed
+# Set the directory where the libraries and executables are placed
 # The default can be overridden by specifying
 # `-D CMAKE_RUNTIME_OUTPUT_DIRECTORY=/path/`
 if (NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)

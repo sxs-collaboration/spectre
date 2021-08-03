@@ -3,6 +3,8 @@
 
 # Check whether the standard library is affected by
 # https://bugs.llvm.org/show_bug.cgi?id=35491
+# This LLVM bug is fixed by commit 59cdf90ac8bea16abbb9d637c5124e69d2c75c09,
+# which is included in the LLVM 7 release.
 
 message(STATUS "Checking for broken std::array<..., 0>")
 try_compile(

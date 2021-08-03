@@ -1,8 +1,6 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-
-
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
   if (NOT USE_LIBCXX)
     option(USE_LIBCXX "Use libc++ as standard library" OFF)

@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-option(USE_CCACHE "Use CCache if available of speed up builds" ON)
+option(USE_CCACHE "Use CCache if available to speed up builds" ON)
 if(USE_CCACHE)
   find_program(CCACHE_FOUND ccache)
   if(CCACHE_FOUND)
