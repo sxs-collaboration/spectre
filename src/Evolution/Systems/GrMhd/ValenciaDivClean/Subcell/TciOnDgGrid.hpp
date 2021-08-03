@@ -47,6 +47,8 @@ namespace grmhd::ValenciaDivClean::subcell {
  *   negative (or extremely small) density and the cell is troubled. Note that
  *   if this `tci_option` is approximately equal to or larger than the
  *   `atmosphere_density`, the atmosphere will be flagged as troubled.
+ * - if \f$\tilde{\tau}\f$ is less than `tci_options.minimum_tilde_tau` then we
+ *   have a negative (or extremely small) energy and the cell is troubled.
  * - if \f$\max(\tilde{D}^{n+1}/(\sqrt{\gamma^n}W^n))\f$ and \f$\max(\rho^n)\f$
  *   are less than `tci_options.atmosphere_density` then the entire DG element
  *   is in atmosphere and it is _not_ troubled.
@@ -72,6 +74,8 @@ class TciOnDgGrid {
   using argument_tags =
       tmpl::list<evolution::dg::subcell::Tags::Inactive<
                      grmhd::ValenciaDivClean::Tags::TildeD>,
+                 evolution::dg::subcell::Tags::Inactive<
+                     grmhd::ValenciaDivClean::Tags::TildeTau>,
                  grmhd::ValenciaDivClean::Tags::TildeD,
                  grmhd::ValenciaDivClean::Tags::TildeTau,
                  grmhd::ValenciaDivClean::Tags::TildeS<>,
@@ -86,6 +90,7 @@ class TciOnDgGrid {
   static bool apply(
       gsl::not_null<Variables<hydro::grmhd_tags<DataVector>>*> dg_prim_vars,
       const Scalar<DataVector>& subcell_tilde_d,
+      const Scalar<DataVector>& subcell_tilde_tau,
       const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau,
       const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,
       const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
