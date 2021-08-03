@@ -113,6 +113,7 @@
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
+#include "ParallelAlgorithms/Events/ObserveNorms.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/EventsAndTriggers/Completion.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
@@ -234,6 +235,8 @@ struct EvolutionMetavars {
             Event,
             tmpl::flatten<tmpl::list<
                 Events::Completion,
+                Events::ObserveNorms<
+                    tmpl::list<hydro::Tags::RestMassDensity<DataVector>>>,
                 tmpl::conditional_t<
                     UseDgSubcell,
                     evolution::dg::subcell::Events::ObserveFields<
