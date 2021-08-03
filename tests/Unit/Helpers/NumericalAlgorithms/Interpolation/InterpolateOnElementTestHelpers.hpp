@@ -34,7 +34,6 @@
 #include "Utilities/TMPL.hpp"
 
 /// Holds code that is shared between multiple tests. Currently used by
-/// - Test_InterpolateToTarget
 /// - Test_InterpolateWithoutInterpolatorComponent.
 namespace InterpolateOnElementTestHelpers {
 

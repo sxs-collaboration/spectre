@@ -117,16 +117,6 @@ namespace intrp {
 ///      Domain will be filled with this value. If this variable is not defined,
 ///      then the `apply` function must check for invalid points,
 ///      and should typically exit with an error message if it finds any.
-/// - should_interpolate (optional):
-///      A template function that takes as a single argument a const reference
-///      to the \ref DataBoxGroup, and returns a `bool`: `true` if the
-///      element should interpolate in the current state, `false` otherwise.
-///      Often, this will examine the `temporal_id` to determine whether to
-///      interpolate, but it may examine any part of the \ref DataBoxGroup.
-///      If omitted, the behavior is as if the `should_interpolate` function
-///      always returns true. This function is called using the DG element's
-///      \ref DataBoxGroup and is only used if `InterpolateToTarget` is
-///      in the element's action list.
 /// - interpolating_component (used only if not `is_sequential`):
 ///      A type alias for the component that will be interpolating to the
 ///      interpolation target.
@@ -348,23 +338,6 @@ namespace intrp {
 /// a copy of every target point, which will use a lot of memory.  An
 /// alternative is to invoke an Action on each `InterpolationTarget`
 /// (presumably from an `Event`).
-///
-/// #### Actions::InterpolateToTarget
-///
-/// `Actions::InterpolateToTarget` is invoked on `Element`s, and does
-/// interpolation at the current `temporal_id` of the `Element`.
-///
-/// ###### Current logic:
-///
-/// > Does interpolation using the precomputed `block_logical_coordinates`.
-/// > It does so by computing `element_logical_coordinates` and interpolating
-/// > any points that are contained in that `element` (with care to avoid
-/// > repeating points on boundaries).
-///
-/// ###### New logic:
-///
-/// > Calls `block_logical_coordinates` itself, and then does the
-/// > interpolation of appropriate points.
 ///
 template <class Metavariables, typename InterpolationTargetTag>
 struct InterpolationTarget {

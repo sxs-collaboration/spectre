@@ -596,8 +596,5 @@ void set_up_interpolation(
         }
       });
 }
-
-CREATE_IS_CALLABLE(should_interpolate)
-CREATE_IS_CALLABLE_V(should_interpolate)
 }  // namespace InterpolationTarget_detail
 }  // namespace intrp
