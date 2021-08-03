@@ -135,20 +135,68 @@ struct EvolutionMetavars
                           EvolutionMetavars>::dg_registration_list,
                       intrp::Actions::RegisterElementWithInterpolator>;
 
+  using initialization_actions = typename GeneralizedHarmonicTemplateBase<
+      EvolutionMetavars>::initialization_actions;
+
+  using step_actions =
+      typename GeneralizedHarmonicTemplateBase<EvolutionMetavars>::step_actions;
+
+  // the dg element array needs to be re-declared to capture the new type
+  // aliases for the action lists.
+  using gh_dg_element_array = DgElementArray<
+      EvolutionMetavars,
+      tmpl::flatten<tmpl::list<
+          Parallel::PhaseActions<Phase, Phase::Initialization,
+                                 initialization_actions>,
+          tmpl::conditional_t<
+              evolution::is_numeric_initial_data_v<InitialData>,
+              tmpl::list<
+                  Parallel::PhaseActions<
+                      Phase, Phase::RegisterWithElementDataReader,
+                      tmpl::list<
+                          importers::Actions::RegisterWithElementDataReader,
+                          Parallel::Actions::TerminatePhase>>,
+                  Parallel::PhaseActions<
+                      Phase, Phase::ImportInitialData,
+                      tmpl::list<importers::Actions::ReadVolumeData<
+                                     evolution::OptionTags::NumericInitialData,
+                                     typename system::variables_tag::tags_list>,
+                                 importers::Actions::ReceiveVolumeData<
+                                     evolution::OptionTags::NumericInitialData,
+                                     typename system::variables_tag::tags_list>,
+                                 Parallel::Actions::TerminatePhase>>>,
+              tmpl::list<>>,
+          Parallel::PhaseActions<
+              Phase, Phase::InitializeInitialDataDependentQuantities,
+              initialize_initial_data_dependent_quantities_actions>,
+          Parallel::PhaseActions<
+              Phase, Phase::InitializeTimeStepperHistory,
+              SelfStart::self_start_procedure<step_actions, system>>,
+          Parallel::PhaseActions<Phase, Phase::Register,
+                                 tmpl::list<dg_registration_list,
+                                            Parallel::Actions::TerminatePhase>>,
+          Parallel::PhaseActions<
+              Phase, Phase::Evolve,
+              tmpl::list<
+                  Actions::RunEventsAndTriggers, Actions::ChangeSlabSize,
+                  step_actions, Actions::AdvanceTime,
+                  PhaseControl::Actions::ExecutePhaseChange<phase_changes>>>>>>;
+
   template <typename ParallelComponent>
   struct registration_list {
     using type = std::conditional_t<
-        std::is_same_v<ParallelComponent,
-                       typename GeneralizedHarmonicTemplateBase<
-                           EvolutionMetavars>::gh_dg_element_array>,
+        std::is_same_v<ParallelComponent, gh_dg_element_array>,
         dg_registration_list, tmpl::list<>>;
   };
 
-  using component_list =
-      tmpl::push_back<typename GeneralizedHarmonicTemplateBase<
-                          EvolutionMetavars>::component_list,
-                      intrp::Interpolator<EvolutionMetavars>,
-                      intrp::InterpolationTarget<EvolutionMetavars, AhA>>;
+  using component_list = tmpl::flatten<tmpl::list<
+      observers::Observer<EvolutionMetavars>,
+      observers::ObserverWriter<EvolutionMetavars>,
+      std::conditional_t<evolution::is_numeric_initial_data_v<InitialData>,
+                         importers::ElementDataReader<EvolutionMetavars>,
+                         tmpl::list<>>,
+      gh_dg_element_array, intrp::Interpolator<EvolutionMetavars>,
+      intrp::InterpolationTarget<EvolutionMetavars, AhA>>>;
 };
 
 static const std::vector<void (*)()> charm_init_node_funcs{

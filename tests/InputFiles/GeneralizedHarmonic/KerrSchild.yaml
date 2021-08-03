@@ -2,11 +2,16 @@
 # See LICENSE.txt for details.
 
 # Executable: EvolveGhKerrSchild
-# Check: parse;execute
+# Check: parse;execute_check_output
 # Timeout: 8
 # ExpectedOutput:
 #   GhKerrSchildVolume0.h5
 #   GhKerrSchildReductions.h5
+# OutputFileChecks:
+#   - Label: "check_horizon_find"
+#     Subfile: "/AhA.dat"
+#     FileGlob: "GhKerrSchildReductions.h5"
+#     AbsoluteTolerance: 1e2
 
 Evolution:
   InitialTime: 0.0
