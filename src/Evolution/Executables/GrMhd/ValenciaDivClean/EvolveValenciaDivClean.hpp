@@ -182,6 +182,7 @@ struct EvolutionMetavars {
       tmpl::conditional_t<local_time_stepping, LtsTimeStepper, TimeStepper>>;
 
   using ordered_list_of_primitive_recovery_schemes = tmpl::list<
+      grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAl,
       grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin,
       grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::PalenzuelaEtAl>;
 
