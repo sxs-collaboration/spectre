@@ -35,103 +35,233 @@ void test_equations(const DataVector& used_for_size) {
   const double eps = 1.e-12;
   const auto seed = std::random_device{}();
   const double fill_result_tensors = 0.;
-  pypp::check_with_random_values<1>(
+  pypp::check_with_random_values<3>(
       &Xcts::add_hamiltonian_sources<0>, "Equations", {"hamiltonian_sources"},
-      {{{-1., 1.}}}, used_for_size, eps, seed, fill_result_tensors);
-  pypp::check_with_random_values<1>(&Xcts::add_hamiltonian_sources<6>,
-                                    "Equations", {"hamiltonian_sources_conf"},
-                                    {{{-1., 1.}}}, used_for_size, eps, seed,
-                                    fill_result_tensors);
-  pypp::check_with_random_values<1>(
-      &Xcts::add_linearized_hamiltonian_sources<0>, "Equations",
-      {"linearized_hamiltonian_sources"}, {{{-1., 1.}}}, used_for_size, eps,
-      seed, fill_result_tensors);
-  pypp::check_with_random_values<1>(
-      &Xcts::add_linearized_hamiltonian_sources<6>, "Equations",
-      {"linearized_hamiltonian_sources_conf"}, {{{-1., 1.}}}, used_for_size,
-      eps, seed, fill_result_tensors);
-  pypp::check_with_random_values<1>(
-      &Xcts::add_distortion_hamiltonian_sources, "Equations",
-      {"distortion_hamiltonian_sources"}, {{{-1., 1.}}}, used_for_size, eps,
-      seed, fill_result_tensors);
-  pypp::check_with_random_values<1>(
-      &Xcts::add_linearized_distortion_hamiltonian_sources, "Equations",
-      {"linearized_distortion_hamiltonian_sources"}, {{{-1., 1.}}},
+      {{{0., 1.}, {-1., 1.}, {0.5, 2.}}}, used_for_size, eps, seed,
+      fill_result_tensors);
+  pypp::check_with_random_values<3>(
+      &Xcts::add_hamiltonian_sources<6>, "Equations",
+      {"hamiltonian_sources_conf"}, {{{0., 1.}, {-1., 1.}, {0.5, 2.}}},
       used_for_size, eps, seed, fill_result_tensors);
-  pypp::check_with_random_values<1>(
+  pypp::check_with_random_values<4>(
+      &Xcts::add_linearized_hamiltonian_sources<0>, "Equations",
+      {"linearized_hamiltonian_sources"},
+      {{{0., 1.}, {-1., 1.}, {0.5, 2.}, {-1., 1.}}}, used_for_size, eps, seed,
+      fill_result_tensors);
+  pypp::check_with_random_values<4>(
+      &Xcts::add_linearized_hamiltonian_sources<6>, "Equations",
+      {"linearized_hamiltonian_sources_conf"},
+      {{{0., 1.}, {-1., 1.}, {0.5, 2.}, {-1., 1.}}}, used_for_size, eps, seed,
+      fill_result_tensors);
+  pypp::check_with_random_values<2>(
+      &Xcts::add_distortion_hamiltonian_sources, "Equations",
+      {"distortion_hamiltonian_sources"}, {{{-1., 1.}, {0.5, 2.}}},
+      used_for_size, eps, seed, fill_result_tensors);
+  pypp::check_with_random_values<3>(
+      &Xcts::add_linearized_distortion_hamiltonian_sources, "Equations",
+      {"linearized_distortion_hamiltonian_sources"},
+      {{{-1., 1.}, {0.5, 2.}, {-1., 1.}}}, used_for_size, eps, seed,
+      fill_result_tensors);
+  pypp::check_with_random_values<2>(
       &Xcts::add_curved_hamiltonian_or_lapse_sources, "Equations",
-      {"curved_hamiltonian_or_lapse_sources"}, {{{-1., 1.}}}, used_for_size,
-      eps, seed, fill_result_tensors);
-  pypp::check_with_random_values<1>(
+      {"curved_hamiltonian_or_lapse_sources"}, {{{-1., 1.}, {0.5, 2.}}},
+      used_for_size, eps, seed, fill_result_tensors);
+  pypp::check_with_random_values<7>(
       &Xcts::add_lapse_sources<0>, "Equations", {"lapse_sources"},
-      {{{-1., 1.}}}, used_for_size, eps, seed, fill_result_tensors);
-  pypp::check_with_random_values<1>(
+      {{{0., 1.},
+        {-1., 1.},
+        {-1., 1.},
+        {-1., 1.},
+        {-1., 1.},
+        {0.5, 2.},
+        {0.5, 2.}}},
+      used_for_size, eps, seed, fill_result_tensors);
+  pypp::check_with_random_values<7>(
       &Xcts::add_lapse_sources<6>, "Equations", {"lapse_sources_conf"},
-      {{{-1., 1.}}}, used_for_size, eps, seed, fill_result_tensors);
-  pypp::check_with_random_values<1>(&Xcts::add_linearized_lapse_sources<0>,
+      {{{0., 1.},
+        {-1., 1.},
+        {-1., 1.},
+        {-1., 1.},
+        {-1., 1.},
+        {0.5, 2.},
+        {0.5, 2.}}},
+      used_for_size, eps, seed, fill_result_tensors);
+  pypp::check_with_random_values<9>(&Xcts::add_linearized_lapse_sources<0>,
                                     "Equations", {"linearized_lapse_sources"},
-                                    {{{-1., 1.}}}, used_for_size, eps, seed,
+                                    {{{0., 1.},
+                                      {-1., 1.},
+                                      {-1., 1.},
+                                      {-1., 1.},
+                                      {-1., 1.},
+                                      {0.5, 2.},
+                                      {0.5, 2.},
+                                      {-1., 1.},
+                                      {-1., 1.}}},
+                                    used_for_size, eps, seed,
                                     fill_result_tensors);
-  pypp::check_with_random_values<1>(
+  pypp::check_with_random_values<9>(
       &Xcts::add_linearized_lapse_sources<6>, "Equations",
-      {"linearized_lapse_sources_conf"}, {{{-1., 1.}}}, used_for_size, eps,
-      seed, fill_result_tensors);
-  pypp::check_with_random_values<1>(
+      {"linearized_lapse_sources_conf"},
+      {{{0., 1.},
+        {-1., 1.},
+        {-1., 1.},
+        {-1., 1.},
+        {-1., 1.},
+        {0.5, 2.},
+        {0.5, 2.},
+        {-1., 1.},
+        {-1., 1.}}},
+      used_for_size, eps, seed, fill_result_tensors);
+  pypp::check_with_random_values<3>(
       &Xcts::add_distortion_hamiltonian_and_lapse_sources, "Equations",
       {"distortion_hamiltonian_sources_with_lapse", "distortion_lapse_sources"},
-      {{{-1., 1.}}}, used_for_size, eps, seed, fill_result_tensors);
-  pypp::check_with_random_values<1>(
+      {{{-1., 1.}, {0.5, 2.}, {0.5, 2.}}}, used_for_size, eps, seed,
+      fill_result_tensors);
+  pypp::check_with_random_values<5>(
       &Xcts::add_linearized_distortion_hamiltonian_and_lapse_sources,
       "Equations",
       {"linearized_distortion_hamiltonian_sources_with_lapse",
        "linearized_distortion_lapse_sources"},
-      {{{-1., 1.}}}, used_for_size, eps, seed, fill_result_tensors);
-  pypp::check_with_random_values<1>(
+      {{{-1., 1.}, {0.5, 2.}, {0.5, 2.}, {-1., 1.}, {-1., 1.}}}, used_for_size,
+      eps, seed, fill_result_tensors);
+  pypp::check_with_random_values<8>(
       &Xcts::add_flat_cartesian_momentum_sources<0>, "Equations",
       {"flat_cartesian_distortion_hamiltonian_sources_full",
        "flat_cartesian_distortion_lapse_sources_with_shift",
        "flat_cartesian_momentum_sources"},
-      {{{-1., 1.}}}, used_for_size, eps, seed, fill_result_tensors);
-  pypp::check_with_random_values<1>(
+      {{{-1., 1.},
+        {-1., 1.},
+        {-1., 1.},
+        {0.5, 2.},
+        {0.5, 2.},
+        {-1., 1.},
+        {-1., 1.},
+        {-1., 1.}}},
+      used_for_size, eps, seed, fill_result_tensors);
+  pypp::check_with_random_values<8>(
       &Xcts::add_flat_cartesian_momentum_sources<6>, "Equations",
       {"flat_cartesian_distortion_hamiltonian_sources_full",
        "flat_cartesian_distortion_lapse_sources_with_shift",
        "flat_cartesian_momentum_sources_conf"},
-      {{{-1., 1.}}}, used_for_size, eps, seed, fill_result_tensors);
-  pypp::check_with_random_values<1>(
+      {{{-1., 1.},
+        {-1., 1.},
+        {-1., 1.},
+        {0.5, 2.},
+        {0.5, 2.},
+        {-1., 1.},
+        {-1., 1.},
+        {-1., 1.}}},
+      used_for_size, eps, seed, fill_result_tensors);
+  pypp::check_with_random_values<10>(
       &Xcts::add_curved_momentum_sources<0>, "Equations",
       {"distortion_hamiltonian_sources_full",
        "distortion_lapse_sources_with_shift", "momentum_sources"},
-      {{{-1., 1.}}}, used_for_size, eps, seed, fill_result_tensors);
-  pypp::check_with_random_values<1>(
+      {{{-1., 1.},
+        {-1., 1.},
+        {-1., 1.},
+        {-1., 1.},
+        {-1., 1.},
+        {0.5, 2.},
+        {0.5, 2.},
+        {-1., 1.},
+        {-1., 1.},
+        {-1., 1.}}},
+      used_for_size, eps, seed, fill_result_tensors);
+  pypp::check_with_random_values<10>(
       &Xcts::add_curved_momentum_sources<6>, "Equations",
       {"distortion_hamiltonian_sources_full",
        "distortion_lapse_sources_with_shift", "momentum_sources_conf"},
-      {{{-1., 1.}}}, used_for_size, eps, seed, fill_result_tensors);
-  pypp::check_with_random_values<1>(
+      {{{-1., 1.},
+        {-1., 1.},
+        {-1., 1.},
+        {-1., 1.},
+        {-1., 1.},
+        {0.5, 2.},
+        {0.5, 2.},
+        {-1., 1.},
+        {-1., 1.},
+        {-1., 1.}}},
+      used_for_size, eps, seed, fill_result_tensors);
+  pypp::check_with_random_values<13>(
       &Xcts::add_flat_cartesian_linearized_momentum_sources<0>, "Equations",
       {"flat_cartesian_linearized_distortion_hamiltonian_sources_full",
        "flat_cartesian_linearized_distortion_lapse_sources_with_shift",
        "flat_cartesian_linearized_momentum_sources"},
-      {{{-1., 1.}}}, used_for_size, eps, seed, fill_result_tensors);
-  pypp::check_with_random_values<1>(
+      {{{-1., 1.},
+        {-1., 1.},
+        {0.5, 2.},
+        {0.5, 2.},
+        {-1., 1.},
+        {-1., 1.},
+        {-1., 1.},
+        {-1., 1.},
+        {-1., 1.},
+        {-1., 1.},
+        {-1., 1.},
+        {-1., 1.},
+        {-1., 1.}}},
+      used_for_size, eps, seed, fill_result_tensors);
+  pypp::check_with_random_values<13>(
       &Xcts::add_flat_cartesian_linearized_momentum_sources<6>, "Equations",
       {"flat_cartesian_linearized_distortion_hamiltonian_sources_full",
        "flat_cartesian_linearized_distortion_lapse_sources_with_shift",
        "flat_cartesian_linearized_momentum_sources_conf"},
-      {{{-1., 1.}}}, used_for_size, eps, seed, fill_result_tensors);
-  pypp::check_with_random_values<1>(
+      {{{-1., 1.},
+        {-1., 1.},
+        {0.5, 2.},
+        {0.5, 2.},
+        {-1., 1.},
+        {-1., 1.},
+        {-1., 1.},
+        {-1., 1.},
+        {-1., 1.},
+        {-1., 1.},
+        {-1., 1.},
+        {-1., 1.},
+        {-1., 1.}}},
+      used_for_size, eps, seed, fill_result_tensors);
+  pypp::check_with_random_values<15>(
       &Xcts::add_curved_linearized_momentum_sources<0>, "Equations",
       {"linearized_distortion_hamiltonian_sources_full",
        "linearized_distortion_lapse_sources_with_shift",
        "linearized_momentum_sources"},
-      {{{-1., 1.}}}, used_for_size, eps, seed, fill_result_tensors);
-  pypp::check_with_random_values<1>(
+      {{{-1., 1.},
+        {-1., 1.},
+        {-1., 1.},
+        {-1., 1.},
+        {0.5, 2.},
+        {0.5, 2.},
+        {-1., 1.},
+        {-1., 1.},
+        {-1., 1.},
+        {-1., 1.},
+        {-1., 1.},
+        {-1., 1.},
+        {-1., 1.},
+        {-1., 1.},
+        {-1., 1.}}},
+      used_for_size, eps, seed, fill_result_tensors);
+  pypp::check_with_random_values<15>(
       &Xcts::add_curved_linearized_momentum_sources<6>, "Equations",
       {"linearized_distortion_hamiltonian_sources_full",
        "linearized_distortion_lapse_sources_with_shift",
        "linearized_momentum_sources_conf"},
-      {{{-1., 1.}}}, used_for_size, eps, seed, fill_result_tensors);
+      {{{-1., 1.},
+        {-1., 1.},
+        {-1., 1.},
+        {-1., 1.},
+        {0.5, 2.},
+        {0.5, 2.},
+        {-1., 1.},
+        {-1., 1.},
+        {-1., 1.},
+        {-1., 1.},
+        {-1., 1.},
+        {-1., 1.},
+        {-1., 1.},
+        {-1., 1.},
+        {-1., 1.}}},
+      used_for_size, eps, seed, fill_result_tensors);
 }
 
 template <Xcts::Equations EnabledEquations, Xcts::Geometry ConformalGeometry,
