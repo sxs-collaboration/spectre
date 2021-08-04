@@ -3,11 +3,15 @@
 
 #include "Domain/Creators/RotatedIntervals.hpp"
 
+#include <memory>
+
 #include "DataStructures/Index.hpp"
 #include "Domain/Block.hpp"  // IWYU pragma: keep
 #include "Domain/BoundaryConditions/None.hpp"
 #include "Domain/BoundaryConditions/Periodic.hpp"
 #include "Domain/Creators/DomainCreator.hpp"  // IWYU pragma: keep
+#include "Domain/Creators/TimeDependence/None.hpp"
+#include "Domain/Creators/TimeDependence/TimeDependence.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/Structure/BlockNeighbor.hpp"  // IWYU pragma: keep
@@ -16,32 +20,41 @@
 
 namespace domain::creators {
 RotatedIntervals::RotatedIntervals(
-    typename LowerBound::type lower_x, typename Midpoint::type midpoint_x,
-    typename UpperBound::type upper_x,
-    typename InitialRefinement::type initial_refinement_level_x,
-    typename InitialGridPoints::type initial_number_of_grid_points_in_x,
-    typename IsPeriodicIn::type is_periodic_in) noexcept
-    // clang-tidy: trivially copyable
-    : lower_x_(std::move(lower_x)),                // NOLINT
-      midpoint_x_(std::move(midpoint_x)),          // NOLINT
-      upper_x_(std::move(upper_x)),                // NOLINT
-      is_periodic_in_(std::move(is_periodic_in)),  // NOLINT
-      initial_refinement_level_x_(                 // NOLINT
-          std::move(initial_refinement_level_x)),  // NOLINT
-      initial_number_of_grid_points_in_x_(         // NOLINT
-          initial_number_of_grid_points_in_x),
+    const std::array<double, 1> lower_x, const std::array<double, 1> midpoint_x,
+    const std::array<double, 1> upper_x,
+    const std::array<size_t, 1> initial_refinement_level_x,
+    const std::array<std::array<size_t, 2>, 1>
+        initial_number_of_grid_points_in_x,
+    const std::array<bool, 1> is_periodic_in,
+    std::unique_ptr<domain::creators::time_dependence::TimeDependence<1>>
+        time_dependence) noexcept
+    : lower_x_(lower_x),
+      midpoint_x_(midpoint_x),
+      upper_x_(upper_x),
+      is_periodic_in_(is_periodic_in),
+      initial_refinement_level_x_(initial_refinement_level_x),
+      initial_number_of_grid_points_in_x_(initial_number_of_grid_points_in_x),
       lower_boundary_condition_(nullptr),
-      upper_boundary_condition_(nullptr) {}
+      upper_boundary_condition_(nullptr),
+      time_dependence_(std::move(time_dependence)) {
+  if (time_dependence_ == nullptr) {
+    time_dependence_ =
+        std::make_unique<domain::creators::time_dependence::None<1>>();
+  }
+}
 
 RotatedIntervals::RotatedIntervals(
-    typename LowerBound::type lower_x, typename Midpoint::type midpoint_x,
-    typename UpperBound::type upper_x,
-    typename InitialRefinement::type initial_refinement_level_x,
-    typename InitialGridPoints::type initial_number_of_grid_points_in_x,
+    const std::array<double, 1> lower_x, const std::array<double, 1> midpoint_x,
+    const std::array<double, 1> upper_x,
+    const std::array<size_t, 1> initial_refinement_level_x,
+    const std::array<std::array<size_t, 2>, 1>
+        initial_number_of_grid_points_in_x,
     std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
         lower_boundary_condition,
     std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
         upper_boundary_condition,
+    std::unique_ptr<domain::creators::time_dependence::TimeDependence<1>>
+        time_dependence,
     const Options::Context& context)
     : lower_x_(lower_x),
       midpoint_x_(midpoint_x),
@@ -50,7 +63,12 @@ RotatedIntervals::RotatedIntervals(
       initial_refinement_level_x_(initial_refinement_level_x),
       initial_number_of_grid_points_in_x_(initial_number_of_grid_points_in_x),
       lower_boundary_condition_(std::move(lower_boundary_condition)),
-      upper_boundary_condition_(std::move(upper_boundary_condition)) {
+      upper_boundary_condition_(std::move(upper_boundary_condition)),
+      time_dependence_(std::move(time_dependence)) {
+  if (time_dependence_ == nullptr) {
+    time_dependence_ =
+        std::make_unique<domain::creators::time_dependence::None<1>>();
+  }
   using domain::BoundaryConditions::is_none;
   if (is_none(lower_boundary_condition_) or
       is_none(upper_boundary_condition_)) {
@@ -102,12 +120,21 @@ Domain<1> RotatedIntervals::create_domain() const noexcept {
     boundary_conditions_all_blocks[1] = std::move(boundary_conditions_block1);
   }
 
-  return rectilinear_domain<1>(
+  Domain<1> domain = rectilinear_domain<1>(
       Index<1>{2}, {{{lower_x_[0], midpoint_x_[0], upper_x_[0]}}},
       std::move(boundary_conditions_all_blocks), {},
       {OrientationMap<1>{}, OrientationMap<1>{std::array<Direction<1>, 1>{
                                 {Direction<1>::lower_xi()}}}},
       is_periodic_in_);
+  if (not time_dependence_->is_none()) {
+    const size_t number_of_blocks = domain.blocks().size();
+    auto block_maps = time_dependence_->block_maps(number_of_blocks);
+    for (size_t block_id = 0; block_id < number_of_blocks; ++block_id) {
+      domain.inject_time_dependent_map_for_block(
+          block_id, std::move(block_maps[block_id]));
+    }
+  }
+  return domain;
 }
 
 std::vector<std::array<size_t, 1>> RotatedIntervals::initial_extents() const
@@ -120,5 +147,15 @@ std::vector<std::array<size_t, 1>>
 RotatedIntervals ::initial_refinement_levels() const noexcept {
   return {{{initial_refinement_level_x_[0]}},
           {{initial_refinement_level_x_[0]}}};
+}
+
+std::unordered_map<std::string,
+                   std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
+RotatedIntervals::functions_of_time() const noexcept {
+  if (time_dependence_->is_none()) {
+    return {};
+  } else {
+    return time_dependence_->functions_of_time();
+  }
 }
 }  // namespace domain::creators

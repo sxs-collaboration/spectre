@@ -465,11 +465,15 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
             const ::dg::MortarId<Dim> mortar_id{direction, neighbor_id};
             const auto& mortar_mesh = all_mortar_meshes.at(mortar_id);
             const auto& mortar_size = all_mortar_sizes.at(mortar_id);
+            // When no projection is necessary we can safely move the boundary
+            // data from the face as there is only a single neighbor in this
+            // direction
             auto projected_boundary_data =
                 Spectral::needs_projection(face_mesh, mortar_mesh, mortar_size)
+                    // NOLINTNEXTLINE
                     ? boundary_data.project_to_mortar(face_mesh, mortar_mesh,
                                                       mortar_size)
-                    : std::move(boundary_data);
+                    : std::move(boundary_data);  // NOLINT
             (*all_mortar_data)[mortar_id].local_insert(
                 temporal_id, std::move(projected_boundary_data));
           }

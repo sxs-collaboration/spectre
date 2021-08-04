@@ -38,6 +38,7 @@ DomainCreator:
     UpperBound: [6.283185307179586]
     InitialRefinement: [1]
     InitialGridPoints: [[7, 3]]
+    TimeDependence: None
     BoundaryConditions:
       LowerBoundary: DirichletAnalytic
       UpperBoundary: DirichletAnalytic
