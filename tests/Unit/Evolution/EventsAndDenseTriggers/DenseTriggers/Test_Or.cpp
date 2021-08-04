@@ -19,6 +19,7 @@
 #include "Helpers/Evolution/EventsAndDenseTriggers/DenseTriggers/TestTrigger.hpp"
 #include "Options/Options.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
@@ -29,6 +30,7 @@
 
 namespace {
 struct Metavariables {
+  using component_list = tmpl::list<>;
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<tmpl::pair<
@@ -45,11 +47,15 @@ void check(const bool time_runs_forward, const bool expected_is_ready,
       Parallel::Tags::MetavariablesImpl<Metavariables>, Tags::TimeStepId>>(
       Metavariables{},
       TimeStepId(time_runs_forward, 0, Slab(0.0, 1.0).start()));
+  Parallel::GlobalCache<Metavariables> cache{};
+  const int array_index = 0;
+  const void* component = nullptr;
   const auto trigger = serialize_and_deserialize(
       TestHelpers::test_creation<std::unique_ptr<DenseTrigger>, Metavariables>(
           creation_string));
 
-  CHECK(trigger->is_ready(box) == expected_is_ready);
+  CHECK(trigger->is_ready(box, cache, array_index, component) ==
+        expected_is_ready);
   if (not expected_is_ready) {
     return;
   }

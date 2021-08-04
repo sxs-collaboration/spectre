@@ -165,7 +165,8 @@ EventsAndDenseTriggers::TriggeringState EventsAndDenseTriggers::is_ready(
       db::get<::Tags::TimeStepId>(box).time_runs_forward()};
 
   while (current_trigger() != events_and_triggers_.end()) {
-    if (not current_trigger()->trigger->is_ready(box)) {
+    if (not current_trigger()->trigger->is_ready(box, cache, array_index,
+                                                 component)) {
       return TriggeringState::NotReady;
     }
 

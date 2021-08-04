@@ -30,8 +30,6 @@ DenseTrigger::Result Times::is_triggered(const TimeStepId& time_step_id,
   return {time == trigger_times[1], next_time};
 }
 
-bool Times::is_ready() noexcept { return true; }
-
 void Times::pup(PUP::er& p) noexcept {
   DenseTrigger::pup(p);
   p | times_;

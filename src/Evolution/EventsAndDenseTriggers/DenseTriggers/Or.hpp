@@ -18,6 +18,10 @@
 #include "Utilities/TMPL.hpp"
 
 /// \cond
+namespace Parallel {
+template <typename Metavariables>
+class GlobalCache;
+}  // namespace Parallel
 namespace Tags {
 struct DataBox;
 struct TimeStepId;
@@ -68,12 +72,16 @@ class Or : public DenseTrigger {
 
   using is_ready_argument_tags = tmpl::list<Tags::DataBox>;
 
-  template <typename DbTags>
-  bool is_ready(const db::DataBox<DbTags>& box) const noexcept {
+  template <typename Metavariables, typename ArrayIndex, typename Component,
+            typename DbTags>
+  bool is_ready(Parallel::GlobalCache<Metavariables>& cache,
+                const ArrayIndex& array_index, const Component* const component,
+                const db::DataBox<DbTags>& box) const noexcept {
     return alg::all_of(
         triggers_,
-        [&box](const std::unique_ptr<DenseTrigger>& trigger) noexcept {
-          return trigger->is_ready(box);
+        [&array_index, &box, &cache, &component](
+            const std::unique_ptr<DenseTrigger>& trigger) noexcept {
+          return trigger->is_ready(box, cache, array_index, component);
         });
   }
 

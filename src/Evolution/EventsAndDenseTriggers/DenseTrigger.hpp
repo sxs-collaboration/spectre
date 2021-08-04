@@ -12,6 +12,13 @@
 #include "Parallel/Tags/Metavariables.hpp"
 #include "Utilities/FakeVirtual.hpp"
 
+/// \cond
+namespace Parallel {
+template <typename Metavariables>
+class GlobalCache;
+}  // namespace Parallel
+/// \endcond
+
 /// \ingroup EventsAndTriggersGroup
 namespace DenseTriggers {}
 
@@ -76,18 +83,25 @@ class DenseTrigger : public PUP::able {
   /// available.  The trigger is not responsible for checking whether
   /// dense output of the evolved variables is possible, but may need
   /// to check things such as the availability of FunctionOfTime data.
-  template <typename DbTags>
-  bool is_ready(const db::DataBox<DbTags>& box) const noexcept {
+  template <typename DbTags, typename Metavariables, typename ArrayIndex,
+            typename Component>
+  bool is_ready(const db::DataBox<DbTags>& box,
+                Parallel::GlobalCache<Metavariables>& cache,
+                const ArrayIndex& array_index,
+                const Component* const component) const noexcept {
     using factory_classes =
         typename std::decay_t<decltype(db::get<Parallel::Tags::Metavariables>(
             box))>::factory_creation::factory_classes;
     return call_with_dynamic_type<bool,
                                   tmpl::at<factory_classes, DenseTrigger>>(
-        this, [&box](auto* const trigger) noexcept {
+        this,
+        [&array_index, &box, &cache, &component](auto* const trigger) noexcept {
           using TriggerType = std::decay_t<decltype(*trigger)>;
           return db::apply<typename TriggerType::is_ready_argument_tags>(
-              [&trigger](const auto&... args) noexcept {
-                return trigger->is_ready(args...);
+              [&array_index, &cache, &component,
+               &trigger](const auto&... args) noexcept {
+                return trigger->is_ready(cache, array_index, component,
+                                         args...);
               },
               box);
         });
