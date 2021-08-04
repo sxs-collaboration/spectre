@@ -11,6 +11,7 @@ set(LIBRARY_SOURCES
   BoundaryCorrections/Test_Rusanov.cpp
   FiniteDifference/Test_MonotisedCentral.cpp
   FiniteDifference/Test_Tag.cpp
+  Limiters/Test_CharacteristicHelpers.cpp
   Limiters/Test_Flattener.cpp
   Limiters/Test_KxrcfTci.cpp
   Limiters/Test_VariablesToLimit.cpp
