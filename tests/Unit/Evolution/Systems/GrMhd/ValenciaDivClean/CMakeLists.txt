@@ -16,6 +16,7 @@ set(LIBRARY_SOURCES
   Limiters/Test_KxrcfTci.cpp
   Limiters/Test_Minmod.cpp
   Limiters/Test_VariablesToLimit.cpp
+  Limiters/Test_Weno.cpp
   Subcell/Test_ComputeFluxes.cpp
   Subcell/Test_FixConservativesAndComputePrims.cpp
   Subcell/Test_GrTagsForHydro.cpp
