@@ -12,6 +12,7 @@ set(LIBRARY_SOURCES
   FiniteDifference/Test_MonotisedCentral.cpp
   FiniteDifference/Test_Tag.cpp
   Limiters/Test_Flattener.cpp
+  Limiters/Test_KxrcfTci.cpp
   Limiters/Test_VariablesToLimit.cpp
   Subcell/Test_ComputeFluxes.cpp
   Subcell/Test_FixConservativesAndComputePrims.cpp
