@@ -8,6 +8,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tags/TempTensor.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
+#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Evolution/DgSubcell/PerssonTci.hpp"
@@ -137,6 +138,17 @@ bool TciOnDgGrid<RecoveryScheme>::apply(
                                           persson_tci_epsilon) or
       evolution::dg::subcell::persson_tci(tilde_tau, dg_mesh, persson_exponent,
                                           persson_tci_epsilon)) {
+    return true;
+  }
+  // Check Cartesian magnitude of magnetic field satisfies the Persson TCI
+  const Scalar<DataVector> tilde_b_magnitude =
+      tci_options.magnetic_field_cutoff.has_value() ? magnitude(tilde_b)
+                                                    : Scalar<DataVector>{};
+  if (tci_options.magnetic_field_cutoff.has_value() and
+      max(get(tilde_b_magnitude)) >
+          tci_options.magnetic_field_cutoff.value() and
+      evolution::dg::subcell::persson_tci(
+          tilde_b_magnitude, dg_mesh, persson_exponent, persson_tci_epsilon)) {
     return true;
   }
 

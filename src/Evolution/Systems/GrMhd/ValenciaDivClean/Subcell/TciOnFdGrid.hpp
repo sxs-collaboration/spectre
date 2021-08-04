@@ -43,10 +43,13 @@ struct TciOnFdGrid {
                      grmhd::ValenciaDivClean::Tags::TildeD>,
                  evolution::dg::subcell::Tags::Inactive<
                      grmhd::ValenciaDivClean::Tags::TildeTau>,
+                 evolution::dg::subcell::Tags::Inactive<
+                     grmhd::ValenciaDivClean::Tags::TildeB<>>,
                  grmhd::ValenciaDivClean::Tags::VariablesNeededFixing,
                  domain::Tags::Mesh<3>, Tags::TciOptions>;
   static bool apply(const Scalar<DataVector>& tilde_d,
                     const Scalar<DataVector>& tilde_tau,
+                    const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
                     bool vars_needed_fixing, const Mesh<3>& dg_mesh,
                     const TciOptions& tci_options,
                     double persson_exponent) noexcept;

@@ -23,6 +23,7 @@ enum class TestThis {
   NeededFixing,
   PerssonTildeD,
   PerssonTildeTau,
+  PerssonTildeB,
   NegativeTildeD,
   NegativeTildeTau
 };
@@ -32,18 +33,24 @@ void test(const TestThis test_this) {
                      Spectral::Quadrature::GaussLobatto};
   const double persson_exponent = 5.0;
   const grmhd::ValenciaDivClean::subcell::TciOptions tci_options{
-      1.0e-20, 1.0e-40, 1.1e-12, 1.0e-12};
+      1.0e-12, 1.0e-40, 1.0e-11, 1.0e-12,
+      test_this == TestThis::PerssonTildeB ? std::optional<double>{1.0e-2}
+                                           : std::nullopt};
 
   auto box = db::create<
       db::AddSimpleTags<evolution::dg::subcell::Tags::Inactive<
                             grmhd::ValenciaDivClean::Tags::TildeD>,
                         evolution::dg::subcell::Tags::Inactive<
                             grmhd::ValenciaDivClean::Tags::TildeTau>,
+                        evolution::dg::subcell::Tags::Inactive<
+                            grmhd::ValenciaDivClean::Tags::TildeB<>>,
                         grmhd::ValenciaDivClean::Tags::VariablesNeededFixing,
                         domain::Tags::Mesh<3>,
                         grmhd::ValenciaDivClean::subcell::Tags::TciOptions>>(
       Scalar<DataVector>(mesh.number_of_grid_points(), 1.0),
       Scalar<DataVector>(mesh.number_of_grid_points(), 1.0),
+      tnsr::I<DataVector, 3, Frame::Inertial>(mesh.number_of_grid_points(),
+                                              1.0),
       test_this == TestThis::NeededFixing, mesh, tci_options);
 
   const size_t point_to_change = mesh.number_of_grid_points() / 2;
@@ -58,6 +65,14 @@ void test(const TestThis test_this) {
         grmhd::ValenciaDivClean::Tags::TildeD>>(
         make_not_null(&box), [point_to_change](const auto tilde_d_ptr) {
           get(*tilde_d_ptr)[point_to_change] *= 2.0;
+        });
+  } else if (test_this == TestThis::PerssonTildeB) {
+    db::mutate<evolution::dg::subcell::Tags::Inactive<
+        grmhd::ValenciaDivClean::Tags::TildeB<>>>(
+        make_not_null(&box), [point_to_change](const auto tilde_b_ptr) {
+          for (size_t i = 0; i < 3; ++i) {
+            tilde_b_ptr->get(i)[point_to_change] *= 2.0;
+          }
         });
   } else if (test_this == TestThis::NegativeTildeD) {
     db::mutate<evolution::dg::subcell::Tags::Inactive<
@@ -88,8 +103,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ValenciaDivClean.Subcell.TciOnFdGrid",
                   "[Unit][Evolution]") {
   for (const TestThis& test_this :
        {TestThis::AllGood, TestThis::NeededFixing, TestThis::PerssonTildeD,
-        TestThis::PerssonTildeTau, TestThis::NegativeTildeD,
-        TestThis::NegativeTildeTau}) {
+        TestThis::PerssonTildeTau, TestThis::PerssonTildeB,
+        TestThis::NegativeTildeD, TestThis::NegativeTildeTau}) {
     test(test_this);
   }
 }

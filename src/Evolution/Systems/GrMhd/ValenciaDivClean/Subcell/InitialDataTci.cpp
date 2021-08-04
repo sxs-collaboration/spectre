@@ -6,6 +6,7 @@
 #include <cstddef>
 
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Evolution/DgSubcell/PerssonTci.hpp"
@@ -26,6 +27,11 @@ bool DgInitialDataTci::apply(
         subcell_vars,
     double rdmp_delta0, double rdmp_epsilon, double persson_exponent,
     const Mesh<3>& dg_mesh, const TciOptions& tci_options) noexcept {
+  const Scalar<DataVector> tilde_b_magnitude =
+      tci_options.magnetic_field_cutoff.has_value()
+          ? magnitude(get<ValenciaDivClean::Tags::TildeB<>>(dg_vars))
+          : Scalar<DataVector>{};
+
   return min(get(get<ValenciaDivClean::Tags::TildeD>(dg_vars))) <
              tci_options.minimum_rest_mass_density_times_lorentz_factor or
          min(get(get<Inactive<ValenciaDivClean::Tags::TildeD>>(subcell_vars))) <
@@ -41,6 +47,11 @@ bool DgInitialDataTci::apply(
              persson_exponent, 1.0e-18) or
          evolution::dg::subcell::persson_tci(
              get<ValenciaDivClean::Tags::TildeTau>(dg_vars), dg_mesh,
-             persson_exponent, 1.0e-18);
+             persson_exponent, 1.0e-18) or
+         (tci_options.magnetic_field_cutoff.has_value() and
+          max(get(tilde_b_magnitude)) >
+              tci_options.magnetic_field_cutoff.value() and
+          evolution::dg::subcell::persson_tci(tilde_b_magnitude, dg_mesh,
+                                              persson_exponent, 1.0e-18));
 }
 }  // namespace grmhd::ValenciaDivClean::subcell
