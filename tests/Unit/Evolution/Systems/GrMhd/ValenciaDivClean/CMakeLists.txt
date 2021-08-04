@@ -14,6 +14,7 @@ set(LIBRARY_SOURCES
   Limiters/Test_CharacteristicHelpers.cpp
   Limiters/Test_Flattener.cpp
   Limiters/Test_KxrcfTci.cpp
+  Limiters/Test_Minmod.cpp
   Limiters/Test_VariablesToLimit.cpp
   Subcell/Test_ComputeFluxes.cpp
   Subcell/Test_FixConservativesAndComputePrims.cpp
