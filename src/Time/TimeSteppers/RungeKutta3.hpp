@@ -37,6 +37,8 @@ namespace TimeSteppers {
 /// A "strong stability-preserving" 3rd-order Runge-Kutta
 /// time-stepper, as described in \cite HesthavenWarburton section
 /// 5.7.
+///
+/// The CFL factor/stable step size is 1.25637266330916.
 class RungeKutta3 : public TimeStepper::Inherit {
  public:
   using options = tmpl::list<>;
