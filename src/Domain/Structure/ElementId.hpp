@@ -20,10 +20,10 @@
 #include "Utilities/MakeArray.hpp"
 
 /// \cond
-/// \endcond
 namespace PUP {
 class er;
 }  // namespace PUP
+/// \endcond
 
 /*!
  * \ingroup ComputationalDomainGroup
