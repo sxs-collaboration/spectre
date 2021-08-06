@@ -14,6 +14,7 @@ set(LIBRARY_SOURCES
   Test_H5BoundaryCommunication.cpp
   Test_InitializeCharacteristicEvolution.cpp
   Test_InitializeWorldtubeBoundary.cpp
+  Test_InterpolateDuringSelfStart.cpp
   Test_RequestBoundaryData.cpp
   Test_ScriObserveInterpolated.cpp
   Test_TimeManagement.cpp
