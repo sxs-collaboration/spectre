@@ -109,7 +109,7 @@ void ComputeHorizonVolumeQuantities::apply(
 
   // temp tags without variables that are already in DestTagList.
   using temp_tags_list =
-      tmpl::list_difference<full_temp_tags_list, tmpl::list<DestTagList>>;
+      tmpl::list_difference<full_temp_tags_list, DestTagList>;
   TempBuffer<temp_tags_list> buffer(get<0, 0>(psi).size());
 
   auto& extrinsic_curvature =
@@ -251,7 +251,7 @@ void ComputeHorizonVolumeQuantities::apply(
 
   // temp tags without variables that are already in DestTagList.
   using temp_tags_list =
-      tmpl::list_difference<full_temp_tags_list, tmpl::list<DestTagList>>;
+      tmpl::list_difference<full_temp_tags_list, DestTagList>;
   TempBuffer<temp_tags_list> buffer(get<0, 0>(psi).size());
 
   // These are always temporaries.
