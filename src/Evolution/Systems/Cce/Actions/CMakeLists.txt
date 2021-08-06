@@ -20,12 +20,12 @@ spectre_target_headers(
   InitializeCharacteristicEvolutionVariables.hpp
   InitializeFirstHypersurface.hpp
   InitializeWorldtubeBoundary.hpp
+  InterpolateDuringSelfStart.hpp
   InsertInterpolationScriData.hpp
   ReceiveGhWorldtubeData.hpp
   ReceiveWorldtubeData.hpp
   RequestBoundaryData.hpp
   ScriObserveInterpolated.hpp
-  SendNextTimeToCce.hpp
   TimeManagement.hpp
   UpdateGauge.hpp
   )

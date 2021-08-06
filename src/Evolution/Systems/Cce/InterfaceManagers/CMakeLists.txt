@@ -13,7 +13,6 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   GhInterfaceManager.hpp
-  GhInterpolationStrategies.hpp
   GhLocalTimeStepping.hpp
   GhLockstep.hpp
   )

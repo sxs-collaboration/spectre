@@ -18,6 +18,7 @@
 #include "NumericalAlgorithms/Interpolation/Callbacks/SendGhWorldtubeData.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/Tags.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -25,46 +26,35 @@ namespace {
 
 struct dispatch_to_send_gh_worldtube_data {
   template <typename ParallelComponent, typename... DbTags, typename ArrayIndex,
-            typename Metavariables,
-            Requires<tmpl2::flat_any_v<
-                std::is_same_v<::Tags::TimeStepId, DbTags>...>> = nullptr>
+            typename Metavariables>
   static void apply(const db::DataBox<tmpl::list<DbTags...>>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/) noexcept {
-    intrp::callbacks::SendGhWorldtubeData<
-        Cce::CharacteristicEvolution<Metavariables>,
-        ::Tags::TimeStepId>::apply(box, cache,
-                                   db::get<::Tags::TimeStepId>(box));
+    if constexpr (tmpl2::flat_any_v<std::is_same_v<::Tags::Time, DbTags>...>) {
+      intrp::callbacks::SendGhWorldtubeData<
+          Cce::CharacteristicEvolution<Metavariables>, ::Tags::Time,
+          false>::apply(box, cache, db::get<::Tags::Time>(box));
+    } else {
+      ERROR("Missing required tag ::Tag::Time");
+    }
   }
 };
 
 tnsr::aa<DataVector, 3> received_spacetime_metric;
 tnsr::iaa<DataVector, 3> received_phi;
 tnsr::aa<DataVector, 3> received_pi;
-tnsr::aa<DataVector, 3> received_dt_spacetime_metric;
-tnsr::iaa<DataVector, 3> received_dt_phi;
-tnsr::aa<DataVector, 3> received_dt_pi;
-TimeStepId received_time_step_id;
 struct test_receive_gh_data {
   template <typename ParallelComponent, typename DbTagList,
             typename Metavariables, typename ArrayIndex>
   static void apply(const db::DataBox<DbTagList>& /*box*/,
                     const Parallel::GlobalCache<Metavariables>& /* cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const TimeStepId& time_step_id,
+                    const ArrayIndex& /*array_index*/, const double /*time*/,
                     const tnsr::aa<DataVector, 3>& spacetime_metric,
                     const tnsr::iaa<DataVector, 3>& phi,
-                    const tnsr::aa<DataVector, 3>& pi,
-                    const tnsr::aa<DataVector, 3>& dt_spacetime_metric,
-                    const tnsr::iaa<DataVector, 3>& dt_phi,
-                    const tnsr::aa<DataVector, 3>& dt_pi) noexcept {
-    received_time_step_id = time_step_id;
+                    const tnsr::aa<DataVector, 3>& pi) noexcept {
     received_spacetime_metric = spacetime_metric;
     received_phi = phi;
     received_pi = pi;
-    received_dt_spacetime_metric = dt_spacetime_metric;
-    received_dt_phi = dt_phi;
-    received_dt_pi = dt_pi;
   }
 };
 
@@ -73,15 +63,12 @@ struct mock_interpolation_target {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
-  using simple_tags = tmpl::list<
-      ::Tags::Variables<tmpl::list<
-          ::gr::Tags::SpacetimeMetric<3, Frame::Inertial>,
-          GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>,
-          GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>,
-          ::Tags::dt<::gr::Tags::SpacetimeMetric<3, Frame::Inertial>>,
-          ::Tags::dt<::GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>>,
-          ::Tags::dt<::GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>>>>,
-      ::Tags::TimeStepId>;
+  using simple_tags =
+      tmpl::list<::Tags::Variables<tmpl::list<
+                     ::gr::Tags::SpacetimeMetric<3, Frame::Inertial>,
+                     GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>,
+                     GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>>>,
+                 ::Tags::Time>;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename Metavariables::Phase, Metavariables::Phase::Initialization,
       tmpl::list<ActionTesting::InitializeDataBox<simple_tags, tmpl::list<>>>>>;
@@ -93,7 +80,7 @@ struct mock_gh_worldtube_boundary {
   using component_being_mocked = Cce::GhWorldtubeBoundary<Metavariables>;
   using replace_these_simple_actions =
       tmpl::list<Cce::Actions::ReceiveGhWorldtubeData<
-          Cce::CharacteristicEvolution<Metavariables>>>;
+          Cce::CharacteristicEvolution<Metavariables>, false>>;
   using with_these_simple_actions = tmpl::list<test_receive_gh_data>;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
@@ -104,7 +91,6 @@ struct mock_gh_worldtube_boundary {
 };
 
 struct test_metavariables {
-  using temporal_id = ::Tags::TimeStepId;
   using component_list =
       tmpl::list<mock_gh_worldtube_boundary<test_metavariables>,
                  mock_interpolation_target<test_metavariables>>;
@@ -118,13 +104,10 @@ SPECTRE_TEST_CASE(
   UniformCustomDistribution<size_t> resolution_distribution{7, 10};
   const size_t l_max = resolution_distribution(gen);
   UniformCustomDistribution<double> value_distribution{0.1, 1.0};
-  using spacetime_tags = tmpl::list<
-      ::gr::Tags::SpacetimeMetric<3, Frame::Inertial>,
-      GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>,
-      GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>,
-      ::Tags::dt<::gr::Tags::SpacetimeMetric<3, Frame::Inertial>>,
-      ::Tags::dt<::GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>>,
-      ::Tags::dt<::GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>>>;
+  using spacetime_tags =
+      tmpl::list<::gr::Tags::SpacetimeMetric<3, Frame::Inertial>,
+                 GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>,
+                 GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>>;
   Variables<spacetime_tags> spacetime_variables{
       Spectral::Swsh::number_of_swsh_collocation_points(l_max)};
   tmpl::for_each<spacetime_tags>([&gen, &value_distribution,
@@ -138,8 +121,7 @@ SPECTRE_TEST_CASE(
   runner.set_phase(test_metavariables::Phase::Initialization);
   ActionTesting::emplace_component_and_initialize<
       mock_interpolation_target<test_metavariables>>(
-      &runner, 0_st,
-      {spacetime_variables, TimeStepId{true, 0_st, {{0.0, 0.1}, {1, 2}}}});
+      &runner, 0_st, {spacetime_variables, 0.05});
   ActionTesting::emplace_component<
       mock_gh_worldtube_boundary<test_metavariables>>(&runner, 0_st);
   runner.set_phase(test_metavariables::Phase::Testing);
@@ -157,11 +139,5 @@ SPECTRE_TEST_CASE(
             spacetime_variables) == received_phi);
   CHECK(get<GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>>(
             spacetime_variables) == received_pi);
-  CHECK(get<::Tags::dt<::gr::Tags::SpacetimeMetric<3, Frame::Inertial>>>(
-            spacetime_variables) == received_dt_spacetime_metric);
-  CHECK(get<::Tags::dt<GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>>>(
-            spacetime_variables) == received_dt_phi);
-  CHECK(get<::Tags::dt<GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>>>(
-            spacetime_variables) == received_dt_pi);
 }
 }  // namespace

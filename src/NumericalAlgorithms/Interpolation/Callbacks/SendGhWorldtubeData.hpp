@@ -25,7 +25,8 @@ namespace callbacks {
 ///
 /// This is an InterpolationTargetTag::post_interpolation_callback;
 /// see InterpolationTarget for a description of InterpolationTargetTag.
-template <typename CceEvolutionComponent, typename TemporalId>
+template <typename CceEvolutionComponent, typename TemporalId,
+          bool DuringSelfStart>
 struct SendGhWorldtubeData {
   using observation_types = tmpl::list<>;
   template <typename DbTags, typename Metavariables>
@@ -34,20 +35,12 @@ struct SendGhWorldtubeData {
                     const typename TemporalId::type& temporal_id) noexcept {
     auto& cce_gh_boundary_component = Parallel::get_parallel_component<
         Cce::GhWorldtubeBoundary<Metavariables>>(cache);
-    Parallel::simple_action<
-        typename Cce::Actions::ReceiveGhWorldtubeData<CceEvolutionComponent>>(
+    Parallel::simple_action<typename Cce::Actions::ReceiveGhWorldtubeData<
+        CceEvolutionComponent, DuringSelfStart>>(
         cce_gh_boundary_component, temporal_id,
         db::get<::gr::Tags::SpacetimeMetric<3, Frame::Inertial>>(box),
         db::get<::GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>>(box),
-        db::get<::GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>>(box),
-        db::get<::Tags::dt<::gr::Tags::SpacetimeMetric<3, Frame::Inertial>>>(
-            box),
-        db::get<
-            ::Tags::dt<::GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>>>(
-            box),
-        db::get<
-            ::Tags::dt<::GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>>>(
-            box));
+        db::get<::GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>>(box));
   }
 };
 }  // namespace callbacks

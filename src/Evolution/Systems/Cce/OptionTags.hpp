@@ -12,7 +12,7 @@
 #include "Evolution/Systems/Cce/AnalyticSolutions/WorldtubeData.hpp"
 #include "Evolution/Systems/Cce/Initialize/InitializeJ.hpp"
 #include "Evolution/Systems/Cce/InterfaceManagers/GhInterfaceManager.hpp"
-#include "Evolution/Systems/Cce/InterfaceManagers/GhInterpolationStrategies.hpp"
+#include "Evolution/Systems/Cce/InterfaceManagers/GhLocalTimeStepping.hpp"
 #include "Evolution/Systems/Cce/InterfaceManagers/GhLockstep.hpp"
 #include "Evolution/Systems/Cce/WorldtubeDataManager.hpp"
 #include "NumericalAlgorithms/Interpolation/SpanInterpolator.hpp"
@@ -178,7 +178,7 @@ struct AnalyticSolution {
 };
 
 struct GhInterfaceManager {
-  using type = std::unique_ptr<InterfaceManagers::GhInterfaceManager>;
+  using type = InterfaceManagers::GhLocalTimeStepping;
   static constexpr Options::String help{
       "Class to manage worldtube data from a GH system."};
   using group = Cce;
@@ -482,39 +482,14 @@ struct SpecifiedEndTime : Tags::EndTime, db::SimpleTag {
 };
 
 struct GhInterfaceManager : db::SimpleTag {
-  using type = std::unique_ptr<InterfaceManagers::GhInterfaceManager>;
+  using type = InterfaceManagers::GhLocalTimeStepping;
   using option_tags = tmpl::list<OptionTags::GhInterfaceManager>;
 
   static constexpr bool pass_metavariables = false;
-  static std::unique_ptr<InterfaceManagers::GhInterfaceManager>
-  create_from_options(
-      const std::unique_ptr<InterfaceManagers::GhInterfaceManager>&
+  static InterfaceManagers::GhLocalTimeStepping create_from_options(
+      const InterfaceManagers::GhLocalTimeStepping&
           interface_manager) noexcept {
-    return interface_manager->get_clone();
-  }
-};
-
-/// \brief Intended for use in the const global cache to communicate to the
-/// sending elements when they should be sending worldtube data for CCE to the
-/// interpolator.
-///
-/// \details This tag is not specifiable by independent options in the yaml, and
-/// instead is entirely determined by the choice of interface manager, which
-/// sets by virtual member function the interpolation strategy that is
-/// compatible with the interface manager. The choice to extract this
-/// information at option-parsing is to avoid needing to pass any information
-/// from the interpolation manager that is typically stored in the
-/// `WorldtubeBoundary` component \ref DataBoxGroup to the components that
-/// provide data for CCE.
-struct InterfaceManagerInterpolationStrategy : db::SimpleTag {
-  using type = InterfaceManagers::InterpolationStrategy;
-  using option_tags = tmpl::list<OptionTags::GhInterfaceManager>;
-
-  static constexpr bool pass_metavariables = false;
-  static InterfaceManagers::InterpolationStrategy create_from_options(
-      const std::unique_ptr<InterfaceManagers::GhInterfaceManager>&
-          interface_manager) noexcept {
-    return interface_manager->get_interpolation_strategy();
+    return interface_manager;
   }
 };
 

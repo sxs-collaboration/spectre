@@ -299,10 +299,10 @@ struct GeneralizedHarmonicTemplateBase<
       case Phase::ImportInitialData:
         return Phase::InitializeInitialDataDependentQuantities;
       case Phase::InitializeInitialDataDependentQuantities:
-        return Phase::InitializeTimeStepperHistory;
-      case Phase::InitializeTimeStepperHistory:
         return Phase::Register;
       case Phase::Register:
+        return Phase::InitializeTimeStepperHistory;
+      case Phase::InitializeTimeStepperHistory:
         return Phase::Evolve;
       case Phase::Evolve:
         return Phase::Exit;

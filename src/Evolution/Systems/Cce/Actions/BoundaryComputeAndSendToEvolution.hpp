@@ -230,12 +230,12 @@ struct BoundaryComputeAndSendToEvolution<GhWorldtubeBoundary<Metavariables>,
                     const ArrayIndex& /*array_index*/,
                     const TimeStepId& time) noexcept {
     auto retrieve_data_and_send_to_evolution =
-        [&time, &cache](const gsl::not_null<
-                        std::unique_ptr<InterfaceManagers::GhInterfaceManager>*>
-                            interface_manager) noexcept {
-          (*interface_manager)->request_gh_data(time);
+        [&time,
+         &cache](const gsl::not_null<InterfaceManagers::GhInterfaceManager*>
+                     interface_manager) noexcept {
+          interface_manager->request_gh_data(time);
           const auto gh_data =
-              (*interface_manager)->retrieve_and_remove_first_ready_gh_data();
+              interface_manager->retrieve_and_remove_first_ready_gh_data();
           if (static_cast<bool>(gh_data)) {
             Parallel::simple_action<Actions::SendToEvolution<
                 GhWorldtubeBoundary<Metavariables>, EvolutionComponent>>(

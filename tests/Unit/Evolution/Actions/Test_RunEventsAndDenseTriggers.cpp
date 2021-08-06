@@ -638,7 +638,7 @@ void test_lts(const bool time_runs_forward) noexcept {
         .insert(
             {quarter_time_step_id,
              {{neighbor,
-               {Mesh<0>{}, {}, {{second_correction}}, half_time_step_id}}}});
+               {Mesh<0>{}, {}, {{second_correction}}, next_time_step_id}}}});
     CHECK(run_if_ready(make_not_null(&runner)));
     VarsType dense_var = initial_vars + 0.5 * step_size * deriv_vars;
     get(get<Var>(dense_var))[1] -=

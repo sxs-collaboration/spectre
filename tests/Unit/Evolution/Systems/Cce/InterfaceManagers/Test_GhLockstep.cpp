@@ -35,8 +35,6 @@ void test_gh_lockstep_interface_manager(
       expected_gh_data(7);
   size_t running_total = 0;
   InterfaceManagers::GhLockstep interface_manager{};
-  CHECK(interface_manager.get_interpolation_strategy() ==
-        InterfaceManagers::InterpolationStrategy::EverySubstep);
   tnsr::aa<DataVector, 3> spacetime_metric{5_st};
   tnsr::iaa<DataVector, 3> phi{5_st};
   tnsr::aa<DataVector, 3> pi{5_st};
@@ -96,17 +94,10 @@ void test_gh_lockstep_interface_manager(
       };
   {
     INFO("Retrieve data from directly constructed manager");
-    // choose a timestep to request - requests should do nothing
+    interface_manager.request_gh_data(get<0>(expected_gh_data[0]));
     interface_manager.request_gh_data(get<0>(expected_gh_data[1]));
-    interface_manager.request_gh_data(get<0>(expected_gh_data[2]));
     check_data_retrieval_against_vector(make_not_null(&interface_manager), 7_st,
                                         0_st);
-    // add some of the individual next_times -- this should also do nothing for
-    // the lockstep interface manager
-    interface_manager.insert_next_gh_time(get<0>(expected_gh_data[1]),
-                                          get<0>(expected_gh_data[2]));
-    interface_manager.insert_next_gh_time(get<0>(expected_gh_data[2]),
-                                          get<0>(expected_gh_data[3]));
     check_data_retrieval_against_vector(make_not_null(&interface_manager), 6_st,
                                         1_st);
   }

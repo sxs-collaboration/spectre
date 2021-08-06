@@ -65,9 +65,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
       "SpecifiedEndTime");
   TestHelpers::db::test_simple_tag<Cce::Tags::GhInterfaceManager>(
       "GhInterfaceManager");
-  TestHelpers::db::test_simple_tag<
-      Cce::Tags::InterfaceManagerInterpolationStrategy>(
-      "InterfaceManagerInterpolationStrategy");
   TestHelpers::db::test_simple_tag<Cce::Tags::AnalyticBoundaryDataManager>(
       "AnalyticBoundaryDataManager");
   TestHelpers::db::test_simple_tag<Cce::Tags::InitializeJ<true>>("InitializeJ");
@@ -108,13 +105,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
         5_st);
   CHECK(TestHelpers::test_option_tag<Cce::OptionTags::ScriInterpolationOrder>(
             "4") == 4_st);
-
-  auto option_created_lockstep_interface_manager =
-      TestHelpers::test_option_tag<Cce::OptionTags::GhInterfaceManager>(
-          "GhLockstep");
-  CHECK(std::is_same_v<
-        decltype(option_created_lockstep_interface_manager),
-        std::unique_ptr<Cce::InterfaceManagers::GhInterfaceManager>>);
 
   CHECK(TestHelpers::test_option_tag<Cce::OptionTags::ScriOutputDensity>("6") ==
         6_st);

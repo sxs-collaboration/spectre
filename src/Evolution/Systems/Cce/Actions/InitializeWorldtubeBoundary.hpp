@@ -174,8 +174,7 @@ struct InitializeWorldtubeBoundary<GhWorldtubeBoundary<Metavariables>>
 
   using const_global_cache_tags =
       tmpl::list<Tags::LMax, InitializationTags::ExtractionRadius,
-                 Tags::NoEndTime, Tags::SpecifiedStartTime,
-                 Tags::InterfaceManagerInterpolationStrategy>;
+                 Tags::NoEndTime, Tags::SpecifiedStartTime>;
   using typename base_type::initialization_tags;
   using typename base_type::initialization_tags_to_keep;
 };

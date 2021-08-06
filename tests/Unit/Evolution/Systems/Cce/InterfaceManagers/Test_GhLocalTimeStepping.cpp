@@ -17,6 +17,9 @@
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
+#include "NumericalAlgorithms/Interpolation/BarycentricRationalSpanInterpolator.hpp"
+#include "NumericalAlgorithms/Interpolation/CubicSpanInterpolator.hpp"
+#include "NumericalAlgorithms/Interpolation/LinearSpanInterpolator.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Time.hpp"
@@ -29,6 +32,7 @@ namespace {
 template <typename Generator>
 void test_gh_local_time_stepping_interface_manager(
     const gsl::not_null<Generator*> gen) noexcept {
+  Parallel::register_derived_classes_with_charm<intrp::SpanInterpolator>();
   // the frequency has to be small to be kind to the time stepper for the ~.1
   // step size in this test
   UniformCustomDistribution<double> value_dist{0.1, 1.0};
@@ -49,10 +53,9 @@ void test_gh_local_time_stepping_interface_manager(
       {true, 0, {target_slab, {0, 1}}},   {true, 0, {target_slab, {1, 40}}},
       {true, 0, {target_slab, {3, 40}}},  {true, 0, {target_slab, {7, 40}}},
       {true, 0, {target_slab, {19, 80}}}, {true, 0, {target_slab, {7, 20}}},
-      {true, 0, {target_slab, {17, 40}}}, {true, 0, {target_slab, {1, 2}}}};
-  InterfaceManagers::GhLocalTimeStepping interface_manager{5};
-  CHECK(interface_manager.get_interpolation_strategy() ==
-        InterpolationStrategy::EveryStep);
+      {true, 0, {target_slab, {15, 40}}}, {true, 0, {target_slab, {1, 2}}}};
+  InterfaceManagers::GhLocalTimeStepping interface_manager{
+      std::make_unique<intrp::BarycentricRationalSpanInterpolator>(2u, 2u)};
 
   // These represent data at time = 0, the time dependence for item i in the
   // vector will be a * cos((frequency + i * 0.05) * t), so the first derivative
@@ -95,17 +98,10 @@ void test_gh_local_time_stepping_interface_manager(
             current_spacetime_metric[i][j] =
                 spacetime_metric[i][j] *
                 cos((frequency + j * frequency_increment) * current_time);
-            current_dt_spacetime_metric[i][j] =
-                -spacetime_metric[i][j] *
-                (frequency + j * frequency_increment) *
-                sin((frequency + j * frequency_increment) * current_time);
 
             current_pi[i][j] =
                 pi[i][j] *
                 cos((frequency + j * frequency_increment) * current_time);
-            current_dt_pi[i][j] =
-                -pi[i][j] * (frequency + j * frequency_increment) *
-                sin((frequency + j * frequency_increment) * current_time);
           }
         }
         for (size_t i = 0; i < tnsr::iaa<DataVector, 3>::size(); ++i) {
@@ -113,24 +109,11 @@ void test_gh_local_time_stepping_interface_manager(
             current_phi[i][j] =
                 phi[i][j] *
                 cos((frequency + j * frequency_increment) * current_time);
-            current_dt_phi[i][j] =
-                -phi[i][j] * (frequency + j * frequency_increment) *
-                sin((frequency + j * frequency_increment) * current_time);
           }
         }
         local_interface_manager->insert_gh_data(
-            current_time_step_id, current_spacetime_metric, current_phi,
-            current_pi, current_dt_spacetime_metric, current_dt_phi,
-            current_dt_pi);
-      };
-
-  const auto insert_source_next_time =
-      [&source_time_steps](
-          const gsl::not_null<InterfaceManagers::GhLocalTimeStepping*>
-              local_interface_manager,
-          const size_t index) noexcept {
-        local_interface_manager->insert_next_gh_time(
-            source_time_steps[index], source_time_steps[index + 1]);
+            current_time_step_id.substep_time().value(),
+            current_spacetime_metric, current_phi, current_pi);
       };
 
   const auto request_target_time =
@@ -194,84 +177,82 @@ void test_gh_local_time_stepping_interface_manager(
   // Test plan (given in ratios of the source interval):
   // insert 0.0
   // request 0.0
-  // insert 0.0 next time
+  // fail to retrieve 0.0
   // request 0.05
-  //
-  // insert 0.1 and next time
+  // insert 0.1
   // request 0.15
   //
-  // insert 0.2 and next time
+  // insert 0.2
   // request 0.35
-  // insert 0.3 and next time
+  // fail to retrieve 0.0
+  // insert 0.3
+  // retrieve 0.0
+  // retrieve 0.05
+  // retrieve 0.15
+  // fail to retrieve 0.35
   // insert 0.4
   //
   // request 0.475 (19/40)
   // fail to retrieve .475
-  // insert 0.4 next time
+  // insert .5 data
   // retrieve .475
-  // insert .5 data and next time
+  // fail to retrieve no requests
   // insert .6 data
   // request .7
   //
   // clone and serialize; check remaining for original, serialized, and clone
   //
-  // insert .6 next time
-  // request .85
-  // insert .7 next time and data
-  // insert .8 data and next time
+  // request .75
+  // insert .7 data
+  // insert .8 data
   // retrieve .7
-  // retrieve .85
+  // retrieve .75
 
   check_no_retrieval(make_not_null(&interface_manager));
 
   insert_source_data(make_not_null(&interface_manager), 0_st);
   request_target_time(make_not_null(&interface_manager), 0_st);
   check_no_retrieval(make_not_null(&interface_manager));
-  insert_source_next_time(make_not_null(&interface_manager), 0_st);
   request_target_time(make_not_null(&interface_manager), 1_st);
+  insert_source_data(make_not_null(&interface_manager), 1_st);
+  request_target_time(make_not_null(&interface_manager), 2_st);
+
+  insert_source_data(make_not_null(&interface_manager), 2_st);
+  request_target_time(make_not_null(&interface_manager), 3_st);
+  check_no_retrieval(make_not_null(&interface_manager));
+  insert_source_data(make_not_null(&interface_manager), 3_st);
   check_retrieval(make_not_null(&interface_manager), 0_st,
                   Approx::custom().epsilon(1.e-5).scale(1.));
   check_retrieval(make_not_null(&interface_manager), 1_st,
                   Approx::custom().epsilon(1.e-7).scale(1.));
-
-  insert_source_data(make_not_null(&interface_manager), 1_st);
-  insert_source_next_time(make_not_null(&interface_manager), 1_st);
-  request_target_time(make_not_null(&interface_manager), 2_st);
   check_retrieval(make_not_null(&interface_manager), 2_st,
                   Approx::custom().epsilon(1.e-9).scale(1.));
-
-  insert_source_data(make_not_null(&interface_manager), 2_st);
-  insert_source_next_time(make_not_null(&interface_manager), 2_st);
-  request_target_time(make_not_null(&interface_manager), 3_st);
   check_no_retrieval(make_not_null(&interface_manager));
-  insert_source_data(make_not_null(&interface_manager), 3_st);
-  insert_source_next_time(make_not_null(&interface_manager), 3_st);
-  check_retrieval(make_not_null(&interface_manager), 3_st);
   insert_source_data(make_not_null(&interface_manager), 4_st);
+  check_retrieval(make_not_null(&interface_manager), 3_st,
+                  Approx::custom().epsilon(1.e-11).scale(1.));
 
   request_target_time(make_not_null(&interface_manager), 4_st);
   check_no_retrieval(make_not_null(&interface_manager));
-  insert_source_next_time(make_not_null(&interface_manager), 4_st);
   insert_source_data(make_not_null(&interface_manager), 5_st);
-  insert_source_next_time(make_not_null(&interface_manager), 5_st);
-  check_retrieval(make_not_null(&interface_manager), 4_st);
+  check_retrieval(make_not_null(&interface_manager), 4_st,
+                  Approx::custom().epsilon(1.e-11).scale(1.));
   check_no_retrieval(make_not_null(&interface_manager));
   insert_source_data(make_not_null(&interface_manager), 6_st);
   request_target_time(make_not_null(&interface_manager), 5_st);
 
   const auto second_half_checks =
       [&request_target_time, &check_no_retrieval, &check_retrieval,
-       &insert_source_data, &insert_source_next_time](
+       &insert_source_data](
           const gsl::not_null<InterfaceManagers::GhLocalTimeStepping*>
               local_interface_manager) noexcept {
-        insert_source_next_time(local_interface_manager, 6_st);
         request_target_time(local_interface_manager, 6_st);
-        insert_source_next_time(local_interface_manager, 7_st);
         insert_source_data(local_interface_manager, 7_st);
         insert_source_data(local_interface_manager, 8_st);
-        insert_source_next_time(local_interface_manager, 8_st);
-        check_retrieval(local_interface_manager, 5_st);
-        check_retrieval(local_interface_manager, 6_st);
+        check_retrieval(local_interface_manager, 5_st,
+                        Approx::custom().epsilon(1.e-11).scale(1.));
+        check_retrieval(local_interface_manager, 6_st,
+                        Approx::custom().epsilon(1.e-11).scale(1.));
         check_no_retrieval(local_interface_manager);
       };
   auto clone = interface_manager.get_clone();

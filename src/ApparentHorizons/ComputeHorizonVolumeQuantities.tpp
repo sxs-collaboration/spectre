@@ -56,10 +56,6 @@ void ComputeHorizonVolumeQuantities::apply(
     const gsl::not_null<Variables<DestTagList>*> target_vars,
     const Variables<SrcTagList>& src_vars, const Mesh<3>& /*mesh*/) noexcept {
   static_assert(
-      std::is_same_v<tmpl::list_difference<SrcTagList, allowed_src_tags>,
-                     tmpl::list<>>,
-      "Found a src tag that is not allowed");
-  static_assert(
       std::is_same_v<tmpl::list_difference<required_src_tags, SrcTagList>,
                      tmpl::list<>>,
       "A required src tag is missing");
@@ -170,10 +166,6 @@ void ComputeHorizonVolumeQuantities::apply(
     const Jacobian<DataVector, 3, TargetFrame, Frame::Inertial>& jacobian,
     const InverseJacobian<DataVector, 3, Frame::Logical, TargetFrame>&
         inverse_jacobian) noexcept {
-  static_assert(
-      std::is_same_v<tmpl::list_difference<SrcTagList, allowed_src_tags>,
-                     tmpl::list<>>,
-      "Found a src tag that is not allowed");
   static_assert(
       std::is_same_v<tmpl::list_difference<required_src_tags, SrcTagList>,
                      tmpl::list<>>,
