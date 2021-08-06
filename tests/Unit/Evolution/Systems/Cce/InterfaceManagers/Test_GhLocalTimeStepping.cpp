@@ -51,8 +51,6 @@ void test_gh_local_time_stepping_interface_manager(
       {true, 0, {target_slab, {19, 80}}}, {true, 0, {target_slab, {7, 20}}},
       {true, 0, {target_slab, {17, 40}}}, {true, 0, {target_slab, {1, 2}}}};
   InterfaceManagers::GhLocalTimeStepping interface_manager{5};
-  CHECK(interface_manager.get_interpolation_strategy() ==
-        InterpolationStrategy::EveryStep);
 
   // These represent data at time = 0, the time dependence for item i in the
   // vector will be a * cos((frequency + i * 0.05) * t), so the first derivative
