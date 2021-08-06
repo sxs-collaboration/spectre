@@ -11,18 +11,28 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/TciOnFdGrid.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/TciOptions.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace {
-enum class TestThis { AllGood, NeededFixing, PerssonTildeD, PerssonTildeTau };
+enum class TestThis {
+  AllGood,
+  NeededFixing,
+  PerssonTildeD,
+  PerssonTildeTau,
+  NegativeTildeD,
+  NegativeTildeTau
+};
 
 void test(const TestThis test_this) {
   const Mesh<3> mesh{6, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto};
   const double persson_exponent = 5.0;
+  const grmhd::ValenciaDivClean::subcell::TciOptions tci_options{
+      1.0e-20, 1.0e-40, 1.1e-12, 1.0e-12};
 
   auto box = db::create<
       db::AddSimpleTags<evolution::dg::subcell::Tags::Inactive<
@@ -30,10 +40,11 @@ void test(const TestThis test_this) {
                         evolution::dg::subcell::Tags::Inactive<
                             grmhd::ValenciaDivClean::Tags::TildeTau>,
                         grmhd::ValenciaDivClean::Tags::VariablesNeededFixing,
-                        domain::Tags::Mesh<3>>>(
+                        domain::Tags::Mesh<3>,
+                        grmhd::ValenciaDivClean::subcell::Tags::TciOptions>>(
       Scalar<DataVector>(mesh.number_of_grid_points(), 1.0),
       Scalar<DataVector>(mesh.number_of_grid_points(), 1.0),
-      test_this == TestThis::NeededFixing, mesh);
+      test_this == TestThis::NeededFixing, mesh, tci_options);
 
   const size_t point_to_change = mesh.number_of_grid_points() / 2;
   if (test_this == TestThis::PerssonTildeTau) {
@@ -47,6 +58,18 @@ void test(const TestThis test_this) {
         grmhd::ValenciaDivClean::Tags::TildeD>>(
         make_not_null(&box), [point_to_change](const auto tilde_d_ptr) {
           get(*tilde_d_ptr)[point_to_change] *= 2.0;
+        });
+  } else if (test_this == TestThis::NegativeTildeD) {
+    db::mutate<evolution::dg::subcell::Tags::Inactive<
+        grmhd::ValenciaDivClean::Tags::TildeD>>(
+        make_not_null(&box), [point_to_change](const auto tilde_d_ptr) {
+          get(*tilde_d_ptr)[point_to_change] = -1.0e-20;
+        });
+  } else if (test_this == TestThis::NegativeTildeTau) {
+    db::mutate<evolution::dg::subcell::Tags::Inactive<
+        grmhd::ValenciaDivClean::Tags::TildeTau>>(
+        make_not_null(&box), [point_to_change](const auto tilde_tau_ptr) {
+          get(*tilde_tau_ptr)[point_to_change] = -1.0e-20;
         });
   }
 
@@ -65,7 +88,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ValenciaDivClean.Subcell.TciOnFdGrid",
                   "[Unit][Evolution]") {
   for (const TestThis& test_this :
        {TestThis::AllGood, TestThis::NeededFixing, TestThis::PerssonTildeD,
-        TestThis::PerssonTildeTau}) {
+        TestThis::PerssonTildeTau, TestThis::NegativeTildeD,
+        TestThis::NegativeTildeTau}) {
     test(test_this);
   }
 }

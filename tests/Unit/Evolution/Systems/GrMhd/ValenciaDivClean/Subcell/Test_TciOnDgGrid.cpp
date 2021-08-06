@@ -35,13 +35,17 @@ enum class TestThis {
   TildeB2TooBig,
   PrimRecoveryFailed,
   PerssonTildeD,
-  PerssonTildeTau
+  PerssonTildeTau,
+  NegativeTildeDSubcell,
+  NegativeTildeTauSubcell,
+  NegativeTildeTau
 };
 
 void test(const TestThis test_this) {
   const EquationsOfState::PolytropicFluid<true> eos{100.0, 2.0};
   const Mesh<3> mesh{6, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto};
+  const Mesh<3> subcell_mesh = evolution::dg::subcell::fd::mesh(mesh);
   using ConsVars =
       typename grmhd::ValenciaDivClean::System::variables_tag::type;
   using PrimVars = Variables<hydro::grmhd_tags<DataVector>>;
@@ -82,9 +86,13 @@ void test(const TestThis test_this) {
                                                    1.0};
 
   const grmhd::ValenciaDivClean::subcell::TciOptions tci_options{
-      1.0e-20, 1.1e-12, 1.0e-12};
+      1.0e-20, 1.0e-40, 1.1e-12, 1.0e-12};
 
   auto box = db::create<db::AddSimpleTags<
+      evolution::dg::subcell::Tags::Inactive<
+          grmhd::ValenciaDivClean::Tags::TildeD>,
+      evolution::dg::subcell::Tags::Inactive<
+          grmhd::ValenciaDivClean::Tags::TildeTau>,
       ::Tags::Variables<typename ConsVars::tags_list>,
       ::Tags::Variables<typename PrimVars::tags_list>, ::domain::Tags::Mesh<3>,
       hydro::Tags::EquationOfState<
@@ -92,6 +100,8 @@ void test(const TestThis test_this) {
       gr::Tags::SqrtDetSpatialMetric<>, gr::Tags::SpatialMetric<3>,
       gr::Tags::InverseSpatialMetric<3>,
       grmhd::ValenciaDivClean::subcell::Tags::TciOptions>>(
+      Scalar<DataVector>(subcell_mesh.number_of_grid_points(), 1.0),
+      Scalar<DataVector>(subcell_mesh.number_of_grid_points(), 1.0),
       ConsVars{mesh.number_of_grid_points()}, prim_vars, mesh,
       std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>{
           std::make_unique<EquationsOfState::PolytropicFluid<true>>(eos)},
@@ -157,6 +167,23 @@ void test(const TestThis test_this) {
         make_not_null(&box), [point_to_change](const auto tilde_d_ptr) {
           get(*tilde_d_ptr)[point_to_change] *= 2.0;
         });
+  } else if (test_this == TestThis::NegativeTildeDSubcell) {
+    db::mutate<evolution::dg::subcell::Tags::Inactive<
+        grmhd::ValenciaDivClean::Tags::TildeD>>(
+        make_not_null(&box), [point_to_change](const auto tilde_d_ptr) {
+          get(*tilde_d_ptr)[point_to_change] = -1.0e-20;
+        });
+  } else if (test_this == TestThis::NegativeTildeTauSubcell) {
+    db::mutate<evolution::dg::subcell::Tags::Inactive<
+        grmhd::ValenciaDivClean::Tags::TildeTau>>(
+        make_not_null(&box), [point_to_change](const auto tilde_d_ptr) {
+          get(*tilde_d_ptr)[point_to_change] = -1.0e-20;
+        });
+  } else if (test_this == TestThis::NegativeTildeTau) {
+    db::mutate<grmhd::ValenciaDivClean::Tags::TildeTau>(
+        make_not_null(&box), [point_to_change](const auto tilde_d_ptr) {
+          get(*tilde_d_ptr)[point_to_change] = -1.0e-20;
+        });
   }
 
   const bool result =
@@ -183,7 +210,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ValenciaDivClean.Subcell.TciOnDgGrid",
   for (const TestThis& test_this :
        {TestThis::AllGood, TestThis::SmallTildeD, TestThis::InAtmosphere,
         TestThis::TildeB2TooBig, TestThis::PrimRecoveryFailed,
-        TestThis::PerssonTildeD, TestThis::PerssonTildeTau}) {
+        TestThis::PerssonTildeD, TestThis::PerssonTildeTau,
+        TestThis::NegativeTildeDSubcell, TestThis::NegativeTildeTauSubcell,
+        TestThis::NegativeTildeTau}) {
     test(test_this);
   }
 }

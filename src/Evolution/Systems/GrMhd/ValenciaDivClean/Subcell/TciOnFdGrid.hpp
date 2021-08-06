@@ -8,6 +8,7 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/Tags/Inactive.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/TciOptions.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
 #include "Evolution/VariableFixing/Tags.hpp"
 #include "Utilities/TMPL.hpp"
@@ -29,6 +30,10 @@ namespace grmhd::ValenciaDivClean::subcell {
  *   remain on FD. (Note: this could be relaxed in the future if we need to
  *   allow switching from FD to DG in the atmosphere and the current approach
  *   isn't working.)
+ * - if `min(tilde_d)` is less than
+ *   `tci_options.minimum_rest_mass_density_times_lorentz_factor` or if
+ *   `min(tilde_tau)` is less than `tci_options.minimum_tilde_tau` then the we
+ *   remain on FD.
  * - apply the Persson TCI to \f$\tilde{D}\f$ and \f$\tilde{\tau}\f$
  */
 struct TciOnFdGrid {
@@ -39,10 +44,11 @@ struct TciOnFdGrid {
                  evolution::dg::subcell::Tags::Inactive<
                      grmhd::ValenciaDivClean::Tags::TildeTau>,
                  grmhd::ValenciaDivClean::Tags::VariablesNeededFixing,
-                 domain::Tags::Mesh<3>>;
+                 domain::Tags::Mesh<3>, Tags::TciOptions>;
   static bool apply(const Scalar<DataVector>& tilde_d,
                     const Scalar<DataVector>& tilde_tau,
                     bool vars_needed_fixing, const Mesh<3>& dg_mesh,
+                    const TciOptions& tci_options,
                     double persson_exponent) noexcept;
 };
 }  // namespace grmhd::ValenciaDivClean::subcell

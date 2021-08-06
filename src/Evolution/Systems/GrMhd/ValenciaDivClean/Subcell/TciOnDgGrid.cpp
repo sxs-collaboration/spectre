@@ -26,6 +26,8 @@ template <typename RecoveryScheme>
 template <size_t ThermodynamicDim>
 bool TciOnDgGrid<RecoveryScheme>::apply(
     const gsl::not_null<Variables<hydro::grmhd_tags<DataVector>>*> dg_prim_vars,
+    const Scalar<DataVector>& subcell_tilde_d,
+    const Scalar<DataVector>& subcell_tilde_tau,
     const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau,
     const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,
     const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
@@ -42,7 +44,15 @@ bool TciOnDgGrid<RecoveryScheme>::apply(
 
   // require: tilde_d/sqrt{gamma} >= 0.0 (or some positive user-specified value)
   if (min(get(tilde_d) / get(sqrt_det_spatial_metric)) <
-      tci_options.minimum_rest_mass_density_times_lorentz_factor) {
+          tci_options.minimum_rest_mass_density_times_lorentz_factor or
+      min(get(subcell_tilde_d)) <
+          tci_options.minimum_rest_mass_density_times_lorentz_factor) {
+    return true;
+  }
+
+  // require: tilde_tau >= 0.0 (or some positive user-specified value)
+  if (min(get(tilde_tau)) < tci_options.minimum_tilde_tau or
+      min(get(subcell_tilde_tau)) < tci_options.minimum_tilde_tau) {
     return true;
   }
 
@@ -148,6 +158,8 @@ GENERATE_INSTANTIATIONS(
   template bool TciOnDgGrid<RECOVERY(data)>::apply<THERMO_DIM(data)>(         \
       const gsl::not_null<Variables<hydro::grmhd_tags<DataVector>>*>          \
           dg_prim_vars,                                                       \
+      const Scalar<DataVector>& subcell_tilde_d,                              \
+      const Scalar<DataVector>& subcell_tilde_tau,                            \
       const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau, \
       const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,                 \
       const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,                 \
