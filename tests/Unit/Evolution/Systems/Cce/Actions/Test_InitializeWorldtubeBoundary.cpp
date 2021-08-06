@@ -176,23 +176,15 @@ void test_gh_initialization() noexcept {
   runner.set_phase(GhMetavariables::Phase::Initialization);
   ActionTesting::emplace_component<component>(
       &runner, 0,
-      Tags::GhInterfaceManager::create_from_options(
-          std::make_unique<InterfaceManagers::GhLockstep>()),
-      Tags::GhInterfaceManager::create_from_options(
-          std::make_unique<InterfaceManagers::GhLockstep>()));
+      InterfaceManagers::GhLocalTimeStepping{
+          std::make_unique<intrp::BarycentricRationalSpanInterpolator>(3u, 4u)},
+      InterfaceManagers::GhLockstep{});
 
   // this should run the initialization
   for (size_t i = 0; i < 3; ++i) {
     ActionTesting::next_action<component>(make_not_null(&runner), 0);
   }
   runner.set_phase(GhMetavariables::Phase::Evolve);
-  // check that the GH data manager copied out of the databox has the correct
-  // properties that we can examine without running the other actions
-  const auto& interface_manager =
-      ActionTesting::get_databox_tag<component, Tags::GhInterfaceManager>(
-          runner, 0);
-  CHECK(std::is_same_v<decltype(interface_manager),
-                       const InterfaceManagers::GhInterfaceManager&>);
 
   // check that the Variables is in the expected state (here we just make sure
   // it has the right size - it shouldn't have been written to yet)

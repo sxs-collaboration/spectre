@@ -426,13 +426,12 @@ struct InterpolationManager : db::SimpleTag {
 /// During self-start, we must be in lockstep with the GH system (if running
 /// concurrently), because the step size is unchangable during self-start.
 struct SelfStartGhInterfaceManager : db::SimpleTag {
-  using type = std::unique_ptr<InterfaceManagers::GhInterfaceManager>;
+  using type = InterfaceManagers::GhLockstep;
   using option_tags = tmpl::list<>;
 
   static constexpr bool pass_metavariables = false;
-  static std::unique_ptr<InterfaceManagers::GhInterfaceManager>
-  create_from_options() noexcept {
-    return std::make_unique<Cce::InterfaceManagers::GhLockstep>();
+  static InterfaceManagers::GhLockstep create_from_options() noexcept {
+    return Cce::InterfaceManagers::GhLockstep();
   }
 };
 }  // namespace Tags

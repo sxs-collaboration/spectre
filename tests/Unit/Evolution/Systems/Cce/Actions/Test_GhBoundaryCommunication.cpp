@@ -33,7 +33,7 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/Evolution/Systems/Cce/BoundaryTestHelpers.hpp"
-#include "NumericalAlgorithms/Interpolation/BarycentricRationalSpanInterpolator.hpp"
+#include "NumericalAlgorithms/Interpolation/LinearSpanInterpolator.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCoefficients.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
 #include "NumericalAlgorithms/Spectral/SwshTags.hpp"
@@ -226,10 +226,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.GhBoundaryCommunication",
       scri_plus_interpolation_order);
   ActionTesting::emplace_component<worldtube_component>(
       &runner, 0,
-      Tags::GhInterfaceManager::create_from_options(
-          std::make_unique<InterfaceManagers::GhLockstep>()),
-      Tags::GhInterfaceManager::create_from_options(
-          std::make_unique<InterfaceManagers::GhLockstep>()));
+      InterfaceManagers::GhLocalTimeStepping{
+          std::make_unique<intrp::LinearSpanInterpolator>()},
+      InterfaceManagers::GhLockstep{});
 
   // this should run the initializations
   for (size_t i = 0; i < 5; ++i) {

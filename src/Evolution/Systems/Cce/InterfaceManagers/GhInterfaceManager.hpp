@@ -57,8 +57,6 @@ class GhInterfaceManager : public PUP::able {
               GeneralizedHarmonic::Tags::Pi<3, ::Frame::Inertial>,
               GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>>>;
 
-  using creatable_classes = tmpl::list<GhLocalTimeStepping, GhLockstep>;
-
   WRAPPED_PUPable_abstract(GhInterfaceManager);  // NOLINT
 
   virtual std::unique_ptr<GhInterfaceManager> get_clone() const noexcept = 0;
