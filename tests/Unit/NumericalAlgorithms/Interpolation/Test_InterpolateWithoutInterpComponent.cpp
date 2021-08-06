@@ -20,7 +20,6 @@
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Tags/Metavariables.hpp"
 #include "Time/Tags.hpp"
-#include "Time/TimeStepId.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -40,12 +39,12 @@ struct mock_element {
 
 template <typename Metavariables, typename ElemComponent>
 struct initialize_elements_and_queue_simple_actions {
-  template <typename InterpPointInfo, typename Runner, typename TemporalId>
+  template <typename InterpPointInfo, typename Runner>
   void operator()(const DomainCreator<3>& domain_creator,
                   const Domain<3>& domain,
                   const std::vector<ElementId<3>>& element_ids,
                   const InterpPointInfo& interp_point_info, Runner& runner,
-                  const TemporalId& temporal_id) noexcept {
+                  const double time) noexcept {
     using metavars = Metavariables;
     using elem_component = ElemComponent;
     // Emplace elements.
@@ -71,12 +70,11 @@ struct initialize_elements_and_queue_simple_actions {
       // 2. Make a box
       const auto box = db::create<
           db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<metavars>,
-                            typename metavars::temporal_id,
-                            intrp::Tags::InterpPointInfo<metavars>,
+                            Tags::Time, intrp::Tags::InterpPointInfo<metavars>,
                             domain::Tags::Mesh<metavars::volume_dim>,
                             ::Tags::Variables<typename std::remove_reference_t<
                                 decltype(vars)>::tags_list>>>(
-          metavars{}, temporal_id, interp_point_info, mesh, vars);
+          metavars{}, time, interp_point_info, mesh, vars);
 
       // 3. Run the event.  This will invoke simple actions on
       // InterpolationTarget.
@@ -99,7 +97,6 @@ struct MockMetavariables {
         tmpl::list<InterpolateOnElementTestHelpers::Tags::MultiplyByTwoCompute>,
         tmpl::list<>>;
   };
-  using temporal_id = ::Tags::TimeStepId;
   static constexpr size_t volume_dim = 3;
   using interpolation_target_tags = tmpl::list<InterpolationTargetA>;
 

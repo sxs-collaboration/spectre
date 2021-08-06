@@ -12,7 +12,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "NumericalAlgorithms/Interpolation/Actions/SendPointsToInterpolator.hpp"
-#include "NumericalAlgorithms/Interpolation/Actions/VerifyTemporalIdsAndSendPoints.hpp"
+#include "NumericalAlgorithms/Interpolation/Actions/VerifyTimesAndSendPoints.hpp"
 #include "NumericalAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
@@ -27,12 +27,9 @@
 // IWYU pragma: no_forward_declare db::DataBox
 namespace intrp {
 namespace Tags {
-template <typename TemporalId>
-struct CompletedTemporalIds;
-template <typename TemporalId>
-struct PendingTemporalIds;
-template <typename TemporalId>
-struct TemporalIds;
+struct CompletedTimes;
+struct PendingTimes;
+struct Times;
 }  // namespace Tags
 }  // namespace intrp
 template <typename TagsList>
@@ -50,24 +47,24 @@ namespace Actions {
 /// - Tells `Interpolator`s that the interpolation is complete
 ///  (by calling
 ///  `Actions::CleanUpInterpolator<InterpolationTargetTag>`)
-/// - Removes the first `temporal_id` from `Tags::TemporalIds<TemporalId>`
-/// - If there are more `temporal_id`s, begins interpolation at the next
-///  `temporal_id` (by calling `InterpolationTargetTag::compute_target_points`)
+/// - Removes the first time from `Tags::Times`
+/// - If there are more timess, begins interpolation at the next
+///   time (by calling `InterpolationTargetTag::compute_target_points`)
 ///
 /// Uses:
 /// - DataBox:
-///   - `Tags::TemporalIds<TemporalId>`
-///   - `Tags::IndicesOfFilledInterpPoints<TemporalId>`
-///   - `Tags::InterpolatedVars<InterpolationTargetTag,TemporalId>`
+///   - `Tags::Times`
+///   - `Tags::IndicesOfFilledInterpPoints`
+///   - `Tags::InterpolatedVars<InterpolationTargetTag>`
 ///
 /// DataBox changes:
 /// - Adds: nothing
 /// - Removes: nothing
 /// - Modifies:
-///   - `Tags::TemporalIds<TemporalId>`
-///   - `Tags::CompletedTemporalIds<TemporalId>`
-///   - `Tags::IndicesOfFilledInterpPoints<TemporalId>`
-///   - `Tags::InterpolatedVars<InterpolationTargetTag,TemporalId>`
+///   - `Tags::Times`
+///   - `Tags::CompletedTimes`
+///   - `Tags::IndicesOfFilledInterpPoints`
+///   - `Tags::InterpolatedVars<InterpolationTargetTag>`
 ///   - `::Tags::Variables<typename
 ///                   InterpolationTargetTag::vars_to_interpolate_to_target>`
 ///
@@ -75,28 +72,23 @@ namespace Actions {
 template <typename InterpolationTargetTag>
 struct InterpolationTargetReceiveVars {
   /// For requirements on Metavariables, see InterpolationTarget
-  template <
-      typename ParallelComponent, typename DbTags, typename Metavariables,
-      typename ArrayIndex, typename TemporalId,
-      Requires<tmpl::list_contains_v<DbTags, Tags::TemporalIds<TemporalId>>> =
-          nullptr>
+  template <typename ParallelComponent, typename DbTags, typename Metavariables,
+            typename ArrayIndex,
+            Requires<tmpl::list_contains_v<DbTags, Tags::Times>> = nullptr>
   static void apply(
-      db::DataBox<DbTags>& box,
-      Parallel::GlobalCache<Metavariables>& cache,
+      db::DataBox<DbTags>& box, Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/,
       const std::vector<Variables<
           typename InterpolationTargetTag::vars_to_interpolate_to_target>>&
           vars_src,
       const std::vector<std::vector<size_t>>& global_offsets,
-      const TemporalId& temporal_id) noexcept {
-    // Check if we already have completed interpolation at this
-    // temporal_id.
-    const auto& completed_ids =
-        db::get<Tags::CompletedTemporalIds<TemporalId>>(box);
-    // (Search from the end because temporal_id is more likely to be
+      const double time) noexcept {
+    // Check if we already have completed interpolation at this time.
+    const auto& completed_times = db::get<Tags::CompletedTimes>(box);
+    // (Search from the end because time is more likely to be
     // at the end of the list then at the beginning.)
-    if (UNLIKELY(std::find(completed_ids.rbegin(), completed_ids.rend(),
-                           temporal_id) != completed_ids.rend())) {
+    if (UNLIKELY(std::find(completed_times.rbegin(), completed_times.rend(),
+                           time) != completed_times.rend())) {
       // The code will get into this 'if' statement in the following
       // scenario:
       // - There is at least one interpolation point exactly on the
@@ -105,7 +97,7 @@ struct InterpolationTargetReceiveVars {
       //   with data for the same interpolation point (this is ok,
       //   and add_received_variables handles this).
       // - The only Interpolator elements that have not yet called
-      //   InterpolationTargetReceiveVars for this temporal_id are
+      //   InterpolationTargetReceiveVars for this time are
       //   those that have data only for duplicated interpolation
       //   points, and the InterpolationTarget has already received
       //   that data from other Interpolator elements.
@@ -114,56 +106,55 @@ struct InterpolationTargetReceiveVars {
       // one more condition needed for the scenario that gets
       // us inside this 'if':
       // - The InterpolationTarget has already completed its work at
-      //   this temporal_id, and it has cleaned up its data structures
-      //   for this temporal_id before all of the remaining calls to
+      //   this time, and it has cleaned up its data structures
+      //   for this time before all of the remaining calls to
       //   InterpolationTargetReceiveVars have occurred at this
-      //   temporal_id, and now we are in one of those remaining
+      //   time, and now we are in one of those remaining
       //   calls.
       //
       // If this scenario occurs, we just return. This is because the
       // InterpolationTarget is done and there is nothing left to do
-      // at this temporal_id.  Note that if there were extra work to
-      // do at this temporal_id, then CompletedTemporalIds would not
-      // have an entry for this temporal_id.
+      // at this time.  Note that if there were extra work to
+      // do at this time, then CompletedTimes would not
+      // have an entry for this time.
       return;
     }
 
     InterpolationTarget_detail::add_received_variables<InterpolationTargetTag>(
-        make_not_null(&box), vars_src, global_offsets, temporal_id);
+        make_not_null(&box), vars_src, global_offsets, time);
     if (InterpolationTarget_detail::have_data_at_all_points<
-            InterpolationTargetTag>(box, temporal_id)) {
+            InterpolationTargetTag>(box, time)) {
       // All the valid points have been interpolated.
       if (InterpolationTarget_detail::call_callback<InterpolationTargetTag>(
-              make_not_null(&box), make_not_null(&cache), temporal_id)) {
+              make_not_null(&box), make_not_null(&cache), time)) {
         InterpolationTarget_detail::clean_up_interpolation_target<
-            InterpolationTargetTag>(make_not_null(&box), temporal_id);
+            InterpolationTargetTag>(make_not_null(&box), time);
         auto& interpolator_proxy =
             Parallel::get_parallel_component<Interpolator<Metavariables>>(
                 cache);
         Parallel::simple_action<
             Actions::CleanUpInterpolator<InterpolationTargetTag>>(
-            interpolator_proxy, temporal_id);
+            interpolator_proxy, time);
 
         // If we have a sequential target, and there are further
-        // temporal_ids, begin interpolation for the next one.
+        // times, begin interpolation for the next one.
         if (InterpolationTargetTag::compute_target_points::is_sequential::
                 value) {
-          const auto& temporal_ids =
-              db::get<Tags::TemporalIds<TemporalId>>(box);
-          if (not temporal_ids.empty()) {
+          const auto& times = db::get<Tags::Times>(box);
+          if (not times.empty()) {
             auto& my_proxy = Parallel::get_parallel_component<
                 InterpolationTarget<Metavariables, InterpolationTargetTag>>(
                 cache);
             Parallel::simple_action<
                 SendPointsToInterpolator<InterpolationTargetTag>>(
-                my_proxy, temporal_ids.front());
-          } else if (not db::get<Tags::PendingTemporalIds<TemporalId>>(box)
-                             .empty()) {
+                my_proxy, times.front());
+          } else if (not db::get<Tags::PendingTimes>(box).empty()) {
             auto& my_proxy = Parallel::get_parallel_component<
                 InterpolationTarget<Metavariables, InterpolationTargetTag>>(
                 cache);
-            Parallel::simple_action<Actions::VerifyTemporalIdsAndSendPoints<
-                InterpolationTargetTag>>(my_proxy);
+            Parallel::simple_action<
+                Actions::VerifyTimesAndSendPoints<InterpolationTargetTag>>(
+                my_proxy);
           }
         }
       }

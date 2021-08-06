@@ -26,15 +26,10 @@
 #include "NumericalAlgorithms/Interpolation/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
-#include "Time/Slab.hpp"
-#include "Time/Tags.hpp"
-#include "Time/Time.hpp"
-#include "Time/TimeStepId.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// Holds code that is shared between multiple tests. Currently used by
-/// - Test_InterpolateToTarget
 /// - Test_InterpolateWithoutInterpolatorComponent.
 namespace InterpolateOnElementTestHelpers {
 
@@ -83,17 +78,16 @@ template <typename InterpolationTargetTag>
 struct MockInterpolationTargetVarsFromElement {
   template <
       typename ParallelComponent, typename DbTags, typename Metavariables,
-      typename ArrayIndex, typename TemporalId,
+      typename ArrayIndex,
       Requires<tmpl::list_contains_v<DbTags, Tags::TestTargetPoints>> = nullptr>
   static void apply(
-      db::DataBox<DbTags>& box,
-      Parallel::GlobalCache<Metavariables>& /*cache*/,
+      db::DataBox<DbTags>& box, Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/,
       const std::vector<Variables<
           typename InterpolationTargetTag::vars_to_interpolate_to_target>>&
           vars_src,
       const std::vector<std::vector<size_t>>& global_offsets,
-      const TemporalId& /*temporal_id*/) noexcept {
+      const double /*time*/) noexcept {
     CHECK(global_offsets.size() == vars_src.size());
     // global_offsets and vars_src always have a size of 1 for calls
     // directly from the elements; the outer vector is used only by
@@ -188,8 +182,7 @@ void test_interpolate_on_element(
   const auto domain_creator =
       domain::creators::Shell(0.9, 2.9, 2, {{7, 7}}, false);
   const auto domain = domain_creator.create_domain();
-  Slab slab(0.0, 1.0);
-  TimeStepId temporal_id(true, 0, Time(slab, Rational(11, 15)));
+  const double time = 11.0 / 15.0;
 
   // Create Element_ids.
   std::vector<ElementId<3>> element_ids{};
@@ -233,9 +226,8 @@ void test_interpolate_on_element(
   ActionTesting::emplace_component_and_initialize<target_component>(
       &runner, 0, {target_points});
 
-  initialize_elements_and_queue_simple_actions(domain_creator, domain,
-                                               element_ids, interp_point_info,
-                                               runner, temporal_id);
+  initialize_elements_and_queue_simple_actions(
+      domain_creator, domain, element_ids, interp_point_info, runner, time);
 
   // Only some of the actions/events just invoked on elements (those elements
   // which contain target points) will queue a simple action on the
