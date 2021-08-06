@@ -13,7 +13,6 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Evolution/Systems/Cce/InterfaceManagers/GhInterfaceManager.hpp"
-#include "Evolution/Systems/Cce/InterfaceManagers/GhInterpolationStrategies.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
@@ -119,10 +118,6 @@ class GhLocalTimeStepping : public GhInterfaceManager {
 
   /// Serialization for Charm++.
   void pup(PUP::er& p) noexcept override;
-
-  InterpolationStrategy get_interpolation_strategy() const noexcept override {
-    return InterpolationStrategy::EveryStep;
-  };
 
  private:
   // performs the needed logic to move entries from pre_history_ into the

@@ -171,7 +171,7 @@ void test_gh_initialization() noexcept {
       tuples::tagged_tuple_from_typelist<
           Parallel::get_const_global_cache_tags<GhMetavariables>>{
           l_max, extraction_radius, std::numeric_limits<double>::infinity(),
-          0.0, InterfaceManagers::InterpolationStrategy::EveryStep}};
+          0.0}};
 
   runner.set_phase(GhMetavariables::Phase::Initialization);
   ActionTesting::emplace_component<component>(

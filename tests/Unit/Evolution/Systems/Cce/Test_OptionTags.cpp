@@ -65,9 +65,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
       "SpecifiedEndTime");
   TestHelpers::db::test_simple_tag<Cce::Tags::GhInterfaceManager>(
       "GhInterfaceManager");
-  TestHelpers::db::test_simple_tag<
-      Cce::Tags::InterfaceManagerInterpolationStrategy>(
-      "InterfaceManagerInterpolationStrategy");
   TestHelpers::db::test_simple_tag<Cce::Tags::AnalyticBoundaryDataManager>(
       "AnalyticBoundaryDataManager");
   TestHelpers::db::test_simple_tag<Cce::Tags::InitializeJ<true>>("InitializeJ");

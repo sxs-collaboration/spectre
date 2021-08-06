@@ -11,7 +11,6 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/Cce/InterfaceManagers/GhInterfaceManager.hpp"
-#include "Evolution/Systems/Cce/InterfaceManagers/GhInterpolationStrategies.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Time/TimeStepId.hpp"
@@ -91,10 +90,6 @@ class GhLockstep : public GhInterfaceManager {
 
   /// Serialization for Charm++.
   void pup(PUP::er& p) noexcept override;
-
-  InterpolationStrategy get_interpolation_strategy() const noexcept override {
-    return InterpolationStrategy::EverySubstep;
-  };
 
  private:
   std::deque<std::tuple<TimeStepId, gh_variables>> provided_data_;
