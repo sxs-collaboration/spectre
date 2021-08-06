@@ -16,7 +16,6 @@ set(LIBRARY_SOURCES
   Test_InitializeWorldtubeBoundary.cpp
   Test_RequestBoundaryData.cpp
   Test_ScriObserveInterpolated.cpp
-  Test_SendNextTimeToCce.cpp
   Test_TimeManagement.cpp
   Test_UpdateGauge.cpp
   )

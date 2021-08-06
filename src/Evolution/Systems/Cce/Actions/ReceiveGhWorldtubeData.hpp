@@ -17,6 +17,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Time/Tags.hpp"
+#include "Time/TimeAndPrevious.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
@@ -48,39 +49,46 @@ namespace Actions {
 template <typename EvolutionComponent>
 struct ReceiveGhWorldtubeData {
   template <typename ParallelComponent, typename... DbTags,
-            typename Metavariables, typename ArrayIndex,
-            Requires<tmpl::list_contains_v<tmpl::list<DbTags...>,
-                                           Tags::GhInterfaceManager>> = nullptr>
+            typename Metavariables, typename ArrayIndex>
   static void apply(
       db::DataBox<tmpl::list<DbTags...>>& box,
       Parallel::GlobalCache<Metavariables>& cache,
-      const ArrayIndex& /*array_index*/, const TimeStepId& time,
+      const ArrayIndex& /*array_index*/,
+      const tmpl::conditional_t<DuringSelfStart, TimeStepId, TimeAndPrevious>
+          time,
       const tnsr::aa<DataVector, 3>& spacetime_metric,
-      const tnsr::iaa<DataVector, 3>& phi, const tnsr::aa<DataVector, 3>& pi,
-      const tnsr::aa<DataVector, 3>& dt_spacetime_metric =
-          tnsr::aa<DataVector, 3>{},
-      const tnsr::iaa<DataVector, 3>& dt_phi = tnsr::iaa<DataVector, 3>{},
-      const tnsr::aa<DataVector, 3>& dt_pi =
-          tnsr::aa<DataVector, 3>{}) noexcept {
-    db::mutate<Tags::GhInterfaceManager>(
-        make_not_null(&box),
-        [&spacetime_metric, &phi, &pi, &dt_spacetime_metric, &dt_phi, &dt_pi,
-         &time, &cache](const gsl::not_null<
-                        std::unique_ptr<InterfaceManagers::GhInterfaceManager>*>
-                            interface_manager) noexcept {
-          (*interface_manager)
-              ->insert_gh_data(time, spacetime_metric, phi, pi,
-                               dt_spacetime_metric, dt_phi, dt_pi);
-          const auto gh_data =
-              (*interface_manager)->retrieve_and_remove_first_ready_gh_data();
-          if (static_cast<bool>(gh_data)) {
-            Parallel::simple_action<Actions::SendToEvolution<
-                GhWorldtubeBoundary<Metavariables>, EvolutionComponent>>(
-                Parallel::get_parallel_component<
-                    GhWorldtubeBoundary<Metavariables>>(cache),
-                get<0>(*gh_data), get<1>(*gh_data));
-          }
-        });
+      const tnsr::iaa<DataVector, 3>& phi,
+      const tnsr::aa<DataVector, 3>& pi) noexcept {
+    if constexpr (not tmpl::list_contains_v<tmpl::list<DbTags...>,
+                                            Tags::GhInterfaceManager>) {
+      (void)time;
+      (void)spacetime_metric;
+      (void)phi;
+      (void)pi;
+      ERROR("Required tag: Tags::GhInterfaceManager is missing.");
+    } else {
+      auto insert_gh_data_to_interface_manager =
+          [&spacetime_metric, &phi, &pi, &time,
+           &cache](const auto interface_manager) noexcept {
+            interface_manager->insert_gh_data(time, spacetime_metric, phi, pi);
+            const auto gh_data =
+                interface_manager->retrieve_and_remove_first_ready_gh_data();
+            if (static_cast<bool>(gh_data)) {
+              Parallel::simple_action<Actions::SendToEvolution<
+                  GhWorldtubeBoundary<Metavariables>, EvolutionComponent>>(
+                  Parallel::get_parallel_component<
+                      GhWorldtubeBoundary<Metavariables>>(cache),
+                  get<0>(*gh_data), get<1>(*gh_data));
+            }
+          };
+      if constexpr (DuringSelfStart) {
+        db::mutate<Tags::SelfStartGhInterfaceManager>(
+            make_not_null(&box), insert_gh_data_to_interface_manager);
+      } else {
+        db::mutate<Tags::GhInterfaceManager>(
+            make_not_null(&box), insert_gh_data_to_interface_manager);
+      }
+    }
   }
 };
 }  // namespace Actions

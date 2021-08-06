@@ -5,14 +5,18 @@
 
 #include <cstddef>
 #include <deque>
+#include <map>
 #include <memory>
 #include <tuple>
 #include <utility>
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Evolution/Systems/Cce/WorldtubeBufferUpdater.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
+#include "NumericalAlgorithms/Interpolation/SpanInterpolator.hpp"
 #include "Parallel/CharmPupable.hpp"
+#include "Parallel/PupStlCpp11.hpp"
 #include "Parallel/PupStlCpp17.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/History.hpp"
@@ -21,157 +25,107 @@
 
 namespace Cce::InterfaceManagers {
 
+namespace detail {
+template <typename VarsToInterpolate>
+auto create_span_for_time_value(
+    double time, int interpolator_length,
+    const std::map<TimeAndPrevious, VarsToInterpolate,
+                   TimeAndPreviousLessComparator>& gh_data) noexcept {
+  const auto now = gh_data.upper_bound(time);
+  if (std::distance(gh_data.begin(), now) < interpolator_length) {
+    return gh_data.begin();
+  } else if (std::distance(now, gh_data.end()) < interpolator_length) {
+    return std::prev(gh_data.end(), 2 * interpolator_length);
+  }
+  return std::prev(now, interpolator_length);
+}
+
+template <typename VarsToInterpolate>
+bool interpolate_to_time(
+    const gsl::not_null<VarsToInterpolate*> vars_to_interpolate,
+    const std::map<TimeAndPrevious, VarsToInterpolate,
+                   TimeAndPreviousLessComparator>& gh_data,
+    const std::unique_ptr<intrp::SpanInterpolator>& interpolator,
+    const double target_time) noexcept {
+  auto iterator_start = detail::create_span_for_time_value(
+      target_time, interpolator->required_number_of_points_before_and_after(),
+      gh_data);
+  for (auto gh_data_it = gh_data.begin();
+       gh_data_it !=
+       std::next(
+           iterator_start,
+           2 * static_cast<int>(
+                   interpolator->required_number_of_points_before_and_after()) -
+               1);
+       ++gh_data_it) {
+    if (gh_data_it->first.time != std::next(gh_data_it)->first.previous_time) {
+      return false;
+    }
+  }
+  DataVector time_points{
+      2 * interpolator->required_number_of_points_before_and_after()};
+  DataVector tensor_component_values{
+      2 * interpolator->required_number_of_points_before_and_after()};
+  for (auto [i, map_it] = std::make_tuple(0_st, iterator_start);
+       i < time_points.size(); ++i, ++map_it) {
+    time_points[i] = map_it->first.time;
+  }
+  tmpl::for_each<typename VarsToInterpolate::tags_list>(
+      [&vars_to_interpolate, &interpolator, &time_points,
+       &tensor_component_values, &target_time,
+       &iterator_start](auto tensor_tag_v) noexcept {
+        using tensor_tag = typename decltype(tensor_tag_v)::type;
+        auto& tensor = get<tensor_tag>(*vars_to_interpolate);
+        for (size_t i = 0; i < tensor.size(); ++i) {
+          for (size_t offset = 0;
+               offset < vars_to_interpolate->number_of_grid_points();
+               ++offset) {
+            // assemble data into easily interpolated structures
+            for (auto [time_index, gh_data_it] =
+                     std::make_tuple(0_st, iterator_start);
+                 time_index <
+                 2 * interpolator->required_number_of_points_before_and_after();
+                 ++time_index, ++gh_data_it) {
+              tensor_component_values[time_index] =
+                  get<tensor_tag>(gh_data_it->second)[i][offset];
+            }
+            tensor[i][offset] = interpolator->interpolate(
+                gsl::span<const double>{time_points.data(), time_points.size()},
+                gsl::span<const double>{tensor_component_values.data(),
+                                        tensor_component_values.size()},
+                target_time);
+          }
+        }
+      });
+  return true;
+}
+}  // namespace detail
+
 std::unique_ptr<GhInterfaceManager> GhLocalTimeStepping::get_clone()
     const noexcept {
   return std::make_unique<GhLocalTimeStepping>(*this);
 }
 
 void GhLocalTimeStepping::insert_gh_data(
-    TimeStepId time_id, const tnsr::aa<DataVector, 3>& spacetime_metric,
-    const tnsr::iaa<DataVector, 3>& phi, const tnsr::aa<DataVector, 3>& pi,
-    const tnsr::aa<DataVector, 3>& dt_spacetime_metric,
-    const tnsr::iaa<DataVector, 3>& dt_phi,
-    const tnsr::aa<DataVector, 3>& dt_pi) noexcept {
+    const TimeAndPrevious& time_and_previous,
+    const tnsr::aa<DataVector, 3>& spacetime_metric,
+    const tnsr::iaa<DataVector, 3>& phi,
+    const tnsr::aa<DataVector, 3>& pi) noexcept {
   gh_variables input_gh_variables{get<0, 0>(spacetime_metric).size()};
-  dt_gh_variables input_dt_gh_variables{get<0, 0>(spacetime_metric).size()};
   get<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>(
       input_gh_variables) = spacetime_metric;
-  get<::Tags::dt<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>>(
-      input_dt_gh_variables) = dt_spacetime_metric;
   get<GeneralizedHarmonic::Tags::Pi<3, ::Frame::Inertial>>(input_gh_variables) =
       pi;
-  get<::Tags::dt<GeneralizedHarmonic::Tags::Pi<3, ::Frame::Inertial>>>(
-      input_dt_gh_variables) = dt_pi;
   get<GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>>(
       input_gh_variables) = phi;
-  get<::Tags::dt<GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>>>(
-      input_dt_gh_variables) = dt_phi;
-
-  // retrieve an iterator position if the next time has already been
-  // inserted for this data
-  auto previous_deque_entry = alg::find_if(
-      pre_history_,
-      [&time_id](const std::tuple<TimeStepId, std::optional<gh_variables>,
-                                  std::optional<TimeStepId>,
-                                  std::optional<dt_gh_variables>>&
-                     deque_entry) noexcept {
-        return get<0>(deque_entry) == time_id;
-      });
-  // If no pending requests, we don't know what time will be needed next, so
-  // just stash the data in the deque.
-  if (requests_.empty() or
-      requests_.front().substep_time().value() <=
-          time_id.substep_time().value() or
-      pre_history_.size() > 1 or previous_deque_entry == pre_history_.end()) {
-    if(previous_deque_entry == pre_history_.end()) {
-      // NOLINTNEXTLINE(performance-move-const-arg)
-      pre_history_.emplace_back(std::move(time_id),
-                                std::move(input_gh_variables), std::nullopt,
-                                std::move(input_dt_gh_variables));
-    } else {
-      get<1>(*previous_deque_entry) = std::move(input_gh_variables);
-      get<3>(*previous_deque_entry) = std::move(input_dt_gh_variables);
-      update_history();
-    }
-    return;
-  }
-
-  // if we have pending requests, we know how much history to insert, so we take
-  // from the deque and then add in the current data if suitable
-  // NOLINTNEXTLINE(performance-move-const-arg)
-  boundary_history_.insert(std::move(time_id), input_dt_gh_variables);
-  boundary_history_.most_recent_value() = input_gh_variables;
-  // NOLINTNEXTLINE(performance-move-const-arg)
-  latest_next_ = std::move(*get<2>(*previous_deque_entry));
-  pre_history_.erase(previous_deque_entry);
-  if (boundary_history_.size() > order_) {
-    boundary_history_.mark_unneeded(
-        boundary_history_.begin() +
-        static_cast<ptrdiff_t>(boundary_history_.size() - order_));
-  }
-}
-
-void GhLocalTimeStepping::insert_next_gh_time(
-    TimeStepId time_id, TimeStepId next_time_id) noexcept {
-  // retrieve an iterator position if the next time has already been
-  // inserted for this data
-  const auto previous_deque_entry = alg::find_if(
-      pre_history_,
-      [&time_id](const std::tuple<TimeStepId, std::optional<gh_variables>,
-                                  std::optional<TimeStepId>,
-                                  std::optional<dt_gh_variables>>&
-                     deque_entry) noexcept {
-        return get<0>(deque_entry) == time_id;
-      });
-
-  // If no pending requests, we don't know what time will be needed next, so
-  // just stash the data in the deque.
-  if(previous_deque_entry == pre_history_.end()) {
-    // NOLINTNEXTLINE(performance-move-const-arg)
-    pre_history_.emplace_back(std::move(time_id), std::nullopt,
-                              // NOLINTNEXTLINE(performance-move-const-arg)
-                              std::move(next_time_id), std::nullopt);
-    return;
-  } else if (requests_.empty() or
-             requests_.front().substep_time().value() <=
-             time_id.substep_time().value() or
-             pre_history_.size() > 1) {
-    // NOLINTNEXTLINE(performance-move-const-arg)
-    get<2>(*previous_deque_entry) = std::move(next_time_id);
-    update_history();
-    return;
-  }
-
-  // if we have pending requests, we know how much history to insert, so we take
-  // from the deque and then add in the current data if suitable
-  // NOLINTNEXTLINE(performance-move-const-arg)
-  boundary_history_.insert(std::move(time_id), *get<3>(*previous_deque_entry));
-  boundary_history_.most_recent_value() = *get<1>(*previous_deque_entry);
-  // NOLINTNEXTLINE(performance-move-const-arg)
-  latest_next_ = std::move(next_time_id);
-  pre_history_.erase(previous_deque_entry);
-  if (boundary_history_.size() > order_) {
-    boundary_history_.mark_unneeded(
-        boundary_history_.begin() +
-        static_cast<ptrdiff_t>(boundary_history_.size() - order_));
-  }
-  if (boundary_history_.integration_order() < boundary_history_.size()) {
-    boundary_history_.integration_order(
-        std::min(boundary_history_.size(), order_));
-  }
+  gh_data_.insert({time_and_previous, std::move(input_gh_variables)});
+  clean_up_gh_data();
 }
 
 void GhLocalTimeStepping::request_gh_data(const TimeStepId& time_id) noexcept {
-  requests_.push_back(time_id);
+  requests_.insert(time_id);
   if (requests_.size() == 1) {
-    update_history();
-  }
-}
-
-void GhLocalTimeStepping::update_history() noexcept {
-  if (requests_.empty()) {
-    return;
-  }
-  while (not pre_history_.empty() and
-         static_cast<bool>(get<1>(pre_history_.at(0))) and
-         static_cast<bool>(get<2>(pre_history_.at(0))) and
-         requests_.front().substep_time().value() >=
-             get<0>(pre_history_.front()).substep_time().value()) {
-    boundary_history_.insert(get<0>(pre_history_.front()),
-                             *get<3>(pre_history_.front()));
-    boundary_history_.most_recent_value() = *get<1>(pre_history_.front());
-    latest_next_ = *get<2>(pre_history_.front());
-    pre_history_.pop_front();
-  }
-
-  if (boundary_history_.size() > order_) {
-    boundary_history_.mark_unneeded(
-        boundary_history_.begin() +
-        static_cast<ptrdiff_t>(boundary_history_.size() - order_));
-  }
-  if (boundary_history_.integration_order() < boundary_history_.size()) {
-    boundary_history_.integration_order(
-        std::min(boundary_history_.size(), order_));
+    clean_up_gh_data();
   }
 }
 
@@ -180,30 +134,56 @@ auto GhLocalTimeStepping::retrieve_and_remove_first_ready_gh_data() noexcept
   if (requests_.empty()) {
     return std::nullopt;
   }
-  const double first_request = requests_.front().substep_time().value();
-  if (boundary_history_.size() > 0 and
-      (boundary_history_.end() - 1)->value() <= first_request and
-      latest_next_.substep_time().value() >= first_request) {
-    gh_variables latest_values{};
-    time_stepper_.dense_update_u(make_not_null(&latest_values),
-                                 boundary_history_, first_request);
-    // NOLINTNEXTLINE(performance-move-const-arg)
-    std::tuple requested_data{std::move(requests_.front()),
-                              std::move(latest_values)};
-    requests_.pop_front();
-    update_history();
+  const double first_request = requests_.begin()->substep_time().value();
+  if (gh_data_.size() >=
+          interpolator_->required_number_of_points_before_and_after() * 2 and
+      gh_data_.rbegin()->first.time > first_request) {
+    gh_variables requested_values{
+        gh_data_.rbegin()->second.number_of_grid_points()};
+    bool success =
+        gh_data_.begin()->first.previous_time == latest_removed_ and
+        detail::interpolate_to_time(make_not_null(&requested_values), gh_data_,
+                                    interpolator_, first_request);
+    if (not success) {
+      return std::nullopt;
+    }
+    std::tuple requested_data{*requests_.begin(), std::move(requested_values)};
+    requests_.erase(requests_.begin());
+    clean_up_gh_data();
     return requested_data;
   }
   return std::nullopt;
 }
 
+void GhLocalTimeStepping::clean_up_gh_data() noexcept {
+  if (requests_.empty() or gh_data_.empty()) {
+    return;
+  }
+  // count the number of elements to remove from the start
+  const size_t max_to_remove =
+      gh_data_.size() -
+      interpolator_->required_number_of_points_before_and_after() * 2;
+  size_t number_of_points_before_first_request =
+      static_cast<size_t>(std::distance(
+          gh_data_.begin(),
+          gh_data_.upper_bound(requests_.begin()->substep_time().value())));
+  const size_t number_of_points_to_remove = std::min(
+      max_to_remove, std::max(number_of_points_before_first_request, 1_st) - 1);
+  for (size_t i = 0; i < number_of_points_to_remove; ++i) {
+    if (gh_data_.begin()->first.previous_time != latest_removed_) {
+      // times are currently not ordered, so it is not safe to remove any more.
+      break;
+    }
+    latest_removed_ = gh_data_.begin()->first.time;
+    gh_data_.erase(gh_data_.begin());
+  }
+}
+
 void GhLocalTimeStepping::pup(PUP::er& p) noexcept {
-  p | order_;
-  p | pre_history_;
+  pup_override(p, gh_data_);
   p | requests_;
-  p | boundary_history_;
-  p | latest_next_;
-  p | time_stepper_;
+  p | interpolator_;
+  p | latest_removed_;
 }
 
 PUP::able::PUP_ID GhLocalTimeStepping::my_PUP_ID = 0;
