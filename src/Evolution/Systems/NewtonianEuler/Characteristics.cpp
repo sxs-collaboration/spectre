@@ -21,6 +21,100 @@
 // IWYU pragma: no_forward_declare Tensor
 
 namespace NewtonianEuler {
+namespace detail {
+template <>
+Matrix flux_jacobian<1>(const tnsr::I<double, 1>& velocity,
+                        const double kappa_over_density,
+                        const double b_times_theta,
+                        const double specific_enthalpy,
+                        const tnsr::i<double, 1>& unit_normal) noexcept {
+  const double n_x = get<0>(unit_normal);
+  const double u = get<0>(velocity);
+  const Matrix a_x = blaze::DynamicMatrix<double>{
+      {0., 1., 0.},
+      {b_times_theta - square(u), u * (2. - kappa_over_density),
+       kappa_over_density},
+      {u * (b_times_theta - specific_enthalpy),
+       specific_enthalpy - kappa_over_density * square(u),
+       u * (kappa_over_density + 1.)}};
+  return n_x * a_x;
+}
+
+template <>
+Matrix flux_jacobian<2>(const tnsr::I<double, 2>& velocity,
+                        const double kappa_over_density,
+                        const double b_times_theta,
+                        const double specific_enthalpy,
+                        const tnsr::i<double, 2>& unit_normal) noexcept {
+  const double n_x = get<0>(unit_normal);
+  const double n_y = get<1>(unit_normal);
+  const double u = get<0>(velocity);
+  const double v = get<1>(velocity);
+  const Matrix a_x = blaze::DynamicMatrix<double>{
+      {0., 1., 0., 0.},
+      {b_times_theta - square(u), u * (2. - kappa_over_density),
+       -v * kappa_over_density, kappa_over_density},
+      {-u * v, v, u, 0.},
+      {u * (b_times_theta - specific_enthalpy),
+       specific_enthalpy - kappa_over_density * square(u),
+       -u * v * kappa_over_density, u * (kappa_over_density + 1.)}};
+  const Matrix a_y = blaze::DynamicMatrix<double>{
+      {0., 0., 1., 0.},
+      {-u * v, v, u, 0.},
+      {b_times_theta - square(v), -u * kappa_over_density,
+       v * (2. - kappa_over_density), kappa_over_density},
+      {v * (b_times_theta - specific_enthalpy), -u * v * kappa_over_density,
+       specific_enthalpy - kappa_over_density * square(v),
+       v * (kappa_over_density + 1.)}};
+  return n_x * a_x + n_y * a_y;
+}
+
+template <>
+Matrix flux_jacobian<3>(const tnsr::I<double, 3>& velocity,
+                        const double kappa_over_density,
+                        const double b_times_theta,
+                        const double specific_enthalpy,
+                        const tnsr::i<double, 3>& unit_normal) noexcept {
+  const double n_x = get<0>(unit_normal);
+  const double n_y = get<1>(unit_normal);
+  const double n_z = get<2>(unit_normal);
+  const double u = get<0>(velocity);
+  const double v = get<1>(velocity);
+  const double w = get<2>(velocity);
+  const Matrix a_x = blaze::DynamicMatrix<double>{
+      {0., 1., 0., 0., 0.},
+      {b_times_theta - square(u), u * (2. - kappa_over_density),
+       -v * kappa_over_density, -w * kappa_over_density, kappa_over_density},
+      {-u * v, v, u, 0., 0.},
+      {-u * w, w, 0., u, 0.},
+      {u * (b_times_theta - specific_enthalpy),
+       specific_enthalpy - kappa_over_density * square(u),
+       -u * v * kappa_over_density, -u * w * kappa_over_density,
+       u * (kappa_over_density + 1.)}};
+  const Matrix a_y = blaze::DynamicMatrix<double>{
+      {0., 0., 1., 0., 0.},
+      {-u * v, v, u, 0., 0.},
+      {b_times_theta - square(v), -u * kappa_over_density,
+       v * (2. - kappa_over_density), -w * kappa_over_density,
+       kappa_over_density},
+      {-v * w, 0., w, v, 0.},
+      {v * (b_times_theta - specific_enthalpy), -u * v * kappa_over_density,
+       specific_enthalpy - kappa_over_density * square(v),
+       -v * w * kappa_over_density, v * (kappa_over_density + 1.)}};
+  const Matrix a_z = blaze::DynamicMatrix<double>{
+      {0., 0., 0., 1., 0.},
+      {-u * w, w, 0., u, 0.},
+      {-v * w, 0., w, v, 0.},
+      {b_times_theta - square(w), -u * kappa_over_density,
+       -v * kappa_over_density, w * (2. - kappa_over_density),
+       kappa_over_density},
+      {w * (b_times_theta - specific_enthalpy), -u * w * kappa_over_density,
+       -v * w * kappa_over_density,
+       specific_enthalpy - kappa_over_density * square(w),
+       w * (kappa_over_density + 1.)}};
+  return n_x * a_x + n_y * a_y + n_z * a_z;
+}
+}  // namespace detail
 
 template <size_t Dim>
 void characteristic_speeds(
@@ -383,6 +477,85 @@ Matrix left_eigenvectors<3>(const tnsr::I<double, 3>& velocity,
   return result;
 }
 
+template <size_t Dim>
+std::pair<DataVector, std::pair<Matrix, Matrix>> numerical_eigensystem(
+    const tnsr::I<double, Dim>& velocity,
+    const Scalar<double>& sound_speed_squared,
+    const Scalar<double>& specific_enthalpy,
+    const Scalar<double>& kappa_over_density,
+    const tnsr::i<double, Dim>& unit_normal) noexcept {
+  ASSERT(equal_within_roundoff(get(magnitude(unit_normal)), 1.),
+         "Expected unit normal, but got normal with magnitude "
+             << get(magnitude(unit_normal)));
+
+  const double b_times_theta =
+      get(kappa_over_density) *
+          (get(dot_product(velocity, velocity)) - get(specific_enthalpy)) +
+      get(sound_speed_squared);
+
+  const Matrix a = detail::flux_jacobian<Dim>(
+      velocity, get(kappa_over_density), b_times_theta, get(specific_enthalpy),
+      unit_normal);
+
+  const double vn = get(dot_product(velocity, unit_normal));
+  const double cs = sqrt(get(sound_speed_squared));
+  DataVector eigenvalues(Dim + 2, vn);
+  eigenvalues[0] -= cs;
+  eigenvalues[Dim + 1] += cs;
+
+  Matrix right(Dim + 2, Dim + 2);
+
+  // We'd like to use `blaze::eigen` to get the eigenvalues and eigenvectors
+  // of the flux Jacobian matrix `a`... but because `a` is not symmetric,
+  // blaze generically produces complex eigenvectors. So instead we find the
+  // nullspace of `a - \lambda I` using `blaze::svd`.
+  blaze::DynamicMatrix<double, blaze::rowMajor> a_minus_lambda;
+  blaze::DynamicMatrix<double, blaze::rowMajor> U;      // left singular vectors
+  blaze::DynamicVector<double, blaze::columnVector> s;  // singular values
+  blaze::DynamicMatrix<double, blaze::rowMajor> V;  // right singular vectors
+
+  const auto find_group_of_eigenvectors =
+      [&a_minus_lambda, &a, &U, &s, &V, &eigenvalues, &right](
+          const size_t index, const size_t degeneracy) noexcept {
+        a_minus_lambda = a;
+        for (size_t i = 0; i < Dim + 2; ++i) {
+          a_minus_lambda(i, i) -= eigenvalues[index];
+        }
+        blaze::svd(a_minus_lambda, U, s, V);
+
+        // Check the null space has the expected size: the last degeneracy
+        // singular values should vanish
+#ifdef SPECTRE_DEBUG
+        for (size_t i = 0; i < Dim + 2 - degeneracy; ++i) {
+          ASSERT(fabs(s[i]) > 1e-14, "Bad SVD");
+        }
+        for (size_t i = Dim + 2 - degeneracy; i < Dim + 2; ++i) {
+          ASSERT(fabs(s[i]) < 1e-14, "Bad SVD");
+        }
+#endif  // ifdef SPECTRE_DEBUG
+
+        // Copy the last degeneracy rows of V into the
+        // (index, index+degeneracy) columns of right
+        for (size_t i = 0; i < Dim + 2; ++i) {
+          for (size_t j = 0; j < degeneracy; ++j) {
+            right(i, index + j) = V(Dim + 2 - degeneracy + j, i);
+          }
+        }
+      };
+
+  // lambda = vn - cs
+  find_group_of_eigenvectors(0, 1);
+  // Dim-degenerate eigenvalues, lambda = vn
+  find_group_of_eigenvectors(1, Dim);
+  // lambda = vn + cs
+  find_group_of_eigenvectors(Dim + 1, 1);
+
+  Matrix left = right;
+  blaze::invert<blaze::asGeneral>(left);
+
+  return std::make_pair(eigenvalues, std::make_pair(right, left));
+}
+
 }  // namespace NewtonianEuler
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
@@ -399,7 +572,12 @@ Matrix left_eigenvectors<3>(const tnsr::I<double, 3>& velocity,
       const Scalar<DataVector>& sound_speed,                                   \
       const tnsr::i<DataVector, DIM(data)>& normal) noexcept;                  \
   template struct NewtonianEuler::Tags::ComputeLargestCharacteristicSpeed<DIM( \
-      data)>;
+      data)>;                                                                  \
+  template std::pair<DataVector, std::pair<Matrix, Matrix>>                    \
+  NewtonianEuler::numerical_eigensystem(                                       \
+      const tnsr::I<double, DIM(data)>&, const Scalar<double>&,                \
+      const Scalar<double>&, const Scalar<double>&,                            \
+      const tnsr::i<double, DIM(data)>&) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 

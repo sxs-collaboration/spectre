@@ -32,6 +32,22 @@ class DataVector;
 
 namespace NewtonianEuler {
 
+namespace detail {
+// Compute the flux Jacobian for the NewtonianEuler system
+//
+// The flux Jacobian is \f$n_i A^i = n_i \partial F^i / \partial U\f$.
+// The input `b_times_theta` is \f$b\theta = \kappa/\rho (v^2 - h) + c_s^2\f$.
+//
+// This is used for:
+// - testing the analytic characteristic transformation
+// - as input for the numerical characteristic transformation
+template <size_t Dim>
+Matrix flux_jacobian(const tnsr::I<double, Dim>& velocity,
+                     double kappa_over_density, double b_times_theta,
+                     double specific_enthalpy,
+                     const tnsr::i<double, Dim>& unit_normal) noexcept;
+}  // namespace detail
+
 /// @{
 /*!
  * \brief Compute the characteristic speeds of NewtonianEuler system
@@ -113,6 +129,25 @@ Matrix left_eigenvectors(const tnsr::I<double, Dim>& velocity,
                          const Scalar<double>& kappa_over_density,
                          const tnsr::i<double, Dim>& unit_normal) noexcept;
 /// @}
+
+/*!
+ * \brief Compute the transform matrices between the conserved variables and
+ * the characteristic variables of the NewtonianEuler system.
+ *
+ * See `right_eigenvectors` and `left_eigenvectors` for more details.
+ *
+ * However, note that this function computes the transformation (i.e., the
+ * eigenvectors of the flux Jacobian) numerically, instead of using the analytic
+ * expressions. This is useful as a proof-of-concept for more complicated
+ * systems where the analytic expressions may not be known.
+ */
+template <size_t Dim>
+std::pair<DataVector, std::pair<Matrix, Matrix>> numerical_eigensystem(
+    const tnsr::I<double, Dim>& velocity,
+    const Scalar<double>& sound_speed_squared,
+    const Scalar<double>& specific_enthalpy,
+    const Scalar<double>& kappa_over_density,
+    const tnsr::i<double, Dim>& unit_normal) noexcept;
 
 namespace Tags {
 

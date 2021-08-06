@@ -18,12 +18,17 @@ SPECTRE_TEST_CASE(
   CHECK(NewtonianEuler::Limiters::VariablesToLimit::Characteristic ==
         TestHelpers::test_creation<NewtonianEuler::Limiters::VariablesToLimit>(
             "Characteristic"));
+  CHECK(NewtonianEuler::Limiters::VariablesToLimit::NumericalCharacteristic ==
+        TestHelpers::test_creation<NewtonianEuler::Limiters::VariablesToLimit>(
+            "NumericalCharacteristic"));
 
   CHECK(get_output(NewtonianEuler::Limiters::VariablesToLimit::Conserved) ==
         "Conserved");
   CHECK(
       get_output(NewtonianEuler::Limiters::VariablesToLimit::Characteristic) ==
       "Characteristic");
+  CHECK(get_output(NewtonianEuler::Limiters::VariablesToLimit::
+                       NumericalCharacteristic) == "NumericalCharacteristic");
 }
 
 // [[OutputRegex, Failed to convert "BadVars" to VariablesToLimit]]

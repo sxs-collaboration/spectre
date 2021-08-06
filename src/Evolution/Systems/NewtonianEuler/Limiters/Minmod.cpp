@@ -43,7 +43,8 @@ bool characteristic_minmod_impl(
         std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
         typename NewtonianEuler::Limiters::Minmod<VolumeDim>::PackagedData,
         boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
-        neighbor_data) noexcept {
+        neighbor_data,
+    const bool compute_char_transformation_numerically) noexcept {
   // Storage for transforming neighbor_data into char variables
   using CharacteristicVarsMinmod =
       Limiters::Minmod<VolumeDim,
@@ -103,7 +104,8 @@ bool characteristic_minmod_impl(
   return NewtonianEuler::Limiters::
       apply_limiter_to_characteristic_fields_in_all_directions(
           mass_density_cons, momentum_density, energy_density, mesh,
-          equation_of_state, minmod_convert_neighbor_data_then_limit);
+          equation_of_state, minmod_convert_neighbor_data_then_limit,
+          compute_char_transformation_numerically);
 }
 
 }  // namespace
@@ -189,11 +191,17 @@ bool Minmod<VolumeDim>::operator()(
         mass_density_cons, momentum_density, energy_density, mesh, element,
         logical_coords, element_size, neighbor_data);
   } else if (vars_to_limit_ ==
-             NewtonianEuler::Limiters::VariablesToLimit::Characteristic) {
+                 NewtonianEuler::Limiters::VariablesToLimit::Characteristic or
+             vars_to_limit_ == NewtonianEuler::Limiters::VariablesToLimit::
+                                   NumericalCharacteristic) {
+    const bool compute_char_transformation_numerically =
+        (vars_to_limit_ ==
+         NewtonianEuler::Limiters::VariablesToLimit::NumericalCharacteristic);
     limiter_activated = characteristic_minmod_impl(
         mass_density_cons, momentum_density, energy_density, minmod_type_,
         tvb_constant_, mesh, element, logical_coords, element_size,
-        equation_of_state, neighbor_data);
+        equation_of_state, neighbor_data,
+        compute_char_transformation_numerically);
   } else {
     ERROR(
         "No implementation of NewtonianEuler::Limiters::Minmod for variables: "

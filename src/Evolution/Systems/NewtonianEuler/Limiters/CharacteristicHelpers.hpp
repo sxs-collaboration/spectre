@@ -41,7 +41,8 @@ std::pair<Matrix, Matrix> right_and_left_eigenvectors(
     const Scalar<double>& mean_energy,
     const EquationsOfState::EquationOfState<false, ThermodynamicDim>&
         equation_of_state,
-    const tnsr::i<double, VolumeDim>& unit_vector) noexcept;
+    const tnsr::i<double, VolumeDim>& unit_vector,
+    bool compute_char_transformation_numerically = false) noexcept;
 
 /// @{
 /// \brief Compute characteristic fields from conserved fields
@@ -145,7 +146,8 @@ bool apply_limiter_to_characteristic_fields_in_all_directions(
     const Mesh<VolumeDim>& mesh,
     const EquationsOfState::EquationOfState<false, ThermodynamicDim>&
         equation_of_state,
-    const LimiterLambda& prepare_and_apply_limiter) noexcept {
+    const LimiterLambda& prepare_and_apply_limiter,
+    const bool compute_char_transformation_numerically = false) noexcept {
   // Temp variables for calculations
   // There are quite a few tensors in this allocation because in general we need
   // to preserve the input (cons field) tensors until they are overwritten at
@@ -205,7 +207,7 @@ bool apply_limiter_to_characteristic_fields_in_all_directions(
     const auto right_and_left =
         NewtonianEuler::Limiters::right_and_left_eigenvectors(
             mean_density, mean_momentum, mean_energy, equation_of_state,
-            unit_vector);
+            unit_vector, compute_char_transformation_numerically);
     const auto& right = right_and_left.first;
     const auto& left = right_and_left.second;
 
