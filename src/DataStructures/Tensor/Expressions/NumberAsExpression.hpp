@@ -8,7 +8,6 @@
 
 #include "DataStructures/Tensor/Expressions/TensorExpression.hpp"
 #include "Utilities/ForceInline.hpp"
-#include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace TensorExpressions {
@@ -30,16 +29,13 @@ struct NumberAsExpression
   ///
   /// \details
   /// While a NumberAsExpression does not store a rank 0 Tensor, it does
-  /// represent one. This is why this template is only defined for the case
-  /// where `TensorIndices` is empty.
+  /// represent one. This is why the multi-index argument is always an array of
+  /// size 0.
   ///
-  /// \tparam TensorIndices the TensorIndexs of the LHS tensor and RHS tensor
-  /// expression
   /// \return the number represented by this expression
-  template <typename... TensorIndices,
-            Requires<sizeof...(TensorIndices) == 0> = nullptr>
   SPECTRE_ALWAYS_INLINE double get(
-      const std::array<size_t, 0>& /*multi_index*/) const noexcept {
+      const std::array<size_t, num_tensor_indices>& /*multi_index*/)
+      const noexcept {
     return number_;
   }
 

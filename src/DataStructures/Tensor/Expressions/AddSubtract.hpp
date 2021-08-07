@@ -16,6 +16,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Expressions/NumberAsExpression.hpp"
 #include "DataStructures/Tensor/Expressions/TensorExpression.hpp"
+#include "DataStructures/Tensor/Expressions/TensorIndexTransformation.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -128,14 +129,14 @@ struct AddSubSymmetry<SymmList1<Symm1...>, SymmList2<Symm2...>,
                            TensorIndexList1<TensorIndices1...>,
                            TensorIndexList2<TensorIndices2...>, NumIndices,
                            std::index_sequence<Ints...>> {
-  static constexpr std::array<size_t, NumIndices> lhs_tensorindex_values = {
+  static constexpr std::array<size_t, NumIndices> tensorindex_values1 = {
       {TensorIndices1::value...}};
-  static constexpr std::array<size_t, NumIndices> rhs_tensorindex_values = {
+  static constexpr std::array<size_t, NumIndices> tensorindex_values2 = {
       {TensorIndices2::value...}};
-  static constexpr std::array<size_t, NumIndices> lhs_to_rhs_map = {
+  static constexpr std::array<size_t, NumIndices> op2_to_op1_map = {
       {std::distance(
-          rhs_tensorindex_values.begin(),
-          alg::find(rhs_tensorindex_values, lhs_tensorindex_values[Ints]))...}};
+          tensorindex_values2.begin(),
+          alg::find(tensorindex_values2, tensorindex_values1[Ints]))...}};
 
   static constexpr std::array<std::int32_t, NumIndices> symm1 = {
       {Symm1::value...}};
@@ -145,7 +146,7 @@ struct AddSubSymmetry<SymmList1<Symm1...>, SymmList2<Symm2...>,
   // so that the two symmetry arguments to `get_addsub_symm` are aligned
   // w.r.t. their generic index orders
   static constexpr std::array<std::int32_t, NumIndices> addsub_symm =
-      get_addsub_symm(symm1, {{symm2[lhs_to_rhs_map[Ints]]...}});
+      get_addsub_symm(symm1, {{symm2[op2_to_op1_map[Ints]]...}});
 
   using type = tmpl::integral_list<std::int32_t, addsub_symm[Ints]...>;
 };
@@ -227,27 +228,52 @@ struct AddSub<T1, T2, ArgsList1<Args1...>, ArgsList2<Args2...>, Sign>
   using index_list = typename detail::AddSubType<T1, T2>::index_list;
   static constexpr auto num_tensor_indices = tmpl::size<index_list>::value;
   using args_list = typename T1::args_list;
+  static constexpr std::array<size_t, num_tensor_indices>
+      operand_index_transformation =
+          compute_tensorindex_transformation<num_tensor_indices>(
+              {{Args1::value...}}, {{Args2::value...}});
 
   AddSub(T1 t1, T2 t2) : t1_(std::move(t1)), t2_(std::move(t2)) {}
   ~AddSub() override = default;
 
-  template <typename... LhsIndices>
-  SPECTRE_ALWAYS_INLINE decltype(auto) get(
-      const std::array<size_t, num_tensor_indices>& lhs_multi_index) const {
+  /// \brief Helper function for computing the sum of or difference between
+  /// components at given multi-indices from both operands of the expression
+  ///
+  /// \details Both multi-index arguments must be ordered according to their
+  /// operand's respective generic index ordering
+  ///
+  /// \param op1_multi_index the multi-index of the component of the first
+  /// operand
+  /// \param op2_multi_index the multi-index of the component of the second
+  /// operand
+  /// \return the sum of or difference between the two components' values
+  SPECTRE_ALWAYS_INLINE decltype(auto) add_or_subtract(
+      const std::array<size_t, num_tensor_indices>& op1_multi_index,
+      const std::array<size_t, num_tensor_indices>& op2_multi_index)
+      const noexcept {
     if constexpr (Sign == 1) {
-      return t1_.template get<LhsIndices...>(lhs_multi_index) +
-             t2_.template get<LhsIndices...>(lhs_multi_index);
+      return t1_.get(op1_multi_index) + t2_.get(op2_multi_index);
     } else {
-      return t1_.template get<LhsIndices...>(lhs_multi_index) -
-             t2_.template get<LhsIndices...>(lhs_multi_index);
+      return t1_.get(op1_multi_index) - t2_.get(op2_multi_index);
     }
   }
 
-  SPECTRE_ALWAYS_INLINE typename T1::type operator[](size_t i) const {
-    if constexpr (Sign == 1) {
-      return t1_[i] + t2_[i];
+  /// \brief Return the value of the component at the given multi-index of the
+  /// tensor resulting from addition or subtraction
+  ///
+  /// \param result_multi_index the multi-index of the component of the result
+  /// tensor to retrieve
+  /// \return the value of the component at `result_multi_index` in the result
+  /// tensor
+  SPECTRE_ALWAYS_INLINE decltype(auto) get(
+      const std::array<size_t, num_tensor_indices>& result_multi_index) const {
+    if constexpr (std::is_same_v<tmpl::list<Args1...>, tmpl::list<Args2...>>) {
+      return add_or_subtract(result_multi_index, result_multi_index);
     } else {
-      return t1_[i] - t2_[i];
+      return add_or_subtract(
+          result_multi_index,
+          transform_multi_index(result_multi_index,
+                                operand_index_transformation));
     }
   }
 
