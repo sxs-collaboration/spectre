@@ -40,15 +40,7 @@ struct SendGhWorldtubeData {
         cce_gh_boundary_component, temporal_id,
         db::get<::gr::Tags::SpacetimeMetric<3, Frame::Inertial>>(box),
         db::get<::GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>>(box),
-        db::get<::GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>>(box),
-        db::get<::Tags::dt<::gr::Tags::SpacetimeMetric<3, Frame::Inertial>>>(
-            box),
-        db::get<
-            ::Tags::dt<::GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>>>(
-            box),
-        db::get<
-            ::Tags::dt<::GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>>>(
-            box));
+        db::get<::GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>>(box));
   }
 };
 }  // namespace callbacks
