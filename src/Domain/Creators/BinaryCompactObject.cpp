@@ -32,6 +32,7 @@
 #include "Domain/Creators/DomainCreator.hpp"  // IWYU pragma: keep
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
+#include "Domain/FunctionsOfTime/FixedSpeedCubic.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Domain/Structure/BlockNeighbor.hpp"  // IWYU pragma: keep
 #include "Utilities/MakeArray.hpp"
@@ -166,9 +167,13 @@ BinaryCompactObject::BinaryCompactObject(
       initial_expiration_delta_t_(std::numeric_limits<double>::signaling_NaN()),
       expansion_map_outer_boundary_(
           std::numeric_limits<double>::signaling_NaN()),
-      initial_expansion_({}),
-      initial_expansion_velocity_({}),
-      expansion_function_of_time_names_({}),
+      initial_expansion_(std::numeric_limits<double>::signaling_NaN()),
+      initial_expansion_velocity_(std::numeric_limits<double>::signaling_NaN()),
+      expansion_function_of_time_name_({}),
+      asymptotic_velocity_outer_boundary_(
+          std::numeric_limits<double>::signaling_NaN()),
+      decay_timescale_outer_boundary_velocity_(
+          std::numeric_limits<double>::signaling_NaN()),
       initial_rotation_angle_(std::numeric_limits<double>::signaling_NaN()),
       initial_angular_velocity_(std::numeric_limits<double>::signaling_NaN()),
       rotation_about_z_axis_function_of_time_name_({}),
@@ -184,10 +189,11 @@ BinaryCompactObject::BinaryCompactObject(
 // the time-dependent maps
 BinaryCompactObject::BinaryCompactObject(
     double initial_time, std::optional<double> initial_expiration_delta_t,
-    double expansion_map_outer_boundary,
-    std::array<double, 2> initial_expansion,
-    std::array<double, 2> initial_expansion_velocity,
-    std::array<std::string, 2> expansion_function_of_time_names,
+    double expansion_map_outer_boundary, double initial_expansion,
+    double initial_expansion_velocity,
+    std::string expansion_function_of_time_name,
+    double asymptotic_velocity_outer_boundary,
+    double decay_timescale_outer_boundary_velocity,
     double initial_rotation_angle, double initial_angular_velocity,
     std::string rotation_about_z_axis_function_of_time_name,
     std::array<double, 2> initial_size_map_values,
@@ -220,8 +226,11 @@ BinaryCompactObject::BinaryCompactObject(
       expansion_map_outer_boundary_(expansion_map_outer_boundary),
       initial_expansion_(initial_expansion),
       initial_expansion_velocity_(initial_expansion_velocity),
-      expansion_function_of_time_names_(
-          std::move(expansion_function_of_time_names)),
+      expansion_function_of_time_name_(
+          std::move(expansion_function_of_time_name)),
+      asymptotic_velocity_outer_boundary_(asymptotic_velocity_outer_boundary),
+      decay_timescale_outer_boundary_velocity_(
+          decay_timescale_outer_boundary_velocity),
       initial_rotation_angle_(initial_rotation_angle),
       initial_angular_velocity_(initial_angular_velocity),
       rotation_about_z_axis_function_of_time_name_(
@@ -499,10 +508,10 @@ Domain<3> BinaryCompactObject::create_domain() const noexcept {
     block_maps[number_of_blocks_ - 1] =
         std::make_unique<CubicScaleAndRotationMapForComposition>(
             domain::push_back(
-                CubicScaleMapForComposition{
-                    CubicScaleMap{expansion_map_outer_boundary_,
-                                  expansion_function_of_time_names_[0],
-                                  expansion_function_of_time_names_[1]}},
+                CubicScaleMapForComposition{CubicScaleMap{
+                    expansion_map_outer_boundary_,
+                    expansion_function_of_time_name_,
+                    expansion_function_of_time_name_ + "OuterBoundary"s}},
                 RotationMapForComposition{RotationMap{
                     RotationMap2D{rotation_about_z_axis_function_of_time_name_},
                     IdentityMap1D{}}}));
@@ -523,10 +532,10 @@ Domain<3> BinaryCompactObject::create_domain() const noexcept {
                                  object_A_.outer_radius,
                                  {{object_A_.x_coord, 0.0, 0.0}}}},
               domain::push_back(
-                  CubicScaleMapForComposition{
-                      CubicScaleMap{expansion_map_outer_boundary_,
-                                    expansion_function_of_time_names_[0],
-                                    expansion_function_of_time_names_[1]}},
+                  CubicScaleMapForComposition{CubicScaleMap{
+                      expansion_map_outer_boundary_,
+                      expansion_function_of_time_name_,
+                      expansion_function_of_time_name_ + "OuterBoundary"s}},
                   RotationMapForComposition{RotationMap{
                       RotationMap2D{
                           rotation_about_z_axis_function_of_time_name_},
@@ -544,10 +553,10 @@ Domain<3> BinaryCompactObject::create_domain() const noexcept {
                                  object_B_.outer_radius,
                                  {{object_B_.x_coord, 0.0, 0.0}}}},
               domain::push_back(
-                  CubicScaleMapForComposition{
-                      CubicScaleMap{expansion_map_outer_boundary_,
-                                    expansion_function_of_time_names_[0],
-                                    expansion_function_of_time_names_[1]}},
+                  CubicScaleMapForComposition{CubicScaleMap{
+                      expansion_map_outer_boundary_,
+                      expansion_function_of_time_name_,
+                      expansion_function_of_time_name_ + "OuterBoundary"}},
                   RotationMapForComposition{RotationMap{
                       RotationMap2D{
                           rotation_about_z_axis_function_of_time_name_},
@@ -646,23 +655,19 @@ BinaryCompactObject::functions_of_time() const noexcept {
 
   // ExpansionMap FunctionOfTime for the function \f$a(t)\f$ in the
   // domain::CoordinateMaps::TimeDependent::CubicScale map
-  result[expansion_function_of_time_names_[0]] =
+  result[expansion_function_of_time_name_] =
       std::make_unique<FunctionsOfTime::PiecewisePolynomial<2>>(
           initial_time_,
-          std::array<DataVector, 3>{{{initial_expansion_[0]},
-                                     {initial_expansion_velocity_[0]},
-                                     {0.0}}},
+          std::array<DataVector, 3>{
+              {{initial_expansion_}, {initial_expansion_velocity_}, {0.0}}},
           initial_expiration_time);
 
   // ExpansionMap FunctionOfTime for the function \f$b(t)\f$ in the
   // domain::CoordinateMaps::TimeDependent::CubicScale map
-  result[expansion_function_of_time_names_[1]] =
-      std::make_unique<FunctionsOfTime::PiecewisePolynomial<2>>(
-          initial_time_,
-          std::array<DataVector, 3>{{{initial_expansion_[1]},
-                                     {initial_expansion_velocity_[1]},
-                                     {0.0}}},
-          initial_expiration_time);
+  result[expansion_function_of_time_name_ + "OuterBoundary"s] =
+      std::make_unique<FunctionsOfTime::FixedSpeedCubic>(
+          1.0, initial_time_, asymptotic_velocity_outer_boundary_,
+          decay_timescale_outer_boundary_velocity_);
 
   // RotationAboutZAxisMap FunctionOfTime for the rotation angle about the z
   // axis \f$\phi\f$.

@@ -448,29 +448,42 @@ class BinaryCompactObject : public DomainCreator<3> {
     using group = ExpansionMap;
     static std::string name() noexcept { return "OuterBoundary"; }
   };
-  /// \brief The initial values of the expansion factors.
+  /// \brief The initial value of the expansion factor.
   struct InitialExpansion {
-    using type = std::array<double, 2>;
+    using type = double;
     static constexpr Options::String help = {
-        "Expansion values at initial time."};
+        "Expansion value at initial time."};
     using group = ExpansionMap;
   };
-  /// \brief The velocity of the expansion factors.
+  /// \brief The velocity of the expansion factor.
   struct InitialExpansionVelocity {
-    using type = std::array<double, 2>;
+    using type = double;
     static constexpr Options::String help = {"The rate of expansion."};
     using group = ExpansionMap;
   };
-  /// \brief The names of the functions of times to be added to the DataBox for
+  /// \brief The asymptotic radial velocity of the outer boundary.
+  struct AsymptoticVelocityOuterBoundary {
+    using type = double;
+    static constexpr Options::String help = {
+        "The asymptotic velocity of the outer boundary."};
+    using group = ExpansionMap;
+  };
+  /// \brief The timescale for how fast the outer boundary velocity approaches
+  /// its asymptotic value.
+  struct DecayTimescaleOuterBoundaryVelocity {
+    using type = double;
+    static constexpr Options::String help = {
+        "The timescale for how fast the outer boundary velocity approaches its "
+        "asymptotic value."};
+    using group = ExpansionMap;
+  };
+  /// \brief The name of the function of time to be added to the DataBox for
   /// the expansion map.
-  ///
-  /// If the two names are same then a linear radial scaling is used instead of
-  /// a cubic scaling.
-  struct ExpansionFunctionOfTimeNames {
-    using type = std::array<std::string, 2>;
+  struct ExpansionFunctionOfTimeName {
+    using type = std::string;
     static constexpr Options::String help = {"Names of the functions of time."};
     using group = ExpansionMap;
-    static std::string name() noexcept { return "FunctionOfTimeNames"; }
+    static std::string name() noexcept { return "FunctionOfTimeName"; }
   };
 
   struct RotationAboutZAxisMap {
@@ -582,11 +595,12 @@ class BinaryCompactObject : public DomainCreator<3> {
   using time_dependent_options =
       tmpl::list<InitialTime, InitialExpirationDeltaT,
                  ExpansionMapOuterBoundary, InitialExpansion,
-                 InitialExpansionVelocity, ExpansionFunctionOfTimeNames,
-                 InitialRotationAngle, InitialAngularVelocity,
-                 RotationAboutZAxisFunctionOfTimeName, InitialSizeMapValues,
-                 InitialSizeMapVelocities, InitialSizeMapAccelerations,
-                 SizeMapFunctionOfTimeNames>;
+                 InitialExpansionVelocity, ExpansionFunctionOfTimeName,
+                 AsymptoticVelocityOuterBoundary,
+                 DecayTimescaleOuterBoundaryVelocity, InitialRotationAngle,
+                 InitialAngularVelocity, RotationAboutZAxisFunctionOfTimeName,
+                 InitialSizeMapValues, InitialSizeMapVelocities,
+                 InitialSizeMapAccelerations, SizeMapFunctionOfTimeNames>;
 
   template <typename Metavariables>
   using options = tmpl::conditional_t<
@@ -650,10 +664,11 @@ class BinaryCompactObject : public DomainCreator<3> {
   // with parameters corresponding to the additional options
   BinaryCompactObject(
       double initial_time, std::optional<double> initial_expiration_delta_t,
-      double expansion_map_outer_boundary,
-      std::array<double, 2> initial_expansion,
-      std::array<double, 2> initial_expansion_velocity,
-      std::array<std::string, 2> expansion_function_of_time_names,
+      double expansion_map_outer_boundary, double initial_expansion,
+      double initial_expansion_velocity,
+      std::string expansion_function_of_time_name,
+      double asymptotic_velocity_outer_boundary,
+      double decay_timescale_outer_boundary_velocity,
       double initial_rotation_angle, double initial_angular_velocity,
       std::string rotation_about_z_axis_function_of_time_name,
       std::array<double, 2> initial_size_map_values,
@@ -715,9 +730,11 @@ class BinaryCompactObject : public DomainCreator<3> {
   double initial_time_;
   std::optional<double> initial_expiration_delta_t_;
   double expansion_map_outer_boundary_;
-  std::array<double, 2> initial_expansion_;
-  std::array<double, 2> initial_expansion_velocity_;
-  std::array<std::string, 2> expansion_function_of_time_names_;
+  double initial_expansion_;
+  double initial_expansion_velocity_;
+  std::string expansion_function_of_time_name_;
+  double asymptotic_velocity_outer_boundary_;
+  double decay_timescale_outer_boundary_velocity_;
   double initial_rotation_angle_;
   double initial_angular_velocity_;
   std::string rotation_about_z_axis_function_of_time_name_;
