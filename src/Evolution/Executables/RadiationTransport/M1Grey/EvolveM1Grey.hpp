@@ -177,10 +177,14 @@ struct EvolutionMetavars {
 
   using step_actions = tmpl::flatten<tmpl::list<
       evolution::dg::Actions::ComputeTimeDerivative<EvolutionMetavars>,
-      evolution::dg::Actions::ApplyBoundaryCorrections<EvolutionMetavars>,
       tmpl::conditional_t<
-          local_time_stepping, tmpl::list<>,
-          tmpl::list<Actions::RecordTimeStepperData<>,
+          local_time_stepping,
+          tmpl::list<evolution::Actions::RunEventsAndDenseTriggers<>,
+                     evolution::dg::Actions::ApplyBoundaryCorrections<
+                         EvolutionMetavars>>,
+          tmpl::list<evolution::dg::Actions::ApplyBoundaryCorrections<
+                         EvolutionMetavars>,
+                     Actions::RecordTimeStepperData<>,
                      evolution::Actions::RunEventsAndDenseTriggers<>,
                      Actions::UpdateU<>>>,
       Limiters::Actions::SendData<EvolutionMetavars>,

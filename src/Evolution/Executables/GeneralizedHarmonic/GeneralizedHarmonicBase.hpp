@@ -318,10 +318,14 @@ struct GeneralizedHarmonicTemplateBase<
 
   using step_actions = tmpl::list<
       evolution::dg::Actions::ComputeTimeDerivative<derived_metavars>,
-      evolution::dg::Actions::ApplyBoundaryCorrections<derived_metavars>,
       tmpl::conditional_t<
-          local_time_stepping, tmpl::list<>,
-          tmpl::list<Actions::RecordTimeStepperData<>,
+          local_time_stepping,
+          tmpl::list<evolution::Actions::RunEventsAndDenseTriggers<>,
+                     evolution::dg::Actions::ApplyBoundaryCorrections<
+                         derived_metavars>>,
+          tmpl::list<evolution::dg::Actions::ApplyBoundaryCorrections<
+                         derived_metavars>,
+                     Actions::RecordTimeStepperData<>,
                      evolution::Actions::RunEventsAndDenseTriggers<>,
                      Actions::UpdateU<>>>>;
 
