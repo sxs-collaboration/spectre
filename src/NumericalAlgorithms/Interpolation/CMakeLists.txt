@@ -27,7 +27,7 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
-  AddTimesToInterpolationTarget.hpp
+  AddTemporalIdsToInterpolationTarget.hpp
   BarycentricRational.hpp
   BarycentricRationalSpanInterpolator.hpp
   CMakeLists.txt

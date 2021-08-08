@@ -41,7 +41,7 @@
 #include "IO/Observer/ReductionActions.hpp"  // IWYU pragma: keep
 #include "IO/Observer/Tags.hpp"              // IWYU pragma: keep
 #include "IO/Observer/TypeOfObservation.hpp"
-#include "NumericalAlgorithms/Interpolation/AddTimesToInterpolationTarget.hpp"  // IWYU pragma: keep
+#include "NumericalAlgorithms/Interpolation/AddTemporalIdsToInterpolationTarget.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Interpolation/Callbacks/ObserveTimeSeriesOnSurface.hpp"
 #include "NumericalAlgorithms/Interpolation/CleanUpInterpolator.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Interpolation/InitializeInterpolationTarget.hpp"
@@ -59,6 +59,10 @@
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "Time/Slab.hpp"
+#include "Time/Tags.hpp"
+#include "Time/Time.hpp"
+#include "Time/TimeStepId.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/Gsl.hpp"
@@ -258,6 +262,7 @@ struct MockMetavariables {
       tmpl::list<Tags::TestSolution,
                  gr::Tags::SpatialMetric<3, Frame::Inertial>>;
   using interpolation_target_tags = tmpl::list<SurfaceA, SurfaceB, SurfaceC>;
+  using temporal_id = ::Tags::TimeStepId;
   static constexpr size_t volume_dim = 3;
   using component_list =
       tmpl::list<MockObserverWriter<MockMetavariables>,
@@ -343,7 +348,8 @@ SPECTRE_TEST_CASE(
   ActionTesting::set_phase(make_not_null(&runner),
                            metavars::Phase::Registration);
 
-  double time = 0.0;
+  Slab slab(0.0, 1.0);
+  TimeStepId temporal_id(true, 0, Time(slab, 0));
   const auto domain = domain_creator.create_domain();
 
   // Create element_ids.
@@ -380,19 +386,20 @@ SPECTRE_TEST_CASE(
   ActionTesting::next_action<target_b_component>(make_not_null(&runner), 0);
   ActionTesting::next_action<target_c_component>(make_not_null(&runner), 0);
 
-  // Tell the InterpolationTargets that we want to interpolate at time.
+  // Tell the InterpolationTargets that we want to interpolate at
+  // temporal_id.
   ActionTesting::simple_action<
       target_a_component,
-      intrp::Actions::AddTimesToInterpolationTarget<metavars::SurfaceA>>(
-      make_not_null(&runner), 0, std::vector<double>{time});
+      intrp::Actions::AddTemporalIdsToInterpolationTarget<metavars::SurfaceA>>(
+      make_not_null(&runner), 0, std::vector<TimeStepId>{temporal_id});
   ActionTesting::simple_action<
       target_b_component,
-      intrp::Actions::AddTimesToInterpolationTarget<metavars::SurfaceB>>(
-      make_not_null(&runner), 0, std::vector<double>{time});
+      intrp::Actions::AddTemporalIdsToInterpolationTarget<metavars::SurfaceB>>(
+      make_not_null(&runner), 0, std::vector<TimeStepId>{temporal_id});
   ActionTesting::simple_action<
       target_c_component,
-      intrp::Actions::AddTimesToInterpolationTarget<metavars::SurfaceC>>(
-      make_not_null(&runner), 0, std::vector<double>{time});
+      intrp::Actions::AddTemporalIdsToInterpolationTarget<metavars::SurfaceC>>(
+      make_not_null(&runner), 0, std::vector<TimeStepId>{temporal_id});
 
   // There should be three queued simple actions (registration), so invoke
   // them and check that there are no more.
@@ -445,8 +452,8 @@ SPECTRE_TEST_CASE(
     // Call the InterpolatorReceiveVolumeData action on each element_id.
     ActionTesting::simple_action<interp_component,
                                  intrp::Actions::InterpolatorReceiveVolumeData>(
-        make_not_null(&runner), mock_core_for_each_element.at(element_id), time,
-        element_id, mesh, std::move(output_vars));
+        make_not_null(&runner), mock_core_for_each_element.at(element_id),
+        temporal_id, element_id, mesh, std::move(output_vars));
   }
 
   // Invoke remaining actions in random order.

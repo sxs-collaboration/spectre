@@ -29,7 +29,7 @@
 #include "Domain/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestHelpers.hpp"
-#include "NumericalAlgorithms/Interpolation/AddTimesToInterpolationTarget.hpp"  // IWYU pragma: keep
+#include "NumericalAlgorithms/Interpolation/AddTemporalIdsToInterpolationTarget.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Interpolation/CleanUpInterpolator.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Interpolation/InitializeInterpolationTarget.hpp"
 #include "NumericalAlgorithms/Interpolation/InitializeInterpolator.hpp"  // IWYU pragma: keep
@@ -45,6 +45,10 @@
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
+#include "Time/Slab.hpp"
+#include "Time/Tags.hpp"
+#include "Time/Time.hpp"
+#include "Time/TimeStepId.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
@@ -95,6 +99,7 @@ struct NegateCompute : Negate, db::ComputeTag {
 };
 }  // namespace Tags
 
+
 // Structs for compute_vars_to_interpolate.
 struct ComputeSquare {
   template <typename SrcTag, typename DestTag>
@@ -142,7 +147,8 @@ struct TestFunction {
   template <typename DbTags, typename Metavariables>
   static void apply(const db::DataBox<DbTags>& box,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const double /*time*/) noexcept {
+                    const typename Metavariables::temporal_id::
+                        type& /*temporal_id*/) noexcept {
     const auto& interpolation_result = get<DbTagToRetrieve>(box);
     const auto
         expected_interpolation_result = [&interpolation_result]() noexcept {
@@ -152,8 +158,7 @@ struct TestFunction {
       for (size_t n = 0; n < n_pts; ++n) {
         std::array<double, 3> coords{};
         for (size_t d = 0; d < 3; ++d) {
-          gsl::at(coords, d) =
-              TestFunctionHelper<DbTagToRetrieve>::coords(n);
+          gsl::at(coords, d) = TestFunctionHelper<DbTagToRetrieve>::coords(n);
         }
         get(result)[n] = TestFunctionHelper<DbTagToRetrieve>::apply(
             2.0 * coords[0] + 3.0 * coords[1] + 5.0 * coords[2]);
@@ -170,7 +175,8 @@ struct TestKerrHorizonIntegral {
   template <typename DbTags, typename Metavariables>
   static void apply(const db::DataBox<DbTags>& box,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const double /*time*/) noexcept {
+                    const typename Metavariables::temporal_id::
+                        type& /*temporal_id*/) noexcept {
     const auto& interpolation_result = get<Tags::Square>(box);
     const auto& strahlkorper =
         get<StrahlkorperTags::Strahlkorper<Frame::Inertial>>(box);
@@ -260,6 +266,7 @@ struct MockMetavariables {
   using interpolation_target_tags =
       tmpl::list<InterpolationTargetA, InterpolationTargetB,
                  InterpolationTargetC>;
+  using temporal_id = ::Tags::TimeStepId;
   static constexpr size_t volume_dim = 3;
   using component_list = tmpl::list<
       mock_interpolation_target<MockMetavariables, InterpolationTargetA>,
@@ -332,7 +339,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.Integration",
   ActionTesting::set_phase(make_not_null(&runner),
                            metavars::Phase::Registration);
 
-  double time = 0.0;
+  Slab slab(0.0, 1.0);
+  TimeStepId temporal_id(true, 0, Time(slab, 0));
   const auto domain = domain_creator.create_domain();
 
   // Create Element_ids.
@@ -365,19 +373,20 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.Integration",
     }
   }
 
-  // Tell the InterpolationTargets that we want to interpolate at time.
-  ActionTesting::simple_action<target_a_component,
-                               intrp::Actions::AddTimesToInterpolationTarget<
-                                   metavars::InterpolationTargetA>>(
-      make_not_null(&runner), 0, std::vector<double>{time});
-  ActionTesting::simple_action<target_b_component,
-                               intrp::Actions::AddTimesToInterpolationTarget<
-                                   metavars::InterpolationTargetB>>(
-      make_not_null(&runner), 0, std::vector<double>{time});
-  ActionTesting::simple_action<target_c_component,
-                               intrp::Actions::AddTimesToInterpolationTarget<
-                                   metavars::InterpolationTargetC>>(
-      make_not_null(&runner), 0, std::vector<double>{time});
+  // Tell the InterpolationTargets that we want to interpolate at
+  // temporal_id.
+  ActionTesting::simple_action<
+      target_a_component, intrp::Actions::AddTemporalIdsToInterpolationTarget<
+                              metavars::InterpolationTargetA>>(
+      make_not_null(&runner), 0, std::vector<TimeStepId>{temporal_id});
+  ActionTesting::simple_action<
+      target_b_component, intrp::Actions::AddTemporalIdsToInterpolationTarget<
+                              metavars::InterpolationTargetB>>(
+      make_not_null(&runner), 0, std::vector<TimeStepId>{temporal_id});
+  ActionTesting::simple_action<
+      target_c_component, intrp::Actions::AddTemporalIdsToInterpolationTarget<
+                              metavars::InterpolationTargetC>>(
+      make_not_null(&runner), 0, std::vector<TimeStepId>{temporal_id});
 
   // Create volume data and send it to the interpolator.
   for (const auto& element_id : element_ids) {
@@ -403,8 +412,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.Integration",
     // Call the InterpolatorReceiveVolumeData action on each element_id.
     ActionTesting::simple_action<interp_component,
                                  intrp::Actions::InterpolatorReceiveVolumeData>(
-        make_not_null(&runner), mock_core_for_each_element.at(element_id), time,
-        element_id, mesh, std::move(output_vars));
+        make_not_null(&runner), mock_core_for_each_element.at(element_id),
+        temporal_id, element_id, mesh, std::move(output_vars));
   }
 
   // Invoke remaining actions in random order.
@@ -427,12 +436,12 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.Integration",
   CHECK(num_test_function_calls == 3);
 
   // Tell one InterpolationTarget that we want to interpolate at the same
-  // time that we already interpolated at.
+  // temporal_id that we already interpolated at.
   // This call should be ignored by the InterpolationTarget...
-  ActionTesting::simple_action<target_a_component,
-                               intrp::Actions::AddTimesToInterpolationTarget<
-                                   metavars::InterpolationTargetA>>(
-      make_not_null(&runner), 0, std::vector<double>{time});
+  ActionTesting::simple_action<
+      target_a_component, intrp::Actions::AddTemporalIdsToInterpolationTarget<
+                              metavars::InterpolationTargetA>>(
+      make_not_null(&runner), 0, std::vector<TimeStepId>{temporal_id});
   // ...so make sure it was ignored by checking that there isn't anything
   // else in the simple_action queue of the target or the interpolator.
   CHECK(ActionTesting::is_simple_action_queue_empty<target_a_component>(runner,

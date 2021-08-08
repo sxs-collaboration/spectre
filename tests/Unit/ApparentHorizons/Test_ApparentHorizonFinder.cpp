@@ -38,7 +38,7 @@
 #include "Framework/TestHelpers.hpp"
 #include "IO/Logging/Tags.hpp"  // IWYU pragma: keep
 #include "IO/Logging/Verbosity.hpp"
-#include "NumericalAlgorithms/Interpolation/AddTimesToInterpolationTarget.hpp"  // IWYU pragma: keep
+#include "NumericalAlgorithms/Interpolation/AddTemporalIdsToInterpolationTarget.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Interpolation/Callbacks/ErrorOnFailedApparentHorizon.hpp"
 #include "NumericalAlgorithms/Interpolation/Callbacks/FindApparentHorizon.hpp"
 #include "NumericalAlgorithms/Interpolation/CleanUpInterpolator.hpp"  // IWYU pragma: keep
@@ -64,6 +64,10 @@
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/Pi.hpp"
 #include "PointwiseFunctions/GeneralRelativity/SpacetimeMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "Time/Slab.hpp"
+#include "Time/Tags.hpp"
+#include "Time/Time.hpp"
+#include "Time/TimeStepId.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -100,14 +104,14 @@ namespace {
 struct TestHorizonFindFailureCallback {
   // [horizon_find_failure_callback_example]
   template <typename InterpolationTargetTag, typename DbTags,
-            typename Metavariables>
+            typename Metavariables, typename TemporalId>
   static void apply(const db::DataBox<DbTags>& box,
                     const Parallel::GlobalCache<Metavariables>& cache,
-                    const double time,
+                    const TemporalId& temporal_id,
                     const FastFlow::Status failure_reason) noexcept {
     // [horizon_find_failure_callback_example]
     intrp::callbacks::ErrorOnFailedApparentHorizon::template apply<
-        InterpolationTargetTag>(box, cache, time, failure_reason);
+        InterpolationTargetTag>(box, cache, temporal_id, failure_reason);
   }
 };
 
@@ -120,7 +124,8 @@ struct TestSchwarzschildHorizon {
   template <typename DbTags, typename Metavariables>
   static void apply(const db::DataBox<DbTags>& box,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const double /*time*/) noexcept {
+                    const typename Metavariables::temporal_id::
+                        type& /*temporal_id*/) noexcept {
     // [post_horizon_find_callback_example]
     const auto& horizon_radius = get(get<StrahlkorperTags::Radius<Frame>>(box));
     const auto expected_radius =
@@ -151,7 +156,8 @@ struct TestKerrHorizon {
   template <typename DbTags, typename Metavariables>
   static void apply(const db::DataBox<DbTags>& box,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const double /*time*/) noexcept {
+                    const typename Metavariables::temporal_id::
+                        type& /*temporal_id*/) noexcept {
     const auto& strahlkorper =
         get<StrahlkorperTags::Strahlkorper<Frame>>(box);
     // Test actual horizon radius against analytic value at the same
@@ -239,6 +245,7 @@ struct MockMetavariables {
                  GeneralizedHarmonic::Tags::Pi<3, ::Frame::Inertial>,
                  GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>>;
   using interpolation_target_tags = tmpl::list<AhA>;
+  using temporal_id = ::Tags::TimeStepId;
   static constexpr size_t volume_dim = 3;
   using component_list =
       tmpl::list<mock_interpolation_target<MockMetavariables, AhA>,
@@ -336,13 +343,16 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
   ActionTesting::set_phase(make_not_null(&runner),
                            metavars::Phase::Registration);
 
-  // Find horizon at two times.  The horizon find at the second
-  // time will use the result from the first time as
+  // Find horizon at two temporal_ids.  The horizon find at the second
+  // temporal_id will use the result from the first temporal_id as
   // an initial guess.  For the time-independent case, the volume data will
   // not change between horizon finds, so the second horizon find will take
   // zero iterations.
-  // Having two times tests some logic in the interpolator.
-  const std::vector<double> times{13.0 / 15.0, 14.0 / 15.0};
+  // Having two temporal_ids tests some logic in the interpolator.
+  Slab slab(0.0, 1.0);
+  const std::vector<TimeStepId> temporal_ids{
+      {true, 0, Time(slab, Rational(13, 15))},
+      {true, 0, Time(slab, Rational(14, 15))}};
 
   // Create element_ids.
   std::vector<ElementId<3>> element_ids{};
@@ -376,11 +386,11 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
   ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Testing);
 
   // Tell the InterpolationTargets that we want to interpolate at
-  // two times.
+  // two temporal_ids.
   ActionTesting::simple_action<
-      target_component,
-      intrp::Actions::AddTimesToInterpolationTarget<typename metavars::AhA>>(
-      make_not_null(&runner), 0, times);
+      target_component, intrp::Actions::AddTemporalIdsToInterpolationTarget<
+                            typename metavars::AhA>>(make_not_null(&runner), 0,
+                                                     temporal_ids);
 
   // Center of the analytic solution.
   const auto analytic_solution_center = []() noexcept -> std::array<double, 3> {
@@ -393,8 +403,8 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
     return {0.0, 0.0, 0.0};
   }();
 
-  // Create volume data and send it to the interpolator, for each time.
-  for (const auto& time : times) {
+  // Create volume data and send it to the interpolator, for each temporal_id.
+  for (const auto& temporal_id : temporal_ids) {
     for (const auto& element_id : element_ids) {
       const auto& block = domain.blocks()[element_id.block_id()];
       ::Mesh<3> mesh{domain_creator->initial_extents()[element_id.block_id()],
@@ -418,8 +428,8 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
         const auto& functions_of_time =
             get<domain::Tags::FunctionsOfTime>(cache);
         analytic_solution_coords = block.moving_mesh_grid_to_inertial_map()(
-            map_logical_to_grid(logical_coordinates(mesh)), time,
-            functions_of_time);
+            map_logical_to_grid(logical_coordinates(mesh)),
+            temporal_id.step_time().value(), functions_of_time);
       } else {
         // Time-independent
         ElementMap<3, ::Frame::Inertial> map{
@@ -501,8 +511,9 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
             get<domain::Tags::FunctionsOfTime>(cache);
         const auto coords_frame_velocity_jacobians =
             block.moving_mesh_grid_to_inertial_map()
-                .coords_frame_velocity_jacobians(analytic_solution_coords, time,
-                                                 functions_of_time);
+                .coords_frame_velocity_jacobians(
+                    analytic_solution_coords, temporal_id.step_time().value(),
+                    functions_of_time);
         const auto& inv_jacobian = std::get<1>(coords_frame_velocity_jacobians);
         const auto& jacobian = std::get<2>(coords_frame_velocity_jacobians);
         const auto& frame_velocity =
@@ -643,7 +654,7 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
       ActionTesting::simple_action<
           interp_component, intrp::Actions::InterpolatorReceiveVolumeData>(
           make_not_null(&runner), mock_core_for_each_element.at(element_id),
-          time, element_id, mesh, output_vars);
+          temporal_id, element_id, mesh, output_vars);
     }
   }
 

@@ -18,7 +18,11 @@
 #include "NumericalAlgorithms/Interpolation/Actions/InterpolationTargetVarsFromElement.hpp"
 #include "NumericalAlgorithms/Interpolation/InitializeInterpolationTarget.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
+#include "Time/Slab.hpp"
+#include "Time/Tags.hpp"
+#include "Time/Time.hpp"
 #include "Utilities/MakeWithValue.hpp"
+#include "Utilities/Rational.hpp"
 
 namespace Parallel {
 template <typename Metavariables>
@@ -69,17 +73,19 @@ struct MockComputeTargetPoints {
 
 struct MockPostInterpolationCallback {
   template <typename DbTags, typename Metavariables>
-  static void apply(const db::DataBox<DbTags>& box,
-                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const double time) noexcept {
+  static void apply(
+      const db::DataBox<DbTags>& box,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const typename Metavariables::temporal_id::type& temporal_id) noexcept {
     // This callback simply checks that the points are as expected.
-    const double first_time = 13.0 / 15.0;
-    const double second_time = 14.0 / 15.0;
-    if (time == first_time) {
+    Slab slab(0.0, 1.0);
+    const TimeStepId first_temporal_id(true, 0, Time(slab, Rational(13, 15)));
+    const TimeStepId second_temporal_id(true, 0, Time(slab, Rational(14, 15)));
+    if (temporal_id == first_temporal_id) {
       const Scalar<DataVector> expected{
           DataVector{{0.0, 1.0, 4.0, 9.0, 16.0, 25.0, 36.0, 49.0, 64.0, 81.0}}};
       CHECK_ITERABLE_APPROX(expected, db::get<Tags::Square>(box));
-    } else if (time == second_time) {
+    } else if (temporal_id == second_temporal_id) {
       const Scalar<DataVector> expected{DataVector{
           {0.0, 4.0, 16.0, 36.0, 64.0, 100.0, 144.0, 196.0, 256.0, 324.0}}};
       CHECK_ITERABLE_APPROX(expected, db::get<Tags::Square>(box));
@@ -115,6 +121,7 @@ struct MockMetavariables {
     using compute_target_points = MockComputeTargetPoints;
     using post_interpolation_callback = MockPostInterpolationCallback;
   };
+  using temporal_id = ::Tags::TimeStepId;
   static constexpr size_t volume_dim = 3;
   using interpolation_target_tags = tmpl::list<InterpolationTargetA>;
 
@@ -128,12 +135,14 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.TargetVarsFromElement",
   domain::creators::register_derived_with_charm();
 
   using metavars = MockMetavariables;
+  using temporal_id_type = typename metavars::temporal_id::type;
   using target_component =
       mock_interpolation_target<metavars,
                                 typename metavars::InterpolationTargetA>;
 
-  const double first_time = 13.0 / 15.0;
-  const double second_time = 14.0 / 15.0;
+  Slab slab(0.0, 1.0);
+  const TimeStepId first_temporal_id(true, 0, Time(slab, Rational(13, 15)));
+  const TimeStepId second_temporal_id(true, 0, Time(slab, Rational(14, 15)));
   const auto domain_creator =
       domain::creators::Shell(0.9, 4.9, 1, {{5, 5}}, false);
 
@@ -146,10 +155,11 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.TargetVarsFromElement",
       {domain_creator.create_domain()}};
   ActionTesting::emplace_component_and_initialize<target_component>(
       &runner, 0,
-      {std::unordered_map<double, std::unordered_set<size_t>>{},
-       std::unordered_map<double, std::unordered_set<size_t>>{},
-       std::deque<double>{}, std::deque<double>{}, std::deque<double>{},
-       std::unordered_map<double,
+      {std::unordered_map<temporal_id_type, std::unordered_set<size_t>>{},
+       std::unordered_map<temporal_id_type, std::unordered_set<size_t>>{},
+       std::deque<temporal_id_type>{}, std::deque<temporal_id_type>{},
+       std::deque<temporal_id_type>{},
+       std::unordered_map<temporal_id_type,
                           Variables<typename metavars::InterpolationTargetA::
                                         vars_to_interpolate_to_target>>{},
        // Default-constructed Variables cause problems, so below
@@ -177,27 +187,28 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.TargetVarsFromElement",
     }
   };
 
-  // Add points at first_time
+  // Add points at first_temporal_id
   add_to_vars_src({{3.0, 6.0}}, {{3, 6}});
   add_to_vars_src({{2.0, 7.0}}, {{2, 7}});
   ActionTesting::simple_action<
       target_component, intrp::Actions::InterpolationTargetVarsFromElement<
                             typename metavars::InterpolationTargetA>>(
-      make_not_null(&runner), 0, vars_src, global_offsets, first_time);
+      make_not_null(&runner), 0, vars_src, global_offsets, first_temporal_id);
 
-  // It should know about only one time
-  CHECK(ActionTesting::get_databox_tag<target_component, intrp::Tags::Times>(
+  // It should know about only one temporal_id
+  CHECK(ActionTesting::get_databox_tag<
+            target_component, intrp::Tags::TemporalIds<temporal_id_type>>(
             runner, 0)
             .size() == 1);
   // It should have accumulated 4 points by now.
   CHECK(
-      ActionTesting::get_databox_tag<target_component,
-                                     intrp::Tags::IndicesOfFilledInterpPoints>(
-          runner, 0)
-          .at(first_time)
+      ActionTesting::get_databox_tag<
+          target_component,
+          intrp::Tags::IndicesOfFilledInterpPoints<temporal_id_type>>(runner, 0)
+          .at(first_temporal_id)
           .size() == 4);
 
-  // Add some more points at first_time
+  // Add some more points at first_temporal_id
   vars_src.clear();
   global_offsets.clear();
   add_to_vars_src({{1.0, 888888.0}},
@@ -206,18 +217,18 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.TargetVarsFromElement",
   ActionTesting::simple_action<
       target_component, intrp::Actions::InterpolationTargetVarsFromElement<
                             typename metavars::InterpolationTargetA>>(
-      make_not_null(&runner), 0, vars_src, global_offsets, first_time);
+      make_not_null(&runner), 0, vars_src, global_offsets, first_temporal_id);
 
   // It should have interpolated 8 points by now. (The ninth point had
   // a repeated global_offsets so it should be ignored)
   CHECK(
-      ActionTesting::get_databox_tag<target_component,
-                                     intrp::Tags::IndicesOfFilledInterpPoints>(
-          runner, 0)
-          .at(first_time)
+      ActionTesting::get_databox_tag<
+          target_component,
+          intrp::Tags::IndicesOfFilledInterpPoints<temporal_id_type>>(runner, 0)
+          .at(first_temporal_id)
           .size() == 8);
 
-  // Add points at second_time
+  // Add points at second_temporal_id
   vars_src.clear();
   global_offsets.clear();
   add_to_vars_src({{10.0, 16.0}}, {{5, 8}});
@@ -225,28 +236,29 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.TargetVarsFromElement",
   ActionTesting::simple_action<
       target_component, intrp::Actions::InterpolationTargetVarsFromElement<
                             typename metavars::InterpolationTargetA>>(
-      make_not_null(&runner), 0, vars_src, global_offsets, second_time);
+      make_not_null(&runner), 0, vars_src, global_offsets, second_temporal_id);
 
-  // It should know about two times
-  CHECK(ActionTesting::get_databox_tag<target_component, intrp::Tags::Times>(
+  // It should know about two temporal_ids
+  CHECK(ActionTesting::get_databox_tag<
+            target_component, intrp::Tags::TemporalIds<temporal_id_type>>(
             runner, 0)
             .size() == 2);
-  // It should have accumulated 4 points for second_time.
+  // It should have accumulated 4 points for second_temporal_id.
   CHECK(
-      ActionTesting::get_databox_tag<target_component,
-                                     intrp::Tags::IndicesOfFilledInterpPoints>(
-          runner, 0)
-          .at(second_time)
+      ActionTesting::get_databox_tag<
+          target_component,
+          intrp::Tags::IndicesOfFilledInterpPoints<temporal_id_type>>(runner, 0)
+          .at(second_temporal_id)
           .size() == 4);
-  // ... and still have 8 points for first_time.
+  // ... and still have 8 points for first_temporal_id.
   CHECK(
-      ActionTesting::get_databox_tag<target_component,
-                                     intrp::Tags::IndicesOfFilledInterpPoints>(
-          runner, 0)
-          .at(first_time)
+      ActionTesting::get_databox_tag<
+          target_component,
+          intrp::Tags::IndicesOfFilledInterpPoints<temporal_id_type>>(runner, 0)
+          .at(first_temporal_id)
           .size() == 8);
 
-  // Add more points at second_time
+  // Add more points at second_temporal_id
   vars_src.clear();
   global_offsets.clear();
   add_to_vars_src({{2.0, 888888.0}},
@@ -255,19 +267,19 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.TargetVarsFromElement",
   ActionTesting::simple_action<
       target_component, intrp::Actions::InterpolationTargetVarsFromElement<
                             typename metavars::InterpolationTargetA>>(
-      make_not_null(&runner), 0, vars_src, global_offsets, second_time);
+      make_not_null(&runner), 0, vars_src, global_offsets, second_temporal_id);
 
   // It should have interpolated 8 points by now. (The ninth point had
   // a repeated global_offsets so it should be ignored)
   CHECK(
-      ActionTesting::get_databox_tag<target_component,
-                                     intrp::Tags::IndicesOfFilledInterpPoints>(
-          runner, 0)
-          .at(second_time)
+      ActionTesting::get_databox_tag<
+          target_component,
+          intrp::Tags::IndicesOfFilledInterpPoints<temporal_id_type>>(runner, 0)
+          .at(second_temporal_id)
           .size() == 8);
 
-  // Now add enough points at second_time so it triggers the
-  // callback.  (The first time doesn't yet have enough points, so
+  // Now add enough points at second_temporal_id so it triggers the
+  // callback.  (The first temporal id doesn't yet have enough points, so
   // here we also test asynchronicity).
   vars_src.clear();
   global_offsets.clear();
@@ -275,33 +287,37 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.TargetVarsFromElement",
   ActionTesting::simple_action<
       target_component, intrp::Actions::InterpolationTargetVarsFromElement<
                             typename metavars::InterpolationTargetA>>(
-      make_not_null(&runner), 0, vars_src, global_offsets, second_time);
+      make_not_null(&runner), 0, vars_src, global_offsets, second_temporal_id);
 
   // It should have interpolated all the points by now,
   // and the list of points should have been cleaned up.
   CHECK(
-      ActionTesting::get_databox_tag<target_component,
-                                     intrp::Tags::IndicesOfFilledInterpPoints>(
-          runner, 0)
-          .count(second_time) == 0);
-  // There should be only 1 time left.
-  // And its value should be first_time.
-  CHECK(ActionTesting::get_databox_tag<target_component, intrp::Tags::Times>(
+      ActionTesting::get_databox_tag<
+          target_component,
+          intrp::Tags::IndicesOfFilledInterpPoints<temporal_id_type>>(runner, 0)
+          .count(second_temporal_id) == 0);
+  // There should be only 1 temporal_id left.
+  // And its value should be first_temporal_id.
+  CHECK(ActionTesting::get_databox_tag<
+            target_component, intrp::Tags::TemporalIds<temporal_id_type>>(
             runner, 0)
             .size() == 1);
-  CHECK(ActionTesting::get_databox_tag<target_component, intrp::Tags::Times>(
+  CHECK(ActionTesting::get_databox_tag<
+            target_component, intrp::Tags::TemporalIds<temporal_id_type>>(
             runner, 0)
-            .front() == first_time);
-  // There should be 1 CompletedTime, and its value
-  // should be second_time.
-  CHECK(ActionTesting::get_databox_tag<target_component,
-                                       intrp::Tags::CompletedTimes>(runner, 0)
+            .front() == first_temporal_id);
+  // There should be 1 CompletedTemporalId, and its value
+  // should be second_temporal_id.
+  CHECK(ActionTesting::get_databox_tag<
+            target_component,
+            intrp::Tags::CompletedTemporalIds<temporal_id_type>>(runner, 0)
             .size() == 1);
-  CHECK(ActionTesting::get_databox_tag<target_component,
-                                       intrp::Tags::CompletedTimes>(runner, 0)
-            .front() == second_time);
+  CHECK(ActionTesting::get_databox_tag<
+            target_component,
+            intrp::Tags::CompletedTemporalIds<temporal_id_type>>(runner, 0)
+            .front() == second_temporal_id);
 
-  // Now add enough points at first_time so it triggers the
+  // Now add enough points at first_temporal_id so it triggers the
   // callback.
   vars_src.clear();
   global_offsets.clear();
@@ -309,29 +325,33 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.TargetVarsFromElement",
   ActionTesting::simple_action<
       target_component, intrp::Actions::InterpolationTargetVarsFromElement<
                             typename metavars::InterpolationTargetA>>(
-      make_not_null(&runner), 0, vars_src, global_offsets, first_time);
+      make_not_null(&runner), 0, vars_src, global_offsets, first_temporal_id);
 
   // It should have interpolated all the points by now,
   // and the list of points should have been cleaned up.
   CHECK(
-      ActionTesting::get_databox_tag<target_component,
-                                     intrp::Tags::IndicesOfFilledInterpPoints>(
-          runner, 0)
-          .count(first_time) == 0);
-  // There should be no times left.
-  CHECK(ActionTesting::get_databox_tag<target_component, intrp::Tags::Times>(
+      ActionTesting::get_databox_tag<
+          target_component,
+          intrp::Tags::IndicesOfFilledInterpPoints<temporal_id_type>>(runner, 0)
+          .count(first_temporal_id) == 0);
+  // There should be no temporal_ids left.
+  CHECK(ActionTesting::get_databox_tag<
+            target_component, intrp::Tags::TemporalIds<temporal_id_type>>(
             runner, 0)
             .empty());
-  // There should be 2 CompletedTimes
-  CHECK(ActionTesting::get_databox_tag<target_component,
-                                       intrp::Tags::CompletedTimes>(runner, 0)
+  // There should be 2 CompletedTemporalIds
+  CHECK(ActionTesting::get_databox_tag<
+            target_component,
+            intrp::Tags::CompletedTemporalIds<temporal_id_type>>(runner, 0)
             .size() == 2);
-  CHECK(ActionTesting::get_databox_tag<target_component,
-                                       intrp::Tags::CompletedTimes>(runner, 0)
-            .at(0) == second_time);
-  CHECK(ActionTesting::get_databox_tag<target_component,
-                                       intrp::Tags::CompletedTimes>(runner, 0)
-            .at(1) == first_time);
+  CHECK(ActionTesting::get_databox_tag<
+            target_component,
+            intrp::Tags::CompletedTemporalIds<temporal_id_type>>(runner, 0)
+            .at(0) == second_temporal_id);
+  CHECK(ActionTesting::get_databox_tag<
+            target_component,
+            intrp::Tags::CompletedTemporalIds<temporal_id_type>>(runner, 0)
+            .at(1) == first_temporal_id);
 
   // Should be no queued simple action.
   CHECK(

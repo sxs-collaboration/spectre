@@ -54,14 +54,15 @@ constexpr bool any_index_in_frame_v =
 // Interpolates data onto a set of points desired by an InterpolationTarget.
 template <typename InterpolationTargetTag, typename Metavariables,
           typename DbTags>
-void interpolate_data(const gsl::not_null<db::DataBox<DbTags>*> box,
-                      Parallel::GlobalCache<Metavariables>& cache,
-                      const double time) noexcept {
+void interpolate_data(
+    const gsl::not_null<db::DataBox<DbTags>*> box,
+    Parallel::GlobalCache<Metavariables>& cache,
+    const typename Metavariables::temporal_id::type& temporal_id) noexcept {
   db::mutate_apply<
       tmpl::list<::intrp::Tags::InterpolatedVarsHolders<Metavariables>,
                  ::intrp::Tags::VolumeVarsInfo<Metavariables>>,
       tmpl::list<domain::Tags::Domain<Metavariables::volume_dim>>>(
-      [&cache, &time](
+      [&cache, &temporal_id](
           const gsl::not_null<typename ::intrp::Tags::InterpolatedVarsHolders<
               Metavariables>::type*>
               holders,
@@ -72,7 +73,7 @@ void interpolate_data(const gsl::not_null<db::DataBox<DbTags>*> box,
         auto& interp_info =
             get<Vars::HolderTag<InterpolationTargetTag, Metavariables>>(
                 *holders)
-                .infos.at(time);
+                .infos.at(temporal_id);
 
         // Avoid compiler warning for unused variable in some 'if
         // constexpr' branches.
@@ -80,11 +81,11 @@ void interpolate_data(const gsl::not_null<db::DataBox<DbTags>*> box,
 
         for (auto& volume_info_outer : *volume_vars_info) {
           // Are we at the right time?
-          if (volume_info_outer.first != time) {
+          if (volume_info_outer.first != temporal_id) {
             continue;
           }
 
-          // Get list of ElementIds that have the correct time and that
+          // Get list of ElementIds that have the correct temporal_id and that
           // have not yet been interpolated.
           std::vector<ElementId<Metavariables::volume_dim>> element_ids;
 
@@ -115,7 +116,7 @@ void interpolate_data(const gsl::not_null<db::DataBox<DbTags>*> box,
                               InterpolationTargetTag>) {
               if (vars_to_interpolate.size() == 0) {
                 // vars_to_interpolate has not been filled for
-                // this element at this time.  So fill it. How we
+                // this element at this temporal_id.  So fill it. How we
                 // fill it will depend on whether we need to change frames.
                 vars_to_interpolate.initialize(
                     volume_info.vars_from_element.number_of_grid_points());
@@ -147,7 +148,7 @@ void interpolate_data(const gsl::not_null<db::DataBox<DbTags>*> box,
                       block.moving_mesh_grid_to_inertial_map().jacobian(
                           map_logical_to_grid(
                               logical_coordinates(volume_info.mesh)),
-                          time, functions_of_time);
+                          temporal_id.step_time().value(), functions_of_time);
                   InterpolationTargetTag::compute_vars_to_interpolate::apply(
                       make_not_null(&vars_to_interpolate),
                       volume_info.vars_from_element, volume_info.mesh,
@@ -191,7 +192,7 @@ template <typename InterpolationTargetTag, typename Metavariables,
 void try_to_interpolate(
     const gsl::not_null<db::DataBox<DbTags>*> box,
     const gsl::not_null<Parallel::GlobalCache<Metavariables>*> cache,
-    const double time) noexcept {
+    const typename Metavariables::temporal_id::type& temporal_id) noexcept {
   const auto& holders =
       db::get<Tags::InterpolatedVarsHolders<Metavariables>>(*box);
   const auto& vars_infos =
@@ -199,39 +200,40 @@ void try_to_interpolate(
           .infos;
 
   // If we don't yet have any points for this InterpolationTarget at
-  // this time, we should exit (we can't interpolate anyway).
-  if (vars_infos.count(time) == 0) {
+  // this temporal_id, we should exit (we can't interpolate anyway).
+  if (vars_infos.count(temporal_id) == 0) {
     return;
   }
 
   interpolator_detail::interpolate_data<InterpolationTargetTag, Metavariables>(
-      box, *cache, time);
+      box, *cache, temporal_id);
 
   // Send interpolated data only if interpolation has been done on all
   // of the local elements.
   const auto& num_elements = db::get<Tags::NumberOfElements>(*box);
-  if (vars_infos.at(time).interpolation_is_done_for_these_elements.size() ==
-      num_elements) {
+  if (vars_infos.at(temporal_id)
+          .interpolation_is_done_for_these_elements.size() == num_elements) {
     // Send data to InterpolationTarget, but only if the list of points is
     // non-empty.
-    if (not vars_infos.at(time).global_offsets.empty()) {
-      const auto& info = vars_infos.at(time);
+    if (not vars_infos.at(temporal_id).global_offsets.empty()) {
+      const auto& info = vars_infos.at(temporal_id);
       auto& receiver_proxy = Parallel::get_parallel_component<
           InterpolationTarget<Metavariables, InterpolationTargetTag>>(*cache);
       Parallel::simple_action<
           Actions::InterpolationTargetReceiveVars<InterpolationTargetTag>>(
-          receiver_proxy, info.vars, info.global_offsets, time);
+          receiver_proxy, info.vars, info.global_offsets, temporal_id);
     }
 
     // Clear interpolated data, since we don't need it anymore.
     db::mutate<Tags::InterpolatedVarsHolders<Metavariables>>(
         box,
-        [&time](const gsl::not_null<
+        [&temporal_id](
+            const gsl::not_null<
                 typename Tags::InterpolatedVarsHolders<Metavariables>::type*>
-                    holders_l) noexcept {
+                holders_l) noexcept {
           get<Vars::HolderTag<InterpolationTargetTag, Metavariables>>(
               *holders_l)
-              .infos.erase(time);
+              .infos.erase(temporal_id);
         });
   }
 }

@@ -7,18 +7,19 @@
 #include <pup.h>
 
 #include "Domain/Structure/ElementId.hpp"
-#include "NumericalAlgorithms/Interpolation/AddTimesToInterpolationTarget.hpp"
+#include "NumericalAlgorithms/Interpolation/AddTemporalIdsToInterpolationTarget.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "Time/TimeStepId.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
 namespace Tags {
-struct Time;
+struct TimeStepId;
 }  // namespace Tags
 namespace domain {
 namespace Tags {
@@ -30,8 +31,7 @@ namespace Tags {
 template <typename TagsList>
 struct Variables;
 }  // namespace Tags
-template <size_t Dim>
-class Mesh;
+template <size_t Dim> class Mesh;
 template <size_t VolumeDim>
 class ElementId;
 namespace intrp {
@@ -73,10 +73,10 @@ class Interpolate<VolumeDim, InterpolationTargetTag, tmpl::list<Tensors...>>
   Interpolate() = default;
 
   using argument_tags =
-      tmpl::list<::Tags::Time, domain::Tags::Mesh<VolumeDim>, Tensors...>;
+      tmpl::list<::Tags::TimeStepId, domain::Tags::Mesh<VolumeDim>, Tensors...>;
 
   template <typename Metavariables, typename ParallelComponent>
-  void operator()(const double time, const Mesh<VolumeDim>& mesh,
+  void operator()(const TimeStepId& time_id, const Mesh<VolumeDim>& mesh,
                   const typename Tensors::type&... tensors,
                   Parallel::GlobalCache<Metavariables>& cache,
                   const ElementId<VolumeDim>& array_index,
@@ -96,15 +96,15 @@ class Interpolate<VolumeDim, InterpolationTargetTag, tmpl::list<Tensors...>>
         *::Parallel::get_parallel_component<Interpolator<Metavariables>>(cache)
              .ckLocalBranch();
     Parallel::simple_action<Actions::InterpolatorReceiveVolumeData>(
-        interpolator, time, ElementId<VolumeDim>(array_index), mesh,
+        interpolator, time_id, ElementId<VolumeDim>(array_index), mesh,
         interp_vars);
 
     // Tell the interpolation target that it should interpolate.
     auto& target = Parallel::get_parallel_component<
         InterpolationTarget<Metavariables, InterpolationTargetTag>>(cache);
     Parallel::simple_action<
-        Actions::AddTimesToInterpolationTarget<InterpolationTargetTag>>(
-        target, std::vector<double>{time});
+        Actions::AddTemporalIdsToInterpolationTarget<InterpolationTargetTag>>(
+        target, std::vector<TimeStepId>{time_id});
   }
 
   using is_ready_argument_tags = tmpl::list<>;
