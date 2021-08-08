@@ -10,6 +10,7 @@
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/TagsTimeDependent.hpp"
+#include "NumericalAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
 #include "NumericalAlgorithms/Interpolation/IrregularInterpolant.hpp"
 #include "NumericalAlgorithms/Interpolation/Tags.hpp"
 #include "Parallel/GlobalCache.hpp"
@@ -54,20 +55,23 @@ constexpr bool any_index_in_frame_v =
 // Interpolates data onto a set of points desired by an InterpolationTarget.
 template <typename InterpolationTargetTag, typename Metavariables,
           typename DbTags>
-void interpolate_data(
-    const gsl::not_null<db::DataBox<DbTags>*> box,
-    Parallel::GlobalCache<Metavariables>& cache,
-    const typename Metavariables::temporal_id::type& temporal_id) noexcept {
+void interpolate_data(const gsl::not_null<db::DataBox<DbTags>*> box,
+                      Parallel::GlobalCache<Metavariables>& cache,
+                      const typename InterpolationTargetTag::temporal_id::type&
+                          temporal_id) noexcept {
   db::mutate_apply<
-      tmpl::list<::intrp::Tags::InterpolatedVarsHolders<Metavariables>,
-                 ::intrp::Tags::VolumeVarsInfo<Metavariables>>,
+      tmpl::list<
+          ::intrp::Tags::InterpolatedVarsHolders<Metavariables>,
+          ::intrp::Tags::VolumeVarsInfo<
+              Metavariables, typename InterpolationTargetTag::temporal_id>>,
       tmpl::list<domain::Tags::Domain<Metavariables::volume_dim>>>(
       [&cache, &temporal_id](
           const gsl::not_null<typename ::intrp::Tags::InterpolatedVarsHolders<
               Metavariables>::type*>
               holders,
-          const gsl::not_null<
-              typename ::intrp::Tags::VolumeVarsInfo<Metavariables>::type*>
+          const gsl::not_null<typename ::intrp::Tags::VolumeVarsInfo<
+              Metavariables,
+              typename InterpolationTargetTag::temporal_id>::type*>
               volume_vars_info,
           const Domain<Metavariables::volume_dim>& domain) noexcept {
         auto& interp_info =
@@ -148,7 +152,9 @@ void interpolate_data(
                       block.moving_mesh_grid_to_inertial_map().jacobian(
                           map_logical_to_grid(
                               logical_coordinates(volume_info.mesh)),
-                          temporal_id.step_time().value(), functions_of_time);
+                          InterpolationTarget_detail::
+                              evaluate_temporal_id_for_expiration(temporal_id),
+                          functions_of_time);
                   InterpolationTargetTag::compute_vars_to_interpolate::apply(
                       make_not_null(&vars_to_interpolate),
                       volume_info.vars_from_element, volume_info.mesh,
@@ -192,7 +198,8 @@ template <typename InterpolationTargetTag, typename Metavariables,
 void try_to_interpolate(
     const gsl::not_null<db::DataBox<DbTags>*> box,
     const gsl::not_null<Parallel::GlobalCache<Metavariables>*> cache,
-    const typename Metavariables::temporal_id::type& temporal_id) noexcept {
+    const typename InterpolationTargetTag::temporal_id::type&
+        temporal_id) noexcept {
   const auto& holders =
       db::get<Tags::InterpolatedVarsHolders<Metavariables>>(*box);
   const auto& vars_infos =

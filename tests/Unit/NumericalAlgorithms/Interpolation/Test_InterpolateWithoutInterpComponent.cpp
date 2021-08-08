@@ -69,13 +69,13 @@ struct initialize_elements_and_queue_simple_actions {
               domain_creator, domain, element_id);
 
       // 2. Make a box
-      const auto box = db::create<
-          db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<metavars>,
-                            typename metavars::temporal_id,
-                            intrp::Tags::InterpPointInfo<metavars>,
-                            domain::Tags::Mesh<metavars::volume_dim>,
-                            ::Tags::Variables<typename std::remove_reference_t<
-                                decltype(vars)>::tags_list>>>(
+      const auto box = db::create<db::AddSimpleTags<
+          Parallel::Tags::MetavariablesImpl<metavars>,
+          typename metavars::InterpolationTargetA::temporal_id,
+          intrp::Tags::InterpPointInfo<metavars>,
+          domain::Tags::Mesh<metavars::volume_dim>,
+          ::Tags::Variables<
+              typename std::remove_reference_t<decltype(vars)>::tags_list>>>(
           metavars{}, temporal_id, interp_point_info, mesh, vars);
 
       // 3. Run the event.  This will invoke simple actions on
@@ -90,6 +90,7 @@ struct initialize_elements_and_queue_simple_actions {
 template <bool HaveComputeItemsOnSource>
 struct MockMetavariables {
   struct InterpolationTargetA {
+    using temporal_id = ::Tags::TimeStepId;
     using vars_to_interpolate_to_target = tmpl::list<tmpl::conditional_t<
         HaveComputeItemsOnSource,
         InterpolateOnElementTestHelpers::Tags::MultiplyByTwo,
@@ -99,7 +100,6 @@ struct MockMetavariables {
         tmpl::list<InterpolateOnElementTestHelpers::Tags::MultiplyByTwoCompute>,
         tmpl::list<>>;
   };
-  using temporal_id = ::Tags::TimeStepId;
   static constexpr size_t volume_dim = 3;
   using interpolation_target_tags = tmpl::list<InterpolationTargetA>;
 

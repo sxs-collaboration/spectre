@@ -187,7 +187,10 @@ struct MockInterpolator {
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
           tmpl::list<Actions::SetupDataBox,
                      ::intrp::Actions::InitializeInterpolator<
-                         intrp::Tags::VolumeVarsInfo<Metavariables>,
+                         tmpl::list<intrp::Tags::VolumeVarsInfo<
+                                        Metavariables, ::Tags::TimeStepId>,
+                                    intrp::Tags::VolumeVarsInfo<Metavariables,
+                                                                ::Tags::Time>>,
                          intrp::Tags::InterpolatedVarsHolders<Metavariables>>>>,
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::Registration, tmpl::list<>>,
@@ -198,6 +201,7 @@ struct MockInterpolator {
 
 struct MockMetavariables {
   struct SurfaceA {
+    using temporal_id = ::Tags::Time;
     using vars_to_interpolate_to_target =
         tmpl::list<Tags::TestSolution,
                    gr::Tags::SpatialMetric<3, Frame::Inertial>>;
@@ -215,6 +219,7 @@ struct MockMetavariables {
             SurfaceA, SurfaceA>;
   };
   struct SurfaceB {
+    using temporal_id = ::Tags::TimeStepId;
     using vars_to_interpolate_to_target =
         tmpl::list<Tags::TestSolution,
                    gr::Tags::SpatialMetric<3, Frame::Inertial>>;
@@ -236,6 +241,7 @@ struct MockMetavariables {
             SurfaceB, SurfaceB>;
   };
   struct SurfaceC {
+    using temporal_id = ::Tags::TimeStepId;
     using vars_to_interpolate_to_target =
         tmpl::list<Tags::TestSolution,
                    gr::Tags::SpatialMetric<3, Frame::Inertial>>;
@@ -262,7 +268,6 @@ struct MockMetavariables {
       tmpl::list<Tags::TestSolution,
                  gr::Tags::SpatialMetric<3, Frame::Inertial>>;
   using interpolation_target_tags = tmpl::list<SurfaceA, SurfaceB, SurfaceC>;
-  using temporal_id = ::Tags::TimeStepId;
   static constexpr size_t volume_dim = 3;
   using component_list =
       tmpl::list<MockObserverWriter<MockMetavariables>,
@@ -391,7 +396,8 @@ SPECTRE_TEST_CASE(
   ActionTesting::simple_action<
       target_a_component,
       intrp::Actions::AddTemporalIdsToInterpolationTarget<metavars::SurfaceA>>(
-      make_not_null(&runner), 0, std::vector<TimeStepId>{temporal_id});
+      make_not_null(&runner), 0,
+      std::vector<double>{temporal_id.substep_time().value()});
   ActionTesting::simple_action<
       target_b_component,
       intrp::Actions::AddTemporalIdsToInterpolationTarget<metavars::SurfaceB>>(
@@ -451,7 +457,13 @@ SPECTRE_TEST_CASE(
 
     // Call the InterpolatorReceiveVolumeData action on each element_id.
     ActionTesting::simple_action<interp_component,
-                                 intrp::Actions::InterpolatorReceiveVolumeData>(
+                                 intrp::Actions::InterpolatorReceiveVolumeData<
+                                     typename metavars::SurfaceA::temporal_id>>(
+        make_not_null(&runner), mock_core_for_each_element.at(element_id),
+        temporal_id.substep_time().value(), element_id, mesh, output_vars);
+    ActionTesting::simple_action<interp_component,
+                                 intrp::Actions::InterpolatorReceiveVolumeData<
+                                     typename metavars::SurfaceB::temporal_id>>(
         make_not_null(&runner), mock_core_for_each_element.at(element_id),
         temporal_id, element_id, mesh, std::move(output_vars));
   }

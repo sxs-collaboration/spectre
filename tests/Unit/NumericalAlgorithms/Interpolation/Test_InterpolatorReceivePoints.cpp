@@ -136,7 +136,8 @@ struct mock_interpolator {
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
           tmpl::list<::Actions::SetupDataBox,
                      ::intrp::Actions::InitializeInterpolator<
-                         intrp::Tags::VolumeVarsInfo<Metavariables>,
+                         intrp::Tags::VolumeVarsInfo<Metavariables,
+                                                     ::Tags::TimeStepId>,
                          intrp::Tags::InterpolatedVarsHolders<Metavariables>>>>,
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::Testing, tmpl::list<>>>;
@@ -145,6 +146,7 @@ struct mock_interpolator {
 
 struct Metavariables {
   struct InterpolationTargetA {
+    using temporal_id = ::Tags::TimeStepId;
     using vars_to_interpolate_to_target =
         tmpl::list<gr::Tags::Lapse<DataVector>>;
     using compute_items_on_source = tmpl::list<>;
@@ -152,7 +154,6 @@ struct Metavariables {
   };
   using interpolator_source_vars = tmpl::list<gr::Tags::Lapse<DataVector>>;
   using interpolation_target_tags = tmpl::list<InterpolationTargetA>;
-  using temporal_id = ::Tags::TimeStepId;
   static constexpr size_t volume_dim = 3;
   using component_list =
       tmpl::list<mock_interpolation_target<Metavariables, InterpolationTargetA>,

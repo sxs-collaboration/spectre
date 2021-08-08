@@ -97,13 +97,13 @@ namespace intrp {
 ///```
 ///     void apply(const DataBox<DbTags>&,
 ///                const intrp::GlobalCache<Metavariables>&,
-///                const Metavariables::temporal_id&) noexcept;
+///                const InterpolationTargetTag::temporal_id&) noexcept;
 ///```
 /// or
 ///```
 ///     bool apply(const gsl::not_null<db::DataBox<DbTags>*>,
 ///                const gsl::not_null<intrp::GlobalCache<Metavariables>*>,
-///                const Metavariables::temporal_id&) noexcept;
+///                const InterpolationTargetTag::temporal_id&) noexcept;
 ///```
 ///      that will be called when interpolation is complete.  `DbTags` includes
 ///      everything in `vars_to_interpolate_to_target`, plus everything in
@@ -354,6 +354,7 @@ struct InterpolationTarget {
                           post_interpolation_callback::observation_types>>())};
     }
   };
+  using interpolation_target_tag = InterpolationTargetTag;
   using chare_type = ::Parallel::Algorithms::Singleton;
   using const_global_cache_tags =
       Parallel::get_const_global_cache_tags_from_actions<tmpl::list<

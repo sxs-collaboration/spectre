@@ -14,13 +14,9 @@
 #include "Parallel/Invoke.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
-#include "Time/TimeStepId.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
-namespace Tags {
-struct TimeStepId;
-}  // namespace Tags
 namespace domain {
 namespace Tags {
 template <size_t VolumeDim>
@@ -40,6 +36,7 @@ struct InterpolationTarget;
 template <typename Metavariables>
 struct Interpolator;
 namespace Actions {
+template <typename TemporalId>
 struct InterpolatorReceiveVolumeData;
 }  // namespace Actions
 }  // namespace intrp
@@ -72,15 +69,16 @@ class Interpolate<VolumeDim, InterpolationTargetTag, tmpl::list<Tensors...>>
 
   Interpolate() = default;
 
-  using argument_tags =
-      tmpl::list<::Tags::TimeStepId, domain::Tags::Mesh<VolumeDim>, Tensors...>;
+  using argument_tags = tmpl::list<typename InterpolationTargetTag::temporal_id,
+                                   domain::Tags::Mesh<VolumeDim>, Tensors...>;
 
   template <typename Metavariables, typename ParallelComponent>
-  void operator()(const TimeStepId& time_id, const Mesh<VolumeDim>& mesh,
-                  const typename Tensors::type&... tensors,
-                  Parallel::GlobalCache<Metavariables>& cache,
-                  const ElementId<VolumeDim>& array_index,
-                  const ParallelComponent* const /*meta*/) const noexcept {
+  void operator()(
+      const typename InterpolationTargetTag::temporal_id::type& temporal_id,
+      const Mesh<VolumeDim>& mesh, const typename Tensors::type&... tensors,
+      Parallel::GlobalCache<Metavariables>& cache,
+      const ElementId<VolumeDim>& array_index,
+      const ParallelComponent* const /*meta*/) const noexcept {
     Variables<tmpl::list<Tensors...>> interp_vars(mesh.number_of_grid_points());
     const auto copy_to_variables = [&interp_vars](const auto tensor_tag_v,
                                                   const auto& tensor) noexcept {
@@ -95,8 +93,9 @@ class Interpolate<VolumeDim, InterpolationTargetTag, tmpl::list<Tensors...>>
     auto& interpolator =
         *::Parallel::get_parallel_component<Interpolator<Metavariables>>(cache)
              .ckLocalBranch();
-    Parallel::simple_action<Actions::InterpolatorReceiveVolumeData>(
-        interpolator, time_id, ElementId<VolumeDim>(array_index), mesh,
+    Parallel::simple_action<Actions::InterpolatorReceiveVolumeData<
+        typename InterpolationTargetTag::temporal_id>>(
+        interpolator, temporal_id, ElementId<VolumeDim>(array_index), mesh,
         interp_vars);
 
     // Tell the interpolation target that it should interpolate.
@@ -104,7 +103,8 @@ class Interpolate<VolumeDim, InterpolationTargetTag, tmpl::list<Tensors...>>
         InterpolationTarget<Metavariables, InterpolationTargetTag>>(cache);
     Parallel::simple_action<
         Actions::AddTemporalIdsToInterpolationTarget<InterpolationTargetTag>>(
-        target, std::vector<TimeStepId>{time_id});
+        target, std::vector<typename InterpolationTargetTag::temporal_id::type>{
+                    temporal_id});
   }
 
   using is_ready_argument_tags = tmpl::list<>;

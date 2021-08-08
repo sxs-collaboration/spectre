@@ -64,10 +64,7 @@
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/Pi.hpp"
 #include "PointwiseFunctions/GeneralRelativity/SpacetimeMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
-#include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
-#include "Time/Time.hpp"
-#include "Time/TimeStepId.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -124,7 +121,7 @@ struct TestSchwarzschildHorizon {
   template <typename DbTags, typename Metavariables>
   static void apply(const db::DataBox<DbTags>& box,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const typename Metavariables::temporal_id::
+                    const typename Metavariables::AhA::temporal_id::
                         type& /*temporal_id*/) noexcept {
     // [post_horizon_find_callback_example]
     const auto& horizon_radius = get(get<StrahlkorperTags::Radius<Frame>>(box));
@@ -156,7 +153,7 @@ struct TestKerrHorizon {
   template <typename DbTags, typename Metavariables>
   static void apply(const db::DataBox<DbTags>& box,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const typename Metavariables::temporal_id::
+                    const typename Metavariables::AhA::temporal_id::
                         type& /*temporal_id*/) noexcept {
     const auto& strahlkorper =
         get<StrahlkorperTags::Strahlkorper<Frame>>(box);
@@ -216,7 +213,7 @@ struct mock_interpolator {
       typename Metavariables::Phase, Metavariables::Phase::Initialization,
       tmpl::list<Actions::SetupDataBox,
                  intrp::Actions::InitializeInterpolator<
-                     intrp::Tags::VolumeVarsInfo<Metavariables>,
+                     intrp::Tags::VolumeVarsInfo<Metavariables, ::Tags::Time>,
                      intrp::Tags::InterpolatedVarsHolders<Metavariables>>>>>;
 
   using component_being_mocked = intrp::Interpolator<Metavariables>;
@@ -227,6 +224,7 @@ template <typename PostHorizonFindCallback, typename IsTimeDependent,
 struct MockMetavariables {
   static constexpr bool use_time_dependent_maps = IsTimeDependent::value;
   struct AhA {
+    using temporal_id = ::Tags::Time;
     using compute_vars_to_interpolate = ah::ComputeHorizonVolumeQuantities;
     using vars_to_interpolate_to_target =
         tmpl::list<gr::Tags::InverseSpatialMetric<3, TargetFrame>,
@@ -245,7 +243,6 @@ struct MockMetavariables {
                  GeneralizedHarmonic::Tags::Pi<3, ::Frame::Inertial>,
                  GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>>;
   using interpolation_target_tags = tmpl::list<AhA>;
-  using temporal_id = ::Tags::TimeStepId;
   static constexpr size_t volume_dim = 3;
   using component_list =
       tmpl::list<mock_interpolation_target<MockMetavariables, AhA>,
@@ -349,10 +346,7 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
   // not change between horizon finds, so the second horizon find will take
   // zero iterations.
   // Having two temporal_ids tests some logic in the interpolator.
-  Slab slab(0.0, 1.0);
-  const std::vector<TimeStepId> temporal_ids{
-      {true, 0, Time(slab, Rational(13, 15))},
-      {true, 0, Time(slab, Rational(14, 15))}};
+  const std::vector<double> temporal_ids{13.0 / 15.0, 14.0 / 15.0};
 
   // Create element_ids.
   std::vector<ElementId<3>> element_ids{};
@@ -428,8 +422,8 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
         const auto& functions_of_time =
             get<domain::Tags::FunctionsOfTime>(cache);
         analytic_solution_coords = block.moving_mesh_grid_to_inertial_map()(
-            map_logical_to_grid(logical_coordinates(mesh)),
-            temporal_id.step_time().value(), functions_of_time);
+            map_logical_to_grid(logical_coordinates(mesh)), temporal_id,
+            functions_of_time);
       } else {
         // Time-independent
         ElementMap<3, ::Frame::Inertial> map{
@@ -512,8 +506,7 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
         const auto coords_frame_velocity_jacobians =
             block.moving_mesh_grid_to_inertial_map()
                 .coords_frame_velocity_jacobians(
-                    analytic_solution_coords, temporal_id.step_time().value(),
-                    functions_of_time);
+                    analytic_solution_coords, temporal_id, functions_of_time);
         const auto& inv_jacobian = std::get<1>(coords_frame_velocity_jacobians);
         const auto& jacobian = std::get<2>(coords_frame_velocity_jacobians);
         const auto& frame_velocity =
@@ -652,7 +645,8 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
 
       // Call the InterpolatorReceiveVolumeData action on each element_id.
       ActionTesting::simple_action<
-          interp_component, intrp::Actions::InterpolatorReceiveVolumeData>(
+          interp_component,
+          intrp::Actions::InterpolatorReceiveVolumeData<::Tags::Time>>(
           make_not_null(&runner), mock_core_for_each_element.at(element_id),
           temporal_id, element_id, mesh, output_vars);
     }

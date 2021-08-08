@@ -108,13 +108,13 @@ struct MockComputeTargetPoints {
 template <typename IsSequential, typename IsTimeDependent>
 struct MockMetavariables {
   struct InterpolationTargetA {
+    using temporal_id = ::Tags::TimeStepId;
     using vars_to_interpolate_to_target =
         tmpl::list<gr::Tags::Lapse<DataVector>>;
     using compute_items_on_target = tmpl::list<>;
     using compute_target_points = MockComputeTargetPoints<IsSequential>;
   };
   static constexpr bool use_time_dependent_maps = IsTimeDependent::value;
-  using temporal_id = ::Tags::TimeStepId;
   static constexpr size_t volume_dim = 3;
 
   using component_list = tmpl::list<
@@ -125,7 +125,8 @@ struct MockMetavariables {
 template <typename IsSequential>
 void test_add_temporal_ids() {
   using metavars = MockMetavariables<IsSequential, std::false_type>;
-  using temporal_id_type = typename metavars::temporal_id::type;
+  using temporal_id_type =
+      typename metavars::InterpolationTargetA::temporal_id::type;
   using target_component =
       mock_interpolation_target<metavars,
                                 typename metavars::InterpolationTargetA>;
@@ -320,7 +321,8 @@ struct MyFunctionOfTimeUpdater {
 template <typename IsSequential>
 void test_add_temporal_ids_time_dependent() {
   using metavars = MockMetavariables<IsSequential, std::true_type>;
-  using temporal_id_type = typename metavars::temporal_id::type;
+  using temporal_id_type =
+      typename metavars::InterpolationTargetA::temporal_id::type;
   using target_component =
       mock_interpolation_target<metavars,
                                 typename metavars::InterpolationTargetA>;

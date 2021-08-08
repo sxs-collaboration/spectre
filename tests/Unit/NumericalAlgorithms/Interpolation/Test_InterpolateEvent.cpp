@@ -49,6 +49,7 @@ template <typename TagsList>
 class DataBox;
 }  // namespace db
 namespace intrp::Actions {
+template <typename TemporalId>
 struct InterpolatorReceiveVolumeData;
 }  // namespace intrp::Actions
 
@@ -94,11 +95,13 @@ template <typename InterpolationTargetTag>
 struct MockAddTemporalIdsToInterpolationTarget {
   template <typename ParallelComponent, typename DbTags, typename Metavariables,
             typename ArrayIndex>
-  static void apply(db::DataBox<DbTags>& /*box*/,
-                    Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    std::vector<typename Metavariables::temporal_id::type>&&
-                    /*temporal_ids*/) noexcept {
+  static void apply(
+      db::DataBox<DbTags>& /*box*/,
+      Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/,
+      std::vector<
+          typename Metavariables::InterpolatorTargetA::temporal_id::type>&&
+      /*temporal_ids*/) noexcept {
     // We are not testing this Action here.
     // Do nothing except make sure it is called once.
     ++called_mock_add_temporal_ids_to_interpolation_target;
@@ -108,8 +111,8 @@ struct MockAddTemporalIdsToInterpolationTarget {
 template <typename Metavariables>
 struct mock_interpolator {
   using component_being_mocked = intrp::Interpolator<Metavariables>;
-  using replace_these_simple_actions =
-      tmpl::list<intrp::Actions::InterpolatorReceiveVolumeData>;
+  using replace_these_simple_actions = tmpl::list<
+      intrp::Actions::InterpolatorReceiveVolumeData<::Tags::TimeStepId>>;
   using with_these_simple_actions =
       tmpl::list<MockInterpolatorReceiveVolumeData>;
 
@@ -118,13 +121,14 @@ struct mock_interpolator {
   using array_index = size_t;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename Metavariables::Phase, Metavariables::Phase::Initialization,
-      tmpl::list<Actions::SetupDataBox,
-                 ::intrp::Actions::InitializeInterpolator<
-                     intrp::Tags::VolumeVarsInfo<Metavariables>,
-                     intrp::Tags::InterpolatedVarsHolders<Metavariables>>>>>;
+      tmpl::list<
+          Actions::SetupDataBox,
+          ::intrp::Actions::InitializeInterpolator<
+              intrp::Tags::VolumeVarsInfo<Metavariables, ::Tags::TimeStepId>,
+              intrp::Tags::InterpolatedVarsHolders<Metavariables>>>>>;
   using initial_databox = db::compute_databox_type<
       typename ::intrp::Actions::InitializeInterpolator<
-          intrp::Tags::VolumeVarsInfo<Metavariables>,
+          intrp::Tags::VolumeVarsInfo<Metavariables, ::Tags::TimeStepId>,
           intrp::Tags::InterpolatedVarsHolders<Metavariables>>::
           return_tag_list>;
 };
@@ -164,9 +168,9 @@ struct mock_element {
 
 struct MockMetavariables {
   struct InterpolatorTargetA {
+    using temporal_id = ::Tags::TimeStepId;
     using vars_to_interpolate_to_target = tmpl::list<Tags::Lapse>;
   };
-  using temporal_id = ::Tags::TimeStepId;
   static constexpr size_t volume_dim = 3;
   using interpolator_source_vars = tmpl::list<Tags::Lapse>;
   using interpolation_target_tags = tmpl::list<InterpolatorTargetA>;
@@ -218,10 +222,11 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.InterpolateEvent",
   // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
   std::iota(vars.data(), vars.data() + vars.size(), 1.0);
 
-  const auto box = db::create<db::AddSimpleTags<
-      Parallel::Tags::MetavariablesImpl<metavars>, metavars::temporal_id,
-      domain::Tags::Mesh<metavars::volume_dim>,
-      ::Tags::Variables<typename decltype(vars)::tags_list>>>(
+  const auto box = db::create<
+      db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<metavars>,
+                        metavars::InterpolatorTargetA::temporal_id,
+                        domain::Tags::Mesh<metavars::volume_dim>,
+                        ::Tags::Variables<typename decltype(vars)::tags_list>>>(
       metavars{}, TimeStepId(true, 0, Slab(0., observation_time).end()), mesh,
       vars);
 

@@ -97,7 +97,7 @@ struct VarsToInterpolateToTarget {
 
 /// Volume variables at all `temporal_id`s for all local `Element`s.
 /// Held by the Interpolator.
-template <typename Metavariables>
+template <typename Metavariables, typename TemporalId>
 struct VolumeVarsInfo : db::SimpleTag {
   struct Info {
     Mesh<Metavariables::volume_dim> mesh;
@@ -118,7 +118,7 @@ struct VolumeVarsInfo : db::SimpleTag {
     }
   };
   using type = std::unordered_map<
-      typename Metavariables::temporal_id::type,
+      typename TemporalId::type,
       std::unordered_map<ElementId<Metavariables::volume_dim>, Info>>;
 };
 

@@ -28,13 +28,13 @@ namespace {
 template <size_t Dim>
 struct MockMetavariables {
   struct InterpolationTargetA {
+    using temporal_id = ::Tags::TimeStepId;
     using vars_to_interpolate_to_target =
         tmpl::list<gr::Tags::Lapse<DataVector>>;
     using compute_items_on_target = tmpl::list<>;
     using compute_target_points =
         ::intrp::TargetPoints::SpecifiedPoints<InterpolationTargetA, Dim>;
   };
-  using temporal_id = ::Tags::TimeStepId;
   static constexpr size_t volume_dim = Dim;
   using interpolator_source_vars = tmpl::list<gr::Tags::Lapse<DataVector>>;
   using interpolation_target_tags = tmpl::list<InterpolationTargetA>;

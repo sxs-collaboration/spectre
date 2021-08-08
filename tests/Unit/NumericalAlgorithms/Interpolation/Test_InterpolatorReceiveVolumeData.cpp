@@ -78,7 +78,7 @@ template <typename TemporalId>
 struct InterpolatedVarsHolders;
 template <typename TemporalId>
 struct TemporalIds;
-template <typename TemporalId>
+template <typename Metavariables, typename TemporalId>
 struct VolumeVarsInfo;
 }  // namespace intrp::Tags
 
@@ -199,7 +199,7 @@ struct mock_interpolator {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
   using simple_tags = typename intrp::Actions::InitializeInterpolator<
-      intrp::Tags::VolumeVarsInfo<Metavariables>,
+      intrp::Tags::VolumeVarsInfo<Metavariables, ::Tags::TimeStepId>,
       intrp::Tags::InterpolatedVarsHolders<Metavariables>>::simple_tags;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
@@ -214,13 +214,13 @@ struct mock_interpolator {
 
 struct MockMetavariables {
   struct InterpolationTargetA {
+    using temporal_id = ::Tags::TimeStepId;
     using vars_to_interpolate_to_target = tmpl::list<Tags::Square>;
     using compute_vars_to_interpolate = ComputeSquare;
     using compute_items_on_target = tmpl::list<>;
   };
   using interpolator_source_vars = tmpl::list<gr::Tags::Lapse<DataVector>>;
   using interpolation_target_tags = tmpl::list<InterpolationTargetA>;
-  using temporal_id = ::Tags::TimeStepId;
   static constexpr size_t volume_dim = 3;
   using component_list = tmpl::list<
       mock_interpolation_target<MockMetavariables, InterpolationTargetA>,
@@ -233,7 +233,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceiveVolumeData",
   domain::creators::register_derived_with_charm();
 
   using metavars = MockMetavariables;
-  using temporal_id_type = typename metavars::temporal_id::type;
+  using temporal_id_type =
+      typename metavars::InterpolationTargetA::temporal_id::type;
   using target_component =
       mock_interpolation_target<metavars, metavars::InterpolationTargetA>;
   using interp_component = mock_interpolator<metavars>;
@@ -271,7 +272,10 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceiveVolumeData",
       {domain_creator.create_domain()}};
   ActionTesting::emplace_component_and_initialize<interp_component>(
       &runner, 0,
-      {0_st, typename intrp::Tags::VolumeVarsInfo<metavars>::type{},
+      {0_st,
+       typename intrp::Tags::VolumeVarsInfo<
+           metavars,
+           typename metavars::InterpolationTargetA::temporal_id>::type{},
        typename intrp::Tags::InterpolatedVarsHolders<metavars>::type{
            vars_holders}});
   ActionTesting::emplace_component<target_component>(&runner, 0);
@@ -319,8 +323,10 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceiveVolumeData",
                    5.0 * get<2>(inertial_coords);
 
     // Call the action on each element_id.
-    runner.simple_action<interp_component,
-                         ::intrp::Actions::InterpolatorReceiveVolumeData>(
+    runner.simple_action<
+        interp_component,
+        ::intrp::Actions::InterpolatorReceiveVolumeData<
+            typename metavars::InterpolationTargetA::temporal_id>>(
         0, temporal_id, element_id, mesh, std::move(output_vars));
   }
 

@@ -232,9 +232,26 @@ void test_interpolate_on_element(
   ActionTesting::emplace_component_and_initialize<target_component>(
       &runner, 0, {target_points});
 
-  initialize_elements_and_queue_simple_actions(domain_creator, domain,
-                                               element_ids, interp_point_info,
-                                               runner, temporal_id);
+  static_assert(
+      std::is_same_v<typename metavars::InterpolationTargetA::temporal_id::type,
+                     double> or
+          std::is_same_v<
+              typename metavars::InterpolationTargetA::temporal_id::type,
+              TimeStepId>,
+      "Unsupported temporal_id type");
+  if constexpr (std::is_same_v<
+                    typename metavars::InterpolationTargetA::temporal_id::type,
+                    double>) {
+    initialize_elements_and_queue_simple_actions(
+        domain_creator, domain, element_ids, interp_point_info, runner,
+        temporal_id.substep_time().value());
+  } else if constexpr (std::is_same_v<typename metavars::InterpolationTargetA::
+                                          temporal_id::type,
+                                      TimeStepId>) {
+    initialize_elements_and_queue_simple_actions(domain_creator, domain,
+                                                 element_ids, interp_point_info,
+                                                 runner, temporal_id);
+  }
 
   // Only some of the actions/events just invoked on elements (those elements
   // which contain target points) will queue a simple action on the

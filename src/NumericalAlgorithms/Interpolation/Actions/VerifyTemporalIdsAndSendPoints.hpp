@@ -4,6 +4,7 @@
 #pragma once
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "NumericalAlgorithms/Interpolation/Actions/SendPointsToInterpolator.hpp"
 #include "NumericalAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
 #include "NumericalAlgorithms/Interpolation/Tags.hpp"
 #include "Parallel/GlobalCache.hpp"
@@ -21,7 +22,7 @@ template <typename InterpolationTargetTag, typename ParallelComponent,
 void verify_temporal_ids_and_send_points_time_independent(
     const gsl::not_null<db::DataBox<DbTags>*> box,
     Parallel::GlobalCache<Metavariables>& cache) noexcept {
-  using TemporalId = typename Metavariables::temporal_id::type;
+  using TemporalId = typename InterpolationTargetTag::temporal_id::type;
 
   // Move all PendingTemporalIds to TemporalIds, provided
   // that they are not already there, and fill new_temporal_ids
@@ -70,7 +71,7 @@ template <typename InterpolationTargetTag, typename ParallelComponent,
 void verify_temporal_ids_and_send_points_time_dependent(
     const gsl::not_null<db::DataBox<DbTags>*> box,
     Parallel::GlobalCache<Metavariables>& cache) noexcept {
-  using TemporalId = typename Metavariables::temporal_id::type;
+  using TemporalId = typename InterpolationTargetTag::temporal_id::type;
 
   const auto& pending_temporal_ids =
       db::get<Tags::PendingTemporalIds<TemporalId>>(*box);
@@ -97,7 +98,9 @@ void verify_temporal_ids_and_send_points_time_dependent(
                                  })
                     ->second->time_bounds()[1];
             for (const auto& pending_id : pending_temporal_ids) {
-              if (pending_id.step_time().value() <= min_expiration_time) {
+              if (InterpolationTarget_detail::
+                      evaluate_temporal_id_for_expiration(pending_id) <=
+                  min_expiration_time) {
                 // Success: at least one pending_temporal_id is ok.
                 return std::unique_ptr<Parallel::Callback>{};
               }
@@ -128,7 +131,8 @@ void verify_temporal_ids_and_send_points_time_dependent(
           const gsl::not_null<std::deque<TemporalId>*> pending_ids,
           const std::deque<TemporalId>& completed_ids) noexcept {
         for (auto it = pending_ids->begin(); it != pending_ids->end();) {
-          if (it->step_time().value() <= min_expiration_time and
+          if (InterpolationTarget_detail::evaluate_temporal_id_for_expiration(
+                  *it) <= min_expiration_time and
               std::find(completed_ids.begin(), completed_ids.end(), *it) ==
                   completed_ids.end() and
               std::find(ids->begin(), ids->end(), *it) == ids->end()) {
@@ -220,9 +224,8 @@ struct VerifyTemporalIdsAndSendPoints {
   template <typename ParallelComponent, typename DbTags, typename Metavariables,
             typename ArrayIndex,
             Requires<tmpl::list_contains_v<
-                DbTags,
-                Tags::TemporalIds<typename Metavariables::temporal_id::type>>> =
-                nullptr>
+                DbTags, Tags::TemporalIds<typename InterpolationTargetTag::
+                                              temporal_id::type>>> = nullptr>
   static void apply(db::DataBox<DbTags>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/) noexcept {

@@ -39,8 +39,8 @@ SPECTRE_TEST_CASE("Unit.Interpolation.Tags", "[Unit][NumericalAlgorithms]") {
       "TemporalIds");
   TestHelpers::db::test_simple_tag<intrp::Tags::CompletedTemporalIds<Metavars>>(
       "CompletedTemporalIds");
-  TestHelpers::db::test_simple_tag<intrp::Tags::VolumeVarsInfo<Metavars>>(
-      "VolumeVarsInfo");
+  TestHelpers::db::test_simple_tag<
+      intrp::Tags::VolumeVarsInfo<Metavars, SomeTag>>("VolumeVarsInfo");
   TestHelpers::db::test_simple_tag<
       intrp::Tags::InterpolatedVarsHolders<Metavars>>(
       "InterpolatedVarsHolders");

@@ -12,8 +12,20 @@
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TypeTraits/IsA.hpp"
 
 namespace intrp {
+
+namespace detail {
+template <typename InterpolationTarget>
+struct get_interpolation_target_tag {
+  using type = typename InterpolationTarget::interpolation_target_tag;
+};
+template <typename InterpolationTargetTag>
+struct get_temporal_id {
+  using type = typename InterpolationTargetTag::temporal_id;
+};
+}  // namespace detail
 
 /// \brief ParallelComponent responsible for collecting data from
 /// `Element`s and interpolating it onto `InterpolationTarget`s.
@@ -23,13 +35,22 @@ template <class Metavariables>
 struct Interpolator {
   using chare_type = Parallel::Algorithms::Group;
   using metavariables = Metavariables;
+  using all_interpolation_target_tags = tmpl::transform<
+      tmpl::filter<typename Metavariables::component_list,
+                   tt::is_a_lambda<intrp::InterpolationTarget, tmpl::_1>>,
+      detail::get_interpolation_target_tag<tmpl::_1>>;
+  using all_temporal_ids = tmpl::remove_duplicates<tmpl::transform<
+      all_interpolation_target_tags, detail::get_temporal_id<tmpl::_1>>>;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename metavariables::Phase, metavariables::Phase::Initialization,
-      tmpl::list<::Actions::SetupDataBox,
-                 Actions::InitializeInterpolator<
-                     Tags::VolumeVarsInfo<Metavariables>,
-                     Tags::InterpolatedVarsHolders<Metavariables>>,
-                 Parallel::Actions::TerminatePhase>>>;
+      tmpl::list<
+          ::Actions::SetupDataBox,
+          Actions::InitializeInterpolator<
+              tmpl::transform<all_temporal_ids,
+                              tmpl::bind<Tags::VolumeVarsInfo,
+                                         tmpl::pin<Metavariables>, tmpl::_1>>,
+              Tags::InterpolatedVarsHolders<Metavariables>>,
+          Parallel::Actions::TerminatePhase>>>;
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
   static void execute_next_phase(

@@ -34,16 +34,19 @@ struct mock_interpolator {
       typename Metavariables::Phase, Metavariables::Phase::Initialization,
       tmpl::list<Actions::SetupDataBox,
                  intrp::Actions::InitializeInterpolator<
-                     intrp::Tags::VolumeVarsInfo<Metavariables>,
+                     tmpl::list<intrp::Tags::VolumeVarsInfo<Metavariables,
+                                                            ::Tags::Time>,
+                                intrp::Tags::VolumeVarsInfo<
+                                    Metavariables, ::Tags::TimeStepId>>,
                      intrp::Tags::InterpolatedVarsHolders<Metavariables>>>>>;
 };
 
 struct Metavariables {
   struct InterpolatorTargetA {
+    using temporal_id = ::Tags::TimeStepId;
     using vars_to_interpolate_to_target =
         tmpl::list<gr::Tags::Lapse<DataVector>>;
   };
-  using temporal_id = ::Tags::TimeStepId;
   static constexpr size_t volume_dim = 3;
   using interpolator_source_vars = tmpl::list<gr::Tags::Lapse<DataVector>>;
   using interpolation_target_tags = tmpl::list<InterpolatorTargetA>;
@@ -69,9 +72,14 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.Initialize",
   CHECK(ActionTesting::get_databox_tag<component,
                                        ::intrp::Tags::NumberOfElements>(
             runner, 0) == 0);
-  CHECK(ActionTesting::get_databox_tag<component,
-                                       ::intrp::Tags::VolumeVarsInfo<metavars>>(
+  CHECK(ActionTesting::get_databox_tag<
+            component, ::intrp::Tags::VolumeVarsInfo<metavars, ::Tags::Time>>(
             runner, 0)
+            .empty());
+  CHECK(ActionTesting::get_databox_tag<
+            component,
+            ::intrp::Tags::VolumeVarsInfo<metavars, ::Tags::TimeStepId>>(runner,
+                                                                         0)
             .empty());
 
   const auto& holders = ActionTesting::get_databox_tag<

@@ -17,13 +17,9 @@
 #include "Parallel/Invoke.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
-#include "Time/TimeStepId.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
-namespace Tags {
-struct TimeStepId;
-}  // namespace Tags
 namespace domain {
 namespace Tags {
 template <size_t VolumeDim>
@@ -77,13 +73,13 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
 
   InterpolateWithoutInterpComponent() = default;
 
-  using argument_tags =
-      tmpl::list<::Tags::TimeStepId, Tags::InterpPointInfo<Metavariables>,
-                 domain::Tags::Mesh<VolumeDim>, Tensors...>;
+  using argument_tags = tmpl::list<typename InterpolationTargetTag::temporal_id,
+                                   Tags::InterpPointInfo<Metavariables>,
+                                   domain::Tags::Mesh<VolumeDim>, Tensors...>;
 
   template <typename ParallelComponent>
   void operator()(
-      const TimeStepId& time_id,
+      const typename InterpolationTargetTag::temporal_id::type& temporal_id,
       const typename Tags::InterpPointInfo<Metavariables>::type& point_infos,
       const Mesh<VolumeDim>& mesh, const typename Tensors::type&... tensors,
       Parallel::GlobalCache<Metavariables>& cache,
@@ -154,7 +150,7 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
             typename InterpolationTargetTag::vars_to_interpolate_to_target>>(
             {interpolator.interpolate(interp_vars)}),
         std::vector<std::vector<size_t>>({element_coord_holder.offsets}),
-        time_id);
+        temporal_id);
   }
 
   bool needs_evolved_variables() const noexcept override { return true; }

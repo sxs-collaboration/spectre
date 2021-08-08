@@ -25,6 +25,7 @@
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -90,10 +91,10 @@ struct MockReceivePoints {
       Requires<tmpl::list_contains_v<DbTags, ::intrp::Tags::NumberOfElements>> =
           nullptr>
   static void apply(
-      db::DataBox<DbTags>& box,
-      Parallel::GlobalCache<Metavariables>& /*cache*/,
+      db::DataBox<DbTags>& box, Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/,
-      const typename Metavariables::temporal_id::type& temporal_id,
+      const typename Metavariables::InterpolationTargetA::temporal_id::type&
+          temporal_id,
       std::vector<std::optional<
           IdPair<domain::BlockId,
                  tnsr::I<double, VolumeDim, typename Frame::Logical>>>>&&
@@ -128,10 +129,13 @@ struct mock_interpolator {
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
-          tmpl::list<Actions::SetupDataBox,
-                     intrp::Actions::InitializeInterpolator<
-                         intrp::Tags::VolumeVarsInfo<Metavariables>,
-                         intrp::Tags::InterpolatedVarsHolders<Metavariables>>>>,
+          tmpl::list<
+              Actions::SetupDataBox,
+              intrp::Actions::InitializeInterpolator<
+                  intrp::Tags::VolumeVarsInfo<
+                      Metavariables, typename Metavariables::
+                                         InterpolationTargetA::temporal_id>,
+                  intrp::Tags::InterpolatedVarsHolders<Metavariables>>>>,
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::Testing, tmpl::list<>>>;
 
@@ -149,7 +153,8 @@ void test_interpolation_target(
     typename InterpolationTargetOptionTag::type options,
     const BlockCoordHolder& expected_block_coord_holders) noexcept {
   using metavars = MetaVariables;
-  using temporal_id_type = typename metavars::temporal_id::type;
+  using temporal_id_type =
+      typename metavars::InterpolationTargetA::temporal_id::type;
   using target_component =
       mock_interpolation_target<metavars,
                                 typename metavars::InterpolationTargetA>;
@@ -174,11 +179,24 @@ void test_interpolation_target(
 
   Slab slab(0.0, 1.0);
   TimeStepId temporal_id(true, 0, Time(slab, 0));
-
-  ActionTesting::simple_action<target_component,
-                               intrp::Actions::SendPointsToInterpolator<
-                                   typename metavars::InterpolationTargetA>>(
-      make_not_null(&runner), 0, temporal_id);
+  static_assert(
+      std::is_same_v<typename metavars::InterpolationTargetA::temporal_id::type,
+                     double> or
+          std::is_same_v<
+              typename metavars::InterpolationTargetA::temporal_id::type,
+              TimeStepId>,
+      "Unsupported temporal_id type");
+  if constexpr (std::is_same_v<temporal_id_type, double>) {
+    ActionTesting::simple_action<target_component,
+                                 intrp::Actions::SendPointsToInterpolator<
+                                     typename metavars::InterpolationTargetA>>(
+        make_not_null(&runner), 0, temporal_id.substep_time().value());
+  } else if constexpr (std::is_same_v<temporal_id_type, TimeStepId>) {
+    ActionTesting::simple_action<target_component,
+                                 intrp::Actions::SendPointsToInterpolator<
+                                     typename metavars::InterpolationTargetA>>(
+        make_not_null(&runner), 0, temporal_id);
+  }
 
   // This should not have changed.
   CHECK(ActionTesting::get_databox_tag<

@@ -147,8 +147,7 @@ struct TestFunction {
   template <typename DbTags, typename Metavariables>
   static void apply(const db::DataBox<DbTags>& box,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const typename Metavariables::temporal_id::
-                        type& /*temporal_id*/) noexcept {
+                    const TimeStepId& /*temporal_id*/) noexcept {
     const auto& interpolation_result = get<DbTagToRetrieve>(box);
     const auto
         expected_interpolation_result = [&interpolation_result]() noexcept {
@@ -175,8 +174,7 @@ struct TestKerrHorizonIntegral {
   template <typename DbTags, typename Metavariables>
   static void apply(const db::DataBox<DbTags>& box,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const typename Metavariables::temporal_id::
-                        type& /*temporal_id*/) noexcept {
+                    const TimeStepId& /*temporal_id*/) noexcept {
     const auto& interpolation_result = get<Tags::Square>(box);
     const auto& strahlkorper =
         get<StrahlkorperTags::Strahlkorper<Frame::Inertial>>(box);
@@ -224,7 +222,8 @@ struct mock_interpolator {
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
           tmpl::list<Actions::SetupDataBox,
                      ::intrp::Actions::InitializeInterpolator<
-                         intrp::Tags::VolumeVarsInfo<Metavariables>,
+                         intrp::Tags::VolumeVarsInfo<Metavariables,
+                                                     ::Tags::TimeStepId>,
                          intrp::Tags::InterpolatedVarsHolders<Metavariables>>>>,
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::Registration, tmpl::list<>>,
@@ -236,6 +235,7 @@ struct mock_interpolator {
 
 struct MockMetavariables {
   struct InterpolationTargetA {
+    using temporal_id = ::Tags::TimeStepId;
     using compute_vars_to_interpolate = ComputeSquare;
     using vars_to_interpolate_to_target = tmpl::list<Tags::Square>;
     using compute_items_on_target = tmpl::list<>;
@@ -245,6 +245,7 @@ struct MockMetavariables {
         TestFunction<InterpolationTargetA, Tags::Square>;
   };
   struct InterpolationTargetB {
+    using temporal_id = ::Tags::TimeStepId;
     using compute_vars_to_interpolate = ComputeSquare;
     using vars_to_interpolate_to_target = tmpl::list<Tags::Square>;
     using compute_items_on_target = tmpl::list<Tags::NegateCompute>;
@@ -254,6 +255,7 @@ struct MockMetavariables {
         TestFunction<InterpolationTargetB, Tags::Negate>;
   };
   struct InterpolationTargetC {
+    using temporal_id = ::Tags::TimeStepId;
     using vars_to_interpolate_to_target = tmpl::list<Tags::TestSolution>;
     using compute_items_on_target = tmpl::list<Tags::SquareCompute>;
     using compute_target_points =
@@ -266,7 +268,6 @@ struct MockMetavariables {
   using interpolation_target_tags =
       tmpl::list<InterpolationTargetA, InterpolationTargetB,
                  InterpolationTargetC>;
-  using temporal_id = ::Tags::TimeStepId;
   static constexpr size_t volume_dim = 3;
   using component_list = tmpl::list<
       mock_interpolation_target<MockMetavariables, InterpolationTargetA>,
@@ -410,8 +411,10 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.Integration",
                          5.0 * get<2>(inertial_coords);
 
     // Call the InterpolatorReceiveVolumeData action on each element_id.
-    ActionTesting::simple_action<interp_component,
-                                 intrp::Actions::InterpolatorReceiveVolumeData>(
+    ActionTesting::simple_action<
+        interp_component,
+        intrp::Actions::InterpolatorReceiveVolumeData<
+            typename metavars::InterpolationTargetA::temporal_id>>(
         make_not_null(&runner), mock_core_for_each_element.at(element_id),
         temporal_id, element_id, mesh, std::move(output_vars));
   }

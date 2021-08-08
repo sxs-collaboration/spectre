@@ -45,11 +45,11 @@ struct mock_interpolation_target {
 
 struct Metavariables {
   struct InterpolationTargetA {
+    using temporal_id = ::Tags::TimeStepId;
     using vars_to_interpolate_to_target =
         tmpl::list<gr::Tags::Lapse<DataVector>>;
     using compute_items_on_target = tmpl::list<>;
   };
-  using temporal_id = ::Tags::TimeStepId;
 
   using component_list = tmpl::list<
       mock_interpolation_target<Metavariables, InterpolationTargetA>>;
@@ -60,7 +60,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.Initialize",
                   "[Unit]") {
   domain::creators::register_derived_with_charm();
   using metavars = Metavariables;
-  using temporal_id_type = typename metavars::temporal_id::type;
+  using temporal_id_type =
+      typename metavars::InterpolationTargetA::temporal_id::type;
   using component =
       mock_interpolation_target<metavars,
                                 typename metavars::InterpolationTargetA>;

@@ -81,10 +81,11 @@ void operator|(PUP::er& p, Info<VolumeDim, TagList>& t) noexcept {  // NOLINT
 template <typename Metavariables,
           typename InterpolationTargetTag, typename TagList>
 struct Holder {
-  std::unordered_map<typename Metavariables::temporal_id::type,
+  using temporal_id = typename InterpolationTargetTag::temporal_id;
+  std::unordered_map<typename InterpolationTargetTag::temporal_id::type,
                      Info<Metavariables::volume_dim, TagList>>
       infos;
-  std::unordered_set<typename Metavariables::temporal_id::type>
+  std::unordered_set<typename InterpolationTargetTag::temporal_id::type>
       temporal_ids_when_data_has_been_interpolated;
 };
 

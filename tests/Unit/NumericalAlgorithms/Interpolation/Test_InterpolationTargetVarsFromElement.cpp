@@ -76,7 +76,8 @@ struct MockPostInterpolationCallback {
   static void apply(
       const db::DataBox<DbTags>& box,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const typename Metavariables::temporal_id::type& temporal_id) noexcept {
+      const typename Metavariables::InterpolationTargetA::temporal_id::type&
+          temporal_id) noexcept {
     // This callback simply checks that the points are as expected.
     Slab slab(0.0, 1.0);
     const TimeStepId first_temporal_id(true, 0, Time(slab, Rational(13, 15)));
@@ -116,12 +117,12 @@ struct mock_interpolation_target {
 
 struct MockMetavariables {
   struct InterpolationTargetA {
+    using temporal_id = ::Tags::TimeStepId;
     using vars_to_interpolate_to_target = tmpl::list<Tags::TestSolution>;
     using compute_items_on_target = tmpl::list<Tags::SquareCompute>;
     using compute_target_points = MockComputeTargetPoints;
     using post_interpolation_callback = MockPostInterpolationCallback;
   };
-  using temporal_id = ::Tags::TimeStepId;
   static constexpr size_t volume_dim = 3;
   using interpolation_target_tags = tmpl::list<InterpolationTargetA>;
 
@@ -135,7 +136,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.TargetVarsFromElement",
   domain::creators::register_derived_with_charm();
 
   using metavars = MockMetavariables;
-  using temporal_id_type = typename metavars::temporal_id::type;
+  using temporal_id_type =
+      typename metavars::InterpolationTargetA::temporal_id::type;
   using target_component =
       mock_interpolation_target<metavars,
                                 typename metavars::InterpolationTargetA>;

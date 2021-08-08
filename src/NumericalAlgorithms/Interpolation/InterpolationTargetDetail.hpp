@@ -62,6 +62,10 @@ struct Variables;
 namespace intrp {
 
 namespace InterpolationTarget_detail {
+double get_temporal_id_value(double time) noexcept;
+double get_temporal_id_value(const TimeStepId& time_id) noexcept;
+double evaluate_temporal_id_for_expiration(double time) noexcept;
+double evaluate_temporal_id_for_expiration(const TimeStepId& time_id) noexcept;
 
 // apply_callback accomplishes the overload for the
 // two signatures of callback functions.
@@ -503,7 +507,9 @@ auto block_logical_coords(const db::DataBox<DbTags>& box,
           domain,
           InterpolationTargetTag::compute_target_points::points(
               box, tmpl::type_<Metavariables>{}, temporal_id),
-          temporal_id.step_time().value(), functions_of_time);
+          InterpolationTarget_detail::evaluate_temporal_id_for_expiration(
+              temporal_id),
+          functions_of_time);
     } else {
       // We error here because the maps are time-dependent, yet
       // the cache does not contain FunctionsOfTime.  It would be

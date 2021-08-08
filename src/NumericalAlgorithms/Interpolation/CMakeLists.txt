@@ -13,6 +13,7 @@ spectre_target_sources(
   CubicSpanInterpolator.cpp
   CubicSpline.cpp
   InterpolationTargetApparentHorizon.cpp
+  InterpolationTargetDetail.cpp
   InterpolationTargetKerrHorizon.cpp
   InterpolationTargetLineSegment.cpp
   InterpolationTargetSpecifiedPoints.cpp

@@ -116,7 +116,7 @@ struct compute_target_points_tags<
 /// `Initialization` phase action list prior to this action.
 template <typename Metavariables, typename InterpolationTargetTag>
 struct InitializeInterpolationTarget {
-  using TemporalId = typename Metavariables::temporal_id::type;
+  using TemporalId = typename InterpolationTargetTag::temporal_id::type;
   using return_tag_list_initial = tmpl::list<
       Tags::IndicesOfFilledInterpPoints<TemporalId>,
       Tags::IndicesOfInvalidInterpPoints<TemporalId>,

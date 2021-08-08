@@ -25,7 +25,7 @@ namespace Tags {
 struct NumberOfElements;
 template <typename Metavariables>
 struct InterpolatedVarsHolders;
-template <typename Metavariables>
+template <typename Metavariables, typename TemporalId>
 struct VolumeVarsInfo;
 }  // namespace Tags
 }  // namespace intrp
@@ -42,7 +42,9 @@ namespace Actions {
 /// DataBox changes:
 /// - Adds:
 ///   - `Tags::NumberOfElements`
-///   - `Tags::VolumeVarsInfo<Metavariables>`
+///   - each tag in the template argument VolumeVarsInfos, which may either be a
+///     single `Tags::VolumeVarsInfo<Metavariables, TemporalId>` or a
+///     `tmpl::list` of multiple tags for `VolumeVarsInfo`.
 ///   - `Tags::InterpolatedVarsHolders<Metavariables>`
 /// - Removes: nothing
 /// - Modifies: nothing
@@ -50,10 +52,11 @@ namespace Actions {
 /// \note This action relies on the `SetupDataBox` aggregated initialization
 /// mechanism, so `Actions::SetupDataBox` must be present in the
 /// `Initialization` phase action list prior to this action.
-template <typename VolumeVarsInfo, typename InterpolatedVarsHolders>
+template <typename VolumeVarsInfos, typename InterpolatedVarsHolders>
 struct InitializeInterpolator {
-  using return_tag_list = tmpl::list<Tags::NumberOfElements, VolumeVarsInfo,
-                                     InterpolatedVarsHolders>;
+  using return_tag_list =
+      tmpl::flatten<tmpl::list<Tags::NumberOfElements, VolumeVarsInfos,
+                               InterpolatedVarsHolders>>;
 
   using simple_tags = return_tag_list;
   using compute_tags = tmpl::list<>;
