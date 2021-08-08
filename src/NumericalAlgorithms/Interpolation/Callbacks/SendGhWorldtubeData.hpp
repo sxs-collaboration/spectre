@@ -18,8 +18,6 @@ namespace callbacks {
 /// \brief post_interpolation_callback that calls Cce::ReceiveGhWorldTubeData
 ///
 /// Uses:
-/// - Metavariables
-///   - `temporal_id`
 /// - DataBox:
 ///   - `::gr::Tags::SpacetimeMetric<3,Frame::Inertial>`
 ///   - `::GeneralizedHarmonic::Tags::Pi<3,Frame::Inertial>`
@@ -27,14 +25,13 @@ namespace callbacks {
 ///
 /// This is an InterpolationTargetTag::post_interpolation_callback;
 /// see InterpolationTarget for a description of InterpolationTargetTag.
-template <typename CceEvolutionComponent>
+template <typename CceEvolutionComponent, typename TemporalId>
 struct SendGhWorldtubeData {
   using observation_types = tmpl::list<>;
   template <typename DbTags, typename Metavariables>
-  static void apply(
-      const db::DataBox<DbTags>& box,
-      Parallel::GlobalCache<Metavariables>& cache,
-      const typename Metavariables::temporal_id::type& temporal_id) noexcept {
+  static void apply(const db::DataBox<DbTags>& box,
+                    Parallel::GlobalCache<Metavariables>& cache,
+                    const typename TemporalId::type& temporal_id) noexcept {
     auto& cce_gh_boundary_component = Parallel::get_parallel_component<
         Cce::GhWorldtubeBoundary<Metavariables>>(cache);
     Parallel::simple_action<

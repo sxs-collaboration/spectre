@@ -98,12 +98,12 @@ struct compute_target_points_tags<
 ///
 /// DataBox changes:
 /// - Adds:
-///   - `Tags::IndicesOfFilledInterpPoints>`
-///   - `Tags::IndicesOfInvalidInterpPoints>`
-///   - `Tags::PendingTimes`
-///   - `Tags::Times`
-///   - `Tags::CompletedTimes`
-///   - `Tags::InterpolatedVars<InterpolationTargetTag>`
+///   - `Tags::IndicesOfFilledInterpPoints<TemporalId>`
+///   - `Tags::IndicesOfInvalidInterpPoints<TemporalId>`
+///   - `Tags::PendingTemporalIds<TemporalId>`
+///   - `Tags::TemporalIds<TemporalId>`
+///   - `Tags::CompletedTemporalIds<TemporalId>`
+///   - `Tags::InterpolatedVars<InterpolationTargetTag,TemporalId>`
 ///   - `::Tags::Variables<typename
 ///                   InterpolationTargetTag::vars_to_interpolate_to_target>`
 /// - Removes: nothing
@@ -116,10 +116,13 @@ struct compute_target_points_tags<
 /// `Initialization` phase action list prior to this action.
 template <typename Metavariables, typename InterpolationTargetTag>
 struct InitializeInterpolationTarget {
+  using TemporalId = typename InterpolationTargetTag::temporal_id::type;
   using return_tag_list_initial = tmpl::list<
-      Tags::IndicesOfFilledInterpPoints, Tags::IndicesOfInvalidInterpPoints,
-      Tags::PendingTimes, Tags::Times, Tags::CompletedTimes,
-      Tags::InterpolatedVars<InterpolationTargetTag>,
+      Tags::IndicesOfFilledInterpPoints<TemporalId>,
+      Tags::IndicesOfInvalidInterpPoints<TemporalId>,
+      Tags::PendingTemporalIds<TemporalId>, Tags::TemporalIds<TemporalId>,
+      Tags::CompletedTemporalIds<TemporalId>,
+      Tags::InterpolatedVars<InterpolationTargetTag, TemporalId>,
       ::Tags::Variables<
           typename InterpolationTargetTag::vars_to_interpolate_to_target>>;
   using return_tag_list =

@@ -22,6 +22,7 @@
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "Time/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -44,6 +45,7 @@ struct mock_interpolation_target {
 
 struct Metavariables {
   struct InterpolationTargetA {
+    using temporal_id = ::Tags::TimeStepId;
     using vars_to_interpolate_to_target =
         tmpl::list<gr::Tags::Lapse<DataVector>>;
     using compute_items_on_target = tmpl::list<>;
@@ -58,6 +60,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.Initialize",
                   "[Unit]") {
   domain::creators::register_derived_with_charm();
   using metavars = Metavariables;
+  using temporal_id_type =
+      typename metavars::InterpolationTargetA::temporal_id::type;
   using component =
       mock_interpolation_target<metavars,
                                 typename metavars::InterpolationTargetA>;
@@ -76,19 +80,21 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.Initialize",
                            Metavariables::Phase::Testing);
 
   CHECK(ActionTesting::get_databox_tag<
-            component, ::intrp::Tags::IndicesOfFilledInterpPoints>(runner, 0)
+            component,
+            ::intrp::Tags::IndicesOfFilledInterpPoints<temporal_id_type>>(
+            runner, 0)
             .empty());
-  CHECK(
-      ActionTesting::get_databox_tag<component, ::intrp::Tags::Times>(runner, 0)
-          .empty());
+  CHECK(ActionTesting::get_databox_tag<
+            component, ::intrp::Tags::TemporalIds<temporal_id_type>>(runner, 0)
+            .empty());
 
   const auto& cache = ActionTesting::cache<component>(runner, 0_st);
   CHECK(Parallel::get<domain::Tags::Domain<3>>(cache) ==
         domain_creator.create_domain());
 
   CHECK(ActionTesting::get_databox_tag<
-            component,
-            ::intrp::Tags::InterpolatedVars<metavars::InterpolationTargetA>>(
+            component, ::intrp::Tags::InterpolatedVars<
+                           metavars::InterpolationTargetA, temporal_id_type>>(
             runner, 0)
             .empty());
 }

@@ -13,6 +13,7 @@ spectre_target_sources(
   CubicSpanInterpolator.cpp
   CubicSpline.cpp
   InterpolationTargetApparentHorizon.cpp
+  InterpolationTargetDetail.cpp
   InterpolationTargetKerrHorizon.cpp
   InterpolationTargetLineSegment.cpp
   InterpolationTargetSpecifiedPoints.cpp
@@ -27,7 +28,7 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
-  AddTimesToInterpolationTarget.hpp
+  AddTemporalIdsToInterpolationTarget.hpp
   BarycentricRational.hpp
   BarycentricRationalSpanInterpolator.hpp
   CMakeLists.txt

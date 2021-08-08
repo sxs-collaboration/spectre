@@ -88,6 +88,7 @@ struct mock_gh_worldtube_boundary {
 struct test_metavariables {
   static constexpr size_t volume_dim = 3;
   struct InterpolationTargetA {
+    using temporal_id = ::Tags::Time;
     using vars_to_interpolate_to_target = tmpl::list<>;
     using compute_items_on_source = tmpl::list<>;
   };

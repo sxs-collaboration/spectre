@@ -20,9 +20,6 @@
 #include "Utilities/TMPL.hpp"
 
 /// \cond
-namespace Tags {
-struct Time;
-}  // namespace Tags
 namespace domain {
 namespace Tags {
 template <size_t VolumeDim>
@@ -76,13 +73,13 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
 
   InterpolateWithoutInterpComponent() = default;
 
-  using argument_tags =
-      tmpl::list<::Tags::Time, Tags::InterpPointInfo<Metavariables>,
-                 domain::Tags::Mesh<VolumeDim>, Tensors...>;
+  using argument_tags = tmpl::list<typename InterpolationTargetTag::temporal_id,
+                                   Tags::InterpPointInfo<Metavariables>,
+                                   domain::Tags::Mesh<VolumeDim>, Tensors...>;
 
   template <typename ParallelComponent>
   void operator()(
-      const double time,
+      const typename InterpolationTargetTag::temporal_id::type& time_id,
       const typename Tags::InterpPointInfo<Metavariables>::type& point_infos,
       const Mesh<VolumeDim>& mesh, const typename Tensors::type&... tensors,
       Parallel::GlobalCache<Metavariables>& cache,
@@ -152,7 +149,8 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
         std::vector<Variables<
             typename InterpolationTargetTag::vars_to_interpolate_to_target>>(
             {interpolator.interpolate(interp_vars)}),
-        std::vector<std::vector<size_t>>({element_coord_holder.offsets}), time);
+        std::vector<std::vector<size_t>>({element_coord_holder.offsets}),
+        time_id);
   }
 
   bool needs_evolved_variables() const noexcept override { return true; }

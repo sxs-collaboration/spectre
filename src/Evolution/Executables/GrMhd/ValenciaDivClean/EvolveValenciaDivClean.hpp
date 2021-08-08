@@ -53,6 +53,7 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "NumericalAlgorithms/Interpolation/Actions/ElementInitInterpPoints.hpp"
+#include "NumericalAlgorithms/Interpolation/AddTemporalIdsToInterpolationTarget.hpp"
 #include "NumericalAlgorithms/Interpolation/Callbacks/ObserveTimeSeriesOnSurface.hpp"
 #include "NumericalAlgorithms/Interpolation/CleanUpInterpolator.hpp"
 #include "NumericalAlgorithms/Interpolation/InitializeInterpolationTarget.hpp"
@@ -400,6 +401,7 @@ struct EvolutionMetavars {
 };
 
 struct KerrHorizon {
+  using temporal_id = ::Tags::Time;
   using tags_to_observe =
       tmpl::list<StrahlkorperTags::EuclideanSurfaceIntegralVectorCompute<
           hydro::Tags::MassFlux<DataVector, 3>, ::Frame::Inertial>>;
