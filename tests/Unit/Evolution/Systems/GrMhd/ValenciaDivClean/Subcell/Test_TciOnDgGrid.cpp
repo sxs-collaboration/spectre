@@ -36,6 +36,7 @@ enum class TestThis {
   PrimRecoveryFailed,
   PerssonTildeD,
   PerssonTildeTau,
+  PerssonTildeB,
   NegativeTildeDSubcell,
   NegativeTildeTauSubcell,
   NegativeTildeTau
@@ -86,7 +87,9 @@ void test(const TestThis test_this) {
                                                    1.0};
 
   const grmhd::ValenciaDivClean::subcell::TciOptions tci_options{
-      1.0e-20, 1.0e-40, 1.1e-12, 1.0e-12};
+      1.0e-20, 1.0e-40, 1.1e-12, 1.0e-12,
+      test_this == TestThis::PerssonTildeB ? std::optional<double>{1.0e-2}
+                                           : std::nullopt};
 
   auto box = db::create<db::AddSimpleTags<
       evolution::dg::subcell::Tags::Inactive<
@@ -167,6 +170,13 @@ void test(const TestThis test_this) {
         make_not_null(&box), [point_to_change](const auto tilde_d_ptr) {
           get(*tilde_d_ptr)[point_to_change] *= 2.0;
         });
+  } else if (test_this == TestThis::PerssonTildeB) {
+    db::mutate<grmhd::ValenciaDivClean::Tags::TildeB<>>(
+        make_not_null(&box), [point_to_change](const auto tilde_b_ptr) {
+          for (size_t i = 0; i < 3; ++i) {
+            tilde_b_ptr->get(i)[point_to_change] = 6.0;
+          }
+        });
   } else if (test_this == TestThis::NegativeTildeDSubcell) {
     db::mutate<evolution::dg::subcell::Tags::Inactive<
         grmhd::ValenciaDivClean::Tags::TildeD>>(
@@ -211,8 +221,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ValenciaDivClean.Subcell.TciOnDgGrid",
        {TestThis::AllGood, TestThis::SmallTildeD, TestThis::InAtmosphere,
         TestThis::TildeB2TooBig, TestThis::PrimRecoveryFailed,
         TestThis::PerssonTildeD, TestThis::PerssonTildeTau,
-        TestThis::NegativeTildeDSubcell, TestThis::NegativeTildeTauSubcell,
-        TestThis::NegativeTildeTau}) {
+        TestThis::PerssonTildeB, TestThis::NegativeTildeDSubcell,
+        TestThis::NegativeTildeTauSubcell, TestThis::NegativeTildeTau}) {
     test(test_this);
   }
 }

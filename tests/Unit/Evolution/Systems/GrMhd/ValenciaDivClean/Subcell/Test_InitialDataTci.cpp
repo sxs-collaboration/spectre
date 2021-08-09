@@ -36,7 +36,7 @@ SPECTRE_TEST_CASE(
   const double epsilon = 1.0e-3;
   const double exponent = 4.0;
   const grmhd::ValenciaDivClean::subcell::TciOptions tci_options{
-      1.0e-20, 1.0e-40, 1.1e-12, 1.0e-12};
+      1.0e-20, 1.0e-40, 1.1e-12, 1.0e-12, std::optional<double>{1.0e-2}};
 
   {
     INFO("TCI is happy");
@@ -67,6 +67,23 @@ SPECTRE_TEST_CASE(
         tci_options));
     get(get<grmhd::ValenciaDivClean::Tags::TildeD>(
         dg_vars))[dg_mesh.number_of_grid_points() / 2] = 1.0;
+  }
+
+  {
+    INFO("Persson TCI TildeB fails");
+    const InactiveConsVars subcell_vars{subcell_mesh.number_of_grid_points(),
+                                        1.0};
+    for (size_t i = 0; i < 3; ++i) {
+      get<grmhd::ValenciaDivClean::Tags::TildeB<>>(dg_vars).get(
+          i)[dg_mesh.number_of_grid_points() / 2] += 2.0e10;
+    }
+    CHECK(grmhd::ValenciaDivClean::subcell::DgInitialDataTci::apply(
+        dg_vars, subcell_vars, 1.0e100, epsilon, exponent, dg_mesh,
+        tci_options));
+    for (size_t i = 0; i < 3; ++i) {
+      get<grmhd::ValenciaDivClean::Tags::TildeB<>>(dg_vars).get(
+          i)[dg_mesh.number_of_grid_points() / 2] = 1.0;
+    }
   }
 
   {
