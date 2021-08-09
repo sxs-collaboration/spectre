@@ -256,7 +256,7 @@ bool ApplyBoundaryCorrections<Metavariables>::receive_local_time_stepping(
       const auto& dense_output_time = db::get<::Tags::Time>(*box);
       return [&dense_output_time,
               &local_next_temporal_id](const TimeStepId& id) noexcept {
-        return evolution_less<double>{
+        return evolution_less_equal<double>{
             local_next_temporal_id.time_runs_forward()}(id.step_time().value(),
                                                         dense_output_time);
       };
