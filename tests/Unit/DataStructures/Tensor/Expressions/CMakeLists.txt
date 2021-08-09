@@ -14,6 +14,7 @@ set(LIBRARY_SOURCES
   Test_MixedOperations.cpp
   Test_Product.cpp
   Test_ProductHighRankIntermediate.cpp
+  Test_SpatialSpacetimeIndex.cpp
   Test_SquareRoot.cpp
   Test_TensorIndex.cpp
   Test_TensorIndexTransformation.cpp

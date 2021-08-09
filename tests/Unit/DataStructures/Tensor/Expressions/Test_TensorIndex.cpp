@@ -8,11 +8,15 @@
 SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.TensorIndex",
                   "[DataStructures][Unit]") {
   // Test `make_tensorindex_list`
-  CHECK(std::is_same_v<
-        make_tensorindex_list<ti_j, ti_A, ti_b>,
-        tmpl::list<std::decay_t<decltype(ti_j)>, std::decay_t<decltype(ti_A)>,
-                   std::decay_t<decltype(ti_b)>>>);
-  CHECK(std::is_same_v<make_tensorindex_list<>, tmpl::list<>>);
+  // Check at compile time since some other tests use this metafunction
+  static_assert(
+      std::is_same_v<
+          make_tensorindex_list<ti_j, ti_A, ti_b>,
+          tmpl::list<std::decay_t<decltype(ti_j)>, std::decay_t<decltype(ti_A)>,
+                     std::decay_t<decltype(ti_b)>>>,
+      "make_tensorindex_list failed for non-empty list");
+  static_assert(std::is_same_v<make_tensorindex_list<>, tmpl::list<>>,
+                "make_tensorindex_list failed for empty list");
 
   // Test `get_tensorindex_value_with_opposite_valence`
   //

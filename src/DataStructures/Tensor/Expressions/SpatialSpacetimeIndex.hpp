@@ -3,12 +3,16 @@
 
 #pragma once
 
+#include <array>
+#include <cstddef>
+
 #include "DataStructures/Tensor/Expressions/TensorIndex.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Tensor/Symmetry.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \file
@@ -24,7 +28,8 @@ struct spatial_spacetime_index_positions_impl {
   using type = typename std::conditional_t<
       Element::index_type == IndexType::Spacetime and
           not tmpl::at<TensorIndexList, Iteration>::is_spacetime,
-      tmpl::push_back<State, Iteration>, State>;
+      tmpl::push_back<State, tmpl::integral_constant<size_t, Iteration::value>>,
+      State>;
 };
 
 /// \brief Given a generic index list and tensor index list, returns the list of
@@ -60,6 +65,7 @@ constexpr auto get_spatial_spacetime_index_positions() noexcept {
   return make_array_from_list<make_list_type>();
 }
 
+/// @{
 /// \brief Given a tensor symmetry and the positions of indices where a generic
 /// spatial index is used for a spacetime index, this returns the symmetry
 /// after making those indices nonsymmetric with others
@@ -72,16 +78,18 @@ constexpr auto get_spatial_spacetime_index_positions() noexcept {
 /// with the indices at positions 2 and 3. Therefore, the resulting symmetry
 /// will be equivalent to the form of `[3, 2, 1, 1]`.
 ///
-/// Note: the symmetry returned by this function is not in the canonical form
-/// specified by ::Symmetry. In reality, for the example above, this function
-/// would return `[2, 3, 1, 1]`.
+/// Note: the symmetry returned by this function is not necessarily in the
+/// canonical form specified by ::Symmetry. In reality, for the example above,
+/// this function would return `[2, 3, 1, 1]`.
 ///
 /// \param symmetry the input tensor symmetry to transform
 /// \param spatial_spacetime_index_positions the positions of the indices of the
 /// tensor where a generic spatial index is used for a spacetime index
 /// \return the symmetry after making the `spatial_spacetime_index_positions` of
 /// `symmetry` nonsymmetric with other indices
-template <size_t NumIndices, size_t NumSpatialSpacetimeIndices>
+template <
+    size_t NumIndices, size_t NumSpatialSpacetimeIndices,
+    Requires<(NumIndices >= 2 and NumSpatialSpacetimeIndices != 0)> = nullptr>
 constexpr std::array<std::int32_t, NumIndices>
 get_spatial_spacetime_index_symmetry(
     const std::array<std::int32_t, NumIndices>& symmetry,
@@ -94,14 +102,24 @@ get_spatial_spacetime_index_symmetry(
     gsl::at(spatial_spacetime_index_symmetry, i) = gsl::at(symmetry, i);
   }
   for (size_t i = 0; i < NumSpatialSpacetimeIndices; i++) {
-    spatial_spacetime_index_symmetry[spatial_spacetime_index_positions[i]] +=
-        max_symm_value;
     gsl::at(spatial_spacetime_index_symmetry,
             gsl::at(spatial_spacetime_index_positions, i)) += max_symm_value;
   }
 
   return spatial_spacetime_index_symmetry;
 }
+
+template <
+    size_t NumIndices, size_t NumSpatialSpacetimeIndices,
+    Requires<(NumIndices < 2 or NumSpatialSpacetimeIndices == 0)> = nullptr>
+constexpr std::array<std::int32_t, NumIndices>
+get_spatial_spacetime_index_symmetry(
+    const std::array<std::int32_t, NumIndices>& symmetry,
+    const std::array<size_t, NumSpatialSpacetimeIndices>&
+    /*spatial_spacetime_index_positions*/) noexcept {
+  return symmetry;
+}
+/// @}
 
 template <typename S, typename E>
 struct replace_spatial_spacetime_indices_helper {
