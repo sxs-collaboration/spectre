@@ -9,13 +9,67 @@
 #include <array>
 #include <cstddef>
 #include <type_traits>
+#include <utility>
 
+#include "DataStructures/Tensor/Expressions/SpatialSpacetimeIndex.hpp"
 #include "DataStructures/Tensor/Expressions/TensorExpression.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace TensorExpressions {
+namespace detail {
+/// \ingroup TensorExpressionsGroup
+/// \brief Helper struct for computing the new canonical symmetry of a tensor
+/// after generic spatial indices are used for any of the tensor's spacetime
+/// indices
+///
+/// \details This is relevant in cases where a tensor has spacetime indices that
+/// are symmetric but generic spatial indices are used for a non-empty subset of
+/// those symmetric spacetime indices. For example, if we have some rank 3
+/// tensor with the first index being spatial and the 2nd and third indices
+/// spacetime and symmetric, but a generic spatial index is used for the 2nd
+/// index, the "result" of the single tensor expression, \f$R_{ija}\f$, is a
+/// rank 3 tensor whose 2nd and 3rd indices are no longer symmetric.
+
+/// Given that some `Tensor` named `R` that represents the tensor in the above
+/// example, the symmetry of the `Tensor` is `[2, 1, 1]`, but the computed
+/// symmetry of the `TensorAsExpression` that represents it will have symmetry
+/// `[3, 2, 1]` to reflect this loss of symmetry.
+///
+/// Evaluating the "result" symmetry here in `TensorAsExpression`, at the leaves
+/// of the expression tree, enables the propagation of this symmetry up the tree
+/// to the other expression types. By determining each tensor's "result"
+/// symmetry at the leaves, the expressions at internal nodes of the tree can
+/// have their individual symmetries determined without having to each consider
+/// whether their operand(s) are expression(s) that have spacetime indices where
+/// generic spatial indices were used.
+///
+/// \tparam SymmList the ::Symmetry of the Tensor represented by the expression
+/// \tparam TensorIndexTypeList the \ref SpacetimeIndex "TensorIndexType"'s of
+/// the Tensor represented by the expression
+/// \tparam TensorIndexList the generic indices of the Tensor represented by the
+/// expression
+template <typename SymmList, typename TensorIndexTypeList,
+          typename TensorIndexList,
+          size_t NumIndices = tmpl::size<SymmList>::value,
+          typename IndexSequence = std::make_index_sequence<NumIndices>>
+struct TensorAsExpressionSymm;
+
+template <template <typename...> class SymmList, typename... Symm,
+          typename TensorIndexTypeList, typename TensorIndexList,
+          size_t NumIndices, size_t... Ints>
+struct TensorAsExpressionSymm<SymmList<Symm...>, TensorIndexTypeList,
+                              TensorIndexList, NumIndices,
+                              std::index_sequence<Ints...>> {
+  static constexpr auto symm = get_spatial_spacetime_index_symmetry<NumIndices>(
+      {{Symm::value...}},
+      get_spatial_spacetime_index_positions<TensorIndexTypeList,
+                                            TensorIndexList>());
+  using type = Symmetry<symm[Ints]...>;
+};
+}  // namespace detail
+
 /// \ingroup TensorExpressionsGroup
 /// \brief Defines an expression representing a Tensor
 ///
@@ -42,9 +96,14 @@ struct TensorAsExpression<Tensor<X, Symm, IndexList<Indices...>>,
     : public TensorExpression<
           TensorAsExpression<Tensor<X, Symm, IndexList<Indices...>>,
                              ArgsList<Args...>>,
-          X, Symm, IndexList<Indices...>, ArgsList<Args...>> {
+          X,
+          typename detail::TensorAsExpressionSymm<Symm, IndexList<Indices...>,
+                                                  ArgsList<Args...>>::type,
+          IndexList<Indices...>, ArgsList<Args...>> {
   using type = X;
-  using symmetry = Symm;
+  using symmetry =
+      typename detail::TensorAsExpressionSymm<Symm, IndexList<Indices...>,
+                                              ArgsList<Args...>>::type;
   using index_list = IndexList<Indices...>;
   static constexpr auto num_tensor_indices = tmpl::size<index_list>::value;
   using args_list = ArgsList<Args...>;
