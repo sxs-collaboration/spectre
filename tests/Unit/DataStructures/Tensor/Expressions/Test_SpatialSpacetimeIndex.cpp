@@ -283,6 +283,52 @@ void test_replace_spatial_spacetime_indices() {
             index_list_aBC, positions_list_012>,
         index_list_iJK>);
 }
+
+void test_spatial_spacetime_index_transformation_from_positions() {
+  constexpr std::array<size_t, 0> positions_empty = {{}};
+  constexpr std::array<size_t, 1> positions_0 = {{0}};
+  constexpr std::array<size_t, 1> positions_1 = {{1}};
+  constexpr std::array<size_t, 1> positions_2 = {{2}};
+  constexpr std::array<size_t, 2> positions_12 = {{1, 2}};
+
+  constexpr std::array<std::int32_t, 0> transformation_empty = {{}};
+  constexpr std::array<std::int32_t, 1> transformation_0 = {{0}};
+  constexpr std::array<std::int32_t, 1> transformation_m1 = {{-1}};
+  constexpr std::array<std::int32_t, 1> transformation_p1 = {{1}};
+  constexpr std::array<std::int32_t, 3> transformation_000 = {{0, 0, 0}};
+  constexpr std::array<std::int32_t, 3> transformation_m10p10 = {{-1, 0, 1}};
+  constexpr std::array<std::int32_t, 3> transformation_00m1 = {{0, 0, -1}};
+
+  // Rank 0
+  CHECK(TensorExpressions::detail::
+            spatial_spacetime_index_transformation_from_positions<0>(
+                positions_empty, positions_empty) == transformation_empty);
+
+  // Rank 1
+  CHECK(TensorExpressions::detail::
+            spatial_spacetime_index_transformation_from_positions<1>(
+                positions_empty, positions_empty) == transformation_0);
+  CHECK(TensorExpressions::detail::
+            spatial_spacetime_index_transformation_from_positions<1>(
+                positions_0, positions_0) == transformation_0);
+  CHECK(TensorExpressions::detail::
+            spatial_spacetime_index_transformation_from_positions<1>(
+                positions_0, positions_empty) == transformation_m1);
+  CHECK(TensorExpressions::detail::
+            spatial_spacetime_index_transformation_from_positions<1>(
+                positions_empty, positions_0) == transformation_p1);
+
+  // Rank 3
+  CHECK(TensorExpressions::detail::
+            spatial_spacetime_index_transformation_from_positions<3>(
+                positions_empty, positions_empty) == transformation_000);
+  CHECK(TensorExpressions::detail::
+            spatial_spacetime_index_transformation_from_positions<3>(
+                positions_0, positions_2) == transformation_m10p10);
+  CHECK(TensorExpressions::detail::
+            spatial_spacetime_index_transformation_from_positions<3>(
+                positions_12, positions_1) == transformation_00m1);
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.SpatialSpacetimeIndex",
@@ -290,4 +336,5 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.SpatialSpacetimeIndex",
   test_spatial_spacetime_index_positions();
   test_get_spatial_spacetime_index_symmetry();
   test_replace_spatial_spacetime_indices();
+  test_spatial_spacetime_index_transformation_from_positions();
 }

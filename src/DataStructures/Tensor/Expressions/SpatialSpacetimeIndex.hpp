@@ -12,6 +12,7 @@
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MakeArray.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -133,5 +134,43 @@ template <typename TensorIndexTypeList, typename SpatialSpacetimeIndexPositions>
 using replace_spatial_spacetime_indices = tmpl::fold<
     SpatialSpacetimeIndexPositions, TensorIndexTypeList,
     replace_spatial_spacetime_indices_helper<tmpl::_state, tmpl::_element>>;
+
+/// \brief Given a number of tensor indices of two tensors and the positions of
+/// each tensor's spacetime indices for which a generic spatial index was used,
+/// compute the shift in the multi-index values from the first tensor's
+/// multi-indices to the second's
+///
+/// \details
+/// Example: If we have \f$R_{ijk} + S_{ijk}\f$, where  \f$R\f$'s first and
+/// 2nd indices are spacetime and \f$S\f$' first index and third index are
+/// spacetime, let \f$i = 0\f$, \f$j = 1\f$, and \f$k = 2\f$. The multi-index
+/// that represents  \f$R_{012}\f$ is `{0 + 1, 1 + 1, 2} = {1, 2, 2}` and the
+/// multi-index that represents \f$S_{012}\f$ is
+/// `{0 + 1, 1, 2 + 1} = {1, 1, 3}`. The function returns the element-wise
+/// shift that is applied to convert the first multi-index to the other, which,
+/// in this case, would be: `{1, 1, 3} - {1, 2, 2} = {0, -1, 1}`.
+///
+/// \tparam NumIndices number of indices of the two operands
+/// \param positions1 first operand's index positions where a generic spatial
+/// index is used for a spacetime index
+/// \param positions2 second operand's index positions where a generic spatial
+/// index is used for a spacetime index
+/// \return the element-wise multi-index shift from the first operand's
+/// multi-indices to the second's
+template <size_t NumIndices, size_t NumPositions1, size_t NumPositions2>
+constexpr std::array<std::int32_t, NumIndices>
+spatial_spacetime_index_transformation_from_positions(
+    const std::array<size_t, NumPositions1>& positions1,
+    const std::array<size_t, NumPositions2>& positions2) noexcept {
+  std::array<std::int32_t, NumIndices> transformation =
+      make_array<NumIndices, std::int32_t>(0);
+  for (size_t i = 0; i < NumPositions1; i++) {
+    gsl::at(transformation, gsl::at(positions1, i))--;
+  }
+  for (size_t i = 0; i < NumPositions2; i++) {
+    gsl::at(transformation, gsl::at(positions2, i))++;
+  }
+  return transformation;
+}
 }  // namespace detail
 }  // namespace TensorExpressions

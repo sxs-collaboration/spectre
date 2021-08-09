@@ -167,6 +167,12 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.AddSubtract",
                     SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
       Rlll{};
   std::iota(Rlll.begin(), Rlll.end(), 0.0);
+  Tensor<double, Symmetry<1, 2, 1>,
+         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpatialIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
+      Slll{};
+  std::iota(Slll.begin(), Slll.end(), 0.0);
 
   const Tensor<double, Symmetry<3, 2, 1>,
                index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
@@ -212,6 +218,32 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.AddSubtract",
         CHECK(Glll3.get(i, j, k) == 2.0 * Alll.get(i, j, k));
         CHECK(Glll4.get(i, j, k) == Alll.get(j, k, i) + Rlll.get(k, i, j));
         CHECK(Glll5.get(i, j, k) == Alll.get(j, k, i) - Rlll.get(i, k, j));
+      }
+    }
+  }
+
+  // testing with expressions having spatial indices for spacetime indices
+  const Tensor<double, Symmetry<3, 2, 1>,
+               index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                          SpatialIndex<3, UpLo::Lo, Frame::Grid>,
+                          SpatialIndex<3, UpLo::Lo, Frame::Grid>>>
+      Glll6 = TensorExpressions::evaluate<ti_a, ti_j, ti_k>(
+          Rlll(ti_a, ti_j, ti_k) + Slll(ti_a, ti_j, ti_k));
+  Tensor<double, Symmetry<3, 2, 1>,
+         index_list<SpatialIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
+      Glll7{};
+  TensorExpressions::evaluate<ti_j, ti_a, ti_k>(
+      make_not_null(&Glll7), Slll(ti_j, ti_k, ti_a) - Rlll(ti_k, ti_a, ti_j));
+
+  for (int a = 0; a < 4; ++a) {
+    for (int j = 0; j < 3; ++j) {
+      for (int k = 0; k < 3; ++k) {
+        CHECK(Glll6.get(a, j, k) ==
+              Rlll.get(a, j + 1, k + 1) + Slll.get(a, j, k + 1));
+        CHECK(Glll7.get(j, a, k + 1) ==
+              Slll.get(j + 1, k, a) - Rlll.get(k + 1, a, j + 1));
       }
     }
   }

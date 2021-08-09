@@ -15,6 +15,7 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Expressions/NumberAsExpression.hpp"
+#include "DataStructures/Tensor/Expressions/SpatialSpacetimeIndex.hpp"
 #include "DataStructures/Tensor/Expressions/TensorExpression.hpp"
 #include "DataStructures/Tensor/Expressions/TensorIndexTransformation.hpp"
 #include "Utilities/Algorithm.hpp"
@@ -92,7 +93,15 @@ constexpr std::array<std::int32_t, NumIndices> get_addsub_symm(
   return addsub_symm;
 }
 
-template <size_t NumIndices, Requires<(NumIndices < 2)> = nullptr>
+template <size_t NumIndices, Requires<(NumIndices == 1)> = nullptr>
+constexpr std::array<std::int32_t, NumIndices> get_addsub_symm(
+    const std::array<std::int32_t, NumIndices>& /*symm1*/,
+    const std::array<std::int32_t, NumIndices>& /*symm2*/) {
+  // return {{1}} instead of symm1 in case symm1 is not in the canonical form
+  return {{1}};
+}
+
+template <size_t NumIndices, Requires<(NumIndices == 0)> = nullptr>
 constexpr std::array<std::int32_t, NumIndices> get_addsub_symm(
     const std::array<std::int32_t, NumIndices>& symm1,
     const std::array<std::int32_t, NumIndices>& /*symm2*/) {
@@ -175,23 +184,70 @@ struct AddSubType {
   using tensorindex_list = typename T1::args_list;
 };
 
-template <typename IndexList1, typename IndexList2, typename Args1,
-          typename Args2, typename Element>
-struct AddSubIndexCheckHelper
-    : std::is_same<tmpl::at<IndexList1, tmpl::index_of<Args1, Element>>,
-                   tmpl::at<IndexList2, tmpl::index_of<Args2, Element>>>::type {
+/// \brief Helper struct for checking that an index in one operand can be added
+/// to and subtracted from its corresponding index in another operand
+///
+/// \details
+/// Corresponding indices between two operands are marked by using the same
+/// generic index, such as `ti_a`. For it to be possible to add or subtract one
+/// operand's index to its corresponding index in another operand, this checks
+/// that the following is true for the index in both operands:
+/// - has the same valence (`UpLo`)
+/// - has the same `Frame` type
+/// - has the same number of spatial dimensions (allowing for expressions that
+///   use generic spatial indices for spacetime indices on either side)
+///
+/// \tparam IndexList1 the first operand's \ref SpacetimeIndex "TensorIndexType"
+/// list
+/// \tparam IndexList2 the second operand's
+/// \ref SpacetimeIndex "TensorIndexType" list
+/// \tparam TensorIndexList1 the first operand's generic index list
+/// \tparam TensorIndexList2 the second operand's generic index list
+/// \tparam CurrentTensorIndex1 the first operand's generic index that is being
+/// checked, e.g. the type of `ti_a`
+template <typename IndexList1, typename IndexList2, typename TensorIndexList1,
+          typename TensorIndexList2, typename CurrentTensorIndex1>
+struct AddSubIndexCheckHelper {
+  using index1 =
+      tmpl::at<IndexList1,
+               tmpl::index_of<TensorIndexList1, CurrentTensorIndex1>>;
+  using index2 =
+      tmpl::at<IndexList2,
+               tmpl::index_of<TensorIndexList2, CurrentTensorIndex1>>;
+
+  using type = std::integral_constant<
+      bool,
+      index1::ul == index2::ul and
+          std::is_same_v<typename index1::Frame, typename index2::Frame> and
+          ((index1::index_type == index2::index_type and
+            index1::dim == index2::dim) or
+           (index1::index_type == IndexType::Spacetime and
+            index1::dim == index2::dim + 1) or
+           (index2::index_type == IndexType::Spacetime and
+            index1::dim + 1 == index2::dim))>;
 };
 
-// Check to make sure that the tensor indices being added are of the same type,
-// dimensionality and in the same frame
-template <typename IndexList1, typename IndexList2, typename Args1,
-          typename Args2>
+/// \brief Check that the addition or subtraction of two index lists is valid
+/// given the generic indices used for each
+///
+/// \details
+/// For more details, see `AddSubIndexCheckHelper`, which performs the check for
+/// each index, one at a time.
+///
+/// \tparam IndexList1 the first operand's \ref SpacetimeIndex "TensorIndexType"
+/// list
+/// \tparam IndexList2 the second operand's
+/// \ref SpacetimeIndex "TensorIndexType" list
+/// \tparam TensorIndexList1 the first operand's generic index list
+/// \tparam TensorIndexList2 the second operand's generic index list
+template <typename IndexList1, typename IndexList2, typename TensorIndexList1,
+          typename TensorIndexList2>
 using AddSubIndexCheck = tmpl::fold<
-    Args1, tmpl::bool_<true>,
-    tmpl::and_<tmpl::_state,
-               AddSubIndexCheckHelper<tmpl::pin<IndexList1>,
-                                      tmpl::pin<IndexList2>, tmpl::pin<Args1>,
-                                      tmpl::pin<Args2>, tmpl::_element>>>;
+    TensorIndexList1, tmpl::bool_<true>,
+    tmpl::and_<tmpl::_state, AddSubIndexCheckHelper<
+                                 tmpl::pin<IndexList1>, tmpl::pin<IndexList2>,
+                                 tmpl::pin<TensorIndexList1>,
+                                 tmpl::pin<TensorIndexList2>, tmpl::_element>>>;
 }  // namespace detail
 
 template <typename T1, typename T2, typename ArgsList1, typename ArgsList2,
@@ -232,6 +288,16 @@ struct AddSub<T1, T2, ArgsList1<Args1...>, ArgsList2<Args2...>, Sign>
       operand_index_transformation =
           compute_tensorindex_transformation<num_tensor_indices>(
               {{Args1::value...}}, {{Args2::value...}});
+  // positions of indices in first operand where generic spatial indices are
+  // used for spacetime indices
+  static constexpr auto op1_spatial_spacetime_index_positions =
+      detail::get_spatial_spacetime_index_positions<typename T1::index_list,
+                                                    ArgsList1<Args1...>>();
+  // positions of indices in second operand where generic spatial indices are
+  // used for spacetime indices
+  static constexpr auto op2_spatial_spacetime_index_positions =
+      detail::get_spatial_spacetime_index_positions<typename T2::index_list,
+                                                    ArgsList2<Args2...>>();
 
   AddSub(T1 t1, T2 t2) : t1_(std::move(t1)), t2_(std::move(t2)) {}
   ~AddSub() override = default;
@@ -261,6 +327,43 @@ struct AddSub<T1, T2, ArgsList1<Args1...>, ArgsList2<Args2...>, Sign>
   /// \brief Return the value of the component at the given multi-index of the
   /// tensor resulting from addition or subtraction
   ///
+  /// \details One important detail to note about the type of the `AddSub`
+  /// expression is that its two operands may have (i) different generic index
+  /// orders, and/or (ii) different indices in their `index_list`s if where one
+  /// operand uses a generic spatial index for a spacetime index, the other
+  /// tensor may use that generic spatial index for a spatial index of the same
+  /// dimension, valence, and frame. Therefore, there are four possible cases
+  /// for an `AddSub` expression that are considered in the implementation:
+  /// - same generic index order, spatial spacetime indices in expression
+  /// - same generic index order, spatial spacetime indices not in expression
+  /// - different generic index order, spatial spacetime indices in expression
+  /// - different generic index order, spatial spacetime indices not in
+  /// expression
+  ///
+  /// This means that for expressions where the generic index orders differ, a
+  /// multi-index for a component of one operand is a (possible) rearrangement
+  /// of the equivalent multi-index for a component in the other operand. This
+  /// also means that for expressions where (at least once) a generic spatial
+  /// index is used for a spacetime index, then, after accounting
+  /// for potential reordering due to different generic index orders, a
+  /// multi-index's values for a component of one operand are (possibly) shifted
+  /// by one, compared to the multi-index's values for a component in the other
+  /// operand.
+  ///
+  /// For example, given \f$R_{ij} + S_{ji}\f$, let \f$R\f$'s first index be
+  /// a spacetime index, but \f$R\f$'s second index and both of \f$S\f$' indices
+  /// be spatial indices. If \f$i = 2\f$ and \f$j = 0\f$, then when we compute
+  /// \f$R_{20} + S_{02}\f$, the multi-index for \f$R_{20}\f$ is
+  /// `{2 + 1, 0} = {3, 0}` (first value shifted because it is a spacetime
+  /// index) and the multi-index for \f$S_{02}\f$ is `[0, 2]`. Because the first
+  /// operand of an `AddSub` expresion propagates its generic index order and
+  /// index list ( \ref SpacetimeIndex "TensorIndexType"s) as the `AddSub`'s own
+  /// generic index order and index list, the `result_multi_index` is equivalent
+  /// to the multi-index for the first operand. Thus, we need only compute the
+  /// second operand's multi-index as a transformation of the first: reorder and
+  /// shift the values of the first operand to compute the equivalent
+  /// multi-index for the second operand.
+  ///
   /// \param result_multi_index the multi-index of the component of the result
   /// tensor to retrieve
   /// \return the value of the component at `result_multi_index` in the result
@@ -268,12 +371,88 @@ struct AddSub<T1, T2, ArgsList1<Args1...>, ArgsList2<Args2...>, Sign>
   SPECTRE_ALWAYS_INLINE decltype(auto) get(
       const std::array<size_t, num_tensor_indices>& result_multi_index) const {
     if constexpr (std::is_same_v<tmpl::list<Args1...>, tmpl::list<Args2...>>) {
-      return add_or_subtract(result_multi_index, result_multi_index);
+      if constexpr (op1_spatial_spacetime_index_positions.size() != 0 or
+                    op2_spatial_spacetime_index_positions.size() != 0) {
+        // Operands have the same generic index order, but at least one of them
+        // has at least one spacetime index where a spatial index has been used,
+        // so we need to compute the 2nd operand's (possibly) shifted
+        // multi-index values
+        constexpr std::array<std::int32_t, num_tensor_indices>
+            spatial_spacetime_index_transformation =
+                detail::spatial_spacetime_index_transformation_from_positions<
+                    num_tensor_indices>(op1_spatial_spacetime_index_positions,
+                                        op2_spatial_spacetime_index_positions);
+        std::array<size_t, num_tensor_indices> op2_multi_index =
+            result_multi_index;
+        for (size_t i = 0; i < num_tensor_indices; i++) {
+          gsl::at(op2_multi_index, i) = static_cast<size_t>(
+              static_cast<std::int32_t>(gsl::at(op2_multi_index, i)) +
+              gsl::at(spatial_spacetime_index_transformation, i));
+        }
+        return add_or_subtract(result_multi_index, op2_multi_index);
+      } else {
+        // Operands have the same generic index order and neither of them has
+        // a spacetime index where a spatial index has been used, so
+        // both operands have the same multi-index
+        return add_or_subtract(result_multi_index, result_multi_index);
+      }
     } else {
-      return add_or_subtract(
-          result_multi_index,
-          transform_multi_index(result_multi_index,
-                                operand_index_transformation));
+      if constexpr (op1_spatial_spacetime_index_positions.size() != 0 or
+                    op2_spatial_spacetime_index_positions.size() != 0) {
+        // Operands don't have the same generic index order and at least one of
+        // them has at least one spacetime index where a spatial index has been
+        // used, so we need to compute the 2nd operand's (possibly) shifted
+        // multi-index values and reorder them with respect to the 2nd operand's
+        // generic index order
+
+        // The list of positions where generic spatial indices were used for
+        // spacetime indices in the second operand, but rearranged in terms of
+        // the first operand's generic index order.
+        constexpr std::array<size_t,
+                             op2_spatial_spacetime_index_positions.size()>
+            transformed_op2_spatial_spacetime_index_positions = []() {
+              std::array<size_t, op2_spatial_spacetime_index_positions.size()>
+                  transformed_positions{};
+              for (size_t i = 0;
+                   i < op2_spatial_spacetime_index_positions.size(); i++) {
+                gsl::at(transformed_positions, i) =
+                    gsl::at(operand_index_transformation,
+                            gsl::at(op2_spatial_spacetime_index_positions, i));
+              }
+              return transformed_positions;
+            }();
+
+        // According to the transformed positions above, compute the value shift
+        // needed to convert from multi-indices of the first operand to
+        // multi-indices of the 2nd operand (with the generic index order of the
+        // first)
+        constexpr std::array<std::int32_t, num_tensor_indices>
+            spatial_spacetime_index_transformation =
+                detail::spatial_spacetime_index_transformation_from_positions<
+                    num_tensor_indices>(
+                    op1_spatial_spacetime_index_positions,
+                    transformed_op2_spatial_spacetime_index_positions);
+        std::array<size_t, num_tensor_indices> op2_multi_index =
+            result_multi_index;
+        for (size_t i = 0; i < num_tensor_indices; i++) {
+          gsl::at(op2_multi_index, i) = static_cast<size_t>(
+              static_cast<std::int32_t>(gsl::at(op2_multi_index, i)) +
+              gsl::at(spatial_spacetime_index_transformation, i));
+        }
+        return add_or_subtract(
+            result_multi_index,
+            transform_multi_index(op2_multi_index,
+                                  operand_index_transformation));
+      } else {
+        // Operands don't have the same generic index order, but neither of them
+        // has a spacetime index where a spatial index has been used, so we just
+        // need to reorder the 2nd operand's multi_index according to its
+        // generic index order
+        return add_or_subtract(
+            result_multi_index,
+            transform_multi_index(result_multi_index,
+                                  operand_index_transformation));
+      }
     }
   }
 
