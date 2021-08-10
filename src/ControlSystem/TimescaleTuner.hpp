@@ -51,7 +51,7 @@ class TimescaleTuner {
   ~TimescaleTuner() = default;
 
   /// returns the current timescale for each component of a FunctionOfTime
-  const DataVector& current_timescale() noexcept { return timescale_; }
+  const DataVector& current_timescale() const noexcept { return timescale_; }
   /// manually sets all timescales to a specified value, unless the value is
   /// outside of the specified minimum and maximum timescale bounds, in which
   /// case it is set to the nearest bounded value
