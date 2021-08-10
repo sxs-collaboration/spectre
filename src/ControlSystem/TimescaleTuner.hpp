@@ -6,6 +6,7 @@
 #include <array>
 
 #include "DataStructures/DataVector.hpp"
+#include "Options/Options.hpp"
 
 /// \cond
 namespace PUP {
@@ -45,8 +46,51 @@ class er;
 
 class TimescaleTuner {
  public:
-  TimescaleTuner(DataVector initial_timescale, double max_timescale,
-                 double min_timescale, double decrease_timescale_threshold,
+  static constexpr Options::String help{
+      "TimescaleTuner: stores and dynamically updates the timescales for each "
+      "component of a particular control system."};
+  struct InitialTimescales {
+    using type = std::vector<double>;
+    static constexpr Options::String help = {
+        "Initial timescales for each function of time"};
+  };
+
+  struct MinTimescale {
+    using type = double;
+    static constexpr Options::String help = {"Minimum timescale"};
+  };
+
+  struct MaxTimescale {
+    using type = double;
+    static constexpr Options::String help = {"Maximum timescale"};
+  };
+
+  struct DecreaseThreshold {
+    using type = double;
+    static constexpr Options::String help = {
+        "Threshold for decrease of timescale"};
+  };
+  struct IncreaseThreshold {
+    using type = double;
+    static constexpr Options::String help = {
+        "Threshold for increase of timescale"};
+  };
+  struct IncreaseFactor {
+    using type = double;
+    static constexpr Options::String help = {"Factor to increase timescale"};
+  };
+  struct DecreaseFactor {
+    using type = double;
+    static constexpr Options::String help = {"Factor to decrease timescale"};
+  };
+
+  using options = tmpl::list<InitialTimescales, MaxTimescale, MinTimescale,
+                             DecreaseThreshold, IncreaseThreshold,
+                             IncreaseFactor, DecreaseFactor>;
+
+  TimescaleTuner(const std::vector<double>& initial_timescale,
+                 double max_timescale, double min_timescale,
+                 double decrease_timescale_threshold,
                  double increase_timescale_threshold, double increase_factor,
                  double decrease_factor) noexcept;
 
@@ -70,6 +114,7 @@ class TimescaleTuner {
   void pup(PUP::er& p);
 
   friend bool operator==(const TimescaleTuner& lhs, const TimescaleTuner& rhs);
+
  private:
   DataVector timescale_;
   double max_timescale_;

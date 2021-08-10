@@ -15,20 +15,25 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 
-TimescaleTuner::TimescaleTuner(DataVector initial_timescale,
+TimescaleTuner::TimescaleTuner(const std::vector<double>& initial_timescale,
                                const double max_timescale,
                                const double min_timescale,
                                const double decrease_timescale_threshold,
                                const double increase_timescale_threshold,
                                const double increase_factor,
                                const double decrease_factor) noexcept
-    : timescale_{std::move(initial_timescale)},
-      max_timescale_{max_timescale},
+    : max_timescale_{max_timescale},
       min_timescale_{min_timescale},
       decrease_timescale_threshold_{decrease_timescale_threshold},
       increase_timescale_threshold_{increase_timescale_threshold},
       increase_factor_{increase_factor},
       decrease_factor_{decrease_factor} {
+  DataVector dv(initial_timescale.size());
+  for (size_t i = 0; i < dv.size(); ++i) {
+    dv[i] = initial_timescale[i];
+  }
+  timescale_ = std::move(dv);
+
   for (const auto& t_scale : timescale_) {
     if (t_scale <= 0.0) {
       ERROR("Initial timescale must be > 0");

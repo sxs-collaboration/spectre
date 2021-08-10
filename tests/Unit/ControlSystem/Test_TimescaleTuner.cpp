@@ -7,6 +7,7 @@
 
 #include "ControlSystem/TimescaleTuner.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/MakeWithValue.hpp"
@@ -281,6 +282,28 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.TimescaleTuner.NoChangeToTimescale",
   run_tests(-1.0);  // test negative Q
 }
 
+SPECTRE_TEST_CASE("Unit.ControlSystem.TimescaleTuner.CreateFromOptions",
+                  "[ControlSystem][Unit]") {
+  const double decrease_timescale_threshold = 1.0e-2;
+  const double increase_timescale_threshold = 1.0e-4;
+  const double increase_factor = 1.01;
+  const double decrease_factor = 0.99;
+  const double max_timescale = 10.0;
+  const double min_timescale = 1.0e-3;
+
+  const auto tst = TestHelpers::test_creation<TimescaleTuner>(
+      "InitialTimescales: [1.]\n"
+      "MinTimescale: 1e-3\n"
+      "MaxTimescale: 10.\n"
+      "DecreaseThreshold: 1e-2\n"
+      "IncreaseThreshold: 1e-4\n"
+      "IncreaseFactor: 1.01\n"
+      "DecreaseFactor: 0.99\n");
+  CHECK(tst == TimescaleTuner({1.}, max_timescale, min_timescale,
+                              decrease_timescale_threshold,
+                              increase_timescale_threshold, increase_factor,
+                              decrease_factor));
+}
 
 SPECTRE_TEST_CASE("Unit.ControlSystem.TimescaleTuner.EqualityAndSerialization",
                   "[ControlSystem][Unit]") {
@@ -315,7 +338,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.TimescaleTuner.BadInitTimescale",
   const double max_timescale = 10.0;
   const double min_timescale = 1.0e-3;
 
-  const DataVector init_timescale{0.0};
+  const std::vector<double> init_timescale{0.0};
   TimescaleTuner tst(init_timescale, max_timescale, min_timescale,
                      decrease_timescale_threshold, increase_timescale_threshold,
                      increase_factor, decrease_factor);
@@ -452,7 +475,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.TimescaleTuner.BadDecreaseThreshold",
   const double max_timescale = 10.0;
   const double min_timescale = 1.0e-3;
 
-  const DataVector init_timescale{{1.0, 2.0}};
+  const std::vector<double> init_timescale{{1.0, 2.0}};
   TimescaleTuner tst(init_timescale, max_timescale, min_timescale,
                      decrease_timescale_threshold, increase_timescale_threshold,
                      increase_factor, decrease_factor);
