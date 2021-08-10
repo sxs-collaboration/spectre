@@ -38,6 +38,9 @@ Terms with SpECTRE-specific meanings are defined here.
 - \ref domain_concepts "Domain Concepts" used throughout the code are defined
   here for reference.
 
+### Charm++ Interface
+- \ref load_balancing_notes "Load Balancing Notes and Recommendations"
+
 ### Template Metaprogramming (TMP)
 Explanations for TMP concepts and patterns known to the greater C++ community
 can be found here.
