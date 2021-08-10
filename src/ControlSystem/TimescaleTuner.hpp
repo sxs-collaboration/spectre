@@ -7,6 +7,12 @@
 
 #include "DataStructures/DataVector.hpp"
 
+/// \cond
+namespace PUP {
+class er;
+}
+/// \endcond
+
 /*!
  * \ingroup ControlSystemGroup
  * \brief Manages control system timescales
@@ -44,6 +50,7 @@ class TimescaleTuner {
                  double increase_timescale_threshold, double increase_factor,
                  double decrease_factor) noexcept;
 
+  TimescaleTuner() = default;
   TimescaleTuner(TimescaleTuner&&) noexcept = default;
   TimescaleTuner& operator=(TimescaleTuner&&) noexcept = default;
   TimescaleTuner(const TimescaleTuner&) = delete;
@@ -60,6 +67,9 @@ class TimescaleTuner {
   /// the control system errors
   void update_timescale(const std::array<DataVector, 2>& q_and_dtq) noexcept;
 
+  void pup(PUP::er& p);
+
+  friend bool operator==(const TimescaleTuner& lhs, const TimescaleTuner& rhs);
  private:
   DataVector timescale_;
   double max_timescale_;
@@ -69,3 +79,5 @@ class TimescaleTuner {
   double increase_factor_;
   double decrease_factor_;
 };
+
+bool operator!=(const TimescaleTuner& lhs, const TimescaleTuner& rhs);

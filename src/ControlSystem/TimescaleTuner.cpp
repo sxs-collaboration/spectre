@@ -8,6 +8,7 @@
 #include <cstddef>
 #include <functional>
 #include <ostream>
+#include <pup.h>
 
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
@@ -108,4 +109,30 @@ void TimescaleTuner::update_timescale(
     // maximum(minimum) value.
     timescale_[i] = std::clamp(timescale_[i], min_timescale_, max_timescale_);
   }
+}
+
+void TimescaleTuner::pup(PUP::er&p) {
+    p | timescale_;
+    p | max_timescale_;
+    p | min_timescale_;
+    p | decrease_timescale_threshold_;
+    p | increase_timescale_threshold_;
+    p | increase_factor_;
+    p | decrease_factor_;
+}
+
+bool operator==(const TimescaleTuner& lhs, const TimescaleTuner& rhs) {
+  return (lhs.timescale_ == rhs.timescale_) and
+         (lhs.max_timescale_ == rhs.max_timescale_) and
+         (lhs.min_timescale_ == rhs.min_timescale_) and
+         (lhs.decrease_timescale_threshold_ ==
+          rhs.decrease_timescale_threshold_) and
+         (lhs.increase_timescale_threshold_ ==
+          rhs.increase_timescale_threshold_) and
+         (lhs.increase_factor_ == rhs.increase_factor_) and
+         (lhs.decrease_factor_ == rhs.decrease_factor_);
+}
+
+bool operator!=(const TimescaleTuner& lhs, const TimescaleTuner& rhs){
+  return not(lhs == rhs);
 }

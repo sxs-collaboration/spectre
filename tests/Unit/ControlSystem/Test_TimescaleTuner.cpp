@@ -7,6 +7,7 @@
 
 #include "ControlSystem/TimescaleTuner.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "Framework/TestHelpers.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
@@ -278,6 +279,29 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.TimescaleTuner.NoChangeToTimescale",
   };
   run_tests(1.0);   // test positive Q
   run_tests(-1.0);  // test negative Q
+}
+
+
+SPECTRE_TEST_CASE("Unit.ControlSystem.TimescaleTuner.EqualityAndSerialization",
+                  "[ControlSystem][Unit]") {
+  const double decrease_timescale_threshold = 1.0e-2;
+  const double increase_timescale_threshold = 1.0e-4;
+  const double increase_factor = 1.01;
+  const double decrease_factor = 0.99;
+  const double max_timescale = 10.0;
+  const double min_timescale = 1.0e-3;
+
+  TimescaleTuner tst1(
+      {0.3}, max_timescale, min_timescale, decrease_timescale_threshold,
+      increase_timescale_threshold, increase_factor, decrease_factor);
+
+  TimescaleTuner tst2(
+      {0.4}, max_timescale, min_timescale, decrease_timescale_threshold,
+      increase_timescale_threshold, increase_factor, decrease_factor);
+
+  CHECK(tst1 == tst1);
+  CHECK(tst1 != tst2);
+  CHECK(serialize_and_deserialize(tst1) == tst1);
 }
 
 // [[OutputRegex, Initial timescale must be > 0]]
