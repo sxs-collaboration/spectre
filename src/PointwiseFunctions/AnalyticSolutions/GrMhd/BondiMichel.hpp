@@ -330,10 +330,9 @@ class BondiMichel : public AnalyticSolution, public MarkAsAnalyticSolution {
   template <typename DataType, typename Tag,
             Requires<not tmpl::list_contains_v<hydro::grmhd_tags<DataType>,
                                                Tag>> = nullptr>
-  tuples::TaggedTuple<Tag> variables(const tnsr::I<DataType, 3>& /*x*/,
-                                     tmpl::list<Tag> /*meta*/,
-                                     IntermediateVars<DataType>& vars) const
-      noexcept {
+  tuples::TaggedTuple<Tag> variables(
+      const tnsr::I<DataType, 3>& /*x*/, tmpl::list<Tag> /*meta*/,
+      const IntermediateVars<DataType>& vars) const noexcept {
     return {std::move(get<Tag>(vars.kerr_schild_soln))};
   }
 
