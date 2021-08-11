@@ -30,7 +30,6 @@ spectre_target_headers(
   AddTimesToInterpolationTarget.hpp
   BarycentricRational.hpp
   BarycentricRationalSpanInterpolator.hpp
-  CMakeLists.txt
   CleanUpInterpolator.hpp
   CubicSpanInterpolator.hpp
   CubicSpline.hpp
