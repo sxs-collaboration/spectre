@@ -6,6 +6,7 @@
 #include <array>
 #include <cmath>  // IWYU pragma: keep
 #include <cstddef>
+#include <string>
 #include <utility>
 
 #include "DataStructures/DataVector.hpp"
@@ -13,6 +14,7 @@
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "NumericalAlgorithms/LinearAlgebra/FindGeneralizedEigenvaluesArpack.hpp"
 #include "NumericalAlgorithms/LinearAlgebra/FindGeneralizedEigenvalues.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
@@ -760,11 +762,19 @@ void dimensionful_spin_magnitude(
       trace_christoffel_second_kind, sin_theta, ricci_scalar,
       strahlkorper.ylm_spherepack());
 
-  DataVector eigenvalues_real_part(matrix_dimension, 0.0);
-  DataVector eigenvalues_im_part(matrix_dimension, 0.0);
-  Matrix eigenvectors(matrix_dimension, matrix_dimension, 0.0);
-  find_generalized_eigenvalues(&eigenvalues_real_part, &eigenvalues_im_part,
-                               &eigenvectors, left_matrix, right_matrix);
+  constexpr std::size_t num_evals_to_find = 3;
+  constexpr double sigma = 0.1;
+  const std::string which = "LM";
+
+  DataVector eigenvalues_real_part(num_evals_to_find, 0.0);
+  DataVector eigenvalues_im_part(num_evals_to_find, 0.0);
+
+  Matrix eigenvectors(matrix_dimension, num_evals_to_find, 0.0);
+
+  find_generalized_eigenvalues_arpack(
+      eigenvalues_real_part, eigenvalues_im_part, eigenvectors,
+      left_matrix, right_matrix, num_evals_to_find, sigma,
+      which);
 
   const std::array<DataVector, 3> smallest_eigenvectors =
       get_eigenvectors_for_3_smallest_magnitude_eigenvalues(
@@ -832,7 +842,6 @@ void spin_vector(const gsl::not_null<std::array<double, 3>*> result,
   std::array<double, 3> spin_vector =
       make_array<3>(std::numeric_limits<double>::signaling_NaN());
   auto integrand = make_with_value<Scalar<DataVector>>(get(radius), 0.0);
-
   for (size_t i = 0; i < 3; ++i) {
     // Compute horizon coordinates with a coordinate center such that
     // the mass dipole moment vanishes.
