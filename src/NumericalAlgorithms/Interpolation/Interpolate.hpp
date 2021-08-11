@@ -27,7 +27,8 @@ namespace Tags {
 template <typename TagsList>
 struct Variables;
 }  // namespace Tags
-template <size_t Dim> class Mesh;
+template <size_t Dim>
+class Mesh;
 template <size_t VolumeDim>
 class ElementId;
 namespace intrp {

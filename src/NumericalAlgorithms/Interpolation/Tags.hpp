@@ -25,7 +25,6 @@ class ElementId;
 
 namespace intrp {
 
-
 namespace OptionTags {
 /*!
  * \ingroup OptionGroupsGroup

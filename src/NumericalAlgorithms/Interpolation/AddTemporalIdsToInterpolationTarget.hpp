@@ -30,7 +30,7 @@ namespace Actions {
 /// - If the InterpolationTarget is sequential
 ///   - If TemporalIds and PendingTemporalIds were both initially empty,
 ///     invokes Actions::VerifyTemporalIdsAndSendPoints. (Otherwise there
-///     (is an interpolation in progress and nothing needs to be done.)
+///     is an interpolation in progress and nothing needs to be done.)
 /// - If the InterpolationTarget is not sequential
 ///   - Invokes Actions::SendPointsToInterpolator on all TemporalIds
 ///   - Invokes Actions::VerifyTemporalIdsAndSendPoints if PendingTemporalIds

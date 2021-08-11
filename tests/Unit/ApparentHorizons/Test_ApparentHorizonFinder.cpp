@@ -259,7 +259,8 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
                            const size_t l_max,
                            const size_t grid_points_each_dimension,
                            const double mass,
-                           const std::array<double, 3>& dimensionless_spin) {
+                           const std::array<double, 3>& dimensionless_spin,
+                           const size_t max_its = 100_st) {
   using metavars =
       MockMetavariables<PostHorizonFindCallback, IsTimeDependent, Frame>;
   using interp_component = mock_interpolator<metavars>;
@@ -269,7 +270,9 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
   // Options for all InterpolationTargets.
   // The initial guess for the horizon search is a sphere of radius 2.8M.
   intrp::OptionHolders::ApparentHorizon<Frame> apparent_horizon_opts(
-      Strahlkorper<Frame>{l_max, 2.8, {{0.0, 0.0, 0.0}}}, FastFlow{},
+      Strahlkorper<Frame>{l_max, 2.8, {{0.0, 0.0, 0.0}}},
+      FastFlow{FastFlow::FlowType::Fast, 1.0, 0.5, 1.e-12, 1.e-2, 1.2, 5,
+               max_its},
       Verbosity::Verbose);
 
   std::unique_ptr<DomainCreator<3>> domain_creator;
@@ -728,5 +731,19 @@ SPECTRE_TEST_CASE(
   test_apparent_horizon<TestSchwarzschildHorizon<Frame::Inertial>,
                         std::true_type, Frame::Inertial, true>(
       &test_schwarzschild_horizon_called, 3, 4, 1.0, {{0.0, 0.0, 0.0}});
+}
+
+// [[OutputRegex, Cannot interpolate onto surface]]
+SPECTRE_TEST_CASE("Unit.Interpolator.ApparentHorizonFinder.NotConvergedError",
+                  "[Unit]") {
+  ERROR_TEST();
+  domain::creators::register_derived_with_charm();
+  domain::creators::time_dependence::register_derived_with_charm();
+  domain::FunctionsOfTime::register_derived_with_charm();
+
+  test_schwarzschild_horizon_called = 0;
+  test_apparent_horizon<TestSchwarzschildHorizon<Frame::Inertial>,
+                        std::true_type, Frame::Inertial, true>(
+      &test_schwarzschild_horizon_called, 3, 4, 1.0, {{0.0, 0.0, 0.0}}, 1);
 }
 }  // namespace
