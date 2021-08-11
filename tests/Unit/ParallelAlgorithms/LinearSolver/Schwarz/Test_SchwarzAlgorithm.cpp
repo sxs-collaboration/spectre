@@ -129,8 +129,6 @@ void restrict_to_subdomain(
 // We assume all elements have the same extents so we can use the element's
 // intruding overlap extents instead of initializing extruding overlap extents.
 struct SubdomainOperator : LinearSolver::Schwarz::SubdomainOperator<1> {
-  // The operator can be non-const and can also mutate the DataBox to modify
-  // temporary and persistent memory buffers
   template <typename ResultTags, typename OperandTags, typename DbTagsList>
   void operator()(
       const gsl::not_null<
@@ -138,7 +136,7 @@ struct SubdomainOperator : LinearSolver::Schwarz::SubdomainOperator<1> {
           result,
       const LinearSolver::Schwarz::ElementCenteredSubdomainData<1, OperandTags>&
           operand,
-      db::DataBox<DbTagsList>& box) noexcept {
+      const db::DataBox<DbTagsList>& box) const noexcept {
     // Retrieve arguments from the DataBox
     const auto& matrix_slices =
         db::get<helpers_distributed::LinearOperator>(box);

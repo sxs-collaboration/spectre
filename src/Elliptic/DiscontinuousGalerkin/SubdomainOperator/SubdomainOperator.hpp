@@ -172,6 +172,8 @@ struct SubdomainOperator
                                              tmpl::pin<tmpl::size_t<Dim>>>;
 
  public:
+  /// \warning This function is not thread-safe because it accesses mutable
+  /// memory buffers.
   template <typename ResultTags, typename OperandTags, typename DbTagsList>
   void operator()(
       const gsl::not_null<
@@ -179,7 +181,7 @@ struct SubdomainOperator
           result,
       const LinearSolver::Schwarz::ElementCenteredSubdomainData<
           Dim, OperandTags>& operand,
-      db::DataBox<DbTagsList>& box) noexcept {
+      const db::DataBox<DbTagsList>& box) const noexcept {
     // Used to retrieve items out of the DataBox to forward to functions. This
     // replaces a long series of db::get calls.
     const auto get_items = [](const auto&... args) noexcept {
@@ -583,29 +585,32 @@ struct SubdomainOperator
   }
 
  private:
-  Variables<typename System::auxiliary_fields> central_auxiliary_vars_{};
-  Variables<typename System::primal_fluxes> central_primal_fluxes_{};
-  Variables<typename System::auxiliary_fluxes> central_auxiliary_fluxes_{};
-  LinearSolver::Schwarz::OverlapMap<
+  // Memory buffers for repeated operator applications
+  mutable Variables<typename System::auxiliary_fields>
+      central_auxiliary_vars_{};
+  mutable Variables<typename System::primal_fluxes> central_primal_fluxes_{};
+  mutable Variables<typename System::auxiliary_fluxes>
+      central_auxiliary_fluxes_{};
+  mutable LinearSolver::Schwarz::OverlapMap<
       Dim, Variables<typename System::auxiliary_fields>>
       neighbors_auxiliary_vars_{};
-  LinearSolver::Schwarz::OverlapMap<Dim,
-                                    Variables<typename System::primal_fluxes>>
+  mutable LinearSolver::Schwarz::OverlapMap<
+      Dim, Variables<typename System::primal_fluxes>>
       neighbors_primal_fluxes_{};
-  LinearSolver::Schwarz::OverlapMap<
+  mutable LinearSolver::Schwarz::OverlapMap<
       Dim, Variables<typename System::auxiliary_fluxes>>
       neighbors_auxiliary_fluxes_{};
-  LinearSolver::Schwarz::OverlapMap<Dim,
-                                    Variables<typename System::primal_fields>>
+  mutable LinearSolver::Schwarz::OverlapMap<
+      Dim, Variables<typename System::primal_fields>>
       extended_operand_vars_{};
-  LinearSolver::Schwarz::OverlapMap<Dim,
-                                    Variables<typename System::primal_fields>>
+  mutable LinearSolver::Schwarz::OverlapMap<
+      Dim, Variables<typename System::primal_fields>>
       extended_results_{};
-  ::dg::MortarMap<
+  mutable ::dg::MortarMap<
       Dim, elliptic::dg::MortarData<size_t, typename System::primal_fields,
                                     typename System::primal_fluxes>>
       central_mortar_data_{};
-  LinearSolver::Schwarz::OverlapMap<
+  mutable LinearSolver::Schwarz::OverlapMap<
       Dim, ::dg::MortarMap<Dim, elliptic::dg::MortarData<
                                     size_t, typename System::primal_fields,
                                     typename System::primal_fluxes>>>

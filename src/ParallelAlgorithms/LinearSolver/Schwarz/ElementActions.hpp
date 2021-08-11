@@ -364,7 +364,7 @@ struct SolveSubdomain {
         db::get<SubdomainDataBufferTag<SubdomainData, OptionsGroup>>(box);
 
     // Allocate workspace memory for repeatedly applying the subdomain operator
-    SubdomainOperator subdomain_operator{};
+    const SubdomainOperator subdomain_operator{};
 
     // Construct the subdomain operator
     const auto apply_subdomain_operator =

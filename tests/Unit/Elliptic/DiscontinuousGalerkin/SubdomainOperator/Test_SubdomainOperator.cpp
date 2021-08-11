@@ -225,7 +225,7 @@ struct ApplySubdomainOperator {
     const auto& subdomain_data = db::get<SubdomainDataTag<Dim, Fields>>(box);
 
     // Apply the subdomain operator
-    SubdomainOperator subdomain_operator{};
+    const SubdomainOperator subdomain_operator{};
     auto subdomain_result = make_with_value<
         typename SubdomainOperatorAppliedToDataTag<Dim, Fields>::type>(
         subdomain_data, 0.);
