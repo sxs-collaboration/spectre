@@ -72,12 +72,14 @@ target_link_libraries(
   ${LIBRARY}
   PRIVATE
   PUBLIC
+  ApparentHorizons
   Boost::boost
   DataStructures
   DomainStructure
   ErrorHandling
   FunctionsOfTime
   GSL::gsl
+  Parallel
   RootFinding
   )
 
