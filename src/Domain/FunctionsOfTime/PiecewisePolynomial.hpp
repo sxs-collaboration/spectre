@@ -41,16 +41,21 @@ class PiecewisePolynomial : public FunctionOfTime {
   // clang-tidy: cppcoreguidelines-owning-memory,-warnings-as-errors
   WRAPPED_PUPable_decl_template(PiecewisePolynomial<MaxDeriv>);  // NOLINT
 
-  /// Returns the function at an arbitrary time `t`.
+  /// Returns the function at an arbitrary time `t`.  If `MaxDeriv` is
+  /// 0 and `update` has been called for time `t`, the updated value
+  /// is ignored.
   std::array<DataVector, 1> func(double t) const noexcept override {
     return func_and_derivs<0>(t);
   }
   /// Returns the function and its first derivative at an arbitrary time `t`.
+  /// If `MaxDeriv` is 1 and `update` has been called for time `t`, the updated
+  /// value is ignored.
   std::array<DataVector, 2> func_and_deriv(double t) const noexcept override {
     return func_and_derivs<1>(t);
   }
   /// Returns the function and the first two derivatives at an arbitrary time
-  /// `t`.
+  /// `t`.  If `MaxDeriv` is 2 and `update` has been called for time `t`, the
+  /// updated value is ignored.
   std::array<DataVector, 3> func_and_2_derivs(
       double t) const noexcept override {
     return func_and_derivs<2>(t);

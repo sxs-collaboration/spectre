@@ -75,7 +75,7 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.FunctionOfTimeHelpers",
     const auto& upper_bound_stored_info2 =
         FunctionOfTimeHelpers::stored_info_from_upper_bound(4.0,
                                                             all_stored_info);
-    CHECK(upper_bound_stored_info2 == gsl::at(all_stored_info, 4));
+    CHECK(upper_bound_stored_info2 == gsl::at(all_stored_info, 3));
 
     const auto& upper_bound_stored_info3 =
         FunctionOfTimeHelpers::stored_info_from_upper_bound(-1.e-15,
