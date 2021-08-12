@@ -33,6 +33,24 @@ SpatialDiscretization:
   DiscontinuousGalerkin:
     Formulation: StrongInertial
     Quadrature: GaussLobatto
+    Subcell:
+      RdmpDelta0: 1.0e-7
+      RdmpEpsilon: 1.0e-3
+      PerssonExponent: 4.0
+      InitialData:
+        RdmpDelta0: 1.0e-7
+        RdmpEpsilon: 1.0e-3
+        PerssonExponent: 4.0
+      AlwaysUseSubcells: false
+    TciOptions:
+      MinimumValueOfD: 1.0e-20
+      MinimumValueOfTildeTau: 1.0e-50
+      MagneticFieldCutoff: DoNotCheckMagneticField
+      AtmosphereDensity: 1.01e-15
+      SafetyFactorForB: 1.0e-12
+  SubcellSolver:
+    Reconstructor:
+      MonotisedCentralPrim:
 
 AnalyticData:
   BlastWave:
@@ -48,15 +66,7 @@ AnalyticData:
 
 EvolutionSystem:
   ValenciaDivClean:
-    DampingParameter: 0.0
-
-Limiter:
-  Minmod:
-    Type: Muscl
-    # The optimal value of the TVB constant is problem-dependent.
-    # This test uses 0 to favor robustness over accuracy.
-    TvbConstant: 0.0
-    DisableForDebugging: false
+    DampingParameter: 1.0
 
 VariableFixing:
   FixConservatives:
