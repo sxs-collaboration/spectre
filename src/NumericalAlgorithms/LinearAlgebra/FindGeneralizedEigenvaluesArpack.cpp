@@ -16,10 +16,11 @@
 #include "Utilities/Gsl.hpp"
 
 extern "C" {
-// LAPACK routines to do solve a linear system using LU decomposition
+// LAPACK routine to do solve a linear system using LU decomposition
 void dgetrs_(char* trans, int* n, int* nrhs, double* a, int* lda, int* ipiv,
              double* b, int* ldb, int* info);
 
+// ARPACK routines to do solve a generalized eigenvalue problem
 void dneupd_(int const* rvec, char const* howmny, int const* select, double* dr,
              double* di, double* z, int* ldz, double* sigmar, double* sigmai,
              double* workev, char const* bmat, int* n, char const* which,
@@ -27,7 +28,6 @@ void dneupd_(int const* rvec, char const* howmny, int const* select, double* dr,
              int* ldv, int* iparam, int* ipntr, double* workd, double* workl,
              int* lworkl, int* info);
 
-// ARPACK routine to do solve a generalized eigenvalue problem
 void dnaupd_(int* ido, char const* bmat, int* n, char const* which,
              int const* nev, double* tol, double* resid, int* ncv, double* v,
              int* ldv, int* iparam, int* ipntr, double* workd, double* workl,
@@ -104,16 +104,6 @@ class linear_solver_LU {
 
 }  // namespace
 
-// This function calls dnaupd and dneupd functions of the Arpack library to
-// solve a generalized eigenvalue problem by converting it into a standard
-// eigenvalue problem. It uses shift invert transform to make the convergence
-// faster and calls Lapack LU solver routine to solve the linear system.
-// Documentation for the dnaupd function can be found in the arpack guide page
-// 125 or at the link:
-// (https://www.caam.rice.edu/software/ARPACK/UG/
-// node137.html#SECTION001220000000000000000)
-// Some addition information about the choice of algorithm is present on the
-// pages 91 and 36 of the guide.
 void arpack_dnaupd_wrapper(linear_solver_LU& M_LUsolver, Matrix& B_input,
                            const double sigma,
                            const std::string which_eigenvalues_to_find,
@@ -266,32 +256,6 @@ void arpack_dnaupd_wrapper(linear_solver_LU& M_LUsolver, Matrix& B_input,
           eigenvectors_internal[i * static_cast<size_t>(num_rows) + j];
     }
   }
-
-  // The following comments are only relevant if one is interested in using this
-  // function to solve eigenvalue problems with complex eigenvectors. Because,
-  // in this particular case we know in advance that the eigenvectors are going
-  // to be real they are here only for future reference.
-
-  // If the eigenvalues are imaginary, then the real and imaginary parts of the
-  // corresponding eigenvector are stored consecutively in z( real part at
-  // 'i' and complex part at 'i+1'). The next eigenvector and eigenvalue
-  // will be the complex conjugate of these.
-
-  // NOTE: on the page 36 of the Arpack manual it is says that "When the
-  // eigenvectors corresponding to a complex comjugate pair of eigenvalues are
-  // computed, the vector corresponding to the eigenvalue with positive
-  // imaginary part is stored with real and imaginary parts in consecutive
-  // columns ...". In my limited testing this does not seem to hold true when
-  // shift invert tranforms are used. Even the scipy code seems to follow the
-  // procedure described in the last comment:
-  // (https://github.com/scipy/scipy/blob
-  // /f397c8e17ac235316da6f1a10692b2604b6d6ec4/scipy/sparse/linalg/eigen/arpack
-  // /arpack.py#L801)
-
-  // Note that 2 rows of the eigenvector matrix are required to store both the
-  // imaginary and the real part of a complex eigenvector. It is responsibility
-  // of the user to ensure that the variable `number_of_eigenvalues_to_find` is
-  // large enough to accommodate all the eigenvectors of interest.
 
   return;
 }
