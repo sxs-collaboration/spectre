@@ -15,23 +15,26 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 
-// LAPACK routine to do the generalized eigenvalue problem
 extern "C" {
+// LAPACK routines to do solve a linear system using LU decomposition
 void dgetrs_(char* trans, int* n, int* nrhs, double* a, int* lda, int* ipiv,
              double* b, int* ldb, int* info);
 
-void dneupd_(int* rvec, char const* howmny, int const* select, double* dr,
+void dneupd_(int const* rvec, char const* howmny, int const* select, double* dr,
              double* di, double* z, int* ldz, double* sigmar, double* sigmai,
              double* workev, char const* bmat, int* n, char const* which,
-             int* nev, double* tol, double* resid, int* ncv, double* v,
+             int const* nev, double* tol, double* resid, int* ncv, double* v,
              int* ldv, int* iparam, int* ipntr, double* workd, double* workl,
              int* lworkl, int* info);
 
-void dnaupd_(int* ido, char const* bmat, int* n, char const* which, int* nev,
-             double* tol, double* resid, int* ncv, double* v, int* ldv,
-             int* iparam, int* ipntr, double* workd, double* workl, int* lworkl,
-             int* info);
+// ARPACK routine to do solve a generalized eigenvalue problem
+void dnaupd_(int* ido, char const* bmat, int* n, char const* which,
+             int const* nev, double* tol, double* resid, int* ncv, double* v,
+             int* ldv, int* iparam, int* ipntr, double* workd, double* workl,
+             int* lworkl, int* info);
 }
+
+namespace {
 
 // The reason we are not using dgesv_ directly is because we have to solve Mx=b
 // multiple times where M is fixed but b keeps on changing. The advantage of
@@ -99,6 +102,8 @@ class linear_solver_LU {
   bool mLuFactorizationAlreadyDone = false;
 };
 
+}  // namespace
+
 // This function calls dnaupd and dneupd functions of the Arpack library to
 // solve a generalized eigenvalue problem by converting it into a standard
 // eigenvalue problem. It uses shift invert transform to make the convergence
@@ -108,7 +113,7 @@ class linear_solver_LU {
 // (https://www.caam.rice.edu/software/ARPACK/UG/
 // node137.html#SECTION001220000000000000000)
 // Some addition information about the choice of algorithm is present on the
-// pages 91 and 36.
+// pages 91 and 36 of the guide.
 void arpack_dnaupd_wrapper(linear_solver_LU& M_LUsolver, Matrix& B_input,
                            const double sigma,
                            const std::string which_eigenvalues_to_find,
@@ -117,55 +122,76 @@ void arpack_dnaupd_wrapper(linear_solver_LU& M_LUsolver, Matrix& B_input,
                            DataVector& eigenvalues_imaginary_part,
                            Matrix& eigenvectors) {
   int num_rows = B_input.rows();
-  int nev = number_of_eigenvalues_to_find;
 
-  const char bmat = 'I';
-  const std::string howmny = "A";
+  const char bmat = 'I';  // 'I' -> standard eigenvalue problem;
+                          // 'G' -> generalized eigenvalue problem
+                          // (we have converted our generalized eigenvalue
+                          // problem into a standard eigenvalue problem)
 
-  // ncv should satisfy ncv <= num_rows and ncv - nev >= 2
-  int ncv = 2 * nev;
-  int ldv = num_rows;
+  // ncv should satisfy ncv <= num_rows and ncv - number_of_eigenvalues_to_find
+  // >= 2. ncv can be anything as long as these two constraints are satisfied,
+  // we chose the value (2 * number_of_eigenvalues_to_find + 1) because it is
+  // the default value used in the Arpack examples. (Note: This simple formula
+  // can fail to satisfy the first constraint if for example num_rows = 5 and
+  // number_of_eigenvalues_to_find = 3 in which case one would need to write the
+  // code to deal with it. Although, in our use case that is not an issue as we
+  // are dealing with much larger matrices.
+  int ncv = 2 * number_of_eigenvalues_to_find +
+            1;  // Number of Arnoldi vectors generated
+  ASSERT(ncv <= num_rows, "ncv should satisfy ncv <= num_rows.");
+  ASSERT(ncv - number_of_eigenvalues_to_find >= 2,
+         "ncv should satisfy ncv - number_of_eigenvalues_to_find >= 2");
 
-  int ldz = num_rows + 1;
+  int ldv = num_rows;  // Leading dimension of the array V defined below
+  DenseVector<double> V(
+      static_cast<std::size_t>(ncv * num_rows),
+      0.0);  // Contains the final set of the Arnoldi basis vectors
 
-  int lworkl = 3 * (ncv * ncv) + 6 * ncv;
+  int lworkl = 3 * (ncv * ncv) + 6 * ncv;  // Size of the vector workl
+  DenseVector<double> workl(static_cast<std::size_t>(lworkl),
+                            0.0);  // Internal workspace vector
 
   double tol = 0.0;       // tol <= 0 means machine precision will be used
   double sigmar = sigma;  // Real part of the sigma
   double sigmai = 0;      // Imaginary part of the sigma
-  int rvec = 1;
 
+  // resid contains the final residue vector on output, if info != 0 then it
+  // should contain the starting vector
   DenseVector<double> resid(static_cast<std::size_t>(num_rows), 0.0);
-  DenseVector<double> V(static_cast<std::size_t>(ncv * num_rows), 0.0);
+
+  // Internal workspace vector
   DenseVector<double> workd(3 * static_cast<std::size_t>(num_rows), 0.0);
-  DenseVector<double> workl(static_cast<std::size_t>(lworkl), 0.0);
-  DenseVector<double> workev(static_cast<std::size_t>(3 * ncv), 0.0);
 
-  // We are declaring vectors of size nev+1 so that there is enough space for
-  // Arpack to work with the possible complex conjugate of an eigenpair even
-  // if it was not requested by the user.
-  DenseVector<double> dr(
-      static_cast<std::size_t>((nev + 1)));  // Real Eigenvalues
-  DenseVector<double> di(
-      static_cast<std::size_t>((nev + 1)));  // Imaginary Eigenvalues
-  DenseVector<double> z(
-      static_cast<std::size_t>((num_rows + 1) * (nev + 1)));  // Eigenvectors
-
+  // iparam is used to set various parameters of Arpack
   std::array<int, 11> iparam{};
 
-  iparam[0] = 1;
+  iparam[0] = 1;              // Method for selecting the implicit shifts
   iparam[2] = 10 * num_rows;  // max iterations
-  iparam[3] = 1;
-  iparam[4] = 0;
+  iparam[3] = 1;  // Should be set to 1, blocksize to be used in the recurrence
+  iparam[4] =
+      0;  // On output this contains the number of eigenvalues that converged
   iparam[6] = 3;  // page 91, choses the mode of operation for Arpack
 
+  // ipntr contains the starting index of various things in the workd and workl
+  // vectors. The important ones are ipntr[0] and ipntr[1] pointing to the
+  // vector we are supposed to operate on and the vector we are supposed to
+  // write the output to.
   std::array<int, 14> ipntr{};
 
-  int info = 0, ido = 0;
+  int info = 0;  // 0 -> random starting vector, not zero -> starting vector is
+                 // set to resid. On output this contains the error flag
+  int ido = 0;   // Reverse communication flag
+
+  // For the particular parameters that we have chosen ido = 99 corresponds to
+  // the end of dnaupd and ido = 1,-1 means that we have to do Y = OP * X. OP is
+  // our operation (M - sigma*B)^{-1}*B. X and Y are stored in the workd vector
+  // starting at the index ipntr[0] and ipntr[1]. In the following code block
+  // rhs_vec is X and Minv_B_rhs_vec is Y.
   while (ido != 99) {
-    dnaupd_(&ido, &bmat, &num_rows, which_eigenvalues_to_find.c_str(), &nev,
-            &tol, resid.data(), &ncv, V.data(), &ldv, iparam.data(),
-            ipntr.data(), workd.data(), workl.data(), &lworkl, &info);
+    dnaupd_(&ido, &bmat, &num_rows, which_eigenvalues_to_find.c_str(),
+            &number_of_eigenvalues_to_find, &tol, resid.data(), &ncv, V.data(),
+            &ldv, iparam.data(), ipntr.data(), workd.data(), workl.data(),
+            &lworkl, &info);
 
     DenseVector<double> rhs_vec(static_cast<std::size_t>(num_rows), 0.0);
     for (size_t i = 0; i < static_cast<std::size_t>(num_rows); i++) {
@@ -186,13 +212,39 @@ void arpack_dnaupd_wrapper(linear_solver_LU& M_LUsolver, Matrix& B_input,
         << info);
   }
 
+  const int rvec = 1;  // 1 -> calculate eigenvectors
+                       // 0 -> do not calculate eigenvectors
+
+  // which_eigenvectors_to_calculate if set to 'A' will ask Arpack to calculate
+  // all the eigenvectors (corresponding to the eigenvalues already found). If
+  // which_eigenvectors_to_calculate is set to 'S' then we need to specify a
+  // vector select of size ncv
+  const std::string which_eigenvectors_to_calculate = "A";
   DenseVector<int> select(static_cast<std::size_t>(ncv), 1);
 
-  dneupd_(&rvec, howmny.c_str(), select.data(), dr.data(), di.data(), z.data(),
-          &ldz, &sigmar, &sigmai, workev.data(), &bmat, &num_rows,
-          which_eigenvalues_to_find.c_str(), &nev, &tol, resid.data(), &ncv,
-          V.data(), &ldv, iparam.data(), ipntr.data(), workd.data(),
-          workl.data(), &lworkl, &info);
+  // We are declaring vectors of size number_of_eigenvalues_to_find+1 so that
+  // there is enough space for Arpack to work with the possible complex
+  // conjugate of an eigenpair even if it was not requested by the user.
+  int ldz = num_rows;
+  DenseVector<double> eigenvectors_internal(static_cast<std::size_t>(
+      (num_rows) * (number_of_eigenvalues_to_find + 1)));  // Eigenvectors
+
+  DenseVector<double> eigenvalue_real_part_internal(static_cast<std::size_t>(
+      (number_of_eigenvalues_to_find + 1)));  // Real part of the Eigenvalues
+  DenseVector<double> eigenvalue_imaginary_part_internal(
+      static_cast<std::size_t>((number_of_eigenvalues_to_find +
+                                1)));  // Imaginary part of the Eigenvalues
+  // Internal workspace vector
+  DenseVector<double> workev(static_cast<std::size_t>(3 * ncv), 0.0);
+
+  dneupd_(&rvec, which_eigenvectors_to_calculate.c_str(), select.data(),
+          eigenvalue_real_part_internal.data(),
+          eigenvalue_imaginary_part_internal.data(),
+          eigenvectors_internal.data(), &ldz, &sigmar, &sigmai, workev.data(),
+          &bmat, &num_rows, which_eigenvalues_to_find.c_str(),
+          &number_of_eigenvalues_to_find, &tol, resid.data(), &ncv, V.data(),
+          &ldv, iparam.data(), ipntr.data(), workd.data(), workl.data(),
+          &lworkl, &info);
 
   if (UNLIKELY(info != 0)) {
     ERROR(
@@ -206,10 +258,12 @@ void arpack_dnaupd_wrapper(linear_solver_LU& M_LUsolver, Matrix& B_input,
 
   for (size_t i = 0; i < static_cast<size_t>(number_of_eigenvalues_to_find);
        i++) {
-    eigenvalues_real_part.data()[i] = dr[i];
-    eigenvalues_imaginary_part.data()[i] = di[i];
+    eigenvalues_real_part.data()[i] = eigenvalue_real_part_internal[i];
+    eigenvalues_imaginary_part.data()[i] =
+        eigenvalue_imaginary_part_internal[i];
     for (size_t j = 0; j < static_cast<size_t>(num_rows); j++) {
-      eigenvectors(j, i) = z[i * static_cast<size_t>(num_rows + 1) + j];
+      eigenvectors(j, i) =
+          eigenvectors_internal[i * static_cast<size_t>(num_rows) + j];
     }
   }
 

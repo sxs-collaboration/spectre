@@ -60,7 +60,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearAlgebra.GeneralizedEigenvalueArpack",
   // We will get an error if we ask Arpack to find more than n-2 eigenvalues for
   // a matrix of size n*n. Thus we are using a 4x4 matrix and asking to find 2
   // eigenvalues.
-  constexpr std::size_t num_rows = 4;
+  constexpr std::size_t num_rows = 5;
   Matrix matrix_a(num_rows, num_rows, 0.0);
   Matrix matrix_b(num_rows, num_rows, 0.0);
   const std::string which_eigenvalues_to_find = "LM";
