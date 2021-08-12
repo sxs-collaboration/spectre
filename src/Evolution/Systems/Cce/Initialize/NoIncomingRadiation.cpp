@@ -120,8 +120,9 @@ void NoIncomingRadiation::operator()(
         angular_cauchy_coordinates,
     const Scalar<SpinWeighted<ComplexDataVector, 2>>& boundary_j,
     const Scalar<SpinWeighted<ComplexDataVector, 2>>& boundary_dr_j,
-    const Scalar<SpinWeighted<ComplexDataVector, 0>>& r, const size_t l_max,
-    const size_t number_of_radial_points) const {
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& r,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& /*beta*/,
+    const size_t l_max, const size_t number_of_radial_points) const {
   const size_t number_of_angular_points =
       Spectral::Swsh::number_of_swsh_collocation_points(l_max);
   detail::radial_evolve_psi0_condition(make_not_null(&get(*j)), get(boundary_j),

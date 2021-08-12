@@ -39,6 +39,7 @@ namespace {
 using swsh_boundary_tags_to_generate =
     tmpl::list<Tags::BoundaryValue<Tags::BondiJ>,
                Tags::BoundaryValue<Tags::Dr<Tags::BondiJ>>,
+               Tags::BoundaryValue<Tags::BondiBeta>,
                Tags::BoundaryValue<Tags::BondiR>>;
 
 using real_cauchy_boundary_tags_to_compute =

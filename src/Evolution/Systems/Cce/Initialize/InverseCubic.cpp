@@ -40,8 +40,9 @@ void InverseCubic<true>::operator()(
         angular_inertial_coordinates,
     const Scalar<SpinWeighted<ComplexDataVector, 2>>& boundary_j,
     const Scalar<SpinWeighted<ComplexDataVector, 2>>& boundary_dr_j,
-    const Scalar<SpinWeighted<ComplexDataVector, 0>>& r, const size_t l_max,
-    const size_t number_of_radial_points) const {
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& r,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& /*beta*/,
+    const size_t l_max, const size_t number_of_radial_points) const {
   const DataVector one_minus_y_collocation =
       1.0 - Spectral::collocation_points<Spectral::Basis::Legendre,
                                          Spectral::Quadrature::GaussLobatto>(
@@ -103,8 +104,9 @@ void InverseCubic<false>::operator()(
         angular_cauchy_coordinates,
     const Scalar<SpinWeighted<ComplexDataVector, 2>>& boundary_j,
     const Scalar<SpinWeighted<ComplexDataVector, 2>>& boundary_dr_j,
-    const Scalar<SpinWeighted<ComplexDataVector, 0>>& r, const size_t l_max,
-    const size_t number_of_radial_points) const {
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& r,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& /*beta*/,
+    const size_t l_max, const size_t number_of_radial_points) const {
   const DataVector one_minus_y_collocation =
       1.0 - Spectral::collocation_points<Spectral::Basis::Legendre,
                                          Spectral::Quadrature::GaussLobatto>(

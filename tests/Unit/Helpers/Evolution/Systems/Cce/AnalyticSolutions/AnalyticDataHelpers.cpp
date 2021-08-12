@@ -335,7 +335,8 @@ void test_initialize_j(const size_t l_max, const size_t number_of_radial_points,
       make_not_null(&test_angular_coordinates),
       get<Tags::BoundaryValue<Tags::BondiJ>>(boundary_variables),
       get<Tags::BoundaryValue<Tags::Dr<Tags::BondiJ>>>(boundary_variables),
-      get<Tags::BoundaryValue<Tags::BondiR>>(boundary_variables), l_max,
+      get<Tags::BoundaryValue<Tags::BondiR>>(boundary_variables),
+      get<Tags::BoundaryValue<Tags::BondiBeta>>(boundary_variables), l_max,
       number_of_radial_points);
   (*expected_initialize_j)(
       make_not_null(&expected_j),
@@ -343,7 +344,8 @@ void test_initialize_j(const size_t l_max, const size_t number_of_radial_points,
       make_not_null(&expected_angular_coordinates),
       get<Tags::BoundaryValue<Tags::BondiJ>>(boundary_variables),
       get<Tags::BoundaryValue<Tags::Dr<Tags::BondiJ>>>(boundary_variables),
-      get<Tags::BoundaryValue<Tags::BondiR>>(boundary_variables), l_max,
+      get<Tags::BoundaryValue<Tags::BondiR>>(boundary_variables),
+      get<Tags::BoundaryValue<Tags::BondiBeta>>(boundary_variables), l_max,
       number_of_radial_points);
   CHECK(test_j == expected_j);
   CHECK(test_cartesian_coordinates == expected_cartesian_coordinates);
