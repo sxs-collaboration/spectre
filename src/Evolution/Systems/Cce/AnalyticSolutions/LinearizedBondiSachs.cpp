@@ -89,22 +89,8 @@ void LinearizedBondiSachs::operator()(
         make_not_null(&angular_view_j), l_2_coefficient_buffer,
         l_3_coefficient_buffer, l_max, frequency_, time_);
   }
-  const auto& collocation = Spectral::Swsh::cached_collocation_metadata<
-      Spectral::Swsh::ComplexRepresentation::Interleaved>(l_max);
-  for (const auto& collocation_point : collocation) {
-    get<0>(*angular_cauchy_coordinates)[collocation_point.offset] =
-        collocation_point.theta;
-    get<1>(*angular_cauchy_coordinates)[collocation_point.offset] =
-        collocation_point.phi;
-  }
-  get<0>(*cartesian_cauchy_coordinates) =
-      sin(get<0>(*angular_cauchy_coordinates)) *
-      cos(get<1>(*angular_cauchy_coordinates));
-  get<1>(*cartesian_cauchy_coordinates) =
-      sin(get<0>(*angular_cauchy_coordinates)) *
-      sin(get<1>(*angular_cauchy_coordinates));
-  get<2>(*cartesian_cauchy_coordinates) =
-      cos(get<0>(*angular_cauchy_coordinates));
+  Spectral::Swsh::create_angular_and_cartesian_coordinates(
+      cartesian_cauchy_coordinates, angular_cauchy_coordinates, l_max);
 }
 
 void LinearizedBondiSachs::pup(PUP::er& p) {

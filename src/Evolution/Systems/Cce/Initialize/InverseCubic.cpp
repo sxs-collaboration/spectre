@@ -64,36 +64,11 @@ void InverseCubic<true>::operator()(
         one_minus_y_collocation[i] * one_minus_y_coefficient +
         pow<3>(one_minus_y_collocation[i]) * one_minus_y_cubed_coefficient;
   }
-  const auto& collocation = Spectral::Swsh::cached_collocation_metadata<
-      Spectral::Swsh::ComplexRepresentation::Interleaved>(l_max);
-  for (const auto collocation_point : collocation) {
-    get<0>(*angular_cauchy_coordinates)[collocation_point.offset] =
-        collocation_point.theta;
-    get<1>(*angular_cauchy_coordinates)[collocation_point.offset] =
-        collocation_point.phi;
-    get<0>(*angular_inertial_coordinates)[collocation_point.offset] =
-        collocation_point.theta;
-    get<1>(*angular_inertial_coordinates)[collocation_point.offset] =
-        collocation_point.phi;
-  }
-  get<0>(*cartesian_cauchy_coordinates) =
-      sin(get<0>(*angular_cauchy_coordinates)) *
-      cos(get<1>(*angular_cauchy_coordinates));
-  get<1>(*cartesian_cauchy_coordinates) =
-      sin(get<0>(*angular_cauchy_coordinates)) *
-      sin(get<1>(*angular_cauchy_coordinates));
-  get<2>(*cartesian_cauchy_coordinates) =
-      cos(get<0>(*angular_cauchy_coordinates));
-
+  Spectral::Swsh::create_angular_and_cartesian_coordinates(
+      cartesian_cauchy_coordinates, angular_cauchy_coordinates, l_max);
   // Same as the Cauchy coordinates
-  get<0>(*cartesian_inertial_coordinates) =
-      sin(get<0>(*angular_inertial_coordinates)) *
-      cos(get<1>(*angular_inertial_coordinates));
-  get<1>(*cartesian_inertial_coordinates) =
-      sin(get<0>(*angular_inertial_coordinates)) *
-      sin(get<1>(*angular_inertial_coordinates));
-  get<2>(*cartesian_inertial_coordinates) =
-      cos(get<0>(*angular_inertial_coordinates));
+  Spectral::Swsh::create_angular_and_cartesian_coordinates(
+      cartesian_inertial_coordinates, angular_inertial_coordinates, l_max);
 }
 
 void InverseCubic<false>::operator()(
@@ -128,22 +103,8 @@ void InverseCubic<false>::operator()(
         one_minus_y_collocation[i] * one_minus_y_coefficient +
         pow<3>(one_minus_y_collocation[i]) * one_minus_y_cubed_coefficient;
   }
-  const auto& collocation = Spectral::Swsh::cached_collocation_metadata<
-      Spectral::Swsh::ComplexRepresentation::Interleaved>(l_max);
-  for (const auto collocation_point : collocation) {
-    get<0>(*angular_cauchy_coordinates)[collocation_point.offset] =
-        collocation_point.theta;
-    get<1>(*angular_cauchy_coordinates)[collocation_point.offset] =
-        collocation_point.phi;
-  }
-  get<0>(*cartesian_cauchy_coordinates) =
-      sin(get<0>(*angular_cauchy_coordinates)) *
-      cos(get<1>(*angular_cauchy_coordinates));
-  get<1>(*cartesian_cauchy_coordinates) =
-      sin(get<0>(*angular_cauchy_coordinates)) *
-      sin(get<1>(*angular_cauchy_coordinates));
-  get<2>(*cartesian_cauchy_coordinates) =
-      cos(get<0>(*angular_cauchy_coordinates));
+  Spectral::Swsh::create_angular_and_cartesian_coordinates(
+      cartesian_cauchy_coordinates, angular_cauchy_coordinates, l_max);
 }
 
 void InverseCubic<true>::pup(PUP::er& /*p*/) {}

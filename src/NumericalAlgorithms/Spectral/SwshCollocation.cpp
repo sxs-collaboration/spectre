@@ -7,8 +7,11 @@
 #include <sharp_cxx.h>
 #include <utility>
 
+#include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "NumericalAlgorithms/Spectral/ComplexDataView.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
+#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/ForceInline.hpp"
@@ -68,6 +71,31 @@ const CollocationMetadata<Representation>& cached_collocation_metadata(
             return CollocationMetadata<Representation>{generator_l_max};
           });
   return lazy_collocation_cache(l_max);
+}
+
+void create_angular_and_cartesian_coordinates(
+    const gsl::not_null<tnsr::i<DataVector, 3>*> cartesian_coordinates,
+    const gsl::not_null<
+        tnsr::i<DataVector, 2, ::Frame::Spherical<::Frame::Inertial>>*>
+        angular_coordinates,
+    const size_t l_max) {
+  destructive_resize_components(cartesian_coordinates,
+                                number_of_swsh_collocation_points(l_max));
+  destructive_resize_components(angular_coordinates,
+                                number_of_swsh_collocation_points(l_max));
+  const auto& collocation = Spectral::Swsh::cached_collocation_metadata<
+      Spectral::Swsh::ComplexRepresentation::Interleaved>(l_max);
+  for (const auto collocation_point : collocation) {
+    get<0>(*angular_coordinates)[collocation_point.offset] =
+        collocation_point.theta;
+    get<1>(*angular_coordinates)[collocation_point.offset] =
+        collocation_point.phi;
+  }
+  get<0>(*cartesian_coordinates) =
+      sin(get<0>(*angular_coordinates)) * cos(get<1>(*angular_coordinates));
+  get<1>(*cartesian_coordinates) =
+      sin(get<0>(*angular_coordinates)) * sin(get<1>(*angular_coordinates));
+  get<2>(*cartesian_coordinates) = cos(get<0>(*angular_coordinates));
 }
 
 template class CollocationMetadata<ComplexRepresentation::Interleaved>;

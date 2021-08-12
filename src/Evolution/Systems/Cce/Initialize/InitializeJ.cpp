@@ -28,6 +28,33 @@
 
 namespace Cce::InitializeJ {
 namespace detail {
+
+void initialize_surface_coordinates(
+    const gsl::not_null<tnsr::i<DataVector, 3>*> cartesian_cauchy_coordinates,
+    const gsl::not_null<
+        tnsr::i<DataVector, 2, ::Frame::Spherical<::Frame::Inertial>>*>
+        angular_cauchy_coordinates,
+    size_t l_max) {
+
+  const auto& collocation = Spectral::Swsh::cached_collocation_metadata<
+      Spectral::Swsh::ComplexRepresentation::Interleaved>(l_max);
+  for (const auto collocation_point : collocation) {
+    get<0>(*angular_cauchy_coordinates)[collocation_point.offset] =
+        collocation_point.theta;
+    get<1>(*angular_cauchy_coordinates)[collocation_point.offset] =
+        collocation_point.phi;
+  }
+  get<0>(*cartesian_cauchy_coordinates) =
+      sin(get<0>(*angular_cauchy_coordinates)) *
+      cos(get<1>(*angular_cauchy_coordinates));
+  get<1>(*cartesian_cauchy_coordinates) =
+      sin(get<0>(*angular_cauchy_coordinates)) *
+      sin(get<1>(*angular_cauchy_coordinates));
+  get<2>(*cartesian_cauchy_coordinates) =
+      cos(get<0>(*angular_cauchy_coordinates));
+
+}
+
 // perform an iterative solve for the set of angular coordinates necessary to
 // set the gauge transformed version of `surface_j` to zero. This reliably
 // converges eventually provided `surface_j` is initially reasonably small. As a
@@ -49,22 +76,8 @@ double adjust_angular_coordinates_for_j(
   const size_t number_of_angular_points =
       Spectral::Swsh::number_of_swsh_collocation_points(l_max);
 
-  const auto& collocation = Spectral::Swsh::cached_collocation_metadata<
-      Spectral::Swsh::ComplexRepresentation::Interleaved>(l_max);
-  for (const auto collocation_point : collocation) {
-    get<0>(*angular_cauchy_coordinates)[collocation_point.offset] =
-        collocation_point.theta;
-    get<1>(*angular_cauchy_coordinates)[collocation_point.offset] =
-        collocation_point.phi;
-  }
-  get<0>(*cartesian_cauchy_coordinates) =
-      sin(get<0>(*angular_cauchy_coordinates)) *
-      cos(get<1>(*angular_cauchy_coordinates));
-  get<1>(*cartesian_cauchy_coordinates) =
-      sin(get<0>(*angular_cauchy_coordinates)) *
-      sin(get<1>(*angular_cauchy_coordinates));
-  get<2>(*cartesian_cauchy_coordinates) =
-      cos(get<0>(*angular_cauchy_coordinates));
+  Spectral::Swsh::create_angular_and_cartesian_coordinates(
+      cartesian_cauchy_coordinates, angular_cauchy_coordinates, l_max);
 
   Variables<tmpl::list<
       // cartesian coordinates
