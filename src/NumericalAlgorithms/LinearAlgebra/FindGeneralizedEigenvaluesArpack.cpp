@@ -45,10 +45,19 @@ class linear_solver_LU {
         mNumRows(static_cast<int>(matrix_a.rows())),
         mPivotInfo(matrix_a.rows(), 0.0) {}
 
-  void solve(DenseVector<double>& result) {
+  DenseVector<double> solve(const DenseVector<double>& rhs_vector) {
+    ASSERT(static_cast<int>(rhs_vector.size()) == mNumRows,
+           "Can not solve this linear system because the size of the supplied "
+           "vector "
+               << rhs_vector.size()
+               << " is incompatible with the number of columns " << mNumRows
+               << " of the matrix.");
+
     int matrix_a_spacing = mLhsMatrix.spacing();
     int info;
 
+    // Generate the LU decomposition on the first call to solve and then save it
+    // for the subsequent calls.
     if (not mLuFactorizationAlreadyDone) {
       dgetrf_(&mNumRows, &mNumRows, mLhsMatrix.data(), &matrix_a_spacing,
               mPivotInfo.data(), &info);
@@ -63,6 +72,9 @@ class linear_solver_LU {
       mLuFactorizationAlreadyDone = true;
     }
 
+    // Copy the rhs vector into a result vector because Lapack writes the
+    // result into the rhs vector supplied to it.
+    DenseVector<double> result(rhs_vector);
     int result_a_spacing = result.spacing();
     char trans = 'N';
     int nrhs = 1;
@@ -77,7 +89,7 @@ class linear_solver_LU {
           << info);
     }
 
-    return;
+    return result;
   }
 
  private:
@@ -160,11 +172,10 @@ void arpack_dnaupd_wrapper(linear_solver_LU& M_LUsolver, Matrix& B_input,
       rhs_vec[i] = workd[static_cast<std::size_t>(ipntr[0] - 1) + i];
     }
 
-    DenseVector<double> B_rhs_vec = B_input * rhs_vec;
-    M_LUsolver.solve(B_rhs_vec);
+    DenseVector<double> Minv_B_rhs_vec = M_LUsolver.solve(B_input * rhs_vec);
 
     for (size_t i = 0; i < static_cast<std::size_t>(num_rows); i++) {
-      workd[static_cast<std::size_t>(ipntr[1] - 1) + i] = B_rhs_vec[i];
+      workd[static_cast<std::size_t>(ipntr[1] - 1) + i] = Minv_B_rhs_vec[i];
     }
   }
   if (UNLIKELY(info != 0)) {
