@@ -16,6 +16,12 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/NumericalAlgorithms/Interpolation/InterpolateOnElementTestHelpers.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "Time/Slab.hpp"
+#include "Time/Tags.hpp"
+#include "Time/Time.hpp"
+#include "Time/TimeStepId.hpp"
+#include "Time/TimeSteppers/RungeKutta3.hpp"
+#include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -88,6 +94,7 @@ struct mock_gh_worldtube_boundary {
 struct test_metavariables {
   static constexpr size_t volume_dim = 3;
   struct InterpolationTargetA {
+    using temporal_id = ::Tags::Time;
     using vars_to_interpolate_to_target = tmpl::list<>;
     using compute_items_on_source = tmpl::list<>;
   };

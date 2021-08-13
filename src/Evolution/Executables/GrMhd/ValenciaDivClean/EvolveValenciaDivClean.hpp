@@ -560,6 +560,7 @@ struct EvolutionMetavars {
 };
 
 struct KerrHorizon {
+  using temporal_id = ::Tags::Time;
   using tags_to_observe =
       tmpl::list<StrahlkorperTags::EuclideanSurfaceIntegralVectorCompute<
           hydro::Tags::MassFlux<DataVector, 3>, ::Frame::Inertial>>;

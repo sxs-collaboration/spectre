@@ -44,6 +44,7 @@
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
 #include "Time/StepControllers/Factory.hpp"
+#include "Time/Tags.hpp"
 #include "Utilities/Blas.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
@@ -61,6 +62,7 @@ struct EvolutionMetavars
       "on a domain with a single horizon and corresponding excised region"};
 
   struct AhA {
+    using temporal_id = ::Tags::Time;
     using tags_to_observe =
         tmpl::list<StrahlkorperGr::Tags::AreaCompute<domain_frame>>;
     using compute_vars_to_interpolate = ah::ComputeHorizonVolumeQuantities;

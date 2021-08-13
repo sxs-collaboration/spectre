@@ -20,12 +20,17 @@
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Domain/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
-#include "NumericalAlgorithms/Interpolation/AddTimesToInterpolationTarget.hpp"  // IWYU pragma: keep
+#include "NumericalAlgorithms/Interpolation/AddTemporalIdsToInterpolationTarget.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Interpolation/InitializeInterpolationTarget.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "Time/Slab.hpp"
+#include "Time/Tags.hpp"
+#include "Time/Time.hpp"
+#include "Time/TimeStepId.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Rational.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 // IWYU pragma: no_forward_declare db::DataBox
@@ -34,9 +39,12 @@
 
 class DataVector;
 namespace intrp::Tags {
+template <typename TemporalId>
 struct IndicesOfFilledInterpPoints;
-struct Times;
-struct PendingTimes;
+template <typename TemporalId>
+struct TemporalIds;
+template <typename TemporalId>
+struct PendingTemporalIds;
 }  // namespace intrp::Tags
 namespace Parallel {
 template <typename Metavariables>
@@ -46,23 +54,24 @@ class GlobalCache;
 namespace {
 
 struct MockSendPointsToInterpolator {
-  template <
-      typename ParallelComponent, typename DbTags, typename Metavariables,
-      typename ArrayIndex,
-      Requires<tmpl::list_contains_v<DbTags, intrp::Tags::Times>> = nullptr>
+  template <typename ParallelComponent, typename DbTags, typename Metavariables,
+            typename ArrayIndex, typename TemporalId,
+            Requires<tmpl::list_contains_v<
+                DbTags, intrp::Tags::TemporalIds<TemporalId>>> = nullptr>
   static void apply(db::DataBox<DbTags>& box,
                     Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
-                    const double time) noexcept {
+                    const TemporalId& temporal_id) noexcept {
     // Put something in IndicesOfFilledInterpPts so we can check later whether
     // this function was called.  This isn't the usual usage of
     // IndicesOfFilledInterpPoints.
-    db::mutate<::intrp::Tags::IndicesOfFilledInterpPoints>(
+    db::mutate<::intrp::Tags::IndicesOfFilledInterpPoints<TemporalId>>(
         make_not_null(&box),
-        [&time](const gsl::not_null<
-                std::unordered_map<double, std::unordered_set<size_t>>*>
-                    indices) noexcept {
-          (*indices)[time].insert((*indices)[time].size() + 1);
+        [&temporal_id](
+            const gsl::not_null<
+                std::unordered_map<TemporalId, std::unordered_set<size_t>>*>
+                indices) noexcept {
+          (*indices)[temporal_id].insert((*indices)[temporal_id].size() + 1);
         });
   }
 };
@@ -99,6 +108,7 @@ struct MockComputeTargetPoints {
 template <typename IsSequential, typename IsTimeDependent>
 struct MockMetavariables {
   struct InterpolationTargetA {
+    using temporal_id = ::Tags::TimeStepId;
     using vars_to_interpolate_to_target =
         tmpl::list<gr::Tags::Lapse<DataVector>>;
     using compute_items_on_target = tmpl::list<>;
@@ -113,8 +123,10 @@ struct MockMetavariables {
 };
 
 template <typename IsSequential>
-void test_add_times() {
+void test_add_temporal_ids() {
   using metavars = MockMetavariables<IsSequential, std::false_type>;
+  using temporal_id_type =
+      typename metavars::InterpolationTargetA::temporal_id::type;
   using target_component =
       mock_interpolation_target<metavars,
                                 typename metavars::InterpolationTargetA>;
@@ -130,84 +142,99 @@ void test_add_times() {
   }
   ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Testing);
 
-  // Both PendingTimes and Times should be initially empty.
-  CHECK(ActionTesting::get_databox_tag<target_component,
-                                       ::intrp::Tags::PendingTimes>(runner, 0)
+  // Both PendingTemporalIds and TemporalIds should be initially empty.
+  CHECK(ActionTesting::get_databox_tag<
+            target_component,
+            ::intrp::Tags::PendingTemporalIds<temporal_id_type>>(runner, 0)
             .empty());
-  CHECK(ActionTesting::get_databox_tag<target_component, ::intrp::Tags::Times>(
+  CHECK(ActionTesting::get_databox_tag<
+            target_component, ::intrp::Tags::TemporalIds<temporal_id_type>>(
             runner, 0)
             .empty());
 
-  const std::vector<double> times = {0.0, 1.0 / 3.0};
+  Slab slab(0.0, 1.0);
+  const std::vector<TimeStepId> temporal_ids = {
+      TimeStepId(true, 0, Time(slab, 0)),
+      TimeStepId(true, 0, Time(slab, Rational(1, 3)))};
 
-  ActionTesting::simple_action<target_component,
-                               ::intrp::Actions::AddTimesToInterpolationTarget<
-                                   typename metavars::InterpolationTargetA>>(
-      make_not_null(&runner), 0, times);
+  ActionTesting::simple_action<
+      target_component, ::intrp::Actions::AddTemporalIdsToInterpolationTarget<
+                            typename metavars::InterpolationTargetA>>(
+      make_not_null(&runner), 0, temporal_ids);
 
-  // Times should still be empty, but PendingTimes should
+  // TemporalIds should still be empty, but PendingTemporalIds should
   // have been filled.
-  CHECK(ActionTesting::get_databox_tag<target_component,
-                                       ::intrp::Tags::PendingTimes>(
-            runner, 0) == std::deque<double>(times.begin(), times.end()));
-  CHECK(ActionTesting::get_databox_tag<target_component, ::intrp::Tags::Times>(
+  CHECK(ActionTesting::get_databox_tag<
+            target_component,
+            ::intrp::Tags::PendingTemporalIds<temporal_id_type>>(runner, 0) ==
+        std::deque<TimeStepId>(temporal_ids.begin(), temporal_ids.end()));
+  CHECK(ActionTesting::get_databox_tag<
+            target_component, ::intrp::Tags::TemporalIds<temporal_id_type>>(
             runner, 0)
             .empty());
 
-  // Should be only one queued simple action: VerifyTimesAndSendPoints
+  // Should be only one queued simple action: VerifyTemporalIdsAndSendPoints
   CHECK(ActionTesting::number_of_queued_simple_actions<target_component>(
             runner, 0) == 1);
 
-  // Add the same times again, which should do nothing...
-  ActionTesting::simple_action<target_component,
-                               ::intrp::Actions::AddTimesToInterpolationTarget<
-                                   typename metavars::InterpolationTargetA>>(
-      make_not_null(&runner), 0, times);
+  // Add the same temporal_ids again, which should do nothing...
+  ActionTesting::simple_action<
+      target_component, ::intrp::Actions::AddTemporalIdsToInterpolationTarget<
+                            typename metavars::InterpolationTargetA>>(
+      make_not_null(&runner), 0, temporal_ids);
   // ...and check that it indeed did nothing.
-  CHECK(ActionTesting::get_databox_tag<target_component,
-                                       ::intrp::Tags::PendingTimes>(
-            runner, 0) == std::deque<double>(times.begin(), times.end()));
-  CHECK(ActionTesting::get_databox_tag<target_component, ::intrp::Tags::Times>(
+  CHECK(ActionTesting::get_databox_tag<
+            target_component,
+            ::intrp::Tags::PendingTemporalIds<temporal_id_type>>(runner, 0) ==
+        std::deque<TimeStepId>(temporal_ids.begin(), temporal_ids.end()));
+  CHECK(ActionTesting::get_databox_tag<
+            target_component, ::intrp::Tags::TemporalIds<temporal_id_type>>(
             runner, 0)
             .empty());
 
   // At this point, there should be only one queued simple action,
-  // VerifyTimesAndSendPoints, and triggering this action
-  // should move the PendingTimes to Times and invoke
+  // VerifyTemporalIdsAndSendPoints, and triggering this action
+  // should move the PendingTemporalIds to TemporalIds and invoke
   // other simple actions.
   CHECK(ActionTesting::number_of_queued_simple_actions<target_component>(
             runner, 0) == 1);
   ActionTesting::invoke_queued_simple_action<target_component>(
       make_not_null(&runner), 0);
 
-  // Now the PendingTimes should be empty, and the
-  // Times should contain the two IDs.
-  CHECK(ActionTesting::get_databox_tag<target_component, ::intrp::Tags::Times>(
-            runner, 0) == std::deque<double>(times.begin(), times.end()));
-  CHECK(ActionTesting::get_databox_tag<target_component,
-                                       ::intrp::Tags::PendingTimes>(runner, 0)
+  // Now the PendingTemporalIds should be empty, and the
+  // TemporalIds should contain the two IDs.
+  CHECK(ActionTesting::get_databox_tag<
+            target_component, ::intrp::Tags::TemporalIds<temporal_id_type>>(
+            runner, 0) ==
+        std::deque<TimeStepId>(temporal_ids.begin(), temporal_ids.end()));
+  CHECK(ActionTesting::get_databox_tag<
+            target_component,
+            ::intrp::Tags::PendingTemporalIds<temporal_id_type>>(runner, 0)
             .empty());
 
-  // Add the same times yet again, which should do nothing...
-  ActionTesting::simple_action<target_component,
-                               ::intrp::Actions::AddTimesToInterpolationTarget<
-                                   typename metavars::InterpolationTargetA>>(
-      make_not_null(&runner), 0, times);
+  // Add the same temporal_ids yet again, which should do nothing...
+  ActionTesting::simple_action<
+      target_component, ::intrp::Actions::AddTemporalIdsToInterpolationTarget<
+                            typename metavars::InterpolationTargetA>>(
+      make_not_null(&runner), 0, temporal_ids);
   // ...and check that it indeed did nothing.
-  CHECK(ActionTesting::get_databox_tag<target_component, ::intrp::Tags::Times>(
-            runner, 0) == std::deque<double>(times.begin(), times.end()));
-  CHECK(ActionTesting::get_databox_tag<target_component,
-                                       ::intrp::Tags::PendingTimes>(runner, 0)
+  CHECK(ActionTesting::get_databox_tag<
+            target_component, ::intrp::Tags::TemporalIds<temporal_id_type>>(
+            runner, 0) ==
+        std::deque<TimeStepId>(temporal_ids.begin(), temporal_ids.end()));
+  CHECK(ActionTesting::get_databox_tag<
+            target_component,
+            ::intrp::Tags::PendingTemporalIds<temporal_id_type>>(runner, 0)
             .empty());
 
   if (IsSequential::value) {
-    // Only one simple action should be queued, for the first time.
+    // Only one simple action should be queued, for the first temporal_id.
     CHECK(ActionTesting::number_of_queued_simple_actions<target_component>(
               runner, 0) == 1);
     ActionTesting::invoke_queued_simple_action<target_component>(
         make_not_null(&runner), 0);
   } else {
-    // Two simple actions should be queued, one for each time.
+    // Two simple actions should be queued, one for each temporal_id.
     CHECK(ActionTesting::number_of_queued_simple_actions<target_component>(
               runner, 0) == 2);
     ActionTesting::invoke_queued_simple_action<target_component>(
@@ -218,16 +245,18 @@ void test_add_times() {
 
   // Check that MockSendPointsToInterpolator was called.
   CHECK(ActionTesting::get_databox_tag<
-            target_component, ::intrp::Tags::IndicesOfFilledInterpPoints>(
+            target_component,
+            ::intrp::Tags::IndicesOfFilledInterpPoints<temporal_id_type>>(
             runner, 0)
-            .at(times[0])
+            .at(temporal_ids[0])
             .size() == 1);
   if (not IsSequential::value) {
     // MockSendPointsToInterpolator should have been called twice
     CHECK(ActionTesting::get_databox_tag<
-              target_component, ::intrp::Tags::IndicesOfFilledInterpPoints>(
+              target_component,
+              ::intrp::Tags::IndicesOfFilledInterpPoints<temporal_id_type>>(
               runner, 0)
-              .at(times[1])
+              .at(temporal_ids[1])
               .size() == 1);
   }
 
@@ -238,15 +267,17 @@ void test_add_times() {
   // Call again.
   // If sequential, it should not call MockSendPointsToInterpolator this time.
   // Otherwise it should call MockSendPointsToInterpolator twice.
-  const std::vector<double> times_2 = {2.0 / 3.0, 1.0};
-  ActionTesting::simple_action<target_component,
-                               ::intrp::Actions::AddTimesToInterpolationTarget<
-                                   typename metavars::InterpolationTargetA>>(
-      make_not_null(&runner), 0, times_2);
+  const std::vector<TimeStepId> temporal_ids_2 = {
+      TimeStepId(true, 0, Time(slab, Rational(2, 3))),
+      TimeStepId(true, 0, Time(slab, Rational(3, 3)))};
+  ActionTesting::simple_action<
+      target_component, ::intrp::Actions::AddTemporalIdsToInterpolationTarget<
+                            typename metavars::InterpolationTargetA>>(
+      make_not_null(&runner), 0, temporal_ids_2);
 
   if (not IsSequential::value) {
     // For non-sequential, there should be only one queued simple action,
-    // VerifyTimesAndSendPoints.
+    // VerifyTemporalIdsAndSendPoints.
     CHECK(ActionTesting::number_of_queued_simple_actions<target_component>(
               runner, 0) == 1);
     ActionTesting::invoke_queued_simple_action<target_component>(
@@ -254,14 +285,15 @@ void test_add_times() {
 
     // Now there should be two queued_simple_actions,
     // each of which will call MockSendPointsToInterpolator for one of the
-    // new times.
+    // new temporal_ids.
     for (size_t i = 0; i < 2; ++i) {
       ActionTesting::invoke_queued_simple_action<target_component>(
           make_not_null(&runner), 0);
       CHECK(ActionTesting::get_databox_tag<
-                target_component, ::intrp::Tags::IndicesOfFilledInterpPoints>(
+                target_component,
+                ::intrp::Tags::IndicesOfFilledInterpPoints<temporal_id_type>>(
                 runner, 0)
-                .at(times_2[i])
+                .at(temporal_ids_2[i])
                 .size() == 1);
     }
   }
@@ -287,8 +319,10 @@ struct MyFunctionOfTimeUpdater {
 };
 
 template <typename IsSequential>
-void test_add_times_time_dependent() {
+void test_add_temporal_ids_time_dependent() {
   using metavars = MockMetavariables<IsSequential, std::true_type>;
+  using temporal_id_type =
+      typename metavars::InterpolationTargetA::temporal_id::type;
   using target_component =
       mock_interpolation_target<metavars,
                                 typename metavars::InterpolationTargetA>;
@@ -311,99 +345,117 @@ void test_add_times_time_dependent() {
   }
   ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Testing);
 
-  // Both PendingTimes and Times should be initially empty.
-  CHECK(ActionTesting::get_databox_tag<target_component,
-                                       ::intrp::Tags::PendingTimes>(runner, 0)
+  // Both PendingTemporalIds and TemporalIds should be initially empty.
+  CHECK(ActionTesting::get_databox_tag<
+            target_component,
+            ::intrp::Tags::PendingTemporalIds<temporal_id_type>>(runner, 0)
             .empty());
-  CHECK(ActionTesting::get_databox_tag<target_component, ::intrp::Tags::Times>(
+  CHECK(ActionTesting::get_databox_tag<
+            target_component, ::intrp::Tags::TemporalIds<temporal_id_type>>(
             runner, 0)
             .empty());
 
-  // Two of the times are before the expiration_time, the
+  // Two of the temporal_ids are before the expiration_time, the
   // others are afterwards.  Later we will update the FunctionOfTimes
-  // so that the later times become valid.
-  const std::vector<double> times = {0.0,       1.0 / 20.0, 1.0 / 4.0,
-                                     1.0 / 3.0, 2.0 / 3.0,  3.0 / 4.0};
+  // so that the later temporal_ids become valid.
+  Slab slab(0.0, 1.0);
+  const std::vector<TimeStepId> temporal_ids = {
+      TimeStepId(true, 0, Time(slab, 0)),
+      TimeStepId(true, 0, Time(slab, Rational(1, 20))),
+      TimeStepId(true, 0, Time(slab, Rational(1, 4))),
+      TimeStepId(true, 0, Time(slab, Rational(1, 3))),
+      TimeStepId(true, 0, Time(slab, Rational(2, 3))),
+      TimeStepId(true, 0, Time(slab, Rational(3, 4)))};
 
-  ActionTesting::simple_action<target_component,
-                               ::intrp::Actions::AddTimesToInterpolationTarget<
-                                   typename metavars::InterpolationTargetA>>(
-      make_not_null(&runner), 0, times);
+  ActionTesting::simple_action<
+      target_component, ::intrp::Actions::AddTemporalIdsToInterpolationTarget<
+                            typename metavars::InterpolationTargetA>>(
+      make_not_null(&runner), 0, temporal_ids);
 
-  // Times should still be empty, but PendingTimes should
+  // TemporalIds should still be empty, but PendingTemporalIds should
   // have been filled.
-  CHECK(ActionTesting::get_databox_tag<target_component,
-                                       ::intrp::Tags::PendingTimes>(
-            runner, 0) == std::deque<double>(times.begin(), times.end()));
-  CHECK(ActionTesting::get_databox_tag<target_component, ::intrp::Tags::Times>(
+  CHECK(ActionTesting::get_databox_tag<
+            target_component,
+            ::intrp::Tags::PendingTemporalIds<temporal_id_type>>(runner, 0) ==
+        std::deque<TimeStepId>(temporal_ids.begin(), temporal_ids.end()));
+  CHECK(ActionTesting::get_databox_tag<
+            target_component, ::intrp::Tags::TemporalIds<temporal_id_type>>(
             runner, 0)
             .empty());
 
-  // Should be only one queued simple action: VerifyTimesAndSendPoints
+  // Should be only one queued simple action: VerifyTemporalIdsAndSendPoints
   CHECK(ActionTesting::number_of_queued_simple_actions<target_component>(
             runner, 0) == 1);
 
-  // Add the same times again, which should do nothing...
-  ActionTesting::simple_action<target_component,
-                               ::intrp::Actions::AddTimesToInterpolationTarget<
-                                   typename metavars::InterpolationTargetA>>(
-      make_not_null(&runner), 0, times);
+  // Add the same temporal_ids again, which should do nothing...
+  ActionTesting::simple_action<
+      target_component, ::intrp::Actions::AddTemporalIdsToInterpolationTarget<
+                            typename metavars::InterpolationTargetA>>(
+      make_not_null(&runner), 0, temporal_ids);
   // ...and check that it indeed did nothing.
-  CHECK(ActionTesting::get_databox_tag<target_component,
-                                       ::intrp::Tags::PendingTimes>(
-            runner, 0) == std::deque<double>(times.begin(), times.end()));
-  CHECK(ActionTesting::get_databox_tag<target_component, ::intrp::Tags::Times>(
+  CHECK(ActionTesting::get_databox_tag<
+            target_component,
+            ::intrp::Tags::PendingTemporalIds<temporal_id_type>>(runner, 0) ==
+        std::deque<TimeStepId>(temporal_ids.begin(), temporal_ids.end()));
+  CHECK(ActionTesting::get_databox_tag<
+            target_component, ::intrp::Tags::TemporalIds<temporal_id_type>>(
             runner, 0)
             .empty());
 
   // At this point, there should still be only one queued simple
-  // action, VerifyTimesAndSendPoints.
+  // action, VerifyTemporalIdsAndSendPoints.
   CHECK(ActionTesting::number_of_queued_simple_actions<target_component>(
             runner, 0) == 1);
 
-  // Now invoke VerifyTimesAndSendPoints.
+  // Now invoke VerifyTemporalIdsAndSendPoints.
   ActionTesting::invoke_queued_simple_action<target_component>(
       make_not_null(&runner), 0);
 
-  // Two of the times are before the expiration_time, but the
-  // other times are after the expiration_time.  So only the
-  // first two times should have been moved from
-  // PendingTimes to Times.
-  CHECK(ActionTesting::get_databox_tag<target_component, ::intrp::Tags::Times>(
-            runner, 0) == std::deque<double>({times[0], times[1]}));
-  CHECK(
-      ActionTesting::get_databox_tag<target_component,
-                                     ::intrp::Tags::PendingTimes>(runner, 0) ==
-      std::deque<double>({times[2], times[3], times[4], times[5]}));
+  // Two of the temporal_ids are before the expiration_time, but the
+  // other temporal_ids are after the expiration_time.  So only the
+  // first two temporal_id should have been moved from
+  // PendingTemporalIds to TemporalIds.
+  CHECK(ActionTesting::get_databox_tag<
+            target_component, ::intrp::Tags::TemporalIds<temporal_id_type>>(
+            runner, 0) ==
+        std::deque<TimeStepId>({temporal_ids[0], temporal_ids[1]}));
+  CHECK(ActionTesting::get_databox_tag<
+            target_component,
+            ::intrp::Tags::PendingTemporalIds<temporal_id_type>>(runner, 0) ==
+        std::deque<TimeStepId>({temporal_ids[2], temporal_ids[3],
+                                temporal_ids[4], temporal_ids[5]}));
 
   if (IsSequential::value) {
     // Only one simple action should be queued,
-    // MockSendPointsToInterpolator for the first time.
+    // MockSendPointsToInterpolator for the first temporal_id.
     CHECK(ActionTesting::number_of_queued_simple_actions<target_component>(
               runner, 0) == 1);
   } else {
     // Three simple actions should be queued,
     // MockSendPointsToInterpolator for each of the first two
-    // times, and VerifyTimesAndSendPoints because there
-    // are remaining times that are still pending.
+    // temporal_ids, and VerifyTemporalIdsAndSendPoints because there
+    // are remaining temporal_ids that are still pending.
     CHECK(ActionTesting::number_of_queued_simple_actions<target_component>(
               runner, 0) == 3);
   }
 
-  // Add the same times yet again, which should do nothing...
-  ActionTesting::simple_action<target_component,
-                               ::intrp::Actions::AddTimesToInterpolationTarget<
-                                   typename metavars::InterpolationTargetA>>(
-      make_not_null(&runner), 0, times);
+  // Add the same temporal_ids yet again, which should do nothing...
+  ActionTesting::simple_action<
+      target_component, ::intrp::Actions::AddTemporalIdsToInterpolationTarget<
+                            typename metavars::InterpolationTargetA>>(
+      make_not_null(&runner), 0, temporal_ids);
   // ...and check that it indeed did nothing. That is, check that the
-  // Times and PendingTimes and the number of queued actions are as
+  // TemporalIds and PendingTemporalIds and the number of queued actions are as
   // before.
-  CHECK(ActionTesting::get_databox_tag<target_component, ::intrp::Tags::Times>(
-            runner, 0) == std::deque<double>({times[0], times[1]}));
-  CHECK(
-      ActionTesting::get_databox_tag<target_component,
-                                     ::intrp::Tags::PendingTimes>(runner, 0) ==
-      std::deque<double>({times[2], times[3], times[4], times[5]}));
+  CHECK(ActionTesting::get_databox_tag<
+            target_component, ::intrp::Tags::TemporalIds<temporal_id_type>>(
+            runner, 0) ==
+        std::deque<TimeStepId>({temporal_ids[0], temporal_ids[1]}));
+  CHECK(ActionTesting::get_databox_tag<
+            target_component,
+            ::intrp::Tags::PendingTemporalIds<temporal_id_type>>(runner, 0) ==
+        std::deque<TimeStepId>({temporal_ids[2], temporal_ids[3],
+                                temporal_ids[4], temporal_ids[5]}));
   if (IsSequential::value) {
     CHECK(ActionTesting::number_of_queued_simple_actions<target_component>(
               runner, 0) == 1);
@@ -427,19 +479,21 @@ void test_add_times_time_dependent() {
   }
 
   // Check that MockSendPointsToInterpolator was called for the first
-  // time.
+  // temporal_id.
   CHECK(ActionTesting::get_databox_tag<
-            target_component, ::intrp::Tags::IndicesOfFilledInterpPoints>(
+            target_component,
+            ::intrp::Tags::IndicesOfFilledInterpPoints<temporal_id_type>>(
             runner, 0)
-            .at(times[0])
+            .at(temporal_ids[0])
             .size() == 1);
   if (not IsSequential::value) {
     // Check that MockSendPointsToInterpolator was called for the second
-    // time, in the non-sequential case.
+    // temporal_id, in the non-sequential case.
     CHECK(ActionTesting::get_databox_tag<
-              target_component, ::intrp::Tags::IndicesOfFilledInterpPoints>(
+              target_component,
+              ::intrp::Tags::IndicesOfFilledInterpPoints<temporal_id_type>>(
               runner, 0)
-              .at(times[1])
+              .at(temporal_ids[1])
               .size() == 1);
   }
 
@@ -463,43 +517,46 @@ void test_add_times_time_dependent() {
                                                                         0));
   } else {
     // The callback should have queued a single simple action,
-    // VerifyTimesAndSendPoints.
+    // VerifyTemporalIdsAndSendPoints.
     CHECK(ActionTesting::number_of_queued_simple_actions<target_component>(
               runner, 0) == 1);
 
     ActionTesting::invoke_queued_simple_action<target_component>(
         make_not_null(&runner), 0);
 
-    // The first 4 times should now be in Times,
-    // and the last 2 should be in PendingTimes.
-    CHECK(
-        ActionTesting::get_databox_tag<target_component, ::intrp::Tags::Times>(
-            runner, 0) ==
-        std::deque<double>({times[0], times[1], times[2], times[3]}));
-    CHECK(ActionTesting::get_databox_tag<target_component,
-                                         ::intrp::Tags::PendingTimes>(
-              runner, 0) == std::deque<double>({times[4], times[5]}));
+    // The first 4 temporal_ids should now be in TemporalIds,
+    // and the last 2 should be in PendingTemporalIds.
+    CHECK(ActionTesting::get_databox_tag<
+              target_component, ::intrp::Tags::TemporalIds<temporal_id_type>>(
+              runner, 0) ==
+          std::deque<TimeStepId>({temporal_ids[0], temporal_ids[1],
+                                  temporal_ids[2], temporal_ids[3]}));
+    CHECK(ActionTesting::get_databox_tag<
+              target_component,
+              ::intrp::Tags::PendingTemporalIds<temporal_id_type>>(runner, 0) ==
+          std::deque<TimeStepId>({temporal_ids[4], temporal_ids[5]}));
 
     // Now there should be three queued simple actions.  One is
-    // VerifyTimesAndSendPoints, which was invoked by the last
-    // invocation of VerifyTimesAndSendPoints because there are
-    // still pending times.
+    // VerifyTemporalIdsAndSendPoints, which was invoked by the last
+    // invocation of VerifyTemporalIdsAndSendPoints because there are
+    // still pending temporal_ids.
     // The other two are MockSendPointsToInterpolator for each
-    // of the newly-added times.
+    // of the newly-added temporal_ids.
     CHECK(ActionTesting::number_of_queued_simple_actions<target_component>(
               runner, 0) == 3);
 
     // Invoke the first two simple actions (the ones that call
     // MockSendPointsToInterpolator), and verify that
     // MockSendPointsToInterpolator was indeed called for the
-    // times.
+    // temporal_ids.
     for (size_t i = 0; i < 2; ++i) {
       ActionTesting::invoke_queued_simple_action<target_component>(
           make_not_null(&runner), 0);
       CHECK(ActionTesting::get_databox_tag<
-                target_component, ::intrp::Tags::IndicesOfFilledInterpPoints>(
+                target_component,
+                ::intrp::Tags::IndicesOfFilledInterpPoints<temporal_id_type>>(
                 runner, 0)
-                .at(times[i + 2])
+                .at(temporal_ids[i + 2])
                 .size() == 1);
     }
   }
@@ -507,7 +564,7 @@ void test_add_times_time_dependent() {
   // Earlier in this test we mutated the FunctionsOfTime when there were
   // no more simple_actions in the queue.  Now we mutate the
   // FunctionsOfTime while there is still (for the nonsequential case) a
-  // VerifyTimesAndSendPoints queued.
+  // VerifyTemporalIdsAndSendPoints queued.
   Parallel::mutate<domain::Tags::FunctionsOfTime, MyFunctionOfTimeUpdater<2>>(
       cache);
 
@@ -517,20 +574,22 @@ void test_add_times_time_dependent() {
                                                                         0));
   } else {
     // There should still be a single simple action in the queue,
-    // VerifyTimesAndSendPoints, because there was no callback.
+    // VerifyTemporalIdsAndSendPoints, because there was no callback.
     CHECK(ActionTesting::number_of_queued_simple_actions<target_component>(
               runner, 0) == 1);
 
     ActionTesting::invoke_queued_simple_action<target_component>(
         make_not_null(&runner), 0);
 
-    // All times should now be in Times,
-    // and none should be in PendingTimes.
-    CHECK(
-        ActionTesting::get_databox_tag<target_component, ::intrp::Tags::Times>(
-            runner, 0) == std::deque<double>(times.begin(), times.end()));
-    CHECK(ActionTesting::get_databox_tag<target_component,
-                                         ::intrp::Tags::PendingTimes>(runner, 0)
+    // All temporal_ids should now be in TemporalIds,
+    // and none should be in PendingTemporalIds.
+    CHECK(ActionTesting::get_databox_tag<
+              target_component, ::intrp::Tags::TemporalIds<temporal_id_type>>(
+              runner, 0) ==
+          std::deque<TimeStepId>(temporal_ids.begin(), temporal_ids.end()));
+    CHECK(ActionTesting::get_databox_tag<
+              target_component,
+              ::intrp::Tags::PendingTemporalIds<temporal_id_type>>(runner, 0)
               .empty());
 
     // Now there should be two queued simple actions, the
@@ -540,14 +599,15 @@ void test_add_times_time_dependent() {
 
     // Invoke the two simple actions, and verify that
     // MockSendPointsToInterpolator was indeed called for the
-    // times.
+    // temporal_ids.
     for (size_t i = 0; i < 2; ++i) {
       ActionTesting::invoke_queued_simple_action<target_component>(
           make_not_null(&runner), 0);
       CHECK(ActionTesting::get_databox_tag<
-                target_component, ::intrp::Tags::IndicesOfFilledInterpPoints>(
+                target_component,
+                ::intrp::Tags::IndicesOfFilledInterpPoints<temporal_id_type>>(
                 runner, 0)
-                .at(times[i + 4])
+                .at(temporal_ids[i + 4])
                 .size() == 1);
     }
   }
@@ -557,14 +617,14 @@ void test_add_times_time_dependent() {
       ActionTesting::is_simple_action_queue_empty<target_component>(runner, 0));
 }
 
-SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.AddTimes",
+SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.AddTemporalIds",
                   "[Unit]") {
   domain::creators::register_derived_with_charm();
   domain::creators::time_dependence::register_derived_with_charm();
   domain::FunctionsOfTime::register_derived_with_charm();
-  test_add_times<std::true_type>();
-  test_add_times<std::false_type>();
-  test_add_times_time_dependent<std::true_type>();
-  test_add_times_time_dependent<std::false_type>();
+  test_add_temporal_ids<std::true_type>();
+  test_add_temporal_ids<std::false_type>();
+  test_add_temporal_ids_time_dependent<std::true_type>();
+  test_add_temporal_ids_time_dependent<std::false_type>();
 }
 }  // namespace

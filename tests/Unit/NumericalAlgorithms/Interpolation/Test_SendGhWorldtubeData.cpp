@@ -31,9 +31,10 @@ struct dispatch_to_send_gh_worldtube_data {
   static void apply(const db::DataBox<tmpl::list<DbTags...>>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/) noexcept {
-    intrp::callbacks::
-        SendGhWorldtubeData<Cce::CharacteristicEvolution<Metavariables>>::apply(
-            box, cache, db::get<::Tags::TimeStepId>(box));
+    intrp::callbacks::SendGhWorldtubeData<
+        Cce::CharacteristicEvolution<Metavariables>,
+        ::Tags::TimeStepId>::apply(box, cache,
+                                   db::get<::Tags::TimeStepId>(box));
   }
 };
 

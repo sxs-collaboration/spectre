@@ -11,7 +11,12 @@
 #include "Utilities/TMPL.hpp"
 
 namespace {
+struct SomeType {};
+struct SomeTag {
+  using type = SomeType;
+};
 struct Metavars {
+  using temporal_id = SomeTag;
   static constexpr size_t volume_dim = 3;
   using interpolation_target_tags = tmpl::list<>;
 };
@@ -21,18 +26,21 @@ struct InterpolationTargetTag {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Interpolation.Tags", "[Unit][NumericalAlgorithms]") {
-  TestHelpers::db::test_simple_tag<intrp::Tags::IndicesOfFilledInterpPoints>(
+  TestHelpers::db::test_simple_tag<
+      intrp::Tags::IndicesOfFilledInterpPoints<Metavars>>(
       "IndicesOfFilledInterpPoints");
-  TestHelpers::db::test_simple_tag<intrp::Tags::IndicesOfInvalidInterpPoints>(
+  TestHelpers::db::test_simple_tag<
+      intrp::Tags::IndicesOfInvalidInterpPoints<Metavars>>(
       "IndicesOfInvalidInterpPoints");
   TestHelpers::db::test_simple_tag<
-      intrp::Tags::InterpolatedVars<InterpolationTargetTag>>(
+      intrp::Tags::InterpolatedVars<InterpolationTargetTag, Metavars>>(
       "InterpolatedVars");
-  TestHelpers::db::test_simple_tag<intrp::Tags::Times>("Times");
-  TestHelpers::db::test_simple_tag<intrp::Tags::CompletedTimes>(
-      "CompletedTimes");
-  TestHelpers::db::test_simple_tag<intrp::Tags::VolumeVarsInfo<Metavars>>(
-      "VolumeVarsInfo");
+  TestHelpers::db::test_simple_tag<intrp::Tags::TemporalIds<Metavars>>(
+      "TemporalIds");
+  TestHelpers::db::test_simple_tag<intrp::Tags::CompletedTemporalIds<Metavars>>(
+      "CompletedTemporalIds");
+  TestHelpers::db::test_simple_tag<
+      intrp::Tags::VolumeVarsInfo<Metavars, SomeTag>>("VolumeVarsInfo");
   TestHelpers::db::test_simple_tag<
       intrp::Tags::InterpolatedVarsHolders<Metavars>>(
       "InterpolatedVarsHolders");

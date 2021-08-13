@@ -44,10 +44,15 @@
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "Time/Slab.hpp"
+#include "Time/Tags.hpp"
+#include "Time/Time.hpp"
+#include "Time/TimeStepId.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeWithValue.hpp"
+#include "Utilities/Rational.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -56,7 +61,7 @@
 // IWYU pragma: no_forward_declare Tensor
 namespace intrp::Actions {
 template <typename InterpolationTargetTag>
-struct AddTimesToInterpolationTarget;
+struct AddTemporalIdsToInterpolationTarget;
 template <typename InterpolationTargetTag>
 struct InterpolationTargetReceiveVars;
 }  // namespace intrp::Actions
@@ -69,10 +74,11 @@ template <typename TagsList>
 class DataBox;
 }  // namespace db
 namespace intrp::Tags {
-template <typename Metavariables>
+template <typename TemporalId>
 struct InterpolatedVarsHolders;
-struct Times;
-template <typename Metavariables>
+template <typename TemporalId>
+struct TemporalIds;
+template <typename Metavariables, typename TemporalId>
 struct VolumeVarsInfo;
 }  // namespace intrp::Tags
 
@@ -106,10 +112,10 @@ struct ComputeSquare {
 
 template <typename InterpolationTargetTag>
 struct MockInterpolationTargetReceiveVars {
-  template <
-      typename ParallelComponent, typename DbTags, typename Metavariables,
-      typename ArrayIndex,
-      Requires<tmpl::list_contains_v<DbTags, intrp::Tags::Times>> = nullptr>
+  template <typename ParallelComponent, typename DbTags, typename Metavariables,
+            typename ArrayIndex, typename TemporalId,
+            Requires<tmpl::list_contains_v<
+                DbTags, intrp::Tags::TemporalIds<TemporalId>>> = nullptr>
   static void apply(
       db::DataBox<DbTags>& box, Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/,
@@ -117,7 +123,7 @@ struct MockInterpolationTargetReceiveVars {
           typename InterpolationTargetTag::vars_to_interpolate_to_target>>&
           vars_src,
       const std::vector<std::vector<size_t>>& global_offsets,
-      const double /*time*/) noexcept {
+      const TemporalId& /*temporal_id*/) noexcept {
     size_t number_of_interpolated_points = 0;
     for (size_t i = 0; i < global_offsets.size(); ++i) {
       Scalar<DataVector> expected_vars{global_offsets[i].size()};
@@ -143,15 +149,17 @@ struct MockInterpolationTargetReceiveVars {
     // Make sure we have interpolated at the correct number of points.
     CHECK(number_of_interpolated_points == 15);
     // Change something in the DataBox so we can test that this function was
-    // indeed called.  Put some unusual time into Tags::Times.
-    // This is not the usual usage of Tags::Times; this is done just
+    // indeed called.  Put some unusual temporal_id into Tags::TemporalIds.
+    // This is not the usual usage of Tags::TemporalIds; this is done just
     // for the test.
-    double strange_time = 111.0 / 135.0;
-    db::mutate<intrp::Tags::Times>(
-        make_not_null(&box),
-        [&strange_time](
-            const gsl::not_null<std::deque<double>*> times) noexcept {
-          times->push_back(strange_time);
+    Slab slab(0.0, 1.0);
+    TimeStepId strange_temporal_id(true, 0, Time(slab, Rational(111, 135)));
+    db::mutate<intrp::Tags::TemporalIds<TemporalId>>(
+        make_not_null(&box), [&strange_temporal_id](
+                                 const gsl::not_null<
+                                     std::deque<TemporalId>*>
+                                     temporal_ids) noexcept {
+          temporal_ids->push_back(strange_temporal_id);
         });
   }
 };
@@ -191,7 +199,7 @@ struct mock_interpolator {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
   using simple_tags = typename intrp::Actions::InitializeInterpolator<
-      intrp::Tags::VolumeVarsInfo<Metavariables>,
+      intrp::Tags::VolumeVarsInfo<Metavariables, ::Tags::TimeStepId>,
       intrp::Tags::InterpolatedVarsHolders<Metavariables>>::simple_tags;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
@@ -206,6 +214,7 @@ struct mock_interpolator {
 
 struct MockMetavariables {
   struct InterpolationTargetA {
+    using temporal_id = ::Tags::TimeStepId;
     using vars_to_interpolate_to_target = tmpl::list<Tags::Square>;
     using compute_vars_to_interpolate = ComputeSquare;
     using compute_items_on_target = tmpl::list<>;
@@ -224,6 +233,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceiveVolumeData",
   domain::creators::register_derived_with_charm();
 
   using metavars = MockMetavariables;
+  using temporal_id_type =
+      typename metavars::InterpolationTargetA::temporal_id::type;
   using target_component =
       mock_interpolation_target<metavars, metavars::InterpolationTargetA>;
   using interp_component = mock_interpolator<metavars>;
@@ -232,8 +243,9 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceiveVolumeData",
   const auto domain_creator =
       domain::creators::Shell(0.9, 4.9, 1, {{7, 7}}, false);
   const auto domain = domain_creator.create_domain();
-  double time = 11.0 / 15.0;
-  auto vars_holders = [&domain, &time]() {
+  Slab slab(0.0, 1.0);
+  TimeStepId temporal_id(true, 0, Time(slab, Rational(11, 15)));
+  auto vars_holders = [&domain, &temporal_id]() {
     const size_t n_pts = 15;
     tnsr::I<DataVector, 3, Frame::Inertial> points(n_pts);
     for (size_t d = 0; d < 3; ++d) {
@@ -249,9 +261,10 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceiveVolumeData",
             vars_holders_l)
             .infos;
     vars_infos.emplace(std::make_pair(
-        time, intrp::Vars::Info<3, typename metavars::InterpolationTargetA::
-                                       vars_to_interpolate_to_target>{
-                  std::move(coords)}));
+        temporal_id,
+        intrp::Vars::Info<3, typename metavars::InterpolationTargetA::
+                                 vars_to_interpolate_to_target>{
+            std::move(coords)}));
     return vars_holders_l;
   }();
 
@@ -259,7 +272,10 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceiveVolumeData",
       {domain_creator.create_domain()}};
   ActionTesting::emplace_component_and_initialize<interp_component>(
       &runner, 0,
-      {0_st, typename intrp::Tags::VolumeVarsInfo<metavars>::type{},
+      {0_st,
+       typename intrp::Tags::VolumeVarsInfo<
+           metavars,
+           typename metavars::InterpolationTargetA::temporal_id>::type{},
        typename intrp::Tags::InterpolatedVarsHolders<metavars>::type{
            vars_holders}});
   ActionTesting::emplace_component<target_component>(&runner, 0);
@@ -307,14 +323,17 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceiveVolumeData",
                    5.0 * get<2>(inertial_coords);
 
     // Call the action on each element_id.
-    runner.simple_action<interp_component,
-                         ::intrp::Actions::InterpolatorReceiveVolumeData>(
-        0, time, element_id, mesh, std::move(output_vars));
+    runner.simple_action<
+        interp_component,
+        ::intrp::Actions::InterpolatorReceiveVolumeData<
+            typename metavars::InterpolationTargetA::temporal_id>>(
+        0, temporal_id, element_id, mesh, std::move(output_vars));
   }
 
-  // Should be no times in the target box, since we never
+  // Should be no temporal_ids in the target box, since we never
   // put any there.
-  CHECK(ActionTesting::get_databox_tag<target_component, intrp::Tags::Times>(
+  CHECK(ActionTesting::get_databox_tag<
+            target_component, intrp::Tags::TemporalIds<temporal_id_type>>(
             runner, 0)
             .empty());
 
@@ -322,11 +341,13 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceiveVolumeData",
   runner.invoke_queued_simple_action<target_component>(0);
 
   // Make sure that MockInterpolationTargetReceiveVars was called,
-  // by looking for a funny time that it inserts for the specific
+  // by looking for a funny temporal_id that it inserts for the specific
   // purpose of this test.
-  CHECK(ActionTesting::get_databox_tag<target_component, intrp::Tags::Times>(
+  CHECK(ActionTesting::get_databox_tag<
+            target_component, intrp::Tags::TemporalIds<temporal_id_type>>(
             runner, 0)
-            .front() == 111.0 / 135.0);
+            .front() ==
+        TimeStepId(true, 0, Time(Slab(0.0, 1.0), Rational(111, 135))));
 
   // No more queued simple actions.
   CHECK(runner.is_simple_action_queue_empty<target_component>(0));
