@@ -74,6 +74,12 @@ class EventsAndDenseTriggers {
                   const ArrayIndex& array_index,
                   const ComponentPointer component) noexcept;
 
+  /// Add a new trigger and set of events.  This can only be called
+  /// during initialization.
+  void add_trigger_and_events(
+      std::unique_ptr<DenseTrigger> trigger,
+      std::vector<std::unique_ptr<Event>> events) noexcept;
+
   template <typename F>
   void for_each_event(F&& f) const noexcept;
 

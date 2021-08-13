@@ -27,6 +27,16 @@ EventsAndDenseTriggers::EventsAndDenseTriggers(
   }
 }
 
+void EventsAndDenseTriggers::add_trigger_and_events(
+    std::unique_ptr<DenseTrigger> trigger,
+    std::vector<std::unique_ptr<Event>> events) noexcept {
+  ASSERT(heap_size_ == -1, "Cannot add events after initialization");
+  events_and_triggers_.reserve(events_and_triggers_.size() + 1);
+  events_and_triggers_.push_back(
+      TriggerRecord{std::numeric_limits<double>::signaling_NaN(),
+                    std::move(trigger), std::move(events)});
+}
+
 void EventsAndDenseTriggers::pup(PUP::er& p) noexcept {
   p | events_and_triggers_;
   p | heap_size_;
