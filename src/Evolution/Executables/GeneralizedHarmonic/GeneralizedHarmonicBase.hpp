@@ -140,22 +140,24 @@ class CProxy_GlobalCache;
 }  // namespace Parallel
 /// \endcond
 
-template <typename EvolutionMetavarsDerived>
+template <bool UseDampedHarmonicRollon, typename EvolutionMetavarsDerived>
 struct GeneralizedHarmonicTemplateBase;
 
-template <template <size_t, typename, typename> class EvolutionMetavarsDerived,
+template <bool UseDampedHarmonicRollon,
+          template <size_t, typename, typename> class EvolutionMetavarsDerived,
           size_t VolumeDim, typename InitialData, typename BoundaryConditions>
 struct GeneralizedHarmonicTemplateBase<
+    UseDampedHarmonicRollon,
     EvolutionMetavarsDerived<VolumeDim, InitialData, BoundaryConditions>> {
   using derived_metavars =
       EvolutionMetavarsDerived<VolumeDim, InitialData, BoundaryConditions>;
   static constexpr size_t volume_dim = VolumeDim;
+  static constexpr bool use_damped_harmonic_rollon = UseDampedHarmonicRollon;
   using initial_data = InitialData;
   using frame = Frame::Inertial;
   using system = GeneralizedHarmonic::System<volume_dim>;
   static constexpr dg::Formulation dg_formulation =
       dg::Formulation::StrongInertial;
-  static constexpr bool use_damped_harmonic_rollon = true;
   using temporal_id = Tags::TimeStepId;
   static constexpr bool local_time_stepping = false;
   // Set override_functions_of_time to true to override the

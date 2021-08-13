@@ -25,28 +25,32 @@ PhaseChangeAndTriggers:
           WallclockHours: None
 
 DomainCreator:
-  Interval:
+  RotatedIntervals:
     LowerBound: [0.0]
-    UpperBound: [1.0]
+    Midpoint: [3.0]
+    UpperBound: [6.283185307179586]
     InitialRefinement: [1]
-    InitialGridPoints: [7]
-    TimeDependence: None
+    InitialGridPoints: [[7,7]]
+    TimeDependence:
+      UniformTranslation:
+         InitialTime: 0.0
+         InitialExpirationDeltaT: Auto
+         Velocity: [0.5]
+         FunctionOfTimeNames: ["Translation"]
     BoundaryConditions:
-      LowerBoundary:  Periodic
-      UpperBoundary:  Periodic
+      LowerBoundary:  DirichletAnalytic
+      UpperBoundary:  DirichletAnalytic
 
 AnalyticSolution:
   GaugeWave:
-    Amplitude: 0.1
-    Wavelength: 1.0
+    Amplitude: 0.5
+    Wavelength: 6.283185307179586
 
 EvolutionSystem:
   GeneralizedHarmonic:
     DhGaugeParameters:
-      RollOnStartTime: 100000.0
-      RollOnTimeWindow: 100.0
       SpatialDecayWidth: 50.0
-      Amplitudes: [1.0, 1.0, 1.0]
+      Amplitudes: [0.0, 0.0, 0.0]
       Exponents: [4, 4, 4]
     DampingFunctionGamma0:
       GaussianPlusConstant:
@@ -70,7 +74,7 @@ EvolutionSystem:
 SpatialDiscretization:
   DiscontinuousGalerkin:
     Formulation: StrongInertial
-    Quadrature: GaussLobatto
+    Quadrature: Gauss
   BoundaryCorrection:
     UpwindPenalty:
 

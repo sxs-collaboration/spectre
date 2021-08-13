@@ -30,9 +30,10 @@
 template <size_t VolumeDim, typename InitialData, typename BoundaryConditions>
 struct EvolutionMetavars
     : public GeneralizedHarmonicTemplateBase<
+          false,
           EvolutionMetavars<VolumeDim, InitialData, BoundaryConditions>> {
   using gh_base = GeneralizedHarmonicTemplateBase<
-      EvolutionMetavars<VolumeDim, InitialData, BoundaryConditions>>;
+      false, EvolutionMetavars<VolumeDim, InitialData, BoundaryConditions>>;
   using typename gh_base::const_global_cache_tags;
   using typename gh_base::observed_reduction_data_tags;
   using typename gh_base::component_list;

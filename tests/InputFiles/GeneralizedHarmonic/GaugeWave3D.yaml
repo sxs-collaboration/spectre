@@ -41,8 +41,6 @@ AnalyticSolution:
 EvolutionSystem:
   GeneralizedHarmonic:
     DhGaugeParameters:
-      RollOnStartTime: 100000.0
-      RollOnTimeWindow: 100.0
       SpatialDecayWidth: 50.0
       Amplitudes: [1.0, 1.0, 1.0]
       Exponents: [4, 4, 4]
