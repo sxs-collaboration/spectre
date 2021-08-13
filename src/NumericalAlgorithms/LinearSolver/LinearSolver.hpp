@@ -15,6 +15,7 @@
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Parallel/PupStlCpp17.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/FakeVirtual.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Registration.hpp"
@@ -52,6 +53,7 @@ class LinearSolver : public PUP::able {
   WRAPPED_PUPable_abstract(LinearSolver);  // NOLINT
   /// \endcond
 
+  using registrars = LinearSolverRegistrars;
   using creatable_classes = Registration::registrants<LinearSolverRegistrars>;
 
   virtual std::unique_ptr<LinearSolver<LinearSolverRegistrars>> get_clone()
@@ -66,17 +68,19 @@ class LinearSolver : public PUP::able {
    *   initial guess for \f$x\f$. Not all solvers take the initial guess into
    *   account, but all expect the buffer is sized correctly.
    * - The `linear_operator` must be an invocable that takes a `VarsType` as
-   *   const-ref argument and returns a `SourceType` by reference.
+   *   const-ref argument and returns a `SourceType` by reference. It also takes
+   *   all `OperatorArgs` as const-ref arguments.
    *
    * Each solve may mutate the private state of the solver, for example to cache
    * quantities to accelerate successive solves for the same operator. Invoke
    * `reset` to discard these caches.
    */
   template <typename LinearOperator, typename VarsType, typename SourceType,
-            typename... Args>
+            typename... OperatorArgs, typename... Args>
   Convergence::HasConverged solve(
       gsl::not_null<VarsType*> initial_guess_in_solution_out,
       const LinearOperator& linear_operator, const SourceType& source,
+      const std::tuple<OperatorArgs...>& operator_args,
       Args&&... args) const noexcept;
 
   /// Discard caches from previous solves. Use before solving a different linear
@@ -92,16 +96,17 @@ LinearSolver<LinearSolverRegistrars>::LinearSolver(CkMigrateMessage* m) noexcept
 
 template <typename LinearSolverRegistrars>
 template <typename LinearOperator, typename VarsType, typename SourceType,
-          typename... Args>
+          typename... OperatorArgs, typename... Args>
 Convergence::HasConverged LinearSolver<LinearSolverRegistrars>::solve(
     const gsl::not_null<VarsType*> initial_guess_in_solution_out,
     const LinearOperator& linear_operator, const SourceType& source,
+    const std::tuple<OperatorArgs...>& operator_args,
     Args&&... args) const noexcept {
   return call_with_dynamic_type<Convergence::HasConverged, creatable_classes>(
       this, [&initial_guess_in_solution_out, &linear_operator, &source,
-             &args...](auto* const linear_solver) noexcept {
+             &operator_args, &args...](auto* const linear_solver) noexcept {
         return linear_solver->solve(initial_guess_in_solution_out,
-                                    linear_operator, source,
+                                    linear_operator, source, operator_args,
                                     std::forward<Args>(args)...);
       });
 }

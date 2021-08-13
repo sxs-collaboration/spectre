@@ -1,38 +1,37 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY LinearSolver)
+set(LIBRARY EllipticSubdomainPreconditioners)
 
 add_spectre_library(${LIBRARY})
 
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
-  Gmres.cpp
-  Lapack.cpp
-  )
+  RegisterDerived.cpp
+)
 
 spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
-  ExplicitInverse.hpp
-  Gmres.hpp
-  InnerProduct.hpp
-  Lapack.hpp
-  LinearSolver.hpp
+  MinusLaplacian.hpp
+  RegisterDerived.hpp
   )
 
 target_link_libraries(
   ${LIBRARY}
   PUBLIC
-  Blas
+  LinearSolver
+  Parallel
+  ParallelSchwarz
+  Poisson
+  Utilities
+  INTERFACE
   Convergence
   DataStructures
-  ErrorHandling
+  EllipticDgSubdomainOperator
   Logging
   Options
-  Parallel
-  PRIVATE
-  Lapack
+  PoissonBoundaryConditions
   )

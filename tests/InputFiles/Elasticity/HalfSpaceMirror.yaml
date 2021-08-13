@@ -75,12 +75,14 @@ LinearSolver:
     SubdomainSolver:
       Gmres:
         ConvergenceCriteria:
-          MaxIterations: 50
+          MaxIterations: 10
           RelativeResidual: 1.e-3
           AbsoluteResidual: 1.e-12
         Verbosity: Silent
         Restart: None
-        Preconditioner: None
+        Preconditioner:
+          MinusLaplacian:
+            Solver: ExplicitInverse
 
 EventsAndTriggers:
   ? EveryNIterations:

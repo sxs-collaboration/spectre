@@ -13,6 +13,7 @@
 #include "NumericalAlgorithms/LinearSolver/LinearSolver.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits/CreateIsCallable.hpp"
@@ -109,10 +110,13 @@ class ExplicitInverse : public LinearSolver<LinearSolverRegistrars> {
    * re-creating the `begin()` iterator. The `reset()` function must not
    * invalidate the `end()` iterator.
    */
-  template <typename LinearOperator, typename VarsType, typename SourceType>
-  Convergence::HasConverged solve(gsl::not_null<VarsType*> solution,
-                                  const LinearOperator& linear_operator,
-                                  const SourceType& source) const noexcept;
+  template <typename LinearOperator, typename VarsType, typename SourceType,
+            typename... OperatorArgs>
+  Convergence::HasConverged solve(
+      gsl::not_null<VarsType*> solution, const LinearOperator& linear_operator,
+      const SourceType& source,
+      const std::tuple<OperatorArgs...>& operator_args =
+          std::tuple{}) const noexcept;
 
   /// Flags the operator to require re-initialization. No memory is released.
   /// Call this function to rebuild the solver when the operator changed.
@@ -154,11 +158,12 @@ class ExplicitInverse : public LinearSolver<LinearSolverRegistrars> {
 };
 
 template <typename LinearSolverRegistrars>
-template <typename LinearOperator, typename VarsType, typename SourceType>
+template <typename LinearOperator, typename VarsType, typename SourceType,
+          typename... OperatorArgs>
 Convergence::HasConverged ExplicitInverse<LinearSolverRegistrars>::solve(
     const gsl::not_null<VarsType*> solution,
-    const LinearOperator& linear_operator,
-    const SourceType& source) const noexcept {
+    const LinearOperator& linear_operator, const SourceType& source,
+    const std::tuple<OperatorArgs...>& operator_args) const noexcept {
   if (UNLIKELY(size_ == std::numeric_limits<size_t>::max())) {
     const auto& used_for_size = source;
     size_ = used_for_size.size();
@@ -178,7 +183,10 @@ Convergence::HasConverged ExplicitInverse<LinearSolverRegistrars>::solve(
       // Add a 1 at the unit vector location i
       unit_vector_data = 1.;
       // Invoke the operator on the unit vector
-      linear_operator(make_not_null(&result_buffer), unit_vector);
+      std::apply(linear_operator,
+                 std::tuple_cat(std::forward_as_tuple(
+                                    make_not_null(&result_buffer), unit_vector),
+                                operator_args));
       // Set the unit vector back to zero
       unit_vector_data = 0.;
       // Reset the iterator by calling its `reset` member function or by

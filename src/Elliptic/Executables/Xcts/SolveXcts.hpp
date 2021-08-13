@@ -17,6 +17,8 @@
 #include "Elliptic/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Elliptic/DiscontinuousGalerkin/SubdomainOperator/InitializeSubdomain.hpp"
 #include "Elliptic/DiscontinuousGalerkin/SubdomainOperator/SubdomainOperator.hpp"
+#include "Elliptic/SubdomainPreconditioners/MinusLaplacian.hpp"
+#include "Elliptic/SubdomainPreconditioners/RegisterDerived.hpp"
 #include "Elliptic/Systems/Xcts/FirstOrderSystem.hpp"
 #include "Elliptic/Tags.hpp"
 #include "Elliptic/Triggers/EveryNIterations.hpp"
@@ -150,6 +152,9 @@ struct Metavariables {
   using subdomain_operator =
       elliptic::dg::subdomain_operator::SubdomainOperator<
           system, SolveXcts::OptionTags::SchwarzSmootherGroup>;
+  using subdomain_preconditioners = tmpl::list<
+      elliptic::subdomain_preconditioners::Registrars::MinusLaplacian<
+          volume_dim, SolveXcts::OptionTags::SchwarzSmootherGroup>>;
   // This data needs to be communicated on subdomain overlap regions
   using communicated_overlap_tags = tmpl::list<
       // For linearized sources
@@ -157,6 +162,7 @@ struct Metavariables {
   using schwarz_smoother = LinearSolver::Schwarz::Schwarz<
       typename linear_solver::operand_tag,
       SolveXcts::OptionTags::SchwarzSmootherGroup, subdomain_operator,
+      subdomain_preconditioners,
       typename linear_solver::preconditioner_source_tag>;
   // For the GMRES linear solver we need to apply the DG operator to its
   // internal "operand" in every iteration of the algorithm.
@@ -317,6 +323,7 @@ static const std::vector<void (*)()> charm_init_node_funcs{
         metavariables::system::boundary_conditions_base>,
     &Parallel::register_derived_classes_with_charm<
         metavariables::schwarz_smoother::subdomain_solver>,
+    &elliptic::subdomain_preconditioners::register_derived_with_charm,
     &Parallel::register_factory_classes_with_charm<metavariables>};
 static const std::vector<void (*)()> charm_init_proc_funcs{
     &enable_floating_point_exceptions};

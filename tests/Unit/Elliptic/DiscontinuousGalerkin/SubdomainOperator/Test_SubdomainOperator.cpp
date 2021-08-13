@@ -75,6 +75,11 @@ namespace {
 
 struct DummyOptionsGroup {};
 
+template <typename SubdomainOperatorType>
+struct SubdomainOperatorTag : db::SimpleTag {
+  using type = SubdomainOperatorType;
+};
+
 struct TemporalIdTag : db::SimpleTag {
   using type = size_t;
 };
@@ -101,6 +106,21 @@ struct SubdomainOperatorAppliedToDataTag : db::SimpleTag {
   using type = LinearSolver::Schwarz::ElementCenteredSubdomainData<
       Dim, db::wrap_tags_in<DgOperatorAppliedTo, Fields>>;
 };
+
+template <typename System>
+std::unique_ptr<typename System::boundary_conditions_base>
+make_boundary_condition(
+    const elliptic::BoundaryConditionType boundary_condition_type) {
+  using boundary_condition_registrars =
+      typename System::boundary_conditions_base::registrars;
+  using AnalyticSolutionBoundaryCondition =
+      typename elliptic::BoundaryConditions::Registrars::AnalyticSolution<
+          System>::template f<boundary_condition_registrars>;
+  Parallel::register_derived_classes_with_charm<
+      typename System::boundary_conditions_base>();
+  return std::make_unique<AnalyticSolutionBoundaryCondition>(
+      boundary_condition_type);
+}
 
 // Generate some random element-centered subdomain data on each element
 template <typename SubdomainOperator, typename Fields>
@@ -225,7 +245,8 @@ struct ApplySubdomainOperator {
     const auto& subdomain_data = db::get<SubdomainDataTag<Dim, Fields>>(box);
 
     // Apply the subdomain operator
-    SubdomainOperator subdomain_operator{};
+    const auto& subdomain_operator =
+        db::get<SubdomainOperatorTag<SubdomainOperator>>(box);
     auto subdomain_result = make_with_value<
         typename SubdomainOperatorAppliedToDataTag<Dim, Fields>::type>(
         subdomain_data, 0.);
@@ -276,6 +297,7 @@ struct ElementArray {
               ActionTesting::InitializeDataBox<
                   tmpl::list<domain::Tags::InitialRefinementLevels<Dim>,
                              domain::Tags::InitialExtents<Dim>,
+                             SubdomainOperatorTag<SubdomainOperator>,
                              subdomain_operator_applied_to_fields_tag>>,
               Actions::SetupDataBox,
               ::elliptic::dg::Actions::InitializeDomain<Dim>,
@@ -319,6 +341,7 @@ template <typename System, typename ExtraInitActions = tmpl::list<>,
 void test_subdomain_operator(
     const DomainCreator<Dim>& domain_creator,
     const bool use_massive_dg_operator = true,
+    const bool override_boundary_conditions = false,
     // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
     const size_t max_overlap = 3, const double penalty_parameter = 1.2) {
   CAPTURE(Dim);
@@ -365,6 +388,11 @@ void test_subdomain_operator(
       ActionTesting::emplace_component_and_initialize<element_array>(
           &runner, element_id,
           {initial_ref_levs, initial_extents,
+           SubdomainOperator{
+               override_boundary_conditions
+                   ? std::make_optional(make_boundary_condition<System>(
+                         elliptic::BoundaryConditionType::Dirichlet))
+                   : std::nullopt},
            typename subdomain_operator_applied_to_fields_tag::type{}});
       while (
           not ActionTesting::get_terminate<element_array>(runner, element_id)) {
@@ -509,21 +537,6 @@ struct InitializeConstitutiveRelation {
   }
 };
 
-template <typename System>
-std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-make_boundary_condition(
-    const elliptic::BoundaryConditionType boundary_condition_type) {
-  using boundary_condition_registrars =
-      typename System::boundary_conditions_base::registrars;
-  using AnalyticSolutionBoundaryCondition =
-      typename elliptic::BoundaryConditions::Registrars::AnalyticSolution<
-          System>::template f<boundary_condition_registrars>;
-  Parallel::register_derived_classes_with_charm<
-      typename System::boundary_conditions_base>();
-  return std::make_unique<AnalyticSolutionBoundaryCondition>(
-      boundary_condition_type);
-}
-
 }  // namespace
 
 // This test constructs a selection of domains and tests the subdomain operator
@@ -566,6 +579,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.SubdomainOperator", "[Unit][Elliptic]") {
               elliptic::BoundaryConditionType::Dirichlet),
           nullptr};
       test_subdomain_operator<system>(domain_creator);
+      test_subdomain_operator<system>(domain_creator, true, true);
     }
     {
       INFO("3D");
