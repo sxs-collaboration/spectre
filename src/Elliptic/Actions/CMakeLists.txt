@@ -9,4 +9,5 @@ spectre_target_headers(
   InitializeBackgroundFields.hpp
   InitializeFields.hpp
   InitializeFixedSources.hpp
+  RandomizeInitialGuess.hpp
   )

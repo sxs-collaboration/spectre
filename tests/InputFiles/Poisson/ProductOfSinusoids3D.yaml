@@ -21,6 +21,8 @@ Background:
 InitialGuess:
   Zero:
 
+RandomizeInitialGuess: None
+
 DomainCreator:
   Brick:
     LowerBound: [-1.570796326794896, 0., 0.]

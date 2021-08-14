@@ -20,6 +20,8 @@ Background:
 InitialGuess:
   Zero:
 
+RandomizeInitialGuess: None
+
 DomainCreator:
   Rectangle:
     LowerBound: [-1.570796326794896, 0.]
