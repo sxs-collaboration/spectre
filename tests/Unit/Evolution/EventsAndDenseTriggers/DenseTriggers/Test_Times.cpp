@@ -14,6 +14,7 @@
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
@@ -25,6 +26,7 @@
 
 namespace {
 struct Metavariables {
+  using component_list = tmpl::list<>;
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes =
@@ -62,8 +64,11 @@ void check_one_direction(const std::vector<double>& trigger_times,
                         Tags::TimeStepId, Tags::Time>>(
       Metavariables{}, TimeStepId(time_runs_forward, 100, slab.start()),
       current_time);
+  Parallel::GlobalCache<Metavariables> cache{};
+  const int array_index = 0;
+  const void* component = nullptr;
 
-  CHECK(trigger->is_ready(box));
+  CHECK(trigger->is_ready(box, cache, array_index, component));
   const auto is_triggered = trigger->is_triggered(box);
   CHECK(is_triggered.is_triggered == expected_is_triggered);
   CHECK(is_triggered.next_check == expected_next_check);

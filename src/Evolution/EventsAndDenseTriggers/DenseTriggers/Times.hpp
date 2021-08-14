@@ -15,6 +15,10 @@
 
 /// \cond
 class TimeStepId;
+namespace Parallel {
+template <typename Metavariables>
+class GlobalCache;
+}  // namespace Parallel
 namespace Tags {
 struct Time;
 struct TimeStepId;
@@ -45,7 +49,12 @@ class Times : public DenseTrigger {
 
   using is_ready_argument_tags = tmpl::list<>;
 
-  static bool is_ready() noexcept;
+  template <typename Metavariables, typename ArrayIndex, typename Component>
+  static bool is_ready(Parallel::GlobalCache<Metavariables>& /*cache*/,
+                       const ArrayIndex& /*array_index*/,
+                       const Component* const /*meta*/) noexcept {
+    return true;
+  }
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) noexcept override;

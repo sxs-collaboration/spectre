@@ -83,10 +83,10 @@ class TestTrigger : public DenseTrigger {
   // we have to handle that call and set up for triggering at the
   // interesting time.
   TestTrigger(const double init_time, const double trigger_time,
-              const bool is_ready, const bool is_triggered) noexcept
+              const bool is_ready_arg, const bool is_triggered) noexcept
       : init_time_(init_time),
         trigger_time_(trigger_time),
-        is_ready_(is_ready),
+        is_ready_(is_ready_arg),
         is_triggered_(is_triggered) {}
 
   using is_triggered_argument_tags = tmpl::list<Tags::Time>;
@@ -100,7 +100,11 @@ class TestTrigger : public DenseTrigger {
   }
 
   using is_ready_argument_tags = tmpl::list<Tags::Time>;
-  bool is_ready(const double time) const noexcept {
+  template <typename Metavariables, typename ArrayIndex, typename Component>
+  bool is_ready(Parallel::GlobalCache<Metavariables>& /*cache*/,
+                const ArrayIndex& /*array_index*/,
+                const Component* const /*meta*/,
+                const double time) const noexcept {
     if (time == init_time_) {
       return true;
     }

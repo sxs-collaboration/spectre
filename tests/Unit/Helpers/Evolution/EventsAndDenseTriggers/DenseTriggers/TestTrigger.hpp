@@ -14,6 +14,13 @@
 #include "Parallel/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
 
+/// \cond
+namespace Parallel {
+template <typename Metavariables>
+class GlobalCache;
+}  // namespace Parallel
+/// \endcond
+
 namespace TestHelpers::DenseTriggers {
 class TestTrigger : public DenseTrigger {
  public:
@@ -43,9 +50,9 @@ class TestTrigger : public DenseTrigger {
   using options = tmpl::list<IsReady, IsTriggered, NextCheck>;
   constexpr static Options::String help = "help";
 
-  TestTrigger(const bool is_ready, const bool is_triggered,
+  TestTrigger(const bool is_ready_arg, const bool is_triggered,
               const double next_check) noexcept
-      : is_ready_(is_ready),
+      : is_ready_(is_ready_arg),
         is_triggered_(is_triggered),
         next_check_(next_check) {}
 
@@ -56,7 +63,12 @@ class TestTrigger : public DenseTrigger {
   }
 
   using is_ready_argument_tags = tmpl::list<>;
-  bool is_ready() const noexcept { return is_ready_; }
+  template <typename Metavariables, typename ArrayIndex, typename Component>
+  bool is_ready(Parallel::GlobalCache<Metavariables>& /*cache*/,
+                const ArrayIndex& /*array_index*/,
+                const Component* const /*meta*/) const noexcept {
+    return is_ready_;
+  }
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) noexcept override {
@@ -104,14 +116,20 @@ class BoxTrigger : public DenseTrigger {
 
   using is_triggered_argument_tags =
       tmpl::list<IsReady, IsTriggered, NextCheck>;
-  Result is_triggered(const bool is_ready, const bool is_triggered,
+  Result is_triggered(const bool is_ready_arg, const bool is_triggered,
                       const double next_check) const noexcept {
-    CHECK(is_ready);
+    CHECK(is_ready_arg);
     return {is_triggered, next_check};
   }
 
   using is_ready_argument_tags = tmpl::list<IsReady>;
-  bool is_ready(const bool is_ready) const noexcept { return is_ready; }
+  template <typename Metavariables, typename ArrayIndex, typename Component>
+  bool is_ready(Parallel::GlobalCache<Metavariables>& /*cache*/,
+                const ArrayIndex& /*array_index*/,
+                const Component* const /*meta*/,
+                const bool is_ready_arg) const noexcept {
+    return is_ready_arg;
+  }
 };
 
 /// \cond

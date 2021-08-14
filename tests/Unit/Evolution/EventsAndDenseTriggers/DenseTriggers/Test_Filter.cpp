@@ -16,6 +16,7 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Evolution/EventsAndDenseTriggers/DenseTriggers/TestTrigger.hpp"
 #include "Options/Options.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Parallel/Tags/Metavariables.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
@@ -62,6 +63,7 @@ class TestTrigger : public Trigger {
 PUP::able::PUP_ID TestTrigger::my_PUP_ID = 0;  // NOLINT
 
 struct Metavariables {
+  using component_list = tmpl::list<>;
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
@@ -95,10 +97,14 @@ void check(const bool expected_is_ready,
   const auto box = db::create<
       db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<Metavariables>>>(
       Metavariables{});
+  Parallel::GlobalCache<Metavariables> cache{};
+  const int array_index = 0;
+  const void* component = nullptr;
   const auto trigger = serialize_and_deserialize(
       TestHelpers::test_creation<std::unique_ptr<DenseTrigger>, Metavariables>(
           creation_string.str()));
-  CHECK(trigger->is_ready(box) == expected_is_ready);
+  CHECK(trigger->is_ready(box, cache, array_index, component) ==
+        expected_is_ready);
   if (not expected_is_ready) {
     return;
   }
