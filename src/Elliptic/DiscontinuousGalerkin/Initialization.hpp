@@ -27,6 +27,7 @@
 #include "Elliptic/DiscontinuousGalerkin/Tags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
@@ -70,19 +71,30 @@ struct InitializeGeometry {
 /// yet computed at all. Invoke `elliptic::dg::NormalizeFaceNormals` for this
 /// purpose, possibly preceded by `elliptic::dg::InitializeBackground` if the
 /// system has a background metric.
+///
+/// The `::Tags::deriv<domain::Tags::UnnormalizedFaceNormal<Dim>>` is only
+/// added on external boundaries, for use by boundary conditions.
 template <size_t Dim>
 struct InitializeFacesAndMortars {
   using return_tags = tmpl::append<
       domain::make_faces_tags<
-          Dim, tmpl::list<domain::Tags::Direction<Dim>,
-                          domain::Tags::Coordinates<Dim, Frame::Inertial>,
-                          domain::Tags::FaceNormal<Dim>,
-                          domain::Tags::UnnormalizedFaceNormalMagnitude<Dim>>>,
+          Dim,
+          tmpl::list<domain::Tags::Direction<Dim>,
+                     domain::Tags::Coordinates<Dim, Frame::Inertial>,
+                     domain::Tags::FaceNormal<Dim>,
+                     domain::Tags::UnnormalizedFaceNormalMagnitude<Dim>,
+                     // Possible optimization: The derivative of the face normal
+                     // could be omitted for some systems, but its memory usage
+                     // is probably insignificant since it's only added on
+                     // external boundaries.
+                     ::Tags::deriv<domain::Tags::UnnormalizedFaceNormal<Dim>,
+                                   tmpl::size_t<Dim>, Frame::Inertial>>>,
       tmpl::list<::Tags::Mortars<domain::Tags::Mesh<Dim - 1>, Dim>,
                  ::Tags::Mortars<::Tags::MortarSize<Dim - 1>, Dim>>>;
-  using argument_tags =
-      tmpl::list<domain::Tags::Mesh<Dim>, domain::Tags::Element<Dim>,
-                 domain::Tags::ElementMap<Dim>>;
+  using argument_tags = tmpl::list<
+      domain::Tags::Mesh<Dim>, domain::Tags::Element<Dim>,
+      domain::Tags::ElementMap<Dim>,
+      domain::Tags::InverseJacobian<Dim, Frame::Logical, Frame::Inertial>>;
   void operator()(
       gsl::not_null<DirectionMap<Dim, Direction<Dim>>*> face_directions,
       gsl::not_null<DirectionMap<Dim, tnsr::I<DataVector, Dim>>*>
@@ -90,11 +102,15 @@ struct InitializeFacesAndMortars {
       gsl::not_null<DirectionMap<Dim, tnsr::i<DataVector, Dim>>*> face_normals,
       gsl::not_null<DirectionMap<Dim, Scalar<DataVector>>*>
           face_normal_magnitudes,
+      gsl::not_null<DirectionMap<Dim, tnsr::ij<DataVector, Dim>>*>
+          deriv_unnormalized_face_normals,
       gsl::not_null<::dg::MortarMap<Dim, Mesh<Dim - 1>>*> mortar_meshes,
       gsl::not_null<::dg::MortarMap<Dim, ::dg::MortarSize<Dim - 1>>*>
           mortar_sizes,
       const Mesh<Dim>& mesh, const Element<Dim>& element,
       const ElementMap<Dim, Frame::Inertial>& element_map,
+      const InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>&
+          inv_jacobian,
       const std::vector<std::array<size_t, Dim>>& initial_extents)
       const noexcept;
 };
