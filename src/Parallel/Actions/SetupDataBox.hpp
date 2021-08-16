@@ -65,8 +65,7 @@ auto merge_into_databox_helper(db::DataBox<DbTags>&& box,
                                tmpl::list<SimpleTags...> /*meta*/,
                                tmpl::list<ComputeTags...> /*meta*/) noexcept {
   return db::create_from<db::RemoveTags<>, db::AddSimpleTags<SimpleTags...>,
-                         db::AddComputeTags<ComputeTags...>>(
-      std::move(box), typename SimpleTags::type{}...);
+                         db::AddComputeTags<ComputeTags...>>(std::move(box));
 }
 }  // namespace detail
 
