@@ -39,10 +39,10 @@ namespace intrp {
 ///
 /// `InterpolationTargetTag` must contain the following type aliases:
 /// - vars_to_interpolate_to_target:
-///      A `tmpl::list` of tags describing variables to interpolate.
-///      Will be used to construct a `Variables`.
+///   A `tmpl::list` of tags describing variables to interpolate.
+///   Will be used to construct a `Variables`.
 /// - compute_vars_to_interpolate:
-///      A struct with at least one of the functions
+///   A struct with at least one of the functions
 ///```
 /// static void apply(const gsl::not_null<
 ///                  Variables<vars_to_interpolate_to_target>*>,
@@ -56,67 +56,67 @@ namespace intrp {
 ///                  const InverseJacobian<DataVector, Dim,
 ///                  ::Frame::Logical, TargetFrame>&);
 ///```
-///     that fills `vars_to_interpolate_to_target`.  Here Dim is
-///     `Metavariables::volume_dim`, SrcFrame is the frame of
-///     `Metavariables::interpolator_source_vars` and
-///      TargetFrame is the frame of `vars_to_interpolate_to_target`.
-///      The overload without Jacobians treats the case in which
-///      TargetFrame is the same as SrcFrame.
-///      Used only *with* the Interpolator ParallelComponent.
+///   that fills `vars_to_interpolate_to_target`.  Here Dim is
+///   `Metavariables::volume_dim`, SrcFrame is the frame of
+///   `Metavariables::interpolator_source_vars` and
+///   TargetFrame is the frame of `vars_to_interpolate_to_target`.
+///   The overload without Jacobians treats the case in which
+///   TargetFrame is the same as SrcFrame.
+///   Used only *with* the Interpolator ParallelComponent.
 /// - compute_items_on_source:
-///      A `tmpl::list` of compute items that uses
-///      `Metavariables::interpolator_source_vars` as input and computes the
-///      `Variables` defined by `vars_to_interpolate_to_target`.
-///      Used only *without* the Interpolator ParallelComponent.
+///   A `tmpl::list` of compute items that uses
+///   `Metavariables::interpolator_source_vars` as input and computes the
+///   `Variables` defined by `vars_to_interpolate_to_target`.
+///   Used only *without* the Interpolator ParallelComponent.
 /// - compute_items_on_target:
-///      A `tmpl::list` of compute items that uses
-///      `vars_to_interpolate_to_target` as input.
+///   A `tmpl::list` of compute items that uses
+///   `vars_to_interpolate_to_target` as input.
 /// - compute_target_points:
-///      A `simple_action` of `InterpolationTarget`
-///      that computes the target points and sends them to `Interpolators`. It
-///      takes a `temporal_id` as an extra argument. `compute_target_points`
-///      can (optionally) have an additional function
+///   A `simple_action` of `InterpolationTarget`
+///   that computes the target points and sends them to `Interpolators`. It
+///   takes a `temporal_id` as an extra argument. `compute_target_points`
+///   can (optionally) have an additional function
 ///```
 ///   static auto initialize(const gsl::not_null<db::DataBox<DbTags>*>,
 ///                          const Parallel::GlobalCache<Metavariables>&)
 ///                          noexcept;
 ///```
-///      that mutates arbitrary tags in the `DataBox` when the
-///      `InterpolationTarget` is initialized. Additional simple tags to
-///      include should be put in the typelist `simple_tags` and additional
-///      compute tags in `compute_tags`.  If `compute_target_points` has
-///      an `initialize` function, it must also have a type alias
-///      `initialization_tags` which is a `tmpl::list` of the tags that are
-///      added by `initialize`.
+///   that mutates arbitrary tags in the `DataBox` when the
+///   `InterpolationTarget` is initialized. Additional simple tags to
+///   include should be put in the typelist `simple_tags` and additional
+///   compute tags in `compute_tags`.  If `compute_target_points` has
+///   an `initialize` function, it must also have a type alias
+///   `initialization_tags` which is a `tmpl::list` of the tags that are
+///   added by `initialize`.
 /// - post_interpolation_callback:
-///      A struct with a type alias `const_global_cache_tags` (listing tags that
-///      should be read from option parsing), with a type alias
-///      `observation_types` (listing any ObservationTypes that the callback
-///      will use in constructing ObserverIds to call
-///      observers::ThreadedActions::WriteReductionData), and with a function
+///   A struct with a type alias `const_global_cache_tags` (listing tags that
+///   should be read from option parsing), with a type alias
+///   `observation_types` (listing any ObservationTypes that the callback
+///   will use in constructing ObserverIds to call
+///   observers::ThreadedActions::WriteReductionData), and with a function
 ///```
 ///     void apply(const DataBox<DbTags>&,
 ///                const intrp::GlobalCache<Metavariables>&,
 ///                const InterpolationTargetTag::temporal_id&) noexcept;
 ///```
-/// or
+///   or
 ///```
 ///     bool apply(const gsl::not_null<db::DataBox<DbTags>*>,
 ///                const gsl::not_null<intrp::GlobalCache<Metavariables>*>,
 ///                const InterpolationTargetTag::temporal_id&) noexcept;
 ///```
-///      that will be called when interpolation is complete.  `DbTags` includes
-///      everything in `vars_to_interpolate_to_target`, plus everything in
-///      `compute_items_on_target`.  The second form of the `apply` function
-///      should return false only if it calls another `intrp::Action` that still
-///      needs the volume data at this temporal_id (such as another iteration of
-///      the horizon finder).
+///   that will be called when interpolation is complete.  `DbTags` includes
+///   everything in `vars_to_interpolate_to_target`, plus everything in
+///   `compute_items_on_target`.  The second form of the `apply` function
+///   should return false only if it calls another `intrp::Action` that still
+///   needs the volume data at this temporal_id (such as another iteration of
+///   the horizon finder).
 ///
-///      post_interpolation_callback can optionally have a static constexpr
-///      double called `fill_invalid_points_with`.  Any points outside the
-///      Domain will be filled with this value. If this variable is not defined,
-///      then the `apply` function must check for invalid points,
-///      and should typically exit with an error message if it finds any.
+///   `post_interpolation_callback` can optionally have a static constexpr
+///   double called `fill_invalid_points_with`.  Any points outside the
+///   Domain will be filled with this value. If this variable is not defined,
+///   then the `apply` function must check for invalid points,
+///   and should typically exit with an error message if it finds any.
 /// - interpolating_component (used only if not `is_sequential`):
 ///      A type alias for the component that will be interpolating to the
 ///      interpolation target.
