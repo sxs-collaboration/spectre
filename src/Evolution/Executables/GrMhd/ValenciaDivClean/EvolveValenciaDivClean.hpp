@@ -88,11 +88,13 @@
 #include "NumericalAlgorithms/Interpolation/Actions/ElementInitInterpPoints.hpp"
 #include "NumericalAlgorithms/Interpolation/Callbacks/ObserveTimeSeriesOnSurface.hpp"
 #include "NumericalAlgorithms/Interpolation/CleanUpInterpolator.hpp"
+#include "NumericalAlgorithms/Interpolation/Events/InterpolateWithoutInterpComponent.hpp"
 #include "NumericalAlgorithms/Interpolation/InitializeInterpolationTarget.hpp"
 #include "NumericalAlgorithms/Interpolation/Interpolate.hpp"
 #include "NumericalAlgorithms/Interpolation/InterpolationTarget.hpp"
 #include "NumericalAlgorithms/Interpolation/InterpolationTargetKerrHorizon.hpp"
 #include "NumericalAlgorithms/Interpolation/InterpolationTargetReceiveVars.hpp"
+#include "NumericalAlgorithms/Interpolation/InterpolationTargetSpecifiedPoints.hpp"
 #include "NumericalAlgorithms/Interpolation/Interpolator.hpp"
 #include "NumericalAlgorithms/Interpolation/InterpolatorReceivePoints.hpp"
 #include "NumericalAlgorithms/Interpolation/InterpolatorReceiveVolumeData.hpp"
@@ -255,8 +257,9 @@ struct EvolutionMetavars {
                             evolution::is_analytic_solution_v<initial_data>,
                             analytic_variables_tags, tmpl::list<>>>>,
                 Events::time_events<system>,
-                intrp::Events::Interpolate<3, InterpolationTargetTags,
-                                           interpolator_source_vars>...>>>,
+                intrp::Events::InterpolateWithoutInterpComponent<
+                    3, InterpolationTargetTags, EvolutionMetavars,
+                    interpolator_source_vars>...>>>,
         tmpl::pair<
             grmhd::ValenciaDivClean::BoundaryConditions::BoundaryCondition,
             grmhd::ValenciaDivClean::BoundaryConditions::
@@ -559,6 +562,40 @@ struct EvolutionMetavars {
   void pup(PUP::er& /*p*/) noexcept {}
 };
 
+struct CenterOfStar {
+  struct MaxOfScalar : db::SimpleTag {
+    using type = double;
+  };
+
+  template <typename TagOfScalar>
+  struct MaxOfScalarCompute : db::ComputeTag, MaxOfScalar {
+    using base = MaxOfScalar;
+    using return_type = double;
+    static void function(const gsl::not_null<double*> max_of_scalar,
+                         const Scalar<DataVector>& scalar) noexcept {
+      *max_of_scalar = max(get(scalar));
+    };
+    using argument_tags = tmpl::list<TagOfScalar>;
+  };
+
+  using temporal_id = ::Tags::Time;
+  using tags_to_observe =
+      tmpl::list<MaxOfScalarCompute<hydro::Tags::RestMassDensity<DataVector>>>;
+  using vars_to_interpolate_to_target =
+      tmpl::list<hydro::Tags::RestMassDensity<DataVector>>;
+  using post_interpolation_callback =
+      intrp::callbacks::ObserveTimeSeriesOnSurface<tags_to_observe,
+                                                   CenterOfStar, CenterOfStar>;
+  using compute_target_points =
+      intrp::TargetPoints::SpecifiedPoints<CenterOfStar, 3>;
+  using compute_items_on_target = tags_to_observe;
+  using compute_items_on_source = tmpl::list<>;
+
+  template <typename Metavariables>
+  using interpolating_component =
+      typename Metavariables::dg_element_array_component;
+};
+
 struct KerrHorizon {
   using temporal_id = ::Tags::Time;
   using tags_to_observe =
@@ -581,8 +618,10 @@ struct KerrHorizon {
   using post_interpolation_callback =
       intrp::callbacks::ObserveTimeSeriesOnSurface<tags_to_observe, KerrHorizon,
                                                    KerrHorizon>;
+
+  template <typename Metavariables>
   using interpolating_component =
-      typename metavariables::dg_element_array_component;
+      typename Metavariables::dg_element_array_component;
 };
 
 static const std::vector<void (*)()> charm_init_node_funcs{

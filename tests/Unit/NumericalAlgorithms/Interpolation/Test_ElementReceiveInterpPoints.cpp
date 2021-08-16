@@ -81,7 +81,8 @@ struct MockMetavariables {
     using compute_items_on_target = tmpl::list<>;
     using compute_target_points =
         ::intrp::TargetPoints::LineSegment<InterpolationTargetA, 3>;
-    using interpolating_component = mock_element<MockMetavariables>;
+    template <typename Metavariables>
+    using interpolating_component = mock_element<Metavariables>;
   };
   struct InterpolationTargetB {
     using temporal_id = ::Tags::TimeStepId;
@@ -89,7 +90,8 @@ struct MockMetavariables {
     using compute_items_on_target = tmpl::list<>;
     using compute_target_points =
         ::intrp::TargetPoints::LineSegment<InterpolationTargetB, 3>;
-    using interpolating_component = mock_element<MockMetavariables>;
+    template <typename Metavariables>
+    using interpolating_component = mock_element<Metavariables>;
   };
   static constexpr size_t volume_dim = 3;
   using interpolation_target_tags = tmpl::list<InterpolationTargetA,

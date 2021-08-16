@@ -46,7 +46,8 @@ struct InterpolationTargetSendTimeIndepPointsToElements {
     auto coords = InterpolationTarget_detail::block_logical_coords<
         InterpolationTargetTag>(box, tmpl::type_<Metavariables>{});
     auto& receiver_proxy = Parallel::get_parallel_component<
-        typename InterpolationTargetTag::interpolating_component>(cache);
+        typename InterpolationTargetTag::template interpolating_component<
+            Metavariables>>(cache);
     Parallel::simple_action<ElementReceiveInterpPoints<InterpolationTargetTag>>(
         receiver_proxy, std::move(coords));
     return std::forward_as_tuple(std::move(box));

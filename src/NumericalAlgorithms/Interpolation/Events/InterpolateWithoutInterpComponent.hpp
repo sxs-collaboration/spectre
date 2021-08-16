@@ -8,6 +8,8 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
+#include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "NumericalAlgorithms/Interpolation/Actions/InterpolationTargetVarsFromElement.hpp"
 #include "NumericalAlgorithms/Interpolation/IrregularInterpolant.hpp"
 #include "NumericalAlgorithms/Interpolation/PointInfoTag.hpp"
@@ -18,6 +20,7 @@
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TypeTraits/CreateGetStaticMemberVariableOrDefault.hpp"
 
 /// \cond
 namespace domain {
@@ -40,13 +43,16 @@ struct InterpolationTarget;
 }  // namespace intrp
 /// \endcond
 
-namespace intrp {
-namespace Events {
+namespace intrp::Events {
 /// \cond
 template <size_t VolumeDim, typename InterpolationTargetTag,
           typename Metavariables, typename Tensors>
 class InterpolateWithoutInterpComponent;
 /// \endcond
+
+namespace detail {
+CREATE_GET_STATIC_MEMBER_VARIABLE_OR_DEFAULT(use_dg_subcell)
+}  // namespace detail
 
 /// Does an interpolation onto an InterpolationTargetTag by calling Actions on
 /// the InterpolationTarget component.
@@ -73,9 +79,16 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
 
   InterpolateWithoutInterpComponent() = default;
 
-  using argument_tags = tmpl::list<typename InterpolationTargetTag::temporal_id,
-                                   Tags::InterpPointInfo<Metavariables>,
-                                   domain::Tags::Mesh<VolumeDim>, Tensors...>;
+  using argument_tags = tmpl::conditional_t<
+      detail::get_use_dg_subcell_or_default_v<Metavariables, false>,
+      tmpl::list<typename InterpolationTargetTag::temporal_id,
+                 Tags::InterpPointInfo<Metavariables>,
+                 domain::Tags::Mesh<VolumeDim>,
+                 evolution::dg::subcell::Tags::Mesh<VolumeDim>,
+                 evolution::dg::subcell::Tags::ActiveGrid, Tensors...>,
+      tmpl::list<typename InterpolationTargetTag::temporal_id,
+                 Tags::InterpPointInfo<Metavariables>,
+                 domain::Tags::Mesh<VolumeDim>, Tensors...>>;
 
   template <typename ParallelComponent>
   void operator()(
@@ -153,6 +166,27 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
         temporal_id);
   }
 
+  template <typename ParallelComponent>
+  void operator()(
+      const typename InterpolationTargetTag::temporal_id::type& temporal_id,
+      const typename Tags::InterpPointInfo<Metavariables>::type& point_infos,
+      const Mesh<VolumeDim>& dg_mesh, const Mesh<VolumeDim>& subcell_mesh,
+      const evolution::dg::subcell::ActiveGrid active_grid,
+      const typename Tensors::type&... tensors,
+      Parallel::GlobalCache<Metavariables>& cache,
+      const ElementId<VolumeDim>& array_index,
+      const ParallelComponent* const meta) const noexcept {
+    if (active_grid == evolution::dg::subcell::ActiveGrid::Dg) {
+      this->operator()(temporal_id, point_infos, dg_mesh, tensors..., cache,
+                       array_index, meta);
+    } else {
+      ASSERT(active_grid == evolution::dg::subcell::ActiveGrid::Subcell,
+             "Active grid must be either Dg or Subcell");
+      this->operator()(temporal_id, point_infos, subcell_mesh, tensors...,
+                       cache, array_index, meta);
+    }
+  }
+
   bool needs_evolved_variables() const noexcept override { return true; }
 };
 
@@ -164,5 +198,4 @@ PUP::able::PUP_ID InterpolateWithoutInterpComponent<
     tmpl::list<Tensors...>>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
 
-}  // namespace Events
-}  // namespace intrp
+}  // namespace intrp::Events
