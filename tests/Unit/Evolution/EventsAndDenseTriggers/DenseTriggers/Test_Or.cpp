@@ -43,10 +43,11 @@ void check(const bool time_runs_forward, const bool expected_is_ready,
            const bool expected_is_triggered, const double expected_next_check,
            const std::string& creation_string) noexcept {
   CAPTURE(creation_string);
-  const auto box = db::create<db::AddSimpleTags<
-      Parallel::Tags::MetavariablesImpl<Metavariables>, Tags::TimeStepId>>(
-      Metavariables{},
-      TimeStepId(time_runs_forward, 0, Slab(0.0, 1.0).start()));
+  const auto box = db::create<
+      db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<Metavariables>,
+                        Tags::TimeStepId, Tags::Time>>(
+      Metavariables{}, TimeStepId(time_runs_forward, 0, Slab(0.0, 1.0).start()),
+      0.0);
   Parallel::GlobalCache<Metavariables> cache{};
   const int array_index = 0;
   const void* component = nullptr;

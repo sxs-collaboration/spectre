@@ -59,7 +59,7 @@ void check_one_direction(const std::vector<double>& trigger_times,
           creation_string.str()));
 
   const Slab slab(1.0e10, 2.0e10);
-  const auto box = db::create<
+  auto box = db::create<
       db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<Metavariables>,
                         Tags::TimeStepId, Tags::Time>>(
       Metavariables{}, TimeStepId(time_runs_forward, 100, slab.start()),
@@ -69,9 +69,26 @@ void check_one_direction(const std::vector<double>& trigger_times,
   const void* component = nullptr;
 
   CHECK(trigger->is_ready(box, cache, array_index, component));
+  CHECK_FALSE(trigger->previous_trigger_time().has_value());
   const auto is_triggered = trigger->is_triggered(box);
   CHECK(is_triggered.is_triggered == expected_is_triggered);
   CHECK(is_triggered.next_check == expected_next_check);
+  if (expected_is_triggered) {
+    CHECK_FALSE(trigger->previous_trigger_time().has_value());
+    db::mutate<::Tags::Time>(
+        make_not_null(&box),
+        [](const gsl::not_null<double*> time) noexcept { *time += 0.01; });
+    CHECK_FALSE(trigger->is_triggered(box).is_triggered);
+    REQUIRE(trigger->previous_trigger_time().has_value());
+    CHECK(trigger->previous_trigger_time().value() == current_time);
+  } else {
+    CHECK_FALSE(trigger->previous_trigger_time().has_value());
+    db::mutate<::Tags::Time>(
+        make_not_null(&box),
+        [](const gsl::not_null<double*> time) noexcept { *time += 0.01; });
+    CHECK_FALSE(trigger->is_triggered(box).is_triggered);
+    CHECK_FALSE(trigger->previous_trigger_time().has_value());
+  }
 }
 
 void check_both_directions(std::vector<double> trigger_times,

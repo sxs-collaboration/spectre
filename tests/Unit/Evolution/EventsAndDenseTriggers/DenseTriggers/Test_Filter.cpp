@@ -94,9 +94,9 @@ void check(const bool expected_is_ready,
                   << "    TestTrigger:\n"
                   << "      Result: " << non_dense_is_triggered;
   CAPTURE(creation_string.str());
-  const auto box = db::create<
-      db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<Metavariables>>>(
-      Metavariables{});
+  const auto box = db::create<db::AddSimpleTags<
+      Parallel::Tags::MetavariablesImpl<Metavariables>, ::Tags::Time>>(
+      Metavariables{}, 0.0);
   Parallel::GlobalCache<Metavariables> cache{};
   const int array_index = 0;
   const void* component = nullptr;
