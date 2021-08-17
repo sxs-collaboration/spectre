@@ -267,12 +267,12 @@ struct Metavariables {
       typename nonlinear_solver::template solve<
           build_operator_actions<false>,
           tmpl::list<
-              LinearSolver::multigrid::Actions::SendFieldsToCoarserGrid<
-                  tmpl::list<fields_tag, fluxes_tag>,
-                  typename multigrid::options_group, void>,
               LinearSolver::multigrid::Actions::ReceiveFieldsFromFinerGrid<
                   volume_dim, tmpl::list<fields_tag, fluxes_tag>,
                   typename multigrid::options_group>,
+              LinearSolver::multigrid::Actions::SendFieldsToCoarserGrid<
+                  tmpl::list<fields_tag, fluxes_tag>,
+                  typename multigrid::options_group, void>,
               LinearSolver::Schwarz::Actions::SendOverlapFields<
                   communicated_overlap_tags,
                   typename schwarz_smoother::options_group, false>,
