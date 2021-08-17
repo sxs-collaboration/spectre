@@ -2715,6 +2715,81 @@ void test_get_mutable_reference() noexcept {
   // db::get_mutable_reference<Parent<0>>(make_not_null(&box));
   // db::get_mutable_reference<First<0>>(make_not_null(&box));
 }
+
+void test_output() noexcept {
+  INFO("test output");
+  auto box = db::create<
+      db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
+                        test_databox_tags::Tag2>,
+      db::AddComputeTags<test_databox_tags::Tag4Compute,
+                         test_databox_tags::Tag5Compute>>(
+      3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
+  std::string output_types = box.print_types();
+  std::string expected_types =
+      "DataBox type aliases:\n"
+      "using tags_list = brigand::list<(anonymous "
+      "namespace)::test_databox_tags::Tag0, (anonymous "
+      "namespace)::test_databox_tags::Tag1, (anonymous "
+      "namespace)::test_databox_tags::Tag2, (anonymous "
+      "namespace)::test_databox_tags::Tag4Compute, (anonymous "
+      "namespace)::test_databox_tags::Tag5Compute>;\n"
+      "using immutable_item_tags "
+      "= brigand::list<(anonymous namespace)::test_databox_tags::Tag4Compute, "
+      "(anonymous namespace)::test_databox_tags::Tag5Compute>;\n"
+      "using immutable_item_creation_tags = brigand::list<(anonymous "
+      "namespace)::test_databox_tags::Tag4Compute, (anonymous "
+      "namespace)::test_databox_tags::Tag5Compute>;\n"
+      "using mutable_item_tags = brigand::list<(anonymous "
+      "namespace)::test_databox_tags::Tag0, (anonymous "
+      "namespace)::test_databox_tags::Tag1, (anonymous "
+      "namespace)::test_databox_tags::Tag2>;\n"
+      "using mutable_subitem_tags = brigand::list<>;\n"
+      "using compute_item_tags = brigand::list<(anonymous "
+      "namespace)::test_databox_tags::Tag4Compute, (anonymous "
+      "namespace)::test_databox_tags::Tag5Compute>;\n"
+      "using edge_list = "
+      "brigand::list<brigand::edge<(anonymous "
+      "namespace)::test_databox_tags::Tag0, (anonymous "
+      "namespace)::test_databox_tags::Tag4Compute, "
+      "brigand::integral_constant<int, 1> >, brigand::edge<(anonymous "
+      "namespace)::test_databox_tags::Tag2, (anonymous "
+      "namespace)::test_databox_tags::Tag5Compute, "
+      "brigand::integral_constant<int, 1> >, brigand::edge<(anonymous "
+      "namespace)::test_databox_tags::Tag4Compute, (anonymous "
+      "namespace)::test_databox_tags::Tag5Compute, "
+      "brigand::integral_constant<int, 1> > >;\n";
+  CHECK(output_types == expected_types);
+
+  std::string output_items = box.print_items();
+  std::string expected_items =
+      "Items:\n"
+      "----------\n"
+      "Name:  (anonymous namespace)::test_databox_tags::Tag0\n"
+      "Type:  double\n"
+      "Value: 3.14\n"
+      "----------\n"
+      "Name:  (anonymous namespace)::test_databox_tags::Tag1\n"
+      "Type:  std::vector<double>\n"
+      "Value: (8.7,93.2,84.7)\n"
+      "----------\n"
+      "Name:  (anonymous namespace)::test_databox_tags::Tag2\n"
+      "Type:  std::string\n"
+      "Value: My Sample String\n"
+      "----------\n"
+      "Name:  (anonymous namespace)::test_databox_tags::Tag4Compute\n"
+      "Type:  double\n"
+      "Value: 6.28\n"
+      "----------\n"
+      "Name:  (anonymous namespace)::test_databox_tags::Tag5Compute\n"
+      "Type:  std::string\n"
+      "Value: My Sample String6.28\n";
+  CHECK(output_items == expected_items);
+  std::ostringstream os;
+  os << box;
+  std::string output_stream = os.str();
+  std::string expected_stream = expected_types + "\n" + expected_items+ "\n";
+  CHECK(output_stream == expected_stream);
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
@@ -2737,6 +2812,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
   test_serialization();
   test_reference_item();
   test_get_mutable_reference();
+  test_output();
 }
 
 // Test`tag_is_retrievable_v`

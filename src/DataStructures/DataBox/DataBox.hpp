@@ -11,6 +11,7 @@
 #include <initializer_list>
 #include <ostream>
 #include <pup.h>
+#include <sstream>
 #include <string>
 #include <tuple>
 #include <utility>
@@ -237,6 +238,12 @@ class DataBox<tmpl::list<Tags...>> : private detail::Item<Tags>... {
 
   /// \endcond
 
+  /// Print the expanded type aliases
+  std::string print_types() const noexcept;
+
+  /// Print the items
+  std::string print_items() const noexcept;
+
   /// Retrieve the tag `Tag`, should be called by the free function db::get
   template <typename Tag>
   const auto& get() const noexcept;
@@ -357,6 +364,49 @@ class DataBox<tmpl::list<Tags...>> : private detail::Item<Tags>... {
 
   bool mutate_locked_box_{false};
 };
+
+template <typename... Tags>
+std::string DataBox<tmpl::list<Tags...>>::print_types() const noexcept {
+  std::ostringstream os;
+  os << "DataBox type aliases:\n";
+  os << "using tags_list = " << pretty_type::get_name<tags_list>() << ";\n";
+  os << "using immutable_item_tags = "
+     << pretty_type::get_name<immutable_item_tags>() << ";\n";
+  os << "using immutable_item_creation_tags = "
+     << pretty_type::get_name<immutable_item_creation_tags>() << ";\n";
+  os << "using mutable_item_tags = "
+     << pretty_type::get_name<mutable_item_tags>() << ";\n";
+  os << "using mutable_subitem_tags = "
+     << pretty_type::get_name<mutable_subitem_tags>() << ";\n";
+  os << "using compute_item_tags = "
+     << pretty_type::get_name<compute_item_tags>() << ";\n";
+  os << "using edge_list = " << pretty_type::get_name<edge_list>() << ";\n";
+  return os.str();
+}
+
+template <typename... Tags>
+std::string DataBox<tmpl::list<Tags...>>::print_items() const noexcept {
+  using mutable_item_creation_tags =
+      tmpl::list_difference<mutable_item_tags, mutable_subitem_tags>;
+  std::ostringstream os;
+  os << "Items:\n";
+  const auto print_item = [this,&os](auto tag_v) noexcept {
+    (void)this;
+    using tag = tmpl::type_from<decltype(tag_v)>;
+    using type = typename tag::type;
+    os << "----------\n";
+    os << "Name:  " << pretty_type::get_name<tag>() << "\n";
+    os << "Type:  " << pretty_type::get_name<type>() << "\n";
+    if constexpr (tt::is_streamable_v<std::ostringstream, type>) {
+      os << "Value: " << this->get<tag>() << "\n";
+    } else {
+      os << "Value: UNSTREAMABLE\n";
+    }
+  };
+  tmpl::for_each<mutable_item_creation_tags>(print_item);
+  tmpl::for_each<immutable_item_creation_tags>(print_item);
+  return os.str();
+}
 
 namespace detail {
 // This function exists so that the user can look at the template
@@ -1279,3 +1329,11 @@ SPECTRE_ALWAYS_INLINE constexpr decltype(auto) mutate_apply(
 }
 /// @}
 }  // namespace db
+
+template <typename TagsList>
+std::ostream& operator<<(std::ostream& os,
+                         const db::DataBox<TagsList>& box) noexcept {
+  os << box.print_types() << "\n";
+  os << box.print_items() << "\n";
+  return os;
+}
