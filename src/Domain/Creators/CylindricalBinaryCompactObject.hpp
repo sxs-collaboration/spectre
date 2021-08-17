@@ -48,7 +48,7 @@ class FunctionOfTime;
 
 namespace Frame {
 struct Inertial;
-struct Logical;
+struct BlockLogical;
 }  // namespace Frame
 /// \endcond
 
@@ -116,38 +116,38 @@ namespace domain::creators {
 class CylindricalBinaryCompactObject : public DomainCreator<3> {
  public:
   using maps_list = tmpl::list<
-      domain::CoordinateMap<Frame::Logical, Frame::Inertial,
+      domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial,
                             CoordinateMaps::ProductOf3Maps<
                                 CoordinateMaps::Affine, CoordinateMaps::Affine,
                                 CoordinateMaps::Affine>,
                             CoordinateMaps::CylindricalEndcap,
                             CoordinateMaps::DiscreteRotation<3>>,
       domain::CoordinateMap<
-          Frame::Logical, Frame::Inertial,
+          Frame::BlockLogical, Frame::Inertial,
           CoordinateMaps::ProductOf2Maps<CoordinateMaps::Wedge<2>,
                                          CoordinateMaps::Affine>,
           CoordinateMaps::CylindricalEndcap,
           CoordinateMaps::DiscreteRotation<3>>,
-      domain::CoordinateMap<Frame::Logical, Frame::Inertial,
+      domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial,
                             CoordinateMaps::ProductOf3Maps<
                                 CoordinateMaps::Affine, CoordinateMaps::Affine,
                                 CoordinateMaps::Affine>,
                             CoordinateMaps::CylindricalFlatEndcap,
                             CoordinateMaps::DiscreteRotation<3>>,
       domain::CoordinateMap<
-          Frame::Logical, Frame::Inertial,
+          Frame::BlockLogical, Frame::Inertial,
           CoordinateMaps::ProductOf2Maps<CoordinateMaps::Wedge<2>,
                                          CoordinateMaps::Affine>,
           CoordinateMaps::CylindricalFlatEndcap,
           CoordinateMaps::DiscreteRotation<3>>,
       domain::CoordinateMap<
-          Frame::Logical, Frame::Inertial,
+          Frame::BlockLogical, Frame::Inertial,
           CoordinateMaps::ProductOf2Maps<CoordinateMaps::Wedge<2>,
                                          CoordinateMaps::Affine>,
           CoordinateMaps::CylindricalFlatSide,
           CoordinateMaps::DiscreteRotation<3>>,
       domain::CoordinateMap<
-          Frame::Logical, Frame::Inertial,
+          Frame::BlockLogical, Frame::Inertial,
           CoordinateMaps::ProductOf2Maps<CoordinateMaps::Wedge<2>,
                                          CoordinateMaps::Affine>,
           CoordinateMaps::CylindricalSide,

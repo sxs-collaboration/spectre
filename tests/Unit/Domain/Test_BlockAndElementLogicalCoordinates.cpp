@@ -205,7 +205,7 @@ void fuzzy_test_block_and_element_logical_coordinates_unrefined(
     // Assumes logical coords go from -1 to 1.
     std::uniform_real_distribution<double> ran(-1.0, 1.0);
     MAKE_GENERATOR(gen);
-    std::vector<tnsr::I<double, Dim, Frame::Logical>> coords(n_pts);
+    std::vector<tnsr::I<double, Dim, Frame::BlockLogical>> coords(n_pts);
     for (size_t s = 0; s < n_pts; ++s) {
       for (size_t d = 0; d < Dim; ++d) {
         coords[s].get(d) = ran(gen);
@@ -370,8 +370,8 @@ void test_block_and_element_logical_coordinates(
     const std::vector<std::vector<std::array<double, Dim>>>&
         expected_element_logical) noexcept {
   tnsr::I<DataVector, Dim, Frame::Inertial> inertial_coords(x_inertial.size());
-  std::vector<tnsr::I<double, Dim, Frame::Logical>> expected_logical_coords(
-      x_inertial.size());
+  std::vector<tnsr::I<double, Dim, Frame::BlockLogical>>
+      expected_logical_coords(x_inertial.size());
   for (size_t s = 0; s < x_inertial.size(); ++s) {
     for (size_t d = 0; d < Dim; ++d) {
       inertial_coords.get(d)[s] = gsl::at(x_inertial[s], d);

@@ -26,12 +26,12 @@ struct Logical;
 
 template <size_t VolumeDim>
 Block<VolumeDim>::Block(
-    std::unique_ptr<domain::CoordinateMapBase<Frame::Logical, Frame::Inertial,
-                                              VolumeDim>>&& stationary_map,
+    std::unique_ptr<domain::CoordinateMapBase<
+        Frame::BlockLogical, Frame::Inertial, VolumeDim>>&& stationary_map,
     const size_t id,
     DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>> neighbors,
-    DirectionMap<VolumeDim, std::unique_ptr<
-                                domain::BoundaryConditions::BoundaryCondition>>
+    DirectionMap<VolumeDim,
+                 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>
         external_boundary_conditions) noexcept
     : stationary_map_(std::move(stationary_map)),
       id_(id),
@@ -73,7 +73,8 @@ Block<VolumeDim>::Block(
 }
 
 template <size_t VolumeDim>
-const domain::CoordinateMapBase<Frame::Logical, Frame::Inertial, VolumeDim>&
+const domain::CoordinateMapBase<Frame::BlockLogical, Frame::Inertial,
+                                VolumeDim>&
 Block<VolumeDim>::stationary_map() const noexcept {
   ASSERT(stationary_map_ != nullptr,
          "The stationary map is set to nullptr and so cannot be retrieved. "
@@ -83,7 +84,7 @@ Block<VolumeDim>::stationary_map() const noexcept {
 }
 
 template <size_t VolumeDim>
-const domain::CoordinateMapBase<Frame::Logical, Frame::Grid, VolumeDim>&
+const domain::CoordinateMapBase<Frame::BlockLogical, Frame::Grid, VolumeDim>&
 Block<VolumeDim>::moving_mesh_logical_to_grid_map() const noexcept {
   ASSERT(moving_mesh_grid_map_ != nullptr,
          "The moving mesh Logical to Grid map is set to nullptr and so cannot "

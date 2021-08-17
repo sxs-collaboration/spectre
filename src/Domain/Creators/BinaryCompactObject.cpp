@@ -38,7 +38,7 @@
 #include "Utilities/MakeArray.hpp"
 
 namespace Frame {
-struct Logical;
+struct BlockLogical;
 }  // namespace Frame
 
 namespace domain::creators {
@@ -248,8 +248,8 @@ Domain<3> BinaryCompactObject::create_domain() const noexcept {
   const double inner_sphericity_A = object_A_.is_excised() ? 1.0 : 0.0;
   const double inner_sphericity_B = object_B_.is_excised() ? 1.0 : 0.0;
 
-  using Maps = std::vector<
-      std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Inertial, 3>>>;
+  using Maps = std::vector<std::unique_ptr<
+      CoordinateMapBase<Frame::BlockLogical, Frame::Inertial, 3>>>;
   using BcMap = DirectionMap<
       3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>;
 
@@ -403,7 +403,7 @@ Domain<3> BinaryCompactObject::create_domain() const noexcept {
     const double scaled_r_inner_A = object_A_.inner_radius / sqrt(3.0);
     if (use_equiangular_map_) {
       maps.emplace_back(
-          make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+          make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
               Equiangular3D{Equiangular(-1.0, 1.0, -1.0 * scaled_r_inner_A,
                                         scaled_r_inner_A),
                             Equiangular(-1.0, 1.0, -1.0 * scaled_r_inner_A,
@@ -413,7 +413,7 @@ Domain<3> BinaryCompactObject::create_domain() const noexcept {
               translation_A));
     } else {
       maps.emplace_back(
-          make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+          make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
               Affine3D{
                   Affine(-1.0, 1.0, -1.0 * scaled_r_inner_A, scaled_r_inner_A),
                   Affine(-1.0, 1.0, -1.0 * scaled_r_inner_A, scaled_r_inner_A),
@@ -434,7 +434,7 @@ Domain<3> BinaryCompactObject::create_domain() const noexcept {
     const double scaled_r_inner_B = object_B_.inner_radius / sqrt(3.0);
     if (use_equiangular_map_) {
       maps.emplace_back(
-          make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+          make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
               Equiangular3D{Equiangular(-1.0, 1.0, -1.0 * scaled_r_inner_B,
                                         scaled_r_inner_B),
                             Equiangular(-1.0, 1.0, -1.0 * scaled_r_inner_B,
@@ -444,7 +444,7 @@ Domain<3> BinaryCompactObject::create_domain() const noexcept {
               translation_B));
     } else {
       maps.emplace_back(
-          make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+          make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
               Affine3D{
                   Affine(-1.0, 1.0, -1.0 * scaled_r_inner_B, scaled_r_inner_B),
                   Affine(-1.0, 1.0, -1.0 * scaled_r_inner_B, scaled_r_inner_B),

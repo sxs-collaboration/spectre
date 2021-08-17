@@ -560,7 +560,7 @@ void set_up_interpolation(
     const TemporalId& temporal_id,
     const std::vector<std::optional<
         IdPair<domain::BlockId,
-               tnsr::I<double, VolumeDim, typename ::Frame::Logical>>>>&
+               tnsr::I<double, VolumeDim, typename ::Frame::BlockLogical>>>>&
         block_logical_coords) noexcept {
   db::mutate<Tags::IndicesOfFilledInterpPoints<TemporalId>,
              Tags::IndicesOfInvalidInterpPoints<TemporalId>,

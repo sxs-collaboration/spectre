@@ -44,8 +44,9 @@ struct to_grid_map {
 };
 
 template <typename... Maps>
-struct to_grid_map<CoordinateMap<Frame::Logical, Frame::Inertial, Maps...>> {
-  using type = CoordinateMap<Frame::Logical, Frame::Grid, Maps...>;
+struct to_grid_map<
+    CoordinateMap<Frame::BlockLogical, Frame::Inertial, Maps...>> {
+  using type = CoordinateMap<Frame::BlockLogical, Frame::Grid, Maps...>;
 };
 
 template <size_t Dim>

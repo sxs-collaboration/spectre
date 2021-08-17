@@ -89,6 +89,6 @@ template <size_t Dim>
 auto element_logical_coordinates(
     const std::vector<ElementId<Dim>>& element_ids,
     const std::vector<std::optional<IdPair<
-        domain::BlockId, tnsr::I<double, Dim, typename Frame::Logical>>>>&
+        domain::BlockId, tnsr::I<double, Dim, typename Frame::BlockLogical>>>>&
         block_coord_holders) noexcept
     -> std::unordered_map<ElementId<Dim>, ElementLogicalCoordHolder<Dim>>;

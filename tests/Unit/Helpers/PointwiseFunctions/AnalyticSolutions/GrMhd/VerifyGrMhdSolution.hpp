@@ -127,7 +127,9 @@ void verify_grmhd_solution(const Solution& solution, const Block<3>& block,
   if (block.is_time_dependent()) {
     ERROR("The block must be time-independent");
   }
-  const auto x = block.stationary_map()(x_logical);
+  const ElementMap<3, Frame::Inertial> element_map{
+      ElementId<3>{0}, block.stationary_map().get_clone()};
+  const auto x = element_map(x_logical);
 
   // Evaluate analytic solution
   using solution_tags = tmpl::list<
@@ -242,7 +244,7 @@ void verify_grmhd_solution(const Solution& solution, const Block<3>& block,
     ERROR("The block must be time-independent");
   }
   const auto div_of_fluxes = divergence<flux_tags, 3, Frame::Inertial>(
-      fluxes, mesh, block.stationary_map().inv_jacobian(x_logical));
+      fluxes, mesh, element_map.inv_jacobian(x_logical));
 
   const auto& div_flux_tilde_d =
       get<Tags::div<Tags::Flux<grmhd::ValenciaDivClean::Tags::TildeD,

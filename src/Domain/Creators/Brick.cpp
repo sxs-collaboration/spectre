@@ -23,7 +23,7 @@
 #include "Domain/Structure/BlockNeighbor.hpp"  // IWYU pragma: keep
 
 namespace Frame {
-struct Logical;
+struct BlockLogical;
 struct Inertial;
 }  // namespace Frame
 
@@ -118,7 +118,7 @@ Domain<3> Brick::create_domain() const noexcept {
   }
 
   Domain<3> domain{
-      make_vector_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      make_vector_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
           Affine3D{Affine{-1., 1., lower_xyz_[0], upper_xyz_[0]},
                    Affine{-1., 1., lower_xyz_[1], upper_xyz_[1]},
                    Affine{-1., 1., lower_xyz_[2], upper_xyz_[2]}}),

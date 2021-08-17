@@ -54,7 +54,8 @@ void test_domain_construction(
     const std::vector<std::unordered_set<Direction<VolumeDim>>>&
         expected_external_boundaries,
     const std::vector<std::unique_ptr<domain::CoordinateMapBase<
-        Frame::Logical, TargetFrameGridOrInertial, VolumeDim>>>& expected_maps,
+        Frame::BlockLogical, TargetFrameGridOrInertial, VolumeDim>>>&
+        expected_maps,
     double time = std::numeric_limits<double>::quiet_NaN(),
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&

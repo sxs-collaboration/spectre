@@ -36,6 +36,10 @@ static_assert(std::is_same_v<UpIndex, SpatialIndex<3, UpLo::Up, Frame::Grid>>,
 // [change_up_lo]
 
 // [is_frame_physical]
+static_assert(not Frame::is_frame_physical_v<Frame::BlockLogical>,
+              "Failed testing Frame::is_frame_physical");
+static_assert(not Frame::is_frame_physical_v<Frame::ElementLogical>,
+              "Failed testing Frame::is_frame_physical");
 static_assert(not Frame::is_frame_physical_v<Frame::Logical>,
               "Failed testing Frame::is_frame_physical");
 static_assert(not Frame::is_frame_physical_v<Frame::Distorted>,
@@ -1353,14 +1357,6 @@ SPECTRE_TEST_CASE("Unit.Serialization.Tensor",
 #endif
 }
 
-SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.IndexType",
-                  "[Unit][DataStructures]") {
-  CHECK(get_output(Frame::Logical{}) == "Logical");
-  CHECK(get_output(Frame::Grid{}) == "Grid");
-  CHECK(get_output(Frame::Distorted{}) == "Distorted");
-  CHECK(get_output(Frame::Inertial{}) == "Inertial");
-}
-
 SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.GetVectorOfData",
                   "[Unit][DataStructures]") {
   // NOTE: This test depends on the implementation of serialize and Tensor,
@@ -1392,6 +1388,8 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.GetVectorOfData",
 // [example_spectre_test_case]
 SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Frames",
                   "[Unit][DataStructures]") {
+  CHECK("BlockLogical" == get_output(Frame::BlockLogical{}));
+  CHECK("ElementLogical" == get_output(Frame::ElementLogical{}));
   CHECK("Logical" == get_output(Frame::Logical{}));
   CHECK("Grid" == get_output(Frame::Grid{}));
   CHECK("Inertial" == get_output(Frame::Inertial{}));

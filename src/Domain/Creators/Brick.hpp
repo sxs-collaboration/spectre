@@ -40,7 +40,7 @@ namespace creators {
 class Brick : public DomainCreator<3> {
  public:
   using maps_list = tmpl::list<
-      domain::CoordinateMap<Frame::Logical, Frame::Inertial,
+      domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial,
                             CoordinateMaps::ProductOf3Maps<
                                 CoordinateMaps::Affine, CoordinateMaps::Affine,
                                 CoordinateMaps::Affine>>>;

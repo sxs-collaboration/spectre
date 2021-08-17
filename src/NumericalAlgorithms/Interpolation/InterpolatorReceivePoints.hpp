@@ -71,15 +71,14 @@ struct ReceivePoints {
       const typename InterpolationTargetTag::temporal_id::type& temporal_id,
       std::vector<std::optional<
           IdPair<domain::BlockId,
-                 tnsr::I<double, VolumeDim, typename ::Frame::Logical>>>>&&
+                 tnsr::I<double, VolumeDim, typename ::Frame::BlockLogical>>>>&&
           block_logical_coords) noexcept {
     db::mutate<intrp::Tags::InterpolatedVarsHolders<Metavariables>>(
         make_not_null(&box),
-        [
-          &temporal_id, &block_logical_coords
-        ](const gsl::not_null<
-            typename intrp::Tags::InterpolatedVarsHolders<Metavariables>::type*>
-              vars_holders) noexcept {
+        [&temporal_id, &block_logical_coords](
+            const gsl::not_null<typename intrp::Tags::InterpolatedVarsHolders<
+                Metavariables>::type*>
+                vars_holders) noexcept {
           auto& vars_infos =
               get<intrp::Vars::HolderTag<InterpolationTargetTag,
                                          Metavariables>>(*vars_holders)

@@ -85,9 +85,8 @@ void set_internal_boundaries(
     gsl::not_null<
         std::vector<DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>>*>
         neighbors_of_all_blocks,
-    const std::vector<std::unique_ptr<
-        domain::CoordinateMapBase<Frame::Logical, Frame::Inertial, VolumeDim>>>&
-        maps) noexcept;
+    const std::vector<std::unique_ptr<domain::CoordinateMapBase<
+        Frame::BlockLogical, Frame::Inertial, VolumeDim>>>& maps) noexcept;
 
 /// \ingroup ComputationalDomainGroup
 /// Sets up additional BlockNeighbors corresponding to any
@@ -163,7 +162,7 @@ auto sph_wedge_coordinate_maps(
         radial_distribution = {domain::CoordinateMaps::Distribution::Linear},
     ShellWedges which_wedges = ShellWedges::All) noexcept
     -> std::vector<std::unique_ptr<
-        domain::CoordinateMapBase<Frame::Logical, TargetFrame, 3>>>;
+        domain::CoordinateMapBase<Frame::BlockLogical, TargetFrame, 3>>>;
 
 /// \ingroup ComputationalDomainGroup
 /// These are the ten Frustums used in the DomainCreators for binary compact
@@ -183,7 +182,7 @@ auto frustum_coordinate_maps(
     const std::array<double, 3>& origin_preimage = {{0.0, 0.0, 0.0}},
     double projective_scale_factor = 1.0) noexcept
     -> std::vector<std::unique_ptr<
-        domain::CoordinateMapBase<Frame::Logical, TargetFrame, 3>>>;
+        domain::CoordinateMapBase<Frame::BlockLogical, TargetFrame, 3>>>;
 
 /// \ingroup ComputationalDomainGroup
 /// \brief The corners for a domain with radial layers.
@@ -243,7 +242,7 @@ auto cyl_wedge_coordinate_maps(
         radial_distribution =
             {domain::CoordinateMaps::Distribution::Linear}) noexcept
     -> std::vector<std::unique_ptr<
-        domain::CoordinateMapBase<Frame::Logical, TargetFrame, 3>>>;
+        domain::CoordinateMapBase<Frame::BlockLogical, TargetFrame, 3>>>;
 
 enum class CylindricalDomainParityFlip { none, z_direction };
 
@@ -345,8 +344,8 @@ auto maps_for_rectilinear_domains(
     const std::vector<OrientationMap<VolumeDim>>& orientations_of_all_blocks =
         {},
     bool use_equiangular_map = false) noexcept
-    -> std::vector<std::unique_ptr<
-        domain::CoordinateMapBase<Frame::Logical, TargetFrame, VolumeDim>>>;
+    -> std::vector<std::unique_ptr<domain::CoordinateMapBase<
+        Frame::BlockLogical, TargetFrame, VolumeDim>>>;
 
 /// \ingroup ComputationalDomainGroup
 /// \brief Create a rectilinear Domain of multicubes.
@@ -488,11 +487,11 @@ class FaceCornerIterator {
     return face_index_ < two_to_the(VolumeDim - 1);
   }
 
-  tnsr::I<double, VolumeDim, Frame::Logical> operator()() const noexcept {
+  tnsr::I<double, VolumeDim, Frame::BlockLogical> operator()() const noexcept {
     return corner_;
   }
 
-  tnsr::I<double, VolumeDim, Frame::Logical> operator*() const noexcept {
+  tnsr::I<double, VolumeDim, Frame::BlockLogical> operator*() const noexcept {
     return corner_;
   }
 
@@ -506,7 +505,7 @@ class FaceCornerIterator {
   const Direction<VolumeDim> direction_;
   size_t index_;
   size_t face_index_ = 0;
-  tnsr::I<double, VolumeDim, Frame::Logical> corner_;
+  tnsr::I<double, VolumeDim, Frame::BlockLogical> corner_;
 };
 
 template <size_t VolumeDim>

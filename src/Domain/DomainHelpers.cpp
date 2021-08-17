@@ -138,16 +138,16 @@ std::array<size_t, two_to_the(VolumeDim - 1)> get_common_local_corners(
 }
 
 template <size_t VolumeDim>
-std::array<tnsr::I<double, VolumeDim, Frame::Logical>,
+std::array<tnsr::I<double, VolumeDim, Frame::BlockLogical>,
            two_to_the(VolumeDim - 1)>
 logical_coords_of_corners(
     const std::array<size_t, two_to_the(VolumeDim - 1)>& local_ids) noexcept {
-  std::array<tnsr::I<double, VolumeDim, Frame::Logical>,
+  std::array<tnsr::I<double, VolumeDim, Frame::BlockLogical>,
              two_to_the(VolumeDim - 1)>
       result{};
   std::transform(local_ids.begin(), local_ids.end(), result.begin(),
                  [](const size_t id) noexcept {
-                   tnsr::I<double, VolumeDim, Frame::Logical> point{};
+                   tnsr::I<double, VolumeDim, Frame::BlockLogical> point{};
                    for (size_t i = 0; i < VolumeDim; i++) {
                      point[i] = 2.0 * get_nth_bit(id, i) - 1.0;
                    };
@@ -158,12 +158,13 @@ logical_coords_of_corners(
 
 template <size_t VolumeDim>
 Direction<VolumeDim> get_direction_normal_to_face(
-    const std::array<tnsr::I<double, VolumeDim, Frame::Logical>,
+    const std::array<tnsr::I<double, VolumeDim, Frame::BlockLogical>,
                      two_to_the(VolumeDim - 1)>& face_pts) noexcept {
   const auto summed_point = alg::accumulate(
-      face_pts, tnsr::I<double, VolumeDim, Frame::Logical>(0.0),
-      [](tnsr::I<double, VolumeDim, Frame::Logical>& prior,
-         const tnsr::I<double, VolumeDim, Frame::Logical>& point) noexcept {
+      face_pts, tnsr::I<double, VolumeDim, Frame::BlockLogical>(0.0),
+      [](tnsr::I<double, VolumeDim, Frame::BlockLogical>& prior,
+         const tnsr::I<double, VolumeDim, Frame::BlockLogical>&
+             point) noexcept {
         for (size_t i = 0; i < prior.size(); i++) {
           prior[i] += point[i];
         }
@@ -267,10 +268,9 @@ obtain_correspondence_between_blocks(
 template <size_t VolumeDim>
 std::vector<std::array<size_t, two_to_the(VolumeDim)>> corners_from_two_maps(
     const std::unique_ptr<domain::CoordinateMapBase<
-        Frame::Logical, Frame::Inertial, VolumeDim>>& map1,
-    const std::unique_ptr<
-        domain::CoordinateMapBase<Frame::Logical, Frame::Inertial, VolumeDim>>&
-        map2) noexcept {
+        Frame::BlockLogical, Frame::Inertial, VolumeDim>>& map1,
+    const std::unique_ptr<domain::CoordinateMapBase<
+        Frame::BlockLogical, Frame::Inertial, VolumeDim>>& map2) noexcept {
   std::array<size_t, two_to_the(VolumeDim)> corners_for_block1{};
   std::array<size_t, two_to_the(VolumeDim)> corners_for_block2{};
   for (VolumeCornerIterator<VolumeDim> vci{}; vci; ++vci) {
@@ -280,7 +280,7 @@ std::vector<std::array<size_t, two_to_the(VolumeDim)>> corners_from_two_maps(
   // Fill corners_for_block2 based off which corners are shared with map1.
   for (VolumeCornerIterator<VolumeDim> vci_map2{}; vci_map2; ++vci_map2) {
     const auto mapped_coords2 =
-        (*map2)(tnsr::I<double, VolumeDim, Frame::Logical>{
+        (*map2)(tnsr::I<double, VolumeDim, Frame::BlockLogical>{
             vci_map2.coords_of_corner()});
 
     // Set num_unshared_corners to zero because we only need a local corner
@@ -290,7 +290,7 @@ std::vector<std::array<size_t, two_to_the(VolumeDim)>> corners_from_two_maps(
     // Check each corner of map1 to see if it shares any corners with map2.
     for (VolumeCornerIterator<VolumeDim> vci_map1{}; vci_map1; ++vci_map1) {
       const auto mapped_coords1 =
-          (*map1)(tnsr::I<double, VolumeDim, Frame::Logical>{
+          (*map1)(tnsr::I<double, VolumeDim, Frame::BlockLogical>{
               vci_map1.coords_of_corner()});
       double max_separation = 0.0;
       for (size_t j = 0; j < VolumeDim; j++) {
@@ -326,9 +326,8 @@ std::pair<std::array<Direction<VolumeDim>, VolumeDim>,
           std::array<Direction<VolumeDim>, VolumeDim>>
 obtain_correspondence_between_maps(
     const size_t map_id1, const size_t map_id2,
-    const std::vector<std::unique_ptr<
-        domain::CoordinateMapBase<Frame::Logical, Frame::Inertial, VolumeDim>>>&
-        maps) noexcept {
+    const std::vector<std::unique_ptr<domain::CoordinateMapBase<
+        Frame::BlockLogical, Frame::Inertial, VolumeDim>>>& maps) noexcept {
   return obtain_correspondence_between_blocks<VolumeDim>(
       0, 1, corners_from_two_maps(maps[map_id1], maps[map_id2]));
 }
@@ -478,9 +477,8 @@ void set_internal_boundaries(
     const gsl::not_null<
         std::vector<DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>>*>
         neighbors_of_all_blocks,
-    const std::vector<std::unique_ptr<
-        domain::CoordinateMapBase<Frame::Logical, Frame::Inertial, VolumeDim>>>&
-        maps) noexcept {
+    const std::vector<std::unique_ptr<domain::CoordinateMapBase<
+        Frame::BlockLogical, Frame::Inertial, VolumeDim>>>& maps) noexcept {
   for (size_t block1_index = 0; block1_index < maps.size(); block1_index++) {
     DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>> neighbor;
     for (size_t block2_index = 0; block2_index < maps.size(); block2_index++) {
@@ -604,8 +602,8 @@ size_t which_wedge_index(const ShellWedges& which_wedges) {
 }  // namespace
 
 template <typename TargetFrame>
-std::vector<
-    std::unique_ptr<domain::CoordinateMapBase<Frame::Logical, TargetFrame, 3>>>
+std::vector<std::unique_ptr<
+    domain::CoordinateMapBase<Frame::BlockLogical, TargetFrame, 3>>>
 sph_wedge_coordinate_maps(
     const double inner_radius, const double outer_radius,
     const double inner_sphericity, const double outer_sphericity,
@@ -698,14 +696,14 @@ sph_wedge_coordinate_maps(
   const auto compression =
       domain::CoordinateMaps::EquatorialCompression{aspect_ratio};
 
-  return domain::make_vector_coordinate_map_base<Frame::Logical, TargetFrame,
-                                                 3>(
+  return domain::make_vector_coordinate_map_base<Frame::BlockLogical,
+                                                 TargetFrame, 3>(
       std::move(wedges_for_all_layers), compression, translation);
 }
 
 template <typename TargetFrame>
-std::vector<
-    std::unique_ptr<domain::CoordinateMapBase<Frame::Logical, TargetFrame, 3>>>
+std::vector<std::unique_ptr<
+    domain::CoordinateMapBase<Frame::BlockLogical, TargetFrame, 3>>>
 frustum_coordinate_maps(const double length_inner_cube,
                         const double length_outer_cube,
                         const bool use_equiangular_map,
@@ -788,7 +786,8 @@ frustum_coordinate_maps(const double length_inner_cube,
                                 projective_scale_factor});
 
   // clang-tidy: trivially copyable
-  return domain::make_vector_coordinate_map_base<Frame::Logical, TargetFrame,
+  return domain::make_vector_coordinate_map_base<Frame::BlockLogical,
+                                                 TargetFrame,
                                                  3>(
       std::move(frustums));  // NOLINT
 }
@@ -1088,8 +1087,8 @@ cyl_wedge_coord_map_surrounding_blocks(
 }
 
 template <typename TargetFrame>
-std::vector<
-    std::unique_ptr<domain::CoordinateMapBase<Frame::Logical, TargetFrame, 3>>>
+std::vector<std::unique_ptr<
+    domain::CoordinateMapBase<Frame::BlockLogical, TargetFrame, 3>>>
 cyl_wedge_coordinate_maps(
     const double inner_radius, const double outer_radius,
     const double lower_bound, const double upper_bound,
@@ -1099,7 +1098,7 @@ cyl_wedge_coordinate_maps(
     const std::vector<domain::CoordinateMaps::Distribution>&
         radial_distribution) noexcept {
   std::vector<std::unique_ptr<
-      domain::CoordinateMapBase<Frame::Logical, TargetFrame, 3>>>
+      domain::CoordinateMapBase<Frame::BlockLogical, TargetFrame, 3>>>
       cylinder_mapping;
   const auto maps_surrounding = cyl_wedge_coord_map_surrounding_blocks(
       inner_radius, outer_radius, lower_bound, upper_bound, use_equiangular_map,
@@ -1117,7 +1116,8 @@ cyl_wedge_coordinate_maps(
         for (size_t height = 0; height < 1 + height_partitioning.size();
              ++height) {
           cylinder_mapping.emplace_back(
-              domain::make_coordinate_map_base<Frame::Logical, TargetFrame>(
+              domain::make_coordinate_map_base<Frame::BlockLogical,
+                                               TargetFrame>(
                   maps_center.at(height)));
           for (size_t radius = 0; radius < 1 + radial_partitioning.size();
                ++radius) {
@@ -1125,7 +1125,8 @@ cyl_wedge_coordinate_maps(
             for (size_t block_at_this_radius = 0; block_at_this_radius < 4;
                  ++block_at_this_radius, ++surrounding_block_index) {
               cylinder_mapping.emplace_back(
-                  domain::make_coordinate_map_base<Frame::Logical, TargetFrame>(
+                  domain::make_coordinate_map_base<Frame::BlockLogical,
+                                                   TargetFrame>(
                       maps_surrounding.at(surrounding_block_index)));
             }
           }
@@ -1213,40 +1214,40 @@ corners_for_rectilinear_domains(
 }
 
 template <typename TargetFrame, typename Map>
-std::unique_ptr<domain::CoordinateMapBase<Frame::Logical, TargetFrame, 1>>
+std::unique_ptr<domain::CoordinateMapBase<Frame::BlockLogical, TargetFrame, 1>>
 product_of_1d_maps(std::array<Map, 1>& maps,
                    const OrientationMap<1>& rotation = {}) noexcept {
   if (rotation == OrientationMap<1>{}) {
-    return domain::make_coordinate_map_base<Frame::Logical, TargetFrame>(
+    return domain::make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(
         maps[0]);
   }
-  return domain::make_coordinate_map_base<Frame::Logical, TargetFrame>(
+  return domain::make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(
       domain::CoordinateMaps::DiscreteRotation<1>{rotation}, maps[0]);
 }
 
 template <typename TargetFrame, typename Map>
-std::unique_ptr<domain::CoordinateMapBase<Frame::Logical, TargetFrame, 2>>
+std::unique_ptr<domain::CoordinateMapBase<Frame::BlockLogical, TargetFrame, 2>>
 product_of_1d_maps(std::array<Map, 2>& maps,
                    const OrientationMap<2>& rotation = {}) noexcept {
   if (rotation == OrientationMap<2>{}) {
-    return domain::make_coordinate_map_base<Frame::Logical, TargetFrame>(
+    return domain::make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(
         domain::CoordinateMaps::ProductOf2Maps<Map, Map>(maps[0], maps[1]));
   }
-  return domain::make_coordinate_map_base<Frame::Logical, TargetFrame>(
+  return domain::make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(
       domain::CoordinateMaps::DiscreteRotation<2>{rotation},
       domain::CoordinateMaps::ProductOf2Maps<Map, Map>(maps[0], maps[1]));
 }
 
 template <typename TargetFrame, typename Map>
-std::unique_ptr<domain::CoordinateMapBase<Frame::Logical, TargetFrame, 3>>
+std::unique_ptr<domain::CoordinateMapBase<Frame::BlockLogical, TargetFrame, 3>>
 product_of_1d_maps(std::array<Map, 3>& maps,
                    const OrientationMap<3>& rotation = {}) noexcept {
   if (rotation == OrientationMap<3>{}) {
-    return domain::make_coordinate_map_base<Frame::Logical, TargetFrame>(
+    return domain::make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(
         domain::CoordinateMaps::ProductOf3Maps<Map, Map, Map>(maps[0], maps[1],
                                                               maps[2]));
   }
-  return domain::make_coordinate_map_base<Frame::Logical, TargetFrame>(
+  return domain::make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(
       domain::CoordinateMaps::DiscreteRotation<3>{rotation},
       domain::CoordinateMaps::ProductOf3Maps<Map, Map, Map>(maps[0], maps[1],
                                                             maps[2]));
@@ -1254,7 +1255,7 @@ product_of_1d_maps(std::array<Map, 3>& maps,
 
 template <typename TargetFrame, size_t VolumeDim>
 std::vector<std::unique_ptr<
-    domain::CoordinateMapBase<Frame::Logical, TargetFrame, VolumeDim>>>
+    domain::CoordinateMapBase<Frame::BlockLogical, TargetFrame, VolumeDim>>>
 maps_for_rectilinear_domains(
     const Index<VolumeDim>& domain_extents,
     const std::array<std::vector<double>, VolumeDim>& block_demarcations,
@@ -1266,7 +1267,7 @@ maps_for_rectilinear_domains(
            "If there are N blocks, there must be N+1 demarcations.");
   }
   std::vector<std::unique_ptr<
-      domain::CoordinateMapBase<Frame::Logical, TargetFrame, VolumeDim>>>
+      domain::CoordinateMapBase<Frame::BlockLogical, TargetFrame, VolumeDim>>>
       maps{};
   size_t block_orientation_index = 0;
   for (const auto& block_index : indices_for_rectilinear_domains(
@@ -1444,18 +1445,7 @@ ShellWedges Options::create_from_yaml<ShellWedges>::create<void>(
 }
 
 template std::vector<std::unique_ptr<
-    domain::CoordinateMapBase<Frame::Logical, Frame::Inertial, 3>>>
-sph_wedge_coordinate_maps(
-    const double inner_radius, const double outer_radius,
-    const double inner_sphericity, const double outer_sphericity,
-    const bool use_equiangular_map, const double x_coord_of_shell_center,
-    const bool use_wedge_halves, const double aspect_ratio,
-    const std::vector<double>& radial_partitioning,
-    const std::vector<domain::CoordinateMaps::Distribution>&
-        radial_distribution,
-    const ShellWedges which_wedges) noexcept;
-template std::vector<
-    std::unique_ptr<domain::CoordinateMapBase<Frame::Logical, Frame::Grid, 3>>>
+    domain::CoordinateMapBase<Frame::BlockLogical, Frame::Inertial, 3>>>
 sph_wedge_coordinate_maps(
     const double inner_radius, const double outer_radius,
     const double inner_sphericity, const double outer_sphericity,
@@ -1466,21 +1456,32 @@ sph_wedge_coordinate_maps(
         radial_distribution,
     const ShellWedges which_wedges) noexcept;
 template std::vector<std::unique_ptr<
-    domain::CoordinateMapBase<Frame::Logical, Frame::Inertial, 3>>>
-frustum_coordinate_maps(const double length_inner_cube,
-                        const double length_outer_cube,
-                        const bool use_equiangular_map,
-                        const std::array<double, 3>& origin_preimage,
-                        const double projective_scale_factor) noexcept;
-template std::vector<
-    std::unique_ptr<domain::CoordinateMapBase<Frame::Logical, Frame::Grid, 3>>>
+    domain::CoordinateMapBase<Frame::BlockLogical, Frame::Grid, 3>>>
+sph_wedge_coordinate_maps(
+    const double inner_radius, const double outer_radius,
+    const double inner_sphericity, const double outer_sphericity,
+    const bool use_equiangular_map, const double x_coord_of_shell_center,
+    const bool use_wedge_halves, const double aspect_ratio,
+    const std::vector<double>& radial_partitioning,
+    const std::vector<domain::CoordinateMaps::Distribution>&
+        radial_distribution,
+    const ShellWedges which_wedges) noexcept;
+template std::vector<std::unique_ptr<
+    domain::CoordinateMapBase<Frame::BlockLogical, Frame::Inertial, 3>>>
 frustum_coordinate_maps(const double length_inner_cube,
                         const double length_outer_cube,
                         const bool use_equiangular_map,
                         const std::array<double, 3>& origin_preimage,
                         const double projective_scale_factor) noexcept;
 template std::vector<std::unique_ptr<
-    domain::CoordinateMapBase<Frame::Logical, Frame::Inertial, 3>>>
+    domain::CoordinateMapBase<Frame::BlockLogical, Frame::Grid, 3>>>
+frustum_coordinate_maps(const double length_inner_cube,
+                        const double length_outer_cube,
+                        const bool use_equiangular_map,
+                        const std::array<double, 3>& origin_preimage,
+                        const double projective_scale_factor) noexcept;
+template std::vector<std::unique_ptr<
+    domain::CoordinateMapBase<Frame::BlockLogical, Frame::Inertial, 3>>>
 cyl_wedge_coordinate_maps(
     const double inner_radius, const double outer_radius,
     const double lower_bound, const double upper_bound,
@@ -1489,8 +1490,8 @@ cyl_wedge_coordinate_maps(
     const std::vector<double>& height_partitioning,
     const std::vector<domain::CoordinateMaps::Distribution>&
         radial_distribution) noexcept;
-template std::vector<
-    std::unique_ptr<domain::CoordinateMapBase<Frame::Logical, Frame::Grid, 3>>>
+template std::vector<std::unique_ptr<
+    domain::CoordinateMapBase<Frame::BlockLogical, Frame::Grid, 3>>>
 cyl_wedge_coordinate_maps(
     const double inner_radius, const double outer_radius,
     const double lower_bound, const double upper_bound,
@@ -1526,12 +1527,12 @@ template class domain::CoordinateMaps::ProductOf3Maps<
 template class domain::CoordinateMaps::ProductOf2Maps<
     domain::CoordinateMaps::Affine, domain::CoordinateMaps::Identity<2>>;
 
-INSTANTIATE_MAPS_FUNCTIONS(((Affine2d), (Affine3d), (Equiangular3d),
-                            (domain::CoordinateMaps::Wedge<3>,
-                             domain::CoordinateMaps::EquatorialCompression,
-                             AffineIdentity)),
-                           (Frame::Logical), (Frame::Grid, Frame::Inertial),
-                           (double, DataVector))
+INSTANTIATE_MAPS_FUNCTIONS(
+    ((Affine2d), (Affine3d), (Equiangular3d),
+     (domain::CoordinateMaps::Wedge<3>,
+      domain::CoordinateMaps::EquatorialCompression, AffineIdentity)),
+    (Frame::BlockLogical, Frame::ElementLogical, Frame::Logical),
+    (Frame::Grid, Frame::Inertial), (double, DataVector))
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(1, data)
@@ -1548,7 +1549,7 @@ INSTANTIATE_MAPS_FUNCTIONS(((Affine2d), (Affine3d), (Equiangular3d),
           std::vector<DirectionMap<DIM(data), BlockNeighbor<DIM(data)>>>*>     \
           neighbors_of_all_blocks,                                             \
       const std::vector<std::unique_ptr<domain::CoordinateMapBase<             \
-          Frame::Logical, Frame::Inertial, DIM(data)>>>& maps) noexcept;       \
+          Frame::BlockLogical, Frame::Inertial, DIM(data)>>>& maps) noexcept;  \
   template void set_identified_boundaries(                                     \
       const std::vector<PairOfFaces>& identifications,                         \
       const std::vector<std::array<size_t, two_to_the(DIM(data))>>&            \
@@ -1564,8 +1565,8 @@ INSTANTIATE_MAPS_FUNCTIONS(((Affine2d), (Affine3d), (Equiangular3d),
   corners_for_rectilinear_domains(                                             \
       const Index<DIM(data)>& domain_extents,                                  \
       const std::vector<Index<DIM(data)>>& block_indices_to_exclude) noexcept; \
-  template std::vector<std::unique_ptr<                                        \
-      domain::CoordinateMapBase<Frame::Logical, Frame::Inertial, DIM(data)>>>  \
+  template std::vector<std::unique_ptr<domain::CoordinateMapBase<              \
+      Frame::BlockLogical, Frame::Inertial, DIM(data)>>>                       \
   maps_for_rectilinear_domains(                                                \
       const Index<DIM(data)>& domain_extents,                                  \
       const std::array<std::vector<double>, DIM(data)>& block_demarcations,    \

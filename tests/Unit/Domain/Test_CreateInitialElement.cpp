@@ -54,7 +54,8 @@ void test_h_refinement() noexcept {
       CAPTURE(neighbor_orientation);
       CAPTURE(neighbor_refinement);
       const Block<3> self_block(
-          domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+          domain::make_coordinate_map_base<Frame::BlockLogical,
+                                           Frame::Inertial>(
               domain::CoordinateMaps::Identity<3>{}),
           0, {{neighbor_direction, {1, neighbor_orientation}}});
       const std::vector<std::array<size_t, 3>> refinement_levels{
@@ -399,7 +400,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CreateInitialElement", "[Domain][Unit]") {
   OrientationMap<2> unaligned(
       make_array(Direction<2>::lower_eta(), Direction<2>::upper_xi()));
   Block<2> test_block(
-      domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
           domain::CoordinateMaps::Identity<2>{}),
       0,
       {{Direction<2>::upper_xi(), BlockNeighbor<2>{1, aligned}},

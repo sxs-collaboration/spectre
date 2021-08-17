@@ -50,17 +50,17 @@ namespace creators {
 class Sphere : public DomainCreator<3> {
  public:
   using maps_list = tmpl::list<
-      domain::CoordinateMap<Frame::Logical, Frame::Inertial,
+      domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial,
                             CoordinateMaps::ProductOf3Maps<
                                 CoordinateMaps::Affine, CoordinateMaps::Affine,
                                 CoordinateMaps::Affine>>,
       domain::CoordinateMap<
-          Frame::Logical, Frame::Inertial,
+          Frame::BlockLogical, Frame::Inertial,
           CoordinateMaps::ProductOf3Maps<CoordinateMaps::Equiangular,
                                          CoordinateMaps::Equiangular,
                                          CoordinateMaps::Equiangular>>,
       domain::CoordinateMap<
-          Frame::Logical, Frame::Inertial, CoordinateMaps::Wedge<3>,
+          Frame::BlockLogical, Frame::Inertial, CoordinateMaps::Wedge<3>,
           CoordinateMaps::EquatorialCompression,
           CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
                                          CoordinateMaps::Identity<2>>>>;

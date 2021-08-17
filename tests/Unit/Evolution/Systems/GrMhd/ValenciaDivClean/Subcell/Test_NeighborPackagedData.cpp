@@ -94,12 +94,12 @@ double test(const size_t num_dg_pts) {
           domain::CoordinateMaps::Identity<3>{});
   const auto element = domain::Initialization::create_initial_element(
       ElementId<3>{0, {SegmentId{3, 4}, SegmentId{3, 4}, SegmentId{3, 4}}},
-      Block<3>{
-          domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-              Affine3D{affine_map, affine_map, affine_map}),
-          0,
-          {},
-          {}},
+      Block<3>{domain::make_coordinate_map_base<Frame::BlockLogical,
+                                                Frame::Inertial>(
+                   Affine3D{affine_map, affine_map, affine_map}),
+               0,
+               {},
+               {}},
       std::vector<std::array<size_t, 3>>{std::array<size_t, 3>{{3, 3, 3}}});
 
   const grmhd::Solutions::BondiMichel soln{1.0, 5.0, 0.05, 1.4, 2.0};

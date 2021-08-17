@@ -39,7 +39,7 @@ namespace creators {
 class Rectangle : public DomainCreator<2> {
  public:
   using maps_list = tmpl::list<domain::CoordinateMap<
-      Frame::Logical, Frame::Inertial,
+      Frame::BlockLogical, Frame::Inertial,
       CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
                                      CoordinateMaps::Affine>>>;
 

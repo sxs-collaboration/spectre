@@ -2134,8 +2134,9 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
   const ElementId<Dim> self_id{0, {{{1, 0}}}};
   const Element<Dim> element{self_id, {}};
   ElementMap<Dim, Frame::Grid> element_map{
-      self_id, domain::make_coordinate_map_base<Frame::Logical, Frame::Grid>(
-                   domain::CoordinateMaps::Identity<Dim>{})};
+      self_id,
+      domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
+          domain::CoordinateMaps::Identity<Dim>{})};
   auto grid_to_inertial_map =
       domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
           domain::CoordinateMaps::Identity<Dim>{});
@@ -2216,7 +2217,7 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
     boundary_conditions[Direction<Dim>::upper_xi()] =
         std::make_unique<Outflow<System>>(moving_mesh);
     domain = Domain<Dim>{make_vector(Block<Dim>{
-        domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+        domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
             domain::CoordinateMaps::Identity<Dim>{}),
         0,
         {},
@@ -2339,12 +2340,13 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
               std::make_unique<Ghost<System>>(moving_mesh);
           boundary_conditions[outflow_direction] =
               std::make_unique<Outflow<System>>(moving_mesh);
-          *domain_ptr = Domain<Dim>{make_vector(Block<Dim>{
-              domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-                  domain::CoordinateMaps::Identity<Dim>{}),
-              0,
-              {},
-              std::move(boundary_conditions)})};
+          *domain_ptr = Domain<Dim>{make_vector(
+              Block<Dim>{domain::make_coordinate_map_base<Frame::BlockLogical,
+                                                          Frame::Inertial>(
+                             domain::CoordinateMaps::Identity<Dim>{}),
+                         0,
+                         {},
+                         std::move(boundary_conditions)})};
 
           fill_variables(dt_vars_ptr, offset_dt_evolved_vars);
         });
@@ -2421,12 +2423,13 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
                                                        offset_dt_evolved_vars);
           boundary_conditions[outflow_direction] =
               std::make_unique<Outflow<System>>(moving_mesh);
-          *domain_ptr = Domain<Dim>{make_vector(Block<Dim>{
-              domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-                  domain::CoordinateMaps::Identity<Dim>{}),
-              0,
-              {},
-              std::move(boundary_conditions)})};
+          *domain_ptr = Domain<Dim>{make_vector(
+              Block<Dim>{domain::make_coordinate_map_base<Frame::BlockLogical,
+                                                          Frame::Inertial>(
+                             domain::CoordinateMaps::Identity<Dim>{}),
+                         0,
+                         {},
+                         std::move(boundary_conditions)})};
 
           fill_variables(dt_vars_ptr, offset_dt_evolved_vars);
         });
@@ -2492,13 +2495,13 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
                       moving_mesh, get(expected_dt_var1)[0]);
               boundary_conditions[ghost_direction] =
                   std::make_unique<Ghost<System>>(moving_mesh);
-              *domain_ptr = Domain<Dim>{make_vector(
-                  Block<Dim>{domain::make_coordinate_map_base<Frame::Logical,
-                                                              Frame::Inertial>(
-                                 domain::CoordinateMaps::Identity<Dim>{}),
-                             0,
-                             {},
-                             std::move(boundary_conditions)})};
+              *domain_ptr = Domain<Dim>{make_vector(Block<Dim>{
+                  domain::make_coordinate_map_base<Frame::BlockLogical,
+                                                   Frame::Inertial>(
+                      domain::CoordinateMaps::Identity<Dim>{}),
+                  0,
+                  {},
+                  std::move(boundary_conditions)})};
 
               fill_variables(dt_vars_ptr, offset_dt_evolved_vars);
             });
@@ -2549,13 +2552,13 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
                   std::make_unique<GhostAndTimeDerivative<System>>(moving_mesh);
               boundary_conditions[outflow_direction] =
                   std::make_unique<Outflow<System>>(moving_mesh);
-              *domain_ptr = Domain<Dim>{make_vector(
-                  Block<Dim>{domain::make_coordinate_map_base<Frame::Logical,
-                                                              Frame::Inertial>(
-                                 domain::CoordinateMaps::Identity<Dim>{}),
-                             0,
-                             {},
-                             std::move(boundary_conditions)})};
+              *domain_ptr = Domain<Dim>{make_vector(Block<Dim>{
+                  domain::make_coordinate_map_base<Frame::BlockLogical,
+                                                   Frame::Inertial>(
+                      domain::CoordinateMaps::Identity<Dim>{}),
+                  0,
+                  {},
+                  std::move(boundary_conditions)})};
 
               fill_variables(dt_vars_ptr, offset_dt_evolved_vars);
             });

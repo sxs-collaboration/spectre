@@ -17,8 +17,9 @@
 namespace {
 // Define this alias so we don't need to keep typing this monster.
 template <size_t Dim>
-using block_logical_coord_holder = std::optional<
-    IdPair<domain::BlockId, tnsr::I<double, Dim, typename ::Frame::Logical>>>;
+using block_logical_coord_holder =
+    std::optional<IdPair<domain::BlockId,
+                         tnsr::I<double, Dim, typename ::Frame::BlockLogical>>>;
 using functions_of_time_type = std::unordered_map<
     std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>;
 }  // namespace
@@ -35,7 +36,7 @@ std::vector<block_logical_coord_holder<Dim>> block_logical_coordinates(
     for (size_t d = 0; d < Dim; ++d) {
       x_frame.get(d) = x.get(d)[s];
     }
-    tnsr::I<double, Dim, typename ::Frame::Logical> x_logical{};
+    tnsr::I<double, Dim, typename ::Frame::BlockLogical> x_logical{};
     // Check which block this point is in. Each point will be in one
     // and only one block, unless it is on a shared boundary.  In that
     // case, choose the first matching block (and this block will have

@@ -91,11 +91,11 @@ namespace creators {
 class RotatedBricks : public DomainCreator<3> {
  public:
   using maps_list = tmpl::list<
-      domain::CoordinateMap<Frame::Logical, Frame::Inertial,
+      domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial,
                             CoordinateMaps::ProductOf3Maps<
                                 CoordinateMaps::Affine, CoordinateMaps::Affine,
                                 CoordinateMaps::Affine>>,
-      domain::CoordinateMap<Frame::Logical, Frame::Inertial,
+      domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial,
                             CoordinateMaps::DiscreteRotation<3>,
                             CoordinateMaps::ProductOf3Maps<
                                 CoordinateMaps::Affine, CoordinateMaps::Affine,

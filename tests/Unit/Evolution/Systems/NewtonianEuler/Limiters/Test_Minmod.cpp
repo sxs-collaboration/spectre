@@ -340,7 +340,8 @@ void test_neuler_vs_generic_minmod_1d() noexcept {
   using Affine = domain::CoordinateMaps::Affine;
   const Affine xi_map{-1., 1., 3.7, 4.2};
   const auto coordmap =
-      domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(xi_map);
+      domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
+          xi_map);
   const ElementMap<1, Frame::Inertial> element_map(element.id(),
                                                    coordmap->get_clone());
   const auto element_size = size_of_element(element_map);
@@ -398,7 +399,8 @@ void test_neuler_vs_generic_minmod_2d() noexcept {
   const Affine eta_map{-1., 1., 3.2, 4.2};
   const Affine2D map2d{xi_map, eta_map};
   const auto coordmap =
-      domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(map2d);
+      domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
+          map2d);
   const ElementMap<2, Frame::Inertial> element_map(element.id(),
                                                    coordmap->get_clone());
   const auto element_size = size_of_element(element_map);
@@ -465,7 +467,8 @@ void test_neuler_vs_generic_minmod_3d() noexcept {
   const Affine zeta_map{-1., 1., 1.3, 2.1};
   const Affine3D map3d{xi_map, eta_map, zeta_map};
   const auto coordmap =
-      domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(map3d);
+      domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
+          map3d);
   const ElementMap<3, Frame::Inertial> element_map(element.id(),
                                                    coordmap->get_clone());
   const auto element_size = size_of_element(element_map);

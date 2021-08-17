@@ -111,17 +111,17 @@ auto make_grid_map() {
   using domain::make_coordinate_map_base;
   using domain::CoordinateMaps::Affine;
   if constexpr (Dim == 1) {
-    return make_coordinate_map_base<Frame::Logical, Frame::Grid>(
+    return make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
         Affine(-1.0, 1.0, 2.0, 5.0));
   } else if constexpr (Dim == 2) {
     using domain::CoordinateMaps::ProductOf2Maps;
-    return make_coordinate_map_base<Frame::Logical, Frame::Grid>(
+    return make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
         ProductOf2Maps<Affine, Affine>(Affine(-1.0, 1.0, -1.0, -0.8),
                                        Affine(-1.0, 1.0, -1.0, -0.8)),
         domain::CoordinateMaps::Wedge<2>(0.5, 0.75, 1.0, 1.0, {}, false));
   } else {
     using domain::CoordinateMaps::ProductOf3Maps;
-    return make_coordinate_map_base<Frame::Logical, Frame::Grid>(
+    return make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
         ProductOf3Maps<Affine, Affine, Affine>(Affine(-1.0, 1.0, -1.0, -0.8),
                                                Affine(-1.0, 1.0, -1.0, -0.8),
                                                Affine(-1.0, 1.0, 0.8, 1.0)),
@@ -186,15 +186,15 @@ void test() {
 SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Fd.Actions.TakeTimeStep",
                   "[Evolution][Unit]") {
   using Affine = domain::CoordinateMaps::Affine;
-  PUPable_reg(
-      SINGLE_ARG(domain::CoordinateMap<Frame::Logical, Frame::Grid, Affine>));
+  PUPable_reg(SINGLE_ARG(
+      domain::CoordinateMap<Frame::BlockLogical, Frame::Grid, Affine>));
   PUPable_reg(SINGLE_ARG(domain::CoordinateMap<
-                         Frame::Logical, Frame::Grid,
+                         Frame::BlockLogical, Frame::Grid,
                          domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>,
                          domain::CoordinateMaps::Wedge<2>>));
   PUPable_reg(
       SINGLE_ARG(domain::CoordinateMap<
-                 Frame::Logical, Frame::Grid,
+                 Frame::BlockLogical, Frame::Grid,
                  domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>,
                  domain::CoordinateMaps::Wedge<3>>));
   PUPable_reg(

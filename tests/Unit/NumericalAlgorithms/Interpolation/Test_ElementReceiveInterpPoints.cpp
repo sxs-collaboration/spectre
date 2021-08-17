@@ -152,7 +152,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ElementReceivePoints",
 
   using point_info_type = std::vector<std::optional<
       IdPair<domain::BlockId, tnsr::I<double, metavars::volume_dim,
-                                      typename ::Frame::Logical>>>>;
+                                      typename ::Frame::BlockLogical>>>>;
 
   // element should contain an intrp::Tags::InterpPointInfo<Metavariables>
   // that has an empty point_info for InterpolationTargetA and

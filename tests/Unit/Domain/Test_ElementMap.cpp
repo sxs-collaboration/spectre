@@ -37,14 +37,16 @@ void test_element_impl(
     const T& first_map, const U& second_map,
     const tnsr::I<double, Dim, Frame::Logical>& logical_point_double,
     const tnsr::I<DV, Dim, Frame::Logical>& logical_point_dv) {
-  PUPable_reg(SINGLE_ARG(CoordinateMap<Frame::Logical, Frame::Inertial, T, U>));
+  PUPable_reg(
+      SINGLE_ARG(CoordinateMap<Frame::BlockLogical, Frame::Inertial, T, U>));
   const auto composed_map =
       make_coordinate_map<Frame::Logical, Frame::Inertial>(
           affine_map, first_map, second_map);
 
   ElementMap<Dim, Frame::Inertial> element_map{
-      element_id, make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-                      first_map, second_map)};
+      element_id,
+      make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
+          first_map, second_map)};
   ElementMap<Dim, Frame::Inertial> element_map_deserialized =
       serialize_and_deserialize(element_map);
 
@@ -88,7 +90,7 @@ void test_element_impl(
                         composed_map.jacobian(logical_point_double));
 
   CHECK(element_map.block_map() ==
-        *(make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+        *(make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
             first_map, second_map)));
 }
 

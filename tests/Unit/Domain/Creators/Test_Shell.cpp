@@ -222,8 +222,8 @@ void test_shell_construction(
                           : domain::CoordinateMaps::Distribution::Linear;
   if (aspect_ratio == 1.0) {
     auto vector_of_maps = make_vector_coordinate_map_base<
-        Frame::Logical, tmpl::conditional_t<sizeof...(FuncsOfTime) == 0,
-                                            Frame::Inertial, Frame::Grid>>(
+        Frame::BlockLogical, tmpl::conditional_t<sizeof...(FuncsOfTime) == 0,
+                                                 Frame::Inertial, Frame::Grid>>(
         Wedge3DMap{inner_radius, outer_radius, 1.0, 1.0, OrientationMap<3>{},
                    use_equiangular_map, Halves::Both, radial_distribution},
         Wedge3DMap{inner_radius, outer_radius, 1.0, 1.0,
@@ -267,7 +267,7 @@ void test_shell_construction(
     if constexpr(sizeof...(FuncsOfTime) == 0) {
       // We turn off the domain_no_corners test for time-dependent
       // maps because Domain doesn't have a constructor that takes
-      // maps from Logical to Grid.
+      // maps from BlockLogical to Grid.
       const auto vector_of_maps_copy = clone_unique_ptrs(vector_of_maps);
 
       Domain<3> domain_no_corners =
@@ -301,19 +301,19 @@ void test_shell_construction(
     using TargetFrame = tmpl::conditional_t<sizeof...(FuncsOfTime) == 0,
                                             Frame::Inertial, Frame::Grid>;
     auto vector_of_maps = make_vector(
-        make_coordinate_map_base<Frame::Logical, TargetFrame>(
+        make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(
             Wedge3DMap{inner_radius, outer_radius, 1.0, 1.0,
                        OrientationMap<3>{}, use_equiangular_map, Halves::Both,
                        radial_distribution},
             compression, translation),
-        make_coordinate_map_base<Frame::Logical, TargetFrame>(
+        make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(
             Wedge3DMap{inner_radius, outer_radius, 1.0, 1.0,
                        OrientationMap<3>{std::array<Direction<3>, 3>{
                            {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
                             Direction<3>::lower_zeta()}}},
                        use_equiangular_map, Halves::Both, radial_distribution},
             compression, translation),
-        make_coordinate_map_base<Frame::Logical, TargetFrame>(
+        make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(
             Wedge3DMap{
                 inner_radius, outer_radius, 1.0, 1.0,
                 OrientationMap<3>{std::array<Direction<3>, 3>{
@@ -321,7 +321,7 @@ void test_shell_construction(
                      Direction<3>::lower_eta()}}},
                 use_equiangular_map, Halves::Both, radial_distribution},
             compression, translation),
-        make_coordinate_map_base<Frame::Logical, TargetFrame>(
+        make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(
             Wedge3DMap{
                 inner_radius, outer_radius, 1.0, 1.0,
                 OrientationMap<3>{std::array<Direction<3>, 3>{
@@ -329,7 +329,7 @@ void test_shell_construction(
                      Direction<3>::upper_eta()}}},
                 use_equiangular_map, Halves::Both, radial_distribution},
             compression, translation),
-        make_coordinate_map_base<Frame::Logical, TargetFrame>(
+        make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(
             Wedge3DMap{
                 inner_radius, outer_radius, 1.0, 1.0,
                 OrientationMap<3>{std::array<Direction<3>, 3>{
@@ -337,7 +337,7 @@ void test_shell_construction(
                      Direction<3>::upper_eta()}}},
                 use_equiangular_map, Halves::Both, radial_distribution},
             compression, translation),
-        make_coordinate_map_base<Frame::Logical, TargetFrame>(
+        make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(
             Wedge3DMap{
                 inner_radius, outer_radius, 1.0, 1.0,
                 OrientationMap<3>{std::array<Direction<3>, 3>{
@@ -362,7 +362,7 @@ void test_shell_construction(
     if constexpr (sizeof...(FuncsOfTime) == 0) {
       // We turn off the domain_no_corners test for time-dependent
       // maps because Domain doesn't have a constructor that takes
-      // maps from Logical to Grid.
+      // maps from BlockLogical to Grid.
       const auto vector_of_maps_copy = clone_unique_ptrs(vector_of_maps);
       Domain<3> domain_no_corners =
           expected_boundary_conditions.empty()

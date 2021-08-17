@@ -22,8 +22,9 @@
 namespace {
 // Define this alias so we don't need to keep typing this monster.
 template <size_t Dim>
-using block_logical_coord_holder = std::optional<
-    IdPair<domain::BlockId, tnsr::I<double, Dim, typename ::Frame::Logical>>>;
+using block_logical_coord_holder =
+    std::optional<IdPair<domain::BlockId,
+                         tnsr::I<double, Dim, typename ::Frame::BlockLogical>>>;
 }  // namespace
 
 template <size_t Dim>

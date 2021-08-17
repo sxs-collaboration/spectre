@@ -21,7 +21,7 @@
 namespace Frame {
 struct Grid;
 struct Inertial;
-struct Logical;
+struct BlockLogical;
 }  // namespace Frame
 
 namespace domain {
@@ -34,9 +34,10 @@ void test_coordinates_compute_item(const Mesh<Dim>& mesh, T map) noexcept {
       db::AddComputeTags<
           Tags::LogicalCoordinates<Dim>,
           Tags::MappedCoordinates<map_tag, Tags::LogicalCoordinates<Dim>>>>(
-      mesh, ElementMap<Dim, Frame::Grid>(
-                ElementId<Dim>(0),
-                make_coordinate_map_base<Frame::Logical, Frame::Grid>(map)));
+      mesh,
+      ElementMap<Dim, Frame::Grid>(
+          ElementId<Dim>(0),
+          make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(map)));
   CHECK_ITERABLE_APPROX(
       (db::get<Tags::Coordinates<Dim, Frame::Grid>>(box)),
       (make_coordinate_map<Frame::Logical, Frame::Grid>(map)(

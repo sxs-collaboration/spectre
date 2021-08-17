@@ -70,12 +70,12 @@ void test_rotated_intervals_construction(
       domain, expected_block_neighbors, expected_external_boundaries,
       make_vector(
           make_coordinate_map_base<
-              Frame::Logical,
+              Frame::BlockLogical,
               tmpl::conditional_t<sizeof...(FuncsOfTime) == 0, Frame::Inertial,
                                   Frame::Grid>>(
               CoordinateMaps::Affine{-1., 1., lower_bound[0], midpoint[0]}),
           make_coordinate_map_base<
-              Frame::Logical,
+              Frame::BlockLogical,
               tmpl::conditional_t<sizeof...(FuncsOfTime) == 0, Frame::Inertial,
                                   Frame::Grid>>(
               CoordinateMaps::DiscreteRotation<1>{OrientationMap<1>{

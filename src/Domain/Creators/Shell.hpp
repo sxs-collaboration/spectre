@@ -44,7 +44,7 @@ namespace domain::creators {
 class Shell : public DomainCreator<3> {
  public:
   using maps_list = tmpl::list<domain::CoordinateMap<
-      Frame::Logical, Frame::Inertial, CoordinateMaps::Wedge<3>,
+      Frame::BlockLogical, Frame::Inertial, CoordinateMaps::Wedge<3>,
       CoordinateMaps::EquatorialCompression,
       CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
                                      CoordinateMaps::Identity<2>>>>;

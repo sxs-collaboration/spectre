@@ -96,13 +96,13 @@ template <size_t VolumeDim>
 class AlignedLattice : public DomainCreator<VolumeDim> {
  public:
   using maps_list = tmpl::list<
-      domain::CoordinateMap<Frame::Logical, Frame::Inertial,
+      domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial,
                             CoordinateMaps::Affine>,
       domain::CoordinateMap<
-          Frame::Logical, Frame::Inertial,
+          Frame::BlockLogical, Frame::Inertial,
           CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
                                          CoordinateMaps::Affine>>,
-      domain::CoordinateMap<Frame::Logical, Frame::Inertial,
+      domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial,
                             CoordinateMaps::ProductOf3Maps<
                                 CoordinateMaps::Affine, CoordinateMaps::Affine,
                                 CoordinateMaps::Affine>>>;

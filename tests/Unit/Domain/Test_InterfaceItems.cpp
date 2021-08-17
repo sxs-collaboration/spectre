@@ -502,7 +502,7 @@ void test_interface_slice(){
 
   ElementMap<2, Frame::Inertial> element_map(
       ElementId<2>(0),
-      domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
           domain::CoordinateMaps::Rotation<2>(atan2(4., 3.))));
 
   const std::unordered_map<Direction<dim>, Mesh<dim - 1>>
@@ -680,8 +680,9 @@ void test_boundary_coordinates_moving_mesh() {
     const ElementMap<std::decay_t<decltype(element_id)>::volume_dim,
                      Frame::Grid>
         logical_to_grid_map(
-            element_id, make_coordinate_map_base<Frame::Logical, Frame::Grid>(
-                            time_independent_map));
+            element_id,
+            make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
+                time_independent_map));
     const auto grid_to_inertial_map =
         make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
             time_dependent_map);

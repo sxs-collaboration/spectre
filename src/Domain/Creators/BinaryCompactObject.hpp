@@ -61,7 +61,7 @@ class FunctionOfTime;
 
 namespace Frame {
 struct Inertial;
-struct Logical;
+struct BlockLogical;
 }  // namespace Frame
 
 namespace BinaryCompactObject_detail {
@@ -150,42 +150,42 @@ namespace creators {
 class BinaryCompactObject : public DomainCreator<3> {
  public:
   using maps_list = tmpl::list<
-      domain::CoordinateMap<Frame::Logical, Frame::Inertial,
+      domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial,
                             CoordinateMaps::ProductOf3Maps<
                                 CoordinateMaps::Affine, CoordinateMaps::Affine,
                                 CoordinateMaps::Affine>>,
       domain::CoordinateMap<
-          Frame::Logical, Frame::Inertial,
+          Frame::BlockLogical, Frame::Inertial,
           CoordinateMaps::ProductOf3Maps<CoordinateMaps::Equiangular,
                                          CoordinateMaps::Equiangular,
                                          CoordinateMaps::Equiangular>>,
       domain::CoordinateMap<
-          Frame::Logical, Frame::Inertial,
+          Frame::BlockLogical, Frame::Inertial,
           CoordinateMaps::ProductOf3Maps<CoordinateMaps::Affine,
                                          CoordinateMaps::Affine,
                                          CoordinateMaps::Affine>,
           CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
                                          CoordinateMaps::Identity<2>>>,
-      domain::CoordinateMap<Frame::Logical, Frame::Inertial,
+      domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial,
                             CoordinateMaps::DiscreteRotation<3>,
                             CoordinateMaps::ProductOf3Maps<
                                 CoordinateMaps::Affine, CoordinateMaps::Affine,
                                 CoordinateMaps::Affine>>,
       domain::CoordinateMap<
-          Frame::Logical, Frame::Inertial,
+          Frame::BlockLogical, Frame::Inertial,
           CoordinateMaps::ProductOf3Maps<CoordinateMaps::Equiangular,
                                          CoordinateMaps::Equiangular,
                                          CoordinateMaps::Equiangular>>,
       domain::CoordinateMap<
-          Frame::Logical, Frame::Inertial,
+          Frame::BlockLogical, Frame::Inertial,
           CoordinateMaps::ProductOf3Maps<CoordinateMaps::Equiangular,
                                          CoordinateMaps::Equiangular,
                                          CoordinateMaps::Equiangular>,
           CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
                                          CoordinateMaps::Identity<2>>>,
-      domain::CoordinateMap<Frame::Logical, Frame::Inertial,
+      domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial,
                             CoordinateMaps::Frustum>,
-      domain::CoordinateMap<Frame::Logical, Frame::Inertial,
+      domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial,
                             CoordinateMaps::Wedge<3>>,
       domain::CoordinateMap<
           Frame::Grid, Frame::Inertial,

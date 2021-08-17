@@ -70,7 +70,7 @@ ElementMap<1, Frame::Grid> element_map() noexcept {
   const CoordinateMaps::Affine second_map{1.0, 8.0, -2.5, -1.0};
   const ElementId<dim> element_id(0, segment_ids);
   return ElementMap<dim, Frame::Grid>{
-      element_id, make_coordinate_map_base<Frame::Logical, Frame::Grid>(
+      element_id, make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
                       first_map, second_map)};
 }
 
@@ -83,7 +83,7 @@ ElementMap<2, Frame::Grid> element_map() noexcept {
   const CoordinateMaps::Rotation<dim> second_map(3.1);
   const ElementId<dim> element_id(0, segment_ids);
   return ElementMap<dim, Frame::Grid>{
-      element_id, make_coordinate_map_base<Frame::Logical, Frame::Grid>(
+      element_id, make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
                       first_map, second_map)};
 }
 
@@ -96,7 +96,7 @@ ElementMap<3, Frame::Grid> element_map() noexcept {
   const CoordinateMaps::Rotation<dim> second_map{M_PI_4, M_PI_2, M_PI_2};
   const ElementId<dim> element_id(0, segment_ids);
   return ElementMap<dim, Frame::Grid>{
-      element_id, make_coordinate_map_base<Frame::Logical, Frame::Grid>(
+      element_id, make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
                       first_map, second_map)};
 }
 

@@ -52,13 +52,13 @@ using AffineMap2d =
 using AffineMap3d =
     domain::CoordinateMaps::ProductOf3Maps<AffineMap, AffineMap, AffineMap>;
 
-template <size_t MeshDim, typename TargetFrame>
+template <size_t MeshDim, typename SourceFrame, typename TargetFrame>
 using TimeIndependentMap = tmpl::conditional_t<
-    MeshDim == 1, domain::CoordinateMap<Frame::Logical, TargetFrame, AffineMap>,
+    MeshDim == 1, domain::CoordinateMap<SourceFrame, TargetFrame, AffineMap>,
     tmpl::conditional_t<
         MeshDim == 2,
-        domain::CoordinateMap<Frame::Logical, TargetFrame, AffineMap2d>,
-        domain::CoordinateMap<Frame::Logical, TargetFrame, AffineMap3d>>>;
+        domain::CoordinateMap<SourceFrame, TargetFrame, AffineMap2d>,
+        domain::CoordinateMap<SourceFrame, TargetFrame, AffineMap3d>>>;
 
 template <size_t MeshDim>
 using TimeDependentMap = tmpl::conditional_t<
@@ -69,36 +69,37 @@ using TimeDependentMap = tmpl::conditional_t<
         domain::CoordinateMap<Frame::Grid, Frame::Inertial, TranslationMap2d>,
         domain::CoordinateMap<Frame::Grid, Frame::Inertial, TranslationMap3d>>>;
 
-template <size_t MeshDim, typename TargetFrame>
+template <size_t MeshDim, typename SourceFrame, typename TargetFrame>
 struct CreateAffineMap;
 
-template <typename TargetFrame>
-struct CreateAffineMap<1, TargetFrame> {
-  static TimeIndependentMap<1, TargetFrame> apply() {
-    return TimeIndependentMap<1, TargetFrame>{AffineMap{-1.0, 1.0, 2.0, 7.2}};
+template <typename SourceFrame, typename TargetFrame>
+struct CreateAffineMap<1, SourceFrame, TargetFrame> {
+  static TimeIndependentMap<1, SourceFrame, TargetFrame> apply() {
+    return TimeIndependentMap<1, SourceFrame, TargetFrame>{
+        AffineMap{-1.0, 1.0, 2.0, 7.2}};
   }
 };
 
-template <typename TargetFrame>
-struct CreateAffineMap<2, TargetFrame> {
-  static TimeIndependentMap<2, TargetFrame> apply() {
-    return TimeIndependentMap<2, TargetFrame>{
+template <typename SourceFrame, typename TargetFrame>
+struct CreateAffineMap<2, SourceFrame, TargetFrame> {
+  static TimeIndependentMap<2, SourceFrame, TargetFrame> apply() {
+    return TimeIndependentMap<2, SourceFrame, TargetFrame>{
         {AffineMap{-1.0, 1.0, -2.0, 2.2}, AffineMap{-1.0, 1.0, 2.0, 7.2}}};
   }
 };
 
-template <typename TargetFrame>
-struct CreateAffineMap<3, TargetFrame> {
-  static TimeIndependentMap<3, TargetFrame> apply() {
-    return TimeIndependentMap<3, TargetFrame>{{AffineMap{-1.0, 1.0, -2.0, 2.2},
-                                               AffineMap{-1.0, 1.0, 2.0, 7.2},
-                                               AffineMap{-1.0, 1.0, 1.0, 3.5}}};
+template <typename SourceFrame, typename TargetFrame>
+struct CreateAffineMap<3, SourceFrame, TargetFrame> {
+  static TimeIndependentMap<3, SourceFrame, TargetFrame> apply() {
+    return TimeIndependentMap<3, SourceFrame, TargetFrame>{
+        {AffineMap{-1.0, 1.0, -2.0, 2.2}, AffineMap{-1.0, 1.0, 2.0, 7.2},
+         AffineMap{-1.0, 1.0, 1.0, 3.5}}};
   }
 };
 
-template <size_t MeshDim, typename TargetFrame>
-TimeIndependentMap<MeshDim, TargetFrame> create_affine_map() {
-  return CreateAffineMap<MeshDim, TargetFrame>::apply();
+template <size_t MeshDim, typename SourceFrame, typename TargetFrame>
+TimeIndependentMap<MeshDim, SourceFrame, TargetFrame> create_affine_map() {
+  return CreateAffineMap<MeshDim, SourceFrame, TargetFrame>::apply();
 }
 
 template <size_t MeshDim>
@@ -187,8 +188,13 @@ void test(const Spectral::Quadrature quadrature) noexcept {
   using metavars = Metavariables<Dim>;
   using component = Component<metavars>;
 
-  PUPable_reg(SINGLE_ARG(TimeIndependentMap<Dim, Frame::Inertial>));
-  PUPable_reg(SINGLE_ARG(TimeIndependentMap<Dim, Frame::Grid>));
+  PUPable_reg(SINGLE_ARG(
+      TimeIndependentMap<Dim, Frame::BlockLogical, Frame::Inertial>));
+  PUPable_reg(
+      SINGLE_ARG(TimeIndependentMap<Dim, Frame::BlockLogical, Frame::Grid>));
+  PUPable_reg(
+      SINGLE_ARG(TimeIndependentMap<Dim, Frame::Logical, Frame::Inertial>));
+  PUPable_reg(SINGLE_ARG(TimeIndependentMap<Dim, Frame::Logical, Frame::Grid>));
   PUPable_reg(TimeDependentMap<Dim>);
   PUPable_reg(domain::FunctionsOfTime::PiecewisePolynomial<2>);
 
@@ -215,11 +221,12 @@ void test(const Spectral::Quadrature quadrature) noexcept {
   }
 
   std::vector<Block<Dim>> blocks{1};
-  blocks[0] =
-      Block<Dim>{std::make_unique<TimeIndependentMap<Dim, Frame::Inertial>>(
-                     create_affine_map<Dim, Frame::Inertial>()),
-                 0,
-                 {}};
+  blocks[0] = Block<Dim>{
+      std::make_unique<
+          TimeIndependentMap<Dim, Frame::BlockLogical, Frame::Inertial>>(
+          create_affine_map<Dim, Frame::BlockLogical, Frame::Inertial>()),
+      0,
+      {}};
   Domain<Dim> domain{std::move(blocks)};
 
   if (TimeDependent) {
@@ -242,7 +249,8 @@ void test(const Spectral::Quadrature quadrature) noexcept {
   }
 
   // Set up data to be used for checking correctness
-  const auto logical_to_grid_map = create_affine_map<Dim, Frame::Grid>();
+  const auto logical_to_grid_map =
+      create_affine_map<Dim, Frame::Logical, Frame::Grid>();
   const auto grid_to_inertial_map =
       create_translation_map<Dim>(functions_of_time_names);
   const auto& logical_coords = ActionTesting::get_databox_tag<
@@ -403,7 +411,7 @@ void test(const Spectral::Quadrature quadrature) noexcept {
                                                       const double
                                                           time) noexcept {
     const auto logical_to_inertial_map =
-        create_affine_map<Dim, Frame::Inertial>();
+        create_affine_map<Dim, Frame::Logical, Frame::Inertial>();
     REQUIRE(ActionTesting::get_databox_tag<component, Tags::Time>(
                 runner, self_id) == time);
     CHECK(ActionTesting::get_databox_tag<
