@@ -3,6 +3,8 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <optional>
+
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Evolution/EventsAndDenseTriggers/DenseTrigger.hpp"
@@ -48,13 +50,18 @@ class TestEvent : public Event {
 
   TestEvent() = default;
 
-  using argument_tags = tmpl::list<>;
+  using argument_tags =
+      tmpl::list<Tags::Time, evolution::Tags::PreviousTriggerTime>;
 
   template <typename Metavariables, typename ArrayIndex, typename Component>
-  void operator()(Parallel::GlobalCache<Metavariables>& /*cache*/,
+  void operator()(const double time,
+                  const std::optional<double>& previous_trigger_time,
+                  Parallel::GlobalCache<Metavariables>& /*cache*/,
                   const ArrayIndex& /*array_index*/,
                   const Component* const /*meta*/) const noexcept {
     event_ran = true;
+    time_during_event = time;
+    previous_time_during_event = previous_trigger_time;
   }
 
   struct IsReady : db::SimpleTag {
@@ -76,10 +83,18 @@ class TestEvent : public Event {
   }
 
   static bool event_ran;
+  static double time_during_event;
+  static std::optional<double> previous_time_during_event;
 };
 
 template <typename Label>
 bool TestEvent<Label>::event_ran = false;
+template <typename Label>
+double TestEvent<Label>::time_during_event =
+    std::numeric_limits<double>::signaling_NaN();
+template <typename Label>
+std::optional<double> TestEvent<Label>::previous_time_during_event =
+    std::nullopt;
 
 template <typename Label>
 PUP::able::PUP_ID TestEvent<Label>::my_PUP_ID = 0;  // NOLINT
@@ -140,12 +155,13 @@ void do_test(const bool time_runs_forward, const bool add_event) noexcept {
 
   auto box = db::create<db::AddSimpleTags<
       Parallel::Tags::MetavariablesImpl<Metavariables>, Tags::TimeStepId,
-      Tags::Time, TriggerA::IsReady, TriggerA::IsTriggered, TriggerA::NextCheck,
-      TriggerB::IsReady, TriggerB::IsTriggered, TriggerB::NextCheck,
-      EventA::IsReady, EventB::IsReady, EventC::IsReady>>(
+      Tags::Time, evolution::Tags::PreviousTriggerTime, TriggerA::IsReady,
+      TriggerA::IsTriggered, TriggerA::NextCheck, TriggerB::IsReady,
+      TriggerB::IsTriggered, TriggerB::NextCheck, EventA::IsReady,
+      EventB::IsReady, EventC::IsReady>>(
       Metavariables{}, TimeStepId(time_runs_forward, 0, Slab(0.0, 1.0).start()),
-      -1.0 * time_sign, false, false, 2.0 * time_sign, false, false,
-      3.0 * time_sign, false, false, false);
+      -1.0 * time_sign, std::optional<double>{}, false, false, 2.0 * time_sign,
+      false, false, 3.0 * time_sign, false, false, false);
 
   const auto set_tag = [&box](auto tag_v, const auto value) noexcept {
     using Tag = decltype(tag_v);
@@ -200,6 +216,8 @@ void do_test(const bool time_runs_forward, const bool add_event) noexcept {
             box, cache, array_index, component) == TriggeringState::Ready);
   events_and_dense_triggers.run_events(box, cache, array_index, component);
   check_events(true, false, false);
+  CHECK(EventA::time_during_event == 2.0 * time_sign);
+  CHECK(EventA::previous_time_during_event == std::nullopt);
 
   set_tag(TriggerA::NextCheck{}, 4.0 * time_sign);
   set_tag(TriggerB::IsReady{}, true);
@@ -220,6 +238,7 @@ void do_test(const bool time_runs_forward, const bool add_event) noexcept {
   const auto finish_checks =
       [&array_index, &box, &cache, &check_events, &component,
        &time_sign](evolution::EventsAndDenseTriggers eadt) noexcept {
+        EventA::event_ran = false;
         CHECK(eadt.next_trigger(box) == 3.0 * time_sign);
         CHECK(eadt.is_ready(box, cache, array_index, component) ==
               TriggeringState::NeedsEvolvedVariables);
@@ -230,6 +249,8 @@ void do_test(const bool time_runs_forward, const bool add_event) noexcept {
               TriggeringState::NeedsEvolvedVariables);
         eadt.run_events(box, cache, array_index, component);
         check_events(true, true, true);
+        CHECK(EventA::time_during_event == 3.0 * time_sign);
+        CHECK(EventA::previous_time_during_event.value() == 2.0 * time_sign);
       };
 
   finish_checks(serialize_and_deserialize(events_and_dense_triggers));
