@@ -28,6 +28,7 @@
 #include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
+#include "IO/Observer/Tags.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Parallel/Reduction.hpp"
@@ -43,6 +44,7 @@
 #include "Utilities/Numeric.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
+#include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -67,6 +69,8 @@ namespace {
 struct ObservationTimeTag : db::SimpleTag {
   using type = double;
 };
+
+struct TestSectionIdTag {};
 
 struct MockContributeReductionData {
   struct Results {
@@ -134,7 +138,7 @@ struct MockObserverComponent {
                                         tmpl::list<>>>;
 };
 
-template <typename System>
+template <typename System, typename ArraySectionIdTag>
 struct Metavariables {
   using system = System;
   using component_list = tmpl::list<ElementComponent<Metavariables>,
@@ -146,7 +150,8 @@ struct Metavariables {
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<tmpl::pair<
         Event, tmpl::list<dg::Events::ObserveErrorNorms<
-                   ObservationTimeTag, typename System::vars_for_test>>>>;
+                   ObservationTimeTag, typename System::vars_for_test,
+                   ArraySectionIdTag>>>>;
   };
 
   enum class Phase { Initialization, Testing, Exit };
@@ -226,11 +231,13 @@ struct ComplicatedSystem {
   };
 };
 
-template <typename System, bool HasAnalyticSolutions, typename ObserveEvent>
+template <typename System, bool HasAnalyticSolutions,
+          typename ArraySectionIdTag, typename ObserveEvent>
 void test_observe(const std::unique_ptr<ObserveEvent> observe,
-                  const bool has_analytic_solutions) noexcept {
+                  const bool has_analytic_solutions,
+                  const std::optional<std::string>& section) noexcept {
   constexpr size_t volume_dim = System::volume_dim;
-  using metavariables = Metavariables<System>;
+  using metavariables = Metavariables<System, ArraySectionIdTag>;
   using element_component = ElementComponent<metavariables>;
   using observer_component = MockObserverComponent<metavariables>;
   using coordinates_tag =
@@ -268,7 +275,8 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe,
       Tags::Variables<typename decltype(vars)::tags_list>,
       tmpl::conditional_t<
           HasAnalyticSolutions, ::Tags::AnalyticSolutions<solution_variables>,
-          ::Tags::AnalyticSolutionsOptional<solution_variables>>>>(
+          ::Tags::AnalyticSolutionsOptional<solution_variables>>,
+      observers::Tags::ObservationKey<ArraySectionIdTag>>>(
       metavariables{}, observation_time, vars,
       [&solutions, &has_analytic_solutions]() noexcept {
         if constexpr (HasAnalyticSolutions) {
@@ -279,20 +287,31 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe,
           return has_analytic_solutions ? std::make_optional(solutions)
                                         : std::nullopt;
         }
-      }());
+      }(),
+      section);
 
   const auto ids_to_register =
       observers::get_registration_observation_type_and_key(*observe, box);
+  const std::string expected_subfile_name{
+      "/reduction0" +
+      (std::is_same_v<ArraySectionIdTag, void> ? ""
+                                               : section.value_or("Unused"))};
   const observers::ObservationKey expected_observation_key_for_reg(
-      "/reduction0.dat");
-  CHECK(ids_to_register->first == observers::TypeOfObservation::Reduction);
-  CHECK(ids_to_register->second == expected_observation_key_for_reg);
+      expected_subfile_name + ".dat");
+  if (std::is_same_v<ArraySectionIdTag, void> or section.has_value()) {
+    CHECK(ids_to_register->first == observers::TypeOfObservation::Reduction);
+    CHECK(ids_to_register->second == expected_observation_key_for_reg);
+  } else {
+    CHECK_FALSE(ids_to_register.has_value());
+  }
 
   observe->run(box,
                ActionTesting::cache<element_component>(runner, array_index),
                array_index, std::add_pointer_t<element_component>{});
 
-  if (not HasAnalyticSolutions and not has_analytic_solutions) {
+  if ((not HasAnalyticSolutions and not has_analytic_solutions) or
+      (not std::is_same_v<ArraySectionIdTag, void> and
+       not section.has_value())) {
     CHECK(runner.template is_simple_action_queue_empty<observer_component>(0));
     return;
   }
@@ -303,7 +322,7 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe,
 
   const auto& results = MockContributeReductionData::results;
   CHECK(results.observation_id.value() == observation_time);
-  CHECK(results.subfile_name == "/reduction0");
+  CHECK(results.subfile_name == expected_subfile_name);
   CHECK(results.reduction_names[0] == "ObservationTimeTag");
   CHECK(results.time == observation_time);
   CHECK(results.reduction_names[1] == "NumberOfPoints");
@@ -351,14 +370,22 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe,
   CHECK(observe->needs_evolved_variables());
 }
 
-template <typename System, bool HasAnalyticSolutions>
-void test_system(const bool has_analytic_solutions) noexcept {
+template <typename System, bool HasAnalyticSolutions,
+          typename ArraySectionIdTag>
+void test_system(const bool has_analytic_solutions,
+                 const std::optional<std::string>& section) noexcept {
   INFO(pretty_type::get_name<System>());
-  using metavariables = Metavariables<System>;
-  test_observe<System, HasAnalyticSolutions>(
+  CAPTURE(HasAnalyticSolutions);
+  CAPTURE(has_analytic_solutions);
+  INFO(pretty_type::get_name<ArraySectionIdTag>());
+  CAPTURE(section);
+
+  using metavariables = Metavariables<System, ArraySectionIdTag>;
+  test_observe<System, HasAnalyticSolutions, ArraySectionIdTag>(
       std::make_unique<dg::Events::ObserveErrorNorms<
-          ObservationTimeTag, typename System::vars_for_test>>("reduction0"),
-      has_analytic_solutions);
+          ObservationTimeTag, typename System::vars_for_test,
+          ArraySectionIdTag>>("reduction0"),
+      has_analytic_solutions, section);
 
   INFO("create/serialize");
   Parallel::register_factory_classes_with_charm<metavariables>();
@@ -367,14 +394,19 @@ void test_system(const bool has_analytic_solutions) noexcept {
           "ObserveErrorNorms:\n"
           "  SubfileName: reduction0");
   auto serialized_event = serialize_and_deserialize(factory_event);
-  test_observe<System, HasAnalyticSolutions>(std::move(serialized_event),
-                                             has_analytic_solutions);
+  test_observe<System, HasAnalyticSolutions, ArraySectionIdTag>(
+      std::move(serialized_event), has_analytic_solutions, section);
 }
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveErrorNorms", "[Unit][Evolution]") {
-  INVOKE_TEST_FUNCTION(test_system, (true), (ScalarSystem, ComplicatedSystem),
-                       (true, false));
-  INVOKE_TEST_FUNCTION(test_system, (false), (ScalarSystem, ComplicatedSystem),
-                       (true, false));
+  INVOKE_TEST_FUNCTION(test_system, (true, std::nullopt),
+                       (ScalarSystem, ComplicatedSystem), (true, false),
+                       (void, TestSectionIdTag));
+  INVOKE_TEST_FUNCTION(test_system, (true, "Section0"),
+                       (ScalarSystem, ComplicatedSystem), (true, false),
+                       (void, TestSectionIdTag));
+  INVOKE_TEST_FUNCTION(test_system, (false, std::nullopt),
+                       (ScalarSystem, ComplicatedSystem), (true, false),
+                       (void, TestSectionIdTag));
 }

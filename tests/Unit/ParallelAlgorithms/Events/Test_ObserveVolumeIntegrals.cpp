@@ -32,6 +32,7 @@
 #include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
+#include "IO/Observer/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/DefiniteIntegral.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
@@ -48,6 +49,7 @@
 #include "Utilities/Numeric.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
+#include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace Parallel {
@@ -63,6 +65,8 @@ namespace {
 struct ObservationTimeTag : db::SimpleTag {
   using type = double;
 };
+
+struct TestSectionIdTag {};
 
 struct MockContributeReductionData {
   struct Results {
@@ -145,7 +149,7 @@ template <size_t SpatialDim>
 using variables_for_test =
     tmpl::list<ScalarVar, VectorVar<SpatialDim>, TensorVar<SpatialDim>>;
 
-template <size_t VolumeDim>
+template <size_t VolumeDim, typename ArraySectionIdTag>
 struct Metavariables {
   using component_list = tmpl::list<ElementComponent<Metavariables>,
                                     MockObserverComponent<Metavariables>>;
@@ -154,9 +158,9 @@ struct Metavariables {
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<tmpl::pair<
-        Event,
-        tmpl::list<dg::Events::ObserveVolumeIntegrals<
-            VolumeDim, ObservationTimeTag, variables_for_test<VolumeDim>>>>>;
+        Event, tmpl::list<dg::Events::ObserveVolumeIntegrals<
+                   VolumeDim, ObservationTimeTag, variables_for_test<VolumeDim>,
+                   ArraySectionIdTag>>>>;
   };
   enum class Phase { Initialization, Testing, Exit };
 };
@@ -185,9 +189,10 @@ std::unique_ptr<DomainCreator<3>> domain_creator() noexcept {
       {{false, false, false}}));
 }
 
-template <size_t VolumeDim, typename ObserveEvent>
-void test_observe(const std::unique_ptr<ObserveEvent> observe) noexcept {
-  using metavariables = Metavariables<VolumeDim>;
+template <size_t VolumeDim, typename ArraySectionIdTag, typename ObserveEvent>
+void test_observe(const std::unique_ptr<ObserveEvent> observe,
+                  const std::optional<std::string>& section) noexcept {
+  using metavariables = Metavariables<VolumeDim, ArraySectionIdTag>;
   using element_component = ElementComponent<metavariables>;
   using observer_component = MockObserverComponent<metavariables>;
 
@@ -241,8 +246,9 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe) noexcept {
       Parallel::Tags::MetavariablesImpl<metavariables>, ObservationTimeTag,
       domain::Tags::Mesh<VolumeDim>,
       domain::Tags::DetInvJacobian<Frame::Logical, Frame::Inertial>,
-      Tags::Variables<typename decltype(vars)::tags_list>>>(
-      metavariables{}, observation_time, mesh, det_inv_jacobian, vars);
+      Tags::Variables<typename decltype(vars)::tags_list>,
+      observers::Tags::ObservationKey<ArraySectionIdTag>>>(
+      metavariables{}, observation_time, mesh, det_inv_jacobian, vars, section);
 
   ActionTesting::MockRuntimeSystem<metavariables> runner{{}};
   ActionTesting::emplace_component<element_component>(make_not_null(&runner),
@@ -253,13 +259,23 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe) noexcept {
                ActionTesting::cache<element_component>(runner, array_index),
                array_index, std::add_pointer_t<element_component>{});
 
+  if (not std::is_same_v<ArraySectionIdTag, void> and not section.has_value()) {
+    CHECK(runner.template is_simple_action_queue_empty<observer_component>(0));
+    return;
+  }
+
+  const std::string expected_subfile_name{
+      "/volume_integrals" +
+      (std::is_same_v<ArraySectionIdTag, void> ? ""
+                                               : section.value_or("Unused"))};
+
   // Process the data
   runner.template invoke_queued_simple_action<observer_component>(0);
   CHECK(runner.template is_simple_action_queue_empty<observer_component>(0));
 
   const auto& results = MockContributeReductionData::results;
   CHECK(results.observation_id.value() == observation_time);
-  CHECK(results.subfile_name == "/volume_integrals");
+  CHECK(results.subfile_name == expected_subfile_name);
   CHECK(results.reduction_names == expected_reduction_names);
   CHECK(results.time == observation_time);
   CHECK(results.volume == expected_volume);
@@ -270,32 +286,39 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe) noexcept {
 }
 }  // namespace
 
-template <size_t VolumeDim>
-void test_observe_system() noexcept {
+template <size_t VolumeDim, typename ArraySectionIdTag = void>
+void test_observe_system(
+    const std::optional<std::string>& section = std::nullopt) noexcept {
   using vars_for_test = variables_for_test<VolumeDim>;
 
   {
     INFO("Testing observation for Dim = " << VolumeDim);
-    test_observe<VolumeDim>(
+    test_observe<VolumeDim, ArraySectionIdTag>(
         std::make_unique<dg::Events::ObserveVolumeIntegrals<
-            VolumeDim, ObservationTimeTag, vars_for_test>>("volume_integrals"));
+            VolumeDim, ObservationTimeTag, vars_for_test, ArraySectionIdTag>>(
+            "volume_integrals"),
+        section);
   }
   {
     INFO("Testing create/serialize for Dim = " << VolumeDim);
-    using metavariables = Metavariables<VolumeDim>;
+    using metavariables = Metavariables<VolumeDim, ArraySectionIdTag>;
     Parallel::register_factory_classes_with_charm<metavariables>();
     const auto factory_event =
         TestHelpers::test_creation<std::unique_ptr<Event>, metavariables>(
             "ObserveVolumeIntegrals:\n"
             "  SubfileName: volume_integrals");
     auto serialized_event = serialize_and_deserialize(factory_event);
-    test_observe<VolumeDim>(std::move(serialized_event));
+    test_observe<VolumeDim, ArraySectionIdTag>(std::move(serialized_event),
+                                               section);
   }
 }
 
 SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveVolumeIntegrals",
                   "[Unit][Evolution]") {
-  test_observe_system<1>();
+  test_observe_system<1, void>();
+  test_observe_system<1, void>("Section0");
+  test_observe_system<1, TestSectionIdTag>(std::nullopt);
+  test_observe_system<1, TestSectionIdTag>("Section0");
   test_observe_system<2>();
   test_observe_system<3>();
 }

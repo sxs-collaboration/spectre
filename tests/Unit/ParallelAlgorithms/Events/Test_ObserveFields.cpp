@@ -31,6 +31,7 @@
 #include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
+#include "IO/Observer/Tags.hpp"
 #include "NumericalAlgorithms/Interpolation/RegularGridInterpolant.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/ArrayIndex.hpp"
@@ -46,6 +47,7 @@
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
+#include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -72,11 +74,12 @@ namespace {
 using namespace TestHelpers::dg::Events::ObserveFields;
 
 template <typename System, bool AlwaysHasAnalyticSolutions,
-          typename ObserveEvent>
+          typename ArraySectionIdTag = void, typename ObserveEvent>
 void test_observe(
     const std::unique_ptr<ObserveEvent> observe,
     const std::optional<Mesh<System::volume_dim>>& interpolating_mesh,
-    const bool has_analytic_solutions) noexcept {
+    const bool has_analytic_solutions,
+    const std::optional<std::string>& section = std::nullopt) noexcept {
   using metavariables = Metavariables<System, AlwaysHasAnalyticSolutions>;
   constexpr size_t volume_dim = System::volume_dim;
   using element_component = ElementComponent<metavariables>;
@@ -125,7 +128,8 @@ void test_observe(
       tmpl::conditional_t<
           AlwaysHasAnalyticSolutions,
           ::Tags::AnalyticSolutions<solution_variables>,
-          ::Tags::AnalyticSolutionsOptional<solution_variables>>>>(
+          ::Tags::AnalyticSolutionsOptional<solution_variables>>,
+      observers::Tags::ObservationKey<ArraySectionIdTag>>>(
       metavariables{}, observation_time, mesh, vars,
       [&solutions, &has_analytic_solutions]() {
         if constexpr (AlwaysHasAnalyticSolutions) {
@@ -136,11 +140,22 @@ void test_observe(
           return has_analytic_solutions ? std::make_optional(solutions)
                                         : std::nullopt;
         }
-      }());
+      }(),
+      section);
 
   observe->run(box,
                ActionTesting::cache<element_component>(runner, array_index),
                array_index, std::add_pointer_t<element_component>{});
+
+  if (not std::is_same_v<ArraySectionIdTag, void> and not section.has_value()) {
+    CHECK(runner.template is_simple_action_queue_empty<observer_component>(0));
+    return;
+  }
+
+  const std::string expected_subfile_name{
+      "/element_data" +
+      (std::is_same_v<ArraySectionIdTag, void> ? ""
+                                               : section.value_or("Unused"))};
 
   // Process the data
   runner.template invoke_queued_simple_action<observer_component>(0);
@@ -148,7 +163,7 @@ void test_observe(
 
   const auto& results = MockContributeVolumeData::results;
   CHECK(results.observation_id.value() == observation_time);
-  CHECK(results.subfile_name == "/element_data");
+  CHECK(results.subfile_name == expected_subfile_name);
   CHECK(results.array_component_id ==
         observers::ArrayComponentId(
             std::add_pointer_t<element_component>{},
@@ -221,16 +236,21 @@ template <typename System, bool AlwaysHasAnalyticSolutions = true>
 void test_system(
     const std::string& mesh_creation_string,
     const std::optional<Mesh<System::volume_dim>>& interpolating_mesh = {},
-    const bool has_analytic_solutions = true) noexcept {
+    const bool has_analytic_solutions = true,
+    const std::optional<std::string>& section = std::nullopt) noexcept {
   INFO(pretty_type::get_name<System>());
   CAPTURE(AlwaysHasAnalyticSolutions);
   CAPTURE(has_analytic_solutions);
   CAPTURE(mesh_creation_string);
+  using ArraySectionIdTag =
+      tmpl::front<tmpl::push_back<typename System::extra_args, void>>;
+  INFO(pretty_type::get_name<ArraySectionIdTag>());
+  CAPTURE(section);
   using metavariables = Metavariables<System, AlwaysHasAnalyticSolutions>;
-  test_observe<System, AlwaysHasAnalyticSolutions>(
+  test_observe<System, AlwaysHasAnalyticSolutions, ArraySectionIdTag>(
       std::make_unique<typename System::ObserveEvent>(
           System::make_test_object(interpolating_mesh)),
-      interpolating_mesh, has_analytic_solutions);
+      interpolating_mesh, has_analytic_solutions, section);
   INFO("create/serialize");
   Parallel::register_factory_classes_with_charm<metavariables>();
   const std::string creation_string =
@@ -239,8 +259,9 @@ void test_system(
       TestHelpers::test_creation<std::unique_ptr<Event>, metavariables>(
           creation_string);
   auto serialized_event = serialize_and_deserialize(factory_event);
-  test_observe<System, AlwaysHasAnalyticSolutions>(
-      std::move(serialized_event), interpolating_mesh, has_analytic_solutions);
+  test_observe<System, AlwaysHasAnalyticSolutions, ArraySectionIdTag>(
+      std::move(serialized_event), interpolating_mesh, has_analytic_solutions,
+      section);
 }
 }  // namespace
 
@@ -248,11 +269,19 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields", "[Unit][Evolution]") {
   {
     INFO("No Interpolation")
     const std::string interpolating_mesh_str = "  InterpolateToMesh: None";
-    INVOKE_TEST_FUNCTION(test_system,
-                         (interpolating_mesh_str, std::nullopt, true),
-                         (ScalarSystem<dg::Events::ObserveFields>,
-                          ComplicatedSystem<dg::Events::ObserveFields>),
-                         (true));
+    using system_no_section = ScalarSystem<dg::Events::ObserveFields, void>;
+    using system_with_section =
+        ScalarSystem<dg::Events::ObserveFields, TestSectionIdTag>;
+    INVOKE_TEST_FUNCTION(
+        test_system, (interpolating_mesh_str, std::nullopt, true, std::nullopt),
+        (system_no_section, system_with_section,
+         ComplicatedSystem<dg::Events::ObserveFields>),
+        (true));
+    INVOKE_TEST_FUNCTION(
+        test_system, (interpolating_mesh_str, std::nullopt, true, "Section0"),
+        (system_no_section, system_with_section,
+         ComplicatedSystem<dg::Events::ObserveFields>),
+        (true));
     INVOKE_TEST_FUNCTION(test_system,
                          (interpolating_mesh_str, std::nullopt, false),
                          (ScalarSystem<dg::Events::ObserveFields>,

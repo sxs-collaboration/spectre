@@ -47,6 +47,12 @@ LinearSolver:
     AbsoluteResidual: 1.e-6
   Verbosity: Verbose
 
+  Multigrid:
+    Iterations: 1
+    MaxLevels: Auto
+    Verbosity: Verbose
+    OutputVolumeData: False
+
   SchwarzSmoother:
     Iterations: 3
     MaxOverlap: 2

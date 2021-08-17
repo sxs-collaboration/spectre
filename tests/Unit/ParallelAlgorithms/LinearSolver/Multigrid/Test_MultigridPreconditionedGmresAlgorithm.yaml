@@ -44,11 +44,21 @@ Observers:
   VolumeFileName: "Test_MultigridPreconditionedGmresAlgorithm_Volume"
   ReductionFileName: "Test_MultigridPreconditionedGmresAlgorithm_Reductions"
 
-KrylovSolver:
+NewtonRaphsonSolver:
   ConvergenceCriteria:
     MaxIterations: 2
-    AbsoluteResidual: 1e-14
+    AbsoluteResidual: 1.e-14
     RelativeResidual: 0
+  Verbosity: Verbose
+  SufficientDecrease: 1.e-4
+  MaxGlobalizationSteps: 40
+  DampingFactor: 1
+
+KrylovSolver:
+  ConvergenceCriteria:
+    MaxIterations: 1
+    AbsoluteResidual: 1.e-14
+    RelativeResidual: 1.e-8
   Verbosity: Verbose
 
 MultigridSolver:

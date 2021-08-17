@@ -23,6 +23,7 @@
 #include "ParallelAlgorithms/LinearSolver/Multigrid/ElementsAllocator.hpp"
 #include "ParallelAlgorithms/LinearSolver/Multigrid/Multigrid.hpp"
 #include "ParallelAlgorithms/LinearSolver/Richardson/Richardson.hpp"
+#include "ParallelAlgorithms/NonlinearSolver/NewtonRaphson/NewtonRaphson.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/MemoryHelpers.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
@@ -38,6 +39,11 @@ namespace helpers = LinearSolverAlgorithmTestHelpers;
 namespace helpers_mg = TestHelpers::LinearSolver::multigrid;
 
 namespace {
+
+struct NewtonRaphsonSolver {
+  static constexpr Options::String help =
+      "Options for the iterative non-linear solver";
+};
 
 struct KrylovSolver {
   static constexpr Options::String help =
@@ -64,10 +70,15 @@ struct Metavariables {
       TestHelpers::domain::BoundaryConditions::SystemWithoutBoundaryConditions<
           volume_dim>;
 
-  using linear_solver =
-      LinearSolver::gmres::Gmres<Metavariables, helpers_mg::fields_tag,
-                                 KrylovSolver, true, helpers_mg::sources_tag,
-                                 LinearSolver::multigrid::Tags::IsFinestGrid>;
+  // The test problem is a linear operator, but we add a Newton-Raphson
+  // correction scheme to test it in a multigrid context as well.
+  using nonlinear_solver = NonlinearSolver::newton_raphson::NewtonRaphson<
+      Metavariables, helpers_mg::fields_tag, NewtonRaphsonSolver,
+      helpers_mg::sources_tag, LinearSolver::multigrid::Tags::IsFinestGrid>;
+  using linear_solver = LinearSolver::gmres::Gmres<
+      Metavariables, typename nonlinear_solver::linear_solver_fields_tag,
+      KrylovSolver, true, typename nonlinear_solver::linear_solver_source_tag,
+      LinearSolver::multigrid::Tags::IsFinestGrid>;
   using multigrid = LinearSolver::multigrid::Multigrid<
       volume_dim, typename linear_solver::operand_tag, MultigridSolver,
       helpers_mg::OperatorIsMassive,
@@ -85,42 +96,54 @@ struct Metavariables {
 
   using Phase = helpers::Phase;
 
-  using initialization_actions = tmpl::list<
-      ::Actions::SetupDataBox, helpers_mg::InitializeElement,
-      typename linear_solver::initialize_element,
-      typename multigrid::initialize_element,
-      typename smoother::initialize_element,
-      helpers_mg::ComputeOperatorAction<typename linear_solver::fields_tag>,
-      ::Initialization::Actions::RemoveOptionsAndTerminatePhase>;
+  using initialization_actions =
+      tmpl::list<::Actions::SetupDataBox, helpers_mg::InitializeElement,
+                 typename nonlinear_solver::initialize_element,
+                 typename linear_solver::initialize_element,
+                 typename multigrid::initialize_element,
+                 typename smoother::initialize_element,
+                 ::Initialization::Actions::RemoveOptionsAndTerminatePhase>;
 
-  using register_actions = tmpl::list<typename linear_solver::register_element,
-                                      typename multigrid::register_element,
-                                      typename smoother::register_element,
-                                      Parallel::Actions::TerminatePhase>;
+  using register_actions =
+      tmpl::list<typename nonlinear_solver::register_element,
+                 typename linear_solver::register_element,
+                 typename multigrid::register_element,
+                 typename smoother::register_element,
+                 Parallel::Actions::TerminatePhase>;
+
+  template <typename OperandTag, bool Linear>
+  using compute_operator_action = helpers_mg::ComputeOperatorAction<
+      OperandTag,
+      tmpl::conditional_t<
+          Linear,
+          db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, OperandTag>,
+          db::add_tag_prefix<NonlinearSolver::Tags::OperatorAppliedTo,
+                             OperandTag>>>;
 
   template <typename Label>
   using smooth_actions = tmpl::list<
-      helpers_mg::ComputeOperatorAction<typename smoother::fields_tag>,
+      compute_operator_action<typename smoother::fields_tag, true>,
       typename smoother::template solve<
-          helpers_mg::ComputeOperatorAction<typename smoother::operand_tag>,
+          compute_operator_action<typename smoother::operand_tag, true>,
           Label>>;
 
   using solve_actions = tmpl::list<
-      typename linear_solver::template solve<tmpl::list<
-          typename multigrid::template solve<
-              smooth_actions<LinearSolver::multigrid::VcycleDownLabel>,
-              smooth_actions<LinearSolver::multigrid::VcycleUpLabel>>,
-          LinearSolver::Actions::MakeIdentityIfSkipped<multigrid>,
-          // Only need to apply the operator here again in case the multigrid is
-          // skipped
-          helpers_mg::ComputeOperatorAction<
-              typename linear_solver::operand_tag>>>,
+      typename nonlinear_solver::template solve<
+          compute_operator_action<typename nonlinear_solver::fields_tag, false>,
+          typename linear_solver::template solve<tmpl::list<
+              typename multigrid::template solve<
+                  smooth_actions<LinearSolver::multigrid::VcycleDownLabel>,
+                  smooth_actions<LinearSolver::multigrid::VcycleUpLabel>>,
+              LinearSolver::Actions::make_identity_if_skipped<
+                  multigrid, compute_operator_action<
+                                 typename linear_solver::operand_tag, true>>>>>,
       Parallel::Actions::TerminatePhase>;
 
   using test_actions =
       tmpl::list<helpers_mg::TestResult<typename multigrid::options_group>>;
 
   using component_list = tmpl::flatten<tmpl::list<
+      typename nonlinear_solver::component_list,
       typename linear_solver::component_list,
       typename multigrid::component_list, typename smoother::component_list,
       elliptic::DgElementArray<
@@ -138,7 +161,7 @@ struct Metavariables {
       observers::ObserverWriter<Metavariables>,
       helpers::OutputCleaner<Metavariables>>>;
   using observed_reduction_data_tags = observers::collect_reduction_data_tags<
-      tmpl::list<linear_solver, multigrid, smoother>>;
+      tmpl::list<nonlinear_solver, linear_solver, multigrid, smoother>>;
   static constexpr bool ignore_unrecognized_command_line_options = false;
   static constexpr auto determine_next_phase =
       helpers::determine_next_phase<Metavariables>;

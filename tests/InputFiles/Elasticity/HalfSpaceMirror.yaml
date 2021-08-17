@@ -3,7 +3,7 @@
 
 # Executable: SolveElasticity3D
 # Check: parse;execute_check_output
-# Timeout: 10
+# Timeout: 30
 # ExpectedOutput:
 #   ElasticHalfSpaceMirrorReductions.h5
 #   ElasticHalfSpaceMirrorVolume0.h5
@@ -12,7 +12,7 @@
 #     Subfile: /ErrorNorms.dat
 #     FileGlob: ElasticHalfSpaceMirrorReductions.h5
 #     SkipColumns: [0, 1]
-#     AbsoluteTolerance: 6.e-4
+#     AbsoluteTolerance: 5.e-4
 
 Background:
   HalfSpaceMirror:
@@ -34,8 +34,8 @@ DomainCreator:
     OuterRadius: 0.6
     LowerBound: 0
     UpperBound: 0.3
-    InitialRefinement: 0
-    InitialGridPoints: [3, 3, 4]
+    InitialRefinement: [1, 0, 0]
+    InitialGridPoints: [2, 3, 3]
     UseEquiangularMap: True
     RadialPartitioning: []
     HeightPartitioning: []
@@ -67,6 +67,12 @@ LinearSolver:
       RelativeResidual: 1.e-4
       AbsoluteResidual: 1.e-12
     Verbosity: Verbose
+
+  Multigrid:
+    Iterations: 1
+    MaxLevels: Auto
+    Verbosity: Quiet
+    OutputVolumeData: False
 
   SchwarzSmoother:
     Iterations: 3

@@ -87,13 +87,17 @@ struct Metavariables {
                                       typename smoother::register_element,
                                       Parallel::Actions::TerminatePhase>;
 
+  template <typename OperandTag>
+  using compute_operator_action = helpers_mg::ComputeOperatorAction<
+      OperandTag,
+      db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, OperandTag>>;
+
   // [action_list]
   template <typename Label>
   using smooth_actions = tmpl::list<
-      helpers_mg::ComputeOperatorAction<typename smoother::fields_tag>,
+      compute_operator_action<typename smoother::fields_tag>,
       typename smoother::template solve<
-          helpers_mg::ComputeOperatorAction<typename smoother::operand_tag>,
-          Label>>;
+          compute_operator_action<typename smoother::operand_tag>, Label>>;
 
   using solve_actions =
       tmpl::list<typename multigrid::template solve<

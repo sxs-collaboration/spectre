@@ -187,7 +187,7 @@ struct RegisterObservers {
     // Get the observation key, or "Unused" if the element does not belong
     // to a section with this tag. In the latter case, no observations will
     // ever be contributed.
-    const std::optional<std::string>& section_observation_key =
+    const std::optional<std::string> section_observation_key =
         observers::get_section_observation_key<ArraySectionIdTag>(box);
     ASSERT(section_observation_key != "Unused",
            "The identifier 'Unused' is reserved to indicate that no "
