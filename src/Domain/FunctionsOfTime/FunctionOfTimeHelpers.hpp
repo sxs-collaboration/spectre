@@ -60,7 +60,7 @@ void reset_expiration_time(const gsl::not_null<double*> prev_expiration_time,
                            const double next_expiration_time) noexcept;
 
 /// Returns a StoredInfo corresponding to the closest element in the range of
-/// `StoredInfo.time`s that is less than or equal to `t`. The function throws an
+/// `StoredInfo.time`s that is less than `t`. The function throws an
 /// error if `t` is less than all `StoredInfo.time`s (unless `t` is just less
 /// than the earliest `StoredInfo.time` by roundoff, in which case it returns
 /// the earliest StoredInfo.)

@@ -32,6 +32,11 @@ namespace FunctionsOfTime {
 ///
 /// The domain of validity of the function is given by the `time_bounds` member
 /// function.
+///
+/// The function and all of its derivatives are left-continuous, that
+/// is, when evaluated at a time when the function was updated, they
+/// return the values just before the update, ignoring the updated
+/// value.
 class FunctionOfTime : public PUP::able {
  public:
   FunctionOfTime() = default;

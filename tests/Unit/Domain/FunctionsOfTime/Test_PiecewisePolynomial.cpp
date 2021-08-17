@@ -5,6 +5,7 @@
 
 #include <array>
 #include <cstddef>
+#include <limits>
 #include <memory>
 
 #include "DataStructures/DataVector.hpp"
@@ -68,6 +69,7 @@ void test_non_const_deriv(
     f_of_t_derived->update(t, {3.0 + t}, t + dt);
     CHECK(*f_of_t_derived != f_of_t_derived_copy);
   }
+  t *= 1.0 + std::numeric_limits<double>::epsilon();
   const auto lambdas0 = f_of_t->func_and_2_derivs(t);
   CHECK(approx(lambdas0[0][0]) == 33.948);
   CHECK(approx(lambdas0[1][0]) == 19.56);
@@ -223,6 +225,14 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.PiecewisePolynomial",
 
     test_within_roundoff<deriv_order>(f_of_t);
     test_within_roundoff<deriv_order>(f_of_t2);
+  }
+  {
+    INFO("Test evaluation at update time.");
+    FunctionsOfTime::PiecewisePolynomial<0> f_of_t(1.0, {{{1.0, 2.0}}}, 2.0);
+
+    CHECK(f_of_t.func(2.0)[0] == DataVector{1.0, 2.0});
+    f_of_t.update(2.0, {3.0, 4.0}, 2.1);
+    CHECK(f_of_t.func(2.0)[0] == DataVector{1.0, 2.0});
   }
 }
 

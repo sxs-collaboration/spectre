@@ -68,10 +68,10 @@ const StoredInfo<MaxDerivPlusOne, StoreCoefs>& stored_info_from_upper_bound(
          "Vector of StoredInfos you are trying to access is empty. Was it "
          "constructed properly?");
 
-  const auto upper_bound_stored_info = std::upper_bound(
+  const auto upper_bound_stored_info = std::lower_bound(
       all_stored_infos.begin(), all_stored_infos.end(), t,
-      [](double t0, const StoredInfo<MaxDerivPlusOne, StoreCoefs>& d) {
-        return d.time > t0;
+      [](const StoredInfo<MaxDerivPlusOne, StoreCoefs>& d, double t0) {
+        return d.time < t0;
       });
 
   if (upper_bound_stored_info == all_stored_infos.begin()) {

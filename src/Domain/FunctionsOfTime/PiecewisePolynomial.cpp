@@ -160,15 +160,15 @@ bool operator!=(const PiecewisePolynomial<MaxDeriv>& lhs,
 #define DIMRETURNED(data) BOOST_PP_TUPLE_ELEM(1, data)
 
 #define INSTANTIATE(_, data)                                       \
+  template class PiecewisePolynomial<DIM(data)>;                   \
   template bool operator==                                         \
       <DIM(data)>(const PiecewisePolynomial<DIM(data)>&,           \
                   const PiecewisePolynomial<DIM(data)>&) noexcept; \
-  template class PiecewisePolynomial<DIM(data)>;                   \
   template bool operator!=                                         \
       <DIM(data)>(const PiecewisePolynomial<DIM(data)>&,           \
                   const PiecewisePolynomial<DIM(data)>&) noexcept;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (2, 3, 4))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (0, 1, 2, 3, 4))
 
 #undef INSTANTIATE
 
@@ -177,6 +177,8 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (2, 3, 4))
   PiecewisePolynomial<DIM(data)>::func_and_derivs<DIMRETURNED(data)>( \
       const double) const noexcept;
 
+GENERATE_INSTANTIATIONS(INSTANTIATE, (0), (0))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1), (0, 1))
 GENERATE_INSTANTIATIONS(INSTANTIATE, (2), (0, 1, 2))
 GENERATE_INSTANTIATIONS(INSTANTIATE, (3), (0, 1, 2, 3))
 GENERATE_INSTANTIATIONS(INSTANTIATE, (4), (0, 1, 2, 3, 4))
