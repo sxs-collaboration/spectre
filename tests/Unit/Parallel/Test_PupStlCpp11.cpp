@@ -55,6 +55,14 @@ struct DerivedInPupStlCpp11 : public Base {
 
 }  // namespace Test_Classes
 
+struct PairComparator {
+  bool operator()(std::pair<int, double> lhs,
+                  std::pair<int, double> rhs) const noexcept {
+    return lhs.first < rhs.first or
+           (lhs.first == rhs.first and lhs.second < rhs.second);
+  }
+};
+
 SPECTRE_TEST_CASE("Unit.Serialization.PupStlCpp11", "[Serialization][Unit]") {
   // [example_serialize_comparable]
   {
@@ -64,7 +72,7 @@ SPECTRE_TEST_CASE("Unit.Serialization.PupStlCpp11", "[Serialization][Unit]") {
     um["bbb"] = -10.7392;
     auto test_tuple = std::make_tuple<int, double, std::string,
                                       std::unordered_map<std::string, double>>(
-                                          2, 0.57, "blah", std::move(um));
+        2, 0.57, "blah", std::move(um));
     test_serialization(test_tuple);
   }
   // [example_serialize_comparable]
@@ -73,7 +81,7 @@ SPECTRE_TEST_CASE("Unit.Serialization.PupStlCpp11", "[Serialization][Unit]") {
     INFO("unique_ptr.abstract_base");
     test_serialization_via_base<Test_Classes::Base,
                                 Test_Classes::DerivedInPupStlCpp11>(
-                                    std::vector<double>{-1, 12.3, -7, 8});
+        std::vector<double>{-1, 12.3, -7, 8});
   }
   // [example_serialize_derived]
   {
@@ -98,6 +106,24 @@ SPECTRE_TEST_CASE("Unit.Serialization.PupStlCpp11", "[Serialization][Unit]") {
     PUP::fromMem reader(serialized_data.data());
     reader | serialization_target;
     CHECK(serialization_target == to_serialize);
+  }
+  {
+    INFO("map with custom comparator");
+    std::map<std::pair<int, double>, double, PairComparator> map_to_serialize;
+    map_to_serialize.insert({std::make_pair(1, 2.0), 3.0});
+    map_to_serialize.insert({std::make_pair(3, 1.0), 1.5});
+    map_to_serialize.insert({std::make_pair(2, 6.0), 10.2});
+    std::map<std::pair<int, double>, double, PairComparator>
+        serialization_target;
+    CHECK(map_to_serialize != serialization_target);
+    PUP::sizer sizer;
+    pup_override(sizer, map_to_serialize);
+    std::vector<char> data(sizer.size());
+    PUP::toMem writer(data.data());
+    pup_override(writer, map_to_serialize);
+    PUP::fromMem reader(data.data());
+    pup_override(reader, serialization_target);
+    CHECK(serialization_target == map_to_serialize);
   }
 }
 
