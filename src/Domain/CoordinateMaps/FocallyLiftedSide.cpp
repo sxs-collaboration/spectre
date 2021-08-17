@@ -232,7 +232,7 @@ std::optional<double> Side::lambda_tilde(
   return FocallyLiftedMapHelpers::try_scale_factor(
       parent_mapped_target_coords, projection_point, center_, radius_,
       source_is_between_focus_and_target,
-      not source_is_between_focus_and_target);
+      not source_is_between_focus_and_target, false);
 }
 
 template <typename T>

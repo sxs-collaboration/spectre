@@ -33,10 +33,10 @@ void test_cylindrical_flat_side() {
   // Choose a random center for the annulus, making sure the
   // z-coordinate is outside sphere_two and at least 5 percent below
   // it.  Also make sure that the center of the annulus is not offset
-  // in x-y farther than the radius of sphere_two.
+  // in x-y farther than 90% of the radius of sphere_two.
   const std::array<double, 3> center_one = [&radius_two, &center_two, &unit_dis,
                                             &angle_dis, &gen]() noexcept {
-    const double rho = unit_dis(gen) * radius_two;
+    const double rho = unit_dis(gen) * 0.9 *  radius_two;
     const double phi = angle_dis(gen);
     const double x = center_two[0] + rho * cos(phi);
     const double y = center_two[1] + rho * sin(phi);
@@ -53,7 +53,7 @@ void test_cylindrical_flat_side() {
     const double phi = angle_dis(gen);
     const double cos_theta = interval_dis(gen);
     const double sin_theta = sqrt(1.0 - square(cos_theta));
-    const double r = radius_two * 0.95 * unit_dis(gen);
+    const double r = radius_two * 0.85 * unit_dis(gen);
     return std::array<double, 3>{center_two[0] + r * sin_theta * cos(phi),
                                  center_two[1] + r * sin_theta * sin(phi),
                                  center_two[2] + r * cos_theta};
@@ -66,16 +66,17 @@ void test_cylindrical_flat_side() {
 
   // Pick outer radius of annulus, but not too small.
   // Smallness is decided by making sure angle subtended by annulus with
-  // respect to projection center is greater than 0.05 radians.
-  const double outer_radius = dist_annulus_proj * 0.05 + unit_dis(gen);
+  // respect to projection center is greater than 0.1 radians.
+  const double outer_radius = dist_annulus_proj * 0.1 + unit_dis(gen);
   CAPTURE(outer_radius);
 
   // Pick inner radius of annulus.
   // Don't make the annulus too thin,
   // and don't make the inner radius too small.
   const double min_inner_radius_fac =
-      std::max(0.05, dist_annulus_proj * 0.01 / outer_radius);
-  const double max_inner_radius_fac = 0.95 - min_inner_radius_fac;
+      std::max(0.1, dist_annulus_proj * 0.03 / outer_radius);
+  const double max_inner_radius_fac = 0.9 - min_inner_radius_fac;
+  CHECK(max_inner_radius_fac>0.0);
   const double inner_radius =
       outer_radius *
       (min_inner_radius_fac + max_inner_radius_fac * unit_dis(gen));

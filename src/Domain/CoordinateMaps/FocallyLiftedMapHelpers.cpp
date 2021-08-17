@@ -75,62 +75,80 @@ std::optional<double> try_scale_factor(
     const std::array<double, 3>& src_point,
     const std::array<double, 3>& proj_center,
     const std::array<double, 3>& sphere_center, double radius,
-    const bool pick_larger_root,
-    const bool pick_root_greater_than_one) noexcept {
-  // We solve the quadratic for (scale_factor-1) instead of
-  // scale_factor to avoid roundoff problems when scale_factor is very
-  // nearly equal to unity.  Note that scale_factor==1 will occur in
-  // the inverse map when src_point (which is x^i) is
-  // on the sphere.
-  //
-  // Roundoff is not a problem when forward-mapping and solving only
-  // for lambda.
-
-  // If the original quadratic equation is
-  //
-  // A scale_factor^2 + B scale_factor + C = 0,
-  //
-  // and if x = scale_factor-1, then the quadratic equation for x is
-  //
-  // a x^2 + b x + c = 0
-  //
-  // where
-  //
-  // a = A
-  // b = 2A + B
-  // c = A + B + C
-  //
-  // For this case
-  // A = |x_0^i-P^i|^2
-  // B = 2(x_0^i-P^i)(P^j-C^j)\delta_{ij}
-  // C = |P^i-C^i|^2 - R^2
-  //
-  // Note that A + B + C is |x_0^i-P^i+P^i-C^i|^2 - R^2
-  // and 2A+B is 2(x_0^i-P^i)(x_0^j-P^j+P^j-C^j), so
-  //
-  // a = |x_0^i-P^i|^2
-  // b = 2(x_0^i-P^i)(x_0^j-C^j)\delta_{ij}
-  // c = |x_0^i-C^i|^2 - R^2
-
-  const double a = square(src_point[0] - proj_center[0]) +
-                   square(src_point[1] - proj_center[1]) +
-                   square(src_point[2] - proj_center[2]);
-  const double b =
-      2.0 *
-      ((src_point[0] - proj_center[0]) * (src_point[0] - sphere_center[0]) +
-       (src_point[1] - proj_center[1]) * (src_point[1] - sphere_center[1]) +
-       (src_point[2] - proj_center[2]) * (src_point[2] - sphere_center[2]));
-  const double c = square(sphere_center[0] - src_point[0]) +
-                   square(sphere_center[1] - src_point[1]) +
-                   square(sphere_center[2] - src_point[2]) - square(radius);
+    const bool pick_larger_root, const bool pick_root_greater_than_one,
+    const bool solve_for_root_minus_one) noexcept {
 
   double x0 = std::numeric_limits<double>::signaling_NaN();
   double x1 = std::numeric_limits<double>::signaling_NaN();
-  const int num_real_roots = gsl_poly_solve_quadratic(a, b, c, &x0, &x1);
+  int num_real_roots = 0;
+  if (solve_for_root_minus_one) {
+    // We solve the quadratic for (scale_factor-1) instead of
+    // scale_factor to avoid roundoff problems when scale_factor is very
+    // nearly equal to unity.  Note that scale_factor==1 will occur in
+    // the inverse map when src_point (which is x^i) is
+    // on the sphere.
+    //
+    // Roundoff is not a problem when forward-mapping and solving only
+    // for lambda.
+
+    // If the original quadratic equation is
+    //
+    // A scale_factor^2 + B scale_factor + C = 0,
+    //
+    // and if x = scale_factor-1, then the quadratic equation for x is
+    //
+    // a x^2 + b x + c = 0
+    //
+    // where
+    //
+    // a = A
+    // b = 2A + B
+    // c = A + B + C
+    //
+    // For this case
+    // A = |x_0^i-P^i|^2
+    // B = 2(x_0^i-P^i)(P^j-C^j)\delta_{ij}
+    // C = |P^i-C^i|^2 - R^2
+    //
+    // Note that A + B + C is |x_0^i-P^i+P^i-C^i|^2 - R^2
+    // and 2A+B is 2(x_0^i-P^i)(x_0^j-P^j+P^j-C^j), so
+    //
+    // a = |x_0^i-P^i|^2
+    // b = 2(x_0^i-P^i)(x_0^j-C^j)\delta_{ij}
+    // c = |x_0^i-C^i|^2 - R^2
+
+    const double a = square(src_point[0] - proj_center[0]) +
+                     square(src_point[1] - proj_center[1]) +
+                     square(src_point[2] - proj_center[2]);
+    const double b =
+        2.0 *
+        ((src_point[0] - proj_center[0]) * (src_point[0] - sphere_center[0]) +
+         (src_point[1] - proj_center[1]) * (src_point[1] - sphere_center[1]) +
+         (src_point[2] - proj_center[2]) * (src_point[2] - sphere_center[2]));
+    const double c = square(sphere_center[0] - src_point[0]) +
+                     square(sphere_center[1] - src_point[1]) +
+                     square(sphere_center[2] - src_point[2]) - square(radius);
+    num_real_roots = gsl_poly_solve_quadratic(a, b, c, &x0, &x1);
+  } else {
+    const double a = square(src_point[0] - proj_center[0]) +
+                     square(src_point[1] - proj_center[1]) +
+                     square(src_point[2] - proj_center[2]);
+    const double b =
+        2.0 *
+        ((src_point[0] - proj_center[0]) * (proj_center[0] - sphere_center[0]) +
+         (src_point[1] - proj_center[1]) * (proj_center[1] - sphere_center[1]) +
+         (src_point[2] - proj_center[2]) * (proj_center[2] - sphere_center[2]));
+    const double c = square(proj_center[0] - sphere_center[0]) +
+                     square(proj_center[1] - sphere_center[1]) +
+                     square(proj_center[2] - sphere_center[2]) - square(radius);
+    num_real_roots = gsl_poly_solve_quadratic(a, b, c, &x0, &x1);
+  }
   if (num_real_roots == 2) {
-    // We solved for scale_factor-1 above, so add 1 to get scale_factor.
-    x0 += 1.0;
-    x1 += 1.0;
+    if(solve_for_root_minus_one) {
+      // We solved for scale_factor-1 above, so add 1 to get scale_factor.
+      x0 += 1.0;
+      x1 += 1.0;
+    }
     if (UNLIKELY(equal_within_roundoff(x0, 1.0))) {
       x0 = 1.0;
     }
@@ -178,8 +196,10 @@ std::optional<double> try_scale_factor(
       }
     }
   } else if (num_real_roots == 1) {
-    // We solved for scale_factor-1 above, so add 1 to get scale_factor.
-    x0 += 1.0;
+    if(solve_for_root_minus_one) {
+      // We solved for scale_factor-1 above, so add 1 to get scale_factor.
+      x0 += 1.0;
+    }
     if (equal_within_roundoff(x0, 1.0)) {
       x0 = 1.0;
     }

@@ -47,27 +47,27 @@ CylindricalFlatSide::CylindricalFlatSide(
   const double dist_proj = sqrt(square(center_two[0] - proj_center[0]) +
                                 square(center_two[1] - proj_center[1]) +
                                 square(center_two[2] - proj_center[2]));
-  ASSERT(dist_proj < 0.95 * radius_two,
+  ASSERT(dist_proj < 0.85 * radius_two,
          "CylindricalFlatSide: The map has been tested only for the case when "
          "proj_center is contained inside the sphere and not too close to the "
          "surface of the sphere");
   const double dist_xy_annulus = sqrt(square(center_two[0] - center_one[0]) +
                                       square(center_two[1] - center_one[1]));
-  ASSERT(dist_xy_annulus < radius_two,
+  ASSERT(dist_xy_annulus < 0.9 * radius_two,
          "CylindricalFlatSide: The map has been tested only for the case when "
-         "the center of the annulus is contained in the projection of the "
-         "sphere onto the z-axis");
+         "the center of the annulus is contained in a circle that is 90% of "
+         "the size of the projection of the sphere onto the z-axis");
   const double dist_annulus_proj = sqrt(square(center_one[0] - proj_center[0]) +
                                         square(center_one[1] - proj_center[1]) +
                                         square(center_one[2] - proj_center[2]));
-  ASSERT(outer_radius > 0.05 * dist_annulus_proj,
+  ASSERT(outer_radius > 0.1 * dist_annulus_proj,
          "CylindricalFlatSide: The map has been tested only for the case when "
          "the annulus is not too small");
-  ASSERT(inner_radius < 0.95 * outer_radius,
+  ASSERT(inner_radius < 0.9 * outer_radius,
          "CylindricalFlatSide: The map has been tested only for the case when "
          "the annulus is not too thin");
   const double min_inner_radius_fac =
-      std::max(0.05, dist_annulus_proj * 0.01 / outer_radius);
+      std::max(0.1, dist_annulus_proj * 0.03 / outer_radius);
   ASSERT(inner_radius > min_inner_radius_fac * outer_radius,
          "CylindricalFlatSide: The map has been tested only for the case when "
          "the inner radius is not too small");
