@@ -199,7 +199,6 @@ struct EvolutionMetavars {
       tmpl::conditional_t<evolution::is_analytic_solution_v<initial_data>,
                           Tags::AnalyticSolution<initial_data>,
                           Tags::AnalyticData<initial_data>>;
-  using boundary_condition_tag = initial_data_tag;
   using analytic_variables_tags =
       typename system::primitive_variables_tag::tags_list;
   using equation_of_state_tag =
