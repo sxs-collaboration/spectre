@@ -4,7 +4,6 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <cstddef>
-#include <iostream>
 #include <string>
 
 #include "DataStructures/DataVector.hpp"

@@ -6,6 +6,9 @@
 
 #pragma once
 
+#include <cstddef>
+#include <string>
+
 /// \cond
 class DataVector;
 class Matrix;

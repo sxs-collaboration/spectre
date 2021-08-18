@@ -43,7 +43,7 @@ namespace {
 // this class does.
 class linear_solver_LU {
  public:
-  linear_solver_LU(Matrix& matrix_a)
+  explicit linear_solver_LU(Matrix& matrix_a)
       : mLhsMatrix(matrix_a),
         mNumRows(static_cast<int>(matrix_a.rows())),
         mPivotInfo(matrix_a.rows(), 0.0) {}
@@ -57,7 +57,7 @@ class linear_solver_LU {
                << " of the matrix.");
 
     int matrix_a_spacing = mLhsMatrix.spacing();
-    int info;
+    int info = 0;
 
     // Generate the LU decomposition on the first call to solve and then save it
     // for the subsequent calls.
@@ -134,11 +134,11 @@ void arpack_dnaupd_wrapper(linear_solver_LU& M_LUsolver, Matrix& B_input,
 
   int ldv = num_rows;  // Leading dimension of the array V defined below
   DenseVector<double> V(
-      static_cast<std::size_t>(ncv * num_rows),
+      static_cast<size_t>(ncv * num_rows),
       0.0);  // Contains the final set of the Arnoldi basis vectors
 
   int lworkl = 3 * (ncv * ncv) + 6 * ncv;  // Size of the vector workl
-  DenseVector<double> workl(static_cast<std::size_t>(lworkl),
+  DenseVector<double> workl(static_cast<size_t>(lworkl),
                             0.0);  // Internal workspace vector
 
   double tol = 0.0;       // tol <= 0 means machine precision will be used
@@ -147,10 +147,10 @@ void arpack_dnaupd_wrapper(linear_solver_LU& M_LUsolver, Matrix& B_input,
 
   // resid contains the final residue vector on output, if info != 0 then it
   // should contain the starting vector
-  DenseVector<double> resid(static_cast<std::size_t>(num_rows), 0.0);
+  DenseVector<double> resid(static_cast<size_t>(num_rows), 0.0);
 
   // Internal workspace vector
-  DenseVector<double> workd(3 * static_cast<std::size_t>(num_rows), 0.0);
+  DenseVector<double> workd(3 * static_cast<size_t>(num_rows), 0.0);
 
   // iparam is used to set various parameters of Arpack
   std::array<int, 11> iparam{};
@@ -183,15 +183,15 @@ void arpack_dnaupd_wrapper(linear_solver_LU& M_LUsolver, Matrix& B_input,
             &ldv, iparam.data(), ipntr.data(), workd.data(), workl.data(),
             &lworkl, &info);
 
-    DenseVector<double> rhs_vec(static_cast<std::size_t>(num_rows), 0.0);
-    for (size_t i = 0; i < static_cast<std::size_t>(num_rows); i++) {
-      rhs_vec[i] = workd[static_cast<std::size_t>(ipntr[0] - 1) + i];
+    DenseVector<double> rhs_vec(static_cast<size_t>(num_rows), 0.0);
+    for (size_t i = 0; i < static_cast<size_t>(num_rows); i++) {
+      rhs_vec[i] = workd[static_cast<size_t>(ipntr[0] - 1) + i];
     }
 
     DenseVector<double> Minv_B_rhs_vec = M_LUsolver.solve(B_input * rhs_vec);
 
-    for (size_t i = 0; i < static_cast<std::size_t>(num_rows); i++) {
-      workd[static_cast<std::size_t>(ipntr[1] - 1) + i] = Minv_B_rhs_vec[i];
+    for (size_t i = 0; i < static_cast<size_t>(num_rows); i++) {
+      workd[static_cast<size_t>(ipntr[1] - 1) + i] = Minv_B_rhs_vec[i];
     }
   }
   if (UNLIKELY(info != 0)) {
@@ -210,22 +210,22 @@ void arpack_dnaupd_wrapper(linear_solver_LU& M_LUsolver, Matrix& B_input,
   // which_eigenvectors_to_calculate is set to 'S' then we need to specify a
   // vector select of size ncv
   const std::string which_eigenvectors_to_calculate = "A";
-  DenseVector<int> select(static_cast<std::size_t>(ncv), 1);
+  DenseVector<int> select(static_cast<size_t>(ncv), 1);
 
   // We are declaring vectors of size number_of_eigenvalues_to_find+1 so that
   // there is enough space for Arpack to work with the possible complex
   // conjugate of an eigenpair even if it was not requested by the user.
   int ldz = num_rows;
-  DenseVector<double> eigenvectors_internal(static_cast<std::size_t>(
+  DenseVector<double> eigenvectors_internal(static_cast<size_t>(
       (num_rows) * (number_of_eigenvalues_to_find + 1)));  // Eigenvectors
 
-  DenseVector<double> eigenvalue_real_part_internal(static_cast<std::size_t>(
+  DenseVector<double> eigenvalue_real_part_internal(static_cast<size_t>(
       (number_of_eigenvalues_to_find + 1)));  // Real part of the Eigenvalues
   DenseVector<double> eigenvalue_imaginary_part_internal(
-      static_cast<std::size_t>((number_of_eigenvalues_to_find +
-                                1)));  // Imaginary part of the Eigenvalues
+      static_cast<size_t>((number_of_eigenvalues_to_find +
+                           1)));  // Imaginary part of the Eigenvalues
   // Internal workspace vector
-  DenseVector<double> workev(static_cast<std::size_t>(3 * ncv), 0.0);
+  DenseVector<double> workev(static_cast<size_t>(3 * ncv), 0.0);
 
   dneupd_(&rvec, which_eigenvectors_to_calculate.c_str(), select.data(),
           eigenvalue_real_part_internal.data(),
@@ -256,8 +256,6 @@ void arpack_dnaupd_wrapper(linear_solver_LU& M_LUsolver, Matrix& B_input,
           eigenvectors_internal[i * static_cast<size_t>(num_rows) + j];
     }
   }
-
-  return;
 }
 
 void find_generalized_eigenvalues_arpack(
@@ -265,13 +263,12 @@ void find_generalized_eigenvalues_arpack(
     Matrix& eigenvectors, Matrix& matrix_a, Matrix& matrix_b,
     const size_t number_of_eigenvalues_to_find, const double sigma,
     const std::string which_eigenvalues_to_find) noexcept {
-  const size_t number_of_rows = matrix_a.rows();
-  ASSERT(number_of_rows == matrix_a.columns(),
+  ASSERT(matrix_a.rows() == matrix_a.columns(),
          "Matrix A should be square, but A has "
              << matrix_a.rows() << " rows and " << matrix_a.columns()
              << " columns.");
-  ASSERT(number_of_rows == matrix_b.rows() and
-             number_of_rows == matrix_b.columns(),
+  ASSERT(matrix_a.rows() == matrix_b.rows() and
+             matrix_a.rows() == matrix_b.columns(),
          "Matrix A and matrix B should be the same size, but A has "
              << matrix_a.rows() << " rows and " << matrix_a.columns()
              << " columns, while B has " << matrix_b.rows() << " rows and "
@@ -290,7 +287,7 @@ void find_generalized_eigenvalues_arpack(
           << eigenvalues_imaginary_part.size()
           << " and the number of columns in the eigenvector Matrix are "
           << eigenvectors.columns() << ".");
-  ASSERT(number_of_rows == eigenvectors.rows(),
+  ASSERT(matrix_a.rows() == eigenvectors.rows(),
          "Matrix A and matrix eigenvectors should have the same number of "
          "rows, but A has "
              << matrix_a.rows() << " rows, while the eigenvectors matrix "
