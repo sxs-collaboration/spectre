@@ -22,8 +22,17 @@
 #include "Time/StepChoosers/StepChooser.hpp"        // IWYU pragma: keep
 #include "Time/StepControllers/StepController.hpp"  // IWYU pragma: keep
 #include "Time/Time.hpp"
+#include "Time/TimeAndPrevious.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/TMPL.hpp"
+
+/// \cond
+namespace evolution {
+namespace Tags {
+struct PreviousTriggerTime;
+}  // namespace Tags
+}  // namespace evolution
+/// \endcond
 
 namespace Tags {
 
@@ -256,5 +265,22 @@ struct StepController : db::SimpleTag {
       const std::unique_ptr<::StepController>& step_controller) noexcept {
     return deserialize<type>(serialize<type>(step_controller).data());
   }
+};
+
+struct TimeAndPrevious : db::SimpleTag {
+  using type = ::TimeAndPrevious;
+};
+
+struct TimeAndPreviousCompute : db::ComputeTag, TimeAndPrevious {
+  using base = TimeAndPrevious;
+  using return_type = ::TimeAndPrevious;
+  static void function(
+      const gsl::not_null<::TimeAndPrevious*> time_and_previous,
+      const double time, const std::optional<double>& previous) noexcept {
+    time_and_previous->time = time;
+    time_and_previous->previous_time = previous;
+  }
+  using argument_tags =
+      tmpl::list<::Tags::Time, ::evolution::Tags::PreviousTriggerTime>;
 };
 }  // namespace Tags

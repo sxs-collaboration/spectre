@@ -28,6 +28,7 @@ spectre_target_headers(
   Tags.hpp
   TakeStep.hpp
   Time.hpp
+  TimeAndPrevious.hpp
   TimeSequence.hpp
   TimeStepId.hpp
   Utilities.hpp

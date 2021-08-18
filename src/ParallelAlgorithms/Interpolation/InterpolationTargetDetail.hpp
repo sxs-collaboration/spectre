@@ -15,6 +15,7 @@
 #include "Domain/BlockLogicalCoordinates.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/TagsTimeDependent.hpp"
+#include "Evolution/Systems/Cce/InterfaceManagers/GhLocalTimeStepping.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
@@ -66,6 +67,9 @@ double get_temporal_id_value(double time) noexcept;
 double get_temporal_id_value(const TimeStepId& time_id) noexcept;
 double evaluate_temporal_id_for_expiration(double time) noexcept;
 double evaluate_temporal_id_for_expiration(const TimeStepId& time_id) noexcept;
+double get_temporal_id_value(const TimeAndPrevious& time_and_previous) noexcept;
+double evaluate_temporal_id_for_expiration(
+    const TimeAndPrevious& time_and_previous) noexcept;
 
 // apply_callback accomplishes the overload for the
 // two signatures of callback functions.
