@@ -180,9 +180,9 @@ class CProxy_GlobalCache;
 
 template <typename InitialData, typename... InterpolationTargetTags>
 struct EvolutionMetavars {
-  // The UseDgSubcell flag controls whether to use "standard" limiting (false)
+  // The use_dg_subcell flag controls whether to use "standard" limiting (false)
   // or a DG-FD hybrid scheme (true).
-  static constexpr bool UseDgSubcell = true;
+  static constexpr bool use_dg_subcell = true;
   static constexpr size_t volume_dim = 3;
   static constexpr dg::Formulation dg_formulation =
       dg::Formulation::StrongInertial;
@@ -239,7 +239,7 @@ struct EvolutionMetavars {
                 Events::ObserveNorms<
                     tmpl::list<hydro::Tags::RestMassDensity<DataVector>>>,
                 tmpl::conditional_t<
-                    UseDgSubcell,
+                    use_dg_subcell,
                     evolution::dg::subcell::Events::ObserveFields<
                         volume_dim, Tags::Time,
                         tmpl::append<
@@ -290,7 +290,7 @@ struct EvolutionMetavars {
         db::wrap_tags_in<Tags::Flux, evolved_vars_tags,
                          tmpl::size_t<volume_dim>, Frame::Inertial>;
 
-    static constexpr bool subcell_enabled = UseDgSubcell;
+    static constexpr bool subcell_enabled = use_dg_subcell;
     // We send `ghost_zone_size` cell-centered grid points for variable
     // reconstruction, of which we need `ghost_zone_size-1` for reconstruction
     // to the internal side of the element face, and `ghost_zone_size` for
@@ -381,7 +381,7 @@ struct EvolutionMetavars {
       Actions::Label<evolution::dg::subcell::Actions::Labels::EndOfSolvers>>>;
 
   using step_actions =
-      tmpl::conditional_t<UseDgSubcell, dg_subcell_step_actions,
+      tmpl::conditional_t<use_dg_subcell, dg_subcell_step_actions,
                           dg_step_actions>;
 
   enum class Phase {
@@ -439,7 +439,7 @@ struct EvolutionMetavars {
       Actions::UpdateConservatives,
 
       tmpl::conditional_t<
-          UseDgSubcell,
+          use_dg_subcell,
           tmpl::list<
               evolution::dg::subcell::Actions::Initialize<
                   volume_dim, system,
@@ -508,7 +508,7 @@ struct EvolutionMetavars {
 
   using const_global_cache_tags = tmpl::push_back<
       tmpl::conditional_t<
-          UseDgSubcell,
+          use_dg_subcell,
           tmpl::list<
               grmhd::ValenciaDivClean::fd::Tags::Reconstructor,
               ::Tags::VariableFixer<grmhd::ValenciaDivClean::FixConservatives>,
