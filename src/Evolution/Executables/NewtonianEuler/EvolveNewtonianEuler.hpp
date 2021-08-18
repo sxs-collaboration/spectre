@@ -136,7 +136,6 @@ struct EvolutionMetavars {
                           Tags::AnalyticSolution<initial_data>,
                           Tags::AnalyticData<initial_data>>;
 
-  using boundary_condition_tag = initial_data_tag;
   using analytic_variables_tags =
       typename system::primitive_variables_tag::tags_list;
 
