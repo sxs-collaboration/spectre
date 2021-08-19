@@ -48,7 +48,8 @@ void LinearizedBondiSachs::operator()(
     const Scalar<SpinWeighted<ComplexDataVector, 2>>& /*boundary_dr_j*/,
     const Scalar<SpinWeighted<ComplexDataVector, 0>>& r,
     const Scalar<SpinWeighted<ComplexDataVector, 0>>& /*beta*/,
-    const size_t l_max, const size_t number_of_radial_points) const {
+    const size_t l_max, const size_t number_of_radial_points,
+    const gsl::not_null<Parallel::NodeLock*> /*hdf5_lock*/) const {
   const DataVector one_minus_y_collocation =
       1.0 - Spectral::collocation_points<Spectral::Basis::Legendre,
                                          Spectral::Quadrature::GaussLobatto>(

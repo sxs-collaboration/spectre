@@ -62,6 +62,25 @@ template <typename Metavariables>
 struct dummy_boundary {};
 
 template <typename Metavariables>
+struct mock_observer_writer {
+  using chare_type = ActionTesting::MockNodeGroupChare;
+  using component_being_mocked = observers::ObserverWriter<Metavariables>;
+  using replace_these_simple_actions = tmpl::list<>;
+  using with_these_simple_actions = tmpl::list<>;
+
+  using simple_tags = tmpl::list<observers::Tags::H5FileLock>;
+
+  using const_global_cache_tags = tmpl::list<>;
+
+  using metavariables = Metavariables;
+  using array_index = size_t;
+
+  using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
+      typename Metavariables::Phase, Metavariables::Phase::Initialization,
+      tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>>;
+};
+
+template <typename Metavariables>
 struct mock_characteristic_evolution {
   using simple_tags = db::AddSimpleTags<
       ::Tags::Variables<tmpl::append<real_cauchy_boundary_tags_to_compute,
@@ -106,8 +125,9 @@ struct mock_characteristic_evolution {
 
 template <bool EvolvePartiallyFlatCartesianCoordinates>
 struct metavariables {
-  using component_list = tmpl::list<mock_characteristic_evolution<
-      metavariables<EvolvePartiallyFlatCartesianCoordinates>>>;
+  using component_list =
+      tmpl::list<mock_observer_writer<metavariables>,
+                 mock_characteristic_evolution<metavariables>>;
 
   static constexpr bool uses_partially_flat_cartesian_coordinates =
       EvolvePartiallyFlatCartesianCoordinates;
@@ -168,6 +188,9 @@ void test_InitializeFirstHypersurface() {
         8);
   });
 
+  ActionTesting::emplace_component_and_initialize<mock_observer_writer<
+      metavariables<EvolvePartiallyFlatCartesianCoordinates>>>(
+      &runner, 0, {Parallel::NodeLock{}});
   ActionTesting::emplace_component_and_initialize<component>(
       &runner, 0,
       {real_variables, swsh_variables, swsh_volume_variables, time_step_id});
@@ -191,12 +214,13 @@ void test_InitializeFirstHypersurface() {
   }
 
   // apply the corresponding mutators to the `expected_box`
+  auto node_lock = Parallel::NodeLock{};
   db::mutate_apply<typename Cce::InitializeJ::InitializeJ<
                        EvolvePartiallyFlatCartesianCoordinates>::mutate_tags,
                    typename Cce::InitializeJ::InitializeJ<
                        EvolvePartiallyFlatCartesianCoordinates>::argument_tags>(
       Cce::InitializeJ::InverseCubic<EvolvePartiallyFlatCartesianCoordinates>{},
-      make_not_null(&expected_box));
+      make_not_null(&expected_box), make_not_null(&node_lock));
   db::mutate_apply<GaugeUpdateAngularFromCartesian<
       Tags::CauchyAngularCoords, Tags::CauchyCartesianCoords>>(
       make_not_null(&expected_box));

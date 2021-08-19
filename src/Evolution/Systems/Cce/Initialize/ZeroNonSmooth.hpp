@@ -87,7 +87,8 @@ struct ZeroNonSmooth : InitializeJ<false> {
       const Scalar<SpinWeighted<ComplexDataVector, 2>>& boundary_dr_j,
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& r,
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& beta, size_t l_max,
-      size_t number_of_radial_points) const override;
+      size_t number_of_radial_points,
+      gsl::not_null<Parallel::NodeLock*> hdf5_lock) const override;
 
   void pup(PUP::er& p) override;
 

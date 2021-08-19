@@ -14,6 +14,7 @@
 #include "NumericalAlgorithms/Spectral/SwshInterpolation.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
+#include "Parallel/NodeLock.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -142,7 +143,8 @@ struct InitializeJ<true> : public PUP::able {
       const Scalar<SpinWeighted<ComplexDataVector, 2>>& boundary_dr_j,
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& r,
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& beta, size_t l_max,
-      size_t number_of_radial_points) const = 0;
+      size_t number_of_radial_points,
+      gsl::not_null<Parallel::NodeLock*> hdf5_lock) const = 0;
 };
 
 /*!
@@ -190,7 +192,8 @@ struct InitializeJ<false> : public PUP::able {
       const Scalar<SpinWeighted<ComplexDataVector, 2>>& boundary_dr_j,
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& r,
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& beta, size_t l_max,
-      size_t number_of_radial_points) const = 0;
+      size_t number_of_radial_points,
+      gsl::not_null<Parallel::NodeLock*> hdf5_lock) const = 0;
 };
 }  // namespace InitializeJ
 }  // namespace Cce

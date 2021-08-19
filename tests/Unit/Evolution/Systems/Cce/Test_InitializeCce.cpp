@@ -26,6 +26,7 @@
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
 #include "NumericalAlgorithms/Spectral/SwshFiltering.hpp"
+#include "Parallel/NodeLock.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace Cce {
@@ -34,9 +35,11 @@ template <typename DbTags>
 void test_initialize_j_inverse_cubic(
     const gsl::not_null<db::DataBox<DbTags>*> box_to_initialize,
     const size_t l_max, const size_t number_of_radial_points) {
+  auto node_lock = Parallel::NodeLock{};
   db::mutate_apply<InitializeJ::InitializeJ<true>::mutate_tags,
                    InitializeJ::InitializeJ<true>::argument_tags>(
-      InitializeJ::InverseCubic<true>{}, box_to_initialize);
+      InitializeJ::InverseCubic<true>{}, box_to_initialize,
+      make_not_null(&node_lock));
 
   SpinWeighted<ComplexDataVector, 2> dy_j{
       number_of_radial_points *
@@ -115,9 +118,11 @@ void test_initialize_j_zero_nonsmooth(
     const size_t /*l_max*/, const size_t /*number_of_radial_points*/) {
   // The iterative procedure can reach error levels better than 1.0e-8, but it
   // is difficult to do so reliably and quickly for randomly generated data.
+  auto node_lock = Parallel::NodeLock{};
   db::mutate_apply<InitializeJ::InitializeJ<false>::mutate_tags,
                    InitializeJ::InitializeJ<false>::argument_tags>(
-      InitializeJ::ZeroNonSmooth{1.0e-8, 400}, box_to_initialize);
+      InitializeJ::ZeroNonSmooth{1.0e-8, 400}, box_to_initialize,
+      make_not_null(&node_lock));
 
   // note we want to copy here to compare against the next version of the
   // computation
@@ -130,7 +135,8 @@ void test_initialize_j_zero_nonsmooth(
 
   db::mutate_apply<InitializeJ::InitializeJ<false>::mutate_tags,
                    InitializeJ::InitializeJ<false>::argument_tags>(
-      serialized_and_deserialized_initializer, box_to_initialize);
+      serialized_and_deserialized_initializer, box_to_initialize,
+      make_not_null(&node_lock));
   const auto& initialized_j_from_serialized_and_deserialized =
       db::get<Tags::BondiJ>(*box_to_initialize);
 
@@ -246,10 +252,11 @@ void test_initialize_j_zero_nonsmooth(
         Spectral::Swsh::filter_swsh_boundary_quantity(
             make_not_null(&get(*boundary_r)), l_max, l_max / 2);
       });
+  auto node_lock = Parallel::NodeLock{};
   db::mutate_apply<InitializeJ::InitializeJ<false>::mutate_tags,
                    InitializeJ::InitializeJ<false>::argument_tags>(
       InitializeJ::ZeroNonSmooth{1.0e-12, 1, true},
-      make_not_null(&box_to_initialize));
+      make_not_null(&box_to_initialize), make_not_null(&node_lock));
   ERROR("Failed to trigger ERROR in an error test");
 }
 
@@ -259,9 +266,11 @@ void test_initialize_j_no_radiation(
     const size_t l_max, const size_t /*number_of_radial_points*/) {
   // The iterative procedure can reach error levels better than 1.0e-8, but it
   // is difficult to do so reliably and quickly for randomly generated data.
+  auto node_lock = Parallel::NodeLock{};
   db::mutate_apply<InitializeJ::InitializeJ<false>::mutate_tags,
                    InitializeJ::InitializeJ<false>::argument_tags>(
-      InitializeJ::NoIncomingRadiation{1.0e-8, 400}, box_to_initialize);
+      InitializeJ::NoIncomingRadiation{1.0e-8, 400}, box_to_initialize,
+      make_not_null(&node_lock));
 
   // note we want to copy here to compare against the next version of the
   // computation
@@ -274,7 +283,8 @@ void test_initialize_j_no_radiation(
 
   db::mutate_apply<InitializeJ::InitializeJ<false>::mutate_tags,
                    InitializeJ::InitializeJ<false>::argument_tags>(
-      serialized_and_deserialized_initializer, box_to_initialize);
+      serialized_and_deserialized_initializer, box_to_initialize,
+      make_not_null(&node_lock));
   const auto& initialized_j_from_serialized_and_deserialized =
       db::get<Tags::BondiJ>(*box_to_initialize);
 

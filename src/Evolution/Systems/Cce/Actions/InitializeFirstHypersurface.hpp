@@ -11,6 +11,7 @@
 #include "Evolution/Systems/Cce/Initialize/InitializeJ.hpp"
 #include "Evolution/Systems/Cce/OptionTags.hpp"
 #include "Evolution/Systems/Cce/ScriPlusValues.hpp"
+#include "IO/Observer/Actions/GetLockPointer.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -52,7 +53,7 @@ struct InitializeFirstHypersurface {
   static std::tuple<db::DataBox<DbTags>&&> apply(
       db::DataBox<DbTags>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
     // In some contexts, this action may get re-run (e.g. self-start procedure)
@@ -63,12 +64,21 @@ struct InitializeFirstHypersurface {
         db::get<::Tags::TimeStepId>(box).substep_time().fraction() != 0) {
       return {std::move(box)};
     }
+    // some initialization schemes need the hdf5_lock so that they can read
+    // their own input data from disk.
+    auto hdf5_lock = Parallel::local_branch(
+                         Parallel::get_parallel_component<
+                             observers::ObserverWriter<Metavariables>>(cache))
+                         ->template local_synchronous_action<
+                             observers::Actions::GetLockPointer<
+                                 observers::Tags::H5FileLock>>();
     db::mutate_apply<
         typename InitializeJ::InitializeJ<
             uses_partially_flat_cartesian_coordinates>::mutate_tags,
         typename InitializeJ::InitializeJ<
             uses_partially_flat_cartesian_coordinates>::argument_tags>(
-        db::get<Tags::InitializeJBase>(box), make_not_null(&box));
+        db::get<Tags::InitializeJBase>(box), make_not_null(&box),
+        make_not_null(hdf5_lock));
     db::mutate_apply<InitializeScriPlusValue<Tags::InertialRetardedTime>>(
         make_not_null(&box),
         db::get<::Tags::TimeStepId>(box).substep_time().value());
