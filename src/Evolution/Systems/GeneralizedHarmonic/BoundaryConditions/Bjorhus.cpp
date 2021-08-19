@@ -140,12 +140,13 @@ std::optional<std::string> ConstraintPreservingBjorhus<Dim>::dg_time_derivative(
                         ::Tags::Tempaa<1, Dim, Frame::Inertial, DataVector>,
                         ::Tags::Tempiaa<2, Dim, Frame::Inertial, DataVector>,
                         ::Tags::Tempaa<2, Dim, Frame::Inertial, DataVector>,
+                        ::Tags::Tempaa<3, Dim, Frame::Inertial, DataVector>,
                         ::Tags::Tempa<2, Dim, Frame::Inertial, DataVector>,
                         ::Tags::Tempa<3, Dim, Frame::Inertial, DataVector>,
-                        ::Tags::Tempaa<3, Dim, Frame::Inertial, DataVector>,
-                        ::Tags::Tempiaa<3, Dim, Frame::Inertial, DataVector>,
                         ::Tags::Tempaa<4, Dim, Frame::Inertial, DataVector>,
-                        ::Tags::Tempaa<5, Dim, Frame::Inertial, DataVector>>>
+                        ::Tags::Tempiaa<3, Dim, Frame::Inertial, DataVector>,
+                        ::Tags::Tempaa<5, Dim, Frame::Inertial, DataVector>,
+                        ::Tags::Tempaa<6, Dim, Frame::Inertial, DataVector>>>
       local_buffer(get_size(get<0>(normal_covector)), 0.);
 
   auto& unit_interface_normal_vector =
@@ -174,8 +175,10 @@ std::optional<std::string> ConstraintPreservingBjorhus<Dim>::dg_time_derivative(
       get<::Tags::Tempaa<1, Dim, Frame::Inertial, DataVector>>(local_buffer);
   auto& char_projected_rhs_dt_v_zero =
       get<::Tags::Tempiaa<2, Dim, Frame::Inertial, DataVector>>(local_buffer);
-  auto& char_projected_rhs_dt_v_minus =
+  auto& char_projected_rhs_dt_v_plus =
       get<::Tags::Tempaa<2, Dim, Frame::Inertial, DataVector>>(local_buffer);
+  auto& char_projected_rhs_dt_v_minus =
+      get<::Tags::Tempaa<3, Dim, Frame::Inertial, DataVector>>(local_buffer);
   auto& constraint_char_zero_plus =
       get<::Tags::Tempa<2, Dim, Frame::Inertial, DataVector>>(local_buffer);
   auto& constraint_char_zero_minus =
@@ -184,13 +187,13 @@ std::optional<std::string> ConstraintPreservingBjorhus<Dim>::dg_time_derivative(
   typename Tags::CharacteristicSpeeds<Dim, Frame::Inertial>::type char_speeds;
 
   auto& bc_dt_v_psi =
-      get<::Tags::Tempaa<3, Dim, Frame::Inertial, DataVector>>(local_buffer);
+      get<::Tags::Tempaa<4, Dim, Frame::Inertial, DataVector>>(local_buffer);
   auto& bc_dt_v_zero =
       get<::Tags::Tempiaa<3, Dim, Frame::Inertial, DataVector>>(local_buffer);
   auto& bc_dt_v_plus =
-      get<::Tags::Tempaa<4, Dim, Frame::Inertial, DataVector>>(local_buffer);
-  auto& bc_dt_v_minus =
       get<::Tags::Tempaa<5, Dim, Frame::Inertial, DataVector>>(local_buffer);
+  auto& bc_dt_v_minus =
+      get<::Tags::Tempaa<6, Dim, Frame::Inertial, DataVector>>(local_buffer);
 
   compute_intermediate_vars(
       make_not_null(&unit_interface_normal_vector),
@@ -204,6 +207,7 @@ std::optional<std::string> ConstraintPreservingBjorhus<Dim>::dg_time_derivative(
       make_not_null(&projection_Ab), make_not_null(&projection_AB),
       make_not_null(&char_projected_rhs_dt_v_psi),
       make_not_null(&char_projected_rhs_dt_v_zero),
+      make_not_null(&char_projected_rhs_dt_v_plus),
       make_not_null(&char_projected_rhs_dt_v_minus),
       make_not_null(&constraint_char_zero_plus),
       make_not_null(&constraint_char_zero_minus), make_not_null(&char_speeds),
@@ -239,6 +243,15 @@ std::optional<std::string> ConstraintPreservingBjorhus<Dim>::dg_time_derivative(
       make_not_null(&bc_dt_v_zero), unit_interface_normal_vector,
       four_index_constraint, char_speeds);
 
+  // In order to set dt<V+> = 0, the correction term returned here must be
+  // b_correction = -1*existing(dt<V+>), such that
+  // final(dt<V+>) = existing(dt<V+>) + b_correction = 0
+  for (size_t a = 0; a <= Dim; ++a) {
+    for (size_t b = a; b <= Dim; ++b) {
+      bc_dt_v_plus.get(a, b) = -char_projected_rhs_dt_v_plus.get(a, b);
+    }
+  }
+
   if (type_ == detail::ConstraintPreservingBjorhusType::ConstraintPreserving) {
     Bjorhus::constraint_preserving_bjorhus_corrections_dt_v_minus(
         make_not_null(&bc_dt_v_minus), gamma2, coords, incoming_null_one_form,
@@ -269,6 +282,8 @@ std::optional<std::string> ConstraintPreservingBjorhus<Dim>::dg_time_derivative(
       make_not_null(&bc_dt_v_psi), char_speeds[0]);
   helpers::set_bc_corr_zero_when_char_speed_is_positive(
       make_not_null(&bc_dt_v_zero), char_speeds[1]);
+  helpers::set_bc_corr_zero_when_char_speed_is_positive(
+      make_not_null(&bc_dt_v_plus), char_speeds[2]);
   helpers::set_bc_corr_zero_when_char_speed_is_positive(
       make_not_null(&bc_dt_v_minus), char_speeds[3]);
 
@@ -333,6 +348,8 @@ void ConstraintPreservingBjorhus<Dim>::compute_intermediate_vars(
         char_projected_rhs_dt_v_psi,
     const gsl::not_null<tnsr::iaa<DataVector, Dim, Frame::Inertial>*>
         char_projected_rhs_dt_v_zero,
+    const gsl::not_null<tnsr::aa<DataVector, Dim, Frame::Inertial>*>
+        char_projected_rhs_dt_v_plus,
     const gsl::not_null<tnsr::aa<DataVector, Dim, Frame::Inertial>*>
         char_projected_rhs_dt_v_minus,
     const gsl::not_null<tnsr::a<DataVector, Dim, Frame::Inertial>*>
@@ -434,6 +451,8 @@ void ConstraintPreservingBjorhus<Dim>::compute_intermediate_vars(
       get<Tags::VSpacetimeMetric<Dim, Frame::Inertial>>(dt_char_fields);
   *char_projected_rhs_dt_v_zero =
       get<Tags::VZero<Dim, Frame::Inertial>>(dt_char_fields);
+  *char_projected_rhs_dt_v_plus =
+      get<Tags::VPlus<Dim, Frame::Inertial>>(dt_char_fields);
   *char_projected_rhs_dt_v_minus =
       get<Tags::VMinus<Dim, Frame::Inertial>>(dt_char_fields);
 

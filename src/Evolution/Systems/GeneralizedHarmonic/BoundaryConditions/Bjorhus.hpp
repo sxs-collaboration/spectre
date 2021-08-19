@@ -62,9 +62,12 @@ namespace GeneralizedHarmonic::BoundaryConditions {
  * portion of the boundary conditions is designed to prevent the influx of
  * constraint violations from external faces of the evolution domain, by damping
  * them away on a controlled and short time-scale. These conditions are imposed
- * as corrections to the projections of the right-hand-sides of the GH evolution
- * equations (i.e. using Bjorhus' method \cite Bjorhus1995), and are
- * written down in Eq. (63) - (65) of \cite Lindblom2005qh . The gauge degrees
+ * as corrections to the characteristic projections of the right-hand-sides of
+ * the GH evolution equations (i.e. using Bjorhus' method \cite Bjorhus1995),
+ * as written down in Eq. (63) - (65) of \cite Lindblom2005qh . In addition to
+ * these equations, the fourth projection is simply frozen in the unlikely case
+ * its coordinate speed becomes negative, i.e. \f$d_t u^{\hat{1}+}{}_{ab}=0\f$
+ * (in the notation of \cite Lindblom2005qh). The gauge degrees
  * of freedom are controlled by imposing a Sommerfeld-type condition (\f$L=0\f$
  * member of the hierarchy derived in \cite BaylissTurkel) that allow gauge
  * perturbations to pass through the boundary without strong reflections. These
@@ -235,6 +238,8 @@ class ConstraintPreservingBjorhus final : public BoundaryCondition<Dim> {
           char_projected_rhs_dt_v_psi,
       gsl::not_null<tnsr::iaa<DataVector, Dim, Frame::Inertial>*>
           char_projected_rhs_dt_v_zero,
+      gsl::not_null<tnsr::aa<DataVector, Dim, Frame::Inertial>*>
+          char_projected_rhs_dt_v_plus,
       gsl::not_null<tnsr::aa<DataVector, Dim, Frame::Inertial>*>
           char_projected_rhs_dt_v_minus,
       gsl::not_null<tnsr::a<DataVector, Dim, Frame::Inertial>*>

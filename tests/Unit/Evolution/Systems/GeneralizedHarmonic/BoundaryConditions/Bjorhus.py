@@ -270,6 +270,9 @@ def compute_intermediate_vars(
     char_projected_rhs_dt_v_zero = ght.char_field_uzero(
         gamma2, inverse_spatial_metric, dt_spacetime_metric, dt_pi, dt_phi,
         normal_covector)
+    char_projected_rhs_dt_v_plus = ght.char_field_uplus(
+        gamma2, inverse_spatial_metric, dt_spacetime_metric, dt_pi, dt_phi,
+        normal_covector)
     char_projected_rhs_dt_v_minus = ght.char_field_uminus(
         gamma2, inverse_spatial_metric, dt_spacetime_metric, dt_pi, dt_phi,
         normal_covector)
@@ -301,8 +304,9 @@ def compute_intermediate_vars(
             incoming_null_one_form, outgoing_null_one_form,
             incoming_null_vector, outgoing_null_vector, projection_ab,
             projection_Ab, projection_AB, char_projected_rhs_dt_v_psi,
-            char_projected_rhs_dt_v_zero, char_projected_rhs_dt_v_minus,
-            constraint_char_zero_plus, constraint_char_zero_minus, char_speeds)
+            char_projected_rhs_dt_v_zero, char_projected_rhs_dt_v_plus,
+            char_projected_rhs_dt_v_minus, constraint_char_zero_plus,
+            constraint_char_zero_minus, char_speeds)
 
 
 def error(face_mesh_velocity, normal_covector, normal_vector, spacetime_metric,
@@ -317,8 +321,9 @@ def error(face_mesh_velocity, normal_covector, normal_vector, spacetime_metric,
          outgoing_null_one_form, incoming_null_vector, outgoing_null_vector,
          projection_ab, projection_Ab, projection_AB,
          char_projected_rhs_dt_v_psi, char_projected_rhs_dt_v_zero,
-         char_projected_rhs_dt_v_minus, constraint_char_zero_plus,
-         constraint_char_zero_minus, char_speeds) = compute_intermediate_vars(
+         char_projected_rhs_dt_v_plus, char_projected_rhs_dt_v_minus,
+         constraint_char_zero_plus, constraint_char_zero_minus,
+         char_speeds) = compute_intermediate_vars(
              face_mesh_velocity, normal_covector, pi, phi, spacetime_metric,
              coords, gamma1, gamma2, lapse, shift, inverse_spacetime_metric,
              spacetime_unit_normal_vector, spacetime_unit_normal_one_form,
@@ -352,8 +357,8 @@ def dt_corrs_ConstraintPreserving(
      inverse_spatial_metric, extrinsic_curvature, incoming_null_one_form,
      outgoing_null_one_form, incoming_null_vector, outgoing_null_vector,
      projection_ab, projection_Ab, projection_AB, char_projected_rhs_dt_v_psi,
-     char_projected_rhs_dt_v_zero, char_projected_rhs_dt_v_minus,
-     constraint_char_zero_plus,
+     char_projected_rhs_dt_v_zero, char_projected_rhs_dt_v_plus,
+     char_projected_rhs_dt_v_minus, constraint_char_zero_plus,
      constraint_char_zero_minus, char_speeds) = compute_intermediate_vars(
          face_mesh_velocity, normal_covector, pi, phi, spacetime_metric,
          coords, gamma1, gamma2, lapse, shift, inverse_spacetime_metric,
@@ -368,7 +373,7 @@ def dt_corrs_ConstraintPreserving(
         unit_interface_normal_vector, three_index_constraint, char_speeds)
     dt_v_zero = constraint_preserving_bjorhus_corrections_dt_v_zero(
         unit_interface_normal_vector, four_index_constraint, char_speeds)
-    dt_v_plus = dt_v_psi * 0
+    dt_v_plus = -1. * char_projected_rhs_dt_v_plus
     dt_v_minus = constraint_preserving_bjorhus_corrections_dt_v_minus(
         gamma2, coords, incoming_null_one_form, outgoing_null_one_form,
         incoming_null_vector, outgoing_null_vector, projection_ab,
@@ -379,6 +384,8 @@ def dt_corrs_ConstraintPreserving(
         dt_v_psi, char_speeds[0])
     dt_v_zero = set_bc_corr_zero_when_char_speed_is_positive(
         dt_v_zero, char_speeds[1])
+    dt_v_plus = set_bc_corr_zero_when_char_speed_is_positive(
+        dt_v_plus, char_speeds[2])
     dt_v_minus = set_bc_corr_zero_when_char_speed_is_positive(
         dt_v_minus, char_speeds[3])
     return dt_v_psi, dt_v_zero, dt_v_plus, dt_v_minus
@@ -394,8 +401,8 @@ def dt_corrs_ConstraintPreservingPhysical(
      inverse_spatial_metric, extrinsic_curvature, incoming_null_one_form,
      outgoing_null_one_form, incoming_null_vector, outgoing_null_vector,
      projection_ab, projection_Ab, projection_AB, char_projected_rhs_dt_v_psi,
-     char_projected_rhs_dt_v_zero, char_projected_rhs_dt_v_minus,
-     constraint_char_zero_plus,
+     char_projected_rhs_dt_v_zero, char_projected_rhs_dt_v_plus,
+     char_projected_rhs_dt_v_minus, constraint_char_zero_plus,
      constraint_char_zero_minus, char_speeds) = compute_intermediate_vars(
          face_mesh_velocity, normal_covector, pi, phi, spacetime_metric,
          coords, gamma1, gamma2, lapse, shift, inverse_spacetime_metric,
@@ -410,7 +417,7 @@ def dt_corrs_ConstraintPreservingPhysical(
         unit_interface_normal_vector, three_index_constraint, char_speeds)
     dt_v_zero = constraint_preserving_bjorhus_corrections_dt_v_zero(
         unit_interface_normal_vector, four_index_constraint, char_speeds)
-    dt_v_plus = dt_v_psi * 0
+    dt_v_plus = -1. * char_projected_rhs_dt_v_plus
     dt_v_minus = constraint_preserving_physical_bjorhus_corrections_dt_v_minus(
         gamma2, coords, normal_covector, unit_interface_normal_vector,
         spacetime_unit_normal_vector, incoming_null_one_form,
@@ -424,6 +431,8 @@ def dt_corrs_ConstraintPreservingPhysical(
         dt_v_psi, char_speeds[0])
     dt_v_zero = set_bc_corr_zero_when_char_speed_is_positive(
         dt_v_zero, char_speeds[1])
+    dt_v_plus = set_bc_corr_zero_when_char_speed_is_positive(
+        dt_v_plus, char_speeds[2])
     dt_v_minus = set_bc_corr_zero_when_char_speed_is_positive(
         dt_v_minus, char_speeds[3])
     return dt_v_psi, dt_v_zero, dt_v_plus, dt_v_minus
