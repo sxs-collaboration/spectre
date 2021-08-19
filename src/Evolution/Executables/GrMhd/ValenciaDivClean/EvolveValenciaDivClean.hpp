@@ -478,9 +478,8 @@ struct EvolutionMetavars {
 
           Parallel::PhaseActions<
               Phase, Phase::Register,
-              tmpl::list<intrp::Actions::RegisterElementWithInterpolator,
-                         observers::Actions::RegisterEventsWithObservers,
-                         Parallel::Actions::TerminatePhase>>,
+              tmpl::push_back<dg_registration_list,
+                              Parallel::Actions::TerminatePhase>>,
 
           Parallel::PhaseActions<
               Phase, Phase::Evolve,
