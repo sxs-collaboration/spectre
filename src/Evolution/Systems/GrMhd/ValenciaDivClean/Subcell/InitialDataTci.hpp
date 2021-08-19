@@ -26,12 +26,16 @@ namespace grmhd::ValenciaDivClean::subcell {
  * \brief The troubled-cell indicator run on DG initial data to see if we need
  * to switch to subcell.
  *
- * Uses the two-mesh relaxed discrete maximum principle as well as the Persson
- * TCI applied to \f$\tilde{D}\f$ and \f$\tilde{\tau}\f$. If `TildeD`
- * (`TildeTau`) on the DG or subcell grid (projected from the DG grid, not
- * initialized to the initial data) is less than
- * `tci_options.minimum_rest_mass_density_times_lorentz_factor`
- * (`tci_options.minimum_tilde_tau`), then the element is flagged as troubled.
+ * The following checks are done in the order they are listed:
+ *
+ * - if `TildeD` (`TildeTau`) on the DG or subcell grid (projected from the DG
+ *   grid, not initialized to the initial data) is less than
+ *   `tci_options.minimum_rest_mass_density_times_lorentz_factor`
+ *   (`tci_options.minimum_tilde_tau`), then the element is flagged as troubled.
+ * - apply the two-mesh relaxed discrete maximum principle TCI
+ * - apply the Persson TCI to \f$\tilde{D}\f$ and \f$\tilde{\tau}\f$.
+ * - apply the Persson TCI to the magnitude of \f$\tilde{B}\f$ if its magnitude
+ *   on the DG grid is greater than `tci_options.magnetic_field_cutoff`.
  */
 struct DgInitialDataTci {
  private:
