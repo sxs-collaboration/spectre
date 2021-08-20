@@ -31,6 +31,22 @@ struct TimeStepId;
 /// \endcond
 
 namespace evolution {
+namespace Tags {
+/*!
+ * \ingroup EventsAndTriggersGroup
+ * \brief Previous time at which the trigger activated.
+ *
+ * \details This tag is populated with the most recent time the current trigger
+ * fired prior to the current activation.
+ * \note This tag is only populated with a meaningful value for events invoked
+ * from `EventsAndDenseTriggers`; during other actions, the tag should not be
+ * used.
+ */
+struct PreviousTriggerTime : db::SimpleTag {
+  using type = std::optional<double>;
+};
+}  // namespace Tags
+
 /// \ingroup EventsAndTriggersGroup
 /// Class that checks dense triggers and runs events
 class EventsAndDenseTriggers {
@@ -69,7 +85,7 @@ class EventsAndDenseTriggers {
 
   template <typename DbTags, typename Metavariables, typename ArrayIndex,
             typename ComponentPointer>
-  void run_events(const db::DataBox<DbTags>& box,
+  void run_events(db::DataBox<DbTags>& box,
                   Parallel::GlobalCache<Metavariables>& cache,
                   const ArrayIndex& array_index,
                   const ComponentPointer component) noexcept;
@@ -217,7 +233,7 @@ EventsAndDenseTriggers::TriggeringState EventsAndDenseTriggers::is_ready(
 template <typename DbTags, typename Metavariables, typename ArrayIndex,
           typename ComponentPointer>
 void EventsAndDenseTriggers::run_events(
-    const db::DataBox<DbTags>& box, Parallel::GlobalCache<Metavariables>& cache,
+    db::DataBox<DbTags>& box, Parallel::GlobalCache<Metavariables>& cache,
     const ArrayIndex& array_index, const ComponentPointer component) noexcept {
   ASSERT(heap_size_ != -1, "Not initialized");
   ASSERT(not events_and_triggers_.empty(),
@@ -226,6 +242,12 @@ void EventsAndDenseTriggers::run_events(
   for (auto trigger = heap_end();
        trigger != events_and_triggers_.end();
        ++trigger) {
+    db::mutate<::evolution::Tags::PreviousTriggerTime>(
+        make_not_null(&box),
+        [&trigger](const gsl::not_null<std::optional<double>*>
+                       previous_trigger_time) noexcept {
+          *previous_trigger_time = trigger->trigger->previous_trigger_time();
+        });
     for (const auto& event : trigger->events) {
       event->run(box, cache, array_index, component);
     }

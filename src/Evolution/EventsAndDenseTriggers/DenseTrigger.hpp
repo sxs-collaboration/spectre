@@ -9,7 +9,9 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Parallel/CharmPupable.hpp"
+#include "Parallel/PupStlCpp17.hpp"
 #include "Parallel/Tags/Metavariables.hpp"
+#include "Time/Tags.hpp"
 #include "Utilities/FakeVirtual.hpp"
 
 /// \cond
@@ -63,19 +65,25 @@ class DenseTrigger : public PUP::able {
 
   /// Check whether the trigger fires.
   template <typename DbTags>
-  Result is_triggered(const db::DataBox<DbTags>& box) const noexcept {
+  Result is_triggered(const db::DataBox<DbTags>& box) noexcept {
     using factory_classes =
         typename std::decay_t<decltype(db::get<Parallel::Tags::Metavariables>(
             box))>::factory_creation::factory_classes;
+    previous_trigger_time_ = next_previous_trigger_time_;
     return call_with_dynamic_type<Result,
                                   tmpl::at<factory_classes, DenseTrigger>>(
-        this, [&box](auto* const trigger) noexcept {
+        this, [&box, this](auto* const trigger) noexcept {
           using TriggerType = std::decay_t<decltype(*trigger)>;
-          return db::apply<typename TriggerType::is_triggered_argument_tags>(
-              [&trigger](const auto&... args) noexcept {
-                return trigger->is_triggered(args...);
-              },
-              box);
+          const auto result =
+              db::apply<typename TriggerType::is_triggered_argument_tags>(
+                  [&trigger](const auto&... args) noexcept {
+                    return trigger->is_triggered(args...);
+                  },
+                  box);
+          if (result.is_triggered) {
+            next_previous_trigger_time_ = db::get<::Tags::Time>(box);
+          }
+          return result;
         });
   }
 
@@ -106,4 +114,26 @@ class DenseTrigger : public PUP::able {
               box);
         });
   }
+
+  /// \brief Reports the value of `::Tags::Time` when the trigger most recently
+  /// fired, except for the most recent call of `is_triggered`.
+  ///
+  /// \details The most recent call of `is_triggered` is not used for reporting
+  /// the previous trigger so that the time reported to the event is actually
+  /// the previous time value on which the trigger fired and activated the
+  /// event. Without ignoring the most recent call of `is_triggered`, we'd just
+  /// always be reporting the current time to the event, because events always
+  /// run after their associated triggers fire via a call to `is_triggered`.
+  std::optional<double> previous_trigger_time() const noexcept {
+    return previous_trigger_time_;
+  }
+
+  void pup(PUP::er& p) noexcept override {
+    p | next_previous_trigger_time_;
+    p | previous_trigger_time_;
+  }
+
+ private:
+  std::optional<double> next_previous_trigger_time_ = std::nullopt;
+  std::optional<double> previous_trigger_time_ = std::nullopt;
 };

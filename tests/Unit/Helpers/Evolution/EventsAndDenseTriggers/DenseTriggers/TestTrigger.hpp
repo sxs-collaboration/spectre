@@ -130,6 +130,7 @@ class BoxTrigger : public DenseTrigger {
                 const bool is_ready_arg) const noexcept {
     return is_ready_arg;
   }
+  void pup(PUP::er& p) noexcept { DenseTrigger::pup(p); }
 };
 
 /// \cond

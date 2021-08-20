@@ -252,7 +252,8 @@ struct Component {
   // only accesses it when it should.
   using primitives_tag = Tags::Variables<tmpl::list<PrimVar>>;
   using initialization_tags = tmpl::append<
-      tmpl::list<Tags::TimeStepId, Tags::TimeStep, Tags::Time, variables_tag,
+      tmpl::list<Tags::TimeStepId, Tags::TimeStep, Tags::Time,
+                 evolution::Tags::PreviousTriggerTime, variables_tag,
                  primitives_tag, Tags::HistoryEvolvedVariables<variables_tag>,
                  evolution::Tags::EventsAndDenseTriggers>,
       tmpl::conditional_t<
@@ -382,8 +383,8 @@ void test(const bool time_runs_forward) noexcept {
 
         ActionTesting::emplace_array_component<component>(
             runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0}, 0,
-            time_step_id, exact_step_size, start_time, initial_vars,
-            unset_primitives, std::move(history),
+            time_step_id, exact_step_size, start_time, std::optional<double>{},
+            initial_vars, unset_primitives, std::move(history),
             evolution::EventsAndDenseTriggers(
                 std::move(events_and_dense_triggers)));
         ActionTesting::set_phase(runner, metavars::Phase::Testing);
@@ -593,8 +594,8 @@ void test_lts(const bool time_runs_forward) noexcept {
 
         ActionTesting::emplace_array_component<component>(
             runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0}, 0,
-            time_step_id, exact_step_size, start_time, initial_vars,
-            unset_primitives, std::move(history),
+            time_step_id, exact_step_size, start_time, std::optional<double>{},
+            initial_vars, unset_primitives, std::move(history),
             evolution::EventsAndDenseTriggers(
                 std::move(events_and_dense_triggers)),
             mesh,

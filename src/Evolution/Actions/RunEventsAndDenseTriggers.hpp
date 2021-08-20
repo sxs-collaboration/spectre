@@ -12,6 +12,7 @@
 #include "Evolution/EventsAndDenseTriggers/EventsAndDenseTriggers.hpp"
 #include "Evolution/EventsAndDenseTriggers/Tags.hpp"
 #include "Parallel/AlgorithmMetafunctions.hpp"
+#include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Time/EvolutionOrdering.hpp"
 #include "Time/Tags.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
@@ -199,6 +200,7 @@ struct InitializeRunEventsAndDenseTriggers {
   using initialization_tags =
       tmpl::list<evolution::Tags::EventsAndDenseTriggers>;
   using initialization_tags_to_keep = initialization_tags;
+  using simple_tags = tmpl::list<Tags::PreviousTriggerTime>;
 
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -209,6 +211,8 @@ struct InitializeRunEventsAndDenseTriggers {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*component*/) noexcept {
+    Initialization::mutate_assign<simple_tags>(make_not_null(&box),
+                                               std::nullopt);
     return std::forward_as_tuple(std::move(box));
   }
 };
