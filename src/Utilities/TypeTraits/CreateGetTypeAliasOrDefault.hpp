@@ -11,7 +11,7 @@
  * or if not present, assign a default type.
  *
  * \warning Please use defaults responsibly.  In many cases it is
- * better to require the static member variable is present so the
+ * better to require the type alias is present so the
  * functionality isn't hidden.  Also make sure to document the
  * compile-time interface, e.g. with a \ref protocols "protocol".
  */
