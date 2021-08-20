@@ -176,7 +176,7 @@ void test(const bool always_use_subcell, const bool interior_element) {
                           Spectral::Quadrature::GaussLobatto};
   const ElementId<Dim> self_id{0};
   DirectionMap<Dim, Neighbors<Dim>> neighbors{};
-  if (always_use_subcell and interior_element) {
+  if (interior_element) {
     size_t id_count = 1;
     for (const auto& direction : Direction<Dim>::all_directions()) {
       neighbors[direction] = Neighbors<Dim>{{ElementId<Dim>{id_count}}, {}};
@@ -214,7 +214,11 @@ void test(const bool always_use_subcell, const bool interior_element) {
   // Invoke the Initialize action on the runner
   ActionTesting::next_action<comp>(make_not_null(&runner), 0);
 
-  REQUIRE(Metavariables<Dim, TciFails>::DgInitialDataTci::invoked);
+  if (always_use_subcell or not interior_element) {
+    REQUIRE(not Metavariables<Dim, TciFails>::DgInitialDataTci::invoked);
+  } else {
+    REQUIRE(Metavariables<Dim, TciFails>::DgInitialDataTci::invoked);
+  }
   CHECK(
       ActionTesting::get_databox_tag<comp,
                                      evolution::dg::subcell::Tags::DidRollback>(
@@ -222,7 +226,7 @@ void test(const bool always_use_subcell, const bool interior_element) {
   CHECK(
       ActionTesting::get_databox_tag<comp,
                                      evolution::dg::subcell::Tags::ActiveGrid>(
-          runner, 0) == (TciFails or (always_use_subcell and interior_element)
+          runner, 0) == ((TciFails or always_use_subcell) and interior_element
                              ? evolution::dg::subcell::ActiveGrid::Subcell
                              : evolution::dg::subcell::ActiveGrid::Dg));
   const Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
@@ -230,7 +234,7 @@ void test(const bool always_use_subcell, const bool interior_element) {
                                        evolution::dg::subcell::Tags::Mesh<Dim>>(
             runner, 0) == subcell_mesh);
 
-  if (TciFails or (always_use_subcell and interior_element)) {
+  if ((TciFails or always_use_subcell) and interior_element) {
     Variables<tmpl::list<Var1>> subcell_vars{
         subcell_mesh.number_of_grid_points()};
     evolution::dg::subcell::fd::project(
