@@ -10,7 +10,6 @@ spectre_target_sources(
   PRIVATE
   Averager.cpp
   Controller.cpp
-  FunctionOfTimeUpdater.cpp
   TimescaleTuner.cpp
   )
 
@@ -20,7 +19,6 @@ spectre_target_headers(
   HEADERS
   Averager.hpp
   Controller.hpp
-  FunctionOfTimeUpdater.hpp
   Tags.hpp
   TimescaleTuner.hpp
   )
