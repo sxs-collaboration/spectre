@@ -478,9 +478,11 @@ template <size_t ArgsIndex, typename MutableItemTag, typename... Ts>
 SPECTRE_ALWAYS_INLINE constexpr char
 db::DataBox<tmpl::list<Tags...>>::add_mutable_item_to_box(
     std::tuple<Ts...>& items) noexcept {
-  using ArgType = std::tuple_element_t<ArgsIndex, std::tuple<Ts...>>;
-  get_item<MutableItemTag>() = detail::Item<MutableItemTag>(
-      std::forward<ArgType>(std::get<ArgsIndex>(items)));
+  if constexpr (sizeof...(Ts) > 0) {
+    using ArgType = std::tuple_element_t<ArgsIndex, std::tuple<Ts...>>;
+    get_item<MutableItemTag>() = detail::Item<MutableItemTag>(
+        std::forward<ArgType>(std::get<ArgsIndex>(items)));
+  }
   add_mutable_subitems_to_box<MutableItemTag>(
       typename Subitems<MutableItemTag>::type{});
   return '0';  // must return in constexpr function
@@ -525,14 +527,18 @@ template <typename... AddMutableItemTags, typename AddImmutableItemTagsList,
 constexpr DataBox<tmpl::list<Tags...>>::DataBox(
     tmpl::list<AddMutableItemTags...> /*meta*/,
     AddImmutableItemTagsList /*meta*/, Args&&... args) noexcept {
-  DEBUG_STATIC_ASSERT(sizeof...(AddMutableItemTags) == sizeof...(Args),
-                      "Must pass in as many arguments as AddTags");
+  DEBUG_STATIC_ASSERT(
+      sizeof...(Args) == 0 or sizeof...(Args) == sizeof...(AddMutableItemTags),
+      "Must pass in as many arguments as AddTags, or none to "
+      "default-construct them.");
 #ifdef SPECTRE_DEBUG
-  // The check_argument_type call is very expensive compared to the majority of
-  // DataBox
-  expand_pack(detail::check_initialization_argument_type<
-              AddMutableItemTags, typename AddMutableItemTags::type,
-              std::decay_t<Args>>()...);
+  if constexpr (sizeof...(Args) > 0) {
+    // The check_argument_type call is very expensive compared to the majority
+    // of DataBox
+    expand_pack(detail::check_initialization_argument_type<
+                AddMutableItemTags, typename AddMutableItemTags::type,
+                std::decay_t<Args>>()...);
+  }
 #endif  // SPECTRE_DEBUG
 
   std::tuple<Args&&...> args_tuple(std::forward<Args>(args)...);
@@ -559,9 +565,11 @@ constexpr DataBox<tmpl::list<Tags...>>::DataBox(
     tmpl::list<AddMutableItemTags...> /*meta*/,
     tmpl::list<AddImmutableItemTags...> /*meta*/, Args&&... args) noexcept {
 #ifdef SPECTRE_DEBUG
-  expand_pack(detail::check_initialization_argument_type<
-              AddMutableItemTags, typename AddMutableItemTags::type,
-              std::decay_t<Args>>()...);
+  if constexpr (sizeof...(Args) > 0) {
+    expand_pack(detail::check_initialization_argument_type<
+                AddMutableItemTags, typename AddMutableItemTags::type,
+                std::decay_t<Args>>()...);
+  }
 #endif  // SPECTRE_DEBUG
 
   merge_old_box(std::forward<Box>(old_box), KeepTagsList{});
@@ -986,9 +994,10 @@ template <typename RemoveTags, typename AddMutableItemTags,
           typename AddImmutableItemTags, typename Box, typename... Args>
 SPECTRE_ALWAYS_INLINE constexpr auto create_from(Box&& box,
                                                  Args&&... args) noexcept {
-  static_assert(tmpl::size<AddMutableItemTags>::value == sizeof...(Args),
+  static_assert(sizeof...(Args) == 0 or
+                    sizeof...(Args) == tmpl::size<AddMutableItemTags>::value,
                 "Must pass in as many arguments as AddMutableItemTags to "
-                "db::create_from");
+                "db::create_from, or none to default-construct them.");
 
   // 1. Full list of old tags, and the derived tags list of the RemoveTags
   using old_tags = typename std::decay_t<Box>::tags_list;

@@ -242,6 +242,31 @@ void test_databox() noexcept {
     return original_box;
   };
   {
+    INFO("Default-construction");
+    auto simple_box = db::create<
+        db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
+                          test_databox_tags::Tag2>>();
+    CHECK(db::get<test_databox_tags::Tag0>(simple_box) == 0.);
+    CHECK(db::get<test_databox_tags::Tag1>(simple_box).empty());
+    CHECK(db::get<test_databox_tags::Tag2>(simple_box).empty());
+    db::mutate<test_databox_tags::Tag0, test_databox_tags::Tag2>(
+        make_not_null(&simple_box),
+        [](const gsl::not_null<double*> val,
+           const gsl::not_null<std::string*> str) noexcept {
+          *val = 1.5;
+          *str = "My Sample String";
+        });
+    const auto& box =
+        db::create_from<db::RemoveTags<>,
+                        db::AddSimpleTags<test_databox_tags::Tag3>,
+                        db::AddComputeTags<test_databox_tags::Tag4Compute>>(
+            std::move(simple_box));
+    CHECK(db::get<test_databox_tags::Tag3>(box).empty());
+    CHECK(db::get<test_databox_tags::Tag0>(box) == 1.5);
+    CHECK(db::get<test_databox_tags::Tag2>(box) == "My Sample String"s);
+    CHECK(db::get<test_databox_tags::Tag4>(box) == 3.);
+  }
+  {
     const auto original_box = create_original_box();
     static_assert(
         std::is_same<
@@ -1862,6 +1887,7 @@ class Boxed {
 
   T& operator*() noexcept { return *data_; }
   const T& operator*() const noexcept { return *data_; }
+  const std::shared_ptr<T>& data() const noexcept { return data_; }
 
   // clang-tidy: no non-const references
   void pup(PUP::er& p) noexcept {  // NOLINT
@@ -1875,7 +1901,11 @@ class Boxed {
   }
 
  private:
-  std::shared_ptr<T> data_;
+  // Default-constructing this to a state that can be assigned to a subitem.
+  // This way we can test that the DataBox default-construction correctly links
+  // subitems.
+  std::shared_ptr<T> data_ =
+      std::make_shared<T>(std::numeric_limits<T>::signaling_NaN());
 };
 
 template <size_t N>
@@ -1946,56 +1976,91 @@ namespace {
 
 void test_subitems() noexcept {
   INFO("test subitems");
-  auto box = db::create<db::AddSimpleTags<Parent<0>>,
-                        db::AddComputeTags<ParentCompute<1>>>(
-      std::make_pair(Boxed<int>(std::make_shared<int>(5)),
-                     Boxed<double>(std::make_shared<double>(3.5))));
-
-  TestHelpers::db::test_reference_tag<
-      ::Tags::Subitem<First<1>, ParentCompute<1>>>("First");
-
-  CHECK(*db::get<First<0>>(box) == 5);
-  CHECK(*db::get<First<1>>(box) == 6);
-  CHECK(*db::get<Second<0>>(box) == 3.5);
-  CHECK(*db::get<Second<1>>(box) == 7);
-
-  db::mutate<Second<0>>(
-      make_not_null(&box),
-      [](const gsl::not_null<Boxed<double>*> x) noexcept { **x = 12.; });
-
-  CHECK(*db::get<First<0>>(box) == 5);
-  CHECK(*db::get<First<1>>(box) == 6);
-  CHECK(*db::get<Second<0>>(box) == 12.);
-  CHECK(*db::get<Second<1>>(box) == 24.);
-
   {
-    const auto copy_box = serialize_and_deserialize(box);
-    CHECK(*db::get<First<0>>(copy_box) == 5);
-    CHECK(*db::get<First<1>>(copy_box) == 6);
-    CHECK(*db::get<Second<0>>(copy_box) == 12.);
-    CHECK(*db::get<Second<1>>(copy_box) == 24.);
+    auto box = db::create<db::AddSimpleTags<Parent<0>>,
+                          db::AddComputeTags<ParentCompute<1>>>(
+        std::make_pair(Boxed<int>(std::make_shared<int>(5)),
+                       Boxed<double>(std::make_shared<double>(3.5))));
+
+    TestHelpers::db::test_reference_tag<
+        ::Tags::Subitem<First<1>, ParentCompute<1>>>("First");
+
+    CHECK(*db::get<First<0>>(box) == 5);
+    CHECK(*db::get<First<1>>(box) == 6);
+    CHECK(*db::get<Second<0>>(box) == 3.5);
+    CHECK(*db::get<Second<1>>(box) == 7);
+
+    db::mutate<Second<0>>(
+        make_not_null(&box),
+        [](const gsl::not_null<Boxed<double>*> x) noexcept { **x = 12.; });
+
+    CHECK(*db::get<First<0>>(box) == 5);
+    CHECK(*db::get<First<1>>(box) == 6);
+    CHECK(*db::get<Second<0>>(box) == 12.);
+    CHECK(*db::get<Second<1>>(box) == 24.);
+
+    {
+      const auto copy_box = serialize_and_deserialize(box);
+      CHECK(*db::get<First<0>>(copy_box) == 5);
+      CHECK(*db::get<First<1>>(copy_box) == 6);
+      CHECK(*db::get<Second<0>>(copy_box) == 12.);
+      CHECK(*db::get<Second<1>>(copy_box) == 24.);
+    }
+
+    static_assert(
+        std::is_same_v<
+            decltype(box),
+            decltype(db::create_from<db::RemoveTags<Parent<2>>>(
+                db::create_from<db::RemoveTags<>, db::AddSimpleTags<Parent<2>>>(
+                    std::move(box),
+                    std::make_pair(
+                        Boxed<int>(std::make_shared<int>(5)),
+                        Boxed<double>(std::make_shared<double>(3.5))))))>,
+        "Failed testing that adding and removing a simple subitem does "
+        "not change the type of the DataBox");
+
+    static_assert(
+        std::is_same_v<
+            decltype(box),
+            decltype(db::create_from<db::RemoveTags<ParentCompute<2>>>(
+                db::create_from<db::RemoveTags<>, db::AddSimpleTags<>,
+                                db::AddComputeTags<ParentCompute<2>>>(
+                    std::move(box))))>,
+        "Failed testing that adding and removing a compute subitem does "
+        "not change the type of the DataBox");
   }
-
-  static_assert(
-      std::is_same_v<
-          decltype(box),
-          decltype(db::create_from<db::RemoveTags<Parent<2>>>(
-              db::create_from<db::RemoveTags<>, db::AddSimpleTags<Parent<2>>>(
-                  std::move(box),
-                  std::make_pair(
-                      Boxed<int>(std::make_shared<int>(5)),
-                      Boxed<double>(std::make_shared<double>(3.5))))))>,
-      "Failed testing that adding and removing a simple subitem does "
-      "not change the type of the DataBox");
-
-  static_assert(
-      std::is_same_v<decltype(box),
-                     decltype(db::create_from<db::RemoveTags<ParentCompute<2>>>(
-                         db::create_from<db::RemoveTags<>, db::AddSimpleTags<>,
-                                         db::AddComputeTags<ParentCompute<2>>>(
-                             std::move(box))))>,
-      "Failed testing that adding and removing a compute subitem does "
-      "not change the type of the DataBox");
+  {
+    INFO("Default-construction with subitems");
+    auto box = db::create<db::AddSimpleTags<Parent<0>>,
+                          db::AddComputeTags<ParentCompute<1>>>();
+    // Check the default-constructed DataBox links subitems correctly
+    CHECK(db::get<Parent<0>>(box).first.data() ==
+          db::get<First<0>>(box).data());
+    CHECK(db::get<Parent<0>>(box).second.data() ==
+          db::get<Second<0>>(box).data());
+    db::mutate<Parent<0>>(
+        make_not_null(&box),
+        [](const gsl::not_null<std::pair<Boxed<int>, Boxed<double>>*>
+               val) noexcept {
+          *val = std::make_pair(Boxed<int>(std::make_shared<int>(5)),
+                                Boxed<double>(std::make_shared<double>(3.5)));
+        });
+    CHECK(*db::get<First<0>>(box) == 5);
+    CHECK(*db::get<Second<0>>(box) == 3.5);
+    CHECK(*db::get<First<1>>(box) == 6);
+    CHECK(*db::get<Second<1>>(box) == 7.);
+    db::mutate<First<0>, Second<0>>(
+        make_not_null(&box),
+        [](const gsl::not_null<Boxed<int>*> a,
+           const gsl::not_null<Boxed<double>*> b) noexcept {
+          **a = 2;
+          **b = 2.5;
+        });
+    CHECK(*db::get<First<0>>(box) == 2);
+    CHECK(*db::get<Second<0>>(box) == 2.5);
+    CHECK(*db::get<First<1>>(box) == 3);
+    CHECK(*db::get<Second<1>>(box) == 5.);
+  }
 }
 
 namespace test_databox_tags {
