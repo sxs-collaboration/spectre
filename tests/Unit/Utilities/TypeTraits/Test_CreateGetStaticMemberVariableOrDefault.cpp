@@ -2,11 +2,8 @@
 // See LICENSE.txt for details.
 
 #include "Utilities/TypeTraits/CreateGetStaticMemberVariableOrDefault.hpp"
-#include "Utilities/TypeTraits/CreateHasStaticMemberVariable.hpp"
 
 namespace {
-CREATE_HAS_STATIC_MEMBER_VARIABLE(foo)
-CREATE_HAS_STATIC_MEMBER_VARIABLE_V(foo)
 CREATE_GET_STATIC_MEMBER_VARIABLE_OR_DEFAULT(foo)
 
 struct WithFoo {
