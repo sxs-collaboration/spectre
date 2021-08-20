@@ -456,8 +456,6 @@ struct ComponentA {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
 
-  using component_being_mocked = void;
-
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::Testing, tmpl::list<>>>;
@@ -558,8 +556,6 @@ struct ComponentA {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
-
-  using component_being_mocked = void;
 
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
@@ -804,8 +800,6 @@ struct GroupComponent {
   using chare_type = ActionTesting::MockGroupChare;
   using array_index = size_t;
 
-  using component_being_mocked = void;
-
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
@@ -882,8 +876,6 @@ struct NodeGroupComponent {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockNodeGroupChare;
   using array_index = size_t;
-
-  using component_being_mocked = void;
 
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
