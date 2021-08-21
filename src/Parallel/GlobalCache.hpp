@@ -27,6 +27,7 @@
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
+#include "Utilities/TypeTraits/CreateGetTypeAliasOrDefault.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
 
 #include "Parallel/GlobalCache.decl.h"
@@ -46,29 +47,7 @@ template <class GlobalCacheTag, class Metavariables>
 using type_for_get = typename type_for_get_helper<
     typename get_matching_tag<GlobalCacheTag, Metavariables>::type>::type;
 
-template <class T, class = std::void_t<>>
-struct has_component_being_mocked_alias : std::false_type {};
-
-template <class T>
-struct has_component_being_mocked_alias<
-    T, std::void_t<typename T::component_being_mocked>> : std::true_type {};
-
-template <class T>
-constexpr bool has_component_being_mocked_alias_v =
-    has_component_being_mocked_alias<T>::value;
-
-template <typename ComponentToFind, typename ComponentFromList>
-struct get_component_if_mocked_helper {
-  static_assert(
-      has_component_being_mocked_alias_v<ComponentFromList>,
-      "The parallel component was not found, and it looks like it is not being "
-      "mocked. Did you forget to add it to the "
-      "'Metavariables::component_list'? See the first template parameter for "
-      "the component that we are looking for and the second template parameter "
-      "for the component that is being checked for mocking it.");
-  using type = std::is_same<typename ComponentFromList::component_being_mocked,
-                            ComponentToFind>;
-};
+CREATE_GET_TYPE_ALIAS_OR_DEFAULT(component_being_mocked)
 
 template <typename... Tags>
 auto make_mutable_cache_tag_storage(
@@ -76,6 +55,24 @@ auto make_mutable_cache_tag_storage(
   return tuples::TaggedTuple<MutableCacheTag<Tags>...>(
       std::make_tuple(std::move(tuples::get<Tags>(input)),
                       std::vector<std::unique_ptr<Callback>>{})...);
+}
+
+template <typename ParallelComponent, typename ComponentList>
+auto get_component_if_mocked_impl() {
+  if constexpr (tmpl::list_contains_v<ComponentList, ParallelComponent>) {
+    return ParallelComponent{};
+  } else {
+    using mock_find = tmpl::find<
+        ComponentList,
+        std::is_same<get_component_being_mocked_or_default<tmpl::_1, void>,
+                     tmpl::pin<ParallelComponent>>>;
+    static_assert(
+        tmpl::size<mock_find>::value > 0,
+        "The requested parallel component (first template argument) is not a "
+        "known parallel component (second template argument) or a component "
+        "being mocked by one of those components.");
+    return tmpl::front<mock_find>{};
+  }
 }
 
 /// In order to be able to use a mock action testing framework we need to be
@@ -87,12 +84,8 @@ auto make_mutable_cache_tag_storage(
 /// we search for a mock component that is mocking the component we are trying
 /// to retrieve.
 template <typename ComponentList, typename ParallelComponent>
-using get_component_if_mocked = tmpl::front<tmpl::type_from<tmpl::conditional_t<
-    tmpl::list_contains_v<ComponentList, ParallelComponent>,
-    tmpl::type_<tmpl::list<ParallelComponent>>,
-    tmpl::lazy::find<ComponentList,
-                     tmpl::type_<get_component_if_mocked_helper<
-                         tmpl::pin<ParallelComponent>, tmpl::_1>>>>>>;
+using get_component_if_mocked =
+    decltype(get_component_if_mocked_impl<ParallelComponent, ComponentList>());
 }  // namespace GlobalCache_detail
 
 /// \ingroup ParallelGroup

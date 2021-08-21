@@ -12,7 +12,6 @@
 #include "Utilities/FakeVirtual.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits/CreateGetTypeAliasOrDefault.hpp"
-#include "Utilities/TypeTraits/CreateHasTypeAlias.hpp"
 
 /// \cond
 namespace Parallel {
@@ -61,11 +60,7 @@ class StepChooser;
 namespace StepChoosers {
 
 namespace detail {
-CREATE_HAS_TYPE_ALIAS(compute_tags)
-CREATE_HAS_TYPE_ALIAS_V(compute_tags)
 CREATE_GET_TYPE_ALIAS_OR_DEFAULT(compute_tags)
-CREATE_HAS_TYPE_ALIAS(simple_tags)
-CREATE_HAS_TYPE_ALIAS_V(simple_tags)
 CREATE_GET_TYPE_ALIAS_OR_DEFAULT(simple_tags)
 
 template <typename Metavariables>
@@ -80,14 +75,14 @@ using all_step_choosers = tmpl::join<tmpl::transform<
 template <typename Metavariables>
 using step_chooser_compute_tags = tmpl::remove_duplicates<
     tmpl::join<tmpl::transform<detail::all_step_choosers<Metavariables>,
-                               tmpl::bind<detail::get_compute_tags_or_default_t,
-                                          tmpl::_1, tmpl::pin<tmpl::list<>>>>>>;
+                               detail::get_compute_tags_or_default<
+                                   tmpl::_1, tmpl::pin<tmpl::list<>>>>>>;
 
 template <typename Metavariables>
 using step_chooser_simple_tags = tmpl::remove_duplicates<
     tmpl::join<tmpl::transform<detail::all_step_choosers<Metavariables>,
-                               tmpl::bind<detail::get_simple_tags_or_default_t,
-                                          tmpl::_1, tmpl::pin<tmpl::list<>>>>>>;
+                               detail::get_simple_tags_or_default<
+                                   tmpl::_1, tmpl::pin<tmpl::list<>>>>>>;
 }  // namespace StepChoosers
 
 template <>
