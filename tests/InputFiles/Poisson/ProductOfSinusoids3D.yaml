@@ -60,9 +60,7 @@ LinearSolver:
     SubdomainSolver: ExplicitInverse
 
 EventsAndTriggers:
-  ? EveryNIterations:
-      N: 1
-      Offset: 1
+  ? HasConverged
   : - ObserveErrorNorms:
         SubfileName: ErrorNorms
     - ObserveFields:

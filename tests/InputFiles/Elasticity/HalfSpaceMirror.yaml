@@ -92,17 +92,12 @@ LinearSolver:
             Solver: ExplicitInverse
 
 EventsAndTriggers:
-  ? EveryNIterations:
-      N: 1
-      Offset: 1
+  ? HasConverged
   : - ObserveErrorNorms:
         SubfileName: ErrorNorms
     - ObserveVolumeIntegrals:
         SubfileName: VolumeIntegrals
-  ? EveryNIterations:
-      N: 1
-      Offset: 0
-  : - ObserveFields:
+    - ObserveFields:
         SubfileName: VolumeData
         VariablesToObserve:
           - Displacement
