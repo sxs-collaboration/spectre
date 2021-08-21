@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "PointwiseFunctions/Elasticity/PotentialEnergy.hpp"
+#include "PointwiseFunctions/Xcts/LongitudinalOperator.hpp"
 
 #include <algorithm>
 #include <cstddef>
