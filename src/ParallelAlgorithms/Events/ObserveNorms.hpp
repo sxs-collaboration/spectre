@@ -5,6 +5,7 @@
 
 #include <cstddef>
 #include <limits>
+#include <optional>
 #include <pup.h>
 #include <string>
 #include <unordered_map>
@@ -15,6 +16,7 @@
 #include "DataStructures/DataBox/TagName.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "IO/Observer/GetSectionObservationKey.hpp"
 #include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
@@ -27,7 +29,6 @@
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Reduction.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
-#include "Time/Tags.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Functional.hpp"
@@ -36,7 +37,8 @@
 
 namespace Events {
 /// \cond
-template <typename ObservableTensorTagsList>
+template <typename ObservationValueTag, typename ObservableTensorTagsList,
+          typename ArraySectionIdTag = void>
 class ObserveNorms;
 /// \endcond
 
@@ -63,9 +65,18 @@ class ObserveNorms;
  * Here is an example of an input file:
  *
  * \snippet Test_ObserveNorms.cpp input_file_examples
+ *
+ * \par Array sections
+ * This event supports sections (see `Parallel::Section`). Set the
+ * `ArraySectionIdTag` template parameter to split up observations into subsets
+ * of elements. The `observers::Tags::ObservationKey<ArraySectionIdTag>` must be
+ * available in the DataBox. It identifies the section and is used as a suffix
+ * for the path in the output file.
  */
-template <typename... ObservableTensorTags>
-class ObserveNorms<tmpl::list<ObservableTensorTags...>> : public Event {
+template <typename ObservationValueTag, typename... ObservableTensorTags,
+          typename ArraySectionIdTag>
+class ObserveNorms<ObservationValueTag, tmpl::list<ObservableTensorTags...>,
+                   ArraySectionIdTag> : public Event {
  private:
   struct ObserveTensor {
     static constexpr Options::String help = {
@@ -166,7 +177,7 @@ class ObserveNorms<tmpl::list<ObservableTensorTags...>> : public Event {
       "Observe norms of tensors in the DataBox.\n"
       "\n"
       "Writes reduction quantities:\n"
-      " * Time\n"
+      " * ObservationValueTag (e.g. Time or IterationId)\n"
       " * NumberOfPoints = total number of points in the domain\n"
       " * Max values\n"
       " * Min values\n"
@@ -180,21 +191,31 @@ class ObserveNorms<tmpl::list<ObservableTensorTags...>> : public Event {
   using observed_reduction_data_tags =
       observers::make_reduction_data_tags<tmpl::list<ReductionData>>;
 
-  using argument_tags = tmpl::list<::Tags::Time, ::Tags::DataBox>;
+  using argument_tags = tmpl::list<ObservationValueTag, ::Tags::DataBox>;
 
   template <typename DbTagsList, typename Metavariables, typename ArrayIndex,
             typename ParallelComponent>
-  void operator()(const double& time, const db::DataBox<DbTagsList>& box,
+  void operator()(const typename ObservationValueTag::type& observation_value,
+                  const db::DataBox<DbTagsList>& box,
                   Parallel::GlobalCache<Metavariables>& cache,
                   const ArrayIndex& array_index,
                   const ParallelComponent* const /*meta*/) const noexcept;
 
-  using observation_registration_tags = tmpl::list<>;
+  using observation_registration_tags = tmpl::list<::Tags::DataBox>;
 
-  std::pair<observers::TypeOfObservation, observers::ObservationKey>
-  get_observation_type_and_key_for_registration() const noexcept {
-    return {observers::TypeOfObservation::Reduction,
-            observers::ObservationKey(subfile_path_ + ".dat")};
+  template <typename DbTagsList>
+  std::optional<
+      std::pair<observers::TypeOfObservation, observers::ObservationKey>>
+  get_observation_type_and_key_for_registration(
+      const db::DataBox<DbTagsList>& box) const noexcept {
+    const std::optional<std::string> section_observation_key =
+        observers::get_section_observation_key<ArraySectionIdTag>(box);
+    if (not section_observation_key.has_value()) {
+      return std::nullopt;
+    }
+    return {{observers::TypeOfObservation::Reduction,
+             observers::ObservationKey(
+                 subfile_path_ + section_observation_key.value() + ".dat")}};
   }
 
   using is_ready_argument_tags = tmpl::list<>;
@@ -219,15 +240,18 @@ class ObserveNorms<tmpl::list<ObservableTensorTags...>> : public Event {
 };
 
 /// \cond
-template <typename... ObservableTensorTags>
-ObserveNorms<tmpl::list<ObservableTensorTags...>>::ObserveNorms(
-    CkMigrateMessage* msg) noexcept
+template <typename ObservationValueTag, typename... ObservableTensorTags,
+          typename ArraySectionIdTag>
+ObserveNorms<ObservationValueTag, tmpl::list<ObservableTensorTags...>,
+             ArraySectionIdTag>::ObserveNorms(CkMigrateMessage* msg) noexcept
     : Event(msg) {}
 
-template <typename... ObservableTensorTags>
-ObserveNorms<tmpl::list<ObservableTensorTags...>>::ObserveNorms(
-    const std::string& subfile_name,
-    const std::vector<ObserveTensor>& observe_tensors) noexcept
+template <typename ObservationValueTag, typename... ObservableTensorTags,
+          typename ArraySectionIdTag>
+ObserveNorms<ObservationValueTag, tmpl::list<ObservableTensorTags...>,
+             ArraySectionIdTag>::ObserveNorms(const std::string& subfile_name,
+                                              const std::vector<ObserveTensor>&
+                                                  observe_tensors) noexcept
     : subfile_path_("/" + subfile_name) {
   tensor_names_.reserve(observe_tensors.size());
   tensor_norm_types_.reserve(observe_tensors.size());
@@ -239,10 +263,12 @@ ObserveNorms<tmpl::list<ObservableTensorTags...>>::ObserveNorms(
   }
 }
 
-template <typename... ObservableTensorTags>
-ObserveNorms<tmpl::list<ObservableTensorTags...>>::ObserveTensor::ObserveTensor(
-    std::string in_tensor, std::string in_norm_type, std::string in_components,
-    const Options::Context& context)
+template <typename ObservationValueTag, typename... ObservableTensorTags,
+          typename ArraySectionIdTag>
+ObserveNorms<ObservationValueTag, tmpl::list<ObservableTensorTags...>,
+             ArraySectionIdTag>::ObserveTensor::
+    ObserveTensor(std::string in_tensor, std::string in_norm_type,
+                  std::string in_components, const Options::Context& context)
     : tensor(std::move(in_tensor)),
       norm_type(std::move(in_norm_type)),
       components(std::move(in_components)) {
@@ -262,13 +288,24 @@ ObserveNorms<tmpl::list<ObservableTensorTags...>>::ObserveTensor::ObserveTensor(
   }
 }
 
-template <typename... ObservableTensorTags>
+template <typename ObservationValueTag, typename... ObservableTensorTags,
+          typename ArraySectionIdTag>
 template <typename DbTagsList, typename Metavariables, typename ArrayIndex,
           typename ParallelComponent>
-void ObserveNorms<tmpl::list<ObservableTensorTags...>>::operator()(
-    const double& time, const db::DataBox<DbTagsList>& box,
-    Parallel::GlobalCache<Metavariables>& cache, const ArrayIndex& array_index,
-    const ParallelComponent* const /*meta*/) const noexcept {
+void ObserveNorms<ObservationValueTag, tmpl::list<ObservableTensorTags...>,
+                  ArraySectionIdTag>::
+operator()(const typename ObservationValueTag::type& observation_value,
+           const db::DataBox<DbTagsList>& box,
+           Parallel::GlobalCache<Metavariables>& cache,
+           const ArrayIndex& array_index,
+           const ParallelComponent* const /*meta*/) const noexcept {
+  // Skip observation on elements that are not part of a section
+  const std::optional<std::string> section_observation_key =
+      observers::get_section_observation_key<ArraySectionIdTag>(box);
+  if (not section_observation_key.has_value()) {
+    return;
+  }
+
   using tensor_tags = tmpl::list<ObservableTensorTags...>;
   static_assert((db::tag_is_retrievable_v<ObservableTensorTags,
                                           db::DataBox<DbTagsList>> and
@@ -348,7 +385,8 @@ void ObserveNorms<tmpl::list<ObservableTensorTags...>>::operator()(
   });
 
   // Concatenate the legend info together.
-  std::vector<std::string> legend{"Time", "NumberOfPoints"};
+  std::vector<std::string> legend{db::tag_name<ObservationValueTag>(),
+                                  "NumberOfPoints"};
   legend.insert(legend.end(), norm_values_and_names["Max"].second.begin(),
                 norm_values_and_names["Max"].second.end());
   legend.insert(legend.end(), norm_values_and_names["Min"].second.begin(),
@@ -361,21 +399,25 @@ void ObserveNorms<tmpl::list<ObservableTensorTags...>>::operator()(
       *Parallel::get_parallel_component<observers::Observer<Metavariables>>(
            cache)
            .ckLocalBranch();
-
+  const std::string subfile_path_with_suffix =
+      subfile_path_ + section_observation_key.value();
   Parallel::simple_action<observers::Actions::ContributeReductionData>(
-      local_observer, observers::ObservationId(time, subfile_path_ + ".dat"),
+      local_observer,
+      observers::ObservationId(observation_value, subfile_path_ + ".dat"),
       observers::ArrayComponentId{
           std::add_pointer_t<ParallelComponent>{nullptr},
           Parallel::ArrayIndex<ArrayIndex>(array_index)},
-      subfile_path_, std::move(legend),
-      ReductionData{time, number_of_points,
+      subfile_path_with_suffix, std::move(legend),
+      ReductionData{static_cast<double>(observation_value), number_of_points,
                     std::move(norm_values_and_names["Max"].first),
                     std::move(norm_values_and_names["Min"].first),
                     std::move(norm_values_and_names["L2Norm"].first)});
 }
 
-template <typename... ObservableTensorTags>
-void ObserveNorms<tmpl::list<ObservableTensorTags...>>::pup(PUP::er& p) {
+template <typename ObservationValueTag, typename... ObservableTensorTags,
+          typename ArraySectionIdTag>
+void ObserveNorms<ObservationValueTag, tmpl::list<ObservableTensorTags...>,
+                  ArraySectionIdTag>::pup(PUP::er& p) {
   Event::pup(p);
   p | subfile_path_;
   p | tensor_names_;
@@ -383,8 +425,10 @@ void ObserveNorms<tmpl::list<ObservableTensorTags...>>::pup(PUP::er& p) {
   p | tensor_components_;
 }
 
-template <typename... ObservableTensorTags>
-PUP::able::PUP_ID ObserveNorms<tmpl::list<ObservableTensorTags...>>::my_PUP_ID =
-    0;  // NOLINT
+template <typename ObservationValueTag, typename... ObservableTensorTags,
+          typename ArraySectionIdTag>
+PUP::able::PUP_ID
+    ObserveNorms<ObservationValueTag, tmpl::list<ObservableTensorTags...>,
+                 ArraySectionIdTag>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
 }  // namespace Events

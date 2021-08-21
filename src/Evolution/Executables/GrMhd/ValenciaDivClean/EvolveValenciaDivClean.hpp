@@ -236,6 +236,7 @@ struct EvolutionMetavars {
             tmpl::flatten<tmpl::list<
                 Events::Completion,
                 Events::ObserveNorms<
+                    ::Tags::Time,
                     tmpl::list<hydro::Tags::RestMassDensity<DataVector>>>,
                 tmpl::conditional_t<
                     use_dg_subcell,

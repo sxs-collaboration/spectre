@@ -205,7 +205,8 @@ struct GeneralizedHarmonicTemplateBase<
         tmpl::pair<DomainCreator<volume_dim>, domain_creators<volume_dim>>,
         tmpl::pair<Event,
                    tmpl::flatten<tmpl::list<
-                       Events::Completion, Events::ObserveNorms<observe_fields>,
+                       Events::Completion,
+                       Events::ObserveNorms<::Tags::Time, observe_fields>,
                        dg::Events::field_observations<volume_dim, Tags::Time,
                                                       observe_fields,
                                                       analytic_solution_fields>,

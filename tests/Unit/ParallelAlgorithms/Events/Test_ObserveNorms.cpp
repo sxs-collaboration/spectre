@@ -22,6 +22,7 @@
 #include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
+#include "IO/Observer/Tags.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Reduction.hpp"
@@ -29,7 +30,9 @@
 #include "Parallel/Tags/Metavariables.hpp"
 #include "ParallelAlgorithms/Events/ObserveNorms.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
+#include "Time/Tags.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
+#include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
@@ -40,6 +43,8 @@ struct Var0 : db::SimpleTag {
 struct Var1 : db::SimpleTag {
   using type = tnsr::I<DataVector, 3, Frame::Inertial>;
 };
+
+struct TestSectionIdTag {};
 
 struct MockContributeReductionData {
   struct Results {
@@ -109,6 +114,7 @@ struct MockObserverComponent {
                                         tmpl::list<>>>;
 };
 
+template <typename ArraySectionIdTag>
 struct Metavariables {
   using component_list = tmpl::list<ElementComponent<Metavariables>,
                                     MockObserverComponent<Metavariables>>;
@@ -116,15 +122,19 @@ struct Metavariables {
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<tmpl::pair<
-        Event, tmpl::list<Events::ObserveNorms<tmpl::list<Var0, Var1>>>>>;
+        Event, tmpl::list<Events::ObserveNorms<
+                   ::Tags::Time, tmpl::list<Var0, Var1>, ArraySectionIdTag>>>>;
   };
 
   enum class Phase { Initialization, Testing, Exit };
 };
 
-template <typename ObserveEvent>
-void test(const std::unique_ptr<ObserveEvent> observe) {
-  using metavariables = Metavariables;
+template <typename ArraySectionIdTag, typename ObserveEvent>
+void test(const std::unique_ptr<ObserveEvent> observe,
+          const std::optional<std::string>& section) {
+  CAPTURE(pretty_type::short_name<ArraySectionIdTag>());
+  CAPTURE(section);
+  using metavariables = Metavariables<ArraySectionIdTag>;
   using element_component = ElementComponent<metavariables>;
   using observer_component = MockObserverComponent<metavariables>;
   const typename element_component::array_index array_index(0);
@@ -144,15 +154,24 @@ void test(const std::unique_ptr<ObserveEvent> observe) {
 
   const auto box = db::create<db::AddSimpleTags<
       Parallel::Tags::MetavariablesImpl<metavariables>, ::Tags::Time,
-      Tags::Variables<typename decltype(vars)::tags_list>>>(
-      metavariables{}, observation_time, vars);
+      Tags::Variables<typename decltype(vars)::tags_list>,
+      observers::Tags::ObservationKey<ArraySectionIdTag>>>(
+      metavariables{}, observation_time, vars, section);
 
   const auto ids_to_register =
       observers::get_registration_observation_type_and_key(*observe, box);
+  const std::string expected_subfile_name{
+      "/reduction0" +
+      (std::is_same_v<ArraySectionIdTag, void> ? ""
+                                               : section.value_or("Unused"))};
   const observers::ObservationKey expected_observation_key_for_reg(
-      "/reduction0.dat");
-  CHECK(ids_to_register->first == observers::TypeOfObservation::Reduction);
-  CHECK(ids_to_register->second == expected_observation_key_for_reg);
+      expected_subfile_name + ".dat");
+  if (std::is_same_v<ArraySectionIdTag, void> or section.has_value()) {
+    CHECK(ids_to_register->first == observers::TypeOfObservation::Reduction);
+    CHECK(ids_to_register->second == expected_observation_key_for_reg);
+  } else {
+    CHECK_FALSE(ids_to_register.has_value());
+  }
 
   CHECK(static_cast<const Event&>(*observe).is_ready(
       box, ActionTesting::cache<element_component>(runner, array_index),
@@ -168,7 +187,7 @@ void test(const std::unique_ptr<ObserveEvent> observe) {
 
   const auto& results = MockContributeReductionData::results;
   CHECK(results.observation_id.value() == observation_time);
-  CHECK(results.subfile_name == "/reduction0");
+  CHECK(results.subfile_name == expected_subfile_name);
   CHECK(results.reduction_names[0] == "Time");
   CHECK(results.time == observation_time);
   CHECK(results.reduction_names[1] == "NumberOfPoints");
@@ -198,20 +217,24 @@ void test(const std::unique_ptr<ObserveEvent> observe) {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.ObserveNorms", "[Unit][Evolution]") {
-  test(std::make_unique<Events::ObserveNorms<tmpl::list<Var0, Var1>>>(
-      Events::ObserveNorms<tmpl::list<Var0, Var1>>{
-          "reduction0",
-          {{"Var0", "Max", "Individual"},
-           {"Var1", "Min", "Individual"},
-           {"Var0", "Max", "Sum"},
-           {"Var1", "L2Norm", "Sum"},
-           {"Var1", "L2Norm", "Individual"},
-           {"Var1", "Min", "Sum"}}}));
+  test<TestSectionIdTag>(
+      std::make_unique<Events::ObserveNorms<
+          ::Tags::Time, tmpl::list<Var0, Var1>, TestSectionIdTag>>(
+          Events::ObserveNorms<::Tags::Time, tmpl::list<Var0, Var1>,
+                               TestSectionIdTag>{
+              "reduction0",
+              {{"Var0", "Max", "Individual"},
+               {"Var1", "Min", "Individual"},
+               {"Var0", "Max", "Sum"},
+               {"Var1", "L2Norm", "Sum"},
+               {"Var1", "L2Norm", "Individual"},
+               {"Var1", "Min", "Sum"}}}),
+      "Section0");
 
   INFO("create/serialize");
-  Parallel::register_factory_classes_with_charm<Metavariables>();
+  Parallel::register_factory_classes_with_charm<Metavariables<void>>();
   const auto factory_event =
-      TestHelpers::test_creation<std::unique_ptr<Event>, Metavariables>(
+      TestHelpers::test_creation<std::unique_ptr<Event>, Metavariables<void>>(
           // [input_file_examples]
           R"(
 ObserveNorms:
@@ -238,5 +261,5 @@ ObserveNorms:
       )");
   // [input_file_examples]
   auto serialized_event = serialize_and_deserialize(factory_event);
-  test(std::move(serialized_event));
+  test<void>(std::move(serialized_event), std::nullopt);
 }
