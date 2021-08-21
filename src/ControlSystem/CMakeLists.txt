@@ -19,6 +19,10 @@ spectre_target_headers(
   HEADERS
   Averager.hpp
   Controller.hpp
+  Event.hpp
+  Metafunctions.hpp
+  NamespaceDocs.hpp
+  RunCallbacks.hpp
   Tags.hpp
   TimescaleTuner.hpp
   UpdateFunctionOfTime.hpp
@@ -33,3 +37,5 @@ target_link_libraries(
   ErrorHandling
   FunctionsOfTime
   )
+
+add_subdirectory(Protocols)
