@@ -20,6 +20,7 @@
 #include "Parallel/Main.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseControl/PhaseControlTags.hpp"
+#include "Parallel/PhaseControl/PhaseSelection.hpp"
 #include "Parallel/PhaseControlReductionHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
@@ -215,20 +216,32 @@ struct TestMetavariables {
     Evolution,
     Exit
   };
+  struct phase_selection : tt::ConformsTo<PhaseControl::PhaseSelection> {
+    using phase_changes = tmpl::list<>;
+    using phase_change_tags_and_combines_list =
+        tmpl::list<PhaseChangeTest::IsDone,
+                   PhaseChangeTest::PhaseChangeStepNumber>;
+    struct initialize_phase_change_decision_data {
+      static void apply(
+          const gsl::not_null<tuples::tagged_tuple_from_typelist<
+              phase_change_tags_and_combines_list>*>
+              phase_change_decision_data,
+          const Parallel::GlobalCache<TestMetavariables>& /*cache*/) noexcept {
+        tuples::get<PhaseChangeTest::IsDone>(*phase_change_decision_data) =
+            false;
+        tuples::get<PhaseChangeTest::PhaseChangeStepNumber>(
+            *phase_change_decision_data) = 0;
+      }
+    };
 
-  using phase_change_tags_and_combines_list =
-      tmpl::list<PhaseChangeTest::IsDone,
-                 PhaseChangeTest::PhaseChangeStepNumber>;
-  struct initialize_phase_change_decision_data {
-    static void apply(
-        const gsl::not_null<tuples::tagged_tuple_from_typelist<
-            phase_change_tags_and_combines_list>*>
-            phase_change_decision_data,
-        const Parallel::GlobalCache<TestMetavariables>& /*cache*/) noexcept {
-      tuples::get<PhaseChangeTest::IsDone>(*phase_change_decision_data) = false;
-      tuples::get<PhaseChangeTest::PhaseChangeStepNumber>(
-          *phase_change_decision_data) = 0;
+    static std::string phase_name(Phase /*phase*/) noexcept {
+      ERROR("Specified phase not supported for phase change");
     }
+
+    template <typename ParallelComponent>
+    struct registration_list {
+      using type = tmpl::list<>;
+    };
   };
 
   template <typename... Tags>

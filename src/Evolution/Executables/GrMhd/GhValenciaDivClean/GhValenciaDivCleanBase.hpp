@@ -95,8 +95,10 @@
 #include "Parallel/Actions/TerminatePhase.hpp"
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"
 #include "Parallel/InitializationFunctions.hpp"
+#include "Parallel/PhaseControl/CheckpointAndExitAfterWallclock.hpp"
 #include "Parallel/PhaseControl/ExecutePhaseChange.hpp"
 #include "Parallel/PhaseControl/PhaseControlTags.hpp"
+#include "Parallel/PhaseControl/PhaseSelection.hpp"
 #include "Parallel/PhaseControl/VisitAndReturn.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Reduction.hpp"
@@ -219,19 +221,10 @@ struct GhValenciaDivCleanDefaults {
     InitializeTimeStepperHistory,
     Register,
     LoadBalancing,
+    WriteCheckpoint,
     Evolve,
     Exit
   };
-
-  static std::string phase_name(Phase phase) noexcept {
-    if (phase == Phase::LoadBalancing) {
-        return "LoadBalancing";
-      }
-      ERROR(
-          "Passed phase that should not be used in input file. Integer "
-          "corresponding to phase is: "
-          << static_cast<int>(phase));
-  }
 
   using initialize_initial_data_dependent_quantities_actions = tmpl::list<
       GeneralizedHarmonic::gauges::Actions::InitializeDampedHarmonic<
@@ -324,6 +317,42 @@ struct GhValenciaDivCleanTemplateBase<
                                          Triggers::time_triggers>>>;
   };
 
+  template <typename Metavariables, typename DgElementArray,
+            typename DgRegistrationList>
+  struct PhaseSelection : tt::ConformsTo<PhaseControl::PhaseSelection> {
+    using phase_changes =
+        tmpl::list<PhaseControl::Registrars::VisitAndReturn<
+                       Metavariables, Phase::LoadBalancing>,
+                   PhaseControl::Registrars::VisitAndReturn<
+                       Metavariables, Phase::WriteCheckpoint>,
+                   PhaseControl::Registrars::CheckpointAndExitAfterWallclock<
+                       Metavariables>>;
+
+    using initialize_phase_change_decision_data =
+        PhaseControl::InitializePhaseChangeDecisionData<phase_changes>;
+    using phase_change_tags_and_combines_list =
+        PhaseControl::get_phase_change_tags<phase_changes>;
+
+    static std::string phase_name(Phase phase) noexcept {
+      if (phase == Phase::LoadBalancing) {
+        return "LoadBalancing";
+      } else if (phase == Phase::WriteCheckpoint) {
+        return "WriteCheckpoint";
+      }
+      ERROR(
+          "Passed phase that should not be used in input file. Integer "
+          "corresponding to phase is: "
+          << static_cast<int>(phase));
+    }
+
+    template <typename ParallelComponent>
+    struct registration_list {
+      using type =
+          std::conditional_t<std::is_same_v<ParallelComponent, DgElementArray>,
+                             DgRegistrationList, tmpl::list<>>;
+    };
+  };
+
   using interpolation_target_tags = tmpl::list<InterpolationTargetTags...>;
 
   using observed_reduction_data_tags =
@@ -331,70 +360,9 @@ struct GhValenciaDivCleanTemplateBase<
           tmpl::at<typename factory_creation::factory_classes, Event>,
           typename InterpolationTargetTags::post_interpolation_callback...>>;
 
-  using phase_changes = tmpl::list<PhaseControl::Registrars::VisitAndReturn<
-      GhValenciaDivCleanTemplateBase, Phase::LoadBalancing>>;
-  using initialize_phase_change_decision_data =
-      PhaseControl::InitializePhaseChangeDecisionData<phase_changes>;
-  using phase_change_tags_and_combines_list =
-      PhaseControl::get_phase_change_tags<phase_changes>;
-
-  using const_global_cache_tags = tmpl::flatten<tmpl::list<
-      tmpl::conditional_t<evolution::is_numeric_initial_data_v<initial_data>,
-                          tmpl::list<>, initial_data_tag>,
-      grmhd::ValenciaDivClean::Tags::ConstraintDampingParameter,
-      Tags::EventsAndTriggers,
-      GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma0<
-          volume_dim, Frame::Grid>,
-      GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma1<
-          volume_dim, Frame::Grid>,
-      GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma2<
-          volume_dim, Frame::Grid>,
-      PhaseControl::Tags::PhaseChangeAndTriggers<phase_changes>>>;
-
   using dg_registration_list =
       tmpl::list<intrp::Actions::RegisterElementWithInterpolator,
                  observers::Actions::RegisterEventsWithObservers>;
-
-  template <typename... Tags>
-  static Phase determine_next_phase(
-      const gsl::not_null<tuples::TaggedTuple<Tags...>*>
-          phase_change_decision_data,
-      const Phase& current_phase,
-      const Parallel::CProxy_GlobalCache<derived_metavars>&
-          cache_proxy) noexcept {
-    const auto next_phase = PhaseControl::arbitrate_phase_change<phase_changes>(
-        phase_change_decision_data, current_phase,
-        *(cache_proxy.ckLocalBranch()));
-    if (next_phase.has_value()) {
-      return next_phase.value();
-    }
-    switch (current_phase) {
-      case Phase::Initialization:
-        return evolution::is_numeric_initial_data_v<initial_data>
-                   ? Phase::RegisterWithElementDataReader
-                   : Phase::InitializeInitialDataDependentQuantities;
-      case Phase::RegisterWithElementDataReader:
-        return Phase::ImportInitialData;
-      case Phase::ImportInitialData:
-        return Phase::InitializeInitialDataDependentQuantities;
-      case Phase::InitializeInitialDataDependentQuantities:
-        return Phase::InitializeTimeStepperHistory;
-      case Phase::InitializeTimeStepperHistory:
-        return Phase::Register;
-      case Phase::Register:
-        return Phase::Evolve;
-      case Phase::Evolve:
-        return Phase::Exit;
-      case Phase::Exit:
-        ERROR(
-            "Should never call determine_next_phase with the current phase "
-            "being 'Exit'");
-      default:
-        ERROR(
-            "Unknown type of phase. Did you static_cast<Phase> an integral "
-            "value?");
-    }
-  }
 
   using step_actions = tmpl::flatten<tmpl::list<
       evolution::dg::Actions::ComputeTimeDerivative<derived_metavars>,
@@ -472,19 +440,12 @@ struct GhValenciaDivCleanTemplateBase<
                                             Parallel::Actions::TerminatePhase>>,
           Parallel::PhaseActions<
               Phase, Phase::Evolve,
-              tmpl::list<
-                  VariableFixing::Actions::FixVariables<
-                      VariableFixing::FixToAtmosphere<volume_dim>>,
-                  Actions::UpdateConservatives, Actions::RunEventsAndTriggers,
-                  Actions::ChangeSlabSize, step_actions, Actions::AdvanceTime,
-                  PhaseControl::Actions::ExecutePhaseChange<phase_changes>>>>>>;
-
-  template <typename ParallelComponent>
-  struct registration_list {
-    using type = std::conditional_t<
-        std::is_same_v<ParallelComponent, dg_element_array_component>,
-        dg_registration_list, tmpl::list<>>;
-  };
+              tmpl::list<VariableFixing::Actions::FixVariables<
+                             VariableFixing::FixToAtmosphere<volume_dim>>,
+                         Actions::UpdateConservatives,
+                         Actions::RunEventsAndTriggers, Actions::ChangeSlabSize,
+                         step_actions, Actions::AdvanceTime,
+                         PhaseControl::Actions::ExecutePhaseChange>>>>>;
 
   using component_list = tmpl::flatten<tmpl::list<
       observers::Observer<derived_metavars>,

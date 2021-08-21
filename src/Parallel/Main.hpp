@@ -39,11 +39,17 @@
 
 namespace Parallel {
 namespace detail {
-CREATE_HAS_TYPE_ALIAS(phase_change_tags_and_combines_list)
-CREATE_HAS_TYPE_ALIAS_V(phase_change_tags_and_combines_list)
-CREATE_GET_TYPE_ALIAS_OR_DEFAULT(phase_change_tags_and_combines_list)
-CREATE_HAS_TYPE_ALIAS(initialize_phase_change_decision_data)
-CREATE_HAS_TYPE_ALIAS_V(initialize_phase_change_decision_data)
+CREATE_HAS_TYPE_ALIAS(phase_selection)
+CREATE_HAS_TYPE_ALIAS_V(phase_selection)
+template <typename Metavariables, bool = has_phase_selection_v<Metavariables>>
+struct phase_change_tags_and_combines {
+  using type = tmpl::list<>;
+};
+template <typename Metavariables>
+struct phase_change_tags_and_combines<Metavariables, true> {
+  using type = typename Metavariables::phase_selection::
+      phase_change_tags_and_combines_list;
+};
 }  // namespace detail
 
 /// \ingroup ParallelGroup
@@ -59,8 +65,7 @@ class Main : public CBase_Main<Metavariables> {
       get_mutable_global_cache_tags<Metavariables>;
 
   using phase_change_tags_and_combines_list =
-      detail::get_phase_change_tags_and_combines_list_or_default_t<
-          Metavariables, tmpl::list<>>;
+      typename detail::phase_change_tags_and_combines<Metavariables>::type;
   /// \cond HIDDEN_SYMBOLS
   /// The constructor used to register the class
   explicit Main(
@@ -536,11 +541,10 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept {
   global_cache_proxy_.set_parallel_components(the_parallel_components,
                                                     callback);
 
-  if constexpr (detail::has_initialize_phase_change_decision_data_v<
-                Metavariables>) {
-    Metavariables::initialize_phase_change_decision_data::apply(
-        make_not_null(&phase_change_decision_data_),
-        *global_cache_proxy_.ckLocalBranch());
+  if constexpr (detail::has_phase_selection_v<Metavariables>) {
+    Metavariables::phase_selection::initialize_phase_change_decision_data::
+        apply(make_not_null(&phase_change_decision_data_),
+              *global_cache_proxy_.ckLocalBranch());
   }
 }
 
@@ -729,72 +733,66 @@ void contribute_to_phase_change_reduction(
     tuples::TaggedTuple<Ts...> data_for_reduction,
     Parallel::GlobalCache<Metavariables>& cache,
     const ArrayIndex& array_index) noexcept {
-  if constexpr (detail::has_phase_change_tags_and_combines_list_v<
-                    Metavariables>) {
-    using reduction_data_type = PhaseControl::reduction_data<
-        tmpl::list<Ts...>,
-        typename Metavariables::phase_change_tags_and_combines_list>;
-    (void)Parallel::charmxx::RegisterReducerFunction<
-        reduction_data_type::combine>::registrar;
-    CkCallback callback(
-        CProxy_Main<Metavariables>::index_t::
-            template redn_wrapper_phase_change_reduction<
-                PhaseControl::TaggedTupleCombine, Ts...>(nullptr),
-        cache.get_main_proxy().value());
-    reduction_data_type reduction_data{data_for_reduction};
-    Parallel::get_parallel_component<SenderComponent>(cache)[array_index]
-        .ckLocal()
-        ->contribute(static_cast<int>(reduction_data.size()),
-                     reduction_data.packed().get(),
-                     Parallel::charmxx::charm_reducer_functions.at(
-                         std::hash<Parallel::charmxx::ReducerFunctions>{}(
-                             &reduction_data_type::combine)),
-                     callback);
-  } else {
-    ERROR(
-        "No phase change tags were found; cannot contribute to phase change "
-        "reduction.");
-  }
+  static_assert(
+      detail::has_phase_selection_v<Metavariables>,
+      "No phase selection entry was found in the metavariables; cannot "
+      "contribute to phase change reduction.");
+  using reduction_data_type =
+      PhaseControl::reduction_data<tmpl::list<Ts...>,
+                                   typename Metavariables::phase_selection::
+                                       phase_change_tags_and_combines_list>;
+  (void)Parallel::charmxx::RegisterReducerFunction<
+      reduction_data_type::combine>::registrar;
+  CkCallback callback(CProxy_Main<Metavariables>::index_t::
+                          template redn_wrapper_phase_change_reduction<
+                              PhaseControl::TaggedTupleCombine, Ts...>(nullptr),
+                      cache.get_main_proxy().value());
+  reduction_data_type reduction_data{data_for_reduction};
+  Parallel::get_parallel_component<SenderComponent>(cache)[array_index]
+      .ckLocal()
+      ->contribute(static_cast<int>(reduction_data.size()),
+                   reduction_data.packed().get(),
+                   Parallel::charmxx::charm_reducer_functions.at(
+                       std::hash<Parallel::charmxx::ReducerFunctions>{}(
+                           &reduction_data_type::combine)),
+                   callback);
 }
 template <typename SenderComponent, typename Metavariables, class... Ts>
 void contribute_to_phase_change_reduction(
     tuples::TaggedTuple<Ts...> data_for_reduction,
     Parallel::GlobalCache<Metavariables>& cache) noexcept {
-  if constexpr (detail::has_phase_change_tags_and_combines_list_v<
-                    Metavariables>) {
-    using reduction_data_type = PhaseControl::reduction_data<
-        tmpl::list<Ts...>,
-        typename Metavariables::phase_change_tags_and_combines_list>;
-    (void)Parallel::charmxx::RegisterReducerFunction<
-        reduction_data_type::combine>::registrar;
-    CkCallback callback(
-        CProxy_Main<Metavariables>::index_t::
-            template redn_wrapper_phase_change_reduction<
-                PhaseControl::TaggedTupleCombine, Ts...>(nullptr),
-        cache.get_main_proxy().value());
-    reduction_data_type reduction_data{data_for_reduction};
-    // Note that Singletons could be supported by directly calling the main
-    // entry function, but due to this and other peculiarities with
-    // Singletons, it is best to discourage their use.
-    static_assert(
-        not std::is_same_v<typename SenderComponent::chare_type,
-                           Parallel::Algorithms::Singleton>,
-        "Phase change reduction is not supported for singleton chares. "
-        "Consider constructing your chare as a length-1 array chare if you "
-        "need to contribute to phase change data");
-    Parallel::get_parallel_component<SenderComponent>(cache)
-        .ckLocalBranch()
-        ->contribute(static_cast<int>(reduction_data.size()),
-                     reduction_data.packed().get(),
-                     Parallel::charmxx::charm_reducer_functions.at(
-                         std::hash<Parallel::charmxx::ReducerFunctions>{}(
-                             &reduction_data_type::combine)),
-                     callback);
-  } else {
-    ERROR(
-        "No phase change tags were found; cannot contribute to phase change "
-        "reduction.");
-  }
+  static_assert(
+      detail::has_phase_selection_v<Metavariables>,
+      "No phase selection entry was found in the metavariables; cannot "
+      "contribute to phase change reduction.");
+  using reduction_data_type =
+      PhaseControl::reduction_data<tmpl::list<Ts...>,
+                                   typename Metavariables::phase_selection::
+                                       phase_change_tags_and_combines_list>;
+  (void)Parallel::charmxx::RegisterReducerFunction<
+      reduction_data_type::combine>::registrar;
+  CkCallback callback(CProxy_Main<Metavariables>::index_t::
+                          template redn_wrapper_phase_change_reduction<
+                              PhaseControl::TaggedTupleCombine, Ts...>(nullptr),
+                      cache.get_main_proxy().value());
+  reduction_data_type reduction_data{data_for_reduction};
+  // Note that Singletons could be supported by directly calling the main
+  // entry function, but due to this and other peculiarities with
+  // Singletons, it is best to discourage their use.
+  static_assert(
+      not std::is_same_v<typename SenderComponent::chare_type,
+                         Parallel::Algorithms::Singleton>,
+      "Phase change reduction is not supported for singleton chares. "
+      "Consider constructing your chare as a length-1 array chare if you "
+      "need to contribute to phase change data");
+  Parallel::get_parallel_component<SenderComponent>(cache)
+      .ckLocalBranch()
+      ->contribute(static_cast<int>(reduction_data.size()),
+                   reduction_data.packed().get(),
+                   Parallel::charmxx::charm_reducer_functions.at(
+                       std::hash<Parallel::charmxx::ReducerFunctions>{}(
+                           &reduction_data_type::combine)),
+                   callback);
 }
 /// @}
 

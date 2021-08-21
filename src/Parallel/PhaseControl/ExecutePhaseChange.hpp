@@ -37,7 +37,6 @@ namespace Actions {
  *   - `PhaseChange` objects are permitted to perform mutations on the
  *     \ref DataBoxGroup "DataBox" to store persistent state information.
  */
-template <typename PhaseChangeRegistrars>
 struct ExecutePhaseChange {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -49,8 +48,8 @@ struct ExecutePhaseChange {
       const ArrayIndex& array_index, const ActionList /*meta*/,
       const ParallelComponent* const /*component*/) noexcept {
     const auto& phase_change_and_triggers =
-        Parallel::get<Tags::PhaseChangeAndTriggers<PhaseChangeRegistrars>>(
-            cache);
+        Parallel::get<Tags::PhaseChangeAndTriggers<
+            typename Metavariables::phase_selection::phase_changes>>(cache);
     bool should_halt = false;
     for (const auto& [trigger, phase_changes] : phase_change_and_triggers) {
       if (trigger->is_triggered(box)) {

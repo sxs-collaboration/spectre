@@ -254,32 +254,6 @@ struct EvolutionMetavars {
         << static_cast<int>(phase));
   }
 
-  using phase_changes =
-      tmpl::list<PhaseControl::Registrars::VisitAndReturn<EvolutionMetavars,
-                                                          Phase::LoadBalancing>,
-                 PhaseControl::Registrars::VisitAndReturn<
-                     EvolutionMetavars, Phase::WriteCheckpoint>,
-                 PhaseControl::Registrars::CheckpointAndExitAfterWallclock<
-                     EvolutionMetavars>>;
-
-  using initialize_phase_change_decision_data =
-      PhaseControl::InitializePhaseChangeDecisionData<phase_changes>;
-
-  using phase_change_tags_and_combines_list =
-      PhaseControl::get_phase_change_tags<phase_changes>;
-
-  // A tmpl::list of tags to be added to the GlobalCache by the
-  // metavariables
-  using const_global_cache_tags = tmpl::list<
-      Tags::EventsAndTriggers,
-      GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma0<
-          volume_dim, Frame::Grid>,
-      GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma1<
-          volume_dim, Frame::Grid>,
-      GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma2<
-          volume_dim, Frame::Grid>,
-      PhaseControl::Tags::PhaseChangeAndTriggers<phase_changes>>;
-
   using dg_registration_list =
       tmpl::list<observers::Actions::RegisterEventsWithObservers>;
 
@@ -290,7 +264,8 @@ struct EvolutionMetavars {
       const Phase& current_phase,
       const Parallel::CProxy_GlobalCache<EvolutionMetavars>&
           cache_proxy) noexcept {
-    const auto next_phase = PhaseControl::arbitrate_phase_change<phase_changes>(
+    const auto next_phase = PhaseControl::arbitrate_phase_change<
+        typename phase_selection::phase_changes>(
         phase_change_decision_data, current_phase,
         *(cache_proxy.ckLocalBranch()));
     if (next_phase.has_value()) {
@@ -387,17 +362,56 @@ struct EvolutionMetavars {
                                             Parallel::Actions::TerminatePhase>>,
           Parallel::PhaseActions<
               Phase, Phase::Evolve,
-              tmpl::list<
-                  Actions::RunEventsAndTriggers, Actions::ChangeSlabSize,
-                  step_actions, Actions::AdvanceTime,
-                  PhaseControl::Actions::ExecutePhaseChange<phase_changes>>>>>>;
+              tmpl::list<Actions::RunEventsAndTriggers, Actions::ChangeSlabSize,
+                         step_actions, Actions::AdvanceTime,
+                         PhaseControl::Actions::ExecutePhaseChange>>>>>;
 
-  template <typename ParallelComponent>
-  struct registration_list {
-    using type = std::conditional_t<
-        std::is_same_v<ParallelComponent, gh_dg_element_array>,
-        dg_registration_list, tmpl::list<>>;
+  struct phase_selection : tt::ConformsTo<PhaseControl::PhaseSelection> {
+    using phase_changes =
+        tmpl::list<PhaseControl::Registrars::VisitAndReturn<
+                       EvolutionMetavars, Phase::LoadBalancing>,
+                   PhaseControl::Registrars::VisitAndReturn<
+                       EvolutionMetavars, Phase::WriteCheckpoint>,
+                   PhaseControl::Registrars::CheckpointAndExitAfterWallclock<
+                       EvolutionMetavars>>;
+
+    using initialize_phase_change_decision_data =
+        PhaseControl::InitializePhaseChangeDecisionData<phase_changes>;
+    using phase_change_tags_and_combines_list =
+        PhaseControl::get_phase_change_tags<phase_changes>;
+
+    static std::string phase_name(Phase phase) noexcept {
+      if (phase == Phase::LoadBalancing) {
+        return "LoadBalancing";
+      } else if (phase == Phase::WriteCheckpoint) {
+        return "WriteCheckpoint";
+      }
+      ERROR(
+          "Passed phase that should not be used in input file. Integer "
+          "corresponding to phase is: "
+          << static_cast<int>(phase));
+    }
+
+    template <typename ParallelComponent>
+    struct registration_list {
+      using type = std::conditional_t<
+          std::is_same_v<ParallelComponent, gh_dg_element_array>,
+          dg_registration_list, tmpl::list<>>;
+    };
   };
+
+  // A tmpl::list of tags to be added to the GlobalCache by the
+  // metavariables
+  using const_global_cache_tags = tmpl::list<
+      Tags::EventsAndTriggers,
+      GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma0<
+          volume_dim, Frame::Grid>,
+      GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma1<
+          volume_dim, Frame::Grid>,
+      GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma2<
+          volume_dim, Frame::Grid>,
+      PhaseControl::Tags::PhaseChangeAndTriggers<
+          phase_selection::phase_changes>>;
 
   using component_list =
       tmpl::flatten<tmpl::list<observers::Observer<EvolutionMetavars>,
@@ -421,7 +435,7 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &GeneralizedHarmonic::ConstraintDamping::register_derived_with_charm,
     &Parallel::register_derived_classes_with_charm<TimeStepper>,
     &Parallel::register_derived_classes_with_charm<
-        PhaseChange<metavariables::phase_changes>>,
+        PhaseChange<metavariables::phase_selection::phase_changes>>,
     &Parallel::register_factory_classes_with_charm<metavariables>};
 
 static const std::vector<void (*)()> charm_init_proc_funcs{
