@@ -30,7 +30,7 @@ class Trigger : public PUP::able {
   WRAPPED_PUPable_abstract(Trigger);  // NOLINT
 
   template <typename DbTags>
-  bool is_triggered(const db::DataBox<DbTags>& box) noexcept {
+  bool is_triggered(const db::DataBox<DbTags>& box) const noexcept {
     using factory_classes =
         typename std::decay_t<decltype(db::get<Parallel::Tags::Metavariables>(
             box))>::factory_creation::factory_classes;
