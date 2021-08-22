@@ -129,7 +129,7 @@ class Cylinder : public DomainCreator<3> {
   struct PartitioningInZ {
     using type = std::vector<double>;
     static constexpr Options::String help = {
-        "z-coordinates of the boundaries splitting the domain into discs "
+        "z-coordinates of the boundaries splitting the domain into layers "
         "between LowerZBound and UpperZBound."};
   };
 
@@ -140,6 +140,17 @@ class Cylinder : public DomainCreator<3> {
         "shell. The innermost shell must have a 'Linear' distribution because "
         "it changes in circularity. The 'RadialPartitioning' determines the "
         "number of shells."};
+    static size_t lower_bound_on_size() noexcept { return 1; }
+  };
+
+  struct DistributionInZ {
+    using type = std::vector<domain::CoordinateMaps::Distribution>;
+    static constexpr Options::String help = {
+        "Select the distribution of grid points along the z-axis in each "
+        "layer. The lowermost layer must have a 'Linear' distribution, because "
+        "both a 'Logarithmic' and 'Inverse' distribution places its "
+        "singularity at 'LowerZBound'. The 'PartitioningInZ' determines the "
+        "number of layers."};
     static size_t lower_bound_on_size() noexcept { return 1; }
   };
 
@@ -196,14 +207,15 @@ class Cylinder : public DomainCreator<3> {
                       typename Metavariables::system>>>,
           tmpl::list<IsPeriodicInZ>>,
       tmpl::list<InitialRefinement, InitialGridPoints, UseEquiangularMap,
-                 RadialPartitioning, PartitioningInZ, RadialDistribution>>;
+                 RadialPartitioning, PartitioningInZ, RadialDistribution,
+                 DistributionInZ>>;
 
   static constexpr Options::String help{
       "Creates a right circular Cylinder with a square prism surrounded by \n"
       "wedges. \n"
       "The cylinder can be partitioned radially into multiple cylindrical \n"
       "shells as well as partitioned along the cylinder's height into \n"
-      "multiple disks. Including this partitioning, the number of Blocks is \n"
+      "multiple layers. Including this partitioning, the number of Blocks is \n"
       "given by (1 + 4*(1+n_s)) * (1+n_z), where n_s is the \n"
       "length of RadialPartitioning and n_z the length of \n"
       "HeightPartitioning. The block numbering starts at the inner square \n"
@@ -229,6 +241,8 @@ class Cylinder : public DomainCreator<3> {
       std::vector<double> partitioning_in_z = {},
       std::vector<domain::CoordinateMaps::Distribution> radial_distribution =
           {domain::CoordinateMaps::Distribution::Linear},
+      std::vector<domain::CoordinateMaps::Distribution> distribution_in_z =
+          {domain::CoordinateMaps::Distribution::Linear},
       const Options::Context& context = {});
 
   Cylinder(
@@ -245,6 +259,8 @@ class Cylinder : public DomainCreator<3> {
       bool use_equiangular_map, std::vector<double> radial_partitioning = {},
       std::vector<double> partitioning_in_z = {},
       std::vector<domain::CoordinateMaps::Distribution> radial_distribution =
+          {domain::CoordinateMaps::Distribution::Linear},
+      std::vector<domain::CoordinateMaps::Distribution> distribution_in_z =
           {domain::CoordinateMaps::Distribution::Linear},
       const Options::Context& context = {});
 
@@ -274,6 +290,7 @@ class Cylinder : public DomainCreator<3> {
   std::vector<double> radial_partitioning_{};
   std::vector<double> partitioning_in_z_{};
   std::vector<domain::CoordinateMaps::Distribution> radial_distribution_{};
+  std::vector<domain::CoordinateMaps::Distribution> distribution_in_z_{};
   std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
       lower_z_boundary_condition_{};
   std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>

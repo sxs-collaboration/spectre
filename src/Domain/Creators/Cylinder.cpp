@@ -34,6 +34,7 @@ Cylinder::Cylinder(
     const bool use_equiangular_map, std::vector<double> radial_partitioning,
     std::vector<double> partitioning_in_z,
     std::vector<domain::CoordinateMaps::Distribution> radial_distribution,
+    std::vector<domain::CoordinateMaps::Distribution> distribution_in_z,
     const Options::Context& context)
     : inner_radius_(inner_radius),
       outer_radius_(outer_radius),
@@ -43,7 +44,8 @@ Cylinder::Cylinder(
       use_equiangular_map_(use_equiangular_map),
       radial_partitioning_(std::move(radial_partitioning)),
       partitioning_in_z_(std::move(partitioning_in_z)),
-      radial_distribution_(std::move(radial_distribution)) {
+      radial_distribution_(std::move(radial_distribution)),
+      distribution_in_z_(std::move(distribution_in_z)) {
   if (inner_radius_ > outer_radius_) {
     PARSE_ERROR(context,
                 "Inner radius must be smaller than outer radius, but inner "
@@ -118,6 +120,22 @@ Cylinder::Cylinder(
                 "'RadialPartitioning' to add outer shells for which you can "
                 "select different radial distributions.");
   }
+  if (distribution_in_z_.size() != num_layers) {
+    PARSE_ERROR(context,
+                "Specify a 'DistributionInZ' for every layer. You specified "
+                    << distribution_in_z_.size()
+                    << " items, but the domain has " << num_layers
+                    << " layers.");
+  }
+  if (distribution_in_z_.front() !=
+      domain::CoordinateMaps::Distribution::Linear) {
+    PARSE_ERROR(context,
+                "The 'DistributionInZ' must be 'Linear' for the lowermost "
+                "layer because a 'Logarithmic' distribution places its "
+                "singularity at 'LowerZBound'. Add entries to "
+                "'PartitioningInZ' to add layers for which you can "
+                "select different distributions along z.");
+  }
 
   // Create block names and groups
   static std::array<std::string, 4> direction_descriptions{"East", "North",
@@ -183,12 +201,13 @@ Cylinder::Cylinder(
     const bool use_equiangular_map, std::vector<double> radial_partitioning,
     std::vector<double> partitioning_in_z,
     std::vector<domain::CoordinateMaps::Distribution> radial_distribution,
+    std::vector<domain::CoordinateMaps::Distribution> distribution_in_z,
     const Options::Context& context)
     : Cylinder(inner_radius, outer_radius, lower_z_bound, upper_z_bound, false,
                initial_refinement, initial_number_of_grid_points,
                use_equiangular_map, std::move(radial_partitioning),
                std::move(partitioning_in_z), std::move(radial_distribution),
-               context) {
+               std::move(distribution_in_z), context) {
   lower_z_boundary_condition_ = std::move(lower_z_boundary_condition);
   upper_z_boundary_condition_ = std::move(upper_z_boundary_condition);
   mantle_boundary_condition_ = std::move(mantle_boundary_condition);
@@ -232,12 +251,12 @@ Cylinder::Cylinder(
 
 Domain<3> Cylinder::create_domain() const noexcept {
   const size_t number_of_shells = 1 + radial_partitioning_.size();
-  const size_t number_of_discs = 1 + partitioning_in_z_.size();
+  const size_t number_of_layers = 1 + partitioning_in_z_.size();
   std::vector<PairOfFaces> pairs_of_faces{};
   if (is_periodic_in_z_) {
     // connect faces of end caps in the periodic z-direction
     const size_t corners_per_layer = 4 * (number_of_shells + 1);
-    const size_t num_corners = number_of_discs * corners_per_layer;
+    const size_t num_corners = number_of_layers * corners_per_layer;
     PairOfFaces center{
         {0, 1, 2, 3},
         {num_corners + 0, num_corners + 1, num_corners + 2, num_corners + 3}};
@@ -268,7 +287,7 @@ Domain<3> Cylinder::create_domain() const noexcept {
   if (mantle_boundary_condition_ != nullptr) {
     // Note: The first block in each disk is the central cube.
     boundary_conditions_all_blocks.resize((1 + 4 * number_of_shells) *
-                                          number_of_discs);
+                                          number_of_layers);
 
     // Boundary conditions in z
     for (size_t block_id = 0; not is_periodic_in_z_ and
@@ -303,9 +322,9 @@ Domain<3> Cylinder::create_domain() const noexcept {
       cyl_wedge_coordinate_maps<Frame::Inertial>(
           inner_radius_, outer_radius_, lower_z_bound_, upper_z_bound_,
           use_equiangular_map_, radial_partitioning_, partitioning_in_z_,
-          radial_distribution_),
+          radial_distribution_, distribution_in_z_),
       corners_for_cylindrical_layered_domains(number_of_shells,
-                                              number_of_discs),
+                                              number_of_layers),
       pairs_of_faces, std::move(boundary_conditions_all_blocks)};
 }
 

@@ -941,6 +941,7 @@ cyl_wedge_coord_map_center_blocks(
     const double inner_radius, const double lower_z_bound,
     const double upper_z_bound, const bool use_equiangular_map,
     const std::vector<double>& partitioning_in_z,
+    const std::vector<domain::CoordinateMaps::Distribution>& distribution_in_z,
     const CylindricalDomainParityFlip parity_flip) noexcept {
   using Interval = domain::CoordinateMaps::Interval;
   using Interval3D =
@@ -968,7 +969,7 @@ cyl_wedge_coord_map_center_blocks(
                             inner_radius / sqrt(2.0), angular_distribution),
                    Interval{lower_logical_zeta, upper_logical_zeta,
                             temp_lower_z_bound, temp_upper_z_bound,
-                            domain::CoordinateMaps::Distribution::Linear}});
+                            distribution_in_z.at(layer), lower_z_bound}});
 
     if (layer != partitioning_in_z.size()) {
       temp_lower_z_bound = partitioning_in_z.at(layer);
@@ -987,6 +988,7 @@ cyl_wedge_coord_map_surrounding_blocks(
     const std::vector<double>& partitioning_in_z,
     const std::vector<domain::CoordinateMaps::Distribution>&
         radial_distribution,
+    const std::vector<domain::CoordinateMaps::Distribution>& distribution_in_z,
     const CylindricalDomainParityFlip parity_flip) noexcept {
   using Interval = domain::CoordinateMaps::Interval;
   using Wedge2D = domain::CoordinateMaps::Wedge<2>;
@@ -1027,8 +1029,6 @@ cyl_wedge_coord_map_surrounding_blocks(
     }
     temp_inner_circularity = inner_circularity;
     for (size_t shell = 0; shell < 1 + radial_partitioning.size(); shell++) {
-      const auto& radial_distribution_this_shell =
-          radial_distribution.at(shell);
       if (shell != radial_partitioning.size()) {
         temp_outer_radius = radial_partitioning.at(shell);
       } else {
@@ -1037,14 +1037,16 @@ cyl_wedge_coord_map_surrounding_blocks(
       auto z_map = Interval{
           parity_flip == CylindricalDomainParityFlip::z_direction ? 1.0 : -1.0,
           parity_flip == CylindricalDomainParityFlip::z_direction ? -1.0 : 1.0,
-          temp_lower_z_bound, temp_upper_z_bound,
-          domain::CoordinateMaps::Distribution::Linear};
+          temp_lower_z_bound,
+          temp_upper_z_bound,
+          distribution_in_z.at(layer),
+          lower_z_bound};
       for (const auto& cardinal_direction : wedge_orientations) {
         maps.emplace_back(Wedge3DPrism{
             Wedge2D{temp_inner_radius, temp_outer_radius,
                     temp_inner_circularity, 1.0, cardinal_direction,
                     use_equiangular_map, use_both_halves,
-                    radial_distribution_this_shell},
+                    radial_distribution.at(shell)},
             z_map});
       }
       temp_inner_circularity = 1.;
@@ -1069,14 +1071,17 @@ cyl_wedge_coordinate_maps(
     const std::vector<double>& radial_partitioning,
     const std::vector<double>& partitioning_in_z,
     const std::vector<domain::CoordinateMaps::Distribution>&
-        radial_distribution) noexcept {
+        radial_distribution,
+    const std::vector<domain::CoordinateMaps::Distribution>&
+        distribution_in_z) noexcept {
   std::vector<std::unique_ptr<
       domain::CoordinateMapBase<Frame::BlockLogical, TargetFrame, 3>>>
       cylinder_mapping;
   const auto maps_surrounding = cyl_wedge_coord_map_surrounding_blocks(
       inner_radius, outer_radius, lower_z_bound, upper_z_bound,
       use_equiangular_map, 0.0, radial_partitioning, partitioning_in_z,
-      radial_distribution, CylindricalDomainParityFlip::none);
+      radial_distribution, distribution_in_z,
+      CylindricalDomainParityFlip::none);
 
   // add_to_cylinder_mapping adds the maps for individual blocks in
   // the correct order.  This order is a center block at each height
@@ -1106,7 +1111,7 @@ cyl_wedge_coordinate_maps(
 
   add_to_cylinder_mapping(cyl_wedge_coord_map_center_blocks(
       inner_radius, lower_z_bound, upper_z_bound, use_equiangular_map,
-      partitioning_in_z, CylindricalDomainParityFlip::none));
+      partitioning_in_z, distribution_in_z, CylindricalDomainParityFlip::none));
   return cylinder_mapping;
 }
 
@@ -1454,7 +1459,9 @@ cyl_wedge_coordinate_maps(
     const std::vector<double>& radial_partitioning,
     const std::vector<double>& partitioning_in_z,
     const std::vector<domain::CoordinateMaps::Distribution>&
-        radial_distribution) noexcept;
+        radial_distribution,
+    const std::vector<domain::CoordinateMaps::Distribution>&
+        distribution_in_z) noexcept;
 template std::vector<std::unique_ptr<
     domain::CoordinateMapBase<Frame::BlockLogical, Frame::Grid, 3>>>
 cyl_wedge_coordinate_maps(
@@ -1464,7 +1471,9 @@ cyl_wedge_coordinate_maps(
     const std::vector<double>& radial_partitioning,
     const std::vector<double>& partitioning_in_z,
     const std::vector<domain::CoordinateMaps::Distribution>&
-        radial_distribution) noexcept;
+        radial_distribution,
+    const std::vector<domain::CoordinateMaps::Distribution>&
+        distribution_in_z) noexcept;
 // Explicit instantiations
 using Affine2d =
     domain::CoordinateMaps::ProductOf2Maps<domain::CoordinateMaps::Affine,

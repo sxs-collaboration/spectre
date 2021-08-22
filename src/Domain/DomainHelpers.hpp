@@ -230,7 +230,8 @@ std::vector<std::array<size_t, 8>> corners_for_biradially_layered_domains(
 /// Set the `radial_distribution` to select the radial distribution of grid
 /// points in the cylindrical shells. The innermost shell must have
 /// `domain::CoordinateMaps::Distribution::Linear` because it changes the
-/// circularity.
+/// circularity. The distribution along the z-axis for each circular
+/// disc is specified through `distribution_in_z`.
 template <typename TargetFrame>
 auto cyl_wedge_coordinate_maps(
     double inner_radius, double outer_radius, double lower_z_bound,
@@ -238,8 +239,9 @@ auto cyl_wedge_coordinate_maps(
     const std::vector<double>& radial_partitioning = {},
     const std::vector<double>& partitioning_in_z = {},
     const std::vector<domain::CoordinateMaps::Distribution>&
-        radial_distribution =
-            {domain::CoordinateMaps::Distribution::Linear}) noexcept
+        radial_distribution = {domain::CoordinateMaps::Distribution::Linear},
+    const std::vector<domain::CoordinateMaps::Distribution>& distribution_in_z =
+        {domain::CoordinateMaps::Distribution::Linear}) noexcept
     -> std::vector<std::unique_ptr<
         domain::CoordinateMapBase<Frame::BlockLogical, TargetFrame, 3>>>;
 
@@ -262,6 +264,8 @@ enum class CylindricalDomainParityFlip { none, z_direction };
 auto cyl_wedge_coord_map_center_blocks(
     double inner_radius, double lower_z_bound, double upper_z_bound,
     bool use_equiangular_map, const std::vector<double>& partitioning_in_z = {},
+    const std::vector<domain::CoordinateMaps::Distribution>& distribution_in_z =
+        {domain::CoordinateMaps::Distribution::Linear},
     CylindricalDomainParityFlip parity_flip =
         CylindricalDomainParityFlip::none) noexcept
     -> std::vector<domain::CoordinateMaps::ProductOf3Maps<
@@ -289,6 +293,8 @@ auto cyl_wedge_coord_map_surrounding_blocks(
     const std::vector<double>& partitioning_in_z = {},
     const std::vector<domain::CoordinateMaps::Distribution>&
         radial_distribution = {domain::CoordinateMaps::Distribution::Linear},
+    const std::vector<domain::CoordinateMaps::Distribution>& distribution_in_z =
+        {domain::CoordinateMaps::Distribution::Linear},
     CylindricalDomainParityFlip parity_flip =
         CylindricalDomainParityFlip::none) noexcept
     -> std::vector<domain::CoordinateMaps::ProductOf2Maps<
