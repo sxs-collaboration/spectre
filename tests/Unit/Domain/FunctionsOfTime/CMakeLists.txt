@@ -6,6 +6,7 @@ set(LIBRARY "Test_FunctionsOfTime")
 set(LIBRARY_SOURCES
   Test_FixedSpeedCubic.cpp
   Test_FunctionOfTimeHelpers.cpp
+  Test_FunctionsOfTimeAreReady.cpp
   Test_PiecewisePolynomial.cpp
   Test_QuaternionFunctionOfTime.cpp
   Test_QuaternionHelpers.cpp
