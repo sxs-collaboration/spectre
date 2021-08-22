@@ -32,19 +32,19 @@ DomainCreator:
   Cylinder:
     InnerRadius: 0.08
     OuterRadius: 0.6
-    LowerBound: 0
-    UpperBound: 0.3
+    LowerZBound: 0
+    UpperZBound: 0.3
     InitialRefinement: [1, 0, 0]
     InitialGridPoints: [2, 3, 3]
     UseEquiangularMap: True
     RadialPartitioning: []
-    HeightPartitioning: []
+    PartitioningInZ: []
     RadialDistribution: [Linear]
     BoundaryConditions:
-      Lower:
+      LowerZ:
         AnalyticSolution:
           Displacement: Dirichlet
-      Upper:
+      UpperZ:
         AnalyticSolution:
           Displacement: Dirichlet
       Mantle:

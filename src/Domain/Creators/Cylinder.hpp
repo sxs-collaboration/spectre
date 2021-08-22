@@ -71,13 +71,13 @@ class Cylinder : public DomainCreator<3> {
     static double lower_bound() noexcept { return 0.; }
   };
 
-  struct LowerBound {
+  struct LowerZBound {
     using type = double;
     static constexpr Options::String help = {
         "z-coordinate of the base of the cylinder."};
   };
 
-  struct UpperBound {
+  struct UpperZBound {
     using type = double;
     static constexpr Options::String help = {
         "z-coordinate of the top of the cylinder."};
@@ -126,11 +126,11 @@ class Cylinder : public DomainCreator<3> {
         "between InnerRadius and OuterRadius."};
   };
 
-  struct HeightPartitioning {
+  struct PartitioningInZ {
     using type = std::vector<double>;
     static constexpr Options::String help = {
         "z-coordinates of the boundaries splitting the domain into discs "
-        "between LowerBound and UpperBound."};
+        "between LowerZBound and UpperZBound."};
   };
 
   struct RadialDistribution {
@@ -149,22 +149,22 @@ class Cylinder : public DomainCreator<3> {
   };
 
   template <typename BoundaryConditionsBase>
-  struct LowerBoundaryCondition {
+  struct LowerZBoundaryCondition {
     using group = BoundaryConditions;
-    static std::string name() noexcept { return "Lower"; }
+    static std::string name() noexcept { return "LowerZ"; }
     static constexpr Options::String help =
         "The boundary condition to be imposed on the lower base of the "
-        "cylinder, i.e. at the `LowerBound` in the z-direction.";
+        "cylinder, i.e. at the `LowerZBound` in the z-direction.";
     using type = std::unique_ptr<BoundaryConditionsBase>;
   };
 
   template <typename BoundaryConditionsBase>
-  struct UpperBoundaryCondition {
+  struct UpperZBoundaryCondition {
     using group = BoundaryConditions;
-    static std::string name() noexcept { return "Upper"; }
+    static std::string name() noexcept { return "UpperZ"; }
     static constexpr Options::String help =
         "The boundary condition to be imposed on the upper base of the "
-        "cylinder, i.e. at the `UpperBound` in the z-direction.";
+        "cylinder, i.e. at the `UpperZBound` in the z-direction.";
     using type = std::unique_ptr<BoundaryConditionsBase>;
   };
 
@@ -180,15 +180,15 @@ class Cylinder : public DomainCreator<3> {
 
   template <typename Metavariables>
   using options = tmpl::append<
-      tmpl::list<InnerRadius, OuterRadius, LowerBound, UpperBound>,
+      tmpl::list<InnerRadius, OuterRadius, LowerZBound, UpperZBound>,
       tmpl::conditional_t<
           domain::BoundaryConditions::has_boundary_conditions_base_v<
               typename Metavariables::system>,
           tmpl::list<
-              LowerBoundaryCondition<
+              LowerZBoundaryCondition<
                   domain::BoundaryConditions::get_boundary_conditions_base<
                       typename Metavariables::system>>,
-              UpperBoundaryCondition<
+              UpperZBoundaryCondition<
                   domain::BoundaryConditions::get_boundary_conditions_base<
                       typename Metavariables::system>>,
               MantleBoundaryCondition<
@@ -196,7 +196,7 @@ class Cylinder : public DomainCreator<3> {
                       typename Metavariables::system>>>,
           tmpl::list<IsPeriodicInZ>>,
       tmpl::list<InitialRefinement, InitialGridPoints, UseEquiangularMap,
-                 RadialPartitioning, HeightPartitioning, RadialDistribution>>;
+                 RadialPartitioning, PartitioningInZ, RadialDistribution>>;
 
   static constexpr Options::String help{
       "Creates a right circular Cylinder with a square prism surrounded by \n"
@@ -221,29 +221,29 @@ class Cylinder : public DomainCreator<3> {
       "spacings in the center block."};
 
   Cylinder(
-      double inner_radius, double outer_radius, double lower_bound,
-      double upper_bound, bool is_periodic_in_z,
+      double inner_radius, double outer_radius, double lower_z_bound,
+      double upper_z_bound, bool is_periodic_in_z,
       const typename InitialRefinement::type& initial_refinement,
       const typename InitialGridPoints::type& initial_number_of_grid_points,
       bool use_equiangular_map, std::vector<double> radial_partitioning = {},
-      std::vector<double> height_partitioning = {},
+      std::vector<double> partitioning_in_z = {},
       std::vector<domain::CoordinateMaps::Distribution> radial_distribution =
           {domain::CoordinateMaps::Distribution::Linear},
       const Options::Context& context = {});
 
   Cylinder(
-      double inner_radius, double outer_radius, double lower_bound,
-      double upper_bound,
+      double inner_radius, double outer_radius, double lower_z_bound,
+      double upper_z_bound,
       std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-          lower_boundary_condition,
+          lower_z_boundary_condition,
       std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-          upper_boundary_condition,
+          upper_z_boundary_condition,
       std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
           mantle_boundary_condition,
       const typename InitialRefinement::type& initial_refinement,
       const typename InitialGridPoints::type& initial_number_of_grid_points,
       bool use_equiangular_map, std::vector<double> radial_partitioning = {},
-      std::vector<double> height_partitioning = {},
+      std::vector<double> partitioning_in_z = {},
       std::vector<domain::CoordinateMaps::Distribution> radial_distribution =
           {domain::CoordinateMaps::Distribution::Linear},
       const Options::Context& context = {});
@@ -265,19 +265,19 @@ class Cylinder : public DomainCreator<3> {
  private:
   double inner_radius_{std::numeric_limits<double>::signaling_NaN()};
   double outer_radius_{std::numeric_limits<double>::signaling_NaN()};
-  double lower_bound_{std::numeric_limits<double>::signaling_NaN()};
-  double upper_bound_{std::numeric_limits<double>::signaling_NaN()};
+  double lower_z_bound_{std::numeric_limits<double>::signaling_NaN()};
+  double upper_z_bound_{std::numeric_limits<double>::signaling_NaN()};
   bool is_periodic_in_z_{true};
   std::vector<std::array<size_t, 3>> initial_refinement_{};
   std::vector<std::array<size_t, 3>> initial_number_of_grid_points_{};
   bool use_equiangular_map_{false};
   std::vector<double> radial_partitioning_{};
-  std::vector<double> height_partitioning_{};
+  std::vector<double> partitioning_in_z_{};
   std::vector<domain::CoordinateMaps::Distribution> radial_distribution_{};
   std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-      lower_boundary_condition_{};
+      lower_z_boundary_condition_{};
   std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-      upper_boundary_condition_{};
+      upper_z_boundary_condition_{};
   std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
       mantle_boundary_condition_{};
 };
