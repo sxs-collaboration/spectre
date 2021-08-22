@@ -61,15 +61,12 @@ namespace evolution::dg::subcell::Actions {
  * 1. Computes the maximum and minimum of each evolved variable, which is used
  *    by the relaxed discrete maximum principle troubled-cell indicator.
  * 2. Determine in which directions we have neighbors
- * 3. Slice the _conserved_ variables to send to our neighbors for ghost zones
+ * 3. Slice the variables provided by GhostDataMutator to send to our neighbors
+ *    for ghost zones
  * 4. Send the ghost zone data, appending the max/min for the TCI at the end of
  *    the `std::vector<double>` we are sending.
  *
  * Some notes:
- * - In the future we will need to experiment with sending (some) primitive
- *   variables to the neighbors. This will end up depending on the
- *   reconstruction scheme used, so it'll take a bit of infrastructure
- *   development.
  * - In the future we will need to send the cell-centered fluxes to do
  *   high-order FD without additional reconstruction being necessary.
  *
@@ -130,12 +127,6 @@ struct SendDataForReconstruction {
     const Element<Dim>& element = db::get<::domain::Tags::Element<Dim>>(box);
     const size_t ghost_zone_size =
         Metavariables::SubcellOptions::ghost_zone_size(box);
-    // Note: we currently always send the conserved variables, but will need to
-    // generalize that to allow the user to choose what to send. For example,
-    // with relativistic hydrodynamics it's desirable to reconstruct
-    //    u_i = W v_i = \alpha u^0 v_i
-    // since this guarantees that the Lorentz factor is physical after
-    // reconstruction.
     DirectionMap<Dim, bool> directions_to_slice{};
     for (const auto& direction_neighbors : element.neighbors()) {
       if (direction_neighbors.second.size() == 0) {
@@ -170,7 +161,6 @@ struct SendDataForReconstruction {
          element.neighbors()) {
       const auto& orientation = neighbors_in_direction.orientation();
       const auto direction_from_neighbor = orientation(direction.opposite());
-      // If we are periodic in this direction don't send any data.
       ASSERT(neighbors_in_direction.size() == 1,
              "AMR is not yet supported when using DG-subcell. Note that this "
              "condition could be relaxed to support AMR only where the "
