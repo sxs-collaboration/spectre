@@ -176,12 +176,14 @@ Element<Dim> create_element(const bool with_neighbors) {
 
 template <size_t Dim, bool HasPrims>
 void test_impl(const bool rdmp_fails, const bool tci_fails,
-               const bool always_use_subcell, const bool self_starting) {
+               const bool always_use_subcell, const bool self_starting,
+               const bool with_neighbors) {
   CAPTURE(Dim);
   CAPTURE(rdmp_fails);
   CAPTURE(tci_fails);
   CAPTURE(always_use_subcell);
   CAPTURE(self_starting);
+  CAPTURE(with_neighbors);
 
   using metavars = Metavariables<Dim, HasPrims>;
   metavars::rdmp_fails = rdmp_fails;
@@ -198,7 +200,7 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
   const Mesh<Dim> dg_mesh{5, Spectral::Basis::Legendre,
                           Spectral::Quadrature::GaussLobatto};
   const Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
-  const Element<Dim> element = create_element<Dim>(true);
+  const Element<Dim> element = create_element<Dim>(with_neighbors);
   const evolution::dg::subcell::ActiveGrid active_grid =
       evolution::dg::subcell::ActiveGrid::Dg;
 
@@ -301,7 +303,8 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
              SelfStart::Tags::InitialValue<Tags::Variables<evolved_vars_tags>>>(
           runner, 0));
 
-  const bool expected_rollback = always_use_subcell or rdmp_fails or tci_fails;
+  const bool expected_rollback =
+      with_neighbors and (always_use_subcell or rdmp_fails or tci_fails);
 
   if (expected_rollback) {
     CHECK(ActionTesting::get_next_action_index<comp>(runner, 0) == 4);
@@ -378,10 +381,13 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
       CHECK(it.derivative() == expected_it.derivative());
     }
 
-    CHECK(get(get<evolution::dg::subcell::Tags::Inactive<Var1>>(
-              inactive_vars_from_box)) ==
-          evolution::dg::subcell::fd::project(get(get<Var1>(evolved_vars)),
-                                              dg_mesh, subcell_mesh.extents()));
+    if (with_neighbors) {
+      CHECK(get(get<evolution::dg::subcell::Tags::Inactive<Var1>>(
+                inactive_vars_from_box)) ==
+            evolution::dg::subcell::fd::project(
+                get(get<Var1>(evolved_vars)), dg_mesh, subcell_mesh.extents()));
+    }
+
     CHECK(active_vars_from_box == evolved_vars);
     if (self_starting) {
       CHECK(initial_value_evolved_vars_from_box == initial_value_evolved_vars);
@@ -403,10 +409,12 @@ void test() {
     for (const bool tci_fails : {false, true}) {
       for (const bool always_use_subcell : {false, true}) {
         for (const bool self_starting : {false, true}) {
-          test_impl<Dim, true>(rdmp_fails, tci_fails, always_use_subcell,
-                               self_starting);
-          test_impl<Dim, false>(rdmp_fails, tci_fails, always_use_subcell,
-                                self_starting);
+          for (const bool have_neighbors : {false, true}) {
+            test_impl<Dim, true>(rdmp_fails, tci_fails, always_use_subcell,
+                                 self_starting, have_neighbors);
+            test_impl<Dim, false>(rdmp_fails, tci_fails, always_use_subcell,
+                                  self_starting, have_neighbors);
+          }
         }
       }
     }
