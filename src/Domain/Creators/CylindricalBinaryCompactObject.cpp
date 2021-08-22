@@ -6,7 +6,6 @@
 #include <cmath>
 
 #include "Domain/BoundaryConditions/Periodic.hpp"
-#include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/CylindricalEndcap.hpp"
@@ -14,6 +13,7 @@
 #include "Domain/CoordinateMaps/CylindricalFlatSide.hpp"
 #include "Domain/CoordinateMaps/CylindricalSide.hpp"
 #include "Domain/CoordinateMaps/DiscreteRotation.hpp"
+#include "Domain/CoordinateMaps/Interval.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/CoordinateMaps/Wedge.hpp"
@@ -359,17 +359,17 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const noexcept {
   const double cylinder_lower_bound_z = -1.0;
   const double cylinder_upper_bound_z = 1.0;
   const auto logical_to_cylinder_center_maps =
-      cyl_wedge_coord_map_center_blocks<false>(cylinder_inner_radius,
-                                               cylinder_lower_bound_z,
-                                               cylinder_upper_bound_z);
+      cyl_wedge_coord_map_center_blocks(cylinder_inner_radius,
+                                        cylinder_lower_bound_z,
+                                        cylinder_upper_bound_z, false);
   const auto logical_to_cylinder_surrounding_maps =
       cyl_wedge_coord_map_surrounding_blocks(
           cylinder_inner_radius, cylinder_outer_radius, cylinder_lower_bound_z,
           cylinder_upper_bound_z, false, 0.0);
   const auto logical_to_cylinder_center_maps_flip_z =
-      cyl_wedge_coord_map_center_blocks<false>(
+      cyl_wedge_coord_map_center_blocks(
           cylinder_inner_radius, cylinder_lower_bound_z, cylinder_upper_bound_z,
-          {}, CylindricalDomainParityFlip::z_direction);
+          false, {}, CylindricalDomainParityFlip::z_direction);
   const auto logical_to_cylinder_surrounding_maps_flip_z =
       cyl_wedge_coord_map_surrounding_blocks(
           cylinder_inner_radius, cylinder_outer_radius, cylinder_lower_bound_z,

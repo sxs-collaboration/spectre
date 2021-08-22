@@ -13,11 +13,10 @@
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Block.hpp"  // IWYU pragma: keep
-#include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/Distribution.hpp"
-#include "Domain/CoordinateMaps/Equiangular.hpp"
+#include "Domain/CoordinateMaps/Interval.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/CoordinateMaps/Wedge.hpp"
@@ -196,60 +195,54 @@ void test_cylinder_construction(
   CHECK(cylinder.initial_extents() == expected_extents);
   CHECK(cylinder.initial_refinement_levels() == expected_refinement_level);
   using TargetFrame = Frame::Inertial;
-  using Affine = CoordinateMaps::Affine;
-  using Affine3D = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
-  using Equiangular = CoordinateMaps::Equiangular;
-  using Equiangular3DPrism =
-      CoordinateMaps::ProductOf3Maps<Equiangular, Equiangular, Affine>;
+  using Interval = CoordinateMaps::Interval;
+  using Interval3D =
+      CoordinateMaps::ProductOf3Maps<Interval, Interval, Interval>;
   using Wedge2D = CoordinateMaps::Wedge<2>;
-  using Wedge3DPrism = CoordinateMaps::ProductOf2Maps<Wedge2D, Affine>;
-
-  if (use_equiangular_map) {
-    coord_maps.emplace_back(
-        make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(
-            Equiangular3DPrism{
-                Equiangular(-1.0, 1.0, -1.0 * inner_radius / sqrt(2.0),
-                            inner_radius / sqrt(2.0)),
-                Equiangular(-1.0, 1.0, -1.0 * inner_radius / sqrt(2.0),
-                            inner_radius / sqrt(2.0)),
-                Affine{-1.0, 1.0, lower_bound, upper_bound}}));
-  } else {
-    coord_maps.emplace_back(
-        make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(
-            Affine3D{Affine(-1.0, 1.0, -1.0 * inner_radius / sqrt(2.0),
-                            inner_radius / sqrt(2.0)),
-                     Affine(-1.0, 1.0, -1.0 * inner_radius / sqrt(2.0),
-                            inner_radius / sqrt(2.0)),
-                     Affine{-1.0, 1.0, lower_bound, upper_bound}}));
-  }
+  using Wedge3DPrism = CoordinateMaps::ProductOf2Maps<Wedge2D, Interval>;
+  using Distribution = domain::CoordinateMaps::Distribution;
+  const auto angular_distribution =
+      use_equiangular_map ? Distribution::Equiangular : Distribution::Linear;
+  coord_maps.emplace_back(
+      make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(
+          Interval3D{Interval(-1.0, 1.0, -1.0 * inner_radius / sqrt(2.0),
+                              inner_radius / sqrt(2.0), angular_distribution),
+                     Interval(-1.0, 1.0, -1.0 * inner_radius / sqrt(2.0),
+                              inner_radius / sqrt(2.0), angular_distribution),
+                     Interval{-1.0, 1.0, lower_bound, upper_bound,
+                              Distribution::Linear}}));
   coord_maps.emplace_back(
       make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(Wedge3DPrism{
           Wedge2D{inner_radius, outer_radius, 0.0, 1.0,
                   OrientationMap<2>{std::array<Direction<2>, 2>{
                       {Direction<2>::upper_xi(), Direction<2>::upper_eta()}}},
                   use_equiangular_map},
-          Affine{-1.0, 1.0, lower_bound, upper_bound}}));
+          Interval{-1.0, 1.0, lower_bound, upper_bound,
+                   Distribution::Linear}}));
   coord_maps.emplace_back(
       make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(Wedge3DPrism{
           Wedge2D{inner_radius, outer_radius, 0.0, 1.0,
                   OrientationMap<2>{std::array<Direction<2>, 2>{
                       {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}},
                   use_equiangular_map},
-          Affine{-1.0, 1.0, lower_bound, upper_bound}}));
+          Interval{-1.0, 1.0, lower_bound, upper_bound,
+                   Distribution::Linear}}));
   coord_maps.emplace_back(
       make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(Wedge3DPrism{
           Wedge2D{inner_radius, outer_radius, 0.0, 1.0,
                   OrientationMap<2>{std::array<Direction<2>, 2>{
                       {Direction<2>::lower_xi(), Direction<2>::lower_eta()}}},
                   use_equiangular_map},
-          Affine{-1.0, 1.0, lower_bound, upper_bound}}));
+          Interval{-1.0, 1.0, lower_bound, upper_bound,
+                   Distribution::Linear}}));
   coord_maps.emplace_back(
       make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(Wedge3DPrism{
           Wedge2D{inner_radius, outer_radius, 0.0, 1.0,
                   OrientationMap<2>{std::array<Direction<2>, 2>{
                       {Direction<2>::upper_eta(), Direction<2>::lower_xi()}}},
                   use_equiangular_map},
-          Affine{-1.0, 1.0, lower_bound, upper_bound}}));
+          Interval{-1.0, 1.0, lower_bound, upper_bound,
+                   Distribution::Linear}}));
 
   test_domain_construction(domain, expected_block_neighbors,
                            expected_external_boundaries, coord_maps,
@@ -660,14 +653,15 @@ void test_refined_cylinder_boundaries(
   CHECK(refined_cylinder.initial_refinement_levels() ==
         expected_refinement_level);
   using TargetFrame = Frame::Inertial;
-  using Affine = CoordinateMaps::Affine;
-  using Affine3D = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
-  using Equiangular = CoordinateMaps::Equiangular;
-  using Equiangular3DPrism =
-      CoordinateMaps::ProductOf3Maps<Equiangular, Equiangular, Affine>;
+  using Interval = CoordinateMaps::Interval;
+  using Interval3D =
+      CoordinateMaps::ProductOf3Maps<Interval, Interval, Interval>;
   using Wedge2D = CoordinateMaps::Wedge<2>;
-  using Wedge3DPrism = CoordinateMaps::ProductOf2Maps<Wedge2D, Affine>;
+  using Wedge3DPrism = CoordinateMaps::ProductOf2Maps<Wedge2D, Interval>;
   const auto use_both_halves = Wedge2D::WedgeHalves::Both;
+  using Distribution = domain::CoordinateMaps::Distribution;
+  const auto angular_distribution =
+      use_equiangular_map ? Distribution::Equiangular : Distribution::Linear;
   // in this section, the coord_map is filled same as with the cylinder;
   // first the first shell with radial boundaries
   // (inner_radius, radial_partitioning.at(0)) and circularity changing from 0
@@ -675,52 +669,46 @@ void test_refined_cylinder_boundaries(
   // (radial_partitioning.at(0), outer_radius) and uniform circularity is added.
   // this is then repeated for (lower_bound, height_partitioning.at(0)) and
   // (height_partitioning.at(0), upper_bound)
-  if (use_equiangular_map) {
-    coord_maps.emplace_back(
-        make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(
-            Equiangular3DPrism{
-                Equiangular(-1.0, 1.0, -1.0 * inner_radius / sqrt(2.0),
-                            inner_radius / sqrt(2.0)),
-                Equiangular(-1.0, 1.0, -1.0 * inner_radius / sqrt(2.0),
-                            inner_radius / sqrt(2.0)),
-                Affine{-1.0, 1.0, lower_bound, height_partitioning.at(0)}}));
-  } else {
-    coord_maps.emplace_back(
-        make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(Affine3D{
-            Affine(-1.0, 1.0, -1.0 * inner_radius / sqrt(2.0),
-                   inner_radius / sqrt(2.0)),
-            Affine(-1.0, 1.0, -1.0 * inner_radius / sqrt(2.0),
-                   inner_radius / sqrt(2.0)),
-            Affine{-1.0, 1.0, lower_bound, height_partitioning.at(0)}}));
-  }
+  coord_maps.emplace_back(
+      make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(
+          Interval3D{Interval(-1.0, 1.0, -1.0 * inner_radius / sqrt(2.0),
+                              inner_radius / sqrt(2.0), angular_distribution),
+                     Interval(-1.0, 1.0, -1.0 * inner_radius / sqrt(2.0),
+                              inner_radius / sqrt(2.0), angular_distribution),
+                     Interval{-1.0, 1.0, lower_bound, height_partitioning.at(0),
+                              Distribution::Linear}}));
   coord_maps.emplace_back(
       make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(Wedge3DPrism{
           Wedge2D{inner_radius, radial_partitioning.at(0), 0.0, 1.0,
                   OrientationMap<2>{std::array<Direction<2>, 2>{
                       {Direction<2>::upper_xi(), Direction<2>::upper_eta()}}},
                   use_equiangular_map},
-          Affine{-1.0, 1.0, lower_bound, height_partitioning.at(0)}}));
+          Interval{-1.0, 1.0, lower_bound, height_partitioning.at(0),
+                   Distribution::Linear}}));
   coord_maps.emplace_back(
       make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(Wedge3DPrism{
           Wedge2D{inner_radius, radial_partitioning.at(0), 0.0, 1.0,
                   OrientationMap<2>{std::array<Direction<2>, 2>{
                       {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}},
                   use_equiangular_map},
-          Affine{-1.0, 1.0, lower_bound, height_partitioning.at(0)}}));
+          Interval{-1.0, 1.0, lower_bound, height_partitioning.at(0),
+                   Distribution::Linear}}));
   coord_maps.emplace_back(
       make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(Wedge3DPrism{
           Wedge2D{inner_radius, radial_partitioning.at(0), 0.0, 1.0,
                   OrientationMap<2>{std::array<Direction<2>, 2>{
                       {Direction<2>::lower_xi(), Direction<2>::lower_eta()}}},
                   use_equiangular_map},
-          Affine{-1.0, 1.0, lower_bound, height_partitioning.at(0)}}));
+          Interval{-1.0, 1.0, lower_bound, height_partitioning.at(0),
+                   Distribution::Linear}}));
   coord_maps.emplace_back(
       make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(Wedge3DPrism{
           Wedge2D{inner_radius, radial_partitioning.at(0), 0.0, 1.0,
                   OrientationMap<2>{std::array<Direction<2>, 2>{
                       {Direction<2>::upper_eta(), Direction<2>::lower_xi()}}},
                   use_equiangular_map},
-          Affine{-1.0, 1.0, lower_bound, height_partitioning.at(0)}}));
+          Interval{-1.0, 1.0, lower_bound, height_partitioning.at(0),
+                   Distribution::Linear}}));
   coord_maps.emplace_back(
       make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(Wedge3DPrism{
           Wedge2D{radial_partitioning.at(0), outer_radius, 1.0, 1.0,
@@ -728,7 +716,8 @@ void test_refined_cylinder_boundaries(
                       {Direction<2>::upper_xi(), Direction<2>::upper_eta()}}},
                   use_equiangular_map, use_both_halves,
                   outer_radial_distribution},
-          Affine{-1.0, 1.0, lower_bound, height_partitioning.at(0)}}));
+          Interval{-1.0, 1.0, lower_bound, height_partitioning.at(0),
+                   Distribution::Linear}}));
   coord_maps.emplace_back(
       make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(Wedge3DPrism{
           Wedge2D{radial_partitioning.at(0), outer_radius, 1.0, 1.0,
@@ -736,7 +725,8 @@ void test_refined_cylinder_boundaries(
                       {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}},
                   use_equiangular_map, use_both_halves,
                   outer_radial_distribution},
-          Affine{-1.0, 1.0, lower_bound, height_partitioning.at(0)}}));
+          Interval{-1.0, 1.0, lower_bound, height_partitioning.at(0),
+                   Distribution::Linear}}));
   coord_maps.emplace_back(
       make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(Wedge3DPrism{
           Wedge2D{radial_partitioning.at(0), outer_radius, 1.0, 1.0,
@@ -744,7 +734,8 @@ void test_refined_cylinder_boundaries(
                       {Direction<2>::lower_xi(), Direction<2>::lower_eta()}}},
                   use_equiangular_map, use_both_halves,
                   outer_radial_distribution},
-          Affine{-1.0, 1.0, lower_bound, height_partitioning.at(0)}}));
+          Interval{-1.0, 1.0, lower_bound, height_partitioning.at(0),
+                   Distribution::Linear}}));
   coord_maps.emplace_back(
       make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(Wedge3DPrism{
           Wedge2D{radial_partitioning.at(0), outer_radius, 1.0, 1.0,
@@ -752,53 +743,48 @@ void test_refined_cylinder_boundaries(
                       {Direction<2>::upper_eta(), Direction<2>::lower_xi()}}},
                   use_equiangular_map, use_both_halves,
                   outer_radial_distribution},
-          Affine{-1.0, 1.0, lower_bound, height_partitioning.at(0)}}));
-  if (use_equiangular_map) {
-    coord_maps.emplace_back(
-        make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(
-            Equiangular3DPrism{
-                Equiangular(-1.0, 1.0, -1.0 * inner_radius / sqrt(2.0),
-                            inner_radius / sqrt(2.0)),
-                Equiangular(-1.0, 1.0, -1.0 * inner_radius / sqrt(2.0),
-                            inner_radius / sqrt(2.0)),
-                Affine{-1.0, 1.0, height_partitioning.at(0), upper_bound}}));
-  } else {
-    coord_maps.emplace_back(
-        make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(Affine3D{
-            Affine(-1.0, 1.0, -1.0 * inner_radius / sqrt(2.0),
-                   inner_radius / sqrt(2.0)),
-            Affine(-1.0, 1.0, -1.0 * inner_radius / sqrt(2.0),
-                   inner_radius / sqrt(2.0)),
-            Affine{-1.0, 1.0, height_partitioning.at(0), upper_bound}}));
-  }
+          Interval{-1.0, 1.0, lower_bound, height_partitioning.at(0),
+                   Distribution::Linear}}));
+  coord_maps.emplace_back(
+      make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(
+          Interval3D{Interval(-1.0, 1.0, -1.0 * inner_radius / sqrt(2.0),
+                              inner_radius / sqrt(2.0), angular_distribution),
+                     Interval(-1.0, 1.0, -1.0 * inner_radius / sqrt(2.0),
+                              inner_radius / sqrt(2.0), angular_distribution),
+                     Interval{-1.0, 1.0, height_partitioning.at(0), upper_bound,
+                              Distribution::Linear}}));
   coord_maps.emplace_back(
       make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(Wedge3DPrism{
           Wedge2D{inner_radius, radial_partitioning.at(0), 0.0, 1.0,
                   OrientationMap<2>{std::array<Direction<2>, 2>{
                       {Direction<2>::upper_xi(), Direction<2>::upper_eta()}}},
                   use_equiangular_map},
-          Affine{-1.0, 1.0, height_partitioning.at(0), upper_bound}}));
+          Interval{-1.0, 1.0, height_partitioning.at(0), upper_bound,
+                   Distribution::Linear}}));
   coord_maps.emplace_back(
       make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(Wedge3DPrism{
           Wedge2D{inner_radius, radial_partitioning.at(0), 0.0, 1.0,
                   OrientationMap<2>{std::array<Direction<2>, 2>{
                       {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}},
                   use_equiangular_map},
-          Affine{-1.0, 1.0, height_partitioning.at(0), upper_bound}}));
+          Interval{-1.0, 1.0, height_partitioning.at(0), upper_bound,
+                   Distribution::Linear}}));
   coord_maps.emplace_back(
       make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(Wedge3DPrism{
           Wedge2D{inner_radius, radial_partitioning.at(0), 0.0, 1.0,
                   OrientationMap<2>{std::array<Direction<2>, 2>{
                       {Direction<2>::lower_xi(), Direction<2>::lower_eta()}}},
                   use_equiangular_map},
-          Affine{-1.0, 1.0, height_partitioning.at(0), upper_bound}}));
+          Interval{-1.0, 1.0, height_partitioning.at(0), upper_bound,
+                   Distribution::Linear}}));
   coord_maps.emplace_back(
       make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(Wedge3DPrism{
           Wedge2D{inner_radius, radial_partitioning.at(0), 0.0, 1.0,
                   OrientationMap<2>{std::array<Direction<2>, 2>{
                       {Direction<2>::upper_eta(), Direction<2>::lower_xi()}}},
                   use_equiangular_map},
-          Affine{-1.0, 1.0, height_partitioning.at(0), upper_bound}}));
+          Interval{-1.0, 1.0, height_partitioning.at(0), upper_bound,
+                   Distribution::Linear}}));
   coord_maps.emplace_back(
       make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(Wedge3DPrism{
           Wedge2D{radial_partitioning.at(0), outer_radius, 1.0, 1.0,
@@ -806,7 +792,8 @@ void test_refined_cylinder_boundaries(
                       {Direction<2>::upper_xi(), Direction<2>::upper_eta()}}},
                   use_equiangular_map, use_both_halves,
                   outer_radial_distribution},
-          Affine{-1.0, 1.0, height_partitioning.at(0), upper_bound}}));
+          Interval{-1.0, 1.0, height_partitioning.at(0), upper_bound,
+                   Distribution::Linear}}));
   coord_maps.emplace_back(
       make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(Wedge3DPrism{
           Wedge2D{radial_partitioning.at(0), outer_radius, 1.0, 1.0,
@@ -814,7 +801,8 @@ void test_refined_cylinder_boundaries(
                       {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}},
                   use_equiangular_map, use_both_halves,
                   outer_radial_distribution},
-          Affine{-1.0, 1.0, height_partitioning.at(0), upper_bound}}));
+          Interval{-1.0, 1.0, height_partitioning.at(0), upper_bound,
+                   Distribution::Linear}}));
   coord_maps.emplace_back(
       make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(Wedge3DPrism{
           Wedge2D{radial_partitioning.at(0), outer_radius, 1.0, 1.0,
@@ -822,7 +810,8 @@ void test_refined_cylinder_boundaries(
                       {Direction<2>::lower_xi(), Direction<2>::lower_eta()}}},
                   use_equiangular_map, use_both_halves,
                   outer_radial_distribution},
-          Affine{-1.0, 1.0, height_partitioning.at(0), upper_bound}}));
+          Interval{-1.0, 1.0, height_partitioning.at(0), upper_bound,
+                   Distribution::Linear}}));
   coord_maps.emplace_back(
       make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(Wedge3DPrism{
           Wedge2D{radial_partitioning.at(0), outer_radius, 1.0, 1.0,
@@ -830,7 +819,8 @@ void test_refined_cylinder_boundaries(
                       {Direction<2>::upper_eta(), Direction<2>::lower_xi()}}},
                   use_equiangular_map, use_both_halves,
                   outer_radial_distribution},
-          Affine{-1.0, 1.0, height_partitioning.at(0), upper_bound}}));
+          Interval{-1.0, 1.0, height_partitioning.at(0), upper_bound,
+                   Distribution::Linear}}));
 
   test_domain_construction(domain, expected_block_neighbors,
                            expected_external_boundaries, coord_maps,
@@ -1076,13 +1066,14 @@ void test_refined_cylinder_periodic_boundaries(const bool use_equiangular_map) {
   CHECK(refined_cylinder.initial_refinement_levels() ==
         expected_refinement_level);
   using TargetFrame = Frame::Inertial;
-  using Affine = CoordinateMaps::Affine;
-  using Affine3D = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
-  using Equiangular = CoordinateMaps::Equiangular;
-  using Equiangular3DPrism =
-      CoordinateMaps::ProductOf3Maps<Equiangular, Equiangular, Affine>;
+  using Interval = CoordinateMaps::Interval;
+  using Interval3D =
+      CoordinateMaps::ProductOf3Maps<Interval, Interval, Interval>;
   using Wedge2D = CoordinateMaps::Wedge<2>;
-  using Wedge3DPrism = CoordinateMaps::ProductOf2Maps<Wedge2D, Affine>;
+  using Wedge3DPrism = CoordinateMaps::ProductOf2Maps<Wedge2D, Interval>;
+  using Distribution = domain::CoordinateMaps::Distribution;
+  const auto angular_distribution =
+      use_equiangular_map ? Distribution::Equiangular : Distribution::Linear;
   // in this section, the coord_map is filled same as with the cylinder;
   // first the first shell with radial boundaries
   // (inner_radius, radial_partitioning.at(0)) and circularity changing from 0
@@ -1090,154 +1081,150 @@ void test_refined_cylinder_periodic_boundaries(const bool use_equiangular_map) {
   // (radial_partitioning.at(0), outer_radius) and uniform circularity is added.
   // this is then repeated for (lower_bound, height_partitioning.at(0)) and
   // (height_partitioning.at(0), upper_bound)
-  if (use_equiangular_map) {
-    coord_maps.emplace_back(
-        make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(
-            Equiangular3DPrism{
-                Equiangular(-1.0, 1.0, -1.0 * inner_radius / sqrt(2.0),
-                            inner_radius / sqrt(2.0)),
-                Equiangular(-1.0, 1.0, -1.0 * inner_radius / sqrt(2.0),
-                            inner_radius / sqrt(2.0)),
-                Affine{-1.0, 1.0, lower_bound, height_partitioning.at(0)}}));
-  } else {
-    coord_maps.emplace_back(
-        make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(Affine3D{
-            Affine(-1.0, 1.0, -1.0 * inner_radius / sqrt(2.0),
-                   inner_radius / sqrt(2.0)),
-            Affine(-1.0, 1.0, -1.0 * inner_radius / sqrt(2.0),
-                   inner_radius / sqrt(2.0)),
-            Affine{-1.0, 1.0, lower_bound, height_partitioning.at(0)}}));
-  }
+  coord_maps.emplace_back(
+      make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(
+          Interval3D{Interval(-1.0, 1.0, -1.0 * inner_radius / sqrt(2.0),
+                              inner_radius / sqrt(2.0), angular_distribution),
+                     Interval(-1.0, 1.0, -1.0 * inner_radius / sqrt(2.0),
+                              inner_radius / sqrt(2.0), angular_distribution),
+                     Interval{-1.0, 1.0, lower_bound, height_partitioning.at(0),
+                              Distribution::Linear}}));
   coord_maps.emplace_back(
       make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(Wedge3DPrism{
           Wedge2D{inner_radius, radial_partitioning.at(0), 0.0, 1.0,
                   OrientationMap<2>{std::array<Direction<2>, 2>{
                       {Direction<2>::upper_xi(), Direction<2>::upper_eta()}}},
                   use_equiangular_map},
-          Affine{-1.0, 1.0, lower_bound, height_partitioning.at(0)}}));
+          Interval{-1.0, 1.0, lower_bound, height_partitioning.at(0),
+                   Distribution::Linear}}));
   coord_maps.emplace_back(
       make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(Wedge3DPrism{
           Wedge2D{inner_radius, radial_partitioning.at(0), 0.0, 1.0,
                   OrientationMap<2>{std::array<Direction<2>, 2>{
                       {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}},
                   use_equiangular_map},
-          Affine{-1.0, 1.0, lower_bound, height_partitioning.at(0)}}));
+          Interval{-1.0, 1.0, lower_bound, height_partitioning.at(0),
+                   Distribution::Linear}}));
   coord_maps.emplace_back(
       make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(Wedge3DPrism{
           Wedge2D{inner_radius, radial_partitioning.at(0), 0.0, 1.0,
                   OrientationMap<2>{std::array<Direction<2>, 2>{
                       {Direction<2>::lower_xi(), Direction<2>::lower_eta()}}},
                   use_equiangular_map},
-          Affine{-1.0, 1.0, lower_bound, height_partitioning.at(0)}}));
+          Interval{-1.0, 1.0, lower_bound, height_partitioning.at(0),
+                   Distribution::Linear}}));
   coord_maps.emplace_back(
       make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(Wedge3DPrism{
           Wedge2D{inner_radius, radial_partitioning.at(0), 0.0, 1.0,
                   OrientationMap<2>{std::array<Direction<2>, 2>{
                       {Direction<2>::upper_eta(), Direction<2>::lower_xi()}}},
                   use_equiangular_map},
-          Affine{-1.0, 1.0, lower_bound, height_partitioning.at(0)}}));
+          Interval{-1.0, 1.0, lower_bound, height_partitioning.at(0),
+                   Distribution::Linear}}));
   coord_maps.emplace_back(
       make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(Wedge3DPrism{
           Wedge2D{radial_partitioning.at(0), outer_radius, 1.0, 1.0,
                   OrientationMap<2>{std::array<Direction<2>, 2>{
                       {Direction<2>::upper_xi(), Direction<2>::upper_eta()}}},
                   use_equiangular_map},
-          Affine{-1.0, 1.0, lower_bound, height_partitioning.at(0)}}));
+          Interval{-1.0, 1.0, lower_bound, height_partitioning.at(0),
+                   Distribution::Linear}}));
   coord_maps.emplace_back(
       make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(Wedge3DPrism{
           Wedge2D{radial_partitioning.at(0), outer_radius, 1.0, 1.0,
                   OrientationMap<2>{std::array<Direction<2>, 2>{
                       {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}},
                   use_equiangular_map},
-          Affine{-1.0, 1.0, lower_bound, height_partitioning.at(0)}}));
+          Interval{-1.0, 1.0, lower_bound, height_partitioning.at(0),
+                   Distribution::Linear}}));
   coord_maps.emplace_back(
       make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(Wedge3DPrism{
           Wedge2D{radial_partitioning.at(0), outer_radius, 1.0, 1.0,
                   OrientationMap<2>{std::array<Direction<2>, 2>{
                       {Direction<2>::lower_xi(), Direction<2>::lower_eta()}}},
                   use_equiangular_map},
-          Affine{-1.0, 1.0, lower_bound, height_partitioning.at(0)}}));
+          Interval{-1.0, 1.0, lower_bound, height_partitioning.at(0),
+                   Distribution::Linear}}));
   coord_maps.emplace_back(
       make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(Wedge3DPrism{
           Wedge2D{radial_partitioning.at(0), outer_radius, 1.0, 1.0,
                   OrientationMap<2>{std::array<Direction<2>, 2>{
                       {Direction<2>::upper_eta(), Direction<2>::lower_xi()}}},
                   use_equiangular_map},
-          Affine{-1.0, 1.0, lower_bound, height_partitioning.at(0)}}));
-  if (use_equiangular_map) {
-    coord_maps.emplace_back(
-        make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(
-            Equiangular3DPrism{
-                Equiangular(-1.0, 1.0, -1.0 * inner_radius / sqrt(2.0),
-                            inner_radius / sqrt(2.0)),
-                Equiangular(-1.0, 1.0, -1.0 * inner_radius / sqrt(2.0),
-                            inner_radius / sqrt(2.0)),
-                Affine{-1.0, 1.0, height_partitioning.at(0), upper_bound}}));
-  } else {
-    coord_maps.emplace_back(
-        make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(Affine3D{
-            Affine(-1.0, 1.0, -1.0 * inner_radius / sqrt(2.0),
-                   inner_radius / sqrt(2.0)),
-            Affine(-1.0, 1.0, -1.0 * inner_radius / sqrt(2.0),
-                   inner_radius / sqrt(2.0)),
-            Affine{-1.0, 1.0, height_partitioning.at(0), upper_bound}}));
-  }
+          Interval{-1.0, 1.0, lower_bound, height_partitioning.at(0),
+                   Distribution::Linear}}));
+  coord_maps.emplace_back(
+      make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(
+          Interval3D{Interval(-1.0, 1.0, -1.0 * inner_radius / sqrt(2.0),
+                              inner_radius / sqrt(2.0), angular_distribution),
+                     Interval(-1.0, 1.0, -1.0 * inner_radius / sqrt(2.0),
+                              inner_radius / sqrt(2.0), angular_distribution),
+                     Interval{-1.0, 1.0, height_partitioning.at(0), upper_bound,
+                              Distribution::Linear}}));
   coord_maps.emplace_back(
       make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(Wedge3DPrism{
           Wedge2D{inner_radius, radial_partitioning.at(0), 0.0, 1.0,
                   OrientationMap<2>{std::array<Direction<2>, 2>{
                       {Direction<2>::upper_xi(), Direction<2>::upper_eta()}}},
                   use_equiangular_map},
-          Affine{-1.0, 1.0, height_partitioning.at(0), upper_bound}}));
+          Interval{-1.0, 1.0, height_partitioning.at(0), upper_bound,
+                   Distribution::Linear}}));
   coord_maps.emplace_back(
       make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(Wedge3DPrism{
           Wedge2D{inner_radius, radial_partitioning.at(0), 0.0, 1.0,
                   OrientationMap<2>{std::array<Direction<2>, 2>{
                       {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}},
                   use_equiangular_map},
-          Affine{-1.0, 1.0, height_partitioning.at(0), upper_bound}}));
+          Interval{-1.0, 1.0, height_partitioning.at(0), upper_bound,
+                   Distribution::Linear}}));
   coord_maps.emplace_back(
       make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(Wedge3DPrism{
           Wedge2D{inner_radius, radial_partitioning.at(0), 0.0, 1.0,
                   OrientationMap<2>{std::array<Direction<2>, 2>{
                       {Direction<2>::lower_xi(), Direction<2>::lower_eta()}}},
                   use_equiangular_map},
-          Affine{-1.0, 1.0, height_partitioning.at(0), upper_bound}}));
+          Interval{-1.0, 1.0, height_partitioning.at(0), upper_bound,
+                   Distribution::Linear}}));
   coord_maps.emplace_back(
       make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(Wedge3DPrism{
           Wedge2D{inner_radius, radial_partitioning.at(0), 0.0, 1.0,
                   OrientationMap<2>{std::array<Direction<2>, 2>{
                       {Direction<2>::upper_eta(), Direction<2>::lower_xi()}}},
                   use_equiangular_map},
-          Affine{-1.0, 1.0, height_partitioning.at(0), upper_bound}}));
+          Interval{-1.0, 1.0, height_partitioning.at(0), upper_bound,
+                   Distribution::Linear}}));
   coord_maps.emplace_back(
       make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(Wedge3DPrism{
           Wedge2D{radial_partitioning.at(0), outer_radius, 1.0, 1.0,
                   OrientationMap<2>{std::array<Direction<2>, 2>{
                       {Direction<2>::upper_xi(), Direction<2>::upper_eta()}}},
                   use_equiangular_map},
-          Affine{-1.0, 1.0, height_partitioning.at(0), upper_bound}}));
+          Interval{-1.0, 1.0, height_partitioning.at(0), upper_bound,
+                   Distribution::Linear}}));
   coord_maps.emplace_back(
       make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(Wedge3DPrism{
           Wedge2D{radial_partitioning.at(0), outer_radius, 1.0, 1.0,
                   OrientationMap<2>{std::array<Direction<2>, 2>{
                       {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}},
                   use_equiangular_map},
-          Affine{-1.0, 1.0, height_partitioning.at(0), upper_bound}}));
+          Interval{-1.0, 1.0, height_partitioning.at(0), upper_bound,
+                   Distribution::Linear}}));
   coord_maps.emplace_back(
       make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(Wedge3DPrism{
           Wedge2D{radial_partitioning.at(0), outer_radius, 1.0, 1.0,
                   OrientationMap<2>{std::array<Direction<2>, 2>{
                       {Direction<2>::lower_xi(), Direction<2>::lower_eta()}}},
                   use_equiangular_map},
-          Affine{-1.0, 1.0, height_partitioning.at(0), upper_bound}}));
+          Interval{-1.0, 1.0, height_partitioning.at(0), upper_bound,
+                   Distribution::Linear}}));
   coord_maps.emplace_back(
       make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(Wedge3DPrism{
           Wedge2D{radial_partitioning.at(0), outer_radius, 1.0, 1.0,
                   OrientationMap<2>{std::array<Direction<2>, 2>{
                       {Direction<2>::upper_eta(), Direction<2>::lower_xi()}}},
                   use_equiangular_map},
-          Affine{-1.0, 1.0, height_partitioning.at(0), upper_bound}}));
+          Interval{-1.0, 1.0, height_partitioning.at(0), upper_bound,
+                   Distribution::Linear}}));
 
   test_domain_construction(domain, expected_block_neighbors,
                            expected_external_boundaries, coord_maps,

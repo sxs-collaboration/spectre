@@ -23,7 +23,7 @@
 /// \cond
 namespace domain {
 namespace CoordinateMaps {
-class Affine;
+class Interval;
 template <typename Map1, typename Map2>
 class ProductOf2Maps;
 template <typename Map1, typename Map2, typename Map3>
@@ -115,43 +115,45 @@ namespace domain::creators {
  */
 class CylindricalBinaryCompactObject : public DomainCreator<3> {
  public:
-  using maps_list = tmpl::list<
-      domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial,
-                            CoordinateMaps::ProductOf3Maps<
-                                CoordinateMaps::Affine, CoordinateMaps::Affine,
-                                CoordinateMaps::Affine>,
-                            CoordinateMaps::CylindricalEndcap,
-                            CoordinateMaps::DiscreteRotation<3>>,
-      domain::CoordinateMap<
-          Frame::BlockLogical, Frame::Inertial,
-          CoordinateMaps::ProductOf2Maps<CoordinateMaps::Wedge<2>,
-                                         CoordinateMaps::Affine>,
-          CoordinateMaps::CylindricalEndcap,
-          CoordinateMaps::DiscreteRotation<3>>,
-      domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial,
-                            CoordinateMaps::ProductOf3Maps<
-                                CoordinateMaps::Affine, CoordinateMaps::Affine,
-                                CoordinateMaps::Affine>,
-                            CoordinateMaps::CylindricalFlatEndcap,
-                            CoordinateMaps::DiscreteRotation<3>>,
-      domain::CoordinateMap<
-          Frame::BlockLogical, Frame::Inertial,
-          CoordinateMaps::ProductOf2Maps<CoordinateMaps::Wedge<2>,
-                                         CoordinateMaps::Affine>,
-          CoordinateMaps::CylindricalFlatEndcap,
-          CoordinateMaps::DiscreteRotation<3>>,
-      domain::CoordinateMap<
-          Frame::BlockLogical, Frame::Inertial,
-          CoordinateMaps::ProductOf2Maps<CoordinateMaps::Wedge<2>,
-                                         CoordinateMaps::Affine>,
-          CoordinateMaps::CylindricalFlatSide,
-          CoordinateMaps::DiscreteRotation<3>>,
-      domain::CoordinateMap<
-          Frame::BlockLogical, Frame::Inertial,
-          CoordinateMaps::ProductOf2Maps<CoordinateMaps::Wedge<2>,
-                                         CoordinateMaps::Affine>,
-          CoordinateMaps::CylindricalSide,
-          CoordinateMaps::DiscreteRotation<3>>>;
+  using maps_list =
+      tmpl::list<domain::CoordinateMap<
+                     Frame::BlockLogical, Frame::Inertial,
+                     CoordinateMaps::ProductOf3Maps<CoordinateMaps::Interval,
+                                                    CoordinateMaps::Interval,
+                                                    CoordinateMaps::Interval>,
+                     CoordinateMaps::CylindricalEndcap,
+                     CoordinateMaps::DiscreteRotation<3>>,
+                 domain::CoordinateMap<
+                     Frame::BlockLogical, Frame::Inertial,
+                     CoordinateMaps::ProductOf2Maps<CoordinateMaps::Wedge<2>,
+                                                    CoordinateMaps::Interval>,
+                     CoordinateMaps::CylindricalEndcap,
+                     CoordinateMaps::DiscreteRotation<3>>,
+                 domain::CoordinateMap<
+                     Frame::BlockLogical, Frame::Inertial,
+                     CoordinateMaps::ProductOf3Maps<CoordinateMaps::Interval,
+                                                    CoordinateMaps::Interval,
+                                                    CoordinateMaps::Interval>,
+                     CoordinateMaps::CylindricalFlatEndcap,
+                     CoordinateMaps::DiscreteRotation<3>>,
+                 domain::CoordinateMap<
+                     Frame::BlockLogical, Frame::Inertial,
+                     CoordinateMaps::ProductOf2Maps<CoordinateMaps::Wedge<2>,
+                                                    CoordinateMaps::Interval>,
+                     CoordinateMaps::CylindricalFlatEndcap,
+                     CoordinateMaps::DiscreteRotation<3>>,
+                 domain::CoordinateMap<
+                     Frame::BlockLogical, Frame::Inertial,
+                     CoordinateMaps::ProductOf2Maps<CoordinateMaps::Wedge<2>,
+                                                    CoordinateMaps::Interval>,
+                     CoordinateMaps::CylindricalFlatSide,
+                     CoordinateMaps::DiscreteRotation<3>>,
+                 domain::CoordinateMap<
+                     Frame::BlockLogical, Frame::Inertial,
+                     CoordinateMaps::ProductOf2Maps<CoordinateMaps::Wedge<2>,
+                                                    CoordinateMaps::Interval>,
+                     CoordinateMaps::CylindricalSide,
+                     CoordinateMaps::DiscreteRotation<3>>>;
 
   struct CenterA {
     using type = std::array<double, 3>;

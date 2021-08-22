@@ -20,8 +20,7 @@
 /// \cond
 namespace domain {
 namespace CoordinateMaps {
-class Affine;
-class Equiangular;
+class Interval;
 template <typename Map1, typename Map2>
 class ProductOf2Maps;
 template <typename Map1, typename Map2, typename Map3>
@@ -48,20 +47,16 @@ namespace domain::creators {
 /// \image html Cylinder.png "The Cylinder Domain."
 class Cylinder : public DomainCreator<3> {
  public:
-  using maps_list = tmpl::list<
-      domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial,
-                            CoordinateMaps::ProductOf3Maps<
-                                CoordinateMaps::Affine, CoordinateMaps::Affine,
-                                CoordinateMaps::Affine>>,
-      domain::CoordinateMap<
-          Frame::BlockLogical, Frame::Inertial,
-          CoordinateMaps::ProductOf3Maps<CoordinateMaps::Equiangular,
-                                         CoordinateMaps::Equiangular,
-                                         CoordinateMaps::Affine>>,
-      domain::CoordinateMap<
-          Frame::BlockLogical, Frame::Inertial,
-          CoordinateMaps::ProductOf2Maps<CoordinateMaps::Wedge<2>,
-                                         CoordinateMaps::Affine>>>;
+  using maps_list =
+      tmpl::list<domain::CoordinateMap<
+                     Frame::BlockLogical, Frame::Inertial,
+                     CoordinateMaps::ProductOf3Maps<CoordinateMaps::Interval,
+                                                    CoordinateMaps::Interval,
+                                                    CoordinateMaps::Interval>>,
+                 domain::CoordinateMap<
+                     Frame::BlockLogical, Frame::Inertial,
+                     CoordinateMaps::ProductOf2Maps<CoordinateMaps::Wedge<2>,
+                                                    CoordinateMaps::Interval>>>;
 
   struct InnerRadius {
     using type = double;

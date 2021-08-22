@@ -22,6 +22,7 @@
 #include "Domain/CoordinateMaps/Equiangular.hpp"
 #include "Domain/CoordinateMaps/Frustum.hpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
+#include "Domain/CoordinateMaps/Interval.hpp"
 #include "Domain/CoordinateMaps/MapInstantiationMacros.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
@@ -933,57 +934,42 @@ std::vector<std::array<size_t, 8>> corners_for_biradially_layered_domains(
   return corners;
 }
 
-template <bool UseEquiangularMap>
-tmpl::conditional_t<
-    UseEquiangularMap,
-    std::vector<domain::CoordinateMaps::ProductOf3Maps<
-        domain::CoordinateMaps::Equiangular,
-        domain::CoordinateMaps::Equiangular, domain::CoordinateMaps::Affine>>,
-    std::vector<domain::CoordinateMaps::ProductOf3Maps<
-        domain::CoordinateMaps::Affine, domain::CoordinateMaps::Affine,
-        domain::CoordinateMaps::Affine>>>
+std::vector<domain::CoordinateMaps::ProductOf3Maps<
+    domain::CoordinateMaps::Interval, domain::CoordinateMaps::Interval,
+    domain::CoordinateMaps::Interval>>
 cyl_wedge_coord_map_center_blocks(
     const double inner_radius, const double lower_bound,
-    const double upper_bound, const std::vector<double>& height_partitioning,
+    const double upper_bound, const bool use_equiangular_map,
+    const std::vector<double>& height_partitioning,
     const CylindricalDomainParityFlip parity_flip) noexcept {
-  using Affine = domain::CoordinateMaps::Affine;
-  using Affine3D =
-      domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
-  using Equiangular = domain::CoordinateMaps::Equiangular;
-  using Equiangular3DPrism =
-      domain::CoordinateMaps::ProductOf3Maps<Equiangular, Equiangular, Affine>;
-  std::vector<
-      std::conditional_t<UseEquiangularMap, Equiangular3DPrism, Affine3D>>
-      maps{};
+  using Interval = domain::CoordinateMaps::Interval;
+  using Interval3D =
+      domain::CoordinateMaps::ProductOf3Maps<Interval, Interval, Interval>;
+  std::vector<Interval3D> maps{};
   const double lower_logical_zeta =
       parity_flip == CylindricalDomainParityFlip::z_direction ? 1.0 : -1.0;
   const double upper_logical_zeta =
       parity_flip == CylindricalDomainParityFlip::z_direction ? -1.0 : 1.0;
   double temp_lower_bound = lower_bound;
   double temp_upper_bound{};
+  const auto angular_distribution =
+      use_equiangular_map ? domain::CoordinateMaps::Distribution::Equiangular
+                          : domain::CoordinateMaps::Distribution::Linear;
   for (size_t layer = 0; layer < 1 + height_partitioning.size(); layer++) {
     if (layer != height_partitioning.size()) {
       temp_upper_bound = height_partitioning.at(layer);
     } else {
       temp_upper_bound = upper_bound;
     }
-    if constexpr (UseEquiangularMap) {
-      maps.emplace_back(Equiangular3DPrism{
-          Equiangular(-1.0, 1.0, -1.0 * inner_radius / sqrt(2.0),
-                      inner_radius / sqrt(2.0)),
-          Equiangular(-1.0, 1.0, -1.0 * inner_radius / sqrt(2.0),
-                      inner_radius / sqrt(2.0)),
-          Affine{lower_logical_zeta, upper_logical_zeta, temp_lower_bound,
-                 temp_upper_bound}});
-    } else {
-      maps.emplace_back(
-          Affine3D{Affine(-1.0, 1.0, -1.0 * inner_radius / sqrt(2.0),
-                          inner_radius / sqrt(2.0)),
-                   Affine(-1.0, 1.0, -1.0 * inner_radius / sqrt(2.0),
-                          inner_radius / sqrt(2.0)),
-                   Affine{lower_logical_zeta, upper_logical_zeta,
-                          temp_lower_bound, temp_upper_bound}});
-    }
+    maps.emplace_back(
+        Interval3D{Interval(-1.0, 1.0, -1.0 * inner_radius / sqrt(2.0),
+                            inner_radius / sqrt(2.0), angular_distribution),
+                   Interval(-1.0, 1.0, -1.0 * inner_radius / sqrt(2.0),
+                            inner_radius / sqrt(2.0), angular_distribution),
+                   Interval{lower_logical_zeta, upper_logical_zeta,
+                            temp_lower_bound, temp_upper_bound,
+                            domain::CoordinateMaps::Distribution::Linear}});
+
     if (layer != height_partitioning.size()) {
       temp_lower_bound = height_partitioning.at(layer);
     }
@@ -992,7 +978,7 @@ cyl_wedge_coord_map_center_blocks(
 }
 
 std::vector<domain::CoordinateMaps::ProductOf2Maps<
-    domain::CoordinateMaps::Wedge<2>, domain::CoordinateMaps::Affine>>
+    domain::CoordinateMaps::Wedge<2>, domain::CoordinateMaps::Interval>>
 cyl_wedge_coord_map_surrounding_blocks(
     const double inner_radius, const double outer_radius,
     const double lower_bound, const double upper_bound,
@@ -1002,9 +988,10 @@ cyl_wedge_coord_map_surrounding_blocks(
     const std::vector<domain::CoordinateMaps::Distribution>&
         radial_distribution,
     const CylindricalDomainParityFlip parity_flip) noexcept {
-  using Affine = domain::CoordinateMaps::Affine;
+  using Interval = domain::CoordinateMaps::Interval;
   using Wedge2D = domain::CoordinateMaps::Wedge<2>;
-  using Wedge3DPrism = domain::CoordinateMaps::ProductOf2Maps<Wedge2D, Affine>;
+  using Wedge3DPrism =
+      domain::CoordinateMaps::ProductOf2Maps<Wedge2D, Interval>;
   ASSERT(radial_distribution.size() == 1 + radial_partitioning.size(),
          "Specify a radial distribution for every cylindrical shell. You "
          "specified "
@@ -1047,10 +1034,11 @@ cyl_wedge_coord_map_surrounding_blocks(
       } else {
         temp_outer_radius = outer_radius;
       }
-      auto z_map = Affine{
+      auto z_map = Interval{
           parity_flip == CylindricalDomainParityFlip::z_direction ? 1.0 : -1.0,
           parity_flip == CylindricalDomainParityFlip::z_direction ? -1.0 : 1.0,
-          temp_lower_bound, temp_upper_bound};
+          temp_lower_bound, temp_upper_bound,
+          domain::CoordinateMaps::Distribution::Linear};
       for (const auto& cardinal_direction : wedge_orientations) {
         maps.emplace_back(Wedge3DPrism{
             Wedge2D{temp_inner_radius, temp_outer_radius,
@@ -1116,15 +1104,9 @@ cyl_wedge_coordinate_maps(
     }
   };
 
-  if (use_equiangular_map) {
-    add_to_cylinder_mapping(cyl_wedge_coord_map_center_blocks<true>(
-        inner_radius, lower_bound, upper_bound, height_partitioning,
-        CylindricalDomainParityFlip::none));
-  } else {
-    add_to_cylinder_mapping(cyl_wedge_coord_map_center_blocks<false>(
-        inner_radius, lower_bound, upper_bound, height_partitioning,
-        CylindricalDomainParityFlip::none));
-  }
+  add_to_cylinder_mapping(cyl_wedge_coord_map_center_blocks(
+      inner_radius, lower_bound, upper_bound, use_equiangular_map,
+      height_partitioning, CylindricalDomainParityFlip::none));
   return cylinder_mapping;
 }
 
