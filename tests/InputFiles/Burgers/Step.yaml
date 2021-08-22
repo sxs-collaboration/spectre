@@ -5,68 +5,73 @@
 # CommandLineArgs: +balancer RandCentLB +p2
 # Timeout: 5
 # Check: parse;execute
+# ExpectedOutput:
+#   BurgersStepVolume0.h5
 
 AnalyticSolution:
   Step:
     LeftValue: 2.
     RightValue: 1.
-    InitialPosition: -0.5
+    InitialPosition: -0.65
 
 Evolution:
   InitialTime: 0.0
-  InitialTimeStep: 0.001
+  InitialTimeStep: 0.0005
   TimeStepper:
     AdamsBashforthN:
       Order: 3
 
 PhaseChangeAndTriggers:
-  - - Slabs:
-        EvenlySpaced:
-          Interval: 10
-          Offset: 0
-    - - VisitAndReturn(LoadBalancing)
 
 DomainCreator:
   Interval:
     LowerBound: [-1.0]
     UpperBound: [1.0]
     InitialRefinement: [2]
-    InitialGridPoints: [7]
+    InitialGridPoints: [4]
     TimeDependence: None
     BoundaryConditions:
-      LowerBoundary: DirichletAnalytic
-      UpperBoundary: DirichletAnalytic
+      LowerBoundary:
+        Dirichlet:
+          U: 2.0
+      UpperBoundary: Outflow
 
 SpatialDiscretization:
   BoundaryCorrection:
-    Hll:
+     Rusanov:
   DiscontinuousGalerkin:
     Formulation: StrongInertial
     Quadrature: GaussLobatto
-
-Limiter:
-  Minmod:
-    Type: LambdaPi1
-    # The optimal value of the TVB constant is problem-dependent.
-    # This test uses 0 to favor robustness over accuracy.
-    TvbConstant: 0.0
-    DisableForDebugging: false
+    Subcell:
+      InitialData:
+        RdmpDelta0: 1.0e-4
+        RdmpEpsilon: 1.0e-3
+        PerssonExponent: 4.0
+      RdmpDelta0: 1.0e-4
+      RdmpEpsilon: 1.0e-3
+      PerssonExponent: 4.0
+      AlwaysUseSubcells: false
+  SubcellSolver:
+    Reconstructor:
+      MonotisedCentral:
 
 EventsAndTriggers:
-  ? Always
-  : - ChangeSlabSize:
-        DelayChange: 5
-        StepChoosers:
-          - Cfl:
-              SafetyFactor: 0.5
-          - Increase:
-              Factor: 2.0
+  ? TimeCompares:
+      Comparison: GreaterThanOrEqualTo
+      Value: 1.0
+  : - Completion
+  ? Slabs:
+      EvenlySpaced:
+        Interval: 40
+        Offset: 0
+  : - ObserveFields:
+        VariablesToObserve: ["U", "TciStatus"]
+        SubfileName: element_data
+        InterpolateToMesh: None
+        CoordinatesFloatingPointType: Float
+        FloatingPointTypes: [Float]
 
 EventsAndDenseTriggers:
-  ? Times:
-      Specified:
-        Values: [0.123456]
-  : - Completion
 
 Observers:
   VolumeFileName: "BurgersStepVolume"
