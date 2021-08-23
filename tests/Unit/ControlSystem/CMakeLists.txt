@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
   Test_Controller.cpp
   Test_Tags.cpp
   Test_TimescaleTuner.cpp
+  Test_UpdateFunctionOfTime.cpp
   )
 
 add_test_library(

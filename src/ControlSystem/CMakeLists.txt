@@ -21,6 +21,7 @@ spectre_target_headers(
   Controller.hpp
   Tags.hpp
   TimescaleTuner.hpp
+  UpdateFunctionOfTime.hpp
   )
 
 target_link_libraries(
