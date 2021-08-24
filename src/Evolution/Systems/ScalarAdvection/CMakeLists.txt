@@ -29,9 +29,14 @@ spectre_target_headers(
 
 target_link_libraries(
   ${LIBRARY}
-  PUBLIC DataStructures
-  INTERFACE ErrorHandling
+  PUBLIC
+  DataStructures
+  DgSubcell
+  INTERFACE
+  ErrorHandling
   )
 
 add_subdirectory(BoundaryConditions)
 add_subdirectory(BoundaryCorrections)
+add_subdirectory(FiniteDifference)
+add_subdirectory(Subcell)
