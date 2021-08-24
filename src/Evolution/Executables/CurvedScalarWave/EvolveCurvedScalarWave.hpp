@@ -184,10 +184,14 @@ struct EvolutionMetavars {
 
   using step_actions = tmpl::flatten<tmpl::list<
       evolution::dg::Actions::ComputeTimeDerivative<EvolutionMetavars>,
-      evolution::dg::Actions::ApplyBoundaryCorrections<EvolutionMetavars>,
       tmpl::conditional_t<
-          local_time_stepping, tmpl::list<>,
-          tmpl::list<Actions::RecordTimeStepperData<>,
+          local_time_stepping,
+          tmpl::list<evolution::Actions::RunEventsAndDenseTriggers<>,
+                     evolution::dg::Actions::ApplyBoundaryCorrections<
+                         EvolutionMetavars>>,
+          tmpl::list<evolution::dg::Actions::ApplyBoundaryCorrections<
+                         EvolutionMetavars>,
+                     Actions::RecordTimeStepperData<>,
                      evolution::Actions::RunEventsAndDenseTriggers<>,
                      Actions::UpdateU<>>>,
       tmpl::conditional_t<
@@ -231,7 +235,7 @@ struct EvolutionMetavars {
       PhaseControl::get_phase_change_tags<phase_changes>;
 
   using const_global_cache_tags =
-      tmpl::list<initial_data_tag, time_stepper_tag, Tags::EventsAndTriggers,
+      tmpl::list<initial_data_tag, Tags::EventsAndTriggers,
                  PhaseControl::Tags::PhaseChangeAndTriggers<phase_changes>>;
 
   using dg_registration_list =
