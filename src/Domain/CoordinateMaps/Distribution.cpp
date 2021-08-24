@@ -17,6 +17,8 @@ std::ostream& operator<<(std::ostream& os,
   switch (distribution) {
     case Distribution::Linear:
       return os << "Linear";
+    case Distribution::Equiangular:
+      return os << "Equiangular";
     case Distribution::Logarithmic:
       return os << "Logarithmic";
     case Distribution::Inverse:
@@ -35,6 +37,8 @@ Options::create_from_yaml<domain::CoordinateMaps::Distribution>::create<void>(
   const auto distribution = options.parse_as<std::string>();
   if (distribution == "Linear") {
     return domain::CoordinateMaps::Distribution::Linear;
+  } else if (distribution == "Equiangular") {
+    return domain::CoordinateMaps::Distribution::Equiangular;
   } else if (distribution == "Logarithmic") {
     return domain::CoordinateMaps::Distribution::Logarithmic;
   } else if (distribution == "Inverse") {

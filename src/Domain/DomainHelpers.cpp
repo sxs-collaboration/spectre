@@ -22,6 +22,7 @@
 #include "Domain/CoordinateMaps/Equiangular.hpp"
 #include "Domain/CoordinateMaps/Frustum.hpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
+#include "Domain/CoordinateMaps/Interval.hpp"
 #include "Domain/CoordinateMaps/MapInstantiationMacros.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
@@ -615,10 +616,9 @@ sph_wedge_coordinate_maps(
     const ShellWedges which_wedges) noexcept {
   ASSERT(not use_half_wedges or which_wedges == ShellWedges::All,
          "If we are using half wedges we must also be using ShellWedges::All.");
-  ASSERT(
-      radial_partitioning.empty() or inner_sphericity == outer_sphericity,
-      "If we are using more than one layer the inner and outer sphericities "
-      "must match.");
+  ASSERT(radial_partitioning.empty() or inner_sphericity == outer_sphericity,
+         "If we are using more than one layer the inner and outer sphericities "
+         "must match.");
   ASSERT(radial_distribution.size() == 1 + radial_partitioning.size(),
          "Specify a radial distribution for every spherical shell. You "
          "specified "
@@ -934,78 +934,66 @@ std::vector<std::array<size_t, 8>> corners_for_biradially_layered_domains(
   return corners;
 }
 
-template <bool UseEquiangularMap>
-tmpl::conditional_t<
-    UseEquiangularMap,
-    std::vector<domain::CoordinateMaps::ProductOf3Maps<
-        domain::CoordinateMaps::Equiangular,
-        domain::CoordinateMaps::Equiangular, domain::CoordinateMaps::Affine>>,
-    std::vector<domain::CoordinateMaps::ProductOf3Maps<
-        domain::CoordinateMaps::Affine, domain::CoordinateMaps::Affine,
-        domain::CoordinateMaps::Affine>>>
+std::vector<domain::CoordinateMaps::ProductOf3Maps<
+    domain::CoordinateMaps::Interval, domain::CoordinateMaps::Interval,
+    domain::CoordinateMaps::Interval>>
 cyl_wedge_coord_map_center_blocks(
-    const double inner_radius, const double lower_bound,
-    const double upper_bound, const std::vector<double>& height_partitioning,
+    const double inner_radius, const double lower_z_bound,
+    const double upper_z_bound, const bool use_equiangular_map,
+    const std::vector<double>& partitioning_in_z,
+    const std::vector<domain::CoordinateMaps::Distribution>& distribution_in_z,
     const CylindricalDomainParityFlip parity_flip) noexcept {
-  using Affine = domain::CoordinateMaps::Affine;
-  using Affine3D =
-      domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
-  using Equiangular = domain::CoordinateMaps::Equiangular;
-  using Equiangular3DPrism =
-      domain::CoordinateMaps::ProductOf3Maps<Equiangular, Equiangular, Affine>;
-  std::vector<std::conditional_t<UseEquiangularMap, Equiangular3DPrism,
-                                 Affine3D>>
-      maps{};
+  using Interval = domain::CoordinateMaps::Interval;
+  using Interval3D =
+      domain::CoordinateMaps::ProductOf3Maps<Interval, Interval, Interval>;
+  std::vector<Interval3D> maps{};
   const double lower_logical_zeta =
       parity_flip == CylindricalDomainParityFlip::z_direction ? 1.0 : -1.0;
   const double upper_logical_zeta =
       parity_flip == CylindricalDomainParityFlip::z_direction ? -1.0 : 1.0;
-  double temp_lower_bound = lower_bound;
-  double temp_upper_bound{};
-  for (size_t layer = 0; layer < 1 + height_partitioning.size(); layer++) {
-    if (layer != height_partitioning.size()) {
-      temp_upper_bound = height_partitioning.at(layer);
+  double temp_lower_z_bound = lower_z_bound;
+  double temp_upper_z_bound{};
+  const auto angular_distribution =
+      use_equiangular_map ? domain::CoordinateMaps::Distribution::Equiangular
+                          : domain::CoordinateMaps::Distribution::Linear;
+  for (size_t layer = 0; layer < 1 + partitioning_in_z.size(); layer++) {
+    if (layer != partitioning_in_z.size()) {
+      temp_upper_z_bound = partitioning_in_z.at(layer);
     } else {
-      temp_upper_bound = upper_bound;
+      temp_upper_z_bound = upper_z_bound;
     }
-    if constexpr (UseEquiangularMap) {
-      maps.emplace_back(Equiangular3DPrism{
-          Equiangular(-1.0, 1.0, -1.0 * inner_radius / sqrt(2.0),
-                      inner_radius / sqrt(2.0)),
-          Equiangular(-1.0, 1.0, -1.0 * inner_radius / sqrt(2.0),
-                      inner_radius / sqrt(2.0)),
-          Affine{lower_logical_zeta, upper_logical_zeta, temp_lower_bound,
-                 temp_upper_bound}});
-    } else {
-      maps.emplace_back(
-          Affine3D{Affine(-1.0, 1.0, -1.0 * inner_radius / sqrt(2.0),
-                          inner_radius / sqrt(2.0)),
-                   Affine(-1.0, 1.0, -1.0 * inner_radius / sqrt(2.0),
-                          inner_radius / sqrt(2.0)),
-                   Affine{lower_logical_zeta, upper_logical_zeta,
-                          temp_lower_bound, temp_upper_bound}});
-    }
-    if (layer != height_partitioning.size()) {
-      temp_lower_bound = height_partitioning.at(layer);
+    maps.emplace_back(
+        Interval3D{Interval(-1.0, 1.0, -1.0 * inner_radius / sqrt(2.0),
+                            inner_radius / sqrt(2.0), angular_distribution),
+                   Interval(-1.0, 1.0, -1.0 * inner_radius / sqrt(2.0),
+                            inner_radius / sqrt(2.0), angular_distribution),
+                   Interval{lower_logical_zeta, upper_logical_zeta,
+                            temp_lower_z_bound, temp_upper_z_bound,
+                            distribution_in_z.at(layer), lower_z_bound}});
+
+    if (layer != partitioning_in_z.size()) {
+      temp_lower_z_bound = partitioning_in_z.at(layer);
     }
   }
   return maps;
 }
 
 std::vector<domain::CoordinateMaps::ProductOf2Maps<
-    domain::CoordinateMaps::Wedge<2>, domain::CoordinateMaps::Affine>>
+    domain::CoordinateMaps::Wedge<2>, domain::CoordinateMaps::Interval>>
 cyl_wedge_coord_map_surrounding_blocks(
     const double inner_radius, const double outer_radius,
-    const double lower_bound, const double upper_bound,
+    const double lower_z_bound, const double upper_z_bound,
     const bool use_equiangular_map, const double inner_circularity,
     const std::vector<double>& radial_partitioning,
-    const std::vector<double>& height_partitioning,
+    const std::vector<double>& partitioning_in_z,
     const std::vector<domain::CoordinateMaps::Distribution>&
         radial_distribution,
+    const std::vector<domain::CoordinateMaps::Distribution>& distribution_in_z,
     const CylindricalDomainParityFlip parity_flip) noexcept {
-  using Affine = domain::CoordinateMaps::Affine;
+  using Interval = domain::CoordinateMaps::Interval;
   using Wedge2D = domain::CoordinateMaps::Wedge<2>;
-  using Wedge3DPrism = domain::CoordinateMaps::ProductOf2Maps<Wedge2D, Affine>;
+  using Wedge3DPrism =
+      domain::CoordinateMaps::ProductOf2Maps<Wedge2D, Interval>;
   ASSERT(radial_distribution.size() == 1 + radial_partitioning.size(),
          "Specify a radial distribution for every cylindrical shell. You "
          "specified "
@@ -1019,68 +1007,55 @@ cyl_wedge_coord_map_surrounding_blocks(
   double temp_inner_circularity{};
   double temp_inner_radius{};
   double temp_outer_radius{};
-  double temp_lower_bound = lower_bound;
-  double temp_upper_bound{};
+  double temp_lower_z_bound = lower_z_bound;
+  double temp_upper_z_bound{};
   const auto use_both_halves = Wedge2D::WedgeHalves::Both;
-  for (size_t layer = 0; layer < 1 + height_partitioning.size(); layer++) {
+  const std::array<OrientationMap<2>, 4> wedge_orientations = {
+      OrientationMap<2>{std::array<Direction<2>, 2>{
+          {Direction<2>::upper_xi(), Direction<2>::upper_eta()}}},  //+x wedge
+      OrientationMap<2>{std::array<Direction<2>, 2>{
+          {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}},  //+y wedge
+      OrientationMap<2>{std::array<Direction<2>, 2>{
+          {Direction<2>::lower_xi(), Direction<2>::lower_eta()}}},  //-x wedge
+      OrientationMap<2>{std::array<Direction<2>, 2>{
+          {Direction<2>::upper_eta(), Direction<2>::lower_xi()}}}  //-y wedge
+  };
+  for (size_t layer = 0; layer < 1 + partitioning_in_z.size(); layer++) {
     temp_inner_radius = inner_radius;
-    if (layer != height_partitioning.size()) {
-      temp_upper_bound = height_partitioning.at(layer);
+    if (layer != partitioning_in_z.size()) {
+      temp_upper_z_bound = partitioning_in_z.at(layer);
     } else {
-      temp_upper_bound = upper_bound;
+      temp_upper_z_bound = upper_z_bound;
     }
     temp_inner_circularity = inner_circularity;
     for (size_t shell = 0; shell < 1 + radial_partitioning.size(); shell++) {
-      const auto& radial_distribution_this_shell =
-          radial_distribution.at(shell);
       if (shell != radial_partitioning.size()) {
         temp_outer_radius = radial_partitioning.at(shell);
       } else {
         temp_outer_radius = outer_radius;
       }
-      auto z_map = Affine{
+      auto z_map = Interval{
           parity_flip == CylindricalDomainParityFlip::z_direction ? 1.0 : -1.0,
           parity_flip == CylindricalDomainParityFlip::z_direction ? -1.0 : 1.0,
-          temp_lower_bound, temp_upper_bound};
-      maps.emplace_back(Wedge3DPrism{
-          Wedge2D{temp_inner_radius, temp_outer_radius, temp_inner_circularity,
-                  1.0,
-                  OrientationMap<2>{std::array<Direction<2>, 2>{
-                      {Direction<2>::upper_xi(), Direction<2>::upper_eta()}}},
-                  use_equiangular_map, use_both_halves,
-                  radial_distribution_this_shell},
-          z_map});
-      maps.emplace_back(Wedge3DPrism{
-          Wedge2D{temp_inner_radius, temp_outer_radius, temp_inner_circularity,
-                  1.0,
-                  OrientationMap<2>{std::array<Direction<2>, 2>{
-                      {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}},
-                  use_equiangular_map, use_both_halves,
-                  radial_distribution_this_shell},
-          z_map});
-      maps.emplace_back(Wedge3DPrism{
-          Wedge2D{temp_inner_radius, temp_outer_radius, temp_inner_circularity,
-                  1.0,
-                  OrientationMap<2>{std::array<Direction<2>, 2>{
-                      {Direction<2>::lower_xi(), Direction<2>::lower_eta()}}},
-                  use_equiangular_map, use_both_halves,
-                  radial_distribution_this_shell},
-          z_map});
-      maps.emplace_back(Wedge3DPrism{
-          Wedge2D{temp_inner_radius, temp_outer_radius, temp_inner_circularity,
-                  1.0,
-                  OrientationMap<2>{std::array<Direction<2>, 2>{
-                      {Direction<2>::upper_eta(), Direction<2>::lower_xi()}}},
-                  use_equiangular_map, use_both_halves,
-                  radial_distribution_this_shell},
-          z_map});
+          temp_lower_z_bound,
+          temp_upper_z_bound,
+          distribution_in_z.at(layer),
+          lower_z_bound};
+      for (const auto& cardinal_direction : wedge_orientations) {
+        maps.emplace_back(Wedge3DPrism{
+            Wedge2D{temp_inner_radius, temp_outer_radius,
+                    temp_inner_circularity, 1.0, cardinal_direction,
+                    use_equiangular_map, use_both_halves,
+                    radial_distribution.at(shell)},
+            z_map});
+      }
       temp_inner_circularity = 1.;
       if (shell != radial_partitioning.size()) {
         temp_inner_radius = radial_partitioning.at(shell);
       }
     }
-    if (layer != height_partitioning.size()) {
-      temp_lower_bound = height_partitioning.at(layer);
+    if (layer != partitioning_in_z.size()) {
+      temp_lower_z_bound = partitioning_in_z.at(layer);
     }
   }
   return maps;
@@ -1091,57 +1066,52 @@ std::vector<std::unique_ptr<
     domain::CoordinateMapBase<Frame::BlockLogical, TargetFrame, 3>>>
 cyl_wedge_coordinate_maps(
     const double inner_radius, const double outer_radius,
-    const double lower_bound, const double upper_bound,
+    const double lower_z_bound, const double upper_z_bound,
     const bool use_equiangular_map,
     const std::vector<double>& radial_partitioning,
-    const std::vector<double>& height_partitioning,
+    const std::vector<double>& partitioning_in_z,
     const std::vector<domain::CoordinateMaps::Distribution>&
-        radial_distribution) noexcept {
+        radial_distribution,
+    const std::vector<domain::CoordinateMaps::Distribution>&
+        distribution_in_z) noexcept {
   std::vector<std::unique_ptr<
       domain::CoordinateMapBase<Frame::BlockLogical, TargetFrame, 3>>>
       cylinder_mapping;
   const auto maps_surrounding = cyl_wedge_coord_map_surrounding_blocks(
-      inner_radius, outer_radius, lower_bound, upper_bound, use_equiangular_map,
-      0.0, radial_partitioning, height_partitioning, radial_distribution,
+      inner_radius, outer_radius, lower_z_bound, upper_z_bound,
+      use_equiangular_map, 0.0, radial_partitioning, partitioning_in_z,
+      radial_distribution, distribution_in_z,
       CylindricalDomainParityFlip::none);
 
   // add_to_cylinder_mapping adds the maps for individual blocks in
   // the correct order.  This order is a center block at each height
   // partition and then the surrounding blocks at that height
   // partition.
-  auto add_to_cylinder_mapping =
-      [&cylinder_mapping, &height_partitioning, &radial_partitioning,
-       &maps_surrounding](const auto& maps_center) noexcept {
-        size_t surrounding_block_index = 0;
-        for (size_t height = 0; height < 1 + height_partitioning.size();
-             ++height) {
+  auto add_to_cylinder_mapping = [&cylinder_mapping, &partitioning_in_z,
+                                  &radial_partitioning, &maps_surrounding](
+                                     const auto& maps_center) noexcept {
+    size_t surrounding_block_index = 0;
+    for (size_t height = 0; height < 1 + partitioning_in_z.size(); ++height) {
+      cylinder_mapping.emplace_back(
+          domain::make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(
+              maps_center.at(height)));
+      for (size_t radius = 0; radius < 1 + radial_partitioning.size();
+           ++radius) {
+        // There are 4 surrounding blocks at each radius and height
+        for (size_t block_at_this_radius = 0; block_at_this_radius < 4;
+             ++block_at_this_radius, ++surrounding_block_index) {
           cylinder_mapping.emplace_back(
               domain::make_coordinate_map_base<Frame::BlockLogical,
                                                TargetFrame>(
-                  maps_center.at(height)));
-          for (size_t radius = 0; radius < 1 + radial_partitioning.size();
-               ++radius) {
-            // There are 4 surrounding blocks at each radius and height
-            for (size_t block_at_this_radius = 0; block_at_this_radius < 4;
-                 ++block_at_this_radius, ++surrounding_block_index) {
-              cylinder_mapping.emplace_back(
-                  domain::make_coordinate_map_base<Frame::BlockLogical,
-                                                   TargetFrame>(
-                      maps_surrounding.at(surrounding_block_index)));
-            }
-          }
+                  maps_surrounding.at(surrounding_block_index)));
         }
-      };
+      }
+    }
+  };
 
-  if (use_equiangular_map) {
-    add_to_cylinder_mapping(cyl_wedge_coord_map_center_blocks<true>(
-        inner_radius, lower_bound, upper_bound, height_partitioning,
-        CylindricalDomainParityFlip::none));
-  } else {
-    add_to_cylinder_mapping(cyl_wedge_coord_map_center_blocks<false>(
-        inner_radius, lower_bound, upper_bound, height_partitioning,
-        CylindricalDomainParityFlip::none));
-  }
+  add_to_cylinder_mapping(cyl_wedge_coord_map_center_blocks(
+      inner_radius, lower_z_bound, upper_z_bound, use_equiangular_map,
+      partitioning_in_z, distribution_in_z, CylindricalDomainParityFlip::none));
   return cylinder_mapping;
 }
 
@@ -1484,22 +1454,26 @@ template std::vector<std::unique_ptr<
     domain::CoordinateMapBase<Frame::BlockLogical, Frame::Inertial, 3>>>
 cyl_wedge_coordinate_maps(
     const double inner_radius, const double outer_radius,
-    const double lower_bound, const double upper_bound,
+    const double lower_z_bound, const double upper_z_bound,
     const bool use_equiangular_map,
     const std::vector<double>& radial_partitioning,
-    const std::vector<double>& height_partitioning,
+    const std::vector<double>& partitioning_in_z,
     const std::vector<domain::CoordinateMaps::Distribution>&
-        radial_distribution) noexcept;
+        radial_distribution,
+    const std::vector<domain::CoordinateMaps::Distribution>&
+        distribution_in_z) noexcept;
 template std::vector<std::unique_ptr<
     domain::CoordinateMapBase<Frame::BlockLogical, Frame::Grid, 3>>>
 cyl_wedge_coordinate_maps(
     const double inner_radius, const double outer_radius,
-    const double lower_bound, const double upper_bound,
+    const double lower_z_bound, const double upper_z_bound,
     const bool use_equiangular_map,
     const std::vector<double>& radial_partitioning,
-    const std::vector<double>& height_partitioning,
+    const std::vector<double>& partitioning_in_z,
     const std::vector<domain::CoordinateMaps::Distribution>&
-        radial_distribution) noexcept;
+        radial_distribution,
+    const std::vector<domain::CoordinateMaps::Distribution>&
+        distribution_in_z) noexcept;
 // Explicit instantiations
 using Affine2d =
     domain::CoordinateMaps::ProductOf2Maps<domain::CoordinateMaps::Affine,

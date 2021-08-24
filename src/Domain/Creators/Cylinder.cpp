@@ -27,23 +27,25 @@ struct Inertial;
 namespace domain::creators {
 Cylinder::Cylinder(
     const double inner_radius, const double outer_radius,
-    const double lower_bound, const double upper_bound,
+    const double lower_z_bound, const double upper_z_bound,
     const bool is_periodic_in_z,
     const typename InitialRefinement::type& initial_refinement,
     const typename InitialGridPoints::type& initial_number_of_grid_points,
     const bool use_equiangular_map, std::vector<double> radial_partitioning,
-    std::vector<double> height_partitioning,
+    std::vector<double> partitioning_in_z,
     std::vector<domain::CoordinateMaps::Distribution> radial_distribution,
+    std::vector<domain::CoordinateMaps::Distribution> distribution_in_z,
     const Options::Context& context)
     : inner_radius_(inner_radius),
       outer_radius_(outer_radius),
-      lower_bound_(lower_bound),
-      upper_bound_(upper_bound),
+      lower_z_bound_(lower_z_bound),
+      upper_z_bound_(upper_z_bound),
       is_periodic_in_z_(is_periodic_in_z),
       use_equiangular_map_(use_equiangular_map),
       radial_partitioning_(std::move(radial_partitioning)),
-      height_partitioning_(std::move(height_partitioning)),
-      radial_distribution_(std::move(radial_distribution)) {
+      partitioning_in_z_(std::move(partitioning_in_z)),
+      radial_distribution_(std::move(radial_distribution)),
+      distribution_in_z_(std::move(distribution_in_z)) {
   if (inner_radius_ > outer_radius_) {
     PARSE_ERROR(context,
                 "Inner radius must be smaller than outer radius, but inner "
@@ -51,12 +53,12 @@ Cylinder::Cylinder(
                     std::to_string(inner_radius_) + " and outer radius is " +
                     std::to_string(outer_radius_) + ".");
   }
-  if (lower_bound_ > upper_bound_) {
+  if (lower_z_bound_ > upper_z_bound_) {
     PARSE_ERROR(context,
-                "Lower bound must be smaller than upper bound, but lower "
+                "Lower z-bound must be smaller than upper z-bound, but lower "
                 "bound is " +
-                    std::to_string(lower_bound_) + " and upper bound is " +
-                    std::to_string(upper_bound_) + ".");
+                    std::to_string(lower_z_bound_) + " and upper bound is " +
+                    std::to_string(upper_z_bound_) + ".");
   }
   if (not std::is_sorted(radial_partitioning_.begin(),
                          radial_partitioning_.end())) {
@@ -79,29 +81,29 @@ Cylinder::Cylinder(
               std::to_string(outer_radius_));
     }
   }
-  if (not std::is_sorted(height_partitioning_.begin(),
-                         height_partitioning_.end())) {
+  if (not std::is_sorted(partitioning_in_z_.begin(),
+                         partitioning_in_z_.end())) {
     PARSE_ERROR(context,
-                "Specify height partitioning in ascending order. Specified "
-                "height partitioning is: " +
-                    get_output(height_partitioning_));
+                "Specify partitioning in z in ascending order. Specified "
+                "partitioning is: " +
+                    get_output(partitioning_in_z_));
   }
-  if (not height_partitioning_.empty()) {
-    if (height_partitioning_.front() <= lower_bound_) {
+  if (not partitioning_in_z_.empty()) {
+    if (partitioning_in_z_.front() <= lower_z_bound_) {
       PARSE_ERROR(
           context,
-          "First height partition must be larger than lower bound, but is: " +
-              std::to_string(lower_bound_));
+          "First partition in z must be larger than lower z-bound, but is: " +
+              std::to_string(lower_z_bound_));
     }
-    if (height_partitioning_.back() >= upper_bound_) {
+    if (partitioning_in_z_.back() >= upper_z_bound_) {
       PARSE_ERROR(
           context,
-          "Last height partition must be smaller than upper bound, but is: " +
-              std::to_string(upper_bound_));
+          "Last partition in z must be smaller than upper z-bound, but is: " +
+              std::to_string(upper_z_bound_));
     }
   }
   const size_t num_shells = 1 + radial_partitioning_.size();
-  const size_t num_layers = 1 + height_partitioning_.size();
+  const size_t num_layers = 1 + partitioning_in_z_.size();
   if (radial_distribution_.size() != num_shells) {
     PARSE_ERROR(
         context,
@@ -117,6 +119,22 @@ Cylinder::Cylinder(
                 "shell because it changes in circularity. Add entries to "
                 "'RadialPartitioning' to add outer shells for which you can "
                 "select different radial distributions.");
+  }
+  if (distribution_in_z_.size() != num_layers) {
+    PARSE_ERROR(context,
+                "Specify a 'DistributionInZ' for every layer. You specified "
+                    << distribution_in_z_.size()
+                    << " items, but the domain has " << num_layers
+                    << " layers.");
+  }
+  if (distribution_in_z_.front() !=
+      domain::CoordinateMaps::Distribution::Linear) {
+    PARSE_ERROR(context,
+                "The 'DistributionInZ' must be 'Linear' for the lowermost "
+                "layer because a 'Logarithmic' distribution places its "
+                "singularity at 'LowerZBound'. Add entries to "
+                "'PartitioningInZ' to add layers for which you can "
+                "select different distributions along z.");
   }
 
   // Create block names and groups
@@ -171,40 +189,41 @@ Cylinder::Cylinder(
 
 Cylinder::Cylinder(
     const double inner_radius, const double outer_radius,
-    const double lower_bound, const double upper_bound,
+    const double lower_z_bound, const double upper_z_bound,
     std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-        lower_boundary_condition,
+        lower_z_boundary_condition,
     std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-        upper_boundary_condition,
+        upper_z_boundary_condition,
     std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
         mantle_boundary_condition,
     const typename InitialRefinement::type& initial_refinement,
     const typename InitialGridPoints::type& initial_number_of_grid_points,
     const bool use_equiangular_map, std::vector<double> radial_partitioning,
-    std::vector<double> height_partitioning,
+    std::vector<double> partitioning_in_z,
     std::vector<domain::CoordinateMaps::Distribution> radial_distribution,
+    std::vector<domain::CoordinateMaps::Distribution> distribution_in_z,
     const Options::Context& context)
-    : Cylinder(inner_radius, outer_radius, lower_bound, upper_bound, false,
+    : Cylinder(inner_radius, outer_radius, lower_z_bound, upper_z_bound, false,
                initial_refinement, initial_number_of_grid_points,
                use_equiangular_map, std::move(radial_partitioning),
-               std::move(height_partitioning), std::move(radial_distribution),
-               context) {
-  lower_boundary_condition_ = std::move(lower_boundary_condition);
-  upper_boundary_condition_ = std::move(upper_boundary_condition);
+               std::move(partitioning_in_z), std::move(radial_distribution),
+               std::move(distribution_in_z), context) {
+  lower_z_boundary_condition_ = std::move(lower_z_boundary_condition);
+  upper_z_boundary_condition_ = std::move(upper_z_boundary_condition);
   mantle_boundary_condition_ = std::move(mantle_boundary_condition);
 
   using domain::BoundaryConditions::is_periodic;
-  if (is_periodic(lower_boundary_condition_) xor
-      is_periodic(upper_boundary_condition_)) {
+  if (is_periodic(lower_z_boundary_condition_) xor
+      is_periodic(upper_z_boundary_condition_)) {
     PARSE_ERROR(context,
-                "Either both lower and upper boundary condition must be "
+                "Either both lower and upper z-boundary condition must be "
                 "periodic, or neither.");
   }
-  if (is_periodic(lower_boundary_condition_) and
-      is_periodic(upper_boundary_condition_)) {
+  if (is_periodic(lower_z_boundary_condition_) and
+      is_periodic(upper_z_boundary_condition_)) {
     is_periodic_in_z_ = true;
-    lower_boundary_condition_ = nullptr;
-    upper_boundary_condition_ = nullptr;
+    lower_z_boundary_condition_ = nullptr;
+    upper_z_boundary_condition_ = nullptr;
   }
   if (is_periodic(mantle_boundary_condition_)) {
     PARSE_ERROR(context,
@@ -212,8 +231,8 @@ Cylinder::Cylinder(
                 "radial direction.");
   }
   using domain::BoundaryConditions::is_none;
-  if (is_none(lower_boundary_condition_) or
-      is_none(upper_boundary_condition_) or
+  if (is_none(lower_z_boundary_condition_) or
+      is_none(upper_z_boundary_condition_) or
       is_none(mantle_boundary_condition_)) {
     PARSE_ERROR(
         context,
@@ -221,23 +240,23 @@ Cylinder::Cylinder(
         "outflow boundary condition, you must use that.");
   }
   if (mantle_boundary_condition_ == nullptr or
-      (not is_periodic_in_z_ and (lower_boundary_condition_ == nullptr or
-                                  upper_boundary_condition_ == nullptr))) {
-    PARSE_ERROR(
-        context,
-        "Boundary conditions must not be 'nullptr'. Use the other constructor "
-        "to specify 'is_periodic_in_z' instead of boundary conditions.");
+      (not is_periodic_in_z_ and (lower_z_boundary_condition_ == nullptr or
+                                  upper_z_boundary_condition_ == nullptr))) {
+    PARSE_ERROR(context,
+                "z-boundary conditions must not be 'nullptr'. Use the other "
+                "constructor to specify 'is_periodic_in_z' instead of boundary "
+                "conditions.");
   }
 }
 
 Domain<3> Cylinder::create_domain() const noexcept {
   const size_t number_of_shells = 1 + radial_partitioning_.size();
-  const size_t number_of_discs = 1 + height_partitioning_.size();
+  const size_t number_of_layers = 1 + partitioning_in_z_.size();
   std::vector<PairOfFaces> pairs_of_faces{};
   if (is_periodic_in_z_) {
     // connect faces of end caps in the periodic z-direction
     const size_t corners_per_layer = 4 * (number_of_shells + 1);
-    const size_t num_corners = number_of_discs * corners_per_layer;
+    const size_t num_corners = number_of_layers * corners_per_layer;
     PairOfFaces center{
         {0, 1, 2, 3},
         {num_corners + 0, num_corners + 1, num_corners + 2, num_corners + 3}};
@@ -268,7 +287,7 @@ Domain<3> Cylinder::create_domain() const noexcept {
   if (mantle_boundary_condition_ != nullptr) {
     // Note: The first block in each disk is the central cube.
     boundary_conditions_all_blocks.resize((1 + 4 * number_of_shells) *
-                                          number_of_discs);
+                                          number_of_layers);
 
     // Boundary conditions in z
     for (size_t block_id = 0; not is_periodic_in_z_ and
@@ -276,12 +295,12 @@ Domain<3> Cylinder::create_domain() const noexcept {
          ++block_id) {
       if (block_id < (1 + number_of_shells * 4)) {
         boundary_conditions_all_blocks[block_id][Direction<3>::lower_zeta()] =
-            lower_boundary_condition_->get_clone();
+            lower_z_boundary_condition_->get_clone();
       }
       if (block_id >=
           boundary_conditions_all_blocks.size() - (1 + number_of_shells * 4)) {
         boundary_conditions_all_blocks[block_id][Direction<3>::upper_zeta()] =
-            upper_boundary_condition_->get_clone();
+            upper_z_boundary_condition_->get_clone();
       }
     }
     // Radial boundary conditions
@@ -299,21 +318,22 @@ Domain<3> Cylinder::create_domain() const noexcept {
     }
   }
 
-  return Domain<3>{cyl_wedge_coordinate_maps<Frame::Inertial>(
-                       inner_radius_, outer_radius_, lower_bound_, upper_bound_,
-                       use_equiangular_map_, radial_partitioning_,
-                       height_partitioning_, radial_distribution_),
-                   corners_for_cylindrical_layered_domains(number_of_shells,
-                                                           number_of_discs),
-                   pairs_of_faces, std::move(boundary_conditions_all_blocks)};
+  return Domain<3>{
+      cyl_wedge_coordinate_maps<Frame::Inertial>(
+          inner_radius_, outer_radius_, lower_z_bound_, upper_z_bound_,
+          use_equiangular_map_, radial_partitioning_, partitioning_in_z_,
+          radial_distribution_, distribution_in_z_),
+      corners_for_cylindrical_layered_domains(number_of_shells,
+                                              number_of_layers),
+      pairs_of_faces, std::move(boundary_conditions_all_blocks)};
 }
 
 std::vector<std::array<size_t, 3>> Cylinder::initial_extents() const noexcept {
   return initial_number_of_grid_points_;
 }
 
-std::vector<std::array<size_t, 3>> Cylinder::initial_refinement_levels() const
-    noexcept {
+std::vector<std::array<size_t, 3>> Cylinder::initial_refinement_levels()
+    const noexcept {
   return initial_refinement_;
 }
 }  // namespace domain::creators
