@@ -140,13 +140,10 @@ Cylinder::Cylinder(
   // Create block names and groups
   static std::array<std::string, 4> direction_descriptions{"East", "North",
                                                            "West", "South"};
-  std::vector<std::string> block_names{};
-  std::unordered_map<std::string, std::unordered_set<std::string>>
-      block_groups{};
   for (size_t layer = 0; layer < num_layers; ++layer) {
     std::string layer_prefix =
         num_layers > 1 ? "Layer" + std::to_string(layer) : "";
-    block_names.push_back(layer_prefix + "InnerCube");
+    block_names_.push_back(layer_prefix + "InnerCube");
     for (size_t shell = 0; shell < num_shells; ++shell) {
       std::string shell_prefix =
           num_shells > 1 ? "Shell" + std::to_string(shell) : "";
@@ -154,15 +151,15 @@ Cylinder::Cylinder(
       for (size_t direction = 0; direction < 4; ++direction) {
         std::string block_name = layer_prefix + shell_prefix +
                                  gsl::at(direction_descriptions, direction);
-        block_names.push_back(block_name);
-        block_groups[group_name].insert(block_name);
+        block_names_.push_back(block_name);
+        block_groups_[group_name].insert(block_name);
       }
     }
   }
 
   // Expand initial refinement and number of grid points over all blocks
-  const ExpandOverBlocks<size_t, 3> expand_over_blocks{block_names,
-                                                       std::move(block_groups)};
+  const ExpandOverBlocks<size_t, 3> expand_over_blocks{block_names_,
+                                                       block_groups_};
   try {
     initial_refinement_ = std::visit(expand_over_blocks, initial_refinement);
   } catch (const std::exception& error) {

@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <variant>
 #include <vector>
 
@@ -294,6 +295,15 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
       std::string,
       std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;
 
+  std::vector<std::string> block_names() const noexcept override {
+    return block_names_;
+  }
+
+  std::unordered_map<std::string, std::unordered_set<std::string>>
+  block_groups() const noexcept override {
+    return block_groups_;
+  }
+
  private:
   // Note that center_A_ and center_B_ are rotated with respect to the
   // input centers (which are in the grid frame), so that we can
@@ -326,5 +336,8 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
       inner_boundary_condition_;
   std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
       outer_boundary_condition_;
+  std::vector<std::string> block_names_{};
+  std::unordered_map<std::string, std::unordered_set<std::string>>
+      block_groups_{};
 };
 }  // namespace domain::creators

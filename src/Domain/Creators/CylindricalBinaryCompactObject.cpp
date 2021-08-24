@@ -174,29 +174,24 @@ CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
   }
 
   // Create block names and groups
-  std::vector<std::string> block_names{};
-  std::unordered_map<std::string, std::unordered_set<std::string>>
-      block_groups{};
-
-  auto add_filled_cylinder_name = [&block_names, &block_groups](
+  auto add_filled_cylinder_name = [this](
                                       const std::string& prefix,
                                       const std::string& group_name) noexcept {
     for (const std::string& where :
          {"Center", "East", "North", "West", "South"}) {
       const std::string name =
           std::string(prefix).append("FilledCylinder").append(where);
-      block_names.push_back(name);
-      block_groups[group_name].insert(name);
+      block_names_.push_back(name);
+      block_groups_[group_name].insert(name);
     }
   };
-  auto add_cylinder_name = [&block_names, &block_groups](
-                               const std::string& prefix,
-                               const std::string& group_name) noexcept {
+  auto add_cylinder_name = [this](const std::string& prefix,
+                                  const std::string& group_name) noexcept {
     for (const std::string& where : {"East", "North", "West", "South"}) {
       const std::string name =
           std::string(prefix).append("Cylinder").append(where);
-      block_names.push_back(name);
-      block_groups[group_name].insert(name);
+      block_names_.push_back(name);
+      block_groups_[group_name].insert(name);
     }
   };
 
@@ -241,8 +236,8 @@ CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
   add_cylinder_name("CB", "Outer");
 
   // Expand initial refinement over all blocks
-  const ExpandOverBlocks<size_t, 3> expand_over_blocks{block_names,
-                                                       std::move(block_groups)};
+  const ExpandOverBlocks<size_t, 3> expand_over_blocks{block_names_,
+                                                       block_groups_};
   try {
     initial_refinement_ = std::visit(expand_over_blocks, initial_refinement);
   } catch (const std::exception& error) {
