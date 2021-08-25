@@ -523,13 +523,19 @@ class MockCollectionOfDistributedObjectsProxy {
   template <typename InboxTag, typename Data>
   void receive_data(const typename InboxTag::temporal_id& id, const Data& data,
                     const bool enable_if_disabled = false) {
-    // Create (and call) a proxy on the local node and core that references
-    // each of the mock_distributed_objects.
+    // Call (and possibly create/store) a proxy on the local node and core
+    // that references each of the mock_distributed_objects.
     for (const auto& key_value_pair : *mock_distributed_objects_) {
-      MockDistributedObjectProxy<Component, InboxTagList>(
-          mock_node_, mock_local_core_,
-          mock_distributed_objects_->at(key_value_pair.first),
-          inboxes_->operator[](key_value_pair.first))
+      if (proxies_to_mock_distributed_objects_.count(key_value_pair.first) ==
+          0) {
+        proxies_to_mock_distributed_objects_.emplace(std::make_pair(
+            key_value_pair.first,
+            MockDistributedObjectProxy<Component, InboxTagList>(
+                mock_node_, mock_local_core_,
+                mock_distributed_objects_->at(key_value_pair.first),
+                inboxes_->operator[](key_value_pair.first))));
+      }
+      proxies_to_mock_distributed_objects_.at(key_value_pair.first)
           .template receive_data<InboxTag>(id, data, enable_if_disabled);
     }
   }
@@ -544,7 +550,7 @@ class MockCollectionOfDistributedObjectsProxy {
     mock_global_core_ = mock_global_core;
   }
 
-  MockDistributedObjectProxy<Component, InboxTagList> operator[](
+  MockDistributedObjectProxy<Component, InboxTagList>& operator[](
       const Index& index) {
     ASSERT(mock_distributed_objects_->count(index) == 1,
            "Should have exactly one mock distributed object with key '"
@@ -554,9 +560,14 @@ class MockCollectionOfDistributedObjectsProxy {
                << ". Did you forget to add a mock distributed object when "
                   "constructing "
                   "the MockRuntimeSystem?");
-    return MockDistributedObjectProxy<Component, InboxTagList>(
-        mock_node_, mock_local_core_, mock_distributed_objects_->at(index),
-        inboxes_->operator[](index));
+    if (proxies_to_mock_distributed_objects_.count(index) == 0) {
+      proxies_to_mock_distributed_objects_.emplace(std::make_pair(
+          index, MockDistributedObjectProxy<Component, InboxTagList>(
+                     mock_node_, mock_local_core_,
+                     mock_distributed_objects_->at(index),
+                     inboxes_->operator[](index))));
+    }
+    return proxies_to_mock_distributed_objects_.at(index);
   }
 
   // ckLocalBranch should never be called on an array or singleton
@@ -643,6 +654,8 @@ class MockCollectionOfDistributedObjectsProxy {
 
  private:
   CollectionOfMockDistributedObjects* mock_distributed_objects_;
+  std::unordered_map<Index, MockDistributedObjectProxy<Component, InboxTagList>>
+      proxies_to_mock_distributed_objects_;
   Inboxes* inboxes_;
   // mock_node_, mock_local_core_, and mock_global_core_ are the
   // (mock) node and core that the
