@@ -483,6 +483,16 @@ class MockDistributedObjectProxy {
                : nullptr;
   }
 
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& /*p*/) noexcept {
+    ERROR(
+        "Should not try to serialize the MockDistributedObjectProxy. "
+        "If you encountered this error you are using the mocking framework "
+        "in a way that it was not intended to be used. It may be possible "
+        "to extend it to more use cases but it is recommended you file an "
+        "issue to discuss before modifying the mocking framework.");
+  }
+
  private:
   // mock_node_ and mock_local_core_ are the (mocked) node and core
   // that this MockDistributedObjectProxy lives on.  This is different
@@ -621,8 +631,8 @@ class MockCollectionOfDistributedObjectsProxy {
                   });
   }
 
-  // clang-tidy: no non-const references
-  void pup(PUP::er& /*p*/) noexcept {  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& /*p*/) noexcept {
     ERROR(
         "Should not try to serialize the CollectionOfMockDistributedObjects. "
         "If you encountered this error you are using the mocking framework "
