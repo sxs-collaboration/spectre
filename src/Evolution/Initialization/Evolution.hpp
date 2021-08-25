@@ -96,9 +96,9 @@ struct TimeAndTimeStep {
           Metavariables::local_time_stepping,
           tmpl::list<::Tags::IsUsingTimeSteppingErrorControl<>,
                      ::Tags::TimeStepper<LtsTimeStepper>, ::Tags::StepChoosers,
-                     ::Tags::StepController>,
+                     ::Tags::StepController, Tags::InitialTime>,
           tmpl::list<::Tags::NeverUsingTimeSteppingErrorControl,
-                     ::Tags::TimeStepper<TimeStepper>>>>>;
+                     ::Tags::TimeStepper<TimeStepper>, Tags::InitialTime>>>>;
 
   using simple_tags =
       tmpl::push_back<StepChoosers::step_chooser_simple_tags<Metavariables>,

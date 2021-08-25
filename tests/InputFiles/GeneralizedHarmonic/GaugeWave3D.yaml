@@ -1,12 +1,12 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Executable: EvolveGhGaugeWave
+# Executable: EvolveGhGaugeWave3D
 # Check: parse;execute
 # Timeout: 8
 # ExpectedOutput:
-#   GhGaugeWaveVolume0.h5
-#   GhGaugeWaveReductions.h5
+#   GhGaugeWave3DVolume0.h5
+#   GhGaugeWave3DReductions.h5
 
 Evolution:
   InitialTime: 0.0
@@ -41,8 +41,6 @@ AnalyticSolution:
 EvolutionSystem:
   GeneralizedHarmonic:
     DhGaugeParameters:
-      RollOnStartTime: 100000.0
-      RollOnTimeWindow: 100.0
       SpatialDecayWidth: 50.0
       Amplitudes: [1.0, 1.0, 1.0]
       Exponents: [4, 4, 4]
@@ -103,5 +101,5 @@ EventsAndTriggers:
 EventsAndDenseTriggers:
 
 Observers:
-  VolumeFileName: "GhGaugeWaveVolume"
-  ReductionFileName: "GhGaugeWaveReductions"
+  VolumeFileName: "GhGaugeWave3DVolume"
+  ReductionFileName: "GhGaugeWave3DReductions"

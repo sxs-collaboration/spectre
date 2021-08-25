@@ -10,6 +10,8 @@
 #include "ApparentHorizons/Tags.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
+#include "Domain/Creators/Factory1D.hpp"
+#include "Domain/Creators/Factory2D.hpp"
 #include "Domain/Creators/Factory3D.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
@@ -138,13 +140,24 @@ class CProxy_GlobalCache;
 }  // namespace Parallel
 /// \endcond
 
-struct GeneralizedHarmonicDefaults {
-  static constexpr size_t volume_dim = 3;
+template <bool UseDampedHarmonicRollon, typename EvolutionMetavarsDerived>
+struct GeneralizedHarmonicTemplateBase;
+
+template <bool UseDampedHarmonicRollon,
+          template <size_t, typename, typename> class EvolutionMetavarsDerived,
+          size_t VolumeDim, typename InitialData, typename BoundaryConditions>
+struct GeneralizedHarmonicTemplateBase<
+    UseDampedHarmonicRollon,
+    EvolutionMetavarsDerived<VolumeDim, InitialData, BoundaryConditions>> {
+  using derived_metavars =
+      EvolutionMetavarsDerived<VolumeDim, InitialData, BoundaryConditions>;
+  static constexpr size_t volume_dim = VolumeDim;
+  static constexpr bool use_damped_harmonic_rollon = UseDampedHarmonicRollon;
+  using initial_data = InitialData;
   using frame = Frame::Inertial;
   using system = GeneralizedHarmonic::System<volume_dim>;
   static constexpr dg::Formulation dg_formulation =
       dg::Formulation::StrongInertial;
-  static constexpr bool use_damped_harmonic_rollon = true;
   using temporal_id = Tags::TimeStepId;
   static constexpr bool local_time_stepping = false;
   // Set override_functions_of_time to true to override the
@@ -159,29 +172,6 @@ struct GeneralizedHarmonicDefaults {
       std::conditional_t<local_time_stepping, LtsTimeStepper, TimeStepper>>;
   using analytic_solution_fields = typename system::variables_tag::tags_list;
 
-  enum class Phase {
-    Initialization,
-    RegisterWithElementDataReader,
-    ImportInitialData,
-    InitializeInitialDataDependentQuantities,
-    InitializeTimeStepperHistory,
-    Register,
-    LoadBalancing,
-    WriteCheckpoint,
-    Evolve,
-    Exit
-  };
-
-  static std::string phase_name(Phase phase) noexcept {
-    if (phase == Phase::LoadBalancing) {
-        return "LoadBalancing";
-      }
-      ERROR(
-          "Passed phase that should not be used in input file. Integer "
-          "corresponding to phase is: "
-          << static_cast<int>(phase));
-  }
-
   using initialize_initial_data_dependent_quantities_actions = tmpl::list<
       GeneralizedHarmonic::gauges::Actions::InitializeDampedHarmonic<
           volume_dim, use_damped_harmonic_rollon>,
@@ -190,20 +180,6 @@ struct GeneralizedHarmonicDefaults {
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) noexcept {}
-};
-
-template <typename EvolutionMetavarsDerived>
-struct GeneralizedHarmonicTemplateBase;
-
-template <template <typename, typename> class EvolutionMetavarsDerived,
-          typename InitialData, typename BoundaryConditions>
-struct GeneralizedHarmonicTemplateBase<
-    EvolutionMetavarsDerived<InitialData, BoundaryConditions>>
-    : public virtual GeneralizedHarmonicDefaults {
-  using derived_metavars =
-      EvolutionMetavarsDerived<InitialData, BoundaryConditions>;
-
-  using initial_data = InitialData;
   using analytic_solution_tag = Tags::AnalyticSolution<BoundaryConditions>;
 
   using observe_fields = tmpl::append<
@@ -247,6 +223,29 @@ struct GeneralizedHarmonicTemplateBase<
   using observed_reduction_data_tags =
       observers::collect_reduction_data_tags<tmpl::push_back<
           tmpl::at<typename factory_creation::factory_classes, Event>>>;
+
+  enum class Phase {
+    Initialization,
+    RegisterWithElementDataReader,
+    ImportInitialData,
+    InitializeInitialDataDependentQuantities,
+    InitializeTimeStepperHistory,
+    Register,
+    LoadBalancing,
+    WriteCheckpoint,
+    Evolve,
+    Exit
+  };
+
+  static std::string phase_name(Phase phase) noexcept {
+    if (phase == Phase::LoadBalancing) {
+        return "LoadBalancing";
+      }
+      ERROR(
+          "Passed phase that should not be used in input file. Integer "
+          "corresponding to phase is: "
+          << static_cast<int>(phase));
+  }
 
   using phase_changes =
       tmpl::list<PhaseControl::Registrars::VisitAndReturn<

@@ -23,27 +23,23 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 
-// First template parameter specifies the source of the initial data, which
+// Second template parameter specifies the source of the initial data, which
 // could be an analytic solution, analytic data, or imported numerical data.
-// Second template parameter specifies the analytic solution used when imposing
+// Third template parameter specifies the analytic solution used when imposing
 // dirichlet boundary conditions or against which to compute error norms.
-template <typename InitialData, typename BoundaryConditions>
+template <size_t VolumeDim, typename InitialData, typename BoundaryConditions>
 struct EvolutionMetavars
-    : public virtual GeneralizedHarmonicDefaults,
-      public GeneralizedHarmonicTemplateBase<
-          EvolutionMetavars<InitialData, BoundaryConditions>> {
-  using const_global_cache_tags =
-      typename GeneralizedHarmonicTemplateBase<EvolutionMetavars<
-          InitialData, BoundaryConditions>>::const_global_cache_tags;
-  using observed_reduction_data_tags =
-      typename GeneralizedHarmonicTemplateBase<EvolutionMetavars<
-          InitialData, BoundaryConditions>>::observed_reduction_data_tags;
-  using component_list = typename GeneralizedHarmonicTemplateBase<
-      EvolutionMetavars<InitialData, BoundaryConditions>>::component_list;
+    : public GeneralizedHarmonicTemplateBase<
+          false,
+          EvolutionMetavars<VolumeDim, InitialData, BoundaryConditions>> {
+  using gh_base = GeneralizedHarmonicTemplateBase<
+      false, EvolutionMetavars<VolumeDim, InitialData, BoundaryConditions>>;
+  using typename gh_base::const_global_cache_tags;
+  using typename gh_base::observed_reduction_data_tags;
+  using typename gh_base::component_list;
   template <typename ParallelComponent>
-  using registration_list = typename GeneralizedHarmonicTemplateBase<
-      EvolutionMetavars<InitialData, BoundaryConditions>>::
-      template registration_list<ParallelComponent>;
+  using registration_list =
+      typename gh_base::template registration_list<ParallelComponent>;
 
   static constexpr Options::String help{
       "Evolve the Einstein field equations using the Generalized Harmonic "

@@ -1,0 +1,112 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Executable: EvolveGhGaugeWave1D
+# Check: parse;execute
+# Timeout: 8
+# ExpectedOutput:
+#   GhGaugeWave1DVolume0.h5
+#   GhGaugeWave1DReductions.h5
+
+Evolution:
+  InitialTime: 0.0
+  InitialTimeStep: 0.002
+  TimeStepper:
+    AdamsBashforthN:
+      Order: 3
+
+PhaseChangeAndTriggers:
+  - - Slabs:
+       EvenlySpaced:
+         # Current implementation checks wallclock at these global syncs
+         Interval: 100
+         Offset: 0
+    - - CheckpointAndExitAfterWallclock:
+          WallclockHours: None
+
+DomainCreator:
+  RotatedIntervals:
+    LowerBound: [0.0]
+    Midpoint: [3.0]
+    UpperBound: [6.283185307179586]
+    InitialRefinement: [1]
+    InitialGridPoints: [[7,7]]
+    TimeDependence:
+      UniformTranslation:
+         InitialTime: 0.0
+         InitialExpirationDeltaT: Auto
+         Velocity: [0.5]
+         FunctionOfTimeNames: ["Translation"]
+    BoundaryConditions:
+      LowerBoundary:  DirichletAnalytic
+      UpperBoundary:  DirichletAnalytic
+
+AnalyticSolution:
+  GaugeWave:
+    Amplitude: 0.5
+    Wavelength: 6.283185307179586
+
+EvolutionSystem:
+  GeneralizedHarmonic:
+    DhGaugeParameters:
+      SpatialDecayWidth: 50.0
+      Amplitudes: [0.0, 0.0, 0.0]
+      Exponents: [4, 4, 4]
+    DampingFunctionGamma0:
+      GaussianPlusConstant:
+        Constant: 1.0
+        Amplitude: 0.0
+        Width: 1.0
+        Center: [0.0]
+    DampingFunctionGamma1:
+      GaussianPlusConstant:
+        Constant: -1.0
+        Amplitude: 0.0
+        Width: 1.0
+        Center: [0.0]
+    DampingFunctionGamma2:
+      GaussianPlusConstant:
+        Constant: 1.0
+        Amplitude: 0.0
+        Width: 1.0
+        Center: [0.0]
+
+SpatialDiscretization:
+  DiscontinuousGalerkin:
+    Formulation: StrongInertial
+    Quadrature: Gauss
+  BoundaryCorrection:
+    UpwindPenalty:
+
+EventsAndTriggers:
+  ? Slabs:
+      EvenlySpaced:
+        Interval: 2
+        Offset: 0
+  : - ObserveErrorNorms:
+        SubfileName: Errors
+  ? Slabs:
+      EvenlySpaced:
+        Interval: 5
+        Offset: 0
+  : - ObserveFields:
+        SubfileName: VolumeData
+        VariablesToObserve:
+          - SpacetimeMetric
+          - Pi
+          - Phi
+          - PointwiseL2Norm(GaugeConstraint)
+          - PointwiseL2Norm(ThreeIndexConstraint)
+        InterpolateToMesh: None
+        CoordinatesFloatingPointType: Double
+        FloatingPointTypes: [Double]
+  ? Slabs:
+      Specified:
+        Values: [5]
+  : - Completion
+
+EventsAndDenseTriggers:
+
+Observers:
+  VolumeFileName: "GhGaugeWave1DVolume"
+  ReductionFileName: "GhGaugeWave1DReductions"

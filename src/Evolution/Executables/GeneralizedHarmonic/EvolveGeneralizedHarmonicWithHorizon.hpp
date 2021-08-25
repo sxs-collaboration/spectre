@@ -50,10 +50,17 @@
 // Second template parameter specifies the analytic solution used when imposing
 // dirichlet boundary conditions or against which to compute error norms.
 template <typename InitialData, typename BoundaryConditions>
-struct EvolutionMetavars
-    : public virtual GeneralizedHarmonicDefaults,
-      public GeneralizedHarmonicTemplateBase<
-          EvolutionMetavars<InitialData, BoundaryConditions>> {
+struct EvolutionMetavars<3, InitialData, BoundaryConditions>
+    : public GeneralizedHarmonicTemplateBase<
+          true, EvolutionMetavars<3, InitialData, BoundaryConditions>> {
+  using gh_base = GeneralizedHarmonicTemplateBase<
+      true, EvolutionMetavars<3, InitialData, BoundaryConditions>>;
+  using typename gh_base::frame;
+  using typename gh_base::initialize_initial_data_dependent_quantities_actions;
+  using typename gh_base::Phase;
+  using typename gh_base::system;
+  static constexpr size_t volume_dim = 3;
+
   static constexpr Options::String help{
       "Evolve the Einstein field equations using the Generalized Harmonic "
       "formulation,\n"
@@ -105,19 +112,15 @@ struct EvolutionMetavars
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = Options::add_factory_classes<
-        typename GeneralizedHarmonicTemplateBase<
-            EvolutionMetavars>::factory_creation::factory_classes,
+        typename gh_base::factory_creation::factory_classes,
         tmpl::pair<Event, tmpl::list<intrp::Events::Interpolate<
                               3, AhA, interpolator_source_vars>>>>;
   };
 
-  using phase_changes = typename GeneralizedHarmonicTemplateBase<
-      EvolutionMetavars>::phase_changes;
+  using typename gh_base::phase_changes;
 
   using const_global_cache_tags = tmpl::list<
-      typename GeneralizedHarmonicTemplateBase<
-          EvolutionMetavars>::analytic_solution_tag,
-      Tags::EventsAndTriggers,
+      typename gh_base::analytic_solution_tag, Tags::EventsAndTriggers,
       GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma0<
           volume_dim, frame>,
       GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma1<
@@ -132,15 +135,12 @@ struct EvolutionMetavars
           typename AhA::post_horizon_find_callback>>;
 
   using dg_registration_list =
-      tmpl::push_back<typename GeneralizedHarmonicTemplateBase<
-                          EvolutionMetavars>::dg_registration_list,
+      tmpl::push_back<typename gh_base::dg_registration_list,
                       intrp::Actions::RegisterElementWithInterpolator>;
 
-  using initialization_actions = typename GeneralizedHarmonicTemplateBase<
-      EvolutionMetavars>::initialization_actions;
+  using typename gh_base::initialization_actions;
 
-  using step_actions =
-      typename GeneralizedHarmonicTemplateBase<EvolutionMetavars>::step_actions;
+  using typename gh_base::step_actions;
 
   // the dg element array needs to be re-declared to capture the new type
   // aliases for the action lists.

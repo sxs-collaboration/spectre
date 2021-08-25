@@ -24,6 +24,6 @@ namespace evolution {
 struct NumericInitialData;
 }  // namespace evolution
 
-template <typename InitialData, typename BoundaryConditions>
+template <size_t VolumeDim, typename InitialData, typename BoundaryConditions>
 struct EvolutionMetavars;
 /// \endcond

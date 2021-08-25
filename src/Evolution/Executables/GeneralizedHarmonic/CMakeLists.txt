@@ -7,18 +7,18 @@ function(add_generalized_harmonic_executable_with_horizon
     "EvolveGh${INITIAL_DATA_NAME}"
     EvolveGeneralizedHarmonicWithHorizon
     Evolution/Executables/GeneralizedHarmonic
-    "EvolutionMetavars<${INITIAL_DATA}, ${BOUNDARY_CONDITIONS}>"
+    "EvolutionMetavars<3, ${INITIAL_DATA}, ${BOUNDARY_CONDITIONS}>"
     "${LIBS_TO_LINK}"
     )
 endfunction(add_generalized_harmonic_executable_with_horizon)
 
 function(add_generalized_harmonic_executable_without_horizon
-    INITIAL_DATA_NAME INITIAL_DATA BOUNDARY_CONDITIONS LIBS_TO_LINK)
+    INITIAL_DATA_NAME DIM INITIAL_DATA BOUNDARY_CONDITIONS LIBS_TO_LINK)
   add_spectre_parallel_executable(
-    "EvolveGh${INITIAL_DATA_NAME}"
+    "EvolveGh${INITIAL_DATA_NAME}${DIM}D"
     EvolveGeneralizedHarmonicWithoutHorizon
     Evolution/Executables/GeneralizedHarmonic
-    "EvolutionMetavars<${INITIAL_DATA}, ${BOUNDARY_CONDITIONS}>"
+    "EvolutionMetavars<${DIM}, ${INITIAL_DATA}, ${BOUNDARY_CONDITIONS}>"
     "${LIBS_TO_LINK}"
     )
 endfunction(add_generalized_harmonic_executable_without_horizon)
@@ -63,15 +63,24 @@ add_generalized_harmonic_executable_with_horizon(
 
 add_generalized_harmonic_executable_without_horizon(
   GaugeWave
-  GeneralizedHarmonic::Solutions::WrappedGr<gr::Solutions::GaugeWave<3>>
-  GeneralizedHarmonic::Solutions::WrappedGr<gr::Solutions::GaugeWave<3>>
+  1
+  GeneralizedHarmonic::Solutions::WrappedGr<gr::Solutions::GaugeWave<1>>
+  GeneralizedHarmonic::Solutions::WrappedGr<gr::Solutions::GaugeWave<1>>
   "${LIBS_TO_LINK};GeneralRelativitySolutions"
 )
 
 add_generalized_harmonic_executable_without_horizon(
-  GaugeWaveNumericInitialData
-  evolution::NumericInitialData
-  GeneralizedHarmonic::Solutions::WrappedGr<gr::Solutions::GaugeWave<3>>
-  "${LIBS_TO_LINK};GeneralRelativitySolutions;Importers"
+  GaugeWave
+  2
+  GeneralizedHarmonic::Solutions::WrappedGr<gr::Solutions::GaugeWave<2>>
+  GeneralizedHarmonic::Solutions::WrappedGr<gr::Solutions::GaugeWave<2>>
+  "${LIBS_TO_LINK};GeneralRelativitySolutions"
 )
 
+add_generalized_harmonic_executable_without_horizon(
+  GaugeWave
+  3
+  GeneralizedHarmonic::Solutions::WrappedGr<gr::Solutions::GaugeWave<3>>
+  GeneralizedHarmonic::Solutions::WrappedGr<gr::Solutions::GaugeWave<3>>
+  "${LIBS_TO_LINK};GeneralRelativitySolutions"
+)
