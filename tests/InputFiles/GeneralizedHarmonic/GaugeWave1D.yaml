@@ -71,6 +71,12 @@ EvolutionSystem:
         Width: 1.0
         Center: [0.0]
 
+Filtering:
+  ExpFilter0:
+    Alpha: 36.0
+    HalfPower: 64
+    DisableForDebugging: True
+
 SpatialDiscretization:
   DiscontinuousGalerkin:
     Formulation: StrongInertial

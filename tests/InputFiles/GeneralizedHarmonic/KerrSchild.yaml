@@ -81,6 +81,12 @@ EvolutionSystem:
         Width: 11.313708499
         Center: [0.0, 0.0, 0.0]
 
+Filtering:
+  ExpFilter0:
+    Alpha: 36.0
+    HalfPower: 64
+    DisableForDebugging: False
+
 SpatialDiscretization:
   BoundaryCorrection:
     UpwindPenalty:

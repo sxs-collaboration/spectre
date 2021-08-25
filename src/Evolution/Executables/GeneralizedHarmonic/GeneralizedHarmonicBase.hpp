@@ -66,6 +66,8 @@
 #include "NumericalAlgorithms/Interpolation/InterpolatorRegisterElement.hpp"
 #include "NumericalAlgorithms/Interpolation/Tags.hpp"
 #include "NumericalAlgorithms/Interpolation/TryToInterpolate.hpp"
+#include "NumericalAlgorithms/LinearOperators/ExponentialFilter.hpp"
+#include "NumericalAlgorithms/LinearOperators/FilterAction.hpp"
 #include "Options/Options.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
@@ -167,7 +169,7 @@ struct GeneralizedHarmonicTemplateBase<
   static constexpr bool override_functions_of_time = false;
 
   using normal_dot_numerical_flux = Tags::NumericalFlux<
-    GeneralizedHarmonic::UpwindPenaltyCorrection<volume_dim>>;
+      GeneralizedHarmonic::UpwindPenaltyCorrection<volume_dim>>;
 
   using time_stepper_tag = Tags::TimeStepper<
       std::conditional_t<local_time_stepping, LtsTimeStepper, TimeStepper>>;
@@ -241,12 +243,12 @@ struct GeneralizedHarmonicTemplateBase<
 
   static std::string phase_name(Phase phase) noexcept {
     if (phase == Phase::LoadBalancing) {
-        return "LoadBalancing";
-      }
-      ERROR(
-          "Passed phase that should not be used in input file. Integer "
-          "corresponding to phase is: "
-          << static_cast<int>(phase));
+      return "LoadBalancing";
+    }
+    ERROR(
+        "Passed phase that should not be used in input file. Integer "
+        "corresponding to phase is: "
+        << static_cast<int>(phase));
   }
 
   using phase_changes =
@@ -324,11 +326,20 @@ struct GeneralizedHarmonicTemplateBase<
           tmpl::list<evolution::Actions::RunEventsAndDenseTriggers<>,
                      evolution::dg::Actions::ApplyBoundaryCorrections<
                          derived_metavars>>,
-          tmpl::list<evolution::dg::Actions::ApplyBoundaryCorrections<
-                         derived_metavars>,
-                     Actions::RecordTimeStepperData<>,
-                     evolution::Actions::RunEventsAndDenseTriggers<>,
-                     Actions::UpdateU<>>>>;
+          tmpl::list<
+              evolution::dg::Actions::ApplyBoundaryCorrections<
+                  derived_metavars>,
+              Actions::RecordTimeStepperData<>,
+              evolution::Actions::RunEventsAndDenseTriggers<>,
+              Actions::UpdateU<>,
+              dg::Actions::Filter<
+                  Filters::Exponential<0>,
+                  tmpl::list<gr::Tags::SpacetimeMetric<
+                                 volume_dim, Frame::Inertial, DataVector>,
+                             GeneralizedHarmonic::Tags::Pi<volume_dim,
+                                                           Frame::Inertial>,
+                             GeneralizedHarmonic::Tags::Phi<
+                                 volume_dim, Frame::Inertial>>>>>>;
 
   using initialization_actions = tmpl::list<
       Actions::SetupDataBox,
