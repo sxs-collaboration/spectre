@@ -97,6 +97,25 @@ EventsAndTriggers:
         SubfileName: Errors
   ? Slabs:
       EvenlySpaced:
+        Interval: 2
+        Offset: 0
+  : - ObserveNorms:
+        SubfileName: Norms
+        TensorsToObserve:
+        - Name: Lapse
+          NormType: L2Norm
+          Components: Individual
+        - Name: PointwiseL2Norm(GaugeConstraint)
+          NormType: L2Norm
+          Components: Sum
+        - Name: PointwiseL2Norm(ThreeIndexConstraint)
+          NormType: L2Norm
+          Components: Sum
+        - Name: PointwiseL2Norm(FourIndexConstraint)
+          NormType: L2Norm
+          Components: Sum
+  ? Slabs:
+      EvenlySpaced:
         Interval: 5
         Offset: 0
   : - ObserveFields:
