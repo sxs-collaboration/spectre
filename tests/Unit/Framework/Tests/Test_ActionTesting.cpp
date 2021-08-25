@@ -949,4 +949,128 @@ SPECTRE_TEST_CASE("Unit.ActionTesting.NodesAndCores", "[Unit]") {
 }
 
 }  // namespace TestNodesAndCores
+
+namespace TestMutableGlobalCache {
+struct CacheTag : db::SimpleTag {
+  using type = int;
+};
+
+template <int Value>
+struct CacheTagUpdater {
+  static void apply(gsl::not_null<typename CacheTag::type*> tag_value){
+    *tag_value = Value;
+  }
+};
+
+template <typename Metavariables>
+struct Component {
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockArrayChare;
+  using array_index = int;
+
+  using phase_dependent_action_list =
+      tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
+                                        Metavariables::Phase::Initialization,
+                                        tmpl::list<>>>;
+};
+
+// This Action does nothing other than set a bool so that we can
+// check if it was called.
+static bool simple_action_to_test_was_called = false;
+struct SimpleActionToTest {
+  template <typename ParallelComponent, typename DbTagsList,
+            typename Metavariables, typename ArrayIndex>
+  static void apply(const db::DataBox<DbTagsList>& /*box*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
+                    const ArrayIndex& /*array_index*/) noexcept {
+    simple_action_to_test_was_called = true;
+  }
+};
+
+struct Metavariables {
+  using component_list = tmpl::list<Component<Metavariables>>;
+
+  using mutable_global_cache_tags = tmpl::list<CacheTag>;
+
+  enum class Phase { Initialization, Testing, Exit };
+};
+
+SPECTRE_TEST_CASE("Unit.ActionTesting.MutableGlobalCache", "[Unit]") {
+  using metavars = Metavariables;
+  using component = Component<metavars>;
+
+  ActionTesting::MockRuntimeSystem<metavars> runner{{}, {0}};
+  ActionTesting::emplace_array_component<component>(
+      &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0}, 0);
+
+  auto& cache = ActionTesting::cache<component>(runner, 0);
+  auto& element_proxy = ::Parallel::get_parallel_component<component>(cache)[0];
+
+  CHECK(Parallel::mutable_cache_item_is_ready<CacheTag>(
+      cache, [](const int /*value*/) noexcept {
+        return std::unique_ptr<Parallel::Callback>{};
+      }));
+
+  CHECK(not Parallel::mutable_cache_item_is_ready<CacheTag>(
+      cache, [&element_proxy](const int /*value*/) noexcept {
+        return std::unique_ptr<Parallel::Callback>(
+            new Parallel::PerformAlgorithmCallback<decltype(element_proxy)>(
+                element_proxy));
+      }));
+
+  CHECK(not Parallel::mutable_cache_item_is_ready<CacheTag>(
+      cache, [&element_proxy](const int /*value*/) noexcept {
+        return std::unique_ptr<Parallel::Callback>(
+            new Parallel::SimpleActionCallback<SimpleActionToTest,
+                                               decltype(element_proxy)>(
+                element_proxy));
+      }));
+
+  // Should be no queued simple actions.
+  CHECK(ActionTesting::is_simple_action_queue_empty<component>(runner, 0));
+
+  // After we mutate the item, then SimpleActionToTest should be queued...
+  Parallel::mutate<CacheTag, CacheTagUpdater<1>>(cache);
+  CHECK(ActionTesting::number_of_queued_simple_actions<component>(runner, 0) ==
+        1);
+  // ... so invoke it
+  ActionTesting::invoke_queued_simple_action<component>(make_not_null(&runner),
+                                                        0);
+  // ... and test that the action was called.
+  CHECK(simple_action_to_test_was_called);
+
+  // Now reset for another call.
+  simple_action_to_test_was_called = false;
+
+  // Simple actions can be called on entire components
+  // (i.e. all elements at once as opposed to one element at a time).
+  auto& all_elements_proxy =
+      ::Parallel::get_parallel_component<component>(cache);
+  CHECK(not Parallel::mutable_cache_item_is_ready<CacheTag>(
+      cache, [&all_elements_proxy](const int /*value*/) noexcept {
+        return std::unique_ptr<Parallel::Callback>(
+            new Parallel::SimpleActionCallback<SimpleActionToTest,
+                                               decltype(all_elements_proxy)>(
+                all_elements_proxy));
+      }));
+
+  // Should be no queued simple actions.
+  CHECK(ActionTesting::is_simple_action_queue_empty<component>(runner, 0));
+
+  // After we mutate the item, then SimpleActionToTest should be queued...
+  Parallel::mutate<CacheTag, CacheTagUpdater<3>>(cache);
+  CHECK(ActionTesting::number_of_queued_simple_actions<component>(runner, 0) ==
+        1);
+  // ... so invoke it
+  ActionTesting::invoke_queued_simple_action<component>(make_not_null(&runner),
+                                                        0);
+  // ... and test that the action was called.
+  CHECK(simple_action_to_test_was_called);
+
+  // Currently perform_algorithm cannot be called on all elements at
+  // once (in the ActionTesting framework), but this is not difficult
+  // to add in the future.
+}
+}  // namespace TestMutableGlobalCache
+
 }  // namespace
