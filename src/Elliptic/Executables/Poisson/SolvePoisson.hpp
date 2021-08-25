@@ -21,7 +21,7 @@
 #include "Elliptic/DiscontinuousGalerkin/SubdomainOperator/SubdomainOperator.hpp"
 #include "Elliptic/Systems/Poisson/FirstOrderSystem.hpp"
 #include "Elliptic/Tags.hpp"
-#include "Elliptic/Triggers/EveryNIterations.hpp"
+#include "Elliptic/Triggers/Factory.hpp"
 #include "IO/Observer/Actions/RegisterEvents.hpp"
 #include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
@@ -39,7 +39,6 @@
 #include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Completion.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
-#include "ParallelAlgorithms/EventsAndTriggers/LogicalTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
@@ -187,10 +186,8 @@ struct Metavariables {
                            volume_dim, linear_solver_iteration_id,
                            observe_fields, analytic_solution_fields,
                            LinearSolver::multigrid::Tags::IsFinestGrid>>>>,
-        tmpl::pair<Trigger,
-                   tmpl::push_back<Triggers::logical_triggers,
-                                   elliptic::Triggers::EveryNIterations<
-                                       linear_solver_iteration_id>>>>;
+        tmpl::pair<Trigger, elliptic::Triggers::all_triggers<
+                                typename linear_solver::options_group>>>;
   };
 
   // Collect all reduction tags for observers

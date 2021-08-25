@@ -14,6 +14,7 @@
 #include "Elliptic/Triggers/EveryNIterations.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "NumericalAlgorithms/Convergence/Tags.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Parallel/Tags/Metavariables.hpp"
@@ -23,9 +24,7 @@
 #include "Utilities/TMPL.hpp"
 
 namespace {
-struct IterationIdTag : db::SimpleTag {
-  using type = size_t;
-};
+struct OptionsGroup {};
 
 struct Metavariables {
   using component_list = tmpl::list<>;
@@ -33,7 +32,7 @@ struct Metavariables {
       tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<tmpl::pair<
         Trigger,
-        tmpl::list<elliptic::Triggers::EveryNIterations<IterationIdTag>>>>;
+        tmpl::list<elliptic::Triggers::EveryNIterations<OptionsGroup>>>>;
   };
 };
 }  // namespace
@@ -41,7 +40,7 @@ struct Metavariables {
 SPECTRE_TEST_CASE("Unit.Elliptic.Triggers.EveryNIterations",
                   "[Unit][Elliptic]") {
   Parallel::register_classes_with_charm<
-      elliptic::Triggers::EveryNIterations<IterationIdTag>>();
+      elliptic::Triggers::EveryNIterations<OptionsGroup>>();
 
   const auto trigger =
       TestHelpers::test_creation<std::unique_ptr<Trigger>, Metavariables>(
@@ -51,15 +50,16 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Triggers.EveryNIterations",
 
   const auto sent_trigger = serialize_and_deserialize(trigger);
 
-  auto box = db::create<db::AddSimpleTags<
-      Parallel::Tags::MetavariablesImpl<Metavariables>, IterationIdTag>>(
+  auto box = db::create<
+      db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<Metavariables>,
+                        Convergence::Tags::IterationId<OptionsGroup>>>(
       Metavariables{}, size_t{0});
   for (const bool expected :
        {false, false, false, false, false, true, false, false, true, false}) {
     CHECK(sent_trigger->is_triggered(box) == expected);
-    db::mutate<IterationIdTag>(
-        make_not_null(&box), [](const gsl::not_null<size_t*>
-                                    iteration_id) noexcept {
+    db::mutate<Convergence::Tags::IterationId<OptionsGroup>>(
+        make_not_null(&box),
+        [](const gsl::not_null<size_t*> iteration_id) noexcept {
           (*iteration_id)++;
         });
   }

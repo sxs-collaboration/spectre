@@ -24,7 +24,7 @@
 #include "Elliptic/Systems/Elasticity/FirstOrderSystem.hpp"
 #include "Elliptic/Systems/Elasticity/Tags.hpp"
 #include "Elliptic/Tags.hpp"
-#include "Elliptic/Triggers/EveryNIterations.hpp"
+#include "Elliptic/Triggers/Factory.hpp"
 #include "IO/Observer/Actions/RegisterEvents.hpp"
 #include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
@@ -45,7 +45,6 @@
 #include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Completion.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
-#include "ParallelAlgorithms/EventsAndTriggers/LogicalTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/AddComputeTags.hpp"
@@ -205,10 +204,8 @@ struct Metavariables {
                            tmpl::list<Elasticity::Tags::PotentialEnergyDensity<
                                volume_dim>>,
                            LinearSolver::multigrid::Tags::IsFinestGrid>>>>,
-        tmpl::pair<Trigger,
-                   tmpl::push_back<Triggers::logical_triggers,
-                                   elliptic::Triggers::EveryNIterations<
-                                       linear_solver_iteration_id>>>>;
+        tmpl::pair<Trigger, elliptic::Triggers::all_triggers<
+                                typename linear_solver::options_group>>>;
   };
 
   // Collect all reduction tags for observers

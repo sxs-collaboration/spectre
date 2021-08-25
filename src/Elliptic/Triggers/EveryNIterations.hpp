@@ -6,16 +6,17 @@
 #include <cstdint>
 #include <pup.h>
 
+#include "NumericalAlgorithms/Convergence/Tags.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace elliptic {
-namespace Triggers {
+namespace elliptic::Triggers {
 /// \ingroup EventsAndTriggersGroup
-/// Trigger every N iterations after a given offset.
-template <typename IterationId>
+/// Trigger every N iterations of the solver identifid by the `Label`, after a
+/// given offset.
+template <typename Label>
 class EveryNIterations : public Trigger {
  public:
   /// \cond
@@ -42,10 +43,9 @@ class EveryNIterations : public Trigger {
   EveryNIterations(const uint64_t interval, const uint64_t offset) noexcept
       : interval_(interval), offset_(offset) {}
 
-  using argument_tags = tmpl::list<IterationId>;
+  using argument_tags = tmpl::list<Convergence::Tags::IterationId<Label>>;
 
-  bool operator()(const typename IterationId::type& iteration_id) const
-      noexcept {
+  bool operator()(const size_t iteration_id) const noexcept {
     const auto step_number = static_cast<uint64_t>(iteration_id);
     return step_number >= offset_ and (step_number - offset_) % interval_ == 0;
   }
@@ -62,8 +62,7 @@ class EveryNIterations : public Trigger {
 };
 
 /// \cond
-template <typename IterationId>
-PUP::able::PUP_ID EveryNIterations<IterationId>::my_PUP_ID = 0;  // NOLINT
+template <typename Label>
+PUP::able::PUP_ID EveryNIterations<Label>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
-}  // namespace Triggers
-}  // namespace elliptic
+}  // namespace elliptic::Triggers
