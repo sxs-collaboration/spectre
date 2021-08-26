@@ -110,6 +110,18 @@ bool operator!=(
   return not(lhs == rhs);
 }
 
+template <size_t MaxDerivPlusOne, bool StoreCoefs>
+std::ostream& operator<<(
+    std::ostream& os,
+    const StoredInfo<MaxDerivPlusOne, StoreCoefs>& info) noexcept {
+  os << "t=" << info.time << ": ";
+  for (size_t i = 0; i < MaxDerivPlusOne - 1; ++i) {
+    os << gsl::at(info.stored_quantities, i) << " ";
+  }
+  os << info.stored_quantities[MaxDerivPlusOne -1 ];
+  return os;
+}
+
 // explicit instantiation of StoredInfo class and stored_info_from_upper_bound
 // function for MaxDerivPlusOne = {1,2,3,4,5}
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
@@ -122,7 +134,9 @@ bool operator!=(
       const StoredInfo<DIM(data), STORECOEF(data)>&) noexcept; \
   template bool operator!=<DIM(data), STORECOEF(data)>(        \
       const StoredInfo<DIM(data), STORECOEF(data)>&,           \
-      const StoredInfo<DIM(data), STORECOEF(data)>&) noexcept;
+      const StoredInfo<DIM(data), STORECOEF(data)>&) noexcept; \
+  template std::ostream& operator<<(                           \
+      std::ostream&, const StoredInfo<DIM(data), STORECOEF(data)>&) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3, 4, 5), (true, false))
 
