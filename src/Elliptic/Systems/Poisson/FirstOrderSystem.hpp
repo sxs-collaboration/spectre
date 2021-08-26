@@ -67,8 +67,8 @@ namespace Poisson {
  * Also note that we have defined the _fixed sources_ \f$f_A\f$ as those source
  * terms that are independent of the system variables.
  *
- * The fluxes und sources simplify significantly when the background metric is
- * flat and we employ Cartesian coordinates so \f$\gamma_{ij} = delta_{ij}\f$
+ * The fluxes and sources simplify significantly when the background metric is
+ * flat and we employ Cartesian coordinates so \f$\gamma_{ij} = \delta_{ij}\f$
  * and \f$\Gamma^i_{jk} = 0\f$. Set the template parameter `BackgroundGeometry`
  * to `Poisson::Geometry::FlatCartesian` to specialise the system for this case.
  * Set it to `Poisson::Geometry::Curved` for the general case.
