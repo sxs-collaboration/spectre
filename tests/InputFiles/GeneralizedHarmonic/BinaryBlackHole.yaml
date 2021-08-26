@@ -1,0 +1,214 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Executable: EvolveGhBinaryBlackHole
+# Check: parse
+
+Evolution:
+  InitialTime: 0.0
+  InitialTimeStep: 0.0001
+  TimeStepper: DormandPrince5
+
+DomainCreator:
+  BinaryCompactObject:
+    ObjectA:
+      InnerRadius: 0.7925
+      OuterRadius: 6.683
+      XCoord: -7.683
+      Interior:
+        ExciseWithBoundaryCondition:
+          Outflow:
+      UseLogarithmicMap: false
+      AdditionToRadialRefinementLevel: 1
+    ObjectB:
+      InnerRadius: 0.7925
+      OuterRadius: 6.683
+      XCoord: 7.683
+      Interior:
+        ExciseWithBoundaryCondition:
+          Outflow:
+      UseLogarithmicMap: false
+      AdditionToRadialRefinementLevel: 1
+    EnvelopingCube:
+      Radius: 100.0
+    OuterSphere:
+      Radius: 1493.0
+      UseLogarithmicMap: false
+      AdditionToRadialRefinementLevel: 3
+      BoundaryCondition:
+        ConstraintPreservingBjorhus:
+          Type: ConstraintPreservingPhysical
+    InitialRefinement: 2
+    InitialGridPoints: 11
+    UseProjectiveMap: true
+    TimeDependentMaps:
+      InitialTime: 0.0
+      InitialExpirationDeltaT: Auto
+      ExpansionMap:
+        InitialExpansion: 1.0
+        InitialExpansionVelocity: 0.0
+        OuterBoundary: 1520.0
+        FunctionOfTimeName: "ExpansionFactor"
+        AsymptoticVelocityOuterBoundary: -1.0e-5
+        DecayTimescaleOuterBoundaryVelocity: 0.05
+      RotationAboutZAxisMap:
+        InitialRotationAngle: 0.0
+        InitialAngularVelocity: 0.0
+        FunctionOfTimeName: "RotationAngle"
+      SizeMap:
+        InitialValues: [0.0, 0.0]
+        InitialVelocities: [0.0, 0.0]
+        InitialAccelerations: [0.0, 0.0]
+        FunctionOfTimeNames: ["LambdaFactorA0", "LambdaFactorB0"]
+
+EventsAndDenseTriggers:
+
+# Set gauge and constraint damping parameters.
+# The values here are chosen empirically based on values that proved
+# sucessful in SpEC evolutions of binary black holes.
+# Note: Gaussian width = W / sqrt(34.54), so exp(-W^2/w^2) = 1e-15 at x=W,
+# is used in the damped-harmonic gauge parameters.
+# In SpEC, GaugeItems.input set what spectre calls W and spec calls
+# SecondaryWeightRmax. See
+# EvolutionSystems/GeneralizedHarmonic/DampedHarmonicGaugeItems.cpp
+# line 463 in https://github.com/sxs-collaboration/spec for where the Gaussian
+# is actually computed in SpEC.
+EvolutionSystem:
+  GeneralizedHarmonic:
+    DhGaugeParameters:
+      SpatialDecayWidth: 17.0152695482514  # From SpEC run: 100.0 / sqrt(34.54)
+      Amplitudes: [1.0, 1.0, 1.0]          # From SpEC run: damped harmonic
+      Exponents: [2, 2, 2]                 # From SpEC run
+    DampingFunctionGamma0:
+      TimeDependentTripleGaussian:
+        Constant: 0.001             # 0.001 / (m_A + m_B)
+        Gaussian1:
+          Amplitude: 8.0             # 4.0 / m_A
+          Width: 3.5                 # 7.0 * m_A
+          Center: [-7.683, 0.0, 0.0] # [x_A, 0, 0]
+        Gaussian2:
+          Amplitude: 8.0             # 4.0 / m_B
+          Width: 3.5                 # 7.0 * m_B
+          Center: [7.683, 0.0, 0.0]  # [x_B, 0, 0]
+        Gaussian3:
+          Amplitude: 0.75            # 0.75 / (m_A + m_B)
+          Width: 38.415              # 2.5 * (x_B - x_A)
+          Center: [0.0, 0.0, 0.0]
+        FunctionOfTimeForScaling: ExpansionFactor
+    DampingFunctionGamma1:
+      GaussianPlusConstant:
+        Constant: -0.999
+        Amplitude: 0.999
+        Width: 153.66                # 10.0 * (x_B - x_A)
+        Center: [0.0, 0.0, 0.0]
+    DampingFunctionGamma2:
+      TimeDependentTripleGaussian:
+        Constant: 0.001              # 0.001 / (m_A + m_B)
+        Gaussian1:
+          Amplitude: 8.0             # 4.0 / m_A
+          Width: 3.5                 # 7.0 * m_A
+          Center: [-7.683, 0.0, 0.0] # [x_A, 0, 0]
+        Gaussian2:
+          Amplitude: 8.0             # 4.0 / m_B
+          Width: 3.5                 # 7.0 * m_B
+          Center: [7.683, 0.0, 0.0]  # [x_B, 0, 0]
+        Gaussian3:
+          Amplitude: 0.75            # 0.75 / (m_A + m_B)
+          Width: 38.415              # 2.5 * (x_B - x_A)
+          Center: [0.0, 0.0, 0.0]
+        FunctionOfTimeForScaling: ExpansionFactor
+
+PhaseChangeAndTriggers:
+
+SpatialDiscretization:
+  BoundaryCorrection:
+    UpwindPenalty:
+  DiscontinuousGalerkin:
+    Formulation: StrongInertial
+    Quadrature: GaussLobatto
+
+Filtering:
+  ExpFilter0:
+    Alpha: 36.0
+    HalfPower: 210
+    DisableForDebugging: false
+
+EventsAndTriggers:
+  ? And:
+      - Slabs:
+          EvenlySpaced:
+            Interval: 200
+            Offset: 0
+      # Note: do not adjust step size until a bit of time has passed, because
+      # empirically starting in damped harmonic gauge requires very rapid
+      # grid motion at first.
+      - TimeCompares:
+          Comparison: GreaterThan
+          Value: 0.1
+  : - ChangeSlabSize:
+        DelayChange: 0
+        StepChoosers:
+          - Cfl:
+              SafetyFactor: 0.8
+          - Increase:
+              Factor: 1.2
+  ? Slabs:
+      EvenlySpaced:
+        Interval: 1
+        Offset: 0
+  : - ObserveNorms:
+        SubfileName: Norms
+        TensorsToObserve:
+        - Name: Lapse
+          NormType: L2Norm
+          Components: Individual
+        - Name: PointwiseL2Norm(GaugeConstraint)
+          NormType: L2Norm
+          Components: Sum
+        - Name: PointwiseL2Norm(ThreeIndexConstraint)
+          NormType: L2Norm
+          Components: Sum
+        - Name: PointwiseL2Norm(FourIndexConstraint)
+          NormType: L2Norm
+          Components: Sum
+  ? Slabs:
+      EvenlySpaced:
+        Interval: 1000
+        Offset: 0
+  : - ObserveFields:
+        SubfileName: VolumeData
+        VariablesToObserve:
+          - Lapse
+          - PointwiseL2Norm(GaugeConstraint)
+          - PointwiseL2Norm(ThreeIndexConstraint)
+          - PointwiseL2Norm(FourIndexConstraint)
+        InterpolateToMesh: None
+        CoordinatesFloatingPointType: Double
+        FloatingPointTypes: [Double]
+  ? TimeCompares:
+      Comparison: GreaterThan
+      Value: 3760.0
+  : - Completion
+
+Observers:
+  VolumeFileName: "GhBBHVolumeData"
+  ReductionFileName: "GhBBHReductionData"
+
+# initial_data.h5 should contain numerical initial data
+# on the same grid as specified by the domain given above
+Importers:
+  NumericInitialData:
+    FileName: "/path/to/initial_data.h5"
+    Subgroup: "element_data"
+    ObservationValue: 0.0
+
+# control.h5 should contain data for FunctionsOfTime that can be
+# read by ReadSpecPiecewisePolynomial.
+CubicFunctionOfTimeOverride:
+  FunctionOfTimeFile: "/path/to/control.h5"
+  # Note: SpEC calls the hole on the right hole A, but spectre calls hole A
+  # the hole on the left. So reverse the LambdaFactors used here
+  FunctionOfTimeNameMap: {ExpansionFactor: ExpansionFactor,
+                          RotationAngle: RotationAngle,
+                          LambdaFactorA0: LambdaFactorB0,
+                          LambdaFactorB0: LambdaFactorA0}
