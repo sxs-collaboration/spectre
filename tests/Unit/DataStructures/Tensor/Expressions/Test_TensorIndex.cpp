@@ -27,42 +27,42 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.TensorIndex",
   // value in between.
 
   // Lower spacetime
-  CHECK(get_tensorindex_value_with_opposite_valence(0) ==
-        TensorIndex_detail::upper_sentinel);
-  CHECK(get_tensorindex_value_with_opposite_valence(
-            TensorIndex_detail::upper_sentinel - 1) ==
-        TensorIndex_detail::spatial_sentinel - 1);
-  CHECK(get_tensorindex_value_with_opposite_valence(115) ==
-        TensorIndex_detail::upper_sentinel + 115);
+  CHECK(TensorExpressions::get_tensorindex_value_with_opposite_valence(0) ==
+        TensorExpressions::TensorIndex_detail::upper_sentinel);
+  CHECK(TensorExpressions::get_tensorindex_value_with_opposite_valence(
+            TensorExpressions::TensorIndex_detail::upper_sentinel - 1) ==
+        TensorExpressions::TensorIndex_detail::spatial_sentinel - 1);
+  CHECK(TensorExpressions::get_tensorindex_value_with_opposite_valence(115) ==
+        TensorExpressions::TensorIndex_detail::upper_sentinel + 115);
 
   // Upper spacetime
-  CHECK(get_tensorindex_value_with_opposite_valence(
-            TensorIndex_detail::upper_sentinel) == 0);
-  CHECK(get_tensorindex_value_with_opposite_valence(
-            TensorIndex_detail::spatial_sentinel - 1) ==
-        TensorIndex_detail::upper_sentinel - 1);
-  CHECK(get_tensorindex_value_with_opposite_valence(
-            TensorIndex_detail::upper_sentinel + 88) == 88);
+  CHECK(TensorExpressions::get_tensorindex_value_with_opposite_valence(
+            TensorExpressions::TensorIndex_detail::upper_sentinel) == 0);
+  CHECK(TensorExpressions::get_tensorindex_value_with_opposite_valence(
+            TensorExpressions::TensorIndex_detail::spatial_sentinel - 1) ==
+        TensorExpressions::TensorIndex_detail::upper_sentinel - 1);
+  CHECK(TensorExpressions::get_tensorindex_value_with_opposite_valence(
+            TensorExpressions::TensorIndex_detail::upper_sentinel + 88) == 88);
 
   // Lower spatial
-  CHECK(get_tensorindex_value_with_opposite_valence(
-            TensorIndex_detail::spatial_sentinel) ==
-        TensorIndex_detail::upper_spatial_sentinel);
-  CHECK(get_tensorindex_value_with_opposite_valence(
-            TensorIndex_detail::upper_spatial_sentinel - 1) ==
-        TensorIndex_detail::max_sentinel - 1);
-  CHECK(get_tensorindex_value_with_opposite_valence(
-            TensorIndex_detail::spatial_sentinel + 232) ==
-        TensorIndex_detail::upper_spatial_sentinel + 232);
+  CHECK(TensorExpressions::get_tensorindex_value_with_opposite_valence(
+            TensorExpressions::TensorIndex_detail::spatial_sentinel) ==
+        TensorExpressions::TensorIndex_detail::upper_spatial_sentinel);
+  CHECK(TensorExpressions::get_tensorindex_value_with_opposite_valence(
+            TensorExpressions::TensorIndex_detail::upper_spatial_sentinel -
+            1) == TensorExpressions::TensorIndex_detail::max_sentinel - 1);
+  CHECK(TensorExpressions::get_tensorindex_value_with_opposite_valence(
+            TensorExpressions::TensorIndex_detail::spatial_sentinel + 232) ==
+        TensorExpressions::TensorIndex_detail::upper_spatial_sentinel + 232);
 
   // Upper spatial
-  CHECK(get_tensorindex_value_with_opposite_valence(
-            TensorIndex_detail::upper_spatial_sentinel) ==
-        TensorIndex_detail::spatial_sentinel);
-  CHECK(get_tensorindex_value_with_opposite_valence(
-            TensorIndex_detail::max_sentinel - 1) ==
-        TensorIndex_detail::upper_spatial_sentinel - 1);
-  CHECK(get_tensorindex_value_with_opposite_valence(
-            TensorIndex_detail::upper_spatial_sentinel + 3) ==
-        TensorIndex_detail::spatial_sentinel + 3);
+  CHECK(TensorExpressions::get_tensorindex_value_with_opposite_valence(
+            TensorExpressions::TensorIndex_detail::upper_spatial_sentinel) ==
+        TensorExpressions::TensorIndex_detail::spatial_sentinel);
+  CHECK(TensorExpressions::get_tensorindex_value_with_opposite_valence(
+            TensorExpressions::TensorIndex_detail::max_sentinel - 1) ==
+        TensorExpressions::TensorIndex_detail::upper_spatial_sentinel - 1);
+  CHECK(TensorExpressions::get_tensorindex_value_with_opposite_valence(
+            TensorExpressions::TensorIndex_detail::upper_spatial_sentinel +
+            3) == TensorExpressions::TensorIndex_detail::spatial_sentinel + 3);
 }
