@@ -6,6 +6,7 @@ spectre_target_sources(
   PRIVATE
   ArrayComponentId.cpp
   ObservationId.cpp
+  ReductionActions.cpp
   TypeOfObservation.cpp
   )
 
