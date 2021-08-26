@@ -4,6 +4,8 @@
 set(LIBRARY "Test_ScalarAdvectionSolutions")
 
 set(LIBRARY_SOURCES
+  Test_Krivodonova.cpp
+  Test_Kuzmin.cpp
   Test_Sinusoid.cpp
   )
 
