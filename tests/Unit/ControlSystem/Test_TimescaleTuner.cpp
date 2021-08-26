@@ -12,8 +12,7 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
-SPECTRE_TEST_CASE("Unit.ControlSystem.TimescaleTuner.IncreaseOrDecrease",
-                  "[ControlSystem][Unit]") {
+void test_increase_or_decrease() {
   const double decrease_timescale_threshold = 1.0e-2;
   const double increase_timescale_threshold = 1.0e-4;
   const double increase_factor = 1.01;
@@ -171,8 +170,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.TimescaleTuner.IncreaseOrDecrease",
   run_tests(-1.0);
 }
 
-SPECTRE_TEST_CASE("Unit.ControlSystem.TimescaleTuner.NoChangeToTimescale",
-                  "[ControlSystem][Unit]") {
+void test_no_change_to_timescale() {
   const double decrease_timescale_threshold = 1.0e-2;
   const double increase_timescale_threshold = 1.0e-4;
   const double increase_factor = 1.01;
@@ -198,7 +196,6 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.TimescaleTuner.NoChangeToTimescale",
   const double less_than_one = 0.9;
 
   auto run_tests = [&](double sign_of_q) {
-
     // (1) |Q| > decrease_timescale_threshold
     //     |\dot{Q}| <= decrease_timescale_threshold/timescale
     DataVector q{sign_of_q * greater_than_one * decrease_timescale_threshold};
@@ -282,8 +279,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.TimescaleTuner.NoChangeToTimescale",
   run_tests(-1.0);  // test negative Q
 }
 
-SPECTRE_TEST_CASE("Unit.ControlSystem.TimescaleTuner.CreateFromOptions",
-                  "[ControlSystem][Unit]") {
+void test_create_from_options() {
   const double decrease_timescale_threshold = 1.0e-2;
   const double increase_timescale_threshold = 1.0e-4;
   const double increase_factor = 1.01;
@@ -305,8 +301,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.TimescaleTuner.CreateFromOptions",
                               decrease_factor));
 }
 
-SPECTRE_TEST_CASE("Unit.ControlSystem.TimescaleTuner.EqualityAndSerialization",
-                  "[ControlSystem][Unit]") {
+void test_equality_and_serialization() {
   const double decrease_timescale_threshold = 1.0e-2;
   const double increase_timescale_threshold = 1.0e-4;
   const double increase_factor = 1.01;
@@ -484,4 +479,12 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.TimescaleTuner.BadDecreaseThreshold",
   tst.update_timescale(qs);
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
+}
+
+SPECTRE_TEST_CASE("Unit.ControlSystem.TimescaleTuner",
+                  "[ControlSystem][Unit]") {
+  test_increase_or_decrease();
+  test_no_change_to_timescale();
+  test_create_from_options();
+  test_equality_and_serialization();
 }
