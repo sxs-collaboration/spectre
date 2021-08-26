@@ -124,13 +124,19 @@ class ObserveTimeStep : public Event {
         "Whether to print the time to screen."};
   };
 
+  struct ObservePerCore {
+    using type = bool;
+    static constexpr Options::String help = {
+        "Also write the data per-core in a file per-node."};
+  };
+
   /// \cond
   explicit ObserveTimeStep(CkMigrateMessage* /*unused*/) noexcept {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ObserveTimeStep);  // NOLINT
   /// \endcond
 
-  using options = tmpl::list<SubfileName, PrintTimeToTerminal>;
+  using options = tmpl::list<SubfileName, PrintTimeToTerminal, ObservePerCore>;
   static constexpr Options::String help =
       "Observe the size of the time steps.\n"
       "\n"
@@ -150,7 +156,8 @@ class ObserveTimeStep : public Event {
 
   ObserveTimeStep() = default;
   explicit ObserveTimeStep(const std::string& subfile_name,
-                           const bool output_time) noexcept;
+                           const bool output_time,
+                           const bool observe_per_core) noexcept;
 
   using observed_reduction_data_tags =
       observers::make_reduction_data_tags<tmpl::list<ReductionData>>;
@@ -192,7 +199,7 @@ class ObserveTimeStep : public Event {
         ReductionData{time, number_of_grid_points, slab_size, step_size,
                       step_size, number_of_grid_points / step_size, wall_time,
                       wall_time},
-        std::move(formatter));
+        std::move(formatter), observe_per_core_);
   }
 
   using observation_registration_tags = tmpl::list<>;
@@ -218,17 +225,22 @@ class ObserveTimeStep : public Event {
     Event::pup(p);
     p | subfile_path_;
     p | output_time_;
+    p | observe_per_core_;
   }
 
  private:
   std::string subfile_path_;
   bool output_time_;
+  bool observe_per_core_;
 };
 
 template <typename System>
 ObserveTimeStep<System>::ObserveTimeStep(const std::string& subfile_name,
-                                                const bool output_time) noexcept
-    : subfile_path_("/" + subfile_name), output_time_(output_time) {}
+                                         const bool output_time,
+                                         const bool observe_per_core) noexcept
+    : subfile_path_("/" + subfile_name),
+      output_time_(output_time),
+      observe_per_core_(observe_per_core) {}
 
 /// \cond
 template <typename System>

@@ -63,7 +63,8 @@ struct MockContributeReductionData {
     std::string subfile_name;
     std::vector<std::string> reduction_names;
     ReductionData reduction_data;
-    bool formatter_is_set {};
+    bool formatter_is_set{};
+    bool observe_per_core{};
   };
 
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
@@ -79,17 +80,20 @@ struct MockContributeReductionData {
                     const std::string& subfile_name,
                     const std::vector<std::string>& reduction_names,
                     ReductionData&& reduction_data,
-                    std::optional<Formatter>&& formatter) noexcept {
+                    std::optional<Formatter>&& formatter,
+                    const bool observe_per_core) noexcept {
     if (results) {
       CHECK(results->observation_id == observation_id);
       CHECK(results->subfile_name == subfile_name);
       CHECK(results->reduction_names == reduction_names);
       CHECK(results->formatter_is_set == formatter.has_value());
+      CHECK(results->observe_per_core == observe_per_core);
       results->reduction_data.combine(std::move(reduction_data));
     } else {
       results.emplace();
-      *results = {observation_id, subfile_name, reduction_names,
-                  std::move(reduction_data), formatter.has_value()};
+      *results = {observation_id,        subfile_name,
+                  reduction_names,       std::move(reduction_data),
+                  formatter.has_value(), observe_per_core};
     }
 
     if (formatter.has_value()) {
@@ -163,8 +167,8 @@ struct Metavariables {
 };
 
 template <typename Observer>
-void test_observe(const Observer& observer,
-                  const bool backwards_in_time) noexcept {
+void test_observe(const Observer& observer, const bool backwards_in_time,
+                  const bool observe_per_core = false) noexcept {
   using element_component = ElementComponent<Metavariables>;
   using observer_component = MockObserverComponent<Metavariables>;
 
@@ -256,6 +260,7 @@ void test_observe(const Observer& observer,
   CHECK(std::get<5>(reduction_data.data()) == approx(expected_effective_step));
   CHECK(results->reduction_names[6] == "Minimum Walltime");
   CHECK(results->reduction_names[7] == "Maximum Walltime");
+  CHECK(results->observe_per_core == observe_per_core);
 }
 }  // namespace
 
@@ -264,7 +269,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.ObserveTimeStep", "[Unit][Evolution]") {
 
   for (const bool print_to_terminal : {true, false}) {
     const Events::ObserveTimeStep<typename Metavariables::system> observer(
-        "time_step_subfile", print_to_terminal);
+        "time_step_subfile", print_to_terminal, false);
     CHECK(not observer.needs_evolved_variables());
     test_observe(observer, false);
     test_observe(observer, true);
@@ -276,10 +281,18 @@ SPECTRE_TEST_CASE("Unit.Evolution.ObserveTimeStep", "[Unit][Evolution]") {
             "ObserveTimeStep:\n"
             "  SubfileName: time_step_subfile\n"
             "  PrintTimeToTerminal: " +
-            std::string(print_to_terminal ? "true" : "false"));
+            std::string(print_to_terminal ? "true" : "false") +
+            "\n"
+            "  ObservePerCore: False");
     test_observe(*event, false);
     test_observe(*event, true);
     test_observe(*serialize_and_deserialize(event), false);
     test_observe(*serialize_and_deserialize(event), true);
+  }
+  {
+    INFO("Observe per-core");
+    const Events::ObserveTimeStep<typename Metavariables::system> observer(
+        "time_step_subfile", false, true);
+    test_observe(observer, false, true);
   }
 }
