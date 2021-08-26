@@ -2,14 +2,20 @@
 # See LICENSE.txt for details.
 
 # Executable: EvolveScalarAdvectionKrivodonova1D
-# Check: parse;execute
+# Check: parse;execute_check_output
 # ExpectedOutput:
 #   ScalarAdvectionKrivodonova1DVolume0.h5
-
+#   ScalarAdvectionKrivodonova1DReductions.h5
+# OutputFileChecks:
+#   - Label: check_analytic_solution
+#     Subfile: /ErrorNorms.dat
+#     FileGlob: ScalarAdvectionKrivodonova1DReductions.h5
+#     SkipColumns: [0,1]
+#     AbsoluteTolerance: 0.2
 
 Evolution:
   InitialTime: 0.0
-  InitialTimeStep: 0.001
+  InitialTimeStep: 0.005
   TimeStepper: RungeKutta3
 
 PhaseChangeAndTriggers:
@@ -18,7 +24,7 @@ DomainCreator:
   Interval:
     LowerBound: [-1.0]
     UpperBound: [1.0]
-    InitialRefinement: [1]
+    InitialRefinement: [5]
     InitialGridPoints: [2]
     TimeDependence: None
     BoundaryConditions:
@@ -46,8 +52,14 @@ Limiter:
 EventsAndTriggers:
   ? Slabs:
       Specified:
-        Values: [100]
+        Values: [10]
   : - Completion
+  ? Slabs:
+      EvenlySpaced:
+        Interval: 5
+        Offset: 0
+  : - ObserveErrorNorms:
+        SubfileName: ErrorNorms
   ? Slabs:
       EvenlySpaced:
         Interval: 10

@@ -2,13 +2,20 @@
 # See LICENSE.txt for details.
 
 # Executable: EvolveScalarAdvectionSinusoid1D
-# Check: parse;execute
+# Check: parse;execute_check_output
 # ExpectedOutput:
 #   ScalarAdvectionSinusoid1DVolume0.h5
+#   ScalarAdvectionSinusoid1DReductions.h5
+# OutputFileChecks:
+#   - Label: check_analytic_solution
+#     Subfile: /ErrorNorms.dat
+#     FileGlob: ScalarAdvectionSinusoid1DReductions.h5
+#     SkipColumns: [0,1]
+#     AbsoluteTolerance: 0.02
 
 Evolution:
   InitialTime: 0.0
-  InitialTimeStep: 0.001
+  InitialTimeStep: 0.0001
   TimeStepper: RungeKutta3
 
 PhaseChangeAndTriggers:
@@ -17,8 +24,8 @@ DomainCreator:
   Interval:
     LowerBound: [-1.0]
     UpperBound: [1.0]
-    InitialRefinement: [1]
-    InitialGridPoints: [2]
+    InitialRefinement: [4]
+    InitialGridPoints: [3]
     TimeDependence: None
     BoundaryConditions:
       LowerBoundary: Periodic
@@ -45,8 +52,14 @@ Limiter:
 EventsAndTriggers:
   ? Slabs:
       Specified:
-        Values: [100]
+        Values: [10]
   : - Completion
+  ? Slabs:
+      EvenlySpaced:
+        Interval: 5
+        Offset: 0
+  : - ObserveErrorNorms:
+        SubfileName: ErrorNorms
   ? Slabs:
       EvenlySpaced:
         Interval: 10
