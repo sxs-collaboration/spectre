@@ -69,12 +69,14 @@ using reduction_data = Parallel::ReductionData<
     // Number of subdomains (= number of elements)
     Parallel::ReductionDatum<size_t, funcl::Plus<>>,
     // Average number of subdomain solver iterations
-    Parallel::ReductionDatum<size_t, funcl::Plus<>, funcl::Divides<>,
+    Parallel::ReductionDatum<double, funcl::Plus<>, funcl::Divides<>,
                              std::index_sequence<1>>,
     // Minimum number of subdomain solver iterations
     Parallel::ReductionDatum<size_t, funcl::Min<>>,
     // Maximum number of subdomain solver iterations
-    Parallel::ReductionDatum<size_t, funcl::Max<>>>;
+    Parallel::ReductionDatum<size_t, funcl::Max<>>,
+    // Total number of subdomain solver iterations
+    Parallel::ReductionDatum<size_t, funcl::Plus<>>>;
 
 template <typename OptionsGroup>
 struct SubdomainStatsFormatter
@@ -84,16 +86,18 @@ struct SubdomainStatsFormatter
   SubdomainStatsFormatter(std::string local_section_observation_key) noexcept
       : section_observation_key(std::move(local_section_observation_key)) {}
   std::string operator()(const size_t iteration_id, const size_t num_subdomains,
-                         const size_t avg_subdomain_its,
+                         const double avg_subdomain_its,
                          const size_t min_subdomain_its,
-                         const size_t max_subdomain_its) const noexcept {
+                         const size_t max_subdomain_its,
+                         const size_t total_subdomain_its) const noexcept {
     return Options::name<OptionsGroup>() + section_observation_key + "(" +
            get_output(iteration_id) + ") completed all " +
            get_output(num_subdomains) +
            " subdomain solves. Average of number of iterations: " +
            get_output(avg_subdomain_its) + " (min " +
            get_output(min_subdomain_its) + ", max " +
-           get_output(max_subdomain_its) + ").";
+           get_output(max_subdomain_its) + ", total " +
+           get_output(total_subdomain_its) + ").";
   }
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) noexcept { p | section_observation_key; }
@@ -134,7 +138,8 @@ template <typename OptionsGroup, typename ParallelComponent,
 void contribute_to_subdomain_stats_observation(
     const size_t iteration_id, const size_t subdomain_solve_num_iterations,
     Parallel::GlobalCache<Metavariables>& cache, const ArrayIndex& array_index,
-    const std::string& section_observation_key) noexcept {
+    const std::string& section_observation_key,
+    const bool observe_per_core) noexcept {
   auto& local_observer =
       *Parallel::get_parallel_component<observers::Observer<Metavariables>>(
            cache)
@@ -156,11 +161,13 @@ void contribute_to_subdomain_stats_observation(
       std::string{"/" + Options::name<OptionsGroup>() +
                   section_observation_key + "SubdomainSolves"},
       std::vector<std::string>{"Iteration", "NumSubdomains", "AvgNumIterations",
-                               "MinNumIterations", "MaxNumIterations"},
-      reduction_data{iteration_id, 1, subdomain_solve_num_iterations,
-                     subdomain_solve_num_iterations,
-                     subdomain_solve_num_iterations},
-      std::move(formatter));
+                               "MinNumIterations", "MaxNumIterations",
+                               "TotalNumIterations"},
+      reduction_data{
+          iteration_id, 1, static_cast<double>(subdomain_solve_num_iterations),
+          subdomain_solve_num_iterations, subdomain_solve_num_iterations,
+          subdomain_solve_num_iterations},
+      std::move(formatter), observe_per_core);
 }
 
 template <typename SubdomainDataType, typename OptionsGroup>
@@ -315,7 +322,8 @@ struct SolveSubdomain {
  public:
   using const_global_cache_tags =
       tmpl::list<Tags::MaxOverlap<OptionsGroup>,
-                 logging::Tags::Verbosity<OptionsGroup>>;
+                 logging::Tags::Verbosity<OptionsGroup>,
+                 Tags::ObservePerCoreReductions<OptionsGroup>>;
   using inbox_tags = tmpl::list<overlap_residuals_inbox_tag>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
@@ -412,7 +420,8 @@ struct SolveSubdomain {
       contribute_to_subdomain_stats_observation<OptionsGroup,
                                                 ParallelComponent>(
           iteration_id + 1, subdomain_solve_has_converged.num_iterations(),
-          cache, element_id, *section_observation_key);
+          cache, element_id, *section_observation_key,
+          db::get<Tags::ObservePerCoreReductions<OptionsGroup>>(box));
     }
 
     // Apply weighting

@@ -60,6 +60,7 @@ SchwarzSmoother:
         # Preconditioning with the explicitly-built inverse matrix, so all
         # subdomain solves should converge immediately
         ExplicitInverse
+  ObservePerCoreReductions: False
 
 ConvergenceReason: NumIterations
 

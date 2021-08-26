@@ -95,6 +95,7 @@ LinearSolver:
           MinusLaplacian:
             Solver: ExplicitInverse
     SkipResets: True
+    ObservePerCoreReductions: False
 
 EventsAndTriggers:
   ? HasConverged

@@ -53,6 +53,15 @@ struct SkipSubdomainSolverResets {
       "overall is highly problem-dependent.";
 };
 
+template <typename OptionsGroup>
+struct ObservePerCoreReductions {
+  using type = bool;
+  using group = OptionsGroup;
+  static constexpr Options::String help =
+      "Output statistics per-core in a file per-node, e.g. to assess the load "
+      "(im)balance of subdomain solves.";
+};
+
 }  // namespace OptionTags
 
 /// Tags related to the Schwarz solver
@@ -100,6 +109,16 @@ struct SkipSubdomainSolverResets : db::SimpleTag {
   static constexpr bool pass_metavariables = false;
   using option_tags =
       tmpl::list<OptionTags::SkipSubdomainSolverResets<OptionsGroup>>;
+  static bool create_from_options(const bool value) noexcept { return value; }
+};
+
+/// Enable per-core reduction observations
+template <typename OptionsGroup>
+struct ObservePerCoreReductions : db::SimpleTag {
+  using type = bool;
+  static constexpr bool pass_metavariables = false;
+  using option_tags =
+      tmpl::list<OptionTags::ObservePerCoreReductions<OptionsGroup>>;
   static bool create_from_options(const bool value) noexcept { return value; }
 };
 
