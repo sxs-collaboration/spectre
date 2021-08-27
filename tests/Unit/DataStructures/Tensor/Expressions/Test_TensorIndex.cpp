@@ -4,6 +4,7 @@
 #include "Framework/TestingFramework.hpp"
 
 #include "DataStructures/Tensor/Expressions/TensorIndex.hpp"
+#include "DataStructures/Tensor/Expressions/TimeIndex.hpp"
 
 SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.TensorIndex",
                   "[DataStructures][Unit]") {
@@ -65,4 +66,18 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.TensorIndex",
   CHECK(TensorExpressions::get_tensorindex_value_with_opposite_valence(
             TensorExpressions::TensorIndex_detail::upper_spatial_sentinel +
             3) == TensorExpressions::TensorIndex_detail::spatial_sentinel + 3);
+
+  // Test tensorindex_list_is_valid
+  CHECK(TensorExpressions::tensorindex_list_is_valid<
+        make_tensorindex_list<>>::value);
+  CHECK(TensorExpressions::tensorindex_list_is_valid<
+        make_tensorindex_list<ti_J>>::value);
+  CHECK(TensorExpressions::tensorindex_list_is_valid<
+        make_tensorindex_list<ti_a, ti_c, ti_I, ti_B>>::value);
+  CHECK(TensorExpressions::tensorindex_list_is_valid<
+        make_tensorindex_list<ti_t, ti_T, ti_T, ti_T, ti_t>>::value);
+  CHECK(TensorExpressions::tensorindex_list_is_valid<
+        make_tensorindex_list<ti_d, ti_T, ti_D>>::value);
+  CHECK(not TensorExpressions::tensorindex_list_is_valid<
+        make_tensorindex_list<ti_I, ti_a, ti_I>>::value);
 }

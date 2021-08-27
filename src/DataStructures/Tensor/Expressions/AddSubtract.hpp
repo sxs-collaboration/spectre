@@ -286,7 +286,8 @@ struct AddSub<T1, T2, ArgsList1<Args1...>, ArgsList2<Args2...>, Sign>
   using args_list = typename T1::args_list;
   static constexpr std::array<size_t, num_tensor_indices>
       operand_index_transformation =
-          compute_tensorindex_transformation<num_tensor_indices>(
+          compute_tensorindex_transformation<num_tensor_indices,
+                                             num_tensor_indices>(
               {{Args1::value...}}, {{Args2::value...}});
   // positions of indices in first operand where generic spatial indices are
   // used for spacetime indices

@@ -26,6 +26,7 @@
 #include "DataStructures/Tensor/Expressions/TensorExpression.hpp"
 #include "DataStructures/Tensor/Expressions/TensorIndex.hpp"
 #include "DataStructures/Tensor/Expressions/TensorIndexTransformation.hpp"
+#include "DataStructures/Tensor/Expressions/TimeIndex.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Tensor/Structure.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
@@ -257,10 +258,12 @@ class Tensor<X, Symm, IndexList<Indices...>> {
                   "The tensor expression must be created using TensorIndex "
                   "objects to represent generic indices, e.g. ti_a, ti_b, "
                   "etc.");
-    static_assert(tmpl::is_set<TensorIndices...>::value,
+    static_assert(TensorExpressions::tensorindex_list_is_valid<
+                      tmpl::list<TensorIndices...>>::value,
                   "Cannot create a tensor expression with a repeated generic "
-                  "index. If you intend to contract, ensure that the indices "
-                  "to contract have opposite valences.");
+                  "index. (Note that the concrete time indices, ti_T and ti_t, "
+                  "can be repeated.) If you intend to contract, ensure that "
+                  "the indices to contract have opposite valences.");
     static_assert(
         std::is_same_v<tmpl::integral_list<UpLo, TensorIndices::valence...>,
                        tmpl::integral_list<UpLo, Indices::ul...>>,
@@ -268,9 +271,9 @@ class Tensor<X, Symm, IndexList<Indices...>> {
         "not match the valences of the indices in the Tensor.");
     static_assert((... and (not(TensorIndices::is_spacetime and
                                 (Indices::index_type == IndexType::Spatial)))),
-                  "Cannot use a generic spacetime index for a spatial index. "
-                  "e.g. Cannot do R(ti_a), where R's index is spatial, because "
-                  "ti_a denotes a generic spacetime index.");
+                  "Cannot use a spacetime index for a spatial index. e.g. "
+                  "Cannot do R(ti_a), where R's index is spatial, because ti_a "
+                  "denotes a generic spacetime index.");
     return TensorExpressions::contract(TE<tmpl::list<TensorIndices...>>{*this});
   }
   /// @}

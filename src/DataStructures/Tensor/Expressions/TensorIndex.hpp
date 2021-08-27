@@ -124,8 +124,9 @@ get_tensorindex_value_with_opposite_valence(const size_t i) noexcept {
  * \details The suffix following `ti_` indicates index properties:
  * - Uppercase: contravariant/upper index
  * - Lowercase: covariant/lower index
- * - A/a - H/h: spacetime index
- * - I/i - L/l: spatial index
+ * - A/a - H/h: generic spacetime index
+ * - I/i - L/l: generic spatial index
+ * - T/t: concrete time index (defined as a spacetime `TensorIndex`)
  *
  * \snippet Test_AddSubtract.cpp use_tensor_index
  */
@@ -161,6 +162,14 @@ static constexpr TensorIndex<7> ti_h{};
 static constexpr TensorIndex<
     TensorExpressions::TensorIndex_detail::upper_sentinel + 7>
     ti_H{};
+
+static constexpr TensorIndex<
+    TensorExpressions::TensorIndex_detail::upper_sentinel - 1>
+    ti_t{};
+static constexpr TensorIndex<
+    TensorExpressions::TensorIndex_detail::spatial_sentinel - 1>
+    ti_T{};
+
 static constexpr TensorIndex<
     TensorExpressions::TensorIndex_detail::spatial_sentinel>
     ti_i{};
@@ -209,7 +218,45 @@ struct make_tensorindex_list_impl {
       "objects.");
   using type = tmpl::list<std::decay_t<decltype(TensorIndices)>...>;
 };
+
+template <typename TensorIndexList>
+struct tensorindex_list_is_valid_impl;
+
+template <typename... TensorIndices>
+struct tensorindex_list_is_valid_impl<tmpl::list<TensorIndices...>> {
+  static_assert(
+      (... and tt::is_tensor_index<TensorIndices>::value),
+      "Template parameters of tensorindex_list_is_valid must be TensorIndex "
+      "types.");
+  static constexpr bool value = tmpl::is_set<TensorIndices...>::value;
+};
+
+template <typename TensorIndexList>
+struct remove_time_indices;
 }  // namespace detail
+
+/*!
+ * \ingroup TensorExpressionsGroup
+ * \brief Determine whether or not a given list of TensorIndexs is valid
+ * to be used with a tensor
+ *
+ * \details A list of TensorIndexs is considered valid if the subset of generic
+ * indices are a set. Indices with opposite valences are unique, e.g. one
+ * instance each of `ti_a` and `ti_A` is valid. An arbitrary number of concrete
+ * time indices, regardless of valence, is also valid.
+ *
+ * @tparam TensorIndexList list of generic index types, e.g. the types of
+ * `ti_a, ti_b`
+ */
+template <typename TensorIndexList>
+struct tensorindex_list_is_valid;
+
+template <typename... TensorIndices>
+struct tensorindex_list_is_valid<tmpl::list<TensorIndices...>> {
+  static constexpr bool value = detail::tensorindex_list_is_valid_impl<
+      typename detail::remove_time_indices<
+          tmpl::list<TensorIndices...>>::type>::value;
+};
 }  // namespace TensorExpressions
 
 /*!

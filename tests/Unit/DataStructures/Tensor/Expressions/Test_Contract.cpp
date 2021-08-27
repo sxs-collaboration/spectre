@@ -653,10 +653,135 @@ void test_contractions_rank4(const DataType& used_for_size) noexcept {
 }
 
 template <typename DataType>
+void test_time_index(const DataType& used_for_size) noexcept {
+  Tensor<DataType, Symmetry<4, 3, 2, 1>,
+         index_list<SpacetimeIndex<3, UpLo::Up, Frame::Inertial>,
+                    SpacetimeIndex<3, UpLo::Up, Frame::Inertial>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::Inertial>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::Inertial>>>
+      R(used_for_size);
+  create_tensor(make_not_null(&R));
+  // Contract RHS tensor with time index to a LHS tensor without a time index
+  // Use explicit type (vs auto) for LHS Tensor so the compiler checks the
+  // return type of `evaluate`
+  // \f$L_{b} = R^{at}{}_{ab}\f$
+  const Tensor<DataType, Symmetry<1>,
+               index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Inertial>>>
+      R_contracted_1 =
+          TensorExpressions::evaluate<ti_b>(R(ti_A, ti_T, ti_a, ti_b));
+
+  for (size_t b = 0; b < 4; b++) {
+    DataType expected_R_sum_1 = make_with_value<DataType>(used_for_size, 0.0);
+    for (size_t a = 0; a < 4; a++) {
+      expected_R_sum_1 += R.get(a, 0, a, b);
+    }
+    CHECK_ITERABLE_APPROX(R_contracted_1.get(b), expected_R_sum_1);
+  }
+
+  // Contract RHS tensor with upper and lower time index to a LHS tensor without
+  // time indices
+  // \f$L = R^{at}{}_{at}\f$
+  //
+  // Makes sure that `TensorContract` does not get confused by the presence of
+  // an upper and lower time index in the RHS tensor, which is different than
+  // the presence of an upper and lower generic index
+  const Tensor<DataType> R_contracted_2 =
+      TensorExpressions::evaluate(R(ti_A, ti_T, ti_a, ti_t));
+  DataType expected_R_sum_2 = make_with_value<DataType>(used_for_size, 0.0);
+  for (size_t a = 0; a < 4; a++) {
+    expected_R_sum_2 += R.get(a, 0, a, 0);
+  }
+  CHECK_ITERABLE_APPROX(R_contracted_2.get(), expected_R_sum_2);
+
+  Tensor<DataType, Symmetry<3, 2, 1>,
+         index_list<SpacetimeIndex<3, UpLo::Up, Frame::Inertial>,
+                    SpacetimeIndex<3, UpLo::Up, Frame::Inertial>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::Inertial>>>
+      S(used_for_size);
+  create_tensor(make_not_null(&S));
+  // Assign a placeholder to the LHS tensor's components before it is computed
+  // so that when test expressions below only compute time components, we can
+  // check that LHS spatial components haven't changed
+  const double spatial_component_placeholder =
+      std::numeric_limits<double>::max();
+  auto S_contracted = make_with_value<
+      Tensor<DataType, Symmetry<4, 3, 2, 1>,
+             index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Inertial>,
+                        SpacetimeIndex<3, UpLo::Lo, Frame::Inertial>,
+                        SpacetimeIndex<3, UpLo::Up, Frame::Inertial>,
+                        SpacetimeIndex<3, UpLo::Up, Frame::Inertial>>>>(
+      used_for_size, spatial_component_placeholder);
+
+  // Contract a RHS tensor without time indices to a LHS tensor with time
+  // indices
+  // \f$L_{tt}{}^{bt} = R^{ba}{}_{a}\f$
+  //
+  // Makes sure that `TensorContract` does not get confused by the presence of
+  // an upper and lower time index in the LHS tensor, which is different than
+  // the presence of an upper and lower generic index. Also makes sure that
+  // a contraction can be evaluated to a LHS tensor of higher rank than the
+  // rank that results from contracting the RHS
+  ::TensorExpressions::evaluate<ti_t, ti_t, ti_B, ti_T>(
+      make_not_null(&S_contracted), S(ti_B, ti_A, ti_a));
+
+  for (size_t b = 0; b < 4; b++) {
+    DataType expected_S_sum = make_with_value<DataType>(used_for_size, 0.0);
+    for (size_t a = 0; a < 4; a++) {
+      expected_S_sum += S.get(b, a, a);
+    }
+    CHECK_ITERABLE_APPROX(S_contracted.get(0, 0, b, 0), expected_S_sum);
+
+    for (size_t i = 0; i < 3; i++) {
+      for (size_t j = 0; j < 3; j++) {
+        for (size_t k = 0; k < 3; k++) {
+          CHECK(S_contracted.get(i + 1, j + 1, b, k + 1) ==
+                spatial_component_placeholder);
+        }
+      }
+    }
+  }
+
+  Tensor<DataType, Symmetry<4, 3, 2, 1>,
+         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Up, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Up, Frame::Grid>>>
+      T(used_for_size);
+  create_tensor(make_not_null(&T));
+  auto T_contracted = make_with_value<
+      Tensor<DataType, Symmetry<3, 2, 1>,
+             index_list<SpacetimeIndex<3, UpLo::Up, Frame::Grid>,
+                        SpacetimeIndex<3, UpLo::Up, Frame::Grid>,
+                        SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>>(
+      used_for_size, spatial_component_placeholder);
+
+  // Contract a RHS tensor with time indices to a LHS tensor with time indices
+  // \f$L^{tb}{}_{t} = R_{at}{}^{ab}\f$
+  ::TensorExpressions::evaluate<ti_T, ti_B, ti_t>(make_not_null(&T_contracted),
+                                                  T(ti_a, ti_t, ti_A, ti_B));
+
+  for (size_t b = 0; b < 4; b++) {
+    DataType expected_T_sum = make_with_value<DataType>(used_for_size, 0.0);
+    for (size_t a = 0; a < 4; a++) {
+      expected_T_sum += T.get(a, 0, a, b);
+    }
+    CHECK_ITERABLE_APPROX(T_contracted.get(0, b, 0), expected_T_sum);
+
+    for (size_t i = 0; i < 3; i++) {
+      for (size_t j = 0; j < 3; j++) {
+        CHECK(T_contracted.get(i + 1, b, j + 1) ==
+              spatial_component_placeholder);
+      }
+    }
+  }
+}
+
+template <typename DataType>
 void test_contractions(const DataType& used_for_size) noexcept {
   test_contractions_rank2(used_for_size);
   test_contractions_rank3(used_for_size);
   test_contractions_rank4(used_for_size);
+  test_time_index(used_for_size);
 }
 }  // namespace
 

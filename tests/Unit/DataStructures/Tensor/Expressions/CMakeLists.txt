@@ -11,6 +11,7 @@ set(LIBRARY_SOURCES
   Test_EvaluateRank3.cpp
   Test_EvaluateRank4.cpp
   Test_EvaluateSpatialSpacetimeIndex.cpp
+  Test_EvaluateTimeIndex.cpp
   Test_MixedOperations.cpp
   Test_Product.cpp
   Test_ProductHighRankIntermediate.cpp
@@ -18,6 +19,7 @@ set(LIBRARY_SOURCES
   Test_SquareRoot.cpp
   Test_TensorIndex.cpp
   Test_TensorIndexTransformation.cpp
+  Test_TimeIndex.cpp
   )
 
 add_test_library(

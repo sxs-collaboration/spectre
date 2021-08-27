@@ -17,4 +17,5 @@ spectre_target_headers(
   TensorExpression.hpp
   TensorIndex.hpp
   TensorIndexTransformation.hpp
+  TimeIndex.hpp
   )
