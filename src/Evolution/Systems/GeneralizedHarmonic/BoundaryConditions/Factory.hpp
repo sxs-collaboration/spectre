@@ -9,6 +9,7 @@
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/Bjorhus.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/BoundaryCondition.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/DirichletAnalytic.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/DirichletMinkowski.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/Outflow.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -17,6 +18,6 @@ namespace GeneralizedHarmonic::BoundaryConditions {
 template <size_t Dim>
 using standard_boundary_conditions =
     tmpl::list<ConstraintPreservingBjorhus<Dim>, DirichletAnalytic<Dim>,
-               Outflow<Dim>,
+               DirichletMinkowski<Dim>, Outflow<Dim>,
                domain::BoundaryConditions::Periodic<BoundaryCondition<Dim>>>;
 }  // namespace GeneralizedHarmonic::BoundaryConditions

@@ -8,6 +8,7 @@ spectre_target_sources(
   BjorhusImpl.cpp
   BoundaryCondition.cpp
   DirichletAnalytic.cpp
+  DirichletMinkowski.cpp
   Outflow.cpp
   )
 
@@ -19,6 +20,7 @@ spectre_target_headers(
   BjorhusImpl.hpp
   BoundaryCondition.hpp
   DirichletAnalytic.hpp
+  DirichletMinkowski.hpp
   Factory.hpp
   Outflow.hpp
   )
