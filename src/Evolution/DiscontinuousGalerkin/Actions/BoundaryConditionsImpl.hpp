@@ -44,6 +44,7 @@
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Parallel/Tags/Metavariables.hpp"
 #include "Time/Tags.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
@@ -666,8 +667,11 @@ void apply_boundary_conditions_on_all_external_faces(
                          tmpl::size_t<Dim>, Frame::Inertial>>& partial_derivs,
     const Variables<detail::get_primitive_vars_tags_from_system<System>>* const
         primitive_vars) noexcept {
+  using factory_classes =
+      typename std::decay_t<decltype(db::get<Parallel::Tags::Metavariables>(
+          *box))>::factory_creation::factory_classes;
   using derived_boundary_conditions = tmpl::remove_if<
-      typename System::boundary_conditions_base::creatable_classes,
+      tmpl::at<factory_classes, typename System::boundary_conditions_base>,
       tmpl::or_<
           std::is_base_of<domain::BoundaryConditions::MarkAsPeriodic, tmpl::_1>,
           std::is_base_of<domain::BoundaryConditions::detail::MarkAsNone,

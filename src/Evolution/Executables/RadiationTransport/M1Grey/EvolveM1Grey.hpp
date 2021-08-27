@@ -156,8 +156,12 @@ struct EvolutionMetavars {
                         analytic_variables_tags, tmpl::list<>>>,
                 Events::time_events<system>>>>,
         tmpl::pair<
-            StepChooser<StepChooserUse::LtsStep>,
-            StepChoosers::standard_step_choosers<system, false>>,
+            RadiationTransport::M1Grey::BoundaryConditions::BoundaryCondition<
+                metavariables::neutrino_species>,
+            RadiationTransport::M1Grey::BoundaryConditions::
+                standard_boundary_conditions<metavariables::neutrino_species>>,
+        tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
+                   StepChoosers::standard_step_choosers<system, false>>,
         tmpl::pair<StepChooser<StepChooserUse::Slab>,
                    StepChoosers::standard_slab_choosers<
                        system, local_time_stepping, false>>,
@@ -339,9 +343,6 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &domain::creators::register_derived_with_charm,
     &domain::creators::time_dependence::register_derived_with_charm,
     &domain::FunctionsOfTime::register_derived_with_charm,
-    &Parallel::register_derived_classes_with_charm<
-        RadiationTransport::M1Grey::BoundaryConditions::BoundaryCondition<
-            metavariables::neutrino_species>>,
     &Parallel::register_derived_classes_with_charm<
         RadiationTransport::M1Grey::BoundaryCorrections::BoundaryCorrection<
             metavariables::neutrino_species>>,

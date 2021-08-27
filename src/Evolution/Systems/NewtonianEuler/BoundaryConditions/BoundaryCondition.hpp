@@ -6,26 +6,14 @@
 #include <pup.h>
 
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
-#include "Domain/BoundaryConditions/Periodic.hpp"
-#include "Utilities/TMPL.hpp"
 
-/// \cond
-namespace NewtonianEuler::BoundaryConditions {
-template <size_t Dim>
-class DirichletAnalytic;
-}  // namespace NewtonianEuler::BoundaryConditions
-/// \endcond
-
+namespace NewtonianEuler {
 /// \brief Boundary conditions for the Newtonian Euler hydrodynamics system
-namespace NewtonianEuler::BoundaryConditions {
+namespace BoundaryConditions {
 /// \brief The base class off of which all boundary conditions must inherit
 template <size_t Dim>
 class BoundaryCondition : public domain::BoundaryConditions::BoundaryCondition {
  public:
-  using creatable_classes =
-      tmpl::list<DirichletAnalytic<Dim>,
-                 domain::BoundaryConditions::Periodic<BoundaryCondition<Dim>>>;
-
   BoundaryCondition() = default;
   BoundaryCondition(BoundaryCondition&&) noexcept = default;
   BoundaryCondition& operator=(BoundaryCondition&&) noexcept = default;
@@ -36,4 +24,5 @@ class BoundaryCondition : public domain::BoundaryConditions::BoundaryCondition {
 
   void pup(PUP::er& p) override;
 };
-}  // namespace NewtonianEuler::BoundaryConditions
+}  // namespace BoundaryConditions
+}  // namespace NewtonianEuler

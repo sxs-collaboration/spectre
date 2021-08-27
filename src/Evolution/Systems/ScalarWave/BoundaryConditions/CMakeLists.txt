@@ -7,7 +7,6 @@ spectre_target_sources(
   BoundaryCondition.cpp
   ConstraintPreservingSphericalRadiation.cpp
   DirichletAnalytic.cpp
-  RegisterDerivedWithCharm.cpp
   SphericalRadiation.cpp
   )
 
@@ -19,6 +18,5 @@ spectre_target_headers(
   ConstraintPreservingSphericalRadiation.hpp
   DirichletAnalytic.hpp
   Factory.hpp
-  RegisterDerivedWithCharm.hpp
   SphericalRadiation.hpp
   )

@@ -650,8 +650,6 @@ class Outflow;
 template <size_t Dim>
 class BoundaryCondition : public domain::BoundaryConditions::BoundaryCondition {
  public:
-  using creatable_classes = tmpl::list<Outflow<Dim>>;
-
   BoundaryCondition() = default;
   BoundaryCondition(BoundaryCondition&&) noexcept = default;
   BoundaryCondition& operator=(BoundaryCondition&&) noexcept = default;
@@ -848,9 +846,11 @@ struct Metavariables {
                  domain::Tags::Domain<Dim>>;
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
-    using factory_classes = tmpl::map<tmpl::pair<
-        StepChooser<StepChooserUse::LtsStep>,
-        tmpl::list<StepChoosers::Constant<StepChooserUse::LtsStep>>>>;
+    using factory_classes = tmpl::map<
+        tmpl::pair<BoundaryCondition<Dim>, tmpl::list<Outflow<Dim>>>,
+        tmpl::pair<
+            StepChooser<StepChooserUse::LtsStep>,
+            tmpl::list<StepChoosers::Constant<StepChooserUse::LtsStep>>>>;
   };
 
   using component_list = tmpl::list<component<Metavariables>>;
@@ -1850,7 +1850,6 @@ void test() noexcept {
       BoundaryCorrection<Dim, true>>();
   Parallel::register_derived_classes_with_charm<
       BoundaryCorrection<Dim, false>>();
-  Parallel::register_derived_classes_with_charm<BoundaryCondition<Dim>>();
 
   const auto invoke_tests_with_quadrature_and_formulation =
       [](const Spectral::Quadrature quadrature,

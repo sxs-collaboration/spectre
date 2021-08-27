@@ -7,8 +7,6 @@
 #include <pup.h>
 
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
-#include "Domain/BoundaryConditions/Periodic.hpp"
-#include "Utilities/TMPL.hpp"
 
 namespace ScalarAdvection {
 /// \brief Boundary conditions for the ScalarAdvection system
@@ -17,9 +15,6 @@ namespace BoundaryConditions {
 template <size_t Dim>
 class BoundaryCondition : public domain::BoundaryConditions::BoundaryCondition {
  public:
-  using creatable_classes =
-      tmpl::list<domain::BoundaryConditions::Periodic<BoundaryCondition<Dim>>>;
-
   BoundaryCondition() = default;
   BoundaryCondition(BoundaryCondition&&) noexcept = default;
   BoundaryCondition& operator=(BoundaryCondition&&) noexcept = default;

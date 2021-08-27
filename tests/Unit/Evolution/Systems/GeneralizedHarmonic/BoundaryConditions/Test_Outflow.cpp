@@ -26,10 +26,6 @@ namespace {
 template <size_t Dim>
 void test() noexcept {
   MAKE_GENERATOR(gen);
-  const std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-      boundary_condition = TestHelpers::test_creation<std::unique_ptr<
-          GeneralizedHarmonic::BoundaryConditions::BoundaryCondition<Dim>>>(
-          "Outflow:\n");
 
   helpers::test_boundary_condition_with_python<
       GeneralizedHarmonic::BoundaryConditions::Outflow<Dim>,

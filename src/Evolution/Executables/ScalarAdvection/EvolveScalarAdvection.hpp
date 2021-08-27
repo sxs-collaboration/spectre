@@ -31,7 +31,6 @@
 #include "Evolution/Initialization/Limiter.hpp"
 #include "Evolution/Initialization/SetVariables.hpp"
 #include "Evolution/Systems/ScalarAdvection/BoundaryConditions/Factory.hpp"
-#include "Evolution/Systems/ScalarAdvection/BoundaryConditions/RegisterDerivedWithCharm.hpp"
 #include "Evolution/Systems/ScalarAdvection/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/ScalarAdvection/BoundaryCorrections/RegisterDerived.hpp"
 #include "Evolution/Systems/ScalarAdvection/System.hpp"
@@ -143,6 +142,9 @@ struct EvolutionMetavars {
                                     ScalarAdvection::Tags::VelocityField<Dim>>,
                     analytic_solution_fields>,
                 Events::time_events<system>>>>,
+        tmpl::pair<ScalarAdvection::BoundaryConditions::BoundaryCondition<Dim>,
+                   ScalarAdvection::BoundaryConditions::
+                       standard_boundary_conditions<Dim>>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                    StepChoosers::standard_step_choosers<system>>,
         tmpl::pair<
@@ -310,7 +312,6 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &domain::creators::register_derived_with_charm,
     &domain::creators::time_dependence::register_derived_with_charm,
     &domain::FunctionsOfTime::register_derived_with_charm,
-    &ScalarAdvection::BoundaryConditions::register_derived_with_charm,
     &ScalarAdvection::BoundaryCorrections::register_derived_with_charm,
     &Parallel::register_derived_classes_with_charm<TimeStepper>,
     &Parallel::register_derived_classes_with_charm<

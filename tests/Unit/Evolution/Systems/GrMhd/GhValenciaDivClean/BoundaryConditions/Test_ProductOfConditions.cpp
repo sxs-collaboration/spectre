@@ -401,12 +401,14 @@ SPECTRE_TEST_CASE(
         gh_condition{};
     const grmhd::ValenciaDivClean::BoundaryConditions::DirichletAnalytic
         valencia_condition{};
-    const auto product_boundary_condition =
-        TestHelpers::test_creation<std::unique_ptr<
-            grmhd::GhValenciaDivClean::BoundaryConditions::BoundaryCondition>>(
-            "ProductDirichletAnalyticAndDirichletAnalytic:\n"
-            "  GeneralizedHarmonicDirichletAnalytic:\n"
-            "  ValenciaDirichletAnalytic:");
+    const auto product_boundary_condition = TestHelpers::test_factory_creation<
+        grmhd::GhValenciaDivClean::BoundaryConditions::BoundaryCondition,
+        grmhd::GhValenciaDivClean::BoundaryConditions::ProductOfConditions<
+            GeneralizedHarmonic::BoundaryConditions::DirichletAnalytic<3_st>,
+            grmhd::ValenciaDivClean::BoundaryConditions::DirichletAnalytic>>(
+        "ProductDirichletAnalyticAndDirichletAnalytic:\n"
+        "  GeneralizedHarmonicDirichletAnalytic:\n"
+        "  ValenciaDirichletAnalytic:");
     const auto gridless_box =
         db::create<db::AddSimpleTags<::Tags::Time, DummyAnalyticSolutionTag>>(
             0.5, GeneralizedHarmonic::Solutions::WrappedGr<
@@ -439,13 +441,16 @@ SPECTRE_TEST_CASE(
         gh_condition{
             GeneralizedHarmonic::BoundaryConditions::detail::
                 ConstraintPreservingBjorhusType::ConstraintPreservingPhysical};
-    const auto product_boundary_condition =
-        TestHelpers::test_creation<std::unique_ptr<
-            grmhd::GhValenciaDivClean::BoundaryConditions::BoundaryCondition>>(
-            "ProductConstraintPreservingBjorhusAndDirichletAnalytic:\n"
-            "  GeneralizedHarmonicConstraintPreservingBjorhus:\n"
-            "    Type: ConstraintPreservingPhysical\n"
-            "  ValenciaDirichletAnalytic:");
+    const auto product_boundary_condition = TestHelpers::test_factory_creation<
+        grmhd::GhValenciaDivClean::BoundaryConditions::BoundaryCondition,
+        grmhd::GhValenciaDivClean::BoundaryConditions::ProductOfConditions<
+            GeneralizedHarmonic::BoundaryConditions::
+                ConstraintPreservingBjorhus<3_st>,
+            grmhd::ValenciaDivClean::BoundaryConditions::DirichletAnalytic>>(
+        "ProductConstraintPreservingBjorhusAndDirichletAnalytic:\n"
+        "  GeneralizedHarmonicConstraintPreservingBjorhus:\n"
+        "    Type: ConstraintPreservingPhysical\n"
+        "  ValenciaDirichletAnalytic:");
     const auto gridless_box =
         db::create<db::AddSimpleTags<::Tags::Time, DummyAnalyticSolutionTag>>(
             0.5, GeneralizedHarmonic::Solutions::WrappedGr<
@@ -477,12 +482,14 @@ SPECTRE_TEST_CASE(
     const grmhd::ValenciaDivClean::BoundaryConditions::Outflow
         valencia_condition{};
     const GeneralizedHarmonic::BoundaryConditions::Outflow<3_st> gh_condition{};
-    const auto product_boundary_condition =
-        TestHelpers::test_creation<std::unique_ptr<
-            grmhd::GhValenciaDivClean::BoundaryConditions::BoundaryCondition>>(
-            "ProductOutflowAndOutflow:\n"
-            "  GeneralizedHarmonicOutflow:\n"
-            "  ValenciaOutflow:");
+    const auto product_boundary_condition = TestHelpers::test_factory_creation<
+        grmhd::GhValenciaDivClean::BoundaryConditions::BoundaryCondition,
+        grmhd::GhValenciaDivClean::BoundaryConditions::ProductOfConditions<
+            GeneralizedHarmonic::BoundaryConditions::Outflow<3_st>,
+            grmhd::ValenciaDivClean::BoundaryConditions::Outflow>>(
+        "ProductOutflowAndOutflow:\n"
+        "  GeneralizedHarmonicOutflow:\n"
+        "  ValenciaOutflow:");
     const auto gridless_box = db::create<db::AddSimpleTags<>>();
     auto serialized_and_deserialized_condition = serialize_and_deserialize(
         *dynamic_cast<

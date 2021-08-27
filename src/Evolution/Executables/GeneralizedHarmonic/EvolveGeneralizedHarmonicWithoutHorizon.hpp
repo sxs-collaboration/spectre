@@ -10,7 +10,6 @@
 #include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Evolution/Executables/GeneralizedHarmonic/GeneralizedHarmonicBase.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/RegisterDerivedWithCharm.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/RegisterDerived.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/RegisterDerivedWithCharm.hpp"
 #include "Options/Options.hpp"
@@ -51,7 +50,6 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &disable_openblas_multithreading,
     &domain::creators::time_dependence::register_derived_with_charm,
     &domain::FunctionsOfTime::register_derived_with_charm,
-    &GeneralizedHarmonic::BoundaryConditions::register_derived_with_charm,
     &GeneralizedHarmonic::BoundaryCorrections::register_derived_with_charm,
     &domain::creators::register_derived_with_charm,
     &GeneralizedHarmonic::ConstraintDamping::register_derived_with_charm,

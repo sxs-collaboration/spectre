@@ -46,11 +46,10 @@
 #include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/UpwindPenaltyCorrection.hpp"
-#include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryConditions/ProductOfConditions.hpp"
+#include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryConditions/Factory.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryCorrections/ProductOfCorrections.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryConditions/Factory.hpp"
-#include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryConditions/RegisterDerivedWithCharm.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryCorrections/RegisterDerived.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FixConservatives.hpp"
@@ -307,6 +306,10 @@ struct GhValenciaDivCleanTemplateBase<
                 Events::time_events<system>,
                 intrp::Events::Interpolate<3, InterpolationTargetTags,
                                            interpolator_source_vars>...>>>,
+        tmpl::pair<
+            grmhd::GhValenciaDivClean::BoundaryConditions::BoundaryCondition,
+            grmhd::GhValenciaDivClean::BoundaryConditions::
+                standard_boundary_conditions>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                    StepChoosers::standard_step_choosers<system>>,
         tmpl::pair<

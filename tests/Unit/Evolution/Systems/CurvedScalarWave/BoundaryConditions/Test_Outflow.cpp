@@ -8,6 +8,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/Index.hpp"
+#include "Evolution/Systems/CurvedScalarWave/BoundaryConditions/Factory.hpp"
 #include "Evolution/Systems/CurvedScalarWave/BoundaryConditions/Outflow.hpp"
 #include "Evolution/Systems/CurvedScalarWave/BoundaryCorrections/UpwindPenalty.hpp"
 #include "Evolution/Systems/CurvedScalarWave/System.hpp"
@@ -25,10 +26,6 @@ namespace {
 template <size_t Dim>
 void test() noexcept {
   MAKE_GENERATOR(gen);
-  const std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-      boundary_condition = TestHelpers::test_creation<std::unique_ptr<
-          CurvedScalarWave::BoundaryConditions::BoundaryCondition<Dim>>>(
-          "Outflow:\n");
 
   helpers::test_boundary_condition_with_python<
       CurvedScalarWave::BoundaryConditions::Outflow<Dim>,

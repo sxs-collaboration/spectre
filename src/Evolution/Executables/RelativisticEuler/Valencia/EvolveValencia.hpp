@@ -35,7 +35,6 @@
 #include "Evolution/Initialization/Limiter.hpp"
 #include "Evolution/Initialization/SetVariables.hpp"
 #include "Evolution/Systems/RelativisticEuler/Valencia/BoundaryConditions/Factory.hpp"
-#include "Evolution/Systems/RelativisticEuler/Valencia/BoundaryConditions/RegisterDerivedWithCharm.hpp"
 #include "Evolution/Systems/RelativisticEuler/Valencia/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/RelativisticEuler/Valencia/BoundaryCorrections/RegisterDerived.hpp"
 #include "Evolution/Systems/RelativisticEuler/Valencia/FixConservatives.hpp"
@@ -165,9 +164,12 @@ struct EvolutionMetavars {
                         evolution::is_analytic_solution_v<initial_data>,
                         analytic_variables_tags, tmpl::list<>>>,
                 Events::time_events<system>>>>,
-        tmpl::pair<
-            StepChooser<StepChooserUse::LtsStep>,
-            StepChoosers::standard_step_choosers<system, false>>,
+        tmpl::pair<RelativisticEuler::Valencia::BoundaryConditions::
+                       BoundaryCondition<volume_dim>,
+                   RelativisticEuler::Valencia::BoundaryConditions::
+                       standard_boundary_conditions<volume_dim>>,
+        tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
+                   StepChoosers::standard_step_choosers<system, false>>,
         tmpl::pair<StepChooser<StepChooserUse::Slab>,
                    StepChoosers::standard_slab_choosers<
                        system, local_time_stepping, false>>,
@@ -356,8 +358,6 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &domain::creators::register_derived_with_charm,
     &domain::creators::time_dependence::register_derived_with_charm,
     &domain::FunctionsOfTime::register_derived_with_charm,
-    &RelativisticEuler::Valencia::BoundaryConditions::
-        register_derived_with_charm,
     &RelativisticEuler::Valencia::BoundaryCorrections::
         register_derived_with_charm,
     &Parallel::register_derived_classes_with_charm<TimeStepper>,

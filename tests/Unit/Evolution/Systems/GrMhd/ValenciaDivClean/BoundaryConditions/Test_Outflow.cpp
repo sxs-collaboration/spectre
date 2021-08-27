@@ -26,10 +26,6 @@ SPECTRE_TEST_CASE("Unit.GrMhd.BoundaryConditions.Outflow", "[Unit][GrMhd]") {
   pypp::SetupLocalPythonEnvironment local_python_env{
       "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryConditions/"};
   MAKE_GENERATOR(gen);
-  const std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-      boundary_condition = TestHelpers::test_creation<std::unique_ptr<
-          grmhd::ValenciaDivClean::BoundaryConditions::BoundaryCondition>>(
-          "Outflow:\n");
 
   helpers::test_boundary_condition_with_python<
       grmhd::ValenciaDivClean::BoundaryConditions::Outflow,

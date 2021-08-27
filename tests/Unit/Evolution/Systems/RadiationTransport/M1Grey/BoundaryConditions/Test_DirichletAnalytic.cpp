@@ -125,7 +125,6 @@ SPECTRE_TEST_CASE(
       RadiationTransport::M1Grey::BoundaryConditions::DirichletAnalytic<
           neutrino_species>;
   PUPable_reg(dirichlet_analytic);
-  Parallel::register_derived_classes_with_charm<dirichlet_analytic>();
 
   pypp::SetupLocalPythonEnvironment local_python_env{""};
   test();

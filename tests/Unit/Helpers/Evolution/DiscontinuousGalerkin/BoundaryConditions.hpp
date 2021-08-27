@@ -573,8 +573,8 @@ void test_boundary_condition_with_python(
                        Frame::Inertial>;
   const std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
       boundary_condition =
-          TestHelpers::test_creation<std::unique_ptr<BoundaryConditionBase>>(
-              factory_string);
+          TestHelpers::test_factory_creation<BoundaryConditionBase,
+                                             BoundaryCondition>(factory_string);
 
   REQUIRE_FALSE(
       domain::BoundaryConditions::is_periodic(boundary_condition->get_clone()));
@@ -621,8 +621,8 @@ template <typename BoundaryCondition, typename BoundaryConditionBase>
 void test_periodic_condition(const std::string& factory_string) {
   PUPable_reg(BoundaryCondition);
   const auto boundary_condition =
-      TestHelpers::test_creation<std::unique_ptr<BoundaryConditionBase>>(
-          factory_string);
+      TestHelpers::test_factory_creation<BoundaryConditionBase,
+                                         BoundaryCondition>(factory_string);
   REQUIRE(typeid(*boundary_condition.get()) == typeid(BoundaryCondition));
   const auto bc_clone = boundary_condition->get_clone();
   CHECK(domain::BoundaryConditions::is_periodic(bc_clone));

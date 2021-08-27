@@ -5,7 +5,6 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   BoundaryCondition.cpp
-  RegisterDerived.cpp
   )
 
 spectre_target_headers(
@@ -15,5 +14,4 @@ spectre_target_headers(
   BoundaryCondition.hpp
   Factory.hpp
   ProductOfConditions.hpp
-  RegisterDerived.hpp
   )
