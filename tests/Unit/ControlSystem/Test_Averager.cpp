@@ -11,10 +11,11 @@
 
 #include "ControlSystem/Averager.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "Framework/TestCreation.hpp"
+#include "Framework/TestHelpers.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 
-SPECTRE_TEST_CASE("Unit.ControlSystem.Averager.Linear",
-                  "[ControlSystem][Unit]") {
+void test_linear() {
   double t = 0.0;
   const double dt = 0.1;
   constexpr size_t deriv_order = 2;
@@ -67,8 +68,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Averager.Linear",
   }
 }
 
-SPECTRE_TEST_CASE("Unit.ControlSystem.Averager.SemiAnalytic",
-                  "[ControlSystem][Unit]") {
+void test_semianalytic() {
   double t = 0.0;
   constexpr size_t deriv_order = 2;
   const double final_time = 5.0;
@@ -138,8 +138,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Averager.SemiAnalytic",
   }
 }
 
-SPECTRE_TEST_CASE("Unit.ControlSystem.Averager.Functionality",
-                  "[ControlSystem][Unit]") {
+void test_functionality() {
   double t = 0.0;
   const double dt = 0.1;
   constexpr size_t deriv_order = 2;
@@ -248,8 +247,31 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Averager.BadCallToAverageTime",
   averager.average_time(0.0);
 }
 
-SPECTRE_TEST_CASE("Unit.ControlSystem.Averager.TestMove",
-                  "[ControlSystem][Unit]") {
+void test_equality_and_serialization() {
+  Averager<2> averager1(1.0, true);
+  Averager<2> averager2(1.0, true);
+  Averager<2> averager3(0.5, false);
+
+  CHECK(averager1 == averager2);
+  CHECK(averager1 != averager3);
+  CHECK_FALSE(averager1 == averager3);
+
+  averager2.update(0.1, {0.2}, {0.3});
+  CHECK_FALSE(averager1 == averager2);
+
+  CHECK(serialize_and_deserialize(averager1) == averager1);
+}
+
+void test_create_from_options() {
+  Averager<2> averager(0.5, true);
+  auto averager2 = TestHelpers::test_creation<Averager<2>>(
+      "AverageTimescaleFraction: 0.5\n"
+      "Average0thDeriv: True");
+
+  CHECK(averager == averager2);
+}
+
+void test_move() {
   Averager<2> averager(0.25, false);
   static_assert(std::is_nothrow_move_constructible<Averager<2>>::value,
                 "Averager is not nothrow move constructible");
@@ -280,4 +302,13 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Averager.TestMove",
   CHECK(avg_time == new_averager2.average_time(0.9));
   CHECK(avg_q == new_averager2.using_average_0th_deriv_of_q());
   CHECK(avg_values[0][0] == new_averager2(0.9).value()[0][0]);
+}
+
+SPECTRE_TEST_CASE("Unit.ControlSystem.Averager", "[ControlSystem][Unit]") {
+  test_linear();
+  test_semianalytic();
+  test_functionality();
+  test_equality_and_serialization();
+  test_create_from_options();
+  test_move();
 }
