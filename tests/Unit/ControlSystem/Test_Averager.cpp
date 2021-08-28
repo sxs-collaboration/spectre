@@ -15,6 +15,7 @@
 #include "Framework/TestHelpers.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 
+namespace {
 void test_linear() {
   double t = 0.0;
   const double dt = 0.1;
@@ -177,6 +178,7 @@ void test_functionality() {
   averager.clear();
   CHECK_FALSE(static_cast<bool>(averager(t)));
 }
+}  // namespace
 
 // [[OutputRegex, at or before the last time]]
 SPECTRE_TEST_CASE("Unit.ControlSystem.Averager.BadUpdateTwice",
@@ -247,6 +249,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Averager.BadCallToAverageTime",
   averager.average_time(0.0);
 }
 
+namespace {
 void test_equality_and_serialization() {
   Averager<2> averager1(1.0, true);
   Averager<2> averager2(1.0, true);
@@ -303,6 +306,7 @@ void test_move() {
   CHECK(avg_q == new_averager2.using_average_0th_deriv_of_q());
   CHECK(avg_values[0][0] == new_averager2(0.9).value()[0][0]);
 }
+}  // namespace
 
 SPECTRE_TEST_CASE("Unit.ControlSystem.Averager", "[ControlSystem][Unit]") {
   test_linear();

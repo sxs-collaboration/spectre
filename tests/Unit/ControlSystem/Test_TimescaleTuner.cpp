@@ -12,6 +12,7 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
+namespace {
 void test_increase_or_decrease() {
   const double decrease_timescale_threshold = 1.0e-2;
   const double increase_timescale_threshold = 1.0e-4;
@@ -321,6 +322,7 @@ void test_equality_and_serialization() {
   CHECK(tst1 != tst2);
   CHECK(serialize_and_deserialize(tst1) == tst1);
 }
+}  // namespace
 
 // [[OutputRegex, Initial timescale must be > 0]]
 SPECTRE_TEST_CASE("Unit.ControlSystem.TimescaleTuner.BadInitTimescale",
