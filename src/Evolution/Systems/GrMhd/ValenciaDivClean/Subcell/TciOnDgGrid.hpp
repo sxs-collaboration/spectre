@@ -62,6 +62,8 @@ namespace grmhd::ValenciaDivClean::subcell {
  *   the cell is in atmosphere and not marked as troubled. Note that the
  *   magnetic field is still freely evolved.
  * - apply the Persson TCI to \f$\tilde{D}^{n+1}\f$ and \f$\tilde{\tau}^{n+1}\f$
+ * - apply the Persson TCI to the magnitude of \f$\tilde{B}^{n+1}\f$ if its
+ *   magnitude is greater than `tci_options.magnetic_field_cutoff`.
  *
  * If the cell is not flagged as troubled then the primitives are computed at
  * time level `n+1`.

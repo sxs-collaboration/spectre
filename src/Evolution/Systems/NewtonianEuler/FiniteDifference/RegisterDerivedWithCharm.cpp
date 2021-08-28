@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Evolution/Systems/NewtonianEuler/BoundaryConditions/RegisterDerivedWithCharm.hpp"
+#include "Evolution/Systems/NewtonianEuler/FiniteDifference/RegisterDerivedWithCharm.hpp"
 
 #include "Evolution/Systems/NewtonianEuler/FiniteDifference/Factory.hpp"
 #include "Evolution/Systems/NewtonianEuler/FiniteDifference/Reconstructor.hpp"

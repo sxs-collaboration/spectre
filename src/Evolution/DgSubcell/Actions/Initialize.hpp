@@ -119,16 +119,21 @@ struct Initialize {
     const Mesh<Dim> subcell_mesh = fd::mesh(dg_mesh);
     // Note: we currently cannot do subcell at boundaries, so only set on
     // interior elements.
+    const bool cell_is_not_on_external_boundary =
+        db::get<::domain::Tags::Element<Dim>>(box)
+            .external_boundaries()
+            .empty();
+
     bool cell_is_troubled = subcell_options.always_use_subcells() and
-                            db::get<::domain::Tags::Element<Dim>>(box)
-                                .external_boundaries()
-                                .empty();
+                            cell_is_not_on_external_boundary;
+
     db::mutate_apply<tmpl::list<subcell::Tags::Mesh<Dim>, Tags::ActiveGrid,
                                 Tags::DidRollback,
                                 Tags::Inactive<typename System::variables_tag>,
                                 typename System::variables_tag>,
                      typename TciMutator::argument_tags>(
-        [&cell_is_troubled, &dg_mesh, &subcell_mesh, &subcell_options](
+        [&cell_is_troubled, &cell_is_not_on_external_boundary, &dg_mesh,
+         &subcell_mesh, &subcell_options](
             const gsl::not_null<Mesh<Dim>*> subcell_mesh_ptr,
             const gsl::not_null<ActiveGrid*> active_grid_ptr,
             const gsl::not_null<bool*> did_rollback_ptr,
@@ -144,11 +149,16 @@ struct Initialize {
           fd::project(inactive_vars_ptr, *active_vars_ptr, dg_mesh,
                       subcell_mesh.extents());
           // Now check if the DG solution is admissible
-          cell_is_troubled |= TciMutator::apply(
-              *active_vars_ptr, *inactive_vars_ptr,
-              subcell_options.initial_data_rdmp_delta0(),
-              subcell_options.initial_data_rdmp_epsilon(),
-              subcell_options.initial_data_persson_exponent(), args_for_tci...);
+          // No need to check if always using subcell or the cell is
+          // on an external boundary
+          if (not cell_is_troubled and cell_is_not_on_external_boundary) {
+            cell_is_troubled |= TciMutator::apply(
+                *active_vars_ptr, *inactive_vars_ptr,
+                subcell_options.initial_data_rdmp_delta0(),
+                subcell_options.initial_data_rdmp_epsilon(),
+                subcell_options.initial_data_persson_exponent(),
+                args_for_tci...);
+          }
           if (cell_is_troubled) {
             // Swap grid
             *active_grid_ptr = ActiveGrid::Subcell;

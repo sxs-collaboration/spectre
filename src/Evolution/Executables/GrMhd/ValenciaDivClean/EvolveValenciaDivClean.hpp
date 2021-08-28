@@ -31,6 +31,7 @@
 #include "Evolution/DgSubcell/PerssonTci.hpp"
 #include "Evolution/DgSubcell/PrepareNeighborData.hpp"
 #include "Evolution/DgSubcell/Tags/Inactive.hpp"
+#include "Evolution/DgSubcell/Tags/TciStatus.hpp"
 #include "Evolution/DgSubcell/TwoMeshRdmpTci.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ApplyBoundaryCorrections.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivative.hpp"
@@ -179,9 +180,9 @@ class CProxy_GlobalCache;
 
 template <typename InitialData, typename... InterpolationTargetTags>
 struct EvolutionMetavars {
-  // The UseDgSubcell flag controls whether to use "standard" limiting (false)
+  // The use_dg_subcell flag controls whether to use "standard" limiting (false)
   // or a DG-FD hybrid scheme (true).
-  static constexpr bool UseDgSubcell = true;
+  static constexpr bool use_dg_subcell = true;
   static constexpr size_t volume_dim = 3;
   static constexpr dg::Formulation dg_formulation =
       dg::Formulation::StrongInertial;
@@ -198,7 +199,6 @@ struct EvolutionMetavars {
       tmpl::conditional_t<evolution::is_analytic_solution_v<initial_data>,
                           Tags::AnalyticSolution<initial_data>,
                           Tags::AnalyticData<initial_data>>;
-  using boundary_condition_tag = initial_data_tag;
   using analytic_variables_tags =
       typename system::primitive_variables_tag::tags_list;
   using equation_of_state_tag =
@@ -210,8 +210,6 @@ struct EvolutionMetavars {
                                      grmhd::ValenciaDivClean::Tags::TildeS<>,
                                      grmhd::ValenciaDivClean::Tags::TildeB<>>>>;
 
-  using domain_frame = Frame::Inertial;
-  static constexpr size_t domain_dim = 3;
   using interpolator_source_vars =
       tmpl::remove_duplicates<tmpl::flatten<tmpl::list<
           typename InterpolationTargetTags::vars_to_interpolate_to_target...>>>;
@@ -238,7 +236,7 @@ struct EvolutionMetavars {
                 Events::ObserveNorms<
                     tmpl::list<hydro::Tags::RestMassDensity<DataVector>>>,
                 tmpl::conditional_t<
-                    UseDgSubcell,
+                    use_dg_subcell,
                     evolution::dg::subcell::Events::ObserveFields<
                         volume_dim, Tags::Time,
                         tmpl::append<
@@ -289,7 +287,7 @@ struct EvolutionMetavars {
         db::wrap_tags_in<Tags::Flux, evolved_vars_tags,
                          tmpl::size_t<volume_dim>, Frame::Inertial>;
 
-    static constexpr bool subcell_enabled = UseDgSubcell;
+    static constexpr bool subcell_enabled = use_dg_subcell;
     // We send `ghost_zone_size` cell-centered grid points for variable
     // reconstruction, of which we need `ghost_zone_size-1` for reconstruction
     // to the internal side of the element face, and `ghost_zone_size` for
@@ -380,7 +378,7 @@ struct EvolutionMetavars {
       Actions::Label<evolution::dg::subcell::Actions::Labels::EndOfSolvers>>>;
 
   using step_actions =
-      tmpl::conditional_t<UseDgSubcell, dg_subcell_step_actions,
+      tmpl::conditional_t<use_dg_subcell, dg_subcell_step_actions,
                           dg_step_actions>;
 
   enum class Phase {
@@ -438,7 +436,7 @@ struct EvolutionMetavars {
       Actions::UpdateConservatives,
 
       tmpl::conditional_t<
-          UseDgSubcell,
+          use_dg_subcell,
           tmpl::list<
               evolution::dg::subcell::Actions::Initialize<
                   volume_dim, system,
@@ -480,9 +478,8 @@ struct EvolutionMetavars {
 
           Parallel::PhaseActions<
               Phase, Phase::Register,
-              tmpl::list<intrp::Actions::RegisterElementWithInterpolator,
-                         observers::Actions::RegisterEventsWithObservers,
-                         Parallel::Actions::TerminatePhase>>,
+              tmpl::push_back<dg_registration_list,
+                              Parallel::Actions::TerminatePhase>>,
 
           Parallel::PhaseActions<
               Phase, Phase::Evolve,
@@ -507,7 +504,7 @@ struct EvolutionMetavars {
 
   using const_global_cache_tags = tmpl::push_back<
       tmpl::conditional_t<
-          UseDgSubcell,
+          use_dg_subcell,
           tmpl::list<
               grmhd::ValenciaDivClean::fd::Tags::Reconstructor,
               ::Tags::VariableFixer<grmhd::ValenciaDivClean::FixConservatives>,
