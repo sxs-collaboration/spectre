@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
   BoundaryCorrections/Test_Rusanov.cpp
   Subcell/Test_InitialDataTci.cpp
   Subcell/Test_TciOnDgGrid.cpp
+  Subcell/Test_TciOnFdGrid.cpp
   Test_Characteristics.cpp
   Test_Fluxes.cpp
   Test_Tags.cpp
