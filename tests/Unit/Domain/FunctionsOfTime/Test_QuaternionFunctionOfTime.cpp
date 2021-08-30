@@ -54,10 +54,19 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.QuaternionFunctionOfTime",
         std::array<DataVector, 3>{init_omega, DataVector{3, 0.0},
                                   DataVector{3, 0.0}},
         2.5};
+    // Different expiration time to check comparison operators
+    domain::FunctionsOfTime::QuaternionFunctionOfTime<2> qfot2{
+        0.0, std::array<DataVector, 1>{DataVector{{1.0, 0.0, 0.0, 0.0}}},
+        std::array<DataVector, 3>{init_omega, DataVector{3, 0.0},
+                                  DataVector{3, 0.0}},
+        3.0};
 
     auto qfot_ptr = qfot.get_clone();
     domain::FunctionsOfTime::QuaternionFunctionOfTime<2>
         qfot_serialized_deserialized = serialize_and_deserialize(qfot);
+
+    CHECK(qfot == qfot_serialized_deserialized);
+    CHECK(qfot != qfot2);
 
     std::array<DataVector, 1> expected_func{
         DataVector{{cos(1.0), 0.0, 0.0, sin(1.0)}}};

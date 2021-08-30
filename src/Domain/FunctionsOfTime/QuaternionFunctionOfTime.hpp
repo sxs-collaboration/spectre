@@ -147,6 +147,11 @@ class QuaternionFunctionOfTime : public FunctionOfTime {
   }
 
  private:
+  template <size_t LocalMaxDeriv>
+  friend bool operator==(  // NOLINT(readability-redundant-declaration)
+      const QuaternionFunctionOfTime<LocalMaxDeriv>& lhs,
+      const QuaternionFunctionOfTime<LocalMaxDeriv>& rhs) noexcept;
+
   std::vector<FunctionOfTimeHelpers::StoredInfo<1, false>>
       stored_quaternions_and_times_;
 
@@ -169,6 +174,10 @@ class QuaternionFunctionOfTime : public FunctionOfTime {
   /// quaternion for easy calculations
   boost::math::quaternion<double> setup_func(double t) const noexcept;
 };
+
+template <size_t MaxDeriv>
+bool operator!=(const QuaternionFunctionOfTime<MaxDeriv>& lhs,
+                const QuaternionFunctionOfTime<MaxDeriv>& rhs) noexcept;
 
 /// \cond
 template <size_t MaxDeriv>
