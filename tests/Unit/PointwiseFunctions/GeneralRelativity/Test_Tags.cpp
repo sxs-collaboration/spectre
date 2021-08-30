@@ -74,6 +74,10 @@ void test_simple_tags() {
   TestHelpers::db::test_simple_tag<gr::Tags::MomentumDensity<Dim, Frame, Type>>(
       "MomentumDensity");
   TestHelpers::db::test_simple_tag<gr::Tags::StressTrace<Type>>("StressTrace");
+  TestHelpers::db::test_simple_tag<gr::Tags::HamiltonianConstraint<Type>>(
+      "HamiltonianConstraint");
+  TestHelpers::db::test_simple_tag<
+      gr::Tags::MomentumConstraint<Dim, Frame, Type>>("MomentumConstraint");
   TestHelpers::db::test_simple_tag<gr::Tags::WeylElectric<Dim, Frame, Type>>(
       "WeylElectric");
 }
