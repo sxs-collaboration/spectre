@@ -33,6 +33,7 @@
 #include "Evolution/Systems/ScalarAdvection/BoundaryConditions/Factory.hpp"
 #include "Evolution/Systems/ScalarAdvection/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/ScalarAdvection/BoundaryCorrections/RegisterDerived.hpp"
+#include "Evolution/Systems/ScalarAdvection/Subcell/TciOptions.hpp"
 #include "Evolution/Systems/ScalarAdvection/System.hpp"
 #include "Evolution/Systems/ScalarAdvection/VelocityField.hpp"
 #include "IO/Observer/Actions/RegisterEvents.hpp"
@@ -104,6 +105,8 @@ struct EvolutionMetavars {
   static constexpr size_t volume_dim = Dim;
   using system = ScalarAdvection::System<Dim>;
   using temporal_id = Tags::TimeStepId;
+
+  static constexpr bool use_dg_subcell = true;
   static constexpr bool local_time_stepping = false;
 
   using initial_data = InitialData;
@@ -202,9 +205,12 @@ struct EvolutionMetavars {
   using phase_change_tags_and_combines_list =
       PhaseControl::get_phase_change_tags<phase_changes>;
 
-  using const_global_cache_tags =
-      tmpl::list<initial_data_tag, Tags::EventsAndTriggers,
-                 PhaseControl::Tags::PhaseChangeAndTriggers<phase_changes>>;
+  using const_global_cache_tags = tmpl::list<
+      initial_data_tag, Tags::EventsAndTriggers,
+      tmpl::conditional_t<
+          use_dg_subcell,
+          tmpl::list<ScalarAdvection::subcell::Tags::TciOptions>, tmpl::list<>>,
+      PhaseControl::Tags::PhaseChangeAndTriggers<phase_changes>>;
 
   using dg_registration_list =
       tmpl::list<observers::Actions::RegisterEventsWithObservers>;

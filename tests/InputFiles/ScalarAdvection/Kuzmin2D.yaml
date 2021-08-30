@@ -36,6 +36,7 @@ SpatialDiscretization:
   DiscontinuousGalerkin:
     Formulation: StrongInertial
     Quadrature: GaussLobatto
+    TciOptions:
 
 AnalyticSolution:
   Kuzmin:
