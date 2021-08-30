@@ -13,6 +13,13 @@
 #include "Time/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 
+/// \cond
+namespace gsl {
+template <typename T>
+class not_null;
+}  // namespace gsl
+/// \endcond
+
 namespace evolution {
 namespace Tags {
 /*!
