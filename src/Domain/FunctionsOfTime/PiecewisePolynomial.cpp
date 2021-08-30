@@ -168,7 +168,7 @@ std::ostream& operator<<(
   return os;
 }
 
-// do explicit instantiation of MaxDeriv = {2,3,4}
+// do explicit instantiation of MaxDeriv = {0,1,2,3,4}
 // along with all combinations of MaxDerivReturned = {0,...,MaxDeriv}
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DIMRETURNED(data) BOOST_PP_TUPLE_ELEM(1, data)
