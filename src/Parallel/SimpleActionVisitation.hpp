@@ -100,7 +100,8 @@ void simple_action_visitor_helper(boost::variant<Variants...>& box,
           << args_list << "'.\n"
           << "If the argument types to the apply function match, then it is "
              "possible that the apply function has non-deducible template "
-             "parameters. This could occur from removing an apply function "
+             "parameters other than the initial ParallelComponent parameter. "
+             "This could occur from removing an apply function "
              "argument and forgetting to remove its associated template "
              "parameters.\n");
   }
