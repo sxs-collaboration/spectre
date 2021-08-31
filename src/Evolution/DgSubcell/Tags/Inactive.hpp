@@ -25,10 +25,16 @@ struct Inactive : db::PrefixTag, db::SimpleTag {
   using type = typename tag::type;
 };
 
-/// \copydoc Inactive
+/// \cond
+// This tag currently exposes its constituents as subitems. Possible
+// compile-time optimization: Remove this template specialization and use
+// `Inactive<VariablesTag<tmpl::list<Tag1, Tag2>>>` instead of the individual
+// `Inactive<Tag1>`.
 template <typename TagList>
-struct Inactive<::Tags::Variables<TagList>> : db::PrefixTag, db::SimpleTag {
+struct Inactive<::Tags::Variables<TagList>>
+    : ::Tags::Variables<db::wrap_tags_in<Inactive, TagList>> {
   using tag = ::Tags::Variables<TagList>;
   using type = Variables<db::wrap_tags_in<Inactive, TagList>>;
 };
+/// \endcond
 }  // namespace evolution::dg::subcell::Tags
