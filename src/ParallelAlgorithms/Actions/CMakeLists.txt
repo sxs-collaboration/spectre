@@ -11,6 +11,7 @@ spectre_target_headers(
   HEADERS
   MutateApply.hpp
   SetData.hpp
+  UpdateMessageQueue.hpp
   )
 
 target_link_libraries(
