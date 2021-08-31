@@ -14,6 +14,7 @@
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace domain {
@@ -220,11 +221,17 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.PiecewisePolynomial",
     FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t2 =
         serialize_and_deserialize(f_of_t);
 
-    f_of_t.update(2.0, {6.0, 0.0}, 2.1);
-    f_of_t2.update(2.0, {6.0, 0.0}, 2.1);
+    f_of_t.update(2.0, {12.0, 0.0}, 2.1);
+    f_of_t2.update(2.0, {12.0, 0.0}, 2.1);
 
     test_within_roundoff<deriv_order>(f_of_t);
     test_within_roundoff<deriv_order>(f_of_t2);
+
+    INFO("Test stream operator.");
+
+    CHECK(get_output(f_of_t) ==
+          "t=1: (1,1) (3,2) (3,1) (1,0)\n"
+          "t=2: (8,4) (12,4) (6,1) (2,0)");
   }
   {
     INFO("Test evaluation at update time.");

@@ -8,6 +8,7 @@
 
 #include <array>
 #include <limits>
+#include <ostream>
 #include <pup.h>
 
 #include "DataStructures/DataVector.hpp"
@@ -82,4 +83,9 @@ bool operator!=(
         MaxDerivPlusOne, StoreCoefs>& lhs,
     const domain::FunctionsOfTime::FunctionOfTimeHelpers::StoredInfo<
         MaxDerivPlusOne, StoreCoefs>& rhs) noexcept;
+
+template <size_t MaxDerivPlusOne, bool StoreCoefs>
+std::ostream& operator<<(
+    std::ostream& os,
+    const StoredInfo<MaxDerivPlusOne, StoreCoefs>& info) noexcept;
 }  // namespace domain::FunctionsOfTime::FunctionOfTimeHelpers

@@ -154,6 +154,20 @@ bool operator!=(const PiecewisePolynomial<MaxDeriv>& lhs,
   return not(lhs == rhs);
 }
 
+template <size_t MaxDeriv>
+std::ostream& operator<<(
+    std::ostream& os,
+    const PiecewisePolynomial<MaxDeriv>& piecewise_polynomial) noexcept {
+  const auto size = piecewise_polynomial.deriv_info_at_update_times_.size();
+
+  for (size_t i = 0; i < size - 1; ++i) {
+    os << piecewise_polynomial.deriv_info_at_update_times_[i];
+    os << "\n";
+  }
+  os << piecewise_polynomial.deriv_info_at_update_times_[size - 1];
+  return os;
+}
+
 // do explicit instantiation of MaxDeriv = {2,3,4}
 // along with all combinations of MaxDerivReturned = {0,...,MaxDeriv}
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
@@ -166,7 +180,10 @@ bool operator!=(const PiecewisePolynomial<MaxDeriv>& lhs,
                   const PiecewisePolynomial<DIM(data)>&) noexcept; \
   template bool operator!=                                         \
       <DIM(data)>(const PiecewisePolynomial<DIM(data)>&,           \
-                  const PiecewisePolynomial<DIM(data)>&) noexcept;
+                  const PiecewisePolynomial<DIM(data)>&) noexcept; \
+  template std::ostream& operator<<(                               \
+      std::ostream& os,                                            \
+      const PiecewisePolynomial<DIM(data)>& piecewise_polynomial) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (0, 1, 2, 3, 4))
 

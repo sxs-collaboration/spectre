@@ -9,6 +9,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTimeHelpers.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace domain::FunctionsOfTime {
@@ -54,6 +55,9 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.FunctionOfTimeHelpers",
           init_deriv);
     CHECK(gsl::at(si3_serialize_and_deserialize.stored_quantities, 2) ==
           init_2deriv);
+
+    CHECK(get_output(si1) ==
+          "t=5.4: (1.1,1.2,1.3) (2.4,2.5,2.6) (1.85,1.9,1.95)");
   }
 
   INFO("StoredInfo From Upper Bound") {

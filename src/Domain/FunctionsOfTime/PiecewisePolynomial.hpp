@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <limits>
 #include <memory>
+#include <ostream>
 #include <pup.h>
 #include <vector>
 
@@ -94,6 +95,11 @@ class PiecewisePolynomial : public FunctionOfTime {
   friend bool operator==(  // NOLINT(readability-redundant-declaration)
       const PiecewisePolynomial<LocalMaxDeriv>& lhs,
       const PiecewisePolynomial<LocalMaxDeriv>& rhs) noexcept;
+
+  template <size_t LocalMaxDeriv>
+  friend std::ostream& operator<<(  // NOLINT(readability-redundant-declaration
+      std::ostream& os,
+      const PiecewisePolynomial<LocalMaxDeriv>& piecewise_polynomial) noexcept;
 
   /// Returns the function and `MaxDerivReturned` derivatives at
   /// an arbitrary time `t`.
