@@ -700,11 +700,15 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
     using type = typename T::databox_types;
   };
 
-  using databox_types = tmpl::flatten<
-      tmpl::transform<databox_phase_types, get_databox_types<tmpl::_1>>>;
+  // Make the DataBox types public so `Main` can print some info about it
+ public:
+  using databox_types = tmpl::remove_duplicates<tmpl::flatten<
+      tmpl::transform<databox_phase_types, get_databox_types<tmpl::_1>>>>;
+
+ private:
   // Create a boost::variant that can hold any of the DataBox's
-  using variant_boxes = tmpl::remove_duplicates<
-      tmpl::push_front<databox_types, db::DataBox<tmpl::list<>>>>;
+  using variant_boxes =
+      tmpl::push_front<databox_types, db::DataBox<tmpl::list<>>>;
   make_boost_variant_over<variant_boxes> box_;
   tuples::tagged_tuple_from_typelist<inbox_tags_list> inboxes_{};
   array_index array_index_;
