@@ -182,6 +182,21 @@ class VectorImpl
 
   VectorImpl& operator=(const T& rhs) noexcept;
 
+  decltype(auto) SPECTRE_ALWAYS_INLINE operator[](const size_t index) noexcept {
+    ASSERT(index < size(), "Out-of-range access to element "
+                               << index << " of a size " << size()
+                               << " Blaze vector.");
+    return BaseType::operator[](index);
+  }
+
+  decltype(auto) SPECTRE_ALWAYS_INLINE
+  operator[](const size_t index) const noexcept {
+    ASSERT(index < size(), "Out-of-range access to element "
+                               << index << " of a size " << size()
+                               << " Blaze vector.");
+    return BaseType::operator[](index);
+  }
+
   /// @{
   /// Set the VectorImpl to be a reference to another VectorImpl object
   void set_data_ref(gsl::not_null<VectorType*> rhs) noexcept {
