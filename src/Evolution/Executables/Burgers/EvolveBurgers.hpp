@@ -29,7 +29,6 @@
 #include "Evolution/Initialization/Limiter.hpp"
 #include "Evolution/Initialization/SetVariables.hpp"
 #include "Evolution/Systems/Burgers/BoundaryConditions/Factory.hpp"
-#include "Evolution/Systems/Burgers/BoundaryConditions/RegisterDerivedWithCharm.hpp"
 #include "Evolution/Systems/Burgers/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/Burgers/BoundaryCorrections/RegisterDerived.hpp"
 #include "Evolution/Systems/Burgers/System.hpp"
@@ -130,6 +129,8 @@ struct EvolutionMetavars {
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
+        tmpl::pair<Burgers::BoundaryConditions::BoundaryCondition,
+                   Burgers::BoundaryConditions::standard_boundary_conditions>,
         tmpl::pair<DenseTrigger, DenseTriggers::standard_dense_triggers>,
         tmpl::pair<DomainCreator<volume_dim>, domain_creators<volume_dim>>,
         tmpl::pair<Event, tmpl::flatten<tmpl::list<
@@ -140,9 +141,9 @@ struct EvolutionMetavars {
                               Events::time_events<system>>>>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                    StepChoosers::standard_step_choosers<system>>,
-        tmpl::pair<StepChooser<StepChooserUse::Slab>,
-                   StepChoosers::standard_slab_choosers<system,
-                                                        local_time_stepping>>,
+        tmpl::pair<
+            StepChooser<StepChooserUse::Slab>,
+            StepChoosers::standard_slab_choosers<system, local_time_stepping>>,
         tmpl::pair<StepController, StepControllers::standard_step_controllers>,
         tmpl::pair<TimeSequence<double>,
                    TimeSequences::all_time_sequences<double>>,
@@ -314,7 +315,6 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &domain::creators::register_derived_with_charm,
     &domain::creators::time_dependence::register_derived_with_charm,
     &domain::FunctionsOfTime::register_derived_with_charm,
-    &Burgers::BoundaryConditions::register_derived_with_charm,
     &Burgers::BoundaryCorrections::register_derived_with_charm,
     &Parallel::register_derived_classes_with_charm<TimeStepper>,
     &Parallel::register_derived_classes_with_charm<

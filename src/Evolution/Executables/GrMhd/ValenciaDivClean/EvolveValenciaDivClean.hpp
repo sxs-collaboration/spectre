@@ -52,7 +52,6 @@
 #include "Evolution/Initialization/Limiter.hpp"
 #include "Evolution/Initialization/SetVariables.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryConditions/Factory.hpp"
-#include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryConditions/RegisterDerivedWithCharm.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryCorrections/RegisterDerived.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/Factory.hpp"
@@ -258,6 +257,10 @@ struct EvolutionMetavars {
                 Events::time_events<system>,
                 intrp::Events::Interpolate<3, InterpolationTargetTags,
                                            interpolator_source_vars>...>>>,
+        tmpl::pair<
+            grmhd::ValenciaDivClean::BoundaryConditions::BoundaryCondition,
+            grmhd::ValenciaDivClean::BoundaryConditions::
+                standard_boundary_conditions>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                    StepChoosers::standard_step_choosers<system>>,
         tmpl::pair<
@@ -588,7 +591,6 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &domain::creators::register_derived_with_charm,
     &domain::creators::time_dependence::register_derived_with_charm,
     &domain::FunctionsOfTime::register_derived_with_charm,
-    &grmhd::ValenciaDivClean::BoundaryConditions::register_derived_with_charm,
     &grmhd::ValenciaDivClean::BoundaryCorrections::register_derived_with_charm,
     &grmhd::ValenciaDivClean::fd::register_derived_with_charm,
     &Parallel::register_derived_classes_with_charm<TimeStepper>,

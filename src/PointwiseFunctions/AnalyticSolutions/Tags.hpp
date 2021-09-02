@@ -34,22 +34,12 @@ struct AnalyticSolution {
   using type = SolutionType;
   using group = AnalyticSolutionGroup;
 };
-/// \ingroup OptionTagsGroup
-/// The boundary condition to be applied at all external boundaries.
-template <typename BoundaryConditionType>
-struct BoundaryCondition {
-  static constexpr Options::String help = "Boundary condition to be used";
-  using type = BoundaryConditionType;
-};
 }  // namespace OptionTags
 
 namespace Tags {
 /// Can be used to retrieve the analytic solution from the cache without having
 /// to know the template parameters of AnalyticSolution.
 struct AnalyticSolutionBase : AnalyticSolutionOrData {};
-
-/// Base tag with which to retrieve the BoundaryConditionType
-struct BoundaryConditionBase : db::BaseTag {};
 
 /// \ingroup OptionTagsGroup
 /// The analytic solution, with the type of the analytic solution set as the
@@ -63,20 +53,6 @@ struct AnalyticSolution : AnalyticSolutionBase, db::SimpleTag {
   static SolutionType create_from_options(
       const SolutionType& analytic_solution) noexcept {
     return deserialize<type>(serialize<type>(analytic_solution).data());
-  }
-};
-/// \ingroup OptionTagsGroup
-/// The boundary condition to be applied at all external boundaries.
-template <typename BoundaryConditionType>
-struct BoundaryCondition : BoundaryConditionBase, db::SimpleTag {
-  using type = BoundaryConditionType;
-  using option_tags =
-      tmpl::list<::OptionTags::BoundaryCondition<BoundaryConditionType>>;
-
-  static constexpr bool pass_metavariables = false;
-  static BoundaryConditionType create_from_options(
-      const BoundaryConditionType& boundary_condition) noexcept {
-    return boundary_condition;
   }
 };
 

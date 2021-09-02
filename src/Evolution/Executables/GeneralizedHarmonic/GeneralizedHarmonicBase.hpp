@@ -210,6 +210,10 @@ struct GeneralizedHarmonicTemplateBase<
                                                       observe_fields,
                                                       analytic_solution_fields>,
                        Events::time_events<system>>>>,
+        tmpl::pair<GeneralizedHarmonic::BoundaryConditions::BoundaryCondition<
+                       volume_dim>,
+                   GeneralizedHarmonic::BoundaryConditions::
+                       standard_boundary_conditions<volume_dim>>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                    StepChoosers::standard_step_choosers<system>>,
         tmpl::pair<

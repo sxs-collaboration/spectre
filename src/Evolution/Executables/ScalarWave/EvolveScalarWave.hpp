@@ -28,7 +28,6 @@
 #include "Evolution/Initialization/NonconservativeSystem.hpp"
 #include "Evolution/Initialization/SetVariables.hpp"
 #include "Evolution/Systems/ScalarWave/BoundaryConditions/Factory.hpp"
-#include "Evolution/Systems/ScalarWave/BoundaryConditions/RegisterDerivedWithCharm.hpp"
 #include "Evolution/Systems/ScalarWave/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/ScalarWave/BoundaryCorrections/RegisterDerived.hpp"
 #include "Evolution/Systems/ScalarWave/EnergyDensity.hpp"
@@ -135,17 +134,23 @@ struct EvolutionMetavars {
     using factory_classes = tmpl::map<
         tmpl::pair<DenseTrigger, DenseTriggers::standard_dense_triggers>,
         tmpl::pair<DomainCreator<volume_dim>, domain_creators<volume_dim>>,
-        tmpl::pair<Event, tmpl::flatten<tmpl::list<
-                              Events::Completion,
-                              dg::Events::field_observations<
-                                  volume_dim, Tags::Time, observe_fields,
-                                  analytic_solution_fields>,
-                                  dg::Events::ObserveVolumeIntegrals<
+        tmpl::pair<
+            Event,
+            tmpl::flatten<tmpl::list<
+                Events::Completion,
+                dg::Events::field_observations<volume_dim, Tags::Time,
+                                               observe_fields,
+                                               analytic_solution_fields>,
+                dg::Events::ObserveVolumeIntegrals<
                     volume_dim, Tags::Time,
                     tmpl::list<ScalarWave::Tags::EnergyDensity<volume_dim>>>,
-                              Events::time_events<system>>>>,
+                Events::time_events<system>>>>,
         tmpl::pair<MathFunction<1, Frame::Inertial>,
                    MathFunctions::all_math_functions<1, Frame::Inertial>>,
+        tmpl::pair<
+            ScalarWave::BoundaryConditions::BoundaryCondition<volume_dim>,
+            ScalarWave::BoundaryConditions::standard_boundary_conditions<
+                volume_dim>>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                    tmpl::push_back<StepChoosers::standard_step_choosers<system>,
                                    StepChoosers::ByBlock<
@@ -331,7 +336,6 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &domain::creators::register_derived_with_charm,
     &domain::creators::time_dependence::register_derived_with_charm,
     &domain::FunctionsOfTime::register_derived_with_charm,
-    &ScalarWave::BoundaryConditions::register_derived_with_charm,
     &ScalarWave::BoundaryCorrections::register_derived_with_charm,
     &Parallel::register_derived_classes_with_charm<TimeStepper>,
     &Parallel::register_derived_classes_with_charm<

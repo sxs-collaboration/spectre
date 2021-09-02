@@ -38,10 +38,12 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags/Formulation.hpp"
 #include "NumericalAlgorithms/Interpolation/RegularGridInterpolant.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Utilities/CloneUniquePtrs.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeVector.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
@@ -730,14 +732,6 @@ class GhostAndTimeDerivative;
 template <typename System>
 class BoundaryCondition : public domain::BoundaryConditions::BoundaryCondition {
  public:
-  // Note: Outflow is intentionally first so it gets applied first. This makes
-  // the test easier because the other BCs modify the time derivatives.
-  using creatable_classes =
-      tmpl::list<Outflow<System>, Ghost<System>, TimeDerivative<System>,
-                 GhostAndTimeDerivative<System>,
-                 domain::BoundaryConditions::Periodic<BoundaryCondition>,
-                 domain::BoundaryConditions::None<BoundaryCondition>>;
-
   BoundaryCondition() = default;
   BoundaryCondition(BoundaryCondition&&) noexcept = default;
   BoundaryCondition& operator=(BoundaryCondition&&) noexcept = default;
@@ -2092,6 +2086,25 @@ struct System
   };
 };
 
+// Note: Outflow is intentionally first so it gets applied first. This makes
+// the test easier because the other BCs modify the time derivatives.
+template <typename System>
+using standard_boundary_conditions =
+    tmpl::list<Outflow<System>, Ghost<System>, TimeDerivative<System>,
+               GhostAndTimeDerivative<System>,
+               domain::BoundaryConditions::Periodic<BoundaryCondition<System>>,
+               domain::BoundaryConditions::None<BoundaryCondition<System>>>;
+
+template <typename System>
+struct Metavariables {
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes =
+        tmpl::map<tmpl::pair<BoundaryCondition<System>,
+                             standard_boundary_conditions<System>>>;
+  };
+};
+
 template <typename TagsList>
 void fill_variables(const gsl::not_null<Variables<TagsList>*> variables,
                     const double offset) {
@@ -2227,6 +2240,7 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
   }
 
   using simple_tags = tmpl::list<
+      Parallel::Tags::MetavariablesImpl<Metavariables<System>>,
       domain::Tags::Domain<Dim>, domain::Tags::Mesh<Dim>,
       domain::Tags::Element<Dim>, domain::Tags::ElementMap<Dim, Frame::Grid>,
       domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
@@ -2242,8 +2256,8 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
   using compute_tags = tmpl::list<>;
 
   auto box = db::create<simple_tags, compute_tags>(
-      std::move(domain), mesh, element, std::move(element_map),
-      grid_to_inertial_map->get_clone(), time,
+      Metavariables<System>{}, std::move(domain), mesh, element,
+      std::move(element_map), grid_to_inertial_map->get_clone(), time,
       clone_unique_ptrs(functions_of_time), mesh_velocity, inv_jacobian,
       det_inv_jacobian, normal_covector_and_magnitude, evolved_vars,
       dt_evolved_vars, boundary_condition_volume_tag_number,

@@ -9,7 +9,6 @@ spectre_target_sources(
   BoundaryCondition.cpp
   DirichletAnalytic.cpp
   Outflow.cpp
-  RegisterDerivedWithCharm.cpp
   )
 
 spectre_target_headers(
@@ -22,5 +21,4 @@ spectre_target_headers(
   DirichletAnalytic.hpp
   Factory.hpp
   Outflow.hpp
-  RegisterDerivedWithCharm.hpp
   )

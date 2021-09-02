@@ -5,7 +5,6 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   BoundaryCondition.cpp
-  RegisterDerivedWithCharm.cpp
   )
 
 spectre_target_headers(
@@ -14,5 +13,4 @@ spectre_target_headers(
   HEADERS
   BoundaryCondition.hpp
   Factory.hpp
-  RegisterDerivedWithCharm.hpp
   )

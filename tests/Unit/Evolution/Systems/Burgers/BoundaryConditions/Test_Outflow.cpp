@@ -26,10 +26,6 @@ SPECTRE_TEST_CASE("Unit.Burgers.BoundaryConditions.Outflow",
   pypp::SetupLocalPythonEnvironment local_python_env{
       "Evolution/Systems/Burgers/BoundaryConditions/"};
   MAKE_GENERATOR(gen);
-  const std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-      boundary_condition = TestHelpers::test_creation<
-          std::unique_ptr<Burgers::BoundaryConditions::BoundaryCondition>>(
-          "Outflow:\n");
 
   helpers::test_boundary_condition_with_python<
       Burgers::BoundaryConditions::Outflow,

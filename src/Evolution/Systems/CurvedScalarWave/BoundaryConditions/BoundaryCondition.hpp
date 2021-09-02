@@ -3,30 +3,18 @@
 
 #pragma once
 
+#include <cstddef>
 #include <pup.h>
 
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
-#include "Domain/BoundaryConditions/Periodic.hpp"
-#include "Utilities/TMPL.hpp"
 
-namespace CurvedScalarWave::BoundaryConditions {
-
-/// \cond
-template <size_t Dim>
-class Outflow;
-/// \endcond
-}  // namespace CurvedScalarWave::BoundaryConditions
-
+namespace CurvedScalarWave {
 /// \brief Boundary conditions for the curved scalar wave system
-namespace CurvedScalarWave::BoundaryConditions {
+namespace BoundaryConditions {
 /// \brief The base class off of which all boundary conditions must inherit
 template <size_t Dim>
 class BoundaryCondition : public domain::BoundaryConditions::BoundaryCondition {
  public:
-  using creatable_classes =
-      tmpl::list<Outflow<Dim>,
-                 domain::BoundaryConditions::Periodic<BoundaryCondition<Dim>>>;
-
   BoundaryCondition() = default;
   BoundaryCondition(BoundaryCondition&&) noexcept = default;
   BoundaryCondition& operator=(BoundaryCondition&&) noexcept = default;
@@ -37,4 +25,5 @@ class BoundaryCondition : public domain::BoundaryConditions::BoundaryCondition {
 
   void pup(PUP::er& p) override;
 };
-}  // namespace CurvedScalarWave::BoundaryConditions
+}  // namespace BoundaryConditions
+}  // namespace CurvedScalarWave
