@@ -1,21 +1,21 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Executable: EvolveScalarAdvectionSinusoid1D
+# Executable: EvolveScalarAdvectionKrivodonova1D
 # Check: parse;execute_check_output
 # ExpectedOutput:
-#   ScalarAdvectionSinusoid1DVolume0.h5
-#   ScalarAdvectionSinusoid1DReductions.h5
+#   ScalarAdvectionKrivodonova1DVolume0.h5
+#   ScalarAdvectionKrivodonova1DReductions.h5
 # OutputFileChecks:
 #   - Label: check_analytic_solution
 #     Subfile: /ErrorNorms.dat
-#     FileGlob: ScalarAdvectionSinusoid1DReductions.h5
+#     FileGlob: ScalarAdvectionKrivodonova1DReductions.h5
 #     SkipColumns: [0,1]
-#     AbsoluteTolerance: 0.02
+#     AbsoluteTolerance: 0.2
 
 Evolution:
   InitialTime: 0.0
-  InitialTimeStep: 0.0001
+  InitialTimeStep: 0.005
   TimeStepper: RungeKutta3
 
 PhaseChangeAndTriggers:
@@ -24,8 +24,8 @@ DomainCreator:
   Interval:
     LowerBound: [-1.0]
     UpperBound: [1.0]
-    InitialRefinement: [4]
-    InitialGridPoints: [3]
+    InitialRefinement: [5]
+    InitialGridPoints: [2]
     TimeDependence: None
     BoundaryConditions:
       LowerBoundary: Periodic
@@ -39,7 +39,7 @@ SpatialDiscretization:
     Quadrature: GaussLobatto
 
 AnalyticSolution:
-  Sinusoid:
+  Krivodonova:
 
 Limiter:
   Minmod:
@@ -74,5 +74,5 @@ EventsAndTriggers:
 EventsAndDenseTriggers:
 
 Observers:
-  VolumeFileName: "ScalarAdvectionSinusoid1DVolume"
-  ReductionFileName: "ScalarAdvectionSinusoid1DReductions"
+  VolumeFileName: "ScalarAdvectionKrivodonova1DVolume"
+  ReductionFileName: "ScalarAdvectionKrivodonova1DReductions"

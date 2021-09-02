@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "Domain/Creators/Factory1D.hpp"
+#include "Domain/Creators/Factory2D.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
@@ -60,6 +61,8 @@
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/ScalarAdvection/Krivodonova.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/AnalyticSolutions/ScalarAdvection/Kuzmin.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/AnalyticSolutions/ScalarAdvection/Sinusoid.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "Time/Actions/AdvanceTime.hpp"            // IWYU pragma: keep

@@ -1,35 +1,34 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Executable: EvolveScalarAdvectionSinusoid1D
+# Executable: EvolveScalarAdvectionKuzmin2D
 # Check: parse;execute_check_output
+# Timeout: 10
 # ExpectedOutput:
-#   ScalarAdvectionSinusoid1DVolume0.h5
-#   ScalarAdvectionSinusoid1DReductions.h5
+#   ScalarAdvectionKuzmin2DVolume0.h5
+#   ScalarAdvectionKuzmin2DReductions.h5
 # OutputFileChecks:
 #   - Label: check_analytic_solution
 #     Subfile: /ErrorNorms.dat
-#     FileGlob: ScalarAdvectionSinusoid1DReductions.h5
+#     FileGlob: ScalarAdvectionKuzmin2DReductions.h5
 #     SkipColumns: [0,1]
-#     AbsoluteTolerance: 0.02
+#     AbsoluteTolerance: 0.2
 
 Evolution:
   InitialTime: 0.0
-  InitialTimeStep: 0.0001
+  InitialTimeStep: 0.01
   TimeStepper: RungeKutta3
 
 PhaseChangeAndTriggers:
 
 DomainCreator:
-  Interval:
-    LowerBound: [-1.0]
-    UpperBound: [1.0]
-    InitialRefinement: [4]
-    InitialGridPoints: [3]
+  Rectangle:
+    LowerBound: [0.0, 0.0]
+    UpperBound: [1.0, 1.0]
+    InitialRefinement: [3, 3]
+    InitialGridPoints: [3, 3]
     TimeDependence: None
-    BoundaryConditions:
-      LowerBoundary: Periodic
-      UpperBoundary: Periodic
+    BoundaryCondition: Periodic
 
 SpatialDiscretization:
   BoundaryCorrection:
@@ -39,7 +38,7 @@ SpatialDiscretization:
     Quadrature: GaussLobatto
 
 AnalyticSolution:
-  Sinusoid:
+  Kuzmin:
 
 Limiter:
   Minmod:
@@ -74,5 +73,5 @@ EventsAndTriggers:
 EventsAndDenseTriggers:
 
 Observers:
-  VolumeFileName: "ScalarAdvectionSinusoid1DVolume"
-  ReductionFileName: "ScalarAdvectionSinusoid1DReductions"
+  VolumeFileName: "ScalarAdvectionKuzmin2DVolume"
+  ReductionFileName: "ScalarAdvectionKuzmin2DReductions"

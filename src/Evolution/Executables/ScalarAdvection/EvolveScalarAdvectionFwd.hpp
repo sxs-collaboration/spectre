@@ -7,6 +7,8 @@
 
 namespace ScalarAdvection {
 namespace Solutions {
+class Krivodonova;
+class Kuzmin;
 class Sinusoid;
 }  // namespace Solutions
 }  // namespace ScalarAdvection
