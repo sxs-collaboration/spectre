@@ -1,15 +1,15 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Executable: EvolveScalarAdvectionKrivodonova1D
+# Executable: EvolveScalarAdvection1D
 # Check: parse;execute_check_output
 # ExpectedOutput:
-#   ScalarAdvectionKrivodonova1DVolume0.h5
-#   ScalarAdvectionKrivodonova1DReductions.h5
+#   ScalarAdvection1DKrivodonovaVolume0.h5
+#   ScalarAdvection1DKrivodonovaReductions.h5
 # OutputFileChecks:
 #   - Label: check_analytic_solution
 #     Subfile: /ErrorNorms.dat
-#     FileGlob: ScalarAdvectionKrivodonova1DReductions.h5
+#     FileGlob: ScalarAdvection1DKrivodonovaReductions.h5
 #     SkipColumns: [0,1]
 #     AbsoluteTolerance: 0.2
 
@@ -40,9 +40,6 @@ SpatialDiscretization:
   DiscontinuousGalerkin:
     Formulation: StrongInertial
     Quadrature: GaussLobatto
-
-AnalyticSolution:
-  Krivodonova:
 
 Limiter:
   Minmod:
@@ -77,5 +74,5 @@ EventsAndTriggers:
 EventsAndDenseTriggers:
 
 Observers:
-  VolumeFileName: "ScalarAdvectionKrivodonova1DVolume"
-  ReductionFileName: "ScalarAdvectionKrivodonova1DReductions"
+  VolumeFileName: "ScalarAdvection1DKrivodonovaVolume"
+  ReductionFileName: "ScalarAdvection1DKrivodonovaReductions"

@@ -100,22 +100,12 @@ class CProxy_GlobalCache;
 }  // namespace Parallel
 /// \endcond
 
-template <size_t Dim, typename InitialData>
+template <size_t Dim>
 struct EvolutionMetavars {
   static constexpr size_t volume_dim = Dim;
   using system = ScalarAdvection::System<Dim>;
   using temporal_id = Tags::TimeStepId;
   static constexpr bool local_time_stepping = false;
-
-  using initial_data = InitialData;
-  static_assert(
-      evolution::is_analytic_data_v<initial_data> xor
-          evolution::is_analytic_solution_v<initial_data>,
-      "initial_data must be either an analytic_data or an analytic_solution");
-  using initial_data_tag =
-      tmpl::conditional_t<evolution::is_analytic_solution_v<initial_data>,
-                          Tags::AnalyticSolution<initial_data>,
-                          Tags::AnalyticData<initial_data>>;
 
   using limiter = Tags::Limiter<
       Limiters::Minmod<Dim, typename system::variables_tag::tags_list>>;
@@ -124,9 +114,8 @@ struct EvolutionMetavars {
       tmpl::conditional_t<local_time_stepping, LtsTimeStepper, TimeStepper>>;
 
   using observe_fields = typename system::variables_tag::tags_list;
-  using analytic_solution_fields =
-      tmpl::conditional_t<evolution::is_analytic_solution_v<initial_data>,
-                          observe_fields, tmpl::list<>>;
+
+  using analytic_solution_fields = observe_fields;
 
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
@@ -207,8 +196,7 @@ struct EvolutionMetavars {
       PhaseControl::get_phase_change_tags<phase_changes>;
 
   using const_global_cache_tags =
-      tmpl::list<initial_data_tag,
-                 InitialDataUtilities::Tags::InitialData<
+      tmpl::list<InitialDataUtilities::Tags::InitialData<
                      InitialDataUtilities::InitialData>,
                  Tags::EventsAndTriggers,
                  PhaseControl::Tags::PhaseChangeAndTriggers<phase_changes>>;

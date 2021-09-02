@@ -1,16 +1,16 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Executable: EvolveScalarAdvectionKuzmin2D
+# Executable: EvolveScalarAdvection2D
 # Check: parse;execute_check_output
 # Timeout: 10
 # ExpectedOutput:
-#   ScalarAdvectionKuzmin2DVolume0.h5
-#   ScalarAdvectionKuzmin2DReductions.h5
+#   ScalarAdvection2DKuzminVolume0.h5
+#   ScalarAdvection2DKuzminReductions.h5
 # OutputFileChecks:
 #   - Label: check_analytic_solution
 #     Subfile: /ErrorNorms.dat
-#     FileGlob: ScalarAdvectionKuzmin2DReductions.h5
+#     FileGlob: ScalarAdvection2DKuzminReductions.h5
 #     SkipColumns: [0,1]
 #     AbsoluteTolerance: 0.2
 
@@ -39,9 +39,6 @@ SpatialDiscretization:
   DiscontinuousGalerkin:
     Formulation: StrongInertial
     Quadrature: GaussLobatto
-
-AnalyticSolution:
-  Kuzmin:
 
 Limiter:
   Minmod:
@@ -76,5 +73,5 @@ EventsAndTriggers:
 EventsAndDenseTriggers:
 
 Observers:
-  VolumeFileName: "ScalarAdvectionKuzmin2DVolume"
-  ReductionFileName: "ScalarAdvectionKuzmin2DReductions"
+  VolumeFileName: "ScalarAdvection2DKuzminVolume"
+  ReductionFileName: "ScalarAdvection2DKuzminReductions"

@@ -1,15 +1,15 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Executable: EvolveScalarAdvectionSinusoid1D
+# Executable: EvolveScalarAdvection1D
 # Check: parse;execute_check_output
 # ExpectedOutput:
-#   ScalarAdvectionSinusoid1DVolume0.h5
-#   ScalarAdvectionSinusoid1DReductions.h5
+#   ScalarAdvection1DSinusoidVolume0.h5
+#   ScalarAdvection1DSinusoidReductions.h5
 # OutputFileChecks:
 #   - Label: check_analytic_solution
 #     Subfile: /ErrorNorms.dat
-#     FileGlob: ScalarAdvectionSinusoid1DReductions.h5
+#     FileGlob: ScalarAdvection1DSinusoidReductions.h5
 #     SkipColumns: [0,1]
 #     AbsoluteTolerance: 0.02
 
@@ -40,9 +40,6 @@ SpatialDiscretization:
   DiscontinuousGalerkin:
     Formulation: StrongInertial
     Quadrature: GaussLobatto
-
-AnalyticSolution:
-  Sinusoid:
 
 Limiter:
   Minmod:
@@ -77,5 +74,5 @@ EventsAndTriggers:
 EventsAndDenseTriggers:
 
 Observers:
-  VolumeFileName: "ScalarAdvectionSinusoid1DVolume"
-  ReductionFileName: "ScalarAdvectionSinusoid1DReductions"
+  VolumeFileName: "ScalarAdvection1DSinusoidVolume"
+  ReductionFileName: "ScalarAdvection1DSinusoidReductions"
