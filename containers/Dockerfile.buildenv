@@ -36,6 +36,7 @@ RUN apt-get update -y \
                           gcc-9 g++-9 gfortran-9 \
                           gcc-10 g++-10 gfortran-10 \
                           gdb git ninja-build autoconf automake \
+                          bison flex \
                           libopenblas-dev liblapack-dev \
                           libhdf5-dev hdf5-tools \
                           libgsl0-dev \
@@ -64,9 +65,9 @@ RUN apt-get update -y \
     && apt-get update -y \
     && apt-get install -y libjemalloc2 libjemalloc-dev
 
-# Install ccache to cache compilations for reduced compile time, and Doxygen
+# Install ccache to cache compilations for reduced compile time
 RUN apt-get update -y \
-    && apt-get install -y ccache doxygen
+    && apt-get install -y ccache
 
 # Install Python packages
 # We only install packages that are needed by the build system (e.g. to compile
@@ -128,22 +129,33 @@ RUN wget https://github.com/Kitware/CMake/releases/download/v3.12.4/cmake-3.12.4
 # We install dependencies not available through apt manually rather than using
 # Spack since Spack ends up building a lot of dependencies from scratch
 # that we don't need. Thus, not building the deps with Spack reduces total
-# build time of the Docker image.
-#
-# Build with GCC7 when easily possible to maximize ABI compatibility.
-#
-# Install blaze, brigand, catch2, libsharp, libxsmm, yaml-cpp in /usr/local
+# build time of the Docker image. We build with GCC7 when easily possible to
+# maximize ABI compatibility.
+# - Blaze
 RUN wget https://bitbucket.org/blaze-lib/blaze/downloads/blaze-3.8.tar.gz -O blaze.tar.gz \
     && tar -xzf blaze.tar.gz \
     && mv blaze-* blaze \
     && mv blaze/blaze /usr/local/include \
-    && rm -rf blaze* \
-    && git clone https://github.com/edouarda/brigand.git \
+    && rm -rf blaze*
+# - Brigand
+RUN git clone https://github.com/edouarda/brigand.git \
     && mv brigand/include/brigand /usr/local/include \
-    && rm -rf brigand \
-    && wget https://github.com/catchorg/Catch2/releases/download/v2.11.1/catch.hpp -O catch.hpp \
-    && mv catch.hpp /usr/local/include \
-    && wget https://github.com/Libsharp/libsharp/archive/v1.0.0.tar.gz -O libsharp.tar.gz \
+    && rm -rf brigand
+# - Catch2
+RUN wget https://github.com/catchorg/Catch2/releases/download/v2.11.1/catch.hpp -O catch.hpp \
+    && mv catch.hpp /usr/local/include
+# - Doxygen
+RUN wget https://www.doxygen.nl/files/doxygen-1.9.2.src.tar.gz \
+    && tar -xzf doxygen-1.9.2.src.tar.gz \
+    && cd doxygen-1.9.2 \
+    && mkdir build \
+    && cd build \
+    && cmake -G "Unix Makefiles" .. \
+    && make $PARALLEL_MAKE_ARG \
+    && make install \
+    && cd ../.. && rm -rf doxygen*
+# - Libsharp
+RUN wget https://github.com/Libsharp/libsharp/archive/v1.0.0.tar.gz -O libsharp.tar.gz \
     && tar -xzf libsharp.tar.gz \
     && mv libsharp-* libsharp_build \
     && cd libsharp_build \
@@ -155,16 +167,18 @@ RUN wget https://bitbucket.org/blaze-lib/blaze/downloads/blaze-3.8.tar.gz -O bla
     && mv auto/include/* /usr/local/include \
     && mv auto/lib/* /usr/local/lib \
     && cd ../ \
-    && rm -r libsharp* \
-    && wget https://github.com/hfp/libxsmm/archive/1.16.1.tar.gz -O libxsmm.tar.gz \
+    && rm -r libsharp*
+# - LibXSMM
+RUN wget https://github.com/hfp/libxsmm/archive/1.16.1.tar.gz -O libxsmm.tar.gz \
     && tar -xzf libxsmm.tar.gz \
     && mv libxsmm-* libxsmm \
     && cd libxsmm \
     && make $PARALLEL_MAKE_ARG PREFIX=/usr/local/ CXX=g++-7 CC=gcc-7 \
         FC=gfortran-7 install \
     && cd .. \
-    && rm -rf libxsmm libxsmm.tar.gz \
-    && wget https://github.com/jbeder/yaml-cpp/archive/yaml-cpp-0.6.3.tar.gz -O yaml-cpp.tar.gz \
+    && rm -rf libxsmm libxsmm.tar.gz
+# - Yaml-cpp
+RUN wget https://github.com/jbeder/yaml-cpp/archive/yaml-cpp-0.6.3.tar.gz -O yaml-cpp.tar.gz \
     && tar -xzf yaml-cpp.tar.gz \
     && mv yaml-cpp-* yaml-cpp-build \
     && cd yaml-cpp-build \
