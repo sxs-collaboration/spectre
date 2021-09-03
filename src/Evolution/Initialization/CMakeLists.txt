@@ -18,6 +18,7 @@ spectre_target_headers(
   InitialData.hpp
   Limiter.hpp
   NonconservativeSystem.hpp
+  SetInitialData.hpp
   SetVariables.hpp
   Tags.hpp
   )
