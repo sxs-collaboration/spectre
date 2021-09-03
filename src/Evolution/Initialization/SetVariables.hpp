@@ -52,8 +52,7 @@ namespace Actions {
 ///   * System::primitive_variables_tag (if system has primitive variables)
 template <typename LogicalCoordinatesTag>
 struct SetVariables {
-  using initialization_option_tags =
-      tmpl::list<::Initialization::Tags::InitialTime>;
+  using initialization_tags = tmpl::list<::Initialization::Tags::InitialTime>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
