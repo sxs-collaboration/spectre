@@ -251,6 +251,11 @@ void EventsAndDenseTriggers::run_events(
     for (const auto& event : trigger->events) {
       event->run(box, cache, array_index, component);
     }
+    db::mutate<::evolution::Tags::PreviousTriggerTime>(
+        make_not_null(&box), [](const gsl::not_null<std::optional<double>*>
+                                    previous_trigger_time) noexcept {
+          *previous_trigger_time = std::numeric_limits<double>::signaling_NaN();
+        });
     finish_processing_trigger_at_current_time(trigger);
   }
 
