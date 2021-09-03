@@ -48,9 +48,12 @@ A SpECTRE executable with observers produces volume and/or reduced data h5
 files. An XDMF file must be created from the volume data in order to do
 visualization using ParaView. To this end we provide the python executable
 `GenerateXdmf.py` in the `Visualization/Python` directory. `GenerateXdmf.py`
-takes two arguments which are passed to `--file-prefix` and `--output`. The
-argument passed to `--file-prefix` is the name of the H5 volume data, leaving
-out the node number and extension. The argument passed to `--output` is the
+takes three required arguments which are passed to `--file-prefix`,
+`--subfile-name`, and `--output`. The argument passed to `--file-prefix` is the
+name of the H5 volume data, leaving out the node number and extension. The
+argument passed to `--subfile-name` is the name of the subfile inside the H5
+volume data file where data is stored. In the above example, `--subfile-name`
+would be `VolumePsiPiPhiEvery50Slabs`. The argument passed to `--output` is the
 desired .xmf file name, also without filename extension. Use `--help` to see a
 further description of possible arguments.
 
@@ -59,7 +62,9 @@ readers. On the left hand side of the main ParaView window is a section named
 `Properties`, here you must click the highlighted `Apply` button. ParaView will
 now render your volume data. If you only wish to visualize a few datasets out of
 a large set, we recommended unchecking the boxes for the datasets you wish to
-ignore under `Point Arrays` before clicking `Apply`.
+ignore under `Point Arrays` before clicking `Apply`. Also, don't forget to check
+which dataset is being used for the color under `Coloring`. The default won't
+necessarily be the dataset you want.
 
 ### Helpful ParaView Filters
 
