@@ -14,6 +14,7 @@
 #include "Elliptic/Actions/InitializeAnalyticSolution.hpp"
 #include "Elliptic/Actions/InitializeFields.hpp"
 #include "Elliptic/Actions/InitializeFixedSources.hpp"
+#include "Elliptic/Actions/RandomizeInitialGuess.hpp"
 #include "Elliptic/DiscontinuousGalerkin/Actions/ApplyOperator.hpp"
 #include "Elliptic/DiscontinuousGalerkin/Actions/InitializeDomain.hpp"
 #include "Elliptic/DiscontinuousGalerkin/DgElementArray.hpp"
@@ -206,6 +207,7 @@ struct Metavariables {
       typename multigrid::initialize_element,
       typename schwarz_smoother::initialize_element,
       elliptic::Actions::InitializeFields<system, initial_guess_tag>,
+      elliptic::Actions::RandomizeInitialGuess<system>,
       elliptic::Actions::InitializeFixedSources<system, analytic_solution_tag>,
       elliptic::Actions::InitializeAnalyticSolution<
           analytic_solution_tag, tmpl::append<typename system::primal_fields,
