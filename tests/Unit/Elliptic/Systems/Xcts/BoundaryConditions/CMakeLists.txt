@@ -4,6 +4,7 @@
 set(LIBRARY "Test_XctsBoundaryConditions")
 
 set(LIBRARY_SOURCES
+  Test_ApparentHorizon.cpp
   Test_Flatness.cpp
   )
 
@@ -17,9 +18,12 @@ add_test_library(
 target_link_libraries(
   ${LIBRARY}
   PRIVATE
+  CoordinateMaps
   DataStructures
+  Domain
   DomainStructure
   Elliptic
   Utilities
   XctsBoundaryConditions
+  XctsSolutions
   )
