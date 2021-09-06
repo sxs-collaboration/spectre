@@ -79,12 +79,20 @@ void test_radius_and_derivs() {
   auto box = db::create<
       db::AddSimpleTags<StrahlkorperTags::items_tags<Frame::Inertial>>,
       db::AddComputeTags<
-          StrahlkorperTags::compute_items_tags<Frame::Inertial>>>(strahlkorper);
+          tmpl::push_back<
+              StrahlkorperTags::compute_items_tags<Frame::Inertial>>,
+          StrahlkorperTags::PhysicalCenterCompute<Frame::Inertial>>>(
+      strahlkorper);
 
   // Test radius
   const auto& strahlkorper_radius =
       get(db::get<StrahlkorperTags::Radius<Frame::Inertial>>(box));
   CHECK_ITERABLE_APPROX(strahlkorper_radius, expected_radius);
+
+  // Test physical center tag
+  const auto& strahlkorper_physical_center =
+      db::get<StrahlkorperTags::PhysicalCenter<Frame::Inertial>>(box);
+  CHECK(strahlkorper_physical_center == strahlkorper.physical_center());
 
   // Test derivative of radius
   tnsr::i<DataVector, 3> expected_dx_radius(n_pts);
@@ -459,6 +467,9 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperDataBox",
       StrahlkorperTags::InvHessianCompute<Frame::Inertial>>("InvHessian");
   TestHelpers::db::test_compute_tag<
       StrahlkorperTags::RadiusCompute<Frame::Inertial>>("Radius");
+  TestHelpers::db::test_compute_tag<
+      StrahlkorperTags::PhysicalCenterCompute<Frame::Inertial>>(
+      "PhysicalCenter");
   TestHelpers::db::test_compute_tag<
       StrahlkorperTags::CartesianCoordsCompute<Frame::Inertial>>(
       "CartesianCoords");

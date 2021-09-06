@@ -151,6 +151,13 @@ void RadiusCompute<Frame>::function(
 }
 
 template <typename Frame>
+void PhysicalCenterCompute<Frame>::function(
+    const gsl::not_null<std::array<double, 3>*> physical_center,
+    const ::Strahlkorper<Frame>& strahlkorper) noexcept {
+  *physical_center = strahlkorper.physical_center();
+}
+
+template <typename Frame>
 void CartesianCoordsCompute<Frame>::function(
     const gsl::not_null<aliases::Vector<Frame>*> coords,
     const ::Strahlkorper<Frame>& strahlkorper, const Scalar<DataVector>& radius,
@@ -269,6 +276,7 @@ void TangentsCompute<Frame>::function(
   template struct StrahlkorperTags::InvJacobianCompute<FRAME(data)>;     \
   template struct StrahlkorperTags::InvHessianCompute<FRAME(data)>;      \
   template struct StrahlkorperTags::RadiusCompute<FRAME(data)>;          \
+  template struct StrahlkorperTags::PhysicalCenterCompute<FRAME(data)>;  \
   template struct StrahlkorperTags::CartesianCoordsCompute<FRAME(data)>; \
   template struct StrahlkorperTags::DxRadiusCompute<FRAME(data)>;        \
   template struct StrahlkorperTags::D2xRadiusCompute<FRAME(data)>;       \

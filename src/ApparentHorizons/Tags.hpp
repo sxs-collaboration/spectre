@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <array>
 #include <string>
 
 #include "ApparentHorizons/Strahlkorper.hpp"
@@ -158,6 +159,24 @@ struct RadiusCompute : Radius<Frame>, db::ComputeTag {
   using base = Radius<Frame>;
   using return_type = Scalar<DataVector>;
   static void function(gsl::not_null<Scalar<DataVector>*> radius,
+                       const ::Strahlkorper<Frame>& strahlkorper) noexcept;
+  using argument_tags = tmpl::list<Strahlkorper<Frame>>;
+};
+/// @}
+
+/// @{
+/// The geometrical center of the surface.  Uses
+/// `Strahlkorper::physical_center`.
+template <typename Frame>
+struct PhysicalCenter : db::SimpleTag {
+  using type = std::array<double, 3>;
+};
+
+template <typename Frame>
+struct PhysicalCenterCompute : PhysicalCenter<Frame>, db::ComputeTag {
+  using base = PhysicalCenter<Frame>;
+  using return_type = std::array<double, 3>;
+  static void function(gsl::not_null<std::array<double, 3>*> physical_center,
                        const ::Strahlkorper<Frame>& strahlkorper) noexcept;
   using argument_tags = tmpl::list<Strahlkorper<Frame>>;
 };
