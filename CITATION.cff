@@ -110,6 +110,7 @@ authors:
     California Institute of Technology, Pasadena, CA 91125, USA
   family-names: Kim
   given-names: Yoonsoo
+  orcid: https://orcid.org/0000-0002-4305-6026
 - affiliation: Theoretical Astrophysics, Walter Burke Institute for Theoretical Physics,
     California Institute of Technology, Pasadena, CA 91125, USA
   family-names: Legred
@@ -176,8 +177,8 @@ authors:
   family-names: Wlodarczyk
   given-names: Tom
 cff-version: 1.1.0
-date-released: '2021-08-02'
-doi: 10.5281/zenodo.5153684
+date-released: '2021-09-06'
+doi: 10.5281/zenodo.5475216
 keywords:
 - Software
 - Astrophysics
@@ -195,4 +196,4 @@ message: Please cite SpECTRE in any publications that make use of its code or da
 repository-code: https://github.com/sxs-collaboration/spectre
 title: SpECTRE
 url: https://spectre-code.org/
-version: 2021.08.02
+version: 2021.09.06
