@@ -297,6 +297,7 @@ make_array_from_list() {
 }
 
 namespace detail {
+/// \cond
 template <typename List, size_t... indices,
           Requires<tt::is_a<tmpl::list, tmpl::front<List>>::value> = nullptr>
 inline constexpr std::array<
@@ -313,6 +314,7 @@ inline constexpr std::array<
               size_t,
               tmpl::size<tmpl::at<List, tmpl::size_t<indices>>>::value>{})...}};
 }
+/// \endcond
 }  // namespace detail
 
 /// \ingroup ConstantExpressionsGroup
