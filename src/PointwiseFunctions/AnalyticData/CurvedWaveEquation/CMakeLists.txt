@@ -10,6 +10,7 @@ spectre_target_sources(
   PRIVATE
   PlaneWave3DKerrSchild.cpp
   PlaneWaveMinkowski.cpp
+  PureSphericalHarmonic.cpp
   RegularSphericalWave3DKerrSchild.cpp
   )
 
@@ -18,6 +19,7 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   AnalyticData.hpp
+  PureSphericalHarmonic.hpp
   ScalarWaveGr.hpp
   ScalarWaveGr.tpp
   )
@@ -33,6 +35,7 @@ target_link_libraries(
   DataStructures
   GeneralRelativity
   GeneralRelativitySolutions
+  Spectral
   Utilities
   WaveEquationSolutions
   )
