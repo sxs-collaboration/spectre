@@ -37,6 +37,7 @@ class RiemannProblem;
 }  // namespace AnalyticData
 }  // namespace grmhd
 
+struct CenterOfStar;
 struct KerrHorizon;
 template <typename InitialData, typename...InterpolationTargetTags>
 struct EvolutionMetavars;

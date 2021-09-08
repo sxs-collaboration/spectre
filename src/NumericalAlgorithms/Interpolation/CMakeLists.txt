@@ -74,6 +74,7 @@ target_link_libraries(
   Blas
   Boost::boost
   DataStructures
+  DgSubcell
   Domain
   DomainStructure
   ErrorHandling

@@ -117,7 +117,7 @@ namespace intrp {
 ///   Domain will be filled with this value. If this variable is not defined,
 ///   then the `apply` function must check for invalid points,
 ///   and should typically exit with an error message if it finds any.
-/// - interpolating_component (used only if not `is_sequential`):
+/// - interpolating_component:
 ///      A type alias for the component that will be interpolating to the
 ///      interpolation target.
 ///

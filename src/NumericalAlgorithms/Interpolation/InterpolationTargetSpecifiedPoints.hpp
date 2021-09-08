@@ -50,7 +50,7 @@ struct SpecifiedPoints {
       std::vector<std::array<double, VolumeDim>> points_in) noexcept;
 
   SpecifiedPoints() = default;
-  SpecifiedPoints(const SpecifiedPoints& /*rhs*/) = delete;
+  SpecifiedPoints(const SpecifiedPoints& /*rhs*/) = default;
   SpecifiedPoints& operator=(const SpecifiedPoints& /*rhs*/) = default;
   SpecifiedPoints(SpecifiedPoints&& /*rhs*/) noexcept = default;
   SpecifiedPoints& operator=(SpecifiedPoints&& /*rhs*/) noexcept = default;
