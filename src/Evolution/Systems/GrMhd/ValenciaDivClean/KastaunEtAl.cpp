@@ -158,8 +158,9 @@ std::pair<double, double> FunctionOfMu<ThermodynamicDim>::root_bracket(
     const size_t max_iterations) const {
   // see text between Equations (49) and (50) and after Equation (54)
   double lower_bound = 0.0;
-  double upper_bound =
-      0.0 == h_0_ ? std::numeric_limits<double>::max() : 1.0 / h_0_;
+  // We use `1 / (h_0_ + numeric_limits<double>::min())` to avoid division by
+  // zero in a way that avoids conditionals.
+  double upper_bound = 1.0 / (h_0_ + std::numeric_limits<double>::min());
   if (r_squared_ < square(h_0_)) {
     // need to solve auxiliary function to determine mu_+ which will
     // be the upper bound for the master function bracket
