@@ -37,7 +37,10 @@ double compute_r_bar_squared(const double mu, const double x,
 // Equations (33) and (32)
 double compute_v_0_squared(const double r_squared, const double h_0) noexcept {
   const double z_0_squared = r_squared / square(h_0);
-  return z_0_squared / (1.0 + z_0_squared);
+  static constexpr double velocity_squared_upper_bound =
+      1.0 - 4.0 * std::numeric_limits<double>::epsilon();
+  return std::min(z_0_squared / (1.0 + z_0_squared),
+                  velocity_squared_upper_bound);
 }
 
 struct Primitives {
