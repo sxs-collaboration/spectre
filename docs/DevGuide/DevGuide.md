@@ -37,6 +37,8 @@ See LICENSE.txt for details.
 Terms with SpECTRE-specific meanings are defined here.
 - \ref domain_concepts "Domain Concepts" used throughout the code are defined
   here for reference.
+- \ref spectre_notation_general "Notation and conventions" used throughout the
+  code and the papers using SpECTRE are recommended to follow.
 
 ### Charm++ Interface
 - \ref load_balancing_notes "Load Balancing Notes and Recommendations"
