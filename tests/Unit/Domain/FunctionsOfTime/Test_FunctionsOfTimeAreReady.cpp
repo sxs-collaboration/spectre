@@ -34,9 +34,7 @@ struct OtherFunctionsOfTime : db::SimpleTag {
 struct UpdateFoT {
   static void apply(const gsl::not_null<FunctionMap*> functions,
                     const std::string& name, const double expiration) noexcept {
-    dynamic_cast<domain::FunctionsOfTime::PiecewisePolynomial<2>&>(
-        *functions->at(name))
-        .reset_expiration_time(expiration);
+    (*functions).at(name)->reset_expiration_time(expiration);
   }
 };
 

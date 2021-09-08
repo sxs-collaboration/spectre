@@ -130,3 +130,38 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.SettleToConstant",
                          decay_time});
   }
 }
+
+// [[OutputRegex, Cannot update this FunctionOfTime.]]
+SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.SettleToConstant.BadUpdate",
+                  "[Domain][Unit]") {
+  ERROR_TEST();
+  const std::array<DataVector, 3> initial_function_value{
+      {DataVector{1, 0.0}, DataVector{1, 0.0}, DataVector{1, 0.0}}};
+  const double match_time = 10.0;
+  const double decay_time = 1.0;
+  const std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime> f_of_t =
+      std::make_unique<domain::FunctionsOfTime::SettleToConstant>(
+          initial_function_value, match_time, decay_time);
+
+  const double update_time = 1.0;
+  const DataVector updated_deriv{};
+  const double next_expr_time = 2.0;
+  f_of_t->update(update_time, updated_deriv, next_expr_time);
+}
+
+// [[OutputRegex, Cannot reset expiration time of this FunctionOfTime.]]
+SPECTRE_TEST_CASE(
+    "Unit.Domain.FunctionsOfTime.SettleToConstant.BadResetExprTime",
+    "[Domain][Unit]") {
+  ERROR_TEST();
+  const std::array<DataVector, 3> initial_function_value{
+      {DataVector{1, 0.0}, DataVector{1, 0.0}, DataVector{1, 0.0}}};
+  const double match_time = 10.0;
+  const double decay_time = 1.0;
+  const std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime> f_of_t =
+      std::make_unique<domain::FunctionsOfTime::SettleToConstant>(
+          initial_function_value, match_time, decay_time);
+
+  const double next_expr_time = 2.0;
+  f_of_t->reset_expiration_time(next_expr_time);
+}

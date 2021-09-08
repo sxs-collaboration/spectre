@@ -309,11 +309,7 @@ struct MyFunctionOfTimeUpdater {
   static void apply(gsl::not_null<typename domain::Tags::FunctionsOfTime::type*>
                         functions_of_time) {
     for (auto& name_and_function_of_time : *functions_of_time) {
-      auto* function_of_time =
-          dynamic_cast<domain::FunctionsOfTime::PiecewisePolynomial<2>*>(
-              name_and_function_of_time.second.get());
-      REQUIRE(function_of_time != nullptr);
-      function_of_time->reset_expiration_time(0.5 * Multiplier);
+      name_and_function_of_time.second->reset_expiration_time(0.5 * Multiplier);
     }
   }
 };

@@ -45,9 +45,6 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Controller", "[ControlSystem][Unit]") {
                {freq * std::cos(freq * t)},
                {-square(freq) * std::sin(freq * t)}}},
           t + dt);
-  auto& f_of_t_derived =
-      dynamic_cast<domain::FunctionsOfTime::PiecewisePolynomial<deriv_order>&>(
-          *f_of_t);
 
   Controller<deriv_order> control_signal;
   const double t_offset = 0.0;
@@ -73,7 +70,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Controller", "[ControlSystem][Unit]") {
                                         t_offset, t_offset);
 
     t += dt;
-    f_of_t_derived.update(t, {U}, t + dt);
+    f_of_t->update(t, {U}, t + dt);
 
     // update the timescale
     tst.update_timescale({{q_and_derivs[0], q_and_derivs[1]}});
@@ -116,9 +113,6 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Controller.TimeOffsets",
                {freq * std::cos(freq * t)},
                {-square(freq) * std::sin(freq * t)}}},
           t + dt);
-  auto& f_of_t_derived =
-      dynamic_cast<domain::FunctionsOfTime::PiecewisePolynomial<deriv_order>&>(
-          *f_of_t);
 
   Controller<deriv_order> control_signal;
 
@@ -157,7 +151,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Controller.TimeOffsets",
         control_signal(tst.current_timescale(), avg_qs, t_offset, t_offset);
 
     t += dt;
-    f_of_t_derived.update(t, {U}, t + dt);
+    f_of_t->update(t, {U}, t + dt);
 
     // update the timescale
     tst.update_timescale({{avg_qs[0], avg_qs[1]}});
@@ -200,9 +194,6 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Controller.TimeOffsets_DontAverageQ",
                {freq * std::cos(freq * t)},
                {-square(freq) * std::sin(freq * t)}}},
           t + dt);
-  auto& f_of_t_derived =
-      dynamic_cast<domain::FunctionsOfTime::PiecewisePolynomial<deriv_order>&>(
-          *f_of_t);
 
   Controller<deriv_order> control_signal;
 
@@ -243,7 +234,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Controller.TimeOffsets_DontAverageQ",
         control_signal(tst.current_timescale(), avg_qs, q_t_offset, t_offset);
 
     t += dt;
-    f_of_t_derived.update(t, {U}, t + dt);
+    f_of_t->update(t, {U}, t + dt);
 
     // update the timescale
     tst.update_timescale({{avg_qs[0], avg_qs[1]}});
