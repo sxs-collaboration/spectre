@@ -90,6 +90,7 @@ LinearSolver:
         Preconditioner:
           MinusLaplacian:
             Solver: ExplicitInverse
+    ObservePerCoreReductions: False
 
 EventsAndTriggers:
   ? HasConverged

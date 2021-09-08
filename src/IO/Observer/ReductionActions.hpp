@@ -92,19 +92,36 @@ struct ContributeReductionDataToWriter;
  * reduction data and used to print an informative message when the reduction is
  * complete. The formatter must conform to
  * `observers::protocols::ReductionDataFormatter`.
+ *
+ * This action also supports observing the intermediate stage of the reduction
+ * over just the processing element that the element is currently on. This can
+ * be useful e.g. to measure performance metric to assess load-balancing such as
+ * the number of grid points on each core. Enable per-core observations by
+ * passing `true` for the `observe_per_core` argument (default: `false`). The
+ * data will be written in one H5 file per _node_ prefixed with the
+ * `observers::Tags::ReductionFileName`, in a `Core{core_id}` subfile, where
+ * `core_id` is an integer identifying the core across all nodes (see
+ * `Parallel::my_proc`). For example, when running on 2 nodes with 2 cores each
+ * you will end up with `Reductions0.h5` containing `/Core0/{subfile_name}.dat`
+ * and `/Core1/{subfile_name}.dat`, and `Reductions1.h5` containing
+ * `/Core2/{subfile_name}.dat` and `/Core3/{subfile_name}.dat`. This is in
+ * addition to the usual reduction output over _all_ registered elements,
+ * written to `Reductions.h5` (no node ID suffix in the file name).
  */
 struct ContributeReductionData {
   template <typename ParallelComponent, typename DbTagsList,
             typename Metavariables, typename ArrayIndex, typename... Ts,
             typename Formatter = observers::NoFormatter>
-  static void apply(
-      db::DataBox<DbTagsList>& box, Parallel::GlobalCache<Metavariables>& cache,
-      const ArrayIndex& array_index,
-      const observers::ObservationId& observation_id,
-      const ArrayComponentId& sender_array_id, const std::string& subfile_name,
-      const std::vector<std::string>& reduction_names,
-      Parallel::ReductionData<Ts...>&& reduction_data,
-      std::optional<Formatter>&& formatter = std::nullopt) noexcept {
+  static void apply(db::DataBox<DbTagsList>& box,
+                    Parallel::GlobalCache<Metavariables>& cache,
+                    const ArrayIndex& array_index,
+                    const observers::ObservationId& observation_id,
+                    const ArrayComponentId& sender_array_id,
+                    const std::string& subfile_name,
+                    const std::vector<std::string>& reduction_names,
+                    Parallel::ReductionData<Ts...>&& reduction_data,
+                    std::optional<Formatter>&& formatter = std::nullopt,
+                    const bool observe_per_core = false) noexcept {
     if constexpr (tmpl::list_contains_v<DbTagsList,
                                         Tags::ReductionData<Ts...>> and
                   tmpl::list_contains_v<DbTagsList,
@@ -116,7 +133,7 @@ struct ContributeReductionData {
           make_not_null(&box),
           [&array_index, &cache, &observation_id,
            reduction_data = std::move(reduction_data), &reduction_names,
-           &sender_array_id, &subfile_name, &formatter](
+           &sender_array_id, &subfile_name, &formatter, &observe_per_core](
               const gsl::not_null<std::unordered_map<
                   ObservationId, Parallel::ReductionData<Ts...>>*>
                   reduction_data_map,
@@ -172,6 +189,12 @@ struct ContributeReductionData {
               auto& local_writer = *Parallel::get_parallel_component<
                                         ObserverWriter<Metavariables>>(cache)
                                         .ckLocalBranch();
+              auto& my_proxy =
+                  Parallel::get_parallel_component<ParallelComponent>(cache);
+              const std::optional<int> observe_with_core_id =
+                  observe_per_core ? std::make_optional(Parallel::my_proc(
+                                         *my_proxy.ckLocalBranch()))
+                                   : std::nullopt;
               Parallel::threaded_action<
                   ThreadedActions::CollectReductionDataOnNode>(
                   local_writer, observation_id,
@@ -180,7 +203,7 @@ struct ContributeReductionData {
                       Parallel::ArrayIndex<ArrayIndex>(array_index)},
                   subfile_name, (*reduction_names_map)[observation_id],
                   std::move((*reduction_data_map)[observation_id]),
-                  std::move(formatter));
+                  std::move(formatter), observe_with_core_id);
               reduction_data_map->erase(observation_id);
               reduction_names_map->erase(observation_id);
               reduction_observers_contributed->erase(observation_id);
@@ -195,11 +218,42 @@ struct ContributeReductionData {
             << pretty_type::get_name<Tags::ContributorsOfReductionData>()
             << " in the DataBox.");
     }
+    // Silence a gcc <= 9 unused-variable warning
+    (void)observe_per_core;
   }
 };
 }  // namespace Actions
 
 namespace ThreadedActions {
+
+namespace ReductionActions_detail {
+void append_to_reduction_data(
+    const gsl::not_null<std::vector<double>*> all_reduction_data,
+    const double t) noexcept;
+
+void append_to_reduction_data(
+    const gsl::not_null<std::vector<double>*> all_reduction_data,
+    const std::vector<double>& t) noexcept;
+
+template <typename... Ts, size_t... Is>
+void write_data(const std::string& subfile_name,
+                std::vector<std::string> legend, const std::tuple<Ts...>& data,
+                const std::string& file_prefix,
+                std::index_sequence<Is...> /*meta*/) noexcept {
+  static_assert(sizeof...(Ts) > 0,
+                "Must be reducing at least one piece of data");
+  std::vector<double> data_to_append{};
+  EXPAND_PACK_LEFT_TO_RIGHT(
+      append_to_reduction_data(&data_to_append, std::get<Is>(data)));
+
+  h5::H5File<h5::AccessType::ReadWrite> h5file(file_prefix + ".h5", true);
+  constexpr size_t version_number = 0;
+  auto& time_series_file = h5file.try_insert<h5::Dat>(
+      subfile_name, std::move(legend), version_number);
+  time_series_file.append(data_to_append);
+}
+}  // namespace ReductionActions_detail
+
 /*!
  * \brief Gathers all the reduction data from all processing elements/cores on a
  * node.
@@ -218,7 +272,8 @@ struct CollectReductionDataOnNode {
       ArrayComponentId observer_group_id, const std::string& subfile_name,
       std::vector<std::string>&& reduction_names,
       Parallel::ReductionData<ReductionDatums...>&& received_reduction_data,
-      std::optional<Formatter>&& formatter = std::nullopt) noexcept {
+      std::optional<Formatter>&& formatter = std::nullopt,
+      const std::optional<int> observe_with_core_id = std::nullopt) noexcept {
     if constexpr (tmpl::list_contains_v<
                       DbTagsList, Tags::ReductionData<ReductionDatums...>> and
                   tmpl::list_contains_v<DbTagsList, Tags::ReductionDataNames<
@@ -242,17 +297,19 @@ struct CollectReductionDataOnNode {
                          std::unordered_set<ArrayComponentId>>*
           reduction_observers_contributed = nullptr;
       Parallel::NodeLock* reduction_data_lock = nullptr;
+      Parallel::NodeLock* reduction_file_lock = nullptr;
       size_t observations_registered_with_id =
           std::numeric_limits<size_t>::max();
 
       node_lock->lock();
       db::mutate<Tags::ReductionData<ReductionDatums...>,
                  Tags::ReductionDataNames<ReductionDatums...>,
-                 Tags::ContributorsOfReductionData, Tags::ReductionDataLock>(
+                 Tags::ContributorsOfReductionData, Tags::ReductionDataLock,
+                 Tags::H5FileLock>(
           make_not_null(&box),
           [&reduction_data, &reduction_names_map,
            &reduction_observers_contributed, &reduction_data_lock,
-           &observation_id, &observer_group_id,
+           &reduction_file_lock, &observation_id, &observer_group_id,
            &observations_registered_with_id](
               const gsl::not_null<std::unordered_map<
                   observers::ObservationId,
@@ -266,6 +323,7 @@ struct CollectReductionDataOnNode {
                                      std::unordered_set<ArrayComponentId>>*>
                   reduction_observers_contributed_ptr,
               const gsl::not_null<Parallel::NodeLock*> reduction_data_lock_ptr,
+              const gsl::not_null<Parallel::NodeLock*> reduction_file_lock_ptr,
               const std::unordered_map<ObservationKey,
                                        std::unordered_set<ArrayComponentId>>&
                   observations_registered) noexcept {
@@ -283,6 +341,7 @@ struct CollectReductionDataOnNode {
             reduction_observers_contributed =
                 &*reduction_observers_contributed_ptr;
             reduction_data_lock = &*reduction_data_lock_ptr;
+            reduction_file_lock = &*reduction_file_lock_ptr;
             observations_registered_with_id =
                 observations_registered.at(key).size();
           },
@@ -307,6 +366,27 @@ struct CollectReductionDataOnNode {
               << observer_group_id);
       }
       contributed_group_ids.insert(observer_group_id);
+
+      // If requested, write the intermediate reduction data from the particular
+      // core to one file per node. This allows measuring reduction data
+      // per-core, e.g. performance metrics to assess load balancing.
+      if (observe_with_core_id.has_value()) {
+        auto reduction_data_this_core = received_reduction_data;
+        reduction_data_this_core.finalize();
+        auto reduction_names_this_core = reduction_names;
+        auto& my_proxy =
+            Parallel::get_parallel_component<ParallelComponent>(cache);
+        reduction_file_lock->lock();
+        ReductionActions_detail::write_data(
+            "/Core" + std::to_string(observe_with_core_id.value()) +
+                subfile_name,
+            std::move(reduction_names_this_core),
+            std::move(reduction_data_this_core.data()),
+            Parallel::get<Tags::ReductionFileName>(cache) +
+                std::to_string(Parallel::my_node(*my_proxy.ckLocalBranch())),
+            std::make_index_sequence<sizeof...(ReductionDatums)>{});
+        reduction_file_lock->unlock();
+      }
 
       if (reduction_data->find(observation_id) == reduction_data->end()) {
         // This Action has been called for the first time,
@@ -389,39 +469,6 @@ struct CollectReductionDataOnNode {
  * \brief Write reduction data to disk from node 0.
  */
 struct WriteReductionData {
- private:
-  static void append_to_reduction_data(
-      const gsl::not_null<std::vector<double>*> all_reduction_data,
-      const double t) noexcept {
-    all_reduction_data->push_back(t);
-  }
-
-  static void append_to_reduction_data(
-      const gsl::not_null<std::vector<double>*> all_reduction_data,
-      const std::vector<double>& t) noexcept {
-    all_reduction_data->insert(all_reduction_data->end(), t.begin(), t.end());
-  }
-
-  template <typename... Ts, size_t... Is>
-  static void write_data(const std::string& subfile_name,
-                         std::vector<std::string>&& legend,
-                         std::tuple<Ts...>&& data,
-                         const std::string& file_prefix,
-                         std::index_sequence<Is...> /*meta*/) noexcept {
-    static_assert(sizeof...(Ts) > 0,
-                  "Must be reducing at least one piece of data");
-    std::vector<double> data_to_append{};
-    EXPAND_PACK_LEFT_TO_RIGHT(
-        append_to_reduction_data(&data_to_append, std::get<Is>(data)));
-
-    h5::H5File<h5::AccessType::ReadWrite> h5file(file_prefix + ".h5", true);
-    constexpr size_t version_number = 0;
-    auto& time_series_file = h5file.try_insert<h5::Dat>(
-        subfile_name, std::move(legend), version_number);
-    time_series_file.append(data_to_append);
-  }
-
- public:
   template <typename ParallelComponent, typename DbTagsList,
             typename Metavariables, typename ArrayIndex,
             typename... ReductionDatums,
@@ -598,7 +645,7 @@ struct WriteReductionData {
                 std::apply(*formatter, received_reduction_data.data()) + "\n");
           }
         }
-        WriteReductionData::write_data(
+        ReductionActions_detail::write_data(
             subfile_name,
             // NOLINTNEXTLINE(bugprone-use-after-move)
             std::move(reduction_names),

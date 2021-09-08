@@ -28,7 +28,19 @@ add_test_library(
   ${LIBRARY}
   "IO"
   "${LIBRARY_SOURCES}"
-  "Boost::boost;EventsAndTriggers;IO"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  Boost::boost
+  DataStructures
+  DomainStructure
+  EventsAndTriggers
+  IO
+  Parallel
+  Utilities
   )
 
 add_dependencies(

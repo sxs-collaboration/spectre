@@ -59,7 +59,7 @@ static_assert(tt::assert_conforms_to<
               FormatErrors, observers::protocols::ReductionDataFormatter>);
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.IO.Observers.ReductionObserver", "[Unit][Observers]") {
+void test_reduction_observer(const bool observe_per_core) {
   using registration_list = tmpl::list<
       observers::Actions::RegisterWithObservers<
           helpers::RegisterObservers<observers::TypeOfObservation::Reduction>>,
@@ -77,23 +77,43 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.ReductionObserver", "[Unit][Observers]") {
   const auto& output_file_prefix =
       tuples::get<observers::Tags::ReductionFileName>(cache_data) =
           "./Unit.IO.Observers.ReductionObserver";
-  ActionTesting::MockRuntimeSystem<metavariables> runner{cache_data};
+  const std::vector<size_t> num_cores_per_node{1, 2};
+  const size_t num_cores = alg::accumulate(num_cores_per_node, size_t{0});
+  ActionTesting::MockRuntimeSystem<metavariables> runner{
+      cache_data, {}, num_cores_per_node};
   ActionTesting::emplace_group_component<obs_component>(&runner);
-  for (size_t i = 0; i < 2; ++i) {
-    ActionTesting::next_action<obs_component>(make_not_null(&runner), 0);
+  for (size_t core_id = 0; core_id < num_cores; ++core_id) {
+    for (size_t i = 0; i < 2; ++i) {
+      ActionTesting::next_action<obs_component>(make_not_null(&runner),
+                                                core_id);
+    }
   }
   ActionTesting::emplace_nodegroup_component<obs_writer>(&runner);
-  for (size_t i = 0; i < 2; ++i) {
-    ActionTesting::next_action<obs_writer>(make_not_null(&runner), 0);
+  for (size_t node_id = 0; node_id < num_cores_per_node.size(); ++node_id) {
+    for (size_t i = 0; i < 2; ++i) {
+      ActionTesting::next_action<obs_writer>(make_not_null(&runner), node_id);
+    }
   }
-  // Specific IDs have no significance, just need different IDs.
+  // Use the element IDs to determine on which node and core to place the
+  // element. The Block ID is the node and the first segment index is the local
+  // core ID on that node.
   const std::vector<ElementId<2>> element_ids{{1, {{{1, 0}, {1, 0}}}},
                                               {1, {{{1, 1}, {1, 0}}}},
                                               {1, {{{1, 0}, {2, 3}}}},
                                               {1, {{{1, 0}, {5, 4}}}},
                                               {0, {{{1, 0}, {1, 0}}}}};
+  const auto get_node_id = [](const ElementId<2>& id) { return id.block_id(); };
+  const auto get_local_core_id = [](const ElementId<2>& id) {
+    return id.segment_ids()[0].index();
+  };
+  const auto get_global_core_id = [](const ElementId<2>& id) {
+    // Only works for the specific setup of {1, 2} cores per node
+    return id.block_id() + id.segment_ids()[0].index();
+  };
   for (const auto& id : element_ids) {
-    ActionTesting::emplace_component<element_comp>(&runner, id);
+    ActionTesting::emplace_array_component<element_comp>(
+        &runner, ActionTesting::NodeId{get_node_id(id)},
+        ActionTesting::LocalCoreId{get_local_core_id(id)}, id);
   }
   ActionTesting::set_phase(make_not_null(&runner),
                            metavariables::Phase::RegisterWithObservers);
@@ -104,13 +124,23 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.ReductionObserver", "[Unit][Observers]") {
     // Invoke the simple_action RegisterContributorWithObserver that was called
     // on the observer component by the RegisterWithObservers action.
     ActionTesting::invoke_queued_simple_action<obs_component>(
-        make_not_null(&runner), 0);
+        make_not_null(&runner), get_global_core_id(id));
+    REQUIRE(ActionTesting::is_simple_action_queue_empty<obs_component>(
+        runner, get_global_core_id(id)));
   }
   // Invoke the simple_action RegisterReductionContributorWithObserverWriter.
+  for (size_t node_id = 0; node_id < num_cores_per_node.size(); ++node_id) {
+    ActionTesting::invoke_queued_simple_action<obs_writer>(
+        make_not_null(&runner), node_id);
+    ActionTesting::invoke_queued_simple_action<obs_writer>(
+        make_not_null(&runner), node_id);
+    REQUIRE(ActionTesting::is_simple_action_queue_empty<obs_writer>(runner,
+                                                                    node_id));
+  }
+  // Invoke the simple_action RegisterReductionNodeWithWritingNode.
   ActionTesting::invoke_queued_simple_action<obs_writer>(make_not_null(&runner),
                                                          0);
-  ActionTesting::invoke_queued_simple_action<obs_writer>(make_not_null(&runner),
-                                                         0);
+  REQUIRE(ActionTesting::is_simple_action_queue_empty<obs_writer>(runner, 0));
 
   ActionTesting::set_phase(make_not_null(&runner),
                            metavariables::Phase::Testing);
@@ -152,31 +182,45 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.ReductionObserver", "[Unit][Observers]") {
             time, number_of_grid_points, error0, vector1, vector2, error1};
       });
 
-  tmpl::for_each<tmpl::list<helpers::reduction_data_from_doubles,
-                            helpers::reduction_data_from_vector,
-                            helpers::reduction_data_from_ds_and_vs>>([
-    &element_ids, &make_fake_reduction_data, &runner, &output_file_prefix
-  ](auto reduction_data_v) noexcept {
+  using reduction_data_list =
+      tmpl::list<helpers::reduction_data_from_doubles,
+                 helpers::reduction_data_from_vector,
+                 helpers::reduction_data_from_ds_and_vs>;
+  tmpl::for_each<reduction_data_list>([&element_ids, &make_fake_reduction_data,
+                                       &runner, &output_file_prefix,
+                                       &observe_per_core, &num_cores_per_node,
+                                       &get_global_core_id](
+                                          auto reduction_data_v) noexcept {
     using reduction_data = tmpl::type_from<decltype(reduction_data_v)>;
 
     const double time = 3.0;
-    const auto legend = make_overloader(
-        [](const helpers::reduction_data_from_doubles& /*meta*/) noexcept {
-          return std::vector<std::string>{"Time", "NumberOfPoints", "Error0",
-                                          "Error1"};
-        },
-        [](const helpers::reduction_data_from_vector& /*meta*/) noexcept {
-          return std::vector<std::string>{"Time", "NumberOfPoints", "Vec0",
-                                          "Vec1", "Vec2"};
-        },
-        [](const helpers::reduction_data_from_ds_and_vs& /*meta*/) noexcept {
-          return std::vector<std::string>{"Time",  "NumberOfPoints", "Error0",
-                                          "Vec10", "Vec11",          "Vec20",
-                                          "Vec21", "Error1"};
-        })(reduction_data{});
+    const auto legend = []() {
+      if constexpr (std::is_same_v<reduction_data,
+                                   helpers::reduction_data_from_doubles>) {
+        return std::vector<std::string>{"Time", "NumberOfPoints", "Error0",
+                                        "Error1"};
+      } else if constexpr (std::is_same_v<
+                               reduction_data,
+                               helpers::reduction_data_from_vector>) {
+        return std::vector<std::string>{"Time", "NumberOfPoints", "Vec0",
+                                        "Vec1", "Vec2"};
+      } else if constexpr (std::is_same_v<
+                               reduction_data,
+                               helpers::reduction_data_from_ds_and_vs>) {
+        return std::vector<std::string>{"Time",  "NumberOfPoints", "Error0",
+                                        "Vec10", "Vec11",          "Vec20",
+                                        "Vec21", "Error1"};
+      }
+    }();
     const std::string h5_file_name = output_file_prefix + ".h5";
     if (file_system::check_if_file_exists(h5_file_name)) {
       file_system::rm(h5_file_name, true);
+    }
+    if (file_system::check_if_file_exists(output_file_prefix + "0.h5")) {
+      file_system::rm(output_file_prefix + "0.h5", true);
+    }
+    if (file_system::check_if_file_exists(output_file_prefix + "1.h5")) {
+      file_system::rm(output_file_prefix + "1.h5", true);
     }
 
     // Test passing reduction data.
@@ -197,20 +241,33 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.ReductionObserver", "[Unit][Observers]") {
       }();
       runner.simple_action<obs_component,
                            observers::Actions::ContributeReductionData>(
-          0, observers::ObservationId{time, "ElementObservationType"},
+          get_global_core_id(id),
+          observers::ObservationId{time, "ElementObservationType"},
           observers::ArrayComponentId{
               std::add_pointer_t<element_comp>{nullptr},
               Parallel::ArrayIndex<typename element_comp::array_index>(id)},
           "/element_data", legend, std::move(reduction_data_fakes),
-          std::move(formatter));
+          std::move(formatter), observe_per_core);
+    }
+    // Invoke the threaded action 'CollectReductionDataOnNode'
+    for (size_t node_id = 0; node_id < num_cores_per_node.size(); ++node_id) {
+      for (size_t local_core_id = 0;
+           local_core_id < num_cores_per_node.at(node_id); ++local_core_id) {
+        runner.invoke_queued_threaded_action<obs_writer>(node_id);
+      }
     }
     // Invoke the threaded action 'WriteReductionData' to write reduction data
     // to disk.
     runner.invoke_queued_threaded_action<obs_writer>(0);
-
     runner.invoke_queued_threaded_action<obs_writer>(0);
+    REQUIRE(
+        ActionTesting::is_threaded_action_queue_empty<obs_writer>(runner, 0));
 
     REQUIRE(file_system::check_if_file_exists(h5_file_name));
+    REQUIRE(file_system::check_if_file_exists(output_file_prefix + "0.h5") ==
+            observe_per_core);
+    REQUIRE(file_system::check_if_file_exists(output_file_prefix + "1.h5") ==
+            observe_per_core);
     // Check that the H5 file was written correctly.
     {
       const auto file = h5::H5File<h5::AccessType::ReadOnly>(h5_file_name);
@@ -218,22 +275,23 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.ReductionObserver", "[Unit][Observers]") {
       const Matrix written_data = dat_file.get_data();
       const auto& written_legend = dat_file.get_legend();
       CHECK(written_legend == legend);
-      const auto data = make_overloader(
-          [&time](
-              const helpers::reduction_data_from_doubles& /*meta*/) noexcept {
-            return helpers::reduction_data_from_doubles(time, 0, 0., 0.);
-          },
-          [&time](
-              const helpers::reduction_data_from_vector& /*meta*/) noexcept {
-            return helpers::reduction_data_from_vector(
-                time, 0, std::vector<double>{0., 0., 0.});
-          },
-          [&time](
-              const helpers::reduction_data_from_ds_and_vs& /*meta*/) noexcept {
-            return helpers::reduction_data_from_ds_and_vs(
-                time, 0, 0., std::vector<double>{0., 0.},
-                std::vector<double>{0., 0.}, 0.);
-          })(reduction_data{});
+      const auto data = [&time]() {
+        if constexpr (std::is_same_v<reduction_data,
+                                     helpers::reduction_data_from_doubles>) {
+          return helpers::reduction_data_from_doubles(time, 0, 0., 0.);
+        } else if constexpr (std::is_same_v<
+                                 reduction_data,
+                                 helpers::reduction_data_from_vector>) {
+          return helpers::reduction_data_from_vector(
+              time, 0, std::vector<double>{0., 0., 0.});
+        } else if constexpr (std::is_same_v<
+                                 reduction_data,
+                                 helpers::reduction_data_from_ds_and_vs>) {
+          return helpers::reduction_data_from_ds_and_vs(
+              time, 0, 0., std::vector<double>{0., 0.},
+              std::vector<double>{0., 0.}, 0.);
+        }
+      }();
       const auto expected =
           alg::accumulate(
               element_ids, data,
@@ -247,40 +305,71 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.ReductionObserver", "[Unit][Observers]") {
               })
               .finalize()
               .data();
-      make_overloader(
-          [](const auto l_expected, const auto l_written_data,
-             const helpers::reduction_data_from_doubles& /*meta*/) noexcept {
-            CHECK(std::get<0>(l_expected) == l_written_data(0, 0));
-            CHECK(std::get<1>(l_expected) == l_written_data(0, 1));
-            CHECK(std::get<2>(l_expected) == l_written_data(0, 2));
-            CHECK(std::get<3>(l_expected) == l_written_data(0, 3));
-          },
-          [](const auto l_expected, const auto l_written_data,
-             const helpers::reduction_data_from_vector&
-             /*meta*/) noexcept {
-            CHECK(std::get<0>(l_expected) == l_written_data(0, 0));
-            CHECK(std::get<1>(l_expected) == l_written_data(0, 1));
-            for (size_t i = 0; i < std::get<2>(l_expected).size(); ++i) {
-              CHECK(std::get<2>(l_expected)[i] == l_written_data(0, i + 2));
-            }
-          },
-          [](const auto l_expected, const auto l_written_data,
-             const helpers::reduction_data_from_ds_and_vs&
-             /*meta*/) noexcept {
-            CHECK(std::get<0>(l_expected) == l_written_data(0, 0));
-            CHECK(std::get<1>(l_expected) == l_written_data(0, 1));
-            CHECK(std::get<2>(l_expected) == l_written_data(0, 2));
-            for (size_t i = 0; i < std::get<3>(l_expected).size(); ++i) {
-              CHECK(std::get<3>(l_expected)[i] == l_written_data(0, i + 3));
-            }
-            for (size_t i = 0; i < std::get<4>(l_expected).size(); ++i) {
-              CHECK(std::get<4>(l_expected)[i] == l_written_data(0, i + 5));
-            }
-            CHECK(std::get<5>(l_expected) == l_written_data(0, 7));
-          })(expected, written_data, reduction_data{});
+      if constexpr (std::is_same_v<reduction_data,
+                                   helpers::reduction_data_from_doubles>) {
+        CHECK(std::get<0>(expected) == approx(written_data(0, 0)));
+        CHECK(std::get<1>(expected) == approx(written_data(0, 1)));
+        CHECK(std::get<2>(expected) == approx(written_data(0, 2)));
+        CHECK(std::get<3>(expected) == approx(written_data(0, 3)));
+      } else if constexpr (std::is_same_v<
+                               reduction_data,
+                               helpers::reduction_data_from_vector>) {
+        CHECK(std::get<0>(expected) == approx(written_data(0, 0)));
+        CHECK(std::get<1>(expected) == approx(written_data(0, 1)));
+        for (size_t i = 0; i < std::get<2>(expected).size(); ++i) {
+          CHECK(std::get<2>(expected)[i] == approx(written_data(0, i + 2)));
+        }
+      } else if constexpr (std::is_same_v<
+                               reduction_data,
+                               helpers::reduction_data_from_ds_and_vs>) {
+        CHECK(std::get<0>(expected) == approx(written_data(0, 0)));
+        CHECK(std::get<1>(expected) == approx(written_data(0, 1)));
+        CHECK(std::get<2>(expected) == approx(written_data(0, 2)));
+        for (size_t i = 0; i < std::get<3>(expected).size(); ++i) {
+          CHECK(std::get<3>(expected)[i] == approx(written_data(0, i + 3)));
+        }
+        for (size_t i = 0; i < std::get<4>(expected).size(); ++i) {
+          CHECK(std::get<4>(expected)[i] == approx(written_data(0, i + 5)));
+        }
+        CHECK(std::get<5>(expected) == approx(written_data(0, 7)));
+      }
+    }
+    // Check the per-core H5 files were written correctly. Only check the
+    // num-points reduction because we don't need to check here again that
+    // reductions work.
+    if (observe_per_core and
+        std::is_same_v<reduction_data, helpers::reduction_data_from_doubles>) {
+      const auto check_per_core_reduction =
+          [&output_file_prefix, &legend, &time](
+              const size_t node_id, const size_t global_core_id,
+              const size_t expected_num_points) {
+            const auto file = h5::H5File<h5::AccessType::ReadOnly>(
+                output_file_prefix + std::to_string(node_id) + ".h5");
+            const auto& dat_file = file.get<h5::Dat>(
+                "/Core" + std ::to_string(global_core_id) + "/element_data");
+            const Matrix written_data = dat_file.get_data();
+            const auto& written_legend = dat_file.get_legend();
+            CHECK(written_legend == legend);
+            CHECK(written_data(0, 0) == approx(time));
+            CHECK(written_data(0, 1) == expected_num_points);
+          };
+      check_per_core_reduction(0, 0, 4);
+      check_per_core_reduction(1, 1, 12);
+      check_per_core_reduction(1, 2, 4);
     }
     if (file_system::check_if_file_exists(h5_file_name)) {
       file_system::rm(h5_file_name, true);
     }
+    if (file_system::check_if_file_exists(output_file_prefix + "0.h5")) {
+      file_system::rm(output_file_prefix + "0.h5", true);
+    }
+    if (file_system::check_if_file_exists(output_file_prefix + "1.h5")) {
+      file_system::rm(output_file_prefix + "1.h5", true);
+    }
   });
+}
+
+SPECTRE_TEST_CASE("Unit.IO.Observers.ReductionObserver", "[Unit][Observers]") {
+  test_reduction_observer(false);
+  test_reduction_observer(true);
 }

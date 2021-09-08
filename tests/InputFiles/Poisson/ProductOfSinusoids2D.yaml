@@ -60,6 +60,7 @@ LinearSolver:
     MaxOverlap: 2
     Verbosity: Quiet
     SubdomainSolver: ExplicitInverse
+    ObservePerCoreReductions: False
 
 EventsAndTriggers:
   ? HasConverged
