@@ -21,6 +21,7 @@ spectre_target_headers(
   Averager.hpp
   Controller.hpp
   FunctionOfTimeUpdater.hpp
+  Tags.hpp
   TimescaleTuner.hpp
   )
 
@@ -29,6 +30,7 @@ target_link_libraries(
   PUBLIC
   Boost::boost
   DataStructures
+  Domain
   ErrorHandling
   FunctionsOfTime
   )

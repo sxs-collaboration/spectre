@@ -7,6 +7,7 @@ set(LIBRARY_SOURCES
   Test_Averager.cpp
   Test_Controller.cpp
   Test_FuntionOfTimeUpdater.cpp
+  Test_Tags.cpp
   Test_TimescaleTuner.cpp
   )
 
@@ -14,5 +15,5 @@ add_test_library(
   ${LIBRARY}
   "ControlSystem"
   "${LIBRARY_SOURCES}"
-  "Boost::boost;ControlSystem;ControlSystemHelpers;FunctionsOfTime"
+  "Boost::boost;ControlSystem;ControlSystemHelpers;Domain;FunctionsOfTime"
   )
