@@ -6,6 +6,7 @@ set(LIBRARY Test_ScalarAdvection)
 set(LIBRARY_SOURCES
   BoundaryConditions/Test_Periodic.cpp
   BoundaryCorrections/Test_Rusanov.cpp
+  Subcell/Test_InitialDataTci.cpp
   Test_Characteristics.cpp
   Test_Fluxes.cpp
   Test_Tags.cpp
