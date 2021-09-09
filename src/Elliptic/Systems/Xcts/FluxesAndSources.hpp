@@ -11,6 +11,7 @@
 #include "NumericalAlgorithms/LinearOperators/Divergence.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Tags/Conformal.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -174,8 +175,8 @@ template <int ConformalMatterScale>
 struct Sources<Equations::Hamiltonian, Geometry::FlatCartesian,
                ConformalMatterScale> {
   using argument_tags = tmpl::list<
-      Tags::Conformal<gr::Tags::EnergyDensity<DataVector>,
-                      ConformalMatterScale>,
+      gr::Tags::Conformal<gr::Tags::EnergyDensity<DataVector>,
+                          ConformalMatterScale>,
       gr::Tags::TraceExtrinsicCurvature<DataVector>,
       Tags::LongitudinalShiftMinusDtConformalMetricOverLapseSquare<DataVector>>;
   static void apply(
@@ -229,9 +230,10 @@ template <int ConformalMatterScale>
 struct Sources<Equations::HamiltonianAndLapse, Geometry::FlatCartesian,
                ConformalMatterScale> {
   using argument_tags = tmpl::list<
-      Tags::Conformal<gr::Tags::EnergyDensity<DataVector>,
-                      ConformalMatterScale>,
-      Tags::Conformal<gr::Tags::StressTrace<DataVector>, ConformalMatterScale>,
+      gr::Tags::Conformal<gr::Tags::EnergyDensity<DataVector>,
+                          ConformalMatterScale>,
+      gr::Tags::Conformal<gr::Tags::StressTrace<DataVector>,
+                          ConformalMatterScale>,
       gr::Tags::TraceExtrinsicCurvature<DataVector>,
       ::Tags::dt<gr::Tags::TraceExtrinsicCurvature<DataVector>>,
       Tags::LongitudinalShiftMinusDtConformalMetricSquare<DataVector>,
@@ -312,11 +314,13 @@ template <int ConformalMatterScale>
 struct Sources<Equations::HamiltonianLapseAndShift, Geometry::FlatCartesian,
                ConformalMatterScale> {
   using argument_tags = tmpl::list<
-      Tags::Conformal<gr::Tags::EnergyDensity<DataVector>,
-                      ConformalMatterScale>,
-      Tags::Conformal<gr::Tags::StressTrace<DataVector>, ConformalMatterScale>,
-      Tags::Conformal<gr::Tags::MomentumDensity<3, Frame::Inertial, DataVector>,
-                      ConformalMatterScale>,
+      gr::Tags::Conformal<gr::Tags::EnergyDensity<DataVector>,
+                          ConformalMatterScale>,
+      gr::Tags::Conformal<gr::Tags::StressTrace<DataVector>,
+                          ConformalMatterScale>,
+      gr::Tags::Conformal<
+          gr::Tags::MomentumDensity<3, Frame::Inertial, DataVector>,
+          ConformalMatterScale>,
       gr::Tags::TraceExtrinsicCurvature<DataVector>,
       ::Tags::dt<gr::Tags::TraceExtrinsicCurvature<DataVector>>,
       ::Tags::deriv<gr::Tags::TraceExtrinsicCurvature<DataVector>,

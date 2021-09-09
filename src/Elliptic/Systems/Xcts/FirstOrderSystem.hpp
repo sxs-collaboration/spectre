@@ -15,6 +15,7 @@
 #include "Elliptic/Systems/Xcts/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Tags/Conformal.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace Xcts {
@@ -199,8 +200,8 @@ struct FirstOrderSystem {
   // The variable-independent fields in the equations
   using background_fields = tmpl::flatten<tmpl::list<
       // Quantities for Hamiltonian constraint
-      Tags::Conformal<gr::Tags::EnergyDensity<DataVector>,
-                      ConformalMatterScale>,
+      gr::Tags::Conformal<gr::Tags::EnergyDensity<DataVector>,
+                          ConformalMatterScale>,
       gr::Tags::TraceExtrinsicCurvature<DataVector>,
       tmpl::conditional_t<ConformalGeometry == Geometry::Curved,
                           tmpl::list<Tags::InverseConformalMetric<
@@ -219,8 +220,8 @@ struct FirstOrderSystem {
           EnabledEquations == Equations::HamiltonianAndLapse or
               EnabledEquations ==
                   Equations::HamiltonianLapseAndShift,
-          tmpl::list<Tags::Conformal<gr::Tags::StressTrace<DataVector>,
-                                     ConformalMatterScale>,
+          tmpl::list<gr::Tags::Conformal<gr::Tags::StressTrace<DataVector>,
+                                         ConformalMatterScale>,
                      ::Tags::dt<gr::Tags::TraceExtrinsicCurvature<DataVector>>>,
           tmpl::list<>>,
       tmpl::conditional_t<
@@ -235,7 +236,7 @@ struct FirstOrderSystem {
           EnabledEquations ==
               Equations::HamiltonianLapseAndShift,
           tmpl::list<
-              Tags::Conformal<
+              gr::Tags::Conformal<
                   gr::Tags::MomentumDensity<3, Frame::Inertial, DataVector>,
                   ConformalMatterScale>,
               ::Tags::deriv<gr::Tags::TraceExtrinsicCurvature<DataVector>,

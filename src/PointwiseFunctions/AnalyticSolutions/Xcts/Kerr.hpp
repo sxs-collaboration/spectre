@@ -18,6 +18,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/Xcts/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Xcts/CommonVariables.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Tags/Conformal.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -49,10 +50,10 @@ using KerrVariablesCache = cached_temp_buffer_from_typelist<
             DataType, 3, Frame::Inertial>,
         Tags::ShiftExcess<DataType, 3, Frame::Inertial>,
         Tags::ShiftStrain<DataType, 3, Frame::Inertial>,
-        Tags::Conformal<gr::Tags::EnergyDensity<DataType>, 0>,
-        Tags::Conformal<gr::Tags::StressTrace<DataType>, 0>,
-        Tags::Conformal<gr::Tags::MomentumDensity<3, Frame::Inertial, DataType>,
-                        0>>>;
+        gr::Tags::Conformal<gr::Tags::EnergyDensity<DataType>, 0>,
+        gr::Tags::Conformal<gr::Tags::StressTrace<DataType>, 0>,
+        gr::Tags::Conformal<
+            gr::Tags::MomentumDensity<3, Frame::Inertial, DataType>, 0>>>;
 
 template <typename DataType>
 struct KerrVariables : CommonVariables<DataType, KerrVariablesCache<DataType>> {
@@ -129,16 +130,16 @@ struct KerrVariables : CommonVariables<DataType, KerrVariablesCache<DataType>> {
       const noexcept;
   void operator()(gsl::not_null<Scalar<DataType>*> energy_density,
                   gsl::not_null<Cache*> cache,
-                  Tags::Conformal<gr::Tags::EnergyDensity<DataType>,
-                                  0> /*meta*/) const noexcept;
+                  gr::Tags::Conformal<gr::Tags::EnergyDensity<DataType>,
+                                      0> /*meta*/) const noexcept;
   void operator()(gsl::not_null<Scalar<DataType>*> stress_trace,
                   gsl::not_null<Cache*> cache,
-                  Tags::Conformal<gr::Tags::StressTrace<DataType>, 0> /*meta*/)
-      const noexcept;
-  void operator()(
-      gsl::not_null<tnsr::I<DataType, Dim>*> momentum_density,
-      gsl::not_null<Cache*> cache,
-      Tags::Conformal<gr::Tags::MomentumDensity<Dim, Frame::Inertial, DataType>,
+                  gr::Tags::Conformal<gr::Tags::StressTrace<DataType>,
+                                      0> /*meta*/) const noexcept;
+  void operator()(gsl::not_null<tnsr::I<DataType, Dim>*> momentum_density,
+                  gsl::not_null<Cache*> cache,
+                  gr::Tags::Conformal<
+                      gr::Tags::MomentumDensity<Dim, Frame::Inertial, DataType>,
                       0> /*meta*/) const noexcept;
 };
 

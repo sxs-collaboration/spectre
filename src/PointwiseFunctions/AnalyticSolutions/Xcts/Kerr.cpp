@@ -16,6 +16,7 @@
 #include "PointwiseFunctions/Elasticity/Strain.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Tags/Conformal.hpp"
 #include "PointwiseFunctions/Xcts/LongitudinalOperator.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
@@ -220,7 +221,7 @@ template <typename DataType>
 void KerrVariables<DataType>::operator()(
     const gsl::not_null<Scalar<DataType>*> energy_density,
     const gsl::not_null<Cache*> /*cache*/,
-    Tags::Conformal<gr::Tags::EnergyDensity<DataType>, 0> /*meta*/)
+    gr::Tags::Conformal<gr::Tags::EnergyDensity<DataType>, 0> /*meta*/)
     const noexcept {
   std::fill(energy_density->begin(), energy_density->end(), 0.);
 }
@@ -229,7 +230,7 @@ template <typename DataType>
 void KerrVariables<DataType>::operator()(
     const gsl::not_null<Scalar<DataType>*> stress_trace,
     const gsl::not_null<Cache*> /*cache*/,
-    Tags::Conformal<gr::Tags::StressTrace<DataType>, 0> /*meta*/)
+    gr::Tags::Conformal<gr::Tags::StressTrace<DataType>, 0> /*meta*/)
     const noexcept {
   std::fill(stress_trace->begin(), stress_trace->end(), 0.);
 }
@@ -238,8 +239,9 @@ template <typename DataType>
 void KerrVariables<DataType>::operator()(
     const gsl::not_null<tnsr::I<DataType, Dim>*> momentum_density,
     const gsl::not_null<Cache*> /*cache*/,
-    Tags::Conformal<gr::Tags::MomentumDensity<Dim, Frame::Inertial, DataType>,
-                    0> /*meta*/) const noexcept {
+    gr::Tags::Conformal<
+        gr::Tags::MomentumDensity<Dim, Frame::Inertial, DataType>, 0> /*meta*/)
+    const noexcept {
   std::fill(momentum_density->begin(), momentum_density->end(), 0.);
 }
 

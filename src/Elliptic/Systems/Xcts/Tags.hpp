@@ -8,6 +8,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Tags/Conformal.hpp"
 
 namespace Xcts {
 /// Tags related to the XCTS equations
@@ -23,17 +24,6 @@ struct ConformalFactor : db::SimpleTag {
 };
 
 /*!
- * \brief The quantity `Tag` scaled by the `Xcts::Tags::ConformalFactor` to the
- * given `Power`
- */
-template <typename Tag, int Power>
-struct Conformal : db::PrefixTag, db::SimpleTag {
-  using type = typename Tag::type;
-  using tag = Tag;
-  static constexpr int conformal_factor_power = Power;
-};
-
-/*!
  * \brief The conformally scaled spatial metric
  * \f$\bar{\gamma}_{ij}=\psi^{-4}\gamma_{ij}\f$, where \f$\psi\f$ is the
  * `Xcts::Tags::ConformalFactor` and \f$\gamma_{ij}\f$ is the
@@ -41,7 +31,7 @@ struct Conformal : db::PrefixTag, db::SimpleTag {
  */
 template <typename DataType, size_t Dim, typename Frame>
 using ConformalMetric =
-    Conformal<gr::Tags::SpatialMetric<Dim, Frame, DataType>, -4>;
+    gr::Tags::Conformal<gr::Tags::SpatialMetric<Dim, Frame, DataType>, -4>;
 
 /*!
  * \brief The conformally scaled inverse spatial metric
@@ -51,7 +41,8 @@ using ConformalMetric =
  */
 template <typename DataType, size_t Dim, typename Frame>
 using InverseConformalMetric =
-    Conformal<gr::Tags::InverseSpatialMetric<Dim, Frame, DataType>, 4>;
+    gr::Tags::Conformal<gr::Tags::InverseSpatialMetric<Dim, Frame, DataType>,
+                        4>;
 
 /*!
  * \brief The product of lapse \f$\alpha(x)\f$ and conformal factor
