@@ -67,4 +67,5 @@ target_link_libraries(
 add_subdirectory(BoundaryConditions)
 add_subdirectory(BoundaryCorrections)
 add_subdirectory(FiniteDifference)
+add_subdirectory(Limiters)
 add_subdirectory(Subcell)

@@ -11,6 +11,12 @@ set(LIBRARY_SOURCES
   BoundaryCorrections/Test_Rusanov.cpp
   FiniteDifference/Test_MonotisedCentral.cpp
   FiniteDifference/Test_Tag.cpp
+  Limiters/Test_CharacteristicHelpers.cpp
+  Limiters/Test_Flattener.cpp
+  Limiters/Test_KxrcfTci.cpp
+  Limiters/Test_Minmod.cpp
+  Limiters/Test_VariablesToLimit.cpp
+  Limiters/Test_Weno.cpp
   Subcell/Test_ComputeFluxes.cpp
   Subcell/Test_FixConservativesAndComputePrims.cpp
   Subcell/Test_GrTagsForHydro.cpp
@@ -33,7 +39,6 @@ set(LIBRARY_SOURCES
   Test_Sources.cpp
   Test_Tags.cpp
   Test_TimeDerivativeTerms.cpp
-  Test_ValenciaDivClean.cpp
   )
 
 add_test_library(
@@ -52,4 +57,5 @@ target_link_libraries(
   GeneralRelativityHelpers
   HydroHelpers
   ValenciaDivClean
+  ValenciaDivCleanLimiters
   )

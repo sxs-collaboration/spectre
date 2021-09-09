@@ -22,11 +22,6 @@ namespace ValenciaDivClean {
 /// with divergence cleaning.
 namespace Tags {
 
-/// The characteristic speeds
-struct CharacteristicSpeeds : db::SimpleTag {
-  using type = std::array<DataVector, 9>;
-};
-
 /// The densitized rest-mass density \f${\tilde D}\f$
 struct TildeD : db::SimpleTag {
   using type = Scalar<DataVector>;
@@ -55,6 +50,34 @@ struct TildeB : db::SimpleTag {
 struct TildePhi : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
+
+/// The characteristic speeds
+struct CharacteristicSpeeds : db::SimpleTag {
+  using type = std::array<DataVector, 9>;
+};
+
+/// @{
+/// The characteristic fields of the ValenciaDivClean system.
+///
+/// Note these are approximate fields, based on the approximate speeds used in
+/// `characteristic_speeds`. Furthermore, we group the 5 equal-speed modes into
+/// a single 5-dim tensor for convenience.
+struct VDivCleanMinus : db::SimpleTag {
+  using type = Scalar<DataVector>;
+};
+struct VMinus : db::SimpleTag {
+  using type = Scalar<DataVector>;
+};
+struct VMomentum : db::SimpleTag {
+  using type = tnsr::I<DataVector, 5>;
+};
+struct VPlus : db::SimpleTag {
+  using type = Scalar<DataVector>;
+};
+struct VDivCleanPlus : db::SimpleTag {
+  using type = Scalar<DataVector>;
+};
+/// @}
 
 /// \brief Set to `true` if the variables needed fixing.
 ///
