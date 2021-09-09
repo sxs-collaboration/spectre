@@ -209,6 +209,7 @@ struct Jacobian : db::SimpleTag {
   using type = ::Jacobian<DataVector, Dim, SourceFrame, TargetFrame>;
 };
 
+/// \ingroup DataBoxTagsGroup
 /// \ingroup ComputationalDomainGroup
 /// Computes the Jacobian of the map from the `InverseJacobian<Dim, SourceFrame,
 /// TargetFrame>` tag.
