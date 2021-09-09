@@ -66,12 +66,12 @@ class PiecewisePolynomial : public FunctionOfTime {
   /// `updated_max_deriv` is a vector of the `MaxDeriv`ths for each component.
   /// `next_expiration_time` is the next expiration time.
   void update(double time_of_update, DataVector updated_max_deriv,
-              double next_expiration_time) noexcept;
+              double next_expiration_time) noexcept override;
 
   /// Used by `FunctionOfTimeUpdater` to reset the expiration time
   /// when it decides not to do an update, but instead decides to
   /// keep the current values valid for longer.
-  void reset_expiration_time(double next_expiration_time) noexcept;
+  void reset_expiration_time(double next_expiration_time) noexcept override;
 
   /// Returns the domain of validity of the function,
   /// including the extrapolation region.

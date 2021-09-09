@@ -141,3 +141,38 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.FixedSpeedCubic",
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
+
+// [[OutputRegex, Cannot update this FunctionOfTime.]]
+SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.FixedSpeedCubic.BadUpdate",
+                  "[Domain][Unit]") {
+  ERROR_TEST();
+  const double initial_function_value = 1.0;
+  const double initial_time = 0.0;
+  const double velocity = -0.1;
+  const double decay_timescale = 0.0;
+  const std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime> f_of_t =
+      std::make_unique<domain::FunctionsOfTime::FixedSpeedCubic>(
+          initial_function_value, initial_time, velocity, decay_timescale);
+
+  const double update_time = 1.0;
+  const DataVector updated_deriv{};
+  const double next_expr_time = 2.0;
+  f_of_t->update(update_time, updated_deriv, next_expr_time);
+}
+
+// [[OutputRegex, Cannot reset expiration time of this FunctionOfTime.]]
+SPECTRE_TEST_CASE(
+    "Unit.Domain.FunctionsOfTime.FixedSpeedCubic.BadResetExprTime",
+    "[Domain][Unit]") {
+  ERROR_TEST();
+  const double initial_function_value = 1.0;
+  const double initial_time = 0.0;
+  const double velocity = -0.1;
+  const double decay_timescale = 0.0;
+  const std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime> f_of_t =
+      std::make_unique<domain::FunctionsOfTime::FixedSpeedCubic>(
+          initial_function_value, initial_time, velocity, decay_timescale);
+
+  const double next_expr_time = 2.0;
+  f_of_t->reset_expiration_time(next_expr_time);
+}

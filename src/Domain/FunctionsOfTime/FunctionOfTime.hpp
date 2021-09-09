@@ -10,6 +10,7 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "Parallel/CharmPupable.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 
 namespace domain {
 /// \ingroup ComputationalDomainGroup
@@ -54,6 +55,21 @@ class FunctionOfTime : public PUP::able {
   /// `time_bounds` tells you the bounds including the allowed extrapolation
   /// interval.
   virtual std::array<double, 2> time_bounds() const noexcept = 0;
+
+  /// Updates the maximum derivative of the FunctionOfTime at a given time while
+  /// also resetting the expiration. By default, a FunctionOfTime cannot be
+  /// updated.
+  virtual void update(double /*time_of_update*/,
+                      DataVector /*updated_max_deriv*/,
+                      double /*next_expiration_time*/) noexcept {
+    ERROR("Cannot update this FunctionOfTime.");
+  }
+
+  /// Resets the expiration time to a new value. By default, the expiration time
+  /// of a FunctionOfTime cannot be reset.
+  virtual void reset_expiration_time(double /*next_expiration_time*/) noexcept {
+    ERROR("Cannot reset expiration time of this FunctionOfTime.");
+  }
 
   /// The DataVector can be of any size
   virtual std::array<DataVector, 1> func(double t) const noexcept = 0;

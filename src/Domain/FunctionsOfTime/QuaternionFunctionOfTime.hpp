@@ -79,7 +79,8 @@ class QuaternionFunctionOfTime : public FunctionOfTime {
   // clang-tidy: cppcoreguidelines-owning-memory,-warnings-as-errors
   WRAPPED_PUPable_decl_template(QuaternionFunctionOfTime<MaxDeriv>);  // NOLINT
 
-  void reset_expiration_time(const double next_expiration_time) noexcept {
+  void reset_expiration_time(
+      const double next_expiration_time) noexcept override {
     omega_f_of_t_.reset_expiration_time(next_expiration_time);
   }
 
@@ -94,7 +95,7 @@ class QuaternionFunctionOfTime : public FunctionOfTime {
   /// `updated_max_deriv` is a datavector of the `MaxDeriv`s for each component.
   /// `next_expiration_time` is the next expiration time.
   void update(double time_of_update, DataVector updated_max_deriv,
-              double next_expiration_time) noexcept;
+              double next_expiration_time) noexcept override;
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override;
