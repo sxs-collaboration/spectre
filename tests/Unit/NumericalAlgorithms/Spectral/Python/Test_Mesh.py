@@ -102,6 +102,20 @@ class TestMesh(unittest.TestCase):
                         mesh == Mesh([ex + 1
                                       for ex in extents], basis, quadrature))
 
+    def test_slices(self):
+        for dim in range(3):
+            for basis in self.bases:
+                for quadrature in self.quadratures:
+                    # the mesh constructor of dimension dim + 1
+                    Mesh = self.Mesh[dim]
+                    extents = [
+                        random.choice(self.extents) for _ in range(dim + 1)
+                    ]
+                    mesh = Mesh(extents, basis, quadrature)
+                    self.assertEqual(mesh.slices(), [
+                        Mesh1D(extent, basis, quadrature) for extent in extents
+                    ])
+
 
 if __name__ == '__main__':
     unittest.main()

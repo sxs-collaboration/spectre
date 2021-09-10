@@ -58,6 +58,8 @@ void bind_mesh_impl(py::module& m) {  // NOLINT
                &Mesh<Dim>::quadrature),
            py::arg("d"),
            "The quadrature chosen in the requested dimension of the grid.")
+      .def("slices", &Mesh<Dim>::slices,
+           "Returns the Meshes representing 1D slices of this Mesh.")
       .def(py::self == py::self)  // NOLINT
       .def(py::self != py::self)  // NOLINT
       .def(py::pickle(
