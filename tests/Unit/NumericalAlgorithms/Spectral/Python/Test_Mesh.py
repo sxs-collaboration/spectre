@@ -83,6 +83,25 @@ class TestMesh(unittest.TestCase):
                 self.check_basis(mesh, bases)
                 self.check_quadrature(mesh, quadratures)
 
+    def test_equality(self):
+        for dim in range(3):
+            for basis in self.bases:
+                for quadrature in self.quadratures:
+                    # the mesh constructor of dimension dim + 1
+                    Mesh = self.Mesh[dim]
+                    extents = [
+                        random.choice(self.extents) for _ in range(dim + 1)
+                    ]
+                    mesh = Mesh(extents, basis, quadrature)
+                    self.assertTrue(mesh == Mesh(extents, basis, quadrature))
+                    self.assertFalse(mesh != Mesh(extents, basis, quadrature))
+                    self.assertTrue(
+                        mesh != Mesh([ex + 1
+                                      for ex in extents], basis, quadrature))
+                    self.assertFalse(
+                        mesh == Mesh([ex + 1
+                                      for ex in extents], basis, quadrature))
+
 
 if __name__ == '__main__':
     unittest.main()
