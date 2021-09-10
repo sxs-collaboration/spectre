@@ -24,6 +24,17 @@ void test_simple_tags() {
   TestHelpers::db::test_simple_tag<
       Ccz4::Tags::InverseConformalMetric<Dim, Frame, DataType>>(
       "Conformal(InverseSpatialMetric)");
+  TestHelpers::db::test_simple_tag<Ccz4::Tags::LogLapse<DataType>>("LogLapse");
+  TestHelpers::db::test_simple_tag<Ccz4::Tags::FieldA<Dim, Frame, DataType>>(
+      "FieldA");
+  TestHelpers::db::test_simple_tag<
+      Ccz4::Tags::FieldB<Dim, Frame, DataType>>("FieldB");
+  TestHelpers::db::test_simple_tag<Ccz4::Tags::FieldD<Dim, Frame, DataType>>(
+      "FieldD");
+  TestHelpers::db::test_simple_tag<Ccz4::Tags::LogConformalFactor<DataType>>(
+      "LogConformalFactor");
+  TestHelpers::db::test_simple_tag<Ccz4::Tags::FieldP<Dim, Frame, DataType>>(
+      "FieldP");
 }
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Ccz4.Tags", "[Unit][Evolution]") {

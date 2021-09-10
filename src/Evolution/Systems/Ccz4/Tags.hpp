@@ -49,6 +49,68 @@ template <size_t Dim, typename Frame, typename DataType>
 using InverseConformalMetric =
     gr::Tags::Conformal<gr::Tags::InverseSpatialMetric<Dim, Frame, DataType>,
                         -2>;
+
+/*!
+ * \brief The natural log of the lapse
+ */
+template <typename DataType>
+struct LogLapse : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
+
+/*!
+ * \brief Auxiliary variable which is analytically the spatial derivative of the
+ * natural log of the lapse
+ *
+ * \details If \f$ \alpha \f$ is the lapse, then we define
+ * \f$A_i = \partial_i ln(\alpha) = \frac{\partial_i \alpha}{\alpha}\f$.
+ */
+template <size_t Dim, typename Frame, typename DataType>
+struct FieldA : db::SimpleTag {
+  using type = tnsr::i<DataType, Dim, Frame>;
+};
+
+/*!
+ * \brief Auxiliary variable which is analytically the spatial derivative of the
+ * shift
+ */
+template <size_t Dim, typename Frame, typename DataType>
+struct FieldB : db::SimpleTag {
+  using type = tnsr::iJ<DataType, Dim, Frame>;
+};
+
+/*!
+ * \brief Auxiliary variable which is analytically half the spatial derivative
+ * of the conformal spatial metric
+ *
+ * \details If \f$\bar{\gamma}_{ij}\f$ is the conformal spatial metric, then we
+ * define
+ * \f$D_{kij} = \frac{1}{2} \partial_k \bar{\gamma}_{ij}\f$.
+ */
+template <size_t Dim, typename Frame, typename DataType>
+struct FieldD : db::SimpleTag {
+  using type = tnsr::ijj<DataType, Dim, Frame>;
+};
+
+/*!
+ * \brief The natural log of the conformal factor
+ */
+template <typename DataType>
+struct LogConformalFactor : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
+
+/*!
+ * \brief Auxiliary variable which is analytically the spatial derivative of the
+ * natural log of the conformal factor
+ *
+ * \details If \f$\phi\f$ is the conformal factor, then we define
+ * \f$P_i = \partial_i ln(\phi) = \frac{\partial_i \phi}{\phi}\f$.
+ */
+template <size_t Dim, typename Frame, typename DataType>
+struct FieldP : db::SimpleTag {
+  using type = tnsr::i<DataType, Dim, Frame>;
+};
 }  // namespace Tags
 
 namespace OptionTags {
