@@ -14,3 +14,5 @@ See LICENSE.txt for details.
   externally produced data
 - \ref tutorial_checkpoint_restart - How to get set up a SpECTRE executable for
   checkpointing and restarting
+- \ref tutorial_events_and_triggers - How to specify code to run in an input
+  file
