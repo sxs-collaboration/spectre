@@ -16,6 +16,7 @@ set(LIBRARY_SOURCES
   Test_UpdateFunctionOfTime.cpp
   )
 
+add_subdirectory(Actions)
 add_subdirectory(Protocols)
 
 add_test_library(
