@@ -140,6 +140,8 @@ ${DOCS_POST_PROCESS_COMMAND} && exit \${generate_docs_exit}\n"
       --remove ${CMAKE_BINARY_DIR}/docs/tmp/doc_coverage.info
       '${CMAKE_SOURCE_DIR}/src/Executables/*'
       '${CMAKE_SOURCE_DIR}/tests/*'
+      '${CMAKE_SOURCE_DIR}/citelist'
+      '${CMAKE_SOURCE_DIR}/[generated]'
       --output ${CMAKE_BINARY_DIR}/docs/tmp/doc_coverage.info
 
       COMMAND
