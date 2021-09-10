@@ -1,6 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include <pybind11/operators.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <string>
@@ -57,7 +58,10 @@ void bind_mesh_impl(py::module& m) {  // NOLINT
                &Mesh<Dim>::quadrature),
            py::arg("d"),
            "The quadrature chosen in the requested dimension of the grid.")
-
+      .def("slices", &Mesh<Dim>::slices,
+           "Returns the Meshes representing 1D slices of this Mesh.")
+      .def(py::self == py::self)  // NOLINT
+      .def(py::self != py::self)  // NOLINT
       .def(py::pickle(
           [](const Mesh<Dim>& mesh) {
             return py::make_tuple(mesh.extents().indices(), mesh.basis(),
