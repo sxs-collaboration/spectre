@@ -33,6 +33,9 @@
 #include "Evolution/Systems/ScalarAdvection/BoundaryConditions/Factory.hpp"
 #include "Evolution/Systems/ScalarAdvection/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/ScalarAdvection/BoundaryCorrections/RegisterDerived.hpp"
+#include "Evolution/Systems/ScalarAdvection/FiniteDifference/Factory.hpp"
+#include "Evolution/Systems/ScalarAdvection/FiniteDifference/RegisterDerivedWithCharm.hpp"
+#include "Evolution/Systems/ScalarAdvection/FiniteDifference/Tags.hpp"
 #include "Evolution/Systems/ScalarAdvection/Subcell/TciOptions.hpp"
 #include "Evolution/Systems/ScalarAdvection/System.hpp"
 #include "Evolution/Systems/ScalarAdvection/VelocityField.hpp"
@@ -205,12 +208,14 @@ struct EvolutionMetavars {
   using phase_change_tags_and_combines_list =
       PhaseControl::get_phase_change_tags<phase_changes>;
 
-  using const_global_cache_tags = tmpl::list<
-      initial_data_tag, Tags::EventsAndTriggers,
-      tmpl::conditional_t<
-          use_dg_subcell,
-          tmpl::list<ScalarAdvection::subcell::Tags::TciOptions>, tmpl::list<>>,
-      PhaseControl::Tags::PhaseChangeAndTriggers<phase_changes>>;
+  using const_global_cache_tags =
+      tmpl::list<initial_data_tag, Tags::EventsAndTriggers,
+                 tmpl::conditional_t<
+                     use_dg_subcell,
+                     tmpl::list<ScalarAdvection::subcell::Tags::TciOptions,
+                                ScalarAdvection::fd::Tags::Reconstructor<Dim>>,
+                     tmpl::list<>>,
+                 PhaseControl::Tags::PhaseChangeAndTriggers<phase_changes>>;
 
   using dg_registration_list =
       tmpl::list<observers::Actions::RegisterEventsWithObservers>;
@@ -319,9 +324,11 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &domain::creators::time_dependence::register_derived_with_charm,
     &domain::FunctionsOfTime::register_derived_with_charm,
     &ScalarAdvection::BoundaryCorrections::register_derived_with_charm,
+    &ScalarAdvection::fd::register_derived_with_charm,
     &Parallel::register_derived_classes_with_charm<TimeStepper>,
     &Parallel::register_derived_classes_with_charm<
         PhaseChange<metavariables::phase_changes>>,
     &Parallel::register_factory_classes_with_charm<metavariables>};
+
 static const std::vector<void (*)()> charm_init_proc_funcs{
     &enable_floating_point_exceptions};

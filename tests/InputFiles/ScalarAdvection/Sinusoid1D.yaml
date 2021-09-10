@@ -38,6 +38,8 @@ SpatialDiscretization:
     Formulation: StrongInertial
     Quadrature: GaussLobatto
     TciOptions:
+  SubcellSolver:
+    Reconstructor:
 
 AnalyticSolution:
   Sinusoid:
