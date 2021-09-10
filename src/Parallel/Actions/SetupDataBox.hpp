@@ -14,11 +14,7 @@
 #include "Utilities/TaggedTuple.hpp"
 
 namespace Actions {
-/// \cond
-struct SetupDataBox;
-/// \endcond
-
-namespace detail {
+namespace SetupDataBox_detail {
 template <typename Action, typename enable = std::void_t<>>
 struct optional_simple_tags {
   using type = tmpl::list<>;
@@ -67,7 +63,7 @@ auto merge_into_databox_helper(db::DataBox<DbTags>&& box,
   return db::create_from<db::RemoveTags<>, db::AddSimpleTags<SimpleTags...>,
                          db::AddComputeTags<ComputeTags...>>(std::move(box));
 }
-}  // namespace detail
+}  // namespace SetupDataBox_detail
 
 /*!
  * \brief Add into the \ref DataBoxGroup "DataBox" default constructed items for
@@ -99,6 +95,15 @@ auto merge_into_databox_helper(db::DataBox<DbTags>&& box,
  * DataBoxGroup "DataBox" types.
  */
 struct SetupDataBox {
+  template <typename ParallelComponent>
+  using action_list_simple_tags =
+      tmpl::remove_duplicates<SetupDataBox_detail::get_pdal_simple_tags<
+          typename ParallelComponent::phase_dependent_action_list>>;
+  template <typename ParallelComponent>
+  using action_list_compute_tags =
+      tmpl::remove_duplicates<SetupDataBox_detail::get_pdal_compute_tags<
+          typename ParallelComponent::phase_dependent_action_list>>;
+
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -108,14 +113,9 @@ struct SetupDataBox {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) {
-    using action_list_simple_tags =
-        tmpl::remove_duplicates<detail::get_pdal_simple_tags<
-            typename ParallelComponent::phase_dependent_action_list>>;
-    using action_list_compute_tags =
-        tmpl::remove_duplicates<detail::get_pdal_compute_tags<
-            typename ParallelComponent::phase_dependent_action_list>>;
     using all_new_tags =
-        tmpl::append<action_list_simple_tags, action_list_compute_tags>;
+        tmpl::append<action_list_simple_tags<ParallelComponent>,
+                     action_list_compute_tags<ParallelComponent>>;
     // We just check the first tag in the list to prevent repeat-applications
     // of the action. Any cases where a tag is mistakenly added to the DataBox
     // before `SetupDataBox` is called (which shouldn't happen if it's used as
@@ -123,9 +123,9 @@ struct SetupDataBox {
     if constexpr (tmpl::size<all_new_tags>::value != 0_st) {
       if constexpr (not tmpl::list_contains_v<DbTags,
                                               tmpl::front<all_new_tags>>) {
-        return std::make_tuple(detail::merge_into_databox_helper(
-            std::move(box), action_list_simple_tags{},
-            action_list_compute_tags{}));
+        return std::make_tuple(SetupDataBox_detail::merge_into_databox_helper(
+            std::move(box), action_list_simple_tags<ParallelComponent>{},
+            action_list_compute_tags<ParallelComponent>{}));
       } else {
         ERROR(
             "Trying to call SetupDataBox after it has already been called "
