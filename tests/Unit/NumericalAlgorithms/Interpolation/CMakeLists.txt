@@ -46,10 +46,19 @@ target_link_libraries(
   ${LIBRARY}
   PRIVATE
   Boost::boost
+  CoordinateMaps
+  DataStructures
+  Domain
+  DomainCreators
+  DomainStructure
+  GeneralRelativitySolutions
   Interpolation
   IO
   Logging
   MathFunctions
+  RelativisticEulerSolutions
+  Spectral
+  Utilities
   )
 
 add_dependencies(
