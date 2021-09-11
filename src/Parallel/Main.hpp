@@ -417,6 +417,35 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept {
   tuples::tagged_tuple_from_typelist<parallel_component_tag_list>
       the_parallel_components;
 
+  // Print info on DataBox variants
+#ifdef SPECTRE_DEBUG
+  Parallel::printf("\nParallel components:\n");
+  tmpl::for_each<component_list>([](auto parallel_component_v) noexcept {
+    using parallel_component = tmpl::type_from<decltype(parallel_component_v)>;
+    using chare_type = typename parallel_component::chare_type;
+    using charm_type = Parallel::charm_types_with_parameters<
+        parallel_component, typename Parallel::get_array_index<
+                                chare_type>::template f<parallel_component>>;
+    using algorithm = typename charm_type::algorithm;
+    using databox_types = typename algorithm::databox_types;
+    Parallel::printf("  %s (%s) has %u DataBox variants with [",
+                     pretty_type::short_name<parallel_component>(),
+                     pretty_type::short_name<chare_type>(),
+                     tmpl::size<databox_types>::value);
+    tmpl::for_each<databox_types>([](auto databox_type_v) noexcept {
+      using databox_type = tmpl::type_from<decltype(databox_type_v)>;
+      Parallel::printf("%u",
+                       tmpl::size<typename databox_type::tags_list>::value);
+      if constexpr (not std::is_same_v<databox_type,
+                                       tmpl::back<databox_types>>) {
+        Parallel::printf(", ");
+      }
+    });
+    Parallel::printf("] items.\n");
+  });
+  Parallel::printf("\n");
+#endif  // SPECTRE_DEBUG
+
   // Construct the group proxies with a dependency on the GlobalCache proxy
   using group_component_list = tmpl::filter<
       component_list,
