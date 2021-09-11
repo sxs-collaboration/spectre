@@ -226,6 +226,60 @@ void test_connectivity() {
                                        : nullptr,
               with_boundary_conditions ? create_outer_boundary_condition()
                                        : nullptr};
+
+      CHECK(binary_compact_object.block_names() ==
+            std::vector<std::string>{
+                "CAFilledCylinderCenter", "CAFilledCylinderEast",
+                "CAFilledCylinderNorth",  "CAFilledCylinderWest",
+                "CAFilledCylinderSouth",  "CACylinderEast",
+                "CACylinderNorth",        "CACylinderWest",
+                "CACylinderSouth",        "EAFilledCylinderCenter",
+                "EAFilledCylinderEast",   "EAFilledCylinderNorth",
+                "EAFilledCylinderWest",   "EAFilledCylinderSouth",
+                "EACylinderEast",         "EACylinderNorth",
+                "EACylinderWest",         "EACylinderSouth",
+                "EBFilledCylinderCenter", "EBFilledCylinderEast",
+                "EBFilledCylinderNorth",  "EBFilledCylinderWest",
+                "EBFilledCylinderSouth",  "EBCylinderEast",
+                "EBCylinderNorth",        "EBCylinderWest",
+                "EBCylinderSouth",        "MAFilledCylinderCenter",
+                "MAFilledCylinderEast",   "MAFilledCylinderNorth",
+                "MAFilledCylinderWest",   "MAFilledCylinderSouth",
+                "MBFilledCylinderCenter", "MBFilledCylinderEast",
+                "MBFilledCylinderNorth",  "MBFilledCylinderWest",
+                "MBFilledCylinderSouth",  "CBFilledCylinderCenter",
+                "CBFilledCylinderEast",   "CBFilledCylinderNorth",
+                "CBFilledCylinderWest",   "CBFilledCylinderSouth",
+                "CBCylinderEast",         "CBCylinderNorth",
+                "CBCylinderWest",         "CBCylinderSouth"});
+      CHECK(binary_compact_object.block_groups() ==
+            std::unordered_map<std::string, std::unordered_set<std::string>>{
+                {"Outer",
+                 {{"CAFilledCylinderCenter", "CBCylinderEast",
+                   "CAFilledCylinderEast", "CAFilledCylinderNorth",
+                   "CBFilledCylinderNorth", "CACylinderEast",
+                   "CBFilledCylinderEast", "CAFilledCylinderSouth",
+                   "CACylinderNorth", "CAFilledCylinderWest", "CACylinderWest",
+                   "CACylinderSouth", "CBFilledCylinderCenter",
+                   "CBFilledCylinderWest", "CBFilledCylinderSouth",
+                   "CBCylinderNorth", "CBCylinderWest", "CBCylinderSouth"}}},
+                {"InnerA",
+                 {"EAFilledCylinderCenter", "MAFilledCylinderNorth",
+                  "EACylinderSouth", "EAFilledCylinderSouth", "EACylinderNorth",
+                  "EACylinderWest", "MAFilledCylinderCenter",
+                  "EAFilledCylinderNorth", "EAFilledCylinderWest",
+                  "MAFilledCylinderSouth", "EACylinderEast",
+                  "MAFilledCylinderEast", "EAFilledCylinderEast",
+                  "MAFilledCylinderWest"}},
+                {"InnerB",
+                 {"EBFilledCylinderEast", "MBFilledCylinderEast",
+                  "EBFilledCylinderSouth", "EBFilledCylinderNorth",
+                  "EBFilledCylinderWest", "EBCylinderEast",
+                  "MBFilledCylinderWest", "EBCylinderNorth", "EBCylinderSouth",
+                  "EBCylinderWest", "MBFilledCylinderCenter",
+                  "EBFilledCylinderCenter", "MBFilledCylinderNorth",
+                  "MBFilledCylinderSouth"}}});
+
       test_binary_compact_object_construction(
           binary_compact_object, std::numeric_limits<double>::signaling_NaN(),
           {}, {},

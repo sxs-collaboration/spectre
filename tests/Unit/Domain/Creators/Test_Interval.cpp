@@ -98,6 +98,12 @@ void test_interval() {
                                       grid_points[0],
                                       std::array<bool, 1>{{false}},
                                       nullptr};
+
+    // This domain creator doesn't support block names and groups yet, so they
+    // should be empty
+    CHECK(interval.block_names().empty());
+    CHECK(interval.block_groups().empty());
+
     test_interval_construction(
         interval, lower_bound, upper_bound, grid_points, refinement_level,
         std::vector<DirectionMap<1, BlockNeighbor<1>>>{{}},

@@ -307,6 +307,13 @@ void test_cylinder_no_refinement() {
                                      equiangular_map,
                                      {},
                                      {}};
+        CHECK(cylinder.block_names() ==
+              std::vector<std::string>{"InnerCube", "East", "North", "West",
+                                       "South"});
+        CHECK(cylinder.block_groups() ==
+              std::unordered_map<std::string, std::unordered_set<std::string>>{
+                  {"Wedges", {"East", "North", "West", "South"}}});
+
         test_physical_separation(cylinder.create_domain().blocks());
         test_cylinder_construction(
             cylinder, inner_radius, outer_radius, lower_z_bound, upper_z_bound,
@@ -472,6 +479,46 @@ void test_refined_cylinder_boundaries(
       {domain::CoordinateMaps::Distribution::Linear, outer_radial_distribution},
       {domain::CoordinateMaps::Distribution::Linear,
        uppermost_distribution_in_z}};
+  CHECK(refined_cylinder.block_names() ==
+        std::vector<std::string>{
+            "Layer0InnerCube", "Layer0Shell0East", "Layer0Shell0North",
+            "Layer0Shell0West", "Layer0Shell0South", "Layer0Shell1East",
+            "Layer0Shell1North", "Layer0Shell1West", "Layer0Shell1South",
+            "Layer1InnerCube", "Layer1Shell0East", "Layer1Shell0North",
+            "Layer1Shell0West", "Layer1Shell0South", "Layer1Shell1East",
+            "Layer1Shell1North", "Layer1Shell1West", "Layer1Shell1South"});
+  CHECK(refined_cylinder.block_groups() ==
+        std::unordered_map<std::string, std::unordered_set<std::string>>{
+            {"InnerCubes", {"Layer0InnerCube", "Layer1InnerCube"}},
+            {"Layer0",
+             {"Layer0InnerCube", "Layer0Shell0East", "Layer0Shell0North",
+              "Layer0Shell0West", "Layer0Shell0South", "Layer0Shell1East",
+              "Layer0Shell1North", "Layer0Shell1West", "Layer0Shell1South"}},
+            {"Layer1",
+             {"Layer1InnerCube", "Layer1Shell0East", "Layer1Shell0North",
+              "Layer1Shell0West", "Layer1Shell0South", "Layer1Shell1East",
+              "Layer1Shell1North", "Layer1Shell1West", "Layer1Shell1South"}},
+            {"Shell0",
+             {"Layer0Shell0East", "Layer0Shell0North", "Layer0Shell0West",
+              "Layer0Shell0South", "Layer1Shell0East", "Layer1Shell0North",
+              "Layer1Shell0West", "Layer1Shell0South"}},
+            {"Shell1",
+             {"Layer0Shell1East", "Layer0Shell1North", "Layer0Shell1West",
+              "Layer0Shell1South", "Layer1Shell1East", "Layer1Shell1North",
+              "Layer1Shell1West", "Layer1Shell1South"}},
+            {"Layer0Shell0Wedges",
+             {"Layer0Shell0East", "Layer0Shell0North", "Layer0Shell0West",
+              "Layer0Shell0South"}},
+            {"Layer1Shell0Wedges",
+             {"Layer1Shell0East", "Layer1Shell0North", "Layer1Shell0West",
+              "Layer1Shell0South"}},
+            {"Layer0Shell1Wedges",
+             {"Layer0Shell1East", "Layer0Shell1North", "Layer0Shell1West",
+              "Layer0Shell1South"}},
+            {"Layer1Shell1Wedges",
+             {"Layer1Shell1East", "Layer1Shell1North", "Layer1Shell1West",
+              "Layer1Shell1South"}}});
+
   test_physical_separation(refined_cylinder.create_domain().blocks());
 
   const auto domain = refined_cylinder.create_domain();
