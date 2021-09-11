@@ -7,11 +7,16 @@ if(NOT YAPF_ROOT)
   set(YAPF_ROOT $ENV{YAPF_ROOT})
 endif()
 
+find_package(Python)
+get_filename_component(PYTHON_BIN_DIR ${Python_EXECUTABLE} DIRECTORY)
+
 # Look for an executable called yapf
 find_program(
   YAPF_EXECUTABLE
   NAMES yapf
-  HINTS ${YAPF_ROOT}
+  HINTS
+  ${YAPF_ROOT}
+  ${PYTHON_BIN_DIR}
   DOC "Path to yapf executable")
 
 execute_process(COMMAND "${YAPF_EXECUTABLE}" "--version"
