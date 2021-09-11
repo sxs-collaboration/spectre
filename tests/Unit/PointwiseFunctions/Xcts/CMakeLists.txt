@@ -5,6 +5,7 @@ set(LIBRARY Test_XctsPointwiseFunctions)
 
 set(LIBRARY_SOURCES
   Test_LongitudinalOperator.cpp
+  Test_SpacetimeQuantities.cpp
   )
 
 add_test_library(
@@ -18,5 +19,7 @@ target_link_libraries(
   ${LIBRARY}
   PRIVATE
   DataStructures
+  Spectral
+  Utilities
   XctsPointwiseFunctions
   )

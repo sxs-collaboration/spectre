@@ -83,5 +83,10 @@ template <typename DataType = DataVector>
 struct StressTrace;
 template <size_t Dim, typename Frame, typename DataType>
 struct MomentumDensity;
+template <typename DataType = DataVector>
+struct HamiltonianConstraint;
+template <size_t Dim, typename Frame = Frame::Inertial,
+          typename DataType = DataVector>
+struct MomentumConstraint;
 }  // namespace Tags
 }  // namespace gr

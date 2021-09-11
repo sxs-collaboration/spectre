@@ -157,6 +157,25 @@ struct MomentumDensity : db::SimpleTag {
   using type = tnsr::I<DataType, Dim, Frame>;
 };
 
+/// The ADM Hamiltonian constraint \f$R + K^2 - K_{ij} K^{ij} - 16 \pi \rho\f$
+/// (see e.g. Eq. (2.132) in \cite BaumgarteShapiro).
+///
+/// \warning Some authors include a factor of \f$1/2\f$ in the Hamiltonian
+/// constraint, as does SpEC.
+template <typename DataType>
+struct HamiltonianConstraint : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
+
+/// The ADM momentum constraint
+/// \f$\gamma^{jk} (\nabla_j K_{ki} - \nabla_i K_{jk}) - 8 \pi S_i\f$, where
+/// \f$\nabla\f$ denotes the covariant derivative associated with the spatial
+/// metric \f$\gamma_{ij}\f$ (see e.g. Eq. (2.133) in \cite BaumgarteShapiro).
+template <size_t Dim, typename Frame, typename DataType>
+struct MomentumConstraint : db::SimpleTag {
+  using type = tnsr::i<DataType, Dim, Frame>;
+};
+
 /*!
  * \brief Computes the electric part of the Weyl tensor in vacuum
  * as: \f$ E_{ij} = R_{ij} + KK_{ij} - K^m_{i}K_{mj}\f$ where \f$R_{ij}\f$ is

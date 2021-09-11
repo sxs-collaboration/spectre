@@ -101,12 +101,23 @@ EventsAndTriggers:
   ? HasConverged
   : - ObserveErrorNorms:
         SubfileName: ErrorNorms
+    - ObserveNorms:
+        SubfileName: Norms
+        TensorsToObserve:
+          - Name: HamiltonianConstraint
+            NormType: L2Norm
+            Components: Individual
+          - Name: MomentumConstraint
+            NormType: L2Norm
+            Components: Individual
     - ObserveFields:
         SubfileName: VolumeData
         VariablesToObserve:
           - ConformalFactor
           - LapseTimesConformalFactor
           - ShiftExcess
+          - HamiltonianConstraint
+          - MomentumConstraint
         InterpolateToMesh: None
         CoordinatesFloatingPointType: Double
         FloatingPointTypes: [Double]

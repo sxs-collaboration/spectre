@@ -36,6 +36,7 @@
 #include "Parallel/Reduction.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
+#include "ParallelAlgorithms/Events/ObserveNorms.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Completion.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
@@ -59,6 +60,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/Xcts/Flatness.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Xcts/Kerr.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Xcts/Schwarzschild.hpp"
+#include "PointwiseFunctions/Xcts/SpacetimeQuantities.hpp"
 #include "Utilities/Blas.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/Functional.hpp"
@@ -189,8 +191,12 @@ struct Metavariables {
 
   using analytic_solution_fields = tmpl::append<typename system::primal_fields,
                                                 typename system::primal_fluxes>;
-  using observe_fields = tmpl::append<analytic_solution_fields,
-                                      typename system::background_fields>;
+  using constraint_fields =
+      tmpl::list<gr::Tags::HamiltonianConstraint<DataVector>,
+                 gr::Tags::MomentumConstraint<3, Frame::Inertial, DataVector>>;
+  using observe_fields =
+      tmpl::append<analytic_solution_fields, typename system::background_fields,
+                   constraint_fields>;
 
   // Collect all items to store in the cache.
   using const_global_cache_tags =
@@ -206,6 +212,9 @@ struct Metavariables {
                        dg::Events::field_observations<
                            volume_dim, nonlinear_solver_iteration_id,
                            observe_fields, analytic_solution_fields,
+                           LinearSolver::multigrid::Tags::IsFinestGrid>,
+                       Events::ObserveNorms<
+                           nonlinear_solver_iteration_id, constraint_fields,
                            LinearSolver::multigrid::Tags::IsFinestGrid>>>>,
         tmpl::pair<Trigger, elliptic::Triggers::all_triggers<
                                 typename nonlinear_solver::options_group>>>;
@@ -236,6 +245,9 @@ struct Metavariables {
       elliptic::dg::Actions::initialize_operator<system, background_tag>,
       elliptic::dg::subdomain_operator::Actions::InitializeSubdomain<
           system, background_tag, typename schwarz_smoother::options_group>,
+      ::Initialization::Actions::AddComputeTags<tmpl::list<
+          // Constraint norms
+          Xcts::Tags::SpacetimeQuantitiesCompute<constraint_fields>>>,
       Initialization::Actions::RemoveOptionsAndTerminatePhase>;
 
   template <bool Linearized>
