@@ -23,6 +23,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/Xcts/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Xcts/Flatness.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Tags/Conformal.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -55,10 +56,10 @@ using BinaryVariablesCache = cached_temp_buffer_from_typelist<
                       tmpl::size_t<3>, Frame::Inertial>,
         Tags::LongitudinalShiftBackgroundMinusDtConformalMetric<
             DataType, 3, Frame::Inertial>,
-        Tags::Conformal<gr::Tags::EnergyDensity<DataType>, 0>,
-        Tags::Conformal<gr::Tags::StressTrace<DataType>, 0>,
-        Tags::Conformal<gr::Tags::MomentumDensity<3, Frame::Inertial, DataType>,
-                        0>,
+        gr::Tags::Conformal<gr::Tags::EnergyDensity<DataType>, 0>,
+        gr::Tags::Conformal<gr::Tags::StressTrace<DataType>, 0>,
+        gr::Tags::Conformal<
+            gr::Tags::MomentumDensity<3, Frame::Inertial, DataType>, 0>,
         // For initial guesses
         Tags::ConformalFactor<DataType>,
         Tags::LapseTimesConformalFactor<DataType>,
@@ -77,10 +78,10 @@ struct BinaryVariables
                     tmpl::size_t<Dim>, Frame::Inertial>,
       gr::Tags::TraceExtrinsicCurvature<DataType>,
       ::Tags::dt<gr::Tags::TraceExtrinsicCurvature<DataType>>,
-      Tags::Conformal<gr::Tags::EnergyDensity<DataType>, 0>,
-      Tags::Conformal<gr::Tags::StressTrace<DataType>, 0>,
-      Tags::Conformal<gr::Tags::MomentumDensity<Dim, Frame::Inertial, DataType>,
-                      0>,
+      gr::Tags::Conformal<gr::Tags::EnergyDensity<DataType>, 0>,
+      gr::Tags::Conformal<gr::Tags::StressTrace<DataType>, 0>,
+      gr::Tags::Conformal<
+          gr::Tags::MomentumDensity<Dim, Frame::Inertial, DataType>, 0>,
       Tags::ConformalFactor<DataType>,
       Tags::LapseTimesConformalFactor<DataType>,
       Tags::ShiftExcess<DataType, Dim, Frame::Inertial>>;

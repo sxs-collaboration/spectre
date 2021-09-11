@@ -18,6 +18,7 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/PointwiseFunctions/AnalyticSolutions/Xcts/VerifySolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Xcts/Schwarzschild.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Tags/Conformal.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -53,10 +54,10 @@ using background_tags = tmpl::list<
     Tags::LongitudinalShiftBackgroundMinusDtConformalMetric<DataVector, 3,
                                                             Frame::Inertial>>;
 using matter_source_tags = tmpl::list<
-    Tags::Conformal<gr::Tags::EnergyDensity<DataVector>, 0>,
-    Tags::Conformal<gr::Tags::StressTrace<DataVector>, 0>,
-    Tags::Conformal<gr::Tags::MomentumDensity<3, Frame::Inertial, DataVector>,
-                    0>>;
+    gr::Tags::Conformal<gr::Tags::EnergyDensity<DataVector>, 0>,
+    gr::Tags::Conformal<gr::Tags::StressTrace<DataVector>, 0>,
+    gr::Tags::Conformal<
+        gr::Tags::MomentumDensity<3, Frame::Inertial, DataVector>, 0>>;
 using gr_tags = tmpl::list<gr::Tags::Lapse<DataVector>,
                            gr::Tags::Shift<3, Frame::Inertial, DataVector>>;
 using derived_tags = tmpl::list<

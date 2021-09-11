@@ -18,6 +18,7 @@
 #include "Options/ParseOptions.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Xcts/CommonVariables.tpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Tags/Conformal.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
@@ -248,8 +249,8 @@ template <typename DataType>
 void SchwarzschildVariables<DataType>::operator()(
     const gsl::not_null<Scalar<DataType>*> energy_density,
     const gsl::not_null<Cache*> /*cache*/,
-    Tags::Conformal<gr::Tags::EnergyDensity<DataType>,
-                    ConformalMatterScale> /*meta*/) const noexcept {
+    gr::Tags::Conformal<gr::Tags::EnergyDensity<DataType>,
+                        ConformalMatterScale> /*meta*/) const noexcept {
   std::fill(energy_density->begin(), energy_density->end(), 0.);
 }
 
@@ -257,8 +258,8 @@ template <typename DataType>
 void SchwarzschildVariables<DataType>::operator()(
     const gsl::not_null<Scalar<DataType>*> stress_trace,
     const gsl::not_null<Cache*> /*cache*/,
-    Tags::Conformal<gr::Tags::StressTrace<DataType>,
-                    ConformalMatterScale> /*meta*/) const noexcept {
+    gr::Tags::Conformal<gr::Tags::StressTrace<DataType>,
+                        ConformalMatterScale> /*meta*/) const noexcept {
   std::fill(stress_trace->begin(), stress_trace->end(), 0.);
 }
 
@@ -266,8 +267,8 @@ template <typename DataType>
 void SchwarzschildVariables<DataType>::operator()(
     const gsl::not_null<tnsr::I<DataType, 3>*> momentum_density,
     const gsl::not_null<Cache*> /*cache*/,
-    Tags::Conformal<gr::Tags::MomentumDensity<3, Frame::Inertial, DataType>,
-                    ConformalMatterScale> /*meta*/) const noexcept {
+    gr::Tags::Conformal<gr::Tags::MomentumDensity<3, Frame::Inertial, DataType>,
+                        ConformalMatterScale> /*meta*/) const noexcept {
   std::fill(momentum_density->begin(), momentum_density->end(), 0.);
 }
 

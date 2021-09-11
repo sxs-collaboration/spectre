@@ -7,10 +7,15 @@
 
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Tags/Conformal.hpp"
 
 namespace {
 struct ArbitraryFrame;
 struct ArbitraryType;
+
+struct Tag : db::SimpleTag {
+  using type = int;
+};
 }  // namespace
 
 template <size_t Dim, typename Frame, typename Type>
@@ -83,4 +88,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.Tags",
   test_simple_tags<1, ArbitraryFrame, ArbitraryType>();
   test_simple_tags<2, ArbitraryFrame, ArbitraryType>();
   test_simple_tags<3, ArbitraryFrame, ArbitraryType>();
+
+  TestHelpers::db::test_prefix_tag<gr::Tags::Conformal<Tag, -3>>(
+      "Conformal(Tag)");
 }

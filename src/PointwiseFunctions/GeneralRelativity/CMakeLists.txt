@@ -64,3 +64,4 @@ target_link_libraries(
   )
 
 add_subdirectory(GeneralizedHarmonic)
+add_subdirectory(Tags)

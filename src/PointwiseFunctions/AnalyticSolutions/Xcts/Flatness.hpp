@@ -15,6 +15,7 @@
 #include "Parallel/CharmPupable.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Xcts/AnalyticSolution.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Tags/Conformal.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -93,18 +94,18 @@ class Flatness : public AnalyticSolution<Registrars> {
         ::Tags::div<Tags::LongitudinalShiftBackgroundMinusDtConformalMetric<
             DataVector, 3, Frame::Inertial>>,
         Tags::ShiftDotDerivExtrinsicCurvatureTrace<DataVector>,
-        Tags::Conformal<gr::Tags::EnergyDensity<DataType>, 0>,
-        Tags::Conformal<gr::Tags::StressTrace<DataType>, 0>,
-        Tags::Conformal<gr::Tags::MomentumDensity<3, Frame::Inertial, DataType>,
-                        0>,
-        Tags::Conformal<gr::Tags::EnergyDensity<DataType>, 6>,
-        Tags::Conformal<gr::Tags::StressTrace<DataType>, 6>,
-        Tags::Conformal<gr::Tags::MomentumDensity<3, Frame::Inertial, DataType>,
-                        6>,
-        Tags::Conformal<gr::Tags::EnergyDensity<DataType>, 8>,
-        Tags::Conformal<gr::Tags::StressTrace<DataType>, 8>,
-        Tags::Conformal<gr::Tags::MomentumDensity<3, Frame::Inertial, DataType>,
-                        8>,
+        gr::Tags::Conformal<gr::Tags::EnergyDensity<DataType>, 0>,
+        gr::Tags::Conformal<gr::Tags::StressTrace<DataType>, 0>,
+        gr::Tags::Conformal<
+            gr::Tags::MomentumDensity<3, Frame::Inertial, DataType>, 0>,
+        gr::Tags::Conformal<gr::Tags::EnergyDensity<DataType>, 6>,
+        gr::Tags::Conformal<gr::Tags::StressTrace<DataType>, 6>,
+        gr::Tags::Conformal<
+            gr::Tags::MomentumDensity<3, Frame::Inertial, DataType>, 6>,
+        gr::Tags::Conformal<gr::Tags::EnergyDensity<DataType>, 8>,
+        gr::Tags::Conformal<gr::Tags::StressTrace<DataType>, 8>,
+        gr::Tags::Conformal<
+            gr::Tags::MomentumDensity<3, Frame::Inertial, DataType>, 8>,
         ::Tags::FixedSource<Tags::ConformalFactor<DataType>>,
         ::Tags::FixedSource<Tags::LapseTimesConformalFactor<DataType>>,
         ::Tags::FixedSource<Tags::ShiftExcess<DataType, 3, Frame::Inertial>>>;
