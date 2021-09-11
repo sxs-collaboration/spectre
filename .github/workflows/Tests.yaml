@@ -253,11 +253,15 @@ jobs:
         run: |
           make doc-coverage
       # Upload as an artifact to make available to PRs
+      - name: Prepare for upload
+        working-directory: /work/build
+        run: |
+          zip -qr docs-html.zip docs/html
       - name: Upload documentation
         uses: actions/upload-artifact@v2
         with:
           name: docs-html
-          path: /work/build/docs/html
+          path: /work/build/docs-html.zip
       # Deploy to gh-pages on pushes to develop
       - name: Deploy to gh-pages
         if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
