@@ -106,7 +106,7 @@ add_grmhd_executable(
 
 add_grmhd_executable(
   MagnetizedTovStar
-  grmhd::AnalyticData::MagnetizedTovStar
+  grmhd::AnalyticData::MagnetizedTovStar,CenterOfStar
   "${LIBS_TO_LINK}"
   )
 
