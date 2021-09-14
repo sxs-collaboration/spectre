@@ -180,10 +180,31 @@ QuaternionFunctionOfTime<MaxDeriv>::quat_func_and_2_derivs(
                                    quaternion_to_datavector(dt2quat)};
 }
 
+template <size_t MaxDeriv>
+bool operator==(const QuaternionFunctionOfTime<MaxDeriv>& lhs,
+                const QuaternionFunctionOfTime<MaxDeriv>& rhs) noexcept {
+  return lhs.stored_quaternions_and_times_ ==
+             rhs.stored_quaternions_and_times_ and
+         lhs.omega_f_of_t_ == rhs.omega_f_of_t_;
+}
+
+template <size_t MaxDeriv>
+bool operator!=(const QuaternionFunctionOfTime<MaxDeriv>& lhs,
+                const QuaternionFunctionOfTime<MaxDeriv>& rhs) noexcept {
+  return not(lhs == rhs);
+}
+
 // do explicit instantiation of MaxDeriv = {2,3,4}
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data) template class QuaternionFunctionOfTime<DIM(data)>;
+#define INSTANTIATE(_, data)                                            \
+  template class QuaternionFunctionOfTime<DIM(data)>;                   \
+  template bool operator==                                              \
+      <DIM(data)>(const QuaternionFunctionOfTime<DIM(data)>&,           \
+                  const QuaternionFunctionOfTime<DIM(data)>&) noexcept; \
+  template bool operator!=                                              \
+      <DIM(data)>(const QuaternionFunctionOfTime<DIM(data)>&,           \
+                  const QuaternionFunctionOfTime<DIM(data)>&) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (2, 3, 4))
 
