@@ -44,6 +44,13 @@ template <typename DataType>
 struct SqrtDetSpatialMetric : db::SimpleTag {
   using type = Scalar<DataType>;
 };
+/*!
+ * \brief Spatial derivative of the inverse of the spatial metric.
+ */
+template <size_t Dim, typename Frame, typename DataType>
+struct DerivInverseSpatialMetric : db::SimpleTag {
+  using type = tnsr::iJJ<DataType, Dim, Frame>;
+};
 template <size_t Dim, typename Frame, typename DataType>
 struct Shift : db::SimpleTag {
   using type = tnsr::I<DataType, Dim, Frame>;
