@@ -85,9 +85,11 @@ namespace fd {
  *                              ^ reconstructed_lower_side_of_face_vars
  * \endcode
  *
- * Notice that the `reconstructed_upper_side_of_face_vars` are on the lower side
- * of the cell, while the `reconstructed_lower_side_of_face_vars` are on the
- * upper side of the cell.
+ * Notice that the `reconstructed_upper_side_of_face_vars` are actually on the
+ * lower side of the cells, while the `reconstructed_lower_side_of_face_vars`
+ * are on the upper side of the cells. The `upper` and `lower` here refers to
+ * which side of the interface the quantity is on, not from the perspective of
+ * each cells.
  */
 namespace reconstruction {
 namespace detail {
