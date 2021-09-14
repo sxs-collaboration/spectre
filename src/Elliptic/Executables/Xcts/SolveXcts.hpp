@@ -12,6 +12,7 @@
 #include "Elliptic/Actions/InitializeAnalyticSolution.hpp"
 #include "Elliptic/Actions/InitializeFields.hpp"
 #include "Elliptic/Actions/InitializeFixedSources.hpp"
+#include "Elliptic/BoundaryConditions/Tags/BoundaryFields.hpp"
 #include "Elliptic/DiscontinuousGalerkin/Actions/ApplyOperator.hpp"
 #include "Elliptic/DiscontinuousGalerkin/Actions/InitializeDomain.hpp"
 #include "Elliptic/DiscontinuousGalerkin/DgElementArray.hpp"
@@ -171,7 +172,14 @@ struct Metavariables {
   // This data needs to be communicated on subdomain overlap regions
   using communicated_overlap_tags = tmpl::list<
       // For linearized sources
-      fields_tag, fluxes_tag>;
+      fields_tag, fluxes_tag,
+      // For linearized boundary conditions
+      domain::Tags::Faces<volume_dim, Xcts::Tags::ConformalFactor<DataVector>>,
+      domain::Tags::Faces<volume_dim,
+                          Xcts::Tags::LapseTimesConformalFactor<DataVector>>,
+      domain::Tags::Faces<volume_dim,
+                          ::Tags::NormalDotFlux<Xcts::Tags::ShiftExcess<
+                              DataVector, volume_dim, Frame::Inertial>>>>;
   using schwarz_smoother = LinearSolver::Schwarz::Schwarz<
       typename multigrid::smooth_fields_tag,
       SolveXcts::OptionTags::SchwarzSmootherGroup, subdomain_operator,
@@ -247,7 +255,11 @@ struct Metavariables {
           system, background_tag, typename schwarz_smoother::options_group>,
       ::Initialization::Actions::AddComputeTags<tmpl::list<
           // Constraint norms
-          Xcts::Tags::SpacetimeQuantitiesCompute<constraint_fields>>>,
+          Xcts::Tags::SpacetimeQuantitiesCompute<constraint_fields>,
+          // For linearized boundary conditions
+          elliptic::Tags::BoundaryFieldsCompute<volume_dim, fields_tag>,
+          elliptic::Tags::BoundaryFluxesCompute<volume_dim, fields_tag,
+                                                fluxes_tag>>>,
       Initialization::Actions::RemoveOptionsAndTerminatePhase>;
 
   template <bool Linearized>

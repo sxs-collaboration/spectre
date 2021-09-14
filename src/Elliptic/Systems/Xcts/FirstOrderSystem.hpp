@@ -9,6 +9,7 @@
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "Elliptic/BoundaryConditions/AnalyticSolution.hpp"
 #include "Elliptic/BoundaryConditions/BoundaryCondition.hpp"
+#include "Elliptic/Systems/Xcts/BoundaryConditions/ApparentHorizon.hpp"
 #include "Elliptic/Systems/Xcts/BoundaryConditions/Flatness.hpp"
 #include "Elliptic/Systems/Xcts/FluxesAndSources.hpp"
 #include "Elliptic/Systems/Xcts/Geometry.hpp"
@@ -273,7 +274,9 @@ struct FirstOrderSystem {
       elliptic::BoundaryConditions::BoundaryCondition<
           3, tmpl::list<elliptic::BoundaryConditions::Registrars::
                             AnalyticSolution<FirstOrderSystem>,
-                        BoundaryConditions::Registrars::Flatness>>;
+                        BoundaryConditions::Registrars::Flatness,
+                        BoundaryConditions::Registrars::ApparentHorizon<
+                            ConformalGeometry>>>;
 
   // The tag of the operator to compute magnitudes on the manifold, e.g. to
   // normalize vectors on the faces of an element

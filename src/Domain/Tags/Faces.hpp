@@ -11,6 +11,7 @@
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -23,6 +24,7 @@ namespace Tags {
 /// The `Tag` on element faces
 template <size_t Dim, typename Tag>
 struct Faces : db::PrefixTag, db::SimpleTag {
+  static constexpr size_t volume_dim = Dim;
   using tag = Tag;
   using type = DirectionMap<Dim, typename Tag::type>;
 };
@@ -47,9 +49,16 @@ using make_faces_tags =
 }  // namespace domain
 
 namespace db {
-template <size_t Dim, typename VariablesTag>
-struct Subitems<domain::Tags::Faces<Dim, VariablesTag>,
-                Requires<tt::is_a_v<Variables, typename VariablesTag::type>>> {
+template <typename FacesTag>
+struct Subitems<
+    FacesTag,
+    Requires<std::is_base_of_v<domain::Tags::Faces<FacesTag::volume_dim,
+                                                 typename FacesTag::tag>,
+                             FacesTag> and
+             tt::is_a_v<Variables, typename FacesTag::tag::type>>> {
+  static constexpr size_t Dim = FacesTag::volume_dim;
+  using VariablesTag = typename FacesTag::tag;
+
   template <typename LocalTag>
   using faces_tag = domain::Tags::Faces<Dim, LocalTag>;
 
@@ -101,3 +110,31 @@ struct Subitems<domain::Tags::Faces<Dim, VariablesTag>,
   }
 };
 }  // namespace db
+
+namespace Tags {
+/// \brief Specialization of a subitem tag for a compute tag that inherits off
+/// `domain::Tags::Faces`.
+///
+/// This tag holds a map from faces to _one_ of the subitems, typically one
+/// tensor in a Variables. The `FacesSubitemTag` represents the particular
+/// tensor on faces, and the `FacesComputeTag` represents the full Variables on
+/// faces.
+template <typename FacesSubitemTag, typename FacesComputeTag>
+struct Subitem<
+    FacesSubitemTag, FacesComputeTag,
+    Requires<
+        std::is_base_of_v<domain::Tags::Faces<FacesComputeTag::volume_dim,
+                                              typename FacesComputeTag::tag>,
+                          FacesComputeTag>>>
+    : db::ComputeTag, FacesSubitemTag {
+  using base = FacesSubitemTag;
+  using return_type = typename base::type;
+  using parent_tag = FacesComputeTag;
+  using argument_tags = tmpl::list<parent_tag>;
+  static void function(const gsl::not_null<return_type*> subitems,
+                       const typename parent_tag::type& parent_value) noexcept {
+    ::db::Subitems<parent_tag>::template create_compute_item<base>(
+        subitems, parent_value);
+  }
+};
+}  // namespace Tags

@@ -10,7 +10,9 @@
 #include <vector>
 
 #include "DataStructures/Tensor/EagerMath/Determinant.hpp"
+#include "DataStructures/Tensor/Slice.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/Variables.hpp"
 #include "Domain/CreateInitialElement.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/ElementMap.hpp"
@@ -20,8 +22,12 @@
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/Element.hpp"
+#include "Domain/Structure/IndexToSliceAt.hpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -78,11 +84,15 @@ void InitializeFacesAndMortars<Dim>::operator()(
         face_normals,
     const gsl::not_null<DirectionMap<Dim, Scalar<DataVector>>*>
     /*face_normal_magnitudes*/,
+    const gsl::not_null<DirectionMap<Dim, tnsr::ij<DataVector, Dim>>*>
+        deriv_unnormalized_face_normals,
     const gsl::not_null<::dg::MortarMap<Dim, Mesh<Dim - 1>>*> mortar_meshes,
     const gsl::not_null<::dg::MortarMap<Dim, ::dg::MortarSize<Dim - 1>>*>
         mortar_sizes,
     const Mesh<Dim>& mesh, const Element<Dim>& element,
     const ElementMap<Dim, Frame::Inertial>& element_map,
+    const InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>&
+        inv_jacobian,
     const std::vector<std::array<size_t, Dim>>& initial_extents)
     const noexcept {
   const Spectral::Quadrature quadrature = mesh.quadrature(0);
@@ -96,6 +106,38 @@ void InitializeFacesAndMortars<Dim>::operator()(
         interface_logical_coordinates(face_mesh, direction));
     (*face_normals)[direction] =
         unnormalized_face_normal(face_mesh, element_map, direction);
+  }
+  // Compute the Jacobian derivative numerically, because our coordinate maps
+  // currently don't provide it analytically.
+  if (not element.external_boundaries().empty()) {
+    ASSERT(mesh.quadrature(0) == Spectral::Quadrature::GaussLobatto,
+           "Slicing the Hessian to the boundary currently supports only "
+           "Gauss-Lobatto grids. Add support to "
+           "'elliptic::dg::InitializeFacesAndMortars'.");
+    using inv_jac_tag =
+        domain::Tags::InverseJacobian<Dim, Frame::Logical, Frame::Inertial>;
+    Variables<tmpl::list<inv_jac_tag>> vars_to_differentiate{
+        mesh.number_of_grid_points()};
+    get<inv_jac_tag>(vars_to_differentiate) = inv_jacobian;
+    const auto deriv_vars = partial_derivatives<tmpl::list<inv_jac_tag>>(
+        vars_to_differentiate, mesh, inv_jacobian);
+    const auto& deriv_inv_jac =
+        get<::Tags::deriv<inv_jac_tag, tmpl::size_t<Dim>, Frame::Inertial>>(
+            deriv_vars);
+    for (const auto& direction : element.external_boundaries()) {
+      const auto deriv_inv_jac_on_face =
+          data_on_slice(deriv_inv_jac, mesh.extents(), direction.dimension(),
+                        index_to_slice_at(mesh.extents(), direction));
+      auto& deriv_unnormalized_face_normal =
+          (*deriv_unnormalized_face_normals)[direction];
+      for (size_t i = 0; i < Dim; ++i) {
+        for (size_t j = 0; j < Dim; ++j) {
+          deriv_unnormalized_face_normal.get(i, j) =
+              direction.sign() *
+              deriv_inv_jac_on_face.get(i, direction.dimension(), j);
+        }
+      }
+    }
   }
   // Mortars
   const auto& element_id = element.id();
