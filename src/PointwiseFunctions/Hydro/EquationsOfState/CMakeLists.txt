@@ -7,6 +7,7 @@ spectre_target_sources(
   DarkEnergyFluid.cpp
   IdealFluid.cpp
   PolytropicFluid.cpp
+  Spectral.cpp
   )
 
 spectre_target_headers(
@@ -17,6 +18,7 @@ spectre_target_headers(
   EquationOfState.hpp
   IdealFluid.hpp
   PolytropicFluid.hpp
+  Spectral.hpp
   )
 
 add_subdirectory(Python)
