@@ -29,6 +29,7 @@
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
+#include "IO/Observer/Actions/RegisterEvents.hpp"
 #include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
@@ -273,6 +274,21 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe,
                                                       0);
   ActionTesting::emplace_group_component<observer_component>(&runner);
 
+  const auto ids_to_register =
+      observers::get_registration_observation_type_and_key(*observe, box);
+  const std::string expected_subfile_name{
+      "/volume_integrals" +
+      (std::is_same_v<ArraySectionIdTag, void> ? ""
+                                               : section.value_or("Unused"))};
+  const observers::ObservationKey expected_observation_key_for_reg(
+      expected_subfile_name);
+  if (std::is_same_v<ArraySectionIdTag, void> or section.has_value()) {
+    CHECK(ids_to_register->first == observers::TypeOfObservation::Reduction);
+    CHECK(ids_to_register->second == expected_observation_key_for_reg);
+  } else {
+    CHECK_FALSE(ids_to_register.has_value());
+  }
+
   observe->run(make_observation_box<db::AddComputeTags<>>(box),
                ActionTesting::cache<element_component>(runner, array_index),
                array_index, std::add_pointer_t<element_component>{});
@@ -282,17 +298,14 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe,
     return;
   }
 
-  const std::string expected_subfile_name{
-      "/volume_integrals" +
-      (std::is_same_v<ArraySectionIdTag, void> ? ""
-                                               : section.value_or("Unused"))};
-
   // Process the data
   runner.template invoke_queued_simple_action<observer_component>(0);
   CHECK(runner.template is_simple_action_queue_empty<observer_component>(0));
 
   const auto& results = MockContributeReductionData::results;
   CHECK(results.observation_id.value() == observation_time);
+  CHECK(results.observation_id.observation_key() ==
+        expected_observation_key_for_reg);
   CHECK(results.subfile_name == expected_subfile_name);
   CHECK(results.reduction_names == expected_reduction_names);
   CHECK(results.time == observation_time);
