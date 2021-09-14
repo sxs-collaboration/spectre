@@ -420,7 +420,8 @@ operator()(const typename ObservationValueTag::type& observation_value,
       subfile_path_ + section_observation_key.value();
   Parallel::simple_action<observers::Actions::ContributeReductionData>(
       local_observer,
-      observers::ObservationId(observation_value, subfile_path_ + ".dat"),
+      observers::ObservationId(observation_value,
+                               subfile_path_with_suffix + ".dat"),
       observers::ArrayComponentId{
           std::add_pointer_t<ParallelComponent>{nullptr},
           Parallel::ArrayIndex<ArrayIndex>(array_index)},

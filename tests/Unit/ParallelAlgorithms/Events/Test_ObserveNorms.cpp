@@ -228,6 +228,8 @@ void test(const std::unique_ptr<ObserveEvent> observe,
 
   const auto& results = MockContributeReductionData::results;
   CHECK(results.observation_id.value() == observation_time);
+  CHECK(results.observation_id.observation_key() ==
+        expected_observation_key_for_reg);
   CHECK(results.subfile_name == expected_subfile_name);
   CHECK(results.reduction_names[0] == "Time");
   CHECK(results.time == observation_time);
