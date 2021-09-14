@@ -92,12 +92,12 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Tags",
       evolution::dg::subcell::Tags::Inactive<Var1>>("Inactive(Var1)");
   TestHelpers::db::test_simple_tag<evolution::dg::subcell::Tags::Inactive<
       ::Tags::Variables<tmpl::list<Var1, Var2>>>>(
-      "Inactive(Variables(Var1,Var2))");
+      "Variables(Inactive(Var1),Inactive(Var2))");
   TestHelpers::db::test_simple_tag<
       evolution::dg::subcell::Tags::OnSubcells<Var1>>("OnSubcells(Var1)");
   TestHelpers::db::test_simple_tag<evolution::dg::subcell::Tags::OnSubcells<
       ::Tags::Variables<tmpl::list<Var1, Var2>>>>(
-      "OnSubcells(Variables(Var1,Var2))");
+      "Variables(OnSubcells(Var1),OnSubcells(Var2))");
   TestHelpers::db::test_simple_tag<
       evolution::dg::subcell::Tags::SubcellOptions>("SubcellOptions");
   TestHelpers::db::test_simple_tag<

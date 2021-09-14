@@ -26,9 +26,13 @@ struct OnSubcells : db::PrefixTag, db::SimpleTag {
 };
 
 /// \cond
+// This tag currently exposes its constituents as subitems. Possible
+// compile-time optimization: Remove this template specialization and use
+// `OnSubcells<VariablesTag<tmpl::list<Tag1, Tag2>>>` instead of the individual
+// `OnSubcells<Tag1>`.
 template <typename TagList>
-struct OnSubcells<::Tags::Variables<TagList>> : db::PrefixTag,
-                                                   db::SimpleTag {
+struct OnSubcells<::Tags::Variables<TagList>>
+    : ::Tags::Variables<db::wrap_tags_in<OnSubcells, TagList>> {
  private:
   using wrapped_tags_list = db::wrap_tags_in<OnSubcells, TagList>;
 

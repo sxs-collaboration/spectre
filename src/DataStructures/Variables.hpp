@@ -44,9 +44,12 @@
 /// \cond
 template <typename X, typename Symm, typename IndexList>
 class Tensor;
-
 template <typename TagsList>
 class Variables;
+namespace Tags {
+template <typename TagsList>
+class Variables;
+}  // namespace Tags
 /// \endcond
 
 /*!
@@ -867,8 +870,24 @@ struct NumberOfPoints<Variables<TagList>> {
 }  // namespace MakeWithValueImpls
 
 namespace db {
+// Enable subitems for ::Tags::Variables and derived tags (e.g. compute tags).
+// Other tags that hold a `Variables` don't expose the constituent tensors as
+// subitems by default.
+namespace Variables_detail {
+// Check if the argument is a `::Tags::Variables`, or derived from it. Can't use
+// `tt:is_a_v` because we also want to match derived classes. Can't use
+// `std::is_base_of` because `::Tags::Variables` is a template.
+template <typename TagsList>
+constexpr std::true_type is_a_variables_tag(::Tags::Variables<TagsList>&&) {
+  return {};
+}
+constexpr std::false_type is_a_variables_tag(...) { return {}; }
 template <typename Tag>
-struct Subitems<Tag, Requires<tt::is_a_v<Variables, typename Tag::type>>> {
+static constexpr bool is_a_variables_tag_v =
+    decltype(is_a_variables_tag(std::declval<Tag>()))::value;
+}  // namespace Variables_detail
+template <typename Tag>
+struct Subitems<Tag, Requires<Variables_detail::is_a_variables_tag_v<Tag>>> {
   using type = typename Tag::type::tags_list;
 
   template <typename Subtag, typename LocalTag = Tag>
