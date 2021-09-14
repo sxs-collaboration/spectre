@@ -94,6 +94,24 @@ void test_construction_3d() {
   test_serialization(lower_zeta);
 }
 
+void test_semantics() {
+  check_cmp(Direction<1>::lower_xi(), Direction<1>::upper_xi());
+  check_cmp(Direction<2>::lower_xi(), Direction<2>::upper_xi());
+  check_cmp(Direction<2>::upper_xi(), Direction<2>::lower_eta());
+  check_cmp(Direction<2>::lower_eta(), Direction<2>::upper_eta());
+  check_cmp(Direction<3>::lower_xi(), Direction<3>::upper_xi());
+  check_cmp(Direction<3>::upper_xi(), Direction<3>::lower_eta());
+  check_cmp(Direction<3>::lower_eta(), Direction<3>::upper_eta());
+  check_cmp(Direction<3>::upper_eta(), Direction<3>::lower_zeta());
+  check_cmp(Direction<3>::lower_zeta(), Direction<3>::upper_zeta());
+  std::is_sorted(Direction<1>::all_directions().begin(),
+                 Direction<1>::all_directions().end());
+  std::is_sorted(Direction<2>::all_directions().begin(),
+                 Direction<2>::all_directions().end());
+  std::is_sorted(Direction<3>::all_directions().begin(),
+                 Direction<3>::all_directions().end());
+}
+
 void test_helper_functions() {
   auto upper_xi_3 = Direction<3>::upper_xi();
   CHECK(upper_xi_3.axis() == Direction<3>::Axis::Xi);
@@ -214,6 +232,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Structure.Direction", "[Domain][Unit]") {
   test_construction_1d();
   test_construction_2d();
   test_construction_3d();
+  test_semantics();
   test_helper_functions();
   test_std_hash();
   test_direction_hash();
