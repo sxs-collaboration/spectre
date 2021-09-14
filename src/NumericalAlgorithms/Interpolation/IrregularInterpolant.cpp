@@ -217,6 +217,31 @@ void Irregular<Dim>::pup(PUP::er& p) {
 }
 
 template <size_t Dim>
+void Irregular<Dim>::interpolate(const gsl::not_null<DataVector*> result,
+                                 const DataVector& input) const {
+  const size_t m = interpolation_matrix_.rows();
+  const size_t k = interpolation_matrix_.columns();
+  ASSERT(k == input.size(),
+         "Number of points in 'input', "
+             << input.size()
+             << ",\n disagrees with the size of the source_mesh, " << k
+             << ", that was passed into the constructor");
+  if (result->size() != m) {
+    *result = DataVector{m};
+  }
+  dgemm_('n', 'n', m, 1, k, 1.0, interpolation_matrix_.data(),
+         interpolation_matrix_.spacing(), input.data(), k, 0.0, result->data(),
+         m);
+}
+
+template <size_t Dim>
+DataVector Irregular<Dim>::interpolate(const DataVector& input) const {
+  DataVector result{input.size()};
+  interpolate(make_not_null(&result), input);
+  return result;
+}
+
+template <size_t Dim>
 bool operator!=(const Irregular<Dim>& lhs, const Irregular<Dim>& rhs) {
   return not(lhs == rhs);
 }
