@@ -27,6 +27,17 @@ void test_grad_grad_lapse(const DataType& used_for_size) {
           &::Ccz4::grad_grad_lapse<Dim, Frame::Inertial, DataType>),
       "DerivLapse", "grad_grad_lapse", {{{-1., 1.}}}, used_for_size);
 }
+
+template <size_t Dim, typename DataType>
+void test_divergence_lapse(const DataType& used_for_size) {
+  pypp::check_with_random_values<1>(
+      static_cast<Scalar<DataType> (*)(
+          const Scalar<DataType>&,
+          const tnsr::II<DataType, Dim, Frame::Inertial>&,
+          const tnsr::ij<DataType, Dim, Frame::Inertial>&)>(
+          &::Ccz4::divergence_lapse<Dim, Frame::Inertial, DataType>),
+      "DerivLapse", "divergence_lapse", {{{-1., 1.}}}, used_for_size);
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Ccz4.DerivLapse",
@@ -35,4 +46,5 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Ccz4.DerivLapse",
 
   GENERATE_UNINITIALIZED_DOUBLE_AND_DATAVECTOR;
   CHECK_FOR_DOUBLES_AND_DATAVECTORS(test_grad_grad_lapse, (1, 2, 3));
+  CHECK_FOR_DOUBLES_AND_DATAVECTORS(test_divergence_lapse, (1, 2, 3));
 }

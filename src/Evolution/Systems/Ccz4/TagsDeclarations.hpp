@@ -39,6 +39,8 @@ struct ChristoffelSecondKind;
 template <size_t Dim, typename Frame = Frame::Inertial,
           typename DataType = DataVector>
 struct GradGradLapse;
+template <typename DataType = DataVector>
+struct DivergenceLapse;
 }  // namespace Tags
 
 /// \brief Input option tags for the generalized harmonic evolution system

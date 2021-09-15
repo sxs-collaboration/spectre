@@ -39,4 +39,34 @@ tnsr::ij<DataType, Dim, Frame> grad_grad_lapse(
     const tnsr::i<DataType, Dim, Frame>& field_a,
     const tnsr::ij<DataType, Dim, Frame>& d_field_a) noexcept;
 /// @}
+
+/// @{
+/*!
+ * \ingroup GeneralRelativityGroup
+ * \brief Computes the divergence of the lapse.
+ *
+ * \details Computes the divergence as:
+ * \f{align}
+ *     \nabla^i \nabla_i \alpha &= \phi^2 \tilde{\gamma}^{ij}
+ *         (\nabla_i \nabla_j \alpha)
+ * \f}
+ * where \f$\phi\f$, \f$\tilde{\gamma}^{ij}\f$, and
+ * \f$\nabla_i \nabla_j \alpha\f$ are the conformal factor, inverse conformal
+ * spatial metric, and the gradient of the gradient of the lapse defined by
+ * `Ccz4::Tags::ConformalFactor`, `Ccz4::Tags::InverseConformalMetric`, and
+ * `Ccz4::Tags::GradGradLapse`, respectively.
+ */
+template <size_t Dim, typename Frame, typename DataType>
+void divergence_lapse(
+    const gsl::not_null<Scalar<DataType>*> result,
+    const Scalar<DataType>& conformal_factor,
+    const tnsr::II<DataType, Dim, Frame>& inverse_conformal_metric,
+    const tnsr::ij<DataType, Dim, Frame>& grad_grad_lapse) noexcept;
+
+template <size_t Dim, typename Frame, typename DataType>
+Scalar<DataType> divergence_lapse(
+    const Scalar<DataType>& conformal_factor,
+    const tnsr::II<DataType, Dim, Frame>& inverse_conformal_metric,
+    const tnsr::ij<DataType, Dim, Frame>& grad_grad_lapse) noexcept;
+/// @}
 }  // namespace Ccz4
