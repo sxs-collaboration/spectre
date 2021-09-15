@@ -3,6 +3,8 @@
 
 # Executable: EvolveScalarWavePlaneWave2D
 # Check: parse;execute
+# ExpectedOutput:
+#   ScalarWavePlaneWave2DReductions.h5
 
 AnalyticSolution:
   PlaneWave:
@@ -17,7 +19,7 @@ AnalyticSolution:
 PhaseChangeAndTriggers:
 
 Evolution:
-  InitialTime: 0.0
+  InitialTime: &initial_time 0.0
   InitialTimeStep: 0.001
   InitialSlabSize: 0.01
   TimeStepper:
@@ -68,6 +70,12 @@ EventsAndTriggers:
   : - Completion
 
 EventsAndDenseTriggers:
+  # Test LTS dense output at the initial time
+  ? Times:
+      Specified:
+        Values: [*initial_time]
+  : - ObserveErrorNorms:
+        SubfileName: Errors
 
 Observers:
   VolumeFileName: "ScalarWavePlaneWave2DVolume"

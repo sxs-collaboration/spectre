@@ -130,7 +130,13 @@ struct RunEventsAndDenseTriggers {
         return {std::move(box), Parallel::AlgorithmExecution::Continue};
       }
 
-      if (db::get<::Tags::Time>(box) != next_trigger) {
+      // This can only be true the first time through the loop,
+      // because triggers are not allowed to reschedule for the time
+      // they just triggered at.  This check is primarily to avoid
+      // special-case bookkeeping for the initial simulation time.
+      const bool already_at_correct_time =
+          db::get<::Tags::Time>(box) == next_trigger;
+      if (not already_at_correct_time) {
         time_restorer.save();
         db::mutate<::Tags::Time>(
             make_not_null(&box),
@@ -146,7 +152,7 @@ struct RunEventsAndDenseTriggers {
         case TriggeringState::NotReady:
           return {std::move(box), Parallel::AlgorithmExecution::Retry};
         case TriggeringState::NeedsEvolvedVariables:
-          {
+          if (not already_at_correct_time) {
             if constexpr (Metavariables::local_time_stepping) {
               if (not dg::Actions::ApplyBoundaryCorrections<Metavariables>::
                       template receive_local_time_stepping<true>(
