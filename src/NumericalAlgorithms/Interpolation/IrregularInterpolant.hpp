@@ -25,7 +25,12 @@ class er;
 namespace intrp {
 
 /// \ingroup NumericalAlgorithmsGroup
-/// Interpolates a `Variables` onto an arbitrary set of points.
+/// \brief Interpolates a `Variables` onto an arbitrary set of points.
+///
+/// \details If the `source_mesh` uses Spectral::Basis::FiniteDifference,
+/// linear interpolation is done in each dimension; otherwise it uses the
+/// barycentric interpolation provided by Spectral::interpolation_matrix in each
+/// dimension.
 template <size_t Dim>
 class Irregular {
  public:
