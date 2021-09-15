@@ -84,3 +84,11 @@ add_generalized_harmonic_executable_without_horizon(
   GeneralizedHarmonic::Solutions::WrappedGr<gr::Solutions::GaugeWave<3>>
   "${LIBS_TO_LINK};GeneralRelativitySolutions"
 )
+
+add_spectre_parallel_executable(
+  "EvolveGhBinaryBlackHole"
+  EvolveBinaryBlackHole
+  Evolution/Executables/GeneralizedHarmonic
+  "EvolutionMetavars"
+  "${LIBS_TO_LINK};GeneralRelativitySolutions;Importers"
+)
