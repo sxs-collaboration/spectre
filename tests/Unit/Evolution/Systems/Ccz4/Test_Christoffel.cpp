@@ -27,6 +27,18 @@ void test_conformal_christoffel_second_kind(const DataType& used_for_size) {
       "Christoffel", "conformal_christoffel_second_kind", {{{-1., 1.}}},
       used_for_size);
 }
+
+template <size_t Dim, typename DataType>
+void test_christoffel_second_kind(const DataType& used_for_size) {
+  pypp::check_with_random_values<1>(
+      static_cast<tnsr::Ijj<DataType, Dim, Frame::Inertial> (*)(
+          const tnsr::ii<DataType, Dim, Frame::Inertial>&,
+          const tnsr::II<DataType, Dim, Frame::Inertial>&,
+          const tnsr::i<DataType, Dim, Frame::Inertial>&,
+          const tnsr::Ijj<DataType, Dim, Frame::Inertial>&)>(
+          &::Ccz4::christoffel_second_kind<Dim, Frame::Inertial, DataType>),
+      "Christoffel", "christoffel_second_kind", {{{-1., 1.}}}, used_for_size);
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Ccz4.Christoffel",
@@ -36,4 +48,5 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Ccz4.Christoffel",
   GENERATE_UNINITIALIZED_DOUBLE_AND_DATAVECTOR;
   CHECK_FOR_DOUBLES_AND_DATAVECTORS(test_conformal_christoffel_second_kind,
                                     (1, 2, 3));
+  CHECK_FOR_DOUBLES_AND_DATAVECTORS(test_christoffel_second_kind, (1, 2, 3));
 }

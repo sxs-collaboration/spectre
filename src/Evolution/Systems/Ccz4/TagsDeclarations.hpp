@@ -33,6 +33,9 @@ struct FieldP;
 template <size_t Dim, typename Frame = Frame::Inertial,
           typename DataType = DataVector>
 struct ConformalChristoffelSecondKind;
+template <size_t Dim, typename Frame = Frame::Inertial,
+          typename DataType = DataVector>
+struct ChristoffelSecondKind;
 }  // namespace Tags
 
 /// \brief Input option tags for the generalized harmonic evolution system
