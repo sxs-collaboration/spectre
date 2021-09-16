@@ -97,3 +97,8 @@ def extrinsic_curvature(lapse, shift, deriv_shift, spatial_metric,
         - dt_spatial_metric
     ext_curve *= 0.5 / lapse
     return ext_curve
+
+
+def deriv_inverse_spatial_metric(inverse_spatial_metric, d_spatial_metric):
+    return -np.einsum("in,mj,knm->kij", inverse_spatial_metric,
+                      inverse_spatial_metric, d_spatial_metric)

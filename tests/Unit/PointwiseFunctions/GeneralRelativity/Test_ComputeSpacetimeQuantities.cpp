@@ -20,6 +20,7 @@
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
+#include "PointwiseFunctions/GeneralRelativity/DerivativeSpatialMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/DerivativesOfSpacetimeMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/DetAndInverseSpatialMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ExtrinsicCurvature.hpp"
@@ -179,6 +180,16 @@ void test_compute_spatial_metric_lapse_shift(const T& used_for_size) {
   CHECK_ITERABLE_APPROX(lapse, lapse_test);
 }
 
+template <size_t Dim, typename DataType>
+void test_compute_deriv_inverse_spatial_metric(const DataType& used_for_size) {
+  pypp::check_with_random_values<1>(
+      static_cast<tnsr::iJJ<DataType, Dim, Frame::Inertial> (*)(
+          const tnsr::II<DataType, Dim, Frame::Inertial>&,
+          const tnsr::ijj<DataType, Dim, Frame::Inertial>&) noexcept>(
+          &gr::deriv_inverse_spatial_metric<Dim, Frame::Inertial, DataType>),
+      "ComputeSpacetimeQuantities", "deriv_inverse_spatial_metric",
+      {{{-10., 10.}}}, used_for_size);
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.SpacetimeDecomp",
@@ -201,6 +212,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.SpacetimeDecomp",
   CHECK_FOR_DOUBLES_AND_DATAVECTORS(test_compute_spatial_metric_lapse_shift,
                                     (1, 2, 3));
   CHECK_FOR_DOUBLES_AND_DATAVECTORS(test_compute_extrinsic_curvature,
+                                    (1, 2, 3));
+  CHECK_FOR_DOUBLES_AND_DATAVECTORS(test_compute_deriv_inverse_spatial_metric,
                                     (1, 2, 3));
 
   // Check that compute items work correctly in the DataBox
