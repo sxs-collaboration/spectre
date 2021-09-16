@@ -49,7 +49,6 @@ set(LIBS_TO_LINK
   NewtonianEulerAnalyticData
   NewtonianEulerInstantiations
   NewtonianEulerLimiters
-  NewtonianEulerNumericalFluxes
   NewtonianEulerSolutions
   NewtonianEulerSources
   Options

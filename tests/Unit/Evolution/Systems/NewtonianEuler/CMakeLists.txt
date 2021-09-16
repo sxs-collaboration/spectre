@@ -34,7 +34,6 @@ set(LIBRARY_SOURCES
   )
 
 add_subdirectory(Limiters)
-add_subdirectory(NumericalFluxes)
 add_subdirectory(Sources)
 
 add_test_library(
