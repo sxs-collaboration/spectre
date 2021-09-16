@@ -111,6 +111,23 @@ template <size_t Dim, typename Frame, typename DataType>
 struct FieldP : db::SimpleTag {
   using type = tnsr::i<DataType, Dim, Frame>;
 };
+
+/*!
+ * \brief The conformal spatial christoffel symbols of the second kind
+ *
+ * \details We define:
+ * \f{align}
+ *     \tilde{\Gamma}^k_{ij} &=
+ *         \tilde{\gamma}^{kl} (D_{ijl} + D_{jil} - D_{lij})
+ * \f}
+ * where \f$\tilde{\gamma}^{ij}\f$ and \f$D_{ijk}\f$ are the inverse conformal
+ * spatial metric and the CCZ4 auxiliary variable defined by
+ * `Ccz4::Tags::InverseConformalMetric` and `Ccz4::Tags::FieldD`, respectively.
+ */
+template <size_t Dim, typename Frame, typename DataType>
+struct ConformalChristoffelSecondKind : db::SimpleTag {
+  using type = tnsr::Ijj<DataType, Dim, Frame>;
+};
 }  // namespace Tags
 
 namespace OptionTags {

@@ -30,6 +30,9 @@ struct LogConformalFactor;
 template <size_t Dim, typename Frame = Frame::Inertial,
           typename DataType = DataVector>
 struct FieldP;
+template <size_t Dim, typename Frame = Frame::Inertial,
+          typename DataType = DataVector>
+struct ConformalChristoffelSecondKind;
 }  // namespace Tags
 
 /// \brief Input option tags for the generalized harmonic evolution system

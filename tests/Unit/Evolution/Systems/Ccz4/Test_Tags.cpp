@@ -35,6 +35,9 @@ void test_simple_tags() {
       "LogConformalFactor");
   TestHelpers::db::test_simple_tag<Ccz4::Tags::FieldP<Dim, Frame, DataType>>(
       "FieldP");
+  TestHelpers::db::test_simple_tag<
+      Ccz4::Tags::ConformalChristoffelSecondKind<Dim, Frame, DataType>>(
+      "ConformalChristoffelSecondKind");
 }
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Ccz4.Tags", "[Unit][Evolution]") {
