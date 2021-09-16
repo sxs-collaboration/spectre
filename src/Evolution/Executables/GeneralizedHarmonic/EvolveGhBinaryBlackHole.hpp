@@ -30,7 +30,6 @@
 #include "Evolution/EventsAndDenseTriggers/DenseTriggers/Factory.hpp"
 #include "Evolution/Executables/GeneralizedHarmonic/GeneralizedHarmonicBase.hpp"
 #include "Evolution/Initialization/DgDomain.hpp"
-#include "Evolution/Initialization/DiscontinuousGalerkin.hpp"
 #include "Evolution/Initialization/Evolution.hpp"
 #include "Evolution/Initialization/NonconservativeSystem.hpp"
 #include "Evolution/NumericInitialData.hpp"
