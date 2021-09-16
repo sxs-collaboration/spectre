@@ -185,5 +185,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2))
 #undef INSTANTIATION
 #undef TAGS_LIST
 #undef THERMO_DIM
-#undef DIM
 }  // namespace grmhd::ValenciaDivClean::fd
