@@ -5,6 +5,7 @@ set(LIBRARY "Test_Ccz4")
 
 set(LIBRARY_SOURCES
   Test_Christoffel.cpp
+  Test_DerivChristoffel.cpp
   Test_DerivLapse.cpp
   Test_Tags.cpp
   )
