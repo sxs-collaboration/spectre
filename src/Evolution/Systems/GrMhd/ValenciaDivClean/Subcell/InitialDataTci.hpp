@@ -22,6 +22,17 @@ class Variables;
 /// \endcond
 
 namespace grmhd::ValenciaDivClean::subcell {
+namespace detail {
+bool initial_data_tci_work(
+    const Scalar<DataVector>& dg_tilde_d,
+    const Scalar<DataVector>& dg_tilde_tau,
+    const Scalar<DataVector>& subcell_tilde_d,
+    const Scalar<DataVector>& subcell_tilde_tau,
+    const tnsr::I<DataVector, 3, Frame::Inertial>& dg_tilde_b,
+    double persson_exponent, const Mesh<3>& dg_mesh,
+    const TciOptions& tci_options);
+}  // namespace detail
+
 /*!
  * \brief The troubled-cell indicator run on DG initial data to see if we need
  * to switch to subcell.
