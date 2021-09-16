@@ -5,7 +5,6 @@ set(LIBRARY "Test_EvolutionActions")
 
 set(LIBRARY_SOURCES
   Test_ComputeTimeDerivative.cpp
-  Test_ComputeVolumeFluxes.cpp
   Test_RunEventsAndDenseTriggers.cpp
   )
 
