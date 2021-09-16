@@ -31,10 +31,10 @@ all of these dependencies.
 * [Charm++](http://charm.cs.illinois.edu/) 6.10.2
 * [Git](https://git-scm.com/)
 * BLAS (e.g. [OpenBLAS](http://www.openblas.net))
-* [Blaze](https://bitbucket.org/blaze-lib/blaze/overview) v3.7
+* [Blaze](https://bitbucket.org/blaze-lib/blaze/overview) v3.8
 * [Boost](http://www.boost.org/) 1.60.0 or later
 * [Brigand](https://github.com/edouarda/brigand)
-* [Catch](https://github.com/philsquared/Catch) 2.8.0 or later
+* [Catch](https://github.com/catchorg/Catch2) 2.8.0 or later, but not 3.x as SpECTRE doesn't support v3 yet (If installing from source, it is easiest to use single-header installation)
 * [GSL](https://www.gnu.org/software/gsl/)
 * [HDF5](https://support.hdfgroup.org/HDF5/) (non-mpi version on macOS)
 * [jemalloc](https://github.com/jemalloc/jemalloc)
@@ -55,7 +55,7 @@ all of these dependencies.
 #### Optional:
 * [Pybind11](https://pybind11.readthedocs.io) 2.6.0 or later for SpECTRE Python
   bindings
-* [Doxygen](http://www.stack.nl/~dimitri/doxygen/index.html) — to generate
+* [Doxygen](https://www.doxygen.nl/index.html) — to generate
   documentation
 * [Python](https://www.python.org/) with
   [BeautifulSoup4](https://pypi.org/project/beautifulsoup4/) and
@@ -258,6 +258,14 @@ To build SpECTRE with Singularity you must:
 - You should edit source files in SPECTRE_ROOT in a separate terminal
   outside the container, and use the container only for compiling and running
   the code.
+- If you don't have the same Python version in your environment outside the
+  container as the version inside the container, this will create problems
+  with git hooks. The Singularity container uses python3.8 by default. Thus, it
+  is up to the user to ensure that they are using the same Python version inside
+  and outside the container. To use a different Python version in the container
+  add `-D Python_EXECUTABLE=/path/to/python` to the cmake command above where
+  `/path/to/python` is usually `/usr/bin/pythonX` and `X` is the version you
+  want.
 - Unlike Docker, Singularity does not keep the state between runs. However, it
   shares the home directory with the host OS so you should do all your work
   somewhere in your home directory.
