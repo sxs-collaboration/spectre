@@ -14,7 +14,6 @@ set(LIBRARY_SOURCES
   Test_EnergyDensity.cpp
   Test_Equations.cpp
   Test_TimeDerivative.cpp
-  Test_UpwindPenaltyCorrection.cpp
   )
 
 add_test_library(
