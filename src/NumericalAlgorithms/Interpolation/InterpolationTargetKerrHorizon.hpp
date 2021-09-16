@@ -154,9 +154,6 @@ template <typename InterpolationTargetTag, typename Frame>
 struct KerrHorizon {
   using const_global_cache_tags =
       tmpl::list<Tags::KerrHorizon<InterpolationTargetTag>>;
-  using initialization_tags =
-      tmpl::append<StrahlkorperTags::items_tags<Frame>,
-                   StrahlkorperTags::compute_items_tags<Frame>>;
   using is_sequential = std::false_type;
   using frame = Frame;
 

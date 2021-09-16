@@ -49,6 +49,10 @@ struct Metavariables {
     using vars_to_interpolate_to_target =
         tmpl::list<gr::Tags::Lapse<DataVector>>;
     using compute_items_on_target = tmpl::list<>;
+    // InterpolationTargets must have compute_target_points defined.
+    // But for this test, compute_target_points is not actually used
+    // so we can just define it to be any random type. Choose void.
+    using compute_target_points = void;
   };
 
   using component_list = tmpl::list<
