@@ -19,6 +19,29 @@ if (DOXYGEN_FOUND)
     GENERATE_DOCS_COMMAND
     "${DOXYGEN_EXECUTABLE} ${PROJECT_BINARY_DIR}/docs/DoxyfileHtml"
     )
+
+  # Make sure the Doxygen version is compatible with the CSS, or print a
+  # warning. Notes:
+  # - We use https://github.com/jothepro/doxygen-awesome-css release v1.6.0,
+  #   which ensures compatibility with Doxygen v1.9.2. When upgrading Doxygen,
+  #   it's probably also a good idea to upgrade the CSS files in `docs/config/`.
+  # - The Doxygen release v1.9.1 has a bug so namespaces don't show up in
+  #   groups. It is fixed in v1.9.2.
+  # - The Doxygen release v1.9.2 breaks the ordering of pages in the tree view
+  #   (sidebar). This issue is already fixed upstream:
+  #   https://github.com/doxygen/doxygen/issues/8767
+  if(DOXYGEN_VERSION VERSION_LESS 1.9.2)
+    set(_DOX_WARNING "Your Doxygen version ${DOXYGEN_VERSION} may not be \
+compatible with the stylesheet, so the documentation may look odd or not \
+function correctly. Use Doxygen version 1.9.2 or higher.")
+    message(STATUS ${_DOX_WARNING})
+    # The 'warning' in this message will fail the `doc-check` target (see below)
+    set(
+      GENERATE_DOCS_COMMAND
+      "${GENERATE_DOCS_COMMAND} && echo 'WARNING: ${_DOX_WARNING}'"
+      )
+  endif()
+
   # Construct the command that calls doxygen, but only outputs warnings with a
   # few lines of context to stderr. Fails with exit code 1 if warnings are
   # found. Remains silent and succeeds with exit code 0 if everything is fine.
@@ -27,7 +50,7 @@ if (DOXYGEN_FOUND)
   set(
     GENERATE_AND_CHECK_DOCS_SCRIPT "\
 #!/bin/sh\n\
-! ${GENERATE_DOCS_COMMAND} 2>&1 | grep -A 6 'warning' >&2\n"
+! (${GENERATE_DOCS_COMMAND}) 2>&1 | grep -A 6 -i 'warning' >&2\n"
     )
 
   # We need Python for postprocessing the documentation

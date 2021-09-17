@@ -1,0 +1,13 @@
+/**
+Distributed under the MIT License.
+See LICENSE.txt for details.
+*/
+
+html {
+    /* This width must correspond to Doxygen's `TREEVIEW_WIDTH` */
+    --side-nav-fixed-width: 280px;
+}
+
+#nav-sync {
+    display: none;
+}

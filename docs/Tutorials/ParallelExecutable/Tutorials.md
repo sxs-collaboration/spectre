@@ -17,5 +17,7 @@ installation "installed SpECTRE" and built it successfully.
 
 | Tutorial name | Concepts introduced |
 |---------------|---------------------|
-| \ref tutorial_parallel_concepts "Parallelism in SpECTRE " | SpECTRE and Charm++ |
-| \ref tutorial_minimal_parallel_executable "Minimal executable " | Metavariables, Main component |
+| \subpage tutorial_parallel_concepts "Parallelism in SpECTRE " | SpECTRE and Charm++ |
+| \subpage tutorial_minimal_parallel_executable "Minimal executable " | Metavariables, Main component |
+
+See also: \subpage ParallelInfoExecutablePage

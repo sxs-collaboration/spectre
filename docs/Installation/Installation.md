@@ -5,15 +5,17 @@ See LICENSE.txt for details.
 # Installation {#installation}
 
 This page details the installation procedure for SpECTRE on personal computers.
-For instructions on installing SpECTRE on clusters please refer to the \ref
-installation_on_clusters "Installation on clusters" page.
+For instructions on installing SpECTRE on clusters please refer to the
+\subpage installation_on_clusters page. Refer to the
+\subpage versioning_and_releases page for information on specific versions to
+install.
 
 ### Quick-start guide for code development with Docker and Visual Studio Code
 
 If you're new to writing code for SpECTRE and would like to jump right into a
-working development environment, a good place to start is our \ref
-dev_guide_quick_start_docker_vscode. If you prefer setting up your development
-environment differently, read on!
+working development environment, a good place to start is our
+\subpage dev_guide_quick_start_docker_vscode. If you prefer setting up your
+development environment differently, read on!
 
 ### Dependencies
 
@@ -55,8 +57,8 @@ all of these dependencies.
 #### Optional:
 * [Pybind11](https://pybind11.readthedocs.io) 2.6.0 or later for SpECTRE Python
   bindings
-* [Doxygen](https://www.doxygen.nl/index.html) — to generate
-  documentation
+* [Doxygen](https://www.doxygen.nl/index.html) 1.9.1 or later — to
+  generate documentation
 * [Python](https://www.python.org/) with
   [BeautifulSoup4](https://pypi.org/project/beautifulsoup4/) and
   [Pybtex](https://pybtex.org) — for documentation post-processing

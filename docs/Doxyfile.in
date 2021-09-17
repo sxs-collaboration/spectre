@@ -1,8 +1,8 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Last updated for Doxygen 1.8.10
-# See https://www.stack.nl/~dimitri/doxygen/manual/config.html
+# Last updated for Doxygen 1.9.1
+# See https://www.doxygen.nl/manual/config.html
 # for documentation on the commands in this file.
 
 #---------------------------------------------------------------------------
@@ -74,20 +74,31 @@ GENERATE_BUGLIST       = NO
 
 STRIP_CODE_COMMENTS    = NO
 
+SHOW_FILES             = NO
+
+SHOW_USED_FILES        = YES
+
+VERBATIM_HEADERS       = NO
+
 CITE_BIB_FILES         = @PROJECT_SOURCE_DIR@/docs/References.bib
 
 #---------------------------------------------------------------------------
 # configuration options related to the input files
 #---------------------------------------------------------------------------
 
-INPUT = @SPECTRE_DOXYGEN_GROUPS@ \
-        @PROJECT_SOURCE_DIR@/docs/MainSite/Main.md \
+# Add the documentation pages in the order they should appear in the tree view.
+# Use `\subpage` within the pages to establish a hierarchy.
+INPUT = @PROJECT_SOURCE_DIR@/docs/Installation \
+        @PROJECT_SOURCE_DIR@/docs/Tutorials \
+        @PROJECT_SOURCE_DIR@/docs/Contributing \
+        @PROJECT_SOURCE_DIR@/docs/DevGuide \
+        @PROJECT_SOURCE_DIR@/docs \
+        @SPECTRE_DOXYGEN_GROUPS@ \
         @PROJECT_SOURCE_DIR@/src \
         @PROJECT_SOURCE_DIR@/tests/Unit/Framework \
         @PROJECT_SOURCE_DIR@/tests/Unit/Helpers
 
-# Add tutorials directory
-INPUT += @PROJECT_SOURCE_DIR@/docs
+USE_MDFILE_AS_MAINPAGE = @PROJECT_SOURCE_DIR@/docs/Main.md
 
 # We don't parse cpp files because Doxygen has trouble with some template
 # expressions and we place documentation in header files anyway.
@@ -201,7 +212,9 @@ GRAPHICAL_HIERARCHY    = NO
 
 DIRECTORY_GRAPH        = NO
 
-DOT_IMAGE_FORMAT       = png
+DOT_IMAGE_FORMAT       = svg
+
+DOT_TRANSPARENT        = YES
 
 MAX_DOT_GRAPH_DEPTH    = 0
 
@@ -217,20 +230,25 @@ HTML_EXTRA_FILES       = @PROJECT_SOURCE_DIR@/docs/config/icons/octicons.eot \
                          @PROJECT_SOURCE_DIR@/docs/config/icons/octicons.svg \
                          @PROJECT_SOURCE_DIR@/docs/config/icons/octicons.ttf \
                          @PROJECT_SOURCE_DIR@/docs/config/icons/octicons.woff \
-                         @PROJECT_SOURCE_DIR@/docs/config/bootstrap.min.css \
                          @PROJECT_SOURCE_DIR@/docs/config/octicons.css \
-                         @PROJECT_SOURCE_DIR@/docs/config/js/popper.min.js \
-                         @PROJECT_SOURCE_DIR@/docs/config/js/bootstrap.min.js \
+                         @PROJECT_SOURCE_DIR@/docs/config/js/doxygen-navtree-hacks.js \
                          @PROJECT_SOURCE_DIR@/docs/config/js/spectre.js \
                          @PROJECT_SOURCE_DIR@/docs/.nojekyll \
                          @PROJECT_SOURCE_DIR@/docs/config/MathJax.js \
                          @PROJECT_SOURCE_DIR@/LICENSE.txt
 
-# This is not the recommended way of using a completely custom style sheet.
-# It's probably better to have a custom header that uses the style sheet
-HTML_STYLESHEET = @PROJECT_SOURCE_DIR@/docs/config/doxygen.css
+GENERATE_TREEVIEW      = YES
 
-USE_MDFILE_AS_MAINPAGE = main.md
+# This width must correspond to `side-nav-fixed-width` in `custom.css`
+TREEVIEW_WIDTH         = 280
+
+HTML_EXTRA_STYLESHEET  = @PROJECT_SOURCE_DIR@/docs/config/doxygen-awesome.css \
+                         @PROJECT_SOURCE_DIR@/docs/config/doxygen-awesome-sidebar-only.css \
+                         @PROJECT_SOURCE_DIR@/docs/config/custom.css
+
+HTML_COLORSTYLE_HUE    = 209
+HTML_COLORSTYLE_SAT    = 255
+HTML_COLORSTYLE_GAMMA  = 113
 
 USE_MATHJAX = YES
 

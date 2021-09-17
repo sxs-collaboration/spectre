@@ -190,6 +190,7 @@ long_lines_exclude() {
 long_lines() {
     whitelist "$1" \
               '.cmake$' \
+              '.css$' \
               '.h5$' \
               '.html$' \
               '.js$' \
@@ -197,6 +198,7 @@ long_lines() {
               '.min.js$' \
               '.patch' \
               '.travis.yml$' \
+              '.xml$' \
               'CITATION.cff' \
               'CMakeLists.txt$' \
               'Doxyfile.in$' \
@@ -349,7 +351,8 @@ license() {
               'cmake/FindPythonModule.cmake$' \
               'cmake/Findcppcheck.cmake$' \
               'cmake/Findcppcheck.cpp$' \
-              'docs/config/doxygen.css' \
+              'docs/config/doxygen-awesome-sidebar-only.css' \
+              'docs/config/doxygen-awesome.css' \
               'docs/config/footer.html' \
               'docs/config/header.html' \
               'docs/config/layout.xml' \
