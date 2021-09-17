@@ -66,9 +66,9 @@ function(add_single_input_file_test INPUT_FILE EXECUTABLE COMMAND_LINE_ARGS
       "Known checks are: execute")
   endif()
 
-  # Double timeout if address sanitizer is enabled.
+  # Triple timeout if address sanitizer is enabled.
   if (ASAN)
-    math(EXPR TIMEOUT "2 * ${TIMEOUT}")
+    math(EXPR TIMEOUT "3 * ${TIMEOUT}")
   endif()
 
   # Multiply timeout by the user option
