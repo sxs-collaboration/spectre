@@ -145,9 +145,12 @@ RUN git clone https://github.com/edouarda/brigand.git \
 RUN wget https://github.com/catchorg/Catch2/releases/download/v2.11.1/catch.hpp -O catch.hpp \
     && mv catch.hpp /usr/local/include
 # - Doxygen
-RUN wget https://www.doxygen.nl/files/doxygen-1.9.1.src.tar.gz \
-    && tar -xzf doxygen-1.9.1.src.tar.gz \
-    && cd doxygen-1.9.1 \
+#   We build a specific commit ahead of release 1.9.2 that fixes the upstream
+#   issue https://github.com/doxygen/doxygen/issues/8767. We can move to version
+#   1.9.3 once it is released.
+RUN git clone https://github.com/doxygen/doxygen.git \
+    && cd doxygen \
+    && git checkout 0320654a40f12ba4a49f8dfc87c79b511b4ce48c \
     && mkdir build \
     && cd build \
     && cmake -G "Unix Makefiles" -D CMAKE_BUILD_TYPE=Release .. \
