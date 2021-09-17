@@ -192,6 +192,7 @@ long_lines() {
               '.cmake$' \
               '.h5$' \
               '.html$' \
+              '.js$' \
               '.json$' \
               '.min.js$' \
               '.patch' \
