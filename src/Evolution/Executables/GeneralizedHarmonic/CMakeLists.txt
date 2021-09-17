@@ -87,7 +87,7 @@ add_generalized_harmonic_executable_without_horizon(
 
 add_spectre_parallel_executable(
   "EvolveGhBinaryBlackHole"
-  EvolveBinaryBlackHole
+  EvolveGhBinaryBlackHole
   Evolution/Executables/GeneralizedHarmonic
   "EvolutionMetavars"
   "${LIBS_TO_LINK};GeneralRelativitySolutions;Importers"

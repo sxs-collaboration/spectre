@@ -146,6 +146,11 @@ class CProxy_GlobalCache;
 }  // namespace Parallel
 /// \endcond
 
+// Note: this executable does not use GeneralizedHarmonicBase.hpp, because
+// using it would require a number of changes in GeneralizedHarmonicBase.hpp
+// that would apply only when evolving binary black holes. This would
+// require adding a number of compile-time switches, an outcome we would prefer
+// to avoid.
 struct EvolutionMetavars {
   static constexpr size_t volume_dim = 3;
   static constexpr bool use_damped_harmonic_rollon = false;
