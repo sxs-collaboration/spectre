@@ -200,9 +200,9 @@ function(spectre_parse_file SOURCE_FILE TEST_TARGET)
         "for \"${NAME}\" in ${SOURCE_FILE}\n")
     endif ()
 
-    # Double timeout if address sanitizer is enabled.
+    # Triple timeout if address sanitizer is enabled.
     if (ASAN)
-      math(EXPR TIMEOUT "2 * ${TIMEOUT}")
+      math(EXPR TIMEOUT "3 * ${TIMEOUT}")
     endif()
 
     # Multiply timeout by the user option
