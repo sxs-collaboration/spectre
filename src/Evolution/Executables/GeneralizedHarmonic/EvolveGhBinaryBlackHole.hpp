@@ -28,7 +28,6 @@
 #include "Evolution/DiscontinuousGalerkin/Initialization/Mortars.hpp"
 #include "Evolution/EventsAndDenseTriggers/DenseTrigger.hpp"
 #include "Evolution/EventsAndDenseTriggers/DenseTriggers/Factory.hpp"
-#include "Evolution/Executables/GeneralizedHarmonic/GeneralizedHarmonicBase.hpp"
 #include "Evolution/Initialization/DgDomain.hpp"
 #include "Evolution/Initialization/Evolution.hpp"
 #include "Evolution/Initialization/NonconservativeSystem.hpp"
@@ -345,6 +344,11 @@ struct EvolutionMetavars {
       evolution::dg::Initialization::Domain<volume_dim,
                                             override_functions_of_time>,
       Initialization::Actions::NonconservativeSystem<system>,
+      Initialization::Actions::AddComputeTags<
+          ::Tags::DerivCompute<typename system::variables_tag,
+                               ::domain::Tags::InverseJacobian<
+                                   volume_dim, Frame::Logical, Frame::Inertial>,
+                               typename system::gradient_variables>>,
       Initialization::Actions::TimeStepperHistory<EvolutionMetavars>,
       GeneralizedHarmonic::Actions::InitializeGhAnd3Plus1Variables<volume_dim>,
       Initialization::Actions::AddComputeTags<tmpl::push_back<

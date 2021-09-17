@@ -61,6 +61,7 @@ struct InitializeConstraints {
 
   using compute_tags = tmpl::flatten<db::AddComputeTags<
       GeneralizedHarmonic::Tags::GaugeConstraintCompute<Dim, frame>,
+      GeneralizedHarmonic::Tags::ThreeIndexConstraintCompute<Dim, frame>,
       // following tags added to observe constraints
       ::Tags::PointwiseL2NormCompute<
           GeneralizedHarmonic::Tags::GaugeConstraint<Dim, frame>>,
@@ -100,7 +101,6 @@ struct InitializeGhAnd3Plus1Variables {
       gr::Tags::SpacetimeNormalOneFormCompute<Dim, frame, DataVector>,
       gr::Tags::SpacetimeNormalVectorCompute<Dim, frame, DataVector>,
       gr::Tags::InverseSpacetimeMetricCompute<Dim, frame, DataVector>,
-      GeneralizedHarmonic::Tags::ThreeIndexConstraintCompute<Dim, frame>,
       ConstraintDamping::Tags::ConstraintGamma0Compute<Dim, Frame::Grid>,
       ConstraintDamping::Tags::ConstraintGamma1Compute<Dim, Frame::Grid>,
       ConstraintDamping::Tags::ConstraintGamma2Compute<Dim, Frame::Grid>>;

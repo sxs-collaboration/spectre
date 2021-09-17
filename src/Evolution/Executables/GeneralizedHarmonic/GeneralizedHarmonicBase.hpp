@@ -351,6 +351,11 @@ struct GeneralizedHarmonicTemplateBase<
           evolution::is_numeric_initial_data_v<initial_data>, tmpl::list<>,
           evolution::Initialization::Actions::SetVariables<
               domain::Tags::Coordinates<volume_dim, Frame::Logical>>>,
+      Initialization::Actions::AddComputeTags<
+          ::Tags::DerivCompute<typename system::variables_tag,
+                               domain::Tags::InverseJacobian<
+                                   volume_dim, Frame::Logical, Frame::Inertial>,
+                               typename system::gradient_variables>>,
       Initialization::Actions::TimeStepperHistory<derived_metavars>,
       GeneralizedHarmonic::Actions::InitializeGhAnd3Plus1Variables<volume_dim>,
       Initialization::Actions::AddComputeTags<tmpl::push_back<

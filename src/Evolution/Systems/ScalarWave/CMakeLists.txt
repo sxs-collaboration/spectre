@@ -39,6 +39,7 @@ target_link_libraries(
   Domain
   DomainBoundaryConditions
   ErrorHandling
+  LinearOperators
   Options
   Utilities
   INTERFACE

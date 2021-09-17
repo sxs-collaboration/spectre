@@ -15,7 +15,6 @@
 #include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Domain/Tags.hpp"
-#include "Domain/TagsCharacteresticSpeeds.hpp"
 #include "Evolution/Actions/ComputeTimeDerivative.hpp"
 #include "Evolution/ComputeTags.hpp"
 #include "Evolution/Conservative/UpdateConservatives.hpp"
@@ -234,7 +233,16 @@ struct GhValenciaDivCleanDefaults {
   using initialize_initial_data_dependent_quantities_actions = tmpl::list<
       GeneralizedHarmonic::gauges::Actions::InitializeDampedHarmonic<
           volume_dim, use_damped_harmonic_rollon>,
-      GeneralizedHarmonic::Actions::InitializeConstraints<volume_dim>,
+      // ND: We add the gauge constraint computation separately because when
+      // doing DG-FD observing derivatives is  not possible anymore and so the
+      // 3-index constraint can't be monitored. We will need to revamp the way
+      // we do observing for DG-FD to be able to observe more quantities.
+      Initialization::Actions::AddComputeTags<
+          tmpl::list<GeneralizedHarmonic::Tags::GaugeConstraintCompute<
+                         volume_dim, Frame::Inertial>,
+                     ::Tags::PointwiseL2NormCompute<
+                         GeneralizedHarmonic::Tags::GaugeConstraint<
+                             volume_dim, Frame::Inertial>>>>,
       VariableFixing::Actions::FixVariables<
           VariableFixing::FixToAtmosphere<volume_dim>>,
       Actions::UpdateConservatives, Parallel::Actions::TerminatePhase>;
@@ -275,18 +283,12 @@ struct GhValenciaDivCleanTemplateBase<
       tmpl::remove_duplicates<tmpl::flatten<tmpl::list<
       typename InterpolationTargetTags::vars_to_interpolate_to_target...>>>;
 
-  using observe_fields = tmpl::append<
-      typename system::variables_tag::tags_list,
-      typename system::primitive_variables_tag::tags_list,
-      tmpl::list<
-          ::Tags::PointwiseL2Norm<GeneralizedHarmonic::Tags::GaugeConstraint<
-              volume_dim, domain_frame>>,
-          ::Tags::PointwiseL2Norm<
-              GeneralizedHarmonic::Tags::ThreeIndexConstraint<volume_dim,
-                                                              domain_frame>>,
-          ::Tags::PointwiseL2Norm<
-              GeneralizedHarmonic::Tags::FourIndexConstraint<volume_dim,
-                                                             domain_frame>>>>;
+  using observe_fields =
+      tmpl::append<typename system::variables_tag::tags_list,
+                   typename system::primitive_variables_tag::tags_list,
+                   tmpl::list<::Tags::PointwiseL2Norm<
+                       GeneralizedHarmonic::Tags::GaugeConstraint<
+                           volume_dim, domain_frame>>>>;
 
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {

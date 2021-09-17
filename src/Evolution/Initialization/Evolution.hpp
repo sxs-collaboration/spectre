@@ -200,8 +200,6 @@ struct TimeAndTimeStep {
 ///   * `db::add_tag_prefix<Tags::dt, variables_tag>`
 ///   * `Tags::StepperError<variables_tag>`
 ///   * `Tags::HistoryEvolvedVariables<variables_tag, dt_variables_tag>`
-///   * Tags::ComputeDeriv  (for non-conservative systems)
-///   * Tags::ComputeDiv (for conservative systems)
 /// - Removes: nothing
 /// - Modifies: nothing
 ///
@@ -218,27 +216,12 @@ struct TimeStepperHistory {
   using error_variables_tag =
       db::add_tag_prefix<::Tags::StepperError, variables_tag>;
 
-  template <typename System, bool IsInFluxConservativeForm =
-                                 System::is_in_flux_conservative_form>
-  struct ComputeTags {
-    using type = db::AddComputeTags<::Tags::DerivCompute<
-        variables_tag,
-        domain::Tags::InverseJacobian<dim, Frame::Logical, Frame::Inertial>,
-        typename System::gradients_tags>>;
-  };
-
-  template <typename System>
-  struct ComputeTags<System, true> {
-    using type = db::AddComputeTags<>;
-  };
-
   using simple_tags =
       tmpl::list<dt_variables_tag,
                  ::Tags::HistoryEvolvedVariables<variables_tag>,
                  error_variables_tag, ::Tags::StepperErrorUpdated>;
 
-  using compute_tags =
-      typename ComputeTags<typename Metavariables::system>::type;
+  using compute_tags = db::AddComputeTags<>;
 
   template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
             typename ActionList, typename ParallelComponent,
