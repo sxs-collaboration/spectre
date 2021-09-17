@@ -12,7 +12,6 @@
 #include "Utilities/TMPL.hpp"
 
 namespace domain::BoundaryConditions {
-namespace detail {
 class MarkAsNone {
  public:
   MarkAsNone() = default;
@@ -22,7 +21,6 @@ class MarkAsNone {
   MarkAsNone& operator=(const MarkAsNone&) = default;
   virtual ~MarkAsNone() = 0;
 };
-}  // namespace detail
 
 /*!
  * \brief None boundary conditions.
@@ -47,8 +45,7 @@ class MarkAsNone {
  * not use `None.
  */
 template <typename SystemBoundaryConditionBaseClass>
-struct None final : public SystemBoundaryConditionBaseClass,
-                    public detail::MarkAsNone {
+struct None final : public SystemBoundaryConditionBaseClass, public MarkAsNone {
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help{
