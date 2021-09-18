@@ -177,8 +177,6 @@ ALLEXTERNALS           = NO
 # Configuration options related to the dot tool
 #---------------------------------------------------------------------------
 
-CLASS_DIAGRAMS         = NO
-
 HAVE_DOT               = NO
 
 CLASS_GRAPH            = NO
@@ -223,7 +221,6 @@ HTML_EXTRA_FILES       = @PROJECT_SOURCE_DIR@/docs/config/icons/octicons.eot \
                          @PROJECT_SOURCE_DIR@/docs/config/octicons.css \
                          @PROJECT_SOURCE_DIR@/docs/config/js/popper.min.js \
                          @PROJECT_SOURCE_DIR@/docs/config/js/bootstrap.min.js \
-                         @PROJECT_SOURCE_DIR@/docs/config/js/jquery.js \
                          @PROJECT_SOURCE_DIR@/docs/config/js/spectre.js \
                          @PROJECT_SOURCE_DIR@/docs/.nojekyll \
                          @PROJECT_SOURCE_DIR@/docs/config/MathJax.js \
