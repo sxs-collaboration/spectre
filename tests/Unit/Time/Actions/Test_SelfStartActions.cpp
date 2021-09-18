@@ -17,7 +17,6 @@
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
-#include "Evolution/Actions/ComputeTimeDerivative.hpp"  // IWYU pragma: keep
 #include "Evolution/Conservative/UpdatePrimitives.hpp"  // IWYU pragma: keep
 #include "Framework/ActionTesting.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
@@ -65,27 +64,33 @@ struct PrimitiveVar : db::SimpleTag {
   using type = double;
 };
 
-template <bool HasPrimitives>
-struct SystemBase {
-  static constexpr bool has_primitive_and_conservative_vars = HasPrimitives;
-  using variables_tag = Var;
-
-  struct ComputeTimeDerivative {
-    template <template <class> class StepPrefix>
-    using return_tags = tmpl::list<StepPrefix<Var>>;
-
-    using argument_tags =
-        tmpl::list<tmpl::conditional_t<has_primitive_and_conservative_vars,
-                                       PrimitiveVar, Var>>;
-    static void apply(const gsl::not_null<double*> dt_var,
-                      const double var) noexcept {
-      *dt_var = exp(var);
-    }
-  };
+struct ComputeTimeDerivative {
+  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent>
+  static std::tuple<db::DataBox<DbTagsList>&&> apply(
+      db::DataBox<DbTagsList>& box,
+      tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) noexcept {
+    using argument_tag = tmpl::conditional_t<
+        Metavariables::system::has_primitive_and_conservative_vars,
+        PrimitiveVar, Var>;
+    db::mutate<Tags::dt<Var>>(
+        make_not_null(&box),
+        [](const gsl::not_null<double*> dt_var, const double var) noexcept {
+          *dt_var = exp(var);
+        },
+        db::get<argument_tag>(box));
+    return std::forward_as_tuple(std::move(box));
+  }
 };
 
 template <bool HasPrimitives = false>
-struct System : SystemBase<false> {
+struct System {
+  static constexpr bool has_primitive_and_conservative_vars = false;
+  using variables_tag = Var;
   // Do not define primitive_variables_tag here.  Actions must work without it.
 
   // Only used by the test
@@ -93,7 +98,9 @@ struct System : SystemBase<false> {
 };
 
 template <>
-struct System<true> : SystemBase<true> {
+struct System<true> {
+  static constexpr bool has_primitive_and_conservative_vars = true;
+  using variables_tag = Var;
   using primitive_variables_tag = PrimitiveVar;
   // Only used by the test
   using test_primitive_variables_tags = tmpl::list<primitive_variables_tag>;
@@ -149,9 +156,7 @@ struct Component {
   static constexpr bool has_primitives = Metavariables::has_primitives;
 
   using step_actions =
-      tmpl::list<Actions::ComputeTimeDerivative<
-                     typename metavariables::system::ComputeTimeDerivative>,
-                 Actions::RecordTimeStepperData<>,
+      tmpl::list<ComputeTimeDerivative, Actions::RecordTimeStepperData<>,
                  tmpl::conditional_t<
                      has_primitives,
                      tmpl::list<Actions::UpdateU<>, Actions::UpdatePrimitives>,
