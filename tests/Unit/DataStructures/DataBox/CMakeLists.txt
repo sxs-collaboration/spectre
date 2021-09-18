@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
   Test_DataBox.cpp
   Test_DataBoxDocumentation.cpp
   Test_DataBoxPrefixes.cpp
+  Test_ObservationBox.cpp
   Test_PrefixHelpers.cpp
   Test_TagName.cpp
   Test_TagTraits.cpp
