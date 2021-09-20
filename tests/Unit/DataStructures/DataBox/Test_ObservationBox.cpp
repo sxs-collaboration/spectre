@@ -73,6 +73,8 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.ObservationBox",
   // Call a second time to make sure the compute tag didn't get evaluated again.
   CHECK(get<Tag3>(obs_box) == (2.0 + 2.0 * 2.0 + 2.0 * 2.0 * 2.0));
   CHECK(Tag3Compute::times_called == 1);
+  CHECK(&db_box == &get<::Tags::DataBox>(obs_box));
+  CHECK(&obs_box == &get<::Tags::ObservationBox>(obs_box));
 }
 
 }  // namespace

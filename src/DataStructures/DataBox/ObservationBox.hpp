@@ -13,6 +13,22 @@ template <typename ComputeTagsList, typename DataBoxType>
 class ObservationBox;
 /// \endcond
 
+namespace Tags {
+/*!
+ * \brief Tag used to retrieve the ObservationBox from the `get()` function
+ *
+ * The main use of this tag is to allow fetching the ObservationBox from itself.
+ * The intended primary use case is for Events to be able to retrieve the
+ * ObservationBox and then do runtime retrieval of tags to avoid computing
+ * quantities that aren't needed.
+ */
+struct ObservationBox {
+  // Trick to get friend function declaration to compile but a const
+  // NoSuchtype****& is rather useless
+  using type = NoSuchType****;
+};
+}
+
 /*!
  * \ingroup DataStructuresGroup
  * \brief Used for adding compute items to a `DataBox` without copying or moving
@@ -84,26 +100,34 @@ template <typename DataBoxType, typename... ComputeTags>
 template <typename Tag>
 const auto& ObservationBox<tmpl::list<ComputeTags...>, DataBoxType>::get()
     const {
-  DEBUG_STATIC_ASSERT(not db::detail::has_no_matching_tag_v<tags_list, Tag>,
-                      "Found no tags in the ObservationBox that match the tag "
-                      "being retrieved.");
-  DEBUG_STATIC_ASSERT(
-      db::detail::has_unique_matching_tag_v<tags_list, Tag>,
-      "Found more than one tag in the ObservationBox that matches the tag "
-      "being retrieved. This happens because more than one tag with the same "
-      "base (class) tag was added to the ObservationBox.");
-
-  if constexpr (db::tag_is_retrievable_v<Tag, DataBoxType>) {
-    return db::get<Tag>(*databox_);
+  if constexpr (std::is_same_v<Tag, ::Tags::DataBox>) {
+    return *databox_;
+  } else if constexpr (std::is_same_v<Tag, ::Tags::ObservationBox>) {
+    return *this;
   } else {
-    using item_tag = db::detail::first_matching_tag<compute_item_tags, Tag>;
-    if (not get_item<item_tag>().evaluated()) {
-      evaluate_compute_item<item_tag>(typename item_tag::argument_tags{});
-    }
-    if constexpr (tt::is_a_v<std::unique_ptr, typename item_tag::type>) {
-      return *(get_item<item_tag>().get());
+    DEBUG_STATIC_ASSERT(
+        not db::detail::has_no_matching_tag_v<tags_list, Tag>,
+        "Found no tags in the ObservationBox that match the tag "
+        "being retrieved.");
+    DEBUG_STATIC_ASSERT(
+        db::detail::has_unique_matching_tag_v<tags_list, Tag>,
+        "Found more than one tag in the ObservationBox that matches the tag "
+        "being retrieved. This happens because more than one tag with the same "
+        "base (class) tag was added to the ObservationBox, or because you add "
+        "a compute tag that is already in the DataBox.");
+
+    if constexpr (db::tag_is_retrievable_v<Tag, DataBoxType>) {
+      return db::get<Tag>(*databox_);
     } else {
-      return get_item<item_tag>().get();
+      using item_tag = db::detail::first_matching_tag<compute_item_tags, Tag>;
+      if (not get_item<item_tag>().evaluated()) {
+        evaluate_compute_item<item_tag>(typename item_tag::argument_tags{});
+      }
+      if constexpr (tt::is_a_v<std::unique_ptr, typename item_tag::type>) {
+        return *(get_item<item_tag>().get());
+      } else {
+        return get_item<item_tag>().get();
+      }
     }
   }
 }
