@@ -32,6 +32,7 @@ target_link_libraries(
   PUBLIC
   DataStructures
   DgSubcell
+  FiniteDifference
   INTERFACE
   ErrorHandling
   )
