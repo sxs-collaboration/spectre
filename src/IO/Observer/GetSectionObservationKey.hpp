@@ -17,13 +17,14 @@ namespace observers {
 /// parallel algorithms. The return value can be used to construct a subfile
 /// path for observations, and to skip observations on elements that are not
 /// part of a section (`std::nullopt`).
-template <typename SectionIdTag, typename DbTagsList>
+template <typename SectionIdTag, typename Box>
 std::optional<std::string> get_section_observation_key(
-    [[maybe_unused]] const db::DataBox<DbTagsList>& box) {
+    [[maybe_unused]] const Box& box) {
   if constexpr (std::is_same_v<SectionIdTag, void>) {
     return "";
   } else {
-    return db::get<observers::Tags::ObservationKey<SectionIdTag>>(box);
+    using db::get;
+    return get<observers::Tags::ObservationKey<SectionIdTag>>(box);
   }
 }
 
