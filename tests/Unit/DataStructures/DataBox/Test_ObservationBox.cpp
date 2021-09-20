@@ -57,6 +57,28 @@ struct Tag3Compute : Tag3, db::ComputeTag {
 
 size_t Tag3Compute::times_called = 0;
 
+// Test that we can return values from the apply functions and that we can
+// retrieve both the nested DataBox and the ObservationBox via the argument
+// tags.
+struct SubtractNumberAndReturn {
+  using argument_tags =
+      tmpl::list<::Tags::ObservationBox, ::Tags::DataBox, Tag3>;
+
+  template <typename DbTagsList, typename ComputeTagsList>
+  double operator()(
+      const ObservationBox<ComputeTagsList, db::DataBox<DbTagsList>>& obs_box,
+      const db::DataBox<DbTagsList>& box, const double tag3,
+      const double number) const {
+    CHECK(get<Tag0>(obs_box) == 2.0);
+    CHECK(get<Tag1>(obs_box) == 4.0);
+    CHECK(get<Tag2>(obs_box) == (2.0 * 2.0 * 2.0));
+    CHECK(get<Tag3>(obs_box) == (2.0 + 2.0 * 2.0 + 2.0 * 2.0 * 2.0));
+    CHECK(get<Tag0>(box) == 2.0);
+    CHECK(get<Tag1>(box) == 4.0);
+    return tag3 - number;
+  }
+};
+
 SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.ObservationBox",
                   "[Unit][DataStructures]") {
   const auto db_box =
@@ -75,6 +97,9 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.ObservationBox",
   CHECK(Tag3Compute::times_called == 1);
   CHECK(&db_box == &get<::Tags::DataBox>(obs_box));
   CHECK(&obs_box == &get<::Tags::ObservationBox>(obs_box));
+
+  CHECK(apply(SubtractNumberAndReturn{}, obs_box, 5.0) ==
+        (get<Tag3>(obs_box) - 5.0));
 }
 
 }  // namespace

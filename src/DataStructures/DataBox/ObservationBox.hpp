@@ -143,3 +143,29 @@ template <typename ComputeTagsList, typename DataBoxType>
 auto make_observation_box(const DataBoxType& databox) {
   return ObservationBox<ComputeTagsList, DataBoxType>{databox};
 }
+
+namespace observation_box_detail {
+template <typename DataBoxType, typename ComputeTagsList, typename... Args,
+          typename F, typename... ArgumentTags>
+auto apply(F&& f, tmpl::list<ArgumentTags...> /*meta*/,
+           const ObservationBox<ComputeTagsList, DataBoxType>& observation_box,
+           Args&&... args) {
+  return std::forward<F>(f)(get<ArgumentTags>(observation_box)...,
+                            std::forward<Args>(args)...);
+}
+}  // namespace observation_box_detail
+
+/*!
+ * \ingroup DataStructuresGroup
+ * \brief Apply the function object `f` using its nested `argument_tags` list of
+ * tags.
+ */
+template <typename DataBoxType, typename ComputeTagsList, typename... Args,
+          typename F>
+auto apply(F&& f,
+           const ObservationBox<ComputeTagsList, DataBoxType>& observation_box,
+           Args&&... args) {
+  return observation_box_detail::apply(
+      std::forward<F>(f), typename std::decay_t<F>::argument_tags{},
+      observation_box, std::forward<Args>(args)...);
+}
