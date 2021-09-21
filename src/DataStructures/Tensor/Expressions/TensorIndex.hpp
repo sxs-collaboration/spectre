@@ -125,7 +125,7 @@ get_tensorindex_value_with_opposite_valence(const size_t i) noexcept {
  * - Uppercase: contravariant/upper index
  * - Lowercase: covariant/lower index
  * - A/a - H/h: generic spacetime index
- * - I/i - L/l: generic spatial index
+ * - I/i - M/m: generic spatial index
  * - T/t: concrete time index (defined as a spacetime `TensorIndex`)
  *
  * \snippet Test_AddSubtract.cpp use_tensor_index
@@ -194,6 +194,12 @@ static constexpr TensorIndex<
 static constexpr TensorIndex<
     TensorExpressions::TensorIndex_detail::upper_spatial_sentinel + 3>
     ti_L{};
+static constexpr TensorIndex<
+    TensorExpressions::TensorIndex_detail::spatial_sentinel + 4>
+    ti_m{};
+static constexpr TensorIndex<
+    TensorExpressions::TensorIndex_detail::upper_spatial_sentinel + 4>
+    ti_M{};
 /// @}
 
 namespace tt {
