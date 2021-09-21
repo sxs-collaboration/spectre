@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <cstddef>
 
+#include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Transpose.hpp"
@@ -19,11 +20,11 @@ class Variables;
 namespace {
 
 template <size_t Dim>
-struct Var1 {
+struct Var1 : db::SimpleTag {
   using type = tnsr::i<DataVector, Dim, Frame::Grid>;
 };
 
-struct Var2 {
+struct Var2 : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
 

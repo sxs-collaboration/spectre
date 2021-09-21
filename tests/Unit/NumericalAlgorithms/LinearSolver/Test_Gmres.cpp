@@ -5,6 +5,7 @@
 
 #include <cstddef>
 
+#include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/DenseMatrix.hpp"
 #include "DataStructures/DenseVector.hpp"
@@ -28,7 +29,7 @@ struct ScalarField : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
 template <typename Tag>
-struct SomePrefix : db::PrefixTag {
+struct SomePrefix : db::PrefixTag, db::SimpleTag {
   using type = tmpl::type_from<Tag>;
   using tag = Tag;
 };

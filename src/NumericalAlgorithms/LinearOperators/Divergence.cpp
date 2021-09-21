@@ -6,6 +6,7 @@
 #include <array>
 #include <cstddef>
 
+#include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
@@ -17,7 +18,7 @@
 
 namespace {
 template <size_t Dim, typename DerivativeFrame>
-struct VectorTag {
+struct VectorTag : db::SimpleTag {
   using type = tnsr::I<DataVector, Dim, DerivativeFrame>;
 };
 }  // namespace

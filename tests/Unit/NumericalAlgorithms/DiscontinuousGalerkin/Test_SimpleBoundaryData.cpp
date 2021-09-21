@@ -6,6 +6,7 @@
 #include <array>
 #include <cstddef>
 
+#include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
@@ -19,7 +20,7 @@
 
 namespace {
 
-struct SomeField {
+struct SomeField : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
 

@@ -39,7 +39,7 @@
 namespace {
 namespace Tags {
 template <typename Tag>
-struct Prefix : db::PrefixTag {
+struct Prefix : db::PrefixTag, db::SimpleTag {
   using tag = Tag;
   using type = typename Tag::type;
 };

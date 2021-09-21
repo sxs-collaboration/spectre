@@ -23,6 +23,7 @@
 #include "DataStructures/DataBox/Subitems.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
+#include "DataStructures/DataBox/TagTraits.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -94,6 +95,7 @@ class Variables<tmpl::list<Tags...>> {
   static_assert(sizeof...(Tags) > 0,
                 "You must provide at least one tag to the Variables "
                 "for type inference");
+  static_assert((db::is_simple_tag_v<Tags> and ...));
   static_assert(tmpl2::flat_all_v<tt::is_a_v<Tensor, typename Tags::type>...>);
 
  private:

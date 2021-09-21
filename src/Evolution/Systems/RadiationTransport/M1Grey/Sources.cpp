@@ -6,6 +6,7 @@
 #include <array>
 #include <cstddef>
 
+#include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
@@ -15,7 +16,7 @@
 // IWYU pragma: no_forward_declare Tensor
 
 namespace {
-struct AlphaTildeP {
+struct AlphaTildeP : db::SimpleTag {
   using type = tnsr::II<DataVector, 3>;
 };
 }  //  namespace
