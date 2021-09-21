@@ -141,12 +141,6 @@ template <typename InterpolationTargetTag, typename Frame>
 struct ApparentHorizon {
   using const_global_cache_tags =
       tmpl::list<Tags::ApparentHorizon<InterpolationTargetTag, Frame>>;
-  using initialization_tags =
-      tmpl::append<StrahlkorperTags::items_tags<Frame>,
-                   tmpl::list<::ah::Tags::FastFlow,
-                              logging::Tags::Verbosity<InterpolationTargetTag>,
-                              ::ah::Tags::PreviousStrahlkorper<Frame>>,
-                   StrahlkorperTags::compute_items_tags<Frame>>;
   using is_sequential = std::true_type;
   using frame = Frame;
 
