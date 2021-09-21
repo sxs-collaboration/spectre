@@ -90,7 +90,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.UpdateFunctionOfTime",
 
   for (auto& name : {pp_name, quatfot_name}) {
     Parallel::mutate<domain::Tags::FunctionsOfTime,
-                     control_system::UpdateFunctionOfTime<deriv_order>>(
+                     control_system::UpdateFunctionOfTime>(
         cache, name, update_time, updated_deriv, new_expiration_time);
   }
 
@@ -114,9 +114,8 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.UpdateFunctionOfTime",
   // Update functions of time in global cache with new expiration time
   const double newer_expiration_time = new_expiration_time + 1.0;
   for (auto& name : {pp_name, quatfot_name}) {
-    Parallel::mutate<
-        domain::Tags::FunctionsOfTime,
-        control_system::ResetFunctionOfTimeExpirationTime<deriv_order>>(
+    Parallel::mutate<domain::Tags::FunctionsOfTime,
+                     control_system::ResetFunctionOfTimeExpirationTime>(
         cache, name, newer_expiration_time);
   }
 

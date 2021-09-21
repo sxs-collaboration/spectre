@@ -16,7 +16,6 @@ namespace control_system {
 /// \ingroup ControlSystemGroup
 /// Updates a FunctionOfTime in the global cache. Intended to be used in
 /// Parallel::mutate.
-template <size_t DerivOrder>
 struct UpdateFunctionOfTime {
   static void apply(
       const gsl::not_null<std::unordered_map<
@@ -35,7 +34,6 @@ struct UpdateFunctionOfTime {
 /// \ingroup ControlSystemGroup
 /// Resets the expiration time of a FunctionOfTime in the global cache. Intended
 /// to be used in Parallel::mutate.
-template <size_t DerivOrder>
 struct ResetFunctionOfTimeExpirationTime {
   static void apply(
       const gsl::not_null<std::unordered_map<
