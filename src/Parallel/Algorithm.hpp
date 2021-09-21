@@ -62,19 +62,8 @@ class AlgorithmImpl;
 /// \endcond
 
 namespace Algorithm_detail {
-template <typename Metavariables, typename Component, typename = std::void_t<>>
-struct has_registration_list : std::false_type {};
-
-template <typename Metavariables, typename Component>
-struct has_registration_list<
-    Metavariables, Component,
-  std::void_t<
-    typename Metavariables::template registration_list<Component>::type>>
-    : std::true_type {};
-
-template <typename Metavariables, typename Component>
-constexpr bool has_registration_list_v =
-    has_registration_list<Metavariables, Component>::value;
+CREATE_HAS_TYPE_ALIAS(phase_selection)
+CREATE_HAS_TYPE_ALIAS_V(phase_selection)
 }  // namespace Algorithm_detail
 
 /*!
@@ -491,10 +480,9 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
     if (box.which() == *iter and not *already_visited) {
       // The deregistration and registration below does not actually insert
       // anything into the PUP::er stream, so nothing is done on a sizing pup.
-      if constexpr (Algorithm_detail::has_registration_list_v<
-                        metavariables, ParallelComponent>) {
+      if constexpr (Algorithm_detail::has_phase_selection_v<metavariables>) {
         using registration_list =
-            typename metavariables::template registration_list<
+            typename metavariables::phase_selection::template registration_list<
                 ParallelComponent>::type;
         if (p.isPacking()) {
           tmpl::for_each<registration_list>([this, &box](

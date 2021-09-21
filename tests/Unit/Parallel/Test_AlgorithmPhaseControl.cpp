@@ -32,6 +32,7 @@
 #include "Parallel/PhaseControl/ExecutePhaseChange.hpp"
 #include "Parallel/PhaseControl/PhaseChange.hpp"
 #include "Parallel/PhaseControl/PhaseControlTags.hpp"
+#include "Parallel/PhaseControl/PhaseSelection.hpp"
 #include "Parallel/PhaseControl/VisitAndReturn.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
@@ -133,8 +134,7 @@ struct ComponentAlpha {
           tmpl::list<
               Actions::RecordPhaseIteration<3_st>,
               Actions::TerminateAndRestart<ComponentBeta<Metavariables>, 2_st>,
-              PhaseControl::Actions::ExecutePhaseChange<
-                  typename Metavariables::phase_changes>>>>;
+              PhaseControl::Actions::ExecutePhaseChange>>>;
 
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
@@ -188,8 +188,7 @@ struct ComponentBeta {
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Evolve,
           tmpl::list<Actions::RecordPhaseIteration<3_st>,
-                     PhaseControl::Actions::ExecutePhaseChange<
-                         typename Metavariables::phase_changes>,
+                     PhaseControl::Actions::ExecutePhaseChange,
                      Actions::TerminateAndRestart<ComponentAlpha<Metavariables>,
                                                   3_st>>>>;
 
@@ -247,7 +246,7 @@ struct RecordPhaseIteration {
         make_not_null(&box),
         [](const gsl::not_null<std::string*> phase_log) noexcept {
           *phase_log += "Running phase: " +
-                        Metavariables::phase_name(
+                        Metavariables::phase_selection::phase_name(
                             static_cast<typename Metavariables::Phase>(Phase)) +
                         "\n";
         });
@@ -368,39 +367,42 @@ struct TestMetavariables {
         tmpl::map<tmpl::pair<Trigger, tmpl::list<TempPhaseATrigger,
                                                  TempPhaseBTrigger>>>;
   };
-  using phase_changes =
-      tmpl::list<PhaseControl::Registrars::VisitAndReturn<TestMetavariables,
-                                                          Phase::TempPhaseA>,
-                 PhaseControl::Registrars::VisitAndReturn<TestMetavariables,
-                                                          Phase::TempPhaseB>>;
+  struct phase_selection : tt::ConformsTo<PhaseControl::PhaseSelection> {
+    using phase_changes =
+        tmpl::list<PhaseControl::Registrars::VisitAndReturn<TestMetavariables,
+                                                            Phase::TempPhaseA>,
+                   PhaseControl::Registrars::VisitAndReturn<TestMetavariables,
+                                                            Phase::TempPhaseB>>;
 
-  using phase_change_tags_and_combines_list =
-      PhaseControl::get_phase_change_tags<phase_changes>;
+    using phase_change_tags_and_combines_list =
+        PhaseControl::get_phase_change_tags<phase_changes>;
 
-  using initialize_phase_change_decision_data =
-      PhaseControl::InitializePhaseChangeDecisionData<phase_changes>;
+    using initialize_phase_change_decision_data =
+        PhaseControl::InitializePhaseChangeDecisionData<phase_changes>;
 
-  using const_global_cache_tags = tmpl::list<
-      PhaseControl::Tags::PhaseChangeAndTriggers<phase_changes>>;
-
-  static std::string phase_name(const Phase phase) noexcept {
-    switch (phase) {
-      case Phase::Initialization:
-        return "Initialization";
-      case Phase::TempPhaseA:
-        return "TempPhaseA";
-      case Phase::TempPhaseB:
-        return "TempPhaseB";
-      case Phase::Evolve:
-        return "Evolve";
-      case Phase::Finalize:
-        return "Finalize";
-      case Phase::Exit:
-        return "Exit";
-      default:
-        ERROR("phase_name: Unknown phase");
+    static std::string phase_name(const Phase phase) noexcept {
+      switch (phase) {
+        case Phase::Initialization:
+          return "Initialization";
+        case Phase::TempPhaseA:
+          return "TempPhaseA";
+        case Phase::TempPhaseB:
+          return "TempPhaseB";
+        case Phase::Evolve:
+          return "Evolve";
+        case Phase::Finalize:
+          return "Finalize";
+        case Phase::Exit:
+          return "Exit";
+        default:
+          ERROR("phase_name: Unknown phase");
+      }
     }
-  }
+  };
+
+  using const_global_cache_tags =
+      tmpl::list<PhaseControl::Tags::PhaseChangeAndTriggers<
+          typename phase_selection::phase_changes>>;
 
   static constexpr Options::String help =
       "An executable for testing basic phase control flow.";
@@ -472,17 +474,18 @@ struct TestMetavariables {
            "Terminate Completion\n";
   }
 
+  // [determine_next_phase_example]
   template <typename... Tags>
   static Phase determine_next_phase(
       const gsl::not_null<tuples::TaggedTuple<Tags...>*>
           phase_change_decision_data,
       const Phase& current_phase,
-      const Parallel::CProxy_GlobalCache<
-          TestMetavariables>& cache_proxy) noexcept {
-    const auto next_phase =
-        PhaseControl::arbitrate_phase_change<phase_changes>(
-            phase_change_decision_data, current_phase,
-            *(cache_proxy.ckLocalBranch()));
+      const Parallel::CProxy_GlobalCache<TestMetavariables>&
+          cache_proxy) noexcept {
+    const auto next_phase = PhaseControl::arbitrate_phase_change<
+        typename TestMetavariables::phase_selection::phase_changes>(
+        phase_change_decision_data, current_phase,
+        *(cache_proxy.ckLocalBranch()));
     if (next_phase.has_value()) {
       return next_phase.value();
     }
@@ -500,6 +503,7 @@ struct TestMetavariables {
 
     return Phase::Exit;
   }
+  // [determine_next_phase_example]
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) noexcept {}
@@ -509,7 +513,7 @@ struct TestMetavariables {
 static const std::vector<void (*)()> charm_init_node_funcs{
     &setup_error_handling, &setup_memory_allocation_failure_reporting,
     &Parallel::register_derived_classes_with_charm<
-        PhaseChange<TestMetavariables::phase_changes>>,
+        PhaseChange<TestMetavariables::phase_selection::phase_changes>>,
     &Parallel::register_factory_classes_with_charm<TestMetavariables>};
 static const std::vector<void (*)()> charm_init_proc_funcs{
     &enable_floating_point_exceptions};

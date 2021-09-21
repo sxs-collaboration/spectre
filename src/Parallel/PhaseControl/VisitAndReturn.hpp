@@ -88,9 +88,9 @@ struct TemporaryPhaseRequested {
  * phase, it will execute.
  *
  * To determine which specialization of this template is requested from the
- * input file, the `Metavariables` must define a `phase_name(Phase)` static
- * member function that returns a string for each phase that will be used in
- * `VisitAndReturn`s.
+ * input file, the `Metavariables::phase_selection` struct must define a
+ * `phase_name(Phase)` static member function that returns a string for each
+ * phase that will be used in `VisitAndReturn`s.
  *
  * \note  If multiple such methods are specified (with different
  * `TargetPhase`s), then the order of phase jumps depends on their order in the
@@ -117,8 +117,8 @@ struct VisitAndReturn : public PhaseChange<PhaseChangeRegistrars> {
   /// \endcond
 
   static std::string name() noexcept {
-    return "VisitAndReturn(" + Metavariables::phase_name(TargetPhase) +
-           ")";
+    return "VisitAndReturn(" +
+           Metavariables::phase_selection::phase_name(TargetPhase) + ")";
   }
   using options = tmpl::list<>;
   static constexpr Options::String help{

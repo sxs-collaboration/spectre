@@ -100,26 +100,10 @@ struct EvolutionMetavars
                               3, AhA, interpolator_source_vars>>>>;
   };
 
-  using phase_changes =
-      typename GhValenciaDivCleanTemplateBase<EvolutionMetavars>::phase_changes;
-
   using initial_data =
       typename GhValenciaDivCleanTemplateBase<EvolutionMetavars>::initial_data;
   using initial_data_tag = typename GhValenciaDivCleanTemplateBase<
       EvolutionMetavars>::initial_data_tag;
-
-  using const_global_cache_tags = tmpl::flatten<tmpl::list<
-      tmpl::conditional_t<evolution::is_numeric_initial_data_v<initial_data>,
-                          tmpl::list<>, initial_data_tag>,
-      grmhd::ValenciaDivClean::Tags::ConstraintDampingParameter,
-      Tags::EventsAndTriggers,
-      GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma0<
-          volume_dim, Frame::Grid>,
-      GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma1<
-          volume_dim, Frame::Grid>,
-      GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma2<
-          volume_dim, Frame::Grid>,
-      PhaseControl::Tags::PhaseChangeAndTriggers<phase_changes>>>;
 
   using observed_reduction_data_tags =
       observers::collect_reduction_data_tags<tmpl::push_back<
@@ -130,14 +114,70 @@ struct EvolutionMetavars
   using dg_registration_list = typename GhValenciaDivCleanTemplateBase<
       EvolutionMetavars>::dg_registration_list;
 
-  template <typename ParallelComponent>
-  struct registration_list {
-    using type = std::conditional_t<
-        std::is_same_v<ParallelComponent,
-                       typename GhValenciaDivCleanTemplateBase<
-                           EvolutionMetavars>::dg_element_array_component>,
-        dg_registration_list, tmpl::list<>>;
-  };
+  using phase_selection =
+      typename GhValenciaDivCleanTemplateBase<EvolutionMetavars>::
+          template PhaseSelection<
+              EvolutionMetavars,
+              typename GhValenciaDivCleanTemplateBase<
+                  EvolutionMetavars>::dg_element_array_component,
+              typename GhValenciaDivCleanTemplateBase<
+                  EvolutionMetavars>::dg_registration_list>;
+
+  using const_global_cache_tags = tmpl::flatten<tmpl::list<
+      tmpl::conditional_t<evolution::is_numeric_initial_data_v<InitialData>,
+                          tmpl::list<>, initial_data_tag>,
+      grmhd::ValenciaDivClean::Tags::ConstraintDampingParameter,
+      Tags::EventsAndTriggers,
+      GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma0<
+          volume_dim, Frame::Grid>,
+      GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma1<
+          volume_dim, Frame::Grid>,
+      GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma2<
+          volume_dim, Frame::Grid>,
+      PhaseControl::Tags::PhaseChangeAndTriggers<
+          typename phase_selection::phase_changes>>>;
+
+  template <typename... Tags>
+  static Phase determine_next_phase(
+      const gsl::not_null<tuples::TaggedTuple<Tags...>*>
+          phase_change_decision_data,
+      const Phase& current_phase,
+      const Parallel::CProxy_GlobalCache<EvolutionMetavars>&
+          cache_proxy) noexcept {
+    const auto next_phase = PhaseControl::arbitrate_phase_change<
+        typename phase_selection::phase_changes>(
+        phase_change_decision_data, current_phase,
+        *(cache_proxy.ckLocalBranch()));
+    if (next_phase.has_value()) {
+      return next_phase.value();
+    }
+    switch (current_phase) {
+      case Phase::Initialization:
+        return evolution::is_numeric_initial_data_v<InitialData>
+                   ? Phase::RegisterWithElementDataReader
+                   : Phase::InitializeInitialDataDependentQuantities;
+      case Phase::RegisterWithElementDataReader:
+        return Phase::ImportInitialData;
+      case Phase::ImportInitialData:
+        return Phase::InitializeInitialDataDependentQuantities;
+      case Phase::InitializeInitialDataDependentQuantities:
+        return Phase::InitializeTimeStepperHistory;
+      case Phase::InitializeTimeStepperHistory:
+        return Phase::Register;
+      case Phase::Register:
+        return Phase::Evolve;
+      case Phase::Evolve:
+        return Phase::Exit;
+      case Phase::Exit:
+        ERROR(
+            "Should never call determine_next_phase with the current phase "
+            "being 'Exit'");
+      default:
+        ERROR(
+            "Unknown type of phase. Did you static_cast<Phase> an integral "
+            "value?");
+    }
+  }
 
   using component_list =
       tmpl::push_back<typename GhValenciaDivCleanTemplateBase<
@@ -156,7 +196,7 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &GeneralizedHarmonic::ConstraintDamping::register_derived_with_charm,
     &Parallel::register_derived_classes_with_charm<TimeStepper>,
     &Parallel::register_derived_classes_with_charm<
-        PhaseChange<metavariables::phase_changes>>,
+        PhaseChange<metavariables::phase_selection::phase_changes>>,
     &Parallel::register_factory_classes_with_charm<metavariables>};
 
 static const std::vector<void (*)()> charm_init_proc_funcs{

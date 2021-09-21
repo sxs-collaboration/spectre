@@ -11,6 +11,7 @@
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/PhaseControl/PhaseControlTags.hpp"
+#include "Parallel/PhaseControl/PhaseSelection.hpp"
 #include "Parallel/PhaseControl/VisitAndReturn.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/LogicalTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
@@ -29,15 +30,32 @@ struct Metavariables {
 
   enum class Phase { PhaseA, PhaseB, PhaseC};
 
-  static std::string phase_name(Phase phase) noexcept {
-    if (phase == Phase::PhaseB) {
-      return "PhaseB";
+  struct phase_selection : tt::ConformsTo<PhaseControl::PhaseSelection> {
+    using phase_changes =
+        tmpl::list<PhaseControl::Registrars::VisitAndReturn<
+                       Metavariables, Metavariables::Phase::PhaseB>,
+                   PhaseControl::Registrars::VisitAndReturn<
+                       Metavariables, Metavariables::Phase::PhaseC>>;
+    using initialize_phase_change_decision_data =
+        PhaseControl::InitializePhaseChangeDecisionData<phase_changes>;
+    using phase_change_tags_and_combines_list =
+        PhaseControl::get_phase_change_tags<phase_changes>;
+
+    static std::string phase_name(Phase phase) noexcept {
+      if (phase == Phase::PhaseB) {
+        return "PhaseB";
+      }
+      if (phase == Phase::PhaseC) {
+        return "PhaseC";
+      }
+      ERROR("Specified phase not supported for phase change");
     }
-    if (phase == Phase::PhaseC) {
-      return "PhaseC";
-    }
-    ERROR("Specified phase not supported for phase change");
-  }
+
+    template <typename ParallelComponent>
+    struct registration_list {
+      using type = tmpl::list<>;
+    };
+  };
 };
 
 SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.VisitAndReturn",
