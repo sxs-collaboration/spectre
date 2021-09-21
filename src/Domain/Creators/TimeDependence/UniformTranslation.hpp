@@ -61,17 +61,12 @@ namespace time_dependence {
 template <size_t MeshDim>
 class UniformTranslation final : public TimeDependence<MeshDim> {
  private:
-  using Translation = domain::CoordinateMaps::TimeDependent::Translation;
+  using TranslationMap =
+      domain::CoordinateMaps::TimeDependent::Translation<MeshDim>;
 
  public:
   using maps_list = tmpl::list<
-      domain::CoordinateMap<Frame::Grid, Frame::Inertial, Translation>,
-      domain::CoordinateMap<Frame::Grid, Frame::Inertial,
-                            CoordinateMaps::TimeDependent::ProductOf2Maps<
-                                Translation, Translation>>,
-      domain::CoordinateMap<Frame::Grid, Frame::Inertial,
-                            CoordinateMaps::TimeDependent::ProductOf3Maps<
-                                Translation, Translation, Translation>>>;
+      domain::CoordinateMap<Frame::Grid, Frame::Inertial, TranslationMap>>;
 
   static constexpr size_t mesh_dim = MeshDim;
 
@@ -96,23 +91,16 @@ class UniformTranslation final : public TimeDependence<MeshDim> {
   };
   /// \brief The names of the functions of times to be added to the added to the
   /// DataBox.
-  struct FunctionOfTimeNames {
-    using type = std::array<std::string, MeshDim>;
-    static constexpr Options::String help = {"Names of the functions of time."};
+  struct FunctionOfTimeName {
+    using type = std::string;
+    static constexpr Options::String help = {"Name of the functions of time."};
   };
 
   using MapForComposition =
-      detail::generate_coordinate_map_t<tmpl::list<tmpl::conditional_t<
-          MeshDim == 1, Translation,
-          tmpl::conditional_t<
-              MeshDim == 2,
-              domain::CoordinateMaps::TimeDependent::ProductOf2Maps<
-                  Translation, Translation>,
-              domain::CoordinateMaps::TimeDependent::ProductOf3Maps<
-                  Translation, Translation, Translation>>>>>;
+      detail::generate_coordinate_map_t<tmpl::list<TranslationMap>>;
 
   using options = tmpl::list<InitialTime, InitialExpirationDeltaT, Velocity,
-                             FunctionOfTimeNames>;
+                             FunctionOfTimeName>;
 
   static constexpr Options::String help = {
       "A spatially uniform translation initialized with a constant velocity."};
@@ -124,11 +112,10 @@ class UniformTranslation final : public TimeDependence<MeshDim> {
   UniformTranslation& operator=(const UniformTranslation&) = delete;
   UniformTranslation& operator=(UniformTranslation&&) noexcept = default;
 
-  UniformTranslation(double initial_time,
-                     std::optional<double> initial_expiration_delta_t,
-                     const std::array<double, MeshDim>& velocity,
-                     std::array<std::string, MeshDim> functions_of_time_names =
-                         default_function_names()) noexcept;
+  UniformTranslation(
+      double initial_time, std::optional<double> initial_expiration_delta_t,
+      const std::array<double, MeshDim>& velocity,
+      std::string function_of_time_name = default_function_name()) noexcept;
 
   auto get_clone() const noexcept
       -> std::unique_ptr<TimeDependence<MeshDim>> override;
@@ -146,7 +133,7 @@ class UniformTranslation final : public TimeDependence<MeshDim> {
   MapForComposition map_for_composition() const noexcept;
 
  private:
-  static std::array<std::string, MeshDim> default_function_names() noexcept;
+  static std::string default_function_name() noexcept;
 
   template <size_t LocalDim>
   // NOLINTNEXTLINE(readability-redundant-declaration)
@@ -156,7 +143,7 @@ class UniformTranslation final : public TimeDependence<MeshDim> {
   double initial_time_{std::numeric_limits<double>::signaling_NaN()};
   std::optional<double> initial_expiration_delta_t_{};
   std::array<double, MeshDim> velocity_{};
-  std::array<std::string, MeshDim> functions_of_time_names_{};
+  std::string function_of_time_name_{};
 };
 
 template <size_t Dim>

@@ -43,7 +43,7 @@ namespace {
 namespace helpers = ::TestHelpers::domain::BoundaryConditions;
 
 void test_1d_domains() {
-  using Translation = domain::CoordinateMaps::TimeDependent::Translation;
+  using Translation = domain::CoordinateMaps::TimeDependent::Translation<1>;
   {
     PUPable_reg(SINGLE_ARG(CoordinateMap<Frame::BlockLogical, Frame::Inertial,
                                          CoordinateMaps::Affine>));

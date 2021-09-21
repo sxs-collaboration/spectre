@@ -51,7 +51,7 @@ SPECTRE_TEST_CASE(
   using SubcellGrVars = typename subcell_gr_tag::type;
   using FaceGrVars = typename subcell_faces_gr_tag::type::value_type;
 
-  using Translation = domain::CoordinateMaps::TimeDependent::Translation;
+  using Translation = domain::CoordinateMaps::TimeDependent::Translation<1>;
   using Identity2D = domain::CoordinateMaps::Identity<2>;
   using Solution =
       RelativisticEuler::Solutions::TovStar<gr::Solutions::TovSolution>;

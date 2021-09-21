@@ -36,7 +36,7 @@ DomainCreator:
          InitialTime: 0.0
          InitialExpirationDeltaT: Auto
          Velocity: [0.5]
-         FunctionOfTimeNames: ["Translation"]
+         FunctionOfTimeName: "Translation"
     BoundaryConditions:
       LowerBoundary:  DirichletAnalytic
       UpperBoundary:  DirichletAnalytic

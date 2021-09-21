@@ -45,10 +45,7 @@ namespace domain {
 namespace {
 using Affine = CoordinateMaps::Affine;
 using Affine3D = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
-using Translation = CoordinateMaps::TimeDependent::Translation;
-using Translation3D =
-    CoordinateMaps::TimeDependent::ProductOf3Maps<Translation, Translation,
-                                                  Translation>;
+using Translation3D = CoordinateMaps::TimeDependent::Translation<3>;
 
 template <typename... FuncsOfTime>
 void test_brick_construction(
@@ -370,8 +367,7 @@ void test_brick_factory() {
         "      InitialTime: 1.0\n"
         "      InitialExpirationDeltaT: 9.0\n"
         "      Velocity: [2.3, -0.3, 0.5]\n"
-        "      FunctionOfTimeNames: [TranslationX, TranslationY, "
-        "TranslationZ]");
+        "      FunctionOfTimeName: Translation");
     const auto* brick_creator =
         dynamic_cast<const creators::Brick*>(domain_creator.get());
     test_brick_construction(
@@ -387,20 +383,13 @@ void test_brick_factory() {
         std::make_tuple(
             std::pair<std::string,
                       domain::FunctionsOfTime::PiecewisePolynomial<2>>{
-                "TranslationX",
-                {1.0, std::array<DataVector, 3>{{{0.0}, {2.3}, {0.0}}}, 10.0}},
-            std::pair<std::string,
-                      domain::FunctionsOfTime::PiecewisePolynomial<2>>{
-                "TranslationY",
-                {1.0, std::array<DataVector, 3>{{{0.0}, {-0.3}, {0.0}}}, 10.0}},
-            std::pair<std::string,
-                      domain::FunctionsOfTime::PiecewisePolynomial<2>>{
-                "TranslationZ",
-                {1.0, std::array<DataVector, 3>{{{0.0}, {0.5}, {0.0}}}, 10.0}}),
+                "Translation",
+                {1.0,
+                 std::array<DataVector, 3>{
+                     {{3, 0.0}, {2.3, -0.3, 0.5}, {3, 0.0}}},
+                 10.0}}),
         make_vector_coordinate_map_base<Frame::Grid, Frame::Inertial>(
-            Translation3D{Translation{"TranslationX"},
-                          Translation{"TranslationY"},
-                          Translation{"TranslationZ"}}));
+            Translation3D{"Translation"}));
   }
   {
     INFO("Brick factory time dependent");
@@ -418,8 +407,7 @@ void test_brick_factory() {
         "      InitialTime: 1.0\n"
         "      InitialExpirationDeltaT: 9.0\n"
         "      Velocity: [2.3, -0.3, 0.5]\n"
-        "      FunctionOfTimeNames: [TranslationX, TranslationY, "
-        "TranslationZ]\n" +
+        "      FunctionOfTimeName: Translation\n" +
         boundary_conditions);
     const auto* brick_creator =
         dynamic_cast<const creators::Brick*>(domain_creator.get());
@@ -436,20 +424,13 @@ void test_brick_factory() {
         std::make_tuple(
             std::pair<std::string,
                       domain::FunctionsOfTime::PiecewisePolynomial<2>>{
-                "TranslationX",
-                {1.0, std::array<DataVector, 3>{{{0.0}, {2.3}, {0.0}}}, 10.0}},
-            std::pair<std::string,
-                      domain::FunctionsOfTime::PiecewisePolynomial<2>>{
-                "TranslationY",
-                {1.0, std::array<DataVector, 3>{{{0.0}, {-0.3}, {0.0}}}, 10.0}},
-            std::pair<std::string,
-                      domain::FunctionsOfTime::PiecewisePolynomial<2>>{
-                "TranslationZ",
-                {1.0, std::array<DataVector, 3>{{{0.0}, {0.5}, {0.0}}}, 10.0}}),
+                "Translation",
+                {1.0,
+                 std::array<DataVector, 3>{
+                     {{3, 0.0}, {2.3, -0.3, 0.5}, {3, 0.0}}},
+                 10.0}}),
         make_vector_coordinate_map_base<Frame::Grid, Frame::Inertial>(
-            Translation3D{Translation{"TranslationX"},
-                          Translation{"TranslationY"},
-                          Translation{"TranslationZ"}}),
+            Translation3D{"Translation"}),
         create_boundary_conditions());
   }
 }

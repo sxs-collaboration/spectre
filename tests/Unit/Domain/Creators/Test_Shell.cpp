@@ -65,10 +65,8 @@
 
 namespace domain {
 namespace {
-using Translation = CoordinateMaps::TimeDependent::Translation;
-using Translation3D =
-    CoordinateMaps::TimeDependent::ProductOf3Maps<Translation, Translation,
-                                                  Translation>;
+using Translation = CoordinateMaps::TimeDependent::Translation<1>;
+using Translation3D = CoordinateMaps::TimeDependent::Translation<3>;
 
 using BoundaryCondVector = std::vector<DirectionMap<
     3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>;
@@ -512,9 +510,7 @@ void test_shell_factory_equiangular_time_dependent() {
         "      InitialTime: 1.0\n"
         "      InitialExpirationDeltaT: 9.0\n"
         "      Velocity: [2.3, -0.3, 1.2]\n"
-        "      FunctionOfTimeNames: [TranslationX,"
-        "                            TranslationY,"
-        "                            TranslationZ]\n" +
+        "      FunctionOfTimeName: Translation\n" +
         (expected_boundary_conditions.empty() ? std::string{}
                                               : boundary_conditions_string()));
     const double inner_radius = 1.0;
@@ -528,35 +524,15 @@ void test_shell_factory_equiangular_time_dependent() {
         std::make_tuple(
             std::pair<std::string,
                       domain::FunctionsOfTime::PiecewisePolynomial<2>>{
-                "TranslationX",
-                {1.0, std::array<DataVector, 3>{{{0.0}, {2.3}, {0.0}}}, 10.0}},
-            std::pair<std::string,
-                      domain::FunctionsOfTime::PiecewisePolynomial<2>>{
-                "TranslationY",
-                {1.0, std::array<DataVector, 3>{{{0.0}, {-0.3}, {0.0}}}, 10.0}},
-            std::pair<std::string,
-                      domain::FunctionsOfTime::PiecewisePolynomial<2>>{
-                "TranslationZ",
-                {1.0, std::array<DataVector, 3>{{{0.0}, {1.2}, {0.0}}}, 10.0}}),
+                "Translation",
+                {1.0,
+                 std::array<DataVector, 3>{
+                     {{3, 0.0}, {2.3, -0.3, 1.2}, {3, 0.0}}},
+                 10.0}}),
         make_vector_coordinate_map_base<Frame::Grid, Frame::Inertial>(
-            Translation3D{Translation{"TranslationX"},
-                          Translation{"TranslationY"},
-                          Translation{"TranslationZ"}},
-            Translation3D{Translation{"TranslationX"},
-                          Translation{"TranslationY"},
-                          Translation{"TranslationZ"}},
-            Translation3D{Translation{"TranslationX"},
-                          Translation{"TranslationY"},
-                          Translation{"TranslationZ"}},
-            Translation3D{Translation{"TranslationX"},
-                          Translation{"TranslationY"},
-                          Translation{"TranslationZ"}},
-            Translation3D{Translation{"TranslationX"},
-                          Translation{"TranslationY"},
-                          Translation{"TranslationZ"}},
-            Translation3D{Translation{"TranslationX"},
-                          Translation{"TranslationY"},
-                          Translation{"TranslationZ"}}),
+            Translation3D{"Translation"}, Translation3D{"Translation"},
+            Translation3D{"Translation"}, Translation3D{"Translation"},
+            Translation3D{"Translation"}, Translation3D{"Translation"}),
         expected_boundary_conditions);
   };
   helper(BoundaryCondVector{}, std::false_type{});

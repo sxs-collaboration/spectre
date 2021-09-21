@@ -296,7 +296,7 @@ void test_interval_factory() {
         "      InitialTime: 1.0\n"
         "      InitialExpirationDeltaT: 9.0\n"
         "      Velocity: [2.3]\n"
-        "      FunctionOfTimeNames: [TranslationX]");
+        "      FunctionOfTimeName: TranslationX");
     const auto* interval_creator =
         dynamic_cast<const creators::Interval*>(domain_creator.get());
     test_interval_construction(
@@ -308,7 +308,7 @@ void test_interval_factory() {
                 "TranslationX",
                 {1.0, std::array<DataVector, 3>{{{0.0}, {2.3}, {0.0}}}, 10.0}}),
         make_vector_coordinate_map_base<Frame::Grid, Frame::Inertial>(
-            CoordinateMaps::TimeDependent::Translation{"TranslationX"}),
+            CoordinateMaps::TimeDependent::Translation<1>{"TranslationX"}),
         {});
   }
   {
@@ -327,7 +327,7 @@ void test_interval_factory() {
         "      InitialTime: 1.0\n"
         "      InitialExpirationDeltaT: 9.0\n"
         "      Velocity: [2.3]\n"
-        "      FunctionOfTimeNames: [TranslationX]\n"
+        "      FunctionOfTimeName: TranslationX\n"
         "  BoundaryConditions:\n"
         "    LowerBoundary:\n"
         "      TestBoundaryCondition:\n"
@@ -348,7 +348,7 @@ void test_interval_factory() {
                 "TranslationX",
                 {1.0, std::array<DataVector, 3>{{{0.0}, {2.3}, {0.0}}}, 10.0}}),
         make_vector_coordinate_map_base<Frame::Grid, Frame::Inertial>(
-            CoordinateMaps::TimeDependent::Translation{"TranslationX"}),
+            CoordinateMaps::TimeDependent::Translation<1>{"TranslationX"}),
         expected_boundary_conditions);
   }
 }

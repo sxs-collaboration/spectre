@@ -19,8 +19,6 @@
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/CoordinateMaps/Tags.hpp"
-#include "Domain/CoordinateMaps/TimeDependent/ProductMaps.hpp"
-#include "Domain/CoordinateMaps/TimeDependent/ProductMaps.tpp"
 #include "Domain/CoordinateMaps/TimeDependent/Translation.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
@@ -58,13 +56,9 @@ void test_tags() noexcept {
       "div(MeshVelocity)");
 }
 
-using TranslationMap = domain::CoordinateMaps::TimeDependent::Translation;
-using TranslationMap2d =
-    domain::CoordinateMaps::TimeDependent::ProductOf2Maps<TranslationMap,
-                                                          TranslationMap>;
-using TranslationMap3d = domain::CoordinateMaps::TimeDependent::ProductOf3Maps<
-    TranslationMap, TranslationMap, TranslationMap>;
-
+using TranslationMap = domain::CoordinateMaps::TimeDependent::Translation<1>;
+using TranslationMap2d = domain::CoordinateMaps::TimeDependent::Translation<2>;
+using TranslationMap3d = domain::CoordinateMaps::TimeDependent::Translation<3>;
 using AffineMap = domain::CoordinateMaps::Affine;
 using AffineMap2d =
     domain::CoordinateMaps::ProductOf2Maps<AffineMap, AffineMap>;
@@ -83,30 +77,25 @@ using ConcreteMap = tmpl::conditional_t<
                                               TranslationMap3d, AffineMap3d>>>;
 
 template <size_t MeshDim>
-ConcreteMap<MeshDim> create_coord_map(
-    const std::array<std::string, 3>& f_of_t_names);
+ConcreteMap<MeshDim> create_coord_map(const std::string& f_of_t_name);
 
 template <>
-ConcreteMap<1> create_coord_map<1>(
-    const std::array<std::string, 3>& f_of_t_names) {
-  return ConcreteMap<1>{TranslationMap{f_of_t_names[0]},
+ConcreteMap<1> create_coord_map<1>(const std::string& f_of_t_name) {
+  return ConcreteMap<1>{TranslationMap{f_of_t_name},
                         AffineMap{-1.0, 1.0, 2.0, 7.2}};
 }
 
 template <>
-ConcreteMap<2> create_coord_map<2>(
-    const std::array<std::string, 3>& f_of_t_names) {
+ConcreteMap<2> create_coord_map<2>(const std::string& f_of_t_name) {
   return ConcreteMap<2>{
-      {TranslationMap{f_of_t_names[0]}, TranslationMap{f_of_t_names[1]}},
+      {TranslationMap2d{f_of_t_name}},
       {AffineMap{-1.0, 1.0, -2.0, 2.2}, AffineMap{-1.0, 1.0, 2.0, 7.2}}};
 }
 
 template <>
-ConcreteMap<3> create_coord_map<3>(
-    const std::array<std::string, 3>& f_of_t_names) {
+ConcreteMap<3> create_coord_map<3>(const std::string& f_of_t_name) {
   return ConcreteMap<3>{
-      {TranslationMap{f_of_t_names[0]}, TranslationMap{f_of_t_names[1]},
-       TranslationMap{f_of_t_names[2]}},
+      {TranslationMap3d{f_of_t_name}},
       {AffineMap{-1.0, 1.0, -2.0, 2.2}, AffineMap{-1.0, 1.0, 2.0, 7.2},
        AffineMap{-1.0, 1.0, 1.0, 3.5}}};
 }
@@ -128,11 +117,10 @@ void test() noexcept {
       domain::Tags::InertialMeshVelocityCompute<Dim>>;
 
   MAKE_GENERATOR(gen);
-  const std::array<double, 3> velocity{{1.2, 0.2, -8.9}};
+  const DataVector velocity{Dim, 1.2};
   const double initial_time = 0.0;
   const double expiration_time = 5.0;
-  const std::array<std::string, 3> functions_of_time_names{
-      {"TranslationX", "TranslationY", "TranslationZ"}};
+  const std::string function_of_time_name = "Translation";
 
   UniformCustomDistribution<double> dist(-10.0, 10.0);
 
@@ -149,27 +137,17 @@ void test() noexcept {
   std::unordered_map<std::string,
                      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
       functions_of_time{};
-  functions_of_time[functions_of_time_names[0]] =
+  functions_of_time[function_of_time_name] =
       std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<2>>(
           initial_time,
-          std::array<DataVector, 3>{{{0.0}, {velocity[0]}, {0.0}}},
-          expiration_time);
-  functions_of_time[functions_of_time_names[1]] =
-      std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<2>>(
-          initial_time,
-          std::array<DataVector, 3>{{{0.0}, {velocity[1]}, {0.0}}},
-          expiration_time);
-  functions_of_time[functions_of_time_names[2]] =
-      std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<2>>(
-          initial_time,
-          std::array<DataVector, 3>{{{0.0}, {velocity[2]}, {0.0}}},
+          std::array<DataVector, 3>{{{Dim, 0.0}, velocity, {Dim, 0.0}}},
           expiration_time);
 
   using MapPtr = std::unique_ptr<
       domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, Dim>>;
   const MapPtr grid_to_inertial_map =
       IsTimeDependent ? MapPtr{std::make_unique<ConcreteMap<Dim>>(
-                            create_coord_map<Dim>(functions_of_time_names))}
+                            create_coord_map<Dim>(function_of_time_name))}
                       : MapPtr{std::make_unique<domain::CoordinateMap<
                             Frame::Grid, Frame::Inertial,
                             domain::CoordinateMaps::Identity<Dim>>>()};

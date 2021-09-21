@@ -1079,7 +1079,7 @@ void test_time_dependent_map() {
   functions_of_time["Translation"] =
       std::make_unique<Polynomial>(initial_time, init_func, final_time);
 
-  const CoordinateMaps::TimeDependent::Translation trans_map{"Translation"};
+  const CoordinateMaps::TimeDependent::Translation<1> trans_map{"Translation"};
 
   // affine(x) = 1.5 * x + 5.5
   domain::CoordinateMaps::Affine affine_map{-1., 1., 4., 7.};
@@ -1318,15 +1318,12 @@ void test_jacobian_is_time_dependent() noexcept {
 
 void test_coords_frame_velocity_jacobians() noexcept {
   using affine_map = CoordinateMaps::Affine;
-  using trans_map = CoordinateMaps::TimeDependent::Translation;
+  using trans_map = CoordinateMaps::TimeDependent::Translation<1>;
   using affine_map_2d = CoordinateMaps::ProductOf2Maps<affine_map, affine_map>;
-  using trans_map_2d =
-      CoordinateMaps::TimeDependent::ProductOf2Maps<trans_map, trans_map>;
+  using trans_map_2d = CoordinateMaps::TimeDependent::Translation<2>;
   using affine_map_3d =
       CoordinateMaps::ProductOf3Maps<affine_map, affine_map, affine_map>;
-  using trans_map_3d =
-      CoordinateMaps::TimeDependent::ProductOf3Maps<trans_map, trans_map,
-                                                    trans_map>;
+  using trans_map_3d = CoordinateMaps::TimeDependent::Translation<3>;
 
   const double initial_time = 0.0;
   const double final_time   = 2.0;
@@ -1337,17 +1334,19 @@ void test_coords_frame_velocity_jacobians() noexcept {
   std::unordered_map<std::string,
                      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
       functions_of_time{};
-  functions_of_time["trans_x"] = std::make_unique<Polynomial>(
+  functions_of_time["trans_1d"] = std::make_unique<Polynomial>(
       initial_time,
       std::array<DataVector, deriv_order + 1>{{{1.0}, {-2.0}, {0.0}, {0.0}}},
       final_time);
-  functions_of_time["trans_y"] = std::make_unique<Polynomial>(
+  functions_of_time["trans_2d"] = std::make_unique<Polynomial>(
       initial_time,
-      std::array<DataVector, deriv_order + 1>{{{1.0}, {3.0}, {0.0}, {0.0}}},
+      std::array<DataVector, deriv_order + 1>{
+          {{2, 1.0}, {-2.0, 3.0}, {2, 0.0}, {2, 0.0}}},
       final_time);
-  functions_of_time["trans_z"] = std::make_unique<Polynomial>(
+  functions_of_time["trans_3d"] = std::make_unique<Polynomial>(
       initial_time,
-      std::array<DataVector, deriv_order + 1>{{{1.0}, {4.5}, {0.0}, {0.0}}},
+      std::array<DataVector, deriv_order + 1>{
+          {{3, 1.0}, {-2.0, 3.0, 4.5}, {3, 0.0}, {3, 0.0}}},
       final_time);
   functions_of_time["ExpansionA"] = std::make_unique<Polynomial>(
       initial_time,
@@ -1360,8 +1359,8 @@ void test_coords_frame_velocity_jacobians() noexcept {
 
   const auto composed_map_1d =
       make_coordinate_map<Frame::Logical, Frame::Inertial>(
-          trans_map{"trans_x"}, affine_map{-1.0, 1.0, 0.0, 2.3},
-          trans_map{"trans_x"});
+          trans_map{"trans_1d"}, affine_map{-1.0, 1.0, 0.0, 2.3},
+          trans_map{"trans_1d"});
   CHECK(
       std::get<3>(composed_map_1d.coords_frame_velocity_jacobians(
           tnsr::I<double, 1, Frame::Logical>{0.5}, time, functions_of_time)) ==
@@ -1373,10 +1372,10 @@ void test_coords_frame_velocity_jacobians() noexcept {
 
   const auto composed_map_2d =
       make_coordinate_map<Frame::Logical, Frame::Inertial>(
-          trans_map_2d{trans_map{"trans_x"}, trans_map{"trans_y"}},
+          trans_map_2d{"trans_2d"},
           affine_map_2d{affine_map{-1.0, 1.0, 0.0, 2.3},
                         affine_map{-1.0, 1.0, 1.0, 7.2}},
-          trans_map_2d{trans_map{"trans_x"}, trans_map{"trans_y"}});
+          trans_map_2d{"trans_2d"});
   CHECK(
       std::get<3>(composed_map_2d.coords_frame_velocity_jacobians(
           tnsr::I<double, 2, Frame::Logical>{0.5}, time, functions_of_time)) ==
@@ -1389,8 +1388,7 @@ void test_coords_frame_velocity_jacobians() noexcept {
             {{DataVector{3_st, -2.0 + 1.15 * -2.0},
               DataVector{3_st, 3.0 + 3.1 * 3.0}}}});
 
-  const trans_map_3d translation3d{trans_map{"trans_x"}, trans_map{"trans_y"},
-                                   trans_map{"trans_z"}};
+  const trans_map_3d translation3d{"trans_3d"};
   const affine_map_3d affine3d{affine_map{-1.0, 1.0, 0.0, 2.3},
                                affine_map{-1.0, 1.0, 1.0, 7.2},
                                affine_map{-1.0, 1.0, -10.0, 7.2}};

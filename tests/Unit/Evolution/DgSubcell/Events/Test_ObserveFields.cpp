@@ -85,22 +85,9 @@ using namespace TestHelpers::dg::Events::ObserveFields;
 template <size_t Dim>
 auto make_map() {
   using domain::make_coordinate_map_base;
-  using domain::CoordinateMaps::TimeDependent::Translation;
-  if constexpr (Dim == 1) {
-    return make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
-        Translation("Translation"));
-  } else if constexpr (Dim == 2) {
-    using domain::CoordinateMaps::TimeDependent::ProductOf2Maps;
-    return make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
-        ProductOf2Maps<Translation, Translation>(Translation("Translation"),
-                                                 Translation("Translation")));
-  } else {
-    using domain::CoordinateMaps::TimeDependent::ProductOf3Maps;
-    return make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
-        ProductOf3Maps<Translation, Translation, Translation>(
-            Translation("Translation"), Translation("Translation"),
-            Translation("Translation")));
-  }
+  using Translation = domain::CoordinateMaps::TimeDependent::Translation<Dim>;
+  return make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
+      Translation("Translation"));
 }
 
 template <typename System, bool AlwaysHasAnalyticSolutions>
@@ -129,7 +116,10 @@ void test_observe(
   using solution_variables = typename System::solution_for_test::vars_for_test;
   using Polynomial = domain::FunctionsOfTime::PiecewisePolynomial<3>;
   using FoftPtr = std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>;
-  const std::array<DataVector, 4> init_func{{{1.0}, {-2.0}, {2.0}, {0.0}}};
+  const std::array<DataVector, 4> init_func{{{volume_dim, 1.0},
+                                             {volume_dim, -2.0},
+                                             {volume_dim, 2.0},
+                                             {volume_dim, 0.0}}};
   std::unordered_map<std::string, FoftPtr> functions_of_time{};
   functions_of_time["Translation"] =
       std::make_unique<Polynomial>(0, init_func, 1.0e100);
