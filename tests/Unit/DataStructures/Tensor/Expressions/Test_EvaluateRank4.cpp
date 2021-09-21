@@ -7,7 +7,7 @@
 #include "DataStructures/Tensor/Expressions/TensorIndex.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Tensor/Symmetry.hpp"
-#include "Helpers/DataStructures/Tensor/Expressions/EvaluateRank4TestHelpers.hpp"
+#include "Helpers/DataStructures/Tensor/Expressions/EvaluateRank4.hpp"
 
 SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.EvaluateRank4",
                   "[DataStructures][Unit]") {
