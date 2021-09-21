@@ -29,7 +29,7 @@ struct PrimitiveFromConservativeProxyThermoDim1 {
       const Scalar<DataVector>& mass_density_cons,
       const tnsr::I<DataVector, Dim>& momentum_density,
       const Scalar<DataVector>& energy_density) noexcept {
-    NewtonianEuler::PrimitiveFromConservative<Dim, 1>::apply(
+    NewtonianEuler::PrimitiveFromConservative<Dim>::apply(
         mass_density, velocity, specific_internal_energy, pressure,
         mass_density_cons, momentum_density, energy_density,
         EquationsOfState::PolytropicFluid<false>(1.4, 5.0 / 3.0));
@@ -46,7 +46,7 @@ struct PrimitiveFromConservativeProxyThermoDim2 {
       const Scalar<DataVector>& mass_density_cons,
       const tnsr::I<DataVector, Dim>& momentum_density,
       const Scalar<DataVector>& energy_density) noexcept {
-    NewtonianEuler::PrimitiveFromConservative<Dim, 2>::apply(
+    NewtonianEuler::PrimitiveFromConservative<Dim>::apply(
         mass_density, velocity, specific_internal_energy, pressure,
         mass_density_cons, momentum_density, energy_density,
         EquationsOfState::IdealFluid<false>(5.0 / 3.0));

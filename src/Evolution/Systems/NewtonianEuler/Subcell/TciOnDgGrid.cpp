@@ -28,7 +28,7 @@ bool TciOnDgGrid<Dim>::apply(
     const Scalar<DataVector>& energy_density,
     const EquationsOfState::EquationOfState<false, ThermodynamicDim>& eos,
     const Mesh<Dim>& dg_mesh, const double persson_exponent) noexcept {
-  NewtonianEuler::PrimitiveFromConservative<Dim, ThermodynamicDim>::apply(
+  NewtonianEuler::PrimitiveFromConservative<Dim>::apply(
       make_not_null(&get<MassDensity>(*dg_prim_vars)),
       make_not_null(&get<Velocity>(*dg_prim_vars)),
       make_not_null(&get<SpecificInternalEnergy>(*dg_prim_vars)),

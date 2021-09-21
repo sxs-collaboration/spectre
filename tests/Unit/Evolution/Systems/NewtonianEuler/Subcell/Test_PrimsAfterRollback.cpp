@@ -78,7 +78,7 @@ void test(const gsl::not_null<std::mt19937*> gen,
         db::get<::Tags::Variables<prim_tags>>(box).number_of_grid_points() ==
         cons_vars.number_of_grid_points());
     expected_prim_vars.initialize(cons_vars.number_of_grid_points());
-    NewtonianEuler::PrimitiveFromConservative<Dim, 1>::apply(
+    NewtonianEuler::PrimitiveFromConservative<Dim>::apply(
         make_not_null(&get<MassDensity>(expected_prim_vars)),
         make_not_null(&get<Velocity>(expected_prim_vars)),
         make_not_null(&get<SpecificInternalEnergy>(expected_prim_vars)),

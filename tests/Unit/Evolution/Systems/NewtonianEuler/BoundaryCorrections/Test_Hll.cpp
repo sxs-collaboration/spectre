@@ -91,14 +91,14 @@ void test(const gsl::not_null<std::mt19937*> gen, const size_t num_pts,
       ranges{std::array{1.0e-30, 1.0}, std::array{1.0e-30, 1.0}};
 
   helpers::test_boundary_correction_conservation<
-      NewtonianEuler::System<Dim, EosType, DummyInitialData>>(
+      NewtonianEuler::System<Dim, DummyInitialData>>(
       gen, NewtonianEuler::BoundaryCorrections::Hll<Dim>{},
       Mesh<Dim - 1>{num_pts, Spectral::Basis::Legendre,
                     Spectral::Quadrature::Gauss},
       volume_data, ranges);
 
   helpers::test_boundary_correction_with_python<
-      NewtonianEuler::System<Dim, EosType, DummyInitialData>,
+      NewtonianEuler::System<Dim, DummyInitialData>,
       tmpl::list<ConvertPolytropic, ConvertIdeal>>(
       gen, "Hll",
       {{"dg_package_data_mass_density", "dg_package_data_momentum_density",
@@ -119,7 +119,7 @@ void test(const gsl::not_null<std::mt19937*> gen, const size_t num_pts,
       NewtonianEuler::BoundaryCorrections::BoundaryCorrection<Dim>>>("Hll:");
 
   helpers::test_boundary_correction_with_python<
-      NewtonianEuler::System<Dim, EosType, DummyInitialData>,
+      NewtonianEuler::System<Dim, DummyInitialData>,
       tmpl::list<ConvertPolytropic, ConvertIdeal>>(
       gen, "Hll",
       {{"dg_package_data_mass_density", "dg_package_data_momentum_density",

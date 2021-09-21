@@ -83,7 +83,7 @@ void test(const gsl::not_null<std::mt19937*> gen,
           cons_vars.number_of_grid_points());
   if (active_grid == evolution::dg::subcell::ActiveGrid::Dg) {
     prim_vars.initialize(cons_vars.number_of_grid_points());
-    NewtonianEuler::PrimitiveFromConservative<Dim, 1>::apply(
+    NewtonianEuler::PrimitiveFromConservative<Dim>::apply(
         make_not_null(&get<MassDensity>(prim_vars)),
         make_not_null(&get<Velocity>(prim_vars)),
         make_not_null(&get<SpecificInternalEnergy>(prim_vars)),

@@ -42,7 +42,7 @@ void ResizeAndComputePrims<Dim>::apply(
 
     // We only need to compute the prims if we switched to the DG grid because
     // otherwise we computed the prims during the FD TCI.
-    NewtonianEuler::PrimitiveFromConservative<Dim, ThermodynamicDim>::apply(
+    NewtonianEuler::PrimitiveFromConservative<Dim>::apply(
         make_not_null(&get<MassDensity>(*prim_vars)),
         make_not_null(&get<Velocity>(*prim_vars)),
         make_not_null(&get<SpecificInternalEnergy>(*prim_vars)),

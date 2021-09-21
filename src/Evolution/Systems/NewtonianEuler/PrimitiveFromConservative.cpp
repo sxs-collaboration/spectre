@@ -18,8 +18,9 @@
 
 namespace NewtonianEuler {
 
-template <size_t Dim, size_t ThermodynamicDim>
-void PrimitiveFromConservative<Dim, ThermodynamicDim>::apply(
+template <size_t Dim>
+template <size_t ThermodynamicDim>
+void PrimitiveFromConservative<Dim>::apply(
     const gsl::not_null<Scalar<DataVector>*> mass_density,
     const gsl::not_null<tnsr::I<DataVector, Dim>*> velocity,
     const gsl::not_null<Scalar<DataVector>*> specific_internal_energy,
@@ -52,14 +53,31 @@ void PrimitiveFromConservative<Dim, ThermodynamicDim>::apply(
 }  // namespace NewtonianEuler
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
+
+#define INSTANTIATION(_, data) \
+  template struct NewtonianEuler::PrimitiveFromConservative<DIM(data)>;
+
+GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
+
+#undef INSTANTIATION
+
 #define THERMO_DIM(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATE(_, data)                                           \
-  template struct NewtonianEuler::PrimitiveFromConservative<DIM(data), \
-                                                            THERMO_DIM(data)>;
+#define INSTANTIATION(_, data)                                               \
+  template void NewtonianEuler::PrimitiveFromConservative<DIM(data)>::apply< \
+      THERMO_DIM(data)>(                                                     \
+      const gsl::not_null<Scalar<DataVector>*> mass_density,                 \
+      const gsl::not_null<tnsr::I<DataVector, DIM(data)>*> velocity,         \
+      const gsl::not_null<Scalar<DataVector>*> specific_internal_energy,     \
+      const gsl::not_null<Scalar<DataVector>*> pressure,                     \
+      const Scalar<DataVector>& mass_density_cons,                           \
+      const tnsr::I<DataVector, DIM(data)>& momentum_density,                \
+      const Scalar<DataVector>& energy_density,                              \
+      const EquationsOfState::EquationOfState<false, THERMO_DIM(data)>&      \
+          equation_of_state) noexcept;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (1, 2))
+GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (1, 2))
 
-#undef DIM
+#undef INSTANTIATION
 #undef THERMO_DIM
-#undef INSTANTIATE
+#undef DIM
