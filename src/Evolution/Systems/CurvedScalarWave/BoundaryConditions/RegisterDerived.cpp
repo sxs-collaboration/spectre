@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Evolution/Systems/CurvedScalarWave/BoundaryConditions/RegisterDerivedWithCharm.hpp"
+#include "Evolution/Systems/CurvedScalarWave/BoundaryConditions/RegisterDerived.hpp"
 
 #include "Evolution/Systems/CurvedScalarWave/BoundaryConditions/BoundaryCondition.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"

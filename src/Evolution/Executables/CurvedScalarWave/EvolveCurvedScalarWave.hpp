@@ -28,7 +28,6 @@
 #include "Evolution/Initialization/NonconservativeSystem.hpp"
 #include "Evolution/Initialization/SetVariables.hpp"
 #include "Evolution/Systems/CurvedScalarWave/BoundaryConditions/Factory.hpp"
-#include "Evolution/Systems/CurvedScalarWave/BoundaryConditions/RegisterDerivedWithCharm.hpp"
 #include "Evolution/Systems/CurvedScalarWave/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/CurvedScalarWave/BoundaryCorrections/RegisterDerived.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Constraints.hpp"
@@ -154,6 +153,10 @@ struct EvolutionMetavars {
                                             Events::time_events<system>>>>,
         tmpl::pair<MathFunction<1, Frame::Inertial>,
                    MathFunctions::all_math_functions<1, Frame::Inertial>>,
+        tmpl::pair<
+            CurvedScalarWave::BoundaryConditions::BoundaryCondition<volume_dim>,
+            CurvedScalarWave::BoundaryConditions::standard_boundary_conditions<
+                volume_dim>>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                    tmpl::push_back<StepChoosers::standard_step_choosers<system>,
                                    StepChoosers::ByBlock<
@@ -341,7 +344,6 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &domain::creators::register_derived_with_charm,
     &domain::creators::time_dependence::register_derived_with_charm,
     &domain::FunctionsOfTime::register_derived_with_charm,
-    &CurvedScalarWave::BoundaryConditions::register_derived_with_charm,
     &CurvedScalarWave::BoundaryCorrections::register_derived_with_charm,
     &Parallel::register_derived_classes_with_charm<TimeStepper>,
     &Parallel::register_derived_classes_with_charm<

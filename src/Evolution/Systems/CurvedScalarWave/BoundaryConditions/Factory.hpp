@@ -6,6 +6,7 @@
 #include <cstddef>
 
 #include "Domain/BoundaryConditions/Periodic.hpp"
+#include "Evolution/Systems/CurvedScalarWave/BoundaryConditions/BoundaryCondition.hpp"
 #include "Evolution/Systems/CurvedScalarWave/BoundaryConditions/ConstraintPreservingSphericalRadiation.hpp"
 #include "Evolution/Systems/CurvedScalarWave/BoundaryConditions/Outflow.hpp"
 #include "Utilities/TMPL.hpp"
