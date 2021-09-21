@@ -15,6 +15,7 @@
 
 #include "DataStructures/Tensor/Expressions/TensorExpression.hpp"
 #include "DataStructures/Tensor/Expressions/TensorIndex.hpp"
+#include "DataStructures/Tensor/Expressions/TimeIndex.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Tensor/Symmetry.hpp"
 #include "Utilities/ForceInline.hpp"
@@ -285,13 +286,16 @@ get_first_index_positions_to_contract(
     const std::array<size_t, NumIndices>& tensorindex_values) noexcept {
   for (size_t i = 0; i < tensorindex_values.size(); ++i) {
     const size_t current_value = gsl::at(tensorindex_values, i);
-    const size_t opposite_value_to_find =
-        get_tensorindex_value_with_opposite_valence(current_value);
-    for (size_t j = i + 1; j < tensorindex_values.size(); ++j) {
-      if (opposite_value_to_find == gsl::at(tensorindex_values, j)) {
-        // We found both the lower and upper version of a generic index in the
-        // list of generic indices, so we return this pair's positions
-        return std::pair{i, j};
+    // Concrete time indices are not contracted
+    if (not detail::is_time_index_value(current_value)) {
+      const size_t opposite_value_to_find =
+          get_tensorindex_value_with_opposite_valence(current_value);
+      for (size_t j = i + 1; j < tensorindex_values.size(); ++j) {
+        if (opposite_value_to_find == gsl::at(tensorindex_values, j)) {
+          // We found both the lower and upper version of a generic index in the
+          // list of generic indices, so we return this pair's positions
+          return std::pair{i, j};
+        }
       }
     }
   }

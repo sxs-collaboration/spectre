@@ -1234,6 +1234,114 @@ void test_spatial_spacetime_index(const DataType& used_for_size) noexcept {
   }
 }
 
+// \brief Test the products of tensors where concrete time indices are used for
+// spacetime indices
+//
+// \details
+// The product cases tested are:
+// - \f$L = R_{t} * S * R_{t}\f$
+// - \f$L^{b} = G_{t}{}^{a} * H_{a}{}^{tb}\f$
+// - \f$L^{T}{}_{ba} = R_{a} * R_{b}\f$
+// - \f$L_^{ct} = G_{t}{}^{b} * R_{b} * H_{t}^{ta}\f$
+//
+// \tparam DataType the type of data being stored in the tensor operand of the
+// products
+template <typename DataType>
+void test_time_index(const DataType& used_for_size) noexcept {
+  Tensor<DataType, Symmetry<1>,
+         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
+      R(used_for_size);
+  assign_unique_values_to_tensor(make_not_null(&R));
+
+  Tensor<DataType> S{{{used_for_size}}};
+  if constexpr (std::is_same_v<DataType, double>) {
+    // Replace tensor's value from `used_for_size` to a proper test value
+    S.get() = -2.2;
+  } else {
+    assign_unique_values_to_tensor(make_not_null(&S));
+  }
+
+  // \f$L = R_{t} * S * R_{t}\f$
+  const Tensor<DataType> L =
+      TensorExpressions::evaluate(R(ti_t) * S() * R(ti_t));
+  CHECK(L.get() == R.get(0) * S.get() * R.get(0));
+
+  Tensor<DataType, Symmetry<2, 1>,
+         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Up, Frame::Grid>>>
+      G(used_for_size);
+  assign_unique_values_to_tensor(make_not_null(&G));
+
+  Tensor<DataType, Symmetry<3, 2, 1>,
+         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Up, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Up, Frame::Grid>>>
+      H(used_for_size);
+  assign_unique_values_to_tensor(make_not_null(&H));
+
+  // \f$L^{b} = G_{t}{}^{a} * H_{a}{}^{tb}\f$
+  const Tensor<DataType, Symmetry<1>,
+               index_list<SpacetimeIndex<3, UpLo::Up, Frame::Grid>>>
+      L_B = TensorExpressions::evaluate<ti_B>(G(ti_t, ti_A) *
+                                              H(ti_a, ti_T, ti_B));
+
+  for (size_t b = 0; b < 4; b++) {
+    DataType expected_product = make_with_value<DataType>(used_for_size, 0.0);
+    for (size_t a = 0; a < 4; a++) {
+      expected_product += G.get(0, a) * H.get(a, 0, b);
+    }
+    CHECK_ITERABLE_APPROX(L_B.get(b), expected_product);
+  }
+
+  // Assign a placeholder to the LHS tensor's components before it is computed
+  // so that when test expressions below only compute time components, we can
+  // check that LHS spatial components haven't changed
+  const double spatial_component_placeholder =
+      std::numeric_limits<double>::max();
+  auto L_Tba = make_with_value<
+      Tensor<DataType, Symmetry<2, 1, 1>,
+             index_list<SpacetimeIndex<3, UpLo::Up, Frame::Grid>,
+                        SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                        SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>>(
+      used_for_size, spatial_component_placeholder);
+  // \f$L^{T}{}_{ba} = R_{a} * R_{b}\f$
+  TensorExpressions::evaluate<ti_T, ti_b, ti_a>(make_not_null(&L_Tba),
+                                                R(ti_a) * R(ti_b));
+
+  for (size_t b = 0; b < 4; b++) {
+    for (size_t a = 0; a < 4; a++) {
+      CHECK_ITERABLE_APPROX(L_Tba.get(0, b, a), R.get(a) * R.get(b));
+      for (size_t i = 0; i < 3; i++) {
+        CHECK(L_Tba.get(i + 1, b, a) == spatial_component_placeholder);
+      }
+    }
+  }
+
+  auto L_CT = make_with_value<
+      Tensor<DataType, Symmetry<2, 1>,
+             index_list<SpacetimeIndex<3, UpLo::Up, Frame::Grid>,
+                        SpacetimeIndex<3, UpLo::Up, Frame::Grid>>>>(
+      used_for_size, spatial_component_placeholder);
+  // \f$L_^{ct} = G_{t}{}^{b} * R_{b} * H_{t}^{ta}\f$
+  TensorExpressions::evaluate<ti_C, ti_T>(
+      make_not_null(&L_CT),
+      G(ti_t, ti_B) * H(ti_b, ti_A, ti_C) * G(ti_a, ti_T));
+
+  for (size_t c = 0; c < 4; c++) {
+    DataType expected_product = make_with_value<DataType>(used_for_size, 0.0);
+    for (size_t b = 0; b < 4; b++) {
+      for (size_t a = 0; a < 4; a++) {
+        expected_product += G.get(0, b) * H.get(b, a, c) * G.get(a, 0);
+      }
+    }
+    CHECK_ITERABLE_APPROX(L_CT.get(c, 0), expected_product);
+
+    for (size_t i = 0; i < 3; i++) {
+      CHECK(L_CT.get(c, i + 1) == spatial_component_placeholder);
+    }
+  }
+}
+
 template <typename DataType>
 void test_products(const DataType& used_for_size) noexcept {
   // Test evaluation of outer products
@@ -1254,6 +1362,9 @@ void test_products(const DataType& used_for_size) noexcept {
   // Test product expressions where generic spatial indices are used for
   // spacetime indices
   test_spatial_spacetime_index(used_for_size);
+
+  // Test product expressions where time indices are used for spacetime indices
+  test_time_index(used_for_size);
 }
 }  // namespace
 

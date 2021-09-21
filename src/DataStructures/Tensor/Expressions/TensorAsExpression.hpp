@@ -14,11 +14,90 @@
 #include "DataStructures/Tensor/Expressions/SpatialSpacetimeIndex.hpp"
 #include "DataStructures/Tensor/Expressions/TensorExpression.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/ForceInline.hpp"
+#include "Utilities/Gsl.hpp"
+#include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace TensorExpressions {
 namespace detail {
+/// @{
+/// \brief Given a tensor symmetry and the positions of indices where a generic
+/// spatial index is used for a spacetime index and the positions where a
+/// concrete time index is used, this returns the symmetry after making those
+/// indices nonsymmetric with others that do not do the same
+///
+/// \details
+/// Example: Let `symmetry` be `{1, 2, 2, 2, 1}`. Let
+/// `spatial_spacetime_index_positions` be `{1, 2}`: the 2nd and 3rd indices
+/// of the tensor are spacetime indices where a generic spatial index is used.
+/// Let `time_index_positions` be `{4}`: the 5th (last) index is a spacetime
+/// index where a concrete time index is used. The resulting symmetry will
+/// reflect that the 2nd and 3rd indices are still symmetric with each other,
+/// but no longer symmetric with the 4th index, and the 5th index will no
+/// longer be symmetric with the 1st index. Therefore, the returned symmetry
+/// will be equivalent to the form of `{4, 3, 3, 2, 1}`.
+///
+/// Note: the symmetry returned by this function is not necessarily in the
+/// canonical form specified by ::Symmetry. For example, the actual array
+/// returned in the example above is `{1, 4, 4, 2, 5}`. As such, this array
+/// still encodes which indices are symmetric, but it is not in the canonical
+/// form specified by ::Symmetry, which is `{4, 3, 3, 2, 1}`.
+///
+/// \param symmetry the input tensor symmetry to transform
+/// \param spatial_spacetime_index_positions the positions of the indices of the
+/// tensor where a generic spatial index is used for a spacetime index
+/// \param time_index_positions the positions of the indices of the tensor where
+/// a concrete time index is used for a spacetime index
+/// \return the symmetry after making the `spatial_spacetime_index_positions`
+/// and `time_index_positions` of `symmetry` nonsymmetric with indices at other
+/// positions
+template <
+    size_t NumIndices, size_t NumSpatialSpacetimeIndices,
+    size_t NumConcreteTimeIndices,
+    Requires<(NumIndices >= 2 and (NumSpatialSpacetimeIndices != 0 or
+                                   NumConcreteTimeIndices != 0))> = nullptr>
+constexpr std::array<std::int32_t, NumIndices>
+get_transformed_spacetime_symmetry(
+    const std::array<std::int32_t, NumIndices>& symmetry,
+    const std::array<size_t, NumSpatialSpacetimeIndices>&
+        spatial_spacetime_index_positions,
+    const std::array<size_t, NumConcreteTimeIndices>&
+        time_index_positions) noexcept {
+  std::array<std::int32_t, NumIndices> transformed_spacetime_symmetry{};
+  const std::int32_t max_symm_value =
+      static_cast<std::int32_t>(*alg::max_element(symmetry));
+  for (size_t i = 0; i < NumIndices; i++) {
+    gsl::at(transformed_spacetime_symmetry, i) = gsl::at(symmetry, i);
+  }
+  for (size_t i = 0; i < NumSpatialSpacetimeIndices; i++) {
+    gsl::at(transformed_spacetime_symmetry,
+            gsl::at(spatial_spacetime_index_positions, i)) += max_symm_value;
+  }
+  for (size_t i = 0; i < NumConcreteTimeIndices; i++) {
+    gsl::at(transformed_spacetime_symmetry, gsl::at(time_index_positions, i)) +=
+        2 * max_symm_value;
+  }
+
+  return transformed_spacetime_symmetry;
+}
+
+template <size_t NumIndices, size_t NumSpatialSpacetimeIndices,
+          size_t NumConcreteTimeIndices,
+          Requires<(NumIndices < 2 or (NumSpatialSpacetimeIndices == 0 and
+                                       NumConcreteTimeIndices == 0))> = nullptr>
+constexpr std::array<std::int32_t, NumIndices>
+get_transformed_spacetime_symmetry(
+    const std::array<std::int32_t, NumIndices>& symmetry,
+    const std::array<size_t, NumSpatialSpacetimeIndices>&
+    /*spatial_spacetime_index_positions*/,
+    const std::array<size_t, NumConcreteTimeIndices>&
+    /*time_index_positions*/) noexcept {
+  return symmetry;
+}
+/// @}
+
 /// \ingroup TensorExpressionsGroup
 /// \brief Helper struct for computing the new canonical symmetry of a tensor
 /// after generic spatial indices are used for any of the tensor's spacetime
@@ -62,10 +141,11 @@ template <template <typename...> class SymmList, typename... Symm,
 struct TensorAsExpressionSymm<SymmList<Symm...>, TensorIndexTypeList,
                               TensorIndexList, NumIndices,
                               std::index_sequence<Ints...>> {
-  static constexpr auto symm = get_spatial_spacetime_index_symmetry<NumIndices>(
+  static constexpr auto symm = get_transformed_spacetime_symmetry<NumIndices>(
       {{Symm::value...}},
       get_spatial_spacetime_index_positions<TensorIndexTypeList,
-                                            TensorIndexList>());
+                                            TensorIndexList>(),
+      get_time_index_positions<TensorIndexList>());
   using type = Symmetry<symm[Ints]...>;
 };
 }  // namespace detail

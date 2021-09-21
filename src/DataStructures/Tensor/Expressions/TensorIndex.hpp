@@ -16,6 +16,7 @@
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 
+namespace TensorExpressions {
 namespace TensorIndex_detail {
 // The below values are used to separate upper indices from lower indices and
 // spatial indices from spacetime indices.
@@ -48,6 +49,7 @@ static constexpr size_t upper_spatial_sentinel =
     spatial_sentinel + upper_sentinel;
 static constexpr size_t max_sentinel = 2000;
 }  // namespace TensorIndex_detail
+}  // namespace TensorExpressions
 
 /*!
  * \ingroup TensorExpressionsGroup
@@ -65,20 +67,23 @@ static constexpr size_t max_sentinel = 2000;
  * respectively.
  */
 template <std::size_t I,
-          Requires<(I < TensorIndex_detail::max_sentinel)> = nullptr>
+          Requires<(I < TensorExpressions::TensorIndex_detail::max_sentinel)> =
+              nullptr>
 struct TensorIndex {
   using value_type = std::size_t;
   using type = TensorIndex<I>;
   static constexpr value_type value = I;
   static constexpr UpLo valence =
-      ((I < TensorIndex_detail::upper_sentinel) or
-       (I >= TensorIndex_detail::spatial_sentinel and
-        I < TensorIndex_detail::upper_spatial_sentinel))
+      ((I < TensorExpressions::TensorIndex_detail::upper_sentinel) or
+       (I >= TensorExpressions::TensorIndex_detail::spatial_sentinel and
+        I < TensorExpressions::TensorIndex_detail::upper_spatial_sentinel))
           ? UpLo::Lo
           : UpLo::Up;
-  static constexpr bool is_spacetime = I < TensorIndex_detail::spatial_sentinel;
+  static constexpr bool is_spacetime =
+      I < TensorExpressions::TensorIndex_detail::spatial_sentinel;
 };
 
+namespace TensorExpressions {
 /*!
  * \ingroup TensorExpressionsGroup
  * \brief Returns the TensorIndex value of with opposite valence.
@@ -109,6 +114,7 @@ get_tensorindex_value_with_opposite_valence(const size_t i) noexcept {
     return i + TensorIndex_detail::upper_sentinel;
   }
 }
+}  //  namespace TensorExpressions
 
 /// @{
 /*!
@@ -118,37 +124,75 @@ get_tensorindex_value_with_opposite_valence(const size_t i) noexcept {
  * \details The suffix following `ti_` indicates index properties:
  * - Uppercase: contravariant/upper index
  * - Lowercase: covariant/lower index
- * - A/a - H/h: spacetime index
- * - I/i - L/l: spatial index
+ * - A/a - H/h: generic spacetime index
+ * - I/i - L/l: generic spatial index
+ * - T/t: concrete time index (defined as a spacetime `TensorIndex`)
  *
  * \snippet Test_AddSubtract.cpp use_tensor_index
  */
 static constexpr TensorIndex<0> ti_a{};
-static constexpr TensorIndex<TensorIndex_detail::upper_sentinel> ti_A{};
+static constexpr TensorIndex<
+    TensorExpressions::TensorIndex_detail::upper_sentinel>
+    ti_A{};
 static constexpr TensorIndex<1> ti_b{};
-static constexpr TensorIndex<TensorIndex_detail::upper_sentinel + 1> ti_B{};
+static constexpr TensorIndex<
+    TensorExpressions::TensorIndex_detail::upper_sentinel + 1>
+    ti_B{};
 static constexpr TensorIndex<2> ti_c{};
-static constexpr TensorIndex<TensorIndex_detail::upper_sentinel + 2> ti_C{};
+static constexpr TensorIndex<
+    TensorExpressions::TensorIndex_detail::upper_sentinel + 2>
+    ti_C{};
 static constexpr TensorIndex<3> ti_d{};
-static constexpr TensorIndex<TensorIndex_detail::upper_sentinel + 3> ti_D{};
+static constexpr TensorIndex<
+    TensorExpressions::TensorIndex_detail::upper_sentinel + 3>
+    ti_D{};
 static constexpr TensorIndex<4> ti_e{};
-static constexpr TensorIndex<TensorIndex_detail::upper_sentinel + 4> ti_E{};
+static constexpr TensorIndex<
+    TensorExpressions::TensorIndex_detail::upper_sentinel + 4>
+    ti_E{};
 static constexpr TensorIndex<5> ti_f{};
-static constexpr TensorIndex<TensorIndex_detail::upper_sentinel + 5> ti_F{};
+static constexpr TensorIndex<
+    TensorExpressions::TensorIndex_detail::upper_sentinel + 5>
+    ti_F{};
 static constexpr TensorIndex<6> ti_g{};
-static constexpr TensorIndex<TensorIndex_detail::upper_sentinel + 6> ti_G{};
+static constexpr TensorIndex<
+    TensorExpressions::TensorIndex_detail::upper_sentinel + 6>
+    ti_G{};
 static constexpr TensorIndex<7> ti_h{};
-static constexpr TensorIndex<TensorIndex_detail::upper_sentinel + 7> ti_H{};
-static constexpr TensorIndex<TensorIndex_detail::spatial_sentinel> ti_i{};
-static constexpr TensorIndex<TensorIndex_detail::upper_spatial_sentinel> ti_I{};
-static constexpr TensorIndex<TensorIndex_detail::spatial_sentinel + 1> ti_j{};
-static constexpr TensorIndex<TensorIndex_detail::upper_spatial_sentinel + 1>
+static constexpr TensorIndex<
+    TensorExpressions::TensorIndex_detail::upper_sentinel + 7>
+    ti_H{};
+
+static constexpr TensorIndex<
+    TensorExpressions::TensorIndex_detail::upper_sentinel - 1>
+    ti_t{};
+static constexpr TensorIndex<
+    TensorExpressions::TensorIndex_detail::spatial_sentinel - 1>
+    ti_T{};
+
+static constexpr TensorIndex<
+    TensorExpressions::TensorIndex_detail::spatial_sentinel>
+    ti_i{};
+static constexpr TensorIndex<
+    TensorExpressions::TensorIndex_detail::upper_spatial_sentinel>
+    ti_I{};
+static constexpr TensorIndex<
+    TensorExpressions::TensorIndex_detail::spatial_sentinel + 1>
+    ti_j{};
+static constexpr TensorIndex<
+    TensorExpressions::TensorIndex_detail::upper_spatial_sentinel + 1>
     ti_J{};
-static constexpr TensorIndex<TensorIndex_detail::spatial_sentinel + 2> ti_k{};
-static constexpr TensorIndex<TensorIndex_detail::upper_spatial_sentinel + 2>
+static constexpr TensorIndex<
+    TensorExpressions::TensorIndex_detail::spatial_sentinel + 2>
+    ti_k{};
+static constexpr TensorIndex<
+    TensorExpressions::TensorIndex_detail::upper_spatial_sentinel + 2>
     ti_K{};
-static constexpr TensorIndex<TensorIndex_detail::spatial_sentinel + 3> ti_l{};
-static constexpr TensorIndex<TensorIndex_detail::upper_spatial_sentinel + 3>
+static constexpr TensorIndex<
+    TensorExpressions::TensorIndex_detail::spatial_sentinel + 3>
+    ti_l{};
+static constexpr TensorIndex<
+    TensorExpressions::TensorIndex_detail::upper_spatial_sentinel + 3>
     ti_L{};
 /// @}
 
@@ -163,7 +207,8 @@ template <size_t I>
 struct is_tensor_index<TensorIndex<I>> : std::true_type {};
 }  // namespace tt
 
-namespace TensorIndex_detail {
+namespace TensorExpressions {
+namespace detail {
 template <auto&... TensorIndices>
 struct make_tensorindex_list_impl {
   static_assert(
@@ -173,7 +218,46 @@ struct make_tensorindex_list_impl {
       "objects.");
   using type = tmpl::list<std::decay_t<decltype(TensorIndices)>...>;
 };
-}  // namespace TensorIndex_detail
+
+template <typename TensorIndexList>
+struct tensorindex_list_is_valid_impl;
+
+template <typename... TensorIndices>
+struct tensorindex_list_is_valid_impl<tmpl::list<TensorIndices...>> {
+  static_assert(
+      (... and tt::is_tensor_index<TensorIndices>::value),
+      "Template parameters of tensorindex_list_is_valid must be TensorIndex "
+      "types.");
+  static constexpr bool value = tmpl::is_set<TensorIndices...>::value;
+};
+
+template <typename TensorIndexList>
+struct remove_time_indices;
+}  // namespace detail
+
+/*!
+ * \ingroup TensorExpressionsGroup
+ * \brief Determine whether or not a given list of TensorIndexs is valid
+ * to be used with a tensor
+ *
+ * \details A list of TensorIndexs is considered valid if the subset of generic
+ * indices are a set. Indices with opposite valences are unique, e.g. one
+ * instance each of `ti_a` and `ti_A` is valid. An arbitrary number of concrete
+ * time indices, regardless of valence, is also valid.
+ *
+ * @tparam TensorIndexList list of generic index types, e.g. the types of
+ * `ti_a, ti_b`
+ */
+template <typename TensorIndexList>
+struct tensorindex_list_is_valid;
+
+template <typename... TensorIndices>
+struct tensorindex_list_is_valid<tmpl::list<TensorIndices...>> {
+  static constexpr bool value = detail::tensorindex_list_is_valid_impl<
+      typename detail::remove_time_indices<
+          tmpl::list<TensorIndices...>>::type>::value;
+};
+}  // namespace TensorExpressions
 
 /*!
  * \ingroup TensorExpressionsGroup
@@ -183,5 +267,5 @@ struct make_tensorindex_list_impl {
  */
 template <auto&... TensorIndices>
 using make_tensorindex_list =
-    typename TensorIndex_detail::make_tensorindex_list_impl<
+    typename TensorExpressions::detail::make_tensorindex_list_impl<
         TensorIndices...>::type;

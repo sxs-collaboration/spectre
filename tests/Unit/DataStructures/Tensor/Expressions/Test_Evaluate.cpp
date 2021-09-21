@@ -9,9 +9,9 @@
 #include "DataStructures/Tensor/Expressions/Evaluate.hpp"
 #include "DataStructures/Tensor/Expressions/TensorIndex.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"
-#include "Helpers/DataStructures/Tensor/Expressions/EvaluateRank0TestHelpers.hpp"
-#include "Helpers/DataStructures/Tensor/Expressions/EvaluateRank1TestHelpers.hpp"
-#include "Helpers/DataStructures/Tensor/Expressions/EvaluateRank2TestHelpers.hpp"
+#include "Helpers/DataStructures/Tensor/Expressions/EvaluateRank0.hpp"
+#include "Helpers/DataStructures/Tensor/Expressions/EvaluateRank1.hpp"
+#include "Helpers/DataStructures/Tensor/Expressions/EvaluateRank2.hpp"
 
 namespace {
 template <auto&... TensorIndices>

@@ -4,11 +4,12 @@
 #include "Framework/TestingFramework.hpp"
 
 #include "DataStructures/Tensor/Expressions/TensorIndex.hpp"
-#include "Helpers/DataStructures/Tensor/Expressions/TensorIndexTransformationRank0TestHelpers.hpp"
-#include "Helpers/DataStructures/Tensor/Expressions/TensorIndexTransformationRank1TestHelpers.hpp"
-#include "Helpers/DataStructures/Tensor/Expressions/TensorIndexTransformationRank2TestHelpers.hpp"
-#include "Helpers/DataStructures/Tensor/Expressions/TensorIndexTransformationRank3TestHelpers.hpp"
-#include "Helpers/DataStructures/Tensor/Expressions/TensorIndexTransformationRank4TestHelpers.hpp"
+#include "Helpers/DataStructures/Tensor/Expressions/TensorIndexTransformationRank0.hpp"
+#include "Helpers/DataStructures/Tensor/Expressions/TensorIndexTransformationRank1.hpp"
+#include "Helpers/DataStructures/Tensor/Expressions/TensorIndexTransformationRank2.hpp"
+#include "Helpers/DataStructures/Tensor/Expressions/TensorIndexTransformationRank3.hpp"
+#include "Helpers/DataStructures/Tensor/Expressions/TensorIndexTransformationRank4.hpp"
+#include "Helpers/DataStructures/Tensor/Expressions/TensorIndexTransformationTimeIndex.hpp"
 
 SPECTRE_TEST_CASE(
     "Unit.DataStructures.Tensor.Expression.TensorIndexTransformation",
@@ -91,4 +92,8 @@ SPECTRE_TEST_CASE(
       ti_d, ti_c, ti_a, ti_b);
   TestHelpers::TensorExpressions::test_tensor_index_transformation_rank_4(
       ti_d, ti_c, ti_b, ti_a);
+
+  // Test transformations involving time indices
+  TestHelpers::TensorExpressions::
+      test_tensor_index_transformation_with_time_indices();
 }
