@@ -59,7 +59,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Transpose", "[DataStructures][Unit]") {
   const size_t n_pts = chunk_size * number_of_chunks;
   DataVector data(n_pts);
   for (size_t i = 0; i < data.size(); ++i) {
-    data[i] = i * i;
+    data[i] = static_cast<double>(i * i);
   }
   DataVector transposed_data(n_pts, 0.);
   transposed_data = transpose(data, chunk_size, number_of_chunks);
