@@ -129,6 +129,30 @@ get_tensorindex_value_with_opposite_valence(const size_t i) noexcept {
  * - T/t: concrete time index (defined as a spacetime `TensorIndex`)
  *
  * \snippet Test_AddSubtract.cpp use_tensor_index
+ *
+ * If you want to support a new generic index, definitions for the upper and
+ * lower versions of the index must be added as unique `TensorIndex` types, e.g.
+ * \code
+ * static constexpr TensorIndex<UNIQUE_INTEGER_IN_PROPER_RANGE_LOWER> ti_x{};
+ * static constexpr TensorIndex<UNIQUE_INTEGER_IN_PROPER_RANGE_UPPER> ti_X{};
+ * \endcode
+ * where `UNIQUE_INTEGER_IN_PROPER_RANGE_LOWER` and
+ * `UNIQUE_INTEGER_IN_PROPER_RANGE_UPPER` are unique, but related integers that
+ * fall in the integer ranges that properly encode the index's properties
+ * according to the `_sentinel` values defined at the top of
+ * `src/DataStructures/Tensor/Expressions/TensorIndex.hpp`. This enables the new
+ * index to be distinguishable from others and for the upper and lower versions
+ * to be recognized as related by opposite valence. See comments there on these
+ * integer ranges to properly encode the new index (both upper and lower
+ * definitions) that you wish to add. In short, you should simply be able to
+ * continue the pattern used for the existing `TensorIndex` types that are
+ * already defined. For example, if `ti_M`/`ti_m` is the highest-valued generic
+ * spatial index currently defined and you want to add `ti_N`/`ti_n` as a new
+ * generic spatial index, you can simply define `ti_N` and `ti_n`'s unique
+ * integer values to be `INTEGER_VALUE_FOR_M + 1` and `INTEGER_VALUE_FOR_m + 1`,
+ * respectively. For adding a new generic spacetime index, you should be able to
+ * do the same thing with respect to the upper and lower versions of the
+ * highest-valued currently defined generic spacetime `TensorIndex`.
  */
 static constexpr TensorIndex<0> ti_a{};
 static constexpr TensorIndex<
