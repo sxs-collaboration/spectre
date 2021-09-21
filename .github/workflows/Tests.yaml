@@ -485,6 +485,9 @@ ${{ env.CACHE_KEY_SUFFIX }}"
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path-to-lcov: /work/build/tmp/coverage.info
+        # We don't actively use coveralls currently, so it's ok when the upload
+        # fails (they had some outages)
+        continue-on-error: true
       # Build the executables in a single thread to reduce memory usage
       # sufficiently so they compile on the GitHub-hosted runners
       - name: Build executables
