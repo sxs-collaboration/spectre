@@ -10,12 +10,12 @@
 #include <cstddef>
 #include <type_traits>
 
+#include "DataStructures/Tensor/Expressions/IndexPropertyCheck.hpp"
 #include "DataStructures/Tensor/Expressions/LhsTensorSymmAndIndices.hpp"
 #include "DataStructures/Tensor/Expressions/TensorExpression.hpp"
 #include "DataStructures/Tensor/Expressions/TensorIndex.hpp"
 #include "DataStructures/Tensor/Expressions/TensorIndexTransformation.hpp"
 #include "DataStructures/Tensor/Expressions/TimeIndex.hpp"
-#include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Tensor/Structure.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/Gsl.hpp"
@@ -23,7 +23,6 @@
 #include "Utilities/TMPL.hpp"
 
 namespace TensorExpressions {
-
 namespace detail {
 template <size_t NumIndices>
 constexpr bool contains_indices_to_contract(
@@ -89,143 +88,6 @@ constexpr bool is_evaluated_lhs_multi_index(
   }
   return true;
 }
-
-/// @{
-/// \brief Helper struct for checking that a RHS tensor's index can be evaluated
-/// to its corresponding index in the LHS tensor
-///
-/// \details
-/// A RHS index's corresponding LHS index uses the same generic index, such as
-/// `ti_a`. For it to be possible to evaluate a RHS index to its corresponding
-/// LHS index, this checks that the following is true for the index on both
-/// sides:
-/// - has the same valence (`UpLo`)
-/// - has the same `Frame` type
-/// - has the same number of spatial dimensions (allowing for expressions that
-///   use generic spatial indices for spacetime indices on either side)
-///
-/// \tparam LhsIndexList the LHS tensor's \ref SpacetimeIndex "TensorIndexType"
-/// list
-/// \tparam RhsIndexList the RHS tensor's \ref SpacetimeIndex "TensorIndexType"
-/// list
-/// \tparam LhsTensorIndexList the LHS tensor's generic index list
-/// \tparam RhsTensorIndexList the RHS tensor's generic index list
-/// \tparam CurrentLhsTensorIndex the current generic index of the LHS tensor
-/// that is being checked, e.g. the type of `ti_a`
-/// \tparam Iteration the position of the current LHS index being checked, e.g.
-/// the position of `ti_a`
-template <typename LhsIndexList, typename RhsIndexList,
-          typename LhsTensorIndexList, typename RhsTensorIndexList,
-          typename CurrentLhsTensorIndex, typename Iteration>
-struct EvaluateIndexCheckImpl {
-  using lhs_index = tmpl::at<LhsIndexList, Iteration>;
-  using rhs_index =
-      tmpl::at<RhsIndexList,
-               tmpl::index_of<RhsTensorIndexList, CurrentLhsTensorIndex>>;
-
-  using type = std::bool_constant<
-      lhs_index::ul == rhs_index::ul and
-      std::is_same_v<typename lhs_index::Frame, typename rhs_index::Frame> and
-      ((lhs_index::index_type == rhs_index::index_type and
-        lhs_index::dim == rhs_index::dim) or
-       (lhs_index::index_type == IndexType::Spacetime and
-        lhs_index::dim == rhs_index::dim + 1) or
-       (rhs_index::index_type == IndexType::Spacetime and
-        lhs_index::dim + 1 == rhs_index::dim))>;
-};
-
-template <typename LhsIndexList, typename RhsIndexList,
-          typename LhsTensorIndexList, typename RhsTensorIndexList,
-          typename Iteration>
-struct EvaluateIndexCheckImpl<LhsIndexList, RhsIndexList, LhsTensorIndexList,
-                              RhsTensorIndexList, std::decay_t<decltype(ti_T)>,
-                              Iteration> {
-  using lhs_index = tmpl::at<LhsIndexList, Iteration>;
-  using type =
-      std::bool_constant<lhs_index::index_type == IndexType::Spacetime>;
-};
-
-template <typename LhsIndexList, typename RhsIndexList,
-          typename LhsTensorIndexList, typename RhsTensorIndexList,
-          typename Iteration>
-struct EvaluateIndexCheckImpl<LhsIndexList, RhsIndexList, LhsTensorIndexList,
-                              RhsTensorIndexList, std::decay_t<decltype(ti_t)>,
-                              Iteration> {
-  using lhs_index = tmpl::at<LhsIndexList, Iteration>;
-  using type =
-      std::bool_constant<lhs_index::index_type == IndexType::Spacetime>;
-};
-/// @}
-
-/// \brief Helper struct for checking that a RHS tensor's indices can be
-/// evaluated to their corresponding indices in the LHS tensor
-///
-/// \details
-/// This struct checks that:
-/// (1) The shared generic indices between the LHS and RHS can be mathematically
-/// evaluated
-/// (2) Any non-shared indices are spacetime indices where a concrete time index
-/// has been used
-///
-/// This struct checks that (2) is true for RHS time indices and calls
-/// `EvaluateIndexCheckImpl` to check that (2) is true for the LHS time indices
-/// and that (1) is true. To see more details regarding how (1) is checked, see
-/// `EvaluateIndexCheckImpl`.
-///
-/// \tparam LhsIndexList the LHS tensor's \ref SpacetimeIndex "TensorIndexType"
-/// list
-/// \tparam RhsIndexList the RHS tensor's \ref SpacetimeIndex "TensorIndexType"
-/// list
-/// \tparam LhsTensorIndexList the LHS tensor's generic index list
-/// \tparam RhsTensorIndexList the RHS tensor's generic index list
-template <typename LhsIndexList, typename RhsIndexList,
-          typename LhsTensorIndexList, typename RhsTensorIndexList>
-struct EvaluateIndexCheckHelper;
-
-template <typename LhsIndexList, typename... RhsIndices,
-          typename LhsTensorIndexList, typename... RhsTensorIndices>
-struct EvaluateIndexCheckHelper<LhsIndexList, tmpl::list<RhsIndices...>,
-                                LhsTensorIndexList,
-                                tmpl::list<RhsTensorIndices...>> {
-  static constexpr bool value =
-      // Check that RHS concrete time indices are used with spacetime indices
-      (... and ((not tt::is_time_index<RhsTensorIndices>::value) or
-                (tt::is_time_index<RhsTensorIndices>::value and
-                 RhsIndices::index_type == IndexType::Spacetime))) and
-      // Check that:
-      // - LHS concrete time indices are used with spacetime indices
-      // - shared generic indices between the LHS and RHS can be mathematically
-      // evaluated
-      (tmpl::enumerated_fold<
-          LhsTensorIndexList, tmpl::bool_<true>,
-          tmpl::and_<
-              tmpl::_state,
-              EvaluateIndexCheckImpl<tmpl::pin<LhsIndexList>,
-                                     tmpl::pin<tmpl::list<RhsIndices...>>,
-                                     tmpl::pin<LhsTensorIndexList>,
-                                     tmpl::pin<tmpl::list<RhsTensorIndices...>>,
-                                     tmpl::_element, tmpl::_3>>,
-          tmpl::size_t<0>>::value);
-};
-
-/// \brief Check that a RHS tensor's indices can be mathematically evaluated to
-/// their corresponding indices in the LHS tensor
-///
-/// \details
-/// For more details on what is checked, see `EvaluateIndexCheckImpl` followed
-/// by `EvaluateIndexCheckHelper`
-///
-/// \tparam LhsIndexList the LHS tensor's \ref SpacetimeIndex "TensorIndexType"
-/// list
-/// \tparam RhsIndexList the RHS tensor's \ref SpacetimeIndex "TensorIndexType"
-/// list
-/// \tparam LhsTensorIndexList the LHS tensor's generic index list
-/// \tparam RhsTensorIndexList the RHS tensor's generic index list
-template <typename LhsIndexList, typename RhsIndexList,
-          typename LhsTensorIndexList, typename RhsTensorIndexList>
-using EvaluateIndexCheck =
-    EvaluateIndexCheckHelper<LhsIndexList, RhsIndexList, LhsTensorIndexList,
-                             RhsTensorIndexList>;
 }  // namespace detail
 
 /*!
@@ -301,7 +163,7 @@ void evaluate(
           {{std::decay_t<decltype(LhsTensorIndices)>::value...}}),
       "Cannot evaluate a tensor expression to a LHS tensor with generic "
       "indices that would be contracted, e.g. evaluate<ti_A, ti_a>.");
-  // `EvaluateIndexCheck` does also check that valence (Up/Lo) of indices that
+  // `IndexPropertyCheck` does also check that valence (Up/Lo) of indices that
   // correspond in the RHS and LHS tensors are equal, but the assertion message
   // below does not mention this because a mismatch in valence should have been
   // caught due to the combination of (i) the Tensor::operator() assertion
@@ -309,7 +171,7 @@ void evaluate(
   // valences and (ii) the above assertion that RHS and LHS generic indices
   // match
   static_assert(
-      detail::EvaluateIndexCheck<LhsIndexList, RhsIndexList,
+      detail::IndexPropertyCheck<LhsIndexList, RhsIndexList,
                                  lhs_tensorindex_list,
                                  rhs_tensorindex_list>::value,
       "At least one index of the tensor evaluated from the RHS expression "

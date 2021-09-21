@@ -14,6 +14,7 @@
 #include <utility>
 
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/Expressions/IndexPropertyCheck.hpp"
 #include "DataStructures/Tensor/Expressions/NumberAsExpression.hpp"
 #include "DataStructures/Tensor/Expressions/SpatialSpacetimeIndex.hpp"
 #include "DataStructures/Tensor/Expressions/TensorExpression.hpp"
@@ -183,71 +184,6 @@ struct AddSubType {
   using index_list = typename T1::index_list;
   using tensorindex_list = typename T1::args_list;
 };
-
-/// \brief Helper struct for checking that an index in one operand can be added
-/// to and subtracted from its corresponding index in another operand
-///
-/// \details
-/// Corresponding indices between two operands are marked by using the same
-/// generic index, such as `ti_a`. For it to be possible to add or subtract one
-/// operand's index to its corresponding index in another operand, this checks
-/// that the following is true for the index in both operands:
-/// - has the same valence (`UpLo`)
-/// - has the same `Frame` type
-/// - has the same number of spatial dimensions (allowing for expressions that
-///   use generic spatial indices for spacetime indices on either side)
-///
-/// \tparam IndexList1 the first operand's \ref SpacetimeIndex "TensorIndexType"
-/// list
-/// \tparam IndexList2 the second operand's
-/// \ref SpacetimeIndex "TensorIndexType" list
-/// \tparam TensorIndexList1 the first operand's generic index list
-/// \tparam TensorIndexList2 the second operand's generic index list
-/// \tparam CurrentTensorIndex1 the first operand's generic index that is being
-/// checked, e.g. the type of `ti_a`
-template <typename IndexList1, typename IndexList2, typename TensorIndexList1,
-          typename TensorIndexList2, typename CurrentTensorIndex1>
-struct AddSubIndexCheckHelper {
-  using index1 =
-      tmpl::at<IndexList1,
-               tmpl::index_of<TensorIndexList1, CurrentTensorIndex1>>;
-  using index2 =
-      tmpl::at<IndexList2,
-               tmpl::index_of<TensorIndexList2, CurrentTensorIndex1>>;
-
-  using type = std::integral_constant<
-      bool,
-      index1::ul == index2::ul and
-          std::is_same_v<typename index1::Frame, typename index2::Frame> and
-          ((index1::index_type == index2::index_type and
-            index1::dim == index2::dim) or
-           (index1::index_type == IndexType::Spacetime and
-            index1::dim == index2::dim + 1) or
-           (index2::index_type == IndexType::Spacetime and
-            index1::dim + 1 == index2::dim))>;
-};
-
-/// \brief Check that the addition or subtraction of two index lists is valid
-/// given the generic indices used for each
-///
-/// \details
-/// For more details, see `AddSubIndexCheckHelper`, which performs the check for
-/// each index, one at a time.
-///
-/// \tparam IndexList1 the first operand's \ref SpacetimeIndex "TensorIndexType"
-/// list
-/// \tparam IndexList2 the second operand's
-/// \ref SpacetimeIndex "TensorIndexType" list
-/// \tparam TensorIndexList1 the first operand's generic index list
-/// \tparam TensorIndexList2 the second operand's generic index list
-template <typename IndexList1, typename IndexList2, typename TensorIndexList1,
-          typename TensorIndexList2>
-using AddSubIndexCheck = tmpl::fold<
-    TensorIndexList1, tmpl::bool_<true>,
-    tmpl::and_<tmpl::_state, AddSubIndexCheckHelper<
-                                 tmpl::pin<IndexList1>, tmpl::pin<IndexList2>,
-                                 tmpl::pin<TensorIndexList1>,
-                                 tmpl::pin<TensorIndexList2>, tmpl::_element>>>;
 }  // namespace detail
 
 template <typename T1, typename T2, typename ArgsList1, typename ArgsList2,
@@ -269,8 +205,9 @@ struct AddSub<T1, T2, ArgsList1<Args1...>, ArgsList2<Args2...>, Sign>
                     std::is_same<T2, NumberAsExpression>::value,
                 "Cannot add or subtract Tensors holding different data types.");
   static_assert(
-      detail::AddSubIndexCheck<typename T1::index_list, typename T2::index_list,
-                               ArgsList1<Args1...>, ArgsList2<Args2...>>::value,
+      detail::IndexPropertyCheck<typename T1::index_list,
+                                 typename T2::index_list, ArgsList1<Args1...>,
+                                 ArgsList2<Args2...>>::value,
       "You are attempting to add indices of different types, e.g. T^a_b + "
       "S^b_a, which doesn't make sense. The indices may also be in different "
       "frames, different types (spatial vs. spacetime) or of different "
