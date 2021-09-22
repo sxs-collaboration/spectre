@@ -347,7 +347,12 @@ struct EvolutionMetavars {
       evolution::dg::Actions::ApplyBoundaryCorrections<EvolutionMetavars>,
       tmpl::conditional_t<
           local_time_stepping, tmpl::list<>,
-          tmpl::list<Actions::RecordTimeStepperData<>, Actions::UpdateU<>>>,
+          tmpl::list<Actions::RecordTimeStepperData<>,
+                     evolution::Actions::RunEventsAndDenseTriggers<
+                         grmhd::ValenciaDivClean::subcell::
+                             FixConservativesAndComputePrims<
+                                 ordered_list_of_primitive_recovery_schemes>>,
+                     Actions::UpdateU<>>>,
       // Note: The primitive variables are computed as part of the TCI.
       evolution::dg::subcell::Actions::TciAndRollback<
           grmhd::ValenciaDivClean::subcell::TciOnDgGrid<
@@ -369,7 +374,11 @@ struct EvolutionMetavars {
           ordered_list_of_primitive_recovery_schemes>>,
       evolution::dg::subcell::fd::Actions::TakeTimeStep<
           grmhd::ValenciaDivClean::subcell::TimeDerivative>,
-      Actions::RecordTimeStepperData<>, Actions::UpdateU<>,
+      Actions::RecordTimeStepperData<>,
+      evolution::Actions::RunEventsAndDenseTriggers<
+          grmhd::ValenciaDivClean::subcell::FixConservativesAndComputePrims<
+              ordered_list_of_primitive_recovery_schemes>>,
+      Actions::UpdateU<>,
       Actions::MutateApply<
           grmhd::ValenciaDivClean::subcell::FixConservativesAndComputePrims<
               ordered_list_of_primitive_recovery_schemes>>,
