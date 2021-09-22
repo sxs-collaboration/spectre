@@ -7,10 +7,12 @@
 
 #include "ApparentHorizons/FastFlow.hpp"
 #include "ApparentHorizons/Strahlkorper.hpp"
+#include "ApparentHorizons/StrahlkorperInDifferentFrame.hpp"
 #include "ApparentHorizons/Tags.hpp"
 #include "ApparentHorizons/YlmSpherepack.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/VariablesTag.hpp"
+#include "Domain/FunctionsOfTime/Tags.hpp"
 #include "IO/Logging/Tags.hpp"
 #include "IO/Logging/Verbosity.hpp"
 #include "NumericalAlgorithms/Interpolation/Actions/SendPointsToInterpolator.hpp"
@@ -248,6 +250,31 @@ struct FindApparentHorizon {
           },
           box);
 
+      // Compute Strahlkorper in Inertial frame if the current frame
+      // is not inertial.
+      if constexpr (not std::is_same_v<Frame, ::Frame::Inertial>) {
+        db::mutate_apply<
+            tmpl::list<StrahlkorperTags::Strahlkorper<::Frame::Inertial>>,
+            tmpl::list<StrahlkorperTags::Strahlkorper<Frame>,
+                       domain::Tags::Domain<Metavariables::volume_dim>>>(
+            [&cache, &temporal_id](
+                const gsl::not_null<Strahlkorper<::Frame::Inertial>*>
+                    inertial_strahlkorper,
+                const Strahlkorper<Frame>& strahlkorper,
+                const Domain<Metavariables::volume_dim>& domain) noexcept {
+              // Note that functions_of_time must already be up to
+              // date at temporal_id because they were used in the AH
+              // search above.
+              const auto& functions_of_time =
+                  get<domain::Tags::FunctionsOfTime>(*cache);
+              strahlkorper_in_different_frame(
+                  inertial_strahlkorper, strahlkorper, domain,
+                  functions_of_time,
+                  InterpolationTarget_detail::get_temporal_id_value(
+                      temporal_id));
+            },
+            box);
+      }
       InterpolationTargetTag::post_horizon_find_callback::apply(*box, *cache,
                                                                 temporal_id);
     }

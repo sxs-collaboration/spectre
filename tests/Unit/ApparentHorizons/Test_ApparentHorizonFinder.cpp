@@ -17,6 +17,7 @@
 #include "ApparentHorizons/ComputeItems.hpp"  // IWYU pragma: keep
 #include "ApparentHorizons/FastFlow.hpp"
 #include "ApparentHorizons/Strahlkorper.hpp"
+#include "ApparentHorizons/StrahlkorperInDifferentFrame.hpp"
 #include "ApparentHorizons/YlmSpherepack.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"  // IWYU pragma: keep
 #include "DataStructures/DataBox/Prefixes.hpp"
@@ -112,6 +113,35 @@ struct TestHorizonFindFailureCallback {
   }
 };
 
+// If we have found the horizon in a non-inertial frame, the the
+// inertial-frame Strahlkorper should also be in the DataBox.  So this
+// test compares the inertial-frame strahlkorper to its expected
+// value.
+template <typename Frame, typename DbTags, typename Metavariables>
+void test_inertial_strahlkorper(
+    const db::DataBox<DbTags>& box,
+    const Parallel::GlobalCache<Metavariables>& cache,
+    const typename Metavariables::AhA::temporal_id::type&
+        temporal_id) noexcept {
+  if constexpr (not std::is_same_v<Frame, ::Frame::Inertial>) {
+    const auto& strahlkorper = get<StrahlkorperTags::Strahlkorper<Frame>>(box);
+    const auto& inertial_strahlkorper =
+        get<StrahlkorperTags::Strahlkorper<::Frame::Inertial>>(box);
+    const auto& functions_of_time = get<domain::Tags::FunctionsOfTime>(cache);
+    const auto& domain = get<domain::Tags::Domain<3>>(cache);
+
+    Strahlkorper<::Frame::Inertial> expected_inertial_strahlkorper{};
+    strahlkorper_in_different_frame(
+        make_not_null(&expected_inertial_strahlkorper), strahlkorper, domain,
+        functions_of_time,
+        intrp::InterpolationTarget_detail::get_temporal_id_value(temporal_id));
+    CHECK_ITERABLE_APPROX(expected_inertial_strahlkorper.physical_center(),
+                          inertial_strahlkorper.physical_center());
+    CHECK_ITERABLE_APPROX(expected_inertial_strahlkorper.coefficients(),
+                          inertial_strahlkorper.coefficients());
+  }
+}
+
 // Counter to ensure that this function is called
 size_t test_schwarzschild_horizon_called = 0;
 template <typename Frame>
@@ -120,9 +150,9 @@ struct TestSchwarzschildHorizon {
   // [post_horizon_find_callback_example]
   template <typename DbTags, typename Metavariables>
   static void apply(const db::DataBox<DbTags>& box,
-                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const typename Metavariables::AhA::temporal_id::
-                        type& /*temporal_id*/) noexcept {
+                    const Parallel::GlobalCache<Metavariables>& cache,
+                    const typename Metavariables::AhA::temporal_id::type&
+                        temporal_id) noexcept {
     // [post_horizon_find_callback_example]
     const auto& horizon_radius = get(get<StrahlkorperTags::Radius<Frame>>(box));
     const auto expected_radius =
@@ -141,6 +171,8 @@ struct TestSchwarzschildHorizon {
     CHECK(strahlkorper.ylm_spherepack().physical_size() ==
           get<0, 0>(inv_metric).size());
 
+    test_inertial_strahlkorper<Frame>(box, cache, temporal_id);
+
     ++test_schwarzschild_horizon_called;
   }
 };
@@ -152,9 +184,9 @@ struct TestKerrHorizon {
   using observation_types = tmpl::list<>;
   template <typename DbTags, typename Metavariables>
   static void apply(const db::DataBox<DbTags>& box,
-                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const typename Metavariables::AhA::temporal_id::
-                        type& /*temporal_id*/) noexcept {
+                    const Parallel::GlobalCache<Metavariables>& cache,
+                    const typename Metavariables::AhA::temporal_id::type&
+                        temporal_id) noexcept {
     const auto& strahlkorper =
         get<StrahlkorperTags::Strahlkorper<Frame>>(box);
     // Test actual horizon radius against analytic value at the same
@@ -176,6 +208,8 @@ struct TestKerrHorizon {
         get<gr::Tags::InverseSpatialMetric<3, Frame>>(box);
     CHECK(strahlkorper.ylm_spherepack().physical_size() ==
           get<0, 0>(inv_metric).size());
+
+    test_inertial_strahlkorper<Frame>(box, cache, temporal_id);
 
     ++test_kerr_horizon_called;
   }
