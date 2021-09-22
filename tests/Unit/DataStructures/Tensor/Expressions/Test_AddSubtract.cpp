@@ -247,4 +247,137 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.AddSubtract",
       }
     }
   }
+
+  // testing with operands having time indices for spacetime indices
+  const Tensor<double, Symmetry<2, 1>,
+               index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                          SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
+      Gll7 = TensorExpressions::evaluate<ti_c, ti_b>(Alll(ti_c, ti_t, ti_b) +
+                                                     Hlll(ti_b, ti_c, ti_t));
+
+  for (int c = 0; c < 4; ++c) {
+    for (int b = 0; b < 4; ++b) {
+      CHECK(Gll7.get(c, b) == Alll.get(c, 0, b) + Hlll.get(b, c, 0));
+    }
+  }
+
+  const Tensor<double, Symmetry<1, 1>,
+               index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                          SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
+      Gll8 = TensorExpressions::evaluate<ti_d, ti_c>(Alll(ti_c, ti_d, ti_t) -
+                                                     All(ti_d, ti_c));
+
+  for (int d = 0; d < 4; ++d) {
+    for (int c = 0; c < 4; ++c) {
+      CHECK(Gll8.get(d, c) == Alll.get(c, d, 0) - All.get(d, c));
+    }
+  }
+
+  const Tensor<double, Symmetry<1, 1>,
+               index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                          SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
+      Gll9 = TensorExpressions::evaluate<ti_a, ti_b>(All(ti_b, ti_a) +
+                                                     Alll(ti_b, ti_a, ti_t));
+
+  for (int a = 0; a < 4; ++a) {
+    for (int b = 0; b < 4; ++b) {
+      CHECK(Gll9.get(a, b) == All.get(b, a) + Alll.get(b, a, 0));
+    }
+  }
+
+  // Assign a placeholder to the LHS tensor's components before it is computed
+  // so that when test expressions below only compute time components, we can
+  // check that LHS spatial components haven't changed
+  const double spatial_component_placeholder =
+      std::numeric_limits<double>::max();
+
+  auto Gll10 = make_with_value<
+      Tensor<double, Symmetry<4, 3, 2, 1>,
+             index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                        SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                        SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                        SpacetimeIndex<3, UpLo::Up, Frame::Grid>>>>(
+      0.0, spatial_component_placeholder);
+  TensorExpressions::evaluate<ti_t, ti_d, ti_b, ti_T>(
+      make_not_null(&Gll10), All(ti_b, ti_d) - Hll(ti_b, ti_d));
+
+  for (int d = 0; d < 4; ++d) {
+    for (int b = 0; b < 4; ++b) {
+      CHECK(Gll10.get(0, d, b, 0) == All.get(b, d) - Hll.get(b, d));
+      for (size_t i = 0; i < 3; ++i) {
+        for (size_t j = 0; j < 3; ++j) {
+          CHECK(Gll10.get(i + 1, d, b, j + 1) == spatial_component_placeholder);
+        }
+      }
+    }
+  }
+
+  auto Gll11 = make_with_value<
+      Tensor<double, Symmetry<2, 2, 1>,
+             index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                        SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                        SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>>(
+      0.0, spatial_component_placeholder);
+  TensorExpressions::evaluate<ti_a, ti_c, ti_t>(
+      make_not_null(&Gll11), Rlll(ti_t, ti_c, ti_a) + All(ti_a, ti_c));
+
+  for (int a = 0; a < 4; ++a) {
+    for (int c = 0; c < 4; ++c) {
+      CHECK(Gll11.get(a, c, 0) == Rlll.get(0, c, a) + All.get(a, c));
+      for (size_t i = 0; i < 3; ++i) {
+        CHECK(Gll11.get(a, c, i + 1) == spatial_component_placeholder);
+      }
+    }
+  }
+
+  auto Gll12 = make_with_value<
+      Tensor<double, Symmetry<3, 2, 1>,
+             index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                        SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                        SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>>(
+      0.0, spatial_component_placeholder);
+  TensorExpressions::evaluate<ti_g, ti_t, ti_h>(
+      make_not_null(&Gll12), Hll(ti_h, ti_g) - Alll(ti_g, ti_t, ti_h));
+
+  for (int g = 0; g < 4; ++g) {
+    for (int h = 0; h < 4; ++h) {
+      CHECK(Gll12.get(g, 0, h) == Hll.get(h, g) - Alll.get(g, 0, h));
+      for (size_t i = 0; i < 3; ++i) {
+        CHECK(Gll12.get(g, i + 1, h) == spatial_component_placeholder);
+      }
+    }
+  }
+
+  auto Gll13 = make_with_value<
+      Tensor<double, Symmetry<2, 1>,
+             index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                        SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>>(
+      0.0, spatial_component_placeholder);
+  TensorExpressions::evaluate<ti_t, ti_f>(
+      make_not_null(&Gll13), Rlll(ti_t, ti_t, ti_f) - Hll(ti_f, ti_t));
+
+  for (int f = 0; f < 4; ++f) {
+    CHECK(Gll13.get(0, f) == Rlll.get(0, 0, f) - Hll.get(f, 0));
+    for (size_t i = 0; i < 3; ++i) {
+      CHECK(Gll13.get(i + 1, f) == spatial_component_placeholder);
+    }
+  }
+
+  const Tensor<double> T{{{-3.2}}};
+
+  auto Gll14 = make_with_value<
+      Tensor<double, Symmetry<2, 1>,
+             index_list<SpacetimeIndex<3, UpLo::Up, Frame::Grid>,
+                        SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>>(
+      0.0, spatial_component_placeholder);
+  TensorExpressions::evaluate<ti_T, ti_t>(
+      make_not_null(&Gll14),
+      Hll(ti_t, ti_t) - T() - Rlll(ti_t, ti_t, ti_t) + 9.1);
+
+  CHECK(Gll14.get(0, 0) == Hll.get(0, 0) - get(T) - Rlll.get(0, 0, 0) + 9.1);
+  for (size_t i = 0; i < 3; ++i) {
+    for (size_t j = 0; j < 3; ++j) {
+      CHECK(Gll14.get(i + 1, j + 1) == spatial_component_placeholder);
+    }
+  }
 }

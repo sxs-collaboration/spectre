@@ -205,6 +205,9 @@ template <typename T>
 struct is_tensor_index : std::false_type {};
 template <size_t I>
 struct is_tensor_index<TensorIndex<I>> : std::true_type {};
+
+template <typename T>
+struct is_time_index;
 }  // namespace tt
 
 namespace TensorExpressions {
@@ -229,6 +232,37 @@ struct tensorindex_list_is_valid_impl<tmpl::list<TensorIndices...>> {
       "Template parameters of tensorindex_list_is_valid must be TensorIndex "
       "types.");
   static constexpr bool value = tmpl::is_set<TensorIndices...>::value;
+};
+
+template <typename TensorIndexList1, typename TensorIndexList2,
+          bool ListsSameSize>
+struct generic_indices_at_same_positions_impl;
+
+template <typename... TensorIndices1, typename... TensorIndices2>
+struct generic_indices_at_same_positions_impl<
+    tmpl::list<TensorIndices1...>, tmpl::list<TensorIndices2...>, true> {
+  static_assert((... and (tt::is_tensor_index<TensorIndices1>::value and
+                          tt::is_tensor_index<TensorIndices2>::value)),
+                "Template parameters of generic_indices_at_same_positions_impl "
+                "must be lists containing TensorIndex types.");
+  using type = std::bool_constant<(
+      ... and (std::is_same_v<TensorIndices1, TensorIndices2> or
+               (tt::is_time_index<TensorIndices1>::value and
+                tt::is_time_index<TensorIndices2>::value)))>;
+};
+
+template <typename... TensorIndices1, typename... TensorIndices2>
+struct generic_indices_at_same_positions_impl<
+    tmpl::list<TensorIndices1...>, tmpl::list<TensorIndices2...>, false> {
+  static_assert((... and (tt::is_tensor_index<TensorIndices1>::value)),
+                "The first template parameter of "
+                "generic_indices_at_same_positions_impl must be a list "
+                "containing TensorIndex types.");
+  static_assert((... and (tt::is_tensor_index<TensorIndices2>::value)),
+                "The second template parameter of "
+                "generic_indices_at_same_positions_impl must be a list "
+                "containing TensorIndex types.");
+  using type = std::bool_constant<false>;
 };
 
 template <typename TensorIndexList>
@@ -257,6 +291,21 @@ struct tensorindex_list_is_valid<tmpl::list<TensorIndices...>> {
       typename detail::remove_time_indices<
           tmpl::list<TensorIndices...>>::type>::value;
 };
+
+/*!
+ * \ingroup TensorExpressionsGroup
+ * \brief Determine whether or not two lists of TensorIndexs contain the same
+ * generic indices at the same positions
+ *
+ * \tparam TensorIndexList1 the first TensorIndex list
+ * \tparam TensorIndexList2 the second TensorIndex list
+ */
+template <typename TensorIndexList1, typename TensorIndexList2>
+using generic_indices_at_same_positions =
+    typename detail::generic_indices_at_same_positions_impl<
+        TensorIndexList1, TensorIndexList2,
+        tmpl::size<TensorIndexList1>::value ==
+            tmpl::size<TensorIndexList2>::value>::type;
 }  // namespace TensorExpressions
 
 /*!
