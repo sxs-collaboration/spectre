@@ -63,6 +63,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/ScalarAdvection/Factory.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/Tags/AnalyticSolutionCompute.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
 #include "Time/Actions/AdvanceTime.hpp"            // IWYU pragma: keep
 #include "Time/Actions/ChangeSlabSize.hpp"         // IWYU pragma: keep
@@ -223,14 +224,10 @@ struct EvolutionMetavars {
       evolution::Initialization::Actions::SetInitialData<
           domain::Tags::Coordinates<Dim, Frame::ElementLogical>>,
       Initialization::Actions::TimeStepperHistory<EvolutionMetavars>,
-      Initialization::Actions::AddComputeTags<
-          tmpl::list<ScalarAdvection::Tags::VelocityFieldCompute<Dim>>>,
-      tmpl::conditional_t<
-          evolution::is_analytic_solution_v<initial_data>,
-          Initialization::Actions::AddComputeTags<
-              tmpl::list<evolution::Tags::AnalyticCompute<
-                  Dim, initial_data_tag, analytic_solution_fields>>>,
-          tmpl::list<>>,
+      Initialization::Actions::AddComputeTags<tmpl::list<
+          ScalarAdvection::Tags::VelocityFieldCompute<Dim>,
+          InitialDataUtilities::Tags::AnalyticSolutionOptionalCompute<
+              volume_dim, observe_fields>>>,
       Initialization::Actions::AddComputeTags<
           StepChoosers::step_chooser_compute_tags<EvolutionMetavars>>,
       ::evolution::dg::Initialization::Mortars<volume_dim, system>,
