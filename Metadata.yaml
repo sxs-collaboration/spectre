@@ -58,6 +58,9 @@ Affiliations:
   - &new_hampshire
     Department of Physics & Astronomy, University of New Hampshire, 9 Library
     Way, Durham NH 03824, USA
+  - &koln
+    I. Physikalisches Institut, Universität zu Köln, Zülpicher Straße 77,
+    50937, Köln, Germany
 
 Authors:
   Description: |
@@ -229,6 +232,10 @@ Authors:
         Orcid: 0000-0002-5075-5116
         Affiliations: [*cornell]
         GitHub: moble
+      - Name: Chaudhary, Himanshu
+        Orcid: 0000-0002-4101-0534
+        Affiliations: [*caltech]
+        GitHub: GitHimanshuc
       - Name: Foucart, Francois
         Orcid: 0000-0003-4617-4738
         Affiliations: [*new_hampshire]
@@ -256,6 +263,10 @@ Authors:
         Orcid: 0000-0002-1962-680X
         Affiliations: [*caltech]
         GitHub: dongjun826
+      - Name: Ma, Sizheng
+        Orcid: 0000-0002-4645-453X
+        Affiliations: [*caltech]
+        GitHub: Sizheng-Ma
       - Name: Macedo, Alexandra
         Orcid: 0000-0001-5139-9013
         Affiliations: [*fullerton]
@@ -288,6 +299,10 @@ Authors:
         Orcid: 0000-0003-3574-2090
         Affiliations: [*fullerton]
         GitHub: sierracthomas
+      - Name: Vieira, Daniel
+        Orcid: 0000-0001-8019-0390
+        Affiliations: [*cornell, *koln]
+        GitHub: dkvieira
       - Name: Wittek, Nikolas A.
         Orcid: 0000-0001-8575-5450
         Affiliations: [*aei]
