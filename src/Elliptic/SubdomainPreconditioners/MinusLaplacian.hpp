@@ -213,9 +213,12 @@ void assign_component(
   }
   for (const auto& [overlap_id, rhs_data] : rhs.overlap_data) {
     const size_t num_points_overlap = rhs_data.number_of_grid_points();
+    // The random-access operation is relatively slow because it computes a
+    // hash, so it's important for performance to avoid repeating it in every
+    // iteration of the loop below.
+    auto& lhs_vars = lhs->overlap_data[overlap_id];
     for (size_t i = 0; i < num_points_overlap; ++i) {
-      lhs->overlap_data[overlap_id]
-          .data()[lhs_component * num_points_overlap + i] =
+      lhs_vars.data()[lhs_component * num_points_overlap + i] =
           rhs_data.data()[rhs_component * num_points_overlap + i];
     }
   }
