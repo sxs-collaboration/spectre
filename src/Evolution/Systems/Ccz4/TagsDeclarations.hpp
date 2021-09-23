@@ -25,9 +25,6 @@ struct FieldB;
 template <size_t Dim, typename Frame = Frame::Inertial,
           typename DataType = DataVector>
 struct FieldD;
-template <size_t Dim, typename Frame = Frame::Inertial,
-          typename DataType = DataVector>
-struct FieldDUp;
 template <typename DataType = DataVector>
 struct LogConformalFactor;
 template <size_t Dim, typename Frame = Frame::Inertial,
@@ -35,13 +32,16 @@ template <size_t Dim, typename Frame = Frame::Inertial,
 struct FieldP;
 template <size_t Dim, typename Frame = Frame::Inertial,
           typename DataType = DataVector>
+struct FieldDUp;
+template <size_t Dim, typename Frame = Frame::Inertial,
+          typename DataType = DataVector>
 struct ConformalChristoffelSecondKind;
 template <size_t Dim, typename Frame = Frame::Inertial,
           typename DataType = DataVector>
-struct ChristoffelSecondKind;
+struct DerivConformalChristoffelSecondKind;
 template <size_t Dim, typename Frame = Frame::Inertial,
           typename DataType = DataVector>
-struct DerivConformalChristoffelSecondKind;
+struct ChristoffelSecondKind;
 template <size_t Dim, typename Frame = Frame::Inertial,
           typename DataType = DataVector>
 struct GradGradLapse;
