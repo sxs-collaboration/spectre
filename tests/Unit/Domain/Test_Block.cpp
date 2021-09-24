@@ -18,8 +18,6 @@
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
-#include "Domain/CoordinateMaps/TimeDependent/ProductMaps.hpp"
-#include "Domain/CoordinateMaps/TimeDependent/ProductMaps.tpp"
 #include "Domain/CoordinateMaps/TimeDependent/Translation.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Domain/Structure/BlockNeighbor.hpp"
@@ -99,52 +97,19 @@ void test_block_time_independent() {
   test_move_semantics(std::move(original_block), block_copy);
 }
 
-using Translation = domain::CoordinateMaps::TimeDependent::Translation;
 template <size_t Dim>
-using TranslationDimD =
-    tmpl::conditional_t<Dim == 2,
-                        domain::CoordinateMaps::TimeDependent::ProductOf2Maps<
-                            Translation, Translation>,
-                        domain::CoordinateMaps::TimeDependent::ProductOf3Maps<
-                            Translation, Translation, Translation>>;
+using Translation = domain::CoordinateMaps::TimeDependent::Translation<Dim>;
 
 template <size_t VolumeDim>
-auto make_translation_map() noexcept;
-
-template <>
-auto make_translation_map<1>() noexcept {
+auto make_translation_map() noexcept {
   return domain::make_coordinate_map<Frame::Grid, Frame::Inertial>(
-      Translation{"Translation"});
-}
-
-template <>
-auto make_translation_map<2>() noexcept {
-  return domain::make_coordinate_map<Frame::Grid, Frame::Inertial>(
-      TranslationDimD<2>{Translation{"Translation"},
-                         Translation{"Translation"}});
-}
-
-template <>
-auto make_translation_map<3>() noexcept {
-  return domain::make_coordinate_map<Frame::Grid, Frame::Inertial>(
-      TranslationDimD<3>{Translation{"Translation"}, Translation{"Translation"},
-                         Translation{"Translation"}});
+      Translation<VolumeDim>{"Translation"});
 }
 
 template <size_t Dim>
 void test_block_time_dependent() {
-  using TranslationDimD = tmpl::conditional_t<
-      Dim == 1,
-      domain::CoordinateMap<Frame::Grid, Frame::Inertial, Translation>,
-      tmpl::conditional_t<
-          Dim == 2,
-          domain::CoordinateMap<Frame::Grid, Frame::Inertial,
-                                domain::CoordinateMaps::TimeDependent::
-                                    ProductOf2Maps<Translation, Translation>>,
-          domain::CoordinateMap<
-              Frame::Grid, Frame::Inertial,
-              domain::CoordinateMaps::TimeDependent::ProductOf3Maps<
-                  Translation, Translation, Translation>>>>;
+  using TranslationDimD =
+      domain::CoordinateMap<Frame::Grid, Frame::Inertial, Translation<Dim>>;
   using logical_to_grid_coordinate_map =
       CoordinateMap<Frame::BlockLogical, Frame::Inertial,
                     CoordinateMaps::Identity<Dim>>;
@@ -172,7 +137,9 @@ void test_block_time_dependent() {
 
     functions_of_time["Translation"] =
         std::make_unique<FunctionsOfTime::PiecewisePolynomial<2>>(
-            0.0, std::array<DataVector, 3>{{{0.0}, {1.0}, {0.0}}}, 2.5);
+            0.0,
+            std::array<DataVector, 3>{{{Dim, 0.0}, {Dim, 1.0}, {Dim, 0.0}}},
+            2.5);
 
     // Test external boundaries:
     CHECK((block.external_boundaries().size()) == 2 * Dim);

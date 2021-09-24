@@ -38,9 +38,8 @@ class FunctionOfTime;
 }  // namespace domain::FunctionsOfTime
 
 namespace {
-using Translation = domain::CoordinateMaps::TimeDependent::Translation;
-using Translation3D = domain::CoordinateMaps::TimeDependent::ProductOf3Maps<
-    Translation, Translation, Translation>;
+using Translation = domain::CoordinateMaps::TimeDependent::Translation<1>;
+using Translation3D = domain::CoordinateMaps::TimeDependent::Translation<3>;
 using BoundaryCondVector = std::vector<DirectionMap<
     3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>;
 
@@ -343,8 +342,7 @@ std::string create_option_string(
             "      InitialTime: 1.0\n"
             "      InitialExpirationDeltaT: 9.0\n"
             "      Velocity: [2.3, -0.3, 0.5]\n"
-            "      FunctionOfTimeNames: [TranslationX, TranslationY, "
-            "TranslationZ]\n"
+            "      FunctionOfTimeName: Translation\n"
           : "  TimeDependence: None\n"};
   const std::string boundary_conditions{
       add_boundary_condition ? std::string{"  BoundaryConditions:\n"
@@ -403,45 +401,23 @@ void test_bbh_time_dependent_factory(const bool with_boundary_conditions) {
   constexpr double expected_time = 1.0; // matches InitialTime: 1.0 above
   constexpr double expected_update_delta_t =
       9.0;  // matches InitialExpirationDeltaT: 9.0 above
-  std::array<DataVector, 3> function_of_time_coefficients_x{
-      {{0.0}, {2.3}, {0.0}}};
-  const std::array<DataVector, 3> function_of_time_coefficients_y{
-      {{0.0}, {-0.3}, {0.0}}};
-  const std::array<DataVector, 3> function_of_time_coefficients_z{
-      {{0.0}, {0.5}, {0.0}}};
+  std::array<DataVector, 3> function_of_time_coefficients{
+      {{3,0.0}, {2.3,-0.3,0.5}, {3,0.0}}};
 
   const std::tuple<
-      std::pair<std::string, domain::FunctionsOfTime::PiecewisePolynomial<2>>,
-      std::pair<std::string, domain::FunctionsOfTime::PiecewisePolynomial<2>>,
       std::pair<std::string, domain::FunctionsOfTime::PiecewisePolynomial<2>>>
       expected_functions_of_time = std::make_tuple(
           std::pair<std::string,
                     domain::FunctionsOfTime::PiecewisePolynomial<2>>{
-              "TranslationX"s,
-              {expected_time, function_of_time_coefficients_x,
-               expected_time + expected_update_delta_t}},
-          std::pair<std::string,
-                    domain::FunctionsOfTime::PiecewisePolynomial<2>>{
-              "TranslationY"s,
-              {expected_time, function_of_time_coefficients_y,
-               expected_time + expected_update_delta_t}},
-          std::pair<std::string,
-                    domain::FunctionsOfTime::PiecewisePolynomial<2>>{
-              "TranslationZ"s,
-              {expected_time, function_of_time_coefficients_z,
+              "Translation"s,
+              {expected_time, function_of_time_coefficients,
                expected_time + expected_update_delta_t}});
   std::unordered_map<std::string,
                      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
       functions_of_time{};
-  functions_of_time["TranslationX"] =
+  functions_of_time["Translation"] =
       std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<2>>(
-          initial_time, function_of_time_coefficients_x, expiration_time);
-  functions_of_time["TranslationY"] =
-      std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<2>>(
-          initial_time, function_of_time_coefficients_y, expiration_time);
-  functions_of_time["TranslationZ"] =
-      std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<2>>(
-          initial_time, function_of_time_coefficients_z, expiration_time);
+          initial_time, function_of_time_coefficients, expiration_time);
 
   for (const double time : times_to_check) {
     test_binary_compact_object_construction(

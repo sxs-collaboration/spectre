@@ -39,7 +39,7 @@ void test_product_of_2_maps_time_dep(
     const double y_target_a, const double y_target_b,
     const std::array<double, 2>& expected_frame_velocity) noexcept {
   using AffineMap = CoordinateMaps::Affine;
-  using TranslationMap = CoordinateMaps::TimeDependent::Translation;
+  using TranslationMap = CoordinateMaps::TimeDependent::Translation<1>;
   static_assert(
       std::is_same_v<Map1, AffineMap> or std::is_same_v<Map1, TranslationMap>,
       "Map1 must be either an affine map or a translation map");
@@ -150,7 +150,7 @@ void test_product_of_2_maps_time_dep() noexcept {
   INFO("Product of two maps with time dependence");
   constexpr size_t deriv_order = 3;
   using affine_map = CoordinateMaps::Affine;
-  using translation_map = CoordinateMaps::TimeDependent::Translation;
+  using translation_map = CoordinateMaps::TimeDependent::Translation<1>;
 
   const std::string f_of_t_name{"translation"};
   const double time = 2.0;
@@ -291,7 +291,7 @@ void test_product_of_3_maps_time_dep(
     const double z_target_b,
     const std::array<double, 3>& expected_frame_velocity) noexcept {
   using AffineMap = CoordinateMaps::Affine;
-  using TranslationMap = CoordinateMaps::TimeDependent::Translation;
+  using TranslationMap = CoordinateMaps::TimeDependent::Translation<1>;
   static_assert(
       std::is_same_v<Map1, AffineMap> or std::is_same_v<Map1, TranslationMap>,
       "Map1 must be either an affine map or a translation map");
@@ -426,7 +426,7 @@ void test_product_of_3_maps() noexcept {
   INFO("Product of 3 maps");
   constexpr size_t deriv_order = 3;
   using affine_map = CoordinateMaps::Affine;
-  using translation_map = CoordinateMaps::TimeDependent::Translation;
+  using translation_map = CoordinateMaps::TimeDependent::Translation<1>;
 
   const std::string f_of_t_name_x{"translation_x"};
   const std::string f_of_t_name_y{"translation_y"};

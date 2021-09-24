@@ -46,7 +46,7 @@ DomainCreator:
         InitialTime: *InitialTime
         InitialExpirationDeltaT: Auto
         Velocity: [0.5]
-        FunctionOfTimeNames: ["Translation"]
+        FunctionOfTimeName: "Translation"
     BoundaryConditions:
       LowerBoundary: Periodic
       UpperBoundary: Periodic

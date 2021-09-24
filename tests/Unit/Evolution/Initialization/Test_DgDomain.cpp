@@ -21,8 +21,6 @@
 #include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
-#include "Domain/CoordinateMaps/TimeDependent/ProductMaps.hpp"
-#include "Domain/CoordinateMaps/TimeDependent/ProductMaps.tpp"
 #include "Domain/CoordinateMaps/TimeDependent/Translation.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
@@ -39,12 +37,9 @@
 #include "Utilities/TMPL.hpp"
 
 namespace {
-using TranslationMap = domain::CoordinateMaps::TimeDependent::Translation;
-using TranslationMap2d =
-    domain::CoordinateMaps::TimeDependent::ProductOf2Maps<TranslationMap,
-                                                          TranslationMap>;
-using TranslationMap3d = domain::CoordinateMaps::TimeDependent::ProductOf3Maps<
-    TranslationMap, TranslationMap, TranslationMap>;
+template <size_t MeshDim>
+using TranslationMap =
+    domain::CoordinateMaps::TimeDependent::Translation<MeshDim>;
 
 using AffineMap = domain::CoordinateMaps::Affine;
 using AffineMap2d =
@@ -61,13 +56,8 @@ using TimeIndependentMap = tmpl::conditional_t<
         domain::CoordinateMap<SourceFrame, TargetFrame, AffineMap3d>>>;
 
 template <size_t MeshDim>
-using TimeDependentMap = tmpl::conditional_t<
-    MeshDim == 1,
-    domain::CoordinateMap<Frame::Grid, Frame::Inertial, TranslationMap>,
-    tmpl::conditional_t<
-        MeshDim == 2,
-        domain::CoordinateMap<Frame::Grid, Frame::Inertial, TranslationMap2d>,
-        domain::CoordinateMap<Frame::Grid, Frame::Inertial, TranslationMap3d>>>;
+using TimeDependentMap = domain::CoordinateMap<Frame::Grid, Frame::Inertial,
+                                               TranslationMap<MeshDim>>;
 
 template <size_t MeshDim, typename SourceFrame, typename TargetFrame>
 struct CreateAffineMap;
@@ -104,27 +94,8 @@ TimeIndependentMap<MeshDim, SourceFrame, TargetFrame> create_affine_map() {
 
 template <size_t MeshDim>
 TimeDependentMap<MeshDim> create_translation_map(
-    const std::array<std::string, 3>& f_of_t_names);
-
-template <>
-TimeDependentMap<1> create_translation_map<1>(
-    const std::array<std::string, 3>& f_of_t_names) {
-  return TimeDependentMap<1>{TranslationMap{f_of_t_names[0]}};
-}
-
-template <>
-TimeDependentMap<2> create_translation_map<2>(
-    const std::array<std::string, 3>& f_of_t_names) {
-  return TimeDependentMap<2>{
-      {TranslationMap{f_of_t_names[0]}, TranslationMap{f_of_t_names[1]}}};
-}
-
-template <>
-TimeDependentMap<3> create_translation_map<3>(
-    const std::array<std::string, 3>& f_of_t_names) {
-  return TimeDependentMap<3>{{TranslationMap{f_of_t_names[0]},
-                              TranslationMap{f_of_t_names[1]},
-                              TranslationMap{f_of_t_names[2]}}};
+    const std::string& f_of_t_name) {
+  return TimeDependentMap<MeshDim>{TranslationMap<MeshDim>{f_of_t_name}};
 }
 
 namespace Actions {
@@ -203,22 +174,19 @@ void test(const Spectral::Quadrature quadrature) noexcept {
   const std::vector<std::array<size_t, Dim>> initial_refinement{
       make_array<Dim>(0_st)};
   const size_t num_pts = pow<Dim>(4_st);
-  const std::array<double, 3> velocity{{1.2, 0.2, -8.9}};
+  const DataVector velocity{Dim, 3.6};
   const double initial_time = 0.0;
   const double expiration_time = 2.5;
-  const std::array<std::string, 3> functions_of_time_names{
-      {"TranslationX", "TranslationY", "TranslationZ"}};
+  const std::string function_of_time_name = "Translation";
   std::unordered_map<std::string,
                      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
       functions_of_time{};
-  for (size_t i = 0; i < velocity.size(); ++i) {
-    functions_of_time.insert(std::make_pair(
-        gsl::at(functions_of_time_names, i),
-        std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<2>>(
-            initial_time,
-            std::array<DataVector, 3>{{{0.0}, {gsl::at(velocity, i)}, {0.0}}},
-            expiration_time)));
-  }
+  functions_of_time.insert(std::make_pair(
+      function_of_time_name,
+      std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<2>>(
+          initial_time,
+          std::array<DataVector, 3>{{{Dim, 0.0}, velocity, {Dim, 0.0}}},
+          expiration_time)));
 
   std::vector<Block<Dim>> blocks{1};
   blocks[0] = Block<Dim>{
@@ -232,7 +200,7 @@ void test(const Spectral::Quadrature quadrature) noexcept {
   if (TimeDependent) {
     domain.inject_time_dependent_map_for_block(
         0, std::make_unique<TimeDependentMap<Dim>>(
-               create_translation_map<Dim>(functions_of_time_names)));
+               create_translation_map<Dim>(function_of_time_name)));
   }
 
   const ElementId<Dim> self_id(0);
@@ -252,7 +220,7 @@ void test(const Spectral::Quadrature quadrature) noexcept {
   const auto logical_to_grid_map =
       create_affine_map<Dim, Frame::Logical, Frame::Grid>();
   const auto grid_to_inertial_map =
-      create_translation_map<Dim>(functions_of_time_names);
+      create_translation_map<Dim>(function_of_time_name);
   const auto& logical_coords = ActionTesting::get_databox_tag<
       component, domain::Tags::Coordinates<Dim, Frame::Logical>>(runner,
                                                                  self_id);

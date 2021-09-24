@@ -45,9 +45,7 @@ namespace domain {
 namespace {
 using Affine = CoordinateMaps::Affine;
 using Affine2D = CoordinateMaps::ProductOf2Maps<Affine, Affine>;
-using Translation = CoordinateMaps::TimeDependent::Translation;
-using Translation2D =
-    CoordinateMaps::TimeDependent::ProductOf2Maps<Translation, Translation>;
+using Translation2D = CoordinateMaps::TimeDependent::Translation<2>;
 
 template <typename... FuncsOfTime>
 void test_rectangle_construction(
@@ -294,7 +292,7 @@ void test_rectangle_factory() {
         "      InitialTime: 1.0\n"
         "      InitialExpirationDeltaT: 9.0\n"
         "      Velocity: [2.3, -0.3]\n"
-        "      FunctionOfTimeNames: [TranslationX, TranslationY]");
+        "      FunctionOfTimeName: Translation");
     const auto* rectangle_creator =
         dynamic_cast<const creators::Rectangle*>(domain_creator.get());
     test_rectangle_construction(
@@ -305,16 +303,12 @@ void test_rectangle_factory() {
         std::make_tuple(
             std::pair<std::string,
                       domain::FunctionsOfTime::PiecewisePolynomial<2>>{
-                "TranslationX",
-                {1.0, std::array<DataVector, 3>{{{0.0}, {2.3}, {0.0}}}, 10.0}},
-            std::pair<std::string,
-                      domain::FunctionsOfTime::PiecewisePolynomial<2>>{
-                "TranslationY",
-                {1.0, std::array<DataVector, 3>{{{0.0}, {-0.3}, {0.0}}},
+                "Translation",
+                {1.0,
+                 std::array<DataVector, 3>{{{2, 0.0}, {2.3, -0.3}, {2, 0.0}}},
                  10.0}}),
         make_vector_coordinate_map_base<Frame::Grid, Frame::Inertial>(
-            Translation2D{Translation{"TranslationX"},
-                          Translation{"TranslationY"}}));
+            Translation2D{"Translation"}));
   }
   {
     INFO("Rectangle factory time dependent, with boundary conditions");
@@ -333,7 +327,7 @@ void test_rectangle_factory() {
         "      InitialTime: 1.0\n"
         "      InitialExpirationDeltaT: 9.0\n"
         "      Velocity: [2.3, -0.3]\n"
-        "      FunctionOfTimeNames: [TranslationX, TranslationY]\n"
+        "      FunctionOfTimeName: Translation\n"
         "  BoundaryCondition:\n"
         "    TestBoundaryCondition:\n"
         "      Direction: lower-xi\n"
@@ -349,16 +343,12 @@ void test_rectangle_factory() {
         std::make_tuple(
             std::pair<std::string,
                       domain::FunctionsOfTime::PiecewisePolynomial<2>>{
-                "TranslationX",
-                {1.0, std::array<DataVector, 3>{{{0.0}, {2.3}, {0.0}}}, 10.0}},
-            std::pair<std::string,
-                      domain::FunctionsOfTime::PiecewisePolynomial<2>>{
-                "TranslationY",
-                {1.0, std::array<DataVector, 3>{{{0.0}, {-0.3}, {0.0}}},
+                "Translation",
+                {1.0,
+                 std::array<DataVector, 3>{{{2, 0.0}, {2.3, -0.3}, {2, 0.0}}},
                  10.0}}),
         make_vector_coordinate_map_base<Frame::Grid, Frame::Inertial>(
-            Translation2D{Translation{"TranslationX"},
-                          Translation{"TranslationY"}}),
+            Translation2D{"Translation"}),
         expected_boundary_conditions);
   }
 }  // namespace domain

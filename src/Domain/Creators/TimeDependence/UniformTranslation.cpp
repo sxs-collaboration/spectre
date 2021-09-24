@@ -27,29 +27,23 @@
 
 namespace domain {
 namespace creators::time_dependence {
-namespace {
-std::array<std::string, 3> default_function_names_impl() noexcept {
-  return {{"TranslationX", "TranslationY", "TranslationZ"}};
-}
-}  // namespace
-
 template <size_t MeshDim>
 UniformTranslation<MeshDim>::UniformTranslation(
     const double initial_time,
     const std::optional<double> initial_expiration_delta_t,
     const std::array<double, MeshDim>& velocity,
-    std::array<std::string, MeshDim> functions_of_time_names) noexcept
+    std::string function_of_time_name) noexcept
     : initial_time_(initial_time),
       initial_expiration_delta_t_(initial_expiration_delta_t),
       velocity_(velocity),
-      functions_of_time_names_(std::move(functions_of_time_names)) {}
+      function_of_time_name_(std::move(function_of_time_name)) {}
 
 template <size_t MeshDim>
 std::unique_ptr<TimeDependence<MeshDim>>
 UniformTranslation<MeshDim>::get_clone() const noexcept {
   return std::make_unique<UniformTranslation>(
       initial_time_, initial_expiration_delta_t_, velocity_,
-      functions_of_time_names_);
+      function_of_time_name_);
 }
 
 template <size_t MeshDim>
@@ -82,73 +76,29 @@ UniformTranslation<MeshDim>::functions_of_time() const noexcept {
 
   // We use a `PiecewisePolynomial` with 2 derivs since some transformations
   // between different frames for moving meshes can require Hessians.
-  result[functions_of_time_names_[0]] =
+  DataVector velocity{MeshDim, 0.0};
+  for (size_t i = 0; i < MeshDim; i++) {
+    velocity[i] = gsl::at(velocity_, i);
+  }
+  result[function_of_time_name_] =
       std::make_unique<FunctionsOfTime::PiecewisePolynomial<2>>(
           initial_time_,
-          std::array<DataVector, 3>{{{0.0}, {velocity_[0]}, {0.0}}},
+          std::array<DataVector, 3>{{{MeshDim, 0.0}, velocity, {MeshDim, 0.0}}},
           initial_expiration_time);
-  if (MeshDim > 1) {
-    result[gsl::at(functions_of_time_names_, 1)] =
-        std::make_unique<FunctionsOfTime::PiecewisePolynomial<2>>(
-            initial_time_,
-            std::array<DataVector, 3>{{{0.0}, {gsl::at(velocity_, 1)}, {0.0}}},
-            initial_expiration_time);
-  }
-  if (MeshDim > 2) {
-    result[gsl::at(functions_of_time_names_, 2)] =
-        std::make_unique<FunctionsOfTime::PiecewisePolynomial<2>>(
-            initial_time_,
-            std::array<DataVector, 3>{{{0.0}, {gsl::at(velocity_, 2)}, {0.0}}},
-            initial_expiration_time);
-  }
   return result;
 }
 
-template <>
-auto UniformTranslation<1>::map_for_composition() const noexcept
+template <size_t MeshDim>
+auto UniformTranslation<MeshDim>::map_for_composition() const noexcept
     -> MapForComposition {
-  return MapForComposition{domain::CoordinateMaps::TimeDependent::Translation{
-      functions_of_time_names_[0]}};
-}
-
-template <>
-auto UniformTranslation<2>::map_for_composition() const noexcept
-    -> MapForComposition {
-  using ProductMap =
-      domain::CoordinateMaps::TimeDependent::ProductOf2Maps<Translation,
-                                                            Translation>;
   return MapForComposition{
-      ProductMap{Translation{functions_of_time_names_[0]},
-                 Translation{functions_of_time_names_[1]}}};
+      domain::CoordinateMaps::TimeDependent::Translation<MeshDim>{
+          function_of_time_name_}};
 }
 
-template <>
-auto UniformTranslation<3>::map_for_composition() const noexcept
-    -> MapForComposition {
-  using ProductMap = domain::CoordinateMaps::TimeDependent::ProductOf3Maps<
-      Translation, Translation, Translation>;
-  return MapForComposition{
-      ProductMap{Translation{functions_of_time_names_[0]},
-                 Translation{functions_of_time_names_[1]},
-                 Translation{functions_of_time_names_[2]}}};
-}
-
-template <>
-std::array<std::string, 1>
-UniformTranslation<1>::default_function_names() noexcept {
-  return {{default_function_names_impl()[0]}};
-}
-
-template <>
-std::array<std::string, 2>
-UniformTranslation<2>::default_function_names() noexcept {
-  return {{default_function_names_impl()[0], default_function_names_impl()[1]}};
-}
-
-template <>
-std::array<std::string, 3>
-UniformTranslation<3>::default_function_names() noexcept {
-  return default_function_names_impl();
+template <size_t MeshDim>
+std::string UniformTranslation<MeshDim>::default_function_name() noexcept {
+  return "Translation";
 }
 
 template <size_t Dim>
@@ -157,7 +107,7 @@ bool operator==(const UniformTranslation<Dim>& lhs,
   return lhs.initial_time_ == rhs.initial_time_ and
          lhs.initial_expiration_delta_t_ == rhs.initial_expiration_delta_t_ and
          lhs.velocity_ == rhs.velocity_ and
-         lhs.functions_of_time_names_ == rhs.functions_of_time_names_;
+         lhs.function_of_time_name_ == rhs.function_of_time_name_;
 }
 
 template <size_t Dim>
@@ -183,19 +133,11 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 #undef INSTANTIATION
 }  // namespace creators::time_dependence
 
-using Translation = CoordinateMaps::TimeDependent::Translation;
-using Translation2d =
-    CoordinateMaps::TimeDependent::ProductOf2Maps<Translation, Translation>;
-using Translation3d =
-    CoordinateMaps::TimeDependent::ProductOf3Maps<Translation, Translation,
-                                                  Translation>;
+template <size_t MeshDim>
+using Translation = CoordinateMaps::TimeDependent::Translation<MeshDim>;
 
-template class CoordinateMaps::TimeDependent::ProductOf2Maps<Translation,
-                                                             Translation>;
-template class CoordinateMaps::TimeDependent::ProductOf3Maps<
-    Translation, Translation, Translation>;
-
-INSTANTIATE_MAPS_FUNCTIONS(((Translation), (Translation2d), (Translation3d)),
+INSTANTIATE_MAPS_FUNCTIONS(((Translation<1>), (Translation<2>),
+                            (Translation<3>)),
                            (Frame::Grid), (Frame::Inertial),
                            (double, DataVector))
 
