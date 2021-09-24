@@ -26,8 +26,8 @@ EQUATION_OF_STATE_MEMBER_DEFINITIONS(template <bool IsRelativistic>,
                                      DataVector, 1)
 
 template <bool IsRelativistic>
-PolytropicFluid<IsRelativistic>::PolytropicFluid(CkMigrateMessage* /*unused*/) {
-}
+PolytropicFluid<IsRelativistic>::PolytropicFluid(CkMigrateMessage* msg)
+    : EquationOfState<IsRelativistic, 1>(msg) {}
 
 template <bool IsRelativistic>
 void PolytropicFluid<IsRelativistic>::pup(PUP::er& p) {

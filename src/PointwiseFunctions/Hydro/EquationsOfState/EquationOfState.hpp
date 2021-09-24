@@ -97,6 +97,8 @@ class EquationOfState<IsRelativistic, 1> : public PUP::able {
   EquationOfState& operator=(EquationOfState&&) = default;
   ~EquationOfState() override = default;
 
+  explicit EquationOfState(CkMigrateMessage* msg) : PUP::able(msg) {}
+
   WRAPPED_PUPable_abstract(EquationOfState);  // NOLINT
 
   /// @{
@@ -211,6 +213,8 @@ class EquationOfState<IsRelativistic, 2> : public PUP::able {
   EquationOfState(EquationOfState&&) = default;
   EquationOfState& operator=(EquationOfState&&) = default;
   ~EquationOfState() override = default;
+
+  explicit EquationOfState(CkMigrateMessage* msg) : PUP::able(msg) {}
 
   WRAPPED_PUPable_abstract(EquationOfState);  // NOLINT
 
@@ -362,7 +366,7 @@ class EquationOfState<IsRelativistic, 2> : public PUP::able {
   /* clang-tidy: do not use non-const references */                           \
   void pup(PUP::er& p) override; /* NOLINT */                                 \
                                                                               \
-  explicit DERIVED(CkMigrateMessage* /*unused*/);
+  explicit DERIVED(CkMigrateMessage* msg);
 
 /// \cond
 #define EQUATION_OF_STATE_FORWARD_ARGUMENTS(z, n, unused) \

@@ -24,8 +24,8 @@ EQUATION_OF_STATE_MEMBER_DEFINITIONS(template <typename ColdEquationOfState>,
                                      2)
 
 template <typename ColdEquationOfState>
-HybridEos<ColdEquationOfState>::HybridEos(CkMigrateMessage*
-                                          /*unused*/) {}
+HybridEos<ColdEquationOfState>::HybridEos(CkMigrateMessage* msg)
+    : EquationOfState<is_relativistic, 2>(msg) {}
 
 template <typename ColdEquationOfState>
 void HybridEos<ColdEquationOfState>::pup(PUP::er& p) {

@@ -22,7 +22,8 @@ EQUATION_OF_STATE_MEMBER_DEFINITIONS(template <bool IsRelativistic>,
                                      IdealFluid<IsRelativistic>, DataVector, 2)
 
 template <bool IsRelativistic>
-IdealFluid<IsRelativistic>::IdealFluid(CkMigrateMessage* /*unused*/) {}
+IdealFluid<IsRelativistic>::IdealFluid(CkMigrateMessage* msg)
+    : EquationOfState<IsRelativistic, 2>(msg) {}
 
 template <bool IsRelativistic>
 void IdealFluid<IsRelativistic>::pup(PUP::er& p) {

@@ -26,8 +26,8 @@ EQUATION_OF_STATE_MEMBER_DEFINITIONS(template <bool IsRelativistic>,
                                      DataVector, 2)
 
 template <bool IsRelativistic>
-DarkEnergyFluid<IsRelativistic>::DarkEnergyFluid(CkMigrateMessage* /*unused*/) {
-}
+DarkEnergyFluid<IsRelativistic>::DarkEnergyFluid(CkMigrateMessage* msg)
+    : EquationOfState<IsRelativistic, 2>(msg) {}
 
 template <bool IsRelativistic>
 void DarkEnergyFluid<IsRelativistic>::pup(PUP::er& p) {
