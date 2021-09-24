@@ -22,13 +22,11 @@
 /// \brief Items related to evolving the Newtonian Euler system
 namespace NewtonianEuler {
 
-template <size_t Dim, typename EquationOfStateType, typename InitialDataType>
+template <size_t Dim, typename InitialDataType>
 struct System {
   static constexpr bool is_in_flux_conservative_form = true;
   static constexpr bool has_primitive_and_conservative_vars = true;
   static constexpr size_t volume_dim = Dim;
-  static constexpr size_t thermodynamic_dim =
-      EquationOfStateType::thermodynamic_dim;
 
   using boundary_conditions_base = BoundaryConditions::BoundaryCondition<Dim>;
   using boundary_correction_base = BoundaryCorrections::BoundaryCorrection<Dim>;
@@ -54,8 +52,7 @@ struct System {
   using volume_sources = ComputeSources<InitialDataType>;
 
   using conservative_from_primitive = ConservativeFromPrimitive<Dim>;
-  using primitive_from_conservative =
-      PrimitiveFromConservative<Dim, thermodynamic_dim>;
+  using primitive_from_conservative = PrimitiveFromConservative<Dim>;
 
   using compute_largest_characteristic_speed =
       Tags::ComputeLargestCharacteristicSpeed<Dim>;

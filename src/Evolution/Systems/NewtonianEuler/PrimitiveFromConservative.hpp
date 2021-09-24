@@ -50,7 +50,7 @@ namespace NewtonianEuler {
  * This routine also returns the mass density as a primitive, and the pressure
  * from a generic equation of state \f$p = p(\rho, \epsilon)\f$.
  */
-template <size_t Dim, size_t ThermodynamicDim>
+template <size_t Dim>
 struct PrimitiveFromConservative {
   using return_tags =
       tmpl::list<Tags::MassDensity<DataVector>, Tags::Velocity<DataVector, Dim>,
@@ -61,6 +61,7 @@ struct PrimitiveFromConservative {
       tmpl::list<Tags::MassDensityCons, Tags::MomentumDensity<Dim>,
                  Tags::EnergyDensity, hydro::Tags::EquationOfStateBase>;
 
+  template <size_t ThermodynamicDim>
   static void apply(
       gsl::not_null<Scalar<DataVector>*> mass_density,
       gsl::not_null<tnsr::I<DataVector, Dim>*> velocity,

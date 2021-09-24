@@ -15,26 +15,14 @@
 #include "PointwiseFunctions/AnalyticSolutions/NewtonianEuler/SmoothFlow.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
-namespace {
-// The system is currently templated on the equation of state, but it's only
-// used in code that will be removed and that we don't care about. Even the
-// dependence on the thermodynamic dimension can probably be removed. In either
-// case, we don't care about the thermodynamic dimension for the explicit
-// instantiation either.
-struct DummyEquationOfStateType {
-  static constexpr size_t thermodynamic_dim = 1;
-};
-}  // namespace
-
 namespace evolution::dg::Actions::detail {
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define INITIAL_DATA_TYPE(data)                           \
   BOOST_PP_IF(BOOST_PP_TUPLE_ELEM(2, data),               \
               BOOST_PP_TUPLE_ELEM(1, data) < DIM(data) >, \
               BOOST_PP_TUPLE_ELEM(1, data))
-#define SYSTEM(data)                                            \
-  ::NewtonianEuler::System<DIM(data), DummyEquationOfStateType, \
-                           INITIAL_DATA_TYPE(data)>
+#define SYSTEM(data) \
+  ::NewtonianEuler::System<DIM(data), INITIAL_DATA_TYPE(data)>
 
 #define INSTANTIATION(r, data)                                                \
   template void volume_terms<::NewtonianEuler::TimeDerivativeTerms<           \

@@ -33,7 +33,7 @@ bool TciOnFdGrid<Dim>::apply(
     const EquationsOfState::EquationOfState<false, ThermodynamicDim>& eos,
     const Mesh<Dim>& dg_mesh, const double persson_exponent) noexcept {
   constexpr double persson_tci_epsilon = 1.0e-18;
-  NewtonianEuler::PrimitiveFromConservative<Dim, ThermodynamicDim>::apply(
+  NewtonianEuler::PrimitiveFromConservative<Dim>::apply(
       make_not_null(&get<MassDensity>(*subcell_grid_prim_vars)),
       make_not_null(&get<Velocity>(*subcell_grid_prim_vars)),
       make_not_null(&get<SpecificInternalEnergy>(*subcell_grid_prim_vars)),
@@ -42,7 +42,7 @@ bool TciOnFdGrid<Dim>::apply(
       eos);
   Variables<tmpl::list<MassDensity, Velocity, SpecificInternalEnergy, Pressure>>
       dg_grid_prim_vars{get(dg_energy_density).size()};
-  NewtonianEuler::PrimitiveFromConservative<Dim, ThermodynamicDim>::apply(
+  NewtonianEuler::PrimitiveFromConservative<Dim>::apply(
       make_not_null(&get<MassDensity>(dg_grid_prim_vars)),
       make_not_null(&get<Velocity>(dg_grid_prim_vars)),
       make_not_null(&get<SpecificInternalEnergy>(dg_grid_prim_vars)),

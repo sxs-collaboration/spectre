@@ -121,8 +121,6 @@ void test() {
       NewtonianEuler::BoundaryConditions::DirichletAnalytic<Dim>,
       NewtonianEuler::BoundaryConditions::BoundaryCondition<Dim>,
       NewtonianEuler::System<Dim,
-                             typename NewtonianEuler::Solutions::SmoothFlow<
-                                 Dim>::equation_of_state_type,
                              NewtonianEuler::Solutions::SmoothFlow<Dim>>,
       tmpl::list<NewtonianEuler::BoundaryCorrections::Rusanov<Dim>>,
       tmpl::list<ConvertSmoothFlow<Dim>>>(
@@ -171,8 +169,6 @@ void test() {
         NewtonianEuler::BoundaryConditions::BoundaryCondition<Dim>,
         NewtonianEuler::System<
             Dim,
-            typename NewtonianEuler::AnalyticData::KhInstability<
-                Dim>::equation_of_state_type,
             NewtonianEuler::AnalyticData::KhInstability<Dim>>,
         tmpl::list<NewtonianEuler::BoundaryCorrections::Rusanov<Dim>>,
         tmpl::list<ConvertKhInstability<Dim>>>(

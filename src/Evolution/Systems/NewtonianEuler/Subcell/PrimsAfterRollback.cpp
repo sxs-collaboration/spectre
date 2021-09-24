@@ -34,7 +34,7 @@ void PrimsAfterRollback<Dim>::apply(
     if (prim_vars->number_of_grid_points() != num_grid_points) {
       prim_vars->initialize(num_grid_points);
     }
-    NewtonianEuler::PrimitiveFromConservative<Dim, ThermodynamicDim>::apply(
+    NewtonianEuler::PrimitiveFromConservative<Dim>::apply(
         make_not_null(&get<MassDensity>(*prim_vars)),
         make_not_null(&get<Velocity>(*prim_vars)),
         make_not_null(&get<SpecificInternalEnergy>(*prim_vars)),

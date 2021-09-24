@@ -124,8 +124,7 @@ struct EvolutionMetavars {
 
   using source_term_type = typename initial_data::source_term_type;
 
-  using system =
-      NewtonianEuler::System<Dim, equation_of_state_type, initial_data>;
+  using system = NewtonianEuler::System<Dim, initial_data>;
 
   using temporal_id = Tags::TimeStepId;
   static constexpr bool local_time_stepping = false;
