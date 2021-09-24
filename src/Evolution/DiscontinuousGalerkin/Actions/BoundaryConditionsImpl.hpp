@@ -674,8 +674,7 @@ void apply_boundary_conditions_on_all_external_faces(
       tmpl::at<factory_classes, typename System::boundary_conditions_base>,
       tmpl::or_<
           std::is_base_of<domain::BoundaryConditions::MarkAsPeriodic, tmpl::_1>,
-          std::is_base_of<domain::BoundaryConditions::detail::MarkAsNone,
-                          tmpl::_1>>>;
+          std::is_base_of<domain::BoundaryConditions::MarkAsNone, tmpl::_1>>>;
 
   using variables_tag = typename System::variables_tag;
   using flux_variables = typename System::flux_variables;

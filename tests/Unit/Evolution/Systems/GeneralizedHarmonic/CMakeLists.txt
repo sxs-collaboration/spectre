@@ -19,7 +19,6 @@ set(LIBRARY_SOURCES
   Test_DuDtTempTags.cpp
   Test_Fluxes.cpp
   Test_Tags.cpp
-  Test_UpwindPenaltyCorrection.cpp
   )
 
 add_test_library(

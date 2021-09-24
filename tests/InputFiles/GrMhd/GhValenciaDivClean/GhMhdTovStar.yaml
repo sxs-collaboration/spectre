@@ -128,7 +128,7 @@ EventsAndTriggers:
           - RestMassDensity
           - Pressure
           - MagneticField
-          - PointwiseL2Norm(ThreeIndexConstraint)
+          - PointwiseL2Norm(GaugeConstraint)
         InterpolateToMesh: None
         CoordinatesFloatingPointType: Double
         FloatingPointTypes: [Double, Double, Double, Double, Double]

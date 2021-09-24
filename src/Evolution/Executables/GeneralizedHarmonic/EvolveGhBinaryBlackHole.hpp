@@ -19,7 +19,6 @@
 #include "Domain/Protocols/Metavariables.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/TagsCharacteresticSpeeds.hpp"
-#include "Evolution/Actions/ComputeTimeDerivative.hpp"
 #include "Evolution/Actions/RunEventsAndDenseTriggers.hpp"
 #include "Evolution/ComputeTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ApplyBoundaryCorrections.hpp"
@@ -28,9 +27,7 @@
 #include "Evolution/DiscontinuousGalerkin/Initialization/Mortars.hpp"
 #include "Evolution/EventsAndDenseTriggers/DenseTrigger.hpp"
 #include "Evolution/EventsAndDenseTriggers/DenseTriggers/Factory.hpp"
-#include "Evolution/Executables/GeneralizedHarmonic/GeneralizedHarmonicBase.hpp"
 #include "Evolution/Initialization/DgDomain.hpp"
-#include "Evolution/Initialization/DiscontinuousGalerkin.hpp"
 #include "Evolution/Initialization/Evolution.hpp"
 #include "Evolution/Initialization/NonconservativeSystem.hpp"
 #include "Evolution/NumericInitialData.hpp"
@@ -45,7 +42,6 @@
 #include "Evolution/Systems/GeneralizedHarmonic/Initialize.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/UpwindPenaltyCorrection.hpp"
 #include "Evolution/TypeTraits.hpp"
 #include "IO/Importers/Actions/ReadVolumeData.hpp"
 #include "IO/Importers/Actions/ReceiveVolumeData.hpp"
@@ -164,9 +160,6 @@ struct EvolutionMetavars {
   // 2nd or 3rd order piecewise polynomial functions of time using
   // `read_spec_piecewise_polynomial()`
   static constexpr bool override_functions_of_time = true;
-
-  using normal_dot_numerical_flux = Tags::NumericalFlux<
-      GeneralizedHarmonic::UpwindPenaltyCorrection<volume_dim>>;
 
   using time_stepper_tag = Tags::TimeStepper<
       std::conditional_t<local_time_stepping, LtsTimeStepper, TimeStepper>>;
@@ -350,6 +343,11 @@ struct EvolutionMetavars {
       evolution::dg::Initialization::Domain<volume_dim,
                                             override_functions_of_time>,
       Initialization::Actions::NonconservativeSystem<system>,
+      Initialization::Actions::AddComputeTags<
+          ::Tags::DerivCompute<typename system::variables_tag,
+                               ::domain::Tags::InverseJacobian<
+                                   volume_dim, Frame::Logical, Frame::Inertial>,
+                               typename system::gradient_variables>>,
       Initialization::Actions::TimeStepperHistory<EvolutionMetavars>,
       GeneralizedHarmonic::Actions::InitializeGhAnd3Plus1Variables<volume_dim>,
       Initialization::Actions::AddComputeTags<tmpl::push_back<

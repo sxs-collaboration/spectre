@@ -13,7 +13,6 @@ spectre_target_headers(
   HEADERS
   ConservativeSystem.hpp
   DgDomain.hpp
-  DiscontinuousGalerkin.hpp
   Evolution.hpp
   GrTagsForHydro.hpp
   InitialData.hpp

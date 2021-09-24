@@ -6,11 +6,11 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/Tensor/EagerMath/Norms.hpp"
 #include "DataStructures/Variables.hpp"
-#include "Evolution/Initialization/DiscontinuousGalerkin.hpp"
 #include "Evolution/Initialization/Evolution.hpp"
 #include "Evolution/Systems/ScalarWave/Constraints.hpp"
 #include "Evolution/Systems/ScalarWave/System.hpp"
 #include "Evolution/Systems/ScalarWave/Tags.hpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
@@ -41,6 +41,10 @@ struct InitializeConstraints {
   using simple_tags = tmpl::list<ScalarWave::Tags::ConstraintGamma2>;
 
   using compute_tags = tmpl::list<
+      ::Tags::DerivCompute<
+          typename System<Dim>::variables_tag,
+          domain::Tags::InverseJacobian<Dim, Frame::Logical, Frame::Inertial>,
+          typename System<Dim>::gradient_variables>,
       ScalarWave::Tags::OneIndexConstraintCompute<Dim>,
       ScalarWave::Tags::TwoIndexConstraintCompute<Dim>,
       ::Tags::PointwiseL2NormCompute<ScalarWave::Tags::OneIndexConstraint<Dim>>,
