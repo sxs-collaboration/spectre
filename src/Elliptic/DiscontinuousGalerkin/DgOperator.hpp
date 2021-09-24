@@ -9,6 +9,7 @@
 #include <unordered_map>
 #include <utility>
 
+#include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/SliceVariables.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -157,7 +158,7 @@ struct PerpendicularNumPoints {
 
 /// A measure of element size perpendicular to an element face. Used to compute
 /// the penalty (see `elliptic::dg::penalty`).
-struct ElementSize {
+struct ElementSize : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
 
@@ -166,7 +167,7 @@ struct ElementSize {
 /// \f$n_i\f$ is the face normal. This quantity is projected to mortars to
 /// compute the jump term of the numerical flux.
 template <typename Tag>
-struct NormalDotFluxForJump : db::PrefixTag {
+struct NormalDotFluxForJump : db::PrefixTag, db::SimpleTag {
   using type = typename Tag::type;
   using tag = Tag;
 };

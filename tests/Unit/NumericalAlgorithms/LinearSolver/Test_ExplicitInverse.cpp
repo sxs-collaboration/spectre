@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "DataStructures/ApplyMatrices.hpp"
+#include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/DenseMatrix.hpp"
 #include "DataStructures/DenseVector.hpp"
@@ -25,7 +26,7 @@
 namespace helpers = TestHelpers::LinearSolver;
 
 namespace {
-struct ScalarFieldTag {
+struct ScalarFieldTag : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
 }  // namespace

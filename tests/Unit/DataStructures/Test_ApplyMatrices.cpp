@@ -13,6 +13,7 @@
 
 #include "DataStructures/ApplyMatrices.hpp"
 #include "DataStructures/ComplexDataVector.hpp"
+#include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/IndexIterator.hpp"
@@ -43,19 +44,19 @@ using ScalarType = Scalar<T>;
 template <typename T>
 using VectorType = tnsr::I<T, 2>;
 
-struct ScalarTag {
+struct ScalarTag : db::SimpleTag {
   using type = ScalarType<DataVector>;
 };
 
-struct TensorTag {
+struct TensorTag : db::SimpleTag {
   using type = VectorType<DataVector>;
 };
 
-struct ComplexScalarTag {
+struct ComplexScalarTag : db::SimpleTag {
   using type = ScalarType<ComplexDataVector>;
 };
 
-struct ComplexTensorTag {
+struct ComplexTensorTag : db::SimpleTag {
   using type = VectorType<ComplexDataVector>;
 };
 

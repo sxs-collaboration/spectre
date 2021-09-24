@@ -10,6 +10,7 @@
 #include <pup.h>
 #include <type_traits>
 
+#include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -37,12 +38,12 @@ using Affine = domain::CoordinateMaps::Affine;
 using Affine2D = domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>;
 using Affine3D = domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
 
-struct ScalarTensor {
+struct ScalarTensor : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
 
 template <size_t SpatialDim>
-struct Coords {
+struct Coords : db::SimpleTag {
   using type = tnsr::I<DataVector, SpatialDim, Frame::Inertial>;
 };
 

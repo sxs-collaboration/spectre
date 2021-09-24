@@ -9,6 +9,7 @@
 #include <type_traits>
 #include <vector>
 
+#include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Structure/Direction.hpp"
@@ -25,11 +26,11 @@
 #include "Utilities/TMPL.hpp"
 
 namespace {
-struct ScalarFieldTag {
+struct ScalarFieldTag : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
 template <size_t Dim>
-struct VectorFieldTag {
+struct VectorFieldTag : db::SimpleTag {
   using type = tnsr::I<DataVector, Dim>;
 };
 template <size_t Dim>

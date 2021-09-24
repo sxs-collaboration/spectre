@@ -4,6 +4,7 @@
 #include "PointwiseFunctions/Xcts/SpacetimeQuantities.hpp"
 
 #include "DataStructures/DataBox/Prefixes.hpp"
+#include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Elliptic/Systems/Xcts/Tags.hpp"
@@ -21,7 +22,7 @@ namespace Xcts {
 
 namespace detail {
 template <typename T>
-struct TempTag {
+struct TempTag : db::SimpleTag {
   using type = T;
 };
 template <typename U, typename T, size_t Dim, typename DerivativeFrame>

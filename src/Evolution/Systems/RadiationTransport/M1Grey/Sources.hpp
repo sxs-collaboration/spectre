@@ -20,8 +20,7 @@ class DataVector;
 // IWYU pragma: no_forward_declare Tensor
 // IWYU pragma: no_forward_declare Tags::deriv
 
-namespace RadiationTransport {
-namespace M1Grey {
+namespace RadiationTransport::M1Grey {
 
 // Implementation of the curvature source terms
 // for the M1 system, for an individual species.
@@ -117,5 +116,4 @@ struct ComputeSources {
   }
 };
 
-}  // namespace M1Grey
-}  // namespace RadiationTransport
+}  // namespace RadiationTransport::M1Grey

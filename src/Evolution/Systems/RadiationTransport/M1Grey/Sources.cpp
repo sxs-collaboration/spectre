@@ -6,24 +6,22 @@
 #include <array>
 #include <cstddef>
 
+#include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
-#include "PointwiseFunctions/GeneralRelativity/Tags.hpp" // IWYU pragma: keep
+#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"  // IWYU pragma: keep
 
 // IWYU pragma: no_forward_declare Tensor
 
 namespace {
-struct AlphaTildeP {
+struct AlphaTildeP : db::SimpleTag {
   using type = tnsr::II<DataVector, 3>;
 };
 }  //  namespace
 
-namespace RadiationTransport {
-namespace M1Grey {
-
-namespace detail {
+namespace RadiationTransport::M1Grey::detail {
 void compute_sources_impl(
     const gsl::not_null<Scalar<DataVector>*> source_tilde_e,
     const gsl::not_null<tnsr::i<DataVector, 3>*> source_tilde_s,
@@ -83,6 +81,4 @@ void compute_sources_impl(
   }
 }
 
-}  // namespace detail
-}  // namespace M1Grey
-}  // namespace RadiationTransport
+}  // namespace RadiationTransport::M1Grey::detail

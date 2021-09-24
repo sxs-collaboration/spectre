@@ -9,6 +9,7 @@
 #include <cstddef>
 #include <utility>
 
+#include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -23,10 +24,10 @@
 // IWYU pragma: no_forward_declare Tensor
 
 namespace {
-struct MomentumUp {
+struct MomentumUp : db::SimpleTag {
   using type = tnsr::I<DataVector, 3, Frame::Inertial>;
 };
-struct MomentumSquared {
+struct MomentumSquared : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
 

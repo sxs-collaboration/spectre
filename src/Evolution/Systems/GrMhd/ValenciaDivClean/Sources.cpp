@@ -5,6 +5,7 @@
 
 #include <cstddef>
 
+#include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -49,13 +50,13 @@ void densitized_stress(
   }
 }
 
-struct MagneticFieldOneForm {
+struct MagneticFieldOneForm : db::SimpleTag {
   using type = tnsr::i<DataVector, 3, Frame::Inertial>;
 };
-struct TildeSUp {
+struct TildeSUp : db::SimpleTag {
   using type = tnsr::I<DataVector, 3, Frame::Inertial>;
 };
-struct DensitizedStress {
+struct DensitizedStress : db::SimpleTag {
   using type = tnsr::II<DataVector, 3, Frame::Inertial>;
 };
 struct OneOverLorentzFactorSquared : db::SimpleTag {

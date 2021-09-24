@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <cstddef>
 
+#include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Transpose.hpp"
@@ -19,11 +20,11 @@ class Variables;
 namespace {
 
 template <size_t Dim>
-struct Var1 {
+struct Var1 : db::SimpleTag {
   using type = tnsr::i<DataVector, Dim, Frame::Grid>;
 };
 
-struct Var2 {
+struct Var2 : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
 
@@ -58,7 +59,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Transpose", "[DataStructures][Unit]") {
   const size_t n_pts = chunk_size * number_of_chunks;
   DataVector data(n_pts);
   for (size_t i = 0; i < data.size(); ++i) {
-    data[i] = i * i;
+    data[i] = static_cast<double>(i * i);
   }
   DataVector transposed_data(n_pts, 0.);
   transposed_data = transpose(data, chunk_size, number_of_chunks);

@@ -8,6 +8,7 @@
 
 #include "DataStructures/CachedTempBuffer.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
+#include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Elliptic/Systems/Elasticity/Tags.hpp"
 #include "Options/Options.hpp"
@@ -25,7 +26,7 @@ namespace Elasticity::Solutions {
 namespace detail {
 template <typename DataType>
 struct HalfSpaceMirrorVariables {
-  struct DisplacementR {
+  struct DisplacementR : db::SimpleTag {
     using type = Scalar<DataType>;
   };
   using Cache =

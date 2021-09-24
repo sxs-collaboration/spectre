@@ -9,6 +9,7 @@
 #include <cstddef>
 #include <utility>
 
+#include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -22,11 +23,11 @@
 // IWYU pragma: no_forward_declare Tensor
 
 namespace {
-struct densitized_eta_minus_kappaJ {
+struct densitized_eta_minus_kappaJ : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
 
-struct kappaT_lapse {
+struct kappaT_lapse : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
 }  // namespace
