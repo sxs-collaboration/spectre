@@ -7,6 +7,7 @@ set(LIBRARY_SOURCES
   Test_AddSubSymmetry.cpp
   Test_AddSubtract.cpp
   Test_Contract.cpp
+  Test_Divide.cpp
   Test_Evaluate.cpp
   Test_EvaluateRank3.cpp
   Test_EvaluateRank4.cpp

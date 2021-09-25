@@ -124,7 +124,6 @@ struct OuterProduct<T1, T2, IndexList1<Indices1...>, IndexList2<Indices2...>,
   T1 t1_;
   T2 t2_;
 };
-
 }  // namespace TensorExpressions
 
 /// \ingroup TensorExpressionsGroup
@@ -191,27 +190,3 @@ SPECTRE_ALWAYS_INLINE auto operator*(
   return TensorExpressions::NumberAsExpression(number) * t;
 }
 /// @}
-
-/// \ingroup TensorExpressionsGroup
-/// \brief Returns the tensor expression representing the quotient of a tensor
-/// expression and a `double`
-///
-/// \note The implementation instead uses the operation, `t * (1.0 / number)`
-///
-/// \tparam T the derived TensorExpression type of the tensor expression operand
-/// of the quotient
-/// \tparam X the type of data stored in the tensor expression operand of the
-/// quotient
-/// \tparam ArgsList the TensorIndexs of the tensor expression operand of the
-/// quotient
-/// \param t the tensor expression operand of the quotient
-/// \param number the `double` operand of the quotient
-/// \return the tensor expression representing the quotient of a tensor
-/// expression and a `double`
-template <typename T, typename X, typename ArgsList>
-SPECTRE_ALWAYS_INLINE auto operator/(
-    const TensorExpression<T, X, typename T::symmetry, typename T::index_list,
-                           ArgsList>& t,
-    const double number) {
-  return t * TensorExpressions::NumberAsExpression(1.0 / number);
-}
