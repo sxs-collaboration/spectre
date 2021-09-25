@@ -11,8 +11,9 @@ spectre_target_headers(
   Evaluate.hpp
   IndexPropertyCheck.hpp
   LhsTensorSymmAndIndices.hpp
-  Product.hpp
+  Negate.hpp
   NumberAsExpression.hpp
+  Product.hpp
   SpatialSpacetimeIndex.hpp
   SquareRoot.hpp
   TensorAsExpression.hpp

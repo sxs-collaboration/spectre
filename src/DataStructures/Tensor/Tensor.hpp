@@ -21,6 +21,7 @@
 #include "DataStructures/Tensor/Expressions/Evaluate.hpp"
 #include "DataStructures/Tensor/Expressions/IndexPropertyCheck.hpp"
 #include "DataStructures/Tensor/Expressions/LhsTensorSymmAndIndices.hpp"
+#include "DataStructures/Tensor/Expressions/Negate.hpp"
 #include "DataStructures/Tensor/Expressions/NumberAsExpression.hpp"
 #include "DataStructures/Tensor/Expressions/Product.hpp"
 #include "DataStructures/Tensor/Expressions/SpatialSpacetimeIndex.hpp"
