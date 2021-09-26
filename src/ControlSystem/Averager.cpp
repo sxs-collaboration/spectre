@@ -6,6 +6,7 @@
 #include <ostream>
 
 #include "Utilities/ErrorHandling/Error.hpp"
+#include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 
@@ -160,33 +161,72 @@ double Averager<DerivOrder>::average_time(const double time) const {
 template <size_t DerivOrder>
 std::array<DataVector, DerivOrder + 1> Averager<DerivOrder>::get_derivs()
     const {
-  static_assert(DerivOrder == 2,
-                "Finite differencing currently only implemented for DerivOrder "
-                "= 2. If a different DerivOrder is desired, please add stencil "
-                "coefficients for that order.");
-
   // initialize the finite difference coefs
-  std::array<std::array<double, 3>, 3> coefs{};
+  std::array<std::array<double, DerivOrder + 1>, DerivOrder + 1> coefs{};
 
-  const double delta_t1 = times_[0] - times_[1];
-  const double delta_t2 = times_[1] - times_[2];
-  const double delta_t = delta_t1 + delta_t2;
-  const double denom = 1.0 / delta_t;
-  const double dts = delta_t1 * delta_t2;
+  // These coeffiecients are the weights of the Lagrange interpolation
+  // polynomial and its derivatives evaluated at `time_[0]`
+  if constexpr (DerivOrder == 1) {
+    const double one_over_delta_t = 1.0 / (times_[0] - times_[1]);
 
-  // set coefs for function value
-  coefs[0] = {{1.0, 0.0, 0.0}};
-  // first deriv coefs
-  coefs[1] = {{(2.0 + delta_t2 / delta_t1) * denom, -delta_t / dts,
-               delta_t1 / delta_t2 * denom}};
-  // second deriv coefs
-  coefs[2] = {{2.0 / delta_t1 * denom, -2.0 / dts, 2.0 / delta_t2 * denom}};
+    // set coefs for function value
+    coefs[0] = {{1.0, 0.0}};
+    // first deriv coefs
+    coefs[1] = {{one_over_delta_t, -one_over_delta_t}};
+  } else if constexpr (DerivOrder == 2) {
+    const double t0_minus_t1 = times_[0] - times_[1];
+    const double t1_minus_t2 = times_[1] - times_[2];
+    const double t0_minus_t2 = times_[0] - times_[2];
+    const double denom = 1.0 / t0_minus_t2;
+    const double one_over_mult_dts = 1.0 / (t0_minus_t1 * t1_minus_t2);
 
-  std::array<DataVector, 3> result =
-      make_array<3>(DataVector(raw_qs_[0].size(), 0.0));
+    // set coefs for function value
+    coefs[0] = {{1.0, 0.0, 0.0}};
+    // first deriv coefs
+    coefs[1] = {{(2.0 + t1_minus_t2 / t0_minus_t1) * denom,
+                 -t0_minus_t2 * one_over_mult_dts,
+                 t0_minus_t1 / t1_minus_t2 * denom}};
+    // second deriv coefs
+    coefs[2] = {{2.0 / t0_minus_t1 * denom, -2.0 * one_over_mult_dts,
+                 2.0 / t1_minus_t2 * denom}};
+  } else if constexpr (DerivOrder == 3) {
+    const double t1_minus_t0 = times_[1] - times_[0];
+    const double t2_minus_t0 = times_[2] - times_[0];
+    const double t3_minus_t0 = times_[3] - times_[0];
+    const double t1_minus_t2 = times_[1] - times_[2];
+    const double t1_minus_t3 = times_[1] - times_[3];
+    const double t2_minus_t3 = times_[2] - times_[3];
+
+    // set coefs for function value
+    coefs[0] = {{1.0, 0.0, 0.0, 0.0}};
+    // first deriv coefs
+    coefs[1] = {
+        {-1.0 / t1_minus_t0 - 1.0 / t2_minus_t0 - 1.0 / t3_minus_t0,
+         t2_minus_t0 * t3_minus_t0 / (t1_minus_t0 * t1_minus_t2 * t1_minus_t3),
+         -t1_minus_t0 * t3_minus_t0 / (t2_minus_t0 * t1_minus_t2 * t2_minus_t3),
+         t1_minus_t0 * t2_minus_t0 /
+             (t3_minus_t0 * t1_minus_t3 * t2_minus_t3)}};
+    // second deriv coefs
+    coefs[2] = {{2.0 * (t1_minus_t0 + t2_minus_t0 + t3_minus_t0) /
+                     (t1_minus_t0 * t2_minus_t0 * t3_minus_t0),
+                 -2.0 * (t2_minus_t0 + t3_minus_t0) /
+                     (t1_minus_t0 * t1_minus_t2 * t1_minus_t3),
+                 2.0 * (t1_minus_t0 + t3_minus_t0) /
+                     (t2_minus_t0 * t1_minus_t2 * t2_minus_t3),
+                 -2.0 * (t1_minus_t0 + t2_minus_t0) /
+                     (t3_minus_t0 * t1_minus_t3 * t2_minus_t3)}};
+    // third deriv coefs
+    coefs[3] = {{-6.0 / (t1_minus_t0 * t2_minus_t0 * t3_minus_t0),
+                 6.0 / (t1_minus_t0 * t1_minus_t2 * t1_minus_t3),
+                 -6.0 / (t2_minus_t0 * t1_minus_t2 * t2_minus_t3),
+                 6.0 / (t3_minus_t0 * t1_minus_t3 * t2_minus_t3)}};
+  }
+
+  std::array<DataVector, DerivOrder + 1> result =
+      make_array<DerivOrder + 1>(DataVector(raw_qs_[0].size(), 0.0));
   // compute derivatives
-  for (size_t i = 0; i < 3; i++) {
-    for (size_t j = 0; j < 3; j++) {
+  for (size_t i = 0; i < DerivOrder + 1; i++) {
+    for (size_t j = 0; j < DerivOrder + 1; j++) {
       gsl::at(result, i) += raw_qs_[j] * gsl::at(gsl::at(coefs, i), j);
     }
   }
@@ -220,7 +260,17 @@ bool operator!=(const Averager<DerivOrder>& avg1,
   return not(avg1 == avg2);
 }
 
-// explicit instantiations
-template class Averager<2>;
-template bool operator==(const Averager<2>& avg1, const Averager<2>& avg2);
-template bool operator!=(const Averager<2>& avg1, const Averager<2>& avg2);
+// explicit instantiations for deriv order (1, 2, 3)
+#define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
+
+#define INSTANTIATE(_, data)                            \
+  template class Averager<DIM(data)>;                   \
+  template bool operator==(const Averager<DIM(data)>&,  \
+                           const Averager<DIM(data)>&); \
+  template bool operator!=(const Averager<DIM(data)>&,  \
+                           const Averager<DIM(data)>&);
+
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
+
+#undef INSTANTIATE
+#undef DIM

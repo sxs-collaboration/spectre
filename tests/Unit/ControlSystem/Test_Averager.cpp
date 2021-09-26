@@ -14,27 +14,32 @@
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/Gsl.hpp"
+#include "Utilities/MakeArray.hpp"
 
 namespace {
+template <size_t DerivOrder>
 void test_linear() {
+  INFO("Test linear.");
   double t = 0.0;
   const double dt = 0.1;
-  constexpr size_t deriv_order = 2;
   const double final_time = 5.0;
 
   // test true and false `using_average_0th_deriv_of_q`
-  Averager<deriv_order> averager_t(0.5, true);
-  Averager<deriv_order> averager_f(0.5, false);
+  Averager<DerivOrder> averager_t(0.5, true);
+  Averager<DerivOrder> averager_f(0.5, false);
 
   CHECK(averager_t.using_average_0th_deriv_of_q());
   CHECK_FALSE(averager_f.using_average_0th_deriv_of_q());
 
-  // define custom approx for second derivative checks
-  Approx custom_approx = Approx::custom().epsilon(1.0e-12).scale(1.0);
+  // define custom approx for higher derivative checks
+  Approx custom_approx = Approx::custom().epsilon(1.0e-11).scale(1.0);
 
   while (t < final_time) {
     // test using an analytic function f(t) = t
-    const DataVector analytic_func = {t, 1.0, 0.0};
+    DataVector analytic_func{DerivOrder + 1, 0.0};
+    analytic_func[0] = t;
+    analytic_func[1] = 1.0;
 
     // update exponential averager
     averager_t.update(t, {analytic_func[0]}, {0.1});
@@ -44,34 +49,33 @@ void test_linear() {
       const auto result_t = averager_t(t).value();
       // check function value, which should agree with the effective time
       CHECK(approx(result_t[0][0]) == averager_t.average_time(t));
-      // check first derivative
-      CHECK(approx(result_t[1][0]) == analytic_func[1]);
-      // check second derivative
+      // check derivatives
       // The exponential averager uses finite differencing to approximate the
-      // derivatives. The second derivative is only a first order approximation,
-      // which is why we enforce a less stringent check here.
-      CHECK(custom_approx(result_t[2][0]) == analytic_func[2]);
+      // derivatives, which is why we enforce a less stringent check here.
+      for (size_t i = 1; i < DerivOrder + 1; i++) {
+        CHECK(custom_approx(gsl::at(result_t, i)[0]) == analytic_func[i]);
+      }
     }
     if (averager_f(t)) {
       const auto result_f = averager_f(t).value();
       // check function value, which should agree with the true time `t`
       CHECK(approx(result_f[0][0]) == t);
-      // check first derivative
-      CHECK(approx(result_f[1][0]) == analytic_func[1]);
-      // check second derivative
+      // check derivatives
       // The exponential averager uses finite differencing to approximate the
-      // derivatives. The second derivative is only a first order approximation,
-      // which is why we enforce a less stringent check here.
-      CHECK(custom_approx(result_f[2][0]) == analytic_func[2]);
+      // derivatives, which is why we enforce a less stringent check here.
+      for (size_t i = 1; i < DerivOrder + 1; i++) {
+        CHECK(custom_approx(gsl::at(result_f, i)[0]) == analytic_func[i]);
+      }
     }
 
     t += dt;
   }
 }
 
+template <size_t DerivOrder>
 void test_semianalytic() {
+  INFO("Test semianalytic.");
   double t = 0.0;
-  constexpr size_t deriv_order = 2;
   const double final_time = 5.0;
 
   // The equations suggests that our exponential averager is equivalent
@@ -83,7 +87,8 @@ void test_semianalytic() {
   // each timestep.
 
   // some vars for a simple exponential average to compare against
-  std::array<DataVector, deriv_order + 1> avg_values{{{0.0}, {0.0}, {0.0}}};
+  std::array<DataVector, DerivOrder + 1> avg_values =
+      make_array<DerivOrder + 1, DataVector>(DataVector{1, 0.0});
   double avg_time = 0.0;
 
   // the measurement timescale (tau_m)
@@ -94,14 +99,27 @@ void test_semianalytic() {
   // the average weight, represents W(t) in the above comment
   double avg_weight = 0.0;
 
-  Averager<deriv_order> averager(avg_tscale_fac, true);
+  Averager<DerivOrder> averager(avg_tscale_fac, true);
 
   // define custom approx for second derivative checks
-  Approx custom_approx = Approx::custom().epsilon(1.0e-12).scale(1.0);
+  Approx custom_approx = Approx::custom().epsilon(1.0e-11).scale(1.0);
 
   while (t < final_time) {
-    // test using an analytic function f(t) = t**2
-    const DataVector analytic_func = {square(t), 2.0 * t, 2.0};
+    // test using an analytic function f(t) = t**DerivOrder
+    DataVector analytic_func{DerivOrder + 1, 0.0};
+    if constexpr (DerivOrder == 1) {
+      analytic_func[0] = t;
+      analytic_func[1] = 1.0;
+    } else if constexpr (DerivOrder == 2) {
+      analytic_func[0] = square(t);
+      analytic_func[1] = 2.0 * t;
+      analytic_func[2] = 2.0;
+    } else if constexpr (DerivOrder == 3) {
+      analytic_func[0] = cube(t);
+      analytic_func[1] = 3.0 * square(t);
+      analytic_func[2] = 6.0 * t;
+      analytic_func[3] = 6.0;
+    }
 
     // update exponential averager
     averager.update(t, {analytic_func[0]}, {damping_time});
@@ -113,38 +131,38 @@ void test_semianalytic() {
 
       // do simple average of time, analytic func and its analytic derivatives
       avg_time = alpha * t + (1.0 - alpha) * avg_time;
-      avg_values[0] = alpha * analytic_func[0] + (1.0 - alpha) * avg_values[0];
-      avg_values[1] = alpha * analytic_func[1] + (1.0 - alpha) * avg_values[1];
-      avg_values[2] = alpha * analytic_func[2] + (1.0 - alpha) * avg_values[2];
-
+      for (size_t i = 0; i < DerivOrder + 1; i++) {
+        gsl::at(avg_values, i) =
+            alpha * analytic_func[i] + (1.0 - alpha) * gsl::at(avg_values, i);
+      }
       auto result = averager(t).value();
 
       // check that the effective times agree with the averaged time
       CHECK(approx(averager.average_time(t)) == avg_time);
-      // check function value
+      // check function value with stricter approx
       CHECK(approx(result[0][0]) == avg_values[0][0]);
-      // check first derivative
-      CHECK(approx(result[1][0]) == avg_values[1][0]);
-      // check second derivative
+      // check derivatives
       // Again, this check is slightly looser than the others due to
       // numerical differentiation (see comment in Averager.Linear test)
-      CHECK(custom_approx(result[2][0]) == avg_values[2][0]);
+      CHECK_ITERABLE_CUSTOM_APPROX(result, avg_values, custom_approx);
     } else {
       avg_time = t;
-      avg_values = {
-          {{analytic_func[0]}, {analytic_func[1]}, {analytic_func[2]}}};
+      for (size_t i = 0; i < DerivOrder + 1; i++) {
+        gsl::at(avg_values, i) = analytic_func[i];
+      }
     }
 
     t += tau_m;
   }
 }
 
+template <size_t DerivOrder>
 void test_functionality() {
+  INFO("Test functionality.");
   double t = 0.0;
   const double dt = 0.1;
-  constexpr size_t deriv_order = 2;
 
-  Averager<deriv_order> averager(0.5, false);
+  Averager<DerivOrder> averager(0.5, false);
 
   // test the validity of data functionality
   // data not valid yet
@@ -156,11 +174,22 @@ void test_functionality() {
   t += dt;
   // second update
   averager.update(t, {t}, {0.1});
-  // data not valid yet
-  CHECK_FALSE(static_cast<bool>(averager(t)));
-  t += dt;
-  // third update
-  averager.update(t, {t}, {0.1});
+  // different deriv orders need different number of updates for data to become
+  // valid
+  if constexpr (DerivOrder > 1) {
+    // data not valid yet
+    CHECK_FALSE(static_cast<bool>(averager(t)));
+    t += dt;
+    // third update
+    averager.update(t, {t}, {0.1});
+  }
+  if constexpr (DerivOrder > 2) {
+    // data not valid yet
+    CHECK_FALSE(static_cast<bool>(averager(t)));
+    t += dt;
+    // fourth update
+    averager.update(t, {t}, {0.1});
+  }
   // data should be valid now
   CHECK(static_cast<bool>(averager(t)));
   CHECK(averager(t).value()[0][0] == t);
@@ -250,10 +279,12 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Averager.BadCallToAverageTime",
 }
 
 namespace {
+template <size_t DerivOrder>
 void test_equality_and_serialization() {
-  Averager<2> averager1(1.0, true);
-  Averager<2> averager2(1.0, true);
-  Averager<2> averager3(0.5, false);
+  INFO("Test equality.");
+  Averager<DerivOrder> averager1(1.0, true);
+  Averager<DerivOrder> averager2(1.0, true);
+  Averager<DerivOrder> averager3(0.5, false);
 
   CHECK(averager1 == averager2);
   CHECK(averager1 != averager3);
@@ -265,19 +296,25 @@ void test_equality_and_serialization() {
   CHECK(serialize_and_deserialize(averager1) == averager1);
 }
 
+template <size_t DerivOrder>
 void test_create_from_options() {
-  Averager<2> averager(0.5, true);
-  auto averager2 = TestHelpers::test_creation<Averager<2>>(
+  INFO("Test options.");
+  Averager<DerivOrder> averager(0.5, true);
+  auto averager2 = TestHelpers::test_creation<Averager<DerivOrder>>(
       "AverageTimescaleFraction: 0.5\n"
       "Average0thDeriv: True");
 
   CHECK(averager == averager2);
 }
 
+template <size_t DerivOrder>
 void test_move() {
-  Averager<2> averager(0.25, false);
-  static_assert(std::is_move_constructible<Averager<2>>::value);
-  static_assert(std::is_move_assignable<Averager<2>>::value);
+  INFO("Test move.");
+  Averager<DerivOrder> averager(0.25, false);
+  static_assert(std::is_move_constructible<Averager<DerivOrder>>::value,
+                "Averager is not nothrow move constructible");
+  static_assert(std::is_move_assignable<Averager<DerivOrder>>::value,
+                "Averager is not nothrow move assignable");
   // update with junk data
   averager.update(0.3, {0.1}, {0.1});
   averager.update(0.5, {0.2}, {0.1});
@@ -296,7 +333,7 @@ void test_move() {
   CHECK(avg_q == new_averager.using_average_0th_deriv_of_q());
   CHECK(avg_values[0][0] == new_averager(0.9).value()[0][0]);
   // test move assignment
-  Averager<2> new_averager2(0.1, true);
+  Averager<DerivOrder> new_averager2(0.1, true);
   new_averager2 = std::move(new_averager);
   // check moved values against stored values
   CHECK(last_time == new_averager2.last_time_updated());
@@ -307,10 +344,33 @@ void test_move() {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.ControlSystem.Averager", "[ControlSystem][Unit]") {
-  test_linear();
-  test_semianalytic();
-  test_functionality();
-  test_equality_and_serialization();
-  test_create_from_options();
-  test_move();
+  {
+    INFO("Deriv Order 1")
+    test_linear<1>();
+    test_semianalytic<1>();
+    test_functionality<1>();
+    test_equality_and_serialization<1>();
+    test_create_from_options<1>();
+    test_move<1>();
+  }
+
+  {
+    INFO("Deriv Order 2")
+    test_linear<2>();
+    test_semianalytic<2>();
+    test_functionality<2>();
+    test_equality_and_serialization<2>();
+    test_create_from_options<2>();
+    test_move<2>();
+  }
+
+  {
+    INFO("Deriv Order 3")
+    test_linear<3>();
+    test_semianalytic<3>();
+    test_functionality<3>();
+    test_equality_and_serialization<3>();
+    test_create_from_options<3>();
+    test_move<3>();
+  }
 }

@@ -29,13 +29,18 @@
 /// \f$Q\f$ since the raw computed \f$Q\f$ is a function of the minimum on a
 /// surface and may jump around discontinuously.
 ///
-/// The averager is designed to support an arbitrary DerivOrder, however the
-/// private get_derivs method currently only supports DerivOrder = 2.
-/// If an additional DerivOrder is needed, finite differencing needs to be
-/// implemented to specifically handle that order (as it seems like overkill to
-/// generalize the differencing stencil at this time).
+/// The averager is designed to support DerivOrders 1, 2, and 3. If an
+/// additional DerivOrder is needed, finite differencing needs to be implemented
+/// to specifically handle that order (as it seems like overkill to generalize
+/// the differencing stencil at this time).
 template <size_t DerivOrder>
 class Averager {
+  static_assert(DerivOrder != 0, "Cannot average just a function value.");
+  static_assert(
+      DerivOrder <= 3,
+      "Averager only instantiated for deriv order less than or equal to 3. If "
+      "you want a higher deriv order, you'll need to add it yourself.");
+
  public:
   struct AverageTimescaleFraction {
     using type = double;
@@ -121,11 +126,6 @@ class Averager {
   /// (`DerivOrder` + 1), the order of the finite difference varies for
   /// different derivatives. Assuming \f$M\lte\f$`DerivOrder`, the \f$M\f$'th
   /// derivative is of order (`DerivOrder` + 1 - \f$M\f$).
-  ///
-  /// NOTE: the derivative function currently only supports DerivOrder = 2,
-  /// and contains a static_assert to guard against the possible instantiation
-  /// of another DerivOrder, for which finite differencing does not
-  /// currently support.
   std::array<DataVector, DerivOrder + 1> get_derivs() const;
 
   double avg_tscale_frac_;
