@@ -76,7 +76,7 @@ class Event : public ::Event {
   static constexpr bool factory_creatable = false;
   Event() = default;
 
-  using argument_tags = tmpl::list<Tags::DataBox>;
+  using argument_tags = tmpl::list<::Tags::DataBox>;
 
   template <typename DbTags, typename Metavariables, typename ArrayIndex,
             typename Component>

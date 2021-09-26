@@ -69,17 +69,28 @@ class TestCreator : public DomainCreator<1> {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.ControlSystem.Tags", "[ControlSystem][Unit]") {
-  using tag = control_system::Tags::MeasurementTimescales;
-  TestHelpers::db::test_simple_tag<tag>("MeasurementTimescales");
+  using name_tag = control_system::Tags::ControlSystemName;
+  TestHelpers::db::test_simple_tag<name_tag>("ControlSystemName");
+  using averager_tag = control_system::Tags::Averager<2>;
+  TestHelpers::db::test_simple_tag<averager_tag>("Averager");
+  using timescaletuner_tag = control_system::Tags::TimescaleTuner;
+  TestHelpers::db::test_simple_tag<timescaletuner_tag>("TimescaleTuner");
+  using controller_tag = control_system::Tags::Controller<2>;
+  TestHelpers::db::test_simple_tag<controller_tag>("Controller");
 
-  static_assert(tmpl::size<tag::option_tags<Metavariables>>::value == 2);
-  using Creator = tmpl::front<tag::option_tags<Metavariables>>::type;
+  using measurement_tag = control_system::Tags::MeasurementTimescales;
+  TestHelpers::db::test_simple_tag<measurement_tag>("MeasurementTimescales");
+
+  static_assert(
+      tmpl::size<measurement_tag::option_tags<Metavariables>>::value == 2);
+  using Creator =
+      tmpl::front<measurement_tag::option_tags<Metavariables>>::type;
   const double time_step = 0.2;
   {
     const Creator creator = std::make_unique<TestCreator>(true);
 
-    const tag::type timescales =
-        tag::create_from_options<Metavariables>(creator, time_step);
+    const measurement_tag::type timescales =
+        measurement_tag::create_from_options<Metavariables>(creator, time_step);
     CHECK(timescales.size() == 1);
     // The lack of expiration is a placeholder until the control systems
     // have been implemented sufficiently to manage their timescales.
@@ -93,8 +104,9 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Tags", "[ControlSystem][Unit]") {
 
     // Verify that negative time steps are accepted with no control
     // systems.
-    const tag::type timescales =
-        tag::create_from_options<Metavariables>(creator, -time_step);
+    const measurement_tag::type timescales =
+        measurement_tag::create_from_options<Metavariables>(creator,
+                                                            -time_step);
     CHECK(timescales.empty());
   }
 }
@@ -104,8 +116,8 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Tags", "[ControlSystem][Unit]") {
 SPECTRE_TEST_CASE("Unit.ControlSystem.Tags.Backwards",
                   "[ControlSystem][Unit]") {
   ERROR_TEST();
-  using tag = control_system::Tags::MeasurementTimescales;
+  using measurement_tag = control_system::Tags::MeasurementTimescales;
   const std::unique_ptr<DomainCreator<1>> creator =
       std::make_unique<TestCreator>(true);
-  tag::create_from_options<Metavariables>(creator, -1.0);
+  measurement_tag::create_from_options<Metavariables>(creator, -1.0);
 }
