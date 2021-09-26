@@ -18,6 +18,7 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   Averager.hpp
+  Component.hpp
   Controller.hpp
   Event.hpp
   Metafunctions.hpp
@@ -38,4 +39,5 @@ target_link_libraries(
   FunctionsOfTime
   )
 
+add_subdirectory(Actions)
 add_subdirectory(Protocols)
