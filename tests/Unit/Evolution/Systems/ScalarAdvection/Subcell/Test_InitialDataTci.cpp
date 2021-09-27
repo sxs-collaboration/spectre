@@ -46,8 +46,8 @@ void test() {
     // set dg_vars == subcell_vars
     const InactiveVars subcell_vars{number_of_subcell_grid_points, 1.0};
     CHECK_FALSE(ScalarAdvection::subcell::DgInitialDataTci<Dim>::apply(
-        dg_vars, subcell_vars, dg_mesh, persson_exponent, rdmp_delta0,
-        rdmp_epsilon));
+        dg_vars, subcell_vars, rdmp_delta0, rdmp_epsilon, persson_exponent,
+        dg_mesh));
   }
 
   {
@@ -55,8 +55,8 @@ void test() {
     // set subcell_vars to be smooth but quite different from dg_vars
     const InactiveVars subcell_vars{number_of_subcell_grid_points, 2.0};
     CHECK(ScalarAdvection::subcell::DgInitialDataTci<Dim>::apply(
-        dg_vars, subcell_vars, dg_mesh, persson_exponent, rdmp_delta0,
-        rdmp_epsilon));
+        dg_vars, subcell_vars, rdmp_delta0, rdmp_epsilon, persson_exponent,
+        dg_mesh));
   }
 
   {
@@ -68,8 +68,8 @@ void test() {
     // set rdmp_delta0 to be very large to ensure that it's the Persson TCI
     // which triggers alarm here
     CHECK(ScalarAdvection::subcell::DgInitialDataTci<Dim>::apply(
-        dg_vars, subcell_vars, dg_mesh, persson_exponent, 1.0e100,
-        rdmp_epsilon));
+        dg_vars, subcell_vars, rdmp_delta0, rdmp_epsilon, persson_exponent,
+        dg_mesh));
   }
 }
 }  // namespace
