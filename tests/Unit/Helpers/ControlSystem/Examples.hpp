@@ -96,6 +96,8 @@ struct ExampleControlSystem
   static std::string name() { return "ExampleControlSystem"; }
   using measurement = ExampleMeasurement;
 
+  using simple_tags = tmpl::list<>;
+
   // This is not part of the required interface, but is used by this
   // control system to store the measurement data.  Most control
   // systems will do something like this.

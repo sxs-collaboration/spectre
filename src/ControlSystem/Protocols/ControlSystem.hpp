@@ -24,6 +24,10 @@ namespace control_system::protocols {
 /// - a type alias `measurement` to a struct implementing the
 ///   Measurement protocol.
 ///
+/// - a type alias `simple_tags` to a `tmpl::list` of simple tags needed for the
+///   control system. These tags will be added to the DataBox of the
+///   ControlComponent. The list may be empty.
+///
 /// - a member struct (or type alias) `process_measurement`, defining
 ///   the following:
 ///
@@ -69,6 +73,8 @@ struct ControlSystem {
           typename ConformingType::process_measurement::template argument_tags<
               Submeasurement>;
     };
+
+    using simple_tags = typename ConformingType::simple_tags;
 
     using process_measurement_argument_tags =
         tmpl::transform<typename measurement::submeasurements,
