@@ -138,9 +138,9 @@ struct EvolutionMetavars {
             Event,
             tmpl::flatten<tmpl::list<
                 Events::Completion,
-                dg::Events::field_observations<volume_dim, Tags::Time,
-                                               observe_fields,
-                                               analytic_solution_fields>,
+                dg::Events::field_observations<
+                    volume_dim, Tags::Time, observe_fields,
+                    analytic_solution_fields, tmpl::list<>>,
                 dg::Events::ObserveVolumeIntegrals<
                     volume_dim, Tags::Time,
                     tmpl::list<ScalarWave::Tags::EnergyDensity<volume_dim>>>,

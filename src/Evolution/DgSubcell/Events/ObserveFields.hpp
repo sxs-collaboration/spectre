@@ -62,6 +62,7 @@ struct Inertial;
 namespace evolution::dg::subcell::Events {
 /// \cond
 template <size_t VolumeDim, typename ObservationValueTag, typename Tensors,
+          typename NonTensorComputeTagsList = tmpl::list<>,
           typename AnalyticSolutionTensors = tmpl::list<>,
           typename NonSolutionTensors =
               tmpl::list_difference<Tensors, AnalyticSolutionTensors>>
@@ -81,10 +82,15 @@ class ObserveFields;
  *
  * The user may specify an `interpolation_mesh` to which the
  * data is interpolated.
+ *
+ * \note The `NonTensorComputeTags` are intended to be used for `Variables`
+ * compute tags like `Tags::DerivCompute`
  */
 template <size_t VolumeDim, typename ObservationValueTag, typename... Tensors,
-          typename... AnalyticSolutionTensors, typename... NonSolutionTensors>
+          typename... NonTensorComputeTags, typename... AnalyticSolutionTensors,
+          typename... NonSolutionTensors>
 class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
+                    tmpl::list<NonTensorComputeTags...>,
                     tmpl::list<AnalyticSolutionTensors...>,
                     tmpl::list<NonSolutionTensors...>> : public Event {
  private:
@@ -98,6 +104,7 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
   using dg_observe_fields =
       ::dg::Events::ObserveFields<VolumeDim, ObservationValueTag,
                                   tmpl::list<Tensors...>,
+                                  tmpl::list<NonTensorComputeTags...>,
                                   tmpl::list<AnalyticSolutionTensors...>,
                                   tmpl::list<NonSolutionTensors...>>;
 
@@ -156,7 +163,8 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
   using coordinates_tag =
       ::domain::Tags::Coordinates<VolumeDim, Frame::Inertial>;
 
-  using compute_tags_for_observation_box = tmpl::list<>;
+  using compute_tags_for_observation_box =
+      tmpl::list<Tensors..., NonTensorComputeTags...>;
 
   using argument_tags =
       tmpl::list<ObservationValueTag, ::domain::Tags::Mesh<VolumeDim>,
@@ -196,7 +204,8 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
             const Mesh<VolumeDim>& mesh,
             const tnsr::I<DataVector, VolumeDim, Frame::Inertial>&
                 inertial_coords) {
-          if constexpr (evolution::is_analytic_solution_v<
+          if constexpr (sizeof...(AnalyticSolutionTensors) > 0 and
+                        evolution::is_analytic_solution_v<
                             typename Metavariables::initial_data>) {
             Variables<tmpl::list<AnalyticSolutionTensors...>> soln_vars{
                 mesh.number_of_grid_points()};
@@ -217,6 +226,7 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
       set_analytic_soln(dg_mesh, dg_inertial_coords);
       ::dg::Events::ObserveFields<VolumeDim, ObservationValueTag,
                                   tmpl::list<Tensors...>,
+                                  tmpl::list<NonTensorComputeTags...>,
                                   tmpl::list<AnalyticSolutionTensors...>,
                                   tmpl::list<NonSolutionTensors...>>::
           call_operator_impl(
@@ -289,8 +299,10 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
 
 /// \cond
 template <size_t VolumeDim, typename ObservationValueTag, typename... Tensors,
-          typename... AnalyticSolutionTensors, typename... NonSolutionTensors>
+          typename... NonTensorComputeTags, typename... AnalyticSolutionTensors,
+          typename... NonSolutionTensors>
 ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
+              tmpl::list<NonTensorComputeTags...>,
               tmpl::list<AnalyticSolutionTensors...>,
               tmpl::list<NonSolutionTensors...>>::
     ObserveFields(const std::string& subfile_name,
@@ -355,10 +367,11 @@ ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
 
 /// \cond
 template <size_t VolumeDim, typename ObservationValueTag, typename... Tensors,
-          typename... AnalyticSolutionTensors, typename... NonSolutionTensors>
-PUP::able::PUP_ID
-    ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
-                  tmpl::list<AnalyticSolutionTensors...>,
-                  tmpl::list<NonSolutionTensors...>>::my_PUP_ID = 0;  // NOLINT
+          typename... NonTensorComputeTags, typename... AnalyticSolutionTensors,
+          typename... NonSolutionTensors>
+PUP::able::PUP_ID ObserveFields<
+    VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
+    tmpl::list<NonTensorComputeTags...>, tmpl::list<AnalyticSolutionTensors...>,
+    tmpl::list<NonSolutionTensors...>>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
 }  // namespace evolution::dg::subcell::Events

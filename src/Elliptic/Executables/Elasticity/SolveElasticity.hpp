@@ -192,18 +192,19 @@ struct Metavariables {
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
         tmpl::pair<DomainCreator<volume_dim>, domain_creators<volume_dim>>,
-        tmpl::pair<Event,
-                   tmpl::flatten<tmpl::list<
-                       Events::Completion,
-                       dg::Events::field_observations<
-                           volume_dim, linear_solver_iteration_id,
-                           observe_fields, analytic_solution_fields,
-                           LinearSolver::multigrid::Tags::IsFinestGrid>,
-                       dg::Events::ObserveVolumeIntegrals<
-                           volume_dim, linear_solver_iteration_id,
-                           tmpl::list<Elasticity::Tags::PotentialEnergyDensity<
-                               volume_dim>>,
-                           LinearSolver::multigrid::Tags::IsFinestGrid>>>>,
+        tmpl::pair<
+            Event,
+            tmpl::flatten<tmpl::list<
+                Events::Completion,
+                dg::Events::field_observations<
+                    volume_dim, linear_solver_iteration_id, observe_fields,
+                    analytic_solution_fields, tmpl::list<>,
+                    LinearSolver::multigrid::Tags::IsFinestGrid>,
+                dg::Events::ObserveVolumeIntegrals<
+                    volume_dim, linear_solver_iteration_id,
+                    tmpl::list<
+                        Elasticity::Tags::PotentialEnergyDensity<volume_dim>>,
+                    LinearSolver::multigrid::Tags::IsFinestGrid>>>>,
         tmpl::pair<Trigger, elliptic::Triggers::all_triggers<
                                 typename linear_solver::options_group>>>;
   };

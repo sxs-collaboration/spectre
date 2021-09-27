@@ -269,7 +269,8 @@ struct EvolutionMetavars {
                 Events::Completion,
                 Events::ObserveNorms<::Tags::Time, observe_fields>,
                 dg::Events::field_observations<volume_dim, Tags::Time,
-                                               observe_fields, tmpl::list<>>,
+                                               observe_fields, tmpl::list<>,
+                                               tmpl::list<>>,
                 Events::time_events<system>>>>,
         tmpl::pair<GeneralizedHarmonic::BoundaryConditions::BoundaryCondition<
                        volume_dim>,

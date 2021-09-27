@@ -256,7 +256,8 @@ struct EvolutionMetavars {
                                          tags_list>,
                         tmpl::conditional_t<
                             evolution::is_analytic_solution_v<initial_data>,
-                            analytic_variables_tags, tmpl::list<>>>>,
+                            analytic_variables_tags, tmpl::list<>>,
+                        tmpl::list<>>>,
                 Events::time_events<system>,
                 intrp::Events::InterpolateWithoutInterpComponent<
                     3, InterpolationTargetTags, EvolutionMetavars,

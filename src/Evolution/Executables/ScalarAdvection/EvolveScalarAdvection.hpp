@@ -165,10 +165,10 @@ struct EvolutionMetavars {
                         volume_dim, Tags::Time,
                         tmpl::push_back<observe_fields, evolution::dg::subcell::
                                                             Tags::TciStatus>,
-                        analytic_solution_fields>,
-                    dg::Events::field_observations<volume_dim, Tags::Time,
-                                                   observe_fields,
-                                                   analytic_solution_fields>>,
+                        analytic_solution_fields, tmpl::list<>>,
+                    dg::Events::field_observations<
+                        volume_dim, Tags::Time, observe_fields,
+                        analytic_solution_fields, tmpl::list<>>>,
                 Events::time_events<system>>>>,
         tmpl::pair<ScalarAdvection::BoundaryConditions::BoundaryCondition<Dim>,
                    ScalarAdvection::BoundaryConditions::

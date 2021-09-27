@@ -107,7 +107,7 @@ void test_observe(
 
   const typename System::solution_for_test analytic_solution{};
   using solution_variables = typename System::solution_for_test::vars_for_test;
-  const Variables<db::wrap_tags_in<Tags::Analytic, solution_variables>>
+  const Variables<db::wrap_tags_in<::Tags::Analytic, solution_variables>>
       solutions{variables_from_tagged_tuple(analytic_solution.variables(
           get<coordinates_tag>(vars), observation_time, solution_variables{}))};
   const Variables<solution_variables> errors =
@@ -116,7 +116,7 @@ void test_observe(
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavariables>;
   MockRuntimeSystem runner(
       tuples::TaggedTuple<
-          Tags::AnalyticSolution<typename System::solution_for_test>>{
+          ::Tags::AnalyticSolution<typename System::solution_for_test>>{
           std::move(analytic_solution)});
   ActionTesting::emplace_component<element_component>(make_not_null(&runner),
                                                       element_id);
@@ -125,7 +125,7 @@ void test_observe(
   const auto box = db::create<db::AddSimpleTags<
       Parallel::Tags::MetavariablesImpl<metavariables>, ObservationTimeTag,
       domain::Tags::Mesh<volume_dim>,
-      Tags::Variables<typename decltype(vars)::tags_list>,
+      ::Tags::Variables<typename decltype(vars)::tags_list>,
       tmpl::conditional_t<
           AlwaysHasAnalyticSolutions,
           ::Tags::AnalyticSolutions<solution_variables>,
@@ -144,9 +144,12 @@ void test_observe(
       }(),
       section);
 
-  observe->run(make_observation_box<db::AddComputeTags<>>(box),
-               ActionTesting::cache<element_component>(runner, array_index),
-               array_index, std::add_pointer_t<element_component>{});
+  observe->run(
+      make_observation_box<tmpl::filter<
+          typename System::ObserveEvent::compute_tags_for_observation_box,
+          db::is_compute_tag<tmpl::_1>>>(box),
+      ActionTesting::cache<element_component>(runner, array_index), array_index,
+      std::add_pointer_t<element_component>{});
 
   if (not std::is_same_v<ArraySectionIdTag, void> and not section.has_value()) {
     CHECK(runner.template is_simple_action_queue_empty<observer_component>(0));
@@ -216,7 +219,19 @@ void test_observe(
   System::check_data([&check_component, &vars](const std::string& name,
                                                auto tag,
                                                const auto... indices) {
-    check_component(name, get<decltype(tag)>(vars).get(indices...));
+    if constexpr (std::is_same_v<decltype(tag),
+                                 TestHelpers::dg::Events::ObserveFields::Tags::
+                                     ScalarVarTimesTwo>) {
+      check_component(
+          name, DataVector{2.0 * get<typename System::ScalarVar>(vars).get()});
+    } else if constexpr (std::is_same_v<decltype(tag),
+                                        TestHelpers::dg::Events::ObserveFields::
+                                            Tags::ScalarVarTimesThree>) {
+      check_component(
+          name, DataVector{3.0 * get<typename System::ScalarVar>(vars).get()});
+    } else {
+      check_component(name, get<decltype(tag)>(vars).get(indices...));
+    }
   });
   if (AlwaysHasAnalyticSolutions or has_analytic_solutions) {
     System::solution_for_test::check_data(

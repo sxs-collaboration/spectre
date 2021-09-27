@@ -301,7 +301,8 @@ struct GhValenciaDivCleanTemplateBase<
                     volume_dim, Tags::Time, observe_fields,
                     tmpl::conditional_t<
                         evolution::is_analytic_solution_v<initial_data>,
-                        analytic_solution_fields, tmpl::list<>>>,
+                        analytic_solution_fields, tmpl::list<>>,
+                    tmpl::list<>>,
                 Events::time_events<system>,
                 intrp::Events::Interpolate<3, InterpolationTargetTags,
                                            interpolator_source_vars>...>>>,

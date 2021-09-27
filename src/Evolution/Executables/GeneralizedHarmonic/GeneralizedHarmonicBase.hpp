@@ -201,9 +201,9 @@ struct GeneralizedHarmonicTemplateBase<
                    tmpl::flatten<tmpl::list<
                        Events::Completion,
                        Events::ObserveNorms<::Tags::Time, observe_fields>,
-                       dg::Events::field_observations<volume_dim, Tags::Time,
-                                                      observe_fields,
-                                                      analytic_solution_fields>,
+                       dg::Events::field_observations<
+                           volume_dim, Tags::Time, observe_fields,
+                           analytic_solution_fields, tmpl::list<>>,
                        Events::time_events<system>>>>,
         tmpl::pair<GeneralizedHarmonic::BoundaryConditions::BoundaryCondition<
                        volume_dim>,
