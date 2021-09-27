@@ -14,7 +14,7 @@
 #include "Evolution/Systems/Cce/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestHelpers.hpp"
-#include "Helpers/NumericalAlgorithms/Interpolation/InterpolateOnElementTestHelpers.hpp"
+#include "Helpers/ParallelAlgorithms/Interpolation/InterpolateOnElementTestHelpers.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"

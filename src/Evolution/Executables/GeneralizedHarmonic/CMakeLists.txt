@@ -42,6 +42,7 @@ set(LIBS_TO_LINK
   MathFunctions
   Options
   Parallel
+  ParallelInterpolation
   PhaseControl
   Time
   Utilities

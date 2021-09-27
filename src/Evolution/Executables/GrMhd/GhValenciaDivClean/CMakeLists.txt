@@ -89,7 +89,7 @@ add_ghmhd_executable(
 add_ghmhd_with_horizon_executable(
   BondiMichel
   GeneralizedHarmonic::Solutions::WrappedGr<grmhd::Solutions::BondiMichel>
-  "${LIBS_TO_LINK}"
+  "${LIBS_TO_LINK};ParallelInterpolation"
   )
 
 add_ghmhd_executable(
