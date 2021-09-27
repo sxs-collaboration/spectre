@@ -5,8 +5,7 @@
 
 #include <pup.h>
 
-namespace intrp {
-namespace OptionHolders {
+namespace intrp::OptionHolders {
 
 WedgeSectionTorus::WedgeSectionTorus(
     const double min_radius_in, const double max_radius_in,
@@ -61,5 +60,4 @@ bool operator!=(const WedgeSectionTorus& lhs,
   return not(lhs == rhs);
 }
 
-}  // namespace OptionHolders
-}  // namespace intrp
+}  // namespace intrp::OptionHolders
