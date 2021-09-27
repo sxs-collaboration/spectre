@@ -254,15 +254,16 @@ void test_shell_construction(
     } else if (UNLIKELY(which_wedges == ShellWedges::OneAlongMinusX)) {
       vector_of_maps.erase(vector_of_maps.begin(), vector_of_maps.begin() + 5);
     }
-    test_domain_construction(
-        domain, expected_block_neighbors, expected_external_boundaries,
-        vector_of_maps,
-        expected_grid_to_inertial_maps.empty() ?
-        std::numeric_limits<double>::signaling_NaN() : 10.0,
-        shell.functions_of_time(), expected_grid_to_inertial_maps,
-        expected_boundary_conditions);
+    test_domain_construction(domain, expected_block_neighbors,
+                             expected_external_boundaries, vector_of_maps,
+                             expected_grid_to_inertial_maps.empty()
+                                 ? std::numeric_limits<double>::signaling_NaN()
+                                 : 10.0,
+                             shell.functions_of_time(),
+                             expected_grid_to_inertial_maps,
+                             expected_boundary_conditions);
 
-    if constexpr(sizeof...(FuncsOfTime) == 0) {
+    if constexpr (sizeof...(FuncsOfTime) == 0) {
       // We turn off the domain_no_corners test for time-dependent
       // maps because Domain doesn't have a constructor that takes
       // maps from BlockLogical to Grid.
@@ -382,6 +383,10 @@ void test_shell_construction(
       test_serialization(domain_no_corners);
     }
   }
+  CHECK(domain.excision_spheres() ==
+        std::unordered_map<std::string, ExcisionSphere<3>>{
+            {"CentralExcisionSphere",
+             ExcisionSphere<3>{inner_radius, {{0.0, 0.0, 0.0}}}}});
 
   test_initial_domain(domain, shell.initial_refinement_levels());
   TestHelpers::domain::creators::test_functions_of_time(

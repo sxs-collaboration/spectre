@@ -10,12 +10,15 @@
 #include <cstddef>
 #include <iosfwd>
 #include <memory>
+#include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "Domain/Block.hpp"  // IWYU pragma: keep
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
+#include "Domain/Structure/ExcisionSphere.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 
 namespace Frame {
@@ -64,7 +67,9 @@ class Domain {
       std::vector<DirectionMap<
           VolumeDim,
           std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
-          boundary_conditions = {});
+          boundary_conditions = {},
+      std::unordered_map<std::string, ExcisionSphere<VolumeDim>>
+          excision_spheres = {});
 
   /*!
    * Create a Domain using a corner numbering scheme to encode the Orientations,
@@ -95,7 +100,9 @@ class Domain {
          std::vector<DirectionMap<
              VolumeDim,
              std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
-             boundary_conditions = {});
+             boundary_conditions = {},
+         std::unordered_map<std::string, ExcisionSphere<VolumeDim>>
+             excision_spheres = {});
 
   Domain() = default;
   ~Domain() = default;
@@ -112,11 +119,18 @@ class Domain {
 
   const std::vector<Block<VolumeDim>>& blocks() const { return blocks_; }
 
+  const std::unordered_map<std::string, ExcisionSphere<VolumeDim>>&
+  excision_spheres() const {
+    return excision_spheres_;
+  }
+
   // clang-tidy: google-runtime-references
   void pup(PUP::er& p);  // NOLINT
 
  private:
   std::vector<Block<VolumeDim>> blocks_{};
+  std::unordered_map<std::string, ExcisionSphere<VolumeDim>>
+      excision_spheres_{};
 };
 
 template <size_t VolumeDim>

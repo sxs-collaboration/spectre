@@ -201,12 +201,16 @@ void test_1d_domains() {
     CHECK(get_output(domain_from_corners) ==
           "Domain with 2 blocks:\n" +
               get_output(domain_from_corners.blocks()[0]) + "\n" +
-              get_output(domain_from_corners.blocks()[1]) + "\n");
+              get_output(domain_from_corners.blocks()[1]) + "\n" +
+          "Excision spheres:\n" +
+              get_output(domain_from_corners.excision_spheres()) + "\n");
 
     CHECK(get_output(domain_no_corners) ==
           "Domain with 2 blocks:\n" +
               get_output(domain_from_corners.blocks()[0]) + "\n" +
-              get_output(domain_from_corners.blocks()[1]) + "\n");
+              get_output(domain_from_corners.blocks()[1]) + "\n" +
+          "Excision spheres:\n" +
+              get_output(domain_from_corners.excision_spheres()) + "\n");
   }
 
   {
