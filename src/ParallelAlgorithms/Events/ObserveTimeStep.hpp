@@ -160,6 +160,8 @@ class ObserveTimeStep : public Event {
   using observed_reduction_data_tags =
       observers::make_reduction_data_tags<tmpl::list<ReductionData>>;
 
+  using compute_tags_for_observation_box = tmpl::list<>;
+
   // We obtain the grid size from the variables, rather than the mesh,
   // so that this observer is not DG-specific.
   using argument_tags =

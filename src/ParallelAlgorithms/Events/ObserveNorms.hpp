@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/ObservationBox.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -190,12 +191,15 @@ class ObserveNorms<ObservationValueTag, tmpl::list<ObservableTensorTags...>,
   using observed_reduction_data_tags =
       observers::make_reduction_data_tags<tmpl::list<ReductionData>>;
 
-  using argument_tags = tmpl::list<ObservationValueTag, ::Tags::DataBox>;
+  using compute_tags_for_observation_box = tmpl::list<>;
 
-  template <typename DbTagsList, typename Metavariables, typename ArrayIndex,
+  using argument_tags = tmpl::list<ObservationValueTag, ::Tags::ObservationBox>;
+
+  template <typename ComputeTagsList, typename DataBoxType,
+            typename Metavariables, typename ArrayIndex,
             typename ParallelComponent>
   void operator()(const typename ObservationValueTag::type& observation_value,
-                  const db::DataBox<DbTagsList>& box,
+                  const ObservationBox<ComputeTagsList, DataBoxType>& box,
                   Parallel::GlobalCache<Metavariables>& cache,
                   const ArrayIndex& array_index,
                   const ParallelComponent* const /*meta*/) const;
@@ -289,12 +293,13 @@ ObserveNorms<ObservationValueTag, tmpl::list<ObservableTensorTags...>,
 
 template <typename ObservationValueTag, typename... ObservableTensorTags,
           typename ArraySectionIdTag>
-template <typename DbTagsList, typename Metavariables, typename ArrayIndex,
+template <typename ComputeTagsList, typename DataBoxType,
+          typename Metavariables, typename ArrayIndex,
           typename ParallelComponent>
 void ObserveNorms<ObservationValueTag, tmpl::list<ObservableTensorTags...>,
                   ArraySectionIdTag>::
 operator()(const typename ObservationValueTag::type& observation_value,
-           const db::DataBox<DbTagsList>& box,
+           const ObservationBox<ComputeTagsList, DataBoxType>& box,
            Parallel::GlobalCache<Metavariables>& cache,
            const ArrayIndex& array_index,
            const ParallelComponent* const /*meta*/) const {
@@ -306,10 +311,6 @@ operator()(const typename ObservationValueTag::type& observation_value,
   }
 
   using tensor_tags = tmpl::list<ObservableTensorTags...>;
-  static_assert((db::tag_is_retrievable_v<ObservableTensorTags,
-                                          db::DataBox<DbTagsList>> and
-                 ...),
-                "Not all ObservableTensorTags were found in the DataBox.");
 
   std::unordered_map<std::string,
                      std::pair<std::vector<double>, std::vector<std::string>>>
@@ -327,7 +328,7 @@ operator()(const typename ObservationValueTag::type& observation_value,
       if (tensor_name == tensor_names_[i]) {
         auto& [values, names] = norm_values_and_names[tensor_norm_types_[i]];
         const auto [component_names, components] =
-            db::get<tag>(box).get_vector_of_data();
+            get<tag>(box).get_vector_of_data();
         if (number_of_points != 0 and
             components[0].size() != number_of_points) {
           ERROR("The number of grid points previously was "

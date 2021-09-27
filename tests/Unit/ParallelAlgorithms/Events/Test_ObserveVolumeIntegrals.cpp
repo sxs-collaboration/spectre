@@ -254,7 +254,7 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe,
                                                       0);
   ActionTesting::emplace_group_component<observer_component>(&runner);
 
-  observe->run(box,
+  observe->run(make_observation_box<db::AddComputeTags<>>(box),
                ActionTesting::cache<element_component>(runner, array_index),
                array_index, std::add_pointer_t<element_component>{});
 

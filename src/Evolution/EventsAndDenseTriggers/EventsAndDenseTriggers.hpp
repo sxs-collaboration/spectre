@@ -50,6 +50,12 @@ struct PreviousTriggerTime : db::SimpleTag {
 /// \ingroup EventsAndTriggersGroup
 /// Class that checks dense triggers and runs events
 class EventsAndDenseTriggers {
+ private:
+  template <typename Event>
+  struct get_tags {
+    using type = typename Event::compute_tags_for_observation_box;
+  };
+
  public:
   using ConstructionType =
       std::unordered_map<std::unique_ptr<DenseTrigger>,
@@ -234,6 +240,12 @@ void EventsAndDenseTriggers::run_events(
   ASSERT(heap_size_ != -1, "Not initialized");
   ASSERT(not events_and_triggers_.empty(),
          "Should not be calling run_events with no triggers");
+  using compute_tags = tmpl::remove_duplicates<tmpl::filter<
+      tmpl::flatten<tmpl::transform<
+          tmpl::at<typename Metavariables::factory_creation::factory_classes,
+                   Event>,
+          get_tags<tmpl::_1>>>,
+      db::is_compute_tag<tmpl::_1>>>;
 
   for (auto trigger = heap_end();
        trigger != events_and_triggers_.end();
@@ -244,8 +256,9 @@ void EventsAndDenseTriggers::run_events(
             const gsl::not_null<std::optional<double>*> previous_trigger_time) {
           *previous_trigger_time = trigger->trigger->previous_trigger_time();
         });
+    const auto observation_box = make_observation_box<compute_tags>(box);
     for (const auto& event : trigger->events) {
-      event->run(box, cache, array_index, component);
+      event->run(observation_box, cache, array_index, component);
     }
     db::mutate<::evolution::Tags::PreviousTriggerTime>(
         make_not_null(&box),

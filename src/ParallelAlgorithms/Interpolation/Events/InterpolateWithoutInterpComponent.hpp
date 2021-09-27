@@ -76,6 +76,8 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
 
   InterpolateWithoutInterpComponent() = default;
 
+  using compute_tags_for_observation_box = tmpl::list<>;
+
   using argument_tags = tmpl::conditional_t<
       detail::get_use_dg_subcell_or_default_v<Metavariables, false>,
       tmpl::list<typename InterpolationTargetTag::temporal_id,

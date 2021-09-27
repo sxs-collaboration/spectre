@@ -156,6 +156,8 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
   using coordinates_tag =
       ::domain::Tags::Coordinates<VolumeDim, Frame::Inertial>;
 
+  using compute_tags_for_observation_box = tmpl::list<>;
+
   using argument_tags =
       tmpl::list<ObservationValueTag, ::domain::Tags::Mesh<VolumeDim>,
                  subcell::Tags::Mesh<VolumeDim>, subcell::Tags::ActiveGrid,

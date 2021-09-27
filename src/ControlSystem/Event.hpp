@@ -78,6 +78,8 @@ class Event : public ::Event {
   static constexpr bool factory_creatable = false;
   Event() = default;
 
+  using compute_tags_for_observation_box = tmpl::list<>;
+
   using argument_tags = tmpl::list<::Tags::DataBox>;
 
   template <typename DbTags, typename Metavariables, typename ArrayIndex,

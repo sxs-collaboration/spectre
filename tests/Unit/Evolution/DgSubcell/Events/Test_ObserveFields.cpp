@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/ObservationBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -193,7 +194,7 @@ void test_observe(
 
   // Reset to empty
   MockContributeVolumeData::results = MockContributeVolumeData::Results{};
-  observe->run(box,
+  observe->run(make_observation_box<db::AddComputeTags<>>(box),
                ActionTesting::cache<element_component>(runner, array_index),
                array_index, std::add_pointer_t<element_component>{});
 

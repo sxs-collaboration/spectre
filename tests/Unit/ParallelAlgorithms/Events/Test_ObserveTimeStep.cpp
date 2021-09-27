@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/ObservationBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -225,10 +226,11 @@ void test_observe(const Observer& observer, const bool backwards_in_time,
         ActionTesting::cache<element_component>(runner, index),
         static_cast<element_component::array_index>(index),
         std::add_pointer_t<element_component>{}));
-    observer.run(element_boxes[index],
-                 ActionTesting::cache<element_component>(runner, index),
-                 static_cast<element_component::array_index>(index),
-                 std::add_pointer_t<element_component>{});
+    observer.run(
+        make_observation_box<db::AddComputeTags<>>(element_boxes[index]),
+        ActionTesting::cache<element_component>(runner, index),
+        static_cast<element_component::array_index>(index),
+        std::add_pointer_t<element_component>{});
   }
 
   // Process the data
