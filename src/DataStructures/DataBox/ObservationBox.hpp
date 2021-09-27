@@ -120,13 +120,18 @@ const auto& ObservationBox<tmpl::list<ComputeTags...>, DataBoxType>::get()
       return db::get<Tag>(*databox_);
     } else {
       using item_tag = db::detail::first_matching_tag<compute_item_tags, Tag>;
-      if (not get_item<item_tag>().evaluated()) {
-        evaluate_compute_item<item_tag>(typename item_tag::argument_tags{});
-      }
-      if constexpr (tt::is_a_v<std::unique_ptr, typename item_tag::type>) {
-        return *(get_item<item_tag>().get());
+      if constexpr (db::detail::Item<item_tag>::item_type ==
+                    db::detail::ItemType::Reference) {
+        return item_tag::get(get<typename item_tag::parent_tag>());
       } else {
-        return get_item<item_tag>().get();
+        if (not get_item<item_tag>().evaluated()) {
+          evaluate_compute_item<item_tag>(typename item_tag::argument_tags{});
+        }
+        if constexpr (tt::is_a_v<std::unique_ptr, typename item_tag::type>) {
+          return *(get_item<item_tag>().get());
+        } else {
+          return get_item<item_tag>().get();
+        }
       }
     }
   }
@@ -141,7 +146,8 @@ void ObservationBox<tmpl::list<ComputeTags...>, DataBoxType>::
 
 template <typename ComputeTagsList, typename DataBoxType>
 auto make_observation_box(const DataBoxType& databox) {
-  return ObservationBox<ComputeTagsList, DataBoxType>{databox};
+  return ObservationBox<db::detail::expand_subitems<ComputeTagsList>,
+                        DataBoxType>{databox};
 }
 
 namespace observation_box_detail {

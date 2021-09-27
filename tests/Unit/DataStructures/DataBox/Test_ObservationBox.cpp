@@ -6,7 +6,12 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/ObservationBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
+#include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/Variables.hpp"
+#include "DataStructures/VariablesTag.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/TMPL.hpp"
 
 namespace {
 void multiply_by_two(const gsl::not_null<double*> result, const double value) {
@@ -57,6 +62,29 @@ struct Tag3Compute : Tag3, db::ComputeTag {
 
 size_t Tag3Compute::times_called = 0;
 
+struct ScalarVar : db::SimpleTag {
+  using type = Scalar<DataVector>;
+};
+
+struct VectorVar : db::SimpleTag {
+  using type = tnsr::I<DataVector, 3, Frame::Inertial>;
+};
+
+struct VarsCompute : db::ComputeTag,
+                     ::Tags::Variables<tmpl::list<ScalarVar, VectorVar>> {
+  using base = ::Tags::Variables<tmpl::list<ScalarVar, VectorVar>>;
+  using return_type = typename base::type;
+  using argument_tags = tmpl::list<>;
+  static void function(
+      const gsl::not_null<::Variables<tmpl::list<ScalarVar, VectorVar>>*>
+          result) {
+    result->initialize(5, 1.0);
+    for (size_t i = 0; i < 3; ++i) {
+      get<VectorVar>(*result).get(i) += static_cast<double>(i) + 1.0;
+    }
+  }
+};
+
 // Test that we can return values from the apply functions and that we can
 // retrieve both the nested DataBox and the ObservationBox via the argument
 // tags.
@@ -83,9 +111,8 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.ObservationBox",
                   "[Unit][DataStructures]") {
   const auto db_box =
       db::create<db::AddSimpleTags<Tag0>, db::AddComputeTags<Tag1Compute>>(2.0);
-  const auto obs_box =
-      make_observation_box<db::AddComputeTags<Tag2Compute, Tag3Compute>>(
-          db_box);
+  const auto obs_box = make_observation_box<
+      db::AddComputeTags<Tag2Compute, Tag3Compute, VarsCompute>>(db_box);
   CHECK(Tag3Compute::times_called == 0);
   CHECK(get<Tag0>(obs_box) == 2.0);
   CHECK(get<Tag1>(obs_box) == 4.0);
@@ -100,6 +127,10 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.ObservationBox",
 
   CHECK(apply(SubtractNumberAndReturn{}, obs_box, 5.0) ==
         (get<Tag3>(obs_box) - 5.0));
+  CHECK(get(get<ScalarVar>(obs_box)) == DataVector(5, 1.0));
+  CHECK(get<0>(get<VectorVar>(obs_box)) == DataVector(5, 2.0));
+  CHECK(get<1>(get<VectorVar>(obs_box)) == DataVector(5, 3.0));
+  CHECK(get<2>(get<VectorVar>(obs_box)) == DataVector(5, 4.0));
 }
 
 }  // namespace
