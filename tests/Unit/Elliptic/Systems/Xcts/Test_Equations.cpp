@@ -14,6 +14,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Tags.hpp"
+#include "Elliptic/Protocols/FirstOrderSystem.hpp"
 #include "Elliptic/Systems/Xcts/Equations.hpp"
 #include "Elliptic/Systems/Xcts/FirstOrderSystem.hpp"
 #include "Elliptic/Systems/Xcts/Tags.hpp"
@@ -25,6 +26,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeString.hpp"
 #include "Utilities/MakeWithValue.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits/FunctionInfo.hpp"
@@ -272,6 +274,8 @@ void test_computers(const DataVector& used_for_size) {
   CAPTURE(ConformalMatterScale);
   using system = Xcts::FirstOrderSystem<EnabledEquations, ConformalGeometry,
                                         ConformalMatterScale>;
+  static_assert(
+      tt::assert_conforms_to<system, elliptic::protocols::FirstOrderSystem>);
   TestHelpers::elliptic::test_first_order_fluxes_computer<system>(
       used_for_size);
   TestHelpers::elliptic::test_first_order_sources_computer<system>(

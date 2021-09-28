@@ -12,12 +12,14 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "Elliptic/BoundaryConditions/AnalyticSolution.hpp"
 #include "Elliptic/BoundaryConditions/BoundaryCondition.hpp"
+#include "Elliptic/Protocols/FirstOrderSystem.hpp"
 #include "Elliptic/Systems/Poisson/BoundaryConditions/Robin.hpp"
 #include "Elliptic/Systems/Poisson/Equations.hpp"
 #include "Elliptic/Systems/Poisson/Geometry.hpp"
 #include "Elliptic/Systems/Poisson/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace Poisson {
@@ -42,16 +44,8 @@ namespace Poisson {
  * it are assumed to be independent of the variables \f$u\f$ and \f$v_i\f$, i.e.
  * constant throughout an iterative elliptic solve.
  *
- * This scheme also goes by the name of _mixed_ or _flux_ formulation (see e.g.
- * \cite Arnold2002). The reason for the latter name is that we can write the
- * set of coupled first-order PDEs in flux-form
- *
- * \f[
- * -\partial_i F^i_A + S_A = f_A(x)
- * \f]
- *
- * by choosing the fluxes and sources in terms of the system variables
- * \f$u(x)\f$ and \f$v_i(x)\f$ as
+ * The system can be formulated in terms of these fluxes and sources (see
+ * `elliptic::protocols::FirstOrderSystem`):
  *
  * \f{align*}
  * F^i_u &= \gamma^{ij} v_j(x) \\
@@ -62,11 +56,6 @@ namespace Poisson {
  * f_{v_j} &= 0 \text{.}
  * \f}
  *
- * Note that we use the system variables to index the fluxes and sources, which
- * we also do in the code by using DataBox tags.
- * Also note that we have defined the _fixed sources_ \f$f_A\f$ as those source
- * terms that are independent of the system variables.
- *
  * The fluxes and sources simplify significantly when the background metric is
  * flat and we employ Cartesian coordinates so \f$\gamma_{ij} = \delta_{ij}\f$
  * and \f$\Gamma^i_{jk} = 0\f$. Set the template parameter `BackgroundGeometry`
@@ -74,7 +63,8 @@ namespace Poisson {
  * Set it to `Poisson::Geometry::Curved` for the general case.
  */
 template <size_t Dim, Geometry BackgroundGeometry>
-struct FirstOrderSystem {
+struct FirstOrderSystem
+    : tt::ConformsTo<elliptic::protocols::FirstOrderSystem> {
  private:
   using field = Tags::Field;
   using field_gradient =
@@ -83,19 +73,16 @@ struct FirstOrderSystem {
  public:
   static constexpr size_t volume_dim = Dim;
 
-  // The physical fields to solve for
   using primal_fields = tmpl::list<field>;
   using auxiliary_fields = tmpl::list<field_gradient>;
 
-  // Tags for the first-order fluxes. We just use the standard `Flux` prefix
-  // because the fluxes don't have symmetries and we don't need to give them a
-  // particular meaning.
+  // We just use the standard `Flux` prefix because the fluxes don't have
+  // symmetries and we don't need to give them a particular meaning.
   using primal_fluxes =
       tmpl::list<::Tags::Flux<field, tmpl::size_t<Dim>, Frame::Inertial>>;
   using auxiliary_fluxes = tmpl::list<
       ::Tags::Flux<field_gradient, tmpl::size_t<Dim>, Frame::Inertial>>;
 
-  // The variable-independent background fields in the equations
   using background_fields = tmpl::conditional_t<
       BackgroundGeometry == Geometry::FlatCartesian, tmpl::list<>,
       tmpl::list<
@@ -106,12 +93,9 @@ struct FirstOrderSystem {
       BackgroundGeometry == Geometry::FlatCartesian, void,
       gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataVector>>;
 
-  // The system equations formulated as fluxes and sources
   using fluxes_computer = Fluxes<Dim, BackgroundGeometry>;
   using sources_computer = Sources<Dim, BackgroundGeometry>;
 
-  // The supported boundary conditions. Boundary conditions can be
-  // factory-created from this base class.
   using boundary_conditions_base =
       elliptic::BoundaryConditions::BoundaryCondition<
           Dim, tmpl::list<elliptic::BoundaryConditions::Registrars::

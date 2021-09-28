@@ -83,8 +83,6 @@ struct Fluxes<Dim, Geometry::FlatCartesian> {
                     const tnsr::i<DataVector, Dim>& field_gradient) noexcept;
   static void apply(gsl::not_null<tnsr::Ij<DataVector, Dim>*> flux_for_gradient,
                     const Scalar<DataVector>& field) noexcept;
-  // clang-tidy: no runtime references
-  void pup(PUP::er& /*p*/) noexcept {}  // NOLINT
 };
 
 /*!
@@ -104,8 +102,6 @@ struct Fluxes<Dim, Geometry::Curved> {
   static void apply(gsl::not_null<tnsr::Ij<DataVector, Dim>*> flux_for_gradient,
                     const tnsr::II<DataVector, Dim>& inv_spatial_metric,
                     const Scalar<DataVector>& field) noexcept;
-  // clang-tidy: no runtime references
-  void pup(PUP::er& /*p*/) noexcept {}  // NOLINT
 };
 
 /*!

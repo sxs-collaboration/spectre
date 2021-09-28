@@ -10,12 +10,14 @@
 #include "Elliptic/BoundaryConditions/AnalyticSolution.hpp"
 #include "Elliptic/BoundaryConditions/BoundaryCondition.hpp"
 #include "Elliptic/BoundaryConditions/BoundaryConditionType.hpp"
+#include "Elliptic/Protocols/FirstOrderSystem.hpp"
 #include "Elliptic/Systems/Elasticity/BoundaryConditions/LaserBeam.hpp"
 #include "Elliptic/Systems/Elasticity/BoundaryConditions/Zero.hpp"
 #include "Elliptic/Systems/Elasticity/Equations.hpp"
 #include "Elliptic/Systems/Elasticity/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "PointwiseFunctions/Elasticity/ConstitutiveRelations/ConstitutiveRelation.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace Elasticity {
@@ -36,8 +38,8 @@ namespace Elasticity {
  * -\nabla_{(k} \xi_{l)} + S_{kl} = 0
  * \f}
  *
- * The fluxes and sources in terms of the system variables
- * \f$\xi^j\f$ and \f$S_{kl}\f$ are given by
+ * The system can be formulated in terms of these fluxes and sources (see
+ * `elliptic::protocols::FirstOrderSystem`):
  *
  * \f{align*}
  * F^i_{\xi^j} &=  Y^{ijkl}_{(\xi, S)} S_{kl} \\
@@ -47,12 +49,10 @@ namespace Elasticity {
  * S_{S_{kl}} &= S_{kl} \\
  * f_{S_{kl}} &= 0 \text{.}
  * \f}
- *
- * See `Poisson::FirstOrderSystem` for details on the first-order
- * flux-formulation.
  */
 template <size_t Dim>
-struct FirstOrderSystem {
+struct FirstOrderSystem
+    : tt::ConformsTo<elliptic::protocols::FirstOrderSystem> {
  private:
   using displacement = Tags::Displacement<Dim>;
   using strain = Tags::Strain<Dim>;
@@ -61,25 +61,19 @@ struct FirstOrderSystem {
  public:
   static constexpr size_t volume_dim = Dim;
 
-  // The physical fields to solve for
   using primal_fields = tmpl::list<displacement>;
   using auxiliary_fields = tmpl::list<strain>;
 
-  // Tags for the first-order fluxes
   using primal_fluxes = tmpl::list<minus_stress>;
   using auxiliary_fluxes =
       tmpl::list<::Tags::Flux<strain, tmpl::size_t<Dim>, Frame::Inertial>>;
 
-  // The variable-independent background fields in the equations
   using background_fields = tmpl::list<>;
   using inv_metric_tag = void;
 
-  // The system equations formulated as fluxes and sources
   using fluxes_computer = Fluxes<Dim>;
   using sources_computer = Sources<Dim>;
 
-  // The supported boundary conditions. Boundary conditions can be
-  // factory-created from this base class.
   using boundary_conditions_base =
       elliptic::BoundaryConditions::BoundaryCondition<
           Dim,
