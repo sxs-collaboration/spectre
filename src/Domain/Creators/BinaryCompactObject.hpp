@@ -726,21 +726,33 @@ class BinaryCompactObject : public DomainCreator<3> {
       outer_boundary_condition_;
 
   // Variables for FunctionsOfTime options
-  bool enable_time_dependence_;
-  double initial_time_;
-  std::optional<double> initial_expiration_delta_t_;
-  double expansion_map_outer_boundary_;
-  double initial_expansion_;
-  double initial_expansion_velocity_;
+  bool enable_time_dependence_{false};
+  double initial_time_{std::numeric_limits<double>::signaling_NaN()};
+  std::optional<double> initial_expiration_delta_t_{
+      std::numeric_limits<double>::signaling_NaN()};
+  double expansion_map_outer_boundary_{
+      std::numeric_limits<double>::signaling_NaN()};
+  double initial_expansion_{std::numeric_limits<double>::signaling_NaN()};
+  double initial_expansion_velocity_{
+      std::numeric_limits<double>::signaling_NaN()};
   std::string expansion_function_of_time_name_;
-  double asymptotic_velocity_outer_boundary_;
-  double decay_timescale_outer_boundary_velocity_;
-  double initial_rotation_angle_;
-  double initial_angular_velocity_;
+  double asymptotic_velocity_outer_boundary_{
+      std::numeric_limits<double>::signaling_NaN()};
+  double decay_timescale_outer_boundary_velocity_{
+      std::numeric_limits<double>::signaling_NaN()};
+  double initial_rotation_angle_{std::numeric_limits<double>::signaling_NaN()};
+  double initial_angular_velocity_{
+      std::numeric_limits<double>::signaling_NaN()};
   std::string rotation_about_z_axis_function_of_time_name_;
-  std::array<double, 2> initial_size_map_values_;
-  std::array<double, 2> initial_size_map_velocities_;
-  std::array<double, 2> initial_size_map_accelerations_;
+  std::array<double, 2> initial_size_map_values_{
+      std::numeric_limits<double>::signaling_NaN(),
+      std::numeric_limits<double>::signaling_NaN()};
+  std::array<double, 2> initial_size_map_velocities_{
+      std::numeric_limits<double>::signaling_NaN(),
+      std::numeric_limits<double>::signaling_NaN()};
+  std::array<double, 2> initial_size_map_accelerations_{
+      std::numeric_limits<double>::signaling_NaN(),
+      std::numeric_limits<double>::signaling_NaN()};
   std::array<std::string, 2> size_map_function_of_time_names_;
 };
 }  // namespace creators
