@@ -7,6 +7,9 @@ add_subdirectory(Logging)
 set(LIBRARY "Test_IO")
 
 set(LIBRARY_SOURCES
+  H5/Test_H5.cpp
+  H5/Test_StellarCollapseEos.cpp
+  H5/Test_VolumeData.cpp
   Observers/Test_ArrayComponentId.cpp
   Observers/Test_GetLockPointer.cpp
   Observers/Test_Initialize.cpp
@@ -19,9 +22,6 @@ set(LIBRARY_SOURCES
   Observers/Test_TypeOfObservation.cpp
   Observers/Test_VolumeObserver.cpp
   Observers/Test_WriteSimpleData.cpp
-  Test_H5.cpp
-  Test_StellarCollapseEos.cpp
-  Test_VolumeData.cpp
   )
 
 add_test_library(
@@ -50,13 +50,13 @@ add_dependencies(
 
 spectre_add_python_bindings_test(
   "Unit.IO.H5.Python"
-  "Test_H5.py"
+  "H5/Test_H5.py"
   "unit;IO;H5;python"
   PyH5)
 
 spectre_add_python_bindings_test(
   "Unit.IO.H5.VolumeData.Python"
-  "Test_VolumeData.py"
+  "H5/Test_VolumeData.py"
   "unit;IO;H5;Python"
   PyH5
   )
