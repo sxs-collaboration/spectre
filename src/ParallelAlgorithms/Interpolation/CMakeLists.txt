@@ -34,8 +34,6 @@ target_link_libraries(
   ${LIBRARY}
   PUBLIC
   ApparentHorizons
-  Blas
-  Boost::boost
   DataStructures
   DgSubcell
   Domain
@@ -47,8 +45,6 @@ target_link_libraries(
   Logging
   Options
   Spectral
-  INTERFACE
-  SystemUtilities
   )
 
 add_subdirectory(Actions)
