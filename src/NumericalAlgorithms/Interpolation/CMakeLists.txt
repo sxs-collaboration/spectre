@@ -12,12 +12,6 @@ spectre_target_sources(
   BarycentricRationalSpanInterpolator.cpp
   CubicSpanInterpolator.cpp
   CubicSpline.cpp
-  InterpolationTargetApparentHorizon.cpp
-  InterpolationTargetDetail.cpp
-  InterpolationTargetKerrHorizon.cpp
-  InterpolationTargetLineSegment.cpp
-  InterpolationTargetSpecifiedPoints.cpp
-  InterpolationTargetWedgeSectionTorus.cpp
   IrregularInterpolant.cpp
   LinearSpanInterpolator.cpp
   RegularGridInterpolant.cpp
@@ -28,38 +22,15 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
-  AddTemporalIdsToInterpolationTarget.hpp
   BarycentricRational.hpp
   BarycentricRationalSpanInterpolator.hpp
-  CleanUpInterpolator.hpp
   CubicSpanInterpolator.hpp
   CubicSpline.hpp
-  InitializeInterpolationTarget.hpp
-  InitializeInterpolator.hpp
-  Interpolate.hpp
-  InterpolatedVars.hpp
-  InterpolationTarget.hpp
-  InterpolationTargetApparentHorizon.hpp
-  InterpolationTargetDetail.hpp
-  InterpolationTargetKerrHorizon.hpp
-  InterpolationTargetLineSegment.hpp
-  InterpolationTargetReceiveVars.hpp
-  InterpolationTargetSpecifiedPoints.hpp
-  InterpolationTargetWedgeSectionTorus.hpp
-  Interpolator.hpp
-  InterpolatorReceivePoints.hpp
-  InterpolatorReceiveVolumeData.hpp
-  InterpolatorRegisterElement.hpp
-  Intrp.hpp
-  IntrpOptionHolders.hpp
   IrregularInterpolant.hpp
   LagrangePolynomial.hpp
   LinearSpanInterpolator.hpp
-  PointInfoTag.hpp
   RegularGridInterpolant.hpp
   SpanInterpolator.hpp
-  Tags.hpp
-  TryToInterpolate.hpp
   )
 
 add_dependencies(
@@ -87,7 +58,4 @@ target_link_libraries(
   SystemUtilities
   )
 
-add_subdirectory(Actions)
-add_subdirectory(Callbacks)
-add_subdirectory(Events)
 add_subdirectory(Python)

@@ -16,10 +16,10 @@
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryCorrections/RegisterDerived.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
 #include "Evolution/VariableFixing/Tags.hpp"
-#include "NumericalAlgorithms/Interpolation/Callbacks/ObserveTimeSeriesOnSurface.hpp"
-#include "NumericalAlgorithms/Interpolation/InterpolationTarget.hpp"
-#include "NumericalAlgorithms/Interpolation/Tags.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "ParallelAlgorithms/Interpolation/Callbacks/ObserveTimeSeriesOnSurface.hpp"
+#include "ParallelAlgorithms/Interpolation/InterpolationTarget.hpp"
+#include "ParallelAlgorithms/Interpolation/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 
 template <typename InitialData, typename... InterpolationTargetTags>

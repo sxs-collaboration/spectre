@@ -15,7 +15,7 @@
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
-#include "NumericalAlgorithms/Interpolation/Callbacks/SendGhWorldtubeData.hpp"
+#include "ParallelAlgorithms/Interpolation/Callbacks/SendGhWorldtubeData.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/Tags.hpp"
 #include "Utilities/Literals.hpp"
