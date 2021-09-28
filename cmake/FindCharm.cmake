@@ -40,6 +40,12 @@ option(CHARM_USE_MPI "Find and link MPI with Charm++. An attempt is made to \
 determine automatically if MPI is needed, but this flag can be turned on to \
 enable linking MPI if the automatic check fails." OFF)
 
+option(CHARM_TRACE_PROJECTIONS "Charm++ was built with projections support on. \
+Enables '-tracemode projections'" OFF)
+
+option(CHARM_TRACE_SUMMARY "Charm++ was built with projections support on. \
+Enables '-tracemode summary'" OFF)
+
 if (DEFINED ENV{CHARM_ROOT} AND "${CHARM_ROOT}" STREQUAL "")
   set(CHARM_ROOT "$ENV{CHARM_ROOT}")
 endif()
@@ -79,6 +85,12 @@ endif()
 #   links it because we sometimes want to link Charm++ without a main function.
 list(APPEND CHARMC_OPTIONS "-nomain")
 list(APPEND CHARMC_OPTIONS "-nomain-module")
+if(CHARM_TRACE_PROJECTIONS)
+  list(APPEND CHARMC_OPTIONS "-tracemode projections")
+endif()
+if(CHARM_TRACE_SUMMARY)
+  list(APPEND CHARMC_OPTIONS "-tracemode summary")
+endif()
 # - Request optional Charm++ modules. They can be specified as `COMPONENTS` when
 #   calling CMake's `find_package`.
 if(Charm_FIND_COMPONENTS)

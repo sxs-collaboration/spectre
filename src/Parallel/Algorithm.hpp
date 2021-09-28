@@ -347,6 +347,28 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
   }
   /// @}
 
+  // Invoke the static `apply` method of `ThisAction`. The if constexprs are for
+  // handling the cases where the `apply` method returns a tuple of one, two,
+  // or three elements, in order:
+  // 1. A DataBox
+  // 2. Either:
+  //    2a. A bool determining whether or not to terminate (and potentially move
+  //        to the next phase), or
+  //    2b. An `AlgorithmExecution` object describing whether to continue,
+  //        pause, or halt.
+  // 3. An unsigned integer corresponding to which action in the current phase's
+  //    algorithm to execute next.
+  //
+  // Returns whether the action ran successfully, i.e., did not return
+  // AlgorithmExecution::Retry.
+  //
+  // Needs to be public for local entry methods to work.
+  //
+  // Note: The template parameters PhaseIndex and DataBoxIndex are used to
+  // shorten the function name to make profiling easier.
+  template <typename ThisAction, typename PhaseIndex, typename DataBoxIndex>
+  bool invoke_iterable_action();
+
  private:
   template <typename ThisVariant, typename... Variants>
   void touch_global_cache_proxy_in_databox_impl(
@@ -380,23 +402,6 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
       std::tuple<Args...>&& args, std::index_sequence<Is...> /*meta*/);
 
   size_t number_of_actions_in_phase(const Parallel::Phase phase) const;
-
-  // Invoke the static `apply` method of `ThisAction`. The if constexprs are for
-  // handling the cases where the `apply` method returns a tuple of one, two,
-  // or three elements, in order:
-  // 1. A DataBox
-  // 2. Either:
-  //    2a. A bool determining whether or not to terminate (and potentially move
-  //        to the next phase), or
-  //    2b. An `AlgorithmExecution` object describing whether to continue,
-  //        pause, or halt.
-  // 3. An unsigned integer corresponding to which action in the current phase's
-  //    algorithm to execute next.
-  //
-  // Returns whether the action ran successfully, i.e., did not return
-  // AlgorithmExecution::Retry.
-  template <typename ThisAction, typename ActionList, typename DbTags>
-  bool invoke_iterable_action(db::DataBox<DbTags>& my_box);
 
   // After catching an exception, shutdown the simulation
   [[noreturn]] void initiate_shutdown(const std::exception& exception);
@@ -1014,13 +1019,34 @@ AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
                   static_cast<int>(
                       tmpl::index_of<variant_boxes, this_databox>::value)) {
             box_found = true;
-            auto& box = boost::get<this_databox>(box_);
             performing_action_ = true;
             ++algorithm_step_;
-            if (not invoke_iterable_action<this_action, actions_list>(box)) {
-              take_next_action = false;
-              --algorithm_step_;
+        // While the overhead from using the local entry method to enable
+        // profiling is fairly small (<2%), we still avoid it when we aren't
+        // tracing.
+#ifdef SPECTRE_CHARM_PROJECTIONS
+            if constexpr (Parallel::is_array_proxy<cproxy_type>::value) {
+              if (not this->thisProxy[array_index_]
+                          .template invoke_iterable_action<
+                              this_action,
+                              std::integral_constant<size_t, phase_index>,
+                              std::integral_constant<
+                                  size_t, potential_databox_index>>()) {
+                take_next_action = false;
+                --algorithm_step_;
+              }
+            } else {
+#endif  // SPECTRE_CHARM_PROJECTIONS
+              if (not invoke_iterable_action<
+                      this_action, std::integral_constant<size_t, phase_index>,
+                      std::integral_constant<size_t,
+                                             potential_databox_index>>()) {
+                take_next_action = false;
+                --algorithm_step_;
+              }
+#ifdef SPECTRE_CHARM_PROJECTIONS
             }
+#endif  // SPECTRE_CHARM_PROJECTIONS
           }
         });
     if (not box_found) {
@@ -1085,19 +1111,34 @@ AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
 }
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
-template <typename ThisAction, typename ActionList, typename DbTags>
+template <typename ThisAction, typename PhaseIndex, typename DataBoxIndex>
 bool AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
-    invoke_iterable_action(db::DataBox<DbTags>& my_box) {
+    invoke_iterable_action() {
+  using phase_dep_action =
+      tmpl::at_c<phase_dependent_action_lists, PhaseIndex::value>;
+  using actions_list = typename phase_dep_action::action_list;
+  using databox_phase_type = tmpl::at_c<databox_phase_types, PhaseIndex::value>;
+  using databox_types_this_phase = typename databox_phase_type::databox_types;
+  using DataBoxType = tmpl::at_c<databox_types_this_phase, DataBoxIndex::value>;
+
+#ifdef SPECTRE_CHARM_PROJECTIONS
+  if constexpr (Parallel::is_array_proxy<cproxy_type>::value) {
+    (void)Parallel::charmxx::RegisterInvokeIterableAction<
+        ParallelComponent, ThisAction, PhaseIndex, DataBoxIndex>::registrar;
+  }
+#endif // SPECTRE_CHARM_PROJECTIONS
   static_assert(not Algorithm_detail::is_is_ready_callable_t<
-                    ThisAction, db::DataBox<DbTags>&,
+                    ThisAction, DataBoxType&,
                     tuples::tagged_tuple_from_typelist<inbox_tags_list>&,
                     Parallel::GlobalCache<metavariables>&, array_index>{},
                 "Actions no longer support is_ready methods.  Instead, "
                 "return AlgorithmExecution::Retry from apply().");
 
+  DataBoxType& my_box = boost::get<DataBoxType>(box_);
+
   auto action_return = ThisAction::apply(
       my_box, inboxes_, *Parallel::local_branch(global_cache_proxy_),
-      std::as_const(array_index_), ActionList{},
+      std::as_const(array_index_), actions_list{},
       std::add_pointer_t<ParallelComponent>{});
 
   static_assert(

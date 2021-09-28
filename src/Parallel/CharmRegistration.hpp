@@ -16,6 +16,10 @@
 #include "Utilities/Functional.hpp"
 
 /// \cond
+namespace db {
+template <typename TagsList>
+class DataBox;
+}  // namespace db
 template <size_t MaxSize, class Key, class ValueType, class Hash,
           class KeyEqual>
 class FixedHashMap;
@@ -628,6 +632,53 @@ struct RegisterGlobalCacheMutate : RegistrationHelper {
 
 /*!
  * \ingroup CharmExtensionsGroup
+ * \brief Derived class for registering the invoke_iterable_action entry method.
+ * This is a `local` entry method that is only used for tracing the code with
+ * Charm++'s Projections.
+ *
+ * Calls the appropriate Charm++ function to register the invoke_iterable_action
+ * function.
+ */
+template <typename ParallelComponent, typename Action, typename PhaseIndex,
+          typename DataBoxIndex>
+struct RegisterInvokeIterableAction : RegistrationHelper {
+  using chare_type = typename ParallelComponent::chare_type;
+  using charm_type = charm_types_with_parameters<
+      ParallelComponent,
+      typename get_array_index<chare_type>::template f<ParallelComponent>>;
+  using cproxy = typename charm_type::cproxy;
+  using ckindex = typename charm_type::ckindex;
+  using algorithm = typename charm_type::algorithm;
+
+  RegisterInvokeIterableAction() = default;
+  RegisterInvokeIterableAction(const RegisterInvokeIterableAction&) = default;
+  RegisterInvokeIterableAction& operator=(const RegisterInvokeIterableAction&) =
+      default;
+  RegisterInvokeIterableAction(RegisterInvokeIterableAction&&) = default;
+  RegisterInvokeIterableAction& operator=(RegisterInvokeIterableAction&&) =
+      default;
+  ~RegisterInvokeIterableAction() override = default;
+
+  void register_with_charm() const override {
+    static bool done_registration{false};
+    if (done_registration) {
+      return;  // LCOV_EXCL_LINE
+    }
+    done_registration = true;
+    ckindex::template idx_invoke_iterable_action<Action, PhaseIndex,
+                                                 DataBoxIndex>(
+        static_cast<bool (algorithm::*)()>(nullptr));
+  }
+
+  std::string name() const override {
+    return get_template_parameters_as_string<RegisterInvokeIterableAction>();
+  }
+
+  static bool registrar;
+};
+
+/*!
+ * \ingroup CharmExtensionsGroup
  * \brief Function that adds a pointer to a specific derived class to the
  * `charm_register_list`
  *
@@ -748,6 +799,14 @@ bool Parallel::charmxx::RegisterGlobalCacheMutate<
     Args...>::registrar =  // NOLINT
     Parallel::charmxx::register_func_with_charm<RegisterGlobalCacheMutate<
         Metavariables, GlobalCacheTag, Function, Args...>>();
+
+// clang-tidy: redundant declaration
+template <typename ParallelComponent, typename Action, typename PhaseIndex,
+          typename DataBoxIndex>
+bool Parallel::charmxx::RegisterInvokeIterableAction<
+    ParallelComponent, Action, PhaseIndex, DataBoxIndex>::registrar =  // NOLINT
+    Parallel::charmxx::register_func_with_charm<RegisterInvokeIterableAction<
+        ParallelComponent, Action, PhaseIndex, DataBoxIndex>>();
 
 /// \cond
 class CkReductionMsg;

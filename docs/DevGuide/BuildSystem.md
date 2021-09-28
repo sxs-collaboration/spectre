@@ -190,6 +190,12 @@ cmake -D FLAG1=OPT1 ... -D FLAGN=OPTN <SPECTRE_ROOT>
   - Build _only_ documentation (default is `OFF`). Requires `BUILD_DOCS=ON`.
 - CHARM_ROOT
   - The path to the build directory of `Charm++`
+- CHARM_TRACE_PROJECTIONS
+  - Enables tracing with Charm++ projections. Specifically, enables the link
+    flag `-tracemode projections`. (default is `OFF`)
+- CHARM_TRACE_SUMMARY
+  - Enables trace summaries with Charm++ projections. Specifically, enables
+    the link flag `-tracemode summary`. (default is `OFF`)
 - CMAKE_BUILD_TYPE
   - Sets the build type.  Common options:
     - `Debug` (the default if the flag is not specified): sets flags

@@ -11,12 +11,14 @@ function(add_charm_module MODULE)
     add_custom_target(module_All)
   endif()
 
+  set(_VERSION_SUFFIX "_v${CHARM_VERSION}")
+
   add_custom_command(
     OUTPUT ${MODULE}.decl.h ${MODULE}.def.h
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}.ci
     COMMAND cp ${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}.ci ${MODULE}.ci
     COMMAND ${CHARM_COMPILER} -no-charmrun ${MODULE}.ci
-    COMMAND ${CMAKE_SOURCE_DIR}/tools/patch_charm_modules.sh ${MODULE} ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_SOURCE_DIR} `pwd`
+    COMMAND ${CMAKE_SOURCE_DIR}/tools/patch_charm_modules.sh ${MODULE} ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_SOURCE_DIR} `pwd` ${_VERSION_SUFFIX}
     )
   add_custom_target(
     module_${MODULE}
