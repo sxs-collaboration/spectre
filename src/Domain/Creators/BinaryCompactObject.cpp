@@ -47,8 +47,51 @@ bool BinaryCompactObject::Object::is_excised() const noexcept {
   return inner_boundary_condition.has_value();
 }
 
-void BinaryCompactObject::check_for_parse_errors(
-    const Options::Context& context) const {
+// Time-independent constructor
+BinaryCompactObject::BinaryCompactObject(
+    Object object_A, Object object_B, const double radius_enveloping_cube,
+    const double radius_enveloping_sphere, const size_t initial_refinement,
+    const size_t initial_grid_points_per_dim, const bool use_projective_map,
+    const bool use_logarithmic_map_outer_spherical_shell,
+    const size_t addition_to_outer_layer_radial_refinement_level,
+    std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+        outer_boundary_condition,
+    const Options::Context& context)
+    : object_A_(std::move(object_A)),
+      object_B_(std::move(object_B)),
+      radius_enveloping_cube_(radius_enveloping_cube),
+      radius_enveloping_sphere_(radius_enveloping_sphere),
+      initial_refinement_(initial_refinement),
+      initial_grid_points_per_dim_(initial_grid_points_per_dim),
+      use_projective_map_(use_projective_map),
+      use_logarithmic_map_outer_spherical_shell_(
+          use_logarithmic_map_outer_spherical_shell),
+      addition_to_outer_layer_radial_refinement_level_(
+          addition_to_outer_layer_radial_refinement_level),
+      outer_boundary_condition_(std::move(outer_boundary_condition)) {
+  // Determination of parameters for domain construction:
+  translation_ = 0.5 * (object_B_.x_coord + object_A_.x_coord);
+  length_inner_cube_ = abs(object_A_.x_coord - object_B_.x_coord);
+  length_outer_cube_ = 2.0 * radius_enveloping_cube_ / sqrt(3.0);
+  if (use_projective_map_) {
+    projective_scale_factor_ = length_inner_cube_ / length_outer_cube_;
+  } else {
+    projective_scale_factor_ = 1.0;
+  }
+
+  // Calculate number of blocks
+  // Layers 1, 2, 3, 4, and 5 have 12, 12, 10, 10, and 10 blocks, respectively,
+  // for 54 total.
+  number_of_blocks_ = 54;
+
+  // For each object whose interior is not excised, add 1 block
+  if (not object_A_.is_excised()) {
+    number_of_blocks_++;
+  }
+  if (not object_B_.is_excised()) {
+    number_of_blocks_++;
+  }
+
   if (object_A_.x_coord >= 0.0) {
     PARSE_ERROR(
         context,
@@ -115,76 +158,6 @@ void BinaryCompactObject::check_for_parse_errors(
   }
 }
 
-void BinaryCompactObject::initialize_calculated_member_variables() noexcept {
-  // Determination of parameters for domain construction:
-  translation_ = 0.5 * (object_B_.x_coord + object_A_.x_coord);
-  length_inner_cube_ = abs(object_A_.x_coord - object_B_.x_coord);
-  length_outer_cube_ = 2.0 * radius_enveloping_cube_ / sqrt(3.0);
-  if (use_projective_map_) {
-    projective_scale_factor_ = length_inner_cube_ / length_outer_cube_;
-  } else {
-    projective_scale_factor_ = 1.0;
-  }
-
-  // Calculate number of blocks
-  // Layers 1, 2, 3, 4, and 5 have 12, 12, 10, 10, and 10 blocks, respectively,
-  // for 54 total.
-  number_of_blocks_ = 54;
-
-  // For each object whose interior is not excised, add 1 block
-  if (not object_A_.is_excised()) {
-    number_of_blocks_++;
-  }
-  if (not object_B_.is_excised()) {
-    number_of_blocks_++;
-  }
-}
-
-// Time-independent constructor
-BinaryCompactObject::BinaryCompactObject(
-    Object object_A, Object object_B, double radius_enveloping_cube,
-    double radius_enveloping_sphere, size_t initial_refinement,
-    size_t initial_grid_points_per_dim, bool use_projective_map,
-    bool use_logarithmic_map_outer_spherical_shell,
-    size_t addition_to_outer_layer_radial_refinement_level,
-    std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-        outer_boundary_condition,
-    const Options::Context& context)
-    : object_A_(std::move(object_A)),
-      object_B_(std::move(object_B)),
-      radius_enveloping_cube_(radius_enveloping_cube),
-      radius_enveloping_sphere_(radius_enveloping_sphere),
-      initial_refinement_(initial_refinement),
-      initial_grid_points_per_dim_(initial_grid_points_per_dim),
-      use_projective_map_(use_projective_map),
-      use_logarithmic_map_outer_spherical_shell_(
-          use_logarithmic_map_outer_spherical_shell),
-      addition_to_outer_layer_radial_refinement_level_(
-          addition_to_outer_layer_radial_refinement_level),
-      outer_boundary_condition_(std::move(outer_boundary_condition)),
-      enable_time_dependence_(false),
-      initial_time_(std::numeric_limits<double>::signaling_NaN()),
-      initial_expiration_delta_t_(std::numeric_limits<double>::signaling_NaN()),
-      expansion_map_outer_boundary_(
-          std::numeric_limits<double>::signaling_NaN()),
-      initial_expansion_(std::numeric_limits<double>::signaling_NaN()),
-      initial_expansion_velocity_(std::numeric_limits<double>::signaling_NaN()),
-      expansion_function_of_time_name_({}),
-      asymptotic_velocity_outer_boundary_(
-          std::numeric_limits<double>::signaling_NaN()),
-      decay_timescale_outer_boundary_velocity_(
-          std::numeric_limits<double>::signaling_NaN()),
-      initial_rotation_angle_(std::numeric_limits<double>::signaling_NaN()),
-      initial_angular_velocity_(std::numeric_limits<double>::signaling_NaN()),
-      rotation_about_z_axis_function_of_time_name_({}),
-      initial_size_map_values_({}),
-      initial_size_map_velocities_({}),
-      initial_size_map_accelerations_({}),
-      size_map_function_of_time_names_({}) {
-  initialize_calculated_member_variables();
-  check_for_parse_errors(context);
-}
-
 // Time-dependent constructor, with additional options for specifying
 // the time-dependent maps
 BinaryCompactObject::BinaryCompactObject(
@@ -208,40 +181,31 @@ BinaryCompactObject::BinaryCompactObject(
     std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
         outer_boundary_condition,
     const Options::Context& context)
-    : object_A_(std::move(object_A)),
-      object_B_(std::move(object_B)),
-      radius_enveloping_cube_(radius_enveloping_cube),
-      radius_enveloping_sphere_(radius_enveloping_sphere),
-      initial_refinement_(initial_refinement),
-      initial_grid_points_per_dim_(initial_grid_points_per_dim),
-      use_projective_map_(use_projective_map),
-      use_logarithmic_map_outer_spherical_shell_(
-          use_logarithmic_map_outer_spherical_shell),
-      addition_to_outer_layer_radial_refinement_level_(
-          addition_to_outer_layer_radial_refinement_level),
-      outer_boundary_condition_(std::move(outer_boundary_condition)),
-      enable_time_dependence_(true),
-      initial_time_(initial_time),
-      initial_expiration_delta_t_(initial_expiration_delta_t),
-      expansion_map_outer_boundary_(expansion_map_outer_boundary),
-      initial_expansion_(initial_expansion),
-      initial_expansion_velocity_(initial_expansion_velocity),
-      expansion_function_of_time_name_(
-          std::move(expansion_function_of_time_name)),
-      asymptotic_velocity_outer_boundary_(asymptotic_velocity_outer_boundary),
-      decay_timescale_outer_boundary_velocity_(
-          decay_timescale_outer_boundary_velocity),
-      initial_rotation_angle_(initial_rotation_angle),
-      initial_angular_velocity_(initial_angular_velocity),
-      rotation_about_z_axis_function_of_time_name_(
-          std::move(rotation_about_z_axis_function_of_time_name)),
-      initial_size_map_values_(initial_size_map_values),
-      initial_size_map_velocities_(initial_size_map_velocities),
-      initial_size_map_accelerations_(initial_size_map_accelerations),
-      size_map_function_of_time_names_(
-          std::move(size_map_function_of_time_names)) {
-  initialize_calculated_member_variables();
-  check_for_parse_errors(context);
+    : BinaryCompactObject(std::move(object_A), std::move(object_B),
+                          radius_enveloping_cube, radius_enveloping_sphere,
+                          initial_refinement, initial_grid_points_per_dim,
+                          use_projective_map,
+                          use_logarithmic_map_outer_spherical_shell,
+                          addition_to_outer_layer_radial_refinement_level,
+                          std::move(outer_boundary_condition), context) {
+  enable_time_dependence_ = true;
+  initial_time_ = initial_time;
+  initial_expiration_delta_t_ = initial_expiration_delta_t;
+  expansion_map_outer_boundary_ = expansion_map_outer_boundary;
+  initial_expansion_ = initial_expansion;
+  initial_expansion_velocity_ = initial_expansion_velocity;
+  expansion_function_of_time_name_ = std::move(expansion_function_of_time_name);
+  asymptotic_velocity_outer_boundary_ = asymptotic_velocity_outer_boundary;
+  decay_timescale_outer_boundary_velocity_ =
+      decay_timescale_outer_boundary_velocity;
+  initial_rotation_angle_ = initial_rotation_angle;
+  initial_angular_velocity_ = initial_angular_velocity;
+  rotation_about_z_axis_function_of_time_name_ =
+      std::move(rotation_about_z_axis_function_of_time_name);
+  initial_size_map_values_ = initial_size_map_values;
+  initial_size_map_velocities_ = initial_size_map_velocities;
+  initial_size_map_accelerations_ = initial_size_map_accelerations;
+  size_map_function_of_time_names_ = std::move(size_map_function_of_time_names);
 }
 
 Domain<3> BinaryCompactObject::create_domain() const noexcept {

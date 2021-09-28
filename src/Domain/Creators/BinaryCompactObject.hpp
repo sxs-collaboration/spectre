@@ -703,9 +703,6 @@ class BinaryCompactObject : public DomainCreator<3> {
       std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;
 
  private:
-  void check_for_parse_errors(const Options::Context& context) const;
-  void initialize_calculated_member_variables() noexcept;
-
   Object object_A_{};
   Object object_B_{};
   double radius_enveloping_cube_{};
