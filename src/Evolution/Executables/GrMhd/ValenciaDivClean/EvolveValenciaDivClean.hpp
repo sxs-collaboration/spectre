@@ -236,7 +236,8 @@ struct EvolutionMetavars {
                 Events::Completion,
                 Events::ObserveNorms<
                     ::Tags::Time,
-                    tmpl::list<hydro::Tags::RestMassDensity<DataVector>>>,
+                    tmpl::list<hydro::Tags::RestMassDensity<DataVector>>,
+                    tmpl::list<>>,
                 tmpl::conditional_t<
                     use_dg_subcell,
                     evolution::dg::subcell::Events::ObserveFields<

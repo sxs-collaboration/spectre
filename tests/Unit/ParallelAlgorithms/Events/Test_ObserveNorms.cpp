@@ -44,6 +44,37 @@ struct Var1 : db::SimpleTag {
   using type = tnsr::I<DataVector, 3, Frame::Inertial>;
 };
 
+struct Var0TimesTwo : db::SimpleTag {
+  using type = Scalar<DataVector>;
+};
+
+struct Var0TimesTwoCompute : db::ComputeTag, Var0TimesTwo {
+  using base = Var0TimesTwo;
+  using return_type = Scalar<DataVector>;
+  using argument_tags = tmpl::list<Var0>;
+  static void function(const gsl::not_null<Scalar<DataVector>*> result,
+                       const Scalar<DataVector>& scalar_var) {
+    get(*result) = 2.0 * get(scalar_var);
+  }
+};
+
+struct Var0TimesThree : db::SimpleTag {
+  using type = Scalar<DataVector>;
+};
+
+struct Var0TimesThreeCompute : db::ComputeTag,
+                               ::Tags::Variables<tmpl::list<Var0TimesThree>> {
+  using base = Var0TimesThree;
+  using return_type = typename base::type;
+  using argument_tags = tmpl::list<Var0>;
+  static void function(
+      const gsl::not_null<::Variables<tmpl::list<Var0TimesThree>>*> result,
+      const Scalar<DataVector>& scalar_var) {
+    result->initialize(get(scalar_var).size());
+    get(get<Var0TimesThree>(*result)) = 3.0 * get(scalar_var);
+  }
+};
+
 struct TestSectionIdTag {};
 
 struct MockContributeReductionData {
@@ -115,15 +146,19 @@ struct MockObserverComponent {
 };
 
 template <typename ArraySectionIdTag>
+using ObserveNormsEvent = Events::ObserveNorms<
+    ::Tags::Time, tmpl::list<Var0, Var1, Var0TimesTwoCompute, Var0TimesThree>,
+    tmpl::list<Var0TimesThreeCompute>, ArraySectionIdTag>;
+
+template <typename ArraySectionIdTag>
 struct Metavariables {
   using component_list = tmpl::list<ElementComponent<Metavariables>,
                                     MockObserverComponent<Metavariables>>;
 
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
-    using factory_classes = tmpl::map<tmpl::pair<
-        Event, tmpl::list<Events::ObserveNorms<
-                   ::Tags::Time, tmpl::list<Var0, Var1>, ArraySectionIdTag>>>>;
+    using factory_classes = tmpl::map<
+        tmpl::pair<Event, tmpl::list<ObserveNormsEvent<ArraySectionIdTag>>>>;
   };
 
   enum class Phase { Initialization, Testing, Exit };
@@ -177,9 +212,13 @@ void test(const std::unique_ptr<ObserveEvent> observe,
       box, ActionTesting::cache<element_component>(runner, array_index),
       array_index, std::add_pointer_t<element_component>{}));
 
-  observe->run(make_observation_box<db::AddComputeTags<>>(box),
-               ActionTesting::cache<element_component>(runner, array_index),
-               array_index, std::add_pointer_t<element_component>{});
+  observe->run(
+      make_observation_box<
+          tmpl::filter<typename ObserveNormsEvent<
+                           ArraySectionIdTag>::compute_tags_for_observation_box,
+                       db::is_compute_tag<tmpl::_1>>>(box),
+      ActionTesting::cache<element_component>(runner, array_index), array_index,
+      std::add_pointer_t<element_component>{});
 
   // Process the data
   runner.template invoke_queued_simple_action<observer_component>(0);
@@ -195,20 +234,22 @@ void test(const std::unique_ptr<ObserveEvent> observe,
   // Check max values
   CHECK(results.reduction_names[2] == "Max(Var0)");
   CHECK(results.reduction_names[3] == "Max(Var0)");
-  CHECK(results.max_values == std::vector<double>{5.0, 5.0});
+  CHECK(results.reduction_names[4] == "Max(Var0TimesTwo)");
+  CHECK(results.reduction_names[5] == "Max(Var0TimesThree)");
+  CHECK(results.max_values == std::vector<double>{5.0, 5.0, 10.0, 15.0});
 
   // Check min values
-  CHECK(results.reduction_names[4] == "Min(Var1_x)");
-  CHECK(results.reduction_names[5] == "Min(Var1_y)");
-  CHECK(results.reduction_names[6] == "Min(Var1_z)");
-  CHECK(results.reduction_names[7] == "Min(Var1)");
+  CHECK(results.reduction_names[6] == "Min(Var1_x)");
+  CHECK(results.reduction_names[7] == "Min(Var1_y)");
+  CHECK(results.reduction_names[8] == "Min(Var1_z)");
+  CHECK(results.reduction_names[9] == "Min(Var1)");
   CHECK(results.min_values == std::vector<double>{6.0, 11.0, 16.0, 6.0});
 
   // Check L2 norms
-  CHECK(results.reduction_names[8] == "L2Norm(Var1)");
-  CHECK(results.reduction_names[9] == "L2Norm(Var1_x)");
-  CHECK(results.reduction_names[10] == "L2Norm(Var1_y)");
-  CHECK(results.reduction_names[11] == "L2Norm(Var1_z)");
+  CHECK(results.reduction_names[10] == "L2Norm(Var1)");
+  CHECK(results.reduction_names[11] == "L2Norm(Var1_x)");
+  CHECK(results.reduction_names[12] == "L2Norm(Var1_y)");
+  CHECK(results.reduction_names[13] == "L2Norm(Var1_z)");
   CHECK(results.l2_norm_values[0] == approx(23.72762103540934575));
   CHECK(results.l2_norm_values[1] == approx(8.12403840463596083));
   CHECK(results.l2_norm_values[2] == approx(13.076696830622021));
@@ -217,19 +258,18 @@ void test(const std::unique_ptr<ObserveEvent> observe,
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.ObserveNorms", "[Unit][Evolution]") {
-  test<TestSectionIdTag>(
-      std::make_unique<Events::ObserveNorms<
-          ::Tags::Time, tmpl::list<Var0, Var1>, TestSectionIdTag>>(
-          Events::ObserveNorms<::Tags::Time, tmpl::list<Var0, Var1>,
-                               TestSectionIdTag>{
-              "reduction0",
-              {{"Var0", "Max", "Individual"},
-               {"Var1", "Min", "Individual"},
-               {"Var0", "Max", "Sum"},
-               {"Var1", "L2Norm", "Sum"},
-               {"Var1", "L2Norm", "Individual"},
-               {"Var1", "Min", "Sum"}}}),
-      "Section0");
+  test<TestSectionIdTag>(std::make_unique<ObserveNormsEvent<TestSectionIdTag>>(
+                             ObserveNormsEvent<TestSectionIdTag>{
+                                 "reduction0",
+                                 {{"Var0", "Max", "Individual"},
+                                  {"Var1", "Min", "Individual"},
+                                  {"Var0", "Max", "Sum"},
+                                  {"Var0TimesTwo", "Max", "Individual"},
+                                  {"Var0TimesThree", "Max", "Individual"},
+                                  {"Var1", "L2Norm", "Sum"},
+                                  {"Var1", "L2Norm", "Individual"},
+                                  {"Var1", "Min", "Sum"}}}),
+                         "Section0");
 
   INFO("create/serialize");
   Parallel::register_factory_classes_with_charm<Metavariables<void>>();
@@ -237,28 +277,34 @@ SPECTRE_TEST_CASE("Unit.Evolution.ObserveNorms", "[Unit][Evolution]") {
       TestHelpers::test_creation<std::unique_ptr<Event>, Metavariables<void>>(
           // [input_file_examples]
           R"(
-ObserveNorms:
-  SubfileName: reduction0
-  TensorsToObserve:
-  - Name: Var0
-    NormType: Max
-    Components: Individual
-  - Name: Var1
-    NormType: Min
-    Components: Individual
-  - Name: Var0
-    NormType: Max
-    Components: Sum
-  - Name: Var1
-    NormType: L2Norm
-    Components: Sum
-  - Name: Var1
-    NormType: L2Norm
-    Components: Individual
-  - Name: Var1
-    NormType: Min
-    Components: Sum
-      )");
+  ObserveNorms:
+    SubfileName: reduction0
+    TensorsToObserve:
+    - Name: Var0
+      NormType: Max
+      Components: Individual
+    - Name: Var1
+      NormType: Min
+      Components: Individual
+    - Name: Var0
+      NormType: Max
+      Components: Sum
+    - Name: Var0TimesTwo
+      NormType: Max
+      Components: Individual
+    - Name: Var0TimesThree
+      NormType: Max
+      Components: Individual
+    - Name: Var1
+      NormType: L2Norm
+      Components: Sum
+    - Name: Var1
+      NormType: L2Norm
+      Components: Individual
+    - Name: Var1
+      NormType: Min
+      Components: Sum
+        )");
   // [input_file_examples]
   auto serialized_event = serialize_and_deserialize(factory_event);
   test<void>(std::move(serialized_event), std::nullopt);

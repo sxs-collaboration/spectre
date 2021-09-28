@@ -39,6 +39,7 @@
 namespace Events {
 /// \cond
 template <typename ObservationValueTag, typename ObservableTensorTagsList,
+          typename NonTensorComputeTagsList = tmpl::list<>,
           typename ArraySectionIdTag = void>
 class ObserveNorms;
 /// \endcond
@@ -67,6 +68,9 @@ class ObserveNorms;
  *
  * \snippet Test_ObserveNorms.cpp input_file_examples
  *
+ * \note The `NonTensorComputeTags` are intended to be used for `Variables`
+ * compute tags like `Tags::DerivCompute`
+ *
  * \par Array sections
  * This event supports sections (see `Parallel::Section`). Set the
  * `ArraySectionIdTag` template parameter to split up observations into subsets
@@ -75,9 +79,10 @@ class ObserveNorms;
  * for the path in the output file.
  */
 template <typename ObservationValueTag, typename... ObservableTensorTags,
-          typename ArraySectionIdTag>
+          typename... NonTensorComputeTags, typename ArraySectionIdTag>
 class ObserveNorms<ObservationValueTag, tmpl::list<ObservableTensorTags...>,
-                   ArraySectionIdTag> : public Event {
+                   tmpl::list<NonTensorComputeTags...>, ArraySectionIdTag>
+    : public Event {
  private:
   struct ObserveTensor {
     static constexpr Options::String help = {
@@ -191,7 +196,8 @@ class ObserveNorms<ObservationValueTag, tmpl::list<ObservableTensorTags...>,
   using observed_reduction_data_tags =
       observers::make_reduction_data_tags<tmpl::list<ReductionData>>;
 
-  using compute_tags_for_observation_box = tmpl::list<>;
+  using compute_tags_for_observation_box =
+      tmpl::list<ObservableTensorTags..., NonTensorComputeTags...>;
 
   using argument_tags = tmpl::list<ObservationValueTag, ::Tags::ObservationBox>;
 
@@ -244,14 +250,16 @@ class ObserveNorms<ObservationValueTag, tmpl::list<ObservableTensorTags...>,
 
 /// \cond
 template <typename ObservationValueTag, typename... ObservableTensorTags,
-          typename ArraySectionIdTag>
+          typename... NonTensorComputeTags, typename ArraySectionIdTag>
 ObserveNorms<ObservationValueTag, tmpl::list<ObservableTensorTags...>,
+             tmpl::list<NonTensorComputeTags...>,
              ArraySectionIdTag>::ObserveNorms(CkMigrateMessage* msg)
     : Event(msg) {}
 
 template <typename ObservationValueTag, typename... ObservableTensorTags,
-          typename ArraySectionIdTag>
+          typename... NonTensorComputeTags, typename ArraySectionIdTag>
 ObserveNorms<ObservationValueTag, tmpl::list<ObservableTensorTags...>,
+             tmpl::list<NonTensorComputeTags...>,
              ArraySectionIdTag>::ObserveNorms(const std::string& subfile_name,
                                               const std::vector<ObserveTensor>&
                                                   observe_tensors)
@@ -267,11 +275,13 @@ ObserveNorms<ObservationValueTag, tmpl::list<ObservableTensorTags...>,
 }
 
 template <typename ObservationValueTag, typename... ObservableTensorTags,
-          typename ArraySectionIdTag>
+          typename... NonTensorComputeTags, typename ArraySectionIdTag>
 ObserveNorms<ObservationValueTag, tmpl::list<ObservableTensorTags...>,
-             ArraySectionIdTag>::ObserveTensor::
-    ObserveTensor(std::string in_tensor, std::string in_norm_type,
-                  std::string in_components, const Options::Context& context)
+             tmpl::list<NonTensorComputeTags...>, ArraySectionIdTag>::
+    ObserveTensor::ObserveTensor(std::string in_tensor,
+                                 std::string in_norm_type,
+                                 std::string in_components,
+                                 const Options::Context& context)
     : tensor(std::move(in_tensor)),
       norm_type(std::move(in_norm_type)),
       components(std::move(in_components)) {
@@ -292,12 +302,12 @@ ObserveNorms<ObservationValueTag, tmpl::list<ObservableTensorTags...>,
 }
 
 template <typename ObservationValueTag, typename... ObservableTensorTags,
-          typename ArraySectionIdTag>
+          typename... NonTensorComputeTags, typename ArraySectionIdTag>
 template <typename ComputeTagsList, typename DataBoxType,
           typename Metavariables, typename ArrayIndex,
           typename ParallelComponent>
 void ObserveNorms<ObservationValueTag, tmpl::list<ObservableTensorTags...>,
-                  ArraySectionIdTag>::
+                  tmpl::list<NonTensorComputeTags...>, ArraySectionIdTag>::
 operator()(const typename ObservationValueTag::type& observation_value,
            const ObservationBox<ComputeTagsList, DataBoxType>& box,
            Parallel::GlobalCache<Metavariables>& cache,
@@ -415,8 +425,9 @@ operator()(const typename ObservationValueTag::type& observation_value,
 }
 
 template <typename ObservationValueTag, typename... ObservableTensorTags,
-          typename ArraySectionIdTag>
+          typename... NonTensorComputeTags, typename ArraySectionIdTag>
 void ObserveNorms<ObservationValueTag, tmpl::list<ObservableTensorTags...>,
+                  tmpl::list<NonTensorComputeTags...>,
                   ArraySectionIdTag>::pup(PUP::er& p) {
   Event::pup(p);
   p | subfile_path_;
@@ -426,9 +437,10 @@ void ObserveNorms<ObservationValueTag, tmpl::list<ObservableTensorTags...>,
 }
 
 template <typename ObservationValueTag, typename... ObservableTensorTags,
-          typename ArraySectionIdTag>
+          typename... NonTensorComputeTags, typename ArraySectionIdTag>
 PUP::able::PUP_ID
     ObserveNorms<ObservationValueTag, tmpl::list<ObservableTensorTags...>,
+                 tmpl::list<NonTensorComputeTags...>,
                  ArraySectionIdTag>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
 }  // namespace Events

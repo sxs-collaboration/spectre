@@ -197,14 +197,14 @@ struct GeneralizedHarmonicTemplateBase<
     using factory_classes = tmpl::map<
         tmpl::pair<DenseTrigger, DenseTriggers::standard_dense_triggers>,
         tmpl::pair<DomainCreator<volume_dim>, domain_creators<volume_dim>>,
-        tmpl::pair<Event,
-                   tmpl::flatten<tmpl::list<
-                       Events::Completion,
-                       Events::ObserveNorms<::Tags::Time, observe_fields>,
-                       dg::Events::field_observations<
-                           volume_dim, Tags::Time, observe_fields,
-                           analytic_solution_fields, tmpl::list<>>,
-                       Events::time_events<system>>>>,
+        tmpl::pair<Event, tmpl::flatten<tmpl::list<
+                              Events::Completion,
+                              Events::ObserveNorms<::Tags::Time, observe_fields,
+                                                   tmpl::list<>>,
+                              dg::Events::field_observations<
+                                  volume_dim, Tags::Time, observe_fields,
+                                  analytic_solution_fields, tmpl::list<>>,
+                              Events::time_events<system>>>>,
         tmpl::pair<GeneralizedHarmonic::BoundaryConditions::BoundaryCondition<
                        volume_dim>,
                    GeneralizedHarmonic::BoundaryConditions::
