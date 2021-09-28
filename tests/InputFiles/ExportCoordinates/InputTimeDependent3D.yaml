@@ -19,21 +19,25 @@ DomainCreator:
       XCoord: -10.0
       ExciseInterior: true
       UseLogarithmicMap: false
-      AdditionToRadialRefinementLevel: 1
     ObjectB:
       InnerRadius: 0.4409
       OuterRadius: 6.0
       XCoord: 10.0
       ExciseInterior: true
       UseLogarithmicMap: false
-      AdditionToRadialRefinementLevel: 1
     EnvelopingCube:
       Radius: 100.0
     OuterSphere:
       Radius: 590.0
       UseLogarithmicMap: false
-      AdditionToRadialRefinementLevel: 0
-    InitialRefinement: 0
+    InitialRefinement:
+      ObjectAShell:   [0, 0, 1]
+      ObjectBShell:   [0, 0, 1]
+      ObjectACube:    [0, 0, 0]
+      ObjectBCube:    [0, 0, 0]
+      EnvelopingCube: [0, 0, 0]
+      CubedShell:     [0, 0, 0]
+      OuterShell:     [0, 0, 0]
     InitialGridPoints: 3
     UseProjectiveMap: true
     TimeDependentMaps:

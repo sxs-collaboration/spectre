@@ -34,6 +34,7 @@
 #include "Helpers/Domain/Creators/TestHelpers.hpp"
 #include "Helpers/Domain/DomainTestHelpers.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
+#include "Utilities/Literals.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -169,12 +170,8 @@ void test_connectivity() {
   constexpr double radius_enveloping_sphere = 32.4;
 
   // Misc.:
-  constexpr size_t refinement = 1;
   constexpr size_t grid_points = 3;
   constexpr bool use_projective_map = true;
-
-  // Options for outer sphere
-  constexpr size_t addition_to_outer_layer_radial_refinement_level = 3;
 
   for (const bool with_boundary_conditions : {true, false}) {
     CAPTURE(with_boundary_conditions);
@@ -182,6 +179,21 @@ void test_connectivity() {
       CAPTURE(excise_interiorA);
       for (const bool excise_interiorB : {true, false}) {
         CAPTURE(excise_interiorB);
+        std::unordered_map<std::string, std::array<size_t, 3>> refinement{
+            {"ObjectAShell", {{1, 1, 1}}},
+            {"ObjectACube", {{1, 1, 1}}},
+            {"ObjectBShell", {{1, 1, 1}}},
+            {"ObjectBCube", {{1, 1, 1}}},
+            {"EnvelopingCube", {{1, 1, 1}}},
+            {"CubedShell", {{1, 1, 1}}},
+            // Add some radial refinement in outer shell
+            {"OuterShell", {{1, 1, 4}}}};
+        if (not excise_interiorA) {
+          refinement["ObjectAInterior"] = std::array<size_t, 3>{{1, 1, 1}};
+        }
+        if (not excise_interiorB) {
+          refinement["ObjectBInterior"] = std::array<size_t, 3>{{1, 1, 1}};
+        }
         for (const bool use_logarithmic_map_outer_spherical_shell :
              {true, false}) {
           CAPTURE(use_logarithmic_map_outer_spherical_shell);
@@ -193,24 +205,97 @@ void test_connectivity() {
                                             ? create_inner_boundary_condition()
                                             : nullptr})
                          : std::nullopt,
-                     false, 0},
-              domain::creators::BinaryCompactObject::Object{
-                  inner_radius_objectB, outer_radius_objectB, xcoord_objectB,
-                  excise_interiorB ? std::make_optional(Excision{
-                                         with_boundary_conditions
-                                             ? create_inner_boundary_condition()
-                                             : nullptr})
-                                   : std::nullopt,
-                  false, 0},
+                     false},
+              Object{inner_radius_objectB, outer_radius_objectB, xcoord_objectB,
+                     excise_interiorB
+                         ? std::make_optional(
+                               Excision{with_boundary_conditions
+                                            ? create_inner_boundary_condition()
+                                            : nullptr})
+                         : std::nullopt,
+                     false},
               radius_enveloping_cube,
               radius_enveloping_sphere,
               refinement,
               grid_points,
               use_projective_map,
               use_logarithmic_map_outer_spherical_shell,
-              addition_to_outer_layer_radial_refinement_level,
               with_boundary_conditions ? create_outer_boundary_condition()
                                        : nullptr};
+
+          std::vector<std::string> expected_block_names{
+              "ObjectAShellUpperZ",       "ObjectAShellLowerZ",
+              "ObjectAShellUpperY",       "ObjectAShellLowerY",
+              "ObjectAShellUpperX",       "ObjectAShellLowerX",
+              "ObjectACubeUpperZ",        "ObjectACubeLowerZ",
+              "ObjectACubeUpperY",        "ObjectACubeLowerY",
+              "ObjectACubeUpperX",        "ObjectACubeLowerX",
+              "ObjectBShellUpperZ",       "ObjectBShellLowerZ",
+              "ObjectBShellUpperY",       "ObjectBShellLowerY",
+              "ObjectBShellUpperX",       "ObjectBShellLowerX",
+              "ObjectBCubeUpperZ",        "ObjectBCubeLowerZ",
+              "ObjectBCubeUpperY",        "ObjectBCubeLowerY",
+              "ObjectBCubeUpperX",        "ObjectBCubeLowerX",
+              "EnvelopingCubeUpperZLeft", "EnvelopingCubeUpperZRight",
+              "EnvelopingCubeLowerZLeft", "EnvelopingCubeLowerZRight",
+              "EnvelopingCubeUpperYLeft", "EnvelopingCubeUpperYRight",
+              "EnvelopingCubeLowerYLeft", "EnvelopingCubeLowerYRight",
+              "EnvelopingCubeUpperX",     "EnvelopingCubeLowerX",
+              "CubedShellUpperZLeft",     "CubedShellUpperZRight",
+              "CubedShellLowerZLeft",     "CubedShellLowerZRight",
+              "CubedShellUpperYLeft",     "CubedShellUpperYRight",
+              "CubedShellLowerYLeft",     "CubedShellLowerYRight",
+              "CubedShellUpperX",         "CubedShellLowerX",
+              "OuterShellUpperZLeft",     "OuterShellUpperZRight",
+              "OuterShellLowerZLeft",     "OuterShellLowerZRight",
+              "OuterShellUpperYLeft",     "OuterShellUpperYRight",
+              "OuterShellLowerYLeft",     "OuterShellLowerYRight",
+              "OuterShellUpperX",         "OuterShellLowerX"};
+          std::unordered_map<std::string, std::unordered_set<std::string>>
+              expected_block_groups{
+                  {"ObjectAShell",
+                   {"ObjectAShellLowerZ", "ObjectAShellUpperX",
+                    "ObjectAShellLowerX", "ObjectAShellUpperY",
+                    "ObjectAShellUpperZ", "ObjectAShellLowerY"}},
+                  {"ObjectBShell",
+                   {"ObjectBShellLowerZ", "ObjectBShellUpperX",
+                    "ObjectBShellLowerX", "ObjectBShellUpperY",
+                    "ObjectBShellUpperZ", "ObjectBShellLowerY"}},
+                  {"ObjectACube",
+                   {"ObjectACubeLowerY", "ObjectACubeLowerZ",
+                    "ObjectACubeUpperY", "ObjectACubeUpperX",
+                    "ObjectACubeUpperZ", "ObjectACubeLowerX"}},
+                  {"ObjectBCube",
+                   {"ObjectBCubeLowerY", "ObjectBCubeLowerZ",
+                    "ObjectBCubeUpperY", "ObjectBCubeUpperX",
+                    "ObjectBCubeUpperZ", "ObjectBCubeLowerX"}},
+                  {"EnvelopingCube",
+                   {"EnvelopingCubeUpperZRight", "EnvelopingCubeUpperX",
+                    "EnvelopingCubeLowerZLeft", "EnvelopingCubeLowerZRight",
+                    "EnvelopingCubeUpperYRight", "EnvelopingCubeLowerYRight",
+                    "EnvelopingCubeUpperYLeft", "EnvelopingCubeUpperZLeft",
+                    "EnvelopingCubeLowerYLeft", "EnvelopingCubeLowerX"}},
+                  {"CubedShell",
+                   {"CubedShellUpperZLeft", "CubedShellUpperZRight",
+                    "CubedShellLowerZLeft", "CubedShellLowerZRight",
+                    "CubedShellUpperYLeft", "CubedShellUpperYRight",
+                    "CubedShellLowerYLeft", "CubedShellLowerYRight",
+                    "CubedShellUpperX", "CubedShellLowerX"}},
+                  {"OuterShell",
+                   {"OuterShellUpperZLeft", "OuterShellUpperZRight",
+                    "OuterShellLowerZLeft", "OuterShellLowerZRight",
+                    "OuterShellUpperYLeft", "OuterShellUpperYRight",
+                    "OuterShellLowerYLeft", "OuterShellLowerYRight",
+                    "OuterShellUpperX", "OuterShellLowerX"}}};
+          if (not excise_interiorA) {
+            expected_block_names.emplace_back("ObjectAInterior");
+          }
+          if (not excise_interiorB) {
+            expected_block_names.emplace_back("ObjectBInterior");
+          }
+          CHECK(binary_compact_object.block_names() == expected_block_names);
+          CHECK(binary_compact_object.block_groups() == expected_block_groups);
+
           test_binary_compact_object_construction(
               binary_compact_object,
               std::numeric_limits<double>::signaling_NaN(), {}, {},
@@ -232,8 +317,7 @@ void test_connectivity() {
               get(magnitude(std::move(map)->operator()(logical_point)));
           // The number of radial divisions in layers 4 and 5, excluding those
           // resulting from InitialRefinement > 0.
-          const auto radial_divisions_in_outer_layers = static_cast<double>(
-              pow(2, addition_to_outer_layer_radial_refinement_level) + 1);
+          const double radial_divisions_in_outer_layers = 9;
           if (use_logarithmic_map_outer_spherical_shell) {
             CHECK(layer_5_inner_radius / radius_enveloping_cube ==
                   approx(pow(radius_enveloping_sphere / radius_enveloping_cube,
@@ -254,7 +338,7 @@ void test_connectivity() {
                                ? std::make_optional(Excision{
                                      create_inner_boundary_condition()})
                                : std::nullopt,
-                           false, 0},
+                           false},
                     domain::creators::BinaryCompactObject::Object{
                         inner_radius_objectB, outer_radius_objectB,
                         xcoord_objectB,
@@ -262,11 +346,10 @@ void test_connectivity() {
                             ? std::make_optional(
                                   Excision{create_inner_boundary_condition()})
                             : std::nullopt,
-                        false, 0},
+                        false},
                     radius_enveloping_cube, radius_enveloping_sphere,
                     refinement, grid_points, use_projective_map,
                     use_logarithmic_map_outer_spherical_shell,
-                    addition_to_outer_layer_radial_refinement_level,
                     std::make_unique<PeriodicBc>(),
                     Options::Context{false, {}, 1, 1}),
                 Catch::Matchers::Contains("Cannot have periodic boundary "
@@ -280,18 +363,17 @@ void test_connectivity() {
                                  ? std::make_optional(
                                        Excision{std::make_unique<PeriodicBc>()})
                                  : std::nullopt,
-                             false, 0},
+                             false},
                       Object{inner_radius_objectB, outer_radius_objectB,
                              xcoord_objectB,
                              excise_interiorB
                                  ? std::make_optional(
                                        Excision{std::make_unique<PeriodicBc>()})
                                  : std::nullopt,
-                             false, 0},
+                             false},
                       radius_enveloping_cube, radius_enveloping_sphere,
                       refinement, grid_points, use_projective_map,
                       use_logarithmic_map_outer_spherical_shell,
-                      addition_to_outer_layer_radial_refinement_level,
                       create_outer_boundary_condition(),
                       Options::Context{false, {}, 1, 1}),
                   Catch::Matchers::Contains("Cannot have periodic boundary "
@@ -304,18 +386,17 @@ void test_connectivity() {
                                  ? std::make_optional(Excision{
                                        create_inner_boundary_condition()})
                                  : std::nullopt,
-                             false, 0},
+                             false},
                       Object{inner_radius_objectB, outer_radius_objectB,
                              xcoord_objectB,
                              excise_interiorB
                                  ? std::make_optional(Excision{
                                        create_inner_boundary_condition()})
                                  : std::nullopt,
-                             false, 0},
+                             false},
                       radius_enveloping_cube, radius_enveloping_sphere,
                       refinement, grid_points, use_projective_map,
-                      use_logarithmic_map_outer_spherical_shell,
-                      addition_to_outer_layer_radial_refinement_level, nullptr,
+                      use_logarithmic_map_outer_spherical_shell, nullptr,
                       Options::Context{false, {}, 1, 1}),
                   Catch::Matchers::Contains(
                       "Must specify either both inner and outer boundary "
@@ -327,17 +408,16 @@ void test_connectivity() {
                              excise_interiorA
                                  ? std::make_optional(Excision{nullptr})
                                  : std::nullopt,
-                             false, 0},
+                             false},
                       Object{inner_radius_objectB, outer_radius_objectB,
                              xcoord_objectB,
                              excise_interiorB
                                  ? std::make_optional(Excision{nullptr})
                                  : std::nullopt,
-                             false, 0},
+                             false},
                       radius_enveloping_cube, radius_enveloping_sphere,
                       refinement, grid_points, use_projective_map,
                       use_logarithmic_map_outer_spherical_shell,
-                      addition_to_outer_layer_radial_refinement_level,
                       create_outer_boundary_condition(),
                       Options::Context{false, {}, 1, 1}),
                   Catch::Matchers::Contains(
@@ -416,9 +496,6 @@ std::string create_option_string(const bool excise_A, const bool excise_B,
          interior_A +
          "    UseLogarithmicMap: " + stringize(use_logarithmic_map_AB) +
          "\n"
-         "    AdditionToRadialRefinementLevel: " +
-         std::to_string(additional_refinement_A) +
-         "\n"
          "  ObjectB:\n"
          "    InnerRadius: 1.0\n"
          "    OuterRadius: 2.0\n"
@@ -426,18 +503,27 @@ std::string create_option_string(const bool excise_A, const bool excise_B,
          interior_B +
          "    UseLogarithmicMap: " + stringize(use_logarithmic_map_AB) +
          "\n"
-         "    AdditionToRadialRefinementLevel: " +
-         std::to_string(additional_refinement_B) +
-         "\n"
          "  EnvelopingCube:\n"
          "    Radius: 22.0\n"
          "  OuterSphere:\n"
          "    Radius: 25.0\n"
-         "    UseLogarithmicMap: false\n"
-         "    AdditionToRadialRefinementLevel: " +
-         std::to_string(additional_refinement_outer) + "\n" +
-         outer_boundary_condition +
-         "  InitialRefinement: 1\n"
+         "    UseLogarithmicMap: false\n" +
+         outer_boundary_condition + "  InitialRefinement:\n" +
+         (excise_A ? "" : "    ObjectAInterior: [1, 1, 1]\n") +
+         (excise_B ? "" : "    ObjectBInterior: [1, 1, 1]\n") +
+         "    ObjectAShell: [1, 1, " +
+         std::to_string(1 + additional_refinement_A) +
+         "]\n"
+         "    ObjectBShell: [1, 1, " +
+         std::to_string(1 + additional_refinement_B) +
+         "]\n"
+         "    ObjectACube: [1, 1, 1]\n"
+         "    ObjectBCube: [1, 1, 1]\n"
+         "    EnvelopingCube: [1, 1, 1]\n"
+         "    CubedShell: [1, 1, 1]\n"
+         "    OuterShell: [1, 1, " +
+         std::to_string(1 + additional_refinement_outer) +
+         "]\n"
          "  InitialGridPoints: 3\n"
          "  UseProjectiveMap: true\n" +
          time_dependence;
@@ -584,49 +670,49 @@ void test_binary_factory() {
 void test_parse_errors() {
   CHECK_THROWS_WITH(
       domain::creators::BinaryCompactObject(
-          {0.5, 1.0, 1.0, {{create_inner_boundary_condition()}}, false, 0},
-          {0.3, 1.0, 1.0, {{create_inner_boundary_condition()}}, false, 0},
-          25.5, 32.4, 2, 6, true, false, 0, create_outer_boundary_condition(),
+          {0.5, 1.0, 1.0, {{create_inner_boundary_condition()}}, false},
+          {0.3, 1.0, 1.0, {{create_inner_boundary_condition()}}, false}, 25.5,
+          32.4, 2_st, 6_st, true, false, create_outer_boundary_condition(),
           Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains(
           "The x-coordinate of ObjectA's center is expected to be negative."));
   CHECK_THROWS_WITH(
       domain::creators::BinaryCompactObject(
-          {0.5, 1.0, -1.0, {{create_inner_boundary_condition()}}, false, 0},
-          {0.3, 1.0, -1.0, {{create_inner_boundary_condition()}}, false, 0},
-          25.5, 32.4, 2, 6, true, false, 0, create_outer_boundary_condition(),
+          {0.5, 1.0, -1.0, {{create_inner_boundary_condition()}}, false},
+          {0.3, 1.0, -1.0, {{create_inner_boundary_condition()}}, false}, 25.5,
+          32.4, 2_st, 6_st, true, false, create_outer_boundary_condition(),
           Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains(
           "The x-coordinate of ObjectB's center is expected to be positive."));
   CHECK_THROWS_WITH(
       domain::creators::BinaryCompactObject(
-          {0.5, 1.0, -7.0, {{create_inner_boundary_condition()}}, false, 0},
-          {0.3, 1.0, 8.0, {{create_inner_boundary_condition()}}, false, 0},
-          25.5, 32.4, 2, 6, true, false, 0, create_outer_boundary_condition(),
+          {0.5, 1.0, -7.0, {{create_inner_boundary_condition()}}, false},
+          {0.3, 1.0, 8.0, {{create_inner_boundary_condition()}}, false}, 25.5,
+          32.4, 2_st, 6_st, true, false, create_outer_boundary_condition(),
           Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains("The radius for the enveloping cube is too "
                                 "small! The Frustums will be malformed."));
   CHECK_THROWS_WITH(
       domain::creators::BinaryCompactObject(
-          {1.5, 1.0, -1.0, {{create_inner_boundary_condition()}}, false, 0},
-          {0.3, 1.0, 1.0, {{create_inner_boundary_condition()}}, false, 0},
-          25.5, 32.4, 2, 6, true, false, 0, create_outer_boundary_condition(),
+          {1.5, 1.0, -1.0, {{create_inner_boundary_condition()}}, false},
+          {0.3, 1.0, 1.0, {{create_inner_boundary_condition()}}, false}, 25.5,
+          32.4, 2_st, 6_st, true, false, create_outer_boundary_condition(),
           Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains(
           "ObjectA's inner radius must be less than its outer radius."));
   CHECK_THROWS_WITH(
       domain::creators::BinaryCompactObject(
-          {0.5, 1.0, -1.0, {{create_inner_boundary_condition()}}, false, 0},
-          {3.3, 1.0, 1.0, {{create_inner_boundary_condition()}}, false, 0},
-          25.5, 32.4, 2, 6, true, false, 0, create_outer_boundary_condition(),
+          {0.5, 1.0, -1.0, {{create_inner_boundary_condition()}}, false},
+          {3.3, 1.0, 1.0, {{create_inner_boundary_condition()}}, false}, 25.5,
+          32.4, 2_st, 6_st, true, false, create_outer_boundary_condition(),
           Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains(
           "ObjectB's inner radius must be less than its outer radius."));
   CHECK_THROWS_WITH(
       domain::creators::BinaryCompactObject(
-          {0.5, 1.0, -1.0, std::nullopt, true, 0},
-          {0.3, 1.0, 1.0, {{create_inner_boundary_condition()}}, false, 0},
-          25.5, 32.4, 2, 6, true, false, 0, create_outer_boundary_condition(),
+          {0.5, 1.0, -1.0, std::nullopt, true},
+          {0.3, 1.0, 1.0, {{create_inner_boundary_condition()}}, false}, 25.5,
+          32.4, 2_st, 6_st, true, false, create_outer_boundary_condition(),
           Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains(
           "Using a logarithmically spaced radial grid in the "
@@ -634,14 +720,28 @@ void test_parse_errors() {
           "of Object A"));
   CHECK_THROWS_WITH(
       domain::creators::BinaryCompactObject(
-          {0.5, 1.0, -1.0, {{create_inner_boundary_condition()}}, false, 0},
-          {0.3, 1.0, 1.0, std::nullopt, true, 0}, 25.5, 32.4, 2, 6, true, false,
-          0, create_outer_boundary_condition(),
+          {0.5, 1.0, -1.0, {{create_inner_boundary_condition()}}, false},
+          {0.3, 1.0, 1.0, std::nullopt, true}, 25.5, 32.4, 2_st, 6_st, true,
+          false, create_outer_boundary_condition(),
           Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains(
           "Using a logarithmically spaced radial grid in the "
           "part of Layer 1 enveloping Object B requires excising the interior "
           "of Object B"));
+  CHECK_THROWS_WITH(
+      domain::creators::BinaryCompactObject(
+          {0.5, 1.0, -1.0, {{create_inner_boundary_condition()}}, false},
+          {0.3, 1.0, 1.0, {{create_inner_boundary_condition()}}, false}, 25.5,
+          32.4, std::vector<std::array<size_t, 3>>{}, 6_st, true, false,
+          create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::Contains("Invalid 'InitialRefinement'"));
+  CHECK_THROWS_WITH(
+      domain::creators::BinaryCompactObject(
+          {0.5, 1.0, -1.0, {{create_inner_boundary_condition()}}, false},
+          {0.3, 1.0, 1.0, {{create_inner_boundary_condition()}}, false}, 25.5,
+          32.4, 2_st, std::vector<std::array<size_t, 3>>{}, true, false,
+          create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::Contains("Invalid 'InitialGridPoints'"));
   // Note: the boundary condition-related parse errors are checked in the
   // test_connectivity function.
 }

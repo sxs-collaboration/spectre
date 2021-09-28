@@ -19,7 +19,6 @@ DomainCreator:
         ExciseWithBoundaryCondition:
           Outflow:
       UseLogarithmicMap: false
-      AdditionToRadialRefinementLevel: 1
     ObjectB:
       InnerRadius: 0.7925
       OuterRadius: 6.683
@@ -28,17 +27,22 @@ DomainCreator:
         ExciseWithBoundaryCondition:
           Outflow:
       UseLogarithmicMap: false
-      AdditionToRadialRefinementLevel: 1
     EnvelopingCube:
       Radius: 100.0
     OuterSphere:
       Radius: 1493.0
       UseLogarithmicMap: false
-      AdditionToRadialRefinementLevel: 3
       BoundaryCondition:
         ConstraintPreservingBjorhus:
           Type: ConstraintPreservingPhysical
-    InitialRefinement: 2
+    InitialRefinement:
+      ObjectAShell:   [2, 2, 3]
+      ObjectACube:    [2, 2, 2]
+      ObjectBShell:   [2, 2, 3]
+      ObjectBCube:    [2, 2, 2]
+      EnvelopingCube: [2, 2, 2]
+      CubedShell:     [2, 2, 2]
+      OuterShell:     [2, 2, 5]
     InitialGridPoints: 11
     UseProjectiveMap: true
     TimeDependentMaps:
