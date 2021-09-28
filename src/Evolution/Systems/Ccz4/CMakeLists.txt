@@ -20,6 +20,7 @@ spectre_target_headers(
   Christoffel.hpp
   DerivChristoffel.hpp
   DerivLapse.hpp
+  System.hpp
   Tags.hpp
   TagsDeclarations.hpp
   )

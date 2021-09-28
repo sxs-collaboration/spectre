@@ -11,7 +11,6 @@
 namespace Ccz4 {
 /// @{
 /*!
- * \ingroup GeneralRelativityGroup
  * \brief Computes the conformal spatial christoffel symbols of the second kind.
  *
  * \details Computes the christoffel symbols as:
@@ -37,7 +36,6 @@ tnsr::Ijj<DataType, Dim, Frame> conformal_christoffel_second_kind(
 
 /// @{
 /*!
- * \ingroup GeneralRelativityGroup
  * \brief Computes the spatial christoffel symbols of the second kind.
  *
  * \details Computes the christoffel symbols as:

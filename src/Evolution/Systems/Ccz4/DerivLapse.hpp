@@ -11,7 +11,6 @@
 namespace Ccz4 {
 /// @{
 /*!
- * \ingroup GeneralRelativityGroup
  * \brief Computes the gradient of the gradient of the lapse.
  *
  * \details Computes the gradient of the gradient as:
