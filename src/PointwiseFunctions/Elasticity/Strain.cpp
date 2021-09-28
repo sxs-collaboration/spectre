@@ -60,7 +60,7 @@ void strain(const gsl::not_null<tnsr::ii<DataType, Dim>*> strain,
 template <size_t Dim>
 void strain(const gsl::not_null<tnsr::ii<DataVector, Dim>*> strain,
             const tnsr::I<DataVector, Dim>& displacement, const Mesh<Dim>& mesh,
-            const InverseJacobian<DataVector, Dim, Frame::Logical,
+            const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
                                   Frame::Inertial>& inv_jacobian) noexcept {
   // Copy the displacement into a Variables to take partial derivatives because
   // at this time the `partial_derivatives` function only works with Variables.
@@ -82,12 +82,12 @@ void strain(const gsl::not_null<tnsr::ii<DataVector, Dim>*> strain,
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATE(_, data)                                       \
-  template void strain<DIM(data)>(                                 \
-      gsl::not_null<tnsr::ii<DataVector, DIM(data)>*> strain,      \
-      const tnsr::I<DataVector, DIM(data)>& displacement,          \
-      const Mesh<DIM(data)>& mesh,                                 \
-      const InverseJacobian<DataVector, DIM(data), Frame::Logical, \
+#define INSTANTIATE(_, data)                                              \
+  template void strain<DIM(data)>(                                        \
+      gsl::not_null<tnsr::ii<DataVector, DIM(data)>*> strain,             \
+      const tnsr::I<DataVector, DIM(data)>& displacement,                 \
+      const Mesh<DIM(data)>& mesh,                                        \
+      const InverseJacobian<DataVector, DIM(data), Frame::ElementLogical, \
                             Frame::Inertial>& inv_jacobian) noexcept;
 
 #define INSTANTIATE_DTYPE(_, data)                                          \

@@ -41,10 +41,10 @@ struct InitializeConstraints {
   using simple_tags = tmpl::list<ScalarWave::Tags::ConstraintGamma2>;
 
   using compute_tags = tmpl::list<
-      ::Tags::DerivCompute<
-          typename System<Dim>::variables_tag,
-          domain::Tags::InverseJacobian<Dim, Frame::Logical, Frame::Inertial>,
-          typename System<Dim>::gradient_variables>,
+      ::Tags::DerivCompute<typename System<Dim>::variables_tag,
+                           domain::Tags::InverseJacobian<
+                               Dim, Frame::ElementLogical, Frame::Inertial>,
+                           typename System<Dim>::gradient_variables>,
       ScalarWave::Tags::OneIndexConstraintCompute<Dim>,
       ScalarWave::Tags::TwoIndexConstraintCompute<Dim>,
       ::Tags::PointwiseL2NormCompute<ScalarWave::Tags::OneIndexConstraint<Dim>>,

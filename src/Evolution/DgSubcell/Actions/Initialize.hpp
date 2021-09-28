@@ -101,7 +101,7 @@ struct Initialize {
       tmpl::list<Tags::LogicalCoordinatesCompute<Dim>,
                  ::domain::Tags::MappedCoordinates<
                      ::domain::Tags::ElementMap<Dim, Frame::Grid>,
-                     subcell::Tags::Coordinates<Dim, Frame::Logical>,
+                     subcell::Tags::Coordinates<Dim, Frame::ElementLogical>,
                      subcell::Tags::Coordinates>,
                  Tags::TciStatusCompute<Dim>>;
 
@@ -177,7 +177,7 @@ struct Initialize {
             });
       }
       evolution::Initialization::Actions::
-          SetVariables<Tags::Coordinates<Dim, Frame::Logical>>::apply(
+          SetVariables<Tags::Coordinates<Dim, Frame::ElementLogical>>::apply(
               box, inboxes, cache, array_index, ActionList{},
               std::add_pointer_t<ParallelComponent>{nullptr});
       db::mutate<

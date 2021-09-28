@@ -41,7 +41,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Xcts.SpacetimeQuantities",
                      Spectral::Quadrature::GaussLobatto};
   const size_t num_points = mesh.number_of_grid_points();
   auto inv_jacobian = make_with_value<
-      InverseJacobian<DataVector, 3, Frame::Logical, Frame::Inertial>>(
+      InverseJacobian<DataVector, 3, Frame::ElementLogical, Frame::Inertial>>(
       num_points, 0.);
   get<0, 0>(inv_jacobian) = 1.;
   get<1, 1>(inv_jacobian) = 1.;

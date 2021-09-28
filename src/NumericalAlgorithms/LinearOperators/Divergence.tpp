@@ -14,8 +14,8 @@
 template <typename FluxTags, size_t Dim, typename DerivativeFrame>
 Variables<db::wrap_tags_in<Tags::div, FluxTags>> divergence(
     const Variables<FluxTags>& F, const Mesh<Dim>& mesh,
-    const InverseJacobian<DataVector, Dim, Frame::Logical, DerivativeFrame>&
-        inverse_jacobian) noexcept {
+    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                          DerivativeFrame>& inverse_jacobian) noexcept {
   Variables<db::wrap_tags_in<Tags::div, FluxTags>> divergence_of_F(
       F.number_of_grid_points());
   divergence(make_not_null(&divergence_of_F), F, mesh, inverse_jacobian);
@@ -27,8 +27,8 @@ template <typename... DivTags, typename... FluxTags, size_t Dim,
 void divergence(
     const gsl::not_null<Variables<tmpl::list<DivTags...>>*> divergence_of_F,
     const Variables<tmpl::list<FluxTags...>>& F, const Mesh<Dim>& mesh,
-    const InverseJacobian<DataVector, Dim, Frame::Logical, DerivativeFrame>&
-        inverse_jacobian) noexcept {
+    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                          DerivativeFrame>& inverse_jacobian) noexcept {
   if (UNLIKELY(divergence_of_F->number_of_grid_points() !=
                mesh.number_of_grid_points())) {
     divergence_of_F->initialize(mesh.number_of_grid_points());

@@ -49,7 +49,7 @@ namespace evolution::dg::subcell::fd::Actions {
  *   - `subcell::fd::Tags::DetInverseJacobianLogicalToGrid`
  *   - `domain::Tags::ElementMap<Dim, Frame::Grid>`
  *   - `domain::CoordinateMaps::Tags::CoordinateMap<Dim, Grid, Inertial>`
- *   - `subcell::Tags::Coordinates<Dim, Frame::Logical>`
+ *   - `subcell::Tags::Coordinates<Dim, Frame::ElementLogical>`
  *   - Anything that `Metavariables::SubcellOptions::TimeDerivative` uses
  * - Adds: nothing
  * - Removes: nothing
@@ -84,7 +84,7 @@ struct TakeTimeStep {
           }
         },
         db::get<::domain::Tags::ElementMap<Dim, Frame::Grid>>(box),
-        db::get<subcell::Tags::Coordinates<Dim, Frame::Logical>>(box));
+        db::get<subcell::Tags::Coordinates<Dim, Frame::ElementLogical>>(box));
 
     TimeDerivative::apply(
         make_not_null(&box),

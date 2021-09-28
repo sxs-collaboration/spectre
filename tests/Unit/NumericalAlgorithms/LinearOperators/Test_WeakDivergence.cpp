@@ -55,7 +55,7 @@ void test_weak_divergence_random_jacobian(const Mesh<Dim>& mesh) {
 
   tnsr::I<DataVector, Dim, Frame::Inertial> inertial_coords{
       mesh.number_of_grid_points()};
-  Jacobian<DataVector, Dim, Frame::Logical, Frame::Inertial> jacobian{
+  Jacobian<DataVector, Dim, Frame::ElementLogical, Frame::Inertial> jacobian{
       mesh.number_of_grid_points()};
 
   fill_with_random_values(make_not_null(&inertial_coords), make_not_null(&gen),
@@ -63,7 +63,7 @@ void test_weak_divergence_random_jacobian(const Mesh<Dim>& mesh) {
   fill_with_random_values(make_not_null(&jacobian), make_not_null(&gen),
                           make_not_null(&dist));
 
-  InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>
+  InverseJacobian<DataVector, Dim, Frame::ElementLogical, Frame::Inertial>
       det_jac_times_inverse_jacobian{};
 
   dg::metric_identity_det_jac_times_inv_jac(
@@ -169,16 +169,16 @@ void test_weak_divergence_constant_jacobian(const Mesh<Dim>& mesh) {
   const auto logical_coords = logical_coordinates(mesh);
   tnsr::I<DataVector, Dim, Frame::Inertial> inertial_coords{
       mesh.number_of_grid_points()};
-  Jacobian<DataVector, Dim, Frame::Logical, Frame::Inertial> jacobian{
+  Jacobian<DataVector, Dim, Frame::ElementLogical, Frame::Inertial> jacobian{
       mesh.number_of_grid_points(), 0.0};
-  InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>
+  InverseJacobian<DataVector, Dim, Frame::ElementLogical, Frame::Inertial>
       inverse_jacobian{mesh.number_of_grid_points(), 0.0};
   for (size_t i = 0; i < Dim; ++i) {
     jacobian.get(i, i) = 2.0;
     inertial_coords.get(i) = 2.0 * logical_coords.get(i);
   }
 
-  InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>
+  InverseJacobian<DataVector, Dim, Frame::ElementLogical, Frame::Inertial>
       det_jac_times_inverse_jacobian{};
 
   dg::metric_identity_det_jac_times_inv_jac(
@@ -239,14 +239,14 @@ void test_weak_divergence_constant_jacobian(const Mesh<Dim>& mesh) {
       const auto gl_logical_coords = logical_coordinates(gl_mesh);
       tnsr::I<DataVector, Dim, Frame::Inertial> gl_inertial_coords{
           gl_mesh.number_of_grid_points()};
-      Jacobian<DataVector, Dim, Frame::Logical, Frame::Inertial> gl_jacobian{
-          gl_mesh.number_of_grid_points(), 0.0};
+      Jacobian<DataVector, Dim, Frame::ElementLogical, Frame::Inertial>
+          gl_jacobian{gl_mesh.number_of_grid_points(), 0.0};
       for (size_t i = 0; i < Dim; ++i) {
         gl_jacobian.get(i, i) = 2.0;
         gl_inertial_coords.get(i) = 2.0 * gl_logical_coords.get(i);
       }
 
-      InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>
+      InverseJacobian<DataVector, Dim, Frame::ElementLogical, Frame::Inertial>
           gl_det_jac_times_inverse_jacobian{};
 
       dg::metric_identity_det_jac_times_inv_jac(

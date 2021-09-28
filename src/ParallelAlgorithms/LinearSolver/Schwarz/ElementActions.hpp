@@ -230,7 +230,7 @@ struct InitializeElement {
     const auto& mesh = db::get<domain::Tags::Mesh<Dim>>(box);
     const size_t num_points = mesh.number_of_grid_points();
     const auto& logical_coords =
-        db::get<domain::Tags::Coordinates<Dim, Frame::Logical>>(box);
+        db::get<domain::Tags::Coordinates<Dim, Frame::ElementLogical>>(box);
     const size_t max_overlap = db::get<Tags::MaxOverlap<OptionsGroup>>(box);
 
     // Intruding overlaps

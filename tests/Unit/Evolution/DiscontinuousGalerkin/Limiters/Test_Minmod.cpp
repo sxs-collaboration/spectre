@@ -914,7 +914,7 @@ template <size_t VolumeDim>
 void test_minmod_impl_work(
     const tnsr::I<DataVector, VolumeDim>& input_vector,
     const Mesh<VolumeDim>& mesh,
-    const tnsr::I<DataVector, VolumeDim, Frame::Logical>& logical_coords,
+    const tnsr::I<DataVector, VolumeDim, Frame::ElementLogical>& logical_coords,
     const std::array<double, VolumeDim>& element_size,
     const std::unordered_map<
         std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
@@ -979,12 +979,12 @@ void test_minmod_impl_1d_work(const Spectral::Quadrature quadrature) noexcept {
   const auto logical_coords = logical_coordinates(mesh);
   const auto element_size = make_array<1>(0.5);
   const auto true_slope = std::array<double, 1>{{2.0}};
-  const auto func =
-      [&true_slope](
-          const tnsr::I<DataVector, 1, Frame::Logical>& coords) noexcept {
-        const auto& x = get<0>(coords);
-        return 1.0 + true_slope[0] * x + 3.3 * square(x);
-      };
+  const auto func = [&true_slope](
+                        const tnsr::I<DataVector, 1, Frame::ElementLogical>&
+                            coords) noexcept {
+    const auto& x = get<0>(coords);
+    return 1.0 + true_slope[0] * x + 3.3 * square(x);
+  };
   const auto data = DataVector{func(logical_coords)};
   const double mean = mean_value(data, mesh);
   const auto input_vector = VectorTag<1>::type{data};
@@ -1027,8 +1027,8 @@ void test_minmod_impl_2d_work(const Spectral::Quadrature quadrature) noexcept {
   const auto element_size = make_array(0.5, 1.0);
   const auto true_slope = std::array<double, 2>{{2.0, -3.0}};
   const auto& func =
-      [&true_slope](
-          const tnsr::I<DataVector, 2, Frame::Logical>& coords) noexcept {
+      [&true_slope](const tnsr::I<DataVector, 2, Frame::ElementLogical>&
+                        coords) noexcept {
         const auto& x = get<0>(coords);
         const auto& y = get<1>(coords);
         return 1.0 + true_slope[0] * x + 3.3 * square(x) + true_slope[1] * y +
@@ -1093,7 +1093,7 @@ template <size_t VolumeDim>
 void test_minmod_impl_limits_in_x_only(
     const ScalarTag::type& input, const Mesh<VolumeDim>& mesh,
     const Element<VolumeDim>& element,
-    const tnsr::I<DataVector, VolumeDim, Frame::Logical>& logical_coords,
+    const tnsr::I<DataVector, VolumeDim, Frame::ElementLogical>& logical_coords,
     const std::array<double, VolumeDim>& element_size,
     const std::unordered_map<
         std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
@@ -1144,10 +1144,10 @@ void test_minmod_impl_two_lower_xi_neighbors() noexcept {
   const auto element_size = make_array<2>(dx);
 
   const auto mean = 2.0;
-  const auto func =
-      [&mean](const tnsr::I<DataVector, 2, Frame::Logical>& coords) noexcept {
-        return mean + 1.2 * get<0>(coords);
-      };
+  const auto func = [&mean](const tnsr::I<DataVector, 2, Frame::ElementLogical>&
+                                coords) noexcept {
+    return mean + 1.2 * get<0>(coords);
+  };
   const auto input = ScalarTag::type(func(logical_coords));
 
   const auto make_neighbors = [&dx](const double left1, const double left2,
@@ -1204,8 +1204,8 @@ void test_minmod_impl_3d_work(const Spectral::Quadrature quadrature) noexcept {
   const auto element_size = make_array(0.5, 1.0, 0.8);
   const auto true_slope = std::array<double, 3>{{2.0, -3.0, 1.0}};
   const auto func =
-      [&true_slope](
-          const tnsr::I<DataVector, 3, Frame::Logical>& coords) noexcept {
+      [&true_slope](const tnsr::I<DataVector, 3, Frame::ElementLogical>&
+                        coords) noexcept {
         const auto& x = get<0>(coords);
         const auto& y = get<1>(coords);
         const auto& z = get<2>(coords);
@@ -1294,10 +1294,10 @@ void test_minmod_impl_four_upper_xi_neighbors() noexcept {
   const auto element_size = make_array<3>(dx);
 
   const auto mean = 2.0;
-  const auto func =
-      [&mean](const tnsr::I<DataVector, 3, Frame::Logical>& coords) noexcept {
-        return mean + 1.2 * get<0>(coords);
-      };
+  const auto func = [&mean](const tnsr::I<DataVector, 3, Frame::ElementLogical>&
+                                coords) noexcept {
+    return mean + 1.2 * get<0>(coords);
+  };
   const auto input = ScalarTag::type(func(logical_coords));
 
   const auto make_neighbors =
@@ -1368,7 +1368,7 @@ void test_minmod_work(
     const Scalar<DataVector>& input_scalar,
     const tnsr::I<DataVector, VolumeDim>& input_vector,
     const Mesh<VolumeDim>& mesh,
-    const tnsr::I<DataVector, VolumeDim, Frame::Logical>& logical_coords,
+    const tnsr::I<DataVector, VolumeDim, Frame::ElementLogical>& logical_coords,
     const std::array<double, VolumeDim>& element_size,
     const std::unordered_map<
         std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
@@ -1443,12 +1443,12 @@ void test_minmod_1d() noexcept {
   const auto logical_coords = logical_coordinates(mesh);
   const auto element_size = make_array<1>(0.5);
   const auto true_slope = std::array<double, 1>{{2.0}};
-  const auto func =
-      [&true_slope](
-          const tnsr::I<DataVector, 1, Frame::Logical>& coords) noexcept {
-        const auto& x = get<0>(coords);
-        return 1.0 + true_slope[0] * x + 3.3 * square(x);
-      };
+  const auto func = [&true_slope](
+                        const tnsr::I<DataVector, 1, Frame::ElementLogical>&
+                            coords) noexcept {
+    const auto& x = get<0>(coords);
+    return 1.0 + true_slope[0] * x + 3.3 * square(x);
+  };
   const auto data = DataVector{func(logical_coords)};
   const double mean = mean_value(data, mesh);
   const auto input_scalar = ScalarTag::type{data};
@@ -1501,8 +1501,8 @@ void test_minmod_2d() noexcept {
   const auto element_size = make_array(0.5, 1.0);
   const auto true_slope = std::array<double, 2>{{2.0, -3.0}};
   const auto& func =
-      [&true_slope](
-          const tnsr::I<DataVector, 2, Frame::Logical>& coords) noexcept {
+      [&true_slope](const tnsr::I<DataVector, 2, Frame::ElementLogical>&
+                        coords) noexcept {
         const auto& x = get<0>(coords);
         const auto& y = get<1>(coords);
         return 1.0 + true_slope[0] * x + 3.3 * square(x) + true_slope[1] * y +
@@ -1592,8 +1592,8 @@ void test_minmod_3d() noexcept {
   const auto element_size = make_array(0.5, 1.0, 0.8);
   const auto true_slope = std::array<double, 3>{{2.0, -3.0, 1.0}};
   const auto func =
-      [&true_slope](
-          const tnsr::I<DataVector, 3, Frame::Logical>& coords) noexcept {
+      [&true_slope](const tnsr::I<DataVector, 3, Frame::ElementLogical>&
+                        coords) noexcept {
         const auto& x = get<0>(coords);
         const auto& y = get<1>(coords);
         const auto& z = get<2>(coords);

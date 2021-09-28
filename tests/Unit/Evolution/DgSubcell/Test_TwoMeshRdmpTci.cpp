@@ -34,7 +34,7 @@ struct Vector : db::SimpleTag {
 }  // namespace Tags
 
 template <size_t Dim>
-DataVector soln(const tnsr::I<DataVector, Dim, Frame::Logical>& coords,
+DataVector soln(const tnsr::I<DataVector, Dim, Frame::ElementLogical>& coords,
                 const bool add_discontinuity) noexcept {
   DataVector result =
       Spectral::compute_basis_function_value<Spectral::Basis::Legendre>(

@@ -54,8 +54,8 @@ InitializeDampedHarmonic<Dim, UseRollon>::impl_rollon(
     const tnsr::aa<DataVector, Dim, Frame::Inertial>& pi,
     const tnsr::iaa<DataVector, Dim, Frame::Inertial>& phi,
     const Mesh<Dim>& mesh,
-    const InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>&
-        inverse_jacobian) noexcept {
+    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                          Frame::Inertial>& inverse_jacobian) noexcept {
   Variables<tmpl::list<
       gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataVector>,
       gr::Tags::DetSpatialMetric<DataVector>,
@@ -298,7 +298,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (true, false))
                       Frame::Inertial>(                                      \
       const Variables<variables_tags<DIM(data), Frame::Inertial>>& u,        \
       const Mesh<DIM(data)>& mesh,                                           \
-      const InverseJacobian<DataVector, DIM(data), Frame::Logical,           \
+      const InverseJacobian<DataVector, DIM(data), Frame::ElementLogical,    \
                             Frame::Inertial>& inverse_jacobian) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))

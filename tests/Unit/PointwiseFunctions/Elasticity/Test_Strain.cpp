@@ -58,17 +58,19 @@ template <size_t Dim>
 auto make_coord_map() {
   using AffineMap = domain::CoordinateMaps::Affine;
   if constexpr (Dim == 1) {
-    return domain::CoordinateMap<Frame::Logical, Frame::Inertial, AffineMap>{
-        {-1., 1., 0., M_PI}};
+    return domain::CoordinateMap<Frame::ElementLogical, Frame::Inertial,
+                                 AffineMap>{{-1., 1., 0., M_PI}};
   } else if constexpr (Dim == 2) {
     using AffineMap2D =
         domain::CoordinateMaps::ProductOf2Maps<AffineMap, AffineMap>;
-    return domain::CoordinateMap<Frame::Logical, Frame::Inertial, AffineMap2D>{
+    return domain::CoordinateMap<Frame::ElementLogical, Frame::Inertial,
+                                 AffineMap2D>{
         {{-1., 1., 0., M_PI}, {-1., 1., 0., M_PI}}};
   } else {
     using AffineMap3D =
         domain::CoordinateMaps::ProductOf3Maps<AffineMap, AffineMap, AffineMap>;
-    return domain::CoordinateMap<Frame::Logical, Frame::Inertial, AffineMap3D>{
+    return domain::CoordinateMap<Frame::ElementLogical, Frame::Inertial,
+                                 AffineMap3D>{
         {{-1., 1., 0., M_PI}, {-1., 1., 0., M_PI}, {-1., 1., 0., M_PI}}};
   }
 }
@@ -114,13 +116,13 @@ void test_strain() noexcept {
     INFO("Test the compute tag");
     TestHelpers::db::test_compute_tag<Elasticity::Tags::StrainCompute<Dim>>(
         "Strain");
-    const auto box =
-        db::create<db::AddSimpleTags<Elasticity::Tags::Displacement<Dim>,
-                                     domain::Tags::Mesh<Dim>,
-                                     domain::Tags::InverseJacobian<
-                                         Dim, Frame::Logical, Frame::Inertial>>,
-                   db::AddComputeTags<Elasticity::Tags::StrainCompute<Dim>>>(
-            displacement, mesh, inv_jacobian);
+    const auto box = db::create<
+        db::AddSimpleTags<Elasticity::Tags::Displacement<Dim>,
+                          domain::Tags::Mesh<Dim>,
+                          domain::Tags::InverseJacobian<
+                              Dim, Frame::ElementLogical, Frame::Inertial>>,
+        db::AddComputeTags<Elasticity::Tags::StrainCompute<Dim>>>(
+        displacement, mesh, inv_jacobian);
     CHECK(get<Elasticity::Tags::Strain<Dim>>(box) == strain);
   }
 }

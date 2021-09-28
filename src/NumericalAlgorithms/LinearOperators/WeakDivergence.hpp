@@ -66,7 +66,8 @@ void weak_divergence(
     const gsl::not_null<Variables<tmpl::list<Tags::div<FluxTags>...>>*>
         divergence_of_fluxes,
     const Variables<tmpl::list<FluxTags...>>& fluxes, const Mesh<Dim>& mesh,
-    const InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>&
+    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                          Frame::Inertial>&
         det_jac_times_inverse_jacobian) noexcept {
   if (UNLIKELY(divergence_of_fluxes->number_of_grid_points() !=
                fluxes.number_of_grid_points())) {

@@ -110,11 +110,10 @@ class ObserveVolumeIntegrals<VolumeDim, ObservationValueTag,
   using observed_reduction_data_tags =
       observers::make_reduction_data_tags<tmpl::list<ReductionData>>;
 
-  using argument_tags =
-      tmpl::list<::Tags::DataBox, ObservationValueTag,
-                 domain::Tags::Mesh<VolumeDim>,
-                 domain::Tags::DetInvJacobian<Frame::Logical, Frame::Inertial>,
-                 Tensors...>;
+  using argument_tags = tmpl::list<
+      ::Tags::DataBox, ObservationValueTag, domain::Tags::Mesh<VolumeDim>,
+      domain::Tags::DetInvJacobian<Frame::ElementLogical, Frame::Inertial>,
+      Tensors...>;
 
   template <typename DbTagsList, typename Metavariables, typename ArrayIndex,
             typename ParallelComponent>

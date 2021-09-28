@@ -79,11 +79,11 @@ void test_compute_horizon_volume_quantities() {
                   Spectral::Basis::Legendre,
                   Spectral::Quadrature::GaussLobatto};
   tnsr::I<DataVector, 3, TargetFrame> target_frame_coords{};
-  InverseJacobian<DataVector, 3, Frame::Logical, Frame::Inertial>
+  InverseJacobian<DataVector, 3, Frame::ElementLogical, Frame::Inertial>
       inv_jacobian_logical_to_inertial{};
   Jacobian<DataVector, 3, TargetFrame, Frame::Inertial>
       jacobian_target_to_inertial{};
-  InverseJacobian<DataVector, 3, Frame::Logical, TargetFrame>
+  InverseJacobian<DataVector, 3, Frame::ElementLogical, TargetFrame>
       inv_jacobian_logical_to_target{};
   if constexpr (IsTimeDependent::value) {
     ElementMap<3, Frame::Grid> map_logical_to_grid{
@@ -97,7 +97,7 @@ void test_compute_horizon_volume_quantities() {
             temporal_id.step_time().value(),
             domain_creator->functions_of_time());
     inv_jacobian_logical_to_inertial =
-        InverseJacobian<DataVector, 3, Frame::Logical, Frame::Inertial>(
+        InverseJacobian<DataVector, 3, Frame::ElementLogical, Frame::Inertial>(
             mesh.number_of_grid_points(), 0.0);
     for (size_t i = 0; i < 3; ++i) {
       for (size_t j = 0; j < 3; ++j) {

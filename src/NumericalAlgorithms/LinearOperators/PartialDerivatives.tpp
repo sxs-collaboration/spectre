@@ -59,8 +59,8 @@ void partial_derivatives_impl(
         Tags::deriv, DerivativeTags, tmpl::size_t<Dim>, DerivativeFrame>>*>
         du,
     const std::array<const double*, Dim>& logical_partial_derivatives_of_u,
-    const InverseJacobian<DataVector, Dim, Frame::Logical, DerivativeFrame>&
-        inverse_jacobian) noexcept {
+    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                          DerivativeFrame>& inverse_jacobian) noexcept {
   constexpr size_t number_of_independent_components =
       Variables<DerivativeTags>::number_of_independent_components;
   double* pdu = du->data();
@@ -72,7 +72,7 @@ void partial_derivatives_impl(
   for (size_t deriv_index = 0; deriv_index < Dim; ++deriv_index) {
     for (size_t d = 0; d < Dim; ++d) {
       gsl::at(gsl::at(indices, d), deriv_index) =
-          InverseJacobian<DataVector, Dim, Frame::Logical,
+          InverseJacobian<DataVector, Dim, Frame::ElementLogical,
                           DerivativeFrame>::get_storage_index(d, deriv_index);
     }
   }
@@ -156,8 +156,8 @@ void partial_derivatives(
         du,
     const std::array<Variables<DerivativeTags>, Dim>&
         logical_partial_derivatives_of_u,
-    const InverseJacobian<DataVector, Dim, Frame::Logical, DerivativeFrame>&
-        inverse_jacobian) noexcept {
+    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                          DerivativeFrame>& inverse_jacobian) noexcept {
   auto& partial_derivatives_of_u = *du;
   // For mutating compute items we must set the size.
   if (UNLIKELY(partial_derivatives_of_u.number_of_grid_points() !=
@@ -183,8 +183,8 @@ void partial_derivatives(
         Tags::deriv, DerivativeTags, tmpl::size_t<Dim>, DerivativeFrame>>*>
         du,
     const Variables<VariableTags>& u, const Mesh<Dim>& mesh,
-    const InverseJacobian<DataVector, Dim, Frame::Logical, DerivativeFrame>&
-        inverse_jacobian) noexcept {
+    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                          DerivativeFrame>& inverse_jacobian) noexcept {
   auto& partial_derivatives_of_u = *du;
   // For mutating compute items we must set the size.
   if (UNLIKELY(partial_derivatives_of_u.number_of_grid_points() !=
@@ -222,8 +222,8 @@ Variables<db::wrap_tags_in<Tags::deriv, DerivativeTags, tmpl::size_t<Dim>,
                            DerivativeFrame>>
 partial_derivatives(
     const Variables<VariableTags>& u, const Mesh<Dim>& mesh,
-    const InverseJacobian<DataVector, Dim, Frame::Logical, DerivativeFrame>&
-        inverse_jacobian) noexcept {
+    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                          DerivativeFrame>& inverse_jacobian) noexcept {
   Variables<db::wrap_tags_in<Tags::deriv, DerivativeTags, tmpl::size_t<Dim>,
                              DerivativeFrame>>
       partial_derivatives_of_u(u.number_of_grid_points());

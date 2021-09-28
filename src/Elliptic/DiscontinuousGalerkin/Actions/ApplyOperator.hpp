@@ -257,7 +257,7 @@ struct PrepareAndSendMortarData<
         make_not_null(&auxiliary_fluxes_buffer), make_not_null(&primal_fluxes),
         make_not_null(&all_mortar_data), db::get<PrimalFieldsTag>(box), element,
         db::get<domain::Tags::Mesh<Dim>>(box),
-        db::get<domain::Tags::InverseJacobian<Dim, Frame::Logical,
+        db::get<domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
                                               Frame::Inertial>>(box),
         db::get<domain::Tags::Faces<Dim, domain::Tags::FaceNormal<Dim>>>(box),
         db::get<domain::Tags::Faces<
@@ -391,10 +391,10 @@ struct ReceiveMortarDataAndApplyOperator<
         },
         db::get<PrimalFieldsTag>(box), db::get<PrimalFluxesTag>(box),
         db::get<domain::Tags::Mesh<Dim>>(box),
-        db::get<domain::Tags::InverseJacobian<Dim, Frame::Logical,
+        db::get<domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
                                               Frame::Inertial>>(box),
-        db::get<domain::Tags::DetInvJacobian<Frame::Logical, Frame::Inertial>>(
-            box),
+        db::get<domain::Tags::DetInvJacobian<Frame::ElementLogical,
+                                             Frame::Inertial>>(box),
         db::get<domain::Tags::Faces<
             Dim, domain::Tags::UnnormalizedFaceNormalMagnitude<Dim>>>(box),
         db::get<::Tags::Mortars<domain::Tags::Mesh<Dim - 1>, Dim>>(box),
@@ -578,10 +578,10 @@ struct ImposeInhomogeneousBoundaryConditionsOnSource<
     elliptic::dg::impose_inhomogeneous_boundary_conditions_on_source<System>(
         make_not_null(&fixed_sources), db::get<domain::Tags::Element<Dim>>(box),
         db::get<domain::Tags::Mesh<Dim>>(box),
-        db::get<domain::Tags::InverseJacobian<Dim, Frame::Logical,
+        db::get<domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
                                               Frame::Inertial>>(box),
-        db::get<domain::Tags::DetInvJacobian<Frame::Logical, Frame::Inertial>>(
-            box),
+        db::get<domain::Tags::DetInvJacobian<Frame::ElementLogical,
+                                             Frame::Inertial>>(box),
         db::get<domain::Tags::Faces<Dim, domain::Tags::FaceNormal<Dim>>>(box),
         db::get<domain::Tags::Faces<
             Dim, domain::Tags::UnnormalizedFaceNormalMagnitude<Dim>>>(box),

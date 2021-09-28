@@ -22,7 +22,7 @@ template <size_t Dim>
 struct InverseJacobianLogicalToGrid : db::SimpleTag {
   static std::string name() noexcept { return "InverseJacobian(Logical,Grid)"; }
   using type = std::optional<
-      ::InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Grid>>;
+      ::InverseJacobian<DataVector, Dim, Frame::ElementLogical, Frame::Grid>>;
 };
 
 /// \brief The determinant of the inverse Jacobian from the logical frame to the

@@ -65,8 +65,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticData.GrMhd.MagTovStar",
       mesh.number_of_grid_points(), 0.0};
   const double scale = 1.0e-2;
   in_coords.get(0) = scale * (log_coords.get(0) + 1.1);
-  InverseJacobian<DataVector, 3, Frame::Logical, Frame::Inertial> inv_jac{
-      mesh.number_of_grid_points(), 0.0};
+  InverseJacobian<DataVector, 3, Frame::ElementLogical, Frame::Inertial>
+      inv_jac{mesh.number_of_grid_points(), 0.0};
   for (size_t i = 0; i < 3; ++i) {
     inv_jac.get(i, i) = 1.0 / scale;
   }

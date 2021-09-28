@@ -40,7 +40,7 @@ template <typename System, typename SolutionType, typename... Maps,
           typename... PrimalFluxes, typename... AuxiliaryFluxes>
 void verify_solution_impl(
     const SolutionType& solution, const Mesh<System::volume_dim>& mesh,
-    const domain::CoordinateMap<Frame::Logical, Frame::Inertial, Maps...>
+    const domain::CoordinateMap<Frame::ElementLogical, Frame::Inertial, Maps...>
         coord_map,
     const double tolerance, const std::tuple<FluxesArgs...>& fluxes_args,
     const std::tuple<SourcesArgs...>& sources_args,
@@ -140,7 +140,7 @@ template <typename System, typename SolutionType, typename... Maps,
           typename... FluxesArgs, typename... SourcesArgs>
 void verify_solution(
     const SolutionType& solution, const Mesh<System::volume_dim>& mesh,
-    const domain::CoordinateMap<Frame::Logical, Frame::Inertial, Maps...>
+    const domain::CoordinateMap<Frame::ElementLogical, Frame::Inertial, Maps...>
         coord_map,
     const double tolerance, const std::tuple<FluxesArgs...>& fluxes_args,
     const std::tuple<SourcesArgs...>& sources_args = std::tuple<>{}) {
@@ -153,7 +153,7 @@ void verify_solution(
 template <typename System, typename SolutionType, typename... Maps>
 void verify_solution(
     const SolutionType& solution, const Mesh<System::volume_dim>& mesh,
-    const domain::CoordinateMap<Frame::Logical, Frame::Inertial, Maps...>
+    const domain::CoordinateMap<Frame::ElementLogical, Frame::Inertial, Maps...>
         coord_map,
     const double tolerance) {
   using argument_tags = tmpl::remove_duplicates<
@@ -207,8 +207,8 @@ template <typename System, typename SolutionType,
           typename PackageFluxesArgs>
 void verify_smooth_solution(
     const SolutionType& solution,
-    const domain::CoordinateMap<Frame::Logical, Frame::Inertial, Maps...>&
-        coord_map,
+    const domain::CoordinateMap<Frame::ElementLogical, Frame::Inertial,
+                                Maps...>& coord_map,
     const double tolerance_offset, const double tolerance_scaling,
     PackageFluxesArgs&& package_fluxes_args) {
   INFO("Verify smooth solution");
@@ -246,8 +246,8 @@ template <typename System, typename SolutionType,
           size_t Dim = System::volume_dim, typename... Maps>
 void verify_solution_with_power_law_convergence(
     const SolutionType& solution,
-    const domain::CoordinateMap<Frame::Logical, Frame::Inertial, Maps...>&
-        coord_map,
+    const domain::CoordinateMap<Frame::ElementLogical, Frame::Inertial,
+                                Maps...>& coord_map,
     const double tolerance_offset, const double tolerance_pow) {
   INFO("Verify solution with power-law convergence");
   for (size_t num_points = Spectral::minimum_number_of_points<

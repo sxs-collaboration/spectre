@@ -63,12 +63,13 @@ namespace Initialization {
  *      Frame::Inertial>`
  *   - `domain::Tags::CoordinatesMeshVelocityAndJacobiansCompute<
  *      CoordinateMap<Dim, Frame::Grid, Frame::Inertial>>`
- *   - `domain::Tags::Coordinates<Dim, Frame::Logical>`
+ *   - `domain::Tags::Coordinates<Dim, Frame::ElementLogical>`
  *   - `domain::Tags::Coordinates<Dim, Frame::Grid>`
  *   - `domain::Tags::Coordinates<Dim, Frame::Inertial>`
- *   - `domain::Tags::InverseJacobian<Dim, Frame::Logical, Frame::Grid>`
- *   - `domain::Tags::InverseJacobian<Dim, Frame::Logical, Frame::Inertial>`
- *   - `domain::Tags::DetInvJacobian<Frame::Logical, Frame::Inertial>`
+ *   - `domain::Tags::InverseJacobian<Dim, Frame::ElementLogical, Frame::Grid>`
+ *   - `domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
+ *      Frame::Inertial>`
+ *   - `domain::Tags::DetInvJacobian<Frame::ElementLogical, Frame::Inertial>`
  *   - `domain::Tags::MeshVelocity<Dim, Frame::Inertial>`
  *   - `domain::Tags::DivMeshVelocity`
  *   - `domain::Tags::MinimumGridSpacingCompute<Dim, Frame::Inertial>>`
@@ -102,10 +103,10 @@ struct Domain {
       // Compute tags for Frame::Grid quantities
       ::domain::Tags::MappedCoordinates<
           ::domain::Tags::ElementMap<Dim, Frame::Grid>,
-          ::domain::Tags::Coordinates<Dim, Frame::Logical>>,
+          ::domain::Tags::Coordinates<Dim, Frame::ElementLogical>>,
       ::domain::Tags::InverseJacobianCompute<
           ::domain::Tags::ElementMap<Dim, Frame::Grid>,
-          ::domain::Tags::Coordinates<Dim, Frame::Logical>>,
+          ::domain::Tags::Coordinates<Dim, Frame::ElementLogical>>,
       // Compute tag to retrieve functions of time from global cache.
       Parallel::Tags::FromGlobalCache<::domain::Tags::FunctionsOfTime>,
       // Compute tags for Frame::Inertial quantities
@@ -115,7 +116,7 @@ struct Domain {
 
       ::domain::Tags::InertialFromGridCoordinatesCompute<Dim>,
       ::domain::Tags::ElementToInertialInverseJacobian<Dim>,
-      ::domain::Tags::DetInvJacobianCompute<Dim, Frame::Logical,
+      ::domain::Tags::DetInvJacobianCompute<Dim, Frame::ElementLogical,
                                             Frame::Inertial>,
       ::domain::Tags::InertialMeshVelocityCompute<Dim>,
       evolution::domain::Tags::DivMeshVelocityCompute<Dim>,

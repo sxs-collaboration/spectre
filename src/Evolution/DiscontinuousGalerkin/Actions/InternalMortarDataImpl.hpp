@@ -73,8 +73,8 @@ void internal_mortar_data_impl(
     const domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, Dim>&
         moving_mesh_map,
     const std::optional<tnsr::I<DataVector, Dim>>& volume_mesh_velocity,
-    const InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>&
-        volume_inverse_jacobian,
+    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                          Frame::Inertial>& volume_inverse_jacobian,
     const PackageDataVolumeArgs&... package_data_volume_args) noexcept {
   using variables_tags = typename System::variables_tag::tags_list;
   using flux_variables = typename System::flux_variables;
@@ -315,9 +315,9 @@ void internal_mortar_data(
       box,
       [&boundary_correction,
        &element = db::get<domain::Tags::Element<Dim>>(*box), &evolved_variables,
-       &logical_to_inertial_inverse_jacobian = db::get<
-           domain::Tags::InverseJacobian<Dim, Frame::Logical, Frame::Inertial>>(
-           *box),
+       &logical_to_inertial_inverse_jacobian =
+           db::get<domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
+                                                 Frame::Inertial>>(*box),
        &mesh = db::get<domain::Tags::Mesh<Dim>>(*box),
        &mesh_velocity = db::get<domain::Tags::MeshVelocity<Dim>>(*box),
        &mortar_meshes = db::get<Tags::MortarMesh<Dim>>(*box),

@@ -176,7 +176,7 @@ void test_neuler_vs_generic_minmod_work(
     const Scalar<DataVector>& input_density,
     const tnsr::I<DataVector, VolumeDim>& input_momentum,
     const Scalar<DataVector>& input_energy, const Mesh<VolumeDim>& mesh,
-    const tnsr::I<DataVector, VolumeDim, Frame::Logical>& logical_coords,
+    const tnsr::I<DataVector, VolumeDim, Frame::ElementLogical>& logical_coords,
     const std::array<double, VolumeDim>& element_size,
     const Scalar<DataVector>& det_inv_logical_to_inertial_jacobian,
     const std::unordered_map<

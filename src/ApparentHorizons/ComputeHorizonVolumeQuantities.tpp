@@ -168,7 +168,7 @@ void ComputeHorizonVolumeQuantities::apply(
     const gsl::not_null<Variables<DestTagList>*> target_vars,
     const Variables<SrcTagList>& src_vars, const Mesh<3>& mesh,
     const Jacobian<DataVector, 3, TargetFrame, Frame::Inertial>& jacobian,
-    const InverseJacobian<DataVector, 3, Frame::Logical, TargetFrame>&
+    const InverseJacobian<DataVector, 3, Frame::ElementLogical, TargetFrame>&
         inverse_jacobian) noexcept {
   static_assert(
       std::is_same_v<tmpl::list_difference<SrcTagList, allowed_src_tags>,
@@ -224,7 +224,7 @@ void ComputeHorizonVolumeQuantities::apply(
       ::Tags::Tempii<5, 3, Frame::Inertial, DataVector>;
   using logical_deriv_metric_tag = ::Tags::TempTensor<
       6, Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1, 1>,
-                index_list<SpatialIndex<3, UpLo::Lo, Frame::Logical>,
+                index_list<SpatialIndex<3, UpLo::Lo, Frame::ElementLogical>,
                            SpatialIndex<3, UpLo::Lo, TargetFrame>,
                            SpatialIndex<3, UpLo::Lo, TargetFrame>>>>;
   using deriv_metric_tag = ::Tags::Tempijj<7, 3, TargetFrame, DataVector>;

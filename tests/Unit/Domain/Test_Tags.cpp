@@ -104,7 +104,7 @@ template <size_t Dim>
 void test_compute_tags() noexcept {
   TestHelpers::db::test_compute_tag<Tags::InverseJacobianCompute<
       Tags::ElementMap<Dim>, Tags::Coordinates<Dim, Frame::Logical>>>(
-      "InverseJacobian(Logical,Inertial)");
+      "InverseJacobian(ElementLogical,Inertial)");
   TestHelpers::db::test_compute_tag<
       Tags::DetInvJacobianCompute<Dim, Frame::Logical, Frame::Inertial>>(
       "DetInvJacobian(Logical,Inertial)");
@@ -124,28 +124,30 @@ void test_compute_tags() noexcept {
       "Jacobian(Logical,Inertial)");
 
   auto map = element_map<Dim>();
-  const tnsr::I<DataVector, Dim, Frame::Logical> logical_coords(
+  const tnsr::I<DataVector, Dim, Frame::ElementLogical> logical_coords(
       make_array<Dim>(DataVector{-1.0, -0.5, 0.0, 0.5, 1.0}));
   const auto expected_inv_jacobian = map.inv_jacobian(logical_coords);
   const auto expected_jacobian = map.jacobian(logical_coords);
 
   const auto box = db::create<
       tmpl::list<Tags::ElementMap<Dim, Frame::Grid>,
-                 Tags::Coordinates<Dim, Frame::Logical>>,
+                 Tags::Coordinates<Dim, Frame::ElementLogical>>,
       db::AddComputeTags<
-          Tags::InverseJacobianCompute<Tags::ElementMap<Dim, Frame::Grid>,
-                                       Tags::Coordinates<Dim, Frame::Logical>>,
-          Tags::DetInvJacobianCompute<Dim, Frame::Logical, Frame::Grid>,
-          Tags::JacobianCompute<Dim, Frame::Logical, Frame::Grid>>>(
+          Tags::InverseJacobianCompute<
+              Tags::ElementMap<Dim, Frame::Grid>,
+              Tags::Coordinates<Dim, Frame::ElementLogical>>,
+          Tags::DetInvJacobianCompute<Dim, Frame::ElementLogical, Frame::Grid>,
+          Tags::JacobianCompute<Dim, Frame::ElementLogical, Frame::Grid>>>(
       std::move(map), logical_coords);
   CHECK_ITERABLE_APPROX(
-      (db::get<Tags::InverseJacobian<Dim, Frame::Logical, Frame::Grid>>(box)),
+      (db::get<Tags::InverseJacobian<Dim, Frame::ElementLogical, Frame::Grid>>(
+          box)),
       expected_inv_jacobian);
   CHECK_ITERABLE_APPROX(
-      (db::get<Tags::DetInvJacobian<Frame::Logical, Frame::Grid>>(box)),
+      (db::get<Tags::DetInvJacobian<Frame::ElementLogical, Frame::Grid>>(box)),
       determinant(expected_inv_jacobian));
   CHECK_ITERABLE_APPROX(
-      (db::get<Tags::Jacobian<Dim, Frame::Logical, Frame::Grid>>(box)),
+      (db::get<Tags::Jacobian<Dim, Frame::ElementLogical, Frame::Grid>>(box)),
       expected_jacobian);
 }
 

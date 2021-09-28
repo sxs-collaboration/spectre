@@ -51,7 +51,7 @@ struct ComputeHorizonVolumeQuantities {
       const gsl::not_null<Variables<DestTagList>*> target_vars,
       const Variables<SrcTagList>& src_vars, const Mesh<3>& mesh,
       const Jacobian<DataVector, 3, TargetFrame, Frame::Inertial>& jacobian,
-      const InverseJacobian<DataVector, 3, Frame::Logical, TargetFrame>&
+      const InverseJacobian<DataVector, 3, Frame::ElementLogical, TargetFrame>&
           inverse_jacobian) noexcept;
 
   using allowed_src_tags =

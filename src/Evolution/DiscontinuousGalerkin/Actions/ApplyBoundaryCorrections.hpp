@@ -378,7 +378,7 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
     if (not using_gauss_lobatto_points) {
       get(volume_det_inv_jacobian)
           .set_data_ref(make_not_null(&const_cast<DataVector&>(get(
-              db::get<domain::Tags::DetInvJacobian<Frame::Logical,
+              db::get<domain::Tags::DetInvJacobian<Frame::ElementLogical,
                                                    Frame::Inertial>>(*box)))));
       get(volume_det_jacobian) = 1.0 / get(volume_det_inv_jacobian);
     }

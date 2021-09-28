@@ -59,8 +59,8 @@ struct div<Tag, Requires<tt::is_a_v<Tensor, typename Tag::type>>>
 template <typename FluxTags, size_t Dim, typename DerivativeFrame>
 auto divergence(
     const Variables<FluxTags>& F, const Mesh<Dim>& mesh,
-    const InverseJacobian<DataVector, Dim, Frame::Logical, DerivativeFrame>&
-        inverse_jacobian) noexcept
+    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                          DerivativeFrame>& inverse_jacobian) noexcept
     -> Variables<db::wrap_tags_in<Tags::div, FluxTags>>;
 
 template <typename... DivTags, typename... FluxTags, size_t Dim,
@@ -68,8 +68,8 @@ template <typename... DivTags, typename... FluxTags, size_t Dim,
 void divergence(
     gsl::not_null<Variables<tmpl::list<DivTags...>>*> divergence_of_F,
     const Variables<tmpl::list<FluxTags...>>& F, const Mesh<Dim>& mesh,
-    const InverseJacobian<DataVector, Dim, Frame::Logical, DerivativeFrame>&
-        inverse_jacobian) noexcept;
+    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                          DerivativeFrame>& inverse_jacobian) noexcept;
 /// @}
 
 /// @{
@@ -79,16 +79,16 @@ template <size_t Dim, typename DerivativeFrame>
 Scalar<DataVector> divergence(
     const tnsr::I<DataVector, Dim, DerivativeFrame>& input,
     const Mesh<Dim>& mesh,
-    const InverseJacobian<DataVector, Dim, Frame::Logical, DerivativeFrame>&
-        inverse_jacobian) noexcept;
+    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                          DerivativeFrame>& inverse_jacobian) noexcept;
 
 template <size_t Dim, typename DerivativeFrame>
 void divergence(
     gsl::not_null<Scalar<DataVector>*> div_input,
     const tnsr::I<DataVector, Dim, DerivativeFrame>& input,
     const Mesh<Dim>& mesh,
-    const InverseJacobian<DataVector, Dim, Frame::Logical, DerivativeFrame>&
-        inverse_jacobian) noexcept;
+    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                          DerivativeFrame>& inverse_jacobian) noexcept;
 /// @}
 
 namespace Tags {
@@ -101,8 +101,8 @@ namespace Tags {
  * the first index must have type
  * `TensorIndexType<Dim, UpLo::Up, Frame::TargetFrame, IndexType::Spatial>`.
  * The divergence is computed in the frame `TargetFrame`, and
- * `InverseJacobianTag` must be associated with a map from `Frame::Logical` to
- * `Frame::TargetFrame`.
+ * `InverseJacobianTag` must be associated with a map from
+ * `Frame::ElementLogical` to `Frame::TargetFrame`.
  *
  * Note that each tensor may have additional tensor indices - in this case the
  * divergence is computed for each additional index. For instance, a tensor
@@ -121,7 +121,7 @@ struct DivVariablesCompute : db::add_tag_prefix<div, Tag>, db::ComputeTag {
   using inv_jac_indices = typename InverseJacobianTag::type::index_list;
   static constexpr auto dim = tmpl::back<inv_jac_indices>::dim;
   static_assert(std::is_same_v<typename tmpl::front<inv_jac_indices>::Frame,
-                               Frame::Logical>,
+                               Frame::ElementLogical>,
                 "Must map from the logical frame.");
 
  public:
@@ -144,7 +144,7 @@ struct DivVectorCompute : div<Tag>, db::ComputeTag {
   using inv_jac_indices = typename InverseJacobianTag::type::index_list;
   static constexpr auto dim = tmpl::back<inv_jac_indices>::dim;
   static_assert(std::is_same_v<typename tmpl::front<inv_jac_indices>::Frame,
-                               Frame::Logical>,
+                               Frame::ElementLogical>,
                 "Must map from the logical frame.");
 
  public:

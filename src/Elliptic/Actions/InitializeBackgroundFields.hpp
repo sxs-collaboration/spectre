@@ -77,9 +77,9 @@ struct InitializeBackgroundFields {
     const auto& inertial_coords =
         get<domain::Tags::Coordinates<Dim, Frame::Inertial>>(box);
     const auto& mesh = get<domain::Tags::Mesh<Dim>>(box);
-    const auto& inv_jacobian = get<
-        domain::Tags::InverseJacobian<Dim, Frame::Logical, Frame::Inertial>>(
-        box);
+    const auto& inv_jacobian =
+        get<domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
+                                          Frame::Inertial>>(box);
     auto background_fields = variables_from_tagged_tuple(
         background.variables(inertial_coords, mesh, inv_jacobian,
                              typename background_fields_tag::tags_list{}));

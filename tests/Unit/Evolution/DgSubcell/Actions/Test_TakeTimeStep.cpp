@@ -84,7 +84,8 @@ struct Metavariables {
     template <typename DbTagsList>
     static void apply(
         const gsl::not_null<db::DataBox<DbTagsList>*> box,
-        const InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Grid>&
+        const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                              Frame::Grid>&
             cell_centered_logical_to_grid_inv_jacobian,
         const Scalar<DataVector>& cell_centered_det_inv_jacobian) noexcept {
       time_derivative_invoked = true;
@@ -94,7 +95,7 @@ struct Metavariables {
       const auto inv_jacobian =
           db::get<domain::Tags::ElementMap<Dim, Frame::Grid>>(*box)
               .inv_jacobian(db::get<evolution::dg::subcell::Tags::Coordinates<
-                                Dim, Frame::Logical>>(*box));
+                                Dim, Frame::ElementLogical>>(*box));
       CHECK(cell_centered_logical_to_grid_inv_jacobian == inv_jacobian);
       const auto det_inv_jacobian = determinant(inv_jacobian);
       CHECK_ITERABLE_APPROX(cell_centered_det_inv_jacobian, det_inv_jacobian);

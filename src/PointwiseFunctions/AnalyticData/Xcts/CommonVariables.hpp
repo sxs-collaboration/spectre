@@ -119,8 +119,8 @@ struct CommonVariables {
           DataType, Dim, Frame::Inertial>> /*meta*/) const noexcept;
 
   std::optional<std::reference_wrapper<const Mesh<Dim>>> mesh;
-  std::optional<std::reference_wrapper<
-      const InverseJacobian<DataType, Dim, Frame::Logical, Frame::Inertial>>>
+  std::optional<std::reference_wrapper<const InverseJacobian<
+      DataType, Dim, Frame::ElementLogical, Frame::Inertial>>>
       inv_jacobian;
 };
 

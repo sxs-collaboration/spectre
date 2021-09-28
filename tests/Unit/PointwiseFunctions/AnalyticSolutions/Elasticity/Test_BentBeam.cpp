@@ -127,7 +127,8 @@ SPECTRE_TEST_CASE(
       domain::CoordinateMaps::ProductOf2Maps<AffineMap, AffineMap>;
   // Since potential_energy() in BentBeam returns the energy stored in the
   // entire beam, the coord_map has to match its dimensions.
-  const domain::CoordinateMap<Frame::Logical, Frame::Inertial, AffineMap2D>
+  const domain::CoordinateMap<Frame::ElementLogical, Frame::Inertial,
+                              AffineMap2D>
       coord_map{{{-1., 1., -5. / 2., 5. / 2.}, {-1., 1., -1. / 2., 1. / 2.}}};
   // Since the solution is a polynomial of degree 2, it should numerically
   // solve the system equations to machine precision on 3 grid points per

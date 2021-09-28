@@ -47,7 +47,7 @@ void test_tags() noexcept {
       "InertialCoordinates");
   TestHelpers::db::test_compute_tag<
       domain::Tags::ElementToInertialInverseJacobian<Dim>>(
-      "InverseJacobian(Logical,Inertial)");
+      "InverseJacobian(ElementLogical,Inertial)");
   TestHelpers::db::test_simple_tag<domain::Tags::MeshVelocity<Dim>>(
       "MeshVelocity");
   TestHelpers::db::test_compute_tag<
@@ -104,7 +104,7 @@ template <size_t Dim, bool IsTimeDependent>
 void test() noexcept {
   using simple_tags = db::AddSimpleTags<
       Tags::Time, domain::Tags::Coordinates<Dim, Frame::Grid>,
-      domain::Tags::InverseJacobian<Dim, Frame::Logical, Frame::Grid>,
+      domain::Tags::InverseJacobian<Dim, Frame::ElementLogical, Frame::Grid>,
       domain::Tags::FunctionsOfTime,
       domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
                                                   Frame::Inertial>>;
@@ -129,7 +129,7 @@ void test() noexcept {
   tnsr::I<DataVector, Dim, Frame::Grid> grid_coords{num_pts};
   fill_with_random_values(make_not_null(&grid_coords), make_not_null(&gen),
                           make_not_null(&dist));
-  InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Grid>
+  InverseJacobian<DataVector, Dim, Frame::ElementLogical, Frame::Grid>
       element_to_grid_inverse_jacobian{num_pts};
   fill_with_random_values(make_not_null(&element_to_grid_inverse_jacobian),
                           make_not_null(&gen), make_not_null(&dist));
@@ -171,7 +171,7 @@ void test() noexcept {
                   grid_coords, expected_time,
                   db::get<domain::Tags::FunctionsOfTime>(box));
 
-      InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>
+      InverseJacobian<DataVector, Dim, Frame::ElementLogical, Frame::Inertial>
           expected_inv_jacobian{num_pts};
 
       for (size_t logical_i = 0; logical_i < Dim; ++logical_i) {
@@ -209,12 +209,12 @@ void test() noexcept {
           expected_coords);
 
       for (size_t i = 0;
-           i < db::get<domain::Tags::InverseJacobian<Dim, Frame::Logical,
+           i < db::get<domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
                                                      Frame::Inertial>>(box)
                    .size();
            ++i) {
         CHECK(
-            db::get<domain::Tags::InverseJacobian<Dim, Frame::Logical,
+            db::get<domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
                                                   Frame::Inertial>>(box)[i]
                 .data() !=
             std::get<1>(*db::get<
@@ -223,7 +223,7 @@ void test() noexcept {
                 .data());
       }
       CHECK_ITERABLE_APPROX(
-          (db::get<domain::Tags::InverseJacobian<Dim, Frame::Logical,
+          (db::get<domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
                                                  Frame::Inertial>>(box)),
           expected_inv_jacobian);
 
@@ -253,7 +253,7 @@ void test() noexcept {
         expected_coords[i] = grid_coords[i];
       }
 
-      InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>
+      InverseJacobian<DataVector, Dim, Frame::ElementLogical, Frame::Inertial>
           expected_inv_jacobian{num_pts};
       // The Grid->Inertial Jacobian is currently just the identity
       for (size_t i = 0; i < expected_inv_jacobian.size(); ++i) {
@@ -275,21 +275,21 @@ void test() noexcept {
           expected_coords);
 
       for (size_t i = 0;
-           i < db::get<domain::Tags::InverseJacobian<Dim, Frame::Logical,
+           i < db::get<domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
                                                      Frame::Inertial>>(box)
                    .size();
            ++i) {
         // Check that the `const_cast`s and set_data_ref inside the compute tag
         // functions worked correctly
-        CHECK(db::get<domain::Tags::InverseJacobian<Dim, Frame::Logical,
+        CHECK(db::get<domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
                                                     Frame::Inertial>>(box)[i]
                   .data() ==
-              db::get<domain::Tags::InverseJacobian<Dim, Frame::Logical,
+              db::get<domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
                                                     Frame::Grid>>(box)[i]
                   .data());
       }
       CHECK_ITERABLE_APPROX(
-          (db::get<domain::Tags::InverseJacobian<Dim, Frame::Logical,
+          (db::get<domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
                                                  Frame::Inertial>>(box)),
           expected_inv_jacobian);
 

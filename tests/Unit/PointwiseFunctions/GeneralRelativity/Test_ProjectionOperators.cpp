@@ -117,11 +117,12 @@ void test_spatial_projection_tensors_3D(
   Mesh<SpatialDim> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
                         Spectral::Quadrature::GaussLobatto};
   const auto coord_map =
-      domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(Affine3D{
-          Affine{-1., 1., lower_bound[0], upper_bound[0]},
-          Affine{-1., 1., lower_bound[1], upper_bound[1]},
-          Affine{-1., 1., lower_bound[2], upper_bound[2]},
-      });
+      domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
+          Affine3D{
+              Affine{-1., 1., lower_bound[0], upper_bound[0]},
+              Affine{-1., 1., lower_bound[1], upper_bound[1]},
+              Affine{-1., 1., lower_bound[2], upper_bound[2]},
+          });
 
   // Setup coordinates
   const auto x_logical = logical_coordinates(mesh);

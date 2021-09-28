@@ -28,8 +28,8 @@ struct TempTag : db::SimpleTag {
 template <typename U, typename T, size_t Dim, typename DerivativeFrame>
 auto deriv_tensor(
     const gsl::not_null<U*> deriv, const T& tensor, const Mesh<Dim>& mesh,
-    const InverseJacobian<DataVector, Dim, Frame::Logical, DerivativeFrame>&
-        inv_jacobian) noexcept {
+    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                          DerivativeFrame>& inv_jacobian) noexcept {
   Variables<tmpl::list<TempTag<T>>> vars{tensor.begin()->size()};
   get<TempTag<T>>(vars) = tensor;
   const auto deriv_vars =

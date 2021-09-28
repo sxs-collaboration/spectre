@@ -87,20 +87,20 @@ auto make_map() noexcept;
 
 template <>
 auto make_map<1>() noexcept {
-  return domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(
+  return domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
       Affine{-1.0, 1.0, -0.3, 0.7});
 }
 
 template <>
 auto make_map<2>() noexcept {
-  return domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(
+  return domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
       Affine2D{{-1.0, 1.0, -1.0, -0.9}, {-1.0, 1.0, -1.0, -0.9}},
       domain::CoordinateMaps::Wedge<2>{1.0, 2.0, 0.0, 1.0, {}, false});
 }
 
 template <>
 auto make_map<3>() noexcept {
-  return domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(
+  return domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
       Affine3D{{-1.0, 1.0, -1.0, -0.9},
                {-1.0, 1.0, -1.0, -0.9},
                {-1.0, 1.0, -1.0, 1.0}},
@@ -139,7 +139,7 @@ void test(const double eps) {
 
   auto volume_fluxes = polynomial_volume_fluxes<tags>(inertial_coords, powers);
 
-  InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>
+  InverseJacobian<DataVector, Dim, Frame::ElementLogical, Frame::Inertial>
       det_jac_times_inverse_jacobian{volume_mesh.number_of_grid_points()};
   dg::metric_identity_det_jac_times_inv_jac(
       make_not_null(&det_jac_times_inverse_jacobian), volume_mesh,

@@ -48,7 +48,7 @@ void apply_element_weight(const gsl::not_null<Scalar<DataVector>*> weight,
 template <size_t Dim>
 void element_weight(
     const gsl::not_null<Scalar<DataVector>*> weight,
-    const tnsr::I<DataVector, Dim, Frame::Logical>& logical_coords,
+    const tnsr::I<DataVector, Dim, Frame::ElementLogical>& logical_coords,
     const std::array<double, Dim>& overlap_widths,
     const std::unordered_set<Direction<Dim>>& external_boundaries) noexcept {
   destructive_resize_components(weight, logical_coords.begin()->size());
@@ -67,7 +67,7 @@ void element_weight(
 
 template <size_t Dim>
 Scalar<DataVector> element_weight(
-    const tnsr::I<DataVector, Dim, Frame::Logical>& logical_coords,
+    const tnsr::I<DataVector, Dim, Frame::ElementLogical>& logical_coords,
     const std::array<double, Dim>& overlap_widths,
     const std::unordered_set<Direction<Dim>>& external_boundaries) noexcept {
   Scalar<DataVector> weight{logical_coords.begin()->size()};
@@ -92,7 +92,7 @@ size_t dim_in_volume(const size_t dim_in_slice,
 template <size_t Dim>
 void intruding_weight(
     const gsl::not_null<Scalar<DataVector>*> weight,
-    const tnsr::I<DataVector, Dim, Frame::Logical>& logical_coords,
+    const tnsr::I<DataVector, Dim, Frame::ElementLogical>& logical_coords,
     const Direction<Dim>& direction,
     const std::array<double, Dim>& overlap_widths,
     const size_t num_intruding_overlaps,
@@ -190,7 +190,7 @@ void intruding_weight(
 
 template <size_t Dim>
 Scalar<DataVector> intruding_weight(
-    const tnsr::I<DataVector, Dim, Frame::Logical>& logical_coords,
+    const tnsr::I<DataVector, Dim, Frame::ElementLogical>& logical_coords,
     const Direction<Dim>& direction,
     const std::array<double, Dim>& overlap_widths,
     const size_t num_intruding_overlaps,
@@ -205,22 +205,26 @@ Scalar<DataVector> intruding_weight(
 #define INSTANTIATE(r, data)                                                \
   template void element_weight(                                             \
       gsl::not_null<Scalar<DataVector>*> weight,                            \
-      const tnsr::I<DataVector, DIM(data), Frame::Logical>& logical_coords, \
+      const tnsr::I<DataVector, DIM(data), Frame::ElementLogical>&          \
+          logical_coords,                                                   \
       const std::array<double, DIM(data)>& overlap_widths,                  \
       const std::unordered_set<Direction<DIM(data)>>& external_boundaries); \
   template Scalar<DataVector> element_weight(                               \
-      const tnsr::I<DataVector, DIM(data), Frame::Logical>& logical_coords, \
+      const tnsr::I<DataVector, DIM(data), Frame::ElementLogical>&          \
+          logical_coords,                                                   \
       const std::array<double, DIM(data)>& overlap_widths,                  \
       const std::unordered_set<Direction<DIM(data)>>& external_boundaries); \
   template void intruding_weight(                                           \
       gsl::not_null<Scalar<DataVector>*> weight,                            \
-      const tnsr::I<DataVector, DIM(data), Frame::Logical>& logical_coords, \
+      const tnsr::I<DataVector, DIM(data), Frame::ElementLogical>&          \
+          logical_coords,                                                   \
       const Direction<DIM(data)>& direction,                                \
       const std::array<double, DIM(data)>& overlap_widths,                  \
       size_t num_intruding_overlaps,                                        \
       const std::unordered_set<Direction<DIM(data)>>& external_boundaries); \
   template Scalar<DataVector> intruding_weight(                             \
-      const tnsr::I<DataVector, DIM(data), Frame::Logical>& logical_coords, \
+      const tnsr::I<DataVector, DIM(data), Frame::ElementLogical>&          \
+          logical_coords,                                                   \
       const Direction<DIM(data)>& direction,                                \
       const std::array<double, DIM(data)>& overlap_widths,                  \
       size_t num_intruding_overlaps,                                        \

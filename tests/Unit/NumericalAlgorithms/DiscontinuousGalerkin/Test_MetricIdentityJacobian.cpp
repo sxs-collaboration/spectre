@@ -36,14 +36,14 @@ using Affine3D = domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
 template <size_t Dim>
 auto make_map() noexcept {
   if constexpr (Dim == 1) {
-    return domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(
+    return domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
         Affine{-1.0, 1.0, -0.3, 0.7});
   } else if constexpr (Dim == 2) {
-    return domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(
+    return domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
         Affine2D{{-1.0, 1.0, -1.0, -0.99}, {-1.0, 1.0, -1.0, -0.99}},
         domain::CoordinateMaps::Wedge<2>{1.0, 2.0, 0.0, 1.0, {}, false});
   } else {
-    return domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(
+    return domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
         Affine3D{{-1.0, 1.0, -1.0, -0.99},
                  {-1.0, 1.0, -1.0, -0.99},
                  {-1.0, 1.0, -1.0, 1.0}},
@@ -62,7 +62,7 @@ void test(const Mesh<Dim>& mesh) {
   {
     tnsr::I<DataVector, Dim, Frame::Inertial> inertial_coords{
         mesh.number_of_grid_points()};
-    Jacobian<DataVector, Dim, Frame::Logical, Frame::Inertial> jacobian{
+    Jacobian<DataVector, Dim, Frame::ElementLogical, Frame::Inertial> jacobian{
         mesh.number_of_grid_points()};
 
     fill_with_random_values(make_not_null(&inertial_coords),
@@ -70,7 +70,8 @@ void test(const Mesh<Dim>& mesh) {
     fill_with_random_values(make_not_null(&jacobian), make_not_null(&gen),
                             make_not_null(&dist));
 
-    InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial> result{};
+    InverseJacobian<DataVector, Dim, Frame::ElementLogical, Frame::Inertial>
+        result{};
 
     dg::metric_identity_det_jac_times_inv_jac(make_not_null(&result), mesh,
                                               inertial_coords, jacobian);
@@ -108,16 +109,16 @@ void test(const Mesh<Dim>& mesh) {
   // Jacobian determinent) are computed correctly. This is not expected to be
   // super accurate unless the maps are very well resolved.
   auto map = make_map<Dim>();
-  const InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>
+  const InverseJacobian<DataVector, Dim, Frame::ElementLogical, Frame::Inertial>
       analytic_inverse_jacobian = map.inv_jacobian(logical_coordinates(mesh));
-  InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>
+  InverseJacobian<DataVector, Dim, Frame::ElementLogical, Frame::Inertial>
       analytic_det_jac_times_inverse_jacobian = analytic_inverse_jacobian;
   const Scalar<DataVector> analytic_det_jac{
       1.0 / get(determinant(analytic_inverse_jacobian))};
   for (auto& t : analytic_det_jac_times_inverse_jacobian) {
     t *= get(analytic_det_jac);
   }
-  InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>
+  InverseJacobian<DataVector, Dim, Frame::ElementLogical, Frame::Inertial>
       det_jac_times_inverse_jacobian{};
 
   dg::metric_identity_det_jac_times_inv_jac(
@@ -136,11 +137,11 @@ void test(const Mesh<Dim>& mesh) {
     }
   }
 
-  InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>
+  InverseJacobian<DataVector, Dim, Frame::ElementLogical, Frame::Inertial>
       det_jac_times_inverse_jacobian2{};
-  InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>
+  InverseJacobian<DataVector, Dim, Frame::ElementLogical, Frame::Inertial>
       inverse_jacobian{};
-  Jacobian<DataVector, Dim, Frame::Logical, Frame::Inertial> jacobian =
+  Jacobian<DataVector, Dim, Frame::ElementLogical, Frame::Inertial> jacobian =
       map.jacobian(logical_coordinates(mesh));
   const auto expected_jacobian = jacobian;
   Scalar<DataVector> det_jacobian{};

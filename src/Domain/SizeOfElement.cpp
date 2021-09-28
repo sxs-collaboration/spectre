@@ -22,9 +22,9 @@ namespace {
 // * in 2D, returns (-1, 0), (1, 0), (0, -1), (0, 1)
 // * in 3D, returns (-1, 0, 0), ..., (0, 0, 1)
 template <size_t VolumeDim>
-inline tnsr::I<double, VolumeDim, Frame::Logical> logical_face_center(
+inline tnsr::I<double, VolumeDim, Frame::ElementLogical> logical_face_center(
     const Direction<VolumeDim>& dir) noexcept {
-  tnsr::I<double, VolumeDim, Frame::Logical> result{{{0.0}}};
+  tnsr::I<double, VolumeDim, Frame::ElementLogical> result{{{0.0}}};
   result.get(dir.dimension()) = (dir.side() == Side::Lower ? -1.0 : 1.0);
   return result;
 }

@@ -193,7 +193,8 @@ struct RandomBackground {
   template <typename... RequestedTags>
   static tuples::TaggedTuple<RequestedTags...> variables(
       const tnsr::I<DataVector, Dim>& x, const Mesh<Dim>& /*mesh*/,
-      const InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>&
+      const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                            Frame::Inertial>&
       /*inv_jacobian*/,
       tmpl::list<RequestedTags...> /*meta*/) noexcept {
     return variables(x, tmpl::list<RequestedTags...>{});

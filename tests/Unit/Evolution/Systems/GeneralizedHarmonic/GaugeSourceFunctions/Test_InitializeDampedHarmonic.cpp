@@ -61,30 +61,33 @@ struct component {
 
   using initial_tags = tmpl::conditional_t<
       metavariables::use_rollon,
-      tmpl::list<
-          domain::Tags::FunctionsOfTime, Tags::Time, domain::Tags::Mesh<Dim>,
-          domain::Tags::Coordinates<Dim, Frame::Grid>,
-          domain::Tags::Coordinates<Dim, Frame::Inertial>,
-          domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
-                                                      Frame::Inertial>,
-          domain::Tags::InverseJacobian<Dim, Frame::Logical, Frame::Inertial>,
-          typename Metavariables::variables_tag>,
+      tmpl::list<domain::Tags::FunctionsOfTime, Tags::Time,
+                 domain::Tags::Mesh<Dim>,
+                 domain::Tags::Coordinates<Dim, Frame::Grid>,
+                 domain::Tags::Coordinates<Dim, Frame::Inertial>,
+                 domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
+                                                             Frame::Inertial>,
+                 domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
+                                               Frame::Inertial>,
+                 typename Metavariables::variables_tag>,
       tmpl::list<
           ::Initialization::Tags::InitialTime, Tags::Time,
           domain::Tags::Mesh<Dim>,
-          domain::Tags::Coordinates<Dim, Frame::Logical>,
+          domain::Tags::Coordinates<Dim, Frame::ElementLogical>,
           domain::Tags::Coordinates<Dim, Frame::Grid>,
           domain::Tags::Coordinates<Dim, Frame::Inertial>,
           domain::Tags::ElementMap<Metavariables::volume_dim, Frame::Grid>,
           domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
                                                       Frame::Inertial>,
           domain::Tags::FunctionsOfTime,
-          domain::Tags::InverseJacobian<Dim, Frame::Logical, Frame::Inertial>,
+          domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
+                                        Frame::Inertial>,
           typename Metavariables::variables_tag>>;
-  using initial_compute_tags = db::AddComputeTags<::Tags::DerivCompute<
-      typename Metavariables::variables_tag,
-      domain::Tags::InverseJacobian<Dim, Frame::Logical, Frame::Inertial>,
-      typename Metavariables::evolved_vars>>;
+  using initial_compute_tags = db::AddComputeTags<
+      ::Tags::DerivCompute<typename Metavariables::variables_tag,
+                           domain::Tags::InverseJacobian<
+                               Dim, Frame::ElementLogical, Frame::Inertial>,
+                           typename Metavariables::evolved_vars>>;
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename Metavariables::Phase, Metavariables::Phase::Initialization,
@@ -201,8 +204,8 @@ void test(const gsl::not_null<std::mt19937*> generator) noexcept {
   }();
   Mesh<Dim> mesh{5, Spectral::Basis::Legendre,
                  Spectral::Quadrature::GaussLobatto};
-  InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial> inv_jac{
-      mesh.number_of_grid_points(), 0.};
+  InverseJacobian<DataVector, Dim, Frame::ElementLogical, Frame::Inertial>
+      inv_jac{mesh.number_of_grid_points(), 0.};
   for (size_t i = 0; i < Dim; ++i) {
     inv_jac.get(i, i) = 1.;
   }
@@ -247,7 +250,7 @@ void test(const gsl::not_null<std::mt19937*> generator) noexcept {
              domain::CoordinateMaps::Identity<Dim>{}),
          inv_jac, evolved_vars});
   } else {
-    tnsr::I<DataVector, Dim, Frame::Logical> logical_coords;
+    tnsr::I<DataVector, Dim, Frame::ElementLogical> logical_coords;
     for (size_t i = 0; i < Dim; ++i) {
       logical_coords.get(i) = inertial_coords.get(i);
     }

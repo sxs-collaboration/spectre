@@ -34,7 +34,8 @@ void verify_solution_impl(const Solution& solution,
   using AffineMap = domain::CoordinateMaps::Affine;
   using AffineMap3D =
       domain::CoordinateMaps::ProductOf3Maps<AffineMap, AffineMap, AffineMap>;
-  const domain::CoordinateMap<Frame::Logical, Frame::Inertial, AffineMap3D>
+  const domain::CoordinateMap<Frame::ElementLogical, Frame::Inertial,
+                              AffineMap3D>
       coord_map{
           {{-1., 1., center[0] + inner_radius, center[0] + outer_radius},
            {-1., 1., center[1] + inner_radius, center[1] + outer_radius},

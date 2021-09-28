@@ -43,8 +43,8 @@ void test() {
       evolution::dg::subcell::Tags::NeighborDataForReconstructionAndRdmpTci<
           Dim>>("NeighborDataForReconstructionAndRdmpTci");
   TestHelpers::db::test_simple_tag<
-      evolution::dg::subcell::Tags::Coordinates<Dim, Frame::Logical>>(
-      "LogicalCoordinates");
+      evolution::dg::subcell::Tags::Coordinates<Dim, Frame::ElementLogical>>(
+      "ElementLogicalCoordinates");
   TestHelpers::db::test_simple_tag<
       evolution::dg::subcell::Tags::Coordinates<Dim, Frame::Grid>>(
       "GridCoordinates");
@@ -63,7 +63,7 @@ void test() {
 
   TestHelpers::db::test_compute_tag<
       evolution::dg::subcell::Tags::LogicalCoordinatesCompute<Dim>>(
-      "LogicalCoordinates");
+      "ElementLogicalCoordinates");
   Mesh<Dim> subcell_mesh(5, Spectral::Basis::FiniteDifference,
                          Spectral::Quadrature::CellCentered);
   const auto logical_coords_box = db::create<
@@ -71,8 +71,9 @@ void test() {
       db::AddComputeTags<
           evolution::dg::subcell::Tags::LogicalCoordinatesCompute<Dim>>>(
       subcell_mesh);
-  CHECK(db::get<evolution::dg::subcell::Tags::Coordinates<Dim, Frame::Logical>>(
-            logical_coords_box) == logical_coordinates(subcell_mesh));
+  CHECK(db::get<evolution::dg::subcell::Tags::Coordinates<
+            Dim, Frame::ElementLogical>>(logical_coords_box) ==
+        logical_coordinates(subcell_mesh));
 
   TestHelpers::db::test_compute_tag<
       evolution::dg::subcell::Tags::TciStatusCompute<Dim>>("TciStatus");

@@ -102,8 +102,8 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
                       {Direction<1>::upper_xi(),
                        {{{ElementId<1>{0, {{SegmentId{2, 2}}}}}}, {}}}}});
     const auto& element_map = get_tag(domain::Tags::ElementMap<1>{});
-    const tnsr::I<DataVector, 1, Frame::Logical> logical_coords_for_element_map{
-        {{{-1., -0.5, 0., 0.1, 1.}}}};
+    const tnsr::I<DataVector, 1, Frame::ElementLogical>
+        logical_coords_for_element_map{{{{-1., -0.5, 0., 0.1, 1.}}}};
     const auto inertial_coords_from_element_map =
         element_map(logical_coords_for_element_map);
     const tnsr::I<DataVector, 1, Frame::Logical> expected_inertial_coords{
@@ -111,18 +111,19 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
     CHECK_ITERABLE_APPROX(get<0>(inertial_coords_from_element_map),
                           get<0>(expected_inertial_coords));
     const auto& logical_coords =
-        get_tag(domain::Tags::Coordinates<1, Frame::Logical>{});
+        get_tag(domain::Tags::Coordinates<1, Frame::ElementLogical>{});
     CHECK(get<0>(logical_coords) ==
           Spectral::collocation_points<Spectral::Basis::Legendre,
                                        Spectral::Quadrature::GaussLobatto>(4));
     const auto& inertial_coords =
         get_tag(domain::Tags::Coordinates<1, Frame::Inertial>{});
     CHECK(inertial_coords == element_map(logical_coords));
-    const auto& inverse_jacobian = get_tag(
-        domain::Tags::InverseJacobian<1, Frame::Logical, Frame::Inertial>{});
+    const auto& inverse_jacobian =
+        get_tag(domain::Tags::InverseJacobian<1, Frame::ElementLogical,
+                                              Frame::Inertial>{});
     CHECK(inverse_jacobian == element_map.inv_jacobian(logical_coords));
     const auto& det_inv_jacobian = get_tag(
-        domain::Tags::DetInvJacobian<Frame::Logical, Frame::Inertial>{});
+        domain::Tags::DetInvJacobian<Frame::ElementLogical, Frame::Inertial>{});
     CHECK(det_inv_jacobian == determinant(inverse_jacobian));
   }
   {
@@ -175,8 +176,9 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
               {{{ElementId<2>{0, {{SegmentId{2, 2}, SegmentId{0, 0}}}}}},
                {}}}}});
     const auto& element_map = get_tag(domain::Tags::ElementMap<2>{});
-    const tnsr::I<DataVector, 2, Frame::Logical> logical_coords_for_element_map{
-        {{{-1., -0.5, 0., 0.1, 1.}, {-1., -0.5, 0., 0.1, 1.}}}};
+    const tnsr::I<DataVector, 2, Frame::ElementLogical>
+        logical_coords_for_element_map{
+            {{{-1., -0.5, 0., 0.1, 1.}, {-1., -0.5, 0., 0.1, 1.}}}};
     const auto inertial_coords_from_element_map =
         element_map(logical_coords_for_element_map);
     const tnsr::I<DataVector, 2, Frame::Logical> expected_inertial_coords{
@@ -186,15 +188,16 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
     CHECK_ITERABLE_APPROX(get<1>(inertial_coords_from_element_map),
                           get<1>(expected_inertial_coords));
     const auto& logical_coords =
-        get_tag(domain::Tags::Coordinates<2, Frame::Logical>{});
+        get_tag(domain::Tags::Coordinates<2, Frame::ElementLogical>{});
     const auto& inertial_coords =
         get_tag(domain::Tags::Coordinates<2, Frame::Inertial>{});
     CHECK(inertial_coords == element_map(logical_coords));
-    const auto& inverse_jacobian = get_tag(
-        domain::Tags::InverseJacobian<2, Frame::Logical, Frame::Inertial>{});
+    const auto& inverse_jacobian =
+        get_tag(domain::Tags::InverseJacobian<2, Frame::ElementLogical,
+                                              Frame::Inertial>{});
     CHECK(inverse_jacobian == element_map.inv_jacobian(logical_coords));
     const auto& det_inv_jacobian = get_tag(
-        domain::Tags::DetInvJacobian<Frame::Logical, Frame::Inertial>{});
+        domain::Tags::DetInvJacobian<Frame::ElementLogical, Frame::Inertial>{});
     CHECK(det_inv_jacobian == determinant(inverse_jacobian));
   }
   {
@@ -254,10 +257,10 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
                    0, {{SegmentId{2, 1}, SegmentId{0, 0}, SegmentId{1, 0}}}}}},
                {}}}}});
     const auto& element_map = get_tag(domain::Tags::ElementMap<3>{});
-    const tnsr::I<DataVector, 3, Frame::Logical> logical_coords_for_element_map{
-        {{{-1., -0.5, 0., 0.1, 1.},
-          {-1., -0.5, 0., 0.1, 1.},
-          {-1., -0.5, 0., 0.1, 1.}}}};
+    const tnsr::I<DataVector, 3, Frame::ElementLogical>
+        logical_coords_for_element_map{{{{-1., -0.5, 0., 0.1, 1.},
+                                         {-1., -0.5, 0., 0.1, 1.},
+                                         {-1., -0.5, 0., 0.1, 1.}}}};
     const auto inertial_coords_from_element_map =
         element_map(logical_coords_for_element_map);
     const tnsr::I<DataVector, 3, Frame::Logical> expected_inertial_coords{
@@ -271,15 +274,16 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
     CHECK_ITERABLE_APPROX(get<2>(inertial_coords_from_element_map),
                           get<2>(expected_inertial_coords));
     const auto& logical_coords =
-        get_tag(domain::Tags::Coordinates<3, Frame::Logical>{});
+        get_tag(domain::Tags::Coordinates<3, Frame::ElementLogical>{});
     const auto& inertial_coords =
         get_tag(domain::Tags::Coordinates<3, Frame::Inertial>{});
     CHECK(inertial_coords == element_map(logical_coords));
-    const auto& inverse_jacobian = get_tag(
-        domain::Tags::InverseJacobian<3, Frame::Logical, Frame::Inertial>{});
+    const auto& inverse_jacobian =
+        get_tag(domain::Tags::InverseJacobian<3, Frame::ElementLogical,
+                                              Frame::Inertial>{});
     CHECK(inverse_jacobian == element_map.inv_jacobian(logical_coords));
     const auto& det_inv_jacobian = get_tag(
-        domain::Tags::DetInvJacobian<Frame::Logical, Frame::Inertial>{});
+        domain::Tags::DetInvJacobian<Frame::ElementLogical, Frame::Inertial>{});
     CHECK(det_inv_jacobian == determinant(inverse_jacobian));
   }
 }

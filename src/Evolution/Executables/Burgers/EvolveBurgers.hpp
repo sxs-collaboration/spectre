@@ -217,7 +217,7 @@ struct EvolutionMetavars {
       evolution::dg::Initialization::Domain<1>,
       Initialization::Actions::ConservativeSystem<system>,
       evolution::Initialization::Actions::SetVariables<
-          domain::Tags::Coordinates<1, Frame::Logical>>,
+          domain::Tags::Coordinates<1, Frame::ElementLogical>>,
       Initialization::Actions::TimeStepperHistory<EvolutionMetavars>,
       tmpl::conditional_t<
           evolution::is_analytic_solution_v<initial_data>,

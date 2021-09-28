@@ -52,7 +52,8 @@ namespace {
 template <size_t Dim, typename... Maps, typename Solution>
 auto face_centered_gr_tags(
     const Mesh<Dim>& subcell_mesh, const double time,
-    const domain::CoordinateMap<Frame::Logical, Frame::Inertial, Maps...>& map,
+    const domain::CoordinateMap<Frame::ElementLogical, Frame::Inertial,
+                                Maps...>& map,
     const Solution& soln) {
   std::array<typename System::flux_spacetime_variables_tag::type, Dim>
       face_centered_gr_vars{};
@@ -87,7 +88,7 @@ double test(const size_t num_dg_pts) {
       domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
   const Affine affine_map{-1.0, 1.0, 2.0, 3.0};
   const auto coordinate_map =
-      domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(
+      domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
           Affine3D{affine_map, affine_map, affine_map});
   const auto moving_mesh_map =
       domain::make_coordinate_map<Frame::Grid, Frame::Inertial>(

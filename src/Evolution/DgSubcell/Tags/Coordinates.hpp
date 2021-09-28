@@ -33,9 +33,10 @@ struct Coordinates : db::SimpleTag {
 
 /// The logical coordinates on the subcell grid
 template <size_t VolumeDim>
-struct LogicalCoordinatesCompute : Coordinates<VolumeDim, Frame::Logical>,
-                                   db::ComputeTag {
-  using base = Coordinates<VolumeDim, Frame::Logical>;
+struct LogicalCoordinatesCompute
+    : Coordinates<VolumeDim, Frame::ElementLogical>,
+      db::ComputeTag {
+  using base = Coordinates<VolumeDim, Frame::ElementLogical>;
   using return_type = typename base::type;
   using argument_tags = tmpl::list<Mesh<VolumeDim>>;
   static constexpr auto function = static_cast<void (*)(

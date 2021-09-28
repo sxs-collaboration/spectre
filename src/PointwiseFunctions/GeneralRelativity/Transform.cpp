@@ -132,7 +132,8 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Inertial),
       const Jacobian<DataVector, DIM(data), DESTFRAME(data), SRCFRAME(data)>& \
           jacobian) noexcept                                                  \
       ->tnsr::ijj<DataVector, DIM(data), DESTFRAME(data)>;
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Logical), (Frame::Grid))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::ElementLogical),
+                        (Frame::Grid))
 
 #undef DIM
 #undef SRCFRAME

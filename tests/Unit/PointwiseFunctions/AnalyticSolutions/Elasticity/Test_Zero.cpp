@@ -31,17 +31,19 @@ template <size_t Dim>
 auto make_coord_map() {
   using AffineMap = domain::CoordinateMaps::Affine;
   if constexpr (Dim == 1) {
-    return domain::CoordinateMap<Frame::Logical, Frame::Inertial, AffineMap>{
-        {-1., 1., 0., M_PI}};
+    return domain::CoordinateMap<Frame::ElementLogical, Frame::Inertial,
+                                 AffineMap>{{-1., 1., 0., M_PI}};
   } else if constexpr (Dim == 2) {
     using AffineMap2D =
         domain::CoordinateMaps::ProductOf2Maps<AffineMap, AffineMap>;
-    return domain::CoordinateMap<Frame::Logical, Frame::Inertial, AffineMap2D>{
+    return domain::CoordinateMap<Frame::ElementLogical, Frame::Inertial,
+                                 AffineMap2D>{
         {{-1., 1., 0., M_PI}, {-1., 1., 0., M_PI}}};
   } else {
     using AffineMap3D =
         domain::CoordinateMaps::ProductOf3Maps<AffineMap, AffineMap, AffineMap>;
-    return domain::CoordinateMap<Frame::Logical, Frame::Inertial, AffineMap3D>{
+    return domain::CoordinateMap<Frame::ElementLogical, Frame::Inertial,
+                                 AffineMap3D>{
         {{-1., 1., 0., M_PI}, {-1., 1., 0., M_PI}, {-1., 1., 0., M_PI}}};
   }
 }

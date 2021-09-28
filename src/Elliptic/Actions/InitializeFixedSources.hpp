@@ -83,7 +83,8 @@ struct InitializeFixedSources {
     if (db::get<elliptic::dg::Tags::Massive>(box)) {
       const auto& mesh = db::get<domain::Tags::Mesh<Dim>>(box);
       const auto& det_inv_jacobian = db::get<
-          domain::Tags::DetInvJacobian<Frame::Logical, Frame::Inertial>>(box);
+          domain::Tags::DetInvJacobian<Frame::ElementLogical, Frame::Inertial>>(
+          box);
       fixed_sources /= get(det_inv_jacobian);
       ::dg::apply_mass_matrix(make_not_null(&fixed_sources), mesh);
     }

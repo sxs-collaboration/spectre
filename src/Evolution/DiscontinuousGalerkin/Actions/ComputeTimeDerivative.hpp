@@ -390,7 +390,8 @@ ComputeTimeDerivative<Metavariables>::apply(
   if constexpr (tmpl::size<flux_variables>::value != 0) {
     if (dg_formulation == ::dg::Formulation::WeakInertial) {
       det_inverse_jacobian = &db::get<
-          domain::Tags::DetInvJacobian<Frame::Logical, Frame::Inertial>>(box);
+          domain::Tags::DetInvJacobian<Frame::ElementLogical, Frame::Inertial>>(
+          box);
     }
   }
   db::mutate_apply<
@@ -402,8 +403,8 @@ ComputeTimeDerivative<Metavariables>::apply(
        &inertial_coordinates =
            db::get<domain::Tags::Coordinates<volume_dim, Frame::Inertial>>(box),
        &logical_to_inertial_inv_jacobian =
-           db::get<::domain::Tags::InverseJacobian<volume_dim, Frame::Logical,
-                                                   Frame::Inertial>>(box),
+           db::get<::domain::Tags::InverseJacobian<
+               volume_dim, Frame::ElementLogical, Frame::Inertial>>(box),
        &mesh,
        &mesh_velocity = db::get<::domain::Tags::MeshVelocity<volume_dim>>(box),
        &partial_derivs, &temporaries, &volume_fluxes](
@@ -572,7 +573,7 @@ void ComputeTimeDerivative<Metavariables>::send_data_for_fluxes(
         const_cast<DataVector&>(get(volume_det_inv_jacobian))
             .set_data_ref(make_not_null(&const_cast<DataVector&>(  // NOLINT
                 get(db::get<domain::Tags::DetInvJacobian<
-                        Frame::Logical, Frame::Inertial>>(*box)))));
+                        Frame::ElementLogical, Frame::Inertial>>(*box)))));
       }
 
       // Add face normal and Jacobian determinants to the local mortar data. We

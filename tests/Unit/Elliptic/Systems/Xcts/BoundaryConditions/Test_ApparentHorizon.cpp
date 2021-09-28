@@ -400,14 +400,14 @@ void test_consistency_with_kerr(const bool compute_expansion) {
   const domain::CoordinateMaps::KerrHorizonConforming horizon_map{
       dimensionless_spin};
   const auto coord_map =
-      domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      domain::make_coordinate_map_base<Frame::ElementLogical, Frame::Inertial>(
           wedge_map, horizon_map);
   // Set up a mesh so we can numerically differentiate the Jacobian
   const auto logical_coords = logical_coordinates(mesh);
   const tnsr::I<DataVector, 3> inertial_coords = (*coord_map)(logical_coords);
   const auto inv_jacobian = coord_map->inv_jacobian(logical_coords);
   using inv_jac_tag =
-      domain::Tags::InverseJacobian<3, Frame::Logical, Frame::Inertial>;
+      domain::Tags::InverseJacobian<3, Frame::ElementLogical, Frame::Inertial>;
   Variables<tmpl::list<inv_jac_tag>> vars_to_derive{num_points};
   get<inv_jac_tag>(vars_to_derive) = inv_jacobian;
   const auto deriv_vars = partial_derivatives<tmpl::list<inv_jac_tag>>(

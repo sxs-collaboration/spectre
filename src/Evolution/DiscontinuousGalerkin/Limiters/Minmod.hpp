@@ -122,20 +122,22 @@ namespace Limiters {
 /// the characteristic variables requires specializing the limiter to each
 /// evolution system.
 ///
-/// The limiter acts in the `Frame::Logical` coordinates, because in these
-/// coordinates it is straightforward to formulate the algorithm. This means the
-/// limiter can operate on generic deformed grids --- however, some things can
-/// start to break down, especially on strongly deformed grids:
-/// 1. When the Jacobian (from `Frame::Logical` to `Frame::Inertial`) varies
+/// The limiter acts in the `Frame::ElementLogical` coordinates, because in
+/// these coordinates it is straightforward to formulate the algorithm. This
+/// means the limiter can operate on generic deformed grids --- however, some
+/// things can start to break down, especially on strongly deformed grids:
+/// 1. When the Jacobian (from `Frame::ElementLogical` to `Frame::Inertial`)
+/// varies
 ///    across the element, then the limiter fails to be conservative. This is
 ///    because the integral of a tensor `u` over the element will change after
 ///    the limiter activates on `u`.
 /// 2. When there is a sudden change in the size of the elements (perhaps at an
 ///    h-refinement boundary, or at the boundary between two blocks with very
 ///    different mappings), a smooth solution in `Frame::Inertial` can appear
-///    to have a kink in `Frame::Logical`. The Minmod implementation includes
-///    some (tested but unproven) corrections based on the size of the elements
-///    that try to reduce spurious limiter activations near these fake kinks.
+///    to have a kink in `Frame::ElementLogical`. The Minmod implementation
+///    includes some (tested but unproven) corrections based on the size of the
+///    elements that try to reduce spurious limiter activations near these fake
+///    kinks.
 ///
 /// When an element has multiple neighbors in any direction, an effective mean
 /// and neighbor size in this direction are computed by averaging over the
@@ -249,7 +251,7 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
   using limit_argument_tags =
       tmpl::list<domain::Tags::Mesh<VolumeDim>,
                  domain::Tags::Element<VolumeDim>,
-                 domain::Tags::Coordinates<VolumeDim, Frame::Logical>,
+                 domain::Tags::Coordinates<VolumeDim, Frame::ElementLogical>,
                  domain::Tags::SizeOfElement<VolumeDim>>;
 
   /// \brief Limits the solution on the element.
@@ -280,7 +282,8 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
   bool operator()(
       const gsl::not_null<std::add_pointer_t<typename Tags::type>>... tensors,
       const Mesh<VolumeDim>& mesh, const Element<VolumeDim>& element,
-      const tnsr::I<DataVector, VolumeDim, Frame::Logical>& logical_coords,
+      const tnsr::I<DataVector, VolumeDim, Frame::ElementLogical>&
+          logical_coords,
       const std::array<double, VolumeDim>& element_size,
       const std::unordered_map<
           std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
@@ -346,7 +349,7 @@ template <size_t VolumeDim, typename... Tags>
 bool Minmod<VolumeDim, tmpl::list<Tags...>>::operator()(
     const gsl::not_null<std::add_pointer_t<typename Tags::type>>... tensors,
     const Mesh<VolumeDim>& mesh, const Element<VolumeDim>& element,
-    const tnsr::I<DataVector, VolumeDim, Frame::Logical>& logical_coords,
+    const tnsr::I<DataVector, VolumeDim, Frame::ElementLogical>& logical_coords,
     const std::array<double, VolumeDim>& element_size,
     const std::unordered_map<
         std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,

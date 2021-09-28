@@ -38,12 +38,12 @@ void InitializeGeometry<Dim>::operator()(
     const gsl::not_null<Mesh<Dim>*> mesh,
     const gsl::not_null<Element<Dim>*> element,
     const gsl::not_null<ElementMap<Dim, Frame::Inertial>*> element_map,
-    const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Logical>*>
+    const gsl::not_null<tnsr::I<DataVector, Dim, Frame::ElementLogical>*>
         logical_coords,
     const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
         inertial_coords,
-    const gsl::not_null<
-        InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>*>
+    const gsl::not_null<InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                                        Frame::Inertial>*>
         inv_jacobian,
     const gsl::not_null<Scalar<DataVector>*> det_inv_jacobian,
     const std::vector<std::array<size_t, Dim>>& initial_extents,
@@ -91,8 +91,8 @@ void InitializeFacesAndMortars<Dim>::operator()(
         mortar_sizes,
     const Mesh<Dim>& mesh, const Element<Dim>& element,
     const ElementMap<Dim, Frame::Inertial>& element_map,
-    const InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>&
-        inv_jacobian,
+    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                          Frame::Inertial>& inv_jacobian,
     const std::vector<std::array<size_t, Dim>>& initial_extents)
     const noexcept {
   const Spectral::Quadrature quadrature = mesh.quadrature(0);
@@ -115,7 +115,8 @@ void InitializeFacesAndMortars<Dim>::operator()(
            "Gauss-Lobatto grids. Add support to "
            "'elliptic::dg::InitializeFacesAndMortars'.");
     using inv_jac_tag =
-        domain::Tags::InverseJacobian<Dim, Frame::Logical, Frame::Inertial>;
+        domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
+                                      Frame::Inertial>;
     Variables<tmpl::list<inv_jac_tag>> vars_to_differentiate{
         mesh.number_of_grid_points()};
     get<inv_jac_tag>(vars_to_differentiate) = inv_jacobian;

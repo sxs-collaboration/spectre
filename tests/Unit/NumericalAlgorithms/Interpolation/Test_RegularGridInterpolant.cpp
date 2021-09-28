@@ -50,20 +50,20 @@ auto make_affine_map() noexcept;
 
 template <>
 auto make_affine_map<1>() noexcept {
-  return domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(
+  return domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
       Affine{-1.0, 1.0, inertial_coord_min, inertial_coord_max});
 }
 
 template <>
 auto make_affine_map<2>() noexcept {
-  return domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(
+  return domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
       Affine2D{Affine{-1.0, 1.0, inertial_coord_min, inertial_coord_max},
                Affine{-1.0, 1.0, inertial_coord_min, inertial_coord_max}});
 }
 
 template <>
 auto make_affine_map<3>() noexcept {
-  return domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(
+  return domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
       Affine3D{Affine{-1.0, 1.0, inertial_coord_min, inertial_coord_max},
                Affine{-1.0, 1.0, inertial_coord_min, inertial_coord_max},
                Affine{-1.0, 1.0, inertial_coord_min, inertial_coord_max}});
@@ -182,8 +182,9 @@ void test_regular_interpolation_override(
       gsl::at(target_extents, d) = gsl::at(target_1d_logical_coords, d).size();
     }
     const Index<Dim> target_index(target_extents);
-    auto result = make_with_value<tnsr::I<DataVector, Dim, Frame::Logical>>(
-        DataVector(target_index.product()), 0.0);
+    auto result =
+        make_with_value<tnsr::I<DataVector, Dim, Frame::ElementLogical>>(
+            DataVector(target_index.product()), 0.0);
     for (IndexIterator<Dim> iter(target_index); iter; ++iter) {
       for (size_t d = 0; d < Dim; ++d) {
         result.get(d)[iter.collapsed_index()] =

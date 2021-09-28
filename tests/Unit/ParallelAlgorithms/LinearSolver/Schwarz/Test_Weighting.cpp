@@ -30,7 +30,7 @@ void test_element_weight() {
   std::uniform_real_distribution<> dist_coords(-2., 2.);
   std::uniform_real_distribution<> dist_widths(0.1, 2.);
   const auto logical_coords =
-      make_with_random_values<tnsr::I<DataVector, Dim, Frame::Logical>>(
+      make_with_random_values<tnsr::I<DataVector, Dim, Frame::ElementLogical>>(
           make_not_null(&generator), make_not_null(&dist_coords), size_t{5});
   const auto widths = make_with_random_values<std::array<double, Dim>>(
       make_not_null(&generator), make_not_null(&dist_widths));
@@ -166,7 +166,7 @@ SPECTRE_TEST_CASE("Unit.ParallelSchwarz.Weighting",
   }
   {
     const auto element_weight = LinearSolver::Schwarz::element_weight(
-        tnsr::I<DataVector, 1, Frame::Logical>{
+        tnsr::I<DataVector, 1, Frame::ElementLogical>{
             {{{-2., -1.5, -1., -0.5, -0.25, 0., 0.25, 0.5, 1., 1.5, 2.}}}},
         {{1.}}, {});
     CHECK_ITERABLE_APPROX(

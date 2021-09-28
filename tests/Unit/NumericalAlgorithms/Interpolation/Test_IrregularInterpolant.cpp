@@ -64,20 +64,20 @@ auto make_affine_map() noexcept;
 
 template <>
 auto make_affine_map<1>() noexcept {
-  return domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(
+  return domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
       Affine{-1.0, 1.0, inertial_coord_min, inertial_coord_max});
 }
 
 template <>
 auto make_affine_map<2>() noexcept {
-  return domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(
+  return domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
       Affine2D{Affine{-1.0, 1.0, inertial_coord_min, inertial_coord_max},
                Affine{-1.0, 1.0, inertial_coord_min, inertial_coord_max}});
 }
 
 template <>
 auto make_affine_map<3>() noexcept {
-  return domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(
+  return domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
       Affine3D{Affine{-1.0, 1.0, inertial_coord_min, inertial_coord_max},
                Affine{-1.0, 1.0, inertial_coord_min, inertial_coord_max},
                Affine{-1.0, 1.0, inertial_coord_min, inertial_coord_max}});
@@ -134,7 +134,7 @@ void test_interpolate_to_points(const Mesh<Dim>& mesh) noexcept {
   const auto coordinate_map = make_affine_map<Dim>();
   const auto target_x = [&target_x_inertial, &coordinate_map,
                          &number_of_points]() {
-    tnsr::I<DataVector, Dim, Frame::Logical> result(number_of_points);
+    tnsr::I<DataVector, Dim, Frame::ElementLogical> result(number_of_points);
     for (size_t s = 0; s < number_of_points; ++s) {
       tnsr::I<double, Dim> x_inertial_local{};
       for (size_t d = 0; d < Dim; ++d) {
@@ -274,10 +274,10 @@ Domain<1> create_domain<1>(const double length,
 }
 
 template <size_t Dim>
-tnsr::I<DataVector, Dim, Frame::Logical> create_target_points(
+tnsr::I<DataVector, Dim, Frame::ElementLogical> create_target_points(
     size_t n_random_target_points) {
-  tnsr::I<DataVector, Dim, Frame::Logical> xi_target{n_random_target_points + 2,
-                                                     -1.0};
+  tnsr::I<DataVector, Dim, Frame::ElementLogical> xi_target{
+      n_random_target_points + 2, -1.0};
   for (size_t d = 0; d < Dim; ++d) {
     xi_target.get(d)[1] = 1.0;
   }
@@ -359,7 +359,7 @@ void test_tov() noexcept {
     auto vars = variables_from_tagged_tuple(
         tov_star.variables(x, 0.0, tmpl::list<rho_tag>{}));
 
-    const tnsr::I<DataVector, 3, Frame::Logical> xi_target{1_st, -1.0};
+    const tnsr::I<DataVector, 3, Frame::ElementLogical> xi_target{1_st, -1.0};
 
     intrp::Irregular irregular_interp{mesh, xi_target};
 

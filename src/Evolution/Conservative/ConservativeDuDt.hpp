@@ -40,7 +40,7 @@ struct ConservativeDuDt {
 
   using argument_tags = tmpl::list<
       domain::Tags::Mesh<volume_dim>,
-      domain::Tags::InverseJacobian<volume_dim, Frame::Logical,
+      domain::Tags::InverseJacobian<volume_dim, Frame::ElementLogical,
                                     Frame::Inertial>,
       db::add_tag_prefix<::Tags::Flux, typename System::variables_tag,
                          tmpl::size_t<volume_dim>, frame>,
@@ -51,8 +51,8 @@ struct ConservativeDuDt {
       const gsl::not_null<Variables<tmpl::list<StepPrefix<VarsTags>...>>*>
           dt_vars,
       const Mesh<Dim> mesh,
-      const InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>&
-          inverse_jacobian,
+      const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                            Frame::Inertial>& inverse_jacobian,
       const Variables<tmpl::list<::Tags::Flux<VarsTags, tmpl::size_t<Dim>,
                                               Frame::Inertial>...>>& fluxes,
       const Variables<tmpl::list<::Tags::Source<VarsTags>...>>&

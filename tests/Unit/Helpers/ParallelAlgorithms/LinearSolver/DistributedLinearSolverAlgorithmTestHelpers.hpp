@@ -270,8 +270,8 @@ struct InitializeElement {
   using const_global_cache_tags = tmpl::list<Source>;
   using simple_tags =
       tmpl::list<domain::Tags::Mesh<1>, domain::Tags::Element<1>,
-                 domain::Tags::Coordinates<1, Frame::Logical>, fields_tag,
-                 sources_tag>;
+                 domain::Tags::Coordinates<1, Frame::ElementLogical>,
+                 fields_tag, sources_tag>;
   using compute_tags = tmpl::list<>;
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent>

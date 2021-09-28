@@ -343,7 +343,7 @@ using variables_tags =
                       DIM(data), derivative_frame>(                          \
       const Variables<variables_tags<DIM(data)>>& u,                         \
       const Mesh<DIM(data)>& mesh,                                           \
-      const InverseJacobian<DataVector, DIM(data), Frame::Logical,           \
+      const InverseJacobian<DataVector, DIM(data), Frame::ElementLogical,    \
                             derivative_frame>& inverse_jacobian) noexcept;   \
   template Variables<db::wrap_tags_in<                                       \
       ::Tags::deriv, derivative_tags_initial_gauge<DIM(data)>,               \
@@ -353,7 +353,7 @@ using variables_tags =
                       derivative_frame>(                                     \
       const Variables<variables_tags_initial_gauge<DIM(data)>>& u,           \
       const Mesh<DIM(data)>& mesh,                                           \
-      const InverseJacobian<DataVector, DIM(data), Frame::Logical,           \
+      const InverseJacobian<DataVector, DIM(data), Frame::ElementLogical,    \
                             derivative_frame>& inverse_jacobian) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))

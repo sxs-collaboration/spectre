@@ -97,8 +97,8 @@ void apply_boundary_condition_on_face(
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time,
     const std::optional<tnsr::I<DataVector, Dim>>& volume_mesh_velocity,
-    const InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>&
-        volume_inverse_jacobian,
+    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                          Frame::Inertial>& volume_inverse_jacobian,
     [[maybe_unused]] const Scalar<DataVector>& volume_det_inv_jacobian,
     tmpl::list<PackageDataVolumeTags...> /*meta*/,
     tmpl::list<PackageFieldTags...> /*meta*/,
@@ -723,9 +723,9 @@ void apply_boundary_conditions_on_all_external_faces(
                 db::get<::Tags::Time>(*box),
                 db::get<::domain::Tags::FunctionsOfTime>(*box),
                 db::get<::domain::Tags::MeshVelocity<Dim>>(*box),
-                db::get<::domain::Tags::InverseJacobian<Dim, Frame::Logical,
-                                                        Frame::Inertial>>(*box),
-                db::get<::domain::Tags::DetInvJacobian<Frame::Logical,
+                db::get<::domain::Tags::InverseJacobian<
+                    Dim, Frame::ElementLogical, Frame::Inertial>>(*box),
+                db::get<::domain::Tags::DetInvJacobian<Frame::ElementLogical,
                                                        Frame::Inertial>>(*box),
                 typename BoundaryCorrection::dg_package_data_volume_tags{},
                 typename BoundaryCorrection::dg_package_field_tags{},

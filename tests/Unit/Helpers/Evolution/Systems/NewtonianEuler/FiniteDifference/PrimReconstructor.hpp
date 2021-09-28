@@ -40,11 +40,12 @@ FixedHashMap<maximum_number_of_neighbors(Dim) + 1,
              std::pair<Direction<Dim>, ElementId<Dim>>,
              evolution::dg::subcell::NeighborData,
              boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>
-compute_neighbor_data(
-    const Mesh<Dim>& subcell_mesh,
-    const tnsr::I<DataVector, Dim, Frame::Logical>& volume_logical_coords,
-    const DirectionMap<Dim, Neighbors<Dim>>& neighbors,
-    const size_t ghost_zone_size, const F& compute_variables_of_neighbor_data) {
+compute_neighbor_data(const Mesh<Dim>& subcell_mesh,
+                      const tnsr::I<DataVector, Dim, Frame::ElementLogical>&
+                          volume_logical_coords,
+                      const DirectionMap<Dim, Neighbors<Dim>>& neighbors,
+                      const size_t ghost_zone_size,
+                      const F& compute_variables_of_neighbor_data) {
   FixedHashMap<maximum_number_of_neighbors(Dim) + 1,
                std::pair<Direction<Dim>, ElementId<Dim>>,
                evolution::dg::subcell::NeighborData,

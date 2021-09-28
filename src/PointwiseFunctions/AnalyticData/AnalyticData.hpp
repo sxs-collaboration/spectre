@@ -76,8 +76,8 @@ class AnalyticData : public PUP::able {
   template <typename... Tags>
   tuples::TaggedTuple<Tags...> variables(
       const tnsr::I<DataVector, Dim>& x, const Mesh<Dim>& mesh,
-      const InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>&
-          inv_jacobian,
+      const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                            Frame::Inertial>& inv_jacobian,
       tmpl::list<Tags...> /*meta*/) const noexcept {
     return call_with_dynamic_type<tuples::TaggedTuple<Tags...>,
                                   creatable_classes>(

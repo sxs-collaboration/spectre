@@ -75,9 +75,9 @@
 class YlmSpherepack {
  public:
   /// Type returned by gradient function.
-  using FirstDeriv = tnsr::i<DataVector, 2, Frame::Logical>;
+  using FirstDeriv = tnsr::i<DataVector, 2, Frame::ElementLogical>;
   /// Type returned by second derivative function.
-  using SecondDeriv = tnsr::ij<DataVector, 2, Frame::Logical>;
+  using SecondDeriv = tnsr::ij<DataVector, 2, Frame::ElementLogical>;
 
   /// Struct to hold cached information at a set of target interpolation
   /// points.

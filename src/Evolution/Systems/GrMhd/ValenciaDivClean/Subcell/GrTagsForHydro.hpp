@@ -63,7 +63,7 @@ namespace subcell {
  *   * `domain::Tags::ElementMap<Dim, Frame::Grid>`
  *   * `Tags::CoordinateMap<Dim, Frame::Grid, Frame::Inertial>`
  *   * `domain::Tags::FunctionsOfTime`
- *   * `evolution::dg::subcell::Tags::Coordinates<Dim, Frame::Logical>`
+ *   * `evolution::dg::subcell::Tags::Coordinates<Dim, Frame::ElementLogical>`
  *   * `::Tags::AnalyticSolutionOrData`
  *
  * DataBox changes:
@@ -91,15 +91,15 @@ struct GrTagsForHydro {
   using FaceGrVars = typename subcell_faces_gr_tag::type::value_type;
 
   using return_tags = tmpl::list<subcell_gr_tag, subcell_faces_gr_tag>;
-  using argument_tags =
-      tmpl::list<Initialization::Tags::InitialTime,
-                 evolution::dg::subcell::Tags::Mesh<Dim>,
-                 domain::Tags::ElementMap<Dim, Frame::Grid>,
-                 domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
-                                                             Frame::Inertial>,
-                 domain::Tags::FunctionsOfTime,
-                 evolution::dg::subcell::Tags::Coordinates<Dim, Frame::Logical>,
-                 ::Tags::AnalyticSolutionOrData>;
+  using argument_tags = tmpl::list<
+      Initialization::Tags::InitialTime,
+      evolution::dg::subcell::Tags::Mesh<Dim>,
+      domain::Tags::ElementMap<Dim, Frame::Grid>,
+      domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
+                                                  Frame::Inertial>,
+      domain::Tags::FunctionsOfTime,
+      evolution::dg::subcell::Tags::Coordinates<Dim, Frame::ElementLogical>,
+      ::Tags::AnalyticSolutionOrData>;
 
   template <typename AnalyticDataOrSolution>
   static void apply(
@@ -113,7 +113,7 @@ struct GrTagsForHydro {
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
           functions_of_time,
-      const tnsr::I<DataVector, Dim, Frame::Logical>&
+      const tnsr::I<DataVector, Dim, Frame::ElementLogical>&
           subcell_logical_coordinates,
       const AnalyticDataOrSolution& analytic_data_or_solution) noexcept {
     const size_t num_grid_points = subcell_mesh.number_of_grid_points();

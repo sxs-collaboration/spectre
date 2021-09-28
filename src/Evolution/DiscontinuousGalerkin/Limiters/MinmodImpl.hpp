@@ -60,7 +60,7 @@ bool minmod_impl(
     const gsl::not_null<typename Tag::type*> tensor,
     const Limiters::MinmodType minmod_type, const double tvb_constant,
     const Mesh<VolumeDim>& mesh, const Element<VolumeDim>& element,
-    const tnsr::I<DataVector, VolumeDim, Frame::Logical>& logical_coords,
+    const tnsr::I<DataVector, VolumeDim, Frame::ElementLogical>& logical_coords,
     const std::array<double, VolumeDim>& element_size,
     const std::unordered_map<
         std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,

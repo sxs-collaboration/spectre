@@ -182,7 +182,8 @@ struct SetLocalMortarData {
         evolution::dg::Tags::NormalCovector<Metavariables::volume_dim>>>;
     const Scalar<DataVector> det_inv_jacobian = determinant(
         db::get<::domain::Tags::InverseJacobian<
-            Metavariables::volume_dim, Frame::Logical, Frame::Inertial>>(box));
+            Metavariables::volume_dim, Frame::ElementLogical, Frame::Inertial>>(
+            box));
 
     for (const auto& [direction, neighbor_ids] : element.neighbors()) {
       size_t count = 0;
@@ -393,14 +394,14 @@ struct component {
       domain::Tags::Mesh<Metavariables::volume_dim>,
       domain::Tags::Element<Metavariables::volume_dim>,
       domain::Tags::Coordinates<Metavariables::volume_dim, Frame::Inertial>,
-      domain::Tags::InverseJacobian<Metavariables::volume_dim, Frame::Logical,
-                                    Frame::Inertial>,
+      domain::Tags::InverseJacobian<Metavariables::volume_dim,
+                                    Frame::ElementLogical, Frame::Inertial>,
       evolution::dg::Tags::Quadrature>;
   using compute_tags = tmpl::list<
-      domain::Tags::JacobianCompute<Metavariables::volume_dim, Frame::Logical,
-                                    Frame::Inertial>,
-      domain::Tags::DetInvJacobianCompute<Metavariables::volume_dim,
-                                          Frame::Logical, Frame::Inertial>>;
+      domain::Tags::JacobianCompute<Metavariables::volume_dim,
+                                    Frame::ElementLogical, Frame::Inertial>,
+      domain::Tags::DetInvJacobianCompute<
+          Metavariables::volume_dim, Frame::ElementLogical, Frame::Inertial>>;
 
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
@@ -523,8 +524,8 @@ void test_impl(const Spectral::Quadrature quadrature,
 
   // Set the Jacobian to not be the identity because otherwise bugs creep in
   // easily.
-  ::InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial> inv_jac{
-      mesh.number_of_grid_points(), 0.0};
+  ::InverseJacobian<DataVector, Dim, Frame::ElementLogical, Frame::Inertial>
+      inv_jac{mesh.number_of_grid_points(), 0.0};
   for (size_t i = 0; i < Dim; ++i) {
     inv_jac.get(i, i) = 2.0;
   }

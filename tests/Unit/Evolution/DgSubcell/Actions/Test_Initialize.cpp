@@ -91,7 +91,7 @@ struct Component {
   using initial_tags =
       tmpl::list<Initialization::Tags::InitialTime, domain::Tags::Mesh<Dim>,
                  domain::Tags::Element<Dim>, domain::Tags::FunctionsOfTime,
-                 domain::Tags::Coordinates<Dim, Frame::Logical>,
+                 domain::Tags::Coordinates<Dim, Frame::ElementLogical>,
                  domain::Tags::ElementMap<Dim, Frame::Grid>,
                  domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
                                                              Frame::Inertial>,
@@ -104,7 +104,7 @@ struct Component {
           ActionTesting::InitializeDataBox<initial_tags>,
           ::Actions::SetupDataBox,
           evolution::Initialization::Actions::SetVariables<
-              domain::Tags::Coordinates<Dim, Frame::Logical>>,
+              domain::Tags::Coordinates<Dim, Frame::ElementLogical>>,
           evolution::dg::subcell::Actions::Initialize<
               Dim, System<Dim>, typename Metavariables::DgInitialDataTci>>>>;
 };
@@ -279,7 +279,8 @@ void test(const bool always_use_subcell, const bool interior_element) {
         evolution::dg::subcell::fd::Tags::DetInverseJacobianLogicalToGrid>(
       runner, 0));
   CHECK(ActionTesting::tag_is_retrievable<
-        comp, evolution::dg::subcell::Tags::Coordinates<Dim, Frame::Logical>>(
+        comp,
+        evolution::dg::subcell::Tags::Coordinates<Dim, Frame::ElementLogical>>(
       runner, 0));
   CHECK(ActionTesting::tag_is_retrievable<
         comp, evolution::dg::subcell::Tags::Coordinates<Dim, Frame::Grid>>(
