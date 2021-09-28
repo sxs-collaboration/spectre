@@ -92,6 +92,7 @@ INPUT = @PROJECT_SOURCE_DIR@/docs/Installation \
         @PROJECT_SOURCE_DIR@/docs/Tutorials \
         @PROJECT_SOURCE_DIR@/docs/Contributing \
         @PROJECT_SOURCE_DIR@/docs/DevGuide \
+        @PROJECT_SOURCE_DIR@/docs/PublicationPolicy.md \
         @PROJECT_SOURCE_DIR@/docs \
         @SPECTRE_DOXYGEN_GROUPS@ \
         @PROJECT_SOURCE_DIR@/src \
