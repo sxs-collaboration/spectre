@@ -198,6 +198,15 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
   /// Charm++ migration constructor, used after a chare is migrated
   explicit AlgorithmImpl(CkMigrateMessage* /*msg*/) noexcept;
 
+  /// \cond
+  ~AlgorithmImpl() override;
+
+  AlgorithmImpl(const AlgorithmImpl& /*unused*/) = delete;
+  AlgorithmImpl& operator=(const AlgorithmImpl& /*unused*/) = delete;
+  AlgorithmImpl(AlgorithmImpl&& /*unused*/) = delete;
+  AlgorithmImpl& operator=(AlgorithmImpl&& /*unused*/) = delete;
+  /// \endcond
+
   /// Print the expanded type aliases
   std::string print_types() const noexcept;
 
@@ -210,61 +219,7 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
   /// Print the current contents of the DataBox
   std::string print_databox() const noexcept;
 
-  void pup(PUP::er& p) noexcept override {  // NOLINT
-#ifdef SPECTRE_CHARM_PROJECTIONS
-    p | non_action_time_start_;
-#endif
-    if (performing_action_) {
-      ERROR("cannot serialize while performing action!");
-    }
-    p | performing_action_;
-    p | phase_;
-    p | phase_bookmarks_;
-    p | algorithm_step_;
-    if constexpr (Parallel::is_node_group_proxy<cproxy_type>::value) {
-      p | node_lock_;
-    }
-    p | terminate_;
-    p | halt_algorithm_until_next_phase_;
-    p | box_;
-    // After unpacking the DataBox, we "touch" the GlobalCache proxy inside.
-    // This forces the DataBox to recompute the GlobalCache* the next time it
-    // is needed, but delays this process until after the pupper is called.
-    // (This delay is important: updating the pointer requires calling
-    // ckLocalBranch() on the Charm++ proxy, and in a restart from checkpoint
-    // this call may not be well-defined until after components are finished
-    // unpacking.)
-    if (p.isUnpacking()) {
-      touch_global_cache_proxy_in_databox(box_);
-    }
-    p | inboxes_;
-    p | array_index_;
-    p | global_cache_proxy_;
-    // Note that `perform_registration_or_deregistration` passes the `box_` by
-    // const reference. If mutable access is required to the box, this function
-    // call needs to be carefully considered with respect to the `p | box_` call
-    // in both packing and unpacking scenarios.
-    //
-    // Note also that we don't perform (de)registrations when pup'ing for a
-    // checkpoint/restart. This enables a simpler first-pass implementation of
-    // checkpointing, though it means the restart must occur on the same
-    // hardware configuration (same number of nodes and same procs per node)
-    // used when writing the checkpoint.
-    if constexpr (Algorithm_detail::has_LoadBalancing_v<
-                      typename metavariables::Phase>) {
-      if (phase_ == metavariables::Phase::LoadBalancing) {
-        perform_registration_or_deregistration(p, box_);
-      }
-    }
-  }
-  /// \cond
-  ~AlgorithmImpl() override;
-
-  AlgorithmImpl(const AlgorithmImpl& /*unused*/) = delete;
-  AlgorithmImpl& operator=(const AlgorithmImpl& /*unused*/) = delete;
-  AlgorithmImpl(AlgorithmImpl&& /*unused*/) = delete;
-  AlgorithmImpl& operator=(AlgorithmImpl&& /*unused*/) = delete;
-  /// \endcond
+  void pup(PUP::er& p) noexcept override;  // NOLINT
 
   /*!
    * \brief Calls the `apply` function `Action` after a reduction has been
@@ -292,14 +247,7 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
   /// \ref DataBoxGroup "DataBox".
   template <typename Action, typename... Args>
   typename Action::return_type local_synchronous_action(
-      Args&&... args) noexcept {
-    static_assert(Parallel::is_node_group_proxy<cproxy_type>::value,
-                  "Cannot call a (blocking) local synchronous action on a "
-                  "chare that is not a NodeGroup");
-    return Algorithm_detail::local_synchronous_action_visitor<
-        Action, ParallelComponent>(box_, make_not_null(&node_lock_),
-                                   std::forward<Args>(args)...);
-  }
+      Args&&... args) noexcept;
 
   /// @{
   /// Call an Action on a local nodegroup requiring the Action to handle thread
@@ -316,6 +264,8 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
       Requires<(sizeof...(Args), std::is_same_v<Parallel::Algorithms::Nodegroup,
                                                 chare_type>)> = nullptr>
   void threaded_action(std::tuple<Args...> args) noexcept {
+    // Note: this method is defined inline because GCC fails to compile when the
+    // definition is out of line.
     (void)Parallel::charmxx::RegisterThreadedAction<ParallelComponent, Action,
                                                     Args...>::registrar;
     forward_tuple_to_threaded_action<Action>(
@@ -323,15 +273,7 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
   }
 
   template <typename Action>
-  void threaded_action() noexcept {
-    // NOLINTNEXTLINE(modernize-redundant-void-arg)
-    (void)Parallel::charmxx::RegisterThreadedAction<ParallelComponent,
-                                                    Action>::registrar;
-    Algorithm_detail::simple_action_visitor<Action, ParallelComponent>(
-        box_, *(global_cache_proxy_.ckLocalBranch()),
-        static_cast<const array_index&>(array_index_),
-        make_not_null(&node_lock_));
-  }
+  void threaded_action() noexcept;
   /// @}
 
   /// \brief Receive data and store it in the Inbox, and try to continue
@@ -349,49 +291,13 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
   /// Start evaluating the algorithm until it is stopped by an action.
   constexpr void perform_algorithm() noexcept;
 
-  constexpr void perform_algorithm(const bool restart_if_terminated) noexcept {
-    if (restart_if_terminated) {
-      set_terminate(false);
-    }
-    perform_algorithm();
-  }
+  constexpr void perform_algorithm(const bool restart_if_terminated) noexcept;
   /// @}
 
   /// Start execution of the phase-dependent action list in `next_phase`. If
   /// `next_phase` has already been visited, execution will resume at the point
   /// where the previous execution of the same phase left off.
-  void start_phase(const PhaseType next_phase) noexcept {
-    // terminate should be true since we exited a phase previously.
-    if (not get_terminate() and not halt_algorithm_until_next_phase_) {
-      ERROR(
-          "An algorithm must always be set to terminate at the beginning of a "
-          "phase. Since this is not the case the previous phase did not end "
-          "correctly. The integer corresponding to the previous phase is: "
-          << static_cast<int>(phase_)
-          << " and the next phase is: " << static_cast<int>(next_phase)
-          << ", The termination flag is: " << get_terminate()
-          << ", and the halt flag is: " << halt_algorithm_until_next_phase_);
-    }
-    // set terminate to true if there are no actions in this PDAL
-    set_terminate(number_of_actions_in_phase(next_phase) == 0);
-
-    // Ideally, we'd set the bookmarks as we are leaving a phase, but there is
-    // no 'clean-up' code that we run when departing a phase, so instead we set
-    // the bookmark for the previous phase (still stored in `phase_` at this
-    // point), before we update the member variable `phase_`.
-    // Then, after updating `phase_`, we check if we've ever stored a bookmark
-    // for the new phase previously. If so, we start from where we left off,
-    // otherwise, start from the beginning of the action list.
-    phase_bookmarks_[phase_] = algorithm_step_;
-    phase_ = next_phase;
-    if(phase_bookmarks_.count(phase_) != 0) {
-      algorithm_step_ = phase_bookmarks_.at(phase_);
-    } else {
-      algorithm_step_ = 0;
-    }
-    halt_algorithm_until_next_phase_ = false;
-    perform_algorithm();
-  }
+  void start_phase(const PhaseType next_phase) noexcept;
 
   /// Tell the Algorithm it should no longer execute the algorithm. This does
   /// not mean that the execution of the program is terminated, but only that
@@ -453,95 +359,23 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
   template <typename ThisVariant, typename... Variants>
   void touch_global_cache_proxy_in_databox_impl(
       boost::variant<Variants...>& box, const gsl::not_null<int*> iter,
-      const gsl::not_null<bool*> already_visited) noexcept {
-    if constexpr (db::tag_is_retrievable_v<
-                      Tags::GlobalCacheProxy<metavariables>, ThisVariant>) {
-      if (box.which() == *iter and not *already_visited) {
-        db::mutate<Tags::GlobalCacheProxy<metavariables>>(
-            make_not_null(&(boost::get<ThisVariant>(box))),
-            [](const gsl::not_null<CProxy_GlobalCache<metavariables>*>
-                   proxy) noexcept { (void)proxy; });
-        *already_visited = true;
-      }
-    } else {
-      // silence warnings
-      (void)already_visited;
-    }
-    ++(*iter);
-  }
+      const gsl::not_null<bool*> already_visited) noexcept;
 
   template <typename... Variants>
   void touch_global_cache_proxy_in_databox(
-      boost::variant<Variants...>& box) noexcept {
-    int iter = 0;
-    bool already_visited = false;
-    EXPAND_PACK_LEFT_TO_RIGHT(
-        touch_global_cache_proxy_in_databox_impl<Variants>(box, &iter,
-                                                           &already_visited));
-  }
+      boost::variant<Variants...>& box) noexcept;
 
   template <typename ThisVariant, typename... Variants, typename... Args>
   void perform_registration_or_deregistration_impl(
       PUP::er& p, const boost::variant<Variants...>& box,
       const gsl::not_null<int*> iter,
-      const gsl::not_null<bool*> already_visited) noexcept {
-    // void cast to avoid compiler warnings about the unused variable in the
-    // false branch of the constexpr
-    (void)already_visited;
-    if (box.which() == *iter and not *already_visited) {
-      // The deregistration and registration below does not actually insert
-      // anything into the PUP::er stream, so nothing is done on a sizing pup.
-      if constexpr (Algorithm_detail::has_registration_list_v<
-                        metavariables, ParallelComponent>) {
-        using registration_list =
-            typename metavariables::template registration_list<
-                ParallelComponent>::type;
-        if (p.isPacking()) {
-          tmpl::for_each<registration_list>([this, &box](
-                                                auto registration_v) noexcept {
-            using registration = typename decltype(registration_v)::type;
-            registration::template perform_deregistration<ParallelComponent>(
-                boost::get<ThisVariant>(box),
-                *(global_cache_proxy_.ckLocalBranch()), array_index_);
-          });
-        }
-        if (p.isUnpacking()) {
-          tmpl::for_each<registration_list>(
-              [this, &box](auto registration_v) noexcept {
-                using registration = typename decltype(registration_v)::type;
-                registration::template perform_registration<ParallelComponent>(
-                    boost::get<ThisVariant>(box),
-                    *(global_cache_proxy_.ckLocalBranch()), array_index_);
-              });
-        }
-        *already_visited = true;
-      }
-    }
-    ++(*iter);
-  }
+      const gsl::not_null<bool*> already_visited) noexcept;
 
   template <typename... Variants, typename... Args>
   void perform_registration_or_deregistration(
-      PUP::er& p, const boost::variant<Variants...>& box) noexcept {
-    int iter = 0;
-    bool already_visited = false;
-    EXPAND_PACK_LEFT_TO_RIGHT(
-        perform_registration_or_deregistration_impl<Variants>(
-            p, box, &iter, &already_visited));
-  }
+      PUP::er& p, const boost::variant<Variants...>& box) noexcept;
 
-  static constexpr bool is_singleton =
-      std::is_same_v<chare_type, Parallel::Algorithms::Singleton>;
-
-  void set_array_index() noexcept {
-    if constexpr (not is_singleton) {
-      // down cast to the algorithm_type, so that the `thisIndex` method can be
-      // called, which is defined in the CBase class
-      array_index_ = static_cast<typename chare_type::template algorithm_type<
-          ParallelComponent, array_index>&>(*this)
-                         .thisIndex;
-    }
-  }
+  void set_array_index() noexcept;
 
   template <typename PhaseDepActions, size_t... Is>
   constexpr bool iterate_over_actions(
@@ -549,34 +383,13 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
 
   template <typename Action, typename... Args, size_t... Is>
   void forward_tuple_to_action(std::tuple<Args...>&& args,
-                               std::index_sequence<Is...> /*meta*/) noexcept {
-    Algorithm_detail::simple_action_visitor<Action, ParallelComponent>(
-        box_, *(global_cache_proxy_.ckLocalBranch()),
-        static_cast<const array_index&>(array_index_),
-        std::forward<Args>(std::get<Is>(args))...);
-  }
+                               std::index_sequence<Is...> /*meta*/) noexcept;
 
   template <typename Action, typename... Args, size_t... Is>
   void forward_tuple_to_threaded_action(
-      std::tuple<Args...>&& args,
-      std::index_sequence<Is...> /*meta*/) noexcept {
-    const gsl::not_null<Parallel::NodeLock*> node_lock{&node_lock_};
-    Algorithm_detail::simple_action_visitor<Action, ParallelComponent>(
-        box_, *(global_cache_proxy_.ckLocalBranch()),
-        static_cast<const array_index&>(array_index_), node_lock,
-        std::forward<Args>(std::get<Is>(args))...);
-  }
+      std::tuple<Args...>&& args, std::index_sequence<Is...> /*meta*/) noexcept;
 
-  size_t number_of_actions_in_phase(const PhaseType phase) const noexcept {
-    size_t number_of_actions = 0;
-    const auto helper = [&number_of_actions, phase](auto pdal_v) {
-      if (pdal_v.phase == phase) {
-        number_of_actions = pdal_v.number_of_actions;
-      }
-    };
-    EXPAND_PACK_LEFT_TO_RIGHT(helper(PhaseDepActionListsPack{}));
-    return number_of_actions;
-  }
+  size_t number_of_actions_in_phase(const PhaseType phase) const noexcept;
 
   // Invoke the static `apply` method of `ThisAction`. The if constexprs are for
   // handling the cases where the `apply` method returns a tuple of one, two,
@@ -593,74 +406,7 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
   // Returns whether the action ran successfully, i.e., did not return
   // AlgorithmExecution::Retry.
   template <typename ThisAction, typename ActionList, typename DbTags>
-  bool invoke_iterable_action(db::DataBox<DbTags>& my_box) noexcept {
-    static_assert(not Algorithm_detail::is_is_ready_callable_t<
-                  ThisAction,
-                  db::DataBox<DbTags>&,
-                  tuples::tagged_tuple_from_typelist<inbox_tags_list>&,
-                  Parallel::GlobalCache<metavariables>&,
-                  array_index>{},
-                  "Actions no longer support is_ready methods.  Instead, "
-                  "return AlgorithmExecution::Retry from apply().");
-
-    auto action_return = ThisAction::apply(
-        my_box, inboxes_, *(global_cache_proxy_.ckLocalBranch()),
-        std::as_const(array_index_), ActionList{},
-        std::add_pointer_t<ParallelComponent>{});
-
-    static_assert(
-        Algorithm_detail::check_iterable_action_return_type<
-            ParallelComponent, ThisAction,
-            std::decay_t<decltype(action_return)>>::value,
-        "An iterable action has an invalid return type.\n"
-        "See the template parameters of "
-        "Algorithm_detail::check_iterable_action_return_type for details: the "
-        "first is the parallel component in question, the second is the "
-        "iterable action, and the third is the return type at fault.\n"
-        "The return type must be a tuple of length one, two, or three "
-        "with:\n"
-        " first type is an updated DataBox;\n"
-        " second type is either a bool (indicating termination) or a "
-        "`Parallel::AlgorithmExecution` object;\n"
-        " third type is a size_t indicating the next action in the current"
-        " phase.");
-
-    constexpr size_t tuple_size =
-        std::tuple_size<decltype(action_return)>::value;
-    if constexpr (tuple_size >= 1_st) {
-      box_ = std::move(get<0>(action_return));
-    }
-    if constexpr (tuple_size >= 2_st) {
-      if constexpr (std::is_same_v<decltype(get<1>(action_return)), bool&>) {
-        terminate_ = get<1>(action_return);
-      } else {
-        switch(get<1>(action_return)) {
-          case AlgorithmExecution::Halt:
-            halt_algorithm_until_next_phase_ = true;
-            terminate_ = true;
-            break;
-          case AlgorithmExecution::Pause:
-            terminate_ = true;
-            break;
-          case AlgorithmExecution::Retry:
-            if constexpr (tuple_size >= 3_st) {
-              ASSERT(
-                  get<2>(action_return) == std::numeric_limits<size_t>::max(),
-                  "Switching actions on a Retry doesn't make sense.  If you "
-                  "need to return a three-element tuple, pass "
-                  "std::numeric_limits<size_t>::max() as the last element.");
-            }
-            return false;
-          default:
-            break;
-        }
-      }
-    }
-    if constexpr (tuple_size >= 3_st) {
-      algorithm_step_ = get<2>(action_return);
-    }
-    return true;
-  }
+  bool invoke_iterable_action(db::DataBox<DbTags>& my_box) noexcept;
 
   // Member variables
 
@@ -668,6 +414,8 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
   double non_action_time_start_;
 #endif
 
+  static constexpr bool is_singleton =
+      std::is_same_v<chare_type, Parallel::Algorithms::Singleton>;
   Parallel::CProxy_GlobalCache<metavariables> global_cache_proxy_;
   bool performing_action_ = false;
   PhaseType phase_{};
@@ -716,6 +464,62 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
 ////////////////////////////////////////////////////////////////
 
 /// \cond
+template <typename ParallelComponent, typename... PhaseDepActionListsPack>
+AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
+    AlgorithmImpl() noexcept {
+  set_array_index();
+}
+
+template <typename ParallelComponent, typename... PhaseDepActionListsPack>
+template <class... InitializationTags>
+AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
+    AlgorithmImpl(
+        const Parallel::CProxy_GlobalCache<metavariables>& global_cache_proxy,
+        tuples::TaggedTuple<InitializationTags...>
+            initialization_items) noexcept
+    : AlgorithmImpl() {
+  (void)initialization_items;  // avoid potential compiler warnings if unused
+  // When we are using the LoadBalancing phase, we want the Main component to
+  // handle the synchronization, so the components do not participate in the
+  // charm++ `AtSync` barrier.
+  // The array parallel components are migratable so they get balanced
+  // appropriately when load balancing is triggered by the LoadBalancing phase
+  // in Main
+  if constexpr (std::is_same_v<typename ParallelComponent::chare_type,
+                               Parallel::Algorithms::Array> and
+                Algorithm_detail::has_LoadBalancing_v<
+                    typename metavariables::Phase>) {
+    this->usesAtSync = false;
+    this->setMigratable(true);
+  }
+  global_cache_proxy_ = global_cache_proxy;
+  box_ =
+      db::create<db::AddSimpleTags<tmpl::flatten<tmpl::list<
+                     Tags::MetavariablesImpl<metavariables>,
+                     Tags::GlobalCacheProxy<metavariables>,
+                     typename ParallelComponent::initialization_tags>>>,
+                 db::AddComputeTags<
+                     Tags::GlobalCacheImplCompute<metavariables>,
+                     db::wrap_tags_in<Tags::FromGlobalCache, all_cache_tags>>>(
+          metavariables{}, global_cache_proxy_,
+          std::move(get<InitializationTags>(initialization_items))...);
+}
+
+template <typename ParallelComponent, typename... PhaseDepActionListsPack>
+AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
+    AlgorithmImpl(CkMigrateMessage* msg) noexcept
+    : cbase_type(msg) {}
+
+template <typename ParallelComponent, typename... PhaseDepActionListsPack>
+AlgorithmImpl<ParallelComponent,
+              tmpl::list<PhaseDepActionListsPack...>>::~AlgorithmImpl() {
+  // We place the registrar in the destructor since every AlgorithmImpl will
+  // have a destructor, but we have different constructors so it's not clear
+  // which will be instantiated.
+  (void)Parallel::charmxx::RegisterParallelComponent<
+      ParallelComponent>::registrar;
+}
+
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 std::string AlgorithmImpl<ParallelComponent,
                           tmpl::list<PhaseDepActionListsPack...>>::print_types()
@@ -787,61 +591,54 @@ std::string AlgorithmImpl<
   return os.str();
 }
 
-  template <typename ParallelComponent, typename... PhaseDepActionListsPack>
-AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
-    AlgorithmImpl() noexcept {
-  set_array_index();
-}
-
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
-template <class... InitializationTags>
-AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
-    AlgorithmImpl(const Parallel::CProxy_GlobalCache<metavariables>&
-                      global_cache_proxy,
-                  tuples::TaggedTuple<InitializationTags...>
-                      initialization_items) noexcept
-    : AlgorithmImpl() {
-  (void)initialization_items;  // avoid potential compiler warnings if unused
-  // When we are using the LoadBalancing phase, we want the Main component to
-  // handle the synchronization, so the components do not participate in the
-  // charm++ `AtSync` barrier.
-  // The array parallel components are migratable so they get balanced
-  // appropriately when load balancing is triggered by the LoadBalancing phase
-  // in Main
-  if constexpr (std::is_same_v<typename ParallelComponent::chare_type,
-                               Parallel::Algorithms::Array> and
-                Algorithm_detail::has_LoadBalancing_v<
-                    typename metavariables::Phase>) {
-    this->usesAtSync = false;
-    this->setMigratable(true);
+void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
+    pup(PUP::er& p) noexcept {  // NOLINT
+#ifdef SPECTRE_CHARM_PROJECTIONS
+  p | non_action_time_start_;
+#endif
+  if (performing_action_) {
+    ERROR("cannot serialize while performing action!");
   }
-  global_cache_proxy_ = global_cache_proxy;
-  box_ = db::create<
-      db::AddSimpleTags<tmpl::flatten<
-          tmpl::list<Tags::MetavariablesImpl<metavariables>,
-                     Tags::GlobalCacheProxy<metavariables>,
-                     typename ParallelComponent::initialization_tags>>>,
-      db::AddComputeTags<
-          Tags::GlobalCacheImplCompute<metavariables>,
-          db::wrap_tags_in<Tags::FromGlobalCache, all_cache_tags>>>(
-          metavariables{},
-          global_cache_proxy_,
-      std::move(get<InitializationTags>(initialization_items))...);
-}
-
-template <typename ParallelComponent, typename... PhaseDepActionListsPack>
-AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
-    AlgorithmImpl(CkMigrateMessage* msg) noexcept
-    : cbase_type(msg) {}
-
-template <typename ParallelComponent, typename... PhaseDepActionListsPack>
-AlgorithmImpl<ParallelComponent,
-              tmpl::list<PhaseDepActionListsPack...>>::~AlgorithmImpl() {
-  // We place the registrar in the destructor since every AlgorithmImpl will
-  // have a destructor, but we have different constructors so it's not clear
-  // which will be instantiated.
-  (void)Parallel::charmxx::RegisterParallelComponent<
-      ParallelComponent>::registrar;
+  p | performing_action_;
+  p | phase_;
+  p | phase_bookmarks_;
+  p | algorithm_step_;
+  if constexpr (Parallel::is_node_group_proxy<cproxy_type>::value) {
+    p | node_lock_;
+  }
+  p | terminate_;
+  p | halt_algorithm_until_next_phase_;
+  p | box_;
+  // After unpacking the DataBox, we "touch" the GlobalCache proxy inside.
+  // This forces the DataBox to recompute the GlobalCache* the next time it
+  // is needed, but delays this process until after the pupper is called.
+  // (This delay is important: updating the pointer requires calling
+  // ckLocalBranch() on the Charm++ proxy, and in a restart from checkpoint
+  // this call may not be well-defined until after components are finished
+  // unpacking.)
+  if (p.isUnpacking()) {
+    touch_global_cache_proxy_in_databox(box_);
+  }
+  p | inboxes_;
+  p | array_index_;
+  p | global_cache_proxy_;
+  // Note that `perform_registration_or_deregistration` passes the `box_` by
+  // const reference. If mutable access is required to the box, this function
+  // call needs to be carefully considered with respect to the `p | box_` call
+  // in both packing and unpacking scenarios.
+  //
+  // Note also that we don't perform (de)registrations when pup'ing for a
+  // checkpoint/restart. This enables a simpler first-pass implementation of
+  // checkpointing, though it means the restart must occur on the same
+  // hardware configuration (same number of nodes and same procs per node)
+  // used when writing the checkpoint.
+  if constexpr (Algorithm_detail::has_LoadBalancing_v<
+                    typename metavariables::Phase>) {
+    if (phase_ == metavariables::Phase::LoadBalancing) {
+      perform_registration_or_deregistration(p, box_);
+    }
+  }
 }
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
@@ -925,6 +722,32 @@ void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
 }
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
+template <typename Action, typename... Args>
+typename Action::return_type
+AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
+    local_synchronous_action(Args&&... args) noexcept {
+  static_assert(Parallel::is_node_group_proxy<cproxy_type>::value,
+                "Cannot call a (blocking) local synchronous action on a "
+                "chare that is not a NodeGroup");
+  return Algorithm_detail::local_synchronous_action_visitor<Action,
+                                                            ParallelComponent>(
+      box_, make_not_null(&node_lock_), std::forward<Args>(args)...);
+}
+
+template <typename ParallelComponent, typename... PhaseDepActionListsPack>
+template <typename Action>
+void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
+    threaded_action() noexcept {
+  // NOLINTNEXTLINE(modernize-redundant-void-arg)
+  (void)Parallel::charmxx::RegisterThreadedAction<ParallelComponent,
+                                                  Action>::registrar;
+  Algorithm_detail::simple_action_visitor<Action, ParallelComponent>(
+      box_, *(global_cache_proxy_.ckLocalBranch()),
+      static_cast<const array_index&>(array_index_),
+      make_not_null(&node_lock_));
+}
+
+template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 template <typename ReceiveTag, typename ReceiveDataType>
 void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
     receive_data(typename ReceiveTag::temporal_id instance, ReceiveDataType&& t,
@@ -990,7 +813,150 @@ constexpr void AlgorithmImpl<
                         non_action_time_start_, sys::wall_time());
 #endif
 }
-/// \endcond
+
+template <typename ParallelComponent, typename... PhaseDepActionListsPack>
+constexpr void
+AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
+    perform_algorithm(const bool restart_if_terminated) noexcept {
+  if (restart_if_terminated) {
+    set_terminate(false);
+  }
+  perform_algorithm();
+}
+
+template <typename ParallelComponent, typename... PhaseDepActionListsPack>
+void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
+    start_phase(const PhaseType next_phase) noexcept {
+  // terminate should be true since we exited a phase previously.
+  if (not get_terminate() and not halt_algorithm_until_next_phase_) {
+    ERROR(
+        "An algorithm must always be set to terminate at the beginning of a "
+        "phase. Since this is not the case the previous phase did not end "
+        "correctly. The integer corresponding to the previous phase is: "
+        << static_cast<int>(phase_)
+        << " and the next phase is: " << static_cast<int>(next_phase)
+        << ", The termination flag is: " << get_terminate()
+        << ", and the halt flag is: " << halt_algorithm_until_next_phase_);
+  }
+  // set terminate to true if there are no actions in this PDAL
+  set_terminate(number_of_actions_in_phase(next_phase) == 0);
+
+  // Ideally, we'd set the bookmarks as we are leaving a phase, but there is
+  // no 'clean-up' code that we run when departing a phase, so instead we set
+  // the bookmark for the previous phase (still stored in `phase_` at this
+  // point), before we update the member variable `phase_`.
+  // Then, after updating `phase_`, we check if we've ever stored a bookmark
+  // for the new phase previously. If so, we start from where we left off,
+  // otherwise, start from the beginning of the action list.
+  phase_bookmarks_[phase_] = algorithm_step_;
+  phase_ = next_phase;
+  if (phase_bookmarks_.count(phase_) != 0) {
+    algorithm_step_ = phase_bookmarks_.at(phase_);
+  } else {
+    algorithm_step_ = 0;
+  }
+  halt_algorithm_until_next_phase_ = false;
+  perform_algorithm();
+}
+
+template <typename ParallelComponent, typename... PhaseDepActionListsPack>
+template <typename ThisVariant, typename... Variants>
+void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
+    touch_global_cache_proxy_in_databox_impl(
+        boost::variant<Variants...>& box, const gsl::not_null<int*> iter,
+        const gsl::not_null<bool*> already_visited) noexcept {
+  if constexpr (db::tag_is_retrievable_v<Tags::GlobalCacheProxy<metavariables>,
+                                         ThisVariant>) {
+    if (box.which() == *iter and not *already_visited) {
+      db::mutate<Tags::GlobalCacheProxy<metavariables>>(
+          make_not_null(&(boost::get<ThisVariant>(box))),
+          [](const gsl::not_null<CProxy_GlobalCache<metavariables>*>
+                 proxy) noexcept { (void)proxy; });
+      *already_visited = true;
+    }
+  } else {
+    // silence warnings
+    (void)already_visited;
+  }
+  ++(*iter);
+}
+
+template <typename ParallelComponent, typename... PhaseDepActionListsPack>
+template <typename... Variants>
+void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
+    touch_global_cache_proxy_in_databox(
+        boost::variant<Variants...>& box) noexcept {
+  int iter = 0;
+  bool already_visited = false;
+  EXPAND_PACK_LEFT_TO_RIGHT(touch_global_cache_proxy_in_databox_impl<Variants>(
+      box, &iter, &already_visited));
+}
+
+template <typename ParallelComponent, typename... PhaseDepActionListsPack>
+template <typename ThisVariant, typename... Variants, typename... Args>
+void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
+    perform_registration_or_deregistration_impl(
+        PUP::er& p, const boost::variant<Variants...>& box,
+        const gsl::not_null<int*> iter,
+        const gsl::not_null<bool*> already_visited) noexcept {
+  // void cast to avoid compiler warnings about the unused variable in the
+  // false branch of the constexpr
+  (void)already_visited;
+  if (box.which() == *iter and not *already_visited) {
+    // The deregistration and registration below does not actually insert
+    // anything into the PUP::er stream, so nothing is done on a sizing pup.
+    if constexpr (Algorithm_detail::has_registration_list_v<
+                      metavariables, ParallelComponent>) {
+      using registration_list =
+          typename metavariables::template registration_list<
+              ParallelComponent>::type;
+      if (p.isPacking()) {
+        tmpl::for_each<registration_list>(
+            [this, &box](auto registration_v) noexcept {
+              using registration = typename decltype(registration_v)::type;
+              registration::template perform_deregistration<ParallelComponent>(
+                  boost::get<ThisVariant>(box),
+                  *(global_cache_proxy_.ckLocalBranch()), array_index_);
+            });
+      }
+      if (p.isUnpacking()) {
+        tmpl::for_each<registration_list>(
+            [this, &box](auto registration_v) noexcept {
+              using registration = typename decltype(registration_v)::type;
+              registration::template perform_registration<ParallelComponent>(
+                  boost::get<ThisVariant>(box),
+                  *(global_cache_proxy_.ckLocalBranch()), array_index_);
+            });
+      }
+      *already_visited = true;
+    }
+  }
+  ++(*iter);
+}
+
+template <typename ParallelComponent, typename... PhaseDepActionListsPack>
+template <typename... Variants, typename... Args>
+void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
+    perform_registration_or_deregistration(
+        PUP::er& p, const boost::variant<Variants...>& box) noexcept {
+  int iter = 0;
+  bool already_visited = false;
+  EXPAND_PACK_LEFT_TO_RIGHT(
+      perform_registration_or_deregistration_impl<Variants>(p, box, &iter,
+                                                            &already_visited));
+}
+
+template <typename ParallelComponent, typename... PhaseDepActionListsPack>
+void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
+    set_array_index() noexcept {
+  if constexpr (not is_singleton) {
+    // down cast to the algorithm_type, so that the `thisIndex` method can be
+    // called, which is defined in the CBase class
+    array_index_ = static_cast<typename chare_type::template algorithm_type<
+        ParallelComponent, array_index>&>(*this)
+                       .thisIndex;
+  }
+}
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 template <typename PhaseDepActions, size_t... Is>
@@ -1061,6 +1027,113 @@ AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
   EXPAND_PACK_LEFT_TO_RIGHT(helper(std::integral_constant<size_t, Is>{}));
   return take_next_action;
 }
+
+template <typename ParallelComponent, typename... PhaseDepActionListsPack>
+template <typename Action, typename... Args, size_t... Is>
+void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
+    forward_tuple_to_action(std::tuple<Args...>&& args,
+                            std::index_sequence<Is...> /*meta*/) noexcept {
+  Algorithm_detail::simple_action_visitor<Action, ParallelComponent>(
+      box_, *(global_cache_proxy_.ckLocalBranch()),
+      static_cast<const array_index&>(array_index_),
+      std::forward<Args>(std::get<Is>(args))...);
+}
+
+template <typename ParallelComponent, typename... PhaseDepActionListsPack>
+template <typename Action, typename... Args, size_t... Is>
+void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
+    forward_tuple_to_threaded_action(
+        std::tuple<Args...>&& args,
+        std::index_sequence<Is...> /*meta*/) noexcept {
+  const gsl::not_null<Parallel::NodeLock*> node_lock{&node_lock_};
+  Algorithm_detail::simple_action_visitor<Action, ParallelComponent>(
+      box_, *(global_cache_proxy_.ckLocalBranch()),
+      static_cast<const array_index&>(array_index_), node_lock,
+      std::forward<Args>(std::get<Is>(args))...);
+}
+
+template <typename ParallelComponent, typename... PhaseDepActionListsPack>
+size_t
+AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
+    number_of_actions_in_phase(const PhaseType phase) const noexcept {
+  size_t number_of_actions = 0;
+  const auto helper = [&number_of_actions, phase](auto pdal_v) {
+    if (pdal_v.phase == phase) {
+      number_of_actions = pdal_v.number_of_actions;
+    }
+  };
+  EXPAND_PACK_LEFT_TO_RIGHT(helper(PhaseDepActionListsPack{}));
+  return number_of_actions;
+}
+
+template <typename ParallelComponent, typename... PhaseDepActionListsPack>
+template <typename ThisAction, typename ActionList, typename DbTags>
+bool AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
+    invoke_iterable_action(db::DataBox<DbTags>& my_box) noexcept {
+  static_assert(not Algorithm_detail::is_is_ready_callable_t<
+                    ThisAction, db::DataBox<DbTags>&,
+                    tuples::tagged_tuple_from_typelist<inbox_tags_list>&,
+                    Parallel::GlobalCache<metavariables>&, array_index>{},
+                "Actions no longer support is_ready methods.  Instead, "
+                "return AlgorithmExecution::Retry from apply().");
+
+  auto action_return = ThisAction::apply(
+      my_box, inboxes_, *(global_cache_proxy_.ckLocalBranch()),
+      std::as_const(array_index_), ActionList{},
+      std::add_pointer_t<ParallelComponent>{});
+
+  static_assert(
+      Algorithm_detail::check_iterable_action_return_type<
+          ParallelComponent, ThisAction,
+          std::decay_t<decltype(action_return)>>::value,
+      "An iterable action has an invalid return type.\n"
+      "See the template parameters of "
+      "Algorithm_detail::check_iterable_action_return_type for details: the "
+      "first is the parallel component in question, the second is the "
+      "iterable action, and the third is the return type at fault.\n"
+      "The return type must be a tuple of length one, two, or three "
+      "with:\n"
+      " first type is an updated DataBox;\n"
+      " second type is either a bool (indicating termination) or a "
+      "`Parallel::AlgorithmExecution` object;\n"
+      " third type is a size_t indicating the next action in the current"
+      " phase.");
+
+  constexpr size_t tuple_size = std::tuple_size<decltype(action_return)>::value;
+  if constexpr (tuple_size >= 1_st) {
+    box_ = std::move(get<0>(action_return));
+  }
+  if constexpr (tuple_size >= 2_st) {
+    if constexpr (std::is_same_v<decltype(get<1>(action_return)), bool&>) {
+      terminate_ = get<1>(action_return);
+    } else {
+      switch (get<1>(action_return)) {
+        case AlgorithmExecution::Halt:
+          halt_algorithm_until_next_phase_ = true;
+          terminate_ = true;
+          break;
+        case AlgorithmExecution::Pause:
+          terminate_ = true;
+          break;
+        case AlgorithmExecution::Retry:
+          if constexpr (tuple_size >= 3_st) {
+            ASSERT(get<2>(action_return) == std::numeric_limits<size_t>::max(),
+                   "Switching actions on a Retry doesn't make sense.  If you "
+                   "need to return a three-element tuple, pass "
+                   "std::numeric_limits<size_t>::max() as the last element.");
+          }
+          return false;
+        default:
+          break;
+      }
+    }
+  }
+  if constexpr (tuple_size >= 3_st) {
+    algorithm_step_ = get<2>(action_return);
+  }
+  return true;
+}
+/// \endcond
 
 template <typename ParallelComponent, typename PhaseDepActionLists>
 std::ostream& operator<<(
