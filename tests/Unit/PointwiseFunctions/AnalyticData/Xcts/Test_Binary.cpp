@@ -39,7 +39,7 @@ using test_tags = tmpl::list<
 template <typename IsolatedObjectRegistrars>
 struct BinaryProxy {
   tuples::tagged_tuple_from_typelist<test_tags> test_variables(
-      const tnsr::I<DataVector, 3, Frame::Inertial>& x) const noexcept {
+      const tnsr::I<DataVector, 3, Frame::Inertial>& x) const {
     return binary.variables(x, test_tags{});
   }
 

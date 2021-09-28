@@ -15,7 +15,7 @@ template <size_t Dim, typename Frame, typename DataType>
 void spacetime_metric(
     const gsl::not_null<tnsr::aa<DataType, Dim, Frame>*> spacetime_metric,
     const Scalar<DataType>& lapse, const tnsr::I<DataType, Dim, Frame>& shift,
-    const tnsr::ii<DataType, Dim, Frame>& spatial_metric) noexcept {
+    const tnsr::ii<DataType, Dim, Frame>& spatial_metric) {
   if (UNLIKELY(get_size(get<0, 0>(*spacetime_metric)) !=
                get_size(get(lapse)))) {
     *spacetime_metric = tnsr::aa<DataType, Dim, Frame>(get_size(get(lapse)));
@@ -47,7 +47,7 @@ void spacetime_metric(
 template <size_t Dim, typename Frame, typename DataType>
 tnsr::aa<DataType, Dim, Frame> spacetime_metric(
     const Scalar<DataType>& lapse, const tnsr::I<DataType, Dim, Frame>& shift,
-    const tnsr::ii<DataType, Dim, Frame>& spatial_metric) noexcept {
+    const tnsr::ii<DataType, Dim, Frame>& spatial_metric) {
   tnsr::aa<DataType, Dim, Frame> spacetime_metric{};
   gr::spacetime_metric<Dim, Frame, DataType>(make_not_null(&spacetime_metric),
                                              lapse, shift, spatial_metric);
@@ -65,13 +65,11 @@ tnsr::aa<DataType, Dim, Frame> spacetime_metric(
           spacetime_metric,                                                    \
       const Scalar<DTYPE(data)>& lapse,                                        \
       const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,               \
-      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>&                     \
-          spatial_metric) noexcept;                                            \
+      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& spatial_metric);    \
   template tnsr::aa<DTYPE(data), DIM(data), FRAME(data)> gr::spacetime_metric( \
       const Scalar<DTYPE(data)>& lapse,                                        \
       const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,               \
-      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>&                     \
-          spatial_metric) noexcept;
+      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& spatial_metric);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
                         (Frame::Grid, Frame::Inertial))

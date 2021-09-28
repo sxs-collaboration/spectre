@@ -44,7 +44,7 @@ namespace evolution::dg::Actions::detail {
       const std::optional<Scalar<DataVector>>& div_mesh_velocity,             \
       const Scalar<DataVector>& pi,                                           \
       const tnsr::i<DataVector, DIM(data), Frame::Inertial>& phi,             \
-      const Scalar<DataVector>& gamma2) noexcept;
+      const Scalar<DataVector>& gamma2);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 

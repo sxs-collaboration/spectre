@@ -136,10 +136,9 @@ class CylindricalEndcap {
  public:
   static constexpr size_t dim = 3;
   CylindricalEndcap(const std::array<double, 3>& center_one,
-                       const std::array<double, 3>& center_two,
-                       const std::array<double, 3>& proj_center,
-                       double radius_one, double radius_two,
-                       double z_plane) noexcept;
+                    const std::array<double, 3>& center_two,
+                    const std::array<double, 3>& proj_center, double radius_one,
+                    double radius_two, double z_plane);
 
   CylindricalEndcap() = default;
   ~CylindricalEndcap() = default;
@@ -150,34 +149,33 @@ class CylindricalEndcap {
 
   template <typename T>
   std::array<tt::remove_cvref_wrap_t<T>, 3> operator()(
-      const std::array<T, 3>& source_coords) const noexcept;
+      const std::array<T, 3>& source_coords) const;
 
   /// The inverse function is only callable with doubles because the inverse
   /// might fail if called for a point out of range, and it is unclear
   /// what should happen if the inverse were to succeed for some points in a
   /// DataVector but fail for other points.
   std::optional<std::array<double, 3>> inverse(
-      const std::array<double, 3>& target_coords) const noexcept;
+      const std::array<double, 3>& target_coords) const;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> jacobian(
-      const std::array<T, 3>& source_coords) const noexcept;
+      const std::array<T, 3>& source_coords) const;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> inv_jacobian(
-      const std::array<T, 3>& source_coords) const noexcept;
+      const std::array<T, 3>& source_coords) const;
 
   // clang-tidy: google runtime references
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
 
-  static bool is_identity() noexcept { return false; }
+  static bool is_identity() { return false; }
 
  private:
   friend bool operator==(const CylindricalEndcap& lhs,
-                         const CylindricalEndcap& rhs) noexcept;
+                         const CylindricalEndcap& rhs);
   FocallyLiftedMap<FocallyLiftedInnerMaps::Endcap> impl_;
 };
-bool operator!=(const CylindricalEndcap& lhs,
-                const CylindricalEndcap& rhs) noexcept;
+bool operator!=(const CylindricalEndcap& lhs, const CylindricalEndcap& rhs);
 
 }  // namespace domain::CoordinateMaps

@@ -14,7 +14,7 @@
 #include "Utilities/GetOutput.hpp"
 
 namespace {
-void check(const bool time_runs_forward) noexcept {
+void check(const bool time_runs_forward) {
   using Hash = std::hash<TimeStepId>;
 
   const Slab slab(1.2, 3.4);
@@ -56,11 +56,10 @@ void check(const bool time_runs_forward) noexcept {
   CHECK_FALSE(id != id);
   CHECK(id == TimeStepId(id));
 
-  const auto check_comparisons = [&id](
-      const int64_t slab_delta,
-      const TimeDelta& step_time_delta,
-      const int64_t substep_delta,
-      const TimeDelta& substep_time_delta) noexcept {
+  const auto check_comparisons = [&id](const int64_t slab_delta,
+                                       const TimeDelta& step_time_delta,
+                                       const int64_t substep_delta,
+                                       const TimeDelta& substep_time_delta) {
     const TimeStepId id2(id.time_runs_forward(),
                          id.slab_number() + slab_delta,
                          id.step_time() + step_time_delta,

@@ -31,14 +31,13 @@ class BoundaryCorrection : public PUP::able {
   ~BoundaryCorrection() override = default;
 
   /// \cond
-  explicit BoundaryCorrection(CkMigrateMessage* msg) noexcept
-      : PUP::able(msg) {}
+  explicit BoundaryCorrection(CkMigrateMessage* msg) : PUP::able(msg) {}
   WRAPPED_PUPable_abstract(BoundaryCorrection<NeutrinoSpeciesList>);  // NOLINT
   /// \endcond
 
   using creatable_classes = tmpl::list<Rusanov<NeutrinoSpeciesList>>;
 
   virtual std::unique_ptr<BoundaryCorrection<NeutrinoSpeciesList>> get_clone()
-      const noexcept = 0;
+      const = 0;
 };
 }  // namespace RadiationTransport::M1Grey::BoundaryCorrections

@@ -78,7 +78,7 @@ struct GrTagsForHydro {
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     const double initial_time = db::get<Initialization::Tags::InitialTime>(box);
     using GrVars = typename gr_tag::type;
 

@@ -58,7 +58,7 @@ class FixConservatives {
     using type = double;
     static constexpr Options::String help = {
         "Minimum value of rest-mass density times Lorentz factor"};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
 
   /// The cutoff below which \f$D\f$ is set to `MinimumValueOfD`
@@ -66,7 +66,7 @@ class FixConservatives {
     using type = double;
     static constexpr Options::String help = {
         "Cutoff below which D is set to MinimumValueOfD"};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
 
   /// The safety factor to fix \f$\tilde S_i\f$
@@ -74,10 +74,8 @@ class FixConservatives {
     using type = double;
     static constexpr Options::String help = {
         "Safety factor for momentum density bound."};
-    static type lower_bound() noexcept {
-      return std::numeric_limits<double>::epsilon();
-    }
-    static type upper_bound() noexcept { return 1.0; }
+    static type lower_bound() { return std::numeric_limits<double>::epsilon(); }
+    static type upper_bound() { return 1.0; }
   };
 
   using options = tmpl::list<MinimumValueOfD, CutoffD, SafetyFactorForS>;
@@ -87,8 +85,8 @@ class FixConservatives {
   FixConservatives() = default;
   FixConservatives(const FixConservatives& /*rhs*/) = default;
   FixConservatives& operator=(const FixConservatives& /*rhs*/) = default;
-  FixConservatives(FixConservatives&& /*rhs*/) noexcept = default;
-  FixConservatives& operator=(FixConservatives&& /*rhs*/) noexcept = default;
+  FixConservatives(FixConservatives&& /*rhs*/) = default;
+  FixConservatives& operator=(FixConservatives&& /*rhs*/) = default;
   ~FixConservatives() = default;
 
   FixConservatives(double minimum_rest_mass_density_times_lorentz_factor,
@@ -97,7 +95,7 @@ class FixConservatives {
                    const Options::Context& context = {});
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept;
+  void pup(PUP::er& p);
 
   using return_tags =
       tmpl::list<RelativisticEuler::Valencia::Tags::TildeD,
@@ -112,13 +110,13 @@ class FixConservatives {
       gsl::not_null<Scalar<DataVector>*> tilde_tau,
       gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*> tilde_s,
       const tnsr::II<DataVector, Dim, Frame::Inertial>& inv_spatial_metric,
-      const Scalar<DataVector>& sqrt_det_spatial_metric) const noexcept;
+      const Scalar<DataVector>& sqrt_det_spatial_metric) const;
 
  private:
   template <size_t SpatialDim>
   friend bool operator==(  // NOLINT(readability-redundant-declaration)
       const FixConservatives<SpatialDim>& lhs,
-      const FixConservatives<SpatialDim>& rhs) noexcept;
+      const FixConservatives<SpatialDim>& rhs);
 
   double minimum_rest_mass_density_times_lorentz_factor_ =
       std::numeric_limits<double>::signaling_NaN();
@@ -130,6 +128,6 @@ class FixConservatives {
 
 template <size_t Dim>
 bool operator!=(const FixConservatives<Dim>& lhs,
-                const FixConservatives<Dim>& rhs) noexcept;
+                const FixConservatives<Dim>& rhs);
 }  // namespace Valencia
 }  // namespace RelativisticEuler

@@ -14,15 +14,15 @@
 SPECTRE_TEST_CASE("Unit.Utilities.CachedFunction", "[Unit][Utilities]") {
   size_t call_count = 0;
   // Use types that cannot be implicitly converted
-  const auto func = [&call_count](const std::string& s) noexcept {
+  const auto func = [&call_count](const std::string& s) {
     ++call_count;
     return s.size();
   };
 
   bool comparator_used = false;
   // Unused capture to silence clang-tidy warning in the example below.
-  auto comparator = [&comparator_used, not_trivially_copyable=std::string{}](
-      const std::string& a, const std::string& b) noexcept {
+  auto comparator = [&comparator_used, not_trivially_copyable = std::string{}](
+                        const std::string& a, const std::string& b) {
     comparator_used = true;
     return a < b;
   };

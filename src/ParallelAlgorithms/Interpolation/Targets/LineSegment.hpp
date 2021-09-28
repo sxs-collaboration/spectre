@@ -53,7 +53,7 @@ struct LineSegment {
     using type = size_t;
     static constexpr Options::String help = {
         "Number of points including endpoints"};
-    static type lower_bound() noexcept { return 2; }
+    static type lower_bound() { return 2; }
   };
   using options = tmpl::list<Begin, End, NumberOfPoints>;
   static constexpr Options::String help = {
@@ -61,18 +61,17 @@ struct LineSegment {
       " uniformly-spaced points including the endpoints."};
 
   LineSegment(std::array<double, VolumeDim> begin_in,
-              std::array<double, VolumeDim> end_in,
-              size_t number_of_points_in) noexcept;
+              std::array<double, VolumeDim> end_in, size_t number_of_points_in);
 
   LineSegment() = default;
   LineSegment(const LineSegment& /*rhs*/) = delete;
   LineSegment& operator=(const LineSegment& /*rhs*/) = default;
-  LineSegment(LineSegment&& /*rhs*/) noexcept = default;
-  LineSegment& operator=(LineSegment&& /*rhs*/) noexcept = default;
+  LineSegment(LineSegment&& /*rhs*/) = default;
+  LineSegment& operator=(LineSegment&& /*rhs*/) = default;
   ~LineSegment() = default;
 
   // clang-tidy non-const reference pointer.
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
 
   std::array<double, VolumeDim> begin{};
   std::array<double, VolumeDim> end{};
@@ -81,10 +80,10 @@ struct LineSegment {
 
 template <size_t VolumeDim>
 bool operator==(const LineSegment<VolumeDim>& lhs,
-                const LineSegment<VolumeDim>& rhs) noexcept;
+                const LineSegment<VolumeDim>& rhs);
 template <size_t VolumeDim>
 bool operator!=(const LineSegment<VolumeDim>& lhs,
-                const LineSegment<VolumeDim>& rhs) noexcept;
+                const LineSegment<VolumeDim>& rhs);
 
 }  // namespace OptionHolders
 
@@ -94,9 +93,7 @@ struct LineSegment {
   using type = OptionHolders::LineSegment<VolumeDim>;
   static constexpr Options::String help{
       "Options for interpolation onto line segment."};
-  static std::string name() noexcept {
-    return Options::name<InterpolationTargetTag>();
-  }
+  static std::string name() { return Options::name<InterpolationTargetTag>(); }
   using group = InterpolationTargets;
 };
 }  // namespace OptionTags
@@ -109,9 +106,7 @@ struct LineSegment : db::SimpleTag {
       tmpl::list<OptionTags::LineSegment<InterpolationTargetTag, VolumeDim>>;
 
   static constexpr bool pass_metavariables = false;
-  static type create_from_options(const type& option) noexcept {
-    return option;
-  }
+  static type create_from_options(const type& option) { return option; }
 };
 }  // namespace Tags
 
@@ -129,7 +124,7 @@ struct LineSegment {
   template <typename Metavariables, typename DbTags>
   static tnsr::I<DataVector, VolumeDim, Frame::Inertial> points(
       const db::DataBox<DbTags>& box,
-      const tmpl::type_<Metavariables>& /*meta*/) noexcept {
+      const tmpl::type_<Metavariables>& /*meta*/) {
     const auto& options =
         get<Tags::LineSegment<InterpolationTargetTag, VolumeDim>>(box);
 
@@ -151,7 +146,7 @@ struct LineSegment {
   template <typename Metavariables, typename DbTags, typename TemporalId>
   static tnsr::I<DataVector, VolumeDim, Frame::Inertial> points(
       const db::DataBox<DbTags>& box, const tmpl::type_<Metavariables>& meta,
-      const TemporalId& /*temporal_id*/) noexcept {
+      const TemporalId& /*temporal_id*/) {
     return points(box, meta);
   }
 };

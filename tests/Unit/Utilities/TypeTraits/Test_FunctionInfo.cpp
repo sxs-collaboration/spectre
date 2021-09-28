@@ -93,9 +93,9 @@ int int_two_5(const double* const /*unused*/, char /*unused*/) { return 0; }
 FUNCTION_INFO_TEST(, , )
 FUNCTION_INFO_TEST(Const, , const)
 FUNCTION_INFO_TEST(Static, static, )
-FUNCTION_INFO_TEST(Noexcept, , noexcept)
-FUNCTION_INFO_TEST(ConstNoexcept, , const noexcept)
-FUNCTION_INFO_TEST(StaticNoexcept, static, noexcept)
+FUNCTION_INFO_TEST(Noexcept, , )
+FUNCTION_INFO_TEST(ConstNoexcept, , const)
+FUNCTION_INFO_TEST(StaticNoexcept, static, )
 
 #undef FUNCTION_INFO_TEST
 
@@ -341,7 +341,7 @@ struct check_function_info {
   static constexpr CheckClass<FunctionInfoTestConst> const_members{};
   static constexpr CheckClass<FunctionInfoTestConstNoexcept>
       const_noexcept_members{};
-  static constexpr CheckClass<FunctionInfoTestNoexcept> noexcept_members{};
+  static constexpr CheckClass<FunctionInfoTestNoexcept> _members{};
   static constexpr CheckClass<FunctionInfoTestVirtual> virtual_members{};
   static constexpr CheckClass<FunctionInfoTestVirtualBase>
       virtual_base_members{};
@@ -365,7 +365,7 @@ struct identity {
 
 // Scope function calls to avoid warnings
 struct TestFunctions {
-  TestFunctions() noexcept {
+  TestFunctions() {
     (void)check_function_info<identity>{};
     (void)check_function_info<std::add_pointer>{};
     (void)check_function_info<add_pointer_helper<std::add_const>::impl>{};

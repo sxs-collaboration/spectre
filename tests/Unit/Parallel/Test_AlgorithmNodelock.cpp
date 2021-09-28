@@ -51,12 +51,12 @@ struct NodegroupParallelComponent;
 
 namespace Tags {
 struct vector_of_array_indexs : db::SimpleTag {
-  static std::string name() noexcept { return "vector_of_array_indexs"; }
+  static std::string name() { return "vector_of_array_indexs"; }
   using type = std::vector<int>;
 };
 
 struct total_receives_on_node : db::SimpleTag {
-  static std::string name() noexcept { return "total_receives_on_node"; }
+  static std::string name() { return "total_receives_on_node"; }
   using type = int;
 };
 }  // namespace Tags
@@ -270,7 +270,7 @@ struct ArrayParallelComponent {
   static void allocate_array(
       Parallel::CProxy_GlobalCache<Metavariables>& global_cache,
       const tuples::tagged_tuple_from_typelist<initialization_tags>&
-      /*initialization_items*/) noexcept {
+      /*initialization_items*/) {
     auto& local_cache = *(global_cache.ckLocalBranch());
     auto& array_proxy =
         Parallel::get_parallel_component<ArrayParallelComponent>(local_cache);
@@ -288,7 +288,7 @@ struct ArrayParallelComponent {
 
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
-      Parallel::CProxy_GlobalCache<Metavariables>& global_cache) noexcept {
+      Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *(global_cache.ckLocalBranch());
     auto& array_proxy =
         Parallel::get_parallel_component<ArrayParallelComponent>(local_cache);
@@ -326,7 +326,7 @@ struct NodegroupParallelComponent {
 
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
-      Parallel::CProxy_GlobalCache<Metavariables>& global_cache) noexcept {
+      Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *(global_cache.ckLocalBranch());
     auto& nodegroup_proxy =
         Parallel::get_parallel_component<NodegroupParallelComponent>(
@@ -361,8 +361,7 @@ struct TestMetavariables {
       const gsl::not_null<
           tuples::TaggedTuple<Tags...>*> /*phase_change_decision_data*/,
       const Phase& current_phase,
-      const Parallel::CProxy_GlobalCache<
-          TestMetavariables>& /*cache_proxy*/) noexcept {
+      const Parallel::CProxy_GlobalCache<TestMetavariables>& /*cache_proxy*/) {
     Parallel::printf("Determining next phase\n");
 
     if (current_phase == Phase::Initialization) {
@@ -382,7 +381,7 @@ struct TestMetavariables {
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& /*p*/) noexcept {}
+  void pup(PUP::er& /*p*/) {}
 };
 
 static const std::vector<void (*)()> charm_init_node_funcs{

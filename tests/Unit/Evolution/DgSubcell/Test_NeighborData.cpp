@@ -18,7 +18,7 @@
 
 namespace evolution::dg::subcell {
 namespace {
-void test() noexcept {
+void test() {
   MAKE_GENERATOR(gen);
   UniformCustomDistribution<double> dist{-100.0, 100.0};
   std::vector<double> slice_data(10);

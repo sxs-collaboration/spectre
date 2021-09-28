@@ -63,7 +63,7 @@ struct TimeDerivativeTermsImpl<
       const typename ::Tags::deriv<GhGradientTags, tmpl::size_t<3_st>,
                                    Frame::Inertial>::type&... gh_gradients,
       const typename GhArgTags::type&... gh_args,
-      const typename ValenciaArgTags::type&... valencia_args) noexcept {
+      const typename ValenciaArgTags::type&... valencia_args) {
     GeneralizedHarmonic::TimeDerivative<3_st>::apply(
         gh_dts..., gh_temporaries..., gh_gradients..., gh_args...);
 
@@ -96,8 +96,7 @@ struct TimeDerivativeTermsImpl<
       gsl::not_null<tnsr::aa<DataVector, 3_st>*> /*dt_spacetime_metric*/,
       gsl::not_null<tnsr::aa<DataVector, 3_st>*> dt_pi,
       gsl::not_null<tnsr::iaa<DataVector, 3_st>*> /*dt_phi*/,
-      const TupleType& args,
-      const tnsr::aa<DataVector, 3_st>& stress_energy) noexcept {
+      const TupleType& args, const tnsr::aa<DataVector, 3_st>& stress_energy) {
     add_stress_energy_term_to_dt_pi(
         dt_pi, stress_energy,
         tuples::get<
@@ -119,7 +118,7 @@ struct TimeDerivativeTermsImpl<
       const Scalar<DataVector>& /*gamma2*/,
       const tnsr::a<DataVector, 3_st>& /*gauge_function*/,
       const tnsr::ab<DataVector, 3_st>& /*spacetime_deriv_gauge_function*/,
-      const TupleType& args) noexcept {
+      const TupleType& args) {
     trace_reversed_stress_energy(
         local_stress_energy, four_velocity_buffer_one_form,
         comoving_magnetic_field_one_form,
@@ -210,7 +209,7 @@ struct TimeDerivativeTerms {
   using argument_tags = tmpl::append<gh_arg_tags, valencia_arg_tags>;
 
   template <typename... Args>
-  static void apply(Args&&... args) noexcept {
+  static void apply(Args&&... args) {
     detail::TimeDerivativeTermsImpl<
         gh_dt_tags, valencia_dt_tags, valencia_flux_tags, gh_temp_tags,
         valencia_temp_tags, gh_gradient_tags, gh_arg_tags, valencia_arg_tags,

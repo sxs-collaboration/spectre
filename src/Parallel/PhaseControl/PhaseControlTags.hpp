@@ -72,8 +72,7 @@ struct PhaseChangeAndTriggers : db::SimpleTag {
   using option_tags =
       tmpl::list<OptionTags::PhaseChangeAndTriggers<PhaseChangeRegistrars>>;
   static constexpr bool pass_metavariables = false;
-  static type create_from_options(
-      const type& phase_control_and_triggers) noexcept {
+  static type create_from_options(const type& phase_control_and_triggers) {
     return deserialize<type>(
         serialize<type>(phase_control_and_triggers).data());
   }

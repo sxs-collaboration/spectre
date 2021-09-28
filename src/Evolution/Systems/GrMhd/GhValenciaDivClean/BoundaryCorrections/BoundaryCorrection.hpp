@@ -46,8 +46,7 @@ class BoundaryCorrection : public PUP::able {
   ~BoundaryCorrection() override = default;
 
   /// \cond
-  explicit BoundaryCorrection(CkMigrateMessage* msg) noexcept
-      : PUP::able(msg) {}
+  explicit BoundaryCorrection(CkMigrateMessage* msg) : PUP::able(msg) {}
   WRAPPED_PUPable_abstract(BoundaryCorrection);  // NOLINT
   /// \endcond
 
@@ -57,6 +56,6 @@ class BoundaryCorrection : public PUP::able {
       typename grmhd::ValenciaDivClean::BoundaryCorrections::
           BoundaryCorrection::creatable_classes>::type;
 
-  virtual std::unique_ptr<BoundaryCorrection> get_clone() const noexcept = 0;
+  virtual std::unique_ptr<BoundaryCorrection> get_clone() const = 0;
 };
 }  // namespace grmhd::GhValenciaDivClean::BoundaryCorrections

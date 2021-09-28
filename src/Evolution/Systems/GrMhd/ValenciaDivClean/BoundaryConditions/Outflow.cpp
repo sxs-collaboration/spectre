@@ -22,11 +22,10 @@
 #include "Utilities/TMPL.hpp"
 
 namespace grmhd::ValenciaDivClean::BoundaryConditions {
-Outflow::Outflow(CkMigrateMessage* const msg) noexcept
-    : BoundaryCondition(msg) {}
+Outflow::Outflow(CkMigrateMessage* const msg) : BoundaryCondition(msg) {}
 
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-Outflow::get_clone() const noexcept {
+Outflow::get_clone() const {
   return std::make_unique<Outflow>(*this);
 }
 
@@ -41,7 +40,7 @@ std::optional<std::string> Outflow::dg_outflow(
     /*outward_directed_normal_vector*/,
 
     const tnsr::I<DataVector, 3, Frame::Inertial>& shift,
-    const Scalar<DataVector>& lapse) noexcept {
+    const Scalar<DataVector>& lapse) {
   double min_speed = std::numeric_limits<double>::signaling_NaN();
   Variables<tmpl::list<::Tags::TempScalar<0>, ::Tags::TempScalar<1>>> buffer{
       get(lapse).size()};

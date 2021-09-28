@@ -37,7 +37,7 @@ class GhostDataOnSubcells {
       tmpl::list<::Tags::Variables<tmpl::list<ScalarAdvection::Tags::U>>>;
 
   static Variables<tmpl::list<ScalarAdvection::Tags::U>> apply(
-      const Variables<tmpl::list<ScalarAdvection::Tags::U>>& vars) noexcept;
+      const Variables<tmpl::list<ScalarAdvection::Tags::U>>& vars);
 };
 
 /*!
@@ -58,6 +58,6 @@ class GhostDataToSlice {
 
   static Variables<tmpl::list<ScalarAdvection::Tags::U>> apply(
       const Variables<tmpl::list<ScalarAdvection::Tags::U>>& vars,
-      const Mesh<Dim>& dg_mesh, const Mesh<Dim>& subcell_mesh) noexcept;
+      const Mesh<Dim>& dg_mesh, const Mesh<Dim>& subcell_mesh);
 };
 }  // namespace ScalarAdvection::subcell

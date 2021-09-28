@@ -35,7 +35,7 @@ struct test_send_to_evolution {
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const TimeStepId& /*time*/,
       const Cce::InterfaceManagers::GhInterfaceManager::gh_variables&
-      /*gh_variables*/) noexcept {}
+      /*gh_variables*/) {}
 };
 
 TimeStepId next_time_received;
@@ -45,8 +45,7 @@ struct test_receive_next_element_time {
   static void apply(const db::DataBox<tmpl::list<DbTags...>>& /*box*/,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
-                    const TimeStepId& /*time*/,
-                    const TimeStepId& next_time) noexcept {
+                    const TimeStepId& /*time*/, const TimeStepId& next_time) {
     next_time_received = next_time;
   }
 };
@@ -113,7 +112,7 @@ struct initialize_elements_and_queue_simple_actions {
   initialize_elements_and_queue_simple_actions(
       const TimeStepId& time_step_id, const TimeStepId& next_time_step_id,
       const TimeDelta& time_step, const TimeStepId& expected_next_time_step,
-      const bool is_substep) noexcept
+      const bool is_substep)
       : time_step_id_{time_step_id},
         next_time_step_id_{next_time_step_id},
         time_step_{time_step},
@@ -125,7 +124,7 @@ struct initialize_elements_and_queue_simple_actions {
                   const Domain<3>& domain,
                   const std::vector<ElementId<3>>& element_ids,
                   const InterpPointInfo& interp_point_info, Runner& runner,
-                  const TemporalId& /*temporal_id*/) noexcept {
+                  const TemporalId& /*temporal_id*/) {
     using elem_component = ElemComponent;
 
     ActionTesting::emplace_component_and_initialize<
@@ -177,7 +176,7 @@ struct initialize_elements_and_queue_simple_actions {
   bool is_substep_;
 };
 
-void test_send_time_to_cce(const bool substep) noexcept {
+void test_send_time_to_cce(const bool substep) {
   Parallel::register_derived_classes_with_charm<
       Cce::InterfaceManagers::GhInterfaceManager>();
   Parallel::register_derived_classes_with_charm<TimeStepper>();

@@ -112,7 +112,7 @@ constexpr size_t SpatialDim = 3;
 void test_spatial_projection_tensors_3D(
     const size_t grid_size_each_dimension,
     const std::array<double, 3>& lower_bound,
-    const std::array<double, 3>& upper_bound) noexcept {
+    const std::array<double, 3>& upper_bound) {
   // Setup grid
   Mesh<SpatialDim> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
                         Spectral::Quadrature::GaussLobatto};

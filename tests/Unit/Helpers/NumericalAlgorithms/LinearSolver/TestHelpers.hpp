@@ -20,7 +20,7 @@ namespace TestHelpers::LinearSolver {
 struct ApplyMatrix {
   DenseMatrix<double> matrix;
   void operator()(const gsl::not_null<DenseVector<double>*> result,
-                  const DenseVector<double>& operand) const noexcept {
+                  const DenseVector<double>& operand) const {
     *result = matrix * operand;
   }
 };
@@ -31,16 +31,16 @@ struct ExactInversePreconditioner {
   void solve(const gsl::not_null<DenseVector<double>*> solution,
              const ApplyMatrix& linear_operator,
              const DenseVector<double>& source,
-             const std::tuple<>& /*operator_args*/) const noexcept {
+             const std::tuple<>& /*operator_args*/) const {
     if (not inv_matrix_.has_value()) {
       inv_matrix_ = blaze::inv(linear_operator.matrix);
     }
     *solution = *inv_matrix_ * source;
   }
 
-  void reset() noexcept { inv_matrix_.reset(); }
+  void reset() { inv_matrix_.reset(); }
 
-  void pup(PUP::er& p) noexcept { p | inv_matrix_; }  // NOLINT
+  void pup(PUP::er& p) { p | inv_matrix_; }  // NOLINT
 
   // Make option-creatable for factory tests
   using options = tmpl::list<>;
@@ -55,7 +55,7 @@ struct JacobiPreconditioner {
   void solve(const gsl::not_null<DenseVector<double>*> solution,
              const ApplyMatrix& linear_operator,
              const DenseVector<double>& source,
-             const std::tuple<>& /*operator_args*/) const noexcept {
+             const std::tuple<>& /*operator_args*/) const {
     if (not inv_diagonal_.has_value()) {
       inv_diagonal_ = DenseVector<double>(source.size(), 1.);
       for (size_t i = 0; i < source.size(); ++i) {
@@ -68,9 +68,9 @@ struct JacobiPreconditioner {
     }
   }
 
-  void reset() noexcept { inv_diagonal_.reset(); }
+  void reset() { inv_diagonal_.reset(); }
 
-  void pup(PUP::er& p) noexcept { p | inv_diagonal_; }  // NOLINT
+  void pup(PUP::er& p) { p | inv_diagonal_; }  // NOLINT
 
  private:
   mutable std::optional<DenseVector<double>> inv_diagonal_{};
@@ -87,7 +87,7 @@ struct RichardsonPreconditioner {
   void solve(
       const gsl::not_null<DenseVector<double>*> initial_guess_in_solution_out,
       const ApplyMatrix& linear_operator, const DenseVector<double>& source,
-      const std::tuple<>& /*operator_args*/) const noexcept {
+      const std::tuple<>& /*operator_args*/) const {
     for (size_t i = 0; i < num_iterations_; ++i) {
       linear_operator(make_not_null(&correction_buffer_),
                       *initial_guess_in_solution_out);
@@ -98,9 +98,9 @@ struct RichardsonPreconditioner {
     }
   }
 
-  static void reset() noexcept {}
+  static void reset() {}
 
-  void pup(PUP::er& p) noexcept {  // NOLINT
+  void pup(PUP::er& p) {  // NOLINT
     p | relaxation_parameter_;
     p | num_iterations_;
   }

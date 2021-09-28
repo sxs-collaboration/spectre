@@ -17,7 +17,7 @@ struct Tag : db::SimpleTag {
   using type = int;
 };
 struct TestOptionsGroup {
-  static std::string name() noexcept { return "TestNonlinearSolver"; }
+  static std::string name() { return "TestNonlinearSolver"; }
 };
 }  // namespace
 

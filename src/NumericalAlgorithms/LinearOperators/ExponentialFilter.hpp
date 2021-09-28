@@ -62,7 +62,7 @@ class Exponential {
     using type = double;
     static constexpr Options::String help =
         "exp(-alpha) is rescaling of highest coefficient";
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
 
   /*!
@@ -76,7 +76,7 @@ class Exponential {
     using type = unsigned;
     static constexpr Options::String help =
         "Half of the exponent in the generalized Gaussian";
-    static type lower_bound() noexcept { return 1; }
+    static type lower_bound() { return 1; }
   };
 
   /// \brief Turn the filter off
@@ -86,34 +86,33 @@ class Exponential {
   /// approach is to not compile the filter into the executable.
   struct DisableForDebugging {
     using type = bool;
-    static type suggested_value() noexcept { return false; }
+    static type suggested_value() { return false; }
     static constexpr Options::String help = {"Disable the filter"};
   };
 
   using options = tmpl::list<Alpha, HalfPower, DisableForDebugging>;
   static constexpr Options::String help = {"An exponential filter."};
-  static std::string name() noexcept {
+  static std::string name() {
     return "ExpFilter" + std::to_string(FilterIndex);
   }
 
   Exponential() = default;
 
-  Exponential(double alpha, unsigned half_power,
-              bool disable_for_debugging) noexcept;
+  Exponential(double alpha, unsigned half_power, bool disable_for_debugging);
 
   /// A cached matrix used to apply the filter to the given mesh
-  const Matrix& filter_matrix(const Mesh<1>& mesh) const noexcept;
+  const Matrix& filter_matrix(const Mesh<1>& mesh) const;
 
-  bool disable_for_debugging() const noexcept { return disable_for_debugging_; }
+  bool disable_for_debugging() const { return disable_for_debugging_; }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept;
+  void pup(PUP::er& p);
 
  private:
   template <size_t LocalFilterIndex>
   // NOLINTNEXTLINE(readability-redundant-declaration)
   friend bool operator==(const Exponential<LocalFilterIndex>& lhs,
-                         const Exponential<LocalFilterIndex>& rhs) noexcept;
+                         const Exponential<LocalFilterIndex>& rhs);
 
   double alpha_{36.0};
   unsigned half_power_{16};
@@ -122,9 +121,9 @@ class Exponential {
 
 template <size_t LocalFilterIndex>
 bool operator==(const Exponential<LocalFilterIndex>& lhs,
-                const Exponential<LocalFilterIndex>& rhs) noexcept;
+                const Exponential<LocalFilterIndex>& rhs);
 
 template <size_t FilterIndex>
 bool operator!=(const Exponential<FilterIndex>& lhs,
-                const Exponential<FilterIndex>& rhs) noexcept;
+                const Exponential<FilterIndex>& rhs);
 }  // namespace Filters

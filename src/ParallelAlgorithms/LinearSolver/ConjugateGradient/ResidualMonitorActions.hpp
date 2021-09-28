@@ -53,7 +53,7 @@ struct InitializeResidual {
   static void apply(db::DataBox<DbTagsList>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
-                    const double residual_square) noexcept {
+                    const double residual_square) {
     constexpr size_t iteration_id = 0;
     const double residual_magnitude = sqrt(residual_square);
 
@@ -61,7 +61,7 @@ struct InitializeResidual {
         make_not_null(&box),
         [residual_square, residual_magnitude](
             const gsl::not_null<double*> local_residual_square,
-            const gsl::not_null<double*> initial_residual_magnitude) noexcept {
+            const gsl::not_null<double*> initial_residual_magnitude) {
           *local_residual_square = residual_square;
           *initial_residual_magnitude = residual_magnitude;
         });
@@ -112,7 +112,7 @@ struct ComputeAlpha {
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
                     const size_t iteration_id,
-                    const double conj_grad_inner_product) noexcept {
+                    const double conj_grad_inner_product) {
     Parallel::receive_data<Tags::Alpha<OptionsGroup>>(
         Parallel::get_parallel_component<BroadcastTarget>(cache), iteration_id,
         get<residual_square_tag>(box) / conj_grad_inner_product);
@@ -138,15 +138,13 @@ struct UpdateResidual {
   static void apply(db::DataBox<DbTagsList>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
-                    const size_t iteration_id,
-                    const double residual_square) noexcept {
+                    const size_t iteration_id, const double residual_square) {
     // Compute the residual ratio before mutating the DataBox
     const double res_ratio = residual_square / get<residual_square_tag>(box);
 
     db::mutate<residual_square_tag>(
         make_not_null(&box),
-        [residual_square](
-            const gsl::not_null<double*> local_residual_square) noexcept {
+        [residual_square](const gsl::not_null<double*> local_residual_square) {
           *local_residual_square = residual_square;
         });
 

@@ -13,7 +13,7 @@ namespace detail {
 template <typename TagsList, typename... ReturnTags, typename... ArgumentTags>
 void compute_fluxes_impl(const gsl::not_null<Variables<TagsList>*> vars,
                          tmpl::list<ReturnTags...> /*meta*/,
-                         tmpl::list<ArgumentTags...> /*meta*/) noexcept {
+                         tmpl::list<ArgumentTags...> /*meta*/) {
   grmhd::ValenciaDivClean::ComputeFluxes::apply(
       make_not_null(&get<ReturnTags>(*vars))..., get<ArgumentTags>(*vars)...);
 }
@@ -24,7 +24,7 @@ void compute_fluxes_impl(const gsl::not_null<Variables<TagsList>*> vars,
  * and argument tags from `vars`.
  */
 template <typename TagsList>
-void compute_fluxes(const gsl::not_null<Variables<TagsList>*> vars) noexcept {
+void compute_fluxes(const gsl::not_null<Variables<TagsList>*> vars) {
   detail::compute_fluxes_impl(
       vars, typename grmhd::ValenciaDivClean::ComputeFluxes::return_tags{},
       typename grmhd::ValenciaDivClean::ComputeFluxes::argument_tags{});

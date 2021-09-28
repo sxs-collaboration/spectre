@@ -48,7 +48,7 @@ struct ReturnPhase {
   struct combine_method {
     std::optional<decltype(Phase)> operator()(
         const std::optional<decltype(Phase)> /*first_phase*/,
-        const std::optional<decltype(Phase)>& /*second_phase*/) noexcept {
+        const std::optional<decltype(Phase)>& /*second_phase*/) {
       ERROR(
           "The return phase should only be altered by the phase change "
           "arbitration in the Main chare, so no reduction data should be "
@@ -111,12 +111,12 @@ template <typename Metavariables, typename Metavariables::Phase TargetPhase,
 struct VisitAndReturn : public PhaseChange<PhaseChangeRegistrars> {
   /// \cond
   VisitAndReturn() = default;
-  explicit VisitAndReturn(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit VisitAndReturn(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(VisitAndReturn);  // NOLINT
   /// \endcond
 
-  static std::string name() noexcept {
+  static std::string name() {
     return "VisitAndReturn(" + Metavariables::phase_name(TargetPhase) +
            ")";
   }
@@ -138,7 +138,7 @@ struct VisitAndReturn : public PhaseChange<PhaseChangeRegistrars> {
   template <typename... DecisionTags>
   void initialize_phase_data_impl(
       const gsl::not_null<tuples::TaggedTuple<DecisionTags...>*>
-          phase_change_decision_data) const noexcept {
+          phase_change_decision_data) const {
     tuples::get<Tags::ReturnPhase<TargetPhase>>(*phase_change_decision_data) =
         std::nullopt;
     tuples::get<Tags::TemporaryPhaseRequested<TargetPhase>>(
@@ -149,7 +149,7 @@ struct VisitAndReturn : public PhaseChange<PhaseChangeRegistrars> {
             typename LocalMetavariables>
   void contribute_phase_data_impl(
       Parallel::GlobalCache<LocalMetavariables>& cache,
-      const ArrayIndex& array_index) const noexcept {
+      const ArrayIndex& array_index) const {
     if constexpr (std::is_same_v<typename ParallelComponent::chare_type,
                                  Parallel::Algorithms::Array>) {
       Parallel::contribute_to_phase_change_reduction<ParallelComponent>(
@@ -169,8 +169,7 @@ struct VisitAndReturn : public PhaseChange<PhaseChangeRegistrars> {
       const gsl::not_null<tuples::TaggedTuple<DecisionTags...>*>
           phase_change_decision_data,
       const typename LocalMetavariables::Phase current_phase,
-      const Parallel::GlobalCache<LocalMetavariables>& /*cache*/)
-      const noexcept {
+      const Parallel::GlobalCache<LocalMetavariables>& /*cache*/) const {
     auto& return_phase = tuples::get<Tags::ReturnPhase<TargetPhase>>(
         *phase_change_decision_data);
     if (return_phase.has_value()) {
@@ -191,7 +190,7 @@ struct VisitAndReturn : public PhaseChange<PhaseChangeRegistrars> {
     return std::nullopt;
   }
 
-  void pup(PUP::er& /*p*/) noexcept override {}
+  void pup(PUP::er& /*p*/) override {}
 };
 }  // namespace PhaseControl
 

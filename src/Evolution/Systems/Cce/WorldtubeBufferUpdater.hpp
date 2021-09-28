@@ -62,8 +62,8 @@ namespace detail {
 // it returns the dataset name "/gxy".
 template <typename... T>
 std::string dataset_name_for_component(std::string base_name,
-                                       const T... indices) noexcept {  // NOLINT
-  const auto add_index = [&base_name](size_t index) noexcept {
+                                       const T... indices) {  // NOLINT
+  const auto add_index = [&base_name](size_t index) {
     ASSERT(index < 3, "The character-arithmetic index must be less than 3.");
     base_name += static_cast<char>('x' + index);
   };
@@ -81,7 +81,7 @@ std::string dataset_name_for_component(std::string base_name,
 // correct size starting at `lower bound`, but not constrained by `upper_bound`
 std::pair<size_t, size_t> create_span_for_time_value(
     double time, size_t pad, size_t interpolator_length, size_t lower_bound,
-    size_t upper_bound, const DataVector& time_buffer) noexcept;
+    size_t upper_bound, const DataVector& time_buffer);
 }  // namespace detail
 
 /// the full set of tensors to be extracted from the worldtube h5 file
@@ -154,20 +154,19 @@ class WorldtubeBufferUpdater : public PUP::able {
       gsl::not_null<size_t*> time_span_start,
       gsl::not_null<size_t*> time_span_end, double time,
       size_t computation_l_max, size_t interpolator_length,
-      size_t buffer_depth) const noexcept = 0;
+      size_t buffer_depth) const = 0;
 
-  virtual std::unique_ptr<WorldtubeBufferUpdater> get_clone()
-      const noexcept = 0;
+  virtual std::unique_ptr<WorldtubeBufferUpdater> get_clone() const = 0;
 
-  virtual bool time_is_outside_range(double time) const noexcept = 0;
+  virtual bool time_is_outside_range(double time) const = 0;
 
-  virtual size_t get_l_max() const noexcept = 0;
+  virtual size_t get_l_max() const = 0;
 
-  virtual double get_extraction_radius() const noexcept = 0;
+  virtual double get_extraction_radius() const = 0;
 
-  virtual bool has_version_history() const noexcept = 0;
+  virtual bool has_version_history() const = 0;
 
-  virtual DataVector& get_time_buffer() noexcept = 0;
+  virtual DataVector& get_time_buffer() = 0;
 };
 
 /// A `WorldtubeBufferUpdater` specialized to the CCE input worldtube  H5 file
@@ -184,12 +183,11 @@ class MetricWorldtubeH5BufferUpdater
   /// retrieved as an integer in the filename.
   explicit MetricWorldtubeH5BufferUpdater(
       const std::string& cce_data_filename,
-      std::optional<double> extraction_radius = std::nullopt) noexcept;
+      std::optional<double> extraction_radius = std::nullopt);
 
   WRAPPED_PUPable_decl_template(MetricWorldtubeH5BufferUpdater);  // NOLINT
 
-  explicit MetricWorldtubeH5BufferUpdater(
-      CkMigrateMessage* /*unused*/) noexcept {}
+  explicit MetricWorldtubeH5BufferUpdater(CkMigrateMessage* /*unused*/) {}
 
   /// update the `buffers`, `time_span_start`, and `time_span_end` with
   /// time-varies-fastest, Goldberg modal data and the start and end index in
@@ -202,22 +200,20 @@ class MetricWorldtubeH5BufferUpdater
       gsl::not_null<size_t*> time_span_start,
       gsl::not_null<size_t*> time_span_end, double time,
       size_t computation_l_max, size_t interpolator_length,
-      size_t buffer_depth) const noexcept override;
+      size_t buffer_depth) const override;
 
   std::unique_ptr<WorldtubeBufferUpdater<cce_metric_input_tags>> get_clone()
-      const noexcept override;
+      const override;
 
   /// The time can only be supported in the buffer update if it is between the
   /// first and last time of the input file.
-  bool time_is_outside_range(double time) const noexcept override;
+  bool time_is_outside_range(double time) const override;
 
   /// retrieves the l_max of the input file
-  size_t get_l_max() const noexcept override { return l_max_; }
+  size_t get_l_max() const override { return l_max_; }
 
   /// retrieves the extraction radius
-  double get_extraction_radius() const noexcept override {
-    return extraction_radius_;
-  }
+  double get_extraction_radius() const override { return extraction_radius_; }
 
   /// The time buffer is supplied by non-const reference to allow views to
   /// easily point into the buffer.
@@ -226,20 +222,17 @@ class MetricWorldtubeH5BufferUpdater
   /// results in undefined behavior! This should be supplied by const reference
   /// once there is a convenient method of producing a const view of a vector
   /// type.
-  DataVector& get_time_buffer() noexcept override { return time_buffer_; }
+  DataVector& get_time_buffer() override { return time_buffer_; }
 
-  bool has_version_history() const noexcept override {
-    return has_version_history_;
-  }
+  bool has_version_history() const override { return has_version_history_; }
 
   /// Serialization for Charm++.
-  void pup(PUP::er& p) noexcept override;
+  void pup(PUP::er& p) override;
 
  private:
   void update_buffer(gsl::not_null<ComplexModalVector*> buffer_to_update,
                      const h5::Dat& read_data, size_t computation_l_max,
-                     size_t time_span_start,
-                     size_t time_span_end) const noexcept;
+                     size_t time_span_start, size_t time_span_end) const;
 
   bool has_version_history_ = true;
   double extraction_radius_ = std::numeric_limits<double>::signaling_NaN();
@@ -270,12 +263,11 @@ class BondiWorldtubeH5BufferUpdater
   /// retrieved as an integer in the filename.
   explicit BondiWorldtubeH5BufferUpdater(
       const std::string& cce_data_filename,
-      std::optional<double> extraction_radius = std::nullopt) noexcept;
+      std::optional<double> extraction_radius = std::nullopt);
 
   WRAPPED_PUPable_decl_template(BondiWorldtubeH5BufferUpdater);  // NOLINT
 
-  explicit BondiWorldtubeH5BufferUpdater(
-      CkMigrateMessage* /*unused*/) noexcept {}
+  explicit BondiWorldtubeH5BufferUpdater(CkMigrateMessage* /*unused*/) {}
 
   /// update the `buffers`, `time_span_start`, and `time_span_end` with
   /// time-varies-fastest, Goldberg modal data and the start and end index in
@@ -285,26 +277,26 @@ class BondiWorldtubeH5BufferUpdater
       gsl::not_null<size_t*> time_span_start,
       gsl::not_null<size_t*> time_span_end, double time,
       size_t computation_l_max, size_t interpolator_length,
-      size_t buffer_depth) const noexcept override;
+      size_t buffer_depth) const override;
 
   std::unique_ptr<WorldtubeBufferUpdater<cce_bondi_input_tags>> get_clone()
-      const noexcept override {
+      const override {
     return std::make_unique<BondiWorldtubeH5BufferUpdater>(filename_);
   }
 
   /// The time can only be supported in the buffer update if it is between the
   /// first and last time of the input file.
-  bool time_is_outside_range(const double time) const noexcept override {
+  bool time_is_outside_range(const double time) const override {
     return time < time_buffer_[0] or
            time > time_buffer_[time_buffer_.size() - 1];
   }
 
   /// retrieves the l_max of the input file
-  size_t get_l_max() const noexcept override { return l_max_; }
+  size_t get_l_max() const override { return l_max_; }
 
   /// retrieves the extraction radius. In most normal circumstances, this will
   /// not be needed for Bondi data.
-  double get_extraction_radius() const noexcept override {
+  double get_extraction_radius() const override {
     if (not static_cast<bool>(extraction_radius_)) {
       ERROR(
           "Extraction radius has not been set, and was not successfully parsed "
@@ -321,20 +313,18 @@ class BondiWorldtubeH5BufferUpdater
   /// results in undefined behavior! This should be supplied by const reference
   /// once there is a convenient method of producing a const view of a vector
   /// type.
-  DataVector& get_time_buffer() noexcept override { return time_buffer_; }
+  DataVector& get_time_buffer() override { return time_buffer_; }
 
-  bool has_version_history() const noexcept override {
-    return true;
-  }
+  bool has_version_history() const override { return true; }
 
   /// Serialization for Charm++.
-  void pup(PUP::er& p) noexcept override;
+  void pup(PUP::er& p) override;
 
  private:
   void update_buffer(gsl::not_null<ComplexModalVector*> buffer_to_update,
                      const h5::Dat& read_data, size_t computation_l_max,
                      size_t time_span_start, size_t time_span_end,
-                     bool is_real) const noexcept;
+                     bool is_real) const;
 
   std::optional<double> extraction_radius_ = std::nullopt;
   size_t l_max_ = 0;

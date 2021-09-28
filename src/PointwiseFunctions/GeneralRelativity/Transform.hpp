@@ -40,13 +40,12 @@ template <size_t VolumeDim, typename SrcFrame, typename DestFrame>
 void to_different_frame(
     const gsl::not_null<tnsr::ii<DataVector, VolumeDim, DestFrame>*> dest,
     const tnsr::ii<DataVector, VolumeDim, SrcFrame>& src,
-    const Jacobian<DataVector, VolumeDim, DestFrame, SrcFrame>&
-        jacobian) noexcept;
+    const Jacobian<DataVector, VolumeDim, DestFrame, SrcFrame>& jacobian);
 
 template <size_t VolumeDim, typename SrcFrame, typename DestFrame>
-auto to_different_frame(const tnsr::ii<DataVector, VolumeDim, SrcFrame>& src,
-                        const Jacobian<DataVector, VolumeDim, DestFrame,
-                                       SrcFrame>& jacobian) noexcept
+auto to_different_frame(
+    const tnsr::ii<DataVector, VolumeDim, SrcFrame>& src,
+    const Jacobian<DataVector, VolumeDim, DestFrame, SrcFrame>& jacobian)
     -> tnsr::ii<DataVector, VolumeDim, DestFrame>;
 /// @}
 
@@ -85,8 +84,7 @@ void first_index_to_different_frame(
                  index_list<SpatialIndex<VolumeDim, UpLo::Lo, SrcFrame>,
                             SpatialIndex<VolumeDim, UpLo::Lo, DestFrame>,
                             SpatialIndex<VolumeDim, UpLo::Lo, DestFrame>>>& src,
-    const Jacobian<DataVector, VolumeDim, DestFrame, SrcFrame>&
-        jacobian) noexcept;
+    const Jacobian<DataVector, VolumeDim, DestFrame, SrcFrame>& jacobian);
 
 template <size_t VolumeDim, typename SrcFrame, typename DestFrame>
 auto first_index_to_different_frame(
@@ -94,7 +92,7 @@ auto first_index_to_different_frame(
                  index_list<SpatialIndex<VolumeDim, UpLo::Lo, SrcFrame>,
                             SpatialIndex<VolumeDim, UpLo::Lo, DestFrame>,
                             SpatialIndex<VolumeDim, UpLo::Lo, DestFrame>>>& src,
-    const Jacobian<DataVector, VolumeDim, DestFrame, SrcFrame>&
-        jacobian) noexcept -> tnsr::ijj<DataVector, VolumeDim, DestFrame>;
+    const Jacobian<DataVector, VolumeDim, DestFrame, SrcFrame>& jacobian)
+    -> tnsr::ijj<DataVector, VolumeDim, DestFrame>;
 /// @}
 }  // namespace transform

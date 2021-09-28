@@ -16,7 +16,7 @@
 namespace domain::CoordinateMaps {
 
 Equiangular::Equiangular(const double A, const double B, const double a,
-                         const double b) noexcept
+                         const double b)
     : A_(A),
       B_(B),
       a_(a),
@@ -32,7 +32,7 @@ Equiangular::Equiangular(const double A, const double B, const double a,
 
 template <typename T>
 std::array<tt::remove_cvref_wrap_t<T>, 1> Equiangular::operator()(
-    const std::array<T, 1>& source_coords) const noexcept {
+    const std::array<T, 1>& source_coords) const {
   return {
       {0.5 * (a_ + b_ +
               length_of_range_ * tan(m_pi_4_over_length_of_domain_ *
@@ -40,7 +40,7 @@ std::array<tt::remove_cvref_wrap_t<T>, 1> Equiangular::operator()(
 }
 
 std::optional<std::array<double, 1>> Equiangular::inverse(
-    const std::array<double, 1>& target_coords) const noexcept {
+    const std::array<double, 1>& target_coords) const {
   return {{{0.5 * (A_ + B_ +
                    length_of_domain_over_m_pi_4_ *
                        atan(one_over_length_of_range_ *
@@ -49,7 +49,7 @@ std::optional<std::array<double, 1>> Equiangular::inverse(
 
 template <typename T>
 tnsr::Ij<tt::remove_cvref_wrap_t<T>, 1, Frame::NoFrame> Equiangular::jacobian(
-    const std::array<T, 1>& source_coords) const noexcept {
+    const std::array<T, 1>& source_coords) const {
   const tt::remove_cvref_wrap_t<T> tan_variable =
       tan(m_pi_4_over_length_of_domain_ * (-B_ - A_ + 2.0 * source_coords[0]));
   auto jacobian_matrix =
@@ -62,8 +62,7 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 1, Frame::NoFrame> Equiangular::jacobian(
 
 template <typename T>
 tnsr::Ij<tt::remove_cvref_wrap_t<T>, 1, Frame::NoFrame>
-Equiangular::inv_jacobian(const std::array<T, 1>& source_coords) const
-    noexcept {
+Equiangular::inv_jacobian(const std::array<T, 1>& source_coords) const {
   const tt::remove_cvref_wrap_t<T> tan_variable =
       tan(m_pi_4_over_length_of_domain_ * (-B_ - A_ + 2.0 * source_coords[0]));
   auto inv_jacobian_matrix =
@@ -74,7 +73,7 @@ Equiangular::inv_jacobian(const std::array<T, 1>& source_coords) const
   return inv_jacobian_matrix;
 }
 
-void Equiangular::pup(PUP::er& p) noexcept {
+void Equiangular::pup(PUP::er& p) {
   p | A_;
   p | B_;
   p | a_;
@@ -88,7 +87,7 @@ void Equiangular::pup(PUP::er& p) noexcept {
 }
 
 bool operator==(const CoordinateMaps::Equiangular& lhs,
-                const CoordinateMaps::Equiangular& rhs) noexcept {
+                const CoordinateMaps::Equiangular& rhs) {
   return lhs.A_ == rhs.A_ and lhs.B_ == rhs.B_ and lhs.a_ == rhs.a_ and
          lhs.b_ == rhs.b_ and
          lhs.length_of_domain_over_m_pi_4_ ==
@@ -106,15 +105,16 @@ bool operator==(const CoordinateMaps::Equiangular& lhs,
 // Explicit instantiations
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                                  \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 1> Equiangular::  \
-  operator()(const std::array<DTYPE(data), 1>& source_coords) const noexcept; \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 1, Frame::NoFrame>  \
-  Equiangular::jacobian(const std::array<DTYPE(data), 1>& source_coords)      \
-      const noexcept;                                                         \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 1, Frame::NoFrame>  \
-  Equiangular::inv_jacobian(const std::array<DTYPE(data), 1>& source_coords)  \
-      const noexcept;
+#define INSTANTIATE(_, data)                                                 \
+  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 1>               \
+  Equiangular::operator()(const std::array<DTYPE(data), 1>& source_coords)   \
+      const;                                                                 \
+  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 1, Frame::NoFrame> \
+  Equiangular::jacobian(const std::array<DTYPE(data), 1>& source_coords)     \
+      const;                                                                 \
+  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 1, Frame::NoFrame> \
+  Equiangular::inv_jacobian(const std::array<DTYPE(data), 1>& source_coords) \
+      const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector,
                                       std::reference_wrapper<const double>,

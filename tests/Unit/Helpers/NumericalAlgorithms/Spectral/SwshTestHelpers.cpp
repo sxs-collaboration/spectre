@@ -13,7 +13,7 @@ namespace Spectral {
 namespace Swsh {
 namespace TestHelpers {
 
-double factorial(const size_t arg) noexcept {
+double factorial(const size_t arg) {
   if (arg <= 1) {
     return 1.0;
   }
@@ -24,9 +24,10 @@ double factorial(const size_t arg) noexcept {
   return factorial_result;
 }
 
-std::complex<double> spin_weighted_spherical_harmonic(
-    const int s, const int l, const int m, const double theta,
-    const double phi) noexcept {
+std::complex<double> spin_weighted_spherical_harmonic(const int s, const int l,
+                                                      const int m,
+                                                      const double theta,
+                                                      const double phi) {
   if (l + s < 0 or l - s < 0) {
     return 0.0;
   }
@@ -56,25 +57,29 @@ std::complex<double> spin_weighted_spherical_harmonic(
 template <>
 std::complex<double> derivative_of_spin_weighted_spherical_harmonic<Tags::Eth>(
     const int s, const int l, const int m, const double theta,
-    const double phi) noexcept {
+    const double phi) {
   return sqrt(static_cast<std::complex<double>>((l - s) * (l + s + 1))) *
          spin_weighted_spherical_harmonic(s + 1, l, m, theta, phi);
 }
 
 template <>
 std::complex<double>
-derivative_of_spin_weighted_spherical_harmonic<Tags::Ethbar>(
-    const int s, const int l, const int m, const double theta,
-    const double phi) noexcept {
+derivative_of_spin_weighted_spherical_harmonic<Tags::Ethbar>(const int s,
+                                                             const int l,
+                                                             const int m,
+                                                             const double theta,
+                                                             const double phi) {
   return -sqrt(static_cast<std::complex<double>>((l + s) * (l - s + 1))) *
          spin_weighted_spherical_harmonic(s - 1, l, m, theta, phi);
 }
 
 template <>
 std::complex<double>
-derivative_of_spin_weighted_spherical_harmonic<Tags::EthEth>(
-    const int s, const int l, const int m, const double theta,
-    const double phi) noexcept {
+derivative_of_spin_weighted_spherical_harmonic<Tags::EthEth>(const int s,
+                                                             const int l,
+                                                             const int m,
+                                                             const double theta,
+                                                             const double phi) {
   return sqrt(static_cast<std::complex<double>>((l - s) * (l + s + 1))) *
          derivative_of_spin_weighted_spherical_harmonic<Tags::Eth>(s + 1, l, m,
                                                                    theta, phi);
@@ -84,7 +89,7 @@ template <>
 std::complex<double>
 derivative_of_spin_weighted_spherical_harmonic<Tags::EthbarEth>(
     const int s, const int l, const int m, const double theta,
-    const double phi) noexcept {
+    const double phi) {
   return sqrt(static_cast<std::complex<double>>((l - s) * (l + s + 1))) *
          derivative_of_spin_weighted_spherical_harmonic<Tags::Ethbar>(
              s + 1, l, m, theta, phi);
@@ -94,7 +99,7 @@ template <>
 std::complex<double>
 derivative_of_spin_weighted_spherical_harmonic<Tags::EthEthbar>(
     const int s, const int l, const int m, const double theta,
-    const double phi) noexcept {
+    const double phi) {
   return -sqrt(static_cast<std::complex<double>>((l + s) * (l - s + 1))) *
          derivative_of_spin_weighted_spherical_harmonic<Tags::Eth>(s - 1, l, m,
                                                                    theta, phi);
@@ -104,7 +109,7 @@ template <>
 std::complex<double>
 derivative_of_spin_weighted_spherical_harmonic<Tags::EthbarEthbar>(
     const int s, const int l, const int m, const double theta,
-    const double phi) noexcept {
+    const double phi) {
   return -sqrt(static_cast<std::complex<double>>((l + s) * (l - s + 1))) *
          derivative_of_spin_weighted_spherical_harmonic<Tags::Ethbar>(
              s - 1, l, m, theta, phi);
@@ -114,7 +119,7 @@ template <>
 std::complex<double>
 derivative_of_spin_weighted_spherical_harmonic<Tags::InverseEth>(
     const int s, const int l, const int m, const double theta,
-    const double phi) noexcept {
+    const double phi) {
   return (l - s + 1) * (l + s) == 0
              ? 0.0
              : spin_weighted_spherical_harmonic(s - 1, l, m, theta, phi) /
@@ -126,7 +131,7 @@ template <>
 std::complex<double>
 derivative_of_spin_weighted_spherical_harmonic<Tags::InverseEthbar>(
     const int s, const int l, const int m, const double theta,
-    const double phi) noexcept {
+    const double phi) {
   return (l + s + 1) * (l - s) == 0
              ? 0.0
              : spin_weighted_spherical_harmonic(s + 1, l, m, theta, phi) /
@@ -134,7 +139,6 @@ derivative_of_spin_weighted_spherical_harmonic<Tags::InverseEthbar>(
                                                            (l - s)));
   ;
 }
-
 
 }  // namespace TestHelpers
 }  // namespace Swsh

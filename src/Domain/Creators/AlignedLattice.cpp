@@ -22,9 +22,8 @@ namespace domain::creators {
 
 using ::operator<<;
 template <size_t VolumeDim>
-std::ostream& operator<<(
-    std::ostream& /*s*/,
-    const RefinementRegion<VolumeDim>& /*unused*/) noexcept {
+std::ostream& operator<<(std::ostream& /*s*/,
+                         const RefinementRegion<VolumeDim>& /*unused*/) {
   ERROR(
       "RefinementRegion stream operator is only for option parsing and "
       "should never be called.");
@@ -50,12 +49,12 @@ AlignedLattice<VolumeDim>::AlignedLattice(
       refined_refinement_(std::move(refined_refinement)),
       refined_grid_points_(std::move(refined_grid_points)),
       blocks_to_exclude_(std::move(blocks_to_exclude)),
-      number_of_blocks_by_dim_{map_array(
-          block_bounds_,
-          [](const std::vector<double>& v) noexcept { return v.size() - 1; })},
+      number_of_blocks_by_dim_{
+          map_array(block_bounds_,
+                    [](const std::vector<double>& v) { return v.size() - 1; })},
       boundary_condition_(nullptr) {
   if (not blocks_to_exclude_.empty() and
-      alg::any_of(is_periodic_in_, [](const bool t) noexcept { return t; })) {
+      alg::any_of(is_periodic_in_, [](const bool t) { return t; })) {
     PARSE_ERROR(context,
                 "Cannot exclude blocks as well as have periodic boundary "
                 "conditions!");
@@ -103,9 +102,9 @@ AlignedLattice<VolumeDim>::AlignedLattice(
       refined_refinement_(std::move(refined_refinement)),
       refined_grid_points_(std::move(refined_grid_points)),
       blocks_to_exclude_(std::move(blocks_to_exclude)),
-      number_of_blocks_by_dim_{map_array(
-          block_bounds_,
-          [](const std::vector<double>& v) noexcept { return v.size() - 1; })},
+      number_of_blocks_by_dim_{
+          map_array(block_bounds_,
+                    [](const std::vector<double>& v) { return v.size() - 1; })},
       boundary_condition_(std::move(boundary_condition)) {
   using domain::BoundaryConditions::is_none;
   if (is_none(boundary_condition_)) {
@@ -122,7 +121,7 @@ AlignedLattice<VolumeDim>::AlignedLattice(
     boundary_condition_ = nullptr;
   }
   if (not blocks_to_exclude_.empty() and
-      alg::any_of(is_periodic_in_, [](const bool t) noexcept { return t; })) {
+      alg::any_of(is_periodic_in_, [](const bool t) { return t; })) {
     PARSE_ERROR(context,
                 "Cannot exclude blocks as well as have periodic boundary "
                 "conditions!");
@@ -150,7 +149,7 @@ AlignedLattice<VolumeDim>::AlignedLattice(
 }
 
 template <size_t VolumeDim>
-Domain<VolumeDim> AlignedLattice<VolumeDim>::create_domain() const noexcept {
+Domain<VolumeDim> AlignedLattice<VolumeDim>::create_domain() const {
   using BoundaryCondVector = std::vector<DirectionMap<
       VolumeDim,
       std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>;
@@ -195,8 +194,7 @@ std::vector<std::array<size_t, VolumeDim>> apply_refinement_regions(
     const Index<VolumeDim>& number_of_blocks_by_dim,
     const std::vector<std::array<size_t, VolumeDim>>& blocks_to_exclude,
     const std::array<size_t, VolumeDim>& default_refinement,
-    const std::vector<RefinementRegion<VolumeDim>>&
-        refinement_regions) noexcept {
+    const std::vector<RefinementRegion<VolumeDim>>& refinement_regions) {
   std::vector<std::array<size_t, VolumeDim>> result;
   for (const auto& block_index : indices_for_rectilinear_domains(
            number_of_blocks_by_dim,
@@ -222,7 +220,7 @@ std::vector<std::array<size_t, VolumeDim>> apply_refinement_regions(
 
 template <size_t VolumeDim>
 std::vector<std::array<size_t, VolumeDim>>
-AlignedLattice<VolumeDim>::initial_extents() const noexcept {
+AlignedLattice<VolumeDim>::initial_extents() const {
   return apply_refinement_regions(number_of_blocks_by_dim_, blocks_to_exclude_,
                                   initial_number_of_grid_points_,
                                   refined_grid_points_);
@@ -230,7 +228,7 @@ AlignedLattice<VolumeDim>::initial_extents() const noexcept {
 
 template <size_t VolumeDim>
 std::vector<std::array<size_t, VolumeDim>>
-AlignedLattice<VolumeDim>::initial_refinement_levels() const noexcept {
+AlignedLattice<VolumeDim>::initial_refinement_levels() const {
   return apply_refinement_regions(number_of_blocks_by_dim_, blocks_to_exclude_,
                                   initial_refinement_levels_,
                                   refined_refinement_);
@@ -239,10 +237,10 @@ AlignedLattice<VolumeDim>::initial_refinement_levels() const noexcept {
 template class AlignedLattice<1>;
 template class AlignedLattice<2>;
 template class AlignedLattice<3>;
-template std::ostream& operator<<(
-    std::ostream& /*s*/, const RefinementRegion<1>& /*unused*/) noexcept;
-template std::ostream& operator<<(
-    std::ostream& /*s*/, const RefinementRegion<2>& /*unused*/) noexcept;
-template std::ostream& operator<<(
-    std::ostream& /*s*/, const RefinementRegion<3>& /*unused*/) noexcept;
+template std::ostream& operator<<(std::ostream& /*s*/,
+                                  const RefinementRegion<1>& /*unused*/);
+template std::ostream& operator<<(std::ostream& /*s*/,
+                                  const RefinementRegion<2>& /*unused*/);
+template std::ostream& operator<<(std::ostream& /*s*/,
+                                  const RefinementRegion<3>& /*unused*/);
 }  // namespace domain::creators

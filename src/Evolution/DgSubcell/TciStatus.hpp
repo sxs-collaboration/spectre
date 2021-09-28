@@ -39,12 +39,12 @@ template <size_t Dim>
 void tci_status(gsl::not_null<Scalar<DataVector>*> status,
                 const Mesh<Dim>& dg_mesh, const Mesh<Dim>& subcell_mesh,
                 subcell::ActiveGrid active_grid,
-                const std::deque<subcell::ActiveGrid>& tci_history) noexcept;
+                const std::deque<subcell::ActiveGrid>& tci_history);
 
 template <size_t Dim>
 Scalar<DataVector> tci_status(
     const Mesh<Dim>& dg_mesh, const Mesh<Dim>& subcell_mesh,
     subcell::ActiveGrid active_grid,
-    const std::deque<subcell::ActiveGrid>& tci_history) noexcept;
+    const std::deque<subcell::ActiveGrid>& tci_history);
 /// @}
 }  // namespace evolution::dg::subcell

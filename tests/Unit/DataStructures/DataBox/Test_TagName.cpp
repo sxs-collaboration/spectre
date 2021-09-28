@@ -11,21 +11,21 @@
 
 namespace {
 struct NamedSimple : db::SimpleTag {
-  static std::string name() noexcept { return "NameOfSimple"; }
+  static std::string name() { return "NameOfSimple"; }
 };
 
 struct NamedBase : db::BaseTag {
-  static std::string name() noexcept { return "NameOfBase"; }
+  static std::string name() { return "NameOfBase"; }
 };
 
 struct NamedSimpleWithBase : TestHelpers::db::Tags::Base, db::SimpleTag {
-  static std::string name() noexcept { return "NameOfSimpleWithBase"; }
+  static std::string name() { return "NameOfSimpleWithBase"; }
 };
 
 struct SimpleWithNamedBase : NamedBase, db::SimpleTag {};
 
 struct NamedSimpleWithNamedBase : NamedBase, db::SimpleTag {
-  static std::string name() noexcept { return "NameOfSimpleWithNamedBase"; }
+  static std::string name() { return "NameOfSimpleWithNamedBase"; }
 };
 
 struct SimpleWithForwardedBase : TestHelpers::db::Tags::Base, db::SimpleTag {
@@ -33,11 +33,11 @@ struct SimpleWithForwardedBase : TestHelpers::db::Tags::Base, db::SimpleTag {
 };
 
 struct SimpleNamedCompute : TestHelpers::db::Tags::Simple, db::ComputeTag {
-  static std::string name() noexcept { return "NameOfSimpleCompute"; }
+  static std::string name() { return "NameOfSimpleCompute"; }
 };
 
 struct NamedSimpleNamedCompute : NamedSimple, db::ComputeTag {
-  static std::string name() noexcept { return "NameOfNamedSimpleCompute"; }
+  static std::string name() { return "NameOfNamedSimpleCompute"; }
 };
 
 struct NamedSimpleCompute : NamedSimple, db::ComputeTag {
@@ -46,13 +46,11 @@ struct NamedSimpleCompute : NamedSimple, db::ComputeTag {
 
 struct SimpleWithBaseNamedCompute : TestHelpers::db::Tags::SimpleWithBase,
                                     db::ComputeTag {
-  static std::string name() noexcept { return "NameOfSimpleWithBaseCompute"; }
+  static std::string name() { return "NameOfSimpleWithBaseCompute"; }
 };
 
 struct NamedSimpleWithBaseNamedCompute : NamedSimpleWithBase, db::ComputeTag {
-  static std::string name() noexcept {
-    return "NameOfNamedSimpleWithBaseCompute";
-  }
+  static std::string name() { return "NameOfNamedSimpleWithBaseCompute"; }
 };
 
 struct NamedSimpleWithBaseCompute : NamedSimpleWithBase, db::ComputeTag {
@@ -60,9 +58,7 @@ struct NamedSimpleWithBaseCompute : NamedSimpleWithBase, db::ComputeTag {
 };
 
 struct SimpleWithNamedBaseNamedCompute : SimpleWithNamedBase, db::ComputeTag {
-  static std::string name() noexcept {
-    return "NameOfSimpleWithNamedBaseCompute";
-  }
+  static std::string name() { return "NameOfSimpleWithNamedBaseCompute"; }
 };
 
 struct SimpleWithNamedBaseCompute : SimpleWithNamedBase, db::ComputeTag {
@@ -71,9 +67,7 @@ struct SimpleWithNamedBaseCompute : SimpleWithNamedBase, db::ComputeTag {
 
 struct NamedSimpleWithNamedBaseNamedCompute : NamedSimpleWithNamedBase,
                                               db::ComputeTag {
-  static std::string name() noexcept {
-    return "NameOfNamedSimpleWithNamedBaseCompute";
-  }
+  static std::string name() { return "NameOfNamedSimpleWithNamedBaseCompute"; }
 };
 
 struct NamedSimpleWithNamedBaseCompute : NamedSimpleWithNamedBase,
@@ -82,11 +76,11 @@ struct NamedSimpleWithNamedBaseCompute : NamedSimpleWithNamedBase,
 };
 
 struct SimpleNamedReference : TestHelpers::db::Tags::Simple, db::ReferenceTag {
-  static std::string name() noexcept { return "NameOfSimpleReference"; }
+  static std::string name() { return "NameOfSimpleReference"; }
 };
 
 struct NamedSimpleNamedReference : NamedSimple, db::ReferenceTag {
-  static std::string name() noexcept { return "NameOfNamedSimpleReference"; }
+  static std::string name() { return "NameOfNamedSimpleReference"; }
 };
 
 struct NamedSimpleReference : NamedSimple, db::ReferenceTag {
@@ -95,14 +89,12 @@ struct NamedSimpleReference : NamedSimple, db::ReferenceTag {
 
 struct SimpleWithBaseNamedReference : TestHelpers::db::Tags::SimpleWithBase,
                                       db::ReferenceTag {
-  static std::string name() noexcept { return "NameOfSimpleWithBaseReference"; }
+  static std::string name() { return "NameOfSimpleWithBaseReference"; }
 };
 
 struct NamedSimpleWithBaseNamedReference : NamedSimpleWithBase,
                                            db::ReferenceTag {
-  static std::string name() noexcept {
-    return "NameOfNamedSimpleWithBaseReference";
-  }
+  static std::string name() { return "NameOfNamedSimpleWithBaseReference"; }
 };
 
 struct NamedSimpleWithBaseReference : NamedSimpleWithBase, db::ReferenceTag {
@@ -111,9 +103,7 @@ struct NamedSimpleWithBaseReference : NamedSimpleWithBase, db::ReferenceTag {
 
 struct SimpleWithNamedBaseNamedReference : SimpleWithNamedBase,
                                            db::ReferenceTag {
-  static std::string name() noexcept {
-    return "NameOfSimpleWithNamedBaseReference";
-  }
+  static std::string name() { return "NameOfSimpleWithNamedBaseReference"; }
 };
 
 struct SimpleWithNamedBaseReference : SimpleWithNamedBase, db::ReferenceTag {
@@ -122,7 +112,7 @@ struct SimpleWithNamedBaseReference : SimpleWithNamedBase, db::ReferenceTag {
 
 struct NamedSimpleWithNamedBaseNamedReference : NamedSimpleWithNamedBase,
                                                 db::ReferenceTag {
-  static std::string name() noexcept {
+  static std::string name() {
     return "NameOfNamedSimpleWithNamedBaseReference";
   }
 };
@@ -135,7 +125,7 @@ struct NamedSimpleWithNamedBaseReference : NamedSimpleWithNamedBase,
 template <typename Tag>
 struct NamedLabel : db::PrefixTag, db::SimpleTag {
   using tag = Tag;
-  static std::string name() noexcept {
+  static std::string name() {
     return "NameOfLabel(" + db::tag_name<Tag>() + ")";
   }
 };
@@ -143,7 +133,7 @@ struct NamedLabel : db::PrefixTag, db::SimpleTag {
 template <typename Tag>
 struct LabelNamedCompute : TestHelpers::db::Tags::Label<Tag>, db::ComputeTag {
   using tag = Tag;
-  static std::string name() noexcept {
+  static std::string name() {
     return "NameOfLabelCompute(" + db::tag_name<Tag>() + ")";
   }
 };
@@ -157,7 +147,7 @@ struct NamedLabelCompute : NamedLabel<Tag>, db::ComputeTag {
 template <typename Tag>
 struct NamedLabelNamedCompute : NamedLabel<Tag>, db::ComputeTag {
   using tag = Tag;
-  static std::string name() noexcept {
+  static std::string name() {
     return "NameOfNamedLabelCompute(" + db::tag_name<Tag>() + ")";
   }
 };

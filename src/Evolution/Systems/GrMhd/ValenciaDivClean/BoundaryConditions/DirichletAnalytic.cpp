@@ -10,11 +10,11 @@
 #include "Utilities/GenerateInstantiations.hpp"
 
 namespace grmhd::ValenciaDivClean::BoundaryConditions {
-DirichletAnalytic::DirichletAnalytic(CkMigrateMessage* const msg) noexcept
+DirichletAnalytic::DirichletAnalytic(CkMigrateMessage* const msg)
     : BoundaryCondition(msg) {}
 
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-DirichletAnalytic::get_clone() const noexcept {
+DirichletAnalytic::get_clone() const {
   return std::make_unique<DirichletAnalytic>(*this);
 }
 

@@ -28,7 +28,7 @@ template <typename InboxTag, size_t Dim, typename TemporalIdType,
           typename... InboxTags>
 bool has_received_from_all_mortars(
     const TemporalIdType& temporal_id, const Element<Dim>& element,
-    const tuples::TaggedTuple<InboxTags...>& inboxes) noexcept {
+    const tuples::TaggedTuple<InboxTags...>& inboxes) {
   if (UNLIKELY(element.number_of_neighbors() == 0)) {
     return true;
   }

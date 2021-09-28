@@ -47,12 +47,10 @@ struct RegisterElement {
                                               db::DataBox<DbTags>>> = nullptr>
   static void apply(db::DataBox<DbTags>& box,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/) noexcept {
+                    const ArrayIndex& /*array_index*/) {
     db::mutate<Tags::NumberOfElements>(
         make_not_null(&box),
-        [](const gsl::not_null<size_t*> num_elements) noexcept {
-          ++(*num_elements);
-        });
+        [](const gsl::not_null<size_t*> num_elements) { ++(*num_elements); });
   }
 };
 
@@ -78,12 +76,10 @@ struct DeregisterElement {
                                               db::DataBox<DbTags>>> = nullptr>
   static void apply(db::DataBox<DbTags>& box,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/) noexcept {
+                    const ArrayIndex& /*array_index*/) {
     db::mutate<Tags::NumberOfElements>(
         make_not_null(&box),
-        [](const gsl::not_null<size_t*> num_elements) noexcept {
-          --(*num_elements);
-        });
+        [](const gsl::not_null<size_t*> num_elements) { --(*num_elements); });
   }
 };
 
@@ -112,7 +108,7 @@ struct RegisterElementWithInterpolator {
             typename Metavariables, typename ArrayIndex>
   static void register_or_deregister_impl(
       Parallel::GlobalCache<Metavariables>& cache,
-      const ArrayIndex& /*array_index*/) noexcept {
+      const ArrayIndex& /*array_index*/) {
     auto& interpolator =
         *Parallel::get_parallel_component<::intrp::Interpolator<Metavariables>>(
              cache)
@@ -129,7 +125,7 @@ struct RegisterElementWithInterpolator {
             typename Metavariables, typename ArrayIndex>
   static void perform_registration(const db::DataBox<DbTagList>& /*box*/,
                                    Parallel::GlobalCache<Metavariables>& cache,
-                                   const ArrayIndex& array_index) noexcept {
+                                   const ArrayIndex& array_index) {
     register_or_deregister_impl<ParallelComponent, RegisterElement>(
         cache, array_index);
   }
@@ -139,7 +135,7 @@ struct RegisterElementWithInterpolator {
   static void perform_deregistration(
       const db::DataBox<DbTagList>& /*box*/,
       Parallel::GlobalCache<Metavariables>& cache,
-      const ArrayIndex& array_index) noexcept {
+      const ArrayIndex& array_index) {
     register_or_deregister_impl<ParallelComponent, DeregisterElement>(
         cache, array_index);
   }
@@ -152,7 +148,7 @@ struct RegisterElementWithInterpolator {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     perform_registration<ParallelComponent>(box, cache, array_index);
     return {std::move(box)};
   }

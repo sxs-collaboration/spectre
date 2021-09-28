@@ -4,5 +4,5 @@
 #pragma once
 
 namespace grmhd::ValenciaDivClean::BoundaryCorrections {
-void register_derived_with_charm() noexcept;
+void register_derived_with_charm();
 }  // namespace grmhd::ValenciaDivClean::BoundaryCorrections

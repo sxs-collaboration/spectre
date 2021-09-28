@@ -9,7 +9,7 @@
 #include "Time/Slab.hpp"
 #include "Time/Time.hpp"
 
-double slab_rounding_error(const Time& time) noexcept {
+double slab_rounding_error(const Time& time) {
   return 4.0 * std::numeric_limits<double>::epsilon() *
          (std::abs(time.value()) + std::abs(time.slab().duration().value()));
 }

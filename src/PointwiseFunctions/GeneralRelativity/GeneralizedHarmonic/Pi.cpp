@@ -20,7 +20,7 @@ void pi(const gsl::not_null<tnsr::aa<DataType, SpatialDim, Frame>*> pi,
         const tnsr::I<DataType, SpatialDim, Frame>& dt_shift,
         const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
         const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric,
-        const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept {
+        const tnsr::iaa<DataType, SpatialDim, Frame>& phi) {
   if (UNLIKELY(get_size(get<0, 0>(*pi)) != get_size(get(lapse)))) {
     *pi = tnsr::aa<DataType, SpatialDim, Frame>(get_size(get(lapse)));
   }
@@ -65,7 +65,7 @@ tnsr::aa<DataType, SpatialDim, Frame> pi(
     const tnsr::I<DataType, SpatialDim, Frame>& dt_shift,
     const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
     const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric,
-    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept {
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) {
   tnsr::aa<DataType, SpatialDim, Frame> pi{};
   GeneralizedHarmonic::pi<SpatialDim, Frame, DataType>(
       make_not_null(&pi), lapse, dt_lapse, shift, dt_shift, spatial_metric,
@@ -87,7 +87,7 @@ tnsr::aa<DataType, SpatialDim, Frame> pi(
       const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& dt_shift,           \
       const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& spatial_metric,    \
       const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& dt_spatial_metric, \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi) noexcept;    \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi);             \
   template tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>                      \
   GeneralizedHarmonic::pi(                                                    \
       const Scalar<DTYPE(data)>& lapse, const Scalar<DTYPE(data)>& dt_lapse,  \
@@ -95,7 +95,7 @@ tnsr::aa<DataType, SpatialDim, Frame> pi(
       const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& dt_shift,           \
       const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& spatial_metric,    \
       const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& dt_spatial_metric, \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi) noexcept;
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
                         (Frame::Grid, Frame::Inertial))

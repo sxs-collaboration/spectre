@@ -25,7 +25,7 @@
 template <typename DataType, typename Index>
 Tensor<DataType, Symmetry<1>, index_list<Index>> cross_product(
     const Tensor<DataType, Symmetry<1>, index_list<Index>>& vector_a,
-    const Tensor<DataType, Symmetry<1>, index_list<Index>>& vector_b) noexcept {
+    const Tensor<DataType, Symmetry<1>, index_list<Index>>& vector_b) {
   static_assert(Index::dim == 3, "cross_product vectors must have dimension 3");
   static_assert(Index::index_type == IndexType::Spatial,
                 "cross_product vectors must be spatial");
@@ -53,10 +53,9 @@ Tensor<DataType, Symmetry<1>, index_list<Index>> cross_product(
  */
 template <typename DataType, typename Index>
 Tensor<DataType, Symmetry<1>, index_list<change_index_up_lo<Index>>>
-cross_product(
-    const Tensor<DataType, Symmetry<1>, index_list<Index>>& vector_a,
-    const Tensor<DataType, Symmetry<1>, index_list<change_index_up_lo<Index>>>&
-        vector_b) noexcept {
+cross_product(const Tensor<DataType, Symmetry<1>, index_list<Index>>& vector_a,
+              const Tensor<DataType, Symmetry<1>,
+                           index_list<change_index_up_lo<Index>>>& vector_b) {
   static_assert(Index::dim == 3, "cross_product vectors must have dimension 3");
   static_assert(Index::index_type == IndexType::Spatial,
                 "cross_product vectors must be spatial");
@@ -98,7 +97,7 @@ Tensor<DataType, Symmetry<1>, index_list<Index>> cross_product(
     const Tensor<DataType, Symmetry<1>, index_list<Index>>& vector_b,
     const Tensor<DataType, Symmetry<1, 1>, index_list<Index, Index>>&
         metric_or_inverse_metric,
-    const Scalar<DataType>& metric_determinant) noexcept {
+    const Scalar<DataType>& metric_determinant) {
   static_assert(Index::dim == 3, "cross_product vectors must have dimension 3");
   static_assert(Index::index_type == IndexType::Spatial,
                 "cross_product vectors must be spatial");
@@ -149,7 +148,7 @@ cross_product(const Tensor<DataType, Symmetry<1>, index_list<Index>>& vector_a,
                            index_list<change_index_up_lo<Index>>>& vector_b,
               const Tensor<DataType, Symmetry<1, 1>, index_list<Index, Index>>&
                   metric_or_inverse_metric,
-              const Scalar<DataType>& metric_determinant) noexcept {
+              const Scalar<DataType>& metric_determinant) {
   static_assert(Index::dim == 3, "cross_product vectors must have dimension 3");
   static_assert(Index::index_type == IndexType::Spatial,
                 "cross_product vectors must be spatial");

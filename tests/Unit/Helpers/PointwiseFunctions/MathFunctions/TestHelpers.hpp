@@ -31,22 +31,22 @@ void check_impl(
     const std::unique_ptr<MathFunction<VolumeDim, Fr>>& in_math_function,
     const std::string& python_function_prefix, const T& used_for_size,
     const std::array<std::pair<double, double>, 1> random_value_bounds,
-    const MemberArgs&... member_args) noexcept {
+    const MemberArgs&... member_args) {
   using MathFunc = MathFunction<VolumeDim, Fr>;
   using CallOperatorFunction =
-      Scalar<T> (MathFunc::*)(const tnsr::I<T, VolumeDim, Fr>&) const noexcept;
+      Scalar<T> (MathFunc::*)(const tnsr::I<T, VolumeDim, Fr>&) const;
   using FirstDerivFunction =
       tnsr::i<T, VolumeDim, Fr> (MathFunc::*)(const tnsr::I<T, VolumeDim, Fr>&)
-          const noexcept;
+          const;
   using SecondDerivFunction =
       tnsr::ii<T, VolumeDim, Fr> (MathFunc::*)(const tnsr::I<T, VolumeDim, Fr>&)
-          const noexcept;
+          const;
   using ThirdDerivFunction = tnsr::iii<T, VolumeDim, Fr> (MathFunc::*)(
-      const tnsr::I<T, VolumeDim, Fr>&) const noexcept;
+      const tnsr::I<T, VolumeDim, Fr>&) const;
 
   const auto member_args_tuple = std::make_tuple(member_args...);
   const auto helper =
-      [&](const std::unique_ptr<MathFunc>& math_function) noexcept {
+      [&](const std::unique_ptr<MathFunc>& math_function) {
         // need func variable to work around GCC bug
         CallOperatorFunction func{&MathFunc::operator()};
 
@@ -139,7 +139,7 @@ template <class MathFunctionType, class T, class... MemberArgs>
 void check(std::unique_ptr<MathFunctionType> in_math_function,
            const std::string& python_function_prefix, const T& used_for_size,
            const std::array<std::pair<double, double>, 1> random_value_bounds,
-           const MemberArgs&... member_args) noexcept {
+           const MemberArgs&... member_args) {
   detail::check_impl(
       std::unique_ptr<MathFunction<MathFunctionType::volume_dim,
                                    typename MathFunctionType::frame>>(
@@ -152,7 +152,7 @@ template <class MathFunctionType, class T, class... MemberArgs>
 void check(MathFunctionType in_math_function,
            const std::string& python_function_prefix, const T& used_for_size,
            const std::array<std::pair<double, double>, 1> random_value_bounds,
-           const MemberArgs&... member_args) noexcept {
+           const MemberArgs&... member_args) {
   detail::check_impl(
       std::unique_ptr<MathFunction<MathFunctionType::volume_dim,
                                    typename MathFunctionType::frame>>(

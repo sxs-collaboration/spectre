@@ -182,7 +182,7 @@ void metric_identity_det_jac_times_inv_jac(
     const Mesh<Dim>& mesh,
     const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords,
     const Jacobian<DataVector, Dim, Frame::ElementLogical, Frame::Inertial>&
-        jacobian) noexcept;
+        jacobian);
 
 /*!
  * \ingroup DiscontinuousGalerkinGroup
@@ -244,5 +244,5 @@ void metric_identity_jacobian_quantities(
         Jacobian<DataVector, Dim, Frame::ElementLogical, Frame::Inertial>*>
         jacobian,
     gsl::not_null<Scalar<DataVector>*> det_jacobian, const Mesh<Dim>& mesh,
-    const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords) noexcept;
+    const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords);
 }  // namespace dg

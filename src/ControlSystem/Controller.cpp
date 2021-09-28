@@ -10,9 +10,9 @@ template <size_t DerivOrder>
 DataVector Controller<DerivOrder>::operator()(
     const DataVector& timescales,
     const std::array<DataVector, DerivOrder + 1>& q_and_derivs,
-    const double q_time_offset, const double deriv_time_offset) const noexcept {
+    const double q_time_offset, const double deriv_time_offset) const {
   // helper lambda for computing the binomial coefficients
-  const auto binomial = [](size_t N, size_t k) noexcept {
+  const auto binomial = [](size_t N, size_t k) {
     return falling_factorial(N, k) / factorial(k);
   };
 

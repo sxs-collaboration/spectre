@@ -24,7 +24,7 @@ void package_data_impl(
         packaged_data,
     const NumericalFluxType& numerical_flux_computer,
     tmpl::list<PackageFieldTags...> /*meta*/,
-    tmpl::list<PackageExtraTags...> /*meta*/, const Args&... args) noexcept {
+    tmpl::list<PackageExtraTags...> /*meta*/, const Args&... args) {
   numerical_flux_computer.package_data(
       make_not_null(&get<PackageFieldTags>(packaged_data->field_data))...,
       make_not_null(&get<PackageExtraTags>(packaged_data->extra_data))...,
@@ -46,8 +46,7 @@ void normal_dot_numerical_fluxes_impl(
     tmpl::list<PackageExtraTags...> /*meta*/,
     // Taking output arguments last in this detail implementation so the
     // `NormalDotNumericalFluxTypes` can be inferred
-    const gsl::not_null<
-        NormalDotNumericalFluxTypes*>... n_dot_num_fluxes) noexcept {
+    const gsl::not_null<NormalDotNumericalFluxTypes*>... n_dot_num_fluxes) {
   numerical_flux_computer(
       n_dot_num_fluxes...,
       get<PackageFieldTags>(packaged_data_int.field_data)...,
@@ -65,8 +64,7 @@ void package_data(
     const gsl::not_null<dg::SimpleBoundaryData<tmpl::list<AllFieldTags...>,
                                                tmpl::list<AllExtraTags...>>*>
         packaged_data,
-    const NumericalFluxType& numerical_flux_computer,
-    const Args&... args) noexcept {
+    const NumericalFluxType& numerical_flux_computer, const Args&... args) {
   static_assert(
       tt::assert_conforms_to<NumericalFluxType, protocols::NumericalFlux>);
   detail::package_data_impl(packaged_data, numerical_flux_computer,
@@ -86,7 +84,7 @@ void normal_dot_numerical_fluxes(
         packaged_data_int,
     const dg::SimpleBoundaryData<tmpl::list<AllFieldTags...>,
                                  tmpl::list<AllExtraTags...>>&
-        packaged_data_ext) noexcept {
+        packaged_data_ext) {
   static_assert(
       tt::assert_conforms_to<NumericalFluxType, protocols::NumericalFlux>);
   detail::normal_dot_numerical_fluxes_impl(
@@ -108,7 +106,7 @@ void normal_dot_numerical_fluxes(
         packaged_data_ext,
     // Need to take these return-by-reference arguments last so the template
     // parameter pack deduction works
-    gsl::not_null<NormalDotNumericalFluxes*>... n_dot_num_fluxes) noexcept {
+    gsl::not_null<NormalDotNumericalFluxes*>... n_dot_num_fluxes) {
   static_assert(
       tt::assert_conforms_to<NumericalFluxType, protocols::NumericalFlux>);
   detail::normal_dot_numerical_fluxes_impl(

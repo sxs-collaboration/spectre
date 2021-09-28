@@ -136,7 +136,7 @@ struct SubdomainOperator : LinearSolver::Schwarz::SubdomainOperator<1> {
           result,
       const LinearSolver::Schwarz::ElementCenteredSubdomainData<1, OperandTags>&
           operand,
-      const db::DataBox<DbTagsList>& box) const noexcept {
+      const db::DataBox<DbTagsList>& box) const {
     // Retrieve arguments from the DataBox
     const auto& matrix_slices =
         db::get<helpers_distributed::LinearOperator>(box);
@@ -198,7 +198,7 @@ struct Metavariables {
       helpers::determine_next_phase<Metavariables>;
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& /*p*/) noexcept {}
+  void pup(PUP::er& /*p*/) {}
 };
 
 }  // namespace

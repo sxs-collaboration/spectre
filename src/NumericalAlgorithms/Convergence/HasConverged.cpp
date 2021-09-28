@@ -14,10 +14,10 @@
 
 namespace Convergence {
 
-std::optional<Reason> criteria_match(
-    const Criteria& criteria, const size_t iteration_id,
-    const double residual_magnitude,
-    const double initial_residual_magnitude) noexcept {
+std::optional<Reason> criteria_match(const Criteria& criteria,
+                                     const size_t iteration_id,
+                                     const double residual_magnitude,
+                                     const double initial_residual_magnitude) {
   if (residual_magnitude <= criteria.absolute_residual) {
     return Reason::AbsoluteResidual;
   }
@@ -33,7 +33,7 @@ std::optional<Reason> criteria_match(
 
 HasConverged::HasConverged(const Criteria& criteria, const size_t iteration_id,
                            const double residual_magnitude,
-                           const double initial_residual_magnitude) noexcept
+                           const double initial_residual_magnitude)
     : reason_(criteria_match(criteria, iteration_id, residual_magnitude,
                              initial_residual_magnitude)),
       criteria_(criteria),
@@ -42,7 +42,7 @@ HasConverged::HasConverged(const Criteria& criteria, const size_t iteration_id,
       initial_residual_magnitude_(initial_residual_magnitude) {}
 
 HasConverged::HasConverged(const size_t num_iterations,
-                           const size_t iteration_id) noexcept
+                           const size_t iteration_id)
     : reason_(iteration_id >= num_iterations
                   ? std::optional(Reason::NumIterations)
                   : std::nullopt),
@@ -53,25 +53,22 @@ HasConverged::HasConverged(const size_t num_iterations,
       residual_magnitude_(std::numeric_limits<double>::max()),
       initial_residual_magnitude_(std::numeric_limits<double>::max()) {}
 
-Reason HasConverged::reason() const noexcept {
+Reason HasConverged::reason() const {
   ASSERT(reason_,
          "Tried to retrieve the convergence reason, but has not yet converged. "
          "Check if the instance of HasConverged evaluates to `true` first.");
   return *reason_;
 }
 
-size_t HasConverged::num_iterations() const noexcept { return iteration_id_; }
+size_t HasConverged::num_iterations() const { return iteration_id_; }
 
-double HasConverged::residual_magnitude() const noexcept {
-  return residual_magnitude_;
-}
+double HasConverged::residual_magnitude() const { return residual_magnitude_; }
 
-double HasConverged::initial_residual_magnitude() const noexcept {
+double HasConverged::initial_residual_magnitude() const {
   return initial_residual_magnitude_;
 }
 
-std::ostream& operator<<(std::ostream& os,
-                         const HasConverged& has_converged) noexcept {
+std::ostream& operator<<(std::ostream& os, const HasConverged& has_converged) {
   if (has_converged) {
     switch (has_converged.reason()) {
       case Reason::NumIterations:
@@ -104,7 +101,7 @@ std::ostream& operator<<(std::ostream& os,
   }
 }
 
-void HasConverged::pup(PUP::er& p) noexcept {
+void HasConverged::pup(PUP::er& p) {
   p | reason_;
   p | criteria_;
   p | iteration_id_;
@@ -112,14 +109,14 @@ void HasConverged::pup(PUP::er& p) noexcept {
   p | initial_residual_magnitude_;
 }
 
-bool operator==(const HasConverged& lhs, const HasConverged& rhs) noexcept {
+bool operator==(const HasConverged& lhs, const HasConverged& rhs) {
   return lhs.reason_ == rhs.reason_ and lhs.criteria_ == rhs.criteria_ and
          lhs.iteration_id_ == rhs.iteration_id_ and
          lhs.residual_magnitude_ == rhs.residual_magnitude_ and
          lhs.initial_residual_magnitude_ == rhs.initial_residual_magnitude_;
 }
 
-bool operator!=(const HasConverged& lhs, const HasConverged& rhs) noexcept {
+bool operator!=(const HasConverged& lhs, const HasConverged& rhs) {
   return not(lhs == rhs);
 }
 

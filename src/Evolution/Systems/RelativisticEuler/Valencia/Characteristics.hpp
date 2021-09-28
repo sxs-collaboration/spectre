@@ -64,7 +64,7 @@ void characteristic_speeds(
     const tnsr::I<DataVector, Dim>& spatial_velocity,
     const Scalar<DataVector>& spatial_velocity_squared,
     const Scalar<DataVector>& sound_speed_squared,
-    const tnsr::i<DataVector, Dim>& normal) noexcept;
+    const tnsr::i<DataVector, Dim>& normal);
 
 template <size_t Dim>
 std::array<DataVector, Dim + 2> characteristic_speeds(
@@ -72,7 +72,7 @@ std::array<DataVector, Dim + 2> characteristic_speeds(
     const tnsr::I<DataVector, Dim>& spatial_velocity,
     const Scalar<DataVector>& spatial_velocity_squared,
     const Scalar<DataVector>& sound_speed_squared,
-    const tnsr::i<DataVector, Dim>& normal) noexcept;
+    const tnsr::i<DataVector, Dim>& normal);
 /// @}
 
 /*!
@@ -144,7 +144,7 @@ Matrix right_eigenvectors(const Scalar<double>& rest_mass_density,
                           const tnsr::ii<double, Dim>& spatial_metric,
                           const tnsr::II<double, Dim>& inv_spatial_metric,
                           const Scalar<double>& det_spatial_metric,
-                          const tnsr::i<double, Dim>& unit_normal) noexcept;
+                          const tnsr::i<double, Dim>& unit_normal);
 
 /*!
  * \brief Left eigenvectors of the Valencia formulation
@@ -209,7 +209,7 @@ Matrix left_eigenvectors(const Scalar<double>& rest_mass_density,
                          const tnsr::ii<double, Dim>& spatial_metric,
                          const tnsr::II<double, Dim>& inv_spatial_metric,
                          const Scalar<double>& det_spatial_metric,
-                         const tnsr::i<double, Dim>& unit_normal) noexcept;
+                         const tnsr::i<double, Dim>& unit_normal);
 
 namespace Tags {
 template <size_t Dim>
@@ -233,7 +233,7 @@ struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds<Dim>,
       const tnsr::ii<DataVector, Dim>& spatial_metric,
       const tnsr::I<DataVector, Dim>& spatial_velocity,
       const Scalar<DataVector>& sound_speed_squared,
-      const tnsr::i<DataVector, Dim>& unit_normal) noexcept {
+      const tnsr::i<DataVector, Dim>& unit_normal) {
     characteristic_speeds(
         result, lapse, shift, spatial_velocity,
         dot_product(spatial_velocity, spatial_velocity, spatial_metric),
@@ -245,7 +245,7 @@ struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds<Dim>,
 
 struct ComputeLargestCharacteristicSpeed {
   using argument_tags = tmpl::list<>;
-  static double apply() noexcept { return 1.0; }
+  static double apply() { return 1.0; }
 };
 
 }  // namespace Valencia

@@ -64,7 +64,7 @@ struct RandomizeInitialGuess {
     };
     using options = tmpl::list<Amplitude, Seed>;
     static constexpr Options::String help = "Parameters for the uniform noise.";
-    void pup(PUP::er& p) noexcept {
+    void pup(PUP::er& p) {
       p | amplitude;
       p | seed;
     }
@@ -73,7 +73,7 @@ struct RandomizeInitialGuess {
   };
 
   struct RandomParametersOptionTag {
-    static std::string name() noexcept { return "RandomizeInitialGuess"; }
+    static std::string name() { return "RandomizeInitialGuess"; }
     using type = Options::Auto<RandomParameters, Options::AutoLabel::None>;
     static constexpr Options::String help =
         "Add uniform random noise to the initial guess.";
@@ -83,9 +83,7 @@ struct RandomizeInitialGuess {
     using type = std::optional<RandomParameters>;
     using option_tags = tmpl::list<RandomParametersOptionTag>;
     static constexpr bool pass_metavariables = false;
-    static type create_from_options(const type& value) noexcept {
-      return value;
-    }
+    static type create_from_options(const type& value) { return value; }
   };
 
   using const_global_cache_tags = tmpl::list<RandomParametersTag>;
@@ -97,7 +95,7 @@ struct RandomizeInitialGuess {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ElementId<Dim>& element_id, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     // Retrieve the options
     const std::optional<RandomParameters>& params =
         db::get<RandomParametersTag>(box);
@@ -114,7 +112,7 @@ struct RandomizeInitialGuess {
     std::uniform_real_distribution<> dist(-amplitude, amplitude);
     // Add noise to the fields
     db::mutate<fields_tag>(make_not_null(&box),
-                           [&generator, &dist](const auto fields) noexcept {
+                           [&generator, &dist](const auto fields) {
                              for (size_t i = 0; i < fields->size(); ++i) {
                                fields->data()[i] += dist(generator);
                              }

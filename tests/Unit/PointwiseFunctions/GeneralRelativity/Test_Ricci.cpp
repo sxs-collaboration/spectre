@@ -22,7 +22,7 @@
 
 namespace {
 template <size_t Dim, IndexType TypeOfIndex, typename DataType>
-void test_compute_item_in_databox(const DataType& used_for_size) noexcept {
+void test_compute_item_in_databox(const DataType& used_for_size) {
   TestHelpers::db::test_compute_tag<
       gr::Tags::SpatialRicciCompute<3, Frame::Inertial, DataType>>(
       "SpatialRicci");
@@ -61,8 +61,7 @@ void test_ricci(const DataType& used_for_size) {
   pypp::check_with_random_values<1>(
       static_cast<tnsr::aa<DataType, Dim, Frame::Inertial, TypeOfIndex> (*)(
           const tnsr::Abb<DataType, Dim, Frame::Inertial, TypeOfIndex>&,
-          const tnsr::aBcc<DataType, Dim, Frame::Inertial,
-                           TypeOfIndex>&) noexcept>(
+          const tnsr::aBcc<DataType, Dim, Frame::Inertial, TypeOfIndex>&)>(
           &gr::ricci_tensor<Dim, Frame::Inertial, TypeOfIndex, DataType>),
       "Ricci", "ricci_tensor", {{{-1., 1.}}}, used_for_size);
 }

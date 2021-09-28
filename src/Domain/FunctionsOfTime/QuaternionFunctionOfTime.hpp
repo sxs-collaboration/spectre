@@ -59,12 +59,11 @@ class QuaternionFunctionOfTime : public FunctionOfTime {
   QuaternionFunctionOfTime(
       double t, std::array<DataVector, 1> initial_quat_func,
       std::array<DataVector, MaxDeriv + 1> initial_omega_func,
-      double expiration_time) noexcept;
+      double expiration_time);
 
   ~QuaternionFunctionOfTime() override = default;
-  QuaternionFunctionOfTime(QuaternionFunctionOfTime&&) noexcept = default;
-  QuaternionFunctionOfTime& operator=(QuaternionFunctionOfTime&&) noexcept =
-      default;
+  QuaternionFunctionOfTime(QuaternionFunctionOfTime&&) = default;
+  QuaternionFunctionOfTime& operator=(QuaternionFunctionOfTime&&) = default;
   QuaternionFunctionOfTime(const QuaternionFunctionOfTime&) = default;
   QuaternionFunctionOfTime& operator=(const QuaternionFunctionOfTime&) =
       default;
@@ -73,19 +72,18 @@ class QuaternionFunctionOfTime : public FunctionOfTime {
   explicit QuaternionFunctionOfTime(CkMigrateMessage* /*unused*/) {}
   // LCOV_EXCL_STOP
 
-  auto get_clone() const noexcept -> std::unique_ptr<FunctionOfTime> override;
+  auto get_clone() const -> std::unique_ptr<FunctionOfTime> override;
 
   // clang-tidy: google-runtime-references
   // clang-tidy: cppcoreguidelines-owning-memory,-warnings-as-errors
   WRAPPED_PUPable_decl_template(QuaternionFunctionOfTime<MaxDeriv>);  // NOLINT
 
-  void reset_expiration_time(
-      const double next_expiration_time) noexcept override {
+  void reset_expiration_time(const double next_expiration_time) override {
     omega_f_of_t_.reset_expiration_time(next_expiration_time);
   }
 
   /// Returns domain of validity for the function of time
-  std::array<double, 2> time_bounds() const noexcept override {
+  std::array<double, 2> time_bounds() const override {
     return omega_f_of_t_.time_bounds();
   }
 
@@ -95,54 +93,50 @@ class QuaternionFunctionOfTime : public FunctionOfTime {
   /// `updated_max_deriv` is a datavector of the `MaxDeriv`s for each component.
   /// `next_expiration_time` is the next expiration time.
   void update(double time_of_update, DataVector updated_max_deriv,
-              double next_expiration_time) noexcept override;
+              double next_expiration_time) override;
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override;
 
   /// Returns the quaternion at an arbitrary time `t`.
-  std::array<DataVector, 1> func(const double t) const noexcept override {
+  std::array<DataVector, 1> func(const double t) const override {
     return quat_func(t);
   }
 
   /// Returns the quaternion and its first derivative at an arbitrary time `t`.
-  std::array<DataVector, 2> func_and_deriv(
-      const double t) const noexcept override {
+  std::array<DataVector, 2> func_and_deriv(const double t) const override {
     return quat_func_and_deriv(t);
   }
 
   /// Returns the quaternion and the first two derivatives at an arbitrary
   /// time `t`.
-  std::array<DataVector, 3> func_and_2_derivs(
-      const double t) const noexcept override {
+  std::array<DataVector, 3> func_and_2_derivs(const double t) const override {
     return quat_func_and_2_derivs(t);
   }
 
   /// Returns the quaternion at an arbitrary time `t`.
-  std::array<DataVector, 1> quat_func(double t) const noexcept;
+  std::array<DataVector, 1> quat_func(double t) const;
 
   /// Returns the quaternion and its first derivative at an arbitrary time `t`.
-  std::array<DataVector, 2> quat_func_and_deriv(double t) const noexcept;
+  std::array<DataVector, 2> quat_func_and_deriv(double t) const;
 
   /// Returns the quaternion and the first two derivatives at an arbitrary
   /// time `t`.
-  std::array<DataVector, 3> quat_func_and_2_derivs(double t) const noexcept;
+  std::array<DataVector, 3> quat_func_and_2_derivs(double t) const;
 
   /// Returns stored omega at an arbitrary time `t`.
-  std::array<DataVector, 1> omega_func(const double t) const noexcept {
+  std::array<DataVector, 1> omega_func(const double t) const {
     return omega_f_of_t_.func(t);
   }
 
   /// Returns stored omega and its first derivative at an arbitrary time `t`.
-  std::array<DataVector, 2> omega_func_and_deriv(
-      const double t) const noexcept {
+  std::array<DataVector, 2> omega_func_and_deriv(const double t) const {
     return omega_f_of_t_.func_and_deriv(t);
   }
 
   /// Returns stored omega and the first two derivatives at an arbitrary
   /// time `t`.
-  std::array<DataVector, 3> omega_func_and_2_derivs(
-      const double t) const noexcept {
+  std::array<DataVector, 3> omega_func_and_2_derivs(const double t) const {
     return omega_f_of_t_.func_and_2_derivs(t);
   }
 
@@ -150,7 +144,7 @@ class QuaternionFunctionOfTime : public FunctionOfTime {
   template <size_t LocalMaxDeriv>
   friend bool operator==(  // NOLINT(readability-redundant-declaration)
       const QuaternionFunctionOfTime<LocalMaxDeriv>& lhs,
-      const QuaternionFunctionOfTime<LocalMaxDeriv>& rhs) noexcept;
+      const QuaternionFunctionOfTime<LocalMaxDeriv>& rhs);
 
   std::vector<FunctionOfTimeHelpers::StoredInfo<1, false>>
       stored_quaternions_and_times_;
@@ -162,22 +156,22 @@ class QuaternionFunctionOfTime : public FunctionOfTime {
   /// quaternion at time `t0` and on output, it stores the result at time `t`
   void solve_quaternion_ode(
       gsl::not_null<boost::math::quaternion<double>*> quaternion_to_integrate,
-      double t0, double t) const noexcept;
+      double t0, double t) const;
 
   /// Updates the `std::vector<StoredInfo>` to have the same number of stored
   /// quaternions as the `omega_f_of_t_ptr` has stored omegas. This is necessary
   /// to ensure we can solve the ODE at any time `t`
-  void update_stored_info() noexcept;
+  void update_stored_info();
 
   /// Does common operations to all the `func` functions such as updating stored
   /// info, solving the ODE, and returning the normalized quaternion as a boost
   /// quaternion for easy calculations
-  boost::math::quaternion<double> setup_func(double t) const noexcept;
+  boost::math::quaternion<double> setup_func(double t) const;
 };
 
 template <size_t MaxDeriv>
 bool operator!=(const QuaternionFunctionOfTime<MaxDeriv>& lhs,
-                const QuaternionFunctionOfTime<MaxDeriv>& rhs) noexcept;
+                const QuaternionFunctionOfTime<MaxDeriv>& rhs);
 
 /// \cond
 template <size_t MaxDeriv>

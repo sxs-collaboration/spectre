@@ -52,14 +52,14 @@ struct ArrayCompute : Array<I, sizeof...(VectorBaseExtraIndices) == 0
   using return_type = typename base::type;
 
   static void function(const gsl::not_null<std::array<int, 3>*> result,
-                       const std::vector<double>& t) noexcept {
+                       const std::vector<double>& t) {
     *result = {{static_cast<int>(t.size()), static_cast<int>(t[0]), -8}};
   }
 
   template <typename... Args>
   static void function(
       const gsl::not_null<std::array<int, 2 + sizeof...(Args)>*> result,
-      const std::vector<double>& t, const Args&... args) noexcept {
+      const std::vector<double>& t, const Args&... args) {
     static_assert(sizeof...(VectorBaseExtraIndices) == sizeof...(Args));
     *result = {{static_cast<int>(t.size()), static_cast<int>(t[0]),
                 static_cast<int>(args[0])...}};
@@ -181,7 +181,7 @@ namespace TestTags {
 template <typename T>
 class Boxed {
  public:
-  explicit Boxed(std::shared_ptr<T> data) noexcept : data_(std::move(data)) {}
+  explicit Boxed(std::shared_ptr<T> data) : data_(std::move(data)) {}
   Boxed() = default;
   // The multiple copy constructors (assignment operators) are needed
   // to prevent users from modifying compute item values.
@@ -193,11 +193,11 @@ class Boxed {
   Boxed& operator=(Boxed&&) = default;
   ~Boxed() = default;
 
-  T& operator*() noexcept { return *data_; }
-  const T& operator*() const noexcept { return *data_; }
+  T& operator*() { return *data_; }
+  const T& operator*() const { return *data_; }
 
   // clang-tidy: no non-const references
-  void pup(PUP::er& p) noexcept {  // NOLINT
+  void pup(PUP::er& p) {  // NOLINT
     if (p.isUnpacking()) {
       T t{};
       p | t;
@@ -212,12 +212,12 @@ class Boxed {
 };
 
 template <typename T>
-bool operator==(const Boxed<T>& lhs, const Boxed<T>& rhs) noexcept {
+bool operator==(const Boxed<T>& lhs, const Boxed<T>& rhs) {
   return *lhs == *rhs;
 }
 
 template <typename T>
-bool operator!=(const Boxed<T>& lhs, const Boxed<T>& rhs) noexcept {
+bool operator!=(const Boxed<T>& lhs, const Boxed<T>& rhs) {
   return not(*lhs == *rhs);
 }
 
@@ -239,9 +239,8 @@ template <size_t N>
 struct ParentCompute : Parent<N>, db::ComputeTag {
   using base = Parent<N>;
   using return_type = std::pair<Boxed<int>, Boxed<double>>;
-  static void function(
-      const gsl::not_null<return_type*> result,
-      const std::pair<Boxed<int>, Boxed<double>>& arg) noexcept {
+  static void function(const gsl::not_null<return_type*> result,
+                       const std::pair<Boxed<int>, Boxed<double>>& arg) {
     *result = std::make_pair(
         Boxed<int>(std::make_shared<int>(*arg.first + 1)),
         Boxed<double>(std::make_shared<double>(*arg.second * 2.)));
@@ -278,7 +277,7 @@ struct MultiplyByTwoCompute : MultiplyByTwo<N0, N1>, db::ComputeTag {
   // work correctly with the DataBox.
   template <typename T0, typename T1>
   static void function(const gsl::not_null<double*> result, const T0& t0,
-                       const T1& t1) noexcept {
+                       const T1& t1) {
     *result = *t0 * *t1;
   }
   using argument_tags = tmpl::list<First<N0>, Second<N1>>;
@@ -296,14 +295,14 @@ struct Subitems<TestTags::Parent<N>> {
   // gsl::not_null<item_type<tag>*> and gsl::not_null<item_type<Subtag>*> to
   // test that the code works correctly if create_item is a function template
   template <typename Subtag, typename T0, typename T1>
-  static void create_item(const T0 parent_value, const T1 sub_value) noexcept {
+  static void create_item(const T0 parent_value, const T1 sub_value) {
     *sub_value = std::get<Subtag::index>(*parent_value);
   }
 
   // We use the template parameter T instead of item_type<tag, TagList> just to
   // test that create_compute_time functions can be function templates too
   template <typename Subtag, typename T>
-  static const auto& create_compute_item(const T& parent_value) noexcept {
+  static const auto& create_compute_item(const T& parent_value) {
     return std::get<Subtag::index>(parent_value);
   }
 };
@@ -317,14 +316,14 @@ struct Subitems<TestTags::ParentCompute<N>> {
   // gsl::not_null<item_type<tag>*> and gsl::not_null<item_type<Subtag>*> to
   // test that the code works correctly if create_item is a function template
   template <typename Subtag, typename T0, typename T1>
-  static void create_item(const T0 parent_value, const T1 sub_value) noexcept {
+  static void create_item(const T0 parent_value, const T1 sub_value) {
     *sub_value = std::get<Subtag::index>(*parent_value);
   }
 
   // We use the template parameter T instead of item_type<tag, TagList> just to
   // test that create_compute_time functions can be function templates too
   template <typename Subtag, typename T>
-  static const auto& create_compute_item(const T& parent_value) noexcept {
+  static const auto& create_compute_item(const T& parent_value) {
     return std::get<Subtag::index>(parent_value);
   }
 };
@@ -352,8 +351,8 @@ void test_subitems_tags() {
 
   // - `mutate`ing a subitem by a base tag
   db::mutate<TestTags::FirstBase<0>>(
-      make_not_null(&box), [](const gsl::not_null<TestTags::Boxed<int>*>
-                                  first) noexcept { **first = -3; });
+      make_not_null(&box),
+      [](const gsl::not_null<TestTags::Boxed<int>*> first) { **first = -3; });
   CHECK(*db::get<TestTags::FirstBase<0>>(box) == -3);
   CHECK(*db::get<TestTags::SecondBase<0>>(box) == 3.5);
   CHECK(db::get<TestTags::ParentBase<0>>(box) ==
@@ -390,14 +389,14 @@ void test_subitems_tags() {
               TestTags::Boxed<double>(std::make_shared<double>(9.5))));
   CHECK(db::get<TestTags::MultiplyByTwoBase<0, 2>>(box3) == -3 * 9.5);
   db::mutate<TestTags::FirstBase<0>>(
-      make_not_null(&box3), [](const gsl::not_null<TestTags::Boxed<int>*>
-                                   first) noexcept { **first = 4; });
+      make_not_null(&box3),
+      [](const gsl::not_null<TestTags::Boxed<int>*> first) { **first = 4; });
   CHECK(db::get<TestTags::MultiplyByTwoBase<0, 2>>(box3) == 4 * 9.5);
   db::mutate<TestTags::ParentBase<0>>(
       make_not_null(&box3),
       [](const gsl::not_null<
           std::pair<TestTags::Boxed<int>, TestTags::Boxed<double>>*>
-             parent0) noexcept { *parent0->first = 8; });
+             parent0) { *parent0->first = 8; });
   CHECK(db::get<TestTags::MultiplyByTwoBase<0, 2>>(box3) == 8 * 9.5);
 }
 }  // namespace

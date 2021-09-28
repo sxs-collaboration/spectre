@@ -16,7 +16,7 @@
  */
 template <typename ForwardIt, typename Func>
 void sequence_print_helper(std::ostream& out, ForwardIt&& begin,
-                           ForwardIt&& end, Func f) noexcept {
+                           ForwardIt&& end, Func f) {
   out << "(";
   if (begin != end) {
     while (true) {
@@ -36,10 +36,10 @@ void sequence_print_helper(std::ostream& out, ForwardIt&& begin,
  */
 template <typename ForwardIt>
 void sequence_print_helper(std::ostream& out, ForwardIt&& begin,
-                           ForwardIt&& end) noexcept {
+                           ForwardIt&& end) {
   sequence_print_helper(
       out, std::forward<ForwardIt>(begin), std::forward<ForwardIt>(end),
-      [](std::ostream& os, const ForwardIt& it) noexcept { os << *it; });
+      [](std::ostream& os, const ForwardIt& it) { os << *it; });
 }
 
 /// @{
@@ -49,7 +49,7 @@ void sequence_print_helper(std::ostream& out, ForwardIt&& begin,
  */
 template <typename ForwardIt, typename Func>
 void unordered_print_helper(std::ostream& out, ForwardIt&& begin,
-                            ForwardIt&& end, Func f) noexcept {
+                            ForwardIt&& end, Func f) {
   std::vector<std::string> entries;
   while (begin != end) {
     std::ostringstream ss;
@@ -62,9 +62,9 @@ void unordered_print_helper(std::ostream& out, ForwardIt&& begin,
 
 template <typename ForwardIt>
 void unordered_print_helper(std::ostream& out, ForwardIt&& begin,
-                            ForwardIt&& end) noexcept {
+                            ForwardIt&& end) {
   unordered_print_helper(
       out, std::forward<ForwardIt>(begin), std::forward<ForwardIt>(end),
-      [](std::ostream& os, const ForwardIt& it) noexcept { os << *it; });
+      [](std::ostream& os, const ForwardIt& it) { os << *it; });
 }
 /// @}

@@ -23,7 +23,7 @@ void characteristic_speeds(
     const Scalar<DataVector>& gamma_1, const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, SpatialDim, Frame::Inertial>& shift,
     const tnsr::i<DataVector, SpatialDim, Frame::Inertial>&
-        unit_normal_one_form) noexcept {
+        unit_normal_one_form) {
   if (UNLIKELY(get_size(get<0>(*char_speeds)) != get_size(get(gamma_1)))) {
     *char_speeds = make_with_value<tnsr::a<DataVector, 3, Frame::Inertial>>(
         get(gamma_1), std::numeric_limits<double>::signaling_NaN());
@@ -41,7 +41,7 @@ void characteristic_speeds(
     const Scalar<DataVector>& gamma_1, const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, SpatialDim, Frame::Inertial>& shift,
     const tnsr::i<DataVector, SpatialDim, Frame::Inertial>&
-        unit_normal_one_form) noexcept {
+        unit_normal_one_form) {
   if (UNLIKELY(get_size((*char_speeds)[0]) != get_size(get(gamma_1)))) {
     *char_speeds = make_with_value<std::array<DataVector, 4>>(
         get(gamma_1), std::numeric_limits<double>::signaling_NaN());
@@ -58,7 +58,7 @@ std::array<DataVector, 4> characteristic_speeds(
     const Scalar<DataVector>& gamma_1, const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, SpatialDim, Frame::Inertial>& shift,
     const tnsr::i<DataVector, SpatialDim, Frame::Inertial>&
-        unit_normal_one_form) noexcept {
+        unit_normal_one_form) {
   auto char_speeds = make_with_value<std::array<DataVector, 4>>(
       get<0>(unit_normal_one_form),
       std::numeric_limits<double>::signaling_NaN());
@@ -78,7 +78,7 @@ void characteristic_fields(
     const Scalar<DataVector>& psi, const Scalar<DataVector>& pi,
     const tnsr::i<DataVector, SpatialDim, Frame::Inertial>& phi,
     const tnsr::i<DataVector, SpatialDim, Frame::Inertial>&
-        unit_normal_one_form) noexcept {
+        unit_normal_one_form) {
   if (UNLIKELY(get_size(get(get<Tags::VPsi>(*char_fields))) !=
                get_size(get(gamma_2)))) {
     *char_fields =
@@ -115,7 +115,7 @@ characteristic_fields(
     const Scalar<DataVector>& psi, const Scalar<DataVector>& pi,
     const tnsr::i<DataVector, SpatialDim, Frame::Inertial>& phi,
     const tnsr::i<DataVector, SpatialDim, Frame::Inertial>&
-        unit_normal_one_form) noexcept {
+        unit_normal_one_form) {
   auto char_fields =
       make_with_value<Variables<tmpl::list<Tags::VPsi, Tags::VZero<SpatialDim>,
                                            Tags::VPlus, Tags::VMinus>>>(
@@ -134,7 +134,7 @@ void evolved_fields_from_characteristic_fields(
     const tnsr::i<DataVector, SpatialDim, Frame::Inertial>& v_zero,
     const Scalar<DataVector>& v_plus, const Scalar<DataVector>& v_minus,
     const tnsr::i<DataVector, SpatialDim, Frame::Inertial>&
-        unit_normal_one_form) noexcept {
+        unit_normal_one_form) {
   if (UNLIKELY(get_size(get(get<Psi>(*evolved_fields))) !=
                get_size(get(gamma_2)))) {
     *evolved_fields =
@@ -160,7 +160,7 @@ evolved_fields_from_characteristic_fields(
     const tnsr::i<DataVector, SpatialDim, Frame::Inertial>& v_zero,
     const Scalar<DataVector>& v_plus, const Scalar<DataVector>& v_minus,
     const tnsr::i<DataVector, SpatialDim, Frame::Inertial>&
-        unit_normal_one_form) noexcept {
+        unit_normal_one_form) {
   auto evolved_fields =
       make_with_value<Variables<tmpl::list<Psi, Pi, Phi<SpatialDim>>>>(
           get(gamma_2), std::numeric_limits<double>::signaling_NaN());
@@ -176,8 +176,7 @@ void ComputeLargestCharacteristicSpeed<SpatialDim>::function(
     const gsl::not_null<double*> max_speed, const Scalar<DataVector>& gamma_1,
     const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, SpatialDim, Frame::Inertial>& shift,
-    const tnsr::ii<DataVector, SpatialDim, Frame::Inertial>&
-        spatial_metric) noexcept {
+    const tnsr::ii<DataVector, SpatialDim, Frame::Inertial>& spatial_metric) {
   const auto shift_magnitude = magnitude(shift, spatial_metric);
   *max_speed =
       std::max(max(abs(1. + get(gamma_1)) * get(shift_magnitude)),  // v(VPsi)
@@ -196,18 +195,18 @@ void ComputeLargestCharacteristicSpeed<SpatialDim>::function(
       const Scalar<DataVector>& gamma_1, const Scalar<DataVector>& lapse,     \
       const tnsr::I<DataVector, DIM(data), Frame::Inertial>& shift,           \
       const tnsr::i<DataVector, DIM(data), Frame::Inertial>&                  \
-          unit_normal_one_form) noexcept;                                     \
+          unit_normal_one_form);                                              \
   template void CurvedScalarWave::characteristic_speeds(                      \
       const gsl::not_null<std::array<DataVector, 4>*> char_speeds,            \
       const Scalar<DataVector>& gamma_1, const Scalar<DataVector>& lapse,     \
       const tnsr::I<DataVector, DIM(data), Frame::Inertial>& shift,           \
       const tnsr::i<DataVector, DIM(data), Frame::Inertial>&                  \
-          unit_normal_one_form) noexcept;                                     \
+          unit_normal_one_form);                                              \
   template std::array<DataVector, 4> CurvedScalarWave::characteristic_speeds( \
       const Scalar<DataVector>& gamma_1, const Scalar<DataVector>& lapse,     \
       const tnsr::I<DataVector, DIM(data), Frame::Inertial>& shift,           \
       const tnsr::i<DataVector, DIM(data), Frame::Inertial>&                  \
-          unit_normal_one_form) noexcept;                                     \
+          unit_normal_one_form);                                              \
   template struct CurvedScalarWave::CharacteristicSpeedsCompute<DIM(data)>;   \
   template void CurvedScalarWave::characteristic_fields(                      \
       const gsl::not_null<Variables<tmpl::list<                               \
@@ -221,7 +220,7 @@ void ComputeLargestCharacteristicSpeed<SpatialDim>::function(
       const Scalar<DataVector>& psi, const Scalar<DataVector>& pi,            \
       const tnsr::i<DataVector, DIM(data), Frame::Inertial>& phi,             \
       const tnsr::i<DataVector, DIM(data), Frame::Inertial>&                  \
-          unit_normal_one_form) noexcept;                                     \
+          unit_normal_one_form);                                              \
   template Variables<tmpl::list<                                              \
       CurvedScalarWave::Tags::VPsi, CurvedScalarWave::Tags::VZero<DIM(data)>, \
       CurvedScalarWave::Tags::VPlus, CurvedScalarWave::Tags::VMinus>>         \
@@ -232,7 +231,7 @@ void ComputeLargestCharacteristicSpeed<SpatialDim>::function(
       const Scalar<DataVector>& psi, const Scalar<DataVector>& pi,            \
       const tnsr::i<DataVector, DIM(data), Frame::Inertial>& phi,             \
       const tnsr::i<DataVector, DIM(data), Frame::Inertial>&                  \
-          unit_normal_one_form) noexcept;                                     \
+          unit_normal_one_form);                                              \
   template struct CurvedScalarWave::CharacteristicFieldsCompute<DIM(data)>;   \
   template void CurvedScalarWave::evolved_fields_from_characteristic_fields(  \
       const gsl::not_null<                                                    \
@@ -243,7 +242,7 @@ void ComputeLargestCharacteristicSpeed<SpatialDim>::function(
       const tnsr::i<DataVector, DIM(data), Frame::Inertial>& v_zero,          \
       const Scalar<DataVector>& v_plus, const Scalar<DataVector>& v_minus,    \
       const tnsr::i<DataVector, DIM(data), Frame::Inertial>&                  \
-          unit_normal_one_form) noexcept;                                     \
+          unit_normal_one_form);                                              \
   template Variables<tmpl::list<CurvedScalarWave::Psi, CurvedScalarWave::Pi,  \
                                 CurvedScalarWave::Phi<DIM(data)>>>            \
   CurvedScalarWave::evolved_fields_from_characteristic_fields(                \
@@ -251,7 +250,7 @@ void ComputeLargestCharacteristicSpeed<SpatialDim>::function(
       const tnsr::i<DataVector, DIM(data), Frame::Inertial>& v_zero,          \
       const Scalar<DataVector>& v_plus, const Scalar<DataVector>& v_minus,    \
       const tnsr::i<DataVector, DIM(data), Frame::Inertial>&                  \
-          unit_normal_one_form) noexcept;                                     \
+          unit_normal_one_form);                                              \
   template struct CurvedScalarWave::                                          \
       EvolvedFieldsFromCharacteristicFieldsCompute<DIM(data)>;                \
   template struct CurvedScalarWave::Tags::ComputeLargestCharacteristicSpeed<  \

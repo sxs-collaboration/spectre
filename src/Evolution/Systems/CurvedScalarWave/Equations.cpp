@@ -28,7 +28,7 @@ void ComputeNormalDotFluxes<Dim>::apply(
     const Scalar<DataVector>& gamma2, const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, Dim>& shift,
     const tnsr::II<DataVector, Dim>& inverse_spatial_metric,
-    const tnsr::i<DataVector, Dim>& interface_unit_normal) noexcept {
+    const tnsr::i<DataVector, Dim>& interface_unit_normal) {
   const auto shift_dot_normal = get(dot_product(shift, interface_unit_normal));
   const auto normal_dot_phi = [&]() {
     auto normal_dot_phi_ = make_with_value<Scalar<DataVector>>(psi, 0.);

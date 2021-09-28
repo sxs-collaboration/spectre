@@ -22,7 +22,7 @@ tnsr::ijj<DataType, SpatialDim, Frame> covariant_deriv_of_extrinsic_curvature(
     const tnsr::AA<DataType, SpatialDim, Frame>& inverse_spacetime_metric,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
     const tnsr::iaa<DataType, SpatialDim, Frame>& d_pi,
-    const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi) noexcept {
+    const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi) {
   tnsr::ijj<DataType, SpatialDim, Frame> d_extrinsic_curvature(
       get_size(get<0>(spacetime_unit_normal_vector)));
   GeneralizedHarmonic::covariant_deriv_of_extrinsic_curvature<SpatialDim, Frame,
@@ -44,7 +44,7 @@ void covariant_deriv_of_extrinsic_curvature(
     const tnsr::AA<DataType, SpatialDim, Frame>& inverse_spacetime_metric,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
     const tnsr::iaa<DataType, SpatialDim, Frame>& d_pi,
-    const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi) noexcept {
+    const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi) {
   destructive_resize_components(d_extrinsic_curvature,
                                 get_size(get<0>(spacetime_unit_normal_vector)));
 
@@ -100,34 +100,34 @@ void covariant_deriv_of_extrinsic_curvature(
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(2, data)
 
-#define INSTANTIATE(_, data)                                                  \
-  template tnsr::ijj<DTYPE(data), DIM(data), FRAME(data)>                     \
-  GeneralizedHarmonic::covariant_deriv_of_extrinsic_curvature(                \
-      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>&                    \
-          extrinsic_curvature,                                                \
-      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                     \
-          spacetime_unit_normal_vector,                                       \
-      const tnsr::Ijj<DTYPE(data), DIM(data), FRAME(data)>&                   \
-          spatial_christoffel_second_kind,                                    \
-      const tnsr::AA<DTYPE(data), DIM(data), FRAME(data)>&                    \
-          inverse_spacetime_metric,                                           \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,              \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& d_pi,             \
-      const tnsr::ijaa<DTYPE(data), DIM(data), FRAME(data)>& d_phi) noexcept; \
-  template void GeneralizedHarmonic::covariant_deriv_of_extrinsic_curvature(  \
-      gsl::not_null<tnsr::ijj<DTYPE(data), DIM(data), FRAME(data)>*>          \
-          d_extrinsic_curvature,                                              \
-      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>&                    \
-          extrinsic_curvature,                                                \
-      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                     \
-          spacetime_unit_normal_vector,                                       \
-      const tnsr::Ijj<DTYPE(data), DIM(data), FRAME(data)>&                   \
-          spatial_christoffel_second_kind,                                    \
-      const tnsr::AA<DTYPE(data), DIM(data), FRAME(data)>&                    \
-          inverse_spacetime_metric,                                           \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,              \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& d_pi,             \
-      const tnsr::ijaa<DTYPE(data), DIM(data), FRAME(data)>& d_phi) noexcept;
+#define INSTANTIATE(_, data)                                                 \
+  template tnsr::ijj<DTYPE(data), DIM(data), FRAME(data)>                    \
+  GeneralizedHarmonic::covariant_deriv_of_extrinsic_curvature(               \
+      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>&                   \
+          extrinsic_curvature,                                               \
+      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                    \
+          spacetime_unit_normal_vector,                                      \
+      const tnsr::Ijj<DTYPE(data), DIM(data), FRAME(data)>&                  \
+          spatial_christoffel_second_kind,                                   \
+      const tnsr::AA<DTYPE(data), DIM(data), FRAME(data)>&                   \
+          inverse_spacetime_metric,                                          \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,             \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& d_pi,            \
+      const tnsr::ijaa<DTYPE(data), DIM(data), FRAME(data)>& d_phi);         \
+  template void GeneralizedHarmonic::covariant_deriv_of_extrinsic_curvature( \
+      gsl::not_null<tnsr::ijj<DTYPE(data), DIM(data), FRAME(data)>*>         \
+          d_extrinsic_curvature,                                             \
+      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>&                   \
+          extrinsic_curvature,                                               \
+      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                    \
+          spacetime_unit_normal_vector,                                      \
+      const tnsr::Ijj<DTYPE(data), DIM(data), FRAME(data)>&                  \
+          spatial_christoffel_second_kind,                                   \
+      const tnsr::AA<DTYPE(data), DIM(data), FRAME(data)>&                   \
+          inverse_spacetime_metric,                                          \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,             \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& d_pi,            \
+      const tnsr::ijaa<DTYPE(data), DIM(data), FRAME(data)>& d_phi);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
                         (Frame::Grid, Frame::Inertial))

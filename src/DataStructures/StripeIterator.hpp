@@ -21,13 +21,13 @@ class StripeIterator {
   /// Construct from the grid points in each direction and which dimension the
   /// stripes are in.
   template <size_t Dim>
-  StripeIterator(const Index<Dim>& extents, size_t stripe_dim) noexcept;
+  StripeIterator(const Index<Dim>& extents, size_t stripe_dim);
 
   /// Returns `true` if the iterator is valid
-  explicit operator bool() const noexcept { return offset_ < size_; }
+  explicit operator bool() const { return offset_ < size_; }
 
   /// Increment to the next stripe.
-  StripeIterator& operator++() noexcept {
+  StripeIterator& operator++() {
     ++offset_;
     ++stride_count_;
     if (UNLIKELY(stride_count_ == stride_)) {
@@ -38,10 +38,10 @@ class StripeIterator {
   }
 
   /// Offset into DataVector for first element of stripe.
-  size_t offset() const noexcept { return offset_; }
+  size_t offset() const { return offset_; }
 
   /// Stride of elements in DataVector for the stripe.
-  size_t stride() const noexcept { return stride_; }
+  size_t stride() const { return stride_; }
 
  private:
   size_t offset_ = std::numeric_limits<size_t>::max();

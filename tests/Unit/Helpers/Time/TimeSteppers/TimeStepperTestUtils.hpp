@@ -19,28 +19,27 @@ class TimeStepper;
 
 namespace TimeStepperTestUtils {
 
-void check_multistep_properties(const TimeStepper& stepper) noexcept;
+void check_multistep_properties(const TimeStepper& stepper);
 
-void check_substep_properties(const TimeStepper& stepper) noexcept;
+void check_substep_properties(const TimeStepper& stepper);
 
 void integrate_test(const TimeStepper& stepper, size_t order,
                     size_t number_of_past_steps, double integration_time,
-                    double epsilon, bool test_apply_twice = false) noexcept;
+                    double epsilon, bool test_apply_twice = false);
 
 void integrate_test_explicit_time_dependence(const TimeStepper& stepper,
                                              size_t order,
                                              size_t number_of_past_steps,
                                              double integration_time,
-                                             double epsilon) noexcept;
+                                             double epsilon);
 
 void integrate_variable_test(const TimeStepper& stepper, size_t order,
-                             size_t number_of_past_steps,
-                             double epsilon) noexcept;
+                             size_t number_of_past_steps, double epsilon);
 
 void integrate_error_test(const TimeStepper& stepper, size_t order,
                           size_t number_of_past_steps, double integration_time,
                           double epsilon, size_t num_steps, double error_factor,
-                          bool test_apply_twice = false) noexcept;
+                          bool test_apply_twice = false);
 
 template <typename F1, typename F2, typename EvolvedType>
 void initialize_history(
@@ -48,7 +47,7 @@ void initialize_history(
     const gsl::not_null<TimeSteppers::History<EvolvedType, EvolvedType>*>
         history,
     F1&& analytic, F2&& rhs, TimeDelta step_size,
-    const size_t number_of_past_steps) noexcept {
+    const size_t number_of_past_steps) {
   int64_t slab_number = -1;
   for (size_t j = 0; j < number_of_past_steps; ++j) {
     ASSERT(time.slab() == step_size.slab(), "Slab mismatch");
@@ -69,16 +68,16 @@ void initialize_history(
   }
 }
 
-void stability_test(const TimeStepper& stepper) noexcept;
+void stability_test(const TimeStepper& stepper);
 
 void equal_rate_boundary(const LtsTimeStepper& stepper, size_t order,
-                         size_t number_of_past_steps,
-                         double epsilon, bool forward) noexcept;
+                         size_t number_of_past_steps, double epsilon,
+                         bool forward);
 
-void check_convergence_order(const TimeStepper& stepper) noexcept;
+void check_convergence_order(const TimeStepper& stepper);
 
 void check_dense_output(const TimeStepper& stepper,
-                        const size_t history_integration_order) noexcept;
+                        const size_t history_integration_order);
 
-void check_boundary_dense_output(const LtsTimeStepper& stepper) noexcept;
+void check_boundary_dense_output(const LtsTimeStepper& stepper);
 }  // namespace TimeStepperTestUtils

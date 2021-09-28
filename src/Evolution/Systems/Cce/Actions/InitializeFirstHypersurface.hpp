@@ -54,7 +54,7 @@ struct InitializeFirstHypersurface {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     // In some contexts, this action may get re-run (e.g. self-start procedure)
     // In those cases, we do not want to alter the existing hypersurface data,
     // so we just exit. However, we do want to re-run the action each time

@@ -7,7 +7,7 @@
 
 namespace dg::Tags {
 dg::Formulation Formulation::create_from_options(
-    const dg::Formulation& formulation) noexcept {
+    const dg::Formulation& formulation) {
   return formulation;
 }
 }  // namespace dg::Tags

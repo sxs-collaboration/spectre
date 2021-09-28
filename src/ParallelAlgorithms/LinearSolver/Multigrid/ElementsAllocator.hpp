@@ -78,7 +78,7 @@ struct ElementsAllocator
             typename... InitializationTags>
   static void apply(Parallel::CProxy_GlobalCache<Metavariables>& global_cache,
                     const tuples::TaggedTuple<InitializationTags...>&
-                        original_initialization_items) noexcept {
+                        original_initialization_items) {
     // Copy the initialization items so we can adjust them on each refinement
     // level
     auto initialization_items =
@@ -136,7 +136,7 @@ struct ElementsAllocator
       std::vector<CkArrayIndex> array_indices(element_ids.size());
       std::transform(
           element_ids.begin(), element_ids.end(), array_indices.begin(),
-          [](const ElementId<Dim>& local_element_id) noexcept {
+          [](const ElementId<Dim>& local_element_id) {
             return Parallel::ArrayIndex<ElementId<Dim>>(local_element_id);
           });
       using MultigridLevelSection =

@@ -55,11 +55,9 @@ Header::Header(const bool exists, detail::OpenGroup&& group,
   }
 }
 
-std::string Header::get_env_variables() const noexcept {
-  return environment_variables_;
-}
+std::string Header::get_env_variables() const { return environment_variables_; }
 
-std::string Header::get_build_info() const noexcept { return build_info_; }
+std::string Header::get_build_info() const { return build_info_; }
 
 const std::string Header::printenv_delimiter_{
     "############### printenv ###############\n"};

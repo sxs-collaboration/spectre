@@ -33,16 +33,16 @@ struct TestOrthonormalForms {
   void operator()(
       const tnsr::i<DataType, Dim, Frame>& unit_form,
       const tnsr::ii<DataType, Dim, Frame>& spatial_metric,
-      const tnsr::II<DataType, Dim, Frame>& inv_spatial_metric) const noexcept;
+      const tnsr::II<DataType, Dim, Frame>& inv_spatial_metric) const;
 };
 
 template <>
 struct TestOrthonormalForms<2> {
   template <typename DataType, typename Frame>
-  void operator()(const tnsr::i<DataType, 2, Frame>& unit_form,
-                  const tnsr::ii<DataType, 2, Frame>& /*spatial_metric*/,
-                  const tnsr::II<DataType, 2, Frame>& inv_spatial_metric) const
-      noexcept {
+  void operator()(
+      const tnsr::i<DataType, 2, Frame>& unit_form,
+      const tnsr::ii<DataType, 2, Frame>& /*spatial_metric*/,
+      const tnsr::II<DataType, 2, Frame>& inv_spatial_metric) const {
     const auto orthonormal_form =
         orthonormal_oneform(unit_form, inv_spatial_metric);
 
@@ -61,10 +61,10 @@ struct TestOrthonormalForms<2> {
 template <>
 struct TestOrthonormalForms<3> {
   template <typename DataType, typename Frame>
-  void operator()(const tnsr::i<DataType, 3, Frame>& unit_form,
-                  const tnsr::ii<DataType, 3, Frame>& spatial_metric,
-                  const tnsr::II<DataType, 3, Frame>& inv_spatial_metric) const
-      noexcept {
+  void operator()(
+      const tnsr::i<DataType, 3, Frame>& unit_form,
+      const tnsr::ii<DataType, 3, Frame>& spatial_metric,
+      const tnsr::II<DataType, 3, Frame>& inv_spatial_metric) const {
     const auto first_orthonormal_form =
         orthonormal_oneform(unit_form, inv_spatial_metric);
     const auto second_orthonormal_form =
@@ -97,7 +97,7 @@ struct TestOrthonormalForms<3> {
 };
 
 template <size_t Dim, typename Frame, typename DataType>
-void check_orthonormal_forms(const DataType& used_for_size) noexcept {
+void check_orthonormal_forms(const DataType& used_for_size) {
   MAKE_GENERATOR(generator);
   const TestOrthonormalForms<Dim> test;
 

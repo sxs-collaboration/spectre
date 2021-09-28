@@ -4,7 +4,7 @@
 #include "Parallel/Reduction.hpp"
 
 namespace Parallel {
-NoSection& no_section() noexcept {
+NoSection& no_section() {
   static NoSection local_no_section{};
   return local_no_section;
 }

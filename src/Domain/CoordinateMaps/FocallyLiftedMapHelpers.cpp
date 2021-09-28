@@ -23,7 +23,7 @@ void scale_factor(const gsl::not_null<tt::remove_cvref_wrap_t<T>*>& result,
                   const std::array<T, 3>& src_point,
                   const std::array<double, 3>& proj_center,
                   const std::array<double, 3>& sphere_center, double radius,
-                  const bool src_is_between_proj_and_target) noexcept {
+                  const bool src_is_between_proj_and_target) {
   using ReturnType = tt::remove_cvref_wrap_t<T>;
   // quadratic equation is
   // a scale_factor^2 + b scale_factor + c = 0
@@ -76,8 +76,7 @@ std::optional<double> try_scale_factor(
     const std::array<double, 3>& proj_center,
     const std::array<double, 3>& sphere_center, double radius,
     const bool pick_larger_root, const bool pick_root_greater_than_one,
-    const bool solve_for_root_minus_one) noexcept {
-
+    const bool solve_for_root_minus_one) {
   double x0 = std::numeric_limits<double>::signaling_NaN();
   double x1 = std::numeric_limits<double>::signaling_NaN();
   int num_real_roots = 0;
@@ -226,7 +225,7 @@ void d_scale_factor_d_src_point(
     const gsl::not_null<std::array<tt::remove_cvref_wrap_t<T>, 3>*>& result,
     const std::array<T, 3>& intersection_point,
     const std::array<double, 3>& proj_center,
-    const std::array<double, 3>& sphere_center, const T& lambda) noexcept {
+    const std::array<double, 3>& sphere_center, const T& lambda) {
   using ReturnType = tt::remove_cvref_wrap_t<T>;
   ASSERT(not(intersection_point[0] == proj_center[0] and
              intersection_point[1] == proj_center[1] and
@@ -259,14 +258,13 @@ void d_scale_factor_d_src_point(
       const std::array<DTYPE(data), 3>& src_point,                        \
       const std::array<double, 3>& proj_center,                           \
       const std::array<double, 3>& sphere_center, double radius,          \
-      bool src_is_between_proj_and_target) noexcept;                      \
+      bool src_is_between_proj_and_target);                               \
   template void d_scale_factor_d_src_point<DTYPE(data)>(                  \
       const gsl::not_null<                                                \
           std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>*>& result,  \
       const std::array<DTYPE(data), 3>& intersection_point,               \
       const std::array<double, 3>& proj_center,                           \
-      const std::array<double, 3>& sphere_center,                         \
-      const DTYPE(data) & lambda) noexcept;
+      const std::array<double, 3>& sphere_center, const DTYPE(data) & lambda);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector,
                                       std::reference_wrapper<const double>,

@@ -39,7 +39,7 @@ struct Name : db::SimpleTag {
   using option_tags = tmpl::list<OptionTags::Name>;
 
   static constexpr bool pass_metavariables = false;
-  static std::string create_from_options(const std::string& name) noexcept {
+  static std::string create_from_options(const std::string& name) {
     return name;
   }
 };
@@ -75,13 +75,13 @@ struct HelloWorld {
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
-      Parallel::CProxy_GlobalCache<Metavariables>& global_cache) noexcept;
+      Parallel::CProxy_GlobalCache<Metavariables>& global_cache);
 };
 
 template <class Metavariables>
 void HelloWorld<Metavariables>::execute_next_phase(
     const typename Metavariables::Phase /* next_phase */,
-    Parallel::CProxy_GlobalCache<Metavariables>& global_cache) noexcept {
+    Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
   Parallel::simple_action<Actions::PrintMessage>(
       Parallel::get_parallel_component<HelloWorld>(
           *(global_cache.ckLocalBranch())));
@@ -102,13 +102,13 @@ struct Metavars {
       const gsl::not_null<
           tuples::TaggedTuple<Tags...>*> /*phase_change_decision_data*/,
       const Phase& current_phase,
-      const Parallel::CProxy_GlobalCache<Metavars>& /*cache_proxy*/) noexcept {
+      const Parallel::CProxy_GlobalCache<Metavars>& /*cache_proxy*/) {
     return current_phase == Phase::Initialization ? Phase::Execute
                                                   : Phase::Exit;
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& /*p*/) noexcept {}
+  void pup(PUP::er& /*p*/) {}
 };
 /// [executable_example_metavariables]
 

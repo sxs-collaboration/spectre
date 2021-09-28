@@ -34,7 +34,7 @@ using Affine2D = domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>;
 using Affine3D = domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
 
 template <size_t Dim>
-auto make_map() noexcept {
+auto make_map() {
   if constexpr (Dim == 1) {
     return domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
         Affine{-1.0, 1.0, -0.3, 0.7});

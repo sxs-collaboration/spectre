@@ -37,19 +37,19 @@ class Filter : public DenseTrigger {
  public:
   /// \cond
   Filter() = default;
-  explicit Filter(CkMigrateMessage* const msg) noexcept : DenseTrigger(msg) {}
+  explicit Filter(CkMigrateMessage* const msg) : DenseTrigger(msg) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Filter);  // NOLINT
   /// \endcond
 
   struct TriggerOption {
-    static std::string name() noexcept { return "Trigger"; }
+    static std::string name() { return "Trigger"; }
     using type = std::unique_ptr<DenseTrigger>;
     static constexpr Options::String help = "Dense trigger to filter";
   };
 
   struct FilterOption {
-    static std::string name() noexcept { return "Filter"; }
+    static std::string name() { return "Filter"; }
     using type = std::unique_ptr<Trigger>;
     static constexpr Options::String help = "Non-dense trigger to filter with";
   };
@@ -59,12 +59,12 @@ class Filter : public DenseTrigger {
       "Filter activations of a dense trigger using a non-dense trigger.";
 
   explicit Filter(std::unique_ptr<DenseTrigger> trigger,
-                  std::unique_ptr<Trigger> filter) noexcept;
+                  std::unique_ptr<Trigger> filter);
 
   using is_triggered_argument_tags = tmpl::list<Tags::DataBox>;
 
   template <typename DbTags>
-  Result is_triggered(const db::DataBox<DbTags>& box) const noexcept {
+  Result is_triggered(const db::DataBox<DbTags>& box) const {
     auto result = trigger_->is_triggered(box);
     if (not filter_->is_triggered(box)) {
       result.is_triggered = false;
@@ -78,12 +78,12 @@ class Filter : public DenseTrigger {
             typename DbTags>
   bool is_ready(Parallel::GlobalCache<Metavariables>& cache,
                 const ArrayIndex& array_index, const Component* const component,
-                const db::DataBox<DbTags>& box) const noexcept {
+                const db::DataBox<DbTags>& box) const {
     return trigger_->is_ready(box, cache, array_index, component);
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept override;
+  void pup(PUP::er& p) override;
 
  private:
   std::unique_ptr<DenseTrigger> trigger_{};

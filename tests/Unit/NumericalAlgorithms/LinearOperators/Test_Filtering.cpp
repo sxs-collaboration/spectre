@@ -95,7 +95,7 @@ template <typename Metavariables,
           Requires<Metavariables::filter_individually> = nullptr>
 typename ActionTesting::MockRuntimeSystem<Metavariables>::CacheTuple
 create_cache_tuple(const double alpha, const unsigned half_power,
-                   const bool disable_for_debugging) noexcept {
+                   const bool disable_for_debugging) {
   return {Filters::Exponential<0>{alpha, half_power, disable_for_debugging},
           Filters::Exponential<1>{2.0 * alpha, 2 * half_power,
                                   disable_for_debugging}};
@@ -105,7 +105,7 @@ template <typename Metavariables,
           Requires<not Metavariables::filter_individually> = nullptr>
 typename ActionTesting::MockRuntimeSystem<Metavariables>::CacheTuple
 create_cache_tuple(const double alpha, const unsigned half_power,
-                   const bool disable_for_debugging) noexcept {
+                   const bool disable_for_debugging) {
   return {Filters::Exponential<0>{alpha, half_power, disable_for_debugging}};
 }
 
@@ -113,7 +113,7 @@ template <size_t Dim, Spectral::Basis BasisType,
           Spectral::Quadrature QuadratureType, bool FilterIndividually>
 void test_exponential_filter_action(const double alpha,
                                     const unsigned half_power,
-                                    const bool disable_for_debugging) noexcept {
+                                    const bool disable_for_debugging) {
   CAPTURE(BasisType);
   CAPTURE(QuadratureType);
   CAPTURE(disable_for_debugging);
@@ -195,9 +195,9 @@ void test_exponential_filter_action(const double alpha,
 }
 
 template <size_t Dim, bool FilterIndividually>
-void invoke_test_exponential_filter_action(
-    const double alpha, const unsigned half_power,
-    const bool disable_for_debugging) noexcept {
+void invoke_test_exponential_filter_action(const double alpha,
+                                           const unsigned half_power,
+                                           const bool disable_for_debugging) {
   test_exponential_filter_action<Dim, Spectral::Basis::Legendre,
                                  Spectral::Quadrature::GaussLobatto,
                                  FilterIndividually>(alpha, half_power,
@@ -217,7 +217,7 @@ void invoke_test_exponential_filter_action(
 }
 
 template <size_t Dim>
-void test_exponential_filter_creation() noexcept {
+void test_exponential_filter_creation() {
   using Filter = Filters::Exponential<0>;
   using AnotherFilter = Filters::Exponential<1>;
 

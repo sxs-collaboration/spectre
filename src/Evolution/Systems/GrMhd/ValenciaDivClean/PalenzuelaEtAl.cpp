@@ -29,7 +29,7 @@ class FunctionOfX {
               const double magnetic_field_squared,
               const double rest_mass_density_times_lorentz_factor,
               const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
-                  equation_of_state) noexcept
+                  equation_of_state)
       : q_(total_energy_density / rest_mass_density_times_lorentz_factor - 1.0),
         r_(momentum_density_squared /
            square(rest_mass_density_times_lorentz_factor)),
@@ -40,7 +40,7 @@ class FunctionOfX {
             rest_mass_density_times_lorentz_factor),
         equation_of_state_(equation_of_state) {}
 
-  double lorentz_factor(const double x) const noexcept {
+  double lorentz_factor(const double x) const {
     static constexpr double v_maximum = 1.0 - 1.e-12;
     // Clamp v^2 to physical values.  This is needed because the bounds on
     // x used for the root solve do not guarantee a physical velocity.  Some
@@ -53,14 +53,14 @@ class FunctionOfX {
   }
 
   double specific_internal_energy(const double x,
-                                  const double lorentz_factor) const noexcept {
+                                  const double lorentz_factor) const {
     return lorentz_factor - 1.0 +
            x * (1.0 - square(lorentz_factor)) / lorentz_factor +
            lorentz_factor * (q_ - s_ + 0.5 * t_squared_ / square(x) +
                              0.5 * s_ / square(lorentz_factor));
   }
 
-  double operator()(const double x) const noexcept {
+  double operator()(const double x) const {
     const double current_lorentz_factor = lorentz_factor(x);
     const double current_rest_mass_density =
         rest_mass_density_times_lorentz_factor_ / current_lorentz_factor;
@@ -101,7 +101,7 @@ std::optional<PrimitiveRecoveryData> PalenzuelaEtAl::apply(
     const double magnetic_field_squared,
     const double rest_mass_density_times_lorentz_factor,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
-        equation_of_state) noexcept {
+        equation_of_state) {
   const double lower_bound = (total_energy_density - magnetic_field_squared) /
                              rest_mass_density_times_lorentz_factor;
   const double upper_bound =
@@ -160,7 +160,7 @@ std::optional<PrimitiveRecoveryData> PalenzuelaEtAl::apply(
       const double magnetic_field_squared,                                   \
       const double rest_mass_density_times_lorentz_factor,                   \
       const EquationsOfState::EquationOfState<true, THERMODIM(data)>&        \
-          equation_of_state) noexcept;
+          equation_of_state);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2))
 

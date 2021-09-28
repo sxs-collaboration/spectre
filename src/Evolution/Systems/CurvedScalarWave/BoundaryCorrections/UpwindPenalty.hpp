@@ -102,13 +102,13 @@ class UpwindPenalty final : public BoundaryCorrection<Dim> {
   ~UpwindPenalty() override = default;
 
   /// \cond
-  explicit UpwindPenalty(CkMigrateMessage* msg) noexcept;
+  explicit UpwindPenalty(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(UpwindPenalty);  // NOLINT
   /// \endcond
   void pup(PUP::er& p) override;  // NOLINT
 
-  std::unique_ptr<BoundaryCorrection<Dim>> get_clone() const noexcept override;
+  std::unique_ptr<BoundaryCorrection<Dim>> get_clone() const override;
 
   using dg_package_field_tags =
       tmpl::list<Tags::VPsi, Tags::VZero<Dim>, Tags::VPlus, Tags::VMinus,
@@ -149,8 +149,7 @@ class UpwindPenalty final : public BoundaryCorrection<Dim> {
           interface_unit_normal_vector,
       const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
       /*mesh_velocity*/,
-      const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity)
-      const noexcept;
+      const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity) const;
 
   void dg_boundary_terms(
       gsl::not_null<Scalar<DataVector>*> pi_boundary_correction,
@@ -175,6 +174,6 @@ class UpwindPenalty final : public BoundaryCorrection<Dim> {
       const tnsr::i<DataVector, Dim, Frame::Inertial>&
           interface_unit_normal_ext,
       const tnsr::a<DataVector, 3, Frame::Inertial>& char_speeds_ext,
-      dg::Formulation /*dg_formulation*/) const noexcept;
+      dg::Formulation /*dg_formulation*/) const;
 };
 }  // namespace CurvedScalarWave::BoundaryCorrections

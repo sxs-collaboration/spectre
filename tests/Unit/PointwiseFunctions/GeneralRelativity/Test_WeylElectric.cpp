@@ -23,7 +23,7 @@
 
 namespace {
 template <size_t SpatialDim, typename DataType>
-void test_compute_item_in_databox(const DataType& used_for_size) noexcept {
+void test_compute_item_in_databox(const DataType& used_for_size) {
   TestHelpers::db::test_compute_tag<
       gr::Tags::WeylElectricCompute<SpatialDim, Frame::Inertial, DataType>>(
       "WeylElectric");

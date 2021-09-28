@@ -41,6 +41,6 @@ struct TimeDerivativeTerms {
       gsl::not_null<tnsr::I<DataVector, 1, Frame::Inertial>*> flux_u,
 
       // Arguments listed in argument_tags above
-      const Scalar<DataVector>& u) noexcept;
+      const Scalar<DataVector>& u);
 };
 }  // namespace Burgers

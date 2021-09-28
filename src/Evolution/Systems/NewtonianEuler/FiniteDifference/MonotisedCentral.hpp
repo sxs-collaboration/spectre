@@ -79,22 +79,21 @@ class MonotisedCentralPrim : public Reconstructor<Dim> {
       "Monotised central reconstruction scheme using primitive variables."};
 
   MonotisedCentralPrim() = default;
-  MonotisedCentralPrim(MonotisedCentralPrim&&) noexcept = default;
-  MonotisedCentralPrim& operator=(MonotisedCentralPrim&&) noexcept = default;
+  MonotisedCentralPrim(MonotisedCentralPrim&&) = default;
+  MonotisedCentralPrim& operator=(MonotisedCentralPrim&&) = default;
   MonotisedCentralPrim(const MonotisedCentralPrim&) = default;
   MonotisedCentralPrim& operator=(const MonotisedCentralPrim&) = default;
   ~MonotisedCentralPrim() override = default;
 
-  explicit MonotisedCentralPrim(CkMigrateMessage* msg) noexcept;
+  explicit MonotisedCentralPrim(CkMigrateMessage* msg);
 
   WRAPPED_PUPable_decl_base_template(Reconstructor<Dim>, MonotisedCentralPrim);
 
-  auto get_clone() const noexcept
-      -> std::unique_ptr<Reconstructor<Dim>> override;
+  auto get_clone() const -> std::unique_ptr<Reconstructor<Dim>> override;
 
   void pup(PUP::er& p) override;
 
-  size_t ghost_zone_size() const noexcept override { return 2; }
+  size_t ghost_zone_size() const override { return 2; }
 
   using reconstruction_argument_tags =
       tmpl::list<::Tags::Variables<prims_tags>,
@@ -116,7 +115,7 @@ class MonotisedCentralPrim : public Reconstructor<Dim> {
           evolution::dg::subcell::NeighborData,
           boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
           neighbor_data,
-      const Mesh<Dim>& subcell_mesh) const noexcept;
+      const Mesh<Dim>& subcell_mesh) const;
 
   /// Called by an element doing DG when the neighbor is doing subcell.
   ///
@@ -137,18 +136,18 @@ class MonotisedCentralPrim : public Reconstructor<Dim> {
           boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
           neighbor_data,
       const Mesh<Dim>& subcell_mesh,
-      const Direction<Dim> direction_to_reconstruct) const noexcept;
+      const Direction<Dim> direction_to_reconstruct) const;
 };
 
 template <size_t Dim>
 bool operator==(const MonotisedCentralPrim<Dim>& /*lhs*/,
-                const MonotisedCentralPrim<Dim>& /*rhs*/) noexcept {
+                const MonotisedCentralPrim<Dim>& /*rhs*/) {
   return true;
 }
 
 template <size_t Dim>
 bool operator!=(const MonotisedCentralPrim<Dim>& lhs,
-                const MonotisedCentralPrim<Dim>& rhs) noexcept {
+                const MonotisedCentralPrim<Dim>& rhs) {
   return not(lhs == rhs);
 }
 }  // namespace NewtonianEuler::fd

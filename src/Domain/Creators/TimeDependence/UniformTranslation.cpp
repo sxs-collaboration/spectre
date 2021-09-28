@@ -32,7 +32,7 @@ UniformTranslation<MeshDim>::UniformTranslation(
     const double initial_time,
     const std::optional<double> initial_expiration_delta_t,
     const std::array<double, MeshDim>& velocity,
-    std::string function_of_time_name) noexcept
+    std::string function_of_time_name)
     : initial_time_(initial_time),
       initial_expiration_delta_t_(initial_expiration_delta_t),
       velocity_(velocity),
@@ -40,7 +40,7 @@ UniformTranslation<MeshDim>::UniformTranslation(
 
 template <size_t MeshDim>
 std::unique_ptr<TimeDependence<MeshDim>>
-UniformTranslation<MeshDim>::get_clone() const noexcept {
+UniformTranslation<MeshDim>::get_clone() const {
   return std::make_unique<UniformTranslation>(
       initial_time_, initial_expiration_delta_t_, velocity_,
       function_of_time_name_);
@@ -49,8 +49,7 @@ UniformTranslation<MeshDim>::get_clone() const noexcept {
 template <size_t MeshDim>
 std::vector<std::unique_ptr<
     domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, MeshDim>>>
-UniformTranslation<MeshDim>::block_maps(
-    const size_t number_of_blocks) const noexcept {
+UniformTranslation<MeshDim>::block_maps(const size_t number_of_blocks) const {
   ASSERT(number_of_blocks > 0, "Must have at least one block to create.");
   std::vector<std::unique_ptr<
       domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, MeshDim>>>
@@ -65,7 +64,7 @@ UniformTranslation<MeshDim>::block_maps(
 template <size_t MeshDim>
 std::unordered_map<std::string,
                    std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
-UniformTranslation<MeshDim>::functions_of_time() const noexcept {
+UniformTranslation<MeshDim>::functions_of_time() const {
   std::unordered_map<std::string,
                      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
       result{};
@@ -89,7 +88,7 @@ UniformTranslation<MeshDim>::functions_of_time() const noexcept {
 }
 
 template <size_t MeshDim>
-auto UniformTranslation<MeshDim>::map_for_composition() const noexcept
+auto UniformTranslation<MeshDim>::map_for_composition() const
     -> MapForComposition {
   return MapForComposition{
       domain::CoordinateMaps::TimeDependent::Translation<MeshDim>{
@@ -97,13 +96,13 @@ auto UniformTranslation<MeshDim>::map_for_composition() const noexcept
 }
 
 template <size_t MeshDim>
-std::string UniformTranslation<MeshDim>::default_function_name() noexcept {
+std::string UniformTranslation<MeshDim>::default_function_name() {
   return "Translation";
 }
 
 template <size_t Dim>
 bool operator==(const UniformTranslation<Dim>& lhs,
-                const UniformTranslation<Dim>& rhs) noexcept {
+                const UniformTranslation<Dim>& rhs) {
   return lhs.initial_time_ == rhs.initial_time_ and
          lhs.initial_expiration_delta_t_ == rhs.initial_expiration_delta_t_ and
          lhs.velocity_ == rhs.velocity_ and
@@ -112,20 +111,20 @@ bool operator==(const UniformTranslation<Dim>& lhs,
 
 template <size_t Dim>
 bool operator!=(const UniformTranslation<Dim>& lhs,
-                const UniformTranslation<Dim>& rhs) noexcept {
+                const UniformTranslation<Dim>& rhs) {
   return not(lhs == rhs);
 }
 
 #define GET_DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATION(r, data)                                            \
-  template class UniformTranslation<GET_DIM(data)>;                       \
-  template bool operator==                                                \
-      <GET_DIM(data)>(const UniformTranslation<GET_DIM(data)>&,           \
-                      const UniformTranslation<GET_DIM(data)>&) noexcept; \
-  template bool operator!=                                                \
-      <GET_DIM(data)>(const UniformTranslation<GET_DIM(data)>&,           \
-                      const UniformTranslation<GET_DIM(data)>&) noexcept;
+#define INSTANTIATION(r, data)                                   \
+  template class UniformTranslation<GET_DIM(data)>;              \
+  template bool operator==                                       \
+      <GET_DIM(data)>(const UniformTranslation<GET_DIM(data)>&,  \
+                      const UniformTranslation<GET_DIM(data)>&); \
+  template bool operator!=                                       \
+      <GET_DIM(data)>(const UniformTranslation<GET_DIM(data)>&,  \
+                      const UniformTranslation<GET_DIM(data)>&);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 

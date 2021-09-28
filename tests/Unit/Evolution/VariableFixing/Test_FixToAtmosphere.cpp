@@ -22,8 +22,7 @@ namespace {
 template <size_t Dim>
 void test_variable_fixer(
     const VariableFixing::FixToAtmosphere<Dim>& variable_fixer,
-    const EquationsOfState::EquationOfState<true, 1>&
-        equation_of_state) noexcept {
+    const EquationsOfState::EquationOfState<true, 1>& equation_of_state) {
   // 2.e-12 -> below cutoff, velocity goes to zero
   // 2.e-11 -> above cutoff, no changes
   // 4.e-12 -> density unchanged, velocity restricted
@@ -132,7 +131,7 @@ void test_variable_fixer(
 }
 
 template <size_t Dim>
-void test_variable_fixer() noexcept {
+void test_variable_fixer() {
   // Test for representative 1-d equation of state
   VariableFixing::FixToAtmosphere<Dim> variable_fixer{1.e-12, 3.e-12, 1.e-11,
                                                       1.e-4};

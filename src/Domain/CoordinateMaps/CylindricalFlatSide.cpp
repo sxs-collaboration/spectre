@@ -20,7 +20,7 @@ CylindricalFlatSide::CylindricalFlatSide(
     const std::array<double, 3>& center_one,
     const std::array<double, 3>& center_two,
     const std::array<double, 3>& proj_center, const double inner_radius,
-    const double outer_radius, const double radius_two) noexcept
+    const double outer_radius, const double radius_two)
     : impl_(center_two, proj_center, radius_two, false,
             FocallyLiftedInnerMaps::FlatSide(center_one, inner_radius,
                                              outer_radius)) {
@@ -76,37 +76,35 @@ CylindricalFlatSide::CylindricalFlatSide(
 
 template <typename T>
 std::array<tt::remove_cvref_wrap_t<T>, 3> CylindricalFlatSide::operator()(
-    const std::array<T, 3>& source_coords) const noexcept {
+    const std::array<T, 3>& source_coords) const {
   return impl_.operator()(source_coords);
 }
 
 std::optional<std::array<double, 3>> CylindricalFlatSide::inverse(
-    const std::array<double, 3>& target_coords) const noexcept {
+    const std::array<double, 3>& target_coords) const {
   return impl_.inverse(target_coords);
 }
 
 template <typename T>
 tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>
-CylindricalFlatSide::jacobian(
-    const std::array<T, 3>& source_coords) const noexcept {
+CylindricalFlatSide::jacobian(const std::array<T, 3>& source_coords) const {
   return impl_.jacobian(source_coords);
 }
 
 template <typename T>
 tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>
-CylindricalFlatSide::inv_jacobian(
-    const std::array<T, 3>& source_coords) const noexcept {
+CylindricalFlatSide::inv_jacobian(const std::array<T, 3>& source_coords) const {
   return impl_.inv_jacobian(source_coords);
 }
 
-void CylindricalFlatSide::pup(PUP::er& p) noexcept { p | impl_; }
+void CylindricalFlatSide::pup(PUP::er& p) { p | impl_; }
 
 bool operator==(const CylindricalFlatSide& lhs,
-                const CylindricalFlatSide& rhs) noexcept {
+                const CylindricalFlatSide& rhs) {
   return lhs.impl_ == rhs.impl_;
 }
 bool operator!=(const CylindricalFlatSide& lhs,
-                const CylindricalFlatSide& rhs) noexcept {
+                const CylindricalFlatSide& rhs) {
   return not(lhs == rhs);
 }
 
@@ -116,13 +114,13 @@ bool operator!=(const CylindricalFlatSide& lhs,
 #define INSTANTIATE(_, data)                                                 \
   template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>               \
   CylindricalFlatSide::operator()(                                           \
-      const std::array<DTYPE(data), 3>& source_coords) const noexcept;       \
+      const std::array<DTYPE(data), 3>& source_coords) const;                \
   template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame> \
   CylindricalFlatSide::jacobian(                                             \
-      const std::array<DTYPE(data), 3>& source_coords) const noexcept;       \
+      const std::array<DTYPE(data), 3>& source_coords) const;                \
   template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame> \
   CylindricalFlatSide::inv_jacobian(                                         \
-      const std::array<DTYPE(data), 3>& source_coords) const noexcept;
+      const std::array<DTYPE(data), 3>& source_coords) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector,
                                       std::reference_wrapper<const double>,

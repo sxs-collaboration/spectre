@@ -19,12 +19,10 @@
 
 namespace RelativisticEuler::Valencia::BoundaryCorrections {
 template <size_t Dim>
-Rusanov<Dim>::Rusanov(CkMigrateMessage* msg) noexcept
-    : BoundaryCorrection<Dim>(msg) {}
+Rusanov<Dim>::Rusanov(CkMigrateMessage* msg) : BoundaryCorrection<Dim>(msg) {}
 
 template <size_t Dim>
-std::unique_ptr<BoundaryCorrection<Dim>> Rusanov<Dim>::get_clone()
-    const noexcept {
+std::unique_ptr<BoundaryCorrection<Dim>> Rusanov<Dim>::get_clone() const {
   return std::make_unique<Rusanov>(*this);
 }
 
@@ -67,7 +65,7 @@ double Rusanov<Dim>::dg_package_data(
     /*mesh_velocity*/,
     const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
-        equation_of_state) const noexcept {
+        equation_of_state) const {
   {
     // First compute v^2 and cs^2, storing them in return arguments to avoid
     // new allocations
@@ -146,7 +144,7 @@ void Rusanov<Dim>::dg_boundary_terms(
     const tnsr::i<DataVector, Dim, Frame::Inertial>&
         normal_dot_flux_tilde_s_ext,
     const Scalar<DataVector>& abs_char_speed_ext,
-    const dg::Formulation dg_formulation) const noexcept {
+    const dg::Formulation dg_formulation) const {
   if (dg_formulation == dg::Formulation::WeakInertial) {
     get(*boundary_correction_tilde_d) =
         0.5 * (get(normal_dot_flux_tilde_d_int) -
@@ -233,7 +231,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
           mesh_velocity,                                                       \
       const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity,       \
       const EquationsOfState::EquationOfState<true, THERMODIM(data)>&          \
-          equation_of_state) const noexcept;
+          equation_of_state) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (1, 2))
 

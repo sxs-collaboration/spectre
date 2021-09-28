@@ -85,22 +85,22 @@ class BondiHoyleAccretion : public MarkAsAnalyticData, public AnalyticDataBase {
   struct BhMass {
     using type = double;
     static constexpr Options::String help = {"The mass of the black hole."};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
   /// The dimensionless black hole spin, \f$a_* = a/M\f$.
   struct BhDimlessSpin {
     using type = double;
     static constexpr Options::String help = {
         "The dimensionless black hole spin."};
-    static type lower_bound() noexcept { return -1.0; }
-    static type upper_bound() noexcept { return 1.0; }
+    static type lower_bound() { return -1.0; }
+    static type upper_bound() { return 1.0; }
   };
   /// The rest mass density of the fluid far from the black hole.
   struct RestMassDensity {
     using type = double;
     static constexpr Options::String help = {
         "The asymptotic rest mass density."};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
   /// The magnitude of the spatial velocity far from the black hole.
   struct FlowSpeed {
@@ -119,14 +119,14 @@ class BondiHoyleAccretion : public MarkAsAnalyticData, public AnalyticDataBase {
     using type = double;
     static constexpr Options::String help = {
         "The polytropic constant of the fluid."};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
   /// The polytropic exponent of the fluid.
   struct PolytropicExponent {
     using type = double;
     static constexpr Options::String help = {
         "The polytropic exponent of the fluid."};
-    static type lower_bound() noexcept { return 1.0; }
+    static type lower_bound() { return 1.0; }
   };
 
   using options =
@@ -139,74 +139,64 @@ class BondiHoyleAccretion : public MarkAsAnalyticData, public AnalyticDataBase {
   BondiHoyleAccretion() = default;
   BondiHoyleAccretion(const BondiHoyleAccretion& /*rhs*/) = delete;
   BondiHoyleAccretion& operator=(const BondiHoyleAccretion& /*rhs*/) = delete;
-  BondiHoyleAccretion(BondiHoyleAccretion&& /*rhs*/) noexcept = default;
-  BondiHoyleAccretion& operator=(BondiHoyleAccretion&& /*rhs*/) noexcept =
-      default;
+  BondiHoyleAccretion(BondiHoyleAccretion&& /*rhs*/) = default;
+  BondiHoyleAccretion& operator=(BondiHoyleAccretion&& /*rhs*/) = default;
   ~BondiHoyleAccretion() = default;
 
   BondiHoyleAccretion(double bh_mass, double bh_dimless_spin,
                       double rest_mass_density, double flow_speed,
                       double magnetic_field_strength,
-                      double polytropic_constant,
-                      double polytropic_exponent) noexcept;
+                      double polytropic_constant, double polytropic_exponent);
 
   /// @{
   /// Retrieve hydro variable at `x`
   template <typename DataType>
-  auto variables(
-      const tnsr::I<DataType, 3>& x,
-      tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/) const
-      noexcept -> tuples::TaggedTuple<hydro::Tags::RestMassDensity<DataType>>;
+  auto variables(const tnsr::I<DataType, 3>& x,
+                 tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/)
+      const -> tuples::TaggedTuple<hydro::Tags::RestMassDensity<DataType>>;
 
   template <typename DataType>
   auto variables(
       const tnsr::I<DataType, 3>& x,
       tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>> /*meta*/) const
-      noexcept
       -> tuples::TaggedTuple<hydro::Tags::SpecificInternalEnergy<DataType>>;
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x,
                  tmpl::list<hydro::Tags::Pressure<DataType>> /*meta*/) const
-      noexcept -> tuples::TaggedTuple<hydro::Tags::Pressure<DataType>>;
+      -> tuples::TaggedTuple<hydro::Tags::Pressure<DataType>>;
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x,
                  tmpl::list<hydro::Tags::SpatialVelocity<DataType, 3>> /*meta*/)
-      const noexcept
-      -> tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, 3>>;
+      const -> tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, 3>>;
 
   template <typename DataType>
-  auto variables(
-      const tnsr::I<DataType, 3>& x,
-      tmpl::list<hydro::Tags::MagneticField<DataType, 3>> /*meta*/) const
-      noexcept -> tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3>>;
+  auto variables(const tnsr::I<DataType, 3>& x,
+                 tmpl::list<hydro::Tags::MagneticField<DataType, 3>> /*meta*/)
+      const -> tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3>>;
 
   template <typename DataType>
   auto variables(
       const tnsr::I<DataType, 3>& x,
       tmpl::list<hydro::Tags::DivergenceCleaningField<DataType>> /*meta*/) const
-      noexcept
       -> tuples::TaggedTuple<hydro::Tags::DivergenceCleaningField<DataType>>;
 
   template <typename DataType>
-  auto variables(
-      const tnsr::I<DataType, 3>& x,
-      tmpl::list<hydro::Tags::LorentzFactor<DataType>> /*meta*/) const noexcept
-      -> tuples::TaggedTuple<hydro::Tags::LorentzFactor<DataType>>;
+  auto variables(const tnsr::I<DataType, 3>& x,
+                 tmpl::list<hydro::Tags::LorentzFactor<DataType>> /*meta*/)
+      const -> tuples::TaggedTuple<hydro::Tags::LorentzFactor<DataType>>;
 
   template <typename DataType>
-  auto variables(
-      const tnsr::I<DataType, 3>& x,
-      tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>> /*meta*/) const
-      noexcept -> tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DataType>>;
+  auto variables(const tnsr::I<DataType, 3>& x,
+                 tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>> /*meta*/)
+      const -> tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DataType>>;
   /// @}
 
   /// Retrieve a collection of hydro variables at `x`
   template <typename DataType, typename... Tags>
   tuples::TaggedTuple<Tags...> variables(const tnsr::I<DataType, 3>& x,
-                                         tmpl::list<Tags...> /*meta*/) const
-      noexcept {
+                                         tmpl::list<Tags...> /*meta*/) const {
     static_assert(sizeof...(Tags) > 1,
                   "The generic template will recurse infinitely if only one "
                   "tag is being retrieved.");
@@ -218,34 +208,33 @@ class BondiHoyleAccretion : public MarkAsAnalyticData, public AnalyticDataBase {
             Requires<not tmpl::list_contains_v<hydro::grmhd_tags<DataType>,
                                                Tag>> = nullptr>
   tuples::TaggedTuple<Tag> variables(const tnsr::I<DataType, 3>& x,
-                                     tmpl::list<Tag> /*meta*/) const noexcept {
+                                     tmpl::list<Tag> /*meta*/) const {
     constexpr double dummy_time = 0.0;
     return {std::move(get<Tag>(background_spacetime_.variables(
         x, dummy_time, gr::Solutions::KerrSchild::tags<DataType>{})))};
   }
 
   // clang-tidy: no runtime references
-  void pup(PUP::er& /*p*/) noexcept;  //  NOLINT
+  void pup(PUP::er& /*p*/);  //  NOLINT
 
-  const EquationsOfState::PolytropicFluid<true>& equation_of_state() const
-      noexcept {
+  const EquationsOfState::PolytropicFluid<true>& equation_of_state() const {
     return equation_of_state_;
   }
 
  private:
   friend bool operator==(const BondiHoyleAccretion& lhs,
-                         const BondiHoyleAccretion& rhs) noexcept;
+                         const BondiHoyleAccretion& rhs);
 
   // compute the spatial velocity in spherical Kerr-Schild coordinates
   template <typename DataType>
   tnsr::I<DataType, 3, Frame::NoFrame> spatial_velocity(
       const DataType& r_squared, const DataType& cos_theta,
-      const DataType& sin_theta) const noexcept;
+      const DataType& sin_theta) const;
   // compute the magnetic field in spherical Kerr-Schild coordinates
   template <typename DataType>
   tnsr::I<DataType, 3, Frame::NoFrame> magnetic_field(
       const DataType& r_squared, const DataType& cos_theta,
-      const DataType& sin_theta) const noexcept;
+      const DataType& sin_theta) const;
 
   double bh_mass_ = std::numeric_limits<double>::signaling_NaN();
   double bh_spin_a_ = std::numeric_limits<double>::signaling_NaN();
@@ -260,8 +249,7 @@ class BondiHoyleAccretion : public MarkAsAnalyticData, public AnalyticDataBase {
   gr::KerrSchildCoords kerr_schild_coords_{};
 };
 
-bool operator!=(const BondiHoyleAccretion& lhs,
-                const BondiHoyleAccretion& rhs) noexcept;
+bool operator!=(const BondiHoyleAccretion& lhs, const BondiHoyleAccretion& rhs);
 
 }  // namespace AnalyticData
 }  // namespace grmhd

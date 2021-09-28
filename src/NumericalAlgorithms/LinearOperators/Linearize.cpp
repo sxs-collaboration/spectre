@@ -18,7 +18,7 @@
 
 template <size_t Dim>
 void linearize(const gsl::not_null<DataVector*> result, const DataVector& u,
-               const Mesh<Dim>& mesh) noexcept {
+               const Mesh<Dim>& mesh) {
   ASSERT(result->size() == u.size(),
          "The size of result passed to linearize must be equal to the size of "
          "u. result.size(): "
@@ -33,7 +33,7 @@ void linearize(const gsl::not_null<DataVector*> result, const DataVector& u,
 }
 
 template <size_t Dim>
-DataVector linearize(const DataVector& u, const Mesh<Dim>& mesh) noexcept {
+DataVector linearize(const DataVector& u, const Mesh<Dim>& mesh) {
   DataVector result(mesh.number_of_grid_points());
   linearize(&result, u, mesh);
   return result;
@@ -41,7 +41,7 @@ DataVector linearize(const DataVector& u, const Mesh<Dim>& mesh) noexcept {
 
 template <size_t Dim>
 void linearize(const gsl::not_null<DataVector*> result, const DataVector& u,
-               const Mesh<Dim>& mesh, const size_t d) noexcept {
+               const Mesh<Dim>& mesh, const size_t d) {
   ASSERT(result->size() == u.size(),
          "The size of result passed to linearize must be equal to the size of "
          "u. result.size(): "
@@ -55,23 +55,23 @@ void linearize(const gsl::not_null<DataVector*> result, const DataVector& u,
 
 template <size_t Dim>
 DataVector linearize(const DataVector& u, const Mesh<Dim>& mesh,
-                     const size_t d) noexcept {
+                     const size_t d) {
   DataVector result(mesh.number_of_grid_points());
   linearize(&result, u, mesh, d);
   return result;
 }
 
 #define GET_DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
-#define INSTANTIATION(r, data)                                                 \
-  template void linearize<GET_DIM(data)>(const gsl::not_null<DataVector*>,     \
-                                         const DataVector&,                    \
-                                         const Mesh<GET_DIM(data)>&) noexcept; \
-  template DataVector linearize<GET_DIM(data)>(                                \
-      const DataVector&, const Mesh<GET_DIM(data)>&) noexcept;                 \
-  template void linearize<GET_DIM(data)>(                                      \
-      const gsl::not_null<DataVector*>, const DataVector&,                     \
-      const Mesh<GET_DIM(data)>&, const size_t);                               \
-  template DataVector linearize<GET_DIM(data)>(                                \
+#define INSTANTIATION(r, data)                                              \
+  template void linearize<GET_DIM(data)>(const gsl::not_null<DataVector*>,  \
+                                         const DataVector&,                 \
+                                         const Mesh<GET_DIM(data)>&);       \
+  template DataVector linearize<GET_DIM(data)>(const DataVector&,           \
+                                               const Mesh<GET_DIM(data)>&); \
+  template void linearize<GET_DIM(data)>(                                   \
+      const gsl::not_null<DataVector*>, const DataVector&,                  \
+      const Mesh<GET_DIM(data)>&, const size_t);                            \
+  template DataVector linearize<GET_DIM(data)>(                             \
       const DataVector&, const Mesh<GET_DIM(data)>&, const size_t);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))

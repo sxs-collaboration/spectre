@@ -25,18 +25,16 @@
 namespace Cce::Solutions {
 
 TeukolskyWave::TeukolskyWave(const double extraction_radius,
-                             const double amplitude,
-                             const double duration) noexcept
+                             const double amplitude, const double duration)
     : SphericalMetricData{extraction_radius},
       amplitude_{amplitude},
       duration_{duration} {}
 
-std::unique_ptr<WorldtubeData> TeukolskyWave::get_clone() const noexcept {
+std::unique_ptr<WorldtubeData> TeukolskyWave::get_clone() const {
   return std::make_unique<TeukolskyWave>(*this);
 }
 
-double TeukolskyWave::pulse_profile_coefficient_a(const double time) const
-    noexcept {
+double TeukolskyWave::pulse_profile_coefficient_a(const double time) const {
   const double retarded_time = time - extraction_radius_;
   return 3.0 * amplitude_ * exp(-square(retarded_time) / square(duration_)) /
          (pow<4>(duration_) * pow<5>(extraction_radius_)) *
@@ -46,8 +44,7 @@ double TeukolskyWave::pulse_profile_coefficient_a(const double time) const
               (extraction_radius_ + 3.0 * retarded_time));
 }
 
-double TeukolskyWave::pulse_profile_coefficient_b(const double time) const
-    noexcept {
+double TeukolskyWave::pulse_profile_coefficient_b(const double time) const {
   const double retarded_time = time - extraction_radius_;
   return 2.0 * amplitude_ * exp(-square(retarded_time) / square(duration_)) /
          (pow<6>(duration_) * pow<5>(extraction_radius_)) *
@@ -59,8 +56,7 @@ double TeukolskyWave::pulse_profile_coefficient_b(const double time) const
               (extraction_radius_ + 2.0 * retarded_time));
 }
 
-double TeukolskyWave::pulse_profile_coefficient_c(const double time) const
-    noexcept {
+double TeukolskyWave::pulse_profile_coefficient_c(const double time) const {
   const double retarded_time = time - extraction_radius_;
   return 0.25 * amplitude_ * exp(-square(retarded_time) / square(duration_)) /
          (pow<8>(duration_) * pow<5>(extraction_radius_)) *
@@ -77,8 +73,7 @@ double TeukolskyWave::pulse_profile_coefficient_c(const double time) const
                3.0 * square(retarded_time)));
 }
 
-double TeukolskyWave::dr_pulse_profile_coefficient_a(const double time) const
-    noexcept {
+double TeukolskyWave::dr_pulse_profile_coefficient_a(const double time) const {
   const double retarded_time = time - extraction_radius_;
   return -dt_pulse_profile_coefficient_a(time) -
          9.0 * amplitude_ * exp(-square(retarded_time) / square(duration_)) /
@@ -89,8 +84,7 @@ double TeukolskyWave::dr_pulse_profile_coefficient_a(const double time) const
                   (extraction_radius_ + 4.0 * retarded_time));
 }
 
-double TeukolskyWave::dr_pulse_profile_coefficient_b(const double time) const
-    noexcept {
+double TeukolskyWave::dr_pulse_profile_coefficient_b(const double time) const {
   const double retarded_time = time - extraction_radius_;
   return -dt_pulse_profile_coefficient_b(time) +
          2.0 * amplitude_ * exp(-square(retarded_time) / square(duration_)) /
@@ -104,8 +98,7 @@ double TeukolskyWave::dr_pulse_profile_coefficient_b(const double time) const
                   (3.0 * extraction_radius_ + 8.0 * retarded_time));
 }
 
-double TeukolskyWave::dr_pulse_profile_coefficient_c(const double time) const
-    noexcept {
+double TeukolskyWave::dr_pulse_profile_coefficient_c(const double time) const {
   const double retarded_time = time - extraction_radius_;
   return -dt_pulse_profile_coefficient_c(time) -
          0.25 * amplitude_ * exp(-square(retarded_time) / square(duration_)) /
@@ -123,8 +116,7 @@ double TeukolskyWave::dr_pulse_profile_coefficient_c(const double time) const
                    9.0 * square(retarded_time)));
 }
 
-double TeukolskyWave::dt_pulse_profile_coefficient_a(const double time) const
-    noexcept {
+double TeukolskyWave::dt_pulse_profile_coefficient_a(const double time) const {
   const double retarded_time = time - extraction_radius_;
   return -2.0 * retarded_time / square(duration_) *
              pulse_profile_coefficient_a(time) +
@@ -134,8 +126,7 @@ double TeukolskyWave::dt_pulse_profile_coefficient_a(const double time) const
               6.0 * square(duration_) * extraction_radius_);
 }
 
-double TeukolskyWave::dt_pulse_profile_coefficient_b(const double time) const
-    noexcept {
+double TeukolskyWave::dt_pulse_profile_coefficient_b(const double time) const {
   const double retarded_time = time - extraction_radius_;
   return -2.0 * retarded_time / square(duration_) *
              pulse_profile_coefficient_b(time) +
@@ -147,8 +138,7 @@ double TeukolskyWave::dt_pulse_profile_coefficient_b(const double time) const
               6.0 * pow<4>(duration_) * extraction_radius_);
 }
 
-double TeukolskyWave::dt_pulse_profile_coefficient_c(const double time) const
-    noexcept {
+double TeukolskyWave::dt_pulse_profile_coefficient_c(const double time) const {
   const double retarded_time = time - extraction_radius_;
   return -2.0 * retarded_time / square(duration_) *
              pulse_profile_coefficient_c(time) +
@@ -163,7 +153,7 @@ double TeukolskyWave::dt_pulse_profile_coefficient_c(const double time) const
                   (2.0 * extraction_radius_ + 6.0 * retarded_time));
 }
 
-DataVector TeukolskyWave::sin_theta(const size_t l_max) noexcept {
+DataVector TeukolskyWave::sin_theta(const size_t l_max) {
   DataVector sin_theta_result{
       Spectral::Swsh::number_of_swsh_collocation_points(l_max)};
   const auto& collocation = Spectral::Swsh::cached_collocation_metadata<
@@ -174,7 +164,7 @@ DataVector TeukolskyWave::sin_theta(const size_t l_max) noexcept {
   return sin_theta_result;
 }
 
-DataVector TeukolskyWave::cos_theta(const size_t l_max) noexcept {
+DataVector TeukolskyWave::cos_theta(const size_t l_max) {
   DataVector cos_theta_result{
       Spectral::Swsh::number_of_swsh_collocation_points(l_max)};
   const auto& collocation = Spectral::Swsh::cached_collocation_metadata<
@@ -189,7 +179,7 @@ void TeukolskyWave::spherical_metric(
     const gsl::not_null<
         tnsr::aa<DataVector, 3, ::Frame::Spherical<::Frame::Inertial>>*>
         spherical_metric,
-    const size_t l_max, const double time) const noexcept {
+    const size_t l_max, const double time) const {
   const auto coefficient_a = pulse_profile_coefficient_a(time);
   const auto coefficient_b = pulse_profile_coefficient_b(time);
   const auto coefficient_c = pulse_profile_coefficient_c(time);
@@ -223,7 +213,7 @@ void TeukolskyWave::dr_spherical_metric(
     const gsl::not_null<
         tnsr::aa<DataVector, 3, ::Frame::Spherical<::Frame::Inertial>>*>
         dr_spherical_metric,
-    const size_t l_max, const double time) const noexcept {
+    const size_t l_max, const double time) const {
   const auto coefficient_a = pulse_profile_coefficient_a(time);
   const auto coefficient_b = pulse_profile_coefficient_b(time);
   const auto coefficient_c = pulse_profile_coefficient_c(time);
@@ -270,7 +260,7 @@ void TeukolskyWave::dt_spherical_metric(
     const gsl::not_null<
         tnsr::aa<DataVector, 3, ::Frame::Spherical<::Frame::Inertial>>*>
         dt_spherical_metric,
-    const size_t l_max, const double time) const noexcept {
+    const size_t l_max, const double time) const {
   const auto dt_coefficient_a = dt_pulse_profile_coefficient_a(time);
   const auto dt_coefficient_b = dt_pulse_profile_coefficient_b(time);
   const auto dt_coefficient_c = dt_pulse_profile_coefficient_c(time);
@@ -302,7 +292,7 @@ void TeukolskyWave::dt_spherical_metric(
 void TeukolskyWave::variables_impl(
     const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, -2>>*> news,
     const size_t l_max, const double time,
-    tmpl::type_<Tags::News> /*meta*/) const noexcept {
+    tmpl::type_<Tags::News> /*meta*/) const {
   const auto local_sin_theta = sin_theta(l_max);
   get(*news).data() =
       -std::complex<double>{6.0, 0.0} * square(local_sin_theta) * amplitude_ *
@@ -313,7 +303,7 @@ void TeukolskyWave::variables_impl(
        4.0 * pow<4>(time - extraction_radius_));
 }
 
-void TeukolskyWave::pup(PUP::er& p) noexcept {
+void TeukolskyWave::pup(PUP::er& p) {
   SphericalMetricData::pup(p);
   p | amplitude_;
   p | duration_;

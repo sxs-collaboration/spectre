@@ -32,7 +32,7 @@
 template <size_t Dim>
 class LeviCivitaIterator {
  public:
-  explicit LeviCivitaIterator() noexcept = default;
+  explicit LeviCivitaIterator() = default;
 
   /// \cond HIDDEN_SYMBOLS
   ~LeviCivitaIterator() = default;
@@ -46,10 +46,10 @@ class LeviCivitaIterator {
   /// \endcond
 
   // Return false if the end of the loop is reached
-  explicit operator bool() const noexcept { return valid_; }
+  explicit operator bool() const { return valid_; }
 
   // Increment the current permutation
-  LeviCivitaIterator& operator++() noexcept {
+  LeviCivitaIterator& operator++() {
     ++permutation_;
     if (permutation_ >= signs_.size()) {
       valid_ = false;
@@ -59,21 +59,21 @@ class LeviCivitaIterator {
 
   /// Return a `std::array` containing the current multi-index, an ordered list
   /// of indices for the current permutation.
-  const std::array<size_t, Dim> operator()() const noexcept {
+  const std::array<size_t, Dim> operator()() const {
     return static_cast<std::array<size_t, Dim>>(indexes_[permutation_]);
   }
 
   /// Return a specific index from the multi-index of the current permutation.
-  const size_t& operator[](const size_t i) const noexcept {
+  const size_t& operator[](const size_t i) const {
     return indexes_[permutation_][i];
   }
 
   /// Return the sign of the Levi-Civita symbol for the current permutation.
-  int sign() const noexcept { return signs_[permutation_]; };
+  int sign() const { return signs_[permutation_]; };
 
  private:
   static constexpr cpp20::array<cpp20::array<size_t, Dim>, factorial(Dim)>
-  indexes() noexcept {
+  indexes() {
     cpp20::array<cpp20::array<size_t, Dim>, factorial(Dim)> indexes{};
     cpp20::array<size_t, Dim> index{};
     cpp2b::iota(index.begin(), index.end(), size_t(0));
@@ -90,7 +90,7 @@ class LeviCivitaIterator {
     return indexes;
   };
 
-  static constexpr cpp20::array<int, factorial(Dim)> signs() noexcept {
+  static constexpr cpp20::array<int, factorial(Dim)> signs() {
     cpp20::array<int, factorial(Dim)> signs{};
     // By construction, the sign of the first permutation is +1
     signs[0] = 1;

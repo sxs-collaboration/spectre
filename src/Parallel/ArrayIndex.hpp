@@ -67,11 +67,11 @@ struct ArrayIndex : public CkArrayIndex {
   ArrayIndex(const ArrayIndex& rhs) = delete;
   ArrayIndex& operator=(const ArrayIndex& rhs) = delete;
 
-  ArrayIndex(ArrayIndex&& /*rhs*/) noexcept = delete;
-  ArrayIndex& operator=(ArrayIndex&& /*rhs*/) noexcept = delete;
+  ArrayIndex(ArrayIndex&& /*rhs*/) = delete;
+  ArrayIndex& operator=(ArrayIndex&& /*rhs*/) = delete;
   ~ArrayIndex() = default;
 
-  const Index& get_index() const noexcept { return *array_index_; }
+  const Index& get_index() const { return *array_index_; }
 
  private:
   Index* array_index_ = nullptr;

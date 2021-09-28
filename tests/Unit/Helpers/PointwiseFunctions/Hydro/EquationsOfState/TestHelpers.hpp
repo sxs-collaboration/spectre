@@ -42,7 +42,7 @@ void check_impl(
     const std::unique_ptr<
         ::EquationsOfState::EquationOfState<IsRelativistic, 1>>& in_eos,
     const std::string& python_function_prefix, const T& used_for_size,
-    const MemberArgs&... member_args) noexcept {
+    const MemberArgs&... member_args) {
   // Bounds for: density
   const std::array<std::pair<double, double>, 1> random_value_bounds{
       {{1.0e-4, 4.0}}};
@@ -51,7 +51,7 @@ void check_impl(
   INFO("Testing "s + (IsRelativistic ? "relativistic"s : "Newtonian"s) +
        " equation of state"s)
   const auto member_args_tuple = std::make_tuple(member_args...);
-  const auto helper = [&](const std::unique_ptr<EoS>& eos) noexcept {
+  const auto helper = [&](const std::unique_ptr<EoS>& eos) {
     // need func variable to work around GCC bug
     Function func{&EoS::pressure_from_density};
     INFO("Testing pressure_from_density...")
@@ -114,7 +114,7 @@ void check_impl(
     const std::unique_ptr<
         ::EquationsOfState::EquationOfState<IsRelativistic, 2>>& in_eos,
     const std::string& python_function_prefix, const T& used_for_size,
-    const MemberArgs&... member_args) noexcept {
+    const MemberArgs&... member_args) {
   // Bounds for: density, specific internal energy
   const std::array<std::pair<double, double>, 2> random_value_bounds{
       {{1.0e-4, 4.0}, {0.0, 1.0e4}}};
@@ -123,7 +123,7 @@ void check_impl(
   INFO("Testing "s + (IsRelativistic ? "relativistic"s : "Newtonian"s) +
        " equation of state"s)
   const auto member_args_tuple = std::make_tuple(member_args...);
-  const auto helper = [&](const std::unique_ptr<EoS>& eos) noexcept {
+  const auto helper = [&](const std::unique_ptr<EoS>& eos) {
     // need func variable to work around GCC bug
     Function func{&EoS::pressure_from_density_and_energy};
     INFO("Testing pressure_from_density_and_energy...")
@@ -198,7 +198,7 @@ void check_impl(
 template <class EosType, class T, class... MemberArgs>
 void check(std::unique_ptr<EosType> in_eos,
            const std::string& python_function_prefix, const T& used_for_size,
-           const MemberArgs&... member_args) noexcept {
+           const MemberArgs&... member_args) {
   detail::check_impl(std::unique_ptr<::EquationsOfState::EquationOfState<
                          EosType::is_relativistic, EosType::thermodynamic_dim>>(
                          std::move(in_eos)),
@@ -207,7 +207,7 @@ void check(std::unique_ptr<EosType> in_eos,
 
 template <class EosType, class T, class... MemberArgs>
 void check(EosType in_eos, const std::string& python_function_prefix,
-           const T& used_for_size, const MemberArgs&... member_args) noexcept {
+           const T& used_for_size, const MemberArgs&... member_args) {
   detail::check_impl(std::unique_ptr<::EquationsOfState::EquationOfState<
                          EosType::is_relativistic, EosType::thermodynamic_dim>>(
                          std::make_unique<EosType>(std::move(in_eos))),

@@ -25,8 +25,7 @@
 namespace domain::CoordinateMaps::FocallyLiftedInnerMaps {
 
 FlatSide::FlatSide(const std::array<double, 3>& center,
-                   const double inner_radius,
-                   const double outer_radius) noexcept
+                   const double inner_radius, const double outer_radius)
     : center_(center),
       inner_radius_(inner_radius),
       outer_radius_(outer_radius) {
@@ -45,7 +44,7 @@ template <typename T>
 void FlatSide::forward_map(
     const gsl::not_null<std::array<tt::remove_cvref_wrap_t<T>, 3>*>
         target_coords,
-    const std::array<T, 3>& source_coords) const noexcept {
+    const std::array<T, 3>& source_coords) const {
   using ReturnType = tt::remove_cvref_wrap_t<T>;
   const ReturnType& xbar = source_coords[0];
   const ReturnType& ybar = source_coords[1];
@@ -67,7 +66,7 @@ template <typename T>
 void FlatSide::jacobian(const gsl::not_null<tnsr::Ij<tt::remove_cvref_wrap_t<T>,
                                                      3, Frame::NoFrame>*>
                             jacobian_out,
-                        const std::array<T, 3>& source_coords) const noexcept {
+                        const std::array<T, 3>& source_coords) const {
   using ReturnType = tt::remove_cvref_wrap_t<T>;
   const ReturnType& xbar = source_coords[0];
   const ReturnType& ybar = source_coords[1];
@@ -108,7 +107,7 @@ void FlatSide::inv_jacobian(
     const gsl::not_null<
         tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>*>
         inv_jacobian_out,
-    const std::array<T, 3>& source_coords) const noexcept {
+    const std::array<T, 3>& source_coords) const {
   using ReturnType = tt::remove_cvref_wrap_t<T>;
   const ReturnType& xbar = source_coords[0];
   const ReturnType& ybar = source_coords[1];
@@ -149,8 +148,7 @@ void FlatSide::inv_jacobian(
 }
 
 std::optional<std::array<double, 3>> FlatSide::inverse(
-    const std::array<double, 3>& target_coords,
-    const double sigma_in) const noexcept {
+    const std::array<double, 3>& target_coords, const double sigma_in) const {
   const double x = (target_coords[0] - center_[0]);
   const double y = (target_coords[1] - center_[1]);
   const double rho = sqrt(square(x) + square(y));
@@ -175,7 +173,7 @@ std::optional<std::array<double, 3>> FlatSide::inverse(
 
 template <typename T>
 void FlatSide::sigma(const gsl::not_null<tt::remove_cvref_wrap_t<T>*> sigma_out,
-                     const std::array<T, 3>& source_coords) const noexcept {
+                     const std::array<T, 3>& source_coords) const {
   *sigma_out = 0.5 * (source_coords[2] + 1.0);
 }
 
@@ -183,7 +181,7 @@ template <typename T>
 void FlatSide::deriv_sigma(
     const gsl::not_null<std::array<tt::remove_cvref_wrap_t<T>, 3>*>
         deriv_sigma_out,
-    const std::array<T, 3>& source_coords) const noexcept {
+    const std::array<T, 3>& source_coords) const {
   using ReturnType = tt::remove_cvref_wrap_t<T>;
   if constexpr (not std::is_same<ReturnType, double>::value) {
     destructive_resize_components(
@@ -198,7 +196,7 @@ template <typename T>
 void FlatSide::dxbar_dsigma(
     const gsl::not_null<std::array<tt::remove_cvref_wrap_t<T>, 3>*>
         dxbar_dsigma_out,
-    const std::array<T, 3>& source_coords) const noexcept {
+    const std::array<T, 3>& source_coords) const {
   using ReturnType = tt::remove_cvref_wrap_t<T>;
   if constexpr (not std::is_same<ReturnType, double>::value) {
     destructive_resize_components(
@@ -212,7 +210,7 @@ void FlatSide::dxbar_dsigma(
 std::optional<double> FlatSide::lambda_tilde(
     const std::array<double, 3>& parent_mapped_target_coords,
     const std::array<double, 3>& projection_point,
-    const bool /*source_is_between_focus_and_target*/) const noexcept {
+    const bool /*source_is_between_focus_and_target*/) const {
   const double result = (center_[2] - projection_point[2]) /
                         (parent_mapped_target_coords[2] - projection_point[2]);
   if (result < 1.0) {
@@ -226,7 +224,7 @@ void FlatSide::deriv_lambda_tilde(
     const gsl::not_null<std::array<tt::remove_cvref_wrap_t<T>, 3>*>
         deriv_lambda_tilde_out,
     const std::array<T, 3>& target_coords, const T& lambda_tilde,
-    const std::array<double, 3>& projection_point) const noexcept {
+    const std::array<double, 3>& projection_point) const {
   using ReturnType = tt::remove_cvref_wrap_t<T>;
   if constexpr (not std::is_same<ReturnType, double>::value) {
     destructive_resize_components(
@@ -239,19 +237,19 @@ void FlatSide::deriv_lambda_tilde(
       -square(lambda_tilde) / (center_[2] - projection_point[2]);
 }
 
-void FlatSide::pup(PUP::er& p) noexcept {
+void FlatSide::pup(PUP::er& p) {
   p | center_;
   p | inner_radius_;
   p | outer_radius_;
 }
 
-bool operator==(const FlatSide& lhs, const FlatSide& rhs) noexcept {
+bool operator==(const FlatSide& lhs, const FlatSide& rhs) {
   return lhs.center_ == rhs.center_ and
          lhs.inner_radius_ == rhs.inner_radius_ and
          lhs.outer_radius_ == rhs.outer_radius_;
 }
 
-bool operator!=(const FlatSide& lhs, const FlatSide& rhs) noexcept {
+bool operator!=(const FlatSide& lhs, const FlatSide& rhs) {
   return not(lhs == rhs);
 }
 // Explicit instantiations
@@ -262,37 +260,37 @@ bool operator!=(const FlatSide& lhs, const FlatSide& rhs) noexcept {
       const gsl::not_null<                                                    \
           std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>*>               \
           target_coords,                                                      \
-      const std::array<DTYPE(data), 3>& source_coords) const noexcept;        \
+      const std::array<DTYPE(data), 3>& source_coords) const;                 \
   template void FlatSide::jacobian(                                           \
       const gsl::not_null<                                                    \
           tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame>*> \
           jacobian_out,                                                       \
-      const std::array<DTYPE(data), 3>& source_coords) const noexcept;        \
+      const std::array<DTYPE(data), 3>& source_coords) const;                 \
   template void FlatSide::inv_jacobian(                                       \
       const gsl::not_null<                                                    \
           tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame>*> \
           inv_jacobian_out,                                                   \
-      const std::array<DTYPE(data), 3>& source_coords) const noexcept;        \
+      const std::array<DTYPE(data), 3>& source_coords) const;                 \
   template void FlatSide::sigma(                                              \
       const gsl::not_null<tt::remove_cvref_wrap_t<DTYPE(data)>*> sigma_out,   \
-      const std::array<DTYPE(data), 3>& source_coords) const noexcept;        \
+      const std::array<DTYPE(data), 3>& source_coords) const;                 \
   template void FlatSide::deriv_sigma(                                        \
       const gsl::not_null<                                                    \
           std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>*>               \
           deriv_sigma_out,                                                    \
-      const std::array<DTYPE(data), 3>& source_coords) const noexcept;        \
+      const std::array<DTYPE(data), 3>& source_coords) const;                 \
   template void FlatSide::dxbar_dsigma(                                       \
       const gsl::not_null<                                                    \
           std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>*>               \
           dxbar_dsigma_out,                                                   \
-      const std::array<DTYPE(data), 3>& source_coords) const noexcept;        \
+      const std::array<DTYPE(data), 3>& source_coords) const;                 \
   template void FlatSide::deriv_lambda_tilde(                                 \
       const gsl::not_null<                                                    \
           std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>*>               \
           deriv_lambda_tilde_out,                                             \
       const std::array<DTYPE(data), 3>& target_coords,                        \
       const DTYPE(data) & lambda_tilde,                                       \
-      const std::array<double, 3>& projection_point) const noexcept;
+      const std::array<double, 3>& projection_point) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector,
                                       std::reference_wrapper<const double>,

@@ -19,8 +19,7 @@
 namespace Spectral::Swsh {
 
 template <ComplexRepresentation Representation>
-CollocationMetadata<Representation>::CollocationMetadata(
-    const size_t l_max) noexcept
+CollocationMetadata<Representation>::CollocationMetadata(const size_t l_max)
     : l_max_{l_max} {
   sharp_geom_info* geometry_to_initialize = nullptr;
   sharp_make_gauss_geom_info(
@@ -32,8 +31,7 @@ CollocationMetadata<Representation>::CollocationMetadata(
 }
 
 template <ComplexRepresentation Representation>
-double CollocationMetadata<Representation>::theta(const size_t offset) const
-    noexcept {
+double CollocationMetadata<Representation>::theta(const size_t offset) const {
   ASSERT(offset < (2 * l_max_ + 1) * (l_max_ + 1),
          "invalid offset " << offset
                            << " passed to phi lookup. Must be less than (2 * "
@@ -52,8 +50,7 @@ double CollocationMetadata<Representation>::theta(const size_t offset) const
 }
 
 template <ComplexRepresentation Representation>
-double CollocationMetadata<Representation>::phi(const size_t offset) const
-    noexcept {
+double CollocationMetadata<Representation>::phi(const size_t offset) const {
   ASSERT(offset < (2 * l_max_ + 1) * (l_max_ + 1),
          "invalid offset " << offset
                            << " passed to phi lookup. Must be less than (2 * "
@@ -64,10 +61,10 @@ double CollocationMetadata<Representation>::phi(const size_t offset) const
 
 template <ComplexRepresentation Representation>
 const CollocationMetadata<Representation>& cached_collocation_metadata(
-    const size_t l_max) noexcept {
+    const size_t l_max) {
   const static auto lazy_collocation_cache =
       make_static_cache<CacheRange<0_st, collocation_maximum_l_max>>(
-          [](const size_t generator_l_max) noexcept {
+          [](const size_t generator_l_max) {
             return CollocationMetadata<Representation>{generator_l_max};
           });
   return lazy_collocation_cache(l_max);
@@ -77,8 +74,8 @@ template class CollocationMetadata<ComplexRepresentation::Interleaved>;
 template class CollocationMetadata<ComplexRepresentation::RealsThenImags>;
 
 template const CollocationMetadata<ComplexRepresentation::Interleaved>&
-cached_collocation_metadata(const size_t l_max) noexcept;
+cached_collocation_metadata(const size_t l_max);
 template const CollocationMetadata<ComplexRepresentation::RealsThenImags>&
-cached_collocation_metadata(const size_t l_max) noexcept;
+cached_collocation_metadata(const size_t l_max);
 
 }  // namespace Spectral::Swsh

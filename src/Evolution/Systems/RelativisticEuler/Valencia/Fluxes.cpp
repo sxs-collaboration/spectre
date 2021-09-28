@@ -30,7 +30,7 @@ void fluxes_impl(
     const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, Dim, Frame::Inertial>& shift,
     const tnsr::I<DataVector, Dim, Frame::Inertial>& spatial_velocity,
-    const DataVector& p_alpha_sqrt_det_g) noexcept {
+    const DataVector& p_alpha_sqrt_det_g) {
   for (size_t i = 0; i < Dim; ++i) {
     *transport_velocity_I = get(lapse) * spatial_velocity.get(i) - shift.get(i);
     tilde_d_flux->get(i) = get(tilde_d) * *transport_velocity_I;
@@ -58,8 +58,7 @@ void ComputeFluxes<Dim>::apply(
     const tnsr::I<DataVector, Dim, Frame::Inertial>& shift,
     const Scalar<DataVector>& sqrt_det_spatial_metric,
     const Scalar<DataVector>& pressure,
-    const tnsr::I<DataVector, Dim, Frame::Inertial>&
-        spatial_velocity) noexcept {
+    const tnsr::I<DataVector, Dim, Frame::Inertial>& spatial_velocity) {
   const DataVector p_alpha_sqrt_det_g =
       get(sqrt_det_spatial_metric) * get(lapse) * get(pressure);
   // Outside the loop to save allocations
@@ -87,7 +86,7 @@ void ComputeFluxes<Dim>::apply(
       const Scalar<DataVector>& lapse,                                         \
       const tnsr::I<DataVector, DIM(data), Frame::Inertial>& shift,            \
       const tnsr::I<DataVector, DIM(data), Frame::Inertial>& spatial_velocity, \
-      const DataVector& p_alpha_sqrt_det_g) noexcept;
+      const DataVector& p_alpha_sqrt_det_g);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 

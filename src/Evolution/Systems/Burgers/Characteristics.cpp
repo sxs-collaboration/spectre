@@ -14,9 +14,8 @@
 
 namespace Burgers::Tags {
 void CharacteristicSpeedsCompute::function(
-    const gsl::not_null<return_type*> result,
-    const Scalar<DataVector>& u,
-    const tnsr::i<DataVector, 1>& normal) noexcept {
+    const gsl::not_null<return_type*> result, const Scalar<DataVector>& u,
+    const tnsr::i<DataVector, 1>& normal) {
   ASSERT(get(u).size() == 1 and get<0>(normal).size() == 1,
          "Char speeds only written for 1d boundaries.  "
          "Got wrong number of points: "
@@ -25,8 +24,7 @@ void CharacteristicSpeedsCompute::function(
 }
 
 void ComputeLargestCharacteristicSpeed::function(
-    const gsl::not_null<double*> speed,
-    const Scalar<DataVector>& u) noexcept {
+    const gsl::not_null<double*> speed, const Scalar<DataVector>& u) {
   *speed = max(abs(get(u)));
 }
 }  // namespace Burgers::Tags

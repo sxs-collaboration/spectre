@@ -26,8 +26,7 @@ namespace MakeWithValueImpls {
 template <typename T, typename = std::nullptr_t>
 struct NumberOfPoints {
   /// The default implementation will produce a compile-time error.
-  [[noreturn]] static SPECTRE_ALWAYS_INLINE size_t
-  apply(const T& /*input*/) noexcept {
+  [[noreturn]] static SPECTRE_ALWAYS_INLINE size_t apply(const T& /*input*/) {
     static_assert(typename tmpl::has_type<T, std::false_type>::type{},
                   "Do not know how to obtain a size from this type.  Either "
                   "implement NumberOfPoints or specialize MakeWithValueImpl "
@@ -37,7 +36,7 @@ struct NumberOfPoints {
 
 /// The number of points represented by an object.
 template <typename T>
-size_t number_of_points(const T& input) noexcept {
+size_t number_of_points(const T& input) {
   return NumberOfPoints<T>::apply(input);
 }
 
@@ -51,8 +50,8 @@ struct MakeWithSize {
   /// The default implementation will produce a compile-time error.
   /// In specializations, the \p value parameter need not be a template.
   template <typename T>
-  [[noreturn]] static SPECTRE_ALWAYS_INLINE R
-  apply(const size_t /*size*/, const T& /*value*/) noexcept {
+  [[noreturn]] static SPECTRE_ALWAYS_INLINE R apply(const size_t /*size*/,
+                                                    const T& /*value*/) {
     static_assert(typename tmpl::has_type<R, std::false_type>::type{},
                   "Do not know how to create a sized object of this type.  "
                   "Either implement MakeWithSize or specialize "
@@ -64,8 +63,7 @@ template <typename R, typename T, typename = std::nullptr_t>
 struct MakeWithValueImpl {
   /// The default implementation uses \ref number_of_points and MakeWithSize.
   template <typename ValueType>
-  static SPECTRE_ALWAYS_INLINE R apply(const T& input,
-                                       const ValueType value) noexcept {
+  static SPECTRE_ALWAYS_INLINE R apply(const T& input, const ValueType value) {
     return MakeWithSize<R>::apply(number_of_points(input), value);
   }
 };
@@ -86,7 +84,7 @@ struct MakeWithValueImpl {
 /// \see MakeWithValueImpls
 template <typename R, typename T, typename ValueType>
 SPECTRE_ALWAYS_INLINE std::remove_const_t<R> make_with_value(
-    const T& input, const ValueType& value) noexcept {
+    const T& input, const ValueType& value) {
   return MakeWithValueImpls::MakeWithValueImpl<std::remove_const_t<R>,
                                                T>::apply(input, value);
 }
@@ -94,7 +92,7 @@ SPECTRE_ALWAYS_INLINE std::remove_const_t<R> make_with_value(
 namespace MakeWithValueImpls {
 template <>
 struct NumberOfPoints<size_t> {
-  static SPECTRE_ALWAYS_INLINE size_t apply(const size_t& input) noexcept {
+  static SPECTRE_ALWAYS_INLINE size_t apply(const size_t& input) {
     return input;
   }
 };
@@ -103,7 +101,7 @@ struct NumberOfPoints<size_t> {
 template <typename T>
 struct MakeWithValueImpl<double, T> {
   static SPECTRE_ALWAYS_INLINE double apply(const T& /* input */,
-                                            const double value) noexcept {
+                                            const double value) {
     return value;
   }
 };
@@ -111,7 +109,7 @@ struct MakeWithValueImpl<double, T> {
 template <typename T>
 struct MakeWithValueImpl<std::complex<double>, T> {
   static SPECTRE_ALWAYS_INLINE std::complex<double> apply(
-      const T& /* input */, const std::complex<double> value) noexcept {
+      const T& /* input */, const std::complex<double> value) {
     return value;
   }
 };
@@ -122,7 +120,7 @@ template <size_t Size, typename T, typename InputType>
 struct MakeWithValueImpl<std::array<T, Size>, InputType> {
   template <typename ValueType>
   static SPECTRE_ALWAYS_INLINE std::array<T, Size> apply(
-      const InputType& input, const ValueType value) noexcept {
+      const InputType& input, const ValueType value) {
     return make_array<Size>(make_with_value<T>(input, value));
   }
 };
@@ -133,7 +131,7 @@ template <typename... Tags, typename T>
 struct MakeWithValueImpl<tuples::TaggedTuple<Tags...>, T> {
   template <typename ValueType>
   static SPECTRE_ALWAYS_INLINE tuples::TaggedTuple<Tags...> apply(
-      const T& input, const ValueType value) noexcept {
+      const T& input, const ValueType value) {
     return tuples::TaggedTuple<Tags...>(
         make_with_value<typename Tags::type>(input, value)...);
   }

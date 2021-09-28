@@ -16,11 +16,10 @@ class Test_GlobalCache : public CBase_Test_GlobalCache<Metavariables> {
  public:
   /// \cond HIDDEN_SYMBOLS
   /// The constructor used to register the class
-  explicit Test_GlobalCache(const
-  Parallel::charmxx::MainChareRegistrationConstructor& /*used 4 registration*/)
-    noexcept {
-  }
-  ~Test_GlobalCache() noexcept override {
+  explicit Test_GlobalCache(
+      const Parallel::charmxx::
+          MainChareRegistrationConstructor& /*used 4 registration*/) {}
+  ~Test_GlobalCache() override {
     (void)Parallel::charmxx::RegisterChare<
         Test_GlobalCache<Metavariables>,
         CkIndex_Test_GlobalCache<Metavariables>>::registrar;
@@ -31,12 +30,12 @@ class Test_GlobalCache : public CBase_Test_GlobalCache<Metavariables> {
   Test_GlobalCache& operator=(Test_GlobalCache&&) = default;
   /// \endcond
 
-  explicit Test_GlobalCache(CkArgMsg* msg) noexcept;
+  explicit Test_GlobalCache(CkArgMsg* msg);
   explicit Test_GlobalCache(CkMigrateMessage* /*msg*/) {}
 
-  void exit_if_done(int index) noexcept;
+  void exit_if_done(int index);
 
-  void run_single_core_test() noexcept;
+  void run_single_core_test();
 
  private:
   Parallel::CProxy_MutableGlobalCache<Metavariables>
@@ -55,7 +54,7 @@ class TestArrayChare : public CBase_TestArrayChare<Metavariables> {
       : main_proxy_(std::move(main_proxy)),
         global_cache_proxy_(std::move(global_cache_proxy)) {}
   explicit TestArrayChare(CkMigrateMessage* /*msg*/) {}
-  ~TestArrayChare() noexcept override {
+  ~TestArrayChare() override {
     (void)Parallel::charmxx::RegisterChare<
         TestArrayChare<Metavariables>,
         CkIndex_TestArrayChare<Metavariables>>::registrar;
@@ -65,11 +64,11 @@ class TestArrayChare : public CBase_TestArrayChare<Metavariables> {
   TestArrayChare(TestArrayChare&&) = default;
   TestArrayChare& operator=(TestArrayChare&&) = default;
 
-  void run_test_one() noexcept;
-  void run_test_two() noexcept;
-  void run_test_three() noexcept;
-  void run_test_four() noexcept;
-  void run_test_five() noexcept;
+  void run_test_one();
+  void run_test_two();
+  void run_test_three();
+  void run_test_four();
+  void run_test_five();
 
  private:
   CProxy_Test_GlobalCache<Metavariables> main_proxy_;

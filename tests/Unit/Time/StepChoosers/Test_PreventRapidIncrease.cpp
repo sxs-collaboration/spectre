@@ -52,8 +52,7 @@ struct Metavariables {
   using component_list = tmpl::list<>;
 };
 
-void check_case(const Frac& expected_frac,
-                const std::vector<Frac>& times) noexcept {
+void check_case(const Frac& expected_frac, const std::vector<Frac>& times) {
   CAPTURE(times);
   CAPTURE(expected_frac);
 
@@ -67,8 +66,7 @@ void check_case(const Frac& expected_frac,
   for (const auto& direction : {1, -1}) {
     CAPTURE(direction);
 
-    const auto make_time_id =
-        [&direction, &slab, &times](const size_t i) noexcept {
+    const auto make_time_id = [&direction, &slab, &times](const size_t i) {
       Frac frac = -direction * times[i];
       int64_t slab_number = 0;
       Slab time_slab = slab;
@@ -93,8 +91,7 @@ void check_case(const Frac& expected_frac,
     typename history_tag::type lts_history{};
     typename history_tag::type gts_history{};
 
-    const auto make_gts_time_id =
-        [&direction, &make_time_id](const size_t i) noexcept {
+    const auto make_gts_time_id = [&direction, &make_time_id](const size_t i) {
       const double time = make_time_id(i).substep_time().value();
       const double next_time =
           i > 0 ? make_time_id(i - 1).substep_time().value() : time + direction;
@@ -108,8 +105,7 @@ void check_case(const Frac& expected_frac,
       gts_history.insert_initial(make_gts_time_id(i), nullptr);
     }
 
-    const auto check =
-        [&cache, &expected](auto box, const Time& current_time) noexcept {
+    const auto check = [&cache, &expected](auto box, const Time& current_time) {
       const auto& history = db::get<history_tag>(box);
       const double current_step =
           history.size() > 0 ? abs(current_time - history.back()).value()

@@ -113,7 +113,7 @@ struct Metavariables {
 };
 
 template <size_t Dim, bool UseRollon>
-void test(const gsl::not_null<std::mt19937*> generator) noexcept {
+void test(const gsl::not_null<std::mt19937*> generator) {
   CAPTURE(Dim);
   CAPTURE(UseRollon);
   using metavars = Metavariables<Dim, UseRollon>;
@@ -395,7 +395,7 @@ void test(const gsl::not_null<std::mt19937*> generator) noexcept {
 }
 
 template <bool UseRollon>
-void test_create_from_options() noexcept {
+void test_create_from_options() {
   std::string options =
       "      SpatialDecayWidth : 50.\n"
       "      Amplitudes : [1.0, 1.0, 1.0]\n"

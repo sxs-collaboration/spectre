@@ -47,9 +47,9 @@ struct SufficientDecrease {
   using type = double;
   static constexpr Options::String help = {
       "Fraction of decrease predicted by linearization"};
-  static type lower_bound() noexcept { return 0.; }
-  static type upper_bound() noexcept { return 1.; }
-  static type suggested_value() noexcept { return 1.e-4; }
+  static type lower_bound() { return 0.; }
+  static type upper_bound() { return 1.; }
+  static type suggested_value() { return 1.e-4; }
   using group = OptionsGroup;
 };
 
@@ -66,9 +66,9 @@ struct DampingFactor {
   using type = double;
   static constexpr Options::String help = {
       "Multiply corrections by this factor"};
-  static type lower_bound() noexcept { return 0.; }
-  static type upper_bound() noexcept { return 1.; }
-  static type suggested_value() noexcept { return 1.; }
+  static type lower_bound() { return 0.; }
+  static type upper_bound() { return 1.; }
+  static type suggested_value() { return 1.; }
   using group = OptionsGroup;
 };
 
@@ -86,7 +86,7 @@ struct MaxGlobalizationSteps {
   using type = size_t;
   static constexpr Options::String help = {
       "Maximum number of globalization steps"};
-  static type suggested_value() noexcept { return 40; }
+  static type suggested_value() { return 40; }
   using group = OptionsGroup;
 };
 
@@ -125,7 +125,7 @@ struct Correction : db::PrefixTag, db::SimpleTag {
  */
 template <typename Tag>
 struct OperatorAppliedTo : db::PrefixTag, db::SimpleTag {
-  static std::string name() noexcept {
+  static std::string name() {
     // Add "Nonlinear" prefix to abbreviate the namespace for uniqueness
     return "NonlinearOperatorAppliedTo(" + db::tag_name<Tag>() + ")";
   }
@@ -139,7 +139,7 @@ struct OperatorAppliedTo : db::PrefixTag, db::SimpleTag {
  */
 template <typename Tag>
 struct Residual : db::PrefixTag, db::SimpleTag {
-  static std::string name() noexcept {
+  static std::string name() {
     // Add "Nonlinear" prefix to abbreviate the namespace for uniqueness
     return "NonlinearResidual(" + db::tag_name<Tag>() + ")";
   }
@@ -161,7 +161,7 @@ struct ResidualCompute : db::add_tag_prefix<Residual, FieldsTag>,
       const gsl::not_null<return_type*> residual,
       const typename SourceTag::type& source,
       const typename db::add_tag_prefix<OperatorAppliedTo, FieldsTag>::type&
-          operator_applied_to_fields) noexcept {
+          operator_applied_to_fields) {
     *residual = source - operator_applied_to_fields;
   }
 };
@@ -180,7 +180,7 @@ struct ResidualCompute : db::add_tag_prefix<Residual, FieldsTag>,
  */
 template <typename OptionsGroup>
 struct StepLength : db::SimpleTag {
-  static std::string name() noexcept {
+  static std::string name() {
     return "StepLength(" + Options::name<OptionsGroup>() + ")";
   }
   using type = double;
@@ -193,7 +193,7 @@ struct StepLength : db::SimpleTag {
  */
 template <typename OptionsGroup>
 struct SufficientDecrease : db::SimpleTag {
-  static std::string name() noexcept {
+  static std::string name() {
     return "SufficientDecrease(" + Options::name<OptionsGroup>() + ")";
   }
   using type = double;
@@ -209,7 +209,7 @@ struct SufficientDecrease : db::SimpleTag {
  */
 template <typename OptionsGroup>
 struct DampingFactor : db::SimpleTag {
-  static std::string name() noexcept {
+  static std::string name() {
     return "DampingFactor(" + Options::name<OptionsGroup>() + ")";
   }
   using type = double;
@@ -225,7 +225,7 @@ struct DampingFactor : db::SimpleTag {
  */
 template <typename OptionsGroup>
 struct MaxGlobalizationSteps : db::SimpleTag {
-  static std::string name() noexcept {
+  static std::string name() {
     return "MaxGlobalizationSteps(" + Options::name<OptionsGroup>() + ")";
   }
   using type = size_t;

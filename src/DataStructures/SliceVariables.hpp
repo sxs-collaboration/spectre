@@ -31,7 +31,7 @@ template <std::size_t VolumeDim, typename TagsList>
 void data_on_slice(const gsl::not_null<Variables<TagsList>*> interface_vars,
                    const Variables<TagsList>& vars,
                    const Index<VolumeDim>& element_extents,
-                   const size_t sliced_dim, const size_t fixed_index) noexcept {
+                   const size_t sliced_dim, const size_t fixed_index) {
   const size_t interface_grid_points =
       element_extents.slice_away(sliced_dim).product();
   const size_t volume_grid_points = vars.number_of_grid_points();
@@ -58,7 +58,7 @@ template <std::size_t VolumeDim, typename TagsList>
 Variables<TagsList> data_on_slice(const Variables<TagsList>& vars,
                                   const Index<VolumeDim>& element_extents,
                                   const size_t sliced_dim,
-                                  const size_t fixed_index) noexcept {
+                                  const size_t fixed_index) {
   Variables<TagsList> interface_vars(
       element_extents.slice_away(sliced_dim).product());
   data_on_slice(make_not_null(&interface_vars), vars, element_extents,
@@ -83,7 +83,7 @@ void add_slice_to_data(
     const gsl::not_null<Variables<tmpl::list<VolumeTags...>>*> volume_vars,
     const Variables<tmpl::list<SliceTags...>>& vars_on_slice,
     const Index<VolumeDim>& extents, const size_t sliced_dim,
-    const size_t fixed_index) noexcept {
+    const size_t fixed_index) {
   static_assert((std::is_same_v<db::remove_all_prefixes<VolumeTags>,
                                 db::remove_all_prefixes<SliceTags>> and
                  ...));

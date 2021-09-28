@@ -23,7 +23,7 @@ template <size_t Dim, bool IsRelativistic>
 SmoothFlow<Dim, IsRelativistic>::SmoothFlow(
     const std::array<double, Dim>& mean_velocity,
     const std::array<double, Dim>& wavevector, const double pressure,
-    const double adiabatic_index, const double perturbation_size) noexcept
+    const double adiabatic_index, const double perturbation_size)
     : mean_velocity_(mean_velocity),
       wavevector_(wavevector),
       pressure_(pressure),
@@ -34,11 +34,10 @@ SmoothFlow<Dim, IsRelativistic>::SmoothFlow(
       equation_of_state_{adiabatic_index_} {}
 
 template <size_t Dim, bool IsRelativistic>
-SmoothFlow<Dim, IsRelativistic>::SmoothFlow(
-    CkMigrateMessage* /*unused*/) noexcept {}
+SmoothFlow<Dim, IsRelativistic>::SmoothFlow(CkMigrateMessage* /*unused*/) {}
 
 template <size_t Dim, bool IsRelativistic>
-void SmoothFlow<Dim, IsRelativistic>::pup(PUP::er& p) noexcept {
+void SmoothFlow<Dim, IsRelativistic>::pup(PUP::er& p) {
   p | mean_velocity_;
   p | wavevector_;
   p | pressure_;
@@ -51,7 +50,7 @@ void SmoothFlow<Dim, IsRelativistic>::pup(PUP::er& p) noexcept {
 template <size_t Dim, bool IsRelativistic>
 template <typename DataType>
 DataType SmoothFlow<Dim, IsRelativistic>::k_dot_x_minus_vt(
-    const tnsr::I<DataType, Dim>& x, const double t) const noexcept {
+    const tnsr::I<DataType, Dim>& x, const double t) const {
   auto result = make_with_value<DataType>(x, -k_dot_v_ * t);
   for (size_t i = 0; i < Dim; i++) {
     result += gsl::at(wavevector_, i) * x.get(i);
@@ -65,8 +64,7 @@ template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::RestMassDensity<DataType>>
 SmoothFlow<Dim, IsRelativistic>::variables(
     const tnsr::I<DataType, Dim>& x, double t,
-    tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/)
-    const noexcept {
+    tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/) const {
   const DataType phase = k_dot_x_minus_vt(x, t);
   return {Scalar<DataType>{DataType{1.0 + perturbation_size_ * sin(phase)}}};
 }
@@ -76,8 +74,7 @@ template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::SpecificInternalEnergy<DataType>>
 SmoothFlow<Dim, IsRelativistic>::variables(
     const tnsr::I<DataType, Dim>& x, double t,
-    tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>> /*meta*/)
-    const noexcept {
+    tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>> /*meta*/) const {
   const DataType phase = k_dot_x_minus_vt(x, t);
   return {
       Scalar<DataType>{pressure_ / ((adiabatic_index_ - 1.0) *
@@ -89,7 +86,7 @@ template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::Pressure<DataType>>
 SmoothFlow<Dim, IsRelativistic>::variables(
     const tnsr::I<DataType, Dim>& x, double /*t*/,
-    tmpl::list<hydro::Tags::Pressure<DataType>> /*meta*/) const noexcept {
+    tmpl::list<hydro::Tags::Pressure<DataType>> /*meta*/) const {
   return {make_with_value<Scalar<DataType>>(x, pressure_)};
 }
 
@@ -98,8 +95,7 @@ template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, Dim>>
 SmoothFlow<Dim, IsRelativistic>::variables(
     const tnsr::I<DataType, Dim>& x, double /*t*/,
-    tmpl::list<hydro::Tags::SpatialVelocity<DataType, Dim>> /*meta*/)
-    const noexcept {
+    tmpl::list<hydro::Tags::SpatialVelocity<DataType, Dim>> /*meta*/) const {
   auto result = make_with_value<tnsr::I<DataType, Dim>>(x, 0.0);
   for (size_t i = 0; i < Dim; ++i) {
     result.get(i) = gsl::at(mean_velocity_, i);
@@ -113,7 +109,7 @@ template <typename DataType, bool LocalIsRelativistic,
 tuples::TaggedTuple<hydro::Tags::LorentzFactor<DataType>>
 SmoothFlow<Dim, IsRelativistic>::variables(
     const tnsr::I<DataType, Dim>& x, double /*t*/,
-    tmpl::list<hydro::Tags::LorentzFactor<DataType>> /*meta*/) const noexcept {
+    tmpl::list<hydro::Tags::LorentzFactor<DataType>> /*meta*/) const {
   return {make_with_value<Scalar<DataType>>(
       x,
       1.0 / sqrt(1.0 - alg::accumulate(
@@ -126,8 +122,7 @@ template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DataType>>
 SmoothFlow<Dim, IsRelativistic>::variables(
     const tnsr::I<DataType, Dim>& x, double t,
-    tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>> /*meta*/)
-    const noexcept {
+    tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>> /*meta*/) const {
   Scalar<DataType> specific_internal_energy = std::move(
       get<hydro::Tags::SpecificInternalEnergy<DataType>>(variables<DataType>(
           x, t, tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>>{})));
@@ -140,7 +135,7 @@ SmoothFlow<Dim, IsRelativistic>::variables(
 
 template <size_t Dim, bool IsRelativistic>
 bool operator==(const SmoothFlow<Dim, IsRelativistic>& lhs,
-                const SmoothFlow<Dim, IsRelativistic>& rhs) noexcept {
+                const SmoothFlow<Dim, IsRelativistic>& rhs) {
   // there is no comparison operator for the EoS, but should be okay as
   // the adiabatic_indexs are compared
   return lhs.mean_velocity_ == rhs.mean_velocity_ and
@@ -153,7 +148,7 @@ bool operator==(const SmoothFlow<Dim, IsRelativistic>& lhs,
 
 template <size_t Dim, bool IsRelativistic>
 bool operator!=(const SmoothFlow<Dim, IsRelativistic>& lhs,
-                const SmoothFlow<Dim, IsRelativistic>& rhs) noexcept {
+                const SmoothFlow<Dim, IsRelativistic>& rhs) {
   return not(lhs == rhs);
 }
 
@@ -162,14 +157,14 @@ bool operator!=(const SmoothFlow<Dim, IsRelativistic>& lhs,
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(2, data)
 #define TAG(data) BOOST_PP_TUPLE_ELEM(3, data)
 
-#define INSTANTIATE_CLASS(_, data)                                   \
-  template class SmoothFlow<DIM(data), IS_RELATIVISTIC(data)>;       \
-  template bool operator==(                                          \
-      const SmoothFlow<DIM(data), IS_RELATIVISTIC(data)>&,           \
-      const SmoothFlow<DIM(data), IS_RELATIVISTIC(data)>&) noexcept; \
-  template bool operator!=(                                          \
-      const SmoothFlow<DIM(data), IS_RELATIVISTIC(data)>&,           \
-      const SmoothFlow<DIM(data), IS_RELATIVISTIC(data)>&) noexcept;
+#define INSTANTIATE_CLASS(_, data)                             \
+  template class SmoothFlow<DIM(data), IS_RELATIVISTIC(data)>; \
+  template bool operator==(                                    \
+      const SmoothFlow<DIM(data), IS_RELATIVISTIC(data)>&,     \
+      const SmoothFlow<DIM(data), IS_RELATIVISTIC(data)>&);    \
+  template bool operator!=(                                    \
+      const SmoothFlow<DIM(data), IS_RELATIVISTIC(data)>&,     \
+      const SmoothFlow<DIM(data), IS_RELATIVISTIC(data)>&);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_CLASS, (1, 2, 3), (true, false))
 
@@ -177,7 +172,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_CLASS, (1, 2, 3), (true, false))
   template tuples::TaggedTuple<TAG(data) < DTYPE(data)> >      \
       SmoothFlow<DIM(data), IS_RELATIVISTIC(data)>::variables( \
           const tnsr::I<DTYPE(data), DIM(data)>& x, double t,  \
-          tmpl::list<TAG(data) < DTYPE(data)> > /*meta*/) const noexcept;
+          tmpl::list<TAG(data) < DTYPE(data)> > /*meta*/) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_SCALARS, (1, 2, 3), (true, false),
                         (double, DataVector),
@@ -189,19 +184,17 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_SCALARS, (1, 2, 3), (true, false),
   template tuples::TaggedTuple<hydro::Tags::LorentzFactor<DTYPE(data)>> \
   SmoothFlow<DIM(data), IS_RELATIVISTIC(data)>::variables(              \
       const tnsr::I<DTYPE(data), DIM(data)>& x, double t,               \
-      tmpl::list<hydro::Tags::LorentzFactor<DTYPE(data)>> /*meta*/)     \
-      const noexcept;
+      tmpl::list<hydro::Tags::LorentzFactor<DTYPE(data)>> /*meta*/) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_LORENTZ_FACTOR, (1, 2, 3), (true),
                         (double, DataVector))
 
-#define INSTANTIATE_VECTORS(_, data)                                 \
-  template tuples::TaggedTuple<TAG(data) < DTYPE(data), DIM(data),   \
-                               Frame::Inertial> >                    \
-      SmoothFlow<DIM(data), IS_RELATIVISTIC(data)>::variables(       \
-          const tnsr::I<DTYPE(data), DIM(data)>& x, double t,        \
-          tmpl::list<TAG(data) < DTYPE(data), DIM(data)> > /*meta*/) \
-          const noexcept;
+#define INSTANTIATE_VECTORS(_, data)                               \
+  template tuples::TaggedTuple<TAG(data) < DTYPE(data), DIM(data), \
+                               Frame::Inertial> >                  \
+      SmoothFlow<DIM(data), IS_RELATIVISTIC(data)>::variables(     \
+          const tnsr::I<DTYPE(data), DIM(data)>& x, double t,      \
+          tmpl::list<TAG(data) < DTYPE(data), DIM(data)> > /*meta*/) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_VECTORS, (1, 2, 3), (true, false),
                         (double, DataVector), (hydro::Tags::SpatialVelocity))

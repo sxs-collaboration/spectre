@@ -20,10 +20,10 @@ CylindricalEndcap::CylindricalEndcap(const std::array<double, 3>& center_one,
                                      const std::array<double, 3>& center_two,
                                      const std::array<double, 3>& proj_center,
                                      double radius_one, double radius_two,
-                                     double z_plane) noexcept
+                                     double z_plane)
     : impl_(
           center_two, proj_center, radius_two,
-          [&center_one, &center_two, &radius_one, &radius_two]() noexcept {
+          [&center_one, &center_two, &radius_one, &radius_two]() {
             const double dist_spheres =
                 sqrt(square(center_one[0] - center_two[0]) +
                      square(center_one[1] - center_two[1]) +
@@ -261,37 +261,33 @@ CylindricalEndcap::CylindricalEndcap(const std::array<double, 3>& center_one,
 
 template <typename T>
 std::array<tt::remove_cvref_wrap_t<T>, 3> CylindricalEndcap::operator()(
-    const std::array<T, 3>& source_coords) const noexcept {
+    const std::array<T, 3>& source_coords) const {
   return impl_.operator()(source_coords);
 }
 
 std::optional<std::array<double, 3>> CylindricalEndcap::inverse(
-    const std::array<double, 3>& target_coords) const noexcept {
+    const std::array<double, 3>& target_coords) const {
   return impl_.inverse(target_coords);
 }
 
 template <typename T>
 tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>
-CylindricalEndcap::jacobian(const std::array<T, 3>& source_coords) const
-    noexcept {
+CylindricalEndcap::jacobian(const std::array<T, 3>& source_coords) const {
   return impl_.jacobian(source_coords);
 }
 
 template <typename T>
 tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>
-CylindricalEndcap::inv_jacobian(const std::array<T, 3>& source_coords) const
-    noexcept {
+CylindricalEndcap::inv_jacobian(const std::array<T, 3>& source_coords) const {
   return impl_.inv_jacobian(source_coords);
 }
 
-void CylindricalEndcap::pup(PUP::er& p) noexcept { p | impl_; }
+void CylindricalEndcap::pup(PUP::er& p) { p | impl_; }
 
-bool operator==(const CylindricalEndcap& lhs,
-                const CylindricalEndcap& rhs) noexcept {
+bool operator==(const CylindricalEndcap& lhs, const CylindricalEndcap& rhs) {
   return lhs.impl_ == rhs.impl_;
 }
-bool operator!=(const CylindricalEndcap& lhs,
-                const CylindricalEndcap& rhs) noexcept {
+bool operator!=(const CylindricalEndcap& lhs, const CylindricalEndcap& rhs) {
   return not(lhs == rhs);
 }
 
@@ -301,13 +297,13 @@ bool operator!=(const CylindricalEndcap& lhs,
 #define INSTANTIATE(_, data)                                                   \
   template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>                 \
   CylindricalEndcap::operator()(                                               \
-      const std::array<DTYPE(data), 3>& source_coords) const noexcept;         \
+      const std::array<DTYPE(data), 3>& source_coords) const;                  \
   template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame>   \
   CylindricalEndcap::jacobian(const std::array<DTYPE(data), 3>& source_coords) \
-      const noexcept;                                                          \
+      const;                                                                   \
   template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame>   \
   CylindricalEndcap::inv_jacobian(                                             \
-      const std::array<DTYPE(data), 3>& source_coords) const noexcept;
+      const std::array<DTYPE(data), 3>& source_coords) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector,
                                       std::reference_wrapper<const double>,

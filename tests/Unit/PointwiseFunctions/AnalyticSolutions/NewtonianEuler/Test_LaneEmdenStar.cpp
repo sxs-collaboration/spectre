@@ -57,7 +57,7 @@ struct LaneEmdenStarProxy : NewtonianEuler::Solutions::LaneEmdenStar {
   template <typename DataType>
   tuples::tagged_tuple_from_typelist<variables_tags<DataType>>
   primitive_variables(const tnsr::I<DataType, 3, Frame::Inertial>& x,
-                      double t) const noexcept {
+                      double t) const {
     return this->variables(x, t, variables_tags<DataType>{});
   }
 };
@@ -65,7 +65,7 @@ struct LaneEmdenStarProxy : NewtonianEuler::Solutions::LaneEmdenStar {
 template <typename DataType>
 void test_solution(const DataType& used_for_size,
                    const double central_mass_density,
-                   const double polytropic_constant) noexcept {
+                   const double polytropic_constant) {
   const LaneEmdenStarProxy star(central_mass_density, polytropic_constant);
   pypp::check_with_random_values<1>(
       &LaneEmdenStarProxy::template primitive_variables<DataType>, star,

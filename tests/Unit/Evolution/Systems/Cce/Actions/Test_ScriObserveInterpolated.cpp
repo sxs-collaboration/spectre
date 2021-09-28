@@ -60,13 +60,13 @@ struct SetBoundaryValues {
   static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
-                    ComplexDataVector set_values) noexcept {
-    db::mutate<Tag>(
-        make_not_null(&box), [&set_values](
-                                 const gsl::not_null<typename Tag::type*>
-                                     spin_weighted_scalar_quantity) noexcept {
-          get(*spin_weighted_scalar_quantity).data() = std::move(set_values);
-        });
+                    ComplexDataVector set_values) {
+    db::mutate<Tag>(make_not_null(&box),
+                    [&set_values](const gsl::not_null<typename Tag::type*>
+                                      spin_weighted_scalar_quantity) {
+                      get(*spin_weighted_scalar_quantity).data() =
+                          std::move(set_values);
+                    });
   }
 
   template <
@@ -75,12 +75,11 @@ struct SetBoundaryValues {
       Requires<tmpl::list_contains_v<tmpl::list<DbTags...>, Tag>> = nullptr>
   static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    DataVector set_values) noexcept {
+                    const ArrayIndex& /*array_index*/, DataVector set_values) {
     db::mutate<Tag>(
-        make_not_null(&box), [&set_values](
-                                 const gsl::not_null<typename Tag::type*>
-                                     scalar_quantity) noexcept {
+        make_not_null(&box),
+        [&set_values](
+            const gsl::not_null<typename Tag::type*> scalar_quantity) {
           get(*scalar_quantity) = std::move(set_values);
         });
   }
@@ -222,7 +221,7 @@ template <typename TagToCalculate, typename... Tags>
 ComplexDataVector compute_expected_field_from_pypp(
     const Variables<tmpl::list<Tags...>>& random_values,
     const double linear_coefficient, const double quadratic_coefficient,
-    const double time, TagToCalculate /*meta*/) noexcept {
+    const double time, TagToCalculate /*meta*/) {
   const size_t size = random_values.number_of_grid_points();
   Scalar<DataVector> linear_coefficient_vector;
   get(linear_coefficient_vector) = DataVector{size, linear_coefficient};
@@ -313,7 +312,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.ScriObserveInterpolated",
       vector_size};
   tmpl::for_each<typename test_metavariables::cce_scri_tags>(
       [&l_max, &random_scri_values, &gen,
-       &coefficient_distribution](auto tag_v) noexcept {
+       &coefficient_distribution](auto tag_v) {
         using tag = typename decltype(tag_v)::type;
         SpinWeighted<ComplexModalVector, tag::type::type::spin> generated_modes{
             Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max)};
@@ -337,7 +336,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.ScriObserveInterpolated",
         make_not_null(&runner), 0, time_vector);
     tmpl::for_each<typename test_metavariables::cce_scri_tags>(
         [&runner, &random_scri_values, &linear_coefficient, &time_vector,
-         &quadratic_coefficient](auto tag_v) noexcept {
+         &quadratic_coefficient](auto tag_v) {
           using tag = typename decltype(tag_v)::type;
           ActionTesting::simple_action<evolution_component,
                                        SetBoundaryValues<tag>>(
@@ -383,7 +382,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.ScriObserveInterpolated",
             .scale(1.0);
     tmpl::for_each<typename test_metavariables::scri_values_to_observe>(
         [&random_scri_values, &linear_coefficient, &quadratic_coefficient,
-         &l_max, &interpolation_approx, &read_file](auto tag_v) noexcept {
+         &l_max, &interpolation_approx, &read_file](auto tag_v) {
           using tag = typename decltype(tag_v)::type;
           const auto& dataset = read_file.get<h5::Dat>(
               "/" + Actions::detail::ScriOutput<tag>::name());

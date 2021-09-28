@@ -63,7 +63,7 @@ struct SetVariables {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     if constexpr (tmpl::list_contains_v<
                       typename db::DataBox<DbTagsList>::mutable_item_tags,
                       ::Initialization::Tags::InitialTime>) {
@@ -78,7 +78,7 @@ struct SetVariables {
 
  private:
   template <typename Metavariables, typename DbTagsList>
-  static void impl(const gsl::not_null<db::DataBox<DbTagsList>*> box) noexcept {
+  static void impl(const gsl::not_null<db::DataBox<DbTagsList>*> box) {
     const double initial_time =
         db::get<::Initialization::Tags::InitialTime>(*box);
     const auto inertial_coords =
@@ -98,9 +98,9 @@ struct SetVariables {
       using primitives_tag = typename system::primitive_variables_tag;
       // Set initial data from analytic solution
       db::mutate<primitives_tag>(
-          box, [&initial_time, &inertial_coords, &solution_or_data ](
+          box, [&initial_time, &inertial_coords, &solution_or_data](
                    const gsl::not_null<typename primitives_tag::type*>
-                       primitive_vars) noexcept {
+                       primitive_vars) {
             primitive_vars->assign_subset(evolution::initial_data(
                 solution_or_data, inertial_coords, initial_time,
                 typename Metavariables::analytic_variables_tags{}));
@@ -113,7 +113,7 @@ struct SetVariables {
         db::mutate<variables_tag>(
             box, [&initial_time, &inertial_coords, &solution_or_data](
                      const gsl::not_null<typename variables_tag::type*>
-                         evolved_vars) noexcept {
+                         evolved_vars) {
               evolved_vars->assign_subset(evolution::initial_data(
                   solution_or_data, inertial_coords, initial_time,
                   non_conservative_variables{}));
@@ -126,7 +126,7 @@ struct SetVariables {
       using Vars = typename variables_tag::type;
       db::mutate<variables_tag>(
           box, [&initial_time, &inertial_coords,
-                &solution_or_data](const gsl::not_null<Vars*> vars) noexcept {
+                &solution_or_data](const gsl::not_null<Vars*> vars) {
             vars->assign_subset(evolution::initial_data(
                 solution_or_data, inertial_coords, initial_time,
                 typename Vars::tags_list{}));

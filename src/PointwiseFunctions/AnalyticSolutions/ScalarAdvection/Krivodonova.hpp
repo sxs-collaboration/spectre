@@ -62,25 +62,24 @@ class Krivodonova : public MarkAsAnalyticSolution {
       "over the interval [-1, 1]"};
 
   Krivodonova() = default;
-  Krivodonova(const Krivodonova&) noexcept = default;
-  Krivodonova& operator=(const Krivodonova&) noexcept = default;
-  Krivodonova(Krivodonova&&) noexcept = default;
-  Krivodonova& operator=(Krivodonova&&) noexcept = default;
-  ~Krivodonova() noexcept = default;
+  Krivodonova(const Krivodonova&) = default;
+  Krivodonova& operator=(const Krivodonova&) = default;
+  Krivodonova(Krivodonova&&) = default;
+  Krivodonova& operator=(Krivodonova&&) = default;
+  ~Krivodonova() = default;
 
   template <typename DataType>
   tuples::TaggedTuple<ScalarAdvection::Tags::U> variables(
       const tnsr::I<DataType, 1>& x, double t,
-      tmpl::list<ScalarAdvection::Tags::U> /*meta*/) const noexcept;
+      tmpl::list<ScalarAdvection::Tags::U> /*meta*/) const;
 
   // clang-tidy: no pass by reference
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
 };
 
-bool operator==(const Krivodonova& /*lhs*/,
-                const Krivodonova& /*rhs*/) noexcept;
+bool operator==(const Krivodonova& /*lhs*/, const Krivodonova& /*rhs*/);
 
-bool operator!=(const Krivodonova& lhs, const Krivodonova& rhs) noexcept;
+bool operator!=(const Krivodonova& lhs, const Krivodonova& rhs);
 
 }  // namespace Solutions
 }  // namespace ScalarAdvection

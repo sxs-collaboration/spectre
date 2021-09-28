@@ -13,7 +13,7 @@
 namespace elliptic {
 std::ostream& operator<<(
     std::ostream& os,
-    const elliptic::BoundaryConditionType boundary_condition_type) noexcept {
+    const elliptic::BoundaryConditionType boundary_condition_type) {
   switch (boundary_condition_type) {
     case elliptic::BoundaryConditionType::Dirichlet:
       return os << "Dirichlet";

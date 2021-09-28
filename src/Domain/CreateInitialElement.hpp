@@ -31,6 +31,6 @@ template <size_t VolumeDim>
 Element<VolumeDim> create_initial_element(
     const ElementId<VolumeDim>& element_id, const Block<VolumeDim>& block,
     const std::vector<std::array<size_t, VolumeDim>>&
-        initial_refinement_levels) noexcept;
+        initial_refinement_levels);
 }  // namespace Initialization
 }  // namespace domain

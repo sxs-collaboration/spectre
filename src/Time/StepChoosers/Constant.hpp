@@ -28,14 +28,14 @@ class Constant : public StepChooser<StepChooserUse> {
  public:
   /// \cond
   Constant() = default;
-  explicit Constant(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit Constant(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Constant);  // NOLINT
   /// \endcond
 
   static constexpr Options::String help{"Suggests a constant step size."};
 
-  explicit Constant(const double value) noexcept : value_(value) {
+  explicit Constant(const double value) : value_(value) {
     ASSERT(value_ > 0., "Requested step magnitude should be positive.");
   }
 
@@ -45,12 +45,12 @@ class Constant : public StepChooser<StepChooserUse> {
   template <typename Metavariables>
   std::pair<double, bool> operator()(
       const double /*last_step_magnitude*/,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/) const noexcept {
+      const Parallel::GlobalCache<Metavariables>& /*cache*/) const {
     return std::make_pair(value_, true);
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept override { p | value_; }
+  void pup(PUP::er& p) override { p | value_; }
 
  private:
   double value_ = std::numeric_limits<double>::signaling_NaN();

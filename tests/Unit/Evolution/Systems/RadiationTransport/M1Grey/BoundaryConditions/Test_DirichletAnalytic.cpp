@@ -34,9 +34,8 @@ struct ConvertConstantM1 {
     return {mean_velocity_, comoving_energy_density};
   }
 
-  static inline unpacked_container unpack(
-      const packed_container& /*packed*/,
-      const size_t /*grid_point_index*/) noexcept {
+  static inline unpacked_container unpack(const packed_container& /*packed*/,
+                                          const size_t /*grid_point_index*/) {
     // No way of getting the args from the boundary condition.
     return 3;
   }
@@ -47,7 +46,7 @@ struct ConvertConstantM1 {
     *packed = create_container();
   }
 
-  static inline size_t get_size(const packed_container& /*packed*/) noexcept {
+  static inline size_t get_size(const packed_container& /*packed*/) {
     return 1;
   }
 };

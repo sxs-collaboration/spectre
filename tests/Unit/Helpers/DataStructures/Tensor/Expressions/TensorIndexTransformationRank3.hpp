@@ -33,7 +33,7 @@ template <typename TensorIndexA, typename TensorIndexB, typename TensorIndexC>
 void test_tensor_index_transformation_rank_3(
     const TensorIndexA& /*tensorindex_a*/,
     const TensorIndexB& /*tensorindex_b*/,
-    const TensorIndexC& /*tensorindex_c*/) noexcept {
+    const TensorIndexC& /*tensorindex_c*/) {
   const size_t dim_a = 4;
   const size_t dim_b = 2;
   const size_t dim_c = 3;

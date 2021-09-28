@@ -11,8 +11,7 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GetOutput.hpp"
 
-std::ostream& operator<<(std::ostream& os,
-                         const FloatingPointType& t) noexcept {
+std::ostream& operator<<(std::ostream& os, const FloatingPointType& t) {
   switch (t) {
     case FloatingPointType::Float:
       return os << "Float";

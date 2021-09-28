@@ -12,9 +12,9 @@ namespace detail {
 template <typename Metavariables, typename Tag, typename... OptionTags,
           Requires<Tag::pass_metavariables> = nullptr>
 typename Tag::type create_initialization_item_from_options(
-    const tuples::TaggedTuple<OptionTags...>& options) noexcept {
+    const tuples::TaggedTuple<OptionTags...>& options) {
   return tuples::apply<typename Tag::template option_tags<Metavariables>>(
-      [](const auto&... option) noexcept {
+      [](const auto&... option) {
         return Tag::template create_from_options<Metavariables>(option...);
       },
       options);
@@ -23,11 +23,9 @@ typename Tag::type create_initialization_item_from_options(
 template <typename Metavariables, typename Tag, typename... OptionTags,
           Requires<not Tag::pass_metavariables> = nullptr>
 typename Tag::type create_initialization_item_from_options(
-    const tuples::TaggedTuple<OptionTags...>& options) noexcept {
+    const tuples::TaggedTuple<OptionTags...>& options) {
   return tuples::apply<typename Tag::option_tags>(
-      [](const auto&... option) noexcept {
-        return Tag::create_from_options(option...);
-      },
+      [](const auto&... option) { return Tag::create_from_options(option...); },
       options);
 }
 }  // namespace detail
@@ -39,7 +37,7 @@ typename Tag::type create_initialization_item_from_options(
 template <typename Metavariables, typename... Tags, typename... OptionTags>
 tuples::TaggedTuple<Tags...> create_from_options(
     const tuples::TaggedTuple<OptionTags...>& options,
-    tmpl::list<Tags...> /*meta*/) noexcept {
+    tmpl::list<Tags...> /*meta*/) {
   return {detail::create_initialization_item_from_options<Metavariables, Tags>(
       options)...};
 }

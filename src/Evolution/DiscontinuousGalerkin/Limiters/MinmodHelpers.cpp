@@ -21,8 +21,7 @@
 namespace Limiters::Minmod_detail {
 
 MinmodResult tvb_corrected_minmod(const double a, const double b,
-                                  const double c,
-                                  const double tvb_scale) noexcept {
+                                  const double c, const double tvb_scale) {
   if (fabs(a) <= tvb_scale) {
     return {a, false};
   }
@@ -43,13 +42,13 @@ MinmodResult tvb_corrected_minmod(const double a, const double b,
 }
 
 template <size_t VolumeDim>
-BufferWrapper<VolumeDim>::BufferWrapper(const Mesh<VolumeDim>& mesh) noexcept
+BufferWrapper<VolumeDim>::BufferWrapper(const Mesh<VolumeDim>& mesh)
     : volume_and_slice_buffer_and_indices_(
           ::volume_and_slice_indices(mesh.extents())),
       volume_and_slice_indices(volume_and_slice_buffer_and_indices_.second) {
   const size_t half_number_boundary_points = alg::accumulate(
       alg::iota(std::array<size_t, VolumeDim>{{}}, 0_st), 0_st,
-      [&mesh](const size_t state, const size_t d) noexcept {
+      [&mesh](const size_t state, const size_t d) {
         return state + mesh.slice_away(d).number_of_grid_points();
       });
   contiguous_boundary_buffer_ =
@@ -71,7 +70,7 @@ double effective_difference_to_neighbor(
     const std::array<double, VolumeDim>& element_size, const size_t dim,
     const Side& side,
     const DirectionMap<VolumeDim, double>& effective_neighbor_means,
-    const DirectionMap<VolumeDim, double>& effective_neighbor_sizes) noexcept {
+    const DirectionMap<VolumeDim, double>& effective_neighbor_sizes) {
   const auto dir = Direction<VolumeDim>(dim, side);
   ASSERT(element.neighbors().contains(dir),
          "Minmod helper found no neighbors in direction: " << dir);
@@ -91,7 +90,7 @@ double effective_difference_to_neighbor(
   template double effective_difference_to_neighbor<DIM(data)>(                 \
       double, const Element<DIM(data)>&, const std::array<double, DIM(data)>&, \
       size_t, const Side&, const DirectionMap<DIM(data), double>&,             \
-      const DirectionMap<DIM(data), double>&) noexcept;
+      const DirectionMap<DIM(data), double>&);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 

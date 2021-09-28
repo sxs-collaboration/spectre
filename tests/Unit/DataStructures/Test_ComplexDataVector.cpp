@@ -17,7 +17,7 @@
 
 // IWYU pragma: no_include "DataStructures/DenseMatrix.hpp"
 
-void test_complex_data_vector_math() noexcept {
+void test_complex_data_vector_math() {
   const TestHelpers::VectorImpl::Bound generic{{-100.0, 100.0}};
   const TestHelpers::VectorImpl::Bound mone_one{{-1.0, 1.0}};
   const TestHelpers::VectorImpl::Bound gt_one{{1.0, 100.0}};

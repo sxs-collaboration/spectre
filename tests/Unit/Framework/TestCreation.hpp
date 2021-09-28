@@ -32,7 +32,7 @@ struct TestCreationOpt {
 template <typename Tag, typename = void>
 struct AddGroups {
   template <typename OptionTag = Tag>
-  static std::string apply(std::string construction_string) noexcept {
+  static std::string apply(std::string construction_string) {
     construction_string.insert(0, 2, ' ');
     construction_string =
         boost::algorithm::replace_all_copy(construction_string, "\n", "\n  ");
@@ -43,7 +43,7 @@ struct AddGroups {
 
 template <typename Tag>
 struct AddGroups<Tag, std::void_t<typename Tag::group>> {
-  static std::string apply(const std::string& construction_string) noexcept {
+  static std::string apply(const std::string& construction_string) {
     return AddGroups<typename Tag::group>::apply(
         AddGroups<void>::template apply<Tag>(construction_string));
   }
@@ -77,7 +77,7 @@ struct SingleFactoryMetavariables {
 ///
 /// \see TestHelpers::test_option_tag()
 template <typename T, typename Metavariables = NoSuchType>
-T test_creation(const std::string& construction_string) noexcept {
+T test_creation(const std::string& construction_string) {
   static_assert(not TestCreation_detail::looks_like_tag<Metavariables>::value,
                 "test_creation no longer allows overriding the default "
                 "option tag.  To test a particular option tag use "
@@ -104,7 +104,7 @@ T test_creation(const std::string& construction_string) noexcept {
 /// \see TestHelpers::test_creation()
 template <typename OptionTag, typename Metavariables = NoSuchType>
 typename OptionTag::type test_option_tag(
-    const std::string& construction_string) noexcept {
+    const std::string& construction_string) {
   Options::Parser<tmpl::list<OptionTag>> options("");
   options.parse(
       TestCreation_detail::AddGroups<OptionTag>::apply(construction_string));
@@ -127,7 +127,7 @@ typename OptionTag::type test_option_tag(
 /// \snippet Test_TestCreation.cpp test_factory_creation
 template <typename BaseClass, typename DerivedClass>
 std::unique_ptr<BaseClass> test_factory_creation(
-    const std::string& construction_string) noexcept {
+    const std::string& construction_string) {
   return TestHelpers::test_creation<
       std::unique_ptr<BaseClass>,
       TestCreation_detail::SingleFactoryMetavariables<BaseClass, DerivedClass>>(

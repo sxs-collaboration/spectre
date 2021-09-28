@@ -71,7 +71,7 @@ void test_weak_divergence_random_jacobian(const Mesh<Dim>& mesh) {
       jacobian);
   // Generate constant fluxes that aren't all the same.
   Variables<flux_tags> fluxes{mesh.number_of_grid_points(), 2.0};
-  tmpl::for_each<flux_tags>([&fluxes](auto tag_v) noexcept {
+  tmpl::for_each<flux_tags>([&fluxes](auto tag_v) {
     using tag = tmpl::type_from<decltype(tag_v)>;
     auto& flux = get<tag>(fluxes);
     for (size_t storage_index = 0; storage_index < flux.size();

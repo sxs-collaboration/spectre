@@ -52,16 +52,16 @@ namespace {
 
 struct ScalarTag : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static std::string name() noexcept { return "Scalar"; }
+  static std::string name() { return "Scalar"; }
 };
 
 template <size_t VolumeDim>
 struct VectorTag : db::SimpleTag {
   using type = tnsr::I<DataVector, VolumeDim>;
-  static std::string name() noexcept { return "Vector"; }
+  static std::string name() { return "Vector"; }
 };
 
-void test_weno_option_parsing() noexcept {
+void test_weno_option_parsing() {
   INFO("Testing option parsing");
 
   const auto hweno_1d =
@@ -140,7 +140,7 @@ void test_weno_option_parsing() noexcept {
   CHECK(hweno_3d_larger_weight == expected_hweno_3d_larger_weight);
 }
 
-void test_weno_serialization() noexcept {
+void test_weno_serialization() {
   INFO("Testing serialization");
   const Limiters::Weno<1, tmpl::list<ScalarTag>> weno(Limiters::WenoType::Hweno,
                                                       0.01, 1.0, true);
@@ -148,9 +148,8 @@ void test_weno_serialization() noexcept {
 }
 
 template <size_t VolumeDim>
-void test_package_data_work(
-    const Mesh<VolumeDim>& mesh,
-    const OrientationMap<VolumeDim>& orientation_map) noexcept {
+void test_package_data_work(const Mesh<VolumeDim>& mesh,
+                            const OrientationMap<VolumeDim>& orientation_map) {
   const DataVector used_for_size(mesh.number_of_grid_points());
   MAKE_GENERATOR(generator);
   std::uniform_real_distribution<> dist(-1., 1.);
@@ -175,7 +174,7 @@ void test_package_data_work(
                     mesh, element_size, orientation_map);
 
   const Variables<TagList> oriented_vars = [&mesh, &input_scalar, &input_vector,
-                                            &orientation_map]() noexcept {
+                                            &orientation_map]() {
     Variables<TagList> input_vars(mesh.number_of_grid_points());
     get<ScalarTag>(input_vars) = input_scalar;
     get<VectorTag<VolumeDim>>(input_vars) = input_vector;
@@ -195,7 +194,7 @@ void test_package_data_work(
   }
 }
 
-void test_package_data_1d() noexcept {
+void test_package_data_1d() {
   INFO("Testing package_data in 1D");
   const Mesh<1> mesh(4, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto);
@@ -208,7 +207,7 @@ void test_package_data_1d() noexcept {
   test_package_data_work(mesh, orientation_flipped);
 }
 
-void test_package_data_2d() noexcept {
+void test_package_data_2d() {
   INFO("Testing package_data in 2D");
   const Mesh<2> mesh({{4, 6}}, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto);
@@ -221,7 +220,7 @@ void test_package_data_2d() noexcept {
   test_package_data_work(mesh, orientation_rotated);
 }
 
-void test_package_data_3d() noexcept {
+void test_package_data_3d() {
   INFO("Testing package_data in 3D");
   const Mesh<3> mesh({{4, 6, 3}}, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto);
@@ -237,11 +236,11 @@ void test_package_data_3d() noexcept {
 
 template <size_t VolumeDim>
 Variables<tmpl::list<ScalarTag, VectorTag<VolumeDim>>> make_local_vars(
-    const Mesh<VolumeDim>& mesh) noexcept;
+    const Mesh<VolumeDim>& mesh);
 
 template <>
 Variables<tmpl::list<ScalarTag, VectorTag<1>>> make_local_vars(
-    const Mesh<1>& mesh) noexcept {
+    const Mesh<1>& mesh) {
   const auto logical_coords = logical_coordinates(mesh);
   const auto& x = get<0>(logical_coords);
   Variables<tmpl::list<ScalarTag, VectorTag<1>>> vars(
@@ -253,7 +252,7 @@ Variables<tmpl::list<ScalarTag, VectorTag<1>>> make_local_vars(
 
 template <>
 Variables<tmpl::list<ScalarTag, VectorTag<2>>> make_local_vars(
-    const Mesh<2>& mesh) noexcept {
+    const Mesh<2>& mesh) {
   const auto logical_coords = logical_coordinates(mesh);
   const auto& x = get<0>(logical_coords);
   const auto& y = get<1>(logical_coords);
@@ -268,7 +267,7 @@ Variables<tmpl::list<ScalarTag, VectorTag<2>>> make_local_vars(
 
 template <>
 Variables<tmpl::list<ScalarTag, VectorTag<3>>> make_local_vars(
-    const Mesh<3>& mesh) noexcept {
+    const Mesh<3>& mesh) {
   const auto logical_coords = logical_coordinates(mesh);
   const auto& x = get<0>(logical_coords);
   const auto& y = get<1>(logical_coords);
@@ -297,10 +296,10 @@ std::unordered_map<
 make_neighbor_data_from_neighbor_vars(
     const Mesh<VolumeDim>& mesh, const Element<VolumeDim>& element,
     const std::array<double, VolumeDim>& element_size,
-    const VariablesMap<VolumeDim>& neighbor_vars) noexcept {
+    const VariablesMap<VolumeDim>& neighbor_vars) {
   const auto make_tuple_of_means =
       [&mesh](const Variables<tmpl::list<ScalarTag, VectorTag<VolumeDim>>>&
-                  vars_to_average) noexcept {
+                  vars_to_average) {
         tuples::TaggedTuple<::Tags::Mean<ScalarTag>,
                             ::Tags::Mean<VectorTag<VolumeDim>>>
             result;
@@ -342,7 +341,7 @@ std::unordered_map<
     boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>
 make_neighbor_data(const Mesh<VolumeDim>& mesh,
                    const Element<VolumeDim>& element,
-                   const std::array<double, VolumeDim>& element_size) noexcept;
+                   const std::array<double, VolumeDim>& element_size);
 
 template <>
 std::unordered_map<std::pair<Direction<1>, ElementId<1>>,
@@ -350,15 +349,15 @@ std::unordered_map<std::pair<Direction<1>, ElementId<1>>,
                        1, tmpl::list<ScalarTag, VectorTag<1>>>::PackagedData,
                    boost::hash<std::pair<Direction<1>, ElementId<1>>>>
 make_neighbor_data(const Mesh<1>& mesh, const Element<1>& element,
-                   const std::array<double, 1>& element_size) noexcept {
-  const auto make_lower_xi_vars = [&mesh]() noexcept {
+                   const std::array<double, 1>& element_size) {
+  const auto make_lower_xi_vars = [&mesh]() {
     Variables<tmpl::list<ScalarTag, VectorTag<1>>> vars(
         mesh.number_of_grid_points());
     get(get<ScalarTag>(vars)) = 16.4;
     get<0>(get<VectorTag<1>>(vars)) = 1.2;
     return vars;
   };
-  const auto make_upper_xi_vars = [&mesh]() noexcept {
+  const auto make_upper_xi_vars = [&mesh]() {
     Variables<tmpl::list<ScalarTag, VectorTag<1>>> vars(
         mesh.number_of_grid_points());
     get(get<ScalarTag>(vars)) = -9.5;
@@ -384,8 +383,8 @@ std::unordered_map<std::pair<Direction<2>, ElementId<2>>,
                        2, tmpl::list<ScalarTag, VectorTag<2>>>::PackagedData,
                    boost::hash<std::pair<Direction<2>, ElementId<2>>>>
 make_neighbor_data(const Mesh<2>& mesh, const Element<2>& element,
-                   const std::array<double, 2>& element_size) noexcept {
-  const auto make_lower_xi_vars = [&mesh]() noexcept {
+                   const std::array<double, 2>& element_size) {
+  const auto make_lower_xi_vars = [&mesh]() {
     Variables<tmpl::list<ScalarTag, VectorTag<2>>> vars(
         mesh.number_of_grid_points());
     get(get<ScalarTag>(vars)) = -3.2;
@@ -393,7 +392,7 @@ make_neighbor_data(const Mesh<2>& mesh, const Element<2>& element,
     get<1>(get<VectorTag<2>>(vars)) = -1.7;
     return vars;
   };
-  const auto make_upper_xi_vars = [&mesh]() noexcept {
+  const auto make_upper_xi_vars = [&mesh]() {
     Variables<tmpl::list<ScalarTag, VectorTag<2>>> vars(
         mesh.number_of_grid_points());
     get(get<ScalarTag>(vars)) = 2.8;
@@ -401,7 +400,7 @@ make_neighbor_data(const Mesh<2>& mesh, const Element<2>& element,
     get<1>(get<VectorTag<2>>(vars)) = 2.3;
     return vars;
   };
-  const auto make_lower_eta_vars = [&mesh]() noexcept {
+  const auto make_lower_eta_vars = [&mesh]() {
     Variables<tmpl::list<ScalarTag, VectorTag<2>>> vars(
         mesh.number_of_grid_points());
     get(get<ScalarTag>(vars)) = -2.7;
@@ -409,7 +408,7 @@ make_neighbor_data(const Mesh<2>& mesh, const Element<2>& element,
     get<1>(get<VectorTag<2>>(vars)) = 4.5;
     return vars;
   };
-  const auto make_upper_eta_vars = [&mesh]() noexcept {
+  const auto make_upper_eta_vars = [&mesh]() {
     Variables<tmpl::list<ScalarTag, VectorTag<2>>> vars(
         mesh.number_of_grid_points());
     get(get<ScalarTag>(vars)) = 3.1;
@@ -442,8 +441,8 @@ std::unordered_map<std::pair<Direction<3>, ElementId<3>>,
                        3, tmpl::list<ScalarTag, VectorTag<3>>>::PackagedData,
                    boost::hash<std::pair<Direction<3>, ElementId<3>>>>
 make_neighbor_data(const Mesh<3>& mesh, const Element<3>& element,
-                   const std::array<double, 3>& element_size) noexcept {
-  const auto make_lower_xi_vars = [&mesh]() noexcept {
+                   const std::array<double, 3>& element_size) {
+  const auto make_lower_xi_vars = [&mesh]() {
     Variables<tmpl::list<ScalarTag, VectorTag<3>>> vars(
         mesh.number_of_grid_points());
     get(get<ScalarTag>(vars)) = -3.2;
@@ -452,7 +451,7 @@ make_neighbor_data(const Mesh<3>& mesh, const Element<3>& element,
     get<2>(get<VectorTag<3>>(vars)) = -2.1;
     return vars;
   };
-  const auto make_upper_xi_vars = [&mesh]() noexcept {
+  const auto make_upper_xi_vars = [&mesh]() {
     Variables<tmpl::list<ScalarTag, VectorTag<3>>> vars(
         mesh.number_of_grid_points());
     get(get<ScalarTag>(vars)) = 3.8;
@@ -461,7 +460,7 @@ make_neighbor_data(const Mesh<3>& mesh, const Element<3>& element,
     get<2>(get<VectorTag<3>>(vars)) = 2.1;
     return vars;
   };
-  const auto make_lower_eta_vars = [&mesh]() noexcept {
+  const auto make_lower_eta_vars = [&mesh]() {
     Variables<tmpl::list<ScalarTag, VectorTag<3>>> vars(
         mesh.number_of_grid_points());
     get(get<ScalarTag>(vars)) = -2.5;
@@ -470,7 +469,7 @@ make_neighbor_data(const Mesh<3>& mesh, const Element<3>& element,
     get<2>(get<VectorTag<3>>(vars)) = -0.4;
     return vars;
   };
-  const auto make_upper_eta_vars = [&mesh]() noexcept {
+  const auto make_upper_eta_vars = [&mesh]() {
     Variables<tmpl::list<ScalarTag, VectorTag<3>>> vars(
         mesh.number_of_grid_points());
     get(get<ScalarTag>(vars)) = 2.3;
@@ -479,7 +478,7 @@ make_neighbor_data(const Mesh<3>& mesh, const Element<3>& element,
     get<2>(get<VectorTag<3>>(vars)) = 1.1;
     return vars;
   };
-  const auto make_lower_zeta_vars = [&mesh]() noexcept {
+  const auto make_lower_zeta_vars = [&mesh]() {
     Variables<tmpl::list<ScalarTag, VectorTag<3>>> vars(
         mesh.number_of_grid_points());
     get(get<ScalarTag>(vars)) = 0.41;
@@ -489,7 +488,7 @@ make_neighbor_data(const Mesh<3>& mesh, const Element<3>& element,
     get<2>(get<VectorTag<3>>(vars)) = -8.2;
     return vars;
   };
-  const auto make_upper_zeta_vars = [&mesh]() noexcept {
+  const auto make_upper_zeta_vars = [&mesh]() {
     Variables<tmpl::list<ScalarTag, VectorTag<3>>> vars(
         mesh.number_of_grid_points());
     get(get<ScalarTag>(vars)) = -0.42;
@@ -524,7 +523,7 @@ make_neighbor_data(const Mesh<3>& mesh, const Element<3>& element,
 }
 
 template <size_t VolumeDim>
-void test_simple_weno(const std::array<size_t, VolumeDim>& extents) noexcept {
+void test_simple_weno(const std::array<size_t, VolumeDim>& extents) {
   INFO("Testing simple WENO limiter");
   CAPTURE(VolumeDim);
   const auto mesh = Mesh<VolumeDim>(extents, Spectral::Basis::Legendre,
@@ -599,7 +598,7 @@ void test_simple_weno(const std::array<size_t, VolumeDim>& extents) noexcept {
 }
 
 template <size_t VolumeDim>
-void test_hweno(const std::array<size_t, VolumeDim>& extents) noexcept {
+void test_hweno(const std::array<size_t, VolumeDim>& extents) {
   INFO("Testing HWENO limiter");
   CAPTURE(VolumeDim);
   const auto mesh = Mesh<VolumeDim>(extents, Spectral::Basis::Legendre,

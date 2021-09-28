@@ -45,7 +45,7 @@ SPECTRE_TEST_CASE("Unit.Time.Triggers.Times", "[Unit][Time]") {
 
   const auto check = [](const double time, const double slab_size,
                         const std::vector<double>& trigger_times,
-                        const bool expected) noexcept {
+                        const bool expected) {
     CAPTURE(time);
     CAPTURE(slab_size);
     CAPTURE(trigger_times);

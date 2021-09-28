@@ -21,7 +21,7 @@ void raise_or_lower_first_index(
                  index_list<Index0, Index1, Index1>>& tensor,
     const Tensor<DataType, Symmetry<1, 1>,
                  index_list<change_index_up_lo<Index0>,
-                            change_index_up_lo<Index0>>>& metric) noexcept {
+                            change_index_up_lo<Index0>>>& metric) {
   constexpr auto dimension = Index0::dim;
 
   for (size_t i = 0; i < dimension; ++i) {
@@ -44,7 +44,7 @@ void raise_or_lower_index(
     const Tensor<DataType, Symmetry<1>, index_list<Index0>>& tensor,
     const Tensor<DataType, Symmetry<1, 1>,
                  index_list<change_index_up_lo<Index0>,
-                            change_index_up_lo<Index0>>>& metric) noexcept {
+                            change_index_up_lo<Index0>>>& metric) {
   constexpr auto dimension = Index0::dim;
 
   for (size_t i = 0; i < dimension; ++i) {
@@ -63,7 +63,7 @@ void trace_last_indices(
                  index_list<Index0, Index1, Index1>>& tensor,
     const Tensor<DataType, Symmetry<1, 1>,
                  index_list<change_index_up_lo<Index1>,
-                            change_index_up_lo<Index1>>>& metric) noexcept {
+                            change_index_up_lo<Index1>>>& metric) {
   constexpr auto dimension_of_trace = Index0::dim;
   constexpr auto dimension_of_metric = Index1::dim;
   for (size_t i = 0; i < dimension_of_trace; ++i) {
@@ -85,7 +85,7 @@ void trace(
     const Tensor<DataType, Symmetry<1, 1>, index_list<Index0, Index0>>& tensor,
     const Tensor<DataType, Symmetry<1, 1>,
                  index_list<change_index_up_lo<Index0>,
-                            change_index_up_lo<Index0>>>& metric) noexcept {
+                            change_index_up_lo<Index0>>>& metric) {
   constexpr auto dimension = Index0::dim;
   get(*trace) = get<0, 0>(tensor) * get<0, 0>(metric);
   for (size_t i = 0; i < dimension; ++i) {
@@ -123,8 +123,7 @@ void trace(
           tensor,                                                             \
       const Tensor<DTYPE(data), Symmetry<1, 1>,                               \
                    index_list<change_index_up_lo<INDEX0(data)>,               \
-                              change_index_up_lo<INDEX0(data)>>>&             \
-          metric) noexcept;                                                   \
+                              change_index_up_lo<INDEX0(data)>>>& metric);    \
   template void trace_last_indices(                                           \
       const gsl::not_null<                                                    \
           Tensor<DTYPE(data), Symmetry<1>, index_list<INDEX0(data)>>*>        \
@@ -134,8 +133,7 @@ void trace(
           tensor,                                                             \
       const Tensor<DTYPE(data), Symmetry<1, 1>,                               \
                    index_list<change_index_up_lo<INDEX1(data)>,               \
-                              change_index_up_lo<INDEX1(data)>>>&             \
-          metric) noexcept;
+                              change_index_up_lo<INDEX1(data)>>>& metric);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
                         (Frame::Grid, Frame::Inertial,
@@ -150,26 +148,24 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
 #undef INDEX1
 #undef INSTANTIATE
 
-#define INSTANTIATE2(_, data)                                           \
-  template void raise_or_lower_index(                                   \
-      const gsl::not_null<                                              \
-          Tensor<DTYPE(data), Symmetry<1>,                              \
-                 index_list<change_index_up_lo<INDEX0(data)>>>*>        \
-          trace_of_tensor,                                              \
-      const Tensor<DTYPE(data), Symmetry<1>, index_list<INDEX0(data)>>& \
-          tensor,                                                       \
-      const Tensor<DTYPE(data), Symmetry<1, 1>,                         \
-                   index_list<change_index_up_lo<INDEX0(data)>,         \
-                              change_index_up_lo<INDEX0(data)>>>&       \
-          metric) noexcept;                                             \
-  template void trace(                                                  \
-      const gsl::not_null<Scalar<DTYPE(data)>*> trace,                  \
-      const Tensor<DTYPE(data), Symmetry<1, 1>,                         \
-                   index_list<INDEX0(data), INDEX0(data)>>& tensor,     \
-      const Tensor<DTYPE(data), Symmetry<1, 1>,                         \
-                   index_list<change_index_up_lo<INDEX0(data)>,         \
-                              change_index_up_lo<INDEX0(data)>>>&       \
-          metric) noexcept;
+#define INSTANTIATE2(_, data)                                              \
+  template void raise_or_lower_index(                                      \
+      const gsl::not_null<                                                 \
+          Tensor<DTYPE(data), Symmetry<1>,                                 \
+                 index_list<change_index_up_lo<INDEX0(data)>>>*>           \
+          trace_of_tensor,                                                 \
+      const Tensor<DTYPE(data), Symmetry<1>, index_list<INDEX0(data)>>&    \
+          tensor,                                                          \
+      const Tensor<DTYPE(data), Symmetry<1, 1>,                            \
+                   index_list<change_index_up_lo<INDEX0(data)>,            \
+                              change_index_up_lo<INDEX0(data)>>>& metric); \
+  template void trace(                                                     \
+      const gsl::not_null<Scalar<DTYPE(data)>*> trace,                     \
+      const Tensor<DTYPE(data), Symmetry<1, 1>,                            \
+                   index_list<INDEX0(data), INDEX0(data)>>& tensor,        \
+      const Tensor<DTYPE(data), Symmetry<1, 1>,                            \
+                   index_list<change_index_up_lo<INDEX0(data)>,            \
+                              change_index_up_lo<INDEX0(data)>>>& metric);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE2, (1, 2, 3), (double, DataVector),
                         (Frame::Grid, Frame::Inertial),

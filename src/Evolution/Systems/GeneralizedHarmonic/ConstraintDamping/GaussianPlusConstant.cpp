@@ -25,14 +25,13 @@ class FunctionOfTime;
 
 namespace GeneralizedHarmonic::ConstraintDamping {
 template <size_t VolumeDim, typename Fr>
-GaussianPlusConstant<VolumeDim, Fr>::GaussianPlusConstant(
-    CkMigrateMessage* msg) noexcept
+GaussianPlusConstant<VolumeDim, Fr>::GaussianPlusConstant(CkMigrateMessage* msg)
     : DampingFunction<VolumeDim, Fr>(msg) {}
 
 template <size_t VolumeDim, typename Fr>
 GaussianPlusConstant<VolumeDim, Fr>::GaussianPlusConstant(
     const double constant, const double amplitude, const double width,
-    const std::array<double, VolumeDim>& center) noexcept
+    const std::array<double, VolumeDim>& center)
     : constant_(constant),
       amplitude_(amplitude),
       inverse_width_(1.0 / width),
@@ -42,7 +41,7 @@ template <size_t VolumeDim, typename Fr>
 template <typename T>
 void GaussianPlusConstant<VolumeDim, Fr>::apply_call_operator(
     const gsl::not_null<Scalar<T>*> value_at_x,
-    const tnsr::I<T, VolumeDim, Fr>& x) const noexcept {
+    const tnsr::I<T, VolumeDim, Fr>& x) const {
   tnsr::I<T, VolumeDim, Fr> centered_coords{x};
   for (size_t i = 0; i < VolumeDim; ++i) {
     centered_coords.get(i) -= gsl::at(center_, i);
@@ -58,7 +57,7 @@ void GaussianPlusConstant<VolumeDim, Fr>::operator()(
     const tnsr::I<double, VolumeDim, Fr>& x, const double /*time*/,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-    /*functions_of_time*/) const noexcept {
+    /*functions_of_time*/) const {
   apply_call_operator(value_at_x, x);
 }
 template <size_t VolumeDim, typename Fr>
@@ -67,7 +66,7 @@ void GaussianPlusConstant<VolumeDim, Fr>::operator()(
     const tnsr::I<DataVector, VolumeDim, Fr>& x, const double /*time*/,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-    /*functions_of_time*/) const noexcept {
+    /*functions_of_time*/) const {
   destructive_resize_components(value_at_x, get<0>(x).size());
   apply_call_operator(value_at_x, x);
 }
@@ -82,7 +81,7 @@ void GaussianPlusConstant<VolumeDim, Fr>::pup(PUP::er& p) {
 }
 
 template <size_t VolumeDim, typename Fr>
-auto GaussianPlusConstant<VolumeDim, Fr>::get_clone() const noexcept
+auto GaussianPlusConstant<VolumeDim, Fr>::get_clone() const
     -> std::unique_ptr<DampingFunction<VolumeDim, Fr>> {
   return std::make_unique<GaussianPlusConstant<VolumeDim, Fr>>(*this);
 }
@@ -91,18 +90,17 @@ auto GaussianPlusConstant<VolumeDim, Fr>::get_clone() const noexcept
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define INSTANTIATE(_, data)                                                  \
-  template GeneralizedHarmonic::ConstraintDamping::                           \
-      GaussianPlusConstant<DIM(data), FRAME(data)>::GaussianPlusConstant(     \
-          CkMigrateMessage* msg) noexcept;                                    \
+  template GeneralizedHarmonic::ConstraintDamping::GaussianPlusConstant<      \
+      DIM(data), FRAME(data)>::GaussianPlusConstant(CkMigrateMessage* msg);   \
   template GeneralizedHarmonic::ConstraintDamping::                           \
       GaussianPlusConstant<DIM(data), FRAME(data)>::GaussianPlusConstant(     \
           const double constant, const double amplitude, const double width,  \
-          const std::array<double, DIM(data)>& center) noexcept;              \
+          const std::array<double, DIM(data)>& center);                       \
   template void GeneralizedHarmonic::ConstraintDamping::GaussianPlusConstant< \
       DIM(data), FRAME(data)>::pup(PUP::er& p);                               \
   template auto GeneralizedHarmonic::ConstraintDamping::GaussianPlusConstant< \
-      DIM(data), FRAME(data)>::get_clone() const noexcept                     \
-      ->std::unique_ptr<DampingFunction<DIM(data), FRAME(data)>>;
+      DIM(data), FRAME(data)>::get_clone()                                    \
+      const->std::unique_ptr<DampingFunction<DIM(data), FRAME(data)>>;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Grid, Frame::Inertial))
 #undef DIM
@@ -123,7 +121,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Grid, Frame::Inertial))
               std::string,                                                 \
               std::unique_ptr<domain::FunctionsOfTime::                    \
                                   FunctionOfTime>>& /*functions_of_time*/) \
-          const noexcept;
+          const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Grid, Frame::Inertial),
                         (double, DataVector))

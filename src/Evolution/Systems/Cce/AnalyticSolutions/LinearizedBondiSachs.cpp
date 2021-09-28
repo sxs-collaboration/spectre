@@ -25,10 +25,12 @@
 namespace Cce::Solutions {
 namespace LinearizedBondiSachs_detail {
 namespace InitializeJ {
-LinearizedBondiSachs::LinearizedBondiSachs(
-    const double start_time, const double frequency,
-    const std::complex<double> c_2a, const std::complex<double> c_2b,
-    const std::complex<double> c_3a, const std::complex<double> c_3b) noexcept
+LinearizedBondiSachs::LinearizedBondiSachs(const double start_time,
+                                           const double frequency,
+                                           const std::complex<double> c_2a,
+                                           const std::complex<double> c_2b,
+                                           const std::complex<double> c_3a,
+                                           const std::complex<double> c_3b)
     : c_2a_{c_2a},
       c_2b_{c_2b},
       c_3a_{c_3a},
@@ -45,7 +47,7 @@ void LinearizedBondiSachs::operator()(
     const Scalar<SpinWeighted<ComplexDataVector, 2>>& /*boundary_j*/,
     const Scalar<SpinWeighted<ComplexDataVector, 2>>& /*boundary_dr_j*/,
     const Scalar<SpinWeighted<ComplexDataVector, 0>>& r, const size_t l_max,
-    const size_t number_of_radial_points) const noexcept {
+    const size_t number_of_radial_points) const {
   const DataVector one_minus_y_collocation =
       1.0 - Spectral::collocation_points<Spectral::Basis::Legendre,
                                          Spectral::Quadrature::GaussLobatto>(
@@ -104,7 +106,7 @@ void LinearizedBondiSachs::operator()(
       cos(get<0>(*angular_cauchy_coordinates));
 }
 
-void LinearizedBondiSachs::pup(PUP::er& p) noexcept {
+void LinearizedBondiSachs::pup(PUP::er& p) {
   p | c_2a_;
   p | c_2b_;
   p | c_3a_;
@@ -114,7 +116,7 @@ void LinearizedBondiSachs::pup(PUP::er& p) noexcept {
 }
 
 std::unique_ptr<::Cce::InitializeJ::InitializeJ<false>>
-LinearizedBondiSachs::get_clone() const noexcept {
+LinearizedBondiSachs::get_clone() const {
   return std::make_unique<LinearizedBondiSachs>(*this);
 }
 
@@ -128,7 +130,7 @@ const ComplexDataVector& cached_z_harmonics(const size_t l_max, const size_t l,
       make_static_cache<CacheRange<2_st, z_harmonics_maximum_l_max>,
                         CacheRange<2_st, 4_st>, CacheRange<-2, 3>>(
           [](const size_t local_l_max, const size_t local_l,
-             const int local_spin) noexcept {
+             const int local_spin) {
             Spectral::Swsh::SpinWeightedSphericalHarmonic y_plus_m{
                 local_spin, local_l, static_cast<int>(local_l)};
             Spectral::Swsh::SpinWeightedSphericalHarmonic y_minus_m{
@@ -156,7 +158,7 @@ template <int Spin, typename FactorType>
 void assign_components_from_l_factors(
     const gsl::not_null<SpinWeighted<ComplexDataVector, Spin>*> bondi_quantity,
     const FactorType& l_2_factor, const FactorType& l_3_factor,
-    const size_t l_max, const double frequency, const double time) noexcept {
+    const size_t l_max, const double frequency, const double time) {
   const std::complex<double> time_factor =
       cos(frequency * time) +
       std::complex<double>(0.0, 1.0) * sin(frequency * time);
@@ -174,7 +176,7 @@ void assign_du_components_from_l_factors(
         du_bondi_quantity,
     const std::complex<double>& l_2_factor,
     const std::complex<double>& l_3_factor, const size_t l_max,
-    const double frequency, const double time) noexcept {
+    const double frequency, const double time) {
   const std::complex<double> time_factor =
       frequency * (std::complex<double>(0.0, 1.0) * cos(frequency * time) -
                    sin(frequency * time));
@@ -189,7 +191,7 @@ void assign_du_components_from_l_factors(
 
 LinearizedBondiSachs::LinearizedBondiSachs(
     const std::array<std::complex<double>, 2>& mode_constants,
-    const double extraction_radius, const double frequency) noexcept
+    const double extraction_radius, const double frequency)
     : SphericalMetricData{extraction_radius}, frequency_{frequency} {
   c_2a_ = mode_constants[0];
   c_3a_ = mode_constants[1];
@@ -197,14 +199,13 @@ LinearizedBondiSachs::LinearizedBondiSachs(
   c_3b_ = std::complex<double>(0.0, -3.0) * c_3a_ / pow<3>(frequency_);
 }
 
-std::unique_ptr<WorldtubeData> LinearizedBondiSachs::get_clone()
-    const noexcept {
+std::unique_ptr<WorldtubeData> LinearizedBondiSachs::get_clone() const {
   return std::make_unique<LinearizedBondiSachs>(*this);
 }
 
 void LinearizedBondiSachs::linearized_bondi_j(
     const gsl::not_null<SpinWeighted<ComplexDataVector, 2>*> bondi_j,
-    const size_t l_max, const double time) const noexcept {
+    const size_t l_max, const double time) const {
   const std::complex<double> j_2_coefficient =
       sqrt(0.75) *
       (c_2a_ / extraction_radius_ - c_2b_ / (3.0 * pow<3>(extraction_radius_)));
@@ -221,7 +222,7 @@ void LinearizedBondiSachs::linearized_bondi_j(
 
 void LinearizedBondiSachs::linearized_bondi_u(
     const gsl::not_null<SpinWeighted<ComplexDataVector, 1>*> bondi_u,
-    const size_t l_max, const double time) const noexcept {
+    const size_t l_max, const double time) const {
   const std::complex<double> u_2_coefficient =
       sqrt(3.0) * (0.5 * c_2a_ / square(extraction_radius_) +
                    0.25 * c_2b_ / pow<4>(extraction_radius_) +
@@ -242,7 +243,7 @@ void LinearizedBondiSachs::linearized_bondi_u(
 
 void LinearizedBondiSachs::linearized_bondi_w(
     const gsl::not_null<SpinWeighted<ComplexDataVector, 0>*> bondi_w,
-    const size_t l_max, const double time) const noexcept {
+    const size_t l_max, const double time) const {
   const std::complex<double> w_2_coefficient =
       (-square(frequency_) * c_2b_ / square(extraction_radius_) +
        0.5 * c_2b_ / pow<4>(extraction_radius_) +
@@ -264,7 +265,7 @@ void LinearizedBondiSachs::linearized_bondi_w(
 
 void LinearizedBondiSachs::linearized_dr_bondi_j(
     const gsl::not_null<SpinWeighted<ComplexDataVector, 2>*> dr_bondi_j,
-    const size_t l_max, const double time) const noexcept {
+    const size_t l_max, const double time) const {
   const std::complex<double> dr_j_2_coefficient =
       -sqrt(0.75) *
       (c_2a_ / square(extraction_radius_) - c_2b_ / pow<4>(extraction_radius_));
@@ -282,7 +283,7 @@ void LinearizedBondiSachs::linearized_dr_bondi_j(
 
 void LinearizedBondiSachs::linearized_dr_bondi_u(
     const gsl::not_null<SpinWeighted<ComplexDataVector, 1>*> dr_bondi_u,
-    const size_t l_max, const double time) const noexcept {
+    const size_t l_max, const double time) const {
   const std::complex<double> dr_u_2_coefficient =
       sqrt(3.0) * (-c_2a_ / pow<3>(extraction_radius_) -
                    c_2b_ / pow<5>(extraction_radius_) +
@@ -304,7 +305,7 @@ void LinearizedBondiSachs::linearized_dr_bondi_u(
 
 void LinearizedBondiSachs::linearized_dr_bondi_w(
     const gsl::not_null<SpinWeighted<ComplexDataVector, 0>*> dr_bondi_w,
-    const size_t l_max, const double time) const noexcept {
+    const size_t l_max, const double time) const {
   const std::complex<double> dr_w_2_coefficient =
       (2.0 * square(frequency_) * c_2b_ / pow<3>(extraction_radius_) -
        2.0 * c_2b_ / pow<5>(extraction_radius_) +
@@ -327,7 +328,7 @@ void LinearizedBondiSachs::linearized_dr_bondi_w(
 
 void LinearizedBondiSachs::linearized_du_bondi_j(
     const gsl::not_null<SpinWeighted<ComplexDataVector, 2>*> du_bondi_j,
-    const size_t l_max, const double time) const noexcept {
+    const size_t l_max, const double time) const {
   const std::complex<double> j_2_coefficient =
       sqrt(0.75) *
       (c_2a_ / extraction_radius_ - c_2b_ / (3.0 * pow<3>(extraction_radius_)));
@@ -344,7 +345,7 @@ void LinearizedBondiSachs::linearized_du_bondi_j(
 
 void LinearizedBondiSachs::linearized_du_bondi_u(
     const gsl::not_null<SpinWeighted<ComplexDataVector, 1>*> du_bondi_u,
-    const size_t l_max, const double time) const noexcept {
+    const size_t l_max, const double time) const {
   const std::complex<double> u_2_coefficient =
       sqrt(3.0) * (0.5 * c_2a_ / square(extraction_radius_) +
                    0.25 * c_2b_ / pow<4>(extraction_radius_) +
@@ -365,7 +366,7 @@ void LinearizedBondiSachs::linearized_du_bondi_u(
 
 void LinearizedBondiSachs::linearized_du_bondi_w(
     const gsl::not_null<SpinWeighted<ComplexDataVector, 0>*> du_bondi_w,
-    const size_t l_max, const double time) const noexcept {
+    const size_t l_max, const double time) const {
   const std::complex<double> w_2_coefficient =
       (-square(frequency_) * c_2b_ / square(extraction_radius_) +
        0.5 * c_2b_ / pow<4>(extraction_radius_) +
@@ -389,7 +390,7 @@ void LinearizedBondiSachs::spherical_metric(
     const gsl::not_null<
         tnsr::aa<DataVector, 3, ::Frame::Spherical<::Frame::Inertial>>*>
         spherical_metric,
-    const size_t l_max, const double time) const noexcept {
+    const size_t l_max, const double time) const {
   Variables<tmpl::list<Tags::BondiJ, Tags::BondiU, Tags::BondiK, Tags::BondiW>>
       temporary_variables{
           Spectral::Swsh::number_of_swsh_collocation_points(l_max)};
@@ -430,7 +431,7 @@ void LinearizedBondiSachs::dr_spherical_metric(
     const gsl::not_null<
         tnsr::aa<DataVector, 3, ::Frame::Spherical<::Frame::Inertial>>*>
         dr_spherical_metric,
-    const size_t l_max, const double time) const noexcept {
+    const size_t l_max, const double time) const {
   Variables<tmpl::list<Tags::BondiJ, Tags::BondiU, Tags::BondiK, Tags::BondiW,
                        Tags::Dr<Tags::BondiJ>, Tags::Dr<Tags::BondiU>,
                        Tags::Dr<Tags::BondiK>, Tags::Dr<Tags::BondiW>>>
@@ -518,7 +519,7 @@ void LinearizedBondiSachs::dt_spherical_metric(
     const gsl::not_null<
         tnsr::aa<DataVector, 3, ::Frame::Spherical<::Frame::Inertial>>*>
         dt_spherical_metric,
-    const size_t l_max, const double time) const noexcept {
+    const size_t l_max, const double time) const {
   Variables<tmpl::list<Tags::BondiJ, Tags::BondiU, Tags::BondiK, Tags::BondiW,
                        Tags::Du<Tags::BondiJ>, Tags::Du<Tags::BondiU>,
                        Tags::Du<Tags::BondiK>, Tags::Du<Tags::BondiW>>>
@@ -587,7 +588,7 @@ void LinearizedBondiSachs::dt_spherical_metric(
 void LinearizedBondiSachs::variables_impl(
     const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, -2>>*> news,
     const size_t l_max, const double time,
-    tmpl::type_<Tags::News> /*meta*/) const noexcept {
+    tmpl::type_<Tags::News> /*meta*/) const {
   const std::complex<double> news_2_coefficient =
       std::complex<double>(0.0, 0.5) * pow<3>(frequency_) * c_2b_ / sqrt(3.0);
 
@@ -600,13 +601,13 @@ void LinearizedBondiSachs::variables_impl(
 }
 
 std::unique_ptr<Cce::InitializeJ::InitializeJ<false>>
-LinearizedBondiSachs::get_initialize_j(const double start_time) const noexcept {
+LinearizedBondiSachs::get_initialize_j(const double start_time) const {
   return std::make_unique<
       LinearizedBondiSachs_detail::InitializeJ::LinearizedBondiSachs>(
       start_time, frequency_, c_2a_, c_2b_, c_3a_, c_3b_);
 }
 
-void LinearizedBondiSachs::pup(PUP::er& p) noexcept {
+void LinearizedBondiSachs::pup(PUP::er& p) {
   SphericalMetricData::pup(p);
   p | c_2a_;
   p | c_3a_;

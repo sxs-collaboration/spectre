@@ -41,7 +41,7 @@ class ElementSizeCfl : public StepChooser<StepChooserUse> {
  public:
   /// \cond
   ElementSizeCfl() = default;
-  explicit ElementSizeCfl(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit ElementSizeCfl(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ElementSizeCfl);  // NOLINT
   /// \endcond
@@ -49,7 +49,7 @@ class ElementSizeCfl : public StepChooser<StepChooserUse> {
   struct SafetyFactor {
     using type = double;
     static constexpr Options::String help{"Multiplier for computed step"};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
 
   static constexpr Options::String help{
@@ -59,7 +59,7 @@ class ElementSizeCfl : public StepChooser<StepChooserUse> {
       "dynamically-adjusted step chooser"};
   using options = tmpl::list<SafetyFactor>;
 
-  explicit ElementSizeCfl(const double safety_factor) noexcept
+  explicit ElementSizeCfl(const double safety_factor)
       : safety_factor_(safety_factor) {}
 
   using argument_tags =
@@ -76,7 +76,7 @@ class ElementSizeCfl : public StepChooser<StepChooserUse> {
           time_stepper,
       const std::array<double, Dim>& element_size, const double speed,
       const double last_step_magnitude,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/) const noexcept {
+      const Parallel::GlobalCache<Metavariables>& /*cache*/) const {
     double min_size_of_element = std::numeric_limits<double>::infinity();
     for (auto face_to_face_dimension : element_size) {
       if (face_to_face_dimension < min_size_of_element) {
@@ -91,7 +91,7 @@ class ElementSizeCfl : public StepChooser<StepChooserUse> {
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept override { p | safety_factor_; }
+  void pup(PUP::er& p) override { p | safety_factor_; }
 
  private:
   double safety_factor_ = std::numeric_limits<double>::signaling_NaN();

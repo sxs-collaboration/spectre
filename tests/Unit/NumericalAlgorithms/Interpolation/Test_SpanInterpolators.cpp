@@ -18,7 +18,7 @@
 namespace intrp {
 
 template <typename Generator>
-void test_linear_interpolator(const gsl::not_null<Generator*> gen) noexcept {
+void test_linear_interpolator(const gsl::not_null<Generator*> gen) {
   UniformCustomDistribution<double> value_dist{0.1, 1.0};
   // cannot be const due to participation in the `span`
   auto linear_interpolator_values = make_with_random_values<DataVector>(
@@ -55,7 +55,7 @@ void test_linear_interpolator(const gsl::not_null<Generator*> gen) noexcept {
 template <typename VectorType, typename InterpolatorType, typename Generator>
 void test_interpolator_approximate_fidelity(
     const gsl::not_null<Generator*> gen, const InterpolatorType& interpolator,
-    Approx interpolator_approx) noexcept {
+    Approx interpolator_approx) {
   UniformCustomDistribution<double> value_dist{0.1, 1.0};
   DataVector interpolator_points{
       2 * interpolator.required_number_of_points_before_and_after()};

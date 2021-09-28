@@ -29,7 +29,7 @@ class TimeStepId {
   /// (evolution-defined) end of the slab the TimeStepId will be advanced
   /// to the next slab.
   TimeStepId(const bool time_runs_forward, const int64_t slab_number,
-             const Time& time) noexcept
+             const Time& time)
       : time_runs_forward_(time_runs_forward),
         slab_number_(slab_number),
         step_time_(time),
@@ -40,7 +40,7 @@ class TimeStepId {
   /// starting at time `step_time`.
   TimeStepId(const bool time_runs_forward, const int64_t slab_number,
              const Time& step_time, const uint64_t substep,
-             const Time& substep_time) noexcept
+             const Time& substep_time)
       : time_runs_forward_(time_runs_forward),
         slab_number_(slab_number),
         step_time_(step_time),
@@ -51,23 +51,23 @@ class TimeStepId {
     canonicalize();
   }
 
-  bool time_runs_forward() const noexcept { return time_runs_forward_; }
-  int64_t slab_number() const noexcept { return slab_number_; }
+  bool time_runs_forward() const { return time_runs_forward_; }
+  int64_t slab_number() const { return slab_number_; }
   /// Time at the start of the current step
-  const Time& step_time() const noexcept { return step_time_; }
-  uint64_t substep() const noexcept { return substep_; }
+  const Time& step_time() const { return step_time_; }
+  uint64_t substep() const { return substep_; }
   /// Time of the current substep
-  const Time& substep_time() const noexcept { return substep_time_; }
+  const Time& substep_time() const { return substep_time_; }
 
-  bool is_at_slab_boundary() const noexcept {
+  bool is_at_slab_boundary() const {
     return substep_ == 0 and substep_time_.is_at_slab_boundary();
   }
 
   // clang-tidy: google-runtime-references
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
 
  private:
-  void canonicalize() noexcept;
+  void canonicalize();
 
   bool time_runs_forward_{false};
   int64_t slab_number_{0};
@@ -76,20 +76,20 @@ class TimeStepId {
   Time substep_time_{};
 };
 
-bool operator==(const TimeStepId& a, const TimeStepId& b) noexcept;
-bool operator!=(const TimeStepId& a, const TimeStepId& b) noexcept;
-bool operator<(const TimeStepId& a, const TimeStepId& b) noexcept;
-bool operator<=(const TimeStepId& a, const TimeStepId& b) noexcept;
-bool operator>(const TimeStepId& a, const TimeStepId& b) noexcept;
-bool operator>=(const TimeStepId& a, const TimeStepId& b) noexcept;
+bool operator==(const TimeStepId& a, const TimeStepId& b);
+bool operator!=(const TimeStepId& a, const TimeStepId& b);
+bool operator<(const TimeStepId& a, const TimeStepId& b);
+bool operator<=(const TimeStepId& a, const TimeStepId& b);
+bool operator>(const TimeStepId& a, const TimeStepId& b);
+bool operator>=(const TimeStepId& a, const TimeStepId& b);
 
-std::ostream& operator<<(std::ostream& s, const TimeStepId& id) noexcept;
+std::ostream& operator<<(std::ostream& s, const TimeStepId& id);
 
-size_t hash_value(const TimeStepId& id) noexcept;
+size_t hash_value(const TimeStepId& id);
 
 namespace std {
 template <>
 struct hash<TimeStepId> {
-  size_t operator()(const TimeStepId& id) const noexcept;
+  size_t operator()(const TimeStepId& id) const;
 };
 }  // namespace std

@@ -93,12 +93,12 @@ class ConstantDensityStar {
     using type = double;
     static constexpr Options::String help{
         "The constant density within the star"};
-    static double lower_bound() noexcept { return 0.; }
+    static double lower_bound() { return 0.; }
   };
   struct Radius {
     using type = double;
     static constexpr Options::String help{"The conformal radius of the star"};
-    static double lower_bound() noexcept { return 0.; }
+    static double lower_bound() { return 0.; }
   };
 
  public:
@@ -107,31 +107,30 @@ class ConstantDensityStar {
       "A constant density star in general relativity"};
 
   ConstantDensityStar() = default;
-  ConstantDensityStar(const ConstantDensityStar&) noexcept = delete;
-  ConstantDensityStar& operator=(const ConstantDensityStar&) noexcept = delete;
-  ConstantDensityStar(ConstantDensityStar&&) noexcept = default;
-  ConstantDensityStar& operator=(ConstantDensityStar&&) noexcept = default;
-  ~ConstantDensityStar() noexcept = default;
+  ConstantDensityStar(const ConstantDensityStar&) = delete;
+  ConstantDensityStar& operator=(const ConstantDensityStar&) = delete;
+  ConstantDensityStar(ConstantDensityStar&&) = default;
+  ConstantDensityStar& operator=(ConstantDensityStar&&) = default;
+  ~ConstantDensityStar() = default;
 
   ConstantDensityStar(double density, double radius,
                       const Options::Context& context = {});
 
-  double density() const noexcept { return density_; }
-  double radius() const noexcept { return radius_; }
+  double density() const { return density_; }
+  double radius() const { return radius_; }
 
   /// @{
   /// Retrieve variable at coordinates `x`
   template <typename DataType>
-  auto variables(
-      const tnsr::I<DataType, 3, Frame::Inertial>& x,
-      tmpl::list<Xcts::Tags::ConformalFactor<DataType>> /*meta*/) const noexcept
-      -> tuples::TaggedTuple<Xcts::Tags::ConformalFactor<DataType>>;
+  auto variables(const tnsr::I<DataType, 3, Frame::Inertial>& x,
+                 tmpl::list<Xcts::Tags::ConformalFactor<DataType>> /*meta*/)
+      const -> tuples::TaggedTuple<Xcts::Tags::ConformalFactor<DataType>>;
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3, Frame::Inertial>& x,
                  tmpl::list<::Tags::Initial<
                      Xcts::Tags::ConformalFactor<DataType>>> /*meta*/) const
-      noexcept -> tuples::TaggedTuple<
+      -> tuples::TaggedTuple<
           ::Tags::Initial<Xcts::Tags::ConformalFactor<DataType>>>;
 
   template <typename DataType>
@@ -139,7 +138,7 @@ class ConstantDensityStar {
                  tmpl::list<::Tags::Initial<
                      ::Tags::deriv<Xcts::Tags::ConformalFactor<DataType>,
                                    tmpl::size_t<3>, Frame::Inertial>>> /*meta*/)
-      const noexcept -> tuples::TaggedTuple<
+      const -> tuples::TaggedTuple<
           ::Tags::Initial<::Tags::deriv<Xcts::Tags::ConformalFactor<DataType>,
                                         tmpl::size_t<3>, Frame::Inertial>>>;
 
@@ -147,20 +146,20 @@ class ConstantDensityStar {
   auto variables(const tnsr::I<DataType, 3, Frame::Inertial>& x,
                  tmpl::list<::Tags::FixedSource<
                      Xcts::Tags::ConformalFactor<DataType>>> /*meta*/) const
-      noexcept -> tuples::TaggedTuple<
+      -> tuples::TaggedTuple<
           ::Tags::FixedSource<Xcts::Tags::ConformalFactor<DataType>>>;
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3, Frame::Inertial>& x,
                  tmpl::list<gr::Tags::EnergyDensity<DataType>> /*meta*/) const
-      noexcept -> tuples::TaggedTuple<gr::Tags::EnergyDensity<DataType>>;
+      -> tuples::TaggedTuple<gr::Tags::EnergyDensity<DataType>>;
   /// @}
 
   /// Retrieve a collection of variables at coordinates `x`
   template <typename DataType, typename... Tags>
   tuples::TaggedTuple<Tags...> variables(
       const tnsr::I<DataType, 3, Frame::Inertial>& x,
-      tmpl::list<Tags...> /*meta*/) const noexcept {
+      tmpl::list<Tags...> /*meta*/) const {
     static_assert(sizeof...(Tags) > 1,
                   "The generic template will recurse infinitely if only one "
                   "tag is being retrieved.");
@@ -168,7 +167,7 @@ class ConstantDensityStar {
   }
 
   // clang-tidy: no pass by reference
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
 
  private:
   double density_ = std::numeric_limits<double>::signaling_NaN();
@@ -177,9 +176,8 @@ class ConstantDensityStar {
 };
 
 bool operator==(const ConstantDensityStar& /*lhs*/,
-                const ConstantDensityStar& /*rhs*/) noexcept;
+                const ConstantDensityStar& /*rhs*/);
 
-bool operator!=(const ConstantDensityStar& lhs,
-                const ConstantDensityStar& rhs) noexcept;
+bool operator!=(const ConstantDensityStar& lhs, const ConstantDensityStar& rhs);
 
 }  // namespace Xcts::Solutions

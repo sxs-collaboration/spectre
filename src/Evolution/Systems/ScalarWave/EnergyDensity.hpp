@@ -32,12 +32,12 @@ namespace ScalarWave {
 template <size_t SpatialDim>
 void energy_density(
     gsl::not_null<Scalar<DataVector>*> result, const Scalar<DataVector>& pi,
-    const tnsr::i<DataVector, SpatialDim, Frame::Inertial>& phi) noexcept;
+    const tnsr::i<DataVector, SpatialDim, Frame::Inertial>& phi);
 
 template <size_t SpatialDim>
 Scalar<DataVector> energy_density(
     const Scalar<DataVector>& pi,
-    const tnsr::i<DataVector, SpatialDim, Frame::Inertial>& phi) noexcept;
+    const tnsr::i<DataVector, SpatialDim, Frame::Inertial>& phi);
 /// @}
 
 namespace Tags {
@@ -50,7 +50,7 @@ struct EnergyDensityCompute : EnergyDensity<SpatialDim>, db::ComputeTag {
 
   static constexpr auto function = static_cast<void (*)(
       gsl::not_null<Scalar<DataVector>*> result, const Scalar<DataVector>&,
-      const tnsr::i<DataVector, SpatialDim, Frame::Inertial>&) noexcept>(
+      const tnsr::i<DataVector, SpatialDim, Frame::Inertial>&)>(
       &energy_density<SpatialDim>);
 
   using base = EnergyDensity<SpatialDim>;

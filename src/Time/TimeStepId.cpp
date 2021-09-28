@@ -10,7 +10,7 @@
 #include "Time/EvolutionOrdering.hpp"
 #include "Time/Slab.hpp"
 
-void TimeStepId::canonicalize() noexcept {
+void TimeStepId::canonicalize() {
   if (time_runs_forward_ ? step_time_.is_at_slab_end()
                          : step_time_.is_at_slab_start()) {
     ASSERT(substep_ == 0,
@@ -23,7 +23,7 @@ void TimeStepId::canonicalize() noexcept {
   }
 }
 
-void TimeStepId::pup(PUP::er& p) noexcept {
+void TimeStepId::pup(PUP::er& p) {
   p | time_runs_forward_;
   p | slab_number_;
   p | step_time_;
@@ -31,7 +31,7 @@ void TimeStepId::pup(PUP::er& p) noexcept {
   p | substep_time_;
 }
 
-bool operator==(const TimeStepId& a, const TimeStepId& b) noexcept {
+bool operator==(const TimeStepId& a, const TimeStepId& b) {
   ASSERT(a.time_runs_forward() == b.time_runs_forward(),
          "Time is not running in a consistent direction");
   const bool equal = a.slab_number() == b.slab_number() and
@@ -45,11 +45,11 @@ bool operator==(const TimeStepId& a, const TimeStepId& b) noexcept {
   return equal;
 }
 
-bool operator!=(const TimeStepId& a, const TimeStepId& b) noexcept {
+bool operator!=(const TimeStepId& a, const TimeStepId& b) {
   return not(a == b);
 }
 
-bool operator<(const TimeStepId& a, const TimeStepId& b) noexcept {
+bool operator<(const TimeStepId& a, const TimeStepId& b) {
   ASSERT(a.time_runs_forward() == b.time_runs_forward(),
          "Time is not running in a consistent direction");
   return a.slab_number() < b.slab_number() or
@@ -58,22 +58,16 @@ bool operator<(const TimeStepId& a, const TimeStepId& b) noexcept {
                                                        b.step_time()) or
            (a.step_time() == b.step_time() and a.substep() < b.substep())));
 }
-bool operator<=(const TimeStepId& a, const TimeStepId& b) noexcept {
-  return not(b < a);
-}
-bool operator>(const TimeStepId& a, const TimeStepId& b) noexcept {
-  return b < a;
-}
-bool operator>=(const TimeStepId& a, const TimeStepId& b) noexcept {
-  return not(a < b);
-}
+bool operator<=(const TimeStepId& a, const TimeStepId& b) { return not(b < a); }
+bool operator>(const TimeStepId& a, const TimeStepId& b) { return b < a; }
+bool operator>=(const TimeStepId& a, const TimeStepId& b) { return not(a < b); }
 
-std::ostream& operator<<(std::ostream& s, const TimeStepId& id) noexcept {
+std::ostream& operator<<(std::ostream& s, const TimeStepId& id) {
   return s << id.slab_number() << ':' << id.step_time() << ':' << id.substep()
            << ':' << id.substep_time();
 }
 
-size_t hash_value(const TimeStepId& id) noexcept {
+size_t hash_value(const TimeStepId& id) {
   size_t h = 0;
   boost::hash_combine(h, id.slab_number());
   boost::hash_combine(h, id.step_time());
@@ -84,7 +78,7 @@ size_t hash_value(const TimeStepId& id) noexcept {
 
 // clang-tidy: do not modify std namespace (okay for hash)
 namespace std {  // NOLINT
-size_t hash<TimeStepId>::operator()(const TimeStepId& id) const noexcept {
+size_t hash<TimeStepId>::operator()(const TimeStepId& id) const {
   return boost::hash<TimeStepId>{}(id);
 }
 }  // namespace std

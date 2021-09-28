@@ -42,7 +42,7 @@ struct UpdatePrimitives {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     using PrimFromCon =
         typename Metavariables::system::template primitive_from_conservative<
             typename Metavariables::ordered_list_of_primitive_recovery_schemes>;

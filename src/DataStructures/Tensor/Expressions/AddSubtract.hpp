@@ -101,9 +101,9 @@ namespace detail {
 /// order of the other operand
 template <size_t NumIndicesIn, size_t NumIndicesOut>
 SPECTRE_ALWAYS_INLINE constexpr std::array<std::int32_t, NumIndicesOut>
-transform_addsub_symm(const std::array<std::int32_t, NumIndicesIn>& input_symm,
-                      const std::array<size_t, NumIndicesOut>&
-                          tensorindex_transformation) noexcept {
+transform_addsub_symm(
+    const std::array<std::int32_t, NumIndicesIn>& input_symm,
+    const std::array<size_t, NumIndicesOut>& tensorindex_transformation) {
   std::array<std::int32_t, NumIndicesOut> output_symm =
       make_array<NumIndicesOut, std::int32_t>(0);
   for (size_t i = 0; i < NumIndicesOut; i++) {
@@ -339,8 +339,7 @@ struct AddSub<T1, T2, ArgsList1<Args1...>, ArgsList2<Args2...>, Sign>
   /// \return the sum of or difference between the two components' values
   SPECTRE_ALWAYS_INLINE decltype(auto) add_or_subtract(
       const std::array<size_t, num_tensor_indices>& op1_multi_index,
-      const std::array<size_t, num_tensor_indices_op2>& op2_multi_index)
-      const noexcept {
+      const std::array<size_t, num_tensor_indices_op2>& op2_multi_index) const {
     if constexpr (Sign == 1) {
       return t1_.get(op1_multi_index) + t2_.get(op2_multi_index);
     } else {

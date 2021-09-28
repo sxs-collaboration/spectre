@@ -55,11 +55,11 @@ struct ResidualMonitor {
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
   static void initialize(
-      Parallel::CProxy_GlobalCache<Metavariables>& /*global_cache*/) noexcept {}
+      Parallel::CProxy_GlobalCache<Metavariables>& /*global_cache*/) {}
 
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
-      Parallel::CProxy_GlobalCache<Metavariables>& global_cache) noexcept {
+      Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *(global_cache.ckLocalBranch());
     Parallel::get_parallel_component<ResidualMonitor>(local_cache)
         .start_phase(next_phase);
@@ -95,7 +95,7 @@ struct InitializeResidualMonitor {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     Initialization::mutate_assign<simple_tags>(
         make_not_null(&box), std::numeric_limits<double>::signaling_NaN(),
         std::numeric_limits<double>::signaling_NaN(),

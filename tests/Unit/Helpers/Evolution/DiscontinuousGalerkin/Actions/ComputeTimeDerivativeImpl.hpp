@@ -9,5 +9,5 @@
 
 namespace TestHelpers::evolution::dg::Actions {
 template <SystemType system_type, size_t Dim>
-void test() noexcept;
+void test();
 }  // namespace TestHelpers::evolution::dg::Actions

@@ -29,13 +29,13 @@ class FunctionOfLorentzFactor {
  public:
   FunctionOfLorentzFactor(const double b_squared_over_d,
                           const double tau_over_d,
-                          const double normalized_s_dot_b) noexcept
+                          const double normalized_s_dot_b)
       : b_squared_over_d_(b_squared_over_d),
         tau_over_d_(tau_over_d),
         normalized_s_dot_b_(normalized_s_dot_b) {}
 
   // This function codes Eq. (B.34)
-  double operator()(const double lorentz_factor) const noexcept {
+  double operator()(const double lorentz_factor) const {
     return (lorentz_factor + b_squared_over_d_ - tau_over_d_ - 1.0) *
                (square(lorentz_factor) +
                 b_squared_over_d_ * square(normalized_s_dot_b_) *
@@ -81,7 +81,7 @@ FixConservatives::FixConservatives(
 }
 
 // clang-tidy: google-runtime-references
-void FixConservatives::pup(PUP::er& p) noexcept {  // NOLINT
+void FixConservatives::pup(PUP::er& p) {  // NOLINT
   p | minimum_rest_mass_density_times_lorentz_factor_;
   p | rest_mass_density_times_lorentz_factor_cutoff_;
   p | one_minus_safety_factor_for_magnetic_field_;
@@ -104,7 +104,7 @@ bool FixConservatives::operator()(
     const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
     const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
     const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
-    const Scalar<DataVector>& sqrt_det_spatial_metric) const noexcept {
+    const Scalar<DataVector>& sqrt_det_spatial_metric) const {
   bool needed_fixing = false;
   const size_t size = get<0>(tilde_b).size();
   Variables<tmpl::list<::Tags::TempScalar<0>, ::Tags::TempScalar<1>,
@@ -282,8 +282,7 @@ bool FixConservatives::operator()(
   return needed_fixing;
 }
 
-bool operator==(const FixConservatives& lhs,
-                const FixConservatives& rhs) noexcept {
+bool operator==(const FixConservatives& lhs, const FixConservatives& rhs) {
   return lhs.minimum_rest_mass_density_times_lorentz_factor_ ==
              rhs.minimum_rest_mass_density_times_lorentz_factor_ and
          lhs.rest_mass_density_times_lorentz_factor_cutoff_ ==
@@ -294,8 +293,7 @@ bool operator==(const FixConservatives& lhs,
              rhs.one_minus_safety_factor_for_momentum_density_;
 }
 
-bool operator!=(const FixConservatives& lhs,
-                const FixConservatives& rhs) noexcept {
+bool operator!=(const FixConservatives& lhs, const FixConservatives& rhs) {
   return not(lhs == rhs);
 }
 }  // namespace grmhd::ValenciaDivClean

@@ -44,7 +44,7 @@ class DenseMatrix : public blaze::DynamicMatrix<T, SO> {
 
   /// Charm++ serialization
   // clang-tidy: runtime-references
-  void pup(PUP::er& p) noexcept {  // NOLINT
+  void pup(PUP::er& p) {  // NOLINT
     auto rows = blaze::DynamicMatrix<T, SO>::rows();
     auto columns = blaze::DynamicMatrix<T, SO>::columns();
     p | rows;

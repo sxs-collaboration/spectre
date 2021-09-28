@@ -46,11 +46,10 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.StepToTimes", "[Unit][Time]") {
   Parallel::register_factory_classes_with_charm<Metavariables>();
 
   const auto requested = [](const double now, std::vector<double> times,
-                            const double step) noexcept {
+                            const double step) {
     double result = -1.0;
-    const auto impl =
-        [&result, &step](const TimeStepId& now_id,
-                         const std::vector<double>& impl_times) noexcept {
+    const auto impl = [&result, &step](const TimeStepId& now_id,
+                                       const std::vector<double>& impl_times) {
       CAPTURE(now_id);
       CAPTURE(impl_times);
       CAPTURE(step);
@@ -80,7 +79,7 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.StepToTimes", "[Unit][Time]") {
                 ->desired_slab(step, box, cache) == result);
     };
     impl(TimeStepId(true, 0, Slab(now, now + 1.0).start()), times);
-    alg::for_each(times, [](double& x) noexcept { return x = -x; });
+    alg::for_each(times, [](double& x) { return x = -x; });
     impl(TimeStepId(false, 0, Slab(-now, -now + 1.0).start()), times);
     return result;
   };
@@ -107,8 +106,7 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.StepToTimes", "[Unit][Time]") {
     CHECK(request < 2.0);
   }
 
-  const auto one_five_check = [&requested](
-      const std::vector<double>& times) noexcept {
+  const auto one_five_check = [&requested](const std::vector<double>& times) {
     CHECK(requested(0.0, times, infinity) == 1.0);
     CHECK(requested(1.0, times, infinity) == 4.0);
     CHECK(requested(2.0, times, infinity) == 3.0);
@@ -121,7 +119,7 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.StepToTimes", "[Unit][Time]") {
   one_five_check({1.0, 5.0, 1.0, 5.0, 1.0, 5.0});
 
   const auto check_rounding = [&requested](const double start,
-                                           const double step) noexcept {
+                                           const double step) {
     CAPTURE(start);
     CAPTURE(step);
     auto scaled_approx = Approx::custom().scale(std::abs(start));

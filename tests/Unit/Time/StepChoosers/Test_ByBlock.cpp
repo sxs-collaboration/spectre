@@ -44,7 +44,7 @@ struct Metavariables {
 };
 
 template <typename Use>
-void test_by_block() noexcept {
+void test_by_block() {
   using ByBlock = StepChoosers::ByBlock<Use, volume_dim>;
 
   const ByBlock by_block({2.5, 3.0, 3.5});

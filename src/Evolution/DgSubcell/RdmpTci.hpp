@@ -64,13 +64,13 @@ bool rdmp_tci(const Variables<tmpl::list<EvolvedVarsTags...>>&
                   inactive_grid_candidate_evolved_vars,
               const std::vector<double>& max_of_past_variables,
               const std::vector<double>& min_of_past_variables,
-              const double rdmp_delta0, const double rdmp_epsilon) noexcept {
+              const double rdmp_delta0, const double rdmp_epsilon) {
   bool cell_is_troubled = false;
   size_t component_index = 0;
   tmpl::for_each<tmpl::list<EvolvedVarsTags...>>(
       [&active_grid_candidate_evolved_vars, &cell_is_troubled, &component_index,
        &inactive_grid_candidate_evolved_vars, &max_of_past_variables,
-       &min_of_past_variables, rdmp_delta0, rdmp_epsilon](auto tag_v) noexcept {
+       &min_of_past_variables, rdmp_delta0, rdmp_epsilon](auto tag_v) {
         if (cell_is_troubled) {
           return;
         }
@@ -126,7 +126,7 @@ std::pair<std::vector<double>, std::vector<double>> rdmp_max_min(
     const Variables<tmpl::list<EvolvedVarsTags...>>& active_grid_evolved_vars,
     const Variables<tmpl::list<Tags::Inactive<EvolvedVarsTags>...>>&
         inactive_grid_evolved_vars,
-    const bool include_inactive_grid) noexcept {
+    const bool include_inactive_grid) {
   std::vector<double> max_of_vars(
       active_grid_evolved_vars.number_of_independent_components,
       std::numeric_limits<double>::min());
@@ -136,8 +136,7 @@ std::pair<std::vector<double>, std::vector<double>> rdmp_max_min(
   size_t component_index = 0;
   tmpl::for_each<tmpl::list<EvolvedVarsTags...>>(
       [&active_grid_evolved_vars, &component_index, &inactive_grid_evolved_vars,
-       &include_inactive_grid, &max_of_vars,
-       &min_of_vars](auto tag_v) noexcept {
+       &include_inactive_grid, &max_of_vars, &min_of_vars](auto tag_v) {
         using std::max;
         using std::min;
 

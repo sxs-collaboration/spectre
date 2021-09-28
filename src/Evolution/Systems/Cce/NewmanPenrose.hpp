@@ -61,6 +61,6 @@ struct VolumeWeyl<Tags::Psi0> {
       const Scalar<SpinWeighted<ComplexDataVector, 2>>& dy_dy_j,
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_k,
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_r,
-      const Scalar<SpinWeighted<ComplexDataVector, 0>>& one_minus_y) noexcept;
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>& one_minus_y);
 };
 }  // namespace Cce

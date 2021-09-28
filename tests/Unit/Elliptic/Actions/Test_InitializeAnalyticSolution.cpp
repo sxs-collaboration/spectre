@@ -49,8 +49,7 @@ struct AnalyticSolution : AnalyticSolutionOrData {
   WRAPPED_PUPable_decl(AnalyticSolution);
 
   static tuples::TaggedTuple<ScalarFieldTag> variables(
-      const tnsr::I<DataVector, 1>& x,
-      tmpl::list<ScalarFieldTag> /*meta*/) noexcept {
+      const tnsr::I<DataVector, 1>& x, tmpl::list<ScalarFieldTag> /*meta*/) {
     Scalar<DataVector> solution{2. * get<0>(x)};
     return {std::move(solution)};
   }

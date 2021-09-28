@@ -12,10 +12,9 @@
 
 namespace ScalarAdvection {
 template <size_t Dim>
-void Fluxes<Dim>::apply(
-    const gsl::not_null<tnsr::I<DataVector, Dim>*> u_flux,
-    const Scalar<DataVector>& u,
-    const tnsr::I<DataVector, Dim>& velocity_field) noexcept {
+void Fluxes<Dim>::apply(const gsl::not_null<tnsr::I<DataVector, Dim>*> u_flux,
+                        const Scalar<DataVector>& u,
+                        const tnsr::I<DataVector, Dim>& velocity_field) {
   for (size_t i = 0; i < Dim; ++i) {
     u_flux->get(i) = velocity_field.get(i) * get(u);
   }

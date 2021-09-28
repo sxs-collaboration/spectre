@@ -20,13 +20,13 @@
 namespace {
 template <typename... Ts>
 void assign_unique_values_to_tensor(
-    gsl::not_null<Tensor<double, Ts...>*> tensor) noexcept {
+    gsl::not_null<Tensor<double, Ts...>*> tensor) {
   std::iota(tensor->begin(), tensor->end(), 0.0);
 }
 
 template <typename... Ts>
 void assign_unique_values_to_tensor(
-    gsl::not_null<Tensor<DataVector, Ts...>*> tensor) noexcept {
+    gsl::not_null<Tensor<DataVector, Ts...>*> tensor) {
   double value = 0.0;
   for (auto index_it = tensor->begin(); index_it != tensor->end(); index_it++) {
     for (auto vector_it = index_it->begin(); vector_it != index_it->end();
@@ -56,8 +56,7 @@ void assign_unique_values_to_tensor(
 // \tparam DataType the type of data being stored in the tensor operand of the
 // products
 template <typename DataType>
-void test_outer_product_quotient_double(
-    const DataType& used_for_size) noexcept {
+void test_outer_product_quotient_double(const DataType& used_for_size) {
   constexpr size_t dim = 3;
   using tensor_type =
       Tensor<DataType, Symmetry<1, 1>,
@@ -113,7 +112,7 @@ void test_outer_product_quotient_double(
 //
 // \tparam DataType the type of data being stored in the product operands
 template <typename DataType>
-void test_outer_product_rank_0_operand(const DataType& used_for_size) noexcept {
+void test_outer_product_rank_0_operand(const DataType& used_for_size) {
   Tensor<DataType> R{{{used_for_size}}};
   if constexpr (std::is_same_v<DataType, double>) {
     // Replace tensor's value from `used_for_size` to a proper test value
@@ -206,7 +205,7 @@ void test_outer_product_rank_0_operand(const DataType& used_for_size) noexcept {
 //
 // \tparam DataType the type of data being stored in the product operands
 template <typename DataType>
-void test_outer_product_rank_1_operand(const DataType& used_for_size) noexcept {
+void test_outer_product_rank_1_operand(const DataType& used_for_size) {
   Tensor<DataType, Symmetry<1>,
          index_list<SpatialIndex<3, UpLo::Lo, Frame::Grid>>>
       Rl(used_for_size);
@@ -293,8 +292,7 @@ void test_outer_product_rank_1_operand(const DataType& used_for_size) noexcept {
 //
 // \tparam DataType the type of data being stored in the product operands
 template <typename DataType>
-void test_outer_product_rank_2x2_operands(
-    const DataType& used_for_size) noexcept {
+void test_outer_product_rank_2x2_operands(const DataType& used_for_size) {
   using R_index = SpacetimeIndex<3, UpLo::Lo, Frame::Grid>;
   using S_first_index = SpatialIndex<4, UpLo::Up, Frame::Grid>;
   using S_second_index = SpacetimeIndex<2, UpLo::Lo, Frame::Grid>;
@@ -456,8 +454,7 @@ void test_outer_product_rank_2x2_operands(
 //
 // \tparam DataType the type of data being stored in the product operands
 template <typename DataType>
-void test_outer_product_rank_0x1x2_operands(
-    const DataType& used_for_size) noexcept {
+void test_outer_product_rank_0x1x2_operands(const DataType& used_for_size) {
   Tensor<DataType> R{{{used_for_size}}};
   if constexpr (std::is_same_v<DataType, double>) {
     // Replace tensor's value from `used_for_size` to a proper test value
@@ -737,8 +734,7 @@ void test_outer_product_rank_0x1x2_operands(
 //
 // \tparam DataType the type of data being stored in the product operands
 template <typename DataType>
-void test_inner_product_rank_1x1_operands(
-    const DataType& used_for_size) noexcept {
+void test_inner_product_rank_1x1_operands(const DataType& used_for_size) {
   Tensor<DataType, Symmetry<1>,
          index_list<SpacetimeIndex<3, UpLo::Up, Frame::Grid>>>
       Ru(used_for_size);
@@ -775,8 +771,7 @@ void test_inner_product_rank_1x1_operands(
 //
 // \tparam DataType the type of data being stored in the product operands
 template <typename DataType>
-void test_inner_product_rank_2x2_operands(
-    const DataType& used_for_size) noexcept {
+void test_inner_product_rank_2x2_operands(const DataType& used_for_size) {
   using lower_spacetime_index = SpacetimeIndex<3, UpLo::Lo, Frame::Inertial>;
   using upper_spacetime_index = SpacetimeIndex<3, UpLo::Up, Frame::Inertial>;
   using lower_spatial_index = SpatialIndex<2, UpLo::Lo, Frame::Inertial>;
@@ -897,7 +892,7 @@ void test_inner_product_rank_2x2_operands(
 //
 // \tparam DataType the type of data being stored in the product operands
 template <typename DataType>
-void test_two_term_inner_outer_product(const DataType& used_for_size) noexcept {
+void test_two_term_inner_outer_product(const DataType& used_for_size) {
   using R_index = SpacetimeIndex<3, UpLo::Lo, Frame::Grid>;
   using T_index = SpacetimeIndex<3, UpLo::Up, Frame::Grid>;
 
@@ -1018,8 +1013,7 @@ void test_two_term_inner_outer_product(const DataType& used_for_size) noexcept {
 //
 // \tparam DataType the type of data being stored in the product operands
 template <typename DataType>
-void test_three_term_inner_outer_product(
-    const DataType& used_for_size) noexcept {
+void test_three_term_inner_outer_product(const DataType& used_for_size) {
   Tensor<DataType, Symmetry<1>,
          index_list<SpatialIndex<3, UpLo::Up, Frame::Inertial>>>
       Ru(used_for_size);
@@ -1149,7 +1143,7 @@ void test_three_term_inner_outer_product(
 // \tparam DataType the type of data being stored in the tensor operand of the
 // products
 template <typename DataType>
-void test_spatial_spacetime_index(const DataType& used_for_size) noexcept {
+void test_spatial_spacetime_index(const DataType& used_for_size) {
   std::uniform_real_distribution<> distribution(0.1, 1.0);
 
   Tensor<DataType, Symmetry<1>,
@@ -1247,7 +1241,7 @@ void test_spatial_spacetime_index(const DataType& used_for_size) noexcept {
 // \tparam DataType the type of data being stored in the tensor operand of the
 // products
 template <typename DataType>
-void test_time_index(const DataType& used_for_size) noexcept {
+void test_time_index(const DataType& used_for_size) {
   Tensor<DataType, Symmetry<1>,
          index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
       R(used_for_size);
@@ -1343,7 +1337,7 @@ void test_time_index(const DataType& used_for_size) noexcept {
 }
 
 template <typename DataType>
-void test_products(const DataType& used_for_size) noexcept {
+void test_products(const DataType& used_for_size) {
   // Test evaluation of outer products
   test_outer_product_quotient_double(used_for_size);
   test_outer_product_rank_0_operand(used_for_size);

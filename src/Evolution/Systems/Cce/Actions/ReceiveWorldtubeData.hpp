@@ -52,12 +52,10 @@ struct ReceiveWorldtubeData {
                   typename Metavariables::cce_boundary_communication_tags>> and
           tmpl::list_contains_v<DbTags, ::Tags::TimeStepId>> = nullptr>
   static std::tuple<db::DataBox<DbTags>&&, Parallel::AlgorithmExecution> apply(
-      db::DataBox<DbTags>& box,
-      tuples::TaggedTuple<InboxTags...>& inboxes,
+      db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& inboxes,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/,
-      const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
     auto& inbox = tuples::get<Cce::ReceiveTags::BoundaryData<
         typename Metavariables::cce_boundary_communication_tags>>(inboxes);
     if (inbox.count(db::get<::Tags::TimeStepId>(box)) != 1) {
@@ -65,12 +63,12 @@ struct ReceiveWorldtubeData {
     }
 
     tmpl::for_each<typename Metavariables::cce_boundary_communication_tags>(
-        [&inbox, &box ](auto tag_v) noexcept {
+        [&inbox, &box](auto tag_v) {
           using tag = typename decltype(tag_v)::type;
           db::mutate<tag>(
               make_not_null(&box),
               [&inbox](const gsl::not_null<typename tag::type*> destination,
-                       const TimeStepId& time) noexcept {
+                       const TimeStepId& time) {
                 *destination = get<tag>(inbox[time]);
               },
               db::get<::Tags::TimeStepId>(box));
@@ -92,7 +90,7 @@ struct ReceiveWorldtubeData {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     ERROR(
         "Required tags not present in the inbox or databox to transfer the CCE "
         "boundary data");

@@ -67,7 +67,7 @@ void time_deriv_of_lapse(
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_unit_normal,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
-    const tnsr::aa<DataType, SpatialDim, Frame>& pi) noexcept;
+    const tnsr::aa<DataType, SpatialDim, Frame>& pi);
 
 template <size_t SpatialDim, typename Frame, typename DataType>
 Scalar<DataType> time_deriv_of_lapse(
@@ -75,7 +75,7 @@ Scalar<DataType> time_deriv_of_lapse(
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_unit_normal,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
-    const tnsr::aa<DataType, SpatialDim, Frame>& pi) noexcept;
+    const tnsr::aa<DataType, SpatialDim, Frame>& pi);
 /// @}
 
 namespace Tags {
@@ -102,7 +102,7 @@ struct TimeDerivLapseCompute : ::Tags::dt<gr::Tags::Lapse<DataVector>>,
       const tnsr::I<DataVector, SpatialDim, Frame>&,
       const tnsr::A<DataVector, SpatialDim, Frame>&,
       const tnsr::iaa<DataVector, SpatialDim, Frame>&,
-      const tnsr::aa<DataVector, SpatialDim, Frame>&) noexcept>(
+      const tnsr::aa<DataVector, SpatialDim, Frame>&)>(
       &time_deriv_of_lapse<SpatialDim, Frame>);
 
   using base = ::Tags::dt<gr::Tags::Lapse<DataVector>>;

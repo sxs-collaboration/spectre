@@ -28,7 +28,7 @@ struct Inertial;
 
 namespace {
 template <size_t VolumeDim, typename DataType, typename Fr>
-void test_pow_x_random(const DataType& used_for_size) noexcept {
+void test_pow_x_random(const DataType& used_for_size) {
   Parallel::register_classes_with_charm<MathFunctions::PowX<VolumeDim, Fr>>();
 
   for (int power = -5; power < 6; ++power) {

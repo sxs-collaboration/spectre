@@ -27,7 +27,7 @@ Matrix flux_jacobian<1>(const tnsr::I<double, 1>& velocity,
                         const double kappa_over_density,
                         const double b_times_theta,
                         const double specific_enthalpy,
-                        const tnsr::i<double, 1>& unit_normal) noexcept {
+                        const tnsr::i<double, 1>& unit_normal) {
   const double n_x = get<0>(unit_normal);
   const double u = get<0>(velocity);
   const Matrix a_x = blaze::DynamicMatrix<double>{
@@ -45,7 +45,7 @@ Matrix flux_jacobian<2>(const tnsr::I<double, 2>& velocity,
                         const double kappa_over_density,
                         const double b_times_theta,
                         const double specific_enthalpy,
-                        const tnsr::i<double, 2>& unit_normal) noexcept {
+                        const tnsr::i<double, 2>& unit_normal) {
   const double n_x = get<0>(unit_normal);
   const double n_y = get<1>(unit_normal);
   const double u = get<0>(velocity);
@@ -74,7 +74,7 @@ Matrix flux_jacobian<3>(const tnsr::I<double, 3>& velocity,
                         const double kappa_over_density,
                         const double b_times_theta,
                         const double specific_enthalpy,
-                        const tnsr::i<double, 3>& unit_normal) noexcept {
+                        const tnsr::i<double, 3>& unit_normal) {
   const double n_x = get<0>(unit_normal);
   const double n_y = get<1>(unit_normal);
   const double n_z = get<2>(unit_normal);
@@ -121,7 +121,7 @@ void characteristic_speeds(
     const gsl::not_null<std::array<DataVector, Dim + 2>*> char_speeds,
     const tnsr::I<DataVector, Dim>& velocity,
     const Scalar<DataVector>& sound_speed,
-    const tnsr::i<DataVector, Dim>& normal) noexcept {
+    const tnsr::i<DataVector, Dim>& normal) {
   auto& characteristic_speeds = *char_speeds;
   characteristic_speeds =
       make_array<Dim + 2>(DataVector(get(dot_product(velocity, normal))));
@@ -134,7 +134,7 @@ template <size_t Dim>
 std::array<DataVector, Dim + 2> characteristic_speeds(
     const tnsr::I<DataVector, Dim>& velocity,
     const Scalar<DataVector>& sound_speed,
-    const tnsr::i<DataVector, Dim>& normal) noexcept {
+    const tnsr::i<DataVector, Dim>& normal) {
   std::array<DataVector, Dim + 2> char_speeds{};
   characteristic_speeds(make_not_null(&char_speeds), velocity, sound_speed,
                         normal);
@@ -146,7 +146,7 @@ Matrix right_eigenvectors<1>(const tnsr::I<double, 1>& velocity,
                              const Scalar<double>& sound_speed_squared,
                              const Scalar<double>& specific_enthalpy,
                              const Scalar<double>& kappa_over_density,
-                             const tnsr::i<double, 1>& unit_normal) noexcept {
+                             const tnsr::i<double, 1>& unit_normal) {
   ASSERT(equal_within_roundoff(get(magnitude(unit_normal)), 1.),
          "Expected unit normal, but got normal with magnitude "
              << get(magnitude(unit_normal)));
@@ -175,7 +175,7 @@ Matrix right_eigenvectors<2>(const tnsr::I<double, 2>& velocity,
                              const Scalar<double>& sound_speed_squared,
                              const Scalar<double>& specific_enthalpy,
                              const Scalar<double>& kappa_over_density,
-                             const tnsr::i<double, 2>& unit_normal) noexcept {
+                             const tnsr::i<double, 2>& unit_normal) {
   ASSERT(equal_within_roundoff(get(magnitude(unit_normal)), 1.),
          "Expected unit normal, but got normal with magnitude "
              << get(magnitude(unit_normal)));
@@ -213,7 +213,7 @@ Matrix right_eigenvectors<3>(const tnsr::I<double, 3>& velocity,
                              const Scalar<double>& sound_speed_squared,
                              const Scalar<double>& specific_enthalpy,
                              const Scalar<double>& kappa_over_density,
-                             const tnsr::i<double, 3>& unit_normal) noexcept {
+                             const tnsr::i<double, 3>& unit_normal) {
   ASSERT(equal_within_roundoff(get(magnitude(unit_normal)), 1.),
          "Expected unit normal, but got normal with magnitude "
              << get(magnitude(unit_normal)));
@@ -249,11 +249,11 @@ Matrix right_eigenvectors<3>(const tnsr::I<double, 3>& velocity,
   // eigenvectors are chosen so that the largest of (n_x, n_y, n_z) appears in
   // the denominator, because this avoids division by zero. Here we make the
   // consistent choice of right eigenvectors.
-  const auto index_of_largest =
-      std::distance(unit_normal.begin(), alg::max_element(unit_normal, [
-                    ](const double n1, const double n2) noexcept {
-                      return fabs(n1) < fabs(n2);
-                    }));
+  const auto index_of_largest = std::distance(
+      unit_normal.begin(),
+      alg::max_element(unit_normal, [](const double n1, const double n2) {
+        return fabs(n1) < fabs(n2);
+      }));
   if (index_of_largest == 0) {
     // right eigenvectors corresponding to left eigenvectors with 1/n_x terms
     result(0, 2) = 0.;
@@ -299,7 +299,7 @@ Matrix left_eigenvectors<1>(const tnsr::I<double, 1>& velocity,
                             const Scalar<double>& sound_speed_squared,
                             const Scalar<double>& specific_enthalpy,
                             const Scalar<double>& kappa_over_density,
-                            const tnsr::i<double, 1>& unit_normal) noexcept {
+                            const tnsr::i<double, 1>& unit_normal) {
   ASSERT(equal_within_roundoff(get(magnitude(unit_normal)), 1.),
          "Expected unit normal, but got normal with magnitude "
              << get(magnitude(unit_normal)));
@@ -336,7 +336,7 @@ Matrix left_eigenvectors<2>(const tnsr::I<double, 2>& velocity,
                             const Scalar<double>& sound_speed_squared,
                             const Scalar<double>& specific_enthalpy,
                             const Scalar<double>& kappa_over_density,
-                            const tnsr::i<double, 2>& unit_normal) noexcept {
+                            const tnsr::i<double, 2>& unit_normal) {
   ASSERT(equal_within_roundoff(get(magnitude(unit_normal)), 1.),
          "Expected unit normal, but got normal with magnitude "
              << get(magnitude(unit_normal)));
@@ -384,7 +384,7 @@ Matrix left_eigenvectors<3>(const tnsr::I<double, 3>& velocity,
                             const Scalar<double>& sound_speed_squared,
                             const Scalar<double>& specific_enthalpy,
                             const Scalar<double>& kappa_over_density,
-                            const tnsr::i<double, 3>& unit_normal) noexcept {
+                            const tnsr::i<double, 3>& unit_normal) {
   ASSERT(equal_within_roundoff(get(magnitude(unit_normal)), 1.),
          "Expected unit normal, but got normal with magnitude "
              << get(magnitude(unit_normal)));
@@ -432,11 +432,11 @@ Matrix left_eigenvectors<3>(const tnsr::I<double, 3>& velocity,
   // use rows where the largest of (n_x, n_y, n_z) appears in the denominator,
   // because this avoids division by zero. A consistent choice of right
   // eigenvectors must be made.
-  const auto index_of_largest =
-      std::distance(unit_normal.begin(), alg::max_element(unit_normal, [
-                    ](const double n1, const double n2) noexcept {
-                      return fabs(n1) < fabs(n2);
-                    }));
+  const auto index_of_largest = std::distance(
+      unit_normal.begin(),
+      alg::max_element(unit_normal, [](const double n1, const double n2) {
+        return fabs(n1) < fabs(n2);
+      }));
   if (index_of_largest == 0) {
     // left eigenvectors with 1/n_x terms
     result(2, 0) = (n_y * v_n - v) / n_x;
@@ -483,7 +483,7 @@ std::pair<DataVector, std::pair<Matrix, Matrix>> numerical_eigensystem(
     const Scalar<double>& sound_speed_squared,
     const Scalar<double>& specific_enthalpy,
     const Scalar<double>& kappa_over_density,
-    const tnsr::i<double, Dim>& unit_normal) noexcept {
+    const tnsr::i<double, Dim>& unit_normal) {
   ASSERT(equal_within_roundoff(get(magnitude(unit_normal)), 1.),
          "Expected unit normal, but got normal with magnitude "
              << get(magnitude(unit_normal)));
@@ -516,15 +516,15 @@ std::pair<DataVector, std::pair<Matrix, Matrix>> numerical_eigensystem(
 
   const auto find_group_of_eigenvectors =
       [&a_minus_lambda, &a, &U, &s, &V, &eigenvalues, &right](
-          const size_t index, const size_t degeneracy) noexcept {
+          const size_t index, const size_t degeneracy) {
         a_minus_lambda = a;
         for (size_t i = 0; i < Dim + 2; ++i) {
           a_minus_lambda(i, i) -= eigenvalues[index];
         }
         blaze::svd(a_minus_lambda, U, s, V);
 
-        // Check the null space has the expected size: the last degeneracy
-        // singular values should vanish
+    // Check the null space has the expected size: the last degeneracy
+    // singular values should vanish
 #ifdef SPECTRE_DEBUG
         for (size_t i = 0; i < Dim + 2 - degeneracy; ++i) {
           ASSERT(fabs(s[i]) > 1e-14, "Bad SVD");
@@ -565,19 +565,19 @@ std::pair<DataVector, std::pair<Matrix, Matrix>> numerical_eigensystem(
       const gsl::not_null<std::array<DataVector, DIM(data) + 2>*> char_speeds, \
       const tnsr::I<DataVector, DIM(data)>& velocity,                          \
       const Scalar<DataVector>& sound_speed,                                   \
-      const tnsr::i<DataVector, DIM(data)>& normal) noexcept;                  \
+      const tnsr::i<DataVector, DIM(data)>& normal);                           \
   template std::array<DataVector, DIM(data) + 2>                               \
   NewtonianEuler::characteristic_speeds(                                       \
       const tnsr::I<DataVector, DIM(data)>& velocity,                          \
       const Scalar<DataVector>& sound_speed,                                   \
-      const tnsr::i<DataVector, DIM(data)>& normal) noexcept;                  \
+      const tnsr::i<DataVector, DIM(data)>& normal);                           \
   template struct NewtonianEuler::Tags::ComputeLargestCharacteristicSpeed<DIM( \
       data)>;                                                                  \
   template std::pair<DataVector, std::pair<Matrix, Matrix>>                    \
   NewtonianEuler::numerical_eigensystem(                                       \
       const tnsr::I<double, DIM(data)>&, const Scalar<double>&,                \
       const Scalar<double>&, const Scalar<double>&,                            \
-      const tnsr::i<double, DIM(data)>&) noexcept;
+      const tnsr::i<double, DIM(data)>&);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 

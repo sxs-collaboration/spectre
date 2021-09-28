@@ -36,7 +36,7 @@ struct InsertIntoInterpolationManagerImpl {
       const gsl::not_null<ScriPlusInterpolationManager<ComplexDataVector, Tag>*>
           interpolation_manager,
       const typename Tag::type& scri_data,
-      const Scalar<DataVector>& inertial_retarded_time) noexcept {
+      const Scalar<DataVector>& inertial_retarded_time) {
     interpolation_manager->insert_data(get(inertial_retarded_time),
                                        get(scri_data).data());
   }
@@ -54,7 +54,7 @@ struct InsertIntoInterpolationManagerImpl<::Tags::Multiplies<LhsTag, RhsTag>> {
                         interpolation_manager,
                     const typename LhsTag::type& lhs_data,
                     const typename RhsTag::type& rhs_data,
-                    const Scalar<DataVector>& inertial_retarded_time) noexcept {
+                    const Scalar<DataVector>& inertial_retarded_time) {
     interpolation_manager->insert_data(get(inertial_retarded_time),
                                        get(lhs_data).data(),
                                        get(rhs_data).data());
@@ -64,7 +64,7 @@ struct InsertIntoInterpolationManagerImpl<::Tags::Multiplies<LhsTag, RhsTag>> {
 template <typename Tag, typename ParallelComponent, typename Metavariables>
 void output_impl(const size_t observation_l_max, const size_t l_max,
                  const TimeStepId& time_id, const typename Tag::type& tag_data,
-                 Parallel::GlobalCache<Metavariables>& cache) noexcept {
+                 Parallel::GlobalCache<Metavariables>& cache) {
   std::vector<double> data_to_write(2 * square(observation_l_max + 1) + 1);
   std::vector<std::string> file_legend;
   file_legend.reserve(2 * square(observation_l_max + 1) + 1);
@@ -137,7 +137,7 @@ struct InsertInterpolationScriData {
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     if constexpr(tt::is_a_v<AnalyticWorldtubeBoundary, BoundaryComponent>) {
       if (db::get<Tags::OutputNoninertialNews>(box) and
           db::get<::Tags::TimeStepId>(box).substep() == 0 and
@@ -173,7 +173,7 @@ struct InsertInterpolationScriData {
               const gsl::not_null<
                   ScriPlusInterpolationManager<ComplexDataVector, Tag>*>
                   interpolation_manager,
-              const size_t number_of_interpolated_times) noexcept {
+              const size_t number_of_interpolated_times) {
             for (size_t i = 0; i < number_of_interpolated_times; ++i) {
               interpolation_manager->insert_target_time(
                   this_time +

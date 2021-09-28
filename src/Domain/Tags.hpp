@@ -58,8 +58,7 @@ struct Domain : db::SimpleTag {
 
   static constexpr bool pass_metavariables = false;
   static ::Domain<VolumeDim> create_from_options(
-      const std::unique_ptr<::DomainCreator<VolumeDim>>&
-          domain_creator) noexcept;
+      const std::unique_ptr<::DomainCreator<VolumeDim>>& domain_creator);
 };
 
 /// \ingroup DataBoxTagsGroup
@@ -73,7 +72,7 @@ struct InitialExtents : db::SimpleTag {
 
   static constexpr bool pass_metavariables = false;
   static std::vector<std::array<size_t, Dim>> create_from_options(
-      const std::unique_ptr<::DomainCreator<Dim>>& domain_creator) noexcept;
+      const std::unique_ptr<::DomainCreator<Dim>>& domain_creator);
 };
 
 /// \ingroup DataBoxTagsGroup
@@ -87,7 +86,7 @@ struct InitialRefinementLevels : db::SimpleTag {
 
   static constexpr bool pass_metavariables = false;
   static std::vector<std::array<size_t, Dim>> create_from_options(
-      const std::unique_ptr<::DomainCreator<Dim>>& domain_creator) noexcept;
+      const std::unique_ptr<::DomainCreator<Dim>>& domain_creator);
 };
 
 /// \ingroup DataBoxTagsGroup
@@ -117,7 +116,7 @@ struct ElementMap : db::SimpleTag {
   using target_frame = TargetFrame;
   using source_frame = Frame::ElementLogical;
 
-  static std::string name() noexcept {
+  static std::string name() {
     return "ElementMap(" + get_output(TargetFrame{}) + ")";
   }
   using type = ::ElementMap<VolumeDim, TargetFrame>;
@@ -128,9 +127,7 @@ struct ElementMap : db::SimpleTag {
 /// The coordinates in a given frame.
 template <size_t Dim, typename Frame>
 struct Coordinates : db::SimpleTag {
-  static std::string name() noexcept {
-    return get_output(Frame{}) + "Coordinates";
-  }
+  static std::string name() { return get_output(Frame{}) + "Coordinates"; }
   using type = tnsr::I<DataVector, Dim, Frame>;
 };
 
@@ -150,7 +147,7 @@ struct MappedCoordinates
       const gsl::not_null<return_type*> target_coords,
       const typename MapTag::type& element_map,
       const tnsr::I<DataVector, MapTag::dim, typename MapTag::source_frame>&
-          source_coords) noexcept {
+          source_coords) {
     *target_coords = element_map(source_coords);
   }
 };
@@ -163,7 +160,7 @@ struct MappedCoordinates
 /// denotes the source frame and \f$i\f$ denotes the target frame.
 template <size_t Dim, typename SourceFrame, typename TargetFrame>
 struct InverseJacobian : db::SimpleTag {
-  static std::string name() noexcept {
+  static std::string name() {
     return "InverseJacobian(" + get_output(SourceFrame{}) + "," +
            get_output(TargetFrame{}) + ")";
   }
@@ -188,7 +185,7 @@ struct InverseJacobianCompute
       const gsl::not_null<return_type*> inv_jacobian,
       const typename MapTag::type& element_map,
       const tnsr::I<DataVector, MapTag::dim, typename MapTag::source_frame>&
-          source_coords) noexcept {
+          source_coords) {
     *inv_jacobian = element_map.inv_jacobian(source_coords);
   }
 };
@@ -202,7 +199,7 @@ struct InverseJacobianCompute
 /// frame.
 template <size_t Dim, typename SourceFrame, typename TargetFrame>
 struct Jacobian : db::SimpleTag {
-  static std::string name() noexcept {
+  static std::string name() {
     return "Jacobian(" + get_output(SourceFrame{}) + "," +
            get_output(TargetFrame{}) + ")";
   }
@@ -223,7 +220,7 @@ struct JacobianCompute : Jacobian<Dim, SourceFrame, TargetFrame>,
   static constexpr auto function(
       const gsl::not_null<return_type*> jacobian,
       const ::InverseJacobian<DataVector, Dim, SourceFrame, TargetFrame>&
-          inv_jac) noexcept {
+          inv_jac) {
     *jacobian = determinant_and_inverse(inv_jac).second;
   }
 };
@@ -235,7 +232,7 @@ struct JacobianCompute : Jacobian<Dim, SourceFrame, TargetFrame>,
 template <typename SourceFrame, typename TargetFrame>
 struct DetInvJacobian : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static std::string name() noexcept {
+  static std::string name() {
     return "DetInvJacobian(" + get_output(SourceFrame{}) + "," +
            get_output(TargetFrame{}) + ")";
   }
@@ -253,7 +250,7 @@ struct DetInvJacobianCompute : db::ComputeTag,
       tmpl::list<InverseJacobian<Dim, SourceFrame, TargetFrame>>;
   static void function(const gsl::not_null<return_type*> det_inv_jac,
                        const ::InverseJacobian<DataVector, Dim, SourceFrame,
-                                               TargetFrame>& inv_jac) noexcept {
+                                               TargetFrame>& inv_jac) {
     determinant(det_inv_jac, inv_jac);
   }
 };
@@ -281,7 +278,7 @@ struct InternalDirectionsCompute : InternalDirections<VolumeDim>,
   using return_type = std::unordered_set<::Direction<VolumeDim>>;
   using argument_tags = tmpl::list<Element<VolumeDim>>;
   static void function(const gsl::not_null<return_type*> directions,
-                       const ::Element<VolumeDim>& element) noexcept {
+                       const ::Element<VolumeDim>& element) {
     for (const auto& direction_neighbors : element.neighbors()) {
       directions->insert(direction_neighbors.first);
     }
@@ -310,7 +307,7 @@ struct BoundaryDirectionsInteriorCompute
   using return_type = std::unordered_set<::Direction<VolumeDim>>;
   using argument_tags = tmpl::list<Element<VolumeDim>>;
   static void function(const gsl::not_null<return_type*> directions,
-                       const ::Element<VolumeDim>& element) noexcept {
+                       const ::Element<VolumeDim>& element) {
     *directions = element.external_boundaries();
   }
 };
@@ -337,7 +334,7 @@ struct BoundaryDirectionsExteriorCompute
   using return_type = std::unordered_set<::Direction<VolumeDim>>;
   using argument_tags = tmpl::list<Element<VolumeDim>>;
   static constexpr auto function(const gsl::not_null<return_type*> directions,
-                                 const ::Element<VolumeDim>& element) noexcept {
+                                 const ::Element<VolumeDim>& element) {
     *directions = element.external_boundaries();
   }
 };
@@ -368,7 +365,7 @@ template <typename DirectionsTag, typename Tag>
 struct Interface : db::SimpleTag {
   static_assert(db::is_simple_tag_v<DirectionsTag>);
   static_assert(db::is_simple_tag_v<Tag>);
-  static std::string name() noexcept {
+  static std::string name() {
     return "Interface<" + db::tag_name<DirectionsTag>() + ", " +
            db::tag_name<Tag>() + ">";
   };
@@ -401,7 +398,7 @@ struct InterfaceSubitemsImpl {
   template <typename Subtag>
   static void create_item(
       const gsl::not_null<typename tag::type*> parent_value,
-      const gsl::not_null<typename Subtag::type*> sub_value) noexcept {
+      const gsl::not_null<typename Subtag::type*> sub_value) {
     sub_value->clear();
     for (auto& direction_vars : *parent_value) {
       const auto& direction = direction_vars.first;
@@ -422,7 +419,7 @@ struct InterfaceSubitemsImpl {
   template <typename Subtag>
   static void create_compute_item(
       const gsl::not_null<typename Subtag::type*> sub_value,
-      const typename tag::type& parent_value) noexcept {
+      const typename tag::type& parent_value) {
     for (const auto& direction_vars : parent_value) {
       const auto& direction = direction_vars.first;
       const auto& parent_vars =

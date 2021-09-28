@@ -19,7 +19,7 @@ struct Inertial;
 template <typename Frame>
 Strahlkorper<Frame>::Strahlkorper(const size_t l_max, const size_t m_max,
                                   const double radius,
-                                  std::array<double, 3> center) noexcept
+                                  std::array<double, 3> center)
     : l_max_(l_max),
       m_max_(m_max),
       ylm_(l_max, m_max),
@@ -33,7 +33,7 @@ template <typename Frame>
 Strahlkorper<Frame>::Strahlkorper(
     const size_t l_max, const size_t m_max,
     const DataVector& radius_at_collocation_points,
-    std::array<double, 3> center) noexcept
+    std::array<double, 3> center)
     : l_max_(l_max),
       m_max_(m_max),
       ylm_(l_max, m_max),
@@ -46,9 +46,8 @@ Strahlkorper<Frame>::Strahlkorper(
 }
 
 template <typename Frame>
-Strahlkorper<Frame>::Strahlkorper(
-    const size_t l_max, const size_t m_max,
-    const Strahlkorper& another_strahlkorper) noexcept
+Strahlkorper<Frame>::Strahlkorper(const size_t l_max, const size_t m_max,
+                                  const Strahlkorper& another_strahlkorper)
     : l_max_(l_max),
       m_max_(m_max),
       ylm_(l_max, m_max),
@@ -57,8 +56,8 @@ Strahlkorper<Frame>::Strahlkorper(
           another_strahlkorper.strahlkorper_coefs_, ylm_)) {}
 
 template <typename Frame>
-Strahlkorper<Frame>::Strahlkorper(
-    DataVector coefs, const Strahlkorper& another_strahlkorper) noexcept
+Strahlkorper<Frame>::Strahlkorper(DataVector coefs,
+                                  const Strahlkorper& another_strahlkorper)
     : l_max_(another_strahlkorper.l_max_),
       m_max_(another_strahlkorper.m_max_),
       ylm_(another_strahlkorper.ylm_),
@@ -72,7 +71,7 @@ Strahlkorper<Frame>::Strahlkorper(
 
 template <typename Frame>
 Strahlkorper<Frame>::Strahlkorper(DataVector coefs,
-                                  Strahlkorper&& another_strahlkorper) noexcept
+                                  Strahlkorper&& another_strahlkorper)
     : l_max_(another_strahlkorper.l_max_),
       m_max_(another_strahlkorper.m_max_),
       ylm_(std::move(another_strahlkorper.ylm_)),
@@ -85,7 +84,7 @@ Strahlkorper<Frame>::Strahlkorper(DataVector coefs,
 }
 
 template <typename Frame>
-void Strahlkorper<Frame>::pup(PUP::er& p) noexcept {
+void Strahlkorper<Frame>::pup(PUP::er& p) {
   p | l_max_;
   p | m_max_;
   p | center_;
@@ -97,7 +96,7 @@ void Strahlkorper<Frame>::pup(PUP::er& p) noexcept {
 }
 
 template <typename Frame>
-std::array<double, 3> Strahlkorper<Frame>::physical_center() const noexcept {
+std::array<double, 3> Strahlkorper<Frame>::physical_center() const {
   // Uses Eqs. (38)-(40) in Hemberger et al, arXiv:1211.6079.  This is
   // an approximation of Eq. (37) in the same paper, which gives the
   // exact result.
@@ -110,19 +109,18 @@ std::array<double, 3> Strahlkorper<Frame>::physical_center() const noexcept {
 }
 
 template <typename Frame>
-double Strahlkorper<Frame>::average_radius() const noexcept {
+double Strahlkorper<Frame>::average_radius() const {
   return YlmSpherepack::average(coefficients());
 }
 
 template <typename Frame>
-double Strahlkorper<Frame>::radius(const double theta,
-                                   const double phi) const noexcept {
+double Strahlkorper<Frame>::radius(const double theta, const double phi) const {
   return ylm_.interpolate_from_coefs<double>(strahlkorper_coefs_, {theta, phi});
 }
 
 template <typename Frame>
 bool Strahlkorper<Frame>::point_is_contained(
-    const std::array<double, 3>& x) const noexcept {
+    const std::array<double, 3>& x) const {
   // The point `x` is assumed to be in Cartesian coords in the
   // Strahlkorper frame.
 

@@ -13,11 +13,10 @@
 #include "Utilities/MakeString.hpp"
 
 namespace Burgers::BoundaryConditions {
-Outflow::Outflow(CkMigrateMessage* const msg) noexcept
-    : BoundaryCondition(msg) {}
+Outflow::Outflow(CkMigrateMessage* const msg) : BoundaryCondition(msg) {}
 
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-Outflow::get_clone() const noexcept {
+Outflow::get_clone() const {
   return std::make_unique<Outflow>(*this);
 }
 
@@ -28,7 +27,7 @@ std::optional<std::string> Outflow::dg_outflow(
         face_mesh_velocity,
     const tnsr::i<DataVector, 1, Frame::Inertial>&
         outward_directed_normal_covector,
-    const Scalar<DataVector>& u) noexcept {
+    const Scalar<DataVector>& u) {
   double min_speed = std::numeric_limits<double>::signaling_NaN();
   if (face_mesh_velocity.has_value()) {
     min_speed = min(get<0>(outward_directed_normal_covector) *

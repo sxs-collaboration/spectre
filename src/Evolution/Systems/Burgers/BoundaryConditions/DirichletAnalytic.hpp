@@ -44,18 +44,18 @@ class DirichletAnalytic final : public BoundaryCondition {
       "the analytic solution or analytic data."};
 
   DirichletAnalytic() = default;
-  DirichletAnalytic(DirichletAnalytic&&) noexcept = default;
-  DirichletAnalytic& operator=(DirichletAnalytic&&) noexcept = default;
+  DirichletAnalytic(DirichletAnalytic&&) = default;
+  DirichletAnalytic& operator=(DirichletAnalytic&&) = default;
   DirichletAnalytic(const DirichletAnalytic&) = default;
   DirichletAnalytic& operator=(const DirichletAnalytic&) = default;
   ~DirichletAnalytic() override = default;
 
-  explicit DirichletAnalytic(CkMigrateMessage* msg) noexcept;
+  explicit DirichletAnalytic(CkMigrateMessage* msg);
 
   WRAPPED_PUPable_decl_base_template(
       domain::BoundaryConditions::BoundaryCondition, DirichletAnalytic);
 
-  auto get_clone() const noexcept -> std::unique_ptr<
+  auto get_clone() const -> std::unique_ptr<
       domain::BoundaryConditions::BoundaryCondition> override;
 
   static constexpr evolution::BoundaryConditions::Type bc_type =
@@ -78,7 +78,7 @@ class DirichletAnalytic final : public BoundaryCondition {
       const tnsr::i<DataVector, 1, Frame::Inertial>& /*normal_covector*/,
       const tnsr::I<DataVector, 1, Frame::Inertial>& coords,
       [[maybe_unused]] const double time,
-      const AnalyticSolutionOrData& analytic_solution_or_data) const noexcept {
+      const AnalyticSolutionOrData& analytic_solution_or_data) const {
     if constexpr (std::is_base_of_v<MarkAsAnalyticSolution,
                                     AnalyticSolutionOrData>) {
       *u = get<Burgers::Tags::U>(analytic_solution_or_data.variables(
@@ -94,6 +94,6 @@ class DirichletAnalytic final : public BoundaryCondition {
  private:
   static void flux_impl(
       gsl::not_null<tnsr::I<DataVector, 1, Frame::Inertial>*> flux,
-      const Scalar<DataVector>& u_analytic) noexcept;
+      const Scalar<DataVector>& u_analytic);
 };
 }  // namespace Burgers::BoundaryConditions

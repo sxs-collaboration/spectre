@@ -182,7 +182,7 @@ void test_general_magnitude_tags() {
   const tnsr::i<DataVector, 3, Frame::Grid> covector{
       {{DataVector{npts, -3.0}, DataVector{npts, 12.0},
         DataVector{npts, 4.0}}}};
-  const tnsr::II<DataVector, 3, Frame::Grid> inv_metric = []() noexcept {
+  const tnsr::II<DataVector, 3, Frame::Grid> inv_metric = []() {
     auto tensor = make_with_value<tnsr::II<DataVector, 3, Frame::Grid>>(
         DataVector{npts}, 0.0);
     get<0, 0>(tensor) = 2.0;
@@ -192,13 +192,12 @@ void test_general_magnitude_tags() {
     get<1, 2>(tensor) = 12.0;
     get<2, 2>(tensor) = 13.0;
     return tensor;
-  }
-  ();
+  }();
 
   const tnsr::I<DataVector, 3, Frame::Grid> vector{
       {{DataVector{npts, -3.0}, DataVector{npts, 12.0},
         DataVector{npts, 4.0}}}};
-  const tnsr::ii<DataVector, 3, Frame::Grid> metric = []() noexcept {
+  const tnsr::ii<DataVector, 3, Frame::Grid> metric = []() {
     auto tensor = make_with_value<tnsr::ii<DataVector, 3, Frame::Grid>>(
         DataVector{npts}, 0.0);
     get<0, 0>(tensor) = 2.0;
@@ -208,8 +207,7 @@ void test_general_magnitude_tags() {
     get<1, 2>(tensor) = 12.0;
     get<2, 2>(tensor) = 13.0;
     return tensor;
-  }
-  ();
+  }();
 
   const auto box =
       db::create<db::AddSimpleTags<Vector, Covector<3>, Metric, InverseMetric>,

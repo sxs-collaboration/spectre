@@ -56,7 +56,7 @@ class Block {
         DirectionMap<
             VolumeDim,
             std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>
-            external_boundary_conditions = {}) noexcept;
+            external_boundary_conditions = {});
 
   Block() = default;
   ~Block() = default;
@@ -70,14 +70,14 @@ class Block {
   /// \see is_time_dependent()
   const domain::CoordinateMapBase<Frame::BlockLogical, Frame::Inertial,
                                   VolumeDim>&
-  stationary_map() const noexcept;
+  stationary_map() const;
 
   /// \brief The map going from the block logical frame to the last time
   /// independent frame. Only used when the coordinate map is time-dependent.
   ///
   /// \see is_time_dependent() moving_mesh_grid_to_inertial_map()
   const domain::CoordinateMapBase<Frame::BlockLogical, Frame::Grid, VolumeDim>&
-  moving_mesh_logical_to_grid_map() const noexcept;
+  moving_mesh_logical_to_grid_map() const;
 
   /// \brief The map going from the last time independent frame to the frame in
   /// which the equations are solved. Only used when the coordinate map is
@@ -85,32 +85,30 @@ class Block {
   ///
   /// \see is_time_dependent() moving_mesh_logical_to_grid_map()
   const domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, VolumeDim>&
-  moving_mesh_grid_to_inertial_map() const noexcept;
+  moving_mesh_grid_to_inertial_map() const;
 
   /// \brief Returns `true` if the block has time-dependent maps.
-  bool is_time_dependent() const noexcept { return stationary_map_ == nullptr; }
+  bool is_time_dependent() const { return stationary_map_ == nullptr; }
 
   /// \brief Given a Block that has a time-independent map, injects the
   /// time-dependent map into the Block.
   void inject_time_dependent_map(
       std::unique_ptr<
           domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, VolumeDim>>
-          moving_mesh_inertial_map) noexcept;
+          moving_mesh_inertial_map);
 
   /// A unique identifier for the Block that is in the range
   /// [0, number_of_blocks -1] where number_of_blocks is the number
   /// of Blocks that cover the computational domain.
-  size_t id() const noexcept { return id_; }
+  size_t id() const { return id_; }
 
   /// Information about the neighboring Blocks.
-  const DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>& neighbors() const
-      noexcept {
+  const DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>& neighbors() const {
     return neighbors_;
   }
 
   /// The directions of the faces of the Block that are external boundaries.
-  const std::unordered_set<Direction<VolumeDim>>& external_boundaries() const
-      noexcept {
+  const std::unordered_set<Direction<VolumeDim>>& external_boundaries() const {
     return external_boundaries_;
   }
 
@@ -118,18 +116,18 @@ class Block {
   const DirectionMap<
       VolumeDim,
       std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>&
-  external_boundary_conditions() const noexcept {
+  external_boundary_conditions() const {
     return external_boundary_conditions_;
   }
 
   /// Serialization for Charm++
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
 
  private:
   template <size_t LocalVolumeDim>
   // NOLINTNEXTLINE(readability-redundant-declaration)
   friend bool operator==(const Block<LocalVolumeDim>& lhs,
-                         const Block<LocalVolumeDim>& rhs) noexcept;
+                         const Block<LocalVolumeDim>& rhs);
 
   std::unique_ptr<domain::CoordinateMapBase<Frame::BlockLogical,
                                             Frame::Inertial, VolumeDim>>
@@ -150,9 +148,7 @@ class Block {
 };
 
 template <size_t VolumeDim>
-std::ostream& operator<<(std::ostream& os,
-                         const Block<VolumeDim>& block) noexcept;
+std::ostream& operator<<(std::ostream& os, const Block<VolumeDim>& block);
 
 template <size_t VolumeDim>
-bool operator!=(const Block<VolumeDim>& lhs,
-                const Block<VolumeDim>& rhs) noexcept;
+bool operator!=(const Block<VolumeDim>& lhs, const Block<VolumeDim>& rhs);

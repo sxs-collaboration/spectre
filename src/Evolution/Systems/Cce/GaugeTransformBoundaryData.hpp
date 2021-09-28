@@ -75,7 +75,7 @@ struct GaugeAdjustedBoundaryValue<Tags::BondiR> {
           evolution_gauge_r,
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& cauchy_gauge_r,
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& omega,
-      const Spectral::Swsh::SwshInterpolator& interpolator) noexcept;
+      const Spectral::Swsh::SwshInterpolator& interpolator);
 };
 
 /*!
@@ -119,8 +119,7 @@ struct GaugeAdjustedBoundaryValue<Tags::DuRDividedByR> {
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& evolution_gauge_r,
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& omega,
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& du_omega,
-      const Spectral::Swsh::SwshInterpolator& interpolator,
-      size_t l_max) noexcept;
+      const Spectral::Swsh::SwshInterpolator& interpolator, size_t l_max);
 };
 
 /*!
@@ -156,7 +155,7 @@ struct GaugeAdjustedBoundaryValue<Tags::BondiJ> {
       const Scalar<SpinWeighted<ComplexDataVector, 2>>& gauge_c,
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& gauge_d,
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& omega,
-      const Spectral::Swsh::SwshInterpolator& interpolator) noexcept;
+      const Spectral::Swsh::SwshInterpolator& interpolator);
 };
 
 /*!
@@ -187,8 +186,7 @@ struct GaugeAdjustedBoundaryValue<Tags::Dr<Tags::BondiJ>> {
       const Scalar<SpinWeighted<ComplexDataVector, 2>>& gauge_c,
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& gauge_d,
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& omega,
-      const Spectral::Swsh::SwshInterpolator& interpolator,
-      size_t l_max) noexcept;
+      const Spectral::Swsh::SwshInterpolator& interpolator, size_t l_max);
 };
 
 /*!
@@ -218,7 +216,7 @@ struct GaugeAdjustedBoundaryValue<Tags::BondiBeta> {
           evolution_gauge_beta,
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& cauchy_gauge_beta,
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& omega,
-      const Spectral::Swsh::SwshInterpolator& interpolator) noexcept;
+      const Spectral::Swsh::SwshInterpolator& interpolator);
 };
 
 /*!
@@ -278,7 +276,7 @@ struct GaugeAdjustedBoundaryValue<Tags::BondiQ> {
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& omega,
       const Scalar<SpinWeighted<ComplexDataVector, 1>>& eth_omega,
       const Spectral::Swsh::SwshInterpolator& interpolator,
-      const size_t l_max) noexcept {
+      const size_t l_max) {
     apply_impl(make_not_null(&get(*evolution_gauge_q)), get(cauchy_gauge_dr_u),
                get(volume_j), get(volume_dy_j), get(evolution_gauge_r),
                get(evolution_gauge_beta), get(gauge_c), get(gauge_d),
@@ -297,8 +295,7 @@ struct GaugeAdjustedBoundaryValue<Tags::BondiQ> {
       const SpinWeighted<ComplexDataVector, 0>& gauge_d,
       const SpinWeighted<ComplexDataVector, 0>& omega,
       const SpinWeighted<ComplexDataVector, 1>& eth_omega,
-      const Spectral::Swsh::SwshInterpolator& interpolator,
-      size_t l_max) noexcept;
+      const Spectral::Swsh::SwshInterpolator& interpolator, size_t l_max);
 };
 
 /*!
@@ -360,8 +357,7 @@ struct GaugeAdjustedBoundaryValue<Tags::BondiU> {
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& gauge_d,
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& omega,
       const Scalar<SpinWeighted<ComplexDataVector, 1>>& eth_omega,
-      const Spectral::Swsh::SwshInterpolator& interpolator,
-      size_t l_max) noexcept;
+      const Spectral::Swsh::SwshInterpolator& interpolator, size_t l_max);
 };
 
 /*!
@@ -414,7 +410,7 @@ struct GaugeAdjustedBoundaryValue<Tags::BondiW> {
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& du_omega,
       const Scalar<SpinWeighted<ComplexDataVector, 1>>& eth_omega,
       const Spectral::Swsh::SwshInterpolator& interpolator,
-      const size_t l_max) noexcept {
+      const size_t l_max) {
     apply_impl(make_not_null(&get(*evolution_gauge_w)), get(cauchy_gauge_w),
                get(volume_j), get(evolution_gauge_u), get(evolution_gauge_beta),
                get(evolution_gauge_u_at_scri), get(evolution_gauge_r),
@@ -433,8 +429,7 @@ struct GaugeAdjustedBoundaryValue<Tags::BondiW> {
       const SpinWeighted<ComplexDataVector, 0>& omega,
       const SpinWeighted<ComplexDataVector, 0>& du_omega,
       const SpinWeighted<ComplexDataVector, 1>& eth_omega,
-      const Spectral::Swsh::SwshInterpolator& interpolator,
-      size_t l_max) noexcept;
+      const Spectral::Swsh::SwshInterpolator& interpolator, size_t l_max);
 };
 
 /*!
@@ -497,7 +492,7 @@ struct GaugeAdjustedBoundaryValue<Tags::BondiH> {
       const Scalar<SpinWeighted<ComplexDataVector, 0>>&
           evolution_gauge_du_r_divided_by_r,
       const Spectral::Swsh::SwshInterpolator& interpolator,
-      const size_t l_max) noexcept {
+      const size_t l_max) {
     apply_impl(make_not_null(&get(*evolution_gauge_h)), get(volume_j),
                get(cauchy_gauge_du_j), get(volume_dy_j),
                get(evolution_gauge_u_at_scri), get(evolution_gauge_r),
@@ -521,8 +516,7 @@ struct GaugeAdjustedBoundaryValue<Tags::BondiH> {
       const SpinWeighted<ComplexDataVector, 1>& eth_omega,
       const SpinWeighted<ComplexDataVector, 0>&
           evolution_gauge_du_r_divided_by_r,
-      const Spectral::Swsh::SwshInterpolator& interpolator,
-      size_t l_max) noexcept;
+      const Spectral::Swsh::SwshInterpolator& interpolator, size_t l_max);
 };
 
 /*!
@@ -585,7 +579,7 @@ struct GaugeUpdateTimeDerivatives {
       const tnsr::i<DataVector, 3>& cartesian_cauchy_coordinates,
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& omega,
       const Scalar<SpinWeighted<ComplexDataVector, 1>>& eth_omega,
-      size_t l_max) noexcept;
+      size_t l_max);
 };
 
 /*!
@@ -632,8 +626,7 @@ struct GaugeUpdateInertialTimeDerivatives {
       const Scalar<SpinWeighted<ComplexDataVector, 2>>& gauge_cauchy_c,
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& omega,
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& gauge_cauchy_d,
-      size_t l_max,
-      const Spectral::Swsh::SwshInterpolator& interpolator) noexcept;
+      size_t l_max, const Spectral::Swsh::SwshInterpolator& interpolator);
 };
 
 /*!
@@ -654,8 +647,7 @@ struct GaugeUpdateAngularFromCartesian {
       const gsl::not_null<
           tnsr::i<DataVector, 2, ::Frame::Spherical<::Frame::Inertial>>*>
           angular_coordinates,
-      const gsl::not_null<tnsr::i<DataVector, 3>*>
-          cartesian_coordinates) noexcept {
+      const gsl::not_null<tnsr::i<DataVector, 3>*> cartesian_coordinates) {
     // normalize the cartesian coordinates
     const DataVector one_over_cartesian_r =
         1.0 / sqrt(square(get<0>(*cartesian_coordinates)) +
@@ -684,8 +676,7 @@ void gauge_update_jacobian_from_coordinates_apply_impl(
     gsl::not_null<
         tnsr::i<DataVector, 2, ::Frame::Spherical<::Frame::Inertial>>*>
         angular_source_coordinates,
-    const tnsr::i<DataVector, 3>& cartesian_source_coordinates,
-    size_t l_max) noexcept;
+    const tnsr::i<DataVector, 3>& cartesian_source_coordinates, size_t l_max);
 }  // namespace detail
 
 /*!
@@ -730,7 +721,7 @@ struct GaugeUpdateJacobianFromCoordinates {
           tnsr::i<DataVector, 2, ::Frame::Spherical<::Frame::Inertial>>*>
           angular_source_coordinates,
       const tnsr::i<DataVector, 3>& cartesian_source_coordinates,
-      const size_t l_max) noexcept {
+      const size_t l_max) {
     detail::gauge_update_jacobian_from_coordinates_apply_impl(
         gauge_factor_spin_2, gauge_factor_spin_0, angular_source_coordinates,
         cartesian_source_coordinates, l_max);
@@ -758,7 +749,7 @@ struct GaugeUpdateInterpolator {
       const gsl::not_null<Spectral::Swsh::SwshInterpolator*> interpolator,
       const tnsr::i<DataVector, 2, ::Frame::Spherical<::Frame::Inertial>>&
           angular_coordinates,
-      const size_t l_max) noexcept {
+      const size_t l_max) {
     // throw away the old interpolator and generate a new one for the current
     // grid points.
     *interpolator = Spectral::Swsh::SwshInterpolator(
@@ -788,8 +779,7 @@ struct GaugeUpdateOmega {
       gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*> omega,
       gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 1>>*> eth_omega,
       const Scalar<SpinWeighted<ComplexDataVector, 2>>& gauge_c,
-      const Scalar<SpinWeighted<ComplexDataVector, 0>>& gauge_d,
-      size_t l_max) noexcept;
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>& gauge_d, size_t l_max);
 };
 
 /*!
@@ -825,6 +815,6 @@ struct InitializeGauge {
       gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 2>>*> gauge_c,
       gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*> gauge_d,
       gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*> omega,
-      size_t l_max) noexcept;
+      size_t l_max);
 };
 }  // namespace Cce

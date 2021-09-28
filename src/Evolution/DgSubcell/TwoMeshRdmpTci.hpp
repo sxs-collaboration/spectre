@@ -39,13 +39,13 @@ bool two_mesh_rdmp_tci(
     const Variables<tmpl::list<EvolvedVarsTags...>>& dg_evolved_vars,
     const Variables<tmpl::list<Tags::Inactive<EvolvedVarsTags>...>>&
         subcell_evolved_vars,
-    const double rdmp_delta0, const double rdmp_epsilon) noexcept {
+    const double rdmp_delta0, const double rdmp_epsilon) {
   ASSERT(rdmp_delta0 > 0.0, "The RDMP delta0 parameter must be positive.");
   ASSERT(rdmp_epsilon > 0.0, "The RDMP epsilon parameter must be positive.");
   bool cell_is_troubled = false;
   tmpl::for_each<tmpl::list<EvolvedVarsTags...>>(
       [&cell_is_troubled, &dg_evolved_vars, rdmp_delta0, rdmp_epsilon,
-       &subcell_evolved_vars](auto tag_v) noexcept {
+       &subcell_evolved_vars](auto tag_v) {
         if (cell_is_troubled) {
           return;
         }

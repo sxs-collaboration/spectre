@@ -68,7 +68,7 @@ void weak_divergence(
     const Variables<tmpl::list<FluxTags...>>& fluxes, const Mesh<Dim>& mesh,
     const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
                           Frame::Inertial>&
-        det_jac_times_inverse_jacobian) noexcept {
+        det_jac_times_inverse_jacobian) {
   if (UNLIKELY(divergence_of_fluxes->number_of_grid_points() !=
                fluxes.number_of_grid_points())) {
     divergence_of_fluxes->initialize(fluxes.number_of_grid_points());
@@ -76,7 +76,7 @@ void weak_divergence(
 
   const auto apply_matrix_in_first_dim =
       [](double* result, const double* const input, const Matrix& matrix,
-         const size_t size, const bool add_to_result) noexcept {
+         const size_t size, const bool add_to_result) {
         dgemm_<true>(
             'N', 'N',
             matrix.rows(),            // rows of matrix and result
@@ -107,7 +107,7 @@ void weak_divergence(
             auto flux_tag_v,
             const gsl::not_null<Variables<tmpl::list<Tags::div<FluxTags>...>>*>
                 result_buffer,
-            auto logical_index_of_jacobian) noexcept {
+            auto logical_index_of_jacobian) {
           using flux_tag = tmpl::type_from<decltype(flux_tag_v)>;
           using div_tag = Tags::div<flux_tag>;
 

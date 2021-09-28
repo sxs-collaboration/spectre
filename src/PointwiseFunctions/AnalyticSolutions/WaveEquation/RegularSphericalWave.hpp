@@ -80,18 +80,17 @@ class RegularSphericalWave : public MarkAsAnalyticSolution {
 
   RegularSphericalWave() = default;
   explicit RegularSphericalWave(
-      std::unique_ptr<MathFunction<1, Frame::Inertial>> profile) noexcept;
-  RegularSphericalWave(const RegularSphericalWave&) noexcept = delete;
-  RegularSphericalWave& operator=(const RegularSphericalWave&) noexcept =
-      delete;
-  RegularSphericalWave(RegularSphericalWave&&) noexcept = default;
-  RegularSphericalWave& operator=(RegularSphericalWave&&) noexcept = default;
-  ~RegularSphericalWave() noexcept = default;
+      std::unique_ptr<MathFunction<1, Frame::Inertial>> profile);
+  RegularSphericalWave(const RegularSphericalWave&) = delete;
+  RegularSphericalWave& operator=(const RegularSphericalWave&) = delete;
+  RegularSphericalWave(RegularSphericalWave&&) = default;
+  RegularSphericalWave& operator=(RegularSphericalWave&&) = default;
+  ~RegularSphericalWave() = default;
 
   tuples::TaggedTuple<ScalarWave::Pi, ScalarWave::Phi<3>, ScalarWave::Psi>
   variables(const tnsr::I<DataVector, 3>& x, double t,
             tmpl::list<ScalarWave::Pi, ScalarWave::Phi<3>,
-                       ScalarWave::Psi> /*meta*/) const noexcept;
+                       ScalarWave::Psi> /*meta*/) const;
 
   tuples::TaggedTuple<::Tags::dt<ScalarWave::Pi>,
                       ::Tags::dt<ScalarWave::Phi<3>>,
@@ -99,10 +98,10 @@ class RegularSphericalWave : public MarkAsAnalyticSolution {
   variables(
       const tnsr::I<DataVector, 3>& x, double t,
       tmpl::list<::Tags::dt<ScalarWave::Pi>, ::Tags::dt<ScalarWave::Phi<3>>,
-                 ::Tags::dt<ScalarWave::Psi>> /*meta*/) const noexcept;
+                 ::Tags::dt<ScalarWave::Psi>> /*meta*/) const;
 
   // clang-tidy: no pass by reference
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
 
  private:
   std::unique_ptr<MathFunction<1, Frame::Inertial>> profile_;

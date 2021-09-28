@@ -41,7 +41,7 @@ void dgemv_(const char& TRANS, const int& M, const int& N, const double& ALPHA,
  *
  * Details: https://github.com/xianyi/OpenBLAS/wiki/Faq#multi-threaded
  */
-void disable_openblas_multithreading() noexcept;
+void disable_openblas_multithreading();
 
 /*!
  * \ingroup UtilitiesGroup

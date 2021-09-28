@@ -212,13 +212,8 @@ class DataBox<tmpl::list<Tags...>> : private detail::Item<Tags>... {
    * \note the default constructor is only used for serialization
    */
   DataBox() = default;
-  DataBox(DataBox&& rhs) noexcept(
-      tmpl2::flat_all_v<
-          std::is_nothrow_move_constructible_v<detail::Item<Tags>>...>) =
-      default;
-  DataBox& operator=(DataBox&& rhs) noexcept(
-      tmpl2::flat_all_v<
-          std::is_nothrow_move_assignable_v<detail::Item<Tags>>...>) {
+  DataBox(DataBox&& rhs) = default;
+  DataBox& operator=(DataBox&& rhs) {
     if (&rhs != this) {
 #if defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 8
 #pragma GCC diagnostic push
@@ -239,22 +234,22 @@ class DataBox<tmpl::list<Tags...>> : private detail::Item<Tags>... {
   /// \endcond
 
   /// Print the expanded type aliases
-  std::string print_types() const noexcept;
+  std::string print_types() const;
 
   /// Print the items
-  std::string print_items() const noexcept;
+  std::string print_items() const;
 
   /// Retrieve the tag `Tag`, should be called by the free function db::get
   template <typename Tag>
-  const auto& get() const noexcept;
+  const auto& get() const;
 
   /// Retrieve a mutable reference to the tag `Tag`, should be called
   /// by the free function db::get_mutable_reference
   template <typename Tag>
-  auto& get_mutable_reference() noexcept;
+  auto& get_mutable_reference();
 
   // clang-tidy: no non-const references
-  void pup(PUP::er& p) noexcept {  // NOLINT
+  void pup(PUP::er& p) {  // NOLINT
     using non_subitems_tags =
         tmpl::list_difference<mutable_item_tags,
                               mutable_subitem_tags>;
@@ -269,12 +264,12 @@ class DataBox<tmpl::list<Tags...>> : private detail::Item<Tags>... {
   constexpr DataBox(Box&& old_box, KeepTagsList /*meta*/,
                     tmpl::list<AddMutableItemTags...> /*meta*/,
                     tmpl::list<AddImmutableItemTags...> /*meta*/,
-                    Args&&... args) noexcept;
+                    Args&&... args);
 
   template <typename... AddMutableItemTags, typename AddImmutableItemTagsList,
             typename... Args>
   constexpr DataBox(tmpl::list<AddMutableItemTags...> /*meta*/,
-                    AddImmutableItemTagsList /*meta*/, Args&&... args) noexcept;
+                    AddImmutableItemTagsList /*meta*/, Args&&... args);
 
  private:
   template <typename... MutateTags, typename TagList, typename Invokable,
@@ -282,38 +277,37 @@ class DataBox<tmpl::list<Tags...>> : private detail::Item<Tags>... {
   // clang-tidy: redundant declaration
   friend decltype(auto) mutate(gsl::not_null<DataBox<TagList>*> box,  // NOLINT
                                Invokable&& invokable,
-                               Args&&... args) noexcept;  // NOLINT
+                               Args&&... args);  // NOLINT
 
   // evaluates the compute item corresponding to ComputeTag passing along
   // items fetched via ArgumentTags
   template <typename ComputeTag, typename... ArgumentTags>
-  void evaluate_compute_item(tmpl::list<ArgumentTags...> /*meta*/) const
-      noexcept;
+  void evaluate_compute_item(tmpl::list<ArgumentTags...> /*meta*/) const;
 
   // get a constant reference to the item corresponding to Tag
   template <typename Tag>
-  const auto& get_item() const noexcept {
+  const auto& get_item() const {
     return static_cast<const detail::Item<Tag>&>(*this);
   }
 
   // get a mutable reference to the item corresponding to Tag
   template <typename Tag>
-  auto& get_item() noexcept {
+  auto& get_item() {
     return static_cast<detail::Item<Tag>&>(*this);
   }
 
   template <typename ParentTag>
-  constexpr void add_mutable_subitems_to_box(tmpl::list<> /*meta*/) noexcept {}
+  constexpr void add_mutable_subitems_to_box(tmpl::list<> /*meta*/) {}
 
   // add mutable items for the subitems of the item corresponding to ParentTag
   template <typename ParentTag, typename... SubitemTags>
   constexpr void add_mutable_subitems_to_box(
-      tmpl::list<SubitemTags...> /*meta*/) noexcept;
+      tmpl::list<SubitemTags...> /*meta*/);
 
   // sets the mutable item corresponding to Tag with the ArgsIndex object in
   // items
   template <size_t ArgsIndex, typename Tag, typename... Ts>
-  constexpr char add_mutable_item_to_box(std::tuple<Ts...>& items) noexcept;
+  constexpr char add_mutable_item_to_box(std::tuple<Ts...>& items);
 
   // set the mutable items corresponding to AddMutableItemTags to the
   // appropriate objects from items, and checks the dependencies of the
@@ -323,7 +317,7 @@ class DataBox<tmpl::list<Tags...>> : private detail::Item<Tags>... {
   void add_items_to_box(std::tuple<Ts...>& items,
                         tmpl::list<AddMutableItemTags...> /*meta*/,
                         std::index_sequence<Is...> /*meta*/,
-                        tmpl::list<AddImmutableItemTags...> /*meta*/) noexcept;
+                        tmpl::list<AddImmutableItemTags...> /*meta*/);
 
   // Merging DataBox's using create_from requires that all instantiations of
   // DataBox be friends with each other.
@@ -332,30 +326,29 @@ class DataBox<tmpl::list<Tags...>> : private detail::Item<Tags>... {
 
   template <typename Box, typename... TagsToCopy>
   constexpr void merge_old_box(Box&& old_box,
-                               tmpl::list<TagsToCopy...> /*meta*/) noexcept;
+                               tmpl::list<TagsToCopy...> /*meta*/);
 
   // clang-tidy: no non-const references
   template <typename... NonSubitemsTags, typename... ComputeTags>
   void pup_impl(PUP::er& p, tmpl::list<NonSubitemsTags...> /*meta*/,  // NOLINT
-                tmpl::list<ComputeTags...> /*meta*/) noexcept;
+                tmpl::list<ComputeTags...> /*meta*/);
 
   // Mutating items in the DataBox
   template <typename ParentTag>
-  constexpr void mutate_mutable_subitems(tmpl::list<> /*meta*/) noexcept {}
+  constexpr void mutate_mutable_subitems(tmpl::list<> /*meta*/) {}
 
   template <typename ParentTag, typename... Subtags>
-  constexpr void mutate_mutable_subitems(
-      tmpl::list<Subtags...> /*meta*/) noexcept;
+  constexpr void mutate_mutable_subitems(tmpl::list<Subtags...> /*meta*/);
 
   template <typename ImmutableItemTag>
-  constexpr void reset_compute_item() noexcept;
+  constexpr void reset_compute_item();
 
   template <typename... TagsOfImmutableItemsToReset>
   SPECTRE_ALWAYS_INLINE constexpr void reset_compute_items_after_mutate(
-      tmpl::list<TagsOfImmutableItemsToReset...> /*meta*/) noexcept;
+      tmpl::list<TagsOfImmutableItemsToReset...> /*meta*/);
 
   SPECTRE_ALWAYS_INLINE constexpr void reset_compute_items_after_mutate(
-      tmpl::list<> /*meta*/) noexcept {}
+      tmpl::list<> /*meta*/) {}
   // End mutating items in the DataBox
 
   using edge_list =
@@ -366,7 +359,7 @@ class DataBox<tmpl::list<Tags...>> : private detail::Item<Tags>... {
 };
 
 template <typename... Tags>
-std::string DataBox<tmpl::list<Tags...>>::print_types() const noexcept {
+std::string DataBox<tmpl::list<Tags...>>::print_types() const {
   std::ostringstream os;
   os << "DataBox type aliases:\n";
   os << "using tags_list = " << pretty_type::get_name<tags_list>() << ";\n";
@@ -385,12 +378,12 @@ std::string DataBox<tmpl::list<Tags...>>::print_types() const noexcept {
 }
 
 template <typename... Tags>
-std::string DataBox<tmpl::list<Tags...>>::print_items() const noexcept {
+std::string DataBox<tmpl::list<Tags...>>::print_items() const {
   using mutable_item_creation_tags =
       tmpl::list_difference<mutable_item_tags, mutable_subitem_tags>;
   std::ostringstream os;
   os << "Items:\n";
-  const auto print_item = [this,&os](auto tag_v) noexcept {
+  const auto print_item = [this, &os](auto tag_v) {
     (void)this;
     using tag = tmpl::type_from<decltype(tag_v)>;
     using type = typename tag::type;
@@ -412,7 +405,7 @@ namespace detail {
 // This function exists so that the user can look at the template
 // arguments to find out what triggered the static_assert.
 template <typename ImmutableItemTag, typename ArgumentTag, typename TagsList>
-constexpr char check_immutable_item_tag_dependency() noexcept {
+constexpr char check_immutable_item_tag_dependency() {
   using immutable_item_tag_index = tmpl::index_of<TagsList, ImmutableItemTag>;
   static_assert(
       tmpl::less<tmpl::index_if<TagsList,
@@ -430,9 +423,8 @@ constexpr char check_immutable_item_tag_dependency() noexcept {
 
 template <typename ImmutableItemTag, typename TagsList,
           typename... ArgumentsTags>
-SPECTRE_ALWAYS_INLINE constexpr void
-check_immutable_item_tag_dependencies_impl(
-    tmpl::list<ArgumentsTags...> /*meta*/) noexcept {
+SPECTRE_ALWAYS_INLINE constexpr void check_immutable_item_tag_dependencies_impl(
+    tmpl::list<ArgumentsTags...> /*meta*/) {
   DEBUG_STATIC_ASSERT(
       tmpl2::flat_all_v<is_tag_v<ArgumentsTags>...>,
       "Cannot have non-DataBoxTag arguments to a ComputeItem or ReferenceItem. "
@@ -446,8 +438,7 @@ check_immutable_item_tag_dependencies_impl(
 }
 
 template <typename ImmutableItemTag, typename TagsList>
-SPECTRE_ALWAYS_INLINE constexpr void
-check_immutable_item_tag_dependencies() noexcept {
+SPECTRE_ALWAYS_INLINE constexpr void check_immutable_item_tag_dependencies() {
   check_immutable_item_tag_dependencies_impl<ImmutableItemTag, TagsList>(
       tmpl::transform<typename ImmutableItemTag::argument_tags,
                       tmpl::bind<detail::first_matching_tag,
@@ -459,7 +450,7 @@ template <typename... Tags>
 template <typename ParentTag, typename... SubitemTags>
 SPECTRE_ALWAYS_INLINE constexpr void
 db::DataBox<tmpl::list<Tags...>>::add_mutable_subitems_to_box(
-    tmpl::list<SubitemTags...> /*meta*/) noexcept {
+    tmpl::list<SubitemTags...> /*meta*/) {
   const auto add_mutable_subitem_to_box = [this](auto tag_v) {
     (void)this;  // Compiler bug warns this is unused
     using subitem_tag = decltype(tag_v);
@@ -477,7 +468,7 @@ template <typename... Tags>
 template <size_t ArgsIndex, typename MutableItemTag, typename... Ts>
 SPECTRE_ALWAYS_INLINE constexpr char
 db::DataBox<tmpl::list<Tags...>>::add_mutable_item_to_box(
-    std::tuple<Ts...>& items) noexcept {
+    std::tuple<Ts...>& items) {
   if constexpr (sizeof...(Ts) > 0) {
     using ArgType = std::tuple_element_t<ArgsIndex, std::tuple<Ts...>>;
     get_item<MutableItemTag>() = detail::Item<MutableItemTag>(
@@ -498,7 +489,7 @@ template <typename... Ts, typename... AddMutableItemTags,
 SPECTRE_ALWAYS_INLINE void DataBox<tmpl::list<Tags...>>::add_items_to_box(
     std::tuple<Ts...>& items, tmpl::list<AddMutableItemTags...> /*meta*/,
     std::index_sequence<Is...> /*meta*/,
-    tmpl::list<AddImmutableItemTags...> /*meta*/) noexcept {
+    tmpl::list<AddImmutableItemTags...> /*meta*/) {
   expand_pack(add_mutable_item_to_box<Is, AddMutableItemTags>(items)...);
   EXPAND_PACK_LEFT_TO_RIGHT(
       detail::check_immutable_item_tag_dependencies<AddImmutableItemTags,
@@ -510,7 +501,7 @@ namespace detail {
 // users can see what tag has the wrong type when the static_assert
 // fails.
 template <typename Tag, typename TagType, typename SuppliedType>
-constexpr int check_initialization_argument_type() noexcept {
+constexpr int check_initialization_argument_type() {
   static_assert(std::is_same_v<TagType, SuppliedType>,
                 "The type of each Tag must be the same as the type being "
                 "passed into the function creating the new DataBox.  See the "
@@ -526,7 +517,7 @@ template <typename... AddMutableItemTags, typename AddImmutableItemTagsList,
           typename... Args>
 constexpr DataBox<tmpl::list<Tags...>>::DataBox(
     tmpl::list<AddMutableItemTags...> /*meta*/,
-    AddImmutableItemTagsList /*meta*/, Args&&... args) noexcept {
+    AddImmutableItemTagsList /*meta*/, Args&&... args) {
   DEBUG_STATIC_ASSERT(
       sizeof...(Args) == 0 or sizeof...(Args) == sizeof...(AddMutableItemTags),
       "Must pass in as many arguments as AddTags, or none to "
@@ -552,7 +543,7 @@ constexpr DataBox<tmpl::list<Tags...>>::DataBox(
 template <typename... Tags>
 template <typename Box, typename... TagsToCopy>
 constexpr void DataBox<tmpl::list<Tags...>>::merge_old_box(
-    Box&& old_box, tmpl::list<TagsToCopy...> /*meta*/) noexcept {
+    Box&& old_box, tmpl::list<TagsToCopy...> /*meta*/) {
   EXPAND_PACK_LEFT_TO_RIGHT(get_item<TagsToCopy>() = std::move(
                                 old_box.template get_item<TagsToCopy>()));
 }
@@ -563,7 +554,7 @@ template <typename Box, typename KeepTagsList, typename... AddMutableItemTags,
 constexpr DataBox<tmpl::list<Tags...>>::DataBox(
     Box&& old_box, KeepTagsList /*meta*/,
     tmpl::list<AddMutableItemTags...> /*meta*/,
-    tmpl::list<AddImmutableItemTags...> /*meta*/, Args&&... args) noexcept {
+    tmpl::list<AddImmutableItemTags...> /*meta*/, Args&&... args) {
 #ifdef SPECTRE_DEBUG
   if constexpr (sizeof...(Args) > 0) {
     expand_pack(detail::check_initialization_argument_type<
@@ -589,8 +580,8 @@ template <typename... Tags>
 template <typename... NonSubitemsTags, typename... ComputeTags>
 void DataBox<tmpl::list<Tags...>>::pup_impl(
     PUP::er& p, tmpl::list<NonSubitemsTags...> /*meta*/,
-    tmpl::list<ComputeTags...> /*meta*/) noexcept {
-  const auto pup_simple_item = [&p, this ](auto current_tag) noexcept {
+    tmpl::list<ComputeTags...> /*meta*/) {
+  const auto pup_simple_item = [&p, this](auto current_tag) {
     (void)this;  // Compiler bug warning this capture is not used
     using tag = decltype(current_tag);
     if (p.isUnpacking()) {
@@ -614,7 +605,7 @@ void DataBox<tmpl::list<Tags...>>::pup_impl(
 template <typename... Tags>
 template <typename ImmutableItemTag>
 SPECTRE_ALWAYS_INLINE constexpr void
-DataBox<tmpl::list<Tags...>>::reset_compute_item() noexcept {
+DataBox<tmpl::list<Tags...>>::reset_compute_item() {
   // reference items do not need to be reset
   if constexpr (db::is_compute_tag_v<ImmutableItemTag>) {
     get_item<ImmutableItemTag>().reset();
@@ -634,7 +625,7 @@ template <typename... Tags>
 template <typename... TagsOfImmutableItemsToReset>
 SPECTRE_ALWAYS_INLINE constexpr void
 db::DataBox<tmpl::list<Tags...>>::reset_compute_items_after_mutate(
-    tmpl::list<TagsOfImmutableItemsToReset...> /*meta*/) noexcept {
+    tmpl::list<TagsOfImmutableItemsToReset...> /*meta*/) {
   EXPAND_PACK_LEFT_TO_RIGHT(reset_compute_item<TagsOfImmutableItemsToReset>());
   using current_tags_to_reset = tmpl::list<TagsOfImmutableItemsToReset...>;
   using next_compute_tags_to_reset = tmpl::list_difference<
@@ -652,13 +643,13 @@ template <typename... Tags>
 template <typename ParentTag, typename... Subtags>
 SPECTRE_ALWAYS_INLINE constexpr void
 db::DataBox<tmpl::list<Tags...>>::mutate_mutable_subitems(
-    tmpl::list<Subtags...> /*meta*/) noexcept {
-  const auto helper = [this](auto tag_v) noexcept {
+    tmpl::list<Subtags...> /*meta*/) {
+  const auto helper = [this](auto tag_v) {
     (void)this;  // Compiler bug warns about unused this capture
     using tag = decltype(tag_v);
-      Subitems<ParentTag>::template create_item<tag>(
-          make_not_null(&get_item<ParentTag>().mutate()),
-          make_not_null(&get_item<tag>().mutate()));
+    Subitems<ParentTag>::template create_item<tag>(
+        make_not_null(&get_item<ParentTag>().mutate()),
+        make_not_null(&get_item<tag>().mutate()));
   };
 
   EXPAND_PACK_LEFT_TO_RIGHT(helper(Subtags{}));
@@ -697,7 +688,7 @@ db::DataBox<tmpl::list<Tags...>>::mutate_mutable_subitems(
 template <typename... MutateTags, typename TagList, typename Invokable,
           typename... Args>
 decltype(auto) mutate(const gsl::not_null<DataBox<TagList>*> box,
-                      Invokable&& invokable, Args&&... args) noexcept {
+                      Invokable&& invokable, Args&&... args) {
   static_assert(
       tmpl2::flat_all_v<
           detail::has_unique_matching_tag_v<TagList, MutateTags>...>,
@@ -783,13 +774,13 @@ decltype(auto) mutate(const gsl::not_null<DataBox<TagList>*> box,
 template <typename... Tags>
 template <typename ComputeTag, typename... ArgumentTags>
 void DataBox<tmpl::list<Tags...>>::evaluate_compute_item(
-    tmpl::list<ArgumentTags...> /*meta*/) const noexcept {
+    tmpl::list<ArgumentTags...> /*meta*/) const {
   get_item<ComputeTag>().evaluate(get<ArgumentTags>()...);
 }
 
 template <typename... Tags>
 template <typename Tag>
-const auto& DataBox<tmpl::list<Tags...>>::get() const noexcept {
+const auto& DataBox<tmpl::list<Tags...>>::get() const {
   if constexpr (std::is_same_v<Tag, ::Tags::DataBox>) {
     if (UNLIKELY(mutate_locked_box_)) {
       ERROR(
@@ -846,13 +837,13 @@ const auto& DataBox<tmpl::list<Tags...>>::get() const noexcept {
  * \return The object corresponding to the tag `Tag`
  */
 template <typename Tag, typename TagList>
-SPECTRE_ALWAYS_INLINE const auto& get(const DataBox<TagList>& box) noexcept {
+SPECTRE_ALWAYS_INLINE const auto& get(const DataBox<TagList>& box) {
   return box.template get<Tag>();
 }
 
 template <typename... Tags>
 template <typename Tag>
-auto& DataBox<tmpl::list<Tags...>>::get_mutable_reference() noexcept {
+auto& DataBox<tmpl::list<Tags...>>::get_mutable_reference() {
   DEBUG_STATIC_ASSERT(
       not detail::has_no_matching_tag_v<tmpl::list<Tags...>, Tag>,
       "Found no tags in the DataBox that match the tag being retrieved.");
@@ -895,7 +886,7 @@ auto& DataBox<tmpl::list<Tags...>>::get_mutable_reference() noexcept {
  */
 template <typename Tag, typename TagList>
 SPECTRE_ALWAYS_INLINE auto& get_mutable_reference(
-    const gsl::not_null<DataBox<TagList>*> box) noexcept {
+    const gsl::not_null<DataBox<TagList>*> box) {
   return box->template get_mutable_reference<Tag>();
 }
 
@@ -992,8 +983,7 @@ SPECTRE_ALWAYS_INLINE constexpr auto create(Args&&... args) {
 namespace detail {
 template <typename RemoveTags, typename AddMutableItemTags,
           typename AddImmutableItemTags, typename Box, typename... Args>
-SPECTRE_ALWAYS_INLINE constexpr auto create_from(Box&& box,
-                                                 Args&&... args) noexcept {
+SPECTRE_ALWAYS_INLINE constexpr auto create_from(Box&& box, Args&&... args) {
   static_assert(sizeof...(Args) == 0 or
                     sizeof...(Args) == tmpl::size<AddMutableItemTags>::value,
                 "Must pass in as many arguments as AddMutableItemTags to "
@@ -1091,7 +1081,7 @@ template <typename RemoveTags, typename AddMutableItemTags = tmpl::list<>,
           typename AddImmutableItemTags = tmpl::list<>, typename TagsList,
           typename... Args>
 SPECTRE_ALWAYS_INLINE constexpr auto create_from(db::DataBox<TagsList>&& box,
-                                                 Args&&... args) noexcept {
+                                                 Args&&... args) {
   return detail::create_from<RemoveTags, AddMutableItemTags,
                              AddImmutableItemTags>(std::move(box),
                                                    std::forward<Args>(args)...);
@@ -1102,7 +1092,7 @@ CREATE_IS_CALLABLE(apply)
 CREATE_IS_CALLABLE_V(apply)
 
 template <typename Func, typename... Args>
-constexpr void error_function_not_callable() noexcept {
+constexpr void error_function_not_callable() {
   static_assert(
       std::is_same_v<Func, void>,
       "The function is not callable with the expected arguments.  "
@@ -1120,7 +1110,7 @@ constexpr void error_function_not_callable() noexcept {
 
 template <typename DataBoxTags, typename... TagsToRetrieve>
 constexpr bool check_tags_are_in_databox(
-    DataBoxTags /*meta*/, tmpl::list<TagsToRetrieve...> /*meta*/) noexcept {
+    DataBoxTags /*meta*/, tmpl::list<TagsToRetrieve...> /*meta*/) {
   static_assert(
       (tag_is_retrievable_v<TagsToRetrieve, DataBox<DataBoxTags>> and ...),
       "A desired tag is not in the DataBox.  See the first template "
@@ -1133,7 +1123,7 @@ template <typename... ArgumentTags, typename F, typename BoxTags,
           typename... Args>
 static constexpr auto apply(F&& f, const DataBox<BoxTags>& box,
                             tmpl::list<ArgumentTags...> /*meta*/,
-                            Args&&... args) noexcept {
+                            Args&&... args) {
   if constexpr (is_apply_callable_v<
                     F, const_item_type<ArgumentTags, BoxTags>..., Args...>) {
     return F::apply(::db::get<ArgumentTags>(box)...,
@@ -1205,7 +1195,7 @@ static constexpr auto apply(F&& f, const DataBox<BoxTags>& box,
  */
 template <typename ArgumentTags, typename F, typename BoxTags, typename... Args>
 SPECTRE_ALWAYS_INLINE constexpr auto apply(F&& f, const DataBox<BoxTags>& box,
-                                           Args&&... args) noexcept {
+                                           Args&&... args) {
   detail::check_tags_are_in_databox(
       BoxTags{}, tmpl::remove<ArgumentTags, ::Tags::DataBox>{});
   return detail::apply(std::forward<F>(f), box, ArgumentTags{},
@@ -1214,14 +1204,14 @@ SPECTRE_ALWAYS_INLINE constexpr auto apply(F&& f, const DataBox<BoxTags>& box,
 
 template <typename F, typename BoxTags, typename... Args>
 SPECTRE_ALWAYS_INLINE constexpr auto apply(F&& f, const DataBox<BoxTags>& box,
-                                           Args&&... args) noexcept {
+                                           Args&&... args) {
   return apply<typename std::decay_t<F>::argument_tags>(
       std::forward<F>(f), box, std::forward<Args>(args)...);
 }
 
 template <typename F, typename BoxTags, typename... Args>
 SPECTRE_ALWAYS_INLINE constexpr auto apply(const DataBox<BoxTags>& box,
-                                           Args&&... args) noexcept {
+                                           Args&&... args) {
   return apply(F{}, box, std::forward<Args>(args)...);
 }
 /// @}
@@ -1232,7 +1222,7 @@ template <typename... ReturnTags, typename... ArgumentTags, typename F,
 SPECTRE_ALWAYS_INLINE constexpr decltype(auto) mutate_apply(
     F&& f, const gsl::not_null<db::DataBox<BoxTags>*> box,
     tmpl::list<ReturnTags...> /*meta*/, tmpl::list<ArgumentTags...> /*meta*/,
-    Args&&... args) noexcept {
+    Args&&... args) {
   static_assert(
       not tmpl2::flat_any_v<std::is_same_v<ArgumentTags, Tags::DataBox>...> and
           not tmpl2::flat_any_v<std::is_same_v<ReturnTags, Tags::DataBox>...>,
@@ -1245,7 +1235,7 @@ SPECTRE_ALWAYS_INLINE constexpr decltype(auto) mutate_apply(
         box,
         [](const gsl::not_null<typename ReturnTags::type*>... mutated_items,
            const_item_type<ArgumentTags, BoxTags>... args_items,
-           decltype(std::forward<Args>(args))... l_args) noexcept {
+           decltype(std::forward<Args>(args))... l_args) {
           return std::decay_t<F>::apply(mutated_items..., args_items...,
                                         std::forward<Args>(l_args)...);
         },
@@ -1259,7 +1249,7 @@ SPECTRE_ALWAYS_INLINE constexpr decltype(auto) mutate_apply(
         box,
         [&f](const gsl::not_null<typename ReturnTags::type*>... mutated_items,
              const_item_type<ArgumentTags, BoxTags>... args_items,
-             decltype(std::forward<Args>(args))... l_args) noexcept {
+             decltype(std::forward<Args>(args))... l_args) {
           return f(mutated_items..., args_items...,
                    std::forward<Args>(l_args)...);
         },
@@ -1314,8 +1304,7 @@ SPECTRE_ALWAYS_INLINE constexpr decltype(auto) mutate_apply(
 template <typename MutateTags, typename ArgumentTags, typename F,
           typename BoxTags, typename... Args>
 SPECTRE_ALWAYS_INLINE constexpr decltype(auto) mutate_apply(
-    F&& f, const gsl::not_null<DataBox<BoxTags>*> box,
-    Args&&... args) noexcept {
+    F&& f, const gsl::not_null<DataBox<BoxTags>*> box, Args&&... args) {
   detail::check_tags_are_in_databox(BoxTags{}, MutateTags{});
   detail::check_tags_are_in_databox(BoxTags{}, ArgumentTags{});
   return detail::mutate_apply(std::forward<F>(f), box, MutateTags{},
@@ -1324,8 +1313,7 @@ SPECTRE_ALWAYS_INLINE constexpr decltype(auto) mutate_apply(
 
 template <typename F, typename BoxTags, typename... Args>
 SPECTRE_ALWAYS_INLINE constexpr decltype(auto) mutate_apply(
-    F&& f, const gsl::not_null<DataBox<BoxTags>*> box,
-    Args&&... args) noexcept {
+    F&& f, const gsl::not_null<DataBox<BoxTags>*> box, Args&&... args) {
   return mutate_apply<typename std::decay_t<F>::return_tags,
                       typename std::decay_t<F>::argument_tags>(
       std::forward<F>(f), box, std::forward<Args>(args)...);
@@ -1333,15 +1321,14 @@ SPECTRE_ALWAYS_INLINE constexpr decltype(auto) mutate_apply(
 
 template <typename F, typename BoxTags, typename... Args>
 SPECTRE_ALWAYS_INLINE constexpr decltype(auto) mutate_apply(
-    const gsl::not_null<DataBox<BoxTags>*> box, Args&&... args) noexcept {
+    const gsl::not_null<DataBox<BoxTags>*> box, Args&&... args) {
   return mutate_apply(F{}, box, std::forward<Args>(args)...);
 }
 /// @}
 }  // namespace db
 
 template <typename TagsList>
-std::ostream& operator<<(std::ostream& os,
-                         const db::DataBox<TagsList>& box) noexcept {
+std::ostream& operator<<(std::ostream& os, const db::DataBox<TagsList>& box) {
   os << box.print_types() << "\n";
   os << box.print_items() << "\n";
   return os;

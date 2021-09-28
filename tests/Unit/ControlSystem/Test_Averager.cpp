@@ -276,10 +276,8 @@ void test_create_from_options() {
 
 void test_move() {
   Averager<2> averager(0.25, false);
-  static_assert(std::is_nothrow_move_constructible<Averager<2>>::value,
-                "Averager is not nothrow move constructible");
-  static_assert(std::is_nothrow_move_assignable<Averager<2>>::value,
-                "Averager is not nothrow move assignable");
+  static_assert(std::is_move_constructible<Averager<2>>::value);
+  static_assert(std::is_move_assignable<Averager<2>>::value);
   // update with junk data
   averager.update(0.3, {0.1}, {0.1});
   averager.update(0.5, {0.2}, {0.1});

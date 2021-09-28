@@ -33,8 +33,7 @@ static_assert(sizeof(ElementId<3>) == 3 * sizeof(int),
               "Wrong size for ElementId<3>");
 
 template <size_t VolumeDim>
-ElementId<VolumeDim>::ElementId(const size_t block_id,
-                                const size_t grid_index) noexcept
+ElementId<VolumeDim>::ElementId(const size_t block_id, const size_t grid_index)
     : block_id_(block_id),
       grid_index_(grid_index),
       index_xi_{0},
@@ -55,7 +54,7 @@ ElementId<VolumeDim>::ElementId(const size_t block_id,
 template <size_t VolumeDim>
 ElementId<VolumeDim>::ElementId(const size_t block_id,
                                 std::array<SegmentId, VolumeDim> segment_ids,
-                                const size_t grid_index) noexcept
+                                const size_t grid_index)
     : block_id_(block_id), grid_index_(grid_index) {
   ASSERT(block_id < two_to_the(block_id_bits),
          "Block id out of bounds: " << block_id << "\nMaximum value is: "
@@ -84,8 +83,7 @@ ElementId<VolumeDim>::ElementId(const size_t block_id,
 
 template <size_t VolumeDim>
 ElementId<VolumeDim> ElementId<VolumeDim>::id_of_child(const size_t dim,
-                                                       const Side side) const
-    noexcept {
+                                                       const Side side) const {
   std::array<SegmentId, VolumeDim> new_segment_ids = segment_ids();
   gsl::at(new_segment_ids, dim) =
       gsl::at(new_segment_ids, dim).id_of_child(side);
@@ -93,15 +91,15 @@ ElementId<VolumeDim> ElementId<VolumeDim>::id_of_child(const size_t dim,
 }
 
 template <size_t VolumeDim>
-ElementId<VolumeDim> ElementId<VolumeDim>::id_of_parent(const size_t dim) const
-    noexcept {
+ElementId<VolumeDim> ElementId<VolumeDim>::id_of_parent(
+    const size_t dim) const {
   std::array<SegmentId, VolumeDim> new_segment_ids = segment_ids();
   gsl::at(new_segment_ids, dim) = gsl::at(new_segment_ids, dim).id_of_parent();
   return {block_id(), new_segment_ids, grid_index()};
 }
 
 template <size_t VolumeDim>
-ElementId<VolumeDim> ElementId<VolumeDim>::external_boundary_id() noexcept {
+ElementId<VolumeDim> ElementId<VolumeDim>::external_boundary_id() {
   // We use the maximum possible value that can be stored in `block_id_bits` and
   // the maximum refinement level to signal an external boundary. While in
   // theory this could cause a problem if we have an element at the highest
@@ -113,8 +111,7 @@ ElementId<VolumeDim> ElementId<VolumeDim>::external_boundary_id() noexcept {
 }
 
 template <size_t VolumeDim>
-std::ostream& operator<<(std::ostream& os,
-                         const ElementId<VolumeDim>& id) noexcept {
+std::ostream& operator<<(std::ostream& os, const ElementId<VolumeDim>& id) {
   os << "[B" << id.block_id() << ',' << id.segment_ids();
   if (id.grid_index() > 0) {
     os << ",G" << id.grid_index();
@@ -125,7 +122,7 @@ std::ostream& operator<<(std::ostream& os,
 
 // LCOV_EXCL_START
 template <size_t VolumeDim>
-size_t hash_value(const ElementId<VolumeDim>& id) noexcept {
+size_t hash_value(const ElementId<VolumeDim>& id) {
   // ElementId is used as an opaque array of bytes by Charm, so we
   // treat it that way as well.
   // clang-tidy: do not use reinterpret_cast
@@ -138,7 +135,7 @@ size_t hash_value(const ElementId<VolumeDim>& id) noexcept {
 namespace std {  // NOLINT
 template <size_t VolumeDim>
 size_t hash<ElementId<VolumeDim>>::operator()(
-    const ElementId<VolumeDim>& id) const noexcept {
+    const ElementId<VolumeDim>& id) const {
   return hash_value(id);
 }
 }  // namespace std
@@ -146,13 +143,13 @@ size_t hash<ElementId<VolumeDim>>::operator()(
 
 #define GET_DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATION(r, data)                                                 \
-  template class ElementId<GET_DIM(data)>;                                     \
-  template std::ostream& operator<<(std::ostream&,                             \
-                                    const ElementId<GET_DIM(data)>&) noexcept; \
-  template size_t hash_value(const ElementId<GET_DIM(data)>&) noexcept;        \
-  namespace std { /* NOLINT */                                                 \
-  template struct hash<ElementId<GET_DIM(data)>>;                              \
+#define INSTANTIATION(r, data)                                        \
+  template class ElementId<GET_DIM(data)>;                            \
+  template std::ostream& operator<<(std::ostream&,                    \
+                                    const ElementId<GET_DIM(data)>&); \
+  template size_t hash_value(const ElementId<GET_DIM(data)>&);        \
+  namespace std { /* NOLINT */                                        \
+  template struct hash<ElementId<GET_DIM(data)>>;                     \
   }
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))

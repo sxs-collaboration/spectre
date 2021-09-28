@@ -31,8 +31,8 @@ struct TempBuffer;
 
 template <typename TagList>
 struct TempBuffer<TagList, true> : tuples::tagged_tuple_from_typelist<TagList> {
-  explicit TempBuffer(const size_t /*size*/) noexcept
-      : tuples::tagged_tuple_from_typelist<TagList>::TaggedTuple(){}
+  explicit TempBuffer(const size_t /*size*/)
+      : tuples::tagged_tuple_from_typelist<TagList>::TaggedTuple() {}
 };
 
 template <typename TagList>

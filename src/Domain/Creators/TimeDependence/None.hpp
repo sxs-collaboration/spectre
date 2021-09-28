@@ -48,27 +48,26 @@ class None final : public TimeDependence<MeshDim> {
   None() = default;
   ~None() override = default;
   None(const None&) = default;
-  None(None&&) noexcept = default;
+  None(None&&) = default;
   None& operator=(const None&) = default;
-  None& operator=(None&&) noexcept = default;
+  None& operator=(None&&) = default;
 
-  auto get_clone() const noexcept
-      -> std::unique_ptr<TimeDependence<MeshDim>> override;
+  auto get_clone() const -> std::unique_ptr<TimeDependence<MeshDim>> override;
 
-  [[noreturn]] auto block_maps(size_t number_of_blocks) const noexcept
+  [[noreturn]] auto block_maps(size_t number_of_blocks) const
       -> std::vector<std::unique_ptr<domain::CoordinateMapBase<
           Frame::Grid, Frame::Inertial, MeshDim>>> override;
 
-  [[noreturn]] auto functions_of_time() const noexcept -> std::unordered_map<
+  [[noreturn]] auto functions_of_time() const -> std::unordered_map<
       std::string,
       std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;
 };
 
 template <size_t Dim>
-bool operator==(const None<Dim>& lhs, const None<Dim>& rhs) noexcept;
+bool operator==(const None<Dim>& lhs, const None<Dim>& rhs);
 
 template <size_t Dim>
-bool operator!=(const None<Dim>& lhs, const None<Dim>& rhs) noexcept;
+bool operator!=(const None<Dim>& lhs, const None<Dim>& rhs);
 }  // namespace time_dependence
 }  // namespace creators
 }  // namespace domain

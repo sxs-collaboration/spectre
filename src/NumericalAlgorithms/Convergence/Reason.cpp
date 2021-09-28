@@ -13,7 +13,7 @@
 
 namespace Convergence {
 
-std::ostream& operator<<(std::ostream& os, const Reason& reason) noexcept {
+std::ostream& operator<<(std::ostream& os, const Reason& reason) {
   switch (reason) {
     case Reason::NumIterations:
       return os << "NumIterations";

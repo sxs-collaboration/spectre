@@ -11,7 +11,7 @@ SubcellOptions::SubcellOptions(double initial_data_rdmp_delta0,
                                double rdmp_delta0, double rdmp_epsilon,
                                double initial_data_persson_exponent,
                                double persson_exponent,
-                               bool always_use_subcells) noexcept
+                               bool always_use_subcells)
     : initial_data_rdmp_delta0_(initial_data_rdmp_delta0),
       initial_data_rdmp_epsilon_(initial_data_rdmp_epsilon),
       rdmp_delta0_(rdmp_delta0),
@@ -20,7 +20,7 @@ SubcellOptions::SubcellOptions(double initial_data_rdmp_delta0,
       persson_exponent_(persson_exponent),
       always_use_subcells_(always_use_subcells) {}
 
-void SubcellOptions::pup(PUP::er& p) noexcept {
+void SubcellOptions::pup(PUP::er& p) {
   p | initial_data_rdmp_delta0_;
   p | initial_data_rdmp_epsilon_;
   p | rdmp_delta0_;
@@ -30,7 +30,7 @@ void SubcellOptions::pup(PUP::er& p) noexcept {
   p | always_use_subcells_;
 }
 
-bool operator==(const SubcellOptions& lhs, const SubcellOptions& rhs) noexcept {
+bool operator==(const SubcellOptions& lhs, const SubcellOptions& rhs) {
   return lhs.initial_data_rdmp_delta0() == rhs.initial_data_rdmp_delta0() and
          lhs.initial_data_rdmp_epsilon() == rhs.initial_data_rdmp_epsilon() and
          lhs.rdmp_delta0() == rhs.rdmp_delta0() and
@@ -41,7 +41,7 @@ bool operator==(const SubcellOptions& lhs, const SubcellOptions& rhs) noexcept {
          lhs.always_use_subcells() == rhs.always_use_subcells();
 }
 
-bool operator!=(const SubcellOptions& lhs, const SubcellOptions& rhs) noexcept {
+bool operator!=(const SubcellOptions& lhs, const SubcellOptions& rhs) {
   return not(lhs == rhs);
 }
 }  // namespace evolution::dg::subcell

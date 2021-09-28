@@ -46,55 +46,55 @@ class History {
   History& operator=(History&&) = default;
   ~History() = default;
 
-  explicit History(const size_t integration_order) noexcept
+  explicit History(const size_t integration_order)
       : integration_order_(integration_order) {}
 
   /// Add a new set of values to the end of the history.
-  void insert(const TimeStepId& time_step_id, const DerivVars& deriv) noexcept;
+  void insert(const TimeStepId& time_step_id, const DerivVars& deriv);
 
   /// Add a new derivative to the front of the history.  This is often
   /// convenient for setting initial data.  The function value must be
   /// set separately before this object is used, using `most_recent_value()`.
-  void insert_initial(TimeStepId time_step_id, DerivVars deriv) noexcept;
+  void insert_initial(TimeStepId time_step_id, DerivVars deriv);
 
   /// The most recent value of the integrated variables.
   /// @{
-  Vars& most_recent_value() noexcept { return most_recent_value_; }
-  const Vars& most_recent_value() const noexcept { return most_recent_value_; }
+  Vars& most_recent_value() { return most_recent_value_; }
+  const Vars& most_recent_value() const { return most_recent_value_; }
   /// @}
 
   /// Mark all data before the passed point in history as unneeded so
   /// it can be removed.  Calling this directly should not often be
   /// necessary, as it is handled internally by the time steppers.
-  void mark_unneeded(const const_iterator& first_needed) noexcept;
+  void mark_unneeded(const const_iterator& first_needed);
 
   /// These iterators directly return the Time of the past values.
   /// The derivative data can be accessed through the iterators using
   /// HistoryIterator::derivative().
   /// @{
-  const_iterator begin() const noexcept {
+  const_iterator begin() const {
     return data_.begin() +
            static_cast<typename decltype(data_.begin())::difference_type>(
                first_needed_entry_);
   }
-  const_iterator end() const noexcept { return data_.end(); }
-  const_iterator cbegin() const noexcept { return begin(); }
-  const_iterator cend() const noexcept { return end(); }
+  const_iterator end() const { return data_.end(); }
+  const_iterator cbegin() const { return begin(); }
+  const_iterator cend() const { return end(); }
   /// @}
 
-  size_type size() const noexcept { return capacity() - first_needed_entry_; }
-  size_type capacity() const noexcept { return data_.size(); }
-  void shrink_to_fit() noexcept;
+  size_type size() const { return capacity() - first_needed_entry_; }
+  size_type capacity() const { return data_.size(); }
+  void shrink_to_fit();
 
   /// These return the past times.  The other data can be accessed
   /// through HistoryIterator methods.
   /// @{
-  const_reference operator[](size_type n) const noexcept {
+  const_reference operator[](size_type n) const {
     return *(begin() + static_cast<difference_type>(n));
   }
 
-  const_reference front() const noexcept { return *begin(); }
-  const_reference back() const noexcept {
+  const_reference front() const { return *begin(); }
+  const_reference back() const {
     return std::get<0>(data_.back()).substep_time();
   }
   /// @}
@@ -102,14 +102,14 @@ class History {
   /// Get or set the current order of integration.  TimeSteppers may
   /// impose restrictions on the valid values.
   /// @{
-  size_t integration_order() const noexcept { return integration_order_; }
-  void integration_order(const size_t integration_order) noexcept {
+  size_t integration_order() const { return integration_order_; }
+  void integration_order(const size_t integration_order) {
     integration_order_ = integration_order;
   }
   /// @}
 
   // clang-tidy: google-runtime-references
-  void pup(PUP::er& p) noexcept {  // NOLINT
+  void pup(PUP::er& p) {  // NOLINT
     // Don't send cached allocations.  This object is probably going
     // to be thrown away after serialization, so we take the easy
     // route of just throwing them away.
@@ -144,45 +144,47 @@ class HistoryIterator {
 
   HistoryIterator() = default;
 
-  reference operator*() const noexcept {
-    return std::get<0>(*base_).substep_time();
-  }
-  pointer operator->() const noexcept { return &**this; }
-  reference operator[](const difference_type n) const noexcept {
+  reference operator*() const { return std::get<0>(*base_).substep_time(); }
+  pointer operator->() const { return &**this; }
+  reference operator[](const difference_type n) const {
     return std::get<0>(base_[n]).substep_time();
   }
-  HistoryIterator& operator++() noexcept { ++base_; return *this; }
+  HistoryIterator& operator++() {
+    ++base_;
+    return *this;
+  }
   // clang-tidy: return const... Really? What?
-  HistoryIterator operator++(int) noexcept { return base_++; }  // NOLINT
-  HistoryIterator& operator--() noexcept { --base_; return *this; }
+  HistoryIterator operator++(int) { return base_++; }  // NOLINT
+  HistoryIterator& operator--() {
+    --base_;
+    return *this;
+  }
   // clang-tidy: return const... Really? What?
-  HistoryIterator operator--(int) noexcept { return base_--; }  // NOLINT
-  HistoryIterator& operator+=(difference_type n) noexcept {
+  HistoryIterator operator--(int) { return base_--; }  // NOLINT
+  HistoryIterator& operator+=(difference_type n) {
     base_ += n;
     return *this;
   }
-  HistoryIterator& operator-=(difference_type n) noexcept {
+  HistoryIterator& operator-=(difference_type n) {
     base_ -= n;
     return *this;
   }
 
-  const TimeStepId& time_step_id() const noexcept {
-    return std::get<0>(*base_);
-  }
-  const DerivVars& derivative() const noexcept { return std::get<1>(*base_); }
+  const TimeStepId& time_step_id() const { return std::get<0>(*base_); }
+  const DerivVars& derivative() const { return std::get<1>(*base_); }
 
  private:
   friend class History<Vars, DerivVars>;
 
   friend difference_type operator-(const HistoryIterator& a,
-                                   const HistoryIterator& b) noexcept {
+                                   const HistoryIterator& b) {
     return a.base_ - b.base_;
   }
 
-#define FORWARD_HISTORY_ITERATOR_OP(op)                        \
-  friend bool operator op(const HistoryIterator& a,            \
-                          const HistoryIterator& b) noexcept { \
-    return a.base_ op b.base_;                                 \
+#define FORWARD_HISTORY_ITERATOR_OP(op)               \
+  friend bool operator op(const HistoryIterator& a,   \
+                          const HistoryIterator& b) { \
+    return a.base_ op b.base_;                        \
   }
   FORWARD_HISTORY_ITERATOR_OP(==)
   FORWARD_HISTORY_ITERATOR_OP(!=)
@@ -193,7 +195,7 @@ class HistoryIterator {
 #undef FORWARD_HISTORY_ITERATOR_OP
 
   // clang-tidy: google-explicit-constructor - private
-  HistoryIterator(Base base) noexcept : base_(std::move(base)) {}  // NOLINT
+  HistoryIterator(Base base) : base_(std::move(base)) {}  // NOLINT
 
   Base base_{};
 };
@@ -202,7 +204,7 @@ class HistoryIterator {
 
 template <typename Vars, typename DerivVars>
 void History<Vars, DerivVars>::insert(const TimeStepId& time_step_id,
-                                      const DerivVars& deriv) noexcept {
+                                      const DerivVars& deriv) {
   if (first_needed_entry_ == 0) {
     data_.emplace_back(time_step_id, deriv);
   } else {
@@ -219,19 +221,19 @@ void History<Vars, DerivVars>::insert(const TimeStepId& time_step_id,
 
 template <typename Vars, typename DerivVars>
 inline void History<Vars, DerivVars>::insert_initial(TimeStepId time_step_id,
-                                                     DerivVars deriv) noexcept {
+                                                     DerivVars deriv) {
   // NOLINTNEXTLINE(hicpp-move-const-arg,performance-move-const-arg)
   data_.emplace_front(std::move(time_step_id), std::move(deriv));
 }
 
 template <typename Vars, typename DerivVars>
 inline void History<Vars, DerivVars>::mark_unneeded(
-    const const_iterator& first_needed) noexcept {
+    const const_iterator& first_needed) {
   first_needed_entry_ = static_cast<size_t>(first_needed.base_ - data_.begin());
 }
 
 template <typename Vars, typename DerivVars>
-inline void History<Vars, DerivVars>::shrink_to_fit() noexcept {
+inline void History<Vars, DerivVars>::shrink_to_fit() {
   data_.erase(
       data_.begin(),
       data_.begin() +
@@ -243,7 +245,7 @@ inline void History<Vars, DerivVars>::shrink_to_fit() noexcept {
 template <typename Vars, typename DerivVars>
 inline HistoryIterator<Vars, DerivVars> operator+(
     HistoryIterator<Vars, DerivVars> it,
-    typename HistoryIterator<Vars, DerivVars>::difference_type n) noexcept {
+    typename HistoryIterator<Vars, DerivVars>::difference_type n) {
   it += n;
   return it;
 }
@@ -251,14 +253,14 @@ inline HistoryIterator<Vars, DerivVars> operator+(
 template <typename Vars, typename DerivVars>
 inline HistoryIterator<Vars, DerivVars> operator+(
     typename HistoryIterator<Vars, DerivVars>::difference_type n,
-    HistoryIterator<Vars, DerivVars> it) noexcept {
+    HistoryIterator<Vars, DerivVars> it) {
   return std::move(it) + n;
 }
 
 template <typename Vars, typename DerivVars>
 inline HistoryIterator<Vars, DerivVars> operator-(
     HistoryIterator<Vars, DerivVars> it,
-    typename HistoryIterator<Vars, DerivVars>::difference_type n) noexcept {
+    typename HistoryIterator<Vars, DerivVars>::difference_type n) {
   return std::move(it) + (-n);
 }
 }  // namespace TimeSteppers

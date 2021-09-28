@@ -41,7 +41,7 @@ struct SendPointsToInterpolator {
   static void apply(db::DataBox<DbTags>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
-                    const TemporalId& temporal_id) noexcept {
+                    const TemporalId& temporal_id) {
     auto coords = InterpolationTarget_detail::block_logical_coords<
         InterpolationTargetTag>(box, cache, temporal_id);
     InterpolationTarget_detail::set_up_interpolation<InterpolationTargetTag>(

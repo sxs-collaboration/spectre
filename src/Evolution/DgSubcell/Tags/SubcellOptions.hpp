@@ -13,7 +13,7 @@ namespace evolution::dg::subcell {
 namespace OptionTags {
 /// System-agnostic options for DG-subcell
 struct SubcellOptions {
-  static std::string name() noexcept { return "Subcell"; }
+  static std::string name() { return "Subcell"; }
   using type = evolution::dg::subcell::SubcellOptions;
   static constexpr Options::String help =
       "System-agnostic options for DG-subcell";
@@ -28,7 +28,7 @@ struct SubcellOptions : db::SimpleTag {
 
   using option_tags = tmpl::list<OptionTags::SubcellOptions>;
   static constexpr bool pass_metavariables = false;
-  static type create_from_options(const type& subcell_options) noexcept {
+  static type create_from_options(const type& subcell_options) {
     return subcell_options;
   }
 };

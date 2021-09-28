@@ -74,8 +74,7 @@ void correct_package_data(
     const std::unordered_map<
         std::pair<Direction<Dim>, ElementId<Dim>>,
         evolution::dg::MortarData<Dim>,
-        boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
-        mortar_data) noexcept {
+        boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>& mortar_data) {
   const Direction<Dim> upper_direction{logical_dimension_to_operate_in,
                                        Side::Upper};
   const Direction<Dim> lower_direction{logical_dimension_to_operate_in,
@@ -104,7 +103,7 @@ void correct_package_data(
                                subcell_packaged_data,
                            const size_t subcell_index,
                            const Mesh<Dim - 1>& neighbor_face_mesh,
-                           const std::vector<double>& neighbor_data) noexcept {
+                           const std::vector<double>& neighbor_data) {
         const double* slice_data = neighbor_data.data();
         // Warning: projected_data can't be inside the `if constexpr` since that
         // would lead to a dangling pointer.

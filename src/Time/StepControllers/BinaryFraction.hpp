@@ -31,7 +31,7 @@ class BinaryFraction : public StepController {
  public:
   /// \cond
   BinaryFraction() = default;
-  explicit BinaryFraction(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit BinaryFraction(CkMigrateMessage* /*unused*/) {}
   WRAPPED_PUPable_decl(BinaryFraction);  // NOLINT
   /// \endcond
 
@@ -40,7 +40,7 @@ class BinaryFraction : public StepController {
       "Chooses steps to be binary fractions of a slab"};
 
   TimeDelta choose_step(const Time& time,
-                        const double desired_step) const noexcept override {
+                        const double desired_step) const override {
     ASSERT((time.fraction().denominator() &
             (time.fraction().denominator() - 1)) == 0,
            "Not at a binary-fraction time within slab: " << time.fraction());

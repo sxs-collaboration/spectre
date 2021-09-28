@@ -37,10 +37,10 @@
 
 namespace {
 
-void lindblom_rhs(const gsl::not_null<std::array<double, 2>*> dvars,
-                  const std::array<double, 2>& vars, const double log_enthalpy,
-                  const EquationsOfState::EquationOfState<true, 1>&
-                      equation_of_state) noexcept {
+void lindblom_rhs(
+    const gsl::not_null<std::array<double, 2>*> dvars,
+    const std::array<double, 2>& vars, const double log_enthalpy,
+    const EquationsOfState::EquationOfState<true, 1>& equation_of_state) {
   const double& radius_squared = vars[0];
   const double& mass_over_radius = vars[1];
   double& d_radius_squared = (*dvars)[0];
@@ -73,7 +73,7 @@ void lindblom_rhs(const gsl::not_null<std::array<double, 2>*> dvars,
 class Observer {
  public:
   void operator()(const std::array<double, 2>& vars,
-                  const double current_log_enthalpy) noexcept {
+                  const double current_log_enthalpy) {
     radius.push_back(std::sqrt(vars[0]));
     mass_over_radius.push_back(vars[1]);
     log_enthalpy.push_back(current_log_enthalpy);
@@ -90,7 +90,7 @@ interior_solution(
     const EquationsOfState::EquationOfState<true, 1>& equation_of_state,
     const DataType& radius, const DataType& mass_over_radius,
     const DataType& log_specific_enthalpy,
-    const double log_lapse_at_outer_radius) noexcept {
+    const double log_lapse_at_outer_radius) {
   RelativisticEuler::Solutions::TovStar<
       gr::Solutions::TovSolution>::RadialVariables<DataType>
       result(radius);
@@ -141,7 +141,7 @@ interior_solution(
 template <typename DataType>
 RelativisticEuler::Solutions::TovStar<
     gr::Solutions::TovSolution>::RadialVariables<DataType>
-vacuum_solution(const DataType& radius, const double total_mass) noexcept {
+vacuum_solution(const DataType& radius, const double total_mass) {
   RelativisticEuler::Solutions::TovStar<
       gr::Solutions::TovSolution>::RadialVariables<DataType>
       result(radius);
@@ -191,7 +191,7 @@ TovSolution::TovSolution(
       dopri5,
       [&equation_of_state](const std::array<double, 2>& lindblom_u_and_v,
                            std::array<double, 2>& lindblom_dudh_and_dvdh,
-                           const double lindblom_enthalpy) noexcept {
+                           const double lindblom_enthalpy) {
         return lindblom_rhs(&lindblom_dudh_and_dvdh, lindblom_u_and_v,
                             lindblom_enthalpy, equation_of_state);
       },
@@ -209,19 +209,19 @@ TovSolution::TovSolution(
       intrp::BarycentricRational(observer.radius, observer.log_enthalpy, 3);
 }
 
-double TovSolution::outer_radius() const noexcept { return outer_radius_; }
+double TovSolution::outer_radius() const { return outer_radius_; }
 
-double TovSolution::mass_over_radius(const double r) const noexcept {
+double TovSolution::mass_over_radius(const double r) const {
   ASSERT(r >= 0.0 and r <= outer_radius_,
          "Invalid radius: " << r << " not in [0.0, " << outer_radius_ << "]\n");
   return mass_over_radius_interpolant_(r);
 }
 
-double TovSolution::mass(const double r) const noexcept {
+double TovSolution::mass(const double r) const {
   return mass_over_radius(r) * r;
 }
 
-double TovSolution::log_specific_enthalpy(const double r) const noexcept {
+double TovSolution::log_specific_enthalpy(const double r) const {
   ASSERT(r >= 0.0 and r <= outer_radius_,
          "Invalid radius: " << r << " not in [0.0, " << outer_radius_ << "]\n");
   return log_enthalpy_interpolant_(r);
@@ -231,7 +231,7 @@ template <>
 RelativisticEuler::Solutions::TovStar<TovSolution>::RadialVariables<double>
 TovSolution::radial_variables(
     const EquationsOfState::EquationOfState<true, 1>& equation_of_state,
-    const tnsr::I<double, 3>& x) const noexcept {
+    const tnsr::I<double, 3>& x) const {
   // add small number to avoid FPEs at origin
   const double radius = get(magnitude(x)) + 1.e-30 * outer_radius_;
   if (radius >= outer_radius_) {
@@ -246,7 +246,7 @@ template <>
 RelativisticEuler::Solutions::TovStar<TovSolution>::RadialVariables<DataVector>
 TovSolution::radial_variables(
     const EquationsOfState::EquationOfState<true, 1>& equation_of_state,
-    const tnsr::I<DataVector, 3>& x) const noexcept {
+    const tnsr::I<DataVector, 3>& x) const {
   // add small number to avoid FPEs at origin
   const DataVector radius = get(magnitude(x)) + 1.e-30 * outer_radius_;
   if (min(radius) >= outer_radius_) {
@@ -294,7 +294,7 @@ TovSolution::radial_variables(
   return result;
 }
 
-void TovSolution::pup(PUP::er& p) noexcept {  // NOLINT
+void TovSolution::pup(PUP::er& p) {  // NOLINT
   p | outer_radius_;
   p | total_mass_;
   p | log_lapse_at_outer_radius_;

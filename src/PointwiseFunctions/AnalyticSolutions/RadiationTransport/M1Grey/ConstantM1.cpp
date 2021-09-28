@@ -22,12 +22,12 @@
 namespace RadiationTransport::M1Grey::Solutions {
 
 ConstantM1::ConstantM1(const std::array<double, 3>& mean_velocity,
-                       const double comoving_energy_density) noexcept
+                       const double comoving_energy_density)
     :  // clang-tidy: do not std::move trivial types.
       mean_velocity_(std::move(mean_velocity)),  // NOLINT
       comoving_energy_density_(comoving_energy_density) {}
 
-void ConstantM1::pup(PUP::er& p) noexcept {
+void ConstantM1::pup(PUP::er& p) {
   p | mean_velocity_;
   p | comoving_energy_density_;
   p | background_spacetime_;
@@ -39,8 +39,7 @@ tuples::TaggedTuple<
     RadiationTransport::M1Grey::Tags::TildeE<Frame::Inertial, NeutrinoSpecies>>
 ConstantM1::variables(const tnsr::I<DataVector, 3>& x, double /*t*/,
                       tmpl::list<RadiationTransport::M1Grey::Tags::TildeE<
-                          Frame::Inertial, NeutrinoSpecies>> /*meta*/) const
-    noexcept {
+                          Frame::Inertial, NeutrinoSpecies>> /*meta*/) const {
   const double W_sqr =
       1. /
       (1. - std::inner_product(mean_velocity_.begin(), mean_velocity_.end(),
@@ -54,8 +53,7 @@ tuples::TaggedTuple<
     RadiationTransport::M1Grey::Tags::TildeS<Frame::Inertial, NeutrinoSpecies>>
 ConstantM1::variables(const tnsr::I<DataVector, 3>& x, double /*t*/,
                       tmpl::list<RadiationTransport::M1Grey::Tags::TildeS<
-                          Frame::Inertial, NeutrinoSpecies>> /*meta*/) const
-    noexcept {
+                          Frame::Inertial, NeutrinoSpecies>> /*meta*/) const {
   const double W_sqr =
       1. /
       (1. - std::inner_product(mean_velocity_.begin(), mean_velocity_.end(),
@@ -74,7 +72,7 @@ tuples::TaggedTuple<
 ConstantM1::variables(
     const tnsr::I<DataVector, 3>& x, double /*t*/,
     tmpl::list<RadiationTransport::M1Grey::Tags::GreyEmissivity<
-        NeutrinoSpecies>> /*meta*/) const noexcept {
+        NeutrinoSpecies>> /*meta*/) const {
   return {Scalar<DataVector>{DataVector(get<0>(x).size(), 0.)}};
 }
 
@@ -84,7 +82,7 @@ tuples::TaggedTuple<
 ConstantM1::variables(
     const tnsr::I<DataVector, 3>& x, double /*t*/,
     tmpl::list<RadiationTransport::M1Grey::Tags::GreyAbsorptionOpacity<
-        NeutrinoSpecies>> /*meta*/) const noexcept {
+        NeutrinoSpecies>> /*meta*/) const {
   return {Scalar<DataVector>{DataVector(get<0>(x).size(), 0.)}};
 }
 
@@ -94,7 +92,7 @@ tuples::TaggedTuple<
 ConstantM1::variables(
     const tnsr::I<DataVector, 3>& x, double /*t*/,
     tmpl::list<RadiationTransport::M1Grey::Tags::GreyScatteringOpacity<
-        NeutrinoSpecies>> /*meta*/) const noexcept {
+        NeutrinoSpecies>> /*meta*/) const {
   return {Scalar<DataVector>{DataVector(get<0>(x).size(), 0.)}};
 }
 
@@ -102,8 +100,7 @@ ConstantM1::variables(
 tuples::TaggedTuple<hydro::Tags::LorentzFactor<DataVector>>
 ConstantM1::variables(
     const tnsr::I<DataVector, 3>& x, double /*t*/,
-    tmpl::list<hydro::Tags::LorentzFactor<DataVector>> /*meta*/) const
-    noexcept {
+    tmpl::list<hydro::Tags::LorentzFactor<DataVector>> /*meta*/) const {
   const double W =
       1. /
       sqrt(1. - std::inner_product(mean_velocity_.begin(), mean_velocity_.end(),
@@ -114,21 +111,20 @@ ConstantM1::variables(
 tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataVector, 3>>
 ConstantM1::variables(
     const tnsr::I<DataVector, 3>& x, double /*t*/,
-    tmpl::list<hydro::Tags::SpatialVelocity<DataVector, 3>> /*meta*/) const
-    noexcept {
+    tmpl::list<hydro::Tags::SpatialVelocity<DataVector, 3>> /*meta*/) const {
   auto result = make_with_value<tnsr::I<DataVector, 3>>(x, mean_velocity_[0]);
   get<1>(result) = mean_velocity_[1];
   get<2>(result) = mean_velocity_[2];
   return {std::move(result)};
 }
 
-bool operator==(const ConstantM1& lhs, const ConstantM1& rhs) noexcept {
+bool operator==(const ConstantM1& lhs, const ConstantM1& rhs) {
   return lhs.mean_velocity_ == rhs.mean_velocity_ and
          lhs.comoving_energy_density_ == rhs.comoving_energy_density_ and
          lhs.background_spacetime_ == rhs.background_spacetime_;
 }
 
-bool operator!=(const ConstantM1& lhs, const ConstantM1& rhs) noexcept {
+bool operator!=(const ConstantM1& lhs, const ConstantM1& rhs) {
   return not(lhs == rhs);
 }
 
@@ -137,13 +133,13 @@ bool operator!=(const ConstantM1& lhs, const ConstantM1& rhs) noexcept {
 #define EBIN(data) BOOST_PP_TUPLE_ELEM(2, data)
 #define GENERATE_LIST(z, n, _) BOOST_PP_COMMA_IF(n) n
 
-#define INSTANTIATE_M1_FUNCTION_WITH_FRAME(_, data)                           \
-  template tuples::TaggedTuple<TAG(data) < Frame::Inertial,                   \
-                               NTYPE(data) < EBIN(data)>>>                    \
-      ConstantM1::variables(                                                  \
-          const tnsr::I<DataVector, 3>& x, double t,                          \
-          tmpl::list<TAG(data) < Frame::Inertial, NTYPE(data) < EBIN(data)>>> \
-          /*meta*/) const noexcept;
+#define INSTANTIATE_M1_FUNCTION_WITH_FRAME(_, data)                            \
+  template tuples::TaggedTuple<TAG(data) < Frame::Inertial,                    \
+                               NTYPE(data) < EBIN(data)> >>                    \
+      ConstantM1::variables(                                                   \
+          const tnsr::I<DataVector, 3>& x, double t,                           \
+          tmpl::list<TAG(data) < Frame::Inertial, NTYPE(data) < EBIN(data)> >> \
+          /*meta*/) const;
 
 #define temp_list \
   (BOOST_PP_REPEAT(MAX_NUMBER_OF_NEUTRINO_ENERGY_BINS, GENERATE_LIST, _))
@@ -168,11 +164,12 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_M1_FUNCTION_WITH_FRAME,
 #define EBIN(data) BOOST_PP_TUPLE_ELEM(2, data)
 #define GENERATE_LIST(z, n, _) BOOST_PP_COMMA_IF(n) n
 
-#define INSTANTIATE_M1_FUNCTION(_, data)                                       \
-  template tuples::TaggedTuple<TAG(data) < NTYPE(data) < EBIN(data)>>>         \
-      ConstantM1::variables(const tnsr::I<DataVector, 3>& x, double t,         \
-                            tmpl::list<TAG(data) < NTYPE(data) < EBIN(data)>>> \
-                            /*meta*/) const noexcept;
+#define INSTANTIATE_M1_FUNCTION(_, data)                                \
+  template tuples::TaggedTuple<TAG(data) < NTYPE(data) < EBIN(data)> >> \
+      ConstantM1::variables(                                            \
+          const tnsr::I<DataVector, 3>& x, double t,                    \
+          tmpl::list<TAG(data) < NTYPE(data) < EBIN(data)> >>           \
+          /*meta*/) const;
 
 #define temp_list \
   (BOOST_PP_REPEAT(MAX_NUMBER_OF_NEUTRINO_ENERGY_BINS, GENERATE_LIST, _))

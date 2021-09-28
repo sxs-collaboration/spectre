@@ -21,7 +21,7 @@ template <typename InterpolationTargetTag, typename ParallelComponent,
           typename DbTags, typename Metavariables>
 void verify_temporal_ids_and_send_points_time_independent(
     const gsl::not_null<db::DataBox<DbTags>*> box,
-    Parallel::GlobalCache<Metavariables>& cache) noexcept {
+    Parallel::GlobalCache<Metavariables>& cache) {
   using TemporalId = typename InterpolationTargetTag::temporal_id::type;
 
   // Move all PendingTemporalIds to TemporalIds, provided
@@ -34,7 +34,7 @@ void verify_temporal_ids_and_send_points_time_independent(
       [&new_temporal_ids](
           const gsl::not_null<std::deque<TemporalId>*> ids,
           const gsl::not_null<std::deque<TemporalId>*> pending_ids,
-          const std::deque<TemporalId>& completed_ids) noexcept {
+          const std::deque<TemporalId>& completed_ids) {
         for (auto& id : *pending_ids) {
           if (std::find(completed_ids.begin(), completed_ids.end(), id) ==
                   completed_ids.end() and
@@ -70,7 +70,7 @@ template <typename InterpolationTargetTag, typename ParallelComponent,
           typename DbTags, typename Metavariables>
 void verify_temporal_ids_and_send_points_time_dependent(
     const gsl::not_null<db::DataBox<DbTags>*> box,
-    Parallel::GlobalCache<Metavariables>& cache) noexcept {
+    Parallel::GlobalCache<Metavariables>& cache) {
   using TemporalId = typename InterpolationTargetTag::temporal_id::type;
 
   const auto& pending_temporal_ids =
@@ -129,7 +129,7 @@ void verify_temporal_ids_and_send_points_time_dependent(
       [&min_expiration_time, &new_temporal_ids](
           const gsl::not_null<std::deque<TemporalId>*> ids,
           const gsl::not_null<std::deque<TemporalId>*> pending_ids,
-          const std::deque<TemporalId>& completed_ids) noexcept {
+          const std::deque<TemporalId>& completed_ids) {
         for (auto it = pending_ids->begin(); it != pending_ids->end();) {
           if (InterpolationTarget_detail::evaluate_temporal_id_for_expiration(
                   *it) <= min_expiration_time and
@@ -228,7 +228,7 @@ struct VerifyTemporalIdsAndSendPoints {
                                               temporal_id::type>>> = nullptr>
   static void apply(db::DataBox<DbTags>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
-                    const ArrayIndex& /*array_index*/) noexcept {
+                    const ArrayIndex& /*array_index*/) {
     if constexpr (std::is_same_v<typename InterpolationTargetTag::
                                      compute_target_points::frame,
                                  ::Frame::Grid>) {

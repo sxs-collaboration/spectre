@@ -145,7 +145,7 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.Gmres",
     constexpr size_t num_points = 2;
     // This also tests that the linear operator can be a lambda
     const auto linear_operator = [](const gsl::not_null<Vars*> result,
-                                    const Vars& operand) noexcept {
+                                    const Vars& operand) {
       if (result->number_of_grid_points() != num_points) {
         result->initialize(num_points);
       }

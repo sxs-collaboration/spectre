@@ -21,7 +21,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.IndexIterator",
 
   IndexIterator<3> index_iterator(elements);
   auto check_next = [&index_iterator,
-                     call_num = 0](const Index<3>& expected) mutable noexcept {
+                     call_num = 0](const Index<3>& expected) mutable {
     CHECK(index_iterator);
     CHECK(index_iterator() == expected);
     CHECK(*index_iterator == expected);

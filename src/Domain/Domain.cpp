@@ -20,7 +20,7 @@ struct BlockLogical;
 }  // namespace Frame
 
 template <size_t VolumeDim>
-Domain<VolumeDim>::Domain(std::vector<Block<VolumeDim>> blocks) noexcept
+Domain<VolumeDim>::Domain(std::vector<Block<VolumeDim>> blocks)
     : blocks_(std::move(blocks)) {}
 
 template <size_t VolumeDim>
@@ -31,7 +31,7 @@ Domain<VolumeDim>::Domain(
     std::vector<DirectionMap<
         VolumeDim,
         std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
-        boundary_conditions) noexcept {
+        boundary_conditions) {
   ASSERT(
       boundary_conditions.size() == maps.size() or boundary_conditions.empty(),
       "There must be either one set of boundary conditions per block or none "
@@ -63,7 +63,7 @@ Domain<VolumeDim>::Domain(
     std::vector<DirectionMap<
         VolumeDim,
         std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
-        boundary_conditions) noexcept {
+        boundary_conditions) {
   ASSERT(
       maps.size() == corners_of_all_blocks.size(),
       "Must pass same number of maps as block corner sets, but maps.size() == "
@@ -96,7 +96,7 @@ void Domain<VolumeDim>::inject_time_dependent_map_for_block(
     const size_t block_id,
     std::unique_ptr<
         domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, VolumeDim>>
-        moving_mesh_inertial_map) noexcept {
+        moving_mesh_inertial_map) {
   ASSERT(block_id < blocks_.size(),
          "The block id " << block_id
                          << " larger than the total number of blocks, "
@@ -106,20 +106,17 @@ void Domain<VolumeDim>::inject_time_dependent_map_for_block(
 }
 
 template <size_t VolumeDim>
-bool operator==(const Domain<VolumeDim>& lhs,
-                const Domain<VolumeDim>& rhs) noexcept {
+bool operator==(const Domain<VolumeDim>& lhs, const Domain<VolumeDim>& rhs) {
   return lhs.blocks() == rhs.blocks();
 }
 
 template <size_t VolumeDim>
-bool operator!=(const Domain<VolumeDim>& lhs,
-                const Domain<VolumeDim>& rhs) noexcept {
+bool operator!=(const Domain<VolumeDim>& lhs, const Domain<VolumeDim>& rhs) {
   return not(lhs == rhs);
 }
 
 template <size_t VolumeDim>
-std::ostream& operator<<(std::ostream& os,
-                         const Domain<VolumeDim>& d) noexcept {
+std::ostream& operator<<(std::ostream& os, const Domain<VolumeDim>& d) {
   const auto& blocks = d.blocks();
   os << "Domain with " << blocks.size() << " blocks:\n";
   for (const auto& block : blocks) {
@@ -129,19 +126,19 @@ std::ostream& operator<<(std::ostream& os,
 }
 
 template <size_t VolumeDim>
-void Domain<VolumeDim>::pup(PUP::er& p) noexcept {
+void Domain<VolumeDim>::pup(PUP::er& p) {
   p | blocks_;
 }
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(1, data)
-#define INSTANTIATE(_, data)                                       \
-  template class Domain<DIM(data)>;                                \
-  template bool operator==(const Domain<DIM(data)>& lhs,           \
-                           const Domain<DIM(data)>& rhs) noexcept; \
-  template bool operator!=(const Domain<DIM(data)>& lhs,           \
-                           const Domain<DIM(data)>& rhs) noexcept; \
-  template std::ostream& operator<<(std::ostream& os,              \
+#define INSTANTIATE(_, data)                              \
+  template class Domain<DIM(data)>;                       \
+  template bool operator==(const Domain<DIM(data)>& lhs,  \
+                           const Domain<DIM(data)>& rhs); \
+  template bool operator!=(const Domain<DIM(data)>& lhs,  \
+                           const Domain<DIM(data)>& rhs); \
+  template std::ostream& operator<<(std::ostream& os,     \
                                     const Domain<DIM(data)>& d);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))

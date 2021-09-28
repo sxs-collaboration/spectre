@@ -38,14 +38,14 @@ class SpanInterpolator : public PUP::able {
   WRAPPED_PUPable_abstract(SpanInterpolator);  // NOLINT
 
   /// Produce a `std::unique_ptr` that points to a copy of `*this``
-  virtual std::unique_ptr<SpanInterpolator> get_clone() const noexcept = 0;
+  virtual std::unique_ptr<SpanInterpolator> get_clone() const = 0;
 
   /// Perform the interpolation of function represented by `values` at
   /// `source_points` to the requested `target_point`, returning the
   /// interpolation result.
   virtual double interpolate(const gsl::span<const double>& source_points,
                              const gsl::span<const double>& values,
-                             double target_point) const noexcept = 0;
+                             double target_point) const = 0;
 
   /// Perform the interpolation of function represented by complex `values` at
   /// `source_points` to the requested `target_point`, returning the
@@ -53,13 +53,12 @@ class SpanInterpolator : public PUP::able {
   std::complex<double> interpolate(
       const gsl::span<const double>& source_points,
       const gsl::span<const std::complex<double>>& values,
-      double target_point) const noexcept;
+      double target_point) const;
 
   /// The number of domain points that should be both before and after the
   /// requested target point for best interpolation. For instance, for a linear
   /// interpolator, this function would return `1` to request that the target is
   /// between the two domain points passed to `source_points`.
-  virtual size_t required_number_of_points_before_and_after() const
-      noexcept = 0;
+  virtual size_t required_number_of_points_before_and_after() const = 0;
 };
 }  // namespace intrp

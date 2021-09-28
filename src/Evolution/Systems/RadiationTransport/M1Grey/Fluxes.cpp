@@ -27,8 +27,7 @@ void compute_fluxes_impl(
     const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, 3, Frame::Inertial>& shift,
     const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
-    const tnsr::II<DataVector, 3, Frame::Inertial>&
-        inv_spatial_metric) noexcept {
+    const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric) {
   constexpr size_t spatial_dim = 3;
 
   raise_or_lower_index(tilde_s_M, tilde_s, inv_spatial_metric);

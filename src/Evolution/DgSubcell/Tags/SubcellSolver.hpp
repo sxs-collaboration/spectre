@@ -18,7 +18,7 @@ namespace evolution::dg::subcell::OptionTags {
  * `SpatialDiscretization::OptionTags::SpatialDiscretizationGroup`.
  */
 struct SubcellSolverGroup {
-  static std::string name() noexcept { return "SubcellSolver"; }
+  static std::string name() { return "SubcellSolver"; }
   static constexpr Options::String help{
       "Options controlling the subcell solver spatial discretization "
       "of the PDE system.\n\n"

@@ -75,12 +75,12 @@ void neighbor_reconstructed_face_solution(
                        std::optional<std::vector<double>>, ::TimeStepId>,
             boost::hash<std::pair<Direction<Metavariables::volume_dim>,
                                   ElementId<Metavariables::volume_dim>>>>>*>
-        received_temporal_id_and_data) noexcept {
+        received_temporal_id_and_data) {
   constexpr size_t volume_dim = Metavariables::volume_dim;
   db::mutate<
       subcell::Tags::NeighborDataForReconstructionAndRdmpTci<volume_dim>>(
-      box, [&received_temporal_id_and_data](
-               const auto subcell_neighbor_data_ptr) noexcept {
+      box,
+      [&received_temporal_id_and_data](const auto subcell_neighbor_data_ptr) {
         subcell::NeighborData& self_neighbor_data =
             subcell_neighbor_data_ptr->at(
                 std::pair{Direction<volume_dim>::lower_xi(),

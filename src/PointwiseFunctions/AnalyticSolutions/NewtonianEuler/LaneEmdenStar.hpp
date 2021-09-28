@@ -54,7 +54,7 @@ class LaneEmdenStar : public MarkAsAnalyticSolution {
     using type = double;
     static constexpr Options::String help = {
         "The central mass density of the star."};
-    static type lower_bound() noexcept { return 0.; }
+    static type lower_bound() { return 0.; }
   };
 
   /// The polytropic constant of the polytropic fluid.
@@ -62,7 +62,7 @@ class LaneEmdenStar : public MarkAsAnalyticSolution {
     using type = double;
     static constexpr Options::String help = {
         "The polytropic constant of the fluid."};
-    static type lower_bound() noexcept { return 0.; }
+    static type lower_bound() { return 0.; }
   };
 
   using options = tmpl::list<CentralMassDensity, PolytropicConstant>;
@@ -76,19 +76,17 @@ class LaneEmdenStar : public MarkAsAnalyticSolution {
   LaneEmdenStar() = default;
   LaneEmdenStar(const LaneEmdenStar& /*rhs*/) = delete;
   LaneEmdenStar& operator=(const LaneEmdenStar& /*rhs*/) = delete;
-  LaneEmdenStar(LaneEmdenStar&& /*rhs*/) noexcept = default;
-  LaneEmdenStar& operator=(LaneEmdenStar&& /*rhs*/) noexcept = default;
+  LaneEmdenStar(LaneEmdenStar&& /*rhs*/) = default;
+  LaneEmdenStar& operator=(LaneEmdenStar&& /*rhs*/) = default;
   ~LaneEmdenStar() = default;
 
-  LaneEmdenStar(double central_mass_density,
-                double polytropic_constant) noexcept;
+  LaneEmdenStar(double central_mass_density, double polytropic_constant);
 
   /// Retrieve a collection of variables at `(x, t)`
   template <typename DataType, typename... Tags>
   tuples::TaggedTuple<Tags...> variables(const tnsr::I<DataType, 3>& x,
                                          const double /*t*/,
-                                         tmpl::list<Tags...> /*meta*/) const
-      noexcept {
+                                         tmpl::list<Tags...> /*meta*/) const {
     const auto mass_density = precompute_mass_density(x);
     return {tuples::get<Tags>(variables(tmpl::list<Tags>{}, mass_density))...};
   }
@@ -99,48 +97,44 @@ class LaneEmdenStar : public MarkAsAnalyticSolution {
   /// The result is the vector-field giving the acceleration due to gravity
   /// that is felt by a test particle.
   template <typename DataType>
-  tnsr::I<DataType, 3> gravitational_field(const tnsr::I<DataType, 3>& x) const
-      noexcept;
+  tnsr::I<DataType, 3> gravitational_field(const tnsr::I<DataType, 3>& x) const;
 
-  const EquationsOfState::PolytropicFluid<false>& equation_of_state() const
-      noexcept {
+  const EquationsOfState::PolytropicFluid<false>& equation_of_state() const {
     return equation_of_state_;
   }
 
-  const Sources::LaneEmdenGravitationalField& source_term() const noexcept {
+  const Sources::LaneEmdenGravitationalField& source_term() const {
     return source_term_;
   }
 
   // clang-tidy: no runtime references
-  void pup(PUP::er& /*p*/) noexcept;  // NOLINT
+  void pup(PUP::er& /*p*/);  // NOLINT
 
  private:
   template <typename DataType>
-  Scalar<DataType> precompute_mass_density(const tnsr::I<DataType, 3>& x) const
-      noexcept;
+  Scalar<DataType> precompute_mass_density(const tnsr::I<DataType, 3>& x) const;
 
   template <typename DataType>
   tuples::TaggedTuple<Tags::MassDensity<DataType>> variables(
       tmpl::list<Tags::MassDensity<DataType>> /*meta*/,
-      const Scalar<DataType>& mass_density) const noexcept;
+      const Scalar<DataType>& mass_density) const;
 
   template <typename DataType>
   tuples::TaggedTuple<Tags::Velocity<DataType, 3>> variables(
       tmpl::list<Tags::Velocity<DataType, 3>> /*meta*/,
-      const Scalar<DataType>& mass_density) const noexcept;
+      const Scalar<DataType>& mass_density) const;
 
   template <typename DataType>
   tuples::TaggedTuple<Tags::Pressure<DataType>> variables(
       tmpl::list<Tags::Pressure<DataType>> /*meta*/,
-      const Scalar<DataType>& mass_density) const noexcept;
+      const Scalar<DataType>& mass_density) const;
 
   template <typename DataType>
   tuples::TaggedTuple<Tags::SpecificInternalEnergy<DataType>> variables(
       tmpl::list<Tags::SpecificInternalEnergy<DataType>> /*meta*/,
-      const Scalar<DataType>& mass_density) const noexcept;
+      const Scalar<DataType>& mass_density) const;
 
-  friend bool operator==(const LaneEmdenStar& lhs,
-                         const LaneEmdenStar& rhs) noexcept;
+  friend bool operator==(const LaneEmdenStar& lhs, const LaneEmdenStar& rhs);
 
   double central_mass_density_ = std::numeric_limits<double>::signaling_NaN();
   double polytropic_constant_ = std::numeric_limits<double>::signaling_NaN();
@@ -148,7 +142,7 @@ class LaneEmdenStar : public MarkAsAnalyticSolution {
   Sources::LaneEmdenGravitationalField source_term_{};
 };
 
-bool operator!=(const LaneEmdenStar& lhs, const LaneEmdenStar& rhs) noexcept;
+bool operator!=(const LaneEmdenStar& lhs, const LaneEmdenStar& rhs);
 
 }  // namespace Solutions
 }  // namespace NewtonianEuler

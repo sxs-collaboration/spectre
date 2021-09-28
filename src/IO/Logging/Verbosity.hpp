@@ -17,7 +17,7 @@ struct create_from_yaml;
 /// \brief Indicates how much informative output a class should output.
 enum class Verbosity { Silent, Quiet, Verbose, Debug };
 
-std::ostream& operator<<(std::ostream& os, const Verbosity& verbosity) noexcept;
+std::ostream& operator<<(std::ostream& os, const Verbosity& verbosity);
 
 template <>
 struct Options::create_from_yaml<Verbosity> {

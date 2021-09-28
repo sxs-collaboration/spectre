@@ -366,7 +366,7 @@ struct InitializeDataBox<tmpl::list<SimpleTags...>, ComputeTagsList> {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     if (not initial_values_valid_) {
       ERROR(
           "The values being used to construct the initial DataBox have not "
@@ -390,7 +390,7 @@ struct InitializeDataBox<tmpl::list<SimpleTags...>, ComputeTagsList> {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     ERROR(
         "Tried to apply ActionTesting::InitializeDataBox even though one or "
         "more of its tags are already in the DataBox. Did you call next_action "
@@ -398,7 +398,7 @@ struct InitializeDataBox<tmpl::list<SimpleTags...>, ComputeTagsList> {
   }
 
   /// Sets the initial values of simple tags in the DataBox.
-  static void set_initial_values(const InitialValues& t) noexcept {
+  static void set_initial_values(const InitialValues& t) {
     initial_values_ =
         deserialize<InitialValues>(serialize<InitialValues>(t).data());
     initial_values_valid_ = true;
@@ -446,33 +446,31 @@ class MockDistributedObjectProxy {
   }
 
   template <typename Action, typename... Args>
-  void simple_action(std::tuple<Args...> args) noexcept {
+  void simple_action(std::tuple<Args...> args) {
     mock_distributed_object_.template simple_action<Action>(std::move(args));
   }
 
   template <typename Action>
-  void simple_action() noexcept {
+  void simple_action() {
     mock_distributed_object_.template simple_action<Action>();
   }
 
   template <typename Action, typename... Args>
-  void threaded_action(std::tuple<Args...> args) noexcept {
+  void threaded_action(std::tuple<Args...> args) {
     mock_distributed_object_.template threaded_action<Action>(std::move(args));
   }
 
   template <typename Action>
-  void threaded_action() noexcept {
+  void threaded_action() {
     mock_distributed_object_.template threaded_action<Action>();
   }
 
-  void set_terminate(bool t) noexcept {
-    mock_distributed_object_.set_terminate(t);
-  }
+  void set_terminate(bool t) { mock_distributed_object_.set_terminate(t); }
 
   // Actions may call this, but since tests step through actions manually it has
   // no effect.
-  void perform_algorithm() noexcept {}
-  void perform_algorithm(const bool /*restart_if_terminated*/) noexcept {}
+  void perform_algorithm() {}
+  void perform_algorithm(const bool /*restart_if_terminated*/) {}
 
   MockDistributedObject<Component>* ckLocal() {
     return (mock_distributed_object_.my_node() ==
@@ -484,7 +482,7 @@ class MockDistributedObjectProxy {
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& /*p*/) noexcept {
+  void pup(PUP::er& /*p*/) {
     ERROR(
         "Should not try to serialize the MockDistributedObjectProxy. "
         "If you encountered this error you are using the mocking framework "
@@ -577,7 +575,7 @@ class MockCollectionOfDistributedObjectsProxy {
   // is the same as the global core index.
   // For a mocked nodegroup, there is one element per node, so the index
   // of the array is the node index.
-  MockDistributedObject<Component>* ckLocalBranch() noexcept {
+  MockDistributedObject<Component>* ckLocalBranch() {
     if constexpr (std::is_same_v<ChareType, MockGroupChare>) {
       return std::addressof(mock_distributed_objects_->at(mock_global_core_));
     } else if constexpr (std::is_same_v<ChareType, MockNodeGroupChare>) {
@@ -592,7 +590,7 @@ class MockCollectionOfDistributedObjectsProxy {
   template <typename U = ChareType,
             typename = Requires<std::is_same_v<U, ChareType> and
                                 std::is_same_v<U, MockSingletonChare>>>
-  MockDistributedObject<Component>* ckLocal() noexcept {
+  MockDistributedObject<Component>* ckLocal() {
     static_assert(std::is_same_v<ChareType, MockSingletonChare>,
                   "Do not call ckLocal for other than a Singleton");
     auto& object = mock_distributed_objects_->at(0);
@@ -603,47 +601,47 @@ class MockCollectionOfDistributedObjectsProxy {
   }
 
   template <typename Action, typename... Args>
-  void simple_action(std::tuple<Args...> args) noexcept {
+  void simple_action(std::tuple<Args...> args) {
     alg::for_each(*mock_distributed_objects_,
-                  [&args](auto& index_and_mock_distributed_object) noexcept {
+                  [&args](auto& index_and_mock_distributed_object) {
                     index_and_mock_distributed_object.second
                         .template simple_action<Action>(args);
                   });
   }
 
   template <typename Action>
-  void simple_action() noexcept {
+  void simple_action() {
     alg::for_each(*mock_distributed_objects_,
-                  [](auto& index_and_mock_distributed_object) noexcept {
+                  [](auto& index_and_mock_distributed_object) {
                     index_and_mock_distributed_object.second
                         .template simple_action<Action>();
                   });
   }
 
   template <typename Action, typename... Args>
-  void threaded_action(std::tuple<Args...> args) noexcept {
+  void threaded_action(std::tuple<Args...> args) {
     static_assert(std::is_same_v<ChareType, MockNodeGroupChare>,
                   "Do not call threaded_action for other than a Nodegroup");
     alg::for_each(*mock_distributed_objects_,
-                  [&args](auto& index_and_mock_distributed_object) noexcept {
+                  [&args](auto& index_and_mock_distributed_object) {
                     index_and_mock_distributed_object.second
                         .template threaded_action<Action>(args);
                   });
   }
 
   template <typename Action>
-  void threaded_action() noexcept {
+  void threaded_action() {
     static_assert(std::is_same_v<ChareType, MockNodeGroupChare>,
                   "Do not call threaded_action for other than a Nodegroup");
     alg::for_each(*mock_distributed_objects_,
-                  [](auto& index_and_mock_distributed_object) noexcept {
+                  [](auto& index_and_mock_distributed_object) {
                     index_and_mock_distributed_object.second
                         .template threaded_action<Action>();
                   });
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& /*p*/) noexcept {
+  void pup(PUP::er& /*p*/) {
     ERROR(
         "Should not try to serialize the CollectionOfMockDistributedObjects. "
         "If you encountered this error you are using the mocking framework "

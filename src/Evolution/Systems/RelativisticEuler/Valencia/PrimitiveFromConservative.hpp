@@ -91,7 +91,7 @@ struct PrimitiveFromConservative {
       const tnsr::II<DataVector, Dim, Frame::Inertial>& inv_spatial_metric,
       const Scalar<DataVector>& sqrt_det_spatial_metric,
       const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
-          equation_of_state) noexcept;
+          equation_of_state);
 };
 }  // namespace Valencia
 }  // namespace RelativisticEuler

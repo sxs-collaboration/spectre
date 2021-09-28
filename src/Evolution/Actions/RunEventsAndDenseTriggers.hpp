@@ -50,10 +50,9 @@ struct RunEventsAndDenseTriggers {
   template <typename DbTags, typename Tag>
   class StateRestorer {
    public:
-    StateRestorer(const gsl::not_null<db::DataBox<DbTags>*> box) noexcept
-        : box_(box) {}
+    StateRestorer(const gsl::not_null<db::DataBox<DbTags>*> box) : box_(box) {}
 
-    void save() noexcept {
+    void save() {
       // Only store the value the first time, because after that we
       // are seeing the value after the previous change instead of the
       // original.
@@ -64,18 +63,17 @@ struct RunEventsAndDenseTriggers {
 
     ~StateRestorer() {
       if (value_.has_value()) {
-        db::mutate<Tag>(
-            box_,
-            [this](const gsl::not_null<typename Tag::type*> value) noexcept {
+        db::mutate<Tag>(box_,
+                        [this](const gsl::not_null<typename Tag::type*> value) {
 #if defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 11
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 #endif  // defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 11
-              *value = *value_;
+                          *value = *value_;
 #if defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 11
 #pragma GCC diagnostic pop
 #endif  // defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 11
-            });
+                        });
       }
     }
 
@@ -89,11 +87,10 @@ struct RunEventsAndDenseTriggers {
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
   static std::tuple<db::DataBox<DbTags>&&, Parallel::AlgorithmExecution> apply(
-      db::DataBox<DbTags>& box,
-      tuples::TaggedTuple<InboxTags...>& inboxes,
+      db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& inboxes,
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index, const ActionList /*meta*/,
-      const ParallelComponent* const component) noexcept {
+      const ParallelComponent* const component) {
     using system = typename Metavariables::system;
     using variables_tag = typename system::variables_tag;
 
@@ -114,7 +111,7 @@ struct RunEventsAndDenseTriggers {
     StateRestorer<DbTags, ::Tags::Time> time_restorer(make_not_null(&box));
     StateRestorer<DbTags, variables_tag> variables_restorer(
         make_not_null(&box));
-    auto primitives_restorer = [&box]() noexcept {
+    auto primitives_restorer = [&box]() {
       if constexpr (system::has_primitive_and_conservative_vars) {
         return StateRestorer<DbTags, typename system::primitive_variables_tag>(
             make_not_null(&box));
@@ -140,7 +137,7 @@ struct RunEventsAndDenseTriggers {
         time_restorer.save();
         db::mutate<::Tags::Time>(
             make_not_null(&box),
-            [&next_trigger](const gsl::not_null<double*> time) noexcept {
+            [&next_trigger](const gsl::not_null<double*> time) {
               *time = next_trigger;
             });
       }
@@ -169,7 +166,7 @@ struct RunEventsAndDenseTriggers {
                 [&dense_output_succeeded, &next_trigger](
                     gsl::not_null<typename variables_tag::type*> vars,
                     const TimeStepper& stepper,
-                    const typename history_tag::type& history) noexcept {
+                    const typename history_tag::type& history) {
                   dense_output_succeeded =
                       stepper.dense_update_u(vars, history, next_trigger);
                 },
@@ -216,7 +213,7 @@ struct InitializeRunEventsAndDenseTriggers {
                     Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
-                    const ParallelComponent* const /*component*/) noexcept {
+                    const ParallelComponent* const /*component*/) {
     Initialization::mutate_assign<simple_tags>(make_not_null(&box),
                                                std::nullopt);
     return std::forward_as_tuple(std::move(box));

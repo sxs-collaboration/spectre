@@ -27,5 +27,5 @@ enum class Flag {
 };
 
 /// Output operator for a Flag.
-std::ostream& operator<<(std::ostream& os, const Flag& flag) noexcept;
+std::ostream& operator<<(std::ostream& os, const Flag& flag);
 }  // namespace amr

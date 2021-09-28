@@ -219,7 +219,7 @@ struct GhValenciaDivCleanDefaults {
     Exit
   };
 
-  static std::string phase_name(Phase phase) noexcept {
+  static std::string phase_name(Phase phase) {
     if (phase == Phase::LoadBalancing) {
         return "LoadBalancing";
       }
@@ -247,7 +247,7 @@ struct GhValenciaDivCleanDefaults {
       Actions::UpdateConservatives, Parallel::Actions::TerminatePhase>;
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& /*p*/) noexcept {}
+  void pup(PUP::er& /*p*/) {}
 };
 
 template <typename EvolutionMetavarsDerived>
@@ -359,8 +359,7 @@ struct GhValenciaDivCleanTemplateBase<
       const gsl::not_null<tuples::TaggedTuple<Tags...>*>
           phase_change_decision_data,
       const Phase& current_phase,
-      const Parallel::CProxy_GlobalCache<derived_metavars>&
-          cache_proxy) noexcept {
+      const Parallel::CProxy_GlobalCache<derived_metavars>& cache_proxy) {
     const auto next_phase = PhaseControl::arbitrate_phase_change<phase_changes>(
         phase_change_decision_data, current_phase,
         *(cache_proxy.ckLocalBranch()));

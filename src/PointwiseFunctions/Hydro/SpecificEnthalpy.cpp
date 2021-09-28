@@ -15,7 +15,7 @@ void relativistic_specific_enthalpy(
     const gsl::not_null<Scalar<DataType>*> result,
     const Scalar<DataType>& rest_mass_density,
     const Scalar<DataType>& specific_internal_energy,
-    const Scalar<DataType>& pressure) noexcept {
+    const Scalar<DataType>& pressure) {
   destructive_resize_components(result, get_size(get(rest_mass_density)));
   get(*result) = 1.0 + get(specific_internal_energy) +
                  get(pressure) / get(rest_mass_density);
@@ -25,7 +25,7 @@ template <typename DataType>
 Scalar<DataType> relativistic_specific_enthalpy(
     const Scalar<DataType>& rest_mass_density,
     const Scalar<DataType>& specific_internal_energy,
-    const Scalar<DataType>& pressure) noexcept {
+    const Scalar<DataType>& pressure) {
   Scalar<DataType> result{};
   relativistic_specific_enthalpy(make_not_null(&result), rest_mass_density,
                                  specific_internal_energy, pressure);
@@ -39,11 +39,11 @@ Scalar<DataType> relativistic_specific_enthalpy(
       const gsl::not_null<Scalar<DTYPE(data)>*> result,        \
       const Scalar<DTYPE(data)>& rest_mass_density,            \
       const Scalar<DTYPE(data)>& specific_internal_energy,     \
-      const Scalar<DTYPE(data)>& pressure) noexcept;           \
+      const Scalar<DTYPE(data)>& pressure);                    \
   template Scalar<DTYPE(data)> relativistic_specific_enthalpy( \
       const Scalar<DTYPE(data)>& rest_mass_density,            \
       const Scalar<DTYPE(data)>& specific_internal_energy,     \
-      const Scalar<DTYPE(data)>& pressure) noexcept;
+      const Scalar<DTYPE(data)>& pressure);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
 

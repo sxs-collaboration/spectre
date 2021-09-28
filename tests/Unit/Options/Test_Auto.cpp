@@ -34,13 +34,12 @@ struct Derived : Base {
 };
 
 template <typename T>
-void test_instance(Options::Auto<T> value,
-                   const std::optional<T> expected) noexcept {
+void test_instance(Options::Auto<T> value, const std::optional<T> expected) {
   CHECK(static_cast<const std::optional<T>&>(value) == expected);
   CHECK(static_cast<std::optional<T>>(std::move(value)) == expected);
 }
 
-void test_class() noexcept {
+void test_class() {
   test_instance(Options::Auto<int>{}, std::optional<int>{});
   test_instance(Options::Auto<int>{3}, std::optional<int>{3});
   test_instance(Options::Auto<std::unique_ptr<int>>{},
@@ -57,7 +56,7 @@ void test_class() noexcept {
     struct A {};
     struct B {
       // NOLINTNEXTLINE(google-explicit-constructor)
-      B(A /*unused*/) noexcept {}
+      B(A /*unused*/) {}
     };
 
     // Test that converting the contained class compiles.
@@ -85,14 +84,14 @@ void test_class() noexcept {
 
 template <typename T>
 void check_create(const std::string& creation_string,
-                  const std::optional<T>& expected) noexcept {
+                  const std::optional<T>& expected) {
   CAPTURE(creation_string);
   CHECK(static_cast<std::optional<T>>(
             TestHelpers::test_creation<Options::Auto<T>>(creation_string)) ==
         expected);
 }
 
-void test_parsing() noexcept {
+void test_parsing() {
   check_create<int>("3", 3);
   check_create<int>("Auto", {});
 
@@ -124,7 +123,7 @@ class ExampleClass {
 
   struct AutoArg {
     using type = Options::Auto<int>;
-    static type suggested_value() noexcept { return {}; }
+    static type suggested_value() { return {}; }
     static constexpr Options::String help =
         "Integer that can be automatically chosen";
   };
@@ -138,7 +137,7 @@ class ExampleClass {
   using options = tmpl::list<AutoArg, OptionalArg>;
 
   explicit ExampleClass(std::optional<int> auto_arg,
-                        std::optional<double> opt_arg) noexcept
+                        std::optional<double> opt_arg)
       : value(auto_arg ? *auto_arg : -12), optional_value(opt_arg) {}
 
   int value{};
@@ -162,10 +161,10 @@ class NonCopyableArgument {
   using options = tmpl::list<AutoArg>;
 
   explicit NonCopyableArgument(
-      std::optional<std::unique_ptr<Base>> /*auto_arg*/) noexcept {}
+      std::optional<std::unique_ptr<Base>> /*auto_arg*/) {}
 };
 
-void test_use_as_option() noexcept {
+void test_use_as_option() {
   // [example_create]
   const auto example1 = TestHelpers::test_creation<ExampleClass>(
       "AutoArg: 7\n"

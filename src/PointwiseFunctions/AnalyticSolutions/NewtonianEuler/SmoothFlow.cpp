@@ -23,41 +23,38 @@ template <size_t Dim>
 SmoothFlow<Dim>::SmoothFlow(const std::array<double, Dim>& mean_velocity,
                             const std::array<double, Dim>& wavevector,
                             const double pressure, const double adiabatic_index,
-                            const double perturbation_size) noexcept
+                            const double perturbation_size)
     : smooth_flow{mean_velocity, wavevector, pressure, adiabatic_index,
                   perturbation_size} {}
 
 template <size_t Dim>
-SmoothFlow<Dim>::SmoothFlow(CkMigrateMessage* msg) noexcept
-    : smooth_flow(msg) {}
+SmoothFlow<Dim>::SmoothFlow(CkMigrateMessage* msg) : smooth_flow(msg) {}
 
 template <size_t Dim>
-void SmoothFlow<Dim>::pup(PUP::er& p) noexcept {
+void SmoothFlow<Dim>::pup(PUP::er& p) {
   smooth_flow::pup(p);
 }
 
 template <size_t Dim>
-bool operator==(const SmoothFlow<Dim>& lhs,
-                const SmoothFlow<Dim>& rhs) noexcept {
+bool operator==(const SmoothFlow<Dim>& lhs, const SmoothFlow<Dim>& rhs) {
   using smooth_flow = hydro::Solutions::SmoothFlow<Dim, false>;
   return *static_cast<const smooth_flow*>(&lhs) ==
          *static_cast<const smooth_flow*>(&rhs);
 }
 
 template <size_t Dim>
-bool operator!=(const SmoothFlow<Dim>& lhs,
-                const SmoothFlow<Dim>& rhs) noexcept {
+bool operator!=(const SmoothFlow<Dim>& lhs, const SmoothFlow<Dim>& rhs) {
   return not(lhs == rhs);
 }
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE_CLASS(_, data)                                 \
-  template class SmoothFlow<DIM(data)>;                            \
-  template bool operator==(const SmoothFlow<DIM(data)>&,           \
-                           const SmoothFlow<DIM(data)>&) noexcept; \
-  template bool operator!=(const SmoothFlow<DIM(data)>&,           \
-                           const SmoothFlow<DIM(data)>&) noexcept;
+#define INSTANTIATE_CLASS(_, data)                        \
+  template class SmoothFlow<DIM(data)>;                   \
+  template bool operator==(const SmoothFlow<DIM(data)>&,  \
+                           const SmoothFlow<DIM(data)>&); \
+  template bool operator!=(const SmoothFlow<DIM(data)>&,  \
+                           const SmoothFlow<DIM(data)>&);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_CLASS, (1, 2, 3))
 

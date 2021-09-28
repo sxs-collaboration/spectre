@@ -38,9 +38,9 @@ struct CharSpeedsCompute : CharSpeeds<Dim>, db::ComputeTag {
   using base = CharSpeeds<Dim>;
   using return_type = std::array<DataVector, 4>;
 
-  static void function(const gsl::not_null<std::array<DataVector, 4>*> result,
-                       const tnsr::I<DataVector, Dim, Frame::Inertial>&
-                           inertial_coords) noexcept {
+  static void function(
+      const gsl::not_null<std::array<DataVector, 4>*> result,
+      const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords) {
     gsl::at(*result, 0) = inertial_coords.get(0);
     for (size_t i = 1; i < 4; ++i) {
       gsl::at(*result, i) = inertial_coords.get(0) + 2.0 * i;
@@ -53,7 +53,7 @@ struct CharSpeedsCompute : CharSpeeds<Dim>, db::ComputeTag {
 template <size_t Dim>
 struct Directions : db::SimpleTag {
   static constexpr size_t volume_dim = Dim;
-  static std::string name() noexcept { return "Directions"; }
+  static std::string name() { return "Directions"; }
   using type = std::unordered_set<Direction<Dim>>;
 };
 

@@ -71,30 +71,30 @@ struct RobinsonTrautman : public SphericalMetricData {
     using type = double;
     static constexpr Options::String help{
         "The extraction radius of the spherical solution"};
-    static type lower_bound() noexcept { return 0.0; }
-    static type suggested_value() noexcept { return 20.0; }
+    static type lower_bound() { return 0.0; }
+    static type suggested_value() { return 20.0; }
   };
   struct LMax {
     using type = size_t;
     static constexpr Options::String help{
         "The maximum l value for the internal computation of the analytic "
         "solution"};
-    static type lower_bound() noexcept { return 4; }
+    static type lower_bound() { return 4; }
   };
   struct Tolerance {
     using type = double;
     static constexpr Options::String help{
         "The tolerance for the time evolution part of the calculation of the "
         "semi-analytic Robinson-Trautman solution"};
-    static type lower_bound() noexcept { return 0.0; }
-    static type suggested_value() noexcept { return 1.0e-11; }
+    static type lower_bound() { return 0.0; }
+    static type suggested_value() { return 1.0e-11; }
   };
   struct StartTime {
     using type = double;
     static constexpr Options::String help{
         "The starting time for the Robinson-Trautman evolution"};
-    static type lower_bound() noexcept { return 0.0; }
-    static type suggested_value() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
+    static type suggested_value() { return 0.0; }
   };
 
   using options =
@@ -107,8 +107,7 @@ struct RobinsonTrautman : public SphericalMetricData {
 
   WRAPPED_PUPable_decl_template(RobinsonTrautman);  // NOLINT
 
-  explicit RobinsonTrautman(CkMigrateMessage* msg) noexcept
-      : SphericalMetricData(msg) {}
+  explicit RobinsonTrautman(CkMigrateMessage* msg) : SphericalMetricData(msg) {}
 
   RobinsonTrautman() = default;
 
@@ -116,39 +115,35 @@ struct RobinsonTrautman : public SphericalMetricData {
                    double extraction_radius, size_t l_max, double tolerance,
                    double start_time, const Options::Context& context);
 
-  std::unique_ptr<WorldtubeData> get_clone() const noexcept override;
+  std::unique_ptr<WorldtubeData> get_clone() const override;
 
-  void pup(PUP::er& p) noexcept override;
+  void pup(PUP::er& p) override;
 
-  bool use_noninertial_news() const noexcept override { return true; }
+  bool use_noninertial_news() const override { return true; }
 
  private:
   void du_rt_scalar(
       gsl::not_null<SpinWeighted<ComplexDataVector, 0>*> local_du_rt_scalar,
-      const SpinWeighted<ComplexDataVector, 0>& rt_scalar) const noexcept;
+      const SpinWeighted<ComplexDataVector, 0>& rt_scalar) const;
 
   void du_bondi_w(
       gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*> du_bondi_w,
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& local_du_rt_scalar,
-      const Scalar<SpinWeighted<ComplexDataVector, 0>>& rt_scalar)
-      const noexcept;
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>& rt_scalar) const;
 
   void bondi_u(
       gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 1>>*> bondi_u,
-      const Scalar<SpinWeighted<ComplexDataVector, 0>>& rt_scalar)
-      const noexcept;
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>& rt_scalar) const;
 
   void bondi_w(
       gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*> bondi_w,
-      const Scalar<SpinWeighted<ComplexDataVector, 0>>& rt_scalar)
-      const noexcept;
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>& rt_scalar) const;
 
   void dr_bondi_w(
       gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*> dr_bondi_w,
-      const Scalar<SpinWeighted<ComplexDataVector, 0>>& rt_scalar)
-      const noexcept;
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>& rt_scalar) const;
 
-  void initialize_stepper_from_start() const noexcept;
+  void initialize_stepper_from_start() const;
 
  protected:
   /*!
@@ -170,8 +165,7 @@ struct RobinsonTrautman : public SphericalMetricData {
    * As the scalar \f$\omega_{\text{RT}}\f$ is evolved, it is filtered by
    * zeroing the highest two angular modes.
    */
-  void prepare_solution(size_t output_l_max,
-                        double time) const noexcept override;
+  void prepare_solution(size_t output_l_max, double time) const override;
 
   /*!
    * \brief Compute the spherical coordinate metric of the Robinson-Trautman
@@ -210,7 +204,7 @@ struct RobinsonTrautman : public SphericalMetricData {
       gsl::not_null<
           tnsr::aa<DataVector, 3, ::Frame::Spherical<::Frame::Inertial>>*>
           spherical_metric,
-      size_t l_max, double time) const noexcept override;
+      size_t l_max, double time) const override;
 
   /*!
    * \brief Compute radial derivative of the spherical coordinate metric of the
@@ -249,7 +243,7 @@ struct RobinsonTrautman : public SphericalMetricData {
       gsl::not_null<
           tnsr::aa<DataVector, 3, ::Frame::Spherical<::Frame::Inertial>>*>
           dr_spherical_metric,
-      size_t l_max, double time) const noexcept override;
+      size_t l_max, double time) const override;
 
   /*!
    * \brief Compute time derivative of the spherical coordinate metric of the
@@ -296,7 +290,7 @@ struct RobinsonTrautman : public SphericalMetricData {
       gsl::not_null<
           tnsr::aa<DataVector, 3, ::Frame::Spherical<::Frame::Inertial>>*>
           dt_spherical_metric,
-      size_t l_max, double time) const noexcept override;
+      size_t l_max, double time) const override;
 
   /*!
    * \brief Compute the news associated with the Robinson-Trautman solution
@@ -311,7 +305,7 @@ struct RobinsonTrautman : public SphericalMetricData {
   void variables_impl(
       gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, -2>>*> News,
       size_t l_max, double time,
-      tmpl::type_<Tags::News> /*meta*/) const noexcept override;
+      tmpl::type_<Tags::News> /*meta*/) const override;
 
   using WorldtubeData::variables_impl;
 

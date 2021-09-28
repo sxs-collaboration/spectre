@@ -47,7 +47,7 @@ struct RegisterWithElementDataReader {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
       const ElementId<Dim>& array_index, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     const std::string element_name = MakeString{}
                                      << ElementId<Dim>(array_index);
     auto& local_reader_component =
@@ -84,13 +84,13 @@ struct RegisterElementWithSelf {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const observers::ArrayComponentId& array_component_id,
-                    const std::string& grid_name) noexcept {
+                    const std::string& grid_name) {
     db::mutate<Tags::RegisteredElements>(
         make_not_null(&box),
-        [&array_component_id, &grid_name ](
+        [&array_component_id, &grid_name](
             const gsl::not_null<
                 std::unordered_map<observers::ArrayComponentId, std::string>*>
-                registered_elements) noexcept {
+                registered_elements) {
           (*registered_elements)[array_component_id] = grid_name;
         });
   }

@@ -34,8 +34,7 @@ void compute_fluxes_impl(
     const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, 3, Frame::Inertial>& shift,
     const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
-    const tnsr::II<DataVector, 3, Frame::Inertial>&
-        inv_spatial_metric) noexcept;
+    const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric);
 }  // namespace detail
 
 /*!
@@ -86,8 +85,7 @@ struct ComputeFluxes {
       const Scalar<DataVector>& lapse,
       const tnsr::I<DataVector, 3, Frame::Inertial>& shift,
       const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
-      const tnsr::II<DataVector, 3, Frame::Inertial>&
-          inv_spatial_metric) noexcept {
+      const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric) {
     // Allocate memory for tildeS^i
     tnsr::I<DataVector, 3, Frame::Inertial> tilde_s_M(get(lapse).size());
     EXPAND_PACK_LEFT_TO_RIGHT(detail::compute_fluxes_impl(

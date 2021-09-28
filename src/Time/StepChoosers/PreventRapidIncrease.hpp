@@ -38,7 +38,7 @@ class PreventRapidIncrease : public StepChooser<StepChooserUse> {
  public:
   /// \cond
   PreventRapidIncrease() = default;
-  explicit PreventRapidIncrease(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit PreventRapidIncrease(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(PreventRapidIncrease);  // NOLINT
   /// \endcond
@@ -54,7 +54,7 @@ class PreventRapidIncrease : public StepChooser<StepChooserUse> {
   template <typename Metavariables, typename History>
   std::pair<double, bool> operator()(
       const History& history, const double last_step_magnitude,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/) const noexcept {
+      const Parallel::GlobalCache<Metavariables>& /*cache*/) const {
     if (history.size() < 2) {
       return std::make_pair(std::numeric_limits<double>::infinity(), true);
     }

@@ -71,13 +71,13 @@ class Rusanov final : public BoundaryCorrection<Dim> {
   ~Rusanov() override = default;
 
   /// \cond
-  explicit Rusanov(CkMigrateMessage* msg) noexcept;
+  explicit Rusanov(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Rusanov);  // NOLINT
   /// \endcond
   void pup(PUP::er& p) override;  // NOLINT
 
-  std::unique_ptr<BoundaryCorrection<Dim>> get_clone() const noexcept override;
+  std::unique_ptr<BoundaryCorrection<Dim>> get_clone() const override;
 
   using dg_package_field_tags =
       tmpl::list<Tags::U, ::Tags::NormalDotFlux<Tags::U>, AbsCharSpeed>;
@@ -94,8 +94,7 @@ class Rusanov final : public BoundaryCorrection<Dim> {
       const tnsr::i<DataVector, Dim, Frame::Inertial>& normal_covector,
       const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
           mesh_velocity,
-      const std::optional<Scalar<DataVector>>&
-          normal_dot_mesh_velocity) noexcept;
+      const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity);
 
   static void dg_boundary_terms(
       gsl::not_null<Scalar<DataVector>*> boundary_correction_u,
@@ -105,7 +104,7 @@ class Rusanov final : public BoundaryCorrection<Dim> {
       const Scalar<DataVector>& u_ext,
       const Scalar<DataVector>& normal_dot_flux_u_ext,
       const Scalar<DataVector>& abs_char_speed_ext,
-      dg::Formulation dg_formulation) noexcept;
+      dg::Formulation dg_formulation);
 };
 }  // namespace BoundaryCorrections
 }  // namespace ScalarAdvection

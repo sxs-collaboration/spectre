@@ -15,11 +15,11 @@ template <typename... MutateTags, typename BoxTags, typename... Args>
 SPECTRE_ALWAYS_INLINE constexpr void mutate_assign_impl(
     // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
     const gsl::not_null<db::DataBox<BoxTags>*> box,
-    tmpl::list<MutateTags...> /*meta*/, Args&&... args) noexcept {
+    tmpl::list<MutateTags...> /*meta*/, Args&&... args) {
   static_assert(sizeof...(MutateTags) == sizeof...(args),
                 "The number of arguments passed to `mutate_assign` must be "
                 "equal to the number of tags passed.");
-  db::mutate<MutateTags...>(box, [&args...](const auto... box_args) noexcept {
+  db::mutate<MutateTags...>(box, [&args...](const auto... box_args) {
     // silence unused capture warnings when there are zero args.
     // This function still gets instantiated despite the `static_assert` in the
     // parent function.
@@ -38,7 +38,7 @@ SPECTRE_ALWAYS_INLINE constexpr void mutate_assign_impl(
 template <typename MutateTagList, typename BoxTags, typename... Args>
 SPECTRE_ALWAYS_INLINE constexpr void mutate_assign(
     // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
-    const gsl::not_null<db::DataBox<BoxTags>*> box, Args&&... args) noexcept {
+    const gsl::not_null<db::DataBox<BoxTags>*> box, Args&&... args) {
   static_assert(
       tmpl::size<MutateTagList>::value > 0,
       "At least one tag must be passed to `Initialization::mutate_assign`, but "

@@ -45,5 +45,5 @@ template <size_t VolumeDim>
 bool update_amr_decision(
     gsl::not_null<std::array<amr::Flag, VolumeDim>*> my_current_amr_flags,
     const Element<VolumeDim>& element, const ElementId<VolumeDim>& neighbor_id,
-    const std::array<amr::Flag, VolumeDim>& neighbor_amr_flags) noexcept;
+    const std::array<amr::Flag, VolumeDim>& neighbor_amr_flags);
 }  // namespace amr

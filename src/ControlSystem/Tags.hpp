@@ -42,7 +42,7 @@ struct MeasurementTimescales : db::SimpleTag {
   static type create_from_options(
       const std::unique_ptr<::DomainCreator<Metavariables::volume_dim>>&
           domain_creator,
-      const double initial_time_step) noexcept {
+      const double initial_time_step) {
     std::unordered_map<std::string,
                        std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
         timescales;

@@ -49,7 +49,7 @@ class LinearSolver : public PUP::able {
   ~LinearSolver() override = default;
 
   /// \cond
-  explicit LinearSolver(CkMigrateMessage* m) noexcept;
+  explicit LinearSolver(CkMigrateMessage* m);
   WRAPPED_PUPable_abstract(LinearSolver);  // NOLINT
   /// \endcond
 
@@ -80,17 +80,16 @@ class LinearSolver : public PUP::able {
   Convergence::HasConverged solve(
       gsl::not_null<VarsType*> initial_guess_in_solution_out,
       const LinearOperator& linear_operator, const SourceType& source,
-      const std::tuple<OperatorArgs...>& operator_args,
-      Args&&... args) const noexcept;
+      const std::tuple<OperatorArgs...>& operator_args, Args&&... args) const;
 
   /// Discard caches from previous solves. Use before solving a different linear
   /// operator.
-  virtual void reset() noexcept = 0;
+  virtual void reset() = 0;
 };
 
 /// \cond
 template <typename LinearSolverRegistrars>
-LinearSolver<LinearSolverRegistrars>::LinearSolver(CkMigrateMessage* m) noexcept
+LinearSolver<LinearSolverRegistrars>::LinearSolver(CkMigrateMessage* m)
     : PUP::able(m) {}
 /// \endcond
 
@@ -100,11 +99,10 @@ template <typename LinearOperator, typename VarsType, typename SourceType,
 Convergence::HasConverged LinearSolver<LinearSolverRegistrars>::solve(
     const gsl::not_null<VarsType*> initial_guess_in_solution_out,
     const LinearOperator& linear_operator, const SourceType& source,
-    const std::tuple<OperatorArgs...>& operator_args,
-    Args&&... args) const noexcept {
+    const std::tuple<OperatorArgs...>& operator_args, Args&&... args) const {
   return call_with_dynamic_type<Convergence::HasConverged, creatable_classes>(
       this, [&initial_guess_in_solution_out, &linear_operator, &source,
-             &operator_args, &args...](auto* const linear_solver) noexcept {
+             &operator_args, &args...](auto* const linear_solver) {
         return linear_solver->solve(initial_guess_in_solution_out,
                                     linear_operator, source, operator_args,
                                     std::forward<Args>(args)...);
@@ -136,7 +134,7 @@ class PreconditionedLinearSolver : public LinearSolver<LinearSolverRegistrars> {
       tmpl::conditional_t<std::is_abstract_v<Preconditioner>,
                           std::unique_ptr<Preconditioner>, Preconditioner>;
   struct PreconditionerOption {
-    static std::string name() noexcept { return "Preconditioner"; }
+    static std::string name() { return "Preconditioner"; }
     // Support factory-creatable preconditioners by storing them as unique-ptrs
     using type = Options::Auto<PreconditionerType, Options::AutoLabel::None>;
     static constexpr Options::String help =
@@ -150,20 +148,19 @@ class PreconditionedLinearSolver : public LinearSolver<LinearSolverRegistrars> {
   PreconditionedLinearSolver& operator=(PreconditionedLinearSolver&&) = default;
 
   explicit PreconditionedLinearSolver(
-      std::optional<PreconditionerType> local_preconditioner) noexcept;
+      std::optional<PreconditionerType> local_preconditioner);
 
-  PreconditionedLinearSolver(const PreconditionedLinearSolver& rhs) noexcept;
-  PreconditionedLinearSolver& operator=(
-      const PreconditionedLinearSolver& rhs) noexcept;
+  PreconditionedLinearSolver(const PreconditionedLinearSolver& rhs);
+  PreconditionedLinearSolver& operator=(const PreconditionedLinearSolver& rhs);
 
  public:
   ~PreconditionedLinearSolver() override = default;
 
   /// \cond
-  explicit PreconditionedLinearSolver(CkMigrateMessage* m) noexcept;
+  explicit PreconditionedLinearSolver(CkMigrateMessage* m);
   /// \endcond
 
-  void pup(PUP::er& p) noexcept override {  // NOLINT
+  void pup(PUP::er& p) override {  // NOLINT
     PUP::able::pup(p);
     if constexpr (not std::is_same_v<Preconditioner, NoPreconditioner>) {
       p | preconditioner_;
@@ -171,7 +168,7 @@ class PreconditionedLinearSolver : public LinearSolver<LinearSolverRegistrars> {
   }
 
   /// Whether or not a preconditioner is set
-  bool has_preconditioner() const noexcept {
+  bool has_preconditioner() const {
     if constexpr (not std::is_same_v<Preconditioner, NoPreconditioner>) {
       return preconditioner_.has_value();
     } else {
@@ -187,7 +184,7 @@ class PreconditionedLinearSolver : public LinearSolver<LinearSolverRegistrars> {
       bool Enabled = not std::is_same_v<Preconditioner, NoPreconditioner>,
       Requires<Enabled and
                not std::is_same_v<Preconditioner, NoPreconditioner>> = nullptr>
-  const Preconditioner& preconditioner() const noexcept {
+  const Preconditioner& preconditioner() const {
     ASSERT(has_preconditioner(),
            "No preconditioner is set. Please use `has_preconditioner()` to "
            "check before trying to retrieve it.");
@@ -202,7 +199,7 @@ class PreconditionedLinearSolver : public LinearSolver<LinearSolverRegistrars> {
       bool Enabled = not std::is_same_v<Preconditioner, NoPreconditioner>,
       Requires<Enabled and
                not std::is_same_v<Preconditioner, NoPreconditioner>> = nullptr>
-  Preconditioner& preconditioner() noexcept {
+  Preconditioner& preconditioner() {
     ASSERT(has_preconditioner(),
            "No preconditioner is set. Please use `has_preconditioner()` to "
            "check before trying to retrieve it.");
@@ -216,7 +213,7 @@ class PreconditionedLinearSolver : public LinearSolver<LinearSolverRegistrars> {
   // Keep the function virtual so derived classes must provide an
   // implementation, but also provide an implementation below that derived
   // classes can use to reset the preconditioner
-  void reset() noexcept override = 0;
+  void reset() override = 0;
 
  protected:
   /// Copy the preconditioner. Useful to implement `get_clone` when the
@@ -225,7 +222,7 @@ class PreconditionedLinearSolver : public LinearSolver<LinearSolverRegistrars> {
       bool Enabled = not std::is_same_v<Preconditioner, NoPreconditioner>,
       Requires<Enabled and
                not std::is_same_v<Preconditioner, NoPreconditioner>> = nullptr>
-  std::optional<PreconditionerType> clone_preconditioner() const noexcept {
+  std::optional<PreconditionerType> clone_preconditioner() const {
     if constexpr (std::is_abstract_v<Preconditioner>) {
       return has_preconditioner()
                  ? std::optional((*preconditioner_)->get_clone())
@@ -245,13 +242,13 @@ class PreconditionedLinearSolver : public LinearSolver<LinearSolverRegistrars> {
 template <typename Preconditioner, typename LinearSolverRegistrars>
 PreconditionedLinearSolver<Preconditioner, LinearSolverRegistrars>::
     PreconditionedLinearSolver(
-        std::optional<PreconditionerType> local_preconditioner) noexcept
+        std::optional<PreconditionerType> local_preconditioner)
     : preconditioner_(std::move(local_preconditioner)) {}
 
 // Override copy constructors so they can clone abstract preconditioners
 template <typename Preconditioner, typename LinearSolverRegistrars>
 PreconditionedLinearSolver<Preconditioner, LinearSolverRegistrars>::
-    PreconditionedLinearSolver(const PreconditionedLinearSolver& rhs) noexcept
+    PreconditionedLinearSolver(const PreconditionedLinearSolver& rhs)
     : Base(rhs) {
   if constexpr (not std::is_same_v<Preconditioner, NoPreconditioner>) {
     preconditioner_ = rhs.clone_preconditioner();
@@ -260,7 +257,7 @@ PreconditionedLinearSolver<Preconditioner, LinearSolverRegistrars>::
 template <typename Preconditioner, typename LinearSolverRegistrars>
 PreconditionedLinearSolver<Preconditioner, LinearSolverRegistrars>&
 PreconditionedLinearSolver<Preconditioner, LinearSolverRegistrars>::operator=(
-    const PreconditionedLinearSolver& rhs) noexcept {
+    const PreconditionedLinearSolver& rhs) {
   Base::operator=(rhs);
   if constexpr (not std::is_same_v<Preconditioner, NoPreconditioner>) {
     preconditioner_ = rhs.clone_preconditioner();
@@ -271,13 +268,13 @@ PreconditionedLinearSolver<Preconditioner, LinearSolverRegistrars>::operator=(
 /// \cond
 template <typename Preconditioner, typename LinearSolverRegistrars>
 PreconditionedLinearSolver<Preconditioner, LinearSolverRegistrars>::
-    PreconditionedLinearSolver(CkMigrateMessage* m) noexcept
+    PreconditionedLinearSolver(CkMigrateMessage* m)
     : Base(m) {}
 /// \endcond
 
 template <typename Preconditioner, typename LinearSolverRegistrars>
 void PreconditionedLinearSolver<Preconditioner,
-                                LinearSolverRegistrars>::reset() noexcept {
+                                LinearSolverRegistrars>::reset() {
   if constexpr (not std::is_same_v<Preconditioner, NoPreconditioner>) {
     if (has_preconditioner()) {
       preconditioner().reset();

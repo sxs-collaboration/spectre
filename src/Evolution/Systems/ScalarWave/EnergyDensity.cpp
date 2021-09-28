@@ -14,7 +14,7 @@ namespace ScalarWave {
 template <size_t SpatialDim>
 void energy_density(
     gsl::not_null<Scalar<DataVector>*> result, const Scalar<DataVector>& pi,
-    const tnsr::i<DataVector, SpatialDim, Frame::Inertial>& phi) noexcept {
+    const tnsr::i<DataVector, SpatialDim, Frame::Inertial>& phi) {
   dot_product(result, phi, phi);
   get(*result) += square(get(pi));
   get(*result) *= 0.5;
@@ -23,7 +23,7 @@ void energy_density(
 template <size_t SpatialDim>
 Scalar<DataVector> energy_density(
     const Scalar<DataVector>& pi,
-    const tnsr::i<DataVector, SpatialDim, Frame::Inertial>& phi) noexcept {
+    const tnsr::i<DataVector, SpatialDim, Frame::Inertial>& phi) {
   Scalar<DataVector> result{get(pi).size()};
   energy_density(make_not_null(&result), pi, phi);
   return result;
@@ -36,7 +36,7 @@ Scalar<DataVector> energy_density(
 #define INSTANTIATE(_, data)                                                   \
   template void ScalarWave::energy_density(                                    \
       gsl::not_null<Scalar<DataVector>*> result, const Scalar<DataVector>& pi, \
-      const tnsr::i<DataVector, DIM(data), Frame::Inertial>& phi) noexcept;
+      const tnsr::i<DataVector, DIM(data), Frame::Inertial>& phi);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 

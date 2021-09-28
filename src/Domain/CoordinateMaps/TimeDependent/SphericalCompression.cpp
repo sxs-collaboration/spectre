@@ -35,7 +35,7 @@ double lambda00_y00(
     const std::string& f_of_t_name, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time) noexcept {
+        functions_of_time) {
   ASSERT(functions_of_time.find(f_of_t_name) != functions_of_time.end(),
          "Could not find function of time: '"
              << f_of_t_name << "' in functions of time. Known functions are "
@@ -49,7 +49,7 @@ double dt_lambda00_y00(
     const std::string& f_of_t_name, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time) noexcept {
+        functions_of_time) {
   ASSERT(functions_of_time.find(f_of_t_name) != functions_of_time.end(),
          "Could not find function of time: '"
              << f_of_t_name << "' in functions of time. Known functions are "
@@ -61,8 +61,7 @@ double dt_lambda00_y00(
 // Evaluate \f$\rho^i = \xi^i - C^i\f$ or \f$r^i = x^i - C^i\f$.
 template <typename T>
 std::array<ResultType<T>, 3> radial_position(
-    const std::array<T, 3>& coords,
-    const std::array<double, 3>& center) noexcept {
+    const std::array<T, 3>& coords, const std::array<double, 3>& center) {
   std::array<ResultType<T>, 3> result{};
   for (size_t i = 0; i < 3; ++i) {
     gsl::at(result, i) = gsl::at(coords, i) - gsl::at(center, i);
@@ -79,7 +78,7 @@ template <bool InteriorMap, typename T>
 void correct_mapped_coordinate_or_frame_velocity(
     const gsl::not_null<ResultType<T>*> input, const T& source_radial_coord,
     const T& source_radius, const double lambda_y, const double min_radius,
-    const double max_radius) noexcept {
+    const double max_radius) {
   if constexpr (InteriorMap) {
     *input -= lambda_y * source_radial_coord / min_radius;
   } else {
@@ -135,7 +134,7 @@ namespace domain::CoordinateMaps::TimeDependent {
 template <bool InteriorMap>
 SphericalCompression<InteriorMap>::SphericalCompression(
     std::string function_of_time_name, const double min_radius,
-    const double max_radius, const std::array<double, 3>& center) noexcept
+    const double max_radius, const std::array<double, 3>& center)
     : f_of_t_name_(std::move(function_of_time_name)),
       min_radius_(min_radius),
       max_radius_(max_radius),
@@ -152,7 +151,7 @@ std::array<ResultType<T>, 3> SphericalCompression<InteriorMap>::operator()(
     const std::array<T, 3>& source_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time) const noexcept {
+        functions_of_time) const {
   const std::array<ResultType<T>, 3> source_rad_position{
       radial_position(source_coords, center_)};
   const ResultType<T> source_radius{magnitude(source_rad_position)};
@@ -173,7 +172,7 @@ std::optional<std::array<double, 3>> SphericalCompression<InteriorMap>::inverse(
     const std::array<double, 3>& target_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time) const noexcept {
+        functions_of_time) const {
   const double lambda_y{lambda00_y00(f_of_t_name_, time, functions_of_time)};
   if (UNLIKELY(min_radius_ - max_radius_ > lambda_y or
                lambda_y > min_radius_)) {
@@ -209,7 +208,7 @@ std::array<ResultType<T>, 3> SphericalCompression<InteriorMap>::frame_velocity(
     const std::array<T, 3>& source_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time) const noexcept {
+        functions_of_time) const {
   const std::array<ResultType<T>, 3> source_rad_position{
       radial_position(source_coords, center_)};
   const ResultType<T> source_radius{magnitude(source_rad_position)};
@@ -233,7 +232,7 @@ SphericalCompression<InteriorMap>::jacobian(
     const std::array<T, 3>& source_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time) const noexcept {
+        functions_of_time) const {
   const std::array<ResultType<T>, 3> source_rad_position{
       radial_position(source_coords, center_)};
   const ResultType<T> source_radius{magnitude(source_rad_position)};
@@ -274,7 +273,7 @@ SphericalCompression<InteriorMap>::inv_jacobian(
     const std::array<T, 3>& source_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time) const noexcept {
+        functions_of_time) const {
   // Obtain the Jacobian and then compute its inverse numerically.
   // There is a clear opportunity here for a potential future optimization:
   // instead of taking the determinant and inverse numerically, it is
@@ -285,7 +284,7 @@ SphericalCompression<InteriorMap>::inv_jacobian(
 }
 
 template <bool InteriorMap>
-void SphericalCompression<InteriorMap>::pup(PUP::er& p) noexcept {
+void SphericalCompression<InteriorMap>::pup(PUP::er& p) {
   p | f_of_t_name_;
   p | min_radius_;
   p | max_radius_;
@@ -302,28 +301,28 @@ void SphericalCompression<InteriorMap>::pup(PUP::er& p) noexcept {
       const std::unordered_map<                                              \
           std::string,                                                       \
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&         \
-          functions_of_time) const noexcept;                                 \
+          functions_of_time) const;                                          \
   template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>               \
   SphericalCompression<INTERIOR_MAP(data)>::frame_velocity(                  \
       const std::array<DTYPE(data), 3>& source_coords, const double time,    \
       const std::unordered_map<                                              \
           std::string,                                                       \
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&         \
-          functions_of_time) const noexcept;                                 \
+          functions_of_time) const;                                          \
   template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame> \
   SphericalCompression<INTERIOR_MAP(data)>::jacobian(                        \
       const std::array<DTYPE(data), 3>& source_coords, double time,          \
       const std::unordered_map<                                              \
           std::string,                                                       \
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&         \
-          functions_of_time) const noexcept;                                 \
+          functions_of_time) const;                                          \
   template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame> \
   SphericalCompression<INTERIOR_MAP(data)>::inv_jacobian(                    \
       const std::array<DTYPE(data), 3>& source_coords, double time,          \
       const std::unordered_map<                                              \
           std::string,                                                       \
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&         \
-          functions_of_time) const noexcept;
+          functions_of_time) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (true, false),
                         (double, DataVector,
@@ -332,19 +331,18 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (true, false),
 #undef DTYPE
 #undef INSTANTIATE
 
-#define INSTANTIATE(_, data)                                                  \
-  template SphericalCompression<INTERIOR_MAP(data)>::SphericalCompression(    \
-      std::string function_of_time_name, const double min_radius,             \
-      const double max_radius, const std::array<double, 3>& center) noexcept; \
-  template std::optional<std::array<double, 3>>                               \
-  SphericalCompression<INTERIOR_MAP(data)>::inverse(                          \
-      const std::array<double, 3>& target_coords, const double time,          \
-      const std::unordered_map<                                               \
-          std::string,                                                        \
-          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&          \
-          functions_of_time) const noexcept;                                  \
-  template void SphericalCompression<INTERIOR_MAP(data)>::pup(                \
-      PUP::er& p) noexcept;
+#define INSTANTIATE(_, data)                                               \
+  template SphericalCompression<INTERIOR_MAP(data)>::SphericalCompression( \
+      std::string function_of_time_name, const double min_radius,          \
+      const double max_radius, const std::array<double, 3>& center);       \
+  template std::optional<std::array<double, 3>>                            \
+  SphericalCompression<INTERIOR_MAP(data)>::inverse(                       \
+      const std::array<double, 3>& target_coords, const double time,       \
+      const std::unordered_map<                                            \
+          std::string,                                                     \
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&       \
+          functions_of_time) const;                                        \
+  template void SphericalCompression<INTERIOR_MAP(data)>::pup(PUP::er& p);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (true, false))
 #undef INTERIOR_MAP

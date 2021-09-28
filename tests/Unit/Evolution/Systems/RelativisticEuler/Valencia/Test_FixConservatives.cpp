@@ -84,7 +84,7 @@ void test_fix_conservatives(
 }
 
 template <size_t Dim>
-void test_fixer() noexcept {
+void test_fixer() {
   RelativisticEuler::Valencia::FixConservatives<Dim> variable_fixer(
       1.0e-12, 1.2e-12, 1.0e-11);
 

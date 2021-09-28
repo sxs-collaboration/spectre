@@ -21,7 +21,7 @@ namespace CurvedScalarWave::BoundaryConditions {
 
 template <size_t Dim>
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-ConstraintPreservingSphericalRadiation<Dim>::get_clone() const noexcept {
+ConstraintPreservingSphericalRadiation<Dim>::get_clone() const {
   return std::make_unique<ConstraintPreservingSphericalRadiation>(*this);
 }
 
@@ -31,8 +31,8 @@ void ConstraintPreservingSphericalRadiation<Dim>::pup(PUP::er& p) {
 }
 
 template <size_t Dim>
-ConstraintPreservingSphericalRadiation<Dim>::
-    ConstraintPreservingSphericalRadiation(CkMigrateMessage* const msg) noexcept
+ConstraintPreservingSphericalRadiation<
+    Dim>::ConstraintPreservingSphericalRadiation(CkMigrateMessage* const msg)
     : BoundaryCondition<Dim>(msg) {}
 
 template <size_t Dim>
@@ -52,7 +52,7 @@ ConstraintPreservingSphericalRadiation<Dim>::dg_time_derivative(
     const Scalar<DataVector>& lapse, const tnsr::I<DataVector, Dim>& shift,
     const Scalar<DataVector>& dt_pi, const tnsr::i<DataVector, Dim>& dt_phi,
     const Scalar<DataVector>& dt_psi, const tnsr::i<DataVector, Dim>& d_psi,
-    const tnsr::ij<DataVector, Dim>& d_phi) const noexcept {
+    const tnsr::ij<DataVector, Dim>& d_phi) const {
   Variables<tmpl::list<::Tags::Tempa<0, 3>, ::Tags::TempScalar<1>,
                        ::Tags::TempScalar<2>>>
       buffer{get<0>(coords).size()};

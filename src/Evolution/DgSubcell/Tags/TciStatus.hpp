@@ -38,7 +38,7 @@ struct TciStatusCompute : TciStatus, db::ComputeTag {
   static constexpr auto function = static_cast<void (*)(
       gsl::not_null<Scalar<DataVector>*>, const ::Mesh<Dim>&,
       const ::Mesh<Dim>&, evolution::dg::subcell::ActiveGrid,
-      const std::deque<evolution::dg::subcell::ActiveGrid>&) noexcept>(
+      const std::deque<evolution::dg::subcell::ActiveGrid>&)>(
       &evolution::dg::subcell::tci_status<Dim>);
 };
 }  // namespace evolution::dg::subcell::Tags

@@ -31,7 +31,7 @@ struct get_maps {
 };
 
 template <size_t Dim>
-void register_maps_with_charm() noexcept {
+void register_maps_with_charm() {
   using maps_to_register =
       tmpl::remove_duplicates<tmpl::flatten<tmpl::push_back<
           tmpl::transform<typename TimeDependence<Dim>::creatable_classes,
@@ -43,7 +43,7 @@ void register_maps_with_charm() noexcept {
 }
 }  // namespace
 
-void register_derived_with_charm() noexcept {
+void register_derived_with_charm() {
   register_maps_with_charm<1>();
   register_maps_with_charm<2>();
   register_maps_with_charm<3>();

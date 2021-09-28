@@ -78,7 +78,7 @@ class TestWithArg : public OptionTest {
 // pretty_type::short_name
 class TestWithArg2 : public OptionTest {
  public:
-  static std::string name() noexcept { return "ThisIsArg"; }
+  static std::string name() { return "ThisIsArg"; }
   struct Arg {
     using type = std::string;
     static constexpr Options::String help = {"halp"};

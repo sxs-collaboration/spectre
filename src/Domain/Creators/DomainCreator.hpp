@@ -34,36 +34,35 @@ class DomainCreator {
  public:
   DomainCreator() = default;
   DomainCreator(const DomainCreator<VolumeDim>&) = delete;
-  DomainCreator(DomainCreator<VolumeDim>&&) noexcept = default;
+  DomainCreator(DomainCreator<VolumeDim>&&) = default;
   DomainCreator<VolumeDim>& operator=(const DomainCreator<VolumeDim>&) = delete;
-  DomainCreator<VolumeDim>& operator=(DomainCreator<VolumeDim>&&) noexcept =
-      default;
+  DomainCreator<VolumeDim>& operator=(DomainCreator<VolumeDim>&&) = default;
   virtual ~DomainCreator() = default;
 
   virtual Domain<VolumeDim> create_domain() const = 0;
 
   /// A human-readable name for every block, or empty if the domain creator
   /// doesn't support block names (yet).
-  virtual std::vector<std::string> block_names() const noexcept { return {}; }
+  virtual std::vector<std::string> block_names() const { return {}; }
 
   /// Labels to refer to groups of blocks. The groups can overlap, and they
   /// don't have to cover all blocks in the domain. The groups can be used to
   /// refer to multiple blocks at once when specifying input-file options.
   virtual std::unordered_map<std::string, std::unordered_set<std::string>>
-  block_groups() const noexcept {
+  block_groups() const {
     return {};
   }
 
   /// Obtain the initial grid extents of the Element%s in each block.
-  virtual std::vector<std::array<size_t, VolumeDim>> initial_extents() const
-      noexcept = 0;
+  virtual std::vector<std::array<size_t, VolumeDim>> initial_extents()
+      const = 0;
 
   /// Obtain the initial refinement levels of the blocks.
   virtual std::vector<std::array<size_t, VolumeDim>> initial_refinement_levels()
-      const noexcept = 0;
+      const = 0;
 
   /// Retrieve the functions of time used for moving meshes.
-  virtual auto functions_of_time() const noexcept -> std::unordered_map<
+  virtual auto functions_of_time() const -> std::unordered_map<
       std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> {
     return {};
   }

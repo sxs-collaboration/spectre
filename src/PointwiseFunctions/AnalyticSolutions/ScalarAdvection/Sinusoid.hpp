@@ -38,24 +38,24 @@ class Sinusoid : public MarkAsAnalyticSolution {
       "interval [-1, 1]"};
 
   Sinusoid() = default;
-  Sinusoid(const Sinusoid&) noexcept = default;
-  Sinusoid& operator=(const Sinusoid&) noexcept = default;
-  Sinusoid(Sinusoid&&) noexcept = default;
-  Sinusoid& operator=(Sinusoid&&) noexcept = default;
-  ~Sinusoid() noexcept = default;
+  Sinusoid(const Sinusoid&) = default;
+  Sinusoid& operator=(const Sinusoid&) = default;
+  Sinusoid(Sinusoid&&) = default;
+  Sinusoid& operator=(Sinusoid&&) = default;
+  ~Sinusoid() = default;
 
   template <typename DataType>
   tuples::TaggedTuple<ScalarAdvection::Tags::U> variables(
       const tnsr::I<DataType, 1>& x, double t,
-      tmpl::list<ScalarAdvection::Tags::U> /*meta*/) const noexcept;
+      tmpl::list<ScalarAdvection::Tags::U> /*meta*/) const;
 
   // clang-tidy: no pass by reference
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
 };
 
-bool operator==(const Sinusoid& /*lhs*/, const Sinusoid& /*rhs*/) noexcept;
+bool operator==(const Sinusoid& /*lhs*/, const Sinusoid& /*rhs*/);
 
-bool operator!=(const Sinusoid& lhs, const Sinusoid& rhs) noexcept;
+bool operator!=(const Sinusoid& lhs, const Sinusoid& rhs);
 
 }  // namespace Solutions
 }  // namespace ScalarAdvection

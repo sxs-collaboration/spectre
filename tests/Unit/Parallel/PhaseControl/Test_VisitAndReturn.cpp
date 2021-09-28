@@ -29,7 +29,7 @@ struct Metavariables {
 
   enum class Phase { PhaseA, PhaseB, PhaseC};
 
-  static std::string phase_name(Phase phase) noexcept {
+  static std::string phase_name(Phase phase) {
     if (phase == Phase::PhaseB) {
       return "PhaseB";
     }

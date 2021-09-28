@@ -43,24 +43,22 @@ struct HalfSpaceMirrorVariables {
   const double relative_tolerance;
 
   void operator()(gsl::not_null<Scalar<DataType>*> displacement_r,
-                  gsl::not_null<Cache*> cache,
-                  DisplacementR /*meta*/) const noexcept;
+                  gsl::not_null<Cache*> cache, DisplacementR /*meta*/) const;
   void operator()(gsl::not_null<tnsr::I<DataType, 3>*> displacement,
                   gsl::not_null<Cache*> cache,
-                  Tags::Displacement<3> /*meta*/) const noexcept;
+                  Tags::Displacement<3> /*meta*/) const;
   void operator()(gsl::not_null<tnsr::ii<DataType, 3>*> strain,
-                  gsl::not_null<Cache*> cache,
-                  Tags::Strain<3> /*meta*/) const noexcept;
+                  gsl::not_null<Cache*> cache, Tags::Strain<3> /*meta*/) const;
   void operator()(gsl::not_null<tnsr::II<DataType, 3>*> minus_stress,
                   gsl::not_null<Cache*> cache,
-                  Tags::MinusStress<3> /*meta*/) const noexcept;
+                  Tags::MinusStress<3> /*meta*/) const;
   void operator()(gsl::not_null<Scalar<DataType>*> potential_energy_density,
                   gsl::not_null<Cache*> cache,
-                  Tags::PotentialEnergyDensity<3> /*meta*/) const noexcept;
+                  Tags::PotentialEnergyDensity<3> /*meta*/) const;
   void operator()(
       gsl::not_null<tnsr::I<DataType, 3>*> fixed_source_for_displacement,
       gsl::not_null<Cache*> cache,
-      ::Tags::FixedSource<Tags::Displacement<3>> /*meta*/) const noexcept;
+      ::Tags::FixedSource<Tags::Displacement<3>> /*meta*/) const;
 };
 }  // namespace detail
 
@@ -136,7 +134,7 @@ class HalfSpaceMirror : public AnalyticSolution<3, Registrars> {
     using type = double;
     static constexpr Options::String help{
         "The lasers beam width r_0 with FWHM = 2*sqrt(ln 2)*r_0"};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
 
   struct Material {
@@ -152,25 +150,25 @@ class HalfSpaceMirror : public AnalyticSolution<3, Registrars> {
         "reach the prescribed tolerance at large distances relative to the "
         "beam width. The suggested values for workspace size and tolerances "
         "should accommodate distances of up to ~100 beam widths."};
-    static type lower_bound() noexcept { return 1; }
-    static type suggested_value() noexcept { return 350; }
+    static type lower_bound() { return 1; }
+    static type suggested_value() { return 350; }
   };
 
   struct AbsoluteTolerance {
     using type = double;
     static constexpr Options::String help{
         "Absolute tolerance for numerical integrals"};
-    static type lower_bound() noexcept { return 0.; }
-    static type suggested_value() noexcept { return 1e-12; }
+    static type lower_bound() { return 0.; }
+    static type suggested_value() { return 1e-12; }
   };
 
   struct RelativeTolerance {
     using type = double;
     static constexpr Options::String help{
         "Relative tolerance for numerical integrals"};
-    static type lower_bound() noexcept { return 0.; }
-    static type upper_bound() noexcept { return 1.; }
-    static type suggested_value() noexcept { return 1e-10; }
+    static type lower_bound() { return 0.; }
+    static type upper_bound() { return 1.; }
+    static type suggested_value() { return 1e-10; }
   };
 
   using options = tmpl::list<BeamWidth, Material, IntegrationIntervals,
@@ -180,14 +178,14 @@ class HalfSpaceMirror : public AnalyticSolution<3, Registrars> {
       "to the mirrors surface."};
 
   HalfSpaceMirror() = default;
-  HalfSpaceMirror(const HalfSpaceMirror&) noexcept = default;
-  HalfSpaceMirror& operator=(const HalfSpaceMirror&) noexcept = default;
-  HalfSpaceMirror(HalfSpaceMirror&&) noexcept = default;
-  HalfSpaceMirror& operator=(HalfSpaceMirror&&) noexcept = default;
-  ~HalfSpaceMirror() noexcept override = default;
+  HalfSpaceMirror(const HalfSpaceMirror&) = default;
+  HalfSpaceMirror& operator=(const HalfSpaceMirror&) = default;
+  HalfSpaceMirror(HalfSpaceMirror&&) = default;
+  HalfSpaceMirror& operator=(HalfSpaceMirror&&) = default;
+  ~HalfSpaceMirror() override = default;
 
   /// \cond
-  explicit HalfSpaceMirror(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit HalfSpaceMirror(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(HalfSpaceMirror);  // NOLINT
   /// \endcond
@@ -196,29 +194,26 @@ class HalfSpaceMirror : public AnalyticSolution<3, Registrars> {
                   constitutive_relation_type constitutive_relation,
                   size_t integration_intervals = 350,
                   double absolute_tolerance = 1e-12,
-                  double relative_tolerance = 1e-10) noexcept
+                  double relative_tolerance = 1e-10)
       : beam_width_(beam_width),
         constitutive_relation_(std::move(constitutive_relation)),
         integration_intervals_(integration_intervals),
         absolute_tolerance_(absolute_tolerance),
         relative_tolerance_(relative_tolerance) {}
 
-  double beam_width() const noexcept { return beam_width_; }
-  size_t integration_intervals() const noexcept {
-    return integration_intervals_;
-  }
-  double absolute_tolerance() const noexcept { return absolute_tolerance_; }
-  double relative_tolerance() const noexcept { return relative_tolerance_; }
+  double beam_width() const { return beam_width_; }
+  size_t integration_intervals() const { return integration_intervals_; }
+  double absolute_tolerance() const { return absolute_tolerance_; }
+  double relative_tolerance() const { return relative_tolerance_; }
 
-  const constitutive_relation_type& constitutive_relation() const
-      noexcept override {
+  const constitutive_relation_type& constitutive_relation() const override {
     return constitutive_relation_;
   }
 
   template <typename DataType, typename... RequestedTags>
   tuples::TaggedTuple<RequestedTags...> variables(
       const tnsr::I<DataType, 3>& x,
-      tmpl::list<RequestedTags...> /*meta*/) const noexcept {
+      tmpl::list<RequestedTags...> /*meta*/) const {
     for (size_t i = 0; i < get_size(get<2>(x)); i++) {
       if (UNLIKELY(get_element(get<2>(x), i) < 0)) {
         ERROR(
@@ -236,7 +231,7 @@ class HalfSpaceMirror : public AnalyticSolution<3, Registrars> {
   }
 
   // clang-tidy: no pass by reference
-  void pup(PUP::er& p) noexcept override {  // NOLINT
+  void pup(PUP::er& p) override {  // NOLINT
     p | beam_width_;
     p | constitutive_relation_;
     p | integration_intervals_;
@@ -259,7 +254,7 @@ PUP::able::PUP_ID HalfSpaceMirror<Registrars>::my_PUP_ID = 0;  // NOLINT
 
 template <typename Registrars>
 bool operator==(const HalfSpaceMirror<Registrars>& lhs,
-                const HalfSpaceMirror<Registrars>& rhs) noexcept {
+                const HalfSpaceMirror<Registrars>& rhs) {
   return lhs.beam_width() == rhs.beam_width() and
          lhs.constitutive_relation() == rhs.constitutive_relation() and
          lhs.integration_intervals() == rhs.integration_intervals() and
@@ -269,7 +264,7 @@ bool operator==(const HalfSpaceMirror<Registrars>& lhs,
 
 template <typename Registrars>
 bool operator!=(const HalfSpaceMirror<Registrars>& lhs,
-                const HalfSpaceMirror<Registrars>& rhs) noexcept {
+                const HalfSpaceMirror<Registrars>& rhs) {
   return not(lhs == rhs);
 }
 

@@ -43,12 +43,11 @@ struct SphericalMetricData : public WorldtubeData {
 
   WRAPPED_PUPable_abstract(SphericalMetricData);  // NOLINT
 
-  SphericalMetricData() noexcept = default;
+  SphericalMetricData() = default;
 
-  explicit SphericalMetricData(CkMigrateMessage* msg) noexcept
-      : WorldtubeData(msg) {}
+  explicit SphericalMetricData(CkMigrateMessage* msg) : WorldtubeData(msg) {}
 
-  explicit SphericalMetricData(const double extraction_radius) noexcept
+  explicit SphericalMetricData(const double extraction_radius)
       : WorldtubeData{extraction_radius} {}
 
   /*!
@@ -81,7 +80,7 @@ struct SphericalMetricData : public WorldtubeData {
    * \f}
    */
   void jacobian(gsl::not_null<SphericaliCartesianJ*> jacobian,
-                size_t l_max) const noexcept;
+                size_t l_max) const;
 
   /*!
    * Computes the first radial derivative of the
@@ -116,7 +115,7 @@ struct SphericalMetricData : public WorldtubeData {
    * \f}
    */
   static void dr_jacobian(gsl::not_null<SphericaliCartesianJ*> dr_jacobian,
-                          size_t l_max) noexcept;
+                          size_t l_max);
 
   /*!
    * Computes the Jacobian
@@ -150,7 +149,7 @@ struct SphericalMetricData : public WorldtubeData {
    * \f}
    */
   void inverse_jacobian(gsl::not_null<CartesianiSphericalJ*> inverse_jacobian,
-                        size_t l_max) const noexcept;
+                        size_t l_max) const;
 
   /*!
    * Computes the first radial derivative of the
@@ -187,9 +186,9 @@ struct SphericalMetricData : public WorldtubeData {
    */
   void dr_inverse_jacobian(
       gsl::not_null<CartesianiSphericalJ*> dr_inverse_jacobian,
-      size_t l_max) const noexcept;
+      size_t l_max) const;
 
-  void pup(PUP::er& p) noexcept override;
+  void pup(PUP::er& p) override;
 
  protected:
   using WorldtubeData::variables_impl;
@@ -204,11 +203,12 @@ struct SphericalMetricData : public WorldtubeData {
    * coordinate transformation using the Jacobian computed from
    * `SphericalMetricData::inverse_jacobian()`.
    */
-  void variables_impl(gsl::not_null<tnsr::aa<DataVector, 3>*> spacetime_metric,
-                      size_t l_max, double time,
-                      tmpl::type_<gr::Tags::SpacetimeMetric<
-                          3, ::Frame::Inertial, DataVector>> /*meta*/) const
-      noexcept override;
+  void variables_impl(
+      gsl::not_null<tnsr::aa<DataVector, 3>*> spacetime_metric, size_t l_max,
+      double time,
+      tmpl::type_<
+          gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>> /*meta*/)
+      const override;
 
   /*!
    * \brief Computes the time derivative of the Cartesian spacetime metric from
@@ -225,7 +225,7 @@ struct SphericalMetricData : public WorldtubeData {
       gsl::not_null<tnsr::aa<DataVector, 3>*> dt_spacetime_metric, size_t l_max,
       double time,
       tmpl::type_<::Tags::dt<gr::Tags::SpacetimeMetric<
-          3, ::Frame::Inertial, DataVector>>> /*meta*/) const noexcept override;
+          3, ::Frame::Inertial, DataVector>>> /*meta*/) const override;
 
   /*!
    * \brief Computes the spatial derivatives of the Cartesian spacetime metric
@@ -244,8 +244,8 @@ struct SphericalMetricData : public WorldtubeData {
       gsl::not_null<tnsr::iaa<DataVector, 3>*> d_spacetime_metric, size_t l_max,
       double time,
       tmpl::type_<
-          GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>> /*meta*/) const
-      noexcept override;
+          GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>> /*meta*/)
+      const override;
 
   /// Must be overriden in the derived class; should compute the spacetime
   /// metric of the analytic solution in spherical coordinates.
@@ -253,7 +253,7 @@ struct SphericalMetricData : public WorldtubeData {
       gsl::not_null<
           tnsr::aa<DataVector, 3, ::Frame::Spherical<::Frame::Inertial>>*>
           spherical_metric,
-      size_t l_max, double time) const noexcept = 0;
+      size_t l_max, double time) const = 0;
 
   /// Must be overriden in the derived class; should compute the first radial
   /// derivative of the spacetime metric of the analytic solution in spherical
@@ -262,7 +262,7 @@ struct SphericalMetricData : public WorldtubeData {
       gsl::not_null<
           tnsr::aa<DataVector, 3, ::Frame::Spherical<::Frame::Inertial>>*>
           dr_spherical_metric,
-      size_t l_max, double time) const noexcept = 0;
+      size_t l_max, double time) const = 0;
 
   /// Must be overriden in the derived class; should compute the first time
   /// derivative of the spacetime metric of the analytic solution in spherical
@@ -271,7 +271,7 @@ struct SphericalMetricData : public WorldtubeData {
       gsl::not_null<
           tnsr::aa<DataVector, 3, ::Frame::Spherical<::Frame::Inertial>>*>
           dt_spherical_metric,
-      size_t l_max, double time) const noexcept = 0;
+      size_t l_max, double time) const = 0;
 };
 
 }  // namespace Solutions

@@ -69,21 +69,20 @@ class ScalarWaveGr : public MarkAsAnalyticData {
   using options = tmpl::list<Background, ScalarField>;
   static constexpr Options::String help{
       "A scalar field in curved background spacetime\n\n"};
-  static std::string name() noexcept { return "ScalarWaveGr"; };
+  static std::string name() { return "ScalarWaveGr"; };
 
   // Construct from options
-  ScalarWaveGr(BackgroundGrData background,
-               ScalarFieldData scalar_field) noexcept
+  ScalarWaveGr(BackgroundGrData background, ScalarFieldData scalar_field)
       : flat_space_scalar_wave_data_(std::move(scalar_field)),
         background_gr_data_(std::move(background)) {}
 
-  explicit ScalarWaveGr(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit ScalarWaveGr(CkMigrateMessage* /*unused*/) {}
 
   ScalarWaveGr() = default;
   ScalarWaveGr(const ScalarWaveGr& /*rhs*/) = delete;
   ScalarWaveGr& operator=(const ScalarWaveGr& /*rhs*/) = delete;
-  ScalarWaveGr(ScalarWaveGr&& /*rhs*/) noexcept = default;
-  ScalarWaveGr& operator=(ScalarWaveGr&& /*rhs*/) noexcept = default;
+  ScalarWaveGr(ScalarWaveGr&& /*rhs*/) = default;
+  ScalarWaveGr& operator=(ScalarWaveGr&& /*rhs*/) = default;
   ~ScalarWaveGr() = default;
 
   // Tags
@@ -97,7 +96,7 @@ class ScalarWaveGr : public MarkAsAnalyticData {
       typename DataType, typename Tag,
       Requires<tmpl::list_contains_v<spacetime_tags<DataType>, Tag>> = nullptr>
   tuples::TaggedTuple<Tag> variables(const tnsr::I<DataType, volume_dim>& x,
-                                     tmpl::list<Tag> /*meta*/) const noexcept {
+                                     tmpl::list<Tag> /*meta*/) const {
     constexpr double default_initial_time = 0.;
     return {std::move(get<Tag>(background_gr_data_.variables(
         x, default_initial_time, spacetime_tags<DataType>{})))};
@@ -105,11 +104,11 @@ class ScalarWaveGr : public MarkAsAnalyticData {
 
   /// Retrieve scalar wave variables
   tuples::TaggedTuple<Pi> variables(const tnsr::I<DataVector, volume_dim>& x,
-                                    tmpl::list<Pi> /*meta*/) const noexcept;
+                                    tmpl::list<Pi> /*meta*/) const;
 
   tuples::TaggedTuple<Phi<volume_dim>> variables(
       const tnsr::I<DataVector, volume_dim>& x,
-      tmpl::list<Phi<volume_dim>> /*meta*/) const noexcept {
+      tmpl::list<Phi<volume_dim>> /*meta*/) const {
     constexpr double default_initial_time = 0.;
     return {std::move(
         get<ScalarWave::Phi<volume_dim>>(flat_space_scalar_wave_data_.variables(
@@ -118,7 +117,7 @@ class ScalarWaveGr : public MarkAsAnalyticData {
                        ScalarWave::Psi>{})))};
   }
   tuples::TaggedTuple<Psi> variables(const tnsr::I<DataVector, volume_dim>& x,
-                                     tmpl::list<Psi> /*meta*/) const noexcept {
+                                     tmpl::list<Psi> /*meta*/) const {
     constexpr double default_initial_time = 0.;
     return {
         std::move(get<ScalarWave::Psi>(flat_space_scalar_wave_data_.variables(
@@ -130,8 +129,7 @@ class ScalarWaveGr : public MarkAsAnalyticData {
   // Retrieve one or more tags
   template <typename DataType, typename... Tags>
   tuples::TaggedTuple<Tags...> variables(const tnsr::I<DataType, volume_dim>& x,
-                                         tmpl::list<Tags...> /*meta*/) const
-      noexcept {
+                                         tmpl::list<Tags...> /*meta*/) const {
     static_assert(sizeof...(Tags) > 1,
                   "This generic template will recurse infinitely if only one "
                   "tag is being retrieved through it.");
@@ -143,7 +141,7 @@ class ScalarWaveGr : public MarkAsAnalyticData {
   }
 
   // clang-tidy: no runtime references
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
 
  private:
   template <typename LocalScalarFieldData,                  // NOLINT
@@ -153,16 +151,15 @@ class ScalarWaveGr : public MarkAsAnalyticData {
                                 LocalBackgroundData>& lhs,  // NOLINT
              const ScalarWaveGr<LocalScalarFieldData,       // NOLINT
                                 LocalBackgroundData>& rhs)  // NOLINT
-      noexcept;                                             // NOLINT
+      ;                                                     // NOLINT
 
   ScalarFieldData flat_space_scalar_wave_data_;
   BackgroundGrData background_gr_data_;
 };
 
 template <typename ScalarFieldData, typename BackgroundData>
-bool operator!=(
-    const ScalarWaveGr<ScalarFieldData, BackgroundData>& lhs,
-    const ScalarWaveGr<ScalarFieldData, BackgroundData>& rhs) noexcept;
+bool operator!=(const ScalarWaveGr<ScalarFieldData, BackgroundData>& lhs,
+                const ScalarWaveGr<ScalarFieldData, BackgroundData>& rhs);
 
 }  // namespace AnalyticData
 }  // namespace CurvedScalarWave

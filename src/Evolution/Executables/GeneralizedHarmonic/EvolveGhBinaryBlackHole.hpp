@@ -171,7 +171,7 @@ struct EvolutionMetavars {
       Parallel::Actions::TerminatePhase>;
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& /*p*/) noexcept {}
+  void pup(PUP::er& /*p*/) {}
   struct domain : tt::ConformsTo<::domain::protocols::Metavariables> {
     static constexpr bool enable_time_dependent_maps = true;
   };
@@ -235,7 +235,7 @@ struct EvolutionMetavars {
     Exit
   };
 
-  static std::string phase_name(Phase phase) noexcept {
+  static std::string phase_name(Phase phase) {
     if (phase == Phase::LoadBalancing) {
       return "LoadBalancing";
     } else if (phase == Phase::WriteCheckpoint) {
@@ -281,8 +281,7 @@ struct EvolutionMetavars {
       const gsl::not_null<tuples::TaggedTuple<Tags...>*>
           phase_change_decision_data,
       const Phase& current_phase,
-      const Parallel::CProxy_GlobalCache<EvolutionMetavars>&
-          cache_proxy) noexcept {
+      const Parallel::CProxy_GlobalCache<EvolutionMetavars>& cache_proxy) {
     const auto next_phase = PhaseControl::arbitrate_phase_change<phase_changes>(
         phase_change_decision_data, current_phase,
         *(cache_proxy.ckLocalBranch()));

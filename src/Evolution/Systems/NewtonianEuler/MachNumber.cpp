@@ -14,14 +14,14 @@ namespace NewtonianEuler {
 template <typename DataType, size_t Dim, typename Fr>
 void mach_number(const gsl::not_null<Scalar<DataType>*> result,
                  const tnsr::I<DataType, Dim, Fr>& velocity,
-                 const Scalar<DataType>& sound_speed) noexcept {
+                 const Scalar<DataType>& sound_speed) {
   destructive_resize_components(result, get_size(get(sound_speed)));
   get(*result) = get(magnitude(velocity)) / get(sound_speed);
 }
 
 template <typename DataType, size_t Dim, typename Fr>
 Scalar<DataType> mach_number(const tnsr::I<DataType, Dim, Fr>& velocity,
-                             const Scalar<DataType>& sound_speed) noexcept {
+                             const Scalar<DataType>& sound_speed) {
   Scalar<DataType> result{};
   mach_number(make_not_null(&result), velocity, sound_speed);
   return result;
@@ -33,10 +33,10 @@ Scalar<DataType> mach_number(const tnsr::I<DataType, Dim, Fr>& velocity,
 #define INSTANTIATE(_, data)                                                  \
   template void mach_number(const gsl::not_null<Scalar<DTYPE(data)>*> result, \
                             const tnsr::I<DTYPE(data), DIM(data)>& velocity,  \
-                            const Scalar<DTYPE(data)>& sound_speed) noexcept; \
+                            const Scalar<DTYPE(data)>& sound_speed);          \
   template Scalar<DTYPE(data)> mach_number(                                   \
       const tnsr::I<DTYPE(data), DIM(data)>& velocity,                        \
-      const Scalar<DTYPE(data)>& sound_speed) noexcept;
+      const Scalar<DTYPE(data)>& sound_speed);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector), (1, 2, 3))
 

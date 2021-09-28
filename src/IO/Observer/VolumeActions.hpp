@@ -52,17 +52,16 @@ struct ContributeVolumeData {
       typename ParallelComponent, typename DbTagsList, typename Metavariables,
       typename ArrayIndex, size_t Dim,
       Requires<tmpl::list_contains_v<DbTagsList, Tags::TensorData>> = nullptr>
-  static void apply(db::DataBox<DbTagsList>& box,
-                    Parallel::GlobalCache<Metavariables>& cache,
-                    const ArrayIndex& array_index,
-                    const observers::ObservationId& observation_id,
-                    const std::string& subfile_name,
-                    const observers::ArrayComponentId& sender_array_id,
-                    std::vector<TensorComponent>&& received_tensor_data,
-                    const Index<Dim>& received_extents,
-                    const std::array<Spectral::Basis, Dim>& received_basis,
-                    const std::array<Spectral::Quadrature, Dim>&
-                        received_quadrature) noexcept {
+  static void apply(
+      db::DataBox<DbTagsList>& box, Parallel::GlobalCache<Metavariables>& cache,
+      const ArrayIndex& array_index,
+      const observers::ObservationId& observation_id,
+      const std::string& subfile_name,
+      const observers::ArrayComponentId& sender_array_id,
+      std::vector<TensorComponent>&& received_tensor_data,
+      const Index<Dim>& received_extents,
+      const std::array<Spectral::Basis, Dim>& received_basis,
+      const std::array<Spectral::Quadrature, Dim>& received_quadrature) {
     db::mutate<Tags::TensorData, Tags::ContributorsOfTensorData>(
         make_not_null(&box),
         [&array_index, &cache, &observation_id, &sender_array_id,
@@ -78,7 +77,7 @@ struct ContributeVolumeData {
                 contributed_volume_data_ids,
             const std::unordered_map<ObservationKey,
                                      std::unordered_set<ArrayComponentId>>&
-                registered_array_component_ids) mutable noexcept {
+                registered_array_component_ids) mutable {
           const ObservationKey& key{observation_id.observation_key()};
           if (UNLIKELY(registered_array_component_ids.find(key) ==
                        registered_array_component_ids.end())) {
@@ -173,7 +172,7 @@ struct ContributeVolumeDataToWriter {
       const observers::ObservationId& observation_id,
       ArrayComponentId observer_group_id, const std::string& subfile_name,
       std::unordered_map<observers::ArrayComponentId, ElementVolumeData>&&
-          received_volume_data) noexcept {
+          received_volume_data) {
     if constexpr (tmpl::list_contains_v<DbTagsList, Tags::TensorData> and
                   tmpl::list_contains_v<DbTagsList,
                                         Tags::ContributorsOfTensorData> and
@@ -220,7 +219,7 @@ struct ContributeVolumeDataToWriter {
               const gsl::not_null<Parallel::NodeLock*> volume_file_lock_ptr,
               const std::unordered_map<ObservationKey,
                                        std::unordered_set<ArrayComponentId>>&
-                  observations_registered) noexcept {
+                  observations_registered) {
             const ObservationKey& key{observation_id.observation_key()};
             const auto& registered_group_ids = observations_registered.at(key);
             if (UNLIKELY(registered_group_ids.find(observer_group_id) ==

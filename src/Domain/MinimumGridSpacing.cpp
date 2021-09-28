@@ -20,7 +20,7 @@
 namespace {
 template <size_t Dim, typename Frame>
 std::array<double, Dim> nth_point(const tnsr::I<DataVector, Dim, Frame>& tensor,
-                                  const size_t index) noexcept {
+                                  const size_t index) {
   std::array<double, Dim> result{};
   for (size_t d = 0; d < Dim; ++d) {
     gsl::at(result, d) = tensor.get(d)[index];
@@ -30,9 +30,8 @@ std::array<double, Dim> nth_point(const tnsr::I<DataVector, Dim, Frame>& tensor,
 }  // namespace
 
 template <size_t Dim, typename Frame>
-double minimum_grid_spacing(
-    const Index<Dim>& extents,
-    const tnsr::I<DataVector, Dim, Frame>& coords) noexcept {
+double minimum_grid_spacing(const Index<Dim>& extents,
+                            const tnsr::I<DataVector, Dim, Frame>& coords) {
   double minimum_spacing = std::numeric_limits<double>::max();
   for (IndexIterator<Dim> point(extents); point; ++point) {
     const auto point_coords = nth_point(coords, point.collapsed_index());
@@ -72,7 +71,7 @@ double minimum_grid_spacing(
 #define INSTANTIATE(_, data)            \
   template double minimum_grid_spacing( \
       const Index<DIM(data)>& extents,  \
-      const tnsr::I<DataVector, DIM(data), FRAME(data)>& coords) noexcept;
+      const tnsr::I<DataVector, DIM(data), FRAME(data)>& coords);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Grid, Frame::Inertial))
 

@@ -78,7 +78,7 @@ struct Square : db::SimpleTag {
 };
 struct SquareCompute : Square, db::ComputeTag {
   static void function(gsl::not_null<Scalar<DataVector>*> result,
-                       const Scalar<DataVector>& x) noexcept {
+                       const Scalar<DataVector>& x) {
     get(*result) = square(get(x));
   }
   using argument_tags = tmpl::list<TestSolution>;
@@ -90,7 +90,7 @@ struct Negate : db::SimpleTag {
 };
 struct NegateCompute : Negate, db::ComputeTag {
   static void function(gsl::not_null<Scalar<DataVector>*> result,
-                       const Scalar<DataVector>& x) noexcept {
+                       const Scalar<DataVector>& x) {
     get(*result) = -get(x);
   }
   using argument_tags = tmpl::list<Square>;
@@ -106,7 +106,7 @@ struct ComputeSquare {
   static void apply(
       const gsl::not_null<Variables<tmpl::list<DestTag>>*> target_vars,
       const Variables<tmpl::list<SrcTag>>& src_vars,
-      const Mesh<3>& /* mesh */) noexcept {
+      const Mesh<3>& /* mesh */) {
     get(get<DestTag>(*target_vars)) = square(get(get<SrcTag>(src_vars)));
   }
 };
@@ -115,7 +115,7 @@ struct ComputeNegate {
   static void apply(
       const gsl::not_null<Variables<tmpl::list<DestTag>>*> target_vars,
       const Variables<tmpl::list<SrcTag>>& src_vars,
-      const Mesh<3>& /* mesh */) noexcept {
+      const Mesh<3>& /* mesh */) {
     get(get<DestTag>(*target_vars)) = -get(get<SrcTag>(src_vars));
   }
 };
@@ -131,14 +131,14 @@ struct TestFunctionHelper;
 template <>
 struct TestFunctionHelper<Tags::Square> {
   static constexpr size_t npts = 15;
-  static double apply(const double a) noexcept { return square(a); }
-  static double coords(size_t i) noexcept { return 1.0 + 0.1 * i; }
+  static double apply(const double a) { return square(a); }
+  static double coords(size_t i) { return 1.0 + 0.1 * i; }
 };
 template <>
 struct TestFunctionHelper<Tags::Negate> {
   static constexpr size_t npts = 17;
-  static double apply(const double a) noexcept { return -square(a); }
-  static double coords(size_t i) noexcept { return 1.1 + 0.0875 * i; }
+  static double apply(const double a) { return -square(a); }
+  static double coords(size_t i) { return 1.1 + 0.0875 * i; }
 };
 
 size_t num_test_function_calls = 0;
@@ -147,10 +147,9 @@ struct TestFunction {
   template <typename DbTags, typename Metavariables>
   static void apply(const db::DataBox<DbTags>& box,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const TimeStepId& /*temporal_id*/) noexcept {
+                    const TimeStepId& /*temporal_id*/) {
     const auto& interpolation_result = get<DbTagToRetrieve>(box);
-    const auto
-        expected_interpolation_result = [&interpolation_result]() noexcept {
+    const auto expected_interpolation_result = [&interpolation_result]() {
       auto result =
           make_with_value<Scalar<DataVector>>(interpolation_result, 0.0);
       const size_t n_pts = TestFunctionHelper<DbTagToRetrieve>::npts;
@@ -163,8 +162,7 @@ struct TestFunction {
             2.0 * coords[0] + 3.0 * coords[1] + 5.0 * coords[2]);
       }
       return result;
-    }
-    ();
+    }();
     CHECK_ITERABLE_APPROX(interpolation_result, expected_interpolation_result);
     ++num_test_function_calls;
   }
@@ -174,7 +172,7 @@ struct TestKerrHorizonIntegral {
   template <typename DbTags, typename Metavariables>
   static void apply(const db::DataBox<DbTags>& box,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const TimeStepId& /*temporal_id*/) noexcept {
+                    const TimeStepId& /*temporal_id*/) {
     const auto& interpolation_result = get<Tags::Square>(box);
     const auto& strahlkorper =
         get<StrahlkorperTags::Strahlkorper<Frame::Inertial>>(box);

@@ -62,7 +62,7 @@ void test_compute_inverse_spacetime_metric(const DataType& used_for_size) {
       static_cast<tnsr::AA<DataType, Dim, Frame::Inertial> (*)(
           const Scalar<DataType>&,
           const tnsr::I<DataType, Dim, Frame::Inertial>&,
-          const tnsr::II<DataType, Dim, Frame::Inertial>&) noexcept>(
+          const tnsr::II<DataType, Dim, Frame::Inertial>&)>(
           &gr::inverse_spacetime_metric<Dim, Frame::Inertial, DataType>),
       "ComputeSpacetimeQuantities", "inverse_spacetime_metric", {{{-10., 10.}}},
       used_for_size);
@@ -94,7 +94,7 @@ void test_compute_derivatives_of_spacetime_metric(
           const tnsr::iJ<DataType, Dim, Frame::Inertial>&,
           const tnsr::ii<DataType, Dim, Frame::Inertial>&,
           const tnsr::ii<DataType, Dim, Frame::Inertial>&,
-          const tnsr::ijj<DataType, Dim, Frame::Inertial>&) noexcept>(
+          const tnsr::ijj<DataType, Dim, Frame::Inertial>&)>(
           &gr::derivatives_of_spacetime_metric<Dim, Frame::Inertial, DataType>),
       "ComputeSpacetimeQuantities", "derivatives_of_spacetime_metric",
       {{{-10., 10.}}}, used_for_size);
@@ -133,7 +133,7 @@ void test_compute_extrinsic_curvature(const DataType& used_for_size) {
           const tnsr::iJ<DataType, Dim, Frame::Inertial>&,
           const tnsr::ii<DataType, Dim, Frame::Inertial>&,
           const tnsr::ii<DataType, Dim, Frame::Inertial>&,
-          const tnsr::ijj<DataType, Dim, Frame::Inertial>&) noexcept>(
+          const tnsr::ijj<DataType, Dim, Frame::Inertial>&)>(
           &gr::extrinsic_curvature<Dim, Frame::Inertial, DataType>),
       "ComputeSpacetimeQuantities", "extrinsic_curvature", {{{-10., 10.}}},
       used_for_size);
@@ -185,7 +185,7 @@ void test_compute_deriv_inverse_spatial_metric(const DataType& used_for_size) {
   pypp::check_with_random_values<1>(
       static_cast<tnsr::iJJ<DataType, Dim, Frame::Inertial> (*)(
           const tnsr::II<DataType, Dim, Frame::Inertial>&,
-          const tnsr::ijj<DataType, Dim, Frame::Inertial>&) noexcept>(
+          const tnsr::ijj<DataType, Dim, Frame::Inertial>&)>(
           &gr::deriv_inverse_spatial_metric<Dim, Frame::Inertial, DataType>),
       "ComputeSpacetimeQuantities", "deriv_inverse_spatial_metric",
       {{{-10., 10.}}}, used_for_size);

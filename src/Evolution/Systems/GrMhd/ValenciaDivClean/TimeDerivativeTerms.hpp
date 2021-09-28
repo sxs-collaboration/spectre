@@ -162,6 +162,6 @@ struct TimeDerivativeTerms {
       const Scalar<DataVector>& rest_mass_density,
       const Scalar<DataVector>& specific_enthalpy,
       const tnsr::ii<DataVector, 3, Frame::Inertial>& extrinsic_curvature,
-      double constraint_damping_parameter) noexcept;
+      double constraint_damping_parameter);
 };
 }  // namespace grmhd::ValenciaDivClean

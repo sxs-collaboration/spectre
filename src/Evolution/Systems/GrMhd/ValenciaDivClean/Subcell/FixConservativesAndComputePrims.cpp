@@ -32,7 +32,7 @@ void FixConservativesAndComputePrims<OrderedListOfRecoverySchemes>::apply(
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
     const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
     const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
-    const Scalar<DataVector>& sqrt_det_spatial_metric) noexcept {
+    const Scalar<DataVector>& sqrt_det_spatial_metric) {
   *needed_fixing = fix_conservatives(
       make_not_null(&get<Tags::TildeD>(*conserved_vars_ptr)),
       make_not_null(&get<Tags::TildeTau>(*conserved_vars_ptr)),
@@ -90,7 +90,7 @@ using KastaunThenNewmanThenPalenzuela =
       const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>& eos, \
       const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,       \
       const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,   \
-      const Scalar<DataVector>& sqrt_det_spatial_metric) noexcept;
+      const Scalar<DataVector>& sqrt_det_spatial_metric);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION,
                         (tmpl::list<PrimitiveRecoverySchemes::KastaunEtAl>,

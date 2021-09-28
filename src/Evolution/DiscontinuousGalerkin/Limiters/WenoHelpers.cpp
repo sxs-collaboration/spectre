@@ -25,7 +25,7 @@ namespace {
 // Compute the unnormalized nonlinear WENO weights. This is a fairly standard
 // choice of weights; see e.g., Eq. 3.9 of Zhong2013 or Eq. 3.6 of Zhu2016.
 inline double unnormalized_nonlinear_weight(
-    const double linear_weight, const double oscillation_indicator) noexcept {
+    const double linear_weight, const double oscillation_indicator) {
   return linear_weight / square(1.e-6 + oscillation_indicator);
 }
 
@@ -41,7 +41,7 @@ void reconstruct_from_weighted_sum(
     const std::unordered_map<
         std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, DataVector,
         boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
-        neighbor_polynomials) noexcept {
+        neighbor_polynomials) {
 #ifdef SPECTRE_DEBUG
   ASSERT(local_polynomial->size() > 0,
          "The local_polynomial values are missing - was the input correctly\n"
@@ -113,8 +113,8 @@ void reconstruct_from_weighted_sum(
       const Mesh<DIM(data)>&,                                                 \
       const std::unordered_map<                                               \
           std::pair<Direction<DIM(data)>, ElementId<DIM(data)>>, DataVector,  \
-          boost::hash<std::pair<Direction<DIM(data)>,                         \
-                                ElementId<DIM(data)>>>>&) noexcept;
+          boost::hash<                                                        \
+              std::pair<Direction<DIM(data)>, ElementId<DIM(data)>>>>&);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 

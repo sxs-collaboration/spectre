@@ -55,6 +55,6 @@ struct SwapGrTags {
           typename System::spacetime_variables_tag>::type*>
           inactive_gr_vars,
       const Mesh<3>& dg_mesh, const Mesh<3>& subcell_mesh,
-      evolution::dg::subcell::ActiveGrid active_grid) noexcept;
+      evolution::dg::subcell::ActiveGrid active_grid);
 };
 }  // namespace grmhd::ValenciaDivClean::subcell

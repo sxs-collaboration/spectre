@@ -4,5 +4,5 @@
 #pragma once
 
 namespace ScalarWave::BoundaryCorrections {
-void register_derived_with_charm() noexcept;
+void register_derived_with_charm();
 }  // namespace ScalarWave::BoundaryCorrections

@@ -18,7 +18,7 @@
 
 namespace domain::CoordinateMaps {
 
-EquatorialCompression::EquatorialCompression(const double aspect_ratio) noexcept
+EquatorialCompression::EquatorialCompression(const double aspect_ratio)
     : aspect_ratio_(aspect_ratio),
       inverse_aspect_ratio_(1.0 / aspect_ratio),
       is_identity_(aspect_ratio_ == 1.0) {
@@ -28,8 +28,7 @@ EquatorialCompression::EquatorialCompression(const double aspect_ratio) noexcept
 template <typename T>
 std::array<tt::remove_cvref_wrap_t<T>, 3>
 EquatorialCompression::angular_distortion(const std::array<T, 3>& coords,
-                                          const double inverse_alpha) const
-    noexcept {
+                                          const double inverse_alpha) const {
   using ReturnType = tt::remove_cvref_wrap_t<T>;
   const ReturnType& x = coords[0];
   const ReturnType& y = coords[1];
@@ -61,7 +60,7 @@ EquatorialCompression::angular_distortion(const std::array<T, 3>& coords,
 template <typename T>
 tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>
 EquatorialCompression::angular_distortion_jacobian(
-    const std::array<T, 3>& coords, const double inverse_alpha) const noexcept {
+    const std::array<T, 3>& coords, const double inverse_alpha) const {
   using ReturnType = tt::remove_cvref_wrap_t<T>;
   const ReturnType& x = coords[0];
   const ReturnType& y = coords[1];
@@ -121,44 +120,43 @@ EquatorialCompression::angular_distortion_jacobian(
 
 template <typename T>
 std::array<tt::remove_cvref_wrap_t<T>, 3> EquatorialCompression::operator()(
-    const std::array<T, 3>& source_coords) const noexcept {
+    const std::array<T, 3>& source_coords) const {
   return angular_distortion(source_coords, inverse_aspect_ratio_);
 }
 
 std::optional<std::array<double, 3>> EquatorialCompression::inverse(
-    const std::array<double, 3>& target_coords) const noexcept {
+    const std::array<double, 3>& target_coords) const {
   return angular_distortion(target_coords, aspect_ratio_);
 }
 
 template <typename T>
 tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>
-EquatorialCompression::jacobian(const std::array<T, 3>& source_coords) const
-    noexcept {
+EquatorialCompression::jacobian(const std::array<T, 3>& source_coords) const {
   return angular_distortion_jacobian(source_coords, inverse_aspect_ratio_);
 }
 
 template <typename T>
 tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>
-EquatorialCompression::inv_jacobian(const std::array<T, 3>& source_coords) const
-    noexcept {
+EquatorialCompression::inv_jacobian(
+    const std::array<T, 3>& source_coords) const {
   return angular_distortion_jacobian((*this)(source_coords), aspect_ratio_);
 }
 
-void EquatorialCompression::pup(PUP::er& p) noexcept {
+void EquatorialCompression::pup(PUP::er& p) {
   p | aspect_ratio_;
   p | inverse_aspect_ratio_;
   p | is_identity_;
 }
 
 bool operator==(const EquatorialCompression& lhs,
-                const EquatorialCompression& rhs) noexcept {
+                const EquatorialCompression& rhs) {
   return lhs.aspect_ratio_ == rhs.aspect_ratio_ and
          lhs.inverse_aspect_ratio_ == rhs.inverse_aspect_ratio_ and
          lhs.is_identity_ == rhs.is_identity_;
 }
 
 bool operator!=(const EquatorialCompression& lhs,
-                const EquatorialCompression& rhs) noexcept {
+                const EquatorialCompression& rhs) {
   return not(lhs == rhs);
 }
 
@@ -168,13 +166,13 @@ bool operator!=(const EquatorialCompression& lhs,
 #define INSTANTIATE(_, data)                                                 \
   template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>               \
   EquatorialCompression::operator()(                                         \
-      const std::array<DTYPE(data), 3>& source_coords) const noexcept;       \
+      const std::array<DTYPE(data), 3>& source_coords) const;                \
   template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame> \
   EquatorialCompression::jacobian(                                           \
-      const std::array<DTYPE(data), 3>& source_coords) const noexcept;       \
+      const std::array<DTYPE(data), 3>& source_coords) const;                \
   template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame> \
   EquatorialCompression::inv_jacobian(                                       \
-      const std::array<DTYPE(data), 3>& source_coords) const noexcept;
+      const std::array<DTYPE(data), 3>& source_coords) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector,
                                       std::reference_wrapper<const double>,

@@ -42,7 +42,7 @@ namespace {
 //   \sum_n ((C * A + 2 B ) * m)_n P_n
 //        = \sum_n (B * m)_n ((1 - x) d_x P_n + 2 * P_n)
 // Therefore, the matrix M = B * (C * A + 2 B)^{-1} .
-Matrix q_integration_matrix(const size_t number_of_points) noexcept {
+Matrix q_integration_matrix(const size_t number_of_points) {
   Matrix inverse_one_minus_y = Matrix(number_of_points, number_of_points, 0.0);
   for (size_t i = 1; i < number_of_points - 1; ++i) {
     inverse_one_minus_y(i, i - 1) = i / -(2.0 * i - 1.0);
@@ -88,10 +88,10 @@ Matrix q_integration_matrix(const size_t number_of_points) noexcept {
 }  // namespace
 
 const Matrix& precomputed_cce_q_integrator(
-    const size_t number_of_radial_grid_points) noexcept {
+    const size_t number_of_radial_grid_points) {
   static const auto lazy_matrix_cache = make_static_cache<CacheRange<
       1_st, Spectral::maximum_number_of_points<Spectral::Basis::Legendre> + 1>>(
-      [](const size_t local_number_of_radial_points) noexcept {
+      [](const size_t local_number_of_radial_points) {
         return q_integration_matrix(local_number_of_radial_points);
       });
   return lazy_matrix_cache(number_of_radial_grid_points);
@@ -102,7 +102,7 @@ void radial_integrate_cce_pole_equations(
     const ComplexDataVector& pole_of_integrand,
     const ComplexDataVector& regular_integrand,
     const ComplexDataVector& boundary, const ComplexDataVector& one_minus_y,
-    const size_t l_max, const size_t number_of_radial_points) noexcept {
+    const size_t l_max, const size_t number_of_radial_points) {
   const ComplexDataVector integrand =
       pole_of_integrand + one_minus_y * regular_integrand;
 
@@ -134,7 +134,7 @@ namespace detail {
 void transpose_to_reals_then_imags_radial_stripes(
     const gsl::not_null<DataVector*> result, const ComplexDataVector& input,
     const size_t number_of_radial_points,
-    const size_t number_of_angular_points) noexcept {
+    const size_t number_of_angular_points) {
   for (size_t i = 0; i < input.size() * 2; ++i) {
     (*result)[i] = ((i / number_of_radial_points) % 2) == 0
                        ? real(input[number_of_angular_points *
@@ -157,7 +157,7 @@ void RadialIntegrateBondi<BoundaryPrefix, Tag>::apply(
         integrand,
     const Scalar<SpinWeighted<ComplexDataVector, Tag::type::type::spin>>&
         boundary,
-    const size_t l_max, const size_t number_of_radial_points) noexcept {
+    const size_t l_max, const size_t number_of_radial_points) {
   indefinite_integral(make_not_null(&get(*integral_result).data()),
                       get(integrand).data(),
                       Spectral::Swsh::swsh_volume_mesh_for_radial_operations(
@@ -181,7 +181,7 @@ void RadialIntegrateBondi<BoundaryPrefix, Tags::BondiQ>::apply(
     const Scalar<SpinWeighted<ComplexDataVector, 1>>& regular_integrand,
     const Scalar<SpinWeighted<ComplexDataVector, 1>>& boundary,
     const Scalar<SpinWeighted<ComplexDataVector, 0>>& one_minus_y,
-    const size_t l_max, const size_t number_of_radial_points) noexcept {
+    const size_t l_max, const size_t number_of_radial_points) {
   radial_integrate_cce_pole_equations(
       make_not_null(&get(*integral_result).data()),
       get(pole_of_integrand).data(), get(regular_integrand).data(),
@@ -197,7 +197,7 @@ void RadialIntegrateBondi<BoundaryPrefix, Tags::BondiW>::apply(
     const Scalar<SpinWeighted<ComplexDataVector, 0>>& regular_integrand,
     const Scalar<SpinWeighted<ComplexDataVector, 0>>& boundary,
     const Scalar<SpinWeighted<ComplexDataVector, 0>>& one_minus_y,
-    const size_t l_max, const size_t number_of_radial_points) noexcept {
+    const size_t l_max, const size_t number_of_radial_points) {
   radial_integrate_cce_pole_equations(
       make_not_null(&get(*integral_result).data()),
       get(pole_of_integrand).data(), get(regular_integrand).data(),
@@ -216,7 +216,7 @@ void RadialIntegrateBondi<BoundaryPrefix, Tags::BondiH>::apply(
         linear_factor_of_conjugate,
     const Scalar<SpinWeighted<ComplexDataVector, 2>>& boundary,
     const Scalar<SpinWeighted<ComplexDataVector, 0>>& one_minus_y,
-    const size_t l_max, const size_t number_of_radial_points) noexcept {
+    const size_t l_max, const size_t number_of_radial_points) {
   const size_t number_of_angular_points =
       Spectral::Swsh::number_of_swsh_collocation_points(l_max);
 

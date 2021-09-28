@@ -7,7 +7,7 @@
 #include <string>
 
 namespace TestHelpers::evolution::dg::Actions {
-std::ostream& operator<<(std::ostream& os, const SystemType t) noexcept {
+std::ostream& operator<<(std::ostream& os, const SystemType t) {
   return os << (t == SystemType::Conservative ? std::string{"Conservative"}
                 : t == SystemType::Nonconservative
                     ? std::string{"Nonconservative"}

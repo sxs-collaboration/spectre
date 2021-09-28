@@ -31,8 +31,7 @@
 namespace {
 
 template <typename Frame, typename DataType>
-tnsr::I<DataType, 3, Frame> spatial_coords(
-    const DataType& used_for_size) noexcept {
+tnsr::I<DataType, 3, Frame> spatial_coords(const DataType& used_for_size) {
   auto x = make_with_value<tnsr::I<DataType, 3, Frame>>(used_for_size, 0.0);
   get<0>(x) = 1.32;
   get<1>(x) = 0.82;
@@ -41,7 +40,7 @@ tnsr::I<DataType, 3, Frame> spatial_coords(
 }
 
 template <typename Frame, typename DataType>
-void test_schwarzschild(const DataType& used_for_size) noexcept {
+void test_schwarzschild(const DataType& used_for_size) {
   // Schwarzschild solution is:
   // H        = M/r
   // l_mu     = (1,x/r,y/r,z/r)
@@ -157,7 +156,7 @@ void test_schwarzschild(const DataType& used_for_size) noexcept {
 }
 
 template <typename Frame, typename DataType>
-void test_tag_retrieval(const DataType& used_for_size) noexcept {
+void test_tag_retrieval(const DataType& used_for_size) {
   // Parameters for KerrSchild solution
   const double mass = 1.234;
   const std::array<double, 3> spin{{0.1, -0.2, 0.3}};
@@ -173,7 +172,7 @@ void test_tag_retrieval(const DataType& used_for_size) noexcept {
 }
 
 template <typename Frame>
-void test_einstein_solution() noexcept {
+void test_einstein_solution() {
   // Parameters
   //   ...for KerrSchild solution
   const double mass = 1.7;
@@ -197,12 +196,12 @@ void test_einstein_solution() noexcept {
   }
 }
 
-void test_serialize() noexcept {
+void test_serialize() {
   gr::Solutions::KerrSchild solution(3.0, {{0.2, 0.3, 0.2}}, {{0.0, 3.0, 4.0}});
   test_serialization(solution);
 }
 
-void test_copy_and_move() noexcept {
+void test_copy_and_move() {
   gr::Solutions::KerrSchild solution(3.0, {{0.2, 0.3, 0.2}}, {{0.0, 3.0, 4.0}});
   test_copy_semantics(solution);
   auto solution_copy = solution;

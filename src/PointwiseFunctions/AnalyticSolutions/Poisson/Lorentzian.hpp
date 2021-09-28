@@ -32,19 +32,18 @@ struct LorentzianVariables {
   const tnsr::I<DataType, Dim>& x;
 
   void operator()(gsl::not_null<Scalar<DataType>*> field,
-                  gsl::not_null<Cache*> cache, Tags::Field /*meta*/) const
-      noexcept;
+                  gsl::not_null<Cache*> cache, Tags::Field /*meta*/) const;
   void operator()(gsl::not_null<tnsr::i<DataType, Dim>*> field_gradient,
                   gsl::not_null<Cache*> cache,
                   ::Tags::deriv<Tags::Field, tmpl::size_t<Dim>,
-                                Frame::Inertial> /*meta*/) const noexcept;
+                                Frame::Inertial> /*meta*/) const;
   void operator()(gsl::not_null<tnsr::I<DataType, Dim>*> flux_for_field,
                   gsl::not_null<Cache*> cache,
                   ::Tags::Flux<Tags::Field, tmpl::size_t<Dim>,
-                               Frame::Inertial> /*meta*/) const noexcept;
+                               Frame::Inertial> /*meta*/) const;
   void operator()(gsl::not_null<Scalar<DataType>*> fixed_source_for_field,
                   gsl::not_null<Cache*> cache,
-                  ::Tags::FixedSource<Tags::Field> /*meta*/) const noexcept;
+                  ::Tags::FixedSource<Tags::Field> /*meta*/) const;
 };
 }  // namespace detail
 
@@ -89,14 +88,14 @@ class Lorentzian : public AnalyticSolution<Dim, Registrars> {
       "A Lorentzian solution to the Poisson equation."};
 
   Lorentzian() = default;
-  Lorentzian(const Lorentzian&) noexcept = default;
-  Lorentzian& operator=(const Lorentzian&) noexcept = default;
-  Lorentzian(Lorentzian&&) noexcept = default;
-  Lorentzian& operator=(Lorentzian&&) noexcept = default;
-  ~Lorentzian() noexcept override = default;
+  Lorentzian(const Lorentzian&) = default;
+  Lorentzian& operator=(const Lorentzian&) = default;
+  Lorentzian(Lorentzian&&) = default;
+  Lorentzian& operator=(Lorentzian&&) = default;
+  ~Lorentzian() override = default;
 
   /// \cond
-  explicit Lorentzian(CkMigrateMessage* m) noexcept : Base(m) {}
+  explicit Lorentzian(CkMigrateMessage* m) : Base(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Lorentzian);  // NOLINT
   /// \endcond
@@ -104,14 +103,14 @@ class Lorentzian : public AnalyticSolution<Dim, Registrars> {
   template <typename DataType, typename... RequestedTags>
   tuples::TaggedTuple<RequestedTags...> variables(
       const tnsr::I<DataType, Dim>& x,
-      tmpl::list<RequestedTags...> /*meta*/) const noexcept {
+      tmpl::list<RequestedTags...> /*meta*/) const {
     using VarsComputer = detail::LorentzianVariables<DataType, Dim>;
     typename VarsComputer::Cache cache{get_size(*x.begin()), VarsComputer{x}};
     return {cache.get_var(RequestedTags{})...};
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& /*p*/) noexcept override {}
+  void pup(PUP::er& /*p*/) override {}
 };
 
 /// \cond
@@ -121,13 +120,13 @@ PUP::able::PUP_ID Lorentzian<Dim, Registrars>::my_PUP_ID = 0;  // NOLINT
 
 template <size_t Dim, typename Registrars>
 bool operator==(const Lorentzian<Dim, Registrars>& /*lhs*/,
-                const Lorentzian<Dim, Registrars>& /*rhs*/) noexcept {
+                const Lorentzian<Dim, Registrars>& /*rhs*/) {
   return true;
 }
 
 template <size_t Dim, typename Registrars>
 bool operator!=(const Lorentzian<Dim, Registrars>& lhs,
-                const Lorentzian<Dim, Registrars>& rhs) noexcept {
+                const Lorentzian<Dim, Registrars>& rhs) {
   return not(lhs == rhs);
 }
 

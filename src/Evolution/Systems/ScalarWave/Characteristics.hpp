@@ -53,14 +53,12 @@ namespace ScalarWave {
  */
 template <size_t Dim>
 std::array<DataVector, 4> characteristic_speeds(
-    const tnsr::i<DataVector, Dim, Frame::Inertial>&
-        unit_normal_one_form) noexcept;
+    const tnsr::i<DataVector, Dim, Frame::Inertial>& unit_normal_one_form);
 
 template <size_t Dim>
 void characteristic_speeds(
     gsl::not_null<std::array<DataVector, 4>*> char_speeds,
-    const tnsr::i<DataVector, Dim, Frame::Inertial>&
-        unit_normal_one_form) noexcept;
+    const tnsr::i<DataVector, Dim, Frame::Inertial>& unit_normal_one_form);
 
 namespace Tags {
 template <size_t Dim>
@@ -71,9 +69,9 @@ struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds<Dim>,
   using argument_tags =
       tmpl::list<::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim>>>;
 
-  static void function(gsl::not_null<return_type*> char_speeds,
-                       const tnsr::i<DataVector, Dim, Frame::Inertial>&
-                           unit_normal_one_form) noexcept {
+  static void function(
+      gsl::not_null<return_type*> char_speeds,
+      const tnsr::i<DataVector, Dim, Frame::Inertial>& unit_normal_one_form) {
     characteristic_speeds(char_speeds, unit_normal_one_form);
   }
 };
@@ -129,12 +127,11 @@ struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds<Dim>,
  */
 template <size_t Dim>
 Variables<tmpl::list<Tags::VPsi, Tags::VZero<Dim>, Tags::VPlus, Tags::VMinus>>
-characteristic_fields(const Scalar<DataVector>& gamma_2,
-                      const Scalar<DataVector>& psi,
-                      const Scalar<DataVector>& pi,
-                      const tnsr::i<DataVector, Dim, Frame::Inertial>& phi,
-                      const tnsr::i<DataVector, Dim, Frame::Inertial>&
-                          unit_normal_one_form) noexcept;
+characteristic_fields(
+    const Scalar<DataVector>& gamma_2, const Scalar<DataVector>& psi,
+    const Scalar<DataVector>& pi,
+    const tnsr::i<DataVector, Dim, Frame::Inertial>& phi,
+    const tnsr::i<DataVector, Dim, Frame::Inertial>& unit_normal_one_form);
 
 template <size_t Dim>
 void characteristic_fields(
@@ -144,8 +141,7 @@ void characteristic_fields(
     const Scalar<DataVector>& gamma_2, const Scalar<DataVector>& psi,
     const Scalar<DataVector>& pi,
     const tnsr::i<DataVector, Dim, Frame::Inertial>& phi,
-    const tnsr::i<DataVector, Dim, Frame::Inertial>&
-        unit_normal_one_form) noexcept;
+    const tnsr::i<DataVector, Dim, Frame::Inertial>& unit_normal_one_form);
 
 namespace Tags {
 template <size_t Dim>
@@ -157,13 +153,12 @@ struct CharacteristicFieldsCompute : Tags::CharacteristicFields<Dim>,
       tmpl::list<Tags::ConstraintGamma2, Psi, Pi, Phi<Dim>,
                  ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim>>>;
 
-  static void function(const gsl::not_null<return_type*> char_fields,
-                       const Scalar<DataVector>& gamma_2,
-                       const Scalar<DataVector>& psi,
-                       const Scalar<DataVector>& pi,
-                       const tnsr::i<DataVector, Dim, Frame::Inertial>& phi,
-                       const tnsr::i<DataVector, Dim, Frame::Inertial>&
-                           unit_normal_one_form) noexcept {
+  static void function(
+      const gsl::not_null<return_type*> char_fields,
+      const Scalar<DataVector>& gamma_2, const Scalar<DataVector>& psi,
+      const Scalar<DataVector>& pi,
+      const tnsr::i<DataVector, Dim, Frame::Inertial>& phi,
+      const tnsr::i<DataVector, Dim, Frame::Inertial>& unit_normal_one_form) {
     characteristic_fields(char_fields, gamma_2, psi, pi, phi,
                           unit_normal_one_form);
   };
@@ -184,8 +179,7 @@ evolved_fields_from_characteristic_fields(
     const Scalar<DataVector>& gamma_2, const Scalar<DataVector>& v_psi,
     const tnsr::i<DataVector, Dim, Frame::Inertial>& v_zero,
     const Scalar<DataVector>& v_plus, const Scalar<DataVector>& v_minus,
-    const tnsr::i<DataVector, Dim, Frame::Inertial>&
-        unit_normal_one_form) noexcept;
+    const tnsr::i<DataVector, Dim, Frame::Inertial>& unit_normal_one_form);
 
 template <size_t Dim>
 void evolved_fields_from_characteristic_fields(
@@ -193,8 +187,7 @@ void evolved_fields_from_characteristic_fields(
     const Scalar<DataVector>& gamma_2, const Scalar<DataVector>& v_psi,
     const tnsr::i<DataVector, Dim, Frame::Inertial>& v_zero,
     const Scalar<DataVector>& v_plus, const Scalar<DataVector>& v_minus,
-    const tnsr::i<DataVector, Dim, Frame::Inertial>&
-        unit_normal_one_form) noexcept;
+    const tnsr::i<DataVector, Dim, Frame::Inertial>& unit_normal_one_form);
 
 namespace Tags {
 template <size_t Dim>
@@ -208,14 +201,12 @@ struct EvolvedFieldsFromCharacteristicFieldsCompute
                  Tags::VPlus, Tags::VMinus,
                  ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim>>>;
 
-  static void function(const gsl::not_null<return_type*> evolved_fields,
-                       const Scalar<DataVector>& gamma_2,
-                       const Scalar<DataVector>& v_psi,
-                       const tnsr::i<DataVector, Dim, Frame::Inertial>& v_zero,
-                       const Scalar<DataVector>& v_plus,
-                       const Scalar<DataVector>& v_minus,
-                       const tnsr::i<DataVector, Dim, Frame::Inertial>&
-                           unit_normal_one_form) noexcept {
+  static void function(
+      const gsl::not_null<return_type*> evolved_fields,
+      const Scalar<DataVector>& gamma_2, const Scalar<DataVector>& v_psi,
+      const tnsr::i<DataVector, Dim, Frame::Inertial>& v_zero,
+      const Scalar<DataVector>& v_plus, const Scalar<DataVector>& v_minus,
+      const tnsr::i<DataVector, Dim, Frame::Inertial>& unit_normal_one_form) {
     evolved_fields_from_characteristic_fields(evolved_fields, gamma_2, v_psi,
                                               v_zero, v_plus, v_minus,
                                               unit_normal_one_form);
@@ -233,7 +224,7 @@ struct ComputeLargestCharacteristicSpeed : LargestCharacteristicSpeed,
   using return_type = double;
   using base = LargestCharacteristicSpeed;
   SPECTRE_ALWAYS_INLINE static constexpr void function(
-      const gsl::not_null<double*> speed) noexcept {
+      const gsl::not_null<double*> speed) {
     *speed = 1.0;
   }
 };

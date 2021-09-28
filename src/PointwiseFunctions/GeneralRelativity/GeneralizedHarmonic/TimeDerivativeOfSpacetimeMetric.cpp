@@ -21,7 +21,7 @@ void time_derivative_of_spacetime_metric(
     const Scalar<DataType>& lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
     const tnsr::aa<DataType, SpatialDim, Frame>& pi,
-    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept {
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) {
   destructive_resize_components(dt_spacetime_metric, get_size(get(lapse)));
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
     for (size_t b = a; b < SpatialDim + 1; ++b) {
@@ -38,7 +38,7 @@ tnsr::aa<DataType, SpatialDim, Frame> time_derivative_of_spacetime_metric(
     const Scalar<DataType>& lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
     const tnsr::aa<DataType, SpatialDim, Frame>& pi,
-    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept {
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) {
   tnsr::aa<DataType, SpatialDim, Frame> dt_spacetime_metric{
       get_size(get(lapse))};
   time_derivative_of_spacetime_metric(make_not_null(&dt_spacetime_metric),
@@ -51,20 +51,20 @@ tnsr::aa<DataType, SpatialDim, Frame> time_derivative_of_spacetime_metric(
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(2, data)
 
-#define INSTANTIATE(_, data)                                               \
-  template tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>                   \
-  GeneralizedHarmonic::time_derivative_of_spacetime_metric(                \
-      const Scalar<DTYPE(data)>& lapse,                                    \
-      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,           \
-      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi,             \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi) noexcept; \
-  template void GeneralizedHarmonic::time_derivative_of_spacetime_metric(  \
-      const gsl::not_null<tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>*>  \
-          dt_spacetime_metric,                                             \
-      const Scalar<DTYPE(data)>& lapse,                                    \
-      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,           \
-      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi,             \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi) noexcept;
+#define INSTANTIATE(_, data)                                              \
+  template tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>                  \
+  GeneralizedHarmonic::time_derivative_of_spacetime_metric(               \
+      const Scalar<DTYPE(data)>& lapse,                                   \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,          \
+      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi,            \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi);         \
+  template void GeneralizedHarmonic::time_derivative_of_spacetime_metric( \
+      const gsl::not_null<tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>*> \
+          dt_spacetime_metric,                                            \
+      const Scalar<DTYPE(data)>& lapse,                                   \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,          \
+      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi,            \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
                         (Frame::Grid, Frame::Inertial))

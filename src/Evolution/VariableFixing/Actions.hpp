@@ -52,7 +52,7 @@ struct FixVariables {
       tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     const auto& variable_fixer = get<Tags::VariableFixer<VariableFixer>>(cache);
     db::mutate_apply(variable_fixer, make_not_null(&box));
     return std::forward_as_tuple(std::move(box));

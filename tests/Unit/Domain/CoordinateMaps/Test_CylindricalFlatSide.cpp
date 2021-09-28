@@ -35,7 +35,7 @@ void test_cylindrical_flat_side() {
   // it.  Also make sure that the center of the annulus is not offset
   // in x-y farther than 90% of the radius of sphere_two.
   const std::array<double, 3> center_one = [&radius_two, &center_two, &unit_dis,
-                                            &angle_dis, &gen]() noexcept {
+                                            &angle_dis, &gen]() {
     const double rho = unit_dis(gen) * 0.9 *  radius_two;
     const double phi = angle_dis(gen);
     const double x = center_two[0] + rho * cos(phi);
@@ -49,7 +49,7 @@ void test_cylindrical_flat_side() {
   // Don't let proj_center be too close to the edge of the sphere.
   const std::array<double, 3> proj_center = [&center_two, &radius_two, &gen,
                                              &unit_dis, &interval_dis,
-                                             &angle_dis]() noexcept {
+                                             &angle_dis]() {
     const double phi = angle_dis(gen);
     const double cos_theta = interval_dis(gen);
     const double sin_theta = sqrt(1.0 - square(cos_theta));

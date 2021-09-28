@@ -11,11 +11,11 @@
 
 namespace {
 struct NamedBase : db::BaseTag {
-  static std::string name() noexcept { return "NamedBaseName"; }
+  static std::string name() { return "NamedBaseName"; }
 };
 
 struct NamedSimple : db::SimpleTag {
-  static std::string name() noexcept { return "NamedSimpleName"; }
+  static std::string name() { return "NamedSimpleName"; }
   using type = int;
 };
 
@@ -42,7 +42,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.TestHelpers",
 
 namespace {
 struct RedundantName : db::SimpleTag {
-  static std::string name() noexcept { return "RedundantName"; }
+  static std::string name() { return "RedundantName"; }
   using type = int;
 };
 }  // namespace

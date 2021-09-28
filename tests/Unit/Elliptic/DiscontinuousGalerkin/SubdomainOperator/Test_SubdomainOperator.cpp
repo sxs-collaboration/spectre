@@ -135,7 +135,7 @@ struct InitializeRandomSubdomainData {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ElementId<Dim>& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     using SubdomainData = typename SubdomainDataTag<Dim, Fields>::type;
 
     db::mutate<SubdomainDataTag<Dim, Fields>>(
@@ -187,7 +187,7 @@ struct RandomBackground {
   template <typename... RequestedTags>
   static tuples::TaggedTuple<RequestedTags...> variables(
       const tnsr::I<DataVector, Dim>& x,
-      tmpl::list<RequestedTags...> /*meta*/) noexcept {
+      tmpl::list<RequestedTags...> /*meta*/) {
     return {variables(x, RequestedTags{})...};
   }
   template <typename... RequestedTags>
@@ -196,13 +196,13 @@ struct RandomBackground {
       const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
                             Frame::Inertial>&
       /*inv_jacobian*/,
-      tmpl::list<RequestedTags...> /*meta*/) noexcept {
+      tmpl::list<RequestedTags...> /*meta*/) {
     return variables(x, tmpl::list<RequestedTags...>{});
   }
   static tnsr::II<DataVector, Dim> variables(
       const tnsr::I<DataVector, Dim>& x,
       gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial,
-                                     DataVector> /*meta*/) noexcept {
+                                     DataVector> /*meta*/) {
     tnsr::II<DataVector, Dim> inv_metric{x.begin()->size()};
     const DataVector r = get(magnitude(x));
     for (size_t i = 0; i < Dim; ++i) {
@@ -215,8 +215,8 @@ struct RandomBackground {
   }
   static tnsr::i<DataVector, Dim> variables(
       const tnsr::I<DataVector, Dim>& x,
-      gr::Tags::SpatialChristoffelSecondKindContracted<
-          Dim, Frame::Inertial, DataVector> /*meta*/) noexcept {
+      gr::Tags::SpatialChristoffelSecondKindContracted<Dim, Frame::Inertial,
+                                                       DataVector> /*meta*/) {
     tnsr::i<DataVector, Dim> result{x.begin()->size()};
     const DataVector r = get(magnitude(x));
     for (size_t i = 0; i < Dim; ++i) {
@@ -225,7 +225,7 @@ struct RandomBackground {
     return result;
   }
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& /*p*/) noexcept {}
+  void pup(PUP::er& /*p*/) {}
 };
 
 template <size_t Dim>
@@ -242,7 +242,7 @@ struct ApplySubdomainOperator {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ElementId<Dim>& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     const auto& subdomain_data = db::get<SubdomainDataTag<Dim, Fields>>(box);
 
     // Apply the subdomain operator
@@ -528,7 +528,7 @@ struct InitializeConstitutiveRelation {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     ::Initialization::mutate_assign<simple_tags>(
         make_not_null(&box),
         std::make_unique<

@@ -45,14 +45,13 @@ void filter_swsh_volume_quantity(
     gsl::not_null<SpinWeighted<ComplexDataVector, Spin>*> to_filter,
     size_t l_max, size_t limit_l, double exponential_alpha,
     size_t exponential_half_power, gsl::not_null<ComplexDataVector*> buffer,
-    gsl::not_null<SpinWeighted<ComplexModalVector, Spin>*>
-        transform_buffer) noexcept;
+    gsl::not_null<SpinWeighted<ComplexModalVector, Spin>*> transform_buffer);
 
 template <int Spin>
 void filter_swsh_volume_quantity(
     gsl::not_null<SpinWeighted<ComplexDataVector, Spin>*> to_filter,
     size_t l_max, size_t limit_l, double exponential_alpha,
-    size_t exponential_half_power) noexcept;
+    size_t exponential_half_power);
 /// @}
 /// @{
 /*!
@@ -68,13 +67,12 @@ template <int Spin>
 void filter_swsh_boundary_quantity(
     gsl::not_null<SpinWeighted<ComplexDataVector, Spin>*> to_filter,
     size_t l_max, size_t limit_l,
-    gsl::not_null<SpinWeighted<ComplexModalVector, Spin>*>
-        transform_buffer) noexcept;
+    gsl::not_null<SpinWeighted<ComplexModalVector, Spin>*> transform_buffer);
 
 template <int Spin>
 void filter_swsh_boundary_quantity(
     gsl::not_null<SpinWeighted<ComplexDataVector, Spin>*> to_filter,
-    size_t l_max, size_t limit_l) noexcept;
+    size_t l_max, size_t limit_l);
 /// @}
 }  // namespace Swsh
 }  // namespace Spectral

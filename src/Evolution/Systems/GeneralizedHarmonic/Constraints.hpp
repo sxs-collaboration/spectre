@@ -37,13 +37,13 @@ namespace GeneralizedHarmonic {
 template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::iaa<DataType, SpatialDim, Frame> three_index_constraint(
     const tnsr::iaa<DataType, SpatialDim, Frame>& d_spacetime_metric,
-    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept;
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi);
 
 template <size_t SpatialDim, typename Frame, typename DataType>
 void three_index_constraint(
     gsl::not_null<tnsr::iaa<DataType, SpatialDim, Frame>*> constraint,
     const tnsr::iaa<DataType, SpatialDim, Frame>& d_spacetime_metric,
-    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept;
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi);
 /// @}
 
 /// @{
@@ -72,7 +72,7 @@ tnsr::a<DataType, SpatialDim, Frame> gauge_constraint(
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
     const tnsr::AA<DataType, SpatialDim, Frame>& inverse_spacetime_metric,
     const tnsr::aa<DataType, SpatialDim, Frame>& pi,
-    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept;
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi);
 
 template <size_t SpatialDim, typename Frame, typename DataType>
 void gauge_constraint(
@@ -83,7 +83,7 @@ void gauge_constraint(
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
     const tnsr::AA<DataType, SpatialDim, Frame>& inverse_spacetime_metric,
     const tnsr::aa<DataType, SpatialDim, Frame>& pi,
-    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept;
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi);
 /// @}
 
 /// @{
@@ -133,8 +133,7 @@ tnsr::ia<DataType, SpatialDim, Frame> two_index_constraint(
     const tnsr::iaa<DataType, SpatialDim, Frame>& d_pi,
     const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi,
     const Scalar<DataType>& gamma2,
-    const tnsr::iaa<DataType, SpatialDim, Frame>&
-        three_index_constraint) noexcept;
+    const tnsr::iaa<DataType, SpatialDim, Frame>& three_index_constraint);
 
 template <size_t SpatialDim, typename Frame, typename DataType>
 void two_index_constraint(
@@ -149,8 +148,7 @@ void two_index_constraint(
     const tnsr::iaa<DataType, SpatialDim, Frame>& d_pi,
     const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi,
     const Scalar<DataType>& gamma2,
-    const tnsr::iaa<DataType, SpatialDim, Frame>&
-        three_index_constraint) noexcept;
+    const tnsr::iaa<DataType, SpatialDim, Frame>& three_index_constraint);
 /// @}
 
 /// @{
@@ -181,12 +179,12 @@ void two_index_constraint(
  */
 template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::iaa<DataType, SpatialDim, Frame> four_index_constraint(
-    const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi) noexcept;
+    const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi);
 
 template <size_t SpatialDim, typename Frame, typename DataType>
 void four_index_constraint(
     gsl::not_null<tnsr::iaa<DataType, SpatialDim, Frame>*> constraint,
-    const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi) noexcept;
+    const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi);
 /// @}
 
 /// @{
@@ -284,8 +282,7 @@ tnsr::a<DataType, SpatialDim, Frame> f_constraint(
     const tnsr::iaa<DataType, SpatialDim, Frame>& d_pi,
     const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi,
     const Scalar<DataType>& gamma2,
-    const tnsr::iaa<DataType, SpatialDim, Frame>&
-        three_index_constraint) noexcept;
+    const tnsr::iaa<DataType, SpatialDim, Frame>& three_index_constraint);
 
 template <size_t SpatialDim, typename Frame, typename DataType>
 void f_constraint(
@@ -301,8 +298,7 @@ void f_constraint(
     const tnsr::iaa<DataType, SpatialDim, Frame>& d_pi,
     const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi,
     const Scalar<DataType>& gamma2,
-    const tnsr::iaa<DataType, SpatialDim, Frame>&
-        three_index_constraint) noexcept;
+    const tnsr::iaa<DataType, SpatialDim, Frame>& three_index_constraint);
 
 template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::a<DataType, SpatialDim, Frame> f_constraint(
@@ -318,8 +314,7 @@ tnsr::a<DataType, SpatialDim, Frame> f_constraint(
     const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi,
     const Scalar<DataType>& gamma2,
     const tnsr::iaa<DataType, SpatialDim, Frame>& three_index_constraint,
-    const tnsr::aa<DataType, SpatialDim, Frame>&
-        trace_reversed_stress_energy) noexcept;
+    const tnsr::aa<DataType, SpatialDim, Frame>& trace_reversed_stress_energy);
 
 template <size_t SpatialDim, typename Frame, typename DataType>
 void f_constraint(
@@ -336,8 +331,7 @@ void f_constraint(
     const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi,
     const Scalar<DataType>& gamma2,
     const tnsr::iaa<DataType, SpatialDim, Frame>& three_index_constraint,
-    const tnsr::aa<DataType, SpatialDim, Frame>&
-        trace_reversed_stress_energy) noexcept;
+    const tnsr::aa<DataType, SpatialDim, Frame>& trace_reversed_stress_energy);
 /// @}
 
 /// @{
@@ -539,7 +533,7 @@ Scalar<DataType> constraint_energy(
     double gauge_constraint_multiplier = 1.0,
     double two_index_constraint_multiplier = 1.0,
     double three_index_constraint_multiplier = 1.0,
-    double four_index_constraint_multiplier = 1.0) noexcept;
+    double four_index_constraint_multiplier = 1.0);
 
 template <size_t SpatialDim, typename Frame, typename DataType>
 void constraint_energy(
@@ -554,7 +548,7 @@ void constraint_energy(
     double gauge_constraint_multiplier = 1.0,
     double two_index_constraint_multiplier = 1.0,
     double three_index_constraint_multiplier = 1.0,
-    double four_index_constraint_multiplier = 1.0) noexcept;
+    double four_index_constraint_multiplier = 1.0);
 /// @}
 
 namespace Tags {
@@ -586,7 +580,7 @@ struct GaugeConstraintCompute : GaugeConstraint<SpatialDim, Frame>,
       const tnsr::II<DataVector, SpatialDim, Frame>&,
       const tnsr::AA<DataVector, SpatialDim, Frame>&,
       const tnsr::aa<DataVector, SpatialDim, Frame>&,
-      const tnsr::iaa<DataVector, SpatialDim, Frame>&) noexcept>(
+      const tnsr::iaa<DataVector, SpatialDim, Frame>&)>(
       &gauge_constraint<SpatialDim, Frame, DataVector>);
 
   using base = GaugeConstraint<SpatialDim, Frame>;
@@ -632,7 +626,7 @@ struct FConstraintCompute : FConstraint<SpatialDim, Frame>, db::ComputeTag {
       const tnsr::iaa<DataVector, SpatialDim, Frame>&,
       const tnsr::ijaa<DataVector, SpatialDim, Frame>&,
       const Scalar<DataVector>&,
-      const tnsr::iaa<DataVector, SpatialDim, Frame>&) noexcept>(
+      const tnsr::iaa<DataVector, SpatialDim, Frame>&)>(
       &f_constraint<SpatialDim, Frame, DataVector>);
 
   using base = FConstraint<SpatialDim, Frame>;
@@ -674,7 +668,7 @@ struct TwoIndexConstraintCompute : TwoIndexConstraint<SpatialDim, Frame>,
       const tnsr::iaa<DataVector, SpatialDim, Frame>&,
       const tnsr::ijaa<DataVector, SpatialDim, Frame>&,
       const Scalar<DataVector>&,
-      const tnsr::iaa<DataVector, SpatialDim, Frame>&) noexcept>(
+      const tnsr::iaa<DataVector, SpatialDim, Frame>&)>(
       &two_index_constraint<SpatialDim, Frame, DataVector>);
 
   using base = TwoIndexConstraint<SpatialDim, Frame>;
@@ -700,7 +694,7 @@ struct ThreeIndexConstraintCompute : ThreeIndexConstraint<SpatialDim, Frame>,
   static constexpr auto function = static_cast<void (*)(
       gsl::not_null<tnsr::iaa<DataVector, SpatialDim, Frame>*>,
       const tnsr::iaa<DataVector, SpatialDim, Frame>&,
-      const tnsr::iaa<DataVector, SpatialDim, Frame>&) noexcept>(
+      const tnsr::iaa<DataVector, SpatialDim, Frame>&)>(
       &three_index_constraint<SpatialDim, Frame, DataVector>);
 
   using base = ThreeIndexConstraint<SpatialDim, Frame>;
@@ -723,7 +717,7 @@ struct FourIndexConstraintCompute : FourIndexConstraint<SpatialDim, Frame>,
 
   static constexpr auto function = static_cast<void (*)(
       gsl::not_null<tnsr::iaa<DataVector, SpatialDim, Frame>*>,
-      const tnsr::ijaa<DataVector, SpatialDim, Frame>&) noexcept>(
+      const tnsr::ijaa<DataVector, SpatialDim, Frame>&)>(
       &four_index_constraint<SpatialDim, Frame, DataVector>);
 
   using base = FourIndexConstraint<SpatialDim, Frame>;
@@ -758,7 +752,7 @@ struct ConstraintEnergyCompute : ConstraintEnergy<SpatialDim, Frame>,
       const tnsr::iaa<DataVector, SpatialDim, Frame>& three_index_constraint,
       const tnsr::iaa<DataVector, SpatialDim, Frame>& four_index_constraint,
       const tnsr::II<DataVector, SpatialDim, Frame>& inverse_spatial_metric,
-      const Scalar<DataVector>& spatial_metric_determinant) noexcept {
+      const Scalar<DataVector>& spatial_metric_determinant) {
     destructive_resize_components(energy,
                                   get(spatial_metric_determinant).size());
     constraint_energy<SpatialDim, Frame, DataVector>(

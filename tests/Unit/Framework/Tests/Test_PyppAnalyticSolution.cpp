@@ -37,8 +37,8 @@ struct AnalyticSolutionTest {
       : a_(a), b_(b) {}
 
   template <typename T>
-  tuples::TaggedTuple<Var1<T>, Var2<T>> solution(
-      const tnsr::i<T, 3>& x, const double t) const noexcept {
+  tuples::TaggedTuple<Var1<T>, Var2<T>> solution(const tnsr::i<T, 3>& x,
+                                                 const double t) const {
     auto sol =
         make_with_value<tuples::TaggedTuple<Var1<T>, Var2<T>>>(x.get(0), 0.);
     auto& scalar = tuples::get<Var1<T>>(sol);

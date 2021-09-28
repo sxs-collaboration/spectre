@@ -14,12 +14,12 @@
 
 namespace GeneralizedHarmonic::BoundaryConditions {
 template <size_t Dim>
-DirichletAnalytic<Dim>::DirichletAnalytic(CkMigrateMessage* const msg) noexcept
+DirichletAnalytic<Dim>::DirichletAnalytic(CkMigrateMessage* const msg)
     : BoundaryCondition<Dim>(msg) {}
 
 template <size_t Dim>
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-DirichletAnalytic<Dim>::get_clone() const noexcept {
+DirichletAnalytic<Dim>::get_clone() const {
   return std::make_unique<DirichletAnalytic>(*this);
 }
 
@@ -34,8 +34,7 @@ void DirichletAnalytic<Dim>::lapse_shift_and_inv_spatial_metric(
     const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*> shift,
     const gsl::not_null<tnsr::II<DataVector, Dim, Frame::Inertial>*>
         inv_spatial_metric,
-    const tnsr::aa<DataVector, Dim, Frame::Inertial>& spacetime_metric)
-    const noexcept {
+    const tnsr::aa<DataVector, Dim, Frame::Inertial>& spacetime_metric) const {
   const auto spatial_metric = gr::spatial_metric(spacetime_metric);
   *inv_spatial_metric = determinant_and_inverse(spatial_metric).second;
   gr::shift(shift, spacetime_metric, *inv_spatial_metric);

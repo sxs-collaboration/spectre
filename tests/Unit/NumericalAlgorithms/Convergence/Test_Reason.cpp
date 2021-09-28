@@ -12,7 +12,7 @@
 
 namespace {
 template <Convergence::Reason TheConvergenceReason>
-void test_construct_from_options() noexcept {
+void test_construct_from_options() {
   const auto created = TestHelpers::test_creation<Convergence::Reason>(
       get_output(TheConvergenceReason));
   CHECK(created == TheConvergenceReason);

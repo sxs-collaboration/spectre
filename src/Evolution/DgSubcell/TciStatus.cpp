@@ -19,10 +19,10 @@ template <size_t Dim>
 void tci_status(const gsl::not_null<Scalar<DataVector>*> status,
                 const Mesh<Dim>& dg_mesh, const Mesh<Dim>& subcell_mesh,
                 const subcell::ActiveGrid active_grid,
-                const std::deque<subcell::ActiveGrid>& tci_history) noexcept {
+                const std::deque<subcell::ActiveGrid>& tci_history) {
   const auto set_status =
       [&active_grid, &dg_mesh, &status,
-       &subcell_mesh](const subcell::ActiveGrid grid_to_set_from) noexcept {
+       &subcell_mesh](const subcell::ActiveGrid grid_to_set_from) {
         destructive_resize_components(
             status, active_grid == ActiveGrid::Dg
                         ? dg_mesh.number_of_grid_points()
@@ -44,7 +44,7 @@ template <size_t Dim>
 Scalar<DataVector> tci_status(
     const Mesh<Dim>& dg_mesh, const Mesh<Dim>& subcell_mesh,
     const subcell::ActiveGrid active_grid,
-    const std::deque<subcell::ActiveGrid>& tci_history) noexcept {
+    const std::deque<subcell::ActiveGrid>& tci_history) {
   Scalar<DataVector> status{};
   tci_status(make_not_null(&status), dg_mesh, subcell_mesh, active_grid,
              tci_history);
@@ -58,11 +58,11 @@ Scalar<DataVector> tci_status(
       gsl::not_null<Scalar<DataVector>*> status,                           \
       const Mesh<DIM(data)>& dg_mesh, const Mesh<DIM(data)>& subcell_mesh, \
       subcell::ActiveGrid active_grid,                                     \
-      const std::deque<subcell::ActiveGrid>& tci_history) noexcept;        \
+      const std::deque<subcell::ActiveGrid>& tci_history);                 \
   template Scalar<DataVector> tci_status(                                  \
       const Mesh<DIM(data)>& dg_mesh, const Mesh<DIM(data)>& subcell_mesh, \
       subcell::ActiveGrid active_grid,                                     \
-      const std::deque<subcell::ActiveGrid>& tci_history) noexcept;
+      const std::deque<subcell::ActiveGrid>& tci_history);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 

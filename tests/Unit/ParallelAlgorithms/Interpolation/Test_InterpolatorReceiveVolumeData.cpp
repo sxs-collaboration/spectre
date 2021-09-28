@@ -91,7 +91,7 @@ struct Square : db::SimpleTag {
 };
 struct SquareCompute : Square, db::ComputeTag {
   static void function(gsl::not_null<Scalar<DataVector>*> result,
-                       const Scalar<DataVector>& x) noexcept {
+                       const Scalar<DataVector>& x) {
     get(*result) = square(get(x));
   }
   using argument_tags = tmpl::list<gr::Tags::Lapse<DataVector>>;
@@ -105,7 +105,7 @@ struct ComputeSquare {
   static void apply(
       const gsl::not_null<Variables<tmpl::list<DestTag>>*> target_vars,
       const Variables<tmpl::list<SrcTag>>& src_vars,
-      const Mesh<3>& /* mesh */) noexcept {
+      const Mesh<3>& /* mesh */) {
     get(get<DestTag>(*target_vars)) = square(get(get<SrcTag>(src_vars)));
   }
 };
@@ -123,7 +123,7 @@ struct MockInterpolationTargetReceiveVars {
           typename InterpolationTargetTag::vars_to_interpolate_to_target>>&
           vars_src,
       const std::vector<std::vector<size_t>>& global_offsets,
-      const TemporalId& /*temporal_id*/) noexcept {
+      const TemporalId& /*temporal_id*/) {
     size_t number_of_interpolated_points = 0;
     for (size_t i = 0; i < global_offsets.size(); ++i) {
       Scalar<DataVector> expected_vars{global_offsets[i].size()};
@@ -155,10 +155,9 @@ struct MockInterpolationTargetReceiveVars {
     Slab slab(0.0, 1.0);
     TimeStepId strange_temporal_id(true, 0, Time(slab, Rational(111, 135)));
     db::mutate<intrp::Tags::TemporalIds<TemporalId>>(
-        make_not_null(&box), [&strange_temporal_id](
-                                 const gsl::not_null<
-                                     std::deque<TemporalId>*>
-                                     temporal_ids) noexcept {
+        make_not_null(&box),
+        [&strange_temporal_id](
+            const gsl::not_null<std::deque<TemporalId>*> temporal_ids) {
           temporal_ids->push_back(strange_temporal_id);
         });
   }

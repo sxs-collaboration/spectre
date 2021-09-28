@@ -29,7 +29,7 @@ struct Inertial;
 
 namespace {
 template <size_t VolumeDim, typename DataType, typename Fr>
-void test_gaussian_random(const DataType& used_for_size) noexcept {
+void test_gaussian_random(const DataType& used_for_size) {
   Parallel::register_classes_with_charm<
       MathFunctions::Gaussian<VolumeDim, Fr>>();
 

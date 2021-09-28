@@ -67,6 +67,6 @@ struct ComputeNormalDotFluxes {
       const Scalar<DataVector>& gamma2, const Scalar<DataVector>& lapse,
       const tnsr::I<DataVector, Dim>& shift,
       const tnsr::II<DataVector, Dim>& inverse_spatial_metric,
-      const tnsr::i<DataVector, Dim>& interface_unit_normal) noexcept;
+      const tnsr::i<DataVector, Dim>& interface_unit_normal);
 };
 }  // namespace CurvedScalarWave

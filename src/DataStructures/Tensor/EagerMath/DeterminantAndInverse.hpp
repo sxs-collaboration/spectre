@@ -37,7 +37,7 @@ struct DetAndInverseImpl<Symm, Index0, Index1, Requires<Index0::dim == 1>> {
       const gsl::not_null<Scalar<T>*> det,
       const gsl::not_null<Tensor<T, Symm, inverse_indices<Index0, Index1>>*>
           inv,
-      const Tensor<T, Symm, tmpl::list<Index0, Index1>>& tensor) noexcept {
+      const Tensor<T, Symm, tmpl::list<Index0, Index1>>& tensor) {
     const T& t00 = get<0, 0>(tensor);
     // inv is non-const so that it can be moved into the std::pair:
     get(*det) = t00;
@@ -55,8 +55,7 @@ struct DetAndInverseImpl<Symmetry<2, 1>, Index0, Index1,
       const gsl::not_null<
           Tensor<T, Symmetry<2, 1>, inverse_indices<Index0, Index1>>*>
           inv,
-      const Tensor<T, Symmetry<2, 1>, tmpl::list<Index0, Index1>>&
-          tensor) noexcept {
+      const Tensor<T, Symmetry<2, 1>, tmpl::list<Index0, Index1>>& tensor) {
     const T& t00 = get<0, 0>(tensor);
     const T& t01 = get<0, 1>(tensor);
     const T& t10 = get<1, 0>(tensor);
@@ -80,8 +79,7 @@ struct DetAndInverseImpl<Symmetry<1, 1>, Index0, Index0,
       const gsl::not_null<
           Tensor<T, Symmetry<1, 1>, inverse_indices<Index0, Index0>>*>
           inv,
-      const Tensor<T, Symmetry<1, 1>, tmpl::list<Index0, Index0>>&
-          tensor) noexcept {
+      const Tensor<T, Symmetry<1, 1>, tmpl::list<Index0, Index0>>& tensor) {
     const T& t00 = get<0, 0>(tensor);
     const T& t01 = get<0, 1>(tensor);
     const T& t11 = get<1, 1>(tensor);
@@ -105,8 +103,7 @@ struct DetAndInverseImpl<Symmetry<2, 1>, Index0, Index1,
       const gsl::not_null<
           Tensor<T, Symmetry<2, 1>, inverse_indices<Index0, Index1>>*>
           inv,
-      const Tensor<T, Symmetry<2, 1>, tmpl::list<Index0, Index1>>&
-          tensor) noexcept {
+      const Tensor<T, Symmetry<2, 1>, tmpl::list<Index0, Index1>>& tensor) {
     const T& t00 = get<0, 0>(tensor);
     const T& t01 = get<0, 1>(tensor);
     const T& t02 = get<0, 2>(tensor);
@@ -143,8 +140,7 @@ struct DetAndInverseImpl<Symmetry<1, 1>, Index0, Index0,
       const gsl::not_null<
           Tensor<T, Symmetry<1, 1>, inverse_indices<Index0, Index0>>*>
           inv,
-      const Tensor<T, Symmetry<1, 1>, tmpl::list<Index0, Index0>>&
-          tensor) noexcept {
+      const Tensor<T, Symmetry<1, 1>, tmpl::list<Index0, Index0>>& tensor) {
     const T& t00 = get<0, 0>(tensor);
     const T& t01 = get<0, 1>(tensor);
     const T& t02 = get<0, 2>(tensor);
@@ -191,8 +187,7 @@ struct DetAndInverseImpl<Symmetry<2, 1>, Index0, Index1,
       const gsl::not_null<
           Tensor<T, Symmetry<2, 1>, inverse_indices<Index0, Index1>>*>
           inv,
-      const Tensor<T, Symmetry<2, 1>, tmpl::list<Index0, Index1>>&
-          tensor) noexcept {
+      const Tensor<T, Symmetry<2, 1>, tmpl::list<Index0, Index1>>& tensor) {
     const T& p00 = get<0, 0>(tensor);
     const T& p01 = get<0, 1>(tensor);
     const T& p10 = get<1, 0>(tensor);
@@ -286,8 +281,7 @@ struct DetAndInverseImpl<Symmetry<1, 1>, Index0, Index0,
       const gsl::not_null<
           Tensor<T, Symmetry<1, 1>, inverse_indices<Index0, Index0>>*>
           inv,
-      const Tensor<T, Symmetry<1, 1>, tmpl::list<Index0, Index0>>&
-          tensor) noexcept {
+      const Tensor<T, Symmetry<1, 1>, tmpl::list<Index0, Index0>>& tensor) {
     const T& p00 = get<0, 0>(tensor);
     const T& p01 = get<0, 1>(tensor);
     const T& p11 = get<1, 1>(tensor);
@@ -375,7 +369,7 @@ void determinant_and_inverse(
         T, Symm,
         tmpl::list<change_index_up_lo<Index1>, change_index_up_lo<Index0>>>*>
         inv,
-    const Tensor<T, Symm, tmpl::list<Index0, Index1>>& tensor) noexcept {
+    const Tensor<T, Symm, tmpl::list<Index0, Index1>>& tensor) {
   static_assert(Index0::dim == Index1::dim,
                 "Cannot take the inverse of a Tensor whose Indices are not "
                 "of the same dimensionality.");
@@ -395,7 +389,7 @@ void determinant_and_inverse(
 
 template <typename T, typename Symm, typename Index0, typename Index1>
 auto determinant_and_inverse(
-    const Tensor<T, Symm, tmpl::list<Index0, Index1>>& tensor) noexcept
+    const Tensor<T, Symm, tmpl::list<Index0, Index1>>& tensor)
     -> std::pair<Scalar<T>, Tensor<T, Symm,
                                    tmpl::list<change_index_up_lo<Index1>,
                                               change_index_up_lo<Index0>>>> {
@@ -428,7 +422,7 @@ template <typename DetTag, typename InvTag, typename T, typename Symm,
           typename Index0, typename Index1>
 void determinant_and_inverse(
     const gsl::not_null<Variables<tmpl::list<DetTag, InvTag>>*> det_and_inv,
-    const Tensor<T, Symm, tmpl::list<Index0, Index1>>& tensor) noexcept {
+    const Tensor<T, Symm, tmpl::list<Index0, Index1>>& tensor) {
   static_assert(std::is_same_v<typename DetTag::type, Scalar<T>>,
                 "Type of first return tag must correspond to that of input's "
                 "determinant.");
@@ -451,7 +445,7 @@ void determinant_and_inverse(
 template <typename DetTag, typename InvTag, typename T, typename Symm,
           typename Index0, typename Index1>
 auto determinant_and_inverse(
-    const Tensor<T, Symm, tmpl::list<Index0, Index1>>& tensor) noexcept
+    const Tensor<T, Symm, tmpl::list<Index0, Index1>>& tensor)
     -> Variables<tmpl::list<DetTag, InvTag>> {
   static_assert(std::is_same_v<typename DetTag::type, Scalar<T>>,
                 "Type of first return tag must correspond to that of input's "

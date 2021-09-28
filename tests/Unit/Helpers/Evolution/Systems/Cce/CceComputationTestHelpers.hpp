@@ -44,13 +44,12 @@ struct AngularCollocationsFor : db::SimpleTag {
 // shortcut method for evaluating a frequently used radial quantity in CCE
 void volume_one_minus_y(
     gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*> one_minus_y,
-    size_t l_max) noexcept;
+    size_t l_max);
 
 // explicit power method avoids behavior of Blaze to occasionally FPE on
 // powers of complex that operate fine when repeated multiplication is used
 // instead.
-ComplexDataVector power(const ComplexDataVector& value,
-                        size_t exponent) noexcept;
+ComplexDataVector power(const ComplexDataVector& value, size_t exponent);
 
 // A utility for copying a set of tags from one DataBox to another. Useful in
 // the CCE tests, where often an expected input needs to be copied to the box
@@ -59,12 +58,12 @@ template <typename... Tags>
 struct CopyDataBoxTags {
   template <typename FromDataBox, typename ToDataBox>
   static void apply(const gsl::not_null<ToDataBox*> to_data_box,
-                    const FromDataBox& from_data_box) noexcept {
+                    const FromDataBox& from_data_box) {
     db::mutate<Tags...>(
         to_data_box,
         [](const gsl::not_null<typename Tags::type*>... to_value,
-           const typename Tags::type&... from_value) noexcept {
-          const auto assign = [](auto to, const auto& from) noexcept {
+           const typename Tags::type&... from_value) {
+          const auto assign = [](auto to, const auto& from) {
             *to = from;
             return 0;
           };
@@ -81,7 +80,7 @@ void generate_volume_data_from_separated_values(
     gsl::not_null<ComplexDataVector*> one_divided_by_r,
     const ComplexDataVector& angular_collocation,
     const ComplexModalVector& radial_coefficients, size_t l_max,
-    size_t number_of_radial_grid_points) noexcept;
+    size_t number_of_radial_grid_points);
 
 // A utility for separately verifying the values in several computation
 // routines in the CCE quantity derivations. These are an independent
@@ -106,7 +105,7 @@ struct CalculateSeparatedTag<Tags::Dy<Tag>> {
       const gsl::not_null<Variables<RadialCoefficientTagList>*>
           radial_coefficients,
       const ComplexDataVector& /*one_divided_by_r*/,
-      const ComplexDataVector& boundary_r, const size_t /*l_max*/) noexcept {
+      const ComplexDataVector& boundary_r, const size_t /*l_max*/) {
     get(get<AngularCollocationsFor<Tags::Dy<Tag>>>(*angular_collocation))
         .data() =
         get(get<AngularCollocationsFor<Tag>>(*angular_collocation)).data() /
@@ -135,7 +134,7 @@ struct CalculateSeparatedTag<Spectral::Swsh::Tags::Derivative<Tag, DerivKind>> {
       const gsl::not_null<Variables<RadialCoefficientTagList>*>
           radial_coefficients,
       const ComplexDataVector& /*one_divided_by_r*/,
-      const ComplexDataVector& /*boundary_r*/, const size_t l_max) noexcept {
+      const ComplexDataVector& /*boundary_r*/, const size_t l_max) {
     get(get<AngularCollocationsFor<
             Spectral::Swsh::Tags::Derivative<Tag, DerivKind>>>(
         *angular_collocation)) =
@@ -159,8 +158,7 @@ struct CalculateSeparatedTag<::Tags::Multiplies<LhsTag, RhsTag>> {
       const gsl::not_null<Variables<RadialCoefficientTagList>*>
           radial_coefficients,
       const ComplexDataVector& /*one_divided_by_r*/,
-      const ComplexDataVector& /*boundary_r*/,
-      const size_t /*l_max*/) noexcept {
+      const ComplexDataVector& /*boundary_r*/, const size_t /*l_max*/) {
     get(get<AngularCollocationsFor<::Tags::Multiplies<LhsTag, RhsTag>>>(
         *angular_collocation)) =
         get(get<AngularCollocationsFor<LhsTag>>(*angular_collocation)) *
@@ -197,8 +195,7 @@ struct CalculateSeparatedTag<Tags::BondiJbar> {
       const gsl::not_null<Variables<RadialCoefficientTagList>*>
           radial_coefficients,
       const ComplexDataVector& /*one_divided_by_r*/,
-      const ComplexDataVector& /*boundary_r*/,
-      const size_t /*l_max*/) noexcept {
+      const ComplexDataVector& /*boundary_r*/, const size_t /*l_max*/) {
     get(get<AngularCollocationsFor<Tags::BondiJbar>>(*angular_collocation)) =
         conj(get(
             get<AngularCollocationsFor<Tags::BondiJ>>(*angular_collocation)));
@@ -216,8 +213,7 @@ struct CalculateSeparatedTag<Tags::BondiUbar> {
       const gsl::not_null<Variables<RadialCoefficientTagList>*>
           radial_coefficients,
       const ComplexDataVector& /*one_divided_by_r*/,
-      const ComplexDataVector& /*boundary_r*/,
-      const size_t /*l_max*/) noexcept {
+      const ComplexDataVector& /*boundary_r*/, const size_t /*l_max*/) {
     get(get<AngularCollocationsFor<Tags::BondiUbar>>(*angular_collocation)) =
         conj(get(
             get<AngularCollocationsFor<Tags::BondiU>>(*angular_collocation)));
@@ -235,8 +231,7 @@ struct CalculateSeparatedTag<Tags::BondiQbar> {
       const gsl::not_null<Variables<RadialCoefficientTagList>*>
           radial_coefficients,
       const ComplexDataVector& /*one_divided_by_r*/,
-      const ComplexDataVector& /*boundary_r*/,
-      const size_t /*l_max*/) noexcept {
+      const ComplexDataVector& /*boundary_r*/, const size_t /*l_max*/) {
     get(get<AngularCollocationsFor<Tags::BondiQbar>>(*angular_collocation)) =
         conj(get(
             get<AngularCollocationsFor<Tags::BondiQ>>(*angular_collocation)));
@@ -272,7 +267,7 @@ void generate_separable_expected(
         radial_modes,
     const gsl::not_null<Generator*> generator,
     const SpinWeighted<ComplexDataVector, 0>& boundary_r, const size_t l_max,
-    const size_t number_of_radial_points) noexcept {
+    const size_t number_of_radial_points) {
   const ComplexDataVector y = outer_product(
       ComplexDataVector{
           Spectral::Swsh::number_of_swsh_collocation_points(l_max), 1.0},
@@ -288,10 +283,10 @@ void generate_separable_expected(
                                                    number_of_radial_points));
 
   // the generation step for the 'input' tags
-  tmpl::for_each<InputTagList>([
-    &angular_collocations, &radial_modes, &pre_swsh_derivatives, &dist,
-    &generator, &l_max, &number_of_radial_points, &one_divided_by_r
-  ](auto tag_v) noexcept {
+  tmpl::for_each<InputTagList>([&angular_collocations, &radial_modes,
+                                &pre_swsh_derivatives, &dist, &generator,
+                                &l_max, &number_of_radial_points,
+                                &one_divided_by_r](auto tag_v) {
     using tag = typename decltype(tag_v)::type;
     using radial_polynomial_tag = RadialPolyCoefficientsFor<tag>;
     using angular_collocation_tag = AngularCollocationsFor<tag>;
@@ -330,49 +325,52 @@ void generate_separable_expected(
 
   // Compute the expected versions using the separable mathematics from above
   // utilities
-  const auto calculate_separable_for_pre_swsh_derivative = [
-    &angular_collocations, &radial_modes, &pre_swsh_derivatives, &l_max,
-    &number_of_radial_points, &one_divided_by_r, &boundary_r
-  ](auto pre_swsh_derivative_tag_v) noexcept {
-    using pre_swsh_derivative_tag =
-        typename decltype(pre_swsh_derivative_tag_v)::type;
-    CalculateSeparatedTag<pre_swsh_derivative_tag>{}(
-        angular_collocations, radial_modes, one_divided_by_r, boundary_r.data(),
-        l_max);
-    generate_volume_data_from_separated_values(
-        make_not_null(
-            &get(get<pre_swsh_derivative_tag>(*pre_swsh_derivatives)).data()),
-        make_not_null(&one_divided_by_r),
-        get(get<AngularCollocationsFor<pre_swsh_derivative_tag>>(
-                *angular_collocations))
-            .data(),
-        get(get<RadialPolyCoefficientsFor<pre_swsh_derivative_tag>>(
-            *radial_modes)),
-        l_max, number_of_radial_points);
-  };
+  const auto calculate_separable_for_pre_swsh_derivative =
+      [&angular_collocations, &radial_modes, &pre_swsh_derivatives, &l_max,
+       &number_of_radial_points, &one_divided_by_r,
+       &boundary_r](auto pre_swsh_derivative_tag_v) {
+        using pre_swsh_derivative_tag =
+            typename decltype(pre_swsh_derivative_tag_v)::type;
+        CalculateSeparatedTag<pre_swsh_derivative_tag>{}(
+            angular_collocations, radial_modes, one_divided_by_r,
+            boundary_r.data(), l_max);
+        generate_volume_data_from_separated_values(
+            make_not_null(
+                &get(get<pre_swsh_derivative_tag>(*pre_swsh_derivatives))
+                     .data()),
+            make_not_null(&one_divided_by_r),
+            get(get<AngularCollocationsFor<pre_swsh_derivative_tag>>(
+                    *angular_collocations))
+                .data(),
+            get(get<RadialPolyCoefficientsFor<pre_swsh_derivative_tag>>(
+                *radial_modes)),
+            l_max, number_of_radial_points);
+      };
 
-  const auto calculate_separable_for_swsh_derivative = [
-    &angular_collocations, &radial_modes, &swsh_derivatives, &l_max,
-    &number_of_radial_points, &one_divided_by_r, &boundary_r
-  ](auto swsh_derivative_tag_v) noexcept {
-    using swsh_derivative_tag = typename decltype(swsh_derivative_tag_v)::type;
-    CalculateSeparatedTag<swsh_derivative_tag>{}(angular_collocations,
-                                                 radial_modes, one_divided_by_r,
-                                                 boundary_r.data(), l_max);
-    generate_volume_data_from_separated_values(
-        make_not_null(&get(get<swsh_derivative_tag>(*swsh_derivatives)).data()),
-        make_not_null(&one_divided_by_r),
-        get(get<AngularCollocationsFor<swsh_derivative_tag>>(
-                *angular_collocations))
-            .data(),
-        get(get<RadialPolyCoefficientsFor<swsh_derivative_tag>>(*radial_modes)),
-        l_max, number_of_radial_points);
-  };
+  const auto calculate_separable_for_swsh_derivative =
+      [&angular_collocations, &radial_modes, &swsh_derivatives, &l_max,
+       &number_of_radial_points, &one_divided_by_r,
+       &boundary_r](auto swsh_derivative_tag_v) {
+        using swsh_derivative_tag =
+            typename decltype(swsh_derivative_tag_v)::type;
+        CalculateSeparatedTag<swsh_derivative_tag>{}(
+            angular_collocations, radial_modes, one_divided_by_r,
+            boundary_r.data(), l_max);
+        generate_volume_data_from_separated_values(
+            make_not_null(
+                &get(get<swsh_derivative_tag>(*swsh_derivatives)).data()),
+            make_not_null(&one_divided_by_r),
+            get(get<AngularCollocationsFor<swsh_derivative_tag>>(
+                    *angular_collocations))
+                .data(),
+            get(get<RadialPolyCoefficientsFor<swsh_derivative_tag>>(
+                *radial_modes)),
+            l_max, number_of_radial_points);
+      };
 
-  tmpl::for_each<TargetTagList>([
-    &calculate_separable_for_pre_swsh_derivative, &
-    calculate_separable_for_swsh_derivative
-  ](auto target_tag_v) noexcept {
+  tmpl::for_each<TargetTagList>([&calculate_separable_for_pre_swsh_derivative,
+                                 &calculate_separable_for_swsh_derivative](
+                                    auto target_tag_v) {
     using target_tag = typename decltype(target_tag_v)::type;
     tmpl::for_each<typename detail::TagsToComputeForImpl<
         target_tag>::pre_swsh_derivative_tags>(

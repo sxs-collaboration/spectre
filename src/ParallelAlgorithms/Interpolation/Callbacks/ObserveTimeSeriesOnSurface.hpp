@@ -98,10 +98,10 @@ struct ObserveTimeSeriesOnSurface {
       std::numeric_limits<double>::quiet_NaN();
 
   template <typename DbTags, typename Metavariables>
-  static void apply(const db::DataBox<DbTags>& box,
-                    Parallel::GlobalCache<Metavariables>& cache,
-                    const typename InterpolationTargetTag::temporal_id::type&
-                        temporal_id) noexcept {
+  static void apply(
+      const db::DataBox<DbTags>& box,
+      Parallel::GlobalCache<Metavariables>& cache,
+      const typename InterpolationTargetTag::temporal_id::type& temporal_id) {
     auto& proxy = Parallel::get_parallel_component<
         observers::ObserverWriter<Metavariables>>(cache);
 

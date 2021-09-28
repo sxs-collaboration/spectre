@@ -95,37 +95,37 @@ class Shape {
       const std::array<double, 3>& center, size_t l_max, size_t m_max,
       std::unique_ptr<ShapeMapTransitionFunctions::ShapeMapTransitionFunction>
           transition_func,
-      std::string function_of_time_name) noexcept;
+      std::string function_of_time_name);
 
   Shape() = default;
 
   template <typename T>
   std::array<tt::remove_cvref_wrap_t<T>, 3> operator()(
       const std::array<T, 3>& source_coords, double time,
-      const FunctionsOfTimeMap& functions_of_time) const noexcept;
+      const FunctionsOfTimeMap& functions_of_time) const;
 
   std::optional<std::array<double, 3>> inverse(
       const std::array<double, 3>& target_coords, double time,
-      const FunctionsOfTimeMap& functions_of_time) const noexcept;
+      const FunctionsOfTimeMap& functions_of_time) const;
 
   template <typename T>
   std::array<tt::remove_cvref_wrap_t<T>, 3> frame_velocity(
       const std::array<T, 3>& source_coords, double time,
-      const FunctionsOfTimeMap& functions_of_time) const noexcept;
+      const FunctionsOfTimeMap& functions_of_time) const;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> jacobian(
       const std::array<T, 3>& source_coords, double time,
-      const FunctionsOfTimeMap& functions_of_time) const noexcept;
+      const FunctionsOfTimeMap& functions_of_time) const;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> inv_jacobian(
       const std::array<T, 3>& source_coords, double time,
-      const FunctionsOfTimeMap& functions_of_time) const noexcept;
+      const FunctionsOfTimeMap& functions_of_time) const;
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept;
-  static bool is_identity() noexcept { return false; }
+  void pup(PUP::er& p);
+  static bool is_identity() { return false; }
   static constexpr size_t dim = 3;
 
  private:
@@ -139,17 +139,17 @@ class Shape {
 
   template <typename T>
   std::array<tt::remove_cvref_wrap_t<T>, 3> center_coordinates(
-      const std::array<T, 3>& coords) const noexcept {
+      const std::array<T, 3>& coords) const {
     return {coords[0] - center_[0], coords[1] - center_[1],
             coords[2] - center_[2]};
   }
 
   // Checks that the vector of coefficients has the right size and that the
   // monopole and dipole coefficients are zero.
-  void check_coefficients(const DataVector& coefs) const noexcept;
+  void check_coefficients(const DataVector& coefs) const;
 
-  friend bool operator==(const Shape& lhs, const Shape& rhs) noexcept;
+  friend bool operator==(const Shape& lhs, const Shape& rhs);
 };
-bool operator!=(const Shape& lhs, const Shape& rhs) noexcept;
+bool operator!=(const Shape& lhs, const Shape& rhs);
 
 }  // namespace domain::CoordinateMaps::TimeDependent

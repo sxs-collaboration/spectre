@@ -23,7 +23,7 @@
 namespace {
 
 template <typename DataType>
-void test_kerr_schild_coords(const DataType& used_for_size) noexcept {
+void test_kerr_schild_coords(const DataType& used_for_size) {
   const double bh_mass = 2.54;
   const double bh_dimless_spin = 0.9375;
   const auto member_variables = std::make_tuple(bh_mass, bh_dimless_spin);
@@ -41,8 +41,7 @@ void test_kerr_schild_coords(const DataType& used_for_size) noexcept {
 }
 
 template <typename DataType>
-void test_coord_transformation_on_xy_plane(
-    const DataType& used_for_size) noexcept {
+void test_coord_transformation_on_xy_plane(const DataType& used_for_size) {
   const double bh_mass = 0.34;
   const double bh_dimless_spin = 0.6332;
   const double spin_a = bh_mass * bh_dimless_spin;
@@ -78,8 +77,7 @@ void test_coord_transformation_on_xy_plane(
 }
 
 template <typename DataType>
-void test_coord_transformation_along_z_axis(
-    const DataType& used_for_size) noexcept {
+void test_coord_transformation_along_z_axis(const DataType& used_for_size) {
   MAKE_GENERATOR(generator);
   std::uniform_real_distribution<> distribution(-13.0, 13.0);
 
@@ -115,7 +113,7 @@ void test_coord_transformation_along_z_axis(
 }
 
 template <typename DataType>
-void test_theta_component(const DataType& used_for_size) noexcept {
+void test_theta_component(const DataType& used_for_size) {
   MAKE_GENERATOR(generator);
   std::uniform_real_distribution<> distribution(-13.0, 13.0);
 

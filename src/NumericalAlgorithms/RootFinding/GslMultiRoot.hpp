@@ -25,7 +25,7 @@ namespace RootFinder {
 namespace gsl_multiroot_detail {
 template <size_t Dim, typename Solver>
 void print_state(const size_t iteration_number, const Solver* const solver,
-                 const bool print_header = false) noexcept {
+                 const bool print_header = false) {
   if (print_header) {
     Parallel::printf("Iter\t");
     for (size_t i = 0; i < Dim; ++i) {
@@ -48,7 +48,7 @@ void print_state(const size_t iteration_number, const Solver* const solver,
 }
 
 template <size_t Dim>
-std::array<double, Dim> gsl_to_std_array(const gsl_vector* const x) noexcept {
+std::array<double, Dim> gsl_to_std_array(const gsl_vector* const x) {
   std::array<double, Dim> input_as_std_array{};
   for (size_t i = 0; i < Dim; i++) {
     gsl::at(input_as_std_array, i) = gsl_vector_get(x, i);
@@ -59,7 +59,7 @@ std::array<double, Dim> gsl_to_std_array(const gsl_vector* const x) noexcept {
 template <size_t Dim>
 void gsl_vector_set_with_std_array(
     gsl_vector* const func,
-    const std::array<double, Dim>& result_as_std_array) noexcept {
+    const std::array<double, Dim>& result_as_std_array) {
   for (size_t i = 0; i < Dim; i++) {
     gsl_vector_set(func, i, gsl::at(result_as_std_array, i));
   }
@@ -68,7 +68,7 @@ void gsl_vector_set_with_std_array(
 template <size_t Dim>
 void gsl_matrix_set_with_std_array(
     gsl_matrix* const matrix,
-    const std::array<std::array<double, Dim>, Dim>& matrix_array) noexcept {
+    const std::array<std::array<double, Dim>, Dim>& matrix_array) {
   for (size_t i = 0; i < Dim; i++) {
     for (size_t j = 0; j < Dim; j++) {
       gsl_matrix_set(matrix, i, j, gsl::at(gsl::at(matrix_array, i), j));
@@ -89,7 +89,7 @@ void gsl_matrix_set_with_std_array(
 template <size_t Dim, typename Function>
 int gsl_multirootfunctionfdf_wrapper_f(const gsl_vector* const x,
                                        void* const untyped_function_object,
-                                       gsl_vector* const f_of_x) noexcept {
+                                       gsl_vector* const f_of_x) {
   const auto function_object =
       static_cast<const Function*>(untyped_function_object);
   gsl_vector_set_with_std_array(
@@ -100,7 +100,7 @@ int gsl_multirootfunctionfdf_wrapper_f(const gsl_vector* const x,
 template <size_t Dim, typename Function>
 int gsl_multirootfunctionfdf_wrapper_df(const gsl_vector* const x,
                                         void* const untyped_function_object,
-                                        gsl_matrix* const jacobian) noexcept {
+                                        gsl_matrix* const jacobian) {
   const auto function_object =
       static_cast<const Function*>(untyped_function_object);
   gsl_matrix_set_with_std_array(
@@ -113,7 +113,7 @@ template <size_t Dim, typename Function>
 int gsl_multirootfunctionfdf_wrapper_fdf(const gsl_vector* const x,
                                          void* const untyped_function_object,
                                          gsl_vector* const f_of_x,
-                                         gsl_matrix* const jacobian) noexcept {
+                                         gsl_matrix* const jacobian) {
   const auto function_object =
       static_cast<const Function*>(untyped_function_object);
   const std::array<double, Dim> x_as_std_array = gsl_to_std_array<Dim>(x);
@@ -162,8 +162,7 @@ enum class Method {
   Newton
 };
 
-std::ostream& operator<<(std::ostream& /*os*/,
-                         const Method& /*method*/) noexcept;
+std::ostream& operator<<(std::ostream& /*os*/, const Method& /*method*/);
 
 /*!
  *  \ingroup NumericalAlgorithmsGroup
@@ -182,7 +181,7 @@ enum class StoppingCondition {
 };
 
 std::ostream& operator<<(std::ostream& /*os*/,
-                         const StoppingCondition& /*condition*/) noexcept;
+                         const StoppingCondition& /*condition*/);
 
 namespace gsl_multiroot_detail {
 template <typename SolverType, typename SolverAlloc, typename SolverSet,
@@ -336,7 +335,7 @@ std::array<double, Dim> gsl_multiroot_impl(
 void print_rootfinding_parameters(Method method, double absolute_tolerance,
                                   double relative_tolerance,
                                   double maximum_absolute_tolerance,
-                                  StoppingCondition condition) noexcept;
+                                  StoppingCondition condition);
 }  // namespace gsl_multiroot_detail
 
 /// @{

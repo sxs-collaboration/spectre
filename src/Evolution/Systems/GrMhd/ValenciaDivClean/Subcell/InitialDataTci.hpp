@@ -57,6 +57,6 @@ struct DgInitialDataTci {
                                  Inactive<ValenciaDivClean::Tags::TildePhi>>>&
           subcell_vars,
       double rdmp_delta0, double rdmp_epsilon, double persson_exponent,
-      const Mesh<3>& dg_mesh, const TciOptions& tci_options) noexcept;
+      const Mesh<3>& dg_mesh, const TciOptions& tci_options);
 };
 }  // namespace grmhd::ValenciaDivClean::subcell

@@ -21,7 +21,7 @@ void spacetime_derivative_of_spacetime_metric(
     const Scalar<DataType>& lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
     const tnsr::aa<DataType, SpatialDim, Frame>& pi,
-    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept {
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) {
   destructive_resize_components(da_spacetime_metric, get_size(get(lapse)));
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
     for (size_t b = a; b < SpatialDim + 1; ++b) {
@@ -46,7 +46,7 @@ void spacetime_derivative_of_spacetime_metric(
       const Scalar<DTYPE(data)>& lapse,                                        \
       const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,               \
       const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi,                 \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi) noexcept;
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
                         (Frame::Grid, Frame::Inertial))

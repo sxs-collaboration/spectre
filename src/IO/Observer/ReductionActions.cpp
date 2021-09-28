@@ -11,13 +11,13 @@ namespace observers::ThreadedActions::ReductionActions_detail {
 
 void append_to_reduction_data(
     const gsl::not_null<std::vector<double>*> all_reduction_data,
-    const double t) noexcept {
+    const double t) {
   all_reduction_data->push_back(t);
 }
 
 void append_to_reduction_data(
     const gsl::not_null<std::vector<double>*> all_reduction_data,
-    const std::vector<double>& t) noexcept {
+    const std::vector<double>& t) {
   all_reduction_data->insert(all_reduction_data->end(), t.begin(), t.end());
 }
 

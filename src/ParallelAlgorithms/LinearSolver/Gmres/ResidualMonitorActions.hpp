@@ -52,13 +52,13 @@ struct InitializeResidualMagnitude {
   static void apply(db::DataBox<DbTagsList>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
-                    const double residual_magnitude) noexcept {
+                    const double residual_magnitude) {
     constexpr size_t iteration_id = 0;
 
     db::mutate<initial_residual_magnitude_tag>(
         make_not_null(&box),
         [residual_magnitude](
-            const gsl::not_null<double*> initial_residual_magnitude) noexcept {
+            const gsl::not_null<double*> initial_residual_magnitude) {
           *initial_residual_magnitude = residual_magnitude;
         });
 
@@ -111,13 +111,13 @@ struct StoreOrthogonalization {
                     const ArrayIndex& /*array_index*/,
                     const size_t iteration_id,
                     const size_t orthogonalization_iteration_id,
-                    const double orthogonalization) noexcept {
+                    const double orthogonalization) {
     if (UNLIKELY(orthogonalization_iteration_id == 0)) {
       // Append a row and a column to the orthogonalization history. Zero the
       // entries that won't be set during the orthogonalization procedure below.
       db::mutate<orthogonalization_history_tag>(
           make_not_null(&box),
-          [iteration_id](const auto orthogonalization_history) noexcept {
+          [iteration_id](const auto orthogonalization_history) {
             orthogonalization_history->resize(iteration_id + 2,
                                               iteration_id + 1);
             for (size_t j = 0; j < orthogonalization_history->columns() - 1;
@@ -134,7 +134,7 @@ struct StoreOrthogonalization {
       db::mutate<orthogonalization_history_tag>(
           make_not_null(&box),
           [orthogonalization, iteration_id, orthogonalization_iteration_id](
-              const auto orthogonalization_history) noexcept {
+              const auto orthogonalization_history) {
             (*orthogonalization_history)(orthogonalization_iteration_id,
                                          iteration_id) = orthogonalization;
           });
@@ -148,8 +148,8 @@ struct StoreOrthogonalization {
     // At this point, the orthogonalization procedure is complete.
     db::mutate<orthogonalization_history_tag>(
         make_not_null(&box),
-        [orthogonalization, iteration_id, orthogonalization_iteration_id](
-            const auto orthogonalization_history) noexcept {
+        [orthogonalization, iteration_id,
+         orthogonalization_iteration_id](const auto orthogonalization_history) {
           (*orthogonalization_history)(orthogonalization_iteration_id,
                                        iteration_id) = sqrt(orthogonalization);
         });

@@ -40,7 +40,7 @@ class StepToTimes : public StepChooser<StepChooserUse::Slab> {
  public:
   /// \cond
   StepToTimes() = default;
-  explicit StepToTimes(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit StepToTimes(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(StepToTimes);  // NOLINT
   /// \endcond
@@ -60,7 +60,7 @@ class StepToTimes : public StepChooser<StepChooserUse::Slab> {
       "the desired time.\n";
   using options = tmpl::list<Times>;
 
-  explicit StepToTimes(std::unique_ptr<TimeSequence<double>> times) noexcept
+  explicit StepToTimes(std::unique_ptr<TimeSequence<double>> times)
       : times_(std::move(times)) {}
 
   using argument_tags = tmpl::list<::Tags::TimeStepId>;
@@ -69,7 +69,7 @@ class StepToTimes : public StepChooser<StepChooserUse::Slab> {
   template <typename Metavariables>
   std::pair<double, bool> operator()(
       const TimeStepId& time_step_id, const double last_step_magnitude,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/) const noexcept {
+      const Parallel::GlobalCache<Metavariables>& /*cache*/) const {
     const auto& substep_time = time_step_id.substep_time();
     const double now = substep_time.value();
     // Trying to step to a given time might not get us exactly there
@@ -117,7 +117,7 @@ class StepToTimes : public StepChooser<StepChooserUse::Slab> {
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept override { p | times_; }
+  void pup(PUP::er& p) override { p | times_; }
 
  private:
   std::unique_ptr<TimeSequence<double>> times_;

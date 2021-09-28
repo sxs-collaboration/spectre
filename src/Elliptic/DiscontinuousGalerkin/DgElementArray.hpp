@@ -45,9 +45,9 @@ struct DefaultElementsAllocator
 
   template <typename ParallelComponent, typename Metavariables,
             typename... InitializationTags>
-  static void apply(Parallel::CProxy_GlobalCache<Metavariables>& global_cache,
-                    const tuples::TaggedTuple<InitializationTags...>&
-                        initialization_items) noexcept {
+  static void apply(
+      Parallel::CProxy_GlobalCache<Metavariables>& global_cache,
+      const tuples::TaggedTuple<InitializationTags...>& initialization_items) {
     auto& local_cache = *(global_cache.ckLocalBranch());
     auto& element_array =
         Parallel::get_parallel_component<ParallelComponent>(local_cache);
@@ -109,14 +109,14 @@ struct DgElementArray {
   static void allocate_array(
       Parallel::CProxy_GlobalCache<Metavariables>& global_cache,
       const tuples::tagged_tuple_from_typelist<initialization_tags>&
-          initialization_items) noexcept {
+          initialization_items) {
     ElementsAllocator::template apply<DgElementArray>(global_cache,
                                                       initialization_items);
   }
 
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
-      Parallel::CProxy_GlobalCache<Metavariables>& global_cache) noexcept {
+      Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *(global_cache.ckLocalBranch());
     Parallel::get_parallel_component<DgElementArray>(local_cache)
         .start_phase(next_phase);

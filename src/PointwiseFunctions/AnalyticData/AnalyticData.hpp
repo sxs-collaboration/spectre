@@ -49,7 +49,7 @@ class AnalyticData : public PUP::able {
   ~AnalyticData() override = default;
 
   /// \cond
-  explicit AnalyticData(CkMigrateMessage* m) noexcept : PUP::able(m) {}
+  explicit AnalyticData(CkMigrateMessage* m) : PUP::able(m) {}
   WRAPPED_PUPable_abstract(AnalyticData);  // NOLINT
   /// \endcond
 
@@ -57,12 +57,11 @@ class AnalyticData : public PUP::able {
 
   /// Retrieve a collection of tensor fields at spatial coordinate(s) `x`
   template <typename DataType, typename... Tags>
-  tuples::TaggedTuple<Tags...> variables(
-      const tnsr::I<DataType, Dim>& x,
-      tmpl::list<Tags...> /*meta*/) const noexcept {
+  tuples::TaggedTuple<Tags...> variables(const tnsr::I<DataType, Dim>& x,
+                                         tmpl::list<Tags...> /*meta*/) const {
     return call_with_dynamic_type<tuples::TaggedTuple<Tags...>,
                                   creatable_classes>(
-        this, [&x](auto* const derived) noexcept {
+        this, [&x](auto* const derived) {
           return derived->variables(x, tmpl::list<Tags...>{});
         });
   }
@@ -78,10 +77,10 @@ class AnalyticData : public PUP::able {
       const tnsr::I<DataVector, Dim>& x, const Mesh<Dim>& mesh,
       const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
                             Frame::Inertial>& inv_jacobian,
-      tmpl::list<Tags...> /*meta*/) const noexcept {
+      tmpl::list<Tags...> /*meta*/) const {
     return call_with_dynamic_type<tuples::TaggedTuple<Tags...>,
                                   creatable_classes>(
-        this, [&x, &mesh, &inv_jacobian](auto* const derived) noexcept {
+        this, [&x, &mesh, &inv_jacobian](auto* const derived) {
           return derived->variables(x, mesh, inv_jacobian,
                                     tmpl::list<Tags...>{});
         });

@@ -12,8 +12,7 @@
 
 namespace domain::CoordinateMaps {
 
-std::ostream& operator<<(std::ostream& os,
-                         const Distribution distribution) noexcept {
+std::ostream& operator<<(std::ostream& os, const Distribution distribution) {
   switch (distribution) {
     case Distribution::Linear:
       return os << "Linear";

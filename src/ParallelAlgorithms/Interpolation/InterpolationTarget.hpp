@@ -79,7 +79,7 @@ namespace intrp {
 ///```
 ///   static auto initialize(const gsl::not_null<db::DataBox<DbTags>*>,
 ///                          const Parallel::GlobalCache<Metavariables>&)
-///                          noexcept;
+///                         ;
 ///```
 ///   that mutates arbitrary tags in the `DataBox` when the
 ///   `InterpolationTarget` is initialized. Additional simple tags to
@@ -97,13 +97,13 @@ namespace intrp {
 ///```
 ///     void apply(const DataBox<DbTags>&,
 ///                const intrp::GlobalCache<Metavariables>&,
-///                const InterpolationTargetTag::temporal_id&) noexcept;
+///                const InterpolationTargetTag::temporal_id&);
 ///```
 ///   or
 ///```
 ///     bool apply(const gsl::not_null<db::DataBox<DbTags>*>,
 ///                const gsl::not_null<intrp::GlobalCache<Metavariables>*>,
-///                const InterpolationTargetTag::temporal_id&) noexcept;
+///                const InterpolationTargetTag::temporal_id&);
 ///```
 ///   that will be called when interpolation is complete.  `DbTags` includes
 ///   everything in `vars_to_interpolate_to_target`, plus everything in
@@ -346,7 +346,7 @@ struct InterpolationTarget {
               typename ArrayIndex>
     static std::pair<observers::TypeOfObservation, observers::ObservationKey>
     register_info(const db::DataBox<DbTagsList>& /*box*/,
-                  const ArrayIndex& /*array_index*/) noexcept {
+                  const ArrayIndex& /*array_index*/) {
       return {observers::TypeOfObservation::Reduction,
               observers::ObservationKey(
                   pretty_type::get_name<tmpl::front<
@@ -394,7 +394,7 @@ struct InterpolationTarget {
 
   static void execute_next_phase(
       typename metavariables::Phase next_phase,
-      Parallel::CProxy_GlobalCache<metavariables>& global_cache) noexcept {
+      Parallel::CProxy_GlobalCache<metavariables>& global_cache) {
     auto& local_cache = *(global_cache.ckLocalBranch());
     Parallel::get_parallel_component<
         InterpolationTarget<metavariables, InterpolationTargetTag>>(local_cache)

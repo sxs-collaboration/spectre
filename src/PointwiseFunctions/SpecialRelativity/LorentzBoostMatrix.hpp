@@ -47,11 +47,11 @@ namespace sr {
  */
 template <size_t SpatialDim>
 tnsr::Ab<double, SpatialDim, Frame::NoFrame> lorentz_boost_matrix(
-    const tnsr::I<double, SpatialDim, Frame::NoFrame>& velocity) noexcept;
+    const tnsr::I<double, SpatialDim, Frame::NoFrame>& velocity);
 
 template <size_t SpatialDim>
 void lorentz_boost_matrix(
     gsl::not_null<tnsr::Ab<double, SpatialDim, Frame::NoFrame>*> boost_matrix,
-    const tnsr::I<double, SpatialDim, Frame::NoFrame>& velocity) noexcept;
+    const tnsr::I<double, SpatialDim, Frame::NoFrame>& velocity);
 /// @}
 }  // namespace sr

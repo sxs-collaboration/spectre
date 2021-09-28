@@ -27,9 +27,8 @@ void add_bilinear_term(const gsl::not_null<Matrix*> rot_matrix,
 }
 }  // namespace
 
-Matrix get_rotation_matrix(
-    const double t,
-    const domain::FunctionsOfTime::FunctionOfTime& fot) noexcept {
+Matrix get_rotation_matrix(const double t,
+                           const domain::FunctionsOfTime::FunctionOfTime& fot) {
   std::array<DataVector, 1> quat = fot.func(t);
   Matrix rot_matrix{{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}};
 
@@ -39,8 +38,7 @@ Matrix get_rotation_matrix(
 }
 
 Matrix get_rotation_matrix_deriv(
-    const double t,
-    const domain::FunctionsOfTime::FunctionOfTime& fot) noexcept {
+    const double t, const domain::FunctionsOfTime::FunctionOfTime& fot) {
   std::array<DataVector, 2> quat_and_deriv = fot.func_and_deriv(t);
   Matrix rot_matrix_deriv{{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}};
 

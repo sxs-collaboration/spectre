@@ -16,7 +16,7 @@
 
 template <typename Generator>
 void test_square_general_matrix_linear_solve(
-    const gsl::not_null<Generator*> generator) noexcept {
+    const gsl::not_null<Generator*> generator) {
   UniformCustomDistribution<size_t> size_dist(2, 6);
   // the size of the matrix in the linear solve
   const size_t rows = size_dist(*generator);

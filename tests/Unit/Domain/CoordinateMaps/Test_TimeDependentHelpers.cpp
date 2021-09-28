@@ -30,7 +30,7 @@ struct TimeDepMap {
       const std::unordered_map<
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-          functions_of_time) const noexcept;
+          functions_of_time) const;
 };
 template <size_t Dim>
 struct TimeIndepMap {
@@ -38,7 +38,7 @@ struct TimeIndepMap {
 
   template <typename T>
   std::array<tt::remove_cvref_wrap_t<T>, Dim> operator()(
-      const std::array<T, Dim>& source_coords) const noexcept;
+      const std::array<T, Dim>& source_coords) const;
 };
 
 template <size_t Dim>
@@ -51,7 +51,7 @@ struct TimeDepJac {
       const std::unordered_map<
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-          functions_of_time) const noexcept;
+          functions_of_time) const;
 };
 template <size_t Dim>
 struct TimeIndepJac {
@@ -59,7 +59,7 @@ struct TimeIndepJac {
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame> jacobian(
-      const std::array<T, Dim>& source_coords) const noexcept;
+      const std::array<T, Dim>& source_coords) const;
 };
 }  // namespace
 

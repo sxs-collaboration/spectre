@@ -21,7 +21,7 @@ void densitized_stress(
     const tnsr::I<DataVector, Dim, Frame::Inertial>& spatial_velocity,
     const tnsr::II<DataVector, Dim, Frame::Inertial>& inv_spatial_metric,
     const Scalar<DataVector>& sqrt_det_spatial_metric,
-    const Scalar<DataVector>& pressure) noexcept {
+    const Scalar<DataVector>& pressure) {
   *result = inv_spatial_metric;
   for (size_t i = 0; i < Dim; ++i) {
     for (size_t j = i; j < Dim; ++j) {
@@ -52,8 +52,7 @@ void sources_impl(
     const tnsr::ijj<DataVector, Dim, Frame::Inertial>& d_spatial_metric,
     const tnsr::II<DataVector, Dim, Frame::Inertial>& inv_spatial_metric,
     const Scalar<DataVector>& sqrt_det_spatial_metric,
-    const tnsr::ii<DataVector, Dim, Frame::Inertial>&
-        extrinsic_curvature) noexcept {
+    const tnsr::ii<DataVector, Dim, Frame::Inertial>& extrinsic_curvature) {
   raise_or_lower_index(tilde_s_M, tilde_s, inv_spatial_metric);
   densitized_stress(tilde_s_MN, *tilde_s_M, spatial_velocity,
                     inv_spatial_metric, sqrt_det_spatial_metric, pressure);
@@ -102,8 +101,7 @@ void ComputeSources<Dim>::apply(
     const tnsr::ijj<DataVector, Dim, Frame::Inertial>& d_spatial_metric,
     const tnsr::II<DataVector, Dim, Frame::Inertial>& inv_spatial_metric,
     const Scalar<DataVector>& sqrt_det_spatial_metric,
-    const tnsr::ii<DataVector, Dim, Frame::Inertial>&
-        extrinsic_curvature) noexcept {
+    const tnsr::ii<DataVector, Dim, Frame::Inertial>& extrinsic_curvature) {
   tnsr::I<DataVector, Dim, Frame::Inertial> tilde_s_M{
       get(sqrt_det_spatial_metric).size()};
   tnsr::II<DataVector, Dim, Frame::Inertial> tilde_s_MN{
@@ -140,7 +138,7 @@ void ComputeSources<Dim>::apply(
           inv_spatial_metric,                                                  \
       const Scalar<DataVector>& sqrt_det_spatial_metric,                       \
       const tnsr::ii<DataVector, DIM(data), Frame::Inertial>&                  \
-          extrinsic_curvature) noexcept;
+          extrinsic_curvature);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 

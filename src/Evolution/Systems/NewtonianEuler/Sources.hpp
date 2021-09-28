@@ -45,7 +45,7 @@ struct ComputeSources {
     static void function(
         const gsl::not_null<typename SourcedVarsTags::type*>... sourced_vars,
         const typename Tags::SourceTerm<InitialDataType>::type& source,
-        const typename ArgsTags::type&... args) noexcept {
+        const typename ArgsTags::type&... args) {
       source.apply(sourced_vars..., args...);
     }
   };
@@ -60,7 +60,7 @@ struct ComputeSources {
                        Tags::SourceTerm<InitialDataType>>;
 
   template <class... Args>
-  static void apply(const Args&... args) noexcept {
+  static void apply(const Args&... args) {
     apply_helper<typename source_term_type::sourced_variables,
                  typename source_term_type::argument_tags>::function(args...);
   }

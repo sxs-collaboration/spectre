@@ -31,7 +31,7 @@ struct LaserBeamImpl {
     static constexpr Options::String help =
         "The width r_0 of the Gaussian beam profile, such that FWHM = 2 * "
         "sqrt(ln 2) * r_0";
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
 
   static constexpr Options::String help =
@@ -39,15 +39,15 @@ struct LaserBeamImpl {
   using options = tmpl::list<BeamWidth>;
 
   LaserBeamImpl() = default;
-  LaserBeamImpl(const LaserBeamImpl&) noexcept = default;
-  LaserBeamImpl& operator=(const LaserBeamImpl&) noexcept = default;
-  LaserBeamImpl(LaserBeamImpl&&) noexcept = default;
-  LaserBeamImpl& operator=(LaserBeamImpl&&) noexcept = default;
-  ~LaserBeamImpl() noexcept = default;
+  LaserBeamImpl(const LaserBeamImpl&) = default;
+  LaserBeamImpl& operator=(const LaserBeamImpl&) = default;
+  LaserBeamImpl(LaserBeamImpl&&) = default;
+  LaserBeamImpl& operator=(LaserBeamImpl&&) = default;
+  ~LaserBeamImpl() = default;
 
-  LaserBeamImpl(double beam_width) noexcept : beam_width_(beam_width) {}
+  LaserBeamImpl(double beam_width) : beam_width_(beam_width) {}
 
-  double beam_width() const noexcept { return beam_width_; }
+  double beam_width() const { return beam_width_; }
 
   using argument_tags =
       tmpl::list<domain::Tags::Coordinates<3, Frame::Inertial>,
@@ -58,25 +58,25 @@ struct LaserBeamImpl {
   void apply(gsl::not_null<tnsr::I<DataVector, 3>*> displacement,
              gsl::not_null<tnsr::I<DataVector, 3>*> n_dot_minus_stress,
              const tnsr::I<DataVector, 3>& x,
-             const tnsr::i<DataVector, 3>& face_normal) const noexcept;
+             const tnsr::i<DataVector, 3>& face_normal) const;
 
   using argument_tags_linearized = tmpl::list<>;
   using volume_tags_linearized = tmpl::list<>;
 
   static void apply_linearized(
       gsl::not_null<tnsr::I<DataVector, 3>*> displacement,
-      gsl::not_null<tnsr::I<DataVector, 3>*> n_dot_minus_stress) noexcept;
+      gsl::not_null<tnsr::I<DataVector, 3>*> n_dot_minus_stress);
 
   // NOLINTNEXTLINE
-  void pup(PUP::er& p) noexcept { p | beam_width_; }
+  void pup(PUP::er& p) { p | beam_width_; }
 
  private:
   double beam_width_{std::numeric_limits<double>::signaling_NaN()};
 };
 
-bool operator==(const LaserBeamImpl& lhs, const LaserBeamImpl& rhs) noexcept;
+bool operator==(const LaserBeamImpl& lhs, const LaserBeamImpl& rhs);
 
-bool operator!=(const LaserBeamImpl& lhs, const LaserBeamImpl& rhs) noexcept;
+bool operator!=(const LaserBeamImpl& lhs, const LaserBeamImpl& rhs);
 
 }  // namespace detail
 
@@ -127,26 +127,26 @@ class LaserBeam
 
  public:
   LaserBeam() = default;
-  LaserBeam(const LaserBeam&) noexcept = default;
-  LaserBeam& operator=(const LaserBeam&) noexcept = default;
-  LaserBeam(LaserBeam&&) noexcept = default;
-  LaserBeam& operator=(LaserBeam&&) noexcept = default;
-  ~LaserBeam() noexcept = default;
+  LaserBeam(const LaserBeam&) = default;
+  LaserBeam& operator=(const LaserBeam&) = default;
+  LaserBeam(LaserBeam&&) = default;
+  LaserBeam& operator=(LaserBeam&&) = default;
+  ~LaserBeam() = default;
 
   using LaserBeamImpl::LaserBeamImpl;
 
   /// \cond
-  explicit LaserBeam(CkMigrateMessage* m) noexcept : Base(m) {}
+  explicit LaserBeam(CkMigrateMessage* m) : Base(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(LaserBeam);
   /// \endcond
 
   std::unique_ptr<domain::BoundaryConditions::BoundaryCondition> get_clone()
-      const noexcept override {
+      const override {
     return std::make_unique<LaserBeam>(*this);
   }
 
-  void pup(PUP::er& p) noexcept override {
+  void pup(PUP::er& p) override {
     Base::pup(p);
     detail::LaserBeamImpl::pup(p);
   }

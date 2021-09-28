@@ -22,7 +22,7 @@ namespace detail {
  */
 enum class Topology { Line, Quad, Hexahedron };
 
-std::ostream& operator<<(std::ostream& os, const Topology& topology) noexcept;
+std::ostream& operator<<(std::ostream& os, const Topology& topology);
 
 /*!
  * \brief Represents the number of cells in a particular topology
@@ -60,10 +60,9 @@ struct CellInTopology {
  * same.
  */
 template <size_t Dim>
-std::vector<CellInTopology> compute_cells(const Index<Dim>& extents) noexcept;
+std::vector<CellInTopology> compute_cells(const Index<Dim>& extents);
 
-std::vector<CellInTopology> compute_cells(
-    const std::vector<size_t>& extents) noexcept;
+std::vector<CellInTopology> compute_cells(const std::vector<size_t>& extents);
 /// @}
 }  // namespace detail
 }  // namespace vis

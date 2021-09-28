@@ -20,8 +20,7 @@ namespace Poisson::Solutions::detail {
 template <typename DataType, size_t Dim>
 void LorentzianVariables<DataType, Dim>::operator()(
     const gsl::not_null<Scalar<DataType>*> field,
-    const gsl::not_null<Cache*> /*cache*/, Tags::Field /*meta*/) const
-    noexcept {
+    const gsl::not_null<Cache*> /*cache*/, Tags::Field /*meta*/) const {
   get(*field) = 1. / sqrt(1. + get(dot_product(x, x)));
 }
 
@@ -30,7 +29,7 @@ void LorentzianVariables<DataType, Dim>::operator()(
     const gsl::not_null<tnsr::i<DataType, Dim>*> field_gradient,
     const gsl::not_null<Cache*> /*cache*/,
     ::Tags::deriv<Tags::Field, tmpl::size_t<Dim>, Frame::Inertial> /*meta*/)
-    const noexcept {
+    const {
   const DataVector prefactor = -1. / cube(sqrt(1. + get(dot_product(x, x))));
   get<0>(*field_gradient) = prefactor * get<0>(x);
   get<1>(*field_gradient) = prefactor * get<1>(x);
@@ -42,7 +41,7 @@ void LorentzianVariables<DataType, Dim>::operator()(
     const gsl::not_null<tnsr::I<DataType, Dim>*> flux_for_field,
     const gsl::not_null<Cache*> cache,
     ::Tags::Flux<Tags::Field, tmpl::size_t<Dim>, Frame::Inertial> /*meta*/)
-    const noexcept {
+    const {
   const auto& field_gradient = cache->get_var(
       ::Tags::deriv<Tags::Field, tmpl::size_t<Dim>, Frame::Inertial>{});
   for (size_t d = 0; d < Dim; ++d) {
@@ -54,7 +53,7 @@ template <typename DataType, size_t Dim>
 void LorentzianVariables<DataType, Dim>::operator()(
     const gsl::not_null<Scalar<DataType>*> fixed_source_for_field,
     const gsl::not_null<Cache*> /*cache*/,
-    ::Tags::FixedSource<Tags::Field> /*meta*/) const noexcept {
+    ::Tags::FixedSource<Tags::Field> /*meta*/) const {
   get(*fixed_source_for_field) = 3. / pow<5>(sqrt(1. + get(dot_product(x, x))));
 }
 

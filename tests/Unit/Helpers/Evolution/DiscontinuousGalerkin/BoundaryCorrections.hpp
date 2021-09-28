@@ -391,7 +391,7 @@ void test_boundary_correction_conservation_impl(
 
     tmpl::for_each<flux_variables>([&interior_package_data,
                                     &expected_boundary_corrections](
-                                       auto flux_variable_tag_v) noexcept {
+                                       auto flux_variable_tag_v) {
       using flux_variable_tag = tmpl::type_from<decltype(flux_variable_tag_v)>;
       using normal_dot_flux_tag = ::Tags::NormalDotFlux<flux_variable_tag>;
       using dt_tag = ::Tags::dt<flux_variable_tag>;
@@ -447,7 +447,7 @@ void test_boundary_correction_conservation_impl(
       tmpl::for_each<dt_variables_tags>([&custom_approx,
                                          &expected_zero_boundary_correction,
                                          &zero_boundary_correction](
-                                            auto dt_variables_tag_v) noexcept {
+                                            auto dt_variables_tag_v) {
         using dt_variables_tag = tmpl::type_from<decltype(dt_variables_tag_v)>;
         const std::string tag_name = db::tag_name<dt_variables_tag>();
         CAPTURE(tag_name);

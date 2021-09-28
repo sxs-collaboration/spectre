@@ -34,49 +34,43 @@ struct is_streamable;
 }  // namespace tt
 
 template <typename T>
-std::ostream& operator<<(std::ostream& os, const std::list<T>& v) noexcept;
+std::ostream& operator<<(std::ostream& os, const std::list<T>& v);
 
 template <typename T>
-std::ostream& operator<<(std::ostream& os, const std::vector<T>& v) noexcept;
+std::ostream& operator<<(std::ostream& os, const std::vector<T>& v);
 
 template <typename T>
-std::ostream& operator<<(std::ostream& os, const std::deque<T>& v) noexcept;
+std::ostream& operator<<(std::ostream& os, const std::deque<T>& v);
 
 template <typename T, size_t N>
-std::ostream& operator<<(std::ostream& os, const std::array<T, N>& a) noexcept;
+std::ostream& operator<<(std::ostream& os, const std::array<T, N>& a);
 
 template <typename... Args>
-std::ostream& operator<<(std::ostream& os,
-                         const std::tuple<Args...>& t) noexcept;
+std::ostream& operator<<(std::ostream& os, const std::tuple<Args...>& t);
 
 template <typename K, typename V, typename H>
 inline std::ostream& operator<<(std::ostream& os,
-                                const std::unordered_map<K, V, H>& m) noexcept;
+                                const std::unordered_map<K, V, H>& m);
 
 template <typename K, typename V, typename C>
-inline std::ostream& operator<<(std::ostream& os,
-                                const std::map<K, V, C>& m) noexcept;
+inline std::ostream& operator<<(std::ostream& os, const std::map<K, V, C>& m);
 
 template <typename T, typename H>
-std::ostream& operator<<(std::ostream& os,
-                         const std::unordered_set<T, H>& v) noexcept;
+std::ostream& operator<<(std::ostream& os, const std::unordered_set<T, H>& v);
 
 template <typename T, typename C>
-inline std::ostream& operator<<(std::ostream& os,
-                                const std::set<T, C>& v) noexcept;
+inline std::ostream& operator<<(std::ostream& os, const std::set<T, C>& v);
 
 template <typename T,
           Requires<tt::is_streamable<std::ostream, T, void>::value> = nullptr>
-std::ostream& operator<<(std::ostream& os,
-                         const std::unique_ptr<T>& t) noexcept;
+std::ostream& operator<<(std::ostream& os, const std::unique_ptr<T>& t);
 
 template <typename T,
           Requires<tt::is_streamable<std::ostream, T, void>::value> = nullptr>
-std::ostream& operator<<(std::ostream& os,
-                         const std::shared_ptr<T>& t) noexcept;
+std::ostream& operator<<(std::ostream& os, const std::shared_ptr<T>& t);
 
 template <typename T, typename U>
-std::ostream& operator<<(std::ostream& os, const std::pair<T, U>& t) noexcept;
+std::ostream& operator<<(std::ostream& os, const std::pair<T, U>& t);
 
 template <typename T>
-std::ostream& operator<<(std::ostream& os, const std::optional<T>& t) noexcept;
+std::ostream& operator<<(std::ostream& os, const std::optional<T>& t);

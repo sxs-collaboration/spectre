@@ -28,7 +28,7 @@ template <size_t NonlinearWeightExponent>
 struct AoWeno53Reconstructor {
   SPECTRE_ALWAYS_INLINE static std::array<double, 2> pointwise(
       const double* const u, const int stride, const double gamma_hi,
-      const double gamma_lo, const double epsilon) noexcept {
+      const double gamma_lo, const double epsilon) {
     ASSERT(gamma_hi <= 1.0 and gamma_hi >= 0.0,
            "gamma_hi must be in [0.0, 1.0] but is " << gamma_hi);
     ASSERT(gamma_lo <= 1.0 and gamma_lo >= 0.0,
@@ -148,9 +148,7 @@ struct AoWeno53Reconstructor {
                  polys_at_plus_half[3] * moments[4]}};
   }
 
-  SPECTRE_ALWAYS_INLINE static constexpr size_t stencil_width() noexcept {
-    return 5;
-  }
+  SPECTRE_ALWAYS_INLINE static constexpr size_t stencil_width() { return 5; }
 };
 }  // namespace detail
 
@@ -329,8 +327,7 @@ void aoweno_53(
     const gsl::span<const double>& volume_vars,
     const DirectionMap<Dim, gsl::span<const double>>& ghost_cell_vars,
     const Index<Dim>& volume_extents, const size_t number_of_variables,
-    const double gamma_hi, const double gamma_lo,
-    const double epsilon) noexcept {
+    const double gamma_hi, const double gamma_lo, const double epsilon) {
   detail::reconstruct<detail::AoWeno53Reconstructor<NonlinearWeightExponent>>(
       reconstructed_upper_side_of_face_vars,
       reconstructed_lower_side_of_face_vars, volume_vars, ghost_cell_vars,
@@ -353,12 +350,12 @@ std::tuple<
              gsl::not_null<std::array<gsl::span<double>, Dim>*>,
              const gsl::span<const double>&,
              const DirectionMap<Dim, gsl::span<const double>>&,
-             const Index<Dim>&, size_t, double, double, double) noexcept,
+             const Index<Dim>&, size_t, double, double, double),
     void (*)(gsl::not_null<DataVector*>, const DataVector&, const DataVector&,
              const Index<Dim>&, const Index<Dim>&, const Direction<Dim>&,
-             const double&, const double&, const double&) noexcept,
+             const double&, const double&, const double&),
     void (*)(gsl::not_null<DataVector*>, const DataVector&, const DataVector&,
              const Index<Dim>&, const Index<Dim>&, const Direction<Dim>&,
-             const double&, const double&, const double&) noexcept>
-aoweno_53_function_pointers(size_t nonlinear_weight_exponent) noexcept;
+             const double&, const double&, const double&)>
+aoweno_53_function_pointers(size_t nonlinear_weight_exponent);
 }  // namespace fd::reconstruction

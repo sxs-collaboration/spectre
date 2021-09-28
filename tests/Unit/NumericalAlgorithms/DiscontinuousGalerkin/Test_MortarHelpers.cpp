@@ -34,7 +34,7 @@
 
 namespace {
 template <size_t Dim>
-Mesh<Dim> lgl_mesh(const std::array<size_t, Dim>& extents) noexcept {
+Mesh<Dim> lgl_mesh(const std::array<size_t, Dim>& extents) {
   return {extents, Spectral::Basis::Legendre,
           Spectral::Quadrature::GaussLobatto};
 }
@@ -68,8 +68,7 @@ SPECTRE_TEST_CASE("Unit.DG.MortarHelpers.mortar_size",
         std::array<Spectral::MortarSize, 1>{{Spectral::MortarSize::LowerHalf}});
 
   // Check all the aligned cases in 3D
-  const auto test_segment = [](const SegmentId& base,
-                               const size_t test) noexcept {
+  const auto test_segment = [](const SegmentId& base, const size_t test) {
     switch (test) {
       case 0:
         return base;
@@ -83,7 +82,7 @@ SPECTRE_TEST_CASE("Unit.DG.MortarHelpers.mortar_size",
         ERROR("Test logic error");
     }
   };
-  const auto expected_size = [](const size_t test) noexcept {
+  const auto expected_size = [](const size_t test) {
     switch (test) {
       case 0:
       case 1:
@@ -144,7 +143,7 @@ struct Var : db::SimpleTag {
 template <size_t Dim>
 tnsr::I<DataVector, Dim, Frame::ElementLogical> scaled_coords(
     tnsr::I<DataVector, Dim, Frame::ElementLogical> coords,
-    const std::array<Spectral::MortarSize, Dim>& mortar_size) noexcept {
+    const std::array<Spectral::MortarSize, Dim>& mortar_size) {
   for (size_t d = 0; d < Dim; ++d) {
     switch (gsl::at(mortar_size, d)) {
       case Spectral::MortarSize::LowerHalf:
@@ -163,11 +162,11 @@ tnsr::I<DataVector, Dim, Frame::ElementLogical> scaled_coords(
 // There is no nice way to get the basis functions from the spectral
 // code (bug #801).  In each case here we want the first unresolved
 // basis function.
-DataVector basis5(const DataVector& coords) noexcept {
+DataVector basis5(const DataVector& coords) {
   return 1. / 8. * coords *
          (15. + square(coords) * (-70. + square(coords) * 63.));
 }
-DataVector basis6(const DataVector& coords) noexcept {
+DataVector basis6(const DataVector& coords) {
   return 1. / 16. *
          (-5. + square(coords) *
                     (105. + square(coords) * (-315. + square(coords) * 231.)));
@@ -191,7 +190,7 @@ SPECTRE_TEST_CASE("Unit.DG.MortarHelpers.projections",
     const auto mortar_mesh = lgl_mesh<1>({{7}});
     const auto mortar_coords = logical_coordinates(mortar_mesh);
     const auto func =
-        [](const tnsr::I<DataVector, 1, Frame::ElementLogical>& coords) noexcept
+        [](const tnsr::I<DataVector, 1, Frame::ElementLogical>& coords)
         -> DataVector { return pow<3>(get<0>(coords)); };
     for (const auto& face_mesh : {mortar_mesh, lgl_mesh<1>({{5}})}) {
       CAPTURE(face_mesh);
@@ -207,19 +206,21 @@ SPECTRE_TEST_CASE("Unit.DG.MortarHelpers.projections",
                               func(scaled_coords(mortar_coords, mortar_size)));
       }
 
-      const auto make_mortar_data = [
-        &face_mesh, &func, &mortar_coords, &mortar_mesh
-      ](const std::array<MortarSize, 1>& mortar_size) noexcept {
-        Variables<tmpl::list<Var>> vars(mortar_mesh.number_of_grid_points());
-        get(get<Var>(vars)) = func(scaled_coords(mortar_coords, mortar_size));
-        if (face_mesh.extents(0) < mortar_mesh.extents(0)) {
-          // Add some data orthogonal to the function space on the
-          // face.  It should be projected to zero.
-          get(get<Var>(vars)) +=
-              basis5(get<0>(scaled_coords(mortar_coords, mortar_size)));
-        }
-        return vars;
-      };
+      const auto make_mortar_data =
+          [&face_mesh, &func, &mortar_coords,
+           &mortar_mesh](const std::array<MortarSize, 1>& mortar_size) {
+            Variables<tmpl::list<Var>> vars(
+                mortar_mesh.number_of_grid_points());
+            get(get<Var>(vars)) =
+                func(scaled_coords(mortar_coords, mortar_size));
+            if (face_mesh.extents(0) < mortar_mesh.extents(0)) {
+              // Add some data orthogonal to the function space on the
+              // face.  It should be projected to zero.
+              get(get<Var>(vars)) +=
+                  basis5(get<0>(scaled_coords(mortar_coords, mortar_size)));
+            }
+            return vars;
+          };
 
       // full mortar -> face
       if (face_mesh != mortar_mesh) {
@@ -249,7 +250,7 @@ SPECTRE_TEST_CASE("Unit.DG.MortarHelpers.projections",
     const auto mortar_mesh = lgl_mesh<2>({{7, 8}});
     const auto mortar_coords = logical_coordinates(mortar_mesh);
     const auto func =
-        [](const tnsr::I<DataVector, 2, Frame::ElementLogical>& coords) noexcept
+        [](const tnsr::I<DataVector, 2, Frame::ElementLogical>& coords)
         -> DataVector {
       return pow<3>(get<0>(coords)) * pow<5>(get<1>(coords));
     };
@@ -273,22 +274,24 @@ SPECTRE_TEST_CASE("Unit.DG.MortarHelpers.projections",
         }
       }
 
-      const auto make_mortar_data = [
-        &face_mesh, &func, &mortar_coords, &mortar_mesh
-      ](const std::array<MortarSize, 2>& mortar_size) noexcept {
-        Variables<tmpl::list<Var>> vars(mortar_mesh.number_of_grid_points());
-        get(get<Var>(vars)) = func(scaled_coords(mortar_coords, mortar_size));
+      const auto make_mortar_data =
+          [&face_mesh, &func, &mortar_coords,
+           &mortar_mesh](const std::array<MortarSize, 2>& mortar_size) {
+            Variables<tmpl::list<Var>> vars(
+                mortar_mesh.number_of_grid_points());
+            get(get<Var>(vars)) =
+                func(scaled_coords(mortar_coords, mortar_size));
 
-        // Add some data orthogonal to the function space on the face.
-        // It should be projected to zero.
-        if (face_mesh.extents(0) < mortar_mesh.extents(0)) {
-          get(get<Var>(vars)) += basis5(get<0>(mortar_coords));
-        }
-        if (face_mesh.extents(1) < mortar_mesh.extents(1)) {
-          get(get<Var>(vars)) += basis6(get<1>(mortar_coords));
-        }
-        return vars;
-      };
+            // Add some data orthogonal to the function space on the face.
+            // It should be projected to zero.
+            if (face_mesh.extents(0) < mortar_mesh.extents(0)) {
+              get(get<Var>(vars)) += basis5(get<0>(mortar_coords));
+            }
+            if (face_mesh.extents(1) < mortar_mesh.extents(1)) {
+              get(get<Var>(vars)) += basis6(get<1>(mortar_coords));
+            }
+            return vars;
+          };
 
       // full mortar -> face
       if (face_mesh != mortar_mesh) {

@@ -64,13 +64,13 @@ struct PrepareSolve {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     db::mutate<Convergence::Tags::IterationId<OptionsGroup>, operand_tag,
                residual_tag>(
         make_not_null(&box),
         [](const gsl::not_null<size_t*> iteration_id, const auto operand,
            const auto residual, const auto& source,
-           const auto& operator_applied_to_fields) noexcept {
+           const auto& operator_applied_to_fields) {
           *iteration_id = 0;
           *operand = source - operator_applied_to_fields;
           *residual = *operand;
@@ -106,7 +106,7 @@ struct InitializeHasConverged {
         tuples::TaggedTuple<InboxTags...>& inboxes,
         const Parallel::GlobalCache<Metavariables>& /*cache*/,
         const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-        const ParallelComponent* const /*meta*/) noexcept {
+        const ParallelComponent* const /*meta*/) {
     auto& inbox = get<Tags::InitialHasConverged<OptionsGroup>>(inboxes);
     const auto& iteration_id =
         db::get<Convergence::Tags::IterationId<OptionsGroup>>(box);
@@ -120,7 +120,7 @@ struct InitializeHasConverged {
     db::mutate<Convergence::Tags::HasConverged<OptionsGroup>>(
         make_not_null(&box),
         [&has_converged](const gsl::not_null<Convergence::HasConverged*>
-                             local_has_converged) noexcept {
+                             local_has_converged) {
           *local_has_converged = std::move(has_converged);
         });
 
@@ -145,7 +145,7 @@ struct PerformStep {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     using fields_tag = FieldsTag;
     using operand_tag =
         db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>;
@@ -195,7 +195,7 @@ struct UpdateFieldValues {
         tuples::TaggedTuple<InboxTags...>& inboxes,
         Parallel::GlobalCache<Metavariables>& cache,
         const ArrayIndex& array_index, const ActionList /*meta*/,
-        const ParallelComponent* const /*meta*/) noexcept {
+        const ParallelComponent* const /*meta*/) {
     auto& inbox = get<Tags::Alpha<OptionsGroup>>(inboxes);
     const auto& iteration_id =
         db::get<Convergence::Tags::IterationId<OptionsGroup>>(box);
@@ -208,7 +208,7 @@ struct UpdateFieldValues {
     db::mutate<residual_tag, fields_tag>(
         make_not_null(&box),
         [alpha](const auto residual, const auto fields, const auto& operand,
-                const auto& operator_applied_to_operand) noexcept {
+                const auto& operator_applied_to_operand) {
           *fields += alpha * operand;
           *residual -= alpha * operator_applied_to_operand;
         },
@@ -256,7 +256,7 @@ struct UpdateOperand {
         tuples::TaggedTuple<InboxTags...>& inboxes,
         const Parallel::GlobalCache<Metavariables>& /*cache*/,
         const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-        const ParallelComponent* const /*meta*/) noexcept {
+        const ParallelComponent* const /*meta*/) {
     auto& inbox =
         get<Tags::ResidualRatioAndHasConverged<OptionsGroup>>(inboxes);
     const auto& iteration_id =
@@ -276,7 +276,7 @@ struct UpdateOperand {
         [res_ratio, &has_converged](
             const auto operand, const gsl::not_null<size_t*> local_iteration_id,
             const gsl::not_null<Convergence::HasConverged*> local_has_converged,
-            const auto& residual) noexcept {
+            const auto& residual) {
           *operand = residual + res_ratio * *operand;
           ++(*local_iteration_id);
           *local_has_converged = std::move(has_converged);

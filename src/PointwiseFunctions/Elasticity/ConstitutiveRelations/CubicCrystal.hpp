@@ -78,21 +78,21 @@ class CubicCrystal : public ConstitutiveRelation<3> {
     using type = double;
     static constexpr Options::String help = {
         "c_11 parameter for a cubic crystal"};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
 
   struct C_12 {
     using type = double;
     static constexpr Options::String help = {
         "c_12 parameter for a cubic crystal"};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
 
   struct C_44 {
     using type = double;
     static constexpr Options::String help = {
         "c_44 parameter for a cubic crystal"};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
 
   using options = tmpl::list<C_11, C_12, C_44>;
@@ -109,30 +109,30 @@ class CubicCrystal : public ConstitutiveRelation<3> {
   CubicCrystal& operator=(CubicCrystal&&) = default;
   ~CubicCrystal() override = default;
 
-  CubicCrystal(double c_11, double c_12, double c_44) noexcept;
+  CubicCrystal(double c_11, double c_12, double c_44);
 
   /// The constitutive relation that characterizes the elastic properties of a
   /// material
   void stress(gsl::not_null<tnsr::II<DataVector, 3>*> stress,
               const tnsr::ii<DataVector, 3>& strain,
-              const tnsr::I<DataVector, 3>& x) const noexcept override;
+              const tnsr::I<DataVector, 3>& x) const override;
 
   /// The 1st group parameter \f$c_{11} = \frac{1 - \nu}{\nu} \lambda\f$
-  double c_11() const noexcept;
+  double c_11() const;
   /// The 2nd group parameter; the \f$\mathrm{Lam\acute{e}}\f$ parameter
   /// \f$c_{12} = \lambda\f$
-  double c_12() const noexcept;
+  double c_12() const;
   /// The 3rd group parameter; the shear modulus (rigidity) \f$c_{44} = \mu\f$
-  double c_44() const noexcept;
+  double c_44() const;
   /// The Young's modulus \f$E\f$
-  double youngs_modulus() const noexcept;
+  double youngs_modulus() const;
   /// The %Poisson ratio \f$\nu\f$
-  double poisson_ratio() const noexcept;
+  double poisson_ratio() const;
 
   // clang-tidy: no runtime references
-  void pup(PUP::er& /*p*/) noexcept override;  //  NOLINT
+  void pup(PUP::er& /*p*/) override;  //  NOLINT
 
-  explicit CubicCrystal(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit CubicCrystal(CkMigrateMessage* /*unused*/) {}
 
   WRAPPED_PUPable_decl_base_template(  // NOLINT
       SINGLE_ARG(ConstitutiveRelation<3>), CubicCrystal);
@@ -143,7 +143,7 @@ class CubicCrystal : public ConstitutiveRelation<3> {
   double c_44_ = std::numeric_limits<double>::signaling_NaN();
 };  // namespace ConstitutiveRelations
 
-bool operator==(const CubicCrystal& lhs, const CubicCrystal& rhs) noexcept;
-bool operator!=(const CubicCrystal& lhs, const CubicCrystal& rhs) noexcept;
+bool operator==(const CubicCrystal& lhs, const CubicCrystal& rhs);
+bool operator!=(const CubicCrystal& lhs, const CubicCrystal& rhs);
 
 }  // namespace Elasticity::ConstitutiveRelations

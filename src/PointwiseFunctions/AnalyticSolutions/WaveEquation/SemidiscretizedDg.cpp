@@ -19,8 +19,8 @@
 // IWYU pragma: no_forward_declare Tensor
 
 namespace ScalarWave::Solutions {
-SemidiscretizedDg::SemidiscretizedDg(
-    const int harmonic, const std::array<double, 4>& amplitudes) noexcept
+SemidiscretizedDg::SemidiscretizedDg(const int harmonic,
+                                     const std::array<double, 4>& amplitudes)
     : harmonic_(harmonic), amplitudes_(amplitudes) {}
 
 namespace {
@@ -31,7 +31,7 @@ struct Mode {
 };
 
 std::array<Mode, 4> get_modes(const tnsr::I<DataVector, 1>& x,
-                              const int harmonic) noexcept {
+                              const int harmonic) {
   using namespace std::complex_literals;
 
   if (get<0>(x).size() != 2) {
@@ -95,7 +95,7 @@ std::array<Mode, 4> get_modes(const tnsr::I<DataVector, 1>& x,
 
 tuples::TaggedTuple<ScalarWave::Pi> SemidiscretizedDg::variables(
     const tnsr::I<DataVector, 1>& x, double t,
-    tmpl::list<ScalarWave::Pi> /*meta*/) const noexcept {
+    tmpl::list<ScalarWave::Pi> /*meta*/) const {
   using namespace std::complex_literals;
 
   const auto modes = get_modes(x, harmonic_);
@@ -112,7 +112,7 @@ tuples::TaggedTuple<ScalarWave::Pi> SemidiscretizedDg::variables(
 
 tuples::TaggedTuple<ScalarWave::Phi<1>> SemidiscretizedDg::variables(
     const tnsr::I<DataVector, 1>& x, double t,
-    tmpl::list<ScalarWave::Phi<1>> /*meta*/) const noexcept {
+    tmpl::list<ScalarWave::Phi<1>> /*meta*/) const {
   using namespace std::complex_literals;
 
   const auto modes = get_modes(x, harmonic_);
@@ -129,7 +129,7 @@ tuples::TaggedTuple<ScalarWave::Phi<1>> SemidiscretizedDg::variables(
 
 tuples::TaggedTuple<ScalarWave::Psi> SemidiscretizedDg::variables(
     const tnsr::I<DataVector, 1>& x, double t,
-    tmpl::list<ScalarWave::Psi> /*meta*/) const noexcept {
+    tmpl::list<ScalarWave::Psi> /*meta*/) const {
   using namespace std::complex_literals;
 
   // There are two more modes that are just constant offsets of Psi,
@@ -151,7 +151,7 @@ tuples::TaggedTuple<ScalarWave::Psi> SemidiscretizedDg::variables(
   return {Scalar<DataVector>(std::move(psi))};
 }
 
-void SemidiscretizedDg::pup(PUP::er& p) noexcept {
+void SemidiscretizedDg::pup(PUP::er& p) {
   p | harmonic_;
   p | amplitudes_;
 }

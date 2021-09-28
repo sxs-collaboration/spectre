@@ -32,11 +32,11 @@ struct MomentumSquared : db::SimpleTag {
 };
 
 // Minerbo (maximum entropy) closure for the M1 scheme
-double minerbo_closure_function(const double zeta) noexcept {
+double minerbo_closure_function(const double zeta) {
   return 1.0 / 3.0 +
          square(zeta) * (0.4 - 2.0 / 15.0 * zeta + 0.4 * square(zeta));
 }
-double minerbo_closure_deriv(const double zeta) noexcept {
+double minerbo_closure_deriv(const double zeta) {
   return 0.4 * zeta * (2.0 - zeta + 4.0 * square(zeta));
 }
 }  // namespace
@@ -56,8 +56,7 @@ void compute_closure_impl(
     const tnsr::I<DataVector, 3, Frame::Inertial>& fluid_velocity,
     const Scalar<DataVector>& fluid_lorentz_factor,
     const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
-    const tnsr::II<DataVector, 3, Frame::Inertial>&
-        inv_spatial_metric) noexcept {
+    const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric) {
   // Small number used to avoid divisions by zero
   static constexpr double avoid_divisions_by_zero = 1.e-150;
   // Below small_velocity, we use the v=0 closure,
@@ -199,10 +198,11 @@ void compute_closure_impl(
           2. * h_thin_v * h_thin_f * v_dot_f_pt - square(h_thin_t);
 
       // Root finding function
-      const auto zeta_j_sqr_minus_h_sqr = [
-        &e_pt, &j_0, &j_thin, &j_thick, &h_sqr_0, &h_sqr_thick, &h_sqr_thin,
-        &h_sqr_thin_thin, &h_sqr_thick_thick, &h_sqr_thin_thick
-      ](const double local_zeta) noexcept {
+      const auto zeta_j_sqr_minus_h_sqr = [&e_pt, &j_0, &j_thin, &j_thick,
+                                           &h_sqr_0, &h_sqr_thick, &h_sqr_thin,
+                                           &h_sqr_thin_thin, &h_sqr_thick_thick,
+                                           &h_sqr_thin_thick](
+                                              const double local_zeta) {
         const double chi = minerbo_closure_function(local_zeta);
         const double dchi_dzeta = minerbo_closure_deriv(local_zeta);
         const double d_thin = 1.5 * chi - 0.5;

@@ -26,7 +26,7 @@ namespace Cce::Solutions {
 
 GaugeWave::GaugeWave(const double extraction_radius, const double mass,
                      const double frequency, const double amplitude,
-                     const double peak_time, const double duration) noexcept
+                     const double peak_time, const double duration)
     : SphericalMetricData{extraction_radius},
       mass_{mass},
       frequency_{frequency},
@@ -34,19 +34,17 @@ GaugeWave::GaugeWave(const double extraction_radius, const double mass,
       peak_time_{peak_time},
       duration_{duration} {}
 
-std::unique_ptr<WorldtubeData> GaugeWave::get_clone() const
-    noexcept {
+std::unique_ptr<WorldtubeData> GaugeWave::get_clone() const {
   return std::make_unique<GaugeWave>(*this);
 }
 
-double GaugeWave::coordinate_wave_function(const double time) const noexcept {
+double GaugeWave::coordinate_wave_function(const double time) const {
   const auto retarded_time = time - extraction_radius_;
   return amplitude_ * sin(frequency_ * retarded_time) *
          exp(-square(retarded_time - peak_time_) / square(duration_));
 }
 
-double GaugeWave::du_coordinate_wave_function(const double time) const
-    noexcept {
+double GaugeWave::du_coordinate_wave_function(const double time) const {
   const auto retarded_time = time - extraction_radius_;
   return amplitude_ *
          (-2.0 * (retarded_time - peak_time_) / square(duration_) *
@@ -55,8 +53,7 @@ double GaugeWave::du_coordinate_wave_function(const double time) const
          exp(-square(retarded_time - peak_time_) / square(duration_));
 }
 
-double GaugeWave::du_du_coordinate_wave_function(const double time) const
-    noexcept {
+double GaugeWave::du_du_coordinate_wave_function(const double time) const {
   const auto retarded_time = time - extraction_radius_;
   return amplitude_ *
          (-4.0 * square(duration_) * (retarded_time - peak_time_) * frequency_ *
@@ -72,7 +69,7 @@ void GaugeWave::spherical_metric(
     const gsl::not_null<
         tnsr::aa<DataVector, 3, ::Frame::Spherical<::Frame::Inertial>>*>
         spherical_metric,
-    const size_t /*l_max*/, const double time) const noexcept {
+    const size_t /*l_max*/, const double time) const {
   const auto wave_f = coordinate_wave_function(time);
   const auto du_wave_f = du_coordinate_wave_function(time);
   get<0, 0>(*spherical_metric) = -(extraction_radius_ - 2.0 * mass_) *
@@ -104,7 +101,7 @@ void GaugeWave::dr_spherical_metric(
     const gsl::not_null<
         tnsr::aa<DataVector, 3, ::Frame::Spherical<::Frame::Inertial>>*>
         dr_spherical_metric,
-    const size_t l_max, const double time) const noexcept {
+    const size_t l_max, const double time) const {
   const auto wave_f = coordinate_wave_function(time);
   const auto du_wave_f = du_coordinate_wave_function(time);
   // for simpler expressions, we take advantage of the F derivatives evaluated
@@ -155,7 +152,7 @@ void GaugeWave::dt_spherical_metric(
     const gsl::not_null<
         tnsr::aa<DataVector, 3, ::Frame::Spherical<::Frame::Inertial>>*>
         dt_spherical_metric,
-    const size_t /*l_max*/, const double time) const noexcept {
+    const size_t /*l_max*/, const double time) const {
   const auto wave_f = coordinate_wave_function(time);
   const auto du_wave_f = du_coordinate_wave_function(time);
   const auto du_du_wave_f = du_du_coordinate_wave_function(time);
@@ -195,11 +192,11 @@ void GaugeWave::dt_spherical_metric(
 void GaugeWave::variables_impl(
     const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, -2>>*> news,
     const size_t /*l_max*/, const double /*time*/,
-    tmpl::type_<Tags::News> /*meta*/) const noexcept {
+    tmpl::type_<Tags::News> /*meta*/) const {
   get(*news).data() = 0.0;
 }
 
-void GaugeWave::pup(PUP::er& p) noexcept {
+void GaugeWave::pup(PUP::er& p) {
   SphericalMetricData::pup(p);
   p | mass_;
   p | frequency_;

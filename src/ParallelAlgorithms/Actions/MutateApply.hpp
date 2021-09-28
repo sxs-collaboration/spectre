@@ -45,7 +45,7 @@ struct MutateApply {
       DataBox& box, const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     db::mutate_apply<Mutator>(make_not_null(&box));
     return {std::move(box)};
   }

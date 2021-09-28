@@ -39,6 +39,6 @@ struct DgInitialDataTci {
       const Variables<tmpl::list<Inactive<ScalarAdvection::Tags::U>>>&
           subcell_vars,
       const Mesh<Dim>& dg_mesh, double persson_exponent, double rdmp_delta0,
-      double rdmp_epsilon) noexcept;
+      double rdmp_epsilon);
 };
 }  // namespace ScalarAdvection::subcell

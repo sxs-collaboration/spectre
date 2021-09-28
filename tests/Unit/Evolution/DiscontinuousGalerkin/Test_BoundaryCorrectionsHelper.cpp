@@ -30,9 +30,8 @@ struct VolumeDoubleConversion {
   using packed_container = VolumeDouble;
   using packed_type = double;
 
-  static inline unpacked_container unpack(
-      const packed_container packed,
-      const size_t /*grid_point_index*/) noexcept {
+  static inline unpacked_container unpack(const packed_container packed,
+                                          const size_t /*grid_point_index*/) {
     return {{packed.value}};
   }
 
@@ -42,7 +41,7 @@ struct VolumeDoubleConversion {
     packed->value = unpacked[0];
   }
 
-  static inline size_t get_size(const packed_container& /*packed*/) noexcept {
+  static inline size_t get_size(const packed_container& /*packed*/) {
     return 1;
   }
 };
@@ -103,14 +102,14 @@ struct CorrectionBase : public PUP::able {
   CorrectionBase& operator=(CorrectionBase&&) = default;
   ~CorrectionBase() override = default;
 
-  explicit CorrectionBase(CkMigrateMessage* msg) noexcept : PUP::able(msg) {}
+  explicit CorrectionBase(CkMigrateMessage* msg) : PUP::able(msg) {}
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
   WRAPPED_PUPable_abstract(CorrectionBase);  // NOLINT
 #pragma GCC diagnostic pop
 
-  virtual std::unique_ptr<CorrectionBase> get_clone() const noexcept = 0;
+  virtual std::unique_ptr<CorrectionBase> get_clone() const = 0;
 };
 
 template <size_t Dim, typename VolumeDoubleType>
@@ -135,11 +134,11 @@ struct Correction final : public CorrectionBase {
   Correction& operator=(Correction&&) = default;
   ~Correction() override = default;
 
-  std::unique_ptr<CorrectionBase> get_clone() const noexcept override {
+  std::unique_ptr<CorrectionBase> get_clone() const override {
     return std::make_unique<Correction>(*this);
   }
 
-  explicit Correction(CkMigrateMessage* msg) noexcept : CorrectionBase(msg) {}
+  explicit Correction(CkMigrateMessage* msg) : CorrectionBase(msg) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Correction);  // NOLINT
   void pup(PUP::er& p) override { CorrectionBase::pup(p); }
@@ -160,7 +159,7 @@ struct Correction final : public CorrectionBase {
       const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
       /*mesh_velocity*/,
       const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity,
-      const VolumeDoubleType volume_double_in) const noexcept {
+      const VolumeDoubleType volume_double_in) const {
     double volume_double = 0.0;
     if constexpr (std::is_same_v<double, VolumeDoubleType>) {
       volume_double = volume_double_in;
@@ -205,7 +204,7 @@ struct Correction final : public CorrectionBase {
       const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
           mesh_velocity,
       const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity,
-      const VolumeDoubleType volume_double_in) const noexcept {
+      const VolumeDoubleType volume_double_in) const {
     const double max_speed = dg_package_data(
         packaged_var1, packaged_normal_dot_flux_var1, packaged_var2,
         packaged_normal_dot_flux_var2, packaged_abs_char_speed, var1, var2,
@@ -234,7 +233,7 @@ struct Correction final : public CorrectionBase {
       const tnsr::i<DataVector, Dim, Frame::Inertial>& var2_ext,
       const tnsr::i<DataVector, Dim, Frame::Inertial>& normal_dot_flux_var2_ext,
       const Scalar<DataVector>& abs_char_speed_ext,
-      const dg::Formulation dg_formulation) const noexcept {
+      const dg::Formulation dg_formulation) const {
     // The below code is a Rusanov solver.
     if (dg_formulation == dg::Formulation::WeakInertial) {
       get(*boundary_correction_var1) =

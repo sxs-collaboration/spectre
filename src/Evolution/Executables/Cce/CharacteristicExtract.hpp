@@ -68,11 +68,11 @@ struct EvolutionMetavars {
                                     Cce::Tags::InertialRetardedTime>>>;
 
   struct swsh_vars_selector {
-    static std::string name() noexcept { return "SwshVars"; }
+    static std::string name() { return "SwshVars"; }
   };
 
   struct coord_vars_selector {
-    static std::string name() noexcept { return "CoordVars"; }
+    static std::string name() { return "CoordVars"; }
   };
 
   using cce_boundary_communication_tags =
@@ -182,8 +182,7 @@ struct EvolutionMetavars {
       const gsl::not_null<
           tuples::TaggedTuple<Tags...>*> /*phase_change_decision_data*/,
       const Phase& current_phase,
-      const Parallel::CProxy_GlobalCache<
-          EvolutionMetavars>& /*cache_proxy*/) noexcept {
+      const Parallel::CProxy_GlobalCache<EvolutionMetavars>& /*cache_proxy*/) {
     if (current_phase == Phase::Initialization) {
       return Phase::InitializeTimeStepperHistory;
     } else if (current_phase == Phase::InitializeTimeStepperHistory) {
@@ -194,7 +193,7 @@ struct EvolutionMetavars {
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& /*p*/) noexcept {}
+  void pup(PUP::er& /*p*/) {}
 };
 
 static const std::vector<void (*)()> charm_init_node_funcs{

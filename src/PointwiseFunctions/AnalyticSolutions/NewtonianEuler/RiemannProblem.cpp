@@ -27,7 +27,7 @@ template <size_t Dim>
 struct FunctionOfPressureAndData {
   FunctionOfPressureAndData(const typename NewtonianEuler::Solutions::
                                 RiemannProblem<Dim>::InitialData& data,
-                            const double adiabatic_index) noexcept
+                            const double adiabatic_index)
       : state_pressure_(data.pressure_),
         adiabatic_index_(adiabatic_index),
         constant_a_(data.constant_a_),
@@ -38,7 +38,7 @@ struct FunctionOfPressureAndData {
     exponent_deriv_ = -0.5 * (adiabatic_index_ + 1.0) / adiabatic_index_;
   }
 
-  double operator()(const double pressure) const noexcept {
+  double operator()(const double pressure) const {
     // Value depends on whether the initial state is a shock
     // (pressure > pressure of initial state) or a rarefaction wave
     // (pressure <= pressure of initial state)
@@ -50,7 +50,7 @@ struct FunctionOfPressureAndData {
   }
 
   // First derivative with respect to the pressure.
-  double deriv(const double pressure) const noexcept {
+  double deriv(const double pressure) const {
     return pressure > state_pressure_
                ? 0.5 * sqrt(constant_a_) *
                      (pressure + state_pressure_ + 2.0 * constant_b_) /
@@ -82,7 +82,7 @@ RiemannProblem<Dim>::RiemannProblem(
     const std::array<double, Dim>& left_velocity, const double left_pressure,
     const double right_mass_density,
     const std::array<double, Dim>& right_velocity, const double right_pressure,
-    const double pressure_star_tol) noexcept
+    const double pressure_star_tol)
     : adiabatic_index_(adiabatic_index),
       initial_position_(initial_position),
       left_initial_data_(left_mass_density, left_velocity, left_pressure,
@@ -113,8 +113,9 @@ RiemannProblem<Dim>::RiemannProblem(
   // The initial guess to obtain p_* is given by the
   // Two-Shock approximation (Eqn. (4.47) in Toro), which gives best results
   // overall. Other options are also possible (see Section 4.3.2 of Toro.)
-  const double guess_for_pressure_star = [&delta_u, this ](
-      const InitialData& left, const InitialData& right) noexcept {
+  const double guess_for_pressure_star = [&delta_u, this](
+                                             const InitialData& left,
+                                             const InitialData& right) {
     // Eqn. (4.47) of Toro: guess derived from a linearized solution
     // based on primitive variables.
     double p_pv =
@@ -129,8 +130,7 @@ RiemannProblem<Dim>::RiemannProblem(
     return std::max(pressure_star_tol_, (g_left * left.pressure_ +
                                          g_right * right.pressure_ - delta_u) /
                                             (g_left + g_right));
-  }
-  (left_initial_data_, right_initial_data_);
+  }(left_initial_data_, right_initial_data_);
 
   // Compute bracket for root finder according to value of the function whose
   // root we want (Eqn. 4.39 of Toro.)
@@ -159,8 +159,8 @@ RiemannProblem<Dim>::RiemannProblem(
   }
 
   // Now get pressure by solving transcendental equation. Newton-Raphson is OK.
-  const auto f_of_p_and_deriv =
-      [&f_of_p_left, &f_of_p_right, &delta_u ](const double pressure) noexcept {
+  const auto f_of_p_and_deriv = [&f_of_p_left, &f_of_p_right,
+                                 &delta_u](const double pressure) {
     // Function of pressure in Eqn. (4.5) of Toro.
     return std::make_pair(
         f_of_p_left(pressure) + f_of_p_right(pressure) + delta_u,
@@ -187,7 +187,7 @@ RiemannProblem<Dim>::RiemannProblem(
 }
 
 template <size_t Dim>
-void RiemannProblem<Dim>::pup(PUP::er& p) noexcept {
+void RiemannProblem<Dim>::pup(PUP::er& p) {
   p | adiabatic_index_;
   p | initial_position_;
   p | left_initial_data_;
@@ -202,7 +202,7 @@ template <size_t Dim>
 RiemannProblem<Dim>::InitialData::InitialData(
     const double mass_density, const std::array<double, Dim>& velocity,
     const double pressure, const double adiabatic_index,
-    const size_t propagation_axis) noexcept
+    const size_t propagation_axis)
     : mass_density_(mass_density), velocity_(velocity), pressure_(pressure) {
   ASSERT(mass_density_ > 0.0,
          "The mass density must be positive. Value given: " << mass_density);
@@ -216,7 +216,7 @@ RiemannProblem<Dim>::InitialData::InitialData(
 }
 
 template <size_t Dim>
-void RiemannProblem<Dim>::InitialData::pup(PUP::er& p) noexcept {
+void RiemannProblem<Dim>::InitialData::pup(PUP::er& p) {
   p | mass_density_;
   p | velocity_;
   p | pressure_;
@@ -230,8 +230,7 @@ template <size_t Dim>
 RiemannProblem<Dim>::Wave::Wave(const InitialData& data,
                                 const double pressure_star,
                                 const double velocity_star,
-                                const double adiabatic_index,
-                                const Side& side) noexcept
+                                const double adiabatic_index, const Side& side)
     : pressure_ratio_(pressure_star / data.pressure_),
       is_shock_(pressure_ratio_ > 1.0),
       data_(data),
@@ -241,15 +240,14 @@ RiemannProblem<Dim>::Wave::Wave(const InitialData& data,
 
 template <size_t Dim>
 double RiemannProblem<Dim>::Wave::mass_density(const double x_shifted,
-                                               const double t) const noexcept {
+                                               const double t) const {
   return (is_shock_ ? shock_.mass_density(x_shifted, t, data_)
                     : rarefaction_.mass_density(x_shifted, t, data_));
 }
 
 template <size_t Dim>
 double RiemannProblem<Dim>::Wave::normal_velocity(
-    const double x_shifted, const double t, const double velocity_star) const
-    noexcept {
+    const double x_shifted, const double t, const double velocity_star) const {
   return (is_shock_ ? shock_.normal_velocity(x_shifted, t, data_, velocity_star)
                     : rarefaction_.normal_velocity(x_shifted, t, data_,
                                                    velocity_star));
@@ -258,8 +256,7 @@ double RiemannProblem<Dim>::Wave::normal_velocity(
 template <size_t Dim>
 double RiemannProblem<Dim>::Wave::pressure(const double x_shifted,
                                            const double t,
-                                           const double pressure_star) const
-    noexcept {
+                                           const double pressure_star) const {
   return (is_shock_
               ? shock_.pressure(x_shifted, t, data_, pressure_star)
               : rarefaction_.pressure(x_shifted, t, data_, pressure_star));
@@ -269,7 +266,7 @@ template <size_t Dim>
 RiemannProblem<Dim>::Shock::Shock(const InitialData& data,
                                   const double pressure_ratio,
                                   const double adiabatic_index,
-                                  const Side& side) noexcept
+                                  const Side& side)
     : direction_(side == Side::Left ? -1.0 : 1.0) {
   const double gamma_mm = adiabatic_index - 1.0;
   const double gamma_pp = adiabatic_index + 1.0;
@@ -288,8 +285,7 @@ RiemannProblem<Dim>::Shock::Shock(const InitialData& data,
 template <size_t Dim>
 double RiemannProblem<Dim>::Shock::mass_density(const double x_shifted,
                                                 const double t,
-                                                const InitialData& data) const
-    noexcept {
+                                                const InitialData& data) const {
   return mass_density_star_ +
          (data.mass_density_ - mass_density_star_) *
              step_function(direction_ * (x_shifted - shock_speed_ * t));
@@ -298,7 +294,7 @@ double RiemannProblem<Dim>::Shock::mass_density(const double x_shifted,
 template <size_t Dim>
 double RiemannProblem<Dim>::Shock::normal_velocity(
     const double x_shifted, const double t, const InitialData& data,
-    const double velocity_star) const noexcept {
+    const double velocity_star) const {
   return velocity_star +
          (data.normal_velocity_ - velocity_star) *
              step_function(direction_ * (x_shifted - shock_speed_ * t));
@@ -308,8 +304,7 @@ template <size_t Dim>
 double RiemannProblem<Dim>::Shock::pressure(const double x_shifted,
                                             const double t,
                                             const InitialData& data,
-                                            const double pressure_star) const
-    noexcept {
+                                            const double pressure_star) const {
   return pressure_star +
          (data.pressure_ - pressure_star) *
              step_function(direction_ * (x_shifted - shock_speed_ * t));
@@ -320,7 +315,7 @@ RiemannProblem<Dim>::Rarefaction::Rarefaction(const InitialData& data,
                                               const double pressure_ratio,
                                               const double velocity_star,
                                               const double adiabatic_index,
-                                              const Side& side) noexcept
+                                              const Side& side)
     : direction_(side == Side::Left ? -1.0 : 1.0) {
   gamma_mm_ = adiabatic_index - 1.0;
   gamma_pp_ = adiabatic_index + 1.0;
@@ -335,8 +330,7 @@ RiemannProblem<Dim>::Rarefaction::Rarefaction(const InitialData& data,
 
 template <size_t Dim>
 double RiemannProblem<Dim>::Rarefaction::mass_density(
-    const double x_shifted, const double t, const InitialData& data) const
-    noexcept {
+    const double x_shifted, const double t, const InitialData& data) const {
   const double s = (t > 0.0 ? (x_shifted / t) : 0.0);
   return direction_ * (x_shifted - tail_speed_ * t) < 0.0
              ? mass_density_star_
@@ -354,7 +348,7 @@ double RiemannProblem<Dim>::Rarefaction::mass_density(
 template <size_t Dim>
 double RiemannProblem<Dim>::Rarefaction::normal_velocity(
     const double x_shifted, const double t, const InitialData& data,
-    const double velocity_star) const noexcept {
+    const double velocity_star) const {
   const double s = (t > 0.0 ? (x_shifted / t) : 0.0);
   return direction_ * (x_shifted - tail_speed_ * t) < 0.0
              ? velocity_star
@@ -370,7 +364,7 @@ double RiemannProblem<Dim>::Rarefaction::normal_velocity(
 template <size_t Dim>
 double RiemannProblem<Dim>::Rarefaction::pressure(
     const double x_shifted, const double t, const InitialData& data,
-    const double pressure_star) const noexcept {
+    const double pressure_star) const {
   const double s = (t > 0.0 ? (x_shifted / t) : 0.0);
   return direction_ * (x_shifted - tail_speed_ * t) < 0.0
              ? pressure_star
@@ -390,7 +384,7 @@ template <typename DataType>
 tuples::TaggedTuple<Tags::MassDensity<DataType>> RiemannProblem<Dim>::variables(
     const tnsr::I<DataType, Dim, Frame::Inertial>& x_shifted, const double t,
     tmpl::list<Tags::MassDensity<DataType>> /*meta*/, const Wave& left,
-    const Wave& right) const noexcept {
+    const Wave& right) const {
   auto mass_density = make_with_value<Scalar<DataType>>(x_shifted, 0.0);
   const double u_star_times_t = velocity_star_ * t;
   for (size_t s = 0; s < get_size(get<0>(x_shifted)); ++s) {
@@ -407,8 +401,8 @@ template <typename DataType>
 tuples::TaggedTuple<Tags::Velocity<DataType, Dim>>
 RiemannProblem<Dim>::variables(
     const tnsr::I<DataType, Dim, Frame::Inertial>& x_shifted, const double t,
-    tmpl::list<Tags::Velocity<DataType, Dim>> /*meta*/,
-    const Wave& left, const Wave& right) const noexcept {
+    tmpl::list<Tags::Velocity<DataType, Dim>> /*meta*/, const Wave& left,
+    const Wave& right) const {
   auto velocity = make_with_value<tnsr::I<DataType, Dim, Frame::Inertial>>(
       get<0>(x_shifted), 0.0);
 
@@ -446,7 +440,7 @@ template <typename DataType>
 tuples::TaggedTuple<Tags::Pressure<DataType>> RiemannProblem<Dim>::variables(
     const tnsr::I<DataType, Dim, Frame::Inertial>& x_shifted, const double t,
     tmpl::list<Tags::Pressure<DataType>> /*meta*/, const Wave& left,
-    const Wave& right) const noexcept {
+    const Wave& right) const {
   auto pressure = make_with_value<Scalar<DataType>>(x_shifted, 0.0);
   const double u_star_times_t = velocity_star_ * t;
   for (size_t s = 0; s < get_size(get<0>(x_shifted)); ++s) {
@@ -465,7 +459,7 @@ tuples::TaggedTuple<Tags::SpecificInternalEnergy<DataType>>
 RiemannProblem<Dim>::variables(
     const tnsr::I<DataType, Dim, Frame::Inertial>& x_shifted, const double t,
     tmpl::list<Tags::SpecificInternalEnergy<DataType>> /*meta*/,
-    const Wave& left, const Wave& right) const noexcept {
+    const Wave& left, const Wave& right) const {
   return equation_of_state_.specific_internal_energy_from_density_and_pressure(
       get<Tags::MassDensity<DataType>>(
           variables(x_shifted, t, tmpl::list<Tags::MassDensity<DataType>>{},
@@ -476,7 +470,7 @@ RiemannProblem<Dim>::variables(
 
 template <size_t Dim>
 bool operator==(const RiemannProblem<Dim>& lhs,
-                const RiemannProblem<Dim>& rhs) noexcept {
+                const RiemannProblem<Dim>& rhs) {
   return lhs.adiabatic_index_ == rhs.adiabatic_index_ and
          lhs.initial_position_ == rhs.initial_position_ and
          lhs.left_initial_data_ == rhs.left_initial_data_ and
@@ -488,7 +482,7 @@ bool operator==(const RiemannProblem<Dim>& lhs,
 
 template <size_t Dim>
 bool operator!=(const RiemannProblem<Dim>& lhs,
-                const RiemannProblem<Dim>& rhs) noexcept {
+                const RiemannProblem<Dim>& rhs) {
   return not(lhs == rhs);
 }
 
@@ -496,33 +490,32 @@ bool operator!=(const RiemannProblem<Dim>& lhs,
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define TAG(data) BOOST_PP_TUPLE_ELEM(2, data)
 
-#define INSTANTIATE_CLASS(_, data)                                     \
-  template class RiemannProblem<DIM(data)>;                            \
-  template bool operator==(const RiemannProblem<DIM(data)>&,           \
-                           const RiemannProblem<DIM(data)>&) noexcept; \
-  template bool operator!=(const RiemannProblem<DIM(data)>&,           \
-                           const RiemannProblem<DIM(data)>&) noexcept;
+#define INSTANTIATE_CLASS(_, data)                            \
+  template class RiemannProblem<DIM(data)>;                   \
+  template bool operator==(const RiemannProblem<DIM(data)>&,  \
+                           const RiemannProblem<DIM(data)>&); \
+  template bool operator!=(const RiemannProblem<DIM(data)>&,  \
+                           const RiemannProblem<DIM(data)>&);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_CLASS, (1, 2, 3))
 
 #define INSTANTIATE_SCALARS(_, data)                                         \
-  template tuples::TaggedTuple<TAG(data) < DTYPE(data)>>                     \
+  template tuples::TaggedTuple<TAG(data) < DTYPE(data)> >                    \
       RiemannProblem<DIM(data)>::variables(                                  \
           const tnsr::I<DTYPE(data), DIM(data), Frame::Inertial>& x_shifted, \
-          const double t, tmpl::list<TAG(data) < DTYPE(data)>>,              \
-          const Wave& left, const Wave& right) const noexcept;
+          const double t, tmpl::list<TAG(data) < DTYPE(data)> >,             \
+          const Wave& left, const Wave& right) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_SCALARS, (1, 2, 3), (double, DataVector),
                         (Tags::MassDensity, Tags::Pressure,
                          Tags::SpecificInternalEnergy))
 
 #define INSTANTIATE_VELOCITY(_, data)                                        \
-  template tuples::TaggedTuple<TAG(data) < DTYPE(data), DIM(data)>>          \
+  template tuples::TaggedTuple<TAG(data) < DTYPE(data), DIM(data)> >         \
       RiemannProblem<DIM(data)>::variables(                                  \
           const tnsr::I<DTYPE(data), DIM(data), Frame::Inertial>& x_shifted, \
-          const double t,                                                    \
-          tmpl::list<TAG(data) < DTYPE(data), DIM(data)>>,  \
-          const Wave& left, const Wave& right) const noexcept;
+          const double t, tmpl::list<TAG(data) < DTYPE(data), DIM(data)> >,  \
+          const Wave& left, const Wave& right) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_VELOCITY, (1, 2, 3), (double, DataVector),
                         (Tags::Velocity))

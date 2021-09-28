@@ -34,7 +34,7 @@
 
 namespace {
 template <size_t Dim>
-void test_tags() noexcept {
+void test_tags() {
   TestHelpers::db::test_compute_tag<
       evolution::domain::Tags::DivMeshVelocityCompute<Dim>>(
       "div(MeshVelocity)");
@@ -54,7 +54,7 @@ ConcreteMap<MeshDim> create_coord_map(const std::string& f_of_t_name) {
 }
 
 template <size_t Dim, bool IsTimeDependent>
-void test() noexcept {
+void test() {
   using simple_tags = db::AddSimpleTags<
       Tags::Time, domain::Tags::Mesh<Dim>,
       domain::Tags::Coordinates<Dim, Frame::Grid>,
@@ -117,7 +117,7 @@ void test() noexcept {
       time, mesh, grid_coords, element_to_grid_inverse_jacobian,
       std::move(functions_of_time), grid_to_inertial_map->get_clone());
 
-  const auto check_helper = [&box, &mesh]() noexcept {
+  const auto check_helper = [&box, &mesh]() {
     if (IsTimeDependent) {
       const std::optional<Scalar<DataVector>>& div_frame_velocity =
           db::get<domain::Tags::DivMeshVelocity>(box);
@@ -136,10 +136,9 @@ void test() noexcept {
   };
   check_helper();
 
-  db::mutate<Tags::Time>(make_not_null(&box),
-                         [](const gsl::not_null<double*> local_time) noexcept {
-                           *local_time = 4.5;
-                         });
+  db::mutate<Tags::Time>(
+      make_not_null(&box),
+      [](const gsl::not_null<double*> local_time) { *local_time = 4.5; });
   check_helper();
 }
 }  // namespace

@@ -16,7 +16,7 @@
 template <size_t Dim>
 // clang-tidy: incorrectly reported redundancy in template expression
 template <size_t N, Requires<(N > 0 and N == Dim)>>  // NOLINT
-Mesh<Dim - 1> Mesh<Dim>::slice_away(const size_t d) const noexcept {
+Mesh<Dim - 1> Mesh<Dim>::slice_away(const size_t d) const {
   ASSERT(d < Dim, "Tried to slice away non-existing dimension "
                       << d << " of " << Dim << "-dimensional mesh.");
   std::array<size_t, Dim - 1> dims{};
@@ -32,10 +32,10 @@ Mesh<Dim - 1> Mesh<Dim>::slice_away(const size_t d) const noexcept {
 template <size_t Dim>
 template <size_t SliceDim, Requires<(SliceDim <= Dim)>>
 Mesh<SliceDim> Mesh<Dim>::slice_through(
-    const std::array<size_t, SliceDim>& dims) const noexcept {
+    const std::array<size_t, SliceDim>& dims) const {
   // Check for duplicates in `dims`
   ASSERT(
-      [&dims]() noexcept {
+      [&dims]() {
         auto sorted_dims = dims;
         std::sort(sorted_dims.begin(), sorted_dims.end());
         auto last_unique = std::unique(sorted_dims.begin(), sorted_dims.end());
@@ -58,7 +58,7 @@ Mesh<SliceDim> Mesh<Dim>::slice_through(
 }
 
 template <size_t Dim>
-std::array<Mesh<1>, Dim> Mesh<Dim>::slices() const noexcept {
+std::array<Mesh<1>, Dim> Mesh<Dim>::slices() const {
   std::array<Mesh<1>, Dim> result{};
   for (size_t d = 0; d < Dim; ++d) {
     gsl::at(result, d) = Mesh<1>(extents(d), basis(d), quadrature(d));
@@ -67,64 +67,52 @@ std::array<Mesh<1>, Dim> Mesh<Dim>::slices() const noexcept {
 }
 
 template <size_t Dim>
-void Mesh<Dim>::pup(PUP::er& p) noexcept {
+void Mesh<Dim>::pup(PUP::er& p) {
   p | extents_;
   p | bases_;
   p | quadratures_;
 }
 
 template <size_t Dim>
-bool operator==(const Mesh<Dim>& lhs, const Mesh<Dim>& rhs) noexcept {
+bool operator==(const Mesh<Dim>& lhs, const Mesh<Dim>& rhs) {
   return lhs.extents() == rhs.extents() and lhs.basis() == rhs.basis() and
          lhs.quadrature() == rhs.quadrature();
 }
 
 template <size_t Dim>
-bool operator!=(const Mesh<Dim>& lhs, const Mesh<Dim>& rhs) noexcept {
+bool operator!=(const Mesh<Dim>& lhs, const Mesh<Dim>& rhs) {
   return not(lhs == rhs);
 }
 
 template <size_t Dim>
-std::ostream& operator<<(std::ostream& os, const Mesh<Dim>& mesh) noexcept {
+std::ostream& operator<<(std::ostream& os, const Mesh<Dim>& mesh) {
   using ::operator<<;
   return os << '[' << mesh.extents() << ',' << mesh.basis() << ','
             << mesh.quadrature() << ']';
 }
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
-#define GEN_OP(op, dim)                           \
-  template bool operator op(const Mesh<dim>& lhs, \
-                            const Mesh<dim>& rhs) noexcept;
+#define GEN_OP(op, dim) \
+  template bool operator op(const Mesh<dim>& lhs, const Mesh<dim>& rhs);
 #define INSTANTIATE_MESH(_, data)                     \
   template class Mesh<DIM(data)>;                     \
   GEN_OP(==, DIM(data))                               \
   GEN_OP(!=, DIM(data))                               \
   template std::ostream& operator<<(std::ostream& os, \
-                                    const Mesh<DIM(data)>& mesh) noexcept;
+                                    const Mesh<DIM(data)>& mesh);
 
-#define INSTANTIATE_SLICE_AWAY(_, data)                                  \
-  template Mesh<DIM(data) - 1> Mesh<DIM(data)>::slice_away(const size_t) \
-      const noexcept;
-template Mesh<0> Mesh<0>::slice_through(const std::array<size_t, 0>&) const
-    noexcept;
-template Mesh<0> Mesh<1>::slice_through(const std::array<size_t, 0>&) const
-    noexcept;
-template Mesh<1> Mesh<1>::slice_through(const std::array<size_t, 1>&) const
-    noexcept;
-template Mesh<0> Mesh<2>::slice_through(const std::array<size_t, 0>&) const
-    noexcept;
-template Mesh<1> Mesh<2>::slice_through(const std::array<size_t, 1>&) const
-    noexcept;
-template Mesh<2> Mesh<2>::slice_through(const std::array<size_t, 2>&) const
-    noexcept;
-template Mesh<0> Mesh<3>::slice_through(const std::array<size_t, 0>&) const
-    noexcept;
-template Mesh<1> Mesh<3>::slice_through(const std::array<size_t, 1>&) const
-    noexcept;
-template Mesh<2> Mesh<3>::slice_through(const std::array<size_t, 2>&) const
-    noexcept;
-template Mesh<3> Mesh<3>::slice_through(const std::array<size_t, 3>&) const
-    noexcept;
+#define INSTANTIATE_SLICE_AWAY(_, data) \
+  template Mesh<DIM(data) - 1> Mesh<DIM(data)>::slice_away(const size_t) const;
+template Mesh<0> Mesh<0>::slice_through(const std::array<size_t, 0>&) const;
+template Mesh<0> Mesh<1>::slice_through(const std::array<size_t, 0>&) const;
+template Mesh<1> Mesh<1>::slice_through(const std::array<size_t, 1>&) const;
+template Mesh<0> Mesh<2>::slice_through(const std::array<size_t, 0>&) const;
+template Mesh<1> Mesh<2>::slice_through(const std::array<size_t, 1>&) const;
+template Mesh<2> Mesh<2>::slice_through(const std::array<size_t, 2>&) const;
+template Mesh<0> Mesh<3>::slice_through(const std::array<size_t, 0>&) const;
+template Mesh<1> Mesh<3>::slice_through(const std::array<size_t, 1>&) const;
+template Mesh<2> Mesh<3>::slice_through(const std::array<size_t, 2>&) const;
+template Mesh<3> Mesh<3>::slice_through(const std::array<size_t, 3>&) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_MESH, (0, 1, 2, 3))
 GENERATE_INSTANTIATIONS(INSTANTIATE_SLICE_AWAY, (1, 2, 3))

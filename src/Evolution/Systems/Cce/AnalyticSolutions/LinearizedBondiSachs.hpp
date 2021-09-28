@@ -38,16 +38,15 @@ namespace InitializeJ {
 // function of `Cce::InitializeJ::LinearizedBondiSachs`.
 struct LinearizedBondiSachs : ::Cce::InitializeJ::InitializeJ<false> {
   WRAPPED_PUPable_decl_template(LinearizedBondiSachs);  // NOLINT
-  explicit LinearizedBondiSachs(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit LinearizedBondiSachs(CkMigrateMessage* /*unused*/) {}
 
   LinearizedBondiSachs() = default;
 
   LinearizedBondiSachs(double start_time, double frequency,
                        std::complex<double> c_2a, std::complex<double> c_2b,
-                       std::complex<double> c_3a,
-                       std::complex<double> c_3b) noexcept;
+                       std::complex<double> c_3a, std::complex<double> c_3b);
 
-  std::unique_ptr<InitializeJ> get_clone() const noexcept override;
+  std::unique_ptr<InitializeJ> get_clone() const override;
 
   void operator()(
       gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 2>>*> j,
@@ -58,9 +57,10 @@ struct LinearizedBondiSachs : ::Cce::InitializeJ::InitializeJ<false> {
       const Scalar<SpinWeighted<ComplexDataVector, 2>>& boundary_j,
       const Scalar<SpinWeighted<ComplexDataVector, 2>>& boundary_dr_j,
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& r, size_t l_max,
-      size_t number_of_radial_points) const noexcept override;
+      size_t number_of_radial_points) const override;
 
-  void pup(PUP::er& /*p*/) noexcept override;
+  void pup(PUP::er& /*p*/) override;
+
  private:
   std::complex<double> c_2a_ = std::numeric_limits<double>::signaling_NaN();
   std::complex<double> c_2b_ = std::numeric_limits<double>::signaling_NaN();
@@ -77,7 +77,7 @@ template <int Spin, typename FactorType>
 void assign_components_from_l_factors(
     gsl::not_null<SpinWeighted<ComplexDataVector, Spin>*> bondi_quantity,
     const FactorType& l_2_factor, const FactorType& l_3_factor, size_t l_max,
-    double frequency, double time) noexcept;
+    double frequency, double time);
 
 // combine the (2,2) and (3,3) modes to time derivative collocation values for
 // `bondi_quantity`
@@ -86,7 +86,7 @@ void assign_du_components_from_l_factors(
     gsl::not_null<SpinWeighted<ComplexDataVector, Spin>*> du_bondi_quantity,
     const std::complex<double>& l_2_factor,
     const std::complex<double>& l_3_factor, size_t l_max, double frequency,
-    double time) noexcept;
+    double time);
 }  // namespace LinearizedBondiSachs_detail
 
 /*!
@@ -120,13 +120,13 @@ struct LinearizedBondiSachs : public SphericalMetricData {
     using type = double;
     static constexpr Options::String help{
         "The extraction radius of the spherical solution"};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
   struct Frequency {
     using type = double;
     static constexpr Options::String help{
         "The frequency of the linearized modes."};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
 
   static constexpr Options::String help{
@@ -136,29 +136,29 @@ struct LinearizedBondiSachs : public SphericalMetricData {
 
   WRAPPED_PUPable_decl_template(LinearizedBondiSachs);  // NOLINT
 
-  explicit LinearizedBondiSachs(CkMigrateMessage* msg) noexcept
+  explicit LinearizedBondiSachs(CkMigrateMessage* msg)
       : SphericalMetricData(msg) {}
 
   // clang doesn't manage to use = default correctly in this case
   // NOLINTNEXTLINE(hicpp-use-equals-default,modernize-use-equals-default)
-  LinearizedBondiSachs() noexcept {}
+  LinearizedBondiSachs() {}
 
   LinearizedBondiSachs(
       const std::array<std::complex<double>, 2>& mode_constants,
-      double extraction_radius, double frequency) noexcept;
+      double extraction_radius, double frequency);
 
-  std::unique_ptr<WorldtubeData> get_clone() const noexcept override;
+  std::unique_ptr<WorldtubeData> get_clone() const override;
 
-  void pup(PUP::er& p) noexcept override;
+  void pup(PUP::er& p) override;
 
   std::unique_ptr<Cce::InitializeJ::InitializeJ<false>> get_initialize_j(
-      double start_time) const noexcept override;
+      double start_time) const override;
 
  protected:
   /// A no-op as the linearized solution does not have substantial shared
   /// computation to prepare before the separate component calculations.
   void prepare_solution(const size_t /*output_l_max*/,
-                        const double /*time*/) const noexcept override {}
+                        const double /*time*/) const override {}
 
   /*!
    * \brief Computes the linearized solution for \f$J\f$.
@@ -183,7 +183,7 @@ struct LinearizedBondiSachs : public SphericalMetricData {
    */
   void linearized_bondi_j(
       gsl::not_null<SpinWeighted<ComplexDataVector, 2>*> bondi_j, size_t l_max,
-      double time) const noexcept;
+      double time) const;
 
   /*!
    * \brief Compute the linearized solution for \f$U\f$
@@ -209,7 +209,7 @@ struct LinearizedBondiSachs : public SphericalMetricData {
    */
   void linearized_bondi_u(
       gsl::not_null<SpinWeighted<ComplexDataVector, 1>*> bondi_u, size_t l_max,
-      double time) const noexcept;
+      double time) const;
 
   /*!
    * \brief Computes the linearized solution for \f$W\f$.
@@ -235,7 +235,7 @@ struct LinearizedBondiSachs : public SphericalMetricData {
    */
   void linearized_bondi_w(
       gsl::not_null<SpinWeighted<ComplexDataVector, 0>*> bondi_w, size_t l_max,
-      double time) const noexcept;
+      double time) const;
 
   /*!
    * \brief Computes the linearized solution for \f$\partial_r J\f$.
@@ -260,7 +260,7 @@ struct LinearizedBondiSachs : public SphericalMetricData {
    */
   void linearized_dr_bondi_j(
       gsl::not_null<SpinWeighted<ComplexDataVector, 2>*> dr_bondi_j,
-      size_t l_max, double time) const noexcept;
+      size_t l_max, double time) const;
 
   /*!
    * \brief Compute the linearized solution for \f$\partial_r U\f$
@@ -286,7 +286,7 @@ struct LinearizedBondiSachs : public SphericalMetricData {
    */
   void linearized_dr_bondi_u(
       gsl::not_null<SpinWeighted<ComplexDataVector, 1>*> dr_bondi_u,
-      size_t l_max, double time) const noexcept;
+      size_t l_max, double time) const;
 
   /*!
    * \brief Computes the linearized solution for \f$\partial_r W\f$.
@@ -313,7 +313,7 @@ struct LinearizedBondiSachs : public SphericalMetricData {
    */
   void linearized_dr_bondi_w(
       gsl::not_null<SpinWeighted<ComplexDataVector, 0>*> dr_bondi_w,
-      size_t l_max, double time) const noexcept;
+      size_t l_max, double time) const;
 
   /*!
    * \brief Computes the linearized solution for \f$\partial_u J\f$.
@@ -338,7 +338,7 @@ struct LinearizedBondiSachs : public SphericalMetricData {
    */
   void linearized_du_bondi_j(
       gsl::not_null<SpinWeighted<ComplexDataVector, 2>*> du_bondi_j,
-      size_t l_max, double time) const noexcept;
+      size_t l_max, double time) const;
 
   /*!
    * \brief Compute the linearized solution for \f$\partial_u U\f$
@@ -364,7 +364,7 @@ struct LinearizedBondiSachs : public SphericalMetricData {
    */
   void linearized_du_bondi_u(
       gsl::not_null<SpinWeighted<ComplexDataVector, 1>*> du_bondi_u,
-      size_t l_max, double time) const noexcept;
+      size_t l_max, double time) const;
 
   /*!
    * \brief Computes the linearized solution for \f$\partial_u W\f$.
@@ -390,7 +390,7 @@ struct LinearizedBondiSachs : public SphericalMetricData {
    */
   void linearized_du_bondi_w(
       gsl::not_null<SpinWeighted<ComplexDataVector, 0>*> du_bondi_w,
-      size_t l_max, double time) const noexcept;
+      size_t l_max, double time) const;
 
   /*!
    * \brief Compute the spherical coordinate metric from the linearized
@@ -431,7 +431,7 @@ struct LinearizedBondiSachs : public SphericalMetricData {
       gsl::not_null<
           tnsr::aa<DataVector, 3, ::Frame::Spherical<::Frame::Inertial>>*>
           spherical_metric,
-      size_t l_max, double time) const noexcept override;
+      size_t l_max, double time) const override;
 
   /*!
    * \brief Compute the radial derivative of the spherical coordinate metric
@@ -481,7 +481,7 @@ struct LinearizedBondiSachs : public SphericalMetricData {
       gsl::not_null<
           tnsr::aa<DataVector, 3, ::Frame::Spherical<::Frame::Inertial>>*>
           dr_spherical_metric,
-      size_t l_max, double time) const noexcept override;
+      size_t l_max, double time) const override;
 
   /*!
    * \brief Compute the time derivative of the spherical coordinate metric from
@@ -527,7 +527,7 @@ struct LinearizedBondiSachs : public SphericalMetricData {
       gsl::not_null<
           tnsr::aa<DataVector, 3, ::Frame::Spherical<::Frame::Inertial>>*>
           dt_spherical_metric,
-      size_t l_max, double time) const noexcept override;
+      size_t l_max, double time) const override;
 
   using WorldtubeData::variables_impl;
 
@@ -549,8 +549,8 @@ struct LinearizedBondiSachs : public SphericalMetricData {
    */
   void variables_impl(
       gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, -2>>*> news,
-      size_t l_max, double time, tmpl::type_<Tags::News> /*meta*/) const
-      noexcept override;
+      size_t l_max, double time,
+      tmpl::type_<Tags::News> /*meta*/) const override;
 
   std::complex<double> c_2a_ = std::numeric_limits<double>::signaling_NaN();
   std::complex<double> c_3a_ = std::numeric_limits<double>::signaling_NaN();

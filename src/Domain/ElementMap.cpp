@@ -13,7 +13,7 @@ ElementMap<Dim, TargetFrame>::ElementMap(
     ElementId<Dim> element_id,
     std::unique_ptr<
         domain::CoordinateMapBase<Frame::BlockLogical, TargetFrame, Dim>>
-        block_map) noexcept
+        block_map)
     : block_map_(std::move(block_map)),
       element_id_(std::move(element_id)),
       map_slope_{[](const ElementId<Dim>& id) {
@@ -54,7 +54,7 @@ ElementMap<Dim, TargetFrame>::ElementMap(
       inverse_jacobian_{map_inverse_slope_} {}
 
 template <size_t Dim, typename TargetFrame>
-void ElementMap<Dim, TargetFrame>::pup(PUP::er& p) noexcept {
+void ElementMap<Dim, TargetFrame>::pup(PUP::er& p) {
   p | block_map_;
   p | element_id_;
   p | map_slope_;

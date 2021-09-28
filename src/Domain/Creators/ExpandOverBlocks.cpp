@@ -17,14 +17,14 @@
 namespace domain {
 
 template <typename T, size_t Dim>
-ExpandOverBlocks<T, Dim>::ExpandOverBlocks(size_t num_blocks) noexcept
+ExpandOverBlocks<T, Dim>::ExpandOverBlocks(size_t num_blocks)
     : num_blocks_(num_blocks) {}
 
 template <typename T, size_t Dim>
 ExpandOverBlocks<T, Dim>::ExpandOverBlocks(
     std::vector<std::string> block_names,
     std::unordered_map<std::string, std::unordered_set<std::string>>
-        block_groups) noexcept
+        block_groups)
     : num_blocks_(block_names.size()),
       block_names_(std::move(block_names)),
       block_groups_(std::move(block_groups)) {}

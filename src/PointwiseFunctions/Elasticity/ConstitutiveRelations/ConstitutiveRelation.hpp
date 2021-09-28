@@ -73,14 +73,14 @@ class ConstitutiveRelation : public PUP::able {
   /// material
   virtual void stress(gsl::not_null<tnsr::II<DataVector, Dim>*> stress,
                       const tnsr::ii<DataVector, Dim>& strain,
-                      const tnsr::I<DataVector, Dim>& x) const noexcept = 0;
+                      const tnsr::I<DataVector, Dim>& x) const = 0;
 
   // This overload is provided for the situation where the `stress` variable
   // holds a non-symmetric tensor, as is currently the case when it is held in a
   // `Tags::Flux`. The overload can be removed once it is no longer used.
   void stress(gsl::not_null<tnsr::IJ<DataVector, Dim>*> stress,
               const tnsr::ii<DataVector, Dim>& strain,
-              const tnsr::I<DataVector, Dim>& x) const noexcept;
+              const tnsr::I<DataVector, Dim>& x) const;
   /// @}
 };
 

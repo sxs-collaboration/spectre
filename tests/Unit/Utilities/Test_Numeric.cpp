@@ -8,7 +8,7 @@
 #include "Utilities/Numeric.hpp"
 
 namespace {
-constexpr bool check_iota() noexcept {
+constexpr bool check_iota() {
   const size_t size = 6;
   cpp20::array<size_t, size> a{};
   cpp2b::iota(a.begin(), a.end(), size_t(1));
@@ -25,7 +25,7 @@ constexpr bool check_iota() noexcept {
   return check;
 }
 
-constexpr bool check_accumulate() noexcept {
+constexpr bool check_accumulate() {
   cpp20::array<size_t, 6> a{};
   cpp2b::iota(a.begin(), a.end(), size_t(1));
   size_t sum = cpp2b::accumulate(a.begin(), a.end(), size_t(23));
@@ -45,8 +45,8 @@ SPECTRE_TEST_CASE("Unit.Utilities.Numeric", "[Unit][Utilities]") {
   CHECK(alg::accumulate(std::array<int, 3>{{1, -3, 7}}, 4) == 9);
   CHECK(alg::accumulate(std::array<int, 3>{{1, -3, 7}}, 4,
                         std::multiplies<>{}) == -84);
-  CHECK(alg::accumulate(std::array<int, 3>{{1, -3, 7}},
-                        4, [](const int state, const int element) noexcept {
+  CHECK(alg::accumulate(std::array<int, 3>{{1, -3, 7}}, 4,
+                        [](const int state, const int element) {
                           return state * element;
                         }) == -84);
 }

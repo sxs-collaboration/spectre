@@ -92,18 +92,18 @@ struct MockContributeReductionData {
                     observers::ArrayComponentId /*sender_array_id*/,
                     const std::string& subfile_name,
                     const std::vector<std::string>& reduction_names,
-                    Parallel::ReductionData<Ts...>&& reduction_data) noexcept {
+                    Parallel::ReductionData<Ts...>&& reduction_data) {
     results.observation_id = observation_id;
     results.subfile_name = subfile_name;
     results.reduction_names = reduction_names;
     results.time = std::get<0>(reduction_data.data());
     results.number_of_grid_points = std::get<1>(reduction_data.data());
     results.errors.clear();
-    tmpl::for_each<tmpl::range<size_t, 2, sizeof...(Ts)>>([&reduction_data](
-        const auto index_v) noexcept {
-      constexpr size_t index = tmpl::type_from<decltype(index_v)>::value;
-      results.errors.push_back(std::get<index>(reduction_data.data()));
-    });
+    tmpl::for_each<tmpl::range<size_t, 2, sizeof...(Ts)>>(
+        [&reduction_data](const auto index_v) {
+          constexpr size_t index = tmpl::type_from<decltype(index_v)>::value;
+          results.errors.push_back(std::get<index>(reduction_data.data()));
+        });
   }
 };
 
@@ -161,7 +161,7 @@ struct Metavariables {
 
 struct ScalarSystem {
   struct ScalarVar : db::SimpleTag {
-    static std::string name() noexcept { return "Scalar"; }
+    static std::string name() { return "Scalar"; }
     using type = Scalar<DataVector>;
   };
 
@@ -169,38 +169,38 @@ struct ScalarSystem {
   using vars_for_test = tmpl::list<ScalarVar>;
   struct solution_for_test {
     template <typename CheckTensor>
-    static void check_data(const CheckTensor& check_tensor) noexcept {
+    static void check_data(const CheckTensor& check_tensor) {
       check_tensor("Error(Scalar)", ScalarVar{});
     }
 
     static tuples::tagged_tuple_from_typelist<vars_for_test> variables(
         const tnsr::I<DataVector, 1>& x, const double t,
-        const vars_for_test /*meta*/) noexcept {
+        const vars_for_test /*meta*/) {
       return {Scalar<DataVector>{1.0 - t * get<0>(x)}};
     }
 
-    void pup(PUP::er& /*p*/) noexcept {}  // NOLINT
+    void pup(PUP::er& /*p*/) {}  // NOLINT
   };
 };
 
 struct ComplicatedSystem {
   struct ScalarVar : db::SimpleTag {
-    static std::string name() noexcept { return "Scalar"; }
+    static std::string name() { return "Scalar"; }
     using type = Scalar<DataVector>;
   };
 
   struct VectorVar : db::SimpleTag {
-    static std::string name() noexcept { return "Vector"; }
+    static std::string name() { return "Vector"; }
     using type = tnsr::I<DataVector, 2>;
   };
 
   struct TensorVar : db::SimpleTag {
-    static std::string name() noexcept { return "Tensor"; }
+    static std::string name() { return "Tensor"; }
     using type = tnsr::ii<DataVector, 2>;
   };
 
   struct TensorVar2 : db::SimpleTag {
-    static std::string name() noexcept { return "Tensor2"; }
+    static std::string name() { return "Tensor2"; }
     using type = tnsr::ii<DataVector, 2>;
   };
 
@@ -208,14 +208,14 @@ struct ComplicatedSystem {
   using vars_for_test = tmpl::list<VectorVar, TensorVar2>;
   struct solution_for_test {
     template <typename CheckTensor>
-    static void check_data(const CheckTensor& check_tensor) noexcept {
+    static void check_data(const CheckTensor& check_tensor) {
       check_tensor("Error(Vector)", VectorVar{});
       check_tensor("Error(Tensor2)", TensorVar2{});
     }
 
     static tuples::tagged_tuple_from_typelist<vars_for_test> variables(
         const tnsr::I<DataVector, 2>& x, const double t,
-        const vars_for_test /*meta*/) noexcept {
+        const vars_for_test /*meta*/) {
       auto vector = make_with_value<tnsr::I<DataVector, 2>>(x, 0.0);
       auto tensor = make_with_value<tnsr::ii<DataVector, 2>>(x, 0.0);
       // Arbitrary functions
@@ -227,7 +227,7 @@ struct ComplicatedSystem {
       return {std::move(vector), std::move(tensor)};
     }
 
-    void pup(PUP::er& /*p*/) noexcept {}  // NOLINT
+    void pup(PUP::er& /*p*/) {}  // NOLINT
   };
 };
 
@@ -235,7 +235,7 @@ template <typename System, bool HasAnalyticSolutions,
           typename ArraySectionIdTag, typename ObserveEvent>
 void test_observe(const std::unique_ptr<ObserveEvent> observe,
                   const bool has_analytic_solutions,
-                  const std::optional<std::string>& section) noexcept {
+                  const std::optional<std::string>& section) {
   constexpr size_t volume_dim = System::volume_dim;
   using metavariables = Metavariables<System, ArraySectionIdTag>;
   using element_component = ElementComponent<metavariables>;
@@ -278,7 +278,7 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe,
           ::Tags::AnalyticSolutionsOptional<solution_variables>>,
       observers::Tags::ObservationKey<ArraySectionIdTag>>>(
       metavariables{}, observation_time, vars,
-      [&solutions, &has_analytic_solutions]() noexcept {
+      [&solutions, &has_analytic_solutions]() {
         if constexpr (HasAnalyticSolutions) {
           (void)has_analytic_solutions;
           // NOLINTNEXTLINE(performance-no-automatic-move)
@@ -339,9 +339,9 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe,
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-lambda-capture"
 #endif  // __clang__
-  System::solution_for_test::check_data([
-    &errors, &num_tensors_observed, &results
-  ](const std::string& name, auto tag) noexcept {
+  System::solution_for_test::check_data([&errors, &num_tensors_observed,
+                                         &results](const std::string& name,
+                                                   auto tag) {
 #if defined(__clang__) && __clang_major__ > 4
 #pragma GCC diagnostic pop
 #endif  // __clang__
@@ -373,7 +373,7 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe,
 template <typename System, bool HasAnalyticSolutions,
           typename ArraySectionIdTag>
 void test_system(const bool has_analytic_solutions,
-                 const std::optional<std::string>& section) noexcept {
+                 const std::optional<std::string>& section) {
   INFO(pretty_type::get_name<System>());
   CAPTURE(HasAnalyticSolutions);
   CAPTURE(has_analytic_solutions);

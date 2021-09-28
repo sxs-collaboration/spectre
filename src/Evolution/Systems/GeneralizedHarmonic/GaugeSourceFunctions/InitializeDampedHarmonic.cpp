@@ -55,7 +55,7 @@ InitializeDampedHarmonic<Dim, UseRollon>::impl_rollon(
     const tnsr::iaa<DataVector, Dim, Frame::Inertial>& phi,
     const Mesh<Dim>& mesh,
     const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
-                          Frame::Inertial>& inverse_jacobian) noexcept {
+                          Frame::Inertial>& inverse_jacobian) {
   Variables<tmpl::list<
       gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataVector>,
       gr::Tags::DetSpatialMetric<DataVector>,
@@ -133,8 +133,7 @@ void InitializeDampedHarmonic<Dim, UseRollon>::new_pi_from_gauge_h(
     const tnsr::aa<DataVector, Dim, Frame::Inertial>& spacetime_metric,
     const tnsr::iaa<DataVector, Dim, Frame::Inertial>& phi,
     const tnsr::I<DataVector, Dim, Frame::Inertial>& coords,
-    const GeneralizedHarmonic::gauges::DhGaugeParameters<false>&
-        parameters) noexcept {
+    const GeneralizedHarmonic::gauges::DhGaugeParameters<false>& parameters) {
   const auto spatial_metric = gr::spatial_metric(spacetime_metric);
   const auto det_and_inverse_spatial_metric =
       determinant_and_inverse(spatial_metric);
@@ -218,7 +217,7 @@ void InitializeDampedHarmonic<Dim, UseRollon>::
         const tnsr::iaa<DataVector, Dim, Frame>& phi, const double time,
         const tnsr::I<DataVector, Dim, Frame>& coords,
         const GeneralizedHarmonic::gauges::DhGaugeParameters<true>&
-            parameters) noexcept {
+            parameters) {
   if (UNLIKELY(h_and_d4_h->number_of_grid_points() != get(lapse).size())) {
     h_and_d4_h->initialize(get(lapse).size());
   }
@@ -253,7 +252,7 @@ void InitializeDampedHarmonic<Dim, UseRollon>::DampedHarmonicCompute<Frame>::
         const tnsr::iaa<DataVector, Dim, Frame>& phi,
         const tnsr::I<DataVector, Dim, Frame>& coords,
         const GeneralizedHarmonic::gauges::DhGaugeParameters<false>&
-            parameters) noexcept {
+            parameters) {
   if (UNLIKELY(h_and_d4_h->number_of_grid_points() != get(lapse).size())) {
     h_and_d4_h->initialize(get(lapse).size());
   }
@@ -299,7 +298,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (true, false))
       const Variables<variables_tags<DIM(data), Frame::Inertial>>& u,        \
       const Mesh<DIM(data)>& mesh,                                           \
       const InverseJacobian<DataVector, DIM(data), Frame::ElementLogical,    \
-                            Frame::Inertial>& inverse_jacobian) noexcept;
+                            Frame::Inertial>& inverse_jacobian);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 

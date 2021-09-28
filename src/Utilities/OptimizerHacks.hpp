@@ -11,7 +11,7 @@ namespace optimizer_hacks {
 /// Produce a situation where the value of `*variable` could have been
 /// changed without the optimizer's knowledge, without actually
 /// changing the variable.
-void indicate_value_can_be_changed(void* variable) noexcept;
+void indicate_value_can_be_changed(void* variable);
 }  // namespace optimizer_hacks
 
 #define VARIABLE_CAUSES_CLANG_FPE(var) \

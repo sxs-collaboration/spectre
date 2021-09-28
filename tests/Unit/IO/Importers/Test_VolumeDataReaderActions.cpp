@@ -38,12 +38,12 @@ namespace {
 
 struct VectorTag : db::SimpleTag {
   using type = tnsr::I<DataVector, 2>;
-  static std::string name() noexcept { return "V"; }
+  static std::string name() { return "V"; }
 };
 
 struct TensorTag : db::SimpleTag {
   using type = tnsr::ij<DataVector, 2>;
-  static std::string name() noexcept { return "T"; }
+  static std::string name() { return "T"; }
 };
 
 using import_tags_list = tmpl::list<VectorTag, TensorTag>;

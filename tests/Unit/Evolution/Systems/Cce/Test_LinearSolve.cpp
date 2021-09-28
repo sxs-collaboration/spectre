@@ -26,8 +26,7 @@ namespace {
 // in each of the integration routines
 
 ComplexDataVector radial_vector_from_power_series(
-    const ComplexModalVector& powers,
-    const ComplexDataVector& one_minus_y) noexcept {
+    const ComplexModalVector& powers, const ComplexDataVector& one_minus_y) {
   ComplexDataVector result{one_minus_y.size(), powers[0]};
   for (size_t i = 1; i < powers.size(); ++i) {
     // use of TestHelpers::power due to an internal bug in blaze powers of
@@ -40,13 +39,12 @@ ComplexDataVector radial_vector_from_power_series(
 template <typename BondiValueTag, typename DataBoxTagList>
 void make_boundary_data(const gsl::not_null<db::DataBox<DataBoxTagList>*> box,
                         const gsl::not_null<ComplexDataVector*> expected,
-                        const size_t l_max) noexcept {
+                        const size_t l_max) {
   db::mutate<Tags::BoundaryValue<BondiValueTag>>(
       box,
-      [
-        &expected, &l_max
-      ](const gsl::not_null<typename Tags::BoundaryValue<BondiValueTag>::type*>
-            boundary) noexcept {
+      [&expected, &l_max](const gsl::not_null<
+                          typename Tags::BoundaryValue<BondiValueTag>::type*>
+                              boundary) {
         get(*boundary).data() = ComplexDataVector{
             expected->data(),
             Spectral::Swsh::number_of_swsh_collocation_points(l_max)};
@@ -59,14 +57,14 @@ void generate_powers_for_tags(
     const gsl::not_null<db::DataBox<DataBoxTagList>*> box,
     const gsl::not_null<Generator*> generator,
     const gsl::not_null<Distribution*> distribution,
-    const size_t number_of_modes, tmpl::list<Tags...> /*meta*/) noexcept {
+    const size_t number_of_modes, tmpl::list<Tags...> /*meta*/) {
   EXPAND_PACK_LEFT_TO_RIGHT(
       db::mutate<TestHelpers::RadialPolyCoefficientsFor<Tags>>(
           box,
           [](const gsl::not_null<Scalar<ComplexModalVector>*> modes,
              const gsl::not_null<Generator*> gen,
              const gsl::not_null<Distribution*> dist,
-             const size_t lambda_number_of_modes) noexcept {
+             const size_t lambda_number_of_modes) {
             get(*modes) = make_with_random_values<ComplexModalVector>(
                 gen, dist, lambda_number_of_modes);
           },
@@ -76,11 +74,10 @@ void generate_powers_for_tags(
 template <typename Tag, typename DataBoxTagList>
 void zero_top_modes(const gsl::not_null<db::DataBox<DataBoxTagList>*> box,
                     const size_t number_of_modes_to_zero,
-                    const size_t total_number_of_modes) noexcept {
+                    const size_t total_number_of_modes) {
   db::mutate<TestHelpers::RadialPolyCoefficientsFor<Tag>>(
-      box, [
-        &number_of_modes_to_zero, &total_number_of_modes
-      ](const gsl::not_null<Scalar<ComplexModalVector>*> modes) noexcept {
+      box, [&number_of_modes_to_zero, &total_number_of_modes](
+               const gsl::not_null<Scalar<ComplexModalVector>*> modes) {
         for (size_t i = total_number_of_modes - number_of_modes_to_zero;
              i < total_number_of_modes; ++i) {
           get(*modes)[i] = 0.0;
@@ -92,12 +89,12 @@ template <typename DataBoxTagList, typename... Tags>
 void generate_volume_data_from_separable(
     const gsl::not_null<db::DataBox<DataBoxTagList>*> box,
     const ComplexDataVector& angular_data, const ComplexDataVector& one_minus_y,
-    tmpl::list<Tags...> /*meta*/) noexcept {
+    tmpl::list<Tags...> /*meta*/) {
   EXPAND_PACK_LEFT_TO_RIGHT(db::mutate<Tags>(
       box,
       [](auto to_fill, const ComplexDataVector& lambda_one_minus_y,
          const ComplexDataVector& lambda_angular_data,
-         const Scalar<ComplexModalVector>& modes) noexcept {
+         const Scalar<ComplexModalVector>& modes) {
         get(*to_fill).data() = outer_product(
             lambda_angular_data,
             radial_vector_from_power_series(get(modes), lambda_one_minus_y));
@@ -109,7 +106,7 @@ void generate_volume_data_from_separable(
 template <typename BondiValueTag>
 auto create_box_for_bondi_integration(
     const size_t l_max, const size_t number_of_radial_grid_points,
-    const size_t number_of_radial_polynomials) noexcept {
+    const size_t number_of_radial_polynomials) {
   const size_t number_of_grid_points =
       number_of_radial_grid_points *
       Spectral::Swsh::number_of_swsh_collocation_points(l_max);
@@ -140,7 +137,7 @@ auto create_box_for_bondi_integration(
 template <typename BondiValueTag, typename Generator>
 void test_regular_integration(const gsl::not_null<Generator*> gen,
                               const size_t number_of_radial_grid_points,
-                              const size_t l_max) noexcept {
+                              const size_t l_max) {
   UniformCustomDistribution<double> dist(0.1, 5.0);
   const size_t number_of_radial_polynomials = 5;
   auto box = create_box_for_bondi_integration<BondiValueTag>(
@@ -155,7 +152,7 @@ void test_regular_integration(const gsl::not_null<Generator*> gen,
       TestHelpers::RadialPolyCoefficientsFor<Tags::Integrand<BondiValueTag>>>(
       make_not_null(&box),
       [](const gsl::not_null<Scalar<ComplexModalVector>*> integrand_modes,
-         const Scalar<ComplexModalVector>& bondi_value_modes) noexcept {
+         const Scalar<ComplexModalVector>& bondi_value_modes) {
         for (size_t i = 0; i < get(bondi_value_modes).size() - 1; ++i) {
           // sign change because these are modes of 1 - y.
           get(*integrand_modes)[i] =
@@ -206,7 +203,7 @@ void test_regular_integration(const gsl::not_null<Generator*> gen,
 template <typename BondiValueTag, typename Generator>
 void test_pole_integration(const gsl::not_null<Generator*> gen,
                            const size_t number_of_radial_grid_points,
-                           const size_t l_max) noexcept {
+                           const size_t l_max) {
   UniformCustomDistribution<double> dist(0.1, 5.0);
   const size_t number_of_radial_polynomials = 5;
 
@@ -228,7 +225,7 @@ void test_pole_integration(const gsl::not_null<Generator*> gen,
       make_not_null(&box),
       [](const gsl::not_null<Scalar<ComplexModalVector>*>
              pole_of_integrand_modes,
-         const Scalar<ComplexModalVector>& bondi_value_modes) noexcept {
+         const Scalar<ComplexModalVector>& bondi_value_modes) {
         get(*pole_of_integrand_modes)[0] = 2.0 * get(bondi_value_modes)[0];
       },
       db::get<TestHelpers::RadialPolyCoefficientsFor<BondiValueTag>>(box));
@@ -239,7 +236,7 @@ void test_pole_integration(const gsl::not_null<Generator*> gen,
       [](const gsl::not_null<Scalar<ComplexModalVector>*>
              regular_integrand_modes,
          const Scalar<ComplexModalVector>& bondi_value_modes,
-         const Scalar<ComplexModalVector>& pole_integrand_modes) noexcept {
+         const Scalar<ComplexModalVector>& pole_integrand_modes) {
         for (size_t i = 0; i < get(bondi_value_modes).size() - 1; ++i) {
           // sign change because these are modes of 1 - y.
           get(*regular_integrand_modes)[i] =
@@ -297,7 +294,7 @@ void test_pole_integration(const gsl::not_null<Generator*> gen,
 template <typename BondiValueTag, typename Generator>
 void test_pole_integration_with_linear_operator(
     const gsl::not_null<Generator*> gen, size_t number_of_radial_grid_points,
-    size_t l_max) noexcept {
+    size_t l_max) {
   // The typical linear solve performed during realistic CCE evolution involves
   // fairly small wave amplitudes
   UniformCustomDistribution<double> dist(0.01, 0.1);
@@ -327,7 +324,7 @@ void test_pole_integration_with_linear_operator(
              linear_factor_modes,
          const gsl::not_null<typename TestHelpers::RadialPolyCoefficientsFor<
              Tags::LinearFactorForConjugate<BondiValueTag>>::type*>
-             linear_factor_of_conjugate_modes) noexcept {
+             linear_factor_of_conjugate_modes) {
         get(*linear_factor_modes)[0] = 1.0;
         get(*linear_factor_of_conjugate_modes)[0] = 0.0;
       });
@@ -380,20 +377,18 @@ void test_pole_integration_with_linear_operator(
   db::mutate<Tags::PoleOfIntegrand<BondiValueTag>,
              Tags::RegularIntegrand<BondiValueTag>>(
       make_not_null(&box),
-      [
-        &random_angular_data, &l_max, &one_minus_y, &
-        number_of_radial_grid_points
-      ](const gsl::not_null<
-            typename Tags::PoleOfIntegrand<BondiValueTag>::type*>
-            pole_integrand,
-        const gsl::not_null<
-            typename Tags::RegularIntegrand<BondiValueTag>::type*>
-            regular_integrand,
-        const Scalar<ComplexModalVector>& bondi_value_modes,
-        const Scalar<ComplexModalVector>& pole_integrand_modes,
-        const Scalar<ComplexModalVector>& linear_factor_modes,
-        const Scalar<ComplexModalVector>&
-            linear_factor_of_conjugate_modes) noexcept {
+      [&random_angular_data, &l_max, &one_minus_y,
+       &number_of_radial_grid_points](
+          const gsl::not_null<
+              typename Tags::PoleOfIntegrand<BondiValueTag>::type*>
+              pole_integrand,
+          const gsl::not_null<
+              typename Tags::RegularIntegrand<BondiValueTag>::type*>
+              regular_integrand,
+          const Scalar<ComplexModalVector>& bondi_value_modes,
+          const Scalar<ComplexModalVector>& pole_integrand_modes,
+          const Scalar<ComplexModalVector>& linear_factor_modes,
+          const Scalar<ComplexModalVector>& linear_factor_of_conjugate_modes) {
         for (size_t i = 0; i < number_of_radial_grid_points; ++i) {
           ComplexDataVector angular_view_for_pole_integrand{
               get(*pole_integrand).data().data() +

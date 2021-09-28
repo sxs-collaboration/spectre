@@ -11,7 +11,7 @@
 #include "Time/Utilities.hpp"
 
 namespace {
-void check_slab(const double start, const double end) noexcept {
+void check_slab(const double start, const double end) {
   const double duration = end - start;
   {
     const Slab slab = Slab::with_duration_from_start(start, duration);

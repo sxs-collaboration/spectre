@@ -35,7 +35,7 @@ void raise_or_lower_first_index(
                  index_list<Index0, Index1, Index1>>& tensor,
     const Tensor<DataType, Symmetry<1, 1>,
                  index_list<change_index_up_lo<Index0>,
-                            change_index_up_lo<Index0>>>& metric) noexcept;
+                            change_index_up_lo<Index0>>>& metric);
 
 template <typename DataType, typename Index0, typename Index1>
 Tensor<DataType, Symmetry<2, 1, 1>,
@@ -45,7 +45,7 @@ raise_or_lower_first_index(
                  index_list<Index0, Index1, Index1>>& tensor,
     const Tensor<DataType, Symmetry<1, 1>,
                  index_list<change_index_up_lo<Index0>,
-                            change_index_up_lo<Index0>>>& metric) noexcept {
+                            change_index_up_lo<Index0>>>& metric) {
   auto result = make_with_value<
       Tensor<DataType, Symmetry<2, 1, 1>,
              index_list<change_index_up_lo<Index0>, Index1, Index1>>>(metric,
@@ -76,7 +76,7 @@ void raise_or_lower_index(
     const Tensor<DataType, Symmetry<1>, index_list<Index0>>& tensor,
     const Tensor<DataType, Symmetry<1, 1>,
                  index_list<change_index_up_lo<Index0>,
-                            change_index_up_lo<Index0>>>& metric) noexcept;
+                            change_index_up_lo<Index0>>>& metric);
 
 template <typename DataType, typename Index0>
 Tensor<DataType, Symmetry<1>, index_list<change_index_up_lo<Index0>>>
@@ -84,7 +84,7 @@ raise_or_lower_index(
     const Tensor<DataType, Symmetry<1>, index_list<Index0>>& tensor,
     const Tensor<DataType, Symmetry<1, 1>,
                  index_list<change_index_up_lo<Index0>,
-                            change_index_up_lo<Index0>>>& metric) noexcept {
+                            change_index_up_lo<Index0>>>& metric) {
   auto result = make_with_value<
       Tensor<DataType, Symmetry<1>, index_list<change_index_up_lo<Index0>>>>(
       metric, 0.);
@@ -113,7 +113,7 @@ void trace_last_indices(
                  index_list<Index0, Index1, Index1>>& tensor,
     const Tensor<DataType, Symmetry<1, 1>,
                  index_list<change_index_up_lo<Index1>,
-                            change_index_up_lo<Index1>>>& metric) noexcept;
+                            change_index_up_lo<Index1>>>& metric);
 
 template <typename DataType, typename Index0, typename Index1>
 Tensor<DataType, Symmetry<1>, index_list<Index0>> trace_last_indices(
@@ -121,7 +121,7 @@ Tensor<DataType, Symmetry<1>, index_list<Index0>> trace_last_indices(
                  index_list<Index0, Index1, Index1>>& tensor,
     const Tensor<DataType, Symmetry<1, 1>,
                  index_list<change_index_up_lo<Index1>,
-                            change_index_up_lo<Index1>>>& metric) noexcept {
+                            change_index_up_lo<Index1>>>& metric) {
   auto trace_of_tensor =
       make_with_value<Tensor<DataType, Symmetry<1>, index_list<Index0>>>(metric,
                                                                          0.);
@@ -143,14 +143,14 @@ void trace(
     const Tensor<DataType, Symmetry<1, 1>, index_list<Index0, Index0>>& tensor,
     const Tensor<DataType, Symmetry<1, 1>,
                  index_list<change_index_up_lo<Index0>,
-                            change_index_up_lo<Index0>>>& metric) noexcept;
+                            change_index_up_lo<Index0>>>& metric);
 
 template <typename DataType, typename Index0>
 Scalar<DataType> trace(
     const Tensor<DataType, Symmetry<1, 1>, index_list<Index0, Index0>>& tensor,
     const Tensor<DataType, Symmetry<1, 1>,
                  index_list<change_index_up_lo<Index0>,
-                            change_index_up_lo<Index0>>>& metric) noexcept {
+                            change_index_up_lo<Index0>>>& metric) {
   Scalar<DataType> trace{};
   ::trace(make_not_null(&trace), tensor, metric);
   return trace;

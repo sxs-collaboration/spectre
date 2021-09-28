@@ -76,7 +76,7 @@ struct TciAndRollback {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     static_assert(
         tmpl::count_if<
             ActionList,
@@ -115,7 +115,7 @@ struct TciAndRollback {
       db::mutate<Tags::Inactive<variables_tag>>(
           make_not_null(&box),
           [&dg_mesh, &subcell_mesh](const auto inactive_vars_ptr,
-                                    const auto& active_vars) noexcept {
+                                    const auto& active_vars) {
             // Note: strictly speaking, to be conservative this should project
             // uJ instead of u.
             fd::project(inactive_vars_ptr, active_vars, dg_mesh,
@@ -171,7 +171,7 @@ struct TciAndRollback {
                 const auto active_vars_ptr, const auto inactive_vars_ptr,
                 const auto active_history_ptr,
                 const gsl::not_null<ActiveGrid*> active_grid_ptr,
-                const gsl::not_null<bool*> did_rollback_ptr) noexcept {
+                const gsl::not_null<bool*> did_rollback_ptr) {
               ASSERT(
                   active_history_ptr->size() > 0,
                   "We cannot have an empty history when unwinding, that's just "
@@ -225,9 +225,8 @@ struct TciAndRollback {
                 SelfStart::Tags::InitialValue<
                     typename Metavariables::system::primitive_variables_tag>>(
                 make_not_null(&box),
-                [&dg_mesh, &subcell_mesh](
-                    const auto initial_vars_ptr,
-                    const auto initial_prim_vars_ptr) noexcept {
+                [&dg_mesh, &subcell_mesh](const auto initial_vars_ptr,
+                                          const auto initial_prim_vars_ptr) {
                   // Note: for strict conservation, we need to project uJ
                   // instead of just u.
                   std::get<0>(*initial_vars_ptr) =
@@ -239,8 +238,8 @@ struct TciAndRollback {
                 });
           } else {
             db::mutate<SelfStart::Tags::InitialValue<variables_tag>>(
-                make_not_null(&box), [&dg_mesh, &subcell_mesh](
-                                         const auto initial_vars_ptr) noexcept {
+                make_not_null(&box),
+                [&dg_mesh, &subcell_mesh](const auto initial_vars_ptr) {
                   // Note: for strict conservation, we need to project uJ
                   // instead of just u.
                   std::get<0>(*initial_vars_ptr) =
@@ -261,9 +260,8 @@ struct TciAndRollback {
     // The unlimited DG solver has passed, so we can remove the current neighbor
     // data.
     db::mutate<subcell::Tags::NeighborDataForReconstructionAndRdmpTci<Dim>>(
-        make_not_null(&box), [](const auto neighbor_data_ptr) noexcept {
-          neighbor_data_ptr->clear();
-        });
+        make_not_null(&box),
+        [](const auto neighbor_data_ptr) { neighbor_data_ptr->clear(); });
 
     return {std::move(box), false,
             tmpl::index_of<ActionList, TciAndRollback>::value + 1};

@@ -44,7 +44,7 @@ void constraint_preserving_bjorhus_corrections_dt_v_psi(
         unit_interface_normal_vector,
     const tnsr::iaa<DataType, VolumeDim, Frame::Inertial>&
         three_index_constraint,
-    const std::array<DataType, 4>& char_speeds) noexcept;
+    const std::array<DataType, 4>& char_speeds);
 
 /*!
  * \brief Computes the expression needed to set boundary conditions on the time
@@ -76,7 +76,7 @@ void constraint_preserving_bjorhus_corrections_dt_v_zero(
         unit_interface_normal_vector,
     const tnsr::iaa<DataType, VolumeDim, Frame::Inertial>&
         four_index_constraint,
-    const std::array<DataType, 4>& char_speeds) noexcept;
+    const std::array<DataType, 4>& char_speeds);
 
 /// @{
 /*!
@@ -189,7 +189,7 @@ void constraint_preserving_bjorhus_corrections_dt_v_minus(
         constraint_char_zero_plus,
     const tnsr::a<DataType, VolumeDim, Frame::Inertial>&
         constraint_char_zero_minus,
-    const std::array<DataType, 4>& char_speeds) noexcept;
+    const std::array<DataType, 4>& char_speeds);
 
 template <size_t VolumeDim, typename DataType>
 void constraint_preserving_physical_bjorhus_corrections_dt_v_minus(
@@ -229,7 +229,7 @@ void constraint_preserving_physical_bjorhus_corrections_dt_v_minus(
     const tnsr::iaa<DataType, VolumeDim, Frame::Inertial>& phi,
     const tnsr::ijaa<DataType, VolumeDim, Frame::Inertial>& d_phi,
     const tnsr::iaa<DataType, VolumeDim, Frame::Inertial>& d_pi,
-    const std::array<DataType, 4>& char_speeds) noexcept;
+    const std::array<DataType, 4>& char_speeds);
 /// @}
 
 namespace detail {
@@ -245,7 +245,7 @@ void add_gauge_sommerfeld_terms_to_dt_v_minus(
     const tnsr::A<DataType, VolumeDim, Frame::Inertial>& outgoing_null_vector,
     const tnsr::Ab<DataType, VolumeDim, Frame::Inertial>& projection_Ab,
     const tnsr::aa<DataType, VolumeDim, Frame::Inertial>&
-        char_projected_rhs_dt_v_psi) noexcept;
+        char_projected_rhs_dt_v_psi);
 
 template <size_t VolumeDim, typename DataType>
 void add_constraint_dependent_terms_to_dt_v_minus(
@@ -263,7 +263,7 @@ void add_constraint_dependent_terms_to_dt_v_minus(
         constraint_char_zero_minus,
     const tnsr::aa<DataType, VolumeDim, Frame::Inertial>&
         char_projected_rhs_dt_v_minus,
-    const std::array<DataType, 4>& char_speeds) noexcept;
+    const std::array<DataType, 4>& char_speeds);
 
 template <size_t VolumeDim, typename DataType>
 void add_physical_terms_to_dt_v_minus(
@@ -292,7 +292,7 @@ void add_physical_terms_to_dt_v_minus(
     const tnsr::iaa<DataType, VolumeDim, Frame::Inertial>& phi,
     const tnsr::ijaa<DataType, VolumeDim, Frame::Inertial>& d_phi,
     const tnsr::iaa<DataType, VolumeDim, Frame::Inertial>& d_pi,
-    const std::array<DataType, 4>& char_speeds) noexcept;
+    const std::array<DataType, 4>& char_speeds);
 }  // namespace detail
 }  // namespace Bjorhus
 }  // namespace GeneralizedHarmonic::BoundaryConditions

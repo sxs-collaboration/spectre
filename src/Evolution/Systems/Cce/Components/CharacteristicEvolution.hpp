@@ -231,12 +231,11 @@ struct CharacteristicEvolution {
                              extract_action_list>>;
 
   static void initialize(
-      Parallel::CProxy_GlobalCache<Metavariables>& /*global_cache*/) noexcept {}
+      Parallel::CProxy_GlobalCache<Metavariables>& /*global_cache*/) {}
 
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
-      const Parallel::CProxy_GlobalCache<Metavariables>&
-          global_cache) noexcept {
+      const Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *(global_cache.ckLocalBranch());
     Parallel::get_parallel_component<CharacteristicEvolution<Metavariables>>(
         local_cache)

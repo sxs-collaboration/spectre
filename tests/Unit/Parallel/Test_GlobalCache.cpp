@@ -73,7 +73,7 @@ class Triangle : public Shape {
  public:
   Triangle() = default;
   explicit Triangle(CkMigrateMessage* /*m*/) {}
-  size_t number_of_sides() const noexcept final { return 3; }
+  size_t number_of_sides() const final { return 3; }
   // clang-tidy: internal charm++ warnings
   WRAPPED_PUPable_decl_base_template(Shape,  // NOLINT
                                      Triangle);
@@ -84,7 +84,7 @@ class Square : public Shape {
  public:
   Square() = default;
   explicit Square(CkMigrateMessage* /*m*/) {}
-  size_t number_of_sides() const noexcept final { return 4; }
+  size_t number_of_sides() const final { return 4; }
   // clang-tidy: internal charm++ warnings
   WRAPPED_PUPable_decl_base_template(Shape,  // NOLINT
                                      Square);
@@ -105,8 +105,8 @@ class Arthropod : public Animal {
   Arthropod() = default;
   explicit Arthropod(const size_t num_legs) : number_of_legs_(num_legs){};
   explicit Arthropod(CkMigrateMessage* /*m*/) {}
-  size_t number_of_legs() const noexcept final { return number_of_legs_; }
-  void set_number_of_legs(const size_t num_legs) noexcept final {
+  size_t number_of_legs() const final { return number_of_legs_; }
+  void set_number_of_legs(const size_t num_legs) final {
     number_of_legs_ = num_legs;
   }
   // clang-tidy: internal charm++ warnings
@@ -137,15 +137,14 @@ struct animal : animal_base {
 
 template <typename T>
 struct modify_value {
-  static void apply(const gsl::not_null<T*> value,
-                    const T& new_value) noexcept {
+  static void apply(const gsl::not_null<T*> value, const T& new_value) {
     *value = new_value;
   }
 };
 
 struct modify_number_of_legs {
   static void apply(const gsl::not_null<std::unique_ptr<Animal>*> animal_local,
-                    const size_t num_legs) noexcept {
+                    const size_t num_legs) {
     (*animal_local)->set_number_of_legs(num_legs);
   }
 };
@@ -220,12 +219,12 @@ struct TestMetavariables {
 // PerformAlgorithmCallback because they can be mocked.
 class UseCkCallbackAsCallback : public Parallel::Callback {
  public:
-  explicit UseCkCallbackAsCallback(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit UseCkCallbackAsCallback(CkMigrateMessage* /*unused*/) {}
   WRAPPED_PUPable_decl(UseCkCallbackAsCallback);
   explicit UseCkCallbackAsCallback(const CkCallback& callback)
       : callback_(callback) {}
-  void invoke() noexcept override { callback_.send(nullptr); }
-  void pup(PUP::er& /*p*/) noexcept override {
+  void invoke() override { callback_.send(nullptr); }
+  void pup(PUP::er& /*p*/) override {
     ERROR(
         "Should not be pupping a UseCkCallbackAsCallback, since it is always "
         "stored in the local MutableGlobalCache");
@@ -236,7 +235,7 @@ class UseCkCallbackAsCallback : public Parallel::Callback {
 };
 
 template <typename Metavariables>
-void TestArrayChare<Metavariables>::run_test_one() noexcept {
+void TestArrayChare<Metavariables>::run_test_one() {
   // Test that the values are what we think they should be.
   auto& local_cache = *global_cache_proxy_.ckLocalBranch();
   SPECTRE_PARALLEL_REQUIRE("Nobody" == Parallel::get<name>(local_cache));
@@ -281,7 +280,7 @@ void TestArrayChare<Metavariables>::run_test_one() noexcept {
 }
 
 template <typename Metavariables>
-void TestArrayChare<Metavariables>::run_test_two() noexcept {
+void TestArrayChare<Metavariables>::run_test_two() {
   // Move on when the weight is 150.
   auto callback =
       CkCallback(CkIndex_TestArrayChare<Metavariables>::run_test_two(),
@@ -308,7 +307,7 @@ void TestArrayChare<Metavariables>::run_test_two() noexcept {
 }
 
 template <typename Metavariables>
-void TestArrayChare<Metavariables>::run_test_three() noexcept {
+void TestArrayChare<Metavariables>::run_test_three() {
   // Move on when the email is Albert's.
   auto callback =
       CkCallback(CkIndex_TestArrayChare<Metavariables>::run_test_three(),
@@ -333,7 +332,7 @@ void TestArrayChare<Metavariables>::run_test_three() noexcept {
 }
 
 template <typename Metavariables>
-void TestArrayChare<Metavariables>::run_test_four() noexcept {
+void TestArrayChare<Metavariables>::run_test_four() {
   // Move on when the animal has 8 legs.
   auto callback =
       CkCallback(CkIndex_TestArrayChare<Metavariables>::run_test_four(),
@@ -360,7 +359,7 @@ void TestArrayChare<Metavariables>::run_test_four() noexcept {
 }
 
 template <typename Metavariables>
-void TestArrayChare<Metavariables>::run_test_five() noexcept {
+void TestArrayChare<Metavariables>::run_test_five() {
   // Move on when the animal has 30 legs.
   auto callback =
       CkCallback(CkIndex_TestArrayChare<Metavariables>::run_test_five(),
@@ -385,7 +384,7 @@ void TestArrayChare<Metavariables>::run_test_five() noexcept {
 // using proxies or parallelism.  run_single_core_test tests constructors
 // and member functions that are used in the action testing framework.
 template <typename Metavariables>
-void Test_GlobalCache<Metavariables>::run_single_core_test() noexcept {
+void Test_GlobalCache<Metavariables>::run_single_core_test() {
   using const_tag_list =
       typename Parallel::get_const_global_cache_tags<TestMetavariables>;
   static_assert(std::is_same_v<const_tag_list,
@@ -466,7 +465,7 @@ void Test_GlobalCache<Metavariables>::run_single_core_test() noexcept {
 
 template <typename Metavariables>
 Test_GlobalCache<Metavariables>::Test_GlobalCache(CkArgMsg*
-                                                  /*msg*/) noexcept {
+                                                  /*msg*/) {
   // Register the pup functions.
   Parallel::register_classes_with_charm<Triangle, Square, Arthropod>();
 
@@ -518,7 +517,7 @@ Test_GlobalCache<Metavariables>::Test_GlobalCache(CkArgMsg*
 }
 
 template <typename Metavariables>
-void Test_GlobalCache<Metavariables>::exit_if_done(int index) noexcept {
+void Test_GlobalCache<Metavariables>::exit_if_done(int index) {
   elements_that_are_finished_.insert(index);
   if (elements_that_are_finished_.size() >= num_elements_) {
     sys::exit();

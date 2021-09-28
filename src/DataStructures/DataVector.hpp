@@ -62,9 +62,7 @@ VECTOR_BLAZE_TRAIT_SPECIALIZE_ARITHMETIC_TRAITS(DataVector);
 VECTOR_BLAZE_TRAIT_SPECIALIZE_ALL_MAP_TRAITS(DataVector);
 }  // namespace blaze
 
-SPECTRE_ALWAYS_INLINE auto fabs(const DataVector& t) noexcept {
-  return abs(*t);
-}
+SPECTRE_ALWAYS_INLINE auto fabs(const DataVector& t) { return abs(*t); }
 
 MAKE_STD_ARRAY_VECTOR_BINOPS(DataVector)
 

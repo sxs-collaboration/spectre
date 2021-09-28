@@ -72,8 +72,7 @@ struct PrimVar : db::SimpleTag {
 class TestTrigger : public DenseTrigger {
  public:
   TestTrigger() = default;
-  explicit TestTrigger(CkMigrateMessage* const msg) noexcept
-      : DenseTrigger(msg) {}
+  explicit TestTrigger(CkMigrateMessage* const msg) : DenseTrigger(msg) {}
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
   WRAPPED_PUPable_decl_template(TestTrigger);  // NOLINT
@@ -83,14 +82,14 @@ class TestTrigger : public DenseTrigger {
   // we have to handle that call and set up for triggering at the
   // interesting time.
   TestTrigger(const double init_time, const double trigger_time,
-              const bool is_ready_arg, const bool is_triggered) noexcept
+              const bool is_ready_arg, const bool is_triggered)
       : init_time_(init_time),
         trigger_time_(trigger_time),
         is_ready_(is_ready_arg),
         is_triggered_(is_triggered) {}
 
   using is_triggered_argument_tags = tmpl::list<Tags::Time>;
-  Result is_triggered(const double time) const noexcept {
+  Result is_triggered(const double time) const {
     if (time == init_time_) {
       return {false, trigger_time_};
     }
@@ -103,8 +102,7 @@ class TestTrigger : public DenseTrigger {
   template <typename Metavariables, typename ArrayIndex, typename Component>
   bool is_ready(Parallel::GlobalCache<Metavariables>& /*cache*/,
                 const ArrayIndex& /*array_index*/,
-                const Component* const /*meta*/,
-                const double time) const noexcept {
+                const Component* const /*meta*/, const double time) const {
     if (time == init_time_) {
       return true;
     }
@@ -113,7 +111,7 @@ class TestTrigger : public DenseTrigger {
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept override {
+  void pup(PUP::er& p) override {
     DenseTrigger::pup(p);
     p | init_time_;
     p | trigger_time_;
@@ -132,7 +130,7 @@ PUP::able::PUP_ID TestTrigger::my_PUP_ID = 0;  // NOLINT
 
 struct TestEvent : public Event {
   TestEvent() = default;
-  explicit TestEvent(CkMigrateMessage* const /*msg*/) noexcept {}
+  explicit TestEvent(CkMigrateMessage* const /*msg*/) {}
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
   WRAPPED_PUPable_decl_template(TestEvent);  // NOLINT
@@ -147,7 +145,7 @@ struct TestEvent : public Event {
   void operator()(const double time, Var::type var, PrimVar::type prim_var,
                   Parallel::GlobalCache<Metavariables>& /*cache*/,
                   const ArrayIndex& /*array_index*/,
-                  const Component* const /*meta*/) const noexcept {
+                  const Component* const /*meta*/) const {
     calls.emplace_back(time, std::move(var), std::move(prim_var));
   }
 
@@ -156,20 +154,19 @@ struct TestEvent : public Event {
   template <typename Metavariables, typename ArrayIndex, typename Component>
   bool is_ready(Parallel::GlobalCache<Metavariables>& /*cache*/,
                 const ArrayIndex& /*array_index*/,
-                const Component* const /*meta*/) const noexcept {
+                const Component* const /*meta*/) const {
     // We use the triggers to control readiness for this test.
     return true;
   }
 
-  bool needs_evolved_variables() const noexcept override {
+  bool needs_evolved_variables() const override {
     return needs_evolved_variables_;
   }
 
   template <bool HasPrimitiveAndConservativeVars>
   static void check_calls(
       const std::vector<std::tuple<double, Variables<tmpl::list<Var>>,
-                                   Variables<tmpl::list<PrimVar>>>>&
-          expected) noexcept {
+                                   Variables<tmpl::list<PrimVar>>>>& expected) {
     CAPTURE(get_output(expected));
     CAPTURE(get_output(calls));
     REQUIRE(calls.size() == expected.size());
@@ -197,7 +194,7 @@ struct PrimFromCon {
   using return_tags = tmpl::list<PrimVar>;
   using argument_tags = tmpl::list<Var>;
   static void apply(const gsl::not_null<Scalar<DataVector>*> prim,
-                    const Scalar<DataVector>& con) noexcept {
+                    const Scalar<DataVector>& con) {
     get(*prim) = -get(con);
   }
 };
@@ -220,7 +217,7 @@ struct BoundaryCorrection final : BoundaryCorrectionBase {
       const gsl::not_null<Scalar<DataVector>*> correction,
       const Scalar<DataVector>& /*interior*/,
       const Scalar<DataVector>& exterior,
-      const dg::Formulation /*formulation*/) noexcept {
+      const dg::Formulation /*formulation*/) {
     *correction = exterior;
   }
 };
@@ -302,11 +299,11 @@ struct Metavariables {
 template <typename Metavariables>
 bool run_if_ready(
     const gsl::not_null<ActionTesting::MockRuntimeSystem<Metavariables>*>
-        runner) noexcept {
+        runner) {
   using component = Component<Metavariables>;
   using system = typename Metavariables::system;
   using variables_tag = typename system::variables_tag;
-  const auto get_prims = [&runner]() noexcept {
+  const auto get_prims = [&runner]() {
     if constexpr (system::has_primitive_and_conservative_vars) {
       return ActionTesting::get_databox_tag<
           component, typename system::primitive_variables_tag>(*runner, 0);
@@ -335,7 +332,7 @@ bool run_if_ready(
 }
 
 template <bool HasPrimitiveAndConservativeVars>
-void test(const bool time_runs_forward) noexcept {
+void test(const bool time_runs_forward) {
   using metavars = Metavariables<HasPrimitiveAndConservativeVars, false>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
   using component = Component<metavars>;
@@ -364,8 +361,7 @@ void test(const bool time_runs_forward) noexcept {
       [&deriv_vars, &exact_step_size, &initial_vars, &start_time, &time_step_id,
        &unset_primitives](
           const gsl::not_null<MockRuntimeSystem*> runner,
-          const std::vector<std::tuple<double, bool, bool, bool>>&
-              triggers) noexcept {
+          const std::vector<std::tuple<double, bool, bool, bool>>& triggers) {
         History history(1);
         history.insert(time_step_id, deriv_vars);
         history.most_recent_value() = initial_vars;
@@ -393,8 +389,8 @@ void test(const bool time_runs_forward) noexcept {
   // Tests start here
 
   // Nothing should happen in self-start
-  const auto check_self_start = [&set_up_component, &start_time, &step_size](
-                                    const bool trigger_is_ready) noexcept {
+  const auto check_self_start = [&set_up_component, &start_time,
+                                 &step_size](const bool trigger_is_ready) {
     // This isn't a valid time for the trigger to reschedule to (it is
     // in the past), but the triggers should be completely ignored in
     // this check.
@@ -408,8 +404,7 @@ void test(const bool time_runs_forward) noexcept {
       auto& box = ActionTesting::get_databox<component, tmpl::list<>>(
           make_not_null(&runner), 0);
       db::mutate<Tags::TimeStepId>(
-          make_not_null(&box),
-          [](const gsl::not_null<TimeStepId*> id) noexcept {
+          make_not_null(&box), [](const gsl::not_null<TimeStepId*> id) {
             *id = TimeStepId(id->time_runs_forward(), -1, id->step_time());
           });
     }
@@ -428,8 +423,8 @@ void test(const bool time_runs_forward) noexcept {
   }
 
   // Triggers too far in the future
-  const auto check_not_reached = [&set_up_component, &start_time, &step_size](
-                                     const bool trigger_is_ready) noexcept {
+  const auto check_not_reached = [&set_up_component, &start_time,
+                                  &step_size](const bool trigger_is_ready) {
     MockRuntimeSystem runner{
         {std::make_unique<TimeSteppers::AdamsBashforthN>(1)}};
     set_up_component(&runner, {{start_time + 1.5 * step_size, trigger_is_ready,
@@ -474,16 +469,15 @@ void test(const bool time_runs_forward) noexcept {
   const auto check_missing_dense_data = [&initial_vars, &set_up_component,
                                          &step_center, &time_step_id,
                                          &unset_primitives](
-                                            const bool data_needed) noexcept {
+                                            const bool data_needed) {
     MockRuntimeSystem runner{{std::make_unique<TimeSteppers::RungeKutta3>()}};
     set_up_component(&runner, {{step_center, true, true, data_needed}});
     {
       auto& box = ActionTesting::get_databox<component, tmpl::list<>>(
           make_not_null(&runner), 0);
       db::mutate<Tags::HistoryEvolvedVariables<variables_tag>>(
-          make_not_null(&box),
-          [&initial_vars,
-           &time_step_id](const gsl::not_null<History*> history) noexcept {
+          make_not_null(&box), [&initial_vars, &time_step_id](
+                                   const gsl::not_null<History*> history) {
             *history = History(3);
             history->insert(TimeStepId(time_step_id.time_runs_forward(), 0,
                                        time_step_id.step_time(), 1,
@@ -519,7 +513,7 @@ void test(const bool time_runs_forward) noexcept {
 }
 
 template <bool HasPrimitiveAndConservativeVars>
-void test_lts(const bool time_runs_forward) noexcept {
+void test_lts(const bool time_runs_forward) {
   using metavars = Metavariables<HasPrimitiveAndConservativeVars, true>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
   using component = Component<metavars>;
@@ -561,7 +555,7 @@ void test_lts(const bool time_runs_forward) noexcept {
        &initial_vars, &neighbor, &next_time_step_id, &quarter_time_step_id,
        &start_time, &time_step_id,
        &unset_primitives](const gsl::not_null<MockRuntimeSystem*> runner,
-                          const bool needs_evolved_variables) noexcept {
+                          const bool needs_evolved_variables) {
         const Mesh<1> mesh(2, Spectral::Basis::Legendre,
                            Spectral::Quadrature::GaussLobatto);
         History history(1);

@@ -73,7 +73,7 @@ struct InitializeCharacteristicEvolutionScri {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     initialize_impl(make_not_null(&box),
                     typename Metavariables::scri_values_to_observe{});
     return std::make_tuple(std::move(box));
@@ -81,7 +81,7 @@ struct InitializeCharacteristicEvolutionScri {
 
   template <typename TagList, typename... TagPack>
   static void initialize_impl(const gsl::not_null<db::DataBox<TagList>*> box,
-                              tmpl::list<TagPack...> /*meta*/) noexcept {
+                              tmpl::list<TagPack...> /*meta*/) {
     const size_t target_number_of_points =
         db::get<InitializationTags::ScriInterpolationOrder>(*box);
     const size_t vector_size =

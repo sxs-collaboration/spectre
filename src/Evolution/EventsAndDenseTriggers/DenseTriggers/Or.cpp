@@ -7,10 +7,10 @@
 #include <utility>
 
 namespace DenseTriggers {
-Or::Or(std::vector<std::unique_ptr<DenseTrigger>> triggers) noexcept
+Or::Or(std::vector<std::unique_ptr<DenseTrigger>> triggers)
     : triggers_(std::move(triggers)) {}
 
-void Or::pup(PUP::er& p) noexcept {
+void Or::pup(PUP::er& p) {
   DenseTrigger::pup(p);
   p | triggers_;
 }

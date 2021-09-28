@@ -87,7 +87,7 @@ struct Metavariables {
         const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
                               Frame::Grid>&
             cell_centered_logical_to_grid_inv_jacobian,
-        const Scalar<DataVector>& cell_centered_det_inv_jacobian) noexcept {
+        const Scalar<DataVector>& cell_centered_det_inv_jacobian) {
       time_derivative_invoked = true;
       CHECK(db::get<evolution::dg::subcell::Tags::Mesh<Dim>>(*box) ==
             Mesh<Dim>(5, Spectral::Basis::FiniteDifference,

@@ -38,7 +38,7 @@ struct TildeTau : db::SimpleTag {
 template <size_t Dim, typename Fr>
 struct TildeS : db::SimpleTag {
   using type = tnsr::i<DataVector, Dim, Fr>;
-  static std::string name() noexcept { return Frame::prefix<Fr>() + "TildeS"; }
+  static std::string name() { return Frame::prefix<Fr>() + "TildeS"; }
 };
 
 }  // namespace Tags

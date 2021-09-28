@@ -10,4 +10,4 @@ class Time;
 /// \ingroup TimeGroup
 /// Scale of the roundoff error incurred from inexact slab operations
 /// near the given time.
-double slab_rounding_error(const Time& time) noexcept;
+double slab_rounding_error(const Time& time);

@@ -56,7 +56,7 @@ struct TimeDerivative {
       const gsl::not_null<db::DataBox<DbTagsList>*> box,
       const InverseJacobian<DataVector, 3, Frame::ElementLogical, Frame::Grid>&
           cell_centered_logical_to_grid_inv_jacobian,
-      const Scalar<DataVector>& /*cell_centered_det_inv_jacobian*/) noexcept {
+      const Scalar<DataVector>& /*cell_centered_det_inv_jacobian*/) {
     using evolved_vars_tag = typename System::variables_tag;
     using evolved_vars_tags = typename evolved_vars_tag::tags_list;
     using prim_tags = typename System::primitive_variables_tag::tags_list;
@@ -106,8 +106,8 @@ struct TimeDerivative {
     using derived_boundary_corrections =
         typename std::decay_t<decltype(boundary_correction)>::creatable_classes;
     std::array<Variables<evolved_vars_tags>, 3> boundary_corrections{};
-    tmpl::for_each<
-        derived_boundary_corrections>([&](auto derived_correction_v) noexcept {
+    tmpl::for_each<derived_boundary_corrections>([&](auto
+                                                         derived_correction_v) {
       using DerivedCorrection = tmpl::type_from<decltype(derived_correction_v)>;
       if (typeid(boundary_correction) == typeid(DerivedCorrection)) {
         using dg_package_data_temporary_tags =
@@ -136,7 +136,7 @@ struct TimeDerivative {
              &spacetime_vars_on_face =
                  db::get<evolution::dg::subcell::Tags::OnSubcellFaces<
                      typename System::flux_spacetime_variables_tag, 3>>(*box)](
-                auto tag_v) noexcept {
+                auto tag_v) {
               using tag = tmpl::type_from<decltype(tag_v)>;
               for (size_t d = 0; d < 3; ++d) {
                 get<tag>(gsl::at(vars_on_lower_face, d)) =
@@ -150,11 +150,11 @@ struct TimeDerivative {
         call_with_dynamic_type<void, typename grmhd::ValenciaDivClean::fd::
                                          Reconstructor::creatable_classes>(
             &recons, [&box, &vars_on_lower_face,
-                      &vars_on_upper_face](const auto& reconstructor) noexcept {
-              db::apply<typename std::decay_t<decltype(
-                  *reconstructor)>::reconstruction_argument_tags>(
+                      &vars_on_upper_face](const auto& reconstructor) {
+              db::apply<typename std::decay_t<
+                  decltype(*reconstructor)>::reconstruction_argument_tags>(
                   [&vars_on_lower_face, &vars_on_upper_face,
-                   &reconstructor](const auto&... args) noexcept {
+                   &reconstructor](const auto&... args) {
                     reconstructor->reconstruct(
                         make_not_null(&vars_on_lower_face),
                         make_not_null(&vars_on_upper_face), args...);
@@ -279,7 +279,7 @@ struct TimeDerivative {
             grmhd::ValenciaDivClean::Tags::ConstraintDampingParameter>>(
         [&cell_centered_logical_to_grid_inv_jacobian, &num_pts,
          &boundary_corrections, &subcell_mesh, &one_over_delta_xi](
-            const auto dt_vars_ptr, const auto&... source_args) noexcept {
+            const auto dt_vars_ptr, const auto&... source_args) {
           dt_vars_ptr->initialize(num_pts, 0.0);
           using TildeD = grmhd::ValenciaDivClean::Tags::TildeD;
           using TildeTau = grmhd::ValenciaDivClean::Tags::TildeTau;

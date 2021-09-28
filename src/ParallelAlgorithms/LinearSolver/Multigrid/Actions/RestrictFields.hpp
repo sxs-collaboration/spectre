@@ -92,7 +92,7 @@ struct SendFieldsToCoarserGrid<tmpl::list<FieldsTags...>, OptionsGroup,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
       const ElementId<Dim>& element_id, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     // Skip restriction on coarsest level
     const auto& parent_id = db::get<Tags::ParentId<Dim>>(box);
     if (not parent_id.has_value()) {
@@ -129,7 +129,7 @@ struct SendFieldsToCoarserGrid<tmpl::list<FieldsTags...>, OptionsGroup,
                                                       child_size, massive);
       const auto restrict_fields = [&restricted_fields, &restriction_operator,
                                     &mesh](const auto receive_tag_v,
-                                           const auto& fields) noexcept {
+                                           const auto& fields) {
         using receive_tag = std::decay_t<decltype(receive_tag_v)>;
         get<receive_tag>(restricted_fields) = typename receive_tag::type(
             apply_matrices(restriction_operator, fields, mesh.extents()));
@@ -179,7 +179,7 @@ struct ReceiveFieldsFromFinerGrid<Dim, FieldsTags, OptionsGroup,
         tuples::TaggedTuple<InboxTags...>& inboxes,
         const Parallel::GlobalCache<Metavariables>& /*cache*/,
         const ElementId<Dim>& element_id, const ActionList /*meta*/,
-        const ParallelComponent* const /*meta*/) noexcept {
+        const ParallelComponent* const /*meta*/) {
     // Skip on finest grid
     const auto& child_ids = db::get<Tags::ChildIds<Dim>>(box);
     if (child_ids.empty()) {
@@ -213,7 +213,7 @@ struct ReceiveFieldsFromFinerGrid<Dim, FieldsTags, OptionsGroup,
 
     // Assemble restricted data from children
     const auto assemble_children_data =
-        [&children_data](const auto source, const auto receive_tag_v) noexcept {
+        [&children_data](const auto source, const auto receive_tag_v) {
           using receive_tag = std::decay_t<decltype(receive_tag_v)>;
           // Move the first child data directly into the buffer, then add the
           // data from the remaining children.

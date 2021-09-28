@@ -47,6 +47,6 @@ struct DgInitialDataTci {
           tmpl::list<Inactive<MassDensityCons>, Inactive<MomentumDensity>,
                      Inactive<EnergyDensity>>>& subcell_vars,
       double rdmp_delta0, double rdmp_epsilon, double persson_exponent,
-      const Mesh<Dim>& dg_mesh, const Scalar<DataVector>& dg_pressure) noexcept;
+      const Mesh<Dim>& dg_mesh, const Scalar<DataVector>& dg_pressure);
 };
 }  // namespace NewtonianEuler::subcell

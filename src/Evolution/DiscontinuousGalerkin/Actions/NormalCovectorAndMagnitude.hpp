@@ -51,7 +51,7 @@ void unit_normal_vector_and_covector_and_magnitude_impl(
         unit_normal_covector,
     const gsl::not_null<Variables<FieldsOnFaceTags>*> fields_on_face,
     const tnsr::i<DataVector, Dim, Frame::Inertial>&
-        unnormalized_normal_covector) noexcept {
+        unnormalized_normal_covector) {
   if constexpr (has_inverse_spatial_metric_tag_v<System>) {
     using inverse_spatial_metric_tag =
         typename System::inverse_spatial_metric_tag;
@@ -117,7 +117,7 @@ void unit_normal_vector_and_covector_and_magnitude(
     const std::unordered_map<Direction<Dim>, tnsr::i<DataVector, Dim>>&
         unnormalized_normal_covectors,
     const domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, Dim>&
-        moving_mesh_map) noexcept {
+        moving_mesh_map) {
   const bool mesh_is_moving = not moving_mesh_map.is_identity();
   const auto& unnormalized_normal_covector =
       unnormalized_normal_covectors.at(direction);

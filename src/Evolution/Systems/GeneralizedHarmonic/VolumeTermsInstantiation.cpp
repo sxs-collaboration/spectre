@@ -50,8 +50,7 @@ namespace evolution::dg::Actions::detail {
       const Scalar<DataVector>& gamma0, const Scalar<DataVector>& gamma1,     \
       const Scalar<DataVector>& gamma2,                                       \
       const tnsr::a<DataVector, DIM(data)>& gauge_function,                   \
-      const tnsr::ab<DataVector, DIM(data)>&                                  \
-          spacetime_deriv_gauge_function) noexcept;
+      const tnsr::ab<DataVector, DIM(data)>& spacetime_deriv_gauge_function);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 

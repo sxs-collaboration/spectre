@@ -17,7 +17,7 @@
 
 SPECTRE_TEST_CASE("Unit.Time.StepControllers.BinaryFraction", "[Unit][Time]") {
   Parallel::register_classes_with_charm<StepControllers::BinaryFraction>();
-  const auto check = [](const auto& bf) noexcept {
+  const auto check = [](const auto& bf) {
     const Slab slab(1., 4.);
     CHECK(bf.choose_step(slab.start(), 4.) == slab.duration());
     CHECK(bf.choose_step(slab.start(), 10.) == slab.duration());

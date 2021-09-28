@@ -59,7 +59,7 @@ struct CharacteristicSpeeds : ::db::SimpleTag {
 template <size_t Dim>
 std::array<DataVector, (Dim + 1) * (Dim + 1)> characteristic_speeds(
     const Scalar<DataVector>& var_1, const tnsr::I<DataVector, Dim>& var_2,
-    const tnsr::i<DataVector, Dim>& var_3) noexcept {
+    const tnsr::i<DataVector, Dim>& var_3) {
   std::array<DataVector, (Dim + 1) * (Dim + 1)> result;
   // Any expression for the characteristic speeds is fine.
   for (size_t i = 0; i < result.size(); ++i) {
@@ -89,8 +89,7 @@ using n_dot_f_tags =
 
 template <typename FluxType, typename... Args>
 auto get_packaged_data(const FluxType& flux_computer,
-                       const DataVector& used_for_size,
-                       const Args&... args) noexcept {
+                       const DataVector& used_for_size, const Args&... args) {
   dg::SimpleBoundaryData<typename FluxType::package_field_tags,
                          typename FluxType::package_extra_tags>
       packaged_data{used_for_size.size()};
@@ -103,7 +102,7 @@ namespace detail {
 template <size_t Dim, typename FluxType, typename... VariablesTags>
 void test_conservation(const FluxType& flux_computer,
                        const DataVector& used_for_size,
-                       const tmpl::list<VariablesTags...> /*meta*/) noexcept {
+                       const tmpl::list<VariablesTags...> /*meta*/) {
   MAKE_GENERATOR(gen);
   std::uniform_real_distribution<> dist(0.0, 1.0);
   const size_t num_points = used_for_size.size();
@@ -154,7 +153,7 @@ void test_conservation(const FluxType& flux_computer,
 
 template <size_t Dim, typename FluxType>
 void test_conservation(const FluxType& flux_computer,
-                       const DataVector& used_for_size) noexcept {
+                       const DataVector& used_for_size) {
   detail::test_conservation<Dim>(
       flux_computer, used_for_size,
       typename System<Dim>::variables_tag::tags_list{});

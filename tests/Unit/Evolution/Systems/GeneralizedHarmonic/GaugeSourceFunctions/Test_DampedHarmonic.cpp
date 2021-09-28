@@ -35,8 +35,7 @@ namespace GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail {
 // possible accidental usage.
 template <size_t SpatialDim, typename Frame, typename DataType>
 Scalar<DataType> spatial_weight_function(
-    const tnsr::I<DataType, SpatialDim, Frame>& coords,
-    const double sigma_r) noexcept {
+    const tnsr::I<DataType, SpatialDim, Frame>& coords, const double sigma_r) {
   Scalar<DataType> spatial_weight{};
   spatial_weight_function(make_not_null(&spatial_weight), coords, sigma_r);
   return spatial_weight;
@@ -44,8 +43,7 @@ Scalar<DataType> spatial_weight_function(
 
 template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::a<DataType, SpatialDim, Frame> spacetime_deriv_of_spatial_weight_function(
-    const tnsr::I<DataType, SpatialDim, Frame>& coords,
-    const double sigma_r) noexcept {
+    const tnsr::I<DataType, SpatialDim, Frame>& coords, const double sigma_r) {
   tnsr::a<DataType, SpatialDim, Frame> d4_weight{};
   spacetime_deriv_of_spatial_weight_function(
       make_not_null(&d4_weight), coords, sigma_r,
@@ -53,15 +51,15 @@ tnsr::a<DataType, SpatialDim, Frame> spacetime_deriv_of_spatial_weight_function(
   return d4_weight;
 }
 
-double roll_on_function(double time, double t_start, double sigma_t) noexcept;
+double roll_on_function(double time, double t_start, double sigma_t);
 
 double time_deriv_of_roll_on_function(double time, double t_start,
-                                      double sigma_t) noexcept;
+                                      double sigma_t);
 }  // namespace GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail
 
 namespace {
 template <size_t SpatialDim, typename Frame, typename DataType>
-void test_rollon_function(const DataType& used_for_size) noexcept {
+void test_rollon_function(const DataType& used_for_size) {
   INFO("Test rollon function");
   // roll_on_function
   pypp::check_with_random_values<1>(
@@ -102,7 +100,7 @@ void wrap_damped_harmonic_rollon(
     const tnsr::I<DataVector, SpatialDim, Frame>& coords,
     const double amp_coef_L1, const double amp_coef_L2, const double amp_coef_S,
     const double rollon_start_time, const double rollon_width,
-    const double sigma_r) noexcept {
+    const double sigma_r) {
   GeneralizedHarmonic::gauges::damped_harmonic_rollon(
       gauge_h, d4_gauge_h, gauge_h_init, dgauge_h_init, lapse, shift,
       spacetime_unit_normal_one_form, sqrt_det_spatial_metric,
@@ -126,7 +124,7 @@ void wrap_damped_harmonic(
     const tnsr::iaa<DataVector, SpatialDim, Frame>& phi,
     const tnsr::I<DataVector, SpatialDim, Frame>& coords,
     const double amp_coef_L1, const double amp_coef_L2, const double amp_coef_S,
-    const double sigma_r) noexcept {
+    const double sigma_r) {
   GeneralizedHarmonic::gauges::damped_harmonic(
       gauge_h, d4_gauge_h, lapse, shift, spacetime_unit_normal_one_form,
       sqrt_det_spatial_metric, inverse_spatial_metric, spacetime_metric, pi,
@@ -135,7 +133,7 @@ void wrap_damped_harmonic(
 
 // Compare with Python implementation
 template <size_t SpatialDim, typename Frame>
-void test_with_python(const DataVector& used_for_size) noexcept {
+void test_with_python(const DataVector& used_for_size) {
   INFO("Test with python");
   CAPTURE(SpatialDim);
   CAPTURE(Frame{});

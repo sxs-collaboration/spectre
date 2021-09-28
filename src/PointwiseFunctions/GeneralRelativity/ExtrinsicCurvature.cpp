@@ -22,8 +22,7 @@ void extrinsic_curvature(
     const tnsr::iJ<DataType, SpatialDim, Frame>& deriv_shift,
     const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
     const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric,
-    const tnsr::ijj<DataType, SpatialDim, Frame>&
-        deriv_spatial_metric) noexcept {
+    const tnsr::ijj<DataType, SpatialDim, Frame>& deriv_spatial_metric) {
   destructive_resize_components(ex_curvature, get_size(get(lapse)));
   const DataType half_over_lapse = 0.5 / get(lapse);
   for (size_t i = 0; i < SpatialDim; ++i) {
@@ -47,8 +46,7 @@ tnsr::ii<DataType, SpatialDim, Frame> extrinsic_curvature(
     const tnsr::iJ<DataType, SpatialDim, Frame>& deriv_shift,
     const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
     const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric,
-    const tnsr::ijj<DataType, SpatialDim, Frame>&
-        deriv_spatial_metric) noexcept {
+    const tnsr::ijj<DataType, SpatialDim, Frame>& deriv_spatial_metric) {
   tnsr::ii<DataType, SpatialDim, Frame> ex_curvature{};
   extrinsic_curvature(make_not_null(&ex_curvature), lapse, shift, deriv_shift,
                       spatial_metric, dt_spatial_metric, deriv_spatial_metric);
@@ -70,7 +68,7 @@ tnsr::ii<DataType, SpatialDim, Frame> extrinsic_curvature(
       const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& spatial_metric,    \
       const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& dt_spatial_metric, \
       const tnsr::ijj<DTYPE(data), DIM(data), FRAME(data)>&                   \
-          deriv_spatial_metric) noexcept;                                     \
+          deriv_spatial_metric);                                              \
   template tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>                      \
   gr::extrinsic_curvature(                                                    \
       const Scalar<DTYPE(data)>& lapse,                                       \
@@ -79,7 +77,7 @@ tnsr::ii<DataType, SpatialDim, Frame> extrinsic_curvature(
       const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& spatial_metric,    \
       const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& dt_spatial_metric, \
       const tnsr::ijj<DTYPE(data), DIM(data), FRAME(data)>&                   \
-          deriv_spatial_metric) noexcept;
+          deriv_spatial_metric);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
                         (Frame::Grid, Frame::Inertial))

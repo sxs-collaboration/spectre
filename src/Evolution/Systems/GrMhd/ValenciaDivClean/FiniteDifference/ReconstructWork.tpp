@@ -36,7 +36,7 @@ template <typename TagsList, size_t ThermodynamicDim>
 void compute_conservatives_for_reconstruction(
     const gsl::not_null<Variables<TagsList>*> vars_on_face,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
-        eos) noexcept {
+        eos) {
   // Computes:
   // 1. W v^i
   // 2. Lorentz factor as sqrt(1 + Wv^i Wv^j\gamma_{ij})
@@ -117,7 +117,7 @@ void reconstruct_prims_work(
                        evolution::dg::subcell::NeighborData,
                        boost::hash<std::pair<Direction<3>, ElementId<3>>>>
         neighbor_data,
-    const Mesh<3>& subcell_mesh, size_t ghost_zone_size) noexcept {
+    const Mesh<3>& subcell_mesh, size_t ghost_zone_size) {
   using prim_tags_for_reconstruction =
       tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
                  hydro::Tags::Pressure<DataVector>,
@@ -143,7 +143,7 @@ void reconstruct_prims_work(
                                                 &vars_on_lower_face,
                                                 &vars_on_upper_face,
                                                 &subcell_mesh](
-                                                   auto tag_v) noexcept {
+                                                   auto tag_v) {
     using tag = tmpl::type_from<decltype(tag_v)>;
     const typename tag::type* volume_tensor_ptr = nullptr;
     Variables<tmpl::list<
@@ -231,7 +231,7 @@ void reconstruct_fd_neighbor_work(
                        boost::hash<std::pair<Direction<3>, ElementId<3>>>>
         neighbor_data,
     const Mesh<3>& subcell_mesh, const Direction<3>& direction_to_reconstruct,
-    const size_t ghost_zone_size) noexcept {
+    const size_t ghost_zone_size) {
   using prim_tags_for_reconstruction =
       tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
                  hydro::Tags::Pressure<DataVector>,
@@ -262,7 +262,7 @@ void reconstruct_fd_neighbor_work(
   tmpl::for_each<prim_tags_for_reconstruction>(
       [&direction_to_reconstruct, &ghost_data_extents, &neighbor_prims,
        &reconstruct_lower_neighbor, &reconstruct_upper_neighbor, &subcell_mesh,
-       &subcell_volume_prims, &vars_on_face](auto tag_v) noexcept {
+       &subcell_volume_prims, &vars_on_face](auto tag_v) {
         using tag = tmpl::type_from<decltype(tag_v)>;
         const typename tag::type* volume_tensor_ptr = nullptr;
         typename tag::type volume_tensor{};

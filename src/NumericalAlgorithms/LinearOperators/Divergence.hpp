@@ -60,7 +60,7 @@ template <typename FluxTags, size_t Dim, typename DerivativeFrame>
 auto divergence(
     const Variables<FluxTags>& F, const Mesh<Dim>& mesh,
     const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
-                          DerivativeFrame>& inverse_jacobian) noexcept
+                          DerivativeFrame>& inverse_jacobian)
     -> Variables<db::wrap_tags_in<Tags::div, FluxTags>>;
 
 template <typename... DivTags, typename... FluxTags, size_t Dim,
@@ -69,7 +69,7 @@ void divergence(
     gsl::not_null<Variables<tmpl::list<DivTags...>>*> divergence_of_F,
     const Variables<tmpl::list<FluxTags...>>& F, const Mesh<Dim>& mesh,
     const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
-                          DerivativeFrame>& inverse_jacobian) noexcept;
+                          DerivativeFrame>& inverse_jacobian);
 /// @}
 
 /// @{
@@ -80,7 +80,7 @@ Scalar<DataVector> divergence(
     const tnsr::I<DataVector, Dim, DerivativeFrame>& input,
     const Mesh<Dim>& mesh,
     const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
-                          DerivativeFrame>& inverse_jacobian) noexcept;
+                          DerivativeFrame>& inverse_jacobian);
 
 template <size_t Dim, typename DerivativeFrame>
 void divergence(
@@ -88,7 +88,7 @@ void divergence(
     const tnsr::I<DataVector, Dim, DerivativeFrame>& input,
     const Mesh<Dim>& mesh,
     const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
-                          DerivativeFrame>& inverse_jacobian) noexcept;
+                          DerivativeFrame>& inverse_jacobian);
 /// @}
 
 namespace Tags {

@@ -50,43 +50,43 @@ class KomissarovShock : public AnalyticSolution, public MarkAsAnalyticSolution {
     using type = double;
     static constexpr Options::String help = {
         "The adiabatic index of the ideal fluid"};
-    static type lower_bound() noexcept { return 1.0; }
+    static type lower_bound() { return 1.0; }
   };
   struct LeftRestMassDensity {
     using type = double;
-    static std::string name() noexcept { return "LeftDensity"; };
+    static std::string name() { return "LeftDensity"; };
     static constexpr Options::String help = {
         "Fluid rest mass density in the left half-domain"};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
   struct RightRestMassDensity {
     using type = double;
-    static std::string name() noexcept { return "RightDensity"; };
+    static std::string name() { return "RightDensity"; };
     static constexpr Options::String help = {
         "Fluid rest mass density in the right half-domain"};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
   struct LeftPressure {
     using type = double;
     static constexpr Options::String help = {
         "Fluid pressure in the left half-domain"};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
   struct RightPressure {
     using type = double;
     static constexpr Options::String help = {
         "Fluid pressure in the right half-domain"};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
   struct LeftSpatialVelocity {
     using type = std::array<double, 3>;
-    static std::string name() noexcept { return "LeftVelocity"; };
+    static std::string name() { return "LeftVelocity"; };
     static constexpr Options::String help = {
         "Fluid spatial velocity in the left half-domain"};
   };
   struct RightSpatialVelocity {
     using type = std::array<double, 3>;
-    static std::string name() noexcept { return "RightVelocity"; };
+    static std::string name() { return "RightVelocity"; };
     static constexpr Options::String help = {
         "Fluid spatial velocity in the right half-domain"};
   };
@@ -118,8 +118,8 @@ class KomissarovShock : public AnalyticSolution, public MarkAsAnalyticSolution {
   KomissarovShock() = default;
   KomissarovShock(const KomissarovShock& /*rhs*/) = delete;
   KomissarovShock& operator=(const KomissarovShock& /*rhs*/) = delete;
-  KomissarovShock(KomissarovShock&& /*rhs*/) noexcept = default;
-  KomissarovShock& operator=(KomissarovShock&& /*rhs*/) noexcept = default;
+  KomissarovShock(KomissarovShock&& /*rhs*/) = default;
+  KomissarovShock& operator=(KomissarovShock&& /*rhs*/) = default;
   ~KomissarovShock() = default;
 
   KomissarovShock(double adiabatic_index, double left_rest_mass_density,
@@ -129,68 +129,60 @@ class KomissarovShock : public AnalyticSolution, public MarkAsAnalyticSolution {
                   const std::array<double, 3>& right_spatial_velocity,
                   const std::array<double, 3>& left_magnetic_field,
                   const std::array<double, 3>& right_magnetic_field,
-                  double shock_speed) noexcept;
+                  double shock_speed);
 
-  explicit KomissarovShock(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit KomissarovShock(CkMigrateMessage* /*unused*/) {}
 
   /// @{
   /// Retrieve the GRMHD variables at a given position.
   template <typename DataType>
-  auto variables(
-      const tnsr::I<DataType, 3>& x, double t,
-      tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/) const
-      noexcept -> tuples::TaggedTuple<hydro::Tags::RestMassDensity<DataType>>;
+  auto variables(const tnsr::I<DataType, 3>& x, double t,
+                 tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/)
+      const -> tuples::TaggedTuple<hydro::Tags::RestMassDensity<DataType>>;
 
   template <typename DataType>
   auto variables(
       const tnsr::I<DataType, 3>& x, double t,
       tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>> /*meta*/) const
-      noexcept
       -> tuples::TaggedTuple<hydro::Tags::SpecificInternalEnergy<DataType>>;
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x, double t,
                  tmpl::list<hydro::Tags::Pressure<DataType>> /*meta*/) const
-      noexcept -> tuples::TaggedTuple<hydro::Tags::Pressure<DataType>>;
+      -> tuples::TaggedTuple<hydro::Tags::Pressure<DataType>>;
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x, double t,
                  tmpl::list<hydro::Tags::SpatialVelocity<DataType, 3>> /*meta*/)
-      const noexcept
-      -> tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, 3>>;
+      const -> tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, 3>>;
 
   template <typename DataType>
-  auto variables(
-      const tnsr::I<DataType, 3>& x, double t,
-      tmpl::list<hydro::Tags::MagneticField<DataType, 3>> /*meta*/) const
-      noexcept -> tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3>>;
+  auto variables(const tnsr::I<DataType, 3>& x, double t,
+                 tmpl::list<hydro::Tags::MagneticField<DataType, 3>> /*meta*/)
+      const -> tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3>>;
 
   template <typename DataType>
   auto variables(
       const tnsr::I<DataType, 3>& x, double t,
       tmpl::list<hydro::Tags::DivergenceCleaningField<DataType>> /*meta*/) const
-      noexcept
       -> tuples::TaggedTuple<hydro::Tags::DivergenceCleaningField<DataType>>;
 
   template <typename DataType>
-  auto variables(
-      const tnsr::I<DataType, 3>& x, double t,
-      tmpl::list<hydro::Tags::LorentzFactor<DataType>> /*meta*/) const noexcept
-      -> tuples::TaggedTuple<hydro::Tags::LorentzFactor<DataType>>;
+  auto variables(const tnsr::I<DataType, 3>& x, double t,
+                 tmpl::list<hydro::Tags::LorentzFactor<DataType>> /*meta*/)
+      const -> tuples::TaggedTuple<hydro::Tags::LorentzFactor<DataType>>;
 
   template <typename DataType>
-  auto variables(
-      const tnsr::I<DataType, 3>& x, double t,
-      tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>> /*meta*/) const
-      noexcept -> tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DataType>>;
+  auto variables(const tnsr::I<DataType, 3>& x, double t,
+                 tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>> /*meta*/)
+      const -> tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DataType>>;
   /// @}
 
   /// Retrieve a collection of hydrodynamic variables at position x
   template <typename DataType, typename... Tags>
   tuples::TaggedTuple<Tags...> variables(const tnsr::I<DataType, 3>& x,
                                          double t,
-                                         tmpl::list<Tags...> /*meta*/) const
-      noexcept {
+                                         tmpl::list<Tags...> /*meta*/) const {
     static_assert(sizeof...(Tags) > 1,
                   "The generic template will recurse infinitely if only one "
                   "tag is being retrieved.");
@@ -200,16 +192,16 @@ class KomissarovShock : public AnalyticSolution, public MarkAsAnalyticSolution {
   /// Retrieve the metric variables
   template <typename DataType, typename Tag>
   tuples::TaggedTuple<Tag> variables(const tnsr::I<DataType, 3>& x, double t,
-                                     tmpl::list<Tag> /*meta*/) const noexcept {
+                                     tmpl::list<Tag> /*meta*/) const {
     return background_spacetime_.variables(x, t, tmpl::list<Tag>{});
   }
 
-  const EquationsOfState::IdealFluid<true>& equation_of_state() const noexcept {
+  const EquationsOfState::IdealFluid<true>& equation_of_state() const {
     return equation_of_state_;
   }
 
   // clang-tidy: no runtime references
-  void pup(PUP::er& /*p*/) noexcept;  //  NOLINT
+  void pup(PUP::er& /*p*/);  //  NOLINT
 
  protected:
   EquationsOfState::IdealFluid<true> equation_of_state_{};
@@ -240,10 +232,10 @@ class KomissarovShock : public AnalyticSolution, public MarkAsAnalyticSolution {
   double shock_speed_ = std::numeric_limits<double>::signaling_NaN();
 
   friend bool operator==(const KomissarovShock& lhs,
-                         const KomissarovShock& rhs) noexcept;
+                         const KomissarovShock& rhs);
 
   friend bool operator!=(const KomissarovShock& lhs,
-                         const KomissarovShock& rhs) noexcept;
+                         const KomissarovShock& rhs);
 };
 
 }  // namespace Solutions

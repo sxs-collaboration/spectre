@@ -15,7 +15,7 @@ namespace {
 
 template <size_t Dim>
 void test_sources(const std::array<double, Dim>& acceleration_field,
-                  const DataVector& used_for_size) noexcept {
+                  const DataVector& used_for_size) {
   NewtonianEuler::Sources::UniformAcceleration<Dim> source(acceleration_field);
   pypp::check_with_random_values<2>(
       &NewtonianEuler::Sources::UniformAcceleration<Dim>::apply, source,

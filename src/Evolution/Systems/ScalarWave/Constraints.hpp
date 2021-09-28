@@ -29,13 +29,13 @@ namespace ScalarWave {
 template <size_t SpatialDim>
 tnsr::i<DataVector, SpatialDim, Frame::Inertial> one_index_constraint(
     const tnsr::i<DataVector, SpatialDim, Frame::Inertial>& d_psi,
-    const tnsr::i<DataVector, SpatialDim, Frame::Inertial>& phi) noexcept;
+    const tnsr::i<DataVector, SpatialDim, Frame::Inertial>& phi);
 
 template <size_t SpatialDim>
 void one_index_constraint(
     gsl::not_null<tnsr::i<DataVector, SpatialDim, Frame::Inertial>*> constraint,
     const tnsr::i<DataVector, SpatialDim, Frame::Inertial>& d_psi,
-    const tnsr::i<DataVector, SpatialDim, Frame::Inertial>& phi) noexcept;
+    const tnsr::i<DataVector, SpatialDim, Frame::Inertial>& phi);
 /// @}
 
 /// @{
@@ -51,13 +51,13 @@ void one_index_constraint(
  */
 template <size_t SpatialDim>
 tnsr::ij<DataVector, SpatialDim, Frame::Inertial> two_index_constraint(
-    const tnsr::ij<DataVector, SpatialDim, Frame::Inertial>& d_phi) noexcept;
+    const tnsr::ij<DataVector, SpatialDim, Frame::Inertial>& d_phi);
 
 template <size_t SpatialDim>
 void two_index_constraint(
     gsl::not_null<tnsr::ij<DataVector, SpatialDim, Frame::Inertial>*>
         constraint,
-    const tnsr::ij<DataVector, SpatialDim, Frame::Inertial>& d_phi) noexcept;
+    const tnsr::ij<DataVector, SpatialDim, Frame::Inertial>& d_phi);
 /// @}
 
 namespace Tags {

@@ -27,7 +27,7 @@ struct ErrorOnFailedApparentHorizon {
   static void apply(const db::DataBox<DbTags>& /*box*/,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const TemporalId& /*temporal_id*/,
-                    const FastFlow::Status failure_reason) noexcept {
+                    const FastFlow::Status failure_reason) {
     ERROR("Apparent horizon finder "
           << pretty_type::short_name<InterpolationTargetTag>()
           << " failed, reason = " << failure_reason);

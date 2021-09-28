@@ -16,7 +16,7 @@ namespace blaze {
 // This vectorized implementation of the step function is necessary because
 // blaze does not offer its own version of a vectorized step function.
 template <typename T>
-BLAZE_ALWAYS_INLINE SIMDdouble step_function(const SIMDf64<T>& v) noexcept
+BLAZE_ALWAYS_INLINE SIMDdouble step_function(const SIMDf64<T>& v)
 #if BLAZE_AVX512F_MODE || BLAZE_MIC_MODE
 {
   return _mm512_set_pd((*v).eval().value[7] < 0.0 ? 0.0 : 1.0,
@@ -46,7 +46,7 @@ BLAZE_ALWAYS_INLINE SIMDdouble step_function(const SIMDf64<T>& v) noexcept
 }
 #endif
 
-BLAZE_ALWAYS_INLINE double step_function(const double v) noexcept {
+BLAZE_ALWAYS_INLINE double step_function(const double v) {
   return v < 0.0 ? 0.0 : 1.0;
 }
 
@@ -54,12 +54,12 @@ struct StepFunction {
   explicit inline StepFunction() = default;
 
   template <typename T>
-  BLAZE_ALWAYS_INLINE decltype(auto) operator()(const T& a) const noexcept {
+  BLAZE_ALWAYS_INLINE decltype(auto) operator()(const T& a) const {
     return step_function(a);
   }
 
   template <typename T>
-  BLAZE_ALWAYS_INLINE decltype(auto) load(const T& a) const noexcept {
+  BLAZE_ALWAYS_INLINE decltype(auto) load(const T& a) const {
     BLAZE_CONSTRAINT_MUST_BE_SIMD_PACK(T);
     return step_function(a);
   }
@@ -68,12 +68,12 @@ struct StepFunction {
 
 template <typename VT, bool TF>
 BLAZE_ALWAYS_INLINE decltype(auto) step_function(
-    const blaze::DenseVector<VT, TF>& vec) noexcept {
+    const blaze::DenseVector<VT, TF>& vec) {
   return map(*vec, blaze::StepFunction{});
 }
 
 template <typename VT, bool TF>
 BLAZE_ALWAYS_INLINE decltype(auto) StepFunction(
-    const blaze::DenseVector<VT, TF>& vec) noexcept {
+    const blaze::DenseVector<VT, TF>& vec) {
   return map(*vec, blaze::StepFunction{});
 }

@@ -20,7 +20,7 @@ namespace detail {
 template <size_t Dim>
 void project_impl(gsl::span<double> subcell_u,
                   const gsl::span<const double> dg_u, const Mesh<Dim>& dg_mesh,
-                  const Index<Dim>& subcell_extents) noexcept {
+                  const Index<Dim>& subcell_extents) {
   const size_t number_of_components =
       dg_u.size() / dg_mesh.number_of_grid_points();
   const Matrix& proj_matrix = projection_matrix(dg_mesh, subcell_extents);
@@ -33,8 +33,7 @@ void project_impl(gsl::span<double> subcell_u,
 
 template <size_t Dim>
 void project(const gsl::not_null<DataVector*> subcell_u, const DataVector& dg_u,
-             const Mesh<Dim>& dg_mesh,
-             const Index<Dim>& subcell_extents) noexcept {
+             const Mesh<Dim>& dg_mesh, const Index<Dim>& subcell_extents) {
   ASSERT(dg_u.size() == dg_mesh.number_of_grid_points(),
          "dg_u has incorrect size " << dg_u.size() << " since the mesh is size "
                                     << dg_mesh.number_of_grid_points());
@@ -46,7 +45,7 @@ void project(const gsl::not_null<DataVector*> subcell_u, const DataVector& dg_u,
 
 template <size_t Dim>
 DataVector project(const DataVector& dg_u, const Mesh<Dim>& dg_mesh,
-                   const Index<Dim>& subcell_extents) noexcept {
+                   const Index<Dim>& subcell_extents) {
   DataVector subcell_u{subcell_extents.product()};
   project(&subcell_u, dg_u, dg_mesh, subcell_extents);
   return subcell_u;
@@ -54,16 +53,15 @@ DataVector project(const DataVector& dg_u, const Mesh<Dim>& dg_mesh,
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATION(r, data)                                           \
-  template DataVector project(const DataVector&, const Mesh<DIM(data)>&, \
-                              const Index<DIM(data)>&) noexcept;         \
-  template void project(gsl::not_null<DataVector*>, const DataVector&,   \
-                        const Mesh<DIM(data)>&,                          \
-                        const Index<DIM(data)>&) noexcept;               \
-  template void detail::project_impl(                                    \
-      gsl::span<double> subcell_u, const gsl::span<const double> dg_u,   \
-      const Mesh<DIM(data)>& dg_mesh,                                    \
-      const Index<DIM(data)>& subcell_extents) noexcept;
+#define INSTANTIATION(r, data)                                            \
+  template DataVector project(const DataVector&, const Mesh<DIM(data)>&,  \
+                              const Index<DIM(data)>&);                   \
+  template void project(gsl::not_null<DataVector*>, const DataVector&,    \
+                        const Mesh<DIM(data)>&, const Index<DIM(data)>&); \
+  template void detail::project_impl(gsl::span<double> subcell_u,         \
+                                     const gsl::span<const double> dg_u,  \
+                                     const Mesh<DIM(data)>& dg_mesh,      \
+                                     const Index<DIM(data)>& subcell_extents);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 

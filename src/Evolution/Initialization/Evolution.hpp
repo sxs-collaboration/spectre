@@ -38,9 +38,9 @@ namespace Evolution_detail {
 // Global time stepping
 template <typename Metavariables, typename DbTagsList,
           Requires<not Metavariables::local_time_stepping> = nullptr>
-TimeDelta get_initial_time_step(
-    const Time& initial_time, const double initial_dt_value,
-    const db::DataBox<DbTagsList>& /*box*/) noexcept {
+TimeDelta get_initial_time_step(const Time& initial_time,
+                                const double initial_dt_value,
+                                const db::DataBox<DbTagsList>& /*box*/) {
   return (initial_dt_value > 0.0 ? 1 : -1) * initial_time.slab().duration();
 }
 
@@ -49,7 +49,7 @@ template <typename Metavariables, typename DbTagsList,
           Requires<Metavariables::local_time_stepping> = nullptr>
 TimeDelta get_initial_time_step(const Time& initial_time,
                                 const double initial_dt_value,
-                                const db::DataBox<DbTagsList>& box) noexcept {
+                                const db::DataBox<DbTagsList>& box) {
   const auto& step_controller = db::get<Tags::StepController>(box);
   return step_controller.choose_step(initial_time, initial_dt_value);
 }
@@ -126,7 +126,7 @@ struct TimeAndTimeStep {
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     const double initial_time_value = db::get<Tags::InitialTime>(box);
     const double initial_dt_value = db::get<Tags::InitialTimeDelta>(box);
     const double initial_slab_size =
@@ -183,7 +183,7 @@ struct TimeAndTimeStep {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     ERROR(
         "Could not find dependency 'Initialization::Tags::InitialTime', "
         "'Initialization::Tags::InitialTimeDelta', or "
@@ -236,7 +236,7 @@ struct TimeStepperHistory {
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     using DtVars = typename dt_variables_tag::type;
     using ErrorVars = typename error_variables_tag::type;
 
@@ -278,7 +278,7 @@ struct TimeStepperHistory {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     ERROR(
         "Could not find dependency '::Tags::Mesh<dim>' or "
         "'Metavariables::system::variables_tag' in DataBox.");

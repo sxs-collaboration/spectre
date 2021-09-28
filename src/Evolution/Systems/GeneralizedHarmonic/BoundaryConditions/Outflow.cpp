@@ -22,12 +22,12 @@
 
 namespace GeneralizedHarmonic::BoundaryConditions {
 template <size_t Dim>
-Outflow<Dim>::Outflow(CkMigrateMessage* const msg) noexcept
+Outflow<Dim>::Outflow(CkMigrateMessage* const msg)
     : BoundaryCondition<Dim>(msg) {}
 
 template <size_t Dim>
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-Outflow<Dim>::get_clone() const noexcept {
+Outflow<Dim>::get_clone() const {
   return std::make_unique<Outflow>(*this);
 }
 
@@ -46,7 +46,7 @@ std::optional<std::string> Outflow<Dim>::dg_outflow(
     /*outward_directed_normal_vector*/,
 
     const Scalar<DataVector>& gamma_1, const Scalar<DataVector>& lapse,
-    const tnsr::I<DataVector, Dim, Frame::Inertial>& shift) noexcept {
+    const tnsr::I<DataVector, Dim, Frame::Inertial>& shift) {
   const auto char_speeds = characteristic_speeds(
       gamma_1, lapse, shift, outward_directed_normal_covector);
   Scalar<DataVector> normal_dot_mesh_velocity;

@@ -64,7 +64,7 @@ void neighbor_reconstructed_face_solution(
                        std::optional<std::vector<double>>, ::TimeStepId>,
             boost::hash<std::pair<Direction<Metavariables::volume_dim>,
                                   ElementId<Metavariables::volume_dim>>>>>*>
-        received_temporal_id_and_data) noexcept;
+        received_temporal_id_and_data);
 }  // namespace evolution::dg::subcell
 /// \endcond
 
@@ -78,7 +78,7 @@ void boundary_correction(
     const Variables<tmpl::list<Tags...>>& local_boundary_data,
     const Variables<tmpl::list<Tags...>>& neighbor_boundary_data,
     const BoundaryCorrection& boundary_correction,
-    const ::dg::Formulation dg_formulation) noexcept {
+    const ::dg::Formulation dg_formulation) {
   boundary_correction.dg_boundary_terms(
       make_not_null(
           &get<BoundaryCorrectionTags>(*boundary_corrections_on_mortar))...,
@@ -121,19 +121,18 @@ struct ApplyBoundaryCorrections {
         tuples::TaggedTuple<InboxTags...>& inboxes,
         const Parallel::GlobalCache<Metavariables>& /*cache*/,
         const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-        const ParallelComponent* const /*meta*/) noexcept;
+        const ParallelComponent* const /*meta*/);
 
   /// `DenseOutput = true` is used by the dense output code under
   /// local time-stepping.
   template <bool DenseOutput = false, typename DbTagsList,
             typename... InboxTags>
-  static void complete_time_step(
-      gsl::not_null<db::DataBox<DbTagsList>*> box) noexcept;
+  static void complete_time_step(gsl::not_null<db::DataBox<DbTagsList>*> box);
 
   template <typename DbTagsList, typename... InboxTags>
   static bool receive_global_time_stepping(
       gsl::not_null<db::DataBox<DbTagsList>*> box,
-      gsl::not_null<tuples::TaggedTuple<InboxTags...>*> inboxes) noexcept;
+      gsl::not_null<tuples::TaggedTuple<InboxTags...>*> inboxes);
 
   /// `DenseOutput = true` is used by the dense output code under
   /// local time-stepping.
@@ -141,14 +140,14 @@ struct ApplyBoundaryCorrections {
             typename... InboxTags>
   static bool receive_local_time_stepping(
       gsl::not_null<db::DataBox<DbTagsList>*> box,
-      gsl::not_null<tuples::TaggedTuple<InboxTags...>*> inboxes) noexcept;
+      gsl::not_null<tuples::TaggedTuple<InboxTags...>*> inboxes);
 };
 
 template <typename Metavariables>
 template <typename DbTagsList, typename... InboxTags>
 bool ApplyBoundaryCorrections<Metavariables>::receive_global_time_stepping(
     const gsl::not_null<db::DataBox<DbTagsList>*> box,
-    const gsl::not_null<tuples::TaggedTuple<InboxTags...>*> inboxes) noexcept {
+    const gsl::not_null<tuples::TaggedTuple<InboxTags...>*> inboxes) {
   constexpr size_t volume_dim = Metavariables::system::volume_dim;
 
   const TimeStepId& temporal_id = get<::Tags::TimeStepId>(*box);
@@ -194,7 +193,7 @@ bool ApplyBoundaryCorrections<Metavariables>::receive_global_time_stepping(
               mortar_data,
           const gsl::not_null<
               std::unordered_map<Key, TimeStepId, boost::hash<Key>>*>
-              mortar_next_time_step_id) noexcept {
+              mortar_next_time_step_id) {
         for (auto& received_mortar_data :
              received_temporal_id_and_data->second) {
           const auto& mortar_id = received_mortar_data.first;
@@ -227,7 +226,7 @@ template <typename Metavariables>
 template <bool DenseOutput, typename DbTagsList, typename... InboxTags>
 bool ApplyBoundaryCorrections<Metavariables>::receive_local_time_stepping(
     const gsl::not_null<db::DataBox<DbTagsList>*> box,
-    const gsl::not_null<tuples::TaggedTuple<InboxTags...>*> inboxes) noexcept {
+    const gsl::not_null<tuples::TaggedTuple<InboxTags...>*> inboxes) {
   constexpr size_t volume_dim = Metavariables::system::volume_dim;
 
   using variables_tag = typename Metavariables::system::variables_tag;
@@ -249,19 +248,19 @@ bool ApplyBoundaryCorrections<Metavariables>::receive_local_time_stepping(
       tuples::get<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
           volume_dim>>(*inboxes);
 
-  const auto needed_time = [&box]() noexcept {
+  const auto needed_time = [&box]() {
     const auto& local_next_temporal_id =
         db::get<::Tags::Next<::Tags::TimeStepId>>(*box);
     if constexpr (DenseOutput) {
       const auto& dense_output_time = db::get<::Tags::Time>(*box);
       return [&dense_output_time,
-              &local_next_temporal_id](const TimeStepId& id) noexcept {
+              &local_next_temporal_id](const TimeStepId& id) {
         return evolution_less<double>{
             local_next_temporal_id.time_runs_forward()}(id.step_time().value(),
                                                         dense_output_time);
       };
     } else {
-      return [&local_next_temporal_id](const TimeStepId& id) noexcept {
+      return [&local_next_temporal_id](const TimeStepId& id) {
         return id < local_next_temporal_id;
       };
     }
@@ -283,7 +282,7 @@ bool ApplyBoundaryCorrections<Metavariables>::receive_local_time_stepping(
                   boundary_data_history,
               const gsl::not_null<
                   std::unordered_map<Key, TimeStepId, boost::hash<Key>>*>
-                  mortar_next_time_step_id) noexcept {
+                  mortar_next_time_step_id) {
             // Move received boundary data into boundary history.
             for (auto received_data = inbox.begin();
                  received_data != inbox.end() and
@@ -340,8 +339,8 @@ bool ApplyBoundaryCorrections<Metavariables>::receive_local_time_stepping(
 
   return alg::all_of(
       db::get<evolution::dg::Tags::MortarNextTemporalId<volume_dim>>(*box),
-      [&needed_time](const std::pair<Key, TimeStepId>&
-                         mortar_id_and_next_temporal_id) noexcept {
+      [&needed_time](
+          const std::pair<Key, TimeStepId>& mortar_id_and_next_temporal_id) {
         return mortar_id_and_next_temporal_id.first.second ==
                    ElementId<volume_dim>::external_boundary_id() or
                not needed_time(mortar_id_and_next_temporal_id.second);
@@ -351,7 +350,7 @@ bool ApplyBoundaryCorrections<Metavariables>::receive_local_time_stepping(
 template <typename Metavariables>
 template <bool DenseOutput, typename DbTagsList, typename... InboxTags>
 void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
-    const gsl::not_null<db::DataBox<DbTagsList>*> box) noexcept {
+    const gsl::not_null<db::DataBox<DbTagsList>*> box) {
   constexpr size_t volume_dim = Metavariables::system::volume_dim;
 
   using variables_tag = typename Metavariables::system::variables_tag;
@@ -398,7 +397,7 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
               *box);
 
   const auto& time_stepper = db::get<::Tags::TimeStepper<>>(*box);
-  const auto time_step_and_dense_output_time = [&box]() noexcept {
+  const auto time_step_and_dense_output_time = [&box]() {
     if constexpr (DenseOutput) {
       return std::pair{TimeDelta{}, db::get<::Tags::Time>(*box)};
     } else {
@@ -415,7 +414,7 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
        &time_stepper, using_gauss_lobatto_points, &volume_det_jacobian,
        &volume_det_inv_jacobian, &volume_mesh](
           const auto variables_or_dt_variables_ptr, const auto mortar_data_ptr,
-          const auto& boundary_correction) noexcept {
+          const auto& boundary_correction) {
         using mortar_tags_list = typename std::decay_t<decltype(
             boundary_correction)>::dg_package_field_tags;
 
@@ -454,9 +453,9 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
                local_time_stepping, &mortar_id, &mortar_meshes, &mortar_sizes,
                &neighbor_data_on_mortar, using_gauss_lobatto_points,
                &volume_det_jacobian, &volume_det_inv_jacobian,
-               &volume_dt_correction, &volume_mesh](
-                  const MortarData<volume_dim>& local_mortar_data,
-                  const MortarData<volume_dim>& neighbor_mortar_data) noexcept
+               &volume_dt_correction,
+               &volume_mesh](const MortarData<volume_dim>& local_mortar_data,
+                             const MortarData<volume_dim>& neighbor_mortar_data)
               -> DtVariables {
             // Clang thinks we don't need to capture local_time_stepping.
             (void)local_time_stepping;
@@ -516,7 +515,7 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
             auto& dt_boundary_correction =
                 [&dt_boundary_correction_on_mortar,
                  &dt_boundary_correction_projected_onto_face, &face_mesh,
-                 &mortar_mesh, &mortar_size]() noexcept -> DtVariables& {
+                 &mortar_mesh, &mortar_size]() -> DtVariables& {
               if (Spectral::needs_projection(face_mesh, mortar_mesh,
                                              mortar_size)) {
                 dt_boundary_correction_projected_onto_face =
@@ -669,7 +668,7 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
       "final.");
   call_with_dynamic_type<void, derived_boundary_corrections>(
       &boundary_correction, [&box, &compute_and_lift_boundary_corrections](
-                                auto* typed_boundary_correction) noexcept {
+                                auto* typed_boundary_correction) {
         // Compute internal boundary quantities on the mortar for sides of
         // the element that have neighbors, i.e. they are not an external
         // side.
@@ -694,7 +693,7 @@ ApplyBoundaryCorrections<Metavariables>::apply(
     db::DataBox<DbTagsList>& box, tuples::TaggedTuple<InboxTags...>& inboxes,
     const Parallel::GlobalCache<Metavariables>& /*cache*/,
     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-    const ParallelComponent* const /*meta*/) noexcept {
+    const ParallelComponent* const /*meta*/) {
   constexpr size_t volume_dim = Metavariables::system::volume_dim;
   const Element<volume_dim>& element =
       db::get<domain::Tags::Element<volume_dim>>(box);

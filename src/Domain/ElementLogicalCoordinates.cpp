@@ -29,9 +29,9 @@ using block_logical_coord_holder =
 
 template <size_t Dim>
 std::unordered_map<ElementId<Dim>, ElementLogicalCoordHolder<Dim>>
-element_logical_coordinates(const std::vector<ElementId<Dim>>& element_ids,
-                            const std::vector<block_logical_coord_holder<Dim>>&
-                                block_coord_holders) noexcept {
+element_logical_coordinates(
+    const std::vector<ElementId<Dim>>& element_ids,
+    const std::vector<block_logical_coord_holder<Dim>>& block_coord_holders) {
   // Temporarily put results here in data structures that allow
   // push_back, because we don't know the sizes of the output
   // DataVectors ahead of time.
@@ -110,7 +110,7 @@ element_logical_coordinates(const std::vector<ElementId<Dim>>& element_ids,
   element_logical_coordinates(                                      \
       const std::vector<ElementId<DIM(data)>>& element_ids,         \
       const std::vector<block_logical_coord_holder<DIM(data)>>&     \
-          block_coord_holders) noexcept;
+          block_coord_holders);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 

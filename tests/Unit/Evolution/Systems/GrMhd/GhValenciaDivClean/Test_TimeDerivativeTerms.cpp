@@ -39,7 +39,7 @@ struct ComputeVolumeTimeDerivativeTermsHelper<
       [[maybe_unused]] const gsl::not_null<FluxVariables*> volume_fluxes,
       const gsl::not_null<TemporaryVariables*> temporaries,
       const GradientVariables& partial_derivs,
-      const ArgumentVariables& time_derivative_args) noexcept {
+      const ArgumentVariables& time_derivative_args) {
     ComputeVolumeTimeDerivativeTerms::apply(
         make_not_null(&get<::Tags::dt<EvolvedTags>>(*dt_vars_ptr))...,
         make_not_null(&get<FluxTags>(*volume_fluxes))...,
@@ -121,7 +121,7 @@ SPECTRE_TEST_CASE(
           make_not_null(&gen), make_not_null(&dist), element_size);
   arg_variables_type arg_variables;
   tmpl::for_each<tmpl::append<gh_arg_tags, valencia_arg_tags>>(
-      [&gen, &dist, &arg_variables](auto tag_v) noexcept {
+      [&gen, &dist, &arg_variables](auto tag_v) {
         using tag = typename decltype(tag_v)::type;
         tuples::get<tag>(arg_variables) =
             make_with_random_values<typename tag::type>(
@@ -153,7 +153,7 @@ SPECTRE_TEST_CASE(
 
   tmpl::for_each<all_valencia_arg_tags>(
       [&arg_variables, &expected_temp_variables,
-       &all_valencia_argument_variables](const auto tag_v) noexcept {
+       &all_valencia_argument_variables](const auto tag_v) {
         using tag = typename decltype(tag_v)::type;
         if constexpr (tmpl::list_contains_v<gh_temp_tags, tag>) {
           tuples::get<tag>(all_valencia_argument_variables) =

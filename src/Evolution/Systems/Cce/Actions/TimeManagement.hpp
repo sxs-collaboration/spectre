@@ -41,7 +41,7 @@ struct ExitIfEndTimeReached {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     return std::tuple<db::DataBox<DbTags>&&, bool>(
         std::move(box),
         db::get<::Tags::TimeStepId>(box).substep_time().value() >=

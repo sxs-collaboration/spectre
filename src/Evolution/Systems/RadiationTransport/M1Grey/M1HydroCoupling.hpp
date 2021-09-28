@@ -48,7 +48,7 @@ void compute_m1_hydro_coupling_impl(
     const Scalar<DataVector>& fluid_lorentz_factor,
     const Scalar<DataVector>& lapse,
     const tnsr::ii<DataVector, 3>& spatial_metric,
-    const Scalar<DataVector>& sqrt_det_spatial_metric) noexcept;
+    const Scalar<DataVector>& sqrt_det_spatial_metric);
 }  // namespace detail
 
 template <typename NeutrinoSpeciesList>
@@ -111,7 +111,7 @@ struct ComputeM1HydroCoupling<tmpl::list<NeutrinoSpecies...>> {
       const tnsr::I<DataVector, 3>& spatial_velocity,
       const Scalar<DataVector>& lorentz_factor, const Scalar<DataVector>& lapse,
       const tnsr::ii<DataVector, 3>& spatial_metric,
-      const Scalar<DataVector>& sqrt_det_spatial_metric) noexcept {
+      const Scalar<DataVector>& sqrt_det_spatial_metric) {
     EXPAND_PACK_LEFT_TO_RIGHT(detail::compute_m1_hydro_coupling_impl(
         source_n, source_i, emissivity, absorption_opacity, scattering_opacity,
         tilde_j, tilde_hn, tilde_hi, spatial_velocity, lorentz_factor, lapse,

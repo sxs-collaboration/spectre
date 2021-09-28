@@ -57,7 +57,7 @@ void test_extents_basis_and_quadrature(
   }
 }
 
-void test_uniform_lgl_mesh() noexcept {
+void test_uniform_lgl_mesh() {
   INFO("Uniform LGL mesh");
   const Mesh<1> mesh1d_lgl{3, Spectral::Basis::Legendre,
                            Spectral::Quadrature::GaussLobatto};
@@ -81,7 +81,7 @@ void test_uniform_lgl_mesh() noexcept {
         Spectral::Quadrature::GaussLobatto}});
 }
 
-void test_explicit_choices_per_dimension() noexcept {
+void test_explicit_choices_per_dimension() {
   INFO("Explicit choices per dimension");
   CHECK(Mesh<0>{}.slice_through() == Mesh<0>{});
   const Mesh<1> mesh1d{{{2}},
@@ -161,7 +161,7 @@ void test_explicit_choices_per_dimension() noexcept {
                   Spectral::Quadrature::Gauss}}});
 }
 
-void test_equality() noexcept {
+void test_equality() {
   INFO("Equality");
   CHECK(Mesh<1>{3, Spectral::Basis::Legendre,
                 Spectral::Quadrature::GaussLobatto} ==
@@ -228,7 +228,7 @@ void test_equality() noexcept {
                 Spectral::Quadrature::GaussLobatto}}});
 }
 
-void test_serialization() noexcept {
+void test_serialization() {
   INFO("Serialization");
   test_serialization(Mesh<1>{3, Spectral::Basis::Legendre,
                              Spectral::Quadrature::GaussLobatto});

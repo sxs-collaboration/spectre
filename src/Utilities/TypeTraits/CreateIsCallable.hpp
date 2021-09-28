@@ -36,10 +36,10 @@
    private:                                                                    \
     struct NotCallable {};                                                     \
     template <typename T, typename... Args>                                    \
-    static auto test_callable(int) noexcept                                    \
+    static auto test_callable(int)                                             \
         -> decltype(std::declval<T>().METHOD_NAME(std::declval<Args>()...));   \
     template <typename, typename...>                                           \
-    static auto test_callable(...) noexcept -> NotCallable;                    \
+    static auto test_callable(...) -> NotCallable;                             \
                                                                                \
    public:                                                                     \
     static constexpr bool value =                                              \

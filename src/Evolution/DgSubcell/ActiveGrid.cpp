@@ -8,7 +8,7 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 
 namespace evolution::dg::subcell {
-std::ostream& operator<<(std::ostream& os, ActiveGrid active_grid) noexcept {
+std::ostream& operator<<(std::ostream& os, ActiveGrid active_grid) {
   switch (active_grid) {
     case ActiveGrid::Dg:
       return os << "Dg";

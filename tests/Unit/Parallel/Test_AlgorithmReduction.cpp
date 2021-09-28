@@ -54,8 +54,7 @@ struct ProcessReducedSumOfInts {
             typename ArrayIndex>
   static void apply(db::DataBox<DbTags>& /*box*/,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const int& value) noexcept {
+                    const ArrayIndex& /*array_index*/, const int& value) {
     SPECTRE_PARALLEL_REQUIRE(number_of_1d_array_elements *
                                  (number_of_1d_array_elements - 1) / 2 ==
                              value);
@@ -70,7 +69,7 @@ struct ProcessErrorNorms {
   static void apply(db::DataBox<DbTags>& /*box*/,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/, const int points,
-                    const double error_u, const double error_v) noexcept {
+                    const double error_u, const double error_v) {
     SPECTRE_PARALLEL_REQUIRE(number_of_1d_array_elements * 3 == points);
     SPECTRE_PARALLEL_REQUIRE(equal_within_roundoff(
         error_u, sqrt(number_of_1d_array_elements * square(1.0e-3) / points)));
@@ -87,7 +86,7 @@ struct ProcessCustomReductionAction {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/, int reduced_int,
                     std::unordered_map<std::string, int> reduced_map,
-                    std::vector<int>&& reduced_vector) noexcept {
+                    std::vector<int>&& reduced_vector) {
     SPECTRE_PARALLEL_REQUIRE(reduced_int == 10);
     SPECTRE_PARALLEL_REQUIRE(reduced_map.at("unity") ==
                              number_of_1d_array_elements - 1);
@@ -128,7 +127,7 @@ struct ArrayReduce {
             typename ArrayIndex>
   static void apply(const db::DataBox<DbTags>& /*box*/,
                     const Parallel::GlobalCache<Metavariables>& cache,
-                    const ArrayIndex& array_index) noexcept {
+                    const ArrayIndex& array_index) {
     static_assert(std::is_same_v<ParallelComponent,
                                  ArrayParallelComponent<TestMetavariables>>,
                   "The ParallelComponent is not deduced to be the right type");
@@ -167,7 +166,7 @@ struct ArrayReduce {
     my_send_map["double"] = 2 * array_index;
     my_send_map["negative"] = -array_index;
     struct {
-      int operator()(const int time_state, const int time) noexcept {
+      int operator()(const int time_state, const int time) {
         if (time_state != time) {
           ERROR("Tried to reduce from different iteration values "
                 << time_state << " and " << time);
@@ -178,7 +177,7 @@ struct ArrayReduce {
     struct {
       std::unordered_map<std::string, int> operator()(
           std::unordered_map<std::string, int> state,
-          const std::unordered_map<std::string, int>& element) noexcept {
+          const std::unordered_map<std::string, int>& element) {
         for (const auto& string_int : element) {
           if (string_int.second > state.at(string_int.first)) {
             state[string_int.first] = string_int.second;
@@ -189,7 +188,7 @@ struct ArrayReduce {
     } map_combine;
     struct {
       std::vector<int> operator()(std::vector<int> state,
-                                  const std::vector<int>& element) noexcept {
+                                  const std::vector<int>& element) {
         for (size_t i = 0; i < state.size(); ++i) {
           state[i] += element[i];
         }
@@ -238,7 +237,7 @@ struct ArrayParallelComponent {
   static void allocate_array(
       Parallel::CProxy_GlobalCache<Metavariables>& global_cache,
       const tuples::tagged_tuple_from_typelist<initialization_tags>&
-      /*initialization_items*/) noexcept {
+      /*initialization_items*/) {
     auto& local_cache = *(global_cache.ckLocalBranch());
     auto& array_proxy =
         Parallel::get_parallel_component<ArrayParallelComponent>(local_cache);
@@ -253,7 +252,7 @@ struct ArrayParallelComponent {
 
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
-      Parallel::CProxy_GlobalCache<Metavariables>& global_cache) noexcept {
+      Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *(global_cache.ckLocalBranch());
     if (next_phase == Metavariables::Phase::CallArrayReduce) {
       Parallel::simple_action<ArrayReduce>(
@@ -277,14 +276,13 @@ struct TestMetavariables {
       const gsl::not_null<
           tuples::TaggedTuple<Tags...>*> /*phase_change_decision_data*/,
       const Phase& current_phase,
-      const Parallel::CProxy_GlobalCache<
-          TestMetavariables>& /*cache_proxy*/) noexcept {
+      const Parallel::CProxy_GlobalCache<TestMetavariables>& /*cache_proxy*/) {
     return current_phase == Phase::Initialization ? Phase::CallArrayReduce
                                                   : Phase::Exit;
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& /*p*/) noexcept {}
+  void pup(PUP::er& /*p*/) {}
 };
 
 static const std::vector<void (*)()> charm_init_node_funcs{

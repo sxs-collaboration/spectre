@@ -44,9 +44,7 @@ class WrappedGr : public SolutionType {
   static constexpr size_t volume_dim = SolutionType::volume_dim;
   using options = typename SolutionType::options;
   static constexpr Options::String help = SolutionType::help;
-  static std::string name() noexcept {
-    return Options::name<SolutionType>();
-  }
+  static std::string name() { return Options::name<SolutionType>(); }
 
   using DerivLapse = ::Tags::deriv<gr::Tags::Lapse<DataVector>,
                                    tmpl::size_t<volume_dim>, Frame::Inertial>;
@@ -75,7 +73,7 @@ class WrappedGr : public SolutionType {
   template <typename... Tags>
   tuples::TaggedTuple<Tags...> variables(
       const tnsr::I<DataVector, volume_dim>& x, double t,
-      tmpl::list<Tags...> /*meta*/) const noexcept {
+      tmpl::list<Tags...> /*meta*/) const {
     // Get the underlying solution's variables using the solution's tags list,
     // store in IntermediateVariables
     const IntermediateVars& intermediate_vars = SolutionType::variables(
@@ -87,8 +85,7 @@ class WrappedGr : public SolutionType {
 
   template <typename Tag>
   tuples::TaggedTuple<Tag> variables(const tnsr::I<DataVector, volume_dim>& x,
-                                     double t, tmpl::list<Tag> /*meta*/) const
-      noexcept {
+                                     double t, tmpl::list<Tag> /*meta*/) const {
     const IntermediateVars& intermediate_vars = SolutionType::variables(
         x, t, typename SolutionType::template tags<DataVector>{});
     return {get<Tag>(variables(x, t, tmpl::list<Tag>{}, intermediate_vars))};
@@ -99,7 +96,7 @@ class WrappedGr : public SolutionType {
   template <typename... Tags>
   tuples::TaggedTuple<Tags...> variables(
       const tnsr::I<DataVector, volume_dim>& x,
-      tmpl::list<Tags...> /*meta*/) const noexcept {
+      tmpl::list<Tags...> /*meta*/) const {
     // Get the underlying solution's variables using the solution's tags list,
     // store in IntermediateVariables
     const IntermediateVars intermediate_vars = SolutionType::variables(
@@ -110,14 +107,14 @@ class WrappedGr : public SolutionType {
 
   template <typename Tag>
   tuples::TaggedTuple<Tag> variables(const tnsr::I<DataVector, volume_dim>& x,
-                                     tmpl::list<Tag> /*meta*/) const noexcept {
+                                     tmpl::list<Tag> /*meta*/) const {
     const IntermediateVars intermediate_vars = SolutionType::variables(
         x, typename SolutionType::template tags<DataVector>{});
     return {get<Tag>(variables(x, tmpl::list<Tag>{}, intermediate_vars))};
   }
 
   // clang-tidy: google-runtime-references
-  void pup(PUP::er& p) noexcept { SolutionType::pup(p); }  // NOLINT
+  void pup(PUP::er& p) { SolutionType::pup(p); }  // NOLINT
 
  private:
   // Preprocessor logic to avoid declaring variables() functions for
@@ -139,7 +136,7 @@ class WrappedGr : public SolutionType {
   tuples::TaggedTuple<Tag> variables(
       const tnsr::I<DataVector, volume_dim>& /*x*/, double /*t*/,
       tmpl::list<Tag> /*meta*/,
-      const IntermediateVars& intermediate_vars) const noexcept {
+      const IntermediateVars& intermediate_vars) const {
     return {get<Tag>(intermediate_vars)};
   }
 
@@ -149,7 +146,7 @@ class WrappedGr : public SolutionType {
           typename SolutionType::template tags<DataVector>, Tag>> = nullptr>
   tuples::TaggedTuple<Tag> variables(
       const tnsr::I<DataVector, volume_dim>& /*x*/, tmpl::list<Tag> /*meta*/,
-      const IntermediateVars& intermediate_vars) const noexcept {
+      const IntermediateVars& intermediate_vars) const {
     return {get<Tag>(intermediate_vars)};
   }
 
@@ -160,7 +157,7 @@ class WrappedGr : public SolutionType {
   tuples::TaggedTuple<Tag> variables(
       const tnsr::I<DataVector, volume_dim>& x, double /*t*/,
       tmpl::list<Tag> tag_list,
-      const IntermediateVars& intermediate_vars) const noexcept {
+      const IntermediateVars& intermediate_vars) const {
     return variables(x, tag_list, intermediate_vars);
   }
 
@@ -169,32 +166,32 @@ class WrappedGr : public SolutionType {
   variables(const tnsr::I<DataVector, volume_dim>& /*x*/,
             tmpl::list<gr::Tags::SpacetimeMetric<volume_dim, Frame::Inertial,
                                                  DataVector>> /*meta*/,
-            const IntermediateVars& intermediate_vars) const noexcept;
+            const IntermediateVars& intermediate_vars) const;
   tuples::TaggedTuple<
       GeneralizedHarmonic::Tags::Pi<volume_dim, Frame::Inertial>>
   variables(const tnsr::I<DataVector, volume_dim>& /*x*/,
             tmpl::list<GeneralizedHarmonic::Tags::Pi<volume_dim,
                                                      Frame::Inertial>> /*meta*/,
-            const IntermediateVars& intermediate_vars) const noexcept;
+            const IntermediateVars& intermediate_vars) const;
   tuples::TaggedTuple<
       GeneralizedHarmonic::Tags::Phi<volume_dim, Frame::Inertial>>
   variables(
       const tnsr::I<DataVector, volume_dim>& /*x*/,
       tmpl::list<
           GeneralizedHarmonic::Tags::Phi<volume_dim, Frame::Inertial>> /*meta*/,
-      const IntermediateVars& intermediate_vars) const noexcept;
+      const IntermediateVars& intermediate_vars) const;
 };
 
 template <typename SolutionType>
 inline constexpr bool operator==(const WrappedGr<SolutionType>& lhs,
-                                 const WrappedGr<SolutionType>& rhs) noexcept {
+                                 const WrappedGr<SolutionType>& rhs) {
   return dynamic_cast<const SolutionType&>(lhs) ==
          dynamic_cast<const SolutionType&>(rhs);
 }
 
 template <typename SolutionType>
 inline constexpr bool operator!=(const WrappedGr<SolutionType>& lhs,
-                                 const WrappedGr<SolutionType>& rhs) noexcept {
+                                 const WrappedGr<SolutionType>& rhs) {
   return not(lhs == rhs);
 }
 }  // namespace Solutions

@@ -42,7 +42,7 @@ class TimeSequence : public PUP::able {
   /// sequence terminates) is returned as an empty std::optional.  The
   /// central std::optional will be populated unless the sequence is
   /// empty.
-  virtual std::array<std::optional<T>, 3> times_near(T time) const noexcept = 0;
+  virtual std::array<std::optional<T>, 3> times_near(T time) const = 0;
 };
 
 /// \ingroup TimeGroup
@@ -55,7 +55,7 @@ class EvenlySpaced : public TimeSequence<T> {
  public:
   /// \cond
   EvenlySpaced() = default;
-  explicit EvenlySpaced(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit EvenlySpaced(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(EvenlySpaced);  // NOLINT
   /// \endcond
@@ -63,7 +63,7 @@ class EvenlySpaced : public TimeSequence<T> {
   struct Interval {
     static constexpr Options::String help = "Spacing between times";
     using type = T;
-    static constexpr T lower_bound() noexcept { return 0; }
+    static constexpr T lower_bound() { return 0; }
   };
 
   struct Offset {
@@ -77,10 +77,10 @@ class EvenlySpaced : public TimeSequence<T> {
   explicit EvenlySpaced(T interval, T offset = 0,
                         const Options::Context& context = {});
 
-  std::array<std::optional<T>, 3> times_near(T time) const noexcept override;
+  std::array<std::optional<T>, 3> times_near(T time) const override;
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept override;
+  void pup(PUP::er& p) override;
 
  private:
   // This is
@@ -104,7 +104,7 @@ class Specified : public TimeSequence<T> {
  public:
   /// \cond
   Specified() = default;
-  explicit Specified(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit Specified(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Specified);  // NOLINT
   /// \endcond
@@ -118,12 +118,12 @@ class Specified : public TimeSequence<T> {
       "An explicitly specified sequence of times.";
   using options = tmpl::list<Values>;
 
-  explicit Specified(std::vector<T> values) noexcept;
+  explicit Specified(std::vector<T> values);
 
-  std::array<std::optional<T>, 3> times_near(T time) const noexcept override;
+  std::array<std::optional<T>, 3> times_near(T time) const override;
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept override;
+  void pup(PUP::er& p) override;
 
  private:
   std::vector<T> values_;

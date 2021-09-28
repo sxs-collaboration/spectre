@@ -12,16 +12,16 @@
 #include "Helpers/PointwiseFunctions/GeneralRelativity/TestHelpers.hpp"
 
 void check_random_values(const double v, const double bound1,
-                         const double bound2) noexcept {
+                         const double bound2) {
   CHECK(approx(v) >= std::min(bound1, bound2));
   CHECK(approx(v) <= std::max(bound1, bound2));
 }
 
 // clang-tidy is wrong, this is a function definition
 template <typename T>
-void check_random_values(const T& c,                      // NOLINT
-                         const double bound1,             // NOLINT
-                         const double bound2) noexcept {  // NOLINT
+void check_random_values(const T& c,             // NOLINT
+                         const double bound1,    // NOLINT
+                         const double bound2) {  // NOLINT
   for (const auto& v : c) {
     check_random_values(v, bound1, bound2);
   }
@@ -29,7 +29,7 @@ void check_random_values(const T& c,                      // NOLINT
 
 template <typename... Tags>
 void check_random_values(const Variables<tmpl::list<Tags...>>& v,
-                         const double bound1, const double bound2) noexcept {
+                         const double bound1, const double bound2) {
   expand_pack((
       check_random_values<decltype(get<Tags>(v))>(get<Tags>(v), bound1, bound2),
       '0')...);
@@ -55,7 +55,7 @@ Scalar<DataType> magnitude_auto_invert(
 
 template <size_t Dim, UpLo Ul, typename DataType>
 void test_range(const gsl::not_null<std::mt19937*> generator,
-                const DataType& used_for_size) noexcept {
+                const DataType& used_for_size) {
   using Fr = Frame::Inertial;
 
   std::uniform_real_distribution<> distribution1(0.0, 100.0);

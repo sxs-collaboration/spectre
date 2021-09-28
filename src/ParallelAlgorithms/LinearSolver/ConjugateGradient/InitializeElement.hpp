@@ -57,7 +57,7 @@ struct InitializeElement {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     // The `PrepareSolve` action populates these tags with initial
     // values, except for `operator_applied_to_fields_tag` which is
     // expected to be filled at that point and

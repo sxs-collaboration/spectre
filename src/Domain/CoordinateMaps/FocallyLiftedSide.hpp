@@ -238,7 +238,7 @@ class Side {
  public:
   static constexpr size_t dim = 3;
   Side(const std::array<double, 3>& center, const double radius,
-       const double z_lower, const double z_upper) noexcept;
+       const double z_lower, const double z_upper);
 
   Side() = default;
   ~Side() = default;
@@ -251,64 +251,63 @@ class Side {
   void forward_map(
       const gsl::not_null<std::array<tt::remove_cvref_wrap_t<T>, 3>*>
           target_coords,
-      const std::array<T, 3>& source_coords) const noexcept;
+      const std::array<T, 3>& source_coords) const;
 
   std::optional<std::array<double, 3>> inverse(
-      const std::array<double, 3>& target_coords,
-      double sigma_in) const noexcept;
+      const std::array<double, 3>& target_coords, double sigma_in) const;
 
   template <typename T>
   void jacobian(const gsl::not_null<
                     tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>*>
                     jacobian_out,
-                const std::array<T, 3>& source_coords) const noexcept;
+                const std::array<T, 3>& source_coords) const;
 
   template <typename T>
   void inv_jacobian(const gsl::not_null<tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3,
                                                  Frame::NoFrame>*>
                         inv_jacobian_out,
-                    const std::array<T, 3>& source_coords) const noexcept;
+                    const std::array<T, 3>& source_coords) const;
 
   template <typename T>
   void sigma(const gsl::not_null<tt::remove_cvref_wrap_t<T>*> sigma_out,
-             const std::array<T, 3>& source_coords) const noexcept;
+             const std::array<T, 3>& source_coords) const;
 
   template <typename T>
   void deriv_sigma(
       const gsl::not_null<std::array<tt::remove_cvref_wrap_t<T>, 3>*>
           deriv_sigma_out,
-      const std::array<T, 3>& source_coords) const noexcept;
+      const std::array<T, 3>& source_coords) const;
 
   template <typename T>
   void dxbar_dsigma(
       const gsl::not_null<std::array<tt::remove_cvref_wrap_t<T>, 3>*>
           dxbar_dsigma_out,
-      const std::array<T, 3>& source_coords) const noexcept;
+      const std::array<T, 3>& source_coords) const;
 
   std::optional<double> lambda_tilde(
       const std::array<double, 3>& parent_mapped_target_coords,
       const std::array<double, 3>& projection_point,
-      bool source_is_between_focus_and_target) const noexcept;
+      bool source_is_between_focus_and_target) const;
 
   template <typename T>
   void deriv_lambda_tilde(
       const gsl::not_null<std::array<tt::remove_cvref_wrap_t<T>, 3>*>
           deriv_lambda_tilde_out,
       const std::array<T, 3>& target_coords, const T& lambda_tilde,
-      const std::array<double, 3>& projection_point) const noexcept;
+      const std::array<double, 3>& projection_point) const;
 
   // clang-tidy: google runtime references
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
 
-  static bool is_identity() noexcept { return false; }
+  static bool is_identity() { return false; }
 
  private:
-  friend bool operator==(const Side& lhs, const Side& rhs) noexcept;
+  friend bool operator==(const Side& lhs, const Side& rhs);
   std::array<double, 3> center_{
       make_array<3>(std::numeric_limits<double>::signaling_NaN())};
   double radius_{std::numeric_limits<double>::signaling_NaN()};
   double theta_min_{std::numeric_limits<double>::signaling_NaN()};
   double theta_max_{std::numeric_limits<double>::signaling_NaN()};
 };
-bool operator!=(const Side& lhs, const Side& rhs) noexcept;
+bool operator!=(const Side& lhs, const Side& rhs);
 }  // namespace domain::CoordinateMaps::FocallyLiftedInnerMaps

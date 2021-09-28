@@ -37,7 +37,7 @@ void ConservativeFromPrimitive::apply(
     const tnsr::I<DataVector, 3, Frame::Inertial>& magnetic_field,
     const Scalar<DataVector>& sqrt_det_spatial_metric,
     const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
-    const Scalar<DataVector>& divergence_cleaning_field) noexcept {
+    const Scalar<DataVector>& divergence_cleaning_field) {
   Variables<tmpl::list<hydro::Tags::SpatialVelocityOneForm<DataVector, 3>,
                        hydro::Tags::SpatialVelocitySquared<DataVector>,
                        hydro::Tags::MagneticFieldOneForm<DataVector, 3>,

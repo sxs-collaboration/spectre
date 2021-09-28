@@ -113,9 +113,8 @@ class ObserveNorms<ObservationValueTag, tmpl::list<ObservableTensorTags...>,
 
   template <typename Functional>
   struct ElementWiseBinary {
-    std::vector<double> operator()(
-        const std::vector<double>& t0,
-        const std::vector<double>& t1) const noexcept {
+    std::vector<double> operator()(const std::vector<double>& t0,
+                                   const std::vector<double>& t1) const {
       ASSERT(t0.size() == t1.size(),
              "Size must be the same but got t0: " << t0.size()
                                                   << " and t1: " << t1.size());
@@ -127,7 +126,7 @@ class ObserveNorms<ObservationValueTag, tmpl::list<ObservableTensorTags...>,
     }
 
     std::vector<double> operator()(const std::vector<double>& t0,
-                                   const double t1) const noexcept {
+                                   const double t1) const {
       // This overload is needed for the L2 norm
       std::vector<double> result(t0.size());
       for (size_t i = 0; i < t0.size(); ++i) {
@@ -166,7 +165,7 @@ class ObserveNorms<ObservationValueTag, tmpl::list<ObservableTensorTags...>,
   };
 
   /// \cond
-  explicit ObserveNorms(CkMigrateMessage* msg) noexcept;
+  explicit ObserveNorms(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ObserveNorms);  // NOLINT
   /// \endcond
@@ -186,7 +185,7 @@ class ObserveNorms<ObservationValueTag, tmpl::list<ObservableTensorTags...>,
   ObserveNorms() = default;
 
   ObserveNorms(const std::string& subfile_name,
-               const std::vector<ObserveTensor>& observe_tensors) noexcept;
+               const std::vector<ObserveTensor>& observe_tensors);
 
   using observed_reduction_data_tags =
       observers::make_reduction_data_tags<tmpl::list<ReductionData>>;
@@ -199,7 +198,7 @@ class ObserveNorms<ObservationValueTag, tmpl::list<ObservableTensorTags...>,
                   const db::DataBox<DbTagsList>& box,
                   Parallel::GlobalCache<Metavariables>& cache,
                   const ArrayIndex& array_index,
-                  const ParallelComponent* const /*meta*/) const noexcept;
+                  const ParallelComponent* const /*meta*/) const;
 
   using observation_registration_tags = tmpl::list<::Tags::DataBox>;
 
@@ -207,7 +206,7 @@ class ObserveNorms<ObservationValueTag, tmpl::list<ObservableTensorTags...>,
   std::optional<
       std::pair<observers::TypeOfObservation, observers::ObservationKey>>
   get_observation_type_and_key_for_registration(
-      const db::DataBox<DbTagsList>& box) const noexcept {
+      const db::DataBox<DbTagsList>& box) const {
     const std::optional<std::string> section_observation_key =
         observers::get_section_observation_key<ArraySectionIdTag>(box);
     if (not section_observation_key.has_value()) {
@@ -223,11 +222,11 @@ class ObserveNorms<ObservationValueTag, tmpl::list<ObservableTensorTags...>,
   template <typename Metavariables, typename ArrayIndex, typename Component>
   bool is_ready(Parallel::GlobalCache<Metavariables>& /*cache*/,
                 const ArrayIndex& /*array_index*/,
-                const Component* const /*meta*/) const noexcept {
+                const Component* const /*meta*/) const {
     return true;
   }
 
-  bool needs_evolved_variables() const noexcept override { return true; }
+  bool needs_evolved_variables() const override { return true; }
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override;
@@ -243,7 +242,7 @@ class ObserveNorms<ObservationValueTag, tmpl::list<ObservableTensorTags...>,
 template <typename ObservationValueTag, typename... ObservableTensorTags,
           typename ArraySectionIdTag>
 ObserveNorms<ObservationValueTag, tmpl::list<ObservableTensorTags...>,
-             ArraySectionIdTag>::ObserveNorms(CkMigrateMessage* msg) noexcept
+             ArraySectionIdTag>::ObserveNorms(CkMigrateMessage* msg)
     : Event(msg) {}
 
 template <typename ObservationValueTag, typename... ObservableTensorTags,
@@ -251,7 +250,7 @@ template <typename ObservationValueTag, typename... ObservableTensorTags,
 ObserveNorms<ObservationValueTag, tmpl::list<ObservableTensorTags...>,
              ArraySectionIdTag>::ObserveNorms(const std::string& subfile_name,
                                               const std::vector<ObserveTensor>&
-                                                  observe_tensors) noexcept
+                                                  observe_tensors)
     : subfile_path_("/" + subfile_name) {
   tensor_names_.reserve(observe_tensors.size());
   tensor_norm_types_.reserve(observe_tensors.size());
@@ -298,7 +297,7 @@ operator()(const typename ObservationValueTag::type& observation_value,
            const db::DataBox<DbTagsList>& box,
            Parallel::GlobalCache<Metavariables>& cache,
            const ArrayIndex& array_index,
-           const ParallelComponent* const /*meta*/) const noexcept {
+           const ParallelComponent* const /*meta*/) const {
   // Skip observation on elements that are not part of a section
   const std::optional<std::string> section_observation_key =
       observers::get_section_observation_key<ArraySectionIdTag>(box);
@@ -321,7 +320,7 @@ operator()(const typename ObservationValueTag::type& observation_value,
   // This approach allows us to delay evaluating any compute tags until they're
   // actually needed for observing.
   tmpl::for_each<tensor_tags>([this, &box, &norm_values_and_names,
-                               &number_of_points](auto tag_v) noexcept {
+                               &number_of_points](auto tag_v) {
     using tag = tmpl::type_from<decltype(tag_v)>;
     const std::string tensor_name = db::tag_name<tag>();
     for (size_t i = 0; i < tensor_names_.size(); ++i) {

@@ -24,7 +24,7 @@ RotatedBricks::RotatedBricks(
     const typename UpperBound::type upper_xyz,
     const typename InitialRefinement::type initial_refinement_level_xyz,
     const typename InitialGridPoints::type initial_number_of_grid_points_in_xyz,
-    const typename IsPeriodicIn::type is_periodic_in) noexcept
+    const typename IsPeriodicIn::type is_periodic_in)
     // clang-tidy: trivially copyable
     : lower_xyz_(std::move(lower_xyz)),                      // NOLINT
       midpoint_xyz_(std::move(midpoint_xyz)),                // NOLINT
@@ -71,7 +71,7 @@ RotatedBricks::RotatedBricks(
   }
 }
 
-Domain<3> RotatedBricks::create_domain() const noexcept {
+Domain<3> RotatedBricks::create_domain() const {
   using BcMap = DirectionMap<
       3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>;
   std::vector<BcMap> boundary_conditions_all_blocks{};
@@ -137,8 +137,7 @@ Domain<3> RotatedBricks::create_domain() const noexcept {
       is_periodic_in_);
 }
 
-std::vector<std::array<size_t, 3>> RotatedBricks::initial_extents() const
-    noexcept {
+std::vector<std::array<size_t, 3>> RotatedBricks::initial_extents() const {
   const size_t& x_0 = initial_number_of_grid_points_in_xyz_[0][0];
   const size_t& x_1 = initial_number_of_grid_points_in_xyz_[0][1];
   const size_t& y_0 = initial_number_of_grid_points_in_xyz_[1][0];
@@ -151,7 +150,7 @@ std::vector<std::array<size_t, 3>> RotatedBricks::initial_extents() const
 }
 
 std::vector<std::array<size_t, 3>> RotatedBricks::initial_refinement_levels()
-    const noexcept {
+    const {
   const size_t& x_0 = initial_refinement_level_xyz_[0];
   const size_t& y_0 = initial_refinement_level_xyz_[1];
   const size_t& z_0 = initial_refinement_level_xyz_[2];

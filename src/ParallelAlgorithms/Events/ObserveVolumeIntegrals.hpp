@@ -86,7 +86,7 @@ class ObserveVolumeIntegrals<VolumeDim, ObservationValueTag,
   };
 
   /// \cond
-  explicit ObserveVolumeIntegrals(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit ObserveVolumeIntegrals(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ObserveVolumeIntegrals);  // NOLINT
   /// \endcond
@@ -105,7 +105,7 @@ class ObserveVolumeIntegrals<VolumeDim, ObservationValueTag,
       "run at once will produce unpredictable results.";
 
   ObserveVolumeIntegrals() = default;
-  explicit ObserveVolumeIntegrals(const std::string& subfile_name) noexcept;
+  explicit ObserveVolumeIntegrals(const std::string& subfile_name);
 
   using observed_reduction_data_tags =
       observers::make_reduction_data_tags<tmpl::list<ReductionData>>;
@@ -124,7 +124,7 @@ class ObserveVolumeIntegrals<VolumeDim, ObservationValueTag,
                   const typename Tensors::type&... tensors,
                   Parallel::GlobalCache<Metavariables>& cache,
                   const ArrayIndex& array_index,
-                  const ParallelComponent* const /*meta*/) const noexcept {
+                  const ParallelComponent* const /*meta*/) const {
     // Skip observation on elements that are not part of a section
     const std::optional<std::string> section_observation_key =
         observers::get_section_observation_key<ArraySectionIdTag>(box);
@@ -140,9 +140,10 @@ class ObserveVolumeIntegrals<VolumeDim, ObservationValueTag,
     std::vector<double> local_volume_integrals{};
     std::vector<std::string> reduction_names = {
         db::tag_name<ObservationValueTag>(), "Volume"};
-    const auto record_integrals =
-        [&local_volume_integrals, &reduction_names, &det_jacobian, &mesh ](
-            const auto tensor_tag_v, const auto& tensor) noexcept {
+    const auto record_integrals = [&local_volume_integrals, &reduction_names,
+                                   &det_jacobian,
+                                   &mesh](const auto tensor_tag_v,
+                                          const auto& tensor) {
       using tensor_tag = tmpl::type_from<decltype(tensor_tag_v)>;
       for (size_t i = 0; i < tensor.size(); ++i) {
         reduction_names.push_back("VolumeIntegral(" +
@@ -180,7 +181,7 @@ class ObserveVolumeIntegrals<VolumeDim, ObservationValueTag,
   std::optional<
       std::pair<observers::TypeOfObservation, observers::ObservationKey>>
   get_observation_type_and_key_for_registration(
-      const db::DataBox<DbTagsList>& box) const noexcept {
+      const db::DataBox<DbTagsList>& box) const {
     const std::optional<std::string> section_observation_key =
         observers::get_section_observation_key<ArraySectionIdTag>(box);
     if (not section_observation_key.has_value()) {
@@ -196,11 +197,11 @@ class ObserveVolumeIntegrals<VolumeDim, ObservationValueTag,
   template <typename Metavariables, typename ArrayIndex, typename Component>
   bool is_ready(Parallel::GlobalCache<Metavariables>& /*cache*/,
                 const ArrayIndex& /*array_index*/,
-                const Component* const /*meta*/) const noexcept {
+                const Component* const /*meta*/) const {
     return true;
   }
 
-  bool needs_evolved_variables() const noexcept override { return true; }
+  bool needs_evolved_variables() const override { return true; }
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override {
@@ -214,9 +215,9 @@ class ObserveVolumeIntegrals<VolumeDim, ObservationValueTag,
 
 template <size_t VolumeDim, typename ObservationValueTag, typename... Tensors,
           typename ArraySectionIdTag>
-ObserveVolumeIntegrals<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
-                       ArraySectionIdTag>::
-    ObserveVolumeIntegrals(const std::string& subfile_name) noexcept
+ObserveVolumeIntegrals<
+    VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
+    ArraySectionIdTag>::ObserveVolumeIntegrals(const std::string& subfile_name)
     : subfile_path_("/" + subfile_name) {}
 
 /// \cond

@@ -30,7 +30,7 @@ void strahlkorper_in_different_frame(
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time,
-    const double time) noexcept {
+    const double time) {
   // Temporary storage; reduce the number of allocations.
   Variables<
       tmpl::list<::Tags::Tempi<0, 2, ::Frame::Spherical<SrcFrame>>,
@@ -110,7 +110,7 @@ void strahlkorper_in_different_frame(
   // only requirement is that it is centered enough so that the
   // surface is star-shaped.  If we want to re-center the strahlkorper
   // later, we can call `change_expansion_center_of_strahlkorper_to_physical`.
-  const auto center_dest = [&dest_cartesian_coords]() noexcept {
+  const auto center_dest = [&dest_cartesian_coords]() {
     std::array<double, 3> center{};
     for (size_t d = 0; d < 3; ++d) {
       gsl::at(center, d) =
@@ -131,8 +131,7 @@ void strahlkorper_in_different_frame(
   // there is another version of the function that returns a double.
   const auto radius_function_for_bracketing =
       [&r_hat, &center_dest, &src_strahlkorper, &domain, &functions_of_time,
-       &time](const double r_dest,
-              const size_t s) noexcept -> std::optional<double> {
+       &time](const double r_dest, const size_t s) -> std::optional<double> {
     // Get destination Cartesian coordinates of the point.
     const tnsr::I<double, 3, DestFrame> x_dest{
         {r_dest * get<0>(r_hat)[s] + center_dest[0],
@@ -208,14 +207,12 @@ void strahlkorper_in_different_frame(
   // std::optional<double>, and will be used once the root is
   // bracketed.
   const auto radius_function = [&radius_function_for_bracketing](
-                                   const double r_dest,
-                                   const size_t s) noexcept {
+                                   const double r_dest, const size_t s) {
     return radius_function_for_bracketing(r_dest, s).value();
   };
 
   // We try to roughly bracket the root between r_min and r_max.
-  const auto [r_min, r_max] = [&dest_cartesian_coords,
-                               &center_dest]() noexcept {
+  const auto [r_min, r_max] = [&dest_cartesian_coords, &center_dest]() {
     const DataVector dest_radius =
         sqrt(square(get<0>(dest_cartesian_coords) - center_dest[0]) +
              square(get<1>(dest_cartesian_coords) - center_dest[1]) +
@@ -261,7 +258,7 @@ void strahlkorper_in_different_frame(
           std::string,                                                       \
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&         \
           functions_of_time,                                                 \
-      const double time) noexcept;
+      const double time);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (::Frame::Grid), (::Frame::Inertial))
 

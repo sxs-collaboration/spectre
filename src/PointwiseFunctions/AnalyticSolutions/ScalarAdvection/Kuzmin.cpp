@@ -19,7 +19,7 @@ namespace ScalarAdvection::Solutions {
 template <typename DataType>
 tuples::TaggedTuple<ScalarAdvection::Tags::U> Kuzmin::variables(
     const tnsr::I<DataType, 2>& x, double t,
-    tmpl::list<ScalarAdvection::Tags::U> /*meta*/) const noexcept {
+    tmpl::list<ScalarAdvection::Tags::U> /*meta*/) const {
   auto coords_init = make_with_value<tnsr::I<DataType, 2>>(x, 0.0);
   auto& x0 = get<0>(coords_init);
   auto& y0 = get<1>(coords_init);
@@ -36,7 +36,7 @@ tuples::TaggedTuple<ScalarAdvection::Tags::U> Kuzmin::variables(
   // parameters and functions for the initial profile (from the Kuzmin paper)
   const double r0{0.15};
   const auto r_xy = [&r0](const double x_var, const double x0_var,
-                          const double y_var, const double y0_var) noexcept {
+                          const double y_var, const double y0_var) {
     return sqrt(pow(x_var - x0_var, 2.0) + pow(y_var - y0_var, 2.0)) / r0;
   };
 
@@ -75,13 +75,11 @@ tuples::TaggedTuple<ScalarAdvection::Tags::U> Kuzmin::variables(
   return u_variable;
 }
 
-void Kuzmin::pup(PUP::er& /*p*/) noexcept {}
+void Kuzmin::pup(PUP::er& /*p*/) {}
 
-bool operator==(const Kuzmin& /*lhs*/, const Kuzmin& /*rhs*/) noexcept {
-  return true;
-}
+bool operator==(const Kuzmin& /*lhs*/, const Kuzmin& /*rhs*/) { return true; }
 
-bool operator!=(const Kuzmin& lhs, const Kuzmin& rhs) noexcept {
+bool operator!=(const Kuzmin& lhs, const Kuzmin& rhs) {
   return not(lhs == rhs);
 }
 
@@ -93,7 +91,7 @@ bool operator!=(const Kuzmin& lhs, const Kuzmin& rhs) noexcept {
   template tuples::TaggedTuple<ScalarAdvection::Tags::U> \
   ScalarAdvection::Solutions::Kuzmin::variables(         \
       const tnsr::I<DTYPE(data), 2>& x, double t,        \
-      tmpl::list<ScalarAdvection::Tags::U> /*meta*/) const noexcept;
+      tmpl::list<ScalarAdvection::Tags::U> /*meta*/) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (DataVector))
 

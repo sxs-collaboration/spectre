@@ -55,7 +55,7 @@ struct AdvanceTime {
       db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {  // NOLINT const
+      const ParallelComponent* const /*meta*/) {  // NOLINT const
     db::mutate<Tags::TimeStepId, Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
                Tags::Time, Tags::Next<Tags::TimeStep>>(
         make_not_null(&box),
@@ -64,7 +64,7 @@ struct AdvanceTime {
            const gsl::not_null<TimeDelta*> time_step,
            const gsl::not_null<double*> time,
            const gsl::not_null<TimeDelta*> next_time_step,
-           const TimeStepper& time_stepper) noexcept {
+           const TimeStepper& time_stepper) {
           *time_id = *next_time_id;
           *time_step = next_time_step->with_slab(time_id->step_time().slab());
 

@@ -87,7 +87,7 @@
               std::integer_sequence<                                         \
                   unsigned long,                                             \
                   INSTANTIATE_COORD_MAP_DETAIL_GET_FILLED_INDEX_SEQUENCE(    \
-                      data)>) const noexcept;                                \
+                      data)>) const;                                         \
   template std::optional<                                                    \
       tnsr::I<double, INSTANTIATE_COORD_MAP_DETAIL_GET_MAPS_DIM(data),       \
               INSTANTIATE_COORD_MAP_DETAIL_GET_SOURCE_FRAME(data)>>          \
@@ -103,7 +103,7 @@
               std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&,    \
           std::index_sequence<                                               \
               INSTANTIATE_COORD_MAP_DETAIL_GET_FILLED_INDEX_SEQUENCE(        \
-                  data)> /*meta*/) const noexcept;                           \
+                  data)> /*meta*/) const;                                    \
   template class domain::CoordinateMap<                                      \
       INSTANTIATE_COORD_MAP_DETAIL_GET_SOURCE_FRAME(data),                   \
       INSTANTIATE_COORD_MAP_DETAIL_GET_TARGET_FRAME(data),                   \

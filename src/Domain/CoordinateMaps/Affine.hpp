@@ -43,36 +43,36 @@ class Affine {
   Affine() = default;
   ~Affine() = default;
   Affine(const Affine&) = default;
-  Affine(Affine&&) noexcept = default;  // NOLINT
+  Affine(Affine&&) = default;  // NOLINT
   Affine& operator=(const Affine&) = default;
   Affine& operator=(Affine&&) = default;
 
   template <typename T>
   std::array<tt::remove_cvref_wrap_t<T>, 1> operator()(
-      const std::array<T, 1>& source_coords) const noexcept;
+      const std::array<T, 1>& source_coords) const;
 
   /// The inverse function is only callable with doubles because the inverse
   /// might fail if called for a point out of range, and it is unclear
   /// what should happen if the inverse were to succeed for some points in a
   /// DataVector but fail for other points.
   std::optional<std::array<double, 1>> inverse(
-      const std::array<double, 1>& target_coords) const noexcept;
+      const std::array<double, 1>& target_coords) const;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, 1, Frame::NoFrame> jacobian(
-      const std::array<T, 1>& source_coords) const noexcept;
+      const std::array<T, 1>& source_coords) const;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, 1, Frame::NoFrame> inv_jacobian(
-      const std::array<T, 1>& source_coords) const noexcept;
+      const std::array<T, 1>& source_coords) const;
 
   // clang-tidy: google-runtime-references
   void pup(PUP::er& p);  // NOLINT
 
-  bool is_identity() const noexcept { return is_identity_; }
+  bool is_identity() const { return is_identity_; }
 
  private:
-  friend bool operator==(const Affine& lhs, const Affine& rhs) noexcept;
+  friend bool operator==(const Affine& lhs, const Affine& rhs);
 
   double A_{-1.0};
   double B_{1.0};
@@ -86,7 +86,7 @@ class Affine {
 };
 
 inline bool operator!=(const CoordinateMaps::Affine& lhs,
-                       const CoordinateMaps::Affine& rhs) noexcept {
+                       const CoordinateMaps::Affine& rhs) {
   return not(lhs == rhs);
 }
 

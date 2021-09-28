@@ -23,8 +23,7 @@
 // below over this function.
 template <typename T>
 void raw_transpose(const gsl::not_null<T*> result, const T* const data,
-                   const size_t chunk_size,
-                   const size_t number_of_chunks) noexcept {
+                   const size_t chunk_size, const size_t number_of_chunks) {
   // The i outside loop order is faster, but that could be architecture
   // dependent and so may need updating in the future. Changing this made the
   // logical derivatives in 3D with 50 variables 20% faster.
@@ -80,8 +79,7 @@ void raw_transpose(const gsl::not_null<T*> result, const T* const data,
 /// \tparam T the type of the transposed data
 template <typename U, typename T>
 void transpose(const gsl::not_null<T*> result, const U& u,
-               const size_t chunk_size,
-               const size_t number_of_chunks) noexcept {
+               const size_t chunk_size, const size_t number_of_chunks) {
   ASSERT(chunk_size * number_of_chunks == result->size(),
          "chunk_size = " << chunk_size << ", number_of_chunks = "
                          << number_of_chunks << ", size = " << result->size());
@@ -93,7 +91,7 @@ void transpose(const gsl::not_null<T*> result, const U& u,
 
 template <typename U, typename T = U>
 T transpose(const U& u, const size_t chunk_size,
-            const size_t number_of_chunks) noexcept {
+            const size_t number_of_chunks) {
   T t = make_with_value<T>(u, 0.0);
   transpose(make_not_null(&t), u, chunk_size, number_of_chunks);
   return t;

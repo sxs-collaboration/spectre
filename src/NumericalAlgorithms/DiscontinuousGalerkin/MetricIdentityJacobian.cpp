@@ -32,7 +32,7 @@ void metric_identity_det_jac_times_inv_jac_impl(
     const Mesh<Dim>& mesh,
     const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords,
     const Jacobian<DataVector, Dim, Frame::ElementLogical, Frame::Inertial>&
-        jacobian) noexcept {
+        jacobian) {
   static_assert(Dim == 1 or Dim == 2, "Generic impl handles only 1d and 2d.");
   destructive_resize_components(det_jac_times_inverse_jacobian,
                                 mesh.number_of_grid_points());
@@ -73,7 +73,7 @@ void metric_identity_det_jac_times_inv_jac_impl(
     const gsl::not_null<DataVector*> buffer_component, const Mesh<3>& mesh,
     const tnsr::I<DataVector, 3, Frame::Inertial>& inertial_coords,
     const Jacobian<DataVector, 3, Frame::ElementLogical, Frame::Inertial>&
-        jacobian) noexcept {
+        jacobian) {
   // The 3d case is handled separately because this actually requires a buffer.
   // Basically, in 2d you can get into the situation where you have 2 unused
   // components (and thus 2 buffers) and so taking the eta derivatives you have
@@ -228,7 +228,7 @@ void metric_identity_det_jac_times_inv_jac(
     const Mesh<Dim>& mesh,
     const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords,
     const Jacobian<DataVector, Dim, Frame::ElementLogical, Frame::Inertial>&
-        jacobian) noexcept {
+        jacobian) {
   if constexpr (Dim == 3) {
     const size_t num_grid_points = mesh.number_of_grid_points();
     DataVector buffers{2 * num_grid_points};
@@ -259,7 +259,7 @@ void metric_identity_jacobian_quantities(
         jacobian,
     const gsl::not_null<Scalar<DataVector>*> det_jacobian,
     const Mesh<Dim>& mesh,
-    const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords) noexcept {
+    const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords) {
   static_assert(Dim == 1 or Dim == 2 or Dim == 3,
                 "Only implemented for 1, 2, and 3d.");
   destructive_resize_components(det_jac_times_inverse_jacobian,
@@ -268,7 +268,7 @@ void metric_identity_jacobian_quantities(
   destructive_resize_components(det_jacobian, mesh.number_of_grid_points());
   ASSERT(
       alg::all_of(*jacobian,
-                  [&mesh](const DataVector& jac_component) noexcept {
+                  [&mesh](const DataVector& jac_component) {
                     return jac_component.size() == mesh.number_of_grid_points();
                   }),
       "The Jacobian components must all be the same size as the number of grid "
@@ -330,7 +330,7 @@ void metric_identity_jacobian_quantities(
       const tnsr::I<DataVector, GET_DIM(data), Frame::Inertial>&               \
           inertial_coords,                                                     \
       const Jacobian<DataVector, GET_DIM(data), Frame::ElementLogical,         \
-                     Frame::Inertial>& jacobian) noexcept;                     \
+                     Frame::Inertial>& jacobian);                              \
   template void metric_identity_jacobian_quantities(                           \
       gsl::not_null<InverseJacobian<DataVector, GET_DIM(data),                 \
                                     Frame::ElementLogical, Frame::Inertial>*>  \
@@ -344,7 +344,7 @@ void metric_identity_jacobian_quantities(
       gsl::not_null<Scalar<DataVector>*> det_jacobian,                         \
       const Mesh<GET_DIM(data)>& mesh,                                         \
       const tnsr::I<DataVector, GET_DIM(data), Frame::Inertial>&               \
-          inertial_coords) noexcept;
+          inertial_coords);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 

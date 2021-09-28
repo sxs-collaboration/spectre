@@ -24,7 +24,7 @@ tuples::TaggedTuple<Tags::BondiBeta, Tags::BondiU, Tags::BondiW, Tags::BondiJ>
 extract_bondi_scalars_from_cartesian_metric(
     const tnsr::aa<DataVector, 3>& spacetime_metric,
     const CartesianiSphericalJ& inverse_jacobian,
-    const double extraction_radius) noexcept {
+    const double extraction_radius) {
   const auto inverse_cartesian_metric =
       determinant_and_inverse(spacetime_metric).second;
   tnsr::AA<DataVector, 3, ::Frame::Spherical<::Frame::Inertial>>
@@ -86,7 +86,7 @@ extract_dt_bondi_scalars_from_cartesian_metric(
     const tnsr::aa<DataVector, 3>& dt_spacetime_metric,
     const tnsr::aa<DataVector, 3>& spacetime_metric,
     const CartesianiSphericalJ& inverse_jacobian,
-    const double extraction_radius) noexcept {
+    const double extraction_radius) {
   const auto inverse_cartesian_metric =
       determinant_and_inverse(spacetime_metric).second;
   tnsr::AA<DataVector, 3, ::Frame::Spherical<::Frame::Inertial>>
@@ -192,7 +192,7 @@ extract_dr_bondi_scalars_from_cartesian_metric(
     const tnsr::aa<DataVector, 3>& spacetime_metric,
     const CartesianiSphericalJ& inverse_jacobian,
     const CartesianiSphericalJ& dr_inverse_jacobian,
-    const double extraction_radius) noexcept {
+    const double extraction_radius) {
   const auto inverse_cartesian_metric =
       determinant_and_inverse(spacetime_metric).second;
   tnsr::AA<DataVector, 3, ::Frame::Spherical<::Frame::Inertial>>
@@ -306,12 +306,11 @@ extract_dr_bondi_scalars_from_cartesian_metric(
   return {dr_bondi_beta, dr_bondi_u, dr_bondi_w, dr_bondi_j};
 }
 
-void test_initialize_j(
-    const size_t l_max, const size_t number_of_radial_points,
-    const double extraction_radius, const double time,
-    const std::unique_ptr<InitializeJ::InitializeJ<false>>
-        expected_initialize_j,
-    const std::unique_ptr<WorldtubeData> analytic_solution) noexcept {
+void test_initialize_j(const size_t l_max, const size_t number_of_radial_points,
+                       const double extraction_radius, const double time,
+                       const std::unique_ptr<InitializeJ::InitializeJ<false>>
+                           expected_initialize_j,
+                       const std::unique_ptr<WorldtubeData> analytic_solution) {
   const size_t number_of_angular_points =
       Spectral::Swsh::number_of_swsh_collocation_points(l_max);
   Variables<Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>

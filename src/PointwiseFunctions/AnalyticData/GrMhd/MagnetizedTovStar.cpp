@@ -23,11 +23,12 @@
 #include "Utilities/MakeWithValue.hpp"
 
 namespace grmhd::AnalyticData {
-MagnetizedTovStar::MagnetizedTovStar(
-    const double central_rest_mass_density, const double polytropic_constant,
-    const double polytropic_exponent, const size_t pressure_exponent,
-    const double cutoff_pressure_fraction,
-    const double vector_potential_amplitude) noexcept
+MagnetizedTovStar::MagnetizedTovStar(const double central_rest_mass_density,
+                                     const double polytropic_constant,
+                                     const double polytropic_exponent,
+                                     const size_t pressure_exponent,
+                                     const double cutoff_pressure_fraction,
+                                     const double vector_potential_amplitude)
     : tov_star(central_rest_mass_density, polytropic_constant,
                polytropic_exponent),
       pressure_exponent_(pressure_exponent),
@@ -36,7 +37,7 @@ MagnetizedTovStar::MagnetizedTovStar(
                            Scalar<double>{central_rest_mass_density}))),
       vector_potential_amplitude_(vector_potential_amplitude) {}
 
-void MagnetizedTovStar::pup(PUP::er& p) noexcept {
+void MagnetizedTovStar::pup(PUP::er& p) {
   tov_star::pup(p);
   p | pressure_exponent_;
   p | cutoff_pressure_;
@@ -49,7 +50,7 @@ MagnetizedTovStar::variables(
     const tnsr::I<DataType, 3>& coords,
     tmpl::list<
         hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>> /*meta*/,
-    const RadialVariables<DataType>& radial_vars) const noexcept {
+    const RadialVariables<DataType>& radial_vars) const {
   const size_t num_pts = get_size(get<0>(coords));
   auto magnetic_field =
       make_with_value<tnsr::I<DataType, 3, Frame::Inertial>>(num_pts, 0.0);
@@ -99,8 +100,7 @@ MagnetizedTovStar::variables(
   return magnetic_field;
 }
 
-bool operator==(const MagnetizedTovStar& lhs,
-                const MagnetizedTovStar& rhs) noexcept {
+bool operator==(const MagnetizedTovStar& lhs, const MagnetizedTovStar& rhs) {
   return static_cast<const typename MagnetizedTovStar::tov_star&>(lhs) ==
              static_cast<const typename MagnetizedTovStar::tov_star&>(rhs) and
          lhs.pressure_exponent_ == rhs.pressure_exponent_ and
@@ -108,8 +108,7 @@ bool operator==(const MagnetizedTovStar& lhs,
          lhs.vector_potential_amplitude_ == rhs.vector_potential_amplitude_;
 }
 
-bool operator!=(const MagnetizedTovStar& lhs,
-                const MagnetizedTovStar& rhs) noexcept {
+bool operator!=(const MagnetizedTovStar& lhs, const MagnetizedTovStar& rhs) {
   return not(lhs == rhs);
 }
 
@@ -122,7 +121,7 @@ bool operator!=(const MagnetizedTovStar& lhs,
       const tnsr::I<DTYPE(data), 3>& coords,                            \
       tmpl::list<hydro::Tags::MagneticField<DTYPE(data), 3,             \
                                             Frame::Inertial>> /*meta*/, \
-      const RadialVariables<DTYPE(data)>& radial_vars) const noexcept;
+      const RadialVariables<DTYPE(data)>& radial_vars) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
 

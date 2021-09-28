@@ -18,7 +18,7 @@
 namespace {
 template <size_t VolumeDim>
 std::set<size_t> set_of_dimensions(
-    const std::array<Direction<VolumeDim>, VolumeDim>& directions) noexcept {
+    const std::array<Direction<VolumeDim>, VolumeDim>& directions) {
   std::set<size_t> set_of_dims;
   for (size_t j = 0; j < VolumeDim; j++) {
     set_of_dims.insert(gsl::at(directions, j).dimension());
@@ -28,7 +28,7 @@ std::set<size_t> set_of_dimensions(
 }  // namespace
 
 template <size_t VolumeDim>
-OrientationMap<VolumeDim>::OrientationMap() noexcept {
+OrientationMap<VolumeDim>::OrientationMap() {
   for (size_t j = 0; j < VolumeDim; j++) {
     gsl::at(mapped_directions_, j) = Direction<VolumeDim>(j, Side::Upper);
   }
@@ -36,7 +36,7 @@ OrientationMap<VolumeDim>::OrientationMap() noexcept {
 
 template <size_t VolumeDim>
 OrientationMap<VolumeDim>::OrientationMap(
-    std::array<Direction<VolumeDim>, VolumeDim> mapped_directions) noexcept
+    std::array<Direction<VolumeDim>, VolumeDim> mapped_directions)
     : mapped_directions_(std::move(mapped_directions)) {
   for (size_t j = 0; j < VolumeDim; j++) {
     if (gsl::at(mapped_directions_, j).dimension() != j or
@@ -51,8 +51,7 @@ OrientationMap<VolumeDim>::OrientationMap(
 template <size_t VolumeDim>
 OrientationMap<VolumeDim>::OrientationMap(
     const std::array<Direction<VolumeDim>, VolumeDim>& directions_in_host,
-    const std::array<Direction<VolumeDim>, VolumeDim>&
-        directions_in_neighbor) noexcept {
+    const std::array<Direction<VolumeDim>, VolumeDim>& directions_in_neighbor) {
   for (size_t j = 0; j < VolumeDim; j++) {
     gsl::at(mapped_directions_, gsl::at(directions_in_host, j).dimension()) =
         (gsl::at(directions_in_host, j).side() == Side::Upper
@@ -70,7 +69,7 @@ OrientationMap<VolumeDim>::OrientationMap(
 
 template <size_t VolumeDim>
 std::array<SegmentId, VolumeDim> OrientationMap<VolumeDim>::operator()(
-    const std::array<SegmentId, VolumeDim>& segmentIds) const noexcept {
+    const std::array<SegmentId, VolumeDim>& segmentIds) const {
   std::array<SegmentId, VolumeDim> result = segmentIds;
   for (size_t d = 0; d < VolumeDim; d++) {
     gsl::at(result, gsl::at(mapped_directions_, d).dimension()) =
@@ -83,15 +82,14 @@ std::array<SegmentId, VolumeDim> OrientationMap<VolumeDim>::operator()(
 
 template <size_t VolumeDim>
 Mesh<VolumeDim> OrientationMap<VolumeDim>::operator()(
-    const Mesh<VolumeDim>& mesh) const noexcept {
+    const Mesh<VolumeDim>& mesh) const {
   return Mesh<VolumeDim>(this->permute_from_neighbor(mesh.extents().indices()),
                          this->permute_from_neighbor(mesh.basis()),
                          this->permute_from_neighbor(mesh.quadrature()));
 }
 
 template <size_t VolumeDim>
-OrientationMap<VolumeDim> OrientationMap<VolumeDim>::inverse_map() const
-    noexcept {
+OrientationMap<VolumeDim> OrientationMap<VolumeDim>::inverse_map() const {
   std::array<Direction<VolumeDim>, VolumeDim> result;
   for (size_t i = 0; i < VolumeDim; i++) {
     gsl::at(result, gsl::at(mapped_directions_, i).dimension()) =
@@ -101,21 +99,21 @@ OrientationMap<VolumeDim> OrientationMap<VolumeDim>::inverse_map() const
 }
 
 template <size_t VolumeDim>
-void OrientationMap<VolumeDim>::pup(PUP::er& p) noexcept {
+void OrientationMap<VolumeDim>::pup(PUP::er& p) {
   p | mapped_directions_;
   p | is_aligned_;
 }
 
 template <>
 std::ostream& operator<<(std::ostream& os,
-                         const OrientationMap<1>& orientation) noexcept {
+                         const OrientationMap<1>& orientation) {
   os << "(" << orientation(Direction<1>::upper_xi()) << ")";
   return os;
 }
 
 template <>
 std::ostream& operator<<(std::ostream& os,
-                         const OrientationMap<2>& orientation) noexcept {
+                         const OrientationMap<2>& orientation) {
   os << "(" << orientation(Direction<2>::upper_xi()) << ", "
      << orientation(Direction<2>::upper_eta()) << ")";
   return os;
@@ -123,7 +121,7 @@ std::ostream& operator<<(std::ostream& os,
 
 template <>
 std::ostream& operator<<(std::ostream& os,
-                         const OrientationMap<3>& orientation) noexcept {
+                         const OrientationMap<3>& orientation) {
   os << "(" << orientation(Direction<3>::upper_xi()) << ", "
      << orientation(Direction<3>::upper_eta()) << ", "
      << orientation(Direction<3>::upper_zeta()) << ")";
@@ -133,7 +131,7 @@ std::ostream& operator<<(std::ostream& os,
 template <size_t VolumeDim, typename T>
 std::array<tt::remove_cvref_wrap_t<T>, VolumeDim> discrete_rotation(
     const OrientationMap<VolumeDim>& rotation,
-    std::array<T, VolumeDim> source_coords) noexcept {
+    std::array<T, VolumeDim> source_coords) {
   using ReturnType = tt::remove_cvref_wrap_t<T>;
   std::array<ReturnType, VolumeDim> new_coords{};
   for (size_t i = 0; i < VolumeDim; i++) {
@@ -149,7 +147,7 @@ std::array<tt::remove_cvref_wrap_t<T>, VolumeDim> discrete_rotation(
 
 template <size_t VolumeDim>
 tnsr::Ij<double, VolumeDim, Frame::NoFrame> discrete_rotation_jacobian(
-    const OrientationMap<VolumeDim>& orientation) noexcept {
+    const OrientationMap<VolumeDim>& orientation) {
   tnsr::Ij<double, VolumeDim, Frame::NoFrame> jacobian_matrix{0.0};
   for (size_t d = 0; d < VolumeDim; d++) {
     const auto new_direction =
@@ -162,7 +160,7 @@ tnsr::Ij<double, VolumeDim, Frame::NoFrame> discrete_rotation_jacobian(
 
 template <size_t VolumeDim>
 tnsr::Ij<double, VolumeDim, Frame::NoFrame> discrete_rotation_inverse_jacobian(
-    const OrientationMap<VolumeDim>& orientation) noexcept {
+    const OrientationMap<VolumeDim>& orientation) {
   tnsr::Ij<double, VolumeDim, Frame::NoFrame> inverse_jacobian_matrix{0.0};
   for (size_t d = 0; d < VolumeDim; d++) {
     const auto new_direction =
@@ -175,14 +173,13 @@ tnsr::Ij<double, VolumeDim, Frame::NoFrame> discrete_rotation_inverse_jacobian(
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATION(r, data)                                \
-  template class OrientationMap<DIM(data)>;                   \
-  template tnsr::Ij<double, DIM(data), Frame::NoFrame>        \
-  discrete_rotation_jacobian(                                 \
-      const OrientationMap<DIM(data)>& orientation) noexcept; \
-  template tnsr::Ij<double, DIM(data), Frame::NoFrame>        \
-  discrete_rotation_inverse_jacobian(                         \
-      const OrientationMap<DIM(data)>& orientation) noexcept;
+#define INSTANTIATION(r, data)                                              \
+  template class OrientationMap<DIM(data)>;                                 \
+  template tnsr::Ij<double, DIM(data), Frame::NoFrame>                      \
+  discrete_rotation_jacobian(const OrientationMap<DIM(data)>& orientation); \
+  template tnsr::Ij<double, DIM(data), Frame::NoFrame>                      \
+  discrete_rotation_inverse_jacobian(                                       \
+      const OrientationMap<DIM(data)>& orientation);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 
@@ -194,7 +191,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
   template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data)> \
   discrete_rotation<DIM(data), DTYPE(data)>(                           \
       const OrientationMap<DIM(data)>& rotation,                       \
-      std::array<DTYPE(data), DIM(data)> source_coords) noexcept;
+      std::array<DTYPE(data), DIM(data)> source_coords);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3),
                         (double, DataVector, const double, const DataVector,

@@ -36,9 +36,7 @@ struct MassDensityCons : db::SimpleTag {
 template <size_t Dim, typename Fr>
 struct MomentumDensity : db::SimpleTag {
   using type = tnsr::I<DataVector, Dim, Fr>;
-  static std::string name() noexcept {
-    return Frame::prefix<Fr>() + "MomentumDensity";
-  }
+  static std::string name() { return Frame::prefix<Fr>() + "MomentumDensity"; }
 };
 
 /// The energy density of the fluid.
@@ -50,9 +48,7 @@ struct EnergyDensity : db::SimpleTag {
 template <typename DataType, size_t Dim, typename Fr>
 struct Velocity : db::SimpleTag {
   using type = tnsr::I<DataType, Dim, Fr>;
-  static std::string name() noexcept {
-    return Frame::prefix<Fr>() + "Velocity";
-  }
+  static std::string name() { return Frame::prefix<Fr>() + "Velocity"; }
 };
 
 /// The specific internal energy of the fluid.
@@ -121,9 +117,7 @@ struct MachNumber : db::SimpleTag {
 template <typename DataType, size_t Dim, typename Fr>
 struct RamPressure : db::SimpleTag {
   using type = tnsr::II<DataType, Dim, Fr>;
-  static std::string name() noexcept {
-    return Frame::prefix<Fr>() + "RamPressure";
-  }
+  static std::string name() { return Frame::prefix<Fr>() + "RamPressure"; }
 };
 
 /// The specific kinetic energy.
@@ -145,8 +139,7 @@ struct SourceTerm : SourceTermBase, db::SimpleTag {
                           ::OptionTags::AnalyticData<InitialDataType>>>;
 
   static constexpr bool pass_metavariables = false;
-  static type create_from_options(
-      const InitialDataType& initial_data) noexcept {
+  static type create_from_options(const InitialDataType& initial_data) {
     return initial_data.source_term();
   }
 };

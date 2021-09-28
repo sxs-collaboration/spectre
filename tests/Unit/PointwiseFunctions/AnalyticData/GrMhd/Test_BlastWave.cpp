@@ -47,20 +47,18 @@ struct BlastWaveProxy : grmhd::AnalyticData::BlastWave {
 
   template <typename DataType>
   tuples::tagged_tuple_from_typelist<hydro_variables_tags<DataType>>
-  hydro_variables(const tnsr::I<DataType, 3, Frame::Inertial>& x) const
-      noexcept {
+  hydro_variables(const tnsr::I<DataType, 3, Frame::Inertial>& x) const {
     return variables(x, hydro_variables_tags<DataType>{});
   }
 
   template <typename DataType>
   tuples::tagged_tuple_from_typelist<grmhd_variables_tags<DataType>>
-  grmhd_variables(const tnsr::I<DataType, 3, Frame::Inertial>& x) const
-      noexcept {
+  grmhd_variables(const tnsr::I<DataType, 3, Frame::Inertial>& x) const {
     return variables(x, grmhd_variables_tags<DataType>{});
   }
 };
 
-void test_create_from_options() noexcept {
+void test_create_from_options() {
   const auto cylindrical_blast_wave =
       TestHelpers::test_creation<grmhd::AnalyticData::BlastWave>(
           "InnerRadius: 0.8\n"
@@ -79,7 +77,7 @@ void test_create_from_options() noexcept {
             grmhd::AnalyticData::BlastWave::Geometry::Cylindrical));
 }
 
-void test_move() noexcept {
+void test_move() {
   grmhd::AnalyticData::BlastWave cylindrical_blast_wave(
       0.8, 1.0, 1.0e-2, 1.0e-4, 1.0, 5.0e-4,
       std::array<double, 3>{{0.1, 0.0, 0.0}}, 1.3333333333333333333,
@@ -103,7 +101,7 @@ void test_move() noexcept {
                       spherical_blast_wave_copy);  //  NOLINT
 }
 
-void test_serialize() noexcept {
+void test_serialize() {
   grmhd::AnalyticData::BlastWave cylindrical_blast_wave(
       0.8, 1.0, 1.0e-2, 1.0e-4, 1.0, 5.0e-4,
       std::array<double, 3>{{0.1, 0.0, 0.0}}, 1.3333333333333333333,
@@ -112,9 +110,8 @@ void test_serialize() noexcept {
 }
 
 template <typename DataType>
-void test_variables(
-    const DataType& used_for_size,
-    const grmhd::AnalyticData::BlastWave::Geometry geometry) noexcept {
+void test_variables(const DataType& used_for_size,
+                    const grmhd::AnalyticData::BlastWave::Geometry geometry) {
   const double inner_radius = 0.8;
   const double outer_radius = 1.0;
   const double inner_density = 1.0e-2;

@@ -17,5 +17,5 @@ namespace evolution::dg::subcell::fd {
  * the DG basis.
  */
 template <size_t Dim>
-Mesh<Dim> mesh(const Mesh<Dim>& dg_mesh) noexcept;
+Mesh<Dim> mesh(const Mesh<Dim>& dg_mesh);
 }  // namespace evolution::dg::subcell::fd

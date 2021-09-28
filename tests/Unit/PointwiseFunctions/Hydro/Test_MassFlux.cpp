@@ -25,8 +25,8 @@ void test_mass_flux(const DataType& used_for_size) {
       static_cast<tnsr::I<DataType, Dim, Frame> (*)(
           const Scalar<DataType>&, const tnsr::I<DataType, Dim, Frame>&,
           const Scalar<DataType>&, const Scalar<DataType>&,
-          const tnsr::I<DataType, Dim, Frame>&,
-          const Scalar<DataType>&) noexcept>(&mass_flux<DataType, Dim, Frame>),
+          const tnsr::I<DataType, Dim, Frame>&, const Scalar<DataType>&)>(
+          &mass_flux<DataType, Dim, Frame>),
       "TestFunctions", "mass_flux", {{{-10.0, 10.0}}}, used_for_size);
 }
 }  // namespace

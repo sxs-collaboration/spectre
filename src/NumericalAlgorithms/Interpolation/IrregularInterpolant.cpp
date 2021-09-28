@@ -21,7 +21,7 @@ namespace {
 // Future optimization: it might be more efficient to use Blaze's sparse
 // matrices since the interpolation matrix is mostly zeros
 std::vector<double> fd_stencil(const DataVector& xi_source,
-                               const double xi_target) noexcept {
+                               const double xi_target) {
   ASSERT(std::is_sorted(std::begin(xi_source), std::end(xi_source)),
          "xi_source = " << xi_source);
   auto xi_u =
@@ -45,12 +45,12 @@ std::vector<double> fd_stencil(const DataVector& xi_source,
 template <size_t Dim>
 Matrix interpolation_matrix(
     const Mesh<Dim>& mesh,
-    const tnsr::I<DataVector, Dim, Frame::ElementLogical>& points) noexcept;
+    const tnsr::I<DataVector, Dim, Frame::ElementLogical>& points);
 
 template <>
 Matrix interpolation_matrix(
     const Mesh<1>& mesh,
-    const tnsr::I<DataVector, 1, Frame::ElementLogical>& points) noexcept {
+    const tnsr::I<DataVector, 1, Frame::ElementLogical>& points) {
   if (mesh.basis()[0] == Spectral::Basis::FiniteDifference) {
     auto source_xi = logical_coordinates(mesh);
     const auto number_of_source_points = mesh.number_of_grid_points();
@@ -75,7 +75,7 @@ Matrix interpolation_matrix(
 template <>
 Matrix interpolation_matrix(
     const Mesh<2>& mesh,
-    const tnsr::I<DataVector, 2, Frame::ElementLogical>& points) noexcept {
+    const tnsr::I<DataVector, 2, Frame::ElementLogical>& points) {
   const auto number_of_target_points = get<0>(points).size();
   Matrix result(number_of_target_points, mesh.number_of_grid_points());
 
@@ -128,7 +128,7 @@ Matrix interpolation_matrix(
 template <>
 Matrix interpolation_matrix(
     const Mesh<3>& mesh,
-    const tnsr::I<DataVector, 3, Frame::ElementLogical>& points) noexcept {
+    const tnsr::I<DataVector, 3, Frame::ElementLogical>& points) {
   const auto number_of_target_points = get<0>(points).size();
   Matrix result(number_of_target_points, mesh.number_of_grid_points());
 
@@ -208,27 +208,24 @@ Irregular<Dim>::Irregular() = default;
 template <size_t Dim>
 Irregular<Dim>::Irregular(const Mesh<Dim>& source_mesh,
                           const tnsr::I<DataVector, Dim, Frame::ElementLogical>&
-                              target_points) noexcept
+                              target_points)
     : interpolation_matrix_(interpolation_matrix(source_mesh, target_points)) {}
 
 template <size_t Dim>
-void Irregular<Dim>::pup(PUP::er& p) noexcept {
+void Irregular<Dim>::pup(PUP::er& p) {
   p | interpolation_matrix_;
 }
 
 template <size_t Dim>
-bool operator!=(const Irregular<Dim>& lhs, const Irregular<Dim>& rhs) noexcept {
+bool operator!=(const Irregular<Dim>& lhs, const Irregular<Dim>& rhs) {
   return not(lhs == rhs);
 }
 
 template class Irregular<1>;
 template class Irregular<2>;
 template class Irregular<3>;
-template bool operator!=(const Irregular<1>& lhs,
-                         const Irregular<1>& rhs) noexcept;
-template bool operator!=(const Irregular<2>& lhs,
-                         const Irregular<2>& rhs) noexcept;
-template bool operator!=(const Irregular<3>& lhs,
-                         const Irregular<3>& rhs) noexcept;
+template bool operator!=(const Irregular<1>& lhs, const Irregular<1>& rhs);
+template bool operator!=(const Irregular<2>& lhs, const Irregular<2>& rhs);
+template bool operator!=(const Irregular<3>& lhs, const Irregular<3>& rhs);
 
 }  // namespace intrp

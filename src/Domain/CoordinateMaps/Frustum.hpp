@@ -169,7 +169,7 @@ class Frustum {
           OrientationMap<3> orientation_of_frustum,
           bool with_equiangular_map = false,
           double projective_scale_factor = 1.0,
-          bool auto_projective_scale_factor = false) noexcept;
+          bool auto_projective_scale_factor = false);
   Frustum() = default;
   ~Frustum() = default;
   Frustum(Frustum&&) = default;
@@ -179,7 +179,7 @@ class Frustum {
 
   template <typename T>
   std::array<tt::remove_cvref_wrap_t<T>, 3> operator()(
-      const std::array<T, 3>& source_coords) const noexcept;
+      const std::array<T, 3>& source_coords) const;
 
   /// Returns std::nullopt if \f$z\f$ is at or beyond the \f$z\f$-coordinate of
   /// the apex of the pyramid, tetrahedron, or triangular prism that is
@@ -190,23 +190,23 @@ class Frustum {
   /// what should happen if the inverse were to succeed for some points in a
   /// DataVector but fail for other points.
   std::optional<std::array<double, 3>> inverse(
-      const std::array<double, 3>& target_coords) const noexcept;
+      const std::array<double, 3>& target_coords) const;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> jacobian(
-      const std::array<T, 3>& source_coords) const noexcept;
+      const std::array<T, 3>& source_coords) const;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> inv_jacobian(
-      const std::array<T, 3>& source_coords) const noexcept;
+      const std::array<T, 3>& source_coords) const;
 
   // clang-tidy: google runtime references
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
 
-  bool is_identity() const noexcept { return is_identity_; }
+  bool is_identity() const { return is_identity_; }
 
  private:
-  friend bool operator==(const Frustum& lhs, const Frustum& rhs) noexcept;
+  friend bool operator==(const Frustum& lhs, const Frustum& rhs);
 
   OrientationMap<3> orientation_of_frustum_{};
   bool with_equiangular_map_{false};
@@ -226,6 +226,6 @@ class Frustum {
   double w_minus_{std::numeric_limits<double>::signaling_NaN()};
 };
 
-bool operator!=(const Frustum& lhs, const Frustum& rhs) noexcept;
+bool operator!=(const Frustum& lhs, const Frustum& rhs);
 }  // namespace CoordinateMaps
 }  // namespace domain

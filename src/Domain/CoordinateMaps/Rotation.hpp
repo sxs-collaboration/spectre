@@ -56,35 +56,34 @@ class Rotation<2> {
   ~Rotation() = default;
   Rotation(const Rotation&) = default;
   Rotation& operator=(const Rotation&) = default;
-  Rotation(Rotation&&) noexcept = default;  // NOLINT
+  Rotation(Rotation&&) = default;  // NOLINT
   Rotation& operator=(Rotation&&) = default;
 
   template <typename T>
   std::array<tt::remove_cvref_wrap_t<T>, 2> operator()(
-      const std::array<T, 2>& source_coords) const noexcept;
+      const std::array<T, 2>& source_coords) const;
 
   /// The inverse function is only callable with doubles because the inverse
   /// might fail if called for a point out of range, and it is unclear
   /// what should happen if the inverse were to succeed for some points in a
   /// DataVector but fail for other points.
   std::optional<std::array<double, 2>> inverse(
-      const std::array<double, 2>& target_coords) const noexcept;
+      const std::array<double, 2>& target_coords) const;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, 2, Frame::NoFrame> jacobian(
-      const std::array<T, 2>& source_coords) const noexcept;
+      const std::array<T, 2>& source_coords) const;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, 2, Frame::NoFrame> inv_jacobian(
-      const std::array<T, 2>& source_coords) const noexcept;
+      const std::array<T, 2>& source_coords) const;
 
   void pup(PUP::er& p);  // NOLINT
 
-  bool is_identity() const noexcept { return is_identity_; }
+  bool is_identity() const { return is_identity_; }
 
  private:
-  friend bool operator==(const Rotation<2>& lhs,
-                         const Rotation<2>& rhs) noexcept;
+  friend bool operator==(const Rotation<2>& lhs, const Rotation<2>& rhs);
 
   double rotation_angle_{std::numeric_limits<double>::signaling_NaN()};
   tnsr::ij<double, 2, Frame::Grid> rotation_matrix_{
@@ -92,7 +91,7 @@ class Rotation<2> {
   bool is_identity_{false};
 };
 
-bool operator!=(const Rotation<2>& lhs, const Rotation<2>& rhs) noexcept;
+bool operator!=(const Rotation<2>& lhs, const Rotation<2>& rhs);
 
 /*!
  * \ingroup CoordinateMapsGroup
@@ -134,31 +133,30 @@ class Rotation<3> {
   ~Rotation() = default;
   Rotation(const Rotation&) = default;
   Rotation& operator=(const Rotation&) = default;
-  Rotation(Rotation&&) noexcept = default;  // NOLINT
+  Rotation(Rotation&&) = default;  // NOLINT
   Rotation& operator=(Rotation&&) = default;
 
   template <typename T>
   std::array<tt::remove_cvref_wrap_t<T>, 3> operator()(
-      const std::array<T, 3>& source_coords) const noexcept;
+      const std::array<T, 3>& source_coords) const;
 
   std::optional<std::array<double, 3>> inverse(
-      const std::array<double, 3>& target_coords) const noexcept;
+      const std::array<double, 3>& target_coords) const;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> jacobian(
-      const std::array<T, 3>& source_coords) const noexcept;
+      const std::array<T, 3>& source_coords) const;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> inv_jacobian(
-      const std::array<T, 3>& source_coords) const noexcept;
+      const std::array<T, 3>& source_coords) const;
 
   void pup(PUP::er& p);  // NOLINT
 
-  bool is_identity() const noexcept { return is_identity_; }
+  bool is_identity() const { return is_identity_; }
 
  private:
-  friend bool operator==(const Rotation<3>& lhs,
-                         const Rotation<3>& rhs) noexcept;
+  friend bool operator==(const Rotation<3>& lhs, const Rotation<3>& rhs);
 
   double rotation_about_z_{std::numeric_limits<double>::signaling_NaN()};
   double rotation_about_rotated_y_{
@@ -170,7 +168,7 @@ class Rotation<3> {
   bool is_identity_{false};
 };
 
-bool operator!=(const Rotation<3>& lhs, const Rotation<3>& rhs) noexcept;
+bool operator!=(const Rotation<3>& lhs, const Rotation<3>& rhs);
 
 }  // namespace CoordinateMaps
 }  // namespace domain

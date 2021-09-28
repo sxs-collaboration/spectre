@@ -69,13 +69,13 @@ class FrustalCloak : public DomainCreator<3> {
   struct LengthInnerCube {
     using type = double;
     static constexpr Options::String help = {"Side length of each inner cube."};
-    static constexpr type lower_bound() noexcept { return 0.0; }
+    static constexpr type lower_bound() { return 0.0; }
   };
 
   struct LengthOuterCube {
     using type = double;
     static constexpr Options::String help = {"Side length of the outer cube."};
-    static constexpr type lower_bound() noexcept { return 0.0; }
+    static constexpr type lower_bound() { return 0.0; }
   };
 
   struct OriginPreimage {
@@ -85,7 +85,7 @@ class FrustalCloak : public DomainCreator<3> {
 
   template <typename BoundaryConditionsBase>
   struct BoundaryCondition {
-    static std::string name() noexcept { return "BoundaryCondition"; }
+    static std::string name() { return "BoundaryCondition"; }
     static constexpr Options::String help =
         "The boundary condition to impose on all sides.";
     using type = std::unique_ptr<BoundaryConditionsBase>;
@@ -138,17 +138,16 @@ class FrustalCloak : public DomainCreator<3> {
 
   FrustalCloak() = default;
   FrustalCloak(const FrustalCloak&) = delete;
-  FrustalCloak(FrustalCloak&&) noexcept = default;
+  FrustalCloak(FrustalCloak&&) = default;
   FrustalCloak& operator=(const FrustalCloak&) = delete;
-  FrustalCloak& operator=(FrustalCloak&&) noexcept = default;
-  ~FrustalCloak() noexcept override = default;
+  FrustalCloak& operator=(FrustalCloak&&) = default;
+  ~FrustalCloak() override = default;
 
-  Domain<3> create_domain() const noexcept override;
+  Domain<3> create_domain() const override;
 
-  std::vector<std::array<size_t, 3>> initial_extents() const noexcept override;
+  std::vector<std::array<size_t, 3>> initial_extents() const override;
 
-  std::vector<std::array<size_t, 3>> initial_refinement_levels() const
-      noexcept override;
+  std::vector<std::array<size_t, 3>> initial_refinement_levels() const override;
 
  private:
   typename InitialRefinement::type initial_refinement_level_{};

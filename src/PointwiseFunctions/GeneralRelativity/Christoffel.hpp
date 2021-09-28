@@ -38,11 +38,11 @@ namespace gr {
 template <size_t SpatialDim, typename Frame, IndexType Index, typename DataType>
 void christoffel_first_kind(
     gsl::not_null<tnsr::abb<DataType, SpatialDim, Frame, Index>*> christoffel,
-    const tnsr::abb<DataType, SpatialDim, Frame, Index>& d_metric) noexcept;
+    const tnsr::abb<DataType, SpatialDim, Frame, Index>& d_metric);
 
 template <size_t SpatialDim, typename Frame, IndexType Index, typename DataType>
 tnsr::abb<DataType, SpatialDim, Frame, Index> christoffel_first_kind(
-    const tnsr::abb<DataType, SpatialDim, Frame, Index>& d_metric) noexcept;
+    const tnsr::abb<DataType, SpatialDim, Frame, Index>& d_metric);
 /// @}
 
 /// @{
@@ -64,13 +64,12 @@ void christoffel_second_kind(
     const gsl::not_null<tnsr::Abb<DataType, SpatialDim, Frame, Index>*>
         christoffel,
     const tnsr::abb<DataType, SpatialDim, Frame, Index>& d_metric,
-    const tnsr::AA<DataType, SpatialDim, Frame, Index>&
-        inverse_metric) noexcept;
+    const tnsr::AA<DataType, SpatialDim, Frame, Index>& inverse_metric);
 
 template <size_t SpatialDim, typename Frame, IndexType Index, typename DataType>
 auto christoffel_second_kind(
     const tnsr::abb<DataType, SpatialDim, Frame, Index>& d_metric,
-    const tnsr::AA<DataType, SpatialDim, Frame, Index>& inverse_metric) noexcept
+    const tnsr::AA<DataType, SpatialDim, Frame, Index>& inverse_metric)
     -> tnsr::Abb<DataType, SpatialDim, Frame, Index>;
 /// @}
 
@@ -93,7 +92,7 @@ struct SpatialChristoffelFirstKindCompute
   static constexpr auto function = static_cast<void (*)(
       gsl::not_null<
           tnsr::abb<DataType, SpatialDim, Frame, IndexType::Spatial>*>,
-      const tnsr::ijj<DataType, SpatialDim, Frame>&) noexcept>(
+      const tnsr::ijj<DataType, SpatialDim, Frame>&)>(
       &christoffel_first_kind<SpatialDim, Frame, IndexType::Spatial, DataType>);
 
   using base = SpatialChristoffelFirstKind<SpatialDim, Frame, DataType>;
@@ -117,7 +116,7 @@ struct SpatialChristoffelSecondKindCompute
   static constexpr auto function = static_cast<void (*)(
       gsl::not_null<tnsr::Ijj<DataType, SpatialDim, Frame>*>,
       const tnsr::ijj<DataType, SpatialDim, Frame>&,
-      const tnsr::II<DataType, SpatialDim, Frame>&) noexcept>(
+      const tnsr::II<DataType, SpatialDim, Frame>&)>(
       &raise_or_lower_first_index<DataType,
                                   SpatialIndex<SpatialDim, UpLo::Lo, Frame>,
                                   SpatialIndex<SpatialDim, UpLo::Lo, Frame>>);
@@ -144,7 +143,7 @@ struct TraceSpatialChristoffelFirstKindCompute
   static constexpr auto function = static_cast<void (*)(
       gsl::not_null<tnsr::i<DataType, SpatialDim, Frame>*>,
       const tnsr::ijj<DataType, SpatialDim, Frame>&,
-      const tnsr::II<DataType, SpatialDim, Frame>&) noexcept>(
+      const tnsr::II<DataType, SpatialDim, Frame>&)>(
       &trace_last_indices<DataType, SpatialIndex<SpatialDim, UpLo::Lo, Frame>,
                           SpatialIndex<SpatialDim, UpLo::Lo, Frame>>);
 
@@ -170,7 +169,7 @@ struct TraceSpatialChristoffelSecondKindCompute
   static constexpr auto function = static_cast<void (*)(
       gsl::not_null<tnsr::I<DataType, SpatialDim, Frame>*>,
       const tnsr::Ijj<DataType, SpatialDim, Frame>&,
-      const tnsr::II<DataType, SpatialDim, Frame>&) noexcept>(
+      const tnsr::II<DataType, SpatialDim, Frame>&)>(
       &trace_last_indices<DataType, SpatialIndex<SpatialDim, UpLo::Up, Frame>,
                           SpatialIndex<SpatialDim, UpLo::Lo, Frame>>);
 
@@ -192,13 +191,12 @@ struct SpacetimeChristoffelFirstKindCompute
   using return_type =
       tnsr::abb<DataType, SpatialDim, Frame, IndexType::Spacetime>;
 
-  static constexpr auto function =
-      static_cast<void (*)(gsl::not_null<tnsr::abb<DataType, SpatialDim, Frame,
-                                                   IndexType::Spacetime>*>,
-                           const tnsr::abb<DataType, SpatialDim, Frame,
-                                           IndexType::Spacetime>&) noexcept>(
-          &christoffel_first_kind<SpatialDim, Frame, IndexType::Spacetime,
-                                  DataType>);
+  static constexpr auto function = static_cast<void (*)(
+      gsl::not_null<
+          tnsr::abb<DataType, SpatialDim, Frame, IndexType::Spacetime>*>,
+      const tnsr::abb<DataType, SpatialDim, Frame, IndexType::Spacetime>&)>(
+      &christoffel_first_kind<SpatialDim, Frame, IndexType::Spacetime,
+                              DataType>);
 
   using base = SpacetimeChristoffelFirstKind<SpatialDim, Frame, DataType>;
 };
@@ -221,7 +219,7 @@ struct SpacetimeChristoffelSecondKindCompute
   static constexpr auto function = static_cast<void (*)(
       gsl::not_null<tnsr::Abb<DataType, SpatialDim, Frame>*>,
       const tnsr::abb<DataType, SpatialDim, Frame>&,
-      const tnsr::AA<DataType, SpatialDim, Frame>&) noexcept>(
+      const tnsr::AA<DataType, SpatialDim, Frame>&)>(
       &raise_or_lower_first_index<DataType,
                                   SpacetimeIndex<SpatialDim, UpLo::Lo, Frame>,
                                   SpacetimeIndex<SpatialDim, UpLo::Lo, Frame>>);
@@ -248,7 +246,7 @@ struct TraceSpacetimeChristoffelFirstKindCompute
   static constexpr auto function = static_cast<void (*)(
       gsl::not_null<tnsr::a<DataType, SpatialDim, Frame>*>,
       const tnsr::abb<DataType, SpatialDim, Frame>&,
-      const tnsr::AA<DataType, SpatialDim, Frame>&) noexcept>(
+      const tnsr::AA<DataType, SpatialDim, Frame>&)>(
       &trace_last_indices<DataType, SpacetimeIndex<SpatialDim, UpLo::Lo, Frame>,
                           SpacetimeIndex<SpatialDim, UpLo::Lo, Frame>>);
 

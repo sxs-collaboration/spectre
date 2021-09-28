@@ -50,8 +50,8 @@ class Dat : public h5::Object {
 
   Dat(const Dat& /*rhs*/) = delete;
   Dat& operator=(const Dat& /*rhs*/) = delete;
-  Dat(Dat&& /*rhs*/) noexcept = delete;             // NOLINT
-  Dat& operator=(Dat&& /*rhs*/) noexcept = delete;  // NOLINT
+  Dat(Dat&& /*rhs*/) = delete;             // NOLINT
+  Dat& operator=(Dat&& /*rhs*/) = delete;  // NOLINT
 
   ~Dat() override;
   /// \endcond HIDDEN_SYMBOLS
@@ -77,9 +77,7 @@ class Dat : public h5::Object {
   /*!
    * \returns the legend of the Dat file
    */
-  const std::vector<std::string>& get_legend() const noexcept {
-    return legend_;
-  }
+  const std::vector<std::string>& get_legend() const { return legend_; }
 
   /*!
    * \returns all data stored in the Dat file
@@ -105,14 +103,12 @@ class Dat : public h5::Object {
   /*!
    * \returns the number of rows (first index) and columns (second index)
    */
-  const std::array<hsize_t, 2>& get_dimensions() const noexcept {
-    return size_;
-  }
+  const std::array<hsize_t, 2>& get_dimensions() const { return size_; }
 
   /*!
    * \returns the header of the Dat file
    */
-  const std::string& get_header() const noexcept { return header_; }
+  const std::string& get_header() const { return header_; }
 
   /*!
    * \returns the user-specified version number of the Dat file
@@ -120,7 +116,7 @@ class Dat : public h5::Object {
    * \note h5::Version returns a uint32_t, so we return one here too for the
    * version
    */
-  uint32_t get_version() const noexcept { return version_; }
+  uint32_t get_version() const { return version_; }
 
  private:
   void append_impl(hsize_t number_of_rows, const std::vector<double>& data);

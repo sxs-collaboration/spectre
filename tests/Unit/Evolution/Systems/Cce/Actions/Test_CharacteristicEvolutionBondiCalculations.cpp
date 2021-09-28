@@ -163,7 +163,7 @@ struct TestSendToEvolution {
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/, const TimeStepId& time,
       const Variables<typename Metavariables::cce_boundary_communication_tags>&
-          data_to_send) noexcept {
+          data_to_send) {
     Parallel::receive_data<Cce::ReceiveTags::BoundaryData<
         typename Metavariables::cce_boundary_communication_tags>>(
         Parallel::get_parallel_component<
@@ -281,7 +281,7 @@ SPECTRE_TEST_CASE(
           const gsl::not_null<
               Variables<Tags::characteristic_worldtube_boundary_tags<
                   Tags::BoundaryValue>>*>
-              boundary_variables) noexcept {
+              boundary_variables) {
         create_bondi_boundary_data(
             boundary_variables, spatial_metric_coefficients,
             dt_spatial_metric_coefficients, dr_spatial_metric_coefficients,

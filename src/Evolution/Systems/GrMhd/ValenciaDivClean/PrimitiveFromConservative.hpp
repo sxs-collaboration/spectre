@@ -85,7 +85,7 @@ struct PrimitiveFromConservative {
       const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
       const Scalar<DataVector>& sqrt_det_spatial_metric,
       const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
-          equation_of_state) noexcept;
+          equation_of_state);
 };
 }  // namespace ValenciaDivClean
 }  // namespace grmhd

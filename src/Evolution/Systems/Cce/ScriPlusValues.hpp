@@ -59,7 +59,7 @@ struct CalculateScriPlusValue<Tags::News> {
       const Scalar<SpinWeighted<ComplexDataVector, 1>>& eth_beta,
       const Scalar<SpinWeighted<ComplexDataVector, 2>>& eth_eth_beta,
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& boundary_r,
-      size_t l_max, size_t number_of_radial_points) noexcept;
+      size_t l_max, size_t number_of_radial_points);
 };
 
 /*!
@@ -111,7 +111,7 @@ struct CalculateScriPlusValue<Tags::TimeIntegral<Tags::ScriPlus<Tags::Psi4>>> {
       const Scalar<SpinWeighted<ComplexDataVector, 2>>& dy_du_bondi_j,
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& boundary_r,
       const Scalar<SpinWeighted<ComplexDataVector, 1>>& eth_r_divided_by_r,
-      size_t l_max, size_t number_of_radial_points) noexcept;
+      size_t l_max, size_t number_of_radial_points);
 };
 
 
@@ -170,7 +170,7 @@ struct CalculateScriPlusValue<Tags::ScriPlus<Tags::Psi3>> {
       const Scalar<SpinWeighted<ComplexDataVector, 1>>& ethbar_dy_du_bondi_j,
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& boundary_r,
       const Scalar<SpinWeighted<ComplexDataVector, 1>>& eth_r_divided_by_r,
-      size_t l_max, size_t number_of_radial_points) noexcept;
+      size_t l_max, size_t number_of_radial_points);
 };
 
 /*!
@@ -235,7 +235,7 @@ struct CalculateScriPlusValue<Tags::ScriPlus<Tags::Psi2>> {
       const Scalar<SpinWeighted<ComplexDataVector, 2>>& dy_du_bondi_j,
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& boundary_r,
       const Scalar<SpinWeighted<ComplexDataVector, 1>>& eth_r_divided_by_r,
-      size_t l_max, size_t number_of_radial_points) noexcept;
+      size_t l_max, size_t number_of_radial_points);
 };
 
 /*!
@@ -285,7 +285,7 @@ struct CalculateScriPlusValue<Tags::ScriPlus<Tags::Psi1>> {
       const Scalar<SpinWeighted<ComplexDataVector, 1>>& dy_dy_bondi_q,
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& boundary_r,
       const Scalar<SpinWeighted<ComplexDataVector, 1>>& eth_r_divided_by_r,
-      size_t l_max, size_t number_of_radial_points) noexcept;
+      size_t l_max, size_t number_of_radial_points);
 };
 
 /*!
@@ -326,7 +326,7 @@ struct CalculateScriPlusValue<Tags::ScriPlus<Tags::Psi0>> {
       const Scalar<SpinWeighted<ComplexDataVector, 2>>& dy_bondi_j,
       const Scalar<SpinWeighted<ComplexDataVector, 2>>& dy_dy_dy_bondi_j,
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& boundary_r,
-      size_t l_max, size_t number_of_radial_points) noexcept;
+      size_t l_max, size_t number_of_radial_points);
 };
 
 /*!
@@ -368,7 +368,7 @@ struct CalculateScriPlusValue<Tags::ScriPlus<Tags::Strain>> {
       const Scalar<SpinWeighted<ComplexDataVector, 2>>& dy_bondi_j,
       const Scalar<SpinWeighted<ComplexDataVector, 2>>& eth_eth_retarded_time,
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& boundary_r,
-      size_t l_max, size_t number_of_radial_points) noexcept;
+      size_t l_max, size_t number_of_radial_points);
 };
 
 /*!
@@ -389,7 +389,7 @@ struct CalculateScriPlusValue<::Tags::dt<Tags::InertialRetardedTime>> {
 
   static void apply(
       gsl::not_null<Scalar<DataVector>*> dt_inertial_time,
-      const Scalar<SpinWeighted<ComplexDataVector, 0>>& exp_2_beta) noexcept;
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>& exp_2_beta);
 };
 
 /// Determines the angular derivative of the asymptotic inertial time, useful
@@ -404,7 +404,7 @@ struct CalculateScriPlusValue<Tags::EthInertialRetardedTime> {
       gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 1>>*>
           eth_inertial_time,
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& inertial_time,
-      size_t l_max) noexcept;
+      size_t l_max);
 };
 
 /// Initialize the \f$\mathcal I^+\f$ value `Tag` for the first hypersurface.
@@ -419,7 +419,7 @@ struct InitializeScriPlusValue<Tags::InertialRetardedTime> {
   using return_tags = tmpl::list<Tags::InertialRetardedTime>;
 
   static void apply(const gsl::not_null<Scalar<DataVector>*> inertial_time,
-                    const double initial_time = 0.0) noexcept {
+                    const double initial_time = 0.0) {
     // this is arbitrary, and has to do with choosing a BMS frame.
     get(*inertial_time) = initial_time;
   }

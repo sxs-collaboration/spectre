@@ -91,7 +91,7 @@ struct Square : db::SimpleTag {
 };
 struct SquareCompute : Square, db::ComputeTag {
   static void function(gsl::not_null<Scalar<DataVector>*> result,
-                       const Scalar<DataVector>& x) noexcept {
+                       const Scalar<DataVector>& x) {
     get(*result) = square(get(x));
   }
   using argument_tags = tmpl::list<TestSolution>;
@@ -103,7 +103,7 @@ struct Negate : db::SimpleTag {
 };
 struct NegateCompute : Negate, db::ComputeTag {
   static void function(gsl::not_null<Scalar<DataVector>*> result,
-                       const Scalar<DataVector>& x) noexcept {
+                       const Scalar<DataVector>& x) {
     get(*result) = -get(x);
   }
   using argument_tags = tmpl::list<Square>;
@@ -145,7 +145,7 @@ struct MockInterpolationTarget {
               typename ArrayIndex>
     static std::pair<observers::TypeOfObservation, observers::ObservationKey>
     register_info(const db::DataBox<DbTagsList>& /*box*/,
-                  const ArrayIndex& /*array_index*/) noexcept {
+                  const ArrayIndex& /*array_index*/) {
       return {observers::TypeOfObservation::Reduction,
               observers::ObservationKey{
                   pretty_type::get_name<InterpolationTargetTag>()}};
@@ -520,21 +520,21 @@ SPECTRE_TEST_CASE(
 
   // Check that the H5 file was written correctly.
   const auto file = h5::H5File<h5::AccessType::ReadOnly>(h5_file_name);
-  auto check_file_contents = [&file](
-      const std::vector<double>& expected_integral,
-      const std::vector<std::string>& expected_legend,
-      const std::string& group_name) noexcept {
-    const auto& dat_file = file.get<h5::Dat>(group_name);
-    const Matrix written_data = dat_file.get_data();
-    const auto& written_legend = dat_file.get_legend();
-    CHECK(written_legend == expected_legend);
-    CHECK(0.0 == written_data(0, 0));
-    // The interpolation is not perfect because I use too few grid points.
-    Approx custom_approx = Approx::custom().epsilon(1.e-4).scale(1.0);
-    for (size_t i = 0; i < expected_integral.size(); ++i) {
-      CHECK(expected_integral[i] == custom_approx(written_data(0, i + 1)));
-    }
-  };
+  auto check_file_contents =
+      [&file](const std::vector<double>& expected_integral,
+              const std::vector<std::string>& expected_legend,
+              const std::string& group_name) {
+        const auto& dat_file = file.get<h5::Dat>(group_name);
+        const Matrix written_data = dat_file.get_data();
+        const auto& written_legend = dat_file.get_legend();
+        CHECK(written_legend == expected_legend);
+        CHECK(0.0 == written_data(0, 0));
+        // The interpolation is not perfect because I use too few grid points.
+        Approx custom_approx = Approx::custom().epsilon(1.e-4).scale(1.0);
+        for (size_t i = 0; i < expected_integral.size(); ++i) {
+          CHECK(expected_integral[i] == custom_approx(written_data(0, i + 1)));
+        }
+      };
   check_file_contents(expected_integral_a, expected_legend_a, "/SurfaceA");
   check_file_contents(expected_integral_b, expected_legend_b, "/SurfaceB");
   check_file_contents(expected_integral_c, expected_legend_c, "/SurfaceC");

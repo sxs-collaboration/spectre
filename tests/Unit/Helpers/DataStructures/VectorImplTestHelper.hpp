@@ -40,7 +40,7 @@ void vector_test_construct_and_assign(
     tt::get_fundamental_type_t<ValueType> low =
         tt::get_fundamental_type_t<ValueType>{-100.0},
     tt::get_fundamental_type_t<ValueType> high =
-        tt::get_fundamental_type_t<ValueType>{100.0}) noexcept {
+        tt::get_fundamental_type_t<ValueType>{100.0}) {
   MAKE_GENERATOR(gen);
   UniformCustomDistribution<tt::get_fundamental_type_t<ValueType>> dist{low,
                                                                         high};
@@ -55,12 +55,12 @@ void vector_test_construct_and_assign(
 
   const VectorType value_size_constructed{size, generated_value1};
   CHECK(value_size_constructed.size() == size);
-  alg::for_each(value_size_constructed, [
-    generated_value1, &value_size_constructed
-  ](typename VectorType::value_type element) noexcept {
-    CAPTURE(value_size_constructed);
-    CHECK(element == generated_value1);
-  });
+  alg::for_each(value_size_constructed,
+                [generated_value1, &value_size_constructed](
+                    typename VectorType::value_type element) {
+                  CAPTURE(value_size_constructed);
+                  CHECK(element == generated_value1);
+                });
 
   // random generation must use `make_with_random_values`, because stored value
   // in vector type might be a non-fundamental type.
@@ -159,8 +159,7 @@ template <typename VectorType, typename ValueType>
 void vector_test_serialize(tt::get_fundamental_type_t<ValueType> low =
                                tt::get_fundamental_type_t<ValueType>{-100.0},
                            tt::get_fundamental_type_t<ValueType> high =
-                               tt::get_fundamental_type_t<ValueType>{
-                                   100.0}) noexcept {
+                               tt::get_fundamental_type_t<ValueType>{100.0}) {
   MAKE_GENERATOR(gen);
   UniformCustomDistribution<tt::get_fundamental_type_t<ValueType>> dist{low,
                                                                         high};
@@ -177,7 +176,7 @@ void vector_test_serialize(tt::get_fundamental_type_t<ValueType> low =
   // generate_series is used to generate a pair of equivalent, but independently
   // constructed, data sets to fill the vectors with.
   ValueType current_value = start_value;
-  const auto generate_series = [&current_value, value_difference ]() noexcept {
+  const auto generate_series = [&current_value, value_difference]() {
     return current_value += value_difference;
   };
   std::generate(vector_test.begin(), vector_test.end(), generate_series);
@@ -204,8 +203,7 @@ template <typename VectorType, typename ValueType>
 void vector_test_ref(tt::get_fundamental_type_t<ValueType> low =
                          tt::get_fundamental_type_t<ValueType>{-100.0},
                      tt::get_fundamental_type_t<ValueType> high =
-                         tt::get_fundamental_type_t<ValueType>{
-                             100.0}) noexcept {
+                         tt::get_fundamental_type_t<ValueType>{100.0}) {
   MAKE_GENERATOR(gen);
   UniformCustomDistribution<tt::get_fundamental_type_t<ValueType>> dist{low,
                                                                         high};
@@ -309,7 +307,7 @@ void vector_ref_test_size_error(
     tt::get_fundamental_type_t<ValueType> low =
         tt::get_fundamental_type_t<ValueType>{-100.0},
     tt::get_fundamental_type_t<ValueType> high =
-        tt::get_fundamental_type_t<ValueType>{100.0}) noexcept {
+        tt::get_fundamental_type_t<ValueType>{100.0}) {
   MAKE_GENERATOR(gen);
   UniformCustomDistribution<tt::get_fundamental_type_t<ValueType>> dist{low,
                                                                         high};
@@ -343,7 +341,7 @@ void vector_test_math_after_move(
     tt::get_fundamental_type_t<ValueType> low =
         tt::get_fundamental_type_t<ValueType>{-100.0},
     tt::get_fundamental_type_t<ValueType> high =
-        tt::get_fundamental_type_t<ValueType>{100.0}) noexcept {
+        tt::get_fundamental_type_t<ValueType>{100.0}) {
   MAKE_GENERATOR(gen);
   UniformCustomDistribution<tt::get_fundamental_type_t<ValueType>> dist{low,
                                                                         high};
@@ -456,9 +454,10 @@ enum class UseRefWrap { Cref, None, Ref };
 // used so that the `std::variant` items below can have a consistent interface
 template <typename T>
 struct ValueWrapper {
-  explicit ValueWrapper(T value) noexcept : value_{value} {}
+  explicit ValueWrapper(T value) : value_{value} {}
 
-  constexpr T get() const noexcept { return value_; }
+  constexpr T get() const { return value_; }
+
  private:
   T value_;
 };
@@ -469,7 +468,7 @@ struct ValueWrapper {
 template <class T>
 std::variant<ValueWrapper<T>, std::reference_wrapper<T>,
              std::reference_wrapper<const T>>
-wrap(UseRefWrap wrapper, T& t) noexcept {
+wrap(UseRefWrap wrapper, T& t) {
   if(wrapper == UseRefWrap::Cref) {
     return std::cref(t);
   } else if (wrapper == UseRefWrap::Ref) {
@@ -492,7 +491,7 @@ struct VectorOrArraySize {
   // size, as will be the case for the relevant test helpers in this detail
   // namespace
   template <typename T, size_t S>
-  size_t operator()(const std::array<T, S>& container) const noexcept {
+  size_t operator()(const std::array<T, S>& container) const {
     return S * VectorOrArraySize{}(container[0]);
   }
   // vector version
@@ -500,7 +499,7 @@ struct VectorOrArraySize {
             Requires<std::is_arithmetic_v<typename T::ElementType> or
                      tt::is_complex_of_fundamental_v<typename T::ElementType>> =
                 nullptr>
-  size_t operator()(const T& container) const noexcept {
+  size_t operator()(const T& container) const {
     return container.size();
   }
 };
@@ -510,13 +509,11 @@ struct VectorOrArraySize {
 struct VectorOrArrayAt {
   // array of vectors version
   template <typename T, size_t S>
-  decltype(auto) operator()(std::array<T, S>& container,
-                            size_t index) noexcept {
+  decltype(auto) operator()(std::array<T, S>& container, size_t index) {
     return VectorOrArrayAt{}(gsl::at(container, index % S), index / S);
   }
   template <typename T, size_t S>
-  decltype(auto) operator()(const std::array<T, S>& container,
-                            size_t index) noexcept {
+  decltype(auto) operator()(const std::array<T, S>& container, size_t index) {
     return VectorOrArrayAt{}(gsl::at(container, index % S), index / S);
   }
   // vector version
@@ -524,7 +521,7 @@ struct VectorOrArrayAt {
             Requires<std::is_arithmetic_v<typename T::ElementType> or
                      tt::is_complex_of_fundamental_v<typename T::ElementType>> =
                 nullptr>
-  decltype(auto) operator()(T& container, size_t index) noexcept {
+  decltype(auto) operator()(T& container, size_t index) {
     return container.at(index);
   }
 };
@@ -535,21 +532,21 @@ struct VectorOrArrayAt {
 template <typename... Operands, size_t... Is>
 auto wrap_tuple(std::tuple<Operands...>& operand_values,
                 const std::array<UseRefWrap, sizeof...(Is)>& wraps,
-                std::index_sequence<Is...> /*meta*/) noexcept {
+                std::index_sequence<Is...> /*meta*/) {
   return std::make_tuple(wrap(wraps[Is], get<Is>(operand_values))...);
 }
 
 // CHECK forwarding for parameter pack expansion. Return value also required for
 // easy parameter pack use.
 inline int call_check_approx(const double a, const double b,
-                             Approx custom_approx) noexcept {
+                             Approx custom_approx) {
   CHECK(custom_approx(a) == b);
   return 0;
 }
 
 inline int call_check_approx(const std::complex<double> a,
                              const std::complex<double> b,
-                             Approx custom_approx) noexcept {
+                             Approx custom_approx) {
   CHECK(custom_approx(real(a)) == real(b));
   CHECK(custom_approx(imag(a)) == imag(b));
   return 0;
@@ -562,17 +559,16 @@ class CheckWrappedOperandsVisitor {
       : function_{function} {}
 
   template <typename... WrappedOperands>
-  void operator()(WrappedOperands... operands) noexcept {
+  void operator()(WrappedOperands... operands) {
     call_impl(operands.get()...);
   }
 
  private:
   template <typename... WrappedOperands>
-  void call_impl(WrappedOperands... operands) noexcept {
+  void call_impl(WrappedOperands... operands) {
     const size_t size_value =
         std::max({get_size(operands, VectorOrArraySize{})...});
-    tuple_fold(std::make_tuple(operands...), [&size_value](
-                                                 const auto x) noexcept {
+    tuple_fold(std::make_tuple(operands...), [&size_value](const auto x) {
       if (not(get_size(x, VectorOrArraySize{}) == size_value or
               get_size(x, VectorOrArraySize{}) == 1)) {
         ERROR(
@@ -611,7 +607,7 @@ void test_function_on_vector_operands(
     const Function& function, const std::tuple<Bounds...>& bounds,
     const std::array<UseRefWrap, sizeof...(Is)>& wraps,
     const std::tuple<Operands...>& /*operands*/,
-    std::index_sequence<Is...> /*meta*/) noexcept {
+    std::index_sequence<Is...> /*meta*/) {
   MAKE_GENERATOR(generator);
   UniformCustomDistribution<size_t> size_distribution{2, 5};
   const size_t size = size_distribution(generator);
@@ -629,7 +625,7 @@ void test_function_on_vector_operands(
   // using compile-time logic
   auto wrapped_operands = wrap_tuple(
       operand_values, wraps, std::make_index_sequence<sizeof...(Bounds)>{});
-  const auto visitor_helper = [&function](auto... operands) noexcept {
+  const auto visitor_helper = [&function](auto... operands) {
     CheckWrappedOperandsVisitor<Function, Is...> visitor{function};
     std::visit(visitor, operands...);
   };
@@ -709,7 +705,7 @@ void assemble_test_function_arguments_and_execute_tests(
     const Function& function, const std::tuple<DistBounds...>& bounds,
     const std::array<UseRefWrap, sizeof...(Operands)>& wraps,
     const std::tuple<Operands...> operands,
-    TestFunctionsWithVectorArgumentsChoices::Done /*meta*/) noexcept {
+    TestFunctionsWithVectorArgumentsChoices::Done /*meta*/) {
   test_function_on_vector_operands(
       function, bounds, wraps, operands,
       std::make_index_sequence<sizeof...(DistBounds)>{});
@@ -725,10 +721,10 @@ void assemble_test_function_arguments_and_execute_tests(
     const std::array<UseRefWrap, sizeof...(Operands)>& wraps,
     const std::tuple<Operands...>&& operands,
     TestFunctionsWithVectorArgumentsChoices::Continuing
-    /*meta*/) noexcept {
+    /*meta*/) {
   for (size_t i = 0; i < WrapperList.size(); ++i) {
     tmpl::for_each<UniqueTypeList>([&function, &bounds, &wraps, &operands,
-                                    &i](const auto y) noexcept {
+                                    &i](const auto y) {
       using next_vector = typename decltype(y)::type;
       std::array<UseRefWrap, sizeof...(Operands) + 1_st> new_wraps;
       for(size_t j = 0; j < sizeof...(Operands); ++j) {
@@ -754,7 +750,7 @@ void assemble_test_function_arguments_and_execute_tests(
     const Function& function, const std::tuple<DistBounds...>& bounds,
     const std::array<UseRefWrap, 0>& /*wraps*/,
     const std::tuple<Operands...>&& /*operands*/,
-    TestFunctionsWithVectorArgumentsChoices::FirstInplace /*meta*/) noexcept {
+    TestFunctionsWithVectorArgumentsChoices::FirstInplace /*meta*/) {
   for (size_t i = 0; i < NonConstWrapperList.size(); ++i) {
     assemble_test_function_arguments_and_execute_tests<Test, UniqueTypeList,
                                                        FirstOperand>(
@@ -775,7 +771,7 @@ void assemble_test_function_arguments_and_execute_tests(
     const std::array<UseRefWrap, NumberOfWraps>& wraps,
     const std::tuple<Operands...>& operands,
     TestFunctionsWithVectorArgumentsChoices::
-        GivenOrderOfArgumentsOnly /*meta*/) noexcept {
+        GivenOrderOfArgumentsOnly /*meta*/) {
   for (size_t i = 0; i < NonConstWrapperList.size(); ++i) {
     std::array<UseRefWrap, NumberOfWraps + 1> new_wraps;
     for (size_t j = 0; j < NumberOfWraps; ++j) {
@@ -799,7 +795,7 @@ template <TestKind Test, typename VectorType0, typename... VectorTypes,
           typename Function, typename... DistBounds>
 void test_function_with_vector_arguments_impl(
     const std::tuple<Function, std::tuple<DistBounds...>>&
-        function_and_argument_bounds) noexcept {
+        function_and_argument_bounds) {
   // The unique set of possible operands
   using operand_type_list = tmpl::conditional_t<
       Test == TestKind::Strict,
@@ -877,10 +873,10 @@ template <TestKind Test, typename VectorType0, typename... VectorTypes,
           typename... FunctionsAndArgumentBounds>
 void test_functions_with_vector_arguments(
     const std::tuple<FunctionsAndArgumentBounds...>&
-        tuple_of_functions_and_argument_bounds) noexcept {
+        tuple_of_functions_and_argument_bounds) {
   tuple_fold(
       tuple_of_functions_and_argument_bounds,
-      [](const auto& function_and_argument_bounds) noexcept {
+      [](const auto& function_and_argument_bounds) {
         detail::test_function_with_vector_arguments_impl<Test, VectorType0,
                                                          VectorTypes...>(
             function_and_argument_bounds);

@@ -18,7 +18,7 @@
 
 namespace {
 template <size_t Dim>
-void test_collapsed_index(const Index<Dim> extents) noexcept {
+void test_collapsed_index(const Index<Dim> extents) {
   for (IndexIterator<Dim> index_it(extents); index_it; ++index_it) {
     CAPTURE(*index_it);
     Index<Dim> index;

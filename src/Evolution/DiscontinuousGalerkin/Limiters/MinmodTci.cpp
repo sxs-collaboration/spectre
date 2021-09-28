@@ -25,7 +25,7 @@ bool tvb_minmod_indicator(
     const Element<VolumeDim>& element,
     const std::array<double, VolumeDim>& element_size,
     const DirectionMap<VolumeDim, double>& effective_neighbor_means,
-    const DirectionMap<VolumeDim, double>& effective_neighbor_sizes) noexcept {
+    const DirectionMap<VolumeDim, double>& effective_neighbor_sizes) {
   // Check that basis is LGL or LG. Note that...
   // - non-Legendre bases may work "out of the box", but are untested
   // - mixed bases may be okay in principle, but are untested
@@ -37,7 +37,7 @@ bool tvb_minmod_indicator(
                  make_array<VolumeDim>(Spectral::Quadrature::Gauss),
          "Unsupported quadrature: " << mesh);
 
-  const double tvb_scale = [&tvb_constant, &element_size]() noexcept {
+  const double tvb_scale = [&tvb_constant, &element_size]() {
     const double max_h =
         *std::max_element(element_size.begin(), element_size.end());
     return tvb_constant * square(max_h);
@@ -46,7 +46,7 @@ bool tvb_minmod_indicator(
 
   const auto difference_to_neighbor =
       [&u_mean, &element, &element_size, &effective_neighbor_means,
-       &effective_neighbor_sizes](const size_t dim, const Side& side) noexcept {
+       &effective_neighbor_sizes](const size_t dim, const Side& side) {
         return Minmod_detail::effective_difference_to_neighbor(
             u_mean, element, element_size, dim, side, effective_neighbor_means,
             effective_neighbor_sizes);
@@ -142,7 +142,7 @@ bool tvb_minmod_indicator(
       const double, const DataVector&, const Mesh<DIM(data)>&,         \
       const Element<DIM(data)>&, const std::array<double, DIM(data)>&, \
       const DirectionMap<DIM(data), double>&,                          \
-      const DirectionMap<DIM(data), double>&) noexcept;
+      const DirectionMap<DIM(data), double>&);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 

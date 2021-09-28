@@ -37,7 +37,7 @@ struct Map {
   template <typename Inbox, typename TemporalId, typename ReceiveDataType>
   static void insert_into_inbox(const gsl::not_null<Inbox*> inbox,
                                 const TemporalId& temporal_id,
-                                ReceiveDataType&& data) noexcept {
+                                ReceiveDataType&& data) {
     static_assert(std::is_same<std::decay_t<TemporalId>,
                                typename InboxTag::temporal_id>::value,
                   "The temporal_id of the inbox tag does not match the "
@@ -68,7 +68,7 @@ struct MemberInsert {
   template <typename Inbox, typename TemporalId, typename ReceiveDataType>
   static void insert_into_inbox(const gsl::not_null<Inbox*> inbox,
                                 const TemporalId& temporal_id,
-                                ReceiveDataType&& data) noexcept {
+                                ReceiveDataType&& data) {
     static_assert(std::is_same<std::decay_t<TemporalId>,
                                typename InboxTag::temporal_id>::value,
                   "The temporal_id of the inbox tag does not match the "
@@ -87,7 +87,7 @@ struct Value {
   template <typename Inbox, typename TemporalId, typename ReceiveDataType>
   static void insert_into_inbox(const gsl::not_null<Inbox*> inbox,
                                 const TemporalId& temporal_id,
-                                ReceiveDataType&& data) noexcept {
+                                ReceiveDataType&& data) {
     static_assert(std::is_same<std::decay_t<TemporalId>,
                                typename InboxTag::temporal_id>::value,
                   "The temporal_id of the inbox tag does not match the "
@@ -110,7 +110,7 @@ struct Pushback {
   template <typename Inbox, typename TemporalId, typename ReceiveDataType>
   static void insert_into_inbox(const gsl::not_null<Inbox*> inbox,
                                 const TemporalId& temporal_id,
-                                ReceiveDataType&& data) noexcept {
+                                ReceiveDataType&& data) {
     static_assert(std::is_same<std::decay_t<TemporalId>,
                                typename InboxTag::temporal_id>::value,
                   "The temporal_id of the inbox tag does not match the "

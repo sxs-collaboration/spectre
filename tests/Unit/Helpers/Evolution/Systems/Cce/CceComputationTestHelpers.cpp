@@ -16,8 +16,7 @@
 namespace Cce {
 namespace TestHelpers {
 
-ComplexDataVector power(const ComplexDataVector& value,
-                        const size_t exponent) noexcept {
+ComplexDataVector power(const ComplexDataVector& value, const size_t exponent) {
   ComplexDataVector return_value{value.size(), 1.0};
   for (size_t i = 0; i < exponent; ++i) {
     return_value *= value;
@@ -28,7 +27,7 @@ ComplexDataVector power(const ComplexDataVector& value,
 void volume_one_minus_y(
     const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
         one_minus_y,
-    const size_t l_max) noexcept {
+    const size_t l_max) {
   const size_t number_of_angular_points =
       Spectral::Swsh::number_of_swsh_collocation_points(l_max);
   const size_t number_of_radial_points =
@@ -51,7 +50,7 @@ void generate_volume_data_from_separated_values(
     const gsl::not_null<ComplexDataVector*> one_divided_by_r,
     const ComplexDataVector& angular_collocation,
     const ComplexModalVector& radial_coefficients, const size_t l_max,
-    const size_t number_of_radial_grid_points) noexcept {
+    const size_t number_of_radial_grid_points) {
   for (size_t i = 0; i < number_of_radial_grid_points; ++i) {
     ComplexDataVector volume_angular_view{
         volume_data->data() +

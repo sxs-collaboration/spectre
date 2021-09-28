@@ -23,7 +23,7 @@ template <size_t Dim>
 void reconstruct_impl(gsl::span<double> dg_u,
                       gsl::span<const double> subcell_u_times_projected_det_jac,
                       const Mesh<Dim>& dg_mesh,
-                      const Index<Dim>& subcell_extents) noexcept;
+                      const Index<Dim>& subcell_extents);
 }  // namespace detail
 
 /// @{
@@ -51,19 +51,17 @@ void reconstruct_impl(gsl::span<double> dg_u,
 template <size_t Dim>
 DataVector reconstruct(const DataVector& subcell_u_times_projected_det_jac,
                        const Mesh<Dim>& dg_mesh,
-                       const Index<Dim>& subcell_extents) noexcept;
+                       const Index<Dim>& subcell_extents);
 
 template <size_t Dim>
 void reconstruct(gsl::not_null<DataVector*> dg_u,
                  const DataVector& subcell_u_times_projected_det_jac,
-                 const Mesh<Dim>& dg_mesh,
-                 const Index<Dim>& subcell_extents) noexcept;
+                 const Mesh<Dim>& dg_mesh, const Index<Dim>& subcell_extents);
 
 template <typename SubcellTagList, typename DgTagList, size_t Dim>
 void reconstruct(const gsl::not_null<Variables<DgTagList>*> dg_u,
                  const Variables<SubcellTagList>& subcell_u,
-                 const Mesh<Dim>& dg_mesh,
-                 const Index<Dim>& subcell_extents) noexcept {
+                 const Mesh<Dim>& dg_mesh, const Index<Dim>& subcell_extents) {
   ASSERT(subcell_u.number_of_grid_points() == subcell_extents.product(),
          "Incorrect subcell size of u: " << subcell_u.number_of_grid_points()
                                          << " but should be "
@@ -81,7 +79,7 @@ void reconstruct(const gsl::not_null<Variables<DgTagList>*> dg_u,
 template <typename TagList, size_t Dim>
 Variables<TagList> reconstruct(const Variables<TagList>& subcell_u,
                                const Mesh<Dim>& dg_mesh,
-                               const Index<Dim>& subcell_extents) noexcept {
+                               const Index<Dim>& subcell_extents) {
   Variables<TagList> dg_u(dg_mesh.number_of_grid_points());
   reconstruct(make_not_null(&dg_u), subcell_u, dg_mesh, subcell_extents);
   return dg_u;

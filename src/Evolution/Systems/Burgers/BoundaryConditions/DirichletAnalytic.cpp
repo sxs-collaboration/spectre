@@ -12,11 +12,11 @@
 #include "Evolution/Systems/Burgers/Fluxes.hpp"
 
 namespace Burgers::BoundaryConditions {
-DirichletAnalytic::DirichletAnalytic(CkMigrateMessage* const msg) noexcept
+DirichletAnalytic::DirichletAnalytic(CkMigrateMessage* const msg)
     : BoundaryCondition(msg) {}
 
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-DirichletAnalytic::get_clone() const noexcept {
+DirichletAnalytic::get_clone() const {
   return std::make_unique<DirichletAnalytic>(*this);
 }
 
@@ -24,7 +24,7 @@ void DirichletAnalytic::pup(PUP::er& p) { BoundaryCondition::pup(p); }
 
 void DirichletAnalytic::flux_impl(
     const gsl::not_null<tnsr::I<DataVector, 1, Frame::Inertial>*> flux,
-    const Scalar<DataVector>& u_analytic) noexcept {
+    const Scalar<DataVector>& u_analytic) {
   Burgers::Fluxes::apply(flux, u_analytic);
 }
 

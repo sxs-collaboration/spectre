@@ -63,7 +63,7 @@ struct Metavariables {
           typename system::variables_tag>>;
       template <typename T>
       static Variables<tmpl::list<evolution::dg::subcell::Tags::Inactive<Var1>>>
-      apply(const T& subcell_vars) noexcept {
+      apply(const T& subcell_vars) {
         T subcell_vars_to_send = subcell_vars;
         get(get<evolution::dg::subcell::Tags::Inactive<Var1>>(
             subcell_vars_to_send)) *= 2.0;

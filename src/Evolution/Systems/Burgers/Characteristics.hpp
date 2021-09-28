@@ -32,7 +32,7 @@ struct CharacteristicSpeedsCompute : CharacteristicSpeeds, db::ComputeTag {
   using return_type = std::array<DataVector, 1>;
   static void function(gsl::not_null<return_type*> result,
                        const Scalar<DataVector>& u,
-                       const tnsr::i<DataVector, 1>& normal) noexcept;
+                       const tnsr::i<DataVector, 1>& normal);
 };
 
 struct LargestCharacteristicSpeed : db::SimpleTag {
@@ -45,6 +45,6 @@ struct ComputeLargestCharacteristicSpeed : LargestCharacteristicSpeed,
   using return_type = double;
   using base = LargestCharacteristicSpeed;
   static void function(const gsl::not_null<double*> speed,
-                       const Scalar<DataVector>& u) noexcept;
+                       const Scalar<DataVector>& u);
 };
 }  // namespace Burgers::Tags

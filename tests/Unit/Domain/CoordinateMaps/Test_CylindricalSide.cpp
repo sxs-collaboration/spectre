@@ -38,8 +38,7 @@ void test_cylindrical_side_sphere_two_encloses_sphere_one(
   CAPTURE(center_one);
 
   const auto center_two = [&projection_point_near_z_plane, &center_one,
-                           &interval_dis,
-                           &gen]() noexcept -> std::array<double, 3> {
+                           &interval_dis, &gen]() -> std::array<double, 3> {
     if (projection_point_near_z_plane) {
       return {center_one[0], center_one[1], interval_dis(gen)};
     } else {
@@ -69,7 +68,7 @@ void test_cylindrical_side_sphere_two_encloses_sphere_one(
 
   const std::array<double, 2> z_planes =
       [&gen, &unit_dis, &center_one, &radius_one,
-       &projection_point_near_z_plane]() noexcept {
+       &projection_point_near_z_plane]() {
         if (projection_point_near_z_plane) {
           // Make sure each z_plane intersects sphere_one in two locations;
           // to do this, ensure that each plane is no closer than 25% of the
@@ -97,13 +96,13 @@ void test_cylindrical_side_sphere_two_encloses_sphere_one(
   // Keep proj_center inside sphere_1 and between (or on) the z_planes.
   const std::array<double, 3> proj_center =
       [&z_planes, &center_one, &radius_one, &gen, &unit_dis, &angle_dis,
-       &projection_point_near_z_plane]() noexcept {
+       &projection_point_near_z_plane]() {
         // z is z coordinate of projection point.
         // rho_max_factor is rho_max/rho_sphere_one (see below for
         // definition of rho_sphere_one).
-        const auto & [z, rho_max_factor] =
+        const auto& [z, rho_max_factor] =
             [&z_planes, &projection_point_near_z_plane, &unit_dis,
-             &gen]() noexcept -> std::array<double, 2> {
+             &gen]() -> std::array<double, 2> {
           if (projection_point_near_z_plane) {
             // Place z exactly at one of the z-planes.
             // Choose which plane randomly, with probability 1/2.
@@ -165,7 +164,7 @@ void test_cylindrical_side_sphere_one_encloses_sphere_two() {
   // the center of sphere_one (because we need to fit sphere_two between
   // the planes).
   const std::array<double, 2> z_planes = [&gen, &unit_dis, &center_one,
-                                          &radius_one]() noexcept {
+                                          &radius_one]() {
     const double z_plane_1 =
         center_one[2] - (0.2 + 0.72 * unit_dis(gen)) * radius_one;
     const double z_plane_2 =
@@ -184,7 +183,7 @@ void test_cylindrical_side_sphere_one_encloses_sphere_two() {
   // and inside the z_planes.
   const std::array<double, 3> center_two = [&z_planes, &radius_one, &radius_two,
                                             &center_one, &angle_dis, &unit_dis,
-                                            &gen]() noexcept {
+                                            &gen]() {
     const double center_two_z_min = z_planes[0] + radius_two;
     const double center_two_z_max = z_planes[1] - radius_two;
     const double center_two_z =
@@ -203,7 +202,7 @@ void test_cylindrical_side_sphere_one_encloses_sphere_two() {
 
   // Keep proj_center inside sphere_two.
   const std::array<double, 3> proj_center = [&center_two, &radius_two, &gen,
-                                             &unit_dis, &angle_dis]() noexcept {
+                                             &unit_dis, &angle_dis]() {
     // choose 0.9 so that proj_center is not on edge of sphere_two.
     const double r = 0.9 * radius_two * unit_dis(gen);
     const double theta = 2.0 * angle_dis(gen);

@@ -14,7 +14,7 @@ namespace OptionTags {
  * \brief Groups the filtering configurations in the input file.
  */
 struct FilteringGroup {
-  static std::string name() noexcept { return "Filtering"; }
+  static std::string name() { return "Filtering"; }
   static constexpr Options::String help = "Options for filtering";
 };
 
@@ -25,9 +25,7 @@ struct FilteringGroup {
  */
 template <typename FilterType>
 struct Filter {
-  static std::string name() noexcept {
-    return Options::name<FilterType>();
-  }
+  static std::string name() { return Options::name<FilterType>(); }
   static constexpr Options::String help = "Options for the filter";
   using type = FilterType;
   using group = FilteringGroup;
@@ -41,12 +39,12 @@ namespace Tags {
  */
 template <typename FilterType>
 struct Filter : db::SimpleTag {
-  static std::string name() noexcept { return "Filter"; }
+  static std::string name() { return "Filter"; }
   using type = FilterType;
   using option_tags = tmpl::list<::OptionTags::Filter<FilterType>>;
 
   static constexpr bool pass_metavariables = false;
-  static FilterType create_from_options(const FilterType& filter) noexcept {
+  static FilterType create_from_options(const FilterType& filter) {
     return filter;
   }
 };

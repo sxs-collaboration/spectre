@@ -70,13 +70,13 @@ class CoordinateMapBase : public PUP::able {
   get_to_grid_frame() const = 0;
 
   /// Returns `true` if the map is the identity
-  virtual bool is_identity() const noexcept = 0;
+  virtual bool is_identity() const = 0;
 
   /// Returns `true` if the inverse Jacobian depends on time.
-  virtual bool inv_jacobian_is_time_dependent() const noexcept = 0;
+  virtual bool inv_jacobian_is_time_dependent() const = 0;
 
   /// Returns `true` if the Jacobian depends on time.
-  virtual bool jacobian_is_time_dependent() const noexcept = 0;
+  virtual bool jacobian_is_time_dependent() const = 0;
 
   /// @{
   /// Apply the `Maps` to the point(s) `source_point`
@@ -84,22 +84,22 @@ class CoordinateMapBase : public PUP::able {
       tnsr::I<double, Dim, SourceFrame> source_point,
       double time = std::numeric_limits<double>::signaling_NaN(),
       const std::unordered_map<
-      std::string,
-      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-      functions_of_time = std::unordered_map<
-      std::string,
-      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{}) const
-      noexcept = 0;
+          std::string,
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+          functions_of_time = std::unordered_map<
+              std::string,
+              std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{})
+      const = 0;
   virtual tnsr::I<DataVector, Dim, TargetFrame> operator()(
       tnsr::I<DataVector, Dim, SourceFrame> source_point,
       double time = std::numeric_limits<double>::signaling_NaN(),
       const std::unordered_map<
-      std::string,
-      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-      functions_of_time = std::unordered_map<
-      std::string,
-      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{}) const
-      noexcept = 0;
+          std::string,
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+          functions_of_time = std::unordered_map<
+              std::string,
+              std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{})
+      const = 0;
   /// @}
 
   /// @{
@@ -116,12 +116,12 @@ class CoordinateMapBase : public PUP::able {
       tnsr::I<double, Dim, TargetFrame> target_point,
       double time = std::numeric_limits<double>::signaling_NaN(),
       const std::unordered_map<
-      std::string,
-      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-      functions_of_time = std::unordered_map<
-      std::string,
-      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{}) const
-      noexcept = 0;
+          std::string,
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+          functions_of_time = std::unordered_map<
+              std::string,
+              std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{})
+      const = 0;
   /// @}
 
   /// @{
@@ -131,23 +131,23 @@ class CoordinateMapBase : public PUP::able {
       tnsr::I<double, Dim, SourceFrame> source_point,
       double time = std::numeric_limits<double>::signaling_NaN(),
       const std::unordered_map<
-      std::string,
-      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-      functions_of_time = std::unordered_map<
-      std::string,
-      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{}) const
-      noexcept = 0;
+          std::string,
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+          functions_of_time = std::unordered_map<
+              std::string,
+              std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{})
+      const = 0;
   virtual InverseJacobian<DataVector, Dim, SourceFrame, TargetFrame>
   inv_jacobian(
       tnsr::I<DataVector, Dim, SourceFrame> source_point,
       double time = std::numeric_limits<double>::signaling_NaN(),
       const std::unordered_map<
-      std::string,
-      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-      functions_of_time = std::unordered_map<
-      std::string,
-      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{}) const
-      noexcept = 0;
+          std::string,
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+          functions_of_time = std::unordered_map<
+              std::string,
+              std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{})
+      const = 0;
   /// @}
 
   /// @{
@@ -156,22 +156,22 @@ class CoordinateMapBase : public PUP::able {
       tnsr::I<double, Dim, SourceFrame> source_point,
       double time = std::numeric_limits<double>::signaling_NaN(),
       const std::unordered_map<
-      std::string,
-      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-      functions_of_time = std::unordered_map<
-      std::string,
-      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{}) const
-      noexcept = 0;
+          std::string,
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+          functions_of_time = std::unordered_map<
+              std::string,
+              std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{})
+      const = 0;
   virtual Jacobian<DataVector, Dim, SourceFrame, TargetFrame> jacobian(
       tnsr::I<DataVector, Dim, SourceFrame> source_point,
       double time = std::numeric_limits<double>::signaling_NaN(),
       const std::unordered_map<
-      std::string,
-      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-      functions_of_time = std::unordered_map<
-      std::string,
-      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{}) const
-      noexcept = 0;
+          std::string,
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+          functions_of_time = std::unordered_map<
+              std::string,
+              std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{})
+      const = 0;
   /// @}
 
   /// @{
@@ -185,12 +185,12 @@ class CoordinateMapBase : public PUP::able {
       tnsr::I<double, Dim, SourceFrame> source_point,
       double time = std::numeric_limits<double>::signaling_NaN(),
       const std::unordered_map<
-      std::string,
-      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-      functions_of_time = std::unordered_map<
-      std::string,
-      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{}) const
-  noexcept = 0;
+          std::string,
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+          functions_of_time = std::unordered_map<
+              std::string,
+              std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{})
+      const = 0;
   virtual std::tuple<tnsr::I<DataVector, Dim, TargetFrame>,
                      InverseJacobian<DataVector, Dim, SourceFrame, TargetFrame>,
                      Jacobian<DataVector, Dim, SourceFrame, TargetFrame>,
@@ -199,22 +199,22 @@ class CoordinateMapBase : public PUP::able {
       tnsr::I<DataVector, Dim, SourceFrame> source_point,
       double time = std::numeric_limits<double>::signaling_NaN(),
       const std::unordered_map<
-      std::string,
-      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-      functions_of_time = std::unordered_map<
-      std::string,
-      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{}) const
-  noexcept = 0;
+          std::string,
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+          functions_of_time = std::unordered_map<
+              std::string,
+              std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{})
+      const = 0;
   /// @}
 
  private:
   virtual bool is_equal_to(const CoordinateMapBase& other) const = 0;
   friend bool operator==(const CoordinateMapBase& lhs,
-                         const CoordinateMapBase& rhs) noexcept {
+                         const CoordinateMapBase& rhs) {
     return typeid(lhs) == typeid(rhs) and lhs.is_equal_to(rhs);
   }
   friend bool operator!=(const CoordinateMapBase& lhs,
-                         const CoordinateMapBase& rhs) noexcept {
+                         const CoordinateMapBase& rhs) {
     return not(lhs == rhs);
   }
 };
@@ -276,13 +276,13 @@ class CoordinateMap
   }
 
   /// Returns `true` if the map is the identity
-  bool is_identity() const noexcept override;
+  bool is_identity() const override;
 
   /// Returns `true` if the inverse Jacobian depends on time.
-  bool inv_jacobian_is_time_dependent() const noexcept override;
+  bool inv_jacobian_is_time_dependent() const override;
 
   /// Returns `true` if the Jacobian depends on time.
-  bool jacobian_is_time_dependent() const noexcept override;
+  bool jacobian_is_time_dependent() const override;
 
   /// @{
   /// Apply the `Maps...` to the point(s) `source_point`
@@ -294,8 +294,8 @@ class CoordinateMap
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
           functions_of_time = std::unordered_map<
               std::string,
-              std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{}) const
-      noexcept override {
+              std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{})
+      const override {
     return call_impl(std::move(source_point), time, functions_of_time,
                      std::make_index_sequence<sizeof...(Maps)>{});
   }
@@ -307,8 +307,8 @@ class CoordinateMap
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
           functions_of_time = std::unordered_map<
               std::string,
-              std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{}) const
-      noexcept override {
+              std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{})
+      const override {
     return call_impl(std::move(source_point), time, functions_of_time,
                      std::make_index_sequence<sizeof...(Maps)>{});
   }
@@ -324,8 +324,8 @@ class CoordinateMap
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
           functions_of_time = std::unordered_map<
               std::string,
-              std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{}) const
-      noexcept override {
+              std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{})
+      const override {
     return inverse_impl(std::move(target_point), time, functions_of_time,
                         std::make_index_sequence<sizeof...(Maps)>{});
   }
@@ -342,8 +342,8 @@ class CoordinateMap
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
           functions_of_time = std::unordered_map<
               std::string,
-              std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{}) const
-      noexcept override {
+              std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{})
+      const override {
     return inv_jacobian_impl(std::move(source_point), time, functions_of_time);
   }
   constexpr InverseJacobian<DataVector, dim, SourceFrame, TargetFrame>
@@ -355,8 +355,8 @@ class CoordinateMap
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
           functions_of_time = std::unordered_map<
               std::string,
-              std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{}) const
-      noexcept override {
+              std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{})
+      const override {
     return inv_jacobian_impl(std::move(source_point), time, functions_of_time);
   }
   /// @}
@@ -371,8 +371,8 @@ class CoordinateMap
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
           functions_of_time = std::unordered_map<
               std::string,
-              std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{}) const
-      noexcept override {
+              std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{})
+      const override {
     return jacobian_impl(std::move(source_point), time, functions_of_time);
   }
   constexpr Jacobian<DataVector, dim, SourceFrame, TargetFrame> jacobian(
@@ -383,8 +383,8 @@ class CoordinateMap
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
           functions_of_time = std::unordered_map<
               std::string,
-              std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{}) const
-      noexcept override {
+              std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{})
+      const override {
     return jacobian_impl(std::move(source_point), time, functions_of_time);
   }
   /// @}
@@ -404,8 +404,8 @@ class CoordinateMap
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
           functions_of_time = std::unordered_map<
               std::string,
-              std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{}) const
-      noexcept override {
+              std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{})
+      const override {
     return coords_frame_velocity_jacobians_impl(std::move(source_point), time,
                                                 functions_of_time);
   }
@@ -421,8 +421,8 @@ class CoordinateMap
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
           functions_of_time = std::unordered_map<
               std::string,
-              std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{}) const
-      noexcept override {
+              std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{})
+      const override {
     return coords_frame_velocity_jacobians_impl(std::move(source_point), time,
                                                 functions_of_time);
   }
@@ -441,8 +441,7 @@ class CoordinateMap
   }
 
  private:
-  friend bool operator==(const CoordinateMap& lhs,
-                         const CoordinateMap& rhs) noexcept {
+  friend bool operator==(const CoordinateMap& lhs, const CoordinateMap& rhs) {
     return lhs.maps_ == rhs.maps_;
   }
 
@@ -452,7 +451,7 @@ class CoordinateMap
   // NOLINTNEXTLINE(readability-redundant-declaration,-warnings-as-errors)
   push_back_impl(
       CoordinateMap<LocalSourceFrame, LocalTargetFrame, LocalMaps...>&& old_map,
-      NewMap new_map, std::index_sequence<Is...> /*meta*/) noexcept;
+      NewMap new_map, std::index_sequence<Is...> /*meta*/);
 
   template <typename... NewMaps, typename LocalSourceFrame,
             typename LocalTargetFrame, typename... LocalMaps, size_t... Is,
@@ -463,8 +462,7 @@ class CoordinateMap
   push_back_impl(
       CoordinateMap<LocalSourceFrame, LocalTargetFrame, LocalMaps...>&& old_map,
       CoordinateMap<LocalSourceFrame, LocalTargetFrame, NewMaps...> new_map,
-      std::index_sequence<Is...> /*meta*/,
-      std::index_sequence<Js...> /*meta*/) noexcept;
+      std::index_sequence<Is...> /*meta*/, std::index_sequence<Js...> /*meta*/);
 
   template <typename NewMap, typename LocalSourceFrame,
             typename LocalTargetFrame, typename... LocalMaps, size_t... Is>
@@ -472,12 +470,11 @@ class CoordinateMap
   // NOLINTNEXTLINE(readability-redundant-declaration,-warnings-as-errors)
   push_front_impl(
       CoordinateMap<LocalSourceFrame, LocalTargetFrame, LocalMaps...>&& old_map,
-      NewMap new_map, std::index_sequence<Is...> /*meta*/) noexcept;
+      NewMap new_map, std::index_sequence<Is...> /*meta*/);
 
   template <size_t... Is>
   std::unique_ptr<CoordinateMapBase<SourceFrame, Frame::Grid, dim>>
-      get_to_grid_frame_impl(std::index_sequence<Is...> /*meta*/) const
-      noexcept;
+      get_to_grid_frame_impl(std::index_sequence<Is...> /*meta*/) const;
 
   bool is_equal_to(const CoordinateMapBase<SourceFrame, TargetFrame, dim>&
                        other) const override {
@@ -492,7 +489,7 @@ class CoordinateMap
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
           functions_of_time,
-      std::index_sequence<Is...> /*meta*/) const noexcept;
+      std::index_sequence<Is...> /*meta*/) const;
 
   template <typename T, size_t... Is>
   std::optional<tnsr::I<T, dim, SourceFrame>> inverse_impl(
@@ -501,7 +498,7 @@ class CoordinateMap
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
           functions_of_time,
-      std::index_sequence<Is...> /*meta*/) const noexcept;
+      std::index_sequence<Is...> /*meta*/) const;
 
   template <typename T>
   InverseJacobian<T, dim, SourceFrame, TargetFrame> inv_jacobian_impl(
@@ -509,7 +506,7 @@ class CoordinateMap
       const std::unordered_map<
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-          functions_of_time) const noexcept;
+          functions_of_time) const;
 
   template <typename T>
   Jacobian<T, dim, SourceFrame, TargetFrame> jacobian_impl(
@@ -517,7 +514,7 @@ class CoordinateMap
       const std::unordered_map<
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-          functions_of_time) const noexcept;
+          functions_of_time) const;
 
   template <typename T>
   std::tuple<tnsr::I<T, dim, TargetFrame>,
@@ -529,7 +526,7 @@ class CoordinateMap
       const std::unordered_map<
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-          functions_of_time) const noexcept;
+          functions_of_time) const;
 
   std::tuple<Maps...> maps_;
 };
@@ -537,13 +534,13 @@ class CoordinateMap
 /// \ingroup ComputationalDomainGroup
 /// \brief Creates a `CoordinateMap` of `maps...`
 template <typename SourceFrame, typename TargetFrame, typename... Maps>
-auto make_coordinate_map(Maps&&... maps) noexcept
+auto make_coordinate_map(Maps&&... maps)
     -> CoordinateMap<SourceFrame, TargetFrame, std::decay_t<Maps>...>;
 
 /// \ingroup ComputationalDomainGroup
 /// \brief Creates a `std::unique_ptr<CoordinateMapBase>` of `maps...`
 template <typename SourceFrame, typename TargetFrame, typename... Maps>
-auto make_coordinate_map_base(Maps&&... maps) noexcept
+auto make_coordinate_map_base(Maps&&... maps)
     -> std::unique_ptr<CoordinateMapBase<
         SourceFrame, TargetFrame,
         CoordinateMap<SourceFrame, TargetFrame, std::decay_t<Maps>...>::dim>>;
@@ -554,8 +551,7 @@ auto make_coordinate_map_base(Maps&&... maps) noexcept
 /// argument passed in.
 template <typename SourceFrame, typename TargetFrame, typename Arg0,
           typename... Args>
-auto make_vector_coordinate_map_base(Arg0&& arg_0,
-                                     Args&&... remaining_args) noexcept
+auto make_vector_coordinate_map_base(Arg0&& arg_0, Args&&... remaining_args)
     -> std::vector<std::unique_ptr<
         CoordinateMapBase<SourceFrame, TargetFrame, std::decay_t<Arg0>::dim>>>;
 
@@ -567,7 +563,7 @@ auto make_vector_coordinate_map_base(Arg0&& arg_0,
 template <typename SourceFrame, typename TargetFrame, size_t Dim, typename Map,
           typename... Maps>
 auto make_vector_coordinate_map_base(std::vector<Map> maps,
-                                     const Maps&... remaining_maps) noexcept
+                                     const Maps&... remaining_maps)
     -> std::vector<
         std::unique_ptr<CoordinateMapBase<SourceFrame, TargetFrame, Dim>>>;
 
@@ -577,8 +573,7 @@ auto make_vector_coordinate_map_base(std::vector<Map> maps,
 template <typename SourceFrame, typename TargetFrame, typename... Maps,
           typename NewMap>
 CoordinateMap<SourceFrame, TargetFrame, Maps..., NewMap> push_back(
-    CoordinateMap<SourceFrame, TargetFrame, Maps...> old_map,
-    NewMap new_map) noexcept;
+    CoordinateMap<SourceFrame, TargetFrame, Maps...> old_map, NewMap new_map);
 
 /// \ingroup ComputationalDomainGroup
 /// \brief Creates a `CoordinateMap` by prepending the new map to the beginning
@@ -586,8 +581,7 @@ CoordinateMap<SourceFrame, TargetFrame, Maps..., NewMap> push_back(
 template <typename SourceFrame, typename TargetFrame, typename... Maps,
           typename NewMap>
 CoordinateMap<SourceFrame, TargetFrame, NewMap, Maps...> push_front(
-    CoordinateMap<SourceFrame, TargetFrame, Maps...> old_map,
-    NewMap new_map) noexcept;
+    CoordinateMap<SourceFrame, TargetFrame, Maps...> old_map, NewMap new_map);
 
 /// \cond
 template <typename SourceFrame, typename TargetFrame, typename... Maps>

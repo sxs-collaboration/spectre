@@ -117,7 +117,6 @@ struct TimeDerivativeTerms {
       const tnsr::ii<DataVector, Dim, Frame::Inertial>& extrinsic_curvature,
 
       // For Riemann solvers
-      const tnsr::ii<DataVector, Dim, Frame::Inertial>&
-          spatial_metric) noexcept;
+      const tnsr::ii<DataVector, Dim, Frame::Inertial>& spatial_metric);
 };
 }  // namespace RelativisticEuler::Valencia

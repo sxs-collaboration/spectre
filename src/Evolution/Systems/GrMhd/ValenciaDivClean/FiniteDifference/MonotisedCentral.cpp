@@ -30,11 +30,10 @@
 #include "Utilities/TMPL.hpp"
 
 namespace grmhd::ValenciaDivClean::fd {
-MonotisedCentralPrim::MonotisedCentralPrim(CkMigrateMessage* const msg) noexcept
+MonotisedCentralPrim::MonotisedCentralPrim(CkMigrateMessage* const msg)
     : Reconstructor(msg) {}
 
-std::unique_ptr<Reconstructor> MonotisedCentralPrim::get_clone()
-    const noexcept {
+std::unique_ptr<Reconstructor> MonotisedCentralPrim::get_clone() const {
   return std::make_unique<MonotisedCentralPrim>(*this);
 }
 
@@ -57,7 +56,7 @@ void MonotisedCentralPrim::reconstruct(
                        evolution::dg::subcell::NeighborData,
                        boost::hash<std::pair<Direction<dim>, ElementId<dim>>>>&
         neighbor_data,
-    const Mesh<dim>& subcell_mesh) const noexcept {
+    const Mesh<dim>& subcell_mesh) const {
   reconstruct_prims_work(
       vars_on_lower_face, vars_on_upper_face,
       [](auto upper_face_vars_ptr, auto lower_face_vars_ptr,
@@ -83,7 +82,7 @@ void MonotisedCentralPrim::reconstruct_fd_neighbor(
                        boost::hash<std::pair<Direction<dim>, ElementId<dim>>>>&
         neighbor_data,
     const Mesh<dim>& subcell_mesh,
-    const Direction<dim> direction_to_reconstruct) const noexcept {
+    const Direction<dim> direction_to_reconstruct) const {
   reconstruct_fd_neighbor_work(
       vars_on_face,
       [](const auto tensor_component_on_face_ptr,
@@ -91,7 +90,7 @@ void MonotisedCentralPrim::reconstruct_fd_neighbor(
          const auto& tensor_component_neighbor,
          const Index<dim>& subcell_extents,
          const Index<dim>& ghost_data_extents,
-         const Direction<dim>& local_direction_to_reconstruct) noexcept {
+         const Direction<dim>& local_direction_to_reconstruct) {
         ::fd::reconstruction::reconstruct_neighbor<
             Side::Lower,
             ::fd::reconstruction::detail::MonotisedCentralReconstructor>(
@@ -104,7 +103,7 @@ void MonotisedCentralPrim::reconstruct_fd_neighbor(
          const auto& tensor_component_neighbor,
          const Index<dim>& subcell_extents,
          const Index<dim>& ghost_data_extents,
-         const Direction<dim>& local_direction_to_reconstruct) noexcept {
+         const Direction<dim>& local_direction_to_reconstruct) {
         ::fd::reconstruction::reconstruct_neighbor<
             Side::Upper,
             ::fd::reconstruction::detail::MonotisedCentralReconstructor>(
@@ -117,12 +116,12 @@ void MonotisedCentralPrim::reconstruct_fd_neighbor(
 }
 
 bool operator==(const MonotisedCentralPrim& /*lhs*/,
-                const MonotisedCentralPrim& /*rhs*/) noexcept {
+                const MonotisedCentralPrim& /*rhs*/) {
   return true;
 }
 
 bool operator!=(const MonotisedCentralPrim& lhs,
-                const MonotisedCentralPrim& rhs) noexcept {
+                const MonotisedCentralPrim& rhs) {
   return not(lhs == rhs);
 }
 
@@ -167,7 +166,7 @@ bool operator!=(const MonotisedCentralPrim& lhs,
                          evolution::dg::subcell::NeighborData,                \
                          boost::hash<std::pair<Direction<3>, ElementId<3>>>>& \
           neighbor_data,                                                      \
-      const Mesh<3>& subcell_mesh) const noexcept;                            \
+      const Mesh<3>& subcell_mesh) const;                                     \
   template void MonotisedCentralPrim::reconstruct_fd_neighbor(                \
       gsl::not_null<Variables<TAGS_LIST(data)>*> vars_on_face,                \
       const Variables<hydro::grmhd_tags<DataVector>>& subcell_volume_prims,   \
@@ -179,7 +178,7 @@ bool operator!=(const MonotisedCentralPrim& lhs,
                          boost::hash<std::pair<Direction<3>, ElementId<3>>>>& \
           neighbor_data,                                                      \
       const Mesh<3>& subcell_mesh,                                            \
-      const Direction<3> direction_to_reconstruct) const noexcept;
+      const Direction<3> direction_to_reconstruct) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2))
 

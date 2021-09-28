@@ -42,22 +42,20 @@ struct ElementCenteredSubdomainData {
 
   ElementCenteredSubdomainData() = default;
   ElementCenteredSubdomainData(const ElementCenteredSubdomainData&) = default;
-  ElementCenteredSubdomainData& operator=(
-      const ElementCenteredSubdomainData&) noexcept = default;
-  ElementCenteredSubdomainData(ElementCenteredSubdomainData&&) noexcept =
+  ElementCenteredSubdomainData& operator=(const ElementCenteredSubdomainData&) =
       default;
-  ElementCenteredSubdomainData& operator=(
-      ElementCenteredSubdomainData&&) noexcept = default;
-  ~ElementCenteredSubdomainData() noexcept = default;
+  ElementCenteredSubdomainData(ElementCenteredSubdomainData&&) = default;
+  ElementCenteredSubdomainData& operator=(ElementCenteredSubdomainData&&) =
+      default;
+  ~ElementCenteredSubdomainData() = default;
 
-  explicit ElementCenteredSubdomainData(
-      const size_t element_num_points) noexcept
+  explicit ElementCenteredSubdomainData(const size_t element_num_points)
       : element_data{element_num_points} {}
 
   template <typename UsedForSizeTagsList>
   void destructive_resize(
       const ElementCenteredSubdomainData<Dim, UsedForSizeTagsList>&
-          used_for_size) noexcept {
+          used_for_size) {
     if (UNLIKELY(element_data.number_of_grid_points() !=
                  used_for_size.element_data.number_of_grid_points())) {
       element_data.initialize(
@@ -75,32 +73,32 @@ struct ElementCenteredSubdomainData {
 
   ElementCenteredSubdomainData(
       Variables<TagsList> local_element_data,
-      OverlapMap<Dim, Variables<TagsList>> local_overlap_data) noexcept
+      OverlapMap<Dim, Variables<TagsList>> local_overlap_data)
       : element_data{std::move(local_element_data)},
         overlap_data{std::move(local_overlap_data)} {}
 
-  size_t size() const noexcept {
+  size_t size() const {
     return std::accumulate(
         overlap_data.begin(), overlap_data.end(), element_data.size(),
-        [](const size_t size, const auto& overlap_id_and_data) noexcept {
+        [](const size_t size, const auto& overlap_id_and_data) {
           return size + overlap_id_and_data.second.size();
         });
   }
-  iterator begin() noexcept { return {this}; }
-  iterator end() noexcept { return {}; }
-  const_iterator begin() const noexcept { return {this}; }
-  const_iterator end() const noexcept { return {}; }
-  const_iterator cbegin() const noexcept { return begin(); }
-  const_iterator cend() const noexcept { return end(); }
+  iterator begin() { return {this}; }
+  iterator end() { return {}; }
+  const_iterator begin() const { return {this}; }
+  const_iterator end() const { return {}; }
+  const_iterator cbegin() const { return begin(); }
+  const_iterator cend() const { return end(); }
 
-  void pup(PUP::er& p) noexcept {  // NOLINT
+  void pup(PUP::er& p) {  // NOLINT
     p | element_data;
     p | overlap_data;
   }
 
   template <typename RhsTagsList>
   ElementCenteredSubdomainData& operator+=(
-      const ElementCenteredSubdomainData<Dim, RhsTagsList>& rhs) noexcept {
+      const ElementCenteredSubdomainData<Dim, RhsTagsList>& rhs) {
     element_data += rhs.element_data;
     for (auto& [overlap_id, data] : overlap_data) {
       data += rhs.overlap_data.at(overlap_id);
@@ -110,7 +108,7 @@ struct ElementCenteredSubdomainData {
 
   template <typename RhsTagsList>
   ElementCenteredSubdomainData& operator-=(
-      const ElementCenteredSubdomainData<Dim, RhsTagsList>& rhs) noexcept {
+      const ElementCenteredSubdomainData<Dim, RhsTagsList>& rhs) {
     element_data -= rhs.element_data;
     for (auto& [overlap_id, data] : overlap_data) {
       data -= rhs.overlap_data.at(overlap_id);
@@ -118,7 +116,7 @@ struct ElementCenteredSubdomainData {
     return *this;
   }
 
-  ElementCenteredSubdomainData& operator*=(const double scalar) noexcept {
+  ElementCenteredSubdomainData& operator*=(const double scalar) {
     element_data *= scalar;
     for (auto& [overlap_id, data] : overlap_data) {
       data *= scalar;
@@ -128,7 +126,7 @@ struct ElementCenteredSubdomainData {
     return *this;
   }
 
-  ElementCenteredSubdomainData& operator/=(const double scalar) noexcept {
+  ElementCenteredSubdomainData& operator/=(const double scalar) {
     element_data /= scalar;
     for (auto& [overlap_id, data] : overlap_data) {
       data /= scalar;
@@ -145,7 +143,7 @@ struct ElementCenteredSubdomainData {
 template <size_t Dim, typename LhsTagsList, typename RhsTagsList>
 decltype(auto) operator+(
     ElementCenteredSubdomainData<Dim, LhsTagsList> lhs,
-    const ElementCenteredSubdomainData<Dim, RhsTagsList>& rhs) noexcept {
+    const ElementCenteredSubdomainData<Dim, RhsTagsList>& rhs) {
   lhs += rhs;
   return lhs;
 }
@@ -153,37 +151,36 @@ decltype(auto) operator+(
 template <size_t Dim, typename LhsTagsList, typename RhsTagsList>
 decltype(auto) operator-(
     ElementCenteredSubdomainData<Dim, LhsTagsList> lhs,
-    const ElementCenteredSubdomainData<Dim, RhsTagsList>& rhs) noexcept {
+    const ElementCenteredSubdomainData<Dim, RhsTagsList>& rhs) {
   lhs -= rhs;
   return lhs;
 }
 
 template <size_t Dim, typename TagsList>
-decltype(auto) operator*(
-    const double scalar,
-    ElementCenteredSubdomainData<Dim, TagsList> data) noexcept {
+decltype(auto) operator*(const double scalar,
+                         ElementCenteredSubdomainData<Dim, TagsList> data) {
   data *= scalar;
   return data;
 }
 
 template <size_t Dim, typename TagsList>
 decltype(auto) operator*(ElementCenteredSubdomainData<Dim, TagsList> data,
-                         const double scalar) noexcept {
+                         const double scalar) {
   data *= scalar;
   return data;
 }
 
 template <size_t Dim, typename TagsList>
 decltype(auto) operator/(ElementCenteredSubdomainData<Dim, TagsList> data,
-                         const double scalar) noexcept {
+                         const double scalar) {
   data /= scalar;
   return data;
 }
 
 template <size_t Dim, typename TagsList>
-std::ostream& operator<<(std::ostream& os,
-                         const ElementCenteredSubdomainData<Dim, TagsList>&
-                             subdomain_data) noexcept {
+std::ostream& operator<<(
+    std::ostream& os,
+    const ElementCenteredSubdomainData<Dim, TagsList>& subdomain_data) {
   os << "Element data:\n"
      << subdomain_data.element_data << "\nOverlap data:\n"
      << subdomain_data.overlap_data;
@@ -191,17 +188,15 @@ std::ostream& operator<<(std::ostream& os,
 }
 
 template <size_t Dim, typename TagsList>
-bool operator==(
-    const ElementCenteredSubdomainData<Dim, TagsList>& lhs,
-    const ElementCenteredSubdomainData<Dim, TagsList>& rhs) noexcept {
+bool operator==(const ElementCenteredSubdomainData<Dim, TagsList>& lhs,
+                const ElementCenteredSubdomainData<Dim, TagsList>& rhs) {
   return lhs.element_data == rhs.element_data and
          lhs.overlap_data == rhs.overlap_data;
 }
 
 template <size_t Dim, typename TagsList>
-bool operator!=(
-    const ElementCenteredSubdomainData<Dim, TagsList>& lhs,
-    const ElementCenteredSubdomainData<Dim, TagsList>& rhs) noexcept {
+bool operator!=(const ElementCenteredSubdomainData<Dim, TagsList>& lhs,
+                const ElementCenteredSubdomainData<Dim, TagsList>& rhs) {
   return not(lhs == rhs);
 }
 
@@ -209,16 +204,16 @@ namespace detail {
 // Defines a consistent ordering of overlap IDs
 template <size_t Dim, typename ValueType>
 std::vector<OverlapId<Dim>> ordered_overlap_ids(
-    const OverlapMap<Dim, ValueType>& overlap_map) noexcept {
+    const OverlapMap<Dim, ValueType>& overlap_map) {
   std::vector<OverlapId<Dim>> overlap_ids{};
   overlap_ids.reserve(overlap_map.size());
   std::transform(overlap_map.begin(), overlap_map.end(),
                  std::back_inserter(overlap_ids),
-                 [](const auto& overlap_id_and_value) noexcept {
+                 [](const auto& overlap_id_and_value) {
                    return overlap_id_and_value.first;
                  });
   std::sort(overlap_ids.begin(), overlap_ids.end(),
-            [](const OverlapId<Dim>& lhs, const OverlapId<Dim>& rhs) noexcept {
+            [](const OverlapId<Dim>& lhs, const OverlapId<Dim>& rhs) {
               if (lhs.first.axis() != rhs.first.axis()) {
                 return lhs.first.axis() < rhs.first.axis();
               }
@@ -276,12 +271,12 @@ struct ElementCenteredSubdomainDataIterator {
   using iterator_category = std::forward_iterator_tag;
 
   /// Construct begin state
-  ElementCenteredSubdomainDataIterator(PtrType data) noexcept : data_(data) {
+  ElementCenteredSubdomainDataIterator(PtrType data) : data_(data) {
     overlap_ids_ = detail::ordered_overlap_ids(data_->overlap_data);
     reset();
   }
 
-  void reset() noexcept {
+  void reset() {
     overlap_index_ = (data_->element_data.size() == 0 and overlap_ids_.empty())
                          ? std::numeric_limits<size_t>::max()
                          : 0;
@@ -289,12 +284,12 @@ struct ElementCenteredSubdomainDataIterator {
   }
 
   /// Construct end state
-  ElementCenteredSubdomainDataIterator() noexcept {
+  ElementCenteredSubdomainDataIterator() {
     overlap_index_ = std::numeric_limits<size_t>::max();
     data_index_ = 0;
   }
 
-  ElementCenteredSubdomainDataIterator& operator++() noexcept {
+  ElementCenteredSubdomainDataIterator& operator++() {
     ++data_index_;
     if (data_index_ ==
         (overlap_index_ == 0
@@ -310,7 +305,7 @@ struct ElementCenteredSubdomainDataIterator {
     return *this;
   }
 
-  tmpl::conditional_t<Const, double, double&> operator*() const noexcept {
+  tmpl::conditional_t<Const, double, double&> operator*() const {
     if (overlap_index_ == 0) {
       return data_->element_data.data()[data_index_];
     } else {
@@ -320,16 +315,14 @@ struct ElementCenteredSubdomainDataIterator {
   }
 
  private:
-  friend bool operator==(
-      const ElementCenteredSubdomainDataIterator& lhs,
-      const ElementCenteredSubdomainDataIterator& rhs) noexcept {
+  friend bool operator==(const ElementCenteredSubdomainDataIterator& lhs,
+                         const ElementCenteredSubdomainDataIterator& rhs) {
     return lhs.overlap_index_ == rhs.overlap_index_ and
            lhs.data_index_ == rhs.data_index_;
   }
 
-  friend bool operator!=(
-      const ElementCenteredSubdomainDataIterator& lhs,
-      const ElementCenteredSubdomainDataIterator& rhs) noexcept {
+  friend bool operator!=(const ElementCenteredSubdomainDataIterator& lhs,
+                         const ElementCenteredSubdomainDataIterator& rhs) {
     return not(lhs == rhs);
   }
 
@@ -349,8 +342,7 @@ struct InnerProductImpl<
     Schwarz::ElementCenteredSubdomainData<Dim, RhsTagsList>> {
   static double apply(
       const Schwarz::ElementCenteredSubdomainData<Dim, LhsTagsList>& lhs,
-      const Schwarz::ElementCenteredSubdomainData<Dim, RhsTagsList>&
-          rhs) noexcept {
+      const Schwarz::ElementCenteredSubdomainData<Dim, RhsTagsList>& rhs) {
     double result = inner_product(lhs.element_data, rhs.element_data);
     for (const auto& [overlap_id, lhs_data] : lhs.overlap_data) {
       result += inner_product(lhs_data, rhs.overlap_data.at(overlap_id));
@@ -372,7 +364,7 @@ struct MakeWithValueImpl<
   using SubdomainDataOut =
       LinearSolver::Schwarz::ElementCenteredSubdomainData<Dim, TagsListOut>;
   static SPECTRE_ALWAYS_INLINE SubdomainDataOut
-  apply(const SubdomainDataIn& input, const double value) noexcept {
+  apply(const SubdomainDataIn& input, const double value) {
     SubdomainDataOut output{};
     output.element_data =
         make_with_value<typename SubdomainDataOut::ElementData>(

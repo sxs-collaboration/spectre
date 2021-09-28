@@ -23,7 +23,7 @@
 namespace LinearSolver::Schwarz {
 
 DataVector extruding_weight(const DataVector& logical_coords,
-                            const double width, const Side& side) noexcept {
+                            const double width, const Side& side) {
   const double sign = side == Side::Lower ? -1. : 1.;
   return 0.5 + 0.5 * sign -
          sign * smoothstep<2>(sign - width, sign + width, logical_coords);
@@ -33,7 +33,7 @@ namespace {
 void apply_element_weight(const gsl::not_null<Scalar<DataVector>*> weight,
                           const DataVector& logical_coords, const double width,
                           const bool has_overlap_lower,
-                          const bool has_overlap_upper) noexcept {
+                          const bool has_overlap_upper) {
   if (has_overlap_lower and has_overlap_upper) {
     get(*weight) *= extruding_weight(logical_coords, width, Side::Lower) +
                     extruding_weight(logical_coords, width, Side::Upper) - 1.;
@@ -50,7 +50,7 @@ void element_weight(
     const gsl::not_null<Scalar<DataVector>*> weight,
     const tnsr::I<DataVector, Dim, Frame::ElementLogical>& logical_coords,
     const std::array<double, Dim>& overlap_widths,
-    const std::unordered_set<Direction<Dim>>& external_boundaries) noexcept {
+    const std::unordered_set<Direction<Dim>>& external_boundaries) {
   destructive_resize_components(weight, logical_coords.begin()->size());
   get(*weight) = 1.;
   for (size_t d = 0; d < Dim; ++d) {
@@ -69,7 +69,7 @@ template <size_t Dim>
 Scalar<DataVector> element_weight(
     const tnsr::I<DataVector, Dim, Frame::ElementLogical>& logical_coords,
     const std::array<double, Dim>& overlap_widths,
-    const std::unordered_set<Direction<Dim>>& external_boundaries) noexcept {
+    const std::unordered_set<Direction<Dim>>& external_boundaries) {
   Scalar<DataVector> weight{logical_coords.begin()->size()};
   element_weight(make_not_null(&weight), logical_coords, overlap_widths,
                  external_boundaries);
@@ -77,14 +77,13 @@ Scalar<DataVector> element_weight(
 }
 
 DataVector intruding_weight(const DataVector& logical_coords,
-                            const double width, const Side& side) noexcept {
+                            const double width, const Side& side) {
   const double sign = side == Side::Lower ? -1. : 1.;
   return extruding_weight(logical_coords - sign * 2., width, opposite(side));
 }
 
 namespace {
-size_t dim_in_volume(const size_t dim_in_slice,
-                     const size_t sliced_dim) noexcept {
+size_t dim_in_volume(const size_t dim_in_slice, const size_t sliced_dim) {
   return dim_in_slice >= sliced_dim ? (dim_in_slice + 1) : dim_in_slice;
 }
 }  // namespace
@@ -96,7 +95,7 @@ void intruding_weight(
     const Direction<Dim>& direction,
     const std::array<double, Dim>& overlap_widths,
     const size_t num_intruding_overlaps,
-    const std::unordered_set<Direction<Dim>>& external_boundaries) noexcept {
+    const std::unordered_set<Direction<Dim>>& external_boundaries) {
   static_assert(Dim > 0 and Dim <= 3,
                 "This function supports one, two and three dimensions.");
   ASSERT(gsl::at(overlap_widths, direction.dimension()) > 0,
@@ -112,7 +111,7 @@ void intruding_weight(
     destructive_resize_components(weight, num_points);
     get(*weight) = 1.;
     const auto has_overlap = [&external_boundaries](const size_t dimension,
-                                                    const Side side) noexcept {
+                                                    const Side side) {
       return external_boundaries.find(Direction<Dim>{dimension, side}) ==
              external_boundaries.end();
     };
@@ -130,7 +129,7 @@ void intruding_weight(
     // conservation, we add the missing weights to the intruding overlaps here.
     // See the function documentation for details.
     const auto skip_corner =
-        [&direction, &has_overlap](const Vertex<Dim - 1>& corner) noexcept {
+        [&direction, &has_overlap](const Vertex<Dim - 1>& corner) {
           // Skip corners to external boundaries
           for (size_t d = 0; d < Dim - 1; ++d) {
             if (not has_overlap(dim_in_volume(d, direction.dimension()),
@@ -194,7 +193,7 @@ Scalar<DataVector> intruding_weight(
     const Direction<Dim>& direction,
     const std::array<double, Dim>& overlap_widths,
     const size_t num_intruding_overlaps,
-    const std::unordered_set<Direction<Dim>>& external_boundaries) noexcept {
+    const std::unordered_set<Direction<Dim>>& external_boundaries) {
   Scalar<DataVector> weight{logical_coords.begin()->size()};
   intruding_weight(make_not_null(&weight), logical_coords, direction,
                    overlap_widths, num_intruding_overlaps, external_boundaries);

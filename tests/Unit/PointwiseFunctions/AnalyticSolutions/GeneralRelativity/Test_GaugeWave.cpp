@@ -36,14 +36,14 @@ struct GaugeWaveProxy : gr::Solutions::GaugeWave<Dim> {
 
   template <typename DataType>
   tuples::tagged_tuple_from_typelist<variables_tags<DataType>> test_variables(
-      const tnsr::I<DataType, Dim>& x, const double t) const noexcept {
+      const tnsr::I<DataType, Dim>& x, const double t) const {
     return this->variables(x, t, variables_tags<DataType>{});
   }
 };
 
 template <size_t Dim, typename DataType>
 tnsr::I<DataType, Dim, Frame::Inertial> spatial_coords(
-    const DataType& used_for_size) noexcept {
+    const DataType& used_for_size) {
   auto x = make_with_value<tnsr::I<DataType, Dim, Frame::Inertial>>(
       used_for_size, 0.0);
   get<0>(x) = 1.32;
@@ -58,7 +58,7 @@ tnsr::I<DataType, Dim, Frame::Inertial> spatial_coords(
 
 template <size_t Dim, typename DataType>
 void test_gauge_wave(const gr::Solutions::GaugeWave<Dim>& solution,
-                     const DataType& used_for_size) noexcept {
+                     const DataType& used_for_size) {
   using GaugeWave = gr::Solutions::GaugeWave<Dim>;
   // The solution is as follows, with H = 1 - A \sin((2*\pi/d)*(x-t))
   // and \partial_x H = - A (2*\pi/d) \cos((2*\pi/d)*(x-t)):
@@ -191,7 +191,7 @@ void test_gauge_wave(const gr::Solutions::GaugeWave<Dim>& solution,
 
   // Check that we can retrieve tags individually from the solution
   tmpl::for_each<typename GaugeWave::template tags<DataType>>(
-      [&solution, &vars, &x, &t](auto tag_v) noexcept {
+      [&solution, &vars, &x, &t](auto tag_v) {
         using Tag = tmpl::type_from<decltype(tag_v)>;
         CHECK_ITERABLE_APPROX(get<Tag>(vars), get<Tag>(solution.variables(
                                                   x, t, tmpl::list<Tag>{})));
@@ -215,19 +215,19 @@ void test_gauge_wave(const gr::Solutions::GaugeWave<Dim>& solution,
       typename gr::Solutions::GaugeWave<Dim>::template tags<DataType>{});
 }
 
-void test_consistency() noexcept {
+void test_consistency() {
   const gr::Solutions::GaugeWave<3> solution(0.3, 2.4);
   TestHelpers::VerifyGrSolution::verify_consistency(
       solution, 1.234, tnsr::I<double, 3>{{{1.2, 2.3, 3.4}}}, 0.01, 1.0e-8);
 }
 
-void test_serialize() noexcept {
+void test_serialize() {
   const gr::Solutions::GaugeWave<3> solution(0.24, 4.4);
   test_serialization(solution);
   test_gauge_wave(serialize_and_deserialize(solution), DataVector{5});
 }
 
-void test_copy_and_move() noexcept {
+void test_copy_and_move() {
   gr::Solutions::GaugeWave<3> solution(0.25, 4.0);
   test_copy_semantics(solution);
   auto solution_copy = solution;

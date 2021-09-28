@@ -39,11 +39,11 @@ struct Background {
       const InverseJacobian<DataVector, 1, Frame::ElementLogical,
                             Frame::Inertial>&
       /*inv_jacobian*/,
-      tmpl::list<BackgroundFieldTag> /*meta*/) noexcept {
+      tmpl::list<BackgroundFieldTag> /*meta*/) {
     return {Scalar<DataVector>{get<0>(x)}};
   }
   // NOLINTNEXTLINE
-  void pup(PUP::er& /*p*/) noexcept {}
+  void pup(PUP::er& /*p*/) {}
 };
 
 template <typename Metavariables>

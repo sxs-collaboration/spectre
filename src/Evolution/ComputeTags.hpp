@@ -32,7 +32,7 @@ struct AnalyticCompute : ::Tags::AnalyticSolutions<AnalyticFieldsTagList>,
       const gsl::not_null<return_type*> analytic_solution,
       const typename AnalyticSolutionTag::type& analytic_solution_computer,
       const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords,
-      const double time) noexcept {
+      const double time) {
     *analytic_solution =
         variables_from_tagged_tuple(analytic_solution_computer.variables(
             inertial_coords, time, AnalyticFieldsTagList{}));
@@ -63,9 +63,9 @@ struct ErrorsCompute
       const gsl::not_null<Variables<tmpl::list<ErrorTags...>>*> errors,
       const AnalyticSolution& analytic_solution_computer,
       const tnsr::I<DataVector, VolumeDim, Frame::Inertial>& inertial_coords,
-      const double time, const FieldTypes&... fields) noexcept {
+      const double time, const FieldTypes&... fields) {
     *errors = return_type{get<0>(inertial_coords).size()};
-    const auto helper = [](const auto error, const auto& field) noexcept {
+    const auto helper = [](const auto error, const auto& field) {
       for (size_t i = 0; i < field.size(); ++i) {
         (*error)[i] = field[i];
       }

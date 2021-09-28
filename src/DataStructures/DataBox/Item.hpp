@@ -54,11 +54,11 @@ class Item<Tag, ItemType::Mutable> {
   constexpr Item& operator=(Item&&) = default;
   ~Item() = default;
 
-  explicit Item(value_type value) noexcept : value_(std::move(value)) {}
+  explicit Item(value_type value) : value_(std::move(value)) {}
 
-  const value_type& get() const noexcept { return value_; }
+  const value_type& get() const { return value_; }
 
-  value_type& mutate() noexcept { return value_; }
+  value_type& mutate() { return value_; }
 
  private:
   value_type value_{};
@@ -99,20 +99,20 @@ class Item<Tag, ItemType::Compute> {
   constexpr Item& operator=(Item&&) = default;
   ~Item() = default;
 
-  const value_type& get() const noexcept { return value_; }
+  const value_type& get() const { return value_; }
 
-  bool evaluated() const noexcept { return evaluated_; }
+  bool evaluated() const { return evaluated_; }
 
-  void reset() noexcept { evaluated_ = false; }
+  void reset() { evaluated_ = false; }
 
   template <typename... Args>
-  void evaluate(const Args&... args) const noexcept {
+  void evaluate(const Args&... args) const {
     Tag::function(make_not_null(&value_), args...);
     evaluated_ = true;
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept {
+  void pup(PUP::er& p) {
     p | evaluated_;
     if (evaluated_) {
       p | value_;
@@ -145,7 +145,7 @@ class Item<Tag, ItemType::Reference> {
   ~Item() = default;
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& /*p*/) noexcept {}
+  void pup(PUP::er& /*p*/) {}
 };
 }  // namespace db::detail
 /// \endcond

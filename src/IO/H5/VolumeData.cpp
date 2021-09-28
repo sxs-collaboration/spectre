@@ -38,11 +38,10 @@ void append_element_extents_and_connectivity(
     const gsl::not_null<std::vector<size_t>*> total_extents,
     const gsl::not_null<std::vector<int>*> total_connectivity,
     const gsl::not_null<int*> total_points_so_far, const size_t dim,
-    const ExtentsAndTensorVolumeData& element) noexcept {
+    const ExtentsAndTensorVolumeData& element) {
   // Process the element extents
   const auto& extents = element.extents;
-  ASSERT(alg::none_of(extents,
-                      [](const size_t extent) noexcept { return extent == 1; }),
+  ASSERT(alg::none_of(extents, [](const size_t extent) { return extent == 1; }),
          "We cannot generate connectivity for any single grid point elements.");
   if (extents.size() != dim) {
     ERROR("Trying to write data of dimensionality"
@@ -56,8 +55,7 @@ void append_element_extents_and_connectivity(
   // Generate the connectivity data for the element
   // Possible optimization: local_connectivity.reserve(BLAH) if we can figure
   // out size without computing all the connectivities.
-  const std::vector<int> connectivity = [&extents,
-                                         &total_points_so_far]() noexcept {
+  const std::vector<int> connectivity = [&extents, &total_points_so_far]() {
     std::vector<int> local_connectivity;
     for (const auto& cell : vis::detail::compute_cells(extents)) {
       for (const auto& bounding_indices : cell.bounding_indices) {
@@ -74,7 +72,7 @@ void append_element_extents_and_connectivity(
 
 // Append the name of an element to the string of grid names
 void append_element_name(const gsl::not_null<std::string*> grid_names,
-                         const ExtentsAndTensorVolumeData& element) noexcept {
+                         const ExtentsAndTensorVolumeData& element) {
   // Get the name of the element
   const auto& first_tensor_name = element.tensor_components.front().name;
   ASSERT(first_tensor_name.find_last_of('/') != std::string::npos,
@@ -91,7 +89,7 @@ void append_element_name(const gsl::not_null<std::string*> grid_names,
 
 VolumeData::VolumeData(const bool subfile_exists, detail::OpenGroup&& group,
                        const hid_t /*location*/, const std::string& name,
-                       const uint32_t version) noexcept
+                       const uint32_t version)
     : group_(std::move(group)),
       name_(name.size() > extension().size()
                 ? (extension() == name.substr(name.size() - extension().size())
@@ -128,7 +126,7 @@ VolumeData::VolumeData(const bool subfile_exists, detail::OpenGroup&& group,
 // an `observation_group` in a `VolumeData` file.
 void VolumeData::write_volume_data(
     const size_t observation_id, const double observation_value,
-    const std::vector<ElementVolumeData>& elements) noexcept {
+    const std::vector<ElementVolumeData>& elements) {
   const std::string path = "ObservationId" + std::to_string(observation_id);
   detail::OpenGroup observation_group(volume_data_group_.id(), path,
                                       AccessType::ReadWrite);
@@ -142,7 +140,7 @@ void VolumeData::write_volume_data(
   h5::write_to_attribute(observation_group.id(), "observation_value",
                          observation_value);
   // Get first element to extract the component names and dimension
-  const auto get_component_name = [](const auto& component) noexcept {
+  const auto get_component_name = [](const auto& component) {
     ASSERT(component.name.find_last_of('/') != std::string::npos,
            "The expected format of the tensor component names is "
            "'GROUP_NAME/COMPONENT_NAME' but could not find a '/' in '"
@@ -188,20 +186,19 @@ void VolumeData::write_volume_data(
     const auto fill_and_write_contiguous_tensor_data =
         [&bases, &component_name, &dim, &elements, &grid_names, i,
          &observation_group, &quadratures, &total_connectivity, &total_extents,
-         &total_points_so_far](const auto contiguous_tensor_data_ptr) noexcept {
+         &total_points_so_far](const auto contiguous_tensor_data_ptr) {
           for (const auto& element : elements) {
             if (UNLIKELY(i == 0)) {
               // True if first tensor component being accessed
               append_element_name(&grid_names, element);
               // append element basis
-              alg::transform(element.basis, std::back_inserter(bases),
-                             [](const Spectral::Basis t) noexcept {
-                               return static_cast<int>(t);
-                             });
+              alg::transform(
+                  element.basis, std::back_inserter(bases),
+                  [](const Spectral::Basis t) { return static_cast<int>(t); });
               // append element quadraature
               alg::transform(element.quadrature,
                              std::back_inserter(quadratures),
-                             [](const Spectral::Quadrature t) noexcept {
+                             [](const Spectral::Quadrature t) {
                                return static_cast<int>(t);
                              });
 
@@ -271,17 +268,16 @@ void VolumeData::write_volume_data(
                  {total_connectivity.size()}, "connectivity");
 }
 
-std::vector<size_t> VolumeData::list_observation_ids() const noexcept {
+std::vector<size_t> VolumeData::list_observation_ids() const {
   const auto names = get_group_names(volume_data_group_.id(), "");
-  const auto helper = [](const std::string& s) noexcept {
+  const auto helper = [](const std::string& s) {
     return std::stoul(s.substr(std::string("ObservationId").size()));
   };
   return {boost::make_transform_iterator(names.begin(), helper),
           boost::make_transform_iterator(names.end(), helper)};
 }
 
-double VolumeData::get_observation_value(
-    const size_t observation_id) const noexcept {
+double VolumeData::get_observation_value(const size_t observation_id) const {
   const std::string path = "ObservationId" + std::to_string(observation_id);
   detail::OpenGroup observation_group(volume_data_group_.id(), path,
                                       AccessType::ReadOnly);
@@ -290,7 +286,7 @@ double VolumeData::get_observation_value(
 }
 
 std::vector<std::string> VolumeData::list_tensor_components(
-    const size_t observation_id) const noexcept {
+    const size_t observation_id) const {
   auto tensor_components =
       get_group_names(volume_data_group_.id(),
                       "ObservationId" + std::to_string(observation_id));
@@ -311,7 +307,7 @@ std::vector<std::string> VolumeData::list_tensor_components(
 }
 
 std::vector<std::string> VolumeData::get_grid_names(
-    const size_t observation_id) const noexcept {
+    const size_t observation_id) const {
   const std::string path = "ObservationId" + std::to_string(observation_id);
   detail::OpenGroup observation_group(volume_data_group_.id(), path,
                                       AccessType::ReadOnly);
@@ -319,9 +315,8 @@ std::vector<std::string> VolumeData::get_grid_names(
       h5::read_data<1, std::vector<char>>(observation_group.id(), "grid_names");
   const std::string all_names(names.begin(), names.end());
   std::vector<std::string> grid_names{};
-  boost::split(grid_names, all_names, [](const char c) noexcept {
-    return c == h5::VolumeData::separator();
-  });
+  boost::split(grid_names, all_names,
+               [](const char c) { return c == h5::VolumeData::separator(); });
   // boost::split counts the last separator as a split even though there are no
   // characters after it, so the last entry of the vector is empty
   grid_names.pop_back();
@@ -329,8 +324,7 @@ std::vector<std::string> VolumeData::get_grid_names(
 }
 
 DataVector VolumeData::get_tensor_component(
-    const size_t observation_id,
-    const std::string& tensor_component) const noexcept {
+    const size_t observation_id, const std::string& tensor_component) const {
   const std::string path = "ObservationId" + std::to_string(observation_id);
   detail::OpenGroup observation_group(volume_data_group_.id(), path,
                                       AccessType::ReadOnly);
@@ -358,7 +352,7 @@ DataVector VolumeData::get_tensor_component(
 }
 
 std::vector<std::vector<size_t>> VolumeData::get_extents(
-    const size_t observation_id) const noexcept {
+    const size_t observation_id) const {
   const std::string path = "ObservationId" + std::to_string(observation_id);
   detail::OpenGroup observation_group(volume_data_group_.id(), path,
                                       AccessType::ReadOnly);
@@ -379,7 +373,7 @@ std::vector<std::vector<size_t>> VolumeData::get_extents(
 std::pair<size_t, size_t> offset_and_length_for_grid(
     const std::string& grid_name,
     const std::vector<std::string>& all_grid_names,
-    const std::vector<std::vector<size_t>>& all_extents) noexcept {
+    const std::vector<std::vector<size_t>>& all_extents) {
   auto found_grid_name = alg::find(all_grid_names, grid_name);
   if (found_grid_name == all_grid_names.end()) {
     ERROR("Found no grid named '" + grid_name + "'.");
@@ -388,7 +382,7 @@ std::pair<size_t, size_t> offset_and_length_for_grid(
         std::distance(all_grid_names.begin(), found_grid_name);
     const size_t element_data_offset = std::accumulate(
         all_extents.begin(), all_extents.begin() + element_index, 0_st,
-        [](const size_t offset, const std::vector<size_t>& extents) noexcept {
+        [](const size_t offset, const std::vector<size_t>& extents) {
           return offset + alg::accumulate(extents, 1_st, std::multiplies<>{});
         });
     const size_t element_data_length = alg::accumulate(
@@ -397,12 +391,12 @@ std::pair<size_t, size_t> offset_and_length_for_grid(
   }
 }
 
-size_t VolumeData::get_dimension() const noexcept {
+size_t VolumeData::get_dimension() const {
   return h5::read_value_attribute<double>(volume_data_group_.id(), "dimension");
 }
 
 std::vector<std::vector<std::string>> VolumeData::get_bases(
-    const size_t observation_id) const noexcept {
+    const size_t observation_id) const {
   const std::string path = "ObservationId" + std::to_string(observation_id);
   detail::OpenGroup observation_group(volume_data_group_.id(), path,
                                       AccessType::ReadOnly);
@@ -423,7 +417,7 @@ std::vector<std::vector<std::string>> VolumeData::get_bases(
   return element_bases;
 }
 std::vector<std::vector<std::string>> VolumeData::get_quadratures(
-    const size_t observation_id) const noexcept {
+    const size_t observation_id) const {
   const std::string path = "ObservationId" + std::to_string(observation_id);
   detail::OpenGroup observation_group(volume_data_group_.id(), path,
                                       AccessType::ReadOnly);

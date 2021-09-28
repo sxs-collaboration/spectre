@@ -57,6 +57,6 @@ struct FixConservativesAndComputePrims {
       const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
       const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
       const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
-      const Scalar<DataVector>& sqrt_det_spatial_metric) noexcept;
+      const Scalar<DataVector>& sqrt_det_spatial_metric);
 };
 }  // namespace grmhd::ValenciaDivClean::subcell

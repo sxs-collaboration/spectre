@@ -99,7 +99,7 @@ tnsr::ijj<DataType, SpatialDim, Frame> covariant_deriv_of_extrinsic_curvature(
     const tnsr::AA<DataType, SpatialDim, Frame>& inverse_spacetime_metric,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
     const tnsr::iaa<DataType, SpatialDim, Frame>& d_pi,
-    const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi) noexcept;
+    const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi);
 
 template <size_t SpatialDim, typename Frame, typename DataType>
 void covariant_deriv_of_extrinsic_curvature(
@@ -112,5 +112,5 @@ void covariant_deriv_of_extrinsic_curvature(
     const tnsr::AA<DataType, SpatialDim, Frame>& inverse_spacetime_metric,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
     const tnsr::iaa<DataType, SpatialDim, Frame>& d_pi,
-    const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi) noexcept;
+    const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi);
 }  // namespace GeneralizedHarmonic

@@ -115,7 +115,7 @@ struct GrTagsForHydro {
           functions_of_time,
       const tnsr::I<DataVector, Dim, Frame::ElementLogical>&
           subcell_logical_coordinates,
-      const AnalyticDataOrSolution& analytic_data_or_solution) noexcept {
+      const AnalyticDataOrSolution& analytic_data_or_solution) {
     const size_t num_grid_points = subcell_mesh.number_of_grid_points();
     const auto cell_centered_inertial_coords =
         grid_to_inertial_map(logical_to_grid_map(subcell_logical_coordinates),

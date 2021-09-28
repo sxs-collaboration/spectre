@@ -37,9 +37,8 @@ enum class InterpolationStrategy { EveryStep, EverySubstep };
  * `Cce::InterfaceManagers::GhInterfaceManager`.
  */
 template <typename DbTagList>
-bool should_interpolate_for_strategy(
-    const db::DataBox<DbTagList>& box,
-    const InterpolationStrategy strategy) noexcept {
+bool should_interpolate_for_strategy(const db::DataBox<DbTagList>& box,
+                                     const InterpolationStrategy strategy) {
   if(strategy == InterpolationStrategy::EverySubstep) {
     return true;
   }

@@ -46,10 +46,10 @@ struct Fluxes<Equations::Hamiltonian, Geometry::FlatCartesian> {
   using volume_tags = tmpl::list<>;
   static void apply(
       gsl::not_null<tnsr::I<DataVector, 3>*> flux_for_conformal_factor,
-      const tnsr::i<DataVector, 3>& conformal_factor_gradient) noexcept;
+      const tnsr::i<DataVector, 3>& conformal_factor_gradient);
   static void apply(const gsl::not_null<tnsr::Ij<DataVector, 3>*>
                         flux_for_conformal_factor_gradient,
-                    const Scalar<DataVector>& conformal_factor) noexcept;
+                    const Scalar<DataVector>& conformal_factor);
 };
 
 template <>
@@ -60,11 +60,11 @@ struct Fluxes<Equations::Hamiltonian, Geometry::Curved> {
   static void apply(
       gsl::not_null<tnsr::I<DataVector, 3>*> flux_for_conformal_factor,
       const tnsr::II<DataVector, 3>& inv_conformal_metric,
-      const tnsr::i<DataVector, 3>& conformal_factor_gradient) noexcept;
+      const tnsr::i<DataVector, 3>& conformal_factor_gradient);
   static void apply(gsl::not_null<tnsr::Ij<DataVector, 3>*>
                         flux_for_conformal_factor_gradient,
                     const tnsr::II<DataVector, 3>& inv_conformal_metric,
-                    const Scalar<DataVector>& conformal_factor) noexcept;
+                    const Scalar<DataVector>& conformal_factor);
 };
 
 template <>
@@ -76,15 +76,13 @@ struct Fluxes<Equations::HamiltonianAndLapse, Geometry::FlatCartesian> {
       gsl::not_null<tnsr::I<DataVector, 3>*>
           flux_for_lapse_times_conformal_factor,
       const tnsr::i<DataVector, 3>& conformal_factor_gradient,
-      const tnsr::i<DataVector, 3>&
-          lapse_times_conformal_factor_gradient) noexcept;
-  static void apply(
-      gsl::not_null<tnsr::Ij<DataVector, 3>*>
-          flux_for_conformal_factor_gradient,
-      gsl::not_null<tnsr::Ij<DataVector, 3>*>
-          flux_for_lapse_times_conformal_factor_gradient,
-      const Scalar<DataVector>& conformal_factor,
-      const Scalar<DataVector>& lapse_times_conformal_factor) noexcept;
+      const tnsr::i<DataVector, 3>& lapse_times_conformal_factor_gradient);
+  static void apply(gsl::not_null<tnsr::Ij<DataVector, 3>*>
+                        flux_for_conformal_factor_gradient,
+                    gsl::not_null<tnsr::Ij<DataVector, 3>*>
+                        flux_for_lapse_times_conformal_factor_gradient,
+                    const Scalar<DataVector>& conformal_factor,
+                    const Scalar<DataVector>& lapse_times_conformal_factor);
 };
 
 template <>
@@ -98,16 +96,14 @@ struct Fluxes<Equations::HamiltonianAndLapse, Geometry::Curved> {
           flux_for_lapse_times_conformal_factor,
       const tnsr::II<DataVector, 3>& inv_conformal_metric,
       const tnsr::i<DataVector, 3>& conformal_factor_gradient,
-      const tnsr::i<DataVector, 3>&
-          lapse_times_conformal_factor_gradient) noexcept;
-  static void apply(
-      gsl::not_null<tnsr::Ij<DataVector, 3>*>
-          flux_for_conformal_factor_gradient,
-      gsl::not_null<tnsr::Ij<DataVector, 3>*>
-          flux_for_lapse_times_conformal_factor_gradient,
-      const tnsr::II<DataVector, 3>& inv_conformal_metric,
-      const Scalar<DataVector>& conformal_factor,
-      const Scalar<DataVector>& lapse_times_conformal_factor) noexcept;
+      const tnsr::i<DataVector, 3>& lapse_times_conformal_factor_gradient);
+  static void apply(gsl::not_null<tnsr::Ij<DataVector, 3>*>
+                        flux_for_conformal_factor_gradient,
+                    gsl::not_null<tnsr::Ij<DataVector, 3>*>
+                        flux_for_lapse_times_conformal_factor_gradient,
+                    const tnsr::II<DataVector, 3>& inv_conformal_metric,
+                    const Scalar<DataVector>& conformal_factor,
+                    const Scalar<DataVector>& lapse_times_conformal_factor);
 };
 
 template <>
@@ -121,7 +117,7 @@ struct Fluxes<Equations::HamiltonianLapseAndShift, Geometry::FlatCartesian> {
       gsl::not_null<tnsr::II<DataVector, 3>*> longitudinal_shift_excess,
       const tnsr::i<DataVector, 3>& conformal_factor_gradient,
       const tnsr::i<DataVector, 3>& lapse_times_conformal_factor_gradient,
-      const tnsr::ii<DataVector, 3>& shift_strain) noexcept;
+      const tnsr::ii<DataVector, 3>& shift_strain);
   static void apply(
       gsl::not_null<tnsr::Ij<DataVector, 3>*>
           flux_for_conformal_factor_gradient,
@@ -130,7 +126,7 @@ struct Fluxes<Equations::HamiltonianLapseAndShift, Geometry::FlatCartesian> {
       gsl::not_null<tnsr::Ijj<DataVector, 3>*> flux_for_shift_strain,
       const Scalar<DataVector>& conformal_factor,
       const Scalar<DataVector>& lapse_times_conformal_factor,
-      const tnsr::I<DataVector, 3>& shift) noexcept;
+      const tnsr::I<DataVector, 3>& shift);
 };
 
 template <>
@@ -148,7 +144,7 @@ struct Fluxes<Equations::HamiltonianLapseAndShift, Geometry::Curved> {
       const tnsr::II<DataVector, 3>& inv_conformal_metric,
       const tnsr::i<DataVector, 3>& conformal_factor_gradient,
       const tnsr::i<DataVector, 3>& lapse_times_conformal_factor_gradient,
-      const tnsr::ii<DataVector, 3>& shift_strain) noexcept;
+      const tnsr::ii<DataVector, 3>& shift_strain);
   static void apply(
       gsl::not_null<tnsr::Ij<DataVector, 3>*>
           flux_for_conformal_factor_gradient,
@@ -159,7 +155,7 @@ struct Fluxes<Equations::HamiltonianLapseAndShift, Geometry::Curved> {
       const tnsr::II<DataVector, 3>& inv_conformal_metric,
       const Scalar<DataVector>& conformal_factor,
       const Scalar<DataVector>& lapse_times_conformal_factor,
-      const tnsr::I<DataVector, 3>& shift_excess) noexcept;
+      const tnsr::I<DataVector, 3>& shift_excess);
 };
 /// \endcond
 
@@ -186,7 +182,7 @@ struct Sources<Equations::Hamiltonian, Geometry::FlatCartesian,
       const Scalar<DataVector>&
           longitudinal_shift_minus_dt_conformal_metric_over_lapse_square,
       const Scalar<DataVector>& conformal_factor,
-      const tnsr::I<DataVector, 3>& conformal_factor_flux) noexcept;
+      const tnsr::I<DataVector, 3>& conformal_factor_flux);
   static void apply(
       gsl::not_null<tnsr::i<DataVector, 3>*>
           equation_for_conformal_factor_gradient,
@@ -194,7 +190,7 @@ struct Sources<Equations::Hamiltonian, Geometry::FlatCartesian,
       const Scalar<DataVector>& extrinsic_curvature_trace,
       const Scalar<DataVector>&
           longitudinal_shift_minus_dt_conformal_metric_over_lapse_square,
-      const Scalar<DataVector>& conformal_factor) noexcept;
+      const Scalar<DataVector>& conformal_factor);
 };
 
 template <int ConformalMatterScale>
@@ -213,7 +209,7 @@ struct Sources<Equations::Hamiltonian, Geometry::Curved, ConformalMatterScale> {
       const tnsr::i<DataVector, 3>& conformal_christoffel_contracted,
       const Scalar<DataVector>& conformal_ricci_scalar,
       const Scalar<DataVector>& conformal_factor,
-      const tnsr::I<DataVector, 3>& conformal_factor_flux) noexcept;
+      const tnsr::I<DataVector, 3>& conformal_factor_flux);
   static void apply(
       gsl::not_null<tnsr::i<DataVector, 3>*>
           equation_for_conformal_factor_gradient,
@@ -223,7 +219,7 @@ struct Sources<Equations::Hamiltonian, Geometry::Curved, ConformalMatterScale> {
           longitudinal_shift_minus_dt_conformal_metric_over_lapse_square,
       const tnsr::i<DataVector, 3>& conformal_christoffel_contracted,
       const Scalar<DataVector>& conformal_ricci_scalar,
-      const Scalar<DataVector>& conformal_factor) noexcept;
+      const Scalar<DataVector>& conformal_factor);
 };
 
 template <int ConformalMatterScale>
@@ -251,7 +247,7 @@ struct Sources<Equations::HamiltonianAndLapse, Geometry::FlatCartesian,
       const Scalar<DataVector>& conformal_factor,
       const Scalar<DataVector>& lapse_times_conformal_factor,
       const tnsr::I<DataVector, 3>& conformal_factor_flux,
-      const tnsr::I<DataVector, 3>& lapse_times_conformal_factor_flux) noexcept;
+      const tnsr::I<DataVector, 3>& lapse_times_conformal_factor_flux);
   static void apply(
       gsl::not_null<tnsr::i<DataVector, 3>*>
           equation_for_conformal_factor_gradient,
@@ -265,7 +261,7 @@ struct Sources<Equations::HamiltonianAndLapse, Geometry::FlatCartesian,
           longitudinal_shift_minus_dt_conformal_metric_square,
       const Scalar<DataVector>& shift_dot_deriv_extrinsic_curvature_trace,
       const Scalar<DataVector>& conformal_factor,
-      const Scalar<DataVector>& lapse_times_conformal_factor) noexcept;
+      const Scalar<DataVector>& lapse_times_conformal_factor);
 };
 
 template <int ConformalMatterScale>
@@ -291,7 +287,7 @@ struct Sources<Equations::HamiltonianAndLapse, Geometry::Curved,
       const Scalar<DataVector>& conformal_factor,
       const Scalar<DataVector>& lapse_times_conformal_factor,
       const tnsr::I<DataVector, 3>& conformal_factor_flux,
-      const tnsr::I<DataVector, 3>& lapse_times_conformal_factor_flux) noexcept;
+      const tnsr::I<DataVector, 3>& lapse_times_conformal_factor_flux);
   static void apply(
       gsl::not_null<tnsr::i<DataVector, 3>*>
           equation_for_conformal_factor_gradient,
@@ -307,7 +303,7 @@ struct Sources<Equations::HamiltonianAndLapse, Geometry::Curved,
       const tnsr::i<DataVector, 3>& conformal_christoffel_contracted,
       const Scalar<DataVector>& conformal_ricci_scalar,
       const Scalar<DataVector>& conformal_factor,
-      const Scalar<DataVector>& lapse_times_conformal_factor) noexcept;
+      const Scalar<DataVector>& lapse_times_conformal_factor);
 };
 
 template <int ConformalMatterScale>
@@ -350,7 +346,7 @@ struct Sources<Equations::HamiltonianLapseAndShift, Geometry::FlatCartesian,
       const tnsr::I<DataVector, 3>& shift_excess,
       const tnsr::I<DataVector, 3>& conformal_factor_flux,
       const tnsr::I<DataVector, 3>& lapse_times_conformal_factor_flux,
-      const tnsr::II<DataVector, 3>& longitudinal_shift_excess) noexcept;
+      const tnsr::II<DataVector, 3>& longitudinal_shift_excess);
   static void apply(
       gsl::not_null<tnsr::i<DataVector, 3>*>
           equation_for_conformal_factor_gradient,
@@ -370,7 +366,7 @@ struct Sources<Equations::HamiltonianLapseAndShift, Geometry::FlatCartesian,
           div_longitudinal_shift_background_minus_dt_conformal_metric,
       const Scalar<DataVector>& conformal_factor,
       const Scalar<DataVector>& lapse_times_conformal_factor,
-      const tnsr::I<DataVector, 3>& shift_excess) noexcept;
+      const tnsr::I<DataVector, 3>& shift_excess);
 };
 
 template <int ConformalMatterScale>
@@ -412,7 +408,7 @@ struct Sources<Equations::HamiltonianLapseAndShift, Geometry::Curved,
       const tnsr::I<DataVector, 3>& shift_excess,
       const tnsr::I<DataVector, 3>& conformal_factor_flux,
       const tnsr::I<DataVector, 3>& lapse_times_conformal_factor_flux,
-      const tnsr::II<DataVector, 3>& longitudinal_shift_excess) noexcept;
+      const tnsr::II<DataVector, 3>& longitudinal_shift_excess);
   static void apply(
       gsl::not_null<tnsr::i<DataVector, 3>*>
           equation_for_conformal_factor_gradient,
@@ -438,7 +434,7 @@ struct Sources<Equations::HamiltonianLapseAndShift, Geometry::Curved,
       const Scalar<DataVector>& conformal_ricci_scalar,
       const Scalar<DataVector>& conformal_factor,
       const Scalar<DataVector>& lapse_times_conformal_factor,
-      const tnsr::I<DataVector, 3>& shift_excess) noexcept;
+      const tnsr::I<DataVector, 3>& shift_excess);
 };
 /// \endcond
 
@@ -467,7 +463,7 @@ struct LinearizedSources<Equations::Hamiltonian, Geometry::FlatCartesian,
       const Scalar<DataVector>& conformal_factor,
       const Scalar<DataVector>& conformal_factor_correction,
       const tnsr::I<DataVector, 3>&
-      /*conformal_factor_flux_correction*/) noexcept;
+      /*conformal_factor_flux_correction*/);
   static void apply(
       gsl::not_null<tnsr::i<DataVector, 3>*>
           source_for_conformal_factor_gradient_correction,
@@ -476,7 +472,7 @@ struct LinearizedSources<Equations::Hamiltonian, Geometry::FlatCartesian,
       const Scalar<DataVector>&
           longitudinal_shift_minus_dt_conformal_metric_over_lapse_square,
       const Scalar<DataVector>& conformal_factor,
-      const Scalar<DataVector>& conformal_factor_correction) noexcept;
+      const Scalar<DataVector>& conformal_factor_correction);
 };
 
 template <int ConformalMatterScale>
@@ -496,7 +492,7 @@ struct LinearizedSources<Equations::Hamiltonian, Geometry::Curved,
       const Scalar<DataVector>& conformal_ricci_scalar,
       const Scalar<DataVector>& conformal_factor,
       const Scalar<DataVector>& conformal_factor_correction,
-      const tnsr::I<DataVector, 3>& conformal_factor_flux_correction) noexcept;
+      const tnsr::I<DataVector, 3>& conformal_factor_flux_correction);
   static void apply(
       gsl::not_null<tnsr::i<DataVector, 3>*>
           equation_for_conformal_factor_gradient_correction,
@@ -507,7 +503,7 @@ struct LinearizedSources<Equations::Hamiltonian, Geometry::Curved,
       const tnsr::i<DataVector, 3>& conformal_christoffel_contracted,
       const Scalar<DataVector>& conformal_ricci_scalar,
       const Scalar<DataVector>& conformal_factor,
-      const Scalar<DataVector>& conformal_factor_correction) noexcept;
+      const Scalar<DataVector>& conformal_factor_correction);
 };
 
 template <int ConformalMatterScale>
@@ -534,7 +530,7 @@ struct LinearizedSources<Equations::HamiltonianAndLapse,
       const Scalar<DataVector>& lapse_times_conformal_factor_correction,
       const tnsr::I<DataVector, 3>& /*conformal_factor_flux_correction*/,
       const tnsr::I<DataVector, 3>&
-          lapse_times_conformal_factor_flux_correction) noexcept;
+          lapse_times_conformal_factor_flux_correction);
   static void apply(
       gsl::not_null<tnsr::i<DataVector, 3>*>
           equation_for_conformal_factor_gradient_correction,
@@ -550,8 +546,7 @@ struct LinearizedSources<Equations::HamiltonianAndLapse,
       const Scalar<DataVector>& conformal_factor,
       const Scalar<DataVector>& lapse_times_conformal_factor,
       const Scalar<DataVector>& conformal_factor_correction,
-      const Scalar<DataVector>&
-          lapse_times_conformal_factor_correction) noexcept;
+      const Scalar<DataVector>& lapse_times_conformal_factor_correction);
 };
 
 template <int ConformalMatterScale>
@@ -580,7 +575,7 @@ struct LinearizedSources<Equations::HamiltonianAndLapse, Geometry::Curved,
       const Scalar<DataVector>& lapse_times_conformal_factor_correction,
       const tnsr::I<DataVector, 3>& conformal_factor_flux_correction,
       const tnsr::I<DataVector, 3>&
-          lapse_times_conformal_factor_flux_correction) noexcept;
+          lapse_times_conformal_factor_flux_correction);
   static void apply(
       gsl::not_null<tnsr::i<DataVector, 3>*>
           equation_for_conformal_factor_gradient_correction,
@@ -598,8 +593,7 @@ struct LinearizedSources<Equations::HamiltonianAndLapse, Geometry::Curved,
       const Scalar<DataVector>& conformal_factor,
       const Scalar<DataVector>& lapse_times_conformal_factor,
       const Scalar<DataVector>& conformal_factor_correction,
-      const Scalar<DataVector>&
-          lapse_times_conformal_factor_correction) noexcept;
+      const Scalar<DataVector>& lapse_times_conformal_factor_correction);
 };
 
 template <int ConformalMatterScale>
@@ -644,8 +638,7 @@ struct LinearizedSources<Equations::HamiltonianLapseAndShift,
       const tnsr::I<DataVector, 3>& conformal_factor_flux_correction,
       const tnsr::I<DataVector, 3>&
           lapse_times_conformal_factor_flux_correction,
-      const tnsr::II<DataVector, 3>&
-          longitudinal_shift_excess_correction) noexcept;
+      const tnsr::II<DataVector, 3>& longitudinal_shift_excess_correction);
   static void apply(
       gsl::not_null<tnsr::i<DataVector, 3>*>
           equation_for_conformal_factor_gradient_correction,
@@ -672,7 +665,7 @@ struct LinearizedSources<Equations::HamiltonianLapseAndShift,
       const tnsr::II<DataVector, 3>& longitudinal_shift_excess,
       const Scalar<DataVector>& conformal_factor_correction,
       const Scalar<DataVector>& lapse_times_conformal_factor_correction,
-      const tnsr::I<DataVector, 3>& shift_excess_correction) noexcept;
+      const tnsr::I<DataVector, 3>& shift_excess_correction);
 };
 
 template <int ConformalMatterScale>
@@ -722,8 +715,7 @@ struct LinearizedSources<Equations::HamiltonianLapseAndShift, Geometry::Curved,
       const tnsr::I<DataVector, 3>& conformal_factor_flux_correction,
       const tnsr::I<DataVector, 3>&
           lapse_times_conformal_factor_flux_correction,
-      const tnsr::II<DataVector, 3>&
-          longitudinal_shift_excess_correction) noexcept;
+      const tnsr::II<DataVector, 3>& longitudinal_shift_excess_correction);
   static void apply(
       gsl::not_null<tnsr::i<DataVector, 3>*>
           equation_for_conformal_factor_gradient_correction,
@@ -756,7 +748,7 @@ struct LinearizedSources<Equations::HamiltonianLapseAndShift, Geometry::Curved,
       const tnsr::II<DataVector, 3>& longitudinal_shift_excess,
       const Scalar<DataVector>& conformal_factor_correction,
       const Scalar<DataVector>& lapse_times_conformal_factor_correction,
-      const tnsr::I<DataVector, 3>& shift_excess_correction) noexcept;
+      const tnsr::I<DataVector, 3>& shift_excess_correction);
 };
 /// \endcond
 

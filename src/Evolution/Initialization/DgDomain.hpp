@@ -134,7 +134,7 @@ struct Domain {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ElementId<Dim>& array_index,
                     const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     const auto& initial_extents =
         db::get<::domain::Tags::InitialExtents<Dim>>(box);
     const auto& initial_refinement =
@@ -181,7 +181,7 @@ struct Domain {
       DataBox& /*box*/, const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     ERROR(
         "Dependencies not fulfilled. Did you forget to terminate the phase "
         "after removing options?");

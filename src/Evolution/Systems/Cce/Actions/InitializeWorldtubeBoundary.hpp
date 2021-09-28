@@ -57,7 +57,7 @@ struct InitializeWorldtubeBoundaryBase {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     if constexpr (std::is_same_v<Tags::AnalyticBoundaryDataManager,
                                  tmpl::front<ManagerTags>>) {
       if (dynamic_cast<const Solutions::RobinsonTrautman*>(

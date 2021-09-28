@@ -15,7 +15,7 @@ namespace PUP {
 /// \ingroup ParallelGroup
 /// Serialization of std::atomic for Charm++
 template <typename T>
-void pup(PUP::er& p, std::atomic<T>& d) noexcept {  // NOLINT
+void pup(PUP::er& p, std::atomic<T>& d) {  // NOLINT
   T local_d;
   if(p.isUnpacking()) {
     p | local_d;
@@ -29,7 +29,7 @@ void pup(PUP::er& p, std::atomic<T>& d) noexcept {  // NOLINT
 /// \ingroup ParallelGroup
 /// Serialization of std::atomic for Charm++
 template <typename T>
-void operator|(er& p, std::atomic<T>& d) noexcept {  // NOLINT
+void operator|(er& p, std::atomic<T>& d) {  // NOLINT
   pup(p, d);
 }
 }  // namespace PUP

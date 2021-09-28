@@ -27,19 +27,19 @@
 namespace {
 struct Var : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static std::string name() noexcept { return "Var"; }
+  static std::string name() { return "Var"; }
 };
 
 struct PrimVar : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static std::string name() noexcept { return "PrimVar"; }
+  static std::string name() { return "PrimVar"; }
 };
 
 struct SystemAnalyticSolution : public MarkAsAnalyticSolution {
-  static int equation_of_state() noexcept { return 5; }
+  static int equation_of_state() { return 5; }
 
   // NOLINTNEXTLINE
-  void pup(PUP::er& /*p*/) noexcept {}
+  void pup(PUP::er& /*p*/) {}
 };
 
 template <size_t Dim, bool HasPrimitiveAndConservativeVars>
@@ -85,7 +85,7 @@ struct Metavariables {
 
 template <size_t Dim, typename Runner>
 void check_primitives(std::true_type /*has_prims*/, const Runner& runner,
-                      const size_t number_of_grid_points) noexcept {
+                      const size_t number_of_grid_points) {
   using metavars = Metavariables<Dim, true>;
   using comp = component<Dim, metavars>;
   using prim_vars_tag = Tags::Variables<tmpl::list<PrimVar>>;
@@ -98,10 +98,10 @@ void check_primitives(std::true_type /*has_prims*/, const Runner& runner,
 
 template <size_t Dim, typename Runner>
 void check_primitives(std::false_type /*has_prims*/, const Runner& /*runner*/,
-                      const size_t /*number_of_grid_points*/) noexcept {}
+                      const size_t /*number_of_grid_points*/) {}
 
 template <size_t Dim, bool HasPrimitives>
-void test() noexcept {
+void test() {
   using metavars = Metavariables<Dim, HasPrimitives>;
   using comp = component<Dim, metavars>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;

@@ -56,7 +56,7 @@ struct VectorTag : db::SimpleTag {
 };
 
 namespace test_1d {
-void test_package_data(const size_t order) noexcept {
+void test_package_data(const size_t order) {
   INFO("Testing package data");
   CAPTURE(order);
   const Mesh<1> mesh(order + 1, Spectral::Basis::Legendre,
@@ -112,7 +112,7 @@ void test_package_data(const size_t order) noexcept {
   }
 }
 
-void test_limiting_two_neighbors() noexcept {
+void test_limiting_two_neighbors() {
   INFO("Testing applying limiter to coefficients");
   static constexpr size_t dim = 1;
   const size_t order = 3;
@@ -149,8 +149,7 @@ void test_limiting_two_neighbors() noexcept {
        &package_data_lower, &package_data_upper, &nodal_scalar_data_to_limit,
        &nodal_vector_data_to_limit](
           const ModalVector& upper_coeffs, const ModalVector& initial_coeffs,
-          const ModalVector& lower_coeffs,
-          const ModalVector& expected_coeffs) noexcept {
+          const ModalVector& lower_coeffs, const ModalVector& expected_coeffs) {
         to_nodal_coefficients(&get(nodal_scalar_data_to_limit), initial_coeffs,
                               mesh);
         get(get<::Tags::Modal<ScalarTag<0>>>(
@@ -251,7 +250,7 @@ void test_limiting_two_neighbors() noexcept {
          {3.0, 2.0, 0.0, 0.0});
 }
 
-void test_limiting_different_values_different_tensors() noexcept {
+void test_limiting_different_values_different_tensors() {
   INFO("Testing different values for each tensor component");
   static constexpr size_t dim = 1;
   const size_t order = 3;
@@ -315,7 +314,7 @@ void test_limiting_different_values_different_tensors() noexcept {
   }
 }
 
-void run() noexcept {
+void run() {
   INFO("Testing 1d limiter");
   for (size_t order = Spectral::minimum_number_of_points<
            Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto>;
@@ -329,7 +328,7 @@ void run() noexcept {
 }  // namespace test_1d
 
 namespace test_2d {
-void test_package_data() noexcept {
+void test_package_data() {
   INFO("Testing package data");
   static constexpr size_t dim = 2;
   const Mesh<dim> mesh({{2, 3}},
@@ -380,7 +379,7 @@ void test_package_data() noexcept {
 }
 
 template <typename F>
-void test_limiting_2_2_coefficient(const F& helper) noexcept {
+void test_limiting_2_2_coefficient(const F& helper) {
   // Limit no coefficients because the highest coefficient doesn't need
   // limiting.
   helper({0.0, 1.0, 2.0, 3.0, 4.0, 7.0, 3.0, 4.1, 0.0},
@@ -456,7 +455,7 @@ void test_limiting_2_2_coefficient(const F& helper) noexcept {
 }
 
 template <typename F>
-void test_limiting_2_1_coefficient(const F& helper) noexcept {
+void test_limiting_2_1_coefficient(const F& helper) {
   // Limit (2,1) because +(2,0)
   helper({0.0, 7.0, 3.0, 7.0, 3.0, 4.1, 7.0, 4.1, 0.0},
          {0.0, 7.0, 3.0, 7.0, 3.0, 4.1, 7.0, 4.1, 0.0},
@@ -523,7 +522,7 @@ void test_limiting_2_1_coefficient(const F& helper) noexcept {
 }
 
 template <typename F>
-void test_limiting_1_2_coefficient(const F& helper) noexcept {
+void test_limiting_1_2_coefficient(const F& helper) {
   // Limit (1,2) because +(0,2)
   helper({0.0, 7.0, 7.0, 7.0, 3.0, 4.1, 4.0, 4.1, 0.0},
          {0.0, 7.0, 7.0, 7.0, 3.0, 4.1, 4.0, 4.1, 0.0},
@@ -590,7 +589,7 @@ void test_limiting_1_2_coefficient(const F& helper) noexcept {
 }
 
 template <typename F>
-void test_limiting_2_0_coefficient(const F& helper) noexcept {
+void test_limiting_2_0_coefficient(const F& helper) {
   // Limit (2,0) because +(1,0)
   helper({5.0, 3.1, 7.0, 7.0, 3.0, 4.1, 4.0, 4.1, 0.0},
          {5.0, 7.0, 7.0, 7.0, 3.0, 4.1, 4.0, 4.1, 0.0},
@@ -625,7 +624,7 @@ void test_limiting_2_0_coefficient(const F& helper) noexcept {
 }
 
 template <typename F>
-void test_limiting_0_2_coefficient(const F& helper) noexcept {
+void test_limiting_0_2_coefficient(const F& helper) {
   // Limit (0,2) because +(0,1)
   helper({5.0, 7.0, 7.0, 7.0, 3.0, 4.1, 4.0, 4.1, 0.0},
          {5.0, 7.0, 7.0, 3.1, 3.0, 4.1, 4.0, 4.1, 0.0},
@@ -660,7 +659,7 @@ void test_limiting_0_2_coefficient(const F& helper) noexcept {
 }
 
 template <typename F>
-void test_limiting_1_1_coefficient(const F& helper) noexcept {
+void test_limiting_1_1_coefficient(const F& helper) {
   // Limit (1,1) because +(1,0)
   helper({5.0, 4.0, 7.0, 7.0, 3.0, 4.1, 4.0, 4.1, 0.0},
          {5.0, 3.3, 7.0, 3.1, 3.0, 4.1, 4.0, 4.1, 0.0},
@@ -731,7 +730,7 @@ void test_limiting_1_1_coefficient(const F& helper) noexcept {
 }
 
 template <typename F>
-void test_limiting_1_0_coefficient(const F& helper) noexcept {
+void test_limiting_1_0_coefficient(const F& helper) {
   // Limit (1,0) because +(0,0)
   helper({1.5, 4.0, 7.0, 7.0, 3.0, 4.1, 4.0, 4.1, 0.0},
          {5.0, 3.3, 7.0, 3.1, 3.0, 4.1, 4.0, 4.1, 0.0},
@@ -770,7 +769,7 @@ void test_limiting_1_0_coefficient(const F& helper) noexcept {
 }
 
 template <typename F>
-void test_limiting_0_1_coefficient(const F& helper) noexcept {
+void test_limiting_0_1_coefficient(const F& helper) {
   // Limit (0,1) because +(0,0)
   helper({1.4, 4.0, 7.0, 7.0, 3.0, 4.1, 4.0, 4.1, 0.0},
          {1.5, 3.3, 7.0, 3.1, 3.0, 4.1, 4.0, 4.1, 0.0},
@@ -808,7 +807,7 @@ void test_limiting_0_1_coefficient(const F& helper) noexcept {
           0.99, 0.0});
 }
 
-void test_limiting_different_values_different_tensors() noexcept {
+void test_limiting_different_values_different_tensors() {
   INFO("Testing different values for each tensor component");
   static constexpr size_t dim = 2;
   const size_t order = 2;  // Use only 3 coefficients because more is tedious...
@@ -909,7 +908,7 @@ void test_limiting_different_values_different_tensors() noexcept {
   }
 }
 
-void run() noexcept {
+void run() {
   INFO("Testing 2d limiter");
   test_package_data();
 
@@ -957,7 +956,7 @@ void run() noexcept {
           const ModalVector& up_xi_coeffs, const ModalVector& up_eta_coeffs,
           const ModalVector& initial_coeffs, const ModalVector& lo_xi_coeffs,
           const ModalVector& lo_eta_coeffs,
-          const ModalVector& expected_coeffs) noexcept {
+          const ModalVector& expected_coeffs) {
         to_nodal_coefficients(&get(nodal_scalar_data_to_limit), initial_coeffs,
                               mesh);
         get(get<::Tags::Modal<ScalarTag<0>>>(
@@ -991,7 +990,7 @@ void run() noexcept {
 }  // namespace test_2d
 
 namespace test_3d {
-void test_package_data() noexcept {
+void test_package_data() {
   INFO("Testing package data");
   static constexpr size_t dim = 3;
   const Mesh<dim> mesh(
@@ -1054,7 +1053,7 @@ void test_package_data() noexcept {
 }
 
 template <typename F>
-void test_limiting_2_2_2_coefficient(const F& helper) noexcept {
+void test_limiting_2_2_2_coefficient(const F& helper) {
   // Limit no coefficients because the highest coefficient doesn't need
   // limiting.
   helper({0.0,  1.0,  2.0,  3.0,  4.0,  5.0,  6.0,  7.0,  8.0,
@@ -1439,7 +1438,7 @@ void test_limiting_2_2_2_coefficient(const F& helper) noexcept {
 }
 
 template <typename F>
-void test_limiting_2_2_1_coefficient(const F& helper) noexcept {
+void test_limiting_2_2_1_coefficient(const F& helper) {
   // Limit (2,2,1) because +(1,2,1)
   helper({0.0,  1.0,   2.0,  3.0,  4.0,  5.0, 6.0,  3.0,  3.0,
           9.0,  10.0,  11.0, 12.0, 13.0, 2.0, 15.0, -1.1, 4.1,
@@ -1790,7 +1789,7 @@ void test_limiting_2_2_1_coefficient(const F& helper) noexcept {
 }
 
 template <typename F>
-void test_limiting_2_1_2_coefficient(const F& helper) noexcept {
+void test_limiting_2_1_2_coefficient(const F& helper) {
   // Limit (2,1,2) because +(1,1,2)
   helper({0.0,  1.0,   2.0,  3.0,  4.0,   5.0, 6.0,  3.0, 3.0,
           9.0,  10.0,  11.0, 12.0, 13.0,  2.0, 15.0, 3.0, 4.1,
@@ -2141,7 +2140,7 @@ void test_limiting_2_1_2_coefficient(const F& helper) noexcept {
 }
 
 template <typename F>
-void test_limiting_1_2_2_coefficient(const F& helper) noexcept {
+void test_limiting_1_2_2_coefficient(const F& helper) {
   // Limit (1,2,2) because +(0,2,2)
   helper({0.0,  1.0,   2.0,  3.0,  4.0,  5.0, 6.0,   3.0, 3.0,
           9.0,  10.0,  11.0, 12.0, 13.0, 2.0, 15.0,  3.0, 4.1,
@@ -2322,7 +2321,7 @@ void test_limiting_1_2_2_coefficient(const F& helper) noexcept {
 }
 
 template <typename F>
-void test_limiting_0_1_2_coefficient_permutations(const F& helper) noexcept {
+void test_limiting_0_1_2_coefficient_permutations(const F& helper) {
   // Limit (2,1,0) because -(2,0,0)
   helper({0.0,   10.0,  2.0,  3.0,   8.0,  5.0, 60.0,  3.0, 3.0,
           9.0,   100.0, 11.0, 120.0, 11.8, 2.0, -15.0, 3.0, 4.1,
@@ -2541,7 +2540,7 @@ void test_limiting_0_1_2_coefficient_permutations(const F& helper) noexcept {
           -2.0, 0.97 * 0.99, 0.5 * 0.99});
 }
 
-void test_limiting_different_values_different_tensors() noexcept {
+void test_limiting_different_values_different_tensors() {
   INFO("Testing different values for each tensor component");
   static constexpr size_t dim = 3;
   const size_t order = 2;  // Use only 3 coefficients because more is tedious...
@@ -2770,7 +2769,7 @@ void test_limiting_different_values_different_tensors() noexcept {
   }
 }
 
-void run() noexcept {
+void run() {
   INFO("Testing 3d limiter");
   test_package_data();
 
@@ -2829,7 +2828,7 @@ void run() noexcept {
           const ModalVector& up_zeta_coeffs, const ModalVector& initial_coeffs,
           const ModalVector& lo_xi_coeffs, const ModalVector& lo_eta_coeffs,
           const ModalVector& lo_zeta_coeffs,
-          const ModalVector& expected_coeffs) noexcept {
+          const ModalVector& expected_coeffs) {
         to_nodal_coefficients(&get(nodal_scalar_data_to_limit), initial_coeffs,
                               mesh);
         get(get<::Tags::Modal<ScalarTag<0>>>(

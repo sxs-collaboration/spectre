@@ -15,13 +15,11 @@
 
 namespace {
 // This is needed a lot, so define a shorter name.
-std::int64_t to64(const std::int32_t n) noexcept {
-  return static_cast<std::int64_t>(n);
-}
+std::int64_t to64(const std::int32_t n) { return static_cast<std::int64_t>(n); }
 
 template <typename IntType>
 std::tuple<std::int32_t, std::int32_t> reduce(IntType numerator,
-                                              IntType denominator) noexcept {
+                                              IntType denominator) {
   const IntType common_factor = boost::integer::gcd(numerator, denominator);
   numerator /= common_factor;
   denominator /= common_factor;
@@ -37,16 +35,16 @@ std::tuple<std::int32_t, std::int32_t> reduce(IntType numerator,
 }  // namespace
 
 Rational::Rational(const std::int32_t numerator,
-                   const std::int32_t denominator) noexcept {
+                   const std::int32_t denominator) {
   ASSERT(denominator != 0, "Division by zero");
   std::tie(numerator_, denominator_) = reduce(numerator, denominator);
 }
 
-double Rational::value() const noexcept {
+double Rational::value() const {
   return static_cast<double>(numerator_) / static_cast<double>(denominator_);
 }
 
-Rational Rational::inverse() const noexcept {
+Rational Rational::inverse() const {
   // Default construct to avoid the reduce() call.
   ASSERT(*this != 0, "Division by zero");
   Rational ret;
@@ -59,83 +57,75 @@ Rational Rational::inverse() const noexcept {
   return ret;
 }
 
-Rational& Rational::operator+=(const Rational& other) noexcept {
+Rational& Rational::operator+=(const Rational& other) {
   std::tie(numerator_, denominator_) =
       reduce(to64(numerator_) * to64(other.denominator_) +
              to64(denominator_) * to64(other.numerator_),
              to64(denominator_) * to64(other.denominator_));
   return *this;
 }
-Rational& Rational::operator-=(const Rational& other) noexcept {
+Rational& Rational::operator-=(const Rational& other) {
   return *this += -other;
 }
-Rational& Rational::operator*=(const Rational& other) noexcept {
+Rational& Rational::operator*=(const Rational& other) {
   std::tie(numerator_, denominator_) =
       reduce(to64(numerator_) * to64(other.numerator()),
              to64(denominator_) * to64(other.denominator()));
   return *this;
 }
-Rational& Rational::operator/=(const Rational& other) noexcept {
+Rational& Rational::operator/=(const Rational& other) {
   return *this *= other.inverse();
 }
 
-void Rational::pup(PUP::er& p) noexcept {
+void Rational::pup(PUP::er& p) {
   p | numerator_;
   p | denominator_;
 }
 
-Rational operator-(Rational r) noexcept {
+Rational operator-(Rational r) {
   // No reduced-form check needed
   r.numerator_ = -r.numerator_;
   return r;
 }
 
-Rational operator+(const Rational& a, const Rational& b) noexcept {
+Rational operator+(const Rational& a, const Rational& b) {
   Rational ret = a;
   ret += b;
   return ret;
 }
-Rational operator-(const Rational& a, const Rational& b) noexcept {
+Rational operator-(const Rational& a, const Rational& b) {
   Rational ret = a;
   ret -= b;
   return ret;
 }
-Rational operator*(const Rational& a, const Rational& b) noexcept {
+Rational operator*(const Rational& a, const Rational& b) {
   Rational ret = a;
   ret *= b;
   return ret;
 }
-Rational operator/(const Rational& a, const Rational& b) noexcept {
+Rational operator/(const Rational& a, const Rational& b) {
   Rational ret = a;
   ret /= b;
   return ret;
 }
 
-bool operator==(const Rational& a, const Rational& b) noexcept {
+bool operator==(const Rational& a, const Rational& b) {
   return a.numerator() == b.numerator() and a.denominator() == b.denominator();
 }
-bool operator!=(const Rational& a, const Rational& b) noexcept {
-  return not (a == b);
-}
-bool operator<(const Rational& a, const Rational& b) noexcept {
+bool operator!=(const Rational& a, const Rational& b) { return not(a == b); }
+bool operator<(const Rational& a, const Rational& b) {
   return to64(a.numerator()) * to64(b.denominator()) <
          to64(b.numerator()) * to64(a.denominator());
 }
-bool operator>(const Rational& a, const Rational& b) noexcept {
-  return b < a;
-}
-bool operator<=(const Rational& a, const Rational& b) noexcept {
-  return not (b < a);
-}
-bool operator>=(const Rational& a, const Rational& b) noexcept {
-  return not (a < b);
-}
+bool operator>(const Rational& a, const Rational& b) { return b < a; }
+bool operator<=(const Rational& a, const Rational& b) { return not(b < a); }
+bool operator>=(const Rational& a, const Rational& b) { return not(a < b); }
 
-std::ostream& operator<<(std::ostream& os, const Rational& r) noexcept {
+std::ostream& operator<<(std::ostream& os, const Rational& r) {
   return os << r.numerator() << '/' << r.denominator();
 }
 
-size_t hash_value(const Rational& r) noexcept {
+size_t hash_value(const Rational& r) {
   size_t h = 0;
   boost::hash_combine(h, r.numerator());
   boost::hash_combine(h, r.denominator());
@@ -144,7 +134,7 @@ size_t hash_value(const Rational& r) noexcept {
 
 // clang-tidy: do not modify std namespace (okay for hash)
 namespace std {  // NOLINT
-size_t hash<Rational>::operator()(const Rational& r) const noexcept {
+size_t hash<Rational>::operator()(const Rational& r) const {
   return boost::hash<Rational>{}(r);
 }
 }  // namespace std

@@ -25,17 +25,17 @@ class MakeString {
   ~MakeString() = default;
 
   // NOLINTNEXTLINE(google-explicit-constructor)
-  operator std::string() const noexcept { return stream_.str(); }
+  operator std::string() const { return stream_.str(); }
 
   template <class T>
-  friend MakeString operator<<(MakeString&& ms, const T& t) noexcept {
+  friend MakeString operator<<(MakeString&& ms, const T& t) {
     // clang-tidy: can get unintentional pointer casts
     ms.stream_ << t;  // NOLINT
     return std::move(ms);
   }
 
   template <class T>
-  friend MakeString& operator<<(MakeString& ms, const T& t) noexcept {
+  friend MakeString& operator<<(MakeString& ms, const T& t) {
     // clang-tidy: can get unintentional pointer casts
     ms.stream_ << t;  // NOLINT
     return ms;
@@ -45,7 +45,6 @@ class MakeString {
   std::stringstream stream_{};
 };
 
-inline std::ostream& operator<<(std::ostream& os,
-                                const MakeString& t) noexcept {
+inline std::ostream& operator<<(std::ostream& os, const MakeString& t) {
   return os << std::string{t};
 }

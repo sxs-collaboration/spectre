@@ -12,7 +12,7 @@
 namespace {
 template <int>
 struct StrangeComparison {
-  explicit StrangeComparison(const int v) noexcept : value(v) {}
+  explicit StrangeComparison(const int v) : value(v) {}
   StrangeComparison(const StrangeComparison&) = delete;
   StrangeComparison(StrangeComparison&&) = default;
   StrangeComparison& operator=(const StrangeComparison&) = delete;
@@ -21,8 +21,7 @@ struct StrangeComparison {
   int value;
 };
 
-bool operator==(const StrangeComparison<1>& x,
-                const StrangeComparison<1>& y) noexcept {
+bool operator==(const StrangeComparison<1>& x, const StrangeComparison<1>& y) {
   return x.value == y.value;
 }
 
@@ -31,7 +30,7 @@ bool operator==(const StrangeComparison<1>& x,
 // this with I1 == I2, so we don't have to handle that.)
 template <int I1, int I2>
 const StrangeComparison<std::min(I1, I2)>& operator<(
-    const StrangeComparison<I1>& x, const StrangeComparison<I2>& y) noexcept {
+    const StrangeComparison<I1>& x, const StrangeComparison<I2>& y) {
   if constexpr (I1 < I2) {
     return x;
   } else {
@@ -41,24 +40,24 @@ const StrangeComparison<std::min(I1, I2)>& operator<(
 
 template <int I1, int I2>
 decltype(auto) operator>(const StrangeComparison<I1>& x,
-                         const StrangeComparison<I2>& y) noexcept {
+                         const StrangeComparison<I2>& y) {
   return x < y;
 }
 
 template <int I1, int I2>
 decltype(auto) operator<=(const StrangeComparison<I1>& x,
-                          const StrangeComparison<I2>& y) noexcept {
+                          const StrangeComparison<I2>& y) {
   return x < y;
 }
 
 template <int I1, int I2>
 decltype(auto) operator>=(const StrangeComparison<I1>& x,
-                          const StrangeComparison<I2>& y) noexcept {
+                          const StrangeComparison<I2>& y) {
   return x < y;
 }
 
 template <typename EvOp, typename StdOp, typename Arg1, typename Arg2>
-void check_helper(const EvOp& ev_forward, const EvOp& ev_backward) noexcept {
+void check_helper(const EvOp& ev_forward, const EvOp& ev_backward) {
   CHECK(ev_forward(Arg1{1}, Arg2{2}) == StdOp{}(Arg1{1}, Arg2{2}));
   CHECK(ev_forward(Arg1{2}, Arg2{1}) == StdOp{}(Arg1{2}, Arg2{1}));
   CHECK(ev_forward(Arg1{1}, Arg2{1}) == StdOp{}(Arg1{1}, Arg2{1}));
@@ -69,7 +68,7 @@ void check_helper(const EvOp& ev_forward, const EvOp& ev_backward) noexcept {
 }
 
 template <template <typename...> class EvOp, template <typename...> class StdOp>
-void check_op() noexcept {
+void check_op() {
   {
     INFO("Concrete");
     check_helper<EvOp<int>, StdOp<int>, int, int>({true}, {false});

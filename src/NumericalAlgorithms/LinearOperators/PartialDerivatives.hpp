@@ -102,11 +102,11 @@ template <typename DerivativeTags, typename VariableTags, size_t Dim>
 void logical_partial_derivatives(
     gsl::not_null<std::array<Variables<DerivativeTags>, Dim>*>
         logical_partial_derivatives_of_u,
-    const Variables<VariableTags>& u, const Mesh<Dim>& mesh) noexcept;
+    const Variables<VariableTags>& u, const Mesh<Dim>& mesh);
 
 template <typename DerivativeTags, typename VariableTags, size_t Dim>
 auto logical_partial_derivatives(const Variables<VariableTags>& u,
-                                 const Mesh<Dim>& mesh) noexcept
+                                 const Mesh<Dim>& mesh)
     -> std::array<Variables<DerivativeTags>, Dim>;
 /// @}
 
@@ -132,8 +132,7 @@ void logical_partial_derivative(
         Frame::ElementLogical>*>
         logical_derivative_of_u,
     gsl::not_null<gsl::span<double>*> buffer,
-    const Tensor<DataVector, SymmList, IndexList>& u,
-    const Mesh<Dim>& mesh) noexcept;
+    const Tensor<DataVector, SymmList, IndexList>& u, const Mesh<Dim>& mesh);
 
 template <typename SymmList, typename IndexList, size_t Dim>
 void logical_partial_derivative(
@@ -141,13 +140,11 @@ void logical_partial_derivative(
         Tensor<DataVector, SymmList, IndexList>, Dim, UpLo::Lo,
         Frame::ElementLogical>*>
         logical_derivative_of_u,
-    const Tensor<DataVector, SymmList, IndexList>& u,
-    const Mesh<Dim>& mesh) noexcept;
+    const Tensor<DataVector, SymmList, IndexList>& u, const Mesh<Dim>& mesh);
 
 template <typename SymmList, typename IndexList, size_t Dim>
 auto logical_partial_derivative(
-    const Tensor<DataVector, SymmList, IndexList>& u,
-    const Mesh<Dim>& mesh) noexcept
+    const Tensor<DataVector, SymmList, IndexList>& u, const Mesh<Dim>& mesh)
     -> TensorMetafunctions::prepend_spatial_index<
         Tensor<DataVector, SymmList, IndexList>, Dim, UpLo::Lo,
         Frame::ElementLogical>;
@@ -173,7 +170,7 @@ void partial_derivatives(
     const std::array<Variables<DerivativeTags>, Dim>&
         logical_partial_derivatives_of_u,
     const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
-                          DerivativeFrame>& inverse_jacobian) noexcept;
+                          DerivativeFrame>& inverse_jacobian);
 
 template <typename DerivativeTags, typename VariableTags, size_t Dim,
           typename DerivativeFrame>
@@ -183,14 +180,14 @@ void partial_derivatives(
         du,
     const Variables<VariableTags>& u, const Mesh<Dim>& mesh,
     const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
-                          DerivativeFrame>& inverse_jacobian) noexcept;
+                          DerivativeFrame>& inverse_jacobian);
 
 template <typename DerivativeTags, typename VariableTags, size_t Dim,
           typename DerivativeFrame>
 auto partial_derivatives(
     const Variables<VariableTags>& u, const Mesh<Dim>& mesh,
     const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
-                          DerivativeFrame>& inverse_jacobian) noexcept
+                          DerivativeFrame>& inverse_jacobian)
     -> Variables<db::wrap_tags_in<Tags::deriv, DerivativeTags,
                                   tmpl::size_t<Dim>, DerivativeFrame>>;
 /// @}

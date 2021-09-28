@@ -12,7 +12,7 @@
 /// invoking `get_clone()` on each element of the input map.
 template <typename KeyType, typename T>
 std::unordered_map<KeyType, std::unique_ptr<T>> clone_unique_ptrs(
-    const std::unordered_map<KeyType, std::unique_ptr<T>>& map) noexcept {
+    const std::unordered_map<KeyType, std::unique_ptr<T>>& map) {
   std::unordered_map<KeyType, std::unique_ptr<T>> result{};
   for (const auto& kv : map) {
     result[kv.first] = kv.second->get_clone();
@@ -25,7 +25,7 @@ std::unordered_map<KeyType, std::unique_ptr<T>> clone_unique_ptrs(
 /// invoking `get_clone()` on each element of the input vector.
 template <typename T>
 std::vector<std::unique_ptr<T>> clone_unique_ptrs(
-    const std::vector<std::unique_ptr<T>>& vector) noexcept {
+    const std::vector<std::unique_ptr<T>>& vector) {
   std::vector<std::unique_ptr<T>> result{vector.size()};
   for (size_t i = 0; i < vector.size(); ++i) {
     result[i] = vector[i]->get_clone();

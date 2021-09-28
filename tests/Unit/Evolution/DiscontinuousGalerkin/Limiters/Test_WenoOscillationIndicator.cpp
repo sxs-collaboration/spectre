@@ -16,7 +16,7 @@
 
 namespace {
 
-void test_derivative_weight() noexcept {
+void test_derivative_weight() {
   INFO("Testing DerivativeWeight");
 
   CHECK(get_output(Limiters::Weno_detail::DerivativeWeight::Unity) == "Unity");
@@ -28,9 +28,8 @@ void test_derivative_weight() noexcept {
       "PowTwoEllOverEllFactorial");
 }
 
-void test_oscillation_indicator_1d_impl(
-    const size_t number_of_points,
-    const Spectral::Quadrature quadrature) noexcept {
+void test_oscillation_indicator_1d_impl(const size_t number_of_points,
+                                        const Spectral::Quadrature quadrature) {
   // Sanity check there are enough grid points to resolve test function
   if (number_of_points < 5) {
     ERROR("test_oscillation_indicator_1d_impl needs 5+ grid points");
@@ -68,7 +67,7 @@ void test_oscillation_indicator_1d_impl(
   CHECK(indicator3 == approx(expected3));
 }
 
-void test_oscillation_indicator_1d() noexcept {
+void test_oscillation_indicator_1d() {
   INFO("Testing oscillation_indicator in 1D");
   // Call with multiple resolutions to verify that the caching of the indicator
   // matrix correctly accounts for the input mesh
@@ -78,8 +77,7 @@ void test_oscillation_indicator_1d() noexcept {
   test_oscillation_indicator_1d_impl(6, Spectral::Quadrature::Gauss);
 }
 
-void test_oscillation_indicator_2d_impl(
-    const Spectral::Quadrature quadrature) noexcept {
+void test_oscillation_indicator_2d_impl(const Spectral::Quadrature quadrature) {
   CAPTURE(quadrature);
   const Mesh<2> mesh({{4, 5}}, Spectral::Basis::Legendre, quadrature);
   const auto logical_coords = logical_coordinates(mesh);
@@ -117,14 +115,13 @@ void test_oscillation_indicator_2d_impl(
   CHECK(indicator3 == approx(expected3));
 }
 
-void test_oscillation_indicator_2d() noexcept {
+void test_oscillation_indicator_2d() {
   INFO("Testing oscillation_indicator in 2D");
   test_oscillation_indicator_2d_impl(Spectral::Quadrature::GaussLobatto);
   test_oscillation_indicator_2d_impl(Spectral::Quadrature::Gauss);
 }
 
-void test_oscillation_indicator_3d_impl(
-    const Spectral::Quadrature quadrature) noexcept {
+void test_oscillation_indicator_3d_impl(const Spectral::Quadrature quadrature) {
   CAPTURE(quadrature);
   const Mesh<3> mesh({{4, 3, 5}}, Spectral::Basis::Legendre, quadrature);
   const auto logical_coords = logical_coordinates(mesh);
@@ -170,7 +167,7 @@ void test_oscillation_indicator_3d_impl(
   CHECK(indicator3 == approx(expected3));
 }
 
-void test_oscillation_indicator_3d() noexcept {
+void test_oscillation_indicator_3d() {
   INFO("Testing oscillation_indicator in 3D");
   test_oscillation_indicator_3d_impl(Spectral::Quadrature::GaussLobatto);
   test_oscillation_indicator_3d_impl(Spectral::Quadrature::Gauss);

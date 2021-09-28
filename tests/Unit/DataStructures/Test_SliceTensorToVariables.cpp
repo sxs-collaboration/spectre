@@ -23,7 +23,7 @@
 
 namespace {
 template <typename VectorType>
-void test_variables_slice() noexcept {
+void test_variables_slice() {
   MAKE_GENERATOR(gen);
   UniformCustomDistribution<size_t> sdist{5, 10};
 

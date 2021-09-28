@@ -43,6 +43,6 @@ void reconstruct_from_weighted_sum(
     const std::unordered_map<
         std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, DataVector,
         boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
-        neighbor_polynomials) noexcept;
+        neighbor_polynomials);
 
 }  // namespace Limiters::Weno_detail

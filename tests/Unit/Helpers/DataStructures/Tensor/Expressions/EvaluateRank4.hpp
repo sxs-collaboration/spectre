@@ -52,7 +52,7 @@ namespace TestHelpers::TensorExpressions {
 template <typename DataType, typename RhsSymmetry,
           typename RhsTensorIndexTypeList, auto& TensorIndexA,
           auto& TensorIndexB, auto& TensorIndexC, auto& TensorIndexD>
-void test_evaluate_rank_4() noexcept {
+void test_evaluate_rank_4() {
   const size_t used_for_size = 5;
   Tensor<DataType, RhsSymmetry, RhsTensorIndexTypeList> R_abcd(used_for_size);
   std::iota(R_abcd.begin(), R_abcd.end(), 0.0);

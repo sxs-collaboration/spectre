@@ -50,7 +50,7 @@ void forward_to_time_deriv(
     const Scalar<DataVector>& rest_mass_density,
     const Scalar<DataVector>& specific_enthalpy,
     const tnsr::ii<DataVector, 3, Frame::Inertial>& extrinsic_curvature,
-    const double constraint_damping_parameter) noexcept {
+    const double constraint_damping_parameter) {
   get(*non_flux_terms_dt_tilde_d) = 0.0;
 
   Variables<

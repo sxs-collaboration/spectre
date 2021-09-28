@@ -19,18 +19,18 @@
 
 namespace {
 
-void test_create() noexcept {
+void test_create() {
   const auto sine_wave =
       TestHelpers::test_creation<ScalarAdvection::Solutions::Sinusoid>("");
   CHECK(sine_wave == ScalarAdvection::Solutions::Sinusoid());
 }
 
-void test_serialize() noexcept {
+void test_serialize() {
   ScalarAdvection::Solutions::Sinusoid sine_wave;
   test_serialization(sine_wave);
 }
 
-void test_move() noexcept {
+void test_move() {
   ScalarAdvection::Solutions::Sinusoid sine_wave;
   ScalarAdvection::Solutions::Sinusoid sine_wave_copy;
   test_move_semantics(std::move(sine_wave), sine_wave_copy);  //  NOLINT
@@ -43,7 +43,7 @@ struct SinusoidProxy : ScalarAdvection::Solutions::Sinusoid {
 
   template <typename DataType>
   tuples::tagged_tuple_from_typelist<variables_tags> retrieve_variables(
-      const tnsr::I<DataType, 1>& x, double t) const noexcept {
+      const tnsr::I<DataType, 1>& x, double t) const {
     return this->variables(x, t, variables_tags{});
   }
 };

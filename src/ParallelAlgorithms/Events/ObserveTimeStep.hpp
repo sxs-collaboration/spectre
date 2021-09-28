@@ -64,8 +64,7 @@ struct FormatTimeOutput
                          const double /* max_time_step */,
                          const double /* effective_time_step */,
                          const double min_wall_time,
-                         const double max_wall_time) const
-      noexcept {
+                         const double max_wall_time) const {
     std::stringstream ss;
     ss  << "Simulation time: " << std::to_string(time)
         << "\n  Wall time: " << std::to_string(min_wall_time)
@@ -74,7 +73,7 @@ struct FormatTimeOutput
     return ss.str();
   }
   // NOLINTNEXTLINE
-  void pup(PUP::er& /*p*/) noexcept {}
+  void pup(PUP::er& /*p*/) {}
 };
 }  // namespace detail
 
@@ -131,7 +130,7 @@ class ObserveTimeStep : public Event {
   };
 
   /// \cond
-  explicit ObserveTimeStep(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit ObserveTimeStep(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ObserveTimeStep);  // NOLINT
   /// \endcond
@@ -156,8 +155,7 @@ class ObserveTimeStep : public Event {
 
   ObserveTimeStep() = default;
   explicit ObserveTimeStep(const std::string& subfile_name,
-                           const bool output_time,
-                           const bool observe_per_core) noexcept;
+                           const bool output_time, const bool observe_per_core);
 
   using observed_reduction_data_tags =
       observers::make_reduction_data_tags<tmpl::list<ReductionData>>;
@@ -173,7 +171,7 @@ class ObserveTimeStep : public Event {
                   const typename System::variables_tag::type& variables,
                   Parallel::GlobalCache<Metavariables>& cache,
                   const ArrayIndex& array_index,
-                  const ParallelComponent* const /*meta*/) const noexcept {
+                  const ParallelComponent* const /*meta*/) const {
     const size_t number_of_grid_points = variables.number_of_grid_points();
     const double slab_size = time_step.slab().duration().value();
     const double step_size = abs(time_step.value());
@@ -204,7 +202,7 @@ class ObserveTimeStep : public Event {
 
   using observation_registration_tags = tmpl::list<>;
   std::pair<observers::TypeOfObservation, observers::ObservationKey>
-  get_observation_type_and_key_for_registration() const noexcept {
+  get_observation_type_and_key_for_registration() const {
     return {observers::TypeOfObservation::Reduction,
             observers::ObservationKey(subfile_path_ + ".dat")};
   }
@@ -214,11 +212,11 @@ class ObserveTimeStep : public Event {
   template <typename Metavariables, typename ArrayIndex, typename Component>
   bool is_ready(Parallel::GlobalCache<Metavariables>& /*cache*/,
                 const ArrayIndex& /*array_index*/,
-                const Component* const /*meta*/) const noexcept {
+                const Component* const /*meta*/) const {
     return true;
   }
 
-  bool needs_evolved_variables() const noexcept override { return false; }
+  bool needs_evolved_variables() const override { return false; }
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override {
@@ -237,7 +235,7 @@ class ObserveTimeStep : public Event {
 template <typename System>
 ObserveTimeStep<System>::ObserveTimeStep(const std::string& subfile_name,
                                          const bool output_time,
-                                         const bool observe_per_core) noexcept
+                                         const bool observe_per_core)
     : subfile_path_("/" + subfile_name),
       output_time_(output_time),
       observe_per_core_(observe_per_core) {}

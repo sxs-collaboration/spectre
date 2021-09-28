@@ -153,7 +153,7 @@ void test_wedge2d_all_orientations(const bool with_equiangular_map) {
   }
 }
 
-void test_wedge2d_fail() noexcept {
+void test_wedge2d_fail() {
   INFO("Wedge2d fail");
   const auto map = Wedge2D(0.2, 4.0, 0.0, 1.0, OrientationMap<2>{}, true);
 

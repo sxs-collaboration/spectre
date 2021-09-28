@@ -14,12 +14,12 @@ struct Inertial;
 namespace GeneralizedHarmonic::ConstraintDamping {
 namespace {
 template <size_t Dim, typename Fr>
-void register_damping_functions_with_charm() noexcept {
+void register_damping_functions_with_charm() {
   Parallel::register_derived_classes_with_charm<DampingFunction<Dim, Fr>>();
 }
 }  // namespace
 
-void register_derived_with_charm() noexcept {
+void register_derived_with_charm() {
   register_damping_functions_with_charm<1, Frame::Grid>();
   register_damping_functions_with_charm<2, Frame::Grid>();
   register_damping_functions_with_charm<3, Frame::Grid>();

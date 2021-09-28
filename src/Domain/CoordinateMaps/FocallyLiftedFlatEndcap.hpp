@@ -153,7 +153,7 @@ namespace domain::CoordinateMaps::FocallyLiftedInnerMaps {
  */
 class FlatEndcap {
  public:
-  FlatEndcap(const std::array<double, 3>& center, double radius) noexcept;
+  FlatEndcap(const std::array<double, 3>& center, double radius);
 
   FlatEndcap() = default;
   ~FlatEndcap() = default;
@@ -166,61 +166,60 @@ class FlatEndcap {
   void forward_map(
       const gsl::not_null<std::array<tt::remove_cvref_wrap_t<T>, 3>*>
           target_coords,
-      const std::array<T, 3>& source_coords) const noexcept;
+      const std::array<T, 3>& source_coords) const;
 
   std::optional<std::array<double, 3>> inverse(
-      const std::array<double, 3>& target_coords,
-      double sigma_in) const noexcept;
+      const std::array<double, 3>& target_coords, double sigma_in) const;
 
   template <typename T>
   void jacobian(const gsl::not_null<
                     tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>*>
                     jacobian_out,
-                const std::array<T, 3>& source_coords) const noexcept;
+                const std::array<T, 3>& source_coords) const;
 
   template <typename T>
   void inv_jacobian(const gsl::not_null<tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3,
                                                  Frame::NoFrame>*>
                         inv_jacobian_out,
-                    const std::array<T, 3>& source_coords) const noexcept;
+                    const std::array<T, 3>& source_coords) const;
 
   template <typename T>
   void sigma(const gsl::not_null<tt::remove_cvref_wrap_t<T>*> sigma_out,
-             const std::array<T, 3>& source_coords) const noexcept;
+             const std::array<T, 3>& source_coords) const;
 
   template <typename T>
   void deriv_sigma(
       const gsl::not_null<std::array<tt::remove_cvref_wrap_t<T>, 3>*>
           deriv_sigma_out,
-      const std::array<T, 3>& source_coords) const noexcept;
+      const std::array<T, 3>& source_coords) const;
 
   template <typename T>
   void dxbar_dsigma(
       const gsl::not_null<std::array<tt::remove_cvref_wrap_t<T>, 3>*>
           dxbar_dsigma_out,
-      const std::array<T, 3>& source_coords) const noexcept;
+      const std::array<T, 3>& source_coords) const;
 
   std::optional<double> lambda_tilde(
       const std::array<double, 3>& parent_mapped_target_coords,
       const std::array<double, 3>& projection_point,
-      bool source_is_between_focus_and_target) const noexcept;
+      bool source_is_between_focus_and_target) const;
 
   template <typename T>
   void deriv_lambda_tilde(
       const gsl::not_null<std::array<tt::remove_cvref_wrap_t<T>, 3>*>
           deriv_lambda_tilde_out,
       const std::array<T, 3>& target_coords, const T& lambda_tilde,
-      const std::array<double, 3>& projection_point) const noexcept;
+      const std::array<double, 3>& projection_point) const;
 
   // clang-tidy: google runtime references
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
 
-  static bool is_identity() noexcept { return false; }
+  static bool is_identity() { return false; }
 
  private:
-  friend bool operator==(const FlatEndcap& lhs, const FlatEndcap& rhs) noexcept;
+  friend bool operator==(const FlatEndcap& lhs, const FlatEndcap& rhs);
   std::array<double, 3> center_{};
   double radius_{std::numeric_limits<double>::signaling_NaN()};
 };
-bool operator!=(const FlatEndcap& lhs, const FlatEndcap& rhs) noexcept;
+bool operator!=(const FlatEndcap& lhs, const FlatEndcap& rhs);
 }  // namespace domain::CoordinateMaps::FocallyLiftedInnerMaps

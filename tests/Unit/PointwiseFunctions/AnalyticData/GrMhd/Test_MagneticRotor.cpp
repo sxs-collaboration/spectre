@@ -45,20 +45,18 @@ struct MagneticRotorProxy : grmhd::AnalyticData::MagneticRotor {
 
   template <typename DataType>
   tuples::tagged_tuple_from_typelist<hydro_variables_tags<DataType>>
-  hydro_variables(const tnsr::I<DataType, 3, Frame::Inertial>& x) const
-      noexcept {
+  hydro_variables(const tnsr::I<DataType, 3, Frame::Inertial>& x) const {
     return variables(x, hydro_variables_tags<DataType>{});
   }
 
   template <typename DataType>
   tuples::tagged_tuple_from_typelist<grmhd_variables_tags<DataType>>
-  grmhd_variables(const tnsr::I<DataType, 3, Frame::Inertial>& x) const
-      noexcept {
+  grmhd_variables(const tnsr::I<DataType, 3, Frame::Inertial>& x) const {
     return variables(x, grmhd_variables_tags<DataType>{});
   }
 };
 
-void test_create_from_options() noexcept {
+void test_create_from_options() {
   const auto magnetic_rotor =
       TestHelpers::test_creation<grmhd::AnalyticData::MagneticRotor>(
           "RotorRadius: 0.1\n"
@@ -74,7 +72,7 @@ void test_create_from_options() noexcept {
                               1.6666666666666666));
 }
 
-void test_move() noexcept {
+void test_move() {
   grmhd::AnalyticData::MagneticRotor magnetic_rotor(
       0.1, 10.0, 1.0, 1.0, 9.95,
       std::array<double, 3>{{3.5449077018, 0.0, 0.0}}, 1.6666666666666666);
@@ -85,7 +83,7 @@ void test_move() noexcept {
                       magnetic_rotor_copy);  //  NOLINT
 }
 
-void test_serialize() noexcept {
+void test_serialize() {
   grmhd::AnalyticData::MagneticRotor magnetic_rotor(
       0.1, 10.0, 1.0, 1.0, 9.95,
       std::array<double, 3>{{3.5449077018, 0.0, 0.0}}, 1.6666666666666666);
@@ -93,7 +91,7 @@ void test_serialize() noexcept {
 }
 
 template <typename DataType>
-void test_variables(const DataType& used_for_size) noexcept {
+void test_variables(const DataType& used_for_size) {
   const double rotor_radius = 0.1;
   const double rotor_density = 10.0;
   const double background_density = 1.0;

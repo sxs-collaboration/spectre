@@ -14,7 +14,7 @@ namespace ScalarAdvection::Tags {
 template <size_t Dim>
 void LargestCharacteristicSpeedCompute<Dim>::function(
     const gsl::not_null<double*> speed,
-    const tnsr::I<DataVector, Dim>& velocity_field) noexcept {
+    const tnsr::I<DataVector, Dim>& velocity_field) {
   *speed = max(get(magnitude<DataVector>(velocity_field)));
 }
 
@@ -25,8 +25,7 @@ void LargestCharacteristicSpeedCompute<Dim>::function(
 #define INSTANTIATE(_, data)                                                  \
   template void ScalarAdvection::Tags::LargestCharacteristicSpeedCompute<DIM( \
       data)>::function(gsl::not_null<double*> speed,                          \
-                       const tnsr::I<DataVector, DIM(data)>&                  \
-                           velocity_field) noexcept;
+                       const tnsr::I<DataVector, DIM(data)>& velocity_field);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2))
 

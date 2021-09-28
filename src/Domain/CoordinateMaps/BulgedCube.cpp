@@ -25,7 +25,7 @@ class RootFunction {
  public:
   RootFunction(const double radius, const double sphericity,
                const double physical_r_squared, const double x_sq,
-               const double y_sq, const double z_sq) noexcept
+               const double y_sq, const double z_sq)
       : radius_(radius),
         sphericity_(sphericity),
         physical_r_squared_(physical_r_squared),
@@ -38,7 +38,7 @@ class RootFunction {
            "handled explicitly without call the root finder.");
   }
 
-  double operator()(const double rho) const noexcept {
+  double operator()(const double rho) const {
     const double x_sq_over_r_sq = x_sq_ / physical_r_squared_;
     const double y_sq_over_r_sq = y_sq_ / physical_r_squared_;
     const double z_sq_over_r_sq = z_sq_ / physical_r_squared_;
@@ -56,7 +56,7 @@ class RootFunction {
                      1.0 / sqrt(2.0 + square(rho) * y_sq_over_r_sq) -
                      1.0 / sqrt(2.0 + square(rho) * z_sq_over_r_sq)));
   }
-  double get_r_sq() const noexcept { return physical_r_squared_; }
+  double get_r_sq() const { return physical_r_squared_; }
 
  private:
   const double radius_;
@@ -67,7 +67,7 @@ class RootFunction {
   const double z_sq_;
 };
 
-std::optional<double> scaling_factor(RootFunction&& rootfunction) noexcept {
+std::optional<double> scaling_factor(RootFunction&& rootfunction) {
   const double physical_r_squared = rootfunction.get_r_sq();
   try {
     constexpr double tol = 10.0 * std::numeric_limits<double>::epsilon();
@@ -89,7 +89,7 @@ std::optional<double> scaling_factor(RootFunction&& rootfunction) noexcept {
 
 namespace domain::CoordinateMaps {
 BulgedCube::BulgedCube(const double radius, const double sphericity,
-                       const bool use_equiangular_map) noexcept
+                       const bool use_equiangular_map)
     : radius_(radius),
       sphericity_(sphericity),
       use_equiangular_map_(use_equiangular_map),
@@ -102,11 +102,11 @@ BulgedCube::BulgedCube(const double radius, const double sphericity,
 
 template <typename T>
 std::array<tt::remove_cvref_wrap_t<T>, 3> BulgedCube::operator()(
-    const std::array<T, 3>& source_coords) const noexcept {
+    const std::array<T, 3>& source_coords) const {
   using ReturnType = tt::remove_cvref_wrap_t<T>;
-  const auto physical_coordinates = [this](
-      const ReturnType& cap_xi, const ReturnType& cap_eta,
-      const ReturnType& cap_zeta) noexcept {
+  const auto physical_coordinates = [this](const ReturnType& cap_xi,
+                                           const ReturnType& cap_eta,
+                                           const ReturnType& cap_zeta) {
     const auto one_over_rho_xi = 1.0 / sqrt(2.0 + square(cap_xi));
     const auto one_over_rho_eta = 1.0 / sqrt(2.0 + square(cap_eta));
     const auto one_over_rho_zeta = 1.0 / sqrt(2.0 + square(cap_zeta));
@@ -154,7 +154,7 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> BulgedCube::operator()(
 }
 
 std::optional<std::array<double, 3>> BulgedCube::inverse(
-    const std::array<double, 3>& target_coords) const noexcept {
+    const std::array<double, 3>& target_coords) const {
   const double& physical_x = target_coords[0];
   const double& physical_y = target_coords[1];
   const double& physical_z = target_coords[2];
@@ -190,7 +190,7 @@ std::optional<std::array<double, 3>> BulgedCube::inverse(
 
 template <typename T>
 std::array<tt::remove_cvref_wrap_t<T>, 3> BulgedCube::xi_derivative(
-    const std::array<T, 3>& source_coords) const noexcept {
+    const std::array<T, 3>& source_coords) const {
   using ReturnType = tt::remove_cvref_wrap_t<T>;
   const auto derivative_lambda = [this](
       const ReturnType& cap_xi, const ReturnType& cap_eta,
@@ -239,7 +239,7 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> BulgedCube::xi_derivative(
 
 template <typename T>
 tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> BulgedCube::jacobian(
-    const std::array<T, 3>& source_coords) const noexcept {
+    const std::array<T, 3>& source_coords) const {
   const auto dX_dxi = xi_derivative(source_coords);
   const auto dX_deta = xi_derivative(
       std::array<std::reference_wrapper<const tt::remove_cvref_wrap_t<T>>, 3>{
@@ -269,40 +269,40 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> BulgedCube::jacobian(
 
 template <typename T>
 tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>
-BulgedCube::inv_jacobian(const std::array<T, 3>& source_coords) const noexcept {
+BulgedCube::inv_jacobian(const std::array<T, 3>& source_coords) const {
   const auto jac = jacobian(source_coords);
   return determinant_and_inverse(jac).second;
 }
 
-void BulgedCube::pup(PUP::er& p) noexcept {
+void BulgedCube::pup(PUP::er& p) {
   p | radius_;
   p | sphericity_;
   p | use_equiangular_map_;
   p | is_identity_;
 }
 
-bool operator==(const BulgedCube& lhs, const BulgedCube& rhs) noexcept {
+bool operator==(const BulgedCube& lhs, const BulgedCube& rhs) {
   return lhs.radius_ == rhs.radius_ and lhs.sphericity_ == rhs.sphericity_ and
          lhs.use_equiangular_map_ == rhs.use_equiangular_map_ and
          lhs.is_identity_ == rhs.is_identity_;
 }
 
-bool operator!=(const BulgedCube& lhs, const BulgedCube& rhs) noexcept {
+bool operator!=(const BulgedCube& lhs, const BulgedCube& rhs) {
   return not(lhs == rhs);
 }
 
 // Explicit instantiations
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                                  \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3> BulgedCube::   \
-  operator()(const std::array<DTYPE(data), 3>& source_coords) const noexcept; \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame>  \
-  BulgedCube::jacobian(const std::array<DTYPE(data), 3>& source_coords)       \
-      const noexcept;                                                         \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame>  \
-  BulgedCube::inv_jacobian(const std::array<DTYPE(data), 3>& source_coords)   \
-      const noexcept;
+#define INSTANTIATE(_, data)                                                   \
+  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>                 \
+  BulgedCube::operator()(const std::array<DTYPE(data), 3>& source_coords)      \
+      const;                                                                   \
+  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame>   \
+  BulgedCube::jacobian(const std::array<DTYPE(data), 3>& source_coords) const; \
+  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame>   \
+  BulgedCube::inv_jacobian(const std::array<DTYPE(data), 3>& source_coords)    \
+      const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector,
                                       std::reference_wrapper<const double>,

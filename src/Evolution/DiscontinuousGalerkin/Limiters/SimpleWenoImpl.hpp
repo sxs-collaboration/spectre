@@ -54,7 +54,7 @@ void simple_weno_impl(
     const std::unordered_map<
         std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
         boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
-        neighbor_data) noexcept {
+        neighbor_data) {
   // Check that basis is LGL or LG
   // Note that the SimpleWeno implementation should generalize well to other
   // bases beyond LGL or LG, once the oscillation_indicator function has been
@@ -139,7 +139,7 @@ void simple_weno_impl(
     const std::unordered_map<
         std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
         boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
-        neighbor_data) noexcept {
+        neighbor_data) {
   for (size_t tensor_storage_index = 0; tensor_storage_index < tensor->size();
        ++tensor_storage_index) {
     simple_weno_impl<Tag>(interpolator_buffer,

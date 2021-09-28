@@ -51,7 +51,7 @@ class ProductOf2Maps {
   // Needed for Charm++ serialization
   ProductOf2Maps() = default;
 
-  ProductOf2Maps(Map1 map1, Map2 map2) noexcept;
+  ProductOf2Maps(Map1 map1, Map2 map2);
 
   template <typename T>
   std::array<tt::remove_cvref_wrap_t<T>, dim> operator()(
@@ -59,7 +59,7 @@ class ProductOf2Maps {
       const std::unordered_map<
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-          functions_of_time) const noexcept;
+          functions_of_time) const;
 
   /// The inverse function is only callable with doubles because the inverse
   /// might fail if called for a point out of range, and it is unclear
@@ -70,7 +70,7 @@ class ProductOf2Maps {
       const std::unordered_map<
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-          functions_of_time) const noexcept;
+          functions_of_time) const;
 
   template <typename T>
   std::array<tt::remove_cvref_wrap_t<T>, dim> frame_velocity(
@@ -78,7 +78,7 @@ class ProductOf2Maps {
       const std::unordered_map<
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-          functions_of_time) const noexcept;
+          functions_of_time) const;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, dim, Frame::NoFrame> inv_jacobian(
@@ -86,7 +86,7 @@ class ProductOf2Maps {
       const std::unordered_map<
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-          functions_of_time) const noexcept;
+          functions_of_time) const;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, dim, Frame::NoFrame> jacobian(
@@ -94,18 +94,17 @@ class ProductOf2Maps {
       const std::unordered_map<
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-          functions_of_time) const noexcept;
+          functions_of_time) const;
 
   // clang-tidy: google-runtime-references
   void pup(PUP::er& p);  // NOLINT
 
-  bool is_identity() const noexcept {
+  bool is_identity() const {
     return map1_.is_identity() and map2_.is_identity();
   }
 
  private:
-  friend bool operator==(const ProductOf2Maps& lhs,
-                         const ProductOf2Maps& rhs) noexcept {
+  friend bool operator==(const ProductOf2Maps& lhs, const ProductOf2Maps& rhs) {
     return lhs.map1_ == rhs.map1_ and lhs.map2_ == rhs.map2_;
   }
 
@@ -115,7 +114,7 @@ class ProductOf2Maps {
 
 template <typename Map1, typename Map2>
 bool operator!=(const ProductOf2Maps<Map1, Map2>& lhs,
-                const ProductOf2Maps<Map1, Map2>& rhs) noexcept;
+                const ProductOf2Maps<Map1, Map2>& rhs);
 
 /// \ingroup CoordinateMapsGroup
 /// \brief Product of three one-dimensional CoordinateMaps.
@@ -136,7 +135,7 @@ class ProductOf3Maps {
   // Needed for Charm++ serialization
   ProductOf3Maps() = default;
 
-  ProductOf3Maps(Map1 map1, Map2 map2, Map3 map3) noexcept;
+  ProductOf3Maps(Map1 map1, Map2 map2, Map3 map3);
 
   template <typename T>
   std::array<tt::remove_cvref_wrap_t<T>, dim> operator()(
@@ -144,14 +143,14 @@ class ProductOf3Maps {
       const std::unordered_map<
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-          functions_of_time) const noexcept;
+          functions_of_time) const;
 
   std::optional<std::array<double, dim>> inverse(
       const std::array<double, dim>& target_coords, double time,
       const std::unordered_map<
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-          functions_of_time) const noexcept;
+          functions_of_time) const;
 
   template <typename T>
   std::array<tt::remove_cvref_wrap_t<T>, dim> frame_velocity(
@@ -159,7 +158,7 @@ class ProductOf3Maps {
       const std::unordered_map<
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-          functions_of_time) const noexcept;
+          functions_of_time) const;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, dim, Frame::NoFrame> inv_jacobian(
@@ -167,7 +166,7 @@ class ProductOf3Maps {
       const std::unordered_map<
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-          functions_of_time) const noexcept;
+          functions_of_time) const;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, dim, Frame::NoFrame> jacobian(
@@ -175,18 +174,17 @@ class ProductOf3Maps {
       const std::unordered_map<
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-          functions_of_time) const noexcept;
+          functions_of_time) const;
 
   // clang-tidy: google-runtime-references
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
 
-  bool is_identity() const noexcept {
+  bool is_identity() const {
     return map1_.is_identity() and map2_.is_identity() and map3_.is_identity();
   }
 
  private:
-  friend bool operator==(const ProductOf3Maps& lhs,
-                         const ProductOf3Maps& rhs) noexcept {
+  friend bool operator==(const ProductOf3Maps& lhs, const ProductOf3Maps& rhs) {
     return lhs.map1_ == rhs.map1_ and lhs.map2_ == rhs.map2_ and
            lhs.map3_ == rhs.map3_;
   }
@@ -198,7 +196,7 @@ class ProductOf3Maps {
 
 template <typename Map1, typename Map2, typename Map3>
 bool operator!=(const ProductOf3Maps<Map1, Map2, Map3>& lhs,
-                const ProductOf3Maps<Map1, Map2, Map3>& rhs) noexcept;
+                const ProductOf3Maps<Map1, Map2, Map3>& rhs);
 }  // namespace TimeDependent
 }  // namespace CoordinateMaps
 }  // namespace domain

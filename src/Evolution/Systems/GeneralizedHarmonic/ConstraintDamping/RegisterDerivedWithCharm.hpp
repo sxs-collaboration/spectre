@@ -4,5 +4,5 @@
 #pragma once
 
 namespace GeneralizedHarmonic::ConstraintDamping {
-void register_derived_with_charm() noexcept;
+void register_derived_with_charm();
 }  // namespace GeneralizedHarmonic::ConstraintDamping

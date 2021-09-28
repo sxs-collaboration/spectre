@@ -25,7 +25,7 @@ enum class UpLo {
 };
 
 /// \cond HIDDEN_SYMBOLS
-inline std::ostream& operator<<(std::ostream& os, const UpLo& ul) noexcept {
+inline std::ostream& operator<<(std::ostream& os, const UpLo& ul) {
   return os << (ul == UpLo::Up ? "Up"s : "Lo"s);
 }
 /// \endcond
@@ -75,31 +75,30 @@ constexpr bool is_frame_physical_v = is_frame_physical<CheckFrame>::value;
 
 /// \cond HIDDEN_SYMBOLS
 inline std::ostream& operator<<(std::ostream& os,
-                                const Frame::BlockLogical& /*meta*/) noexcept {
+                                const Frame::BlockLogical& /*meta*/) {
   return os << "BlockLogical";
 }
-inline std::ostream& operator<<(
-    std::ostream& os, const Frame::ElementLogical& /*meta*/) noexcept {
+inline std::ostream& operator<<(std::ostream& os,
+                                const Frame::ElementLogical& /*meta*/) {
   return os << "ElementLogical";
 }
 inline std::ostream& operator<<(std::ostream& os,
-                                const Frame::Logical& /*meta*/) noexcept {
+                                const Frame::Logical& /*meta*/) {
   return os << "Logical";
 }
-inline std::ostream& operator<<(std::ostream& os,
-                                const Frame::Grid& /*meta*/) noexcept {
+inline std::ostream& operator<<(std::ostream& os, const Frame::Grid& /*meta*/) {
   return os << "Grid";
 }
 inline std::ostream& operator<<(std::ostream& os,
-                                const Frame::Inertial& /*meta*/) noexcept {
+                                const Frame::Inertial& /*meta*/) {
   return os << "Inertial";
 }
 inline std::ostream& operator<<(std::ostream& os,
-                                const Frame::Distorted& /*meta*/) noexcept {
+                                const Frame::Distorted& /*meta*/) {
   return os << "Distorted";
 }
 inline std::ostream& operator<<(std::ostream& os,
-                                const Frame::NoFrame& /*meta*/) noexcept {
+                                const Frame::NoFrame& /*meta*/) {
   return os << "NoFrame";
 }
 /// \endcond
@@ -113,36 +112,36 @@ inline std::ostream& operator<<(std::ostream& os,
 /// \example
 /// \snippet Hydro/Test_Tags.cpp prefix_example
 template <typename Fr>
-inline std::string prefix() noexcept;
+inline std::string prefix();
 
 /// \cond HIDDEN_SYMBOLS
 template <>
-inline std::string prefix<Frame::BlockLogical>() noexcept {
+inline std::string prefix<Frame::BlockLogical>() {
   return "BlockLogical_";
 }
 
 template <>
-inline std::string prefix<Frame::ElementLogical>() noexcept {
+inline std::string prefix<Frame::ElementLogical>() {
   return "ElementLogical_";
 }
 
 template <>
-inline std::string prefix<Frame::Logical>() noexcept {
+inline std::string prefix<Frame::Logical>() {
   return "Logical_";
 }
 
 template <>
-inline std::string prefix<Frame::Grid>() noexcept {
+inline std::string prefix<Frame::Grid>() {
   return "Grid_";
 }
 
 template <>
-inline std::string prefix<Frame::Inertial>() noexcept {
+inline std::string prefix<Frame::Inertial>() {
   return "";
 }
 
 template <>
-inline std::string prefix<Frame::Distorted>() noexcept {
+inline std::string prefix<Frame::Distorted>() {
   return "Distorted_";
 }
 /// \endcond
@@ -159,8 +158,7 @@ enum class IndexType : char {
 };
 
 /// \cond HIDDEN_SYMBOLS
-inline std::ostream& operator<<(std::ostream& os,
-                                const IndexType& index_type) noexcept {
+inline std::ostream& operator<<(std::ostream& os, const IndexType& index_type) {
   return os << (index_type == IndexType::Spatial ? "Spatial" : "Spacetime");
 }
 /// \endcond

@@ -40,7 +40,7 @@ struct MockWriteSimpleData {
                     const gsl::not_null<Parallel::NodeLock*> /*node_lock*/,
                     const std::vector<std::string>& /*file_legend*/,
                     const std::vector<double>& data_row,
-                    const std::string& subfile_name) noexcept {
+                    const std::string& subfile_name) {
     data_set_name = subfile_name;
     output_news_data = data_row;
   }
@@ -53,7 +53,7 @@ struct TestCallWriteNews {
                 Tags::AnalyticBoundaryDataManager, DbTags>...>> = nullptr>
   static void apply(const db::DataBox<tmpl::list<DbTags...>>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
-                    const ArrayIndex& /*array_index*/) noexcept {
+                    const ArrayIndex& /*array_index*/) {
     db::get<Tags::AnalyticBoundaryDataManager>(box)
         .template write_news<ParallelComponent>(
             cache, db::get<::Tags::TimeStepId>(box).substep_time().value());
@@ -146,7 +146,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.AnalyticBoundaryDataManager",
   tmpl::for_each<
       Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>(
       [&boundary_variables_from_manager,
-       &expected_boundary_variables](auto tag_v) noexcept {
+       &expected_boundary_variables](auto tag_v) {
         using tag = typename decltype(tag_v)::type;
         CHECK_ITERABLE_APPROX(get<tag>(boundary_variables_from_manager),
                               get<tag>(expected_boundary_variables));

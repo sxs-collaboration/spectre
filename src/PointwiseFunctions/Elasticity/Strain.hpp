@@ -18,7 +18,7 @@ namespace Elasticity {
  */
 template <typename DataType, size_t Dim>
 void strain(gsl::not_null<tnsr::ii<DataType, Dim>*> strain,
-            const tnsr::iJ<DataType, Dim>& deriv_displacement) noexcept;
+            const tnsr::iJ<DataType, Dim>& deriv_displacement);
 
 /*!
  * \brief The symmetric strain \f$S_{ij} = \nabla_{(i} \gamma_{j)k} \xi^k =
@@ -31,7 +31,7 @@ void strain(gsl::not_null<tnsr::ii<DataType, Dim>*> strain,
             const tnsr::ii<DataType, Dim>& metric,
             const tnsr::ijj<DataType, Dim>& deriv_metric,
             const tnsr::ijj<DataType, Dim>& christoffel_first_kind,
-            const tnsr::I<DataType, Dim>& displacement) noexcept;
+            const tnsr::I<DataType, Dim>& displacement);
 
 /*!
  * \brief The symmetric strain \f$S_{ij} = \partial_{(i} \xi_{j)}\f$ on a flat
@@ -44,7 +44,7 @@ template <size_t Dim>
 void strain(gsl::not_null<tnsr::ii<DataVector, Dim>*> strain,
             const tnsr::I<DataVector, Dim>& displacement, const Mesh<Dim>& mesh,
             const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
-                                  Frame::Inertial>& inv_jacobian) noexcept;
+                                  Frame::Inertial>& inv_jacobian);
 
 namespace Tags {
 

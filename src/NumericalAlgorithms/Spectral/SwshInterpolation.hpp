@@ -34,7 +34,7 @@ class SpinWeightedSphericalHarmonic {
   // charm needs an empty constructor
   SpinWeightedSphericalHarmonic() = default;
 
-  SpinWeightedSphericalHarmonic(int spin, size_t l, int m) noexcept;
+  SpinWeightedSphericalHarmonic(int spin, size_t l, int m);
 
   /*!
    *  Return by pointer the values of the spin-weighted spherical harmonic
@@ -58,7 +58,7 @@ class SpinWeightedSphericalHarmonic {
   void evaluate(gsl::not_null<ComplexDataVector*> result,
                 const DataVector& theta, const DataVector& phi,
                 const DataVector& sin_theta_over_2,
-                const DataVector& cos_theta_over_2) const noexcept;
+                const DataVector& cos_theta_over_2) const;
 
   /// Return by value the spin-weighted spherical harmonic evaluated at `theta`
   /// and `phi`.
@@ -69,14 +69,14 @@ class SpinWeightedSphericalHarmonic {
   /// once.
   ComplexDataVector evaluate(const DataVector& theta, const DataVector& phi,
                              const DataVector& sin_theta_over_2,
-                             const DataVector& cos_theta_over_2) const noexcept;
+                             const DataVector& cos_theta_over_2) const;
 
   /// Return by value the spin-weighted spherical harmonic evaluated at `theta`
   /// and `phi`.
-  std::complex<double> evaluate(double theta, double phi) const noexcept;
+  std::complex<double> evaluate(double theta, double phi) const;
 
   /// Serialization for Charm++.
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
 
  private:
   int spin_ = 0;
@@ -238,10 +238,10 @@ class SwshInterpolator {
   SwshInterpolator(SwshInterpolator&&) = default;
   SwshInterpolator& operator=(const SwshInterpolator&) = default;
   SwshInterpolator& operator=(SwshInterpolator&&) = default;
-  ~SwshInterpolator() noexcept = default;
+  ~SwshInterpolator() = default;
 
   SwshInterpolator(const DataVector& theta, const DataVector& phi,
-                   size_t l_max) noexcept;
+                   size_t l_max);
 
   /*!
    * \brief Perform the Clenshaw recurrence sum, returning by pointer
@@ -271,8 +271,7 @@ class SwshInterpolator {
   template <int Spin>
   void interpolate(
       gsl::not_null<SpinWeighted<ComplexDataVector, Spin>*> interpolated,
-      const SpinWeighted<ComplexModalVector, Spin>& goldberg_modes) const
-      noexcept;
+      const SpinWeighted<ComplexModalVector, Spin>& goldberg_modes) const;
 
   /*!
    * \brief Perform the Clenshaw recurrence sum, returning by pointer
@@ -302,8 +301,7 @@ class SwshInterpolator {
   template <int Spin>
   void interpolate(
       gsl::not_null<SpinWeighted<ComplexDataVector, Spin>*> interpolated,
-      const SpinWeighted<ComplexDataVector, Spin>& libsharp_collocation) const
-      noexcept;
+      const SpinWeighted<ComplexDataVector, Spin>& libsharp_collocation) const;
 
   /// \brief Evaluate the SWSH function at the lowest \f$l\f$ value for a given
   /// \f$m\f$ at the target interpolation points.
@@ -314,7 +312,7 @@ class SwshInterpolator {
   template <int Spin>
   void direct_evaluation_swsh_at_l_min(
       gsl::not_null<SpinWeighted<ComplexDataVector, Spin>*> harmonic,
-      int m) const noexcept;
+      int m) const;
 
   /// \brief Evaluate the SWSH function at the next-to-lowest \f$l\f$ value for
   /// a given \f$m\f$ at the target interpolation points, given input harmonic
@@ -327,7 +325,7 @@ class SwshInterpolator {
   void evaluate_swsh_at_l_min_plus_one(
       gsl::not_null<SpinWeighted<ComplexDataVector, Spin>*> harmonic,
       const SpinWeighted<ComplexDataVector, Spin>& harmonic_at_l_min,
-      int m) const noexcept;
+      int m) const;
 
   /// \brief Evaluate the SWSH function at the lowest \f$l\f$ value for a given
   /// \f$m\f$ at the target interpolation points, given harmonic data at the
@@ -340,7 +338,7 @@ class SwshInterpolator {
   template <int Spin>
   void evaluate_swsh_m_recurrence_at_l_min(
       gsl::not_null<SpinWeighted<ComplexDataVector, Spin>*> harmonic,
-      int m) const noexcept;
+      int m) const;
 
   /// \brief Perform the core Clenshaw interpolation at fixed \f$m\f$,
   /// accumulating the result in `interpolation`.
@@ -352,11 +350,11 @@ class SwshInterpolator {
       gsl::not_null<SpinWeighted<ComplexDataVector, Spin>*> interpolation,
       const SpinWeighted<ComplexDataVector, Spin>& l_min_harmonic,
       const SpinWeighted<ComplexDataVector, Spin>& l_min_plus_one_harmonic,
-      const SpinWeighted<ComplexModalVector, Spin>& goldberg_modes, int m) const
-      noexcept;
+      const SpinWeighted<ComplexModalVector, Spin>& goldberg_modes,
+      int m) const;
 
   /// Serialization for Charm++.
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
 
  private:
   size_t l_max_ = 0;

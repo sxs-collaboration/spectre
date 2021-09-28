@@ -40,15 +40,15 @@ class StellarCollapseEos : public h5::Object {
   /// \cond
   // The root-level HDF5 group in the SRO Equation of State files does not
   // have an extension in its group name
-  static std::string extension() noexcept { return ""; }
+  static std::string extension() { return ""; }
 
   StellarCollapseEos(bool exists, detail::OpenGroup&& group, hid_t location,
-                     const std::string& /*name*/) noexcept;
+                     const std::string& /*name*/);
 
   StellarCollapseEos(const StellarCollapseEos& /*rhs*/) = delete;
   StellarCollapseEos& operator=(const StellarCollapseEos& /*rhs*/) = delete;
-  StellarCollapseEos(StellarCollapseEos&& /*rhs*/) noexcept = delete;
-  StellarCollapseEos& operator=(StellarCollapseEos&& /*rhs*/) noexcept = delete;
+  StellarCollapseEos(StellarCollapseEos&& /*rhs*/) = delete;
+  StellarCollapseEos& operator=(StellarCollapseEos&& /*rhs*/) = delete;
 
   ~StellarCollapseEos() override = default;
   /// \endcond
@@ -58,21 +58,20 @@ class StellarCollapseEos : public h5::Object {
    * \brief reads a rank-0 dataset (contains only one element)
    */
   template <typename T>
-  T get_scalar_dataset(const std::string& dataset_name) const noexcept;
+  T get_scalar_dataset(const std::string& dataset_name) const;
 
   /*!
    * \ingroup HDF5Group
    * \brief reads a dataset with elements along 1 dimension
    */
-  std::vector<double> get_rank1_dataset(const std::string& dataset_name) const
-      noexcept;
+  std::vector<double> get_rank1_dataset(const std::string& dataset_name) const;
 
   /*!
    * \ingroup HDF5Group
    * \brief reads a dataset with elements along 3 dimensions
    */
   boost::multi_array<double, 3> get_rank3_dataset(
-      const std::string& dataset_name) const noexcept;
+      const std::string& dataset_name) const;
 
  private:
   detail::OpenGroup root_group_;

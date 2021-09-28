@@ -33,7 +33,7 @@ void InitializeOverlapGeometry<Dim>::operator()(
     const Element<Dim>& element, const Mesh<Dim>& mesh,
     const std::vector<std::array<size_t, Dim>>& initial_extents,
     const ElementId<Dim>& element_id, const Direction<Dim>& overlap_direction,
-    const size_t max_overlap) const noexcept {
+    const size_t max_overlap) const {
   const Spectral::Quadrature quadrature = mesh.quadrature(0);
   // Extruding extent
   *extruding_extent = LinearSolver::Schwarz::overlap_extent(

@@ -25,6 +25,6 @@ namespace elliptic::dg {
  * see section 7.2 in \cite HesthavenWarburton.
  */
 DataVector penalty(const DataVector& element_size, size_t num_points,
-                   double penalty_parameter) noexcept;
+                   double penalty_parameter);
 
 }  // namespace elliptic::dg

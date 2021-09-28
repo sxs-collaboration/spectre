@@ -23,7 +23,7 @@ template <size_t Dim>
 void MortarData<Dim>::insert_local_mortar_data(
     TimeStepId time_step_id, Mesh<Dim - 1> local_interface_mesh,
     // NOLINTNEXTLINE(performance-unnecessary-value-param)
-    std::vector<double> local_mortar_vars) noexcept {
+    std::vector<double> local_mortar_vars) {
   // clang-tidy can't figure out that `vars` is moved below
   ASSERT(not local_mortar_data_, "Already received local data at "
                                      << time_step_id << " with interface mesh "
@@ -42,7 +42,7 @@ template <size_t Dim>
 void MortarData<Dim>::insert_neighbor_mortar_data(
     TimeStepId time_step_id, Mesh<Dim - 1> neighbor_interface_mesh,
     // NOLINTNEXTLINE(performance-unnecessary-value-param)
-    std::vector<double> neighbor_mortar_vars) noexcept {
+    std::vector<double> neighbor_mortar_vars) {
   // clang-tidy can't figure out that `vars` is moved below
   ASSERT(not neighbor_mortar_data_, "Already received neighbor data at "
                                         << time_step_id
@@ -62,7 +62,7 @@ template <size_t Dim>
 void MortarData<Dim>::insert_local_geometric_quantities(
     const Scalar<DataVector>& local_volume_det_inv_jacobian,
     const Scalar<DataVector>& local_face_det_jacobian,
-    const Scalar<DataVector>& local_face_normal_magnitude) noexcept {
+    const Scalar<DataVector>& local_face_normal_magnitude) {
   ASSERT(local_mortar_data_.has_value(),
          "Must set local mortar data before setting the geometric quantities.");
   ASSERT(local_face_det_jacobian[0].size() ==
@@ -107,7 +107,7 @@ void MortarData<Dim>::insert_local_geometric_quantities(
 
 template <size_t Dim>
 void MortarData<Dim>::insert_local_face_normal_magnitude(
-    const Scalar<DataVector>& local_face_normal_magnitude) noexcept {
+    const Scalar<DataVector>& local_face_normal_magnitude) {
   ASSERT(local_mortar_data_.has_value(),
          "Must set local mortar data before setting the local face normal.");
   ASSERT(not using_volume_and_face_jacobians_,
@@ -127,7 +127,7 @@ void MortarData<Dim>::insert_local_face_normal_magnitude(
 template <size_t Dim>
 void MortarData<Dim>::get_local_volume_det_inv_jacobian(
     const gsl::not_null<Scalar<DataVector>*> local_volume_det_inv_jacobian)
-    const noexcept {
+    const {
   ASSERT(local_mortar_data_.has_value(),
          "Must set local mortar data before getting the local volume inverse "
          "Jacobian determinant.");
@@ -155,8 +155,7 @@ void MortarData<Dim>::get_local_volume_det_inv_jacobian(
 
 template <size_t Dim>
 void MortarData<Dim>::get_local_face_det_jacobian(
-    const gsl::not_null<Scalar<DataVector>*> local_face_det_jacobian)
-    const noexcept {
+    const gsl::not_null<Scalar<DataVector>*> local_face_det_jacobian) const {
   ASSERT(local_mortar_data_.has_value(),
          "Must set local mortar data before getting the local face Jacobian "
          "determinant.");
@@ -185,7 +184,7 @@ void MortarData<Dim>::get_local_face_det_jacobian(
 template <size_t Dim>
 void MortarData<Dim>::get_local_face_normal_magnitude(
     const gsl::not_null<Scalar<DataVector>*> local_face_normal_magnitude)
-    const noexcept {
+    const {
   ASSERT(local_mortar_data_.has_value(),
          "Must set local mortar data before getting the local face normal "
          "magnitude.");
@@ -207,7 +206,7 @@ void MortarData<Dim>::get_local_face_normal_magnitude(
 template <size_t Dim>
 std::pair<std::pair<Mesh<Dim - 1>, std::vector<double>>,
           std::pair<Mesh<Dim - 1>, std::vector<double>>>
-MortarData<Dim>::extract() noexcept {
+MortarData<Dim>::extract() {
   ASSERT(local_mortar_data_ and neighbor_mortar_data_,
          "Tried to extract boundary data, but do not have "
              << (local_mortar_data_      ? "neighbor"
@@ -222,7 +221,7 @@ MortarData<Dim>::extract() noexcept {
 }
 
 template <size_t Dim>
-void MortarData<Dim>::pup(PUP::er& p) noexcept {
+void MortarData<Dim>::pup(PUP::er& p) {
   p | time_step_id_;
   p | local_mortar_data_;
   p | neighbor_mortar_data_;
@@ -232,8 +231,7 @@ void MortarData<Dim>::pup(PUP::er& p) noexcept {
 }
 
 template <size_t Dim>
-bool operator==(const MortarData<Dim>& lhs,
-                const MortarData<Dim>& rhs) noexcept {
+bool operator==(const MortarData<Dim>& lhs, const MortarData<Dim>& rhs) {
   return lhs.time_step_id() == rhs.time_step_id() and
          lhs.local_mortar_data() == rhs.local_mortar_data() and
          lhs.neighbor_mortar_data() == rhs.neighbor_mortar_data() and
@@ -245,19 +243,18 @@ bool operator==(const MortarData<Dim>& lhs,
 }
 
 template <size_t Dim>
-bool operator!=(const MortarData<Dim>& lhs,
-                const MortarData<Dim>& rhs) noexcept {
+bool operator!=(const MortarData<Dim>& lhs, const MortarData<Dim>& rhs) {
   return not(lhs == rhs);
 }
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATION(r, data)                                         \
-  template class MortarData<DIM(data)>;                                \
-  template bool operator==(const MortarData<DIM(data)>& lhs,           \
-                           const MortarData<DIM(data)>& rhs) noexcept; \
-  template bool operator!=(const MortarData<DIM(data)>& lhs,           \
-                           const MortarData<DIM(data)>& rhs) noexcept;
+#define INSTANTIATION(r, data)                                \
+  template class MortarData<DIM(data)>;                       \
+  template bool operator==(const MortarData<DIM(data)>& lhs,  \
+                           const MortarData<DIM(data)>& rhs); \
+  template bool operator!=(const MortarData<DIM(data)>& lhs,  \
+                           const MortarData<DIM(data)>& rhs);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 

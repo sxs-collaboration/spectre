@@ -16,7 +16,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.OdeIntegration",
   // [explicit_fundamental_array_system]
   const auto oscillatory_array_system = [](const std::array<double, 2>& state,
                                            std::array<double, 2>& dt_state,
-                                           const double /*time*/) noexcept {
+                                           const double /*time*/) {
     dt_state[0] = state[1];
     dt_state[1] = -state[0];
   };
@@ -40,7 +40,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.OdeIntegration",
   // dense output stepper for a fundamental type
   // [dense_output_fundamental_system]
   const auto quadratic_system = [](const double /*state*/, double& dt_state,
-                                   const double time) noexcept {
+                                   const double time) {
     dt_state = 2.0 * time;
   };
   // [dense_output_fundamental_system]
@@ -69,7 +69,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.OdeIntegration",
   // [dense_output_vector_stepper]
   const auto oscillatory_vector_system =
       [](const std::array<DataVector, 2>& state,
-         std::array<DataVector, 2>& dt_state, const double /*time*/) noexcept {
+         std::array<DataVector, 2>& dt_state, const double /*time*/) {
         dt_state[0] = state[1];
         dt_state[1] = -state[0];
       };

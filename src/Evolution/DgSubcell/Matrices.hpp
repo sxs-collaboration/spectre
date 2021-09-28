@@ -21,7 +21,7 @@ namespace evolution::dg::subcell::fd {
  */
 template <size_t Dim>
 const Matrix& projection_matrix(const Mesh<Dim>& dg_mesh,
-                                const Index<Dim>& subcell_extents) noexcept;
+                                const Index<Dim>& subcell_extents);
 
 /*!
  * \ingroup DgSubcellGroup
@@ -74,5 +74,5 @@ const Matrix& projection_matrix(const Mesh<Dim>& dg_mesh,
  */
 template <size_t Dim>
 const Matrix& reconstruction_matrix(const Mesh<Dim>& dg_mesh,
-                                    const Index<Dim>& subcell_extents) noexcept;
+                                    const Index<Dim>& subcell_extents);
 }  // namespace evolution::dg::subcellfd

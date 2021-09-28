@@ -34,7 +34,7 @@ Brick::Brick(
     typename InitialGridPoints::type initial_number_of_grid_points_in_xyz,
     typename IsPeriodicIn::type is_periodic_in_xyz,
     std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
-        time_dependence) noexcept
+        time_dependence)
     // clang-tidy: trivially copyable
     : lower_xyz_(std::move(lower_xyz)),                      // NOLINT
       upper_xyz_(std::move(upper_xyz)),                      // NOLINT
@@ -90,7 +90,7 @@ Brick::Brick(
   }
 }
 
-Domain<3> Brick::create_domain() const noexcept {
+Domain<3> Brick::create_domain() const {
   using Affine = CoordinateMaps::Affine;
   using Affine3D = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
   std::vector<PairOfFaces> identifications{};
@@ -132,18 +132,17 @@ Domain<3> Brick::create_domain() const noexcept {
   return domain;
 }
 
-std::vector<std::array<size_t, 3>> Brick::initial_extents() const noexcept {
+std::vector<std::array<size_t, 3>> Brick::initial_extents() const {
   return {initial_number_of_grid_points_in_xyz_};
 }
 
-std::vector<std::array<size_t, 3>> Brick::initial_refinement_levels() const
-    noexcept {
+std::vector<std::array<size_t, 3>> Brick::initial_refinement_levels() const {
   return {initial_refinement_level_xyz_};
 }
 
 std::unordered_map<std::string,
                    std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
-Brick::functions_of_time() const noexcept {
+Brick::functions_of_time() const {
   if (time_dependence_->is_none()) {
     return {};
   } else {

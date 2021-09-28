@@ -71,22 +71,22 @@ class er;
 
 namespace SolvePoisson::OptionTags {
 struct LinearSolverGroup {
-  static std::string name() noexcept { return "LinearSolver"; }
+  static std::string name() { return "LinearSolver"; }
   static constexpr Options::String help =
       "The iterative Krylov-subspace linear solver";
 };
 struct GmresGroup {
-  static std::string name() noexcept { return "GMRES"; }
+  static std::string name() { return "GMRES"; }
   static constexpr Options::String help = "Options for the GMRES linear solver";
   using group = LinearSolverGroup;
 };
 struct SchwarzSmootherGroup {
-  static std::string name() noexcept { return "SchwarzSmoother"; }
+  static std::string name() { return "SchwarzSmoother"; }
   static constexpr Options::String help = "Options for the Schwarz smoother";
   using group = LinearSolverGroup;
 };
 struct MultigridGroup {
-  static std::string name() noexcept { return "Multigrid"; }
+  static std::string name() { return "Multigrid"; }
   static constexpr Options::String help = "Options for the multigrid";
   using group = LinearSolverGroup;
 };
@@ -273,8 +273,7 @@ struct Metavariables {
       const gsl::not_null<
           tuples::TaggedTuple<Tags...>*> /*phase_change_decision_data*/,
       const Phase& current_phase,
-      const Parallel::CProxy_GlobalCache<
-          Metavariables>& /*cache_proxy*/) noexcept {
+      const Parallel::CProxy_GlobalCache<Metavariables>& /*cache_proxy*/) {
     switch (current_phase) {
       case Phase::Initialization:
         return Phase::RegisterWithObserver;
@@ -294,7 +293,7 @@ struct Metavariables {
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& /*p*/) noexcept {}
+  void pup(PUP::er& /*p*/) {}
 };
 
 static const std::vector<void (*)()> charm_init_node_funcs{

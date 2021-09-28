@@ -26,7 +26,7 @@
 
 namespace Spectral::Swsh {
 template <int Spin>
-void test_angular_filtering() noexcept {
+void test_angular_filtering() {
   MAKE_GENERATOR(gen);
   // limited l_max distribution because test depends on an analytic
   // basis function with factorials.
@@ -89,7 +89,7 @@ void test_angular_filtering() noexcept {
 }
 
 template <int Spin>
-void test_radial_filtering() noexcept {
+void test_radial_filtering() {
   MAKE_GENERATOR(generator);
   UniformCustomDistribution<size_t> sdist{2, 5};
   const size_t l_max = sdist(generator);

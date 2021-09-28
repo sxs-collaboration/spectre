@@ -73,13 +73,13 @@ struct ComputeTimeDerivative {
       tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     using argument_tag = tmpl::conditional_t<
         Metavariables::system::has_primitive_and_conservative_vars,
         PrimitiveVar, Var>;
     db::mutate<Tags::dt<Var>>(
         make_not_null(&box),
-        [](const gsl::not_null<double*> dt_var, const double var) noexcept {
+        [](const gsl::not_null<double*> dt_var, const double var) {
           *dt_var = exp(var);
         },
         db::get<argument_tag>(box));
@@ -109,8 +109,7 @@ struct System<true> {
   struct primitive_from_conservative {
     using return_tags = tmpl::list<PrimitiveVar>;
     using argument_tags = tmpl::list<Var>;
-    static void apply(const gsl::not_null<double*> prim,
-                      const double cons) noexcept {
+    static void apply(const gsl::not_null<double*> prim, const double cons) {
       *prim = cons;
     }
   };
@@ -185,7 +184,7 @@ void emplace_component_and_initialize(
         runner,
     const bool forward_in_time, const Time& initial_time,
     const TimeDelta& initial_time_step, const size_t order,
-    const double initial_value) noexcept {
+    const double initial_value) {
   ActionTesting::emplace_component_and_initialize<
       Component<Metavariables<HasPrimitives, MultipleHistories>>>(
       runner, 0,
@@ -201,7 +200,7 @@ void emplace_component_and_initialize<true, false>(
     const gsl::not_null<MockRuntimeSystem<true, false>*> runner,
     const bool forward_in_time, const Time& initial_time,
     const TimeDelta& initial_time_step, const size_t order,
-    const double initial_value) noexcept {
+    const double initial_value) {
   ActionTesting::emplace_component_and_initialize<
       Component<Metavariables<true, false>>>(
       runner, 0,
@@ -218,7 +217,7 @@ void emplace_component_and_initialize<false, true>(
     const gsl::not_null<MockRuntimeSystem<false, true>*> runner,
     const bool forward_in_time, const Time& initial_time,
     const TimeDelta& initial_time_step, const size_t order,
-    const double initial_value) noexcept {
+    const double initial_value) {
   ActionTesting::emplace_component_and_initialize<
       Component<Metavariables<false, true>>>(
       runner, 0,
@@ -235,7 +234,7 @@ void emplace_component_and_initialize<true, true>(
     const gsl::not_null<MockRuntimeSystem<true, true>*> runner,
     const bool forward_in_time, const Time& initial_time,
     const TimeDelta& initial_time_step, const size_t order,
-    const double initial_value) noexcept {
+    const double initial_value) {
   ActionTesting::emplace_component_and_initialize<
       Component<Metavariables<true, true>>>(
       runner, 0,
@@ -261,7 +260,7 @@ template <typename Stop, typename Whitelist, bool MultipleHistories,
           bool HasPrimitives>
 bool run_past(
     const gsl::not_null<MockRuntimeSystem<HasPrimitives, MultipleHistories>*>
-        runner) noexcept {
+        runner) {
   for (;;) {
     bool done = false;
     const size_t current_action = ActionTesting::get_next_action_index<
@@ -269,7 +268,7 @@ bool run_past(
     size_t action_to_check = current_action;
     tmpl::for_each<typename Component<
         Metavariables<HasPrimitives, MultipleHistories>>::action_list>(
-        [&action_to_check, &done](const auto action) noexcept {
+        [&action_to_check, &done](const auto action) {
           using Action = tmpl::type_from<decltype(action)>;
           if (action_to_check-- == 0) {
             INFO(pretty_type::get_name<Action>());
@@ -291,7 +290,7 @@ bool run_past(
   }
 }
 
-void test_actions(const size_t order, const int step_denominator) noexcept {
+void test_actions(const size_t order, const int step_denominator) {
   const bool forward_in_time = step_denominator > 0;
   const Slab slab(1., 3.);
   const TimeDelta initial_time_step = slab.duration() / step_denominator;
@@ -401,7 +400,7 @@ void test_actions(const size_t order, const int step_denominator) noexcept {
 }
 
 template <bool TestPrimitives, bool MultipleHistories>
-double error_in_step(const size_t order, const double step) noexcept {
+double error_in_step(const size_t order, const double step) {
   const bool forward_in_time = step > 0.;
   const auto slab = forward_in_time ? Slab::with_duration_from_start(1., step)
                                     : Slab::with_duration_to_end(1., -step);
@@ -434,7 +433,7 @@ double error_in_step(const size_t order, const double step) noexcept {
 }
 
 template <bool TestPrimitives, bool MultipleHistories>
-void test_convergence(const size_t order, const bool forward_in_time) noexcept {
+void test_convergence(const size_t order, const bool forward_in_time) {
   const double step = forward_in_time ? 0.1 : -0.1;
   const double convergence_rate =
       (log(abs(error_in_step<TestPrimitives, MultipleHistories>(order, step))) -

@@ -45,39 +45,38 @@ class DynamicBuffer {
    * `number_of_grid_points`. `number_of_grid_points` has to be 1 if T is a
    * fundamental type.
    */
-  DynamicBuffer(size_t number_of_vectors,
-                size_t number_of_grid_points) noexcept;
+  DynamicBuffer(size_t number_of_vectors, size_t number_of_grid_points);
   ~DynamicBuffer() = default;
   DynamicBuffer(DynamicBuffer&& other) = default;
   DynamicBuffer& operator=(DynamicBuffer&& other) = default;
 
-  DynamicBuffer(const DynamicBuffer& other) noexcept;
+  DynamicBuffer(const DynamicBuffer& other);
 
-  DynamicBuffer& operator=(const DynamicBuffer& other) noexcept;
+  DynamicBuffer& operator=(const DynamicBuffer& other);
 
-  T& operator[](size_t index) noexcept { return data_[index]; }
-  T& at(size_t index) noexcept { return data_.at(index); }
-  const T& operator[](size_t index) const noexcept { return data_[index]; }
-  const T& at(size_t index) const noexcept { return data_.at(index); }
+  T& operator[](size_t index) { return data_[index]; }
+  T& at(size_t index) { return data_.at(index); }
+  const T& operator[](size_t index) const { return data_[index]; }
+  const T& at(size_t index) const { return data_.at(index); }
 
-  auto begin() noexcept { return data_.begin(); }
-  auto end() noexcept { return data_.end(); }
-  auto begin() const noexcept { return data_.begin(); }
-  auto end() const noexcept { return data_.end(); }
+  auto begin() { return data_.begin(); }
+  auto end() { return data_.end(); }
+  auto begin() const { return data_.begin(); }
+  auto end() const { return data_.end(); }
 
-  size_t size() const noexcept { return data_.size(); }
+  size_t size() const { return data_.size(); }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept;
+  void pup(PUP::er& p);
 
  private:
   // sets data references for all `data_` into `buffer_`
-  void set_references() noexcept;
+  void set_references();
 
   template <typename LocalT>
   // NOLINTNEXTLINE(readability-redundant-declaration)
   friend bool operator==(const DynamicBuffer<LocalT>& lhs,
-                         const DynamicBuffer<LocalT>& rhs) noexcept;
+                         const DynamicBuffer<LocalT>& rhs);
 
   size_t number_of_grid_points_;
   // vector of non-owning DataVectors pointing into `buffer_`. In case of
@@ -88,5 +87,4 @@ class DynamicBuffer {
 };
 
 template <typename T>
-bool operator!=(const DynamicBuffer<T>& lhs,
-                const DynamicBuffer<T>& rhs) noexcept;
+bool operator!=(const DynamicBuffer<T>& lhs, const DynamicBuffer<T>& rhs);

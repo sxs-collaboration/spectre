@@ -55,8 +55,7 @@ T serialize_and_deserialize(const T& t) {
  * \brief Serializes and deserializes an object `t` of type `T`
  */
 template <typename T>
-void serialize_and_deserialize(const gsl::not_null<T*> result,
-                               const T& t) noexcept {
+void serialize_and_deserialize(const gsl::not_null<T*> result, const T& t) {
   deserialize<T>(result, serialize<T>(t).data());
 }
 
@@ -125,10 +124,8 @@ template <typename T, Requires<tt::has_equivalence<T>::value> = nullptr,
 void test_move_semantics(T&& a, const T& comparison, Args&&... args) {
   static_assert(std::is_rvalue_reference<decltype(a)>::value,
                 "Must move into test_move_semantics");
-  static_assert(std::is_nothrow_move_assignable<T>::value,
-                "Class is not nothrow move assignable.");
-  static_assert(std::is_nothrow_move_constructible<T>::value,
-                "Class is not nothrow move constructible.");
+  static_assert(std::is_move_assignable<T>::value);
+  static_assert(std::is_move_constructible<T>::value);
   if (&a == &comparison or a != comparison) {
     // We use ERROR instead of ASSERT (which we normally should be using) to
     // guard against someone writing tests in Release mode where ASSERTs don't
@@ -147,35 +144,6 @@ void test_move_semantics(T&& a, const T& comparison, Args&&... args) {
     INFO("Test move construction");
     CHECK(c == comparison);
   }
-}
-
-/// Test for move semantics assuming operator== is implemented correctly.
-/// \requires `std::is_rvalue_reference<decltype(a)>::%value` is true.
-/// This version is included for use with the rare type that (likely
-/// incorrectly) has not marked the move assignment and move construction
-/// operators `noexcept`
-template <typename T, Requires<tt::has_equivalence<T>::value> = nullptr,
-          typename... Args>
-void test_throwing_move_semantics(T&& a, const T& comparison,
-                                  Args&&... args) noexcept {
-  static_assert(std::is_rvalue_reference<decltype(a)>::value,
-                "Must move into test_move_semantics");
-  static_assert(std::is_move_assignable<T>::value,
-                "Class is not nothrow move assignable.");
-  static_assert(std::is_move_constructible<T>::value,
-                "Class is not nothrow move constructible.");
-  if (&a == &comparison or a != comparison) {
-    // We use ERROR instead of ASSERT (which we normally should be using) to
-    // guard against someone writing tests in Release mode where ASSERTs don't
-    // show up.
-    ERROR("'a' and 'comparison' must be distinct (but equal in value) objects");
-  }
-  T b(std::forward<Args>(args)...);
-  // clang-tidy: use std::forward instead of std::move
-  b = std::move(a);  // NOLINT
-  CHECK(b == comparison);
-  T c(std::move(b));
-  CHECK(c == comparison);
 }
 
 // Test for iterators
@@ -301,7 +269,7 @@ template <typename Invocable, size_t VolumeDim>
 std::result_of_t<const Invocable&(const std::array<double, VolumeDim>&)>
 numerical_derivative(const Invocable& function,
                      const std::array<double, VolumeDim>& x,
-                     const size_t direction, const double delta) noexcept {
+                     const size_t direction, const double delta) {
   ASSERT(0 <= direction and direction < VolumeDim,
          "Trying to take derivative along axis " << direction);
 
@@ -333,36 +301,15 @@ struct NonCopyable {
   NonCopyable& operator=(NonCopyable&&) = default;
   ~NonCopyable() = default;
 };
-inline bool operator==(const NonCopyable& /*a*/,
-                       const NonCopyable& /*b*/) noexcept {
+inline bool operator==(const NonCopyable& /*a*/, const NonCopyable& /*b*/) {
   return true;
 }
-inline bool operator!=(const NonCopyable& a, const NonCopyable& b) noexcept {
+inline bool operator!=(const NonCopyable& a, const NonCopyable& b) {
   return not(a == b);
 }
-inline std::ostream& operator<<(std::ostream& os,
-                                const NonCopyable& /*v*/) noexcept {
+inline std::ostream& operator<<(std::ostream& os, const NonCopyable& /*v*/) {
   return os << "NC";
 }
-
-class DoesNotThrow {
- public:
-  DoesNotThrow() noexcept = default;
-  DoesNotThrow(const DoesNotThrow&) noexcept = default;
-  DoesNotThrow& operator=(const DoesNotThrow&) noexcept = default;
-  DoesNotThrow(DoesNotThrow&&) noexcept = default;
-  DoesNotThrow& operator=(DoesNotThrow&&) noexcept = default;
-  ~DoesNotThrow() = default;
-};
-class DoesThrow {
- public:
-  DoesThrow() noexcept(false);
-  DoesThrow(const DoesThrow&) noexcept(false);
-  DoesThrow& operator=(const DoesThrow&) noexcept(false);
-  DoesThrow(DoesThrow&&) noexcept(false);
-  DoesThrow& operator=(DoesThrow&&) noexcept(false);
-  ~DoesThrow() = default;
-};
 
 /*!
  * \ingroup TestingFrameworkGroup
@@ -433,7 +380,7 @@ void test_throw_exception(const ThrowingFunctor& func,
 #define MAKE_GENERATOR(...)                                             \
   std::mt19937 MAKE_GENERATOR_IMPL_FIRST_ARG(__VA_ARGS__, DUMMY_TOKEN); \
   /* Capture everything because we don't know what passed seed uses */  \
-  INFO("Seed is: " << [&]() noexcept {                                  \
+  INFO("Seed is: " << [&]() {                                           \
     const auto MAKE_GENERATOR_seed = (MAKE_GENERATOR_IMPL_SECOND_ARG(   \
         __VA_ARGS__, std::random_device{}(), DUMMY_TOKEN));             \
     MAKE_GENERATOR_IMPL_FIRST_ARG(__VA_ARGS__, DUMMY_TOKEN)             \
@@ -469,7 +416,7 @@ void test_throw_exception(const ThrowingFunctor& func,
 
 template <typename Tag, typename TagList>
 const auto& extract_value_for_variables_comparison(
-    const Variables<TagList>& input_vars, std::true_type /*meta*/) noexcept {
+    const Variables<TagList>& input_vars, std::true_type /*meta*/) {
   // only Scalars of spin-weighted quantities are currently allowed. If that
   // changes, then this solution will no longer be workable.
   return get(get<Tag>(input_vars)).data();
@@ -477,7 +424,7 @@ const auto& extract_value_for_variables_comparison(
 
 template <typename Tag, typename TagList>
 const auto& extract_value_for_variables_comparison(
-    const Variables<TagList>& input_vars, std::false_type /*meta*/) noexcept {
+    const Variables<TagList>& input_vars, std::false_type /*meta*/) {
   return get<Tag>(input_vars);
 }
 

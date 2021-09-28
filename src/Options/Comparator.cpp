@@ -11,11 +11,10 @@
 #include "Options/ParseOptions.hpp"
 
 namespace Options {
-Comparator::Comparator(Comparison comparison) noexcept
-    : comparison_(comparison) {}
+Comparator::Comparator(Comparison comparison) : comparison_(comparison) {}
 
 // NOLINTNEXTLINE(google-runtime-references)
-void Comparator::pup(PUP::er& p) noexcept { p | comparison_; }
+void Comparator::pup(PUP::er& p) { p | comparison_; }
 
 Comparator create_from_yaml<Comparator>::create_impl(const Option& options) {
   const auto name = options.parse_as<std::string>();

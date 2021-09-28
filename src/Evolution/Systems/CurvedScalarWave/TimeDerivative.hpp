@@ -92,7 +92,6 @@ struct TimeDerivative {
       const tnsr::II<DataVector, Dim>& upper_spatial_metric,
       const tnsr::I<DataVector, Dim>& trace_spatial_christoffel,
       const Scalar<DataVector>& trace_extrinsic_curvature,
-      const Scalar<DataVector>& gamma1,
-      const Scalar<DataVector>& gamma2) noexcept;
+      const Scalar<DataVector>& gamma1, const Scalar<DataVector>& gamma2);
 };
 }  // namespace CurvedScalarWave

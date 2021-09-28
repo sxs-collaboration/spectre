@@ -16,7 +16,7 @@ namespace Limiters {
 
 // Construct a Neighbors object with one neighboring element.
 template <size_t VolumeDim>
-Neighbors<VolumeDim> make_neighbor_with_id(const size_t id) noexcept {
+Neighbors<VolumeDim> make_neighbor_with_id(const size_t id) {
   return {std::unordered_set<ElementId<VolumeDim>>{ElementId<VolumeDim>(id)},
           OrientationMap<VolumeDim>{}};
 }
@@ -26,9 +26,8 @@ Neighbors<VolumeDim> make_neighbor_with_id(const size_t id) noexcept {
 // The optional argument specifies directions to external boundaries, i.e.,
 // directions where there is no neighboring element.
 template <size_t VolumeDim>
-Element<VolumeDim> make_element(
-    const std::unordered_set<Direction<VolumeDim>>&
-        directions_of_external_boundaries = {}) noexcept {
+Element<VolumeDim> make_element(const std::unordered_set<Direction<VolumeDim>>&
+                                    directions_of_external_boundaries = {}) {
   typename Element<VolumeDim>::Neighbors_t neighbors;
   for (const auto& dir : Direction<VolumeDim>::all_directions()) {
     // Element has neighbors in directions with internal boundaries

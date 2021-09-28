@@ -95,14 +95,14 @@ struct WorldtubeData : public PUP::able {
 
   // clang doesn't manage to use = default correctly in this case
   // NOLINTNEXTLINE(modernize-use-equals-default)
-  WorldtubeData() noexcept {};
+  WorldtubeData(){};
 
-  explicit WorldtubeData(const double extraction_radius) noexcept
+  explicit WorldtubeData(const double extraction_radius)
       : extraction_radius_{extraction_radius} {}
 
-  explicit WorldtubeData(CkMigrateMessage* msg) noexcept : PUP::able(msg) {}
+  explicit WorldtubeData(CkMigrateMessage* msg) : PUP::able(msg) {}
 
-  virtual std::unique_ptr<WorldtubeData> get_clone() const noexcept = 0;
+  virtual std::unique_ptr<WorldtubeData> get_clone() const = 0;
 
   /*!
    * \brief Retrieve worldtube data represented by the analytic solution, at
@@ -117,24 +117,24 @@ struct WorldtubeData : public PUP::able {
   tuples::TaggedTuple<Tags...> variables(
       // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
       const size_t output_l_max, const double time,
-      tmpl::list<Tags...> /*meta*/) const noexcept {
+      tmpl::list<Tags...> /*meta*/) const {
     prepare_solution(output_l_max, time);
     return {cache_or_compute<Tags>(output_l_max, time)...};
   }
 
-  void pup(PUP::er& p) noexcept override;
+  void pup(PUP::er& p) override;
 
   virtual std::unique_ptr<Cce::InitializeJ::InitializeJ<false>>
-  get_initialize_j(const double /*start_time*/) const noexcept {
+  get_initialize_j(const double /*start_time*/) const {
     return std::make_unique<Cce::InitializeJ::InverseCubic<false>>();
   };
 
-  virtual bool use_noninertial_news() const noexcept { return false; }
+  virtual bool use_noninertial_news() const { return false; }
 
  protected:
   template <typename Tag>
   const auto& cache_or_compute(const size_t output_l_max,
-                               const double time) const noexcept {
+                               const double time) const {
     auto& item_cache = get<IntermediateCacheTag<Tag>>(intermediate_cache_);
     if (item_cache.l_max == output_l_max and item_cache.time == time) {
       return item_cache.data;
@@ -149,104 +149,102 @@ struct WorldtubeData : public PUP::able {
     item_cache.time = time;
     return item;
   }
-  virtual void prepare_solution(size_t output_l_max, double time) const
-      noexcept = 0;
+  virtual void prepare_solution(size_t output_l_max, double time) const = 0;
 
   // note that function template cannot be virtual, so we have to emulate
   // template specializations through function overloads
   virtual void variables_impl(
       gsl::not_null<tnsr::i<DataVector, 3>*> cartesian_coordinates,
       size_t output_l_max, double time,
-      tmpl::type_<Tags::CauchyCartesianCoords> /*meta*/) const noexcept;
+      tmpl::type_<Tags::CauchyCartesianCoords> /*meta*/) const;
 
   virtual void variables_impl(
       gsl::not_null<tnsr::i<DataVector, 3>*> dr_cartesian_coordinates,
       size_t output_l_max, double time,
-      tmpl::type_<Tags::Dr<Tags::CauchyCartesianCoords>> /*meta*/) const
-      noexcept;
+      tmpl::type_<Tags::Dr<Tags::CauchyCartesianCoords>> /*meta*/) const;
 
   virtual void variables_impl(
       gsl::not_null<tnsr::aa<DataVector, 3>*> spacetime_metric,
       size_t output_l_max, double time,
       tmpl::type_<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>
-      /*meta*/) const noexcept = 0;
+      /*meta*/) const = 0;
 
   virtual void variables_impl(
       gsl::not_null<tnsr::aa<DataVector, 3>*> dt_spacetime_metric,
       size_t output_l_max, double time,
       tmpl::type_<::Tags::dt<
           gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>>
-      /*meta*/) const noexcept = 0;
+      /*meta*/) const = 0;
 
   virtual void variables_impl(
       gsl::not_null<tnsr::aa<DataVector, 3>*> pi, size_t output_l_max,
       double time,
       tmpl::type_<GeneralizedHarmonic::Tags::Pi<3, ::Frame::Inertial>>
-      /*meta*/) const noexcept;
+      /*meta*/) const;
 
   virtual void variables_impl(
       gsl::not_null<tnsr::iaa<DataVector, 3>*> d_spacetime_metric,
       size_t output_l_max, double time,
       tmpl::type_<GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>>
-      /*meta*/) const noexcept = 0;
+      /*meta*/) const = 0;
 
   virtual void variables_impl(
       gsl::not_null<tnsr::ii<DataVector, 3>*> spatial_metric,
       size_t output_l_max, double time,
       tmpl::type_<gr::Tags::SpatialMetric<3, ::Frame::Inertial, DataVector>>
-      /*meta*/) const noexcept;
+      /*meta*/) const;
 
   virtual void variables_impl(
       gsl::not_null<tnsr::ii<DataVector, 3>*> dt_spatial_metric,
       size_t output_l_max, double time,
       tmpl::type_<
           ::Tags::dt<gr::Tags::SpatialMetric<3, ::Frame::Inertial, DataVector>>>
-      /*meta*/) const noexcept;
+      /*meta*/) const;
 
   virtual void variables_impl(
       gsl::not_null<tnsr::ii<DataVector, 3>*> dr_spatial_metric,
       size_t output_l_max, double time,
       tmpl::type_<
           Tags::Dr<gr::Tags::SpatialMetric<3, ::Frame::Inertial, DataVector>>>
-      /*meta*/) const noexcept;
+      /*meta*/) const;
 
   virtual void variables_impl(
       gsl::not_null<tnsr::I<DataVector, 3>*> shift, size_t output_l_max,
       double time,
       tmpl::type_<gr::Tags::Shift<3, ::Frame::Inertial, DataVector>>
-      /*meta*/) const noexcept;
+      /*meta*/) const;
 
   virtual void variables_impl(
       gsl::not_null<tnsr::I<DataVector, 3>*> dt_shift, size_t output_l_max,
       double time,
       tmpl::type_<::Tags::dt<gr::Tags::Shift<3, ::Frame::Inertial, DataVector>>>
-      /*meta*/) const noexcept;
+      /*meta*/) const;
 
   virtual void variables_impl(
       gsl::not_null<tnsr::I<DataVector, 3>*> dr_shift, size_t output_l_max,
       double time,
       tmpl::type_<Tags::Dr<gr::Tags::Shift<3, ::Frame::Inertial, DataVector>>>
-      /*meta*/) const noexcept;
+      /*meta*/) const;
 
   virtual void variables_impl(gsl::not_null<Scalar<DataVector>*> lapse,
                               size_t output_l_max, double time,
                               tmpl::type_<gr::Tags::Lapse<DataVector>>
-                              /*meta*/) const noexcept;
+                              /*meta*/) const;
 
   virtual void variables_impl(
       gsl::not_null<Scalar<DataVector>*> dt_lapse, size_t output_l_max,
       double time, tmpl::type_<::Tags::dt<gr::Tags::Lapse<DataVector>>>
-      /*meta*/) const noexcept;
+      /*meta*/) const;
 
   virtual void variables_impl(gsl::not_null<Scalar<DataVector>*> dr_lapse,
                               size_t output_l_max, double time,
                               tmpl::type_<Tags::Dr<gr::Tags::Lapse<DataVector>>>
-                              /*meta*/) const noexcept;
+                              /*meta*/) const;
 
   virtual void variables_impl(
       gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, -2>>*> news,
-      size_t output_l_max, double time, tmpl::type_<Tags::News> /*meta*/) const
-      noexcept = 0;
+      size_t output_l_max, double time,
+      tmpl::type_<Tags::News> /*meta*/) const = 0;
 
   template <typename Tag>
   struct IntermediateCache {

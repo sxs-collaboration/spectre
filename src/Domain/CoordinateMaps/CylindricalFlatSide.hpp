@@ -93,7 +93,7 @@ class CylindricalFlatSide {
                       const std::array<double, 3>& center_two,
                       const std::array<double, 3>& proj_center,
                       const double inner_radius, const double outer_radius,
-                      const double radius_two) noexcept;
+                      const double radius_two);
 
   CylindricalFlatSide() = default;
   ~CylindricalFlatSide() = default;
@@ -104,30 +104,29 @@ class CylindricalFlatSide {
 
   template <typename T>
   std::array<tt::remove_cvref_wrap_t<T>, 3> operator()(
-      const std::array<T, 3>& source_coords) const noexcept;
+      const std::array<T, 3>& source_coords) const;
 
   std::optional<std::array<double, 3>> inverse(
-      const std::array<double, 3>& target_coords) const noexcept;
+      const std::array<double, 3>& target_coords) const;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> jacobian(
-      const std::array<T, 3>& source_coords) const noexcept;
+      const std::array<T, 3>& source_coords) const;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> inv_jacobian(
-      const std::array<T, 3>& source_coords) const noexcept;
+      const std::array<T, 3>& source_coords) const;
 
   // clang-tidy: google runtime references
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
 
-  static bool is_identity() noexcept { return false; }
+  static bool is_identity() { return false; }
 
  private:
   friend bool operator==(const CylindricalFlatSide& lhs,
-                         const CylindricalFlatSide& rhs) noexcept;
+                         const CylindricalFlatSide& rhs);
   FocallyLiftedMap<FocallyLiftedInnerMaps::FlatSide> impl_;
 };
-bool operator!=(const CylindricalFlatSide& lhs,
-                const CylindricalFlatSide& rhs) noexcept;
+bool operator!=(const CylindricalFlatSide& lhs, const CylindricalFlatSide& rhs);
 
 }  // namespace domain::CoordinateMaps

@@ -13,12 +13,12 @@
 
 namespace h5_detail {
 
-std::array<Spectral::Basis, 3> allowed_bases() noexcept {
+std::array<Spectral::Basis, 3> allowed_bases() {
   return {Spectral::Basis::Chebyshev, Spectral::Basis::Legendre,
           Spectral::Basis::FiniteDifference};
 }
 
-std::array<Spectral::Quadrature, 4> allowed_quadratures() noexcept {
+std::array<Spectral::Quadrature, 4> allowed_quadratures() {
   return {Spectral::Quadrature::Gauss, Spectral::Quadrature::GaussLobatto,
           Spectral::Quadrature::CellCentered,
           Spectral::Quadrature::FaceCentered};
@@ -26,14 +26,14 @@ std::array<Spectral::Quadrature, 4> allowed_quadratures() noexcept {
 
 void write_dictionary(const std::string& dict_name,
                       const std::vector<std::string>& values,
-                      const h5::detail::OpenGroup& observation_group) noexcept {
+                      const h5::detail::OpenGroup& observation_group) {
   h5::write_to_attribute<std::string>(observation_group.id(), dict_name,
                                       values);
 }
 
 std::vector<std::string> decode_with_dictionary_name(
     const std::string& dict_name, const std::vector<int>& decodable,
-    const h5::detail::OpenGroup& observation_group) noexcept {
+    const h5::detail::OpenGroup& observation_group) {
   const auto dict =
       h5::read_rank1_attribute<std::string>(observation_group.id(), dict_name);
 

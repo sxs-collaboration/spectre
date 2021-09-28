@@ -44,7 +44,7 @@ void test_primitive_from_conservative_random(
     const gsl::not_null<std::mt19937*> generator,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
         equation_of_state,
-    const DataVector& used_for_size) noexcept {
+    const DataVector& used_for_size) {
   // generate random primitives with interesting astrophysical values
   const auto expected_rest_mass_density =
       TestHelpers::hydro::random_density(generator, used_for_size);
@@ -143,8 +143,7 @@ void test_primitive_from_conservative_random(
 }
 
 template <typename OrderedListOfPrimitiveRecoverySchemes>
-void test_primitive_from_conservative_known(
-    const DataVector& used_for_size) noexcept {
+void test_primitive_from_conservative_known(const DataVector& used_for_size) {
   const auto expected_rest_mass_density =
       make_with_value<Scalar<DataVector>>(used_for_size, 2.0);
   const auto expected_lorentz_factor =

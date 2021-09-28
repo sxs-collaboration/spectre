@@ -31,7 +31,7 @@ struct has_ckLocal_method<T, std::void_t<decltype(std::declval<T>().ckLocal())>>
 template <typename ReceiveTag, typename Proxy, typename ReceiveDataType>
 void receive_data(Proxy&& proxy, typename ReceiveTag::temporal_id temporal_id,
                   ReceiveDataType&& receive_data,
-                  const bool enable_if_disabled = false) noexcept {
+                  const bool enable_if_disabled = false) {
   // Both branches of this if statement call into the charm proxy system, but
   // because we specify [inline] for array chares, we must specify the
   // `ReceiveDataType` explicitly in the template arguments when dispatching to
@@ -59,12 +59,12 @@ void receive_data(Proxy&& proxy, typename ReceiveTag::temporal_id temporal_id,
  * \brief Invoke a simple action on `proxy`
  */
 template <typename Action, typename Proxy>
-void simple_action(Proxy&& proxy) noexcept {
+void simple_action(Proxy&& proxy) {
   proxy.template simple_action<Action>();
 }
 
 template <typename Action, typename Proxy, typename Arg0, typename... Args>
-void simple_action(Proxy&& proxy, Arg0&& arg0, Args&&... args) noexcept {
+void simple_action(Proxy&& proxy, Arg0&& arg0, Args&&... args) {
   proxy.template simple_action<Action>(
       std::tuple<std::decay_t<Arg0>, std::decay_t<Args>...>(
           std::forward<Arg0>(arg0), std::forward<Args>(args)...));
@@ -76,8 +76,7 @@ void simple_action(Proxy&& proxy, Arg0&& arg0, Args&&... args) noexcept {
  * \brief Invoke a local synchronous action on `proxy`
  */
 template <typename Action, typename Proxy, typename... Args>
-decltype(auto) local_synchronous_action(Proxy&& proxy,
-                                        Args&&... args) noexcept {
+decltype(auto) local_synchronous_action(Proxy&& proxy, Args&&... args) {
   return proxy.ckLocalBranch()->template local_synchronous_action<Action>(
       std::forward<Args>(args)...);
 }
@@ -89,12 +88,12 @@ decltype(auto) local_synchronous_action(Proxy&& proxy,
  * nodegroup.
  */
 template <typename Action, typename Proxy>
-void threaded_action(Proxy&& proxy) noexcept {
+void threaded_action(Proxy&& proxy) {
   proxy.template threaded_action<Action>();
 }
 
 template <typename Action, typename Proxy, typename Arg0, typename... Args>
-void threaded_action(Proxy&& proxy, Arg0&& arg0, Args&&... args) noexcept {
+void threaded_action(Proxy&& proxy, Arg0&& arg0, Args&&... args) {
   proxy.template threaded_action<Action>(
       std::tuple<std::decay_t<Arg0>, std::decay_t<Args>...>(
           std::forward<Arg0>(arg0), std::forward<Args>(args)...));

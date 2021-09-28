@@ -19,7 +19,7 @@ template <size_t VolumeDim>
 void test_initial_element_ids(
     const std::vector<ElementId<VolumeDim>>& element_ids,
     const std::vector<std::array<size_t, VolumeDim>>& initial_refinement_levels,
-    size_t grid_index) noexcept {
+    size_t grid_index) {
   size_t expected_number_of_elements = 0;
   for (const auto& initial_refinement_levels_of_block :
        initial_refinement_levels) {

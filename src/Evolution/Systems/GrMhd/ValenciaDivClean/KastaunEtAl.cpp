@@ -23,19 +23,19 @@ namespace grmhd::ValenciaDivClean::PrimitiveRecoverySchemes {
 namespace {
 
 // Equation (26)
-double compute_x(const double mu, const double b_squared) noexcept {
+double compute_x(const double mu, const double b_squared) {
   return 1.0 / (1.0 + mu * b_squared);
 }
 
 // Equation (38)
 double compute_r_bar_squared(const double mu, const double x,
                              const double r_squared,
-                             const double r_dot_b_squared) noexcept {
+                             const double r_dot_b_squared) {
   return x * (r_squared * x + mu * (1.0 + x) * r_dot_b_squared);
 }
 
 // Equations (33) and (32)
-double compute_v_0_squared(const double r_squared, const double h_0) noexcept {
+double compute_v_0_squared(const double r_squared, const double h_0) {
   const double z_0_squared = r_squared / square(h_0);
   static constexpr double velocity_squared_upper_bound =
       1.0 - 4.0 * std::numeric_limits<double>::epsilon();
@@ -58,14 +58,13 @@ struct Primitives {
 class CornerCaseFunction {
  public:
   CornerCaseFunction(const double w_target, const double r_squared,
-                     const double b_squared,
-                     const double r_dot_b_squared) noexcept
+                     const double b_squared, const double r_dot_b_squared)
       : v_squared_target_(1.0 - 1.0 / square(w_target)),
         r_squared_(r_squared),
         b_squared_(b_squared),
         r_dot_b_squared_(r_dot_b_squared) {}
 
-  double operator()(const double mu) const noexcept {
+  double operator()(const double mu) const {
     const double x = compute_x(mu, b_squared_);
     const double r_bar_squared =
         compute_r_bar_squared(mu, x, r_squared_, r_dot_b_squared_);
@@ -85,14 +84,13 @@ class CornerCaseFunction {
 class AuxiliaryFunction {
  public:
   AuxiliaryFunction(const double h_0, const double r_squared,
-                    const double b_squared,
-                    const double r_dot_b_squared) noexcept
+                    const double b_squared, const double r_dot_b_squared)
       : h_0_(h_0),
         r_squared_(r_squared),
         b_squared_(b_squared),
         r_dot_b_squared_(r_dot_b_squared) {}
 
-  double operator()(double mu) const noexcept {
+  double operator()(double mu) const {
     const double x = compute_x(mu, b_squared_);
     const double r_bar_squared =
         compute_r_bar_squared(mu, x, r_squared_, r_dot_b_squared_);
@@ -117,7 +115,7 @@ class FunctionOfMu {
                const double magnetic_field_squared,
                const double rest_mass_density_times_lorentz_factor,
                const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
-                   equation_of_state) noexcept
+                   equation_of_state)
       : q_(total_energy_density / rest_mass_density_times_lorentz_factor - 1.0),
         r_squared_(momentum_density_squared /
                    square(rest_mass_density_times_lorentz_factor)),
@@ -135,9 +133,9 @@ class FunctionOfMu {
       double rest_mass_density_times_lorentz_factor, double absolute_tolerance,
       double relative_tolerance, size_t max_iterations) const;
 
-  Primitives primitives(double mu) const noexcept;
+  Primitives primitives(double mu) const;
 
-  double operator()(const double mu) const noexcept;
+  double operator()(const double mu) const;
 
  private:
   const double q_;
@@ -229,8 +227,7 @@ std::pair<double, double> FunctionOfMu<ThermodynamicDim>::root_bracket(
 }
 
 template <size_t ThermodynamicDim>
-Primitives FunctionOfMu<ThermodynamicDim>::primitives(const double mu) const
-    noexcept {
+Primitives FunctionOfMu<ThermodynamicDim>::primitives(const double mu) const {
   // Equation (26)
   const double x = compute_x(mu, b_squared_);
   // Equations(38)
@@ -268,8 +265,7 @@ Primitives FunctionOfMu<ThermodynamicDim>::primitives(const double mu) const
 }
 
 template <size_t ThermodynamicDim>
-double FunctionOfMu<ThermodynamicDim>::operator()(const double mu) const
-    noexcept {
+double FunctionOfMu<ThermodynamicDim>::operator()(const double mu) const {
   const auto [rho_hat, w_hat, p_hat, epsilon_hat, q_bar, r_bar_squared] =
       primitives(mu);
   // Equation (43)
@@ -291,7 +287,7 @@ std::optional<PrimitiveRecoveryData> KastaunEtAl::apply(
     const double magnetic_field_squared,
     const double rest_mass_density_times_lorentz_factor,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
-        equation_of_state) noexcept {
+        equation_of_state) {
   // Master function see Equation (44)
   const auto f_of_mu =
       FunctionOfMu<ThermodynamicDim>{total_energy_density,
@@ -347,7 +343,7 @@ std::optional<PrimitiveRecoveryData> KastaunEtAl::apply(
       const double magnetic_field_squared,                                    \
       const double rest_mass_density_times_lorentz_factor,                    \
       const EquationsOfState::EquationOfState<true, THERMODIM(data)>&         \
-          equation_of_state) noexcept;
+          equation_of_state);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2))
 

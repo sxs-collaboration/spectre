@@ -19,8 +19,7 @@ namespace Limiters {
 /// \see Limiters::Minmod for a description and reference.
 enum class MinmodType { LambdaPi1, LambdaPiN, Muscl };
 
-std::ostream& operator<<(std::ostream& os,
-                         Limiters::MinmodType minmod_type) noexcept;
+std::ostream& operator<<(std::ostream& os, Limiters::MinmodType minmod_type);
 }  // namespace Limiters
 
 template <>

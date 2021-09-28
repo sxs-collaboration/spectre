@@ -54,7 +54,7 @@ namespace ah {
 template <typename SrcTagList, typename DestTagList>
 void ComputeHorizonVolumeQuantities::apply(
     const gsl::not_null<Variables<DestTagList>*> target_vars,
-    const Variables<SrcTagList>& src_vars, const Mesh<3>& /*mesh*/) noexcept {
+    const Variables<SrcTagList>& src_vars, const Mesh<3>& /*mesh*/) {
   static_assert(
       std::is_same_v<tmpl::list_difference<SrcTagList, allowed_src_tags>,
                      tmpl::list<>>,
@@ -169,7 +169,7 @@ void ComputeHorizonVolumeQuantities::apply(
     const Variables<SrcTagList>& src_vars, const Mesh<3>& mesh,
     const Jacobian<DataVector, 3, TargetFrame, Frame::Inertial>& jacobian,
     const InverseJacobian<DataVector, 3, Frame::ElementLogical, TargetFrame>&
-        inverse_jacobian) noexcept {
+        inverse_jacobian) {
   static_assert(
       std::is_same_v<tmpl::list_difference<SrcTagList, allowed_src_tags>,
                      tmpl::list<>>,

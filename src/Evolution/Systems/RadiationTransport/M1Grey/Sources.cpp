@@ -32,7 +32,7 @@ void compute_sources_impl(
     const tnsr::iJ<DataVector, 3>& d_shift,
     const tnsr::ijj<DataVector, 3>& d_spatial_metric,
     const tnsr::II<DataVector, 3>& inv_spatial_metric,
-    const tnsr::ii<DataVector, 3>& extrinsic_curvature) noexcept {
+    const tnsr::ii<DataVector, 3>& extrinsic_curvature) {
   Variables<tmpl::list<Tags::TildeSVector<Frame::Inertial>, AlphaTildeP>>
       temp_tensors(get(tilde_e).size());
 

@@ -17,7 +17,7 @@
 #include "Utilities/Gsl.hpp"
 
 namespace {
-void test_desired_refinement_levels() noexcept {
+void test_desired_refinement_levels() {
   ElementId<1> element_id_1d{0, {{SegmentId(2, 3)}}};
   CHECK(amr::desired_refinement_levels(element_id_1d, {{amr::Flag::Split}}) ==
         std::array<size_t, 1>{{3}});
@@ -55,7 +55,7 @@ void test_desired_refinement_levels() noexcept {
 template <size_t VolumeDim>
 void check_desired_refinement_levels_of_neighbor(
     const ElementId<VolumeDim>& neighbor_id,
-    const std::array<amr::Flag, VolumeDim>& neighbor_flags) noexcept {
+    const std::array<amr::Flag, VolumeDim>& neighbor_flags) {
   for (OrientationMapIterator<VolumeDim> orientation{}; orientation;
        ++orientation) {
     const auto desired_levels_my_frame = desired_refinement_levels_of_neighbor(
@@ -69,7 +69,7 @@ void check_desired_refinement_levels_of_neighbor(
   }
 }
 
-void test_desired_refinement_levels_of_neighbor() noexcept {
+void test_desired_refinement_levels_of_neighbor() {
   ElementId<1> neighbor_id_1d{0, {{SegmentId(2, 3)}}};
   check_desired_refinement_levels_of_neighbor(neighbor_id_1d,
                                               {{amr::Flag::Split}});

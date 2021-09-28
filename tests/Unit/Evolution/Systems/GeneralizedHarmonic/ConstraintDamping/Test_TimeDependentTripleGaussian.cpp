@@ -20,7 +20,7 @@
 
 namespace {
 template <typename DataType>
-void test_triple_gaussian_random(const DataType& used_for_size) noexcept {
+void test_triple_gaussian_random(const DataType& used_for_size) {
   Parallel::register_derived_classes_with_charm<
       GeneralizedHarmonic::ConstraintDamping::TimeDependentTripleGaussian>();
 

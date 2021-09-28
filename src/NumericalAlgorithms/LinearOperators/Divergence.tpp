@@ -15,7 +15,7 @@ template <typename FluxTags, size_t Dim, typename DerivativeFrame>
 Variables<db::wrap_tags_in<Tags::div, FluxTags>> divergence(
     const Variables<FluxTags>& F, const Mesh<Dim>& mesh,
     const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
-                          DerivativeFrame>& inverse_jacobian) noexcept {
+                          DerivativeFrame>& inverse_jacobian) {
   Variables<db::wrap_tags_in<Tags::div, FluxTags>> divergence_of_F(
       F.number_of_grid_points());
   divergence(make_not_null(&divergence_of_F), F, mesh, inverse_jacobian);
@@ -28,7 +28,7 @@ void divergence(
     const gsl::not_null<Variables<tmpl::list<DivTags...>>*> divergence_of_F,
     const Variables<tmpl::list<FluxTags...>>& F, const Mesh<Dim>& mesh,
     const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
-                          DerivativeFrame>& inverse_jacobian) noexcept {
+                          DerivativeFrame>& inverse_jacobian) {
   if (UNLIKELY(divergence_of_F->number_of_grid_points() !=
                mesh.number_of_grid_points())) {
     divergence_of_F->initialize(mesh.number_of_grid_points());
@@ -39,7 +39,7 @@ void divergence(
 
   const auto apply_div = [
     &divergence_of_F, &inverse_jacobian, &logical_partial_derivatives_of_F
-  ](auto flux_tag_v, auto div_tag_v) noexcept {
+  ](auto flux_tag_v, auto div_tag_v) {
     using FluxTag = std::decay_t<decltype(flux_tag_v)>;
     using DivFluxTag = std::decay_t<decltype(div_tag_v)>;
 

@@ -30,7 +30,7 @@ void ComputeBondiIntegrand<Tags::Integrand<Tags::BondiBeta>>::apply_impl(
     const gsl::not_null<SpinWeighted<ComplexDataVector, 0>*> integrand_for_beta,
     const SpinWeighted<ComplexDataVector, 2>& dy_j,
     const SpinWeighted<ComplexDataVector, 2>& j,
-    const SpinWeighted<ComplexDataVector, 0>& one_minus_y) noexcept {
+    const SpinWeighted<ComplexDataVector, 0>& one_minus_y) {
   *integrand_for_beta =
       0.125 * one_minus_y *
       (dy_j * conj(dy_j) -
@@ -40,7 +40,7 @@ void ComputeBondiIntegrand<Tags::Integrand<Tags::BondiBeta>>::apply_impl(
 void ComputeBondiIntegrand<Tags::PoleOfIntegrand<Tags::BondiQ>>::apply_impl(
     const gsl::not_null<SpinWeighted<ComplexDataVector, 1>*>
         pole_of_integrand_for_q,
-    const SpinWeighted<ComplexDataVector, 1>& eth_beta) noexcept {
+    const SpinWeighted<ComplexDataVector, 1>& eth_beta) {
   *pole_of_integrand_for_q = -4.0 * eth_beta;
 }
 
@@ -57,7 +57,7 @@ void ComputeBondiIntegrand<Tags::RegularIntegrand<Tags::BondiQ>>::apply_impl(
     const SpinWeighted<ComplexDataVector, 1>& ethbar_dy_j,
     const SpinWeighted<ComplexDataVector, 1>& ethbar_j,
     const SpinWeighted<ComplexDataVector, 1>& eth_r_divided_by_r,
-    const SpinWeighted<ComplexDataVector, 0>& k) noexcept {
+    const SpinWeighted<ComplexDataVector, 0>& k) {
   *script_aq =
       0.25 * (j * conj(ethbar_dy_j) - eth_jbar_dy_j - conj(ethbar_j) * dy_j +
               0.5 * eth_j_jbar * (conj(j) * dy_j + j * conj(dy_j)) /
@@ -77,14 +77,14 @@ void ComputeBondiIntegrand<Tags::Integrand<Tags::BondiU>>::apply_impl(
     const SpinWeighted<ComplexDataVector, 2>& j,
     const SpinWeighted<ComplexDataVector, 1>& q,
     const SpinWeighted<ComplexDataVector, 0>& k,
-    const SpinWeighted<ComplexDataVector, 0>& r) noexcept {
+    const SpinWeighted<ComplexDataVector, 0>& r) {
   *regular_integrand_for_u = 0.5 * exp_2_beta / r * (k * q - j * conj(q));
 }
 
 void ComputeBondiIntegrand<Tags::PoleOfIntegrand<Tags::BondiW>>::apply_impl(
     const gsl::not_null<SpinWeighted<ComplexDataVector, 0>*>
         pole_of_integrand_for_w,
-    const SpinWeighted<ComplexDataVector, 0>& ethbar_u) noexcept {
+    const SpinWeighted<ComplexDataVector, 0>& ethbar_u) {
   *pole_of_integrand_for_w = ethbar_u + conj(ethbar_u);
 }
 
@@ -107,7 +107,7 @@ void ComputeBondiIntegrand<Tags::RegularIntegrand<Tags::BondiW>>::apply_impl(
     const SpinWeighted<ComplexDataVector, 1>& ethbar_j,
     const SpinWeighted<ComplexDataVector, 1>& eth_r_divided_by_r,
     const SpinWeighted<ComplexDataVector, 0>& k,
-    const SpinWeighted<ComplexDataVector, 0>& r) noexcept {
+    const SpinWeighted<ComplexDataVector, 0>& r) {
   // this computation is split over two lines because GCC-10 on release mode
   // optimizes the long expression templates in such a way to cause segfaults.
   *script_av =
@@ -139,7 +139,7 @@ void ComputeBondiIntegrand<Tags::PoleOfIntegrand<Tags::BondiH>>::apply_impl(
     const SpinWeighted<ComplexDataVector, 1>& ethbar_j,
     const SpinWeighted<ComplexDataVector, -2>& ethbar_jbar_u,
     const SpinWeighted<ComplexDataVector, 0>& ethbar_u,
-    const SpinWeighted<ComplexDataVector, 0>& k) noexcept {
+    const SpinWeighted<ComplexDataVector, 0>& k) {
   *pole_of_integrand_for_h = -0.5 * conj(ethbar_jbar_u) - j * conj(ethbar_u) -
                              0.5 * j * ethbar_u - k * eth_u -
                              0.5 * u * ethbar_j + 2.0 * j * w;
@@ -179,7 +179,7 @@ void ComputeBondiIntegrand<Tags::RegularIntegrand<Tags::BondiH>>::apply_impl(
     const SpinWeighted<ComplexDataVector, 1>& eth_r_divided_by_r,
     const SpinWeighted<ComplexDataVector, 0>& k,
     const SpinWeighted<ComplexDataVector, 0>& one_minus_y,
-    const SpinWeighted<ComplexDataVector, 0>& r) noexcept {
+    const SpinWeighted<ComplexDataVector, 0>& r) {
   *script_aj =
       0.25 *
       (conj(ethbar_ethbar_j) -
@@ -249,7 +249,7 @@ void ComputeBondiIntegrand<Tags::LinearFactor<Tags::BondiH>>::apply_impl(
     const gsl::not_null<SpinWeighted<ComplexDataVector, 2>*> script_djbar,
     const SpinWeighted<ComplexDataVector, 2>& dy_j,
     const SpinWeighted<ComplexDataVector, 2>& j,
-    const SpinWeighted<ComplexDataVector, 0>& one_minus_y) noexcept {
+    const SpinWeighted<ComplexDataVector, 0>& one_minus_y) {
   *script_djbar = 0.25 * one_minus_y *
                   (-2.0 * dy_j +
                    j * (conj(j) * dy_j + j * conj(dy_j)) / (1.0 + j * conj(j)));
@@ -263,7 +263,7 @@ void ComputeBondiIntegrand<Tags::LinearFactorForConjugate<Tags::BondiH>>::
         const gsl::not_null<SpinWeighted<ComplexDataVector, 2>*> script_djbar,
         const SpinWeighted<ComplexDataVector, 2>& dy_j,
         const SpinWeighted<ComplexDataVector, 2>& j,
-        const SpinWeighted<ComplexDataVector, 0>& one_minus_y) noexcept {
+        const SpinWeighted<ComplexDataVector, 0>& one_minus_y) {
   *script_djbar = 0.25 * one_minus_y *
                   (-2.0 * dy_j +
                    j * (conj(j) * dy_j + j * conj(dy_j)) / (1.0 + j * conj(j)));

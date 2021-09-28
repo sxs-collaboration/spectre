@@ -49,7 +49,7 @@ class PrimitiveGhostDataOnSubcells {
   using argument_tags = tmpl::list<::Tags::Variables<prim_tags>>;
 
   static Variables<prims_to_reconstruct_tags> apply(
-      const Variables<prim_tags>& prims) noexcept;
+      const Variables<prim_tags>& prims);
 };
 
 /*!
@@ -93,6 +93,6 @@ class PrimitiveGhostDataToSlice {
 
   static Variables<prims_to_reconstruct_tags> apply(
       const Variables<prim_tags>& prims, const Mesh<Dim>& dg_mesh,
-      const Mesh<Dim>& subcell_mesh) noexcept;
+      const Mesh<Dim>& subcell_mesh);
 };
 }  // namespace NewtonianEuler::subcell

@@ -23,7 +23,7 @@ bool DgInitialDataTci<Dim>::apply(
                    Inactive<EnergyDensity>>>& subcell_vars,
     const double rdmp_delta0, const double rdmp_epsilon,
     const double persson_exponent, const Mesh<Dim>& dg_mesh,
-    const Scalar<DataVector>& dg_pressure) noexcept {
+    const Scalar<DataVector>& dg_pressure) {
   return evolution::dg::subcell::two_mesh_rdmp_tci(dg_vars, subcell_vars,
                                                    rdmp_delta0, rdmp_epsilon) or
          evolution::dg::subcell::persson_tci(get<MassDensityCons>(dg_vars),

@@ -33,14 +33,14 @@ void potential_energy_density(
     const tnsr::ii<DataVector, Dim>& strain,
     const tnsr::I<DataVector, Dim>& coordinates,
     const ConstitutiveRelations::ConstitutiveRelation<Dim>&
-        constitutive_relation) noexcept;
+        constitutive_relation);
 
 template <size_t Dim>
 Scalar<DataVector> potential_energy_density(
     const tnsr::ii<DataVector, Dim>& strain,
     const tnsr::I<DataVector, Dim>& coordinates,
     const ConstitutiveRelations::ConstitutiveRelation<Dim>&
-        constitutive_relation) noexcept;
+        constitutive_relation);
 /// @}
 
 namespace Tags {
@@ -61,7 +61,7 @@ struct PotentialEnergyDensityCompute
   static constexpr auto function = static_cast<void (*)(
       gsl::not_null<Scalar<DataVector>*>, const tnsr::ii<DataVector, Dim>&,
       const tnsr::I<DataVector, Dim>&,
-      const ConstitutiveRelations::ConstitutiveRelation<Dim>&) noexcept>(
+      const ConstitutiveRelations::ConstitutiveRelation<Dim>&)>(
       &potential_energy_density<Dim>);
 };
 

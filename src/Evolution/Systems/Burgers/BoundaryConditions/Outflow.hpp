@@ -29,18 +29,18 @@ class Outflow final : public BoundaryCondition {
       "are all directed out of the domain."};
 
   Outflow() = default;
-  Outflow(Outflow&&) noexcept = default;
-  Outflow& operator=(Outflow&&) noexcept = default;
+  Outflow(Outflow&&) = default;
+  Outflow& operator=(Outflow&&) = default;
   Outflow(const Outflow&) = default;
   Outflow& operator=(const Outflow&) = default;
   ~Outflow() override = default;
 
-  explicit Outflow(CkMigrateMessage* msg) noexcept;
+  explicit Outflow(CkMigrateMessage* msg);
 
   WRAPPED_PUPable_decl_base_template(
       domain::BoundaryConditions::BoundaryCondition, Outflow);
 
-  auto get_clone() const noexcept -> std::unique_ptr<
+  auto get_clone() const -> std::unique_ptr<
       domain::BoundaryConditions::BoundaryCondition> override;
 
   static constexpr evolution::BoundaryConditions::Type bc_type =
@@ -57,6 +57,6 @@ class Outflow final : public BoundaryCondition {
           face_mesh_velocity,
       const tnsr::i<DataVector, 1, Frame::Inertial>&
           outward_directed_normal_covector,
-      const Scalar<DataVector>& u) noexcept;
+      const Scalar<DataVector>& u);
 };
 }  // namespace Burgers::BoundaryConditions

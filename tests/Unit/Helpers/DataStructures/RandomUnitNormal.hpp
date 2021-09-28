@@ -19,14 +19,14 @@ class not_null;
 template <typename DataType>
 tnsr::I<DataType, 1> random_unit_normal(
     gsl::not_null<std::mt19937*> generator,
-    const tnsr::ii<DataType, 1>& spatial_metric) noexcept;
+    const tnsr::ii<DataType, 1>& spatial_metric);
 
 template <typename DataType>
 tnsr::I<DataType, 2> random_unit_normal(
     gsl::not_null<std::mt19937*> generator,
-    const tnsr::ii<DataType, 2>& spatial_metric) noexcept;
+    const tnsr::ii<DataType, 2>& spatial_metric);
 
 template <typename DataType>
 tnsr::I<DataType, 3> random_unit_normal(
     gsl::not_null<std::mt19937*> generator,
-    const tnsr::ii<DataType, 3>& spatial_metric) noexcept;
+    const tnsr::ii<DataType, 3>& spatial_metric);

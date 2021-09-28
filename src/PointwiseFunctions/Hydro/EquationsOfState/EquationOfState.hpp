@@ -93,9 +93,9 @@ class EquationOfState<IsRelativistic, 1>
    * Computes the pressure \f$p\f$ from the rest mass density \f$\rho\f$.
    */
   virtual Scalar<double> pressure_from_density(
-      const Scalar<double>& /*rest_mass_density*/) const noexcept = 0;
+      const Scalar<double>& /*rest_mass_density*/) const = 0;
   virtual Scalar<DataVector> pressure_from_density(
-      const Scalar<DataVector>& /*rest_mass_density*/) const noexcept = 0;
+      const Scalar<DataVector>& /*rest_mass_density*/) const = 0;
   /// @}
 
   /// @{
@@ -104,9 +104,9 @@ class EquationOfState<IsRelativistic, 1>
    * \f$h\f$.
    */
   virtual Scalar<double> rest_mass_density_from_enthalpy(
-      const Scalar<double>& /*specific_enthalpy*/) const noexcept = 0;
+      const Scalar<double>& /*specific_enthalpy*/) const = 0;
   virtual Scalar<DataVector> rest_mass_density_from_enthalpy(
-      const Scalar<DataVector>& /*specific_enthalpy*/) const noexcept = 0;
+      const Scalar<DataVector>& /*specific_enthalpy*/) const = 0;
   /// @}
 
   /// @{
@@ -115,9 +115,9 @@ class EquationOfState<IsRelativistic, 1>
    * \f$\rho\f$.
    */
   virtual Scalar<double> specific_enthalpy_from_density(
-      const Scalar<double>& /*rest_mass_density*/) const noexcept = 0;
+      const Scalar<double>& /*rest_mass_density*/) const = 0;
   virtual Scalar<DataVector> specific_enthalpy_from_density(
-      const Scalar<DataVector>& /*rest_mass_density*/) const noexcept = 0;
+      const Scalar<DataVector>& /*rest_mass_density*/) const = 0;
   /// @}
 
   /// @{
@@ -126,9 +126,9 @@ class EquationOfState<IsRelativistic, 1>
    * density \f$\rho\f$.
    */
   virtual Scalar<double> specific_internal_energy_from_density(
-      const Scalar<double>& /*rest_mass_density*/) const noexcept = 0;
+      const Scalar<double>& /*rest_mass_density*/) const = 0;
   virtual Scalar<DataVector> specific_internal_energy_from_density(
-      const Scalar<DataVector>& /*rest_mass_density*/) const noexcept = 0;
+      const Scalar<DataVector>& /*rest_mass_density*/) const = 0;
   /// @}
 
   /// @{
@@ -137,9 +137,9 @@ class EquationOfState<IsRelativistic, 1>
    * \f$p\f$ is the pressure and \f$\rho\f$ is the rest mass density.
    */
   virtual Scalar<double> chi_from_density(
-      const Scalar<double>& /*rest_mass_density*/) const noexcept = 0;
+      const Scalar<double>& /*rest_mass_density*/) const = 0;
   virtual Scalar<DataVector> chi_from_density(
-      const Scalar<DataVector>& /*rest_mass_density*/) const noexcept = 0;
+      const Scalar<DataVector>& /*rest_mass_density*/) const = 0;
   /// @}
 
   /// @{
@@ -154,28 +154,28 @@ class EquationOfState<IsRelativistic, 1>
    * some equations of state.
    */
   virtual Scalar<double> kappa_times_p_over_rho_squared_from_density(
-      const Scalar<double>& /*rest_mass_density*/) const noexcept = 0;
+      const Scalar<double>& /*rest_mass_density*/) const = 0;
   virtual Scalar<DataVector> kappa_times_p_over_rho_squared_from_density(
-      const Scalar<DataVector>& /*rest_mass_density*/) const noexcept = 0;
+      const Scalar<DataVector>& /*rest_mass_density*/) const = 0;
 
   /// The lower bound of the rest mass density that is valid for this EOS
-  virtual double rest_mass_density_lower_bound() const noexcept = 0;
+  virtual double rest_mass_density_lower_bound() const = 0;
 
   /// The upper bound of the rest mass density that is valid for this EOS
-  virtual double rest_mass_density_upper_bound() const noexcept = 0;
+  virtual double rest_mass_density_upper_bound() const = 0;
 
   /// The lower bound of the specific internal energy that is valid for this EOS
   /// at the given rest mass density \f$\rho\f$
   virtual double specific_internal_energy_lower_bound(
-      const double rest_mass_density) const noexcept = 0;
+      const double rest_mass_density) const = 0;
 
   /// The upper bound of the specific internal energy that is valid for this EOS
   /// at the given rest mass density \f$\rho\f$
   virtual double specific_internal_energy_upper_bound(
-      const double rest_mass_density) const noexcept = 0;
+      const double rest_mass_density) const = 0;
 
   /// The lower bound of the specific enthalpy that is valid for this EOS
-  virtual double specific_enthalpy_lower_bound() const noexcept = 0;
+  virtual double specific_enthalpy_lower_bound() const = 0;
 };
 
 /*!
@@ -211,11 +211,10 @@ class EquationOfState<IsRelativistic, 2>
    */
   virtual Scalar<double> pressure_from_density_and_energy(
       const Scalar<double>& /*rest_mass_density*/,
-      const Scalar<double>& /*specific_internal_energy*/) const noexcept = 0;
+      const Scalar<double>& /*specific_internal_energy*/) const = 0;
   virtual Scalar<DataVector> pressure_from_density_and_energy(
       const Scalar<DataVector>& /*rest_mass_density*/,
-      const Scalar<DataVector>& /*specific_internal_energy*/) const
-      noexcept = 0;
+      const Scalar<DataVector>& /*specific_internal_energy*/) const = 0;
   /// @}
 
   /// @{
@@ -225,10 +224,10 @@ class EquationOfState<IsRelativistic, 2>
    */
   virtual Scalar<double> pressure_from_density_and_enthalpy(
       const Scalar<double>& /*rest_mass_density*/,
-      const Scalar<double>& /*specific_enthalpy*/) const noexcept = 0;
+      const Scalar<double>& /*specific_enthalpy*/) const = 0;
   virtual Scalar<DataVector> pressure_from_density_and_enthalpy(
       const Scalar<DataVector>& /*rest_mass_density*/,
-      const Scalar<DataVector>& /*specific_enthalpy*/) const noexcept = 0;
+      const Scalar<DataVector>& /*specific_enthalpy*/) const = 0;
   /// @}
 
   /// @{
@@ -238,11 +237,10 @@ class EquationOfState<IsRelativistic, 2>
    */
   virtual Scalar<double> specific_enthalpy_from_density_and_energy(
       const Scalar<double>& /*rest_mass_density*/,
-      const Scalar<double>& /*specific_internal_energy*/) const noexcept = 0;
+      const Scalar<double>& /*specific_internal_energy*/) const = 0;
   virtual Scalar<DataVector> specific_enthalpy_from_density_and_energy(
       const Scalar<DataVector>& /*rest_mass_density*/,
-      const Scalar<DataVector>& /*specific_internal_energy*/) const
-      noexcept = 0;
+      const Scalar<DataVector>& /*specific_internal_energy*/) const = 0;
   /// @}
 
   /// @{
@@ -252,10 +250,10 @@ class EquationOfState<IsRelativistic, 2>
    */
   virtual Scalar<double> specific_internal_energy_from_density_and_pressure(
       const Scalar<double>& /*rest_mass_density*/,
-      const Scalar<double>& /*pressure*/) const noexcept = 0;
+      const Scalar<double>& /*pressure*/) const = 0;
   virtual Scalar<DataVector> specific_internal_energy_from_density_and_pressure(
       const Scalar<DataVector>& /*rest_mass_density*/,
-      const Scalar<DataVector>& /*pressure*/) const noexcept = 0;
+      const Scalar<DataVector>& /*pressure*/) const = 0;
   /// @}
 
   /// @{
@@ -266,11 +264,10 @@ class EquationOfState<IsRelativistic, 2>
    */
   virtual Scalar<double> chi_from_density_and_energy(
       const Scalar<double>& /*rest_mass_density*/,
-      const Scalar<double>& /*specific_internal_energy*/) const noexcept = 0;
+      const Scalar<double>& /*specific_internal_energy*/) const = 0;
   virtual Scalar<DataVector> chi_from_density_and_energy(
       const Scalar<DataVector>& /*rest_mass_density*/,
-      const Scalar<DataVector>& /*specific_internal_energy*/) const
-      noexcept = 0;
+      const Scalar<DataVector>& /*specific_internal_energy*/) const = 0;
   /// @}
 
   /// @{
@@ -287,32 +284,31 @@ class EquationOfState<IsRelativistic, 2>
    */
   virtual Scalar<double> kappa_times_p_over_rho_squared_from_density_and_energy(
       const Scalar<double>& /*rest_mass_density*/,
-      const Scalar<double>& /*specific_internal_energy*/) const noexcept = 0;
+      const Scalar<double>& /*specific_internal_energy*/) const = 0;
   virtual Scalar<DataVector>
   kappa_times_p_over_rho_squared_from_density_and_energy(
       const Scalar<DataVector>& /*rest_mass_density*/,
-      const Scalar<DataVector>& /*specific_internal_energy*/) const
-      noexcept = 0;
+      const Scalar<DataVector>& /*specific_internal_energy*/) const = 0;
   /// @}
 
   /// The lower bound of the rest mass density that is valid for this EOS
-  virtual double rest_mass_density_lower_bound() const noexcept = 0;
+  virtual double rest_mass_density_lower_bound() const = 0;
 
   /// The upper bound of the rest mass density that is valid for this EOS
-  virtual double rest_mass_density_upper_bound() const noexcept = 0;
+  virtual double rest_mass_density_upper_bound() const = 0;
 
   /// The lower bound of the specific internal energy that is valid for this EOS
   /// at the given rest mass density \f$\rho\f$
   virtual double specific_internal_energy_lower_bound(
-      const double rest_mass_density) const noexcept = 0;
+      const double rest_mass_density) const = 0;
 
   /// The upper bound of the specific internal energy that is valid for this EOS
   /// at the given rest mass density \f$\rho\f$
   virtual double specific_internal_energy_upper_bound(
-      const double rest_mass_density) const noexcept = 0;
+      const double rest_mass_density) const = 0;
 
   /// The lower bound of the specific enthalpy that is valid for this EOS
-  virtual double specific_enthalpy_lower_bound() const noexcept = 0;
+  virtual double specific_enthalpy_lower_bound() const = 0;
 };
 }  // namespace EquationsOfState
 
@@ -332,14 +328,12 @@ class EquationOfState<IsRelativistic, 2>
 #define EQUATION_OF_STATE_ARGUMENTS_EXPAND(z, n, type) \
   BOOST_PP_COMMA_IF(n) const Scalar<type>&
 
-#define EQUATION_OF_STATE_FORWARD_DECLARE_MEMBERS_HELPER(r, DIM,            \
-                                                         FUNCTION_NAME)     \
-  Scalar<double> FUNCTION_NAME(                                             \
-      BOOST_PP_REPEAT(DIM, EQUATION_OF_STATE_ARGUMENTS_EXPAND, double))     \
-      const noexcept override;                                              \
-  Scalar<DataVector> FUNCTION_NAME(                                         \
-      BOOST_PP_REPEAT(DIM, EQUATION_OF_STATE_ARGUMENTS_EXPAND, DataVector)) \
-      const noexcept override;
+#define EQUATION_OF_STATE_FORWARD_DECLARE_MEMBERS_HELPER(r, DIM,        \
+                                                         FUNCTION_NAME) \
+  Scalar<double> FUNCTION_NAME(BOOST_PP_REPEAT(                         \
+      DIM, EQUATION_OF_STATE_ARGUMENTS_EXPAND, double)) const override; \
+  Scalar<DataVector> FUNCTION_NAME(BOOST_PP_REPEAT(                     \
+      DIM, EQUATION_OF_STATE_ARGUMENTS_EXPAND, DataVector)) const override;
 
 /// \endcond
 
@@ -356,9 +350,9 @@ class EquationOfState<IsRelativistic, 2>
           (EQUATION_OF_STATE_FUNCTIONS_1D, EQUATION_OF_STATE_FUNCTIONS_2D)))) \
                                                                               \
   /* clang-tidy: do not use non-const references */                           \
-  void pup(PUP::er& p) noexcept override; /* NOLINT */                        \
+  void pup(PUP::er& p) override; /* NOLINT */                                 \
                                                                               \
-  explicit DERIVED(CkMigrateMessage* /*unused*/) noexcept;
+  explicit DERIVED(CkMigrateMessage* /*unused*/);
 
 /// \cond
 #define EQUATION_OF_STATE_FORWARD_ARGUMENTS(z, n, unused) \
@@ -371,8 +365,7 @@ class EquationOfState<IsRelativistic, 2>
     TEMPLATE, DERIVED, DATA_TYPE, DIM, FUNCTION_NAME)                       \
   TEMPLATE                                                                  \
   Scalar<DATA_TYPE> DERIVED::FUNCTION_NAME(BOOST_PP_REPEAT(                 \
-      DIM, EQUATION_OF_STATE_ARGUMENTS_EXPAND_NAMED, DATA_TYPE))            \
-      const noexcept {                                                      \
+      DIM, EQUATION_OF_STATE_ARGUMENTS_EXPAND_NAMED, DATA_TYPE)) const {    \
     return FUNCTION_NAME##_impl(                                            \
         BOOST_PP_REPEAT(DIM, EQUATION_OF_STATE_FORWARD_ARGUMENTS, UNUSED)); \
   }
@@ -398,7 +391,7 @@ class EquationOfState<IsRelativistic, 2>
                                                               FUNCTION_NAME) \
   template <class DataType>                                                  \
   Scalar<DataType> FUNCTION_NAME##_impl(BOOST_PP_REPEAT(                     \
-      DIM, EQUATION_OF_STATE_ARGUMENTS_EXPAND, DataType)) const noexcept;
+      DIM, EQUATION_OF_STATE_ARGUMENTS_EXPAND, DataType)) const;
 /// \endcond
 
 #define EQUATION_OF_STATE_FORWARD_DECLARE_MEMBER_IMPLS(DIM)       \

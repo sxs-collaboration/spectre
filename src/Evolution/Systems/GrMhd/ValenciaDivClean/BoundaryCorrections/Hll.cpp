@@ -16,9 +16,9 @@
 #include "Utilities/Gsl.hpp"
 
 namespace grmhd::ValenciaDivClean::BoundaryCorrections {
-Hll::Hll(CkMigrateMessage* /*unused*/) noexcept {}
+Hll::Hll(CkMigrateMessage* /*unused*/) {}
 
-std::unique_ptr<BoundaryCorrection> Hll::get_clone() const noexcept {
+std::unique_ptr<BoundaryCorrection> Hll::get_clone() const {
   return std::make_unique<Hll>(*this);
 }
 
@@ -62,8 +62,7 @@ double Hll::dg_package_data(
     const tnsr::I<DataVector, 3, Frame::Inertial>& /*normal_vector*/,
     const std::optional<tnsr::I<DataVector, 3, Frame::Inertial>>&
     /*mesh_velocity*/,
-    const std::optional<Scalar<DataVector>>&
-        normal_dot_mesh_velocity) noexcept {
+    const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity) {
   {
     // Compute max abs char speed
     Scalar<DataVector>& shift_dot_normal = *packaged_tilde_d;
@@ -135,7 +134,7 @@ void Hll::dg_boundary_terms(
     const Scalar<DataVector>& normal_dot_flux_tilde_phi_ext,
     const Scalar<DataVector>& largest_outgoing_char_speed_ext,
     const Scalar<DataVector>& largest_ingoing_char_speed_ext,
-    const dg::Formulation dg_formulation) noexcept {
+    const dg::Formulation dg_formulation) {
   // Allocate a temp buffer with four tags.
   Variables<tmpl::list<::Tags::TempScalar<0>, ::Tags::TempScalar<1>,
                        ::Tags::TempScalar<2>, ::Tags::TempScalar<3>>>

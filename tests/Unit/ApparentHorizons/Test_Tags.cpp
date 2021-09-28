@@ -313,7 +313,7 @@ void test_min_ricci_scalar() {
   CHECK(expected_min == min);
 }
 
-void test_dimensionful_spin_vector_compute_tag() noexcept {
+void test_dimensionful_spin_vector_compute_tag() {
   const double y11_amplitude = 1.0;
   const double y11_radius = 2.0;
   const std::array<double, 3> center = {{0.1, 0.2, 0.3}};

@@ -31,12 +31,12 @@ namespace gr {
  */
 template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::ii<DataType, SpatialDim, Frame> spatial_metric(
-    const tnsr::aa<DataType, SpatialDim, Frame>& spacetime_metric) noexcept;
+    const tnsr::aa<DataType, SpatialDim, Frame>& spacetime_metric);
 
 template <size_t SpatialDim, typename Frame, typename DataType>
 void spatial_metric(
     gsl::not_null<tnsr::ii<DataType, SpatialDim, Frame>*> spatial_metric,
-    const tnsr::aa<DataType, SpatialDim, Frame>& spacetime_metric) noexcept;
+    const tnsr::aa<DataType, SpatialDim, Frame>& spacetime_metric);
 /// @}
 
 namespace Tags {
@@ -56,7 +56,7 @@ struct SpatialMetricCompute : SpatialMetric<SpatialDim, Frame, DataType>,
 
   static constexpr auto function = static_cast<void (*)(
       gsl::not_null<tnsr::ii<DataType, SpatialDim, Frame>*>,
-      const tnsr::aa<DataType, SpatialDim, Frame>&) noexcept>(
+      const tnsr::aa<DataType, SpatialDim, Frame>&)>(
       &spatial_metric<SpatialDim, Frame, DataType>);
 
   using base = SpatialMetric<SpatialDim, Frame, DataType>;

@@ -32,27 +32,27 @@ double integrand(const double x, void* const params) {
 
 class GslQuadAdaptiveImpl {
  public:
-  explicit GslQuadAdaptiveImpl(size_t max_intervals) noexcept;
+  explicit GslQuadAdaptiveImpl(size_t max_intervals);
 
   GslQuadAdaptiveImpl() = default;
   GslQuadAdaptiveImpl(const GslQuadAdaptiveImpl&) = delete;
   GslQuadAdaptiveImpl& operator=(const GslQuadAdaptiveImpl&) = delete;
-  GslQuadAdaptiveImpl(GslQuadAdaptiveImpl&&) noexcept = default;
-  GslQuadAdaptiveImpl& operator=(GslQuadAdaptiveImpl&& rhs) noexcept = default;
-  ~GslQuadAdaptiveImpl() noexcept = default;
+  GslQuadAdaptiveImpl(GslQuadAdaptiveImpl&&) = default;
+  GslQuadAdaptiveImpl& operator=(GslQuadAdaptiveImpl&& rhs) = default;
+  ~GslQuadAdaptiveImpl() = default;
 
-  void pup(PUP::er& p) noexcept;  // NOLINT(google-runtime-references)
+  void pup(PUP::er& p);  // NOLINT(google-runtime-references)
 
  protected:
   template <typename IntegrandType>
-  gsl_function* gsl_integrand(IntegrandType&& integrand) const noexcept {
+  gsl_function* gsl_integrand(IntegrandType&& integrand) const {
     gsl_integrand_.function = &detail::integrand<IntegrandType>;
     gsl_integrand_.params = &integrand;
     return &gsl_integrand_;
   }
 
   struct GslIntegrationWorkspaceDeleter {
-    void operator()(gsl_integration_workspace* workspace) const noexcept;
+    void operator()(gsl_integration_workspace* workspace) const;
   };
 
   size_t max_intervals_ = 0;
@@ -60,14 +60,14 @@ class GslQuadAdaptiveImpl {
       workspace_{};
 
  private:
-  void initialize() noexcept;
+  void initialize();
 
   mutable gsl_function gsl_integrand_{};
 };
 
 void check_status_code(int status_code);
 
-void disable_gsl_error_handling() noexcept;
+void disable_gsl_error_handling();
 
 }  // namespace detail
 

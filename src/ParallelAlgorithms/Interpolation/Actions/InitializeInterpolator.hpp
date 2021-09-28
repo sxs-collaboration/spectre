@@ -68,7 +68,7 @@ struct InitializeInterpolator {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     Initialization::mutate_assign<tmpl::list<Tags::NumberOfElements>>(
         make_not_null(&box), 0_st);
     return std::make_tuple(std::move(box));

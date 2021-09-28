@@ -19,7 +19,7 @@
 namespace {
 template <size_t Dim, typename DataType>
 void test_spatial_velocity(const gsl::not_null<std::mt19937*> generator,
-                           const DataType& used_for_size) noexcept {
+                           const DataType& used_for_size) {
   const auto metric =
       TestHelpers::gr::random_spatial_metric<Dim>(generator, used_for_size);
   const auto lorentz_factor =

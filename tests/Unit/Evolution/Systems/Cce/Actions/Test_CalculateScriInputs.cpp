@@ -144,10 +144,11 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.CalculateScriInputs",
       component_boundary_variables{
           Spectral::Swsh::number_of_swsh_collocation_points(l_max)};
 
-  tmpl::for_each<all_pre_swsh_derivative_scri_input_tags>([
-    &component_volume_variables, &gen, &coefficient_distribution,
-    &number_of_radial_points, &l_max
-  ](auto tag_v) noexcept {
+  tmpl::for_each<
+      all_pre_swsh_derivative_scri_input_tags>([&component_volume_variables,
+                                                &gen, &coefficient_distribution,
+                                                &number_of_radial_points,
+                                                &l_max](auto tag_v) {
     using tag = typename decltype(tag_v)::type;
     SpinWeighted<ComplexModalVector, tag::type::type::spin> generated_modes{
         number_of_radial_points *
@@ -166,9 +167,10 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.CalculateScriInputs",
         l_max / 2, 32.0, 8);
   });
 
-  tmpl::for_each<all_real_boundary_scri_input_tags>([
-    &component_real_variables, &gen, &coefficient_distribution, &l_max
-  ](auto tag_v) noexcept {
+  tmpl::for_each<all_real_boundary_scri_input_tags>([&component_real_variables,
+                                                     &gen,
+                                                     &coefficient_distribution,
+                                                     &l_max](auto tag_v) {
     using tag = typename decltype(tag_v)::type;
     SpinWeighted<ComplexModalVector, 0> generated_modes{
         Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max)};
@@ -197,14 +199,13 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.CalculateScriInputs",
   runner.set_phase(metavariables::Phase::Initialization);
 
   // run the initialization to get the values into the databox
-  tmpl::for_each<extra_pre_swsh_derivative_scri_tags>([&expected_box](
-      auto tag_v) noexcept {
-    using tag = typename decltype(tag_v)::type;
-    db::mutate_apply<PreSwshDerivatives<tag>>(make_not_null(&expected_box));
-  });
+  tmpl::for_each<extra_pre_swsh_derivative_scri_tags>(
+      [&expected_box](auto tag_v) {
+        using tag = typename decltype(tag_v)::type;
+        db::mutate_apply<PreSwshDerivatives<tag>>(make_not_null(&expected_box));
+      });
 
-  tmpl::for_each<extra_precomputation_scri_tags>([&expected_box](
-      auto tag_v) noexcept {
+  tmpl::for_each<extra_precomputation_scri_tags>([&expected_box](auto tag_v) {
     using tag = typename decltype(tag_v)::type;
     db::mutate_apply<PrecomputeCceDependencies<Tags::BoundaryValue, tag>>(
         make_not_null(&expected_box));
@@ -224,7 +225,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.CalculateScriInputs",
   // The mutations themselves are tested in other unit tests.
   tmpl::for_each<tmpl::append<all_pre_swsh_derivative_tags_for_scri,
                               all_boundary_pre_swsh_derivative_tags_for_scri>>(
-      [&expected_box](auto pre_swsh_derivative_tag_v) noexcept {
+      [&expected_box](auto pre_swsh_derivative_tag_v) {
         using pre_swsh_derivative_tag =
             typename decltype(pre_swsh_derivative_tag_v)::type;
         db::mutate_apply<PreSwshDerivatives<pre_swsh_derivative_tag>>(
@@ -234,25 +235,25 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.CalculateScriInputs",
   db::mutate_apply<
       Spectral::Swsh::AngularDerivatives<all_swsh_derivative_tags_for_scri>>(
       make_not_null(&expected_box));
-  tmpl::for_each<all_boundary_swsh_derivative_tags_for_scri>([
-    &expected_box, &l_max
-  ](auto swsh_derivative_tag_v) noexcept {
-    using swsh_derivative_tag = typename decltype(swsh_derivative_tag_v)::type;
-    db::mutate<swsh_derivative_tag>(
-        make_not_null(&expected_box),
-        [&l_max](
-            const gsl::not_null<typename swsh_derivative_tag::type*> derivative,
-            const typename swsh_derivative_tag::derivative_of::type&
-                argument) noexcept {
-          Spectral::Swsh::angular_derivatives<
-              tmpl::list<typename swsh_derivative_tag::derivative_kind>>(
-              l_max, 1, make_not_null(&get(*derivative)), get(argument));
-        },
-        db::get<typename swsh_derivative_tag::derivative_of>(expected_box));
-  });
+  tmpl::for_each<all_boundary_swsh_derivative_tags_for_scri>(
+      [&expected_box, &l_max](auto swsh_derivative_tag_v) {
+        using swsh_derivative_tag =
+            typename decltype(swsh_derivative_tag_v)::type;
+        db::mutate<swsh_derivative_tag>(
+            make_not_null(&expected_box),
+            [&l_max](const gsl::not_null<typename swsh_derivative_tag::type*>
+                         derivative,
+                     const typename swsh_derivative_tag::derivative_of::type&
+                         argument) {
+              Spectral::Swsh::angular_derivatives<
+                  tmpl::list<typename swsh_derivative_tag::derivative_kind>>(
+                  l_max, 1, make_not_null(&get(*derivative)), get(argument));
+            },
+            db::get<typename swsh_derivative_tag::derivative_of>(expected_box));
+      });
 
   tmpl::for_each<all_swsh_derivative_tags_for_scri>([&expected_box](
-      auto derivative_tag_v) noexcept {
+                                                        auto derivative_tag_v) {
     using derivative_tag = typename decltype(derivative_tag_v)::type;
     detail::apply_swsh_jacobian_helper<derivative_tag>(
         make_not_null(&expected_box),
@@ -268,15 +269,14 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.CalculateScriInputs",
   tmpl::for_each<tmpl::append<all_swsh_derivative_tags_for_scri,
                               all_pre_swsh_derivative_tags_for_scri,
                               all_boundary_pre_swsh_derivative_tags_for_scri,
-                              all_boundary_swsh_derivative_tags_for_scri>>([
-    &expected_box, &runner, &multiple_derivative_approx
-  ](auto tag_v) noexcept {
-    using tag = typename decltype(tag_v)::type;
-    const auto& test_lhs =
-        ActionTesting::get_databox_tag<component, tag>(runner, 0);
-    const auto& test_rhs = db::get<tag>(expected_box);
-    CHECK_ITERABLE_CUSTOM_APPROX(test_lhs, test_rhs,
-                                 multiple_derivative_approx);
-  });
+                              all_boundary_swsh_derivative_tags_for_scri>>(
+      [&expected_box, &runner, &multiple_derivative_approx](auto tag_v) {
+        using tag = typename decltype(tag_v)::type;
+        const auto& test_lhs =
+            ActionTesting::get_databox_tag<component, tag>(runner, 0);
+        const auto& test_rhs = db::get<tag>(expected_box);
+        CHECK_ITERABLE_CUSTOM_APPROX(test_lhs, test_rhs,
+                                     multiple_derivative_approx);
+      });
 }
 }  // namespace Cce

@@ -24,7 +24,7 @@ class FocallyLiftedMap;
 
 template <typename InnerMap>
 bool operator==(const FocallyLiftedMap<InnerMap>& lhs,
-                const FocallyLiftedMap<InnerMap>& rhs) noexcept;
+                const FocallyLiftedMap<InnerMap>& rhs);
 
 /*!
  * \ingroup CoordinateMapsGroup
@@ -315,8 +315,7 @@ class FocallyLiftedMap {
   static constexpr size_t dim = 3;
   FocallyLiftedMap(const std::array<double, 3>& center,
                    const std::array<double, 3>& proj_center, double radius,
-                   bool source_is_between_focus_and_target,
-                   InnerMap inner_map) noexcept;
+                   bool source_is_between_focus_and_target, InnerMap inner_map);
 
   FocallyLiftedMap() = default;
   ~FocallyLiftedMap() = default;
@@ -327,32 +326,31 @@ class FocallyLiftedMap {
 
   template <typename T>
   std::array<tt::remove_cvref_wrap_t<T>, 3> operator()(
-      const std::array<T, 3>& source_coords) const noexcept;
+      const std::array<T, 3>& source_coords) const;
 
   /// The inverse function is only callable with doubles because the inverse
   /// might fail if called for a point out of range, and it is unclear
   /// what should happen if the inverse were to succeed for some points in a
   /// DataVector but fail for other points.
   std::optional<std::array<double, 3>> inverse(
-      const std::array<double, 3>& target_coords) const noexcept;
+      const std::array<double, 3>& target_coords) const;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> jacobian(
-      const std::array<T, 3>& source_coords) const noexcept;
+      const std::array<T, 3>& source_coords) const;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> inv_jacobian(
-      const std::array<T, 3>& source_coords) const noexcept;
+      const std::array<T, 3>& source_coords) const;
 
   // clang-tidy: google runtime references
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
 
-  static bool is_identity() noexcept { return false; }
+  static bool is_identity() { return false; }
 
  private:
-  friend bool operator==
-      <InnerMap>(const FocallyLiftedMap<InnerMap>& lhs,
-                 const FocallyLiftedMap<InnerMap>& rhs) noexcept;
+  friend bool operator==<InnerMap>(const FocallyLiftedMap<InnerMap>& lhs,
+                                   const FocallyLiftedMap<InnerMap>& rhs);
   std::array<double, 3> center_{}, proj_center_{};
   double radius_{std::numeric_limits<double>::signaling_NaN()};
   bool source_is_between_focus_and_target_;
@@ -360,5 +358,5 @@ class FocallyLiftedMap {
 };
 template <typename InnerMap>
 bool operator!=(const FocallyLiftedMap<InnerMap>& lhs,
-                const FocallyLiftedMap<InnerMap>& rhs) noexcept;
+                const FocallyLiftedMap<InnerMap>& rhs);
 }  // namespace domain::CoordinateMaps

@@ -38,9 +38,8 @@ struct Metavariables {
 };
 
 template <typename ScalarFieldData, typename BackgroundData>
-void test_tag_retrieval(
-    const CurvedScalarWave::AnalyticData::ScalarWaveGr<
-        ScalarFieldData, BackgroundData>& curved_wave_data) noexcept {
+void test_tag_retrieval(const CurvedScalarWave::AnalyticData::ScalarWaveGr<
+                        ScalarFieldData, BackgroundData>& curved_wave_data) {
   const tnsr::I<DataVector, 3> x{std::array<DataVector, 3>{
       {DataVector({0., 1., 2., 3.}), DataVector({0., 0., 0., 0.}),
        DataVector({0., 0., 0., 0.})}}};
@@ -55,7 +54,7 @@ void test_tag_retrieval(
 template <typename ScalarFieldData, typename BackgroundData>
 void test_no_hole(const CurvedScalarWave::AnalyticData::ScalarWaveGr<
                       ScalarFieldData, BackgroundData>& curved_wave_data,
-                  const ScalarFieldData& flat_wave_solution) noexcept {
+                  const ScalarFieldData& flat_wave_solution) {
   const tnsr::I<DataVector, 3> x{std::array<DataVector, 3>{
       {DataVector({0., 1., 2., 3.}), DataVector({0., 0., 0., 0.}),
        DataVector({0., 0., 0., 0.})}}};
@@ -81,7 +80,7 @@ void test_kerr(
     const CurvedScalarWave::AnalyticData::ScalarWaveGr<
         ScalarFieldData, gr::Solutions::KerrSchild>& curved_wave_data,
     const gr::Solutions::KerrSchild& bh_solution,
-    const ScalarFieldData& flat_wave_solution) noexcept {
+    const ScalarFieldData& flat_wave_solution) {
   const tnsr::I<DataVector, 3> x{std::array<DataVector, 3>{
       {DataVector({0., 1., 2., 3.}), DataVector({0., 0., 0., 0.}),
        DataVector({0., 0., 0., 0.})}}};
@@ -122,7 +121,7 @@ template <typename ScalarFieldData>
 void test_kerr_schild_vars(
     const CurvedScalarWave::AnalyticData::ScalarWaveGr<
         ScalarFieldData, gr::Solutions::KerrSchild>& curved_wave_data,
-    const gr::Solutions::KerrSchild& bh_solution) noexcept {
+    const gr::Solutions::KerrSchild& bh_solution) {
   const tnsr::I<DataVector, 3> x{std::array<DataVector, 3>{
       {DataVector({0., 1., 2., 3.}), DataVector({0., 0., 0., 0.}),
        DataVector({0., 0., 0., 0.})}}};
@@ -143,7 +142,7 @@ void test_kerr_schild_vars(
       });
 }
 
-void test_construct_from_options() noexcept {
+void test_construct_from_options() {
   {  // test with wave profile = spherical
     const auto curved_wave_data_constructed_from_opts =
         TestHelpers::test_creation<
@@ -318,7 +317,7 @@ void test_construct_from_options() noexcept {
 }
 
 void test_serialize(const double mass, const std::array<double, 3>& spin,
-                    const std::array<double, 3>& center) noexcept {
+                    const std::array<double, 3>& center) {
   Parallel::register_factory_classes_with_charm<Metavariables>();
   {  // test with wave profile = spherical
     CurvedScalarWave::AnalyticData::ScalarWaveGr<
@@ -366,7 +365,7 @@ void test_serialize(const double mass, const std::array<double, 3>& spin,
 }
 
 void test_move(const double mass, const std::array<double, 3>& spin,
-               const std::array<double, 3>& center) noexcept {
+               const std::array<double, 3>& center) {
   {  // test with wave profile = spherical
     CurvedScalarWave::AnalyticData::ScalarWaveGr<
         ScalarWave::Solutions::RegularSphericalWave, gr::Solutions::KerrSchild>

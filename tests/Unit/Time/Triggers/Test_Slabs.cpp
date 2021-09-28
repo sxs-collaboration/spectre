@@ -56,16 +56,16 @@ SPECTRE_TEST_CASE("Unit.Time.Triggers.Slabs", "[Unit][Time]") {
   for (const bool expected :
        {false, false, false, true, false, false, true, false, true, false}) {
     CHECK(sent_trigger->is_triggered(box) == expected);
-    db::mutate<Tags::TimeStepId>(make_not_null(&box), [
-    ](const gsl::not_null<TimeStepId*> time_id) noexcept {
-      *time_id = TimeStepId(true, time_id->slab_number(), time_id->step_time(),
-                            1, time_id->step_time());
-    });
+    db::mutate<Tags::TimeStepId>(
+        make_not_null(&box), [](const gsl::not_null<TimeStepId*> time_id) {
+          *time_id = TimeStepId(true, time_id->slab_number(),
+                                time_id->step_time(), 1, time_id->step_time());
+        });
     CHECK_FALSE(sent_trigger->is_triggered(box));
-    db::mutate<Tags::TimeStepId>(make_not_null(&box), [
-    ](const gsl::not_null<TimeStepId*> time_id) noexcept {
-      *time_id =
-          TimeStepId(true, time_id->slab_number() + 1, time_id->step_time());
-    });
+    db::mutate<Tags::TimeStepId>(
+        make_not_null(&box), [](const gsl::not_null<TimeStepId*> time_id) {
+          *time_id = TimeStepId(true, time_id->slab_number() + 1,
+                                time_id->step_time());
+        });
   }
 }

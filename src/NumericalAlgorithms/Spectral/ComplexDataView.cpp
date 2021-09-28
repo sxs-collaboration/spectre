@@ -35,7 +35,7 @@ void sizes_assert(const T& vector, const size_t size) {
 template <>
 ComplexDataView<ComplexRepresentation::Interleaved>::ComplexDataView(
     const gsl::not_null<ComplexDataVector*> vector, const size_t size,
-    const size_t offset) noexcept
+    const size_t offset)
     : size_{size},
       real_slices_up_to_date_{false},
       // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
@@ -55,7 +55,7 @@ ComplexDataView<ComplexRepresentation::Interleaved>::ComplexDataView(
 // reference.
 template <>
 ComplexDataView<ComplexRepresentation::Interleaved>::ComplexDataView(
-    std::complex<double>* const start, const size_t size) noexcept
+    std::complex<double>* const start, const size_t size)
     : size_{size},
       real_slices_up_to_date_{false},
       // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
@@ -72,7 +72,7 @@ ComplexDataView<ComplexRepresentation::Interleaved>::ComplexDataView(
 template <>
 ComplexDataView<ComplexRepresentation::RealsThenImags>::ComplexDataView(
     const gsl::not_null<ComplexDataVector*> vector, const size_t size,
-    const size_t offset) noexcept
+    const size_t offset)
     : size_{size}, real_slices_up_to_date_{true}, complex_view_{} {
   complex_view_.set_data_ref(vector->data() + offset, size_);
   real_slice_ = real(complex_view_);
@@ -83,7 +83,7 @@ ComplexDataView<ComplexRepresentation::RealsThenImags>::ComplexDataView(
 
 template <>
 ComplexDataView<ComplexRepresentation::RealsThenImags>::ComplexDataView(
-    std::complex<double>* const start, const size_t size) noexcept
+    std::complex<double>* const start, const size_t size)
     : size_{size}, real_slices_up_to_date_{true}, complex_view_{} {
   complex_view_.set_data_ref(start, size_);
   real_slice_ = real(complex_view_);
@@ -99,7 +99,7 @@ ComplexDataView<ComplexRepresentation::RealsThenImags>::ComplexDataView(
 template <>
 ComplexDataView<ComplexRepresentation::Interleaved>&
 ComplexDataView<ComplexRepresentation::Interleaved>::assign_real(
-    const DataVector& vector) noexcept {
+    const DataVector& vector) {
   if (real_slice_.data() != vector.data() or not real_slices_up_to_date_) {
     sizes_assert(vector, size_);
     for (size_t i = 0; i < size_; i++) {
@@ -114,7 +114,7 @@ ComplexDataView<ComplexRepresentation::Interleaved>::assign_real(
 template <>
 ComplexDataView<ComplexRepresentation::Interleaved>&
 ComplexDataView<ComplexRepresentation::Interleaved>::assign_imag(
-    const DataVector& vector) noexcept {
+    const DataVector& vector) {
   if (imag_slice_.data() != vector.data() or not real_slices_up_to_date_) {
     sizes_assert(vector, size_);
     for (size_t i = 0; i < size_; i++) {
@@ -132,7 +132,7 @@ ComplexDataView<ComplexRepresentation::Interleaved>::assign_imag(
 template <>
 ComplexDataView<ComplexRepresentation::RealsThenImags>&
 ComplexDataView<ComplexRepresentation::RealsThenImags>::assign_real(
-    const DataVector& vector) noexcept {
+    const DataVector& vector) {
   if (real_slice_.data() != vector.data()) {
     sizes_assert(vector, size_);
     real_slice_ = vector;
@@ -143,7 +143,7 @@ ComplexDataView<ComplexRepresentation::RealsThenImags>::assign_real(
 template <>
 ComplexDataView<ComplexRepresentation::RealsThenImags>&
 ComplexDataView<ComplexRepresentation::RealsThenImags>::assign_imag(
-    const DataVector& vector) noexcept {
+    const DataVector& vector) {
   if (imag_slice_.data() != vector.data()) {
     sizes_assert(vector, size_);
     imag_slice_ = vector;
@@ -156,13 +156,13 @@ ComplexDataView<ComplexRepresentation::RealsThenImags>::assign_imag(
 // sync with the view. This function is a no-op.
 template <>
 void ComplexDataView<
-    ComplexRepresentation::Interleaved>::copy_back_to_source() noexcept {}
+    ComplexRepresentation::Interleaved>::copy_back_to_source() {}
 
 // `ComplexDataView<ComplexRepresentation::RealsThenImags>` views perform a true
 // copy back to the source vector when this function is called
 template <>
 void ComplexDataView<
-    ComplexRepresentation::RealsThenImags>::copy_back_to_source() noexcept {
+    ComplexRepresentation::RealsThenImags>::copy_back_to_source() {
   for (size_t i = 0; i < size_; i++) {
     complex_view_[i] = std::complex<double>{real_slice_[i], imag_slice_[i]};
   }
@@ -174,7 +174,7 @@ void ComplexDataView<
 template <>
 ComplexDataView<ComplexRepresentation::Interleaved>&
 ComplexDataView<ComplexRepresentation::Interleaved>::operator=(
-    const ComplexDataVector& vector) noexcept {
+    const ComplexDataVector& vector) {
   if (complex_view_.data() != vector.data()) {
     sizes_assert(vector, size_);
     complex_view_ = vector;
@@ -186,7 +186,7 @@ ComplexDataView<ComplexRepresentation::Interleaved>::operator=(
 template <>
 ComplexDataView<ComplexRepresentation::Interleaved>&
 ComplexDataView<ComplexRepresentation::Interleaved>::operator=(
-    const ComplexDataView<ComplexRepresentation::Interleaved>& view) noexcept {
+    const ComplexDataView<ComplexRepresentation::Interleaved>& view) {
   if (this != &view) {
     sizes_assert(view, size_);
     complex_view_ = view.complex_view_;
@@ -196,7 +196,7 @@ ComplexDataView<ComplexRepresentation::Interleaved>::operator=(
 }
 
 template <>
-void ComplexDataView<ComplexRepresentation::Interleaved>::conjugate() noexcept {
+void ComplexDataView<ComplexRepresentation::Interleaved>::conjugate() {
   complex_view_ = conj(complex_view_);
   real_slices_up_to_date_ = false;
 }
@@ -208,7 +208,7 @@ void ComplexDataView<ComplexRepresentation::Interleaved>::conjugate() noexcept {
 template <>
 ComplexDataView<ComplexRepresentation::RealsThenImags>&
 ComplexDataView<ComplexRepresentation::RealsThenImags>::operator=(
-    const ComplexDataVector& vector) noexcept {
+    const ComplexDataVector& vector) {
   sizes_assert(vector, size_);
   real_slice_ = real(vector);
   imag_slice_ = imag(vector);
@@ -218,8 +218,7 @@ ComplexDataView<ComplexRepresentation::RealsThenImags>::operator=(
 template <>
 ComplexDataView<ComplexRepresentation::RealsThenImags>&
 ComplexDataView<ComplexRepresentation::RealsThenImags>::operator=(
-    const ComplexDataView<ComplexRepresentation::RealsThenImags>&
-        view) noexcept {
+    const ComplexDataView<ComplexRepresentation::RealsThenImags>& view) {
   sizes_assert(view, size_);
   if (real_slice_.data() != view.real_slice_.data()) {
     real_slice_ = view.real_slice_;
@@ -231,8 +230,7 @@ ComplexDataView<ComplexRepresentation::RealsThenImags>::operator=(
 }
 
 template <>
-void ComplexDataView<
-    ComplexRepresentation::RealsThenImags>::conjugate() noexcept {
+void ComplexDataView<ComplexRepresentation::RealsThenImags>::conjugate() {
   imag_slice_ = -imag_slice_;
 }
 
@@ -240,26 +238,24 @@ void ComplexDataView<
 // individual pointer positions only one double length apart, with a memory
 // stride of 2, as the real and imaginary parts alternate in memory.
 template <>
-double*
-ComplexDataView<ComplexRepresentation::Interleaved>::real_data() noexcept {
+double* ComplexDataView<ComplexRepresentation::Interleaved>::real_data() {
   return data_real_;
 }
 
 template <>
 const double* ComplexDataView<ComplexRepresentation::Interleaved>::real_data()
-    const noexcept {
+    const {
   return data_real_;
 }
 
 template <>
-double*
-ComplexDataView<ComplexRepresentation::Interleaved>::imag_data() noexcept {
+double* ComplexDataView<ComplexRepresentation::Interleaved>::imag_data() {
   return data_imag_;
 }
 
 template <>
 const double* ComplexDataView<ComplexRepresentation::Interleaved>::imag_data()
-    const noexcept {
+    const {
   return data_imag_;
 }
 
@@ -268,28 +264,24 @@ const double* ComplexDataView<ComplexRepresentation::Interleaved>::imag_data()
 // vectors, but have a memory stride of 1, as each of the two blocks is a
 // contiguous representation.
 template <>
-double*
-ComplexDataView<ComplexRepresentation::RealsThenImags>::real_data() noexcept {
+double* ComplexDataView<ComplexRepresentation::RealsThenImags>::real_data() {
   return real_slice_.data();
 }
 
 template <>
 const double*
-ComplexDataView<ComplexRepresentation::RealsThenImags>::real_data() const
-    noexcept {
+ComplexDataView<ComplexRepresentation::RealsThenImags>::real_data() const {
   return real_slice_.data();
 }
 
 template <>
-double*
-ComplexDataView<ComplexRepresentation::RealsThenImags>::imag_data() noexcept {
+double* ComplexDataView<ComplexRepresentation::RealsThenImags>::imag_data() {
   return imag_slice_.data();
 }
 
 template <>
 const double*
-ComplexDataView<ComplexRepresentation::RealsThenImags>::imag_data() const
-    noexcept {
+ComplexDataView<ComplexRepresentation::RealsThenImags>::imag_data() const {
   return imag_slice_.data();
 }
 }  // namespace detail

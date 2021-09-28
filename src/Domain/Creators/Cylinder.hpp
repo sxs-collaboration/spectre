@@ -63,13 +63,13 @@ class Cylinder : public DomainCreator<3> {
     using type = double;
     static constexpr Options::String help = {
         "Radius of the circle circumscribing the inner square."};
-    static double lower_bound() noexcept { return 0.; }
+    static double lower_bound() { return 0.; }
   };
 
   struct OuterRadius {
     using type = double;
     static constexpr Options::String help = {"Radius of the cylinder."};
-    static double lower_bound() noexcept { return 0.; }
+    static double lower_bound() { return 0.; }
   };
 
   struct LowerZBound {
@@ -141,7 +141,7 @@ class Cylinder : public DomainCreator<3> {
         "shell. The innermost shell must have a 'Linear' distribution because "
         "it changes in circularity. The 'RadialPartitioning' determines the "
         "number of shells."};
-    static size_t lower_bound_on_size() noexcept { return 1; }
+    static size_t lower_bound_on_size() { return 1; }
   };
 
   struct DistributionInZ {
@@ -152,7 +152,7 @@ class Cylinder : public DomainCreator<3> {
         "both a 'Logarithmic' and 'Inverse' distribution places its "
         "singularity at 'LowerZBound'. The 'PartitioningInZ' determines the "
         "number of layers."};
-    static size_t lower_bound_on_size() noexcept { return 1; }
+    static size_t lower_bound_on_size() { return 1; }
   };
 
   struct BoundaryConditions {
@@ -163,7 +163,7 @@ class Cylinder : public DomainCreator<3> {
   template <typename BoundaryConditionsBase>
   struct LowerZBoundaryCondition {
     using group = BoundaryConditions;
-    static std::string name() noexcept { return "LowerZ"; }
+    static std::string name() { return "LowerZ"; }
     static constexpr Options::String help =
         "The boundary condition to be imposed on the lower base of the "
         "cylinder, i.e. at the `LowerZBound` in the z-direction.";
@@ -173,7 +173,7 @@ class Cylinder : public DomainCreator<3> {
   template <typename BoundaryConditionsBase>
   struct UpperZBoundaryCondition {
     using group = BoundaryConditions;
-    static std::string name() noexcept { return "UpperZ"; }
+    static std::string name() { return "UpperZ"; }
     static constexpr Options::String help =
         "The boundary condition to be imposed on the upper base of the "
         "cylinder, i.e. at the `UpperZBound` in the z-direction.";
@@ -183,7 +183,7 @@ class Cylinder : public DomainCreator<3> {
   template <typename BoundaryConditionsBase>
   struct MantleBoundaryCondition {
     using group = BoundaryConditions;
-    static std::string name() noexcept { return "Mantle"; }
+    static std::string name() { return "Mantle"; }
     static constexpr Options::String help =
         "The boundary condition to be imposed on the mantle of the "
         "cylinder, i.e. at the `OuterRadius` in the radial direction.";
@@ -267,24 +267,21 @@ class Cylinder : public DomainCreator<3> {
 
   Cylinder() = default;
   Cylinder(const Cylinder&) = delete;
-  Cylinder(Cylinder&&) noexcept = default;
+  Cylinder(Cylinder&&) = default;
   Cylinder& operator=(const Cylinder&) = delete;
-  Cylinder& operator=(Cylinder&&) noexcept = default;
-  ~Cylinder() noexcept override = default;
+  Cylinder& operator=(Cylinder&&) = default;
+  ~Cylinder() override = default;
 
-  Domain<3> create_domain() const noexcept override;
+  Domain<3> create_domain() const override;
 
-  std::vector<std::array<size_t, 3>> initial_extents() const noexcept override;
+  std::vector<std::array<size_t, 3>> initial_extents() const override;
 
-  std::vector<std::array<size_t, 3>> initial_refinement_levels()
-      const noexcept override;
+  std::vector<std::array<size_t, 3>> initial_refinement_levels() const override;
 
-  std::vector<std::string> block_names() const noexcept override {
-    return block_names_;
-  }
+  std::vector<std::string> block_names() const override { return block_names_; }
 
   std::unordered_map<std::string, std::unordered_set<std::string>>
-  block_groups() const noexcept override {
+  block_groups() const override {
     return block_groups_;
   }
 

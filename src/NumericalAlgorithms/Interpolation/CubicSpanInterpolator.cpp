@@ -11,10 +11,9 @@ namespace intrp {
 
 namespace {
 template <typename ValueType>
-SPECTRE_ALWAYS_INLINE ValueType
-interpolate_impl(const gsl::span<const double>& source_points,
-                 const gsl::span<const ValueType>& values,
-                 const double target_point) noexcept {
+SPECTRE_ALWAYS_INLINE ValueType interpolate_impl(
+    const gsl::span<const double>& source_points,
+    const gsl::span<const ValueType>& values, const double target_point) {
   const double t0 = source_points[0];
   const double t1 = source_points[1];
   const double t2 = source_points[2];
@@ -40,14 +39,14 @@ interpolate_impl(const gsl::span<const double>& source_points,
 
 double CubicSpanInterpolator::interpolate(
     const gsl::span<const double>& source_points,
-    const gsl::span<const double>& values, double target_point) const noexcept {
+    const gsl::span<const double>& values, double target_point) const {
   return interpolate_impl(source_points, values, target_point);
 }
 
 std::complex<double> CubicSpanInterpolator::interpolate(
     const gsl::span<const double>& source_points,
     const gsl::span<const std::complex<double>>& values,
-    double target_point) const noexcept {
+    double target_point) const {
   return interpolate_impl(source_points, values, target_point);
 }
 

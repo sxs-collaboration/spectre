@@ -67,7 +67,7 @@ struct TakeTimeStep {
       db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     ASSERT((db::get<::domain::CoordinateMaps::Tags::CoordinateMap<
                 Dim, Frame::Grid, Frame::Inertial>>(box))
                .is_identity(),
@@ -76,8 +76,7 @@ struct TakeTimeStep {
                fd::Tags::DetInverseJacobianLogicalToGrid>(
         make_not_null(&box),
         [](const auto inv_jac_ptr, const auto det_inv_jac_ptr,
-           const auto& logical_to_grid_map,
-           const auto& logical_coords) noexcept {
+           const auto& logical_to_grid_map, const auto& logical_coords) {
           if (not inv_jac_ptr->has_value()) {
             *inv_jac_ptr = logical_to_grid_map.inv_jacobian(logical_coords);
             *det_inv_jac_ptr = determinant(**inv_jac_ptr);
@@ -92,7 +91,7 @@ struct TakeTimeStep {
         *db::get<fd::Tags::DetInverseJacobianLogicalToGrid>(box));
 
     db::mutate<evolution::dg::Tags::MortarData<Dim>>(
-        make_not_null(&box), [](const auto mortar_data_ptr) noexcept {
+        make_not_null(&box), [](const auto mortar_data_ptr) {
           for (auto& data : *mortar_data_ptr) {
             data.second = evolution::dg::MortarData<Dim>{};
           }

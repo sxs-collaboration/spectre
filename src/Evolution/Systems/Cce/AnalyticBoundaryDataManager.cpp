@@ -11,7 +11,7 @@
 namespace Cce {
 AnalyticBoundaryDataManager::AnalyticBoundaryDataManager(
     const size_t l_max, const double extraction_radius,
-    std::unique_ptr<Solutions::WorldtubeData> generator) noexcept
+    std::unique_ptr<Solutions::WorldtubeData> generator)
     : l_max_{l_max},
       generator_{std::move(generator)},
       extraction_radius_{extraction_radius} {}
@@ -20,7 +20,7 @@ bool AnalyticBoundaryDataManager::populate_hypersurface_boundary_data(
     const gsl::not_null<Variables<
         Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>*>
         boundary_data_variables,
-    const double time) const noexcept {
+    const double time) const {
   const auto boundary_tuple = generator_->variables(
       l_max_, time,
       tmpl::list<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>,
@@ -38,7 +38,7 @@ bool AnalyticBoundaryDataManager::populate_hypersurface_boundary_data(
   return true;
 }
 
-void AnalyticBoundaryDataManager::pup(PUP::er& p) noexcept {
+void AnalyticBoundaryDataManager::pup(PUP::er& p) {
   p | l_max_;
   p | extraction_radius_;
   p | generator_;

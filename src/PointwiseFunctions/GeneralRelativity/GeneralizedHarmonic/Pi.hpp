@@ -58,7 +58,7 @@ void pi(gsl::not_null<tnsr::aa<DataType, SpatialDim, Frame>*> pi,
         const tnsr::I<DataType, SpatialDim, Frame>& dt_shift,
         const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
         const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric,
-        const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept;
+        const tnsr::iaa<DataType, SpatialDim, Frame>& phi);
 
 template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::aa<DataType, SpatialDim, Frame> pi(
@@ -67,7 +67,7 @@ tnsr::aa<DataType, SpatialDim, Frame> pi(
     const tnsr::I<DataType, SpatialDim, Frame>& dt_shift,
     const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
     const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric,
-    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept;
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi);
 /// @}
 
 namespace Tags {
@@ -96,7 +96,7 @@ struct PiCompute : Pi<SpatialDim, Frame>, db::ComputeTag {
       const tnsr::I<DataVector, SpatialDim, Frame>&,
       const tnsr::ii<DataVector, SpatialDim, Frame>&,
       const tnsr::ii<DataVector, SpatialDim, Frame>&,
-      const tnsr::iaa<DataVector, SpatialDim, Frame>&) noexcept>(
+      const tnsr::iaa<DataVector, SpatialDim, Frame>&)>(
       &pi<SpatialDim, Frame, DataVector>);
 
   using base = Pi<SpatialDim, Frame>;

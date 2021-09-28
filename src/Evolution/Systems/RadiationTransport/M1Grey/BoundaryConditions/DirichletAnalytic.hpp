@@ -57,19 +57,19 @@ class DirichletAnalytic<tmpl::list<NeutrinoSpecies...>> final
       "analytic data."};
 
   DirichletAnalytic() = default;
-  DirichletAnalytic(DirichletAnalytic&&) noexcept = default;
-  DirichletAnalytic& operator=(DirichletAnalytic&&) noexcept = default;
+  DirichletAnalytic(DirichletAnalytic&&) = default;
+  DirichletAnalytic& operator=(DirichletAnalytic&&) = default;
   DirichletAnalytic(const DirichletAnalytic&) = default;
   DirichletAnalytic& operator=(const DirichletAnalytic&) = default;
   ~DirichletAnalytic() override = default;
 
-  explicit DirichletAnalytic(CkMigrateMessage* msg) noexcept
+  explicit DirichletAnalytic(CkMigrateMessage* msg)
       : BoundaryCondition<tmpl::list<NeutrinoSpecies...>>(msg) {}
 
   WRAPPED_PUPable_decl_base_template(
       domain::BoundaryConditions::BoundaryCondition, DirichletAnalytic);
 
-  auto get_clone() const noexcept -> std::unique_ptr<
+  auto get_clone() const -> std::unique_ptr<
       domain::BoundaryConditions::BoundaryCondition> override {
     return std::make_unique<DirichletAnalytic>(*this);
   }
@@ -110,9 +110,8 @@ class DirichletAnalytic<tmpl::list<NeutrinoSpecies...>> final
       const tnsr::i<DataVector, 3, Frame::Inertial>& /*normal_covector*/,
       const tnsr::I<DataVector, 3, Frame::Inertial>& /*normal_vector*/,
       const tnsr::I<DataVector, 3, Frame::Inertial>& coords, const double time,
-      const AnalyticSolutionOrData& analytic_solution_or_data) const noexcept {
-    auto boundary_values = [&analytic_solution_or_data, &coords,
-                            &time]() noexcept {
+      const AnalyticSolutionOrData& analytic_solution_or_data) const {
+    auto boundary_values = [&analytic_solution_or_data, &coords, &time]() {
       if constexpr (std::is_base_of_v<MarkAsAnalyticSolution,
                                       AnalyticSolutionOrData>) {
         return analytic_solution_or_data.variables(
@@ -157,7 +156,7 @@ class DirichletAnalytic<tmpl::list<NeutrinoSpecies...>> final
                 local_flux_tilde_e,
             const gsl::not_null<tnsr::Ij<DataVector, 3, Frame::Inertial>*>
                 local_flux_tilde_s,
-            auto species_v) noexcept {
+            auto species_v) {
           using species = decltype(species_v);
           using tilde_e_tag = Tags::TildeE<Frame::Inertial, species>;
           using tilde_s_tag = Tags::TildeS<Frame::Inertial, species>;

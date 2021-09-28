@@ -64,7 +64,7 @@ struct InitializeElement {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ElementId<Dim>& element_id, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     // Note: The following initialization code assumes that all elements in a
     // block have the same p-refinement. This is true for initial domains, but
     // will be broken by AMR.
@@ -144,7 +144,7 @@ struct PreparePreSmoothing {
       tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ElementId<Dim>& element_id, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     const size_t iteration_id =
         db::get<Convergence::Tags::IterationId<OptionsGroup>>(box);
     if (UNLIKELY(db::get<logging::Tags::Verbosity<OptionsGroup>>(box) >=
@@ -160,7 +160,7 @@ struct PreparePreSmoothing {
       db::mutate<fields_tag, operator_applied_to_fields_tag>(
           make_not_null(&box),
           [](const auto fields, const auto operator_applied_to_fields,
-             const auto& source) noexcept {
+             const auto& source) {
             *fields = make_with_value<typename fields_tag::type>(source, 0.);
             // We can set the linear operator applied to the initial fields to
             // zero as well, since it's linear. This may save the smoother an
@@ -177,7 +177,7 @@ struct PreparePreSmoothing {
       db::mutate<Tags::VolumeDataForOutput<OptionsGroup, FieldsTag>>(
           make_not_null(&box),
           [](const auto volume_data, const auto& initial_fields,
-             const auto& source) noexcept {
+             const auto& source) {
             volume_data->assign_subset(
                 Variables<db::wrap_tags_in<Tags::PreSmoothingInitial,
                                            typename fields_tag::tags_list>>(
@@ -212,7 +212,7 @@ struct SkipPostsmoothingAtBottom {
         const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
         const Parallel::GlobalCache<Metavariables>& /*cache*/,
         const ElementId<Dim>& /*element_id*/, const ActionList /*meta*/,
-        const ParallelComponent* const /*meta*/) noexcept {
+        const ParallelComponent* const /*meta*/) {
     const bool is_coarsest_grid =
         not db::get<Tags::ParentId<Dim>>(box).has_value();
 
@@ -221,7 +221,7 @@ struct SkipPostsmoothingAtBottom {
       db::mutate<Tags::VolumeDataForOutput<OptionsGroup, FieldsTag>>(
           make_not_null(&box),
           [](const auto volume_data, const auto& result_fields,
-             const auto& residuals) noexcept {
+             const auto& residuals) {
             volume_data->assign_subset(
                 Variables<db::wrap_tags_in<Tags::PreSmoothingResult,
                                            typename fields_tag::tags_list>>(
@@ -274,7 +274,7 @@ struct SendCorrectionToFinerGrid {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
       const ElementId<Dim>& element_id, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     const auto& child_ids = db::get<Tags::ChildIds<Dim>>(box);
 
     // Record post-smoothing result fields and residual
@@ -282,7 +282,7 @@ struct SendCorrectionToFinerGrid {
       db::mutate<Tags::VolumeDataForOutput<OptionsGroup, FieldsTag>>(
           make_not_null(&box),
           [](const auto volume_data, const auto& result_fields,
-             const auto& residuals) noexcept {
+             const auto& residuals) {
             volume_data->assign_subset(
                 Variables<db::wrap_tags_in<Tags::PostSmoothingResult,
                                            typename fields_tag::tags_list>>(
@@ -337,7 +337,7 @@ struct ReceiveCorrectionFromCoarserGrid {
         tuples::TaggedTuple<InboxTags...>& inboxes,
         const Parallel::GlobalCache<Metavariables>& /*cache*/,
         const ElementId<Dim>& element_id, const ActionList /*meta*/,
-        const ParallelComponent* const /*meta*/) noexcept {
+        const ParallelComponent* const /*meta*/) {
     const auto& parent_id = db::get<Tags::ParentId<Dim>>(box);
     // We should always have a `parent_id` at this point because we skip this
     // part of the algorithm on the coarsest grid with the
@@ -371,7 +371,7 @@ struct ReceiveCorrectionFromCoarserGrid {
     const auto child_size =
         domain::child_size(element_id.segment_ids(), parent_id->segment_ids());
     const auto prolongated_parent_correction =
-        [&parent_correction, &parent_mesh, &mesh, &child_size]() noexcept {
+        [&parent_correction, &parent_mesh, &mesh, &child_size]() {
           if (Spectral::needs_projection(*parent_mesh, mesh, child_size)) {
             const auto prolongation_operator =
                 Spectral::projection_matrix_parent_to_child(*parent_mesh, mesh,
@@ -384,18 +384,17 @@ struct ReceiveCorrectionFromCoarserGrid {
         }();
 
     // Add correction to the solution on this grid
-    db::mutate<fields_tag>(
-        make_not_null(&box),
-        [&prolongated_parent_correction](const auto fields) noexcept {
-          *fields += prolongated_parent_correction;
-        });
+    db::mutate<fields_tag>(make_not_null(&box),
+                           [&prolongated_parent_correction](const auto fields) {
+                             *fields += prolongated_parent_correction;
+                           });
 
     // Record post-smoothing initial fields and source
     if (db::get<Tags::OutputVolumeData<OptionsGroup>>(box)) {
       db::mutate<Tags::VolumeDataForOutput<OptionsGroup, FieldsTag>>(
           make_not_null(&box),
           [](const auto volume_data, const auto& initial_fields,
-             const auto& source) noexcept {
+             const auto& source) {
             volume_data->assign_subset(
                 Variables<db::wrap_tags_in<Tags::PostSmoothingInitial,
                                            typename fields_tag::tags_list>>(

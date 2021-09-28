@@ -45,7 +45,7 @@ struct initialize_elements_and_queue_simple_actions {
                   const Domain<3>& domain,
                   const std::vector<ElementId<3>>& element_ids,
                   const InterpPointInfo& interp_point_info, Runner& runner,
-                  const TemporalId& temporal_id) noexcept {
+                  const TemporalId& temporal_id) {
     using metavars = Metavariables;
     using elem_component = ElemComponent;
     // Emplace elements.
@@ -121,7 +121,7 @@ struct MockMetavariables {
 };
 
 template <typename MockMetavariables>
-void run_test() noexcept {
+void run_test() {
   using metavars = MockMetavariables;
   using elem_component = mock_element<metavars>;
   InterpolateOnElementTestHelpers::test_interpolate_on_element<metavars,

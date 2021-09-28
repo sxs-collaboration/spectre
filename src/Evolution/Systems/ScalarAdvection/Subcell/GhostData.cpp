@@ -16,14 +16,14 @@
 
 namespace ScalarAdvection::subcell {
 Variables<tmpl::list<ScalarAdvection::Tags::U>> GhostDataOnSubcells::apply(
-    const Variables<tmpl::list<ScalarAdvection::Tags::U>>& vars) noexcept {
+    const Variables<tmpl::list<ScalarAdvection::Tags::U>>& vars) {
   return vars;
 }
 
 template <size_t Dim>
 Variables<tmpl::list<ScalarAdvection::Tags::U>> GhostDataToSlice<Dim>::apply(
     const Variables<tmpl::list<ScalarAdvection::Tags::U>>& vars,
-    const Mesh<Dim>& dg_mesh, const Mesh<Dim>& subcell_mesh) noexcept {
+    const Mesh<Dim>& dg_mesh, const Mesh<Dim>& subcell_mesh) {
   return evolution::dg::subcell::fd::project(vars, dg_mesh,
                                              subcell_mesh.extents());
 }

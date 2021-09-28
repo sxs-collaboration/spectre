@@ -15,7 +15,7 @@ class C {};
 namespace TestHelpers {
 class D {};
 
-std::ostream& operator<<(std::ostream& os, const D&) noexcept;
+std::ostream& operator<<(std::ostream& os, const D&);
 }  // namespace TestHelpers
 
 // [is_streamable_example]

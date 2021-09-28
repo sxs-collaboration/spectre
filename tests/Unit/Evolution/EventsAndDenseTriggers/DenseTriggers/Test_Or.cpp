@@ -41,7 +41,7 @@ struct Metavariables {
 
 void check(const bool time_runs_forward, const bool expected_is_ready,
            const bool expected_is_triggered, const double expected_next_check,
-           const std::string& creation_string) noexcept {
+           const std::string& creation_string) {
   CAPTURE(creation_string);
   const auto box = db::create<
       db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<Metavariables>,
@@ -66,11 +66,10 @@ void check(const bool time_runs_forward, const bool expected_is_ready,
 }
 
 void check_permutations(
-    const bool expected_is_ready,
-    const bool expected_is_triggered,
+    const bool expected_is_ready, const bool expected_is_triggered,
     const double expected_next_check,
     std::vector<std::pair<bool, bool>> is_ready_and_is_triggered,
-    std::vector<double> next_checks) noexcept {
+    std::vector<double> next_checks) {
   alg::sort(is_ready_and_is_triggered);
   alg::sort(next_checks);
   do {

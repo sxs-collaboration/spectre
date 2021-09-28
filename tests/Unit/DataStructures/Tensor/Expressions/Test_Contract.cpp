@@ -18,12 +18,12 @@
 
 namespace {
 template <typename... Ts>
-void create_tensor(gsl::not_null<Tensor<double, Ts...>*> tensor) noexcept {
+void create_tensor(gsl::not_null<Tensor<double, Ts...>*> tensor) {
   std::iota(tensor->begin(), tensor->end(), 0.0);
 }
 
 template <typename... Ts>
-void create_tensor(gsl::not_null<Tensor<DataVector, Ts...>*> tensor) noexcept {
+void create_tensor(gsl::not_null<Tensor<DataVector, Ts...>*> tensor) {
   double value = 0.0;
   for (auto index_it = tensor->begin(); index_it != tensor->end(); index_it++) {
     for (auto vector_it = index_it->begin(); vector_it != index_it->end();
@@ -37,7 +37,7 @@ void create_tensor(gsl::not_null<Tensor<DataVector, Ts...>*> tensor) noexcept {
 const size_t contracted_value_placeholder = std::numeric_limits<size_t>::max();
 
 template <typename DataType>
-void test_contractions_rank2(const DataType& used_for_size) noexcept {
+void test_contractions_rank2(const DataType& used_for_size) {
   // Contract (upper, lower) tensor
   // Use explicit type (vs auto) for LHS Tensor so the compiler checks the
   // return type of `evaluate`
@@ -82,7 +82,7 @@ void test_contractions_rank2(const DataType& used_for_size) noexcept {
 }
 
 template <typename DataType>
-void test_contractions_rank3(const DataType& used_for_size) noexcept {
+void test_contractions_rank3(const DataType& used_for_size) {
   // Contract first and second indices of (lower, upper, lower) tensor
   // Use explicit type (vs auto) for LHS Tensor so the compiler checks the
   // return type of `evaluate`
@@ -192,7 +192,7 @@ void test_contractions_rank3(const DataType& used_for_size) noexcept {
 }
 
 template <typename DataType>
-void test_contractions_rank4(const DataType& used_for_size) noexcept {
+void test_contractions_rank4(const DataType& used_for_size) {
   // Contract first and second indices of (lower, upper, upper, lower) tensor to
   // rank 2 tensor
   // Use explicit type (vs auto) for LHS Tensor so the compiler checks the
@@ -653,7 +653,7 @@ void test_contractions_rank4(const DataType& used_for_size) noexcept {
 }
 
 template <typename DataType>
-void test_time_index(const DataType& used_for_size) noexcept {
+void test_time_index(const DataType& used_for_size) {
   Tensor<DataType, Symmetry<4, 3, 2, 1>,
          index_list<SpacetimeIndex<3, UpLo::Up, Frame::Inertial>,
                     SpacetimeIndex<3, UpLo::Up, Frame::Inertial>,
@@ -777,7 +777,7 @@ void test_time_index(const DataType& used_for_size) noexcept {
 }
 
 template <typename DataType>
-void test_contractions(const DataType& used_for_size) noexcept {
+void test_contractions(const DataType& used_for_size) {
   test_contractions_rank2(used_for_size);
   test_contractions_rank3(used_for_size);
   test_contractions_rank4(used_for_size);

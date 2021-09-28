@@ -66,7 +66,7 @@ struct ExpectedResult {
   using type = DenseVector<double>;
 };
 struct ExpectedConvergenceReason {
-  static std::string name() noexcept { return "ConvergenceReason"; }
+  static std::string name() { return "ConvergenceReason"; }
   static constexpr Options::String help = "The expected convergence reason";
   using type = Convergence::Reason;
 };
@@ -78,7 +78,7 @@ struct LinearOperator : db::SimpleTag {
 
   static constexpr bool pass_metavariables = false;
   static DenseMatrix<double> create_from_options(
-      const DenseMatrix<double>& linear_operator) noexcept {
+      const DenseMatrix<double>& linear_operator) {
     return linear_operator;
   }
 };
@@ -89,7 +89,7 @@ struct Source : db::SimpleTag {
 
   static constexpr bool pass_metavariables = false;
   static DenseVector<double> create_from_options(
-      const DenseVector<double>& source) noexcept {
+      const DenseVector<double>& source) {
     return source;
   }
 };
@@ -100,7 +100,7 @@ struct InitialGuess : db::SimpleTag {
 
   static constexpr bool pass_metavariables = false;
   static DenseVector<double> create_from_options(
-      const DenseVector<double>& initial_guess) noexcept {
+      const DenseVector<double>& initial_guess) {
     return initial_guess;
   }
 };
@@ -111,7 +111,7 @@ struct ExpectedResult : db::SimpleTag {
 
   static constexpr bool pass_metavariables = false;
   static DenseVector<double> create_from_options(
-      const DenseVector<double>& expected_result) noexcept {
+      const DenseVector<double>& expected_result) {
     return expected_result;
   }
 };
@@ -121,7 +121,7 @@ struct ExpectedConvergenceReason : db::SimpleTag {
   using option_tags = tmpl::list<OptionTags::ExpectedConvergenceReason>;
 
   static constexpr bool pass_metavariables = false;
-  static type create_from_options(const type& option_value) noexcept {
+  static type create_from_options(const type& option_value) {
     return option_value;
   }
 };
@@ -146,13 +146,13 @@ struct ComputeOperatorAction {
       // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
       const ActionList /*meta*/,
       // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     db::mutate<LinearSolver::Tags::OperatorAppliedTo<OperandTag>>(
         make_not_null(&box),
         [](const gsl::not_null<DenseVector<double>*>
                operator_applied_to_operand,
            const DenseMatrix<double>& linear_operator,
-           const DenseVector<double>& operand) noexcept {
+           const DenseVector<double>& operand) {
           *operator_applied_to_operand = linear_operator * operand;
         },
         get<LinearOperator>(box), get<OperandTag>(box));
@@ -177,7 +177,7 @@ struct TestResult {
       // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
       const ActionList /*meta*/,
       // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     const auto& has_converged =
         get<Convergence::Tags::HasConverged<OptionsGroup>>(box);
     SPECTRE_PARALLEL_REQUIRE(has_converged);
@@ -200,7 +200,7 @@ struct InitializeElement {
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const int /*array_index*/, const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     Initialization::mutate_assign<simple_tags>(
         make_not_null(&box), get<InitialGuess>(box), get<Source>(box));
     return std::make_tuple(std::move(box));
@@ -306,7 +306,7 @@ struct ElementArray {
   static void allocate_array(
       Parallel::CProxy_GlobalCache<Metavariables>& global_cache,
       const tuples::tagged_tuple_from_typelist<initialization_tags>&
-          initialization_items) noexcept {
+          initialization_items) {
     auto& local_component = Parallel::get_parallel_component<ElementArray>(
         *(global_cache.ckLocalBranch()));
     local_component[0].insert(global_cache, initialization_items, 0);
@@ -315,7 +315,7 @@ struct ElementArray {
 
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
-      Parallel::CProxy_GlobalCache<Metavariables>& global_cache) noexcept {
+      Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
     auto& local_component = Parallel::get_parallel_component<ElementArray>(
         *(global_cache.ckLocalBranch()));
     local_component.start_phase(next_phase);
@@ -334,7 +334,7 @@ struct CleanOutput {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     const auto& reductions_file_name =
         get<observers::Tags::ReductionFileName>(box) + ".h5";
     if (file_system::check_if_file_exists(reductions_file_name)) {
@@ -369,7 +369,7 @@ struct OutputCleaner {
 
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
-      Parallel::CProxy_GlobalCache<Metavariables>& global_cache) noexcept {
+      Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
     auto& local_component = Parallel::get_parallel_component<OutputCleaner>(
         *(global_cache.ckLocalBranch()));
     local_component.start_phase(next_phase);
@@ -390,8 +390,7 @@ static Phase determine_next_phase(
     const gsl::not_null<
         tuples::TaggedTuple<Tags...>*> /*phase_change_decision_data*/,
     const Phase& current_phase,
-    const Parallel::CProxy_GlobalCache<
-        Metavariables>& /*cache_proxy*/) noexcept {
+    const Parallel::CProxy_GlobalCache<Metavariables>& /*cache_proxy*/) {
   switch (current_phase) {
     case Phase::Initialization:
       return Phase::RegisterWithObserver;

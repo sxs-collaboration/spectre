@@ -31,7 +31,7 @@ struct dt;
 template <typename Solution>
 void check_burgers_solution(const Solution& solution,
                             const DataVector& positions,
-                            const std::vector<double>& times) noexcept {
+                            const std::vector<double>& times) {
   static_assert(evolution::is_analytic_solution_v<Solution>,
                 "Solution was not derived from AnalyticSolution");
   // Check that different functions are consistent.
@@ -54,21 +54,22 @@ void check_burgers_solution(const Solution& solution,
       // Check that the time derivative is the derivative of the
       // value.
       CHECK(numerical_derivative(
-                [&solution, &xp](const std::array<double, 1>& t) noexcept {
+                [&solution, &xp](const std::array<double, 1>& t) {
                   return std::array<double, 1>{{get(solution.u(xp, t[0]))}};
                 },
-                std::array<double, 1>{{time}}, 0, 1e-4)[0] ==
-            approx.epsilon(1e-10)(dtup));
+                std::array<double, 1>{{time}}, 0,
+                1e-4)[0] == approx.epsilon(1e-10)(dtup));
       // Check that the Burgers equation is satisfied.
-      CHECK(numerical_derivative([&solution, &time](
-                                     const std::array<double, 1>& x) noexcept {
-              tnsr::I<DataVector, 1> flux{{{DataVector(1)}}};
-              Burgers::Fluxes::apply(
-                  &flux, solution.u(tnsr::I<DataVector, 1>{{{{x[0]}}}}, time));
-              return std::array<double, 1>{{get<0>(flux)[0]}};
-            },
-                                 std::array<double, 1>{{get<0>(xp)}}, 0,
-                                 1e-4)[0] == approx(-dtup));
+      CHECK(numerical_derivative(
+                [&solution, &time](const std::array<double, 1>& x) {
+                  tnsr::I<DataVector, 1> flux{{{DataVector(1)}}};
+                  Burgers::Fluxes::apply(
+                      &flux,
+                      solution.u(tnsr::I<DataVector, 1>{{{{x[0]}}}}, time));
+                  return std::array<double, 1>{{get<0>(flux)[0]}};
+                },
+                std::array<double, 1>{{get<0>(xp)}}, 0,
+                1e-4)[0] == approx(-dtup));
     }
   }
 }

@@ -37,19 +37,19 @@ class Times : public Trigger {
  public:
   /// \cond
   Times() = default;
-  explicit Times(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit Times(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Times);  // NOLINT
   /// \endcond
 
   static constexpr Options::String help{"Trigger at particular times."};
 
-  explicit Times(std::unique_ptr<TimeSequence<double>> times) noexcept
+  explicit Times(std::unique_ptr<TimeSequence<double>> times)
       : times_(std::move(times)) {}
 
   using argument_tags = tmpl::list<Tags::Time, Tags::TimeStepId>;
 
-  bool operator()(const double now, const TimeStepId& time_id) const noexcept {
+  bool operator()(const double now, const TimeStepId& time_id) const {
     const auto& substep_time = time_id.substep_time();
     // Trying to step to a given time might not get us exactly there
     // because of rounding errors.
@@ -60,7 +60,7 @@ class Times : public Trigger {
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept override { p | times_; }
+  void pup(PUP::er& p) override { p | times_; }
 
  private:
   std::unique_ptr<TimeSequence<double>> times_;

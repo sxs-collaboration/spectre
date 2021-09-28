@@ -27,7 +27,7 @@ tnsr::ii<DataType, SpatialDim, Frame> weyl_propagating(
     const tnsr::II<DataType, SpatialDim, Frame>& projection_IJ,
     const tnsr::ii<DataType, SpatialDim, Frame>& projection_ij,
     const tnsr::Ij<DataType, SpatialDim, Frame>& projection_Ij,
-    const double sign) noexcept {
+    const double sign) {
   tnsr::ii<DataType, SpatialDim, Frame> weyl_prop(
       get_size(get<0>(unit_interface_normal_vector)));
   weyl_propagating<SpatialDim, Frame, DataType>(
@@ -49,7 +49,7 @@ void weyl_propagating(
     const tnsr::II<DataType, SpatialDim, Frame>& projection_IJ,
     const tnsr::ii<DataType, SpatialDim, Frame>& projection_ij,
     const tnsr::Ij<DataType, SpatialDim, Frame>& projection_Ij,
-    const double sign) noexcept {
+    const double sign) {
   ASSERT((sign == 1.) or (sign == -1.),
          "Calculation of weyl propagating modes accepts only +1/-1 to indicate "
          "which of U8+/- is needed.");
@@ -115,7 +115,7 @@ void weyl_propagating(
       const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>& projection_IJ,      \
       const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& projection_ij,      \
       const tnsr::Ij<DTYPE(data), DIM(data), FRAME(data)>& projection_Ij,      \
-      const double sign) noexcept;                                             \
+      const double sign);                                                      \
   template void gr::weyl_propagating(                                          \
       const gsl::not_null<tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>*>      \
           weyl_prop_u8,                                                        \
@@ -131,7 +131,7 @@ void weyl_propagating(
       const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>& projection_IJ,      \
       const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& projection_ij,      \
       const tnsr::Ij<DTYPE(data), DIM(data), FRAME(data)>& projection_Ij,      \
-      const double sign) noexcept;
+      const double sign);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
                         (Frame::Grid, Frame::Inertial))

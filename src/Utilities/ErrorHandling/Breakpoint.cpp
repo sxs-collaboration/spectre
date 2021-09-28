@@ -5,7 +5,7 @@
 
 #include <csignal>
 
-void breakpoint() noexcept {
+void breakpoint() {
   // We send ourselves a SIGTRAP and ignore it.  If we're not being
   // traced (e.g. being run in a debugger), that doesn't do much, but if we are
   // then the tracer (debugger) can see the signal delivery.  We don't reset the

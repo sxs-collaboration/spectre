@@ -11,7 +11,7 @@
 
 namespace {
 void check(const std::string& name, const bool expected_less,
-           const bool expected_equal, const bool expected_greater) noexcept {
+           const bool expected_equal, const bool expected_greater) {
   const auto comparator = TestHelpers::test_creation<Options::Comparator>(name);
   CHECK(comparator(2.0, 3.0) == expected_less);
   CHECK(comparator(2.0, 2.0) == expected_equal);

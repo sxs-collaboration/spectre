@@ -55,10 +55,10 @@ constexpr bool any_index_in_frame_v =
 // Interpolates data onto a set of points desired by an InterpolationTarget.
 template <typename InterpolationTargetTag, typename Metavariables,
           typename DbTags>
-void interpolate_data(const gsl::not_null<db::DataBox<DbTags>*> box,
-                      Parallel::GlobalCache<Metavariables>& cache,
-                      const typename InterpolationTargetTag::temporal_id::type&
-                          temporal_id) noexcept {
+void interpolate_data(
+    const gsl::not_null<db::DataBox<DbTags>*> box,
+    Parallel::GlobalCache<Metavariables>& cache,
+    const typename InterpolationTargetTag::temporal_id::type& temporal_id) {
   db::mutate_apply<
       tmpl::list<
           ::intrp::Tags::InterpolatedVarsHolders<Metavariables>,
@@ -73,7 +73,7 @@ void interpolate_data(const gsl::not_null<db::DataBox<DbTags>*> box,
               Metavariables,
               typename InterpolationTargetTag::temporal_id>::type*>
               volume_vars_info,
-          const Domain<Metavariables::volume_dim>& domain) noexcept {
+          const Domain<Metavariables::volume_dim>& domain) {
         auto& interp_info =
             get<Vars::HolderTag<InterpolationTargetTag, Metavariables>>(
                 *holders)
@@ -198,8 +198,7 @@ template <typename InterpolationTargetTag, typename Metavariables,
 void try_to_interpolate(
     const gsl::not_null<db::DataBox<DbTags>*> box,
     const gsl::not_null<Parallel::GlobalCache<Metavariables>*> cache,
-    const typename InterpolationTargetTag::temporal_id::type&
-        temporal_id) noexcept {
+    const typename InterpolationTargetTag::temporal_id::type& temporal_id) {
   const auto& holders =
       db::get<Tags::InterpolatedVarsHolders<Metavariables>>(*box);
   const auto& vars_infos =
@@ -237,7 +236,7 @@ void try_to_interpolate(
         [&temporal_id](
             const gsl::not_null<
                 typename Tags::InterpolatedVarsHolders<Metavariables>::type*>
-                holders_l) noexcept {
+                holders_l) {
           get<Vars::HolderTag<InterpolationTargetTag, Metavariables>>(
               *holders_l)
               .infos.erase(temporal_id);

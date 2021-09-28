@@ -51,7 +51,7 @@ struct ComputeBoundaryCorrectionHelperImpl<
       const std::optional<tnsr::I<DataVector, 3, Frame::Inertial>>&
           mesh_velocity,
       const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity,
-      const DerivedCorrection& derived_correction) noexcept {
+      const DerivedCorrection& derived_correction) {
     return derived_correction.dg_package_data(
         make_not_null(&get<PackagedFieldTags>(*packaged_variables))...,
         get<EvolvedTags>(evolved_variables)...,
@@ -67,7 +67,7 @@ struct ComputeBoundaryCorrectionHelperImpl<
       const PackagedVariables& internal_packaged_fields,
       const PackagedVariables& external_packaged_fields,
       dg::Formulation dg_formulation,
-      const DerivedCorrection& derived_correction) noexcept {
+      const DerivedCorrection& derived_correction) {
     derived_correction.dg_boundary_terms(
         make_not_null(&get<EvolvedTags>(*boundary_corrections))...,
         get<PackagedFieldTags>(internal_packaged_fields)...,
@@ -91,7 +91,7 @@ void test_boundary_correction_combination(
     const grmhd::GhValenciaDivClean::BoundaryCorrections::ProductOfCorrections<
         DerivedGhCorrection, DerivedValenciaCorrection>&
         derived_product_correction,
-    const dg::Formulation formulation) noexcept {
+    const dg::Formulation formulation) {
   using gh_variables_tags =
       typename GeneralizedHarmonic::System<3_st>::variables_tag::tags_list;
   using valencia_variables_tags =

@@ -67,13 +67,13 @@ class Averager {
   /// differentiation), so the `average_0th_deriv_of_q` option only specifies
   /// whether to return an averaged value for the 0th derivative piece of the
   /// function.
-  Averager(double avg_timescale_frac, bool average_0th_deriv_of_q) noexcept;
+  Averager(double avg_timescale_frac, bool average_0th_deriv_of_q);
 
   Averager() = default;
   // Explicitly defined move constructor due to the fact that the std::deque
-  // move constructor is not marked noexcept
-  Averager(Averager&& rhs) noexcept;
-  Averager& operator=(Averager&& rhs) noexcept;
+  // move constructor is not marked
+  Averager(Averager&& rhs);
+  Averager& operator=(Averager&& rhs);
   Averager(const Averager&) = default;
   Averager& operator=(const Averager&) = default;
   ~Averager() = default;
@@ -92,29 +92,27 @@ class Averager {
   /// there is insufficient data, the operator returns an invalid
   /// `std::optional`.
   const std::optional<std::array<DataVector, DerivOrder + 1>>& operator()(
-      double time) const noexcept;
+      double time) const;
   /// A function that allows for resetting the averager.
-  void clear() noexcept;
+  void clear();
   /// The function responsible for updating the averaged values
   /// at \f$t=\f$`time`. Requires `raw_q` (the raw components of \f$Q(t)\f$)
   /// and `timescales` (the associated damping times for each component).
   void update(double time, const DataVector& raw_q,
-              const DataVector& timescales) noexcept;
+              const DataVector& timescales);
   /// Returns the latest time at which the averager has sufficient data to
   /// return \f$Q\f$ and its derivatives.
-  double last_time_updated() const noexcept;
+  double last_time_updated() const;
   /// Returns the exponentially averaged time at \f$t=\f$`time`. The time is
   /// averaged along side \f$Q\f$ to determine the effective time at which
   /// the average value is computed. The effective time is retarded, due to the
   /// weighting of past times.
-  double average_time(double time) const noexcept;
+  double average_time(double time) const;
   /// Returns a bool corresponding to whether `average_0th_deriv_of_q`
   /// is `true`/`false`.
-  bool using_average_0th_deriv_of_q() const noexcept {
-    return average_0th_deriv_of_q_;
-  };
+  bool using_average_0th_deriv_of_q() const { return average_0th_deriv_of_q_; };
 
-  void pup(PUP::er& p) noexcept;
+  void pup(PUP::er& p);
 
  private:
   /// Returns the function and numerical derivatives up to the
@@ -128,7 +126,7 @@ class Averager {
   /// and contains a static_assert to guard against the possible instantiation
   /// of another DerivOrder, for which finite differencing does not
   /// currently support.
-  std::array<DataVector, DerivOrder + 1> get_derivs() const noexcept;
+  std::array<DataVector, DerivOrder + 1> get_derivs() const;
 
   double avg_tscale_frac_;
   bool average_0th_deriv_of_q_;

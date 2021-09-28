@@ -55,7 +55,7 @@ template <size_t VolumeDim, typename InterpolationTargetTag,
 class Interpolate<VolumeDim, InterpolationTargetTag, tmpl::list<Tensors...>>
     : public Event {
   /// \cond
-  explicit Interpolate(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit Interpolate(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Interpolate);  // NOLINT
   /// \endcond
@@ -64,9 +64,7 @@ class Interpolate<VolumeDim, InterpolationTargetTag, tmpl::list<Tensors...>>
   static constexpr Options::String help =
       "Starts interpolation onto the given InterpolationTargetTag.";
 
-  static std::string name() noexcept {
-    return Options::name<InterpolationTargetTag>();
-  }
+  static std::string name() { return Options::name<InterpolationTargetTag>(); }
 
   Interpolate() = default;
 
@@ -79,10 +77,10 @@ class Interpolate<VolumeDim, InterpolationTargetTag, tmpl::list<Tensors...>>
       const Mesh<VolumeDim>& mesh, const typename Tensors::type&... tensors,
       Parallel::GlobalCache<Metavariables>& cache,
       const ElementId<VolumeDim>& array_index,
-      const ParallelComponent* const /*meta*/) const noexcept {
+      const ParallelComponent* const /*meta*/) const {
     Variables<tmpl::list<Tensors...>> interp_vars(mesh.number_of_grid_points());
     const auto copy_to_variables = [&interp_vars](const auto tensor_tag_v,
-                                                  const auto& tensor) noexcept {
+                                                  const auto& tensor) {
       using tensor_tag = tmpl::type_from<decltype(tensor_tag_v)>;
       get<tensor_tag>(interp_vars) = tensor;
       return 0;
@@ -113,11 +111,11 @@ class Interpolate<VolumeDim, InterpolationTargetTag, tmpl::list<Tensors...>>
   template <typename Metavariables, typename ArrayIndex, typename Component>
   bool is_ready(Parallel::GlobalCache<Metavariables>& /*cache*/,
                 const ArrayIndex& /*array_index*/,
-                const Component* const /*meta*/) const noexcept {
+                const Component* const /*meta*/) const {
     return true;
   }
 
-  bool needs_evolved_variables() const noexcept override { return true; }
+  bool needs_evolved_variables() const override { return true; }
 };
 
 /// \cond

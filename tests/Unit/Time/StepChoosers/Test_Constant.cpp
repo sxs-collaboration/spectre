@@ -35,7 +35,7 @@ struct Metavariables {
 };
 
 template <typename Use>
-void test_use() noexcept {
+void test_use() {
   const Parallel::GlobalCache<Metavariables> cache{};
   auto box = db::create<
       db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<Metavariables>>>(

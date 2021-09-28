@@ -22,18 +22,17 @@
 namespace detail {
 struct vector_impl_algebra : boost::numeric::odeint::vector_space_algebra {
   template <typename VectorType>
-  static double norm_inf(const VectorType& vector) noexcept {
+  static double norm_inf(const VectorType& vector) {
     return max(abs(vector));
   }
 };
 
 struct vector_impl_array_algebra : boost::numeric::odeint::array_algebra {
   template <typename VectorType, size_t Size>
-  static double norm_inf(
-      const std::array<VectorType, Size>& vector_array) noexcept {
+  static double norm_inf(const std::array<VectorType, Size>& vector_array) {
     return std::accumulate(
         vector_array.begin(), vector_array.end(), 0.0,
-        [](const double maximum_so_far, const VectorType& element) noexcept {
+        [](const double maximum_so_far, const VectorType& element) {
           return std::max(maximum_so_far, max(abs(element)));
         });
   }
@@ -47,7 +46,7 @@ namespace odeint {
 namespace detail {
 template <typename V>
 struct set_unit_value_impl<ComplexDataVector, V, void> {
-  static void set_value(ComplexDataVector& t, const V& v) noexcept {  // NOLINT
+  static void set_value(ComplexDataVector& t, const V& v) {  // NOLINT
     // this ensures that the blaze expression template resolve the result to a
     // complex vector
     t = std::complex<double>(1.0, 0.0) * v;
@@ -55,7 +54,7 @@ struct set_unit_value_impl<ComplexDataVector, V, void> {
 };
 template <typename V>
 struct set_unit_value_impl<ComplexModalVector, V, void> {
-  static void set_value(ComplexModalVector& t, const V& v) noexcept {  // NOLINT
+  static void set_value(ComplexModalVector& t, const V& v) {  // NOLINT
     // this ensures that the blaze expression template resolve the result to a
     // complex vector
     t = std::complex<double>(1.0, 0.0) * v;
@@ -72,7 +71,7 @@ struct resize_impl_sfinae<VectorType1, VectorType2,
                           typename boost::enable_if_c<
                               is_derived_of_vector_impl_v<VectorType1> and
                               is_derived_of_vector_impl_v<VectorType2>>::type> {
-  static void resize(VectorType1& x1, const VectorType2& x2) noexcept {
+  static void resize(VectorType1& x1, const VectorType2& x2) {
     x1.destructive_resize(x2.size());
   }
 };

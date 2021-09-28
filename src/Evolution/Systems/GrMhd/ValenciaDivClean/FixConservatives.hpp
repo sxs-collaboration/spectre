@@ -101,14 +101,14 @@ class FixConservatives {
   /// \brief Minimum value of rest-mass density times lorentz factor
   struct MinimumValueOfD {
     using type = double;
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
     static constexpr Options::String help = {
         "Minimum value of rest-mass density times lorentz factor"};
   };
   /// \brief Cutoff below which \f$D = \rho W\f$ is set to MinimumValueOfD
   struct CutoffD {
     using type = double;
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
     static constexpr Options::String help = {
         "Cutoff below which D is set to MinimumValueOfD"};
   };
@@ -116,14 +116,14 @@ class FixConservatives {
   /// \brief Safety factor \f$\epsilon_B\f$.
   struct SafetyFactorForB {
     using type = double;
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
     static constexpr Options::String help = {
         "Safety factor for magnetic field bound."};
   };
   /// \brief Safety factor \f$\epsilon_S\f$.
   struct SafetyFactorForS {
     using type = double;
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
     static constexpr Options::String help = {
         "Safety factor for momentum density bound."};
   };
@@ -141,12 +141,12 @@ class FixConservatives {
   FixConservatives() = default;
   FixConservatives(const FixConservatives& /*rhs*/) = default;
   FixConservatives& operator=(const FixConservatives& /*rhs*/) = default;
-  FixConservatives(FixConservatives&& /*rhs*/) noexcept = default;
-  FixConservatives& operator=(FixConservatives&& /*rhs*/) noexcept = default;
+  FixConservatives(FixConservatives&& /*rhs*/) = default;
+  FixConservatives& operator=(FixConservatives&& /*rhs*/) = default;
   ~FixConservatives() = default;
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept;
+  void pup(PUP::er& p);
 
   using return_tags = tmpl::list<grmhd::ValenciaDivClean::Tags::TildeD,
                                  grmhd::ValenciaDivClean::Tags::TildeTau,
@@ -164,11 +164,11 @@ class FixConservatives {
       const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
       const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
       const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
-      const Scalar<DataVector>& sqrt_det_spatial_metric) const noexcept;
+      const Scalar<DataVector>& sqrt_det_spatial_metric) const;
 
  private:
   friend bool operator==(const FixConservatives& lhs,
-                         const FixConservatives& rhs) noexcept;
+                         const FixConservatives& rhs);
 
   double minimum_rest_mass_density_times_lorentz_factor_{
       std::numeric_limits<double>::signaling_NaN()};
@@ -180,8 +180,7 @@ class FixConservatives {
       std::numeric_limits<double>::signaling_NaN()};
 };
 
-bool operator!=(const FixConservatives& lhs,
-                const FixConservatives& rhs) noexcept;
+bool operator!=(const FixConservatives& lhs, const FixConservatives& rhs);
 
 }  // namespace ValenciaDivClean
 }  // namespace grmhd

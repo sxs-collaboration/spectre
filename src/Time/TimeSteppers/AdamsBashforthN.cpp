@@ -10,24 +10,20 @@
 
 namespace TimeSteppers {
 
-AdamsBashforthN::AdamsBashforthN(const size_t order) noexcept : order_(order) {
+AdamsBashforthN::AdamsBashforthN(const size_t order) : order_(order) {
   if (order_ < 1 or order_ > maximum_order) {
     ERROR("The order for Adams-Bashforth Nth order must be 1 <= order <= "
           << maximum_order);
   }
 }
 
-size_t AdamsBashforthN::order() const noexcept { return order_; }
+size_t AdamsBashforthN::order() const { return order_; }
 
-size_t AdamsBashforthN::error_estimate_order() const noexcept {
-  return order_ - 1;
-}
+size_t AdamsBashforthN::error_estimate_order() const { return order_ - 1; }
 
-size_t AdamsBashforthN::number_of_past_steps() const noexcept {
-  return order_ - 1;
-}
+size_t AdamsBashforthN::number_of_past_steps() const { return order_ - 1; }
 
-double AdamsBashforthN::stable_step() const noexcept {
+double AdamsBashforthN::stable_step() const {
   if (order_ == 1) {
     return 1.;
   }
@@ -45,16 +41,15 @@ double AdamsBashforthN::stable_step() const noexcept {
   return 1. / invstep;
 }
 
-TimeStepId AdamsBashforthN::next_time_id(
-    const TimeStepId& current_id,
-    const TimeDelta& time_step) const noexcept {
+TimeStepId AdamsBashforthN::next_time_id(const TimeStepId& current_id,
+                                         const TimeDelta& time_step) const {
   ASSERT(current_id.substep() == 0, "Adams-Bashforth should not have substeps");
   return {current_id.time_runs_forward(), current_id.slab_number(),
           current_id.step_time() + time_step};
 }
 
 std::vector<double> AdamsBashforthN::get_coefficients_impl(
-    const std::vector<double>& steps) noexcept {
+    const std::vector<double>& steps) {
   const size_t order = steps.size();
   ASSERT(order >= 1 and order <= maximum_order, "Bad order" << order);
   if (std::all_of(steps.begin(), steps.end(),
@@ -66,7 +61,7 @@ std::vector<double> AdamsBashforthN::get_coefficients_impl(
 }
 
 std::vector<double> AdamsBashforthN::variable_coefficients(
-    const std::vector<double>& steps) noexcept {
+    const std::vector<double>& steps) {
   const size_t order = steps.size();  // "k" in below equations
   std::vector<double> result;
   result.reserve(order);
@@ -110,8 +105,7 @@ std::vector<double> AdamsBashforthN::variable_coefficients(
   return result;
 }
 
-std::vector<double> AdamsBashforthN::constant_coefficients(
-    const size_t order) noexcept {
+std::vector<double> AdamsBashforthN::constant_coefficients(const size_t order) {
   switch (order) {
     case 1: return {1.};
     case 2: return {1.5, -0.5};
@@ -132,18 +126,16 @@ std::vector<double> AdamsBashforthN::constant_coefficients(
   }
 }
 
-void AdamsBashforthN::pup(PUP::er& p) noexcept {
+void AdamsBashforthN::pup(PUP::er& p) {
   LtsTimeStepper::Inherit::pup(p);
   p | order_;
 }
 
-bool operator==(const AdamsBashforthN& lhs,
-                const AdamsBashforthN& rhs) noexcept {
+bool operator==(const AdamsBashforthN& lhs, const AdamsBashforthN& rhs) {
   return lhs.order_ == rhs.order_;
 }
 
-bool operator!=(const AdamsBashforthN& lhs,
-                const AdamsBashforthN& rhs) noexcept {
+bool operator!=(const AdamsBashforthN& lhs, const AdamsBashforthN& rhs) {
   return not(lhs == rhs);
 }
 }  // namespace TimeSteppers

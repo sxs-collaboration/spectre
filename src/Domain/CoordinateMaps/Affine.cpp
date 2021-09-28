@@ -26,20 +26,20 @@ Affine::Affine(const double A, const double B, const double a, const double b)
 
 template <typename T>
 std::array<tt::remove_cvref_wrap_t<T>, 1> Affine::operator()(
-    const std::array<T, 1>& source_coords) const noexcept {
+    const std::array<T, 1>& source_coords) const {
   return {{(length_of_range_ * source_coords[0] + a_ * B_ - b_ * A_) /
            length_of_domain_}};
 }
 
 std::optional<std::array<double, 1>> Affine::inverse(
-    const std::array<double, 1>& target_coords) const noexcept {
+    const std::array<double, 1>& target_coords) const {
   return {{{(length_of_domain_ * target_coords[0] - a_ * B_ + b_ * A_) /
             length_of_range_}}};
 }
 
 template <typename T>
 tnsr::Ij<tt::remove_cvref_wrap_t<T>, 1, Frame::NoFrame> Affine::jacobian(
-    const std::array<T, 1>& source_coords) const noexcept {
+    const std::array<T, 1>& source_coords) const {
   return make_with_value<
       tnsr::Ij<tt::remove_cvref_wrap_t<T>, 1, Frame::NoFrame>>(
       dereference_wrapper(source_coords[0]), jacobian_);
@@ -47,7 +47,7 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 1, Frame::NoFrame> Affine::jacobian(
 
 template <typename T>
 tnsr::Ij<tt::remove_cvref_wrap_t<T>, 1, Frame::NoFrame> Affine::inv_jacobian(
-    const std::array<T, 1>& source_coords) const noexcept {
+    const std::array<T, 1>& source_coords) const {
   return make_with_value<
       tnsr::Ij<tt::remove_cvref_wrap_t<T>, 1, Frame::NoFrame>>(
       dereference_wrapper(source_coords[0]), inverse_jacobian_);
@@ -66,7 +66,7 @@ void Affine::pup(PUP::er& p) {
 }
 
 bool operator==(const CoordinateMaps::Affine& lhs,
-                const CoordinateMaps::Affine& rhs) noexcept {
+                const CoordinateMaps::Affine& rhs) {
   return lhs.A_ == rhs.A_ and lhs.B_ == rhs.B_ and lhs.a_ == rhs.a_ and
          lhs.b_ == rhs.b_ and lhs.length_of_domain_ == rhs.length_of_domain_ and
          lhs.length_of_range_ == rhs.length_of_range_ and
@@ -78,15 +78,13 @@ bool operator==(const CoordinateMaps::Affine& lhs,
 // Explicit instantiations
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                                  \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 1> Affine::       \
-  operator()(const std::array<DTYPE(data), 1>& source_coords) const noexcept; \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 1, Frame::NoFrame>  \
-  Affine::jacobian(const std::array<DTYPE(data), 1>& source_coords)           \
-      const noexcept;                                                         \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 1, Frame::NoFrame>  \
-  Affine::inv_jacobian(const std::array<DTYPE(data), 1>& source_coords)       \
-      const noexcept;
+#define INSTANTIATE(_, data)                                                 \
+  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 1>               \
+  Affine::operator()(const std::array<DTYPE(data), 1>& source_coords) const; \
+  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 1, Frame::NoFrame> \
+  Affine::jacobian(const std::array<DTYPE(data), 1>& source_coords) const;   \
+  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 1, Frame::NoFrame> \
+  Affine::inv_jacobian(const std::array<DTYPE(data), 1>& source_coords) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector,
                                       std::reference_wrapper<const double>,

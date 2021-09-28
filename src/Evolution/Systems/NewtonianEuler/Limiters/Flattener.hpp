@@ -61,6 +61,6 @@ FlattenerAction flatten_solution(
     const Mesh<VolumeDim>& mesh,
     const Scalar<DataVector>& det_logical_to_inertial_jacobian,
     const EquationsOfState::EquationOfState<false, ThermodynamicDim>&
-        equation_of_state) noexcept;
+        equation_of_state);
 
 }  // namespace NewtonianEuler::Limiters

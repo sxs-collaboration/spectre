@@ -117,7 +117,7 @@ struct Metavariables {
         const Variables<
             tmpl::list<evolution::dg::subcell::Tags::Inactive<Var1>>>& dg_vars,
         const Variables<tmpl::list<Var1>>& subcell_vars,
-        const Mesh<Dim>& dg_mesh, const double persson_exponent) noexcept {
+        const Mesh<Dim>& dg_mesh, const double persson_exponent) {
       Variables<tmpl::list<evolution::dg::subcell::Tags::Inactive<Var1>>>
           reconstructed_dg_vars{dg_vars.number_of_grid_points()};
       evolution::dg::subcell::fd::reconstruct(

@@ -53,11 +53,11 @@ T&& dereference_wrapper(std::reference_wrapper<T>&& t) {
 // DVecScalarMultExpr and DVecScalarDivExpr, with a std::reference_wrapper
 // The forwarding references match everything perfectly and so the functions
 // here will (almost) always win in overload selection.
-#define UNARY_REF_WRAP_OP(OP)                        \
-  template <typename T>                              \
-  SPECTRE_ALWAYS_INLINE decltype(auto) OP(           \
-      const std::reference_wrapper<T>& t) noexcept { \
-    return OP(t.get());                              \
+#define UNARY_REF_WRAP_OP(OP)               \
+  template <typename T>                     \
+  SPECTRE_ALWAYS_INLINE decltype(auto) OP(  \
+      const std::reference_wrapper<T>& t) { \
+    return OP(t.get());                     \
   }
 #define BINARY_REF_WRAP_FUNCTION_OP(OP)                                    \
   template <                                                               \
@@ -65,7 +65,7 @@ T&& dereference_wrapper(std::reference_wrapper<T>&& t) {
       Requires<not tt::is_a_v<std::reference_wrapper, std::decay_t<T1>>> = \
           nullptr>                                                         \
   SPECTRE_ALWAYS_INLINE decltype(auto) OP(                                 \
-      const std::reference_wrapper<T0>& t0, T1&& t1) noexcept {            \
+      const std::reference_wrapper<T0>& t0, T1&& t1) {                     \
     return OP(t0.get(), t1);                                               \
   }                                                                        \
   template <                                                               \
@@ -73,13 +73,13 @@ T&& dereference_wrapper(std::reference_wrapper<T>&& t) {
       Requires<not tt::is_a_v<std::reference_wrapper, std::decay_t<T0>>> = \
           nullptr>                                                         \
   SPECTRE_ALWAYS_INLINE decltype(auto) OP(                                 \
-      T0&& t0, const std::reference_wrapper<T1>& t1) noexcept {            \
+      T0&& t0, const std::reference_wrapper<T1>& t1) {                     \
     return OP(t0, t1.get());                                               \
   }                                                                        \
   template <typename T0, typename T1>                                      \
   SPECTRE_ALWAYS_INLINE decltype(auto) OP(                                 \
       const std::reference_wrapper<T0>& t0,                                \
-      const std::reference_wrapper<T1>& t1) noexcept {                     \
+      const std::reference_wrapper<T1>& t1) {                              \
     return OP(t0.get(), t1.get());                                         \
   }
 
@@ -89,7 +89,7 @@ T&& dereference_wrapper(std::reference_wrapper<T>&& t) {
       Requires<not tt::is_a_v<std::reference_wrapper, std::decay_t<T1>>> = \
           nullptr>                                                         \
   SPECTRE_ALWAYS_INLINE decltype(auto) operator OP(                        \
-      const std::reference_wrapper<T0>& t0, T1&& t1) noexcept {            \
+      const std::reference_wrapper<T0>& t0, T1&& t1) {                     \
     return t0.get() OP t1;                                                 \
   }                                                                        \
   template <                                                               \
@@ -97,13 +97,13 @@ T&& dereference_wrapper(std::reference_wrapper<T>&& t) {
       Requires<not tt::is_a_v<std::reference_wrapper, std::decay_t<T0>>> = \
           nullptr>                                                         \
   SPECTRE_ALWAYS_INLINE decltype(auto) operator OP(                        \
-      T0&& t0, const std::reference_wrapper<T1>& t1) noexcept {            \
+      T0&& t0, const std::reference_wrapper<T1>& t1) {                     \
     return t0 OP t1.get();                                                 \
   }                                                                        \
   template <typename T0, typename T1>                                      \
   SPECTRE_ALWAYS_INLINE decltype(auto) operator OP(                        \
       const std::reference_wrapper<T0>& t0,                                \
-      const std::reference_wrapper<T1>& t1) noexcept {                     \
+      const std::reference_wrapper<T1>& t1) {                              \
     return t0.get() OP t1.get();                                           \
   }
 
@@ -151,7 +151,7 @@ BINARY_REF_WRAP_OP(==)
 
 template <typename T>
 SPECTRE_ALWAYS_INLINE decltype(auto) operator-(
-    const std::reference_wrapper<T>& t) noexcept {
+    const std::reference_wrapper<T>& t) {
   return -t.get();
 }
 

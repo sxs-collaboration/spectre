@@ -32,7 +32,7 @@ struct VortexPerturbation3dProxy
       const gsl::not_null<Scalar<DataVector>*> source_mass_density_cons,
       const gsl::not_null<tnsr::I<DataVector, 3>*> source_momentum_density,
       const gsl::not_null<Scalar<DataVector>*> source_energy_density,
-      const tnsr::I<DataVector, 3>& x, const double t) const noexcept {
+      const tnsr::I<DataVector, 3>& x, const double t) const {
     this->apply(source_mass_density_cons, source_momentum_density,
                 source_energy_density, vortex_, x, t);
   }
@@ -41,7 +41,7 @@ struct VortexPerturbation3dProxy
   NewtonianEuler::Solutions::IsentropicVortex<3> vortex_{};
 };
 
-void test_sources() noexcept {
+void test_sources() {
   const double perturbation_amplitude = 0.1987;
   const double adiabatic_index = 1.2;
   const std::array<double, 3> vortex_center = {{0.7, 0.5, -5.5}};

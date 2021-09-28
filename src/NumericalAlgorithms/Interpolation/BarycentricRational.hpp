@@ -43,16 +43,16 @@ namespace intrp {
  */
 class BarycentricRational {
  public:
-  BarycentricRational() noexcept = default;
+  BarycentricRational() = default;
   BarycentricRational(std::vector<double> x_values,
-                      std::vector<double> y_values, size_t order) noexcept;
+                      std::vector<double> y_values, size_t order);
 
-  double operator()(double x_to_interp_to) const noexcept;
+  double operator()(double x_to_interp_to) const;
 
-  size_t order() const noexcept;
+  size_t order() const;
 
   // clang-tidy: no runtime references
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
 
  private:
   std::vector<double> x_values_;

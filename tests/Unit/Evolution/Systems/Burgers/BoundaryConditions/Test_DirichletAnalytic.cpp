@@ -29,9 +29,8 @@ struct ConvertSinusoid {
   using packed_container = Burgers::AnalyticData::Sinusoid;
   using packed_type = double;
 
-  static inline unpacked_container unpack(
-      const packed_container /*packed*/,
-      const size_t /*grid_point_index*/) noexcept {
+  static inline unpacked_container unpack(const packed_container /*packed*/,
+                                          const size_t /*grid_point_index*/) {
     return 0.0;  // no parameter but we need some placeholder type
   }
 
@@ -41,7 +40,7 @@ struct ConvertSinusoid {
     // no parameters but we need a placeholder function
   }
 
-  static inline size_t get_size(const packed_container& /*packed*/) noexcept {
+  static inline size_t get_size(const packed_container& /*packed*/) {
     return 1;
   }
 };
@@ -53,9 +52,8 @@ struct ConvertStep {
 
   static packed_container create_container() { return {2.0, 1.0, 0.5}; }
 
-  static inline unpacked_container unpack(
-      const packed_container /*packed*/,
-      const size_t /*grid_point_index*/) noexcept {
+  static inline unpacked_container unpack(const packed_container /*packed*/,
+                                          const size_t /*grid_point_index*/) {
     // No way of getting the args from the boundary condition.
     return {{2.0, 1.0, 0.5}};
   }
@@ -66,7 +64,7 @@ struct ConvertStep {
     *packed = packed_container{unpacked[0], unpacked[1], unpacked[2]};
   }
 
-  static inline size_t get_size(const packed_container& /*packed*/) noexcept {
+  static inline size_t get_size(const packed_container& /*packed*/) {
     return 1;
   }
 };

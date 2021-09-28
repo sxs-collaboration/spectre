@@ -49,15 +49,14 @@ struct SmoothFlowProxy : NewtonianEuler::Solutions::SmoothFlow<Dim> {
 
   template <typename DataType>
   tuples::tagged_tuple_from_typelist<variables_tags<DataType>>
-  primitive_variables(const tnsr::I<DataType, Dim>& x,
-                      const double t) const noexcept {
+  primitive_variables(const tnsr::I<DataType, Dim>& x, const double t) const {
     return this->variables(x, t, variables_tags<DataType>{});
   }
 
   template <typename DataType>
   tuples::tagged_tuple_from_typelist<ne_variables_tags<DataType>>
   ne_primitive_variables(const tnsr::I<DataType, Dim>& x,
-                         const double t) const noexcept {
+                         const double t) const {
     return this->variables(x, t, ne_variables_tags<DataType>{});
   }
 };

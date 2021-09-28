@@ -60,7 +60,7 @@ class TimeStepper : public PUP::able {
   void update_u(
       const gsl::not_null<Vars*> u,
       const gsl::not_null<TimeSteppers::History<Vars, DerivVars>*> history,
-      const TimeDelta& time_step) const noexcept {
+      const TimeDelta& time_step) const {
     return TimeStepper_detail::fake_virtual_update_u<creatable_classes>(
         this, u, history, time_step);
   }
@@ -77,7 +77,7 @@ class TimeStepper : public PUP::able {
   bool update_u(
       const gsl::not_null<Vars*> u, const gsl::not_null<ErrVars*> u_error,
       const gsl::not_null<TimeSteppers::History<Vars, DerivVars>*> history,
-      const TimeDelta& time_step) const noexcept {
+      const TimeDelta& time_step) const {
     return TimeStepper_detail::fake_virtual_update_u<creatable_classes>(
         this, u, u_error, history, time_step);
   }
@@ -90,38 +90,37 @@ class TimeStepper : public PUP::able {
   template <typename Vars, typename DerivVars>
   bool dense_update_u(const gsl::not_null<Vars*> u,
                       const TimeSteppers::History<Vars, DerivVars>& history,
-                      const double time) const noexcept {
+                      const double time) const {
     return TimeStepper_detail::fake_virtual_dense_update_u<creatable_classes>(
         this, u, history, time);
   }
 
   /// The convergence order of the stepper
-  virtual size_t order() const noexcept = 0;
+  virtual size_t order() const = 0;
 
   /// The convergence order of the stepper error measure
-  virtual size_t error_estimate_order() const noexcept = 0;
+  virtual size_t error_estimate_order() const = 0;
 
   /// Number of substeps in this TimeStepper
-  virtual uint64_t number_of_substeps() const noexcept = 0;
+  virtual uint64_t number_of_substeps() const = 0;
 
   /// Number of substeps in this TimeStepper when providing an error measure for
   /// adaptive time-stepping
   ///
   /// \details Certain substep methods (e.g. embedded RK4(3)) require additional
   /// steps when providing an error measure of the integration.
-  virtual uint64_t number_of_substeps_for_error() const noexcept = 0;
+  virtual uint64_t number_of_substeps_for_error() const = 0;
 
   /// Number of past time steps needed for multi-step method
-  virtual size_t number_of_past_steps() const noexcept = 0;
+  virtual size_t number_of_past_steps() const = 0;
 
   /// Rough estimate of the maximum step size this method can take
   /// stably as a multiple of the step for Euler's method.
-  virtual double stable_step() const noexcept = 0;
+  virtual double stable_step() const = 0;
 
   /// The TimeStepId after the current substep
-  virtual TimeStepId next_time_id(
-      const TimeStepId& current_id,
-      const TimeDelta& time_step) const noexcept = 0;
+  virtual TimeStepId next_time_id(const TimeStepId& current_id,
+                                  const TimeDelta& time_step) const = 0;
 
   /// The TimeStepId after the current substep when providing an error measure
   /// for adaptive time-stepping.
@@ -129,15 +128,14 @@ class TimeStepper : public PUP::able {
   /// Certain substep methods (e.g. embedded RK4(3)) require additional
   /// steps when providing an error measure of the integration.
   virtual TimeStepId next_time_id_for_error(
-      const TimeStepId& current_id,
-      const TimeDelta& time_step) const noexcept = 0;
+      const TimeStepId& current_id, const TimeDelta& time_step) const = 0;
 
   /// Whether a change in the step size is allowed before taking
   /// a step.
   template <typename Vars, typename DerivVars>
   bool can_change_step_size(
       const TimeStepId& time_id,
-      const TimeSteppers::History<Vars, DerivVars>& history) const noexcept {
+      const TimeSteppers::History<Vars, DerivVars>& history) const {
     return TimeStepper_detail::fake_virtual_can_change_step_size<
         creatable_classes>(this, time_id, history);
   }
@@ -183,7 +181,7 @@ class LtsTimeStepper : public TimeStepper::Inherit {
           LocalVars, RemoteVars,
           std::result_of_t<const Coupling&(LocalVars, RemoteVars)>>*>
           history,
-      const TimeDelta& time_step) const noexcept {
+      const TimeDelta& time_step) const {
     return LtsTimeStepper_detail::fake_virtual_compute_boundary_delta<
         creatable_classes>(this, coupling, history, time_step);
   }
@@ -195,20 +193,19 @@ class LtsTimeStepper : public TimeStepper::Inherit {
       const TimeSteppers::BoundaryHistory<
           LocalVars, RemoteVars,
           std::result_of_t<const Coupling&(LocalVars, RemoteVars)>>& history,
-      const double time) const noexcept {
+      const double time) const {
     return LtsTimeStepper_detail::fake_virtual_boundary_dense_output<
         creatable_classes>(this, coupling, history, time);
   }
 
   /// Substep LTS integrators are not supported, so this is always 1.
-  uint64_t number_of_substeps() const noexcept final { return 1; }
+  uint64_t number_of_substeps() const final { return 1; }
 
   /// Substep LTS integrators are not supported, so this is always 1.
-  uint64_t number_of_substeps_for_error() const noexcept final { return 1; }
+  uint64_t number_of_substeps_for_error() const final { return 1; }
 
-  TimeStepId next_time_id_for_error(
-      const TimeStepId& current_id,
-      const TimeDelta& time_step) const noexcept final {
+  TimeStepId next_time_id_for_error(const TimeStepId& current_id,
+                                    const TimeDelta& time_step) const final {
     return next_time_id(current_id, time_step);
   }
 
@@ -221,7 +218,7 @@ class LtsTimeStepper : public TimeStepper::Inherit {
   void update_u(
       const gsl::not_null<Vars*> u,
       const gsl::not_null<TimeSteppers::History<Vars, DerivVars>*> history,
-      const TimeDelta& time_step) const noexcept {
+      const TimeDelta& time_step) const {
     return TimeStepper::update_u(u, history, time_step);
   }
 
@@ -229,14 +226,14 @@ class LtsTimeStepper : public TimeStepper::Inherit {
   bool update_u(
       const gsl::not_null<Vars*> u, const gsl::not_null<ErrVars*> u_error,
       const gsl::not_null<TimeSteppers::History<Vars, DerivVars>*> history,
-      const TimeDelta& time_step) const noexcept {
+      const TimeDelta& time_step) const {
     return TimeStepper::update_u(u, u_error, history, time_step);
   }
 
   template <typename Vars, typename DerivVars>
   bool can_change_step_size(
       const TimeStepId& time_id,
-      const TimeSteppers::History<Vars, DerivVars>& history) const noexcept {
+      const TimeSteppers::History<Vars, DerivVars>& history) const {
     return TimeStepper::can_change_step_size(time_id, history);
   }
   /// \endcond

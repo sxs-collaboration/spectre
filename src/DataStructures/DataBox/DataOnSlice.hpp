@@ -33,7 +33,7 @@ template <size_t VolumeDim, typename TagsList, typename... TagsToSlice>
 Variables<tmpl::list<TagsToSlice...>> data_on_slice(
     const db::DataBox<TagsList>& box, const Index<VolumeDim>& element_extents,
     const size_t sliced_dim, const size_t fixed_index,
-    tmpl::list<TagsToSlice...> /*meta*/) noexcept {
+    tmpl::list<TagsToSlice...> /*meta*/) {
   return data_on_slice<TagsToSlice...>(element_extents, sliced_dim, fixed_index,
                                        db::get<TagsToSlice>(box)...);
 }

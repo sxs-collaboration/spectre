@@ -55,8 +55,7 @@ void gauge_source(
     const tnsr::iJ<DataType, SpatialDim, Frame>& deriv_shift,
     const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
     const Scalar<DataType>& trace_extrinsic_curvature,
-    const tnsr::i<DataType, SpatialDim, Frame>&
-        trace_christoffel_last_indices) noexcept;
+    const tnsr::i<DataType, SpatialDim, Frame>& trace_christoffel_last_indices);
 
 template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::a<DataType, SpatialDim, Frame> gauge_source(
@@ -67,8 +66,7 @@ tnsr::a<DataType, SpatialDim, Frame> gauge_source(
     const tnsr::iJ<DataType, SpatialDim, Frame>& deriv_shift,
     const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
     const Scalar<DataType>& trace_extrinsic_curvature,
-    const tnsr::i<DataType, SpatialDim, Frame>&
-        trace_christoffel_last_indices) noexcept;
+    const tnsr::i<DataType, SpatialDim, Frame>& trace_christoffel_last_indices);
 /// @}
 
 namespace Tags {
@@ -106,7 +104,7 @@ struct GaugeHImplicitFrom3p1QuantitiesCompute : GaugeH<SpatialDim, Frame>,
       const tnsr::I<DataVector, SpatialDim, Frame>&,
       const tnsr::iJ<DataVector, SpatialDim, Frame>&,
       const tnsr::ii<DataVector, SpatialDim, Frame>&, const Scalar<DataVector>&,
-      const tnsr::i<DataVector, SpatialDim, Frame>&) noexcept>(
+      const tnsr::i<DataVector, SpatialDim, Frame>&)>(
       &gauge_source<SpatialDim, Frame, DataVector>);
 
   using base = GaugeH<SpatialDim, Frame>;
@@ -133,8 +131,7 @@ struct SpacetimeDerivGaugeHCompute : SpacetimeDerivGaugeH<SpatialDim, Frame>,
       const gsl::not_null<tnsr::ab<DataVector, SpatialDim, Frame>*>
           spacetime_deriv_gauge_source,
       const tnsr::a<DataVector, SpatialDim, Frame>& time_deriv_gauge_source,
-      const tnsr::ia<DataVector, SpatialDim, Frame>&
-          deriv_gauge_source) noexcept {
+      const tnsr::ia<DataVector, SpatialDim, Frame>& deriv_gauge_source) {
     destructive_resize_components(spacetime_deriv_gauge_source,
                                   get<0>(time_deriv_gauge_source).size());
     for (size_t b = 0; b < SpatialDim + 1; ++b) {

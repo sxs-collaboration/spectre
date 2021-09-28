@@ -47,9 +47,10 @@ namespace Convergence {
  *   interpreted as an error because the algorithm did not converge in the
  *   alloted number of iterations.
  */
-std::optional<Reason> criteria_match(
-    const Criteria& criteria, size_t iteration_id, double residual_magnitude,
-    double initial_residual_magnitude) noexcept;
+std::optional<Reason> criteria_match(const Criteria& criteria,
+                                     size_t iteration_id,
+                                     double residual_magnitude,
+                                     double initial_residual_magnitude);
 
 /*!
  * \brief Signals convergence of the algorithm.
@@ -73,16 +74,15 @@ struct HasConverged {
    * `Convergence::criteria_match`.
    */
   HasConverged(const Criteria& criteria, size_t iteration_id,
-               double residual_magnitude,
-               double initial_residual_magnitude) noexcept;
+               double residual_magnitude, double initial_residual_magnitude);
 
   /// Construct at a state where `iteration_id` iterations of a total of
   /// `num_iterations` have completed. Use when the algorithm is intended to run
   /// for a fixed number of iterations. The convergence `reason()` will be
   /// `Convergence::Reason::NumIterations`.
-  HasConverged(size_t num_iterations, size_t iteration_id) noexcept;
+  HasConverged(size_t num_iterations, size_t iteration_id);
 
-  explicit operator bool() const noexcept { return static_cast<bool>(reason_); }
+  explicit operator bool() const { return static_cast<bool>(reason_); }
 
   /*!
    * \brief The reason the algorithm has converged.
@@ -90,28 +90,26 @@ struct HasConverged {
    * \warning Calling this function is an error if the algorithm has not yet
    * converged.
    */
-  Reason reason() const noexcept;
+  Reason reason() const;
 
   /// The number of iterations the algorithm has completed
-  size_t num_iterations() const noexcept;
+  size_t num_iterations() const;
 
   /// The residual magnitude after the last iteration. NaN if no iteration has
   /// completed yet.
-  double residual_magnitude() const noexcept;
+  double residual_magnitude() const;
 
   /// The residual magnitude before the first iteration. NaN if this information
   /// is not available yet.
-  double initial_residual_magnitude() const noexcept;
+  double initial_residual_magnitude() const;
 
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
 
-  friend bool operator==(const HasConverged& lhs,
-                         const HasConverged& rhs) noexcept;
-  friend bool operator!=(const HasConverged& lhs,
-                         const HasConverged& rhs) noexcept;
+  friend bool operator==(const HasConverged& lhs, const HasConverged& rhs);
+  friend bool operator!=(const HasConverged& lhs, const HasConverged& rhs);
 
   friend std::ostream& operator<<(std::ostream& os,
-                                  const HasConverged& has_converged) noexcept;
+                                  const HasConverged& has_converged);
 
  private:
   std::optional<Reason> reason_{};

@@ -40,38 +40,38 @@ struct Criteria {
     using type = size_t;
     static constexpr Options::String help = {
         "The number of iterations exceeds this limit."};
-    static type lower_bound() noexcept { return 0; }
+    static type lower_bound() { return 0; }
   };
 
   struct AbsoluteResidual {
     using type = double;
     static constexpr Options::String help = {
         "The residual has reached this magnitude."};
-    static type lower_bound() noexcept { return 0.; }
+    static type lower_bound() { return 0.; }
   };
 
   struct RelativeResidual {
     using type = double;
     static constexpr Options::String help = {
         "The residual has decreased by this factor."};
-    static type lower_bound() noexcept { return 0.; }
-    static type upper_bound() noexcept { return 1.; }
+    static type lower_bound() { return 0.; }
+    static type upper_bound() { return 1.; }
   };
 
   using options = tmpl::list<MaxIterations, AbsoluteResidual, RelativeResidual>;
 
   Criteria() = default;
   Criteria(size_t max_iterations_in, double absolute_residual_in,
-           double relative_residual_in) noexcept;
+           double relative_residual_in);
 
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
 
   size_t max_iterations{};
   double absolute_residual{};
   double relative_residual{};
 };
 
-bool operator==(const Criteria& lhs, const Criteria& rhs) noexcept;
-bool operator!=(const Criteria& lhs, const Criteria& rhs) noexcept;
+bool operator==(const Criteria& lhs, const Criteria& rhs);
+bool operator!=(const Criteria& lhs, const Criteria& rhs);
 
 }  // namespace Convergence

@@ -18,7 +18,7 @@
 
 namespace {
 template <size_t Dim, typename Frame>
-void check(const Matrix& transform, const double squeeze_factor) noexcept {
+void check(const Matrix& transform, const double squeeze_factor) {
   CAPTURE(transform);
   const double large_segment = 3.0;
   const double small_segment = 1.7;
@@ -57,7 +57,7 @@ void check(const Matrix& transform, const double squeeze_factor) noexcept {
 }
 
 template <typename Frame>
-void check_frame() noexcept {
+void check_frame() {
   check<1, Frame>(Matrix{{1.}}, 1.);
   check<1, Frame>(Matrix{{-1.}}, 1.);
   check<1, Frame>(Matrix{{0.1}}, 0.1);

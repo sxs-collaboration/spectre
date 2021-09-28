@@ -79,7 +79,7 @@ void test_observe(
     const std::unique_ptr<ObserveEvent> observe,
     const std::optional<Mesh<System::volume_dim>>& interpolating_mesh,
     const bool has_analytic_solutions,
-    const std::optional<std::string>& section = std::nullopt) noexcept {
+    const std::optional<std::string>& section = std::nullopt) {
   using metavariables = Metavariables<System, AlwaysHasAnalyticSolutions>;
   constexpr size_t volume_dim = System::volume_dim;
   using element_component = ElementComponent<metavariables>;
@@ -184,16 +184,16 @@ void test_observe(
   // non-const, so we capture a pointer instead.
   const auto check_component = [&element_name, &num_components_observed,
                                 tensor_data = &results.in_received_tensor_data,
-                                &interpolant](
-                                   const std::string& component,
-                                   const DataVector& expected) noexcept {
+                                &interpolant](const std::string& component,
+                                              const DataVector& expected) {
     CAPTURE(*tensor_data);
     CAPTURE(component);
     const DataVector interpolated_expected = interpolant.interpolate(expected);
     const auto it = alg::find_if(
         *tensor_data,
-        [name = element_name + "/" + component](
-            const TensorComponent& tc) noexcept { return tc.name == name; });
+        [name = element_name + "/" + component](const TensorComponent& tc) {
+          return tc.name == name;
+        });
     CHECK(it != tensor_data->end());
     if (it != tensor_data->end()) {
       if (component.substr(0, 6) == "Tensor" or
@@ -214,13 +214,13 @@ void test_observe(
   }
   System::check_data([&check_component, &vars](const std::string& name,
                                                auto tag,
-                                               const auto... indices) noexcept {
+                                               const auto... indices) {
     check_component(name, get<decltype(tag)>(vars).get(indices...));
   });
   if (AlwaysHasAnalyticSolutions or has_analytic_solutions) {
     System::solution_for_test::check_data(
         [&check_component, &errors](const std::string& name, auto tag,
-                                    const auto... indices) noexcept {
+                                    const auto... indices) {
           check_component(name, get<decltype(tag)>(errors).get(indices...));
         });
   }
@@ -237,7 +237,7 @@ void test_system(
     const std::string& mesh_creation_string,
     const std::optional<Mesh<System::volume_dim>>& interpolating_mesh = {},
     const bool has_analytic_solutions = true,
-    const std::optional<std::string>& section = std::nullopt) noexcept {
+    const std::optional<std::string>& section = std::nullopt) {
   INFO(pretty_type::get_name<System>());
   CAPTURE(AlwaysHasAnalyticSolutions);
   CAPTURE(has_analytic_solutions);

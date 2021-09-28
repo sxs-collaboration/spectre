@@ -34,8 +34,7 @@ struct NumberAsExpression
   ///
   /// \return the number represented by this expression
   SPECTRE_ALWAYS_INLINE double get(
-      const std::array<size_t, num_tensor_indices>& /*multi_index*/)
-      const noexcept {
+      const std::array<size_t, num_tensor_indices>& /*multi_index*/) const {
     return number_;
   }
 

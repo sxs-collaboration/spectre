@@ -19,7 +19,7 @@ void spatial_deriv_of_lapse(
     const gsl::not_null<tnsr::i<DataType, SpatialDim, Frame>*> deriv_lapse,
     const Scalar<DataType>& lapse,
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_unit_normal,
-    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept {
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) {
   if (UNLIKELY(get_size(get<0>(*deriv_lapse)) != get_size(get(lapse)))) {
     *deriv_lapse = tnsr::i<DataType, SpatialDim, Frame>(get_size(get(lapse)));
   }
@@ -43,7 +43,7 @@ template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::i<DataType, SpatialDim, Frame> spatial_deriv_of_lapse(
     const Scalar<DataType>& lapse,
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_unit_normal,
-    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept {
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) {
   tnsr::i<DataType, SpatialDim, Frame> deriv_lapse{};
   GeneralizedHarmonic::spatial_deriv_of_lapse<SpatialDim, Frame, DataType>(
       make_not_null(&deriv_lapse), lapse, spacetime_unit_normal, phi);
@@ -55,20 +55,20 @@ tnsr::i<DataType, SpatialDim, Frame> spatial_deriv_of_lapse(
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(2, data)
 
-#define INSTANTIATE(_, data)                                               \
-  template void GeneralizedHarmonic::spatial_deriv_of_lapse(               \
-      const gsl::not_null<tnsr::i<DTYPE(data), DIM(data), FRAME(data)>*>   \
-          deriv_lapse,                                                     \
-      const Scalar<DTYPE(data)>& lapse,                                    \
-      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                  \
-          spacetime_unit_normal,                                           \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi) noexcept; \
-  template tnsr::i<DTYPE(data), DIM(data), FRAME(data)>                    \
-  GeneralizedHarmonic::spatial_deriv_of_lapse(                             \
-      const Scalar<DTYPE(data)>& lapse,                                    \
-      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                  \
-          spacetime_unit_normal,                                           \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi) noexcept;
+#define INSTANTIATE(_, data)                                             \
+  template void GeneralizedHarmonic::spatial_deriv_of_lapse(             \
+      const gsl::not_null<tnsr::i<DTYPE(data), DIM(data), FRAME(data)>*> \
+          deriv_lapse,                                                   \
+      const Scalar<DTYPE(data)>& lapse,                                  \
+      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                \
+          spacetime_unit_normal,                                         \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi);        \
+  template tnsr::i<DTYPE(data), DIM(data), FRAME(data)>                  \
+  GeneralizedHarmonic::spatial_deriv_of_lapse(                           \
+      const Scalar<DTYPE(data)>& lapse,                                  \
+      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                \
+          spacetime_unit_normal,                                         \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
                         (Frame::Grid, Frame::Inertial))

@@ -86,7 +86,7 @@ void test_rotated_bricks_construction(
         expected_external_boundaries,
     const std::vector<DirectionMap<
         3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>&
-        expected_boundary_conditions = {}) noexcept {
+        expected_boundary_conditions = {}) {
   const auto domain = rotated_bricks.create_domain();
 
   CHECK(domain.blocks().size() == expected_extents.size());

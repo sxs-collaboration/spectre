@@ -52,19 +52,18 @@ namespace Sources {
  */
 template <size_t Dim>
 struct UniformAcceleration {
-  UniformAcceleration() noexcept = default;
+  UniformAcceleration() = default;
   UniformAcceleration(const UniformAcceleration& /*rhs*/) = default;
   UniformAcceleration& operator=(const UniformAcceleration& /*rhs*/) = default;
-  UniformAcceleration(UniformAcceleration&& /*rhs*/) noexcept = default;
-  UniformAcceleration& operator=(UniformAcceleration&& /*rhs*/) noexcept =
-      default;
+  UniformAcceleration(UniformAcceleration&& /*rhs*/) = default;
+  UniformAcceleration& operator=(UniformAcceleration&& /*rhs*/) = default;
   ~UniformAcceleration() = default;
 
   explicit UniformAcceleration(
-      const std::array<double, Dim>& acceleration_field) noexcept;
+      const std::array<double, Dim>& acceleration_field);
 
   // clang-tidy: google-runtime-references
-  void pup(PUP::er& /*p*/) noexcept;  // NOLINT
+  void pup(PUP::er& /*p*/);  // NOLINT
 
   using sourced_variables =
       tmpl::list<Tags::MomentumDensity<Dim>, Tags::EnergyDensity>;
@@ -75,13 +74,13 @@ struct UniformAcceleration {
   void apply(gsl::not_null<tnsr::I<DataVector, Dim>*> source_momentum_density,
              gsl::not_null<Scalar<DataVector>*> source_energy_density,
              const Scalar<DataVector>& mass_density_cons,
-             const tnsr::I<DataVector, Dim>& momentum_density) const noexcept;
+             const tnsr::I<DataVector, Dim>& momentum_density) const;
 
  private:
   template <size_t SpatialDim>
   friend bool operator==(  // NOLINT(readability-redundant-declaration)
       const UniformAcceleration<SpatialDim>& lhs,
-      const UniformAcceleration<SpatialDim>& rhs) noexcept;
+      const UniformAcceleration<SpatialDim>& rhs);
 
   std::array<double, Dim> acceleration_field_ =
       make_array<Dim>(std::numeric_limits<double>::signaling_NaN());
@@ -89,6 +88,6 @@ struct UniformAcceleration {
 
 template <size_t Dim>
 bool operator!=(const UniformAcceleration<Dim>& lhs,
-                const UniformAcceleration<Dim>& rhs) noexcept;
+                const UniformAcceleration<Dim>& rhs);
 }  // namespace Sources
 }  // namespace NewtonianEuler

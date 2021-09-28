@@ -44,13 +44,13 @@ class PolytropicFluid : public EquationOfState<IsRelativistic, 1> {
   struct PolytropicConstant {
     using type = double;
     static constexpr Options::String help = {"Polytropic constant K"};
-    static double lower_bound() noexcept { return 0.0; }
+    static double lower_bound() { return 0.0; }
   };
 
   struct PolytropicExponent {
     using type = double;
     static constexpr Options::String help = {"Polytropic exponent Gamma"};
-    static double lower_bound() noexcept { return 1.0; }
+    static double lower_bound() { return 1.0; }
   };
 
   static constexpr Options::String help = {
@@ -69,8 +69,7 @@ class PolytropicFluid : public EquationOfState<IsRelativistic, 1> {
   PolytropicFluid& operator=(PolytropicFluid&&) = default;
   ~PolytropicFluid() override = default;
 
-  PolytropicFluid(double polytropic_constant,
-                  double polytropic_exponent) noexcept;
+  PolytropicFluid(double polytropic_constant, double polytropic_exponent);
 
   EQUATION_OF_STATE_FORWARD_DECLARE_MEMBERS(PolytropicFluid, 1)
 
@@ -78,27 +77,27 @@ class PolytropicFluid : public EquationOfState<IsRelativistic, 1> {
       SINGLE_ARG(EquationOfState<IsRelativistic, 1>), PolytropicFluid);
 
   /// The lower bound of the rest mass density that is valid for this EOS
-  double rest_mass_density_lower_bound() const noexcept override { return 0.0; }
+  double rest_mass_density_lower_bound() const override { return 0.0; }
 
   /// The upper bound of the rest mass density that is valid for this EOS
-  double rest_mass_density_upper_bound() const noexcept override;
+  double rest_mass_density_upper_bound() const override;
 
   /// The lower bound of the specific internal energy that is valid for this EOS
   /// at the given rest mass density \f$\rho\f$
   double specific_internal_energy_lower_bound(
-      const double /* rest_mass_density */) const noexcept override {
+      const double /* rest_mass_density */) const override {
     return 0.0;
   }
 
   /// The upper bound of the specific internal energy that is valid for this EOS
   /// at the given rest mass density \f$\rho\f$
   double specific_internal_energy_upper_bound(
-      const double /* rest_mass_density */) const noexcept override {
+      const double /* rest_mass_density */) const override {
     return std::numeric_limits<double>::max();
   }
 
   /// The lower bound of the specific enthalpy that is valid for this EOS
-  double specific_enthalpy_lower_bound() const noexcept override {
+  double specific_enthalpy_lower_bound() const override {
     return IsRelativistic ? 1.0 : 0.0;
   }
 

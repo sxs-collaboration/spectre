@@ -67,17 +67,17 @@ struct MockContributeVolumeData {
 
   template <typename ParallelComponent, typename... DbTags,
             typename Metavariables, typename ArrayIndex, size_t Dim>
-  static void apply(db::DataBox<tmpl::list<DbTags...>>& /*box*/,
-                    Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const observers::ObservationId& observation_id,
-                    const std::string& subfile_name,
-                    const observers::ArrayComponentId& array_component_id,
-                    std::vector<TensorComponent>&& in_received_tensor_data,
-                    const Index<Dim>& received_extents,
-                    const std::array<Spectral::Basis, Dim>& received_basis,
-                    const std::array<Spectral::Quadrature, Dim>&
-                        received_quadrature) noexcept {
+  static void apply(
+      db::DataBox<tmpl::list<DbTags...>>& /*box*/,
+      Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/,
+      const observers::ObservationId& observation_id,
+      const std::string& subfile_name,
+      const observers::ArrayComponentId& array_component_id,
+      std::vector<TensorComponent>&& in_received_tensor_data,
+      const Index<Dim>& received_extents,
+      const std::array<Spectral::Basis, Dim>& received_basis,
+      const std::array<Spectral::Quadrature, Dim>& received_quadrature) {
     results.observation_id = observation_id;
     results.subfile_name = subfile_name;
     results.array_component_id = array_component_id;
@@ -147,7 +147,7 @@ struct ScalarSystem {
   using extra_args = tmpl::list<ExtraArgs...>;
 
   struct ScalarVar : db::SimpleTag {
-    static std::string name() noexcept { return "Scalar"; }
+    static std::string name() { return "Scalar"; }
     using type = Scalar<DataVector>;
   };
 
@@ -155,7 +155,7 @@ struct ScalarSystem {
   using variables_tag = Tags::Variables<tmpl::list<ScalarVar>>;
 
   template <typename CheckComponent>
-  static void check_data(const CheckComponent& check_component) noexcept {
+  static void check_data(const CheckComponent& check_component) {
     check_component("Scalar", ScalarVar{});
   }
 
@@ -164,17 +164,17 @@ struct ScalarSystem {
     using vars_for_test = typename variables_tag::tags_list;
 
     template <typename CheckComponent>
-    static void check_data(const CheckComponent& check_component) noexcept {
+    static void check_data(const CheckComponent& check_component) {
       check_component("Error(Scalar)", ScalarVar{});
     }
     static tuples::tagged_tuple_from_typelist<vars_for_test> variables(
 
         const tnsr::I<DataVector, 1>& x, const double t,
-        const vars_for_test /*meta*/) noexcept {
+        const vars_for_test /*meta*/) {
       return {Scalar<DataVector>{1.0 - t * get<0>(x)}};
     }
 
-    void pup(PUP::er& /*p*/) noexcept {}  // NOLINT
+    void pup(PUP::er& /*p*/) {}  // NOLINT
   };
 
   using ObserveEvent =
@@ -187,7 +187,7 @@ struct ScalarSystem {
       "  VariablesToObserve: [Scalar]\n"
       "  FloatingPointTypes: [Double]\n";
   static ObserveEvent make_test_object(
-      const std::optional<Mesh<volume_dim>>& interpolating_mesh) noexcept {
+      const std::optional<Mesh<volume_dim>>& interpolating_mesh) {
     return ObserveEvent{"element_data",
                         FloatingPointType::Double,
                         {FloatingPointType::Double},
@@ -202,32 +202,32 @@ struct ComplicatedSystem {
   using extra_args = tmpl::list<ExtraArgs...>;
 
   struct ScalarVar : db::SimpleTag {
-    static std::string name() noexcept { return "Scalar"; }
+    static std::string name() { return "Scalar"; }
     using type = Scalar<DataVector>;
   };
 
   struct VectorVar : db::SimpleTag {
-    static std::string name() noexcept { return "Vector"; }
+    static std::string name() { return "Vector"; }
     using type = tnsr::I<DataVector, 2>;
   };
 
   struct TensorVar : db::SimpleTag {
-    static std::string name() noexcept { return "Tensor"; }
+    static std::string name() { return "Tensor"; }
     using type = tnsr::ii<DataVector, 2>;
   };
 
   struct TensorVar2 : db::SimpleTag {
-    static std::string name() noexcept { return "Tensor2"; }
+    static std::string name() { return "Tensor2"; }
     using type = tnsr::ii<DataVector, 2>;
   };
 
   struct UnobservedVar : db::SimpleTag {
-    static std::string name() noexcept { return "Unobserved"; }
+    static std::string name() { return "Unobserved"; }
     using type = Scalar<DataVector>;
   };
 
   struct UnobservedVar2 : db::SimpleTag {
-    static std::string name() noexcept { return "Unobserved2"; }
+    static std::string name() { return "Unobserved2"; }
     using type = Scalar<DataVector>;
   };
 
@@ -238,7 +238,7 @@ struct ComplicatedSystem {
       Tags::Variables<tmpl::list<VectorVar, TensorVar2, UnobservedVar2>>;
 
   template <typename CheckComponent>
-  static void check_data(const CheckComponent& check_component) noexcept {
+  static void check_data(const CheckComponent& check_component) {
     check_component("Scalar", ScalarVar{});
     check_component("Tensor_xx", TensorVar{}, 0, 0);
     check_component("Tensor_yx", TensorVar{}, 0, 1);
@@ -256,7 +256,7 @@ struct ComplicatedSystem {
     using vars_for_test = typename primitive_variables_tag::tags_list;
 
     template <typename CheckComponent>
-    static void check_data(const CheckComponent& check_component) noexcept {
+    static void check_data(const CheckComponent& check_component) {
       check_component("Error(Vector)_x", VectorVar{}, 0);
       check_component("Error(Vector)_y", VectorVar{}, 1);
       check_component("Error(Tensor2)_xx", TensorVar2{}, 0, 0);
@@ -266,7 +266,7 @@ struct ComplicatedSystem {
 
     static tuples::tagged_tuple_from_typelist<vars_for_test> variables(
         const tnsr::I<DataVector, 2>& x, const double t,
-        const vars_for_test /*meta*/) noexcept {
+        const vars_for_test /*meta*/) {
       auto vector = make_with_value<tnsr::I<DataVector, 2>>(x, 0.0);
       auto tensor = make_with_value<tnsr::ii<DataVector, 2>>(x, 0.0);
       auto unobserved = make_with_value<Scalar<DataVector>>(x, 0.0);
@@ -280,7 +280,7 @@ struct ComplicatedSystem {
       return {std::move(vector), std::move(tensor), std::move(unobserved)};
     }
 
-    void pup(PUP::er& /*p*/) noexcept {}  // NOLINT
+    void pup(PUP::er& /*p*/) {}  // NOLINT
   };
 
   using ObserveEvent =
@@ -294,7 +294,7 @@ struct ComplicatedSystem {
       "  FloatingPointTypes: [Double, Double, Float, Float]\n";
 
   static ObserveEvent make_test_object(
-      const std::optional<Mesh<volume_dim>>& interpolating_mesh) noexcept {
+      const std::optional<Mesh<volume_dim>>& interpolating_mesh) {
     return ObserveEvent("element_data", FloatingPointType::Double,
                         {FloatingPointType::Double, FloatingPointType::Double,
                          FloatingPointType::Float, FloatingPointType::Float},

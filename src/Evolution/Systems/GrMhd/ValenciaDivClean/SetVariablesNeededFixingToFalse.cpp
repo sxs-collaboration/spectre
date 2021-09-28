@@ -7,7 +7,7 @@
 
 namespace grmhd::ValenciaDivClean {
 void SetVariablesNeededFixingToFalse::apply(
-    const gsl::not_null<bool*> variables_needed_fixing) noexcept {
+    const gsl::not_null<bool*> variables_needed_fixing) {
   *variables_needed_fixing = false;
 }
 }  // namespace grmhd::ValenciaDivClean

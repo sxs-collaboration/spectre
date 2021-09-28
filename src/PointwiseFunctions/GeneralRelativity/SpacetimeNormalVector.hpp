@@ -35,14 +35,14 @@ namespace gr {
 template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::A<DataType, SpatialDim, Frame> spacetime_normal_vector(
     const Scalar<DataType>& lapse,
-    const tnsr::I<DataType, SpatialDim, Frame>& shift) noexcept;
+    const tnsr::I<DataType, SpatialDim, Frame>& shift);
 
 template <size_t SpatialDim, typename Frame, typename DataType>
 void spacetime_normal_vector(
     gsl::not_null<tnsr::A<DataType, SpatialDim, Frame>*>
         spacetime_normal_vector,
     const Scalar<DataType>& lapse,
-    const tnsr::I<DataType, SpatialDim, Frame>& shift) noexcept;
+    const tnsr::I<DataType, SpatialDim, Frame>& shift);
 /// @}
 
 namespace Tags {
@@ -63,8 +63,7 @@ struct SpacetimeNormalVectorCompute
 
   static constexpr auto function = static_cast<void (*)(
       gsl::not_null<tnsr::A<DataType, SpatialDim, Frame>*>,
-      const Scalar<DataType>&,
-      const tnsr::I<DataType, SpatialDim, Frame>&) noexcept>(
+      const Scalar<DataType>&, const tnsr::I<DataType, SpatialDim, Frame>&)>(
       &spacetime_normal_vector<SpatialDim, Frame, DataType>);
 
   using base = SpacetimeNormalVector<SpatialDim, Frame, DataType>;

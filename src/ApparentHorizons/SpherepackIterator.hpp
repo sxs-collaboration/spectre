@@ -53,20 +53,20 @@ class SpherepackIterator {
 
   SpherepackIterator(size_t l_max_input, size_t m_max_input, size_t stride = 1);
 
-  size_t l_max() const noexcept { return l_max_; }
-  size_t m_max() const noexcept { return m_max_; }
-  size_t n_th() const noexcept { return n_th_; }
-  size_t n_ph() const noexcept { return n_ph_; }
-  size_t stride() const noexcept { return stride_; }
+  size_t l_max() const { return l_max_; }
+  size_t m_max() const { return m_max_; }
+  size_t n_th() const { return n_th_; }
+  size_t n_ph() const { return n_ph_; }
+  size_t stride() const { return stride_; }
 
   /// Size of a SPHEREPACK coefficient array (a and b combined), not
   /// counting stride.  For non-unit stride, the size of the array
   /// should be spherepack_array_size()*stride.
-  size_t spherepack_array_size() const noexcept {
+  size_t spherepack_array_size() const {
     return (l_max_ + 1) * (m_max_ + 1) * 2;
   }
 
-  SpherepackIterator& operator++() noexcept {
+  SpherepackIterator& operator++() {
     ASSERT(current_compact_index_ != offset_into_spherepack_array.size(),
            "Incrementing an invalid iterator: "
                << current_compact_index_ << " "
@@ -75,40 +75,40 @@ class SpherepackIterator {
     return *this;
   }
 
-  explicit operator bool() const noexcept {
+  explicit operator bool() const {
     return current_compact_index_ < offset_into_spherepack_array.size();
   }
 
   /// Current index into a SPHEREPACK coefficient array.
-  size_t operator()() const noexcept {
+  size_t operator()() const {
     return offset_into_spherepack_array[current_compact_index_];
   }
 
   /// Current values of l and m.
-  size_t l() const noexcept { return compact_l_[current_compact_index_]; }
-  size_t m() const noexcept { return compact_m_[current_compact_index_]; }
+  size_t l() const { return compact_l_[current_compact_index_]; }
+  size_t m() const { return compact_m_[current_compact_index_]; }
   ///  Whether the iterator points to an element of 'a' or 'b',
   ///  i.e. points to the cos(m*phi) or sin(m*phi) part of a spectral
   ///  coefficient.
-  CoefficientArray coefficient_array() const noexcept {
+  CoefficientArray coefficient_array() const {
     return (current_compact_index_ < number_of_valid_entries_in_a_
                 ? CoefficientArray::a
                 : CoefficientArray::b);
   }
 
   /// Reset iterator back to beginning value. Returns *this.
-  SpherepackIterator& reset() noexcept;
+  SpherepackIterator& reset();
 
   /// Set iterator to specific value of l, m, array.  Returns *this.
   SpherepackIterator& set(size_t l_input, size_t m_input,
-                          CoefficientArray coefficient_array_input) noexcept;
+                          CoefficientArray coefficient_array_input);
 
   /// Same as 'set' above, but assumes CoefficientArray is 'a' for m>=0 and
   /// 'b' for m<0.  This is useful when converting between true
   /// spherical harmonics (which allow negative values of m) and
   /// SPHEREPACK coefficients (which have only positive values of m,
   /// but two arrays for sin(m*phi) and cos(m*phi) parts).
-  SpherepackIterator& set(size_t l_input, int m_input) noexcept {
+  SpherepackIterator& set(size_t l_input, int m_input) {
     return set(l_input, size_t(abs(m_input)),
                m_input >= 0 ? CoefficientArray::a : CoefficientArray::b);
   }
@@ -134,7 +134,7 @@ inline bool operator!=(const SpherepackIterator& lhs,
 
 inline std::ostream& operator<<(
     std::ostream& os,
-    const SpherepackIterator::CoefficientArray& coefficient_array) noexcept {
+    const SpherepackIterator::CoefficientArray& coefficient_array) {
   return os << (coefficient_array == SpherepackIterator::CoefficientArray::a
                     ? 'a'
                     : 'b');

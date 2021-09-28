@@ -26,7 +26,7 @@ template <typename InnerMap>
 FocallyLiftedMap<InnerMap>::FocallyLiftedMap(
     const std::array<double, 3>& center,
     const std::array<double, 3>& proj_center, double radius,
-    const bool source_is_between_focus_and_target, InnerMap inner_map) noexcept
+    const bool source_is_between_focus_and_target, InnerMap inner_map)
     : center_(center),
       proj_center_(proj_center),
       radius_(radius),
@@ -35,8 +35,9 @@ FocallyLiftedMap<InnerMap>::FocallyLiftedMap(
 
 template <typename InnerMap>
 template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, 3> FocallyLiftedMap<InnerMap>::
-operator()(const std::array<T, 3>& source_coords) const noexcept {
+std::array<tt::remove_cvref_wrap_t<T>, 3>
+FocallyLiftedMap<InnerMap>::operator()(
+    const std::array<T, 3>& source_coords) const {
   using ReturnType = tt::remove_cvref_wrap_t<T>;
 
   // Temporary variable that will be re-used to avoid extra
@@ -78,7 +79,7 @@ template <typename InnerMap>
 template <typename T>
 tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>
 FocallyLiftedMap<InnerMap>::jacobian(
-    const std::array<T, 3>& source_coords) const noexcept {
+    const std::array<T, 3>& source_coords) const {
   using ReturnType = tt::remove_cvref_wrap_t<T>;
 
   // Use these variables to reduce allocations.
@@ -177,7 +178,7 @@ template <typename InnerMap>
 template <typename T>
 tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>
 FocallyLiftedMap<InnerMap>::inv_jacobian(
-    const std::array<T, 3>& source_coords) const noexcept {
+    const std::array<T, 3>& source_coords) const {
   using ReturnType = tt::remove_cvref_wrap_t<T>;
 
   // lower_coords are the mapped coords on the surface.
@@ -268,7 +269,7 @@ FocallyLiftedMap<InnerMap>::inv_jacobian(
 
 template <typename InnerMap>
 std::optional<std::array<double, 3>> FocallyLiftedMap<InnerMap>::inverse(
-    const std::array<double, 3>& target_coords) const noexcept {
+    const std::array<double, 3>& target_coords) const {
   // Scale factor taking target_coords to lower_coords.
   const auto lambda_tilde = inner_map_.lambda_tilde(
       target_coords, proj_center_, source_is_between_focus_and_target_);
@@ -334,7 +335,7 @@ std::optional<std::array<double, 3>> FocallyLiftedMap<InnerMap>::inverse(
 }
 
 template <typename InnerMap>
-void FocallyLiftedMap<InnerMap>::pup(PUP::er& p) noexcept {
+void FocallyLiftedMap<InnerMap>::pup(PUP::er& p) {
   p | center_;
   p | proj_center_;
   p | radius_;
@@ -344,13 +345,13 @@ void FocallyLiftedMap<InnerMap>::pup(PUP::er& p) noexcept {
 
 template <typename InnerMap>
 bool operator!=(const FocallyLiftedMap<InnerMap>& lhs,
-                const FocallyLiftedMap<InnerMap>& rhs) noexcept {
+                const FocallyLiftedMap<InnerMap>& rhs) {
   return not(lhs == rhs);
 }
 
 template <typename InnerMap>
 bool operator==(const FocallyLiftedMap<InnerMap>& lhs,
-                const FocallyLiftedMap<InnerMap>& rhs) noexcept {
+                const FocallyLiftedMap<InnerMap>& rhs) {
   return lhs.center_ == rhs.center_ and lhs.proj_center_ == rhs.proj_center_ and
          lhs.radius_ == rhs.radius_ and
          lhs.source_is_between_focus_and_target_ ==
@@ -361,12 +362,12 @@ bool operator==(const FocallyLiftedMap<InnerMap>& lhs,
 // Explicit instantiations
 #define IMAP(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                                  \
-  template class FocallyLiftedMap<IMAP(data)>;                                \
-  template bool operator==(const FocallyLiftedMap<IMAP(data)>& lhs,           \
-                           const FocallyLiftedMap<IMAP(data)>& rhs) noexcept; \
-  template bool operator!=(const FocallyLiftedMap<IMAP(data)>& lhs,           \
-                           const FocallyLiftedMap<IMAP(data)>& rhs) noexcept;
+#define INSTANTIATE(_, data)                                         \
+  template class FocallyLiftedMap<IMAP(data)>;                       \
+  template bool operator==(const FocallyLiftedMap<IMAP(data)>& lhs,  \
+                           const FocallyLiftedMap<IMAP(data)>& rhs); \
+  template bool operator!=(const FocallyLiftedMap<IMAP(data)>& lhs,  \
+                           const FocallyLiftedMap<IMAP(data)>& rhs);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (FocallyLiftedInnerMaps::Endcap,
                                       FocallyLiftedInnerMaps::FlatEndcap,
@@ -380,13 +381,13 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (FocallyLiftedInnerMaps::Endcap,
 #define INSTANTIATE(_, data)                                                 \
   template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>               \
   FocallyLiftedMap<IMAP(data)>::operator()(                                  \
-      const std::array<DTYPE(data), 3>& source_coords) const noexcept;       \
+      const std::array<DTYPE(data), 3>& source_coords) const;                \
   template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame> \
   FocallyLiftedMap<IMAP(data)>::jacobian(                                    \
-      const std::array<DTYPE(data), 3>& source_coords) const noexcept;       \
+      const std::array<DTYPE(data), 3>& source_coords) const;                \
   template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame> \
   FocallyLiftedMap<IMAP(data)>::inv_jacobian(                                \
-      const std::array<DTYPE(data), 3>& source_coords) const noexcept;
+      const std::array<DTYPE(data), 3>& source_coords) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE,
                         (FocallyLiftedInnerMaps::Endcap,

@@ -27,10 +27,10 @@ namespace {
 
 // Find the alpha parameter that corresponds to the weak-field solution,
 // since this is the solution we get when we set \psi = 1 initially
-double compute_alpha(const double density, const double radius) noexcept {
+double compute_alpha(const double density, const double radius) {
   const double alpha_source = sqrt(2. * M_PI * density / 3.) * radius;
   return RootFinder::newton_raphson(
-      [alpha_source](const double a) noexcept {
+      [alpha_source](const double a) {
         const double a_square = pow<2>(a);
         const double pow_2_one_plus_a_square = pow<2>(1. + a_square);
         return std::pair<double, double>{
@@ -47,19 +47,18 @@ double compute_alpha(const double density, const double radius) noexcept {
 
 template <typename DataType>
 Scalar<DataType> compute_piecewise(const Scalar<DataType>& r, double radius,
-                                   double inner_value,
-                                   double outer_value) noexcept;
+                                   double inner_value, double outer_value);
 template <>
 Scalar<double> compute_piecewise(const Scalar<double>& r, const double radius,
                                  const double inner_value,
-                                 const double outer_value) noexcept {
+                                 const double outer_value) {
   return Scalar<double>(get(r) < radius ? inner_value : outer_value);
 }
 template <>
 Scalar<DataVector> compute_piecewise(const Scalar<DataVector>& r,
                                      const double radius,
                                      const double inner_value,
-                                     const double outer_value) noexcept {
+                                     const double outer_value) {
   return Scalar<DataVector>(inner_value - (inner_value - outer_value) *
                                               step_function(get(r) - radius));
 }
@@ -84,7 +83,7 @@ ConstantDensityStar::ConstantDensityStar(const double density,
   }
 }
 
-void ConstantDensityStar::pup(PUP::er& p) noexcept {
+void ConstantDensityStar::pup(PUP::er& p) {
   p | density_;
   p | radius_;
   if (p.isUnpacking()) {
@@ -96,7 +95,7 @@ template <typename DataType>
 tuples::TaggedTuple<Xcts::Tags::ConformalFactor<DataType>>
 ConstantDensityStar::variables(
     const tnsr::I<DataType, 3, Frame::Inertial>& x,
-    tmpl::list<Xcts::Tags::ConformalFactor<DataType>> /*meta*/) const noexcept {
+    tmpl::list<Xcts::Tags::ConformalFactor<DataType>> /*meta*/) const {
   const DataType r = get(magnitude(x));
   const double inner_prefactor =
       sqrt(alpha_ * radius_) / std::pow(2. * M_PI * density_ / 3., 0.25);
@@ -120,7 +119,7 @@ tuples::TaggedTuple<::Tags::Initial<Xcts::Tags::ConformalFactor<DataType>>>
 ConstantDensityStar::variables(
     const tnsr::I<DataType, 3, Frame::Inertial>& x,
     tmpl::list<::Tags::Initial<Xcts::Tags::ConformalFactor<DataType>>> /*meta*/)
-    const noexcept {
+    const {
   return {make_with_value<Scalar<DataType>>(x, 1.)};
 }
 
@@ -131,7 +130,7 @@ ConstantDensityStar::variables(
     const tnsr::I<DataType, 3, Frame::Inertial>& x,
     tmpl::list<::Tags::Initial<
         ::Tags::deriv<Xcts::Tags::ConformalFactor<DataType>, tmpl::size_t<3>,
-                      Frame::Inertial>>> /*meta*/) const noexcept {
+                      Frame::Inertial>>> /*meta*/) const {
   return {make_with_value<tnsr::i<DataType, 3, Frame::Inertial>>(x, 0.)};
 }
 
@@ -141,7 +140,7 @@ ConstantDensityStar::variables(
     const tnsr::I<DataType, 3, Frame::Inertial>& x,
     tmpl::list<
         ::Tags::FixedSource<Xcts::Tags::ConformalFactor<DataType>>> /*meta*/)
-    const noexcept {
+    const {
   return {make_with_value<Scalar<DataType>>(x, 0.)};
 }
 
@@ -149,17 +148,17 @@ template <typename DataType>
 tuples::TaggedTuple<gr::Tags::EnergyDensity<DataType>>
 ConstantDensityStar::variables(
     const tnsr::I<DataType, 3, Frame::Inertial>& x,
-    tmpl::list<gr::Tags::EnergyDensity<DataType>> /*meta*/) const noexcept {
+    tmpl::list<gr::Tags::EnergyDensity<DataType>> /*meta*/) const {
   return {compute_piecewise(magnitude(x), radius_, density_, 0.)};
 }
 
 bool operator==(const ConstantDensityStar& lhs,
-                const ConstantDensityStar& rhs) noexcept {
+                const ConstantDensityStar& rhs) {
   return lhs.density() == rhs.density() and lhs.radius() == rhs.radius();
 }
 
 bool operator!=(const ConstantDensityStar& lhs,
-                const ConstantDensityStar& rhs) noexcept {
+                const ConstantDensityStar& rhs) {
   return not(lhs == rhs);
 }
 
@@ -169,13 +168,13 @@ bool operator!=(const ConstantDensityStar& lhs,
   template tuples::TaggedTuple<Xcts::Tags::ConformalFactor<DTYPE(data)>>      \
   ConstantDensityStar::variables(                                             \
       const tnsr::I<DTYPE(data), 3, Frame::Inertial>&,                        \
-      tmpl::list<Xcts::Tags::ConformalFactor<DTYPE(data)>>) const noexcept;   \
+      tmpl::list<Xcts::Tags::ConformalFactor<DTYPE(data)>>) const;            \
   template tuples::TaggedTuple<                                               \
       ::Tags::Initial<Xcts::Tags::ConformalFactor<DTYPE(data)>>>              \
   ConstantDensityStar::variables(                                             \
       const tnsr::I<DTYPE(data), 3, Frame::Inertial>&,                        \
       tmpl::list<::Tags::Initial<Xcts::Tags::ConformalFactor<DTYPE(data)>>>)  \
-      const noexcept;                                                         \
+      const;                                                                  \
   template tuples::TaggedTuple<                                               \
       ::Tags::Initial<::Tags::deriv<Xcts::Tags::ConformalFactor<DTYPE(data)>, \
                                     tmpl::size_t<3>, Frame::Inertial>>>       \
@@ -183,18 +182,18 @@ bool operator!=(const ConstantDensityStar& lhs,
       const tnsr::I<DTYPE(data), 3, Frame::Inertial>&,                        \
       tmpl::list<::Tags::Initial<                                             \
           ::Tags::deriv<Xcts::Tags::ConformalFactor<DTYPE(data)>,             \
-                        tmpl::size_t<3>, Frame::Inertial>>>) const noexcept;  \
+                        tmpl::size_t<3>, Frame::Inertial>>>) const;           \
   template tuples::TaggedTuple<                                               \
       ::Tags::FixedSource<Xcts::Tags::ConformalFactor<DTYPE(data)>>>          \
   ConstantDensityStar::variables(                                             \
       const tnsr::I<DTYPE(data), 3, Frame::Inertial>&,                        \
       tmpl::list<                                                             \
           ::Tags::FixedSource<Xcts::Tags::ConformalFactor<DTYPE(data)>>>)     \
-      const noexcept;                                                         \
+      const;                                                                  \
   template tuples::TaggedTuple<gr::Tags::EnergyDensity<DTYPE(data)>>          \
   ConstantDensityStar::variables(                                             \
       const tnsr::I<DTYPE(data), 3, Frame::Inertial>&,                        \
-      tmpl::list<gr::Tags::EnergyDensity<DTYPE(data)>>) const noexcept;
+      tmpl::list<gr::Tags::EnergyDensity<DTYPE(data)>>) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
 

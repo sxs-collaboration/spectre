@@ -19,7 +19,7 @@ RotatedRectangles::RotatedRectangles(
     const typename UpperBound::type upper_xy,
     const typename InitialRefinement::type initial_refinement_level_xy,
     const typename InitialGridPoints::type initial_number_of_grid_points_in_xy,
-    const typename IsPeriodicIn::type is_periodic_in) noexcept
+    const typename IsPeriodicIn::type is_periodic_in)
     // clang-tidy: trivially copyable
     : lower_xy_(std::move(lower_xy)),                       // NOLINT
       midpoint_xy_(std::move(midpoint_xy)),                 // NOLINT
@@ -62,7 +62,7 @@ RotatedRectangles::RotatedRectangles(
   }
 }
 
-Domain<2> RotatedRectangles::create_domain() const noexcept {
+Domain<2> RotatedRectangles::create_domain() const {
   std::vector<DirectionMap<
       2, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
       boundary_conditions_all_blocks{};
@@ -118,8 +118,7 @@ Domain<2> RotatedRectangles::create_domain() const noexcept {
       is_periodic_in_);
 }
 
-std::vector<std::array<size_t, 2>> RotatedRectangles::initial_extents() const
-    noexcept {
+std::vector<std::array<size_t, 2>> RotatedRectangles::initial_extents() const {
   const size_t& x_0 = initial_number_of_grid_points_in_xy_[0][0];
   const size_t& x_1 = initial_number_of_grid_points_in_xy_[0][1];
   const size_t& y_0 = initial_number_of_grid_points_in_xy_[1][0];
@@ -128,7 +127,7 @@ std::vector<std::array<size_t, 2>> RotatedRectangles::initial_extents() const
 }
 
 std::vector<std::array<size_t, 2>>
-RotatedRectangles::initial_refinement_levels() const noexcept {
+RotatedRectangles::initial_refinement_levels() const {
   const size_t& x_0 = initial_refinement_level_xy_[0];
   const size_t& y_0 = initial_refinement_level_xy_[1];
   return {{{x_0, y_0}}, {{x_0, y_0}}, {{y_0, x_0}}, {{y_0, x_0}}};

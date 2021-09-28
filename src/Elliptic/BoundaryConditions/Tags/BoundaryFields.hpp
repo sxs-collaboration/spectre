@@ -33,8 +33,7 @@ struct BoundaryFieldsCompute : db::ComputeTag,
                                    domain::Tags::Element<Dim>>;
   static void function(const gsl::not_null<return_type*> vars_on_face,
                        const typename FieldsTag::type& vars,
-                       const Mesh<Dim>& mesh,
-                       const Element<Dim>& element) noexcept {
+                       const Mesh<Dim>& mesh, const Element<Dim>& element) {
     ASSERT(mesh.quadrature(0) == Spectral::Quadrature::GaussLobatto,
            "Slicing fields to the boundary currently supports only "
            "Gauss-Lobatto grids. Add support to "
@@ -65,7 +64,7 @@ struct BoundaryFluxesCompute
       const gsl::not_null<return_type*> normal_dot_fluxes,
       const typename FluxesTag::type& fluxes,
       const DirectionMap<Dim, tnsr::i<DataVector, Dim>>& face_normals,
-      const Mesh<Dim>& mesh, const Element<Dim>& element) noexcept {
+      const Mesh<Dim>& mesh, const Element<Dim>& element) {
     ASSERT(mesh.quadrature(0) == Spectral::Quadrature::GaussLobatto,
            "Slicing fluxes to the boundary currently supports only "
            "Gauss-Lobatto grids. Add support to "

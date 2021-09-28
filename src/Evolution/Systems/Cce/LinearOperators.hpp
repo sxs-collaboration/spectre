@@ -28,5 +28,5 @@ namespace Cce {
  */
 void logical_partial_directional_derivative_of_complex(
     gsl::not_null<ComplexDataVector*> d_u, const ComplexDataVector& u,
-    const Mesh<3>& mesh, size_t dimension_to_differentiate) noexcept;
+    const Mesh<3>& mesh, size_t dimension_to_differentiate);
 }  // namespace Cce

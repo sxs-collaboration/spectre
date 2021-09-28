@@ -296,7 +296,7 @@ Tensor create_tensor_with_random_values(
   return tensor;
 }
 
-void test_reference_impl_against_spec() noexcept {
+void test_reference_impl_against_spec() {
   const size_t dim = 3;
   const size_t n_pts = 2;
 
@@ -457,7 +457,7 @@ void test_reference_impl_against_spec() noexcept {
 }
 
 template <size_t Dim, typename Generator>
-void test_compute_dudt(const gsl::not_null<Generator*> generator) noexcept {
+void test_compute_dudt(const gsl::not_null<Generator*> generator) {
   std::uniform_real_distribution<> distribution(0.1, 1.0);
   using gh_tags_list = tmpl::list<gr::Tags::SpacetimeMetric<Dim>,
                                   GeneralizedHarmonic::Tags::Pi<Dim>,

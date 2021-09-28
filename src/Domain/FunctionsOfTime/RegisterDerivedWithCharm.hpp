@@ -5,6 +5,6 @@
 
 namespace domain {
 namespace FunctionsOfTime {
-void register_derived_with_charm() noexcept;
+void register_derived_with_charm();
 }  // namespace FunctionsOfTime
 }  // namespace domain

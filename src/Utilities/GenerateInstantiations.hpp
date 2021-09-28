@@ -87,7 +87,7 @@
  * #define GET_DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
  * #define GEN_OP(op, dim)                            \
  *   template bool operator op(const Index<dim>& lhs, \
- *                             const Index<dim>& rhs) noexcept;
+ *                             const Index<dim>& rhs);
  * #define INSTANTIATION(_, data)         \
  *   template class Index<GET_DIM(data)>; \
  *   GEN_OP(==, GET_DIM(data))            \
@@ -104,17 +104,17 @@
  *
  * \code
  * template class Index<0>;
- * template bool operator==(const Index<0>& lhs, const Index<0>& rhs) noexcept;
- * template bool operator!=(const Index<0>& lhs, const Index<0>& rhs) noexcept;
+ * template bool operator==(const Index<0>& lhs, const Index<0>& rhs);
+ * template bool operator!=(const Index<0>& lhs, const Index<0>& rhs);
  * template class Index<1>;
- * template bool operator==(const Index<1>& lhs, const Index<1>& rhs) noexcept;
- * template bool operator!=(const Index<1>& lhs, const Index<1>& rhs) noexcept;
+ * template bool operator==(const Index<1>& lhs, const Index<1>& rhs);
+ * template bool operator!=(const Index<1>& lhs, const Index<1>& rhs);
  * template class Index<2>;
- * template bool operator==(const Index<2>& lhs, const Index<2>& rhs) noexcept;
- * template bool operator!=(const Index<2>& lhs, const Index<2>& rhs) noexcept;
+ * template bool operator==(const Index<2>& lhs, const Index<2>& rhs);
+ * template bool operator!=(const Index<2>& lhs, const Index<2>& rhs);
  * template class Index<3>;
- * template bool operator==(const Index<3>& lhs, const Index<3>& rhs) noexcept;
- * template bool operator!=(const Index<3>& lhs, const Index<3>& rhs) noexcept;
+ * template bool operator==(const Index<3>& lhs, const Index<3>& rhs);
+ * template bool operator!=(const Index<3>& lhs, const Index<3>& rhs);
  * \endcode
  *
  * Now let's look at generating instantiations of member function templates of
@@ -132,10 +132,10 @@
  * #define INSTANTIATE(_, data)                                              \
  *   template Scalar<DTYPE(data)>                                            \
  *   ScalarWave::Solutions::PlaneWave<DIM(data)>::psi(                       \
- *       const tnsr::I<DTYPE(data), DIM(data)>& x, double t) const noexcept; \
+ *       const tnsr::I<DTYPE(data), DIM(data)>& x, double t) const; \
  *   template Scalar<DTYPE(data)>                                            \
  *   ScalarWave::Solutions::PlaneWave<DIM(data)>::dpsi_dt(                   \
- *       const tnsr::I<DTYPE(data), DIM(data)>& x, double t) const noexcept;
+ *       const tnsr::I<DTYPE(data), DIM(data)>& x, double t) const;
  *
  * GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector))
  *

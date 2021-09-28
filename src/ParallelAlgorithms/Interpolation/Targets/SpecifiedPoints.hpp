@@ -47,27 +47,27 @@ struct SpecifiedPoints {
   static constexpr Options::String help = {"A list of specified points"};
 
   explicit SpecifiedPoints(
-      std::vector<std::array<double, VolumeDim>> points_in) noexcept;
+      std::vector<std::array<double, VolumeDim>> points_in);
 
   SpecifiedPoints() = default;
   SpecifiedPoints(const SpecifiedPoints& /*rhs*/) = default;
   SpecifiedPoints& operator=(const SpecifiedPoints& /*rhs*/) = default;
-  SpecifiedPoints(SpecifiedPoints&& /*rhs*/) noexcept = default;
-  SpecifiedPoints& operator=(SpecifiedPoints&& /*rhs*/) noexcept = default;
+  SpecifiedPoints(SpecifiedPoints&& /*rhs*/) = default;
+  SpecifiedPoints& operator=(SpecifiedPoints&& /*rhs*/) = default;
   ~SpecifiedPoints() = default;
 
   // clang-tidy non-const reference pointer.
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
 
   std::vector<std::array<double, VolumeDim>> points{};
 };
 
 template <size_t VolumeDim>
 bool operator==(const SpecifiedPoints<VolumeDim>& lhs,
-                const SpecifiedPoints<VolumeDim>& rhs) noexcept;
+                const SpecifiedPoints<VolumeDim>& rhs);
 template <size_t VolumeDim>
 bool operator!=(const SpecifiedPoints<VolumeDim>& lhs,
-                const SpecifiedPoints<VolumeDim>& rhs) noexcept;
+                const SpecifiedPoints<VolumeDim>& rhs);
 
 }  // namespace OptionHolders
 
@@ -77,9 +77,7 @@ struct SpecifiedPoints {
   using type = OptionHolders::SpecifiedPoints<VolumeDim>;
   static constexpr Options::String help{
       "Options for interpolation onto a specified list of points."};
-  static std::string name() noexcept {
-    return Options::name<InterpolationTargetTag>();
-  }
+  static std::string name() { return Options::name<InterpolationTargetTag>(); }
   using group = InterpolationTargets;
 };
 }  // namespace OptionTags
@@ -92,9 +90,7 @@ struct SpecifiedPoints : db::SimpleTag {
       OptionTags::SpecifiedPoints<InterpolationTargetTag, VolumeDim>>;
 
   static constexpr bool pass_metavariables = false;
-  static type create_from_options(const type& option) noexcept {
-    return option;
-  }
+  static type create_from_options(const type& option) { return option; }
 };
 }  // namespace Tags
 
@@ -112,7 +108,7 @@ struct SpecifiedPoints {
   template <typename Metavariables, typename DbTags>
   static tnsr::I<DataVector, VolumeDim, Frame::Inertial> points(
       const db::DataBox<DbTags>& box,
-      const tmpl::type_<Metavariables>& /*meta*/) noexcept {
+      const tmpl::type_<Metavariables>& /*meta*/) {
     const auto& options =
         get<Tags::SpecifiedPoints<InterpolationTargetTag, VolumeDim>>(box);
     tnsr::I<DataVector, VolumeDim, Frame::Inertial> target_points(
@@ -128,7 +124,7 @@ struct SpecifiedPoints {
   template <typename Metavariables, typename DbTags, typename TemporalId>
   static tnsr::I<DataVector, VolumeDim, Frame::Inertial> points(
       const db::DataBox<DbTags>& box, const tmpl::type_<Metavariables>& meta,
-      const TemporalId& /*temporal_id*/) noexcept {
+      const TemporalId& /*temporal_id*/) {
     return points(box, meta);
   }
 };

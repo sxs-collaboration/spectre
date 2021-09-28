@@ -51,7 +51,7 @@ void test_cylindrical_flat_endcap() {
   // surface.
   const std::array<double, 3> proj_center = [&center_two, &radius_two, &gen,
                                              &unit_dis, &interval_dis,
-                                             &angle_dis]() noexcept {
+                                             &angle_dis]() {
     const double phi = angle_dis(gen);
     const double cos_theta = interval_dis(gen);
     const double sin_theta = sqrt(1.0 - square(cos_theta));

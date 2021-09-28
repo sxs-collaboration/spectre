@@ -39,11 +39,11 @@ struct System {
 struct Background {
   static tuples::TaggedTuple<Tags::FixedSource<ScalarFieldTag>> variables(
       const tnsr::I<DataVector, 1>& x,
-      tmpl::list<Tags::FixedSource<ScalarFieldTag>> /*meta*/) noexcept {
+      tmpl::list<Tags::FixedSource<ScalarFieldTag>> /*meta*/) {
     return {Scalar<DataVector>{get<0>(x)}};
   }
   // NOLINTNEXTLINE
-  void pup(PUP::er& /*p*/) noexcept {}
+  void pup(PUP::er& /*p*/) {}
 };
 
 template <typename Metavariables>

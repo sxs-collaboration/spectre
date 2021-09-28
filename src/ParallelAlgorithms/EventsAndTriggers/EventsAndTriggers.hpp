@@ -31,7 +31,7 @@ class EventsAndTriggers {
                                      std::vector<std::unique_ptr<Event>>>;
 
   EventsAndTriggers() = default;
-  explicit EventsAndTriggers(Storage events_and_triggers) noexcept
+  explicit EventsAndTriggers(Storage events_and_triggers)
       : events_and_triggers_(std::move(events_and_triggers)) {}
 
   template <typename DbTags, typename Metavariables, typename ArrayIndex,
@@ -39,7 +39,7 @@ class EventsAndTriggers {
   void run_events(const db::DataBox<DbTags>& box,
                   Parallel::GlobalCache<Metavariables>& cache,
                   const ArrayIndex& array_index,
-                  const Component* component) const noexcept {
+                  const Component* component) const {
     for (const auto& trigger_and_events : events_and_triggers_) {
       const auto& trigger = trigger_and_events.first;
       const auto& events = trigger_and_events.second;
@@ -52,12 +52,12 @@ class EventsAndTriggers {
   }
 
   // clang-tidy: google-runtime-references
-  void pup(PUP::er& p) noexcept {  // NOLINT
+  void pup(PUP::er& p) {  // NOLINT
     p | events_and_triggers_;
   }
 
   template <typename F>
-  void for_each_event(F&& f) const noexcept {
+  void for_each_event(F&& f) const {
     for (const auto& trigger_and_events : events_and_triggers_) {
       for (const auto& event : trigger_and_events.second) {
         f(*event);

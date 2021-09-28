@@ -52,12 +52,12 @@ struct UpdateFields {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     // Update the solution fields according to the Richardson scheme
     db::mutate<FieldsTag>(
         make_not_null(&box),
         [](const auto fields, const auto& residual,
-           const double relaxation_parameter) noexcept {
+           const double relaxation_parameter) {
           *fields += relaxation_parameter * residual;
         },
         get<residual_tag>(box),

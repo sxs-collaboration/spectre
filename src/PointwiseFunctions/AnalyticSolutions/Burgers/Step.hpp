@@ -40,12 +40,12 @@ class Step : public MarkAsAnalyticSolution {
  public:
   struct LeftValue {
     using type = double;
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
     static constexpr Options::String help{"The value of U, left of the shock"};
   };
   struct RightValue {
     using type = double;
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
     static constexpr Options::String help{"The value of U, right of the shock"};
   };
   struct InitialPosition {
@@ -60,29 +60,28 @@ class Step : public MarkAsAnalyticSolution {
        const Options::Context& context = {});
 
   Step() = default;
-  Step(const Step&) noexcept = default;
-  Step& operator=(const Step&) noexcept = default;
-  Step(Step&&) noexcept = default;
-  Step& operator=(Step&&) noexcept = default;
-  ~Step() noexcept = default;
+  Step(const Step&) = default;
+  Step& operator=(const Step&) = default;
+  Step(Step&&) = default;
+  Step& operator=(Step&&) = default;
+  ~Step() = default;
 
   template <typename T>
-  Scalar<T> u(const tnsr::I<T, 1>& x, double t) const noexcept;
+  Scalar<T> u(const tnsr::I<T, 1>& x, double t) const;
 
   template <typename T>
-  Scalar<T> du_dt(const tnsr::I<T, 1>& x, double t) const noexcept;
+  Scalar<T> du_dt(const tnsr::I<T, 1>& x, double t) const;
 
   tuples::TaggedTuple<Tags::U> variables(const tnsr::I<DataVector, 1>& x,
                                          double t,
-                                         tmpl::list<Tags::U> /*meta*/) const
-      noexcept;
+                                         tmpl::list<Tags::U> /*meta*/) const;
 
   tuples::TaggedTuple<::Tags::dt<Tags::U>> variables(
       const tnsr::I<DataVector, 1>& x, double t,
-      tmpl::list<::Tags::dt<Tags::U>> /*meta*/) const noexcept;
+      tmpl::list<::Tags::dt<Tags::U>> /*meta*/) const;
 
   // clang-tidy: no pass by reference
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
 
  private:
   double left_value_ = std::numeric_limits<double>::signaling_NaN();

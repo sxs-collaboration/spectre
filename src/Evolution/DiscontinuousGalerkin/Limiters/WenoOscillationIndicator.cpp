@@ -30,7 +30,7 @@ namespace {
 //
 // Note: this function assumes a Legendre basis, i.e., assumes that the modes
 // are the amplitudes of a Legendre polynomial expansion.
-ModalVector modal_derivative(const ModalVector& coeffs) noexcept {
+ModalVector modal_derivative(const ModalVector& coeffs) {
   const size_t number_of_modes = coeffs.size();
   ModalVector deriv_coeffs(number_of_modes, 0.);
   for (size_t i = 0; i < number_of_modes; ++i) {
@@ -53,7 +53,7 @@ double compute_sum_of_legendre_derivs(
     const size_t number_of_modes, const size_t m, const size_t n,
     const std::array<
         double, Spectral::maximum_number_of_points<Spectral::Basis::Legendre>>&
-        weights_for_derivatives) noexcept {
+        weights_for_derivatives) {
   ModalVector coeffs_m(number_of_modes, 0.);
   coeffs_m[m] = 1.;
   ModalVector coeffs_n(number_of_modes, 0.);
@@ -104,12 +104,12 @@ double compute_sum_of_legendre_derivs(
 template <size_t VolumeDim>
 Matrix compute_indicator_matrix(
     const Limiters::Weno_detail::DerivativeWeight derivative_weight,
-    const Index<VolumeDim>& extents) noexcept {
+    const Index<VolumeDim>& extents) {
   Matrix result(extents.product() - 1, extents.product() - 1);
 
   const std::array<
       double, Spectral::maximum_number_of_points<Spectral::Basis::Legendre>>
-      weights_for_derivatives = [&derivative_weight]() noexcept {
+      weights_for_derivatives = [&derivative_weight]() {
         auto weights = make_array<
             Spectral::maximum_number_of_points<Spectral::Basis::Legendre>>(1.);
         if (derivative_weight ==
@@ -172,7 +172,7 @@ Matrix compute_indicator_matrix(
 template <size_t VolumeDim>
 const Matrix& cached_indicator_matrix_from_mesh_index(
     const Limiters::Weno_detail::DerivativeWeight derivative_weight,
-    const Index<VolumeDim>& extents) noexcept {
+    const Index<VolumeDim>& extents) {
   using CacheEnumerationDerivativeWeight = CacheEnumeration<
       Limiters::Weno_detail::DerivativeWeight,
       Limiters::Weno_detail::DerivativeWeight::Unity,
@@ -186,7 +186,7 @@ const Matrix& cached_indicator_matrix_from_mesh_index(
     const auto cache = make_static_cache<CacheEnumerationDerivativeWeight,
                                          CacheRange<min, max>>(
         [](const Limiters::Weno_detail::DerivativeWeight dw,
-           const size_t nx) noexcept -> Matrix {
+           const size_t nx) -> Matrix {
           return compute_indicator_matrix(dw, Index<1>(nx));
         });
     return cache(derivative_weight, extents[0]);
@@ -195,7 +195,7 @@ const Matrix& cached_indicator_matrix_from_mesh_index(
         make_static_cache<CacheEnumerationDerivativeWeight,
                           CacheRange<min, max>, CacheRange<min, max>>(
             [](const Limiters::Weno_detail::DerivativeWeight dw,
-               const size_t nx, const size_t ny) noexcept -> Matrix {
+               const size_t nx, const size_t ny) -> Matrix {
               return compute_indicator_matrix(dw, Index<2>(nx, ny));
             });
     return cache(derivative_weight, extents[0], extents[1]);
@@ -205,8 +205,7 @@ const Matrix& cached_indicator_matrix_from_mesh_index(
                           CacheRange<min, max>, CacheRange<min, max>,
                           CacheRange<min, max>>(
             [](const Limiters::Weno_detail::DerivativeWeight dw,
-               const size_t nx, const size_t ny,
-               const size_t nz) noexcept -> Matrix {
+               const size_t nx, const size_t ny, const size_t nz) -> Matrix {
               return compute_indicator_matrix(dw, Index<3>(nx, ny, nz));
             });
     return cache(derivative_weight, extents[0], extents[1], extents[2]);
@@ -217,8 +216,7 @@ const Matrix& cached_indicator_matrix_from_mesh_index(
 
 namespace Limiters::Weno_detail {
 
-std::ostream& operator<<(std::ostream& os,
-                         DerivativeWeight derivative_weight) noexcept {
+std::ostream& operator<<(std::ostream& os, DerivativeWeight derivative_weight) {
   switch (derivative_weight) {
     case DerivativeWeight::Unity:
       return os << "Unity";
@@ -234,7 +232,7 @@ std::ostream& operator<<(std::ostream& os,
 template <size_t VolumeDim>
 double oscillation_indicator(const DerivativeWeight derivative_weight,
                              const DataVector& data,
-                             const Mesh<VolumeDim>& mesh) noexcept {
+                             const Mesh<VolumeDim>& mesh) {
   ASSERT(mesh.basis() == make_array<VolumeDim>(Spectral::Basis::Legendre),
          "Unsupported basis: " << mesh);
   ASSERT(mesh.quadrature() ==
@@ -270,7 +268,7 @@ double oscillation_indicator(const DerivativeWeight derivative_weight,
 
 #define INSTANTIATE(_, data)                        \
   template double oscillation_indicator<DIM(data)>( \
-      DerivativeWeight, const DataVector&, const Mesh<DIM(data)>&) noexcept;
+      DerivativeWeight, const DataVector&, const Mesh<DIM(data)>&);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 

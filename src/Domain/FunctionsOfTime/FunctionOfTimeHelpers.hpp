@@ -31,15 +31,14 @@ struct StoredInfo {
 
   StoredInfo() = default;
 
-  StoredInfo(double t,
-             std::array<DataVector, MaxDerivPlusOne> init_quantities) noexcept;
+  StoredInfo(double t, std::array<DataVector, MaxDerivPlusOne> init_quantities);
   ~StoredInfo() = default;
-  StoredInfo(StoredInfo&&) noexcept = default;
-  StoredInfo& operator=(StoredInfo&&) noexcept = default;
+  StoredInfo(StoredInfo&&) = default;
+  StoredInfo& operator=(StoredInfo&&) = default;
   StoredInfo(const StoredInfo&) = default;
   StoredInfo& operator=(const StoredInfo&) = default;
 
-  void pup(PUP::er& p) noexcept;
+  void pup(PUP::er& p);
 };
 
 template <size_t MaxDerivPlusOne>
@@ -49,16 +48,15 @@ struct StoredInfo<MaxDerivPlusOne, false> {
 
   StoredInfo() = default;
 
-  StoredInfo(double t,
-             std::array<DataVector, MaxDerivPlusOne> init_quantities) noexcept;
+  StoredInfo(double t, std::array<DataVector, MaxDerivPlusOne> init_quantities);
 
-  void pup(PUP::er& p) noexcept;
+  void pup(PUP::er& p);
 };
 
 /// Resets the previous expiration time if the next expiration time is after,
 /// otherwise throws an error
 void reset_expiration_time(const gsl::not_null<double*> prev_expiration_time,
-                           const double next_expiration_time) noexcept;
+                           const double next_expiration_time);
 
 /// Returns a StoredInfo corresponding to the closest element in the range of
 /// `StoredInfo.time`s that is less than `t`. The function throws an
@@ -68,24 +66,23 @@ void reset_expiration_time(const gsl::not_null<double*> prev_expiration_time,
 template <size_t MaxDerivPlusOne, bool StoreCoefs>
 const StoredInfo<MaxDerivPlusOne, StoreCoefs>& stored_info_from_upper_bound(
     const double t, const std::vector<StoredInfo<MaxDerivPlusOne, StoreCoefs>>&
-                        all_stored_infos) noexcept;
+                        all_stored_infos);
 
 template <size_t MaxDerivPlusOne, bool StoreCoefs>
 bool operator==(
     const domain::FunctionsOfTime::FunctionOfTimeHelpers::StoredInfo<
         MaxDerivPlusOne, StoreCoefs>& lhs,
     const domain::FunctionsOfTime::FunctionOfTimeHelpers::StoredInfo<
-        MaxDerivPlusOne, StoreCoefs>& rhs) noexcept;
+        MaxDerivPlusOne, StoreCoefs>& rhs);
 
 template <size_t MaxDerivPlusOne, bool StoreCoefs>
 bool operator!=(
     const domain::FunctionsOfTime::FunctionOfTimeHelpers::StoredInfo<
         MaxDerivPlusOne, StoreCoefs>& lhs,
     const domain::FunctionsOfTime::FunctionOfTimeHelpers::StoredInfo<
-        MaxDerivPlusOne, StoreCoefs>& rhs) noexcept;
+        MaxDerivPlusOne, StoreCoefs>& rhs);
 
 template <size_t MaxDerivPlusOne, bool StoreCoefs>
-std::ostream& operator<<(
-    std::ostream& os,
-    const StoredInfo<MaxDerivPlusOne, StoreCoefs>& info) noexcept;
+std::ostream& operator<<(std::ostream& os,
+                         const StoredInfo<MaxDerivPlusOne, StoreCoefs>& info);
 }  // namespace domain::FunctionsOfTime::FunctionOfTimeHelpers

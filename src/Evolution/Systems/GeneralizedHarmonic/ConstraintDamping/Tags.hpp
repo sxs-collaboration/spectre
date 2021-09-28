@@ -85,7 +85,7 @@ struct DampingFunctionGamma0 : db::SimpleTag {
                      DampingFunctionGamma0<VolumeDim, Fr>>;
 
   static constexpr bool pass_metavariables = false;
-  static type create_from_options(const type& damping_function) noexcept {
+  static type create_from_options(const type& damping_function) {
     return damping_function->get_clone();
   }
 };
@@ -104,7 +104,7 @@ struct DampingFunctionGamma1 : db::SimpleTag {
                      DampingFunctionGamma1<VolumeDim, Fr>>;
 
   static constexpr bool pass_metavariables = false;
-  static type create_from_options(const type& damping_function) noexcept {
+  static type create_from_options(const type& damping_function) {
     return std::move(damping_function->get_clone());
   }
 };
@@ -123,7 +123,7 @@ struct DampingFunctionGamma2 : db::SimpleTag {
                      DampingFunctionGamma2<VolumeDim, Fr>>;
 
   static constexpr bool pass_metavariables = false;
-  static type create_from_options(const type& damping_function) noexcept {
+  static type create_from_options(const type& damping_function) {
     return std::move(damping_function->get_clone());
   }
 };

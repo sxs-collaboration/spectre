@@ -16,9 +16,9 @@
 #include "Utilities/Gsl.hpp"
 
 namespace Burgers::BoundaryCorrections {
-Hll::Hll(CkMigrateMessage* msg) noexcept : BoundaryCorrection(msg) {}
+Hll::Hll(CkMigrateMessage* msg) : BoundaryCorrection(msg) {}
 
-std::unique_ptr<BoundaryCorrection> Hll::get_clone() const noexcept {
+std::unique_ptr<BoundaryCorrection> Hll::get_clone() const {
   return std::make_unique<Hll>(*this);
 }
 
@@ -33,8 +33,7 @@ double Hll::dg_package_data(
     const tnsr::i<DataVector, 1, Frame::Inertial>& normal_covector,
     const std::optional<tnsr::I<DataVector, 1, Frame::Inertial>>&
     /*mesh_velocity*/,
-    const std::optional<Scalar<DataVector>>&
-        normal_dot_mesh_velocity) noexcept {
+    const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity) {
   get(*packaged_char_speed) = sign(get<0>(normal_covector)) * get(u);
   if (normal_dot_mesh_velocity.has_value()) {
     get(*packaged_char_speed) -= get(*normal_dot_mesh_velocity);
@@ -51,7 +50,7 @@ void Hll::dg_boundary_terms(
     const Scalar<DataVector>& char_speed_int, const Scalar<DataVector>& u_ext,
     const Scalar<DataVector>& normal_dot_flux_u_ext,
     const Scalar<DataVector>& char_speed_ext,
-    const dg::Formulation dg_formulation) noexcept {
+    const dg::Formulation dg_formulation) {
   Variables<tmpl::list<::Tags::TempScalar<0>, ::Tags::TempScalar<1>>> temps{
       get(u_int).size()};
   get(get<::Tags::TempScalar<0>>(temps)) =

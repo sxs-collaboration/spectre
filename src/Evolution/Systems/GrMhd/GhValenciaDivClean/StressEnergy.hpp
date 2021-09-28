@@ -35,7 +35,7 @@ namespace grmhd::GhValenciaDivClean {
 void add_stress_energy_term_to_dt_pi(
     gsl::not_null<tnsr::aa<DataVector, 3>*> dt_pi,
     const tnsr::aa<DataVector, 3>& trace_reversed_stress_energy,
-    const Scalar<DataVector>& lapse) noexcept;
+    const Scalar<DataVector>& lapse);
 
 /*!
  * \brief Calculate the trace-reversed stress-energy tensor \f$(T_{\mu \nu} -
@@ -113,5 +113,5 @@ void trace_reversed_stress_energy(
     const Scalar<DataVector>& pressure,
     const tnsr::aa<DataVector, 3, Frame::Inertial>& spacetime_metric,
     const tnsr::I<DataVector, 3, Frame::Inertial>& shift,
-    const Scalar<DataVector>& lapse) noexcept;
+    const Scalar<DataVector>& lapse);
 }  // namespace grmhd::GhValenciaDivClean

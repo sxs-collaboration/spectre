@@ -14,7 +14,7 @@
 
 namespace {
 template <size_t SpatialDim>
-void test_lorentz_boost_matrix_random(const double& used_for_size) noexcept {
+void test_lorentz_boost_matrix_random(const double& used_for_size) {
   tnsr::Ab<double, SpatialDim, Frame::NoFrame> (*f)(
       const tnsr::I<double, SpatialDim, Frame::NoFrame>&) =
       &sr::lorentz_boost_matrix<SpatialDim>;
@@ -29,8 +29,7 @@ void test_lorentz_boost_matrix_random(const double& used_for_size) noexcept {
 }
 
 template <size_t SpatialDim>
-void test_lorentz_boost_matrix_analytic(
-    const double& velocity_squared) noexcept {
+void test_lorentz_boost_matrix_analytic(const double& velocity_squared) {
   // Check that zero velocity returns an identity matrix
   const tnsr::I<double, SpatialDim, Frame::NoFrame> velocity_zero{0.0};
   const auto boost_matrix_zero = sr::lorentz_boost_matrix(velocity_zero);

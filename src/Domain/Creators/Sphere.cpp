@@ -59,7 +59,7 @@ Sphere::Sphere(typename InnerRadius::type inner_radius,
   }
 }
 
-Domain<3> Sphere::create_domain() const noexcept {
+Domain<3> Sphere::create_domain() const {
   using Affine = CoordinateMaps::Affine;
   using Affine3D = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
   using Equiangular = CoordinateMaps::Equiangular;
@@ -113,7 +113,7 @@ Domain<3> Sphere::create_domain() const noexcept {
                    std::move(boundary_conditions_all_blocks));
 }
 
-std::vector<std::array<size_t, 3>> Sphere::initial_extents() const noexcept {
+std::vector<std::array<size_t, 3>> Sphere::initial_extents() const {
   std::vector<std::array<size_t, 3>> extents{
       6,
       {{initial_number_of_grid_points_[1], initial_number_of_grid_points_[1],
@@ -124,8 +124,7 @@ std::vector<std::array<size_t, 3>> Sphere::initial_extents() const noexcept {
   return extents;
 }
 
-std::vector<std::array<size_t, 3>> Sphere::initial_refinement_levels() const
-    noexcept {
+std::vector<std::array<size_t, 3>> Sphere::initial_refinement_levels() const {
   return {7, make_array<3>(initial_refinement_)};
 }
 }  // namespace domain::creators

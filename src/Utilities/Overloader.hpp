@@ -98,7 +98,7 @@ class Overloader<> {
  public:
   using type = Overloader;
   SPECTRE_ALWAYS_INLINE void operator()(
-      const overloader_detail::no_such_type& /*unused*/) noexcept {}
+      const overloader_detail::no_such_type& /*unused*/) {}
 };
 
 /*!

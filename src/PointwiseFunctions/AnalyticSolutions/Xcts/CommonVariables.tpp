@@ -25,7 +25,7 @@ void CommonVariables<DataType, Cache>::operator()(
     const gsl::not_null<tnsr::I<DataType, Dim>*> conformal_factor_flux,
     const gsl::not_null<Cache*> cache,
     ::Tags::Flux<Tags::ConformalFactor<DataType>, tmpl::size_t<Dim>,
-                 Frame::Inertial> /*meta*/) const noexcept {
+                 Frame::Inertial> /*meta*/) const {
   const auto& conformal_factor_gradient =
       cache->get_var(::Tags::deriv<Tags::ConformalFactor<DataType>,
                                    tmpl::size_t<Dim>, Frame::Inertial>{});
@@ -41,7 +41,7 @@ void CommonVariables<DataType, Cache>::operator()(
         lapse_times_conformal_factor_flux,
     const gsl::not_null<Cache*> cache,
     ::Tags::Flux<Tags::LapseTimesConformalFactor<DataType>, tmpl::size_t<Dim>,
-                 Frame::Inertial> /*meta*/) const noexcept {
+                 Frame::Inertial> /*meta*/) const {
   const auto& lapse_times_conformal_factor_gradient =
       cache->get_var(::Tags::deriv<Tags::LapseTimesConformalFactor<DataType>,
                                    tmpl::size_t<Dim>, Frame::Inertial>{});
@@ -57,7 +57,7 @@ void CommonVariables<DataType, Cache>::operator()(
     const gsl::not_null<tnsr::II<DataType, Dim>*> longitudinal_shift_excess,
     const gsl::not_null<Cache*> cache,
     Tags::LongitudinalShiftExcess<DataType, Dim, Frame::Inertial> /*meta*/)
-    const noexcept {
+    const {
   const auto& shift_strain =
       cache->get_var(Tags::ShiftStrain<DataType, Dim, Frame::Inertial>{});
   const auto& inv_conformal_metric = cache->get_var(
@@ -70,7 +70,7 @@ template <typename DataType, typename Cache>
 void CommonVariables<DataType, Cache>::operator()(
     const gsl::not_null<tnsr::I<DataType, Dim>*> shift,
     const gsl::not_null<Cache*> cache,
-    gr::Tags::Shift<Dim, Frame::Inertial, DataType> /*meta*/) const noexcept {
+    gr::Tags::Shift<Dim, Frame::Inertial, DataType> /*meta*/) const {
   *shift = cache->get_var(Tags::ShiftExcess<DataType, Dim, Frame::Inertial>{});
   const auto& shift_background =
       cache->get_var(Tags::ShiftBackground<DataType, Dim, Frame::Inertial>{});
@@ -85,7 +85,7 @@ void CommonVariables<DataType, Cache>::operator()(
         longitudinal_shift_minus_dt_conformal_metric_square,
     const gsl::not_null<Cache*> cache,
     Tags::LongitudinalShiftMinusDtConformalMetricSquare<DataType> /*meta*/)
-    const noexcept {
+    const {
   const auto& longitudinal_shift_background =
       cache->get_var(Tags::LongitudinalShiftBackgroundMinusDtConformalMetric<
                      DataType, Dim, Frame::Inertial>{});
@@ -116,7 +116,7 @@ void CommonVariables<DataType, Cache>::operator()(
         longitudinal_shift_minus_dt_conformal_metric_over_lapse_square,
     const gsl::not_null<Cache*> cache,
     Tags::LongitudinalShiftMinusDtConformalMetricOverLapseSquare<
-        DataType> /*meta*/) const noexcept {
+        DataType> /*meta*/) const {
   *longitudinal_shift_minus_dt_conformal_metric_over_lapse_square =
       cache->get_var(
           Tags::LongitudinalShiftMinusDtConformalMetricSquare<DataType>{});
@@ -131,7 +131,7 @@ void CommonVariables<DataType, Cache>::operator()(
         shift_dot_deriv_extrinsic_curvature_trace,
     const gsl::not_null<Cache*> cache,
     Tags::ShiftDotDerivExtrinsicCurvatureTrace<DataType> /*meta*/)
-    const noexcept {
+    const {
   const auto& shift =
       cache->get_var(gr::Tags::Shift<Dim, Frame::Inertial, DataType>{});
   const auto& deriv_extrinsic_curvature_trace =

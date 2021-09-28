@@ -47,7 +47,7 @@ struct ExecutePhaseChange {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index, const ActionList /*meta*/,
-      const ParallelComponent* const /*component*/) noexcept {
+      const ParallelComponent* const /*component*/) {
     const auto& phase_change_and_triggers =
         Parallel::get<Tags::PhaseChangeAndTriggers<PhaseChangeRegistrars>>(
             cache);
@@ -117,7 +117,7 @@ typename std::optional<typename Metavariables::Phase> arbitrate_phase_change(
     const gsl::not_null<tuples::TaggedTuple<DecisionTags...>*>
         phase_change_decision_data,
     typename Metavariables::Phase current_phase,
-    const Parallel::GlobalCache<Metavariables>& cache) noexcept {
+    const Parallel::GlobalCache<Metavariables>& cache) {
   const auto& phase_change_and_triggers =
       Parallel::get<Tags::PhaseChangeAndTriggers<PhaseChangeRegistrars>>(
           cache);
@@ -168,10 +168,9 @@ typename std::optional<typename Metavariables::Phase> arbitrate_phase_change(
 template <typename PhaseChangeRegistrars>
 struct InitializePhaseChangeDecisionData {
   template <typename... DecisionTags, typename Metavariables>
-  static void apply(
-      const gsl::not_null<tuples::TaggedTuple<DecisionTags...>*>
-          phase_change_decision_data,
-      const Parallel::GlobalCache<Metavariables>& cache) noexcept {
+  static void apply(const gsl::not_null<tuples::TaggedTuple<DecisionTags...>*>
+                        phase_change_decision_data,
+                    const Parallel::GlobalCache<Metavariables>& cache) {
     tuples::get<TagsAndCombines::UsePhaseChangeArbitration>(
         *phase_change_decision_data) = false;
     const auto& phase_change_and_triggers =

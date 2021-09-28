@@ -46,23 +46,23 @@ constexpr double inertial_coord_min = -0.3;
 constexpr double inertial_coord_max = 0.7;
 
 template <size_t Dim>
-auto make_affine_map() noexcept;
+auto make_affine_map();
 
 template <>
-auto make_affine_map<1>() noexcept {
+auto make_affine_map<1>() {
   return domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
       Affine{-1.0, 1.0, inertial_coord_min, inertial_coord_max});
 }
 
 template <>
-auto make_affine_map<2>() noexcept {
+auto make_affine_map<2>() {
   return domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
       Affine2D{Affine{-1.0, 1.0, inertial_coord_min, inertial_coord_max},
                Affine{-1.0, 1.0, inertial_coord_min, inertial_coord_max}});
 }
 
 template <>
-auto make_affine_map<3>() noexcept {
+auto make_affine_map<3>() {
   return domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
       Affine3D{Affine{-1.0, 1.0, inertial_coord_min, inertial_coord_max},
                Affine{-1.0, 1.0, inertial_coord_min, inertial_coord_max},
@@ -75,7 +75,7 @@ struct ScalarTag : db::SimpleTag {
   using type = Scalar<DataVector>;
   template <size_t Dim>
   static auto fill_values(const MathFunctions::TensorProduct<Dim>& f,
-                          const tnsr::I<DataVector, Dim>& x) noexcept {
+                          const tnsr::I<DataVector, Dim>& x) {
     return Scalar<DataVector>{{{get(f(x))}}};
   }
 };
@@ -84,7 +84,7 @@ template <size_t Dim>
 struct Vector : db::SimpleTag {
   using type = tnsr::I<DataVector, Dim>;
   static auto fill_values(const MathFunctions::TensorProduct<Dim>& f,
-                          const tnsr::I<DataVector, Dim>& x) noexcept {
+                          const tnsr::I<DataVector, Dim>& x) {
     auto result = make_with_value<tnsr::I<DataVector, Dim>>(x, 0.);
     const auto f_of_x = f(x);
     for (size_t d = 0; d < Dim; ++d) {
@@ -99,7 +99,7 @@ struct Vector : db::SimpleTag {
 // Test interpolation from source_mesh onto target_mesh.
 template <size_t Dim>
 void test_regular_interpolation(const Mesh<Dim>& source_mesh,
-                                const Mesh<Dim>& target_mesh) noexcept {
+                                const Mesh<Dim>& target_mesh) {
   CAPTURE(source_mesh);
   CAPTURE(target_mesh);
   const auto map = make_affine_map<Dim>();
@@ -132,9 +132,8 @@ void test_regular_interpolation(const Mesh<Dim>& source_mesh,
     MathFunctions::TensorProduct<Dim> f(1.0, std::move(functions));
 
     // Fill source and expected destination Variables with analytic solution.
-    tmpl::for_each<tags>([
-      &f, &source_coords, &target_coords, &source_vars, &expected_result
-    ](auto tag) noexcept {
+    tmpl::for_each<tags>([&f, &source_coords, &target_coords, &source_vars,
+                          &expected_result](auto tag) {
       using Tag = tmpl::type_from<decltype(tag)>;
       get<Tag>(source_vars) = Tag::fill_values(f, source_coords);
       get<Tag>(expected_result) = Tag::fill_values(f, target_coords);
@@ -145,7 +144,7 @@ void test_regular_interpolation(const Mesh<Dim>& source_mesh,
     const Variables<tags> result =
         regular_grid_interpolant.interpolate(source_vars);
 
-    tmpl::for_each<tags>([&result, &expected_result ](auto tag) noexcept {
+    tmpl::for_each<tags>([&result, &expected_result](auto tag) {
       using Tag = tmpl::type_from<decltype(tag)>;
       CHECK_ITERABLE_APPROX(get<Tag>(result), get<Tag>(expected_result));
     });
@@ -160,18 +159,18 @@ void test_regular_interpolation(const Mesh<Dim>& source_mesh,
 // Test interpolation from source_mesh onto target_mesh, but with one dimension
 // (at a time) being overridden to specify new target points.
 template <size_t Dim>
-void test_regular_interpolation_override(
-    const Mesh<Dim>& source_mesh, const Mesh<Dim>& target_mesh,
-    const DataVector& override_coords) noexcept {
+void test_regular_interpolation_override(const Mesh<Dim>& source_mesh,
+                                         const Mesh<Dim>& target_mesh,
+                                         const DataVector& override_coords) {
   CAPTURE(source_mesh);
   CAPTURE(target_mesh);
   CAPTURE(override_coords);
   const auto map = make_affine_map<Dim>();
   const auto source_coords = map(logical_coordinates(source_mesh));
 
-  const auto make_target_logical_coordinates =
-      [&target_mesh, &
-       override_coords ](const size_t local_dim_to_override) noexcept {
+  const auto make_target_logical_coordinates = [&target_mesh, &override_coords](
+                                                   const size_t
+                                                       local_dim_to_override) {
     std::array<DataVector, Dim> target_1d_logical_coords;
     std::array<size_t, Dim> target_extents{};
     for (size_t d = 0; d < Dim; ++d) {
@@ -222,9 +221,8 @@ void test_regular_interpolation_override(
     MathFunctions::TensorProduct<Dim> f(1.0, std::move(functions));
 
     // Fill source and expected destination Variables with analytic solution.
-    tmpl::for_each<tags>([
-      &f, &source_coords, &target_coords, &source_vars, &expected_result
-    ](auto tag) noexcept {
+    tmpl::for_each<tags>([&f, &source_coords, &target_coords, &source_vars,
+                          &expected_result](auto tag) {
       using Tag = tmpl::type_from<decltype(tag)>;
       get<Tag>(source_vars) = Tag::fill_values(f, source_coords);
       get<Tag>(expected_result) = Tag::fill_values(f, target_coords);
@@ -238,7 +236,7 @@ void test_regular_interpolation_override(
     // When extrapolating in multiple dimensions, the errors can grow to larger
     // than the default tolerance. But in this test we extrapolate only one
     // dimension at a time, so the default tolerance works:
-    tmpl::for_each<tags>([&result, &expected_result ](auto tag) noexcept {
+    tmpl::for_each<tags>([&result, &expected_result](auto tag) {
       using Tag = tmpl::type_from<decltype(tag)>;
       CHECK_ITERABLE_APPROX(get<Tag>(result), get<Tag>(expected_result));
     });

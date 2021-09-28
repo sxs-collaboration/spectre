@@ -18,7 +18,7 @@ void deriv_conformal_christoffel_second_kind(
     const tnsr::II<DataType, Dim, Frame>& inverse_conformal_spatial_metric,
     const tnsr::ijj<DataType, Dim, Frame>& field_d,
     const tnsr::ijkk<DataType, Dim, Frame>& d_field_d,
-    const tnsr::iJJ<DataType, Dim, Frame>& field_d_up) noexcept {
+    const tnsr::iJJ<DataType, Dim, Frame>& field_d_up) {
   destructive_resize_components(
       result, get_size(get<0, 0>(inverse_conformal_spatial_metric)));
 
@@ -55,7 +55,7 @@ tnsr::iJkk<DataType, Dim, Frame> deriv_conformal_christoffel_second_kind(
     const tnsr::II<DataType, Dim, Frame>& inverse_conformal_spatial_metric,
     const tnsr::ijj<DataType, Dim, Frame>& field_d,
     const tnsr::ijkk<DataType, Dim, Frame>& d_field_d,
-    const tnsr::iJJ<DataType, Dim, Frame>& field_d_up) noexcept {
+    const tnsr::iJJ<DataType, Dim, Frame>& field_d_up) {
   tnsr::iJkk<DataType, Dim, Frame> result{};
   deriv_conformal_christoffel_second_kind(make_not_null(&result),
                                           inverse_conformal_spatial_metric,
@@ -76,16 +76,14 @@ tnsr::iJkk<DataType, Dim, Frame> deriv_conformal_christoffel_second_kind(
           inverse_conformal_spatial_metric,                                 \
       const tnsr::ijj<DTYPE(data), DIM(data), FRAME(data)>& field_d,        \
       const tnsr::ijkk<DTYPE(data), DIM(data), FRAME(data)>& d_field_d,     \
-      const tnsr::iJJ<DTYPE(data), DIM(data), FRAME(data)>&                 \
-          field_d_up) noexcept;                                             \
+      const tnsr::iJJ<DTYPE(data), DIM(data), FRAME(data)>& field_d_up);    \
   template tnsr::iJkk<DTYPE(data), DIM(data), FRAME(data)>                  \
   Ccz4::deriv_conformal_christoffel_second_kind(                            \
       const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                  \
           inverse_conformal_spatial_metric,                                 \
       const tnsr::ijj<DTYPE(data), DIM(data), FRAME(data)>& field_d,        \
       const tnsr::ijkk<DTYPE(data), DIM(data), FRAME(data)>& d_field_d,     \
-      const tnsr::iJJ<DTYPE(data), DIM(data), FRAME(data)>&                 \
-          field_d_up) noexcept;
+      const tnsr::iJJ<DTYPE(data), DIM(data), FRAME(data)>& field_d_up);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Grid, Frame::Inertial),
                         (double, DataVector))

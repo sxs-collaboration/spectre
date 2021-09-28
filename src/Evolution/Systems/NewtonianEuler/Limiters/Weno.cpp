@@ -56,7 +56,7 @@ bool characteristic_simple_weno_impl(
         typename NewtonianEuler::Limiters::Weno<VolumeDim>::PackagedData,
         boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
         neighbor_data,
-    const bool compute_char_transformation_numerically) noexcept {
+    const bool compute_char_transformation_numerically) {
   // Storage for transforming neighbor_data into char variables
   using CharacteristicVarsWeno =
       Limiters::Weno<VolumeDim,
@@ -101,7 +101,7 @@ bool characteristic_simple_weno_impl(
           const gsl::not_null<Scalar<DataVector>*> char_v_minus,
           const gsl::not_null<tnsr::I<DataVector, VolumeDim>*> char_v_momentum,
           const gsl::not_null<Scalar<DataVector>*> char_v_plus,
-          const Matrix& left_eigenvectors) noexcept -> bool {
+          const Matrix& left_eigenvectors) -> bool {
     // Convert neighbor data to characteristics
     for (const auto& [key, data] : neighbor_data) {
       NewtonianEuler::Limiters::characteristic_fields(
@@ -120,7 +120,7 @@ bool characteristic_simple_weno_impl(
          &interpolator_buffer, &modified_neighbor_solution_buffer,
          &tvb_constant, &neighbor_linear_weight, &mesh, &element, &element_size,
          &neighbor_char_data,
-         &effective_neighbor_sizes](auto tag, const auto tensor) noexcept {
+         &effective_neighbor_sizes](auto tag, const auto tensor) {
           for (size_t tensor_storage_index = 0;
                tensor_storage_index < tensor->size(); ++tensor_storage_index) {
             // Check TCI
@@ -187,7 +187,7 @@ bool characteristic_hweno_impl(
         typename NewtonianEuler::Limiters::Weno<VolumeDim>::PackagedData,
         boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
         neighbor_data,
-    const bool compute_char_transformation_numerically) noexcept {
+    const bool compute_char_transformation_numerically) {
   // Hweno checks TCI before limiting any tensors
   const bool cell_is_troubled = NewtonianEuler::Limiters::Tci::kxrcf_indicator(
       kxrcf_constant, *mass_density_cons, *momentum_density, *energy_density,
@@ -235,7 +235,7 @@ bool characteristic_hweno_impl(
           const gsl::not_null<Scalar<DataVector>*> char_v_minus,
           const gsl::not_null<tnsr::I<DataVector, VolumeDim>*> char_v_momentum,
           const gsl::not_null<Scalar<DataVector>*> char_v_plus,
-          const Matrix& left_eigenvectors) noexcept -> bool {
+          const Matrix& left_eigenvectors) -> bool {
     // Convert neighbor data to characteristics
     for (const auto& [key, data] : neighbor_data) {
       NewtonianEuler::Limiters::characteristic_fields(
@@ -282,7 +282,7 @@ bool conservative_hweno_impl(
         std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
         typename NewtonianEuler::Limiters::Weno<VolumeDim>::PackagedData,
         boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
-        neighbor_data) noexcept {
+        neighbor_data) {
   // Hweno checks TCI before limiting any tensors
   const bool cell_is_troubled = NewtonianEuler::Limiters::Tci::kxrcf_indicator(
       kxrcf_constant, *mass_density_cons, *momentum_density, *energy_density,
@@ -367,7 +367,7 @@ Weno<VolumeDim>::Weno(
 
 template <size_t VolumeDim>
 // NOLINTNEXTLINE(google-runtime-references)
-void Weno<VolumeDim>::pup(PUP::er& p) noexcept {
+void Weno<VolumeDim>::pup(PUP::er& p) {
   p | weno_type_;
   p | vars_to_limit_;
   p | neighbor_linear_weight_;
@@ -384,7 +384,7 @@ void Weno<VolumeDim>::package_data(
     const tnsr::I<DataVector, VolumeDim>& momentum_density,
     const Scalar<DataVector>& energy_density, const Mesh<VolumeDim>& mesh,
     const std::array<double, VolumeDim>& element_size,
-    const OrientationMap<VolumeDim>& orientation_map) const noexcept {
+    const OrientationMap<VolumeDim>& orientation_map) const {
   conservative_vars_weno_.package_data(packaged_data, mass_density_cons,
                                        momentum_density, energy_density, mesh,
                                        element_size, orientation_map);
@@ -406,24 +406,24 @@ bool Weno<VolumeDim>::operator()(
     const std::unordered_map<
         std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
         boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
-        neighbor_data) const noexcept {
+        neighbor_data) const {
   if (UNLIKELY(disable_for_debugging_)) {
     // Do not modify input tensors
     return false;
   }
 
   // Enforce restrictions on h-refinement, p-refinement
-  if (UNLIKELY(alg::any_of(element.neighbors(),
-                           [](const auto& direction_neighbors) noexcept {
-                             return direction_neighbors.second.size() != 1;
-                           }))) {
+  if (UNLIKELY(
+          alg::any_of(element.neighbors(), [](const auto& direction_neighbors) {
+            return direction_neighbors.second.size() != 1;
+          }))) {
     ERROR("The Weno limiter does not yet support h-refinement");
     // Removing this limitation will require:
     // - Generalizing the computation of the modified neighbor solutions.
     // - Generalizing the WENO weighted sum for multiple neighbors in each
     //   direction.
   }
-  alg::for_each(neighbor_data, [&mesh](const auto& neighbor_and_data) noexcept {
+  alg::for_each(neighbor_data, [&mesh](const auto& neighbor_and_data) {
     if (UNLIKELY(neighbor_and_data.second.mesh != mesh)) {
       ERROR("The Weno limiter does not yet support p-refinement");
       // Removing this limitation will require generalizing the
@@ -521,7 +521,7 @@ bool Weno<VolumeDim>::operator()(
 }
 
 template <size_t LocalDim>
-bool operator==(const Weno<LocalDim>& lhs, const Weno<LocalDim>& rhs) noexcept {
+bool operator==(const Weno<LocalDim>& lhs, const Weno<LocalDim>& rhs) {
   // No need to compare the conservative_vars_weno_ member variable because
   // it is constructed from the other member variables.
   return lhs.weno_type_ == rhs.weno_type_ and
@@ -534,8 +534,7 @@ bool operator==(const Weno<LocalDim>& lhs, const Weno<LocalDim>& rhs) noexcept {
 }
 
 template <size_t VolumeDim>
-bool operator!=(const Weno<VolumeDim>& lhs,
-                const Weno<VolumeDim>& rhs) noexcept {
+bool operator!=(const Weno<VolumeDim>& lhs, const Weno<VolumeDim>& rhs) {
   return not(lhs == rhs);
 }
 
@@ -564,8 +563,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
       const std::unordered_map<                                                \
           std::pair<Direction<DIM(data)>, ElementId<DIM(data)>>, PackagedData, \
           boost::hash<                                                         \
-              std::pair<Direction<DIM(data)>, ElementId<DIM(data)>>>>&)        \
-      const noexcept;
+              std::pair<Direction<DIM(data)>, ElementId<DIM(data)>>>>&) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (1, 2))
 

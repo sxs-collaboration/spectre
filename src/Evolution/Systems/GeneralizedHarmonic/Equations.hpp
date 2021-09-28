@@ -39,6 +39,6 @@ struct ComputeNormalDotFluxes {
           spacetime_metric_normal_dot_flux,
       gsl::not_null<tnsr::aa<DataVector, Dim>*> pi_normal_dot_flux,
       gsl::not_null<tnsr::iaa<DataVector, Dim>*> phi_normal_dot_flux,
-      const tnsr::aa<DataVector, Dim>& spacetime_metric) noexcept;
+      const tnsr::aa<DataVector, Dim>& spacetime_metric);
 };
 }  // namespace GeneralizedHarmonic

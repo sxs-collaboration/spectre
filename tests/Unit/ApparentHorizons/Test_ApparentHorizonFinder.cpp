@@ -106,7 +106,7 @@ struct TestHorizonFindFailureCallback {
   static void apply(const db::DataBox<DbTags>& box,
                     const Parallel::GlobalCache<Metavariables>& cache,
                     const TemporalId& temporal_id,
-                    const FastFlow::Status failure_reason) noexcept {
+                    const FastFlow::Status failure_reason) {
     // [horizon_find_failure_callback_example]
     intrp::callbacks::ErrorOnFailedApparentHorizon::template apply<
         InterpolationTargetTag>(box, cache, temporal_id, failure_reason);
@@ -121,8 +121,7 @@ template <typename Frame, typename DbTags, typename Metavariables>
 void test_inertial_strahlkorper(
     const db::DataBox<DbTags>& box,
     const Parallel::GlobalCache<Metavariables>& cache,
-    const typename Metavariables::AhA::temporal_id::type&
-        temporal_id) noexcept {
+    const typename Metavariables::AhA::temporal_id::type& temporal_id) {
   if constexpr (not std::is_same_v<Frame, ::Frame::Inertial>) {
     const auto& strahlkorper = get<StrahlkorperTags::Strahlkorper<Frame>>(box);
     const auto& inertial_strahlkorper =
@@ -149,10 +148,10 @@ struct TestSchwarzschildHorizon {
   using observation_types = tmpl::list<>;
   // [post_horizon_find_callback_example]
   template <typename DbTags, typename Metavariables>
-  static void apply(const db::DataBox<DbTags>& box,
-                    const Parallel::GlobalCache<Metavariables>& cache,
-                    const typename Metavariables::AhA::temporal_id::type&
-                        temporal_id) noexcept {
+  static void apply(
+      const db::DataBox<DbTags>& box,
+      const Parallel::GlobalCache<Metavariables>& cache,
+      const typename Metavariables::AhA::temporal_id::type& temporal_id) {
     // [post_horizon_find_callback_example]
     const auto& horizon_radius = get(get<StrahlkorperTags::Radius<Frame>>(box));
     const auto expected_radius =
@@ -183,10 +182,10 @@ template <typename Frame>
 struct TestKerrHorizon {
   using observation_types = tmpl::list<>;
   template <typename DbTags, typename Metavariables>
-  static void apply(const db::DataBox<DbTags>& box,
-                    const Parallel::GlobalCache<Metavariables>& cache,
-                    const typename Metavariables::AhA::temporal_id::type&
-                        temporal_id) noexcept {
+  static void apply(
+      const db::DataBox<DbTags>& box,
+      const Parallel::GlobalCache<Metavariables>& cache,
+      const typename Metavariables::AhA::temporal_id::type& temporal_id) {
     const auto& strahlkorper =
         get<StrahlkorperTags::Strahlkorper<Frame>>(box);
     // Test actual horizon radius against analytic value at the same
@@ -424,7 +423,7 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
                                                      temporal_ids);
 
   // Center of the analytic solution.
-  const auto analytic_solution_center = []() noexcept -> std::array<double, 3> {
+  const auto analytic_solution_center = []() -> std::array<double, 3> {
     if constexpr (MakeHorizonFinderFailOnPurpose) {
       // Make the analytic solution off-center on purpose, so that
       // the domain only partially contains the horizon and therefore
@@ -575,7 +574,7 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
             [&inv_jacobian](
                 const gsl::not_null<tnsr::ii<DataVector, 3, ::Frame::Inertial>*>
                     u_inertial,
-                const tnsr::ii<DataVector, 3, Frame>& u_frame) noexcept {
+                const tnsr::ii<DataVector, 3, Frame>& u_frame) {
               for (size_t i = 0; i < 3; ++i) {
                 for (size_t j = i; j < 3; ++j) {  // symmetry
                   u_inertial->get(i, j) = 0.0;

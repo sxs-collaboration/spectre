@@ -22,12 +22,12 @@ namespace NewtonianEuler {
 template <typename DataType, size_t Dim, typename Fr>
 void ram_pressure(gsl::not_null<tnsr::II<DataType, Dim, Fr>*> result,
                   const Scalar<DataType>& mass_density,
-                  const tnsr::I<DataType, Dim, Fr>& velocity) noexcept;
+                  const tnsr::I<DataType, Dim, Fr>& velocity);
 
 template <typename DataType, size_t Dim, typename Fr>
 tnsr::II<DataType, Dim, Fr> ram_pressure(
     const Scalar<DataType>& mass_density,
-    const tnsr::I<DataType, Dim, Fr>& velocity) noexcept;
+    const tnsr::I<DataType, Dim, Fr>& velocity);
 /// @}
 
 namespace Tags {

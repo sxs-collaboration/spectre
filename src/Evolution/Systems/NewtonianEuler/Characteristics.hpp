@@ -45,7 +45,7 @@ template <size_t Dim>
 Matrix flux_jacobian(const tnsr::I<double, Dim>& velocity,
                      double kappa_over_density, double b_times_theta,
                      double specific_enthalpy,
-                     const tnsr::i<double, Dim>& unit_normal) noexcept;
+                     const tnsr::i<double, Dim>& unit_normal);
 }  // namespace detail
 
 /// @{
@@ -70,13 +70,13 @@ void characteristic_speeds(
     gsl::not_null<std::array<DataVector, Dim + 2>*> char_speeds,
     const tnsr::I<DataVector, Dim>& velocity,
     const Scalar<DataVector>& sound_speed,
-    const tnsr::i<DataVector, Dim>& normal) noexcept;
+    const tnsr::i<DataVector, Dim>& normal);
 
 template <size_t Dim>
 std::array<DataVector, Dim + 2> characteristic_speeds(
     const tnsr::I<DataVector, Dim>& velocity,
     const Scalar<DataVector>& sound_speed,
-    const tnsr::i<DataVector, Dim>& normal) noexcept;
+    const tnsr::i<DataVector, Dim>& normal);
 /// @}
 
 /// @{
@@ -120,14 +120,14 @@ Matrix right_eigenvectors(const tnsr::I<double, Dim>& velocity,
                           const Scalar<double>& sound_speed_squared,
                           const Scalar<double>& specific_enthalpy,
                           const Scalar<double>& kappa_over_density,
-                          const tnsr::i<double, Dim>& unit_normal) noexcept;
+                          const tnsr::i<double, Dim>& unit_normal);
 
 template <size_t Dim>
 Matrix left_eigenvectors(const tnsr::I<double, Dim>& velocity,
                          const Scalar<double>& sound_speed_squared,
                          const Scalar<double>& specific_enthalpy,
                          const Scalar<double>& kappa_over_density,
-                         const tnsr::i<double, Dim>& unit_normal) noexcept;
+                         const tnsr::i<double, Dim>& unit_normal);
 /// @}
 
 /*!
@@ -147,7 +147,7 @@ std::pair<DataVector, std::pair<Matrix, Matrix>> numerical_eigensystem(
     const Scalar<double>& sound_speed_squared,
     const Scalar<double>& specific_enthalpy,
     const Scalar<double>& kappa_over_density,
-    const tnsr::i<double, Dim>& unit_normal) noexcept;
+    const tnsr::i<double, Dim>& unit_normal);
 
 namespace Tags {
 
@@ -160,11 +160,10 @@ struct CharacteristicSpeedsCompute : CharacteristicSpeeds<Dim>, db::ComputeTag {
 
   using return_type = std::array<DataVector, Dim + 2>;
 
-  static constexpr void function(
-      const gsl::not_null<return_type*> result,
-      const tnsr::I<DataVector, Dim>& velocity,
-      const Scalar<DataVector>& sound_speed,
-      const tnsr::i<DataVector, Dim>& normal) noexcept {
+  static constexpr void function(const gsl::not_null<return_type*> result,
+                                 const tnsr::I<DataVector, Dim>& velocity,
+                                 const Scalar<DataVector>& sound_speed,
+                                 const tnsr::i<DataVector, Dim>& normal) {
     characteristic_speeds<Dim>(result, velocity, sound_speed, normal);
   }
 };
@@ -182,7 +181,7 @@ struct ComputeLargestCharacteristicSpeed : LargestCharacteristicSpeed,
   using base = LargestCharacteristicSpeed;
   static void function(const gsl::not_null<double*> speed,
                        const tnsr::I<DataVector, Dim>& velocity,
-                       const Scalar<DataVector>& sound_speed) noexcept {
+                       const Scalar<DataVector>& sound_speed) {
     *speed = max(get(magnitude(velocity)) + get(sound_speed));
   }
 };

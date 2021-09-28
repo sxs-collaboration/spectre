@@ -11,13 +11,13 @@
 #include "Utilities/GenerateInstantiations.hpp"
 
 template <size_t VolumeDim>
-void Direction<VolumeDim>::pup(PUP::er& p) noexcept {
+void Direction<VolumeDim>::pup(PUP::er& p) {
   p | axis_;
   p | side_;
 }
 
 template <>
-Direction<1>::Direction(const size_t dimension, const Side side) noexcept {
+Direction<1>::Direction(const size_t dimension, const Side side) {
   ASSERT(
       0 == dimension,
       "dim = " << dimension << ", for Direction<1> only dim = 0 is allowed.");
@@ -26,7 +26,7 @@ Direction<1>::Direction(const size_t dimension, const Side side) noexcept {
 }
 
 template <>
-Direction<2>::Direction(const size_t dimension, const Side side) noexcept {
+Direction<2>::Direction(const size_t dimension, const Side side) {
   ASSERT(0 == dimension or 1 == dimension,
          "dim = " << dimension
                   << ", for Direction<2> only dim = 0 or dim = 1 are allowed.");
@@ -35,7 +35,7 @@ Direction<2>::Direction(const size_t dimension, const Side side) noexcept {
 }
 
 template <>
-Direction<3>::Direction(const size_t dimension, const Side side) noexcept {
+Direction<3>::Direction(const size_t dimension, const Side side) {
   ASSERT(0 == dimension or 1 == dimension or 2 == dimension,
          "dim = " << dimension
                   << ", for Direction<3> only dim = 0, dim = 1, "
@@ -54,7 +54,7 @@ Direction<3>::Direction(const size_t dimension, const Side side) noexcept {
 
 template <size_t VolumeDim>
 std::ostream& operator<<(std::ostream& os,
-                         const Direction<VolumeDim>& direction) noexcept {
+                         const Direction<VolumeDim>& direction) {
   if (-1.0 == direction.sign()) {
     os << "-";
   } else {
@@ -66,10 +66,10 @@ std::ostream& operator<<(std::ostream& os,
 
 #define GET_DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATION(r, data)                                                 \
-  template std::ostream& operator<<(std::ostream&,                             \
-                                    const Direction<GET_DIM(data)>&) noexcept; \
-  template void Direction<GET_DIM(data)>::pup(PUP::er&) noexcept;
+#define INSTANTIATION(r, data)                                        \
+  template std::ostream& operator<<(std::ostream&,                    \
+                                    const Direction<GET_DIM(data)>&); \
+  template void Direction<GET_DIM(data)>::pup(PUP::er&);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 

@@ -23,11 +23,11 @@
 
 namespace grmhd::Solutions {
 
-AlfvenWave::AlfvenWave(
-    const double wavenumber, const double pressure,
-    const double rest_mass_density, const double adiabatic_index,
-    const std::array<double, 3>& background_magnetic_field,
-    const std::array<double, 3>& wave_magnetic_field) noexcept
+AlfvenWave::AlfvenWave(const double wavenumber, const double pressure,
+                       const double rest_mass_density,
+                       const double adiabatic_index,
+                       const std::array<double, 3>& background_magnetic_field,
+                       const std::array<double, 3>& wave_magnetic_field)
     : wavenumber_(wavenumber),
       pressure_(pressure),
       rest_mass_density_(rest_mass_density),
@@ -72,7 +72,7 @@ AlfvenWave::AlfvenWave(
   fluid_speed_ = -auxiliary_speed_b1 * one_over_speed_denominator;
 }
 
-void AlfvenWave::pup(PUP::er& p) noexcept {
+void AlfvenWave::pup(PUP::er& p) {
   p | wavenumber_;
   p | pressure_;
   p | rest_mass_density_;
@@ -93,7 +93,7 @@ void AlfvenWave::pup(PUP::er& p) noexcept {
 
 template <typename DataType>
 DataType AlfvenWave::k_dot_x_minus_vt(const tnsr::I<DataType, 3>& x,
-                                      const double t) const noexcept {
+                                      const double t) const {
   auto result = make_with_value<DataType>(x, -wavenumber_ * alfven_speed_ * t);
   for (size_t d = 0; d < 3; d++) {
     result += wavenumber_ * x.get(d) *
@@ -106,8 +106,7 @@ template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::RestMassDensity<DataType>>
 AlfvenWave::variables(
     const tnsr::I<DataType, 3>& x, double /*t*/,
-    tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/) const
-    noexcept {
+    tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/) const {
   return {make_with_value<Scalar<DataType>>(x, rest_mass_density_)};
 }
 
@@ -115,8 +114,7 @@ template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::SpecificInternalEnergy<DataType>>
 AlfvenWave::variables(
     const tnsr::I<DataType, 3>& x, double /*t*/,
-    tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>> /*meta*/) const
-    noexcept {
+    tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>> /*meta*/) const {
   return {make_with_value<Scalar<DataType>>(
       x, pressure_ / ((adiabatic_index_ - 1.0) * rest_mass_density_))};
 }
@@ -124,7 +122,7 @@ AlfvenWave::variables(
 template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::Pressure<DataType>> AlfvenWave::variables(
     const tnsr::I<DataType, 3>& x, double /*t*/,
-    tmpl::list<hydro::Tags::Pressure<DataType>> /*meta*/) const noexcept {
+    tmpl::list<hydro::Tags::Pressure<DataType>> /*meta*/) const {
   return {make_with_value<Scalar<DataType>>(x, pressure_)};
 }
 
@@ -132,8 +130,7 @@ template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, 3>>
 AlfvenWave::variables(
     const tnsr::I<DataType, 3>& x, double t,
-    tmpl::list<hydro::Tags::SpatialVelocity<DataType, 3>> /*meta*/) const
-    noexcept {
+    tmpl::list<hydro::Tags::SpatialVelocity<DataType, 3>> /*meta*/) const {
   const DataType phase = k_dot_x_minus_vt(x, t);
   auto result = make_with_value<tnsr::I<DataType, 3>>(x, 0.0);
   for (size_t d = 0; d < 3; d++) {
@@ -149,8 +146,7 @@ template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3>>
 AlfvenWave::variables(
     const tnsr::I<DataType, 3>& x, double t,
-    tmpl::list<hydro::Tags::MagneticField<DataType, 3>> /*meta*/) const
-    noexcept {
+    tmpl::list<hydro::Tags::MagneticField<DataType, 3>> /*meta*/) const {
   const DataType phase = k_dot_x_minus_vt(x, t);
   auto result = make_with_value<tnsr::I<DataType, 3>>(x, 0.0);
   for (size_t d = 0; d < 3; d++) {
@@ -167,15 +163,14 @@ template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::DivergenceCleaningField<DataType>>
 AlfvenWave::variables(
     const tnsr::I<DataType, 3>& x, double /*t*/,
-    tmpl::list<hydro::Tags::DivergenceCleaningField<DataType>> /*meta*/) const
-    noexcept {
+    tmpl::list<hydro::Tags::DivergenceCleaningField<DataType>> /*meta*/) const {
   return {make_with_value<Scalar<DataType>>(x, 0.0)};
 }
 
 template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::LorentzFactor<DataType>> AlfvenWave::variables(
     const tnsr::I<DataType, 3>& x, double /*t*/,
-    tmpl::list<hydro::Tags::LorentzFactor<DataType>> /*meta*/) const noexcept {
+    tmpl::list<hydro::Tags::LorentzFactor<DataType>> /*meta*/) const {
   return {make_with_value<Scalar<DataType>>(
       x, 1.0 / sqrt(1.0 - square(fluid_speed_)))};
 }
@@ -184,8 +179,7 @@ template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DataType>>
 AlfvenWave::variables(
     const tnsr::I<DataType, 3>& x, double t,
-    tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>> /*meta*/) const
-    noexcept {
+    tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>> /*meta*/) const {
   Scalar<DataType> specific_internal_energy = std::move(
       get<hydro::Tags::SpecificInternalEnergy<DataType>>(variables<DataType>(
           x, t, tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>>{})));
@@ -194,7 +188,7 @@ AlfvenWave::variables(
   return {std::move(specific_internal_energy)};
 }
 
-bool operator==(const AlfvenWave& lhs, const AlfvenWave& rhs) noexcept {
+bool operator==(const AlfvenWave& lhs, const AlfvenWave& rhs) {
   // there is no comparison operator for the EoS, but should be okay as
   // the adiabatic_indexs are compared
   return lhs.wavenumber_ == rhs.wavenumber_ and
@@ -217,18 +211,18 @@ bool operator==(const AlfvenWave& lhs, const AlfvenWave& rhs) noexcept {
          lhs.background_spacetime_ == rhs.background_spacetime_;
 }
 
-bool operator!=(const AlfvenWave& lhs, const AlfvenWave& rhs) noexcept {
+bool operator!=(const AlfvenWave& lhs, const AlfvenWave& rhs) {
   return not(lhs == rhs);
 }
 
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define TAG(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATE_SCALARS(_, data)                                       \
-  template tuples::TaggedTuple<TAG(data) < DTYPE(data)>>                   \
-      AlfvenWave::variables(const tnsr::I<DTYPE(data), 3>& x, double t,    \
-                            tmpl::list<TAG(data) < DTYPE(data)>> /*meta*/) \
-          const noexcept;
+#define INSTANTIATE_SCALARS(_, data)                                        \
+  template tuples::TaggedTuple<TAG(data) < DTYPE(data)> >                   \
+      AlfvenWave::variables(const tnsr::I<DTYPE(data), 3>& x, double t,     \
+                            tmpl::list<TAG(data) < DTYPE(data)> > /*meta*/) \
+          const;
 
 GENERATE_INSTANTIATIONS(
     INSTANTIATE_SCALARS, (double, DataVector),
@@ -236,11 +230,11 @@ GENERATE_INSTANTIATIONS(
      hydro::Tags::Pressure, hydro::Tags::DivergenceCleaningField,
      hydro::Tags::LorentzFactor, hydro::Tags::SpecificEnthalpy))
 
-#define INSTANTIATE_VECTORS(_, data)                                          \
-  template tuples::TaggedTuple<TAG(data) < DTYPE(data), 3>>                   \
-      AlfvenWave::variables(const tnsr::I<DTYPE(data), 3>& x, double t,       \
-                            tmpl::list<TAG(data) < DTYPE(data), 3>> /*meta*/) \
-          const noexcept;
+#define INSTANTIATE_VECTORS(_, data)                                           \
+  template tuples::TaggedTuple<TAG(data) < DTYPE(data), 3> >                   \
+      AlfvenWave::variables(const tnsr::I<DTYPE(data), 3>& x, double t,        \
+                            tmpl::list<TAG(data) < DTYPE(data), 3> > /*meta*/) \
+          const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_VECTORS, (double, DataVector),
                         (hydro::Tags::SpatialVelocity,

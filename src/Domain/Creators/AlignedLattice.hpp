@@ -65,7 +65,7 @@ struct RefinementRegion {
   using options = tmpl::list<LowerCornerIndex, UpperCornerIndex, Refinement>;
   RefinementRegion(const std::array<size_t, VolumeDim>& lower_corner_index_in,
                    const std::array<size_t, VolumeDim>& upper_corner_index_in,
-                   const std::array<size_t, VolumeDim>& refinement_in) noexcept
+                   const std::array<size_t, VolumeDim>& refinement_in)
       : lower_corner_index(lower_corner_index_in),
         upper_corner_index(upper_corner_index_in),
         refinement(refinement_in) {}
@@ -78,8 +78,7 @@ struct RefinementRegion {
 // is never actually called.
 template <size_t VolumeDim>
 [[noreturn]] std::ostream& operator<<(
-    std::ostream& /*s*/,
-    const RefinementRegion<VolumeDim>& /*unused*/) noexcept;
+    std::ostream& /*s*/, const RefinementRegion<VolumeDim>& /*unused*/);
 /// \endcond
 
 /// \brief Create a Domain consisting of multiple aligned Blocks arrayed in a
@@ -151,7 +150,7 @@ class AlignedLattice : public DomainCreator<VolumeDim> {
 
   template <typename BoundaryConditionsBase>
   struct BoundaryCondition {
-    static std::string name() noexcept { return "BoundaryCondition"; }
+    static std::string name() { return "BoundaryCondition"; }
     static constexpr Options::String help =
         "The boundary condition to impose on all sides.";
     using type = std::unique_ptr<BoundaryConditionsBase>;
@@ -206,18 +205,17 @@ class AlignedLattice : public DomainCreator<VolumeDim> {
 
   AlignedLattice() = default;
   AlignedLattice(const AlignedLattice&) = delete;
-  AlignedLattice(AlignedLattice&&) noexcept = default;
+  AlignedLattice(AlignedLattice&&) = default;
   AlignedLattice& operator=(const AlignedLattice&) = delete;
-  AlignedLattice& operator=(AlignedLattice&&) noexcept = default;
+  AlignedLattice& operator=(AlignedLattice&&) = default;
   ~AlignedLattice() override = default;
 
-  Domain<VolumeDim> create_domain() const noexcept override;
+  Domain<VolumeDim> create_domain() const override;
 
-  std::vector<std::array<size_t, VolumeDim>> initial_extents() const
-      noexcept override;
+  std::vector<std::array<size_t, VolumeDim>> initial_extents() const override;
 
-  std::vector<std::array<size_t, VolumeDim>> initial_refinement_levels() const
-      noexcept override;
+  std::vector<std::array<size_t, VolumeDim>> initial_refinement_levels()
+      const override;
 
  private:
   typename BlockBounds::type block_bounds_{

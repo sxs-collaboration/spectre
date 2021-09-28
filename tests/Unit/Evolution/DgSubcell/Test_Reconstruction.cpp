@@ -84,7 +84,7 @@ auto make_map() {
 
 template <size_t MaxPts, size_t Dim, Spectral::Basis BasisType,
           Spectral::Quadrature QuadratureType>
-void test_reconstruct_fd(const std::vector<double>& eps) noexcept {
+void test_reconstruct_fd(const std::vector<double>& eps) {
   CAPTURE(Dim);
   CAPTURE(BasisType);
   CAPTURE(QuadratureType);

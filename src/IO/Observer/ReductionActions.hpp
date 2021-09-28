@@ -54,7 +54,7 @@ struct WriteReductionData;
 
 /// Indicates no formatter is selected
 struct NoFormatter {
-  void pup(PUP::er& /*p*/) noexcept {}
+  void pup(PUP::er& /*p*/) {}
 };
 
 namespace Actions {
@@ -121,7 +121,7 @@ struct ContributeReductionData {
                     const std::vector<std::string>& reduction_names,
                     Parallel::ReductionData<Ts...>&& reduction_data,
                     std::optional<Formatter>&& formatter = std::nullopt,
-                    const bool observe_per_core = false) noexcept {
+                    const bool observe_per_core = false) {
     if constexpr (tmpl::list_contains_v<DbTagsList,
                                         Tags::ReductionData<Ts...>> and
                   tmpl::list_contains_v<DbTagsList,
@@ -145,7 +145,7 @@ struct ContributeReductionData {
                   reduction_observers_contributed,
               const std::unordered_map<ObservationKey,
                                        std::unordered_set<ArrayComponentId>>&
-                  observations_registered) mutable noexcept {
+                  observations_registered) mutable {
             ASSERT(observations_registered.find(
                        observation_id.observation_key()) !=
                        observations_registered.end(),
@@ -229,17 +229,17 @@ namespace ThreadedActions {
 namespace ReductionActions_detail {
 void append_to_reduction_data(
     const gsl::not_null<std::vector<double>*> all_reduction_data,
-    const double t) noexcept;
+    const double t);
 
 void append_to_reduction_data(
     const gsl::not_null<std::vector<double>*> all_reduction_data,
-    const std::vector<double>& t) noexcept;
+    const std::vector<double>& t);
 
 template <typename... Ts, size_t... Is>
 void write_data(const std::string& subfile_name,
                 std::vector<std::string> legend, const std::tuple<Ts...>& data,
                 const std::string& file_prefix,
-                std::index_sequence<Is...> /*meta*/) noexcept {
+                std::index_sequence<Is...> /*meta*/) {
   static_assert(sizeof...(Ts) > 0,
                 "Must be reducing at least one piece of data");
   std::vector<double> data_to_append{};
@@ -273,7 +273,7 @@ struct CollectReductionDataOnNode {
       std::vector<std::string>&& reduction_names,
       Parallel::ReductionData<ReductionDatums...>&& received_reduction_data,
       std::optional<Formatter>&& formatter = std::nullopt,
-      const std::optional<int> observe_with_core_id = std::nullopt) noexcept {
+      const std::optional<int> observe_with_core_id = std::nullopt) {
     if constexpr (tmpl::list_contains_v<
                       DbTagsList, Tags::ReductionData<ReductionDatums...>> and
                   tmpl::list_contains_v<DbTagsList, Tags::ReductionDataNames<
@@ -326,7 +326,7 @@ struct CollectReductionDataOnNode {
               const gsl::not_null<Parallel::NodeLock*> reduction_file_lock_ptr,
               const std::unordered_map<ObservationKey,
                                        std::unordered_set<ArrayComponentId>>&
-                  observations_registered) noexcept {
+                  observations_registered) {
             const ObservationKey& key{observation_id.observation_key()};
             const auto& registered_group_ids = observations_registered.at(key);
             if (UNLIKELY(registered_group_ids.find(observer_group_id) ==
@@ -481,7 +481,7 @@ struct WriteReductionData {
       const size_t sender_node_number, const std::string& subfile_name,
       std::vector<std::string>&& reduction_names,
       Parallel::ReductionData<ReductionDatums...>&& received_reduction_data,
-      std::optional<Formatter>&& formatter = std::nullopt) noexcept {
+      std::optional<Formatter>&& formatter = std::nullopt) {
     if constexpr (not std::is_same_v<Formatter, observers::NoFormatter>) {
       static_assert(
           tt::assert_conforms_to<Formatter, protocols::ReductionDataFormatter>);
@@ -526,23 +526,22 @@ struct WriteReductionData {
                  Tags::NodesThatContributedReductions, Tags::ReductionDataLock,
                  Tags::H5FileLock>(
           make_not_null(&box),
-          [
-            &nodes_contributed, &reduction_data, &reduction_names_map,
-            &reduction_data_lock, &reduction_file_lock, &observation_id,
-            &observations_registered_with_id, &sender_node_number
-          ](const gsl::not_null<
-                typename Tags::ReductionData<ReductionDatums...>::type*>
-                reduction_data_ptr,
-            const gsl::not_null<
-                std::unordered_map<ObservationId, std::vector<std::string>>*>
-                reduction_names_map_ptr,
-            const gsl::not_null<
-                std::unordered_map<ObservationId, std::unordered_set<size_t>>*>
-                nodes_contributed_ptr,
-            const gsl::not_null<Parallel::NodeLock*> reduction_data_lock_ptr,
-            const gsl::not_null<Parallel::NodeLock*> reduction_file_lock_ptr,
-            const std::unordered_map<ObservationKey, std::set<size_t>>&
-                nodes_registered_for_reductions) noexcept {
+          [&nodes_contributed, &reduction_data, &reduction_names_map,
+           &reduction_data_lock, &reduction_file_lock, &observation_id,
+           &observations_registered_with_id, &sender_node_number](
+              const gsl::not_null<
+                  typename Tags::ReductionData<ReductionDatums...>::type*>
+                  reduction_data_ptr,
+              const gsl::not_null<
+                  std::unordered_map<ObservationId, std::vector<std::string>>*>
+                  reduction_names_map_ptr,
+              const gsl::not_null<std::unordered_map<
+                  ObservationId, std::unordered_set<size_t>>*>
+                  nodes_contributed_ptr,
+              const gsl::not_null<Parallel::NodeLock*> reduction_data_lock_ptr,
+              const gsl::not_null<Parallel::NodeLock*> reduction_file_lock_ptr,
+              const std::unordered_map<ObservationKey, std::set<size_t>>&
+                  nodes_registered_for_reductions) {
             const ObservationKey& key{observation_id.observation_key()};
             ASSERT(nodes_registered_for_reductions.find(key) !=
                        nodes_registered_for_reductions.end(),

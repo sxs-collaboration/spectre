@@ -19,7 +19,7 @@ namespace observers {
 /// part of a section (`std::nullopt`).
 template <typename SectionIdTag, typename DbTagsList>
 std::optional<std::string> get_section_observation_key(
-    [[maybe_unused]] const db::DataBox<DbTagsList>& box) noexcept {
+    [[maybe_unused]] const db::DataBox<DbTagsList>& box) {
   if constexpr (std::is_same_v<SectionIdTag, void>) {
     return "";
   } else {

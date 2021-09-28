@@ -87,7 +87,7 @@ struct InitializeOverlapGeometry {
       const Element<Dim>& element, const Mesh<Dim>& mesh,
       const std::vector<std::array<size_t, Dim>>& initial_extents,
       const ElementId<Dim>& element_id, const Direction<Dim>& overlap_direction,
-      const size_t max_overlap) const noexcept;
+      const size_t max_overlap) const;
 };
 }  // namespace detail
 
@@ -170,7 +170,7 @@ struct InitializeSubdomain {
       DataBox& box, const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ElementId<Dim>& /*element_id*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     if constexpr (tmpl::all<initialization_tags,
                             tmpl::bind<db::tag_is_retrievable, tmpl::_1,
                                        tmpl::pin<DataBox>>>::value) {
@@ -232,7 +232,7 @@ struct InitializeSubdomain {
   template <typename DbTagsList>
   static void initialize_background_fields(
       const gsl::not_null<db::DataBox<DbTagsList>*> box,
-      const LinearSolver::Schwarz::OverlapId<Dim>& overlap_id) noexcept {
+      const LinearSolver::Schwarz::OverlapId<Dim>& overlap_id) {
     const auto& background = db::get<BackgroundTag>(*box);
     DirectionMap<Dim, Variables<typename System::background_fields>>
         face_background_fields{};
@@ -252,7 +252,7 @@ struct InitializeSubdomain {
             const tnsr::I<DataVector, Dim>& inertial_coords,
             const Mesh<Dim>& mesh,
             const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
-                                  Frame::Inertial>& inv_jacobian) noexcept {
+                                  Frame::Inertial>& inv_jacobian) {
           *background_fields = variables_from_tagged_tuple(
               background.variables(inertial_coords, mesh, inv_jacobian,
                                    typename System::background_fields{}));
@@ -272,11 +272,11 @@ struct InitializeSubdomain {
     // Move face background fields into DataBox
     const auto mutate_assign_face_background_field =
         [&box, &overlap_id, &face_background_fields](
-            auto tag_v, const Direction<Dim>& direction) noexcept {
+            auto tag_v, const Direction<Dim>& direction) {
           using tag = tmpl::type_from<std::decay_t<decltype(tag_v)>>;
           db::mutate<overlaps_tag<domain::Tags::Faces<Dim, tag>>>(
               box, [&face_background_fields, &overlap_id,
-                    &direction](const auto stored_value) noexcept {
+                    &direction](const auto stored_value) {
                 (*stored_value)[overlap_id][direction] =
                     get<tag>(face_background_fields.at(direction));
               });
@@ -285,15 +285,13 @@ struct InitializeSubdomain {
         db::get<overlaps_tag<domain::Tags::Element<Dim>>>(*box).at(overlap_id);
     for (const auto& direction : element.internal_boundaries()) {
       tmpl::for_each<background_fields_internal>(
-          [&mutate_assign_face_background_field,
-           &direction](auto tag_v) noexcept {
+          [&mutate_assign_face_background_field, &direction](auto tag_v) {
             mutate_assign_face_background_field(tag_v, direction);
           });
     }
     for (const auto& direction : element.external_boundaries()) {
       tmpl::for_each<background_fields_external>(
-          [&mutate_assign_face_background_field,
-           &direction](auto tag_v) noexcept {
+          [&mutate_assign_face_background_field, &direction](auto tag_v) {
             mutate_assign_face_background_field(tag_v, direction);
           });
     }
@@ -302,7 +300,7 @@ struct InitializeSubdomain {
   template <typename DbTagsList>
   static void normalize_face_normals(
       const gsl::not_null<db::DataBox<DbTagsList>*> box,
-      const LinearSolver::Schwarz::OverlapId<Dim>& overlap_id) noexcept {
+      const LinearSolver::Schwarz::OverlapId<Dim>& overlap_id) {
     // Faces of the overlapped element (internal and external)
     const auto& element =
         db::get<overlaps_tag<domain::Tags::Element<Dim>>>(*box).at(overlap_id);
@@ -352,8 +350,8 @@ struct InitializeSubdomain {
           elliptic::util::mutate_apply_at<
               tmpl::list<neighbor_face_normal_magnitudes_tag>, tmpl::list<>,
               tmpl::list<>>(
-              [&neighbor_face_normal, &inv_metric_on_face](
-                  const auto neighbor_face_normal_magnitude) noexcept {
+              [&neighbor_face_normal,
+               &inv_metric_on_face](const auto neighbor_face_normal_magnitude) {
                 magnitude(neighbor_face_normal_magnitude, neighbor_face_normal,
                           inv_metric_on_face);
               },
@@ -363,7 +361,7 @@ struct InitializeSubdomain {
               tmpl::list<neighbor_face_normal_magnitudes_tag>, tmpl::list<>,
               tmpl::list<>>(
               [&neighbor_face_normal](
-                  const auto neighbor_face_normal_magnitude) noexcept {
+                  const auto neighbor_face_normal_magnitude) {
                 magnitude(neighbor_face_normal_magnitude, neighbor_face_normal);
               },
               box, std::make_tuple(overlap_id, mortar_id));

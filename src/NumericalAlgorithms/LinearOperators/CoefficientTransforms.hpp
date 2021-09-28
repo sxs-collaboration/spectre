@@ -32,8 +32,7 @@ class not_null;
 template <size_t Dim>
 void to_modal_coefficients(
     gsl::not_null<ComplexModalVector*> modal_coefficients,
-    const ComplexDataVector& nodal_coefficients,
-    const Mesh<Dim>& mesh) noexcept;
+    const ComplexDataVector& nodal_coefficients, const Mesh<Dim>& mesh);
 
 // overload provided instead of templating so that the most common case of
 // transforming from `DataVector` to `ModalVector` does not require additional
@@ -41,16 +40,15 @@ void to_modal_coefficients(
 template <size_t Dim>
 void to_modal_coefficients(gsl::not_null<ModalVector*> modal_coefficients,
                            const DataVector& nodal_coefficients,
-                           const Mesh<Dim>& mesh) noexcept;
+                           const Mesh<Dim>& mesh);
 
 template <size_t Dim>
 ModalVector to_modal_coefficients(const DataVector& nodal_coefficients,
-                                  const Mesh<Dim>& mesh) noexcept;
+                                  const Mesh<Dim>& mesh);
 
 template <size_t Dim>
 ComplexModalVector to_modal_coefficients(
-    const ComplexDataVector& nodal_coefficients,
-    const Mesh<Dim>& mesh) noexcept;
+    const ComplexDataVector& nodal_coefficients, const Mesh<Dim>& mesh);
 /// @}
 
 /// @{
@@ -63,7 +61,7 @@ ComplexModalVector to_modal_coefficients(
 template <size_t Dim>
 void to_nodal_coefficients(gsl::not_null<ComplexDataVector*> nodal_coefficients,
                            const ComplexModalVector& modal_coefficients,
-                           const Mesh<Dim>& mesh) noexcept;
+                           const Mesh<Dim>& mesh);
 
 // overload provided instead of templating so that the most common case of
 // transforming from `DataVector` to `ModalVector` does not require additional
@@ -71,14 +69,13 @@ void to_nodal_coefficients(gsl::not_null<ComplexDataVector*> nodal_coefficients,
 template <size_t Dim>
 void to_nodal_coefficients(gsl::not_null<DataVector*> nodal_coefficients,
                            const ModalVector& modal_coefficients,
-                           const Mesh<Dim>& mesh) noexcept;
+                           const Mesh<Dim>& mesh);
 
 template <size_t Dim>
 DataVector to_nodal_coefficients(const ModalVector& modal_coefficients,
-                                 const Mesh<Dim>& mesh) noexcept;
+                                 const Mesh<Dim>& mesh);
 
 template <size_t Dim>
 ComplexDataVector to_nodal_coefficients(
-    const ComplexModalVector& modal_coefficients,
-    const Mesh<Dim>& mesh) noexcept;
+    const ComplexModalVector& modal_coefficients, const Mesh<Dim>& mesh);
 /// @}

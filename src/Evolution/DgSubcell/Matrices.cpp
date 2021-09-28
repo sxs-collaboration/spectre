@@ -24,8 +24,7 @@
 namespace evolution::dg::subcell::fd {
 template <Spectral::Quadrature QuadratureType, size_t NumDgGridPoints1d,
           size_t Dim>
-Matrix projection_matrix_cache_impl_helper(
-    const Index<Dim>& subcell_extents) noexcept {
+Matrix projection_matrix_cache_impl_helper(const Index<Dim>& subcell_extents) {
   // We currently require all dimensions to have the same number of grid
   // points, but this is checked in the calling function.
   const Index<Dim> dg_extents{NumDgGridPoints1d};
@@ -64,8 +63,7 @@ Matrix projection_matrix_cache_impl_helper(
 
 template <Spectral::Quadrature QuadratureType, size_t NumDgGridPoints,
           size_t Dim>
-const Matrix& projection_matrix_cache_impl(
-    const Index<Dim>& subcell_extents) noexcept {
+const Matrix& projection_matrix_cache_impl(const Index<Dim>& subcell_extents) {
   static const Matrix result =
       projection_matrix_cache_impl_helper<QuadratureType, NumDgGridPoints>(
           subcell_extents);
@@ -75,7 +73,7 @@ const Matrix& projection_matrix_cache_impl(
 template <Spectral::Quadrature QuadratureType, size_t... Is, size_t Dim>
 const Matrix& projection_matrix_impl(
     const Mesh<Dim>& dg_mesh, const Index<Dim>& subcell_extents,
-    std::index_sequence<Is...> /*num_dg_grid_points*/) noexcept {
+    std::index_sequence<Is...> /*num_dg_grid_points*/) {
   ASSERT(
       dg_mesh.extents() == Index<Dim>(dg_mesh.extents(0)),
       "The mesh must have the same extents in all directions but has extents "
@@ -87,7 +85,7 @@ const Matrix& projection_matrix_impl(
 
 template <size_t Dim>
 const Matrix& projection_matrix(const Mesh<Dim>& dg_mesh,
-                                const Index<Dim>& subcell_extents) noexcept {
+                                const Index<Dim>& subcell_extents) {
   ASSERT(dg_mesh.basis(0) == Spectral::Basis::Legendre,
          "FD Subcell projection only supports Legendre basis right now but got "
          "basis "
@@ -116,7 +114,7 @@ const Matrix& projection_matrix(const Mesh<Dim>& dg_mesh,
 }
 
 double get_sixth_order_integration_coefficient(const size_t num_pts,
-                                               const size_t index) noexcept {
+                                               const size_t index) {
   if (num_pts == 3) {
     return gsl::at(std::array<double, 3>{{9. / 8., 3. / 4., 9. / 8.}}, index);
   } else if (num_pts == 4) {
@@ -204,8 +202,7 @@ double get_sixth_order_integration_coefficient(const size_t num_pts,
 // location. The 1d coefficient is a product of the 3 coefficients in each
 // direction.
 template <size_t Dim>
-double integration_weight(const Index<Dim>& extents,
-                          const Index<Dim>& index) noexcept {
+double integration_weight(const Index<Dim>& extents, const Index<Dim>& index) {
   double result = get_sixth_order_integration_coefficient(extents[0], index[0]);
   for (size_t d = 1; d < Dim; ++d) {
     result *= get_sixth_order_integration_coefficient(extents[d], index[d]);
@@ -216,7 +213,7 @@ double integration_weight(const Index<Dim>& extents,
 template <Spectral::Quadrature QuadratureType, size_t NumDgGridPoints1d,
           size_t Dim>
 Matrix reconstruction_matrix_cache_impl_helper(
-    const Index<Dim>& subcell_extents) noexcept {
+    const Index<Dim>& subcell_extents) {
   // We currently require all dimensions to have the same number of grid
   // points.
   const Index<Dim> dg_extents{NumDgGridPoints1d};
@@ -303,7 +300,7 @@ Matrix reconstruction_matrix_cache_impl_helper(
 template <Spectral::Quadrature QuadratureType, size_t NumDgGridPoints,
           size_t Dim>
 const Matrix& reconstruction_matrix_cache_impl(
-    const Index<Dim>& subcell_extents) noexcept {
+    const Index<Dim>& subcell_extents) {
   static const Matrix result =
       reconstruction_matrix_cache_impl_helper<QuadratureType, NumDgGridPoints>(
           subcell_extents);
@@ -313,15 +310,15 @@ const Matrix& reconstruction_matrix_cache_impl(
 template <Spectral::Quadrature QuadratureType, size_t... Is, size_t Dim>
 const Matrix& reconstruction_matrix_impl(
     const Mesh<Dim>& dg_mesh, const Index<Dim>& subcell_extents,
-    std::index_sequence<Is...> /*num_dg_grid_points*/) noexcept {
+    std::index_sequence<Is...> /*num_dg_grid_points*/) {
   static const std::array<const Matrix& (*)(const Index<Dim>&), sizeof...(Is)>
       cache{{&reconstruction_matrix_cache_impl<QuadratureType, Is, Dim>...}};
   return gsl::at(cache, dg_mesh.extents(0))(subcell_extents);
 }
 
 template <size_t Dim>
-const Matrix& reconstruction_matrix(
-    const Mesh<Dim>& dg_mesh, const Index<Dim>& subcell_extents) noexcept {
+const Matrix& reconstruction_matrix(const Mesh<Dim>& dg_mesh,
+                                    const Index<Dim>& subcell_extents) {
   ASSERT(dg_mesh.basis(0) == Spectral::Basis::Legendre,
          "FD Subcell reconstruction only supports Legendre basis right now.");
   ASSERT(dg_mesh == Mesh<Dim>(dg_mesh.extents(0), dg_mesh.basis(0),
@@ -349,11 +346,11 @@ const Matrix& reconstruction_matrix(
 
 #define GET_DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATION(r, data)                                           \
-  template const Matrix& projection_matrix(                              \
-      const Mesh<GET_DIM(data)>&, const Index<GET_DIM(data)>&) noexcept; \
-  template const Matrix& reconstruction_matrix(                          \
-      const Mesh<GET_DIM(data)>&, const Index<GET_DIM(data)>&) noexcept;
+#define INSTANTIATION(r, data)                                             \
+  template const Matrix& projection_matrix(const Mesh<GET_DIM(data)>&,     \
+                                           const Index<GET_DIM(data)>&);   \
+  template const Matrix& reconstruction_matrix(const Mesh<GET_DIM(data)>&, \
+                                               const Index<GET_DIM(data)>&);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 

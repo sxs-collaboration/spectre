@@ -42,19 +42,19 @@ struct IsentropicVortexProxy
   template <typename DataType>
   tuples::tagged_tuple_from_typelist<variables_tags<DataType>>
   primitive_variables(const tnsr::I<DataType, Dim, Frame::Inertial>& x,
-                      double t) const noexcept {
+                      double t) const {
     return this->variables(x, t, variables_tags<DataType>{});
   }
 };
 
 template <size_t Dim, typename DataType>
-void test_solution(
-    const DataType& used_for_size, const std::array<double, Dim>& center,
-    const std::string& center_option,
-    const std::array<double, Dim>& mean_velocity,
-    const std::string& mean_velocity_option,
-    const double perturbation_amplitude = 0.0,
-    const std::string& perturbation_amplitude_option = "") noexcept {
+void test_solution(const DataType& used_for_size,
+                   const std::array<double, Dim>& center,
+                   const std::string& center_option,
+                   const std::array<double, Dim>& mean_velocity,
+                   const std::string& mean_velocity_option,
+                   const double perturbation_amplitude = 0.0,
+                   const std::string& perturbation_amplitude_option = "") {
   IsentropicVortexProxy<Dim> vortex(1.43, center, mean_velocity, 3.76,
                                     perturbation_amplitude);
   pypp::check_with_random_values<1>(

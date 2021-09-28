@@ -75,25 +75,25 @@ class KerrHorizonConforming {
 
   template <typename T>
   std::array<tt::remove_cvref_wrap_t<T>, 3> operator()(
-      const std::array<T, 3>& source_coords) const noexcept;
+      const std::array<T, 3>& source_coords) const;
 
   std::optional<std::array<double, 3>> inverse(
-      const std::array<double, 3>& target_coords) const noexcept;
+      const std::array<double, 3>& target_coords) const;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> jacobian(
-      const std::array<T, 3>& source_coords) const noexcept;
+      const std::array<T, 3>& source_coords) const;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> inv_jacobian(
-      const std::array<T, 3>& source_coords) const noexcept;
+      const std::array<T, 3>& source_coords) const;
 
-  bool is_identity() const noexcept {
+  bool is_identity() const {
     return spin_ == std::array<double, 3>{0., 0., 0.};
   }
 
   friend bool operator==(const KerrHorizonConforming& lhs,
-                         const KerrHorizonConforming& rhs) noexcept;
+                         const KerrHorizonConforming& rhs);
 
   void pup(PUP::er& p);
 
@@ -101,12 +101,12 @@ class KerrHorizonConforming {
   template <typename T>
   void stretch_factor_square(
       const gsl::not_null<tt::remove_cvref_wrap_t<T>*> result,
-      const std::array<T, 3>& source_coords) const noexcept;
+      const std::array<T, 3>& source_coords) const;
 
   std::array<double, 3> spin_;
   double spin_mag_sq_;
 };
 bool operator!=(const KerrHorizonConforming& lhs,
-                const KerrHorizonConforming& rhs) noexcept;
+                const KerrHorizonConforming& rhs);
 
 }  // namespace domain::CoordinateMaps

@@ -73,21 +73,21 @@ class MonotisedCentralPrim : public Reconstructor {
       "Monotised central reconstruction scheme using primitive variables."};
 
   MonotisedCentralPrim() = default;
-  MonotisedCentralPrim(MonotisedCentralPrim&&) noexcept = default;
-  MonotisedCentralPrim& operator=(MonotisedCentralPrim&&) noexcept = default;
+  MonotisedCentralPrim(MonotisedCentralPrim&&) = default;
+  MonotisedCentralPrim& operator=(MonotisedCentralPrim&&) = default;
   MonotisedCentralPrim(const MonotisedCentralPrim&) = default;
   MonotisedCentralPrim& operator=(const MonotisedCentralPrim&) = default;
   ~MonotisedCentralPrim() override = default;
 
-  explicit MonotisedCentralPrim(CkMigrateMessage* msg) noexcept;
+  explicit MonotisedCentralPrim(CkMigrateMessage* msg);
 
   WRAPPED_PUPable_decl_base_template(Reconstructor, MonotisedCentralPrim);
 
-  auto get_clone() const noexcept -> std::unique_ptr<Reconstructor> override;
+  auto get_clone() const -> std::unique_ptr<Reconstructor> override;
 
   void pup(PUP::er& p) override;
 
-  size_t ghost_zone_size() const noexcept override { return 2; }
+  size_t ghost_zone_size() const override { return 2; }
 
   using reconstruction_argument_tags =
       tmpl::list<::Tags::Variables<hydro::grmhd_tags<DataVector>>,
@@ -109,7 +109,7 @@ class MonotisedCentralPrim : public Reconstructor {
           evolution::dg::subcell::NeighborData,
           boost::hash<std::pair<Direction<dim>, ElementId<dim>>>>&
           neighbor_data,
-      const Mesh<dim>& subcell_mesh) const noexcept;
+      const Mesh<dim>& subcell_mesh) const;
 
   /// Called by an element doing DG when the neighbor is doing subcell.
   template <size_t ThermodynamicDim, typename TagsList>
@@ -125,12 +125,12 @@ class MonotisedCentralPrim : public Reconstructor {
           boost::hash<std::pair<Direction<dim>, ElementId<dim>>>>&
           neighbor_data,
       const Mesh<dim>& subcell_mesh,
-      const Direction<dim> direction_to_reconstruct) const noexcept;
+      const Direction<dim> direction_to_reconstruct) const;
 };
 
 bool operator==(const MonotisedCentralPrim& /*lhs*/,
-                const MonotisedCentralPrim& /*rhs*/) noexcept;
+                const MonotisedCentralPrim& /*rhs*/);
 
 bool operator!=(const MonotisedCentralPrim& lhs,
-                const MonotisedCentralPrim& rhs) noexcept;
+                const MonotisedCentralPrim& rhs);
 }  // namespace grmhd::ValenciaDivClean::fd

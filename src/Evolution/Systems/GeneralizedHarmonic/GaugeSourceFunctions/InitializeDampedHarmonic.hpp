@@ -104,7 +104,7 @@ struct InitializeDampedHarmonic {
     using base = ::Tags::Variables<tmpl::list<
         ::GeneralizedHarmonic::Tags::GaugeH<Dim, Frame>,
         ::GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH<Dim, Frame>>>;
-    static std::string name() noexcept { return "DampedHarmonicRollonCompute"; }
+    static std::string name() { return "DampedHarmonicRollonCompute"; }
     using argument_tags = tmpl::list<
         ::GeneralizedHarmonic::Tags::InitialGaugeH<Dim, Frame>,
         ::GeneralizedHarmonic::Tags::SpacetimeDerivInitialGaugeH<Dim, Frame>,
@@ -135,8 +135,7 @@ struct InitializeDampedHarmonic {
         const tnsr::aa<DataVector, Dim, Frame>& pi,
         const tnsr::iaa<DataVector, Dim, Frame>& phi, double time,
         const tnsr::I<DataVector, Dim, Frame>& coords,
-        const GeneralizedHarmonic::gauges::DhGaugeParameters<true>&
-            parameters) noexcept;
+        const GeneralizedHarmonic::gauges::DhGaugeParameters<true>& parameters);
   };
 
   template <typename Frame>
@@ -148,7 +147,7 @@ struct InitializeDampedHarmonic {
     using base = ::Tags::Variables<tmpl::list<
         ::GeneralizedHarmonic::Tags::GaugeH<Dim, Frame>,
         ::GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH<Dim, Frame>>>;
-    static std::string name() noexcept { return "DampedHarmonicCompute"; }
+    static std::string name() { return "DampedHarmonicCompute"; }
     using argument_tags = tmpl::list<
         ::gr::Tags::Lapse<DataVector>,
         ::gr::Tags::Shift<Dim, Frame, DataVector>,
@@ -175,7 +174,7 @@ struct InitializeDampedHarmonic {
         const tnsr::iaa<DataVector, Dim, Frame>& phi,
         const tnsr::I<DataVector, Dim, Frame>& coords,
         const GeneralizedHarmonic::gauges::DhGaugeParameters<false>&
-            parameters) noexcept;
+            parameters);
   };
 
  public:
@@ -203,7 +202,7 @@ struct InitializeDampedHarmonic {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     if constexpr (UseRollon) {
       if (not db::get<domain::CoordinateMaps::Tags::CoordinateMap<
                   Metavariables::volume_dim, Frame::Grid, Frame::Inertial>>(box)
@@ -270,14 +269,13 @@ struct InitializeDampedHarmonic {
       const tnsr::iaa<DataVector, Dim, Frame::Inertial>& phi,
       const Mesh<Dim>& mesh,
       const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
-                            Frame::Inertial>& inverse_jacobian) noexcept;
+                            Frame::Inertial>& inverse_jacobian);
 
   static void new_pi_from_gauge_h(
       gsl::not_null<tnsr::aa<DataVector, Dim, Frame::Inertial>*> pi,
       const tnsr::aa<DataVector, Dim, Frame::Inertial>& spacetime_metric,
       const tnsr::iaa<DataVector, Dim, Frame::Inertial>& phi,
       const tnsr::I<DataVector, Dim, Frame::Inertial>& coords,
-      const GeneralizedHarmonic::gauges::DhGaugeParameters<false>&
-          parameters) noexcept;
+      const GeneralizedHarmonic::gauges::DhGaugeParameters<false>& parameters);
 };
 }  // namespace GeneralizedHarmonic::gauges::Actions

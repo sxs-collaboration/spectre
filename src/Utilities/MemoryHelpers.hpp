@@ -41,4 +41,4 @@ typename detail::unique_type<T>::invalid_type make_unique_for_overwrite(
 
 /// Install a memory allocation failure handler that calls ERROR()
 /// instead of throwing an exception.
-void setup_memory_allocation_failure_reporting() noexcept;
+void setup_memory_allocation_failure_reporting();

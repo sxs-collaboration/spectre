@@ -18,7 +18,7 @@
 
 namespace domain::CoordinateMaps {
 
-SpecialMobius::SpecialMobius(const double mu) noexcept
+SpecialMobius::SpecialMobius(const double mu)
     : mu_(mu), is_identity_(mu_ == 0.0) {
   // Note: Empirically we have found that the map is accurate
   // to 12 decimal places for mu = 0.96.
@@ -27,7 +27,7 @@ SpecialMobius::SpecialMobius(const double mu) noexcept
 
 template <typename T>
 std::array<tt::remove_cvref_wrap_t<T>, 3> SpecialMobius::mobius_distortion(
-    const std::array<T, 3>& coords, const double mu) const noexcept {
+    const std::array<T, 3>& coords, const double mu) const {
   using ReturnType = tt::remove_cvref_wrap_t<T>;
   const ReturnType& x = coords[0];
   const ReturnType& y = coords[1];
@@ -43,7 +43,7 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> SpecialMobius::mobius_distortion(
 template <typename T>
 tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>
 SpecialMobius::mobius_distortion_jacobian(const std::array<T, 3>& coords,
-                                          const double mu) const noexcept {
+                                          const double mu) const {
   using ReturnType = tt::remove_cvref_wrap_t<T>;
   const ReturnType& x = coords[0];
   const ReturnType& y = coords[1];
@@ -78,12 +78,12 @@ SpecialMobius::mobius_distortion_jacobian(const std::array<T, 3>& coords,
 
 template <typename T>
 std::array<tt::remove_cvref_wrap_t<T>, 3> SpecialMobius::operator()(
-    const std::array<T, 3>& source_coords) const noexcept {
+    const std::array<T, 3>& source_coords) const {
   return mobius_distortion(source_coords, mu_);
 }
 
 std::optional<std::array<double, 3>> SpecialMobius::inverse(
-    const std::array<double, 3>& target_coords) const noexcept {
+    const std::array<double, 3>& target_coords) const {
   // Invert only points inside or on the unit sphere.
   const auto r_squared = magnitude(target_coords);
   if (r_squared <= 1.0 or equal_within_roundoff(r_squared,1.0)) {
@@ -94,27 +94,26 @@ std::optional<std::array<double, 3>> SpecialMobius::inverse(
 
 template <typename T>
 tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> SpecialMobius::jacobian(
-    const std::array<T, 3>& source_coords) const noexcept {
+    const std::array<T, 3>& source_coords) const {
   return mobius_distortion_jacobian(source_coords, mu_);
 }
 
 template <typename T>
 tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>
-SpecialMobius::inv_jacobian(const std::array<T, 3>& source_coords) const
-    noexcept {
+SpecialMobius::inv_jacobian(const std::array<T, 3>& source_coords) const {
   return mobius_distortion_jacobian((*this)(source_coords), -mu_);
 }
 
-void SpecialMobius::pup(PUP::er& p) noexcept {
+void SpecialMobius::pup(PUP::er& p) {
   p | mu_;
   p | is_identity_;
 }
 
-bool operator==(const SpecialMobius& lhs, const SpecialMobius& rhs) noexcept {
+bool operator==(const SpecialMobius& lhs, const SpecialMobius& rhs) {
   return lhs.mu_ == rhs.mu_ and lhs.is_identity_ == rhs.is_identity_;
 }
 
-bool operator!=(const SpecialMobius& lhs, const SpecialMobius& rhs) noexcept {
+bool operator!=(const SpecialMobius& lhs, const SpecialMobius& rhs) {
   return not(lhs == rhs);
 }
 
@@ -122,14 +121,15 @@ bool operator!=(const SpecialMobius& lhs, const SpecialMobius& rhs) noexcept {
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATE(_, data)                                                   \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3> SpecialMobius:: \
-  operator()(const std::array<DTYPE(data), 3>& source_coords) const noexcept;  \
+  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>                 \
+  SpecialMobius::operator()(const std::array<DTYPE(data), 3>& source_coords)   \
+      const;                                                                   \
   template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame>   \
   SpecialMobius::jacobian(const std::array<DTYPE(data), 3>& source_coords)     \
-      const noexcept;                                                          \
+      const;                                                                   \
   template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame>   \
   SpecialMobius::inv_jacobian(const std::array<DTYPE(data), 3>& source_coords) \
-      const noexcept;
+      const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector,
                                       std::reference_wrapper<const double>,

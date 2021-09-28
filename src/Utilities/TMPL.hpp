@@ -582,7 +582,7 @@ constexpr bool flat_any_v = flat_any<Bs...>::value;
  * EXPAND_PACK_LEFT_TO_RIGHT
  */
 template <typename... Ts>
-constexpr void expand_pack(Ts&&...) noexcept {}
+constexpr void expand_pack(Ts&&...) {}
 
 /*!
  * \ingroup UtilitiesGroup
@@ -606,7 +606,7 @@ constexpr void expand_pack(Ts&&...) noexcept {}
  * \brief Returns the first argument of a parameter pack
  */
 template <typename T, typename... Ts>
-constexpr decltype(auto) get_first_argument(T&& t, Ts&&... /*rest*/) noexcept {
+constexpr decltype(auto) get_first_argument(T&& t, Ts&&... /*rest*/) {
   return t;
 }
 

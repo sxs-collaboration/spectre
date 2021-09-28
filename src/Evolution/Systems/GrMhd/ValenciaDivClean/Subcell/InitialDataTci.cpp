@@ -26,7 +26,7 @@ bool DgInitialDataTci::apply(
                                Inactive<ValenciaDivClean::Tags::TildePhi>>>&
         subcell_vars,
     double rdmp_delta0, double rdmp_epsilon, double persson_exponent,
-    const Mesh<3>& dg_mesh, const TciOptions& tci_options) noexcept {
+    const Mesh<3>& dg_mesh, const TciOptions& tci_options) {
   const Scalar<DataVector> tilde_b_magnitude =
       tci_options.magnetic_field_cutoff.has_value()
           ? magnitude(get<ValenciaDivClean::Tags::TildeB<>>(dg_vars))

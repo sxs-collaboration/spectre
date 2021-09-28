@@ -45,5 +45,5 @@ void read_spec_piecewise_polynomial(
         std::string, domain::FunctionsOfTime::PiecewisePolynomial<MaxDeriv>>*>
         spec_functions_of_time,
     const std::string& file_name,
-    const std::map<std::string, std::string>& dataset_name_map) noexcept;
+    const std::map<std::string, std::string>& dataset_name_map);
 }  // namespace domain::FunctionsOfTime

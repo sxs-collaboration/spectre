@@ -19,7 +19,7 @@
 
 // IWYU pragma: no_include <algorithm>
 
-void test_additional_diagonal_modal_operator_math() noexcept {
+void test_additional_diagonal_modal_operator_math() {
   const TestHelpers::VectorImpl::Bound generic{{-100.0, 100.0}};
 
   const auto acting_on_modal_vector = std::make_tuple(std::make_tuple(

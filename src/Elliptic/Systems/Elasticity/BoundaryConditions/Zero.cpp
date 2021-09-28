@@ -16,7 +16,7 @@
 namespace Elasticity::BoundaryConditions::detail {
 
 template <size_t Dim, elliptic::BoundaryConditionType BoundaryConditionType>
-std::string ZeroImpl<Dim, BoundaryConditionType>::name() noexcept {
+std::string ZeroImpl<Dim, BoundaryConditionType>::name() {
   if constexpr (BoundaryConditionType ==
                 elliptic::BoundaryConditionType::Dirichlet) {
     return "Fixed";
@@ -28,8 +28,7 @@ std::string ZeroImpl<Dim, BoundaryConditionType>::name() noexcept {
 template <size_t Dim, elliptic::BoundaryConditionType BoundaryConditionType>
 void ZeroImpl<Dim, BoundaryConditionType>::apply(
     const gsl::not_null<tnsr::I<DataVector, Dim>*> displacement,
-    const gsl::not_null<tnsr::I<DataVector, Dim>*>
-        n_dot_minus_stress) noexcept {
+    const gsl::not_null<tnsr::I<DataVector, Dim>*> n_dot_minus_stress) {
   if constexpr (BoundaryConditionType ==
                 elliptic::BoundaryConditionType::Dirichlet) {
     (void)n_dot_minus_stress;
@@ -47,20 +46,19 @@ void ZeroImpl<Dim, BoundaryConditionType>::apply(
 template <size_t Dim, elliptic::BoundaryConditionType BoundaryConditionType>
 void ZeroImpl<Dim, BoundaryConditionType>::apply_linearized(
     const gsl::not_null<tnsr::I<DataVector, Dim>*> displacement,
-    const gsl::not_null<tnsr::I<DataVector, Dim>*>
-        n_dot_minus_stress) noexcept {
+    const gsl::not_null<tnsr::I<DataVector, Dim>*> n_dot_minus_stress) {
   apply(displacement, n_dot_minus_stress);
 }
 
 template <size_t Dim, elliptic::BoundaryConditionType BoundaryConditionType>
 bool operator==(const ZeroImpl<Dim, BoundaryConditionType>& /*lhs*/,
-                const ZeroImpl<Dim, BoundaryConditionType>& /*rhs*/) noexcept {
+                const ZeroImpl<Dim, BoundaryConditionType>& /*rhs*/) {
   return true;
 }
 
 template <size_t Dim, elliptic::BoundaryConditionType BoundaryConditionType>
 bool operator!=(const ZeroImpl<Dim, BoundaryConditionType>& lhs,
-                const ZeroImpl<Dim, BoundaryConditionType>& rhs) noexcept {
+                const ZeroImpl<Dim, BoundaryConditionType>& rhs) {
   return not(lhs == rhs);
 }
 

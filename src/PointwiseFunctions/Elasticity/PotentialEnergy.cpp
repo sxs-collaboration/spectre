@@ -24,7 +24,7 @@ void potential_energy_density(
     const tnsr::ii<DataVector, Dim>& strain,
     const tnsr::I<DataVector, Dim>& coordinates,
     const ConstitutiveRelations::ConstitutiveRelation<Dim>&
-        constitutive_relation) noexcept {
+        constitutive_relation) {
   destructive_resize_components(potential_energy_density,
                                 coordinates.begin()->size());
   tnsr::II<DataVector, Dim> stress{coordinates.begin()->size()};
@@ -42,7 +42,7 @@ Scalar<DataVector> potential_energy_density(
     const tnsr::ii<DataVector, Dim>& strain,
     const tnsr::I<DataVector, Dim>& coordinates,
     const ConstitutiveRelations::ConstitutiveRelation<Dim>&
-        constitutive_relation) noexcept {
+        constitutive_relation) {
   Scalar<DataVector> result =
       make_with_value<Scalar<DataVector>>(coordinates, 0.);
   potential_energy_density(make_not_null(&result), strain, coordinates,
@@ -58,12 +58,12 @@ Scalar<DataVector> potential_energy_density(
       const tnsr::ii<DataVector, DIM(data)>& strain,                \
       const tnsr::I<DataVector, DIM(data)>& coordinates,            \
       const ConstitutiveRelations::ConstitutiveRelation<DIM(data)>& \
-          constitutive_relation) noexcept;                          \
+          constitutive_relation);                                   \
   template Scalar<DataVector> potential_energy_density<DIM(data)>(  \
       const tnsr::ii<DataVector, DIM(data)>& strain,                \
       const tnsr::I<DataVector, DIM(data)>& coordinates,            \
       const ConstitutiveRelations::ConstitutiveRelation<DIM(data)>& \
-          constitutive_relation) noexcept;
+          constitutive_relation);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (2, 3))
 

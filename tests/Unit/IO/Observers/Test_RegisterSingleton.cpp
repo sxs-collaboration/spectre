@@ -25,7 +25,7 @@ struct RegistrationHelper {
             typename ArrayIndex>
   static std::pair<observers::TypeOfObservation, observers::ObservationKey>
   register_info(const db::DataBox<DbTagsList>& /*box*/,
-                const ArrayIndex& /*array_index*/) noexcept {
+                const ArrayIndex& /*array_index*/) {
     return {observers::TypeOfObservation::Reduction,
             observers::ObservationKey{"Singleton"}};
   }
@@ -57,7 +57,7 @@ struct MockRegisterReductionContributorWithObserverWriter {
                     Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const observers::ObservationKey& observation_key,
-                    const size_t caller_node_id) noexcept {
+                    const size_t caller_node_id) {
     result.observation_key = observation_key;
     result.caller_node_id = caller_node_id;
   }

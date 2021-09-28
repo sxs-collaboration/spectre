@@ -44,8 +44,7 @@
 namespace {
 // Test the return-by-value one-index constraint function using random values
 template <size_t SpatialDim>
-void test_one_index_constraint_random(
-    const DataVector& used_for_size) noexcept {
+void test_one_index_constraint_random(const DataVector& used_for_size) {
   pypp::check_with_random_values<1>(
       static_cast<tnsr::i<DataVector, SpatialDim, Frame::Inertial> (*)(
           const tnsr::i<DataVector, SpatialDim, Frame::Inertial>&,
@@ -59,8 +58,7 @@ void test_one_index_constraint_random(
 
 // Test the return-by-value two-index constraint function using random values
 template <size_t SpatialDim>
-void test_two_index_constraint_random(
-    const DataVector& used_for_size) noexcept {
+void test_two_index_constraint_random(const DataVector& used_for_size) {
   pypp::check_with_random_values<1>(
       static_cast<tnsr::ij<DataVector, SpatialDim, Frame::Inertial> (*)(
           const tnsr::ij<DataVector, SpatialDim, Frame::Inertial>&)>(
@@ -76,8 +74,7 @@ template <typename Solution>
 void test_constraints_and_compute_tags_analytic(
     const Solution& solution, const size_t grid_size_each_dimension,
     const std::array<double, 3>& lower_bound,
-    const std::array<double, 3>& upper_bound,
-    const double error_tolerance) noexcept {
+    const std::array<double, 3>& upper_bound, const double error_tolerance) {
   constexpr size_t spatial_dim = 3;
 
   // Check vs. time-independent analytic solution

@@ -19,7 +19,7 @@ void TimeDerivativeTerms<Dim>::apply(
     const gsl::not_null<tnsr::I<DataVector, Dim>*> flux,
     const gsl::not_null<tnsr::I<DataVector, Dim>*> temp_velocity_field,
     const Scalar<DataVector>& u,
-    const tnsr::I<DataVector, Dim>& velocity_field) noexcept {
+    const tnsr::I<DataVector, Dim>& velocity_field) {
   *temp_velocity_field = velocity_field;
   Fluxes<Dim>::apply(flux, u, velocity_field);
 }

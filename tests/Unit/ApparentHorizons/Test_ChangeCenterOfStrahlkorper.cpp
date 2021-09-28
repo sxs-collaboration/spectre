@@ -19,7 +19,7 @@ struct Inertial;
 
 namespace {
 
-Strahlkorper<Frame::Inertial> make_strahlkorper() noexcept {
+Strahlkorper<Frame::Inertial> make_strahlkorper() {
   const std::array<double, 3> center{{0.1, 0.2, 0.3}};
   const size_t l_max = 18;
   const double avg_radius = 2.0;
@@ -40,7 +40,7 @@ Strahlkorper<Frame::Inertial> make_strahlkorper() noexcept {
   return Strahlkorper<Frame::Inertial>(coefs, sk);
 }
 
-void test_change_center_of_strahlkorper() noexcept {
+void test_change_center_of_strahlkorper() {
   auto strahlkorper = make_strahlkorper();
   const auto original_strahlkorper = strahlkorper;
   const auto original_physical_center = strahlkorper.physical_center();

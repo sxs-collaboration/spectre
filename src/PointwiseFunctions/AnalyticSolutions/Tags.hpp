@@ -17,7 +17,7 @@ namespace OptionTags {
 /// \ingroup OptionGroupsGroup
 /// Holds the `OptionTags::AnalyticSolution` option in the input file
 struct AnalyticSolutionGroup {
-  static std::string name() noexcept { return "AnalyticSolution"; }
+  static std::string name() { return "AnalyticSolution"; }
   static constexpr Options::String help =
       "Analytic solution used for the initial data and errors";
 };
@@ -27,9 +27,7 @@ struct AnalyticSolutionGroup {
 /// template parameter
 template <typename SolutionType>
 struct AnalyticSolution {
-  static std::string name() noexcept {
-    return Options::name<SolutionType>();
-  }
+  static std::string name() { return Options::name<SolutionType>(); }
   static constexpr Options::String help = "Options for the analytic solution";
   using type = SolutionType;
   using group = AnalyticSolutionGroup;
@@ -51,7 +49,7 @@ struct AnalyticSolution : AnalyticSolutionBase, db::SimpleTag {
 
   static constexpr bool pass_metavariables = false;
   static SolutionType create_from_options(
-      const SolutionType& analytic_solution) noexcept {
+      const SolutionType& analytic_solution) {
     return deserialize<type>(serialize<type>(analytic_solution).data());
   }
 };
@@ -91,7 +89,7 @@ struct AnalyticSolutions : AnalyticSolutionsBase, db::SimpleTag {
 /// solutions are available
 template <typename FieldTags>
 struct AnalyticSolutionsOptional : AnalyticSolutionsBase, db::SimpleTag {
-  static std::string name() noexcept { return "AnalyticSolutions"; }
+  static std::string name() { return "AnalyticSolutions"; }
   using type =
       std::optional<::Variables<db::wrap_tags_in<Analytic, FieldTags>>>;
 };

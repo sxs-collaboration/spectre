@@ -25,17 +25,19 @@ namespace RadiationTransport::M1Grey {
 // Implementation of the curvature source terms
 // for the M1 system, for an individual species.
 namespace detail {
-void compute_sources_impl(
-    gsl::not_null<Scalar<DataVector>*> source_tilde_e,
-    gsl::not_null<tnsr::i<DataVector, 3>*> source_tilde_s,
-    const Scalar<DataVector>& tilde_e, const tnsr::i<DataVector, 3>& tilde_s,
-    const tnsr::II<DataVector, 3>& tilde_p, const Scalar<DataVector>& source_n,
-    const tnsr::i<DataVector, 3>& source_i, const Scalar<DataVector>& lapse,
-    const tnsr::i<DataVector, 3>& d_lapse,
-    const tnsr::iJ<DataVector, 3>& d_shift,
-    const tnsr::ijj<DataVector, 3>& d_spatial_metric,
-    const tnsr::II<DataVector, 3>& inv_spatial_metric,
-    const tnsr::ii<DataVector, 3>& extrinsic_curvature) noexcept;
+void compute_sources_impl(gsl::not_null<Scalar<DataVector>*> source_tilde_e,
+                          gsl::not_null<tnsr::i<DataVector, 3>*> source_tilde_s,
+                          const Scalar<DataVector>& tilde_e,
+                          const tnsr::i<DataVector, 3>& tilde_s,
+                          const tnsr::II<DataVector, 3>& tilde_p,
+                          const Scalar<DataVector>& source_n,
+                          const tnsr::i<DataVector, 3>& source_i,
+                          const Scalar<DataVector>& lapse,
+                          const tnsr::i<DataVector, 3>& d_lapse,
+                          const tnsr::iJ<DataVector, 3>& d_shift,
+                          const tnsr::ijj<DataVector, 3>& d_spatial_metric,
+                          const tnsr::II<DataVector, 3>& inv_spatial_metric,
+                          const tnsr::ii<DataVector, 3>& extrinsic_curvature);
 }  // namespace detail
 
 /*!
@@ -108,7 +110,7 @@ struct ComputeSources {
       const tnsr::iJ<DataVector, 3>& d_shift,
       const tnsr::ijj<DataVector, 3>& d_spatial_metric,
       const tnsr::II<DataVector, 3>& inv_spatial_metric,
-      const tnsr::ii<DataVector, 3>& extrinsic_curvature) noexcept {
+      const tnsr::ii<DataVector, 3>& extrinsic_curvature) {
     EXPAND_PACK_LEFT_TO_RIGHT(detail::compute_sources_impl(
         sources_tilde_e, sources_tilde_s, tilde_e, tilde_s, tilde_p, source_n,
         source_i, lapse, d_lapse, d_shift, d_spatial_metric, inv_spatial_metric,

@@ -37,30 +37,30 @@ class Linear : public MarkAsAnalyticSolution {
   static constexpr Options::String help{"A spatially linear solution"};
 
   Linear() = default;
-  Linear(const Linear&) noexcept = delete;
-  Linear& operator=(const Linear&) noexcept = delete;
-  Linear(Linear&&) noexcept = default;
-  Linear& operator=(Linear&&) noexcept = default;
-  ~Linear() noexcept = default;
+  Linear(const Linear&) = delete;
+  Linear& operator=(const Linear&) = delete;
+  Linear(Linear&&) = default;
+  Linear& operator=(Linear&&) = default;
+  ~Linear() = default;
 
-  explicit Linear(double shock_time) noexcept;
-
-  template <typename T>
-  Scalar<T> u(const tnsr::I<T, 1>& x, double t) const noexcept;
+  explicit Linear(double shock_time);
 
   template <typename T>
-  Scalar<T> du_dt(const tnsr::I<T, 1>& x, double t) const noexcept;
+  Scalar<T> u(const tnsr::I<T, 1>& x, double t) const;
 
-  tuples::TaggedTuple<Tags::U> variables(
-      const tnsr::I<DataVector, 1>& x, double t,
-      tmpl::list<Tags::U> /*meta*/) const noexcept;
+  template <typename T>
+  Scalar<T> du_dt(const tnsr::I<T, 1>& x, double t) const;
+
+  tuples::TaggedTuple<Tags::U> variables(const tnsr::I<DataVector, 1>& x,
+                                         double t,
+                                         tmpl::list<Tags::U> /*meta*/) const;
 
   tuples::TaggedTuple<::Tags::dt<Tags::U>> variables(
       const tnsr::I<DataVector, 1>& x, double t,
-      tmpl::list<::Tags::dt<Tags::U>> /*meta*/) const noexcept;
+      tmpl::list<::Tags::dt<Tags::U>> /*meta*/) const;
 
   // clang-tidy: no pass by reference
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
 
  private:
   double shock_time_ = std::numeric_limits<double>::signaling_NaN();

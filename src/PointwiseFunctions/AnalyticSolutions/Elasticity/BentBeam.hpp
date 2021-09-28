@@ -37,20 +37,19 @@ struct BentBeamVariables {
 
   void operator()(gsl::not_null<tnsr::I<DataType, 2>*> displacement,
                   gsl::not_null<Cache*> cache,
-                  Tags::Displacement<2> /*meta*/) const noexcept;
+                  Tags::Displacement<2> /*meta*/) const;
   void operator()(gsl::not_null<tnsr::ii<DataType, 2>*> strain,
-                  gsl::not_null<Cache*> cache, Tags::Strain<2> /*meta*/) const
-      noexcept;
+                  gsl::not_null<Cache*> cache, Tags::Strain<2> /*meta*/) const;
   void operator()(gsl::not_null<tnsr::II<DataType, 2>*> minus_stress,
                   gsl::not_null<Cache*> cache,
-                  Tags::MinusStress<2> /*meta*/) const noexcept;
+                  Tags::MinusStress<2> /*meta*/) const;
   void operator()(gsl::not_null<Scalar<DataType>*> potential_energy_density,
                   gsl::not_null<Cache*> cache,
-                  Tags::PotentialEnergyDensity<2> /*meta*/) const noexcept;
+                  Tags::PotentialEnergyDensity<2> /*meta*/) const;
   void operator()(
       gsl::not_null<tnsr::I<DataType, 2>*> fixed_source_for_displacement,
       gsl::not_null<Cache*> cache,
-      ::Tags::FixedSource<Tags::Displacement<2>> /*meta*/) const noexcept;
+      ::Tags::FixedSource<Tags::Displacement<2>> /*meta*/) const;
 };
 }  // namespace detail
 
@@ -119,18 +118,18 @@ class BentBeam : public AnalyticSolution<2, Registrars> {
   struct Length {
     using type = double;
     static constexpr Options::String help{"The beam length"};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
   struct Height {
     using type = double;
     static constexpr Options::String help{"The beam height"};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
   struct BendingMoment {
     using type = double;
     static constexpr Options::String help{
         "The bending moment applied to the beam"};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
   struct Material {
     using type = constitutive_relation_type;
@@ -146,31 +145,30 @@ class BentBeam : public AnalyticSolution<2, Registrars> {
       "towards the positive y-axis. It is measured in units of force."};
 
   BentBeam() = default;
-  BentBeam(const BentBeam&) noexcept = default;
-  BentBeam& operator=(const BentBeam&) noexcept = default;
-  BentBeam(BentBeam&&) noexcept = default;
-  BentBeam& operator=(BentBeam&&) noexcept = default;
-  ~BentBeam() noexcept override = default;
+  BentBeam(const BentBeam&) = default;
+  BentBeam& operator=(const BentBeam&) = default;
+  BentBeam(BentBeam&&) = default;
+  BentBeam& operator=(BentBeam&&) = default;
+  ~BentBeam() override = default;
 
   /// \cond
-  explicit BentBeam(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit BentBeam(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(BentBeam);  // NOLINT
   /// \endcond
 
   BentBeam(double length, double height, double bending_moment,
-           constitutive_relation_type constitutive_relation) noexcept
+           constitutive_relation_type constitutive_relation)
       : length_(length),
         height_(height),
         bending_moment_(bending_moment),
         constitutive_relation_(std::move(constitutive_relation)) {}
 
-  double length() const noexcept { return length_; }
-  double height() const noexcept { return height_; }
-  double bending_moment() const noexcept { return bending_moment_; }
+  double length() const { return length_; }
+  double height() const { return height_; }
+  double bending_moment() const { return bending_moment_; }
 
-  const constitutive_relation_type& constitutive_relation() const
-      noexcept override {
+  const constitutive_relation_type& constitutive_relation() const override {
     return constitutive_relation_;
   }
 
@@ -183,7 +181,7 @@ class BentBeam : public AnalyticSolution<2, Registrars> {
   template <typename DataType, typename... RequestedTags>
   tuples::TaggedTuple<RequestedTags...> variables(
       const tnsr::I<DataType, 2>& x,
-      tmpl::list<RequestedTags...> /*meta*/) const noexcept {
+      tmpl::list<RequestedTags...> /*meta*/) const {
     using VarsComputer = detail::BentBeamVariables<DataType>;
     typename VarsComputer::Cache cache{
         get_size(*x.begin()), VarsComputer{x, length_, height_, bending_moment_,
@@ -192,7 +190,7 @@ class BentBeam : public AnalyticSolution<2, Registrars> {
   }
 
   // clang-tidy: no pass by reference
-  void pup(PUP::er& p) noexcept override {  // NOLINT
+  void pup(PUP::er& p) override {  // NOLINT
     p | length_;
     p | height_;
     p | bending_moment_;
@@ -213,7 +211,7 @@ PUP::able::PUP_ID BentBeam<Registrars>::my_PUP_ID = 0;  // NOLINT
 
 template <typename Registrars>
 bool operator==(const BentBeam<Registrars>& lhs,
-                const BentBeam<Registrars>& rhs) noexcept {
+                const BentBeam<Registrars>& rhs) {
   return lhs.length() == rhs.length() and lhs.height() == rhs.height() and
          lhs.bending_moment() == rhs.bending_moment() and
          lhs.constitutive_relation() == rhs.constitutive_relation();
@@ -221,7 +219,7 @@ bool operator==(const BentBeam<Registrars>& lhs,
 
 template <typename Registrars>
 bool operator!=(const BentBeam<Registrars>& lhs,
-                const BentBeam<Registrars>& rhs) noexcept {
+                const BentBeam<Registrars>& rhs) {
   return not(lhs == rhs);
 }
 

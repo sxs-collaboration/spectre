@@ -41,14 +41,13 @@ struct SetData<tmpl::list<Tags...>> {
   static void apply(DataBox& box,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
-                    tuples::TaggedTuple<Tags...> data) noexcept {
-    tmpl::for_each<tmpl::list<Tags...>>([&box, &data](auto tag_v) noexcept {
+                    tuples::TaggedTuple<Tags...> data) {
+    tmpl::for_each<tmpl::list<Tags...>>([&box, &data](auto tag_v) {
       using tag = tmpl::type_from<decltype(tag_v)>;
-      db::mutate<tag>(
-          make_not_null(&box), [&data](const gsl::not_null<typename tag::type*>
-                                           value) noexcept {
-            *value = std::move(tuples::get<tag>(data));
-          });
+      db::mutate<tag>(make_not_null(&box),
+                      [&data](const gsl::not_null<typename tag::type*> value) {
+                        *value = std::move(tuples::get<tag>(data));
+                      });
     });
   }
 };

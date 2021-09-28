@@ -59,14 +59,13 @@ class WorldtubeDataManager : public PUP::able {
       gsl::not_null<Variables<
           Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>*>
           boundary_data_variables,
-      double time,
-      gsl::not_null<Parallel::NodeLock*> hdf5_lock) const noexcept = 0;
+      double time, gsl::not_null<Parallel::NodeLock*> hdf5_lock) const = 0;
 
-  virtual std::unique_ptr<WorldtubeDataManager> get_clone() const noexcept = 0;
+  virtual std::unique_ptr<WorldtubeDataManager> get_clone() const = 0;
 
-  virtual size_t get_l_max() const noexcept = 0;
+  virtual size_t get_l_max() const = 0;
 
-  virtual std::pair<size_t, size_t> get_time_span() const noexcept = 0;
+  virtual std::pair<size_t, size_t> get_time_span() const = 0;
 };
 
 /*!
@@ -92,11 +91,11 @@ class MetricWorldtubeDataManager : public WorldtubeDataManager {
           buffer_updater,
       size_t l_max, size_t buffer_depth,
       std::unique_ptr<intrp::SpanInterpolator> interpolator,
-      bool fix_spec_normalization) noexcept;
+      bool fix_spec_normalization);
 
   WRAPPED_PUPable_decl_template(MetricWorldtubeDataManager);  // NOLINT
 
-  explicit MetricWorldtubeDataManager(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit MetricWorldtubeDataManager(CkMigrateMessage* /*unused*/) {}
 
   /*!
    * \brief Update the `boundary_data_box` entries for all tags in
@@ -119,21 +118,20 @@ class MetricWorldtubeDataManager : public WorldtubeDataManager {
       gsl::not_null<Variables<
           Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>*>
           boundary_data_variables,
-      double time,
-      gsl::not_null<Parallel::NodeLock*> hdf5_lock) const noexcept override;
+      double time, gsl::not_null<Parallel::NodeLock*> hdf5_lock) const override;
 
-  std::unique_ptr<WorldtubeDataManager> get_clone() const noexcept override;
+  std::unique_ptr<WorldtubeDataManager> get_clone() const override;
 
   /// retrieves the l_max that will be supplied to the \ref DataBoxGroup in
   /// `populate_hypersurface_boundary_data()`
-  size_t get_l_max() const noexcept override { return l_max_; }
+  size_t get_l_max() const override { return l_max_; }
 
   /// retrieves the current time span associated with the `buffer_updater_` for
   /// diagnostics
-  std::pair<size_t, size_t> get_time_span() const noexcept override;
+  std::pair<size_t, size_t> get_time_span() const override;
 
   /// Serialization for Charm++.
-  void pup(PUP::er& p) noexcept override;  // NOLINT
+  void pup(PUP::er& p) override;  // NOLINT
 
  private:
   std::unique_ptr<WorldtubeBufferUpdater<cce_metric_input_tags>>
@@ -181,11 +179,11 @@ class BondiWorldtubeDataManager : public WorldtubeDataManager {
       std::unique_ptr<WorldtubeBufferUpdater<cce_bondi_input_tags>>
           buffer_updater,
       size_t l_max, size_t buffer_depth,
-      std::unique_ptr<intrp::SpanInterpolator> interpolator) noexcept;
+      std::unique_ptr<intrp::SpanInterpolator> interpolator);
 
   WRAPPED_PUPable_decl_template(BondiWorldtubeDataManager);  // NOLINT
 
-  explicit BondiWorldtubeDataManager(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit BondiWorldtubeDataManager(CkMigrateMessage* /*unused*/) {}
 
   /*!
    * \brief Update the `boundary_data_box` entries for all tags in
@@ -207,21 +205,20 @@ class BondiWorldtubeDataManager : public WorldtubeDataManager {
       gsl::not_null<Variables<
           Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>*>
           boundary_data_variables,
-      double time,
-      gsl::not_null<Parallel::NodeLock*> hdf5_lock) const noexcept override;
+      double time, gsl::not_null<Parallel::NodeLock*> hdf5_lock) const override;
 
-  std::unique_ptr<WorldtubeDataManager> get_clone() const noexcept override;
+  std::unique_ptr<WorldtubeDataManager> get_clone() const override;
 
   /// retrieves the l_max that will be supplied to the \ref DataBoxGroup in
   /// `populate_hypersurface_boundary_data()`
-  size_t get_l_max() const noexcept override { return l_max_; }
+  size_t get_l_max() const override { return l_max_; }
 
   /// retrieves the current time span associated with the `buffer_updater_` for
   /// diagnostics
-  std::pair<size_t, size_t> get_time_span() const noexcept override;
+  std::pair<size_t, size_t> get_time_span() const override;
 
   /// Serialization for Charm++.
-  void pup(PUP::er& p) noexcept override;  // NOLINT
+  void pup(PUP::er& p) override;  // NOLINT
 
  private:
   std::unique_ptr<WorldtubeBufferUpdater<cce_bondi_input_tags>> buffer_updater_;

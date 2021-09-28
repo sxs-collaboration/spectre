@@ -53,7 +53,7 @@ struct OnDemandInputsForSwshJacobianImpl<
                        not tt::is_a_v<Tags::Dy, Tag>>> {
   template <typename DataBoxTagList>
   SPECTRE_ALWAYS_INLINE decltype(auto) operator()(
-      const db::DataBox<DataBoxTagList>& box) noexcept {
+      const db::DataBox<DataBoxTagList>& box) {
     return get(db::get<Tags::Dy<Tag>>(box)).data();
   }
 };
@@ -66,7 +66,7 @@ struct OnDemandInputsForSwshJacobianImpl<
     std::bool_constant<not tt::is_a_v<::Tags::Multiplies, Tag>>> {
   template <typename DataBoxTagList>
   SPECTRE_ALWAYS_INLINE decltype(auto) operator()(
-      const db::DataBox<DataBoxTagList>& box) noexcept {
+      const db::DataBox<DataBoxTagList>& box) {
     return get(db::get<Tags::Dy<Tags::Dy<Tag>>>(box)).data();
   }
 };
@@ -83,7 +83,7 @@ struct OnDemandInputsForSwshJacobianImpl<
                        not std::is_same_v<RhsTag, Tags::BondiJbar>>> {
   template <typename DataBoxTagList>
   SPECTRE_ALWAYS_INLINE decltype(auto) operator()(
-      const db::DataBox<DataBoxTagList>& box) noexcept {
+      const db::DataBox<DataBoxTagList>& box) {
     decltype(auto) lhs = get(db::get<LhsTag>(box)).data();
     decltype(auto) dy_lhs = get(db::get<Tags::Dy<LhsTag>>(box)).data();
     decltype(auto) rhs = get(db::get<RhsTag>(box)).data();
@@ -101,7 +101,7 @@ struct OnDemandInputsForSwshJacobianImpl<
     std::integral_constant<int, LhsTag::type::type::spin - 2>, std::true_type> {
   template <typename DataBoxTagList>
   SPECTRE_ALWAYS_INLINE decltype(auto) operator()(
-      const db::DataBox<DataBoxTagList>& box) noexcept {
+      const db::DataBox<DataBoxTagList>& box) {
     decltype(auto) lhs = get(get<LhsTag>(box)).data();
     decltype(auto) dy_lhs = get(get<Tags::Dy<LhsTag>>(box)).data();
     decltype(auto) jbar = conj(get(get<Tags::BondiJ>(box)).data());
@@ -119,7 +119,7 @@ struct OnDemandInputsForSwshJacobianImpl<
     std::integral_constant<int, RhsTag::type::type::spin - 2>, std::true_type> {
   template <typename DataBoxTagList>
   SPECTRE_ALWAYS_INLINE decltype(auto) operator()(
-      const db::DataBox<DataBoxTagList>& box) noexcept {
+      const db::DataBox<DataBoxTagList>& box) {
     decltype(auto) rhs = get(get<RhsTag>(box)).data();
     decltype(auto) dy_rhs = get(get<Tags::Dy<RhsTag>>(box)).data();
     decltype(auto) jbar = conj(get(get<Tags::BondiJ>(box)).data());
@@ -137,7 +137,7 @@ struct OnDemandInputsForSwshJacobianImpl<
     std::integral_constant<int, RhsTag::type::type::spin - 1>, std::true_type> {
   template <typename DataBoxTagList>
   SPECTRE_ALWAYS_INLINE decltype(auto) operator()(
-      const db::DataBox<DataBoxTagList>& box) noexcept {
+      const db::DataBox<DataBoxTagList>& box) {
     decltype(auto) ubar = conj(get(get<Tags::BondiU>(box)).data());
     decltype(auto) dy_ubar = conj(get(get<Tags::Dy<Tags::BondiU>>(box)).data());
     decltype(auto) rhs = get(get<RhsTag>(box)).data();
@@ -155,7 +155,7 @@ struct OnDemandInputsForSwshJacobianImpl<
     std::integral_constant<int, LhsTag::type::type::spin - 2>, std::true_type> {
   template <typename DataBoxTagList>
   SPECTRE_ALWAYS_INLINE decltype(auto) operator()(
-      const db::DataBox<DataBoxTagList>& box) noexcept {
+      const db::DataBox<DataBoxTagList>& box) {
     decltype(auto) lhs = get(get<LhsTag>(box)).data();
     decltype(auto) dy_lhs = get(get<Tags::Dy<LhsTag>>(box)).data();
     decltype(auto) dy_dy_lhs = get(get<Tags::Dy<Tags::Dy<LhsTag>>>(box)).data();
@@ -177,7 +177,7 @@ struct OnDemandInputsForSwshJacobianImpl<
     std::true_type> {
   template <typename DataBoxTagList>
   SPECTRE_ALWAYS_INLINE decltype(auto) operator()(
-      const db::DataBox<DataBoxTagList>& box) noexcept {
+      const db::DataBox<DataBoxTagList>& box) {
     return get(get<Spectral::Swsh::Tags::Derivative<Tags::Dy<Tag>, DerivKind>>(
                    box))
         .data();
@@ -193,7 +193,7 @@ struct OnDemandInputsForSwshJacobianImpl<Tags::Dy<Tags::JbarQMinus2EthBeta>,
                                          std::true_type> {
   template <typename DataBoxTagList>
   SPECTRE_ALWAYS_INLINE decltype(auto) operator()(
-      const db::DataBox<DataBoxTagList>& box) noexcept {
+      const db::DataBox<DataBoxTagList>& box) {
     decltype(auto) dy_beta = get(get<Tags::Dy<Tags::BondiBeta>>(box)).data();
     decltype(auto) dy_j = get(get<Tags::Dy<Tags::BondiJ>>(box)).data();
     decltype(auto) dy_q = get(get<Tags::Dy<Tags::BondiQ>>(box)).data();
@@ -589,7 +589,7 @@ template <typename DerivativeTag, typename DataBoxTagList,
           typename... OnDemandTags>
 void apply_swsh_jacobian_helper(
     const gsl::not_null<db::DataBox<DataBoxTagList>*> box,
-    tmpl::list<OnDemandTags...> /*meta*/) noexcept {
+    tmpl::list<OnDemandTags...> /*meta*/) {
   db::mutate_apply<ApplySwshJacobianInplace<DerivativeTag>>(
       box, OnDemandInputsForSwshJacobian<OnDemandTags>{}(*box)...);
 }
@@ -614,7 +614,7 @@ void apply_swsh_jacobian_helper(
  */
 template <typename BondiValueTag, typename DataBoxTagList>
 void mutate_all_swsh_derivatives_for_tag(
-    const gsl::not_null<db::DataBox<DataBoxTagList>*> box) noexcept {
+    const gsl::not_null<db::DataBox<DataBoxTagList>*> box) {
   // The collection of spin-weighted derivatives cannot be applied as individual
   // compute items, because it is better to aggregate similar spins and dispatch
   // to libsharp in groups. So, we supply a bulk mutate operation which takes in
@@ -623,7 +623,7 @@ void mutate_all_swsh_derivatives_for_tag(
   db::mutate_apply<Spectral::Swsh::AngularDerivatives<
       single_swsh_derivative_tags_to_compute_for_t<BondiValueTag>>>(box);
   tmpl::for_each<single_swsh_derivative_tags_to_compute_for_t<BondiValueTag>>(
-      [&box](auto derivative_tag_v) noexcept {
+      [&box](auto derivative_tag_v) {
         using derivative_tag = typename decltype(derivative_tag_v)::type;
         detail::apply_swsh_jacobian_helper<derivative_tag>(
             box, typename ApplySwshJacobianInplace<
@@ -633,7 +633,7 @@ void mutate_all_swsh_derivatives_for_tag(
   db::mutate_apply<Spectral::Swsh::AngularDerivatives<
       second_swsh_derivative_tags_to_compute_for_t<BondiValueTag>>>(box);
   tmpl::for_each<second_swsh_derivative_tags_to_compute_for_t<BondiValueTag>>(
-      [&box](auto derivative_tag_v) noexcept {
+      [&box](auto derivative_tag_v) {
         using derivative_tag = typename decltype(derivative_tag_v)::type;
         detail::apply_swsh_jacobian_helper<derivative_tag>(
             box, typename ApplySwshJacobianInplace<

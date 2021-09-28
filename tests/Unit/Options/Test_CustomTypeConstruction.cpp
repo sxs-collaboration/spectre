@@ -52,7 +52,7 @@ class CreateFromOptionsWithMetavariables {
  public:
   template <typename Metavariables>
   struct CfoOption {
-    static std::string name() noexcept { return Metavariables::option_name(); }
+    static std::string name() { return Metavariables::option_name(); }
     using type = std::string;
     static constexpr Options::String help = {"Option help text"};
   };
@@ -74,8 +74,8 @@ class CreateFromOptionsWithMetavariables {
 };
 
 struct Metavariables {
-  static std::string option_name() noexcept { return "MetaName"; }
-  static std::string expected_string() noexcept { return "MetaString"; }
+  static std::string option_name() { return "MetaName"; }
+  static std::string expected_string() { return "MetaString"; }
 };
 
 struct CfoWithMetavariables {

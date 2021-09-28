@@ -18,7 +18,7 @@ template <size_t Dim, typename Frame, typename DataType>
 void deriv_inverse_spatial_metric(
     const gsl::not_null<tnsr::iJJ<DataType, Dim, Frame>*> result,
     const tnsr::II<DataType, Dim, Frame>& inverse_spatial_metric,
-    const tnsr::ijj<DataType, Dim, Frame>& d_spatial_metric) noexcept {
+    const tnsr::ijj<DataType, Dim, Frame>& d_spatial_metric) {
   destructive_resize_components(result,
                                 get_size(get<0, 0>(inverse_spatial_metric)));
   for (auto& component : *result) {
@@ -43,7 +43,7 @@ void deriv_inverse_spatial_metric(
 template <size_t Dim, typename Frame, typename DataType>
 tnsr::iJJ<DataType, Dim, Frame> deriv_inverse_spatial_metric(
     const tnsr::II<DataType, Dim, Frame>& inverse_spatial_metric,
-    const tnsr::ijj<DataType, Dim, Frame>& d_spatial_metric) noexcept {
+    const tnsr::ijj<DataType, Dim, Frame>& d_spatial_metric) {
   tnsr::iJJ<DataType, Dim, Frame> result{};
   deriv_inverse_spatial_metric(make_not_null(&result), inverse_spatial_metric,
                                d_spatial_metric);
@@ -55,20 +55,18 @@ tnsr::iJJ<DataType, Dim, Frame> deriv_inverse_spatial_metric(
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(2, data)
 
-#define INSTANTIATE(_, data)                                               \
-  template void gr::deriv_inverse_spatial_metric(                          \
-      const gsl::not_null<tnsr::iJJ<DTYPE(data), DIM(data), FRAME(data)>*> \
-          result,                                                          \
-      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                 \
-          inverse_spatial_metric,                                          \
-      const tnsr::ijj<DTYPE(data), DIM(data), FRAME(data)>&                \
-          d_spatial_metric) noexcept;                                      \
-  template tnsr::iJJ<DTYPE(data), DIM(data), FRAME(data)>                  \
-  gr::deriv_inverse_spatial_metric(                                        \
-      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                 \
-          inverse_spatial_metric,                                          \
-      const tnsr::ijj<DTYPE(data), DIM(data), FRAME(data)>&                \
-          d_spatial_metric) noexcept;
+#define INSTANTIATE(_, data)                                                   \
+  template void gr::deriv_inverse_spatial_metric(                              \
+      const gsl::not_null<tnsr::iJJ<DTYPE(data), DIM(data), FRAME(data)>*>     \
+          result,                                                              \
+      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                     \
+          inverse_spatial_metric,                                              \
+      const tnsr::ijj<DTYPE(data), DIM(data), FRAME(data)>& d_spatial_metric); \
+  template tnsr::iJJ<DTYPE(data), DIM(data), FRAME(data)>                      \
+  gr::deriv_inverse_spatial_metric(                                            \
+      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                     \
+          inverse_spatial_metric,                                              \
+      const tnsr::ijj<DTYPE(data), DIM(data), FRAME(data)>& d_spatial_metric);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Grid, Frame::Inertial),
                         (double, DataVector))

@@ -30,14 +30,14 @@ class ArrayComponentId {
 
   template <typename ParallelComponent>
   ArrayComponentId(const ParallelComponent* /*meta*/,
-                   const CkArrayIndex& index) noexcept;
+                   const CkArrayIndex& index);
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept;
+  void pup(PUP::er& p);
 
-  size_t component_id() const noexcept { return component_id_; }
+  size_t component_id() const { return component_id_; }
 
-  const CkArrayIndex& array_index() const noexcept { return array_index_; }
+  const CkArrayIndex& array_index() const { return array_index_; }
 
  private:
   size_t component_id_{0};
@@ -46,19 +46,17 @@ class ArrayComponentId {
 
 template <typename ParallelComponent>
 ArrayComponentId::ArrayComponentId(const ParallelComponent* const /*meta*/,
-                                   const CkArrayIndex& index) noexcept
+                                   const CkArrayIndex& index)
     : component_id_(
           std::hash<std::string>{}(pretty_type::get_name<ParallelComponent>())),
       array_index_(index) {}
 
-bool operator==(const ArrayComponentId& lhs,
-                const ArrayComponentId& rhs) noexcept;
+bool operator==(const ArrayComponentId& lhs, const ArrayComponentId& rhs);
 
-bool operator!=(const ArrayComponentId& lhs,
-                const ArrayComponentId& rhs) noexcept;
+bool operator!=(const ArrayComponentId& lhs, const ArrayComponentId& rhs);
 
 std::ostream& operator<<(std::ostream& os,
-                         const ArrayComponentId& array_component_id) noexcept;
+                         const ArrayComponentId& array_component_id);
 }  // namespace observers
 
 namespace std {

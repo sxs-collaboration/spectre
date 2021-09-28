@@ -66,7 +66,7 @@ struct ResetSubdomainSolver {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ElementId<Dim>& element_id, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     if (not get<LinearSolver::Schwarz::Tags::SkipSubdomainSolverResets<
             OptionsGroup>>(box)) {
       if (UNLIKELY(get<logging::Tags::Verbosity<OptionsGroup>>(box) >=
@@ -76,7 +76,7 @@ struct ResetSubdomainSolver {
       }
       db::mutate<
           LinearSolver::Schwarz::Tags::SubdomainSolverBase<OptionsGroup>>(
-          make_not_null(&box), [](const auto subdomain_solver) noexcept {
+          make_not_null(&box), [](const auto subdomain_solver) {
             // Dereference the gsl::not_null pointer, and then the
             // std::unique_ptr for the subdomain solver's abstract superclass.
             // This needs adjustment if the subdomain solver is stored in the

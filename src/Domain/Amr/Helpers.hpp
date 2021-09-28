@@ -29,7 +29,7 @@ namespace amr {
 template <size_t VolumeDim>
 std::array<size_t, VolumeDim> desired_refinement_levels(
     const ElementId<VolumeDim>& id,
-    const std::array<amr::Flag, VolumeDim>& flags) noexcept;
+    const std::array<amr::Flag, VolumeDim>& flags);
 
 /// \ingroup ComputationalDomainGroup
 /// \brief Computes the desired refinement level of a neighboring Element with
@@ -42,12 +42,12 @@ template <size_t VolumeDim>
 std::array<size_t, VolumeDim> desired_refinement_levels_of_neighbor(
     const ElementId<VolumeDim>& neighbor_id,
     const std::array<amr::Flag, VolumeDim>& neighbor_flags,
-    const OrientationMap<VolumeDim>& orientation) noexcept;
+    const OrientationMap<VolumeDim>& orientation);
 
 /// \ingroup ComputationalDomainGroup
 /// \brief Whether or not the Element with `element_id` can have a sibling
 /// in the given `direction`
 template <size_t VolumeDim>
 bool has_potential_sibling(const ElementId<VolumeDim>& element_id,
-                           const Direction<VolumeDim>& direction) noexcept;
+                           const Direction<VolumeDim>& direction);
 }  // namespace amr

@@ -48,7 +48,7 @@ mortars_apply_impl(const std::vector<std::array<size_t, Dim>>& initial_extents,
                    const Spectral::Quadrature quadrature,
                    const Element<Dim>& element,
                    const TimeStepId& next_temporal_id,
-                   const Mesh<Dim>& volume_mesh) noexcept {
+                   const Mesh<Dim>& volume_mesh) {
   MortarMap<evolution::dg::MortarData<Dim>, Dim> mortar_data{};
   MortarMap<Mesh<Dim - 1>, Dim> mortar_meshes{};
   MortarMap<std::array<Spectral::MortarSize, Dim - 1>, Dim> mortar_sizes{};
@@ -116,7 +116,7 @@ mortars_apply_impl(const std::vector<std::array<size_t, Dim>>& initial_extents,
       const std::vector<std::array<size_t, DIM(data)>>& initial_extents,       \
       const Spectral::Quadrature quadrature,                                   \
       const Element<DIM(data)>& element, const TimeStepId& next_temporal_id,   \
-      const Mesh<DIM(data)>& volume_mesh) noexcept;
+      const Mesh<DIM(data)>& volume_mesh);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 

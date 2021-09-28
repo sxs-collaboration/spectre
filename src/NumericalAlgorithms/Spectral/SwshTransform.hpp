@@ -49,8 +49,7 @@ void append_libsharp_collocation_pointers(
     gsl::not_null<std::vector<double*>*> collocation_data,
     gsl::not_null<std::vector<ComplexDataView<Representation>>*>
         collocation_views,
-    gsl::not_null<ComplexDataVector*> vector, size_t l_max,
-    bool positive_spin) noexcept;
+    gsl::not_null<ComplexDataVector*> vector, size_t l_max, bool positive_spin);
 
 // Perform a conjugation on a vector of `ComplexDataView`s if `Spin` < 0. This
 // is used for undoing the conjugation described in the code comment for
@@ -58,7 +57,7 @@ void append_libsharp_collocation_pointers(
 template <int Spin, ComplexRepresentation Representation>
 SPECTRE_ALWAYS_INLINE void conjugate_views(
     gsl::not_null<std::vector<ComplexDataView<Representation>>*>
-        collocation_views) noexcept {
+        collocation_views) {
   if (Spin < 0) {
     for (auto& view : *collocation_views) {
       view.conjugate();
@@ -72,7 +71,7 @@ SPECTRE_ALWAYS_INLINE void conjugate_views(
 // the documentation for `TransformJob`.
 void append_libsharp_coefficient_pointers(
     gsl::not_null<std::vector<std::complex<double>*>*> coefficient_data,
-    gsl::not_null<ComplexModalVector*> vector, size_t l_max) noexcept;
+    gsl::not_null<ComplexModalVector*> vector, size_t l_max);
 
 // perform the actual libsharp execution calls on an input and output set of
 // pointers. This function handles the complication of a limited maximum number
@@ -85,7 +84,7 @@ void execute_libsharp_transform_set(
     gsl::not_null<std::vector<double*>*> collocation_data,
     gsl::not_null<const CollocationMetadata<Representation>*>
         collocation_metadata,
-    const sharp_alm_info* alm_info, size_t num_transforms) noexcept;
+    const sharp_alm_info* alm_info, size_t num_transforms);
 
 // template 'implementation' for the `swsh_transform` function below which
 // performs an arbitrary number of transforms, and places them in the same
@@ -100,7 +99,7 @@ void swsh_transform_impl(
     size_t l_max, size_t number_of_radial_points,
     std::index_sequence<Is...> /*meta*/,
     gsl::not_null<SpinWeighted<ComplexModalVector, Spin>*> first_coefficient,
-    const ModalThenNodalTypes&... coefficients_then_collocations) noexcept;
+    const ModalThenNodalTypes&... coefficients_then_collocations);
 
 // template 'implementation' for the `inverse_swsh_transform` function below
 // which performs an arbitrary number of transforms, and places them in the same
@@ -115,7 +114,7 @@ void inverse_swsh_transform_impl(
     size_t l_max, size_t number_of_radial_points,
     std::index_sequence<Is...> /*meta*/,
     gsl::not_null<SpinWeighted<ComplexDataVector, Spin>*> first_collocation,
-    const NodalThenModalTypes&... collocations_then_coefficients) noexcept;
+    const NodalThenModalTypes&... collocations_then_coefficients);
 
 // forward declaration for friend specification of helper from
 // `SwshDerivatives.hpp`
@@ -172,7 +171,7 @@ void swsh_transform(
     const size_t l_max, const size_t number_of_radial_points,
     const gsl::not_null<SpinWeighted<ComplexModalVector, Spin>*>
         first_coefficient,
-    const ModalThenNodalTypes&... coefficients_then_collocations) noexcept {
+    const ModalThenNodalTypes&... coefficients_then_collocations) {
   static_assert(
       sizeof...(ModalThenNodalTypes) % 2 == 1,
       "The number of modal arguments passed to swsh_transform must equal the "
@@ -214,7 +213,7 @@ template <
     int Spin>
 SpinWeighted<ComplexModalVector, Spin> swsh_transform(
     size_t l_max, size_t number_of_radial_points,
-    const SpinWeighted<ComplexDataVector, Spin>& collocation) noexcept;
+    const SpinWeighted<ComplexDataVector, Spin>& collocation);
 
 /*!
  * \ingroup SwshGroup
@@ -258,7 +257,7 @@ void inverse_swsh_transform(
     const size_t l_max, const size_t number_of_radial_points,
     const gsl::not_null<SpinWeighted<ComplexDataVector, Spin>*>
         first_collocation,
-    const NodalThenModalTypes&... collocations_then_coefficients) noexcept {
+    const NodalThenModalTypes&... collocations_then_coefficients) {
   static_assert(
       sizeof...(NodalThenModalTypes) % 2 == 1,
       "The number of nodal arguments passed to inverse_swsh_transform must "
@@ -294,8 +293,7 @@ template <
     int Spin>
 SpinWeighted<ComplexDataVector, Spin> inverse_swsh_transform(
     size_t l_max, size_t number_of_radial_points,
-    const SpinWeighted<ComplexModalVector, Spin>&
-        libsharp_coefficients) noexcept;
+    const SpinWeighted<ComplexModalVector, Spin>& libsharp_coefficients);
 
 /*!
  * \ingroup SwshGroup
@@ -435,7 +433,7 @@ struct SwshTransform<tmpl::list<TransformTags...>, Representation> {
       const gsl::not_null<
           typename Tags::SwshTransform<TransformTags>::type*>... coefficients,
       const typename TransformTags::type&... collocations, const size_t l_max,
-      const size_t number_of_radial_points) noexcept {
+      const size_t number_of_radial_points) {
     // forward to the version which takes parameter packs of vectors
     apply_to_vectors(make_not_null(&get(*coefficients))...,
                      get(collocations)..., l_max, number_of_radial_points);
@@ -451,7 +449,7 @@ struct SwshTransform<tmpl::list<TransformTags...>, Representation> {
   friend void detail::swsh_transform_impl(
       size_t, size_t, std::index_sequence<Is...>,
       gsl::not_null<SpinWeighted<ComplexModalVector, FriendSpin>*>,
-      const CoefficientThenCollocationTypes&...) noexcept;
+      const CoefficientThenCollocationTypes&...);
 
   // friend declaration for helper function from `SwshDerivatives.hpp`
   template <typename Transform, typename FullTagList>
@@ -462,7 +460,7 @@ struct SwshTransform<tmpl::list<TransformTags...>, Representation> {
       const gsl::not_null<typename Tags::SwshTransform<
           TransformTags>::type::type*>... coefficients,
       const typename TransformTags::type::type&... collocations, size_t l_max,
-      size_t number_of_radial_points) noexcept;
+      size_t number_of_radial_points);
 };
 /// \endcond
 
@@ -519,7 +517,7 @@ struct InverseSwshTransform<tmpl::list<TransformTags...>, Representation> {
   static void apply(
       const gsl::not_null<typename TransformTags::type*>... collocations,
       const typename Tags::SwshTransform<TransformTags>::type&... coefficients,
-      const size_t l_max, const size_t number_of_radial_points) noexcept {
+      const size_t l_max, const size_t number_of_radial_points) {
     // forward to the version which takes parameter packs of vectors
     apply_to_vectors(make_not_null(&get(*collocations))...,
                      get(coefficients)..., l_max, number_of_radial_points);
@@ -535,7 +533,7 @@ struct InverseSwshTransform<tmpl::list<TransformTags...>, Representation> {
   friend void detail::inverse_swsh_transform_impl(
       size_t, size_t, std::index_sequence<Is...>,
       gsl::not_null<SpinWeighted<ComplexDataVector, FriendSpin>*>,
-      const CollocationThenCoefficientTypes&...) noexcept;
+      const CollocationThenCoefficientTypes&...);
 
   // friend declaration for helper function from `SwshDerivatives.hpp`
   template <typename Transform, typename FullTagList>
@@ -546,7 +544,7 @@ struct InverseSwshTransform<tmpl::list<TransformTags...>, Representation> {
       const gsl::not_null<typename TransformTags::type::type*>... collocations,
       const typename Tags::SwshTransform<
           TransformTags>::type::type&... coefficients,
-      size_t l_max, size_t number_of_radial_points) noexcept;
+      size_t l_max, size_t number_of_radial_points);
 };
 
 template <typename... TransformTags, ComplexRepresentation Representation>
@@ -554,8 +552,7 @@ void SwshTransform<tmpl::list<TransformTags...>, Representation>::
     apply_to_vectors(const gsl::not_null<typename Tags::SwshTransform<
                          TransformTags>::type::type*>... coefficients,
                      const typename TransformTags::type::type&... collocations,
-                     const size_t l_max,
-                     const size_t number_of_radial_points) noexcept {
+                     const size_t l_max, const size_t number_of_radial_points) {
   EXPAND_PACK_LEFT_TO_RIGHT(coefficients->destructive_resize(
       size_of_libsharp_coefficient_vector(l_max) * number_of_radial_points));
 
@@ -607,8 +604,7 @@ void InverseSwshTransform<tmpl::list<TransformTags...>, Representation>::
                          typename TransformTags::type::type*>... collocations,
                      const typename Tags::SwshTransform<
                          TransformTags>::type::type&... coefficients,
-                     const size_t l_max,
-                     const size_t number_of_radial_points) noexcept {
+                     const size_t l_max, const size_t number_of_radial_points) {
   EXPAND_PACK_LEFT_TO_RIGHT(collocations->destructive_resize(
       number_of_swsh_collocation_points(l_max) * number_of_radial_points));
 
@@ -669,7 +665,7 @@ void swsh_transform_impl(
     std::index_sequence<Is...> /*meta*/,
     const gsl::not_null<SpinWeighted<ComplexModalVector, Spin>*>
         first_coefficient,
-    const ModalThenNodalTypes&... coefficients_then_collocations) noexcept {
+    const ModalThenNodalTypes&... coefficients_then_collocations) {
   SwshTransform<
       tmpl::list<::Tags::SpinWeighted<::Tags::TempScalar<Is, ComplexDataVector>,
                                       std::integral_constant<int, Spin>>...>>::
@@ -684,7 +680,7 @@ void inverse_swsh_transform_impl(
     std::index_sequence<Is...> /*meta*/,
     const gsl::not_null<SpinWeighted<ComplexDataVector, Spin>*>
         first_collocation,
-    const NodalThenModalTypes&... collocations_then_coefficients) noexcept {
+    const NodalThenModalTypes&... collocations_then_coefficients) {
   InverseSwshTransform<
       tmpl::list<::Tags::SpinWeighted<::Tags::TempScalar<Is, ComplexDataVector>,
                                       std::integral_constant<int, Spin>>...>>::
@@ -781,7 +777,7 @@ template <int Spin>
 void interpolate_to_collocation(
     gsl::not_null<SpinWeighted<ComplexDataVector, Spin>*> target,
     const SpinWeighted<ComplexDataVector, Spin>& source, size_t target_l_max,
-    size_t source_l_max, size_t number_of_radial_points) noexcept;
+    size_t source_l_max, size_t number_of_radial_points);
 
 }  // namespace Swsh
 }  // namespace Spectral

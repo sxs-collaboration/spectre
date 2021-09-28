@@ -53,18 +53,18 @@ class er;
 
 struct ScalarFieldTag : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static std::string name() noexcept { return "ScalarField"; }
+  static std::string name() { return "ScalarField"; }
 };
 
 template <size_t Dim>
 struct VectorFieldTag : db::SimpleTag {
   using type = tnsr::I<DataVector, Dim>;
-  static std::string name() noexcept { return "VectorField"; }
+  static std::string name() { return "VectorField"; }
 };
 
 enum class Grid { Fine, Coarse };
 
-std::ostream& operator<<(std::ostream& os, Grid grid) noexcept {
+std::ostream& operator<<(std::ostream& os, Grid grid) {
   switch (grid) {
     case Grid::Fine:
       return os << "Fine";
@@ -84,9 +84,7 @@ constexpr size_t number_of_elements<Grid::Coarse> = 1;
 template <Grid TheGrid>
 struct VolumeDataOptions {
   using group = importers::OptionTags::Group;
-  static std::string name() noexcept {
-    return MakeString{} << TheGrid << "VolumeData";
-  }
+  static std::string name() { return MakeString{} << TheGrid << "VolumeData"; }
   static constexpr Options::String help = "Numeric volume data";
 };
 /// [option_group]
@@ -152,7 +150,7 @@ const TestVolumeData<3, Grid::Coarse> coarse_volume_data<3>{
         {{23., 24., 25., 26., 27., 28., 29., 30.}}}}}}};
 
 template <bool Check>
-void clean_test_data(const std::string& data_file_name) noexcept {
+void clean_test_data(const std::string& data_file_name) {
   if (file_system::check_if_file_exists(data_file_name)) {
     file_system::rm(data_file_name, true);
   } else if (Check) {
@@ -164,7 +162,7 @@ template <size_t Dim, Grid TheGrid>
 void write_test_data(const std::string& data_file_name,
                      const std::string& subgroup,
                      const double observation_value,
-                     const TestVolumeData<Dim, TheGrid>& test_data) noexcept {
+                     const TestVolumeData<Dim, TheGrid>& test_data) {
   // Open file for test data
   h5::H5File<h5::AccessType::ReadWrite> data_file{data_file_name, true};
   auto& test_data_file = data_file.insert<h5::VolumeData>("/" + subgroup);
@@ -206,7 +204,7 @@ struct WriteTestData {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     // The data may be in a shared file, so first clean both, then write both
     clean_test_data<false>(
         get<importers::Tags::FileName<VolumeDataOptions<Grid::Fine>>>(box));
@@ -237,7 +235,7 @@ struct CleanTestData {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     clean_test_data<true>(
         get<importers::Tags::FileName<VolumeDataOptions<Grid::Fine>>>(box));
     if (get<importers::Tags::FileName<VolumeDataOptions<Grid::Coarse>>>(box) !=
@@ -263,12 +261,12 @@ struct TestDataWriter {
                                         tmpl::list<CleanTestData>>>;
   using initialization_tags = tmpl::list<>;
 
-  static void initialize(Parallel::CProxy_GlobalCache<
-                         Metavariables>& /*global_cache*/) noexcept {}
+  static void initialize(
+      Parallel::CProxy_GlobalCache<Metavariables>& /*global_cache*/) {}
 
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
-      Parallel::CProxy_GlobalCache<Metavariables>& global_cache) noexcept {
+      Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
     auto& local_component = Parallel::get_parallel_component<TestDataWriter>(
         *(global_cache.ckLocalBranch()));
     local_component.start_phase(next_phase);
@@ -284,7 +282,7 @@ struct InitializeElement {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ElementId<Dim>& /*array_index*/,
                     const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     return std::make_tuple(
         ::Initialization::merge_into_databox<
             InitializeElement,
@@ -298,7 +296,7 @@ template <size_t Dim, Grid TheGrid>
 void test_result(const ElementId<Dim>& element_index,
                  const TestVolumeData<Dim, TheGrid>& test_data,
                  const Scalar<DataVector>& scalar_field,
-                 const tnsr::I<DataVector, Dim>& vector_field) noexcept {
+                 const tnsr::I<DataVector, Dim>& vector_field) {
   const size_t raw_element_index = ElementId<Dim>{element_index}.block_id();
   Scalar<DataVector> expected_scalar_field{
       test_data.scalar_field_data[raw_element_index]};
@@ -320,7 +318,7 @@ struct TestResult {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ElementId<Dim>& array_index, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     if (TheGrid == Grid::Fine) {
       test_result(array_index, fine_volume_data<Dim>, get<ScalarFieldTag>(box),
                   get<VectorFieldTag<Dim>>(box));
@@ -366,7 +364,7 @@ struct ElementArray {
   static void allocate_array(
       Parallel::CProxy_GlobalCache<Metavariables>& global_cache,
       const tuples::tagged_tuple_from_typelist<initialization_tags>&
-          initialization_items) noexcept {
+          initialization_items) {
     auto& array_proxy = Parallel::get_parallel_component<ElementArray>(
         *(global_cache.ckLocalBranch()));
 
@@ -383,7 +381,7 @@ struct ElementArray {
 
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
-      Parallel::CProxy_GlobalCache<Metavariables>& global_cache) noexcept {
+      Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *(global_cache.ckLocalBranch());
     Parallel::get_parallel_component<ElementArray>(local_cache)
         .start_phase(next_phase);
@@ -409,8 +407,7 @@ struct Metavariables {
       const gsl::not_null<
           tuples::TaggedTuple<Tags...>*> /*phase_change_decision_data*/,
       const Phase& current_phase,
-      const Parallel::CProxy_GlobalCache<
-          Metavariables>& /*cache_proxy*/) noexcept {
+      const Parallel::CProxy_GlobalCache<Metavariables>& /*cache_proxy*/) {
     switch (current_phase) {
       case Phase::Initialization:
         return Phase::Register;
@@ -424,7 +421,7 @@ struct Metavariables {
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& /*p*/) noexcept {}
+  void pup(PUP::er& /*p*/) {}
 };
 /// [metavars]
 

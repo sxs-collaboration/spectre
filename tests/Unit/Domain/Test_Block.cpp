@@ -101,7 +101,7 @@ template <size_t Dim>
 using Translation = domain::CoordinateMaps::TimeDependent::Translation<Dim>;
 
 template <size_t VolumeDim>
-auto make_translation_map() noexcept {
+auto make_translation_map() {
   return domain::make_coordinate_map<Frame::Grid, Frame::Inertial>(
       Translation<VolumeDim>{"Translation"});
 }

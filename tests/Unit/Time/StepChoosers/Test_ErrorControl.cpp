@@ -77,7 +77,7 @@ std::pair<double, bool> get_suggestion(
     const StepChoosers::ErrorControl<EvolvedVariablesTag>& error_control,
     const Variables<EvolvedTags>& step_values,
     const Variables<ErrorTags>& error, const double previous_step,
-    const size_t stepper_order) noexcept {
+    const size_t stepper_order) {
   const Parallel::GlobalCache<Metavariables<true>> cache{};
   TimeSteppers::History<
       Variables<EvolvedTags>,
@@ -119,8 +119,7 @@ std::pair<double, bool> get_suggestion(
                                          cache));
 
   db::mutate<Tags::StepperErrorUpdated>(
-      make_not_null(&box),
-      [](const gsl::not_null<bool*> stepper_updated) noexcept {
+      make_not_null(&box), [](const gsl::not_null<bool*> stepper_updated) {
         *stepper_updated = true;
       });
   const std::pair<double, bool> result = error_control(
@@ -136,7 +135,7 @@ std::pair<double, bool> get_suggestion(
   db::mutate<StepChoosers::Tags::PreviousStepError<EvolvedVariablesTag>>(
       make_not_null(&box),
       [previous_step_error](const gsl::not_null<std::optional<double>*>
-                                previous_step_error_from_box) noexcept {
+                                previous_step_error_from_box) {
         *previous_step_error_from_box = *previous_step_error;
       });
   CHECK(serialize_and_deserialize(error_control)(

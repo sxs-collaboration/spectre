@@ -29,13 +29,13 @@ void relativistic_specific_enthalpy(
     gsl::not_null<Scalar<DataType>*> result,
     const Scalar<DataType>& rest_mass_density,
     const Scalar<DataType>& specific_internal_energy,
-    const Scalar<DataType>& pressure) noexcept;
+    const Scalar<DataType>& pressure);
 
 template <typename DataType>
 Scalar<DataType> relativistic_specific_enthalpy(
     const Scalar<DataType>& rest_mass_density,
     const Scalar<DataType>& specific_internal_energy,
-    const Scalar<DataType>& pressure) noexcept;
+    const Scalar<DataType>& pressure);
 /// @}
 
 namespace Tags {
@@ -52,7 +52,7 @@ struct SpecificEnthalpyCompute : SpecificEnthalpy<DataType>, db::ComputeTag {
 
   static constexpr auto function = static_cast<void (*)(
       gsl::not_null<Scalar<DataType>*>, const Scalar<DataType>&,
-      const Scalar<DataType>&, const Scalar<DataType>&) noexcept>(
+      const Scalar<DataType>&, const Scalar<DataType>&)>(
       &relativistic_specific_enthalpy<DataType>);
 
   using base = SpecificEnthalpy<DataType>;

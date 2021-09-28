@@ -21,8 +21,7 @@
 
 namespace Cce::InterfaceManagers {
 
-std::unique_ptr<GhInterfaceManager> GhLocalTimeStepping::get_clone()
-    const noexcept {
+std::unique_ptr<GhInterfaceManager> GhLocalTimeStepping::get_clone() const {
   return std::make_unique<GhLocalTimeStepping>(*this);
 }
 
@@ -31,7 +30,7 @@ void GhLocalTimeStepping::insert_gh_data(
     const tnsr::iaa<DataVector, 3>& phi, const tnsr::aa<DataVector, 3>& pi,
     const tnsr::aa<DataVector, 3>& dt_spacetime_metric,
     const tnsr::iaa<DataVector, 3>& dt_phi,
-    const tnsr::aa<DataVector, 3>& dt_pi) noexcept {
+    const tnsr::aa<DataVector, 3>& dt_pi) {
   gh_variables input_gh_variables{get<0, 0>(spacetime_metric).size()};
   dt_gh_variables input_dt_gh_variables{get<0, 0>(spacetime_metric).size()};
   get<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>(
@@ -51,10 +50,10 @@ void GhLocalTimeStepping::insert_gh_data(
   // inserted for this data
   auto previous_deque_entry = alg::find_if(
       pre_history_,
-      [&time_id](const std::tuple<TimeStepId, std::optional<gh_variables>,
-                                  std::optional<TimeStepId>,
-                                  std::optional<dt_gh_variables>>&
-                     deque_entry) noexcept {
+      [&time_id](
+          const std::tuple<TimeStepId, std::optional<gh_variables>,
+                           std::optional<TimeStepId>,
+                           std::optional<dt_gh_variables>>& deque_entry) {
         return get<0>(deque_entry) == time_id;
       });
   // If no pending requests, we don't know what time will be needed next, so
@@ -91,16 +90,16 @@ void GhLocalTimeStepping::insert_gh_data(
   }
 }
 
-void GhLocalTimeStepping::insert_next_gh_time(
-    TimeStepId time_id, TimeStepId next_time_id) noexcept {
+void GhLocalTimeStepping::insert_next_gh_time(TimeStepId time_id,
+                                              TimeStepId next_time_id) {
   // retrieve an iterator position if the next time has already been
   // inserted for this data
   const auto previous_deque_entry = alg::find_if(
       pre_history_,
-      [&time_id](const std::tuple<TimeStepId, std::optional<gh_variables>,
-                                  std::optional<TimeStepId>,
-                                  std::optional<dt_gh_variables>>&
-                     deque_entry) noexcept {
+      [&time_id](
+          const std::tuple<TimeStepId, std::optional<gh_variables>,
+                           std::optional<TimeStepId>,
+                           std::optional<dt_gh_variables>>& deque_entry) {
         return get<0>(deque_entry) == time_id;
       });
 
@@ -141,14 +140,14 @@ void GhLocalTimeStepping::insert_next_gh_time(
   }
 }
 
-void GhLocalTimeStepping::request_gh_data(const TimeStepId& time_id) noexcept {
+void GhLocalTimeStepping::request_gh_data(const TimeStepId& time_id) {
   requests_.push_back(time_id);
   if (requests_.size() == 1) {
     update_history();
   }
 }
 
-void GhLocalTimeStepping::update_history() noexcept {
+void GhLocalTimeStepping::update_history() {
   if (requests_.empty()) {
     return;
   }
@@ -175,7 +174,7 @@ void GhLocalTimeStepping::update_history() noexcept {
   }
 }
 
-auto GhLocalTimeStepping::retrieve_and_remove_first_ready_gh_data() noexcept
+auto GhLocalTimeStepping::retrieve_and_remove_first_ready_gh_data()
     -> std::optional<std::tuple<TimeStepId, gh_variables>> {
   if (requests_.empty()) {
     return std::nullopt;
@@ -197,7 +196,7 @@ auto GhLocalTimeStepping::retrieve_and_remove_first_ready_gh_data() noexcept
   return std::nullopt;
 }
 
-void GhLocalTimeStepping::pup(PUP::er& p) noexcept {
+void GhLocalTimeStepping::pup(PUP::er& p) {
   p | order_;
   p | pre_history_;
   p | requests_;

@@ -84,32 +84,32 @@ class Interval {
   static constexpr size_t dim = 1;
 
   Interval(double A, double B, double a, double b, Distribution distribution,
-           std::optional<double> singularity_pos = std::nullopt) noexcept;
+           std::optional<double> singularity_pos = std::nullopt);
 
   Interval() = default;
 
   template <typename T>
   std::array<tt::remove_cvref_wrap_t<T>, 1> operator()(
-      const std::array<T, 1>& source_coords) const noexcept;
+      const std::array<T, 1>& source_coords) const;
 
   std::optional<std::array<double, 1>> inverse(
-      const std::array<double, 1>& target_coords) const noexcept;
+      const std::array<double, 1>& target_coords) const;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, 1, Frame::NoFrame> jacobian(
-      const std::array<T, 1>& source_coords) const noexcept;
+      const std::array<T, 1>& source_coords) const;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, 1, Frame::NoFrame> inv_jacobian(
-      const std::array<T, 1>& source_coords) const noexcept;
+      const std::array<T, 1>& source_coords) const;
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept;
+  void pup(PUP::er& p);
 
-  bool is_identity() const noexcept { return is_identity_; }
+  bool is_identity() const { return is_identity_; }
 
  private:
-  friend bool operator==(const Interval& lhs, const Interval& rhs) noexcept;
+  friend bool operator==(const Interval& lhs, const Interval& rhs);
 
   double A_{std::numeric_limits<double>::signaling_NaN()};
   double B_{std::numeric_limits<double>::signaling_NaN()};
@@ -121,7 +121,7 @@ class Interval {
 };
 
 inline bool operator!=(const CoordinateMaps::Interval& lhs,
-                       const CoordinateMaps::Interval& rhs) noexcept {
+                       const CoordinateMaps::Interval& rhs) {
   return not(lhs == rhs);
 }
 

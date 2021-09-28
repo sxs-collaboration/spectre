@@ -22,7 +22,7 @@ template <size_t Dim>
 DirectionMap<Dim, std::vector<double>> slice_data_impl(
     const gsl::span<const double>& volume_subcell_vars,
     const Index<Dim>& subcell_extents, size_t number_of_ghost_points,
-    const DirectionMap<Dim, bool>& directions_to_slice) noexcept;
+    const DirectionMap<Dim, bool>& directions_to_slice);
 }  // namespace detail
 
 /*!
@@ -45,7 +45,7 @@ template <size_t Dim, typename TagList>
 DirectionMap<Dim, std::vector<double>> slice_data(
     const Variables<TagList>& volume_subcell_vars,
     const Index<Dim>& subcell_extents, const size_t number_of_ghost_points,
-    const DirectionMap<Dim, bool>& directions_to_slice) noexcept {
+    const DirectionMap<Dim, bool>& directions_to_slice) {
   return detail::slice_data_impl(
       gsl::make_span(volume_subcell_vars.data(), volume_subcell_vars.size()),
       subcell_extents, number_of_ghost_points, directions_to_slice);

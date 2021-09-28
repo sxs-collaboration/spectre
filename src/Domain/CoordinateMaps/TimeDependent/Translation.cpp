@@ -21,7 +21,7 @@
 namespace domain::CoordinateMaps::TimeDependent {
 
 template <size_t Dim>
-Translation<Dim>::Translation(std::string function_of_time_name) noexcept
+Translation<Dim>::Translation(std::string function_of_time_name)
     : f_of_t_name_(std::move(function_of_time_name)) {}
 
 template <size_t Dim>
@@ -30,7 +30,7 @@ std::array<tt::remove_cvref_wrap_t<T>, Dim> Translation<Dim>::operator()(
     const std::array<T, Dim>& source_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time) const noexcept {
+        functions_of_time) const {
   ASSERT(functions_of_time.count(f_of_t_name_) == 1,
          "The function of time '" << f_of_t_name_
                                   << "' is not one of the known functions of "
@@ -55,7 +55,7 @@ std::optional<std::array<double, Dim>> Translation<Dim>::inverse(
     const std::array<double, Dim>& target_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time) const noexcept {
+        functions_of_time) const {
   ASSERT(functions_of_time.count(f_of_t_name_) == 1,
          "The function of time '" << f_of_t_name_
                                   << "' is not one of the known functions of "
@@ -81,7 +81,7 @@ std::array<tt::remove_cvref_wrap_t<T>, Dim> Translation<Dim>::frame_velocity(
     const std::array<T, Dim>& source_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time) const noexcept {
+        functions_of_time) const {
   ASSERT(functions_of_time.count(f_of_t_name_) == 1,
          "The function of time '" << f_of_t_name_
                                   << "' is not one of the known functions of "
@@ -106,27 +106,24 @@ std::array<tt::remove_cvref_wrap_t<T>, Dim> Translation<Dim>::frame_velocity(
 template <size_t Dim>
 template <typename T>
 tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame>
-Translation<Dim>::jacobian(
-    const std::array<T, Dim>& source_coords) const noexcept {
+Translation<Dim>::jacobian(const std::array<T, Dim>& source_coords) const {
   return identity<Dim>(dereference_wrapper(source_coords[0]));
 }
 
 template <size_t Dim>
 template <typename T>
 tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame>
-Translation<Dim>::inv_jacobian(
-    const std::array<T, Dim>& source_coords) const noexcept {
+Translation<Dim>::inv_jacobian(const std::array<T, Dim>& source_coords) const {
   return identity<Dim>(dereference_wrapper(source_coords[0]));
 }
 
 template <size_t Dim>
-void Translation<Dim>::pup(PUP::er& p) noexcept {
+void Translation<Dim>::pup(PUP::er& p) {
   p | f_of_t_name_;
 }
 
 template <size_t Dim>
-bool operator==(const Translation<Dim>& lhs,
-                const Translation<Dim>& rhs) noexcept {
+bool operator==(const Translation<Dim>& lhs, const Translation<Dim>& rhs) {
   return lhs.f_of_t_name_ == rhs.f_of_t_name_;
 }
 
@@ -136,7 +133,7 @@ bool operator==(const Translation<Dim>& lhs,
 #define INSTANTIATE(_, data)                              \
   template class Translation<DIM(data)>;                  \
   template bool operator==(const Translation<DIM(data)>&, \
-                           const Translation<DIM(data)>&) noexcept;
+                           const Translation<DIM(data)>&);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
@@ -144,31 +141,31 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATE(_, data)                                                   \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data)>         \
-  Translation<DIM(data)>::operator()(                                          \
-      const std::array<DTYPE(data), DIM(data)>& source_coords,                 \
-      const double time,                                                       \
-      const std::unordered_map<                                                \
-          std::string,                                                         \
-          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&           \
-          functions_of_time) const noexcept;                                   \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data)>         \
-  Translation<DIM(data)>::frame_velocity(                                      \
-      const std::array<DTYPE(data), DIM(data)>& source_coords,                 \
-      const double time,                                                       \
-      const std::unordered_map<                                                \
-          std::string,                                                         \
-          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&           \
-          functions_of_time) const noexcept;                                   \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data),           \
-                    Frame::NoFrame>                                            \
-  Translation<DIM(data)>::jacobian(                                            \
-      const std::array<DTYPE(data), DIM(data)>& source_coords) const noexcept; \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data),           \
-                    Frame::NoFrame>                                            \
-  Translation<DIM(data)>::inv_jacobian(                                        \
-      const std::array<DTYPE(data), DIM(data)>& source_coords) const noexcept;
+#define INSTANTIATE(_, data)                                           \
+  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data)> \
+  Translation<DIM(data)>::operator()(                                  \
+      const std::array<DTYPE(data), DIM(data)>& source_coords,         \
+      const double time,                                               \
+      const std::unordered_map<                                        \
+          std::string,                                                 \
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&   \
+          functions_of_time) const;                                    \
+  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data)> \
+  Translation<DIM(data)>::frame_velocity(                              \
+      const std::array<DTYPE(data), DIM(data)>& source_coords,         \
+      const double time,                                               \
+      const std::unordered_map<                                        \
+          std::string,                                                 \
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&   \
+          functions_of_time) const;                                    \
+  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data),   \
+                    Frame::NoFrame>                                    \
+  Translation<DIM(data)>::jacobian(                                    \
+      const std::array<DTYPE(data), DIM(data)>& source_coords) const;  \
+  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data),   \
+                    Frame::NoFrame>                                    \
+  Translation<DIM(data)>::inv_jacobian(                                \
+      const std::array<DTYPE(data), DIM(data)>& source_coords) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
                         (double, DataVector,

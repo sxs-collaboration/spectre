@@ -75,7 +75,7 @@ struct ProductOfCorrectionsImpl<
       const typename ValenciaVolumeTags::type&... valencia_volume_quantities,
 
       const DerivedGhCorrection& gh_correction,
-      const DerivedValenciaCorrection& valencia_correction) noexcept {
+      const DerivedValenciaCorrection& valencia_correction) {
     tuples::TaggedTuple<
         Tags::detail::TemporaryReference<DeduplicatedTempTags>...>
         shuffle_refs{temporaries...};
@@ -112,7 +112,7 @@ struct ProductOfCorrectionsImpl<
       const dg::Formulation dg_formulation,
 
       const DerivedGhCorrection& gh_correction,
-      const DerivedValenciaCorrection& valencia_correction) noexcept {
+      const DerivedValenciaCorrection& valencia_correction) {
     gh_correction.dg_boundary_terms(
         gh_boundary_corrections..., gh_internal_packaged_fields...,
         gh_external_packaged_fields..., dg_formulation);
@@ -171,22 +171,20 @@ class ProductOfCorrections final : public BoundaryCorrection {
       typename DerivedGhCorrection::dg_package_data_volume_tags,
       typename DerivedValenciaCorrection::dg_package_data_volume_tags>;
 
-  static std::string name() noexcept {
+  static std::string name() {
     return "Product" + Options::name<DerivedGhCorrection>() + "And" +
            Options::name<DerivedValenciaCorrection>();
   }
 
   struct GhCorrection {
     using type = DerivedGhCorrection;
-    static std::string name() noexcept {
-      return Options::name<DerivedGhCorrection>();
-    }
+    static std::string name() { return Options::name<DerivedGhCorrection>(); }
     static constexpr Options::String help{
         "The Generalized Harmonic part of the product boundary condition"};
   };
   struct ValenciaCorrection {
     using type = DerivedValenciaCorrection;
-    static std::string name() noexcept {
+    static std::string name() {
       return Options::name<DerivedValenciaCorrection>();
     }
     static constexpr Options::String help{
@@ -202,7 +200,7 @@ class ProductOfCorrections final : public BoundaryCorrection {
 
   ProductOfCorrections() = default;
   ProductOfCorrections(DerivedGhCorrection gh_correction,
-                       DerivedValenciaCorrection valencia_correction) noexcept
+                       DerivedValenciaCorrection valencia_correction)
       : derived_gh_correction_{gh_correction},
         derived_valencia_correction_{valencia_correction} {}
   ProductOfCorrections(const ProductOfCorrections&) = default;
@@ -212,30 +210,30 @@ class ProductOfCorrections final : public BoundaryCorrection {
   ~ProductOfCorrections() override = default;
 
   /// \cond
-  explicit ProductOfCorrections(CkMigrateMessage* msg) noexcept
+  explicit ProductOfCorrections(CkMigrateMessage* msg)
       : BoundaryCorrection(msg) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ProductOfCorrections);  // NOLINT
   /// \endcond
-  void pup(PUP::er& p) noexcept override {
+  void pup(PUP::er& p) override {
     p | derived_gh_correction_;
     p | derived_valencia_correction_;
     BoundaryCorrection::pup(p);
   }
 
-  std::unique_ptr<BoundaryCorrection> get_clone() const noexcept override {
+  std::unique_ptr<BoundaryCorrection> get_clone() const override {
     return std::make_unique<ProductOfCorrections>(*this);
   }
 
   template <typename... Args>
-  double dg_package_data(Args&&... args) const noexcept {
+  double dg_package_data(Args&&... args) const {
     return derived_product_correction_impl::dg_package_data(
         std::forward<Args>(args)..., derived_gh_correction_,
         derived_valencia_correction_);
   }
 
   template <typename... Args>
-  void dg_boundary_terms(Args&&... args) const noexcept {
+  void dg_boundary_terms(Args&&... args) const {
     derived_product_correction_impl::dg_boundary_terms(
         std::forward<Args>(args)..., derived_gh_correction_,
         derived_valencia_correction_);

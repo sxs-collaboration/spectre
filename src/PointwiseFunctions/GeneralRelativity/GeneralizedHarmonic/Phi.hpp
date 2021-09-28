@@ -55,8 +55,7 @@ void phi(gsl::not_null<tnsr::iaa<DataType, SpatialDim, Frame>*> phi,
          const tnsr::I<DataType, SpatialDim, Frame>& shift,
          const tnsr::iJ<DataType, SpatialDim, Frame>& deriv_shift,
          const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
-         const tnsr::ijj<DataType, SpatialDim, Frame>&
-             deriv_spatial_metric) noexcept;
+         const tnsr::ijj<DataType, SpatialDim, Frame>& deriv_spatial_metric);
 
 template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::iaa<DataType, SpatialDim, Frame> phi(
@@ -65,8 +64,7 @@ tnsr::iaa<DataType, SpatialDim, Frame> phi(
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
     const tnsr::iJ<DataType, SpatialDim, Frame>& deriv_shift,
     const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
-    const tnsr::ijj<DataType, SpatialDim, Frame>&
-        deriv_spatial_metric) noexcept;
+    const tnsr::ijj<DataType, SpatialDim, Frame>& deriv_spatial_metric);
 /// @}
 
 namespace Tags {
@@ -98,7 +96,7 @@ struct PhiCompute : Phi<SpatialDim, Frame>, db::ComputeTag {
       const tnsr::I<DataVector, SpatialDim, Frame>&,
       const tnsr::iJ<DataVector, SpatialDim, Frame>&,
       const tnsr::ii<DataVector, SpatialDim, Frame>&,
-      const tnsr::ijj<DataVector, SpatialDim, Frame>&) noexcept>(
+      const tnsr::ijj<DataVector, SpatialDim, Frame>&)>(
       &phi<SpatialDim, Frame, DataVector>);
 
   using base = Phi<SpatialDim, Frame>;

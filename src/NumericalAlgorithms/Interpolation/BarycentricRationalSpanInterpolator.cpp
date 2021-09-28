@@ -13,7 +13,7 @@
 namespace intrp {
 
 BarycentricRationalSpanInterpolator::BarycentricRationalSpanInterpolator(
-    size_t min_order, size_t max_order) noexcept
+    size_t min_order, size_t max_order)
     : min_order_{min_order}, max_order_{max_order} {
   ASSERT(min_order <= max_order,
          "The minimum order for the Barycentric rational interpolator must be "
@@ -22,8 +22,7 @@ BarycentricRationalSpanInterpolator::BarycentricRationalSpanInterpolator(
 
 double BarycentricRationalSpanInterpolator::interpolate(
     const gsl::span<const double>& source_points,
-    const gsl::span<const double>& values, const double target_point) const
-    noexcept {
+    const gsl::span<const double>& values, const double target_point) const {
   if (UNLIKELY(source_points.size() < min_order_ + 1)) {
     ERROR("provided independent values for interpolation too small.");
   }

@@ -39,14 +39,12 @@ namespace gr {
 template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::I<DataType, SpatialDim, Frame> shift(
     const tnsr::aa<DataType, SpatialDim, Frame>& spacetime_metric,
-    const tnsr::II<DataType, SpatialDim, Frame>&
-        inverse_spatial_metric) noexcept;
+    const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric);
 
 template <size_t SpatialDim, typename Frame, typename DataType>
 void shift(gsl::not_null<tnsr::I<DataType, SpatialDim, Frame>*> shift,
            const tnsr::aa<DataType, SpatialDim, Frame>& spacetime_metric,
-           const tnsr::II<DataType, SpatialDim, Frame>&
-               inverse_spatial_metric) noexcept;
+           const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric);
 /// @}
 
 namespace Tags {
@@ -67,7 +65,7 @@ struct ShiftCompute : Shift<SpatialDim, Frame, DataType>, db::ComputeTag {
   static constexpr auto function = static_cast<void (*)(
       const gsl::not_null<tnsr::I<DataType, SpatialDim, Frame>*> shift,
       const tnsr::aa<DataType, SpatialDim, Frame>&,
-      const tnsr::II<DataType, SpatialDim, Frame>&) noexcept>(
+      const tnsr::II<DataType, SpatialDim, Frame>&)>(
       &shift<SpatialDim, Frame, DataType>);
 
   using base = Shift<SpatialDim, Frame, DataType>;

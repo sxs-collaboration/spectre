@@ -82,7 +82,7 @@ struct MakeIdentityIfSkipped {
         const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
         const Parallel::GlobalCache<Metavariables>& /*cache*/,
         const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-        const ParallelComponent* const /*meta*/) noexcept {
+        const ParallelComponent* const /*meta*/) {
     constexpr size_t this_action_index =
         tmpl::index_of<ActionList, MakeIdentityIfSkipped>::value;
     constexpr size_t proceed_action_index =
@@ -99,9 +99,7 @@ struct MakeIdentityIfSkipped {
         has_converged.num_iterations() == 0) {
       db::mutate<typename LinearSolverType::fields_tag>(
           make_not_null(&box),
-          [](const auto fields, const auto& source) noexcept {
-            *fields = source;
-          },
+          [](const auto fields, const auto& source) { *fields = source; },
           get<typename LinearSolverType::source_tag>(box));
       return {std::move(box), Parallel::AlgorithmExecution::Continue,
               this_action_index + 1};

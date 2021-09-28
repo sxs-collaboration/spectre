@@ -36,7 +36,7 @@ namespace Cce {
 
 tnsr::A<DataVector, 3> bouncing_bh_mapped_coordinates(
     const tnsr::A<DataVector, 3>& unmapped_coordinates, const double amplitude,
-    const double period) noexcept {
+    const double period) {
   tnsr::A<DataVector, 3> result{get<0>(unmapped_coordinates).size()};
   get<0>(result) = get<0>(unmapped_coordinates);
   get<1>(result) =
@@ -50,7 +50,7 @@ tnsr::A<DataVector, 3> bouncing_bh_mapped_coordinates(
 
 tnsr::aB<DataVector, 3> bouncing_bh_mapped_jacobian(
     const tnsr::A<DataVector, 3>& unmapped_coordinates, const double amplitude,
-    const double period) noexcept {
+    const double period) {
   tnsr::aB<DataVector, 3> result{get<0>(unmapped_coordinates).size(), 0.0};
   get<0, 0>(result) = 1.0;
   get<0, 1>(result) =
@@ -66,7 +66,7 @@ tnsr::aB<DataVector, 3> bouncing_bh_mapped_jacobian(
 
 tnsr::aaB<DataVector, 3> bouncing_bh_mapped_hessian(
     const tnsr::A<DataVector, 3>& unmapped_coordinates, const double amplitude,
-    const double period) noexcept {
+    const double period) {
   tnsr::aaB<DataVector, 3> result{get<0>(unmapped_coordinates).size(), 0.0};
   get<0, 0, 1>(result) =
       8.0 * amplitude * square(M_PI / period) *

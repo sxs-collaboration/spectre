@@ -88,6 +88,6 @@ class TciOnFdGrid {
       const tnsr::I<DataVector, Dim, Frame::Inertial>& dg_momentum_density,
       const Scalar<DataVector>& dg_energy_density,
       const EquationsOfState::EquationOfState<false, ThermodynamicDim>& eos,
-      const Mesh<Dim>& dg_mesh, double persson_exponent) noexcept;
+      const Mesh<Dim>& dg_mesh, double persson_exponent);
 };
 }  // namespace NewtonianEuler::subcell

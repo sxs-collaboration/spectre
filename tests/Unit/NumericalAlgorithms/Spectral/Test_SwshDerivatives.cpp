@@ -48,7 +48,7 @@ struct TestTag : db::SimpleTag {
 // bugs previously.
 template <typename DerivativeKind, ComplexRepresentation Representation,
           int Spin>
-void test_derivative_via_transforms() noexcept {
+void test_derivative_via_transforms() {
   // generate coefficients for the transformation
   MAKE_GENERATOR(gen);
   UniformCustomDistribution<size_t> size_distribution{2, 7};
@@ -123,7 +123,7 @@ void test_derivative_via_transforms() noexcept {
 // the derivatives of the basis functions by the generated coefficients.
 template <ComplexRepresentation Representation, int Spin0, int Spin1,
           typename DerivativeKind0, typename DerivativeKind1>
-void test_compute_angular_derivatives() noexcept {
+void test_compute_angular_derivatives() {
   MAKE_GENERATOR(gen);
   UniformCustomDistribution<size_t> size_distribution{2, 7};
   const size_t l_max = size_distribution(gen);
@@ -165,7 +165,7 @@ void test_compute_angular_derivatives() noexcept {
 
   const auto coefficients_to_analytic_collocation =
       [&l_max](const auto computed_collocation,
-               const ComplexModalVector& expected_modes) noexcept {
+               const ComplexModalVector& expected_modes) {
         constexpr int lambda_spin =
             std::decay_t<decltype(*computed_collocation)>::type::spin;
         TestHelpers::swsh_collocation_from_coefficients_and_basis_func<
@@ -300,7 +300,7 @@ void test_compute_angular_derivatives() noexcept {
 
 template <typename InverseDerivativeKind, typename DerivativeKind,
           ComplexRepresentation Representation, int Spin>
-void test_inverse_derivative() noexcept {
+void test_inverse_derivative() {
   MAKE_GENERATOR(gen);
   UniformCustomDistribution<size_t> size_distribution{2, 7};
   const size_t l_max = size_distribution(gen);

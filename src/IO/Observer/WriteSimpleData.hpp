@@ -39,13 +39,12 @@ struct WriteSimpleData {
                     const gsl::not_null<Parallel::NodeLock*> node_lock,
                     const std::vector<std::string>& file_legend,
                     const std::vector<double>& data_row,
-                    const std::string& subfile_name) noexcept {
+                    const std::string& subfile_name) {
     node_lock->lock();
     Parallel::NodeLock* file_lock = nullptr;
     db::mutate<Tags::H5FileLock>(
         make_not_null(&box),
-        [&file_lock](
-            const gsl::not_null<Parallel::NodeLock*> in_file_lock) noexcept {
+        [&file_lock](const gsl::not_null<Parallel::NodeLock*> in_file_lock) {
           file_lock = in_file_lock;
         });
     node_lock->unlock();

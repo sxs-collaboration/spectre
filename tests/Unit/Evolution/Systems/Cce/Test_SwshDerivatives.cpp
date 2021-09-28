@@ -138,8 +138,7 @@ struct GenerateStartingData {
       const gsl::not_null<Scalar<ComplexModalVector>*> radial_polynomials_for_j,
       const gsl::not_null<Generator*> generator,
       const gsl::not_null<Distribution*> dist, const size_t l_max,
-      const size_t number_of_radial_grid_points,
-      const ComplexDataVector& y) noexcept {
+      const size_t number_of_radial_grid_points, const ComplexDataVector& y) {
     get(*boundary_r).data() =
         (10.0 +
          std::complex<double>(1.0, 0.0) *

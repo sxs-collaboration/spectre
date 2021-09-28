@@ -20,7 +20,7 @@ namespace {
 template <size_t Dim>
 std::array<SegmentId, Dim> element_index_to_segment_id(
     const std::array<size_t, Dim>& refinement_levels,
-    const size_t element_index) noexcept {
+    const size_t element_index) {
   std::array<SegmentId, Dim> segment_ids{};
   size_t stride = 1;
   for (size_t i = 0; i < Dim; ++i) {
@@ -35,7 +35,7 @@ std::array<SegmentId, Dim> element_index_to_segment_id(
 
 template <size_t Dim>
 size_t segment_id_to_element_index(
-    const std::array<SegmentId, Dim>& segment_ids) noexcept {
+    const std::array<SegmentId, Dim>& segment_ids) {
   size_t element_index = 0;
   size_t stride = 1;
   for (size_t i = 0; i < Dim; ++i) {
@@ -47,7 +47,7 @@ size_t segment_id_to_element_index(
 
 template <size_t Dim>
 size_t number_of_elements_in_block(
-    const std::array<size_t, Dim>& refinement_levels) noexcept {
+    const std::array<size_t, Dim>& refinement_levels) {
   size_t number_of_elements = 1;
   for (size_t i = 0; i < Dim; ++i) {
     number_of_elements *= two_to_the(gsl::at(refinement_levels, i));
@@ -58,8 +58,7 @@ size_t number_of_elements_in_block(
 template <size_t Dim>
 std::vector<std::vector<size_t>> make_proc_map_for_domain(
     const size_t number_of_blocks, const size_t number_of_procs,
-    const std::vector<std::array<size_t, Dim>>&
-        refinement_levels_by_block) noexcept {
+    const std::vector<std::array<size_t, Dim>>& refinement_levels_by_block) {
   std::vector<std::vector<size_t>> proc_map(number_of_blocks);
   const domain::BlockZCurveProcDistribution distribution{
       number_of_procs, refinement_levels_by_block};
@@ -86,8 +85,7 @@ template <size_t Dim>
 void check_element_distribution_uniformity(
     const std::vector<std::vector<size_t>>& proc_map,
     const size_t number_of_procs,
-    const std::vector<std::array<size_t, Dim>>&
-        refinement_levels_by_block) noexcept {
+    const std::vector<std::array<size_t, Dim>>& refinement_levels_by_block) {
   std::vector<size_t> elements_per_proc(number_of_procs);
   for (const auto& block_proc_map : proc_map) {
     for (const size_t proc : block_proc_map) {
@@ -112,7 +110,7 @@ void check_element_distribution_cohesion(
     const std::vector<std::vector<size_t>>& proc_map,
     const size_t number_of_procs,
     const std::vector<std::array<size_t, Dim>>& refinement_levels_by_block,
-    const bool nonuniform_block = false) noexcept {
+    const bool nonuniform_block = false) {
   std::vector<std::set<size_t>> block_set_per_proc(number_of_procs);
   for (size_t block = 0; block < proc_map.size(); ++block) {
     std::array<size_t, Dim> strides{};
@@ -137,8 +135,7 @@ void check_element_distribution_cohesion(
         std::deque<size_t> next_elements;
         auto insert_adjacent_unseen = [&next_elements, &current_proc, &proc_map,
                                        &refinement_levels_by_block, &strides,
-                                       &seen,
-                                       &block](const size_t index) noexcept {
+                                       &seen, &block](const size_t index) {
           for (size_t i = 0; i < Dim; ++i) {
             const size_t index_in_dim =
                 (index / gsl::at(strides, i)) %
@@ -196,7 +193,7 @@ void check_element_distribution_cohesion(
 }
 
 template <size_t Dim>
-void test_single_block_domain() noexcept {
+void test_single_block_domain() {
   std::vector<std::array<size_t, Dim>> refinement_levels_by_block;
   refinement_levels_by_block.emplace_back();
   for (size_t i = 0; i < Dim; ++i) {
@@ -252,7 +249,7 @@ void test_single_block_domain() noexcept {
 
 template <size_t Dim>
 void general_test(const size_t number_of_blocks, const size_t number_of_procs,
-                  const bool uneven_domain) noexcept {
+                  const bool uneven_domain) {
   std::vector<std::array<size_t, Dim>> refinement_levels_by_block;
   for (size_t i = 0; i < number_of_blocks; ++i) {
     refinement_levels_by_block.emplace_back();

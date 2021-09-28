@@ -22,13 +22,12 @@ namespace Cce::Solutions {
 
 RotatingSchwarzschild::RotatingSchwarzschild(const double extraction_radius,
                                              const double mass,
-                                             const double frequency) noexcept
+                                             const double frequency)
     : SphericalMetricData{extraction_radius},
       frequency_{frequency},
       mass_{mass} {}
 
-std::unique_ptr<WorldtubeData> RotatingSchwarzschild::get_clone() const
-    noexcept {
+std::unique_ptr<WorldtubeData> RotatingSchwarzschild::get_clone() const {
   return std::make_unique<RotatingSchwarzschild>(*this);
 }
 
@@ -36,7 +35,7 @@ void RotatingSchwarzschild::spherical_metric(
     const gsl::not_null<
         tnsr::aa<DataVector, 3, ::Frame::Spherical<::Frame::Inertial>>*>
         spherical_metric,
-    const size_t l_max, double /*time*/) const noexcept {
+    const size_t l_max, double /*time*/) const {
   get<0, 1>(*spherical_metric) = 0.0;
   get<0, 2>(*spherical_metric) = 0.0;
 
@@ -67,7 +66,7 @@ void RotatingSchwarzschild::dr_spherical_metric(
     const gsl::not_null<
         tnsr::aa<DataVector, 3, ::Frame::Spherical<::Frame::Inertial>>*>
         dr_spherical_metric,
-    const size_t l_max, double /*time*/) const noexcept {
+    const size_t l_max, double /*time*/) const {
   get<0, 1>(*dr_spherical_metric) = 0.0;
   get<0, 2>(*dr_spherical_metric) = 0.0;
 
@@ -99,7 +98,7 @@ void RotatingSchwarzschild::dt_spherical_metric(
     const gsl::not_null<
         tnsr::aa<DataVector, 3, ::Frame::Spherical<::Frame::Inertial>>*>
         dt_spherical_metric,
-    size_t /*l_max*/, double /*time*/) const noexcept {
+    size_t /*l_max*/, double /*time*/) const {
   for(auto& component : *dt_spherical_metric) {
     component = 0.0;
   }
@@ -108,11 +107,11 @@ void RotatingSchwarzschild::dt_spherical_metric(
 void RotatingSchwarzschild::variables_impl(
     const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, -2>>*> news,
     size_t /*output_l_max*/, double /*time*/,
-    tmpl::type_<Tags::News> /*meta*/) const noexcept {
+    tmpl::type_<Tags::News> /*meta*/) const {
   get(*news).data() = 0.0;
 }
 
-void RotatingSchwarzschild::pup(PUP::er& p) noexcept {
+void RotatingSchwarzschild::pup(PUP::er& p) {
   SphericalMetricData::pup(p);
   p | mass_;
   p | frequency_;

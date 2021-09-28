@@ -25,7 +25,7 @@ void fluxes_impl(
     const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, Dim, Frame::Inertial>& shift,
     const tnsr::I<DataVector, Dim, Frame::Inertial>& spatial_velocity,
-    const DataVector& p_alpha_sqrt_det_g) noexcept;
+    const DataVector& p_alpha_sqrt_det_g);
 
 template <size_t Dim>
 void sources_impl(
@@ -42,8 +42,7 @@ void sources_impl(
     const tnsr::ijj<DataVector, Dim, Frame::Inertial>& d_spatial_metric,
     const tnsr::II<DataVector, Dim, Frame::Inertial>& inv_spatial_metric,
     const Scalar<DataVector>& sqrt_det_spatial_metric,
-    const tnsr::ii<DataVector, Dim, Frame::Inertial>&
-        extrinsic_curvature) noexcept;
+    const tnsr::ii<DataVector, Dim, Frame::Inertial>& extrinsic_curvature);
 }  // namespace detail
 
 template <size_t Dim>
@@ -95,7 +94,7 @@ void TimeDerivativeTerms<Dim>::apply(
     const tnsr::ii<DataVector, Dim, Frame::Inertial>& extrinsic_curvature,
 
     // For Riemann solvers
-    const tnsr::ii<DataVector, Dim, Frame::Inertial>& spatial_metric) noexcept {
+    const tnsr::ii<DataVector, Dim, Frame::Inertial>& spatial_metric) {
   *temp_lapse = lapse;
   *temp_shift = shift;
   *temp_spatial_metric = spatial_metric;

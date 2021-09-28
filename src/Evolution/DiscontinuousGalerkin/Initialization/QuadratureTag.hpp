@@ -31,9 +31,7 @@ struct Quadrature : db::SimpleTag {
 
   using option_tags = tmpl::list<OptionTags::Quadrature>;
   static constexpr bool pass_metavariables = false;
-  static type create_from_options(const type& quadrature) noexcept {
-    return quadrature;
-  }
+  static type create_from_options(const type& quadrature) { return quadrature; }
 };
 }  // namespace Tags
 }  // namespace evolution::dg

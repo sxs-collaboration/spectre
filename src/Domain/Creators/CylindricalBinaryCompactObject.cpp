@@ -25,16 +25,14 @@
 #include "NumericalAlgorithms/RootFinding/QuadraticEquation.hpp"
 
 namespace {
-std::array<double, 3> rotate_to_z_axis(
-    const std::array<double, 3> input) noexcept {
+std::array<double, 3> rotate_to_z_axis(const std::array<double, 3> input) {
   return discrete_rotation(
       OrientationMap<3>{std::array<Direction<3>, 3>{Direction<3>::lower_zeta(),
                                                     Direction<3>::upper_eta(),
                                                     Direction<3>::upper_xi()}},
       input);
 }
-std::array<double, 3> flip_about_xy_plane(
-    const std::array<double, 3> input) noexcept {
+std::array<double, 3> flip_about_xy_plane(const std::array<double, 3> input) {
   return std::array<double, 3>{input[0], input[1], -input[2]};
 }
 }  // namespace
@@ -174,9 +172,8 @@ CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
   }
 
   // Create block names and groups
-  auto add_filled_cylinder_name = [this](
-                                      const std::string& prefix,
-                                      const std::string& group_name) noexcept {
+  auto add_filled_cylinder_name = [this](const std::string& prefix,
+                                         const std::string& group_name) {
     for (const std::string& where :
          {"Center", "East", "North", "West", "South"}) {
       const std::string name =
@@ -186,7 +183,7 @@ CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
     }
   };
   auto add_cylinder_name = [this](const std::string& prefix,
-                                  const std::string& group_name) noexcept {
+                                  const std::string& group_name) {
     for (const std::string& where : {"East", "North", "West", "South"}) {
       const std::string name =
           std::string(prefix).append("Cylinder").append(where);
@@ -258,7 +255,7 @@ CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
   // but for filled cylinders: [xi, eta, zeta] = [perp, theta, r].
 
   auto swap_refinement_and_grid_points_xi_zeta =
-      [this](const size_t block_id) noexcept {
+      [this](const size_t block_id) {
         size_t val = gsl::at(initial_refinement_[block_id], 0);
         gsl::at(initial_refinement_[block_id], 0) =
             gsl::at(initial_refinement_[block_id], 2);
@@ -298,7 +295,7 @@ CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
   }
 }
 
-Domain<3> CylindricalBinaryCompactObject::create_domain() const noexcept {
+Domain<3> CylindricalBinaryCompactObject::create_domain() const {
   using BcMap = DirectionMap<
       3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>;
 
@@ -393,7 +390,7 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const noexcept {
              const AddBoundaryCondition add_boundary_condition =
                  AddBoundaryCondition::none,
              const CylindricalDomainParityFlip parity_flip =
-                 CylindricalDomainParityFlip::none) noexcept {
+                 CylindricalDomainParityFlip::none) {
         auto new_logical_to_cylinder_center_maps =
             domain::make_vector_coordinate_map_base<Frame::BlockLogical,
                                                     Frame::Inertial, 3>(
@@ -455,7 +452,7 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const noexcept {
       [&coordinate_maps, &logical_to_cylinder_center_maps,
        &logical_to_cylinder_surrounding_maps, &boundary_conditions_all_blocks,
        this](const CoordinateMaps::CylindricalFlatEndcap& endcap_map,
-             const CoordinateMaps::DiscreteRotation<3>& rotation_map) noexcept {
+             const CoordinateMaps::DiscreteRotation<3>& rotation_map) {
         auto new_logical_to_cylinder_center_maps =
             domain::make_vector_coordinate_map_base<Frame::BlockLogical,
                                                     Frame::Inertial, 3>(
@@ -530,7 +527,7 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const noexcept {
              const AddBoundaryCondition add_boundary_condition =
                  AddBoundaryCondition::none,
              const CylindricalDomainParityFlip parity_flip =
-                 CylindricalDomainParityFlip::none) noexcept {
+                 CylindricalDomainParityFlip::none) {
         auto new_logical_to_cylindrical_shell_maps =
             domain::make_vector_coordinate_map_base<Frame::BlockLogical,
                                                     Frame::Inertial, 3>(
@@ -674,18 +671,18 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const noexcept {
 }
 
 std::vector<std::array<size_t, 3>>
-CylindricalBinaryCompactObject::initial_extents() const noexcept {
+CylindricalBinaryCompactObject::initial_extents() const {
   return initial_grid_points_;
 }
 
 std::vector<std::array<size_t, 3>>
-CylindricalBinaryCompactObject::initial_refinement_levels() const noexcept {
+CylindricalBinaryCompactObject::initial_refinement_levels() const {
   return initial_refinement_;
 }
 
 std::unordered_map<std::string,
                    std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
-CylindricalBinaryCompactObject::functions_of_time() const noexcept {
+CylindricalBinaryCompactObject::functions_of_time() const {
   if (time_dependence_->is_none()) {
     return {};
   } else {

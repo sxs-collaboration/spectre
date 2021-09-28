@@ -87,14 +87,14 @@ struct ApparentHorizonImpl {
           kerr_solution_for_negative_expansion,
       const Options::Context& context = {});
 
-  const std::array<double, 3>& center() const noexcept { return center_; }
-  const std::array<double, 3>& rotation() const noexcept { return rotation_; }
+  const std::array<double, 3>& center() const { return center_; }
+  const std::array<double, 3>& rotation() const { return rotation_; }
   const std::optional<gr::Solutions::KerrSchild>& kerr_solution_for_lapse()
-      const noexcept {
+      const {
     return kerr_solution_for_lapse_;
   }
   const std::optional<gr::Solutions::KerrSchild>&
-  kerr_solution_for_negative_expansion() const noexcept {
+  kerr_solution_for_negative_expansion() const {
     return kerr_solution_for_negative_expansion_;
   }
 
@@ -130,8 +130,7 @@ struct ApparentHorizonImpl {
       const tnsr::I<DataVector, 3>& x,
       const Scalar<DataVector>& extrinsic_curvature_trace,
       const tnsr::I<DataVector, 3>& shift_background,
-      const tnsr::II<DataVector, 3>& longitudinal_shift_background)
-      const noexcept;
+      const tnsr::II<DataVector, 3>& longitudinal_shift_background) const;
 
   void apply(
       gsl::not_null<Scalar<DataVector>*> conformal_factor,
@@ -149,8 +148,7 @@ struct ApparentHorizonImpl {
       const tnsr::I<DataVector, 3>& shift_background,
       const tnsr::II<DataVector, 3>& longitudinal_shift_background,
       const tnsr::II<DataVector, 3>& inv_conformal_metric,
-      const tnsr::Ijj<DataVector, 3>& conformal_christoffel_second_kind)
-      const noexcept;
+      const tnsr::Ijj<DataVector, 3>& conformal_christoffel_second_kind) const;
 
   using argument_tags_linearized = tmpl::flatten<tmpl::list<
       ::Tags::Normalized<
@@ -193,8 +191,7 @@ struct ApparentHorizonImpl {
       const tnsr::II<DataVector, 3>& longitudinal_shift_background,
       const Scalar<DataVector>& conformal_factor,
       const Scalar<DataVector>& lapse_times_conformal_factor,
-      const tnsr::I<DataVector, 3>& n_dot_longitudinal_shift_excess)
-      const noexcept;
+      const tnsr::I<DataVector, 3>& n_dot_longitudinal_shift_excess) const;
 
   void apply_linearized(
       gsl::not_null<Scalar<DataVector>*> conformal_factor_correction,
@@ -217,11 +214,10 @@ struct ApparentHorizonImpl {
       const Scalar<DataVector>& lapse_times_conformal_factor,
       const tnsr::I<DataVector, 3>& n_dot_longitudinal_shift_excess,
       const tnsr::II<DataVector, 3>& inv_conformal_metric,
-      const tnsr::Ijj<DataVector, 3>& conformal_christoffel_second_kind)
-      const noexcept;
+      const tnsr::Ijj<DataVector, 3>& conformal_christoffel_second_kind) const;
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept;
+  void pup(PUP::er& p);
 
  private:
   std::array<double, 3> center_ =
@@ -235,11 +231,11 @@ struct ApparentHorizonImpl {
 
 template <Xcts::Geometry ConformalGeometry>
 bool operator==(const ApparentHorizonImpl<ConformalGeometry>& lhs,
-                const ApparentHorizonImpl<ConformalGeometry>& rhs) noexcept;
+                const ApparentHorizonImpl<ConformalGeometry>& rhs);
 
 template <Xcts::Geometry ConformalGeometry>
 bool operator!=(const ApparentHorizonImpl<ConformalGeometry>& lhs,
-                const ApparentHorizonImpl<ConformalGeometry>& rhs) noexcept;
+                const ApparentHorizonImpl<ConformalGeometry>& rhs);
 
 }  // namespace detail
 
@@ -342,17 +338,17 @@ class ApparentHorizon
   using detail::ApparentHorizonImpl<ConformalGeometry>::ApparentHorizonImpl;
 
   /// \cond
-  explicit ApparentHorizon(CkMigrateMessage* m) noexcept : Base(m) {}
+  explicit ApparentHorizon(CkMigrateMessage* m) : Base(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ApparentHorizon);
   /// \endcond
 
   std::unique_ptr<domain::BoundaryConditions::BoundaryCondition> get_clone()
-      const noexcept override {
+      const override {
     return std::make_unique<ApparentHorizon>(*this);
   }
 
-  void pup(PUP::er& p) noexcept override {
+  void pup(PUP::er& p) override {
     Base::pup(p);
     detail::ApparentHorizonImpl<ConformalGeometry>::pup(p);
   }

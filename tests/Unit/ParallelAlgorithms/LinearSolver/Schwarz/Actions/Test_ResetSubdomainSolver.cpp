@@ -23,7 +23,7 @@ namespace {
 struct DummyOptionsGroup {};
 
 struct SubdomainSolver {
-  void reset() noexcept { is_reset = true; }
+  void reset() { is_reset = true; }
   bool is_reset = false;
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) { p | is_reset; }
@@ -52,7 +52,7 @@ struct Metavariables {
   enum class Phase { Initialization, Testing, Exit };
 };
 
-void test_reset_subdomain_solver(const bool skip_resets) noexcept {
+void test_reset_subdomain_solver(const bool skip_resets) {
   CAPTURE(skip_resets);
 
   using element_array = typename Metavariables::element_array;

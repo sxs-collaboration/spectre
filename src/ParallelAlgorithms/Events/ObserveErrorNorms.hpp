@@ -100,7 +100,7 @@ class ObserveErrorNorms<ObservationValueTag, tmpl::list<Tensors...>,
   };
 
   /// \cond
-  explicit ObserveErrorNorms(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit ObserveErrorNorms(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ObserveErrorNorms);  // NOLINT
   /// \endcond
@@ -120,7 +120,7 @@ class ObserveErrorNorms<ObservationValueTag, tmpl::list<Tensors...>,
       "run at once will produce unpredictable results.";
 
   ObserveErrorNorms() = default;
-  explicit ObserveErrorNorms(const std::string& subfile_name) noexcept;
+  explicit ObserveErrorNorms(const std::string& subfile_name);
 
   using observed_reduction_data_tags =
       observers::make_reduction_data_tags<tmpl::list<ReductionData>>;
@@ -137,7 +137,7 @@ class ObserveErrorNorms<ObservationValueTag, tmpl::list<Tensors...>,
                   const OptionalAnalyticSolutions& optional_analytic_solutions,
                   Parallel::GlobalCache<Metavariables>& cache,
                   const ArrayIndex& array_index,
-                  const ParallelComponent* const /*meta*/) const noexcept {
+                  const ParallelComponent* const /*meta*/) const {
     // Skip observation on elements that are not part of a section
     const std::optional<std::string> section_observation_key =
         observers::get_section_observation_key<ArraySectionIdTag>(box);
@@ -153,7 +153,7 @@ class ObserveErrorNorms<ObservationValueTag, tmpl::list<Tensors...>,
       }
     }
     const auto& analytic_solutions =
-        [&optional_analytic_solutions]() noexcept -> decltype(auto) {
+        [&optional_analytic_solutions]() -> decltype(auto) {
       // If we generalize this event to do observations of non-solution
       // quantities then we can return a std::optional<std::reference_wrapper>
       // here (using std::cref).
@@ -167,7 +167,7 @@ class ObserveErrorNorms<ObservationValueTag, tmpl::list<Tensors...>,
     tuples::TaggedTuple<LocalSquareError<Tensors>...> local_square_errors;
     const auto record_errors = [&local_square_errors, &analytic_solutions](
                                    const auto tensor_tag_v,
-                                   const auto& tensor) noexcept {
+                                   const auto& tensor) {
       using tensor_tag = tmpl::type_from<decltype(tensor_tag_v)>;
       double local_square_error = 0.0;
       for (size_t i = 0; i < tensor.size(); ++i) {
@@ -211,7 +211,7 @@ class ObserveErrorNorms<ObservationValueTag, tmpl::list<Tensors...>,
   std::optional<
       std::pair<observers::TypeOfObservation, observers::ObservationKey>>
   get_observation_type_and_key_for_registration(
-      const db::DataBox<DbTagsList>& box) const noexcept {
+      const db::DataBox<DbTagsList>& box) const {
     const std::optional<std::string> section_observation_key =
         observers::get_section_observation_key<ArraySectionIdTag>(box);
     if (not section_observation_key.has_value()) {
@@ -227,11 +227,11 @@ class ObserveErrorNorms<ObservationValueTag, tmpl::list<Tensors...>,
   template <typename Metavariables, typename ArrayIndex, typename Component>
   bool is_ready(Parallel::GlobalCache<Metavariables>& /*cache*/,
                 const ArrayIndex& /*array_index*/,
-                const Component* const /*meta*/) const noexcept {
+                const Component* const /*meta*/) const {
     return true;
   }
 
-  bool needs_evolved_variables() const noexcept override { return true; }
+  bool needs_evolved_variables() const override { return true; }
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override {
@@ -246,8 +246,8 @@ class ObserveErrorNorms<ObservationValueTag, tmpl::list<Tensors...>,
 template <typename ObservationValueTag, typename... Tensors,
           typename ArraySectionIdTag>
 ObserveErrorNorms<ObservationValueTag, tmpl::list<Tensors...>,
-                  ArraySectionIdTag>::
-    ObserveErrorNorms(const std::string& subfile_name) noexcept
+                  ArraySectionIdTag>::ObserveErrorNorms(const std::string&
+                                                            subfile_name)
     : subfile_path_("/" + subfile_name) {}
 
 /// \cond

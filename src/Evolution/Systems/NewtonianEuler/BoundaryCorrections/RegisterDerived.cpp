@@ -5,7 +5,7 @@
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 
 namespace NewtonianEuler::BoundaryCorrections {
-void register_derived_with_charm() noexcept {
+void register_derived_with_charm() {
   Parallel::register_derived_classes_with_charm<BoundaryCorrection<1>>();
   Parallel::register_derived_classes_with_charm<BoundaryCorrection<2>>();
   Parallel::register_derived_classes_with_charm<BoundaryCorrection<3>>();

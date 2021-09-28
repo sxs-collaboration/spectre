@@ -39,17 +39,17 @@ convert_constraint_preserving_spherical_radiation_type_from_yaml(
 template <size_t Dim>
 ConstraintPreservingSphericalRadiation<Dim>::
     ConstraintPreservingSphericalRadiation(
-        const detail::ConstraintPreservingSphericalRadiationType type) noexcept
+        const detail::ConstraintPreservingSphericalRadiationType type)
     : type_(type) {}
 
 template <size_t Dim>
-ConstraintPreservingSphericalRadiation<Dim>::
-    ConstraintPreservingSphericalRadiation(CkMigrateMessage* const msg) noexcept
+ConstraintPreservingSphericalRadiation<
+    Dim>::ConstraintPreservingSphericalRadiation(CkMigrateMessage* const msg)
     : BoundaryCondition<Dim>(msg) {}
 
 template <size_t Dim>
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-ConstraintPreservingSphericalRadiation<Dim>::get_clone() const noexcept {
+ConstraintPreservingSphericalRadiation<Dim>::get_clone() const {
   return std::make_unique<ConstraintPreservingSphericalRadiation>(*this);
 }
 
@@ -78,7 +78,7 @@ ConstraintPreservingSphericalRadiation<Dim>::dg_time_derivative(
     const Scalar<DataVector>& dt_psi,
     const tnsr::i<DataVector, Dim, Frame::Inertial>& d_pi,
     const tnsr::i<DataVector, Dim, Frame::Inertial>& d_psi,
-    const tnsr::ij<DataVector, Dim, Frame::Inertial>& d_phi) const noexcept {
+    const tnsr::ij<DataVector, Dim, Frame::Inertial>& d_phi) const {
   {
     if (type_ ==
         detail::ConstraintPreservingSphericalRadiationType::Sommerfeld) {

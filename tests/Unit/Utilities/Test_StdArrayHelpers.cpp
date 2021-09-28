@@ -186,17 +186,16 @@ SPECTRE_TEST_CASE("Unit.Utilities.StdArrayHelpers.Prepend",
 
 SPECTRE_TEST_CASE("Unit.Utilities.StdArrayHelpers.map_array",
                   "[Utilities][Unit]") {
-  const auto func = [](const int x) noexcept { return 2. * x; };
+  const auto func = [](const int x) { return 2. * x; };
   CHECK(map_array(std::array<int, 3>{{4, 3, 2}}, func) ==
         std::array<double, 3>{{8, 6, 4}});
   CHECK(map_array(std::array<int, 1>{{4}}, func) == std::array<double, 1>{{8}});
   CHECK(map_array(std::array<int, 0>{}, func) == std::array<double, 0>{});
 
   // Check function returning a reference
-  CHECK(
-      map_array(std::array<int, 1>{{4}}, [](const int& x) noexcept->const int& {
-        return x;
-      }) == std::array<int, 1>{{4}});
+  CHECK(map_array(std::array<int, 1>{{4}}, [](const int& x) -> const int& {
+          return x;
+        }) == std::array<int, 1>{{4}});
 }
 
 namespace {

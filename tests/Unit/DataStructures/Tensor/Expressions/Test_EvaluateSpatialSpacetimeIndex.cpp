@@ -21,7 +21,7 @@ namespace {
 // \tparam DataType the type of data being stored in the expression operands
 template <typename DataType, typename Generator>
 void test_rhs(const DataType& used_for_size,
-              const gsl::not_null<Generator*> generator) noexcept {
+              const gsl::not_null<Generator*> generator) {
   std::uniform_real_distribution<> distribution(0.1, 1.0);
   constexpr size_t dim = 3;
 
@@ -73,7 +73,7 @@ void test_rhs(const DataType& used_for_size,
 // \tparam DataType the type of data being stored in the expression operands
 template <typename DataType, typename Generator>
 void test_lhs(const DataType& used_for_size,
-              const gsl::not_null<Generator*> generator) noexcept {
+              const gsl::not_null<Generator*> generator) {
   std::uniform_real_distribution<> distribution(0.1, 1.0);
   constexpr size_t dim = 3;
 
@@ -138,9 +138,8 @@ void test_lhs(const DataType& used_for_size,
 //
 // \tparam DataType the type of data being stored in the expression operands
 template <typename DataType, typename Generator>
-void test_rhs_and_lhs_rank2(
-    const DataType& used_for_size,
-    const gsl::not_null<Generator*> generator) noexcept {
+void test_rhs_and_lhs_rank2(const DataType& used_for_size,
+                            const gsl::not_null<Generator*> generator) {
   std::uniform_real_distribution<> distribution(0.1, 1.0);
   constexpr size_t dim = 3;
 
@@ -199,9 +198,8 @@ void test_rhs_and_lhs_rank2(
 //
 // \tparam DataType the type of data being stored in the expression operands
 template <typename DataType, typename Generator>
-void test_rhs_and_lhs_rank4(
-    const DataType& used_for_size,
-    const gsl::not_null<Generator*> generator) noexcept {
+void test_rhs_and_lhs_rank4(const DataType& used_for_size,
+                            const gsl::not_null<Generator*> generator) {
   std::uniform_real_distribution<> distribution(0.1, 1.0);
   constexpr size_t dim = 3;
 
@@ -238,8 +236,7 @@ void test_rhs_and_lhs_rank4(
 }
 
 template <typename DataType>
-void test_evaluate_spatial_spacetime_index(
-    const DataType& used_for_size) noexcept {
+void test_evaluate_spatial_spacetime_index(const DataType& used_for_size) {
   MAKE_GENERATOR(generator);
 
   test_rhs(used_for_size, make_not_null(&generator));

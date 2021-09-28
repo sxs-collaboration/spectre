@@ -104,7 +104,7 @@ struct Tag6Compute : Tag6, db::ComputeTag {
   using base = Tag6;
   using return_type = std::string;
   static void function(gsl::not_null<std::string*> result,
-                       const std::string& s) noexcept {
+                       const std::string& s) {
     *result = s;
   }
   using argument_tags = tmpl::list<Tag2Base>;
@@ -146,9 +146,7 @@ template <typename Tag>
 struct TagPrefix : db::PrefixTag, db::SimpleTag {
   using type = typename Tag::type;
   using tag = Tag;
-  static std::string name() noexcept {
-    return "TagPrefix(" + db::tag_name<Tag>() + ")";
-  }
+  static std::string name() { return "TagPrefix(" + db::tag_name<Tag>() + ")"; }
 };
 // [databox_prefix_tag_example]
 
@@ -167,8 +165,7 @@ struct PointerToCounter : PointerToCounterBase, db::SimpleTag {
 struct PointerToCounterCompute : PointerToCounter, db::ComputeTag {
   using base = PointerToCounter;
   using return_type = std::unique_ptr<int>;
-  static void function(const gsl::not_null<return_type*> result,
-                       const int& p) noexcept {
+  static void function(const gsl::not_null<return_type*> result, const int& p) {
     *result = std::make_unique<int>(p + 1);
   }
   using argument_tags = tmpl::list<Pointer>;
@@ -182,7 +179,7 @@ struct PointerToSumCompute : PointerToSum, db::ComputeTag {
   using base = PointerToSum;
   using return_type = std::unique_ptr<int>;
   static void function(const gsl::not_null<return_type*> ret, const int& arg,
-                       const int& same_arg) noexcept {
+                       const int& same_arg) {
     *ret = std::make_unique<int>(arg + same_arg);
   }
   using argument_tags = tmpl::list<PointerToCounter, PointerToCounterBase>;
@@ -226,7 +223,7 @@ static_assert(std::is_same<decltype(db::create_from<db::RemoveTags<>>(Box_t{})),
                            Box_t>::value,
               "Failed testing no-op create_from");
 
-void test_databox() noexcept {
+void test_databox() {
   INFO("test databox");
   const auto create_original_box = []() {
     // [create_databox]
@@ -250,9 +247,8 @@ void test_databox() noexcept {
     CHECK(db::get<test_databox_tags::Tag1>(simple_box).empty());
     CHECK(db::get<test_databox_tags::Tag2>(simple_box).empty());
     db::mutate<test_databox_tags::Tag0, test_databox_tags::Tag2>(
-        make_not_null(&simple_box),
-        [](const gsl::not_null<double*> val,
-           const gsl::not_null<std::string*> str) noexcept {
+        make_not_null(&simple_box), [](const gsl::not_null<double*> val,
+                                       const gsl::not_null<std::string*> str) {
           *val = 1.5;
           *str = "My Sample String";
         });
@@ -448,7 +444,7 @@ struct String : db::SimpleTag {
 };
 }  // namespace ArgumentTypeTags
 
-void test_create_argument_types() noexcept {
+void test_create_argument_types() {
   INFO("test create argument types");
   std::string mutable_string = "mutable";
   const std::string const_string = "const";
@@ -469,7 +465,7 @@ void test_create_argument_types() noexcept {
   CHECK(db::get<ArgumentTypeTags::String<3>>(box) == "const move");
 }
 
-void test_get_databox() noexcept {
+void test_get_databox() {
   INFO("test get databox");
   auto original_box = db::create<
       db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
@@ -512,7 +508,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.get_databox_error",
 }
 
 namespace {
-void test_mutate() noexcept {
+void test_mutate() {
   INFO("test mutate");
   auto original_box = db::create<
       db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
@@ -556,7 +552,7 @@ void test_mutate() noexcept {
   CHECK(pointer_to_result == &result);
 
   db::mutate<test_databox_tags::Pointer>(
-      make_not_null(&original_box), [](auto p) noexcept {
+      make_not_null(&original_box), [](auto p) {
         static_assert(std::is_same_v<typename test_databox_tags::Pointer::type,
                                      std::unique_ptr<int>>,
                       "Wrong type for item_type on unique_ptr");
@@ -634,7 +630,7 @@ struct NonCopyableFunctor {
   void operator()(Args&&... /*unused*/) && {}
 };
 
-void test_apply() noexcept {
+void test_apply() {
   INFO("test apply");
   auto original_box = db::create<
       db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
@@ -673,7 +669,7 @@ void test_apply() noexcept {
   struct ApplyCallable {
     static void apply(const std::string& sample_string,
                       const std::string& computed_string,
-                      const std::vector<double>& vector) noexcept {
+                      const std::vector<double>& vector) {
       CHECK(sample_string == "My Sample String"s);
       CHECK(computed_string == "My Sample String6.28"s);
       CHECK(vector == (std::vector<double>{8.7, 93.2, 84.7}));
@@ -692,7 +688,7 @@ void test_apply() noexcept {
         tmpl::list<test_databox_tags::Tag2, test_databox_tags::Tag5>;
     static void apply(const std::string& sample_string,
                       const std::string& computed_string,
-                      const std::vector<double>& vector) noexcept {
+                      const std::vector<double>& vector) {
       CHECK(sample_string == "My Sample String"s);
       CHECK(computed_string == "My Sample String6.28"s);
       CHECK(vector == (std::vector<double>{8.7, 93.2, 84.7}));
@@ -709,7 +705,7 @@ void test_apply() noexcept {
       test_databox_tags::PointerToSum, test_databox_tags::PointerBase,
       test_databox_tags::PointerToCounterBase>>(
       [](const int& simple, const int& compute, const int& compute_mutating,
-         const int& simple_base, const int& compute_base) noexcept {
+         const int& simple_base, const int& compute_base) {
         CHECK(simple == 3);
         CHECK(simple_base == 3);
         CHECK(compute == 4);
@@ -725,7 +721,7 @@ void test_apply() noexcept {
         test_databox_tags::PointerToCounterBase>;
     static void apply(const int& simple, const int& compute,
                       const int& compute_mutating, const int& simple_base,
-                      const int& compute_base) noexcept {
+                      const int& compute_base) {
       CHECK(simple == 3);
       CHECK(simple_base == 3);
       CHECK(compute == 4);
@@ -964,7 +960,7 @@ struct MultiplyVariablesByTwoCompute : MultiplyVariablesByTwo, db::ComputeTag {
 };
 }  // namespace test_databox_tags
 
-void test_variables() noexcept {
+void test_variables() {
   INFO("test variables");
   using vars_tag = Tags::Variables<
       tmpl::list<test_databox_tags::ScalarTag, test_databox_tags::VectorTag>>;
@@ -978,7 +974,7 @@ void test_variables() noexcept {
                          test_databox_tags::MultiplyVariablesByTwoCompute>>(
       Variables<tmpl::list<test_databox_tags::ScalarTag,
                            test_databox_tags::VectorTag>>(2, 3.));
-  const auto check_references_match = [&box]() noexcept {
+  const auto check_references_match = [&box]() {
     const auto& vars_original = db::get<vars_tag>(box);
     CHECK(get(db::get<test_databox_tags::ScalarTag>(box)).data() ==
           get(get<test_databox_tags::ScalarTag>(vars_original)).data());
@@ -1166,7 +1162,7 @@ struct Tag2 : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
 
-void test_variables2() noexcept {
+void test_variables2() {
   INFO("test variables2");
   auto box =
       db::create<db::AddSimpleTags<Tags::Variables<tmpl::list<Tag1, Tag2>>>>(
@@ -1179,7 +1175,7 @@ void test_variables2() noexcept {
   CHECK(db::get<Tag1>(box) == Scalar<DataVector>(DataVector(1, 2.)));
 }
 
-void test_reset_compute_items() noexcept {
+void test_reset_compute_items() {
   INFO("test reset compute items");
   auto box = db::create<
       db::AddSimpleTags<
@@ -1229,9 +1225,8 @@ struct CheckReset : db::SimpleTag {
 struct CheckResetCompute : CheckReset, db::ComputeTag {
   using base = CheckReset;
   using return_type = int;
-  static auto function(
-      const gsl::not_null<int*> result,
-      const ::Variables<tmpl::list<Var>>& /*unused*/) noexcept {
+  static auto function(const gsl::not_null<int*> result,
+                       const ::Variables<tmpl::list<Var>>& /*unused*/) {
     static bool first_call = true;
     CHECK(first_call);
     first_call = false;
@@ -1241,7 +1236,7 @@ struct CheckResetCompute : CheckReset, db::ComputeTag {
 };
 }  // namespace ExtraResetTags
 
-void test_variables_extra_reset() noexcept {
+void test_variables_extra_reset() {
   INFO("test variables extra reset");
   auto box = db::create<
       db::AddSimpleTags<ExtraResetTags::Int,
@@ -1272,7 +1267,7 @@ struct TestDataboxMutateApply {
 
   static void apply(const gsl::not_null<Scalar<DataVector>*> scalar,
                     const gsl::not_null<tnsr::I<DataVector, 3>*> vector,
-                    const std::string& tag2) noexcept {
+                    const std::string& tag2) {
     scalar->get() *= 2.0;
     get<0>(*vector) *= 3.0;
     get<1>(*vector) *= 4.0;
@@ -1287,7 +1282,7 @@ struct TestDataboxMutateApplyBase {
   using argument_tags = tmpl::list<test_databox_tags::Tag2Base>;
 
   static void apply(const gsl::not_null<Scalar<DataVector>*> scalar,
-                    const std::string& tag2) noexcept {
+                    const std::string& tag2) {
     CHECK(*scalar == Scalar<DataVector>(DataVector(2, 6.)));
     CHECK(tag2 == "My Sample String"s);
   }
@@ -1298,7 +1293,7 @@ struct PointerMutateApply {
   using argument_tags = tmpl::list<test_databox_tags::PointerToCounter,
                                    test_databox_tags::PointerToSum>;
   static void apply(const gsl::not_null<std::unique_ptr<int>*> ret,
-                    const int& compute, const int& compute_mutating) noexcept {
+                    const int& compute, const int& compute_mutating) {
     **ret = 7;
     CHECK(compute == 7);
     CHECK(compute_mutating == 14);
@@ -1309,13 +1304,13 @@ struct PointerMutateApplyBase {
   using return_tags = tmpl::list<test_databox_tags::Pointer>;
   using argument_tags = tmpl::list<test_databox_tags::PointerToCounterBase>;
   static void apply(const gsl::not_null<std::unique_ptr<int>*> ret,
-                    const int& compute_base) noexcept {
+                    const int& compute_base) {
     **ret = 8;
     CHECK(compute_base == 8);
   }
 };
 
-void test_mutate_apply() noexcept {
+void test_mutate_apply() {
   INFO("test mutate apply");
   auto box = db::create<
       db::AddSimpleTags<
@@ -1454,26 +1449,25 @@ void test_mutate_apply() noexcept {
   {
     INFO("unique_ptr");
     db::mutate_apply<tmpl::list<test_databox_tags::Pointer>, tmpl::list<>>(
-        [](const gsl::not_null<std::unique_ptr<int>*> p) noexcept { **p = 5; },
+        [](const gsl::not_null<std::unique_ptr<int>*> p) { **p = 5; },
         make_not_null(&box));
     db::mutate_apply<tmpl::list<>,
                      tmpl::list<test_databox_tags::Pointer,
                                 test_databox_tags::PointerToCounter,
                                 test_databox_tags::PointerToSum>>(
-        [](const int& simple, const int& compute,
-           const int& compute_mutating) noexcept {
+        [](const int& simple, const int& compute, const int& compute_mutating) {
           CHECK(simple == 5);
           CHECK(compute == 6);
           CHECK(compute_mutating == 12);
         },
         make_not_null(&box));
     db::mutate_apply<tmpl::list<test_databox_tags::Pointer>, tmpl::list<>>(
-        [](const gsl::not_null<std::unique_ptr<int>*> p) noexcept { **p = 6; },
+        [](const gsl::not_null<std::unique_ptr<int>*> p) { **p = 6; },
         make_not_null(&box));
     db::mutate_apply<tmpl::list<>,
                      tmpl::list<test_databox_tags::PointerBase,
                                 test_databox_tags::PointerToCounterBase>>(
-        [](const int& simple_base, const int& compute_base) noexcept {
+        [](const int& simple_base, const int& compute_base) {
           CHECK(simple_base == 6);
           CHECK(compute_base == 7);
         },
@@ -1572,7 +1566,7 @@ struct MutateVariablesCompute : MutateVariables, db::ComputeTag {
 // [databox_mutating_compute_item_tag]
 }  // namespace test_databox_tags
 
-void test_mutating_compute_item() noexcept {
+void test_mutating_compute_item() {
   INFO("test mutating compute item");
   auto original_box = db::create<
       db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
@@ -1678,7 +1672,7 @@ struct vector2 : db::SimpleTag {
 };
 }  // namespace DataBoxTest_detail
 
-void test_data_on_slice_single() noexcept {
+void test_data_on_slice_single() {
   INFO("test data on slice single");
   const size_t x_extents = 2;
   const size_t y_extents = 3;
@@ -1742,7 +1736,7 @@ void test_data_on_slice_single() noexcept {
         expected_vars_sliced_in_z);
 }
 
-void test_data_on_slice() noexcept {
+void test_data_on_slice() {
   INFO("test data on slice");
   const size_t x_extents = 2;
   const size_t y_extents = 3;
@@ -1867,7 +1861,7 @@ namespace {
 template <typename T>
 class Boxed {
  public:
-  explicit Boxed(std::shared_ptr<T> data) noexcept : data_(std::move(data)) {}
+  explicit Boxed(std::shared_ptr<T> data) : data_(std::move(data)) {}
   Boxed() = default;
   // The multiple copy constructors (assignment operators) are needed
   // to prevent users from modifying compute item values.
@@ -1879,12 +1873,12 @@ class Boxed {
   Boxed& operator=(Boxed&&) = default;
   ~Boxed() = default;
 
-  T& operator*() noexcept { return *data_; }
-  const T& operator*() const noexcept { return *data_; }
-  const std::shared_ptr<T>& data() const noexcept { return data_; }
+  T& operator*() { return *data_; }
+  const T& operator*() const { return *data_; }
+  const std::shared_ptr<T>& data() const { return data_; }
 
   // clang-tidy: no non-const references
-  void pup(PUP::er& p) noexcept {  // NOLINT
+  void pup(PUP::er& p) {  // NOLINT
     if (p.isUnpacking()) {
       T t{};
       p | t;
@@ -1910,9 +1904,8 @@ template <size_t N>
 struct ParentCompute : Parent<N>, db::ComputeTag {
   using base = Parent<N>;
   using return_type = std::pair<Boxed<int>, Boxed<double>>;
-  static void function(
-      const gsl::not_null<return_type*> result,
-      const std::pair<Boxed<int>, Boxed<double>>& arg) noexcept {
+  static void function(const gsl::not_null<return_type*> result,
+                       const std::pair<Boxed<int>, Boxed<double>>& arg) {
     count++;
     *result = std::make_pair(
         Boxed<int>(std::make_shared<int>(*arg.first + 1)),
@@ -1948,7 +1941,7 @@ struct Subitems<Parent<N>> {
   template <typename Subtag>
   static void create_item(
       const gsl::not_null<typename tag::type*> parent_value,
-      const gsl::not_null<typename Subtag::type*> sub_value) noexcept {
+      const gsl::not_null<typename Subtag::type*> sub_value) {
     *sub_value = std::get<Subtag::index>(*parent_value);
   }
 };
@@ -1960,7 +1953,7 @@ struct Subitems<ParentCompute<N>> {
 
   template <typename Subtag>
   static const typename Subtag::type& create_compute_item(
-      const typename tag::type& parent_value) noexcept {
+      const typename tag::type& parent_value) {
     return std::get<Subtag::index>(parent_value);
   }
 };
@@ -1968,7 +1961,7 @@ struct Subitems<ParentCompute<N>> {
 
 namespace {
 
-void test_subitems() noexcept {
+void test_subitems() {
   INFO("test subitems");
   {
     auto box = db::create<db::AddSimpleTags<Parent<0>>,
@@ -1986,7 +1979,7 @@ void test_subitems() noexcept {
 
     db::mutate<Second<0>>(
         make_not_null(&box),
-        [](const gsl::not_null<Boxed<double>*> x) noexcept { **x = 12.; });
+        [](const gsl::not_null<Boxed<double>*> x) { **x = 12.; });
 
     CHECK(*db::get<First<0>>(box) == 5);
     CHECK(*db::get<First<1>>(box) == 6);
@@ -2034,8 +2027,7 @@ void test_subitems() noexcept {
           db::get<Second<0>>(box).data());
     db::mutate<Parent<0>>(
         make_not_null(&box),
-        [](const gsl::not_null<std::pair<Boxed<int>, Boxed<double>>*>
-               val) noexcept {
+        [](const gsl::not_null<std::pair<Boxed<int>, Boxed<double>>*> val) {
           *val = std::make_pair(Boxed<int>(std::make_shared<int>(5)),
                                 Boxed<double>(std::make_shared<double>(3.5)));
         });
@@ -2043,13 +2035,12 @@ void test_subitems() noexcept {
     CHECK(*db::get<Second<0>>(box) == 3.5);
     CHECK(*db::get<First<1>>(box) == 6);
     CHECK(*db::get<Second<1>>(box) == 7.);
-    db::mutate<First<0>, Second<0>>(
-        make_not_null(&box),
-        [](const gsl::not_null<Boxed<int>*> a,
-           const gsl::not_null<Boxed<double>*> b) noexcept {
-          **a = 2;
-          **b = 2.5;
-        });
+    db::mutate<First<0>, Second<0>>(make_not_null(&box),
+                                    [](const gsl::not_null<Boxed<int>*> a,
+                                       const gsl::not_null<Boxed<double>*> b) {
+                                      **a = 2;
+                                      **b = 2.5;
+                                    });
     CHECK(*db::get<First<0>>(box) == 2);
     CHECK(*db::get<Second<0>>(box) == 2.5);
     CHECK(*db::get<First<1>>(box) == 3);
@@ -2073,12 +2064,12 @@ struct OverloadTypeCompute : OverloadType<ArgumentTag>, db::ComputeTag {
   using base = OverloadType<ArgumentTag>;
   using return_type = double;
   static constexpr void function(const gsl::not_null<double*> result,
-                                 const int& a) noexcept {
+                                 const int& a) {
     *result = 5 * a;
   }
 
   static constexpr void function(const gsl::not_null<double*> result,
-                                 const double a) noexcept {
+                                 const double a) {
     *result = 3.2 * a;
   }
   using argument_tags = tmpl::list<ArgumentTag>;
@@ -2099,12 +2090,12 @@ struct OverloadNumberOfArgsCompute
   using return_type = double;
 
   static constexpr void function(const gsl::not_null<double*> result,
-                                 const double a) noexcept {
+                                 const double a) {
     *result = 3.2 * a;
   }
 
   static constexpr void function(const gsl::not_null<double*> result,
-                                 const double a, const double b) noexcept {
+                                 const double a, const double b) {
     *result = a * b;
   }
 
@@ -2127,8 +2118,7 @@ struct TemplateCompute : Template<ArgumentTag>, db::ComputeTag {
   using return_type = typename ArgumentTag::type;
 
   template <typename T>
-  static constexpr void function(const gsl::not_null<T*> result,
-                                 const T& a) noexcept {
+  static constexpr void function(const gsl::not_null<T*> result, const T& a) {
     *result = 5 * a;
   }
 
@@ -2137,7 +2127,7 @@ struct TemplateCompute : Template<ArgumentTag>, db::ComputeTag {
 // [overload_compute_tag_template]
 }  // namespace test_databox_tags
 
-void test_overload_compute_tags() noexcept {
+void test_overload_compute_tags() {
   INFO("testing overload compute tags.");
   auto box = db::create<
       db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag0Int>,
@@ -2185,7 +2175,7 @@ struct TupleTag : db::SimpleTag {
 }  // namespace
 }  // namespace TestTags
 
-void test_with_tagged_tuple() noexcept {
+void test_with_tagged_tuple() {
   // Test that having a TaggedTuple inside a DataBox works properly
   auto box = db::create<db::AddSimpleTags<TestTags::TupleTag>>(
       tuples::TaggedTuple<TestTags::MyTag0, TestTags::MyTag1>{123, 2.3});
@@ -2196,7 +2186,7 @@ void test_with_tagged_tuple() noexcept {
         2.3);
 }
 
-void serialization_non_subitem_simple_items() noexcept {
+void serialization_non_subitem_simple_items() {
   INFO("serialization of a DataBox with non-Subitem simple items only");
   auto serialization_test_box = db::create<
       db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
@@ -2233,7 +2223,7 @@ void serialization_non_subitem_simple_items() noexcept {
         &db::get<test_databox_tags::Tag2>(deserialized_serialization_test_box));
 }
 
-void serialization_subitems_simple_items() noexcept {
+void serialization_subitems_simple_items() {
   INFO("serialization of a DataBox with Subitem and non-Subitem simple items");
   auto serialization_test_box =
       db::create<db::AddSimpleTags<test_databox_tags::Tag0, Parent<0>,
@@ -2361,7 +2351,7 @@ template <size_t SecondId>
 int CountingTagDoubleCompute<SecondId>::count = 0;
 
 // clang-tidy: this function is too long. Yes, well we need to check lots
-void serialization_subitem_compute_items() noexcept {  // NOLINT
+void serialization_subitem_compute_items() {  // NOLINT
   INFO("serialization of a DataBox with Subitem compute items");
   auto serialization_test_box =
       db::create<db::AddSimpleTags<test_databox_tags::Tag0, Parent<0>,
@@ -2616,7 +2606,7 @@ void serialization_subitem_compute_items() noexcept {  // NOLINT
   // Mutate subitems 1 in deserialized to see that changes propagate correctly
   db::mutate<Second<1>>(
       make_not_null(&serialization_test_box),
-      [](const gsl::not_null<Boxed<double>*> x) noexcept { **x = 12.; });
+      [](const gsl::not_null<Boxed<double>*> x) { **x = 12.; });
   CHECK(ParentCompute<2>::count == 1);
   CHECK(CountingTagDoubleCompute<2>::count == 1);
   CHECK(db::get<CountingTagDouble<2>>(serialization_test_box) == 24.0 * 6.0);
@@ -2628,7 +2618,7 @@ void serialization_subitem_compute_items() noexcept {  // NOLINT
 
   db::mutate<Second<1>>(
       make_not_null(&deserialized_serialization_test_box),
-      [](const gsl::not_null<Boxed<double>*> x) noexcept { **x = -7.; });
+      [](const gsl::not_null<Boxed<double>*> x) { **x = -7.; });
   CHECK(ParentCompute<2>::count == 2);
   CHECK(CountingTagDoubleCompute<2>::count == 2);
   CHECK(db::get<CountingTagDouble<2>>(deserialized_serialization_test_box) ==
@@ -2658,7 +2648,7 @@ void serialization_subitem_compute_items() noexcept {  // NOLINT
   ParentCompute<3>::count = 0;
 }
 
-void serialization_compute_items_of_base_tags() noexcept {
+void serialization_compute_items_of_base_tags() {
   INFO("serialization of a DataBox with compute items depending on base tags");
   auto original_box =
       db::create<db::AddSimpleTags<test_databox_tags::Tag2>,
@@ -2671,14 +2661,14 @@ void serialization_compute_items_of_base_tags() noexcept {
   CHECK(db::get<test_databox_tags::Tag6>(copied_box) == "My Sample String");
 }
 
-void serialization_of_pointers() noexcept {
+void serialization_of_pointers() {
   INFO("Serialization of pointers");
   const auto box =
       db::create<db::AddSimpleTags<test_databox_tags::Pointer>,
                  db::AddComputeTags<test_databox_tags::PointerToCounterCompute,
                                     test_databox_tags::PointerToSumCompute>>(
           std::make_unique<int>(3));
-  const auto check = [](const decltype(box)& check_box) noexcept {
+  const auto check = [](const decltype(box)& check_box) {
     CHECK(db::get<test_databox_tags::Pointer>(check_box) == 3);
     CHECK(db::get<test_databox_tags::PointerToCounter>(check_box) == 4);
     CHECK(db::get<test_databox_tags::PointerToSum>(check_box) == 8);
@@ -2709,7 +2699,7 @@ struct FromTaggedTuple : Tag, db::ReferenceTag {
 // [databox_reference_tag_example]
 }  // namespace test_databox_tags
 
-void test_reference_item() noexcept {
+void test_reference_item() {
   INFO("test reference item");
   using tuple_tag = test_databox_tags::TaggedTuple<test_databox_tags::Tag0,
                                                    test_databox_tags::Tag1,
@@ -2736,7 +2726,7 @@ void test_reference_item() noexcept {
   CHECK(get<test_databox_tags::Tag2>(box) == "My Sample String"s);
 }
 
-void test_serialization() noexcept {
+void test_serialization() {
   serialization_non_subitem_simple_items();
   serialization_subitems_simple_items();
   serialization_subitem_compute_items();
@@ -2744,7 +2734,7 @@ void test_serialization() noexcept {
   serialization_of_pointers();
 }
 
-void test_get_mutable_reference() noexcept {
+void test_get_mutable_reference() {
   INFO("test get_mutable_reference");
   // Make sure the presence of tags that could not be extracted
   // doesn't prevent the function from working on other tags.
@@ -2775,7 +2765,7 @@ void test_get_mutable_reference() noexcept {
   // db::get_mutable_reference<First<0>>(make_not_null(&box));
 }
 
-void test_output() noexcept {
+void test_output() {
   INFO("test output");
   auto box = db::create<
       db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,

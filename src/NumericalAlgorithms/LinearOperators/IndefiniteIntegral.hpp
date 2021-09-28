@@ -35,10 +35,9 @@ class not_null;
 template <size_t Dim, typename VectorType>
 void indefinite_integral(gsl::not_null<VectorType*> integral,
                          const VectorType& integrand, const Mesh<Dim>& mesh,
-                         size_t dim_to_integrate) noexcept;
+                         size_t dim_to_integrate);
 
 template <size_t Dim, typename VectorType>
 VectorType indefinite_integral(const VectorType& integrand,
-                               const Mesh<Dim>& mesh,
-                               size_t dim_to_integrate) noexcept;
+                               const Mesh<Dim>& mesh, size_t dim_to_integrate);
 /// @}

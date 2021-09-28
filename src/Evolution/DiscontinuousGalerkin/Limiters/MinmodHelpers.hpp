@@ -40,7 +40,7 @@ struct MinmodResult {
 
 // The TVB-corrected minmod function, see e.g. Cockburn reference Eq. 2.26.
 MinmodResult tvb_corrected_minmod(double a, double b, double c,
-                                  double tvb_scale) noexcept;
+                                  double tvb_scale);
 
 // Holds various optimization-related allocations for the Minmod TCI.
 // There is no pup::er, because these allocations should be short-lived (i.e.,
@@ -49,7 +49,7 @@ template <size_t VolumeDim>
 class BufferWrapper {
  public:
   BufferWrapper() = delete;
-  explicit BufferWrapper(const Mesh<VolumeDim>& mesh) noexcept;
+  explicit BufferWrapper(const Mesh<VolumeDim>& mesh);
 
  private:
   std::unique_ptr<double[]> contiguous_boundary_buffer_;
@@ -78,13 +78,13 @@ DirectionMap<VolumeDim, double> compute_effective_neighbor_sizes(
     const std::unordered_map<
         std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
         boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
-        neighbor_data) noexcept {
+        neighbor_data) {
   DirectionMap<VolumeDim, double> result;
   for (const auto& dir : Direction<VolumeDim>::all_directions()) {
     const bool neighbors_in_this_dir = element.neighbors().contains(dir);
     if (neighbors_in_this_dir) {
       const double effective_neighbor_size = [&dir, &element,
-                                              &neighbor_data]() noexcept {
+                                              &neighbor_data]() {
         const size_t dim = dir.dimension();
         const auto& neighbor_ids = element.neighbors().at(dir).ids();
         double size_accumulate = 0.;
@@ -113,13 +113,13 @@ DirectionMap<VolumeDim, double> compute_effective_neighbor_means(
     const std::unordered_map<
         std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
         boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
-        neighbor_data) noexcept {
+        neighbor_data) {
   DirectionMap<VolumeDim, double> result;
   for (const auto& dir : Direction<VolumeDim>::all_directions()) {
     const bool neighbors_in_this_dir = element.neighbors().contains(dir);
     if (neighbors_in_this_dir) {
       const double effective_neighbor_mean =
-          [&dir, &element, &neighbor_data, &tensor_storage_index]() noexcept {
+          [&dir, &element, &neighbor_data, &tensor_storage_index]() {
             const auto& neighbor_ids = element.neighbors().at(dir).ids();
             double mean_accumulate = 0.0;
             for (const auto& id : neighbor_ids) {
@@ -152,6 +152,6 @@ double effective_difference_to_neighbor(
     const std::array<double, VolumeDim>& element_size, size_t dim,
     const Side& side,
     const DirectionMap<VolumeDim, double>& effective_neighbor_means,
-    const DirectionMap<VolumeDim, double>& effective_neighbor_sizes) noexcept;
+    const DirectionMap<VolumeDim, double>& effective_neighbor_sizes);
 
 }  // namespace Limiters::Minmod_detail

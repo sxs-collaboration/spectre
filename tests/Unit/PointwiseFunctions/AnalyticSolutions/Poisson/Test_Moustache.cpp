@@ -42,12 +42,12 @@ struct MoustacheProxy : Poisson::Solutions::Moustache<Dim> {
   using source_tags = tmpl::list<Tags::FixedSource<Poisson::Tags::Field>>;
 
   tuples::tagged_tuple_from_typelist<field_tags> field_variables(
-      const tnsr::I<DataVector, Dim, Frame::Inertial>& x) const noexcept {
+      const tnsr::I<DataVector, Dim, Frame::Inertial>& x) const {
     return Poisson::Solutions::Moustache<Dim>::variables(x, field_tags{});
   }
 
   tuples::tagged_tuple_from_typelist<source_tags> source_variables(
-      const tnsr::I<DataVector, Dim, Frame::Inertial>& x) const noexcept {
+      const tnsr::I<DataVector, Dim, Frame::Inertial>& x) const {
     return Poisson::Solutions::Moustache<Dim>::variables(x, source_tags{});
   }
 };

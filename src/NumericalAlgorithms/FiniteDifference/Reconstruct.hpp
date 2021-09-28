@@ -43,7 +43,7 @@ namespace fd {
  *     const gsl::span<const double>& volume_vars,
  *     const DirectionMap<Dim, gsl::span<const double>>& ghost_cell_vars,
  *     const Index<Dim>& volume_extents, const size_t number_of_variables,
- *     const ArgsForReconstructor&... args_for_reconstructor) noexcept;
+ *     const ArgsForReconstructor&... args_for_reconstructor);
  * \endcode
  *
  * The type of reconstruction done is specified with the `Reconstructor`
@@ -102,7 +102,7 @@ void reconstruct(
     const gsl::span<const double>& volume_vars,
     const DirectionMap<Dim, gsl::span<const double>>& ghost_cell_vars,
     const Index<Dim>& volume_extents, const size_t number_of_variables,
-    const ArgsForReconstructor&... args_for_reconstructor) noexcept;
+    const ArgsForReconstructor&... args_for_reconstructor);
 }  // namespace detail
 
 /*!
@@ -129,6 +129,6 @@ void reconstruct_neighbor(
     const DataVector& neighbor_data, const Index<Dim>& volume_extents,
     const Index<Dim>& ghost_data_extents,
     const Direction<Dim>& direction_to_reconstruct,
-    const ArgsForReconstructor&... args_for_reconstructor) noexcept;
+    const ArgsForReconstructor&... args_for_reconstructor);
 }  // namespace reconstruction
 }  // namespace fd

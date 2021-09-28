@@ -42,7 +42,7 @@ struct Square : db::SimpleTag {
 };
 struct SquareCompute : Square, db::ComputeTag {
   static void function(gsl::not_null<Scalar<DataVector>*> result,
-                       const Scalar<DataVector>& x) noexcept {
+                       const Scalar<DataVector>& x) {
     get(*result) = square(get(x));
   }
   using argument_tags = tmpl::list<TestSolution>;
@@ -56,7 +56,7 @@ struct MockComputeTargetPoints {
   template <typename Metavariables, typename DbTags>
   static tnsr::I<DataVector, 3, Frame::Inertial> points(
       const db::DataBox<DbTags>& /*box*/,
-      const tmpl::type_<Metavariables>& /*meta*/) noexcept {
+      const tmpl::type_<Metavariables>& /*meta*/) {
     // Need 10 points to agree with test.
     const size_t num_pts = 10;
     // Doesn't matter what the points are; they are not used except
@@ -77,7 +77,7 @@ struct MockPostInterpolationCallback {
       const db::DataBox<DbTags>& box,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const typename Metavariables::InterpolationTargetA::temporal_id::type&
-          temporal_id) noexcept {
+          temporal_id) {
     // This callback simply checks that the points are as expected.
     Slab slab(0.0, 1.0);
     const TimeStepId first_temporal_id(true, 0, Time(slab, Rational(13, 15)));

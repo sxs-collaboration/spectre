@@ -24,7 +24,7 @@ namespace helpers = TestHelpers::evolution::dg;
 namespace {
 
 template <size_t Dim>
-void test() noexcept {
+void test() {
   MAKE_GENERATOR(gen);
 
   helpers::test_boundary_condition_with_python<

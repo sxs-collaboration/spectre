@@ -53,9 +53,8 @@ struct Functional {
 
  protected:
   template <class C, size_t Offset, class... Ts, size_t... Is>
-  static constexpr decltype(auto) helper(
-      const std::tuple<Ts...>& t,
-      std::index_sequence<Is...> /*meta*/) noexcept {
+  static constexpr decltype(auto) helper(const std::tuple<Ts...>& t,
+                                         std::index_sequence<Is...> /*meta*/) {
     return C{}(std::get<Offset + Is>(t)...);
   }
 };
@@ -69,7 +68,7 @@ struct Identity;
 template <class C = Identity>
 struct AssertEqual : Functional<2> {
   template <class T>
-  const T& operator()(const T& t0, const T& t1) noexcept {
+  const T& operator()(const T& t0, const T& t1) {
     DEBUG_STATIC_ASSERT(
         C::arity == 1,
         "The arity of the functional passed to AssertEqual must be 1");
@@ -85,7 +84,7 @@ struct AssertEqual : Functional<2> {
   struct NAME : Functional<C0::arity + C1::arity> {                            \
     using base = Functional<C0::arity + C1::arity>;                            \
     template <class... Ts>                                                     \
-    constexpr auto operator()(const Ts&... ts) noexcept {                      \
+    constexpr auto operator()(const Ts&... ts) {                               \
       return OPERATOR(                                                         \
           base::template helper<C0, 0>(std::tuple<const Ts&...>(ts...),        \
                                        std::make_index_sequence<C0::arity>{}), \
@@ -98,88 +97,86 @@ struct AssertEqual : Functional<2> {
   template <class C1>                                                          \
   struct NAME<Identity, C1> : Functional<1 + C1::arity> {                      \
     template <class T0, class... Ts>                                           \
-    constexpr auto operator()(const T0& t0, const Ts&... ts) noexcept {        \
+    constexpr auto operator()(const T0& t0, const Ts&... ts) {                 \
       return OPERATOR(t0, C1{}(ts...));                                        \
     }                                                                          \
   };                                                                           \
   template <>                                                                  \
   struct NAME<Identity, Identity> : Functional<2> {                            \
     template <class T0, class T1>                                              \
-    constexpr auto operator()(const T0& t0, const T1& t1) noexcept {           \
+    constexpr auto operator()(const T0& t0, const T1& t1) {                    \
       return OPERATOR(t0, t1);                                                 \
     }                                                                          \
   } /** \endcond */
 
-#define MAKE_BINARY_INPLACE_OPERATOR(NAME, OPERATOR)                        \
-  /** Functional for computing `OPERATOR` of two objects */                 \
-  template <class C0 = Identity, class C1 = C0>                             \
-  struct NAME : Functional<C0::arity + C1::arity> {                         \
-    using base = Functional<C0::arity + C1::arity>;                         \
-    template <class... Ts>                                                  \
-    constexpr decltype(auto) operator()(Ts&... ts) noexcept {               \
-      return base::template helper<C0, 0>(                                  \
-          std::tuple<const Ts&...>(ts...),                                  \
-          std::make_index_sequence<C0::arity>{})                            \
-          OPERATOR base::template helper<C1, C0::arity>(                    \
-              std::tuple<const Ts&...>(ts...),                              \
-              std::make_index_sequence<C1::arity>{});                       \
-    }                                                                       \
-  };                                                                        \
-  /** \cond */                                                              \
-  template <class C1>                                                       \
-  struct NAME<Identity, C1> : Functional<1 + C1::arity> {                   \
-    template <class T0, class... Ts>                                        \
-    constexpr decltype(auto) operator()(T0& t0, const Ts&... ts) noexcept { \
-      return t0 OPERATOR C1{}(ts...);                                       \
-    }                                                                       \
-  };                                                                        \
-  template <>                                                               \
-  struct NAME<Identity, Identity> : Functional<2> {                         \
-    static constexpr size_t arity = 2;                                      \
-    template <class T0, class T1>                                           \
-    constexpr decltype(auto) operator()(T0& t0, const T1& t1) noexcept {    \
-      return t0 OPERATOR t1;                                                \
-    }                                                                       \
+#define MAKE_BINARY_INPLACE_OPERATOR(NAME, OPERATOR)               \
+  /** Functional for computing `OPERATOR` of two objects */        \
+  template <class C0 = Identity, class C1 = C0>                    \
+  struct NAME : Functional<C0::arity + C1::arity> {                \
+    using base = Functional<C0::arity + C1::arity>;                \
+    template <class... Ts>                                         \
+    constexpr decltype(auto) operator()(Ts&... ts) {               \
+      return base::template helper<C0, 0>(                         \
+          std::tuple<const Ts&...>(ts...),                         \
+          std::make_index_sequence<C0::arity>{})                   \
+          OPERATOR base::template helper<C1, C0::arity>(           \
+              std::tuple<const Ts&...>(ts...),                     \
+              std::make_index_sequence<C1::arity>{});              \
+    }                                                              \
+  };                                                               \
+  /** \cond */                                                     \
+  template <class C1>                                              \
+  struct NAME<Identity, C1> : Functional<1 + C1::arity> {          \
+    template <class T0, class... Ts>                               \
+    constexpr decltype(auto) operator()(T0& t0, const Ts&... ts) { \
+      return t0 OPERATOR C1{}(ts...);                              \
+    }                                                              \
+  };                                                               \
+  template <>                                                      \
+  struct NAME<Identity, Identity> : Functional<2> {                \
+    static constexpr size_t arity = 2;                             \
+    template <class T0, class T1>                                  \
+    constexpr decltype(auto) operator()(T0& t0, const T1& t1) {    \
+      return t0 OPERATOR t1;                                       \
+    }                                                              \
   } /** \endcond */
 
-#define MAKE_BINARY_OPERATOR(NAME, OPERATOR)                            \
-  /** Functional for computing `OPERATOR` of two objects */             \
-  template <class C0 = Identity, class C1 = C0>                         \
-  struct NAME : Functional<C0::arity + C1::arity> {                     \
-    using base = Functional<C0::arity + C1::arity>;                     \
-    template <class... Ts>                                              \
-    constexpr auto operator()(const Ts&... ts) noexcept {               \
-      return base::template helper<C0, 0>(                              \
-          std::tuple<const Ts&...>(ts...),                              \
-          std::make_index_sequence<C0::arity>{})                        \
-          OPERATOR base::template helper<C1, C0::arity>(                \
-              std::tuple<const Ts&...>(ts...),                          \
-              std::make_index_sequence<C1::arity>{});                   \
-    }                                                                   \
-  };                                                                    \
-  /** \cond */                                                          \
-  template <class C1>                                                   \
-  struct NAME<Identity, C1> : Functional<1 + C1::arity> {               \
-    template <class T0, class... Ts>                                    \
-    constexpr auto operator()(const T0& t0, const Ts&... ts) noexcept { \
-      return t0 OPERATOR C1{}(ts...);                                   \
-    }                                                                   \
-  };                                                                    \
-  template <>                                                           \
-  struct NAME<Identity, Identity> : Functional<2> {                     \
-    static constexpr size_t arity = 2;                                  \
-    template <class T0, class T1>                                       \
-    constexpr auto operator()(const T0& t0, const T1& t1) noexcept {    \
-      return t0 OPERATOR t1;                                            \
-    }                                                                   \
+#define MAKE_BINARY_OPERATOR(NAME, OPERATOR)                   \
+  /** Functional for computing `OPERATOR` of two objects */    \
+  template <class C0 = Identity, class C1 = C0>                \
+  struct NAME : Functional<C0::arity + C1::arity> {            \
+    using base = Functional<C0::arity + C1::arity>;            \
+    template <class... Ts>                                     \
+    constexpr auto operator()(const Ts&... ts) {               \
+      return base::template helper<C0, 0>(                     \
+          std::tuple<const Ts&...>(ts...),                     \
+          std::make_index_sequence<C0::arity>{})               \
+          OPERATOR base::template helper<C1, C0::arity>(       \
+              std::tuple<const Ts&...>(ts...),                 \
+              std::make_index_sequence<C1::arity>{});          \
+    }                                                          \
+  };                                                           \
+  /** \cond */                                                 \
+  template <class C1>                                          \
+  struct NAME<Identity, C1> : Functional<1 + C1::arity> {      \
+    template <class T0, class... Ts>                           \
+    constexpr auto operator()(const T0& t0, const Ts&... ts) { \
+      return t0 OPERATOR C1{}(ts...);                          \
+    }                                                          \
+  };                                                           \
+  template <>                                                  \
+  struct NAME<Identity, Identity> : Functional<2> {            \
+    static constexpr size_t arity = 2;                         \
+    template <class T0, class T1>                              \
+    constexpr auto operator()(const T0& t0, const T1& t1) {    \
+      return t0 OPERATOR t1;                                   \
+    }                                                          \
   } /** \endcond */
 
-#define MAKE_LITERAL_VAL(NAME, VAL)          \
-  /** Functional literal for `VAL` */        \
-  struct Literal##NAME : Functional<0> {     \
-    constexpr double operator()() noexcept { \
-      return static_cast<double>(VAL);       \
-    }                                        \
+#define MAKE_LITERAL_VAL(NAME, VAL)                                    \
+  /** Functional literal for `VAL` */                                  \
+  struct Literal##NAME : Functional<0> {                               \
+    constexpr double operator()() { return static_cast<double>(VAL); } \
   }
 
 #define MAKE_UNARY_FUNCTIONAL(NAME, OPERATOR)             \
@@ -190,14 +187,14 @@ struct AssertEqual : Functional<2> {
   template <typename C0>                                  \
   struct NAME : Functional<C0::arity> {                   \
     template <class... Ts>                                \
-    constexpr auto operator()(const Ts&... ts) noexcept { \
+    constexpr auto operator()(const Ts&... ts) {          \
       return OPERATOR(C0{}(ts...));                       \
     }                                                     \
   };                                                      \
   template <>                                             \
   struct NAME<Identity> : Functional<1> {                 \
     template <class T0>                                   \
-    constexpr auto operator()(const T0& t0) noexcept {    \
+    constexpr auto operator()(const T0& t0) {             \
       return OPERATOR(t0);                                \
     }                                                     \
   } /** \endcond */
@@ -206,7 +203,7 @@ struct AssertEqual : Functional<2> {
 template <size_t Arity, size_t ArgumentIndex = 0, class C = Identity>
 struct GetArgument : Functional<Arity> {
   template <class... Ts>
-  constexpr decltype(auto) operator()(const Ts&... ts) noexcept {
+  constexpr decltype(auto) operator()(const Ts&... ts) {
     static_assert(Arity == sizeof...(Ts),
                   "The arity passed to GetArgument must be the same as the "
                   "actually arity of the function.");
@@ -217,14 +214,14 @@ struct GetArgument : Functional<Arity> {
 /// The identity higher order function object
 struct Identity : Functional<1> {
   template <class T>
-  SPECTRE_ALWAYS_INLINE constexpr const T& operator()(const T& t) noexcept {
+  SPECTRE_ALWAYS_INLINE constexpr const T& operator()(const T& t) {
     return t;
   }
 };
 
 template <int val, typename Type = double>
 struct Literal : Functional<0> {
-  constexpr Type operator()() noexcept { return static_cast<Type>(val); }
+  constexpr Type operator()() { return static_cast<Type>(val); }
 };
 
 MAKE_BINARY_INPLACE_OPERATOR(DivAssign, /=);
@@ -286,7 +283,7 @@ struct UnaryPow;
 template <int N, typename C0>
 struct UnaryPow : Functional<C0::arity> {
   template <class... Ts>
-  constexpr auto operator()(const Ts&... ts) noexcept {
+  constexpr auto operator()(const Ts&... ts) {
     return pow<N>(C0{}(ts...));
   }
 };
@@ -294,7 +291,7 @@ struct UnaryPow : Functional<C0::arity> {
 template <int N>
 struct UnaryPow<N, Identity> : Functional<1> {
   template <class T0>
-  constexpr auto operator()(const T0& t0) noexcept {
+  constexpr auto operator()(const T0& t0) {
     return pow<N>(t0);
   }
 };
@@ -304,7 +301,7 @@ struct UnaryPow<N, Identity> : Functional<1> {
 template <class C = Identity>
 struct Square : Functional<C::arity> {
   template <class... Ts>
-  constexpr auto operator()(const Ts&... ts) noexcept {
+  constexpr auto operator()(const Ts&... ts) {
     decltype(auto) result = C{}(ts...);
     return result * result;
   }
@@ -313,8 +310,7 @@ struct Square : Functional<C::arity> {
 /// Function for adding two `std::vector`s of `double` component-wise
 struct VectorPlus {
   std::vector<double> operator()(const std::vector<double>& lhs,
-                                 const std::vector<double>& rhs) const
-      noexcept {
+                                 const std::vector<double>& rhs) const {
     ASSERT(lhs.size() == rhs.size(),
            "Vector sizes in `funcl::VectorPlus` operator do not match. First "
            "argument size: "

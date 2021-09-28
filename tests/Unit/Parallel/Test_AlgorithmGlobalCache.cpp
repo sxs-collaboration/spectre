@@ -42,7 +42,7 @@ namespace mutate_cache {
 // An option tag is needed for every type the GlobalCache contains.
 namespace OptionTags {
 struct VectorOfDoubles {
-  static std::string name() noexcept { return "VectorOfDoubles"; }
+  static std::string name() { return "VectorOfDoubles"; }
   static constexpr Options::String help = "Options for vector of doubles";
   using type = std::vector<double>;
 };
@@ -54,9 +54,7 @@ struct VectorOfDoubles : db::SimpleTag {
   using type = typename OptionTags::VectorOfDoubles::type;
   using option_tags = tmpl::list<OptionTags::VectorOfDoubles>;
   static constexpr bool pass_metavariables = false;
-  static type create_from_options(const type& input_type) noexcept {
-    return input_type;
-  }
+  static type create_from_options(const type& input_type) { return input_type; }
 };
 }  // namespace Tags
 
@@ -65,7 +63,7 @@ struct VectorOfDoubles : db::SimpleTag {
 namespace MutationFunctions {
 struct add_stored_double {
   static void apply(const gsl::not_null<std::vector<double>*> data,
-                    const double new_value) noexcept {
+                    const double new_value) {
     data->emplace_back(new_value);
   }
 };
@@ -82,7 +80,7 @@ struct initialize {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
                     const ParallelComponent* const  // NOLINT const
-                    /*meta*/) noexcept {
+                    /*meta*/) {
     return std::make_tuple(
         db::create_from<db::RemoveTags<>, db::AddSimpleTags<>>(std::move(box)),
         true);
@@ -94,7 +92,7 @@ struct add_new_stored_double {
             typename Metavariables, typename ArrayIndex>
   static void apply(db::DataBox<tmpl::list<DbTags...>>& /*box*/,
                     Parallel::GlobalCache<Metavariables>& cache,
-                    const ArrayIndex& /*array_index*/) noexcept {
+                    const ArrayIndex& /*array_index*/) {
     // [mutate_global_cache_item]
     Parallel::mutate<Tags::VectorOfDoubles,
                      MutationFunctions::add_stored_double>(cache.thisProxy,
@@ -114,7 +112,7 @@ struct finalize {
             typename Metavariables, typename ArrayIndex>
   static void apply(db::DataBox<tmpl::list<DbTags...>>& /*box*/,
                     Parallel::GlobalCache<Metavariables>& cache,
-                    const ArrayIndex& /*array_index*/) noexcept {
+                    const ArrayIndex& /*array_index*/) {
     const std::vector<double> expected_result{42.0};
     SPECTRE_PARALLEL_REQUIRE(Parallel::get<Tags::VectorOfDoubles>(cache) ==
                              expected_result);
@@ -133,7 +131,7 @@ struct simple_action_check_and_use_stored_double {
             typename Metavariables, typename ArrayIndex>
   static void apply(db::DataBox<tmpl::list<DbTags...>>& /*box*/,
                     Parallel::GlobalCache<Metavariables>& cache,
-                    const ArrayIndex& /*array_index*/) noexcept {
+                    const ArrayIndex& /*array_index*/) {
     ++number_of_calls_to_check_and_use_stored_double_is_ready;
     auto& this_proxy =
         Parallel::get_parallel_component<ParallelComponent>(cache);
@@ -164,12 +162,10 @@ struct use_stored_double {
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
   static std::tuple<db::DataBox<DbTags>&&, Parallel::AlgorithmExecution> apply(
-      db::DataBox<DbTags>& box,
-      tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
-      const ArrayIndex& /*array_index*/,
-      const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
     ++number_of_calls_to_use_stored_double_is_ready;
     // [check_mutable_cache_item_is_ready]
     auto& this_proxy = Parallel::get_parallel_component<
@@ -319,8 +315,7 @@ struct TestMetavariables {
       const gsl::not_null<
           tuples::TaggedTuple<Tags...>*> /*phase_change_decision_data*/,
       const Phase& current_phase,
-      const Parallel::CProxy_GlobalCache<
-          TestMetavariables>& /*cache_proxy*/) noexcept {
+      const Parallel::CProxy_GlobalCache<TestMetavariables>& /*cache_proxy*/) {
     switch (current_phase) {
       case Phase::Initialization:
         return Phase::MutableCacheSimpleActionStart;
@@ -340,7 +335,7 @@ struct TestMetavariables {
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& /*p*/) noexcept {}
+  void pup(PUP::er& /*p*/) {}
 };
 
 static const std::vector<void (*)()> charm_init_node_funcs{

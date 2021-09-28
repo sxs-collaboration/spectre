@@ -18,7 +18,7 @@ namespace {
 void test(
     const std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>& f_of_t,
     const double initial_function_value, const double initial_time,
-    const double velocity, const double decay_timescale) noexcept {
+    const double velocity, const double decay_timescale) {
   // Check that at t == initial time, f == initial_function_value,
   // df = 0, and d2f = 0
   const auto lambdas0 = f_of_t->func_and_2_derivs(initial_time);

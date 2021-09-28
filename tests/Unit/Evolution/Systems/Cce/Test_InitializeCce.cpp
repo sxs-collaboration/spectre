@@ -33,7 +33,7 @@ namespace Cce {
 template <typename DbTags>
 void test_initialize_j_inverse_cubic(
     const gsl::not_null<db::DataBox<DbTags>*> box_to_initialize,
-    const size_t l_max, const size_t number_of_radial_points) noexcept {
+    const size_t l_max, const size_t number_of_radial_points) {
   db::mutate_apply<InitializeJ::InitializeJ<true>::mutate_tags,
                    InitializeJ::InitializeJ<true>::argument_tags>(
       InitializeJ::InverseCubic<true>{}, box_to_initialize);
@@ -112,7 +112,7 @@ void test_initialize_j_inverse_cubic(
 template <typename DbTags>
 void test_initialize_j_zero_nonsmooth(
     const gsl::not_null<db::DataBox<DbTags>*> box_to_initialize,
-    const size_t /*l_max*/, const size_t /*number_of_radial_points*/) noexcept {
+    const size_t /*l_max*/, const size_t /*number_of_radial_points*/) {
   // The iterative procedure can reach error levels better than 1.0e-8, but it
   // is difficult to do so reliably and quickly for randomly generated data.
   db::mutate_apply<InitializeJ::InitializeJ<false>::mutate_tags,
@@ -256,7 +256,7 @@ void test_initialize_j_zero_nonsmooth(
 template <typename DbTags>
 void test_initialize_j_no_radiation(
     const gsl::not_null<db::DataBox<DbTags>*> box_to_initialize,
-    const size_t l_max, const size_t /*number_of_radial_points*/) noexcept {
+    const size_t l_max, const size_t /*number_of_radial_points*/) {
   // The iterative procedure can reach error levels better than 1.0e-8, but it
   // is difficult to do so reliably and quickly for randomly generated data.
   db::mutate_apply<InitializeJ::InitializeJ<false>::mutate_tags,

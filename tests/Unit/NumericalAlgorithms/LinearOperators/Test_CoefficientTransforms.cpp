@@ -34,7 +34,7 @@ template <typename ModalVectorType, typename NodalVectorType,
           Spectral::Basis Basis, Spectral::Quadrature Quadrature, size_t Dim>
 void check_transforms(
     const Mesh<Dim>& mesh,
-    const std::vector<std::array<size_t, Dim>>& coeffs_to_include) noexcept {
+    const std::vector<std::array<size_t, Dim>>& coeffs_to_include) {
   CAPTURE(Basis);
   CAPTURE(Quadrature);
   CAPTURE(mesh);
@@ -93,7 +93,7 @@ void check_transforms(
 template <typename ModalVectorType, typename NodalVectorType,
           Spectral::Basis Basis, Spectral::Quadrature Quadrature,
           typename Generator>
-void test_1d(const gsl::not_null<Generator*> generator) noexcept {
+void test_1d(const gsl::not_null<Generator*> generator) {
   UniformCustomDistribution<size_t> dist{
       1, Spectral::maximum_number_of_points<Basis> - 1};
   const size_t order = dist(*generator);
@@ -114,7 +114,7 @@ void test_1d(const gsl::not_null<Generator*> generator) noexcept {
 template <typename ModalVectorType, typename NodalVectorType,
           Spectral::Basis Basis, Spectral::Quadrature Quadrature,
           typename Generator>
-void test_2d(const gsl::not_null<Generator*> generator) noexcept {
+void test_2d(const gsl::not_null<Generator*> generator) {
   // Start at one higher order so we can drop one order in the y-direction.
   UniformCustomDistribution<size_t> dist{
       Spectral::minimum_number_of_points<Basis, Quadrature> + 1,
@@ -139,7 +139,7 @@ void test_2d(const gsl::not_null<Generator*> generator) noexcept {
 template <typename ModalVectorType, typename NodalVectorType,
           Spectral::Basis Basis, Spectral::Quadrature Quadrature,
           typename Generator>
-void test_3d(const gsl::not_null<Generator*> generator) noexcept {
+void test_3d(const gsl::not_null<Generator*> generator) {
   // Start at two orders higher so we can drop one order in the y-direction and
   // two in z-direction.
   UniformCustomDistribution<size_t> dist{

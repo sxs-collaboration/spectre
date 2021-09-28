@@ -38,13 +38,13 @@ void ricci_tensor(
     gsl::not_null<tnsr::aa<DataType, SpatialDim, Frame, Index>*> result,
     const tnsr::Abb<DataType, SpatialDim, Frame, Index>& christoffel_2nd_kind,
     const tnsr::aBcc<DataType, SpatialDim, Frame, Index>&
-        d_christoffel_2nd_kind) noexcept;
+        d_christoffel_2nd_kind);
 
 template <size_t SpatialDim, typename Frame, IndexType Index, typename DataType>
 tnsr::aa<DataType, SpatialDim, Frame, Index> ricci_tensor(
     const tnsr::Abb<DataType, SpatialDim, Frame, Index>& christoffel_2nd_kind,
     const tnsr::aBcc<DataType, SpatialDim, Frame, Index>&
-        d_christoffel_2nd_kind) noexcept;
+        d_christoffel_2nd_kind);
 /// @}
 
 namespace Tags {

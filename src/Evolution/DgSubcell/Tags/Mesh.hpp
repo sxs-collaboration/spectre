@@ -17,7 +17,7 @@ namespace evolution::dg::subcell::Tags {
 /// The mesh on the subcells
 template <size_t VolumeDim>
 struct Mesh : db::SimpleTag {
-  static std::string name() noexcept { return "Subcell(Mesh)"; }
+  static std::string name() { return "Subcell(Mesh)"; }
   using type = ::Mesh<VolumeDim>;
 };
 }  // namespace evolution::dg::subcell::Tags

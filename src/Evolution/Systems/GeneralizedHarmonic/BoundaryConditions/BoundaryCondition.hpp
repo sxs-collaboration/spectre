@@ -15,12 +15,12 @@ template <size_t Dim>
 class BoundaryCondition : public domain::BoundaryConditions::BoundaryCondition {
  public:
   BoundaryCondition() = default;
-  BoundaryCondition(BoundaryCondition&&) noexcept = default;
-  BoundaryCondition& operator=(BoundaryCondition&&) noexcept = default;
+  BoundaryCondition(BoundaryCondition&&) = default;
+  BoundaryCondition& operator=(BoundaryCondition&&) = default;
   BoundaryCondition(const BoundaryCondition&) = default;
   BoundaryCondition& operator=(const BoundaryCondition&) = default;
   ~BoundaryCondition() override = default;
-  explicit BoundaryCondition(CkMigrateMessage* msg) noexcept;
+  explicit BoundaryCondition(CkMigrateMessage* msg);
 
   void pup(PUP::er& p) override;
 };

@@ -66,8 +66,7 @@ template <typename Solution>
 void verify_time_independent_einstein_solution(
     const Solution& solution, const size_t grid_size_each_dimension,
     const std::array<double, 3>& lower_bound,
-    const std::array<double, 3>& upper_bound,
-    const double error_tolerance) noexcept {
+    const std::array<double, 3>& upper_bound, const double error_tolerance) {
   static_assert(evolution::is_analytic_solution_v<Solution>,
                 "Solution was not derived from AnalyticSolution");
   // Shorter names for tags.
@@ -357,12 +356,12 @@ using deriv = Tags::deriv<Tag, tmpl::size_t<3>, Frame>;
 template <typename Tag, typename Solution, typename Frame>
 auto time_derivative(const Solution& solution,
                      const tnsr::I<double, 3, Frame>& x, const double time,
-                     const double dt) noexcept {
+                     const double dt) {
   typename Tag::type result{};
   for (auto it = result.begin(); it != result.end(); ++it) {
     const auto index = result.get_tensor_index(it);
     *it = numerical_derivative(
-        [&index, &solution, &x](const std::array<double, 1>& t_array) noexcept {
+        [&index, &solution, &x](const std::array<double, 1>& t_array) {
           return std::array<double, 1>{
               {get<Tag>(solution.variables(x, t_array[0], tmpl::list<Tag>{}))
                    .get(index)}};
@@ -375,13 +374,12 @@ auto time_derivative(const Solution& solution,
 template <typename Tag, typename Solution, typename Frame>
 auto space_derivative(const Solution& solution,
                       const tnsr::I<double, 3, Frame>& x, const double time,
-                      const double dx) noexcept {
+                      const double dx) {
   typename deriv<Tag, Frame>::type result{};
   for (auto it = result.begin(); it != result.end(); ++it) {
     const auto index = result.get_tensor_index(it);
     *it = numerical_derivative(
-        [&index, &solution, &time,
-         &x](const std::array<double, 1>& offset) noexcept {
+        [&index, &solution, &time, &x](const std::array<double, 1>& offset) {
           auto position = x;
           position.get(index[0]) += offset[0];
           return std::array<double, 1>{
@@ -402,7 +400,7 @@ template <typename Solution, typename Frame>
 void verify_consistency(const Solution& solution, const double time,
                         const tnsr::I<double, 3, Frame>& position,
                         const double derivative_delta,
-                        const double derivative_tolerance) noexcept {
+                        const double derivative_tolerance) {
   using Lapse = gr::Tags::Lapse<double>;
   using Shift = gr::Tags::Shift<3, Frame, double>;
   using SpatialMetric = gr::Tags::SpatialMetric<3, Frame, double>;

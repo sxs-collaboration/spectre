@@ -53,8 +53,7 @@ struct ElementMap;
  */
 template <size_t VolumeDim>
 std::array<double, VolumeDim> size_of_element(
-    const ElementMap<VolumeDim, Frame::Inertial>&
-        logical_to_inertial_map) noexcept;
+    const ElementMap<VolumeDim, Frame::Inertial>& logical_to_inertial_map);
 
 template <size_t VolumeDim>
 std::array<double, VolumeDim> size_of_element(
@@ -64,7 +63,7 @@ std::array<double, VolumeDim> size_of_element(
     double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time) noexcept;
+        functions_of_time);
 /// @}
 
 namespace domain {
@@ -97,7 +96,7 @@ struct SizeOfElementCompute : db::ComputeTag, SizeOfElement<VolumeDim> {
       const std::unordered_map<
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-          functions_of_time) noexcept {
+          functions_of_time) {
     *result = size_of_element(logical_to_grid_map, grid_to_inertial_map, time,
                               functions_of_time);
   }

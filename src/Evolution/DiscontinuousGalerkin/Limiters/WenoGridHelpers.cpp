@@ -17,8 +17,7 @@ namespace Limiters::Weno_detail {
 
 template <size_t VolumeDim>
 bool check_element_has_one_similar_neighbor_in_direction(
-    const Element<VolumeDim>& element,
-    const Direction<VolumeDim>& direction) noexcept {
+    const Element<VolumeDim>& element, const Direction<VolumeDim>& direction) {
   ASSERT(element.neighbors().contains(direction),
          "Inconsistent call: element "
              << element << " has no neighbors in direction " << direction);
@@ -46,7 +45,7 @@ template <size_t VolumeDim>
 std::array<DataVector, VolumeDim> neighbor_grid_points_in_local_logical_coords(
     const Mesh<VolumeDim>& local_mesh, const Mesh<VolumeDim>& neighbor_mesh,
     const Element<VolumeDim>& element,
-    const Direction<VolumeDim>& direction_to_neighbor) noexcept {
+    const Direction<VolumeDim>& direction_to_neighbor) {
   ASSERT(check_element_has_one_similar_neighbor_in_direction(
              element, direction_to_neighbor),
          "Found some amount of h-refinement; this is not supported");
@@ -74,7 +73,7 @@ template <size_t VolumeDim>
 std::array<DataVector, VolumeDim> local_grid_points_in_neighbor_logical_coords(
     const Mesh<VolumeDim>& local_mesh, const Mesh<VolumeDim>& neighbor_mesh,
     const Element<VolumeDim>& element,
-    const Direction<VolumeDim>& direction_to_neighbor) noexcept {
+    const Direction<VolumeDim>& direction_to_neighbor) {
   ASSERT(check_element_has_one_similar_neighbor_in_direction(
              element, direction_to_neighbor),
          "Found some amount of h-refinement; this is not supported");
@@ -101,17 +100,17 @@ std::array<DataVector, VolumeDim> local_grid_points_in_neighbor_logical_coords(
 // Explicit instantiations
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                            \
-  template bool check_element_has_one_similar_neighbor_in_direction(    \
-      const Element<DIM(data)>&, const Direction<DIM(data)>&) noexcept; \
-  template std::array<DataVector, DIM(data)>                            \
-  neighbor_grid_points_in_local_logical_coords(                         \
-      const Mesh<DIM(data)>&, const Mesh<DIM(data)>&,                   \
-      const Element<DIM(data)>&, const Direction<DIM(data)>&) noexcept; \
-  template std::array<DataVector, DIM(data)>                            \
-  local_grid_points_in_neighbor_logical_coords(                         \
-      const Mesh<DIM(data)>&, const Mesh<DIM(data)>&,                   \
-      const Element<DIM(data)>&, const Direction<DIM(data)>&) noexcept;
+#define INSTANTIATE(_, data)                                         \
+  template bool check_element_has_one_similar_neighbor_in_direction( \
+      const Element<DIM(data)>&, const Direction<DIM(data)>&);       \
+  template std::array<DataVector, DIM(data)>                         \
+  neighbor_grid_points_in_local_logical_coords(                      \
+      const Mesh<DIM(data)>&, const Mesh<DIM(data)>&,                \
+      const Element<DIM(data)>&, const Direction<DIM(data)>&);       \
+  template std::array<DataVector, DIM(data)>                         \
+  local_grid_points_in_neighbor_logical_coords(                      \
+      const Mesh<DIM(data)>&, const Mesh<DIM(data)>&,                \
+      const Element<DIM(data)>&, const Direction<DIM(data)>&);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 

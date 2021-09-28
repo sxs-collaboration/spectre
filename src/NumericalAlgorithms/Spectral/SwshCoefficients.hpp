@@ -30,7 +30,7 @@ namespace Swsh {
 ///
 /// \note Assumes the triangular libsharp representation is used.
 constexpr SPECTRE_ALWAYS_INLINE size_t
-size_of_libsharp_coefficient_vector(const size_t l_max) noexcept {
+size_of_libsharp_coefficient_vector(const size_t l_max) {
   return (l_max + 1) * (l_max + 2);  // "triangular" representation
 }
 
@@ -58,8 +58,7 @@ size_of_libsharp_coefficient_vector(const size_t l_max) noexcept {
  * See \cite Goldberg1966uu
  */
 constexpr SPECTRE_ALWAYS_INLINE double sharp_swsh_sign_change(
-    const int from_spin_weight, const int to_spin_weight,
-    const bool real) noexcept {
+    const int from_spin_weight, const int to_spin_weight, const bool real) {
   if (real) {
     return (from_spin_weight == 0 ? -1.0 : 1.0) *
            (from_spin_weight >= 0 ? -1.0 : 1.0) *
@@ -109,8 +108,9 @@ constexpr SPECTRE_ALWAYS_INLINE double sharp_swsh_sign_change(
  * part of the spin-weighted collocation points, not real or imaginary parts of
  * the basis functions themselves.
  */
-constexpr SPECTRE_ALWAYS_INLINE double sharp_swsh_sign(
-    const int spin_weight, const int m, const bool real) noexcept {
+constexpr SPECTRE_ALWAYS_INLINE double sharp_swsh_sign(const int spin_weight,
+                                                       const int m,
+                                                       const bool real) {
   if (real) {
     if (m >= 0) {
       return (spin_weight > 0 ? -1.0 : 1.0) *
@@ -131,7 +131,7 @@ constexpr SPECTRE_ALWAYS_INLINE double sharp_swsh_sign(
 
 namespace detail {
 struct DestroySharpAlm {
-  void operator()(sharp_alm_info* to_delete) noexcept {
+  void operator()(sharp_alm_info* to_delete) {
     sharp_destroy_alm_info(to_delete);
   }
 };
@@ -194,10 +194,10 @@ class CoefficientsMetadata {
    public:
     explicit CoefficientsIndexIterator(const size_t l_max,
                                        const size_t start_l = 0,
-                                       const size_t start_m = 0) noexcept
+                                       const size_t start_m = 0)
         : m_{start_m}, l_{start_l}, l_max_{l_max} {}
 
-    LibsharpCoefficientInfo operator*() const noexcept {
+    LibsharpCoefficientInfo operator*() const {
       // permit dereferencing the iterator only if the return represents a
       // viable location in the coefficient vector
       ASSERT(l_ <= l_max_ && m_ <= l_max_, "coefficients iterator overflow");
@@ -210,7 +210,7 @@ class CoefficientsMetadata {
     }
 
     /// advance the iterator by one position (prefix)
-    CoefficientsIndexIterator& operator++() noexcept {
+    CoefficientsIndexIterator& operator++() {
       // permit altering the iterator only if the new value is between the
       // anticipated begin and end, inclusive
       ASSERT(l_ <= l_max_ && m_ <= l_max_, "coefficients iterator overflow");
@@ -225,14 +225,14 @@ class CoefficientsMetadata {
 
     /// advance the iterator by one position (postfix)
     // NOLINTNEXTLINE(readability-const-return-type)
-    const CoefficientsIndexIterator operator++(int) noexcept {
+    const CoefficientsIndexIterator operator++(int) {
       auto pre_increment = *this;
       ++*this;
       return pre_increment;
     }
 
     /// retreat the iterator by one position (prefix)
-    CoefficientsIndexIterator& operator--() noexcept {
+    CoefficientsIndexIterator& operator--() {
       // permit altering the iterator only if the new value is between the
       // anticipated begin and end, inclusive
       ASSERT(l_ <= l_max_ + 1 && m_ <= l_max_ + 1,
@@ -248,7 +248,7 @@ class CoefficientsMetadata {
 
     /// retreat the iterator by one position (postfix)
     // NOLINTNEXTLINE(readability-const-return-type)
-    const CoefficientsIndexIterator operator--(int) noexcept {
+    const CoefficientsIndexIterator operator--(int) {
       auto pre_decrement = *this;
       --*this;
       return pre_decrement;
@@ -257,10 +257,10 @@ class CoefficientsMetadata {
     /// @{
     /// (In)Equivalence checks the object as well as the l and m current
     /// position.
-    bool operator==(const CoefficientsIndexIterator& rhs) const noexcept {
+    bool operator==(const CoefficientsIndexIterator& rhs) const {
       return m_ == rhs.m_ and l_ == rhs.l_ and l_max_ == rhs.l_max_;
     }
-    bool operator!=(const CoefficientsIndexIterator& rhs) const noexcept {
+    bool operator!=(const CoefficientsIndexIterator& rhs) const {
       return not(*this == rhs);
     }
     /// @}
@@ -271,7 +271,7 @@ class CoefficientsMetadata {
     size_t l_max_;
   };
 
-  explicit CoefficientsMetadata(size_t l_max) noexcept;
+  explicit CoefficientsMetadata(size_t l_max);
 
   ~CoefficientsMetadata() = default;
   CoefficientsMetadata() = default;
@@ -279,38 +279,32 @@ class CoefficientsMetadata {
   CoefficientsMetadata(CoefficientsMetadata&&) = default;
   CoefficientsMetadata& operator=(const CoefficientsMetadata&) = delete;
   CoefficientsMetadata& operator=(CoefficientsMetadata&&) = default;
-  sharp_alm_info* get_sharp_alm_info() const noexcept {
-    return alm_info_.get();
-  }
+  sharp_alm_info* get_sharp_alm_info() const { return alm_info_.get(); }
 
-  size_t l_max() const noexcept { return l_max_; }
+  size_t l_max() const { return l_max_; }
 
   /// returns the number of (complex) entries in a libsharp-compatible
   /// coefficients vector. This includes the factor of 2 associated with needing
   /// to store both the transform of the real and imaginary parts, so is the
   /// full size of the result of a libsharp swsh transform.
-  size_t size() const noexcept {
-    return size_of_libsharp_coefficient_vector(l_max_);
-  }
+  size_t size() const { return size_of_libsharp_coefficient_vector(l_max_); }
 
   /// @{
   /// \brief Get a bidirectional iterator to the start of the series of modes.
-  CoefficientsMetadata::CoefficientsIndexIterator begin() const noexcept {
+  CoefficientsMetadata::CoefficientsIndexIterator begin() const {
     return CoefficientsIndexIterator(l_max_, 0, 0);
   }
-  CoefficientsMetadata::CoefficientsIndexIterator cbegin() const noexcept {
+  CoefficientsMetadata::CoefficientsIndexIterator cbegin() const {
     return begin();
   }
   /// @}
 
   /// @{
   /// \brief Get a bidirectional iterator to the end of the series of modes.
-  CoefficientsMetadata::CoefficientsIndexIterator end() const noexcept {
+  CoefficientsMetadata::CoefficientsIndexIterator end() const {
     return CoefficientsIndexIterator(l_max_, l_max_ + 1, l_max_ + 1);
   }
-  CoefficientsMetadata::CoefficientsIndexIterator cend() const noexcept {
-    return end();
-  }
+  CoefficientsMetadata::CoefficientsIndexIterator cend() const { return end(); }
   /// @}
 
  private:
@@ -329,7 +323,7 @@ class CoefficientsMetadata {
  * See the comments in the similar implementation found in `SwshCollocation.hpp`
  * for more details on the lazy cache.
  */
-const CoefficientsMetadata& cached_coefficients_metadata(size_t l_max) noexcept;
+const CoefficientsMetadata& cached_coefficients_metadata(size_t l_max);
 
 /// @{
 /*!
@@ -356,13 +350,13 @@ template <int Spin>
 std::complex<double> libsharp_mode_to_goldberg_plus_m(
     const LibsharpCoefficientInfo& coefficient_info,
     const SpinWeighted<ComplexModalVector, Spin>& libsharp_modes,
-    size_t radial_offset) noexcept;
+    size_t radial_offset);
 
 template <int Spin>
 std::complex<double> libsharp_mode_to_goldberg_minus_m(
     const LibsharpCoefficientInfo& coefficient_info,
     const SpinWeighted<ComplexModalVector, Spin>& libsharp_modes,
-    size_t radial_offset) noexcept;
+    size_t radial_offset);
 /// @}
 
 /*!
@@ -381,7 +375,7 @@ template <int Spin>
 std::complex<double> libsharp_mode_to_goldberg(
     size_t l, int m, size_t l_max,
     const SpinWeighted<ComplexModalVector, Spin>& libsharp_modes,
-    size_t radial_offset) noexcept;
+    size_t radial_offset);
 
 /*!
  * \ingroup SwshGroup
@@ -410,7 +404,7 @@ void goldberg_modes_to_libsharp_modes_single_pair(
     const LibsharpCoefficientInfo& coefficient_info,
     gsl::not_null<SpinWeighted<ComplexModalVector, Spin>*> libsharp_modes,
     size_t radial_offset, std::complex<double> goldberg_plus_m_mode_value,
-    std::complex<double> goldberg_minus_m_mode_value) noexcept;
+    std::complex<double> goldberg_minus_m_mode_value);
 
 /*!
  * \ingroup SwshGroup
@@ -439,7 +433,7 @@ void goldberg_modes_to_libsharp_modes_single_pair(
     size_t l, int m, size_t l_max,
     gsl::not_null<SpinWeighted<ComplexModalVector, Spin>*> libsharp_modes,
     size_t radial_offset, std::complex<double> goldberg_plus_m_mode_value,
-    std::complex<double> goldberg_minus_m_mode_value) noexcept;
+    std::complex<double> goldberg_minus_m_mode_value);
 
 /// @{
 /*!
@@ -454,13 +448,11 @@ void goldberg_modes_to_libsharp_modes_single_pair(
 template <int Spin>
 void libsharp_to_goldberg_modes(
     gsl::not_null<SpinWeighted<ComplexModalVector, Spin>*> goldberg_modes,
-    const SpinWeighted<ComplexModalVector, Spin>& libsharp_modes,
-    size_t l_max) noexcept;
+    const SpinWeighted<ComplexModalVector, Spin>& libsharp_modes, size_t l_max);
 
 template <int Spin>
 SpinWeighted<ComplexModalVector, Spin> libsharp_to_goldberg_modes(
-    const SpinWeighted<ComplexModalVector, Spin>& libsharp_modes,
-    size_t l_max) noexcept;
+    const SpinWeighted<ComplexModalVector, Spin>& libsharp_modes, size_t l_max);
 /// @}
 
 /// @{
@@ -479,13 +471,11 @@ SpinWeighted<ComplexModalVector, Spin> libsharp_to_goldberg_modes(
 template <int Spin>
 void goldberg_to_libsharp_modes(
     gsl::not_null<SpinWeighted<ComplexModalVector, Spin>*> libsharp_modes,
-    const SpinWeighted<ComplexModalVector, Spin>& goldberg_modes,
-    size_t l_max) noexcept;
+    const SpinWeighted<ComplexModalVector, Spin>& goldberg_modes, size_t l_max);
 
 template <int Spin>
 SpinWeighted<ComplexModalVector, Spin> goldberg_to_libsharp_modes(
-    const SpinWeighted<ComplexModalVector, Spin>& goldberg_modes,
-    size_t l_max) noexcept;
+    const SpinWeighted<ComplexModalVector, Spin>& goldberg_modes, size_t l_max);
 /// @}
 
 /*!
@@ -502,7 +492,7 @@ SpinWeighted<ComplexModalVector, Spin> goldberg_to_libsharp_modes(
  */
 constexpr SPECTRE_ALWAYS_INLINE size_t
 goldberg_mode_index(const size_t l_max, const size_t l, const int m,
-                    const size_t radial_offset = 0) noexcept {
+                    const size_t radial_offset = 0) {
   return static_cast<size_t>(
       static_cast<int>(square(l_max + 1) * radial_offset + square(l) + l) + m);
 }

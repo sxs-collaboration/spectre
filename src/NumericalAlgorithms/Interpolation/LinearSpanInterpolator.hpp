@@ -24,35 +24,33 @@ class LinearSpanInterpolator : public SpanInterpolator {
   static constexpr Options::String help = {"Linear interpolator."};
 
   LinearSpanInterpolator() = default;
-  LinearSpanInterpolator(const LinearSpanInterpolator&) noexcept = default;
-  LinearSpanInterpolator& operator=(const LinearSpanInterpolator&) noexcept =
-      default;
-  LinearSpanInterpolator(LinearSpanInterpolator&&) noexcept = default;
-  LinearSpanInterpolator& operator=(LinearSpanInterpolator&&) noexcept =
-      default;
-  ~LinearSpanInterpolator() noexcept override = default;
+  LinearSpanInterpolator(const LinearSpanInterpolator&) = default;
+  LinearSpanInterpolator& operator=(const LinearSpanInterpolator&) = default;
+  LinearSpanInterpolator(LinearSpanInterpolator&&) = default;
+  LinearSpanInterpolator& operator=(LinearSpanInterpolator&&) = default;
+  ~LinearSpanInterpolator() override = default;
 
   WRAPPED_PUPable_decl_template(LinearSpanInterpolator);  // NOLINT
 
-  explicit LinearSpanInterpolator(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit LinearSpanInterpolator(CkMigrateMessage* /*unused*/) {}
 
   // clang-tidy: do not pass by non-const reference
-  void pup(PUP::er& /*p*/) noexcept override {}
+  void pup(PUP::er& /*p*/) override {}
 
-  std::unique_ptr<SpanInterpolator> get_clone() const noexcept override {
+  std::unique_ptr<SpanInterpolator> get_clone() const override {
     return std::make_unique<LinearSpanInterpolator>(*this);
   }
 
   double interpolate(const gsl::span<const double>& source_points,
                      const gsl::span<const double>& values,
-                     double target_point) const noexcept override;
+                     double target_point) const override;
 
   std::complex<double> interpolate(
       const gsl::span<const double>& source_points,
       const gsl::span<const std::complex<double>>& values,
-      double target_point) const noexcept;
+      double target_point) const;
 
-  size_t required_number_of_points_before_and_after() const noexcept override {
+  size_t required_number_of_points_before_and_after() const override {
     return 1;
   }
 };

@@ -32,7 +32,7 @@ struct AlfvenSpeedSquared : db::SimpleTag {
 template <typename DataType, size_t Dim, typename Fr>
 struct ComovingMagneticField : db::SimpleTag {
   using type = tnsr::A<DataType, Dim, Fr>;
-  static std::string name() noexcept {
+  static std::string name() {
     return Frame::prefix<Fr>() + "ComovingMagneticField";
   }
 };
@@ -79,9 +79,7 @@ struct LorentzFactorSquared : db::SimpleTag {
 template <typename DataType, size_t Dim, typename Fr>
 struct MagneticField : db::SimpleTag {
   using type = tnsr::I<DataType, Dim, Fr>;
-  static std::string name() noexcept {
-    return Frame::prefix<Fr>() + "MagneticField";
-  }
+  static std::string name() { return Frame::prefix<Fr>() + "MagneticField"; }
 };
 
 /// The magnetic field dotted into the spatial velocity, \f$B^iv_i\f$ where
@@ -97,7 +95,7 @@ struct MagneticFieldDotSpatialVelocity : db::SimpleTag {
 template <typename DataType, size_t Dim, typename Fr>
 struct MagneticFieldOneForm : db::SimpleTag {
   using type = tnsr::i<DataType, Dim, Fr>;
-  static std::string name() noexcept {
+  static std::string name() {
     return Frame::prefix<Fr>() + "MagneticFieldOneForm";
   }
 };
@@ -141,9 +139,7 @@ struct SoundSpeedSquared : db::SimpleTag {
 template <typename DataType, size_t Dim, typename Fr>
 struct SpatialVelocity : db::SimpleTag {
   using type = tnsr::I<DataType, Dim, Fr>;
-  static std::string name() noexcept {
-    return Frame::prefix<Fr>() + "SpatialVelocity";
-  }
+  static std::string name() { return Frame::prefix<Fr>() + "SpatialVelocity"; }
 };
 
 /// The spatial velocity one-form \f$v_i\f$, where \f$v_i\f$ is raised
@@ -151,7 +147,7 @@ struct SpatialVelocity : db::SimpleTag {
 template <typename DataType, size_t Dim, typename Fr>
 struct SpatialVelocityOneForm : db::SimpleTag {
   using type = tnsr::i<DataType, Dim, Fr>;
-  static std::string name() noexcept {
+  static std::string name() {
     return Frame::prefix<Fr>() + "SpatialVelocityOneForm";
   }
 };
@@ -206,9 +202,7 @@ struct LorentzFactorTimesSpatialVelocity : db::SimpleTag {
 template <typename DataType, size_t Dim, typename Fr>
 struct MassFlux : db::SimpleTag {
   using type = tnsr::I<DataType, Dim, Fr>;
-  static std::string name() noexcept {
-    return Frame::prefix<Fr>() + "MassFlux";
-  }
+  static std::string name() { return Frame::prefix<Fr>() + "MassFlux"; }
 };
 }  // namespace Tags
 }  // namespace hydro

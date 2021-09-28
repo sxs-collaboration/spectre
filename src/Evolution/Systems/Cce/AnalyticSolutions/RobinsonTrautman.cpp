@@ -57,7 +57,7 @@ RobinsonTrautman::RobinsonTrautman(
   initialize_stepper_from_start();
 }
 
-void RobinsonTrautman::initialize_stepper_from_start() const noexcept {
+void RobinsonTrautman::initialize_stepper_from_start() const {
   // create the initial data
   SpinWeighted<ComplexModalVector, 0> goldberg_modes{square(l_max_ + 1), 0.0};
   for (size_t i = 0; i < std::min(initial_modes_.size(), goldberg_modes.size());
@@ -114,7 +114,7 @@ void RobinsonTrautman::initialize_stepper_from_start() const noexcept {
   }
   const auto rt_system = [this](const ComplexDataVector& local_rt_scalar,
                                 ComplexDataVector& local_du_rt_scalar,
-                                const double /*t*/) noexcept {
+                                const double /*t*/) {
     local_du_rt_scalar.destructive_resize(local_rt_scalar.size());
     const SpinWeighted<ComplexDataVector, 0> rt_scalar_reference;
     make_const_view(make_not_null(&rt_scalar_reference.data()), local_rt_scalar,
@@ -129,12 +129,12 @@ void RobinsonTrautman::initialize_stepper_from_start() const noexcept {
   step_range_ = stepper_.do_step(rt_system);
 }
 
-std::unique_ptr<WorldtubeData> RobinsonTrautman::get_clone() const noexcept {
+std::unique_ptr<WorldtubeData> RobinsonTrautman::get_clone() const {
   return std::make_unique<RobinsonTrautman>(*this);
 }
 
 void RobinsonTrautman::prepare_solution(const size_t l_max,
-                                        const double time) const noexcept {
+                                        const double time) const {
   ASSERT(l_max == l_max_,
          "The Robinson-Trautman solution only supports the l_max resolution "
          "specified at construction, as it must internally store the evolved "
@@ -145,7 +145,7 @@ void RobinsonTrautman::prepare_solution(const size_t l_max,
   // step until the target time is within the current timestep
   const auto rt_system = [this](const ComplexDataVector& local_rt_scalar,
                                 ComplexDataVector& local_du_rt_scalar,
-                                const double /*t*/) noexcept {
+                                const double /*t*/) {
     local_du_rt_scalar.destructive_resize(local_rt_scalar.size());
     const SpinWeighted<ComplexDataVector, 0> rt_scalar_reference;
     make_const_view(make_not_null(&rt_scalar_reference.data()), local_rt_scalar,
@@ -171,7 +171,7 @@ void RobinsonTrautman::prepare_solution(const size_t l_max,
 void RobinsonTrautman::variables_impl(
     const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, -2>>*> news,
     const size_t l_max, const double time,
-    tmpl::type_<Tags::News> /*meta*/) const noexcept {
+    tmpl::type_<Tags::News> /*meta*/) const {
   ASSERT(time == prepared_time_,
          "The Robinson-Trautman solution is being calculated in an "
          "inconsistent state. The public interface should always call "
@@ -190,7 +190,7 @@ void RobinsonTrautman::variables_impl(
 
 void RobinsonTrautman::du_rt_scalar(
     const gsl::not_null<SpinWeighted<ComplexDataVector, 0>*> local_du_rt_scalar,
-    const SpinWeighted<ComplexDataVector, 0>& rt_scalar) const noexcept {
+    const SpinWeighted<ComplexDataVector, 0>& rt_scalar) const {
   using rt_tag = ::Tags::SpinWeighted<::Tags::TempScalar<0, ComplexDataVector>,
                                       std::integral_constant<int, 0>>;
   using ethbar_ethbar_rt_tag =
@@ -221,8 +221,7 @@ void RobinsonTrautman::du_rt_scalar(
 
 void RobinsonTrautman::bondi_u(
     const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 1>>*> bondi_u,
-    const Scalar<SpinWeighted<ComplexDataVector, 0>>& rt_scalar)
-    const noexcept {
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& rt_scalar) const {
   Spectral::Swsh::angular_derivatives<tmpl::list<Spectral::Swsh::Tags::Eth>>(
       l_max_, 1, make_not_null(&get(*bondi_u)), get(rt_scalar));
   get(*bondi_u).data() /= extraction_radius_;
@@ -230,8 +229,7 @@ void RobinsonTrautman::bondi_u(
 
 void RobinsonTrautman::bondi_w(
     const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*> bondi_w,
-    const Scalar<SpinWeighted<ComplexDataVector, 0>>& rt_scalar)
-    const noexcept {
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& rt_scalar) const {
   Spectral::Swsh::angular_derivatives<
       tmpl::list<Spectral::Swsh::Tags::EthEthbar>>(
       l_max_, 1, make_not_null(&get(*bondi_w)), get(rt_scalar));
@@ -241,8 +239,7 @@ void RobinsonTrautman::bondi_w(
 
 void RobinsonTrautman::dr_bondi_w(
     const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*> dr_bondi_w,
-    const Scalar<SpinWeighted<ComplexDataVector, 0>>& rt_scalar)
-    const noexcept {
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& rt_scalar) const {
   SpinWeighted<ComplexDataVector, 0> bondi_w{get(*dr_bondi_w).size()};
   Spectral::Swsh::angular_derivatives<
       tmpl::list<Spectral::Swsh::Tags::EthEthbar>>(
@@ -255,8 +252,7 @@ void RobinsonTrautman::dr_bondi_w(
 void RobinsonTrautman::du_bondi_w(
     const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*> du_bondi_w,
     const Scalar<SpinWeighted<ComplexDataVector, 0>>& local_du_rt_scalar,
-    const Scalar<SpinWeighted<ComplexDataVector, 0>>& rt_scalar)
-    const noexcept {
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& rt_scalar) const {
   Spectral::Swsh::angular_derivatives<
       tmpl::list<Spectral::Swsh::Tags::EthEthbar>>(
       l_max_, 1, make_not_null(&get(*du_bondi_w)), get(local_du_rt_scalar));
@@ -270,7 +266,7 @@ void RobinsonTrautman::spherical_metric(
     const gsl::not_null<
         tnsr::aa<DataVector, 3, ::Frame::Spherical<::Frame::Inertial>>*>
         spherical_metric,
-    const size_t l_max, const double time) const noexcept {
+    const size_t l_max, const double time) const {
   ASSERT(time == prepared_time_,
          "The Robinson-Trautman solution is being calculated in an "
          "inconsistent state. The public interface should always call "
@@ -321,7 +317,7 @@ void RobinsonTrautman::dr_spherical_metric(
     const gsl::not_null<
         tnsr::aa<DataVector, 3, ::Frame::Spherical<::Frame::Inertial>>*>
         dr_spherical_metric,
-    const size_t l_max, const double time) const noexcept {
+    const size_t l_max, const double time) const {
   ASSERT(time == prepared_time_,
          "The Robinson-Trautman solution is being calculated in an "
          "inconsistent state. The public interface should always call "
@@ -391,7 +387,7 @@ void RobinsonTrautman::dt_spherical_metric(
     const gsl::not_null<
         tnsr::aa<DataVector, 3, ::Frame::Spherical<::Frame::Inertial>>*>
         dt_spherical_metric,
-    const size_t l_max, const double time) const noexcept {
+    const size_t l_max, const double time) const {
   ASSERT(time == prepared_time_,
          "The Robinson-Trautman solution is being calculated in an "
          "inconsistent state. The public interface should always call "
@@ -446,7 +442,7 @@ void RobinsonTrautman::dt_spherical_metric(
   }
 }
 
-void RobinsonTrautman::pup(PUP::er& p) noexcept {
+void RobinsonTrautman::pup(PUP::er& p) {
   SphericalMetricData::pup(p);
   p | tolerance_;
   p | start_time_;

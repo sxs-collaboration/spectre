@@ -40,10 +40,10 @@ template <PhaseControl::ArbitrationStrategy Strategy, size_t Index,
               tmpl::list<Registrars::TestPhaseChange<Strategy, Index>>>
 struct TestPhaseChange : public PhaseChange<PhaseChangeRegistrars> {
   TestPhaseChange() = default;
-  explicit TestPhaseChange(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit TestPhaseChange(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(TestPhaseChange);  // NOLINT
-  static std::string name() noexcept {
+  static std::string name() {
     if constexpr (Strategy ==
                   PhaseControl::ArbitrationStrategy::RunPhaseImmediately) {
       if constexpr (Index == 0_st) {
@@ -76,7 +76,7 @@ struct TestPhaseChange : public PhaseChange<PhaseChangeRegistrars> {
   template <typename... DecisionTags>
   void initialize_phase_data_impl(
       const gsl::not_null<tuples::TaggedTuple<DecisionTags...>*>
-          phase_change_decision_data) const noexcept {
+          phase_change_decision_data) const {
     tuples::get<TestTags::Request<Strategy, Index>>(
         *phase_change_decision_data) =
         (Index % 2 == 0) xor
@@ -87,7 +87,7 @@ struct TestPhaseChange : public PhaseChange<PhaseChangeRegistrars> {
             typename ArrayIndex>
   void contribute_phase_data_impl(
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/) const noexcept {}
+      const ArrayIndex& /*array_index*/) const {}
 
   template <typename... DecisionTags, typename Metavariables>
   typename std::optional<std::pair<typename Metavariables::Phase,
@@ -96,7 +96,7 @@ struct TestPhaseChange : public PhaseChange<PhaseChangeRegistrars> {
       const gsl::not_null<tuples::TaggedTuple<DecisionTags...>*>
           phase_change_decision_data,
       const typename Metavariables::Phase /*current_phase*/,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/) const noexcept {
+      const Parallel::GlobalCache<Metavariables>& /*cache*/) const {
     if (tuples::get<TestTags::Request<Strategy, Index>>(
             *phase_change_decision_data)) {
       tuples::get<TestTags::Request<Strategy, Index>>(
@@ -112,7 +112,7 @@ struct TestPhaseChange : public PhaseChange<PhaseChangeRegistrars> {
     }
   }
 
-  void pup(PUP::er& /*p*/) noexcept override {}  // NOLINT
+  void pup(PUP::er& /*p*/) override {}  // NOLINT
 };
 
 template <PhaseControl::ArbitrationStrategy Strategy, size_t Index,

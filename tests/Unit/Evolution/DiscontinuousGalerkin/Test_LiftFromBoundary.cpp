@@ -48,7 +48,7 @@ struct Var2 : db::SimpleTag {
 template <typename TagsList, size_t Dim>
 auto polynomial_volume_fluxes(
     const tnsr::I<DataVector, Dim, Frame::Inertial>& coords,
-    const Index<Dim>& powers) noexcept {
+    const Index<Dim>& powers) {
   Variables<db::wrap_tags_in<Tags::Flux, TagsList, tmpl::size_t<Dim>,
                              Frame::Inertial>>
       result(get<0>(coords).size(), 1.0);
@@ -83,23 +83,23 @@ using Affine2D = domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>;
 using Affine3D = domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
 
 template <size_t VolumeDim>
-auto make_map() noexcept;
+auto make_map();
 
 template <>
-auto make_map<1>() noexcept {
+auto make_map<1>() {
   return domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
       Affine{-1.0, 1.0, -0.3, 0.7});
 }
 
 template <>
-auto make_map<2>() noexcept {
+auto make_map<2>() {
   return domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
       Affine2D{{-1.0, 1.0, -1.0, -0.9}, {-1.0, 1.0, -1.0, -0.9}},
       domain::CoordinateMaps::Wedge<2>{1.0, 2.0, 0.0, 1.0, {}, false});
 }
 
 template <>
-auto make_map<3>() noexcept {
+auto make_map<3>() {
   return domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
       Affine3D{{-1.0, 1.0, -1.0, -0.9},
                {-1.0, 1.0, -1.0, -0.9},
@@ -236,7 +236,7 @@ void test(const double eps) {
   Approx local_approx = Approx::custom().epsilon(eps).scale(1.0);
   tmpl::for_each<typename decltype(expected_dt_vars)::tags_list>(
       [&dt_vars_lifted_one_at_a_time, &dt_vars_lifted_two_at_a_time,
-       &expected_dt_vars, &local_approx](auto tag_v) noexcept {
+       &expected_dt_vars, &local_approx](auto tag_v) {
         using tag = tmpl::type_from<decltype(tag_v)>;
         CHECK_ITERABLE_CUSTOM_APPROX(get<tag>(dt_vars_lifted_one_at_a_time),
                                      get<tag>(expected_dt_vars), local_approx);

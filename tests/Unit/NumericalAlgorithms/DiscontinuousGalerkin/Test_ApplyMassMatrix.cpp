@@ -29,7 +29,7 @@ namespace {
 // computing the mass matrix in the DG code because it is cheaper to apply the
 // mass matrix as a pointwise multiplication over the grid.
 template <Spectral::Basis BasisType, Spectral::Quadrature QuadratureType>
-Matrix exact_logical_mass_matrix(const size_t num_points) noexcept {
+Matrix exact_logical_mass_matrix(const size_t num_points) {
   auto normalized_vandermonde_matrix =
       Spectral::modal_to_nodal_matrix<BasisType, QuadratureType>(num_points);
   for (size_t j = 0; j < num_points; ++j) {
@@ -44,8 +44,7 @@ Matrix exact_logical_mass_matrix(const size_t num_points) noexcept {
 }
 
 template <size_t Dim>
-std::array<Matrix, Dim> exact_logical_mass_matrix(
-    const Mesh<Dim>& mesh) noexcept {
+std::array<Matrix, Dim> exact_logical_mass_matrix(const Mesh<Dim>& mesh) {
   std::array<Matrix, Dim> result{};
   for (size_t d = 0; d < Dim; ++d) {
     ASSERT(mesh.basis(d) == Spectral::Basis::Legendre,
@@ -77,7 +76,7 @@ std::array<Matrix, Dim> exact_logical_mass_matrix(
 template <size_t Dim>
 void test_apply_mass_matrix(
     const Mesh<Dim>& mesh, const DataVector& scalar_field,
-    const DataVector& expected_mass_matrix_times_scalar_field) noexcept {
+    const DataVector& expected_mass_matrix_times_scalar_field) {
   const size_t num_grid_points = mesh.number_of_grid_points();
   {
     INFO("Test with DataVector");

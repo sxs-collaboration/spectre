@@ -40,7 +40,7 @@ struct OutputVolumeData {
   static constexpr Options::String help =
       "Record volume data for debugging purposes.";
   using group = OptionsGroup;
-  static bool suggested_value() noexcept { return false; }
+  static bool suggested_value() { return false; }
 };
 
 }  // namespace OptionTags
@@ -82,8 +82,8 @@ struct MaxLevels : db::SimpleTag {
   using type = std::optional<size_t>;
   static constexpr bool pass_metavariables = false;
   using option_tags = tmpl::list<OptionTags::MaxLevels<OptionsGroup>>;
-  static type create_from_options(const type value) noexcept { return value; };
-  static std::string name() noexcept {
+  static type create_from_options(const type value) { return value; };
+  static std::string name() {
     return "MaxLevels(" + Options::name<OptionsGroup>() + ")";
   }
 };
@@ -94,8 +94,8 @@ struct OutputVolumeData : db::SimpleTag {
   using type = bool;
   static constexpr bool pass_metavariables = false;
   using option_tags = tmpl::list<OptionTags::OutputVolumeData<OptionsGroup>>;
-  static type create_from_options(const type value) noexcept { return value; };
-  static std::string name() noexcept {
+  static type create_from_options(const type value) { return value; };
+  static std::string name() {
     return "OutputVolumeData(" + Options::name<OptionsGroup>() + ")";
   }
 };
@@ -136,7 +136,7 @@ struct ParentMesh : db::SimpleTag {
 template <typename OptionsGroup>
 struct ObservationId : db::SimpleTag {
   using type = size_t;
-  static std::string name() noexcept {
+  static std::string name() {
     return "ObservationId(" + Options::name<OptionsGroup>() + ")";
   }
 };
@@ -197,7 +197,7 @@ struct VolumeDataForOutput : db::SimpleTag {
                    db::wrap_tags_in<PostSmoothingSource, fields_tags>,
                    db::wrap_tags_in<PostSmoothingResult, fields_tags>,
                    db::wrap_tags_in<PostSmoothingResidual, fields_tags>>>;
-  static std::string name() noexcept {
+  static std::string name() {
     return "VolumeDataForOutput(" + Options::name<OptionsGroup>() + ")";
   }
 };

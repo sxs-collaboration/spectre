@@ -20,7 +20,7 @@
 namespace {
 // check that pressure equals energy density at upper bound of specific
 // internal energy for adiabatic index > 2
-void check_dominant_energy_condition_at_bound() noexcept {
+void check_dominant_energy_condition_at_bound() {
   const auto seed = std::random_device{}();
   MAKE_GENERATOR(generator, seed);
   CAPTURE(seed);
@@ -41,7 +41,7 @@ void check_dominant_energy_condition_at_bound() noexcept {
 }
 
 template <bool IsRelativistic>
-void check_bounds() noexcept {
+void check_bounds() {
   const auto eos = EquationsOfState::IdealFluid<IsRelativistic>{1.5};
   CHECK(0.0 == eos.rest_mass_density_lower_bound());
   CHECK(0.0 == eos.specific_internal_energy_lower_bound(1.0));

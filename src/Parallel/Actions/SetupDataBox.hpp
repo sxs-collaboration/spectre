@@ -63,7 +63,7 @@ using get_pdal_compute_tags = tmpl::flatten<
 template <typename DbTags, typename... SimpleTags, typename... ComputeTags>
 auto merge_into_databox_helper(db::DataBox<DbTags>&& box,
                                tmpl::list<SimpleTags...> /*meta*/,
-                               tmpl::list<ComputeTags...> /*meta*/) noexcept {
+                               tmpl::list<ComputeTags...> /*meta*/) {
   return db::create_from<db::RemoveTags<>, db::AddSimpleTags<SimpleTags...>,
                          db::AddComputeTags<ComputeTags...>>(std::move(box));
 }
@@ -107,7 +107,7 @@ struct SetupDataBox {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     using action_list_simple_tags =
         tmpl::remove_duplicates<detail::get_pdal_simple_tags<
             typename ParallelComponent::phase_dependent_action_list>>;
@@ -135,7 +135,6 @@ struct SetupDataBox {
     } else {
       return std::make_tuple(std::move(box));
     }
-
   }
 };
 }  // namespace Actions

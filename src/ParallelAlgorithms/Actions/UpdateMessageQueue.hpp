@@ -38,7 +38,7 @@ struct UpdateMessageQueue {
       const ArrayIndex& array_index,
       const LinkedMessageId<typename LinkedMessageQueueTag::type::IdType>&
           id_and_previous,
-      typename QueueTag::type message) noexcept {
+      typename QueueTag::type message) {
     if constexpr (db::tag_is_retrievable_v<LinkedMessageQueueTag,
                                            db::DataBox<DbTags>>) {
       auto& queue =

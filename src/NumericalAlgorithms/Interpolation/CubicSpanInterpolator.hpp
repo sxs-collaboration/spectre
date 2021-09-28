@@ -28,34 +28,33 @@ class CubicSpanInterpolator : public SpanInterpolator {
   static constexpr Options::String help = {"Cubic interpolator."};
 
   CubicSpanInterpolator() = default;
-  CubicSpanInterpolator(const CubicSpanInterpolator&) noexcept = default;
-  CubicSpanInterpolator& operator=(const CubicSpanInterpolator&) noexcept =
-      default;
-  CubicSpanInterpolator(CubicSpanInterpolator&&) noexcept = default;
-  CubicSpanInterpolator& operator=(CubicSpanInterpolator&&) noexcept = default;
-  ~CubicSpanInterpolator() noexcept override = default;
+  CubicSpanInterpolator(const CubicSpanInterpolator&) = default;
+  CubicSpanInterpolator& operator=(const CubicSpanInterpolator&) = default;
+  CubicSpanInterpolator(CubicSpanInterpolator&&) = default;
+  CubicSpanInterpolator& operator=(CubicSpanInterpolator&&) = default;
+  ~CubicSpanInterpolator() override = default;
 
-  explicit CubicSpanInterpolator(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit CubicSpanInterpolator(CkMigrateMessage* /*unused*/) {}
 
   WRAPPED_PUPable_decl_template(CubicSpanInterpolator);  // NOLINT
 
   // clang-tidy: do not pass by non-const reference
-  void pup(PUP::er& /*p*/) noexcept override {}
+  void pup(PUP::er& /*p*/) override {}
 
-  std::unique_ptr<SpanInterpolator> get_clone() const noexcept override {
+  std::unique_ptr<SpanInterpolator> get_clone() const override {
     return std::make_unique<CubicSpanInterpolator>(*this);
   }
 
   double interpolate(const gsl::span<const double>& source_points,
                      const gsl::span<const double>& values,
-                     double target_point) const noexcept override;
+                     double target_point) const override;
 
   std::complex<double> interpolate(
       const gsl::span<const double>& source_points,
       const gsl::span<const std::complex<double>>& values,
-      double target_point) const noexcept;
+      double target_point) const;
 
-  size_t required_number_of_points_before_and_after() const noexcept override {
+  size_t required_number_of_points_before_and_after() const override {
     return 2;
   }
 };

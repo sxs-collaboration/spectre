@@ -20,7 +20,7 @@
 
 // IWYU pragma: no_include <algorithm>
 
-void test_complex_modal_vector_inhomogeneous_binary_math() noexcept {
+void test_complex_modal_vector_inhomogeneous_binary_math() {
   const TestHelpers::VectorImpl::Bound generic{{-10.0, 10.0}};
   const TestHelpers::VectorImpl::Bound positive{{0.1, 10.0}};
 

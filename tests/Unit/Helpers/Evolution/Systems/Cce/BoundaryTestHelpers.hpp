@@ -25,7 +25,7 @@ namespace Cce {
 namespace TestHelpers {
 template <typename... Structure>
 Tensor<ComplexModalVector, Structure...> tensor_to_goldberg_coefficients(
-    const Tensor<DataVector, Structure...>& nodal_data, size_t l_max) noexcept {
+    const Tensor<DataVector, Structure...>& nodal_data, size_t l_max) {
   Tensor<ComplexModalVector, Structure...> goldberg_modal_data{
       square(l_max + 1)};
   SpinWeighted<ComplexDataVector, 0> transform_buffer{
@@ -44,7 +44,7 @@ template <typename... Structure>
 Tensor<ComplexModalVector, Structure...> tensor_to_libsharp_coefficients(
     const Tensor<DataVector, Structure...>& nodal_data,
     const size_t l_max)  // NOLINT(readability-avoid-const-params-in-decls)
-    noexcept {
+{
   Tensor<ComplexModalVector, Structure...> libsharp_modal_data{
       Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max)};
   SpinWeighted<ComplexDataVector, 0> transform_buffer{
@@ -64,7 +64,7 @@ void create_fake_time_varying_gh_nodal_data(
     const gsl::not_null<tnsr::aa<DataVector, 3>*> pi,
     const AnalyticSolution& solution, const double extraction_radius,
     const double amplitude, const double frequency, const double time,
-    const size_t l_max) noexcept {
+    const size_t l_max) {
   const size_t number_of_angular_points =
       Spectral::Swsh::number_of_swsh_collocation_points(l_max);
   // create the vector of collocation points that we want to interpolate to
@@ -136,7 +136,7 @@ void create_fake_time_varying_modal_data(
     const AnalyticSolution& solution, const double extraction_radius,
     const double amplitude, const double frequency, const double time,
     const size_t l_max, const bool convert_to_goldberg = true,
-    const bool apply_normalization_bug = false) noexcept {
+    const bool apply_normalization_bug = false) {
   const size_t number_of_angular_points =
       Spectral::Swsh::number_of_swsh_collocation_points(l_max);
   // create the vector of collocation points that we want to interpolate to
@@ -273,7 +273,7 @@ template <typename AnalyticSolution>
 void write_test_file(const AnalyticSolution& solution,
                      const std::string& filename, const double target_time,
                      const double extraction_radius, const double frequency,
-                     const double amplitude, const size_t l_max) noexcept {
+                     const double amplitude, const size_t l_max) {
   const size_t goldberg_size = square(l_max + 1);
   tnsr::ii<ComplexModalVector, 3> spatial_metric_coefficients{goldberg_size};
   tnsr::ii<ComplexModalVector, 3> dt_spatial_metric_coefficients{goldberg_size};

@@ -49,8 +49,7 @@ namespace evolution::dg::subcell {
  */
 template <typename Metavariables, typename DbTagsList>
 DirectionMap<Metavariables::volume_dim, std::vector<double>>
-prepare_neighbor_data(
-    const gsl::not_null<db::DataBox<DbTagsList>*> box) noexcept {
+prepare_neighbor_data(const gsl::not_null<db::DataBox<DbTagsList>*> box) {
   constexpr size_t volume_dim = Metavariables::volume_dim;
   using variables_tag = typename Metavariables::system::variables_tag;
   const std::pair self_id{Direction<volume_dim>::lower_xi(),
@@ -58,9 +57,9 @@ prepare_neighbor_data(
   db::mutate<
       subcell::Tags::NeighborDataForReconstructionAndRdmpTci<volume_dim>>(
       box,
-      [&self_id](const auto neighbor_data_ptr,
-                 std::pair<std::vector<double>, std::vector<double>>
-                     max_min_of_vars) noexcept {
+      [&self_id](
+          const auto neighbor_data_ptr,
+          std::pair<std::vector<double>, std::vector<double>> max_min_of_vars) {
         subcell::NeighborData rdmp_data{};
         rdmp_data.max_variables_values = std::move(max_min_of_vars.first);
         rdmp_data.min_variables_values = std::move(max_min_of_vars.second);

@@ -30,7 +30,7 @@ void test_functions_of_time(
 
   tuple_fold(
       expected_functions_of_time,
-      [&functions_of_time](const auto& name_and_function_of_time) noexcept {
+      [&functions_of_time](const auto& name_and_function_of_time) {
         const std::string& name = name_and_function_of_time.first;
         const auto& function_of_time = name_and_function_of_time.second;
         using FunctionOfTimeType = std::decay_t<decltype(function_of_time)>;

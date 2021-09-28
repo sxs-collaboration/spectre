@@ -86,7 +86,7 @@ struct Limit {
       db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& inboxes,
       const Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     constexpr size_t volume_dim = Metavariables::system::volume_dim;
 
     const auto& local_temporal_id =
@@ -154,7 +154,7 @@ struct SendData {
       db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     constexpr size_t volume_dim = Metavariables::system::volume_dim;
 
     auto& receiver_proxy =
@@ -178,7 +178,7 @@ struct SendData {
       using argument_tags =
           typename Metavariables::limiter::type::package_argument_tags;
       const auto packaged_data = db::apply<argument_tags>(
-          [&limiter](const auto&... args) noexcept {
+          [&limiter](const auto&... args) {
             // Note: orientation is received as last element of pack `args`
             typename Metavariables::limiter::type::PackagedData pack{};
             limiter.package_data(make_not_null(&pack), args...);

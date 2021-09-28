@@ -28,7 +28,7 @@ void PrimsAfterRollback<Dim>::apply(
     const tnsr::I<DataVector, Dim>& momentum_density,
     const Scalar<DataVector>& energy_density,
     const EquationsOfState::EquationOfState<false, ThermodynamicDim>&
-        equation_of_state) noexcept {
+        equation_of_state) {
   if (did_rollback) {
     const size_t num_grid_points = subcell_mesh.number_of_grid_points();
     if (prim_vars->number_of_grid_points() != num_grid_points) {
@@ -59,7 +59,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
       const tnsr::I<DataVector, DIM(data)>& momentum_density,                 \
       const Scalar<DataVector>& energy_density,                               \
       const EquationsOfState::EquationOfState<false, THERMO_DIM(data)>&       \
-          equation_of_state) noexcept;
+          equation_of_state);
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (1, 2))
 #undef INSTANTIATION
 #undef THERMO_DIM

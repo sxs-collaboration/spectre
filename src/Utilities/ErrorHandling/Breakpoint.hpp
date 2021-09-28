@@ -6,4 +6,4 @@
 /*!
  * \brief Raise `SIGTRAP` so that debuggers will trap.
  */
-void breakpoint() noexcept;
+void breakpoint();

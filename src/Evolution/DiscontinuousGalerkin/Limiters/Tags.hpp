@@ -14,7 +14,7 @@ namespace OptionTags {
  * \brief Holds the `OptionTags::Limiter` option in the input file
  */
 struct LimiterGroup {
-  static std::string name() noexcept { return "Limiter"; }
+  static std::string name() { return "Limiter"; }
   static constexpr Options::String help = "Options for limiting troubled cells";
 };
 
@@ -25,9 +25,7 @@ struct LimiterGroup {
  */
 template <typename LimiterType>
 struct Limiter {
-  static std::string name() noexcept {
-    return Options::name<LimiterType>();
-  }
+  static std::string name() { return Options::name<LimiterType>(); }
   static constexpr Options::String help = "Options for the limiter";
   using type = LimiterType;
   using group = LimiterGroup;
@@ -44,7 +42,7 @@ struct Limiter : db::SimpleTag {
   using option_tags = tmpl::list<::OptionTags::Limiter<LimiterType>>;
 
   static constexpr bool pass_metavariables = false;
-  static LimiterType create_from_options(const LimiterType& limiter) noexcept {
+  static LimiterType create_from_options(const LimiterType& limiter) {
     return limiter;
   }
 };

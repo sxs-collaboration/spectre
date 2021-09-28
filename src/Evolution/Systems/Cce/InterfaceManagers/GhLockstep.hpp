@@ -46,11 +46,11 @@ class GhLockstep : public GhInterfaceManager {
 
   GhLockstep() = default;
 
-  explicit GhLockstep(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit GhLockstep(CkMigrateMessage* /*unused*/) {}
 
   WRAPPED_PUPable_decl_template(GhLockstep);  // NOLINT
 
-  std::unique_ptr<GhInterfaceManager> get_clone() const noexcept override;
+  std::unique_ptr<GhInterfaceManager> get_clone() const override;
 
   /// \brief Store a provided data set in a `std::deque`.
   ///
@@ -58,41 +58,40 @@ class GhLockstep : public GhInterfaceManager {
   /// harmonic variables `spacetime_metric`, `phi`, and `pi` are used. The
   /// remaining variables are accepted to comply with the more general abstract
   /// interface.
-  void insert_gh_data(
-      TimeStepId time_id, const tnsr::aa<DataVector, 3>& spacetime_metric,
-      const tnsr::iaa<DataVector, 3>& phi, const tnsr::aa<DataVector, 3>& pi,
-      const tnsr::aa<DataVector, 3>& dt_spacetime_metric = {},
-      const tnsr::iaa<DataVector, 3>& dt_phi = {},
-      const tnsr::aa<DataVector, 3>& dt_pi = {}) noexcept override;
+  void insert_gh_data(TimeStepId time_id,
+                      const tnsr::aa<DataVector, 3>& spacetime_metric,
+                      const tnsr::iaa<DataVector, 3>& phi,
+                      const tnsr::aa<DataVector, 3>& pi,
+                      const tnsr::aa<DataVector, 3>& dt_spacetime_metric = {},
+                      const tnsr::iaa<DataVector, 3>& dt_phi = {},
+                      const tnsr::aa<DataVector, 3>& dt_pi = {}) override;
 
   /// \brief next time information is ignored by this implementation, so this is
   /// a no-op.
   void insert_next_gh_time(TimeStepId /*time_id*/,
-                           TimeStepId /*next_time_id*/) noexcept override {}
+                           TimeStepId /*next_time_id*/) override {}
 
   /// \brief Requests are ignored by this implementation, so this is a no-op.
-  void request_gh_data(const TimeStepId& /*time_id*/) noexcept override {}
+  void request_gh_data(const TimeStepId& /*time_id*/) override {}
 
   /// \brief Return a `std::optional<std::tuple>` of the least recently
   /// submitted generalized harmonic boundary data if any exists and removes it
   /// from the internal `std::deque`, otherwise returns `std::nullopt`.
-  auto retrieve_and_remove_first_ready_gh_data() noexcept
+  auto retrieve_and_remove_first_ready_gh_data()
       -> std::optional<std::tuple<TimeStepId, gh_variables>> override;
 
   /// \brief This class ignores requests to ensure a one-way communication
   /// pattern, so the number of requests is always 0.
-  size_t number_of_pending_requests() const noexcept override { return 0; }
+  size_t number_of_pending_requests() const override { return 0; }
 
   /// \brief The number of times at which data from a GH evolution have been
   /// stored and not yet retrieved
-  size_t number_of_gh_times() const noexcept override {
-    return provided_data_.size();
-  }
+  size_t number_of_gh_times() const override { return provided_data_.size(); }
 
   /// Serialization for Charm++.
-  void pup(PUP::er& p) noexcept override;
+  void pup(PUP::er& p) override;
 
-  InterpolationStrategy get_interpolation_strategy() const noexcept override {
+  InterpolationStrategy get_interpolation_strategy() const override {
     return InterpolationStrategy::EverySubstep;
   };
 

@@ -27,13 +27,13 @@ struct NeighborData {
   std::vector<double> min_variables_values{};
 };
 
-void pup(PUP::er& p, NeighborData& nhbr_data) noexcept;  // NOLINT
+void pup(PUP::er& p, NeighborData& nhbr_data);  // NOLINT
 
-void operator|(PUP::er& p, NeighborData& nhbr_data) noexcept;  // NOLINT
+void operator|(PUP::er& p, NeighborData& nhbr_data);  // NOLINT
 
-bool operator==(const NeighborData& lhs, const NeighborData& rhs) noexcept;
+bool operator==(const NeighborData& lhs, const NeighborData& rhs);
 
-bool operator!=(const NeighborData& lhs, const NeighborData& rhs) noexcept;
+bool operator!=(const NeighborData& lhs, const NeighborData& rhs);
 
-std::ostream& operator<<(std::ostream& os, const NeighborData& t) noexcept;
+std::ostream& operator<<(std::ostream& os, const NeighborData& t);
 }  // namespace evolution::dg::subcell

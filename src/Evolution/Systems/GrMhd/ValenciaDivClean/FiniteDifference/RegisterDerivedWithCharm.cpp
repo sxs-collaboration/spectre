@@ -8,7 +8,7 @@
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 
 namespace grmhd::ValenciaDivClean::fd {
-void register_derived_with_charm() noexcept {
+void register_derived_with_charm() {
   Parallel::register_classes_with_charm(
       typename Reconstructor::creatable_classes{});
 }

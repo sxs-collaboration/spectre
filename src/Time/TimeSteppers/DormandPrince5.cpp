@@ -12,17 +12,15 @@
 
 namespace TimeSteppers {
 
-size_t DormandPrince5::order() const noexcept { return 5; }
+size_t DormandPrince5::order() const { return 5; }
 
-size_t DormandPrince5::error_estimate_order() const noexcept { return 4; }
+size_t DormandPrince5::error_estimate_order() const { return 4; }
 
-uint64_t DormandPrince5::number_of_substeps() const noexcept { return 6; }
+uint64_t DormandPrince5::number_of_substeps() const { return 6; }
 
-uint64_t DormandPrince5::number_of_substeps_for_error() const noexcept {
-  return 7;
-}
+uint64_t DormandPrince5::number_of_substeps_for_error() const { return 7; }
 
-size_t DormandPrince5::number_of_past_steps() const noexcept { return 0; }
+size_t DormandPrince5::number_of_past_steps() const { return 0; }
 
 // The growth function for DP5 is
 //
@@ -33,13 +31,10 @@ size_t DormandPrince5::number_of_past_steps() const noexcept { return 0; }
 // RK1 (i.e. forward Euler) would be 1, DP5 has a stable step
 // determined by inserting mu->-2 dt into the above equation. Finding the
 // solutions with a numerical root find yields a stable step of about 1.653.
-double DormandPrince5::stable_step() const noexcept {
-  return 1.6532839463174733;
-}
+double DormandPrince5::stable_step() const { return 1.6532839463174733; }
 
 TimeStepId DormandPrince5::next_time_id(const TimeStepId& current_id,
-                                        const TimeDelta& time_step) const
-    noexcept {
+                                        const TimeDelta& time_step) const {
   const auto& step = current_id.substep();
   const auto& t0 = current_id.step_time();
   const auto& t = current_id.substep_time();
@@ -68,7 +63,7 @@ TimeStepId DormandPrince5::next_time_id(const TimeStepId& current_id,
 }
 
 TimeStepId DormandPrince5::next_time_id_for_error(
-    const TimeStepId& current_id, const TimeDelta& time_step) const noexcept {
+    const TimeStepId& current_id, const TimeDelta& time_step) const {
   const auto& step = current_id.substep();
   if (step < 5) {
     return next_time_id(current_id, time_step);

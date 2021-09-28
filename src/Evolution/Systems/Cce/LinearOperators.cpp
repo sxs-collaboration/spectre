@@ -19,7 +19,7 @@
 namespace Cce {
 void logical_partial_directional_derivative_of_complex(
     const gsl::not_null<ComplexDataVector*> d_u, const ComplexDataVector& u,
-    const Mesh<3>& mesh, const size_t dimension_to_differentiate) noexcept {
+    const Mesh<3>& mesh, const size_t dimension_to_differentiate) {
   const auto empty_matrix = Matrix{};
   std::array<std::reference_wrapper<const Matrix>, 3> matrix_array{
     {std::ref(empty_matrix), std::ref(empty_matrix), std::ref(empty_matrix)}};

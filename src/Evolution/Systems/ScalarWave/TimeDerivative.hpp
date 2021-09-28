@@ -45,6 +45,6 @@ struct TimeDerivative {
       // Terms list in argument_tags above
       const Scalar<DataVector>& pi,
       const tnsr::i<DataVector, Dim, Frame::Inertial>& phi,
-      const Scalar<DataVector>& gamma2) noexcept;
+      const Scalar<DataVector>& gamma2);
 };
 }  // namespace ScalarWave

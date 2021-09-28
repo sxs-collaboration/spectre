@@ -51,7 +51,7 @@ struct RestartPhase {
   struct combine_method {
     std::optional<PhaseType> operator()(
         const std::optional<PhaseType> /*first_phase*/,
-        const std::optional<PhaseType>& /*second_phase*/) noexcept {
+        const std::optional<PhaseType>& /*second_phase*/) {
       ERROR(
           "The restart phase should only be altered by the phase change "
           "arbitration in the Main chare, so no reduction data should be "
@@ -73,7 +73,7 @@ struct WallclockHoursAtCheckpoint {
   struct combine_method {
     std::optional<double> operator()(
         const std::optional<double> /*first_time*/,
-        const std::optional<double>& /*second_time*/) noexcept {
+        const std::optional<double>& /*second_time*/) {
       ERROR(
           "The wallclock time at which a checkpoint was requested should "
           "only be altered by the phase change arbitration in the Main "
@@ -143,7 +143,7 @@ struct CheckpointAndExitAfterWallclock
                                << wallclock_hours.value());
     }
   }
-  explicit CheckpointAndExitAfterWallclock(CkMigrateMessage* msg) noexcept
+  explicit CheckpointAndExitAfterWallclock(CkMigrateMessage* msg)
       : PhaseChange<PhaseChangeRegistrars>(msg) {}
 
   /// \cond
@@ -177,7 +177,7 @@ struct CheckpointAndExitAfterWallclock
   template <typename... DecisionTags>
   void initialize_phase_data_impl(
       const gsl::not_null<tuples::TaggedTuple<DecisionTags...>*>
-          phase_change_decision_data) const noexcept {
+          phase_change_decision_data) const {
     tuples::get<Tags::RestartPhase<typename Metavariables::Phase>>(
         *phase_change_decision_data) = std::nullopt;
     tuples::get<Tags::WallclockHoursAtCheckpoint>(*phase_change_decision_data) =
@@ -190,7 +190,7 @@ struct CheckpointAndExitAfterWallclock
             typename LocalMetavariables>
   void contribute_phase_data_impl(
       Parallel::GlobalCache<LocalMetavariables>& cache,
-      const ArrayIndex& array_index) const noexcept {
+      const ArrayIndex& array_index) const {
     if constexpr (std::is_same_v<typename ParallelComponent::chare_type,
                                  Parallel::Algorithms::Array>) {
       Parallel::contribute_to_phase_change_reduction<ParallelComponent>(
@@ -209,8 +209,7 @@ struct CheckpointAndExitAfterWallclock
       const gsl::not_null<tuples::TaggedTuple<DecisionTags...>*>
           phase_change_decision_data,
       const typename LocalMetavariables::Phase current_phase,
-      const Parallel::GlobalCache<LocalMetavariables>& /*cache*/)
-      const noexcept {
+      const Parallel::GlobalCache<LocalMetavariables>& /*cache*/) const {
     // If no checkpoint-and-exit time given, then do nothing
     if (not wallclock_hours_for_checkpoint_and_exit_.has_value()) {
       return std::nullopt;
@@ -264,7 +263,7 @@ struct CheckpointAndExitAfterWallclock
     return std::nullopt;
   }
 
-  void pup(PUP::er& p) noexcept override {
+  void pup(PUP::er& p) override {
     PhaseChange<PhaseChangeRegistrars>::pup(p);
     p | wallclock_hours_for_checkpoint_and_exit_;
   }

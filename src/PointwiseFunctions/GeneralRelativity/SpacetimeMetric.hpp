@@ -37,13 +37,13 @@ template <size_t Dim, typename Frame, typename DataType>
 void spacetime_metric(
     gsl::not_null<tnsr::aa<DataType, Dim, Frame>*> spacetime_metric,
     const Scalar<DataType>& lapse, const tnsr::I<DataType, Dim, Frame>& shift,
-    const tnsr::ii<DataType, Dim, Frame>& spatial_metric) noexcept;
+    const tnsr::ii<DataType, Dim, Frame>& spatial_metric);
 
 template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::aa<DataType, SpatialDim, Frame> spacetime_metric(
     const Scalar<DataType>& lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
-    const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric) noexcept;
+    const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric);
 /// @}
 
 namespace Tags {
@@ -65,7 +65,7 @@ struct SpacetimeMetricCompute : SpacetimeMetric<SpatialDim, Frame, DataType>,
   static constexpr auto function = static_cast<void (*)(
       gsl::not_null<tnsr::aa<DataType, SpatialDim, Frame>*>,
       const Scalar<DataType>&, const tnsr::I<DataType, SpatialDim, Frame>&,
-      const tnsr::ii<DataType, SpatialDim, Frame>&) noexcept>(
+      const tnsr::ii<DataType, SpatialDim, Frame>&)>(
       &spacetime_metric<SpatialDim, Frame, DataType>);
 
   using base = SpacetimeMetric<SpatialDim, Frame, DataType>;

@@ -27,7 +27,7 @@ struct HeavyLeptonNeutrinos {
 };
 
 template <template <size_t> class U, size_t EnergyBin>
-std::string get_name(const U<EnergyBin>& /*species*/) noexcept {
+std::string get_name(const U<EnergyBin>& /*species*/) {
   return pretty_type::short_name<U<EnergyBin>>() + std::to_string(EnergyBin);
 }
 

@@ -28,11 +28,11 @@ template <size_t Dim, typename Frame, typename DataType>
 void deriv_inverse_spatial_metric(
     const gsl::not_null<tnsr::iJJ<DataType, Dim, Frame>*> result,
     const tnsr::II<DataType, Dim, Frame>& inverse_spatial_metric,
-    const tnsr::ijj<DataType, Dim, Frame>& d_spatial_metric) noexcept;
+    const tnsr::ijj<DataType, Dim, Frame>& d_spatial_metric);
 
 template <size_t Dim, typename Frame, typename DataType>
 tnsr::iJJ<DataType, Dim, Frame> deriv_inverse_spatial_metric(
     const tnsr::II<DataType, Dim, Frame>& inverse_spatial_metric,
-    const tnsr::ijj<DataType, Dim, Frame>& d_spatial_metric) noexcept;
+    const tnsr::ijj<DataType, Dim, Frame>& d_spatial_metric);
 /// @}
 }  // namespace gr

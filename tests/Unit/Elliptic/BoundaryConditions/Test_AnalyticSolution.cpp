@@ -39,7 +39,7 @@ namespace {
 
 template <size_t N>
 struct ScalarFieldTag : db::SimpleTag {
-  static std::string name() noexcept { return "Field" + std::to_string(N); }
+  static std::string name() { return "Field" + std::to_string(N); }
   using type = Scalar<DataVector>;
 };
 
@@ -56,7 +56,7 @@ struct System {
 };
 
 template <size_t Dim>
-void test_analytic_solution() noexcept {
+void test_analytic_solution() {
   CAPTURE(Dim);
   // Test factory-creation
   using Registrar = Registrars::AnalyticSolution<System<Dim>>;

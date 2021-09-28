@@ -4,8 +4,7 @@
 #include "Time/Triggers/NearTimes.hpp"
 
 namespace Triggers {
-bool NearTimes::operator()(const double now,
-                           const TimeDelta& time_step) const noexcept {
+bool NearTimes::operator()(const double now, const TimeDelta& time_step) const {
   const bool time_runs_forward = time_step.is_positive();
 
   double range_code_units = range_;
@@ -38,7 +37,7 @@ bool NearTimes::operator()(const double now,
   return false;
 }
 
-void NearTimes::pup(PUP::er& p) noexcept {
+void NearTimes::pup(PUP::er& p) {
   p | times_;
   p | range_;
   p | unit_;

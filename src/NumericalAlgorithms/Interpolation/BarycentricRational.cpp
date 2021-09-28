@@ -14,7 +14,7 @@
 namespace intrp {
 BarycentricRational::BarycentricRational(std::vector<double> x_values,
                                          std::vector<double> y_values,
-                                         const size_t order) noexcept
+                                         const size_t order)
     : x_values_(std::move(x_values)),
       y_values_(std::move(y_values)),
       weights_(x_values_.size(), 0.0),
@@ -60,8 +60,7 @@ BarycentricRational::BarycentricRational(std::vector<double> x_values,
   }
 }
 
-double BarycentricRational::operator()(const double x_to_interp_to) const
-    noexcept {
+double BarycentricRational::operator()(const double x_to_interp_to) const {
   double numerator = 0.0;
   double denominator = 0.0;
   const size_t size = x_values_.size();
@@ -76,11 +75,11 @@ double BarycentricRational::operator()(const double x_to_interp_to) const
   return numerator / denominator;
 }
 
-size_t BarycentricRational::order() const noexcept {
+size_t BarycentricRational::order() const {
   return static_cast<size_t>(order_);
 }
 
-void BarycentricRational::pup(PUP::er& p) noexcept {
+void BarycentricRational::pup(PUP::er& p) {
   p | x_values_;
   p | y_values_;
   p | weights_;

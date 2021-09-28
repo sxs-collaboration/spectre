@@ -54,7 +54,7 @@ namespace bracketing_detail {
 template <typename Functor>
 std::array<double, 4> bracket_by_contracting(
     const std::vector<double>& x, const std::vector<std::optional<double>>& y,
-    const Functor& f, const size_t level = 0) noexcept {
+    const Functor& f, const size_t level = 0) {
   constexpr size_t max_level = 6;
   if (level > max_level) {
     ERROR("Too many iterations in bracket_by_contracting. Either refine the "
@@ -224,7 +224,7 @@ void bracket_possibly_undefined_function_in_interval(
     const gsl::not_null<double*> upper_bound,
     const gsl::not_null<double*> f_at_lower_bound,
     const gsl::not_null<double*> f_at_upper_bound, const Functor& f,
-    const double guess) noexcept {
+    const double guess) {
   // Initial values of x1,x2,y1,y2.  Use `guess` and `upper_bound`,
   // because in typical usage `guess` underestimates the actual
   // root, and `lower_bound` is more likely than `upper_bound` to be
@@ -326,12 +326,12 @@ void bracket_possibly_undefined_function_in_interval(
     const gsl::not_null<DataVector*> upper_bound,
     const gsl::not_null<DataVector*> f_at_lower_bound,
     const gsl::not_null<DataVector*> f_at_upper_bound, const Functor& f,
-    const DataVector& guess) noexcept {
+    const DataVector& guess) {
   for (size_t s = 0; s < lower_bound->size(); ++s) {
     bracket_possibly_undefined_function_in_interval(
         &((*lower_bound)[s]), &((*upper_bound)[s]), &((*f_at_lower_bound)[s]),
-        &((*f_at_upper_bound)[s]),
-        [&f, &s ](const double x) noexcept { return f(x, s); }, guess[s]);
+        &((*f_at_upper_bound)[s]), [&f, &s](const double x) { return f(x, s); },
+        guess[s]);
   }
 }
 
@@ -345,7 +345,7 @@ void bracket_possibly_undefined_function_in_interval(
     const gsl::not_null<double*> lower_bound,
     const gsl::not_null<double*> upper_bound,
     const gsl::not_null<double*> f_at_lower_bound,
-    const gsl::not_null<double*> f_at_upper_bound, const Functor& f) noexcept {
+    const gsl::not_null<double*> f_at_upper_bound, const Functor& f) {
   bracket_possibly_undefined_function_in_interval(
       lower_bound, upper_bound, f_at_lower_bound, f_at_upper_bound, f,
       *lower_bound + 0.5 * (*upper_bound - *lower_bound));
@@ -361,8 +361,7 @@ void bracket_possibly_undefined_function_in_interval(
     const gsl::not_null<DataVector*> lower_bound,
     const gsl::not_null<DataVector*> upper_bound,
     const gsl::not_null<DataVector*> f_at_lower_bound,
-    const gsl::not_null<DataVector*> f_at_upper_bound,
-    const Functor& f) noexcept {
+    const gsl::not_null<DataVector*> f_at_upper_bound, const Functor& f) {
   bracket_possibly_undefined_function_in_interval(
       lower_bound, upper_bound, f_at_lower_bound, f_at_upper_bound, f,
       *lower_bound + 0.5 * (*upper_bound - *lower_bound));

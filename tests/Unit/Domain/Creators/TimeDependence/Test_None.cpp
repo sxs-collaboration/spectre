@@ -20,7 +20,7 @@ namespace domain::creators::time_dependence {
 namespace {
 
 template <size_t MeshDim>
-void test() noexcept {
+void test() {
   const std::unique_ptr<TimeDependence<MeshDim>> time_dep =
       std::make_unique<None<MeshDim>>();
   CHECK(time_dep != nullptr);
@@ -47,14 +47,14 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.TimeDependence.None",
 }
 
 template <size_t MeshDim>
-void test_error_block_maps() noexcept {
+void test_error_block_maps() {
   const std::unique_ptr<TimeDependence<MeshDim>> time_dep =
       std::make_unique<None<MeshDim>>();
   (void)time_dep->block_maps(5);
 }
 
 template <size_t MeshDim>
-void test_error_functions_of_time() noexcept {
+void test_error_functions_of_time() {
   const std::unique_ptr<TimeDependence<MeshDim>> time_dep =
       std::make_unique<None<MeshDim>>();
   (void)time_dep->functions_of_time();

@@ -20,7 +20,7 @@
       domain::make_coordinate_map_base<                                   \
           Frame::Grid, Frame::Inertial,                                   \
           domain::CoordinateMaps::Identity<DIM(data)>>(                   \
-          domain::CoordinateMaps::Identity<DIM(data)> &&) noexcept;
+          domain::CoordinateMaps::Identity<DIM(data)> &&);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 

@@ -48,9 +48,8 @@ struct ConvertSmoothFlow {
             perturbation_size};
   }
 
-  static inline unpacked_container unpack(
-      const packed_container& /*packed*/,
-      const size_t /*grid_point_index*/) noexcept {
+  static inline unpacked_container unpack(const packed_container& /*packed*/,
+                                          const size_t /*grid_point_index*/) {
     // No way of getting the args from the boundary condition.
     return Dim;
   }
@@ -61,7 +60,7 @@ struct ConvertSmoothFlow {
     *packed = create_container();
   }
 
-  static inline size_t get_size(const packed_container& /*packed*/) noexcept {
+  static inline size_t get_size(const packed_container& /*packed*/) {
     return 1;
   }
 };
@@ -90,9 +89,8 @@ struct ConvertKhInstability {
             perturb_amplitude,   perturb_width};
   }
 
-  static inline unpacked_container unpack(
-      const packed_container& /*packed*/,
-      const size_t /*grid_point_index*/) noexcept {
+  static inline unpacked_container unpack(const packed_container& /*packed*/,
+                                          const size_t /*grid_point_index*/) {
     // No way of getting the args from the boundary condition.
     return Dim;
   }
@@ -103,7 +101,7 @@ struct ConvertKhInstability {
     *packed = create_container();
   }
 
-  static inline size_t get_size(const packed_container& /*packed*/) noexcept {
+  static inline size_t get_size(const packed_container& /*packed*/) {
     return 1;
   }
 };

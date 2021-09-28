@@ -51,7 +51,6 @@ struct TciOnFdGrid {
                     const Scalar<DataVector>& tilde_tau,
                     const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
                     bool vars_needed_fixing, const Mesh<3>& dg_mesh,
-                    const TciOptions& tci_options,
-                    double persson_exponent) noexcept;
+                    const TciOptions& tci_options, double persson_exponent);
 };
 }  // namespace grmhd::ValenciaDivClean::subcell

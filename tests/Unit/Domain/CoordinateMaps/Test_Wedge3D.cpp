@@ -297,7 +297,7 @@ void test_wedge3d_random_radii() {
   }
 }
 
-void test_wedge3d_fail() noexcept {
+void test_wedge3d_fail() {
   INFO("Wedge3d fail");
   const Wedge3D map(0.2, 4.0, 0.0, 1.0, OrientationMap<3>{}, true);
   // Any point with z=0 should fail the inverse map.

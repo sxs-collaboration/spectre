@@ -20,8 +20,7 @@ void spatial_ricci_tensor(
     const gsl::not_null<tnsr::ii<DataType, VolumeDim, Frame>*> ricci,
     const tnsr::iaa<DataType, VolumeDim, Frame>& phi,
     const tnsr::ijaa<DataType, VolumeDim, Frame>& deriv_phi,
-    const tnsr::II<DataType, VolumeDim, Frame>&
-        inverse_spatial_metric) noexcept {
+    const tnsr::II<DataType, VolumeDim, Frame>& inverse_spatial_metric) {
   destructive_resize_components(ricci, get_size(get<0, 0, 0>(phi)));
 
   TempBuffer<tmpl::list<::Tags::TempIjj<0, VolumeDim, Frame, DataType>,
@@ -130,8 +129,7 @@ template <size_t VolumeDim, typename Frame, typename DataType>
 tnsr::ii<DataType, VolumeDim, Frame> spatial_ricci_tensor(
     const tnsr::iaa<DataType, VolumeDim, Frame>& phi,
     const tnsr::ijaa<DataType, VolumeDim, Frame>& deriv_phi,
-    const tnsr::II<DataType, VolumeDim, Frame>&
-        inverse_spatial_metric) noexcept {
+    const tnsr::II<DataType, VolumeDim, Frame>& inverse_spatial_metric) {
   tnsr::ii<DataType, VolumeDim, Frame> ricci{};
   GeneralizedHarmonic::spatial_ricci_tensor<VolumeDim, Frame, DataType>(
       make_not_null(&ricci), phi, deriv_phi, inverse_spatial_metric);
@@ -150,13 +148,13 @@ tnsr::ii<DataType, VolumeDim, Frame> spatial_ricci_tensor(
       const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,          \
       const tnsr::ijaa<DTYPE(data), DIM(data), FRAME(data)>& deriv_phi,   \
       const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                \
-          inverse_spatial_metric) noexcept;                               \
+          inverse_spatial_metric);                                        \
   template tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>                  \
   GeneralizedHarmonic::spatial_ricci_tensor(                              \
       const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,          \
       const tnsr::ijaa<DTYPE(data), DIM(data), FRAME(data)>& deriv_phi,   \
       const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                \
-          inverse_spatial_metric) noexcept;
+          inverse_spatial_metric);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
                         (Frame::Grid, Frame::Inertial))

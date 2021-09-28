@@ -17,8 +17,7 @@ namespace ScalarWave {
 template <size_t Dim>
 void characteristic_speeds(
     const gsl::not_null<std::array<DataVector, 4>*> char_speeds,
-    const tnsr::i<DataVector, Dim, Frame::Inertial>&
-        unit_normal_one_form) noexcept {
+    const tnsr::i<DataVector, Dim, Frame::Inertial>& unit_normal_one_form) {
   destructive_resize_components(char_speeds,
                                 get<0>(unit_normal_one_form).size());
   (*char_speeds)[0] = 0.;   // v(VPsi)
@@ -29,8 +28,7 @@ void characteristic_speeds(
 
 template <size_t Dim>
 std::array<DataVector, 4> characteristic_speeds(
-    const tnsr::i<DataVector, Dim, Frame::Inertial>&
-        unit_normal_one_form) noexcept {
+    const tnsr::i<DataVector, Dim, Frame::Inertial>& unit_normal_one_form) {
   auto char_speeds = make_with_value<std::array<DataVector, 4>>(
       get<0>(unit_normal_one_form), 0.);
   characteristic_speeds(make_not_null(&char_speeds), unit_normal_one_form);
@@ -45,8 +43,7 @@ void characteristic_fields(
     const Scalar<DataVector>& gamma_2, const Scalar<DataVector>& psi,
     const Scalar<DataVector>& pi,
     const tnsr::i<DataVector, Dim, Frame::Inertial>& phi,
-    const tnsr::i<DataVector, Dim, Frame::Inertial>&
-        unit_normal_one_form) noexcept {
+    const tnsr::i<DataVector, Dim, Frame::Inertial>& unit_normal_one_form) {
   if (UNLIKELY(char_fields->number_of_grid_points() != get(psi).size())) {
     char_fields->initialize(get(psi).size());
   }
@@ -72,12 +69,11 @@ void characteristic_fields(
 
 template <size_t Dim>
 Variables<tmpl::list<Tags::VPsi, Tags::VZero<Dim>, Tags::VPlus, Tags::VMinus>>
-characteristic_fields(const Scalar<DataVector>& gamma_2,
-                      const Scalar<DataVector>& psi,
-                      const Scalar<DataVector>& pi,
-                      const tnsr::i<DataVector, Dim, Frame::Inertial>& phi,
-                      const tnsr::i<DataVector, Dim, Frame::Inertial>&
-                          unit_normal_one_form) noexcept {
+characteristic_fields(
+    const Scalar<DataVector>& gamma_2, const Scalar<DataVector>& psi,
+    const Scalar<DataVector>& pi,
+    const tnsr::i<DataVector, Dim, Frame::Inertial>& phi,
+    const tnsr::i<DataVector, Dim, Frame::Inertial>& unit_normal_one_form) {
   Variables<tmpl::list<Tags::VPsi, Tags::VZero<Dim>, Tags::VPlus, Tags::VMinus>>
       char_fields(get_size(get(gamma_2)));
   characteristic_fields(make_not_null(&char_fields), gamma_2, psi, pi, phi,
@@ -92,8 +88,7 @@ void evolved_fields_from_characteristic_fields(
     const Scalar<DataVector>& gamma_2, const Scalar<DataVector>& v_psi,
     const tnsr::i<DataVector, Dim, Frame::Inertial>& v_zero,
     const Scalar<DataVector>& v_plus, const Scalar<DataVector>& v_minus,
-    const tnsr::i<DataVector, Dim, Frame::Inertial>&
-        unit_normal_one_form) noexcept {
+    const tnsr::i<DataVector, Dim, Frame::Inertial>& unit_normal_one_form) {
   if (UNLIKELY(evolved_fields->number_of_grid_points() != get(v_psi).size())) {
     evolved_fields->initialize(get(v_psi).size());
   }
@@ -116,8 +111,7 @@ evolved_fields_from_characteristic_fields(
     const Scalar<DataVector>& gamma_2, const Scalar<DataVector>& v_psi,
     const tnsr::i<DataVector, Dim, Frame::Inertial>& v_zero,
     const Scalar<DataVector>& v_plus, const Scalar<DataVector>& v_minus,
-    const tnsr::i<DataVector, Dim, Frame::Inertial>&
-        unit_normal_one_form) noexcept {
+    const tnsr::i<DataVector, Dim, Frame::Inertial>& unit_normal_one_form) {
   Variables<tmpl::list<Psi, Pi, Phi<Dim>>> evolved_fields(
       get_size(get(gamma_2)));
   evolved_fields_from_characteristic_fields(make_not_null(&evolved_fields),
@@ -133,10 +127,10 @@ evolved_fields_from_characteristic_fields(
   template void ScalarWave::characteristic_speeds(                             \
       const gsl::not_null<std::array<DataVector, 4>*> char_speeds,             \
       const tnsr::i<DataVector, DIM(data), Frame::Inertial>&                   \
-          unit_normal_one_form) noexcept;                                      \
+          unit_normal_one_form);                                               \
   template std::array<DataVector, 4> ScalarWave::characteristic_speeds(        \
       const tnsr::i<DataVector, DIM(data), Frame::Inertial>&                   \
-          unit_normal_one_form) noexcept;                                      \
+          unit_normal_one_form);                                               \
   template struct ScalarWave::Tags::CharacteristicSpeedsCompute<DIM(data)>;    \
   template void ScalarWave::characteristic_fields(                             \
       const gsl::not_null<Variables<tmpl::list<                                \
@@ -147,7 +141,7 @@ evolved_fields_from_characteristic_fields(
       const Scalar<DataVector>& pi,                                            \
       const tnsr::i<DataVector, DIM(data), Frame::Inertial>& phi,              \
       const tnsr::i<DataVector, DIM(data), Frame::Inertial>&                   \
-          unit_normal_one_form) noexcept;                                      \
+          unit_normal_one_form);                                               \
   template Variables<                                                          \
       tmpl::list<ScalarWave::Tags::VPsi, ScalarWave::Tags::VZero<DIM(data)>,   \
                  ScalarWave::Tags::VPlus, ScalarWave::Tags::VMinus>>           \
@@ -156,7 +150,7 @@ evolved_fields_from_characteristic_fields(
       const Scalar<DataVector>& pi,                                            \
       const tnsr::i<DataVector, DIM(data), Frame::Inertial>& phi,              \
       const tnsr::i<DataVector, DIM(data), Frame::Inertial>&                   \
-          unit_normal_one_form) noexcept;                                      \
+          unit_normal_one_form);                                               \
   template struct ScalarWave::Tags::CharacteristicFieldsCompute<DIM(data)>;    \
   template void ScalarWave::evolved_fields_from_characteristic_fields(         \
       const gsl::not_null<Variables<tmpl::list<                                \
@@ -166,7 +160,7 @@ evolved_fields_from_characteristic_fields(
       const tnsr::i<DataVector, DIM(data), Frame::Inertial>& v_zero,           \
       const Scalar<DataVector>& v_plus, const Scalar<DataVector>& v_minus,     \
       const tnsr::i<DataVector, DIM(data), Frame::Inertial>&                   \
-          unit_normal_one_form) noexcept;                                      \
+          unit_normal_one_form);                                               \
   template Variables<                                                          \
       tmpl::list<ScalarWave::Psi, ScalarWave::Pi, ScalarWave::Phi<DIM(data)>>> \
   ScalarWave::evolved_fields_from_characteristic_fields(                       \
@@ -174,7 +168,7 @@ evolved_fields_from_characteristic_fields(
       const tnsr::i<DataVector, DIM(data), Frame::Inertial>& v_zero,           \
       const Scalar<DataVector>& v_plus, const Scalar<DataVector>& v_minus,     \
       const tnsr::i<DataVector, DIM(data), Frame::Inertial>&                   \
-          unit_normal_one_form) noexcept;                                      \
+          unit_normal_one_form);                                               \
   template struct ScalarWave::Tags::                                           \
       EvolvedFieldsFromCharacteristicFieldsCompute<DIM(data)>;
 

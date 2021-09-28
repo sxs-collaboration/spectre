@@ -35,8 +35,7 @@ enum class VariablesToLimit {
   NumericalCharacteristic
 };
 
-std::ostream& operator<<(std::ostream& os,
-                         VariablesToLimit vars_to_limit) noexcept;
+std::ostream& operator<<(std::ostream& os, VariablesToLimit vars_to_limit);
 }  // namespace Limiters
 }  // namespace NewtonianEuler
 

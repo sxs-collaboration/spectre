@@ -28,7 +28,7 @@ namespace {
 // Compute the VolumeDim-dimensional quadrature weights, by taking the tensor
 // product of the 1D quadrature weights in each logical dimension of the Mesh.
 template <size_t VolumeDim>
-DataVector volume_quadrature_weights(const Mesh<VolumeDim>& mesh) noexcept {
+DataVector volume_quadrature_weights(const Mesh<VolumeDim>& mesh) {
   std::array<DataVector, VolumeDim> quadrature_weights_1d{};
   for (size_t d = 0; d < VolumeDim; ++d) {
     gsl::at(quadrature_weights_1d, d) =
@@ -61,10 +61,10 @@ DataVector volume_quadrature_weights(const Mesh<VolumeDim>& mesh) noexcept {
 //   the call to `neighbor_grid_points_in_local_logical_coordinates`.
 // - rectilinear elements are assumed.
 template <size_t VolumeDim>
-Matrix volume_interpolation_matrix(
-    const Mesh<VolumeDim>& source_mesh, const Mesh<VolumeDim>& target_mesh,
-    const Element<VolumeDim>& element,
-    const Direction<VolumeDim>& direction) noexcept {
+Matrix volume_interpolation_matrix(const Mesh<VolumeDim>& source_mesh,
+                                   const Mesh<VolumeDim>& target_mesh,
+                                   const Element<VolumeDim>& element,
+                                   const Direction<VolumeDim>& direction) {
   // The grid points of source_mesh and target_mesh must be in the same
   // coordinates to construct the interpolation matrix. Here we get the points
   // of target_mesh in the local logical coordinates.
@@ -80,9 +80,9 @@ Matrix volume_interpolation_matrix(
   // interpolate in that particular direction (i.e., the interpolation in that
   // direction is identity). This function undoes the optimization by returning
   // elements of an identity matrix if an empty matrix is found.
-  const auto matrix_element = [&interpolation_matrices_1d](
-                                  const size_t dim, const size_t r,
-                                  const size_t s) noexcept {
+  const auto matrix_element = [&interpolation_matrices_1d](const size_t dim,
+                                                           const size_t r,
+                                                           const size_t s) {
     const auto& matrix = gsl::at(interpolation_matrices_1d, dim);
     if (matrix.rows() * matrix.columns() == 0) {
       return (r == s) ? 1. : 0.;
@@ -118,7 +118,7 @@ Matrix inverse_a_matrix(
     const DirectionMap<VolumeDim, DataVector>&
         quadrature_weights_dot_interpolation_matrices,
     const Direction<VolumeDim>& primary_direction,
-    const std::vector<Direction<VolumeDim>>& directions_to_exclude) noexcept {
+    const std::vector<Direction<VolumeDim>>& directions_to_exclude) {
   ASSERT(not alg::found(directions_to_exclude, primary_direction),
          "Logical inconsistency: trying to exclude the primary direction.");
   const size_t number_of_grid_points = mesh.number_of_grid_points();
@@ -126,7 +126,7 @@ Matrix inverse_a_matrix(
 
   // Loop only over directions where there is a neighbor
   const std::vector<Direction<VolumeDim>> directions_with_neighbors =
-      [&element]() noexcept {
+      [&element]() {
         std::vector<Direction<VolumeDim>> result;
         for (const auto& dir_and_neighbors : element.neighbors()) {
           result.push_back(dir_and_neighbors.first);
@@ -185,11 +185,11 @@ Matrix inverse_a_matrix(
 
 template <size_t VolumeDim>
 ConstrainedFitCache<VolumeDim>::ConstrainedFitCache(
-    const Mesh<VolumeDim>& mesh, const Element<VolumeDim>& element) noexcept
+    const Mesh<VolumeDim>& mesh, const Element<VolumeDim>& element)
     : quadrature_weights(volume_quadrature_weights(mesh)) {
   // Cache will only store quantities for directions that have neighbors.
   const std::vector<Direction<VolumeDim>> directions_with_neighbors =
-      [&element]() noexcept {
+      [&element]() {
         std::vector<Direction<VolumeDim>> result;
         for (const auto& dir_and_neighbors : element.neighbors()) {
           result.push_back(dir_and_neighbors.first);
@@ -236,8 +236,7 @@ ConstrainedFitCache<VolumeDim>::ConstrainedFitCache(
 template <size_t VolumeDim>
 const Matrix& ConstrainedFitCache<VolumeDim>::retrieve_inverse_a_matrix(
     const Direction<VolumeDim>& primary_direction,
-    const std::vector<Direction<VolumeDim>>& directions_to_exclude) const
-    noexcept {
+    const std::vector<Direction<VolumeDim>>& directions_to_exclude) const {
   if (LIKELY(directions_to_exclude.size() == 1)) {
     return inverse_a_matrices.at(primary_direction)
         .at(directions_to_exclude[0]);
@@ -258,7 +257,7 @@ namespace {
 
 template <size_t VolumeDim, size_t DummyIndex>
 const ConstrainedFitCache<VolumeDim>& constrained_fit_cache_impl(
-    const Mesh<VolumeDim>& mesh, const Element<VolumeDim>& element) noexcept {
+    const Mesh<VolumeDim>& mesh, const Element<VolumeDim>& element) {
   // For the cache to be valid,
   // - the mesh must always be the same, so we check it below
   // - the element can be different, as long as it has the same configuration
@@ -281,7 +280,7 @@ const ConstrainedFitCache<VolumeDim>& constrained_fit_cache_impl(
 template <size_t VolumeDim, size_t... Is>
 const ConstrainedFitCache<VolumeDim>& constrained_fit_cache(
     const Mesh<VolumeDim>& mesh, const Element<VolumeDim>& element,
-    std::index_sequence<Is...> /*dummy_indices*/) noexcept {
+    std::index_sequence<Is...> /*dummy_indices*/) {
   static const std::array<
       const ConstrainedFitCache<VolumeDim>& (*)(const Mesh<VolumeDim>&,
                                                 const Element<VolumeDim>&),
@@ -291,7 +290,7 @@ const ConstrainedFitCache<VolumeDim>& constrained_fit_cache(
   // Use std::bitset to compute an integer based on the configuration of
   // internal/external boundaries to the element. This is sort of like a hash
   // for indexing into the std::array of ConstrainedFitCache's.
-  const size_t index_from_boundary_types = [&element]() noexcept {
+  const size_t index_from_boundary_types = [&element]() {
     std::bitset<2 * VolumeDim> bits;
     for (size_t d = 0; d < VolumeDim; ++d) {
       for (const Side& side : {Side::Lower, Side::Upper}) {
@@ -318,7 +317,7 @@ const ConstrainedFitCache<VolumeDim>& constrained_fit_cache(
 
 template <size_t VolumeDim>
 const ConstrainedFitCache<VolumeDim>& constrained_fit_cache(
-    const Mesh<VolumeDim>& mesh, const Element<VolumeDim>& element) noexcept {
+    const Mesh<VolumeDim>& mesh, const Element<VolumeDim>& element) {
   return constrained_fit_cache<VolumeDim>(
       mesh, element, std::make_index_sequence<two_to_the(2 * VolumeDim)>{});
 }
@@ -331,10 +330,10 @@ const ConstrainedFitCache<VolumeDim>& constrained_fit_cache(
       const Mesh<DIM(data)>&, const Element<DIM(data)>&, const DataVector&,    \
       const DirectionMap<DIM(data), Matrix>&,                                  \
       const DirectionMap<DIM(data), DataVector>&, const Direction<DIM(data)>&, \
-      const std::vector<Direction<DIM(data)>>&) noexcept;                      \
+      const std::vector<Direction<DIM(data)>>&);                               \
   template class ConstrainedFitCache<DIM(data)>;                               \
   template const ConstrainedFitCache<DIM(data)>& constrained_fit_cache(        \
-      const Mesh<DIM(data)>&, const Element<DIM(data)>&) noexcept;
+      const Mesh<DIM(data)>&, const Element<DIM(data)>&);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 

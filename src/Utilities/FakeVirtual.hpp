@@ -47,40 +47,37 @@
 /// \snippet Test_FakeVirtual.cpp fake_virtual_example
 ///
 /// \see call_with_dynamic_type
-#define DEFINE_FAKE_VIRTUAL(function)                                          \
-  /* This struct is only needed for producing an error if the function */      \
-  /* is not overridden in the derived class. */                                \
-  template <typename Base>                                                     \
-  struct FakeVirtualInherit_##function : public Base {                         \
-    using Base::Base;                                                          \
-    /* clang-tidy: I think "= delete" was overlooked in the guideline */       \
-    void function(...) const = delete; /* NOLINT */                            \
-  };                                                                           \
-                                                                               \
-  template <typename Classes, typename... TArgs, typename Base,                \
-            typename... Args>                                                  \
-  decltype(auto) fake_virtual_##function(Base* obj, Args&&... args) noexcept { \
-    /* NOLINTNEXTLINE(misc-macro-parentheses) */                               \
-    return call_with_dynamic_type<decltype(obj->template function<TArgs...>(   \
-                                      args...)), /* NOLINT */                  \
-                                  Classes>(                                    \
-        obj, [&args...](auto* const dynamic_obj) noexcept -> decltype(auto) {  \
-          static_assert(                                                       \
-              std::is_base_of_v<typename Base::Inherit,                        \
-                                std::decay_t<decltype(*dynamic_obj)>>,         \
-              "Derived class does not inherit from Base::Inherit");            \
-          /* clang-tidy: macro arg in parentheses */                           \
-          return dynamic_obj->template function<TArgs...>(/* NOLINT */         \
-                                                          std::forward<Args>(  \
-                                                              args)...);       \
-        });                                                                    \
+#define DEFINE_FAKE_VIRTUAL(function)                                         \
+  /* This struct is only needed for producing an error if the function */     \
+  /* is not overridden in the derived class. */                               \
+  template <typename Base>                                                    \
+  struct FakeVirtualInherit_##function : public Base {                        \
+    using Base::Base;                                                         \
+    /* clang-tidy: I think "= delete" was overlooked in the guideline */      \
+    void function(...) const = delete; /* NOLINT */                           \
+  };                                                                          \
+                                                                              \
+  template <typename Classes, typename... TArgs, typename Base,               \
+            typename... Args>                                                 \
+  decltype(auto) fake_virtual_##function(Base* obj, Args&&... args) {         \
+    /* NOLINTNEXTLINE(misc-macro-parentheses) */                              \
+    return call_with_dynamic_type<                                            \
+        decltype(obj->template function<TArgs...>(args...)), /* NOLINT */     \
+        Classes>(obj, [&args...](auto* const dynamic_obj) -> decltype(auto) { \
+      static_assert(std::is_base_of_v<typename Base::Inherit,                 \
+                                      std::decay_t<decltype(*dynamic_obj)>>,  \
+                    "Derived class does not inherit from Base::Inherit");     \
+      /* clang-tidy: macro arg in parentheses */                              \
+      return dynamic_obj->template function<TArgs...>(/* NOLINT */            \
+                                                      std::forward<Args>(     \
+                                                          args)...);          \
+    });                                                                       \
   }
 
 /// \cond
 template <typename Result, typename Classes, typename Base, typename Callable,
           Requires<(tmpl::size<Classes>::value == 0)> = nullptr>
-[[noreturn]] Result call_with_dynamic_type(Base* const obj,
-                                           Callable&& /*f*/) noexcept {
+[[noreturn]] Result call_with_dynamic_type(Base* const obj, Callable&& /*f*/) {
   ERROR("Class " << pretty_type::get_runtime_type_name(*obj)
         << " is not registered with "
         << pretty_type::get_name<std::remove_const_t<Base>>());
@@ -100,7 +97,7 @@ template <typename Result, typename Classes, typename Base, typename Callable,
 /// \tparam Classes the typelist of derived classes
 template <typename Result, typename Classes, typename Base, typename Callable,
           Requires<(tmpl::size<Classes>::value != 0)> = nullptr>
-Result call_with_dynamic_type(Base* const obj, Callable&& f) noexcept {
+Result call_with_dynamic_type(Base* const obj, Callable&& f) {
   using Derived = tmpl::front<Classes>;
   using DerivedPointer =
       tmpl::conditional_t<std::is_const<Base>::value, Derived const*, Derived*>;

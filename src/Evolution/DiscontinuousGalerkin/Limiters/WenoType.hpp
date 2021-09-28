@@ -20,8 +20,7 @@ namespace Limiters {
 /// \see Limiters::Weno for a description and references.
 enum class WenoType { Hweno, SimpleWeno };
 
-std::ostream& operator<<(std::ostream& os,
-                         Limiters::WenoType weno_type) noexcept;
+std::ostream& operator<<(std::ostream& os, Limiters::WenoType weno_type);
 }  // namespace Limiters
 
 template <>

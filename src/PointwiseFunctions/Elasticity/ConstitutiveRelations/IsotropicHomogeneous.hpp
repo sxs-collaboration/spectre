@@ -101,13 +101,13 @@ class IsotropicHomogeneous : public ConstitutiveRelation<Dim> {
     using type = double;
     static constexpr Options::String help = {
         "The incompressibility of the material"};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
 
   struct ShearModulus {
     using type = double;
     static constexpr Options::String help = {"The rigidity of the material"};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
 
   using options = tmpl::list<BulkModulus, ShearModulus>;
@@ -125,29 +125,29 @@ class IsotropicHomogeneous : public ConstitutiveRelation<Dim> {
   IsotropicHomogeneous& operator=(IsotropicHomogeneous&&) = default;
   ~IsotropicHomogeneous() override = default;
 
-  IsotropicHomogeneous(double bulk_modulus, double shear_modulus) noexcept;
+  IsotropicHomogeneous(double bulk_modulus, double shear_modulus);
 
   /// The constitutive relation that characterizes the elastic properties of a
   /// material
   void stress(gsl::not_null<tnsr::II<DataVector, Dim>*> stress,
               const tnsr::ii<DataVector, Dim>& strain,
-              const tnsr::I<DataVector, Dim>& x) const noexcept override;
+              const tnsr::I<DataVector, Dim>& x) const override;
 
   /// The bulk modulus (or incompressibility) \f$K\f$
-  double bulk_modulus() const noexcept;
+  double bulk_modulus() const;
   /// The shear modulus (or rigidity) \f$\mu\f$
-  double shear_modulus() const noexcept;
+  double shear_modulus() const;
   /// The Lamé parameter \f$\lambda\f$
-  double lame_parameter() const noexcept;
+  double lame_parameter() const;
   /// The Young's modulus \f$E\f$
-  double youngs_modulus() const noexcept;
+  double youngs_modulus() const;
   /// The Poisson ratio \f$\nu\f$
-  double poisson_ratio() const noexcept;
+  double poisson_ratio() const;
 
   // clang-tidy: no runtime references
-  void pup(PUP::er& /*p*/) noexcept override;  //  NOLINT
+  void pup(PUP::er& /*p*/) override;  //  NOLINT
 
-  explicit IsotropicHomogeneous(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit IsotropicHomogeneous(CkMigrateMessage* /*unused*/) {}
 
   WRAPPED_PUPable_decl_base_template(  // NOLINT
       SINGLE_ARG(ConstitutiveRelation<Dim>), IsotropicHomogeneous);
@@ -159,10 +159,10 @@ class IsotropicHomogeneous : public ConstitutiveRelation<Dim> {
 
 template <size_t Dim>
 bool operator==(const IsotropicHomogeneous<Dim>& lhs,
-                const IsotropicHomogeneous<Dim>& rhs) noexcept;
+                const IsotropicHomogeneous<Dim>& rhs);
 template <size_t Dim>
 bool operator!=(const IsotropicHomogeneous<Dim>& lhs,
-                const IsotropicHomogeneous<Dim>& rhs) noexcept;
+                const IsotropicHomogeneous<Dim>& rhs);
 
 /// \cond
 template <size_t Dim>

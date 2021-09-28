@@ -100,7 +100,7 @@ struct InitializeElement {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     ::Initialization::mutate_assign<
         tmpl::list<Convergence::Tags::IterationId<OptionsGroup>,
                    NonlinearSolver::Tags::Globalization<
@@ -135,12 +135,10 @@ struct PrepareSolve {
         const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
         const Parallel::GlobalCache<Metavariables>& /*cache*/,
         const ArrayIndex& array_index, const ActionList /*meta*/,
-        const ParallelComponent* const /*meta*/) noexcept {
+        const ParallelComponent* const /*meta*/) {
     db::mutate<Convergence::Tags::IterationId<OptionsGroup>>(
         make_not_null(&box),
-        [](const gsl::not_null<size_t*> iteration_id) noexcept {
-          *iteration_id = 0;
-        });
+        [](const gsl::not_null<size_t*> iteration_id) { *iteration_id = 0; });
 
     // Skip the initial reduction on elements that are not part of the section
     if constexpr (not std::is_same_v<ArraySectionIdTag, void>) {
@@ -188,7 +186,7 @@ struct SendInitialResidualMagnitude {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     // Perform a global reduction to compute the initial residual magnitude
     const auto& residual = db::get<nonlinear_residual_tag>(box);
     const double local_residual_magnitude_square =
@@ -225,7 +223,7 @@ struct ReceiveInitialHasConverged {
         tuples::TaggedTuple<InboxTags...>& inboxes,
         const Parallel::GlobalCache<Metavariables>& /*cache*/,
         const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-        const ParallelComponent* const /*meta*/) noexcept {
+        const ParallelComponent* const /*meta*/) {
     const size_t iteration_id =
         db::get<Convergence::Tags::IterationId<OptionsGroup>>(box);
     auto& inbox = get<Tags::GlobalizationResult<OptionsGroup>>(inboxes);
@@ -245,7 +243,7 @@ struct ReceiveInitialHasConverged {
     db::mutate<Convergence::Tags::HasConverged<OptionsGroup>>(
         make_not_null(&box),
         [&has_converged](const gsl::not_null<Convergence::HasConverged*>
-                             local_has_converged) noexcept {
+                             local_has_converged) {
           *local_has_converged = std::move(has_converged);
         });
 
@@ -269,7 +267,7 @@ struct ReceiveInitialHasConverged {
                   .has_value()) {
         db::mutate<Convergence::Tags::IterationId<OptionsGroup>>(
             make_not_null(&box),
-            [](const gsl::not_null<size_t*> local_iteration_id) noexcept {
+            [](const gsl::not_null<size_t*> local_iteration_id) {
               *local_iteration_id = 1;
             });
         constexpr size_t prepare_step_index =
@@ -325,7 +323,7 @@ struct PrepareStep {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& array_index, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     if (UNLIKELY(get<logging::Tags::Verbosity<OptionsGroup>>(box) >=
                  ::Verbosity::Debug)) {
       Parallel::printf(
@@ -346,7 +344,7 @@ struct PrepareStep {
            const gsl::not_null<size_t*> globalization_iteration_id,
            const gsl::not_null<double*> step_length,
            const auto globalization_fields, const auto& fields,
-           const double damping_factor) noexcept {
+           const double damping_factor) {
           ++(*iteration_id);
           // Begin the linear solve with a zero initial guess
           *correction =
@@ -398,7 +396,7 @@ struct PerformStep {
         const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
         const Parallel::GlobalCache<Metavariables>& /*cache*/,
         const ArrayIndex& array_index, const ActionList /*meta*/,
-        const ParallelComponent* const /*meta*/) noexcept {
+        const ParallelComponent* const /*meta*/) {
     // Skip to the end of the step on elements that are not part of the section
     if constexpr (not std::is_same_v<ArraySectionIdTag, void>) {
       if (not db::get<
@@ -462,7 +460,7 @@ struct ContributeToResidualMagnitudeReduction {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     const auto& residual = db::get<nonlinear_residual_tag>(box);
     const double local_residual_magnitude_square =
         LinearSolver::inner_product(residual, residual);
@@ -506,7 +504,7 @@ struct Globalize {
         tuples::TaggedTuple<InboxTags...>& inboxes,
         const Parallel::GlobalCache<Metavariables>& /*cache*/,
         const ArrayIndex& array_index, const ActionList /*meta*/,
-        const ParallelComponent* const /*meta*/) noexcept {
+        const ParallelComponent* const /*meta*/) {
     auto& inbox = get<Tags::GlobalizationResult<OptionsGroup>>(inboxes);
     const size_t iteration_id =
         db::get<Convergence::Tags::IterationId<OptionsGroup>>(box);
@@ -544,10 +542,9 @@ struct Globalize {
         db::mutate<Convergence::Tags::HasConverged<OptionsGroup>,
                    Convergence::Tags::IterationId<OptionsGroup>>(
             make_not_null(&box),
-            [&has_converged](
-                const gsl::not_null<Convergence::HasConverged*>
-                    local_has_converged,
-                const gsl::not_null<size_t*> local_iteration_id) noexcept {
+            [&has_converged](const gsl::not_null<Convergence::HasConverged*>
+                                 local_has_converged,
+                             const gsl::not_null<size_t*> local_iteration_id) {
               *local_has_converged = std::move(has_converged);
               ++(*local_iteration_id);
             });
@@ -575,9 +572,9 @@ struct Globalize {
                  NonlinearSolver::Tags::Globalization<
                      Convergence::Tags::IterationId<OptionsGroup>>>(
           make_not_null(&box),
-          [&globalization_result](const gsl::not_null<double*> step_length,
-                                  const gsl::not_null<size_t*>
-                                      globalization_iteration_id) noexcept {
+          [&globalization_result](
+              const gsl::not_null<double*> step_length,
+              const gsl::not_null<size_t*> globalization_iteration_id) {
             *step_length = get<double>(globalization_result);
             ++(*globalization_iteration_id);
           });
@@ -596,7 +593,7 @@ struct Globalize {
     db::mutate<Convergence::Tags::HasConverged<OptionsGroup>>(
         make_not_null(&box),
         [&has_converged](const gsl::not_null<Convergence::HasConverged*>
-                             local_has_converged) noexcept {
+                             local_has_converged) {
           *local_has_converged = std::move(has_converged);
         });
 
@@ -625,7 +622,7 @@ struct CompleteStep {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& array_index, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     if (UNLIKELY(get<logging::Tags::Verbosity<OptionsGroup>>(box) >=
                  ::Verbosity::Debug)) {
       Parallel::printf(

@@ -42,35 +42,34 @@ class ProductOf2Maps {
   // Needed for Charm++ serialization
   ProductOf2Maps() = default;
 
-  ProductOf2Maps(Map1 map1, Map2 map2) noexcept;
+  ProductOf2Maps(Map1 map1, Map2 map2);
 
   template <typename T>
   std::array<tt::remove_cvref_wrap_t<T>, dim> operator()(
-      const std::array<T, dim>& source_coords) const noexcept;
+      const std::array<T, dim>& source_coords) const;
 
   /// The inverse function is only callable with doubles because the inverse
   /// might fail if called for a point out of range, and it is unclear
   /// what should happen if the inverse were to succeed for some points in a
   /// DataVector but fail for other points.
   std::optional<std::array<double, dim>> inverse(
-      const std::array<double, dim>& target_coords) const noexcept;
+      const std::array<double, dim>& target_coords) const;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, dim, Frame::NoFrame> inv_jacobian(
-      const std::array<T, dim>& source_coords) const noexcept;
+      const std::array<T, dim>& source_coords) const;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, dim, Frame::NoFrame> jacobian(
-      const std::array<T, dim>& source_coords) const noexcept;
+      const std::array<T, dim>& source_coords) const;
 
   // clang-tidy: google-runtime-references
   void pup(PUP::er& p);  // NOLINT
 
-  bool is_identity() const noexcept { return is_identity_; }
+  bool is_identity() const { return is_identity_; }
 
  private:
-  friend bool operator==(const ProductOf2Maps& lhs,
-                         const ProductOf2Maps& rhs) noexcept {
+  friend bool operator==(const ProductOf2Maps& lhs, const ProductOf2Maps& rhs) {
     return lhs.map1_ == rhs.map1_ and lhs.map2_ == rhs.map2_ and
            lhs.is_identity_ == rhs.is_identity_;
   }
@@ -82,7 +81,7 @@ class ProductOf2Maps {
 
 template <typename Map1, typename Map2>
 bool operator!=(const ProductOf2Maps<Map1, Map2>& lhs,
-                const ProductOf2Maps<Map1, Map2>& rhs) noexcept;
+                const ProductOf2Maps<Map1, Map2>& rhs);
 
 /// \ingroup CoordinateMapsGroup
 /// \brief Product of three one-dimensional CoordinateMaps.
@@ -96,31 +95,30 @@ class ProductOf3Maps {
   // Needed for Charm++ serialization
   ProductOf3Maps() = default;
 
-  ProductOf3Maps(Map1 map1, Map2 map2, Map3 map3) noexcept;
+  ProductOf3Maps(Map1 map1, Map2 map2, Map3 map3);
 
   template <typename T>
   std::array<tt::remove_cvref_wrap_t<T>, dim> operator()(
-      const std::array<T, dim>& source_coords) const noexcept;
+      const std::array<T, dim>& source_coords) const;
 
   std::optional<std::array<double, dim>> inverse(
-      const std::array<double, dim>& target_coords) const noexcept;
+      const std::array<double, dim>& target_coords) const;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, dim, Frame::NoFrame> inv_jacobian(
-      const std::array<T, dim>& source_coords) const noexcept;
+      const std::array<T, dim>& source_coords) const;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, dim, Frame::NoFrame> jacobian(
-      const std::array<T, dim>& source_coords) const noexcept;
+      const std::array<T, dim>& source_coords) const;
 
   // clang-tidy: google-runtime-references
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
 
-  bool is_identity() const noexcept { return is_identity_; }
+  bool is_identity() const { return is_identity_; }
 
  private:
-  friend bool operator==(const ProductOf3Maps& lhs,
-                         const ProductOf3Maps& rhs) noexcept {
+  friend bool operator==(const ProductOf3Maps& lhs, const ProductOf3Maps& rhs) {
     return lhs.map1_ == rhs.map1_ and lhs.map2_ == rhs.map2_ and
            lhs.map3_ == rhs.map3_ and lhs.is_identity_ == rhs.is_identity_;
   }
@@ -133,6 +131,6 @@ class ProductOf3Maps {
 
 template <typename Map1, typename Map2, typename Map3>
 bool operator!=(const ProductOf3Maps<Map1, Map2, Map3>& lhs,
-                const ProductOf3Maps<Map1, Map2, Map3>& rhs) noexcept;
+                const ProductOf3Maps<Map1, Map2, Map3>& rhs);
 }  // namespace CoordinateMaps
 }  // namespace domain

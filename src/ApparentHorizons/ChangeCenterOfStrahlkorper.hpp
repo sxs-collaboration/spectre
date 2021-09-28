@@ -21,7 +21,7 @@ class not_null;
 template <typename Frame>
 void change_expansion_center_of_strahlkorper(
     gsl::not_null<Strahlkorper<Frame>*> strahlkorper,
-    const std::array<double, 3>& new_center) noexcept;
+    const std::array<double, 3>& new_center);
 
 /// Changes the expansion center of a Strahlkorper to the physical
 /// center.  Because `Strahlkorper::physical_center()` returns only an
@@ -32,4 +32,4 @@ void change_expansion_center_of_strahlkorper(
 /// `change_expansion_center_of_strahlkorper`.
 template <typename Frame>
 void change_expansion_center_of_strahlkorper_to_physical(
-    gsl::not_null<Strahlkorper<Frame>*> strahlkorper) noexcept;
+    gsl::not_null<Strahlkorper<Frame>*> strahlkorper);

@@ -29,7 +29,7 @@ void PrimitiveFromConservative<Dim>::apply(
     const tnsr::I<DataVector, Dim>& momentum_density,
     const Scalar<DataVector>& energy_density,
     const EquationsOfState::EquationOfState<false, ThermodynamicDim>&
-        equation_of_state) noexcept {
+        equation_of_state) {
   get(*mass_density) = get(mass_density_cons);
 
   // store inverse mass density here in order to save allocation
@@ -74,7 +74,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
       const tnsr::I<DataVector, DIM(data)>& momentum_density,                \
       const Scalar<DataVector>& energy_density,                              \
       const EquationsOfState::EquationOfState<false, THERMO_DIM(data)>&      \
-          equation_of_state) noexcept;
+          equation_of_state);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (1, 2))
 

@@ -18,7 +18,7 @@
 namespace L2Norm_detail {
 template <typename DataType, typename Symm, typename IndexList>
 Scalar<DataType> pointwise_l2_norm_square(
-    const Tensor<DataType, Symm, IndexList>& tensor) noexcept {
+    const Tensor<DataType, Symm, IndexList>& tensor) {
   auto pointwise_l2_normsq = make_with_value<Scalar<DataType>>(tensor, 0.);
   for (auto tensor_element = tensor.begin(); tensor_element != tensor.end();
        ++tensor_element) {
@@ -52,14 +52,13 @@ Scalar<DataType> pointwise_l2_norm_square(
  */
 template <typename DataType, typename Symm, typename IndexList>
 Scalar<DataType> pointwise_l2_norm(
-    const Tensor<DataType, Symm, IndexList>& tensor) noexcept {
+    const Tensor<DataType, Symm, IndexList>& tensor) {
   return Scalar<DataType>{
       sqrt(get(L2Norm_detail::pointwise_l2_norm_square(tensor)))};
 }
 template <typename DataType, typename Symm, typename IndexList>
-void pointwise_l2_norm(
-    const gsl::not_null<Scalar<DataType>*> norm,
-    const Tensor<DataType, Symm, IndexList>& tensor) noexcept {
+void pointwise_l2_norm(const gsl::not_null<Scalar<DataType>*> norm,
+                       const Tensor<DataType, Symm, IndexList>& tensor) {
   destructive_resize_components(norm, get_size(tensor[0].size()));
   get(*norm) = sqrt(get(L2Norm_detail::pointwise_l2_norm_square(tensor)));
 }
@@ -92,7 +91,7 @@ void pointwise_l2_norm(
  * whole domain.
  */
 template <typename DataType, typename Symm, typename IndexList>
-double l2_norm(const Tensor<DataType, Symm, IndexList>& tensor) noexcept {
+double l2_norm(const Tensor<DataType, Symm, IndexList>& tensor) {
   const auto pointwise_l2_normsq =
       L2Norm_detail::pointwise_l2_norm_square(tensor);
   using Plus = funcl::Plus<funcl::Identity>;
@@ -110,7 +109,7 @@ namespace Tags {
 template <typename Tag>
 struct PointwiseL2Norm : db::SimpleTag {
   using type = Scalar<typename Tag::type::type>;
-  static std::string name() noexcept {
+  static std::string name() {
     return "PointwiseL2Norm(" + db::tag_name<Tag>() + ")";
   }
 };
@@ -125,9 +124,9 @@ template <typename Tag>
 struct PointwiseL2NormCompute : PointwiseL2Norm<Tag>, db::ComputeTag {
   using base = PointwiseL2Norm<Tag>;
   using return_type = typename base::type;
-  static constexpr auto function = static_cast<void (*)(
-      const gsl::not_null<return_type*>, const typename Tag::type&) noexcept>(
-      &pointwise_l2_norm);
+  static constexpr auto function =
+      static_cast<void (*)(const gsl::not_null<return_type*>,
+                           const typename Tag::type&)>(&pointwise_l2_norm);
   using argument_tags = tmpl::list<Tag>;
 };
 
@@ -140,9 +139,7 @@ struct PointwiseL2NormCompute : PointwiseL2Norm<Tag>, db::ComputeTag {
 template <typename Tag>
 struct L2Norm : db::SimpleTag {
   using type = double;
-  static std::string name() noexcept {
-    return "L2Norm(" + db::tag_name<Tag>() + ")";
-  }
+  static std::string name() { return "L2Norm(" + db::tag_name<Tag>() + ")"; }
 };
 
 /*!

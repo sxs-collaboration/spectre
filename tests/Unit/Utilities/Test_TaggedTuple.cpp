@@ -40,7 +40,7 @@ struct not_streamable {
 };
 
 constexpr bool operator==(const not_streamable& /*unused*/,
-                          const not_streamable& /*unused*/) noexcept {
+                          const not_streamable& /*unused*/) {
   return true;
 }
 
@@ -148,16 +148,14 @@ int global_of_no_default = 0;
 int global_time_mock = 0;
 
 struct empty_base {};
-bool operator==(const empty_base& /*unused*/,
-                const empty_base& /*unused*/) noexcept {
+bool operator==(const empty_base& /*unused*/, const empty_base& /*unused*/) {
   return true;
 }
 struct no_default {
   no_default() = delete;
   explicit no_default(int i) { global_of_no_default = i; }
 };
-bool operator==(const no_default& /*unused*/,
-                const no_default& /*unused*/) noexcept {
+bool operator==(const no_default& /*unused*/, const no_default& /*unused*/) {
   return true;
 }
 
@@ -393,12 +391,10 @@ struct NotNoExceptCompare {
 
   int v_{0};
 };
-bool operator==(NotNoExceptCompare const& lhs,
-                NotNoExceptCompare const& rhs) noexcept(false) {
+bool operator==(NotNoExceptCompare const& lhs, NotNoExceptCompare const& rhs) {
   return lhs.v_ == rhs.v_;
 }
-bool operator!=(NotNoExceptCompare const& lhs,
-                NotNoExceptCompare const& rhs) noexcept(noexcept(lhs == rhs)) {
+bool operator!=(NotNoExceptCompare const& lhs, NotNoExceptCompare const& rhs) {
   return not(lhs == rhs);
 }
 
@@ -406,7 +402,7 @@ struct timed_compare {
   explicit timed_compare(int v) : v_(v) {}
   int v_{0};
 };
-bool operator==(timed_compare const& lhs, timed_compare const& rhs) noexcept {
+bool operator==(timed_compare const& lhs, timed_compare const& rhs) {
   global_time_mock++;
   return lhs.v_ == rhs.v_;
 }
@@ -541,10 +537,6 @@ SPECTRE_TEST_CASE("Unit.Utilities.TaggedTuple.equivalence",
     CHECK(t5 != t7);
     CHECK(global_time_mock == 14);
   }
-  static_assert(not noexcept(NotNoExceptCompare{1} == NotNoExceptCompare{1}),
-                "Failed testing Unit.Utilities.TaggedTuple.relational");
-  static_assert(not noexcept(NotNoExceptCompare{1} != NotNoExceptCompare{0}),
-                "Failed testing Unit.Utilities.TaggedTuple.relational");
   CHECK(NotNoExceptCompare{1} == NotNoExceptCompare{1});
   CHECK_FALSE(NotNoExceptCompare{1} == NotNoExceptCompare{0});
   CHECK(NotNoExceptCompare{1} != NotNoExceptCompare{0});
@@ -581,10 +573,6 @@ SPECTRE_TEST_CASE("Unit.Utilities.TaggedTuple.equivalence",
                   "Failed testing Unit.Utilities.TaggedTuple.relational");
     static_assert(t0 != t4,
                   "Failed testing Unit.Utilities.TaggedTuple.relational");
-    static_assert(noexcept(t0 != t4),
-                  "Failed testing Unit.Utilities.TaggedTuple.relational");
-    static_assert(noexcept(t0 == t2),
-                  "Failed testing Unit.Utilities.TaggedTuple.relational");
   }
 #endif
 }
@@ -594,8 +582,7 @@ struct lex_time_compared {
   char c_;
 };
 
-bool operator<(lex_time_compared const& lhs,
-               lex_time_compared const& rhs) noexcept {
+bool operator<(lex_time_compared const& lhs, lex_time_compared const& rhs) {
   global_time_mock++;
   return lhs.c_ < rhs.c_;
 }
@@ -787,7 +774,7 @@ struct throws_swap {
   int v_{0};
 };
 
-void swap(throws_swap& lhs, throws_swap& rhs) noexcept(false) {
+void swap(throws_swap& lhs, throws_swap& rhs) {
   using std::swap;
   using tuples::swap;
   swap(lhs.v_, rhs.v_);
@@ -797,15 +784,14 @@ int global_swappable_value = 0;
 
 struct empty_base_swappable {};
 
-void swap(empty_base_swappable& /*lhs*/,
-          empty_base_swappable& /*rhs*/) noexcept {
+void swap(empty_base_swappable& /*lhs*/, empty_base_swappable& /*rhs*/) {
   global_swappable_value++;
 }
 
 struct empty_base_throws_swappable {};
 
 void swap(empty_base_throws_swappable& /*lhs*/,
-          empty_base_throws_swappable& /*rhs*/) noexcept(false) {
+          empty_base_throws_swappable& /*rhs*/) {
   global_swappable_value++;
 }
 
@@ -818,20 +804,6 @@ static_assert(tuples::tuples_detail::is_swappable_with<double&, double&>::value,
 static_assert(
     not tuples::tuples_detail::is_swappable_with<double const&, double>::value,
     "Failed testing tuples::tuples_detail::is_swappable_with");
-
-static_assert(
-    tuples::tuples_detail::is_nothrow_swappable_with<double, double>::value,
-    "Failed testing tuples::tuples_detail::is_nothrow_swappable_with");
-static_assert(
-    tuples::tuples_detail::is_nothrow_swappable_with<double&, double>::value,
-    "Failed testing tuples::tuples_detail::is_nothrow_swappable_with");
-static_assert(
-    tuples::tuples_detail::is_nothrow_swappable_with<double&, double&>::value,
-    "Failed testing tuples::tuples_detail::is_nothrow_swappable_with");
-static_assert(
-    not tuples::tuples_detail::is_nothrow_swappable_with<double const&,
-                                                         double>::value,
-    "Failed testing tuples::tuples_detail::is_nothrow_swappable_with");
 
 static_assert(
     not tuples::tuples_detail::is_swappable_with<double, not_swappable>::value,
@@ -850,33 +822,8 @@ static_assert(not tuples::tuples_detail::is_swappable_with<
               "Failed testing tuples::tuples_detail::is_swappable_with");
 
 static_assert(
-    not tuples::tuples_detail::is_nothrow_swappable_with<double,
-                                                         not_swappable>::value,
-    "Failed testing tuples::tuples_detail::is_nothrow_swappable_with");
-static_assert(
-    not tuples::tuples_detail::is_nothrow_swappable_with<double&,
-                                                         not_swappable>::value,
-    "Failed testing tuples::tuples_detail::is_nothrow_swappable_with");
-static_assert(
-    not tuples::tuples_detail::is_nothrow_swappable_with<double,
-                                                         not_swappable&>::value,
-    "Failed testing tuples::tuples_detail::is_nothrow_swappable_with");
-static_assert(
-    not tuples::tuples_detail::is_nothrow_swappable_with<double&,
-                                                         not_swappable&>::value,
-    "Failed testing tuples::tuples_detail::is_nothrow_swappable_with");
-static_assert(
-    not tuples::tuples_detail::is_nothrow_swappable_with<double const&,
-                                                         not_swappable>::value,
-    "Failed testing tuples::tuples_detail::is_nothrow_swappable_with");
-
-static_assert(
     tuples::tuples_detail::is_swappable_with<throws_swap, throws_swap>::value,
     "Failed testing tuples::tuples_detail::is_swappable_with");
-static_assert(
-    not tuples::tuples_detail::is_nothrow_swappable_with<throws_swap,
-                                                         throws_swap>::value,
-    "Failed testing tuples::tuples_detail::is_nothrow_swappable_with");
 
 namespace swap_tags {
 struct Int0 {
@@ -926,8 +873,6 @@ SPECTRE_TEST_CASE("Unit.Utilities.TaggedTuple.swap", "[Unit][Utilities]") {
     CHECK(tuples::get<swap_tags::Int1>(t1) == 3);
     CHECK(tuples::get<swap_tags::Int0>(t0) == 4);
     CHECK(tuples::get<swap_tags::Int1>(t0) == 5);
-    static_assert(noexcept(tuples::swap(t0, t1)),
-                  "Failed testing Unit.Utilities.TaggedTuple.swap");
   }
   {
     tuples::TaggedTuple<swap_tags::ThrowsSwap> t0{1};
@@ -937,8 +882,6 @@ SPECTRE_TEST_CASE("Unit.Utilities.TaggedTuple.swap", "[Unit][Utilities]") {
     tuples::swap(t0, t1);
     CHECK(tuples::get<swap_tags::ThrowsSwap>(t0).v_ == 2);
     CHECK(tuples::get<swap_tags::ThrowsSwap>(t1).v_ == 1);
-    static_assert(not noexcept(tuples::swap(t0, t1)),
-                  "Failed testing Unit.Utilities.TaggedTuple.swap");
   }
   {
     tuples::TaggedTuple<swap_tags::EmptyBaseSwap0, swap_tags::EmptyBaseSwap1>
@@ -948,8 +891,6 @@ SPECTRE_TEST_CASE("Unit.Utilities.TaggedTuple.swap", "[Unit][Utilities]") {
     global_swappable_value = 0;
     tuples::swap(t0, t1);
     CHECK(global_swappable_value == 2);
-    static_assert(noexcept(tuples::swap(t0, t1)),
-                  "Failed testing Unit.Utilities.TaggedTuple.swap");
   }
   {
     tuples::TaggedTuple<swap_tags::EmptyBaseThrowsSwap0,
@@ -961,8 +902,6 @@ SPECTRE_TEST_CASE("Unit.Utilities.TaggedTuple.swap", "[Unit][Utilities]") {
     global_swappable_value = 0;
     tuples::swap(t0, t1);
     CHECK(global_swappable_value == 2);
-    static_assert(not noexcept(tuples::swap(t0, t1)),
-                  "Failed testing Unit.Utilities.TaggedTuple.swap");
   }
 }
 

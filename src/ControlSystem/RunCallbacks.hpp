@@ -48,13 +48,13 @@ struct RunCallbacks {
   template <typename DbTags, typename Metavariables>
   static void apply(const db::DataBox<DbTags>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
-                    const LinkedMessageId<double>& measurement_id) noexcept {
+                    const LinkedMessageId<double>& measurement_id) {
     tmpl::for_each<ControlSystems>(
-        [&box, &cache, &measurement_id](auto control_system_v) noexcept {
+        [&box, &cache, &measurement_id](auto control_system_v) {
           using ControlSystem = tmpl::type_from<decltype(control_system_v)>;
           db::apply<typename ControlSystem::process_measurement::
                         template argument_tags<Submeasurement>>(
-              [&cache, &measurement_id](const auto&... args) noexcept {
+              [&cache, &measurement_id](const auto&... args) {
                 ControlSystem::process_measurement::apply(
                     Submeasurement{}, args..., cache, measurement_id);
               },

@@ -18,8 +18,7 @@
 
 namespace LinearSolver::Schwarz {
 
-size_t overlap_extent(const size_t volume_extent,
-                      const size_t max_overlap) noexcept {
+size_t overlap_extent(const size_t volume_extent, const size_t max_overlap) {
   return std::min(max_overlap, volume_extent - 1);
 }
 
@@ -27,7 +26,7 @@ namespace {
 template <size_t Dim>
 void assert_overlap_extent(const Index<Dim>& volume_extents,
                            const size_t overlap_extent,
-                           const size_t overlap_dimension) noexcept {
+                           const size_t overlap_dimension) {
   ASSERT(overlap_dimension < Dim,
          "Invalid dimension '" << overlap_dimension << "' in " << Dim << "D.");
   ASSERT(overlap_extent <= volume_extents[overlap_dimension],
@@ -40,14 +39,14 @@ void assert_overlap_extent(const Index<Dim>& volume_extents,
 template <size_t Dim>
 size_t overlap_num_points(const Index<Dim>& volume_extents,
                           const size_t overlap_extent,
-                          const size_t overlap_dimension) noexcept {
+                          const size_t overlap_dimension) {
   assert_overlap_extent(volume_extents, overlap_extent, overlap_dimension);
   return volume_extents.slice_away(overlap_dimension).product() *
          overlap_extent;
 }
 
 double overlap_width(const size_t overlap_extent,
-                     const DataVector& collocation_points) noexcept {
+                     const DataVector& collocation_points) {
   ASSERT(overlap_extent < collocation_points.size(),
          "Overlap extent is "
              << overlap_extent
@@ -68,7 +67,7 @@ double overlap_width(const size_t overlap_extent,
 template <size_t Dim>
 OverlapIterator::OverlapIterator(const Index<Dim>& volume_extents,
                                  const size_t overlap_extent,
-                                 const Direction<Dim>& direction) noexcept
+                                 const Direction<Dim>& direction)
     : size_{overlap_num_points(volume_extents, overlap_extent,
                                direction.dimension())},
       num_slices_{overlap_extent},
@@ -86,9 +85,7 @@ OverlapIterator::OverlapIterator(const Index<Dim>& volume_extents,
   assert_overlap_extent(volume_extents, overlap_extent, direction.dimension());
 }
 
-OverlapIterator::operator bool() const noexcept {
-  return overlap_offset_ < size_;
-}
+OverlapIterator::operator bool() const { return overlap_offset_ < size_; }
 
 OverlapIterator& OverlapIterator::operator++() {
   ++volume_offset_;
@@ -101,15 +98,11 @@ OverlapIterator& OverlapIterator::operator++() {
   return *this;
 }
 
-size_t OverlapIterator::volume_offset() const noexcept {
-  return volume_offset_;
-}
+size_t OverlapIterator::volume_offset() const { return volume_offset_; }
 
-size_t OverlapIterator::overlap_offset() const noexcept {
-  return overlap_offset_;
-}
+size_t OverlapIterator::overlap_offset() const { return overlap_offset_; }
 
-void OverlapIterator::reset() noexcept {
+void OverlapIterator::reset() {
   volume_offset_ = initial_offset_;
   overlap_offset_ = 0;
   stride_count_ = 0;
@@ -122,7 +115,7 @@ void data_on_overlap_impl(double* overlap_data, const double* volume_data,
                           const size_t num_components,
                           const Index<Dim>& volume_extents,
                           const size_t overlap_extent,
-                          const Direction<Dim>& direction) noexcept {
+                          const Direction<Dim>& direction) {
   const size_t volume_num_points = volume_extents.product();
   const size_t overlap_num_points = LinearSolver::Schwarz::overlap_num_points(
       volume_extents, overlap_extent, direction.dimension());
@@ -145,7 +138,7 @@ void add_overlap_data_impl(double* volume_data, const double* overlap_data,
                            const size_t num_components,
                            const Index<Dim>& volume_extents,
                            const size_t overlap_extent,
-                           const Direction<Dim>& direction) noexcept {
+                           const Direction<Dim>& direction) {
   const size_t volume_num_points = volume_extents.product();
   const size_t overlap_num_points = LinearSolver::Schwarz::overlap_num_points(
       volume_extents, overlap_extent, direction.dimension());
@@ -166,17 +159,16 @@ void add_overlap_data_impl(double* volume_data, const double* overlap_data,
 }  // namespace detail
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
-#define INSTANTIATE(r, data)                                                  \
-  template size_t overlap_num_points(const Index<DIM(data)>&, size_t,         \
-                                     size_t) noexcept;                        \
-  template OverlapIterator::OverlapIterator(                                  \
-      const Index<DIM(data)>&, size_t, const Direction<DIM(data)>&) noexcept; \
-  template void detail::add_overlap_data_impl(                                \
-      double*, const double*, size_t, const Index<DIM(data)>&, size_t,        \
-      const Direction<DIM(data)>&) noexcept;                                  \
-  template void detail::data_on_overlap_impl(                                 \
-      double*, const double*, size_t, const Index<DIM(data)>&, size_t,        \
-      const Direction<DIM(data)>&) noexcept;
+#define INSTANTIATE(r, data)                                                   \
+  template size_t overlap_num_points(const Index<DIM(data)>&, size_t, size_t); \
+  template OverlapIterator::OverlapIterator(const Index<DIM(data)>&, size_t,   \
+                                            const Direction<DIM(data)>&);      \
+  template void detail::add_overlap_data_impl(double*, const double*, size_t,  \
+                                              const Index<DIM(data)>&, size_t, \
+                                              const Direction<DIM(data)>&);    \
+  template void detail::data_on_overlap_impl(double*, const double*, size_t,   \
+                                             const Index<DIM(data)>&, size_t,  \
+                                             const Direction<DIM(data)>&);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 

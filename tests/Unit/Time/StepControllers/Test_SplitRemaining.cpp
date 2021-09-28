@@ -16,7 +16,7 @@
 
 SPECTRE_TEST_CASE("Unit.Time.StepControllers.SplitRemaining", "[Unit][Time]") {
   Parallel::register_classes_with_charm<StepControllers::SplitRemaining>();
-  const auto check = [](const auto& sr) noexcept {
+  const auto check = [](const auto& sr) {
     const Slab slab(1., 4.);
     CHECK(sr.choose_step(slab.start(), 4.) == slab.duration());
     CHECK(sr.choose_step(slab.start(), 10.) == slab.duration());

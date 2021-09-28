@@ -27,12 +27,12 @@ template <size_t Dim, typename Frame, typename DataType>
 void conformal_christoffel_second_kind(
     const gsl::not_null<tnsr::Ijj<DataType, Dim, Frame>*> result,
     const tnsr::II<DataType, Dim, Frame>& inverse_conformal_spatial_metric,
-    const tnsr::ijj<DataType, Dim, Frame>& field_d) noexcept;
+    const tnsr::ijj<DataType, Dim, Frame>& field_d);
 
 template <size_t Dim, typename Frame, typename DataType>
 tnsr::Ijj<DataType, Dim, Frame> conformal_christoffel_second_kind(
     const tnsr::II<DataType, Dim, Frame>& inverse_conformal_spatial_metric,
-    const tnsr::ijj<DataType, Dim, Frame>& field_d) noexcept;
+    const tnsr::ijj<DataType, Dim, Frame>& field_d);
 /// @}
 
 /// @{
@@ -61,15 +61,13 @@ void christoffel_second_kind(
     const tnsr::ii<DataType, Dim, Frame>& conformal_spatial_metric,
     const tnsr::II<DataType, Dim, Frame>& inverse_conformal_spatial_metric,
     const tnsr::i<DataType, Dim, Frame>& field_p,
-    const tnsr::Ijj<DataType, Dim, Frame>&
-        conformal_christoffel_second_kind) noexcept;
+    const tnsr::Ijj<DataType, Dim, Frame>& conformal_christoffel_second_kind);
 
 template <size_t Dim, typename Frame, typename DataType>
 tnsr::Ijj<DataType, Dim, Frame> christoffel_second_kind(
     const tnsr::ii<DataType, Dim, Frame>& conformal_spatial_metric,
     const tnsr::II<DataType, Dim, Frame>& inverse_conformal_spatial_metric,
     const tnsr::i<DataType, Dim, Frame>& field_p,
-    const tnsr::Ijj<DataType, Dim, Frame>&
-        conformal_christoffel_second_kind) noexcept;
+    const tnsr::Ijj<DataType, Dim, Frame>& conformal_christoffel_second_kind);
 /// @}
 }  // namespace Ccz4

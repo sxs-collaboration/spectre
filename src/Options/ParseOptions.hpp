@@ -60,26 +60,26 @@ struct InputSource {
 
 // clang-tidy: YAML::Node not movable (as of yaml-cpp-0.5.3)
 // NOLINTNEXTLINE(performance-unnecessary-value-param)
-inline Option::Option(YAML::Node node, Context context) noexcept
+inline Option::Option(YAML::Node node, Context context)
     : node_(std::make_unique<YAML::Node>(std::move(node))),
       context_(std::move(context)) {  // NOLINT
   context_.line = node.Mark().line;
   context_.column = node.Mark().column;
 }
 
-inline Option::Option(Context context) noexcept
+inline Option::Option(Context context)
     : node_(std::make_unique<YAML::Node>()), context_(std::move(context)) {}
 
-inline const YAML::Node& Option::node() const noexcept { return *node_; }
-inline const Context& Option::context() const noexcept { return context_; }
+inline const YAML::Node& Option::node() const { return *node_; }
+inline const Context& Option::context() const { return context_; }
 
 /// Append a line to the contained context.
-inline void Option::append_context(const std::string& context) noexcept {
+inline void Option::append_context(const std::string& context) {
   context_.append(context);
 }
 
 // NOLINTNEXTLINE(performance-unnecessary-value-param)
-inline void Option::set_node(YAML::Node node) noexcept {
+inline void Option::set_node(YAML::Node node) {
   // clang-tidy: YAML::Node not movable (as of yaml-cpp-0.5.3)
   *node_ = std::move(node);  // NOLINT
   context_.line = node_->Mark().line;
@@ -186,12 +186,12 @@ class Parser {
   Parser() = default;
 
   /// \param help_text an overall description of the options
-  explicit Parser(std::string help_text) noexcept;
+  explicit Parser(std::string help_text);
 
   /// Parse a string to obtain options and their values.
   ///
   /// \param options the string holding the YAML formatted options
-  void parse(std::string options) noexcept;
+  void parse(std::string options);
 
   /// Parse an Option to obtain options and their values.
   void parse(const Option& options);
@@ -199,7 +199,7 @@ class Parser {
   /// Parse a file containing options
   ///
   /// \param file_name the path to the file to parse
-  void parse_file(const std::string& file_name) noexcept;
+  void parse_file(const std::string& file_name);
 
   /// Overlay the options from a string or file on top of the
   /// currently parsed options.
@@ -210,10 +210,10 @@ class Parser {
   /// input are left unchanged.
   /// @{
   template <typename OverlayOptions>
-  void overlay(std::string options) noexcept;
+  void overlay(std::string options);
 
   template <typename OverlayOptions>
-  void overlay_file(const std::string& file_name) noexcept;
+  void overlay_file(const std::string& file_name);
   /// @}
 
   /// Get the value of the specified option
@@ -241,10 +241,10 @@ class Parser {
 
   /// Get the help string
   template <typename TagsAndSubgroups = tags_and_subgroups_list>
-  std::string help() const noexcept;
+  std::string help() const;
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept;
+  void pup(PUP::er& p);
 
  private:
   template <typename, typename>
@@ -321,10 +321,10 @@ class Parser {
 
   /// Get the help string for parsing errors
   template <typename TagsAndSubgroups = tags_and_subgroups_list>
-  std::string parsing_help(const YAML::Node& options) const noexcept;
+  std::string parsing_help(const YAML::Node& options) const;
 
   /// Error message when failed to parse an input file.
-  [[noreturn]] void parser_error(const YAML::Exception& e) const noexcept;
+  [[noreturn]] void parser_error(const YAML::Exception& e) const;
 
   template <typename ChosenOptions, typename RemainingOptions, typename F>
   auto call_with_chosen_alternatives_impl(F&& func,
@@ -350,7 +350,7 @@ class Parser {
   tuples::tagged_tuple_from_typelist<
       tmpl::transform<subgroups, tmpl::bind<SubgroupParser, tmpl::_1>>>
       subgroup_parsers_ =
-          tmpl::as_pack<subgroups>([](auto... subgroup_tags) noexcept {
+          tmpl::as_pack<subgroups>([](auto... subgroup_tags) {
             return decltype(subgroup_parsers_)(
                 tmpl::type_from<decltype(subgroup_tags)>::help...);
           });
@@ -365,9 +365,9 @@ class Parser {
 };
 
 template <typename OptionList, typename Group>
-Parser<OptionList, Group>::Parser(std::string help_text) noexcept
+Parser<OptionList, Group>::Parser(std::string help_text)
     : help_text_(std::move(help_text)) {
-  tmpl::for_each<all_possible_options>([](auto t) noexcept {
+  tmpl::for_each<all_possible_options>([](auto t) {
     using T = typename decltype(t)::type;
     const std::string label = name<T>();
     ASSERT(label.size() <= max_label_size_,
@@ -381,7 +381,7 @@ Parser<OptionList, Group>::Parser(std::string help_text) noexcept
 }
 
 template <typename OptionList, typename Group>
-void Parser<OptionList, Group>::parse(std::string options) noexcept {
+void Parser<OptionList, Group>::parse(std::string options) {
   context_.append("In string");
   input_source_.push_back(std::move(options));
   try {
@@ -398,7 +398,7 @@ void Parser<OptionList, Group>::parse(const Option& options) {
 }
 
 namespace Options_detail {
-inline std::ifstream open_file(const std::string& file_name) noexcept {
+inline std::ifstream open_file(const std::string& file_name) {
   errno = 0;
   std::ifstream input(file_name);
   if (not input) {
@@ -411,8 +411,7 @@ inline std::ifstream open_file(const std::string& file_name) noexcept {
 }  // namespace Options_detail
 
 template <typename OptionList, typename Group>
-void Parser<OptionList, Group>::parse_file(
-    const std::string& file_name) noexcept {
+void Parser<OptionList, Group>::parse_file(const std::string& file_name) {
   context_.append("In " + file_name);
   auto input = Options_detail::open_file(file_name);
   input_source_.push_back(std::string(std::istreambuf_iterator(input), {}));
@@ -425,7 +424,7 @@ void Parser<OptionList, Group>::parse_file(
 
 template <typename OptionList, typename Group>
 template <typename OverlayOptions>
-void Parser<OptionList, Group>::overlay(std::string options) noexcept {
+void Parser<OptionList, Group>::overlay(std::string options) {
   context_ = Context{};
   context_.append("In string");
   input_source_.push_back(std::move(options));
@@ -438,8 +437,7 @@ void Parser<OptionList, Group>::overlay(std::string options) noexcept {
 
 template <typename OptionList, typename Group>
 template <typename OverlayOptions>
-void Parser<OptionList, Group>::overlay_file(
-    const std::string& file_name) noexcept {
+void Parser<OptionList, Group>::overlay_file(const std::string& file_name) {
   context_ = Context{};
   context_.append("In " + file_name);
   auto input = Options_detail::open_file(file_name);
@@ -468,11 +466,11 @@ namespace Options_detail {
 // this function could make.
 template <typename OptionList>
 std::pair<int, std::vector<size_t>> choose_alternatives(
-    const std::unordered_set<std::string>& given_options) noexcept {
+    const std::unordered_set<std::string>& given_options) {
   int num_matched = 0;
   std::vector<size_t> alternative_choices{};
   tmpl::for_each<OptionList>([&alternative_choices, &num_matched,
-                              &given_options](auto opt) noexcept {
+                              &given_options](auto opt) {
     using Opt = tmpl::type_from<decltype(opt)>;
     if constexpr (not tt::is_a_v<Options::Alternatives, Opt>) {
       if (given_options.count(name<Opt>()) == 1) {
@@ -484,8 +482,7 @@ std::pair<int, std::vector<size_t>> choose_alternatives(
 
       size_t alternative_number = 0;
       tmpl::for_each<Opt>([&alternative_number, &best_alternatives,
-                           &most_matches,
-                           &given_options](auto alternative) noexcept {
+                           &most_matches, &given_options](auto alternative) {
         using Alternative = tmpl::type_from<decltype(alternative)>;
         auto alternative_match =
             choose_alternatives<Alternative>(given_options);
@@ -640,7 +637,7 @@ decltype(auto) Parser<OptionList, Group>::apply_all(F&& func) const {
 
 template <typename OptionList, typename Group>
 template <typename TagsAndSubgroups>
-std::string Parser<OptionList, Group>::help() const noexcept {
+std::string Parser<OptionList, Group>::help() const {
   std::ostringstream ss;
   ss << "\n==== Description of expected options:\n" << help_text_;
   if (tmpl::size<TagsAndSubgroups>::value > 0) {
@@ -654,7 +651,7 @@ std::string Parser<OptionList, Group>::help() const noexcept {
 }
 
 template <typename OptionList, typename Group>
-void Parser<OptionList, Group>::pup(PUP::er& p) noexcept {
+void Parser<OptionList, Group>::pup(PUP::er& p) {
   static_assert(std::is_same_v<Group, NoSuchType>,
                 "Inner parsers should be recreated by the root parser, not "
                 "serialized.");
@@ -689,7 +686,7 @@ void Parser<OptionList, Group>::parse(const YAML::Node& node) {
 
   alternative_choices_ =
       Options_detail::choose_alternatives<OptionList>(given_options).second;
-  if (alg::any_of(alternative_choices_, [](const size_t x) noexcept {
+  if (alg::any_of(alternative_choices_, [](const size_t x) {
         return x == std::numeric_limits<size_t>::max();
       })) {
     PARSE_ERROR(context_, "Cannot decide between alternative options.\n"
@@ -706,14 +703,13 @@ void Parser<OptionList, Group>::parse(const YAML::Node& node) {
     // the order they are given in the help string.
     std::vector<std::string> result;
     result.reserve(tmpl::size<top_level_options_and_groups>{});
-    tmpl::for_each<top_level_options_and_groups>(
-        [&result](auto opt) noexcept {
-          using Opt = tmpl::type_from<decltype(opt)>;
-          const std::string label = name<Opt>();
-          ASSERT(alg::find(result, label) == result.end(),
-                 "Duplicate option name: " << label);
-          result.push_back(label);
-        });
+    tmpl::for_each<top_level_options_and_groups>([&result](auto opt) {
+      using Opt = tmpl::type_from<decltype(opt)>;
+      const std::string label = name<Opt>();
+      ASSERT(alg::find(result, label) == result.end(),
+             "Duplicate option name: " << label);
+      result.push_back(label);
+    });
     return result;
   });
 
@@ -814,7 +810,7 @@ void Parser<OptionList, Group>::overlay(const YAML::Node& node) {
     context.line = name_and_value.first.Mark().line;
     context.column = name_and_value.first.Mark().column;
 
-    if (tmpl::as_pack<tags_and_subgroups_list>([&name](auto... opts) noexcept {
+    if (tmpl::as_pack<tags_and_subgroups_list>([&name](auto... opts) {
           return ((name != Options::name<tmpl::type_from<decltype(opts)>>()) and
                   ...);
         })) {
@@ -824,7 +820,7 @@ void Parser<OptionList, Group>::overlay(const YAML::Node& node) {
     }
 
     if (tmpl::as_pack<overlayable_tags_and_subgroups_list>(
-            [&name](auto... opts) noexcept {
+            [&name](auto... opts) {
               return (
                   (name != Options::name<tmpl::type_from<decltype(opts)>>()) and
                   ...);
@@ -928,7 +924,7 @@ inline void Parser<OptionList, Group>::check_upper_bound(
 template <typename OptionList, typename Group>
 template <typename TagsAndSubgroups>
 std::string Parser<OptionList, Group>::parsing_help(
-    const YAML::Node& options) const noexcept {
+    const YAML::Node& options) const {
   std::ostringstream os;
   // At top level this would dump the entire input file, which is very
   // verbose and not very informative.  At lower levels the result
@@ -943,7 +939,7 @@ std::string Parser<OptionList, Group>::parsing_help(
 
 template <typename OptionList, typename Group>
 [[noreturn]] void Parser<OptionList, Group>::parser_error(
-    const YAML::Exception& e) const noexcept {
+    const YAML::Exception& e) const {
   auto context = context_;
   context.line = e.mark.line;
   context.column = e.mark.column;

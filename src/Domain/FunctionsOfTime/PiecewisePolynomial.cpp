@@ -22,20 +22,20 @@ namespace domain::FunctionsOfTime {
 template <size_t MaxDeriv>
 PiecewisePolynomial<MaxDeriv>::PiecewisePolynomial(
     const double t, value_type initial_func_and_derivs,
-    const double expiration_time) noexcept
+    const double expiration_time)
     : deriv_info_at_update_times_{{t, std::move(initial_func_and_derivs)}},
       expiration_time_(expiration_time) {}
 
 template <size_t MaxDeriv>
 std::unique_ptr<FunctionOfTime> PiecewisePolynomial<MaxDeriv>::get_clone()
-    const noexcept {
+    const {
   return std::make_unique<PiecewisePolynomial>(*this);
 }
 
 template <size_t MaxDeriv>
 template <size_t MaxDerivReturned>
 std::array<DataVector, MaxDerivReturned + 1>
-PiecewisePolynomial<MaxDeriv>::func_and_derivs(const double t) const noexcept {
+PiecewisePolynomial<MaxDeriv>::func_and_derivs(const double t) const {
   if (t > expiration_time_) {
     ERROR("Attempt to evaluate PiecewisePolynomial at a time "
           << t << " that is after the expiration time " << expiration_time_
@@ -76,7 +76,7 @@ void PiecewisePolynomial<MaxDeriv>::update(
     // However, updated_max_deriv is std::moved out of inside this function.
     // NOLINTNEXTLINE(performance-unnecessary-value-param)
     const double time_of_update, DataVector updated_max_deriv,
-    const double next_expiration_time) noexcept {
+    const double next_expiration_time) {
   if (time_of_update <= deriv_info_at_update_times_.back().time) {
     ERROR("t must be increasing from call to call. "
           << "Attempted to update at time " << time_of_update
@@ -129,7 +129,7 @@ void PiecewisePolynomial<MaxDeriv>::update(
 
 template <size_t MaxDeriv>
 void PiecewisePolynomial<MaxDeriv>::reset_expiration_time(
-    const double next_expiration_time) noexcept {
+    const double next_expiration_time) {
   FunctionOfTimeHelpers::reset_expiration_time(make_not_null(&expiration_time_),
                                                next_expiration_time);
 }
@@ -143,21 +143,21 @@ void PiecewisePolynomial<MaxDeriv>::pup(PUP::er& p) {
 
 template <size_t MaxDeriv>
 bool operator==(const PiecewisePolynomial<MaxDeriv>& lhs,
-                const PiecewisePolynomial<MaxDeriv>& rhs) noexcept {
+                const PiecewisePolynomial<MaxDeriv>& rhs) {
   return lhs.deriv_info_at_update_times_ == rhs.deriv_info_at_update_times_ and
          lhs.expiration_time_ == rhs.expiration_time_;
 }
 
 template <size_t MaxDeriv>
 bool operator!=(const PiecewisePolynomial<MaxDeriv>& lhs,
-                const PiecewisePolynomial<MaxDeriv>& rhs) noexcept {
+                const PiecewisePolynomial<MaxDeriv>& rhs) {
   return not(lhs == rhs);
 }
 
 template <size_t MaxDeriv>
 std::ostream& operator<<(
     std::ostream& os,
-    const PiecewisePolynomial<MaxDeriv>& piecewise_polynomial) noexcept {
+    const PiecewisePolynomial<MaxDeriv>& piecewise_polynomial) {
   const auto size = piecewise_polynomial.deriv_info_at_update_times_.size();
 
   for (size_t i = 0; i < size - 1; ++i) {
@@ -173,17 +173,15 @@ std::ostream& operator<<(
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DIMRETURNED(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATE(_, data)                                       \
-  template class PiecewisePolynomial<DIM(data)>;                   \
-  template bool operator==                                         \
-      <DIM(data)>(const PiecewisePolynomial<DIM(data)>&,           \
-                  const PiecewisePolynomial<DIM(data)>&) noexcept; \
-  template bool operator!=                                         \
-      <DIM(data)>(const PiecewisePolynomial<DIM(data)>&,           \
-                  const PiecewisePolynomial<DIM(data)>&) noexcept; \
-  template std::ostream& operator<<(                               \
-      std::ostream& os,                                            \
-      const PiecewisePolynomial<DIM(data)>& piecewise_polynomial) noexcept;
+#define INSTANTIATE(_, data)                                                  \
+  template class PiecewisePolynomial<DIM(data)>;                              \
+  template bool operator==<DIM(data)>(const PiecewisePolynomial<DIM(data)>&,  \
+                                      const PiecewisePolynomial<DIM(data)>&); \
+  template bool operator!=<DIM(data)>(const PiecewisePolynomial<DIM(data)>&,  \
+                                      const PiecewisePolynomial<DIM(data)>&); \
+  template std::ostream& operator<<(                                          \
+      std::ostream& os,                                                       \
+      const PiecewisePolynomial<DIM(data)>& piecewise_polynomial);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (0, 1, 2, 3, 4))
 
@@ -192,7 +190,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (0, 1, 2, 3, 4))
 #define INSTANTIATE(_, data)                                          \
   template std::array<DataVector, DIMRETURNED(data) + 1>              \
   PiecewisePolynomial<DIM(data)>::func_and_derivs<DIMRETURNED(data)>( \
-      const double) const noexcept;
+      const double) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (0), (0))
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1), (0, 1))

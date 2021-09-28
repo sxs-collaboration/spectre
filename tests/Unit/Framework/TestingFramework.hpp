@@ -30,7 +30,7 @@
 // add_test_library CMake function. It is used to make a call into a translation
 // unit so that static variables for Catch are properly initialized.
 #ifdef SPECTRE_TEST_REGISTER_FUNCTION
-void SPECTRE_TEST_REGISTER_FUNCTION() noexcept {}  // NOLINT
+void SPECTRE_TEST_REGISTER_FUNCTION() {}  // NOLINT
 #endif  // SPECTRE_TEST_REGISTER_FUNCTION
 /// \endcond
 

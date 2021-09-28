@@ -62,7 +62,7 @@ struct FConstraintCompute
       const tnsr::ijaa<DataVector, SpatialDim, Frame>&,
       const Scalar<DataVector>&,
       const tnsr::iaa<DataVector, SpatialDim, Frame>&,
-      const tnsr::aa<DataVector, SpatialDim, Frame>&) noexcept>(
+      const tnsr::aa<DataVector, SpatialDim, Frame>&)>(
       &GeneralizedHarmonic::f_constraint<SpatialDim, Frame, DataVector>);
 
   using base = GeneralizedHarmonic::Tags::FConstraint<SpatialDim, Frame>;

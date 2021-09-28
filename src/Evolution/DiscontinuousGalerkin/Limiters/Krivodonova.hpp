@@ -453,7 +453,7 @@ class Krivodonova<VolumeDim, tmpl::list<Tags...>> {
    */
   struct DisableForDebugging {
     using type = bool;
-    static type suggested_value() noexcept { return false; }
+    static type suggested_value() { return false; }
     static constexpr Options::String help = {"Disable the limiter"};
   };
 
@@ -479,16 +479,16 @@ class Krivodonova<VolumeDim, tmpl::list<Tags...>> {
   ~Krivodonova() = default;
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept;
+  void pup(PUP::er& p);
 
-  bool operator==(const Krivodonova& rhs) const noexcept;
+  bool operator==(const Krivodonova& rhs) const;
 
   struct PackagedData {
     Variables<tmpl::list<::Tags::Modal<Tags>...>> modal_volume_data;
     Mesh<VolumeDim> mesh;
 
     // clang-tidy: google-runtime-references
-    void pup(PUP::er& p) noexcept {  // NOLINT
+    void pup(PUP::er& p) {  // NOLINT
       p | modal_volume_data;
       p | mesh;
     }
@@ -501,8 +501,7 @@ class Krivodonova<VolumeDim, tmpl::list<Tags...>> {
   void package_data(gsl::not_null<PackagedData*> packaged_data,
                     const typename Tags::type&... tensors,
                     const Mesh<VolumeDim>& mesh,
-                    const OrientationMap<VolumeDim>& orientation_map) const
-      noexcept;
+                    const OrientationMap<VolumeDim>& orientation_map) const;
 
   using limit_tags = tmpl::list<Tags...>;
   using limit_argument_tags = tmpl::list<domain::Tags::Element<VolumeDim>,
@@ -514,7 +513,7 @@ class Krivodonova<VolumeDim, tmpl::list<Tags...>> {
       const std::unordered_map<
           std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
           boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
-          neighbor_data) const noexcept;
+          neighbor_data) const;
 
  private:
   template <typename Tag>
@@ -524,7 +523,7 @@ class Krivodonova<VolumeDim, tmpl::list<Tags...>> {
       const std::unordered_map<
           std::pair<Direction<1>, ElementId<1>>, PackagedData,
           boost::hash<std::pair<Direction<1>, ElementId<1>>>>& neighbor_data)
-      const noexcept;
+      const;
   template <typename Tag>
   char limit_one_tensor(
       gsl::not_null<Variables<tmpl::list<::Tags::Modal<Tags>...>>*> coeffs_self,
@@ -532,7 +531,7 @@ class Krivodonova<VolumeDim, tmpl::list<Tags...>> {
       const std::unordered_map<
           std::pair<Direction<2>, ElementId<2>>, PackagedData,
           boost::hash<std::pair<Direction<2>, ElementId<2>>>>& neighbor_data)
-      const noexcept;
+      const;
   template <typename Tag>
   char limit_one_tensor(
       gsl::not_null<Variables<tmpl::list<::Tags::Modal<Tags>...>>*> coeffs_self,
@@ -540,14 +539,13 @@ class Krivodonova<VolumeDim, tmpl::list<Tags...>> {
       const std::unordered_map<
           std::pair<Direction<3>, ElementId<3>>, PackagedData,
           boost::hash<std::pair<Direction<3>, ElementId<3>>>>& neighbor_data)
-      const noexcept;
+      const;
 
   template <typename Tag, size_t Dim>
   char fill_variables_tag_with_spectral_coeffs(
       gsl::not_null<Variables<tmpl::list<::Tags::Modal<Tags>...>>*>
           modal_coeffs,
-      const typename Tag::type& nodal_tensor, const Mesh<Dim>& mesh) const
-      noexcept;
+      const typename Tag::type& nodal_tensor, const Mesh<Dim>& mesh) const;
 
   std::array<double,
              Spectral::maximum_number_of_points<Spectral::Basis::Legendre>>
@@ -566,9 +564,8 @@ Krivodonova<VolumeDim, tmpl::list<Tags...>>::Krivodonova(
     : alphas_(alphas), disable_for_debugging_(disable_for_debugging) {
   // See the main documentation for an explanation of why these bounds are
   // different from those of Krivodonova 2007
-  if (alg::any_of(alphas_, [](const double t) noexcept {
-        return t > 1.0 or t <= 0.0;
-      })) {
+  if (alg::any_of(alphas_,
+                  [](const double t) { return t > 1.0 or t <= 0.0; })) {
     PARSE_ERROR(context,
                 "The alphas in the Krivodonova limiter must be in the range "
                 "(0,1].");
@@ -579,7 +576,7 @@ template <size_t VolumeDim, typename... Tags>
 void Krivodonova<VolumeDim, tmpl::list<Tags...>>::package_data(
     const gsl::not_null<PackagedData*> packaged_data,
     const typename Tags::type&... tensors, const Mesh<VolumeDim>& mesh,
-    const OrientationMap<VolumeDim>& orientation_map) const noexcept {
+    const OrientationMap<VolumeDim>& orientation_map) const {
   if (UNLIKELY(disable_for_debugging_)) {
     // Do not initialize packaged_data
     return;
@@ -604,7 +601,7 @@ bool Krivodonova<VolumeDim, tmpl::list<Tags...>>::operator()(
     const std::unordered_map<
         std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
         boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
-        neighbor_data) const noexcept {
+        neighbor_data) const {
   if (UNLIKELY(disable_for_debugging_)) {
     // Do not modify input tensors
     return false;
@@ -617,13 +614,13 @@ bool Krivodonova<VolumeDim, tmpl::list<Tags...>>::operator()(
         "mesh is: "
         << mesh);
   }
-  if (UNLIKELY(alg::any_of(element.neighbors(),
-                           [](const auto& direction_neighbors) noexcept {
-                             return direction_neighbors.second.size() != 1;
-                           }))) {
+  if (UNLIKELY(
+          alg::any_of(element.neighbors(), [](const auto& direction_neighbors) {
+            return direction_neighbors.second.size() != 1;
+          }))) {
     ERROR("The Krivodonova limiter does not yet support h-refinement");
   }
-  alg::for_each(neighbor_data, [&mesh](const auto& id_packaged_data) noexcept {
+  alg::for_each(neighbor_data, [&mesh](const auto& id_packaged_data) {
     if (UNLIKELY(id_packaged_data.second.mesh != mesh)) {
       ERROR(
           "The Krivodonova limiter does not yet support differing meshes "
@@ -646,7 +643,7 @@ bool Krivodonova<VolumeDim, tmpl::list<Tags...>>::operator()(
 
   // transform back to nodal coefficients
   const auto wrap_copy_nodal_coeffs =
-      [&mesh, &coeffs_self](auto tag, const auto tensor) noexcept {
+      [&mesh, &coeffs_self](auto tag, const auto tensor) {
         auto& coeffs_tensor = get<decltype(tag)>(coeffs_self);
         auto tensor_it = tensor->begin();
         for (auto coeffs_it = coeffs_tensor.begin();
@@ -670,7 +667,7 @@ char Krivodonova<VolumeDim, tmpl::list<Tags...>>::limit_one_tensor(
     const std::unordered_map<
         std::pair<Direction<1>, ElementId<1>>, PackagedData,
         boost::hash<std::pair<Direction<1>, ElementId<1>>>>& neighbor_data)
-    const noexcept {
+    const {
   using tensor_type = typename Tag::type;
   for (size_t storage_index = 0; storage_index < tensor_type::size();
        ++storage_index) {
@@ -715,11 +712,11 @@ char Krivodonova<VolumeDim, tmpl::list<Tags...>>::limit_one_tensor(
     const std::unordered_map<
         std::pair<Direction<2>, ElementId<2>>, PackagedData,
         boost::hash<std::pair<Direction<2>, ElementId<2>>>>& neighbor_data)
-    const noexcept {
+    const {
   using tensor_type = typename Tag::type;
   const auto minmod = [&coeffs_self, &mesh, &neighbor_data, this](
                           const size_t local_i, const size_t local_j,
-                          const size_t local_tensor_storage_index) noexcept {
+                          const size_t local_tensor_storage_index) {
     const auto& self_coeffs =
         get<Tag>(*coeffs_self)[local_tensor_storage_index];
     double min_abs_coeff = std::abs(
@@ -803,12 +800,12 @@ char Krivodonova<VolumeDim, tmpl::list<Tags...>>::limit_one_tensor(
     const std::unordered_map<
         std::pair<Direction<3>, ElementId<3>>, PackagedData,
         boost::hash<std::pair<Direction<3>, ElementId<3>>>>& neighbor_data)
-    const noexcept {
+    const {
   using tensor_type = typename Tag::type;
   const auto minmod = [&coeffs_self, &mesh, &neighbor_data, this](
                           const size_t local_i, const size_t local_j,
                           const size_t local_k,
-                          const size_t local_tensor_storage_index) noexcept {
+                          const size_t local_tensor_storage_index) {
     const auto& self_coeffs =
         get<Tag>(*coeffs_self)[local_tensor_storage_index];
     double min_abs_coeff = std::abs(self_coeffs[mesh.storage_index(
@@ -962,8 +959,7 @@ char Krivodonova<VolumeDim, tmpl::list<Tags...>>::
     fill_variables_tag_with_spectral_coeffs(
         const gsl::not_null<Variables<tmpl::list<::Tags::Modal<Tags>...>>*>
             modal_coeffs,
-        const typename Tag::type& nodal_tensor, const Mesh<Dim>& mesh) const
-    noexcept {
+        const typename Tag::type& nodal_tensor, const Mesh<Dim>& mesh) const {
   auto& coeffs_tensor = get<::Tags::Modal<Tag>>(*modal_coeffs);
   auto tensor_it = nodal_tensor.begin();
   for (auto coeffs_it = coeffs_tensor.begin(); coeffs_it != coeffs_tensor.end();
@@ -974,22 +970,21 @@ char Krivodonova<VolumeDim, tmpl::list<Tags...>>::
 }
 
 template <size_t VolumeDim, typename... Tags>
-void Krivodonova<VolumeDim, tmpl::list<Tags...>>::pup(PUP::er& p) noexcept {
+void Krivodonova<VolumeDim, tmpl::list<Tags...>>::pup(PUP::er& p) {
   p | alphas_;
   p | disable_for_debugging_;
 }
 
 template <size_t VolumeDim, typename... Tags>
 bool Krivodonova<VolumeDim, tmpl::list<Tags...>>::operator==(
-    const Krivodonova<VolumeDim, tmpl::list<Tags...>>& rhs) const noexcept {
+    const Krivodonova<VolumeDim, tmpl::list<Tags...>>& rhs) const {
   return alphas_ == rhs.alphas_ and
          disable_for_debugging_ == rhs.disable_for_debugging_;
 }
 
 template <size_t VolumeDim, typename... Tags>
-bool operator!=(
-    const Krivodonova<VolumeDim, tmpl::list<Tags...>>& lhs,
-    const Krivodonova<VolumeDim, tmpl::list<Tags...>>& rhs) noexcept {
+bool operator!=(const Krivodonova<VolumeDim, tmpl::list<Tags...>>& lhs,
+                const Krivodonova<VolumeDim, tmpl::list<Tags...>>& rhs) {
   return not(lhs == rhs);
 }
 }  // namespace Limiters

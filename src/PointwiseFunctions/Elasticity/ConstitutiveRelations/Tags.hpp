@@ -35,7 +35,7 @@ struct ConstitutiveRelationReference : ConstitutiveRelation<Dim>,
   using argument_tags = tmpl::list<ProviderTag>;
   template <typename Provider>
   static const ConstitutiveRelations::ConstitutiveRelation<Dim>& get(
-      const Provider& provider) noexcept {
+      const Provider& provider) {
     return provider.constitutive_relation();
   }
 };

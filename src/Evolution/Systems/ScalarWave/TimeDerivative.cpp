@@ -23,7 +23,7 @@ void TimeDerivative<Dim>::apply(
     const tnsr::i<DataVector, Dim, Frame::Inertial>& d_psi,
     const Scalar<DataVector>& pi,
     const tnsr::i<DataVector, Dim, Frame::Inertial>& phi,
-    const Scalar<DataVector>& gamma2) noexcept {
+    const Scalar<DataVector>& gamma2) {
   // The constraint damping parameter gamma2 is needed for boundary corrections,
   // which means we need it as a temporary tag in order to project it to the
   // boundary. We prevent slicing/projecting directly from the volume to prevent

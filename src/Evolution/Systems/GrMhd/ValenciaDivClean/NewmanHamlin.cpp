@@ -26,13 +26,11 @@ std::optional<PrimitiveRecoveryData> NewmanHamlin::apply(
     const double magnetic_field_squared,
     const double rest_mass_density_times_lorentz_factor,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
-        equation_of_state) noexcept {
+        equation_of_state) {
   // constant in cubic equation  f(eps) = eps^3 - a eps^2 + d
   // whose root is being found at each point in the iteration below
-  const double d_in_cubic = [
-    momentum_density_squared, magnetic_field_squared,
-    momentum_density_dot_magnetic_field
-  ]() noexcept {
+  const double d_in_cubic = [momentum_density_squared, magnetic_field_squared,
+                             momentum_density_dot_magnetic_field]() {
     const double local_d_in_cubic =
         0.5 * (momentum_density_squared * magnetic_field_squared -
                square(momentum_density_dot_magnetic_field));
@@ -41,8 +39,7 @@ std::optional<PrimitiveRecoveryData> NewmanHamlin::apply(
       return local_d_in_cubic;  // will fail returning std::nullopt
     }
     return std::max(0.0, local_d_in_cubic);
-  }
-  ();
+  }();
   if (UNLIKELY(0.0 > d_in_cubic)) {
     return std::nullopt;
   }
@@ -116,9 +113,9 @@ std::optional<PrimitiveRecoveryData> NewmanHamlin::apply(
                                    rho_h_w_squared};
     }
 
-    const double current_specific_enthalpy = [
-      rho_h_w_squared, current_rest_mass_density, current_lorentz_factor
-    ]() noexcept {
+    const double current_specific_enthalpy = [rho_h_w_squared,
+                                              current_rest_mass_density,
+                                              current_lorentz_factor]() {
       const double specific_enthalpy =
           rho_h_w_squared /
           (current_rest_mass_density * square(current_lorentz_factor));
@@ -126,8 +123,7 @@ std::optional<PrimitiveRecoveryData> NewmanHamlin::apply(
         return specific_enthalpy;  // will fail returning std::nullopt
       }
       return std::max(1.0, specific_enthalpy);
-    }
-    ();
+    }();
     if (UNLIKELY(1.0 > current_specific_enthalpy)) {
       return std::nullopt;
     }
@@ -182,7 +178,7 @@ std::optional<PrimitiveRecoveryData> NewmanHamlin::apply(
       const double magnetic_field_squared,                                    \
       const double rest_mass_density_times_lorentz_factor,                    \
       const EquationsOfState::EquationOfState<true, THERMODIM(data)>&         \
-          equation_of_state) noexcept;
+          equation_of_state);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2))
 

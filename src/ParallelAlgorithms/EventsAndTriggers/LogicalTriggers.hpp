@@ -18,7 +18,7 @@ namespace Triggers {
 class Always : public Trigger {
  public:
   /// \cond
-  explicit Always(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit Always(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Always);  // NOLINT
   /// \endcond
@@ -30,7 +30,7 @@ class Always : public Trigger {
 
   using argument_tags = tmpl::list<>;
 
-  bool operator()() const noexcept { return true; }
+  bool operator()() const { return true; }
 };
 
 /// \ingroup EventsAndTriggersGroup
@@ -39,25 +39,25 @@ class Not : public Trigger {
  public:
   /// \cond
   Not() = default;
-  explicit Not(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit Not(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Not);  // NOLINT
   /// \endcond
 
   static constexpr Options::String help = {"Negates another trigger."};
 
-  explicit Not(std::unique_ptr<Trigger> negated_trigger) noexcept
+  explicit Not(std::unique_ptr<Trigger> negated_trigger)
       : negated_trigger_(std::move(negated_trigger)) {}
 
   using argument_tags = tmpl::list<Tags::DataBox>;
 
   template <typename DbTags>
-  bool operator()(const db::DataBox<DbTags>& box) const noexcept {
+  bool operator()(const db::DataBox<DbTags>& box) const {
     return not negated_trigger_->is_triggered(box);
   }
 
   // clang-tidy: google-runtime-references
-  void pup(PUP::er& p) noexcept {  // NOLINT
+  void pup(PUP::er& p) {  // NOLINT
     p | negated_trigger_;
   }
 
@@ -71,7 +71,7 @@ class And : public Trigger {
  public:
   /// \cond
   And() = default;
-  explicit And(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit And(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(And);  // NOLINT
   /// \endcond
@@ -79,13 +79,13 @@ class And : public Trigger {
   static constexpr Options::String help = {
       "Short-circuiting logical AND of other triggers."};
 
-  explicit And(std::vector<std::unique_ptr<Trigger>> combined_triggers) noexcept
+  explicit And(std::vector<std::unique_ptr<Trigger>> combined_triggers)
       : combined_triggers_(std::move(combined_triggers)) {}
 
   using argument_tags = tmpl::list<Tags::DataBox>;
 
   template <typename DbTags>
-  bool operator()(const db::DataBox<DbTags>& box) const noexcept {
+  bool operator()(const db::DataBox<DbTags>& box) const {
     for (auto& trigger : combined_triggers_) {
       if (not trigger->is_triggered(box)) {
         return false;
@@ -95,7 +95,7 @@ class And : public Trigger {
   }
 
   // clang-tidy: google-runtime-references
-  void pup(PUP::er& p) noexcept {  // NOLINT
+  void pup(PUP::er& p) {  // NOLINT
     p | combined_triggers_;
   }
 
@@ -109,7 +109,7 @@ class Or : public Trigger {
  public:
   /// \cond
   Or() = default;
-  explicit Or(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit Or(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Or);  // NOLINT
   /// \endcond
@@ -117,13 +117,13 @@ class Or : public Trigger {
   static constexpr Options::String help = {
       "Short-circuiting logical OR of other triggers."};
 
-  explicit Or(std::vector<std::unique_ptr<Trigger>> combined_triggers) noexcept
+  explicit Or(std::vector<std::unique_ptr<Trigger>> combined_triggers)
       : combined_triggers_(std::move(combined_triggers)) {}
 
   using argument_tags = tmpl::list<Tags::DataBox>;
 
   template <typename DbTags>
-  bool operator()(const db::DataBox<DbTags>& box) const noexcept {
+  bool operator()(const db::DataBox<DbTags>& box) const {
     for (auto& trigger : combined_triggers_) {
       if (trigger->is_triggered(box)) {
         return true;
@@ -133,7 +133,7 @@ class Or : public Trigger {
   }
 
   // clang-tidy: google-runtime-references
-  void pup(PUP::er& p) noexcept {  // NOLINT
+  void pup(PUP::er& p) {  // NOLINT
     p | combined_triggers_;
   }
 

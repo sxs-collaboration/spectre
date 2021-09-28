@@ -84,7 +84,7 @@ void scale_factor(const gsl::not_null<tt::remove_cvref_wrap_t<T>*>& result,
                   const std::array<T, 3>& src_point,
                   const std::array<double, 3>& proj_center,
                   const std::array<double, 3>& sphere_center, double radius,
-                  bool src_is_between_proj_and_target) noexcept;
+                  bool src_is_between_proj_and_target);
 
 /*!
  *  Solves a problem of the same form as `scale_factor`, but is used
@@ -134,7 +134,7 @@ std::optional<double> try_scale_factor(
     const std::array<double, 3>& proj_center,
     const std::array<double, 3>& sphere_center, double radius,
     bool pick_larger_root, bool pick_root_greater_than_one,
-    bool solve_for_root_minus_one = true) noexcept;
+    bool solve_for_root_minus_one = true);
 
 /*!
  * Computes \f$\partial \lambda/\partial x_0^i\f$, where \f$\lambda\f$
@@ -160,6 +160,6 @@ void d_scale_factor_d_src_point(
     const gsl::not_null<std::array<tt::remove_cvref_wrap_t<T>, 3>*>& result,
     const std::array<T, 3>& intersection_point,
     const std::array<double, 3>& proj_center,
-    const std::array<double, 3>& sphere_center, const T& lambda) noexcept;
+    const std::array<double, 3>& sphere_center, const T& lambda);
 
 }  // namespace domain::CoordinateMaps::FocallyLiftedMapHelpers

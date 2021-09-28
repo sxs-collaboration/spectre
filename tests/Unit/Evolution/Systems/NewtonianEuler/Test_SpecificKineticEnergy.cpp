@@ -22,7 +22,7 @@
 namespace {
 
 template <typename DataType, size_t Dim>
-void test_in_databox(const tnsr::I<DataType, Dim>& velocity) noexcept {
+void test_in_databox(const tnsr::I<DataType, Dim>& velocity) {
   TestHelpers::db::test_compute_tag<
       NewtonianEuler::Tags::SpecificKineticEnergyCompute<DataType, Dim>>(
       "SpecificKineticEnergy");
@@ -40,7 +40,7 @@ void test_in_databox(const tnsr::I<DataType, Dim>& velocity) noexcept {
 }
 
 template <size_t Dim, typename DataType>
-void test(const DataType& used_for_size) noexcept {
+void test(const DataType& used_for_size) {
   MAKE_GENERATOR(generator);
   std::uniform_real_distribution<> distribution(-1.0, 1.0);
   std::uniform_real_distribution<> positive_distribution(0.0, 1.0);

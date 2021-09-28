@@ -106,10 +106,10 @@ class VectorImpl
   /// \attention
   /// upcast should only be used when implementing a derived vector type, not in
   /// calling code
-  const BaseType& operator*() const noexcept {
+  const BaseType& operator*() const {
     return static_cast<const BaseType&>(*this);
   }
-  BaseType& operator*() noexcept { return static_cast<BaseType&>(*this); }
+  BaseType& operator*() { return static_cast<BaseType&>(*this); }
   /// @}
 
   /// Create with the given size. In debug mode, the vector is initialized to
@@ -117,7 +117,7 @@ class VectorImpl
   /// not initialized.
   ///
   /// - `set_size` number of values
-  explicit VectorImpl(size_t set_size) noexcept
+  explicit VectorImpl(size_t set_size)
       : owned_data_(
             set_size > 0
                 ? cpp20::make_unique_for_overwrite<value_type[]>(set_size)
@@ -133,7 +133,7 @@ class VectorImpl
   ///
   /// - `set_size` number of values
   /// - `value` the value to initialize each element
-  VectorImpl(size_t set_size, T value) noexcept
+  VectorImpl(size_t set_size, T value)
       : owned_data_(
             set_size > 0
                 ? cpp20::make_unique_for_overwrite<value_type[]>(set_size)
@@ -143,12 +143,12 @@ class VectorImpl
   }
 
   /// Create a non-owning VectorImpl that points to `start`
-  VectorImpl(T* start, size_t set_size) noexcept
+  VectorImpl(T* start, size_t set_size)
       : BaseType(start, set_size), owning_(false) {}
 
   /// Create from an initializer list of `T`.
   template <class U, Requires<std::is_same_v<U, T>> = nullptr>
-  VectorImpl(std::initializer_list<U> list) noexcept
+  VectorImpl(std::initializer_list<U> list)
       : owned_data_(
             list.size() > 0
                 ? cpp20::make_unique_for_overwrite<value_type[]>(list.size())
@@ -163,10 +163,10 @@ class VectorImpl
   /// \cond HIDDEN_SYMBOLS
   ~VectorImpl() = default;
 
-  VectorImpl(const VectorImpl<T, VectorType>& rhs) noexcept;
-  VectorImpl& operator=(const VectorImpl<T, VectorType>& rhs) noexcept;
-  VectorImpl(VectorImpl<T, VectorType>&& rhs) noexcept;
-  VectorImpl& operator=(VectorImpl<T, VectorType>&& rhs) noexcept;
+  VectorImpl(const VectorImpl<T, VectorType>& rhs);
+  VectorImpl& operator=(const VectorImpl<T, VectorType>& rhs);
+  VectorImpl(VectorImpl<T, VectorType>&& rhs);
+  VectorImpl& operator=(VectorImpl<T, VectorType>&& rhs);
 
   // This is a converting constructor. clang-tidy complains that it's not
   // explicit, but we want it to allow conversion.
@@ -174,23 +174,22 @@ class VectorImpl
   template <
       typename VT, bool VF,
       Requires<std::is_same_v<typename VT::ResultType, VectorType>> = nullptr>
-  VectorImpl(const blaze::DenseVector<VT, VF>& expression) noexcept;  // NOLINT
+  VectorImpl(const blaze::DenseVector<VT, VF>& expression);  // NOLINT
 
   template <typename VT, bool VF>
-  VectorImpl& operator=(const blaze::DenseVector<VT, VF>& expression) noexcept;
+  VectorImpl& operator=(const blaze::DenseVector<VT, VF>& expression);
   /// \endcond
 
-  VectorImpl& operator=(const T& rhs) noexcept;
+  VectorImpl& operator=(const T& rhs);
 
-  decltype(auto) SPECTRE_ALWAYS_INLINE operator[](const size_t index) noexcept {
+  decltype(auto) SPECTRE_ALWAYS_INLINE operator[](const size_t index) {
     ASSERT(index < size(), "Out-of-range access to element "
                                << index << " of a size " << size()
                                << " Blaze vector.");
     return BaseType::operator[](index);
   }
 
-  decltype(auto) SPECTRE_ALWAYS_INLINE
-  operator[](const size_t index) const noexcept {
+  decltype(auto) SPECTRE_ALWAYS_INLINE operator[](const size_t index) const {
     ASSERT(index < size(), "Out-of-range access to element "
                                << index << " of a size " << size()
                                << " Blaze vector.");
@@ -199,11 +198,11 @@ class VectorImpl
 
   /// @{
   /// Set the VectorImpl to be a reference to another VectorImpl object
-  void set_data_ref(gsl::not_null<VectorType*> rhs) noexcept {
+  void set_data_ref(gsl::not_null<VectorType*> rhs) {
     set_data_ref(rhs->data(), rhs->size());
   }
 
-  void set_data_ref(T* const start, const size_t set_size) noexcept {
+  void set_data_ref(T* const start, const size_t set_size) {
     owned_data_.reset();
     if (start == nullptr) {
       (**this).reset();
@@ -225,8 +224,7 @@ class VectorImpl
    *   This uses `UNLIKELY` to perform the check most quickly when the buffer
    *   needs no resizing, but will be slower when resizing is common.
    */
-  void SPECTRE_ALWAYS_INLINE
-  destructive_resize(const size_t new_size) noexcept {
+  void SPECTRE_ALWAYS_INLINE destructive_resize(const size_t new_size) {
     if (UNLIKELY(size() != new_size)) {
       ASSERT(owning_,
              MakeString{}
@@ -239,18 +237,17 @@ class VectorImpl
   }
 
   /// Returns true if the class owns the data
-  bool is_owning() const noexcept { return owning_; }
+  bool is_owning() const { return owning_; }
 
   /// Serialization for Charm++
   // clang-tidy: google-runtime-references
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
 
  protected:
   std::unique_ptr<value_type[]> owned_data_{};
   bool owning_{true};
 
-  SPECTRE_ALWAYS_INLINE void reset_pointer_vector(
-      const size_t set_size) noexcept {
+  SPECTRE_ALWAYS_INLINE void reset_pointer_vector(const size_t set_size) {
     if (set_size == 0) {
       return;
     }
@@ -264,8 +261,7 @@ class VectorImpl
 };
 
 template <typename T, typename VectorType>
-VectorImpl<T, VectorType>::VectorImpl(
-    const VectorImpl<T, VectorType>& rhs) noexcept
+VectorImpl<T, VectorType>::VectorImpl(const VectorImpl<T, VectorType>& rhs)
     : BaseType{rhs},
       owned_data_(
           rhs.size() > 0
@@ -277,7 +273,7 @@ VectorImpl<T, VectorType>::VectorImpl(
 
 template <typename T, typename VectorType>
 VectorImpl<T, VectorType>& VectorImpl<T, VectorType>::operator=(
-    const VectorImpl<T, VectorType>& rhs) noexcept {
+    const VectorImpl<T, VectorType>& rhs) {
   if (this != &rhs) {
     if (owning_) {
       if (size() != rhs.size()) {
@@ -298,8 +294,7 @@ VectorImpl<T, VectorType>& VectorImpl<T, VectorType>::operator=(
 }
 
 template <typename T, typename VectorType>
-VectorImpl<T, VectorType>::VectorImpl(
-    VectorImpl<T, VectorType>&& rhs) noexcept {
+VectorImpl<T, VectorType>::VectorImpl(VectorImpl<T, VectorType>&& rhs) {
   owned_data_ = std::move(rhs.owned_data_);
   **this = std::move(*rhs);
   owning_ = rhs.owning_;
@@ -309,7 +304,7 @@ VectorImpl<T, VectorType>::VectorImpl(
 
 template <typename T, typename VectorType>
 VectorImpl<T, VectorType>& VectorImpl<T, VectorType>::operator=(
-    VectorImpl<T, VectorType>&& rhs) noexcept {
+    VectorImpl<T, VectorType>&& rhs) {
   if (this != &rhs) {
     if (owning_) {
       owned_data_ = std::move(rhs.owned_data_);
@@ -335,7 +330,6 @@ template <typename VT, bool VF,
           Requires<std::is_same_v<typename VT::ResultType, VectorType>>>
 VectorImpl<T, VectorType>::VectorImpl(
     const blaze::DenseVector<VT, VF>& expression)  // NOLINT
-    noexcept
     : owned_data_(cpp20::make_unique_for_overwrite<value_type[]>(
           (*expression).size())) {
   static_assert(std::is_same_v<typename VT::ResultType, VectorType>,
@@ -349,7 +343,7 @@ VectorImpl<T, VectorType>::VectorImpl(
 template <typename T, typename VectorType>
 template <typename VT, bool VF>
 VectorImpl<T, VectorType>& VectorImpl<T, VectorType>::operator=(
-    const blaze::DenseVector<VT, VF>& expression) noexcept {
+    const blaze::DenseVector<VT, VF>& expression) {
   static_assert(std::is_same_v<typename VT::ResultType, VectorType>,
                 "You are attempting to assign the result of an expression "
                 "that is not consistent with the VectorImpl type you are "
@@ -373,14 +367,13 @@ VectorImpl<T, VectorType>& VectorImpl<T, VectorType>::operator=(
 // base type. In the case of a single compatible value, this fills the vector
 // with that value.
 template <typename T, typename VectorType>
-VectorImpl<T, VectorType>& VectorImpl<T, VectorType>::operator=(
-    const T& rhs) noexcept {
+VectorImpl<T, VectorType>& VectorImpl<T, VectorType>::operator=(const T& rhs) {
   **this = rhs;
   return *this;
 }
 
 template <typename T, typename VectorType>
-void VectorImpl<T, VectorType>::pup(PUP::er& p) noexcept {  // NOLINT
+void VectorImpl<T, VectorType>::pup(PUP::er& p) {  // NOLINT
   ASSERT(owning_, "Cannot pup a non-owning vector!");
   auto my_size = size();
   p | my_size;
@@ -396,8 +389,7 @@ void VectorImpl<T, VectorType>::pup(PUP::er& p) noexcept {  // NOLINT
 
 /// Output operator for VectorImpl
 template <typename T, typename VectorType>
-std::ostream& operator<<(std::ostream& os,
-                         const VectorImpl<T, VectorType>& d) noexcept {
+std::ostream& operator<<(std::ostream& os, const VectorImpl<T, VectorType>& d) {
   sequence_print_helper(os, d.begin(), d.end());
   return os;
 }
@@ -558,22 +550,21 @@ std::ostream& operator<<(std::ostream& os,
  *
  * \param VECTOR_TYPE The vector type (e.g. `DataVector`)
  */
-#define MAKE_WITH_VALUE_IMPL_DEFINITION_FOR(VECTOR_TYPE)                     \
-  namespace MakeWithValueImpls {                                             \
-  template <>                                                                \
-  struct NumberOfPoints<VECTOR_TYPE> {                                       \
-    static SPECTRE_ALWAYS_INLINE size_t                                      \
-    apply(const VECTOR_TYPE& input) noexcept {                               \
-      return input.size();                                                   \
-    }                                                                        \
-  };                                                                         \
-  template <>                                                                \
-  struct MakeWithSize<VECTOR_TYPE> {                                         \
-    static SPECTRE_ALWAYS_INLINE VECTOR_TYPE                                 \
-    apply(const size_t size, const VECTOR_TYPE::value_type value) noexcept { \
-      return VECTOR_TYPE(size, value);                                       \
-    }                                                                        \
-  };                                                                         \
+#define MAKE_WITH_VALUE_IMPL_DEFINITION_FOR(VECTOR_TYPE)                  \
+  namespace MakeWithValueImpls {                                          \
+  template <>                                                             \
+  struct NumberOfPoints<VECTOR_TYPE> {                                    \
+    static SPECTRE_ALWAYS_INLINE size_t apply(const VECTOR_TYPE& input) { \
+      return input.size();                                                \
+    }                                                                     \
+  };                                                                      \
+  template <>                                                             \
+  struct MakeWithSize<VECTOR_TYPE> {                                      \
+    static SPECTRE_ALWAYS_INLINE VECTOR_TYPE                              \
+    apply(const size_t size, const VECTOR_TYPE::value_type value) {       \
+      return VECTOR_TYPE(size, value);                                    \
+    }                                                                     \
+  };                                                                      \
   }  // namespace MakeWithValueImpls
 
 /// @{
@@ -661,7 +652,7 @@ template <
                                std::is_base_of_v<blaze::Computation, Rhs>) and
              not(std::is_same_v<Rhs, typename Lhs::ElementType> or
                  std::is_same_v<Lhs, typename Rhs::ElementType>)> = nullptr>
-bool operator==(const Lhs& lhs, const Rhs& rhs) noexcept {
+bool operator==(const Lhs& lhs, const Rhs& rhs) {
   return blaze::equal<blaze::strict>(lhs, rhs);
 }
 
@@ -673,7 +664,7 @@ template <
                                std::is_base_of_v<blaze::Computation, Rhs>) and
              not(std::is_same_v<Rhs, typename Lhs::ElementType> or
                  std::is_same_v<Lhs, typename Lhs::ElementType>)> = nullptr>
-bool operator!=(const Lhs& lhs, const Rhs& rhs) noexcept {
+bool operator!=(const Lhs& lhs, const Rhs& rhs) {
   return not(lhs == rhs);
 }
 
@@ -687,20 +678,19 @@ bool operator!=(const Lhs& lhs, const Rhs& rhs) noexcept {
 template <typename Lhs, typename Rhs,
           Requires<std::is_base_of_v<blaze::Computation, Lhs> or
                    std::is_base_of_v<blaze::Computation, Rhs>> = nullptr>
-bool operator==(const Lhs& lhs, const Rhs& rhs) noexcept {
+bool operator==(const Lhs& lhs, const Rhs& rhs) {
   return blaze::equal<blaze::strict>(lhs, rhs);
 }
 
 template <typename Lhs, typename Rhs,
           Requires<std::is_base_of_v<blaze::Computation, Lhs> or
                    std::is_base_of_v<blaze::Computation, Rhs>> = nullptr>
-bool operator!=(const Lhs& lhs, const Rhs& rhs) noexcept {
+bool operator!=(const Lhs& lhs, const Rhs& rhs) {
   return not(lhs == rhs);
 }
 
 template <typename Lhs, Requires<is_derived_of_vector_impl_v<Lhs>> = nullptr>
-bool operator==(const Lhs& lhs,
-                const typename Lhs::ElementType& rhs) noexcept {
+bool operator==(const Lhs& lhs, const typename Lhs::ElementType& rhs) {
   for (const auto& element : lhs) {
     if (element != rhs) {
       return false;
@@ -710,20 +700,17 @@ bool operator==(const Lhs& lhs,
 }
 
 template <typename Lhs, Requires<is_derived_of_vector_impl_v<Lhs>> = nullptr>
-bool operator!=(const Lhs& lhs,
-                const typename Lhs::ElementType& rhs) noexcept {
+bool operator!=(const Lhs& lhs, const typename Lhs::ElementType& rhs) {
   return not(lhs == rhs);
 }
 
 template <typename Rhs, Requires<is_derived_of_vector_impl_v<Rhs>> = nullptr>
-bool operator==(const typename Rhs::ElementType& lhs,
-                const Rhs& rhs) noexcept {
+bool operator==(const typename Rhs::ElementType& lhs, const Rhs& rhs) {
   return rhs == lhs;
 }
 
 template <typename Rhs, Requires<is_derived_of_vector_impl_v<Rhs>> = nullptr>
-bool operator!=(const typename Rhs::ElementType& lhs,
-                const Rhs& rhs) noexcept {
+bool operator!=(const typename Rhs::ElementType& lhs, const Rhs& rhs) {
   return not(lhs == rhs);
 }
 
@@ -741,7 +728,7 @@ template <typename VectorType,
           Requires<is_derived_of_vector_impl_v<VectorType>> = nullptr>
 void make_const_view(const gsl::not_null<const VectorType*> view,
                      const VectorType& vector, const size_t offset,
-                     const size_t extent) noexcept {
+                     const size_t extent) {
   const_cast<VectorType*>(view.get())  // NOLINT
       ->set_data_ref(
           const_cast<typename VectorType::value_type*>(vector.data())  // NOLINT

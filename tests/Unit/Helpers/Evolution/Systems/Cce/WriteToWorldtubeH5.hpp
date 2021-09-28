@@ -14,8 +14,7 @@ namespace TestHelpers {
 // records worldtube data in the SpEC h5 style.
 struct WorldtubeModeRecorder {
  public:
-  WorldtubeModeRecorder(const std::string& filename,
-                        const size_t l_max) noexcept
+  WorldtubeModeRecorder(const std::string& filename, const size_t l_max)
       : output_file_{filename} {
     // write the .ver that indicates that the derivatives are correctly
     // normalized.
@@ -38,7 +37,7 @@ struct WorldtubeModeRecorder {
   void append_worldtube_mode_data(const std::string& dataset_path,
                                   const double time,
                                   const ComplexModalVector& modes,
-                                  const size_t l_max) noexcept {
+                                  const size_t l_max) {
     auto& output_mode_dataset =
         output_file_.try_insert<h5::Dat>(dataset_path, file_legend_, 0);
     const size_t output_size = square(l_max + 1);

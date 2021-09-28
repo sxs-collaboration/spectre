@@ -35,7 +35,7 @@ struct Vector : db::SimpleTag {
 
 template <size_t Dim>
 DataVector soln(const tnsr::I<DataVector, Dim, Frame::ElementLogical>& coords,
-                const bool add_discontinuity) noexcept {
+                const bool add_discontinuity) {
   DataVector result =
       Spectral::compute_basis_function_value<Spectral::Basis::Legendre>(
           1, get<0>(coords));
@@ -58,7 +58,7 @@ void test_two_mesh_rdmp_impl(const size_t num_pts_1d,
                              const size_t tensor_component_to_modify,
                              const double rdmp_delta0,
                              const double rdmp_epsilon,
-                             const bool expected_tci_triggered) noexcept {
+                             const bool expected_tci_triggered) {
   CAPTURE(Dim);
   CAPTURE(num_pts_1d);
   CAPTURE(tensor_component_to_modify);
@@ -93,7 +93,7 @@ void test_two_mesh_rdmp_impl(const size_t num_pts_1d,
 }
 
 template <size_t Dim>
-void test_two_mesh_rdmp() noexcept {
+void test_two_mesh_rdmp() {
   // We lower the maximum number of 1d points in 3d in order to reduce total
   // test runtime.
   const size_t maximum_number_of_points_1d =

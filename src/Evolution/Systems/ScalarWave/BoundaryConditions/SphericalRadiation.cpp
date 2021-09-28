@@ -38,17 +38,16 @@ SphericalRadiationType convert_spherical_radiation_type_from_yaml(
 
 template <size_t Dim>
 SphericalRadiation<Dim>::SphericalRadiation(
-    const detail::SphericalRadiationType type) noexcept
+    const detail::SphericalRadiationType type)
     : type_(type) {}
 
 template <size_t Dim>
-SphericalRadiation<Dim>::SphericalRadiation(
-    CkMigrateMessage* const msg) noexcept
+SphericalRadiation<Dim>::SphericalRadiation(CkMigrateMessage* const msg)
     : BoundaryCondition<Dim>(msg) {}
 
 template <size_t Dim>
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-SphericalRadiation<Dim>::get_clone() const noexcept {
+SphericalRadiation<Dim>::get_clone() const {
   return std::make_unique<SphericalRadiation>(*this);
 }
 
@@ -70,7 +69,7 @@ std::optional<std::string> SphericalRadiation<Dim>::dg_ghost(
     const tnsr::i<DataVector, Dim, Frame::Inertial>& phi,
     const Scalar<DataVector>& psi,
     const tnsr::I<DataVector, Dim, Frame::Inertial>& coords,
-    const Scalar<DataVector>& gamma2) const noexcept {
+    const Scalar<DataVector>& gamma2) const {
   *gamma2_ext = gamma2;
   get(*pi_ext) = get<0>(normal_covector) * get<0>(phi);
   for (size_t i = 1; i < Dim; ++i) {

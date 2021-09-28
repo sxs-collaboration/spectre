@@ -17,7 +17,7 @@ namespace OptionTags {
  * time stepper.
  */
 struct Group {
-  static std::string name() noexcept { return "Evolution"; }
+  static std::string name() { return "Evolution"; }
   static constexpr Options::String help{"Options for the time evolution"};
 };
 
@@ -29,7 +29,7 @@ struct Group {
  * carries the system name. See e.g. `OptionTags::ValenciaDivCleanGroup`.
  */
 struct SystemGroup {
-  static std::string name() noexcept { return "EvolutionSystem"; }
+  static std::string name() { return "EvolutionSystem"; }
   static constexpr Options::String help{"The system of hyperbolic PDEs"};
 };
 

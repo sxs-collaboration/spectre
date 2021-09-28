@@ -106,16 +106,14 @@ class Shell : public DomainCreator<3> {
         "Select the radial distribution of grid points in each spherical "
         "shell. The possible values are `Linear` and `Logarithmic`. There must "
         "be N+1 radial distributions specified for N radial partitions."};
-    static size_t lower_bound_on_size() noexcept { return 1; }
+    static size_t lower_bound_on_size() { return 1; }
   };
 
   struct WhichWedges {
     using type = ShellWedges;
     static constexpr Options::String help = {
         "Which wedges to include in the shell."};
-    static constexpr type suggested_value() noexcept {
-      return ShellWedges::All;
-    }
+    static constexpr type suggested_value() { return ShellWedges::All; }
   };
 
   struct BoundaryConditions {
@@ -124,7 +122,7 @@ class Shell : public DomainCreator<3> {
 
   template <typename BoundaryConditionsBase>
   struct InnerBoundaryCondition {
-    static std::string name() noexcept { return "InnerBoundary"; }
+    static std::string name() { return "InnerBoundary"; }
     static constexpr Options::String help =
         "Options for the inner boundary conditions.";
     using type = std::unique_ptr<BoundaryConditionsBase>;
@@ -133,7 +131,7 @@ class Shell : public DomainCreator<3> {
 
   template <typename BoundaryConditionsBase>
   struct OuterBoundaryCondition {
-    static std::string name() noexcept { return "OuterBoundary"; }
+    static std::string name() { return "OuterBoundary"; }
     static constexpr Options::String help =
         "Options for the outer boundary conditions.";
     using type = std::unique_ptr<BoundaryConditionsBase>;
@@ -196,19 +194,18 @@ class Shell : public DomainCreator<3> {
 
   Shell() = default;
   Shell(const Shell&) = delete;
-  Shell(Shell&&) noexcept = default;
+  Shell(Shell&&) = default;
   Shell& operator=(const Shell&) = delete;
-  Shell& operator=(Shell&&) noexcept = default;
-  ~Shell() noexcept override = default;
+  Shell& operator=(Shell&&) = default;
+  ~Shell() override = default;
 
-  Domain<3> create_domain() const noexcept override;
+  Domain<3> create_domain() const override;
 
-  std::vector<std::array<size_t, 3>> initial_extents() const noexcept override;
+  std::vector<std::array<size_t, 3>> initial_extents() const override;
 
-  std::vector<std::array<size_t, 3>> initial_refinement_levels()
-      const noexcept override;
+  std::vector<std::array<size_t, 3>> initial_refinement_levels() const override;
 
-  auto functions_of_time() const noexcept -> std::unordered_map<
+  auto functions_of_time() const -> std::unordered_map<
       std::string,
       std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;
 

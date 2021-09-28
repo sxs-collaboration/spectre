@@ -101,7 +101,7 @@ struct InitializeFacesMortarsAndBackground {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     // Initialize faces and mortars
     db::mutate_apply<typename InitializeFacesAndMortars::return_tags,
                      typename InitializeFacesAndMortars::argument_tags>(
@@ -180,9 +180,9 @@ struct PrepareAndSendMortarData<
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
       const ElementId<Dim>& element_id, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     // Used to retrieve items out of the DataBox to forward to functions
-    const auto get_items = [](const auto&... args) noexcept {
+    const auto get_items = [](const auto&... args) {
       return std::forward_as_tuple(args...);
     };
     const auto& temporal_id = db::get<TemporalIdTag>(box);
@@ -197,8 +197,7 @@ struct PrepareAndSendMortarData<
                                           .external_boundary_conditions();
     const auto apply_boundary_condition =
         [&box, &boundary_conditions, &element_id](
-            const Direction<Dim>& direction,
-            const auto... fields_and_fluxes) noexcept {
+            const Direction<Dim>& direction, const auto... fields_and_fluxes) {
           ASSERT(
               boundary_conditions.contains(direction),
               "No boundary condition is available in block "
@@ -358,7 +357,7 @@ struct ReceiveMortarDataAndApplyOperator<
       db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& inboxes,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     const auto& temporal_id = get<TemporalIdTag>(box);
 
     if (not ::dg::has_received_from_all_mortars<mortar_data_inbox_tag>(
@@ -374,8 +373,8 @@ struct ReceiveMortarDataAndApplyOperator<
                         .extract(temporal_id)
                         .mapped());
       db::mutate<all_mortar_data_tag>(
-          make_not_null(&box), [&received_mortar_data, &temporal_id](
-                                   const auto all_mortar_data) noexcept {
+          make_not_null(&box),
+          [&received_mortar_data, &temporal_id](const auto all_mortar_data) {
             for (auto& [mortar_id, mortar_data] : received_mortar_data) {
               all_mortar_data->at(mortar_id).remote_insert(
                   temporal_id, std::move(mortar_data));
@@ -386,7 +385,7 @@ struct ReceiveMortarDataAndApplyOperator<
     // Apply DG operator
     db::mutate<OperatorAppliedToFieldsTag, all_mortar_data_tag>(
         make_not_null(&box),
-        [](const auto&... args) noexcept {
+        [](const auto&... args) {
           elliptic::dg::apply_operator<System, Linearized>(args...);
         },
         db::get<PrimalFieldsTag>(box), db::get<PrimalFluxesTag>(box),
@@ -521,9 +520,9 @@ struct ImposeInhomogeneousBoundaryConditionsOnSource<
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ElementId<Dim>& element_id, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     // Used to retrieve items out of the DataBox to forward to functions
-    const auto get_items = [](const auto&... args) noexcept {
+    const auto get_items = [](const auto&... args) {
       return std::forward_as_tuple(args...);
     };
     const auto& domain = db::get<domain::Tags::Domain<Dim>>(box);
@@ -532,8 +531,7 @@ struct ImposeInhomogeneousBoundaryConditionsOnSource<
                                           .external_boundary_conditions();
     const auto apply_boundary_condition =
         [&box, &boundary_conditions, &element_id](
-            const Direction<Dim>& direction,
-            const auto... fields_and_fluxes) noexcept {
+            const Direction<Dim>& direction, const auto... fields_and_fluxes) {
           ASSERT(
               boundary_conditions.contains(direction),
               "No boundary condition is available in block "

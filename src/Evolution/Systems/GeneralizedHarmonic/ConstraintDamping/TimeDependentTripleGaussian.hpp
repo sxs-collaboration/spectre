@@ -54,7 +54,7 @@ class TimeDependentTripleGaussian : public DampingFunction<3, Frame::Grid> {
   struct Gaussian {
     static constexpr Options::String help = {
         "Parameters for one of the Gaussians."};
-    static std::string name() noexcept {
+    static std::string name() {
       return "Gaussian" + std::to_string(GaussianNumber);
     };
   };
@@ -76,7 +76,7 @@ class TimeDependentTripleGaussian : public DampingFunction<3, Frame::Grid> {
     using type = double;
     static constexpr Options::String help = {
         "The unscaled width of the Gaussian."};
-    static type lower_bound() noexcept { return 0.; }
+    static type lower_bound() { return 0.; }
   };
 
   template <typename Group>
@@ -109,14 +109,16 @@ class TimeDependentTripleGaussian : public DampingFunction<3, Frame::Grid> {
       TimeDependentTripleGaussian);  // NOLINT
   /// \endcond
 
-  explicit TimeDependentTripleGaussian(CkMigrateMessage* msg) noexcept;
+  explicit TimeDependentTripleGaussian(CkMigrateMessage* msg);
 
-  TimeDependentTripleGaussian(
-      double constant, double amplitude_1, double width_1,
-      const std::array<double, 3>& center_1, double amplitude_2, double width_2,
-      const std::array<double, 3>& center_2, double amplitude_3, double width_3,
-      const std::array<double, 3>& center_3,
-      std::string function_of_time_for_scaling) noexcept;
+  TimeDependentTripleGaussian(double constant, double amplitude_1,
+                              double width_1,
+                              const std::array<double, 3>& center_1,
+                              double amplitude_2, double width_2,
+                              const std::array<double, 3>& center_2,
+                              double amplitude_3, double width_3,
+                              const std::array<double, 3>& center_3,
+                              std::string function_of_time_for_scaling);
 
   TimeDependentTripleGaussian() = default;
   ~TimeDependentTripleGaussian() override = default;
@@ -124,25 +126,24 @@ class TimeDependentTripleGaussian : public DampingFunction<3, Frame::Grid> {
       default;
   TimeDependentTripleGaussian& operator=(
       const TimeDependentTripleGaussian& /*rhs*/) = default;
-  TimeDependentTripleGaussian(TimeDependentTripleGaussian&& /*rhs*/) noexcept =
-      default;
+  TimeDependentTripleGaussian(TimeDependentTripleGaussian&& /*rhs*/) = default;
   TimeDependentTripleGaussian& operator=(
-      TimeDependentTripleGaussian&& /*rhs*/) noexcept = default;
+      TimeDependentTripleGaussian&& /*rhs*/) = default;
 
   void operator()(const gsl::not_null<Scalar<double>*> value_at_x,
                   const tnsr::I<double, 3, Frame::Grid>& x, double time,
                   const std::unordered_map<
                       std::string,
                       std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-                      functions_of_time) const noexcept override;
+                      functions_of_time) const override;
   void operator()(const gsl::not_null<Scalar<DataVector>*> value_at_x,
                   const tnsr::I<DataVector, 3, Frame::Grid>& x, double time,
                   const std::unordered_map<
                       std::string,
                       std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-                      functions_of_time) const noexcept override;
+                      functions_of_time) const override;
 
-  auto get_clone() const noexcept
+  auto get_clone() const
       -> std::unique_ptr<DampingFunction<3, Frame::Grid>> override;
 
   // clang-tidy: google-runtime-references
@@ -150,7 +151,7 @@ class TimeDependentTripleGaussian : public DampingFunction<3, Frame::Grid> {
 
  private:
   friend bool operator==(const TimeDependentTripleGaussian& lhs,
-                         const TimeDependentTripleGaussian& rhs) noexcept {
+                         const TimeDependentTripleGaussian& rhs) {
     return lhs.constant_ == rhs.constant_ and
            lhs.amplitude_1_ == rhs.amplitude_1_ and
            lhs.inverse_width_1_ == rhs.inverse_width_1_ and
@@ -184,6 +185,6 @@ class TimeDependentTripleGaussian : public DampingFunction<3, Frame::Grid> {
       const std::unordered_map<
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-          functions_of_time) const noexcept;
+          functions_of_time) const;
 };
 }  // namespace GeneralizedHarmonic::ConstraintDamping

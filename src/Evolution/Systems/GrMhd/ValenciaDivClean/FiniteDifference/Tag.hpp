@@ -32,7 +32,7 @@ struct Reconstructor : db::SimpleTag {
   using option_tags = tmpl::list<OptionTags::Reconstructor>;
 
   static constexpr bool pass_metavariables = false;
-  static type create_from_options(const type& reconstructor) noexcept {
+  static type create_from_options(const type& reconstructor) {
     return reconstructor->get_clone();
   }
 };

@@ -6,8 +6,7 @@
 namespace domain::BoundaryConditions {
 MarkAsNone::~MarkAsNone() = default;
 
-bool is_none(
-    const std::unique_ptr<BoundaryCondition>& boundary_condition) noexcept {
+bool is_none(const std::unique_ptr<BoundaryCondition>& boundary_condition) {
   return dynamic_cast<const MarkAsNone* const>(boundary_condition.get()) !=
          nullptr;
 }

@@ -78,8 +78,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticData.GrMhd.MagTovStar",
                    hydro::Tags::MagneticField<DataVector, 3, Frame::Inertial>>;
   tmpl::for_each<tov_tags>(
       [tov_values = tov.variables(in_coords, 0.0, tov_tags{}),
-       mag_tov_values =
-           mag_tov.variables(in_coords, tov_tags{})](auto tag_v) noexcept {
+       mag_tov_values = mag_tov.variables(in_coords, tov_tags{})](auto tag_v) {
         using tag = tmpl::type_from<decltype(tag_v)>;
         CHECK_ITERABLE_APPROX(get<tag>(mag_tov_values), get<tag>(tov_values));
       });

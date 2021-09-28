@@ -69,30 +69,29 @@ struct SchwarzschildProxy : Xcts::Solutions::Schwarzschild<> {
   using Xcts::Solutions::Schwarzschild<>::Schwarzschild;
   tuples::tagged_tuple_from_typelist<
       tmpl::append<field_tags, auxiliary_field_tags>>
-  field_variables(
-      const tnsr::I<DataVector, 3, Frame::Inertial>& x) const noexcept {
+  field_variables(const tnsr::I<DataVector, 3, Frame::Inertial>& x) const {
     return Xcts::Solutions::Schwarzschild<>::variables(
         x, tmpl::append<field_tags, auxiliary_field_tags>{});
   }
   tuples::tagged_tuple_from_typelist<flux_tags> flux_variables(
-      const tnsr::I<DataVector, 3, Frame::Inertial>& x) const noexcept {
+      const tnsr::I<DataVector, 3, Frame::Inertial>& x) const {
     return Xcts::Solutions::Schwarzschild<>::variables(x, flux_tags{});
   }
   tuples::tagged_tuple_from_typelist<background_tags> background_variables(
-      const tnsr::I<DataVector, 3, Frame::Inertial>& x) const noexcept {
+      const tnsr::I<DataVector, 3, Frame::Inertial>& x) const {
     return Xcts::Solutions::Schwarzschild<>::variables(x, background_tags{});
   }
   tuples::tagged_tuple_from_typelist<matter_source_tags>
   matter_source_variables(
-      const tnsr::I<DataVector, 3, Frame::Inertial>& x) const noexcept {
+      const tnsr::I<DataVector, 3, Frame::Inertial>& x) const {
     return Xcts::Solutions::Schwarzschild<>::variables(x, matter_source_tags{});
   }
   tuples::tagged_tuple_from_typelist<gr_tags> gr_variables(
-      const tnsr::I<DataVector, 3, Frame::Inertial>& x) const noexcept {
+      const tnsr::I<DataVector, 3, Frame::Inertial>& x) const {
     return Xcts::Solutions::Schwarzschild<>::variables(x, gr_tags{});
   }
   tuples::tagged_tuple_from_typelist<derived_tags> derived_variables(
-      const tnsr::I<DataVector, 3, Frame::Inertial>& x) const noexcept {
+      const tnsr::I<DataVector, 3, Frame::Inertial>& x) const {
     return Xcts::Solutions::Schwarzschild<>::variables(x, derived_tags{});
   }
 };

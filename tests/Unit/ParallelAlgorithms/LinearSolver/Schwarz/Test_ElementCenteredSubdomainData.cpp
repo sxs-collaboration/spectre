@@ -30,7 +30,7 @@ SPECTRE_TEST_CASE("Unit.ParallelSchwarz.ElementCenteredSubdomainData",
   const auto make_subdomain_data = [&west_id, &east_id](
                                        DataVector element_data,
                                        DataVector east_overlap_data,
-                                       DataVector west_overlap_data) noexcept {
+                                       DataVector west_overlap_data) {
     ElementCenteredSubdomainData<1, tmpl::list<ScalarField>> subdomain_data{
         element_data.size()};
     get(get<ScalarField>(subdomain_data.element_data)) =

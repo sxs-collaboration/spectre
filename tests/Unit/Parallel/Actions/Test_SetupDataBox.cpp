@@ -35,7 +35,7 @@ struct SquareVectorTag : db::SimpleTag {
 struct SquareVectorCompute : SquareVectorTag, db::ComputeTag {
   using argument_tags = tmpl::list<VectorTag>;
   static void function(const gsl::not_null<DataVector*> result,
-                       const DataVector& vector) noexcept {
+                       const DataVector& vector) {
     *result = square(vector);
   }
   using return_type = DataVector;
@@ -54,7 +54,7 @@ struct InitializationAction {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     Initialization::mutate_assign<tmpl::list<VectorTag>>(make_not_null(&box),
                                                          DataVector{1.2, 3.0});
     return {std::move(box)};
@@ -71,10 +71,10 @@ struct MutateAction {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     db::mutate<CounterTag>(
         make_not_null(&box),
-        [](const gsl::not_null<size_t*> counter) noexcept { *counter = 3_st; });
+        [](const gsl::not_null<size_t*> counter) { *counter = 3_st; });
     return {std::move(box)};
   }
 };

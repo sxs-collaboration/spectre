@@ -16,9 +16,9 @@
 #include "Utilities/Gsl.hpp"
 
 namespace grmhd::ValenciaDivClean::BoundaryCorrections {
-Rusanov::Rusanov(CkMigrateMessage* /*unused*/) noexcept {}
+Rusanov::Rusanov(CkMigrateMessage* /*unused*/) {}
 
-std::unique_ptr<BoundaryCorrection> Rusanov::get_clone() const noexcept {
+std::unique_ptr<BoundaryCorrection> Rusanov::get_clone() const {
   return std::make_unique<Rusanov>(*this);
 }
 
@@ -59,8 +59,7 @@ double Rusanov::dg_package_data(
     const tnsr::I<DataVector, 3, Frame::Inertial>& /*normal_vector*/,
     const std::optional<tnsr::I<DataVector, 3, Frame::Inertial>>&
     /*mesh_velocity*/,
-    const std::optional<Scalar<DataVector>>&
-        normal_dot_mesh_velocity) noexcept {
+    const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity) {
   {
     // Compute max abs char speed
     Scalar<DataVector>& shift_dot_normal = *packaged_tilde_d;
@@ -128,7 +127,7 @@ void Rusanov::dg_boundary_terms(
     const tnsr::I<DataVector, 3, Frame::Inertial>& normal_dot_flux_tilde_b_ext,
     const Scalar<DataVector>& normal_dot_flux_tilde_phi_ext,
     const Scalar<DataVector>& abs_char_speed_ext,
-    const dg::Formulation dg_formulation) noexcept {
+    const dg::Formulation dg_formulation) {
   if (dg_formulation == dg::Formulation::WeakInertial) {
     get(*boundary_correction_tilde_d) =
         0.5 * (get(normal_dot_flux_tilde_d_int) -

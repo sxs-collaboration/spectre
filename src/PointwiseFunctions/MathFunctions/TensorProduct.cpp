@@ -21,8 +21,7 @@ TensorProduct<Dim>::TensorProduct(
 
 template <size_t Dim>
 template <typename T>
-Scalar<T> TensorProduct<Dim>::operator()(const tnsr::I<T, Dim>& x) const
-    noexcept {
+Scalar<T> TensorProduct<Dim>::operator()(const tnsr::I<T, Dim>& x) const {
   auto result = make_with_value<Scalar<T>>(x, scale_);
   for (size_t d = 0; d < Dim; ++d) {
     result.get() *= gsl::at(functions_, d)->operator()(x.get(d));
@@ -33,7 +32,7 @@ Scalar<T> TensorProduct<Dim>::operator()(const tnsr::I<T, Dim>& x) const
 template <size_t Dim>
 template <typename T>
 tnsr::i<T, Dim> TensorProduct<Dim>::first_derivatives(
-    const tnsr::I<T, Dim>& x) const noexcept {
+    const tnsr::I<T, Dim>& x) const {
   auto result = make_with_value<tnsr::i<T, Dim>>(x, scale_);
   for (size_t i = 0; i < Dim; ++i) {
     for (size_t d = 0; d < Dim; ++d) {
@@ -50,7 +49,7 @@ tnsr::i<T, Dim> TensorProduct<Dim>::first_derivatives(
 template <size_t Dim>
 template <typename T>
 tnsr::ii<T, Dim> TensorProduct<Dim>::second_derivatives(
-    const tnsr::I<T, Dim>& x) const noexcept {
+    const tnsr::I<T, Dim>& x) const {
   auto result = make_with_value<tnsr::ii<T, Dim>>(x, scale_);
   for (size_t i = 0; i < Dim; ++i) {
     for (size_t d = 0; d < Dim; ++d) {
@@ -78,15 +77,16 @@ tnsr::ii<T, Dim> TensorProduct<Dim>::second_derivatives(
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATE(_, data)                                             \
-  template Scalar<DTYPE(data)> MathFunctions::TensorProduct<DIM(data)>:: \
-  operator()(const tnsr::I<DTYPE(data), DIM(data)>& x) const noexcept;   \
-  template tnsr::i<DTYPE(data), DIM(data)>                               \
-  MathFunctions::TensorProduct<DIM(data)>::first_derivatives(            \
-      const tnsr::I<DTYPE(data), DIM(data)>& x) const noexcept;          \
-  template tnsr::ii<DTYPE(data), DIM(data)>                              \
-  MathFunctions::TensorProduct<DIM(data)>::second_derivatives(           \
-      const tnsr::I<DTYPE(data), DIM(data)>& x) const noexcept;
+#define INSTANTIATE(_, data)                                   \
+  template Scalar<DTYPE(data)>                                 \
+  MathFunctions::TensorProduct<DIM(data)>::operator()(         \
+      const tnsr::I<DTYPE(data), DIM(data)>& x) const;         \
+  template tnsr::i<DTYPE(data), DIM(data)>                     \
+  MathFunctions::TensorProduct<DIM(data)>::first_derivatives(  \
+      const tnsr::I<DTYPE(data), DIM(data)>& x) const;         \
+  template tnsr::ii<DTYPE(data), DIM(data)>                    \
+  MathFunctions::TensorProduct<DIM(data)>::second_derivatives( \
+      const tnsr::I<DTYPE(data), DIM(data)>& x) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector))
 

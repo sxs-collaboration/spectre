@@ -50,7 +50,7 @@ void time_derivative_of_spacetime_metric(
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
     const tnsr::I<DataType, SpatialDim, Frame>& dt_shift,
     const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
-    const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric) noexcept;
+    const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric);
 
 template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::aa<DataType, SpatialDim, Frame> time_derivative_of_spacetime_metric(
@@ -58,7 +58,7 @@ tnsr::aa<DataType, SpatialDim, Frame> time_derivative_of_spacetime_metric(
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
     const tnsr::I<DataType, SpatialDim, Frame>& dt_shift,
     const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
-    const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric) noexcept;
+    const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric);
 /// @}
 namespace Tags {}  // namespace Tags
 }  // namespace gr

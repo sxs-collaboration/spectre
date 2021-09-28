@@ -45,7 +45,7 @@ void dg_package_data_impl(
     const tnsr::i<DataVector, 3, Frame::Inertial>& normal_covector,
     const tnsr::I<DataVector, 3, Frame::Inertial>& normal_vector,
     const std::optional<tnsr::I<DataVector, 3, Frame::Inertial>>& mesh_velocity,
-    const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity) noexcept;
+    const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity);
 
 void dg_boundary_terms_impl(
     gsl::not_null<Scalar<DataVector>*> boundary_correction_tilde_e,
@@ -59,7 +59,7 @@ void dg_boundary_terms_impl(
     const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s_ext,
     const Scalar<DataVector>& normal_dot_flux_tilde_e_ext,
     const tnsr::i<DataVector, 3, Frame::Inertial>& normal_dot_flux_tilde_s_ext,
-    dg::Formulation dg_formulation) noexcept;
+    dg::Formulation dg_formulation);
 }  // namespace Rusanov_detail
 
 /// \cond
@@ -111,7 +111,7 @@ class Rusanov<tmpl::list<NeutrinoSpecies...>> final
   ~Rusanov() override = default;
 
   /// \cond
-  explicit Rusanov(CkMigrateMessage* msg) noexcept
+  explicit Rusanov(CkMigrateMessage* msg)
       : BoundaryCorrection<tmpl::list<NeutrinoSpecies...>>(msg) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Rusanov);  // NOLINT
@@ -121,7 +121,7 @@ class Rusanov<tmpl::list<NeutrinoSpecies...>> final
   }
 
   std::unique_ptr<BoundaryCorrection<tmpl::list<NeutrinoSpecies...>>>
-  get_clone() const noexcept override {
+  get_clone() const override {
     return std::make_unique<Rusanov>(*this);
   }
 
@@ -161,8 +161,7 @@ class Rusanov<tmpl::list<NeutrinoSpecies...>> final
       const tnsr::I<DataVector, 3, Frame::Inertial>& normal_vector,
       const std::optional<tnsr::I<DataVector, 3, Frame::Inertial>>&
           mesh_velocity,
-      const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity)
-      const noexcept {
+      const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity) const {
     EXPAND_PACK_LEFT_TO_RIGHT(Rusanov_detail::dg_package_data_impl(
         packaged_tilde_e, packaged_tilde_s, packaged_normal_dot_flux_tilde_e,
         packaged_normal_dot_flux_tilde_s, tilde_e, tilde_s, flux_tilde_e,
@@ -195,7 +194,7 @@ class Rusanov<tmpl::list<NeutrinoSpecies...>> final
           type&... normal_dot_flux_tilde_e_ext,
       const typename Tags::TildeS<Frame::Inertial, NeutrinoSpecies>::
           type&... normal_dot_flux_tilde_s_ext,
-      dg::Formulation dg_formulation) const noexcept {
+      dg::Formulation dg_formulation) const {
     EXPAND_PACK_LEFT_TO_RIGHT(Rusanov_detail::dg_boundary_terms_impl(
         boundary_correction_tilde_e, boundary_correction_tilde_s, tilde_e_int,
         tilde_s_int, normal_dot_flux_tilde_e_int, normal_dot_flux_tilde_s_int,

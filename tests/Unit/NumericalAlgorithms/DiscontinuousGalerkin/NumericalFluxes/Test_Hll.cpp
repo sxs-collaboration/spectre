@@ -26,7 +26,7 @@
 namespace {
 
 template <size_t Dim>
-void test_hll_flux_tags() noexcept {
+void test_hll_flux_tags() {
   using system = TestHelpers::NumericalFluxes::System<Dim>;
   using hll_flux = dg::NumericalFluxes::Hll<system>;
   TestHelpers::db::test_simple_tag<typename hll_flux::LargestIngoingSpeed>(
@@ -89,7 +89,7 @@ void apply_hll_flux(
     const Scalar<DataVector>& var_1_ext,
     const tnsr::I<DataVector, Dim>& var_2_ext,
     const tnsr::i<DataVector, Dim>& var_3_ext,
-    const tnsr::Ij<DataVector, Dim>& var_4_ext) noexcept {
+    const tnsr::Ij<DataVector, Dim>& var_4_ext) {
   using hll_flux =
       dg::NumericalFluxes::Hll<TestHelpers::NumericalFluxes::System<Dim>>;
   const DataVector& used_for_size = *(n_dot_f_1_int.begin());
@@ -114,7 +114,7 @@ void apply_hll_flux(
 }
 
 template <size_t Dim>
-void test_hll_flux(const DataVector& used_for_size) noexcept {
+void test_hll_flux(const DataVector& used_for_size) {
   static_assert(
       tt::assert_conforms_to<
           dg::NumericalFluxes::Hll<TestHelpers::NumericalFluxes::System<Dim>>,
@@ -144,7 +144,7 @@ void test_hll_flux(const DataVector& used_for_size) noexcept {
 }
 
 template <size_t Dim>
-void test_conservation(const DataVector& used_for_size) noexcept {
+void test_conservation(const DataVector& used_for_size) {
   TestHelpers::NumericalFluxes::test_conservation<Dim>(
       dg::NumericalFluxes::Hll<TestHelpers::NumericalFluxes::System<Dim>>{},
       used_for_size);

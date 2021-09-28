@@ -42,49 +42,49 @@ class PowX<1, Fr> : public MathFunction<1, Fr> {
   ~PowX() override = default;
   PowX(const PowX& /*rhs*/) = delete;
   PowX& operator=(const PowX& /*rhs*/) = delete;
-  PowX(PowX&& /*rhs*/) noexcept = default;
-  PowX& operator=(PowX&& /*rhs*/) noexcept = default;
+  PowX(PowX&& /*rhs*/) = default;
+  PowX& operator=(PowX&& /*rhs*/) = default;
 
   WRAPPED_PUPable_decl_base_template(SINGLE_ARG(MathFunction<1, Fr>),
                                      PowX);  // NOLINT
 
-  explicit PowX(int power) noexcept;
+  explicit PowX(int power);
 
-  explicit PowX(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit PowX(CkMigrateMessage* /*unused*/) {}
 
-  double operator()(const double& x) const noexcept override;
-  DataVector operator()(const DataVector& x) const noexcept override;
+  double operator()(const double& x) const override;
+  DataVector operator()(const DataVector& x) const override;
 
-  double first_deriv(const double& x) const noexcept override;
-  DataVector first_deriv(const DataVector& x) const noexcept override;
+  double first_deriv(const double& x) const override;
+  DataVector first_deriv(const DataVector& x) const override;
 
-  double second_deriv(const double& x) const noexcept override;
-  DataVector second_deriv(const DataVector& x) const noexcept override;
+  double second_deriv(const double& x) const override;
+  DataVector second_deriv(const DataVector& x) const override;
 
-  double third_deriv(const double& x) const noexcept override;
-  DataVector third_deriv(const DataVector& x) const noexcept override;
+  double third_deriv(const double& x) const override;
+  DataVector third_deriv(const DataVector& x) const override;
 
   // clang-tidy: google-runtime-references
   void pup(PUP::er& p) override;  // NOLINT
 
  private:
   double power_{};
-  friend bool operator==(const PowX& lhs, const PowX& rhs) noexcept {
+  friend bool operator==(const PowX& lhs, const PowX& rhs) {
     return lhs.power_ == rhs.power_;
   }
 
   template <typename T>
-  T apply_call_operator(const T& x) const noexcept;
+  T apply_call_operator(const T& x) const;
   template <typename T>
-  T apply_first_deriv(const T& x) const noexcept;
+  T apply_first_deriv(const T& x) const;
   template <typename T>
-  T apply_second_deriv(const T& x) const noexcept;
+  T apply_second_deriv(const T& x) const;
   template <typename T>
-  T apply_third_deriv(const T& x) const noexcept;
+  T apply_third_deriv(const T& x) const;
 };
 
 template <typename Fr>
-bool operator!=(const PowX<1, Fr>& lhs, const PowX<1, Fr>& rhs) noexcept {
+bool operator!=(const PowX<1, Fr>& lhs, const PowX<1, Fr>& rhs) {
   return not(lhs == rhs);
 }
 }  // namespace MathFunctions

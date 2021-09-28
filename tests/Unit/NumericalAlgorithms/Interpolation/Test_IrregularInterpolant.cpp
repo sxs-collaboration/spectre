@@ -60,23 +60,23 @@ const double inertial_coord_min = -0.3;
 const double inertial_coord_max = 0.7;
 
 template <size_t VolumeDim>
-auto make_affine_map() noexcept;
+auto make_affine_map();
 
 template <>
-auto make_affine_map<1>() noexcept {
+auto make_affine_map<1>() {
   return domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
       Affine{-1.0, 1.0, inertial_coord_min, inertial_coord_max});
 }
 
 template <>
-auto make_affine_map<2>() noexcept {
+auto make_affine_map<2>() {
   return domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
       Affine2D{Affine{-1.0, 1.0, inertial_coord_min, inertial_coord_max},
                Affine{-1.0, 1.0, inertial_coord_min, inertial_coord_max}});
 }
 
 template <>
-auto make_affine_map<3>() noexcept {
+auto make_affine_map<3>() {
   return domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
       Affine3D{Affine{-1.0, 1.0, inertial_coord_min, inertial_coord_max},
                Affine{-1.0, 1.0, inertial_coord_min, inertial_coord_max},
@@ -89,7 +89,7 @@ template <size_t Dim>
 struct Vector : db::SimpleTag {
   using type = tnsr::I<DataVector, Dim>;
   static auto fill_values(const MathFunctions::TensorProduct<Dim>& f,
-                          const tnsr::I<DataVector, Dim>& x) noexcept {
+                          const tnsr::I<DataVector, Dim>& x) {
     auto result = make_with_value<tnsr::I<DataVector, Dim>>(x, 0.);
     const auto f_of_x = f(x);
     for (size_t d = 0; d < Dim; ++d) {
@@ -103,7 +103,7 @@ template <size_t Dim>
 struct SymmetricTensor : db::SimpleTag {
   using type = tnsr::ii<DataVector, Dim>;
   static auto fill_values(const MathFunctions::TensorProduct<Dim>& f,
-                          const tnsr::I<DataVector, Dim>& x) noexcept {
+                          const tnsr::I<DataVector, Dim>& x) {
     auto result = make_with_value<tnsr::ii<DataVector, Dim>>(x, 0.);
     const auto f_of_x = f(x);
     for (size_t i = 0; i < Dim; ++i) {
@@ -118,7 +118,7 @@ struct SymmetricTensor : db::SimpleTag {
 }  // namespace TestTags
 
 template <size_t Dim>
-void test_interpolate_to_points(const Mesh<Dim>& mesh) noexcept {
+void test_interpolate_to_points(const Mesh<Dim>& mesh) {
   // Fill target interpolation coordinates with random values
   MAKE_GENERATOR(generator);
   std::uniform_real_distribution<> dist(inertial_coord_min, inertial_coord_max);
@@ -187,7 +187,7 @@ void test_interpolate_to_points(const Mesh<Dim>& mesh) noexcept {
 
     // Fill source and expected destination Variables with analytic solution.
     tmpl::for_each<tags>([&f, &src_x, &target_x_inertial, &src_vars,
-                          &expected_dest_vars](auto tag) noexcept {
+                          &expected_dest_vars](auto tag) {
       using Tag = tmpl::type_from<decltype(tag)>;
       get<Tag>(src_vars) = Tag::fill_values(f, src_x);
       get<Tag>(expected_dest_vars) = Tag::fill_values(f, target_x_inertial);
@@ -198,7 +198,7 @@ void test_interpolate_to_points(const Mesh<Dim>& mesh) noexcept {
     const Variables<tags> dest_vars =
         irregular_interpolant.interpolate(src_vars);
 
-    tmpl::for_each<tags>([&dest_vars, &expected_dest_vars](auto tag) noexcept {
+    tmpl::for_each<tags>([&dest_vars, &expected_dest_vars](auto tag) {
       using Tag = tmpl::type_from<decltype(tag)>;
       CHECK_ITERABLE_APPROX(get<Tag>(dest_vars), get<Tag>(expected_dest_vars));
     });
@@ -244,11 +244,11 @@ void test_irregular_interpolant_mixed_quadrature() {
 
 template <size_t Dim>
 Domain<Dim> create_domain(double length,
-                          const std::array<size_t, Dim>& extents) noexcept;
+                          const std::array<size_t, Dim>& extents);
 
 template <>
 Domain<3> create_domain<3>(const double length,
-                           const std::array<size_t, 3>& extents) noexcept {
+                           const std::array<size_t, 3>& extents) {
   const domain::creators::Brick creator{{{0.0, 0.0, 0.0}},
                                         {{length, length, length}},
                                         {{0, 0, 0}},
@@ -259,7 +259,7 @@ Domain<3> create_domain<3>(const double length,
 
 template <>
 Domain<2> create_domain<2>(const double length,
-                           const std::array<size_t, 2>& extents) noexcept {
+                           const std::array<size_t, 2>& extents) {
   const domain::creators::Rectangle creator{
       {{0.0, 0.0}}, {{length, length}}, {{0, 0}}, extents, {{false, false}}};
   return creator.create_domain();
@@ -267,7 +267,7 @@ Domain<2> create_domain<2>(const double length,
 
 template <>
 Domain<1> create_domain<1>(const double length,
-                           const std::array<size_t, 1>& extents) noexcept {
+                           const std::array<size_t, 1>& extents) {
   const domain::creators::Interval creator{{{0.0}}, {{length}}, {{0}},
                                            extents, {{false}},  nullptr};
   return creator.create_domain();
@@ -310,8 +310,7 @@ Variables<var_tags> polynomial(
 }
 
 template <size_t Dim, size_t MaxDegree>
-void test_polynomial_interpolant(
-    const std::array<size_t, Dim>& extents) noexcept {
+void test_polynomial_interpolant(const std::array<size_t, Dim>& extents) {
   const size_t n_random_target_points = 10;
 
   const auto domain = create_domain<Dim>(20.0 / 3.0, extents);
@@ -335,7 +334,7 @@ void test_polynomial_interpolant(
   }
 }
 
-void test_tov() noexcept {
+void test_tov() {
   const std::array<size_t, 3> isotropic_extents{{11, 11, 11}};
   constexpr size_t n_resolutions = 4;
   auto errors =

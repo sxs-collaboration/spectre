@@ -16,7 +16,7 @@ namespace ScalarAdvection::Tags {
 template <size_t Dim>
 void VelocityFieldCompute<Dim>::function(
     const gsl::not_null<tnsr::I<DataVector, Dim>*> velocity_field,
-    const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords) noexcept {
+    const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords) {
   destructive_resize_components(velocity_field,
                                 get_size(get<0>(inertial_coords)));
   if constexpr (Dim == 1) {
@@ -41,8 +41,7 @@ void VelocityFieldCompute<Dim>::function(
   template void                                                      \
   ScalarAdvection::Tags::VelocityFieldCompute<DIM(data)>::function(  \
       gsl::not_null<tnsr::I<DataVector, DIM(data)>*> velocity_field, \
-      const tnsr::I<DataVector, DIM(data), Frame::Inertial>&         \
-          inertial_coords) noexcept;
+      const tnsr::I<DataVector, DIM(data), Frame::Inertial>& inertial_coords);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2))
 

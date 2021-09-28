@@ -24,7 +24,7 @@ EvenlySpaced<T>::EvenlySpaced(const T interval, const T offset,
 
 template <typename T>
 std::array<std::optional<T>, 3> EvenlySpaced<T>::times_near(
-    const T time) const noexcept {
+    const T time) const {
   auto sequence_number =
       std::floor((time + 0.5 * interval_ - offset_) / interval_);
 
@@ -44,7 +44,7 @@ std::array<std::optional<T>, 3> EvenlySpaced<T>::times_near(
 }
 
 template <typename T>
-void EvenlySpaced<T>::pup(PUP::er& p) noexcept {
+void EvenlySpaced<T>::pup(PUP::er& p) {
   TimeSequence<T>::pup(p);
   p | interval_;
   p | offset_;
@@ -54,16 +54,14 @@ template <typename T>
 PUP::able::PUP_ID EvenlySpaced<T>::my_PUP_ID = 0;  // NOLINT
 
 template <typename T>
-Specified<T>::Specified(std::vector<T> values) noexcept
-    : values_(std::move(values)) {
+Specified<T>::Specified(std::vector<T> values) : values_(std::move(values)) {
   std::sort(values_.begin(), values_.end());
   const auto new_end = std::unique(values_.begin(), values_.end());
   values_.erase(new_end, values_.end());
 }
 
 template <typename T>
-std::array<std::optional<T>, 3> Specified<T>::times_near(
-    const T time) const noexcept {
+std::array<std::optional<T>, 3> Specified<T>::times_near(const T time) const {
   if (values_.empty()) {
     return {};
   }
@@ -83,7 +81,7 @@ std::array<std::optional<T>, 3> Specified<T>::times_near(
 }
 
 template <typename T>
-void Specified<T>::pup(PUP::er& p) noexcept {
+void Specified<T>::pup(PUP::er& p) {
   TimeSequence<T>::pup(p);
   p | values_;
 }

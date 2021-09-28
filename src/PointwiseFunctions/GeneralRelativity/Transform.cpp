@@ -17,8 +17,7 @@ template <size_t VolumeDim, typename SrcFrame, typename DestFrame>
 void to_different_frame(
     const gsl::not_null<tnsr::ii<DataVector, VolumeDim, DestFrame>*> dest,
     const tnsr::ii<DataVector, VolumeDim, SrcFrame>& src,
-    const Jacobian<DataVector, VolumeDim, DestFrame, SrcFrame>&
-        jacobian) noexcept {
+    const Jacobian<DataVector, VolumeDim, DestFrame, SrcFrame>& jacobian) {
   destructive_resize_components(dest, src.begin()->size());
   for (size_t i = 0; i < VolumeDim; ++i) {
     for (size_t j = i; j < VolumeDim; ++j) {  // symmetry
@@ -40,9 +39,9 @@ void to_different_frame(
 }
 
 template <size_t VolumeDim, typename SrcFrame, typename DestFrame>
-auto to_different_frame(const tnsr::ii<DataVector, VolumeDim, SrcFrame>& src,
-                        const Jacobian<DataVector, VolumeDim, DestFrame,
-                                       SrcFrame>& jacobian) noexcept
+auto to_different_frame(
+    const tnsr::ii<DataVector, VolumeDim, SrcFrame>& src,
+    const Jacobian<DataVector, VolumeDim, DestFrame, SrcFrame>& jacobian)
     -> tnsr::ii<DataVector, VolumeDim, DestFrame> {
   auto dest = make_with_value<tnsr::ii<DataVector, VolumeDim, DestFrame>>(
       src, std::numeric_limits<double>::signaling_NaN());
@@ -57,8 +56,7 @@ void first_index_to_different_frame(
                  index_list<SpatialIndex<VolumeDim, UpLo::Lo, SrcFrame>,
                             SpatialIndex<VolumeDim, UpLo::Lo, DestFrame>,
                             SpatialIndex<VolumeDim, UpLo::Lo, DestFrame>>>& src,
-    const Jacobian<DataVector, VolumeDim, DestFrame, SrcFrame>&
-        jacobian) noexcept {
+    const Jacobian<DataVector, VolumeDim, DestFrame, SrcFrame>& jacobian) {
   destructive_resize_components(dest, src.begin()->size());
   for (size_t i = 0; i < VolumeDim; ++i) {
     for (size_t j = i; j < VolumeDim; ++j) {  // symmetry
@@ -78,8 +76,8 @@ auto first_index_to_different_frame(
                  index_list<SpatialIndex<VolumeDim, UpLo::Lo, SrcFrame>,
                             SpatialIndex<VolumeDim, UpLo::Lo, DestFrame>,
                             SpatialIndex<VolumeDim, UpLo::Lo, DestFrame>>>& src,
-    const Jacobian<DataVector, VolumeDim, DestFrame, SrcFrame>&
-        jacobian) noexcept -> tnsr::ijj<DataVector, VolumeDim, DestFrame> {
+    const Jacobian<DataVector, VolumeDim, DestFrame, SrcFrame>& jacobian)
+    -> tnsr::ijj<DataVector, VolumeDim, DestFrame> {
   auto dest = make_with_value<tnsr::ijj<DataVector, VolumeDim, DestFrame>>(
       src, std::numeric_limits<double>::signaling_NaN());
   first_index_to_different_frame(make_not_null(&dest), src, jacobian);
@@ -98,11 +96,11 @@ auto first_index_to_different_frame(
           dest,                                                               \
       const tnsr::ii<DataVector, DIM(data), SRCFRAME(data)>& src,             \
       const Jacobian<DataVector, DIM(data), DESTFRAME(data), SRCFRAME(data)>& \
-          jacobian) noexcept;                                                 \
+          jacobian);                                                          \
   template auto transform::to_different_frame(                                \
       const tnsr::ii<DataVector, DIM(data), SRCFRAME(data)>& src,             \
       const Jacobian<DataVector, DIM(data), DESTFRAME(data), SRCFRAME(data)>& \
-          jacobian) noexcept                                                  \
+          jacobian)                                                           \
       ->tnsr::ii<DataVector, DIM(data), DESTFRAME(data)>;
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Grid),
                         (Frame::Inertial))
@@ -121,7 +119,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Inertial),
                      SpatialIndex<DIM(data), UpLo::Lo, DESTFRAME(data)>>>&    \
           src,                                                                \
       const Jacobian<DataVector, DIM(data), DESTFRAME(data), SRCFRAME(data)>& \
-          jacobian) noexcept;                                                 \
+          jacobian);                                                          \
   template auto transform::first_index_to_different_frame(                    \
       const Tensor<                                                           \
           DataVector, tmpl::integral_list<std::int32_t, 2, 1, 1>,             \
@@ -130,7 +128,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Inertial),
                      SpatialIndex<DIM(data), UpLo::Lo, DESTFRAME(data)>>>&    \
           src,                                                                \
       const Jacobian<DataVector, DIM(data), DESTFRAME(data), SRCFRAME(data)>& \
-          jacobian) noexcept                                                  \
+          jacobian)                                                           \
       ->tnsr::ijj<DataVector, DIM(data), DESTFRAME(data)>;
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::ElementLogical),
                         (Frame::Grid))

@@ -29,24 +29,24 @@ class ObservationKey {
  public:
   ObservationKey() = default;
 
-  explicit ObservationKey(std::string tag) noexcept;
+  explicit ObservationKey(std::string tag);
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept;
+  void pup(PUP::er& p);
 
-  size_t key() const noexcept { return key_; }
+  size_t key() const { return key_; }
 
-  const std::string& tag() const noexcept;
+  const std::string& tag() const;
 
  private:
   size_t key_{0};
   std::string tag_{};
 };
 
-bool operator==(const ObservationKey& lhs, const ObservationKey& rhs) noexcept;
-bool operator!=(const ObservationKey& lhs, const ObservationKey& rhs) noexcept;
+bool operator==(const ObservationKey& lhs, const ObservationKey& rhs);
+bool operator!=(const ObservationKey& lhs, const ObservationKey& rhs);
 
-std::ostream& operator<<(std::ostream& os, const ObservationKey& t) noexcept;
+std::ostream& operator<<(std::ostream& os, const ObservationKey& t);
 
 /*!
  * \ingroup ObserversGroup
@@ -76,26 +76,24 @@ class ObservationId {
    *
    * The tag is a unique string used to identify the particular observation.
    */
-  ObservationId(double t, std::string tag) noexcept;
+  ObservationId(double t, std::string tag);
 
-  ObservationId(double t, ObservationKey key) noexcept;
+  ObservationId(double t, ObservationKey key);
 
   /// Hash used to distinguish between ObservationIds of different
   /// types and subtypes. This hash does not contain any information about the
   /// `Id` or its value.
-  const ObservationKey& observation_key() const noexcept {
-    return observation_key_;
-  }
+  const ObservationKey& observation_key() const { return observation_key_; }
 
   /// Hash distinguishing different ObservationIds, including
   /// the value of the `Id`.
-  size_t hash() const noexcept { return combined_hash_; }
+  size_t hash() const { return combined_hash_; }
 
   /// The simulation "time".
-  double value() const noexcept { return value_; }
+  double value() const { return value_; }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept;
+  void pup(PUP::er& p);
 
  private:
   ObservationKey observation_key_{};
@@ -103,23 +101,23 @@ class ObservationId {
   double value_{std::numeric_limits<double>::signaling_NaN()};
 };
 
-bool operator==(const ObservationId& lhs, const ObservationId& rhs) noexcept;
-bool operator!=(const ObservationId& lhs, const ObservationId& rhs) noexcept;
+bool operator==(const ObservationId& lhs, const ObservationId& rhs);
+bool operator!=(const ObservationId& lhs, const ObservationId& rhs);
 
-std::ostream& operator<<(std::ostream& os, const ObservationId& t) noexcept;
+std::ostream& operator<<(std::ostream& os, const ObservationId& t);
 }  // namespace observers
 
 namespace std {
 template <>
 struct hash<observers::ObservationId> {
-  size_t operator()(const observers::ObservationId& t) const noexcept {
+  size_t operator()(const observers::ObservationId& t) const {
     return t.hash();
   }
 };
 
 template <>
 struct hash<observers::ObservationKey> {
-  size_t operator()(const observers::ObservationKey& t) const noexcept {
+  size_t operator()(const observers::ObservationKey& t) const {
     return t.key();
   }
 };

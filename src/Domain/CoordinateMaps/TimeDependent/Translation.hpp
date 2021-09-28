@@ -40,7 +40,7 @@ class Translation {
   static constexpr size_t dim = Dim;
 
   Translation() = default;
-  explicit Translation(std::string function_of_time_name) noexcept;
+  explicit Translation(std::string function_of_time_name);
 
   template <typename T>
   std::array<tt::remove_cvref_wrap_t<T>, Dim> operator()(
@@ -48,7 +48,7 @@ class Translation {
       const std::unordered_map<
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-          functions_of_time) const noexcept;
+          functions_of_time) const;
 
   /// The inverse function is only callable with doubles because the inverse
   /// might fail if called for a point out of range, and it is unclear
@@ -59,7 +59,7 @@ class Translation {
       const std::unordered_map<
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-          functions_of_time) const noexcept;
+          functions_of_time) const;
 
   template <typename T>
   std::array<tt::remove_cvref_wrap_t<T>, Dim> frame_velocity(
@@ -67,33 +67,32 @@ class Translation {
       const std::unordered_map<
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-          functions_of_time) const noexcept;
+          functions_of_time) const;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame> inv_jacobian(
-      const std::array<T, Dim>& source_coords) const noexcept;
+      const std::array<T, Dim>& source_coords) const;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame> jacobian(
-      const std::array<T, Dim>& source_coords) const noexcept;
+      const std::array<T, Dim>& source_coords) const;
 
   // clang-tidy: google-runtime-references
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
 
-  static bool is_identity() noexcept { return false; }
+  static bool is_identity() { return false; }
 
  private:
   template <size_t LocalDim>
   friend bool operator==(  // NOLINT(readability-redundant-declaration)
-      const Translation<LocalDim>& lhs,
-      const Translation<LocalDim>& rhs) noexcept;
+      const Translation<LocalDim>& lhs, const Translation<LocalDim>& rhs);
 
   std::string f_of_t_name_{};
 };
 
 template <size_t Dim>
 inline bool operator!=(const Translation<Dim>& lhs,
-                       const Translation<Dim>& rhs) noexcept {
+                       const Translation<Dim>& rhs) {
   return not(lhs == rhs);
 }
 

@@ -184,7 +184,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ElementReceivePoints",
   // intrp::Tags::InterpPointInfo<Metavariables> that has a
   // point_info for InterpolationTargetA/B containing the
   // expected point info.
-  const auto expected_point_info_a = [&domain_creator]() noexcept {
+  const auto expected_point_info_a = [&domain_creator]() {
     const size_t n_pts = 15;
     tnsr::I<DataVector, 3, Frame::Inertial> points(n_pts);
     for (size_t d = 0; d < 3; ++d) {
@@ -193,9 +193,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ElementReceivePoints",
       }
     }
     return block_logical_coordinates(domain_creator.create_domain(), points);
-  }
-  ();
-  const auto expected_point_info_b = [&domain_creator]() noexcept {
+  }();
+  const auto expected_point_info_b = [&domain_creator]() {
     const size_t n_pts = 12;
     tnsr::I<DataVector, 3, Frame::Inertial> points(n_pts);
     for (size_t d = 0; d < 3; ++d) {
@@ -204,8 +203,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ElementReceivePoints",
       }
     }
     return block_logical_coordinates(domain_creator.create_domain(), points);
-  }
-  ();
+  }();
 
   const auto& point_infos =
       ActionTesting::get_databox_tag<elem_component,
@@ -219,7 +217,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ElementReceivePoints",
                                     metavars::volume_dim>>(point_infos);
 
   auto check_point_info = [](const point_info_type& result,
-                             const point_info_type& expected) noexcept {
+                             const point_info_type& expected) {
     const size_t number_of_points = expected.size();
     CHECK(result.size() == number_of_points);
     for (size_t i = 0; i < number_of_points; ++i) {

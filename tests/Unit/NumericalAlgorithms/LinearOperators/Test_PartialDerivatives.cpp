@@ -124,7 +124,7 @@ template <typename GradientTags, typename VariableTags, size_t Dim>
 void test_logical_partial_derivative_per_tensor(
     const std::array<Variables<GradientTags>, Dim>& du,
     const Variables<VariableTags>& u, const Mesh<Dim>& mesh) {
-  tmpl::for_each<GradientTags>([&du, &mesh, &u](auto gradient_tag_v) noexcept {
+  tmpl::for_each<GradientTags>([&du, &mesh, &u](auto gradient_tag_v) {
     using gradient_tag = tmpl::type_from<decltype(gradient_tag_v)>;
     const auto single_du =
         logical_partial_derivative(get<gradient_tag>(u), mesh);
@@ -169,7 +169,7 @@ void test_logical_partial_derivatives_1d(const Mesh<1>& mesh) {
       }
     }
 
-    const auto helper = [&](const auto& du) noexcept {
+    const auto helper = [&](const auto& du) {
       for (size_t n = 0;
            n < Variables<GradientTags>::number_of_independent_components; ++n) {
         for (size_t s = 0; s < number_of_grid_points; ++s) {
@@ -207,7 +207,7 @@ void test_logical_partial_derivatives_2d(const Mesh<2>& mesh) {
     }
   }
 
-  const auto helper = [&](const auto& du) noexcept {
+  const auto helper = [&](const auto& du) {
     for (size_t n = 0;
          n < Variables<GradientTags>::number_of_independent_components; ++n) {
       for (IndexIterator<2> ii(mesh.extents()); ii; ++ii) {
@@ -256,7 +256,7 @@ void test_logical_partial_derivatives_3d(const Mesh<3>& mesh) {
     }
   }
 
-  const auto helper = [&](const auto& du) noexcept {
+  const auto helper = [&](const auto& du) {
     for (size_t n = 0;
          n < Variables<GradientTags>::number_of_independent_components; ++n) {
       for (IndexIterator<3> ii(mesh.extents()); ii; ++ii) {
@@ -311,17 +311,17 @@ void test_partial_derivatives_1d(const Mesh<1>& mesh) {
                              Frame::Grid>>
       expected_du(number_of_grid_points);
   for (size_t a = 0; a < mesh.extents(0); ++a) {
-    tmpl::for_each<VariableTags>([&a, &x, &u ](auto tag) noexcept {
+    tmpl::for_each<VariableTags>([&a, &x, &u](auto tag) {
       using Tag = tmpl::type_from<decltype(tag)>;
       get<Tag>(u) = Tag::f({{a}}, x);
     });
-    tmpl::for_each<GradientTags>([&a, &x, &expected_du ](auto tag) noexcept {
+    tmpl::for_each<GradientTags>([&a, &x, &expected_du](auto tag) {
       using Tag = typename decltype(tag)::type;
       using DerivativeTag = Tags::deriv<Tag, tmpl::size_t<1>, Frame::Grid>;
       get<DerivativeTag>(expected_du) = Tag::df({{a}}, x);
     });
 
-    const auto helper = [&](const auto& du) noexcept {
+    const auto helper = [&](const auto& du) {
       for (size_t n = 0; n < du.size(); ++n) {
         CHECK(du.data()[n] == approx(expected_du.data()[n]));   // NOLINT
       }
@@ -360,18 +360,17 @@ void test_partial_derivatives_2d(const Mesh<2>& mesh) {
       expected_du(number_of_grid_points);
   for (size_t a = 0; a < mesh.extents(0); ++a) {
     for (size_t b = 0; b < mesh.extents(1); ++b) {
-      tmpl::for_each<VariableTags>([&a, &b, &x, &u ](auto tag) noexcept {
+      tmpl::for_each<VariableTags>([&a, &b, &x, &u](auto tag) {
         using Tag = typename decltype(tag)::type;
         get<Tag>(u) = Tag::f({{a, b}}, x);
       });
-      tmpl::for_each<GradientTags>([&a, &b, &x,
-                                    &expected_du ](auto tag) noexcept {
+      tmpl::for_each<GradientTags>([&a, &b, &x, &expected_du](auto tag) {
         using Tag = typename decltype(tag)::type;
         using DerivativeTag = Tags::deriv<Tag, tmpl::size_t<2>, Frame::Grid>;
         get<DerivativeTag>(expected_du) = Tag::df({{a, b}}, x);
       });
 
-      const auto helper = [&](const auto& du) noexcept {
+      const auto helper = [&](const auto& du) {
         for (size_t n = 0; n < du.size(); ++n) {
           CHECK(du.data()[n] ==                                   // NOLINT
                 approx(expected_du.data()[n]).epsilon(1.e-13));   // NOLINT
@@ -415,19 +414,18 @@ void test_partial_derivatives_3d(const Mesh<3>& mesh) {
   for (size_t a = 0; a < mesh.extents(0) / 2; ++a) {
     for (size_t b = 0; b < mesh.extents(1) / 2; ++b) {
       for (size_t c = 0; c < mesh.extents(2) / 2; ++c) {
-        tmpl::for_each<VariableTags>([&a, &b, &c, &x, &u ](auto tag) noexcept {
+        tmpl::for_each<VariableTags>([&a, &b, &c, &x, &u](auto tag) {
           using Tag = typename decltype(tag)::type;
           get<Tag>(u) = Tag::f({{a, b, c}}, x);
         });
-        tmpl::for_each<GradientTags>([&a, &b, &c, &x,
-                                      &expected_du ](auto tag) noexcept {
+        tmpl::for_each<GradientTags>([&a, &b, &c, &x, &expected_du](auto tag) {
           using Tag = typename decltype(tag)::type;
           using DerivativeTag =
               Tags::deriv<Tag, tmpl::size_t<3>, Frame::Grid>;
           get<DerivativeTag>(expected_du) = Tag::df({{a, b, c}}, x);
         });
 
-        const auto helper = [&](const auto& du) noexcept {
+        const auto helper = [&](const auto& du) {
           for (size_t n = 0; n < du.size(); ++n) {
             CHECK(du.data()[n] ==                                   // NOLINT
                   approx(expected_du.data()[n]).epsilon(1.e-11));
@@ -526,14 +524,14 @@ template <typename Tag>
 struct SomePrefix : db::PrefixTag, db::SimpleTag {
   using type = typename Tag::type;
   using tag = Tag;
-  static std::string name() noexcept {
+  static std::string name() {
     return "SomePrefix(" + db::tag_name<Tag>() + ")";
   }
 };
 
 template <size_t Dim, typename T>
 void test_partial_derivatives_compute_item(
-    const std::array<size_t, Dim> extents_array, const T& map) noexcept {
+    const std::array<size_t, Dim> extents_array, const T& map) {
   using vars_tags = tmpl::list<Var1<Dim>, Var2>;
   using map_tag = MapTag<std::decay_t<decltype(map)>>;
   using inv_jac_tag = domain::Tags::InverseJacobianCompute<
@@ -560,18 +558,17 @@ void test_partial_derivatives_compute_item(
   const auto x_logical = logical_coordinates(mesh);
   const auto x = map(logical_coordinates(mesh));
 
-  tmpl::for_each<vars_tags>([&array_to_functions, &x, &u ](auto tag) noexcept {
+  tmpl::for_each<vars_tags>([&array_to_functions, &x, &u](auto tag) {
     using Tag = tmpl::type_from<decltype(tag)>;
     get<Tag>(u) = Tag::f(array_to_functions, x);
   });
   typename prefixed_variables_tag::type prefixed_vars(u);
 
-  tmpl::for_each<vars_tags>(
-      [&array_to_functions, &x, &expected_du ](auto tag) noexcept {
-        using Tag = typename decltype(tag)::type;
-        using DerivativeTag = Tags::deriv<Tag, tmpl::size_t<Dim>, Frame::Grid>;
-        get<DerivativeTag>(expected_du) = Tag::df(array_to_functions, x);
-      });
+  tmpl::for_each<vars_tags>([&array_to_functions, &x, &expected_du](auto tag) {
+    using Tag = typename decltype(tag)::type;
+    using DerivativeTag = Tags::deriv<Tag, tmpl::size_t<Dim>, Frame::Grid>;
+    get<DerivativeTag>(expected_du) = Tag::df(array_to_functions, x);
+  });
 
   auto box = db::create<
       db::AddSimpleTags<domain::Tags::Mesh<Dim>, Tags::Variables<vars_tags>,

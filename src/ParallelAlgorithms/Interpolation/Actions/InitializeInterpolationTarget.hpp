@@ -95,7 +95,7 @@ struct InitializeInterpolationTarget {
                     const Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     if constexpr (
         initialize_interpolation_target_detail::is_initialize_callable_v<
             typename InterpolationTargetTag::compute_target_points,

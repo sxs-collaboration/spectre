@@ -26,7 +26,7 @@ class TimeCompares : public Trigger {
  public:
   /// \cond
   TimeCompares() = default;
-  explicit TimeCompares(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit TimeCompares(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(TimeCompares);  // NOLINT
   /// \endcond
@@ -45,18 +45,15 @@ class TimeCompares : public Trigger {
   static constexpr Options::String help{
       "Trigger based on a comparison with the time."};
 
-  explicit TimeCompares(const Options::Comparator comparator,
-                        const double time) noexcept
+  explicit TimeCompares(const Options::Comparator comparator, const double time)
       : comparator_(comparator), time_(time) {}
 
   using argument_tags = tmpl::list<Tags::Time>;
 
-  bool operator()(const double& time) const noexcept {
-    return comparator_(time, time_);
-  }
+  bool operator()(const double& time) const { return comparator_(time, time_); }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept {
+  void pup(PUP::er& p) {
     p | comparator_;
     p | time_;
   }

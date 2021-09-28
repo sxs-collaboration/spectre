@@ -21,9 +21,9 @@
 namespace domain::CoordinateMaps::FocallyLiftedInnerMaps {
 
 Side::Side(const std::array<double, 3>& center, const double radius,
-           const double z_lower, const double z_upper) noexcept
+           const double z_lower, const double z_upper)
     : center_(center),
-      radius_([&radius]() noexcept {
+      radius_([&radius]() {
         ASSERT(
             not equal_within_roundoff(radius, 0.0),
             "Cannot have zero radius.  Note that this ASSERT implicitly "
@@ -33,13 +33,13 @@ Side::Side(const std::array<double, 3>& center, const double radius,
             "domains, then this ASSERT should be modified.");
         return radius;
       }()),
-      theta_min_([&z_upper, &center, &radius]() noexcept {
+      theta_min_([&z_upper, &center, &radius]() {
         ASSERT(abs(z_upper - center[2]) < radius,
                "Upper plane must intersect sphere, and it must do "
                "so at more than one point.");
         return acos((z_upper - center[2]) / radius);
       }()),
-      theta_max_([&z_lower, &center, &radius]() noexcept {
+      theta_max_([&z_lower, &center, &radius]() {
         ASSERT(abs(z_lower - center[2]) < radius,
                "Lower plane must intersect sphere, and it must do "
                "so at more than one point.");
@@ -54,7 +54,7 @@ template <typename T>
 void Side::forward_map(
     const gsl::not_null<std::array<tt::remove_cvref_wrap_t<T>, 3>*>
         target_coords,
-    const std::array<T, 3>& source_coords) const noexcept {
+    const std::array<T, 3>& source_coords) const {
   using ReturnType = tt::remove_cvref_wrap_t<T>;
   const ReturnType& xbar = source_coords[0];
   const ReturnType& ybar = source_coords[1];
@@ -78,7 +78,7 @@ template <typename T>
 void Side::jacobian(const gsl::not_null<tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3,
                                                  Frame::NoFrame>*>
                         jacobian_out,
-                    const std::array<T, 3>& source_coords) const noexcept {
+                    const std::array<T, 3>& source_coords) const {
   using ReturnType = tt::remove_cvref_wrap_t<T>;
   const ReturnType& xbar = source_coords[0];
   const ReturnType& ybar = source_coords[1];
@@ -126,7 +126,7 @@ template <typename T>
 void Side::inv_jacobian(const gsl::not_null<tnsr::Ij<tt::remove_cvref_wrap_t<T>,
                                                      3, Frame::NoFrame>*>
                             inv_jacobian_out,
-                        const std::array<T, 3>& source_coords) const noexcept {
+                        const std::array<T, 3>& source_coords) const {
   using ReturnType = tt::remove_cvref_wrap_t<T>;
   const ReturnType& xbar = source_coords[0];
   const ReturnType& ybar = source_coords[1];
@@ -164,8 +164,7 @@ void Side::inv_jacobian(const gsl::not_null<tnsr::Ij<tt::remove_cvref_wrap_t<T>,
 }
 
 std::optional<std::array<double, 3>> Side::inverse(
-    const std::array<double, 3>& target_coords,
-    const double sigma_in) const noexcept {
+    const std::array<double, 3>& target_coords, const double sigma_in) const {
   if ((sigma_in < 0.0 and not equal_within_roundoff(sigma_in, 0.0)) or
       (sigma_in > 1.0 and not equal_within_roundoff(sigma_in, 1.0))) {
     return {};
@@ -191,7 +190,7 @@ std::optional<std::array<double, 3>> Side::inverse(
 
 template <typename T>
 void Side::sigma(const gsl::not_null<tt::remove_cvref_wrap_t<T>*> sigma_out,
-                 const std::array<T, 3>& source_coords) const noexcept {
+                 const std::array<T, 3>& source_coords) const {
   *sigma_out = sqrt(square(source_coords[0]) + square(source_coords[1])) - 1.0;
 }
 
@@ -199,7 +198,7 @@ template <typename T>
 void Side::deriv_sigma(
     const gsl::not_null<std::array<tt::remove_cvref_wrap_t<T>, 3>*>
         deriv_sigma_out,
-    const std::array<T, 3>& source_coords) const noexcept {
+    const std::array<T, 3>& source_coords) const {
   using ReturnType = tt::remove_cvref_wrap_t<T>;
   const ReturnType& xbar = source_coords[0];
   const ReturnType& ybar = source_coords[1];
@@ -221,14 +220,14 @@ template <typename T>
 void Side::dxbar_dsigma(
     const gsl::not_null<std::array<tt::remove_cvref_wrap_t<T>, 3>*>
         dxbar_dsigma_out,
-    const std::array<T, 3>& source_coords) const noexcept {
+    const std::array<T, 3>& source_coords) const {
   deriv_sigma(dxbar_dsigma_out, source_coords);
 }
 
 std::optional<double> Side::lambda_tilde(
     const std::array<double, 3>& parent_mapped_target_coords,
     const std::array<double, 3>& projection_point,
-    const bool source_is_between_focus_and_target) const noexcept {
+    const bool source_is_between_focus_and_target) const {
   return FocallyLiftedMapHelpers::try_scale_factor(
       parent_mapped_target_coords, projection_point, center_, radius_,
       source_is_between_focus_and_target,
@@ -240,27 +239,25 @@ void Side::deriv_lambda_tilde(
     const gsl::not_null<std::array<tt::remove_cvref_wrap_t<T>, 3>*>
         deriv_lambda_tilde_out,
     const std::array<T, 3>& target_coords, const T& lambda_tilde,
-    const std::array<double, 3>& projection_point) const noexcept {
+    const std::array<double, 3>& projection_point) const {
   FocallyLiftedMapHelpers::d_scale_factor_d_src_point(
       deriv_lambda_tilde_out, target_coords, projection_point, center_,
       lambda_tilde);
 }
 
-void Side::pup(PUP::er& p) noexcept {
+void Side::pup(PUP::er& p) {
   p | center_;
   p | radius_;
   p | theta_min_;
   p | theta_max_;
 }
 
-bool operator==(const Side& lhs, const Side& rhs) noexcept {
+bool operator==(const Side& lhs, const Side& rhs) {
   return lhs.center_ == rhs.center_ and lhs.radius_ == rhs.radius_ and
          lhs.theta_min_ == rhs.theta_min_ and lhs.theta_max_ == rhs.theta_max_;
 }
 
-bool operator!=(const Side& lhs, const Side& rhs) noexcept {
-  return not(lhs == rhs);
-}
+bool operator!=(const Side& lhs, const Side& rhs) { return not(lhs == rhs); }
 // Explicit instantiations
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 
@@ -269,37 +266,37 @@ bool operator!=(const Side& lhs, const Side& rhs) noexcept {
       const gsl::not_null<                                                    \
           std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>*>               \
           target_coords,                                                      \
-      const std::array<DTYPE(data), 3>& source_coords) const noexcept;        \
+      const std::array<DTYPE(data), 3>& source_coords) const;                 \
   template void Side::jacobian(                                               \
       const gsl::not_null<                                                    \
           tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame>*> \
           jacobian_out,                                                       \
-      const std::array<DTYPE(data), 3>& source_coords) const noexcept;        \
+      const std::array<DTYPE(data), 3>& source_coords) const;                 \
   template void Side::inv_jacobian(                                           \
       const gsl::not_null<                                                    \
           tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame>*> \
           inv_jacobian_out,                                                   \
-      const std::array<DTYPE(data), 3>& source_coords) const noexcept;        \
+      const std::array<DTYPE(data), 3>& source_coords) const;                 \
   template void Side::sigma(                                                  \
       const gsl::not_null<tt::remove_cvref_wrap_t<DTYPE(data)>*> sigma_out,   \
-      const std::array<DTYPE(data), 3>& source_coords) const noexcept;        \
+      const std::array<DTYPE(data), 3>& source_coords) const;                 \
   template void Side::deriv_sigma(                                            \
       const gsl::not_null<                                                    \
           std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>*>               \
           deriv_sigma_out,                                                    \
-      const std::array<DTYPE(data), 3>& source_coords) const noexcept;        \
+      const std::array<DTYPE(data), 3>& source_coords) const;                 \
   template void Side::dxbar_dsigma(                                           \
       const gsl::not_null<                                                    \
           std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>*>               \
           dxbar_dsigma_out,                                                   \
-      const std::array<DTYPE(data), 3>& source_coords) const noexcept;        \
+      const std::array<DTYPE(data), 3>& source_coords) const;                 \
   template void Side::deriv_lambda_tilde(                                     \
       const gsl::not_null<                                                    \
           std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>*>               \
           deriv_lambda_tilde_out,                                             \
       const std::array<DTYPE(data), 3>& target_coords,                        \
       const DTYPE(data) & lambda_tilde,                                       \
-      const std::array<double, 3>& projection_point) const noexcept;
+      const std::array<double, 3>& projection_point) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector,
                                       std::reference_wrapper<const double>,

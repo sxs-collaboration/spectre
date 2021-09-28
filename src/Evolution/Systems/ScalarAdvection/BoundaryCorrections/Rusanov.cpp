@@ -17,12 +17,10 @@
 
 namespace ScalarAdvection::BoundaryCorrections {
 template <size_t Dim>
-Rusanov<Dim>::Rusanov(CkMigrateMessage* msg) noexcept
-    : BoundaryCorrection<Dim>(msg) {}
+Rusanov<Dim>::Rusanov(CkMigrateMessage* msg) : BoundaryCorrection<Dim>(msg) {}
 
 template <size_t Dim>
-std::unique_ptr<BoundaryCorrection<Dim>> Rusanov<Dim>::get_clone()
-    const noexcept {
+std::unique_ptr<BoundaryCorrection<Dim>> Rusanov<Dim>::get_clone() const {
   return std::make_unique<Rusanov>(*this);
 }
 
@@ -42,8 +40,7 @@ double Rusanov<Dim>::dg_package_data(
     const tnsr::i<DataVector, Dim, Frame::Inertial>& normal_covector,
     const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
     /*mesh_velocity*/,
-    const std::optional<Scalar<DataVector>>&
-        normal_dot_mesh_velocity) noexcept {
+    const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity) {
   Scalar<DataVector>& normal_dot_velocity = *packaged_u;
   dot_product(make_not_null(&normal_dot_velocity), velocity_field,
               normal_covector);
@@ -67,7 +64,7 @@ void Rusanov<Dim>::dg_boundary_terms(
     const Scalar<DataVector>& u_ext,
     const Scalar<DataVector>& normal_dot_flux_u_ext,
     const Scalar<DataVector>& abs_char_speed_ext,
-    const dg::Formulation dg_formulation) noexcept {
+    const dg::Formulation dg_formulation) {
   if (dg_formulation == dg::Formulation::WeakInertial) {
     get(*boundary_correction_u) =
         0.5 * (get(normal_dot_flux_u_int) - get(normal_dot_flux_u_ext)) -

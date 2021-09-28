@@ -24,7 +24,7 @@
 namespace domain {
 namespace {
 template <size_t Dim>
-void test_simple_tags() noexcept {
+void test_simple_tags() {
   TestHelpers::db::test_simple_tag<Tags::Domain<Dim>>("Domain");
   TestHelpers::db::test_simple_tag<Tags::InitialExtents<Dim>>("InitialExtents");
   TestHelpers::db::test_simple_tag<Tags::InitialRefinementLevels<Dim>>(
@@ -60,10 +60,10 @@ void test_simple_tags() noexcept {
 }
 
 template <size_t Dim>
-ElementMap<Dim, Frame::Grid> element_map() noexcept;
+ElementMap<Dim, Frame::Grid> element_map();
 
 template <>
-ElementMap<1, Frame::Grid> element_map() noexcept {
+ElementMap<1, Frame::Grid> element_map() {
   constexpr size_t dim = 1;
   const auto segment_ids = std::array<SegmentId, dim>({{SegmentId(2, 3)}});
   const CoordinateMaps::Affine first_map{-3.0, 8.7, 0.4, 5.5};
@@ -75,7 +75,7 @@ ElementMap<1, Frame::Grid> element_map() noexcept {
 }
 
 template <>
-ElementMap<2, Frame::Grid> element_map() noexcept {
+ElementMap<2, Frame::Grid> element_map() {
   constexpr size_t dim = 2;
   const auto segment_ids =
       std::array<SegmentId, dim>({{SegmentId(2, 3), SegmentId(1, 0)}});
@@ -88,7 +88,7 @@ ElementMap<2, Frame::Grid> element_map() noexcept {
 }
 
 template <>
-ElementMap<3, Frame::Grid> element_map() noexcept {
+ElementMap<3, Frame::Grid> element_map() {
   constexpr size_t dim = 3;
   const auto segment_ids = std::array<SegmentId, dim>(
       {{SegmentId(2, 3), SegmentId(1, 0), SegmentId(2, 1)}});
@@ -101,7 +101,7 @@ ElementMap<3, Frame::Grid> element_map() noexcept {
 }
 
 template <size_t Dim>
-void test_compute_tags() noexcept {
+void test_compute_tags() {
   TestHelpers::db::test_compute_tag<Tags::InverseJacobianCompute<
       Tags::ElementMap<Dim>, Tags::Coordinates<Dim, Frame::Logical>>>(
       "InverseJacobian(ElementLogical,Inertial)");

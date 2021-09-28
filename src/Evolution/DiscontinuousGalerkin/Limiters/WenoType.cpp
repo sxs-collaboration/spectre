@@ -10,8 +10,8 @@
 #include "Options/ParseOptions.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 
-std::ostream& Limiters::operator<<(
-    std::ostream& os, const Limiters::WenoType weno_type) noexcept {
+std::ostream& Limiters::operator<<(std::ostream& os,
+                                   const Limiters::WenoType weno_type) {
   switch (weno_type) {
     case Limiters::WenoType::Hweno:
       return os << "Hweno";

@@ -40,13 +40,13 @@ struct ElementReceiveInterpPoints {
       std::vector<std::optional<
           IdPair<domain::BlockId, tnsr::I<double, Metavariables::volume_dim,
                                           typename ::Frame::BlockLogical>>>>&&
-          block_logical_coords) noexcept {
+          block_logical_coords) {
     db::mutate<intrp::Tags::InterpPointInfo<Metavariables>>(
         make_not_null(&box),
         [&block_logical_coords](
             const gsl::not_null<
                 typename intrp::Tags::InterpPointInfo<Metavariables>::type*>
-                point_infos) noexcept {
+                point_infos) {
           get<intrp::Vars::PointInfoTag<InterpolationTargetTag,
                                         Metavariables::volume_dim>>(
               *point_infos) = std::move(block_logical_coords);

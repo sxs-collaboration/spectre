@@ -27,7 +27,7 @@ Frustum::Frustum(const std::array<std::array<double, 2>, 4>& face_vertices,
                  OrientationMap<3> orientation_of_frustum,
                  const bool with_equiangular_map,
                  const double projective_scale_factor,
-                 const bool auto_projective_scale_factor) noexcept
+                 const bool auto_projective_scale_factor)
     // clang-tidy: trivially copyable
     : orientation_of_frustum_(std::move(orientation_of_frustum)),  // NOLINT
       with_equiangular_map_(with_equiangular_map),
@@ -104,7 +104,7 @@ Frustum::Frustum(const std::array<std::array<double, 2>, 4>& face_vertices,
 
 template <typename T>
 std::array<tt::remove_cvref_wrap_t<T>, 3> Frustum::operator()(
-    const std::array<T, 3>& source_coords) const noexcept {
+    const std::array<T, 3>& source_coords) const {
   using ReturnType = tt::remove_cvref_wrap_t<T>;
 
   const ReturnType& xi = source_coords[0];
@@ -129,7 +129,7 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> Frustum::operator()(
 }
 
 std::optional<std::array<double, 3>> Frustum::inverse(
-    const std::array<double, 3>& target_coords) const noexcept {
+    const std::array<double, 3>& target_coords) const {
   // physical coords {x,y,z}
   std::array<double, 3> physical_coords =
       discrete_rotation(orientation_of_frustum_.inverse_map(), target_coords);
@@ -165,7 +165,7 @@ std::optional<std::array<double, 3>> Frustum::inverse(
 
 template <typename T>
 tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Frustum::jacobian(
-    const std::array<T, 3>& source_coords) const noexcept {
+    const std::array<T, 3>& source_coords) const {
   using ReturnType = tt::remove_cvref_wrap_t<T>;
   const ReturnType& xi = source_coords[0];
   const ReturnType& eta = source_coords[1];
@@ -241,12 +241,12 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Frustum::jacobian(
 
 template <typename T>
 tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Frustum::inv_jacobian(
-    const std::array<T, 3>& source_coords) const noexcept {
+    const std::array<T, 3>& source_coords) const {
   const auto jac = jacobian(source_coords);
   return determinant_and_inverse(jac).second;
 }
 
-void Frustum::pup(PUP::er& p) noexcept {
+void Frustum::pup(PUP::er& p) {
   p | orientation_of_frustum_;
   p | with_equiangular_map_;
   p | is_identity_;
@@ -265,7 +265,7 @@ void Frustum::pup(PUP::er& p) noexcept {
   p | w_minus_;
 }
 
-bool operator==(const Frustum& lhs, const Frustum& rhs) noexcept {
+bool operator==(const Frustum& lhs, const Frustum& rhs) {
   return lhs.orientation_of_frustum_ == rhs.orientation_of_frustum_ and
          lhs.with_equiangular_map_ == rhs.with_equiangular_map_ and
          lhs.is_identity_ == rhs.is_identity_ and
@@ -283,7 +283,7 @@ bool operator==(const Frustum& lhs, const Frustum& rhs) noexcept {
          lhs.w_plus_ == rhs.w_plus_ and lhs.w_minus_ == rhs.w_minus_;
 }
 
-bool operator!=(const Frustum& lhs, const Frustum& rhs) noexcept {
+bool operator!=(const Frustum& lhs, const Frustum& rhs) {
   return not(lhs == rhs);
 }
 
@@ -291,14 +291,13 @@ bool operator!=(const Frustum& lhs, const Frustum& rhs) noexcept {
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATE(_, data)                                                  \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3> Frustum::      \
-  operator()(const std::array<DTYPE(data), 3>& source_coords) const noexcept; \
+  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>                \
+  Frustum::operator()(const std::array<DTYPE(data), 3>& source_coords) const; \
   template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame>  \
-  Frustum::jacobian(const std::array<DTYPE(data), 3>& source_coords)          \
-      const noexcept;                                                         \
+  Frustum::jacobian(const std::array<DTYPE(data), 3>& source_coords) const;   \
   template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame>  \
   Frustum::inv_jacobian(const std::array<DTYPE(data), 3>& source_coords)      \
-      const noexcept;
+      const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector,
                                       std::reference_wrapper<const double>,

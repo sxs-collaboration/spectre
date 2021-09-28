@@ -70,7 +70,7 @@ struct InitializeAnalyticSolution {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ElementId<Dim>& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     const auto& inertial_coords =
         get<domain::Tags::Coordinates<Dim, Frame::Inertial>>(box);
     const auto& analytic_solution = get<AnalyticSolutionTag>(box);
@@ -100,7 +100,7 @@ struct InitializeOptionalAnalyticSolution {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ElementId<Dim>& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     const auto analytic_solution =
         dynamic_cast<const AnalyticSolutionType*>(&db::get<BackgroundTag>(box));
     if (analytic_solution != nullptr) {

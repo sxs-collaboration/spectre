@@ -25,7 +25,7 @@ void gauge_source(
     const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
     const Scalar<DataType>& trace_extrinsic_curvature,
     const tnsr::i<DataType, SpatialDim, Frame>&
-        trace_christoffel_last_indices) noexcept {
+        trace_christoffel_last_indices) {
   destructive_resize_components(gauge_source_h, get_size(get(lapse)));
   for (auto& component : *gauge_source_h) {
     component = 0.0;
@@ -71,7 +71,7 @@ tnsr::a<DataType, SpatialDim, Frame> gauge_source(
     const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
     const Scalar<DataType>& trace_extrinsic_curvature,
     const tnsr::i<DataType, SpatialDim, Frame>&
-        trace_christoffel_last_indices) noexcept {
+        trace_christoffel_last_indices) {
   tnsr::a<DataType, SpatialDim, Frame> gauge_source_h{};
   gauge_source(make_not_null(&gauge_source_h), lapse, dt_lapse, deriv_lapse,
                shift, dt_shift, deriv_shift, spatial_metric,
@@ -96,7 +96,7 @@ tnsr::a<DataType, SpatialDim, Frame> gauge_source(
       const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& spatial_metric,   \
       const Scalar<DTYPE(data)>& trace_extrinsic_curvature,                  \
       const tnsr::i<DTYPE(data), DIM(data), FRAME(data)>&                    \
-          trace_christoffel_last_indices) noexcept;                          \
+          trace_christoffel_last_indices);                                   \
   template tnsr::a<DTYPE(data), DIM(data), FRAME(data)>                      \
   GeneralizedHarmonic::gauge_source(                                         \
       const Scalar<DTYPE(data)>& lapse, const Scalar<DTYPE(data)>& dt_lapse, \
@@ -107,7 +107,7 @@ tnsr::a<DataType, SpatialDim, Frame> gauge_source(
       const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& spatial_metric,   \
       const Scalar<DTYPE(data)>& trace_extrinsic_curvature,                  \
       const tnsr::i<DTYPE(data), DIM(data), FRAME(data)>&                    \
-          trace_christoffel_last_indices) noexcept;
+          trace_christoffel_last_indices);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
                         (Frame::Grid, Frame::Inertial))

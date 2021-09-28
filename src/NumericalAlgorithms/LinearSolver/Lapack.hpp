@@ -54,31 +54,28 @@ namespace lapack {
  */
 int general_matrix_linear_solve(gsl::not_null<DataVector*> rhs_in_solution_out,
                                 gsl::not_null<Matrix*> matrix_operator,
-                                int number_of_rhs = 0) noexcept;
+                                int number_of_rhs = 0);
 
 int general_matrix_linear_solve(gsl::not_null<DataVector*> rhs_in_solution_out,
                                 gsl::not_null<std::vector<int>*> pivots,
                                 gsl::not_null<Matrix*> matrix_operator,
-                                int number_of_rhs = 0) noexcept;
+                                int number_of_rhs = 0);
 
 int general_matrix_linear_solve(gsl::not_null<DataVector*> solution,
                                 gsl::not_null<Matrix*> matrix_operator,
-                                const DataVector& rhs,
-                                int number_of_rhs = 0) noexcept;
+                                const DataVector& rhs, int number_of_rhs = 0);
 
 int general_matrix_linear_solve(gsl::not_null<DataVector*> solution,
                                 gsl::not_null<std::vector<int>*> pivots,
                                 gsl::not_null<Matrix*> matrix_operator,
-                                const DataVector& rhs,
-                                int number_of_rhs = 0) noexcept;
+                                const DataVector& rhs, int number_of_rhs = 0);
 
 int general_matrix_linear_solve(gsl::not_null<DataVector*> rhs_in_solution_out,
                                 const Matrix& matrix_operator,
-                                int number_of_rhs = 0) noexcept;
+                                int number_of_rhs = 0);
 
 int general_matrix_linear_solve(gsl::not_null<DataVector*> solution,
                                 const Matrix& matrix_operator,
-                                const DataVector& rhs,
-                                int number_of_rhs = 0) noexcept;
+                                const DataVector& rhs, int number_of_rhs = 0);
 /// @}
 }  // namespace lapack

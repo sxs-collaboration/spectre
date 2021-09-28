@@ -17,7 +17,7 @@ namespace Solutions {
 template <typename DataType>
 Scalar<DataType> kerr_horizon_radius(
     const std::array<DataType, 2>& theta_phi, const double mass,
-    const std::array<double, 3>& dimensionless_spin) noexcept {
+    const std::array<double, 3>& dimensionless_spin) {
   const double spin_magnitude_squared = square(magnitude(dimensionless_spin));
   const double mass_squared = square(mass);
 
@@ -58,11 +58,11 @@ Scalar<DataType> kerr_horizon_radius(
 
 template Scalar<DataVector> kerr_horizon_radius(
     const std::array<DataVector, 2>& theta_phi, const double mass,
-    const std::array<double, 3>& dimensionless_spin) noexcept;
+    const std::array<double, 3>& dimensionless_spin);
 
 template Scalar<double> kerr_horizon_radius(
     const std::array<double, 2>& theta_phi, const double mass,
-    const std::array<double, 3>& dimensionless_spin) noexcept;
+    const std::array<double, 3>& dimensionless_spin);
 
 }  // namespace Solutions
 }  // namespace gr

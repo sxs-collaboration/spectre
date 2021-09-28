@@ -31,7 +31,7 @@ KerrHorizon::KerrHorizon(size_t l_max_in, std::array<double, 3> center_in,
   }
 }
 
-void KerrHorizon::pup(PUP::er& p) noexcept {
+void KerrHorizon::pup(PUP::er& p) {
   p | l_max;
   p | center;
   p | mass;
@@ -39,7 +39,7 @@ void KerrHorizon::pup(PUP::er& p) noexcept {
   p | theta_varies_fastest_memory_layout;
 }
 
-bool operator==(const KerrHorizon& lhs, const KerrHorizon& rhs) noexcept {
+bool operator==(const KerrHorizon& lhs, const KerrHorizon& rhs) {
   return lhs.l_max == rhs.l_max and lhs.center == rhs.center and
          lhs.mass == rhs.mass and
          lhs.dimensionless_spin == rhs.dimensionless_spin and
@@ -47,7 +47,7 @@ bool operator==(const KerrHorizon& lhs, const KerrHorizon& rhs) noexcept {
              rhs.theta_varies_fastest_memory_layout;
 }
 
-bool operator!=(const KerrHorizon& lhs, const KerrHorizon& rhs) noexcept {
+bool operator!=(const KerrHorizon& lhs, const KerrHorizon& rhs) {
   return not(lhs == rhs);
 }
 

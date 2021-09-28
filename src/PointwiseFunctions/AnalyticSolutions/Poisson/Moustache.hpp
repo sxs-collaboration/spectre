@@ -32,19 +32,18 @@ struct MoustacheVariables {
   const tnsr::I<DataType, Dim>& x;
 
   void operator()(gsl::not_null<Scalar<DataType>*> field,
-                  gsl::not_null<Cache*> cache, Tags::Field /*meta*/) const
-      noexcept;
+                  gsl::not_null<Cache*> cache, Tags::Field /*meta*/) const;
   void operator()(gsl::not_null<tnsr::i<DataType, Dim>*> field_gradient,
                   gsl::not_null<Cache*> cache,
                   ::Tags::deriv<Tags::Field, tmpl::size_t<Dim>,
-                                Frame::Inertial> /*meta*/) const noexcept;
+                                Frame::Inertial> /*meta*/) const;
   void operator()(gsl::not_null<tnsr::I<DataType, Dim>*> flux_for_field,
                   gsl::not_null<Cache*> cache,
                   ::Tags::Flux<Tags::Field, tmpl::size_t<Dim>,
-                               Frame::Inertial> /*meta*/) const noexcept;
+                               Frame::Inertial> /*meta*/) const;
   void operator()(gsl::not_null<Scalar<DataType>*> fixed_source_for_field,
                   gsl::not_null<Cache*> cache,
-                  ::Tags::FixedSource<Tags::Field> /*meta*/) const noexcept;
+                  ::Tags::FixedSource<Tags::Field> /*meta*/) const;
 };
 }  // namespace detail
 
@@ -96,14 +95,14 @@ class Moustache : public AnalyticSolution<Dim, Registrars> {
       "in each dimension"};
 
   Moustache() = default;
-  Moustache(const Moustache&) noexcept = default;
-  Moustache& operator=(const Moustache&) noexcept = default;
-  Moustache(Moustache&&) noexcept = default;
-  Moustache& operator=(Moustache&&) noexcept = default;
-  ~Moustache() noexcept override = default;
+  Moustache(const Moustache&) = default;
+  Moustache& operator=(const Moustache&) = default;
+  Moustache(Moustache&&) = default;
+  Moustache& operator=(Moustache&&) = default;
+  ~Moustache() override = default;
 
   /// \cond
-  explicit Moustache(CkMigrateMessage* m) noexcept : Base(m) {}
+  explicit Moustache(CkMigrateMessage* m) : Base(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Moustache);  // NOLINT
   /// \endcond
@@ -111,14 +110,14 @@ class Moustache : public AnalyticSolution<Dim, Registrars> {
   template <typename DataType, typename... RequestedTags>
   tuples::TaggedTuple<RequestedTags...> variables(
       const tnsr::I<DataType, Dim>& x,
-      tmpl::list<RequestedTags...> /*meta*/) const noexcept {
+      tmpl::list<RequestedTags...> /*meta*/) const {
     using VarsComputer = detail::MoustacheVariables<DataType, Dim>;
     typename VarsComputer::Cache cache{get_size(*x.begin()), VarsComputer{x}};
     return {cache.get_var(RequestedTags{})...};
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& /*p*/) noexcept override {}
+  void pup(PUP::er& /*p*/) override {}
 };
 
 /// \cond
@@ -128,13 +127,13 @@ PUP::able::PUP_ID Moustache<Dim, Registrars>::my_PUP_ID = 0;  // NOLINT
 
 template <size_t Dim, typename Registrars>
 constexpr bool operator==(const Moustache<Dim, Registrars>& /*lhs*/,
-                          const Moustache<Dim, Registrars>& /*rhs*/) noexcept {
+                          const Moustache<Dim, Registrars>& /*rhs*/) {
   return true;
 }
 
 template <size_t Dim, typename Registrars>
 constexpr bool operator!=(const Moustache<Dim, Registrars>& lhs,
-                          const Moustache<Dim, Registrars>& rhs) noexcept {
+                          const Moustache<Dim, Registrars>& rhs) {
   return not(lhs == rhs);
 }
 

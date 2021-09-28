@@ -30,7 +30,7 @@ namespace TestHelpers::TensorExpressions {
 template <typename TensorIndexA, typename TensorIndexB>
 void test_tensor_index_transformation_rank_2(
     const TensorIndexA& /*tensorindex_a*/,
-    const TensorIndexB& /*tensorindex_b*/) noexcept {
+    const TensorIndexB& /*tensorindex_b*/) {
   const size_t dim_a = 3;
   const size_t dim_b = 4;
 

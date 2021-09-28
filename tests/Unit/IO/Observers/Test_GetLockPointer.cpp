@@ -26,7 +26,7 @@ struct mock_lock_retrieval_action {
             typename Metavariables, typename ArrayIndex>
   static void apply(const db::DataBox<DbTagList>& /*box*/,
                     Parallel::GlobalCache<Metavariables>& cache,
-                    const ArrayIndex& /*array_index*/) noexcept {
+                    const ArrayIndex& /*array_index*/) {
     auto lock = Parallel::get_parallel_component<
                     observers::ObserverWriter<Metavariables>>(cache)
                     .ckLocalBranch()
@@ -113,7 +113,7 @@ SPECTRE_TEST_CASE("Unit.IO.Observer.GetNodeLockPointer", "[Unit][Cce]") {
                                            observers::Tags::VolumeDataLock>>(
               make_not_null(&runner), 0)),
       [](const gsl::not_null<Parallel::NodeLock*> h5_lock,
-         const gsl::not_null<Parallel::NodeLock*> volume_lock) noexcept {
+         const gsl::not_null<Parallel::NodeLock*> volume_lock) {
         CHECK(h5_lock.get() == h5_lock_to_check);
         CHECK(volume_lock.get() == volume_lock_to_check);
       });

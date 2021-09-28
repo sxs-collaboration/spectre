@@ -18,8 +18,7 @@
 namespace {
 void multiply_in_first_dimension(const gsl::not_null<double*> result,
                                  const gsl::not_null<size_t*> data_size,
-                                 const Matrix& matrix,
-                                 const double* data) noexcept {
+                                 const Matrix& matrix, const double* data) {
   *data_size /= matrix.columns();
   dgemm_<true>('N', 'N',
                matrix.rows(),     // rows of matrix and result
@@ -37,7 +36,7 @@ void multiply_in_first_dimension(const gsl::not_null<double*> result,
 }
 
 void do_transpose(const gsl::not_null<double*> result, const double* const data,
-                  const size_t data_size, const size_t chunk_size) noexcept {
+                  const size_t data_size, const size_t chunk_size) {
   raw_transpose(result, data, chunk_size, data_size / chunk_size);
 }
 
@@ -53,7 +52,7 @@ struct Scratch {
 template <typename MatrixType, size_t Dim>
 Scratch get_scratch(const std::array<MatrixType, Dim>& matrices,
                     const Index<Dim>& extents,
-                    const size_t number_of_independent_components) noexcept {
+                    const size_t number_of_independent_components) {
   size_t size = number_of_independent_components;
   for (size_t i = 0; i < Dim; ++i) {
     const auto& matrix = gsl::at(matrices, i);
@@ -75,7 +74,7 @@ Scratch get_scratch(const std::array<MatrixType, Dim>& matrices,
 // matrices are processed as if they were identity matrices.
 template <size_t Dim, typename MatrixType>
 std::array<size_t, Dim> matrix_rows(const std::array<MatrixType, Dim>& matrices,
-                                    const Index<Dim>& extents) noexcept {
+                                    const Index<Dim>& extents) {
   std::array<size_t, Dim> result{};
   for (size_t i = 0; i < Dim; ++i) {
     if (dereference_wrapper(gsl::at(matrices, i)) == Matrix{}) {
@@ -94,8 +93,7 @@ template <typename MatrixType>
 void Impl<ElementType, Dim, DimensionIsIdentity...>::apply(
     const gsl::not_null<ElementType*> result,
     const std::array<MatrixType, Dim>& matrices, const ElementType* const data,
-    const Index<Dim>& extents,
-    const size_t number_of_independent_components) noexcept {
+    const Index<Dim>& extents, const size_t number_of_independent_components) {
   if (dereference_wrapper(matrices[sizeof...(DimensionIsIdentity)]) ==
       Matrix{}) {
     Impl<ElementType, Dim, DimensionIsIdentity..., true>::apply(
@@ -114,7 +112,7 @@ struct Impl<ElementType, 0> {
                     const std::array<MatrixType, Dim>& /*matrices*/,
                     const ElementType* const data,
                     const Index<Dim>& /*extents*/,
-                    const size_t number_of_independent_components) noexcept {
+                    const size_t number_of_independent_components) {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     std::copy(data, data + number_of_independent_components, result.get());
   }
@@ -127,7 +125,7 @@ struct Impl<double, 1, false> {
   static void apply(const gsl::not_null<double*> result,
                     const std::array<MatrixType, Dim>& matrices,
                     const double* const data, const Index<Dim>& extents,
-                    const size_t number_of_independent_components) noexcept {
+                    const size_t number_of_independent_components) {
     size_t data_size = number_of_independent_components * extents.product();
     multiply_in_first_dimension(result, &data_size, matrices[0], data);
   }
@@ -141,7 +139,7 @@ struct Impl<std::complex<double>, 1, false> {
                     const std::array<MatrixType, Dim>& matrices,
                     const std::complex<double>* const data,
                     const Index<Dim>& extents,
-                    const size_t number_of_independent_components) noexcept {
+                    const size_t number_of_independent_components) {
     size_t data_size = number_of_independent_components * extents.product() * 2;
     auto scratch =
         get_scratch(matrices, extents, number_of_independent_components * 2);
@@ -166,7 +164,7 @@ struct Impl<ElementType, 1, true> {
   static void apply(const gsl::not_null<ElementType*> result,
                     const std::array<MatrixType, Dim>& /*matrices*/,
                     const ElementType* const data, const Index<Dim>& extents,
-                    const size_t number_of_independent_components) noexcept {
+                    const size_t number_of_independent_components) {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     std::copy(data, data + number_of_independent_components * extents.product(),
               result.get());
@@ -180,7 +178,7 @@ struct Impl<double, 2, false, false> {
   static void apply(const gsl::not_null<double*> result,
                     const std::array<MatrixType, Dim>& matrices,
                     const double* const data, const Index<Dim>& extents,
-                    const size_t number_of_independent_components) noexcept {
+                    const size_t number_of_independent_components) {
     const auto rows = matrix_rows(matrices, extents);
     auto scratch =
         get_scratch(matrices, extents, number_of_independent_components);
@@ -202,7 +200,7 @@ struct Impl<std::complex<double>, 2, false, false> {
                     const std::array<MatrixType, Dim>& matrices,
                     const std::complex<double>* const data,
                     const Index<Dim>& extents,
-                    const size_t number_of_independent_components) noexcept {
+                    const size_t number_of_independent_components) {
     const auto rows = matrix_rows(matrices, extents);
     auto scratch =
         get_scratch(matrices, extents, number_of_independent_components * 2);
@@ -232,7 +230,7 @@ struct Impl<double, 2, false, true> {
   static void apply(const gsl::not_null<double*> result,
                     const std::array<MatrixType, Dim>& matrices,
                     const double* const data, const Index<Dim>& extents,
-                    const size_t number_of_independent_components) noexcept {
+                    const size_t number_of_independent_components) {
     size_t data_size = number_of_independent_components * extents.product();
     multiply_in_first_dimension(result, &data_size, matrices[0], data);
   }
@@ -246,7 +244,7 @@ struct Impl<std::complex<double>, 2, false, true> {
                     const std::array<MatrixType, Dim>& matrices,
                     const std::complex<double>* const data,
                     const Index<Dim>& extents,
-                    const size_t number_of_independent_components) noexcept {
+                    const size_t number_of_independent_components) {
     auto scratch =
         get_scratch(matrices, extents, number_of_independent_components * 2);
 
@@ -272,7 +270,7 @@ struct Impl<double, 2, true, false> {
   static void apply(const gsl::not_null<double*> result,
                     const std::array<MatrixType, Dim>& matrices,
                     const double* const data, const Index<Dim>& extents,
-                    const size_t number_of_independent_components) noexcept {
+                    const size_t number_of_independent_components) {
     const auto rows = matrix_rows(matrices, extents);
     auto scratch =
         get_scratch(matrices, extents, number_of_independent_components);
@@ -293,7 +291,7 @@ struct Impl<std::complex<double>, 2, true, false> {
                     const std::array<MatrixType, Dim>& matrices,
                     const std::complex<double>* const data,
                     const Index<Dim>& extents,
-                    const size_t number_of_independent_components) noexcept {
+                    const size_t number_of_independent_components) {
     const auto rows = matrix_rows(matrices, extents);
     auto scratch =
         get_scratch(matrices, extents, number_of_independent_components * 2);
@@ -322,7 +320,7 @@ struct Impl<ElementType, 2, true, true> {
   static void apply(const gsl::not_null<ElementType*> result,
                     const std::array<MatrixType, Dim>& /*matrices*/,
                     const ElementType* const data, const Index<Dim>& extents,
-                    const size_t number_of_independent_components) noexcept {
+                    const size_t number_of_independent_components) {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     std::copy(data, data + number_of_independent_components * extents.product(),
               result.get());
@@ -336,7 +334,7 @@ struct Impl<double, 3, false, false, false> {
   static void apply(const gsl::not_null<double*> result,
                     const std::array<MatrixType, Dim>& matrices,
                     const double* const data, const Index<Dim>& extents,
-                    const size_t number_of_independent_components) noexcept {
+                    const size_t number_of_independent_components) {
     const auto rows = matrix_rows(matrices, extents);
     auto scratch =
         get_scratch(matrices, extents, number_of_independent_components);
@@ -360,7 +358,7 @@ struct Impl<std::complex<double>, 3, false, false, false> {
                     const std::array<MatrixType, Dim>& matrices,
                     const std::complex<double>* const data,
                     const Index<Dim>& extents,
-                    const size_t number_of_independent_components) noexcept {
+                    const size_t number_of_independent_components) {
     const auto rows = matrix_rows(matrices, extents);
     auto scratch =
         get_scratch(matrices, extents, number_of_independent_components * 2);
@@ -392,7 +390,7 @@ struct Impl<double, 3, false, false, true> {
   static void apply(const gsl::not_null<double*> result,
                     const std::array<MatrixType, Dim>& matrices,
                     const double* const data, const Index<Dim>& extents,
-                    const size_t number_of_independent_components) noexcept {
+                    const size_t number_of_independent_components) {
     const auto rows = matrix_rows(matrices, extents);
     auto scratch =
         get_scratch(matrices, extents, number_of_independent_components);
@@ -414,7 +412,7 @@ struct Impl<std::complex<double>, 3, false, false, true> {
                     const std::array<MatrixType, Dim>& matrices,
                     const std::complex<double>* const data,
                     const Index<Dim>& extents,
-                    const size_t number_of_independent_components) noexcept {
+                    const size_t number_of_independent_components) {
     const auto rows = matrix_rows(matrices, extents);
     auto scratch =
         get_scratch(matrices, extents, number_of_independent_components * 2);
@@ -444,7 +442,7 @@ struct Impl<double, 3, false, true, false> {
   static void apply(const gsl::not_null<double*> result,
                     const std::array<MatrixType, Dim>& matrices,
                     const double* const data, const Index<Dim>& extents,
-                    const size_t number_of_independent_components) noexcept {
+                    const size_t number_of_independent_components) {
     const auto rows = matrix_rows(matrices, extents);
     auto scratch =
         get_scratch(matrices, extents, number_of_independent_components);
@@ -466,7 +464,7 @@ struct Impl<std::complex<double>, 3, false, true, false> {
                     const std::array<MatrixType, Dim>& matrices,
                     const std::complex<double>* const data,
                     const Index<Dim>& extents,
-                    const size_t number_of_independent_components) noexcept {
+                    const size_t number_of_independent_components) {
     const auto rows = matrix_rows(matrices, extents);
     auto scratch =
         get_scratch(matrices, extents, number_of_independent_components * 2);
@@ -496,7 +494,7 @@ struct Impl<double, 3, false, true, true> {
   static void apply(const gsl::not_null<double*> result,
                     const std::array<MatrixType, Dim>& matrices,
                     const double* const data, const Index<Dim>& extents,
-                    const size_t number_of_independent_components) noexcept {
+                    const size_t number_of_independent_components) {
     size_t data_size = number_of_independent_components * extents.product();
     multiply_in_first_dimension(result, &data_size, matrices[0], data);
   }
@@ -510,7 +508,7 @@ struct Impl<std::complex<double>, 3, false, true, true> {
                     const std::array<MatrixType, Dim>& matrices,
                     const std::complex<double>* const data,
                     const Index<Dim>& extents,
-                    const size_t number_of_independent_components) noexcept {
+                    const size_t number_of_independent_components) {
     auto scratch =
         get_scratch(matrices, extents, number_of_independent_components * 2);
 
@@ -536,7 +534,7 @@ struct Impl<double, 3, true, false, false> {
   static void apply(const gsl::not_null<double*> result,
                     const std::array<MatrixType, Dim>& matrices,
                     const double* const data, const Index<Dim>& extents,
-                    const size_t number_of_independent_components) noexcept {
+                    const size_t number_of_independent_components) {
     const auto rows = matrix_rows(matrices, extents);
     auto scratch =
         get_scratch(matrices, extents, number_of_independent_components);
@@ -559,7 +557,7 @@ struct Impl<std::complex<double>, 3, true, false, false> {
                     const std::array<MatrixType, Dim>& matrices,
                     const std::complex<double>* const data,
                     const Index<Dim>& extents,
-                    const size_t number_of_independent_components) noexcept {
+                    const size_t number_of_independent_components) {
     const auto rows = matrix_rows(matrices, extents);
     auto scratch =
         get_scratch(matrices, extents, number_of_independent_components * 2);
@@ -590,7 +588,7 @@ struct Impl<double, 3, true, false, true> {
   static void apply(const gsl::not_null<double*> result,
                     const std::array<MatrixType, Dim>& matrices,
                     const double* const data, const Index<Dim>& extents,
-                    const size_t number_of_independent_components) noexcept {
+                    const size_t number_of_independent_components) {
     const auto rows = matrix_rows(matrices, extents);
     auto scratch =
         get_scratch(matrices, extents, number_of_independent_components);
@@ -611,7 +609,7 @@ struct Impl<std::complex<double>, 3, true, false, true> {
                     const std::array<MatrixType, Dim>& matrices,
                     const std::complex<double>* const data,
                     const Index<Dim>& extents,
-                    const size_t number_of_independent_components) noexcept {
+                    const size_t number_of_independent_components) {
     const auto rows = matrix_rows(matrices, extents);
     auto scratch =
         get_scratch(matrices, extents, number_of_independent_components * 2);
@@ -640,7 +638,7 @@ struct Impl<double, 3, true, true, false> {
   static void apply(const gsl::not_null<double*> result,
                     const std::array<MatrixType, Dim>& matrices,
                     const double* const data, const Index<Dim>& extents,
-                    const size_t number_of_independent_components) noexcept {
+                    const size_t number_of_independent_components) {
     const auto rows = matrix_rows(matrices, extents);
     auto scratch =
         get_scratch(matrices, extents, number_of_independent_components);
@@ -661,7 +659,7 @@ struct Impl<std::complex<double>, 3, true, true, false> {
                     const std::array<MatrixType, Dim>& matrices,
                     const std::complex<double>* const data,
                     const Index<Dim>& extents,
-                    const size_t number_of_independent_components) noexcept {
+                    const size_t number_of_independent_components) {
     const auto rows = matrix_rows(matrices, extents);
     auto scratch =
         get_scratch(matrices, extents, number_of_independent_components * 2);
@@ -690,7 +688,7 @@ struct Impl<ElementType, 3, true, true, true> {
   static void apply(const gsl::not_null<ElementType*> result,
                     const std::array<MatrixType, Dim>& /*matrices*/,
                     const ElementType* const data, const Index<Dim>& extents,
-                    const size_t number_of_independent_components) noexcept {
+                    const size_t number_of_independent_components) {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     std::copy(data, data + number_of_independent_components * extents.product(),
               result.get());
@@ -700,12 +698,11 @@ struct Impl<ElementType, 3, true, true, true> {
 #define ELEMENTTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DIM(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define MATRIX(data) BOOST_PP_TUPLE_ELEM(2, data)
-#define INSTANTIATE(_, data)                                   \
-  template void Impl<ELEMENTTYPE(data), DIM(data)>::apply(     \
-      const gsl::not_null<ELEMENTTYPE(data)*>,                 \
-      const std::array<MATRIX(data), DIM(data)>&,              \
-      const ELEMENTTYPE(data)* const, const Index<DIM(data)>&, \
-      const size_t) noexcept;
+#define INSTANTIATE(_, data)                               \
+  template void Impl<ELEMENTTYPE(data), DIM(data)>::apply( \
+      const gsl::not_null<ELEMENTTYPE(data)*>,             \
+      const std::array<MATRIX(data), DIM(data)>&,          \
+      const ELEMENTTYPE(data)* const, const Index<DIM(data)>&, const size_t);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, std::complex<double>),
                         (0, 1, 2, 3),

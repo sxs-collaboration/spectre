@@ -21,7 +21,7 @@ void unnormalized_face_normal(
     const Mesh<VolumeDim - 1>& interface_mesh,
     const InverseJacobian<DataVector, VolumeDim, Frame::ElementLogical,
                           TargetFrame>& inv_jacobian_on_interface,
-    const Direction<VolumeDim>& direction) noexcept {
+    const Direction<VolumeDim>& direction) {
   const auto sliced_away_dim = direction.dimension();
   const double sign = direction.sign();
 
@@ -36,7 +36,7 @@ tnsr::i<DataVector, VolumeDim, TargetFrame> unnormalized_face_normal(
     const Mesh<VolumeDim - 1>& interface_mesh,
     const InverseJacobian<DataVector, VolumeDim, Frame::ElementLogical,
                           TargetFrame>& inv_jacobian_on_interface,
-    const Direction<VolumeDim>& direction) noexcept {
+    const Direction<VolumeDim>& direction) {
   tnsr::i<DataVector, VolumeDim, TargetFrame> result{};
   unnormalized_face_normal(make_not_null(&result), interface_mesh,
                            inv_jacobian_on_interface, direction);
@@ -49,7 +49,7 @@ void unnormalized_face_normal(
     const gsl::not_null<tnsr::i<DataVector, VolumeDim, TargetFrame>*> result,
     const Mesh<VolumeDim - 1>& interface_mesh,
     const ElementMap<VolumeDim, TargetFrame>& map,
-    const Direction<VolumeDim>& direction) noexcept {
+    const Direction<VolumeDim>& direction) {
   unnormalized_face_normal(result, interface_mesh,
                            map.inv_jacobian(interface_logical_coordinates(
                                interface_mesh, direction)),
@@ -60,7 +60,7 @@ template <size_t VolumeDim, typename TargetFrame>
 tnsr::i<DataVector, VolumeDim, TargetFrame> unnormalized_face_normal(
     const Mesh<VolumeDim - 1>& interface_mesh,
     const ElementMap<VolumeDim, TargetFrame>& map,
-    const Direction<VolumeDim>& direction) noexcept {
+    const Direction<VolumeDim>& direction) {
   tnsr::i<DataVector, VolumeDim, TargetFrame> result{};
   unnormalized_face_normal(make_not_null(&result), interface_mesh,
                            map.inv_jacobian(interface_logical_coordinates(
@@ -75,7 +75,7 @@ void unnormalized_face_normal(
     const Mesh<VolumeDim - 1>& interface_mesh,
     const domain::CoordinateMapBase<Frame::ElementLogical, TargetFrame,
                                     VolumeDim>& map,
-    const Direction<VolumeDim>& direction) noexcept {
+    const Direction<VolumeDim>& direction) {
   unnormalized_face_normal(result, interface_mesh,
                            map.inv_jacobian(interface_logical_coordinates(
                                interface_mesh, direction)),
@@ -87,7 +87,7 @@ tnsr::i<DataVector, VolumeDim, TargetFrame> unnormalized_face_normal(
     const Mesh<VolumeDim - 1>& interface_mesh,
     const domain::CoordinateMapBase<Frame::ElementLogical, TargetFrame,
                                     VolumeDim>& map,
-    const Direction<VolumeDim>& direction) noexcept {
+    const Direction<VolumeDim>& direction) {
   tnsr::i<DataVector, VolumeDim, TargetFrame> result{};
   unnormalized_face_normal(make_not_null(&result), interface_mesh,
                            map.inv_jacobian(interface_logical_coordinates(
@@ -108,7 +108,7 @@ void unnormalized_face_normal(
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time,
-    const Direction<VolumeDim>& direction) noexcept {
+    const Direction<VolumeDim>& direction) {
   auto logical_to_grid_inv_jac = logical_to_grid_map.inv_jacobian(
       interface_logical_coordinates(interface_mesh, direction));
   ::InverseJacobian<DataVector, VolumeDim, Frame::ElementLogical,
@@ -153,7 +153,7 @@ tnsr::i<DataVector, VolumeDim, Frame::Inertial> unnormalized_face_normal(
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time,
-    const Direction<VolumeDim>& direction) noexcept {
+    const Direction<VolumeDim>& direction) {
   tnsr::i<DataVector, VolumeDim, Frame::Inertial> result{};
   unnormalized_face_normal(make_not_null(&result), interface_mesh,
                            logical_to_grid_map, grid_to_inertial_map, time,
@@ -171,11 +171,11 @@ tnsr::i<DataVector, VolumeDim, Frame::Inertial> unnormalized_face_normal(
           result,                                                             \
       const Mesh<GET_DIM(data) - 1>&,                                         \
       const ElementMap<GET_DIM(data), GET_FRAME(data)>&,                      \
-      const Direction<GET_DIM(data)>&) noexcept;                              \
+      const Direction<GET_DIM(data)>&);                                       \
   template tnsr::i<DataVector, GET_DIM(data), GET_FRAME(data)>                \
   unnormalized_face_normal(const Mesh<GET_DIM(data) - 1>&,                    \
                            const ElementMap<GET_DIM(data), GET_FRAME(data)>&, \
-                           const Direction<GET_DIM(data)>&) noexcept;         \
+                           const Direction<GET_DIM(data)>&);                  \
   template void unnormalized_face_normal(                                     \
       const gsl::not_null<                                                    \
           tnsr::i<DataVector, GET_DIM(data), GET_FRAME(data)>*>               \
@@ -183,13 +183,13 @@ tnsr::i<DataVector, VolumeDim, Frame::Inertial> unnormalized_face_normal(
       const Mesh<GET_DIM(data) - 1>&,                                         \
       const domain::CoordinateMapBase<Frame::ElementLogical, GET_FRAME(data), \
                                       GET_DIM(data)>&,                        \
-      const Direction<GET_DIM(data)>&) noexcept;                              \
+      const Direction<GET_DIM(data)>&);                                       \
   template tnsr::i<DataVector, GET_DIM(data), GET_FRAME(data)>                \
   unnormalized_face_normal(                                                   \
       const Mesh<GET_DIM(data) - 1>&,                                         \
       const domain::CoordinateMapBase<Frame::ElementLogical, GET_FRAME(data), \
                                       GET_DIM(data)>&,                        \
-      const Direction<GET_DIM(data)>&) noexcept;
+      const Direction<GET_DIM(data)>&);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3),
                         (Frame::Inertial, Frame::Grid))
@@ -210,7 +210,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3),
           std::string,                                                      \
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&        \
           functions_of_time,                                                \
-      const Direction<GET_DIM(data)>& direction) noexcept;                  \
+      const Direction<GET_DIM(data)>& direction);                           \
   template tnsr::i<DataVector, GET_DIM(data), Frame::Inertial>              \
   unnormalized_face_normal(                                                 \
       const Mesh<GET_DIM(data) - 1>& interface_mesh,                        \
@@ -222,7 +222,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3),
           std::string,                                                      \
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&        \
           functions_of_time,                                                \
-      const Direction<GET_DIM(data)>& direction) noexcept;
+      const Direction<GET_DIM(data)>& direction);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 

@@ -24,7 +24,7 @@ Scalar<DataType> compute_piecewise(
     const tnsr::I<DataType, 3>& x, const double inner_radius,
     const double outer_radius, const double inner_value,
     const double outer_value,
-    const grmhd::AnalyticData::BlastWave::Geometry geometry) noexcept {
+    const grmhd::AnalyticData::BlastWave::Geometry geometry) {
   DataType radius{};
   if (geometry == grmhd::AnalyticData::BlastWave::Geometry::Cylindrical) {
     radius = sqrt(square(get<0>(x)) + square(get<1>(x)));
@@ -79,7 +79,7 @@ BlastWave::BlastWave(const double inner_radius, const double outer_radius,
   }
 }
 
-void BlastWave::pup(PUP::er& p) noexcept {
+void BlastWave::pup(PUP::er& p) {
   p | inner_radius_;
   p | outer_radius_;
   p | inner_density_;
@@ -97,8 +97,7 @@ template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::RestMassDensity<DataType>>
 BlastWave::variables(
     const tnsr::I<DataType, 3>& x,
-    tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/)
-    const noexcept {
+    tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/) const {
   return compute_piecewise(x, inner_radius_, outer_radius_, inner_density_,
                            outer_density_, geometry_);
 }
@@ -107,8 +106,7 @@ template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, 3>>
 BlastWave::variables(
     const tnsr::I<DataType, 3>& x,
-    tmpl::list<hydro::Tags::SpatialVelocity<DataType, 3>> /*meta*/)
-    const noexcept {
+    tmpl::list<hydro::Tags::SpatialVelocity<DataType, 3>> /*meta*/) const {
   return {make_with_value<tnsr::I<DataType, 3>>(x, 0.0)};
 }
 
@@ -116,8 +114,7 @@ template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::SpecificInternalEnergy<DataType>>
 BlastWave::variables(
     const tnsr::I<DataType, 3>& x,
-    tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>> /*meta*/)
-    const noexcept {
+    tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>> /*meta*/) const {
   return equation_of_state_.specific_internal_energy_from_density_and_pressure(
       get<hydro::Tags::RestMassDensity<DataType>>(
           variables(x, tmpl::list<hydro::Tags::RestMassDensity<DataType>>{})),
@@ -128,7 +125,7 @@ BlastWave::variables(
 template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::Pressure<DataType>> BlastWave::variables(
     const tnsr::I<DataType, 3>& x,
-    tmpl::list<hydro::Tags::Pressure<DataType>> /*meta*/) const noexcept {
+    tmpl::list<hydro::Tags::Pressure<DataType>> /*meta*/) const {
   return compute_piecewise(x, inner_radius_, outer_radius_, inner_pressure_,
                            outer_pressure_, geometry_);
 }
@@ -137,8 +134,7 @@ template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3>>
 BlastWave::variables(
     const tnsr::I<DataType, 3>& x,
-    tmpl::list<hydro::Tags::MagneticField<DataType, 3>> /*meta*/)
-    const noexcept {
+    tmpl::list<hydro::Tags::MagneticField<DataType, 3>> /*meta*/) const {
   auto magnetic_field = make_with_value<tnsr::I<DataType, 3>>(get<0>(x), 0.0);
   get<0>(magnetic_field) = gsl::at(magnetic_field_, 0);
   get<1>(magnetic_field) = gsl::at(magnetic_field_, 1);
@@ -150,15 +146,14 @@ template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::DivergenceCleaningField<DataType>>
 BlastWave::variables(
     const tnsr::I<DataType, 3>& x,
-    tmpl::list<hydro::Tags::DivergenceCleaningField<DataType>> /*meta*/)
-    const noexcept {
+    tmpl::list<hydro::Tags::DivergenceCleaningField<DataType>> /*meta*/) const {
   return {make_with_value<Scalar<DataType>>(x, 0.0)};
 }
 
 template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::LorentzFactor<DataType>> BlastWave::variables(
     const tnsr::I<DataType, 3>& x,
-    tmpl::list<hydro::Tags::LorentzFactor<DataType>> /*meta*/) const noexcept {
+    tmpl::list<hydro::Tags::LorentzFactor<DataType>> /*meta*/) const {
   return {make_with_value<Scalar<DataType>>(x, 1.0)};
 }
 
@@ -166,8 +161,7 @@ template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DataType>>
 BlastWave::variables(
     const tnsr::I<DataType, 3>& x,
-    tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>> /*meta*/)
-    const noexcept {
+    tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>> /*meta*/) const {
   return equation_of_state_.specific_enthalpy_from_density_and_energy(
       get<hydro::Tags::RestMassDensity<DataType>>(
           variables(x, tmpl::list<hydro::Tags::RestMassDensity<DataType>>{})),
@@ -175,7 +169,7 @@ BlastWave::variables(
           x, tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>>{})));
 }
 
-bool operator==(const BlastWave& lhs, const BlastWave& rhs) noexcept {
+bool operator==(const BlastWave& lhs, const BlastWave& rhs) {
   return lhs.inner_radius_ == rhs.inner_radius_ and
          lhs.outer_radius_ == rhs.outer_radius_ and
          lhs.inner_density_ == rhs.inner_density_ and
@@ -187,7 +181,7 @@ bool operator==(const BlastWave& lhs, const BlastWave& rhs) noexcept {
          lhs.geometry_ == rhs.geometry_;
 }
 
-bool operator!=(const BlastWave& lhs, const BlastWave& rhs) noexcept {
+bool operator!=(const BlastWave& lhs, const BlastWave& rhs) {
   return not(lhs == rhs);
 }
 
@@ -198,7 +192,7 @@ bool operator!=(const BlastWave& lhs, const BlastWave& rhs) noexcept {
   template tuples::TaggedTuple<TAG(data) < DTYPE(data)> >                  \
       BlastWave::variables(const tnsr::I<DTYPE(data), 3>& x,               \
                            tmpl::list<TAG(data) < DTYPE(data)> > /*meta*/) \
-          const noexcept;
+          const;
 
 GENERATE_INSTANTIATIONS(
     INSTANTIATE_SCALARS, (double, DataVector),
@@ -210,7 +204,7 @@ GENERATE_INSTANTIATIONS(
   template tuples::TaggedTuple<TAG(data) < DTYPE(data), 3> >                  \
       BlastWave::variables(const tnsr::I<DTYPE(data), 3>& x,                  \
                            tmpl::list<TAG(data) < DTYPE(data), 3> > /*meta*/) \
-          const noexcept;
+          const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_VECTORS, (double, DataVector),
                         (hydro::Tags::SpatialVelocity,

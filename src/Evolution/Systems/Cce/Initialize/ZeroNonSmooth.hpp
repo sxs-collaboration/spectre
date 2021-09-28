@@ -37,28 +37,28 @@ namespace InitializeJ {
 struct ZeroNonSmooth : InitializeJ<false> {
   struct AngularCoordinateTolerance {
     using type = double;
-    static std::string name() noexcept { return "AngularCoordTolerance"; }
+    static std::string name() { return "AngularCoordTolerance"; }
     static constexpr Options::String help = {
         "Tolerance of initial angular coordinates for CCE"};
-    static type lower_bound() noexcept { return 1.0e-14; }
-    static type upper_bound() noexcept { return 1.0e-3; }
-    static type suggested_value() noexcept { return 1.0e-10; }
+    static type lower_bound() { return 1.0e-14; }
+    static type upper_bound() { return 1.0e-3; }
+    static type suggested_value() { return 1.0e-10; }
   };
 
   struct MaxIterations {
     using type = size_t;
     static constexpr Options::String help = {
         "Number of linearized inversion iterations."};
-    static type lower_bound() noexcept { return 10; }
-    static type upper_bound() noexcept { return 1000; }
-    static type suggested_value() noexcept { return 300; }
+    static type lower_bound() { return 10; }
+    static type upper_bound() { return 1000; }
+    static type suggested_value() { return 300; }
   };
 
   struct RequireConvergence {
     using type = bool;
     static constexpr Options::String help = {
         "If true, initialization will error if it hits MaxIterations"};
-    static type suggested_value() noexcept { return true; }
+    static type suggested_value() { return true; }
   };
   using options =
       tmpl::list<AngularCoordinateTolerance, MaxIterations, RequireConvergence>;
@@ -68,14 +68,14 @@ struct ZeroNonSmooth : InitializeJ<false> {
       "(roughly a no incoming radiation condition)"};
 
   WRAPPED_PUPable_decl_template(ZeroNonSmooth);  // NOLINT
-  explicit ZeroNonSmooth(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit ZeroNonSmooth(CkMigrateMessage* /*unused*/) {}
 
   ZeroNonSmooth(double angular_coordinate_tolerance, size_t max_iterations,
-                bool require_convergence = false) noexcept;
+                bool require_convergence = false);
 
   ZeroNonSmooth() = default;
 
-  std::unique_ptr<InitializeJ> get_clone() const noexcept override;
+  std::unique_ptr<InitializeJ> get_clone() const override;
 
   void operator()(
       gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 2>>*> j,
@@ -86,9 +86,9 @@ struct ZeroNonSmooth : InitializeJ<false> {
       const Scalar<SpinWeighted<ComplexDataVector, 2>>& boundary_j,
       const Scalar<SpinWeighted<ComplexDataVector, 2>>& boundary_dr_j,
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& r, size_t l_max,
-      size_t number_of_radial_points) const noexcept override;
+      size_t number_of_radial_points) const override;
 
-  void pup(PUP::er& p) noexcept override;
+  void pup(PUP::er& p) override;
 
  private:
   double angular_coordinate_tolerance_ = 1.0e-10;

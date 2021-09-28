@@ -74,7 +74,7 @@ struct ComponentBeta;
 
 struct TempPhaseATrigger : public Trigger {
   TempPhaseATrigger() = default;
-  explicit TempPhaseATrigger(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit TempPhaseATrigger(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(TempPhaseATrigger);  // NOLINT
 
@@ -84,14 +84,12 @@ struct TempPhaseATrigger : public Trigger {
 
   using argument_tags = tmpl::list<Tags::Step>;
 
-  bool operator()(const size_t step) const noexcept {
-    return step % 5 == 0;
-  }
+  bool operator()(const size_t step) const { return step % 5 == 0; }
 };
 
 struct TempPhaseBTrigger : public Trigger {
   TempPhaseBTrigger() = default;
-  explicit TempPhaseBTrigger(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit TempPhaseBTrigger(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(TempPhaseBTrigger);  // NOLINT
 
@@ -100,9 +98,7 @@ struct TempPhaseBTrigger : public Trigger {
 
   using argument_tags = tmpl::list<Tags::Step>;
 
-  bool operator()(const size_t step) const noexcept {
-    return step % 3 == 0;
-  }
+  bool operator()(const size_t step) const { return step % 3 == 0; }
 };
 
 PUP::able::PUP_ID TempPhaseBTrigger::my_PUP_ID = 0;
@@ -142,7 +138,7 @@ struct ComponentAlpha {
   static void allocate_array(
       Parallel::CProxy_GlobalCache<Metavariables>& global_cache,
       const tuples::tagged_tuple_from_typelist<initialization_tags>&
-      /*initialization_items*/) noexcept {
+      /*initialization_items*/) {
     auto& local_cache = *(global_cache.ckLocalBranch());
     auto& array_proxy =
         Parallel::get_parallel_component<ComponentAlpha>(local_cache);
@@ -221,7 +217,7 @@ struct InitializePhaseRecord {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     return std::make_tuple(
         Initialization::merge_into_databox<
             InitializePhaseRecord,
@@ -242,10 +238,9 @@ struct RecordPhaseIteration {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     db::mutate<Tags::PhaseRecord>(
-        make_not_null(&box),
-        [](const gsl::not_null<std::string*> phase_log) noexcept {
+        make_not_null(&box), [](const gsl::not_null<std::string*> phase_log) {
           *phase_log += "Running phase: " +
                         Metavariables::phase_name(
                             static_cast<typename Metavariables::Phase>(Phase)) +
@@ -255,7 +250,7 @@ struct RecordPhaseIteration {
         Metavariables::Phase::Evolve) {
       db::mutate<Tags::Step>(
           make_not_null(&box),
-          [](const gsl::not_null<size_t*> step) noexcept { ++(*step); });
+          [](const gsl::not_null<size_t*> step) { ++(*step); });
     }
     return std::make_tuple(std::move(box));
   }
@@ -267,7 +262,7 @@ struct RestartMe {
             typename Metavariables>
   static void apply(db::DataBox<tmpl::list<DbTags...>>& /*box*/,
                     Parallel::GlobalCache<Metavariables>& cache,
-                    const ArrayIndex& /*array_index*/) noexcept {
+                    const ArrayIndex& /*array_index*/) {
     Parallel::get_parallel_component<ComponentToRestart>(cache)
         .perform_algorithm(true);
   }
@@ -283,7 +278,7 @@ struct TerminateAndRestart {
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     if (db::get<Tags::Step>(box) % interval == 0) {
       if(db::get<Tags::Step>(box) < 15) {
         Parallel::simple_action<Actions::RestartMe<ParallelComponent>>(
@@ -291,7 +286,7 @@ struct TerminateAndRestart {
 
         db::mutate<Tags::PhaseRecord>(
             make_not_null(&box),
-            [](const gsl::not_null<std::string*> phase_log) noexcept {
+            [](const gsl::not_null<std::string*> phase_log) {
               *phase_log += "Terminate and Restart\n";
             });
         return std::make_tuple(std::move(box),
@@ -299,7 +294,7 @@ struct TerminateAndRestart {
       } else {
         db::mutate<Tags::PhaseRecord>(
             make_not_null(&box),
-            [](const gsl::not_null<std::string*> phase_log) noexcept {
+            [](const gsl::not_null<std::string*> phase_log) {
               *phase_log += "Terminate Completion\n";
             });
         return std::make_tuple(std::move(box),
@@ -318,7 +313,7 @@ struct Finalize {
       Requires<tmpl::list_contains_v<DbTagsList, Tags::PhaseRecord>> = nullptr>
   static auto apply(const db::DataBox<DbTagsList>& box,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/) noexcept {
+                    const ArrayIndex& /*array_index*/) {
     const std::string& log = db::get<Tags::PhaseRecord>(box);
     SPECTRE_PARALLEL_REQUIRE(
         log == Metavariables::expected_log(tmpl::type_<ParallelComponent>{}));
@@ -330,7 +325,7 @@ struct Finalize {
                 nullptr>
   static auto apply(const db::DataBox<DbTagsList>& /*box*/,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/) noexcept {
+                    const ArrayIndex& /*array_index*/) {
     SPECTRE_PARALLEL_REQUIRE(false);
   }
 };
@@ -383,7 +378,7 @@ struct TestMetavariables {
   using const_global_cache_tags = tmpl::list<
       PhaseControl::Tags::PhaseChangeAndTriggers<phase_changes>>;
 
-  static std::string phase_name(const Phase phase) noexcept {
+  static std::string phase_name(const Phase phase) {
     switch (phase) {
       case Phase::Initialization:
         return "Initialization";
@@ -405,8 +400,7 @@ struct TestMetavariables {
   static constexpr Options::String help =
       "An executable for testing basic phase control flow.";
 
-  static std::string repeat(const std::string& input,
-                            const size_t times) noexcept {
+  static std::string repeat(const std::string& input, const size_t times) {
     std::string output;
     for (size_t i = 0; i < times; ++i) {
       output += input;
@@ -415,7 +409,7 @@ struct TestMetavariables {
   }
 
   static std::string expected_log(
-      tmpl::type_<ComponentAlpha<TestMetavariables>> /*meta*/) noexcept {
+      tmpl::type_<ComponentAlpha<TestMetavariables>> /*meta*/) {
     return "Running phase: Initialization\n" +
            repeat("Running phase: Evolve\n", 2_st) +
            "Terminate and Restart\n"
@@ -448,7 +442,7 @@ struct TestMetavariables {
   }
 
   static std::string expected_log(
-      tmpl::type_<ComponentBeta<TestMetavariables>> /*meta*/) noexcept {
+      tmpl::type_<ComponentBeta<TestMetavariables>> /*meta*/) {
     return "Running phase: Initialization\n" +
            repeat("Running phase: Evolve\n", 3_st) +  // steps 1-3 -> B
            "Running phase: TempPhaseB\n"
@@ -477,8 +471,7 @@ struct TestMetavariables {
       const gsl::not_null<tuples::TaggedTuple<Tags...>*>
           phase_change_decision_data,
       const Phase& current_phase,
-      const Parallel::CProxy_GlobalCache<
-          TestMetavariables>& cache_proxy) noexcept {
+      const Parallel::CProxy_GlobalCache<TestMetavariables>& cache_proxy) {
     const auto next_phase =
         PhaseControl::arbitrate_phase_change<phase_changes>(
             phase_change_decision_data, current_phase,
@@ -502,7 +495,7 @@ struct TestMetavariables {
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& /*p*/) noexcept {}
+  void pup(PUP::er& /*p*/) {}
 };
 
 // [charm_init_funcs_example]

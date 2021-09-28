@@ -21,23 +21,22 @@ namespace hydro {
 /// @{
 /// Computes the Lorentz factor \f$W=1/\sqrt{1 - v^i v_i}\f$
 template <typename DataType, size_t Dim, typename Frame>
-void lorentz_factor(
-    gsl::not_null<Scalar<DataType>*> result,
-    const tnsr::I<DataType, Dim, Frame>& spatial_velocity,
-    const tnsr::i<DataType, Dim, Frame>& spatial_velocity_form) noexcept;
+void lorentz_factor(gsl::not_null<Scalar<DataType>*> result,
+                    const tnsr::I<DataType, Dim, Frame>& spatial_velocity,
+                    const tnsr::i<DataType, Dim, Frame>& spatial_velocity_form);
 
 template <typename DataType, size_t Dim, typename Frame>
 Scalar<DataType> lorentz_factor(
     const tnsr::I<DataType, Dim, Frame>& spatial_velocity,
-    const tnsr::i<DataType, Dim, Frame>& spatial_velocity_form) noexcept;
+    const tnsr::i<DataType, Dim, Frame>& spatial_velocity_form);
 
 template <typename DataType>
 void lorentz_factor(gsl::not_null<Scalar<DataType>*> result,
-                    const Scalar<DataType>& spatial_velocity_squared) noexcept;
+                    const Scalar<DataType>& spatial_velocity_squared);
 
 template <typename DataType>
 Scalar<DataType> lorentz_factor(
-    const Scalar<DataType>& spatial_velocity_squared) noexcept;
+    const Scalar<DataType>& spatial_velocity_squared);
 /// @}
 
 namespace Tags {
@@ -54,7 +53,7 @@ struct LorentzFactorCompute : LorentzFactor<DataType>, db::ComputeTag {
 
   static constexpr auto function = static_cast<void (*)(
       gsl::not_null<Scalar<DataType>*>, const tnsr::I<DataType, Dim, Frame>&,
-      const tnsr::i<DataType, Dim, Frame>&) noexcept>(
+      const tnsr::i<DataType, Dim, Frame>&)>(
       &lorentz_factor<DataType, Dim, Frame>);
 
   using base = LorentzFactor<DataType>;

@@ -31,7 +31,7 @@ namespace Cce::Solutions {
 void WorldtubeData::variables_impl(
     const gsl::not_null<tnsr::i<DataVector, 3>*> cartesian_coordinates,
     const size_t output_l_max, double /*time*/,
-    tmpl::type_<Tags::CauchyCartesianCoords> /*meta*/) const noexcept {
+    tmpl::type_<Tags::CauchyCartesianCoords> /*meta*/) const {
   const auto& collocation = Spectral::Swsh::cached_collocation_metadata<
       Spectral::Swsh::ComplexRepresentation::Interleaved>(output_l_max);
   for (const auto collocation_point : collocation) {
@@ -49,8 +49,7 @@ void WorldtubeData::variables_impl(
 void WorldtubeData::variables_impl(
     const gsl::not_null<tnsr::i<DataVector, 3>*> dr_cartesian_coordinates,
     const size_t output_l_max, const double /*time*/,
-    tmpl::type_<Tags::Dr<Tags::CauchyCartesianCoords>> /*meta*/)
-    const noexcept {
+    tmpl::type_<Tags::Dr<Tags::CauchyCartesianCoords>> /*meta*/) const {
   const auto& collocation = Spectral::Swsh::cached_collocation_metadata<
       Spectral::Swsh::ComplexRepresentation::Interleaved>(output_l_max);
   for (const auto collocation_point : collocation) {
@@ -67,7 +66,7 @@ void WorldtubeData::variables_impl(
     const gsl::not_null<tnsr::aa<DataVector, 3>*> pi, const size_t output_l_max,
     const double time,
     tmpl::type_<GeneralizedHarmonic::Tags::Pi<3, ::Frame::Inertial>> /*meta*/)
-    const noexcept {
+    const {
   const auto& d_spacetime_metric =
       cache_or_compute<GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>>(
           output_l_max, time);
@@ -94,7 +93,7 @@ void WorldtubeData::variables_impl(
     const gsl::not_null<tnsr::ii<DataVector, 3>*> spatial_metric,
     const size_t output_l_max, const double time,
     tmpl::type_<gr::Tags::SpatialMetric<3, ::Frame::Inertial,
-                                        DataVector>> /*meta*/) const noexcept {
+                                        DataVector>> /*meta*/) const {
   gr::spatial_metric(
       spatial_metric,
       cache_or_compute<
@@ -107,7 +106,7 @@ void WorldtubeData::variables_impl(
     const size_t output_l_max, const double time,
     tmpl::type_<::Tags::dt<
         gr::Tags::SpatialMetric<3, ::Frame::Inertial, DataVector>>> /*meta*/)
-    const noexcept {
+    const {
   const auto& dt_spacetime_metric = cache_or_compute<
       ::Tags::dt<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>>(
       output_l_max, time);
@@ -122,9 +121,8 @@ void WorldtubeData::variables_impl(
 void WorldtubeData::variables_impl(
     const gsl::not_null<tnsr::ii<DataVector, 3>*> dr_spatial_metric,
     const size_t output_l_max, const double time,
-    tmpl::type_<Tags::Dr<
-        gr::Tags::SpatialMetric<3, ::Frame::Inertial, DataVector>>> /*meta*/)
-    const noexcept {
+    tmpl::type_<Tags::Dr<gr::Tags::SpatialMetric<3, ::Frame::Inertial,
+                                                 DataVector>>> /*meta*/) const {
   const auto& dr_cartesian_coordinates =
       cache_or_compute<Tags::Dr<Tags::CauchyCartesianCoords>>(output_l_max,
                                                               time);
@@ -147,7 +145,7 @@ void WorldtubeData::variables_impl(
     const gsl::not_null<tnsr::I<DataVector, 3>*> shift,
     const size_t output_l_max, const double time,
     tmpl::type_<gr::Tags::Shift<3, ::Frame::Inertial, DataVector>> /*meta*/)
-    const noexcept {
+    const {
   const auto& spacetime_metric = cache_or_compute<
       gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>(output_l_max,
                                                                    time);
@@ -163,7 +161,7 @@ void WorldtubeData::variables_impl(
     const size_t output_l_max, const double time,
     tmpl::type_<
         ::Tags::dt<gr::Tags::Shift<3, ::Frame::Inertial, DataVector>>> /*meta*/)
-    const noexcept {
+    const {
   const auto& lapse =
       cache_or_compute<gr::Tags::Lapse<DataVector>>(output_l_max, time);
   const auto& shift =
@@ -188,7 +186,7 @@ void WorldtubeData::variables_impl(
     const size_t output_l_max, const double time,
     tmpl::type_<
         Tags::Dr<gr::Tags::Shift<3, ::Frame::Inertial, DataVector>>> /*meta*/)
-    const noexcept {
+    const {
   const auto& lapse =
       cache_or_compute<gr::Tags::Lapse<DataVector>>(output_l_max, time);
   const auto& shift =
@@ -221,7 +219,7 @@ void WorldtubeData::variables_impl(
 void WorldtubeData::variables_impl(
     const gsl::not_null<Scalar<DataVector>*> lapse, const size_t output_l_max,
     const double time,
-    tmpl::type_<gr::Tags::Lapse<DataVector>> /*meta*/) const noexcept {
+    tmpl::type_<gr::Tags::Lapse<DataVector>> /*meta*/) const {
   gr::lapse(lapse,
             cache_or_compute<gr::Tags::Shift<3, ::Frame::Inertial, DataVector>>(
                 output_l_max, time),
@@ -233,8 +231,7 @@ void WorldtubeData::variables_impl(
 void WorldtubeData::variables_impl(
     const gsl::not_null<Scalar<DataVector>*> dt_lapse,
     const size_t output_l_max, const double time,
-    tmpl::type_<::Tags::dt<gr::Tags::Lapse<DataVector>>> /*meta*/)
-    const noexcept {
+    tmpl::type_<::Tags::dt<gr::Tags::Lapse<DataVector>>> /*meta*/) const {
   const auto& lapse =
       cache_or_compute<gr::Tags::Lapse<DataVector>>(output_l_max, time);
   const auto& shift =
@@ -251,8 +248,7 @@ void WorldtubeData::variables_impl(
 void WorldtubeData::variables_impl(
     const gsl::not_null<Scalar<DataVector>*> dr_lapse,
     const size_t output_l_max, const double time,
-    tmpl::type_<Tags::Dr<gr::Tags::Lapse<DataVector>>> /*meta*/)
-    const noexcept {
+    tmpl::type_<Tags::Dr<gr::Tags::Lapse<DataVector>>> /*meta*/) const {
   const auto& lapse =
       cache_or_compute<gr::Tags::Lapse<DataVector>>(output_l_max, time);
   const auto& shift =
@@ -271,7 +267,7 @@ void WorldtubeData::variables_impl(
                    get<2>(dr_cartesian_coordinates) * get<2>(d_lapse);
 }
 
-void WorldtubeData::pup(PUP::er& p) noexcept {
+void WorldtubeData::pup(PUP::er& p) {
   p | extraction_radius_;
   if (p.isUnpacking()) {
     intermediate_cache_ = IntermediateCacheTuple{};

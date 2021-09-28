@@ -23,7 +23,7 @@ GeneralizedHarmonic::gauges::DhGaugeParameters<false>::DhGaugeParameters(
 
 // clang-tidy: google-runtime-references
 void GeneralizedHarmonic::gauges::DhGaugeParameters<true>::pup(
-    PUP::er& p) noexcept {  // NOLINT
+    PUP::er& p) {  // NOLINT
   p | rollon_start;
   p | rollon_window;
   p | spatial_decay_width;
@@ -33,7 +33,7 @@ void GeneralizedHarmonic::gauges::DhGaugeParameters<true>::pup(
 
 // clang-tidy: google-runtime-references
 void GeneralizedHarmonic::gauges::DhGaugeParameters<false>::pup(
-    PUP::er& p) noexcept {  // NOLINT
+    PUP::er& p) {  // NOLINT
   p | spatial_decay_width;
   p | amplitudes;
   p | exponents;

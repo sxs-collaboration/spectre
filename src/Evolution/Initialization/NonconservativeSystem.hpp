@@ -59,7 +59,7 @@ struct NonconservativeSystem {
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     using Vars = typename variables_tag::type;
     Initialization::mutate_assign<simple_tags>(
         make_not_null(&box),

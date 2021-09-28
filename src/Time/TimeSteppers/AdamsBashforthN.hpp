@@ -98,35 +98,35 @@ class AdamsBashforthN : public LtsTimeStepper::Inherit {
   struct Order {
     using type = size_t;
     static constexpr Options::String help = {"Convergence order"};
-    static type lower_bound() noexcept { return 1; }
-    static type upper_bound() noexcept { return maximum_order; }
+    static type lower_bound() { return 1; }
+    static type upper_bound() { return maximum_order; }
   };
   using options = tmpl::list<Order>;
   static constexpr Options::String help = {
       "An Adams-Bashforth Nth order time-stepper."};
 
   AdamsBashforthN() = default;
-  explicit AdamsBashforthN(size_t order) noexcept;
-  AdamsBashforthN(const AdamsBashforthN&) noexcept = default;
-  AdamsBashforthN& operator=(const AdamsBashforthN&) noexcept = default;
-  AdamsBashforthN(AdamsBashforthN&&) noexcept = default;
-  AdamsBashforthN& operator=(AdamsBashforthN&&) noexcept = default;
-  ~AdamsBashforthN() noexcept override = default;
+  explicit AdamsBashforthN(size_t order);
+  AdamsBashforthN(const AdamsBashforthN&) = default;
+  AdamsBashforthN& operator=(const AdamsBashforthN&) = default;
+  AdamsBashforthN(AdamsBashforthN&&) = default;
+  AdamsBashforthN& operator=(AdamsBashforthN&&) = default;
+  ~AdamsBashforthN() override = default;
 
   template <typename Vars, typename DerivVars>
   void update_u(gsl::not_null<Vars*> u,
                 gsl::not_null<History<Vars, DerivVars>*> history,
-                const TimeDelta& time_step) const noexcept;
+                const TimeDelta& time_step) const;
 
   template <typename Vars, typename ErrVars, typename DerivVars>
   bool update_u(gsl::not_null<Vars*> u, gsl::not_null<ErrVars*> u_error,
                 gsl::not_null<History<Vars, DerivVars>*> history,
-                const TimeDelta& time_step) const noexcept;
+                const TimeDelta& time_step) const;
 
   template <typename Vars, typename DerivVars>
   bool dense_update_u(gsl::not_null<Vars*> u,
                       const History<Vars, DerivVars>& history,
-                      double time) const noexcept;
+                      double time) const;
 
   // This is defined as a separate type alias to keep the doxygen page
   // width somewhat under control.
@@ -251,41 +251,41 @@ class AdamsBashforthN : public LtsTimeStepper::Inherit {
       const Coupling& coupling,
       gsl::not_null<BoundaryHistoryType<LocalVars, RemoteVars, Coupling>*>
           history,
-      const TimeDelta& time_step) const noexcept;
+      const TimeDelta& time_step) const;
 
   template <typename LocalVars, typename RemoteVars, typename Coupling>
   std::result_of_t<const Coupling&(LocalVars, RemoteVars)>
   boundary_dense_output(
       const Coupling& coupling,
       const BoundaryHistoryType<LocalVars, RemoteVars, Coupling>& history,
-      double time) const noexcept;
+      double time) const;
 
-  size_t order() const noexcept override;
+  size_t order() const override;
 
-  size_t error_estimate_order() const noexcept override;
+  size_t error_estimate_order() const override;
 
-  size_t number_of_past_steps() const noexcept override;
+  size_t number_of_past_steps() const override;
 
-  double stable_step() const noexcept override;
+  double stable_step() const override;
 
   TimeStepId next_time_id(const TimeStepId& current_id,
-                          const TimeDelta& time_step) const noexcept override;
+                          const TimeDelta& time_step) const override;
 
   template <typename Vars, typename DerivVars>
   bool can_change_step_size(
       const TimeStepId& time_id,
-      const TimeSteppers::History<Vars, DerivVars>& history) const noexcept;
+      const TimeSteppers::History<Vars, DerivVars>& history) const;
 
   WRAPPED_PUPable_decl_template(AdamsBashforthN);  // NOLINT
 
-  explicit AdamsBashforthN(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit AdamsBashforthN(CkMigrateMessage* /*unused*/) {}
 
   // clang-tidy: do not pass by non-const reference
-  void pup(PUP::er& p) noexcept override;  // NOLINT
+  void pup(PUP::er& p) override;  // NOLINT
 
  private:
   friend bool operator==(const AdamsBashforthN& lhs,
-                         const AdamsBashforthN& rhs) noexcept;
+                         const AdamsBashforthN& rhs);
 
   // Some of the private methods take a parameter of type "Delta" or
   // "TimeType".  Delta is expected to be a TimeDelta or an
@@ -298,53 +298,52 @@ class AdamsBashforthN : public LtsTimeStepper::Inherit {
             typename Delta>
   void update_u_impl(gsl::not_null<UpdateVars*> u,
                      const History<Vars, DerivVars>& history,
-                     const Delta& time_step, size_t order) const noexcept;
+                     const Delta& time_step, size_t order) const;
 
   template <typename LocalVars, typename RemoteVars, typename Coupling,
             typename TimeType>
   std::result_of_t<const Coupling&(LocalVars, RemoteVars)> boundary_impl(
       const Coupling& coupling,
       const BoundaryHistoryType<LocalVars, RemoteVars, Coupling>& history,
-      const TimeType& end_time) const noexcept;
+      const TimeType& end_time) const;
 
   /// Get coefficients for a time step.  Arguments are an iterator
   /// pair to past times, oldest to newest, and the time step to take.
   template <typename Iterator, typename Delta>
   static std::vector<double> get_coefficients(const Iterator& times_begin,
                                               const Iterator& times_end,
-                                              const Delta& step) noexcept;
+                                              const Delta& step);
 
   static std::vector<double> get_coefficients_impl(
-      const std::vector<double>& steps) noexcept;
+      const std::vector<double>& steps);
 
   static std::vector<double> variable_coefficients(
-      const std::vector<double>& steps) noexcept;
+      const std::vector<double>& steps);
 
-  static std::vector<double> constant_coefficients(size_t order) noexcept;
+  static std::vector<double> constant_coefficients(size_t order);
 
   struct ApproximateTimeDelta;
 
   // Time-like interface to a double used for dense output
   struct ApproximateTime {
     double time = std::numeric_limits<double>::signaling_NaN();
-    double value() const noexcept { return time; }
+    double value() const { return time; }
 
     // Only the operators that are actually used are defined.
     friend ApproximateTimeDelta operator-(const ApproximateTime& a,
-                                          const Time& b) noexcept {
+                                          const Time& b) {
       return {a.value() - b.value()};
     }
 
-    friend bool operator<(const Time& a, const ApproximateTime& b) noexcept {
+    friend bool operator<(const Time& a, const ApproximateTime& b) {
       return a.value() < b.value();
     }
 
-    friend bool operator<(const ApproximateTime& a, const Time& b) noexcept {
+    friend bool operator<(const ApproximateTime& a, const Time& b) {
       return a.value() < b.value();
     }
 
-    friend std::ostream& operator<<(std::ostream& s,
-                                    const ApproximateTime& t) noexcept {
+    friend std::ostream& operator<<(std::ostream& s, const ApproximateTime& t) {
       return s << t.value();
     }
   };
@@ -352,12 +351,12 @@ class AdamsBashforthN : public LtsTimeStepper::Inherit {
   // TimeDelta-like interface to a double used for dense output
   struct ApproximateTimeDelta {
     double delta = std::numeric_limits<double>::signaling_NaN();
-    double value() const noexcept { return delta; }
-    bool is_positive() const noexcept { return delta > 0.; }
+    double value() const { return delta; }
+    bool is_positive() const { return delta > 0.; }
 
     // Only the operators that are actually used are defined.
     friend bool operator<(const ApproximateTimeDelta& a,
-                          const ApproximateTimeDelta& b) noexcept {
+                          const ApproximateTimeDelta& b) {
       return a.value() < b.value();
     }
   };
@@ -365,14 +364,13 @@ class AdamsBashforthN : public LtsTimeStepper::Inherit {
   size_t order_ = 3;
 };
 
-bool operator!=(const AdamsBashforthN& lhs,
-                const AdamsBashforthN& rhs) noexcept;
+bool operator!=(const AdamsBashforthN& lhs, const AdamsBashforthN& rhs);
 
 template <typename Vars, typename DerivVars>
 void AdamsBashforthN::update_u(
     const gsl::not_null<Vars*> u,
     const gsl::not_null<History<Vars, DerivVars>*> history,
-    const TimeDelta& time_step) const noexcept {
+    const TimeDelta& time_step) const {
   ASSERT(history->size() >= history->integration_order(),
          "Insufficient data to take an order-" << history->integration_order()
          << " step.  Have " << history->size() << " times, need "
@@ -388,7 +386,7 @@ template <typename Vars, typename ErrVars, typename DerivVars>
 bool AdamsBashforthN::update_u(
     const gsl::not_null<Vars*> u, const gsl::not_null<ErrVars*> u_error,
     const gsl::not_null<History<Vars, DerivVars>*> history,
-    const TimeDelta& time_step) const noexcept {
+    const TimeDelta& time_step) const {
   ASSERT(history->size() >= history->integration_order(),
          "Insufficient data to take an order-" << history->integration_order()
          << " step.  Have " << history->size() << " times, need "
@@ -408,7 +406,7 @@ bool AdamsBashforthN::update_u(
 template <typename Vars, typename DerivVars>
 bool AdamsBashforthN::dense_update_u(const gsl::not_null<Vars*> u,
                                      const History<Vars, DerivVars>& history,
-                                     const double time) const noexcept {
+                                     const double time) const {
   const ApproximateTimeDelta time_step{time - history.back().value()};
   update_u_impl(u, history, time_step, history.integration_order());
   return true;
@@ -419,7 +417,7 @@ template <typename UpdateVars, typename Vars, typename DerivVars,
 void AdamsBashforthN::update_u_impl(const gsl::not_null<UpdateVars*> u,
                                     const History<Vars, DerivVars>& history,
                                     const Delta& time_step,
-                                    const size_t order) const noexcept {
+                                    const size_t order) const {
   ASSERT(
       history.size() > 0,
       "Cannot meaningfully update the evolved variables with an empty history");
@@ -447,7 +445,7 @@ AdamsBashforthN::compute_boundary_delta(
     const Coupling& coupling,
     const gsl::not_null<BoundaryHistoryType<LocalVars, RemoteVars, Coupling>*>
         history,
-    const TimeDelta& time_step) const noexcept {
+    const TimeDelta& time_step) const {
   const auto signed_order =
       static_cast<typename decltype(history->local_end())::difference_type>(
           history->integration_order());
@@ -488,7 +486,7 @@ std::result_of_t<const Coupling&(LocalVars, RemoteVars)>
 AdamsBashforthN::boundary_dense_output(
     const Coupling& coupling,
     const BoundaryHistoryType<LocalVars, RemoteVars, Coupling>& history,
-    const double time) const noexcept {
+    const double time) const {
   return boundary_impl(coupling, history, ApproximateTime{time});
 }
 
@@ -498,7 +496,7 @@ std::result_of_t<const Coupling&(LocalVars, RemoteVars)>
 AdamsBashforthN::boundary_impl(
     const Coupling& coupling,
     const BoundaryHistoryType<LocalVars, RemoteVars, Coupling>& history,
-    const TimeType& end_time) const noexcept {
+    const TimeType& end_time) const {
   // Might be different from order_ during self-start.
   const auto current_order = history.integration_order();
 
@@ -576,8 +574,7 @@ AdamsBashforthN::boundary_impl(
          << " is not before " << end_time);
 
   // Union of times of all step boundaries on any side.
-  const auto union_times = [&history, &local_begin, &remote_begin,
-                            &less]() noexcept {
+  const auto union_times = [&history, &local_begin, &remote_begin, &less]() {
     std::vector<Time> ret;
     ret.reserve(history.local_size() + history.remote_size());
     std::set_union(local_begin, history.local_end(), remote_begin,
@@ -588,7 +585,7 @@ AdamsBashforthN::boundary_impl(
   using UnionIter = typename decltype(union_times)::const_iterator;
 
   // Find the union times iterator for a given time.
-  const auto union_step = [&union_times, &less](const Time& t) noexcept {
+  const auto union_step = [&union_times, &less](const Time& t) {
     return std::lower_bound(union_times.cbegin(), union_times.cend(), t, less);
   };
 
@@ -597,8 +594,8 @@ AdamsBashforthN::boundary_impl(
 
   // min(union_times.end(), it + order_s) except being careful not
   // to create out-of-range iterators.
-  const auto advance_within_step =
-      [order_s, &union_times](const UnionIter& it) noexcept {
+  const auto advance_within_step = [order_s,
+                                    &union_times](const UnionIter& it) {
     return union_times.end() - it >
                    static_cast<typename decltype(union_times)::difference_type>(
                        order_s)
@@ -611,28 +608,30 @@ AdamsBashforthN::boundary_impl(
   // expensive, so we cache them.  ab_coefs(it, step) returns the
   // coefficients used to step from *it to *it + step.
   auto ab_coefs = make_overloader(
-      make_cached_function<std::tuple<UnionIter, TimeDelta>,
-                           std::map>([order_s](
-          const std::tuple<UnionIter, TimeDelta>& args) noexcept {
-        return get_coefficients(
-            std::get<0>(args) -
-                static_cast<typename UnionIter::difference_type>(order_s - 1),
-            std::get<0>(args) + 1, std::get<1>(args));
-      }),
+      make_cached_function<std::tuple<UnionIter, TimeDelta>, std::map>(
+          [order_s](const std::tuple<UnionIter, TimeDelta>& args) {
+            return get_coefficients(
+                std::get<0>(args) -
+                    static_cast<typename UnionIter::difference_type>(order_s -
+                                                                     1),
+                std::get<0>(args) + 1, std::get<1>(args));
+          }),
       make_cached_function<std::tuple<UnionIter, ApproximateTimeDelta>,
-                           std::map>([order_s](
-          const std::tuple<UnionIter, ApproximateTimeDelta>& args) noexcept {
-        return get_coefficients(
-            std::get<0>(args) -
-                static_cast<typename UnionIter::difference_type>(order_s - 1),
-            std::get<0>(args) + 1, std::get<1>(args));
-      }));
+                           std::map>(
+          [order_s](const std::tuple<UnionIter, ApproximateTimeDelta>& args) {
+            return get_coefficients(
+                std::get<0>(args) -
+                    static_cast<typename UnionIter::difference_type>(order_s -
+                                                                     1),
+                std::get<0>(args) + 1, std::get<1>(args));
+          }));
 
   // The value of the coefficient of `evaluation_step` when doing
   // a standard Adams-Bashforth integration over the union times
   // from `step` to `step + 1`.
   const auto base_summand = [&ab_coefs, &end_time, &union_times](
-      const UnionIter& step, const UnionIter& evaluation_step) noexcept {
+                                const UnionIter& step,
+                                const UnionIter& evaluation_step) {
     if (step + 1 != union_times.end()) {
       const TimeDelta step_size = *(step + 1) - *step;
       return step_size.value() *
@@ -671,9 +670,9 @@ AdamsBashforthN::boundary_impl(
         // performed at equal times on the two sides of the mortar.
 
         // Makes an iterator with a map to give time as a double.
-        const auto make_lagrange_iterator = [](const auto& it) noexcept {
+        const auto make_lagrange_iterator = [](const auto& it) {
           return boost::make_transform_iterator(
-              it, [](const Time& t) noexcept { return t.value(); });
+              it, [](const Time& t) { return t.value(); });
         };
 
         const auto union_remote_evaluation_step =
@@ -751,7 +750,7 @@ AdamsBashforthN::boundary_impl(
 template <typename Vars, typename DerivVars>
 bool AdamsBashforthN::can_change_step_size(
     const TimeStepId& time_id,
-    const TimeSteppers::History<Vars, DerivVars>& history) const noexcept {
+    const TimeSteppers::History<Vars, DerivVars>& history) const {
   // We need to forbid local time-stepping before initialization is
   // complete.  The self-start procedure itself should never consider
   // changing the step size, but we need to wait during the main
@@ -766,8 +765,7 @@ bool AdamsBashforthN::can_change_step_size(
 
 template <typename Iterator, typename Delta>
 std::vector<double> AdamsBashforthN::get_coefficients(
-    const Iterator& times_begin, const Iterator& times_end,
-    const Delta& step) noexcept {
+    const Iterator& times_begin, const Iterator& times_end, const Delta& step) {
   if (times_begin == times_end) {
     return {};
   }

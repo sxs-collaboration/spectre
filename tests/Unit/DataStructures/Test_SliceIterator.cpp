@@ -30,7 +30,7 @@ void check_slice_iterator_helper(SliceIterator si) {
 }
 
 template <size_t Dim>
-void check_slice_and_volume_indices(const Index<Dim>& extents) noexcept {
+void check_slice_and_volume_indices(const Index<Dim>& extents) {
   const auto t = volume_and_slice_indices(extents);
   const auto& indices = t.second;
   for (size_t d = 0; d < Dim; ++d) {

@@ -46,10 +46,10 @@ class SomeEvent : public Event {
   using options = tmpl::list<SubfileName>;
 
   SomeEvent() = default;
-  explicit SomeEvent(std::string subfile_path) noexcept
+  explicit SomeEvent(std::string subfile_path)
       : subfile_path_(std::move(subfile_path)) {}
 
-  explicit SomeEvent(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit SomeEvent(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
@@ -58,12 +58,12 @@ class SomeEvent : public Event {
 
   using observation_registration_tags = tmpl::list<>;
   std::pair<observers::TypeOfObservation, observers::ObservationKey>
-  get_observation_type_and_key_for_registration() const noexcept {
+  get_observation_type_and_key_for_registration() const {
     return {observers::TypeOfObservation::Reduction,
             observers::ObservationKey(subfile_path_ + ".dat")};
   }
 
-  bool needs_evolved_variables() const noexcept override {
+  bool needs_evolved_variables() const override {
     ERROR("Should not be called");
   }
 
@@ -101,13 +101,12 @@ struct MockRegisterContributorWithObserver {
 
   template <typename ParallelComponent, typename DbTagList,
             typename Metavariables, typename ArrayIndex>
-  static void apply(
-      db::DataBox<DbTagList>& /*box*/,
-      Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/,
-      const observers::ObservationKey& observation_key,
-      const observers::ArrayComponentId& component_id,
-      const observers::TypeOfObservation& type_of_observation) noexcept {
+  static void apply(db::DataBox<DbTagList>& /*box*/,
+                    Parallel::GlobalCache<Metavariables>& /*cache*/,
+                    const ArrayIndex& /*array_index*/,
+                    const observers::ObservationKey& observation_key,
+                    const observers::ArrayComponentId& component_id,
+                    const observers::TypeOfObservation& type_of_observation) {
     result.observation_key = observation_key;
     result.array_component_id = component_id;
     result.type_of_observation = type_of_observation;
@@ -124,13 +123,12 @@ struct MockDeregisterContributorWithObserver {
 
   template <typename ParallelComponent, typename DbTagList,
             typename Metavariables, typename ArrayIndex>
-  static void apply(
-      db::DataBox<DbTagList>& /*box*/,
-      Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/,
-      const observers::ObservationKey& observation_key,
-      const observers::ArrayComponentId& component_id,
-      const observers::TypeOfObservation& type_of_observation) noexcept {
+  static void apply(db::DataBox<DbTagList>& /*box*/,
+                    Parallel::GlobalCache<Metavariables>& /*cache*/,
+                    const ArrayIndex& /*array_index*/,
+                    const observers::ObservationKey& observation_key,
+                    const observers::ArrayComponentId& component_id,
+                    const observers::TypeOfObservation& type_of_observation) {
     result.observation_key = observation_key;
     result.array_component_id = component_id;
     result.type_of_observation = type_of_observation;

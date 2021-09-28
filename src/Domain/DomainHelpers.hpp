@@ -72,7 +72,7 @@ void set_internal_boundaries(
         std::vector<DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>>*>
         neighbors_of_all_blocks,
     const std::vector<std::array<size_t, two_to_the(VolumeDim)>>&
-        corners_of_all_blocks) noexcept;
+        corners_of_all_blocks);
 
 /// \ingroup ComputationalDomainGroup
 /// Sets up the BlockNeighbors using the corner numbering scheme
@@ -85,7 +85,7 @@ void set_internal_boundaries(
         std::vector<DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>>*>
         neighbors_of_all_blocks,
     const std::vector<std::unique_ptr<domain::CoordinateMapBase<
-        Frame::BlockLogical, Frame::Inertial, VolumeDim>>>& maps) noexcept;
+        Frame::BlockLogical, Frame::Inertial, VolumeDim>>>& maps);
 
 /// \ingroup ComputationalDomainGroup
 /// Sets up additional BlockNeighbors corresponding to any
@@ -98,14 +98,14 @@ void set_identified_boundaries(
         corners_of_all_blocks,
     gsl::not_null<
         std::vector<DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>>*>
-        neighbors_of_all_blocks) noexcept;
+        neighbors_of_all_blocks);
 
 /// \ingroup ComputationalDomainGroup
 /// \brief The multi-indices that identify the individual Blocks in the lattice
 template <size_t VolumeDim>
 auto indices_for_rectilinear_domains(
     const Index<VolumeDim>& domain_extents,
-    const std::vector<Index<VolumeDim>>& block_indices_to_exclude = {}) noexcept
+    const std::vector<Index<VolumeDim>>& block_indices_to_exclude = {})
     -> std::vector<Index<VolumeDim>>;
 
 /// \ingroup ComputationalDomainGroup
@@ -119,7 +119,7 @@ auto indices_for_rectilinear_domains(
 template <size_t VolumeDim>
 auto corners_for_rectilinear_domains(
     const Index<VolumeDim>& domain_extents,
-    const std::vector<Index<VolumeDim>>& block_indices_to_exclude = {}) noexcept
+    const std::vector<Index<VolumeDim>>& block_indices_to_exclude = {})
     -> std::vector<std::array<size_t, two_to_the(VolumeDim)>>;
 
 /// \ingroup ComputationalDomainGroup
@@ -159,7 +159,7 @@ auto sph_wedge_coordinate_maps(
     const std::vector<double>& radial_partitioning = {},
     const std::vector<domain::CoordinateMaps::Distribution>&
         radial_distribution = {domain::CoordinateMaps::Distribution::Linear},
-    ShellWedges which_wedges = ShellWedges::All) noexcept
+    ShellWedges which_wedges = ShellWedges::All)
     -> std::vector<std::unique_ptr<
         domain::CoordinateMapBase<Frame::BlockLogical, TargetFrame, 3>>>;
 
@@ -179,7 +179,7 @@ auto frustum_coordinate_maps(
     double length_inner_cube, double length_outer_cube,
     bool use_equiangular_map,
     const std::array<double, 3>& origin_preimage = {{0.0, 0.0, 0.0}},
-    double projective_scale_factor = 1.0) noexcept
+    double projective_scale_factor = 1.0)
     -> std::vector<std::unique_ptr<
         domain::CoordinateMapBase<Frame::BlockLogical, TargetFrame, 3>>>;
 
@@ -199,7 +199,7 @@ std::vector<std::array<size_t, 8>> corners_for_radially_layered_domains(
     size_t number_of_layers, bool include_central_block,
     const std::array<size_t, 8>& central_block_corners = {{1, 2, 3, 4, 5, 6, 7,
                                                            8}},
-    ShellWedges which_wedges = ShellWedges::All) noexcept;
+    ShellWedges which_wedges = ShellWedges::All);
 
 /// \ingroup ComputationalDomainGroup
 /// \brief The corners for a domain with biradial layers.
@@ -216,7 +216,7 @@ std::vector<std::array<size_t, 8>> corners_for_biradially_layered_domains(
     size_t number_of_radial_layers, size_t number_of_biradial_layers,
     bool include_central_block_lhs, bool include_central_block_rhs,
     const std::array<size_t, 8>& central_block_corners_lhs = {
-        {1, 2, 3, 4, 5, 6, 7, 8}}) noexcept;
+        {1, 2, 3, 4, 5, 6, 7, 8}});
 
 /// \ingroup ComputationalDomainGroup
 /// These are the CoordinateMaps used in the Cylinder DomainCreator.
@@ -241,7 +241,7 @@ auto cyl_wedge_coordinate_maps(
     const std::vector<domain::CoordinateMaps::Distribution>&
         radial_distribution = {domain::CoordinateMaps::Distribution::Linear},
     const std::vector<domain::CoordinateMaps::Distribution>& distribution_in_z =
-        {domain::CoordinateMaps::Distribution::Linear}) noexcept
+        {domain::CoordinateMaps::Distribution::Linear})
     -> std::vector<std::unique_ptr<
         domain::CoordinateMapBase<Frame::BlockLogical, TargetFrame, 3>>>;
 
@@ -266,8 +266,7 @@ auto cyl_wedge_coord_map_center_blocks(
     bool use_equiangular_map, const std::vector<double>& partitioning_in_z = {},
     const std::vector<domain::CoordinateMaps::Distribution>& distribution_in_z =
         {domain::CoordinateMaps::Distribution::Linear},
-    CylindricalDomainParityFlip parity_flip =
-        CylindricalDomainParityFlip::none) noexcept
+    CylindricalDomainParityFlip parity_flip = CylindricalDomainParityFlip::none)
     -> std::vector<domain::CoordinateMaps::ProductOf3Maps<
         domain::CoordinateMaps::Interval, domain::CoordinateMaps::Interval,
         domain::CoordinateMaps::Interval>>;
@@ -295,8 +294,7 @@ auto cyl_wedge_coord_map_surrounding_blocks(
         radial_distribution = {domain::CoordinateMaps::Distribution::Linear},
     const std::vector<domain::CoordinateMaps::Distribution>& distribution_in_z =
         {domain::CoordinateMaps::Distribution::Linear},
-    CylindricalDomainParityFlip parity_flip =
-        CylindricalDomainParityFlip::none) noexcept
+    CylindricalDomainParityFlip parity_flip = CylindricalDomainParityFlip::none)
     -> std::vector<domain::CoordinateMaps::ProductOf2Maps<
         domain::CoordinateMaps::Wedge<2>, domain::CoordinateMaps::Interval>>;
 
@@ -313,7 +311,7 @@ auto cyl_wedge_coord_map_surrounding_blocks(
 /// The very basic cylinder with one shell and one layer serves as a base
 /// to generate the corners for subsequent shells first and discs second.
 std::vector<std::array<size_t, 8>> corners_for_cylindrical_layered_domains(
-    size_t number_of_shells, size_t number_of_discs) noexcept;
+    size_t number_of_shells, size_t number_of_discs);
 
 /// \ingroup ComputationalDomainGroup
 /// \brief Permutes the corner numbers of an n-cube.
@@ -327,8 +325,7 @@ std::vector<std::array<size_t, 8>> corners_for_cylindrical_layered_domains(
 template <size_t VolumeDim>
 std::array<size_t, two_to_the(VolumeDim)> discrete_rotation(
     const OrientationMap<VolumeDim>& orientation,
-    const std::array<size_t, two_to_the(VolumeDim)>&
-        corners_of_aligned) noexcept;
+    const std::array<size_t, two_to_the(VolumeDim)>& corners_of_aligned);
 
 /// \ingroup ComputationalDomainGroup
 /// \brief The CoordinateMaps for a rectilinear domain of n-cubes.
@@ -341,7 +338,7 @@ auto maps_for_rectilinear_domains(
     const std::vector<Index<VolumeDim>>& block_indices_to_exclude = {},
     const std::vector<OrientationMap<VolumeDim>>& orientations_of_all_blocks =
         {},
-    bool use_equiangular_map = false) noexcept
+    bool use_equiangular_map = false)
     -> std::vector<std::unique_ptr<domain::CoordinateMapBase<
         Frame::BlockLogical, TargetFrame, VolumeDim>>>;
 
@@ -378,41 +375,40 @@ Domain<VolumeDim> rectilinear_domain(
     const std::array<bool, VolumeDim>& dimension_is_periodic =
         make_array<VolumeDim>(false),
     const std::vector<PairOfFaces>& identifications = {},
-    bool use_equiangular_map = false) noexcept;
+    bool use_equiangular_map = false);
 
 /// \ingroup ComputationalDomainGroup
 /// Iterates over the corners of a VolumeDim-dimensional cube.
 template <size_t VolumeDim>
 class VolumeCornerIterator {
  public:
-  VolumeCornerIterator() noexcept { setup_from_local_corner_number(); }
+  VolumeCornerIterator() { setup_from_local_corner_number(); }
 
-  explicit VolumeCornerIterator(size_t initial_local_corner_number) noexcept
+  explicit VolumeCornerIterator(size_t initial_local_corner_number)
       : local_corner_number_(initial_local_corner_number) {
     setup_from_local_corner_number();
   }
   VolumeCornerIterator(
       // The block index is also global corner
       // index of the lowest corner of the block.
-      Index<VolumeDim> block_index,
-      Index<VolumeDim> global_corner_extents) noexcept
+      Index<VolumeDim> block_index, Index<VolumeDim> global_corner_extents)
       : global_corner_number_(
             collapsed_index(block_index, global_corner_extents)),
         global_corner_index_(block_index),
         global_corner_extents_(global_corner_extents) {}
 
-  void operator++() noexcept {
+  void operator++() {
     ++local_corner_number_;
     setup_from_local_corner_number();
   }
 
-  explicit operator bool() const noexcept {
+  explicit operator bool() const {
     return local_corner_number_ < two_to_the(VolumeDim);
   }
 
-  size_t local_corner_number() const noexcept { return local_corner_number_; }
+  size_t local_corner_number() const { return local_corner_number_; }
 
-  size_t global_corner_number() const noexcept {
+  size_t global_corner_number() const {
     std::array<size_t, VolumeDim> new_indices{};
     for (size_t i = 0; i < VolumeDim; i++) {
       gsl::at(new_indices, i) =
@@ -423,24 +419,20 @@ class VolumeCornerIterator {
     return collapsed_index(interior_multi_index, global_corner_extents_);
   }
 
-  const std::array<Side, VolumeDim>& operator()() const noexcept {
-    return array_sides_;
-  }
+  const std::array<Side, VolumeDim>& operator()() const { return array_sides_; }
 
-  const std::array<Side, VolumeDim>& operator*() const noexcept {
-    return array_sides_;
-  }
+  const std::array<Side, VolumeDim>& operator*() const { return array_sides_; }
 
-  const std::array<double, VolumeDim>& coords_of_corner() const noexcept {
+  const std::array<double, VolumeDim>& coords_of_corner() const {
     return coords_of_corner_;
   }
 
   const std::array<Direction<VolumeDim>, VolumeDim>& directions_of_corner()
-      const noexcept {
+      const {
     return array_directions_;
   }
 
-  void setup_from_local_corner_number() noexcept {
+  void setup_from_local_corner_number() {
     for (size_t i = 0; i < VolumeDim; i++) {
       gsl::at(coords_of_corner_, i) =
           2.0 * get_nth_bit(local_corner_number_, i) - 1.0;
@@ -468,9 +460,9 @@ class VolumeCornerIterator {
 template <size_t VolumeDim>
 class FaceCornerIterator {
  public:
-  explicit FaceCornerIterator(Direction<VolumeDim> direction) noexcept;
+  explicit FaceCornerIterator(Direction<VolumeDim> direction);
 
-  void operator++() noexcept {
+  void operator++() {
     face_index_++;
     do {
       index_++;
@@ -481,23 +473,23 @@ class FaceCornerIterator {
     }
   }
 
-  explicit operator bool() const noexcept {
+  explicit operator bool() const {
     return face_index_ < two_to_the(VolumeDim - 1);
   }
 
-  tnsr::I<double, VolumeDim, Frame::BlockLogical> operator()() const noexcept {
+  tnsr::I<double, VolumeDim, Frame::BlockLogical> operator()() const {
     return corner_;
   }
 
-  tnsr::I<double, VolumeDim, Frame::BlockLogical> operator*() const noexcept {
+  tnsr::I<double, VolumeDim, Frame::BlockLogical> operator*() const {
     return corner_;
   }
 
   // Returns the value used to construct the logical corner.
-  size_t volume_index() const noexcept { return index_; }
+  size_t volume_index() const { return index_; }
 
   // Returns the number of times operator++ has been called.
-  size_t face_index() const noexcept { return face_index_; }
+  size_t face_index() const { return face_index_; }
 
  private:
   const Direction<VolumeDim> direction_;
@@ -508,7 +500,7 @@ class FaceCornerIterator {
 
 template <size_t VolumeDim>
 FaceCornerIterator<VolumeDim>::FaceCornerIterator(
-    Direction<VolumeDim> direction) noexcept
+    Direction<VolumeDim> direction)
     : direction_(std::move(direction)),
       index_(direction_.side() == Side::Upper
                  ? two_to_the(direction_.dimension())
@@ -518,8 +510,7 @@ FaceCornerIterator<VolumeDim>::FaceCornerIterator(
   }
 }
 
-std::ostream& operator<<(std::ostream& os,
-                         const ShellWedges& which_wedges) noexcept;
+std::ostream& operator<<(std::ostream& os, const ShellWedges& which_wedges);
 
 template <>
 struct Options::create_from_yaml<ShellWedges> {

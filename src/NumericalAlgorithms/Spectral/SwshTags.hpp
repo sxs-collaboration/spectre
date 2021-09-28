@@ -64,7 +64,7 @@ struct NoDerivative {};
 
 namespace detail {
 template <typename DerivativeKind>
-inline constexpr int derivative_spin_weight_impl() noexcept {
+inline constexpr int derivative_spin_weight_impl() {
   if (std::is_same_v<DerivativeKind, Eth> or
       std::is_same_v<DerivativeKind, InverseEthbar>) {
     return 1;
@@ -115,8 +115,7 @@ using adjust_spin_weight_t =
 // Helper function for creating an appropriate prefix tag name from one of the
 // spin-weighted derivative types and an existing tag name
 template <typename DerivativeKind>
-std::string compose_spin_weighted_derivative_name(
-    const std::string& suffix) noexcept;
+std::string compose_spin_weighted_derivative_name(const std::string& suffix);
 
 }  // namespace detail
 
@@ -157,7 +156,7 @@ struct Derivative : db::PrefixTag, db::SimpleTag {
   using derivative_of = Tag;
   using derivative_kind = DerivativeKind;
   const static int spin = type::type::spin;
-  static std::string name() noexcept {
+  static std::string name() {
     return detail::compose_spin_weighted_derivative_name<DerivativeKind>(
         db::tag_name<Tag>());
   }

@@ -36,8 +36,7 @@ struct DhGaugeParameters : db::SimpleTag {
       GeneralizedHarmonic::gauges::OptionTags::DhGaugeParameters<UseRollon>>;
 
   static constexpr bool pass_metavariables = false;
-  static ParametersType create_from_options(
-      const ParametersType& parameters) noexcept {
+  static ParametersType create_from_options(const ParametersType& parameters) {
     return parameters;
   }
 };

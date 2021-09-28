@@ -61,7 +61,7 @@ struct Info {
 };
 
 template <size_t VolumeDim, typename TagList>
-void pup(PUP::er& p, Info<VolumeDim, TagList>& t) noexcept {  // NOLINT
+void pup(PUP::er& p, Info<VolumeDim, TagList>& t) {  // NOLINT
   p | t.block_coord_holders;
   p | t.vars;
   p | t.global_offsets;
@@ -69,7 +69,7 @@ void pup(PUP::er& p, Info<VolumeDim, TagList>& t) noexcept {  // NOLINT
 }
 
 template <size_t VolumeDim, typename TagList>
-void operator|(PUP::er& p, Info<VolumeDim, TagList>& t) noexcept {  // NOLINT
+void operator|(PUP::er& p, Info<VolumeDim, TagList>& t) {  // NOLINT
   pup(p, t);
 }
 
@@ -94,16 +94,16 @@ template <typename Metavariables, typename InterpolationTargetTag,
           typename TagList>
 void pup(PUP::er& p,                                              // NOLINT
          Holder<Metavariables, InterpolationTargetTag, TagList>&  // NOLINT
-             t) noexcept {                                        // NOLINT
+             t) {                                                 // NOLINT
   p | t.infos;
   p | t.temporal_ids_when_data_has_been_interpolated;
 }
 
 template <typename Metavariables, typename InterpolationTargetTag,
           typename TagList>
-void operator|(PUP::er& p,  // NOLINT
-               Holder<Metavariables, InterpolationTargetTag, TagList>&
-                   t) noexcept {  // NOLINT
+void operator|(
+    PUP::er& p,                                                   // NOLINT
+    Holder<Metavariables, InterpolationTargetTag, TagList>& t) {  // NOLINT
   pup(p, t);
 }
 

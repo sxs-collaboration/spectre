@@ -72,8 +72,7 @@ struct ComputeFluxes {
       const tnsr::I<DataVector, Dim, Frame::Inertial>& shift,
       const Scalar<DataVector>& sqrt_det_spatial_metric,
       const Scalar<DataVector>& pressure,
-      const tnsr::I<DataVector, Dim, Frame::Inertial>&
-          spatial_velocity) noexcept;
+      const tnsr::I<DataVector, Dim, Frame::Inertial>& spatial_velocity);
 };
 }  // namespace Valencia
 }  // namespace RelativisticEuler

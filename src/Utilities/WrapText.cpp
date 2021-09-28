@@ -9,7 +9,7 @@
 #include "Utilities/ErrorHandling/Assert.hpp"
 
 std::string wrap_text(std::string str, const size_t line_length,
-                      const std::string& indentation) noexcept {
+                      const std::string& indentation) {
   str = indentation + str;
   ASSERT(indentation.size() < line_length,
          "The indentation must be shorter than the line length. Indentation "

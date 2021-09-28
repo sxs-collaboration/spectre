@@ -22,7 +22,7 @@ enum class TypeOfObservation {
   Volume,
 };
 
-std::ostream& operator<<(std::ostream& os, const TypeOfObservation& t) noexcept;
+std::ostream& operator<<(std::ostream& os, const TypeOfObservation& t);
 
 /// @{
 /// Inherits off of `std::true_type` if `T` has a member variable

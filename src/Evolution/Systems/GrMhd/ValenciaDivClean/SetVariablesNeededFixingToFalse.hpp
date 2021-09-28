@@ -22,6 +22,6 @@ struct SetVariablesNeededFixingToFalse {
   using return_tags = tmpl::list<Tags::VariablesNeededFixing>;
   using argument_tags = tmpl::list<>;
 
-  static void apply(gsl::not_null<bool*> variables_needed_fixing) noexcept;
+  static void apply(gsl::not_null<bool*> variables_needed_fixing);
 };
 }  // namespace grmhd::ValenciaDivClean

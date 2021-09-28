@@ -70,7 +70,7 @@ void TimeDerivative<Dim>::apply(
     const Scalar<DataVector>& gamma0, const Scalar<DataVector>& gamma1,
     const Scalar<DataVector>& gamma2,
     const tnsr::a<DataVector, Dim>& gauge_function,
-    const tnsr::ab<DataVector, Dim>& spacetime_deriv_gauge_function) noexcept {
+    const tnsr::ab<DataVector, Dim>& spacetime_deriv_gauge_function) {
   // Need constraint damping on interfaces in DG schemes
   *temp_gamma1 = gamma1;
   *temp_gamma2 = gamma2;
@@ -344,7 +344,7 @@ using variables_tags =
       const Variables<variables_tags<DIM(data)>>& u,                         \
       const Mesh<DIM(data)>& mesh,                                           \
       const InverseJacobian<DataVector, DIM(data), Frame::ElementLogical,    \
-                            derivative_frame>& inverse_jacobian) noexcept;   \
+                            derivative_frame>& inverse_jacobian);            \
   template Variables<db::wrap_tags_in<                                       \
       ::Tags::deriv, derivative_tags_initial_gauge<DIM(data)>,               \
       tmpl::size_t<DIM(data)>, derivative_frame>>                            \
@@ -354,7 +354,7 @@ using variables_tags =
       const Variables<variables_tags_initial_gauge<DIM(data)>>& u,           \
       const Mesh<DIM(data)>& mesh,                                           \
       const InverseJacobian<DataVector, DIM(data), Frame::ElementLogical,    \
-                            derivative_frame>& inverse_jacobian) noexcept;
+                            derivative_frame>& inverse_jacobian);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 

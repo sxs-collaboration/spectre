@@ -32,7 +32,7 @@ enum class Reason {
   RelativeResidual
 };
 
-std::ostream& operator<<(std::ostream& os, const Reason& reason) noexcept;
+std::ostream& operator<<(std::ostream& os, const Reason& reason);
 
 }  // namespace Convergence
 

@@ -63,7 +63,7 @@ std::tuple<
 mortars_apply_impl(const std::vector<std::array<size_t, Dim>>& initial_extents,
                    Spectral::Quadrature quadrature, const Element<Dim>& element,
                    const TimeStepId& next_temporal_id,
-                   const Mesh<Dim>& volume_mesh) noexcept;
+                   const Mesh<Dim>& volume_mesh);
 }  // namespace detail
 
 /*!
@@ -113,7 +113,7 @@ struct Mortars {
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     if constexpr (db::tag_is_retrievable_v<::domain::Tags::InitialExtents<Dim>,
                                            db::DataBox<DbTagsList>>) {
       auto [mortar_data, mortar_meshes, mortar_sizes, mortar_next_temporal_ids,

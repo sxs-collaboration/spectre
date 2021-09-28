@@ -18,7 +18,7 @@ struct TestGroup {
   static constexpr Options::String help = "halp";
 };
 
-void test_construct_from_options() noexcept {
+void test_construct_from_options() {
   Options::Parser<tmpl::list<logging::OptionTags::Verbosity<TestGroup>>> opts(
       "");
   opts.parse("TestGroup:\n  Verbosity: Verbose\n");
@@ -26,14 +26,14 @@ void test_construct_from_options() noexcept {
         Verbosity::Verbose);
 }
 
-void test_construct_from_options_fail() noexcept {
+void test_construct_from_options_fail() {
   Options::Parser<tmpl::list<logging::OptionTags::Verbosity<TestGroup>>> opts(
       "");
   opts.parse("TestGroup:\n  Verbosity: Braggadocious\n");  // Meant to fail.
   opts.get<logging::OptionTags::Verbosity<TestGroup>>();
 }
 
-void test_ostream() noexcept {
+void test_ostream() {
   CHECK(get_output(Verbosity::Silent) == "Silent");
   CHECK(get_output(Verbosity::Quiet) == "Quiet");
   CHECK(get_output(Verbosity::Verbose) == "Verbose");

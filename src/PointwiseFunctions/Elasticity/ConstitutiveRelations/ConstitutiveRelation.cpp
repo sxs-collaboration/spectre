@@ -14,7 +14,7 @@ template <size_t Dim>
 void ConstitutiveRelation<Dim>::stress(
     const gsl::not_null<tnsr::IJ<DataVector, Dim>*> stress,
     const tnsr::ii<DataVector, Dim>& strain,
-    const tnsr::I<DataVector, Dim>& x) const noexcept {
+    const tnsr::I<DataVector, Dim>& x) const {
   tnsr::II<DataVector, Dim> symmetric_stress{x.begin()->size()};
   this->stress(make_not_null(&symmetric_stress), strain, x);
   for (size_t i = 0; i < Dim; ++i) {

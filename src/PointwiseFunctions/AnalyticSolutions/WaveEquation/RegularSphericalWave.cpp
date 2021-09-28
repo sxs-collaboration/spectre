@@ -22,14 +22,14 @@
 namespace ScalarWave::Solutions {
 
 RegularSphericalWave::RegularSphericalWave(
-    std::unique_ptr<MathFunction<1, Frame::Inertial>> profile) noexcept
+    std::unique_ptr<MathFunction<1, Frame::Inertial>> profile)
     : profile_(std::move(profile)) {}
 
 tuples::TaggedTuple<ScalarWave::Pi, ScalarWave::Phi<3>, ScalarWave::Psi>
 RegularSphericalWave::variables(
     const tnsr::I<DataVector, 3>& x, double t,
     const tmpl::list<ScalarWave::Pi, ScalarWave::Phi<3>,
-                     ScalarWave::Psi> /*meta*/) const noexcept {
+                     ScalarWave::Psi> /*meta*/) const {
   const DataVector r = get(magnitude(x));
   // See class documentation for choice of cutoff
   const double r_cutoff = cbrt(std::numeric_limits<double>::epsilon());
@@ -69,7 +69,7 @@ tuples::TaggedTuple<::Tags::dt<ScalarWave::Pi>, ::Tags::dt<ScalarWave::Phi<3>>,
 RegularSphericalWave::variables(
     const tnsr::I<DataVector, 3>& x, double t,
     const tmpl::list<::Tags::dt<ScalarWave::Pi>, ::Tags::dt<ScalarWave::Phi<3>>,
-                     ::Tags::dt<ScalarWave::Psi>> /*meta*/) const noexcept {
+                     ::Tags::dt<ScalarWave::Psi>> /*meta*/) const {
   const DataVector r = get(magnitude(x));
   // See class documentation for choice of cutoff
   const double r_cutoff = cbrt(std::numeric_limits<double>::epsilon());
@@ -107,6 +107,6 @@ RegularSphericalWave::variables(
   return dt_variables;
 }
 
-void RegularSphericalWave::pup(PUP::er& p) noexcept { p | profile_; }
+void RegularSphericalWave::pup(PUP::er& p) { p | profile_; }
 
 }  // namespace ScalarWave::Solutions

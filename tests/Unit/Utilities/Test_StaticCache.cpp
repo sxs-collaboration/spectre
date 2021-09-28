@@ -17,7 +17,7 @@
 namespace {
 enum class Color { Red, Green, Purple };
 
-std::ostream& operator<<(std::ostream& os, Color t) noexcept {
+std::ostream& operator<<(std::ostream& os, Color t) {
   switch (t) {
     case Color::Red:
       return os << "Red";
@@ -32,7 +32,7 @@ std::ostream& operator<<(std::ostream& os, Color t) noexcept {
 
 enum class Animal { Goldendoodle, Labradoodle, Poodle };
 
-std::ostream& operator<<(std::ostream& os, Animal t) noexcept {
+std::ostream& operator<<(std::ostream& os, Animal t) {
   switch (t) {
     case Animal::Goldendoodle:
       return os << "Goldendoodle";
@@ -50,7 +50,7 @@ SPECTRE_TEST_CASE("Unit.Utilities.StaticCache", "[Utilities][Unit]") {
   // [static_cache]
   const static auto cache =
       make_static_cache<CacheRange<0_st, 3_st>, CacheRange<3_st, 5_st>>(
-          [](const size_t a, const size_t b) noexcept { return a + b; });
+          [](const size_t a, const size_t b) { return a + b; });
   CHECK(cache(0, 3) == 3);  // smallest entry
   CHECK(cache(2, 4) == 6);  // largest entry
   // [static_cache]
@@ -58,7 +58,7 @@ SPECTRE_TEST_CASE("Unit.Utilities.StaticCache", "[Utilities][Unit]") {
   std::vector<std::pair<size_t, size_t>> calls;
   const auto cache2 =
       make_static_cache<CacheRange<0_st, 3_st>, CacheRange<3_st, 5_st>>(
-          [&calls](const size_t a, const size_t b) noexcept {
+          [&calls](const size_t a, const size_t b) {
             calls.emplace_back(a, b);
             return a + b;
           });
@@ -90,7 +90,7 @@ SPECTRE_TEST_CASE("Unit.Utilities.StaticCache", "[Utilities][Unit]") {
   CHECK(calls == expected_calls);
 
   size_t small_calls = 0;
-  const auto small_cache = make_static_cache([&small_calls]() noexcept {
+  const auto small_cache = make_static_cache([&small_calls]() {
     ++small_calls;
     return size_t{5};
   });
@@ -100,14 +100,15 @@ SPECTRE_TEST_CASE("Unit.Utilities.StaticCache", "[Utilities][Unit]") {
 
   // [static_cache_no_args]
   const auto simple_small_cache =
-      make_static_cache([]() noexcept { return size_t{10}; });
+      make_static_cache([]() { return size_t{10}; });
   CHECK(simple_small_cache() == 10);
   // [static_cache_no_args]
 
   // check enum caching functionality
-  const auto enum_generator_tuple =
-      [](const Color& color, const size_t value = 5,
-         const Animal animal = Animal::Goldendoodle) noexcept {
+  const auto enum_generator_tuple = [](const Color& color,
+                                       const size_t value = 5,
+                                       const Animal animal =
+                                           Animal::Goldendoodle) {
     size_t offset_animal = 0;
     switch (animal) {
       case Animal::Goldendoodle:
@@ -138,13 +139,13 @@ SPECTRE_TEST_CASE("Unit.Utilities.StaticCache", "[Utilities][Unit]") {
   };
   // [static_cache_with_enum]
   const auto simple_enum_cache = make_static_cache<
-      CacheEnumeration<Color, Color::Red, Color::Green, Color::Purple>>([
-  ](const Color color) noexcept { return std::string{MakeString{} << color}; });
+      CacheEnumeration<Color, Color::Red, Color::Green, Color::Purple>>(
+      [](const Color color) { return std::string{MakeString{} << color}; });
   CHECK(simple_enum_cache(Color::Red) == "Red");
   // [static_cache_with_enum]
 
   const auto int_cache = make_static_cache<CacheRange<-5, 10>>(
-      [](const int val) noexcept { return pow<3>(val); });
+      [](const int val) { return pow<3>(val); });
   CHECK(int_cache(-3) == -27);
   CHECK(int_cache(2) == 8);
 
@@ -172,7 +173,7 @@ SPECTRE_TEST_CASE("Unit.Utilities.StaticCache", "[Utilities][Unit]") {
       CacheRange<3_st, 5_st>,
       CacheEnumeration<Animal, Animal::Goldendoodle, Animal::Labradoodle,
                        Animal::Poodle>>(
-      [](const Color color, const size_t value, const Animal animal) noexcept {
+      [](const Color color, const size_t value, const Animal animal) {
         return std::string{MakeString{} << color << value << animal};
       });
   CHECK(simple_enum_size_t_enum_cache(Color::Red, 3, Animal::Labradoodle) ==
@@ -203,8 +204,8 @@ SPECTRE_TEST_CASE("Unit.Utilities.StaticCache", "[Utilities][Unit]") {
                                "[Utilities][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  const auto cache = make_static_cache<CacheRange<3, 5>>(
-      [](const size_t x) noexcept { return x; });
+  const auto cache =
+      make_static_cache<CacheRange<3, 5>>([](const size_t x) { return x; });
   cache(2);
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
@@ -215,8 +216,8 @@ SPECTRE_TEST_CASE("Unit.Utilities.StaticCache", "[Utilities][Unit]") {
                                "[Utilities][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  const auto cache = make_static_cache<CacheRange<3, 5>>(
-      [](const size_t x) noexcept { return x; });
+  const auto cache =
+      make_static_cache<CacheRange<3, 5>>([](const size_t x) { return x; });
   cache(5);
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif

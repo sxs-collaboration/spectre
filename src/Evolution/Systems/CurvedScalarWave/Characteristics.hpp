@@ -49,7 +49,7 @@ std::array<DataVector, 4> characteristic_speeds(
     const Scalar<DataVector>& gamma_1, const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, SpatialDim, Frame::Inertial>& shift,
     const tnsr::i<DataVector, SpatialDim, Frame::Inertial>&
-        unit_normal_one_form) noexcept;
+        unit_normal_one_form);
 
 template <size_t SpatialDim>
 void characteristic_speeds(
@@ -57,7 +57,7 @@ void characteristic_speeds(
     const Scalar<DataVector>& gamma_1, const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, SpatialDim, Frame::Inertial>& shift,
     const tnsr::i<DataVector, SpatialDim, Frame::Inertial>&
-        unit_normal_one_form) noexcept;
+        unit_normal_one_form);
 
 template <size_t SpatialDim>
 void characteristic_speeds(
@@ -65,7 +65,7 @@ void characteristic_speeds(
     const Scalar<DataVector>& gamma_1, const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, SpatialDim, Frame::Inertial>& shift,
     const tnsr::i<DataVector, SpatialDim, Frame::Inertial>&
-        unit_normal_one_form) noexcept;
+        unit_normal_one_form);
 
 template <size_t SpatialDim>
 struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds<SpatialDim>,
@@ -82,7 +82,7 @@ struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds<SpatialDim>,
       const Scalar<DataVector>& lapse,
       const tnsr::I<DataVector, SpatialDim, Frame::Inertial>& shift,
       const tnsr::i<DataVector, SpatialDim, Frame::Inertial>&
-          unit_normal_one_form) noexcept {
+          unit_normal_one_form) {
     characteristic_speeds<SpatialDim>(result, gamma_1, lapse, shift,
                                       unit_normal_one_form);
   }
@@ -147,7 +147,7 @@ characteristic_fields(
     const Scalar<DataVector>& psi, const Scalar<DataVector>& pi,
     const tnsr::i<DataVector, SpatialDim, Frame::Inertial>& phi,
     const tnsr::i<DataVector, SpatialDim, Frame::Inertial>&
-        unit_normal_one_form) noexcept;
+        unit_normal_one_form);
 
 template <size_t SpatialDim>
 void characteristic_fields(
@@ -160,7 +160,7 @@ void characteristic_fields(
     const Scalar<DataVector>& psi, const Scalar<DataVector>& pi,
     const tnsr::i<DataVector, SpatialDim, Frame::Inertial>& phi,
     const tnsr::i<DataVector, SpatialDim, Frame::Inertial>&
-        unit_normal_one_form) noexcept;
+        unit_normal_one_form);
 
 template <size_t SpatialDim>
 struct CharacteristicFieldsCompute : Tags::CharacteristicFields<SpatialDim>,
@@ -180,7 +180,7 @@ struct CharacteristicFieldsCompute : Tags::CharacteristicFields<SpatialDim>,
       const Scalar<DataVector>& psi, const Scalar<DataVector>& pi,
       const tnsr::i<DataVector, SpatialDim, Frame::Inertial>& phi,
       const tnsr::i<DataVector, SpatialDim, Frame::Inertial>&
-          unit_normal_one_form) noexcept {
+          unit_normal_one_form) {
     characteristic_fields<SpatialDim>(result, gamma_2, inverse_spatial_metric,
                                       psi, pi, phi, unit_normal_one_form);
   }
@@ -199,7 +199,7 @@ evolved_fields_from_characteristic_fields(
     const tnsr::i<DataVector, SpatialDim, Frame::Inertial>& v_zero,
     const Scalar<DataVector>& v_plus, const Scalar<DataVector>& v_minus,
     const tnsr::i<DataVector, SpatialDim, Frame::Inertial>&
-        unit_normal_one_form) noexcept;
+        unit_normal_one_form);
 
 template <size_t SpatialDim>
 void evolved_fields_from_characteristic_fields(
@@ -209,7 +209,7 @@ void evolved_fields_from_characteristic_fields(
     const tnsr::i<DataVector, SpatialDim, Frame::Inertial>& v_zero,
     const Scalar<DataVector>& v_plus, const Scalar<DataVector>& v_minus,
     const tnsr::i<DataVector, SpatialDim, Frame::Inertial>&
-        unit_normal_one_form) noexcept;
+        unit_normal_one_form);
 
 template <size_t SpatialDim>
 struct EvolvedFieldsFromCharacteristicFieldsCompute
@@ -228,7 +228,7 @@ struct EvolvedFieldsFromCharacteristicFieldsCompute
       const tnsr::i<DataVector, SpatialDim, Frame::Inertial>& v_zero,
       const Scalar<DataVector>& v_plus, const Scalar<DataVector>& v_minus,
       const tnsr::i<DataVector, SpatialDim, Frame::Inertial>&
-          unit_normal_one_form) noexcept {
+          unit_normal_one_form) {
     evolved_fields_from_characteristic_fields<SpatialDim>(
         result, gamma_2, v_psi, v_zero, v_plus, v_minus, unit_normal_one_form);
   }
@@ -264,8 +264,7 @@ struct ComputeLargestCharacteristicSpeed : LargestCharacteristicSpeed,
       const gsl::not_null<double*> max_speed, const Scalar<DataVector>& gamma_1,
       const Scalar<DataVector>& lapse,
       const tnsr::I<DataVector, SpatialDim, Frame::Inertial>& shift,
-      const tnsr::ii<DataVector, SpatialDim, Frame::Inertial>&
-          spatial_metric) noexcept;
+      const tnsr::ii<DataVector, SpatialDim, Frame::Inertial>& spatial_metric);
 };
 }  // namespace Tags
 }  // namespace CurvedScalarWave

@@ -118,7 +118,7 @@ class TovStar : public MarkAsAnalyticSolution, public AnalyticSolution<3> {
     using type = double;
     static constexpr Options::String help = {
         "The central density of the star."};
-    static type lower_bound() noexcept { return 0.; }
+    static type lower_bound() { return 0.; }
   };
 
   /// The polytropic constant of the polytropic fluid.
@@ -126,7 +126,7 @@ class TovStar : public MarkAsAnalyticSolution, public AnalyticSolution<3> {
     using type = double;
     static constexpr Options::String help = {
         "The polytropic constant of the fluid."};
-    static type lower_bound() noexcept { return 0.; }
+    static type lower_bound() { return 0.; }
   };
 
   /// The polytropic exponent of the polytropic fluid.
@@ -134,7 +134,7 @@ class TovStar : public MarkAsAnalyticSolution, public AnalyticSolution<3> {
     using type = double;
     static constexpr Options::String help = {
         "The polytropic exponent of the fluid."};
-    static type lower_bound() noexcept { return 1.; }
+    static type lower_bound() { return 1.; }
   };
 
   static constexpr size_t volume_dim = 3_st;
@@ -150,34 +150,32 @@ class TovStar : public MarkAsAnalyticSolution, public AnalyticSolution<3> {
   TovStar() = default;
   TovStar(const TovStar& /*rhs*/) = delete;
   TovStar& operator=(const TovStar& /*rhs*/) = delete;
-  TovStar(TovStar&& /*rhs*/) noexcept = default;
-  TovStar& operator=(TovStar&& /*rhs*/) noexcept = default;
+  TovStar(TovStar&& /*rhs*/) = default;
+  TovStar& operator=(TovStar&& /*rhs*/) = default;
   ~TovStar() = default;
 
   TovStar(double central_rest_mass_density, double polytropic_constant,
-          double polytropic_exponent) noexcept;
+          double polytropic_exponent);
 
   /// Retrieve a collection of variables at `(x, t)`
   template <typename DataType, typename... Tags>
   tuples::TaggedTuple<Tags...> variables(const tnsr::I<DataType, 3>& x,
                                          const double /*t*/,
-                                         tmpl::list<Tags...> /*meta*/) const
-      noexcept {
+                                         tmpl::list<Tags...> /*meta*/) const {
     auto radial_vars =
         radial_tov_solution().radial_variables(equation_of_state_, x);
     return {get<Tags>(variables(x, tmpl::list<Tags>{}, radial_vars))...};
   }
 
   // clang-tidy: no runtime references
-  void pup(PUP::er& /*p*/) noexcept;  //  NOLINT
+  void pup(PUP::er& /*p*/);  //  NOLINT
 
-  const EquationsOfState::PolytropicFluid<true>& equation_of_state() const
-      noexcept {
+  const EquationsOfState::PolytropicFluid<true>& equation_of_state() const {
     return equation_of_state_;
   }
 
  protected:
-  const RadialSolution& radial_tov_solution() const noexcept;
+  const RadialSolution& radial_tov_solution() const;
 
   template <typename DataType>
   using SpatialVelocity = hydro::Tags::SpatialVelocity<DataType, 3>;
@@ -236,13 +234,13 @@ class TovStar : public MarkAsAnalyticSolution, public AnalyticSolution<3> {
   template <typename DataType, typename Tag>
   tuples::TaggedTuple<::Tags::dt<Tag>> variables(
       const tnsr::I<DataType, 3>& x, tmpl::list<::Tags::dt<Tag>> /*meta*/,
-      const RadialVariables<DataType>& /*radial_vars*/) const noexcept;
+      const RadialVariables<DataType>& /*radial_vars*/) const;
 
 #define FUNC_DECL(r, data, elem)                                \
   template <typename DataType>                                  \
   tuples::TaggedTuple<elem> variables(                          \
       const tnsr::I<DataType, 3>& x, tmpl::list<elem> /*meta*/, \
-      const RadialVariables<DataType>& radial_vars) const noexcept;
+      const RadialVariables<DataType>& radial_vars) const;
 
 #define MY_LIST                                                                \
   BOOST_PP_TUPLE_TO_LIST(                                                      \
@@ -265,7 +263,7 @@ class TovStar : public MarkAsAnalyticSolution, public AnalyticSolution<3> {
  private:
   template <typename LocalRadialSolution>
   friend bool operator==(const TovStar<LocalRadialSolution>& lhs,
-                         const TovStar<LocalRadialSolution>& rhs) noexcept;
+                         const TovStar<LocalRadialSolution>& rhs);
 
   double central_rest_mass_density_ =
       std::numeric_limits<double>::signaling_NaN();
@@ -276,7 +274,7 @@ class TovStar : public MarkAsAnalyticSolution, public AnalyticSolution<3> {
 
 template <typename RadialSolution>
 bool operator!=(const TovStar<RadialSolution>& lhs,
-                const TovStar<RadialSolution>& rhs) noexcept;
+                const TovStar<RadialSolution>& rhs);
 
 }  // namespace Solutions
 }  // namespace RelativisticEuler

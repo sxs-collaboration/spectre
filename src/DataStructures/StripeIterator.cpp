@@ -12,7 +12,7 @@
 
 template <size_t Dim>
 StripeIterator::StripeIterator(const Index<Dim>& extents,
-                               const size_t stripe_dim) noexcept
+                               const size_t stripe_dim)
     : offset_(0),
       size_(extents.product()),
       stride_(std::accumulate(extents.begin(), extents.begin() + stripe_dim,

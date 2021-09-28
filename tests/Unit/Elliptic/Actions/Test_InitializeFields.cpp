@@ -41,13 +41,12 @@ struct System {
 
 struct InitialGuess {
   static tuples::TaggedTuple<ScalarFieldTag> variables(
-      const tnsr::I<DataVector, 1>& x,
-      tmpl::list<ScalarFieldTag> /*meta*/) noexcept {
+      const tnsr::I<DataVector, 1>& x, tmpl::list<ScalarFieldTag> /*meta*/) {
     Scalar<DataVector> scalar_field{2. * get<0>(x)};
     return {std::move(scalar_field)};
   }
   // NOLINTNEXTLINE
-  void pup(PUP::er& /*p*/) noexcept {}
+  void pup(PUP::er& /*p*/) {}
 };
 
 template <typename Metavariables>

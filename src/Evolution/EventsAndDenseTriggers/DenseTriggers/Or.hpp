@@ -38,7 +38,7 @@ class Or : public DenseTrigger {
  public:
   /// \cond
   Or() = default;
-  explicit Or(CkMigrateMessage* const msg) noexcept : DenseTrigger(msg) {}
+  explicit Or(CkMigrateMessage* const msg) : DenseTrigger(msg) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Or);  // NOLINT
   /// \endcond
@@ -46,14 +46,14 @@ class Or : public DenseTrigger {
   static constexpr Options::String help =
       "Trigger when any of a collection of triggers triggers.";
 
-  explicit Or(std::vector<std::unique_ptr<DenseTrigger>> triggers) noexcept;
+  explicit Or(std::vector<std::unique_ptr<DenseTrigger>> triggers);
 
   using is_triggered_argument_tags =
       tmpl::list<Tags::TimeStepId, Tags::DataBox>;
 
   template <typename DbTags>
   Result is_triggered(const TimeStepId& time_step_id,
-                      const db::DataBox<DbTags>& box) const noexcept {
+                      const db::DataBox<DbTags>& box) const {
     const evolution_less<double> before{time_step_id.time_runs_forward()};
     Result result{false, before.infinity()};
     for (const auto& trigger : triggers_) {
@@ -76,17 +76,16 @@ class Or : public DenseTrigger {
             typename DbTags>
   bool is_ready(Parallel::GlobalCache<Metavariables>& cache,
                 const ArrayIndex& array_index, const Component* const component,
-                const db::DataBox<DbTags>& box) const noexcept {
+                const db::DataBox<DbTags>& box) const {
     return alg::all_of(
-        triggers_,
-        [&array_index, &box, &cache, &component](
-            const std::unique_ptr<DenseTrigger>& trigger) noexcept {
+        triggers_, [&array_index, &box, &cache,
+                    &component](const std::unique_ptr<DenseTrigger>& trigger) {
           return trigger->is_ready(box, cache, array_index, component);
         });
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept override;
+  void pup(PUP::er& p) override;
 
  private:
   std::vector<std::unique_ptr<DenseTrigger>> triggers_{};

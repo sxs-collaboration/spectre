@@ -22,7 +22,7 @@ void time_deriv_of_shift(
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_unit_normal,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
-    const tnsr::aa<DataType, SpatialDim, Frame>& pi) noexcept {
+    const tnsr::aa<DataType, SpatialDim, Frame>& pi) {
   if (UNLIKELY(get_size(get<0>(*dt_shift)) != get_size(get(lapse)))) {
     *dt_shift = tnsr::I<DataType, SpatialDim, Frame>(get_size(get(lapse)));
   }
@@ -55,7 +55,7 @@ tnsr::I<DataType, SpatialDim, Frame> time_deriv_of_shift(
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_unit_normal,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
-    const tnsr::aa<DataType, SpatialDim, Frame>& pi) noexcept {
+    const tnsr::aa<DataType, SpatialDim, Frame>& pi) {
   tnsr::I<DataType, SpatialDim, Frame> dt_shift{};
   GeneralizedHarmonic::time_deriv_of_shift<SpatialDim, Frame, DataType>(
       make_not_null(&dt_shift), lapse, shift, inverse_spatial_metric,
@@ -79,7 +79,7 @@ tnsr::I<DataType, SpatialDim, Frame> time_deriv_of_shift(
       const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                \
           spacetime_unit_normal,                                         \
       const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,         \
-      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi) noexcept; \
+      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi);          \
   template tnsr::I<DTYPE(data), DIM(data), FRAME(data)>                  \
   GeneralizedHarmonic::time_deriv_of_shift(                              \
       const Scalar<DTYPE(data)>& lapse,                                  \
@@ -89,7 +89,7 @@ tnsr::I<DataType, SpatialDim, Frame> time_deriv_of_shift(
       const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                \
           spacetime_unit_normal,                                         \
       const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,         \
-      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi) noexcept;
+      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
                         (Frame::Grid, Frame::Inertial))

@@ -30,7 +30,7 @@ template <size_t VolumeDim>
 void check_amr_decision_is_unchanged(
     std::array<amr::Flag, VolumeDim> my_initial_amr_flags,
     const Element<VolumeDim>& element, const ElementId<VolumeDim>& neighbor_id,
-    const std::array<amr::Flag, VolumeDim>& neighbor_amr_flags) noexcept {
+    const std::array<amr::Flag, VolumeDim>& neighbor_amr_flags) {
   const auto expected_updated_flags = my_initial_amr_flags;
   std::stringstream os;
   os << neighbor_amr_flags;
@@ -46,7 +46,7 @@ void check_amr_decision_is_changed(
     std::array<amr::Flag, VolumeDim> my_initial_amr_flags,
     const Element<VolumeDim>& element, const ElementId<VolumeDim>& neighbor_id,
     const std::array<amr::Flag, VolumeDim>& neighbor_amr_flags,
-    const std::array<amr::Flag, VolumeDim>& expected_updated_flags) noexcept {
+    const std::array<amr::Flag, VolumeDim>& expected_updated_flags) {
   std::stringstream os;
   os << my_initial_amr_flags << " " << neighbor_amr_flags;
   INFO(os.str());
@@ -63,7 +63,7 @@ template <size_t VolumeDim>
 void check_update_amr_decision(
     const Element<VolumeDim>& element, const ElementId<VolumeDim>& neighbor_id,
     const std::vector<std::array<amr::Flag, VolumeDim>>& all_flags,
-    const changed_flags_t<VolumeDim>& changed_flags) noexcept {
+    const changed_flags_t<VolumeDim>& changed_flags) {
   for (const auto& my_flags : all_flags) {
     for (const auto& neighbor_flags : all_flags) {
       auto search =
@@ -82,7 +82,7 @@ void check_update_amr_decision(
 Element<1> make_element(
     const ElementId<1>& element_id,
     const std::unordered_set<ElementId<1>>& lower_xi_neighbor_ids,
-    const std::unordered_set<ElementId<1>>& upper_xi_neighbor_ids) noexcept {
+    const std::unordered_set<ElementId<1>>& upper_xi_neighbor_ids) {
   DirectionMap<1, Neighbors<1>> neighbors;
   if (not lower_xi_neighbor_ids.empty()) {
     neighbors.emplace(Direction<1>::lower_xi(),
@@ -100,7 +100,7 @@ Element<2> make_element(
     const std::unordered_set<ElementId<2>>& lower_xi_neighbor_ids,
     const std::unordered_set<ElementId<2>>& upper_xi_neighbor_ids,
     const std::unordered_set<ElementId<2>>& lower_eta_neighbor_ids,
-    const std::unordered_set<ElementId<2>>& upper_eta_neighbor_ids) noexcept {
+    const std::unordered_set<ElementId<2>>& upper_eta_neighbor_ids) {
   DirectionMap<2, Neighbors<2>> neighbors;
   if (not lower_xi_neighbor_ids.empty()) {
     neighbors.emplace(Direction<2>::lower_xi(),
@@ -121,7 +121,7 @@ Element<2> make_element(
   return Element<2>{element_id, std::move(neighbors)};
 }
 
-void test_update_amr_decision_1d() noexcept {
+void test_update_amr_decision_1d() {
   const std::array<amr::Flag, 1> split{{amr::Flag::Split}};
   const std::array<amr::Flag, 1> join{{amr::Flag::Join}};
   const std::array<amr::Flag, 1> stay{{amr::Flag::DoNothing}};
@@ -163,7 +163,7 @@ void test_update_amr_decision_1d() noexcept {
                                                {{stay, split}, split}});
 }
 
-void test_update_amr_decision_2d() noexcept {
+void test_update_amr_decision_2d() {
   const std::array<amr::Flag, 2> split_split{
       {amr::Flag::Split, amr::Flag::Split}};
   const std::array<amr::Flag, 2> join_split{

@@ -119,38 +119,35 @@ class UniformRotationAboutZAxis final : public TimeDependence<MeshDim> {
   UniformRotationAboutZAxis() = default;
   ~UniformRotationAboutZAxis() override = default;
   UniformRotationAboutZAxis(const UniformRotationAboutZAxis&) = delete;
-  UniformRotationAboutZAxis(UniformRotationAboutZAxis&&) noexcept = default;
+  UniformRotationAboutZAxis(UniformRotationAboutZAxis&&) = default;
   UniformRotationAboutZAxis& operator=(const UniformRotationAboutZAxis&) =
       delete;
-  UniformRotationAboutZAxis& operator=(UniformRotationAboutZAxis&&) noexcept =
-      default;
+  UniformRotationAboutZAxis& operator=(UniformRotationAboutZAxis&&) = default;
 
   UniformRotationAboutZAxis(
       double initial_time, std::optional<double> initial_expiration_delta_t,
       double angular_velocity,
-      std::string function_of_time_name = "RotationAngle") noexcept;
+      std::string function_of_time_name = "RotationAngle");
 
-  auto get_clone() const noexcept
-      -> std::unique_ptr<TimeDependence<MeshDim>> override;
+  auto get_clone() const -> std::unique_ptr<TimeDependence<MeshDim>> override;
 
-  auto block_maps(size_t number_of_blocks) const noexcept
+  auto block_maps(size_t number_of_blocks) const
       -> std::vector<std::unique_ptr<domain::CoordinateMapBase<
           Frame::Grid, Frame::Inertial, MeshDim>>> override;
 
-  auto functions_of_time() const noexcept -> std::unordered_map<
+  auto functions_of_time() const -> std::unordered_map<
       std::string,
       std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;
 
   /// Returns the map for each block to be used in a composition of
   /// `TimeDependence`s.
-  MapForComposition map_for_composition() const noexcept;
+  MapForComposition map_for_composition() const;
 
  private:
   template <size_t LocalDim>
   // NOLINTNEXTLINE(readability-redundant-declaration)
-  friend bool operator==(
-      const UniformRotationAboutZAxis<LocalDim>& lhs,
-      const UniformRotationAboutZAxis<LocalDim>& rhs) noexcept;
+  friend bool operator==(const UniformRotationAboutZAxis<LocalDim>& lhs,
+                         const UniformRotationAboutZAxis<LocalDim>& rhs);
 
   double initial_time_{std::numeric_limits<double>::signaling_NaN()};
   std::optional<double> initial_expiration_delta_t_{};
@@ -160,11 +157,11 @@ class UniformRotationAboutZAxis final : public TimeDependence<MeshDim> {
 
 template <size_t Dim>
 bool operator==(const UniformRotationAboutZAxis<Dim>& lhs,
-                const UniformRotationAboutZAxis<Dim>& rhs) noexcept;
+                const UniformRotationAboutZAxis<Dim>& rhs);
 
 template <size_t Dim>
 bool operator!=(const UniformRotationAboutZAxis<Dim>& lhs,
-                const UniformRotationAboutZAxis<Dim>& rhs) noexcept;
+                const UniformRotationAboutZAxis<Dim>& rhs);
 }  // namespace time_dependence
 }  // namespace creators
 }  // namespace domain

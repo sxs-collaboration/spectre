@@ -23,8 +23,7 @@ namespace evolution::dg::subcell::fd {
 namespace detail {
 template <size_t Dim>
 void project_impl(gsl::span<double> subcell_u, gsl::span<const double> dg_u,
-                  const Mesh<Dim>& dg_mesh,
-                  const Index<Dim>& subcell_extents) noexcept;
+                  const Mesh<Dim>& dg_mesh, const Index<Dim>& subcell_extents);
 }  // namespace detail
 
 /// @{
@@ -39,17 +38,16 @@ void project_impl(gsl::span<double> subcell_u, gsl::span<const double> dg_u,
  */
 template <size_t Dim>
 DataVector project(const DataVector& dg_u, const Mesh<Dim>& dg_mesh,
-                   const Index<Dim>& subcell_extents) noexcept;
+                   const Index<Dim>& subcell_extents);
 
 template <size_t Dim>
 void project(gsl::not_null<DataVector*> subcell_u, const DataVector& dg_u,
-             const Mesh<Dim>& dg_mesh,
-             const Index<Dim>& subcell_extents) noexcept;
+             const Mesh<Dim>& dg_mesh, const Index<Dim>& subcell_extents);
 
 template <typename SubcellTagList, typename DgTagList, size_t Dim>
 void project(const gsl::not_null<Variables<SubcellTagList>*> subcell_u,
              const Variables<DgTagList>& dg_u, const Mesh<Dim>& dg_mesh,
-             const Index<Dim>& subcell_extents) noexcept {
+             const Index<Dim>& subcell_extents) {
   static_assert(
       std::is_same_v<
           tmpl::transform<SubcellTagList,
@@ -74,7 +72,7 @@ void project(const gsl::not_null<Variables<SubcellTagList>*> subcell_u,
 template <typename TagList, size_t Dim>
 Variables<TagList> project(const Variables<TagList>& dg_u,
                            const Mesh<Dim>& dg_mesh,
-                           const Index<Dim>& subcell_extents) noexcept {
+                           const Index<Dim>& subcell_extents) {
   Variables<TagList> subcell_u(subcell_extents.product());
   project(make_not_null(&subcell_u), dg_u, dg_mesh, subcell_extents);
   return subcell_u;

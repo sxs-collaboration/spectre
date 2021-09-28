@@ -47,18 +47,18 @@ class DirichletAnalytic final : public BoundaryCondition<Dim> {
       "analytic data."};
 
   DirichletAnalytic() = default;
-  DirichletAnalytic(DirichletAnalytic&&) noexcept = default;
-  DirichletAnalytic& operator=(DirichletAnalytic&&) noexcept = default;
+  DirichletAnalytic(DirichletAnalytic&&) = default;
+  DirichletAnalytic& operator=(DirichletAnalytic&&) = default;
   DirichletAnalytic(const DirichletAnalytic&) = default;
   DirichletAnalytic& operator=(const DirichletAnalytic&) = default;
   ~DirichletAnalytic() override = default;
 
-  explicit DirichletAnalytic(CkMigrateMessage* msg) noexcept;
+  explicit DirichletAnalytic(CkMigrateMessage* msg);
 
   WRAPPED_PUPable_decl_base_template(
       domain::BoundaryConditions::BoundaryCondition, DirichletAnalytic);
 
-  auto get_clone() const noexcept -> std::unique_ptr<
+  auto get_clone() const -> std::unique_ptr<
       domain::BoundaryConditions::BoundaryCondition> override;
 
   static constexpr evolution::BoundaryConditions::Type bc_type =
@@ -95,9 +95,8 @@ class DirichletAnalytic final : public BoundaryCondition<Dim> {
       const tnsr::i<DataVector, Dim, Frame::Inertial>& /*normal_covector*/,
       const tnsr::I<DataVector, Dim, Frame::Inertial>& coords,
       const double time,
-      const AnalyticSolutionOrData& analytic_solution_or_data) const noexcept {
-    auto boundary_values = [&analytic_solution_or_data, &coords,
-                            &time]() noexcept {
+      const AnalyticSolutionOrData& analytic_solution_or_data) const {
+    auto boundary_values = [&analytic_solution_or_data, &coords, &time]() {
       if constexpr (std::is_base_of_v<MarkAsAnalyticSolution,
                                       AnalyticSolutionOrData>) {
         return analytic_solution_or_data.variables(

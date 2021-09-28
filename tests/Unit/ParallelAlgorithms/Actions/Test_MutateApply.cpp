@@ -26,7 +26,7 @@ struct AddTheNumber {
   using argument_tags = tmpl::list<SomeNumber>;
   using return_tags = tmpl::list<TestValue>;
   static void apply(const gsl::not_null<int*> test_value,
-                    const int& some_number) noexcept {
+                    const int& some_number) {
     *test_value += some_number;
   }
 };

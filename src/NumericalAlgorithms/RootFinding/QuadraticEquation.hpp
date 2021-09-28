@@ -15,7 +15,7 @@
  * \returns The positive root of a quadratic equation.
  * \requires That there are two real roots, of which only one is positive.
  */
-double positive_root(double a, double b, double c) noexcept;
+double positive_root(double a, double b, double c);
 
 /*!
  * \ingroup NumericalAlgorithmsGroup
@@ -27,8 +27,7 @@ double positive_root(double a, double b, double c) noexcept;
  */
 template <typename T>
 T smallest_root_greater_than_value_within_roundoff(const T& a, const T& b,
-                                                   const T& c,
-                                                   double value) noexcept;
+                                                   const T& c, double value);
 /*!
  * \ingroup NumericalAlgorithmsGroup
  * \brief Returns the largest root of a quadratic equation
@@ -41,7 +40,7 @@ T smallest_root_greater_than_value_within_roundoff(const T& a, const T& b,
 template <typename T>
 T largest_root_between_values_within_roundoff(const T& a, const T& b,
                                               const T& c, double min_value,
-                                              double max_value) noexcept;
+                                              double max_value);
 /*!
  * \ingroup NumericalAlgorithmsGroup
  * \brief Returns the two real roots of a quadratic equation \f$ax^2 +
@@ -49,4 +48,4 @@ T largest_root_between_values_within_roundoff(const T& a, const T& b,
  * \returns An array of the roots of a quadratic equation
  * \requires That there are two real roots.
  */
-std::array<double, 2> real_roots(double a, double b, double c) noexcept;
+std::array<double, 2> real_roots(double a, double b, double c);

@@ -52,7 +52,7 @@ void time_deriv_of_lower_shift(
     const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_unit_normal,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
-    const tnsr::aa<DataType, SpatialDim, Frame>& pi) noexcept;
+    const tnsr::aa<DataType, SpatialDim, Frame>& pi);
 
 template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::i<DataType, SpatialDim, Frame> time_deriv_of_lower_shift(
@@ -61,6 +61,6 @@ tnsr::i<DataType, SpatialDim, Frame> time_deriv_of_lower_shift(
     const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_unit_normal,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
-    const tnsr::aa<DataType, SpatialDim, Frame>& pi) noexcept;
+    const tnsr::aa<DataType, SpatialDim, Frame>& pi);
 /// @}
 }  // namespace GeneralizedHarmonic

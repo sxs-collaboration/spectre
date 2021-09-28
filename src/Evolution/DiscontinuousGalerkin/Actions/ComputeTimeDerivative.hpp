@@ -56,7 +56,7 @@ namespace evolution::dg::subcell {
 // coupling to the DG-subcell libraries for executables that don't use subcell.
 template <typename Metavariables, typename DbTagsList>
 DirectionMap<Metavariables::volume_dim, std::vector<double>>
-prepare_neighbor_data(gsl::not_null<db::DataBox<DbTagsList>*> box) noexcept;
+prepare_neighbor_data(gsl::not_null<db::DataBox<DbTagsList>*> box);
 }  // namespace evolution::dg::subcell
 namespace tuples {
 template <typename...>
@@ -299,7 +299,7 @@ struct ComputeTimeDerivative {
       tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-      const ParallelComponent* /*meta*/) noexcept;  // NOLINT const
+      const ParallelComponent* /*meta*/);  // NOLINT const
 
  private:
   // The below functions will be removed once we've finished writing the new
@@ -307,7 +307,7 @@ struct ComputeTimeDerivative {
   template <typename... NormalDotFluxTags, typename... Args>
   static void apply_flux(
       gsl::not_null<Variables<tmpl::list<NormalDotFluxTags...>>*> boundary_flux,
-      const Args&... boundary_variables) noexcept {
+      const Args&... boundary_variables) {
     Metavariables::system::normal_dot_fluxes::apply(
         make_not_null(&get<NormalDotFluxTags>(*boundary_flux))...,
         boundary_variables...);
@@ -315,16 +315,16 @@ struct ComputeTimeDerivative {
 
   template <typename DbTagsList>
   static void boundary_terms_nonconservative_products(
-      gsl::not_null<db::DataBox<DbTagsList>*> box) noexcept;
+      gsl::not_null<db::DataBox<DbTagsList>*> box);
 
   template <size_t VolumeDim, typename BoundaryScheme, typename DbTagsList>
   static void fill_mortar_data_for_internal_boundaries(
-      gsl::not_null<db::DataBox<DbTagsList>*> box) noexcept;
+      gsl::not_null<db::DataBox<DbTagsList>*> box);
 
   template <typename ParallelComponent, typename DbTagsList>
   static void send_data_for_fluxes(
       gsl::not_null<Parallel::GlobalCache<Metavariables>*> cache,
-      gsl::not_null<db::DataBox<DbTagsList>*> box) noexcept;
+      gsl::not_null<db::DataBox<DbTagsList>*> box);
 };
 
 template <typename Metavariables>
@@ -336,7 +336,7 @@ ComputeTimeDerivative<Metavariables>::apply(
     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
     Parallel::GlobalCache<Metavariables>& cache,
     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-    const ParallelComponent* const /*meta*/) noexcept {  // NOLINT const
+    const ParallelComponent* const /*meta*/) {  // NOLINT const
   static constexpr size_t volume_dim = Metavariables::volume_dim;
   using system = typename Metavariables::system;
   using variables_tag = typename system::variables_tag;
@@ -350,18 +350,17 @@ ComputeTimeDerivative<Metavariables>::apply(
   const ::dg::Formulation dg_formulation =
       db::get<::dg::Tags::Formulation>(box);
   ASSERT(alg::all_of(mesh.basis(),
-                     [&mesh](const Spectral::Basis current_basis) noexcept {
+                     [&mesh](const Spectral::Basis current_basis) {
                        return current_basis == mesh.basis(0);
                      }),
          "An isotropic basis must be used in the evolution code. While "
          "theoretically this restriction could be lifted, the simplification "
          "it offers are quite substantial. Relaxing this assumption is likely "
          "to require quite a bit of careful code refactoring and debugging.");
-  ASSERT(alg::all_of(
-             mesh.quadrature(),
-             [&mesh](const Spectral::Quadrature current_quadrature) noexcept {
-               return current_quadrature == mesh.quadrature(0);
-             }),
+  ASSERT(alg::all_of(mesh.quadrature(),
+                     [&mesh](const Spectral::Quadrature current_quadrature) {
+                       return current_quadrature == mesh.quadrature(0);
+                     }),
          "An isotropic quadrature must be used in the evolution code. While "
          "theoretically this restriction could be lifted, the simplification "
          "it offers are quite substantial. Relaxing this assumption is likely "
@@ -411,7 +410,7 @@ ComputeTimeDerivative<Metavariables>::apply(
           const gsl::not_null<Variables<
               db::wrap_tags_in<::Tags::dt, typename variables_tag::tags_list>>*>
               dt_vars_ptr,
-          const auto&... time_derivative_args) noexcept {
+          const auto&... time_derivative_args) {
         detail::volume_terms<compute_volume_time_derivative_terms>(
             dt_vars_ptr, make_not_null(&volume_fluxes),
             make_not_null(&partial_derivs), make_not_null(&temporaries),
@@ -438,7 +437,7 @@ ComputeTimeDerivative<Metavariables>::apply(
       "final.");
   tmpl::for_each<derived_boundary_corrections>(
       [&boundary_correction, &box, &partial_derivs, &primitive_vars,
-       &temporaries, &volume_fluxes](auto derived_correction_v) noexcept {
+       &temporaries, &volume_fluxes](auto derived_correction_v) {
         using DerivedCorrection =
             tmpl::type_from<decltype(derived_correction_v)>;
         if (typeid(boundary_correction) == typeid(DerivedCorrection)) {
@@ -476,7 +475,7 @@ template <typename Metavariables>
 template <typename ParallelComponent, typename DbTagsList>
 void ComputeTimeDerivative<Metavariables>::send_data_for_fluxes(
     const gsl::not_null<Parallel::GlobalCache<Metavariables>*> cache,
-    const gsl::not_null<db::DataBox<DbTagsList>*> box) noexcept {
+    const gsl::not_null<db::DataBox<DbTagsList>*> box) {
   constexpr size_t volume_dim = Metavariables::volume_dim;
   auto& receiver_proxy =
       Parallel::get_parallel_component<ParallelComponent>(*cache);
@@ -533,7 +532,7 @@ void ComputeTimeDerivative<Metavariables>::send_data_for_fluxes(
               slice_extents, direction.dimension(), orientation);
         }
 
-        const TimeStepId& next_time_step_id = [&box]() noexcept {
+        const TimeStepId& next_time_step_id = [&box]() {
           if (Metavariables::local_time_stepping) {
             return db::get<::Tags::Next<::Tags::TimeStepId>>(*box);
           } else {
@@ -612,7 +611,7 @@ void ComputeTimeDerivative<Metavariables>::send_data_for_fluxes(
                   std::optional<Variables<tmpl::list<
                       evolution::dg::Tags::MagnitudeOfNormal,
                       evolution::dg::Tags::NormalCovector<volume_dim>>>>>&
-                  normal_covector_and_magnitude) noexcept {
+                  normal_covector_and_magnitude) {
             Scalar<DataVector> volume_det_jacobian{};
             Scalar<DataVector> face_det_jacobian{};
             if (using_gauss_points) {

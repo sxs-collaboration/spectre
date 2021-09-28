@@ -15,7 +15,7 @@ namespace CurvedScalarWave {
 template <size_t SpatialDim>
 tnsr::i<DataVector, SpatialDim, Frame::Inertial> one_index_constraint(
     const tnsr::i<DataVector, SpatialDim, Frame::Inertial>& d_psi,
-    const tnsr::i<DataVector, SpatialDim, Frame::Inertial>& phi) noexcept {
+    const tnsr::i<DataVector, SpatialDim, Frame::Inertial>& phi) {
   tnsr::i<DataVector, SpatialDim, Frame::Inertial> constraint(
       get_size(get<0>(phi)));
   one_index_constraint<SpatialDim>(make_not_null(&constraint), d_psi, phi);
@@ -27,7 +27,7 @@ void one_index_constraint(
     const gsl::not_null<tnsr::i<DataVector, SpatialDim, Frame::Inertial>*>
         constraint,
     const tnsr::i<DataVector, SpatialDim, Frame::Inertial>& d_psi,
-    const tnsr::i<DataVector, SpatialDim, Frame::Inertial>& phi) noexcept {
+    const tnsr::i<DataVector, SpatialDim, Frame::Inertial>& phi) {
   if (get_size(get<0>(*constraint)) != get_size(get<0>(phi))) {
     *constraint =
         tnsr::i<DataVector, SpatialDim, Frame::Inertial>(get_size(get<0>(phi)));
@@ -46,7 +46,7 @@ void one_index_constraint(
 
 template <size_t SpatialDim>
 tnsr::ij<DataVector, SpatialDim, Frame::Inertial> two_index_constraint(
-    const tnsr::ij<DataVector, SpatialDim, Frame::Inertial>& d_phi) noexcept {
+    const tnsr::ij<DataVector, SpatialDim, Frame::Inertial>& d_phi) {
   auto constraint =
       make_with_value<tnsr::ij<DataVector, SpatialDim, Frame::Inertial>>(d_phi,
                                                                          0.);
@@ -58,7 +58,7 @@ template <size_t SpatialDim>
 void two_index_constraint(
     const gsl::not_null<tnsr::ij<DataVector, SpatialDim, Frame::Inertial>*>
         constraint,
-    const tnsr::ij<DataVector, SpatialDim, Frame::Inertial>& d_phi) noexcept {
+    const tnsr::ij<DataVector, SpatialDim, Frame::Inertial>& d_phi) {
   if (get_size(get<0, 0>(*constraint)) != get_size(get<0, 0>(d_phi))) {
     *constraint =
         make_with_value<tnsr::ij<DataVector, SpatialDim, Frame::Inertial>>(
@@ -79,17 +79,17 @@ void two_index_constraint(
   template tnsr::i<DataVector, DIM(data), Frame::Inertial>                    \
   CurvedScalarWave::one_index_constraint(                                     \
       const tnsr::i<DataVector, DIM(data), Frame::Inertial>&,                 \
-      const tnsr::i<DataVector, DIM(data), Frame::Inertial>&) noexcept;       \
+      const tnsr::i<DataVector, DIM(data), Frame::Inertial>&);                \
   template void CurvedScalarWave::one_index_constraint(                       \
       const gsl::not_null<tnsr::i<DataVector, DIM(data), Frame::Inertial>*>,  \
       const tnsr::i<DataVector, DIM(data), Frame::Inertial>&,                 \
-      const tnsr::i<DataVector, DIM(data), Frame::Inertial>&) noexcept;       \
+      const tnsr::i<DataVector, DIM(data), Frame::Inertial>&);                \
   template tnsr::ij<DataVector, DIM(data), Frame::Inertial>                   \
   CurvedScalarWave::two_index_constraint(                                     \
-      const tnsr::ij<DataVector, DIM(data), Frame::Inertial>&) noexcept;      \
+      const tnsr::ij<DataVector, DIM(data), Frame::Inertial>&);               \
   template void CurvedScalarWave::two_index_constraint(                       \
       const gsl::not_null<tnsr::ij<DataVector, DIM(data), Frame::Inertial>*>, \
-      const tnsr::ij<DataVector, DIM(data), Frame::Inertial>&) noexcept;
+      const tnsr::ij<DataVector, DIM(data), Frame::Inertial>&);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 

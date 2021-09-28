@@ -47,5 +47,5 @@ void spacetime_derivative_of_spacetime_metric(
     const Scalar<DataType>& lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
     const tnsr::aa<DataType, SpatialDim, Frame>& pi,
-    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept;
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi);
 }  // namespace GeneralizedHarmonic

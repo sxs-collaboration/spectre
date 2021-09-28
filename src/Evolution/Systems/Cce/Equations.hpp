@@ -165,7 +165,7 @@ struct ComputeBondiIntegrand<Tags::Integrand<Tags::BondiBeta>> {
   static void apply(
       const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
           integrand_for_beta,
-      const Args&... args) noexcept {
+      const Args&... args) {
     apply_impl(make_not_null(&get(*integrand_for_beta)), get(args)...);
   }
 
@@ -174,7 +174,7 @@ struct ComputeBondiIntegrand<Tags::Integrand<Tags::BondiBeta>> {
       gsl::not_null<SpinWeighted<ComplexDataVector, 0>*> integrand_for_beta,
       const SpinWeighted<ComplexDataVector, 2>& dy_j,
       const SpinWeighted<ComplexDataVector, 2>& j,
-      const SpinWeighted<ComplexDataVector, 0>& one_minus_y) noexcept;
+      const SpinWeighted<ComplexDataVector, 0>& one_minus_y);
 };
 
 /*!
@@ -226,15 +226,14 @@ struct ComputeBondiIntegrand<Tags::PoleOfIntegrand<Tags::BondiQ>> {
   static void apply(
       const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 1>>*>
           pole_of_integrand_for_q,
-      const Args&... args) noexcept {
+      const Args&... args) {
     apply_impl(make_not_null(&get(*pole_of_integrand_for_q)), get(args)...);
   }
 
  private:
-  static void apply_impl(
-      gsl::not_null<SpinWeighted<ComplexDataVector, 1>*>
-          pole_of_integrand_for_q,
-      const SpinWeighted<ComplexDataVector, 1>& eth_beta) noexcept;
+  static void apply_impl(gsl::not_null<SpinWeighted<ComplexDataVector, 1>*>
+                             pole_of_integrand_for_q,
+                         const SpinWeighted<ComplexDataVector, 1>& eth_beta);
 };
 
 /*!
@@ -310,7 +309,7 @@ struct ComputeBondiIntegrand<Tags::RegularIntegrand<Tags::BondiQ>> {
           regular_integrand_for_q,
       const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 1>>*>
           script_aq,
-      const Args&... args) noexcept {
+      const Args&... args) {
     apply_impl(make_not_null(&get(*regular_integrand_for_q)),
                make_not_null(&get(*script_aq)), get(args)...);
   }
@@ -329,7 +328,7 @@ struct ComputeBondiIntegrand<Tags::RegularIntegrand<Tags::BondiQ>> {
       const SpinWeighted<ComplexDataVector, 1>& ethbar_dy_j,
       const SpinWeighted<ComplexDataVector, 1>& ethbar_j,
       const SpinWeighted<ComplexDataVector, 1>& eth_r_divided_by_r,
-      const SpinWeighted<ComplexDataVector, 0>& k) noexcept;
+      const SpinWeighted<ComplexDataVector, 0>& k);
 };
 
 /*!
@@ -375,7 +374,7 @@ struct ComputeBondiIntegrand<Tags::Integrand<Tags::BondiU>> {
   static void apply(
       const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 1>>*>
           regular_integrand_for_u,
-      const Args&... args) noexcept {
+      const Args&... args) {
     apply_impl(make_not_null(&get(*regular_integrand_for_u)), get(args)...);
   }
 
@@ -386,7 +385,7 @@ struct ComputeBondiIntegrand<Tags::Integrand<Tags::BondiU>> {
                          const SpinWeighted<ComplexDataVector, 2>& j,
                          const SpinWeighted<ComplexDataVector, 1>& q,
                          const SpinWeighted<ComplexDataVector, 0>& k,
-                         const SpinWeighted<ComplexDataVector, 0>& r) noexcept;
+                         const SpinWeighted<ComplexDataVector, 0>& r);
 };
 
 /*!
@@ -434,15 +433,14 @@ struct ComputeBondiIntegrand<Tags::PoleOfIntegrand<Tags::BondiW>> {
   static void apply(
       const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
           pole_of_integrand_for_w,
-      const Args&... args) noexcept {
+      const Args&... args) {
     apply_impl(make_not_null(&get(*pole_of_integrand_for_w)), get(args)...);
   }
 
  private:
-  static void apply_impl(
-      gsl::not_null<SpinWeighted<ComplexDataVector, 0>*>
-          pole_of_integrand_for_w,
-      const SpinWeighted<ComplexDataVector, 0>& ethbar_u) noexcept;
+  static void apply_impl(gsl::not_null<SpinWeighted<ComplexDataVector, 0>*>
+                             pole_of_integrand_for_w,
+                         const SpinWeighted<ComplexDataVector, 0>& ethbar_u);
 };
 
 /*!
@@ -533,7 +531,7 @@ struct ComputeBondiIntegrand<Tags::RegularIntegrand<Tags::BondiW>> {
           regular_integrand_for_w,
       const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
           script_av,
-      const Args&... args) noexcept {
+      const Args&... args) {
     apply_impl(make_not_null(&get(*regular_integrand_for_w)),
                make_not_null(&get(*script_av)), get(args)...);
   }
@@ -558,7 +556,7 @@ struct ComputeBondiIntegrand<Tags::RegularIntegrand<Tags::BondiW>> {
       const SpinWeighted<ComplexDataVector, 1>& ethbar_j,
       const SpinWeighted<ComplexDataVector, 1>& eth_r_divided_by_r,
       const SpinWeighted<ComplexDataVector, 0>& k,
-      const SpinWeighted<ComplexDataVector, 0>& r) noexcept;
+      const SpinWeighted<ComplexDataVector, 0>& r);
 };
 
 /*!
@@ -620,7 +618,7 @@ struct ComputeBondiIntegrand<Tags::PoleOfIntegrand<Tags::BondiH>> {
   static void apply(
       const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 2>>*>
           pole_of_integrand_for_h,
-      const Args&... args) noexcept {
+      const Args&... args) {
     apply_impl(make_not_null(&get(*pole_of_integrand_for_h)), get(args)...);
   }
 
@@ -635,7 +633,7 @@ struct ComputeBondiIntegrand<Tags::PoleOfIntegrand<Tags::BondiH>> {
       const SpinWeighted<ComplexDataVector, 1>& ethbar_j,
       const SpinWeighted<ComplexDataVector, -2>& ethbar_jbar_u,
       const SpinWeighted<ComplexDataVector, 0>& ethbar_u,
-      const SpinWeighted<ComplexDataVector, 0>& k) noexcept;
+      const SpinWeighted<ComplexDataVector, 0>& k);
 };
 
 /*!
@@ -782,7 +780,7 @@ struct ComputeBondiIntegrand<Tags::RegularIntegrand<Tags::BondiH>> {
           script_bj,
       const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 2>>*>
           script_cj,
-      const Args&... args) noexcept {
+      const Args&... args) {
     apply_impl(make_not_null(&get(*regular_integrand_for_h)),
                make_not_null(&get(*script_aj)), make_not_null(&get(*script_bj)),
                make_not_null(&get(*script_cj)), get(args)...);
@@ -823,7 +821,7 @@ struct ComputeBondiIntegrand<Tags::RegularIntegrand<Tags::BondiH>> {
       const SpinWeighted<ComplexDataVector, 1>& eth_r_divided_by_r,
       const SpinWeighted<ComplexDataVector, 0>& k,
       const SpinWeighted<ComplexDataVector, 0>& one_minus_y,
-      const SpinWeighted<ComplexDataVector, 0>& r) noexcept;
+      const SpinWeighted<ComplexDataVector, 0>& r);
 };
 
 /*!
@@ -876,7 +874,7 @@ struct ComputeBondiIntegrand<Tags::LinearFactor<Tags::BondiH>> {
           linear_factor_for_h,
       const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 2>>*>
           script_djbar,
-      const Args&... args) noexcept {
+      const Args&... args) {
     apply_impl(make_not_null(&get(*linear_factor_for_h)),
                make_not_null(&get(*script_djbar)), get(args)...);
   }
@@ -887,7 +885,7 @@ struct ComputeBondiIntegrand<Tags::LinearFactor<Tags::BondiH>> {
       gsl::not_null<SpinWeighted<ComplexDataVector, 2>*> script_djbar,
       const SpinWeighted<ComplexDataVector, 2>& dy_j,
       const SpinWeighted<ComplexDataVector, 2>& j,
-      const SpinWeighted<ComplexDataVector, 0>& one_minus_y) noexcept;
+      const SpinWeighted<ComplexDataVector, 0>& one_minus_y);
 };
 
 /*!
@@ -941,7 +939,7 @@ struct ComputeBondiIntegrand<Tags::LinearFactorForConjugate<Tags::BondiH>> {
           linear_factor_for_conjugate_h,
       const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 2>>*>
           script_djbar,
-      const Args&... args) noexcept {
+      const Args&... args) {
     apply_impl(make_not_null(&get(*linear_factor_for_conjugate_h)),
                make_not_null(&get(*script_djbar)), get(args)...);
   }
@@ -953,6 +951,6 @@ struct ComputeBondiIntegrand<Tags::LinearFactorForConjugate<Tags::BondiH>> {
       gsl::not_null<SpinWeighted<ComplexDataVector, 2>*> script_djbar,
       const SpinWeighted<ComplexDataVector, 2>& dy_j,
       const SpinWeighted<ComplexDataVector, 2>& j,
-      const SpinWeighted<ComplexDataVector, 0>& one_minus_y) noexcept;
+      const SpinWeighted<ComplexDataVector, 0>& one_minus_y);
 };
 }  // namespace Cce

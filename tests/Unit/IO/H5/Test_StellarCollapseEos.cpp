@@ -29,7 +29,7 @@ namespace {
 // For 3D arrays with every element equal to zero (or with repeating numbers),
 // they are random numbers in the range [-10.0, 10.0]
 void test_tabulated(const std::string& file_path,
-                    const std::string& subgroup_path) noexcept {
+                    const std::string& subgroup_path) {
   h5::H5File<h5::AccessType::ReadOnly> sample_file(file_path);
   const auto& sample_data =
       sample_file.get<h5::StellarCollapseEos>(subgroup_path);

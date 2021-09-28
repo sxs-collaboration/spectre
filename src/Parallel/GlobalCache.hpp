@@ -50,8 +50,7 @@ using type_for_get = typename type_for_get_helper<
 CREATE_GET_TYPE_ALIAS_OR_DEFAULT(component_being_mocked)
 
 template <typename... Tags>
-auto make_mutable_cache_tag_storage(
-    tuples::TaggedTuple<Tags...>&& input) noexcept {
+auto make_mutable_cache_tag_storage(tuples::TaggedTuple<Tags...>&& input) {
   return tuples::TaggedTuple<MutableCacheTag<Tags>...>(
       std::make_tuple(std::move(tuples::get<Tags>(input)),
                       std::vector<std::unique_ptr<Callback>>{})...);
@@ -101,11 +100,11 @@ class MutableGlobalCache : public CBase_MutableGlobalCache<Metavariables> {
  public:
   explicit MutableGlobalCache(tuples::tagged_tuple_from_typelist<
                               get_mutable_global_cache_tags<Metavariables>>
-                                  mutable_global_cache) noexcept;
+                                  mutable_global_cache);
   explicit MutableGlobalCache(CkMigrateMessage* msg)
       : CBase_MutableGlobalCache<Metavariables>(msg) {}
 
-  ~MutableGlobalCache() noexcept override {
+  ~MutableGlobalCache() override {
     (void)Parallel::charmxx::RegisterChare<
         MutableGlobalCache<Metavariables>,
         CkIndex_MutableGlobalCache<Metavariables>>::registrar;
@@ -119,7 +118,7 @@ class MutableGlobalCache : public CBase_MutableGlobalCache<Metavariables> {
   /// \endcond
 
   template <typename GlobalCacheTag>
-  auto get() const noexcept
+  auto get() const
       -> const GlobalCache_detail::type_for_get<GlobalCacheTag, Metavariables>&;
 
   // Entry method to mutate the object indentified by `GlobalCacheTag`.
@@ -130,16 +129,16 @@ class MutableGlobalCache : public CBase_MutableGlobalCache<Metavariables> {
   // by the GlobalCacheTag, and then the contents of 'args' as
   // subsequent arguments.  Called via `GlobalCache::mutate`.
   template <typename GlobalCacheTag, typename Function, typename... Args>
-  void mutate(const std::tuple<Args...>& args) noexcept;
+  void mutate(const std::tuple<Args...>& args);
 
   // Not an entry method, and intended to be called only from
   // `GlobalCache` via the free function
   // `Parallel::mutable_cache_item_is_ready`.  See the free function
   // `Parallel::mutable_cache_item_is_ready` for documentation.
   template <typename GlobalCacheTag, typename Function>
-  bool mutable_cache_item_is_ready(const Function& function) noexcept;
+  bool mutable_cache_item_is_ready(const Function& function);
 
-  void pup(PUP::er& p) noexcept override;  // NOLINT
+  void pup(PUP::er& p) override;  // NOLINT
 
  private:
   tuples::tagged_tuple_from_typelist<
@@ -151,13 +150,13 @@ template <typename Metavariables>
 MutableGlobalCache<Metavariables>::MutableGlobalCache(
     tuples::tagged_tuple_from_typelist<
         get_mutable_global_cache_tags<Metavariables>>
-        mutable_global_cache) noexcept
+        mutable_global_cache)
     : mutable_global_cache_(GlobalCache_detail::make_mutable_cache_tag_storage(
           std::move(mutable_global_cache))) {}
 
 template <typename Metavariables>
 template <typename GlobalCacheTag>
-auto MutableGlobalCache<Metavariables>::get() const noexcept
+auto MutableGlobalCache<Metavariables>::get() const
     -> const GlobalCache_detail::type_for_get<GlobalCacheTag, Metavariables>& {
   using tag = MutableCacheTag<
       GlobalCache_detail::get_matching_tag<GlobalCacheTag, Metavariables>>;
@@ -171,7 +170,7 @@ auto MutableGlobalCache<Metavariables>::get() const noexcept
 template <typename Metavariables>
 template <typename GlobalCacheTag, typename Function>
 bool MutableGlobalCache<Metavariables>::mutable_cache_item_is_ready(
-    const Function& function) noexcept {
+    const Function& function) {
   using tag = MutableCacheTag<GlobalCache_detail::get_matching_mutable_tag<
       GlobalCacheTag, Metavariables>>;
   std::unique_ptr<Callback> optional_callback{};
@@ -201,7 +200,7 @@ bool MutableGlobalCache<Metavariables>::mutable_cache_item_is_ready(
 template <typename Metavariables>
 template <typename GlobalCacheTag, typename Function, typename... Args>
 void MutableGlobalCache<Metavariables>::mutate(
-    const std::tuple<Args...>& args) noexcept {
+    const std::tuple<Args...>& args) {
   (void)Parallel::charmxx::RegisterMutableGlobalCacheMutate<
       Metavariables, GlobalCacheTag, Function, Args...>::registrar;
   using tag = MutableCacheTag<GlobalCache_detail::get_matching_mutable_tag<
@@ -209,7 +208,7 @@ void MutableGlobalCache<Metavariables>::mutate(
 
   // Do the mutate.
   std::apply(
-      [this](const auto&... local_args) noexcept {
+      [this](const auto&... local_args) {
         Function::apply(make_not_null(&std::get<0>(
                             tuples::get<tag>(mutable_global_cache_))),
                         local_args...);
@@ -225,7 +224,7 @@ void MutableGlobalCache<Metavariables>::mutate(
 }
 
 template <typename Metavariables>
-void MutableGlobalCache<Metavariables>::pup(PUP::er& p) noexcept {
+void MutableGlobalCache<Metavariables>::pup(PUP::er& p) {
   p | mutable_global_cache_;
 }
 
@@ -287,12 +286,11 @@ class GlobalCache : public CBase_GlobalCache<Metavariables> {
 
   /// Constructor used only by the ActionTesting framework and other
   /// non-charm++ tests that don't know about proxies.
-  GlobalCache(
-      tuples::tagged_tuple_from_typelist<
-          get_const_global_cache_tags<Metavariables>>
-          const_global_cache,
-      MutableGlobalCache<Metavariables>* mutable_global_cache,
-      std::optional<main_proxy_type> main_proxy = std::nullopt) noexcept;
+  GlobalCache(tuples::tagged_tuple_from_typelist<
+                  get_const_global_cache_tags<Metavariables>>
+                  const_global_cache,
+              MutableGlobalCache<Metavariables>* mutable_global_cache,
+              std::optional<main_proxy_type> main_proxy = std::nullopt);
 
   /// Constructor used by Main and anything else that is charm++ aware.
   GlobalCache(
@@ -300,12 +298,12 @@ class GlobalCache : public CBase_GlobalCache<Metavariables> {
           get_const_global_cache_tags<Metavariables>>
           const_global_cache,
       CProxy_MutableGlobalCache<Metavariables> mutable_global_cache_proxy,
-      std::optional<main_proxy_type> main_proxy = std::nullopt) noexcept;
+      std::optional<main_proxy_type> main_proxy = std::nullopt);
 
   explicit GlobalCache(CkMigrateMessage* msg)
       : CBase_GlobalCache<Metavariables>(msg) {}
 
-  ~GlobalCache() noexcept override {
+  ~GlobalCache() override {
     (void)Parallel::charmxx::RegisterChare<
         GlobalCache<Metavariables>,
         CkIndex_GlobalCache<Metavariables>>::registrar;
@@ -322,7 +320,7 @@ class GlobalCache : public CBase_GlobalCache<Metavariables> {
   void set_parallel_components(
       tuples::tagged_tuple_from_typelist<parallel_component_tag_list>&&
           parallel_components,
-      const CkCallback& callback) noexcept;
+      const CkCallback& callback);
 
   /// Returns whether the object referred to by `GlobalCacheTag`
   /// (which must be a mutable cache tag) is ready to be accessed by a
@@ -337,7 +335,7 @@ class GlobalCache : public CBase_GlobalCache<Metavariables> {
   ///   where the `Callback` will re-invoke the current action on the
   ///   current parallel component.
   template <typename GlobalCacheTag, typename Function>
-  bool mutable_cache_item_is_ready(const Function& function) noexcept;
+  bool mutable_cache_item_is_ready(const Function& function);
 
   /// Mutates the non-const object identified by GlobalCacheTag.
   /// \requires `GlobalCacheTag` is a tag in `mutable_global_cache_tags`
@@ -350,27 +348,27 @@ class GlobalCache : public CBase_GlobalCache<Metavariables> {
   /// object named by the GlobalCacheTag, and takes the contents of
   /// `args` as subsequent arguments.
   template <typename GlobalCacheTag, typename Function, typename... Args>
-  void mutate(const std::tuple<Args...>& args) noexcept;
+  void mutate(const std::tuple<Args...>& args);
 
   /// Retrieve the proxy to the global cache
-  proxy_type get_this_proxy() noexcept;
+  proxy_type get_this_proxy();
 
-  void pup(PUP::er& p) noexcept override;  // NOLINT
+  void pup(PUP::er& p) override;  // NOLINT
 
   /// Retrieve the proxy to the Main chare (or std::nullopt if the proxy has not
   /// been set).
-  std::optional<main_proxy_type> get_main_proxy() noexcept;
+  std::optional<main_proxy_type> get_main_proxy();
 
  private:
   // clang-tidy: false positive, redundant declaration
   template <typename GlobalCacheTag, typename MV>
-  friend auto get(const GlobalCache<MV>& cache) noexcept  // NOLINT
+  friend auto get(const GlobalCache<MV>& cache)  // NOLINT
       -> const GlobalCache_detail::type_for_get<GlobalCacheTag, MV>&;
 
   // clang-tidy: false positive, redundant declaration
   template <typename ParallelComponentTag, typename MV>
   friend auto get_parallel_component(  // NOLINT
-      GlobalCache<MV>& cache) noexcept
+      GlobalCache<MV>& cache)
       -> Parallel::proxy_from_parallel_component<
           GlobalCache_detail::get_component_if_mocked<
               typename MV::component_list, ParallelComponentTag>>&;
@@ -378,7 +376,7 @@ class GlobalCache : public CBase_GlobalCache<Metavariables> {
   // clang-tidy: false positive, redundant declaration
   template <typename ParallelComponentTag, typename MV>
   friend auto get_parallel_component(  // NOLINT
-      const GlobalCache<MV>& cache) noexcept
+      const GlobalCache<MV>& cache)
       -> const Parallel::proxy_from_parallel_component<
           GlobalCache_detail::get_component_if_mocked<
               typename MV::component_list,
@@ -410,7 +408,7 @@ GlobalCache<Metavariables>::GlobalCache(
         get_const_global_cache_tags<Metavariables>>
         const_global_cache,
     MutableGlobalCache<Metavariables>* mutable_global_cache,
-    std::optional<main_proxy_type> main_proxy) noexcept
+    std::optional<main_proxy_type> main_proxy)
     : const_global_cache_(std::move(const_global_cache)),
       mutable_global_cache_(mutable_global_cache),
       main_proxy_(std::move(main_proxy)) {
@@ -424,7 +422,7 @@ GlobalCache<Metavariables>::GlobalCache(
         get_const_global_cache_tags<Metavariables>>
         const_global_cache,
     CProxy_MutableGlobalCache<Metavariables> mutable_global_cache_proxy,
-    std::optional<main_proxy_type> main_proxy) noexcept
+    std::optional<main_proxy_type> main_proxy)
     : const_global_cache_(std::move(const_global_cache)),
       mutable_global_cache_(nullptr),
       mutable_global_cache_proxy_(std::move(mutable_global_cache_proxy)),
@@ -434,7 +432,7 @@ template <typename Metavariables>
 void GlobalCache<Metavariables>::set_parallel_components(
     tuples::tagged_tuple_from_typelist<parallel_component_tag_list>&&
         parallel_components,
-    const CkCallback& callback) noexcept {
+    const CkCallback& callback) {
   ASSERT(!parallel_components_have_been_set_,
          "Can only set the parallel_components once");
   parallel_components_ = std::move(parallel_components);
@@ -445,7 +443,7 @@ void GlobalCache<Metavariables>::set_parallel_components(
 template <typename Metavariables>
 template <typename GlobalCacheTag, typename Function>
 bool GlobalCache<Metavariables>::mutable_cache_item_is_ready(
-    const Function& function) noexcept {
+    const Function& function) {
   if (mutable_global_cache_ == nullptr) {
     return mutable_global_cache_proxy_.ckLocalBranch()
         ->template mutable_cache_item_is_ready<GlobalCacheTag>(function);
@@ -457,8 +455,7 @@ bool GlobalCache<Metavariables>::mutable_cache_item_is_ready(
 
 template <typename Metavariables>
 template <typename GlobalCacheTag, typename Function, typename... Args>
-void GlobalCache<Metavariables>::mutate(
-    const std::tuple<Args...>& args) noexcept {
+void GlobalCache<Metavariables>::mutate(const std::tuple<Args...>& args) {
   (void)Parallel::charmxx::RegisterGlobalCacheMutate<
       Metavariables, GlobalCacheTag, Function, Args...>::registrar;
   if (mutable_global_cache_ == nullptr) {
@@ -476,14 +473,13 @@ void GlobalCache<Metavariables>::mutate(
 
 template <typename Metavariables>
 typename Parallel::GlobalCache<Metavariables>::proxy_type
-GlobalCache<Metavariables>::get_this_proxy() noexcept {
+GlobalCache<Metavariables>::get_this_proxy() {
   return this->thisProxy;
 }
 
 template <typename Metavariables>
-std::optional<
-    typename Parallel::GlobalCache<Metavariables>::main_proxy_type>
-GlobalCache<Metavariables>::get_main_proxy() noexcept {
+std::optional<typename Parallel::GlobalCache<Metavariables>::main_proxy_type>
+GlobalCache<Metavariables>::get_main_proxy() {
   if(main_proxy_.has_value()) {
     return main_proxy_;
   } else {
@@ -498,7 +494,7 @@ GlobalCache<Metavariables>::get_main_proxy() noexcept {
 #pragma GCC diagnostic ignored "-Wsuggest-attribute=noreturn"
 #endif  // defined(__GNUC__) && !defined(__clang__)
 template <typename Metavariables>
-void GlobalCache<Metavariables>::pup(PUP::er& p) noexcept {
+void GlobalCache<Metavariables>::pup(PUP::er& p) {
   p | const_global_cache_;
   p | parallel_components_;
   p | mutable_global_cache_proxy_;
@@ -525,7 +521,7 @@ void GlobalCache<Metavariables>::pup(PUP::er& p) noexcept {
 /// \returns a Charm++ proxy that can be used to call an entry method on the
 /// chare(s)
 template <typename ParallelComponentTag, typename Metavariables>
-auto get_parallel_component(GlobalCache<Metavariables>& cache) noexcept
+auto get_parallel_component(GlobalCache<Metavariables>& cache)
     -> Parallel::proxy_from_parallel_component<
         GlobalCache_detail::get_component_if_mocked<
             typename Metavariables::component_list, ParallelComponentTag>>& {
@@ -536,7 +532,7 @@ auto get_parallel_component(GlobalCache<Metavariables>& cache) noexcept
 }
 
 template <typename ParallelComponentTag, typename Metavariables>
-auto get_parallel_component(const GlobalCache<Metavariables>& cache) noexcept
+auto get_parallel_component(const GlobalCache<Metavariables>& cache)
     -> const Parallel::proxy_from_parallel_component<
         GlobalCache_detail::get_component_if_mocked<
             typename Metavariables::component_list, ParallelComponentTag>>& {
@@ -556,7 +552,7 @@ auto get_parallel_component(const GlobalCache<Metavariables>& cache) noexcept
 ///
 /// \returns a constant reference to an object in the cache
 template <typename GlobalCacheTag, typename Metavariables>
-auto get(const GlobalCache<Metavariables>& cache) noexcept
+auto get(const GlobalCache<Metavariables>& cache)
     -> const GlobalCache_detail::type_for_get<GlobalCacheTag, Metavariables>& {
   // We check if the tag is to be retrieved directly or via a base class
   using tag =
@@ -605,7 +601,7 @@ auto get(const GlobalCache<Metavariables>& cache) noexcept
 /// returns false.
 template <typename GlobalCacheTag, typename Function, typename Metavariables>
 bool mutable_cache_item_is_ready(GlobalCache<Metavariables>& cache,
-                                 const Function& function) noexcept {
+                                 const Function& function) {
   return cache.template mutable_cache_item_is_ready<GlobalCacheTag>(function);
 }
 
@@ -624,7 +620,7 @@ bool mutable_cache_item_is_ready(GlobalCache<Metavariables>& cache,
 /// for tests.
 template <typename GlobalCacheTag, typename Function, typename Metavariables,
           typename... Args>
-void mutate(GlobalCache<Metavariables>& cache, Args&&... args) noexcept {
+void mutate(GlobalCache<Metavariables>& cache, Args&&... args) {
   cache.template mutate<GlobalCacheTag, Function>(
       std::make_tuple<Args...>(std::forward<Args>(args)...));
 }
@@ -643,8 +639,7 @@ void mutate(GlobalCache<Metavariables>& cache, Args&&... args) noexcept {
 /// This is the version that takes a charm++ proxy to the GlobalCache.
 template <typename GlobalCacheTag, typename Function, typename Metavariables,
           typename... Args>
-void mutate(CProxy_GlobalCache<Metavariables>& cache_proxy,
-            Args&&... args) noexcept {
+void mutate(CProxy_GlobalCache<Metavariables>& cache_proxy, Args&&... args) {
   cache_proxy.template mutate<GlobalCacheTag, Function>(
       std::make_tuple<Args...>(std::forward<Args>(args)...));
 }
@@ -663,7 +658,7 @@ struct GlobalCacheProxy : db::SimpleTag {
 template <class Metavariables>
 struct GlobalCacheImpl : GlobalCache, db::SimpleTag {
   using type = Parallel::GlobalCache<Metavariables>*;
-  static std::string name() noexcept { return "GlobalCache"; }
+  static std::string name() { return "GlobalCache"; }
 };
 
 template <class Metavariables>
@@ -674,7 +669,7 @@ struct GlobalCacheImplCompute : GlobalCacheImpl<Metavariables>, db::ComputeTag {
   static void function(
       const gsl::not_null<Parallel::GlobalCache<Metavariables>**>
           local_branch_of_global_cache,
-      const CProxy_GlobalCache<Metavariables>& global_cache_proxy) noexcept {
+      const CProxy_GlobalCache<Metavariables>& global_cache_proxy) {
     *local_branch_of_global_cache = global_cache_proxy.ckLocalBranch();
   }
 };

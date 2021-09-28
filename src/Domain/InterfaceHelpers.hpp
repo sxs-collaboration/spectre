@@ -67,7 +67,7 @@ struct unmap_interface_args<true> {
 
   template <size_t VolumeDim, typename T>
   static constexpr const T& apply(const ::Direction<VolumeDim>& /*direction*/,
-                                  const T& arg) noexcept {
+                                  const T& arg) {
     return arg;
   }
 };
@@ -79,7 +79,7 @@ struct unmap_interface_args<false> {
 
   template <size_t VolumeDim, typename T>
   static constexpr decltype(auto) apply(const ::Direction<VolumeDim>& direction,
-                                        const T& arg) noexcept {
+                                        const T& arg) {
     return arg.at(direction);
   }
 };
@@ -100,7 +100,7 @@ struct DispatchInterfaceInvokable<true, InterfaceReturnType, DirectionsTag,
             typename... ExtraArgs>
   static constexpr auto apply(InterfaceInvokable&& /*interface_invokable*/,
                               const db::DataBox<DbTagsList>& box,
-                              ExtraArgs&&... extra_args) noexcept {
+                              ExtraArgs&&... extra_args) {
     DirectionMap<DirectionsTag::volume_dim, InterfaceReturnType> result{};
     for (const auto& direction : get<DirectionsTag>(box)) {
       auto interface_value = InterfaceInvokable::apply(
@@ -124,7 +124,7 @@ struct DispatchInterfaceInvokable<true, void, DirectionsTag, VolumeTagsList,
             typename... ExtraArgs>
   static constexpr void apply(InterfaceInvokable&& /*interface_invokable*/,
                               const db::DataBox<DbTagsList>& box,
-                              ExtraArgs&&... extra_args) noexcept {
+                              ExtraArgs&&... extra_args) {
     for (const auto& direction : get<DirectionsTag>(box)) {
       InterfaceInvokable::apply(
           unmap_interface_args<
@@ -145,7 +145,7 @@ struct DispatchInterfaceInvokable<false, InterfaceReturnType, DirectionsTag,
             typename... ExtraArgs>
   static constexpr auto apply(InterfaceInvokable&& interface_invokable,
                               const db::DataBox<DbTagsList>& box,
-                              ExtraArgs&&... extra_args) noexcept {
+                              ExtraArgs&&... extra_args) {
     DirectionMap<DirectionsTag::volume_dim, InterfaceReturnType> result{};
     for (const auto& direction : get<DirectionsTag>(box)) {
       auto interface_value = interface_invokable(
@@ -169,7 +169,7 @@ struct DispatchInterfaceInvokable<false, void, DirectionsTag, VolumeTagsList,
             typename... ExtraArgs>
   static constexpr void apply(InterfaceInvokable&& interface_invokable,
                               const db::DataBox<DbTagsList>& box,
-                              ExtraArgs&&... extra_args) noexcept {
+                              ExtraArgs&&... extra_args) {
     for (const auto& direction : get<DirectionsTag>(box)) {
       interface_invokable(
           unmap_interface_args<
@@ -199,7 +199,7 @@ struct InterfaceApplyImpl<DirectionsTag, tmpl::list<ArgumentTags...>,
                 ExtraArgs...>> = nullptr>
   static constexpr auto apply(InterfaceInvokable&& interface_invokable,
                               const db::DataBox<DbTagsList>& box,
-                              ExtraArgs&&... extra_args) noexcept {
+                              ExtraArgs&&... extra_args) {
     using interface_return_type =
         std::decay_t<decltype(InterfaceInvokable::apply(
             std::declval<
@@ -220,7 +220,7 @@ struct InterfaceApplyImpl<DirectionsTag, tmpl::list<ArgumentTags...>,
                 ExtraArgs...>> = nullptr>
   static constexpr auto apply(InterfaceInvokable&& interface_invokable,
                               const db::DataBox<DbTagsList>& box,
-                              ExtraArgs&&... extra_args) noexcept {
+                              ExtraArgs&&... extra_args) {
     using interface_return_type = std::decay_t<decltype(interface_invokable(
         std::declval<
             db::detail::const_item_type<ArgumentTags, DbTagsList>>()...,
@@ -270,7 +270,7 @@ template <typename DirectionsTag, typename ArgumentTags, typename VolumeTags,
           typename... ExtraArgs>
 SPECTRE_ALWAYS_INLINE constexpr auto interface_apply(
     InterfaceInvokable&& interface_invokable,
-    const db::DataBox<DbTagsList>& box, ExtraArgs&&... extra_args) noexcept {
+    const db::DataBox<DbTagsList>& box, ExtraArgs&&... extra_args) {
   return InterfaceHelpers_detail::
       InterfaceApplyImpl<DirectionsTag, ArgumentTags, VolumeTags>::apply(
           std::forward<InterfaceInvokable>(interface_invokable), box,
@@ -291,7 +291,7 @@ template <typename DirectionsTag, typename InterfaceInvokable,
           // Needed to disambiguate the overloads
           typename ArgumentTags = typename InterfaceInvokable::argument_tags>
 SPECTRE_ALWAYS_INLINE constexpr auto interface_apply(
-    const DataBoxType& box, ExtraArgs&&... extra_args) noexcept {
+    const DataBoxType& box, ExtraArgs&&... extra_args) {
   return interface_apply<DirectionsTag, ArgumentTags,
                          get_volume_tags<InterfaceInvokable>>(
       InterfaceInvokable{}, box, std::forward<ExtraArgs>(extra_args)...);

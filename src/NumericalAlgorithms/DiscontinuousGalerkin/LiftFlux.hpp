@@ -43,7 +43,7 @@ void lift_flux(
     const gsl::not_null<Variables<tmpl::list<BoundaryCorrectionTags...>>*>
         boundary_correction_terms,
     const size_t extent_perpendicular_to_boundary,
-    const Scalar<DataVector>& magnitude_of_face_normal) noexcept {
+    const Scalar<DataVector>& magnitude_of_face_normal) {
   // For an Nth degree basis (i.e., one with N+1 basis functions), the LGL
   // weights are:
   //   w_i = 2 / ((N + 1) * N * (P_{N}(xi_i))^2)
@@ -64,7 +64,7 @@ void lift_flux(
 template <typename... FluxTags>
 auto lift_flux(Variables<tmpl::list<FluxTags...>> flux,
                const size_t extent_perpendicular_to_boundary,
-               const Scalar<DataVector>& magnitude_of_face_normal) noexcept
+               const Scalar<DataVector>& magnitude_of_face_normal)
     -> Variables<tmpl::list<db::remove_tag_prefix<FluxTags>...>> {
   Variables<tmpl::list<db::remove_tag_prefix<FluxTags>...>> lifted_data(
       std::move(flux));

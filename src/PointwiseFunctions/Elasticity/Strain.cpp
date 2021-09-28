@@ -19,7 +19,7 @@ namespace Elasticity {
 
 template <typename DataType, size_t Dim>
 void strain(const gsl::not_null<tnsr::ii<DataType, Dim>*> strain,
-            const tnsr::iJ<DataType, Dim>& deriv_displacement) noexcept {
+            const tnsr::iJ<DataType, Dim>& deriv_displacement) {
   for (size_t i = 0; i < Dim; ++i) {
     for (size_t j = 0; j <= i; ++j) {
       strain->get(i, j) =
@@ -34,7 +34,7 @@ void strain(const gsl::not_null<tnsr::ii<DataType, Dim>*> strain,
             const tnsr::ii<DataType, Dim>& metric,
             const tnsr::ijj<DataType, Dim>& deriv_metric,
             const tnsr::ijj<DataType, Dim>& christoffel_first_kind,
-            const tnsr::I<DataType, Dim>& displacement) noexcept {
+            const tnsr::I<DataType, Dim>& displacement) {
   for (size_t i = 0; i < Dim; ++i) {
     for (size_t j = 0; j <= i; ++j) {
       // Unroll k=0 iteration of the loop below to avoid filling the result with
@@ -61,7 +61,7 @@ template <size_t Dim>
 void strain(const gsl::not_null<tnsr::ii<DataVector, Dim>*> strain,
             const tnsr::I<DataVector, Dim>& displacement, const Mesh<Dim>& mesh,
             const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
-                                  Frame::Inertial>& inv_jacobian) noexcept {
+                                  Frame::Inertial>& inv_jacobian) {
   // Copy the displacement into a Variables to take partial derivatives because
   // at this time the `partial_derivatives` function only works with Variables.
   // This function is only used for observing the strain and derived quantities
@@ -88,19 +88,19 @@ void strain(const gsl::not_null<tnsr::ii<DataVector, Dim>*> strain,
       const tnsr::I<DataVector, DIM(data)>& displacement,                 \
       const Mesh<DIM(data)>& mesh,                                        \
       const InverseJacobian<DataVector, DIM(data), Frame::ElementLogical, \
-                            Frame::Inertial>& inv_jacobian) noexcept;
+                            Frame::Inertial>& inv_jacobian);
 
-#define INSTANTIATE_DTYPE(_, data)                                          \
-  template void strain(                                                     \
-      gsl::not_null<tnsr::ii<DTYPE(data), DIM(data)>*> strain,              \
-      const tnsr::iJ<DTYPE(data), DIM(data)>& deriv_displacement) noexcept; \
-  template void strain(                                                     \
-      gsl::not_null<tnsr::ii<DTYPE(data), DIM(data)>*> strain,              \
-      const tnsr::iJ<DTYPE(data), DIM(data)>& deriv_displacement,           \
-      const tnsr::ii<DTYPE(data), DIM(data)>& metric,                       \
-      const tnsr::ijj<DTYPE(data), DIM(data)>& deriv_metric,                \
-      const tnsr::ijj<DTYPE(data), DIM(data)>& christoffel_first_kind,      \
-      const tnsr::I<DTYPE(data), DIM(data)>& displacement) noexcept;
+#define INSTANTIATE_DTYPE(_, data)                                     \
+  template void strain(                                                \
+      gsl::not_null<tnsr::ii<DTYPE(data), DIM(data)>*> strain,         \
+      const tnsr::iJ<DTYPE(data), DIM(data)>& deriv_displacement);     \
+  template void strain(                                                \
+      gsl::not_null<tnsr::ii<DTYPE(data), DIM(data)>*> strain,         \
+      const tnsr::iJ<DTYPE(data), DIM(data)>& deriv_displacement,      \
+      const tnsr::ii<DTYPE(data), DIM(data)>& metric,                  \
+      const tnsr::ijj<DTYPE(data), DIM(data)>& deriv_metric,           \
+      const tnsr::ijj<DTYPE(data), DIM(data)>& christoffel_first_kind, \
+      const tnsr::I<DTYPE(data), DIM(data)>& displacement);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (2, 3))
 GENERATE_INSTANTIATIONS(INSTANTIATE_DTYPE, (2, 3), (double, DataVector))

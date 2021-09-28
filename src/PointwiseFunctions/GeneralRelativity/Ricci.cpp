@@ -15,7 +15,7 @@ void ricci_tensor(
     const gsl::not_null<tnsr::aa<DataType, SpatialDim, Frame, Index>*> result,
     const tnsr::Abb<DataType, SpatialDim, Frame, Index>& christoffel_2nd_kind,
     const tnsr::aBcc<DataType, SpatialDim, Frame, Index>&
-        d_christoffel_2nd_kind) noexcept {
+        d_christoffel_2nd_kind) {
   destructive_resize_components(result,
                                 get_size(get<0, 0, 0>(christoffel_2nd_kind)));
   for (auto& component : *result) {
@@ -44,7 +44,7 @@ template <size_t SpatialDim, typename Frame, IndexType Index, typename DataType>
 tnsr::aa<DataType, SpatialDim, Frame, Index> ricci_tensor(
     const tnsr::Abb<DataType, SpatialDim, Frame, Index>& christoffel_2nd_kind,
     const tnsr::aBcc<DataType, SpatialDim, Frame, Index>&
-        d_christoffel_2nd_kind) noexcept {
+        d_christoffel_2nd_kind) {
   tnsr::aa<DataType, SpatialDim, Frame, Index> result{};
   ricci_tensor(make_not_null(&result), christoffel_2nd_kind,
                d_christoffel_2nd_kind);
@@ -65,13 +65,13 @@ tnsr::aa<DataType, SpatialDim, Frame, Index> ricci_tensor(
       const tnsr::Abb<DTYPE(data), DIM(data), FRAME(data), INDEXTYPE(data)>&  \
           christoffel_2nd_kind,                                               \
       const tnsr::aBcc<DTYPE(data), DIM(data), FRAME(data), INDEXTYPE(data)>& \
-          d_christoffel_2nd_kind) noexcept;                                   \
+          d_christoffel_2nd_kind);                                            \
   template tnsr::aa<DTYPE(data), DIM(data), FRAME(data), INDEXTYPE(data)>     \
   gr::ricci_tensor(                                                           \
       const tnsr::Abb<DTYPE(data), DIM(data), FRAME(data), INDEXTYPE(data)>&  \
           christoffel_2nd_kind,                                               \
       const tnsr::aBcc<DTYPE(data), DIM(data), FRAME(data), INDEXTYPE(data)>& \
-          d_christoffel_2nd_kind) noexcept;
+          d_christoffel_2nd_kind);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
                         (Frame::Grid, Frame::Inertial),

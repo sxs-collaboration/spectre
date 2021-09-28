@@ -57,7 +57,7 @@ void time_deriv_of_shift(
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_unit_normal,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
-    const tnsr::aa<DataType, SpatialDim, Frame>& pi) noexcept;
+    const tnsr::aa<DataType, SpatialDim, Frame>& pi);
 
 template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::I<DataType, SpatialDim, Frame> time_deriv_of_shift(
@@ -66,7 +66,7 @@ tnsr::I<DataType, SpatialDim, Frame> time_deriv_of_shift(
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_unit_normal,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
-    const tnsr::aa<DataType, SpatialDim, Frame>& pi) noexcept;
+    const tnsr::aa<DataType, SpatialDim, Frame>& pi);
 /// @}
 
 namespace Tags {
@@ -96,7 +96,7 @@ struct TimeDerivShiftCompute
       const tnsr::II<DataVector, SpatialDim, Frame>&,
       const tnsr::A<DataVector, SpatialDim, Frame>&,
       const tnsr::iaa<DataVector, SpatialDim, Frame>&,
-      const tnsr::aa<DataVector, SpatialDim, Frame>&) noexcept>(
+      const tnsr::aa<DataVector, SpatialDim, Frame>&)>(
       &time_deriv_of_shift<SpatialDim, Frame, DataVector>);
 
   using base = ::Tags::dt<gr::Tags::Shift<SpatialDim, Frame, DataVector>>;

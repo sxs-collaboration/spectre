@@ -35,11 +35,11 @@ class FixedSpeedCubic : public FunctionOfTime {
  public:
   FixedSpeedCubic() = default;
   FixedSpeedCubic(double initial_function_value, double initial_time,
-                  double velocity, double decay_timescale) noexcept;
+                  double velocity, double decay_timescale);
 
   ~FixedSpeedCubic() override = default;
-  FixedSpeedCubic(FixedSpeedCubic&&) noexcept = default;
-  FixedSpeedCubic& operator=(FixedSpeedCubic&&) noexcept = default;
+  FixedSpeedCubic(FixedSpeedCubic&&) = default;
+  FixedSpeedCubic& operator=(FixedSpeedCubic&&) = default;
   FixedSpeedCubic(const FixedSpeedCubic&) = default;
   FixedSpeedCubic& operator=(const FixedSpeedCubic&) = default;
 
@@ -48,26 +48,24 @@ class FixedSpeedCubic : public FunctionOfTime {
 
   explicit FixedSpeedCubic(CkMigrateMessage* /*unused*/) {}
 
-  auto get_clone() const noexcept -> std::unique_ptr<FunctionOfTime> override;
+  auto get_clone() const -> std::unique_ptr<FunctionOfTime> override;
 
   /// Returns the function at an arbitrary time `t`.
-  std::array<DataVector, 1> func(const double t) const noexcept override {
+  std::array<DataVector, 1> func(const double t) const override {
     return func_and_derivs<0>(t);
   }
   /// Returns the function and its first derivative at an arbitrary time `t`.
-  std::array<DataVector, 2> func_and_deriv(
-      const double t) const noexcept override {
+  std::array<DataVector, 2> func_and_deriv(const double t) const override {
     return func_and_derivs<1>(t);
   }
   /// Returns the function and the first two derivatives at an arbitrary time
   /// `t`.
-  std::array<DataVector, 3> func_and_2_derivs(
-      const double t) const noexcept override {
+  std::array<DataVector, 3> func_and_2_derivs(const double t) const override {
     return func_and_derivs<2>(t);
   }
 
   /// Returns the domain of validity of the function.
-  std::array<double, 2> time_bounds() const noexcept override {
+  std::array<double, 2> time_bounds() const override {
     return {{initial_time_, std::numeric_limits<double>::max()}};
   }
 
@@ -76,11 +74,10 @@ class FixedSpeedCubic : public FunctionOfTime {
 
  private:
   friend bool operator==(const FixedSpeedCubic& lhs,
-                         const FixedSpeedCubic& rhs) noexcept;
+                         const FixedSpeedCubic& rhs);
 
   template <size_t MaxDerivReturned = 2>
-  std::array<DataVector, MaxDerivReturned + 1> func_and_derivs(
-      double t) const noexcept;
+  std::array<DataVector, MaxDerivReturned + 1> func_and_derivs(double t) const;
 
   double initial_function_value_{std::numeric_limits<double>::signaling_NaN()};
   double initial_time_{std::numeric_limits<double>::signaling_NaN()};
@@ -88,7 +85,6 @@ class FixedSpeedCubic : public FunctionOfTime {
   double squared_decay_timescale_{std::numeric_limits<double>::signaling_NaN()};
 };
 
-bool operator!=(const FixedSpeedCubic& lhs,
-                const FixedSpeedCubic& rhs) noexcept;
+bool operator!=(const FixedSpeedCubic& lhs, const FixedSpeedCubic& rhs);
 }  // namespace FunctionsOfTime
 }  // namespace domain

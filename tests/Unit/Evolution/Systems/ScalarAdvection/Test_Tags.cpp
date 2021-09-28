@@ -8,7 +8,7 @@
 
 namespace {
 template <size_t Dim>
-void test_tags() noexcept {
+void test_tags() {
   TestHelpers::db::test_simple_tag<ScalarAdvection::Tags::U>("U");
   TestHelpers::db::test_simple_tag<ScalarAdvection::Tags::VelocityField<Dim>>(
       "VelocityField");

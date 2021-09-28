@@ -87,7 +87,7 @@ template <typename OutTensor, typename InTensor>
 void copy_into(const gsl::not_null<OutTensor*> out, const InTensor& in,
                const std::array<size_t, OutTensor::rank() - InTensor::rank()>&
                    extra_indices,
-               const size_t data_index) noexcept {
+               const size_t data_index) {
   for (auto it = in.begin(); it != in.end(); ++it) {
     const auto in_index = in.get_tensor_index(it);
     std::array<size_t, OutTensor::rank()> out_index{};
@@ -102,14 +102,14 @@ void copy_into(const gsl::not_null<OutTensor*> out, const InTensor& in,
 }
 
 template <size_t Dim, typename Frame>
-tnsr::i<double, Dim, Frame> generate_normal(const size_t seed) noexcept {
+tnsr::i<double, Dim, Frame> generate_normal(const size_t seed) {
   tnsr::i<double, Dim, Frame> result{};
   std::iota(result.begin(), result.end(), seed + 2.);
   return result;
 }
 
 template <size_t Dim, typename Frame>
-tnsr::I<double, Dim, Frame> generate_flux(const size_t seed) noexcept {
+tnsr::I<double, Dim, Frame> generate_flux(const size_t seed) {
   tnsr::I<double, Dim, Frame> result{};
   std::iota(result.begin(), result.end(), seed + 3.);
   return result;
@@ -117,7 +117,7 @@ tnsr::I<double, Dim, Frame> generate_flux(const size_t seed) noexcept {
 
 template <size_t Dim>
 Scalar<double> generate_f_dot_n(const size_t normal_seed,
-                                const size_t flux_seed) noexcept {
+                                const size_t flux_seed) {
   double magnitude_normal = 0.;
   double unnormalized_f_dot_n = 0.;
   for (size_t i = 0; i < Dim; ++i) {

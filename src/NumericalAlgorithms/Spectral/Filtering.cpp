@@ -14,7 +14,7 @@
 
 namespace Spectral::filtering {
 Matrix exponential_filter(const Mesh<1>& mesh, const double alpha,
-                          const unsigned half_power) noexcept {
+                          const unsigned half_power) {
   if (UNLIKELY(mesh.number_of_grid_points() == 1)) {
     return Matrix(1, 1, 1.0);
   }
@@ -33,7 +33,7 @@ namespace {
 template <Spectral::Basis BasisType, Spectral::Quadrature QuadratureType>
 struct ZeroLowestModesImpl {
   Matrix operator()(const size_t num_points,
-                    const size_t num_modes_to_zero) const noexcept {
+                    const size_t num_modes_to_zero) const {
     const Matrix& nodal_to_modal =
         Spectral::nodal_to_modal_matrix<BasisType, QuadratureType>(num_points);
     const Matrix& modal_to_nodal =
@@ -48,7 +48,7 @@ struct ZeroLowestModesImpl {
 }  // namespace
 
 const Matrix& zero_lowest_modes(const Mesh<1>& mesh,
-                                const size_t number_of_modes_to_zero) noexcept {
+                                const size_t number_of_modes_to_zero) {
   ASSERT(number_of_modes_to_zero < mesh.extents(0),
          "For a 1d mesh with " << mesh.extents(0)
                                << " grid points, you cannot zero "

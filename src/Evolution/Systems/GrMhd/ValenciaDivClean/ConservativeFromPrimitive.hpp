@@ -91,7 +91,7 @@ struct ConservativeFromPrimitive {
       const tnsr::I<DataVector, 3, Frame::Inertial>& magnetic_field,
       const Scalar<DataVector>& sqrt_det_spatial_metric,
       const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
-      const Scalar<DataVector>& divergence_cleaning_field) noexcept;
+      const Scalar<DataVector>& divergence_cleaning_field);
 };
 }  // namespace ValenciaDivClean
 }  // namespace grmhd

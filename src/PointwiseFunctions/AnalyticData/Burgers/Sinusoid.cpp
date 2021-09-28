@@ -16,23 +16,22 @@
 
 namespace Burgers::AnalyticData {
 template <typename T>
-Scalar<T> Sinusoid::u(const tnsr::I<T, 1>& x) const noexcept {
+Scalar<T> Sinusoid::u(const tnsr::I<T, 1>& x) const {
   return Scalar<T>{sin(get<0>(x))};
 }
 
 tuples::TaggedTuple<Tags::U> Sinusoid::variables(
-    const tnsr::I<DataVector, 1>& x, tmpl::list<Tags::U> /*meta*/) const
-    noexcept {
+    const tnsr::I<DataVector, 1>& x, tmpl::list<Tags::U> /*meta*/) const {
   return {u(x)};
 }
 
-void Sinusoid::pup(PUP::er& /*p*/) noexcept {}
+void Sinusoid::pup(PUP::er& /*p*/) {}
 
-bool operator==(const Sinusoid& /*lhs*/, const Sinusoid& /*rhs*/) noexcept {
+bool operator==(const Sinusoid& /*lhs*/, const Sinusoid& /*rhs*/) {
   return true;
 }
 
-bool operator!=(const Sinusoid& lhs, const Sinusoid& rhs) noexcept {
+bool operator!=(const Sinusoid& lhs, const Sinusoid& rhs) {
   return not(lhs == rhs);
 }
 }  // namespace Burgers::AnalyticData
@@ -41,7 +40,7 @@ bool operator!=(const Sinusoid& lhs, const Sinusoid& rhs) noexcept {
 
 #define INSTANTIATE(_, data)                                       \
   template Scalar<DTYPE(data)> Burgers::AnalyticData::Sinusoid::u( \
-      const tnsr::I<DTYPE(data), 1>& x) const noexcept;
+      const tnsr::I<DTYPE(data), 1>& x) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
 

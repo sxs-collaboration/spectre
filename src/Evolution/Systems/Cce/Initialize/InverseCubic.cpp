@@ -21,12 +21,10 @@
 
 namespace Cce::InitializeJ {
 
-std::unique_ptr<InitializeJ<true>> InverseCubic<true>::get_clone()
-    const noexcept {
+std::unique_ptr<InitializeJ<true>> InverseCubic<true>::get_clone() const {
   return std::make_unique<InverseCubic>();
 }
-std::unique_ptr<InitializeJ<false>> InverseCubic<false>::get_clone()
-    const noexcept {
+std::unique_ptr<InitializeJ<false>> InverseCubic<false>::get_clone() const {
   return std::make_unique<InverseCubic>();
 }
 
@@ -43,7 +41,7 @@ void InverseCubic<true>::operator()(
     const Scalar<SpinWeighted<ComplexDataVector, 2>>& boundary_j,
     const Scalar<SpinWeighted<ComplexDataVector, 2>>& boundary_dr_j,
     const Scalar<SpinWeighted<ComplexDataVector, 0>>& r, const size_t l_max,
-    const size_t number_of_radial_points) const noexcept {
+    const size_t number_of_radial_points) const {
   const DataVector one_minus_y_collocation =
       1.0 - Spectral::collocation_points<Spectral::Basis::Legendre,
                                          Spectral::Quadrature::GaussLobatto>(
@@ -106,7 +104,7 @@ void InverseCubic<false>::operator()(
     const Scalar<SpinWeighted<ComplexDataVector, 2>>& boundary_j,
     const Scalar<SpinWeighted<ComplexDataVector, 2>>& boundary_dr_j,
     const Scalar<SpinWeighted<ComplexDataVector, 0>>& r, const size_t l_max,
-    const size_t number_of_radial_points) const noexcept {
+    const size_t number_of_radial_points) const {
   const DataVector one_minus_y_collocation =
       1.0 - Spectral::collocation_points<Spectral::Basis::Legendre,
                                          Spectral::Quadrature::GaussLobatto>(
@@ -146,8 +144,8 @@ void InverseCubic<false>::operator()(
       cos(get<0>(*angular_cauchy_coordinates));
 }
 
-void InverseCubic<true>::pup(PUP::er& /*p*/) noexcept {}
-void InverseCubic<false>::pup(PUP::er& /*p*/) noexcept {}
+void InverseCubic<true>::pup(PUP::er& /*p*/) {}
+void InverseCubic<false>::pup(PUP::er& /*p*/) {}
 
 PUP::able::PUP_ID InverseCubic<true>::my_PUP_ID = 0;
 PUP::able::PUP_ID InverseCubic<false>::my_PUP_ID = 0;

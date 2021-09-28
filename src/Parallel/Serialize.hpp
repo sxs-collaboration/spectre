@@ -23,7 +23,7 @@
  * \tparam T type to serialize
  */
 template <typename T>
-std::vector<char> serialize(const T& obj) noexcept {
+std::vector<char> serialize(const T& obj) {
   const T& typed_obj = obj;
   // pup routine is non-const, but shouldn't modify anything in serialization
   // mode.
@@ -46,7 +46,7 @@ std::vector<char> serialize(const T& obj) noexcept {
  * \tparam T the type to deserialize to
  */
 template <typename T>
-T deserialize(const void* const data) noexcept {  // NOLINT
+T deserialize(const void* const data) {  // NOLINT
   // clang-tidy: no const in forward decl (this is a definition)
   PUP::fromMem reader(data);
   T result{};
@@ -62,7 +62,7 @@ T deserialize(const void* const data) noexcept {  // NOLINT
  */
 template <typename T>
 void deserialize(const gsl::not_null<T*> result,
-                 const void* const data) noexcept {  // NOLINT
+                 const void* const data) {  // NOLINT
   // clang-tidy: no const in forward decl (this is a definition)
   PUP::fromMem reader(data);
   reader | *result;

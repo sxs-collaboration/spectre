@@ -46,21 +46,20 @@ class TestBoundaryCondition : public BoundaryConditions::BoundaryCondition {
   TestBoundaryCondition() = default;
   explicit TestBoundaryCondition(Direction<Dim> direction)
       : direction_(std::move(direction)) {}
-  TestBoundaryCondition(TestBoundaryCondition&&) noexcept = default;
-  TestBoundaryCondition& operator=(TestBoundaryCondition&&) noexcept = default;
+  TestBoundaryCondition(TestBoundaryCondition&&) = default;
+  TestBoundaryCondition& operator=(TestBoundaryCondition&&) = default;
   TestBoundaryCondition(const TestBoundaryCondition&) = default;
   TestBoundaryCondition& operator=(const TestBoundaryCondition&) = default;
   ~TestBoundaryCondition() override = default;
-  explicit TestBoundaryCondition(CkMigrateMessage* const msg) noexcept
+  explicit TestBoundaryCondition(CkMigrateMessage* const msg)
       : BoundaryConditions::BoundaryCondition(msg) {}
 
   WRAPPED_PUPable_decl_base_template(BoundaryConditions::BoundaryCondition,
                                      TestBoundaryCondition<Dim>);
 
-  const Direction<Dim>& direction() const noexcept { return direction_; }
+  const Direction<Dim>& direction() const { return direction_; }
 
-  auto get_clone() const noexcept
-      -> std::unique_ptr<BoundaryCondition> override {
+  auto get_clone() const -> std::unique_ptr<BoundaryCondition> override {
     return std::make_unique<TestBoundaryCondition>(*this);
   }
 
@@ -75,7 +74,7 @@ class TestBoundaryCondition : public BoundaryConditions::BoundaryCondition {
 template <size_t Dim>
 PUP::able::PUP_ID TestBoundaryCondition<Dim>::my_PUP_ID = 0;  // NOLINT
 
-void test_periodic_same_block() noexcept {
+void test_periodic_same_block() {
   const std::vector<std::array<size_t, 8>> corners_of_all_blocks{
       {{0, 1, 2, 3, 4, 5, 6, 7}}, {{8, 9, 10, 11, 0, 1, 2, 3}}};
   std::vector<DirectionMap<3, BlockNeighbor<3>>> neighbors_of_all_blocks;
@@ -102,7 +101,7 @@ void test_periodic_same_block() noexcept {
   CHECK(neighbors_of_all_blocks == expected_block_neighbors);
 }
 
-void test_periodic_different_blocks() noexcept {
+void test_periodic_different_blocks() {
   const std::vector<std::array<size_t, 8>> corners_of_all_blocks{
       {{0, 1, 2, 3, 4, 5, 6, 7}}, {{8, 9, 10, 11, 0, 1, 2, 3}}};
   std::vector<DirectionMap<3, BlockNeighbor<3>>> neighbors_of_all_blocks;
@@ -512,7 +511,7 @@ void test_ten_wedge_directions_compressed_translated_equidistant() {
       aspect_ratio);
 }
 
-void test_wedge_map_generation() noexcept {
+void test_wedge_map_generation() {
   test_default_six_wedge_directions_equiangular();
   test_default_six_wedge_directions_equidistant();
   test_translated_six_wedge_directions_equiangular();
@@ -527,7 +526,7 @@ void test_wedge_map_generation() noexcept {
   test_ten_wedge_directions_compressed_translated_equidistant();
 }
 
-void test_all_frustum_directions() noexcept {
+void test_all_frustum_directions() {
   using FrustumMap = CoordinateMaps::Frustum;
   // half of the length of the inner cube in the binary compact object domain:
   const double lower = 1.7;
@@ -765,7 +764,7 @@ void test_all_frustum_directions() noexcept {
 #endif
 }
 
-void test_shell_graph() noexcept {
+void test_shell_graph() {
   std::vector<std::array<size_t, 8>> expected_corners = {
       // Shell on left-hand side:
       {{5, 6, 7, 8, 13, 14, 15, 16}} /*+z*/,
@@ -782,7 +781,7 @@ void test_shell_graph() noexcept {
   CHECK(generated_corners == expected_corners);
 }
 
-void test_sphere_graph() noexcept {
+void test_sphere_graph() {
   std::vector<std::array<size_t, 8>> expected_corners = {
       // Shell on left-hand side:
       {{5, 6, 7, 8, 13, 14, 15, 16}} /*+z*/,
@@ -853,7 +852,7 @@ std::vector<std::array<size_t, 8>> expected_bbh_corners() {
           {{27, 25, 31, 29, 35, 33, 39, 37}} /*-xL*/};
 }
 
-void test_bbh_corners() noexcept {
+void test_bbh_corners() {
   const auto generated_corners =
       corners_for_biradially_layered_domains(2, 2, false, false);
   for (size_t i = 0; i < expected_bbh_corners().size(); i++) {
@@ -863,7 +862,7 @@ void test_bbh_corners() noexcept {
   CHECK(generated_corners == expected_bbh_corners());
 }
 
-void test_nsbh_corners() noexcept {
+void test_nsbh_corners() {
   std::vector<std::array<size_t, 8>> expected_corners = expected_bbh_corners();
   expected_corners.push_back(std::array<size_t, 8>{{1, 2, 3, 4, 5, 6, 7, 8}});
   const auto generated_corners =
@@ -875,7 +874,7 @@ void test_nsbh_corners() noexcept {
   CHECK(generated_corners == expected_corners);
 }
 
-void test_bhns_corners() noexcept {
+void test_bhns_corners() {
   std::vector<std::array<size_t, 8>> expected_corners = expected_bbh_corners();
   expected_corners.push_back(
       std::array<size_t, 8>{{41, 42, 43, 44, 45, 46, 47, 48}});
@@ -888,7 +887,7 @@ void test_bhns_corners() noexcept {
   CHECK(generated_corners == expected_corners);
 }
 
-void test_bns_corners() noexcept {
+void test_bns_corners() {
   std::vector<std::array<size_t, 8>> expected_corners = expected_bbh_corners();
   expected_corners.push_back(std::array<size_t, 8>{{1, 2, 3, 4, 5, 6, 7, 8}});
   expected_corners.push_back(
@@ -1074,7 +1073,7 @@ void test_vci_3d() {
                                      Direction<3>::upper_zeta()}});
 }
 
-void test_volume_corner_iterator() noexcept {
+void test_volume_corner_iterator() {
   test_vci_1d();
   test_vci_2d();
   test_vci_3d();
@@ -1235,13 +1234,13 @@ void test_fci_3d() {
   CHECK(not fci6);
 }
 
-void test_face_corner_iterator() noexcept {
+void test_face_corner_iterator() {
   test_fci_1d();
   test_fci_2d();
   test_fci_3d();
 }
 
-void test_indices_for_rectilinear_domains() noexcept {
+void test_indices_for_rectilinear_domains() {
   std::vector<Index<1>> indices_for_a_1d_road{Index<1>{0}, Index<1>{1},
                                               Index<1>{2}};
   std::vector<Index<2>> indices_for_a_2d_vertical_tower{
@@ -1290,7 +1289,7 @@ void test_indices_for_rectilinear_domains() noexcept {
         indices_for_a_rubiks_cube_with_hole);
 }
 
-void test_corners_for_rectilinear_domains() noexcept {
+void test_corners_for_rectilinear_domains() {
   std::vector<std::array<size_t, 2>> corners_for_a_1d_road{
       {{0, 1}}, {{1, 2}}, {{2, 3}}};
   std::vector<std::array<size_t, 4>> corners_for_a_2d_vertical_tower{
@@ -1359,7 +1358,7 @@ void test_corners_for_rectilinear_domains() noexcept {
         corners_for_a_rubiks_cube_with_hole);
 }
 
-void test_discrete_rotation_corner_numbers() noexcept {
+void test_discrete_rotation_corner_numbers() {
   CHECK(std::array<size_t, 2>{{0, 1}} ==
         discrete_rotation(OrientationMap<1>{std::array<Direction<1>, 1>{
                               {Direction<1>::upper_xi()}}},
@@ -1405,7 +1404,7 @@ void test_discrete_rotation_corner_numbers() noexcept {
             std::array<size_t, 8>{{0, 1, 3, 4, 9, 10, 12, 13}}));
 }
 
-void test_maps_for_rectilinear_domains() noexcept {
+void test_maps_for_rectilinear_domains() {
   using Affine = CoordinateMaps::Affine;
   using Affine2D = CoordinateMaps::ProductOf2Maps<Affine, Affine>;
   using Affine3D = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
@@ -1532,7 +1531,7 @@ void test_maps_for_rectilinear_domains() noexcept {
 template <size_t Dim>
 auto compute_boundary_conditions(
     const std::vector<std::unordered_set<Direction<Dim>>>&
-        external_boundaries) noexcept {
+        external_boundaries) {
   using MapType = DirectionMap<
       Dim, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>;
   std::vector<MapType> boundary_conditions{external_boundaries.size()};
@@ -1548,7 +1547,7 @@ auto compute_boundary_conditions(
   return boundary_conditions;
 }
 
-void test_set_cartesian_periodic_boundaries_1() noexcept {
+void test_set_cartesian_periodic_boundaries_1() {
   // 9x9 cube with the central block removed. Periodic is xi.
   const std::vector<std::unordered_set<Direction<3>>>
       expected_external_boundaries{
@@ -1625,7 +1624,7 @@ void test_set_cartesian_periodic_boundaries_1() noexcept {
   }
 }
 
-void test_set_cartesian_periodic_boundaries_2() noexcept {
+void test_set_cartesian_periodic_boundaries_2() {
   const auto rotation = OrientationMap<2>{std::array<Direction<2>, 2>{
       {Direction<2>::upper_eta(), Direction<2>::lower_xi()}}};
   auto orientations_of_all_blocks =
@@ -1670,7 +1669,7 @@ void test_set_cartesian_periodic_boundaries_2() noexcept {
   }
 }
 
-void test_set_cartesian_periodic_boundaries_3() noexcept {
+void test_set_cartesian_periodic_boundaries_3() {
   const OrientationMap<2> flipped{std::array<Direction<2>, 2>{
       {Direction<2>::lower_xi(), Direction<2>::lower_eta()}}};
   const OrientationMap<2> quarter_turn_cw{std::array<Direction<2>, 2>{
@@ -1735,7 +1734,7 @@ void test_set_cartesian_periodic_boundaries_3() noexcept {
   }
 }
 
-void test_which_wedges() noexcept {
+void test_which_wedges() {
   CHECK(get_output(ShellWedges::All) == "All");
   CHECK(get_output(ShellWedges::FourOnEquator) == "FourOnEquator");
   CHECK(get_output(ShellWedges::OneAlongMinusX) == "OneAlongMinusX");

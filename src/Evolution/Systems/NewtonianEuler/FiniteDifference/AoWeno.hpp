@@ -78,25 +78,24 @@ class AoWeno53Prim : public Reconstructor<Dim> {
       "Monotised central reconstruction scheme using primitive variables."};
 
   AoWeno53Prim() = default;
-  AoWeno53Prim(AoWeno53Prim&&) noexcept = default;
-  AoWeno53Prim& operator=(AoWeno53Prim&&) noexcept = default;
+  AoWeno53Prim(AoWeno53Prim&&) = default;
+  AoWeno53Prim& operator=(AoWeno53Prim&&) = default;
   AoWeno53Prim(const AoWeno53Prim&) = default;
   AoWeno53Prim& operator=(const AoWeno53Prim&) = default;
   ~AoWeno53Prim() override = default;
 
   AoWeno53Prim(double gamma_hi, double gamma_lo, double epsilon,
-               size_t nonlinear_weight_exponent) noexcept;
+               size_t nonlinear_weight_exponent);
 
-  explicit AoWeno53Prim(CkMigrateMessage* msg) noexcept;
+  explicit AoWeno53Prim(CkMigrateMessage* msg);
 
   WRAPPED_PUPable_decl_base_template(Reconstructor<Dim>, AoWeno53Prim);
 
-  auto get_clone() const noexcept
-      -> std::unique_ptr<Reconstructor<Dim>> override;
+  auto get_clone() const -> std::unique_ptr<Reconstructor<Dim>> override;
 
   void pup(PUP::er& p) override;
 
-  size_t ghost_zone_size() const noexcept override { return 3; }
+  size_t ghost_zone_size() const override { return 3; }
 
   using reconstruction_argument_tags =
       tmpl::list<::Tags::Variables<prims_tags>,
@@ -118,7 +117,7 @@ class AoWeno53Prim : public Reconstructor<Dim> {
           evolution::dg::subcell::NeighborData,
           boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
           neighbor_data,
-      const Mesh<Dim>& subcell_mesh) const noexcept;
+      const Mesh<Dim>& subcell_mesh) const;
 
   /// Called by an element doing DG when the neighbor is doing subcell.
   template <size_t ThermodynamicDim, typename TagsList>
@@ -134,13 +133,13 @@ class AoWeno53Prim : public Reconstructor<Dim> {
           boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
           neighbor_data,
       const Mesh<Dim>& subcell_mesh,
-      const Direction<Dim> direction_to_reconstruct) const noexcept;
+      const Direction<Dim> direction_to_reconstruct) const;
 
  private:
   template <size_t LocalDim>
   // NOLINTNEXTLINE(readability-redundant-declaration)
   friend bool operator==(const AoWeno53Prim<LocalDim>& lhs,
-                         const AoWeno53Prim<LocalDim>& rhs) noexcept;
+                         const AoWeno53Prim<LocalDim>& rhs);
 
   double gamma_hi_ = std::numeric_limits<double>::signaling_NaN();
   double gamma_lo_ = std::numeric_limits<double>::signaling_NaN();
@@ -151,23 +150,21 @@ class AoWeno53Prim : public Reconstructor<Dim> {
                        gsl::not_null<std::array<gsl::span<double>, Dim>*>,
                        const gsl::span<const double>&,
                        const DirectionMap<Dim, gsl::span<const double>>&,
-                       const Index<Dim>&, size_t, double, double,
-                       double) noexcept;
+                       const Index<Dim>&, size_t, double, double, double);
   void (*reconstruct_lower_neighbor_)(gsl::not_null<DataVector*>,
                                       const DataVector&, const DataVector&,
                                       const Index<Dim>&, const Index<Dim>&,
                                       const Direction<Dim>&, const double&,
-                                      const double&, const double&) noexcept;
+                                      const double&, const double&);
   void (*reconstruct_upper_neighbor_)(gsl::not_null<DataVector*>,
                                       const DataVector&, const DataVector&,
                                       const Index<Dim>&, const Index<Dim>&,
                                       const Direction<Dim>&, const double&,
-                                      const double&, const double&) noexcept;
+                                      const double&, const double&);
 };
 
 template <size_t Dim>
-bool operator!=(const AoWeno53Prim<Dim>& lhs,
-                const AoWeno53Prim<Dim>& rhs) noexcept {
+bool operator!=(const AoWeno53Prim<Dim>& lhs, const AoWeno53Prim<Dim>& rhs) {
   return not(lhs == rhs);
 }
 }  // namespace NewtonianEuler::fd

@@ -17,8 +17,8 @@ class Object {
   Object() = default;
   Object(const Object& /*rhs*/) = delete;
   Object& operator=(const Object& /*rhs*/) = delete;
-  Object(Object&& /*rhs*/) noexcept = delete;             // NOLINT
-  Object& operator=(Object&& /*rhs*/) noexcept = delete;  // NOLINT
+  Object(Object&& /*rhs*/) = delete;             // NOLINT
+  Object& operator=(Object&& /*rhs*/) = delete;  // NOLINT
   virtual ~Object() = default;
   /// \endcond
 };

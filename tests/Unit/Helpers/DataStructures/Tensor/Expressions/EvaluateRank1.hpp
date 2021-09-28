@@ -30,7 +30,7 @@ namespace TestHelpers::TensorExpressions {
 /// \tparam TensorIndex the TensorIndex used in the the TensorExpression,
 /// e.g. `ti_a`
 template <typename DataType, typename TensorIndexTypeList, auto& TensorIndex>
-void test_evaluate_rank_1_impl() noexcept {
+void test_evaluate_rank_1_impl() {
   const size_t used_for_size = 5;
   using tensor_type = Tensor<DataType, Symmetry<1>, TensorIndexTypeList>;
   tensor_type R_a(used_for_size);
@@ -81,7 +81,7 @@ void test_evaluate_rank_1_impl() noexcept {
 template <typename DataType,
           template <size_t, UpLo, typename> class TensorIndexType, UpLo Valence,
           auto& TensorIndex>
-void test_evaluate_rank_1() noexcept {
+void test_evaluate_rank_1() {
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(1, data)
 

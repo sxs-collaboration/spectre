@@ -62,12 +62,12 @@ using Counter = tuples::TaggedTuple<
 template <typename DataType>
 class Computer {
  public:
-  explicit Computer(const gsl::not_null<Counter<DataType>*> counter) noexcept
+  explicit Computer(const gsl::not_null<Counter<DataType>*> counter)
       : counter_(counter) {}
 
   void operator()(const gsl::not_null<Scalar<DataType>*> scalar1,
                   const gsl::not_null<Cache<DataType>*> /*cache*/,
-                  Tags::Scalar1<DataType> /*meta*/) const noexcept {
+                  Tags::Scalar1<DataType> /*meta*/) const {
     ++get<Tags::Count<Tags::Scalar1<DataType>>>(*counter_);
     get(*scalar1) = 7.0;
   }
@@ -75,7 +75,7 @@ class Computer {
   // [compute_func]
   void operator()(const gsl::not_null<Scalar<DataType>*> scalar2,
                   const gsl::not_null<Cache<DataType>*> cache,
-                  Tags::Scalar2<DataType> /*meta*/) const noexcept {
+                  Tags::Scalar2<DataType> /*meta*/) const {
     // [compute_func]
     ++get<Tags::Count<Tags::Scalar2<DataType>>>(*counter_);
     const auto& vector1 = cache->get_var(Tags::Vector1<DataType>{});
@@ -85,7 +85,7 @@ class Computer {
 
   void operator()(const gsl::not_null<tnsr::I<DataType, 2>*> vector1,
                   const gsl::not_null<Cache<DataType>*> /*cache*/,
-                  Tags::Vector1<DataType> /*meta*/) const noexcept {
+                  Tags::Vector1<DataType> /*meta*/) const {
     ++get<Tags::Count<Tags::Vector1<DataType>>>(*counter_);
     get<0>(*vector1) = 10.0;
     get<1>(*vector1) = 11.0;
@@ -93,7 +93,7 @@ class Computer {
 
   void operator()(const gsl::not_null<tnsr::I<DataType, 2>*> vector2,
                   const gsl::not_null<Cache<DataType>*> cache,
-                  Tags::Vector2<DataType> /*meta*/) const noexcept {
+                  Tags::Vector2<DataType> /*meta*/) const {
     ++get<Tags::Count<Tags::Vector2<DataType>>>(*counter_);
     const auto& scalar2 = cache->get_var(Tags::Scalar2<DataType>{});
     const auto& vector1 = cache->get_var(Tags::Vector1<DataType>{});
@@ -107,7 +107,7 @@ class Computer {
 };
 
 template <typename DataType>
-void test_cached_temp_buffer(const DataType& used_for_size) noexcept {
+void test_cached_temp_buffer(const DataType& used_for_size) {
   Counter<DataType> counter{};
   get<Tags::Count<Tags::Scalar1<DataType>>>(counter) = 0;
   get<Tags::Count<Tags::Scalar2<DataType>>>(counter) = 0;
@@ -115,8 +115,8 @@ void test_cached_temp_buffer(const DataType& used_for_size) noexcept {
   get<Tags::Count<Tags::Vector2<DataType>>>(counter) = 0;
 
   const auto check_counts = [&counter](
-      const size_t scalar1, const size_t scalar2, const size_t vector1,
-      const size_t vector2) noexcept {
+                                const size_t scalar1, const size_t scalar2,
+                                const size_t vector1, const size_t vector2) {
     CHECK(get<Tags::Count<Tags::Scalar1<DataType>>>(counter) == scalar1);
     CHECK(get<Tags::Count<Tags::Scalar2<DataType>>>(counter) == scalar2);
     CHECK(get<Tags::Count<Tags::Vector1<DataType>>>(counter) == vector1);

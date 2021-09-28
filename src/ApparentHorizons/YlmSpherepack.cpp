@@ -47,7 +47,7 @@
 //   (as opposed to m_max = m_max_represented+1)
 //============================================================================
 
-YlmSpherepack::YlmSpherepack(const size_t l_max, const size_t m_max) noexcept
+YlmSpherepack::YlmSpherepack(const size_t l_max, const size_t m_max)
     : l_max_{l_max},
       m_max_{m_max},
       n_theta_{l_max_ + 1},
@@ -67,7 +67,7 @@ void YlmSpherepack::phys_to_spec_impl(
     const gsl::not_null<const double*> collocation_values,
     const size_t physical_stride, const size_t physical_offset,
     const size_t spectral_stride, const size_t spectral_offset,
-    const bool loop_over_offset) const noexcept {
+    const bool loop_over_offset) const {
   size_t work_size = 2 * n_theta_ * n_phi_;
   if (loop_over_offset) {
     ASSERT(physical_stride == spectral_stride, "invalid call");
@@ -104,7 +104,7 @@ void YlmSpherepack::spec_to_phys_impl(
     const gsl::not_null<const double*> spectral_coefs,
     const size_t spectral_stride, const size_t spectral_offset,
     const size_t physical_stride, const size_t physical_offset,
-    const bool loop_over_offset) const noexcept {
+    const bool loop_over_offset) const {
   size_t work_size = 2 * n_theta_ * n_phi_;
   if (loop_over_offset) {
     ASSERT(physical_stride == spectral_stride, "invalid call");
@@ -138,9 +138,9 @@ void YlmSpherepack::spec_to_phys_impl(
   memory_pool_.free(work);
 }
 
-DataVector YlmSpherepack::phys_to_spec(
-    const DataVector& collocation_values, const size_t physical_stride,
-    const size_t physical_offset) const noexcept {
+DataVector YlmSpherepack::phys_to_spec(const DataVector& collocation_values,
+                                       const size_t physical_stride,
+                                       const size_t physical_offset) const {
   ASSERT(collocation_values.size() == physical_size() * physical_stride,
          "Sizes don't match: " << collocation_values.size() << " vs "
                                << physical_size() * physical_stride);
@@ -150,9 +150,9 @@ DataVector YlmSpherepack::phys_to_spec(
   return result;
 }
 
-DataVector YlmSpherepack::spec_to_phys(
-    const DataVector& spectral_coefs, const size_t spectral_stride,
-    const size_t spectral_offset) const noexcept {
+DataVector YlmSpherepack::spec_to_phys(const DataVector& spectral_coefs,
+                                       const size_t spectral_stride,
+                                       const size_t spectral_offset) const {
   ASSERT(spectral_coefs.size() == spectral_size() * spectral_stride,
          "Sizes don't match: " << spectral_coefs.size() << " vs "
                                << spectral_size() * spectral_stride);
@@ -163,7 +163,7 @@ DataVector YlmSpherepack::spec_to_phys(
 }
 
 DataVector YlmSpherepack::phys_to_spec_all_offsets(
-    const DataVector& collocation_values, const size_t stride) const noexcept {
+    const DataVector& collocation_values, const size_t stride) const {
   ASSERT(collocation_values.size() == physical_size() * stride,
          "Sizes don't match: " << collocation_values.size() << " vs "
                                << physical_size() * stride);
@@ -174,7 +174,7 @@ DataVector YlmSpherepack::phys_to_spec_all_offsets(
 }
 
 DataVector YlmSpherepack::spec_to_phys_all_offsets(
-    const DataVector& spectral_coefs, const size_t stride) const noexcept {
+    const DataVector& spectral_coefs, const size_t stride) const {
   ASSERT(spectral_coefs.size() == spectral_size() * stride,
          "Sizes don't match: " << spectral_coefs.size() << " vs "
                                << spectral_size() * stride);
@@ -187,7 +187,7 @@ DataVector YlmSpherepack::spec_to_phys_all_offsets(
 void YlmSpherepack::gradient(
     const std::array<double*, 2>& df,
     const gsl::not_null<const double*> collocation_values,
-    const size_t physical_stride, const size_t physical_offset) const noexcept {
+    const size_t physical_stride, const size_t physical_offset) const {
   auto& f_k = memory_pool_.get(spectral_size());
   phys_to_spec_impl(f_k.data(), collocation_values, physical_stride,
                     physical_offset, 1, 0, false);
@@ -199,7 +199,7 @@ void YlmSpherepack::gradient(
 void YlmSpherepack::gradient_all_offsets(
     const std::array<double*, 2>& df,
     const gsl::not_null<const double*> collocation_values,
-    const size_t stride) const noexcept {
+    const size_t stride) const {
   const size_t spectral_stride = stride;
   auto& f_k = memory_pool_.get(spectral_stride * spectral_size());
   phys_to_spec_impl(f_k.data(), collocation_values, stride, 0, spectral_stride,
@@ -213,7 +213,7 @@ void YlmSpherepack::gradient_from_coefs_impl(
     const gsl::not_null<const double*> spectral_coefs,
     const size_t spectral_stride, const size_t spectral_offset,
     const size_t physical_stride, const size_t physical_offset,
-    bool loop_over_offset) const noexcept {
+    bool loop_over_offset) const {
   ASSERT((not loop_over_offset) or spectral_stride == physical_stride,
          "physical and spectral strides must be equal "
          "for loop_over_offset=true");
@@ -254,7 +254,7 @@ void YlmSpherepack::gradient_from_coefs_impl(
 
 YlmSpherepack::FirstDeriv YlmSpherepack::gradient(
     const DataVector& collocation_values, const size_t physical_stride,
-    const size_t physical_offset) const noexcept {
+    const size_t physical_offset) const {
   ASSERT(collocation_values.size() == physical_size() * physical_stride,
          "Sizes don't match: " << collocation_values.size() << " vs "
                                << physical_size() * physical_stride);
@@ -269,7 +269,7 @@ YlmSpherepack::FirstDeriv YlmSpherepack::gradient(
 }
 
 YlmSpherepack::FirstDeriv YlmSpherepack::gradient_all_offsets(
-    const DataVector& collocation_values, const size_t stride) const noexcept {
+    const DataVector& collocation_values, const size_t stride) const {
   ASSERT(collocation_values.size() == physical_size() * stride,
          "Sizes don't match: " << collocation_values.size() << " vs "
                                << physical_size() * stride);
@@ -281,7 +281,7 @@ YlmSpherepack::FirstDeriv YlmSpherepack::gradient_all_offsets(
 
 YlmSpherepack::FirstDeriv YlmSpherepack::gradient_from_coefs(
     const DataVector& spectral_coefs, const size_t spectral_stride,
-    const size_t spectral_offset) const noexcept {
+    const size_t spectral_offset) const {
   ASSERT(spectral_coefs.size() == spectral_size() * spectral_stride,
          "Sizes don't match: " << spectral_coefs.size() << " vs "
                                << spectral_size() * spectral_stride);
@@ -293,7 +293,7 @@ YlmSpherepack::FirstDeriv YlmSpherepack::gradient_from_coefs(
 }
 
 YlmSpherepack::FirstDeriv YlmSpherepack::gradient_from_coefs_all_offsets(
-    const DataVector& spectral_coefs, const size_t stride) const noexcept {
+    const DataVector& spectral_coefs, const size_t stride) const {
   ASSERT(spectral_coefs.size() == spectral_size() * stride,
          "Sizes don't match: " << spectral_coefs.size() << " vs "
                                << spectral_size() * stride);
@@ -307,7 +307,7 @@ YlmSpherepack::FirstDeriv YlmSpherepack::gradient_from_coefs_all_offsets(
 void YlmSpherepack::scalar_laplacian(
     const gsl::not_null<double*> scalar_laplacian,
     const gsl::not_null<const double*> collocation_values,
-    const size_t physical_stride, const size_t physical_offset) const noexcept {
+    const size_t physical_stride, const size_t physical_offset) const {
   auto& f_k = memory_pool_.get(spectral_size());
   phys_to_spec(f_k.data(), collocation_values, physical_stride, physical_offset,
                1, 0);
@@ -320,7 +320,7 @@ void YlmSpherepack::scalar_laplacian_from_coefs(
     const gsl::not_null<double*> scalar_laplacian,
     const gsl::not_null<const double*> spectral_coefs,
     const size_t spectral_stride, const size_t spectral_offset,
-    const size_t physical_stride, const size_t physical_offset) const noexcept {
+    const size_t physical_stride, const size_t physical_offset) const {
   const size_t l1 = m_max_ + 1;
   const double* const a = spectral_coefs;
   // clang-tidy: 'do not use pointer arithmetic'.
@@ -343,9 +343,9 @@ void YlmSpherepack::scalar_laplacian_from_coefs(
   memory_pool_.free(work);
 }
 
-DataVector YlmSpherepack::scalar_laplacian(
-    const DataVector& collocation_values, const size_t physical_stride,
-    const size_t physical_offset) const noexcept {
+DataVector YlmSpherepack::scalar_laplacian(const DataVector& collocation_values,
+                                           const size_t physical_stride,
+                                           const size_t physical_offset) const {
   ASSERT(collocation_values.size() == physical_size() * physical_stride,
          "Sizes don't match: " << collocation_values.size() << " vs "
                                << physical_size() * physical_stride);
@@ -357,7 +357,7 @@ DataVector YlmSpherepack::scalar_laplacian(
 
 DataVector YlmSpherepack::scalar_laplacian_from_coefs(
     const DataVector& spectral_coefs, const size_t spectral_stride,
-    const size_t spectral_offset) const noexcept {
+    const size_t spectral_offset) const {
   ASSERT(spectral_coefs.size() == spectral_size() * spectral_stride,
          "Sizes don't match: " << spectral_coefs.size() << " vs "
                                << spectral_size() * spectral_stride);
@@ -367,7 +367,7 @@ DataVector YlmSpherepack::scalar_laplacian_from_coefs(
   return result;
 }
 
-std::array<DataVector, 2> YlmSpherepack::theta_phi_points() const noexcept {
+std::array<DataVector, 2> YlmSpherepack::theta_phi_points() const {
   std::array<DataVector, 2> result = make_array<2>(DataVector(physical_size()));
   const auto& theta = theta_points();
   const auto& phi = phi_points();
@@ -381,7 +381,7 @@ std::array<DataVector, 2> YlmSpherepack::theta_phi_points() const noexcept {
   return result;
 }
 
-const std::vector<double>& YlmSpherepack::theta_points() const noexcept {
+const std::vector<double>& YlmSpherepack::theta_points() const {
   auto& theta = storage_.theta;
   if (theta.empty()) {
     theta.resize(n_theta_);
@@ -399,7 +399,7 @@ const std::vector<double>& YlmSpherepack::theta_points() const noexcept {
   return theta;
 }
 
-const std::vector<double>& YlmSpherepack::phi_points() const noexcept {
+const std::vector<double>& YlmSpherepack::phi_points() const {
   // The following is not static or constexpr because n_phi_ depends
   // on *this.
   const double two_pi_over_n_phi = 2.0 * M_PI / n_phi_;
@@ -416,7 +416,7 @@ const std::vector<double>& YlmSpherepack::phi_points() const noexcept {
 void YlmSpherepack::second_derivative(
     const std::array<double*, 2>& df, const gsl::not_null<SecondDeriv*> ddf,
     const gsl::not_null<const double*> collocation_values,
-    const size_t physical_stride, const size_t physical_offset) const noexcept {
+    const size_t physical_stride, const size_t physical_offset) const {
   // Initialize trig functions at collocation points
   auto& cos_theta = storage_.cos_theta;
   auto& sin_theta = storage_.sin_theta;
@@ -505,7 +505,7 @@ void YlmSpherepack::second_derivative(
 
 std::pair<YlmSpherepack::FirstDeriv, YlmSpherepack::SecondDeriv>
 YlmSpherepack::first_and_second_derivative(
-    const DataVector& collocation_values) const noexcept {
+    const DataVector& collocation_values) const {
   ASSERT(collocation_values.size() == physical_size(),
          "Sizes don't match: " << collocation_values.size() << " vs "
                                << physical_size());
@@ -580,7 +580,7 @@ YlmSpherepack::InterpolationInfo<T>::InterpolationInfo(
 
 template <typename T>
 YlmSpherepack::InterpolationInfo<T> YlmSpherepack::set_up_interpolation_info(
-    const std::array<T, 2>& target_points) const noexcept {
+    const std::array<T, 2>& target_points) const {
   // SPHEREPACK expands f(theta,phi) as
   //
   // f(theta,phi) =
@@ -690,7 +690,7 @@ void YlmSpherepack::interpolate(
     const gsl::not_null<T*> result,
     const gsl::not_null<const double*> collocation_values,
     const InterpolationInfo<T>& interpolation_info,
-    const size_t physical_stride, const size_t physical_offset) const noexcept {
+    const size_t physical_stride, const size_t physical_offset) const {
   ASSERT(get_size(*result) == interpolation_info.size(),
          "Size mismatch: " << get_size(*result) << ","
                            << interpolation_info.size());
@@ -705,7 +705,7 @@ template <typename T, typename R>
 void YlmSpherepack::interpolate_from_coefs(
     const gsl::not_null<T*> result, const R& spectral_coefs,
     const InterpolationInfo<T>& interpolation_info,
-    const size_t spectral_stride, const size_t spectral_offset) const noexcept {
+    const size_t spectral_stride, const size_t spectral_offset) const {
   const auto& alpha = storage_.work_interp_alpha;
   const auto& beta = storage_.work_interp_beta;
   const auto& index = storage_.work_interp_index;
@@ -790,9 +790,8 @@ void YlmSpherepack::interpolate_from_coefs(
 }
 
 template <typename T>
-T YlmSpherepack::interpolate(
-    const DataVector& collocation_values,
-    const std::array<T, 2>& target_points) const noexcept {
+T YlmSpherepack::interpolate(const DataVector& collocation_values,
+                             const std::array<T, 2>& target_points) const {
   ASSERT(collocation_values.size() == physical_size(),
          "Sizes don't match: " << collocation_values.size() << " vs "
                                << physical_size());
@@ -805,7 +804,7 @@ T YlmSpherepack::interpolate(
 template <typename T>
 T YlmSpherepack::interpolate_from_coefs(
     const DataVector& spectral_coefs,
-    const std::array<T, 2>& target_points) const noexcept {
+    const std::array<T, 2>& target_points) const {
   ASSERT(spectral_coefs.size() == spectral_size(),
          "Sizes don't match: " << spectral_coefs.size() << " vs "
                                << spectral_size());
@@ -815,7 +814,7 @@ T YlmSpherepack::interpolate_from_coefs(
   return result;
 }
 
-void YlmSpherepack::fill_vector_work_arrays() const noexcept {
+void YlmSpherepack::fill_vector_work_arrays() const {
   const size_t l2 = (n_theta_ + 1) / 2;
   auto& work_vector_spec_to_phys = storage_.work_vector_spec_to_phys;
 
@@ -842,7 +841,7 @@ void YlmSpherepack::fill_vector_work_arrays() const noexcept {
   memory_pool_.free(dworkg);
 }
 
-void YlmSpherepack::fill_scalar_work_arrays() const noexcept {
+void YlmSpherepack::fill_scalar_work_arrays() const {
   auto& work_phys_to_spec = storage_.work_phys_to_spec;
   auto& work_scalar_spec_to_phys = storage_.work_scalar_spec_to_phys;
   auto& quadrature_weights = storage_.quadrature_weights;
@@ -911,8 +910,7 @@ void YlmSpherepack::fill_scalar_work_arrays() const noexcept {
 }
 
 DataVector YlmSpherepack::prolong_or_restrict(
-    const DataVector& spectral_coefs,
-    const YlmSpherepack& target) const noexcept {
+    const DataVector& spectral_coefs, const YlmSpherepack& target) const {
   ASSERT(spectral_coefs.size() == spectral_size(),
          "Expecting " << spectral_size() << ", got " << spectral_coefs.size());
   DataVector result(target.spectral_size(), 0.0);
@@ -927,11 +925,11 @@ DataVector YlmSpherepack::prolong_or_restrict(
   return result;
 }
 
-bool operator==(const YlmSpherepack& lhs, const YlmSpherepack& rhs) noexcept {
+bool operator==(const YlmSpherepack& lhs, const YlmSpherepack& rhs) {
   return lhs.l_max() == rhs.l_max() and lhs.m_max() == rhs.m_max();
 }
 
-bool operator!=(const YlmSpherepack& lhs, const YlmSpherepack& rhs) noexcept {
+bool operator!=(const YlmSpherepack& lhs, const YlmSpherepack& rhs) {
   return not(lhs == rhs);
 }
 
@@ -943,19 +941,19 @@ bool operator!=(const YlmSpherepack& lhs, const YlmSpherepack& rhs) noexcept {
       size_t, const std::vector<double>&, const std::array<DTYPE(data), 2>&); \
   template YlmSpherepack::InterpolationInfo<DTYPE(data)>                      \
   YlmSpherepack::set_up_interpolation_info(                                   \
-      const std::array<DTYPE(data), 2>& target_points) const noexcept;        \
+      const std::array<DTYPE(data), 2>& target_points) const;                 \
   template void YlmSpherepack::interpolate(                                   \
       gsl::not_null<DTYPE(data)*> result, gsl::not_null<const double*>,       \
       const YlmSpherepack::InterpolationInfo<DTYPE(data)>&, size_t, size_t)   \
-      const noexcept;                                                         \
+      const;                                                                  \
   template void YlmSpherepack::interpolate_from_coefs(                        \
       gsl::not_null<DTYPE(data)*> result, const DataVector&,                  \
       const YlmSpherepack::InterpolationInfo<DTYPE(data)>&, size_t, size_t)   \
-      const noexcept;                                                         \
+      const;                                                                  \
   template DTYPE(data) YlmSpherepack::interpolate(                            \
-      const DataVector&, const std::array<DTYPE(data), 2>&) const noexcept;   \
+      const DataVector&, const std::array<DTYPE(data), 2>&) const;            \
   template DTYPE(data) YlmSpherepack::interpolate_from_coefs(                 \
-      const DataVector&, const std::array<DTYPE(data), 2>&) const noexcept;
+      const DataVector&, const std::array<DTYPE(data), 2>&) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
 

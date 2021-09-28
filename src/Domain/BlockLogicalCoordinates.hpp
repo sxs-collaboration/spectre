@@ -46,7 +46,6 @@ auto block_logical_coordinates(
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time = std::unordered_map<
             std::string,
-            std::unique_ptr<
-                domain::FunctionsOfTime::FunctionOfTime>>{}) noexcept
+            std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{})
     -> std::vector<std::optional<
         IdPair<domain::BlockId, tnsr::I<double, Dim, ::Frame::BlockLogical>>>>;

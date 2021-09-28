@@ -29,7 +29,7 @@ MetricWorldtubeDataManager::MetricWorldtubeDataManager(
         buffer_updater,
     const size_t l_max, const size_t buffer_depth,
     std::unique_ptr<intrp::SpanInterpolator> interpolator,
-    const bool fix_spec_normalization) noexcept
+    const bool fix_spec_normalization)
     : buffer_updater_{std::move(buffer_updater)},
       l_max_{l_max},
       fix_spec_normalization_{fix_spec_normalization},
@@ -72,7 +72,7 @@ bool MetricWorldtubeDataManager::populate_hypersurface_boundary_data(
         Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>*>
         boundary_data_variables,
     const double time,
-    const gsl::not_null<Parallel::NodeLock*> hdf5_lock) const noexcept {
+    const gsl::not_null<Parallel::NodeLock*> hdf5_lock) const {
   if (buffer_updater_->time_is_outside_range(time)) {
     return false;
   }
@@ -102,8 +102,8 @@ bool MetricWorldtubeDataManager::populate_hypersurface_boundary_data(
 
   auto interpolate_from_column = [&time, &time_points, &buffer_span_size,
                                   &interpolation_time_span,
-                                  &interpolation_span_size, this](
-                                     auto data, const size_t column) noexcept {
+                                  &interpolation_span_size,
+                                  this](auto data, const size_t column) {
     auto interp_val = interpolator_->interpolate(
         gsl::span<const double>(time_points.data(), time_points.size()),
         gsl::span<const std::complex<double>>(
@@ -130,7 +130,7 @@ bool MetricWorldtubeDataManager::populate_hypersurface_boundary_data(
                                   Tags::detail::Dr<Tags::detail::SpatialMetric>,
                                   ::Tags::dt<Tags::detail::SpatialMetric>>>(
             [this, &i, &j, &libsharp_mode, &interpolate_from_column,
-             &spin_weighted_buffer](auto tag_v) noexcept {
+             &spin_weighted_buffer](auto tag_v) {
               using tag = typename decltype(tag_v)::type;
               spin_weighted_buffer.set_data_ref(
                   get<tag>(interpolated_coefficients_).get(i, j).data(),
@@ -153,7 +153,7 @@ bool MetricWorldtubeDataManager::populate_hypersurface_boundary_data(
           tmpl::list<Tags::detail::Shift, Tags::detail::Dr<Tags::detail::Shift>,
                      ::Tags::dt<Tags::detail::Shift>>>(
           [this, &i, &libsharp_mode, &interpolate_from_column,
-           &spin_weighted_buffer](auto tag_v) noexcept {
+           &spin_weighted_buffer](auto tag_v) {
             using tag = typename decltype(tag_v)::type;
             spin_weighted_buffer.set_data_ref(
                 get<tag>(interpolated_coefficients_).get(i).data(),
@@ -177,7 +177,7 @@ bool MetricWorldtubeDataManager::populate_hypersurface_boundary_data(
                    ::Tags::dt<Tags::detail::Lapse>>>([this, &libsharp_mode,
                                                       &interpolate_from_column,
                                                       &spin_weighted_buffer](
-                                                         auto tag_v) noexcept {
+                                                         auto tag_v) {
       using tag = typename decltype(tag_v)::type;
       spin_weighted_buffer.set_data_ref(
           get(get<tag>(interpolated_coefficients_)).data(),
@@ -233,18 +233,17 @@ bool MetricWorldtubeDataManager::populate_hypersurface_boundary_data(
 }
 
 std::unique_ptr<WorldtubeDataManager> MetricWorldtubeDataManager::get_clone()
-    const noexcept {
+    const {
   return std::make_unique<MetricWorldtubeDataManager>(
       buffer_updater_->get_clone(), l_max_, buffer_depth_,
       interpolator_->get_clone(), fix_spec_normalization_);
 }
 
-std::pair<size_t, size_t> MetricWorldtubeDataManager::get_time_span()
-    const noexcept {
+std::pair<size_t, size_t> MetricWorldtubeDataManager::get_time_span() const {
   return std::make_pair(time_span_start_, time_span_end_);
 }
 
-void MetricWorldtubeDataManager::pup(PUP::er& p) noexcept {
+void MetricWorldtubeDataManager::pup(PUP::er& p) {
   p | buffer_updater_;
   p | time_span_start_;
   p | time_span_end_;
@@ -269,7 +268,7 @@ BondiWorldtubeDataManager::BondiWorldtubeDataManager(
     std::unique_ptr<WorldtubeBufferUpdater<cce_bondi_input_tags>>
         buffer_updater,
     const size_t l_max, const size_t buffer_depth,
-    std::unique_ptr<intrp::SpanInterpolator> interpolator) noexcept
+    std::unique_ptr<intrp::SpanInterpolator> interpolator)
     : buffer_updater_{std::move(buffer_updater)},
       l_max_{l_max},
       interpolated_coefficients_{
@@ -309,7 +308,7 @@ bool BondiWorldtubeDataManager::populate_hypersurface_boundary_data(
         Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>*>
         boundary_data_variables,
     const double time,
-    const gsl::not_null<Parallel::NodeLock*> hdf5_lock) const noexcept {
+    const gsl::not_null<Parallel::NodeLock*> hdf5_lock) const {
   if (buffer_updater_->time_is_outside_range(time)) {
     return false;
   }
@@ -356,7 +355,7 @@ bool BondiWorldtubeDataManager::populate_hypersurface_boundary_data(
   for (const auto libsharp_mode :
        Spectral::Swsh::cached_coefficients_metadata(l_max_)) {
     tmpl::for_each<cce_bondi_input_tags>(
-        [this, &libsharp_mode, &interpolate_from_column](auto tag_v) noexcept {
+        [this, &libsharp_mode, &interpolate_from_column](auto tag_v) {
           using tag = typename decltype(tag_v)::type;
           Spectral::Swsh::goldberg_modes_to_libsharp_modes_single_pair(
               libsharp_mode,
@@ -418,18 +417,17 @@ bool BondiWorldtubeDataManager::populate_hypersurface_boundary_data(
 }
 
 std::unique_ptr<WorldtubeDataManager> BondiWorldtubeDataManager::get_clone()
-    const noexcept {
+    const {
   return std::make_unique<BondiWorldtubeDataManager>(
       buffer_updater_->get_clone(), l_max_, buffer_depth_,
       interpolator_->get_clone());
 }
 
-std::pair<size_t, size_t> BondiWorldtubeDataManager::get_time_span()
-    const noexcept {
+std::pair<size_t, size_t> BondiWorldtubeDataManager::get_time_span() const {
   return std::make_pair(time_span_start_, time_span_end_);
 }
 
-void BondiWorldtubeDataManager::pup(PUP::er& p) noexcept {
+void BondiWorldtubeDataManager::pup(PUP::er& p) {
   p | buffer_updater_;
   p | time_span_start_;
   p | time_span_end_;

@@ -45,20 +45,18 @@ struct MagneticFieldLoopProxy : grmhd::AnalyticData::MagneticFieldLoop {
 
   template <typename DataType>
   tuples::tagged_tuple_from_typelist<hydro_variables_tags<DataType>>
-  hydro_variables(const tnsr::I<DataType, 3, Frame::Inertial>& x) const
-      noexcept {
+  hydro_variables(const tnsr::I<DataType, 3, Frame::Inertial>& x) const {
     return variables(x, hydro_variables_tags<DataType>{});
   }
 
   template <typename DataType>
   tuples::tagged_tuple_from_typelist<grmhd_variables_tags<DataType>>
-  grmhd_variables(const tnsr::I<DataType, 3, Frame::Inertial>& x) const
-      noexcept {
+  grmhd_variables(const tnsr::I<DataType, 3, Frame::Inertial>& x) const {
     return variables(x, grmhd_variables_tags<DataType>{});
   }
 };
 
-void test_create_from_options() noexcept {
+void test_create_from_options() {
   const auto magnetic_field_loop =
       TestHelpers::test_creation<grmhd::AnalyticData::MagneticFieldLoop>(
           "Pressure: 3.0\n"
@@ -75,7 +73,7 @@ void test_create_from_options() noexcept {
             0.3));
 }
 
-void test_move() noexcept {
+void test_move() {
   grmhd::AnalyticData::MagneticFieldLoop magnetic_field_loop(
       3.0, 1.0, 1.66666666666666667,
       std::array<double, 3>{{0.5, 0.04166666666666667, 0.0}}, 0.001, 0.06, 0.3);
@@ -86,7 +84,7 @@ void test_move() noexcept {
                       magnetic_field_loop_copy);  //  NOLINT
 }
 
-void test_serialize() noexcept {
+void test_serialize() {
   grmhd::AnalyticData::MagneticFieldLoop magnetic_field_loop(
       3.0, 1.0, 1.66666666666666667,
       std::array<double, 3>{{0.5, 0.04166666666666667, 0.0}}, 0.001, 0.06, 0.3);
@@ -94,7 +92,7 @@ void test_serialize() noexcept {
 }
 
 template <typename DataType>
-void test_variables(const DataType& used_for_size) noexcept {
+void test_variables(const DataType& used_for_size) {
   const double pressure = 3.0;
   const double rest_mass_density = 1.0;
   const double adiabatic_index = 1.6666666666666666;

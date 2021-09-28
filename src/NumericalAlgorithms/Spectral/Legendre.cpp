@@ -24,7 +24,7 @@ namespace Spectral {
 
 namespace {
 template <typename T>
-T compute_basis_function_value_impl(const size_t k, const T& x) noexcept {
+T compute_basis_function_value_impl(const size_t k, const T& x) {
   // Algorithm 20 in Kopriva, p. 60
   switch (k) {
     case 0:
@@ -46,26 +46,26 @@ T compute_basis_function_value_impl(const size_t k, const T& x) noexcept {
 }  // namespace
 
 template <>
-DataVector compute_basis_function_value<Basis::Legendre>(
-    const size_t k, const DataVector& x) noexcept {
+DataVector compute_basis_function_value<Basis::Legendre>(const size_t k,
+                                                         const DataVector& x) {
   return compute_basis_function_value_impl(k, x);
 }
 
 template <>
 double compute_basis_function_value<Basis::Legendre>(const size_t k,
-                                                     const double& x) noexcept {
+                                                     const double& x) {
   return compute_basis_function_value_impl(k, x);
 }
 
 template <>
 DataVector compute_inverse_weight_function_values<Basis::Legendre>(
-    const DataVector& x) noexcept {
+    const DataVector& x) {
   return DataVector(x.size(), 1.);
 }
 
 template <>
 double compute_basis_function_normalization_square<Basis::Legendre>(
-    const size_t k) noexcept {
+    const size_t k) {
   return 2. / (2. * k + 1.);
 }
 
@@ -73,13 +73,13 @@ double compute_basis_function_normalization_square<Basis::Legendre>(
 
 namespace {
 struct LegendrePolynomialAndDerivative {
-  LegendrePolynomialAndDerivative(size_t poly_degree, double x) noexcept;
+  LegendrePolynomialAndDerivative(size_t poly_degree, double x);
   double L;
   double dL;
 };
 
 LegendrePolynomialAndDerivative::LegendrePolynomialAndDerivative(
-    const size_t poly_degree, const double x) noexcept {
+    const size_t poly_degree, const double x) {
   // Algorithm 22 in Kopriva, p. 63
   // The cases where `poly_degree` is `0` or `1` are omitted because they are
   // never used.
@@ -106,7 +106,7 @@ LegendrePolynomialAndDerivative::LegendrePolynomialAndDerivative(
 template <>
 std::pair<DataVector, DataVector>
 compute_collocation_points_and_weights<Basis::Legendre, Quadrature::Gauss>(
-    const size_t num_points) noexcept {
+    const size_t num_points) {
   // Algorithm 23 in Kopriva, p.64
   ASSERT(num_points >= 1,
          "Legendre-Gauss quadrature requires at least one collocation point.");
@@ -124,7 +124,7 @@ compute_collocation_points_and_weights<Basis::Legendre, Quadrature::Gauss>(
       w[0] = w[1] = 1.;
       break;
     default:
-      auto newton_raphson_step = [poly_degree](double logical_coord) noexcept {
+      auto newton_raphson_step = [poly_degree](double logical_coord) {
         const LegendrePolynomialAndDerivative L_and_dL(poly_degree + 1,
                                                        logical_coord);
         return std::make_pair(L_and_dL.L, L_and_dL.dL);
@@ -157,14 +157,13 @@ compute_collocation_points_and_weights<Basis::Legendre, Quadrature::Gauss>(
 
 namespace {
 struct EvaluateQandL {
-  EvaluateQandL(size_t poly_degree, double x) noexcept;
+  EvaluateQandL(size_t poly_degree, double x);
   double q;
   double q_prime;
   double L;
 };
 
-EvaluateQandL::EvaluateQandL(const size_t poly_degree,
-                             const double x) noexcept {
+EvaluateQandL::EvaluateQandL(const size_t poly_degree, const double x) {
   // Algorithm 24 in Kopriva, p. 65
   // Note: Book has errors in last 4 lines, corrected in errata on website
   // https://www.math.fsu.edu/~kopriva/publications/errata.pdf
@@ -196,8 +195,7 @@ EvaluateQandL::EvaluateQandL(const size_t poly_degree,
 
 template <>
 std::pair<DataVector, DataVector> compute_collocation_points_and_weights<
-    Basis::Legendre, Quadrature::GaussLobatto>(
-    const size_t num_points) noexcept {
+    Basis::Legendre, Quadrature::GaussLobatto>(const size_t num_points) {
   // Algorithm 25 in Kopriva, p. 66
   ASSERT(num_points >= 2,
          "Legendre-Gauss-Lobatto quadrature requires at least two collocation "
@@ -215,7 +213,7 @@ std::pair<DataVector, DataVector> compute_collocation_points_and_weights<
       x[0] = -1.;
       x[poly_degree] = 1.;
       w[0] = w[poly_degree] = 2. / (poly_degree * (poly_degree + 1.));
-      auto newton_raphson_step = [poly_degree](double logical_coord) noexcept {
+      auto newton_raphson_step = [poly_degree](double logical_coord) {
         const EvaluateQandL q_and_L(poly_degree, logical_coord);
         return std::make_pair(q_and_L.q, q_and_L.q_prime);
       };
@@ -245,11 +243,11 @@ std::pair<DataVector, DataVector> compute_collocation_points_and_weights<
 }
 
 template <Basis BasisType>
-Matrix spectral_indefinite_integral_matrix(size_t num_points) noexcept;
+Matrix spectral_indefinite_integral_matrix(size_t num_points);
 
 template <>
 Matrix spectral_indefinite_integral_matrix<Basis::Legendre>(
-    const size_t num_points) noexcept {
+    const size_t num_points) {
   // Tridiagonal matrix that gives the indefinite integral modulo a constant
   Matrix indef_int(num_points, num_points, 0.0);
   for (size_t i = 1; i < num_points - 1; ++i) {

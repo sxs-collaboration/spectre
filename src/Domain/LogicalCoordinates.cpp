@@ -19,7 +19,7 @@ template <size_t VolumeDim>
 void logical_coordinates(
     const gsl::not_null<tnsr::I<DataVector, VolumeDim, Frame::ElementLogical>*>
         logical_coords,
-    const Mesh<VolumeDim>& mesh) noexcept {
+    const Mesh<VolumeDim>& mesh) {
   destructive_resize_components(logical_coords, mesh.number_of_grid_points());
   for (size_t d = 0; d < VolumeDim; ++d) {
     const auto& collocation_points_in_this_dim =
@@ -33,7 +33,7 @@ void logical_coordinates(
 
 template <size_t VolumeDim>
 tnsr::I<DataVector, VolumeDim, Frame::ElementLogical> logical_coordinates(
-    const Mesh<VolumeDim>& mesh) noexcept {
+    const Mesh<VolumeDim>& mesh) {
   tnsr::I<DataVector, VolumeDim, Frame::ElementLogical> result{};
   logical_coordinates(make_not_null(&result), mesh);
   return result;
@@ -42,7 +42,7 @@ tnsr::I<DataVector, VolumeDim, Frame::ElementLogical> logical_coordinates(
 template <size_t VolumeDim>
 tnsr::I<DataVector, VolumeDim, Frame::ElementLogical>
 interface_logical_coordinates(const Mesh<VolumeDim - 1>& mesh,
-                              const Direction<VolumeDim>& direction) noexcept {
+                              const Direction<VolumeDim>& direction) {
   const auto num_grid_points = mesh.number_of_grid_points();
   const size_t sliced_away_dim = direction.dimension();
   tnsr::I<DataVector, VolumeDim, Frame::ElementLogical> logical_x(
@@ -74,29 +74,29 @@ interface_logical_coordinates(const Mesh<VolumeDim - 1>& mesh,
 // only for Dim > 0
 template <>
 tnsr::I<DataVector, 1, Frame::ElementLogical> interface_logical_coordinates<1>(
-    const Mesh<0>& mesh, const Direction<1>& direction) noexcept {
+    const Mesh<0>& mesh, const Direction<1>& direction) {
   return tnsr::I<DataVector, 1, Frame::ElementLogical>{
       mesh.number_of_grid_points(), direction.sign()};
 }
 
 // Explicit instantiations
 template tnsr::I<DataVector, 1, Frame::ElementLogical> logical_coordinates(
-    const Mesh<1>&) noexcept;
+    const Mesh<1>&);
 template tnsr::I<DataVector, 2, Frame::ElementLogical> logical_coordinates(
-    const Mesh<2>&) noexcept;
+    const Mesh<2>&);
 template tnsr::I<DataVector, 3, Frame::ElementLogical> logical_coordinates(
-    const Mesh<3>&) noexcept;
+    const Mesh<3>&);
 template void logical_coordinates(
     const gsl::not_null<tnsr::I<DataVector, 1, Frame::ElementLogical>*>,
-    const Mesh<1>&) noexcept;
+    const Mesh<1>&);
 template void logical_coordinates(
     const gsl::not_null<tnsr::I<DataVector, 2, Frame::ElementLogical>*>,
-    const Mesh<2>&) noexcept;
+    const Mesh<2>&);
 template void logical_coordinates(
     const gsl::not_null<tnsr::I<DataVector, 3, Frame::ElementLogical>*>,
-    const Mesh<3>&) noexcept;
+    const Mesh<3>&);
 
 template tnsr::I<DataVector, 2, Frame::ElementLogical>
-interface_logical_coordinates(const Mesh<1>&, const Direction<2>&) noexcept;
+interface_logical_coordinates(const Mesh<1>&, const Direction<2>&);
 template tnsr::I<DataVector, 3, Frame::ElementLogical>
-interface_logical_coordinates(const Mesh<2>&, const Direction<3>&) noexcept;
+interface_logical_coordinates(const Mesh<2>&, const Direction<3>&);

@@ -47,7 +47,7 @@ void apply_map(
   ASSERT(not functions_of_time.empty(),
          "A function of time must be present if the maps are time-dependent.");
   ASSERT(
-      [t]() noexcept {
+      [t]() {
         disable_floating_point_exceptions();
         const bool isnan = std::isnan(t);
         enable_floating_point_exceptions();
@@ -90,7 +90,7 @@ auto apply_map(
   ASSERT(not functions_of_time.empty(),
          "A function of time must be present if the maps are time-dependent.");
   ASSERT(
-      [t]() noexcept {
+      [t]() {
         disable_floating_point_exceptions();
         const bool isnan = std::isnan(t);
         enable_floating_point_exceptions();
@@ -133,7 +133,7 @@ auto apply_inverse_map(
   ASSERT(not functions_of_time.empty(),
          "A function of time must be present if the maps are time-dependent.");
   ASSERT(
-      [t]() noexcept {
+      [t]() {
         disable_floating_point_exceptions();
         const bool isnan = std::isnan(t);
         enable_floating_point_exceptions();
@@ -170,7 +170,7 @@ auto apply_frame_velocity(
   ASSERT(not functions_of_time.empty(),
          "A function of time must be present if the maps are time-dependent.");
   ASSERT(
-      [t]() noexcept {
+      [t]() {
         disable_floating_point_exceptions();
         const bool isnan = std::isnan(t);
         enable_floating_point_exceptions();
@@ -208,7 +208,7 @@ auto apply_jacobian(
   ASSERT(not functions_of_time.empty(),
          "A function of time must be present if the maps are time-dependent.");
   ASSERT(
-      [t]() noexcept {
+      [t]() {
         disable_floating_point_exceptions();
         const bool isnan = std::isnan(t);
         enable_floating_point_exceptions();
@@ -249,7 +249,7 @@ auto apply_inverse_jacobian(
   ASSERT(not functions_of_time.empty(),
          "A function of time must be present if the maps are time-dependent.");
   ASSERT(
-      [t]() noexcept {
+      [t]() {
         disable_floating_point_exceptions();
         const bool isnan = std::isnan(t);
         enable_floating_point_exceptions();

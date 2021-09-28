@@ -55,68 +55,64 @@ using common_tags = tmpl::list<
 template <typename DataType, typename Cache>
 struct CommonVariables {
   static constexpr size_t Dim = 3;
-  void operator()(
-      gsl::not_null<tnsr::II<DataType, Dim>*> inv_conformal_metric,
-      gsl::not_null<Cache*> cache,
-      Tags::InverseConformalMetric<DataType, Dim, Frame::Inertial> /*meta*/)
-      const noexcept;
+  void operator()(gsl::not_null<tnsr::II<DataType, Dim>*> inv_conformal_metric,
+                  gsl::not_null<Cache*> cache,
+                  Tags::InverseConformalMetric<DataType, Dim,
+                                               Frame::Inertial> /*meta*/) const;
   void operator()(
       gsl::not_null<tnsr::ijj<DataType, Dim>*> conformal_christoffel_first_kind,
       gsl::not_null<Cache*> cache,
-      Tags::ConformalChristoffelFirstKind<
-          DataType, Dim, Frame::Inertial> /*meta*/) const noexcept;
+      Tags::ConformalChristoffelFirstKind<DataType, Dim,
+                                          Frame::Inertial> /*meta*/) const;
   void operator()(gsl::not_null<tnsr::Ijj<DataType, Dim>*>
                       conformal_christoffel_second_kind,
                   gsl::not_null<Cache*> cache,
                   Tags::ConformalChristoffelSecondKind<
-                      DataType, Dim, Frame::Inertial> /*meta*/) const noexcept;
+                      DataType, Dim, Frame::Inertial> /*meta*/) const;
   void operator()(
       gsl::not_null<tnsr::i<DataType, Dim>*> conformal_christoffel_contracted,
       gsl::not_null<Cache*> cache,
-      Tags::ConformalChristoffelContracted<
-          DataType, Dim, Frame::Inertial> /*meta*/) const noexcept;
+      Tags::ConformalChristoffelContracted<DataType, Dim,
+                                           Frame::Inertial> /*meta*/) const;
   void operator()(
       gsl::not_null<Scalar<DataType>*> fixed_source_for_hamiltonian_constraint,
       gsl::not_null<Cache*> cache,
-      ::Tags::FixedSource<Tags::ConformalFactor<DataType>> /*meta*/)
-      const noexcept;
+      ::Tags::FixedSource<Tags::ConformalFactor<DataType>> /*meta*/) const;
   void operator()(
       gsl::not_null<Scalar<DataType>*> fixed_source_for_lapse_equation,
       gsl::not_null<Cache*> cache,
       ::Tags::FixedSource<Tags::LapseTimesConformalFactor<DataType>> /*meta*/)
-      const noexcept;
+      const;
   void operator()(
       gsl::not_null<tnsr::I<DataType, 3>*> fixed_source_momentum_constraint,
       gsl::not_null<Cache*> cache,
       ::Tags::FixedSource<
-          Tags::ShiftExcess<DataType, 3, Frame::Inertial>> /*meta*/)
-      const noexcept;
+          Tags::ShiftExcess<DataType, 3, Frame::Inertial>> /*meta*/) const;
   void operator()(
       gsl::not_null<tnsr::iJkk<DataType, Dim>*>
           deriv_conformal_christoffel_second_kind,
       gsl::not_null<Cache*> cache,
       ::Tags::deriv<
           Tags::ConformalChristoffelSecondKind<DataType, Dim, Frame::Inertial>,
-          tmpl::size_t<Dim>, Frame::Inertial> /*meta*/) const noexcept;
+          tmpl::size_t<Dim>, Frame::Inertial> /*meta*/) const;
   void operator()(
       gsl::not_null<tnsr::ii<DataType, Dim>*> conformal_ricci_tensor,
       gsl::not_null<Cache*> cache,
       Tags::ConformalRicciTensor<DataType, Dim, Frame::Inertial> /*meta*/)
-      const noexcept;
+      const;
   void operator()(gsl::not_null<Scalar<DataType>*> conformal_ricci_scalar,
                   gsl::not_null<Cache*> cache,
-                  Tags::ConformalRicciScalar<DataType> /*meta*/) const noexcept;
+                  Tags::ConformalRicciScalar<DataType> /*meta*/) const;
   void operator()(
       gsl::not_null<tnsr::i<DataType, Dim>*> deriv_extrinsic_curvature_trace,
       gsl::not_null<Cache*> cache,
       ::Tags::deriv<gr::Tags::TraceExtrinsicCurvature<DataType>,
-                    tmpl::size_t<Dim>, Frame::Inertial> /*meta*/)
-      const noexcept;
+                    tmpl::size_t<Dim>, Frame::Inertial> /*meta*/) const;
   void operator()(
       gsl::not_null<tnsr::I<DataType, Dim>*> div_longitudinal_shift_background,
       gsl::not_null<Cache*> cache,
       ::Tags::div<Tags::LongitudinalShiftBackgroundMinusDtConformalMetric<
-          DataType, Dim, Frame::Inertial>> /*meta*/) const noexcept;
+          DataType, Dim, Frame::Inertial>> /*meta*/) const;
 
   std::optional<std::reference_wrapper<const Mesh<Dim>>> mesh;
   std::optional<std::reference_wrapper<const InverseJacobian<

@@ -24,7 +24,7 @@ void four_velocity_one_form(
     const tnsr::i<DataVector, 3, Frame::Inertial>& spatial_velocity_one_form,
     const Scalar<DataVector>& lorentz_factor,
     const tnsr::I<DataVector, 3, Frame::Inertial>& shift,
-    const Scalar<DataVector>& lapse) noexcept {
+    const Scalar<DataVector>& lapse) {
   get<0>(*four_velocity_one_form_result) = -get(lapse) * get(lorentz_factor);
   for (size_t i = 0; i < 3; ++i) {
     four_velocity_one_form_result->get(i + 1) =
@@ -55,7 +55,7 @@ void comoving_magnetic_field_one_form(
     const Scalar<DataVector>& magnetic_field_dot_spatial_velocity,
     const Scalar<DataVector>& lorentz_factor,
     const tnsr::I<DataVector, 3, Frame::Inertial>& shift,
-    const Scalar<DataVector>& lapse) noexcept {
+    const Scalar<DataVector>& lapse) {
   get<0>(*comoving_magnetic_field_one_form_result) =
       -get(lapse) * get(lorentz_factor) *
       get(magnetic_field_dot_spatial_velocity);
@@ -67,13 +67,13 @@ void comoving_magnetic_field_one_form(
     get<0>(*comoving_magnetic_field_one_form_result) +=
         shift.get(i) * comoving_magnetic_field_one_form_result->get(i + 1);
   }
- }
+}
 }  // namespace
 
 void add_stress_energy_term_to_dt_pi(
     const gsl::not_null<tnsr::aa<DataVector, 3>*> dt_pi,
     const tnsr::aa<DataVector, 3>& trace_reversed_stress_energy,
-    const Scalar<DataVector>& lapse) noexcept {
+    const Scalar<DataVector>& lapse) {
   for (size_t a = 0; a < 4; ++a) {
     for (size_t b = a; b < 4; ++b) {
       dt_pi->get(a, b) -=
@@ -98,7 +98,7 @@ void trace_reversed_stress_energy(
     const Scalar<DataVector>& pressure,
     const tnsr::aa<DataVector, 3, Frame::Inertial>& spacetime_metric,
     const tnsr::I<DataVector, 3, Frame::Inertial>& shift,
-    const Scalar<DataVector>& lapse) noexcept {
+    const Scalar<DataVector>& lapse) {
   four_velocity_one_form(four_velocity_one_form_buffer,
                          spatial_velocity_one_form, lorentz_factor, shift,
                          lapse);

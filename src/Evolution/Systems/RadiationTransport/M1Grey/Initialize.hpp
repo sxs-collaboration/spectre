@@ -60,7 +60,7 @@ struct InitializeM1Tags {
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     using EvolvedVars = typename evolved_variables_tag::type;
     using HydroVars = typename hydro_variables_tag::type;
     using M1Vars = typename m1_variables_tag::type;
@@ -72,13 +72,15 @@ struct InitializeM1Tags {
     const auto& inertial_coords =
         db::get<domain::Tags::Coordinates<dim, Frame::Inertial>>(box);
 
-    db::mutate<evolved_variables_tag>(make_not_null(&box), [
-      &cache, initial_time, &inertial_coords
-    ](const gsl::not_null<EvolvedVars*> evolved_vars) noexcept {
-      evolved_vars->assign_subset(evolution::initial_data(
-          Parallel::get<::Tags::AnalyticSolutionOrData>(cache), inertial_coords,
-          initial_time, typename evolved_variables_tag::tags_list{}));
-    });
+    db::mutate<evolved_variables_tag>(
+        make_not_null(&box),
+        [&cache, initial_time,
+         &inertial_coords](const gsl::not_null<EvolvedVars*> evolved_vars) {
+          evolved_vars->assign_subset(evolution::initial_data(
+              Parallel::get<::Tags::AnalyticSolutionOrData>(cache),
+              inertial_coords, initial_time,
+              typename evolved_variables_tag::tags_list{}));
+        });
 
     // Get hydro variables
     HydroVars hydro_variables{num_grid_points};

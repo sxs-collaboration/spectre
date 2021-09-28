@@ -33,7 +33,7 @@ struct Vector : db::SimpleTag {
 template <size_t Dim>
 DataVector soln(const tnsr::I<DataVector, Dim, Frame::ElementLogical>& coords,
                 const size_t number_of_modes_per_dim,
-                const std::array<double, Dim>& highest_coeffs) noexcept {
+                const std::array<double, Dim>& highest_coeffs) {
   DataVector result =
       Spectral::compute_basis_function_value<Spectral::Basis::Legendre>(
           1, get<0>(coords));
@@ -55,7 +55,7 @@ void test_persson_impl(
     const size_t num_pts_1d,
     const std::array<double, Dim>& oscillatory_highest_coeffs,
     const size_t tensor_component_to_modify, const double persson_exponent,
-    const bool expected_tci_triggered) noexcept {
+    const bool expected_tci_triggered) {
   CAPTURE(Dim);
   CAPTURE(db::tag_name<TagToCheck>());
   CAPTURE(num_pts_1d);
@@ -96,7 +96,7 @@ void test_persson_impl(
 }
 
 template <size_t Dim>
-void test_persson() noexcept {
+void test_persson() {
   const auto zero_highest_coeffs = make_array<Dim>(0.0);
   // We lower the maximum number of 1d points in 3d in order to reduce total
   // test runtime.

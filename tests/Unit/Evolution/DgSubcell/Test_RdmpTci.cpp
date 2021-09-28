@@ -37,8 +37,7 @@ struct Vector : db::SimpleTag {
 }  // namespace Tags
 
 template <size_t Dim>
-DataVector soln(
-    const tnsr::I<DataVector, Dim, Frame::ElementLogical>& coords) noexcept {
+DataVector soln(const tnsr::I<DataVector, Dim, Frame::ElementLogical>& coords) {
   DataVector result =
       Spectral::compute_basis_function_value<Spectral::Basis::Legendre>(
           1, get<0>(coords));
@@ -55,7 +54,7 @@ void test_rdmp_impl(const std::vector<double>& past_max_values,
                     const double rdmp_delta0, const double rdmp_epsilon,
                     const size_t num_pts_1d, const double rescale_dg_by,
                     const double rescale_subcell_by,
-                    const bool expected_tci_triggered) noexcept {
+                    const bool expected_tci_triggered) {
   CAPTURE(Dim);
   CAPTURE(num_pts_1d);
   CAPTURE(rdmp_delta0);
@@ -98,7 +97,7 @@ void test_rdmp_impl(const std::vector<double>& past_max_values,
 }
 
 template <size_t Dim>
-void test_rdmp() noexcept {
+void test_rdmp() {
   const std::vector<double> past_max_values(Dim + 1, static_cast<double>(Dim));
   const std::vector<double> past_min_values(Dim + 1, -static_cast<double>(Dim));
 

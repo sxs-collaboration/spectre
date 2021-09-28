@@ -38,11 +38,11 @@ struct ObservationLMax;
 class AnalyticBoundaryDataManager {
  public:
   // charm needs an empty constructor.
-  AnalyticBoundaryDataManager() noexcept = default;
+  AnalyticBoundaryDataManager() = default;
 
   AnalyticBoundaryDataManager(
       size_t l_max, double extraction_radius,
-      std::unique_ptr<Solutions::WorldtubeData> generator) noexcept;
+      std::unique_ptr<Solutions::WorldtubeData> generator);
 
   /*!
    * \brief Update the `boundary_data_variables` entries for all tags in
@@ -58,23 +58,21 @@ class AnalyticBoundaryDataManager {
       gsl::not_null<Variables<
           Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>*>
           boundary_data_variables,
-      double time) const noexcept;
+      double time) const;
 
   /// Use `observers::ThreadedActions::WriteSimpleData` to output the expected
   /// news at `time` from the analytic data to dataset `/expected_news.dat`.
   template <typename ParallelComponent, typename Metavariables>
   void write_news(Parallel::GlobalCache<Metavariables>& cache,
-                  double time) const noexcept;
+                  double time) const;
 
-  size_t get_l_max() const noexcept { return l_max_; }
+  size_t get_l_max() const { return l_max_; }
 
-  const Solutions::WorldtubeData& get_generator() const noexcept {
-    return *generator_;
-  }
+  const Solutions::WorldtubeData& get_generator() const { return *generator_; }
 
   /// Serialization for Charm++.
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept;
+  void pup(PUP::er& p);
 
  private:
   size_t l_max_ = 0;
@@ -84,8 +82,7 @@ class AnalyticBoundaryDataManager {
 
 template <typename ParallelComponent, typename Metavariables>
 void AnalyticBoundaryDataManager::write_news(
-    Parallel::GlobalCache<Metavariables>& cache,
-    const double time) const noexcept {
+    Parallel::GlobalCache<Metavariables>& cache, const double time) const {
   const auto news = get<Tags::News>(
       generator_->variables(l_max_, time, tmpl::list<Tags::News>{}));
   const size_t observation_l_max = Parallel::get<Tags::ObservationLMax>(cache);

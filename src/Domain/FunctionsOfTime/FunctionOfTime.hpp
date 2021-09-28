@@ -41,43 +41,41 @@ namespace FunctionsOfTime {
 class FunctionOfTime : public PUP::able {
  public:
   FunctionOfTime() = default;
-  FunctionOfTime(FunctionOfTime&&) noexcept = default;
-  FunctionOfTime& operator=(FunctionOfTime&&) noexcept = default;
+  FunctionOfTime(FunctionOfTime&&) = default;
+  FunctionOfTime& operator=(FunctionOfTime&&) = default;
   FunctionOfTime(const FunctionOfTime&) = default;
   FunctionOfTime& operator=(const FunctionOfTime&) = default;
   ~FunctionOfTime() override = default;
 
-  virtual auto get_clone() const noexcept
-      -> std::unique_ptr<FunctionOfTime> = 0;
+  virtual auto get_clone() const -> std::unique_ptr<FunctionOfTime> = 0;
 
   /// Returns the domain of validity of the function.
   /// For FunctionsOfTime that allow a small amount of time extrapolation,
   /// `time_bounds` tells you the bounds including the allowed extrapolation
   /// interval.
-  virtual std::array<double, 2> time_bounds() const noexcept = 0;
+  virtual std::array<double, 2> time_bounds() const = 0;
 
   /// Updates the maximum derivative of the FunctionOfTime at a given time while
   /// also resetting the expiration. By default, a FunctionOfTime cannot be
   /// updated.
   virtual void update(double /*time_of_update*/,
                       DataVector /*updated_max_deriv*/,
-                      double /*next_expiration_time*/) noexcept {
+                      double /*next_expiration_time*/) {
     ERROR("Cannot update this FunctionOfTime.");
   }
 
   /// Resets the expiration time to a new value. By default, the expiration time
   /// of a FunctionOfTime cannot be reset.
-  virtual void reset_expiration_time(double /*next_expiration_time*/) noexcept {
+  virtual void reset_expiration_time(double /*next_expiration_time*/) {
     ERROR("Cannot reset expiration time of this FunctionOfTime.");
   }
 
   /// The DataVector can be of any size
-  virtual std::array<DataVector, 1> func(double t) const noexcept = 0;
+  virtual std::array<DataVector, 1> func(double t) const = 0;
   /// The DataVector can be of any size
-  virtual std::array<DataVector, 2> func_and_deriv(double t) const noexcept = 0;
+  virtual std::array<DataVector, 2> func_and_deriv(double t) const = 0;
   /// The DataVector can be of any size
-  virtual std::array<DataVector, 3> func_and_2_derivs(double t) const
-      noexcept = 0;
+  virtual std::array<DataVector, 3> func_and_2_derivs(double t) const = 0;
 
   WRAPPED_PUPable_abstract(FunctionOfTime);  // NOLINT
 };

@@ -74,7 +74,7 @@ struct FunctionsOfTime : db::SimpleTag {
           domain_creator,
       const std::optional<std::string>& function_of_time_file,
       const std::optional<std::map<std::string, std::string>>&
-          function_of_time_name_map) noexcept {
+          function_of_time_name_map) {
     if (function_of_time_file and function_of_time_name_map) {
       // Currently, only support order 2 or 3 piecewise polynomials.
       // This could be generalized later, but the SpEC functions of time
@@ -143,7 +143,7 @@ struct FunctionsOfTime : db::SimpleTag {
   template <typename Metavariables>
   static type create_from_options(
       const std::unique_ptr<::DomainCreator<Metavariables::volume_dim>>&
-          domain_creator) noexcept {
+          domain_creator) {
     return domain_creator->functions_of_time();
   }
 };

@@ -45,8 +45,7 @@ tnsr::ii<DataType, SpatialDim, Frame> extrinsic_curvature(
     const tnsr::iJ<DataType, SpatialDim, Frame>& deriv_shift,
     const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
     const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric,
-    const tnsr::ijj<DataType, SpatialDim, Frame>&
-        deriv_spatial_metric) noexcept;
+    const tnsr::ijj<DataType, SpatialDim, Frame>& deriv_spatial_metric);
 
 template <size_t SpatialDim, typename Frame, typename DataType>
 void extrinsic_curvature(
@@ -56,7 +55,6 @@ void extrinsic_curvature(
     const tnsr::iJ<DataType, SpatialDim, Frame>& deriv_shift,
     const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
     const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric,
-    const tnsr::ijj<DataType, SpatialDim, Frame>&
-        deriv_spatial_metric) noexcept;
+    const tnsr::ijj<DataType, SpatialDim, Frame>& deriv_spatial_metric);
 /// @}
 }  // namespace gr

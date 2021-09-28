@@ -85,7 +85,7 @@ using time_index_positions = tmpl::enumerated_fold<
 /// \tparam TensorIndexList the TensorIndex list
 /// \return the list of positions of concrete time indices
 template <typename TensorIndexList>
-constexpr auto get_time_index_positions() noexcept {
+constexpr auto get_time_index_positions() {
   using time_index_positions_ = time_index_positions<TensorIndexList>;
   using make_list_type =
       std::conditional_t<tmpl::size<time_index_positions_>::value == 0, size_t,

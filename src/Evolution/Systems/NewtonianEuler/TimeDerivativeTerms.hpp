@@ -37,7 +37,7 @@ void fluxes_impl(
     const tnsr::I<DataVector, Dim>& momentum_density,
     const Scalar<DataVector>& energy_density,
     const tnsr::I<DataVector, Dim>& velocity,
-    const Scalar<DataVector>& pressure) noexcept;
+    const Scalar<DataVector>& pressure);
 }  // namespace detail
 
 /*!
@@ -88,7 +88,7 @@ struct TimeDerivativeTerms {
       const Scalar<DataVector>& energy_density,
       const tnsr::I<DataVector, Dim>& velocity,
       const Scalar<DataVector>& pressure, const SourceTerm& source,
-      const SourceTermArgs&... source_term_args) noexcept {
+      const SourceTermArgs&... source_term_args) {
     detail::fluxes_impl(mass_density_cons_flux, momentum_density_flux,
                         energy_density_flux, enthalpy_density, momentum_density,
                         energy_density, velocity, pressure);
@@ -126,7 +126,7 @@ struct TimeDerivativeTerms {
       const tnsr::I<DataVector, Dim>& momentum_density,
       const Scalar<DataVector>& energy_density,
       const tnsr::I<DataVector, Dim>& velocity,
-      const Scalar<DataVector>& pressure) noexcept {
+      const Scalar<DataVector>& pressure) {
     detail::fluxes_impl(mass_density_cons_flux, momentum_density_flux,
                         energy_density_flux, enthalpy_density, momentum_density,
                         energy_density, velocity, pressure);
@@ -144,7 +144,7 @@ struct TimeDerivativeTerms {
                                non_flux_terms_dt_vars,
                            tmpl::list<SourcedVars...> /*meta*/,
                            const SourceTerm& source,
-                           const SourceTermArgs&... source_term_args) noexcept {
+                           const SourceTermArgs&... source_term_args) {
     source.apply(
         std::get<
             tmpl::index_of<non_flux_terms_dt_vars_list, SourcedVars>::value>(

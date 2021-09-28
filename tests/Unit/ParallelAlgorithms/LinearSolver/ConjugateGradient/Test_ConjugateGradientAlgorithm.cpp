@@ -44,7 +44,7 @@ struct Metavariables {
       helpers::determine_next_phase<Metavariables>;
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& /*p*/) noexcept {}
+  void pup(PUP::er& /*p*/) {}
 };
 
 }  // namespace

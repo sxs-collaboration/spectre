@@ -22,16 +22,14 @@ namespace InnerProductImpls {
 /// The inner product between any types that have a `dot` product
 template <typename Lhs, typename Rhs>
 struct InnerProductImpl {
-  static double apply(const Lhs& lhs, const Rhs& rhs) noexcept {
-    return dot(lhs, rhs);
-  }
+  static double apply(const Lhs& lhs, const Rhs& rhs) { return dot(lhs, rhs); }
 };
 
 /// The inner product between `Variables`
 template <typename LhsTagsList, typename RhsTagsList>
 struct InnerProductImpl<Variables<LhsTagsList>, Variables<RhsTagsList>> {
   static double apply(const Variables<LhsTagsList>& lhs,
-                      const Variables<RhsTagsList>& rhs) noexcept {
+                      const Variables<RhsTagsList>& rhs) {
     const auto size = lhs.size();
     ASSERT(size == rhs.size(),
            "The Variables must be of the same size to take an inner product");
@@ -68,8 +66,7 @@ struct InnerProductImpl<Variables<LhsTagsList>, Variables<RhsTagsList>> {
  * reduction over all elements that sums their local `inner_product`s.
  */
 template <typename Lhs, typename Rhs>
-SPECTRE_ALWAYS_INLINE double inner_product(const Lhs& lhs,
-                                           const Rhs& rhs) noexcept {
+SPECTRE_ALWAYS_INLINE double inner_product(const Lhs& lhs, const Rhs& rhs) {
   return InnerProductImpls::InnerProductImpl<Lhs, Rhs>::apply(lhs, rhs);
 }
 

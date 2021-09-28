@@ -63,15 +63,15 @@ class SmoothFlow : virtual public MarkAsAnalyticSolution,
   SmoothFlow() = default;
   SmoothFlow(const SmoothFlow& /*rhs*/) = delete;
   SmoothFlow& operator=(const SmoothFlow& /*rhs*/) = delete;
-  SmoothFlow(SmoothFlow&& /*rhs*/) noexcept = default;
-  SmoothFlow& operator=(SmoothFlow&& /*rhs*/) noexcept = default;
+  SmoothFlow(SmoothFlow&& /*rhs*/) = default;
+  SmoothFlow& operator=(SmoothFlow&& /*rhs*/) = default;
   ~SmoothFlow() = default;
 
   SmoothFlow(const std::array<double, Dim>& mean_velocity,
              const std::array<double, Dim>& wavevector, double pressure,
-             double adiabatic_index, double perturbation_size) noexcept;
+             double adiabatic_index, double perturbation_size);
 
-  explicit SmoothFlow(CkMigrateMessage* msg) noexcept;
+  explicit SmoothFlow(CkMigrateMessage* msg);
 
   using smooth_flow::equation_of_state;
   using typename smooth_flow::equation_of_state_type;
@@ -83,7 +83,7 @@ class SmoothFlow : virtual public MarkAsAnalyticSolution,
   template <typename DataType>
   tuples::TaggedTuple<Tags::MassDensity<DataType>> variables(
       const tnsr::I<DataType, Dim>& x, const double t,
-      tmpl::list<Tags::MassDensity<DataType>> /*meta*/) const noexcept {
+      tmpl::list<Tags::MassDensity<DataType>> /*meta*/) const {
     return {tuples::get<hydro::Tags::RestMassDensity<DataType>>(
         variables(x, t, tmpl::list<hydro::Tags::RestMassDensity<DataType>>{}))};
   }
@@ -91,7 +91,7 @@ class SmoothFlow : virtual public MarkAsAnalyticSolution,
   template <typename DataType>
   tuples::TaggedTuple<Tags::Velocity<DataType, Dim>> variables(
       const tnsr::I<DataType, Dim>& x, const double t,
-      tmpl::list<Tags::Velocity<DataType, Dim>> /*meta*/) const noexcept {
+      tmpl::list<Tags::Velocity<DataType, Dim>> /*meta*/) const {
     return {tuples::get<hydro::Tags::SpatialVelocity<DataType, Dim>>(variables(
         x, t, tmpl::list<hydro::Tags::SpatialVelocity<DataType, Dim>>{}))};
   }
@@ -99,7 +99,7 @@ class SmoothFlow : virtual public MarkAsAnalyticSolution,
   template <typename DataType>
   tuples::TaggedTuple<Tags::Pressure<DataType>> variables(
       const tnsr::I<DataType, Dim>& x, const double t,
-      tmpl::list<Tags::Pressure<DataType>> /*meta*/) const noexcept {
+      tmpl::list<Tags::Pressure<DataType>> /*meta*/) const {
     return {tuples::get<hydro::Tags::Pressure<DataType>>(
         variables(x, t, tmpl::list<hydro::Tags::Pressure<DataType>>{}))};
   }
@@ -107,8 +107,7 @@ class SmoothFlow : virtual public MarkAsAnalyticSolution,
   template <typename DataType>
   tuples::TaggedTuple<Tags::SpecificInternalEnergy<DataType>> variables(
       const tnsr::I<DataType, Dim>& x, const double t,
-      tmpl::list<Tags::SpecificInternalEnergy<DataType>> /*meta*/)
-      const noexcept {
+      tmpl::list<Tags::SpecificInternalEnergy<DataType>> /*meta*/) const {
     return {
         tuples::get<hydro::Tags::SpecificInternalEnergy<DataType>>(variables(
             x, t,
@@ -117,9 +116,9 @@ class SmoothFlow : virtual public MarkAsAnalyticSolution,
 
   /// Retrieve a collection of hydro variables at `(x, t)`
   template <typename DataType, typename... Tags>
-  tuples::TaggedTuple<Tags...> variables(
-      const tnsr::I<DataType, Dim>& x, const double t,
-      tmpl::list<Tags...> /*meta*/) const noexcept {
+  tuples::TaggedTuple<Tags...> variables(const tnsr::I<DataType, Dim>& x,
+                                         const double t,
+                                         tmpl::list<Tags...> /*meta*/) const {
     static_assert(sizeof...(Tags) > 1,
                   "The generic template will recurse infinitely if only one "
                   "tag is being retrieved.");
@@ -127,17 +126,15 @@ class SmoothFlow : virtual public MarkAsAnalyticSolution,
   }
 
   // clang-tidy: no runtime references
-  void pup(PUP::er& /*p*/) noexcept;  //  NOLINT
+  void pup(PUP::er& /*p*/);  //  NOLINT
 
  private:
   template <size_t SpatialDim>
   friend bool
   operator==(  // NOLINT (clang-tidy: readability-redundant-declaration)
-      const SmoothFlow<SpatialDim>& lhs,
-      const SmoothFlow<SpatialDim>& rhs) noexcept;
+      const SmoothFlow<SpatialDim>& lhs, const SmoothFlow<SpatialDim>& rhs);
 };
 
 template <size_t Dim>
-bool operator!=(const SmoothFlow<Dim>& lhs,
-                const SmoothFlow<Dim>& rhs) noexcept;
+bool operator!=(const SmoothFlow<Dim>& lhs, const SmoothFlow<Dim>& rhs);
 }  // namespace NewtonianEuler::Solutions

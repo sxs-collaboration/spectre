@@ -122,7 +122,7 @@ Shell::Shell(
   }
 }
 
-Domain<3> Shell::create_domain() const noexcept {
+Domain<3> Shell::create_domain() const {
   std::vector<std::unique_ptr<
       CoordinateMapBase<Frame::BlockLogical, Frame::Inertial, 3>>>
       coord_maps = sph_wedge_coordinate_maps<Frame::Inertial>(
@@ -172,7 +172,7 @@ Domain<3> Shell::create_domain() const noexcept {
   return domain;
 }
 
-std::vector<std::array<size_t, 3>> Shell::initial_extents() const noexcept {
+std::vector<std::array<size_t, 3>> Shell::initial_extents() const {
   std::vector<std::array<size_t, 3>>::size_type num_wedges =
       6 * number_of_layers_;
   if (UNLIKELY(which_wedges_ == ShellWedges::FourOnEquator)) {
@@ -186,8 +186,7 @@ std::vector<std::array<size_t, 3>> Shell::initial_extents() const noexcept {
         initial_number_of_grid_points_[0]}}};
 }
 
-std::vector<std::array<size_t, 3>> Shell::initial_refinement_levels()
-    const noexcept {
+std::vector<std::array<size_t, 3>> Shell::initial_refinement_levels() const {
   std::vector<std::array<size_t, 3>>::size_type num_wedges =
       6 * number_of_layers_;
   if (UNLIKELY(which_wedges_ == ShellWedges::FourOnEquator)) {
@@ -200,7 +199,7 @@ std::vector<std::array<size_t, 3>> Shell::initial_refinement_levels()
 
 std::unordered_map<std::string,
                    std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
-Shell::functions_of_time() const noexcept {
+Shell::functions_of_time() const {
   if (time_dependence_->is_none()) {
     return {};
   } else {

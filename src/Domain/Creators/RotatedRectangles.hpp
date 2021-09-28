@@ -99,7 +99,7 @@ class RotatedRectangles : public DomainCreator<2> {
 
   template <typename BoundaryConditionsBase>
   struct BoundaryCondition {
-    static std::string name() noexcept { return "BoundaryCondition"; }
+    static std::string name() { return "BoundaryCondition"; }
     static constexpr Options::String help =
         "The boundary condition to impose on all sides.";
     using type = std::unique_ptr<BoundaryConditionsBase>;
@@ -132,7 +132,7 @@ class RotatedRectangles : public DomainCreator<2> {
       typename UpperBound::type upper_xy,
       typename InitialRefinement::type initial_refinement_level_xy,
       typename InitialGridPoints::type initial_number_of_grid_points_in_xy,
-      typename IsPeriodicIn::type is_periodic_in) noexcept;
+      typename IsPeriodicIn::type is_periodic_in);
 
   RotatedRectangles(
       typename LowerBound::type lower_xy, typename Midpoint::type midpoint_xy,
@@ -145,17 +145,16 @@ class RotatedRectangles : public DomainCreator<2> {
 
   RotatedRectangles() = default;
   RotatedRectangles(const RotatedRectangles&) = delete;
-  RotatedRectangles(RotatedRectangles&&) noexcept = default;
+  RotatedRectangles(RotatedRectangles&&) = default;
   RotatedRectangles& operator=(const RotatedRectangles&) = delete;
-  RotatedRectangles& operator=(RotatedRectangles&&) noexcept = default;
+  RotatedRectangles& operator=(RotatedRectangles&&) = default;
   ~RotatedRectangles() override = default;
 
-  Domain<2> create_domain() const noexcept override;
+  Domain<2> create_domain() const override;
 
-  std::vector<std::array<size_t, 2>> initial_extents() const noexcept override;
+  std::vector<std::array<size_t, 2>> initial_extents() const override;
 
-  std::vector<std::array<size_t, 2>> initial_refinement_levels() const
-      noexcept override;
+  std::vector<std::array<size_t, 2>> initial_refinement_levels() const override;
 
  private:
   typename LowerBound::type lower_xy_{

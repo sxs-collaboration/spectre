@@ -53,8 +53,7 @@ namespace evolution::dg::Actions::detail {
       const tnsr::I<DataVector, DIM(data), Frame::Inertial>&                  \
           trace_spatial_christoffel,                                          \
       const Scalar<DataVector>& trace_extrinsic_curvature,                    \
-      const Scalar<DataVector>& gamma1,                                       \
-      const Scalar<DataVector>& gamma2) noexcept;
+      const Scalar<DataVector>& gamma1, const Scalar<DataVector>& gamma2);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 

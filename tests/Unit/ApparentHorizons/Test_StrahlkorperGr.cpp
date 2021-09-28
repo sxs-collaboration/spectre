@@ -46,7 +46,7 @@ namespace {
 template <typename Solution, typename Fr, typename ExpectedLambda>
 void test_expansion(const Solution& solution,
                     const Strahlkorper<Fr>& strahlkorper,
-                    const ExpectedLambda& expected) noexcept {
+                    const ExpectedLambda& expected) {
   // Make databox from surface
   const auto box = db::create<
       db::AddSimpleTags<StrahlkorperTags::items_tags<Frame::Inertial>>,
@@ -169,7 +169,7 @@ template <typename Solution, typename SpatialRicciScalar,
           typename ExpectedLambda>
 void test_ricci_scalar(const Solution& solution,
                        const SpatialRicciScalar& spatial_ricci_scalar,
-                       const ExpectedLambda& expected) noexcept {
+                       const ExpectedLambda& expected) {
   // Make surface of radius 2.
   const auto box = db::create<
       db::AddSimpleTags<StrahlkorperTags::items_tags<Frame::Inertial>>,
@@ -223,7 +223,7 @@ void test_ricci_scalar(const Solution& solution,
 
 template <typename Solution, typename ExpectedLambda>
 void test_area_element(const Solution& solution, const double surface_radius,
-                       const ExpectedLambda& expected) noexcept {
+                       const ExpectedLambda& expected) {
   const auto box = db::create<
       db::AddSimpleTags<StrahlkorperTags::items_tags<Frame::Inertial>>,
       db::AddComputeTags<
@@ -254,7 +254,7 @@ void test_area_element(const Solution& solution, const double surface_radius,
 }
 
 void test_euclidean_surface_integral_of_vector(
-    const Strahlkorper<Frame::Inertial>& strahlkorper) noexcept {
+    const Strahlkorper<Frame::Inertial>& strahlkorper) {
   const auto box = db::create<
       db::AddSimpleTags<StrahlkorperTags::items_tags<Frame::Inertial>>,
       db::AddComputeTags<
@@ -293,7 +293,7 @@ void test_euclidean_surface_integral_of_vector(
 template <typename Solution, typename Frame>
 void test_euclidean_surface_integral_of_vector_2(
     const Solution& solution, const Strahlkorper<Frame>& strahlkorper,
-    double expected_area) noexcept {
+    double expected_area) {
   // Another test:  Integrate (assuming Euclidean metric) the vector
   // V^i = s_j \delta^{ij} (s_k s_l \delta^{kl})^{-1/2} A A_euclid^{-1}
   // where s_j is the unnormalized Strahlkorper normal one-form,
@@ -348,7 +348,7 @@ void test_euclidean_surface_integral_of_vector_2(
 }
 
 void test_euclidean_area_element(
-    const Strahlkorper<Frame::Inertial>& strahlkorper) noexcept {
+    const Strahlkorper<Frame::Inertial>& strahlkorper) {
   const auto box = db::create<
       db::AddSimpleTags<StrahlkorperTags::items_tags<Frame::Inertial>>,
       db::AddComputeTags<
@@ -385,7 +385,7 @@ template <typename Solution, typename Fr>
 void test_area(const Solution& solution, const Strahlkorper<Fr>& strahlkorper,
                const double expected, const double expected_irreducible_mass,
                const double dimensionful_spin_magnitude,
-               const double expected_christodoulou_mass) noexcept {
+               const double expected_christodoulou_mass) {
   const auto box = db::create<
       db::AddSimpleTags<StrahlkorperTags::items_tags<Frame::Inertial>>,
       db::AddComputeTags<
@@ -439,9 +439,8 @@ void test_area(const Solution& solution, const Strahlkorper<Fr>& strahlkorper,
 //
 // This tests that I_1==I_2 for an arbitrary 3-vector J^i.
 template <typename Solution, typename Frame>
-void test_integral_correspondence(
-    const Solution& solution,
-    const Strahlkorper<Frame>& strahlkorper) noexcept {
+void test_integral_correspondence(const Solution& solution,
+                                  const Strahlkorper<Frame>& strahlkorper) {
   const auto box = db::create<
       db::AddSimpleTags<StrahlkorperTags::items_tags<Frame>>,
       db::AddComputeTags<StrahlkorperTags::compute_items_tags<Frame>>>(
@@ -508,7 +507,7 @@ void test_integral_correspondence(
 template <typename Solution, typename Fr>
 void test_surface_integral_of_scalar(const Solution& solution,
                                      const Strahlkorper<Fr>& strahlkorper,
-                                     const double expected) noexcept {
+                                     const double expected) {
   const auto box =
       db::create<db::AddSimpleTags<StrahlkorperTags::items_tags<Fr>>,
                  db::AddComputeTags<StrahlkorperTags::compute_items_tags<Fr>>>(
@@ -544,7 +543,7 @@ void test_surface_integral_of_scalar(const Solution& solution,
 template <typename Solution, typename Fr>
 void test_spin_function(const Solution& solution,
                         const Strahlkorper<Fr>& strahlkorper,
-                        const double expected) noexcept {
+                        const double expected) {
   const auto box = db::create<
       db::AddSimpleTags<StrahlkorperTags::items_tags<Frame::Inertial>>,
       db::AddComputeTags<
@@ -618,7 +617,7 @@ void test_dimensionful_spin_magnitude(
     const double mass, const std::array<double, 3> dimensionless_spin,
     const Scalar<DataVector>& horizon_radius_with_spin_on_z_axis,
     const YlmSpherepack& ylm_with_spin_on_z_axis, const double expected,
-    const double tolerance) noexcept {
+    const double tolerance) {
   const auto box = db::create<
       db::AddSimpleTags<StrahlkorperTags::items_tags<Frame::Inertial>>,
       db::AddComputeTags<
@@ -704,7 +703,7 @@ void test_spin_vector(
     const Solution& solution, const Strahlkorper<Fr>& strahlkorper,
     const double mass, const std::array<double, 3> dimensionless_spin,
     const Scalar<DataVector>& horizon_radius_with_spin_on_z_axis,
-    const YlmSpherepack& ylm_with_spin_on_z_axis) noexcept {
+    const YlmSpherepack& ylm_with_spin_on_z_axis) {
   const auto box = db::create<
       db::AddSimpleTags<StrahlkorperTags::items_tags<Frame::Inertial>>,
       db::AddComputeTags<
@@ -781,10 +780,9 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperGr.Expansion",
 
   test_expansion(
       gr::Solutions::KerrSchild{1.0, {{0.0, 0.0, 0.0}}, {{0.0, 0.0, 0.0}}},
-      sphere, [](const size_t size) noexcept { return DataVector(size, 0.0); });
-  test_expansion(
-      gr::Solutions::Minkowski<3>{}, sphere,
-      [](const size_t size) noexcept { return DataVector(size, 1.0); });
+      sphere, [](const size_t size) { return DataVector(size, 0.0); });
+  test_expansion(gr::Solutions::Minkowski<3>{}, sphere,
+                 [](const size_t size) { return DataVector(size, 1.0); });
 
   constexpr int l_max = 20;
   const double mass = 4.444;
@@ -800,9 +798,8 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperGr.Expansion",
   const auto kerr_horizon =
       Strahlkorper<Frame::Inertial>(l_max, l_max, get(horizon_radius), center);
 
-  test_expansion(
-      gr::Solutions::KerrSchild{mass, spin, center}, kerr_horizon,
-      [](const size_t size) noexcept { return DataVector(size, 0.0); });
+  test_expansion(gr::Solutions::KerrSchild{mass, spin, center}, kerr_horizon,
+                 [](const size_t size) { return DataVector(size, 0.0); });
 }
 
 SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperGr.ExtrinsicCurvature",
@@ -819,20 +816,20 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperGr.RicciScalar",
   const double mass = 1.0;
   test_ricci_scalar(
       gr::Solutions::KerrSchild(mass, {{0.0, 0.0, 0.0}}, {{0.0, 0.0, 0.0}}),
-      [&mass](const auto& cartesian_coords) noexcept {
+      [&mass](const auto& cartesian_coords) {
         return TestHelpers::Schwarzschild::spatial_ricci(cartesian_coords,
                                                          mass);
       },
-      [&mass](const size_t size) noexcept {
+      [&mass](const size_t size) {
         return DataVector(size, 0.5 / square(mass));
       });
   test_ricci_scalar(
       gr::Solutions::Minkowski<3>{},
-      [](const auto& cartesian_coords) noexcept {
+      [](const auto& cartesian_coords) {
         return make_with_value<tnsr::ii<DataVector, 3, Frame::Inertial>>(
             cartesian_coords, 0.0);
       },
-      [](const size_t size) noexcept { return DataVector(size, 0.5); });
+      [](const size_t size) { return DataVector(size, 0.5); });
 }
 }  // namespace
 
@@ -841,10 +838,9 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperGr.AreaElement",
   // Check value of dA for a Schwarzschild horizon and a sphere in flat space
   test_area_element(
       gr::Solutions::KerrSchild{4.0, {{0.0, 0.0, 0.0}}, {{0.0, 0.0, 0.0}}}, 8.0,
-      [](const size_t size) noexcept { return DataVector(size, 64.0); });
-  test_area_element(
-      gr::Solutions::Minkowski<3>{}, 2.0,
-      [](const size_t size) noexcept { return DataVector(size, 4.0); });
+      [](const size_t size) { return DataVector(size, 64.0); });
+  test_area_element(gr::Solutions::Minkowski<3>{}, 2.0,
+                    [](const size_t size) { return DataVector(size, 4.0); });
 
   // Check the area of a Kerr horizon
   constexpr int l_max = 22;

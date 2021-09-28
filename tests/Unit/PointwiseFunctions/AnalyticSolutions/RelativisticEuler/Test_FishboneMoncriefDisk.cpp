@@ -56,18 +56,18 @@ struct FishboneMoncriefDiskProxy
 
   template <typename DataType>
   tuples::tagged_tuple_from_typelist<hydro_variables_tags<DataType>>
-  hydro_variables(const tnsr::I<DataType, 3>& x, double t) const noexcept {
+  hydro_variables(const tnsr::I<DataType, 3>& x, double t) const {
     return variables(x, t, hydro_variables_tags<DataType>{});
   }
 
   template <typename DataType>
   tuples::tagged_tuple_from_typelist<grmhd_variables_tags<DataType>>
-  grmhd_variables(const tnsr::I<DataType, 3>& x, double t) const noexcept {
+  grmhd_variables(const tnsr::I<DataType, 3>& x, double t) const {
     return variables(x, t, grmhd_variables_tags<DataType>{});
   }
 };
 
-void test_create_from_options() noexcept {
+void test_create_from_options() {
   const auto disk = TestHelpers::test_creation<
       RelativisticEuler::Solutions::FishboneMoncriefDisk>(
       "BhMass: 1.0\n"
@@ -80,7 +80,7 @@ void test_create_from_options() noexcept {
                     1.0, 0.23, 6.0, 12.0, 0.001, 1.4));
 }
 
-void test_move() noexcept {
+void test_move() {
   RelativisticEuler::Solutions::FishboneMoncriefDisk disk(3.45, 0.23, 4.8, 8.6,
                                                           0.02, 1.5);
   RelativisticEuler::Solutions::FishboneMoncriefDisk disk_copy(3.45, 0.23, 4.8,
@@ -88,14 +88,14 @@ void test_move() noexcept {
   test_move_semantics(std::move(disk), disk_copy);  //  NOLINT
 }
 
-void test_serialize() noexcept {
+void test_serialize() {
   RelativisticEuler::Solutions::FishboneMoncriefDisk disk(4.21, 0.65, 6.0, 12.0,
                                                           0.001, 1.4);
   test_serialization(disk);
 }
 
 template <typename DataType>
-void test_variables(const DataType& used_for_size) noexcept {
+void test_variables(const DataType& used_for_size) {
   const double bh_mass = 1.34;
   const double bh_dimless_spin = 0.94432;
   const double inner_edge_radius = 6.0;
@@ -159,7 +159,7 @@ void test_variables(const DataType& used_for_size) noexcept {
 //  sin_theta_squared. This test evaluates the most recent implementation at
 //  those points in order to ensure that the FPEs are no longer induced.
 template <typename DataType>
-void test_sin_theta_squared(const DataType& used_for_size) noexcept {
+void test_sin_theta_squared(const DataType& used_for_size) {
   // Numbers below reproduce the initial data the bug was spotted with,
   // along with the points where the FPEs were found.
   FishboneMoncriefDiskProxy disk(1.0, 0.9375, 6.0, 12.0, 0.001,
@@ -178,7 +178,7 @@ void test_sin_theta_squared(const DataType& used_for_size) noexcept {
   CHECK(true);
 }
 
-void test_solution() noexcept {
+void test_solution() {
   RelativisticEuler::Solutions::FishboneMoncriefDisk solution(
       1.00, 0.9375, 6.0, 12.0, 0.001, 4.0 / 3.0);
   const std::array<double, 3> x{{5.0, 5.0, 0.0}};

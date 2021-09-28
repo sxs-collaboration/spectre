@@ -49,8 +49,7 @@ struct MockMetavariables {
 };
 }  // namespace
 
-void test_interpolation_target_kerr_horizon(
-    const bool theta_varies_fastest) noexcept {
+void test_interpolation_target_kerr_horizon(const bool theta_varies_fastest) {
   // Constants used in this test.
   // We use l_max=18 to get enough points that the surface is
   // represented to roundoff error; for smaller l_max we would need to
@@ -81,14 +80,14 @@ void test_interpolation_target_kerr_horizon(
 
   const auto expected_block_coord_holders = [&domain_creator, &mass, &center,
                                              &dimless_spin,
-                                             &theta_varies_fastest]() noexcept {
+                                             &theta_varies_fastest]() {
     // How many points are supposed to be in a Strahlkorper,
     // reproduced here by hand for the test.
     const size_t n_theta = l_max + 1;
     const size_t n_phi = 2 * l_max + 1;
 
     // The theta points of a Strahlkorper are Gauss-Legendre points.
-    const std::vector<double> theta_points = []() noexcept {
+    const std::vector<double> theta_points = []() {
       std::vector<double> thetas(n_theta);
       std::vector<double> work(n_theta + 1);
       std::vector<double> unused_weights(n_theta);
@@ -100,7 +99,7 @@ void test_interpolation_target_kerr_horizon(
 
     // Radius as function of theta, phi
     const auto radius = [&mass, &dimless_spin](const double theta,
-                                               const double phi) noexcept {
+                                               const double phi) {
       // Recoding kerr_horizon_radius in a different way for the test.
       const std::array<double, 3> spin_a = {{mass * dimless_spin[0],
                                              mass * dimless_spin[1],

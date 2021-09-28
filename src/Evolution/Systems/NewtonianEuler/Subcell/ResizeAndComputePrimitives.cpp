@@ -29,7 +29,7 @@ void ResizeAndComputePrims<Dim>::apply(
     const tnsr::I<DataVector, Dim>& momentum_density,
     const Scalar<DataVector>& energy_density,
     const EquationsOfState::EquationOfState<false, ThermodynamicDim>&
-        equation_of_state) noexcept {
+        equation_of_state) {
   const size_t num_grid_points =
       (active_grid == evolution::dg::subcell::ActiveGrid::Dg ? dg_mesh
                                                              : subcell_mesh)
@@ -68,7 +68,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
       const tnsr::I<DataVector, DIM(data)>& momentum_density,                 \
       const Scalar<DataVector>& energy_density,                               \
       const EquationsOfState::EquationOfState<false, THERMO_DIM(data)>&       \
-          equation_of_state) noexcept;
+          equation_of_state);
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (1, 2))
 #undef INSTANTIATION
 #undef THERMO_DIM

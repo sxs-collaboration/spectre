@@ -85,7 +85,7 @@ class CylindricalFlatEndcap {
   CylindricalFlatEndcap(const std::array<double, 3>& center_one,
                         const std::array<double, 3>& center_two,
                         const std::array<double, 3>& proj_center,
-                        double radius_one, double radius_two) noexcept;
+                        double radius_one, double radius_two);
 
   CylindricalFlatEndcap() = default;
   ~CylindricalFlatEndcap() = default;
@@ -96,30 +96,30 @@ class CylindricalFlatEndcap {
 
   template <typename T>
   std::array<tt::remove_cvref_wrap_t<T>, 3> operator()(
-      const std::array<T, 3>& source_coords) const noexcept;
+      const std::array<T, 3>& source_coords) const;
 
   std::optional<std::array<double, 3>> inverse(
-      const std::array<double, 3>& target_coords) const noexcept;
+      const std::array<double, 3>& target_coords) const;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> jacobian(
-      const std::array<T, 3>& source_coords) const noexcept;
+      const std::array<T, 3>& source_coords) const;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> inv_jacobian(
-      const std::array<T, 3>& source_coords) const noexcept;
+      const std::array<T, 3>& source_coords) const;
 
   // clang-tidy: google runtime references
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
 
-  static bool is_identity() noexcept { return false; }
+  static bool is_identity() { return false; }
 
  private:
   friend bool operator==(const CylindricalFlatEndcap& lhs,
-                         const CylindricalFlatEndcap& rhs) noexcept;
+                         const CylindricalFlatEndcap& rhs);
   FocallyLiftedMap<FocallyLiftedInnerMaps::FlatEndcap> impl_;
 };
 bool operator!=(const CylindricalFlatEndcap& lhs,
-                const CylindricalFlatEndcap& rhs) noexcept;
+                const CylindricalFlatEndcap& rhs);
 
 }  // namespace domain::CoordinateMaps

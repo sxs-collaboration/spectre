@@ -16,7 +16,7 @@
 
 SPECTRE_TEST_CASE("Unit.Time.StepControllers.FullSlab", "[Unit][Time]") {
   Parallel::register_classes_with_charm<StepControllers::FullSlab>();
-  const auto check = [](const auto& fs) noexcept {
+  const auto check = [](const auto& fs) {
     const Slab slab(1., 4.);
     CHECK(fs.choose_step(slab.start(), 4.) == slab.duration());
     CHECK(fs.choose_step(slab.start(), 10.) == slab.duration());

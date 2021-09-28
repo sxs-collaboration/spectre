@@ -12,7 +12,7 @@ void openblas_set_num_threads(int num_threads);
 #endif  // DISABLE_OPENBLAS_MULTITHREADING
 }  // extern "C"
 
-void disable_openblas_multithreading() noexcept {
+void disable_openblas_multithreading() {
 #ifdef DISABLE_OPENBLAS_MULTITHREADING
   openblas_set_num_threads(1);
 #endif  // DISABLE_OPENBLAS_MULTITHREADING

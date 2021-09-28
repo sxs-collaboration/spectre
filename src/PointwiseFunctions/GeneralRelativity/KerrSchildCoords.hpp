@@ -153,11 +153,11 @@ class KerrSchildCoords {
   KerrSchildCoords() = default;
   KerrSchildCoords(const KerrSchildCoords& /*rhs*/) = delete;
   KerrSchildCoords& operator=(const KerrSchildCoords& /*rhs*/) = delete;
-  KerrSchildCoords(KerrSchildCoords&& /*rhs*/) noexcept = default;
-  KerrSchildCoords& operator=(KerrSchildCoords&& /*rhs*/) noexcept = default;
+  KerrSchildCoords(KerrSchildCoords&& /*rhs*/) = default;
+  KerrSchildCoords& operator=(KerrSchildCoords&& /*rhs*/) = default;
   ~KerrSchildCoords() = default;
 
-  KerrSchildCoords(double bh_mass, double bh_dimless_spin) noexcept;
+  KerrSchildCoords(double bh_mass, double bh_dimless_spin);
 
   /// Transforms a spatial vector from Kerr (or "spherical Kerr-Schild")
   /// coordinates to Cartesian Kerr-Schild coordinates. If applied on points
@@ -166,34 +166,29 @@ class KerrSchildCoords {
   template <typename DataType>
   tnsr::I<DataType, 3, Frame::Inertial> cartesian_from_spherical_ks(
       const tnsr::I<DataType, 3, Frame::NoFrame>& spatial_vector,
-      const tnsr::I<DataType, 3, Frame::Inertial>& cartesian_coords) const
-      noexcept;
+      const tnsr::I<DataType, 3, Frame::Inertial>& cartesian_coords) const;
 
   /// Kerr-Schild \f$r^2\f$ in terms of the Cartesian coordinates.
   template <typename DataType>
   Scalar<DataType> r_coord_squared(
-      const tnsr::I<DataType, 3, Frame::Inertial>& cartesian_coords) const
-      noexcept;
+      const tnsr::I<DataType, 3, Frame::Inertial>& cartesian_coords) const;
 
   // clang-tidy: google-runtime-references
-  void pup(PUP::er& /*p*/) noexcept;  // NOLINT
+  void pup(PUP::er& /*p*/);  // NOLINT
 
  private:
   friend bool operator==(const KerrSchildCoords& lhs,
-                         const KerrSchildCoords& rhs) noexcept;
+                         const KerrSchildCoords& rhs);
 
   // The spatial components of the Jacobian of the transformation from
   // Kerr coordinates to Cartesian coordinates (x, y, z).
   template <typename DataType>
-  tnsr::Ij<DataType, 3, Frame::NoFrame> jacobian_matrix(const DataType& x,
-                                                        const DataType& y,
-                                                        const DataType& z) const
-      noexcept;
+  tnsr::Ij<DataType, 3, Frame::NoFrame> jacobian_matrix(
+      const DataType& x, const DataType& y, const DataType& z) const;
 
   double spin_a_ = std::numeric_limits<double>::signaling_NaN();
 };
 
-bool operator!=(const KerrSchildCoords& lhs,
-                const KerrSchildCoords& rhs) noexcept;
+bool operator!=(const KerrSchildCoords& lhs, const KerrSchildCoords& rhs);
 
 }  // namespace gr

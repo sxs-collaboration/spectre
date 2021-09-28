@@ -120,7 +120,7 @@ void test_minkowski(const T& value) {
       typename gr::Solutions::Minkowski<Dim>::template tags<T>{});
 }
 
-void test_einstein_solution() noexcept {
+void test_einstein_solution() {
   gr::Solutions::Minkowski<3> solution{};
   TestHelpers::VerifyGrSolution::verify_consistency(
       solution, 1.234, tnsr::I<double, 3>{{{1.2, 2.3, 3.4}}}, 0.01, 1.0e-10);

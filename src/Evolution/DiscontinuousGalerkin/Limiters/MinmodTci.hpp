@@ -40,7 +40,7 @@ bool tvb_minmod_indicator(
     const Element<VolumeDim>& element,
     const std::array<double, VolumeDim>& element_size,
     const DirectionMap<VolumeDim, double>& effective_neighbor_means,
-    const DirectionMap<VolumeDim, double>& effective_neighbor_sizes) noexcept;
+    const DirectionMap<VolumeDim, double>& effective_neighbor_sizes);
 
 // Implements the TVB troubled-cell indicator from Cockburn1999 for several
 // tensors. Returns true if any component of any tensor needs limiting.
@@ -56,7 +56,7 @@ bool tvb_minmod_indicator(
     const std::unordered_map<
         std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
         boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
-        neighbor_data) noexcept {
+        neighbor_data) {
   Minmod_detail::BufferWrapper<VolumeDim> buffer(mesh);
   const auto effective_neighbor_sizes =
       Minmod_detail::compute_effective_neighbor_sizes(element, neighbor_data);
@@ -67,7 +67,7 @@ bool tvb_minmod_indicator(
   // track of whether a previous component needed limiting... and if so, then
   // we simply skip any work.
   bool some_component_needs_limiting = false;
-  const auto wrap_tci_one_tensor = [&](auto tag, const auto tensor) noexcept {
+  const auto wrap_tci_one_tensor = [&](auto tag, const auto tensor) {
     if (some_component_needs_limiting) {
       // Skip this tensor completely
       return '0';

@@ -8,7 +8,7 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 
 namespace RootFinder {
-std::ostream& operator<<(std::ostream& os, const Method& method) noexcept {
+std::ostream& operator<<(std::ostream& os, const Method& method) {
   switch (method) {
     case Method::Hybrids:
       return os << "Hybrids";
@@ -22,8 +22,7 @@ std::ostream& operator<<(std::ostream& os, const Method& method) noexcept {
   return os;
 }
 
-std::ostream& operator<<(std::ostream& os,
-                         const StoppingCondition& condition) noexcept {
+std::ostream& operator<<(std::ostream& os, const StoppingCondition& condition) {
   switch (condition) {
     case StoppingCondition::AbsoluteAndRelative:
       return os << "AbsoluteAndRelative";
@@ -40,7 +39,7 @@ void print_rootfinding_parameters(const Method method,
                                   const double absolute_tolerance,
                                   const double relative_tolerance,
                                   const double maximum_absolute_tolerance,
-                                  const StoppingCondition condition) noexcept {
+                                  const StoppingCondition condition) {
   Parallel::printf("\nAttempting a root find.\n");
   if (method == Method::Newton) {
     Parallel::printf(

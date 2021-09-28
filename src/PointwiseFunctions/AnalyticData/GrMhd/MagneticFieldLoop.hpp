@@ -125,8 +125,8 @@ class MagneticFieldLoop : public MarkAsAnalyticData, public AnalyticDataBase {
   MagneticFieldLoop() = default;
   MagneticFieldLoop(const MagneticFieldLoop& /*rhs*/) = delete;
   MagneticFieldLoop& operator=(const MagneticFieldLoop& /*rhs*/) = delete;
-  MagneticFieldLoop(MagneticFieldLoop&& /*rhs*/) noexcept = default;
-  MagneticFieldLoop& operator=(MagneticFieldLoop&& /*rhs*/) noexcept = default;
+  MagneticFieldLoop(MagneticFieldLoop&& /*rhs*/) = default;
+  MagneticFieldLoop& operator=(MagneticFieldLoop&& /*rhs*/) = default;
   ~MagneticFieldLoop() = default;
 
   MagneticFieldLoop(double pressure, double rest_mass_density,
@@ -135,65 +135,57 @@ class MagneticFieldLoop : public MarkAsAnalyticData, public AnalyticDataBase {
                     double magnetic_field_magnitude, double inner_radius,
                     double outer_radius, const Options::Context& context = {});
 
-  explicit MagneticFieldLoop(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit MagneticFieldLoop(CkMigrateMessage* /*unused*/) {}
 
   /// @{
   /// Retrieve the GRMHD variables at a given position.
   template <typename DataType>
-  auto variables(
-      const tnsr::I<DataType, 3>& x,
-      tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/) const
-      noexcept -> tuples::TaggedTuple<hydro::Tags::RestMassDensity<DataType>>;
+  auto variables(const tnsr::I<DataType, 3>& x,
+                 tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/)
+      const -> tuples::TaggedTuple<hydro::Tags::RestMassDensity<DataType>>;
 
   template <typename DataType>
   auto variables(
       const tnsr::I<DataType, 3>& x,
       tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>> /*meta*/) const
-      noexcept
       -> tuples::TaggedTuple<hydro::Tags::SpecificInternalEnergy<DataType>>;
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x,
                  tmpl::list<hydro::Tags::Pressure<DataType>> /*meta*/) const
-      noexcept -> tuples::TaggedTuple<hydro::Tags::Pressure<DataType>>;
+      -> tuples::TaggedTuple<hydro::Tags::Pressure<DataType>>;
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x,
                  tmpl::list<hydro::Tags::SpatialVelocity<DataType, 3>> /*meta*/)
-      const noexcept
-      -> tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, 3>>;
+      const -> tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, 3>>;
 
   template <typename DataType>
-  auto variables(
-      const tnsr::I<DataType, 3>& x,
-      tmpl::list<hydro::Tags::MagneticField<DataType, 3>> /*meta*/) const
-      noexcept -> tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3>>;
+  auto variables(const tnsr::I<DataType, 3>& x,
+                 tmpl::list<hydro::Tags::MagneticField<DataType, 3>> /*meta*/)
+      const -> tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3>>;
 
   template <typename DataType>
   auto variables(
       const tnsr::I<DataType, 3>& x,
       tmpl::list<hydro::Tags::DivergenceCleaningField<DataType>> /*meta*/) const
-      noexcept
       -> tuples::TaggedTuple<hydro::Tags::DivergenceCleaningField<DataType>>;
 
   template <typename DataType>
-  auto variables(
-      const tnsr::I<DataType, 3>& x,
-      tmpl::list<hydro::Tags::LorentzFactor<DataType>> /*meta*/) const noexcept
-      -> tuples::TaggedTuple<hydro::Tags::LorentzFactor<DataType>>;
+  auto variables(const tnsr::I<DataType, 3>& x,
+                 tmpl::list<hydro::Tags::LorentzFactor<DataType>> /*meta*/)
+      const -> tuples::TaggedTuple<hydro::Tags::LorentzFactor<DataType>>;
 
   template <typename DataType>
-  auto variables(
-      const tnsr::I<DataType, 3>& x,
-      tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>> /*meta*/) const
-      noexcept -> tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DataType>>;
+  auto variables(const tnsr::I<DataType, 3>& x,
+                 tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>> /*meta*/)
+      const -> tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DataType>>;
   /// @}
 
   /// Retrieve a collection of hydrodynamic variables at position x
   template <typename DataType, typename... Tags>
   tuples::TaggedTuple<Tags...> variables(const tnsr::I<DataType, 3>& x,
-                                         tmpl::list<Tags...> /*meta*/) const
-      noexcept {
+                                         tmpl::list<Tags...> /*meta*/) const {
     static_assert(sizeof...(Tags) > 1,
                   "The generic template will recurse infinitely if only one "
                   "tag is being retrieved.");
@@ -203,17 +195,17 @@ class MagneticFieldLoop : public MarkAsAnalyticData, public AnalyticDataBase {
   /// Retrieve the metric variables
   template <typename DataType, typename Tag>
   tuples::TaggedTuple<Tag> variables(const tnsr::I<DataType, 3>& x,
-                                     tmpl::list<Tag> /*meta*/) const noexcept {
+                                     tmpl::list<Tag> /*meta*/) const {
     constexpr double dummy_time = 0.0;
     return background_spacetime_.variables(x, dummy_time, tmpl::list<Tag>{});
   }
 
-  const EquationsOfState::IdealFluid<true>& equation_of_state() const noexcept {
+  const EquationsOfState::IdealFluid<true>& equation_of_state() const {
     return equation_of_state_;
   }
 
   // clang-tidy: no runtime references
-  void pup(PUP::er& /*p*/) noexcept;  //  NOLINT
+  void pup(PUP::er& /*p*/);  //  NOLINT
 
  private:
   double pressure_ = std::numeric_limits<double>::signaling_NaN();
@@ -232,10 +224,10 @@ class MagneticFieldLoop : public MarkAsAnalyticData, public AnalyticDataBase {
   gr::Solutions::Minkowski<3> background_spacetime_{};
 
   friend bool operator==(const MagneticFieldLoop& lhs,
-                         const MagneticFieldLoop& rhs) noexcept;
+                         const MagneticFieldLoop& rhs);
 
   friend bool operator!=(const MagneticFieldLoop& lhs,
-                         const MagneticFieldLoop& rhs) noexcept;
+                         const MagneticFieldLoop& rhs);
 };
 
 }  // namespace AnalyticData

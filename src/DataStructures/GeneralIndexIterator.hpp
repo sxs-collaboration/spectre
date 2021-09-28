@@ -18,8 +18,7 @@ class GeneralIndexIterator {
   using value_type = typename Container::value_type::first_type;
   using iterator_type = typename std::vector<value_type>::const_iterator;
 
-  explicit GeneralIndexIterator(Container ranges) noexcept
-      : ranges_(std::move(ranges)) {
+  explicit GeneralIndexIterator(Container ranges) : ranges_(std::move(ranges)) {
     current_.reserve(ranges_.size());
     for (const auto& range : ranges_) {
       if (range.first == range.second) {
@@ -31,13 +30,13 @@ class GeneralIndexIterator {
   }
 
   /// Access the given coordinate of the current value.
-  const value_type& operator[](size_t i) const noexcept { return current_[i]; }
+  const value_type& operator[](size_t i) const { return current_[i]; }
 
   /// Check whether the iterator is complete.  Calling any of the
   /// other methods on a completed iterator is undefined behavior.
-  explicit operator bool() const noexcept { return not done_; }
+  explicit operator bool() const { return not done_; }
 
-  void operator++() noexcept {
+  void operator++() {
     for (size_t index = 0; index < current_.size(); ++index) {
       ++current_[index];
       if (current_[index] != gsl::at(ranges_, index).second) { return; }
@@ -48,10 +47,10 @@ class GeneralIndexIterator {
 
   /// Iterate over the coordinates of the current value.
   /// @{
-  iterator_type cbegin() const noexcept { return current_.cbegin(); }
-  iterator_type cend() const noexcept { return current_.cend(); }
-  iterator_type begin() const noexcept { return cbegin(); }
-  iterator_type end() const noexcept { return cend(); }
+  iterator_type cbegin() const { return current_.cbegin(); }
+  iterator_type cend() const { return current_.cend(); }
+  iterator_type begin() const { return cbegin(); }
+  iterator_type end() const { return cend(); }
   /// @}
 
  private:
@@ -63,7 +62,7 @@ class GeneralIndexIterator {
 /// Construct a GeneralIndexIterator
 template <typename Container>
 GeneralIndexIterator<std::decay_t<Container>> make_general_index_iterator(
-    Container&& ranges) noexcept {
+    Container&& ranges) {
   return GeneralIndexIterator<std::decay_t<Container>>(
       std::forward<Container>(ranges));
 }

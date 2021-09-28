@@ -54,19 +54,19 @@ struct KomissarovShockProxy : grmhd::Solutions::KomissarovShock {
   template <typename DataType>
   tuples::tagged_tuple_from_typelist<hydro_variables_tags<DataType>>
   hydro_variables(const tnsr::I<DataType, 3, Frame::Inertial>& x,
-                  const double t) const noexcept {
+                  const double t) const {
     return variables(x, t, hydro_variables_tags<DataType>{});
   }
 
   template <typename DataType>
   tuples::tagged_tuple_from_typelist<grmhd_variables_tags<DataType>>
   grmhd_variables(const tnsr::I<DataType, 3, Frame::Inertial>& x,
-                  const double t) const noexcept {
+                  const double t) const {
     return variables(x, t, grmhd_variables_tags<DataType>{});
   }
 };
 
-void test_create_from_options() noexcept {
+void test_create_from_options() {
   const auto komissarov_shock =
       TestHelpers::test_creation<grmhd::Solutions::KomissarovShock>(
           "AdiabaticIndex: 1.33\n"
@@ -87,7 +87,7 @@ void test_create_from_options() noexcept {
                                 std::array<double, 3>{{10., 14.49, 0.}}, 0.5));
 }
 
-void test_move() noexcept {
+void test_move() {
   grmhd::Solutions::KomissarovShock komissarov_shock(
       4. / 3., 1., 3.323, 10., 55.36,
       std::array<double, 3>{{0.8370659816473115, 0., 0.}},
@@ -104,7 +104,7 @@ void test_move() noexcept {
                       komissarov_shock_copy);  //  NOLINT
 }
 
-void test_serialize() noexcept {
+void test_serialize() {
   grmhd::Solutions::KomissarovShock komissarov_shock(
       4. / 3., 1., 3.323, 10., 55.36,
       std::array<double, 3>{{0.8370659816473115, 0., 0.}},
@@ -114,7 +114,7 @@ void test_serialize() noexcept {
   test_serialization(komissarov_shock);
 }
 
-void test_left_and_right_variables() noexcept {
+void test_left_and_right_variables() {
   grmhd::Solutions::KomissarovShock komissarov_shock(
       4. / 3., 1., 3.323, 10., 55.36,
       std::array<double, 3>{{0.8370659816473115, 0., 0.}},
@@ -160,7 +160,7 @@ void test_left_and_right_variables() noexcept {
 }
 
 template <typename DataType>
-void test_variables(const DataType& used_for_size) noexcept {
+void test_variables(const DataType& used_for_size) {
   KomissarovShockProxy komissarov_shock(
       4. / 3., 1., 3.323, 10., 55.36,
       std::array<double, 3>{{0.8370659816473115, 0., 0.}},
@@ -190,7 +190,7 @@ void test_variables(const DataType& used_for_size) noexcept {
       {{{-1., 1.}}}, member_variables, used_for_size);
 }
 
-void test_solution() noexcept {
+void test_solution() {
   grmhd::Solutions::KomissarovShock solution(
       1.33, 1., 3.323, 10., 55.36, std::array<double, 3>{{0.83, 0., 0.}},
       std::array<double, 3>{{0.62, -0.44, 0.}},

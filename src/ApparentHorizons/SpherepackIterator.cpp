@@ -126,14 +126,14 @@ SpherepackIterator::SpherepackIterator(const size_t l_max_input,
   }
 }
 
-SpherepackIterator& SpherepackIterator::reset() noexcept {
+SpherepackIterator& SpherepackIterator::reset() {
   current_compact_index_ = 0;
   return *this;
 }
 
 SpherepackIterator& SpherepackIterator::set(
     const size_t l_input, const size_t m_input,
-    const CoefficientArray coefficient_array_input) noexcept {
+    const CoefficientArray coefficient_array_input) {
   ASSERT(l_input <= l_max_, "SpherepackIterator l_input="
                                 << l_input
                                 << " too large, should be <= " << l_max_);

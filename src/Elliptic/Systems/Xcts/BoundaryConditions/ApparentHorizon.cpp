@@ -71,7 +71,7 @@ void normal_gradient_term_flat_cartesian(
     const gsl::not_null<Scalar<DataVector>*> n_dot_conformal_factor_gradient,
     const tnsr::i<DataVector, 3>& face_normal,
     const tnsr::ij<DataVector, 3>& deriv_unnormalized_face_normal,
-    const Scalar<DataVector>& face_normal_magnitude) noexcept {
+    const Scalar<DataVector>& face_normal_magnitude) {
   // Write directly into the output buffer
   DataVector& projected_normal_gradient = get(*n_dot_conformal_factor_gradient);
   projected_normal_gradient = (1. - square(get<0>(face_normal))) *
@@ -99,8 +99,7 @@ void normal_gradient_term_curved(
     const tnsr::ij<DataVector, 3>& deriv_unnormalized_face_normal,
     const Scalar<DataVector>& face_normal_magnitude,
     const tnsr::II<DataVector, 3>& inv_conformal_metric,
-    const tnsr::Ijj<DataVector, 3>&
-        conformal_christoffel_second_kind) noexcept {
+    const tnsr::Ijj<DataVector, 3>& conformal_christoffel_second_kind) {
   // Write directly into the output buffer
   DataVector& projected_normal_gradient = get(*n_dot_conformal_factor_gradient);
   DataVector& projection = *temp_buffer;
@@ -132,7 +131,7 @@ void negative_expansion_quantities(
     const tnsr::I<DataVector, 3>& x,
     const tnsr::i<DataVector, 3>& conformal_face_normal,
     const Scalar<DataVector>& unnormalized_conformal_face_normal_magnitude,
-    const tnsr::ij<DataVector, 3>& deriv_unnormalized_face_normal) noexcept {
+    const tnsr::ij<DataVector, 3>& deriv_unnormalized_face_normal) {
   const auto solution_vars = kerr_solution.variables(
       x, std::numeric_limits<double>::signaling_NaN(),
       tmpl::list<
@@ -235,7 +234,7 @@ void apparent_horizon_impl(
         inv_conformal_metric,
     [[maybe_unused]] const std::optional<
         std::reference_wrapper<const tnsr::Ijj<DataVector, 3>>>
-        conformal_christoffel_second_kind) noexcept {
+        conformal_christoffel_second_kind) {
   // Allocate some temporary memory
   TempBuffer<tmpl::list<::Tags::TempI<0, 3>, ::Tags::TempScalar<1>,
                         ::Tags::TempI<2, 3>, ::Tags::TempScalar<3>>>
@@ -374,7 +373,7 @@ void linearized_apparent_horizon_impl(
         inv_conformal_metric,
     [[maybe_unused]] const std::optional<
         std::reference_wrapper<const tnsr::Ijj<DataVector, 3>>>
-        conformal_christoffel_second_kind) noexcept {
+        conformal_christoffel_second_kind) {
   // Allocate some temporary memory
   TempBuffer<tmpl::list<::Tags::TempI<0, 3>, ::Tags::TempScalar<1>,
                         ::Tags::TempScalar<2>>>
@@ -510,8 +509,7 @@ void ApparentHorizonImpl<ConformalGeometry>::apply(
     const tnsr::I<DataVector, 3>& x,
     const Scalar<DataVector>& extrinsic_curvature_trace,
     const tnsr::I<DataVector, 3>& shift_background,
-    const tnsr::II<DataVector, 3>& longitudinal_shift_background)
-    const noexcept {
+    const tnsr::II<DataVector, 3>& longitudinal_shift_background) const {
   apparent_horizon_impl<ConformalGeometry>(
       conformal_factor, lapse_times_conformal_factor, shift_excess,
       n_dot_conformal_factor_gradient,
@@ -541,8 +539,7 @@ void ApparentHorizonImpl<ConformalGeometry>::apply(
     const tnsr::I<DataVector, 3>& shift_background,
     const tnsr::II<DataVector, 3>& longitudinal_shift_background,
     const tnsr::II<DataVector, 3>& inv_conformal_metric,
-    const tnsr::Ijj<DataVector, 3>& conformal_christoffel_second_kind)
-    const noexcept {
+    const tnsr::Ijj<DataVector, 3>& conformal_christoffel_second_kind) const {
   apparent_horizon_impl<ConformalGeometry>(
       conformal_factor, lapse_times_conformal_factor, shift_excess,
       n_dot_conformal_factor_gradient,
@@ -575,8 +572,7 @@ void ApparentHorizonImpl<ConformalGeometry>::apply_linearized(
     const tnsr::II<DataVector, 3>& longitudinal_shift_background,
     const Scalar<DataVector>& conformal_factor,
     const Scalar<DataVector>& lapse_times_conformal_factor,
-    const tnsr::I<DataVector, 3>& n_dot_longitudinal_shift_excess)
-    const noexcept {
+    const tnsr::I<DataVector, 3>& n_dot_longitudinal_shift_excess) const {
   linearized_apparent_horizon_impl<ConformalGeometry>(
       conformal_factor_correction, lapse_times_conformal_factor_correction,
       shift_excess_correction, n_dot_conformal_factor_gradient_correction,
@@ -611,8 +607,7 @@ void ApparentHorizonImpl<ConformalGeometry>::apply_linearized(
     const Scalar<DataVector>& lapse_times_conformal_factor,
     const tnsr::I<DataVector, 3>& n_dot_longitudinal_shift_excess,
     const tnsr::II<DataVector, 3>& inv_conformal_metric,
-    const tnsr::Ijj<DataVector, 3>& conformal_christoffel_second_kind)
-    const noexcept {
+    const tnsr::Ijj<DataVector, 3>& conformal_christoffel_second_kind) const {
   linearized_apparent_horizon_impl<ConformalGeometry>(
       conformal_factor_correction, lapse_times_conformal_factor_correction,
       shift_excess_correction, n_dot_conformal_factor_gradient_correction,
@@ -627,7 +622,7 @@ void ApparentHorizonImpl<ConformalGeometry>::apply_linearized(
 }
 
 template <Xcts::Geometry ConformalGeometry>
-void ApparentHorizonImpl<ConformalGeometry>::pup(PUP::er& p) noexcept {
+void ApparentHorizonImpl<ConformalGeometry>::pup(PUP::er& p) {
   p | center_;
   p | rotation_;
   p | kerr_solution_for_lapse_;
@@ -636,7 +631,7 @@ void ApparentHorizonImpl<ConformalGeometry>::pup(PUP::er& p) noexcept {
 
 template <Xcts::Geometry ConformalGeometry>
 bool operator==(const ApparentHorizonImpl<ConformalGeometry>& lhs,
-                const ApparentHorizonImpl<ConformalGeometry>& rhs) noexcept {
+                const ApparentHorizonImpl<ConformalGeometry>& rhs) {
   return lhs.center() == rhs.center() and lhs.rotation() == rhs.rotation() and
          lhs.kerr_solution_for_lapse() == rhs.kerr_solution_for_lapse() and
          lhs.kerr_solution_for_negative_expansion() ==
@@ -645,7 +640,7 @@ bool operator==(const ApparentHorizonImpl<ConformalGeometry>& lhs,
 
 template <Xcts::Geometry ConformalGeometry>
 bool operator!=(const ApparentHorizonImpl<ConformalGeometry>& lhs,
-                const ApparentHorizonImpl<ConformalGeometry>& rhs) noexcept {
+                const ApparentHorizonImpl<ConformalGeometry>& rhs) {
   return not(lhs == rhs);
 }
 
@@ -653,15 +648,15 @@ template class ApparentHorizonImpl<Xcts::Geometry::FlatCartesian>;
 template class ApparentHorizonImpl<Xcts::Geometry::Curved>;
 template bool operator==(
     const ApparentHorizonImpl<Xcts::Geometry::FlatCartesian>& lhs,
-    const ApparentHorizonImpl<Xcts::Geometry::FlatCartesian>& rhs) noexcept;
+    const ApparentHorizonImpl<Xcts::Geometry::FlatCartesian>& rhs);
 template bool operator!=(
     const ApparentHorizonImpl<Xcts::Geometry::FlatCartesian>& lhs,
-    const ApparentHorizonImpl<Xcts::Geometry::FlatCartesian>& rhs) noexcept;
+    const ApparentHorizonImpl<Xcts::Geometry::FlatCartesian>& rhs);
 template bool operator==(
     const ApparentHorizonImpl<Xcts::Geometry::Curved>& lhs,
-    const ApparentHorizonImpl<Xcts::Geometry::Curved>& rhs) noexcept;
+    const ApparentHorizonImpl<Xcts::Geometry::Curved>& rhs);
 template bool operator!=(
     const ApparentHorizonImpl<Xcts::Geometry::Curved>& lhs,
-    const ApparentHorizonImpl<Xcts::Geometry::Curved>& rhs) noexcept;
+    const ApparentHorizonImpl<Xcts::Geometry::Curved>& rhs);
 
 }  // namespace Xcts::BoundaryConditions::detail

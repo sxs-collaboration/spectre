@@ -45,8 +45,7 @@ struct InverseCubicEvolutionGauge {
       const Scalar<SpinWeighted<ComplexDataVector, 2>>& boundary_j,
       const Scalar<SpinWeighted<ComplexDataVector, 2>>& boundary_dr_j,
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& r,
-      const size_t /*l_max*/, const size_t number_of_radial_points) const
-      noexcept {
+      const size_t /*l_max*/, const size_t number_of_radial_points) const {
     const DataVector one_minus_y_collocation =
         1.0 - Spectral::collocation_points<Spectral::Basis::Legendre,
                                            Spectral::Quadrature::GaussLobatto>(
@@ -79,7 +78,7 @@ struct InverseCubicEvolutionGauge {
 // transform; full validation can only come from tests of evolving systems.
 template <typename Generator>
 void test_gauge_transforms_via_inverse_coordinate_map(
-    const gsl::not_null<Generator*> gen) noexcept {
+    const gsl::not_null<Generator*> gen) {
   const size_t l_max = 12;
   const size_t number_of_radial_grid_points = 10;
   const size_t number_of_angular_grid_points =
@@ -170,7 +169,7 @@ void test_gauge_transforms_via_inverse_coordinate_map(
        &dt_shift_coefficients, &dr_shift_coefficients, &lapse_coefficients,
        &dt_lapse_coefficients, &dr_lapse_coefficients, &extraction_radius](
           const gsl::not_null<Variables<spin_weighted_boundary_tags>*>
-              spin_weighted_boundary_variables) noexcept {
+              spin_weighted_boundary_variables) {
         create_bondi_boundary_data(
             spin_weighted_boundary_variables, spatial_metric_coefficients,
             dt_spatial_metric_coefficients, dr_spatial_metric_coefficients,
@@ -186,7 +185,7 @@ void test_gauge_transforms_via_inverse_coordinate_map(
       make_not_null(&forward_transform_box),
       [&l_max,
        &variation_amplitude](const gsl::not_null<tnsr::i<DataVector, 3>*>
-                                 cauchy_cartesian_coordinates) noexcept {
+                                 cauchy_cartesian_coordinates) {
         tnsr::i<DataVector, 2> cauchy_angular_coordinates{
             get<0>(*cauchy_cartesian_coordinates).size()};
         // There is a bug in Clang 10.0.0 that gives a nonsensical
@@ -219,7 +218,7 @@ void test_gauge_transforms_via_inverse_coordinate_map(
       make_not_null(&forward_transform_box),
       [&l_max, &variation_amplitude_inertial](
           const gsl::not_null<tnsr::i<DataVector, 3>*>
-              inertial_cartesian_coordinates) noexcept {
+              inertial_cartesian_coordinates) {
         tnsr::i<DataVector, 2> inertial_angular_coordinates{
             get<0>(*inertial_cartesian_coordinates).size()};
         // There is a bug in Clang 10.0.0 that gives a nonsensical
@@ -264,9 +263,9 @@ void test_gauge_transforms_via_inverse_coordinate_map(
 
   db::mutate<Tags::CauchyCartesianCoords>(
       make_not_null(&inverse_transform_box),
-      [&l_max, &variation_amplitude](
-          const gsl::not_null<tnsr::i<DataVector, 3>*>
-              inverse_cauchy_cartesian_coordinates) noexcept {
+      [&l_max,
+       &variation_amplitude](const gsl::not_null<tnsr::i<DataVector, 3>*>
+                                 inverse_cauchy_cartesian_coordinates) {
         tnsr::i<DataVector, 2> inverse_cauchy_angular_coordinates{
             get<0>(*inverse_cauchy_cartesian_coordinates).size()};
         // There is a bug in Clang 10.0.0 that gives a nonsensical
@@ -305,7 +304,7 @@ void test_gauge_transforms_via_inverse_coordinate_map(
       make_not_null(&inverse_transform_box),
       [&l_max, &variation_amplitude_inertial](
           const gsl::not_null<tnsr::i<DataVector, 3>*>
-              inverse_inertial_cartesian_coordinates) noexcept {
+              inverse_inertial_cartesian_coordinates) {
         tnsr::i<DataVector, 2> inverse_inertial_angular_coordinates{
             get<0>(*inverse_inertial_cartesian_coordinates).size()};
         // There is a bug in Clang 10.0.0 that gives a nonsensical
@@ -532,7 +531,7 @@ void test_gauge_transforms_via_inverse_coordinate_map(
   const auto check_gauge_adjustment_against_inverse = [&forward_transform_box,
                                                        &inverse_transform_box,
                                                        &interpolation_approx](
-                                                          auto tag_v) noexcept {
+                                                          auto tag_v) {
     using tag = typename decltype(tag_v)::type;
     INFO("computing tag : " << db::tag_name<tag>());
     db::mutate_apply<GaugeAdjustedBoundaryValue<tag>>(
@@ -542,7 +541,7 @@ void test_gauge_transforms_via_inverse_coordinate_map(
         [](const gsl::not_null<typename Tags::BoundaryValue<tag>::type*>
                inverse_transform_boundary_value,
            const typename Tags::EvolutionGaugeBoundaryValue<tag>::type&
-               forward_transform_evolution_gauge_value) noexcept {
+               forward_transform_evolution_gauge_value) {
           *inverse_transform_boundary_value =
               forward_transform_evolution_gauge_value;
         },
@@ -556,7 +555,7 @@ void test_gauge_transforms_via_inverse_coordinate_map(
              const Scalar<SpinWeighted<ComplexDataVector, 0>>& beta,
              const Scalar<SpinWeighted<ComplexDataVector, 0>>& r,
              const Scalar<SpinWeighted<ComplexDataVector, 1>>& q,
-             const Scalar<SpinWeighted<ComplexDataVector, 2>>& j) noexcept {
+             const Scalar<SpinWeighted<ComplexDataVector, 2>>& j) {
             SpinWeighted<ComplexDataVector, 0> k;
             k.data() = sqrt(1.0 + get(j).data() * conj(get(j).data()));
             get(*dr_u).data() = exp(2.0 * get(beta).data()) /
@@ -578,7 +577,7 @@ void test_gauge_transforms_via_inverse_coordinate_map(
              const Scalar<SpinWeighted<ComplexDataVector, 2>>& dr_j,
              const Scalar<SpinWeighted<ComplexDataVector, 0>>& r,
              const Scalar<SpinWeighted<ComplexDataVector, 0>>&
-                 du_r_divided_by_r) noexcept {
+                 du_r_divided_by_r) {
             get(*du_j) = get(h) - get(r) * get(du_r_divided_by_r) * get(dr_j);
           },
           db::get<Tags::BoundaryValue<Tags::BondiH>>(inverse_transform_box),
@@ -642,8 +641,7 @@ void test_gauge_transforms_via_inverse_coordinate_map(
       make_not_null(&forward_transform_box),
       [](const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 1>>*>
              bondi_u,
-         const Scalar<SpinWeighted<ComplexDataVector, 1>>&
-             boundary_u) noexcept {
+         const Scalar<SpinWeighted<ComplexDataVector, 1>>& boundary_u) {
         const ComplexDataVector time_transform = 10.0 * get(boundary_u).data();
         fill_with_n_copies(make_not_null(&(get(*bondi_u).data())),
                            time_transform, number_of_radial_grid_points);
@@ -663,7 +661,7 @@ void test_gauge_transforms_via_inverse_coordinate_map(
          const Scalar<SpinWeighted<ComplexDataVector, 0>>& d,
          const Scalar<SpinWeighted<ComplexDataVector, 0>>& omega_cd,
          const tnsr::i<DataVector, 2, ::Frame::Spherical<::Frame::Inertial>>&
-             x_of_x_tilde) noexcept {
+             x_of_x_tilde) {
         Spectral::Swsh::SwshInterpolator interpolator{
             get<0>(x_of_x_tilde), get<1>(x_of_x_tilde), l_max};
         SpinWeighted<ComplexDataVector, 1> evolution_coords_u{
@@ -692,7 +690,7 @@ void test_gauge_transforms_via_inverse_coordinate_map(
       [](const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 1>>*>
              evolution_gauge_boundary_u,
          const Scalar<SpinWeighted<ComplexDataVector, 1>>&
-             evolution_gauge_full_u) noexcept {
+             evolution_gauge_full_u) {
         const ComplexDataVector evolution_gauge_u_scri_slice;
         make_const_view(
             make_not_null(&evolution_gauge_u_scri_slice),

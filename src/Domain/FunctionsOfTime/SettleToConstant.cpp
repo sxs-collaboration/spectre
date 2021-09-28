@@ -13,7 +13,7 @@
 namespace domain::FunctionsOfTime {
 SettleToConstant::SettleToConstant(
     const std::array<DataVector, 3>& initial_func_and_derivs,
-    const double match_time, const double decay_time) noexcept
+    const double match_time, const double decay_time)
     : match_time_(match_time), inv_decay_time_(1.0 / decay_time) {
   // F = f(t0)
   // the constants are then computed from F and its derivs:
@@ -26,13 +26,13 @@ SettleToConstant::SettleToConstant(
   coef_a_ = initial_func_and_derivs[0] - coef_b_;
 }
 
-std::unique_ptr<FunctionOfTime> SettleToConstant::get_clone() const noexcept {
+std::unique_ptr<FunctionOfTime> SettleToConstant::get_clone() const {
   return std::make_unique<SettleToConstant>(*this);
 }
 
 template <size_t MaxDerivReturned>
 std::array<DataVector, MaxDerivReturned + 1> SettleToConstant::func_and_derivs(
-    const double t) const noexcept {
+    const double t) const {
   static_assert(MaxDerivReturned < 3, "The maximum available derivative is 2.");
 
   // initialize result for the number of derivs requested
@@ -65,15 +65,13 @@ void SettleToConstant::pup(PUP::er& p) {
   p | inv_decay_time_;
 }
 
-bool operator==(const SettleToConstant& lhs,
-                const SettleToConstant& rhs) noexcept {
+bool operator==(const SettleToConstant& lhs, const SettleToConstant& rhs) {
   return lhs.coef_a_ == rhs.coef_a_ and lhs.coef_b_ == rhs.coef_b_ and
          lhs.coef_c_ == rhs.coef_c_ and lhs.match_time_ == rhs.match_time_ and
          lhs.inv_decay_time_ == rhs.inv_decay_time_;
 }
 
-bool operator!=(const SettleToConstant& lhs,
-                const SettleToConstant& rhs) noexcept {
+bool operator!=(const SettleToConstant& lhs, const SettleToConstant& rhs) {
   return not(lhs == rhs);
 }
 
@@ -83,7 +81,7 @@ PUP::able::PUP_ID SettleToConstant::my_PUP_ID = 0;  // NOLINT
 
 #define INSTANTIATE(_, data)                       \
   template std::array<DataVector, DERIV(data) + 1> \
-  SettleToConstant::func_and_derivs<DERIV(data)>(const double) const noexcept;
+  SettleToConstant::func_and_derivs<DERIV(data)>(const double) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (0, 1, 2))
 

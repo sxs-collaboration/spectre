@@ -13,7 +13,7 @@
 namespace {
 
 template <size_t Dim, typename DataType>
-void test_conservative_from_primitive(const DataType& used_for_size) noexcept {
+void test_conservative_from_primitive(const DataType& used_for_size) {
   pypp::check_with_random_values<1>(
       &RelativisticEuler::Valencia::ConservativeFromPrimitive<Dim>::apply,
       "TestFunctions", {"tilde_d", "tilde_tau", "tilde_s"}, {{{0.0, 1.0}}},

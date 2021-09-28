@@ -39,7 +39,7 @@ struct ReceiveVolumeData {
         tuples::TaggedTuple<InboxTags...>& inboxes,
         const Parallel::GlobalCache<Metavariables>& /*cache*/,
         const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-        const ParallelComponent* const /*meta*/) noexcept {
+        const ParallelComponent* const /*meta*/) {
     auto& inbox =
         tuples::get<Tags::VolumeData<ImporterOptionsGroup, FieldTagsList>>(
             inboxes);
@@ -51,12 +51,11 @@ struct ReceiveVolumeData {
     }
 
     auto& element_data = received_data->second;
-    tmpl::for_each<FieldTagsList>([&box, &element_data](auto tag_v) noexcept {
+    tmpl::for_each<FieldTagsList>([&box, &element_data](auto tag_v) {
       using tag = tmpl::type_from<decltype(tag_v)>;
       db::mutate<tag>(
           make_not_null(&box),
-          [&element_data](
-              const gsl::not_null<typename tag::type*> value) noexcept {
+          [&element_data](const gsl::not_null<typename tag::type*> value) {
             *value = std::move(tuples::get<tag>(element_data));
           });
     });

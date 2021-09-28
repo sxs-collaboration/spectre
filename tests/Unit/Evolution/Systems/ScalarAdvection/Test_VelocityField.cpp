@@ -19,7 +19,7 @@
 
 namespace {
 template <size_t Dim>
-void test_velocity_field(const gsl::not_null<std::mt19937*> gen) noexcept {
+void test_velocity_field(const gsl::not_null<std::mt19937*> gen) {
   // test for tags
   TestHelpers::db::test_compute_tag<
       ScalarAdvection::Tags::VelocityFieldCompute<Dim>>("VelocityField");

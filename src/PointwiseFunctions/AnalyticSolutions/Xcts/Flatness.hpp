@@ -52,14 +52,14 @@ class Flatness : public AnalyticSolution<Registrars> {
       "Flat spacetime, useful as initial guess."};
 
   Flatness() = default;
-  Flatness(const Flatness&) noexcept = default;
-  Flatness& operator=(const Flatness&) noexcept = default;
-  Flatness(Flatness&&) noexcept = default;
-  Flatness& operator=(Flatness&&) noexcept = default;
-  ~Flatness() noexcept = default;
+  Flatness(const Flatness&) = default;
+  Flatness& operator=(const Flatness&) = default;
+  Flatness(Flatness&&) = default;
+  Flatness& operator=(Flatness&&) = default;
+  ~Flatness() = default;
 
   /// \cond
-  explicit Flatness(CkMigrateMessage* m) noexcept : Base(m) {}
+  explicit Flatness(CkMigrateMessage* m) : Base(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Flatness);
   /// \endcond
@@ -67,7 +67,7 @@ class Flatness : public AnalyticSolution<Registrars> {
   template <typename DataType, typename... RequestedTags>
   tuples::TaggedTuple<RequestedTags...> variables(
       const tnsr::I<DataType, 3, Frame::Inertial>& x,
-      tmpl::list<RequestedTags...> /*meta*/) const noexcept {
+      tmpl::list<RequestedTags...> /*meta*/) const {
     using supported_tags_zero = tmpl::list<
         ::Tags::deriv<Tags::ConformalMetric<DataType, 3, Frame::Inertial>,
                       tmpl::size_t<3>, Frame::Inertial>,
@@ -123,7 +123,7 @@ class Flatness : public AnalyticSolution<Registrars> {
             tmpl::list<>>,
         "Not all requested tags are supported. The static_assert lists the "
         "unsupported tags.");
-    const auto make_value = [&x](auto tag_v) noexcept {
+    const auto make_value = [&x](auto tag_v) {
       using tag = std::decay_t<decltype(tag_v)>;
       if constexpr (tmpl::list_contains_v<supported_tags_zero, tag>) {
         return make_with_value<typename tag::type>(x, 0.);
@@ -146,20 +146,20 @@ class Flatness : public AnalyticSolution<Registrars> {
       const InverseJacobian<DataVector, 3, Frame::ElementLogical,
                             Frame::Inertial>&
       /*inv_jacobian*/,
-      tmpl::list<RequestedTags...> /*meta*/) const noexcept {
+      tmpl::list<RequestedTags...> /*meta*/) const {
     return variables(x, tmpl::list<RequestedTags...>{});
   }
 };
 
 template <typename Registrars>
 bool operator==(const Flatness<Registrars>& /*lhs*/,
-                const Flatness<Registrars>& /*rhs*/) noexcept {
+                const Flatness<Registrars>& /*rhs*/) {
   return true;
 }
 
 template <typename Registrars>
 bool operator!=(const Flatness<Registrars>& lhs,
-                const Flatness<Registrars>& rhs) noexcept {
+                const Flatness<Registrars>& rhs) {
   return not(lhs == rhs);
 }
 

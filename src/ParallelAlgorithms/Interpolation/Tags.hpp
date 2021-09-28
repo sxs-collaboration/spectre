@@ -110,7 +110,7 @@ struct VolumeVarsInfo : db::SimpleTag {
         db::wrap_tags_in<VarsToInterpolateToTarget,
                          typename Metavariables::interpolation_target_tags>>
         vars_to_interpolate;
-    void pup(PUP::er& p) noexcept {  // NOLINT
+    void pup(PUP::er& p) {  // NOLINT
       p | mesh;
       p | vars_from_element;
       p | vars_to_interpolate;

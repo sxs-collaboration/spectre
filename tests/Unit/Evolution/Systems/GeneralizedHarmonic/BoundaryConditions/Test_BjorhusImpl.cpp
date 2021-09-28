@@ -29,7 +29,7 @@ constexpr size_t VolumeDim = 3;
 
 // Test boundary conditions on dt<VSpacetimeMetric> in 3D against SpEC
 void test_constraint_preserving_bjorhus_v_psi_vs_spec_3d(
-    const size_t grid_size_each_dimension) noexcept {
+    const size_t grid_size_each_dimension) {
   // Setup grid
   Mesh<VolumeDim> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
                        Spectral::Quadrature::GaussLobatto};
@@ -170,7 +170,7 @@ void test_constraint_preserving_bjorhus_v_psi_vs_spec_3d(
 
 // Test boundary conditions on dt<VZero>
 void test_constraint_preserving_bjorhus_v_zero_vs_spec_3d(
-    const size_t grid_size_each_dimension) noexcept {
+    const size_t grid_size_each_dimension) {
   // Setup grid
   Mesh<VolumeDim> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
                        Spectral::Quadrature::GaussLobatto};
@@ -340,7 +340,7 @@ void test_constraint_preserving_bjorhus_v_zero_vs_spec_3d(
 void test_constraint_preserving_physical_bjorhus_v_minus_vs_spec_3d(
     const size_t grid_size_each_dimension,
     const std::array<double, 3>& lower_bound,
-    const std::array<double, 3>& /* upper_bound */) noexcept {
+    const std::array<double, 3>& /* upper_bound */) {
   // Setup grid
   Mesh<VolumeDim> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
                        Spectral::Quadrature::GaussLobatto};
@@ -1098,7 +1098,7 @@ tnsr::aa<DataVector, VolumeDim, Frame::Inertial> wrapper_func_v_psi(
 
 template <size_t VolumeDim>
 void test_constraint_preserving_bjorhus_corrections_dt_v_psi(
-    const size_t grid_size_each_dimension) noexcept {
+    const size_t grid_size_each_dimension) {
   pypp::check_with_random_values<1>(
       &wrapper_func_v_psi<VolumeDim>,
       "Evolution.Systems.GeneralizedHarmonic.BoundaryConditions.Bjorhus",
@@ -1129,7 +1129,7 @@ tnsr::iaa<DataVector, VolumeDim, Frame::Inertial> wrapper_func_v_zero(
 
 template <size_t VolumeDim>
 void test_constraint_preserving_bjorhus_corrections_dt_v_zero(
-    const size_t grid_size_each_dimension) noexcept {
+    const size_t grid_size_each_dimension) {
   pypp::check_with_random_values<1>(
       &wrapper_func_v_zero<VolumeDim>,
       "Evolution.Systems.GeneralizedHarmonic.BoundaryConditions.Bjorhus",
@@ -1158,7 +1158,7 @@ tnsr::aa<DataVector, VolumeDim, Frame::Inertial> wrapper_func_cp_v_minus(
         constraint_char_zero_plus,
     const tnsr::a<DataVector, VolumeDim, Frame::Inertial>&
         constraint_char_zero_minus,
-    const tnsr::a<DataVector, 3, Frame::Inertial>& char_speeds) noexcept {
+    const tnsr::a<DataVector, 3, Frame::Inertial>& char_speeds) {
   std::array<DataVector, 4> char_speed_array{
       get<0>(char_speeds), get<1>(char_speeds), get<2>(char_speeds),
       get<3>(char_speeds)};
@@ -1215,7 +1215,7 @@ tnsr::aa<DataVector, VolumeDim, Frame::Inertial> wrapper_func_cpp_v_minus(
     const tnsr::iaa<DataVector, VolumeDim, Frame::Inertial>& phi,
     const tnsr::ijaa<DataVector, VolumeDim, Frame::Inertial>& d_phi,
     const tnsr::iaa<DataVector, VolumeDim, Frame::Inertial>& d_pi,
-    const tnsr::a<DataVector, 3, Frame::Inertial>& char_speeds) noexcept {
+    const tnsr::a<DataVector, 3, Frame::Inertial>& char_speeds) {
   std::array<DataVector, 4> char_speed_array{
       get<0>(char_speeds), get<1>(char_speeds), get<2>(char_speeds),
       get<3>(char_speeds)};
@@ -1239,7 +1239,7 @@ tnsr::aa<DataVector, VolumeDim, Frame::Inertial> wrapper_func_cpp_v_minus(
 
 template <size_t VolumeDim>
 void test_constraint_preserving_bjorhus_corrections_dt_v_minus(
-    const size_t grid_size_each_dimension) noexcept {
+    const size_t grid_size_each_dimension) {
   pypp::check_with_random_values<1>(
       &wrapper_func_cp_v_minus<VolumeDim>,
       "Evolution.Systems.GeneralizedHarmonic.BoundaryConditions.Bjorhus",
@@ -1249,7 +1249,7 @@ void test_constraint_preserving_bjorhus_corrections_dt_v_minus(
 
 template <size_t VolumeDim>
 void test_constraint_preserving_physical_bjorhus_corrections_dt_v_minus(
-    const size_t grid_size_each_dimension) noexcept {
+    const size_t grid_size_each_dimension) {
   pypp::check_with_random_values<1>(
       &wrapper_func_cpp_v_minus<VolumeDim>,
       "Evolution.Systems.GeneralizedHarmonic.BoundaryConditions.Bjorhus",

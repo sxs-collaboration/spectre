@@ -63,7 +63,7 @@ char pup_helper(int& index, PUP::er& p, boost::variant<Ts...>& var,  // NOLINT
 
 namespace PUP {
 template <class... Ts>
-void pup(er& p, boost::variant<Ts...>& var) noexcept {  // NOLINT
+void pup(er& p, boost::variant<Ts...>& var) {  // NOLINT
   int index = 0;
   int send_index = var.which();
   p | send_index;
@@ -72,7 +72,7 @@ void pup(er& p, boost::variant<Ts...>& var) noexcept {  // NOLINT
 }
 
 template <typename... Ts>
-inline void operator|(er& p, boost::variant<Ts...>& d) noexcept {  // NOLINT
+inline void operator|(er& p, boost::variant<Ts...>& d) {  // NOLINT
   pup(p, d);
 }
 }  // namespace PUP
@@ -82,8 +82,7 @@ inline void operator|(er& p, boost::variant<Ts...>& d) noexcept {  // NOLINT
  * \brief Get the type name of the current state of the boost::variant
  */
 template <typename... Ts>
-std::string type_of_current_state(
-    const boost::variant<Ts...>& variant) noexcept {
+std::string type_of_current_state(const boost::variant<Ts...>& variant) {
   // clang-format off
   // clang-tidy: use gsl::at (we know it'll be in bounds and want fewer
   // includes) clang-format moves the comment to the wrong line

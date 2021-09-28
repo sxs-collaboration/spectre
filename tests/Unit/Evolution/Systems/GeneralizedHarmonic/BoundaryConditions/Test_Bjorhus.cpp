@@ -106,7 +106,7 @@ void wrap_dt_vars_corrections_ConstraintPreserving(
     // c.f. dg_interior_deriv_vars_tags
     const tnsr::iaa<DataVector, Dim, frame>& d_spacetime_metric,
     const tnsr::iaa<DataVector, Dim, frame>& d_pi,
-    const tnsr::ijaa<DataVector, Dim, frame>& d_phi) noexcept {
+    const tnsr::ijaa<DataVector, Dim, frame>& d_phi) {
   GeneralizedHarmonic::BoundaryConditions::ConstraintPreservingBjorhus<Dim>
       bjorhus_obj{GeneralizedHarmonic::BoundaryConditions::detail::
                       ConstraintPreservingBjorhusType::ConstraintPreserving};
@@ -152,7 +152,7 @@ void wrap_dt_vars_corrections_ConstraintPreservingPhysical(
     // c.f. dg_interior_deriv_vars_tags
     const tnsr::iaa<DataVector, Dim, frame>& d_spacetime_metric,
     const tnsr::iaa<DataVector, Dim, frame>& d_pi,
-    const tnsr::ijaa<DataVector, Dim, frame>& d_phi) noexcept {
+    const tnsr::ijaa<DataVector, Dim, frame>& d_phi) {
   GeneralizedHarmonic::BoundaryConditions::ConstraintPreservingBjorhus<Dim>
       bjorhus_obj{
           GeneralizedHarmonic::BoundaryConditions::detail::
@@ -167,7 +167,7 @@ void wrap_dt_vars_corrections_ConstraintPreservingPhysical(
 }
 
 template <size_t Dim>
-void test_with_random_values(const DataVector& used_for_size) noexcept {
+void test_with_random_values(const DataVector& used_for_size) {
   pypp::check_with_random_values<1>(
       wrap_dt_vars_corrections_ConstraintPreserving<Dim>,
       "Evolution.Systems.GeneralizedHarmonic.BoundaryConditions.Bjorhus",

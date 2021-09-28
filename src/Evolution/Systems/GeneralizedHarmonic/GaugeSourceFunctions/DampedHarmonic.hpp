@@ -166,7 +166,7 @@ void damped_harmonic_rollon(
     const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, SpatialDim, Frame>& shift,
     const tnsr::a<DataVector, SpatialDim, Frame>&
-    spacetime_unit_normal_one_form,
+        spacetime_unit_normal_one_form,
     const Scalar<DataVector>& sqrt_det_spatial_metric,
     const tnsr::II<DataVector, SpatialDim, Frame>& inverse_spatial_metric,
     const tnsr::aa<DataVector, SpatialDim, Frame>& spacetime_metric,
@@ -174,7 +174,7 @@ void damped_harmonic_rollon(
     const tnsr::iaa<DataVector, SpatialDim, Frame>& phi, double time,
     const tnsr::I<DataVector, SpatialDim, Frame>& coords, double amp_coef_L1,
     double amp_coef_L2, double amp_coef_S, int exp_L1, int exp_L2, int exp_S,
-    double rollon_start_time, double rollon_width, double sigma_r) noexcept;
+    double rollon_start_time, double rollon_width, double sigma_r);
 
 /*!
  * \copydoc damped_harmonic_rollon()
@@ -194,6 +194,6 @@ void damped_harmonic(
     const tnsr::iaa<DataVector, SpatialDim, Frame>& phi,
     const tnsr::I<DataVector, SpatialDim, Frame>& coords, double amp_coef_L1,
     double amp_coef_L2, double amp_coef_S, int exp_L1, int exp_L2, int exp_S,
-    double sigma_r) noexcept;
+    double sigma_r);
 }  // namespace gauges
 }  // namespace GeneralizedHarmonic

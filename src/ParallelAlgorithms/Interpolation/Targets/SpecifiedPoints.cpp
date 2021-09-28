@@ -12,34 +12,34 @@ namespace intrp::OptionHolders {
 
 template <size_t VolumeDim>
 SpecifiedPoints<VolumeDim>::SpecifiedPoints(
-    std::vector<std::array<double, VolumeDim>> points_in) noexcept
+    std::vector<std::array<double, VolumeDim>> points_in)
     : points(std::move(points_in)) {}
 
 template <size_t VolumeDim>
-void SpecifiedPoints<VolumeDim>::pup(PUP::er& p) noexcept {
+void SpecifiedPoints<VolumeDim>::pup(PUP::er& p) {
   p | points;
 }
 
 template <size_t VolumeDim>
 bool operator==(const SpecifiedPoints<VolumeDim>& lhs,
-                const SpecifiedPoints<VolumeDim>& rhs) noexcept {
+                const SpecifiedPoints<VolumeDim>& rhs) {
   return lhs.points == rhs.points;
 }
 
 template <size_t VolumeDim>
 bool operator!=(const SpecifiedPoints<VolumeDim>& lhs,
-                const SpecifiedPoints<VolumeDim>& rhs) noexcept {
+                const SpecifiedPoints<VolumeDim>& rhs) {
   return not(lhs == rhs);
 }
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                            \
-  template struct SpecifiedPoints<DIM(data)>;                           \
-  template bool operator==(const SpecifiedPoints<DIM(data)>&,           \
-                           const SpecifiedPoints<DIM(data)>&) noexcept; \
-  template bool operator!=(const SpecifiedPoints<DIM(data)>&,           \
-                           const SpecifiedPoints<DIM(data)>&) noexcept;
+#define INSTANTIATE(_, data)                                   \
+  template struct SpecifiedPoints<DIM(data)>;                  \
+  template bool operator==(const SpecifiedPoints<DIM(data)>&,  \
+                           const SpecifiedPoints<DIM(data)>&); \
+  template bool operator!=(const SpecifiedPoints<DIM(data)>&,  \
+                           const SpecifiedPoints<DIM(data)>&);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 

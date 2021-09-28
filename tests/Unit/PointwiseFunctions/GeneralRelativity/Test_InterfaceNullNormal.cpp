@@ -18,7 +18,7 @@ interface_outgoing_null_normal_one_form(
     const tnsr::A<DataType, SpatialDim, Frame::Inertial>&
         spacetime_normal_one_form,
     const tnsr::I<DataType, SpatialDim, Frame::Inertial>&
-        interface_normal_one_form) noexcept {
+        interface_normal_one_form) {
   return gr::interface_null_normal<SpatialDim, Frame::Inertial, DataType>(
       spacetime_normal_one_form, interface_normal_one_form, 1.);
 }
@@ -28,7 +28,7 @@ interface_incoming_null_normal_one_form(
     const tnsr::A<DataType, SpatialDim, Frame::Inertial>&
         spacetime_normal_one_form,
     const tnsr::I<DataType, SpatialDim, Frame::Inertial>&
-        interface_normal_one_form) noexcept {
+        interface_normal_one_form) {
   return gr::interface_null_normal<SpatialDim, Frame::Inertial, DataType>(
       spacetime_normal_one_form, interface_normal_one_form, -1.);
 }
@@ -38,7 +38,7 @@ interface_outgoing_null_normal_vector(
     const tnsr::A<DataType, SpatialDim, Frame::Inertial>&
         spacetime_normal_vector,
     const tnsr::I<DataType, SpatialDim, Frame::Inertial>&
-        interface_normal_vector) noexcept {
+        interface_normal_vector) {
   return gr::interface_null_normal<SpatialDim, Frame::Inertial, DataType>(
       spacetime_normal_vector, interface_normal_vector, 1.);
 }
@@ -48,7 +48,7 @@ interface_incoming_null_normal_vector(
     const tnsr::A<DataType, SpatialDim, Frame::Inertial>&
         spacetime_normal_vector,
     const tnsr::I<DataType, SpatialDim, Frame::Inertial>&
-        interface_normal_vector) noexcept {
+        interface_normal_vector) {
   return gr::interface_null_normal<SpatialDim, Frame::Inertial, DataType>(
       spacetime_normal_vector, interface_normal_vector, -1.);
 }

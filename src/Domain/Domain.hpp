@@ -39,7 +39,7 @@ class CoordinateMapBase;
 template <size_t VolumeDim>
 class Domain {
  public:
-  explicit Domain(std::vector<Block<VolumeDim>> blocks) noexcept;
+  explicit Domain(std::vector<Block<VolumeDim>> blocks);
 
   /*!
    * Create a Domain using CoordinateMaps to encode the Orientations.
@@ -64,7 +64,7 @@ class Domain {
       std::vector<DirectionMap<
           VolumeDim,
           std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
-          boundary_conditions = {}) noexcept;
+          boundary_conditions = {});
 
   /*!
    * Create a Domain using a corner numbering scheme to encode the Orientations,
@@ -95,9 +95,9 @@ class Domain {
          std::vector<DirectionMap<
              VolumeDim,
              std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
-             boundary_conditions = {}) noexcept;
+             boundary_conditions = {});
 
-  Domain() noexcept = default;
+  Domain() = default;
   ~Domain() = default;
   Domain(const Domain&) = delete;
   Domain(Domain&&) = default;
@@ -108,26 +108,22 @@ class Domain {
       size_t block_id,
       std::unique_ptr<
           domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, VolumeDim>>
-          moving_mesh_inertial_map) noexcept;
+          moving_mesh_inertial_map);
 
-  const std::vector<Block<VolumeDim>>& blocks() const noexcept {
-    return blocks_;
-  }
+  const std::vector<Block<VolumeDim>>& blocks() const { return blocks_; }
 
   // clang-tidy: google-runtime-references
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
 
  private:
   std::vector<Block<VolumeDim>> blocks_{};
 };
 
 template <size_t VolumeDim>
-bool operator==(const Domain<VolumeDim>& lhs,
-                const Domain<VolumeDim>& rhs) noexcept;
+bool operator==(const Domain<VolumeDim>& lhs, const Domain<VolumeDim>& rhs);
 
 template <size_t VolumeDim>
-bool operator!=(const Domain<VolumeDim>& lhs,
-                const Domain<VolumeDim>& rhs) noexcept;
+bool operator!=(const Domain<VolumeDim>& lhs, const Domain<VolumeDim>& rhs);
 
 template <size_t VolumeDim>
-std::ostream& operator<<(std::ostream& os, const Domain<VolumeDim>& d) noexcept;
+std::ostream& operator<<(std::ostream& os, const Domain<VolumeDim>& d);

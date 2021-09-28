@@ -31,7 +31,7 @@ WedgeSectionTorus::WedgeSectionTorus(
   }
 }
 
-void WedgeSectionTorus::pup(PUP::er& p) noexcept {
+void WedgeSectionTorus::pup(PUP::er& p) {
   p | min_radius;
   p | max_radius;
   p | min_theta;
@@ -43,8 +43,7 @@ void WedgeSectionTorus::pup(PUP::er& p) noexcept {
   p | use_uniform_theta_grid;
 }
 
-bool operator==(const WedgeSectionTorus& lhs,
-                const WedgeSectionTorus& rhs) noexcept {
+bool operator==(const WedgeSectionTorus& lhs, const WedgeSectionTorus& rhs) {
   return lhs.min_radius == rhs.min_radius and
          lhs.max_radius == rhs.max_radius and lhs.min_theta == rhs.min_theta and
          lhs.max_theta == rhs.max_theta and
@@ -55,8 +54,7 @@ bool operator==(const WedgeSectionTorus& lhs,
          lhs.use_uniform_theta_grid == rhs.use_uniform_theta_grid;
 }
 
-bool operator!=(const WedgeSectionTorus& lhs,
-                const WedgeSectionTorus& rhs) noexcept {
+bool operator!=(const WedgeSectionTorus& lhs, const WedgeSectionTorus& rhs) {
   return not(lhs == rhs);
 }
 

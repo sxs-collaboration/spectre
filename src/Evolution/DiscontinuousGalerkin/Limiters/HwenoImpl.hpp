@@ -83,7 +83,7 @@ template <size_t VolumeDim>
 class ConstrainedFitCache {
  public:
   ConstrainedFitCache(const Mesh<VolumeDim>& mesh,
-                      const Element<VolumeDim>& element) noexcept;
+                      const Element<VolumeDim>& element);
 
   // Valid calls must satisfy these constraints on directions_to_exclude:
   // - the vector is empty, OR
@@ -93,8 +93,7 @@ class ConstrainedFitCache {
   // not cached. In this case, A^{-1} must be computed from scratch.
   const Matrix& retrieve_inverse_a_matrix(
       const Direction<VolumeDim>& primary_direction,
-      const std::vector<Direction<VolumeDim>>& directions_to_exclude) const
-      noexcept;
+      const std::vector<Direction<VolumeDim>>& directions_to_exclude) const;
 
   DataVector quadrature_weights;
   DirectionMap<VolumeDim, Matrix> interpolation_matrices;
@@ -114,7 +113,7 @@ class ConstrainedFitCache {
 // Return the appropriate cache for the given mesh and element.
 template <size_t VolumeDim>
 const ConstrainedFitCache<VolumeDim>& constrained_fit_cache(
-    const Mesh<VolumeDim>& mesh, const Element<VolumeDim>& element) noexcept;
+    const Mesh<VolumeDim>& mesh, const Element<VolumeDim>& element);
 
 // Compute the inverse of the matrix A_st for the constrained fit.
 // See the documentation of `hweno_modified_neighbor_solution`.
@@ -126,7 +125,7 @@ Matrix inverse_a_matrix(
     const DirectionMap<VolumeDim, DataVector>&
         quadrature_weights_dot_interpolation_matrices,
     const Direction<VolumeDim>& primary_direction,
-    const std::vector<Direction<VolumeDim>>& directions_to_exclude) noexcept;
+    const std::vector<Direction<VolumeDim>>& directions_to_exclude);
 
 // Not all secondary neighbors (i.e., neighbors that are not the primary) are
 // included in the HWENO constrained fit. In particular, for the tensor
@@ -152,7 +151,7 @@ secondary_neighbors_to_exclude_from_fit(
         boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
         neighbor_data,
     const std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>&
-        primary_neighbor) noexcept {
+        primary_neighbor) {
   // Rare case: with only one neighbor, there is no secondary to exclude
   if (UNLIKELY(neighbor_data.size() == 1)) {
     return std::vector<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>{};
@@ -162,7 +161,7 @@ secondary_neighbors_to_exclude_from_fit(
   const auto mean_difference =
       [&tensor_index, &local_mean](
           const std::pair<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
-                          Package>& neighbor_and_data) noexcept {
+                          Package>& neighbor_and_data) {
         return fabs(get<::Tags::Mean<Tag>>(
                         neighbor_and_data.second.means)[tensor_index] -
                     local_mean);
@@ -222,7 +221,7 @@ DataVector b_vector(
     const std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>&
         primary_neighbor,
     const std::vector<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>&
-        neighbors_to_exclude) noexcept {
+        neighbors_to_exclude) {
   const size_t number_of_grid_points = mesh.number_of_grid_points();
   DataVector b(number_of_grid_points, 0.);
 
@@ -262,7 +261,7 @@ DataVector b_vector(
     }
     // Add terms from the secondary neighbors
     else {
-      const double quadrature_weights_dot_u = [&]() noexcept {
+      const double quadrature_weights_dot_u = [&]() {
         double result = 0.;
         for (size_t r = 0; r < neighbor_mesh.number_of_grid_points(); ++r) {
           result +=
@@ -292,7 +291,7 @@ void solve_constrained_fit(
     const std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>&
         primary_neighbor,
     const std::vector<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>&
-        neighbors_to_exclude) noexcept {
+        neighbors_to_exclude) {
   ASSERT(not alg::found(neighbors_to_exclude, primary_neighbor),
          "Logical inconsistency: trying to exclude the primary neighbor.");
   ASSERT(not neighbors_to_exclude.empty() or neighbor_data.size() == 1,
@@ -308,7 +307,7 @@ void solve_constrained_fit(
   // of the neighbor information that we actually need.
   const Direction<VolumeDim> primary_direction = primary_neighbor.first;
   const std::vector<Direction<VolumeDim>> directions_to_exclude =
-      [&neighbors_to_exclude]() noexcept {
+      [&neighbors_to_exclude]() {
         std::vector<Direction<VolumeDim>> result(neighbors_to_exclude.size());
         for (size_t i = 0; i < result.size(); ++i) {
           result[i] = neighbors_to_exclude[i].first;
@@ -348,7 +347,7 @@ void solve_constrained_fit(
   //       some versions of Clang incorrectly warn about capturing w.
   const double lagrange_multiplier = [&number_of_points, &inverse_a_times_b,
                                       &inverse_a_times_w,
-                                      &u](const DataVector& local_w) noexcept {
+                                      &u](const DataVector& local_w) {
     double numerator = 0.;
     double denominator = 0.;
     for (size_t s = 0; s < number_of_points; ++s) {
@@ -535,7 +534,7 @@ void hweno_impl(
     const std::unordered_map<
         std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
         boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
-        neighbor_data) noexcept {
+        neighbor_data) {
   // Check that basis is LGL or LG
   // The Hweno reconstruction implemented here is specialized to the case of a
   // Legendre basis. While the underlying algorithm should work for other bases
@@ -557,7 +556,7 @@ void hweno_impl(
              "before calling hweno_impl.");
 
   alg::for_each(
-      neighbor_data, [&mesh, &element](const auto& neighbor_and_data) noexcept {
+      neighbor_data, [&mesh, &element](const auto& neighbor_and_data) {
         ASSERT(Weno_detail::check_element_has_one_similar_neighbor_in_direction(
                    element, neighbor_and_data.first.first),
                "Found some amount of h-refinement; this is not supported");

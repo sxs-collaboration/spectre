@@ -21,7 +21,7 @@ template <size_t Dim>
 void reconstruct_impl(
     gsl::span<double> dg_u,
     const gsl::span<const double> subcell_u_times_projected_det_jac,
-    const Mesh<Dim>& dg_mesh, const Index<Dim>& subcell_extents) noexcept {
+    const Mesh<Dim>& dg_mesh, const Index<Dim>& subcell_extents) {
   const size_t number_of_components =
       dg_u.size() / dg_mesh.number_of_grid_points();
   const Matrix& recons_matrix = reconstruction_matrix(dg_mesh, subcell_extents);
@@ -35,8 +35,7 @@ void reconstruct_impl(
 template <size_t Dim>
 void reconstruct(const gsl::not_null<DataVector*> dg_u,
                  const DataVector& subcell_u_times_projected_det_jac,
-                 const Mesh<Dim>& dg_mesh,
-                 const Index<Dim>& subcell_extents) noexcept {
+                 const Mesh<Dim>& dg_mesh, const Index<Dim>& subcell_extents) {
   ASSERT(subcell_u_times_projected_det_jac.size() == subcell_extents.product(),
          "Incorrect subcell size of u: "
              << subcell_u_times_projected_det_jac.size() << " but should be "
@@ -52,7 +51,7 @@ void reconstruct(const gsl::not_null<DataVector*> dg_u,
 template <size_t Dim>
 DataVector reconstruct(const DataVector& subcell_u_times_projected_det_jac,
                        const Mesh<Dim>& dg_mesh,
-                       const Index<Dim>& subcell_extents) noexcept {
+                       const Index<Dim>& subcell_extents) {
   DataVector dg_u{dg_mesh.number_of_grid_points()};
   reconstruct(&dg_u, subcell_u_times_projected_det_jac, dg_mesh,
               subcell_extents);
@@ -61,16 +60,15 @@ DataVector reconstruct(const DataVector& subcell_u_times_projected_det_jac,
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATION(r, data)                                               \
-  template DataVector reconstruct(const DataVector&, const Mesh<DIM(data)>&, \
-                                  const Index<DIM(data)>&) noexcept;         \
-  template void reconstruct(gsl::not_null<DataVector*>, const DataVector&,   \
-                            const Mesh<DIM(data)>&,                          \
-                            const Index<DIM(data)>&) noexcept;               \
-  template void detail::reconstruct_impl(                                    \
-      gsl::span<double> dg_u, const gsl::span<const double>,                 \
-      const Mesh<DIM(data)>& dg_mesh,                                        \
-      const Index<DIM(data)>& subcell_extents) noexcept;
+#define INSTANTIATION(r, data)                                                \
+  template DataVector reconstruct(const DataVector&, const Mesh<DIM(data)>&,  \
+                                  const Index<DIM(data)>&);                   \
+  template void reconstruct(gsl::not_null<DataVector*>, const DataVector&,    \
+                            const Mesh<DIM(data)>&, const Index<DIM(data)>&); \
+  template void detail::reconstruct_impl(                                     \
+      gsl::span<double> dg_u, const gsl::span<const double>,                  \
+      const Mesh<DIM(data)>& dg_mesh,                                         \
+      const Index<DIM(data)>& subcell_extents);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 

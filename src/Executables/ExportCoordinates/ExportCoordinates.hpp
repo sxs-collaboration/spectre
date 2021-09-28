@@ -72,13 +72,12 @@ using MinGridSpacingReductionData = Parallel::ReductionData<
 struct MinGridSpacingFormatter
     : tt::ConformsTo<observers::protocols::ReductionDataFormatter> {
   using reduction_data = MinGridSpacingReductionData;
-  std::string operator()(const double time,
-                         const double min_grid_spacing) noexcept {
+  std::string operator()(const double time, const double min_grid_spacing) {
     return "Time: " + get_output(time) +
            ", Global inertial minimum grid spacing: " +
            get_output(min_grid_spacing);
   }
-  void pup(PUP::er& /*p*/) noexcept {}
+  void pup(PUP::er& /*p*/) {}
 };
 
 namespace Actions {
@@ -88,7 +87,7 @@ struct ExportCoordinates {
             typename ArrayIndex>
   static std::pair<observers::TypeOfObservation, observers::ObservationKey>
   register_info(const db::DataBox<DbTagsList>& /*box*/,
-                const ArrayIndex& /*array_index*/) noexcept {
+                const ArrayIndex& /*array_index*/) {
     return {observers::TypeOfObservation::Volume,
             observers::ObservationKey("ObserveCoords")};
   }
@@ -150,7 +149,7 @@ struct FindGlobalMinimumGridSpacing {
             typename ArrayIndex>
   static std::pair<observers::TypeOfObservation, observers::ObservationKey>
   register_info(const db::DataBox<DbTagsList>& /*box*/,
-                const ArrayIndex& /*array_index*/) noexcept {
+                const ArrayIndex& /*array_index*/) {
     return {observers::TypeOfObservation::Reduction,
             observers::ObservationKey("min_grid_spacing")};
   }
@@ -258,8 +257,7 @@ struct Metavariables {
       const gsl::not_null<
           tuples::TaggedTuple<Tags...>*> /*phase_change_decision_data*/,
       const Phase& current_phase,
-      const Parallel::CProxy_GlobalCache<
-          Metavariables>& /*cache_proxy*/) noexcept {
+      const Parallel::CProxy_GlobalCache<Metavariables>& /*cache_proxy*/) {
     switch (current_phase) {
       case Phase::Initialization:
         return Phase::RegisterWithObserver;
@@ -277,7 +275,7 @@ struct Metavariables {
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& /*p*/) noexcept {}
+  void pup(PUP::er& /*p*/) {}
 };
 
 static const std::vector<void (*)()> charm_init_node_funcs{

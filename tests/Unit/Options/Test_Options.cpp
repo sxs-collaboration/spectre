@@ -61,7 +61,7 @@ struct Simple {
 };
 struct NamedSimple {
   using type = int;
-  static std::string name() noexcept { return "SomeName"; }
+  static std::string name() { return "SomeName"; }
   static constexpr Options::String help = {
       "halp halp halp halp halp halp halp halp halp halp halp halp\n"
       "halp halp halp halp halp halp halp halp halp halp halp halp"
@@ -287,9 +287,9 @@ struct Bounded {
   static constexpr Options::String help = {
       "Option with bounds and a suggested value"};
   // These are optional
-  static type suggested_value() noexcept { return 3; }
-  static type lower_bound() noexcept { return 2; }
-  static type upper_bound() noexcept { return 10; }
+  static type suggested_value() { return 3; }
+  static type lower_bound() { return 2; }
+  static type upper_bound() { return 10; }
 };
 // [options_example_scalar_struct]
 
@@ -348,15 +348,15 @@ SPECTRE_TEST_CASE("Unit.Options.suggestion_warning", "[Unit][Options]") {
 struct BadSuggestion {
   using type = int;
   static constexpr Options::String help = {"halp"};
-  static type suggested_value() noexcept { return 3; }
-  static type lower_bound() noexcept { return 4; }
+  static type suggested_value() { return 3; }
+  static type lower_bound() { return 4; }
 };
 struct NamedBadSuggestion {
   using type = int;
-  static std::string name() noexcept { return "SomeName"; }
+  static std::string name() { return "SomeName"; }
   static constexpr Options::String help = {"halp"};
-  static type suggested_value() noexcept { return 3; }
-  static type lower_bound() noexcept { return 4; }
+  static type suggested_value() { return 3; }
+  static type lower_bound() { return 4; }
 };
 
 // [[OutputRegex, Checking SUGGESTED value for BadSuggestion:.Value 3 is below
@@ -382,7 +382,7 @@ struct VectorOption {
   using type = std::vector<int>;
   static constexpr Options::String help = {"A vector with length limits"};
   // These are optional
-  static std::string name() noexcept {
+  static std::string name() {
     return "Vector";  // defaults to "VectorOption"
   }
   static size_t lower_bound_on_size() { return 2; }
@@ -563,8 +563,7 @@ struct VariantTag {
 };
 
 void test_options_variant() {
-  const auto check = [](const std::string& input,
-                        const auto& expected) noexcept {
+  const auto check = [](const std::string& input, const auto& expected) {
     using Tag = tmpl::wrap<std::decay_t<decltype(expected)>, VariantTag>;
     Options::Parser<tmpl::list<Tag>> opts("");
     opts.parse("VariantTag: " + input);
@@ -688,7 +687,7 @@ struct Duplicate {
 };
 struct NamedDuplicate {
   using type = int;
-  static std::string name() noexcept { return "Duplicate"; }
+  static std::string name() { return "Duplicate"; }
   static constexpr Options::String help = {"halp"};
 };
 #endif  // SPECTRE_DEBUG
@@ -711,7 +710,7 @@ struct
 };
 struct NamedTooLong {
   using type = int;
-  static std::string name() noexcept {
+  static std::string name() {
     return "Toooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo"
            "oLong";
   }
@@ -723,7 +722,7 @@ struct NoHelp {
 };
 struct NamedNoHelp {
   using type = int;
-  static std::string name() noexcept { return "NoHelp"; }
+  static std::string name() { return "NoHelp"; }
   static constexpr Options::String help = {""};
 };
 #endif  // SPECTRE_DEBUG
@@ -833,9 +832,7 @@ struct FormatPair {
   static constexpr const char* const expected = "[[int x0], [double x0]]";
 };
 struct ArrayHash {
-  size_t operator()(const std::array<int, 0>& /*unused*/) const noexcept {
-    return 0;
-  }
+  size_t operator()(const std::array<int, 0>& /*unused*/) const { return 0; }
 };
 struct FormatUnorderedMap {
   using type = std::unordered_map<In<int>, In<double>, ArrayHash>;
@@ -846,20 +843,20 @@ struct FormatUnorderedMap {
 struct ScalarWithLimits {
   using type = int;
   static constexpr Options::String help = "ScalarHelp";
-  static type suggested_value() noexcept { return 7; }
-  static type lower_bound() noexcept { return 2; }
-  static type upper_bound() noexcept { return 8; }
+  static type suggested_value() { return 7; }
+  static type lower_bound() { return 2; }
+  static type upper_bound() { return 8; }
 };
 
 struct VectorWithLimits {
   using type = std::vector<int>;
   static constexpr Options::String help = "VectorHelp";
-  static size_t lower_bound_on_size() noexcept { return 5; }
-  static size_t upper_bound_on_size() noexcept { return 9; }
+  static size_t lower_bound_on_size() { return 5; }
+  static size_t upper_bound_on_size() { return 9; }
 };
 
 void test_options_format() {
-  const auto check = [](auto opt) noexcept {
+  const auto check = [](auto opt) {
     using Opt = decltype(opt);
     Options::Parser<tmpl::list<Opt>> opts("");
     INFO("Help string:\n"
@@ -947,17 +944,17 @@ void test_options_explicit_constructor() {
 
 struct SuggestedBool {
   using type = bool;
-  static type suggested_value() noexcept { return false; }
+  static type suggested_value() { return false; }
   constexpr static Options::String help = "halp";
 };
 
-void test_options_format_bool() noexcept {
+void test_options_format_bool() {
   const auto help = Options::Parser<tmpl::list<SuggestedBool>>("").help();
   CAPTURE(help);
   CHECK(help.find("suggested=false") != std::string::npos);
 }
 
-void test_options_input_source() noexcept {
+void test_options_input_source() {
   Options::Parser<tmpl::list<Simple>> parser("");
   const std::string source = "Simple: 3";
   const std::string overlay = "Simple: 4";
@@ -967,7 +964,7 @@ void test_options_input_source() noexcept {
 }
 
 void check_for_lines(const std::string& text,
-                     const std::vector<std::string>& lines) noexcept {
+                     const std::vector<std::string>& lines) {
   CAPTURE(text);
   const std::string search_text = "\n" + text + "\n";
   size_t pos = 0;
@@ -1091,7 +1088,7 @@ struct NestedAlternativesTag {
   static constexpr Options::String help = "halp";
 };
 
-void test_options_alternatives() noexcept {
+void test_options_alternatives() {
   {
     Options::Parser<tmpl::list<AlternativesTag>> parser("");
     parser.parse(
@@ -1205,7 +1202,7 @@ void test_options_alternatives() noexcept {
   // clang-format on
 }
 
-void test_options_overlay() noexcept {
+void test_options_overlay() {
   Options::Parser<tmpl::list<Simple, InnerGroupedTag, OuterGroupedTag>> parser(
       "");
   parser.parse(
@@ -1294,7 +1291,7 @@ SPECTRE_TEST_CASE("Unit.Options.overlay.subgroup_context", "[Unit][Options]") {
       "  OuterGroupedTag: 2");
 }
 
-void test_options_serialization() noexcept {
+void test_options_serialization() {
   {
     // Test serialization of an unparsed parser.
     Options::Parser<tmpl::list<Simple>> parser("passed help");
@@ -1308,7 +1305,7 @@ void test_options_serialization() noexcept {
     CHECK(parser3.get<Simple>() == 4);
   }
 
-  const auto check_repeated = [](const auto& parser1, const auto& f) noexcept {
+  const auto check_repeated = [](const auto& parser1, const auto& f) {
     f(parser1);
     const auto parser2 = serialize_and_deserialize(parser1);
     f(parser2);
@@ -1327,8 +1324,7 @@ void test_options_serialization() noexcept {
         "  OuterGroupedTag: 1\n"
         "Simple: 2\n";
     parser.parse(source);
-    check_repeated(parser, [&source](
-                               const decltype(parser)& local_parser) noexcept {
+    check_repeated(parser, [&source](const decltype(parser)& local_parser) {
       CHECK(local_parser.get<Options::InputSource>() == std::vector{source});
       CHECK(local_parser.get<InnerGroupedTag>() == 3);
       CHECK(local_parser.get<OuterGroupedTag>() == 1);
@@ -1342,8 +1338,8 @@ void test_options_serialization() noexcept {
     const std::string overlay = "Simple: 4";
     parser.parse(source);
     parser.overlay<tmpl::list<Simple>>(overlay);
-    check_repeated(parser, [&source, &overlay](
-                               const decltype(parser)& local_parser) noexcept {
+    check_repeated(parser, [&source,
+                            &overlay](const decltype(parser)& local_parser) {
       CHECK(local_parser.get<Options::InputSource>() ==
             std::vector{source, overlay});
       CHECK(local_parser.get<Simple>() == 4);
@@ -1365,8 +1361,8 @@ void test_options_serialization() noexcept {
         "    InnerGroupedTag: 5\n";
     parser.parse(source);
     parser.overlay<tmpl::list<InnerGroupedTag>>(overlay);
-    check_repeated(parser, [&source, &overlay](
-                               const decltype(parser)& local_parser) noexcept {
+    check_repeated(parser, [&source,
+                            &overlay](const decltype(parser)& local_parser) {
       CHECK(local_parser.get<Options::InputSource>() ==
             std::vector{source, overlay});
       CHECK(local_parser.get<Simple>() == 1);
@@ -1383,8 +1379,7 @@ void test_options_serialization() noexcept {
         "  C: 7\n"
         "  F: required\n";
     parser.parse(source);
-    check_repeated(parser, [&source](
-                               const decltype(parser)& local_parser) noexcept {
+    check_repeated(parser, [&source](const decltype(parser)& local_parser) {
       CHECK(local_parser.get<Options::InputSource>() == std::vector{source});
       const auto result = local_parser.get<AlternativesTag>();
       CHECK(result.a_ == 1.2);

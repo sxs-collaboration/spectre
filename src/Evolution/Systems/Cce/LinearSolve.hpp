@@ -29,8 +29,7 @@ namespace Cce {
  *
  * for \f$f\f$ given integrand \f$g\f$.
  */
-const Matrix& precomputed_cce_q_integrator(
-    size_t number_of_radial_grid_points) noexcept;
+const Matrix& precomputed_cce_q_integrator(size_t number_of_radial_grid_points);
 
 /*!
  * \brief A utility function for evaluating the \f$Q\f$ and \f$W\f$ hypersurface
@@ -53,7 +52,7 @@ void radial_integrate_cce_pole_equations(
     const ComplexDataVector& pole_of_integrand,
     const ComplexDataVector& regular_integrand,
     const ComplexDataVector& boundary, const ComplexDataVector& one_minus_y,
-    size_t l_max, size_t number_of_radial_points) noexcept;
+    size_t l_max, size_t number_of_radial_points);
 
 namespace detail {
 // needed because the standard transpose utility cannot create an arbitrary
@@ -61,7 +60,7 @@ namespace detail {
 // for the linear solve step for H integration
 void transpose_to_reals_then_imags_radial_stripes(
     gsl::not_null<DataVector*> result, const ComplexDataVector& input,
-    size_t number_of_radial_points, size_t number_of_angular_points) noexcept;
+    size_t number_of_radial_points, size_t number_of_angular_points);
 }  // namespace detail
 
 /// @{
@@ -122,7 +121,7 @@ struct RadialIntegrateBondi {
           integrand,
       const Scalar<SpinWeighted<ComplexDataVector, Tag::type::type::spin>>&
           boundary,
-      size_t l_max, size_t number_of_radial_points) noexcept;
+      size_t l_max, size_t number_of_radial_points);
 };
 
 template <template <typename> class BoundaryPrefix>
@@ -143,7 +142,7 @@ struct RadialIntegrateBondi<BoundaryPrefix, Tags::BondiQ> {
       const Scalar<SpinWeighted<ComplexDataVector, 1>>& regular_integrand,
       const Scalar<SpinWeighted<ComplexDataVector, 1>>& boundary,
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& one_minus_y,
-      size_t l_max, size_t number_of_radial_points) noexcept;
+      size_t l_max, size_t number_of_radial_points);
 };
 
 template <template <typename> class BoundaryPrefix>
@@ -164,7 +163,7 @@ struct RadialIntegrateBondi<BoundaryPrefix, Tags::BondiW> {
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& regular_integrand,
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& boundary,
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& one_minus_y,
-      size_t l_max, size_t number_of_radial_points) noexcept;
+      size_t l_max, size_t number_of_radial_points);
 };
 
 template <template <typename> class BoundaryPrefix>
@@ -191,7 +190,7 @@ struct RadialIntegrateBondi<BoundaryPrefix, Tags::BondiH> {
           linear_factor_of_conjugate,
       const Scalar<SpinWeighted<ComplexDataVector, 2>>& boundary,
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& one_minus_y,
-      size_t l_max, size_t number_of_radial_points) noexcept;
+      size_t l_max, size_t number_of_radial_points);
 };
 /// @}
 }  // namespace Cce

@@ -52,7 +52,7 @@ struct FilterSwshVolumeQuantity {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     const size_t l_max = db::get<Tags::LMax>(box);
     const size_t l_filter_start = get<Tags::FilterLMax>(box);
     const double radial_filter_alpha = get<Tags::RadialFilterAlpha>(box);
@@ -60,11 +60,9 @@ struct FilterSwshVolumeQuantity {
         get<Tags::RadialFilterHalfPower>(box);
     db::mutate<BondiTag>(
         make_not_null(&box),
-        [
-          &l_max, &l_filter_start, &radial_filter_alpha, &
-          radial_filter_half_power
-        ](const gsl::not_null<typename BondiTag::type*>
-              bondi_quantity) noexcept {
+        [&l_max, &l_filter_start, &radial_filter_alpha,
+         &radial_filter_half_power](
+            const gsl::not_null<typename BondiTag::type*> bondi_quantity) {
           Spectral::Swsh::filter_swsh_volume_quantity(
               make_not_null(&get(*bondi_quantity)), l_max, l_filter_start,
               radial_filter_alpha, radial_filter_half_power);

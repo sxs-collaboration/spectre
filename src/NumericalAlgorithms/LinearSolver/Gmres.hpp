@@ -36,8 +36,7 @@ template <typename VarsType>
 void arnoldi_orthogonalize(
     const gsl::not_null<VarsType*> operand,
     const gsl::not_null<DenseMatrix<double>*> orthogonalization_history,
-    const std::vector<VarsType>& basis_history,
-    const size_t iteration) noexcept {
+    const std::vector<VarsType>& basis_history, const size_t iteration) {
   // Resize matrix and make sure the new entries that are not being filled below
   // are zero.
   orthogonalization_history->resize(iteration + 2, iteration + 1);
@@ -71,13 +70,13 @@ void solve_minimal_residual(
     gsl::not_null<DenseVector<double>*> residual_history,
     gsl::not_null<DenseVector<double>*> givens_sine_history,
     gsl::not_null<DenseVector<double>*> givens_cosine_history,
-    size_t iteration) noexcept;
+    size_t iteration);
 
 // Find the vector that minimizes the residual by inverting the upper
 // triangular matrix obtained above.
 DenseVector<double> minimal_residual_vector(
     const DenseMatrix<double>& orthogonalization_history,
-    const DenseVector<double>& residual_history) noexcept;
+    const DenseVector<double>& residual_history);
 
 }  // namespace gmres::detail
 
@@ -176,7 +175,7 @@ class Gmres final : public PreconditionedLinearSolver<Preconditioner,
         "Iterations to run before restarting, or 'None' to disable restarting. "
         "Note that the solver is not guaranteed to converge anymore if you "
         "enable restarting.";
-    static type suggested_value() noexcept { return {}; }
+    static type suggested_value() { return {}; }
   };
   struct Verbosity {
     using type = ::Verbosity;
@@ -218,21 +217,21 @@ class Gmres final : public PreconditionedLinearSolver<Preconditioner,
   Gmres& operator=(Gmres&&) = default;
   ~Gmres() override = default;
 
-  Gmres(const Gmres& rhs) noexcept;
-  Gmres& operator=(const Gmres& rhs) noexcept;
+  Gmres(const Gmres& rhs);
+  Gmres& operator=(const Gmres& rhs);
 
-  std::unique_ptr<LinearSolver<LinearSolverRegistrars>> get_clone() const
-      noexcept override {
+  std::unique_ptr<LinearSolver<LinearSolverRegistrars>> get_clone()
+      const override {
     return std::make_unique<Gmres>(*this);
   }
 
   /// \cond
-  explicit Gmres(CkMigrateMessage* m) noexcept;
+  explicit Gmres(CkMigrateMessage* m);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Gmres);  // NOLINT
   /// \endcond
 
-  void initialize() noexcept {
+  void initialize() {
     orthogonalization_history_.reserve(restart_ + 1);
     residual_history_.reserve(restart_ + 1);
     givens_sine_history_.reserve(restart_);
@@ -241,13 +240,13 @@ class Gmres final : public PreconditionedLinearSolver<Preconditioner,
     preconditioned_basis_history_.resize(restart_);
   }
 
-  const Convergence::Criteria& convergence_criteria() const noexcept {
+  const Convergence::Criteria& convergence_criteria() const {
     return convergence_criteria_;
   }
-  ::Verbosity verbosity() const noexcept { return verbosity_; }
-  size_t restart() const noexcept { return restart_; }
+  ::Verbosity verbosity() const { return verbosity_; }
+  size_t restart() const { return restart_; }
 
-  void pup(PUP::er& p) noexcept override {  // NOLINT
+  void pup(PUP::er& p) override {  // NOLINT
     Base::pup(p);
     p | convergence_criteria_;
     p | verbosity_;
@@ -265,9 +264,9 @@ class Gmres final : public PreconditionedLinearSolver<Preconditioner,
       const LinearOperator& linear_operator, const SourceType& source,
       const std::tuple<OperatorArgs...>& operator_args = std::tuple{},
       const IterationCallback& iteration_callback =
-          NoIterationCallback{}) const noexcept;
+          NoIterationCallback{}) const;
 
-  void reset() noexcept override {
+  void reset() override {
     // Nothing to reset. Only call into base class to reset preconditioner.
     Base::reset();
   }
@@ -325,8 +324,7 @@ Gmres<VarsType, Preconditioner, LinearSolverRegistrars>::Gmres(
 // into the base class.
 template <typename VarsType, typename Preconditioner,
           typename LinearSolverRegistrars>
-Gmres<VarsType, Preconditioner, LinearSolverRegistrars>::Gmres(
-    const Gmres& rhs) noexcept
+Gmres<VarsType, Preconditioner, LinearSolverRegistrars>::Gmres(const Gmres& rhs)
     : Base(rhs),
       convergence_criteria_(rhs.convergence_criteria_),
       verbosity_(rhs.verbosity_),
@@ -337,7 +335,7 @@ template <typename VarsType, typename Preconditioner,
           typename LinearSolverRegistrars>
 Gmres<VarsType, Preconditioner, LinearSolverRegistrars>&
 Gmres<VarsType, Preconditioner, LinearSolverRegistrars>::operator=(
-    const Gmres& rhs) noexcept {
+    const Gmres& rhs) {
   Base::operator=(rhs);
   convergence_criteria_ = rhs.convergence_criteria_;
   verbosity_ = rhs.verbosity_;
@@ -350,7 +348,7 @@ Gmres<VarsType, Preconditioner, LinearSolverRegistrars>::operator=(
 template <typename VarsType, typename Preconditioner,
           typename LinearSolverRegistrars>
 Gmres<VarsType, Preconditioner, LinearSolverRegistrars>::Gmres(
-    CkMigrateMessage* m) noexcept
+    CkMigrateMessage* m)
     : Base(m) {}
 /// \endcond
 
@@ -363,7 +361,7 @@ Gmres<VarsType, Preconditioner, LinearSolverRegistrars>::solve(
     const gsl::not_null<VarsType*> initial_guess_in_solution_out,
     const LinearOperator& linear_operator, const SourceType& source,
     const std::tuple<OperatorArgs...>& operator_args,
-    const IterationCallback& iteration_callback) const noexcept {
+    const IterationCallback& iteration_callback) const {
   constexpr bool use_preconditioner =
       not std::is_same_v<Preconditioner, NoPreconditioner>;
   constexpr bool use_iteration_callback =

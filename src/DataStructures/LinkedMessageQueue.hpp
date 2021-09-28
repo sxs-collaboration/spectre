@@ -30,33 +30,30 @@ struct LinkedMessageId {
   std::optional<Id> previous;
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept {
+  void pup(PUP::er& p) {
     p | id;
     p | previous;
   }
 };
 
 template <typename Id>
-bool operator==(const LinkedMessageId<Id>& a,
-                const LinkedMessageId<Id>& b) noexcept {
+bool operator==(const LinkedMessageId<Id>& a, const LinkedMessageId<Id>& b) {
   return a.id == b.id and a.previous == b.previous;
 }
 
 template <typename Id>
-bool operator!=(const LinkedMessageId<Id>& a,
-                const LinkedMessageId<Id>& b) noexcept {
+bool operator!=(const LinkedMessageId<Id>& a, const LinkedMessageId<Id>& b) {
   return not(a == b);
 }
 
 template <typename Id>
-std::ostream& operator<<(std::ostream& s,
-                         const LinkedMessageId<Id>& id) noexcept {
+std::ostream& operator<<(std::ostream& s, const LinkedMessageId<Id>& id) {
   return s << id.id << " (" << id.previous << ")";
 }
 
 template <typename Id>
 struct std::hash<LinkedMessageId<Id>> {
-  size_t operator()(const LinkedMessageId<Id>& id) const noexcept {
+  size_t operator()(const LinkedMessageId<Id>& id) const {
     // For normal use, any particular .id should only appear with one
     // .previous, and vice versa, so hashing only one is fine.
     return std::hash<Id>{}(id.id);
@@ -88,21 +85,21 @@ class LinkedMessageQueue<Id, tmpl::list<QueueTags...>> {
   /// are not required to receive them in the same order.
   template <typename Tag>
   void insert(const LinkedMessageId<Id>& id_and_previous,
-              typename Tag::type message) noexcept;
+              typename Tag::type message);
 
   /// The next ID in the received sequence, if all queues have
   /// received messages at that ID.
-  std::optional<Id> next_ready_id() const noexcept;
+  std::optional<Id> next_ready_id() const;
 
   /// All the messages received at the time indicated by
   /// `next_ready_id()`.  It is an error to call this function if
   /// `next_ready_id()` would return an empty optional.  This function
   /// removes the stored messages from the queues, advancing the
   /// internal sequence ID.
-  tuples::TaggedTuple<QueueTags...> extract() noexcept;
+  tuples::TaggedTuple<QueueTags...> extract();
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept {
+  void pup(PUP::er& p) {
     p | previous_id_;
     p | messages_;
   }
@@ -123,8 +120,7 @@ class LinkedMessageQueue<Id, tmpl::list<QueueTags...>> {
 template <typename Id, typename... QueueTags>
 template <typename Tag>
 void LinkedMessageQueue<Id, tmpl::list<QueueTags...>>::insert(
-    const LinkedMessageId<Id>& id_and_previous,
-    typename Tag::type message) noexcept {
+    const LinkedMessageId<Id>& id_and_previous, typename Tag::type message) {
   static_assert((... or std::is_same_v<Tag, QueueTags>), "Unrecognized tag.");
   const auto entry =
       messages_
@@ -143,8 +139,8 @@ void LinkedMessageQueue<Id, tmpl::list<QueueTags...>>::insert(
 }
 
 template <typename Id, typename... QueueTags>
-std::optional<Id> LinkedMessageQueue<
-    Id, tmpl::list<QueueTags...>>::next_ready_id() const noexcept {
+std::optional<Id>
+LinkedMessageQueue<Id, tmpl::list<QueueTags...>>::next_ready_id() const {
   const auto current_entry = messages_.find(previous_id_);
   if (current_entry == messages_.end()) {
     return {};
@@ -161,7 +157,7 @@ std::optional<Id> LinkedMessageQueue<
 
 template <typename Id, typename... QueueTags>
 tuples::TaggedTuple<QueueTags...>
-LinkedMessageQueue<Id, tmpl::list<QueueTags...>>::extract() noexcept {
+LinkedMessageQueue<Id, tmpl::list<QueueTags...>>::extract() {
   ASSERT(next_ready_id().has_value(),
          "Cannot extract before all messages have been received.");
   const auto current_entry = messages_.find(previous_id_);

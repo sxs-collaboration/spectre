@@ -90,7 +90,7 @@ struct LinearOperator : db::SimpleTag {
   static std::vector<DenseMatrix<double, blaze::columnMajor>>
   create_from_options(
       const std::vector<DenseMatrix<double, blaze::columnMajor>>&
-          linear_operator) noexcept {
+          linear_operator) {
     return linear_operator;
   }
 };
@@ -102,7 +102,7 @@ struct Source : db::SimpleTag {
 
   static constexpr bool pass_metavariables = false;
   static std::vector<DenseVector<double>> create_from_options(
-      const std::vector<DenseVector<double>>& source) noexcept {
+      const std::vector<DenseVector<double>>& source) {
     return source;
   }
 };
@@ -113,7 +113,7 @@ struct ExpectedResult : db::SimpleTag {
 
   static constexpr bool pass_metavariables = false;
   static std::vector<DenseVector<double>> create_from_options(
-      const std::vector<DenseVector<double>>& expected_result) noexcept {
+      const std::vector<DenseVector<double>>& expected_result) {
     return expected_result;
   }
 };
@@ -121,7 +121,7 @@ struct ExpectedResult : db::SimpleTag {
 // The vector `x` we want to solve for
 struct ScalarFieldTag : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static std::string name() noexcept { return "ScalarField"; }
+  static std::string name() { return "ScalarField"; }
 };
 
 using fields_tag = Tags::Variables<tmpl::list<ScalarFieldTag>>;
@@ -133,7 +133,7 @@ using operator_applied_to_fields_tag =
 // entry of the vectors provided in the input file. This function translates the
 // element to an index into these vectors. We assume the domain is composed of a
 // single block.
-size_t get_index(const ElementId<1>& element_id) noexcept {
+size_t get_index(const ElementId<1>& element_id) {
   return element_id.segment_id(0).index();
 }
 
@@ -163,7 +163,7 @@ struct ComputeOperatorAction {
       // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
       const ActionList /*meta*/,
       // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     const size_t element_index = get_index(element_id);
     const auto& operator_matrices = get<LinearOperator>(box);
     const auto number_of_elements = operator_matrices.size();
@@ -199,11 +199,11 @@ struct CollectOperatorAction {
             typename Metavariables, typename ScalarFieldOperandTag,
             Requires<tmpl::list_contains_v<
                 DbTagsList, local_operator_applied_to_operand_tag>> = nullptr>
-  static void apply(db::DataBox<DbTagsList>& box,
-                    const Parallel::GlobalCache<Metavariables>& cache,
-                    const ElementId<1>& element_id,
-                    const Variables<tmpl::list<ScalarFieldOperandTag>>&
-                        Ap_global_data) noexcept {
+  static void apply(
+      db::DataBox<DbTagsList>& box,
+      const Parallel::GlobalCache<Metavariables>& cache,
+      const ElementId<1>& element_id,
+      const Variables<tmpl::list<ScalarFieldOperandTag>>& Ap_global_data) {
     const size_t element_index = get_index(element_id);
     // This could be generalized to work on the Variables instead of the
     // Scalar, but it's only for the purpose of this test.
@@ -216,8 +216,7 @@ struct CollectOperatorAction {
                   static_cast<int>((element_index + 1) * number_of_grid_points),
               Ap_local.begin());
     db::mutate<local_operator_applied_to_operand_tag>(
-        make_not_null(&box),
-        [&Ap_local, &number_of_grid_points](auto Ap) noexcept {
+        make_not_null(&box), [&Ap_local, &number_of_grid_points](auto Ap) {
           *Ap = typename local_operator_applied_to_operand_tag::type{
               number_of_grid_points};
           get(get<LinearSolver::Tags::OperatorAppliedTo<ScalarFieldOperandTag>>(
@@ -246,7 +245,7 @@ struct TestResult {
       // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
       const ActionList /*meta*/,
       // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     const size_t element_index = get_index(element_id);
     const auto& has_converged =
         get<Convergence::Tags::HasConverged<OptionsGroup>>(box);
@@ -279,7 +278,7 @@ struct InitializeElement {
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ElementId<1>& element_id, const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     // Domain geometry
     const auto& domain = db::get<domain::Tags::Domain<1>>(box);
     const auto& initial_extents = db::get<domain::Tags::InitialExtents<1>>(box);

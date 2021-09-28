@@ -76,8 +76,8 @@ SPECTRE_TEST_CASE("Unit.Time.Slab", "[Unit][Time]") {
   CHECK(slab != Slab(tend_d, tend2_d));
 
   {
-    const auto check_overlaps =
-        [](const Slab& a, const Slab& b, const bool expected) noexcept {
+    const auto check_overlaps = [](const Slab& a, const Slab& b,
+                                   const bool expected) {
       CAPTURE(a);
       CAPTURE(b);
       CHECK(a.overlaps(b) == expected);

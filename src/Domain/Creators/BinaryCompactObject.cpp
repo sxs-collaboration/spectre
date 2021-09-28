@@ -49,7 +49,7 @@ struct BlockLogical;
 
 namespace domain::creators {
 
-bool BinaryCompactObject::Object::is_excised() const noexcept {
+bool BinaryCompactObject::Object::is_excised() const {
   return inner_boundary_condition.has_value();
 }
 
@@ -163,9 +163,8 @@ BinaryCompactObject::BinaryCompactObject(
   // Create block names and groups
   static std::array<std::string, 6> wedge_directions{
       "UpperZ", "LowerZ", "UpperY", "LowerY", "UpperX", "LowerX"};
-  const auto add_object_region = [this](
-                                     const std::string& object_name,
-                                     const std::string& region_name) noexcept {
+  const auto add_object_region = [this](const std::string& object_name,
+                                        const std::string& region_name) {
     for (const std::string& wedge_direction : wedge_directions) {
       const std::string block_name =
           // NOLINTNEXTLINE(performance-inefficient-string-concatenation)
@@ -174,13 +173,12 @@ BinaryCompactObject::BinaryCompactObject(
       block_groups_[object_name + region_name].insert(block_name);
     }
   };
-  const auto add_object_interior =
-      [this](const std::string& object_name) noexcept {
-        const std::string block_name = object_name + "Interior";
-        block_names_.push_back(block_name);
-      };
+  const auto add_object_interior = [this](const std::string& object_name) {
+    const std::string block_name = object_name + "Interior";
+    block_names_.push_back(block_name);
+  };
   const auto add_outer_region =
-      [this](const std::string& region_name) noexcept {
+      [this](const std::string& region_name) {
         for (const std::string& wedge_direction : wedge_directions) {
           for (const std::string& leftright : {"Left", "Right"}) {
             if ((wedge_direction == "UpperX" and leftright == "Left") or
@@ -285,7 +283,7 @@ BinaryCompactObject::BinaryCompactObject(
   size_map_function_of_time_names_ = std::move(size_map_function_of_time_names);
 }
 
-Domain<3> BinaryCompactObject::create_domain() const noexcept {
+Domain<3> BinaryCompactObject::create_domain() const {
   const double inner_sphericity_A = object_A_.is_excised() ? 1.0 : 0.0;
   const double inner_sphericity_B = object_B_.is_excised() ? 1.0 : 0.0;
 
@@ -633,7 +631,7 @@ Domain<3> BinaryCompactObject::create_domain() const noexcept {
 
 std::unordered_map<std::string,
                    std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
-BinaryCompactObject::functions_of_time() const noexcept {
+BinaryCompactObject::functions_of_time() const {
   std::unordered_map<std::string,
                      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
       result{};

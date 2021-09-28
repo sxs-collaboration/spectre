@@ -21,7 +21,7 @@ void GaugeAdjustedBoundaryValue<Tags::BondiR>::apply(
         evolution_gauge_r,
     const Scalar<SpinWeighted<ComplexDataVector, 0>>& cauchy_gauge_r,
     const Scalar<SpinWeighted<ComplexDataVector, 0>>& omega,
-    const Spectral::Swsh::SwshInterpolator& interpolator) noexcept {
+    const Spectral::Swsh::SwshInterpolator& interpolator) {
   interpolator.interpolate(make_not_null(&get(*evolution_gauge_r)),
                            get(cauchy_gauge_r));
   get(*evolution_gauge_r) = get(*evolution_gauge_r) * get(omega);
@@ -36,8 +36,7 @@ void GaugeAdjustedBoundaryValue<Tags::DuRDividedByR>::apply(
     const Scalar<SpinWeighted<ComplexDataVector, 0>>& evolution_gauge_r,
     const Scalar<SpinWeighted<ComplexDataVector, 0>>& omega,
     const Scalar<SpinWeighted<ComplexDataVector, 0>>& du_omega,
-    const Spectral::Swsh::SwshInterpolator& interpolator,
-    const size_t l_max) noexcept {
+    const Spectral::Swsh::SwshInterpolator& interpolator, const size_t l_max) {
   interpolator.interpolate(
       make_not_null(&get(*evolution_gauge_du_r_divided_by_r)),
       get(cauchy_gauge_du_r_divided_by_r));
@@ -63,7 +62,7 @@ void GaugeAdjustedBoundaryValue<Tags::BondiJ>::apply(
     const Scalar<SpinWeighted<ComplexDataVector, 2>>& gauge_c,
     const Scalar<SpinWeighted<ComplexDataVector, 0>>& gauge_d,
     const Scalar<SpinWeighted<ComplexDataVector, 0>>& omega,
-    const Spectral::Swsh::SwshInterpolator& interpolator) noexcept {
+    const Spectral::Swsh::SwshInterpolator& interpolator) {
   interpolator.interpolate(make_not_null(&get(*evolution_gauge_j)),
                            get(cauchy_gauge_j));
 
@@ -85,8 +84,7 @@ void GaugeAdjustedBoundaryValue<Tags::Dr<Tags::BondiJ>>::apply(
     const Scalar<SpinWeighted<ComplexDataVector, 2>>& gauge_c,
     const Scalar<SpinWeighted<ComplexDataVector, 0>>& gauge_d,
     const Scalar<SpinWeighted<ComplexDataVector, 0>>& omega,
-    const Spectral::Swsh::SwshInterpolator& interpolator,
-    const size_t l_max) noexcept {
+    const Spectral::Swsh::SwshInterpolator& interpolator, const size_t l_max) {
   interpolator.interpolate(make_not_null(&get(*evolution_gauge_dr_j)),
                            get(cauchy_gauge_dr_j));
 
@@ -110,7 +108,7 @@ void GaugeAdjustedBoundaryValue<Tags::BondiBeta>::apply(
         evolution_gauge_beta,
     const Scalar<SpinWeighted<ComplexDataVector, 0>>& cauchy_gauge_beta,
     const Scalar<SpinWeighted<ComplexDataVector, 0>>& omega,
-    const Spectral::Swsh::SwshInterpolator& interpolator) noexcept {
+    const Spectral::Swsh::SwshInterpolator& interpolator) {
   interpolator.interpolate(make_not_null(&get(*evolution_gauge_beta)),
                            get(cauchy_gauge_beta));
   get(*evolution_gauge_beta).data() -= 0.5 * log(get(omega).data());
@@ -127,8 +125,7 @@ void GaugeAdjustedBoundaryValue<Tags::BondiQ>::apply_impl(
     const SpinWeighted<ComplexDataVector, 0>& gauge_d,
     const SpinWeighted<ComplexDataVector, 0>& omega,
     const SpinWeighted<ComplexDataVector, 1>& eth_omega,
-    const Spectral::Swsh::SwshInterpolator& interpolator,
-    const size_t l_max) noexcept {
+    const Spectral::Swsh::SwshInterpolator& interpolator, const size_t l_max) {
   interpolator.interpolate(evolution_gauge_q, cauchy_gauge_dr_u);
 
   const SpinWeighted<ComplexDataVector, 2> evolution_gauge_j;
@@ -187,8 +184,7 @@ void GaugeAdjustedBoundaryValue<Tags::BondiU>::apply(
     const Scalar<SpinWeighted<ComplexDataVector, 0>>& gauge_d,
     const Scalar<SpinWeighted<ComplexDataVector, 0>>& omega,
     const Scalar<SpinWeighted<ComplexDataVector, 1>>& eth_omega,
-    const Spectral::Swsh::SwshInterpolator& interpolator,
-    const size_t l_max) noexcept {
+    const Spectral::Swsh::SwshInterpolator& interpolator, const size_t l_max) {
   interpolator.interpolate(make_not_null(&get(*evolution_gauge_u)),
                            get(cauchy_gauge_u));
 
@@ -218,8 +214,7 @@ void GaugeAdjustedBoundaryValue<Tags::BondiW>::apply_impl(
     const SpinWeighted<ComplexDataVector, 0>& omega,
     const SpinWeighted<ComplexDataVector, 0>& du_omega,
     const SpinWeighted<ComplexDataVector, 1>& eth_omega,
-    const Spectral::Swsh::SwshInterpolator& interpolator,
-    const size_t l_max) noexcept {
+    const Spectral::Swsh::SwshInterpolator& interpolator, const size_t l_max) {
   interpolator.interpolate(evolution_gauge_w, cauchy_gauge_w);
 
   const SpinWeighted<ComplexDataVector, 2> evolution_gauge_j;
@@ -256,8 +251,7 @@ void GaugeAdjustedBoundaryValue<Tags::BondiH>::apply_impl(
     const SpinWeighted<ComplexDataVector, 0>& du_omega,
     const SpinWeighted<ComplexDataVector, 1>& eth_omega,
     const SpinWeighted<ComplexDataVector, 0>& evolution_gauge_du_r_divided_by_r,
-    const Spectral::Swsh::SwshInterpolator& interpolator,
-    const size_t l_max) noexcept {
+    const Spectral::Swsh::SwshInterpolator& interpolator, const size_t l_max) {
   // optimization note: this has several spin-weighted derivatives, they can
   // be aggregated
 
@@ -419,7 +413,7 @@ void GaugeUpdateTimeDerivatives::apply(
     const tnsr::i<DataVector, 3>& cartesian_cauchy_coordinates,
     const Scalar<SpinWeighted<ComplexDataVector, 0>>& omega,
     const Scalar<SpinWeighted<ComplexDataVector, 1>>& eth_omega,
-    const size_t l_max) noexcept {
+    const size_t l_max) {
   const size_t number_of_angular_points =
       Spectral::Swsh::number_of_swsh_collocation_points(l_max);
   const size_t number_of_radial_points =
@@ -532,8 +526,7 @@ void GaugeUpdateInertialTimeDerivatives::apply(
     const Scalar<SpinWeighted<ComplexDataVector, 2>>& gauge_cauchy_c,
     const Scalar<SpinWeighted<ComplexDataVector, 0>>& omega,
     const Scalar<SpinWeighted<ComplexDataVector, 0>>& gauge_cauchy_d,
-    const size_t l_max,
-    const Spectral::Swsh::SwshInterpolator& interpolator) noexcept {
+    const size_t l_max, const Spectral::Swsh::SwshInterpolator& interpolator) {
   const size_t number_of_angular_points =
       Spectral::Swsh::number_of_swsh_collocation_points(l_max);
 
@@ -631,7 +624,7 @@ void gauge_update_jacobian_from_coordinates_apply_impl(
         tnsr::i<DataVector, 2, ::Frame::Spherical<::Frame::Inertial>>*>
         angular_source_coordinates,
     const tnsr::i<DataVector, 3>& cartesian_source_coordinates,
-    const size_t l_max) noexcept {
+    const size_t l_max) {
   const size_t number_of_angular_points =
       Spectral::Swsh::number_of_swsh_collocation_points(l_max);
   Variables<
@@ -751,7 +744,7 @@ void GaugeUpdateOmega<GaugeC, GaugeD, GaugeOmega>::apply(
     const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 1>>*> eth_omega,
     const Scalar<SpinWeighted<ComplexDataVector, 2>>& gauge_c,
     const Scalar<SpinWeighted<ComplexDataVector, 0>>& gauge_d,
-    const size_t l_max) noexcept {
+    const size_t l_max) {
   get(*omega) = 0.5 * sqrt(get(gauge_d).data() * conj(get(gauge_d).data()) -
                            get(gauge_c).data() * conj(get(gauge_c).data()));
 
@@ -767,7 +760,7 @@ void InitializeGauge::apply(
     const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 2>>*> gauge_c,
     const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*> gauge_d,
     const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*> omega,
-    const size_t l_max) noexcept {
+    const size_t l_max) {
   const auto& collocation = Spectral::Swsh::cached_collocation_metadata<
       Spectral::Swsh::ComplexRepresentation::Interleaved>(l_max);
   for (const auto collocation_point : collocation) {

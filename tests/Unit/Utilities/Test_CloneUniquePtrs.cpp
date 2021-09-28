@@ -26,7 +26,7 @@ struct NonCopyableValue {
 
 void test_unordered_map() {
   using Map = std::unordered_map<int, std::unique_ptr<NonCopyableValue>>;
-  const auto check_cloning = [](const Map& map) noexcept {
+  const auto check_cloning = [](const Map& map) {
     const auto map_copy = clone_unique_ptrs(map);
     REQUIRE(map.size() == map_copy.size());
     for (const auto& kv : map) {
@@ -53,7 +53,7 @@ void test_unordered_map() {
 
 void test_vector() {
   using Vector = std::vector<std::unique_ptr<NonCopyableValue>>;
-  const auto check_cloning = [](const Vector& vector) noexcept {
+  const auto check_cloning = [](const Vector& vector) {
     const auto vector_copy = clone_unique_ptrs(vector);
     REQUIRE(vector.size() == vector_copy.size());
     for (size_t i = 0; i < vector.size(); ++i) {

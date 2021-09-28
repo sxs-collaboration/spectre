@@ -30,13 +30,13 @@ namespace gr {
 template <size_t VolumeDim, typename Frame, typename DataType>
 tnsr::II<DataType, VolumeDim, Frame> transverse_projection_operator(
     const tnsr::II<DataType, VolumeDim, Frame>& inverse_spatial_metric,
-    const tnsr::I<DataType, VolumeDim, Frame>& normal_vector) noexcept;
+    const tnsr::I<DataType, VolumeDim, Frame>& normal_vector);
 
 template <size_t VolumeDim, typename Frame, typename DataType>
 void transverse_projection_operator(
     gsl::not_null<tnsr::II<DataType, VolumeDim, Frame>*> projection_tensor,
     const tnsr::II<DataType, VolumeDim, Frame>& inverse_spatial_metric,
-    const tnsr::I<DataType, VolumeDim, Frame>& normal_vector) noexcept;
+    const tnsr::I<DataType, VolumeDim, Frame>& normal_vector);
 /// @}
 
 /// @{
@@ -51,13 +51,13 @@ void transverse_projection_operator(
 template <size_t VolumeDim, typename Frame, typename DataType>
 tnsr::ii<DataType, VolumeDim, Frame> transverse_projection_operator(
     const tnsr::ii<DataType, VolumeDim, Frame>& spatial_metric,
-    const tnsr::i<DataType, VolumeDim, Frame>& normal_one_form) noexcept;
+    const tnsr::i<DataType, VolumeDim, Frame>& normal_one_form);
 
 template <size_t VolumeDim, typename Frame, typename DataType>
 void transverse_projection_operator(
     gsl::not_null<tnsr::ii<DataType, VolumeDim, Frame>*> projection_tensor,
     const tnsr::ii<DataType, VolumeDim, Frame>& spatial_metric,
-    const tnsr::i<DataType, VolumeDim, Frame>& normal_one_form) noexcept;
+    const tnsr::i<DataType, VolumeDim, Frame>& normal_one_form);
 /// @}
 
 /// @{
@@ -72,13 +72,13 @@ void transverse_projection_operator(
 template <size_t VolumeDim, typename Frame, typename DataType>
 tnsr::Ij<DataType, VolumeDim, Frame> transverse_projection_operator(
     const tnsr::I<DataType, VolumeDim, Frame>& normal_vector,
-    const tnsr::i<DataType, VolumeDim, Frame>& normal_one_form) noexcept;
+    const tnsr::i<DataType, VolumeDim, Frame>& normal_one_form);
 
 template <size_t VolumeDim, typename Frame, typename DataType>
 void transverse_projection_operator(
     gsl::not_null<tnsr::Ij<DataType, VolumeDim, Frame>*> projection_tensor,
     const tnsr::I<DataType, VolumeDim, Frame>& normal_vector,
-    const tnsr::i<DataType, VolumeDim, Frame>& normal_one_form) noexcept;
+    const tnsr::i<DataType, VolumeDim, Frame>& normal_one_form);
 /// @}
 
 /// @{
@@ -101,16 +101,14 @@ template <size_t VolumeDim, typename Frame, typename DataType>
 tnsr::aa<DataType, VolumeDim, Frame> transverse_projection_operator(
     const tnsr::aa<DataType, VolumeDim, Frame>& spacetime_metric,
     const tnsr::a<DataType, VolumeDim, Frame>& spacetime_normal_one_form,
-    const tnsr::i<DataType, VolumeDim, Frame>&
-        interface_unit_normal_one_form) noexcept;
+    const tnsr::i<DataType, VolumeDim, Frame>& interface_unit_normal_one_form);
 
 template <size_t VolumeDim, typename Frame, typename DataType>
 void transverse_projection_operator(
     gsl::not_null<tnsr::aa<DataType, VolumeDim, Frame>*> projection_tensor,
     const tnsr::aa<DataType, VolumeDim, Frame>& spacetime_metric,
     const tnsr::a<DataType, VolumeDim, Frame>& spacetime_normal_one_form,
-    const tnsr::i<DataType, VolumeDim, Frame>&
-        interface_unit_normal_one_form) noexcept;
+    const tnsr::i<DataType, VolumeDim, Frame>& interface_unit_normal_one_form);
 /// @}
 
 /// @{
@@ -133,16 +131,14 @@ template <size_t VolumeDim, typename Frame, typename DataType>
 tnsr::AA<DataType, VolumeDim, Frame> transverse_projection_operator(
     const tnsr::AA<DataType, VolumeDim, Frame>& inverse_spacetime_metric,
     const tnsr::A<DataType, VolumeDim, Frame>& spacetime_normal_vector,
-    const tnsr::I<DataType, VolumeDim, Frame>&
-        interface_unit_normal_vector) noexcept;
+    const tnsr::I<DataType, VolumeDim, Frame>& interface_unit_normal_vector);
 
 template <size_t VolumeDim, typename Frame, typename DataType>
 void transverse_projection_operator(
     gsl::not_null<tnsr::AA<DataType, VolumeDim, Frame>*> projection_tensor,
     const tnsr::AA<DataType, VolumeDim, Frame>& inverse_spacetime_metric,
     const tnsr::A<DataType, VolumeDim, Frame>& spacetime_normal_vector,
-    const tnsr::I<DataType, VolumeDim, Frame>&
-        interface_unit_normal_vector) noexcept;
+    const tnsr::I<DataType, VolumeDim, Frame>& interface_unit_normal_vector);
 /// @}
 
 /// @{
@@ -167,8 +163,7 @@ tnsr::Ab<DataType, VolumeDim, Frame> transverse_projection_operator(
     const tnsr::A<DataType, VolumeDim, Frame>& spacetime_normal_vector,
     const tnsr::a<DataType, VolumeDim, Frame>& spacetime_normal_one_form,
     const tnsr::I<DataType, VolumeDim, Frame>& interface_unit_normal_vector,
-    const tnsr::i<DataType, VolumeDim, Frame>&
-        interface_unit_normal_one_form) noexcept;
+    const tnsr::i<DataType, VolumeDim, Frame>& interface_unit_normal_one_form);
 
 template <size_t VolumeDim, typename Frame, typename DataType>
 void transverse_projection_operator(
@@ -176,7 +171,6 @@ void transverse_projection_operator(
     const tnsr::A<DataType, VolumeDim, Frame>& spacetime_normal_vector,
     const tnsr::a<DataType, VolumeDim, Frame>& spacetime_normal_one_form,
     const tnsr::I<DataType, VolumeDim, Frame>& interface_unit_normal_vector,
-    const tnsr::i<DataType, VolumeDim, Frame>&
-        interface_unit_normal_one_form) noexcept;
+    const tnsr::i<DataType, VolumeDim, Frame>& interface_unit_normal_one_form);
 /// @}
 }  // namespace gr

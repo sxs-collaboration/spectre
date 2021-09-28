@@ -16,7 +16,7 @@ void add_cartesian_flux_divergence(const gsl::not_null<DataVector*> dt_var,
                                    const DataVector& inv_jacobian,
                                    const DataVector& boundary_correction,
                                    const Index<1>& subcell_extents,
-                                   const size_t dimension) noexcept {
+                                   const size_t dimension) {
   (void)dimension;
   ASSERT(dimension == 0, "dimension must be 0 but is " << dimension);
   for (size_t i = 0; i < subcell_extents[0]; ++i) {
@@ -30,7 +30,7 @@ void add_cartesian_flux_divergence(const gsl::not_null<DataVector*> dt_var,
                                    const DataVector& inv_jacobian,
                                    const DataVector& boundary_correction,
                                    const Index<2>& subcell_extents,
-                                   const size_t dimension) noexcept {
+                                   const size_t dimension) {
   ASSERT(dimension == 0 or dimension == 1,
          "dimension must be 0 or 1 but is " << dimension);
   Index<2> subcell_face_extents = subcell_extents;
@@ -57,7 +57,7 @@ void add_cartesian_flux_divergence(const gsl::not_null<DataVector*> dt_var,
                                    const DataVector& inv_jacobian,
                                    const DataVector& boundary_correction,
                                    const Index<3>& subcell_extents,
-                                   const size_t dimension) noexcept {
+                                   const size_t dimension) {
   ASSERT(dimension == 0 or dimension == 1 or dimension == 2,
          "dimension must be 0, 1, or 2 but is " << dimension);
   Index<3> subcell_face_extents = subcell_extents;

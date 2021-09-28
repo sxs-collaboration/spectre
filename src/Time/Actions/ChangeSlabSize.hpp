@@ -73,7 +73,7 @@ struct StoreNewSlabSize {
   static void apply(const db::DataBox<DbTags>& /*box*/,
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& array_index, const int64_t slab_number,
-                    const double slab_size) noexcept {
+                    const double slab_size) {
     Parallel::receive_data<ChangeSlabSize_detail::NewSlabSizeInbox>(
         *Parallel::get_parallel_component<ParallelComponent>(cache)[array_index]
              .ckLocal(),
@@ -115,7 +115,7 @@ struct ChangeSlabSize {
       db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& inboxes,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     const auto& time_step_id = db::get<Tags::TimeStepId>(box);
     if (not time_step_id.is_at_slab_boundary()) {
       return {std::move(box), Parallel::AlgorithmExecution::Continue};
@@ -133,8 +133,7 @@ struct ChangeSlabSize {
         tuples::get<ChangeSlabSize_detail::NewSlabSizeInbox>(inboxes);
 
     const auto slab_number = time_step_id.slab_number();
-    const auto number_of_changes = [&slab_number](
-                                       const auto& inbox) noexcept->size_t {
+    const auto number_of_changes = [&slab_number](const auto& inbox) -> size_t {
       if (inbox.empty()) {
         return 0;
       }
@@ -198,7 +197,7 @@ struct ChangeSlabSize {
             const gsl::not_null<TimeStepId*> next_time_step_id,
             const gsl::not_null<TimeDelta*> time_step,
             const gsl::not_null<TimeDelta*> next_time_step,
-            const gsl::not_null<TimeStepId*> local_time_step_id) noexcept {
+            const gsl::not_null<TimeStepId*> local_time_step_id) {
           *next_time_step_id = new_next_time_step_id;
           *time_step = new_step;
           *next_time_step = new_step;
@@ -232,7 +231,7 @@ class ChangeSlabSize : public Event {
 
  public:
   /// \cond
-  explicit ChangeSlabSize(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit ChangeSlabSize(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ChangeSlabSize);  // NOLINT
   /// \endcond
@@ -241,7 +240,7 @@ class ChangeSlabSize : public Event {
     static constexpr Options::String help = "Limits on slab size";
     using type =
         std::vector<std::unique_ptr<StepChooser<StepChooserUse::Slab>>>;
-    static size_t lower_bound_on_size() noexcept { return 1; }
+    static size_t lower_bound_on_size() { return 1; }
   };
 
   struct DelayChange {
@@ -256,10 +255,9 @@ class ChangeSlabSize : public Event {
       "slab to improve parallelization.";
 
   ChangeSlabSize() = default;
-  ChangeSlabSize(
-      std::vector<std::unique_ptr<StepChooser<StepChooserUse::Slab>>>
-          step_choosers,
-      const uint64_t delay_change) noexcept
+  ChangeSlabSize(std::vector<std::unique_ptr<StepChooser<StepChooserUse::Slab>>>
+                     step_choosers,
+                 const uint64_t delay_change)
       : step_choosers_(std::move(step_choosers)), delay_change_(delay_change) {}
 
   using argument_tags = tmpl::list<Tags::TimeStepId, Tags::DataBox>;
@@ -270,7 +268,7 @@ class ChangeSlabSize : public Event {
                   const db::DataBox<DbTags>& box_for_step_choosers,
                   Parallel::GlobalCache<Metavariables>& cache,
                   const ArrayIndex& array_index,
-                  const ParallelComponent* const /*meta*/) const noexcept {
+                  const ParallelComponent* const /*meta*/) const {
     const auto next_changable_slab = time_step_id.is_at_slab_boundary()
                                          ? time_step_id.slab_number()
                                          : time_step_id.slab_number() + 1;
@@ -305,11 +303,11 @@ class ChangeSlabSize : public Event {
   template <typename Metavariables, typename ArrayIndex, typename Component>
   bool is_ready(Parallel::GlobalCache<Metavariables>& /*cache*/,
                 const ArrayIndex& /*array_index*/,
-                const Component* const /*meta*/) const noexcept {
+                const Component* const /*meta*/) const {
     return true;
   }
 
-  bool needs_evolved_variables() const noexcept override {
+  bool needs_evolved_variables() const override {
     // This depends on the chosen StepChoosers, but they don't have a
     // way to report this information so we just return true to be
     // safe.
@@ -317,7 +315,7 @@ class ChangeSlabSize : public Event {
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept override {
+  void pup(PUP::er& p) override {
     Event::pup(p);
     p | step_choosers_;
     p | delay_change_;

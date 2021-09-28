@@ -89,12 +89,12 @@ struct KerrHorizon {
   KerrHorizon() = default;
   KerrHorizon(const KerrHorizon& /*rhs*/) = default;
   KerrHorizon& operator=(const KerrHorizon& /*rhs*/) = delete;
-  KerrHorizon(KerrHorizon&& /*rhs*/) noexcept = default;
-  KerrHorizon& operator=(KerrHorizon&& /*rhs*/) noexcept = default;
+  KerrHorizon(KerrHorizon&& /*rhs*/) = default;
+  KerrHorizon& operator=(KerrHorizon&& /*rhs*/) = default;
   ~KerrHorizon() = default;
 
   // clang-tidy non-const reference pointer.
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
 
   size_t l_max{};
   std::array<double, 3> center{};
@@ -103,8 +103,8 @@ struct KerrHorizon {
   bool theta_varies_fastest_memory_layout{};
 };
 
-bool operator==(const KerrHorizon& lhs, const KerrHorizon& rhs) noexcept;
-bool operator!=(const KerrHorizon& lhs, const KerrHorizon& rhs) noexcept;
+bool operator==(const KerrHorizon& lhs, const KerrHorizon& rhs);
+bool operator!=(const KerrHorizon& lhs, const KerrHorizon& rhs);
 
 }  // namespace OptionHolders
 
@@ -114,9 +114,7 @@ struct KerrHorizon {
   using type = OptionHolders::KerrHorizon;
   static constexpr Options::String help{
       "Options for interpolation onto Kerr horizon."};
-  static std::string name() noexcept {
-    return Options::name<InterpolationTargetTag>();
-  }
+  static std::string name() { return Options::name<InterpolationTargetTag>(); }
   using group = InterpolationTargets;
 };
 }  // namespace OptionTags
@@ -129,9 +127,7 @@ struct KerrHorizon : db::SimpleTag {
       tmpl::list<OptionTags::KerrHorizon<InterpolationTargetTag>>;
 
   static constexpr bool pass_metavariables = false;
-  static type create_from_options(const type& option) noexcept {
-    return option;
-  }
+  static type create_from_options(const type& option) { return option; }
 };
 }  // namespace Tags
 
@@ -161,9 +157,8 @@ struct KerrHorizon {
   using compute_tags = typename StrahlkorperTags::compute_items_tags<Frame>;
 
   template <typename DbTags, typename Metavariables>
-  static void initialize(
-      const gsl::not_null<db::DataBox<DbTags>*> box,
-      const Parallel::GlobalCache<Metavariables>& cache) noexcept {
+  static void initialize(const gsl::not_null<db::DataBox<DbTags>*> box,
+                         const Parallel::GlobalCache<Metavariables>& cache) {
     const auto& kerr_horizon =
         Parallel::get<Tags::KerrHorizon<InterpolationTargetTag>>(cache);
 
@@ -182,7 +177,7 @@ struct KerrHorizon {
   static tnsr::I<DataVector, 3, Frame> points(
       const db::DataBox<DbTags>& box,
       const tmpl::type_<Metavariables>& /*meta*/,
-      const TemporalId& /*temporal_id*/) noexcept {
+      const TemporalId& /*temporal_id*/) {
     const auto& kerr_horizon =
         db::get<Tags::KerrHorizon<InterpolationTargetTag>>(box);
     if (kerr_horizon.theta_varies_fastest_memory_layout) {
@@ -206,7 +201,7 @@ struct KerrHorizon {
   template <typename Metavariables, typename DbTags>
   static tnsr::I<DataVector, 3, Frame> points(
       const db::DataBox<DbTags>& box,
-      const tmpl::type_<Metavariables>& /*meta*/) noexcept {
+      const tmpl::type_<Metavariables>& /*meta*/) {
     return db::get<StrahlkorperTags::CartesianCoords<Frame>>(box);
   }
 };

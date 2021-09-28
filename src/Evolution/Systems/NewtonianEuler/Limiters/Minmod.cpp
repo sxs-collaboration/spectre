@@ -44,7 +44,7 @@ bool characteristic_minmod_impl(
         typename NewtonianEuler::Limiters::Minmod<VolumeDim>::PackagedData,
         boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
         neighbor_data,
-    const bool compute_char_transformation_numerically) noexcept {
+    const bool compute_char_transformation_numerically) {
   // Storage for transforming neighbor_data into char variables
   using CharacteristicVarsMinmod =
       Limiters::Minmod<VolumeDim,
@@ -72,7 +72,7 @@ bool characteristic_minmod_impl(
           const gsl::not_null<Scalar<DataVector>*> char_v_minus,
           const gsl::not_null<tnsr::I<DataVector, VolumeDim>*> char_v_momentum,
           const gsl::not_null<Scalar<DataVector>*> char_v_plus,
-          const Matrix& left_eigenvectors) noexcept -> bool {
+          const Matrix& left_eigenvectors) -> bool {
     // Convert neighbor data to characteristics
     for (const auto& [key, data] : neighbor_data) {
       NewtonianEuler::Limiters::characteristic_fields(
@@ -87,7 +87,7 @@ bool characteristic_minmod_impl(
                               &u_lin_buffer, &tci_buffer, &minmod_type,
                               &tvb_constant, &mesh, &element, &logical_coords,
                               &element_size, &neighbor_char_data](
-                                 auto tag, const auto tensor) noexcept {
+                                 auto tag, const auto tensor) {
       const bool result =
           Limiters::Minmod_detail::minmod_impl<VolumeDim, decltype(tag)>(
               &u_lin_buffer, &tci_buffer, tensor, minmod_type, tvb_constant,
@@ -117,7 +117,7 @@ Minmod<VolumeDim>::Minmod(
     const ::Limiters::MinmodType minmod_type,
     const NewtonianEuler::Limiters::VariablesToLimit vars_to_limit,
     const double tvb_constant, const bool apply_flattener,
-    const bool disable_for_debugging) noexcept
+    const bool disable_for_debugging)
     : minmod_type_(minmod_type),
       vars_to_limit_(vars_to_limit),
       tvb_constant_(tvb_constant),
@@ -129,7 +129,7 @@ Minmod<VolumeDim>::Minmod(
 }
 
 template <size_t VolumeDim>
-void Minmod<VolumeDim>::pup(PUP::er& p) noexcept {
+void Minmod<VolumeDim>::pup(PUP::er& p) {
   p | minmod_type_;
   p | vars_to_limit_;
   p | tvb_constant_;
@@ -145,7 +145,7 @@ void Minmod<VolumeDim>::package_data(
     const tnsr::I<DataVector, VolumeDim>& momentum_density,
     const Scalar<DataVector>& energy_density, const Mesh<VolumeDim>& mesh,
     const std::array<double, VolumeDim>& element_size,
-    const OrientationMap<VolumeDim>& orientation_map) const noexcept {
+    const OrientationMap<VolumeDim>& orientation_map) const {
   conservative_vars_minmod_.package_data(packaged_data, mass_density_cons,
                                          momentum_density, energy_density, mesh,
                                          element_size, orientation_map);
@@ -166,7 +166,7 @@ bool Minmod<VolumeDim>::operator()(
     const std::unordered_map<
         std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
         boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
-        neighbor_data) const noexcept {
+        neighbor_data) const {
   if (UNLIKELY(disable_for_debugging_)) {
     // Do not modify input tensors
     return false;
@@ -237,8 +237,7 @@ bool Minmod<VolumeDim>::operator()(
 }
 
 template <size_t LocalDim>
-bool operator==(const Minmod<LocalDim>& lhs,
-                const Minmod<LocalDim>& rhs) noexcept {
+bool operator==(const Minmod<LocalDim>& lhs, const Minmod<LocalDim>& rhs) {
   // No need to compare the conservative_vars_minmod_ member variable because
   // it is constructed from the other member variables.
   return lhs.minmod_type_ == rhs.minmod_type_ and
@@ -249,8 +248,7 @@ bool operator==(const Minmod<LocalDim>& lhs,
 }
 
 template <size_t VolumeDim>
-bool operator!=(const Minmod<VolumeDim>& lhs,
-                const Minmod<VolumeDim>& rhs) noexcept {
+bool operator!=(const Minmod<VolumeDim>& lhs, const Minmod<VolumeDim>& rhs) {
   return not(lhs == rhs);
 }
 
@@ -279,8 +277,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
       const std::unordered_map<                                                \
           std::pair<Direction<DIM(data)>, ElementId<DIM(data)>>, PackagedData, \
           boost::hash<                                                         \
-              std::pair<Direction<DIM(data)>, ElementId<DIM(data)>>>>&)        \
-      const noexcept;
+              std::pair<Direction<DIM(data)>, ElementId<DIM(data)>>>>&) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (1, 2))
 

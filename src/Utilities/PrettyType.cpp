@@ -17,7 +17,7 @@ namespace {
 // used to skip characters we know we don't care about or do not
 // understand.
 void remove_until(const gsl::not_null<std::string_view*> remainder,
-                  const char* targets) noexcept {
+                  const char* targets) {
   const auto next_target = remainder->find_first_of(targets);
   ASSERT(next_target != remainder->npos,
          "Overran string " << *remainder << " looking for " << targets);
@@ -25,18 +25,16 @@ void remove_until(const gsl::not_null<std::string_view*> remainder,
 }
 
 std::string_view process_type_or_value(
-    gsl::not_null<std::string_view*> remainder) noexcept;
-void process_literal(gsl::not_null<std::string_view*> remainder) noexcept;
+    gsl::not_null<std::string_view*> remainder);
+void process_literal(gsl::not_null<std::string_view*> remainder);
 std::string_view process_item_sequence(
-    gsl::not_null<std::string_view*> remainder) noexcept;
-void process_substitution(
-    gsl::not_null<std::string_view*> remainder) noexcept;
-std::string_view process_identifier(
-    gsl::not_null<std::string_view*> remainder) noexcept;
+    gsl::not_null<std::string_view*> remainder);
+void process_substitution(gsl::not_null<std::string_view*> remainder);
+std::string_view process_identifier(gsl::not_null<std::string_view*> remainder);
 
 // An entity of undetermined type.
 std::string_view process_type_or_value(
-    const gsl::not_null<std::string_view*> remainder) noexcept {
+    const gsl::not_null<std::string_view*> remainder) {
   remove_until(remainder, "0123456789LNS");
   std::string_view result = "";
   switch ((*remainder)[0]) {
@@ -63,8 +61,7 @@ std::string_view process_type_or_value(
 
 // A value (such as for a non-type template parameter) encoded as
 // L<type><value>E or LDnE (nullptr)
-void process_literal(
-    const gsl::not_null<std::string_view*> remainder) noexcept {
+void process_literal(const gsl::not_null<std::string_view*> remainder) {
   remainder->remove_prefix(1);
   if (not ('a' <= (*remainder)[0] and (*remainder)[0] <= 'z')) {
     if ((*remainder)[0] == 'D') {
@@ -89,7 +86,7 @@ void process_literal(
 // A sequence of items without separators, such as namespaces or
 // template parameters.
 std::string_view process_item_sequence(
-    const gsl::not_null<std::string_view*> remainder) noexcept {
+    const gsl::not_null<std::string_view*> remainder) {
   remainder->remove_prefix(1);
   std::string_view result;
   for (;;) {
@@ -119,8 +116,7 @@ std::string_view process_item_sequence(
 // All cases where these could occur outside of template parameters
 // were handled as special cases at the start, so we don't care about
 // any of them.
-void process_substitution(
-    const gsl::not_null<std::string_view*> remainder) noexcept {
+void process_substitution(const gsl::not_null<std::string_view*> remainder) {
   remainder->remove_prefix(1);
   if ((*remainder)[0] == 't') {
     remainder->remove_prefix(1);
@@ -135,7 +131,7 @@ void process_substitution(
 
 // Identifier coded as <name length><name>
 std::string_view process_identifier(
-    const gsl::not_null<std::string_view*> remainder) noexcept {
+    const gsl::not_null<std::string_view*> remainder) {
   size_t length_chars = 0;
   const size_t identifier_chars =
       static_cast<size_t>(std::stoi(std::string(*remainder), &length_chars));
@@ -146,7 +142,7 @@ std::string_view process_identifier(
 }
 }  // namespace
 
-std::string extract_short_name(const std::string& name) noexcept {
+std::string extract_short_name(const std::string& name) {
   // This ignores some of the less common language features (e.g., C
   // array types) and a lot of things that are not relevant to types.
 

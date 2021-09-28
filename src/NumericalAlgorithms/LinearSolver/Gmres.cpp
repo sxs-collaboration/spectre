@@ -19,7 +19,7 @@ namespace {
 
 void update_givens_rotation(const gsl::not_null<double*> givens_cosine,
                             const gsl::not_null<double*> givens_sine,
-                            const double rho, const double sigma) noexcept {
+                            const double rho, const double sigma) {
   if (UNLIKELY(rho == 0.)) {
     *givens_cosine = 0.;
     *givens_sine = 1.;
@@ -34,7 +34,7 @@ template <typename Arg>
 void apply_and_update_givens_rotation(
     Arg argument, const gsl::not_null<DenseVector<double>*> givens_sine_history,
     const gsl::not_null<DenseVector<double>*> givens_cosine_history,
-    const size_t iteration) noexcept {
+    const size_t iteration) {
   const size_t k = iteration + 1;
   for (size_t i = 0; i < k - 1; ++i) {
     const double tmp = (*givens_cosine_history)[i] * argument[i] +
@@ -58,7 +58,7 @@ void solve_minimal_residual(
     const gsl::not_null<DenseVector<double>*> residual_history,
     const gsl::not_null<DenseVector<double>*> givens_sine_history,
     const gsl::not_null<DenseVector<double>*> givens_cosine_history,
-    const size_t iteration) noexcept {
+    const size_t iteration) {
   residual_history->resize(iteration + 2);
   givens_sine_history->resize(iteration + 1);
   givens_cosine_history->resize(iteration + 1);
@@ -81,7 +81,7 @@ void solve_minimal_residual(
 
 DenseVector<double> minimal_residual_vector(
     const DenseMatrix<double>& orthogonalization_history,
-    const DenseVector<double>& residual_history) noexcept {
+    const DenseVector<double>& residual_history) {
   const size_t length = orthogonalization_history.columns();
   DenseVector<double> minres = blaze::subvector(residual_history, 0, length);
   blaze::trsv(blaze::submatrix(orthogonalization_history, 0, 0, length, length),

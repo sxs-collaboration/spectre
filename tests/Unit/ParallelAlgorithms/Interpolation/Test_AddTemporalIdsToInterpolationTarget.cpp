@@ -61,7 +61,7 @@ struct MockSendPointsToInterpolator {
   static void apply(db::DataBox<DbTags>& box,
                     Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
-                    const TemporalId& temporal_id) noexcept {
+                    const TemporalId& temporal_id) {
     // Put something in IndicesOfFilledInterpPts so we can check later whether
     // this function was called.  This isn't the usual usage of
     // IndicesOfFilledInterpPoints.
@@ -70,7 +70,7 @@ struct MockSendPointsToInterpolator {
         [&temporal_id](
             const gsl::not_null<
                 std::unordered_map<TemporalId, std::unordered_set<size_t>>*>
-                indices) noexcept {
+                indices) {
           (*indices)[temporal_id].insert((*indices)[temporal_id].size() + 1);
         });
   }

@@ -32,14 +32,13 @@ namespace Tags {
 template <typename OptionsGroup>
 struct Verbosity : db::SimpleTag {
   using type = ::Verbosity;
-  static std::string name() noexcept {
+  static std::string name() {
     return "Verbosity(" + Options::name<OptionsGroup>() + ")";
   }
 
   using option_tags = tmpl::list<OptionTags::Verbosity<OptionsGroup>>;
   static constexpr bool pass_metavariables = false;
-  static ::Verbosity create_from_options(
-      const ::Verbosity& verbosity) noexcept {
+  static ::Verbosity create_from_options(const ::Verbosity& verbosity) {
     return verbosity;
   }
 };

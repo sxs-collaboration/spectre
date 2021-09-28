@@ -44,8 +44,7 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.Increase", "[Unit][Time]") {
   auto box = db::create<
       db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<Metavariables>>>(
       Metavariables{});
-  const auto check =
-      [&box, &cache](const double step, const double expected) noexcept {
+  const auto check = [&box, &cache](const double step, const double expected) {
     {
       const StepChoosers::Increase<StepChooserUse::LtsStep> increase{5.};
       const std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>

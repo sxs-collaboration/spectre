@@ -50,7 +50,7 @@ bool minmod_limited_slopes(
     const Mesh<VolumeDim>& mesh, const Element<VolumeDim>& element,
     const std::array<double, VolumeDim>& element_size,
     const DirectionMap<VolumeDim, double>& effective_neighbor_means,
-    const DirectionMap<VolumeDim, double>& effective_neighbor_sizes) noexcept;
+    const DirectionMap<VolumeDim, double>& effective_neighbor_sizes);
 
 // Implements the minmod limiter for one Tensor<DataVector> at a time.
 template <size_t VolumeDim, typename Tag, typename PackagedData>
@@ -65,7 +65,7 @@ bool minmod_impl(
     const std::unordered_map<
         std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
         boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
-        neighbor_data) noexcept {
+        neighbor_data) {
   // True if the mesh is linear-order in every direction
   const bool mesh_is_linear = (mesh.extents() == Index<VolumeDim>(2));
   const bool minmod_type_is_linear =

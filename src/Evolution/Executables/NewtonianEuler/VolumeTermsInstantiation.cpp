@@ -56,7 +56,7 @@ namespace evolution::dg::Actions::detail {
       const tnsr::I<DataVector, DIM(data)>& momentum_density,                 \
       const Scalar<DataVector>& energy_density,                               \
       const tnsr::I<DataVector, DIM(data)>& velocity,                         \
-      const Scalar<DataVector>& pressure) noexcept;
+      const Scalar<DataVector>& pressure);
 
 // The last list passed to GENERATE_INSTANTIATIONS has only one element that
 // must be `1` if the analytic solutions/data are templated on the dimension,

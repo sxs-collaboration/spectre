@@ -66,7 +66,7 @@ using OverlapMap =
  *   the subdomain in the overlap allows to ignore that face altogether in the
  *   subdomain operator.
  */
-size_t overlap_extent(size_t volume_extent, size_t max_overlap) noexcept;
+size_t overlap_extent(size_t volume_extent, size_t max_overlap);
 
 /*!
  * \brief Total number of grid points in an overlap region that extends
@@ -79,8 +79,7 @@ size_t overlap_extent(size_t volume_extent, size_t max_overlap) noexcept;
  */
 template <size_t Dim>
 size_t overlap_num_points(const Index<Dim>& volume_extents,
-                          size_t overlap_extent,
-                          size_t overlap_dimension) noexcept;
+                          size_t overlap_extent, size_t overlap_dimension);
 
 /*!
  * \brief Width of an overlap extending `overlap_extent` points into the
@@ -94,7 +93,7 @@ size_t overlap_num_points(const Index<Dim>& volume_extents,
  * This function assumes the `collocation_points` are mirrored around 0.
  */
 double overlap_width(size_t overlap_extent,
-                     const DataVector& collocation_points) noexcept;
+                     const DataVector& collocation_points);
 
 /*!
  * \brief Iterate over grid points in a region that extends partially into the
@@ -108,19 +107,19 @@ class OverlapIterator {
  public:
   template <size_t Dim>
   OverlapIterator(const Index<Dim>& volume_extents, size_t overlap_extent,
-                  const Direction<Dim>& direction) noexcept;
+                  const Direction<Dim>& direction);
 
-  explicit operator bool() const noexcept;
+  explicit operator bool() const;
 
   OverlapIterator& operator++();
 
   /// Offset into a DataVector that holds full volume data
-  size_t volume_offset() const noexcept;
+  size_t volume_offset() const;
 
   /// Offset into a DataVector that holds data only on the overlap region
-  size_t overlap_offset() const noexcept;
+  size_t overlap_offset() const;
 
-  void reset() noexcept;
+  void reset();
 
  private:
   size_t size_ = std::numeric_limits<size_t>::max();
@@ -141,7 +140,7 @@ void data_on_overlap(const gsl::not_null<Tensor<DataType, TensorStructure...>*>
                      const Tensor<DataType, TensorStructure...>& tensor,
                      const Index<Dim>& volume_extents,
                      const size_t overlap_extent,
-                     const Direction<Dim>& direction) noexcept {
+                     const Direction<Dim>& direction) {
   for (OverlapIterator overlap_iterator{volume_extents, overlap_extent,
                                         direction};
        overlap_iterator; ++overlap_iterator) {
@@ -158,7 +157,7 @@ template <size_t Dim, typename DataType, typename... TensorStructure>
 Tensor<DataType, TensorStructure...> data_on_overlap(
     const Tensor<DataType, TensorStructure...>& tensor,
     const Index<Dim>& volume_extents, const size_t overlap_extent,
-    const Direction<Dim>& direction) noexcept {
+    const Direction<Dim>& direction) {
   Tensor<DataType, TensorStructure...> restricted_tensor{overlap_num_points(
       volume_extents, overlap_extent, direction.dimension())};
   data_on_overlap(make_not_null(&restricted_tensor), tensor, volume_extents,
@@ -172,7 +171,7 @@ void data_on_overlap_impl(double* overlap_data, const double* volume_data,
                           size_t num_components,
                           const Index<Dim>& volume_extents,
                           size_t overlap_extent,
-                          const Direction<Dim>& direction) noexcept;
+                          const Direction<Dim>& direction);
 }  // namespace detail
 
 template <size_t Dim, typename OverlapTagsList, typename VolumeTagsList>
@@ -180,7 +179,7 @@ void data_on_overlap(
     const gsl::not_null<Variables<OverlapTagsList>*> overlap_data,
     const Variables<VolumeTagsList>& volume_data,
     const Index<Dim>& volume_extents, const size_t overlap_extent,
-    const Direction<Dim>& direction) noexcept {
+    const Direction<Dim>& direction) {
   constexpr size_t num_components =
       Variables<VolumeTagsList>::number_of_independent_components;
   ASSERT(volume_data.number_of_grid_points() == volume_extents.product(),
@@ -203,7 +202,7 @@ template <size_t Dim, typename TagsList>
 Variables<TagsList> data_on_overlap(const Variables<TagsList>& volume_data,
                                     const Index<Dim>& volume_extents,
                                     const size_t overlap_extent,
-                                    const Direction<Dim>& direction) noexcept {
+                                    const Direction<Dim>& direction) {
   Variables<TagsList> overlap_data{overlap_num_points(
       volume_extents, overlap_extent, direction.dimension())};
   data_on_overlap(make_not_null(&overlap_data), volume_data, volume_extents,
@@ -218,7 +217,7 @@ void add_overlap_data_impl(double* volume_data, const double* overlap_data,
                            size_t num_components,
                            const Index<Dim>& volume_extents,
                            size_t overlap_extent,
-                           const Direction<Dim>& direction) noexcept;
+                           const Direction<Dim>& direction);
 }  // namespace detail
 
 /// Add the `overlap_data` to the `volume_data`
@@ -227,7 +226,7 @@ void add_overlap_data(
     const gsl::not_null<Variables<VolumeTagsList>*> volume_data,
     const Variables<OverlapTagsList>& overlap_data,
     const Index<Dim>& volume_extents, const size_t overlap_extent,
-    const Direction<Dim>& direction) noexcept {
+    const Direction<Dim>& direction) {
   constexpr size_t num_components =
       Variables<VolumeTagsList>::number_of_independent_components;
   ASSERT(volume_data->number_of_grid_points() == volume_extents.product(),
@@ -254,7 +253,7 @@ void extended_overlap_data(
     const gsl::not_null<Variables<ExtendedTagsList>*> extended_data,
     const Variables<OverlapTagsList>& overlap_data,
     const Index<Dim>& volume_extents, const size_t overlap_extent,
-    const Direction<Dim>& direction) noexcept {
+    const Direction<Dim>& direction) {
   *extended_data = Variables<ExtendedTagsList>{volume_extents.product(), 0.};
   add_overlap_data(extended_data, overlap_data, volume_extents, overlap_extent,
                    direction);
@@ -263,7 +262,7 @@ void extended_overlap_data(
 template <size_t Dim, typename TagsList>
 Variables<TagsList> extended_overlap_data(
     const Variables<TagsList>& overlap_data, const Index<Dim>& volume_extents,
-    const size_t overlap_extent, const Direction<Dim>& direction) noexcept {
+    const size_t overlap_extent, const Direction<Dim>& direction) {
   Variables<TagsList> extended_data{volume_extents.product()};
   extended_overlap_data(make_not_null(&extended_data), overlap_data,
                         volume_extents, overlap_extent, direction);

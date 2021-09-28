@@ -10,23 +10,21 @@
 
 namespace Parallel {
 
-NodeLock::NodeLock() noexcept
-    : lock_(std::make_unique<CmiNodeLock>(CmiCreateLock())) {}
+NodeLock::NodeLock() : lock_(std::make_unique<CmiNodeLock>(CmiCreateLock())) {}
 
-NodeLock::NodeLock(NodeLock&& moved_lock) noexcept
-    : lock_(std::move(moved_lock.lock_)) {
+NodeLock::NodeLock(NodeLock&& moved_lock) : lock_(std::move(moved_lock.lock_)) {
   moved_lock.lock_ = nullptr;
 }
 
-NodeLock& NodeLock::operator=(NodeLock&& moved_lock) noexcept {
+NodeLock& NodeLock::operator=(NodeLock&& moved_lock) {
   lock_ = std::move(moved_lock.lock_);
   moved_lock.lock_ = nullptr;
   return *this;
 }
 
-NodeLock::~NodeLock() noexcept { destroy(); }
+NodeLock::~NodeLock() { destroy(); }
 
-void NodeLock::lock() noexcept {
+void NodeLock::lock() {
   if (UNLIKELY(nullptr == lock_)) {
     ERROR("Trying to lock a destroyed lock");
   }
@@ -36,7 +34,7 @@ void NodeLock::lock() noexcept {
 #pragma GCC diagnostic pop
 }
 
-bool NodeLock::try_lock() noexcept {
+bool NodeLock::try_lock() {
   if (UNLIKELY(nullptr == lock_)) {
     ERROR("Trying to try_lock a destroyed lock");
   }
@@ -46,7 +44,7 @@ bool NodeLock::try_lock() noexcept {
 #pragma GCC diagnostic pop
 }
 
-void NodeLock::unlock() noexcept {
+void NodeLock::unlock() {
   if (UNLIKELY(nullptr == lock_)) {
     ERROR("Trying to unlock a destroyed lock");
   }
@@ -56,7 +54,7 @@ void NodeLock::unlock() noexcept {
 #pragma GCC diagnostic pop
 }
 
-void NodeLock::destroy() noexcept {
+void NodeLock::destroy() {
   if (nullptr == lock_) {
     return;
   }
@@ -67,7 +65,7 @@ void NodeLock::destroy() noexcept {
   lock_ = nullptr;
 }
 
-void NodeLock::pup(PUP::er& p) noexcept {  // NOLINT
+void NodeLock::pup(PUP::er& p) {  // NOLINT
   bool is_null = (nullptr == lock_);
   p | is_null;
   if (is_null) {

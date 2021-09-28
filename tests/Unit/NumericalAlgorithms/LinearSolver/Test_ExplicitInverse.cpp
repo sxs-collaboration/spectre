@@ -87,7 +87,7 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.ExplicitInverse",
     const auto linear_operator = [&matrices_element, &matrices_overlap,
                                   &overlap_id](
                                      const gsl::not_null<SubdomainData*> result,
-                                     const SubdomainData& operand) noexcept {
+                                     const SubdomainData& operand) {
       apply_matrices(make_not_null(&result->element_data), matrices_element,
                      operand.element_data, Index<1>{3});
       apply_matrices(make_not_null(&result->overlap_data.at(overlap_id)),

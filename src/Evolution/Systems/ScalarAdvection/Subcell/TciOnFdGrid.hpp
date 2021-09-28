@@ -40,6 +40,6 @@ struct TciOnFdGrid {
       tmpl::list<Inactive<ScalarAdvection::Tags::U>, ::domain::Tags::Mesh<Dim>>;
 
   static bool apply(const Scalar<DataVector>& dg_u, const Mesh<Dim>& dg_mesh,
-                    const double persson_exponent) noexcept;
+                    const double persson_exponent);
 };
 }  // namespace ScalarAdvection::subcell

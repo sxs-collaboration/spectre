@@ -11,12 +11,12 @@
 
 namespace ScalarWave::BoundaryConditions {
 template <size_t Dim>
-DirichletAnalytic<Dim>::DirichletAnalytic(CkMigrateMessage* const msg) noexcept
+DirichletAnalytic<Dim>::DirichletAnalytic(CkMigrateMessage* const msg)
     : BoundaryCondition<Dim>(msg) {}
 
 template <size_t Dim>
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-DirichletAnalytic<Dim>::get_clone() const noexcept {
+DirichletAnalytic<Dim>::get_clone() const {
   return std::make_unique<DirichletAnalytic>(*this);
 }
 

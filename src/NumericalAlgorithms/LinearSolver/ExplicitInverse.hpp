@@ -90,7 +90,7 @@ class ExplicitInverse : public LinearSolver<LinearSolverRegistrars> {
   ~ExplicitInverse() = default;
 
   /// \cond
-  explicit ExplicitInverse(CkMigrateMessage* m) noexcept : Base(m) {}
+  explicit ExplicitInverse(CkMigrateMessage* m) : Base(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ExplicitInverse);  // NOLINT
   /// \endcond
@@ -115,26 +115,21 @@ class ExplicitInverse : public LinearSolver<LinearSolverRegistrars> {
   Convergence::HasConverged solve(
       gsl::not_null<VarsType*> solution, const LinearOperator& linear_operator,
       const SourceType& source,
-      const std::tuple<OperatorArgs...>& operator_args =
-          std::tuple{}) const noexcept;
+      const std::tuple<OperatorArgs...>& operator_args = std::tuple{}) const;
 
   /// Flags the operator to require re-initialization. No memory is released.
   /// Call this function to rebuild the solver when the operator changed.
-  void reset() noexcept override {
-    size_ = std::numeric_limits<size_t>::max();
-  }
+  void reset() override { size_ = std::numeric_limits<size_t>::max(); }
 
   /// Size of the operator. The stored matrix will have `size^2` entries.
-  size_t size() const noexcept { return size_; }
+  size_t size() const { return size_; }
 
   /// The matrix representation of the solver. This matrix approximates the
   /// inverse of the subdomain operator.
-  const DenseMatrix<double>& matrix_representation() const noexcept {
-    return inverse_;
-  }
+  const DenseMatrix<double>& matrix_representation() const { return inverse_; }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept override {
+  void pup(PUP::er& p) override {
     p | size_;
     p | inverse_;
     if (p.isUnpacking() and size_ != std::numeric_limits<size_t>::max()) {
@@ -143,7 +138,7 @@ class ExplicitInverse : public LinearSolver<LinearSolverRegistrars> {
     }
   }
 
-  std::unique_ptr<Base> get_clone() const noexcept override {
+  std::unique_ptr<Base> get_clone() const override {
     return std::make_unique<ExplicitInverse>(*this);
   }
 
@@ -163,7 +158,7 @@ template <typename LinearOperator, typename VarsType, typename SourceType,
 Convergence::HasConverged ExplicitInverse<LinearSolverRegistrars>::solve(
     const gsl::not_null<VarsType*> solution,
     const LinearOperator& linear_operator, const SourceType& source,
-    const std::tuple<OperatorArgs...>& operator_args) const noexcept {
+    const std::tuple<OperatorArgs...>& operator_args) const {
   if (UNLIKELY(size_ == std::numeric_limits<size_t>::max())) {
     const auto& used_for_size = source;
     size_ = used_for_size.size();

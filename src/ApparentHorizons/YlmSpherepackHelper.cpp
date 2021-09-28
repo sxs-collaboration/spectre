@@ -8,7 +8,7 @@
 
 namespace YlmSpherepack_detail {
 
-std::vector<double>& MemoryPool::get(size_t n_pts) noexcept {
+std::vector<double>& MemoryPool::get(size_t n_pts) {
   for (auto& elem : memory_pool_) {
     if (not elem.currently_in_use) {
       elem.currently_in_use = true;
@@ -27,7 +27,7 @@ std::vector<double>& MemoryPool::get(size_t n_pts) noexcept {
 // in the pool that are unallocated, for random vectors passed into
 // this function that have nothing to do with the pool, or for vectors
 // that are in the pool but have been size-zero allocated.
-void MemoryPool::free(const std::vector<double>& to_be_freed) noexcept {
+void MemoryPool::free(const std::vector<double>& to_be_freed) {
   for (auto& elem : memory_pool_) {
     if (&(elem.storage) == &to_be_freed) {
       elem.currently_in_use = false;
@@ -37,7 +37,7 @@ void MemoryPool::free(const std::vector<double>& to_be_freed) noexcept {
   ERROR("Attempt to free temp that was never allocated.");
 }
 
-void MemoryPool::free(const gsl::not_null<double*> to_be_freed) noexcept {
+void MemoryPool::free(const gsl::not_null<double*> to_be_freed) {
   for (auto& elem : memory_pool_) {
     if (elem.storage.data() == to_be_freed) {
       elem.currently_in_use = false;

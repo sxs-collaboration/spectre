@@ -14,13 +14,12 @@
 #include "Utilities/Gsl.hpp"
 
 namespace Burgers::BoundaryConditions {
-Dirichlet::Dirichlet(const double u_value) noexcept : u_value_(u_value) {}
+Dirichlet::Dirichlet(const double u_value) : u_value_(u_value) {}
 
-Dirichlet::Dirichlet(CkMigrateMessage* const msg) noexcept
-    : BoundaryCondition(msg) {}
+Dirichlet::Dirichlet(CkMigrateMessage* const msg) : BoundaryCondition(msg) {}
 
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-Dirichlet::get_clone() const noexcept {
+Dirichlet::get_clone() const {
   return std::make_unique<Dirichlet>(*this);
 }
 
@@ -34,8 +33,7 @@ std::optional<std::string> Dirichlet::dg_ghost(
     const gsl::not_null<tnsr::I<DataVector, 1, Frame::Inertial>*> flux_u,
     const std::optional<
         tnsr::I<DataVector, 1, Frame::Inertial>>& /*face_mesh_velocity*/,
-    const tnsr::i<DataVector, 1, Frame::Inertial>& /*normal_covector*/)
-    const noexcept {
+    const tnsr::i<DataVector, 1, Frame::Inertial>& /*normal_covector*/) const {
   get(*u) = u_value_;
   Burgers::Fluxes::apply(flux_u, *u);
   return {};

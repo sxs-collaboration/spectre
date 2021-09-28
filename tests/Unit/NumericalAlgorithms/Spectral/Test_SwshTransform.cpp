@@ -78,7 +78,7 @@ static_assert(std::is_same_v<make_transform_list_from_derivative_tags<
 // [make_transform_from_derivative_tags]
 
 template <ComplexRepresentation Representation, int S>
-void test_transform_and_inverse_transform() noexcept {
+void test_transform_and_inverse_transform() {
   // generate parameters for the points to transform
   MAKE_GENERATOR(gen);
   UniformCustomDistribution<size_t> sdist{2, 7};
@@ -113,15 +113,16 @@ void test_transform_and_inverse_transform() noexcept {
   // fill the expected collocation point data by evaluating the analytic
   // functions. This is very slow and rough (due to factorial division), but
   // comparatively simple to formulate.
-  const auto coefficients_to_analytic_collocation = [&l_max](
-      const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, S>>*>
-          computed_collocation,
-      ComplexModalVector& modes) noexcept {
-    TestHelpers::swsh_collocation_from_coefficients_and_basis_func<
-        S, Representation>(make_not_null(&get(*computed_collocation).data()),
-                           modes, l_max, number_of_radial_points,
-                           TestHelpers::spin_weighted_spherical_harmonic);
-  };
+  const auto coefficients_to_analytic_collocation =
+      [&l_max](const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, S>>*>
+                   computed_collocation,
+               ComplexModalVector& modes) {
+        TestHelpers::swsh_collocation_from_coefficients_and_basis_func<
+            S, Representation>(
+            make_not_null(&get(*computed_collocation).data()), modes, l_max,
+            number_of_radial_points,
+            TestHelpers::spin_weighted_spherical_harmonic);
+      };
   db::mutate<TestTag<0, S>>(make_not_null(&box),
                             coefficients_to_analytic_collocation,
                             expected_modes);
@@ -234,7 +235,7 @@ void test_transform_and_inverse_transform() noexcept {
 }
 
 template <int Spin>
-void test_interpolate_to_collocation() noexcept {
+void test_interpolate_to_collocation() {
   // generate parameters for the points to transform
   MAKE_GENERATOR(gen);
   UniformCustomDistribution<size_t> sdist{2, 10};

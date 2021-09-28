@@ -33,15 +33,15 @@ class TestCreator : public DomainCreator<1> {
  public:
   explicit TestCreator(const bool add_controlled)
       : add_controlled_(add_controlled) {}
-  Domain<1> create_domain() const noexcept override { ERROR(""); }
-  std::vector<std::array<size_t, 1>> initial_extents() const noexcept override {
+  Domain<1> create_domain() const override { ERROR(""); }
+  std::vector<std::array<size_t, 1>> initial_extents() const override {
     ERROR("");
   }
   std::vector<std::array<size_t, 1>> initial_refinement_levels()
-      const noexcept override {
+      const override {
     ERROR("");
   }
-  auto functions_of_time() const noexcept -> std::unordered_map<
+  auto functions_of_time() const -> std::unordered_map<
       std::string,
       std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override {
     const std::array<DataVector, 3> initial_values{{{-1.0}, {-2.0}, {-3.0}}};

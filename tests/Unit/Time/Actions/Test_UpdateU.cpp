@@ -140,9 +140,9 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.UpdateU", "[Unit][Time][Actions]") {
         make_not_null(&runner), 0);
     db::mutate<history_tag>(
         make_not_null(&before_box),
-        [&rhs, &substep, &substep_times ](
+        [&rhs, &substep, &substep_times](
             const gsl::not_null<typename history_tag::type*> history,
-            const double vars) noexcept {
+            const double vars) {
           const Time& time = gsl::at(substep_times, substep);
           history->insert(TimeStepId(true, 0, substep_times[0], substep, time),
                           rhs(time.value(), vars));
@@ -156,10 +156,10 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.UpdateU", "[Unit][Time][Actions]") {
         make_not_null(&runner), 0);
     db::mutate<alternative_history_tag>(
         make_not_null(&alternative_before_box),
-        [&rhs, &substep, &substep_times ](
+        [&rhs, &substep, &substep_times](
             const gsl::not_null<typename alternative_history_tag::type*>
                 alternative_history,
-            const double alternative_vars) noexcept {
+            const double alternative_vars) {
           const Time& time = gsl::at(substep_times, substep);
           alternative_history->insert(
               TimeStepId(true, 0, substep_times[0], substep, time),

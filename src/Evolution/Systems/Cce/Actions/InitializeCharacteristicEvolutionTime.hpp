@@ -100,7 +100,7 @@ struct InitializeCharacteristicEvolutionTime {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     const double initial_time_value = db::get<Tags::StartTime>(box);
     const double slab_size =
         db::get<::Initialization::Tags::InitialSlabSize<local_time_stepping>>(

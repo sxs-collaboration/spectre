@@ -39,19 +39,19 @@ struct RotatingSchwarzschild : public SphericalMetricData {
     using type = double;
     static constexpr Options::String help{
         "The extraction radius of the spherical solution"};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
   struct Mass {
     using type = double;
     static constexpr Options::String help{
         "The mass of the Schwarzschild black hole"};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
   struct Frequency {
     using type = double;
     static constexpr Options::String help{
         "The frequency of the coordinate rotation."};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
 
   using options = tmpl::list<ExtractionRadius, Mass, Frequency>;
@@ -62,25 +62,25 @@ struct RotatingSchwarzschild : public SphericalMetricData {
 
   WRAPPED_PUPable_decl_template(RotatingSchwarzschild);  // NOLINT
 
-  explicit RotatingSchwarzschild(CkMigrateMessage* msg) noexcept
+  explicit RotatingSchwarzschild(CkMigrateMessage* msg)
       : SphericalMetricData(msg) {}
 
   // clang doesn't manage to use = default correctly in this case
   // NOLINTNEXTLINE(modernize-use-equals-default)
-  RotatingSchwarzschild() noexcept {};
+  RotatingSchwarzschild(){};
 
   RotatingSchwarzschild(double extraction_radius, double mass,
-                        double frequency) noexcept;
+                        double frequency);
 
-  std::unique_ptr<WorldtubeData> get_clone() const noexcept override;
+  std::unique_ptr<WorldtubeData> get_clone() const override;
 
-  void pup(PUP::er& p) noexcept override;
+  void pup(PUP::er& p) override;
 
  protected:
   /// A no-op as the rotating Schwarzschild solution does not have substantial
   /// shared computation to prepare before the separate component calculations.
   void prepare_solution(const size_t /*output_l_max*/,
-                        const double /*time*/) const noexcept override {}
+                        const double /*time*/) const override {}
 
   /*!
    * \brief Compute the spherical coordinate metric from the closed-form
@@ -99,7 +99,7 @@ struct RotatingSchwarzschild : public SphericalMetricData {
       gsl::not_null<
           tnsr::aa<DataVector, 3, ::Frame::Spherical<::Frame::Inertial>>*>
           spherical_metric,
-      size_t l_max, double time) const noexcept override;
+      size_t l_max, double time) const override;
 
   /*!
    * \brief Compute the radial derivative of the spherical coordinate metric
@@ -118,7 +118,7 @@ struct RotatingSchwarzschild : public SphericalMetricData {
       gsl::not_null<
           tnsr::aa<DataVector, 3, ::Frame::Spherical<::Frame::Inertial>>*>
           dr_spherical_metric,
-      size_t l_max, double time) const noexcept override;
+      size_t l_max, double time) const override;
 
   /*!
    * \brief The time derivative of the spherical coordinate metric in the
@@ -128,7 +128,7 @@ struct RotatingSchwarzschild : public SphericalMetricData {
       gsl::not_null<
           tnsr::aa<DataVector, 3, ::Frame::Spherical<::Frame::Inertial>>*>
           dt_spherical_metric,
-      size_t l_max, double time) const noexcept override;
+      size_t l_max, double time) const override;
 
   using WorldtubeData::variables_impl;
 
@@ -138,7 +138,7 @@ struct RotatingSchwarzschild : public SphericalMetricData {
   void variables_impl(
       gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, -2>>*> news,
       size_t l_max, double time,
-      tmpl::type_<Tags::News> /*meta*/) const noexcept override;
+      tmpl::type_<Tags::News> /*meta*/) const override;
 
   double frequency_ = std::numeric_limits<double>::signaling_NaN();
   double mass_ = std::numeric_limits<double>::signaling_NaN();

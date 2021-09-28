@@ -49,20 +49,19 @@ struct MockWriteReductionData {
             typename... ReductionDatums,
             Requires<tmpl::list_contains_v<DbTagsList, CheckObservationIdTag>> =
                 nullptr>
-  static void apply(db::DataBox<DbTagsList>& box,  // NOLINT
-                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const gsl::not_null<Parallel::NodeLock*> /*node_lock*/,
-                    const observers::ObservationId& observation_id,
-                    const size_t /*sender_node_number*/,
-                    const std::string& subfile_name,
-                    std::vector<std::string>&& reduction_names,
-                    Parallel::ReductionData<ReductionDatums...>&&
-                        in_reduction_data) noexcept {
+  static void apply(
+      db::DataBox<DbTagsList>& box,  // NOLINT
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/,
+      const gsl::not_null<Parallel::NodeLock*> /*node_lock*/,
+      const observers::ObservationId& observation_id,
+      const size_t /*sender_node_number*/, const std::string& subfile_name,
+      std::vector<std::string>&& reduction_names,
+      Parallel::ReductionData<ReductionDatums...>&& in_reduction_data) {
     db::mutate<CheckObservationIdTag, CheckSubfileNameTag,
                CheckReductionNamesTag, CheckReductionDataTag>(
         make_not_null(&box),
-        [ observation_id, subfile_name, reduction_names, in_reduction_data ](
+        [observation_id, subfile_name, reduction_names, in_reduction_data](
             const gsl::not_null<typename CheckObservationIdTag::type*>
                 check_observation_id,
             const gsl::not_null<typename CheckSubfileNameTag::type*>
@@ -70,7 +69,7 @@ struct MockWriteReductionData {
             const gsl::not_null<typename CheckReductionNamesTag::type*>
                 check_reduction_names,
             const gsl::not_null<typename CheckReductionDataTag::type*>
-                check_reduction_data) noexcept {
+                check_reduction_data) {
           *check_observation_id = observation_id;
           *check_subfile_name = subfile_name;
           *check_reduction_names = reduction_names;

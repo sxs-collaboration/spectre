@@ -45,7 +45,7 @@ void forward_to_time_deriv(
     const tnsr::II<DataVector, Dim, Frame::Inertial>& inv_spatial_metric,
     const tnsr::ii<DataVector, Dim, Frame::Inertial>& extrinsic_curvature,
     // For Riemann solvers
-    const tnsr::ii<DataVector, Dim, Frame::Inertial>& spatial_metric) noexcept {
+    const tnsr::ii<DataVector, Dim, Frame::Inertial>& spatial_metric) {
   Variables<typename TimeDerivativeTerms<Dim>::temporary_tags> temp{
       get(lapse).size(), 0.0};
 

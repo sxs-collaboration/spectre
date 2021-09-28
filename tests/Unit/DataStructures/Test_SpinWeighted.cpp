@@ -187,7 +187,7 @@ using SpinWeightedTypePairs =
 
 SPECTRE_TEST_CASE("Unit.DataStructures.SpinWeighted",
                   "[DataStructures][Unit]") {
-  tmpl::for_each<SpinWeightedTypePairs>([](auto x) noexcept {
+  tmpl::for_each<SpinWeightedTypePairs>([](auto x) {
     using type_pair = typename decltype(x)::type;
     test_spinweights<tmpl::front<type_pair>, tmpl::back<type_pair>>();
   });

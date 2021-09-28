@@ -62,7 +62,7 @@ struct PreSwshDerivatives<Tags::BondiJbar> {
   using argument_tags = pre_swsh_derivative_tags;
   static void apply(
       const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, -2>>*> jbar,
-      const Scalar<SpinWeighted<ComplexDataVector, 2>>& j) noexcept {
+      const Scalar<SpinWeighted<ComplexDataVector, 2>>& j) {
     get(*jbar) = conj(get(j));
   }
 };
@@ -86,7 +86,7 @@ struct PreSwshDerivatives<Tags::BondiUbar> {
   using argument_tags = pre_swsh_derivative_tags;
   static void apply(
       const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, -1>>*> ubar,
-      const Scalar<SpinWeighted<ComplexDataVector, 1>>& u) noexcept {
+      const Scalar<SpinWeighted<ComplexDataVector, 1>>& u) {
     get(*ubar) = conj(get(u));
   }
 };
@@ -110,7 +110,7 @@ struct PreSwshDerivatives<Tags::BondiQbar> {
   using argument_tags = pre_swsh_derivative_tags;
   static void apply(
       const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, -1>>*> qbar,
-      const Scalar<SpinWeighted<ComplexDataVector, 1>>& q) noexcept {
+      const Scalar<SpinWeighted<ComplexDataVector, 1>>& q) {
     get(*qbar) = conj(get(q));
   }
 };
@@ -130,7 +130,7 @@ struct PreSwshDerivatives<::Tags::Multiplies<Lhs, Rhs>> {
           result,
       const Scalar<SpinWeighted<ComplexDataVector, Lhs::type::type::spin>>& lhs,
       const Scalar<SpinWeighted<ComplexDataVector, Rhs::type::type::spin>>&
-          rhs) noexcept {
+          rhs) {
     get(*result) = get(lhs) * get(rhs);
   }
 };
@@ -157,7 +157,7 @@ struct PreSwshDerivatives<::Tags::Multiplies<Tags::BondiJbar, Rhs>> {
           result,
       const Scalar<SpinWeighted<ComplexDataVector, 2>>& j,
       const Scalar<SpinWeighted<ComplexDataVector, Rhs::type::type::spin>>&
-          rhs) noexcept {
+          rhs) {
     get(*result) = conj(get(j)) * get(rhs);
   }
 };
@@ -184,7 +184,7 @@ struct PreSwshDerivatives<::Tags::Multiplies<Lhs, Tags::BondiJbar>> {
           result,
       const Scalar<SpinWeighted<ComplexDataVector, 2>>& j,
       const Scalar<SpinWeighted<ComplexDataVector, Lhs::type::type::spin>>&
-          lhs) noexcept {
+          lhs) {
     get(*result) = get(lhs) * conj(get(j));
   }
 };
@@ -211,7 +211,7 @@ struct PreSwshDerivatives<::Tags::Multiplies<Tags::BondiUbar, Rhs>> {
           result,
       const Scalar<SpinWeighted<ComplexDataVector, 1>>& u,
       const Scalar<SpinWeighted<ComplexDataVector, Rhs::type::type::spin>>&
-          rhs) noexcept {
+          rhs) {
     get(*result) = conj(get(u)) * get(rhs);
   }
 };
@@ -238,7 +238,7 @@ struct PreSwshDerivatives<Tags::JbarQMinus2EthBeta> {
           jbar_q_minus_2_eth_beta,
       const Scalar<SpinWeighted<ComplexDataVector, 2>>& j,
       const Scalar<SpinWeighted<ComplexDataVector, 1>>& q,
-      const Scalar<SpinWeighted<ComplexDataVector, 1>>& eth_beta) noexcept {
+      const Scalar<SpinWeighted<ComplexDataVector, 1>>& eth_beta) {
     get(*jbar_q_minus_2_eth_beta) =
         conj(get(j)) * (get(q) - 2.0 * get(eth_beta));
   }
@@ -256,7 +256,7 @@ struct PreSwshDerivatives<Tags::Exp2Beta> {
   static void apply(
       const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
           exp_2_beta,
-      const Scalar<SpinWeighted<ComplexDataVector, 0>>& beta) noexcept {
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>& beta) {
     get(*exp_2_beta).data() = exp(2.0 * get(beta).data());
   }
 };
@@ -274,7 +274,7 @@ struct PreSwshDerivatives<Tags::ComplexInertialRetardedTime> {
   static void apply(
       const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
           complex_inertial_retarded_time,
-      const Scalar<DataVector>& inertial_retarded_time) noexcept {
+      const Scalar<DataVector>& inertial_retarded_time) {
     get(*complex_inertial_retarded_time).data() =
         std::complex<double>(1.0, 0.0) * get(inertial_retarded_time);
   }
@@ -297,7 +297,7 @@ struct PreSwshDerivatives<Tags::Dy<Tag>> {
           Scalar<SpinWeighted<ComplexDataVector, Tag::type::type::spin>>*>
           dy_val,
       const Scalar<SpinWeighted<ComplexDataVector, Tag::type::type::spin>>& val,
-      const size_t l_max) noexcept {
+      const size_t l_max) {
     logical_partial_directional_derivative_of_complex(
         make_not_null(&get(*dy_val).data()), get(val).data(),
         Mesh<3>{
@@ -330,8 +330,7 @@ struct PreSwshDerivatives<Tags::Dy<Tags::BondiBeta>> {
   using argument_tags = integrand_tags;
   static void apply(
       const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*> dy_beta,
-      const Scalar<SpinWeighted<ComplexDataVector, 0>>&
-          integrand_beta) noexcept {
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>& integrand_beta) {
     *dy_beta = integrand_beta;
   }
 };
@@ -353,7 +352,7 @@ struct PreSwshDerivatives<Tags::Dy<Tags::BondiU>> {
   using argument_tags = integrand_tags;
   static void apply(
       const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 1>>*> dy_u,
-      const Scalar<SpinWeighted<ComplexDataVector, 1>>& integrand_u) noexcept {
+      const Scalar<SpinWeighted<ComplexDataVector, 1>>& integrand_u) {
     *dy_u = integrand_u;
   }
 };
@@ -375,7 +374,7 @@ struct PreSwshDerivatives<Tags::Du<Tags::BondiJ>> {
       const Scalar<SpinWeighted<ComplexDataVector, 2>>& dy_bondi_j,
       const Scalar<SpinWeighted<ComplexDataVector, 2>>& bondi_h,
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& du_r_divided_by_r,
-      const Scalar<SpinWeighted<ComplexDataVector, 0>>& one_minus_y) noexcept {
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>& one_minus_y) {
     get(*du_j) = get(bondi_h) -
                  get(du_r_divided_by_r) * get(one_minus_y) * get(dy_bondi_j);
   }
@@ -409,7 +408,7 @@ struct PreSwshDerivatives<
       const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, spin>>*>
           dy_val,
       const Scalar<SpinWeighted<ComplexDataVector, spin>>& val,
-      const size_t l_max) noexcept {
+      const size_t l_max) {
     logical_partial_directional_derivative_of_complex(
         make_not_null(&get(*dy_val).data()), get(val).data(),
         Mesh<3>{
@@ -440,14 +439,13 @@ struct PreSwshDerivatives<
  */
 template <typename BondiValueTag, typename DataBoxType>
 void mutate_all_pre_swsh_derivatives_for_tag(
-    const gsl::not_null<DataBoxType*> box) noexcept {
-  tmpl::for_each<
-      pre_swsh_derivative_tags_to_compute_for_t<BondiValueTag>>([&box](
-      auto pre_swsh_derivative_tag_v) noexcept {
-    using pre_swsh_derivative_tag =
-        typename decltype(pre_swsh_derivative_tag_v)::type;
-    using mutation = PreSwshDerivatives<pre_swsh_derivative_tag>;
-    db::mutate_apply<mutation>(box);
-  });
+    const gsl::not_null<DataBoxType*> box) {
+  tmpl::for_each<pre_swsh_derivative_tags_to_compute_for_t<BondiValueTag>>(
+      [&box](auto pre_swsh_derivative_tag_v) {
+        using pre_swsh_derivative_tag =
+            typename decltype(pre_swsh_derivative_tag_v)::type;
+        using mutation = PreSwshDerivatives<pre_swsh_derivative_tag>;
+        db::mutate_apply<mutation>(box);
+      });
 }
 }  // namespace Cce

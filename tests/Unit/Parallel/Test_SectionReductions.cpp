@@ -58,8 +58,7 @@ struct Count {
       db::DataBox<DbTagsList>& box,
       tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache, const int array_index,
-      const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ActionList /*meta*/, const ParallelComponent* const /*meta*/) {
     const bool section_id = [&array_index]() {
       if constexpr (std::is_same_v<ArraySectionIdTag, EvenOrOddTag>) {
         return array_index % 2 == 0;
@@ -96,7 +95,7 @@ struct ReceiveCount {
   static void apply(db::DataBox<DbTagsList>& /*box*/,
                     Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const int array_index, const bool section_id,
-                    const size_t count) noexcept {
+                    const size_t count) {
     if constexpr (std::is_same_v<ArraySectionIdTag, EvenOrOddTag>) {
       const bool is_even = section_id;
       Parallel::printf(
@@ -148,7 +147,7 @@ struct ArrayComponent {
   static void allocate_array(
       Parallel::CProxy_GlobalCache<Metavariables>& global_cache,
       tuples::tagged_tuple_from_typelist<initialization_tags>
-          initialization_items) noexcept {
+          initialization_items) {
     auto& local_cache = *(global_cache.ckLocalBranch());
     auto& array_proxy =
         Parallel::get_parallel_component<ArrayComponent>(local_cache);
@@ -218,8 +217,7 @@ struct Metavariables {
       const gsl::not_null<tuples::TaggedTuple<Tags...>*>
       /*phase_change_decision_data*/,
       const Phase& current_phase,
-      const Parallel::CProxy_GlobalCache<
-          Metavariables>& /*cache_proxy*/) noexcept {
+      const Parallel::CProxy_GlobalCache<Metavariables>& /*cache_proxy*/) {
     switch (current_phase) {
       case Phase::Initialization:
         return Phase::TestReductions;
@@ -235,7 +233,7 @@ struct Metavariables {
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& /*p*/) noexcept {}
+  void pup(PUP::er& /*p*/) {}
 };
 
 }  // namespace

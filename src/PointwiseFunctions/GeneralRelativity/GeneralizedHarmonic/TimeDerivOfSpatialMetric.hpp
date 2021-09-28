@@ -56,14 +56,14 @@ void time_deriv_of_spatial_metric(
     const Scalar<DataType>& lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
-    const tnsr::aa<DataType, SpatialDim, Frame>& pi) noexcept;
+    const tnsr::aa<DataType, SpatialDim, Frame>& pi);
 
 template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::ii<DataType, SpatialDim, Frame> time_deriv_of_spatial_metric(
     const Scalar<DataType>& lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
-    const tnsr::aa<DataType, SpatialDim, Frame>& pi) noexcept;
+    const tnsr::aa<DataType, SpatialDim, Frame>& pi);
 /// @}
 
 namespace Tags {
@@ -89,7 +89,7 @@ struct TimeDerivSpatialMetricCompute
       gsl::not_null<tnsr::ii<DataVector, SpatialDim, Frame>*>,
       const Scalar<DataVector>&, const tnsr::I<DataVector, SpatialDim, Frame>&,
       const tnsr::iaa<DataVector, SpatialDim, Frame>&,
-      const tnsr::aa<DataVector, SpatialDim, Frame>&) noexcept>(
+      const tnsr::aa<DataVector, SpatialDim, Frame>&)>(
       &time_deriv_of_spatial_metric<SpatialDim, Frame>);
 
   using base =

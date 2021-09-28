@@ -48,7 +48,7 @@ void cartesian_spatial_metric_and_derivatives_from_unnormalized_spec_modes(
     const tnsr::ii<ComplexModalVector, 3>& dr_spatial_metric_coefficients,
     const tnsr::ii<ComplexModalVector, 3>& dt_spatial_metric_coefficients,
     const CartesianiSphericalJ& inverse_cartesian_to_spherical_jacobian,
-    const tnsr::I<DataVector, 3>& unit_cartesian_coords, size_t l_max) noexcept;
+    const tnsr::I<DataVector, 3>& unit_cartesian_coords, size_t l_max);
 
 /*!
  * \brief Compute \f$\beta^{i}\f$, \f$\partial_i \beta^{j}\f$, and
@@ -72,7 +72,7 @@ void cartesian_shift_and_derivatives_from_unnormalized_spec_modes(
     const tnsr::I<ComplexModalVector, 3>& dt_shift_coefficients,
     const CartesianiSphericalJ& inverse_cartesian_to_spherical_jacobian,
     const Scalar<DataVector>& radial_derivative_correction_factor,
-    size_t l_max) noexcept;
+    size_t l_max);
 
 /*!
  * \brief Compute \f$\alpha\f$, \f$\partial_i \alpha\f$, and
@@ -96,7 +96,7 @@ void cartesian_lapse_and_derivatives_from_unnormalized_spec_modes(
     const Scalar<ComplexModalVector>& dt_lapse_coefficients,
     const CartesianiSphericalJ& inverse_cartesian_to_spherical_jacobian,
     const Scalar<DataVector>& radial_derivative_correction_factor,
-    size_t l_max) noexcept;
+    size_t l_max);
 
 /*!
  * \brief Process the worldtube data from modal metric components and
@@ -164,7 +164,7 @@ void create_bondi_boundary_data_from_unnormalized_spec_modes(
     const Scalar<ComplexModalVector>& lapse_coefficients,
     const Scalar<ComplexModalVector>& dt_lapse_coefficients,
     const Scalar<ComplexModalVector>& dr_lapse_coefficients,
-    const double extraction_radius, const size_t l_max) noexcept {
+    const double extraction_radius, const size_t l_max) {
   const size_t size = Spectral::Swsh::number_of_swsh_collocation_points(l_max);
 
   // Most allocations required for the full boundary computation are merged into

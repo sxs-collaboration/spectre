@@ -37,7 +37,7 @@ class Cfl : public StepChooser<StepChooserUse> {
  public:
   /// \cond
   Cfl() = default;
-  explicit Cfl(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit Cfl(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Cfl);  // NOLINT
   /// \endcond
@@ -45,15 +45,14 @@ class Cfl : public StepChooser<StepChooserUse> {
   struct SafetyFactor {
     using type = double;
     static constexpr Options::String help{"Multiplier for computed step"};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
 
   static constexpr Options::String help{
       "Suggests a step size based on the CFL stability criterion."};
   using options = tmpl::list<SafetyFactor>;
 
-  explicit Cfl(const double safety_factor) noexcept
-      : safety_factor_(safety_factor) {}
+  explicit Cfl(const double safety_factor) : safety_factor_(safety_factor) {}
 
   using argument_tags =
       tmpl::list<domain::Tags::MinimumGridSpacing<System::volume_dim, Frame>,
@@ -71,7 +70,7 @@ class Cfl : public StepChooser<StepChooserUse> {
       const typename Metavariables::time_stepper_tag::type::element_type&
           time_stepper,
       const double speed, const double last_step_magnitude,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/) const noexcept {
+      const Parallel::GlobalCache<Metavariables>& /*cache*/) const {
     const double time_stepper_stability_factor = time_stepper.stable_step();
     const double step_size = safety_factor_ * time_stepper_stability_factor *
                              minimum_grid_spacing /
@@ -81,7 +80,7 @@ class Cfl : public StepChooser<StepChooserUse> {
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept override { p | safety_factor_; }
+  void pup(PUP::er& p) override { p | safety_factor_; }
 
  private:
   double safety_factor_ = std::numeric_limits<double>::signaling_NaN();

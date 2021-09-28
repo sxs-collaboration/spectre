@@ -46,7 +46,7 @@ struct Background : db::SimpleTag {
   using option_tags = tmpl::list<OptionTags::Background<BackgroundType>>;
 
   static constexpr bool pass_metavariables = false;
-  static type create_from_options(const type& value) noexcept {
+  static type create_from_options(const type& value) {
     return deserialize<type>(serialize<type>(value).data());
   }
 };
@@ -58,7 +58,7 @@ struct InitialGuess : db::SimpleTag {
   using option_tags = tmpl::list<OptionTags::InitialGuess<InitialGuessType>>;
 
   static constexpr bool pass_metavariables = false;
-  static type create_from_options(const type& value) noexcept {
+  static type create_from_options(const type& value) {
     return deserialize<type>(serialize<type>(value).data());
   }
 };

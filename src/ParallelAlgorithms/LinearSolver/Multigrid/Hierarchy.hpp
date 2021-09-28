@@ -33,7 +33,7 @@ namespace LinearSolver::multigrid {
  */
 template <size_t Dim>
 std::vector<std::array<size_t, Dim>> coarsen(
-    std::vector<std::array<size_t, Dim>> initial_refinement_levels) noexcept;
+    std::vector<std::array<size_t, Dim>> initial_refinement_levels);
 
 /*!
  * \brief The element covering the `child_id` on the coarser grid.
@@ -45,7 +45,7 @@ std::vector<std::array<size_t, Dim>> coarsen(
  * per dimension.
  */
 template <size_t Dim>
-ElementId<Dim> parent_id(const ElementId<Dim>& child_id) noexcept;
+ElementId<Dim> parent_id(const ElementId<Dim>& child_id);
 
 /*!
  * \brief The elements covering the `parent_id` on the finer grid.
@@ -63,6 +63,6 @@ ElementId<Dim> parent_id(const ElementId<Dim>& child_id) noexcept;
 template <size_t Dim>
 std::unordered_set<ElementId<Dim>> child_ids(
     const ElementId<Dim>& parent_id,
-    const std::array<size_t, Dim>& children_refinement_levels) noexcept;
+    const std::array<size_t, Dim>& children_refinement_levels);
 
 }  // namespace LinearSolver::multigrid

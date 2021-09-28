@@ -13,7 +13,7 @@
 
 namespace Cce {
 
-void pypp_test_volume_weyl() noexcept {
+void pypp_test_volume_weyl() {
   pypp::SetupLocalPythonEnvironment local_python_env{"Evolution/Systems/Cce/"};
 
   const size_t num_pts = 5;

@@ -24,8 +24,8 @@ enum class BoundaryConditionType {
   Neumann
 };
 
-std::ostream& operator<<(
-    std::ostream& os, BoundaryConditionType boundary_condition_type) noexcept;
+std::ostream& operator<<(std::ostream& os,
+                         BoundaryConditionType boundary_condition_type);
 
 }  // namespace elliptic
 

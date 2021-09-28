@@ -70,7 +70,7 @@ namespace Spectral {
 enum class Basis { Chebyshev, Legendre, FiniteDifference, SphericalHarmonic };
 
 /// \cond HIDDEN_SYMBOLS
-std::ostream& operator<<(std::ostream& os, const Basis& basis) noexcept;
+std::ostream& operator<<(std::ostream& os, const Basis& basis);
 /// \endcond
 
 /*!
@@ -90,13 +90,12 @@ std::ostream& operator<<(std::ostream& os, const Basis& basis) noexcept;
 enum class Quadrature { Gauss, GaussLobatto, CellCentered, FaceCentered };
 
 /// \cond HIDDEN_SYMBOLS
-std::ostream& operator<<(std::ostream& os,
-                         const Quadrature& quadrature) noexcept;
+std::ostream& operator<<(std::ostream& os, const Quadrature& quadrature);
 /// \endcond
 
 namespace detail {
-constexpr size_t minimum_number_of_points(
-    const Basis /*basis*/, const Quadrature quadrature) noexcept {
+constexpr size_t minimum_number_of_points(const Basis /*basis*/,
+                                          const Quadrature quadrature) {
   // NOLINTNEXTLINE(bugprone-branch-clone)
   if (quadrature == Quadrature::Gauss) {
     return 1;
@@ -149,7 +148,7 @@ constexpr size_t maximum_number_of_points =
  * (zero-indexed).
  */
 template <Basis BasisType, typename T>
-T compute_basis_function_value(size_t k, const T& x) noexcept;
+T compute_basis_function_value(size_t k, const T& x);
 
 /*!
  * \brief Compute the inverse of the weight function \f$w(x)\f$ w.r.t. which
@@ -157,14 +156,14 @@ T compute_basis_function_value(size_t k, const T& x) noexcept;
  * `quadrature_weights(size_t)` for details.
  */
 template <Basis>
-DataVector compute_inverse_weight_function_values(const DataVector&) noexcept;
+DataVector compute_inverse_weight_function_values(const DataVector&);
 
 /*!
  * \brief Compute the normalization square of the basis function \f$\Phi_k\f$
  * (zero-indexed), i.e. the weighted definite integral over its square.
  */
 template <Basis BasisType>
-double compute_basis_function_normalization_square(size_t k) noexcept;
+double compute_basis_function_normalization_square(size_t k);
 
 /*!
  * \brief Compute the collocation points and weights associated to the
@@ -180,21 +179,21 @@ double compute_basis_function_normalization_square(size_t k) noexcept;
  */
 template <Basis BasisType, Quadrature QuadratureType>
 std::pair<DataVector, DataVector> compute_collocation_points_and_weights(
-    size_t num_points) noexcept;
+    size_t num_points);
 
 /*!
  * \brief Collocation points
  * \param num_points The number of collocation points
  */
 template <Basis BasisType, Quadrature QuadratureType>
-const DataVector& collocation_points(size_t num_points) noexcept;
+const DataVector& collocation_points(size_t num_points);
 
 /*!
  * \brief Collocation points for a one-dimensional mesh.
  *
  * \see collocation_points(size_t)
  */
-const DataVector& collocation_points(const Mesh<1>& mesh) noexcept;
+const DataVector& collocation_points(const Mesh<1>& mesh);
 
 /*!
  * \brief Weights to compute definite integrals.
@@ -220,7 +219,7 @@ const DataVector& collocation_points(const Mesh<1>& mesh) noexcept;
  * \param num_points The number of collocation points
  */
 template <Basis BasisType, Quadrature QuadratureType>
-const DataVector& quadrature_weights(size_t num_points) noexcept;
+const DataVector& quadrature_weights(size_t num_points);
 
 /*!
  * \brief Quadrature weights for a one-dimensional mesh.
@@ -230,7 +229,7 @@ const DataVector& quadrature_weights(size_t num_points) noexcept;
  *
  * \see quadrature_weights(size_t)
  */
-const DataVector& quadrature_weights(const Mesh<1>& mesh) noexcept;
+const DataVector& quadrature_weights(const Mesh<1>& mesh);
 
 /*!
  * \brief %Matrix used to compute the derivative of a function.
@@ -245,14 +244,14 @@ const DataVector& quadrature_weights(const Mesh<1>& mesh) noexcept;
  * \param num_points The number of collocation points
  */
 template <Basis BasisType, Quadrature QuadratureType>
-const Matrix& differentiation_matrix(size_t num_points) noexcept;
+const Matrix& differentiation_matrix(size_t num_points);
 
 /*!
  * \brief Differentiation matrix for a one-dimensional mesh.
  *
  * \see differentiation_matrix(size_t)
  */
-const Matrix& differentiation_matrix(const Mesh<1>& mesh) noexcept;
+const Matrix& differentiation_matrix(const Mesh<1>& mesh);
 
 /*!
  * \brief %Matrix used to compute the divergence of the flux in weak form.
@@ -260,14 +259,14 @@ const Matrix& differentiation_matrix(const Mesh<1>& mesh) noexcept;
  * \param num_points The number of collocation points
  */
 template <Basis BasisType, Quadrature QuadratureType>
-const Matrix& weak_flux_differentiation_matrix(size_t num_points) noexcept;
+const Matrix& weak_flux_differentiation_matrix(size_t num_points);
 
 /*!
  * \brief %Matrix used to compute the divergence of the flux in weak form.
  *
  * \see weak_flux_differentiation_matrix(size_t)
  */
-const Matrix& weak_flux_differentiation_matrix(const Mesh<1>& mesh) noexcept;
+const Matrix& weak_flux_differentiation_matrix(const Mesh<1>& mesh);
 
 /*!
  * \brief %Matrix used to perform an indefinite integral of a function over the
@@ -391,14 +390,14 @@ const Matrix& weak_flux_differentiation_matrix(const Mesh<1>& mesh) noexcept;
  * where \f$\Gamma(x)\f$ is the Gamma function.
  */
 template <Basis BasisType, Quadrature QuadratureType>
-const Matrix& integration_matrix(size_t num_points) noexcept;
+const Matrix& integration_matrix(size_t num_points);
 
 /*!
  * \brief Indefinite integration matrix for a one-dimensional mesh.
  *
  * \see integration_matrix(size_t)
  */
-const Matrix& integration_matrix(const Mesh<1>& mesh) noexcept;
+const Matrix& integration_matrix(const Mesh<1>& mesh);
 
 /*!
  * \brief %Matrix used to interpolate to the \p target_points.
@@ -413,7 +412,7 @@ const Matrix& integration_matrix(const Mesh<1>& mesh) noexcept;
  * \param target_points The points to interpolate to
  */
 template <Basis BasisType, Quadrature QuadratureType, typename T>
-Matrix interpolation_matrix(size_t num_points, const T& target_points) noexcept;
+Matrix interpolation_matrix(size_t num_points, const T& target_points);
 
 /*!
  * \brief Interpolation matrix to the \p target_points for a one-dimensional
@@ -422,8 +421,7 @@ Matrix interpolation_matrix(size_t num_points, const T& target_points) noexcept;
  * \see interpolation_matrix(size_t, const T&)
  */
 template <typename T>
-Matrix interpolation_matrix(const Mesh<1>& mesh,
-                            const T& target_points) noexcept;
+Matrix interpolation_matrix(const Mesh<1>& mesh, const T& target_points);
 
 /// @{
 /*!
@@ -439,11 +437,11 @@ Matrix interpolation_matrix(const Mesh<1>& mesh,
  * \warning This can only be called with Gauss points.
  */
 const std::pair<Matrix, Matrix>& boundary_interpolation_matrices(
-    const Mesh<1>& mesh) noexcept;
+    const Mesh<1>& mesh);
 
 template <Basis BasisType, Quadrature QuadratureType>
 const std::pair<Matrix, Matrix>& boundary_interpolation_matrices(
-    size_t num_points) noexcept;
+    size_t num_points);
 /// @}
 
 /// @{
@@ -473,11 +471,11 @@ const std::pair<Matrix, Matrix>& boundary_interpolation_matrices(
  * \warning This can only be called with Gauss points.
  */
 const std::pair<DataVector, DataVector>& boundary_interpolation_term(
-    const Mesh<1>& mesh) noexcept;
+    const Mesh<1>& mesh);
 
 template <Basis BasisType, Quadrature QuadratureType>
 const std::pair<DataVector, DataVector>& boundary_interpolation_term(
-    size_t num_points) noexcept;
+    size_t num_points);
 /// @}
 
 /// @{
@@ -496,11 +494,11 @@ const std::pair<DataVector, DataVector>& boundary_interpolation_term(
  * \warning This can only be called with Gauss points.
  */
 const std::pair<DataVector, DataVector>& boundary_lifting_term(
-    const Mesh<1>& mesh) noexcept;
+    const Mesh<1>& mesh);
 
 template <Basis BasisType, Quadrature QuadratureType>
 const std::pair<DataVector, DataVector>& boundary_lifting_term(
-    size_t num_points) noexcept;
+    size_t num_points);
 /// @}
 
 /*!
@@ -523,7 +521,7 @@ const std::pair<DataVector, DataVector>& boundary_lifting_term(
  * \see nodal_to_modal_matrix(size_t)
  */
 template <Basis BasisType, Quadrature QuadratureType>
-const Matrix& modal_to_nodal_matrix(size_t num_points) noexcept;
+const Matrix& modal_to_nodal_matrix(size_t num_points);
 
 /*!
  * \brief Transformation matrix from modal to nodal coefficients for a
@@ -531,7 +529,7 @@ const Matrix& modal_to_nodal_matrix(size_t num_points) noexcept;
  *
  * \see modal_to_nodal_matrix(size_t)
  */
-const Matrix& modal_to_nodal_matrix(const Mesh<1>& mesh) noexcept;
+const Matrix& modal_to_nodal_matrix(const Mesh<1>& mesh);
 
 /*!
  * \brief %Matrix used to transform from the nodal coefficients of a function to
@@ -553,7 +551,7 @@ const Matrix& modal_to_nodal_matrix(const Mesh<1>& mesh) noexcept;
  * \see modal_to_nodal_matrix(size_t)
  */
 template <Basis BasisType, Quadrature QuadratureType>
-const Matrix& nodal_to_modal_matrix(size_t num_points) noexcept;
+const Matrix& nodal_to_modal_matrix(size_t num_points);
 
 /*!
  * \brief Transformation matrix from nodal to modal coefficients for a
@@ -561,7 +559,7 @@ const Matrix& nodal_to_modal_matrix(size_t num_points) noexcept;
  *
  * \see nodal_to_modal_matrix(size_t)
  */
-const Matrix& nodal_to_modal_matrix(const Mesh<1>& mesh) noexcept;
+const Matrix& nodal_to_modal_matrix(const Mesh<1>& mesh);
 
 /*!
  * \brief %Matrix used to linearize a function.
@@ -577,14 +575,14 @@ const Matrix& nodal_to_modal_matrix(const Mesh<1>& mesh) noexcept;
  * \see nodal_to_modal_matrix(size_t)
  */
 template <Basis BasisType, Quadrature QuadratureType>
-const Matrix& linear_filter_matrix(size_t num_points) noexcept;
+const Matrix& linear_filter_matrix(size_t num_points);
 
 /*!
  * \brief Linear filter matrix for a one-dimensional mesh.
  *
  * \see linear_filter_matrix(size_t)
  */
-const Matrix& linear_filter_matrix(const Mesh<1>& mesh) noexcept;
+const Matrix& linear_filter_matrix(const Mesh<1>& mesh);
 
 }  // namespace Spectral
 

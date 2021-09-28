@@ -128,16 +128,16 @@ class MagnetizedFmDisk
   MagnetizedFmDisk() = default;
   MagnetizedFmDisk(const MagnetizedFmDisk& /*rhs*/) = delete;
   MagnetizedFmDisk& operator=(const MagnetizedFmDisk& /*rhs*/) = delete;
-  MagnetizedFmDisk(MagnetizedFmDisk&& /*rhs*/) noexcept = default;
-  MagnetizedFmDisk& operator=(MagnetizedFmDisk&& /*rhs*/) noexcept = default;
+  MagnetizedFmDisk(MagnetizedFmDisk&& /*rhs*/) = default;
+  MagnetizedFmDisk& operator=(MagnetizedFmDisk&& /*rhs*/) = default;
   ~MagnetizedFmDisk() = default;
 
-  MagnetizedFmDisk(double bh_mass, double bh_dimless_spin,
-                   double inner_edge_radius, double max_pressure_radius,
-                   double polytropic_constant, double polytropic_exponent,
-                   double threshold_density, double inverse_plasma_beta,
-                   size_t normalization_grid_res =
-                       BFieldNormGridRes::suggested_value()) noexcept;
+  MagnetizedFmDisk(
+      double bh_mass, double bh_dimless_spin, double inner_edge_radius,
+      double max_pressure_radius, double polytropic_constant,
+      double polytropic_exponent, double threshold_density,
+      double inverse_plasma_beta,
+      size_t normalization_grid_res = BFieldNormGridRes::suggested_value());
 
   // Overload the variables function from the base class.
   using fm_disk::equation_of_state;
@@ -151,8 +151,7 @@ class MagnetizedFmDisk
   /// before the metric variables.
   template <typename DataType, typename... Tags>
   tuples::TaggedTuple<Tags...> variables(const tnsr::I<DataType, 3>& x,
-                                         tmpl::list<Tags...> /*meta*/) const
-      noexcept {
+                                         tmpl::list<Tags...> /*meta*/) const {
     // Can't store IntermediateVariables as member variable because we
     // need to be threadsafe.
     constexpr double dummy_time = 0.0;
@@ -176,7 +175,7 @@ class MagnetizedFmDisk
 
   template <typename DataType, typename Tag>
   tuples::TaggedTuple<Tag> variables(const tnsr::I<DataType, 3>& x,
-                                     tmpl::list<Tag> /*meta*/) const noexcept {
+                                     tmpl::list<Tag> /*meta*/) const {
     // Can't store IntermediateVariables as member variable because we need to
     // be threadsafe.
     constexpr double dummy_time = 0.0;
@@ -193,22 +192,22 @@ class MagnetizedFmDisk
   /// @}
 
   // clang-tidy: no runtime references
-  void pup(PUP::er& /*p*/) noexcept;  //  NOLINT
+  void pup(PUP::er& /*p*/);  //  NOLINT
 
  private:
   template <typename DataType, bool NeedSpacetime>
   auto variables(const tnsr::I<DataType, 3>& x,
                  tmpl::list<hydro::Tags::MagneticField<DataType, 3>> /*meta*/,
                  const IntermediateVariables<DataType, NeedSpacetime>& vars,
-                 size_t index) const noexcept
+                 size_t index) const
       -> tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3>>;
 
   template <typename DataType>
   tnsr::I<DataType, 3> unnormalized_magnetic_field(
-      const tnsr::I<DataType, 3>& x) const noexcept;
+      const tnsr::I<DataType, 3>& x) const;
 
   friend bool operator==(const MagnetizedFmDisk& lhs,
-                         const MagnetizedFmDisk& rhs) noexcept;
+                         const MagnetizedFmDisk& rhs);
 
   double threshold_density_ = std::numeric_limits<double>::signaling_NaN();
   double inverse_plasma_beta_ = std::numeric_limits<double>::signaling_NaN();
@@ -217,8 +216,7 @@ class MagnetizedFmDisk
   gr::KerrSchildCoords kerr_schild_coords_{};
 };
 
-bool operator!=(const MagnetizedFmDisk& lhs,
-                const MagnetizedFmDisk& rhs) noexcept;
+bool operator!=(const MagnetizedFmDisk& lhs, const MagnetizedFmDisk& rhs);
 
 }  // namespace AnalyticData
 }  // namespace grmhd

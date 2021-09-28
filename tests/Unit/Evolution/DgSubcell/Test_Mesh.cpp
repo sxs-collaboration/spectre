@@ -9,7 +9,7 @@
 
 namespace {
 template <Spectral::Basis BasisType, Spectral::Quadrature QuadratureType>
-void test_mesh() noexcept {
+void test_mesh() {
   constexpr size_t min_num_pts =
       Spectral::minimum_number_of_points<BasisType, QuadratureType>;
   constexpr size_t max_num_pts = Spectral::maximum_number_of_points<BasisType>;

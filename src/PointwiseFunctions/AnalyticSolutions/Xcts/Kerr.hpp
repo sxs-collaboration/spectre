@@ -67,80 +67,73 @@ struct KerrVariables : CommonVariables<DataType, KerrVariablesCache<DataType>> {
   void operator()(
       gsl::not_null<tnsr::ii<DataType, Dim>*> conformal_metric,
       gsl::not_null<Cache*> cache,
-      Tags::ConformalMetric<DataType, Dim, Frame::Inertial> /*meta*/)
-      const noexcept;
-  void operator()(
-      gsl::not_null<tnsr::II<DataType, Dim>*> inv_conformal_metric,
-      gsl::not_null<Cache*> cache,
-      Tags::InverseConformalMetric<DataType, Dim, Frame::Inertial> /*meta*/)
-      const noexcept;
+      Tags::ConformalMetric<DataType, Dim, Frame::Inertial> /*meta*/) const;
+  void operator()(gsl::not_null<tnsr::II<DataType, Dim>*> inv_conformal_metric,
+                  gsl::not_null<Cache*> cache,
+                  Tags::InverseConformalMetric<DataType, Dim,
+                                               Frame::Inertial> /*meta*/) const;
   void operator()(
       gsl::not_null<tnsr::ijj<DataType, Dim>*> deriv_conformal_metric,
       gsl::not_null<Cache*> cache,
       ::Tags::deriv<Tags::ConformalMetric<DataType, Dim, Frame::Inertial>,
-                    tmpl::size_t<Dim>, Frame::Inertial> /*meta*/)
-      const noexcept;
-  void operator()(
-      gsl::not_null<Scalar<DataType>*> trace_extrinsic_curvature,
-      gsl::not_null<Cache*> cache,
-      gr::Tags::TraceExtrinsicCurvature<DataType> /*meta*/) const noexcept;
+                    tmpl::size_t<Dim>, Frame::Inertial> /*meta*/) const;
+  void operator()(gsl::not_null<Scalar<DataType>*> trace_extrinsic_curvature,
+                  gsl::not_null<Cache*> cache,
+                  gr::Tags::TraceExtrinsicCurvature<DataType> /*meta*/) const;
   void operator()(
       gsl::not_null<Scalar<DataType>*> dt_trace_extrinsic_curvature,
       gsl::not_null<Cache*> cache,
-      ::Tags::dt<gr::Tags::TraceExtrinsicCurvature<DataType>> /*meta*/)
-      const noexcept;
+      ::Tags::dt<gr::Tags::TraceExtrinsicCurvature<DataType>> /*meta*/) const;
   void operator()(gsl::not_null<Scalar<DataType>*> conformal_factor,
                   gsl::not_null<Cache*> cache,
-                  Tags::ConformalFactor<DataType> /*meta*/) const noexcept;
+                  Tags::ConformalFactor<DataType> /*meta*/) const;
   void operator()(
       gsl::not_null<tnsr::i<DataType, Dim>*> conformal_factor_gradient,
       gsl::not_null<Cache*> cache,
       ::Tags::deriv<Xcts::Tags::ConformalFactor<DataType>, tmpl::size_t<Dim>,
-                    Frame::Inertial> /*meta*/) const noexcept;
+                    Frame::Inertial> /*meta*/) const;
   void operator()(gsl::not_null<Scalar<DataType>*> lapse,
                   gsl::not_null<Cache*> cache,
-                  gr::Tags::Lapse<DataType> /*meta*/) const noexcept;
-  void operator()(
-      gsl::not_null<Scalar<DataType>*> lapse_times_conformal_factor,
-      gsl::not_null<Cache*> cache,
-      Tags::LapseTimesConformalFactor<DataType> /*meta*/) const noexcept;
-  void operator()(gsl::not_null<tnsr::i<DataType, Dim>*>
-                      lapse_times_conformal_factor_gradient,
+                  gr::Tags::Lapse<DataType> /*meta*/) const;
+  void operator()(gsl::not_null<Scalar<DataType>*> lapse_times_conformal_factor,
                   gsl::not_null<Cache*> cache,
-                  ::Tags::deriv<Tags::LapseTimesConformalFactor<DataType>,
-                                tmpl::size_t<Dim>, Frame::Inertial> /*meta*/)
-      const noexcept;
+                  Tags::LapseTimesConformalFactor<DataType> /*meta*/) const;
+  void operator()(
+      gsl::not_null<tnsr::i<DataType, Dim>*>
+          lapse_times_conformal_factor_gradient,
+      gsl::not_null<Cache*> cache,
+      ::Tags::deriv<Tags::LapseTimesConformalFactor<DataType>,
+                    tmpl::size_t<Dim>, Frame::Inertial> /*meta*/) const;
   void operator()(
       gsl::not_null<tnsr::I<DataType, Dim>*> shift_background,
       gsl::not_null<Cache*> cache,
-      Tags::ShiftBackground<DataType, Dim, Frame::Inertial> /*meta*/)
-      const noexcept;
+      Tags::ShiftBackground<DataType, Dim, Frame::Inertial> /*meta*/) const;
   void operator()(gsl::not_null<tnsr::II<DataType, Dim, Frame::Inertial>*>
                       longitudinal_shift_background_minus_dt_conformal_metric,
                   gsl::not_null<Cache*> cache,
                   Tags::LongitudinalShiftBackgroundMinusDtConformalMetric<
-                      DataType, Dim, Frame::Inertial> /*meta*/) const noexcept;
-  void operator()(gsl::not_null<tnsr::I<DataType, Dim>*> shift_excess,
-                  gsl::not_null<Cache*> cache,
-                  Tags::ShiftExcess<DataType, Dim, Frame::Inertial> /*meta*/)
-      const noexcept;
-  void operator()(gsl::not_null<tnsr::ii<DataType, Dim>*> shift_strain,
-                  gsl::not_null<Cache*> cache,
-                  Tags::ShiftStrain<DataType, Dim, Frame::Inertial> /*meta*/)
-      const noexcept;
-  void operator()(gsl::not_null<Scalar<DataType>*> energy_density,
-                  gsl::not_null<Cache*> cache,
-                  gr::Tags::Conformal<gr::Tags::EnergyDensity<DataType>,
-                                      0> /*meta*/) const noexcept;
-  void operator()(gsl::not_null<Scalar<DataType>*> stress_trace,
-                  gsl::not_null<Cache*> cache,
-                  gr::Tags::Conformal<gr::Tags::StressTrace<DataType>,
-                                      0> /*meta*/) const noexcept;
+                      DataType, Dim, Frame::Inertial> /*meta*/) const;
+  void operator()(
+      gsl::not_null<tnsr::I<DataType, Dim>*> shift_excess,
+      gsl::not_null<Cache*> cache,
+      Tags::ShiftExcess<DataType, Dim, Frame::Inertial> /*meta*/) const;
+  void operator()(
+      gsl::not_null<tnsr::ii<DataType, Dim>*> shift_strain,
+      gsl::not_null<Cache*> cache,
+      Tags::ShiftStrain<DataType, Dim, Frame::Inertial> /*meta*/) const;
+  void operator()(
+      gsl::not_null<Scalar<DataType>*> energy_density,
+      gsl::not_null<Cache*> cache,
+      gr::Tags::Conformal<gr::Tags::EnergyDensity<DataType>, 0> /*meta*/) const;
+  void operator()(
+      gsl::not_null<Scalar<DataType>*> stress_trace,
+      gsl::not_null<Cache*> cache,
+      gr::Tags::Conformal<gr::Tags::StressTrace<DataType>, 0> /*meta*/) const;
   void operator()(gsl::not_null<tnsr::I<DataType, Dim>*> momentum_density,
                   gsl::not_null<Cache*> cache,
                   gr::Tags::Conformal<
                       gr::Tags::MomentumDensity<Dim, Frame::Inertial, DataType>,
-                      0> /*meta*/) const noexcept;
+                      0> /*meta*/) const;
 };
 
 }  // namespace detail
@@ -193,7 +186,7 @@ class Kerr : public AnalyticSolution<Registrars>,
   template <typename DataType, typename... RequestedTags>
   tuples::TaggedTuple<RequestedTags...> variables(
       const tnsr::I<DataType, 3, Frame::Inertial>& x,
-      tmpl::list<RequestedTags...> /*meta*/) const noexcept {
+      tmpl::list<RequestedTags...> /*meta*/) const {
     using VarsComputer = detail::KerrVariables<DataType>;
     typename VarsComputer::Cache cache{
         get_size(*x.begin()),
@@ -209,7 +202,7 @@ class Kerr : public AnalyticSolution<Registrars>,
       const tnsr::I<DataType, 3, Frame::Inertial>& x, const Mesh<3>& mesh,
       const InverseJacobian<DataVector, 3, Frame::ElementLogical,
                             Frame::Inertial>& inv_jacobian,
-      tmpl::list<RequestedTags...> /*meta*/) const noexcept {
+      tmpl::list<RequestedTags...> /*meta*/) const {
     using VarsComputer = detail::KerrVariables<DataType>;
     typename VarsComputer::Cache cache{
         get_size(*x.begin()),
@@ -220,7 +213,7 @@ class Kerr : public AnalyticSolution<Registrars>,
     return {cache.get_var(RequestedTags{})...};
   }
 
-  void pup(PUP::er& p) noexcept override {
+  void pup(PUP::er& p) override {
     gr::Solutions::KerrSchild::pup(p);
     Xcts::Solutions::AnalyticSolution<Registrars>::pup(p);
   }

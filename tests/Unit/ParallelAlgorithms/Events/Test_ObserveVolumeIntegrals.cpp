@@ -89,7 +89,7 @@ struct MockContributeReductionData {
                     observers::ArrayComponentId /*sender_array_id*/,
                     const std::string& subfile_name,
                     const std::vector<std::string>& reduction_names,
-                    Parallel::ReductionData<Ts...>&& reduction_data) noexcept {
+                    Parallel::ReductionData<Ts...>&& reduction_data) {
     results.observation_id = observation_id;
     results.subfile_name = subfile_name;
     results.reduction_names = reduction_names;
@@ -166,24 +166,24 @@ struct Metavariables {
 };
 
 template <size_t SpatialDim>
-std::unique_ptr<DomainCreator<SpatialDim>> domain_creator() noexcept;
+std::unique_ptr<DomainCreator<SpatialDim>> domain_creator();
 
 template <>
-std::unique_ptr<DomainCreator<1>> domain_creator() noexcept {
+std::unique_ptr<DomainCreator<1>> domain_creator() {
   return std::make_unique<domain::creators::Interval>(
       domain::creators::Interval({{-0.5}}, {{0.5}}, {{0}}, {{4}}, {{false}},
                                  nullptr));
 }
 
 template <>
-std::unique_ptr<DomainCreator<2>> domain_creator() noexcept {
+std::unique_ptr<DomainCreator<2>> domain_creator() {
   return std::make_unique<domain::creators::Rectangle>(
       domain::creators::Rectangle({{-0.5, -0.5}}, {{0.5, 0.5}}, {{0, 0}},
                                   {{4, 4}}, {{false, false}}));
 }
 
 template <>
-std::unique_ptr<DomainCreator<3>> domain_creator() noexcept {
+std::unique_ptr<DomainCreator<3>> domain_creator() {
   return std::make_unique<domain::creators::Brick>(domain::creators::Brick(
       {{-0.5, -0.5, -0.5}}, {{0.5, 0.5, 0.5}}, {{0, 0, 0}}, {{4, 4, 4}},
       {{false, false, false}}));
@@ -191,7 +191,7 @@ std::unique_ptr<DomainCreator<3>> domain_creator() noexcept {
 
 template <size_t VolumeDim, typename ArraySectionIdTag, typename ObserveEvent>
 void test_observe(const std::unique_ptr<ObserveEvent> observe,
-                  const std::optional<std::string>& section) noexcept {
+                  const std::optional<std::string>& section) {
   using metavariables = Metavariables<VolumeDim, ArraySectionIdTag>;
   using element_component = ElementComponent<metavariables>;
   using observer_component = MockObserverComponent<metavariables>;
@@ -225,21 +225,20 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe,
   std::vector<double> expected_volume_integrals{};
   std::vector<std::string> expected_reduction_names = {
       db::tag_name<ObservationTimeTag>(), "Volume"};
-  tmpl::for_each<typename std::decay_t<decltype(vars)>::tags_list>([
-    &num_tensor_components, &vars, &expected_volume_integrals,
-    &expected_reduction_names, &det_jacobian, &mesh
-  ](auto tag) noexcept {
-    using tensor_tag = tmpl::type_from<decltype(tag)>;
-    const auto tensor = get<tensor_tag>(vars);
-    for (size_t i = 0; i < tensor.size(); ++i) {
-      expected_reduction_names.push_back("VolumeIntegral(" +
-                                         db::tag_name<tensor_tag>() +
-                                         tensor.component_suffix(i) + ")");
-      expected_volume_integrals.push_back(
-          definite_integral(det_jacobian * tensor[i], mesh));
-      ++num_tensor_components;
-    }
-  });
+  tmpl::for_each<typename std::decay_t<decltype(vars)>::tags_list>(
+      [&num_tensor_components, &vars, &expected_volume_integrals,
+       &expected_reduction_names, &det_jacobian, &mesh](auto tag) {
+        using tensor_tag = tmpl::type_from<decltype(tag)>;
+        const auto tensor = get<tensor_tag>(vars);
+        for (size_t i = 0; i < tensor.size(); ++i) {
+          expected_reduction_names.push_back("VolumeIntegral(" +
+                                             db::tag_name<tensor_tag>() +
+                                             tensor.component_suffix(i) + ")");
+          expected_volume_integrals.push_back(
+              definite_integral(det_jacobian * tensor[i], mesh));
+          ++num_tensor_components;
+        }
+      });
 
   const double observation_time = 2.0;
   const auto box = db::create<db::AddSimpleTags<
@@ -288,7 +287,7 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe,
 
 template <size_t VolumeDim, typename ArraySectionIdTag = void>
 void test_observe_system(
-    const std::optional<std::string>& section = std::nullopt) noexcept {
+    const std::optional<std::string>& section = std::nullopt) {
   using vars_for_test = variables_for_test<VolumeDim>;
 
   {

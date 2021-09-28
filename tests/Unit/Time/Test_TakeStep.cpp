@@ -50,7 +50,7 @@ struct Metavariables {
       using return_type = double;
       using base = largest_characteristic_speed;
       SPECTRE_ALWAYS_INLINE static constexpr void function(
-          const gsl::not_null<double*> speed) noexcept {
+          const gsl::not_null<double*> speed) {
         *speed = 1.0;
       }
     };
@@ -93,19 +93,16 @@ SPECTRE_TEST_CASE("Unit.Time.TakeStep", "[Unit][Time]") {
 
   // exponential function
   const auto update_rhs = [](const gsl::not_null<DataVector*> dt_y,
-                             const DataVector& y) noexcept {
-    *dt_y = 1.0e-2 * y;
-  };
+                             const DataVector& y) { *dt_y = 1.0e-2 * y; };
 
   typename ::Tags::HistoryEvolvedVariables<EvolvedVariable>::type history{5};
   // prepare history so that the Adams-Bashforth is ready to take steps
   TimeStepperTestUtils::initialize_history(
       slab.start(), make_not_null(&history),
-      [&initial_values](const auto t) noexcept {
+      [&initial_values](const auto t) {
         return initial_values * exp(1.0e-2 * t);
       },
-      [](const auto y, const auto /*t*/) noexcept { return 1.0e-2 * y; },
-      time_step, 4);
+      [](const auto y, const auto /*t*/) { return 1.0e-2 * y; }, time_step, 4);
 
   auto box = db::create<
       db::AddSimpleTags<
@@ -154,7 +151,7 @@ SPECTRE_TEST_CASE("Unit.Time.TakeStep", "[Unit][Time]") {
          const gsl::not_null<TimeStepId*> next_time_id,
          const gsl::not_null<TimeDelta*> local_time_step,
          const gsl::not_null<TimeDelta*> next_time_step,
-         const TimeStepper& time_stepper) noexcept {
+         const TimeStepper& time_stepper) {
         *time_id = *next_time_id;
         *local_time_step =
             next_time_step->with_slab(time_id->step_time().slab());

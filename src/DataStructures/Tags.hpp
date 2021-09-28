@@ -61,7 +61,7 @@ struct SpinWeighted : db::PrefixTag, db::SimpleTag {
       ::SpinWeighted<typename Tag::type::type, SpinConstant::value>,
       typename Tag::type>;
   using tag = Tag;
-  static std::string name() noexcept {
+  static std::string name() {
     return "SpinWeighted(" + db::tag_name<Tag>() + ", " +
            std::to_string(SpinConstant::value) + ")";
   }
@@ -82,7 +82,7 @@ template <typename LhsTag, typename RhsTag>
 struct Multiplies : db::PrefixTag, db::SimpleTag {
   using type = detail::product_t<typename LhsTag::type, typename RhsTag::type>;
   using tag = LhsTag;
-  static std::string name() noexcept {
+  static std::string name() {
     return "Multiplies(" + db::tag_name<LhsTag>() + ", " +
            db::tag_name<RhsTag>() + ")";
   }

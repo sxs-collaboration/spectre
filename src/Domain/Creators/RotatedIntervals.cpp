@@ -27,7 +27,7 @@ RotatedIntervals::RotatedIntervals(
         initial_number_of_grid_points_in_x,
     const std::array<bool, 1> is_periodic_in,
     std::unique_ptr<domain::creators::time_dependence::TimeDependence<1>>
-        time_dependence) noexcept
+        time_dependence)
     : lower_x_(lower_x),
       midpoint_x_(midpoint_x),
       upper_x_(upper_x),
@@ -92,7 +92,7 @@ RotatedIntervals::RotatedIntervals(
   }
 }
 
-Domain<1> RotatedIntervals::create_domain() const noexcept {
+Domain<1> RotatedIntervals::create_domain() const {
   std::vector<DirectionMap<
       1, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
       boundary_conditions_all_blocks{};
@@ -137,21 +137,20 @@ Domain<1> RotatedIntervals::create_domain() const noexcept {
   return domain;
 }
 
-std::vector<std::array<size_t, 1>> RotatedIntervals::initial_extents() const
-    noexcept {
+std::vector<std::array<size_t, 1>> RotatedIntervals::initial_extents() const {
   return {{{initial_number_of_grid_points_in_x_[0][0]}},
           {{initial_number_of_grid_points_in_x_[0][1]}}};
 }
 
 std::vector<std::array<size_t, 1>>
-RotatedIntervals ::initial_refinement_levels() const noexcept {
+RotatedIntervals ::initial_refinement_levels() const {
   return {{{initial_refinement_level_x_[0]}},
           {{initial_refinement_level_x_[0]}}};
 }
 
 std::unordered_map<std::string,
                    std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
-RotatedIntervals::functions_of_time() const noexcept {
+RotatedIntervals::functions_of_time() const {
   if (time_dependence_->is_none()) {
     return {};
   } else {

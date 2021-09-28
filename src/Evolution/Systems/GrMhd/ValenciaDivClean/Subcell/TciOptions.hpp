@@ -34,7 +34,7 @@ struct TciOptions {
   /// become negative
   struct MinimumValueOfD {
     using type = double;
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
     static constexpr Options::String help = {
         "Minimum value of rest-mass density times Lorentz factor before we "
         "switch to subcell."};
@@ -43,7 +43,7 @@ struct TciOptions {
   /// Used to identify places where the energy has suddenly become negative
   struct MinimumValueOfTildeTau {
     using type = double;
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
     static constexpr Options::String help = {
         "Minimum value of tilde tau before we switch to subcell."};
   };
@@ -52,7 +52,7 @@ struct TciOptions {
   /// cell as atmosphere.
   struct AtmosphereDensity {
     using type = double;
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
     static constexpr Options::String help = {
         "The density cutoff where if the maximum value of the density in the "
         "DG element is below this value we skip primitive recovery and treat "
@@ -64,7 +64,7 @@ struct TciOptions {
   /// controls.
   struct SafetyFactorForB {
     using type = double;
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
     static constexpr Options::String help = {
         "Safety factor for magnetic field bound."};
   };
@@ -88,7 +88,7 @@ struct TciOptions {
       "Options for the troubled-cell indicator."};
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept;
+  void pup(PUP::er& p);
 
   double minimum_rest_mass_density_times_lorentz_factor{
       std::numeric_limits<double>::signaling_NaN()};
@@ -117,7 +117,7 @@ struct TciOptions : db::SimpleTag {
 
   using option_tags = tmpl::list<OptionTags::TciOptions>;
   static constexpr bool pass_metavariables = false;
-  static type create_from_options(const type& tci_options) noexcept {
+  static type create_from_options(const type& tci_options) {
     return tci_options;
   }
 };

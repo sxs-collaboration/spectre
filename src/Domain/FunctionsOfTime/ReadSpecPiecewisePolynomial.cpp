@@ -27,7 +27,7 @@ void read_spec_piecewise_polynomial(
         std::string, domain::FunctionsOfTime::PiecewisePolynomial<MaxDeriv>>*>
         spec_functions_of_time,
     const std::string& file_name,
-    const std::map<std::string, std::string>& dataset_name_map) noexcept {
+    const std::map<std::string, std::string>& dataset_name_map) {
   h5::H5File<h5::AccessType::ReadOnly> file{file_name};
   for (const auto& [spec_name, spectre_name] : dataset_name_map) {
     const auto& dat_file = file.get<h5::Dat>("/" + spec_name);

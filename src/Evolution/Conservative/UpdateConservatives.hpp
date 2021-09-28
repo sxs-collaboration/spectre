@@ -39,7 +39,7 @@ struct UpdateConservatives {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     db::mutate_apply<
         typename Metavariables::system::conservative_from_primitive>(
         make_not_null(&box));

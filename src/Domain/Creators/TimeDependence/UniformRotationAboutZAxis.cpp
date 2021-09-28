@@ -33,7 +33,7 @@ template <size_t MeshDim>
 UniformRotationAboutZAxis<MeshDim>::UniformRotationAboutZAxis(
     const double initial_time,
     const std::optional<double> initial_expiration_delta_t,
-    const double angular_velocity, std::string function_of_time_name) noexcept
+    const double angular_velocity, std::string function_of_time_name)
     : initial_time_(initial_time),
       initial_expiration_delta_t_(initial_expiration_delta_t),
       angular_velocity_(angular_velocity),
@@ -41,7 +41,7 @@ UniformRotationAboutZAxis<MeshDim>::UniformRotationAboutZAxis(
 
 template <size_t MeshDim>
 std::unique_ptr<TimeDependence<MeshDim>>
-UniformRotationAboutZAxis<MeshDim>::get_clone() const noexcept {
+UniformRotationAboutZAxis<MeshDim>::get_clone() const {
   return std::make_unique<UniformRotationAboutZAxis>(
       initial_time_, initial_expiration_delta_t_, angular_velocity_,
       function_of_time_name_);
@@ -51,7 +51,7 @@ template <size_t MeshDim>
 std::vector<std::unique_ptr<
     domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, MeshDim>>>
 UniformRotationAboutZAxis<MeshDim>::block_maps(
-    const size_t number_of_blocks) const noexcept {
+    const size_t number_of_blocks) const {
   ASSERT(number_of_blocks > 0, "Must have at least one block to create.");
   std::vector<std::unique_ptr<
       domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, MeshDim>>>
@@ -66,7 +66,7 @@ UniformRotationAboutZAxis<MeshDim>::block_maps(
 template <size_t MeshDim>
 std::unordered_map<std::string,
                    std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
-UniformRotationAboutZAxis<MeshDim>::functions_of_time() const noexcept {
+UniformRotationAboutZAxis<MeshDim>::functions_of_time() const {
   std::unordered_map<std::string,
                      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
       result{};
@@ -83,14 +83,14 @@ UniformRotationAboutZAxis<MeshDim>::functions_of_time() const noexcept {
 }
 
 template <>
-auto UniformRotationAboutZAxis<2>::map_for_composition() const noexcept
+auto UniformRotationAboutZAxis<2>::map_for_composition() const
     -> MapForComposition {
   return MapForComposition{domain::CoordinateMaps::TimeDependent::Rotation<2>{
       function_of_time_name_}};
 }
 
 template <>
-auto UniformRotationAboutZAxis<3>::map_for_composition() const noexcept
+auto UniformRotationAboutZAxis<3>::map_for_composition() const
     -> MapForComposition {
   using ProductMap = domain::CoordinateMaps::TimeDependent::ProductOf2Maps<
       domain::CoordinateMaps::TimeDependent::Rotation<2>,
@@ -103,7 +103,7 @@ auto UniformRotationAboutZAxis<3>::map_for_composition() const noexcept
 
 template <size_t Dim>
 bool operator==(const UniformRotationAboutZAxis<Dim>& lhs,
-                const UniformRotationAboutZAxis<Dim>& rhs) noexcept {
+                const UniformRotationAboutZAxis<Dim>& rhs) {
   return lhs.initial_time_ == rhs.initial_time_ and
          lhs.initial_expiration_delta_t_ == rhs.initial_expiration_delta_t_ and
          lhs.angular_velocity_ == rhs.angular_velocity_ and
@@ -112,20 +112,20 @@ bool operator==(const UniformRotationAboutZAxis<Dim>& lhs,
 
 template <size_t Dim>
 bool operator!=(const UniformRotationAboutZAxis<Dim>& lhs,
-                const UniformRotationAboutZAxis<Dim>& rhs) noexcept {
+                const UniformRotationAboutZAxis<Dim>& rhs) {
   return not(lhs == rhs);
 }
 
 #define GET_DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATION(r, data)                                   \
-  template class UniformRotationAboutZAxis<GET_DIM(data)>;       \
-  template bool operator==<GET_DIM(data)>(                       \
-      const UniformRotationAboutZAxis<GET_DIM(data)>&,           \
-      const UniformRotationAboutZAxis<GET_DIM(data)>&) noexcept; \
-  template bool operator!=<GET_DIM(data)>(                       \
-      const UniformRotationAboutZAxis<GET_DIM(data)>&,           \
-      const UniformRotationAboutZAxis<GET_DIM(data)>&) noexcept;
+#define INSTANTIATION(r, data)                                          \
+  template class UniformRotationAboutZAxis<GET_DIM(data)>;              \
+  template bool operator==                                              \
+      <GET_DIM(data)>(const UniformRotationAboutZAxis<GET_DIM(data)>&,  \
+                      const UniformRotationAboutZAxis<GET_DIM(data)>&); \
+  template bool operator!=                                              \
+      <GET_DIM(data)>(const UniformRotationAboutZAxis<GET_DIM(data)>&,  \
+                      const UniformRotationAboutZAxis<GET_DIM(data)>&);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (2, 3))
 

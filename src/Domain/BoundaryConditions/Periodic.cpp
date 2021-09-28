@@ -6,8 +6,7 @@
 namespace domain::BoundaryConditions {
 MarkAsPeriodic::~MarkAsPeriodic() = default;
 
-bool is_periodic(
-    const std::unique_ptr<BoundaryCondition>& boundary_condition) noexcept {
+bool is_periodic(const std::unique_ptr<BoundaryCondition>& boundary_condition) {
   return dynamic_cast<const MarkAsPeriodic* const>(boundary_condition.get()) !=
          nullptr;
 }

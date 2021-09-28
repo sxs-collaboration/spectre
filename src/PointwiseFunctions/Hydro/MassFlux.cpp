@@ -19,7 +19,7 @@ void mass_flux(const gsl::not_null<tnsr::I<DataType, Dim, Frame>*> result,
                const Scalar<DataType>& lorentz_factor,
                const Scalar<DataType>& lapse,
                const tnsr::I<DataType, Dim, Frame>& shift,
-               const Scalar<DataType>& sqrt_det_spatial_metric) noexcept {
+               const Scalar<DataType>& sqrt_det_spatial_metric) {
   destructive_resize_components(result, get_size(get(rest_mass_density)));
   for (size_t i = 0; i < Dim; ++i) {
     result->get(i) = get(rest_mass_density) * get(lorentz_factor) *
@@ -34,7 +34,7 @@ tnsr::I<DataType, Dim, Frame> mass_flux(
     const tnsr::I<DataType, Dim, Frame>& spatial_velocity,
     const Scalar<DataType>& lorentz_factor, const Scalar<DataType>& lapse,
     const tnsr::I<DataType, Dim, Frame>& shift,
-    const Scalar<DataType>& sqrt_det_spatial_metric) noexcept {
+    const Scalar<DataType>& sqrt_det_spatial_metric) {
   tnsr::I<DataType, Dim, Frame> result{};
   mass_flux(make_not_null(&result), rest_mass_density, spatial_velocity,
             lorentz_factor, lapse, shift, sqrt_det_spatial_metric);
@@ -53,14 +53,14 @@ tnsr::I<DataType, Dim, Frame> mass_flux(
       const Scalar<DTYPE(data)>& lorentz_factor,                            \
       const Scalar<DTYPE(data)>& lapse,                                     \
       const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,            \
-      const Scalar<DTYPE(data)>& sqrt_det_spatial_metric) noexcept;         \
+      const Scalar<DTYPE(data)>& sqrt_det_spatial_metric);                  \
   template tnsr::I<DTYPE(data), DIM(data), FRAME(data)> mass_flux(          \
       const Scalar<DTYPE(data)>& rest_mass_density,                         \
       const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& spatial_velocity, \
       const Scalar<DTYPE(data)>& lorentz_factor,                            \
       const Scalar<DTYPE(data)>& lapse,                                     \
       const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,            \
-      const Scalar<DTYPE(data)>& sqrt_det_spatial_metric) noexcept;
+      const Scalar<DTYPE(data)>& sqrt_det_spatial_metric);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
                         (Frame::Grid, Frame::Inertial))

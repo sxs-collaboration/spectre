@@ -21,15 +21,14 @@ namespace NewtonianEuler {
  * specific internal energy.
  */
 template <typename DataType>
-void internal_energy_density(
-    gsl::not_null<Scalar<DataType>*> result,
-    const Scalar<DataType>& mass_density,
-    const Scalar<DataType>& specific_internal_energy) noexcept;
+void internal_energy_density(gsl::not_null<Scalar<DataType>*> result,
+                             const Scalar<DataType>& mass_density,
+                             const Scalar<DataType>& specific_internal_energy);
 
 template <typename DataType>
 Scalar<DataType> internal_energy_density(
     const Scalar<DataType>& mass_density,
-    const Scalar<DataType>& specific_internal_energy) noexcept;
+    const Scalar<DataType>& specific_internal_energy);
 /// @}
 
 namespace Tags {

@@ -63,8 +63,7 @@ struct InitializeGeometry {
       gsl::not_null<Scalar<DataVector>*> det_inv_jacobian,
       const std::vector<std::array<size_t, Dim>>& initial_extents,
       const std::vector<std::array<size_t, Dim>>& initial_refinement,
-      const Domain<Dim>& domain,
-      const ElementId<Dim>& element_id) const noexcept;
+      const Domain<Dim>& domain, const ElementId<Dim>& element_id) const;
 };
 
 /// Initialize the geometry on faces and mortars for the elliptic DG operator
@@ -115,7 +114,7 @@ struct InitializeFacesAndMortars {
       const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
                             Frame::Inertial>& inv_jacobian,
       const std::vector<std::array<size_t, Dim>>& initial_extents)
-      const noexcept;
+      const;
 };
 
 /// Initialize background quantities for the elliptic DG operator, possibly
@@ -139,7 +138,7 @@ struct InitializeBackground {
       const tnsr::I<DataVector, Dim>& inertial_coords, const Mesh<Dim>& mesh,
       const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
                             Frame::Inertial>& inv_jacobian,
-      const Background& background) const noexcept {
+      const Background& background) const {
     *background_fields = variables_from_tagged_tuple(background.variables(
         inertial_coords, mesh, inv_jacobian, BackgroundFields{}));
     ASSERT(mesh.quadrature(0) == Spectral::Quadrature::GaussLobatto,
@@ -172,7 +171,7 @@ struct NormalizeFaceNormal {
   void operator()(
       const gsl::not_null<tnsr::i<DataVector, Dim>*> face_normal,
       const gsl::not_null<Scalar<DataVector>*> face_normal_magnitude,
-      const InvMetric&... inv_metric) const noexcept {
+      const InvMetric&... inv_metric) const {
     magnitude(face_normal_magnitude, *face_normal, inv_metric...);
     for (size_t d = 0; d < Dim; ++d) {
       face_normal->get(d) /= get(*face_normal_magnitude);

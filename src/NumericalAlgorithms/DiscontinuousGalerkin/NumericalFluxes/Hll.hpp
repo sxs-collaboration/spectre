@@ -101,7 +101,7 @@ struct Hll : tt::ConformsTo<dg::protocols::NumericalFlux> {
             packaged_largest_outgoing_speed,
         const typename NormalDotFluxTags::type&... n_dot_f_to_package,
         const typename VariablesTags::type&... u_to_package,
-        const typename char_speeds_tag::type& characteristic_speeds) noexcept {
+        const typename char_speeds_tag::type& characteristic_speeds) {
       expand_pack((*packaged_u = u_to_package)...);
       expand_pack((*packaged_n_dot_f = n_dot_f_to_package)...);
 
@@ -121,12 +121,12 @@ struct Hll : tt::ConformsTo<dg::protocols::NumericalFlux> {
       for (size_t s = 0; s < characteristic_speeds[0].size(); ++s) {
         get(*packaged_largest_ingoing_speed)[s] = (*std::min_element(
             characteristic_speeds.begin(), characteristic_speeds.end(),
-            [&s](const DataVector& a, const DataVector& b) noexcept {
+            [&s](const DataVector& a, const DataVector& b) {
               return a[s] < b[s];
             }))[s];
         get(*packaged_largest_outgoing_speed)[s] = (*std::max_element(
             characteristic_speeds.begin(), characteristic_speeds.end(),
-            [&s](const DataVector& a, const DataVector& b) noexcept {
+            [&s](const DataVector& a, const DataVector& b) {
               return a[s] < b[s];
             }))[s];
       }
@@ -155,7 +155,7 @@ struct Hll : tt::ConformsTo<dg::protocols::NumericalFlux> {
         const typename LargestIngoingSpeed::type&
             minus_largest_outgoing_speed_exterior,
         const typename LargestOutgoingSpeed::type&
-            minus_largest_ingoing_speed_exterior) noexcept {
+            minus_largest_ingoing_speed_exterior) {
       const auto number_of_grid_points =
           get(largest_ingoing_speed_interior).size();
       auto largest_ingoing_speed = Scalar<DataVector>{number_of_grid_points};
@@ -178,12 +178,14 @@ struct Hll : tt::ConformsTo<dg::protocols::NumericalFlux> {
               << get(largest_ingoing_speed));
       const DataVector one_over_sp_minus_sm =
           1.0 / (get(largest_outgoing_speed) - get(largest_ingoing_speed));
-      const auto assemble_numerical_flux =
-          [
-            &largest_ingoing_speed, &largest_outgoing_speed,
-            &one_over_sp_minus_sm
-          ](const auto n_dot_num_f, const auto& n_dot_f_in, const auto& u_in,
-            const auto& minus_n_dot_f_ex, const auto& u_ex) noexcept {
+      const auto assemble_numerical_flux = [&largest_ingoing_speed,
+                                            &largest_outgoing_speed,
+                                            &one_over_sp_minus_sm](
+                                               const auto n_dot_num_f,
+                                               const auto& n_dot_f_in,
+                                               const auto& u_in,
+                                               const auto& minus_n_dot_f_ex,
+                                               const auto& u_ex) {
         for (size_t i = 0; i < n_dot_num_f->size(); ++i) {
           (*n_dot_num_f)[i] =
               one_over_sp_minus_sm *
@@ -205,17 +207,17 @@ struct Hll : tt::ConformsTo<dg::protocols::NumericalFlux> {
   static constexpr Options::String help = {"Computes the HLL numerical flux."};
 
   // clang-tidy: google-runtime-references
-  void pup(PUP::er& /*p*/) noexcept {}  // NOLINT
+  void pup(PUP::er& /*p*/) {}  // NOLINT
 
   template <class... Args>
-  void package_data(const Args&... args) const noexcept {
+  void package_data(const Args&... args) const {
     package_data_helper<variables_tags,
                         db::wrap_tags_in<::Tags::NormalDotFlux,
                                          variables_tags>>::function(args...);
   }
 
   template <class... Args>
-  void operator()(const Args&... args) const noexcept {
+  void operator()(const Args&... args) const {
     call_operator_helper<
         db::wrap_tags_in<::Tags::NormalDotNumericalFlux, variables_tags>,
         variables_tags,

@@ -35,19 +35,18 @@ struct ProductOfSinusoidsVariables {
   const std::array<double, Dim>& wave_numbers;
 
   void operator()(gsl::not_null<Scalar<DataType>*> field,
-                  gsl::not_null<Cache*> cache, Tags::Field /*meta*/) const
-      noexcept;
+                  gsl::not_null<Cache*> cache, Tags::Field /*meta*/) const;
   void operator()(gsl::not_null<tnsr::i<DataType, Dim>*> field_gradient,
                   gsl::not_null<Cache*> cache,
                   ::Tags::deriv<Tags::Field, tmpl::size_t<Dim>,
-                                Frame::Inertial> /*meta*/) const noexcept;
+                                Frame::Inertial> /*meta*/) const;
   void operator()(gsl::not_null<tnsr::I<DataType, Dim>*> flux_for_field,
                   gsl::not_null<Cache*> cache,
                   ::Tags::Flux<Tags::Field, tmpl::size_t<Dim>,
-                               Frame::Inertial> /*meta*/) const noexcept;
+                               Frame::Inertial> /*meta*/) const;
   void operator()(gsl::not_null<Scalar<DataType>*> fixed_source_for_field,
                   gsl::not_null<Cache*> cache,
-                  ::Tags::FixedSource<Tags::Field> /*meta*/) const noexcept;
+                  ::Tags::FixedSource<Tags::Field> /*meta*/) const;
 };
 }  // namespace detail
 
@@ -89,26 +88,25 @@ class ProductOfSinusoids : public AnalyticSolution<Dim, Registrars> {
       "coordinate in each dimension."};
 
   ProductOfSinusoids() = default;
-  ProductOfSinusoids(const ProductOfSinusoids&) noexcept = default;
-  ProductOfSinusoids& operator=(const ProductOfSinusoids&) noexcept = default;
-  ProductOfSinusoids(ProductOfSinusoids&&) noexcept = default;
-  ProductOfSinusoids& operator=(ProductOfSinusoids&&) noexcept = default;
-  ~ProductOfSinusoids() noexcept override = default;
+  ProductOfSinusoids(const ProductOfSinusoids&) = default;
+  ProductOfSinusoids& operator=(const ProductOfSinusoids&) = default;
+  ProductOfSinusoids(ProductOfSinusoids&&) = default;
+  ProductOfSinusoids& operator=(ProductOfSinusoids&&) = default;
+  ~ProductOfSinusoids() override = default;
 
   /// \cond
-  explicit ProductOfSinusoids(CkMigrateMessage* m) noexcept : Base(m) {}
+  explicit ProductOfSinusoids(CkMigrateMessage* m) : Base(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ProductOfSinusoids);  // NOLINT
   /// \endcond
 
-  explicit ProductOfSinusoids(
-      const std::array<double, Dim>& wave_numbers) noexcept
+  explicit ProductOfSinusoids(const std::array<double, Dim>& wave_numbers)
       : wave_numbers_(wave_numbers) {}
 
   template <typename DataType, typename... RequestedTags>
   tuples::TaggedTuple<RequestedTags...> variables(
       const tnsr::I<DataType, Dim>& x,
-      tmpl::list<RequestedTags...> /*meta*/) const noexcept {
+      tmpl::list<RequestedTags...> /*meta*/) const {
     using VarsComputer = detail::ProductOfSinusoidsVariables<DataType, Dim>;
     typename VarsComputer::Cache cache{get_size(*x.begin()),
                                        VarsComputer{x, wave_numbers_}};
@@ -116,11 +114,9 @@ class ProductOfSinusoids : public AnalyticSolution<Dim, Registrars> {
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept override { p | wave_numbers_; }
+  void pup(PUP::er& p) override { p | wave_numbers_; }
 
-  const std::array<double, Dim>& wave_numbers() const noexcept {
-    return wave_numbers_;
-  }
+  const std::array<double, Dim>& wave_numbers() const { return wave_numbers_; }
 
  private:
   std::array<double, Dim> wave_numbers_{
@@ -134,13 +130,13 @@ PUP::able::PUP_ID ProductOfSinusoids<Dim, Registrars>::my_PUP_ID = 0;  // NOLINT
 
 template <size_t Dim, typename Registrars>
 bool operator==(const ProductOfSinusoids<Dim, Registrars>& lhs,
-                const ProductOfSinusoids<Dim, Registrars>& rhs) noexcept {
+                const ProductOfSinusoids<Dim, Registrars>& rhs) {
   return lhs.wave_numbers() == rhs.wave_numbers();
 }
 
 template <size_t Dim, typename Registrars>
 bool operator!=(const ProductOfSinusoids<Dim, Registrars>& lhs,
-                const ProductOfSinusoids<Dim, Registrars>& rhs) noexcept {
+                const ProductOfSinusoids<Dim, Registrars>& rhs) {
   return not(lhs == rhs);
 }
 

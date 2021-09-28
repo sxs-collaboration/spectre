@@ -42,7 +42,7 @@ struct RegisterVolumeContributorWithObserverWriter {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const observers::ObservationKey& observation_key,
-                    const ArrayComponentId& id_of_caller) noexcept {
+                    const ArrayComponentId& id_of_caller) {
     if constexpr (tmpl::list_contains_v<
                       DbTagsList, Tags::ExpectedContributorsForObservations>) {
       db::mutate<Tags::ExpectedContributorsForObservations>(
@@ -50,7 +50,7 @@ struct RegisterVolumeContributorWithObserverWriter {
           [&id_of_caller, &observation_key](
               const gsl::not_null<std::unordered_map<
                   ObservationKey, std::unordered_set<ArrayComponentId>>*>
-                  volume_observers_registered) noexcept {
+                  volume_observers_registered) {
             if (volume_observers_registered->find(observation_key) ==
                 volume_observers_registered->end()) {
               (*volume_observers_registered)[observation_key] =
@@ -95,7 +95,7 @@ struct DeregisterVolumeContributorWithObserverWriter {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const observers::ObservationKey& observation_key,
-                    const ArrayComponentId& id_of_caller) noexcept {
+                    const ArrayComponentId& id_of_caller) {
     if constexpr (tmpl::list_contains_v<
                       DbTagsList, Tags::ExpectedContributorsForObservations>) {
       db::mutate<Tags::ExpectedContributorsForObservations>(
@@ -103,7 +103,7 @@ struct DeregisterVolumeContributorWithObserverWriter {
           [&id_of_caller, &observation_key](
               const gsl::not_null<std::unordered_map<
                   ObservationKey, std::unordered_set<ArrayComponentId>>*>
-                  volume_observers_registered) noexcept {
+                  volume_observers_registered) {
             if (UNLIKELY(volume_observers_registered->find(observation_key) ==
                          volume_observers_registered->end())) {
               ERROR(
@@ -150,7 +150,7 @@ struct RegisterReductionNodeWithWritingNode {
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
                     const observers::ObservationKey& observation_key,
-                    const size_t caller_node_id) noexcept {
+                    const size_t caller_node_id) {
     if constexpr (tmpl::list_contains_v<
                       DbTagsList, Tags::NodesExpectedToContributeReductions>) {
       auto& my_proxy =
@@ -166,7 +166,7 @@ struct RegisterReductionNodeWithWritingNode {
           [&caller_node_id, &observation_key](
               const gsl::not_null<
                   std::unordered_map<ObservationKey, std::set<size_t>>*>
-                  reduction_observers_registered_nodes) noexcept {
+                  reduction_observers_registered_nodes) {
             if (reduction_observers_registered_nodes->find(observation_key) ==
                 reduction_observers_registered_nodes->end()) {
               (*reduction_observers_registered_nodes)[observation_key] =
@@ -205,7 +205,7 @@ struct DeregisterReductionNodeWithWritingNode {
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
                     const observers::ObservationKey& observation_key,
-                    const size_t caller_node_id) noexcept {
+                    const size_t caller_node_id) {
     if constexpr (tmpl::list_contains_v<
                       DbTagsList, Tags::NodesExpectedToContributeReductions>) {
       auto& my_proxy =
@@ -222,7 +222,7 @@ struct DeregisterReductionNodeWithWritingNode {
           [&caller_node_id, &observation_key](
               const gsl::not_null<
                   std::unordered_map<ObservationKey, std::set<size_t>>*>
-                  reduction_observers_registered_nodes) noexcept {
+                  reduction_observers_registered_nodes) {
             if (UNLIKELY(reduction_observers_registered_nodes->find(
                              observation_key) ==
                          reduction_observers_registered_nodes->end())) {
@@ -271,7 +271,7 @@ struct RegisterReductionContributorWithObserverWriter {
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
                     const observers::ObservationKey& observation_key,
-                    const ArrayComponentId& id_of_caller) noexcept {
+                    const ArrayComponentId& id_of_caller) {
     if constexpr (tmpl::list_contains_v<
                       DbTagsList, Tags::ExpectedContributorsForObservations>) {
       auto& my_proxy =
@@ -283,7 +283,7 @@ struct RegisterReductionContributorWithObserverWriter {
           [&cache, &id_of_caller, &node_id, &observation_key](
               const gsl::not_null<std::unordered_map<
                   ObservationKey, std::unordered_set<ArrayComponentId>>*>
-                  reduction_observers_registered) noexcept {
+                  reduction_observers_registered) {
             if (reduction_observers_registered->find(observation_key) ==
                 reduction_observers_registered->end()) {
               (*reduction_observers_registered)[observation_key] =
@@ -336,7 +336,7 @@ struct DeregisterReductionContributorWithObserverWriter {
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
                     const observers::ObservationKey& observation_key,
-                    const ArrayComponentId& id_of_caller) noexcept {
+                    const ArrayComponentId& id_of_caller) {
     if constexpr (tmpl::list_contains_v<
                       DbTagsList, Tags::ExpectedContributorsForObservations>) {
       auto& my_proxy =
@@ -348,7 +348,7 @@ struct DeregisterReductionContributorWithObserverWriter {
           [&cache, &id_of_caller, &node_id, &observation_key](
               const gsl::not_null<std::unordered_map<
                   ObservationKey, std::unordered_set<ArrayComponentId>>*>
-                  reduction_observers_registered) noexcept {
+                  reduction_observers_registered) {
             if (UNLIKELY(
                     reduction_observers_registered->find(observation_key) ==
                     reduction_observers_registered->end())) {
@@ -402,7 +402,7 @@ struct RegisterContributorWithObserver {
                     const ArrayIndex& array_index,
                     const observers::ObservationKey& observation_key,
                     const observers::ArrayComponentId& component_id,
-                    const TypeOfObservation& type_of_observation) noexcept {
+                    const TypeOfObservation& type_of_observation) {
     if constexpr (tmpl::list_contains_v<
                       DbTagList,
                       observers::Tags::ExpectedContributorsForObservations>) {
@@ -413,7 +413,7 @@ struct RegisterContributorWithObserver {
            &observation_key_already_registered](
               const gsl::not_null<std::unordered_map<
                   ObservationKey, std::unordered_set<ArrayComponentId>>*>
-                  array_component_ids) noexcept {
+                  array_component_ids) {
             observation_key_already_registered =
                 (array_component_ids->find(observation_key) !=
                  array_component_ids->end());
@@ -488,7 +488,7 @@ struct DeregisterContributorWithObserver {
                     const ArrayIndex& array_index,
                     const observers::ObservationKey& observation_key,
                     const observers::ArrayComponentId& component_id,
-                    const TypeOfObservation& type_of_observation) noexcept {
+                    const TypeOfObservation& type_of_observation) {
     if constexpr (tmpl::list_contains_v<
                       DbTagList,
                       observers::Tags::ExpectedContributorsForObservations>) {
@@ -499,7 +499,7 @@ struct DeregisterContributorWithObserver {
            &all_array_components_have_been_deregistered](
               const gsl::not_null<std::unordered_map<
                   ObservationKey, std::unordered_set<ArrayComponentId>>*>
-                  array_component_ids) noexcept {
+                  array_component_ids) {
             if (UNLIKELY(array_component_ids->find(observation_key) ==
                          array_component_ids->end())) {
               ERROR(

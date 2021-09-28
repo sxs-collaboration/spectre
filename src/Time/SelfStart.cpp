@@ -6,7 +6,7 @@
 #include "Time/TimeStepId.hpp"
 
 namespace SelfStart {
-bool is_self_starting(const TimeStepId& time_id) noexcept {
+bool is_self_starting(const TimeStepId& time_id) {
   return time_id.slab_number() < 0;
 }
 }  // namespace SelfStart

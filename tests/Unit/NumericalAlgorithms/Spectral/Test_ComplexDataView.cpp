@@ -21,10 +21,10 @@ namespace Spectral::Swsh::detail {
 namespace {
 
 template <ComplexRepresentation Representation>
-void test_basic_view_functionality(
-    const ComplexDataView<Representation>& view,
-    std::complex<double>* const source_vec_data, const size_t view_size,
-    const size_t offset) noexcept {
+void test_basic_view_functionality(const ComplexDataView<Representation>& view,
+                                   std::complex<double>* const source_vec_data,
+                                   const size_t view_size,
+                                   const size_t offset) {
   CHECK(view.size() == view_size);
   // clang-tidy: This class uses manual memory management deliberately,
   // so silence complaints about pointer math and casts.
@@ -41,7 +41,7 @@ void test_basic_view_functionality(
 }
 
 template <ComplexRepresentation Representation>
-void test_view() noexcept {
+void test_view() {
   MAKE_GENERATOR(gen);
   UniformCustomDistribution<double> dist{-100.0, 100.0};
   UniformCustomDistribution<size_t> sdist{5, 50};

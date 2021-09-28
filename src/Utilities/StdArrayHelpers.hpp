@@ -19,7 +19,7 @@
 
 template <size_t Dim, typename T, typename U>
 inline std::array<T, Dim>& operator+=(std::array<T, Dim>& lhs,
-                                      const std::array<U, Dim>& rhs) noexcept {
+                                      const std::array<U, Dim>& rhs) {
   for (size_t i = 0; i < Dim; ++i) {
     gsl::at(lhs, i) += gsl::at(rhs, i);
   }
@@ -28,7 +28,7 @@ inline std::array<T, Dim>& operator+=(std::array<T, Dim>& lhs,
 
 template <size_t Dim, typename T, typename U>
 inline auto operator+(const std::array<T, Dim>& lhs,
-                      const std::array<U, Dim>& rhs) noexcept
+                      const std::array<U, Dim>& rhs)
     -> std::array<decltype(lhs[0] + rhs[0]), Dim> {
   std::array<decltype(lhs[0] + rhs[0]), Dim> result{};
   for (size_t i = 0; i < Dim; ++i) {
@@ -39,7 +39,7 @@ inline auto operator+(const std::array<T, Dim>& lhs,
 
 template <size_t Dim, typename T, typename U>
 inline std::array<T, Dim>& operator-=(std::array<T, Dim>& lhs,
-                                      const std::array<U, Dim>& rhs) noexcept {
+                                      const std::array<U, Dim>& rhs) {
   for (size_t i = 0; i < Dim; ++i) {
     gsl::at(lhs, i) -= gsl::at(rhs, i);
   }
@@ -48,7 +48,7 @@ inline std::array<T, Dim>& operator-=(std::array<T, Dim>& lhs,
 
 template <size_t Dim, typename T, typename U>
 inline auto operator-(const std::array<T, Dim>& lhs,
-                      const std::array<U, Dim>& rhs) noexcept
+                      const std::array<U, Dim>& rhs)
     -> std::array<decltype(lhs[0] - rhs[0]), Dim> {
   std::array<decltype(lhs[0] - rhs[0]), Dim> result{};
   for (size_t i = 0; i < Dim; ++i) {
@@ -59,7 +59,7 @@ inline auto operator-(const std::array<T, Dim>& lhs,
 
 template <size_t Dim, typename T, typename U>
 inline std::array<T, Dim> operator*(const std::array<T, Dim>& lhs,
-                                    const U& scale) noexcept {
+                                    const U& scale) {
   std::array<T, Dim> result{};
   for (size_t i = 0; i < Dim; ++i) {
     gsl::at(result, i) = gsl::at(lhs, i) * scale;
@@ -69,13 +69,13 @@ inline std::array<T, Dim> operator*(const std::array<T, Dim>& lhs,
 
 template <size_t Dim, typename T, typename U>
 inline std::array<T, Dim> operator*(const U& scale,
-                                    const std::array<T, Dim>& rhs) noexcept {
+                                    const std::array<T, Dim>& rhs) {
   return rhs * scale;
 }
 
 template <size_t Dim, typename T, typename U>
 inline std::array<T, Dim> operator/(const std::array<T, Dim>& lhs,
-                                    const U& scale) noexcept {
+                                    const U& scale) {
   std::array<T, Dim> result{};
   for (size_t i = 0; i < Dim; ++i) {
     gsl::at(result, i) = gsl::at(lhs, i) / scale;
@@ -84,7 +84,7 @@ inline std::array<T, Dim> operator/(const std::array<T, Dim>& lhs,
 }
 
 template <size_t Dim, typename T>
-inline std::array<T, Dim> operator-(const std::array<T, Dim>& rhs) noexcept {
+inline std::array<T, Dim> operator-(const std::array<T, Dim>& rhs) {
   std::array<T, Dim> result{};
   for (size_t i = 0; i < Dim; ++i) {
     gsl::at(result, i) = -gsl::at(rhs, i);
@@ -96,7 +96,7 @@ inline std::array<T, Dim> operator-(const std::array<T, Dim>& rhs) noexcept {
 /// \brief Construct an array from an existing array omitting one element
 template <typename T, size_t Dim>
 inline std::array<T, Dim - 1> all_but_specified_element_of(
-    const std::array<T, Dim>& a, const size_t element_to_remove) noexcept {
+    const std::array<T, Dim>& a, const size_t element_to_remove) {
   ASSERT(element_to_remove < Dim, "Specified element does not exist");
   std::array<T, Dim - 1> result{};
   for (size_t i = 0; i < element_to_remove; ++i) {
@@ -113,7 +113,7 @@ inline std::array<T, Dim - 1> all_but_specified_element_of(
 template <typename T, size_t Dim>
 inline std::array<T, Dim + 1> insert_element(std::array<T, Dim> a,
                                              const size_t element_to_add,
-                                             T value) noexcept {
+                                             T value) {
   ASSERT(element_to_add <= Dim, "Specified element is out of range");
   std::array<T, Dim + 1> result{};
   for (size_t i = 0; i < element_to_add; ++i) {
@@ -130,7 +130,7 @@ inline std::array<T, Dim + 1> insert_element(std::array<T, Dim> a,
 /// \brief Construct an array from an existing array prepending a value
 template <typename T, size_t Dim>
 inline constexpr std::array<T, Dim + 1> prepend(const std::array<T, Dim>& a,
-                                                T value) noexcept {
+                                                T value) {
   std::array<T, Dim + 1> result{};
   gsl::at(result, 0) = std::move(value);
   for (size_t i = 0; i < Dim; ++i) {
@@ -150,18 +150,18 @@ inline constexpr std::array<T, Dim + 1> prepend(const std::array<T, Dim>& a,
 /// abs(), sqrt(), and element-wise addition and multiplication.  In addition,
 /// each T in the array must have the same size.
 template <typename T>
-decltype(auto) magnitude(const std::array<T, 1>& a) noexcept {
+decltype(auto) magnitude(const std::array<T, 1>& a) {
   using std::abs;
   return abs(a[0]);
 }
 
 template <typename T>
-decltype(auto) magnitude(const std::array<T, 2>& a) noexcept {
+decltype(auto) magnitude(const std::array<T, 2>& a) {
   return sqrt(a[0] * a[0] + a[1] * a[1]);
 }
 
 template <typename T>
-decltype(auto) magnitude(const std::array<T, 3>& a) noexcept {
+decltype(auto) magnitude(const std::array<T, 3>& a) {
   return sqrt(a[0] * a[0] + a[1] * a[1] + a[2] * a[2]);
 }
 /// @}
@@ -195,7 +195,7 @@ decltype(auto) dot(const std::array<T, 3>& first,
 namespace std_array_helpers_detail {
 template <typename T, size_t Dim, typename F, size_t... Indices>
 auto map_array_impl(const std::array<T, Dim>& array, const F& f,
-                    const std::index_sequence<Indices...> /*meta*/) noexcept {
+                    const std::index_sequence<Indices...> /*meta*/) {
   return std::array<std::decay_t<decltype(f(std::declval<T>()))>, Dim>{
       {f(array[Indices])...}};
 }
@@ -206,7 +206,7 @@ auto map_array_impl(const std::array<T, Dim>& array, const F& f,
 /// array of the results.  The elements of the new array are
 /// constructed in place, so they need not be default constructible.
 template <typename T, size_t Dim, typename F>
-auto map_array(const std::array<T, Dim>& array, const F& f) noexcept {
+auto map_array(const std::array<T, Dim>& array, const F& f) {
   return std_array_helpers_detail::map_array_impl(
       array, f, std::make_index_sequence<Dim>{});
 }
@@ -232,16 +232,15 @@ auto map_array(const std::array<T, Dim>& array, const F& f) noexcept {
  */
 // clang-tidy: complaints about uninitialized member, but the transform will set
 // data
-#define DEFINE_STD_ARRAY_BINOP(RESULT_TYPE, LTYPE, RTYPE, OP_FUNCTION_NAME, \
-                               BINARY_OP)                                   \
-  template <size_t Dim>                                                     \
-  std::array<RESULT_TYPE, Dim> OP_FUNCTION_NAME(                            \
-      const std::array<LTYPE, Dim>& lhs,                                    \
-      const std::array<RTYPE, Dim>& rhs) noexcept {                         \
-    std::array<RESULT_TYPE, Dim> result; /*NOLINT*/                         \
-    std::transform(lhs.begin(), lhs.end(), rhs.begin(), result.begin(),     \
-                   BINARY_OP);                                              \
-    return result;                                                          \
+#define DEFINE_STD_ARRAY_BINOP(RESULT_TYPE, LTYPE, RTYPE, OP_FUNCTION_NAME,   \
+                               BINARY_OP)                                     \
+  template <size_t Dim>                                                       \
+  std::array<RESULT_TYPE, Dim> OP_FUNCTION_NAME(                              \
+      const std::array<LTYPE, Dim>& lhs, const std::array<RTYPE, Dim>& rhs) { \
+    std::array<RESULT_TYPE, Dim> result; /*NOLINT*/                           \
+    std::transform(lhs.begin(), lhs.end(), rhs.begin(), result.begin(),       \
+                   BINARY_OP);                                                \
+    return result;                                                            \
   }
 
 /*!
@@ -261,13 +260,12 @@ auto map_array(const std::array<T, Dim>& array, const F& f) noexcept {
  * \param BINARY_OP the binary function which should be applied elementwise to
  * the pair of arrays. (e.g. `std::plus<>()`)
  */
-#define DEFINE_STD_ARRAY_INPLACE_BINOP(LTYPE, RTYPE, OP_FUNCTION_NAME, \
-                                       BINARY_OP)                      \
-  template <size_t Dim>                                                \
-  std::array<LTYPE, Dim>& OP_FUNCTION_NAME(                            \
-      std::array<LTYPE, Dim>& lhs,                                     \
-      const std::array<RTYPE, Dim>& rhs) noexcept {                    \
-    std::transform(lhs.begin(), lhs.end(), rhs.begin(), lhs.begin(),   \
-                   BINARY_OP);                                         \
-    return lhs;                                                        \
+#define DEFINE_STD_ARRAY_INPLACE_BINOP(LTYPE, RTYPE, OP_FUNCTION_NAME,  \
+                                       BINARY_OP)                       \
+  template <size_t Dim>                                                 \
+  std::array<LTYPE, Dim>& OP_FUNCTION_NAME(                             \
+      std::array<LTYPE, Dim>& lhs, const std::array<RTYPE, Dim>& rhs) { \
+    std::transform(lhs.begin(), lhs.end(), rhs.begin(), lhs.begin(),    \
+                   BINARY_OP);                                          \
+    return lhs;                                                         \
   }

@@ -12,8 +12,7 @@
 #include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
 
 template <size_t VolumeDim>
-Element<VolumeDim>::Element(ElementId<VolumeDim> id,
-                            Neighbors_t neighbors) noexcept
+Element<VolumeDim>::Element(ElementId<VolumeDim> id, Neighbors_t neighbors)
     : id_(std::move(id)),
       neighbors_(std::move(neighbors)),
       number_of_neighbors_([this]() {
@@ -46,7 +45,7 @@ Element<VolumeDim>::Element(ElementId<VolumeDim> id,
 }
 
 template <size_t VolumeDim>
-void Element<VolumeDim>::pup(PUP::er& p) noexcept {
+void Element<VolumeDim>::pup(PUP::er& p) {
   p | id_;
   p | neighbors_;
   p | number_of_neighbors_;
@@ -55,8 +54,7 @@ void Element<VolumeDim>::pup(PUP::er& p) noexcept {
 }
 
 template <size_t VolumeDim>
-bool operator==(const Element<VolumeDim>& lhs,
-                const Element<VolumeDim>& rhs) noexcept {
+bool operator==(const Element<VolumeDim>& lhs, const Element<VolumeDim>& rhs) {
   return lhs.id() == rhs.id() and lhs.neighbors() == rhs.neighbors() and
          lhs.number_of_neighbors() == rhs.number_of_neighbors() and
          lhs.external_boundaries() == rhs.external_boundaries() and
@@ -64,14 +62,12 @@ bool operator==(const Element<VolumeDim>& lhs,
 }
 
 template <size_t VolumeDim>
-bool operator!=(const Element<VolumeDim>& lhs,
-                const Element<VolumeDim>& rhs) noexcept {
+bool operator!=(const Element<VolumeDim>& lhs, const Element<VolumeDim>& rhs) {
   return not(lhs == rhs);
 }
 
 template <size_t VolumeDim>
-std::ostream& operator<<(std::ostream& os,
-                         const Element<VolumeDim>& element) noexcept {
+std::ostream& operator<<(std::ostream& os, const Element<VolumeDim>& element) {
   os << "Element " << element.id() << ":\n";
   os << "  Neighbors: " << element.neighbors() << "\n";
   os << "  External boundaries: " << element.external_boundaries() << "\n";
@@ -80,14 +76,14 @@ std::ostream& operator<<(std::ostream& os,
 
 #define GET_DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATION(r, data)                                      \
-  template class Element<GET_DIM(data)>;                            \
-  template bool operator==(const Element<GET_DIM(data)>&,           \
-                           const Element<GET_DIM(data)>&) noexcept; \
-  template bool operator!=(const Element<GET_DIM(data)>&,           \
-                           const Element<GET_DIM(data)>&) noexcept; \
-  template std::ostream& operator<<(std::ostream&,                  \
-                                    const Element<GET_DIM(data)>&) noexcept;
+#define INSTANTIATION(r, data)                             \
+  template class Element<GET_DIM(data)>;                   \
+  template bool operator==(const Element<GET_DIM(data)>&,  \
+                           const Element<GET_DIM(data)>&); \
+  template bool operator!=(const Element<GET_DIM(data)>&,  \
+                           const Element<GET_DIM(data)>&); \
+  template std::ostream& operator<<(std::ostream&,         \
+                                    const Element<GET_DIM(data)>&);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 

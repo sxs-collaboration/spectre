@@ -16,14 +16,14 @@ std::tuple<
              gsl::not_null<std::array<gsl::span<double>, Dim>*>,
              const gsl::span<const double>&,
              const DirectionMap<Dim, gsl::span<const double>>&,
-             const Index<Dim>&, size_t, double, double, double) noexcept,
+             const Index<Dim>&, size_t, double, double, double),
     void (*)(gsl::not_null<DataVector*>, const DataVector&, const DataVector&,
              const Index<Dim>&, const Index<Dim>&, const Direction<Dim>&,
-             const double&, const double&, const double&) noexcept,
+             const double&, const double&, const double&),
     void (*)(gsl::not_null<DataVector*>, const DataVector&, const DataVector&,
              const Index<Dim>&, const Index<Dim>&, const Direction<Dim>&,
-             const double&, const double&, const double&) noexcept>
-aoweno_53_function_pointers(const size_t nonlinear_weight_exponent) noexcept {
+             const double&, const double&, const double&)>
+aoweno_53_function_pointers(const size_t nonlinear_weight_exponent) {
   switch (nonlinear_weight_exponent) {
     case 2:
       return {&aoweno_53<2, Dim>,
@@ -89,18 +89,16 @@ aoweno_53_function_pointers(const size_t nonlinear_weight_exponent) noexcept {
                gsl::not_null<std::array<gsl::span<double>, DIM(data)>*>, \
                const gsl::span<const double>&,                           \
                const DirectionMap<DIM(data), gsl::span<const double>>&,  \
-               const Index<DIM(data)>&, size_t, double, double,          \
-               double) noexcept,                                         \
+               const Index<DIM(data)>&, size_t, double, double, double), \
       void (*)(gsl::not_null<DataVector*>, const DataVector&,            \
                const DataVector&, const Index<DIM(data)>&,               \
                const Index<DIM(data)>&, const Direction<DIM(data)>&,     \
-               const double&, const double&, const double&) noexcept,    \
+               const double&, const double&, const double&),             \
       void (*)(gsl::not_null<DataVector*>, const DataVector&,            \
                const DataVector&, const Index<DIM(data)>&,               \
                const Index<DIM(data)>&, const Direction<DIM(data)>&,     \
-               const double&, const double&, const double&) noexcept>    \
-  aoweno_53_function_pointers(                                           \
-      const size_t nonlinear_weight_exponent) noexcept;
+               const double&, const double&, const double&)>             \
+  aoweno_53_function_pointers(const size_t nonlinear_weight_exponent);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 
@@ -119,7 +117,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
       const DirectionMap<DIM(data), gsl::span<const double>>& ghost_cell_vars, \
       const Index<DIM(data)>& volume_extents,                                  \
       const size_t number_of_variables, const double& gamma_hi,                \
-      const double& gamma_lo, const double& epsilon) noexcept;
+      const double& gamma_lo, const double& epsilon);
 
 namespace detail {
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (2, 4, 6, 8, 10, 12))
@@ -137,8 +135,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (2, 4, 6, 8, 10, 12))
       const DataVector& neighbor_data, const Index<DIM(data)>& volume_extents, \
       const Index<DIM(data)>& ghost_data_extents,                              \
       const Direction<DIM(data)>& direction_to_reconstruct,                    \
-      const double& gamma_hi, const double& gamma_lo,                          \
-      const double& epsilon) noexcept;
+      const double& gamma_hi, const double& gamma_lo, const double& epsilon);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (2, 4, 6, 8, 10, 12),
                         (Side::Upper, Side::Lower))

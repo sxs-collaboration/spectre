@@ -31,7 +31,7 @@ struct SendGhWorldtubeData {
   template <typename DbTags, typename Metavariables>
   static void apply(const db::DataBox<DbTags>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
-                    const typename TemporalId::type& temporal_id) noexcept {
+                    const typename TemporalId::type& temporal_id) {
     auto& cce_gh_boundary_component = Parallel::get_parallel_component<
         Cce::GhWorldtubeBoundary<Metavariables>>(cache);
     Parallel::simple_action<

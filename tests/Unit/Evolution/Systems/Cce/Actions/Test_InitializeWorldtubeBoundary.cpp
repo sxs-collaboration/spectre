@@ -90,7 +90,7 @@ struct AnalyticMetavariables {
 };
 
 template <typename Generator>
-void test_h5_initialization(const gsl::not_null<Generator*> gen) noexcept {
+void test_h5_initialization(const gsl::not_null<Generator*> gen) {
   using component = mock_h5_worldtube_boundary<H5Metavariables>;
   const size_t l_max = 8;
   const size_t end_time = 100.0;
@@ -163,7 +163,7 @@ void test_h5_initialization(const gsl::not_null<Generator*> gen) noexcept {
   }
 }
 
-void test_gh_initialization() noexcept {
+void test_gh_initialization() {
   using component = mock_gh_worldtube_boundary<GhMetavariables>;
   const size_t l_max = 8;
   const double extraction_radius = 100.0;
@@ -205,7 +205,7 @@ void test_gh_initialization() noexcept {
         Spectral::Swsh::number_of_swsh_collocation_points(l_max));
 }
 
-void test_analytic_initialization() noexcept {
+void test_analytic_initialization() {
   using component = mock_analytic_worldtube_boundary<AnalyticMetavariables>;
   const size_t l_max = 8;
   Parallel::register_derived_classes_with_charm<TimeStepper>();

@@ -41,7 +41,7 @@ double adjust_angular_coordinates_for_j(
         tnsr::i<DataVector, 2, ::Frame::Spherical<::Frame::Inertial>>*>
         angular_cauchy_coordinates,
     const SpinWeighted<ComplexDataVector, 2>& surface_j, size_t l_max,
-    double tolerance, size_t max_steps, bool adjust_volume_gauge) noexcept;
+    double tolerance, size_t max_steps, bool adjust_volume_gauge);
 }  // namespace detail
 
 /*!
@@ -77,7 +77,7 @@ struct GaugeAdjustInitialJ {
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& gauge_omega,
       const tnsr::i<DataVector, 2, ::Frame::Spherical<::Frame::Inertial>>&
           cauchy_angular_coordinates,
-      size_t l_max) noexcept;
+      size_t l_max);
 };
 
 /// \cond
@@ -125,7 +125,7 @@ struct InitializeJ<true> : public PUP::able {
 
   WRAPPED_PUPable_abstract(InitializeJ);  // NOLINT
 
-  virtual std::unique_ptr<InitializeJ<true>> get_clone() const noexcept = 0;
+  virtual std::unique_ptr<InitializeJ<true>> get_clone() const = 0;
 
   virtual void operator()(
       gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 2>>*> j,
@@ -140,7 +140,7 @@ struct InitializeJ<true> : public PUP::able {
       const Scalar<SpinWeighted<ComplexDataVector, 2>>& boundary_j,
       const Scalar<SpinWeighted<ComplexDataVector, 2>>& boundary_dr_j,
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& r, size_t l_max,
-      size_t number_of_radial_points) const noexcept = 0;
+      size_t number_of_radial_points) const = 0;
 };
 
 /*!
@@ -175,7 +175,7 @@ struct InitializeJ<false> : public PUP::able {
 
   WRAPPED_PUPable_abstract(InitializeJ);  // NOLINT
 
-  virtual std::unique_ptr<InitializeJ<false>> get_clone() const noexcept = 0;
+  virtual std::unique_ptr<InitializeJ<false>> get_clone() const = 0;
 
   virtual void operator()(
       gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 2>>*> j,
@@ -186,7 +186,7 @@ struct InitializeJ<false> : public PUP::able {
       const Scalar<SpinWeighted<ComplexDataVector, 2>>& boundary_j,
       const Scalar<SpinWeighted<ComplexDataVector, 2>>& boundary_dr_j,
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& r, size_t l_max,
-      size_t number_of_radial_points) const noexcept = 0;
+      size_t number_of_radial_points) const = 0;
 };
 }  // namespace InitializeJ
 }  // namespace Cce

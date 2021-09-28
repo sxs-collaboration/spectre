@@ -27,11 +27,12 @@
 // IWYU pragma: no_forward_declare Tags::deriv
 
 namespace {
-void compare_different_wrapped_solutions(
-    const double mass, const std::array<double, 3>& spin,
-    const std::array<double, 3>& center, const double mass2,
-    const std::array<double, 3>& spin2,
-    const std::array<double, 3>& center2) noexcept {
+void compare_different_wrapped_solutions(const double mass,
+                                         const std::array<double, 3>& spin,
+                                         const std::array<double, 3>& center,
+                                         const double mass2,
+                                         const std::array<double, 3>& spin2,
+                                         const std::array<double, 3>& center2) {
   const gr::Solutions::KerrSchild& solution{mass, spin, center};
   const gr::Solutions::KerrSchild& solution2{mass2, spin2, center2};
   CHECK_FALSE(solution == solution2);
@@ -39,7 +40,7 @@ void compare_different_wrapped_solutions(
 }
 
 template <typename SolutionType>
-void test_copy_and_move(const SolutionType& solution) noexcept {
+void test_copy_and_move(const SolutionType& solution) {
   test_copy_semantics(solution);
   auto solution_copy = solution;
   auto solution_copy2 = solution;
@@ -48,7 +49,7 @@ void test_copy_and_move(const SolutionType& solution) noexcept {
 }
 
 template <typename SolutionType, typename... Args>
-void test_generalized_harmonic_solution(const Args&... args) noexcept {
+void test_generalized_harmonic_solution(const Args&... args) {
   const SolutionType& solution{args...};
   const GeneralizedHarmonic::Solutions::WrappedGr<SolutionType>&
       wrapped_solution{args...};
@@ -68,7 +69,7 @@ void test_generalized_harmonic_solution(const Args&... args) noexcept {
       x, t, typename SolutionType::template tags<DataVector>{});
 
   tmpl::for_each<typename SolutionType::template tags<DataVector>>(
-      [&vars, &wrapped_vars](auto tag_v) noexcept {
+      [&vars, &wrapped_vars](auto tag_v) {
         using tag = typename decltype(tag_v)::type;
         CHECK(get<tag>(vars) == get<tag>(wrapped_vars));
       });

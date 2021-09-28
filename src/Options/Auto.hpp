@@ -36,7 +36,7 @@ template <typename T, typename Label = AutoLabel::Auto>
 class Auto {
  public:
   Auto() = default;
-  explicit Auto(T value) noexcept : value_(std::move(value)) {}
+  explicit Auto(T value) : value_(std::move(value)) {}
 
   // NOLINTNEXTLINE(google-explicit-constructor)
   template <typename U>
@@ -50,18 +50,18 @@ class Auto {
 };
 
 template <typename T, typename Label>
-bool operator==(const Auto<T, Label>& a, const Auto<T, Label>& b) noexcept {
+bool operator==(const Auto<T, Label>& a, const Auto<T, Label>& b) {
   return static_cast<const std::optional<T>&>(a) ==
          static_cast<const std::optional<T>&>(b);
 }
 
 template <typename T, typename Label>
-bool operator!=(const Auto<T, Label>& a, const Auto<T, Label>& b) noexcept {
+bool operator!=(const Auto<T, Label>& a, const Auto<T, Label>& b) {
   return not(a == b);
 }
 
 template <typename T, typename Label>
-std::ostream& operator<<(std::ostream& os, const Auto<T, Label>& x) noexcept {
+std::ostream& operator<<(std::ostream& os, const Auto<T, Label>& x) {
   const std::optional<T>& value = x;
   if (value) {
     return os << get_output(*value);

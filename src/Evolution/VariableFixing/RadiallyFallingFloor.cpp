@@ -22,7 +22,7 @@ template <size_t Dim>
 RadiallyFallingFloor<Dim>::RadiallyFallingFloor(
     const double minimum_radius_at_which_to_apply_floor,
     const double rest_mass_density_scale, const double rest_mass_density_power,
-    const double pressure_scale, const double pressure_power) noexcept
+    const double pressure_scale, const double pressure_power)
     : minimum_radius_at_which_to_apply_floor_(
           minimum_radius_at_which_to_apply_floor),
       rest_mass_density_scale_(rest_mass_density_scale),
@@ -31,7 +31,7 @@ RadiallyFallingFloor<Dim>::RadiallyFallingFloor(
       pressure_power_(pressure_power) {}
 
 template <size_t Dim>
-void RadiallyFallingFloor<Dim>::pup(PUP::er& p) noexcept {  // NOLINT
+void RadiallyFallingFloor<Dim>::pup(PUP::er& p) {  // NOLINT
   p | minimum_radius_at_which_to_apply_floor_;
   p | rest_mass_density_scale_;
   p | rest_mass_density_power_;
@@ -43,7 +43,7 @@ template <size_t Dim>
 void RadiallyFallingFloor<Dim>::operator()(
     const gsl::not_null<Scalar<DataVector>*> density,
     const gsl::not_null<Scalar<DataVector>*> pressure,
-    const tnsr::I<DataVector, Dim, Frame::Inertial>& coords) const noexcept {
+    const tnsr::I<DataVector, Dim, Frame::Inertial>& coords) const {
   const auto radii = magnitude(coords);
 
   for (size_t i = 0; i < density->get().size(); i++) {
@@ -62,7 +62,7 @@ void RadiallyFallingFloor<Dim>::operator()(
 
 template <size_t LocalDim>
 bool operator==(const RadiallyFallingFloor<LocalDim>& lhs,
-                const RadiallyFallingFloor<LocalDim>& rhs) noexcept {
+                const RadiallyFallingFloor<LocalDim>& rhs) {
   return lhs.minimum_radius_at_which_to_apply_floor_ ==
              rhs.minimum_radius_at_which_to_apply_floor_ and
          lhs.rest_mass_density_scale_ == rhs.rest_mass_density_scale_ and
@@ -73,20 +73,18 @@ bool operator==(const RadiallyFallingFloor<LocalDim>& lhs,
 
 template <size_t Dim>
 bool operator!=(const RadiallyFallingFloor<Dim>& lhs,
-                const RadiallyFallingFloor<Dim>& rhs) noexcept {
+                const RadiallyFallingFloor<Dim>& rhs) {
   return not(lhs == rhs);
 }
 
 #define GET_DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATION(r, data)                                  \
-  template class RadiallyFallingFloor<GET_DIM(data)>;           \
-  template bool operator==(                                     \
-      const RadiallyFallingFloor<GET_DIM(data)>& lhs,           \
-      const RadiallyFallingFloor<GET_DIM(data)>& rhs) noexcept; \
-  template bool operator!=(                                     \
-      const RadiallyFallingFloor<GET_DIM(data)>& lhs,           \
-      const RadiallyFallingFloor<GET_DIM(data)>& rhs) noexcept;
+#define INSTANTIATION(r, data)                                              \
+  template class RadiallyFallingFloor<GET_DIM(data)>;                       \
+  template bool operator==(const RadiallyFallingFloor<GET_DIM(data)>& lhs,  \
+                           const RadiallyFallingFloor<GET_DIM(data)>& rhs); \
+  template bool operator!=(const RadiallyFallingFloor<GET_DIM(data)>& lhs,  \
+                           const RadiallyFallingFloor<GET_DIM(data)>& rhs);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 

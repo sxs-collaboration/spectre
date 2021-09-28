@@ -50,13 +50,13 @@ class SmoothFlow : virtual public MarkAsAnalyticSolution,
   SmoothFlow() = default;
   SmoothFlow(const SmoothFlow& /*rhs*/) = delete;
   SmoothFlow& operator=(const SmoothFlow& /*rhs*/) = delete;
-  SmoothFlow(SmoothFlow&& /*rhs*/) noexcept = default;
-  SmoothFlow& operator=(SmoothFlow&& /*rhs*/) noexcept = default;
+  SmoothFlow(SmoothFlow&& /*rhs*/) = default;
+  SmoothFlow& operator=(SmoothFlow&& /*rhs*/) = default;
   ~SmoothFlow() = default;
 
   SmoothFlow(const std::array<double, 3>& mean_velocity,
              const std::array<double, 3>& wavevector, double pressure,
-             double adiabatic_index, double perturbation_size) noexcept;
+             double adiabatic_index, double perturbation_size);
 
   using smooth_flow::equation_of_state;
   using smooth_flow::equation_of_state_type;
@@ -67,16 +67,14 @@ class SmoothFlow : virtual public MarkAsAnalyticSolution,
   /// @{
   /// Retrieve hydro variable at `(x, t)`
   template <typename DataType>
-  auto variables(
-      const tnsr::I<DataType, 3>& x, double /*t*/,
-      tmpl::list<hydro::Tags::MagneticField<DataType, 3>> /*meta*/) const
-      noexcept -> tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3>>;
+  auto variables(const tnsr::I<DataType, 3>& x, double /*t*/,
+                 tmpl::list<hydro::Tags::MagneticField<DataType, 3>> /*meta*/)
+      const -> tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3>>;
 
   template <typename DataType>
   auto variables(
       const tnsr::I<DataType, 3>& x, double /*t*/,
       tmpl::list<hydro::Tags::DivergenceCleaningField<DataType>> /*meta*/) const
-      noexcept
       -> tuples::TaggedTuple<hydro::Tags::DivergenceCleaningField<DataType>>;
   /// @}
 
@@ -84,8 +82,7 @@ class SmoothFlow : virtual public MarkAsAnalyticSolution,
   template <typename DataType, typename... Tags>
   tuples::TaggedTuple<Tags...> variables(const tnsr::I<DataType, 3>& x,
                                          double t,
-                                         tmpl::list<Tags...> /*meta*/) const
-      noexcept {
+                                         tmpl::list<Tags...> /*meta*/) const {
     static_assert(sizeof...(Tags) > 1,
                   "The generic template will recurse infinitely if only one "
                   "tag is being retrieved.");
@@ -93,12 +90,12 @@ class SmoothFlow : virtual public MarkAsAnalyticSolution,
   }
 
   // clang-tidy: no runtime references
-  void pup(PUP::er& /*p*/) noexcept;  //  NOLINT
+  void pup(PUP::er& /*p*/);  //  NOLINT
 
  protected:
-  friend bool operator==(const SmoothFlow& lhs, const SmoothFlow& rhs) noexcept;
+  friend bool operator==(const SmoothFlow& lhs, const SmoothFlow& rhs);
 };
 
-bool operator!=(const SmoothFlow& lhs, const SmoothFlow& rhs) noexcept;
+bool operator!=(const SmoothFlow& lhs, const SmoothFlow& rhs);
 }  // namespace Solutions
 }  // namespace grmhd

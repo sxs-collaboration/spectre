@@ -17,7 +17,7 @@ bool TciOnFdGrid::apply(const Scalar<DataVector>& tilde_d,
                         const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
                         const bool vars_needed_fixing, const Mesh<3>& dg_mesh,
                         const TciOptions& tci_options,
-                        const double persson_exponent) noexcept {
+                        const double persson_exponent) {
   bool cell_is_troubled =
       vars_needed_fixing or
       min(get(tilde_d)) <

@@ -102,13 +102,13 @@ class Hll final : public BoundaryCorrection<Dim> {
   ~Hll() override = default;
 
   /// \cond
-  explicit Hll(CkMigrateMessage* msg) noexcept;
+  explicit Hll(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Hll);  // NOLINT
   /// \endcond
   void pup(PUP::er& p) override;  // NOLINT
 
-  std::unique_ptr<BoundaryCorrection<Dim>> get_clone() const noexcept override;
+  std::unique_ptr<BoundaryCorrection<Dim>> get_clone() const override;
 
   using dg_package_field_tags =
       tmpl::list<Tags::MassDensityCons, Tags::MomentumDensity<Dim>,
@@ -154,7 +154,7 @@ class Hll final : public BoundaryCorrection<Dim> {
       /*mesh_velocity*/,
       const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity,
       const EquationsOfState::EquationOfState<false, ThermodynamicDim>&
-          equation_of_state) const noexcept;
+          equation_of_state) const;
 
   void dg_boundary_terms(
       gsl::not_null<Scalar<DataVector>*> boundary_correction_mass_density,
@@ -179,6 +179,6 @@ class Hll final : public BoundaryCorrection<Dim> {
       const Scalar<DataVector>& normal_dot_flux_energy_density_ext,
       const Scalar<DataVector>& largest_outgoing_char_speed_ext,
       const Scalar<DataVector>& largest_ingoing_char_speed_ext,
-      dg::Formulation dg_formulation) const noexcept;
+      dg::Formulation dg_formulation) const;
 };
 }  // namespace NewtonianEuler::BoundaryCorrections

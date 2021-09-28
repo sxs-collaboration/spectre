@@ -71,8 +71,7 @@ SPECTRE_ALWAYS_INLINE constexpr decltype(auto) cube(const T& x) {
  * \note The largest representable factorial is 20!. It is up to the user to
  * ensure this is satisfied
  */
-constexpr uint64_t falling_factorial(const uint64_t x,
-                                     const uint64_t n) noexcept {
+constexpr uint64_t falling_factorial(const uint64_t x, const uint64_t n) {
   // clang-tidy: don't warn about STL internals, I can't fix them
   assert(n <= x);  // NOLINT
   uint64_t r = 1;
@@ -86,7 +85,7 @@ constexpr uint64_t falling_factorial(const uint64_t x,
  * \ingroup ConstantExpressionsGroup
  * \brief Compute the factorial of \f$n!\f$
  */
-constexpr uint64_t factorial(const uint64_t n) noexcept {
+constexpr uint64_t factorial(const uint64_t n) {
   assert(n <= 20);  // NOLINT
   return falling_factorial(n, n);
 }
@@ -102,7 +101,7 @@ namespace ConstantExpressions_detail {
 template <typename T>
 SPECTRE_ALWAYS_INLINE constexpr decltype(auto) pow_impl(
     const T& /*t*/, std::integral_constant<int, 0> /*meta*/,
-    std::bool_constant<true> /*exponent_was_positive*/) noexcept {
+    std::bool_constant<true> /*exponent_was_positive*/) {
   return static_cast<tt::get_fundamental_type_t<T>>(1.0);
 }
 
@@ -110,7 +109,7 @@ SPECTRE_ALWAYS_INLINE constexpr decltype(auto) pow_impl(
 template <typename T>
 SPECTRE_ALWAYS_INLINE constexpr decltype(auto) pow_impl(
     const T& t, std::integral_constant<int, 1> /*meta*/,
-    std::bool_constant<true> /*exponent_was_positive*/) noexcept {
+    std::bool_constant<true> /*exponent_was_positive*/) {
   return t;
 }
 
@@ -119,7 +118,7 @@ SPECTRE_ALWAYS_INLINE constexpr decltype(auto) pow_impl(
 template <int N, typename T>
 SPECTRE_ALWAYS_INLINE constexpr decltype(auto) pow_impl(
     const T& t, std::integral_constant<int, N> /*meta*/,
-    std::bool_constant<true> /*exponent_was_positive*/) noexcept {
+    std::bool_constant<true> /*exponent_was_positive*/) {
   return t * pow_impl(t, std::integral_constant<int, N - 1>{},
                       std::bool_constant<true>{});
 }
@@ -132,7 +131,7 @@ SPECTRE_ALWAYS_INLINE constexpr decltype(auto) pow_impl(
 template <int N, typename T>
 SPECTRE_ALWAYS_INLINE constexpr decltype(auto) pow_impl(
     const T& t, std::integral_constant<int, N> /*meta*/,
-    std::bool_constant<false> /*exponent_was_positive*/) noexcept {
+    std::bool_constant<false> /*exponent_was_positive*/) {
   return static_cast<tt::get_fundamental_type_t<T>>(1) /
          (pow_impl(t, std::integral_constant<int, -N>{},
                    std::bool_constant<true>{}));
@@ -157,7 +156,7 @@ SPECTRE_ALWAYS_INLINE constexpr decltype(auto) pow_impl(
 /// \param t the value being exponentiated
 /// \return value \f$t^N\f$ determined via repeated multiplication
 template <int N, typename T>
-SPECTRE_ALWAYS_INLINE constexpr decltype(auto) pow(const T& t) noexcept {
+SPECTRE_ALWAYS_INLINE constexpr decltype(auto) pow(const T& t) {
   return ConstantExpressions_detail::pow_impl(
       t, std::integral_constant<int, N>{}, std::bool_constant<(N >= 0)>{});
 }
@@ -168,30 +167,29 @@ SPECTRE_ALWAYS_INLINE constexpr decltype(auto) pow(const T& t) noexcept {
 /// The argument must be comparable to an int and must be negatable.
 template <typename T, Requires<tt::is_integer_v<T> or
                                std::is_floating_point_v<T>> = nullptr>
-SPECTRE_ALWAYS_INLINE constexpr T ce_abs(const T& x) noexcept(
-    noexcept(x < 0 ? -x : x)) {
+SPECTRE_ALWAYS_INLINE constexpr T ce_abs(const T& x) {
   return x < 0 ? -x : x;
 }
 
 /// \cond
 template <>
-SPECTRE_ALWAYS_INLINE constexpr double ce_abs(const double& x) noexcept {
+SPECTRE_ALWAYS_INLINE constexpr double ce_abs(const double& x) {
   return __builtin_fabs(x);
 }
 
 template <>
-SPECTRE_ALWAYS_INLINE constexpr float ce_abs(const float& x) noexcept {
+SPECTRE_ALWAYS_INLINE constexpr float ce_abs(const float& x) {
   return __builtin_fabsf(x);
 }
 /// \endcond
 
 /// \ingroup ConstantExpressionsGroup
 /// \brief Compute the absolute value of its argument
-constexpr SPECTRE_ALWAYS_INLINE double ce_fabs(const double x) noexcept {
+constexpr SPECTRE_ALWAYS_INLINE double ce_fabs(const double x) {
   return __builtin_fabs(x);
 }
 
-constexpr SPECTRE_ALWAYS_INLINE float ce_fabs(const float x) noexcept {
+constexpr SPECTRE_ALWAYS_INLINE float ce_fabs(const float x) {
   return __builtin_fabsf(x);
 }
 
@@ -248,14 +246,14 @@ constexpr T min_by_magnitude(std::initializer_list<T> ilist) {
 /// \note When summing expression templates one must be careful of
 /// referring to temporaries in `f`.
 template <size_t NumTerms, typename Function, Requires<NumTerms == 1> = nullptr>
-constexpr decltype(auto) constexpr_sum(Function&& f) noexcept {
+constexpr decltype(auto) constexpr_sum(Function&& f) {
   return f(std::integral_constant<size_t, 0>{});
 }
 
 /// \cond HIDDEN_SYMBOLS
 template <size_t NumTerms, typename Function,
           Requires<(NumTerms > 1)> = nullptr>
-constexpr decltype(auto) constexpr_sum(Function&& f) noexcept {
+constexpr decltype(auto) constexpr_sum(Function&& f) {
   return constexpr_sum<NumTerms - 1>(f) +
          f(std::integral_constant<size_t, NumTerms - 1>{});
 }
@@ -333,15 +331,14 @@ inline constexpr auto make_array_from_list() {
 
 /// \ingroup ConstantExpressionsGroup
 /// \brief Compute the length of a const char* at compile time
-SPECTRE_ALWAYS_INLINE constexpr size_t cstring_length(
-    const char* str) noexcept {
+SPECTRE_ALWAYS_INLINE constexpr size_t cstring_length(const char* str) {
   // clang-tidy: do not use pointer arithmetic
   return *str != 0 ? 1 + cstring_length(str + 1) : 0;  // NOLINT
 }
 
 /// \ingroup ConstantExpressionsGroup
 /// \brief Compute a hash of a const char* at compile time
-SPECTRE_ALWAYS_INLINE constexpr size_t cstring_hash(const char* str) noexcept {
+SPECTRE_ALWAYS_INLINE constexpr size_t cstring_hash(const char* str) {
   // clang-tidy: do not use pointer arithmetic
   return *str != 0
              ? (cstring_hash(str + 1) * 33) ^  // NOLINT
@@ -378,7 +375,7 @@ inline constexpr std::array<std::decay_t<T>, Size> replace_at(
 template <typename T, typename S, size_t size>
 inline constexpr bool array_equal(const std::array<T, size>& lhs,
                                   const std::array<S, size>& rhs,
-                                  const size_t i = 0) noexcept {
+                                  const size_t i = 0) {
   // clang-tidy: Cannot use gsl::at because we want constexpr evaluation and
   // Parallel::abort violates this
   return i < size ? (lhs[i] == rhs[i]  // NOLINT

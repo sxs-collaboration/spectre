@@ -63,8 +63,7 @@ get_transformed_spacetime_symmetry(
     const std::array<std::int32_t, NumIndices>& symmetry,
     const std::array<size_t, NumSpatialSpacetimeIndices>&
         spatial_spacetime_index_positions,
-    const std::array<size_t, NumConcreteTimeIndices>&
-        time_index_positions) noexcept {
+    const std::array<size_t, NumConcreteTimeIndices>& time_index_positions) {
   std::array<std::int32_t, NumIndices> transformed_spacetime_symmetry{};
   const std::int32_t max_symm_value =
       static_cast<std::int32_t>(*alg::max_element(symmetry));
@@ -93,7 +92,7 @@ get_transformed_spacetime_symmetry(
     const std::array<size_t, NumSpatialSpacetimeIndices>&
     /*spatial_spacetime_index_positions*/,
     const std::array<size_t, NumConcreteTimeIndices>&
-    /*time_index_positions*/) noexcept {
+    /*time_index_positions*/) {
   return symmetry;
 }
 /// @}
@@ -198,8 +197,7 @@ struct TensorAsExpression<Tensor<X, Symm, IndexList<Indices...>>,
   /// \param multi_index the multi-index of the tensor component to retrieve
   /// \return the value of the component at `multi_index` in the tensor
   SPECTRE_ALWAYS_INLINE decltype(auto) get(
-      const std::array<size_t, num_tensor_indices>& multi_index)
-      const noexcept {
+      const std::array<size_t, num_tensor_indices>& multi_index) const {
     return t_->get(multi_index);
   }
 

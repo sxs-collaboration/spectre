@@ -14,7 +14,7 @@ namespace OptionTags {
  * \brief Groups the variable fixer configurations in the input file.
  */
 struct VariableFixingGroup {
-  static std::string name() noexcept { return "VariableFixing"; }
+  static std::string name() { return "VariableFixing"; }
   static constexpr Options::String help = "Options for variable fixing";
 };
 
@@ -27,9 +27,7 @@ template <typename VariableFixerType>
 struct VariableFixer {
   static constexpr Options::String help = "Options for the variable fixer";
   using type = VariableFixerType;
-  static std::string name() noexcept {
-    return Options::name<VariableFixerType>();
-  }
+  static std::string name() { return Options::name<VariableFixerType>(); }
   using group = VariableFixingGroup;
 };
 }  // namespace OptionTags
@@ -46,7 +44,7 @@ struct VariableFixer : db::SimpleTag {
 
   static constexpr bool pass_metavariables = false;
   static VariableFixerType create_from_options(
-      const VariableFixerType& variable_fixer) noexcept {
+      const VariableFixerType& variable_fixer) {
     return variable_fixer;
   }
 };

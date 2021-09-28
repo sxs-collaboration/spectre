@@ -24,12 +24,12 @@ namespace helpers = TestHelpers::NonlinearSolver;
 namespace {
 
 struct LinearSolverGroup {
-  static std::string name() noexcept { return "LinearSolver"; }
+  static std::string name() { return "LinearSolver"; }
   static constexpr Options::String help = "Options for the linear solver";
 };
 
 struct NonlinearSolverGroup {
-  static std::string name() noexcept { return "NewtonRaphson"; }
+  static std::string name() { return "NewtonRaphson"; }
   static constexpr Options::String help = "Options for the nonlinear solver";
 };
 
@@ -42,10 +42,10 @@ struct ApplyNonlinearOperator {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const int /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*component*/) noexcept {
+      const ParallelComponent* const /*component*/) {
     db::mutate<::NonlinearSolver::Tags::OperatorAppliedTo<OperandTag>>(
         make_not_null(&box),
-        [](const auto Ax, const auto& x) noexcept { *Ax = cube(x) - x; },
+        [](const auto Ax, const auto& x) { *Ax = cube(x) - x; },
         get<OperandTag>(box));
     return {std::move(box)};
   }
@@ -60,10 +60,10 @@ struct ApplyLinearizedOperator {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const int /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*component*/) noexcept {
+      const ParallelComponent* const /*component*/) {
     db::mutate<LinearSolver::Tags::OperatorAppliedTo<OperandTag>>(
         make_not_null(&box),
-        [](const auto Ap, const auto& dx, const auto& x) noexcept {
+        [](const auto Ap, const auto& dx, const auto& x) {
           *Ap = (3. * square(x) - 1) * dx;
         },
         get<OperandTag>(box), get<FieldTag>(box));
@@ -97,7 +97,7 @@ struct Metavariables {
       helpers::determine_next_phase<Metavariables>;
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& /*p*/) noexcept {}
+  void pup(PUP::er& /*p*/) {}
 };
 
 }  // namespace

@@ -25,7 +25,7 @@ namespace fd::reconstruction {
 namespace detail {
 struct MonotisedCentralReconstructor {
   SPECTRE_ALWAYS_INLINE static std::array<double, 2> pointwise(
-      const double* const q, const int stride) noexcept {
+      const double* const q, const int stride) {
     using std::abs;
     using std::min;
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
@@ -38,9 +38,7 @@ struct MonotisedCentralReconstructor {
     return {{q[0] - 0.5 * slope, q[0] + 0.5 * slope}};
   }
 
-  SPECTRE_ALWAYS_INLINE static constexpr size_t stencil_width() noexcept {
-    return 3;
-  }
+  SPECTRE_ALWAYS_INLINE static constexpr size_t stencil_width() { return 3; }
 };
 }  // namespace detail
 
@@ -88,8 +86,7 @@ void monotised_central(
         reconstructed_lower_side_of_face_vars,
     const gsl::span<const double>& volume_vars,
     const DirectionMap<Dim, gsl::span<const double>>& ghost_cell_vars,
-    const Index<Dim>& volume_extents,
-    const size_t number_of_variables) noexcept {
+    const Index<Dim>& volume_extents, const size_t number_of_variables) {
   detail::reconstruct<detail::MonotisedCentralReconstructor>(
       reconstructed_upper_side_of_face_vars,
       reconstructed_lower_side_of_face_vars, volume_vars, ghost_cell_vars,
