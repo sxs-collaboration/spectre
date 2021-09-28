@@ -1,0 +1,78 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Executable: EvolveScalarWavePlaneWave1D
+# Check: parse
+# ExpectedOutput:
+#   ScalarWavePlaneWave1DEventsAndTriggersExampleVolume.h5
+
+AnalyticSolution:
+  PlaneWave:
+    WaveVector: [1.0]
+    Center: [0.0]
+    Profile:
+      Sinusoid:
+        Amplitude: 1.0
+        Wavenumber: 1.0
+        Phase: 0.0
+
+PhaseChangeAndTriggers:
+
+Evolution:
+  InitialTime: 0.0
+  InitialTimeStep: 0.001
+  InitialSlabSize: 0.01
+  TimeStepper:
+    AdamsBashforthN:
+      Order: 3
+  StepController: BinaryFraction
+  StepChoosers:
+    - Constant: 0.001
+
+DomainCreator:
+  Interval:
+    LowerBound: [0.0]
+    UpperBound: [6.283185307179586]
+    InitialRefinement: [0]
+    InitialGridPoints: [2]
+    TimeDependence: None
+    BoundaryConditions:
+      LowerBoundary: Periodic
+      UpperBoundary: Periodic
+
+SpatialDiscretization:
+  BoundaryCorrection:
+    UpwindPenalty:
+  DiscontinuousGalerkin:
+    Formulation: StrongInertial
+    Quadrature: GaussLobatto
+
+EventsAndDenseTriggers:
+
+# [multiple_events]
+EventsAndTriggers:
+  ? Slabs:
+      EvenlySpaced:
+        Interval: 10
+        Offset: 0
+  : - ObserveFields:
+        SubfileName: Fields
+        VariablesToObserve: [Psi]
+        InterpolateToMesh: None
+        CoordinatesFloatingPointType: Double
+        FloatingPointTypes: [Double]
+    - ObserveErrorNorms:
+        SubfileName: Errors
+# [multiple_events]
+
+# [no_arguments]
+  ? Always
+  : - Completion
+# [no_arguments]
+# [no_arguments_single_line]
+  Always: [Completion]
+# [no_arguments_single_line]
+
+Observers:
+  VolumeFileName: "ScalarWavePlaneWave1DEventsAndTriggersExampleVolume"
+  ReductionFileName: "ScalarWavePlaneWave1DEventsAndTriggersExampleReductions"
