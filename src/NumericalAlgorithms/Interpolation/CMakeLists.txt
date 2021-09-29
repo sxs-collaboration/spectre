@@ -33,29 +33,17 @@ spectre_target_headers(
   SpanInterpolator.hpp
   )
 
-add_dependencies(
-  ${LIBRARY}
-  module_GlobalCache
-  )
-
 target_link_libraries(
   ${LIBRARY}
   PUBLIC
-  ApparentHorizons
   Blas
   Boost::boost
   DataStructures
-  DgSubcell
   Domain
-  DomainStructure
   ErrorHandling
-  EventsAndTriggers
   GSL::gsl
-  Logging
   Options
   Spectral
-  INTERFACE
-  SystemUtilities
   )
 
 add_subdirectory(Python)
