@@ -66,13 +66,13 @@ DataVector extruding_weight(const DataVector& logical_coords, double width,
 template <size_t Dim>
 void element_weight(
     gsl::not_null<Scalar<DataVector>*> element_weight,
-    const tnsr::I<DataVector, Dim, Frame::Logical>& logical_coords,
+    const tnsr::I<DataVector, Dim, Frame::ElementLogical>& logical_coords,
     const std::array<double, Dim>& overlap_widths,
     const std::unordered_set<Direction<Dim>>& external_boundaries) noexcept;
 
 template <size_t Dim>
 Scalar<DataVector> element_weight(
-    const tnsr::I<DataVector, Dim, Frame::Logical>& logical_coords,
+    const tnsr::I<DataVector, Dim, Frame::ElementLogical>& logical_coords,
     const std::array<double, Dim>& overlap_widths,
     const std::unordered_set<Direction<Dim>>& external_boundaries) noexcept;
 /// @}
@@ -113,7 +113,7 @@ DataVector intruding_weight(const DataVector& logical_coords, double width,
 template <size_t Dim>
 void intruding_weight(
     gsl::not_null<Scalar<DataVector>*> weight,
-    const tnsr::I<DataVector, Dim, Frame::Logical>& logical_coords,
+    const tnsr::I<DataVector, Dim, Frame::ElementLogical>& logical_coords,
     const Direction<Dim>& direction,
     const std::array<double, Dim>& overlap_widths,
     size_t num_intruding_overlaps,
@@ -121,7 +121,7 @@ void intruding_weight(
 
 template <size_t Dim>
 Scalar<DataVector> intruding_weight(
-    const tnsr::I<DataVector, Dim, Frame::Logical>& logical_coords,
+    const tnsr::I<DataVector, Dim, Frame::ElementLogical>& logical_coords,
     const Direction<Dim>& direction,
     const std::array<double, Dim>& overlap_widths,
     size_t num_intruding_overlaps,

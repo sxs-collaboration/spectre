@@ -163,9 +163,10 @@ void test(const Spectral::Quadrature quadrature) noexcept {
       TimeIndependentMap<Dim, Frame::BlockLogical, Frame::Inertial>));
   PUPable_reg(
       SINGLE_ARG(TimeIndependentMap<Dim, Frame::BlockLogical, Frame::Grid>));
+  PUPable_reg(SINGLE_ARG(
+      TimeIndependentMap<Dim, Frame::ElementLogical, Frame::Inertial>));
   PUPable_reg(
-      SINGLE_ARG(TimeIndependentMap<Dim, Frame::Logical, Frame::Inertial>));
-  PUPable_reg(SINGLE_ARG(TimeIndependentMap<Dim, Frame::Logical, Frame::Grid>));
+      SINGLE_ARG(TimeIndependentMap<Dim, Frame::ElementLogical, Frame::Grid>));
   PUPable_reg(TimeDependentMap<Dim>);
   PUPable_reg(domain::FunctionsOfTime::PiecewisePolynomial<2>);
 
@@ -218,12 +219,12 @@ void test(const Spectral::Quadrature quadrature) noexcept {
 
   // Set up data to be used for checking correctness
   const auto logical_to_grid_map =
-      create_affine_map<Dim, Frame::Logical, Frame::Grid>();
+      create_affine_map<Dim, Frame::ElementLogical, Frame::Grid>();
   const auto grid_to_inertial_map =
       create_translation_map<Dim>(function_of_time_name);
   const auto& logical_coords = ActionTesting::get_databox_tag<
-      component, domain::Tags::Coordinates<Dim, Frame::Logical>>(runner,
-                                                                 self_id);
+      component, domain::Tags::Coordinates<Dim, Frame::ElementLogical>>(
+      runner, self_id);
 
   const auto check_domain_tags_time_dependent = [&functions_of_time,
                                                  &grid_to_inertial_map,
@@ -251,17 +252,18 @@ void test(const Spectral::Quadrature quadrature) noexcept {
     const auto expected_logical_to_grid_inv_jacobian =
         logical_to_grid_map.inv_jacobian(logical_coords);
 
-    CHECK(ActionTesting::get_databox_tag<
-              component,
-              domain::Tags::InverseJacobian<Dim, Frame::Logical, Frame::Grid>>(
-              runner, self_id) == expected_logical_to_grid_inv_jacobian);
+    CHECK(
+        ActionTesting::get_databox_tag<
+            component, domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
+                                                     Frame::Grid>>(
+            runner, self_id) == expected_logical_to_grid_inv_jacobian);
 
     const InverseJacobian<DataVector, Dim, Frame::Grid, Frame::Inertial>
         expected_inv_jacobian_grid_to_inertial =
             grid_to_inertial_map.inv_jacobian(expected_grid_coords, time,
                                               functions_of_time);
 
-    InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>
+    InverseJacobian<DataVector, Dim, Frame::ElementLogical, Frame::Inertial>
         expected_logical_to_inertial_inv_jacobian{num_pts};
 
     for (size_t logical_i = 0; logical_i < Dim; ++logical_i) {
@@ -306,21 +308,21 @@ void test(const Spectral::Quadrature quadrature) noexcept {
 
     for (size_t i = 0;
          i < ActionTesting::get_databox_tag<
-                 component, domain::Tags::InverseJacobian<Dim, Frame::Logical,
-                                                          Frame::Inertial>>(
+                 component, domain::Tags::InverseJacobian<
+                                Dim, Frame::ElementLogical, Frame::Inertial>>(
                  runner, self_id)
                  .size();
          ++i) {
       CHECK(ActionTesting::get_databox_tag<
-                component, domain::Tags::InverseJacobian<Dim, Frame::Logical,
-                                                         Frame::Inertial>>(
+                component, domain::Tags::InverseJacobian<
+                               Dim, Frame::ElementLogical, Frame::Inertial>>(
                 runner, self_id)[i]
                 .data() !=
             std::get<1>(coordinates_mesh_velocity_and_jacobians)[i].data());
     }
     CHECK_ITERABLE_APPROX(
         (ActionTesting::get_databox_tag<
-            component, domain::Tags::InverseJacobian<Dim, Frame::Logical,
+            component, domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
                                                      Frame::Inertial>>(
             runner, self_id)),
         expected_logical_to_inertial_inv_jacobian);
@@ -329,9 +331,9 @@ void test(const Spectral::Quadrature quadrature) noexcept {
         determinant(expected_logical_to_inertial_inv_jacobian);
     CHECK_ITERABLE_APPROX(
         (ActionTesting::get_databox_tag<
-            component,
-            domain::Tags::DetInvJacobian<Frame::Logical, Frame::Inertial>>(
-            runner, self_id)),
+            component, domain::Tags::DetInvJacobian<Frame::ElementLogical,
+                                                    Frame::Inertial>>(runner,
+                                                                      self_id)),
         expected_logical_to_inertial_det_inv_jacobian);
 
     const auto expected_coords_mesh_velocity_jacobians =
@@ -379,7 +381,7 @@ void test(const Spectral::Quadrature quadrature) noexcept {
                                                       const double
                                                           time) noexcept {
     const auto logical_to_inertial_map =
-        create_affine_map<Dim, Frame::Logical, Frame::Inertial>();
+        create_affine_map<Dim, Frame::ElementLogical, Frame::Inertial>();
     REQUIRE(ActionTesting::get_databox_tag<component, Tags::Time>(
                 runner, self_id) == time);
     CHECK(ActionTesting::get_databox_tag<
@@ -415,50 +417,51 @@ void test(const Spectral::Quadrature quadrature) noexcept {
     const auto expected_logical_to_grid_inv_jacobian =
         logical_to_grid_map.inv_jacobian(logical_coords);
 
-    CHECK(ActionTesting::get_databox_tag<
-              component,
-              domain::Tags::InverseJacobian<Dim, Frame::Logical, Frame::Grid>>(
-              runner, self_id) == expected_logical_to_grid_inv_jacobian);
+    CHECK(
+        ActionTesting::get_databox_tag<
+            component, domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
+                                                     Frame::Grid>>(
+            runner, self_id) == expected_logical_to_grid_inv_jacobian);
 
-    const InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>
+    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                          Frame::Inertial>
         expected_logical_to_inertial_inv_jacobian =
             logical_to_inertial_map.inv_jacobian(logical_coords);
 
     CHECK_ITERABLE_APPROX(
         (ActionTesting::get_databox_tag<
-            component, domain::Tags::InverseJacobian<Dim, Frame::Logical,
+            component, domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
                                                      Frame::Inertial>>(
             runner, self_id)),
         expected_logical_to_inertial_inv_jacobian);
     for (size_t i = 0;
          i < ActionTesting::get_databox_tag<
-                 component, domain::Tags::InverseJacobian<Dim, Frame::Logical,
-                                                          Frame::Inertial>>(
+                 component, domain::Tags::InverseJacobian<
+                                Dim, Frame::ElementLogical, Frame::Inertial>>(
                  runner, self_id)
                  .size();
          ++i) {
       // Check that the `const_cast`s and set_data_ref inside the compute
       // tag functions worked correctly
-      CHECK(
-          ActionTesting::get_databox_tag<
-              component, domain::Tags::InverseJacobian<Dim, Frame::Logical,
-                                                       Frame::Inertial>>(
-              runner, self_id)[i]
-              .data() ==
-          ActionTesting::get_databox_tag<
-              component,
-              domain::Tags::InverseJacobian<Dim, Frame::Logical, Frame::Grid>>(
-              runner, self_id)[i]
-              .data());
+      CHECK(ActionTesting::get_databox_tag<
+                component, domain::Tags::InverseJacobian<
+                               Dim, Frame::ElementLogical, Frame::Inertial>>(
+                runner, self_id)[i]
+                .data() ==
+            ActionTesting::get_databox_tag<
+                component, domain::Tags::InverseJacobian<
+                               Dim, Frame::ElementLogical, Frame::Grid>>(
+                runner, self_id)[i]
+                .data());
     }
 
     const Scalar<DataVector> expected_logical_to_inertial_det_inv_jacobian =
         determinant(expected_logical_to_inertial_inv_jacobian);
     CHECK_ITERABLE_APPROX(
         (ActionTesting::get_databox_tag<
-            component,
-            domain::Tags::DetInvJacobian<Frame::Logical, Frame::Inertial>>(
-            runner, self_id)),
+            component, domain::Tags::DetInvJacobian<Frame::ElementLogical,
+                                                    Frame::Inertial>>(runner,
+                                                                      self_id)),
         expected_logical_to_inertial_det_inv_jacobian);
 
     CHECK_FALSE(ActionTesting::get_databox_tag<component,

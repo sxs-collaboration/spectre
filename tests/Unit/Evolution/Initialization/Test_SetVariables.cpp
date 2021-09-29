@@ -187,7 +187,7 @@ struct component {
   using initial_tags =
       tmpl::list<Initialization::Tags::InitialTime,
                  domain::Tags::FunctionsOfTime,
-                 domain::Tags::Coordinates<Dim, Frame::Logical>,
+                 domain::Tags::Coordinates<Dim, Frame::ElementLogical>,
                  domain::Tags::ElementMap<Dim, Frame::Grid>,
                  domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
                                                              Frame::Inertial>,
@@ -198,7 +198,7 @@ struct component {
       typename Metavariables::Phase, Metavariables::Phase::Initialization,
       tmpl::list<ActionTesting::InitializeDataBox<initial_tags>,
                  evolution::Initialization::Actions::SetVariables<
-                     domain::Tags::Coordinates<Dim, Frame::Logical>>>>>;
+                     domain::Tags::Coordinates<Dim, Frame::ElementLogical>>>>>;
 };
 
 template <size_t Dim, typename Metavariables>

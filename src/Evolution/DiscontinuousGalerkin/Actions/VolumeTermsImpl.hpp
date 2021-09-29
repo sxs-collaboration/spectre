@@ -78,7 +78,8 @@ void volume_terms(
     const ::dg::Formulation dg_formulation, const Mesh<Dim>& mesh,
     [[maybe_unused]] const tnsr::I<DataVector, Dim, Frame::Inertial>&
         inertial_coordinates,
-    const InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>&
+    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                          Frame::Inertial>&
         logical_to_inertial_inverse_jacobian,
     [[maybe_unused]] const Scalar<DataVector>* const det_inverse_jacobian,
     const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&

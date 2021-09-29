@@ -87,7 +87,7 @@ element_logical_coordinates(const std::vector<ElementId<Dim>>& element_ids,
   for (size_t index = 0; index < element_ids.size(); ++index) {
     const size_t num_grid_pts = x_element_logical[index][0].size();
     if (num_grid_pts > 0) {
-      tnsr::I<DataVector, Dim, Frame::Logical> tmp(num_grid_pts);
+      tnsr::I<DataVector, Dim, Frame::ElementLogical> tmp(num_grid_pts);
       std::vector<size_t> off(num_grid_pts);
       for (size_t s = 0; s < num_grid_pts; ++s) {
         for (size_t d = 0; d < Dim; ++d) {

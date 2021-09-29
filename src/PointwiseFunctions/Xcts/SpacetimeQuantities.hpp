@@ -136,7 +136,7 @@ struct SpacetimeQuantitiesComputer {
   const tnsr::II<DataVector, 3>& inv_conformal_metric;
   const tnsr::I<DataVector, 3>& shift_background;
   const Mesh<3>& mesh;
-  const InverseJacobian<DataVector, 3, Frame::Logical, Frame::Inertial>&
+  const InverseJacobian<DataVector, 3, Frame::ElementLogical, Frame::Inertial>&
       inv_jacobian;
 };
 
@@ -153,7 +153,7 @@ struct SpacetimeQuantitiesCompute : ::Tags::Variables<Tags>, db::ComputeTag {
       ConformalMetric<DataVector, 3, Frame::Inertial>,
       InverseConformalMetric<DataVector, 3, Frame::Inertial>,
       ShiftBackground<DataVector, 3, Frame::Inertial>, domain::Tags::Mesh<3>,
-      domain::Tags::InverseJacobian<3, Frame::Logical, Frame::Inertial>>;
+      domain::Tags::InverseJacobian<3, Frame::ElementLogical, Frame::Inertial>>;
   template <typename... Args>
   static void function(const gsl::not_null<typename base::type*> result,
                        const Mesh<3>& mesh, const Args&... args) noexcept {

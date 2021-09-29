@@ -46,12 +46,12 @@ struct not_null;
  */
 template <size_t VolumeDim>
 void logical_coordinates(
-    gsl::not_null<tnsr::I<DataVector, VolumeDim, Frame::Logical>*>
+    gsl::not_null<tnsr::I<DataVector, VolumeDim, Frame::ElementLogical>*>
         logical_coords,
     const Mesh<VolumeDim>& mesh) noexcept;
 
 template <size_t VolumeDim>
-tnsr::I<DataVector, VolumeDim, Frame::Logical> logical_coordinates(
+tnsr::I<DataVector, VolumeDim, Frame::ElementLogical> logical_coordinates(
     const Mesh<VolumeDim>& mesh) noexcept;
 /// @}
 
@@ -65,9 +65,9 @@ tnsr::I<DataVector, VolumeDim, Frame::Logical> logical_coordinates(
  * \snippet Test_LogicalCoordinates.cpp interface_logical_coordinates_example
  */
 template <size_t VolumeDim>
-tnsr::I<DataVector, VolumeDim, Frame::Logical> interface_logical_coordinates(
-    const Mesh<VolumeDim - 1>& mesh,
-    const Direction<VolumeDim>& direction) noexcept;
+tnsr::I<DataVector, VolumeDim, Frame::ElementLogical>
+interface_logical_coordinates(const Mesh<VolumeDim - 1>& mesh,
+                              const Direction<VolumeDim>& direction) noexcept;
 
 namespace domain {
 namespace Tags {
@@ -75,9 +75,9 @@ namespace Tags {
 /// \ingroup ComputationalDomainGroup
 /// The logical coordinates in the Element
 template <size_t VolumeDim>
-struct LogicalCoordinates : Coordinates<VolumeDim, Frame::Logical>,
+struct LogicalCoordinates : Coordinates<VolumeDim, Frame::ElementLogical>,
                             db::ComputeTag {
-  using base = Coordinates<VolumeDim, Frame::Logical>;
+  using base = Coordinates<VolumeDim, Frame::ElementLogical>;
   using return_type = typename base::type;
   using argument_tags = tmpl::list<Mesh<VolumeDim>>;
   static constexpr auto function = static_cast<void (*)(

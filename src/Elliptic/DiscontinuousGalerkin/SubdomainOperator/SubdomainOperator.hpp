@@ -129,18 +129,20 @@ struct SubdomainOperator
   // These are the arguments that we need to retrieve from the DataBox and pass
   // to the functions in `elliptic::dg`, both on the central element and on
   // neighbors
-  using prepare_args_tags = tmpl::list<
-      domain::Tags::Element<Dim>, domain::Tags::Mesh<Dim>,
-      domain::Tags::InverseJacobian<Dim, Frame::Logical, Frame::Inertial>,
-      domain::Tags::Faces<Dim, domain::Tags::FaceNormal<Dim>>,
-      domain::Tags::Faces<Dim,
-                          domain::Tags::UnnormalizedFaceNormalMagnitude<Dim>>,
-      ::Tags::Mortars<domain::Tags::Mesh<Dim - 1>, Dim>,
-      ::Tags::Mortars<::Tags::MortarSize<Dim - 1>, Dim>>;
+  using prepare_args_tags =
+      tmpl::list<domain::Tags::Element<Dim>, domain::Tags::Mesh<Dim>,
+                 domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
+                                               Frame::Inertial>,
+                 domain::Tags::Faces<Dim, domain::Tags::FaceNormal<Dim>>,
+                 domain::Tags::Faces<
+                     Dim, domain::Tags::UnnormalizedFaceNormalMagnitude<Dim>>,
+                 ::Tags::Mortars<domain::Tags::Mesh<Dim - 1>, Dim>,
+                 ::Tags::Mortars<::Tags::MortarSize<Dim - 1>, Dim>>;
   using apply_args_tags = tmpl::list<
       domain::Tags::Mesh<Dim>,
-      domain::Tags::InverseJacobian<Dim, Frame::Logical, Frame::Inertial>,
-      domain::Tags::DetInvJacobian<Frame::Logical, Frame::Inertial>,
+      domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
+                                    Frame::Inertial>,
+      domain::Tags::DetInvJacobian<Frame::ElementLogical, Frame::Inertial>,
       domain::Tags::Faces<Dim,
                           domain::Tags::UnnormalizedFaceNormalMagnitude<Dim>>,
       ::Tags::Mortars<domain::Tags::Mesh<Dim - 1>, Dim>,

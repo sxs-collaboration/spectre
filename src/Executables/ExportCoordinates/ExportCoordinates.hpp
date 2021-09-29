@@ -121,12 +121,12 @@ struct ExportCoordinates {
     }
     // Also output the determinant of the inverse jacobian, which measures
     // the expansion and compression of the grid
-    const auto& det_inv_jac =
-        db::get<domain::Tags::DetInvJacobian<Frame::Logical, Frame::Inertial>>(
-            box);
+    const auto& det_inv_jac = db::get<
+        domain::Tags::DetInvJacobian<Frame::ElementLogical, Frame::Inertial>>(
+        box);
     components.emplace_back(
         element_name +
-            db::tag_name<domain::Tags::DetInvJacobian<Frame::Logical,
+            db::tag_name<domain::Tags::DetInvJacobian<Frame::ElementLogical,
                                                       Frame::Inertial>>(),
         get(det_inv_jac));
     // Send data to volume observer

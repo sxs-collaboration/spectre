@@ -46,11 +46,11 @@ void InertialFromGridCoordinatesCompute<Dim>::function(
 
 template <size_t Dim>
 void ElementToInertialInverseJacobian<Dim>::function(
-    const gsl::not_null<
-        ::InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>*>
+    const gsl::not_null<::InverseJacobian<
+        DataVector, Dim, Frame::ElementLogical, Frame::Inertial>*>
         inv_jac_logical_to_inertial,
-    const ::InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Grid>&
-        inv_jac_logical_to_grid,
+    const ::InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                            Frame::Grid>& inv_jac_logical_to_grid,
     const std::optional<std::tuple<
         tnsr::I<DataVector, Dim, Frame::Inertial>,
         ::InverseJacobian<DataVector, Dim, Frame::Grid, Frame::Inertial>,

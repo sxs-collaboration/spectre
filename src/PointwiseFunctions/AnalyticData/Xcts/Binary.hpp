@@ -263,8 +263,8 @@ class Binary : public ::AnalyticData<3, Registrars> {
   template <typename... RequestedTags>
   tuples::TaggedTuple<RequestedTags...> variables(
       const tnsr::I<DataVector, 3, Frame::Inertial>& x, const Mesh<3>& mesh,
-      const InverseJacobian<DataVector, 3, Frame::Logical, Frame::Inertial>&
-          inv_jacobian,
+      const InverseJacobian<DataVector, 3, Frame::ElementLogical,
+                            Frame::Inertial>& inv_jacobian,
       tmpl::list<RequestedTags...> /*meta*/) const noexcept {
     return variables_impl<DataVector>(x, mesh, inv_jacobian,
                                       tmpl::list<RequestedTags...>{});
@@ -300,8 +300,8 @@ class Binary : public ::AnalyticData<3, Registrars> {
   tuples::TaggedTuple<RequestedTags...> variables_impl(
       const tnsr::I<DataType, 3, Frame::Inertial>& x,
       std::optional<std::reference_wrapper<const Mesh<3>>> mesh,
-      std::optional<std::reference_wrapper<
-          const InverseJacobian<DataType, 3, Frame::Logical, Frame::Inertial>>>
+      std::optional<std::reference_wrapper<const InverseJacobian<
+          DataType, 3, Frame::ElementLogical, Frame::Inertial>>>
           inv_jacobian,
       tmpl::list<RequestedTags...> /*meta*/) const noexcept {
     std::array<tnsr::I<DataVector, 3>, 2> x_isolated{{x, x}};

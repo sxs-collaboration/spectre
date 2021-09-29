@@ -343,11 +343,11 @@ struct EvolutionMetavars {
       evolution::dg::Initialization::Domain<volume_dim,
                                             override_functions_of_time>,
       Initialization::Actions::NonconservativeSystem<system>,
-      Initialization::Actions::AddComputeTags<
-          ::Tags::DerivCompute<typename system::variables_tag,
-                               ::domain::Tags::InverseJacobian<
-                                   volume_dim, Frame::Logical, Frame::Inertial>,
-                               typename system::gradient_variables>>,
+      Initialization::Actions::AddComputeTags<::Tags::DerivCompute<
+          typename system::variables_tag,
+          ::domain::Tags::InverseJacobian<volume_dim, Frame::ElementLogical,
+                                          Frame::Inertial>,
+          typename system::gradient_variables>>,
       Initialization::Actions::TimeStepperHistory<EvolutionMetavars>,
       GeneralizedHarmonic::Actions::InitializeGhAnd3Plus1Variables<volume_dim>,
       Initialization::Actions::AddComputeTags<tmpl::push_back<

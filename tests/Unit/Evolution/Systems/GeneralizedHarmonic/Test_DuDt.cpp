@@ -480,7 +480,8 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) noexcept {
       TestHelpers::gr::random_shift<Dim>(generator, used_for_size),
       TestHelpers::gr::random_spatial_metric<Dim>(generator, used_for_size));
 
-  InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial> inv_jac{};
+  InverseJacobian<DataVector, Dim, Frame::ElementLogical, Frame::Inertial>
+      inv_jac{};
   for (size_t i = 0; i < Dim; ++i) {
     for (size_t j = 0; j < Dim; ++j) {
       if (i == j) {

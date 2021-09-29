@@ -58,7 +58,7 @@ void test() noexcept {
   using simple_tags = db::AddSimpleTags<
       Tags::Time, domain::Tags::Mesh<Dim>,
       domain::Tags::Coordinates<Dim, Frame::Grid>,
-      domain::Tags::InverseJacobian<Dim, Frame::Logical, Frame::Grid>,
+      domain::Tags::InverseJacobian<Dim, Frame::ElementLogical, Frame::Grid>,
       domain::Tags::FunctionsOfTime,
       domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
                                                   Frame::Inertial>>;
@@ -89,7 +89,7 @@ void test() noexcept {
   tnsr::I<DataVector, Dim, Frame::Grid> grid_coords{num_pts};
   fill_with_random_values(make_not_null(&grid_coords), make_not_null(&gen),
                           make_not_null(&dist));
-  InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Grid>
+  InverseJacobian<DataVector, Dim, Frame::ElementLogical, Frame::Grid>
       element_to_grid_inverse_jacobian{num_pts};
   fill_with_random_values(make_not_null(&element_to_grid_inverse_jacobian),
                           make_not_null(&gen), make_not_null(&dist));
@@ -122,11 +122,12 @@ void test() noexcept {
       const std::optional<Scalar<DataVector>>& div_frame_velocity =
           db::get<domain::Tags::DivMeshVelocity>(box);
       REQUIRE(div_frame_velocity.has_value());
-      CHECK(*div_frame_velocity ==
-            divergence(
-                db::get<domain::Tags::MeshVelocity<Dim>>(box).value(), mesh,
-                db::get<domain::Tags::InverseJacobian<Dim, Frame::Logical,
-                                                      Frame::Inertial>>(box)));
+      CHECK(
+          *div_frame_velocity ==
+          divergence(
+              db::get<domain::Tags::MeshVelocity<Dim>>(box).value(), mesh,
+              db::get<domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
+                                                    Frame::Inertial>>(box)));
     } else {
       // In the time-independent case, check that the divergence of the mesh
       // velocity is not set.

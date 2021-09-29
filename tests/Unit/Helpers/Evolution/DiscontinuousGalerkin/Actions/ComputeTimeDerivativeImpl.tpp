@@ -768,8 +768,8 @@ struct component {
                                                   Frame::Grid, Frame::Inertial>,
       domain::Tags::Element<Metavariables::volume_dim>,
       domain::Tags::Coordinates<Metavariables::volume_dim, Frame::Inertial>,
-      domain::Tags::InverseJacobian<Metavariables::volume_dim, Frame::Logical,
-                                    Frame::Inertial>,
+      domain::Tags::InverseJacobian<Metavariables::volume_dim,
+                                    Frame::ElementLogical, Frame::Inertial>,
       domain::Tags::MeshVelocity<Metavariables::volume_dim>,
       domain::Tags::DivMeshVelocity,
       domain::Tags::ElementMap<Metavariables::volume_dim, Frame::Grid>,
@@ -781,10 +781,10 @@ struct component {
           tmpl::list<::Tags::NeverUsingTimeSteppingErrorControl,
                      ::Tags::TimeStepper<TimeStepper>>>>>;
   using common_compute_tags = tmpl::list<
-      domain::Tags::JacobianCompute<Metavariables::volume_dim, Frame::Logical,
-                                    Frame::Inertial>,
-      domain::Tags::DetInvJacobianCompute<Metavariables::volume_dim,
-                                          Frame::Logical, Frame::Inertial>,
+      domain::Tags::JacobianCompute<Metavariables::volume_dim,
+                                    Frame::ElementLogical, Frame::Inertial>,
+      domain::Tags::DetInvJacobianCompute<
+          Metavariables::volume_dim, Frame::ElementLogical, Frame::Inertial>,
       domain::Tags::InternalDirectionsCompute<Metavariables::volume_dim>,
       domain::Tags::InterfaceCompute<
           internal_directions,
@@ -1017,8 +1017,8 @@ void test_impl(const Spectral::Quadrature quadrature,
 
   // Set the Jacobian to not be the identity because otherwise bugs creep in
   // easily.
-  ::InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial> inv_jac{
-      mesh.number_of_grid_points(), 0.0};
+  ::InverseJacobian<DataVector, Dim, Frame::ElementLogical, Frame::Inertial>
+      inv_jac{mesh.number_of_grid_points(), 0.0};
   for (size_t i = 0; i < Dim; ++i) {
     inv_jac.get(i, i) = 2.0;
   }
@@ -1361,7 +1361,7 @@ void test_impl(const Spectral::Quadrature quadrature,
         Variables<db::wrap_tags_in<Tags::div, typename fluxes_tag::tags_list>>
             weak_div_fluxes{mesh.number_of_grid_points()};
 
-        InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>
+        InverseJacobian<DataVector, Dim, Frame::ElementLogical, Frame::Inertial>
             det_jac_times_inverse_jacobian{};
         ::dg::metric_identity_det_jac_times_inv_jac(
             make_not_null(&det_jac_times_inverse_jacobian), mesh,
@@ -1415,7 +1415,7 @@ void test_impl(const Spectral::Quadrature quadrature,
         Variables<db::wrap_tags_in<Tags::div, typename fluxes_tag::tags_list>>
             weak_div_fluxes{mesh.number_of_grid_points()};
 
-        InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>
+        InverseJacobian<DataVector, Dim, Frame::ElementLogical, Frame::Inertial>
             det_jac_times_inverse_jacobian{};
         ::dg::metric_identity_det_jac_times_inv_jac(
             make_not_null(&det_jac_times_inverse_jacobian), mesh,

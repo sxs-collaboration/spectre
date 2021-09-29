@@ -19,8 +19,8 @@ template <size_t VolumeDim, typename TargetFrame>
 void unnormalized_face_normal(
     const gsl::not_null<tnsr::i<DataVector, VolumeDim, TargetFrame>*> result,
     const Mesh<VolumeDim - 1>& interface_mesh,
-    const InverseJacobian<DataVector, VolumeDim, Frame::Logical, TargetFrame>&
-        inv_jacobian_on_interface,
+    const InverseJacobian<DataVector, VolumeDim, Frame::ElementLogical,
+                          TargetFrame>& inv_jacobian_on_interface,
     const Direction<VolumeDim>& direction) noexcept {
   const auto sliced_away_dim = direction.dimension();
   const double sign = direction.sign();
@@ -34,8 +34,8 @@ void unnormalized_face_normal(
 template <size_t VolumeDim, typename TargetFrame>
 tnsr::i<DataVector, VolumeDim, TargetFrame> unnormalized_face_normal(
     const Mesh<VolumeDim - 1>& interface_mesh,
-    const InverseJacobian<DataVector, VolumeDim, Frame::Logical, TargetFrame>&
-        inv_jacobian_on_interface,
+    const InverseJacobian<DataVector, VolumeDim, Frame::ElementLogical,
+                          TargetFrame>& inv_jacobian_on_interface,
     const Direction<VolumeDim>& direction) noexcept {
   tnsr::i<DataVector, VolumeDim, TargetFrame> result{};
   unnormalized_face_normal(make_not_null(&result), interface_mesh,
@@ -73,8 +73,8 @@ template <size_t VolumeDim, typename TargetFrame>
 void unnormalized_face_normal(
     const gsl::not_null<tnsr::i<DataVector, VolumeDim, TargetFrame>*> result,
     const Mesh<VolumeDim - 1>& interface_mesh,
-    const domain::CoordinateMapBase<Frame::Logical, TargetFrame, VolumeDim>&
-        map,
+    const domain::CoordinateMapBase<Frame::ElementLogical, TargetFrame,
+                                    VolumeDim>& map,
     const Direction<VolumeDim>& direction) noexcept {
   unnormalized_face_normal(result, interface_mesh,
                            map.inv_jacobian(interface_logical_coordinates(
@@ -85,8 +85,8 @@ void unnormalized_face_normal(
 template <size_t VolumeDim, typename TargetFrame>
 tnsr::i<DataVector, VolumeDim, TargetFrame> unnormalized_face_normal(
     const Mesh<VolumeDim - 1>& interface_mesh,
-    const domain::CoordinateMapBase<Frame::Logical, TargetFrame, VolumeDim>&
-        map,
+    const domain::CoordinateMapBase<Frame::ElementLogical, TargetFrame,
+                                    VolumeDim>& map,
     const Direction<VolumeDim>& direction) noexcept {
   tnsr::i<DataVector, VolumeDim, TargetFrame> result{};
   unnormalized_face_normal(make_not_null(&result), interface_mesh,
@@ -111,7 +111,8 @@ void unnormalized_face_normal(
     const Direction<VolumeDim>& direction) noexcept {
   auto logical_to_grid_inv_jac = logical_to_grid_map.inv_jacobian(
       interface_logical_coordinates(interface_mesh, direction));
-  ::InverseJacobian<DataVector, VolumeDim, Frame::Logical, Frame::Inertial>
+  ::InverseJacobian<DataVector, VolumeDim, Frame::ElementLogical,
+                    Frame::Inertial>
       logical_to_inertial_inv_jac{};
 
   if (grid_to_inertial_map.is_identity()) {
@@ -180,13 +181,13 @@ tnsr::i<DataVector, VolumeDim, Frame::Inertial> unnormalized_face_normal(
           tnsr::i<DataVector, GET_DIM(data), GET_FRAME(data)>*>               \
           result,                                                             \
       const Mesh<GET_DIM(data) - 1>&,                                         \
-      const domain::CoordinateMapBase<Frame::Logical, GET_FRAME(data),        \
+      const domain::CoordinateMapBase<Frame::ElementLogical, GET_FRAME(data), \
                                       GET_DIM(data)>&,                        \
       const Direction<GET_DIM(data)>&) noexcept;                              \
   template tnsr::i<DataVector, GET_DIM(data), GET_FRAME(data)>                \
   unnormalized_face_normal(                                                   \
       const Mesh<GET_DIM(data) - 1>&,                                         \
-      const domain::CoordinateMapBase<Frame::Logical, GET_FRAME(data),        \
+      const domain::CoordinateMapBase<Frame::ElementLogical, GET_FRAME(data), \
                                       GET_DIM(data)>&,                        \
       const Direction<GET_DIM(data)>&) noexcept;
 

@@ -53,7 +53,8 @@ namespace GeneralizedHarmonic::gauges::Actions {
  *   - `domain::Tags::Domain<Dim, Frame::Inertial>`
  *   - `domain::CoordinateMaps::Tags::CoordinateMap<Dim,
  *      Frame::Grid, Frame::Inertial>`
- *   - `domain::Tags::InverseJacobian<Dim, Frame::Logical, Frame::Inertial>`
+ *   - `domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
+ *      Frame::Inertial>`
  *   - `domain::Tags::Mesh<Dim>`
  *   - `gr::Tags::SpacetimeMetric<Dim, Frame::Inertial>`
  *   - `GeneralizedHarmonic::Tags::Pi<Dim, Frame::Inertial>`
@@ -75,7 +76,7 @@ namespace GeneralizedHarmonic::gauges::Actions {
  *   - `domain::Tags::ElementMap<Dim, Frame::Grid>`
  *   - `domain::CoordinateMaps::Tags::CoordinateMap<Dim,
  *      Frame::Grid, Frame::Inertial>`
- *   - `domain::Tags::Coordinates<Dim, Frame::Logical>`
+ *   - `domain::Tags::Coordinates<Dim, Frame::ElementLogical>`
  *   - `domain::Tags::FunctionsOfTime`
  *   - `gr::Tags::SpacetimeMetric<Dim, Frame::Inertial>`
  *   - `GeneralizedHarmonic::Tags::Pi<Dim, Frame::Inertial>`
@@ -217,9 +218,9 @@ struct InitializeDampedHarmonic {
             "currently no plan to add them because we do not need them for "
             "anything else.");
       }
-      const auto& inverse_jacobian =
-          db::get<domain::Tags::InverseJacobian<Dim, Frame::Logical, frame>>(
-              box);
+      const auto& inverse_jacobian = db::get<
+          domain::Tags::InverseJacobian<Dim, Frame::ElementLogical, frame>>(
+          box);
 
       auto [initial_gauge_h, initial_d4_gauge_h] = impl_rollon(
           db::get<gr::Tags::SpacetimeMetric<Dim, Frame::Inertial, DataVector>>(
@@ -236,13 +237,14 @@ struct InitializeDampedHarmonic {
     } else {
       const double initial_time =
           db::get<::Initialization::Tags::InitialTime>(box);
-      const auto inertial_coords =
-          db::get<::domain::CoordinateMaps::Tags::CoordinateMap<
+      const auto inertial_coords = db::get<
+          ::domain::CoordinateMaps::Tags::CoordinateMap<
               Metavariables::volume_dim, Frame::Grid, Frame::Inertial>>(box)(
-              db::get<::domain::Tags::ElementMap<Metavariables::volume_dim,
-                                                 Frame::Grid>>(box)(
-                  db::get<domain::Tags::Coordinates<Dim, Frame::Logical>>(box)),
-              initial_time, db::get<::domain::Tags::FunctionsOfTime>(box));
+          db::get<::domain::Tags::ElementMap<Metavariables::volume_dim,
+                                             Frame::Grid>>(box)(
+              db::get<domain::Tags::Coordinates<Dim, Frame::ElementLogical>>(
+                  box)),
+          initial_time, db::get<::domain::Tags::FunctionsOfTime>(box));
 
       db::mutate<GeneralizedHarmonic::Tags::Pi<Dim, Frame::Inertial>>(
           make_not_null(&box), &new_pi_from_gauge_h,
@@ -267,8 +269,8 @@ struct InitializeDampedHarmonic {
       const tnsr::aa<DataVector, Dim, Frame::Inertial>& pi,
       const tnsr::iaa<DataVector, Dim, Frame::Inertial>& phi,
       const Mesh<Dim>& mesh,
-      const InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>&
-          inverse_jacobian) noexcept;
+      const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                            Frame::Inertial>& inverse_jacobian) noexcept;
 
   static void new_pi_from_gauge_h(
       gsl::not_null<tnsr::aa<DataVector, Dim, Frame::Inertial>*> pi,

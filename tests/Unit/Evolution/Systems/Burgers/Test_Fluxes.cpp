@@ -36,9 +36,10 @@ SPECTRE_TEST_CASE("Unit.Burgers.Fluxes", "[Unit][Burgers]") {
   const Mesh<1> mesh(num_points, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto);
   const auto coords = get<0>(logical_coordinates(mesh));
-  const auto identity = make_with_value<
-      InverseJacobian<DataVector, 1, Frame::Logical, Frame::Inertial>>(coords,
-                                                                       1.);
+  const InverseJacobian<DataVector, 1, Frame::ElementLogical, Frame::Inertial>
+      identity =
+          make_with_value<InverseJacobian<DataVector, 1, Frame::ElementLogical,
+                                          Frame::Inertial>>(coords, 1.);
 
   Variables<tmpl::list<Burgers::Tags::U>> vars(num_points);
   Variables<tmpl::list<Tags::dt<Burgers::Tags::U>>> dt_vars(num_points);

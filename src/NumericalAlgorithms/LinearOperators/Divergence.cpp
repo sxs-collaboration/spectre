@@ -27,8 +27,8 @@ template <size_t Dim, typename DerivativeFrame>
 Scalar<DataVector> divergence(
     const tnsr::I<DataVector, Dim, DerivativeFrame>& input,
     const Mesh<Dim>& mesh,
-    const InverseJacobian<DataVector, Dim, Frame::Logical, DerivativeFrame>&
-        inverse_jacobian) noexcept {
+    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                          DerivativeFrame>& inverse_jacobian) noexcept {
   Scalar<DataVector> div_input{mesh.number_of_grid_points()};
   divergence(make_not_null(&div_input), input, mesh, inverse_jacobian);
   return div_input;
@@ -39,8 +39,8 @@ void divergence(
     const gsl::not_null<Scalar<DataVector>*> div_input,
     const tnsr::I<DataVector, Dim, DerivativeFrame>& input,
     const Mesh<Dim>& mesh,
-    const InverseJacobian<DataVector, Dim, Frame::Logical, DerivativeFrame>&
-        inverse_jacobian) noexcept {
+    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                          DerivativeFrame>& inverse_jacobian) noexcept {
   destructive_resize_components(div_input, mesh.number_of_grid_points());
 
   // We have to copy into a Variables because we don't currently have partial
@@ -64,11 +64,11 @@ void divergence(
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATE(_, data)                                       \
-  template Scalar<DataVector> divergence(                          \
-      const tnsr::I<DataVector, DIM(data), FRAME(data)>& input,    \
-      const Mesh<DIM(data)>& mesh,                                 \
-      const InverseJacobian<DataVector, DIM(data), Frame::Logical, \
+#define INSTANTIATE(_, data)                                              \
+  template Scalar<DataVector> divergence(                                 \
+      const tnsr::I<DataVector, DIM(data), FRAME(data)>& input,           \
+      const Mesh<DIM(data)>& mesh,                                        \
+      const InverseJacobian<DataVector, DIM(data), Frame::ElementLogical, \
                             FRAME(data)>& inverse_jacobian) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Grid, Frame::Inertial))

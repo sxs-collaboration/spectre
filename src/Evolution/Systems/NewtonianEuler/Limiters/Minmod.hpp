@@ -143,13 +143,12 @@ class Minmod {
       tmpl::list<NewtonianEuler::Tags::MassDensityCons,
                  NewtonianEuler::Tags::MomentumDensity<VolumeDim>,
                  NewtonianEuler::Tags::EnergyDensity>;
-  using limit_argument_tags =
-      tmpl::list<domain::Tags::Mesh<VolumeDim>,
-                 domain::Tags::Element<VolumeDim>,
-                 domain::Tags::Coordinates<VolumeDim, Frame::Logical>,
-                 domain::Tags::SizeOfElement<VolumeDim>,
-                 domain::Tags::DetInvJacobian<Frame::Logical, Frame::Inertial>,
-                 ::hydro::Tags::EquationOfStateBase>;
+  using limit_argument_tags = tmpl::list<
+      domain::Tags::Mesh<VolumeDim>, domain::Tags::Element<VolumeDim>,
+      domain::Tags::Coordinates<VolumeDim, Frame::ElementLogical>,
+      domain::Tags::SizeOfElement<VolumeDim>,
+      domain::Tags::DetInvJacobian<Frame::ElementLogical, Frame::Inertial>,
+      ::hydro::Tags::EquationOfStateBase>;
 
   /// \brief Limits the solution on the element.
   template <size_t ThermodynamicDim>
@@ -158,7 +157,8 @@ class Minmod {
       gsl::not_null<tnsr::I<DataVector, VolumeDim>*> momentum_density,
       gsl::not_null<Scalar<DataVector>*> energy_density,
       const Mesh<VolumeDim>& mesh, const Element<VolumeDim>& element,
-      const tnsr::I<DataVector, VolumeDim, Frame::Logical>& logical_coords,
+      const tnsr::I<DataVector, VolumeDim, Frame::ElementLogical>&
+          logical_coords,
       const std::array<double, VolumeDim>& element_size,
       const Scalar<DataVector>& det_inv_logical_to_inertial_jacobian,
       const EquationsOfState::EquationOfState<false, ThermodynamicDim>&

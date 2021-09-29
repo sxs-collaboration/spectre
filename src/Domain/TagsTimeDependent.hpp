@@ -107,17 +107,18 @@ struct InertialFromGridCoordinatesCompute
 /// `CoordinatesVelocityAndJacobians`
 template <size_t Dim>
 struct ElementToInertialInverseJacobian
-    : Tags::InverseJacobian<Dim, Frame::Logical, Frame::Inertial>,
+    : Tags::InverseJacobian<Dim, Frame::ElementLogical, Frame::Inertial>,
       db::ComputeTag {
-  using base = Tags::InverseJacobian<Dim, Frame::Logical, Frame::Inertial>;
+  using base =
+      Tags::InverseJacobian<Dim, Frame::ElementLogical, Frame::Inertial>;
   using return_type = typename base::type;
 
   static void function(
-      gsl::not_null<
-          ::InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>*>
+      gsl::not_null<::InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                                      Frame::Inertial>*>
           inv_jac_logical_to_inertial,
-      const ::InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Grid>&
-          inv_jac_logical_to_grid,
+      const ::InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                              Frame::Grid>& inv_jac_logical_to_grid,
       const std::optional<std::tuple<
           tnsr::I<DataVector, Dim, Frame::Inertial>,
           ::InverseJacobian<DataVector, Dim, Frame::Grid, Frame::Inertial>,
@@ -126,7 +127,7 @@ struct ElementToInertialInverseJacobian
           grid_to_inertial_quantities) noexcept;
 
   using argument_tags =
-      tmpl::list<Tags::InverseJacobian<Dim, Frame::Logical, Frame::Grid>,
+      tmpl::list<Tags::InverseJacobian<Dim, Frame::ElementLogical, Frame::Grid>,
                  CoordinatesMeshVelocityAndJacobians<Dim>>;
 };
 

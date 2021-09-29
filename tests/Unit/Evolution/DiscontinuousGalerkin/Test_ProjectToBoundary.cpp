@@ -36,7 +36,7 @@ struct Var3 : db::SimpleTag {
 
 template <size_t Dim>
 Variables<tmpl::list<Var2, Var3>> polynomial_volume_data(
-    const tnsr::I<DataVector, Dim, Frame::Logical>& coords,
+    const tnsr::I<DataVector, Dim, Frame::ElementLogical>& coords,
     const Index<Dim>& powers) noexcept {
   Variables<tmpl::list<Var2, Var3>> result(get<0>(coords).size(), 1.0);
   for (size_t i = 0; i < Dim; ++i) {

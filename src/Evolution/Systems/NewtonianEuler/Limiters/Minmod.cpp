@@ -35,7 +35,7 @@ bool characteristic_minmod_impl(
     const gsl::not_null<Scalar<DataVector>*> energy_density,
     const Limiters::MinmodType minmod_type, const double tvb_constant,
     const Mesh<VolumeDim>& mesh, const Element<VolumeDim>& element,
-    const tnsr::I<DataVector, VolumeDim, Frame::Logical>& logical_coords,
+    const tnsr::I<DataVector, VolumeDim, Frame::ElementLogical>& logical_coords,
     const std::array<double, VolumeDim>& element_size,
     const EquationsOfState::EquationOfState<false, ThermodynamicDim>&
         equation_of_state,
@@ -158,7 +158,7 @@ bool Minmod<VolumeDim>::operator()(
     const gsl::not_null<tnsr::I<DataVector, VolumeDim>*> momentum_density,
     const gsl::not_null<Scalar<DataVector>*> energy_density,
     const Mesh<VolumeDim>& mesh, const Element<VolumeDim>& element,
-    const tnsr::I<DataVector, VolumeDim, Frame::Logical>& logical_coords,
+    const tnsr::I<DataVector, VolumeDim, Frame::ElementLogical>& logical_coords,
     const std::array<double, VolumeDim>& element_size,
     const Scalar<DataVector>& det_inv_logical_to_inertial_jacobian,
     const EquationsOfState::EquationOfState<false, ThermodynamicDim>&
@@ -273,7 +273,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
       const gsl::not_null<tnsr::I<DataVector, DIM(data)>*>,                    \
       const gsl::not_null<Scalar<DataVector>*>, const Mesh<DIM(data)>&,        \
       const Element<DIM(data)>&,                                               \
-      const tnsr::I<DataVector, DIM(data), Frame::Logical>&,                   \
+      const tnsr::I<DataVector, DIM(data), Frame::ElementLogical>&,            \
       const std::array<double, DIM(data)>&, const Scalar<DataVector>&,         \
       const EquationsOfState::EquationOfState<false, THERMO_DIM(data)>&,       \
       const std::unordered_map<                                                \

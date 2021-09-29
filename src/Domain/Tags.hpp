@@ -115,7 +115,7 @@ template <size_t VolumeDim, typename TargetFrame = Frame::Inertial>
 struct ElementMap : db::SimpleTag {
   static constexpr size_t dim = VolumeDim;
   using target_frame = TargetFrame;
-  using source_frame = Frame::Logical;
+  using source_frame = Frame::ElementLogical;
 
   static std::string name() noexcept {
     return "ElementMap(" + get_output(TargetFrame{}) + ")";

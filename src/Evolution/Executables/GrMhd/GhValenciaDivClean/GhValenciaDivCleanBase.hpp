@@ -417,7 +417,7 @@ struct GhValenciaDivCleanTemplateBase<
       std::conditional_t<
           evolution::is_numeric_initial_data_v<initial_data>, tmpl::list<>,
           evolution::Initialization::Actions::SetVariables<
-              domain::Tags::Coordinates<volume_dim, Frame::Logical>>>,
+              domain::Tags::Coordinates<volume_dim, Frame::ElementLogical>>>,
       Initialization::Actions::TimeStepperHistory<derived_metavars>,
       VariableFixing::Actions::FixVariables<
           VariableFixing::FixToAtmosphere<volume_dim>>,

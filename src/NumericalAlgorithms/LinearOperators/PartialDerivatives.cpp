@@ -42,7 +42,7 @@ template <typename SymmList, typename IndexList, size_t Dim>
 void logical_partial_derivative(
     const gsl::not_null<TensorMetafunctions::prepend_spatial_index<
         Tensor<DataVector, SymmList, IndexList>, Dim, UpLo::Lo,
-        Frame::Logical>*>
+        Frame::ElementLogical>*>
         logical_derivative_of_u,
     const gsl::not_null<gsl::span<double>*> buffer,
     const Tensor<DataVector, SymmList, IndexList>& u,
@@ -100,7 +100,7 @@ template <typename SymmList, typename IndexList, size_t Dim>
 void logical_partial_derivative(
     gsl::not_null<TensorMetafunctions::prepend_spatial_index<
         Tensor<DataVector, SymmList, IndexList>, Dim, UpLo::Lo,
-        Frame::Logical>*>
+        Frame::ElementLogical>*>
         logical_derivative_of_u,
     const Tensor<DataVector, SymmList, IndexList>& u,
     const Mesh<Dim>& mesh) noexcept {
@@ -116,9 +116,10 @@ auto logical_partial_derivative(
     const Mesh<Dim>& mesh) noexcept
     -> TensorMetafunctions::prepend_spatial_index<
         Tensor<DataVector, SymmList, IndexList>, Dim, UpLo::Lo,
-        Frame::Logical> {
+        Frame::ElementLogical> {
   TensorMetafunctions::prepend_spatial_index<
-      Tensor<DataVector, SymmList, IndexList>, Dim, UpLo::Lo, Frame::Logical>
+      Tensor<DataVector, SymmList, IndexList>, Dim, UpLo::Lo,
+      Frame::ElementLogical>
       result{mesh.number_of_grid_points()};
   logical_partial_derivative(make_not_null(&result), u, mesh);
   return result;
@@ -128,29 +129,31 @@ auto logical_partial_derivative(
 #define GET_TENSOR(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define GET_FRAME(data) BOOST_PP_TUPLE_ELEM(2, data)
 
-#define INSTANTIATION(r, data)                                                 \
-  template void logical_partial_derivative(                                    \
-      gsl::not_null<                                                           \
-          TensorMetafunctions::prepend_spatial_index<                          \
-              GET_TENSOR(data) < DataVector, GET_DIM(data), GET_FRAME(data)>,  \
-          GET_DIM(data), UpLo::Lo, Frame::Logical>* > logical_derivative_of_u, \
-      gsl::not_null<gsl::span<double>*> buffer,                                \
-      const GET_TENSOR(data) < DataVector, GET_DIM(data),                      \
-      GET_FRAME(data) > &u, const Mesh<GET_DIM(data)>& mesh) noexcept;         \
-  template void logical_partial_derivative(                                    \
-      gsl::not_null<                                                           \
-          TensorMetafunctions::prepend_spatial_index<                          \
-              GET_TENSOR(data) < DataVector, GET_DIM(data), GET_FRAME(data)>,  \
-          GET_DIM(data), UpLo::Lo, Frame::Logical>* > logical_derivative_of_u, \
-      const GET_TENSOR(data) < DataVector, GET_DIM(data),                      \
-      GET_FRAME(data) > &u, const Mesh<GET_DIM(data)>& mesh) noexcept;         \
-  template TensorMetafunctions::prepend_spatial_index<                         \
-      GET_TENSOR(data) < DataVector, GET_DIM(data), GET_FRAME(data)>,          \
-      GET_DIM(data), UpLo::Lo,                                                 \
-      Frame::Logical > logical_partial_derivative(                             \
-                           const GET_TENSOR(data) < DataVector, GET_DIM(data), \
-                           GET_FRAME(data) > &u,                               \
-                           const Mesh<GET_DIM(data)>& mesh) noexcept;
+#define INSTANTIATION(r, data)                                                \
+  template void logical_partial_derivative(                                   \
+      gsl::not_null<                                                          \
+          TensorMetafunctions::prepend_spatial_index<                         \
+              GET_TENSOR(data) < DataVector, GET_DIM(data), GET_FRAME(data)>, \
+          GET_DIM(data), UpLo::Lo, Frame::ElementLogical>* >                  \
+          logical_derivative_of_u,                                            \
+      gsl::not_null<gsl::span<double>*> buffer,                               \
+      const GET_TENSOR(data) < DataVector, GET_DIM(data),                     \
+      GET_FRAME(data) > &u, const Mesh<GET_DIM(data)>& mesh) noexcept;        \
+  template void logical_partial_derivative(                                   \
+      gsl::not_null<                                                          \
+          TensorMetafunctions::prepend_spatial_index<                         \
+              GET_TENSOR(data) < DataVector, GET_DIM(data), GET_FRAME(data)>, \
+          GET_DIM(data), UpLo::Lo, Frame::ElementLogical>* >                  \
+          logical_derivative_of_u,                                            \
+      const GET_TENSOR(data) < DataVector, GET_DIM(data),                     \
+      GET_FRAME(data) > &u, const Mesh<GET_DIM(data)>& mesh) noexcept;        \
+  template TensorMetafunctions::prepend_spatial_index<                        \
+      GET_TENSOR(data) < DataVector, GET_DIM(data), GET_FRAME(data)>,         \
+      GET_DIM(data), UpLo::Lo,                                                \
+      Frame::ElementLogical > logical_partial_derivative(                     \
+                                  const GET_TENSOR(data) < DataVector,        \
+                                  GET_DIM(data), GET_FRAME(data) > &u,        \
+                                  const Mesh<GET_DIM(data)>& mesh) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3),
                         (tnsr::a, tnsr::A, tnsr::i, tnsr::I, tnsr::ab, tnsr::Ab,
@@ -166,17 +169,19 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3),
 #define INSTANTIATION(r, data)                                                \
   template void logical_partial_derivative(                                   \
       gsl::not_null<TensorMetafunctions::prepend_spatial_index<               \
-          Scalar<DataVector>, GET_DIM(data), UpLo::Lo, Frame::Logical>*>      \
+          Scalar<DataVector>, GET_DIM(data), UpLo::Lo,                        \
+          Frame::ElementLogical>*>                                            \
           logical_derivative_of_u,                                            \
       gsl::not_null<gsl::span<double>*> buffer, const Scalar<DataVector>& u,  \
       const Mesh<GET_DIM(data)>& mesh) noexcept;                              \
   template void logical_partial_derivative(                                   \
       gsl::not_null<TensorMetafunctions::prepend_spatial_index<               \
-          Scalar<DataVector>, GET_DIM(data), UpLo::Lo, Frame::Logical>*>      \
+          Scalar<DataVector>, GET_DIM(data), UpLo::Lo,                        \
+          Frame::ElementLogical>*>                                            \
           logical_derivative_of_u,                                            \
       const Scalar<DataVector>& u, const Mesh<GET_DIM(data)>& mesh) noexcept; \
   template TensorMetafunctions::prepend_spatial_index<                        \
-      Scalar<DataVector>, GET_DIM(data), UpLo::Lo, Frame::Logical>            \
+      Scalar<DataVector>, GET_DIM(data), UpLo::Lo, Frame::ElementLogical>     \
   logical_partial_derivative(const Scalar<DataVector>& u,                     \
                              const Mesh<GET_DIM(data)>& mesh) noexcept;
 

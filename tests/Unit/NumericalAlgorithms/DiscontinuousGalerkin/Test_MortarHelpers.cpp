@@ -142,8 +142,8 @@ struct Var : db::SimpleTag {
 
 // Scales the coordinates to a mortar
 template <size_t Dim>
-tnsr::I<DataVector, Dim, Frame::Logical> scaled_coords(
-    tnsr::I<DataVector, Dim, Frame::Logical> coords,
+tnsr::I<DataVector, Dim, Frame::ElementLogical> scaled_coords(
+    tnsr::I<DataVector, Dim, Frame::ElementLogical> coords,
     const std::array<Spectral::MortarSize, Dim>& mortar_size) noexcept {
   for (size_t d = 0; d < Dim; ++d) {
     switch (gsl::at(mortar_size, d)) {
@@ -190,10 +190,9 @@ SPECTRE_TEST_CASE("Unit.DG.MortarHelpers.projections",
   {
     const auto mortar_mesh = lgl_mesh<1>({{7}});
     const auto mortar_coords = logical_coordinates(mortar_mesh);
-    const auto func = [](const tnsr::I<DataVector, 1, Frame::Logical>&
-                             coords) noexcept -> DataVector {
-      return pow<3>(get<0>(coords));
-    };
+    const auto func =
+        [](const tnsr::I<DataVector, 1, Frame::ElementLogical>& coords) noexcept
+        -> DataVector { return pow<3>(get<0>(coords)); };
     for (const auto& face_mesh : {mortar_mesh, lgl_mesh<1>({{5}})}) {
       CAPTURE(face_mesh);
       const auto face_coords = logical_coordinates(face_mesh);
@@ -249,8 +248,9 @@ SPECTRE_TEST_CASE("Unit.DG.MortarHelpers.projections",
   {
     const auto mortar_mesh = lgl_mesh<2>({{7, 8}});
     const auto mortar_coords = logical_coordinates(mortar_mesh);
-    const auto func = [](const tnsr::I<DataVector, 2, Frame::Logical>&
-                             coords) noexcept -> DataVector {
+    const auto func =
+        [](const tnsr::I<DataVector, 2, Frame::ElementLogical>& coords) noexcept
+        -> DataVector {
       return pow<3>(get<0>(coords)) * pow<5>(get<1>(coords));
     };
     for (const auto& face_mesh :

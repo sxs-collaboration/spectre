@@ -36,7 +36,8 @@ struct System {
 struct Background {
   static tuples::TaggedTuple<BackgroundFieldTag> variables(
       const tnsr::I<DataVector, 1>& x, const Mesh<1>& /*mesh*/,
-      const InverseJacobian<DataVector, 1, Frame::Logical, Frame::Inertial>&
+      const InverseJacobian<DataVector, 1, Frame::ElementLogical,
+                            Frame::Inertial>&
       /*inv_jacobian*/,
       tmpl::list<BackgroundFieldTag> /*meta*/) noexcept {
     return {Scalar<DataVector>{get<0>(x)}};

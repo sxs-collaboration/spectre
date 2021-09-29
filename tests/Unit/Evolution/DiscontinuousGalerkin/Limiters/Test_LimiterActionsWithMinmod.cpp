@@ -73,12 +73,12 @@ struct component {
       domain::CoordinateMaps::Tags::CoordinateMap<2, Frame::Grid,
                                                   Frame::Inertial>,
       ::Tags::Time, domain::Tags::FunctionsOfTime, Var>;
-  using compute_tags =
-      db::AddComputeTags<::domain::Tags::LogicalCoordinates<Dim>,
-                         ::domain::Tags::MappedCoordinates<
-                             ::domain::Tags::ElementMap<Dim, Frame::Grid>,
-                             ::domain::Tags::Coordinates<Dim, Frame::Logical>>,
-                         domain::Tags::SizeOfElementCompute<Dim>>;
+  using compute_tags = db::AddComputeTags<
+      ::domain::Tags::LogicalCoordinates<Dim>,
+      ::domain::Tags::MappedCoordinates<
+          ::domain::Tags::ElementMap<Dim, Frame::Grid>,
+          ::domain::Tags::Coordinates<Dim, Frame::ElementLogical>>,
+      domain::Tags::SizeOfElementCompute<Dim>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,

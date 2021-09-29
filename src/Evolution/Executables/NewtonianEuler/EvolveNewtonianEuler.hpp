@@ -251,7 +251,7 @@ struct EvolutionMetavars {
       Initialization::Actions::ConservativeSystem<system,
                                                   equation_of_state_tag>,
       evolution::Initialization::Actions::SetVariables<
-          domain::Tags::Coordinates<Dim, Frame::Logical>>,
+          domain::Tags::Coordinates<Dim, Frame::ElementLogical>>,
       Initialization::Actions::TimeStepperHistory<EvolutionMetavars>,
       Initialization::Actions::AddComputeTags<
           tmpl::list<NewtonianEuler::Tags::SoundSpeedSquaredCompute<DataVector>,

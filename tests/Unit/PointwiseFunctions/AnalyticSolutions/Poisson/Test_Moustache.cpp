@@ -85,7 +85,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Poisson.Moustache",
     using system =
         Poisson::FirstOrderSystem<1, Poisson::Geometry::FlatCartesian>;
     const Poisson::Solutions::Moustache<1> solution{};
-    const domain::CoordinateMap<Frame::Logical, Frame::Inertial, AffineMap>
+    const domain::CoordinateMap<Frame::ElementLogical, Frame::Inertial,
+                                AffineMap>
         coord_map{{-1., 1., 0., 1.}};
     FirstOrderEllipticSolutionsTestHelpers::
         verify_solution_with_power_law_convergence<system>(solution, coord_map,
@@ -100,7 +101,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Poisson.Moustache",
     const Poisson::Solutions::Moustache<2> solution{};
     using AffineMap2D =
         domain::CoordinateMaps::ProductOf2Maps<AffineMap, AffineMap>;
-    const domain::CoordinateMap<Frame::Logical, Frame::Inertial, AffineMap2D>
+    const domain::CoordinateMap<Frame::ElementLogical, Frame::Inertial,
+                                AffineMap2D>
         coord_map{{{-1., 1., 0., 1.}, {-1., 1., 0., 1.}}};
     FirstOrderEllipticSolutionsTestHelpers::
         verify_solution_with_power_law_convergence<system>(solution, coord_map,

@@ -46,7 +46,8 @@ namespace {
 template <size_t Dim, typename... Maps, typename Solution>
 auto face_centered_gr_tags(
     const Mesh<Dim>& subcell_mesh, const double time,
-    const domain::CoordinateMap<Frame::Logical, Frame::Inertial, Maps...>& map,
+    const domain::CoordinateMap<Frame::ElementLogical, Frame::Inertial,
+                                Maps...>& map,
     const Solution& soln) {
   std::array<typename System::flux_spacetime_variables_tag::type, Dim>
       face_centered_gr_vars{};
@@ -79,7 +80,7 @@ std::array<double, 4> test(const size_t num_dg_pts) {
       domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
   const Affine affine_map{-1.0, 1.0, 8.0, 9.0};
   const auto coordinate_map =
-      domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(
+      domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
           Affine3D{affine_map, affine_map, affine_map});
   const auto element = domain::Initialization::create_initial_element(
       ElementId<3>{0, {SegmentId{3, 4}, SegmentId{3, 4}, SegmentId{3, 4}}},
@@ -205,7 +206,7 @@ std::array<double, 4> test(const size_t num_dg_pts) {
       neighbor_data, 1.0, evolution::dg::Tags::MortarData<3>::type{});
   db::mutate_apply<ConservativeFromPrimitive>(make_not_null(&box));
 
-  InverseJacobian<DataVector, 3, Frame::Logical, Frame::Grid>
+  InverseJacobian<DataVector, 3, Frame::ElementLogical, Frame::Grid>
       cell_centered_logical_to_grid_inv_jacobian{};
   const auto cell_centered_logical_to_inertial_inv_jacobian =
       coordinate_map.inv_jacobian(logical_coordinates(subcell_mesh));

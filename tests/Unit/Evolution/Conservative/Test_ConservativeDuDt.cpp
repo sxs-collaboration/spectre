@@ -110,7 +110,7 @@ struct System {
 template <typename SourcedVariables, size_t Dim>
 using expected_argument_tags = tmpl::list<
     domain::Tags::Mesh<Dim>,
-    domain::Tags::InverseJacobian<Dim, Frame::Logical, Frame::Inertial>,
+    domain::Tags::InverseJacobian<Dim, Frame::ElementLogical, Frame::Inertial>,
     db::add_tag_prefix<Tags::Flux,
                        typename System<SourcedVariables, Dim>::variables_tag,
                        tmpl::size_t<Dim>, Frame::Inertial>,
@@ -199,19 +199,19 @@ auto make_affine_map() noexcept;
 
 template <>
 auto make_affine_map<1>() noexcept {
-  return domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(
+  return domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
       Affine{-1.0, 1.0, -0.3, 0.7});
 }
 
 template <>
 auto make_affine_map<2>() noexcept {
-  return domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(
+  return domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
       Affine2D{Affine{-1.0, 1.0, -0.3, 0.7}, Affine{-1.0, 1.0, 0.3, 0.55}});
 }
 
 template <>
 auto make_affine_map<3>() noexcept {
-  return domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(
+  return domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
       Affine3D{Affine{-1.0, 1.0, -0.3, 0.7}, Affine{-1.0, 1.0, 0.3, 0.55},
                Affine{-1.0, 1.0, 2.3, 2.8}});
 }

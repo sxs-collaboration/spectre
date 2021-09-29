@@ -40,10 +40,11 @@ namespace elliptic::dg::Actions {
  *   - `domain::Tags::Mesh<Dim>`
  *   - `domain::Tags::Element<Dim>`
  *   - `domain::Tags::ElementMap<Dim, Frame::Inertial>`
- *   - `domain::Tags::Coordinates<Dim, Frame::Logical>`
+ *   - `domain::Tags::Coordinates<Dim, Frame::ElementLogical>`
  *   - `domain::Tags::Coordinates<Dim, Frame::Inertial>`
- *   - `domain::Tags::InverseJacobian<Dim, Frame::Logical, Frame::Inertial>`
- *   - `domain::Tags::DetInvJacobian<Frame::Logical, Frame::Inertial>`
+ *   - `domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
+ *      Frame::Inertial>`
+ *   - `domain::Tags::DetInvJacobian<Frame::ElementLogical, Frame::Inertial>`
  *
  * \note This action relies on the `SetupDataBox` aggregated initialization
  * mechanism, so `Actions::SetupDataBox` must be present in the `Initialization`

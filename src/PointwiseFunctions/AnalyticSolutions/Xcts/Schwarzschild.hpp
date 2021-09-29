@@ -329,8 +329,8 @@ class Schwarzschild : public AnalyticSolution<Registrars>,
   template <typename... RequestedTags>
   tuples::TaggedTuple<RequestedTags...> variables(
       const tnsr::I<DataVector, 3, Frame::Inertial>& x, const Mesh<3>& mesh,
-      const InverseJacobian<DataVector, 3, Frame::Logical, Frame::Inertial>&
-          inv_jacobian,
+      const InverseJacobian<DataVector, 3, Frame::ElementLogical,
+                            Frame::Inertial>& inv_jacobian,
       tmpl::list<RequestedTags...> /*meta*/) const noexcept {
     using VarsComputer = detail::SchwarzschildVariables<DataVector>;
     typename VarsComputer::Cache cache{

@@ -58,14 +58,14 @@ auto make_map() {
   if constexpr (Dim == 1) {
     using domain::make_coordinate_map_base;
     using domain::CoordinateMaps::Affine;
-    return make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+    return make_coordinate_map_base<Frame::ElementLogical, Frame::Inertial>(
         Affine(-1.0, 1.0, 2.0, 5.0));
   } else if constexpr (Dim == 2) {
     using domain::make_coordinate_map_base;
     using domain::CoordinateMaps::Affine;
     using domain::CoordinateMaps::ProductOf2Maps;
     using Wedge2D = domain::CoordinateMaps::Wedge<2>;
-    return make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+    return make_coordinate_map_base<Frame::ElementLogical, Frame::Inertial>(
         ProductOf2Maps<Affine, Affine>(Affine(-1.0, 1.0, -1.0, -0.8),
                                        Affine(-1.0, 1.0, -1.0, -0.8)),
         Wedge2D(0.5, 0.75, 1.0, 1.0, {}, false));
@@ -74,7 +74,7 @@ auto make_map() {
     using domain::CoordinateMaps::Affine;
     using domain::CoordinateMaps::ProductOf3Maps;
     using Wedge3D = domain::CoordinateMaps::Wedge<3>;
-    return make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+    return make_coordinate_map_base<Frame::ElementLogical, Frame::Inertial>(
         ProductOf3Maps<Affine, Affine, Affine>(Affine(-1.0, 1.0, -1.0, -0.8),
                                                Affine(-1.0, 1.0, -1.0, -0.8),
                                                Affine(-1.0, 1.0, 0.8, 1.0)),

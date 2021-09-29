@@ -89,7 +89,8 @@ struct GrTagsForHydro {
                                                             Frame::Inertial>>(
             box)(
             db::get<domain::Tags::ElementMap<dim, Frame::Grid>>(box)(
-                db::get<domain::Tags::Coordinates<dim, Frame::Logical>>(box)),
+                db::get<domain::Tags::Coordinates<dim, Frame::ElementLogical>>(
+                    box)),
             initial_time, db::get<domain::Tags::FunctionsOfTime>(box));
 
     // Set initial data from analytic solution

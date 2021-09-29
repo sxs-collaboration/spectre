@@ -445,7 +445,7 @@ struct EvolutionMetavars {
       Initialization::Actions::ConservativeSystem<system,
                                                   equation_of_state_tag>,
       evolution::Initialization::Actions::SetVariables<
-          domain::Tags::Coordinates<3, Frame::Logical>>,
+          domain::Tags::Coordinates<3, Frame::ElementLogical>>,
       Initialization::Actions::TimeStepperHistory<EvolutionMetavars>,
       VariableFixing::Actions::FixVariables<
           VariableFixing::FixToAtmosphere<volume_dim>>,

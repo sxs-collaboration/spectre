@@ -54,7 +54,7 @@ namespace intrp {
 ///                  const Mesh<Dim>&,
 ///                  const Jacobian<DataVector, Dim, TargetFrame, SrcFrame>&,
 ///                  const InverseJacobian<DataVector, Dim,
-///                  ::Frame::Logical, TargetFrame>&);
+///                  ::Frame::ElementLogical, TargetFrame>&);
 ///```
 ///   that fills `vars_to_interpolate_to_target`.  Here Dim is
 ///   `Metavariables::volume_dim`, SrcFrame is the frame of

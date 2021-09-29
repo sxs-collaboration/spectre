@@ -215,7 +215,7 @@ struct EvolutionMetavars {
       evolution::dg::Initialization::Domain<volume_dim>,
       Initialization::Actions::ConservativeSystem<system>,
       evolution::Initialization::Actions::SetVariables<
-          domain::Tags::Coordinates<Dim, Frame::Logical>>,
+          domain::Tags::Coordinates<Dim, Frame::ElementLogical>>,
       Initialization::Actions::TimeStepperHistory<EvolutionMetavars>,
       Initialization::Actions::AddComputeTags<
           tmpl::list<ScalarAdvection::Tags::VelocityFieldCompute<Dim>>>,

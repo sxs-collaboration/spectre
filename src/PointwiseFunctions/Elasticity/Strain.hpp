@@ -43,7 +43,7 @@ void strain(gsl::not_null<tnsr::ii<DataType, Dim>*> strain,
 template <size_t Dim>
 void strain(gsl::not_null<tnsr::ii<DataVector, Dim>*> strain,
             const tnsr::I<DataVector, Dim>& displacement, const Mesh<Dim>& mesh,
-            const InverseJacobian<DataVector, Dim, Frame::Logical,
+            const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
                                   Frame::Inertial>& inv_jacobian) noexcept;
 
 namespace Tags {
@@ -58,9 +58,10 @@ template <size_t Dim>
 struct StrainCompute : Elasticity::Tags::Strain<Dim>, db::ComputeTag {
   using base = Elasticity::Tags::Strain<Dim>;
   using return_type = tnsr::ii<DataVector, Dim>;
-  using argument_tags = tmpl::list<
-      Elasticity::Tags::Displacement<Dim>, domain::Tags::Mesh<Dim>,
-      domain::Tags::InverseJacobian<Dim, Frame::Logical, Frame::Inertial>>;
+  using argument_tags =
+      tmpl::list<Elasticity::Tags::Displacement<Dim>, domain::Tags::Mesh<Dim>,
+                 domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
+                                               Frame::Inertial>>;
   static constexpr auto function = &strain<Dim>;
 };
 

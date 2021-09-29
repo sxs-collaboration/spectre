@@ -204,12 +204,12 @@ void test_simple_weno_1d_impl(
 
   // Functions to produce dummy data on each element
   const auto make_center_tensor =
-      [](const tnsr::I<DataVector, 1, Frame::Logical>& coords) noexcept {
+      [](const tnsr::I<DataVector, 1, Frame::ElementLogical>& coords) noexcept {
         const auto& x = get<0>(coords);
         return tnsr::I<DataVector, 1>{{{0.4 * x - 0.1 * square(x)}}};
       };
   const auto make_lower_xi_vars =
-      [](const tnsr::I<DataVector, 1, Frame::Logical>& coords,
+      [](const tnsr::I<DataVector, 1, Frame::ElementLogical>& coords,
          const double offset = 0.0) noexcept {
         const auto x = get<0>(coords) + offset;
         Variables<tmpl::list<VectorTag<1>>> vars(x.size());
@@ -217,7 +217,7 @@ void test_simple_weno_1d_impl(
         return vars;
       };
   const auto make_upper_xi_vars =
-      [](const tnsr::I<DataVector, 1, Frame::Logical>& coords,
+      [](const tnsr::I<DataVector, 1, Frame::ElementLogical>& coords,
          const double offset = 0.0) noexcept {
         const auto x = get<0>(coords) + offset;
         Variables<tmpl::list<VectorTag<1>>> vars(x.size());
@@ -293,7 +293,7 @@ void test_simple_weno_2d_impl(
   const auto logical_coords = logical_coordinates(mesh);
 
   const auto make_center_tensor =
-      [](const tnsr::I<DataVector, 2, Frame::Logical>& coords) noexcept {
+      [](const tnsr::I<DataVector, 2, Frame::ElementLogical>& coords) noexcept {
         const auto& x = get<0>(coords);
         const auto& y = get<1>(coords);
         return tnsr::I<DataVector, 2>{
@@ -301,7 +301,7 @@ void test_simple_weno_2d_impl(
               0.1 + 0.2 * x - 0.4 * y + 0.3 * square(x) * square(y)}}};
       };
   const auto make_lower_xi_vars =
-      [](const tnsr::I<DataVector, 2, Frame::Logical>& coords,
+      [](const tnsr::I<DataVector, 2, Frame::ElementLogical>& coords,
          const double xi_offset = 0.0) noexcept {
         const auto x = get<0>(coords) + xi_offset;
         const auto& y = get<1>(coords);
@@ -311,7 +311,7 @@ void test_simple_weno_2d_impl(
         return vars;
       };
   const auto make_upper_xi_vars =
-      [](const tnsr::I<DataVector, 2, Frame::Logical>& coords,
+      [](const tnsr::I<DataVector, 2, Frame::ElementLogical>& coords,
          const double xi_offset = 0.0) noexcept {
         const auto x = get<0>(coords) + xi_offset;
         const auto& y = get<1>(coords);
@@ -321,7 +321,7 @@ void test_simple_weno_2d_impl(
         return vars;
       };
   const auto make_lower_eta_vars =
-      [](const tnsr::I<DataVector, 2, Frame::Logical>& coords,
+      [](const tnsr::I<DataVector, 2, Frame::ElementLogical>& coords,
          const double eta_offset = 0.0) noexcept {
         const auto& x = get<0>(coords);
         const auto y = get<1>(coords) + eta_offset;
@@ -331,7 +331,7 @@ void test_simple_weno_2d_impl(
         return vars;
       };
   const auto make_upper_eta_vars =
-      [](const tnsr::I<DataVector, 2, Frame::Logical>& coords,
+      [](const tnsr::I<DataVector, 2, Frame::ElementLogical>& coords,
          const double eta_offset = 0.0) noexcept {
         const auto& x = get<0>(coords);
         const auto y = get<1>(coords) + eta_offset;
@@ -419,7 +419,7 @@ void test_simple_weno_3d_impl(
   const auto logical_coords = logical_coordinates(mesh);
 
   const auto make_center_tensor =
-      [](const tnsr::I<DataVector, 3, Frame::Logical>& coords) noexcept {
+      [](const tnsr::I<DataVector, 3, Frame::ElementLogical>& coords) noexcept {
         const auto& x = get<0>(coords);
         const auto& y = get<1>(coords);
         const auto& z = get<2>(coords);
@@ -427,7 +427,7 @@ void test_simple_weno_3d_impl(
             {{0.4 * x * y * z + square(z), z, x + square(y) + cube(z)}}};
       };
   const auto make_lower_xi_vars =
-      [](const tnsr::I<DataVector, 3, Frame::Logical>& coords,
+      [](const tnsr::I<DataVector, 3, Frame::ElementLogical>& coords,
          const double xi_offset = 0.0) noexcept {
         const auto x = get<0>(coords) + xi_offset;
         const auto& y = get<1>(coords);
@@ -439,7 +439,7 @@ void test_simple_weno_3d_impl(
         return vars;
       };
   const auto make_upper_xi_vars =
-      [](const tnsr::I<DataVector, 3, Frame::Logical>& coords,
+      [](const tnsr::I<DataVector, 3, Frame::ElementLogical>& coords,
          const double xi_offset = 0.0) noexcept {
         const auto x = get<0>(coords) + xi_offset;
         const auto& y = get<1>(coords);
@@ -451,7 +451,7 @@ void test_simple_weno_3d_impl(
         return vars;
       };
   const auto make_lower_eta_vars =
-      [](const tnsr::I<DataVector, 3, Frame::Logical>& coords,
+      [](const tnsr::I<DataVector, 3, Frame::ElementLogical>& coords,
          const double eta_offset = 0.0) noexcept {
         const auto& x = get<0>(coords);
         const auto y = get<1>(coords) + eta_offset;
@@ -463,7 +463,7 @@ void test_simple_weno_3d_impl(
         return vars;
       };
   const auto make_upper_eta_vars =
-      [](const tnsr::I<DataVector, 3, Frame::Logical>& coords,
+      [](const tnsr::I<DataVector, 3, Frame::ElementLogical>& coords,
          const double eta_offset = 0.0) noexcept {
         const auto& x = get<0>(coords);
         const auto y = get<1>(coords) + eta_offset;
@@ -475,7 +475,7 @@ void test_simple_weno_3d_impl(
         return vars;
       };
   const auto make_lower_zeta_vars =
-      [](const tnsr::I<DataVector, 3, Frame::Logical>& coords,
+      [](const tnsr::I<DataVector, 3, Frame::ElementLogical>& coords,
          const double zeta_offset = 0.0) noexcept {
         const auto& x = get<0>(coords);
         const auto& y = get<1>(coords);
@@ -487,7 +487,7 @@ void test_simple_weno_3d_impl(
         return vars;
       };
   const auto make_upper_zeta_vars =
-      [](const tnsr::I<DataVector, 3, Frame::Logical>& coords,
+      [](const tnsr::I<DataVector, 3, Frame::ElementLogical>& coords,
          const double zeta_offset = 0.0) noexcept {
         const auto& x = get<0>(coords);
         const auto& y = get<1>(coords);

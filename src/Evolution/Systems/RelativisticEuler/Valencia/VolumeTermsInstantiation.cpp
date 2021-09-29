@@ -34,7 +34,7 @@ namespace evolution::dg::Actions::detail {
       const ::dg::Formulation dg_formulation, const Mesh<DIM(data)>& mesh,     \
       [[maybe_unused]] const tnsr::I<DataVector, DIM(data), Frame::Inertial>&  \
           inertial_coordinates,                                                \
-      const InverseJacobian<DataVector, DIM(data), Frame::Logical,             \
+      const InverseJacobian<DataVector, DIM(data), Frame::ElementLogical,      \
                             Frame::Inertial>&                                  \
           logical_to_inertial_inverse_jacobian,                                \
       [[maybe_unused]] const Scalar<DataVector>* const det_inverse_jacobian,   \

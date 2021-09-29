@@ -243,7 +243,7 @@ struct InitializeSubdomain {
             overlaps_tag,
             tmpl::list<domain::Tags::Coordinates<Dim, Frame::Inertial>,
                        domain::Tags::Mesh<Dim>,
-                       domain::Tags::InverseJacobian<Dim, Frame::Logical,
+                       domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
                                                      Frame::Inertial>>>,
         tmpl::list<>>(
         [&background, &face_background_fields](
@@ -251,7 +251,7 @@ struct InitializeSubdomain {
                 background_fields,
             const tnsr::I<DataVector, Dim>& inertial_coords,
             const Mesh<Dim>& mesh,
-            const InverseJacobian<DataVector, Dim, Frame::Logical,
+            const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
                                   Frame::Inertial>& inv_jacobian) noexcept {
           *background_fields = variables_from_tagged_tuple(
               background.variables(inertial_coords, mesh, inv_jacobian,

@@ -108,8 +108,9 @@ void check_time_dependent(
     const ElementMap<Dim, Frame::Grid>& logical_to_grid_map,
     const std::unique_ptr<CoordinateMapBase<Frame::Grid, Frame::Inertial, Dim>>&
         grid_to_inertial_map,
-    const std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Inertial,
-                                            Dim>>& logical_to_inertial_map,
+    const std::unique_ptr<
+        CoordinateMapBase<Frame::ElementLogical, Frame::Inertial, Dim>>&
+        logical_to_inertial_map,
     const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
@@ -124,12 +125,14 @@ void check_time_dependent(
         interface_mesh, logical_to_grid_map, *grid_to_inertial_map, time,
         functions_of_time, Direction<Dim>(d, Side::Lower));
 
-    const InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>
+    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                          Frame::Inertial>
         inv_jacobian_upper = logical_to_inertial_map->inv_jacobian(
             interface_logical_coordinates(interface_mesh,
                                           Direction<Dim>(d, Side::Upper)),
             time, functions_of_time);
-    const InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>
+    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                          Frame::Inertial>
         inv_jacobian_lower = logical_to_inertial_map->inv_jacobian(
             interface_logical_coordinates(interface_mesh,
                                           Direction<Dim>(d, Side::Lower)),
@@ -205,7 +208,7 @@ void test_face_normal_coordinate_map() {
   INFO("Test coordinate map");
   // [face_normal_example]
   const Mesh<0> mesh_0d;
-  const auto map_1d = make_coordinate_map<Frame::Logical, Frame::Grid>(
+  const auto map_1d = make_coordinate_map<Frame::ElementLogical, Frame::Grid>(
       CoordinateMaps::Affine(-1.0, 1.0, -3.0, 7.0));
   const auto normal_1d_lower =
       unnormalized_face_normal(mesh_0d, map_1d, Direction<1>::lower_xi());
@@ -218,11 +221,11 @@ void test_face_normal_coordinate_map() {
 
   CHECK(normal_1d_upper.get(0) == DataVector(1, 0.2));
 
-  check(make_coordinate_map<Frame::Logical, Frame::Grid>(
+  check(make_coordinate_map<Frame::ElementLogical, Frame::Grid>(
             CoordinateMaps::Rotation<2>(atan2(4., 3.))),
         {{{{0.6, 0.8}}, {{-0.8, 0.6}}}});
 
-  check(make_coordinate_map<Frame::Logical, Frame::Grid>(
+  check(make_coordinate_map<Frame::ElementLogical, Frame::Grid>(
             CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
                                            CoordinateMaps::Rotation<2>>(
                 {-1., 1., 2., 7.}, CoordinateMaps::Rotation<2>(atan2(4., 3.)))),
@@ -294,7 +297,7 @@ void test_face_normal_moving_mesh() {
                 outer_boundary, functions_of_time_names[0],
                 functions_of_time_names[1]});
     const auto logical_to_inertial_map =
-        make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+        make_coordinate_map_base<Frame::ElementLogical, Frame::Inertial>(
             CoordinateMaps::Affine(-1.0, 1.0, 2.0, 7.8),
             CoordinateMaps::TimeDependent::CubicScale<1>{
                 outer_boundary, functions_of_time_names[0],
@@ -317,7 +320,7 @@ void test_face_normal_moving_mesh() {
                 outer_boundary, functions_of_time_names[0],
                 functions_of_time_names[1]});
     const auto logical_to_inertial_map =
-        make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+        make_coordinate_map_base<Frame::ElementLogical, Frame::Inertial>(
             CoordinateMaps::Rotation<2>(atan2(4., 3.)),
             CoordinateMaps::TimeDependent::CubicScale<2>{
                 outer_boundary, functions_of_time_names[0],
@@ -343,7 +346,7 @@ void test_face_normal_moving_mesh() {
                 outer_boundary, functions_of_time_names[0],
                 functions_of_time_names[1]});
     const auto logical_to_inertial_map =
-        make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+        make_coordinate_map_base<Frame::ElementLogical, Frame::Inertial>(
             CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
                                            CoordinateMaps::Rotation<2>>(
                 {-1., 1., 2., 7.}, CoordinateMaps::Rotation<2>(atan2(4., 3.))),

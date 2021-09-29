@@ -237,7 +237,7 @@ struct EvolutionMetavars {
       Initialization::Actions::GrTagsForHydro<system>,
       Initialization::Actions::ConservativeSystem<system>,
       evolution::Initialization::Actions::SetVariables<
-          domain::Tags::Coordinates<volume_dim, Frame::Logical>>,
+          domain::Tags::Coordinates<volume_dim, Frame::ElementLogical>>,
       Initialization::Actions::TimeStepperHistory<EvolutionMetavars>,
       RadiationTransport::M1Grey::Actions::InitializeM1Tags<system>,
       Actions::MutateApply<typename RadiationTransport::M1Grey::

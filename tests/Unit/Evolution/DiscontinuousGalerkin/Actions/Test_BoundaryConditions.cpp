@@ -2168,7 +2168,7 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
   }
   // Set the Jacobian to not be the identity because otherwise bugs creep in
   // easily.
-  ::InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>
+  ::InverseJacobian<DataVector, Dim, Frame::ElementLogical, Frame::Inertial>
       inv_jacobian{mesh.number_of_grid_points(), 0.0};
   for (size_t i = 0; i < Dim; ++i) {
     inv_jacobian.get(i, i) = 2.0;
@@ -2247,8 +2247,9 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
                                                   Frame::Inertial>,
       ::Tags::Time, domain::Tags::FunctionsOfTime,
       domain::Tags::MeshVelocity<Dim>,
-      domain::Tags::InverseJacobian<Dim, Frame::Logical, Frame::Inertial>,
-      domain::Tags::DetInvJacobian<Frame::Logical, Frame::Inertial>,
+      domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
+                                    Frame::Inertial>,
+      domain::Tags::DetInvJacobian<Frame::ElementLogical, Frame::Inertial>,
       evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>,
       typename System::variables_tag, dt_variables_tag,
       Tags::BoundaryConditionVolumeTag, Tags::BoundaryCorrectionVolumeTag,
@@ -2296,9 +2297,9 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
     // lift into volume and add to volume time derivative
     Variables<tmpl::list<::Tags::dt<Tags::Var1>, ::Tags::dt<Tags::Var2<Dim>>>>
         expected_dt_volume_correction{mesh.number_of_grid_points(), 0.0};
-    const Scalar<DataVector>& volume_det_inv_jacobian =
-        db::get<domain::Tags::DetInvJacobian<Frame::Logical, Frame::Inertial>>(
-            box);
+    const Scalar<DataVector>& volume_det_inv_jacobian = db::get<
+        domain::Tags::DetInvJacobian<Frame::ElementLogical, Frame::Inertial>>(
+        box);
     const Scalar<DataVector>& magnitude_of_interior_face_normal =
         get<evolution::dg::Tags::MagnitudeOfNormal>(
             *db::get<evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>>(box)

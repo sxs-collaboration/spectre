@@ -78,7 +78,7 @@ SPECTRE_TEST_CASE(
       domain::CoordinateMaps::Tags::CoordinateMap<3, Frame::Grid,
                                                   Frame::Inertial>,
       domain::Tags::FunctionsOfTime,
-      evolution::dg::subcell::Tags::Coordinates<3, Frame::Logical>,
+      evolution::dg::subcell::Tags::Coordinates<3, Frame::ElementLogical>,
       Tags::AnalyticSolution<Solution>, subcell_gr_tag, subcell_faces_gr_tag>>(
       time, subcell_mesh,
       ElementMap<3, Frame::Grid>{

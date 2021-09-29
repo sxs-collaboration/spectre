@@ -40,8 +40,8 @@ void test_coordinates_compute_item(const Mesh<Dim>& mesh, T map) noexcept {
           make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(map)));
   CHECK_ITERABLE_APPROX(
       (db::get<Tags::Coordinates<Dim, Frame::Grid>>(box)),
-      (make_coordinate_map<Frame::Logical, Frame::Grid>(map)(
-          db::get<Tags::Coordinates<Dim, Frame::Logical>>(box))));
+      (make_coordinate_map<Frame::ElementLogical, Frame::Grid>(map)(
+          db::get<Tags::Coordinates<Dim, Frame::ElementLogical>>(box))));
 }
 }  // namespace
 

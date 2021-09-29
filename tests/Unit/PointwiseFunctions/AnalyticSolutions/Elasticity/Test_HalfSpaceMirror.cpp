@@ -138,7 +138,8 @@ SPECTRE_TEST_CASE(
     using AffineMap = domain::CoordinateMaps::Affine;
     using AffineMap3D =
         domain::CoordinateMaps::ProductOf3Maps<AffineMap, AffineMap, AffineMap>;
-    const domain::CoordinateMap<Frame::Logical, Frame::Inertial, AffineMap3D>
+    const domain::CoordinateMap<Frame::ElementLogical, Frame::Inertial,
+                                AffineMap3D>
         coord_map{{{-1., 1., 0., 0.5}, {-1., 1., 0., 0.5}, {-1., 1., 0., 0.5}}};
     const Mesh<3> mesh{12, Spectral::Basis::Legendre,
                        Spectral::Quadrature::GaussLobatto};

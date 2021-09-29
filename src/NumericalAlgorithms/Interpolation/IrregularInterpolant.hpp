@@ -34,9 +34,9 @@ namespace intrp {
 template <size_t Dim>
 class Irregular {
  public:
-  Irregular(
-      const Mesh<Dim>& source_mesh,
-      const tnsr::I<DataVector, Dim, Frame::Logical>& target_points) noexcept;
+  Irregular(const Mesh<Dim>& source_mesh,
+            const tnsr::I<DataVector, Dim, Frame::ElementLogical>&
+                target_points) noexcept;
   Irregular();
 
   // clang-tidy: no runtime references

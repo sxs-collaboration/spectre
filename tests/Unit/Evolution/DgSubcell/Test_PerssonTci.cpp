@@ -31,7 +31,7 @@ struct Vector : db::SimpleTag {
 }  // namespace Tags
 
 template <size_t Dim>
-DataVector soln(const tnsr::I<DataVector, Dim, Frame::Logical>& coords,
+DataVector soln(const tnsr::I<DataVector, Dim, Frame::ElementLogical>& coords,
                 const size_t number_of_modes_per_dim,
                 const std::array<double, Dim>& highest_coeffs) noexcept {
   DataVector result =

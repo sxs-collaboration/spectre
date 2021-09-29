@@ -162,13 +162,12 @@ class Weno {
       tmpl::list<NewtonianEuler::Tags::MassDensityCons,
                  NewtonianEuler::Tags::MomentumDensity<VolumeDim>,
                  NewtonianEuler::Tags::EnergyDensity>;
-  using limit_argument_tags =
-      tmpl::list<domain::Tags::Mesh<VolumeDim>,
-                 domain::Tags::Element<VolumeDim>,
-                 domain::Tags::SizeOfElement<VolumeDim>,
-                 domain::Tags::DetInvJacobian<Frame::Logical, Frame::Inertial>,
-                 evolution::dg::Tags::NormalCovectorAndMagnitude<VolumeDim>,
-                 ::hydro::Tags::EquationOfStateBase>;
+  using limit_argument_tags = tmpl::list<
+      domain::Tags::Mesh<VolumeDim>, domain::Tags::Element<VolumeDim>,
+      domain::Tags::SizeOfElement<VolumeDim>,
+      domain::Tags::DetInvJacobian<Frame::ElementLogical, Frame::Inertial>,
+      evolution::dg::Tags::NormalCovectorAndMagnitude<VolumeDim>,
+      ::hydro::Tags::EquationOfStateBase>;
 
   /// \brief Limit the solution on the element
   template <size_t ThermodynamicDim>

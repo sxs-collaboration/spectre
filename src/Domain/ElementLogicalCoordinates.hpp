@@ -66,7 +66,7 @@ class IdPair;
 /// component.
 template <size_t Dim>
 struct ElementLogicalCoordHolder {
-  tnsr::I<DataVector, Dim, Frame::Logical> element_logical_coords;
+  tnsr::I<DataVector, Dim, Frame::ElementLogical> element_logical_coords;
   std::vector<size_t> offsets;
 };
 

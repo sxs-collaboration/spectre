@@ -137,14 +137,14 @@ namespace Limiters {
 ///
 /// Does not support curved elements; this is not enforced. The code will run
 /// but we make no guarantees about the results. Specifically, the limiter acts
-/// in the `Frame::Logical` coordinates, because in these coordinates it is
-/// straightforward to formulate the algorithm. This means the limiter can
+/// in the `Frame::ElementLogical` coordinates, because in these coordinates it
+/// is straightforward to formulate the algorithm. This means the limiter can
 /// operate on generic deformed grids --- however, some things can start to
 /// break down, especially on strongly deformed grids:
-/// 1. When the Jacobian (from `Frame::Logical` to `Frame::Inertial`) varies
-///    across the element, then the limiter fails to be conservative. This is
-///    because the integral of a tensor `u` over the element will change after
-///    the limiter activates on `u`.
+/// 1. When the Jacobian (from `Frame::ElementLogical` to `Frame::Inertial`)
+///    varies across the element, then the limiter fails to be conservative.
+///    This is because the integral of a tensor `u` over the element will change
+///    after the limiter activates on `u`.
 /// 2. When computing the modified neighbor solution for the WENO sum, the
 ///    extrapolation or fitting procedure may not properly account for the
 ///    coordinates of the source data. If the coordinate map of the neighbor

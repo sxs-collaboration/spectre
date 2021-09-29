@@ -140,17 +140,17 @@ DataVector cell_averages_times_volume(
 
 #define GET_DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATION(r, data)                                   \
-  template DataVector cell_values(                               \
-      size_t max_polynomial_degree_plus_one,                     \
-      const tnsr::I<DataVector, GET_DIM(data), Frame::Logical>&  \
-          coords) noexcept;                                      \
-  template DataVector cell_values(                               \
-      size_t max_polynomial_degree_plus_one,                     \
-      const tnsr::I<DataVector, GET_DIM(data), Frame::Inertial>& \
-          coords) noexcept;                                      \
-  template DataVector cell_averages_times_volume(                \
-      size_t max_polynomial_degree_plus_one,                     \
+#define INSTANTIATION(r, data)                                         \
+  template DataVector cell_values(                                     \
+      size_t max_polynomial_degree_plus_one,                           \
+      const tnsr::I<DataVector, GET_DIM(data), Frame::ElementLogical>& \
+          coords) noexcept;                                            \
+  template DataVector cell_values(                                     \
+      size_t max_polynomial_degree_plus_one,                           \
+      const tnsr::I<DataVector, GET_DIM(data), Frame::Inertial>&       \
+          coords) noexcept;                                            \
+  template DataVector cell_averages_times_volume(                      \
+      size_t max_polynomial_degree_plus_one,                           \
       const Index<GET_DIM(data)>& subcell_extents) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))

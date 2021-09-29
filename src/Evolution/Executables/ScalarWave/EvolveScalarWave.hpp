@@ -243,7 +243,7 @@ struct EvolutionMetavars {
                  evolution::dg::Initialization::Domain<volume_dim>,
                  Initialization::Actions::NonconservativeSystem<system>,
                  evolution::Initialization::Actions::SetVariables<
-                     domain::Tags::Coordinates<Dim, Frame::Logical>>,
+                     domain::Tags::Coordinates<Dim, Frame::ElementLogical>>,
                  Initialization::Actions::TimeStepperHistory<EvolutionMetavars>,
                  ScalarWave::Actions::InitializeConstraints<volume_dim>,
                  Initialization::Actions::AddComputeTags<tmpl::push_back<

@@ -29,7 +29,8 @@ template void volume_terms<::Burgers::TimeDerivativeTerms>(
     const ::dg::Formulation dg_formulation, const Mesh<1>& mesh,
     [[maybe_unused]] const tnsr::I<DataVector, 1, Frame::Inertial>&
         inertial_coordinates,
-    const InverseJacobian<DataVector, 1, Frame::Logical, Frame::Inertial>&
+    const InverseJacobian<DataVector, 1, Frame::ElementLogical,
+                          Frame::Inertial>&
         logical_to_inertial_inverse_jacobian,
     [[maybe_unused]] const Scalar<DataVector>* const det_inverse_jacobian,
     const std::optional<tnsr::I<DataVector, 1, Frame::Inertial>>& mesh_velocity,

@@ -45,12 +45,12 @@ std::vector<double> fd_stencil(const DataVector& xi_source,
 template <size_t Dim>
 Matrix interpolation_matrix(
     const Mesh<Dim>& mesh,
-    const tnsr::I<DataVector, Dim, Frame::Logical>& points) noexcept;
+    const tnsr::I<DataVector, Dim, Frame::ElementLogical>& points) noexcept;
 
 template <>
 Matrix interpolation_matrix(
     const Mesh<1>& mesh,
-    const tnsr::I<DataVector, 1, Frame::Logical>& points) noexcept {
+    const tnsr::I<DataVector, 1, Frame::ElementLogical>& points) noexcept {
   if (mesh.basis()[0] == Spectral::Basis::FiniteDifference) {
     auto source_xi = logical_coordinates(mesh);
     const auto number_of_source_points = mesh.number_of_grid_points();
@@ -75,7 +75,7 @@ Matrix interpolation_matrix(
 template <>
 Matrix interpolation_matrix(
     const Mesh<2>& mesh,
-    const tnsr::I<DataVector, 2, Frame::Logical>& points) noexcept {
+    const tnsr::I<DataVector, 2, Frame::ElementLogical>& points) noexcept {
   const auto number_of_target_points = get<0>(points).size();
   Matrix result(number_of_target_points, mesh.number_of_grid_points());
 
@@ -128,7 +128,7 @@ Matrix interpolation_matrix(
 template <>
 Matrix interpolation_matrix(
     const Mesh<3>& mesh,
-    const tnsr::I<DataVector, 3, Frame::Logical>& points) noexcept {
+    const tnsr::I<DataVector, 3, Frame::ElementLogical>& points) noexcept {
   const auto number_of_target_points = get<0>(points).size();
   Matrix result(number_of_target_points, mesh.number_of_grid_points());
 
@@ -206,9 +206,9 @@ template <size_t Dim>
 Irregular<Dim>::Irregular() = default;
 
 template <size_t Dim>
-Irregular<Dim>::Irregular(
-    const Mesh<Dim>& source_mesh,
-    const tnsr::I<DataVector, Dim, Frame::Logical>& target_points) noexcept
+Irregular<Dim>::Irregular(const Mesh<Dim>& source_mesh,
+                          const tnsr::I<DataVector, Dim, Frame::ElementLogical>&
+                              target_points) noexcept
     : interpolation_matrix_(interpolation_matrix(source_mesh, target_points)) {}
 
 template <size_t Dim>

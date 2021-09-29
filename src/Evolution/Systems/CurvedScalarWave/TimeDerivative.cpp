@@ -105,7 +105,7 @@ using derivative_frame = Frame::Inertial;
                       DIM(data), derivative_frame>(                          \
       const Variables<variables_tags<DIM(data)>>& u,                         \
       const Mesh<DIM(data)>& mesh,                                           \
-      const InverseJacobian<DataVector, DIM(data), Frame::Logical,           \
+      const InverseJacobian<DataVector, DIM(data), Frame::ElementLogical,    \
                             derivative_frame>& inverse_jacobian) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))

@@ -54,7 +54,7 @@ struct TimeDerivative {
   template <typename DbTagsList>
   static void apply(
       const gsl::not_null<db::DataBox<DbTagsList>*> box,
-      const InverseJacobian<DataVector, 3, Frame::Logical, Frame::Grid>&
+      const InverseJacobian<DataVector, 3, Frame::ElementLogical, Frame::Grid>&
           cell_centered_logical_to_grid_inv_jacobian,
       const Scalar<DataVector>& /*cell_centered_det_inv_jacobian*/) noexcept {
     using evolved_vars_tag = typename System::variables_tag;
@@ -80,9 +80,10 @@ struct TimeDerivative {
         (subcell_mesh.extents(0) + 1) *
         subcell_mesh.extents().slice_away(0).product();
 
-    const tnsr::I<DataVector, 3, Frame::Logical>& cell_centered_logical_coords =
-        db::get<evolution::dg::subcell::Tags::Coordinates<3, Frame::Logical>>(
-            *box);
+    const tnsr::I<DataVector, 3, Frame::ElementLogical>&
+        cell_centered_logical_coords =
+            db::get<evolution::dg::subcell::Tags::Coordinates<
+                3, Frame::ElementLogical>>(*box);
     std::array<double, 3> one_over_delta_xi{};
     for (size_t i = 0; i < 3; ++i) {
       // Note: assumes isotropic extents

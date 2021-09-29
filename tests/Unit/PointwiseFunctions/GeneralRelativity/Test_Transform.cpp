@@ -78,10 +78,10 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.Transform",
   test_transform_to_different_frame<1, Frame::Grid, Frame::Inertial>(dv);
   test_transform_to_different_frame<2, Frame::Grid, Frame::Inertial>(dv);
   test_transform_to_different_frame<3, Frame::Grid, Frame::Inertial>(dv);
-  test_transform_first_index_to_different_frame<1, Frame::Logical, Frame::Grid>(
-      dv);
-  test_transform_first_index_to_different_frame<2, Frame::Logical, Frame::Grid>(
-      dv);
-  test_transform_first_index_to_different_frame<3, Frame::Logical, Frame::Grid>(
-      dv);
+  test_transform_first_index_to_different_frame<1, Frame::ElementLogical,
+                                                Frame::Grid>(dv);
+  test_transform_first_index_to_different_frame<2, Frame::ElementLogical,
+                                                Frame::Grid>(dv);
+  test_transform_first_index_to_different_frame<3, Frame::ElementLogical,
+                                                Frame::Grid>(dv);
 }

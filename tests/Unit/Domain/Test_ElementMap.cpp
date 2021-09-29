@@ -35,12 +35,12 @@ template <size_t Dim, typename S, typename T, typename U>
 void test_element_impl(
     bool test_inverse, const ElementId<Dim>& element_id, const S& affine_map,
     const T& first_map, const U& second_map,
-    const tnsr::I<double, Dim, Frame::Logical>& logical_point_double,
-    const tnsr::I<DV, Dim, Frame::Logical>& logical_point_dv) {
+    const tnsr::I<double, Dim, Frame::ElementLogical>& logical_point_double,
+    const tnsr::I<DV, Dim, Frame::ElementLogical>& logical_point_dv) {
   PUPable_reg(
       SINGLE_ARG(CoordinateMap<Frame::BlockLogical, Frame::Inertial, T, U>));
   const auto composed_map =
-      make_coordinate_map<Frame::Logical, Frame::Inertial>(
+      make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
           affine_map, first_map, second_map);
 
   ElementMap<Dim, Frame::Inertial> element_map{
@@ -103,8 +103,8 @@ void test_element_map<1>() {
 
   auto segment_ids = std::array<SegmentId, 1>({{SegmentId(2, 3)}});
   ElementId<1> element_id(0, segment_ids);
-  const tnsr::I<double, 1, Frame::Logical> logical_point_double{0.0};
-  const tnsr::I<DV, 1, Frame::Logical> logical_point_dv(
+  const tnsr::I<double, 1, Frame::ElementLogical> logical_point_double{0.0};
+  const tnsr::I<DV, 1, Frame::ElementLogical> logical_point_dv(
       DV{-1.0, -0.5, 0.0, 0.5, 1.0});
 
   const Affine affine_map{-1.0, 1.0, 0.5, 1.0};
@@ -131,10 +131,11 @@ void test_element_map<2>() {
       std::array<SegmentId, 2>({{SegmentId(2, 3), SegmentId(1, 0)}});
   ElementId<2> element_id(0, segment_ids);
 
-  const tnsr::I<double, 2, Frame::Logical> logical_point_double(
+  const tnsr::I<double, 2, Frame::ElementLogical> logical_point_double(
       std::array<double, 2>{{-0.5, 0.5}});
-  const tnsr::I<DV, 2, Frame::Logical> logical_point_dv(std::array<DV, 2>{
-      {DV{-1.0, 0.5, 0.0, 0.5, 1.0}, DV{-1.0, 0.5, 0.0, 0.5, 1.0}}});
+  const tnsr::I<DV, 2, Frame::ElementLogical> logical_point_dv(
+      std::array<DV, 2>{
+          {DV{-1.0, 0.5, 0.0, 0.5, 1.0}, DV{-1.0, 0.5, 0.0, 0.5, 1.0}}});
 
   const CoordinateMaps::ProductOf2Maps<Affine, Affine> affine_map(
       Affine{-1.0, 1.0, 0.5, 1.0}, Affine{-1.0, 1.0, -1.0, 0.0});
@@ -163,9 +164,9 @@ void test_element_map<3>() {
       {{SegmentId(2, 3), SegmentId(1, 0), SegmentId(2, 1)}});
   ElementId<3> element_id(0, segment_ids);
 
-  const tnsr::I<double, 3, Frame::Logical> logical_point_double{
+  const tnsr::I<double, 3, Frame::ElementLogical> logical_point_double{
       {{0.78, 0.12, -0.37}}};
-  const tnsr::I<DataVector, 3, Frame::Logical> logical_point_dv{
+  const tnsr::I<DataVector, 3, Frame::ElementLogical> logical_point_dv{
       {{DV{-1.0, 0.5, 0.0, 0.5, 1.0}, DV{-1.0, 0.5, 0.0, 0.5, 1.0},
         DV{-1.0, 0.5, 0.0, 0.5, 1.0}}}};
 

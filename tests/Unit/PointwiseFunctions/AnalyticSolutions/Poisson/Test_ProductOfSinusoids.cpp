@@ -94,7 +94,8 @@ SPECTRE_TEST_CASE(
     using system =
         Poisson::FirstOrderSystem<1, Poisson::Geometry::FlatCartesian>;
     const Poisson::Solutions::ProductOfSinusoids<1> solution{{{0.5}}};
-    const domain::CoordinateMap<Frame::Logical, Frame::Inertial, AffineMap>
+    const domain::CoordinateMap<Frame::ElementLogical, Frame::Inertial,
+                                AffineMap>
         coord_map{{-1., 1., 0., M_PI}};
     FirstOrderEllipticSolutionsTestHelpers::verify_smooth_solution<system>(
         solution, coord_map, 1.e5, 3.,
@@ -109,7 +110,8 @@ SPECTRE_TEST_CASE(
     const Poisson::Solutions::ProductOfSinusoids<2> solution{{{0.5, 0.5}}};
     using AffineMap2D =
         domain::CoordinateMaps::ProductOf2Maps<AffineMap, AffineMap>;
-    const domain::CoordinateMap<Frame::Logical, Frame::Inertial, AffineMap2D>
+    const domain::CoordinateMap<Frame::ElementLogical, Frame::Inertial,
+                                AffineMap2D>
         coord_map{{{-1., 1., 0., M_PI}, {-1., 1., 0., M_PI}}};
     FirstOrderEllipticSolutionsTestHelpers::verify_smooth_solution<system>(
         solution, coord_map, 1.e5, 3.,
@@ -124,7 +126,8 @@ SPECTRE_TEST_CASE(
     const Poisson::Solutions::ProductOfSinusoids<3> solution{{{0.5, 0.5, 0.5}}};
     using AffineMap3D =
         domain::CoordinateMaps::ProductOf3Maps<AffineMap, AffineMap, AffineMap>;
-    const domain::CoordinateMap<Frame::Logical, Frame::Inertial, AffineMap3D>
+    const domain::CoordinateMap<Frame::ElementLogical, Frame::Inertial,
+                                AffineMap3D>
         coord_map{
             {{-1., 1., 0., M_PI}, {-1., 1., 0., M_PI}, {-1., 1., 0., M_PI}}};
     FirstOrderEllipticSolutionsTestHelpers::verify_smooth_solution<system>(

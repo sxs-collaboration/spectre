@@ -614,8 +614,9 @@ void test_boundary_coordinates_moving_mesh_impl(
     const ElementMap<Dim, Frame::Grid>& logical_to_grid_map,
     const std::unique_ptr<CoordinateMapBase<Frame::Grid, Frame::Inertial, Dim>>&
         grid_to_inertial_map,
-    const std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Inertial,
-                                            Dim>>& logical_to_inertial_map,
+    const std::unique_ptr<
+        CoordinateMapBase<Frame::ElementLogical, Frame::Inertial, Dim>>&
+        logical_to_inertial_map,
     const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
@@ -687,7 +688,7 @@ void test_boundary_coordinates_moving_mesh() {
         make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
             time_dependent_map);
     const auto logical_to_inertial_map =
-        make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+        make_coordinate_map_base<Frame::ElementLogical, Frame::Inertial>(
             time_independent_map, time_dependent_map);
 
     for (const double time : times_to_check) {

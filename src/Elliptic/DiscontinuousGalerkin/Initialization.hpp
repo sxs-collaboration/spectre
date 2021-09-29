@@ -43,20 +43,22 @@ struct InitializeGeometry {
   using return_tags = tmpl::list<
       domain::Tags::Mesh<Dim>, domain::Tags::Element<Dim>,
       domain::Tags::ElementMap<Dim>,
-      domain::Tags::Coordinates<Dim, Frame::Logical>,
+      domain::Tags::Coordinates<Dim, Frame::ElementLogical>,
       domain::Tags::Coordinates<Dim, Frame::Inertial>,
-      domain::Tags::InverseJacobian<Dim, Frame::Logical, Frame::Inertial>,
-      domain::Tags::DetInvJacobian<Frame::Logical, Frame::Inertial>>;
+      domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
+                                    Frame::Inertial>,
+      domain::Tags::DetInvJacobian<Frame::ElementLogical, Frame::Inertial>>;
   using argument_tags = tmpl::list<domain::Tags::InitialExtents<Dim>,
                                    domain::Tags::InitialRefinementLevels<Dim>,
                                    domain::Tags::Domain<Dim>>;
   void operator()(
       gsl::not_null<Mesh<Dim>*> mesh, gsl::not_null<Element<Dim>*> element,
       gsl::not_null<ElementMap<Dim, Frame::Inertial>*> element_map,
-      gsl::not_null<tnsr::I<DataVector, Dim, Frame::Logical>*> logical_coords,
+      gsl::not_null<tnsr::I<DataVector, Dim, Frame::ElementLogical>*>
+          logical_coords,
       gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*> inertial_coords,
-      gsl::not_null<
-          InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>*>
+      gsl::not_null<InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                                    Frame::Inertial>*>
           inv_jacobian,
       gsl::not_null<Scalar<DataVector>*> det_inv_jacobian,
       const std::vector<std::array<size_t, Dim>>& initial_extents,
@@ -91,10 +93,11 @@ struct InitializeFacesAndMortars {
                                    tmpl::size_t<Dim>, Frame::Inertial>>>,
       tmpl::list<::Tags::Mortars<domain::Tags::Mesh<Dim - 1>, Dim>,
                  ::Tags::Mortars<::Tags::MortarSize<Dim - 1>, Dim>>>;
-  using argument_tags = tmpl::list<
-      domain::Tags::Mesh<Dim>, domain::Tags::Element<Dim>,
-      domain::Tags::ElementMap<Dim>,
-      domain::Tags::InverseJacobian<Dim, Frame::Logical, Frame::Inertial>>;
+  using argument_tags =
+      tmpl::list<domain::Tags::Mesh<Dim>, domain::Tags::Element<Dim>,
+                 domain::Tags::ElementMap<Dim>,
+                 domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
+                                               Frame::Inertial>>;
   void operator()(
       gsl::not_null<DirectionMap<Dim, Direction<Dim>>*> face_directions,
       gsl::not_null<DirectionMap<Dim, tnsr::I<DataVector, Dim>>*>
@@ -109,8 +112,8 @@ struct InitializeFacesAndMortars {
           mortar_sizes,
       const Mesh<Dim>& mesh, const Element<Dim>& element,
       const ElementMap<Dim, Frame::Inertial>& element_map,
-      const InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>&
-          inv_jacobian,
+      const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                            Frame::Inertial>& inv_jacobian,
       const std::vector<std::array<size_t, Dim>>& initial_extents)
       const noexcept;
 };
@@ -122,19 +125,20 @@ struct InitializeBackground {
   using return_tags =
       tmpl::list<::Tags::Variables<BackgroundFields>,
                  domain::Tags::Faces<Dim, ::Tags::Variables<BackgroundFields>>>;
-  using argument_tags = tmpl::list<
-      domain::Tags::Coordinates<Dim, Frame::Inertial>, domain::Tags::Mesh<Dim>,
-      domain::Tags::InverseJacobian<Dim, Frame::Logical, Frame::Inertial>>;
+  using argument_tags =
+      tmpl::list<domain::Tags::Coordinates<Dim, Frame::Inertial>,
+                 domain::Tags::Mesh<Dim>,
+                 domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
+                                               Frame::Inertial>>;
 
   template <typename Background>
   void operator()(
       const gsl::not_null<Variables<BackgroundFields>*> background_fields,
-      const gsl::not_null<
-          DirectionMap<Dim, Variables<BackgroundFields>>*>
+      const gsl::not_null<DirectionMap<Dim, Variables<BackgroundFields>>*>
           face_background_fields,
       const tnsr::I<DataVector, Dim>& inertial_coords, const Mesh<Dim>& mesh,
-      const InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>&
-          inv_jacobian,
+      const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                            Frame::Inertial>& inv_jacobian,
       const Background& background) const noexcept {
     *background_fields = variables_from_tagged_tuple(background.variables(
         inertial_coords, mesh, inv_jacobian, BackgroundFields{}));

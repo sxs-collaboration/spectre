@@ -26,12 +26,12 @@
 namespace {
 template <size_t Dim>
 void metric_identity_det_jac_times_inv_jac_impl(
-    const gsl::not_null<
-        InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>*>
+    const gsl::not_null<InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                                        Frame::Inertial>*>
         det_jac_times_inverse_jacobian,
     const Mesh<Dim>& mesh,
     const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords,
-    const Jacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>&
+    const Jacobian<DataVector, Dim, Frame::ElementLogical, Frame::Inertial>&
         jacobian) noexcept {
   static_assert(Dim == 1 or Dim == 2, "Generic impl handles only 1d and 2d.");
   destructive_resize_components(det_jac_times_inverse_jacobian,
@@ -67,12 +67,12 @@ void metric_identity_det_jac_times_inv_jac_impl(
 
 void metric_identity_det_jac_times_inv_jac_impl(
     const gsl::not_null<
-        InverseJacobian<DataVector, 3, Frame::Logical, Frame::Inertial>*>
+        InverseJacobian<DataVector, 3, Frame::ElementLogical, Frame::Inertial>*>
         det_jac_times_inverse_jacobian,
     const gsl::not_null<DataVector*> buffer,
     const gsl::not_null<DataVector*> buffer_component, const Mesh<3>& mesh,
     const tnsr::I<DataVector, 3, Frame::Inertial>& inertial_coords,
-    const Jacobian<DataVector, 3, Frame::Logical, Frame::Inertial>&
+    const Jacobian<DataVector, 3, Frame::ElementLogical, Frame::Inertial>&
         jacobian) noexcept {
   // The 3d case is handled separately because this actually requires a buffer.
   // Basically, in 2d you can get into the situation where you have 2 unused
@@ -222,12 +222,12 @@ void metric_identity_det_jac_times_inv_jac_impl(
 namespace dg {
 template <size_t Dim>
 void metric_identity_det_jac_times_inv_jac(
-    const gsl::not_null<
-        InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>*>
+    const gsl::not_null<InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                                        Frame::Inertial>*>
         det_jac_times_inverse_jacobian,
     const Mesh<Dim>& mesh,
     const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords,
-    const Jacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>&
+    const Jacobian<DataVector, Dim, Frame::ElementLogical, Frame::Inertial>&
         jacobian) noexcept {
   if constexpr (Dim == 3) {
     const size_t num_grid_points = mesh.number_of_grid_points();
@@ -248,14 +248,14 @@ void metric_identity_det_jac_times_inv_jac(
 
 template <size_t Dim>
 void metric_identity_jacobian_quantities(
-    const gsl::not_null<
-        InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>*>
+    const gsl::not_null<InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                                        Frame::Inertial>*>
         det_jac_times_inverse_jacobian,
-    const gsl::not_null<
-        InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>*>
+    const gsl::not_null<InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                                        Frame::Inertial>*>
         inverse_jacobian,
     const gsl::not_null<
-        Jacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>*>
+        Jacobian<DataVector, Dim, Frame::ElementLogical, Frame::Inertial>*>
         jacobian,
     const gsl::not_null<Scalar<DataVector>*> det_jacobian,
     const Mesh<Dim>& mesh,
@@ -323,22 +323,22 @@ void metric_identity_jacobian_quantities(
 
 #define INSTANTIATION(r, data)                                                 \
   template void metric_identity_det_jac_times_inv_jac(                         \
-      gsl::not_null<InverseJacobian<DataVector, GET_DIM(data), Frame::Logical, \
-                                    Frame::Inertial>*>                         \
+      gsl::not_null<InverseJacobian<DataVector, GET_DIM(data),                 \
+                                    Frame::ElementLogical, Frame::Inertial>*>  \
           det_jac_times_inverse_jacobian,                                      \
       const Mesh<GET_DIM(data)>& mesh,                                         \
       const tnsr::I<DataVector, GET_DIM(data), Frame::Inertial>&               \
           inertial_coords,                                                     \
-      const Jacobian<DataVector, GET_DIM(data), Frame::Logical,                \
+      const Jacobian<DataVector, GET_DIM(data), Frame::ElementLogical,         \
                      Frame::Inertial>& jacobian) noexcept;                     \
   template void metric_identity_jacobian_quantities(                           \
-      gsl::not_null<InverseJacobian<DataVector, GET_DIM(data), Frame::Logical, \
-                                    Frame::Inertial>*>                         \
+      gsl::not_null<InverseJacobian<DataVector, GET_DIM(data),                 \
+                                    Frame::ElementLogical, Frame::Inertial>*>  \
           det_jac_times_inverse_jacobian,                                      \
-      gsl::not_null<InverseJacobian<DataVector, GET_DIM(data), Frame::Logical, \
-                                    Frame::Inertial>*>                         \
+      gsl::not_null<InverseJacobian<DataVector, GET_DIM(data),                 \
+                                    Frame::ElementLogical, Frame::Inertial>*>  \
           inverse_jacobian,                                                    \
-      gsl::not_null<Jacobian<DataVector, GET_DIM(data), Frame::Logical,        \
+      gsl::not_null<Jacobian<DataVector, GET_DIM(data), Frame::ElementLogical, \
                              Frame::Inertial>*>                                \
           jacobian,                                                            \
       gsl::not_null<Scalar<DataVector>*> det_jacobian,                         \

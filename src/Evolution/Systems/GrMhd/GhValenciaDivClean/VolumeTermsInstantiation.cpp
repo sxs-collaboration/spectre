@@ -33,7 +33,8 @@ template void volume_terms<::grmhd::GhValenciaDivClean::TimeDerivativeTerms>(
     const ::dg::Formulation dg_formulation, const Mesh<3>& mesh,
     [[maybe_unused]] const tnsr::I<DataVector, 3, Frame::Inertial>&
         inertial_coordinates,
-    const InverseJacobian<DataVector, 3, Frame::Logical, Frame::Inertial>&
+    const InverseJacobian<DataVector, 3, Frame::ElementLogical,
+                          Frame::Inertial>&
         logical_to_inertial_inverse_jacobian,
     [[maybe_unused]] const Scalar<DataVector>* const det_inverse_jacobian,
     const std::optional<tnsr::I<DataVector, 3, Frame::Inertial>>& mesh_velocity,

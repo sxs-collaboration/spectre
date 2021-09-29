@@ -50,7 +50,7 @@ FixedHashMap<maximum_number_of_neighbors(3) + 1,
              boost::hash<std::pair<Direction<3>, ElementId<3>>>>
 compute_neighbor_data(
     const Mesh<3>& subcell_mesh,
-    const tnsr::I<DataVector, 3, Frame::Logical>& volume_logical_coords,
+    const tnsr::I<DataVector, 3, Frame::ElementLogical>& volume_logical_coords,
     const DirectionMap<3, Neighbors<3>>& neighbors,
     const size_t ghost_zone_size, const F& compute_variables_of_neighbor_data) {
   FixedHashMap<maximum_number_of_neighbors(3) + 1,

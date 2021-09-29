@@ -176,12 +176,12 @@ namespace dg {
  */
 template <size_t Dim>
 void metric_identity_det_jac_times_inv_jac(
-    gsl::not_null<
-        InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>*>
+    gsl::not_null<InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                                  Frame::Inertial>*>
         det_jac_times_inverse_jacobian,
     const Mesh<Dim>& mesh,
     const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords,
-    const Jacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>&
+    const Jacobian<DataVector, Dim, Frame::ElementLogical, Frame::Inertial>&
         jacobian) noexcept;
 
 /*!
@@ -234,13 +234,14 @@ void metric_identity_det_jac_times_inv_jac(
  */
 template <size_t Dim>
 void metric_identity_jacobian_quantities(
-    gsl::not_null<
-        InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>*>
+    gsl::not_null<InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                                  Frame::Inertial>*>
         det_jac_times_inverse_jacobian,
-    gsl::not_null<
-        InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>*>
+    gsl::not_null<InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                                  Frame::Inertial>*>
         inverse_jacobian,
-    gsl::not_null<Jacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>*>
+    gsl::not_null<
+        Jacobian<DataVector, Dim, Frame::ElementLogical, Frame::Inertial>*>
         jacobian,
     gsl::not_null<Scalar<DataVector>*> det_jacobian, const Mesh<Dim>& mesh,
     const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords) noexcept;

@@ -995,7 +995,7 @@ void test_radial_block_layers(const double inner_radius,
         }
         const auto map = ElementMap<3, Frame::Inertial>{
             element_id, block.stationary_map().get_clone()};
-        const tnsr::I<double, 3, Frame::Logical> logical_point(
+        const tnsr::I<double, 3, Frame::ElementLogical> logical_point(
             std::array<double, 3>{{0.0, 0.0, 1.0}});
         CHECK(magnitude(map(logical_point)).get() ==
               approx(x_on_element_boundary[element_count]));
