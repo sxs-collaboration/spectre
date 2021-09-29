@@ -30,21 +30,29 @@ add_dependencies(
   module_GlobalCache
   )
 
+# Some of these dependencies should be removed, see issue
+# https://github.com/sxs-collaboration/spectre/issues/3561
 target_link_libraries(
   ${LIBRARY}
   PUBLIC
   ApparentHorizons
   DataStructures
-  DgSubcell
   Domain
-  DomainStructure
   ErrorHandling
-  EventsAndTriggers
-  GSL::gsl
+  GeneralRelativitySolutions
   Interpolation
   Logging
   Options
+  Parallel
   Spectral
+  Time
+  Utilities
+  INTERFACE
+  Cce
+  DgSubcell
+  EventsAndTriggers
+  GeneralizedHarmonic
+  IO
   )
 
 add_subdirectory(Actions)

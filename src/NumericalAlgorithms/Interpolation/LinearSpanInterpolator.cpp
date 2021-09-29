@@ -2,9 +2,12 @@
 // See LICENSE.txt for details.
 
 #include "NumericalAlgorithms/Interpolation/LinearSpanInterpolator.hpp"
-#include "Utilities/ForceInline.hpp"
+
+#include <complex>
 
 #include "Parallel/CharmPupable.hpp"
+#include "Utilities/ForceInline.hpp"
+#include "Utilities/Gsl.hpp"
 
 namespace intrp {
 

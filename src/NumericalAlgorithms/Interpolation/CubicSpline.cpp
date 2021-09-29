@@ -9,6 +9,7 @@
 #include <memory>
 #include <pup.h>
 #include <pup_stl.h>
+#include <vector>
 
 #include "Utilities/ErrorHandling/Assert.hpp"
 
