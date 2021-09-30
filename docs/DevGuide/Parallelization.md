@@ -67,8 +67,7 @@ specify the following:
   \code
     static Phase determine_next_phase(
       const Phase& current_phase,
-      const Parallel::CProxy_GlobalCache<EvolutionMetavars>& cache_proxy)
-      noexcept;
+      const Parallel::CProxy_GlobalCache<EvolutionMetavars>& cache_proxy);
   \endcode
   What this function does is described below in the discussion of
   \ref dev_guide_parallelization_phases_of_execution "phases".
@@ -237,7 +236,7 @@ signature of the `allocate_array` functions must be:
 static void allocate_array(
     Parallel::CProxy_GlobalCache<metavariables>& global_cache,
     const tuples::tagged_tuple_from_typelist<initialization_tags>&
-    initialization_items) noexcept;
+    initialization_items);
 \endcode
 The `allocate_array` function is called by the Main parallel component
 when the execution starts and will typically insert elements into

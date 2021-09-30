@@ -99,11 +99,9 @@ Code Quality Items:
   explicit instantiations whenever possible. The macro
   `GENERATE_EXPLICIT_INSTANTIATIONS` is useful for generating many
   explicit instantiations.
-* Explicit instantiations of functions marked as noexcept should be marked
-  as noexcept as well.
-* Functions that do not throw should be marked `noexcept`. If you're unsure
-  and the function does not use an `Options::Context` or is generating python
-  bindings, mark it `noexcept`.
+* Functions should not be marked `noexcept` unless it is part of the
+  signature of an overriden function (e.g. the what() function of an exception
+  derived from std::exception).
 * Variable names in macros must avoid name collisions, e.g. inside the
   `PARSE_ERROR` macro you would write
   `double variable_name_avoid_name_collisions_PARSE_ERROR = 0.0;`
