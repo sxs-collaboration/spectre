@@ -62,7 +62,7 @@ BinaryCompactObject::BinaryCompactObject(
     const double outer_radius_domain,
     const typename InitialRefinement::type& initial_refinement,
     const typename InitialGridPoints::type& initial_number_of_grid_points,
-    const bool use_projective_map,
+    const bool use_projective_map, const double frustum_sphericity,
     const std::optional<double>& radius_enveloping_sphere,
     const CoordinateMaps::Distribution radial_distribution_outer_shell,
     std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
@@ -73,6 +73,7 @@ BinaryCompactObject::BinaryCompactObject(
       radius_enveloping_cube_(radius_enveloping_cube),
       outer_radius_domain_(outer_radius_domain),
       use_projective_map_(use_projective_map),
+      frustum_sphericity_(frustum_sphericity),
       radial_distribution_outer_shell_(radial_distribution_outer_shell),
       outer_boundary_condition_(std::move(outer_boundary_condition)) {
   // Determination of parameters for domain construction:
@@ -300,18 +301,18 @@ BinaryCompactObject::BinaryCompactObject(
     Object object_B, double radius_enveloping_cube, double outer_radius_domain,
     const typename InitialRefinement::type& initial_refinement,
     const typename InitialGridPoints::type& initial_number_of_grid_points,
-    bool use_projective_map,
+    bool use_projective_map, double frustum_sphericity,
     const std::optional<double>& radius_enveloping_sphere,
     CoordinateMaps::Distribution radial_distribution_outer_shell,
     std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
         outer_boundary_condition,
     const Options::Context& context)
-    : BinaryCompactObject(std::move(object_A), std::move(object_B),
-                          radius_enveloping_cube, outer_radius_domain,
-                          initial_refinement, initial_number_of_grid_points,
-                          use_projective_map, radius_enveloping_sphere,
-                          radial_distribution_outer_shell,
-                          std::move(outer_boundary_condition), context) {
+    : BinaryCompactObject(
+          std::move(object_A), std::move(object_B), radius_enveloping_cube,
+          outer_radius_domain, initial_refinement,
+          initial_number_of_grid_points, use_projective_map, frustum_sphericity,
+          radius_enveloping_sphere, radial_distribution_outer_shell,
+          std::move(outer_boundary_condition), context) {
   enable_time_dependence_ = true;
   initial_time_ = initial_time;
   initial_expiration_delta_t_ = initial_expiration_delta_t;
@@ -373,7 +374,8 @@ Domain<3> BinaryCompactObject::create_domain() const {
       use_equiangular_map_, object_B_.x_coord, false);
   Maps maps_frustums = frustum_coordinate_maps<Frame::Inertial>(
       length_inner_cube_, length_outer_cube_, use_equiangular_map_,
-      {{-translation_, 0.0, 0.0}}, projective_scale_factor_);
+      {{-translation_, 0.0, 0.0}}, projective_scale_factor_,
+      frustum_sphericity_);
 
   if (outer_boundary_condition_ != nullptr) {
     for (size_t i = 0; i < maps_center_A.size(); ++i) {
@@ -415,8 +417,8 @@ Domain<3> BinaryCompactObject::create_domain() const {
             std::back_inserter(maps));
 
   Maps maps_first_outer_shell = sph_wedge_coordinate_maps<Frame::Inertial>(
-      radius_enveloping_cube_, radius_enveloping_sphere_, 0.0, 1.0,
-      use_equiangular_map_, 0.0, true, 1.0, 2, {},
+      radius_enveloping_cube_, radius_enveloping_sphere_, frustum_sphericity_,
+      1.0, use_equiangular_map_, 0.0, true, 1.0, 2, {},
       {domain::CoordinateMaps::Distribution::Linear}, ShellWedges::All);
   Maps maps_second_outer_shell = sph_wedge_coordinate_maps<Frame::Inertial>(
       radius_enveloping_sphere_, outer_radius_domain_, 1.0, 1.0,
