@@ -160,6 +160,72 @@ namespace CoordinateMaps {
  * This is the value for \f$w_{\delta}\f$ used by this CoordinateMap when
  * `auto_projective_scale_factor` is `true`.
  *
+ * ### Bulged Frustum Coordinate Map and Jacobian
+ * Each of the frustum faces in the frustum map given above are flat, but the
+ * upper +z face of the frustum can be bulged out by setting a non-zero value
+ * for the `sphericity`, where a value of `0.0` corresponds to the usual flat-
+ * face, and a value of `1.0` corresponds to a value of fully spherical. Using
+ * OrientationMaps allows the user to create a set of frustums that fully cover
+ * a spherical surface. The radius of the sphere is determined by the corner of
+ * the frustum that is furthest from the origin.
+ *
+ * The full map is given by:
+ * \f[\vec{x}(\xi,\eta,\zeta) = \begin{bmatrix}
+ * \Sigma^x + \Delta^x_{\xi}\Xi + (\Delta^x_{\zeta} +
+ * \Delta^x_{\xi\zeta}\Xi)\mathrm{Z}\\
+ * \Sigma^y + \Delta^y_{\eta}\mathrm{H} + (\Delta^y_{\zeta} +
+ * \Delta^y_{\eta\zeta}\mathrm{H})\mathrm{Z}\\
+ * \Sigma^z + \Delta^z\mathrm{Z}\\
+ * \end{bmatrix}
+ * + s \frac{1 +
+ * \mathrm{Z}}{2}\left(\frac{R}{|\vec{\sigma}_{\mathrm{+z}}|}-1\right)
+ * \vec{\sigma}_{\mathrm{+z}}
+ * \f]
+ *
+ * where \f$R\f$ is the radius, \f$s\f$ is the `sphericity`, and
+ * \f$\vec{\sigma}_{\mathrm{+z}}\f$ is given by:
+ * \f[
+ * \vec{\sigma}_{\mathrm{+z}} =
+ * \begin{bmatrix}
+ * \Sigma^x + \Delta^x_{\xi}\Xi + \Delta^x_{\zeta} +
+ * \Delta^x_{\xi\zeta}\Xi\\
+ * \Sigma^y + \Delta^y_{\eta}\mathrm{H} + \Delta^y_{\zeta} +
+ * \Delta^y_{\eta\zeta}\mathrm{H}\\
+ * \Sigma^z + \Delta^z\\
+ * \end{bmatrix}.
+ * \f]
+ *
+ * The Jacobian is:
+ * \f[J =
+ * \begin{bmatrix}
+ * (\Delta^x_{\xi} + \Delta^x_{\xi\zeta}\mathrm{Z})\Xi' &
+ * 0 & (\Delta^x_{\zeta}+ \Delta^x_{\xi\zeta}\Xi)\mathrm{Z}' \\
+ * 0 & (\Delta^y_{\eta} + \Delta^y_{\eta\zeta}\mathrm{Z})\mathrm{H}' &
+ * (\Delta^y_{\zeta} + \Delta^y_{\eta\zeta}\mathrm{H})\mathrm{Z}'\\
+ * 0 & 0 & \Delta^z\mathrm{Z}' \\
+ * \end{bmatrix}
+ * +
+ * \frac{s}{2} \left\{ \left(\frac{R}{|\vec{\sigma}_{\mathrm{+z}}|}-1\right)
+ * \vec{\sigma}_{\mathrm{+z}}\hat{\zeta}^{\intercal}\mathrm{Z}'+
+ * (1+\mathrm{Z})\left(\frac{R}{|\vec{\sigma}_{\mathrm{+z}}|}\left(
+ * \mathbb{1}-\frac{\vec{\sigma}_{\mathrm{+z}}
+ * \vec{\sigma}_{\mathrm{+z}}^{\intercal}}
+ * {|\vec{\sigma}_{\mathrm{+z}}|^2}\right)-\mathbb{1}\right)
+ * J_{\sigma}\right\},
+ * \f]
+ *
+ * where \f$\hat{\zeta}\f$ is the row vector \f$[0, 0, 1]\f$, and
+ * \f$J_{\sigma}\f$ is the Jacobian of the upper +z surface, given by:
+ * \f[
+ * J_{\sigma} =
+ * \begin{bmatrix}
+ * (\Delta^x_{\xi} + \Delta^x_{\xi\zeta})\Xi' &
+ * 0 & 0 \\
+ * 0 & (\Delta^y_{\eta} + \Delta^y_{\eta\zeta})\mathrm{H}' &
+ * 0 \\
+ * 0 & 0 & 0 \\
+ * \end{bmatrix}.
+ * \f]
  */
 class Frustum {
  public:
@@ -169,7 +235,8 @@ class Frustum {
           OrientationMap<3> orientation_of_frustum,
           bool with_equiangular_map = false,
           double projective_scale_factor = 1.0,
-          bool auto_projective_scale_factor = false);
+          bool auto_projective_scale_factor = false,
+          double sphericity = 0.0);
   Frustum() = default;
   ~Frustum() = default;
   Frustum(Frustum&&) = default;
@@ -224,6 +291,8 @@ class Frustum {
   double delta_z_zeta_{std::numeric_limits<double>::signaling_NaN()};
   double w_plus_{std::numeric_limits<double>::signaling_NaN()};
   double w_minus_{std::numeric_limits<double>::signaling_NaN()};
+  double sphericity_{std::numeric_limits<double>::signaling_NaN()};
+  double radius_{std::numeric_limits<double>::signaling_NaN()};
 };
 
 bool operator!=(const Frustum& lhs, const Frustum& rhs);
