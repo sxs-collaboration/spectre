@@ -87,13 +87,13 @@ SPECTRE_TEST_CASE(
   }
 
   {
-    INFO("Persson TCI pressure fails");
+    INFO("Persson TCI TildeTau fails");
     const InactiveConsVars subcell_vars{subcell_mesh.number_of_grid_points(),
                                         1.0};
     get(get<grmhd::ValenciaDivClean::Tags::TildeTau>(
         dg_vars))[dg_mesh.number_of_grid_points() / 2] += 2.0e10;
     CHECK(grmhd::ValenciaDivClean::subcell::DgInitialDataTci::apply(
-        dg_vars, subcell_vars, 1.0e100, epsilon, exponent, dg_mesh,
+        dg_vars, subcell_vars, 1.0e100, epsilon, 1.0, dg_mesh,
         tci_options));
     get(get<grmhd::ValenciaDivClean::Tags::TildeTau>(
         dg_vars))[dg_mesh.number_of_grid_points() / 2] = 1.0;
@@ -106,7 +106,7 @@ SPECTRE_TEST_CASE(
     get(get<grmhd::ValenciaDivClean::Tags::TildeD>(
         dg_vars))[dg_mesh.number_of_grid_points() / 2] = -1.0e-20;
     CHECK(grmhd::ValenciaDivClean::subcell::DgInitialDataTci::apply(
-        dg_vars, subcell_vars, 1.0e100, epsilon, exponent, dg_mesh,
+        dg_vars, subcell_vars, 1.0e100, epsilon, 1.0, dg_mesh,
         tci_options));
     get(get<grmhd::ValenciaDivClean::Tags::TildeD>(
         dg_vars))[dg_mesh.number_of_grid_points() / 2] = 1.0;

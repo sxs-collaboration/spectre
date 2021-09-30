@@ -6,10 +6,8 @@
 #include <cstddef>
 
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
-#include "Evolution/DgSubcell/PerssonTci.hpp"
 #include "Evolution/DgSubcell/TwoMeshRdmpTci.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/InitialDataTci.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
