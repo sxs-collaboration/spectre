@@ -104,6 +104,18 @@ void test_sqrt(const DataType& used_for_size) noexcept {
   const Tensor<DataType> sqrt_GH_product =
       TensorExpressions::evaluate(sqrt(G(ti_J) * H(ti_j)));
   CHECK(sqrt_GH_product.get() == sqrt(GH_product));
+
+  Tensor<DataType, Symmetry<2, 1>,
+         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Inertial>,
+                    SpacetimeIndex<4, UpLo::Lo, Frame::Inertial>>>
+      T(used_for_size);
+  assign_unique_values_to_tensor(make_not_null(&T));
+
+  // Test expression that uses concrete time index for a spacetime index
+  // \f$L = \sqrt{T_{t, t}\f$
+  const Scalar<DataType> sqrt_T_time =
+      TensorExpressions::evaluate(sqrt(T(ti_t, ti_t)));
+  CHECK(sqrt_T_time.get() == sqrt(T.get(0, 0)));
 }
 }  // namespace
 

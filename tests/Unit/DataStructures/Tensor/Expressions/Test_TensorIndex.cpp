@@ -80,4 +80,45 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.TensorIndex",
         make_tensorindex_list<ti_d, ti_T, ti_D>>::value);
   CHECK(not TensorExpressions::tensorindex_list_is_valid<
         make_tensorindex_list<ti_I, ti_a, ti_I>>::value);
+
+  // Test tensorindex_list_is_valid
+  CHECK(TensorExpressions::tensorindex_list_is_valid<
+        make_tensorindex_list<>>::value);
+  CHECK(TensorExpressions::tensorindex_list_is_valid<
+        make_tensorindex_list<ti_J>>::value);
+  CHECK(TensorExpressions::tensorindex_list_is_valid<
+        make_tensorindex_list<ti_a, ti_c, ti_I, ti_B>>::value);
+  CHECK(TensorExpressions::tensorindex_list_is_valid<
+        make_tensorindex_list<ti_t, ti_T, ti_T, ti_T, ti_t>>::value);
+  CHECK(TensorExpressions::tensorindex_list_is_valid<
+        make_tensorindex_list<ti_d, ti_T, ti_D>>::value);
+  CHECK(not TensorExpressions::tensorindex_list_is_valid<
+        make_tensorindex_list<ti_I, ti_a, ti_I>>::value);
+
+  // Test generic_indices_at_same_positions
+  CHECK(TensorExpressions::generic_indices_at_same_positions<
+        make_tensorindex_list<>, make_tensorindex_list<>>::value);
+  CHECK(TensorExpressions::generic_indices_at_same_positions<
+        make_tensorindex_list<ti_a, ti_c, ti_I, ti_B>,
+        make_tensorindex_list<ti_a, ti_c, ti_I, ti_B>>::value);
+  CHECK(not TensorExpressions::generic_indices_at_same_positions<
+        make_tensorindex_list<ti_a, ti_c, ti_I, ti_B>,
+        make_tensorindex_list<ti_a, ti_c, ti_i, ti_B>>::value);
+  CHECK(not TensorExpressions::generic_indices_at_same_positions<
+        make_tensorindex_list<ti_a, ti_c, ti_I, ti_B>,
+        make_tensorindex_list<ti_a, ti_c, ti_I>>::value);
+  CHECK(not TensorExpressions::generic_indices_at_same_positions<
+        make_tensorindex_list<ti_a, ti_c, ti_I>,
+        make_tensorindex_list<ti_a, ti_c, ti_I, ti_B>>::value);
+  CHECK(not TensorExpressions::generic_indices_at_same_positions<
+        make_tensorindex_list<ti_j, ti_B>,
+        make_tensorindex_list<ti_B, ti_j>>::value);
+  CHECK(TensorExpressions::generic_indices_at_same_positions<
+        make_tensorindex_list<ti_T>, make_tensorindex_list<ti_t>>::value);
+  CHECK(TensorExpressions::generic_indices_at_same_positions<
+        make_tensorindex_list<ti_t, ti_T, ti_T>,
+        make_tensorindex_list<ti_T, ti_t, ti_T>>::value);
+  CHECK(TensorExpressions::generic_indices_at_same_positions<
+        make_tensorindex_list<ti_i, ti_t, ti_C>,
+        make_tensorindex_list<ti_i, ti_T, ti_C>>::value);
 }
