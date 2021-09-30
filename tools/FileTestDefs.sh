@@ -529,6 +529,29 @@ enable_if_test() {
 }
 standard_checks+=(enable_if)
 
+# Check for noexcept
+noexcept() {
+    is_c++ "$1" && \
+        whitelist "$1" \
+                  'src/Options/Options.hpp$' \
+                  'src/Utilities/TypeTraits/FunctionInfo.hpp$' \
+                  'tests/Unit/Utilities/TypeTraits/Test_FunctionInfo.cpp$' && \
+        staged_grep -q noexcept "$1"
+}
+noexcept_report() {
+    echo "Found occurrences of 'noexcept', please remove."
+    pretty_grep noexcept "$@"
+}
+noexcept_test() {
+    test_check pass foo.cpp ''
+    test_check pass foo.hpp ''
+    test_check pass foo.tpp ''
+    test_check fail foo.hpp 'noexcept'
+    test_check fail foo.cpp 'noexcept'
+    test_check fail foo.tpp 'noexcept'
+}
+standard_checks+=(noexcept)
+
 # Check for struct TD and class TD asking to remove it
 struct_td() {
     is_c++ "$1" && staged_grep -q "\(struct TD;\|class TD;\)" "$1"
