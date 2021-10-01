@@ -26,10 +26,6 @@ namespace Actions {
 /// DataBox changes:
 /// - Adds:
 ///   * `ScalarWave::Tags::ConstraintGamma2`
-///   * `ScalarWave::Tags::OneIndexConstraint<Dim>`
-///   * `ScalarWave::Tags::TwoIndexConstraint<Dim>`
-///   * `::Tags::PointwiseL2Norm<ScalarWave::Tags::OneIndexConstraint<Dim>>`
-///   * `::Tags::PointwiseL2Norm<ScalarWave::Tags::TwoIndexConstraint<Dim>>`
 /// - Removes: nothing
 /// - Modifies: nothing
 ///
@@ -40,16 +36,7 @@ template <size_t Dim>
 struct InitializeConstraints {
   using simple_tags = tmpl::list<ScalarWave::Tags::ConstraintGamma2>;
 
-  using compute_tags = tmpl::list<
-      ::Tags::DerivCompute<typename System<Dim>::variables_tag,
-                           domain::Tags::InverseJacobian<
-                               Dim, Frame::ElementLogical, Frame::Inertial>,
-                           typename System<Dim>::gradient_variables>,
-      ScalarWave::Tags::OneIndexConstraintCompute<Dim>,
-      ScalarWave::Tags::TwoIndexConstraintCompute<Dim>,
-      ::Tags::PointwiseL2NormCompute<ScalarWave::Tags::OneIndexConstraint<Dim>>,
-      ::Tags::PointwiseL2NormCompute<
-          ScalarWave::Tags::TwoIndexConstraint<Dim>>>;
+  using compute_tags = tmpl::list<>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
