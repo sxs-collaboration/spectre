@@ -78,28 +78,28 @@ browser and using the file navigator in Doxygen to locate your file.
 
 In addition to providing a file directory of all the source files in SpECTRE,
 Doxygen also conveniently provides two additional organizations of the files,
-Topics and Namespaces. To ensure that your documentation is easily found from
-within Doxygen, we recommend that you add any new objects to Topics and any
+Modules and Namespaces. To ensure that your documentation is easily found from
+within Doxygen, we recommend that you add any new objects to Modules and any
 new namespaces to Namespaces.
 
 \note The `///` Doxygen syntax does not require a `\brief`, while the C-style
 `/*!` does.
 
-## Add your object to an existing Topic:
+## Add your object to an existing Module:
 
 Within a Doxygen comment, use the Doxygen keyword
 \verbatim
 \ingroup
 \endverbatim
 
-followed by the name of the Topic (you can find the list of existing Topics in
+followed by the name of the Module (you can find the list of existing Modules in
 `docs/GroupDefs.hpp`).
 
-## Add a new Topic:
+## Add a new Module:
 
-Within `docs/GroupDefs.hpp`, add the name of your Topic (which follows the
-naming convention "YourNameForTopic" followed by "Group") among the rest,
-taking care to keep the list of Topics in alphabetical order.
+Within `docs/GroupDefs.hpp`, add the name of your Module (which follows the
+naming convention "YourNameForModule" followed by "Group") among the rest,
+taking care to keep the list of Modules in alphabetical order.
 
 ## Add a new namespace:
 

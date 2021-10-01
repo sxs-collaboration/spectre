@@ -113,15 +113,13 @@ accessed by links in the menu bar at the top.
   "write unit tests", how to \ref writing_good_dox "write documentation", and
   also provides information about C++ and the philosophy behind SpECTRE
   development.
-- The [Topics](modules.html) section under the _Reference_ menu item contains
-  groups of related code (managed through doxygen groups). For example, there is
-  a group for all the data structures we use, a group for utility functions and
-  classes, as well as groups for coordinate maps, domain creation, and many
-  others. The [Topics](modules.html) are designed to help developers discover
-  existing functionality so that things are not re-implemented several times.
+- The [Code modules](modules.html) section contains groups of related code
+  (managed through doxygen groups). For example, there is a group for all the
+  data structures we use, a group for utility functions and classes, as well as
+  groups for coordinate maps, domain creation, and many others. The
+  [Code modules](modules.html) are designed to help developers discover existing
+  functionality so that things are not re-implemented several times.
 - You can also get an overview of the code base by namespace by visiting the
-  [Namespaces](namespaces.html) section under the _Reference_ menu item.
-- Finally, it is also possible to browse the repository by files under the
-  [Files](files.html) menu item, though it is recommended that in that case you
-  browse the [GitHub repository](https://github.com/sxs-collaboration/spectre)
-  directly.
+  [Namespaces](namespaces.html) section.
+- To browse all files in the repository you can visit the
+  [GitHub repository](https://github.com/sxs-collaboration/spectre) directly.
