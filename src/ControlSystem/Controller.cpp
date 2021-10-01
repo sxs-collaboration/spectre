@@ -73,5 +73,20 @@ DataVector Controller<DerivOrder>::operator()(
   return control_signal / denom;
 }
 
+template <size_t DerivOrder>
+bool operator==(const Controller<DerivOrder>& lhs,
+                const Controller<DerivOrder>& rhs) {
+  return lhs.update_fraction_ == rhs.update_fraction_ and
+         lhs.time_between_updates_ == rhs.time_between_updates_;
+}
+
+template <size_t DerivOrder>
+bool operator!=(const Controller<DerivOrder>& lhs,
+                const Controller<DerivOrder>& rhs) {
+  return not(lhs == rhs);
+}
+
 // explicit instantiations
 template class Controller<2>;
+template bool operator==(const Controller<2>&, const Controller<2>&);
+template bool operator!=(const Controller<2>&, const Controller<2>&);

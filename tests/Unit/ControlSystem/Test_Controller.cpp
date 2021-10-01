@@ -13,9 +13,12 @@
 #include "DataStructures/DataVector.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
+#include "Framework/TestHelpers.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 
-SPECTRE_TEST_CASE("Unit.ControlSystem.Controller", "[ControlSystem][Unit]") {
+namespace {
+void test_controller() {
+  INFO("Test controller");
   const double decrease_timescale_threshold = 1.0e-2;
   const double increase_timescale_threshold = 1.0e-4;
   const double increase_factor = 1.01;
@@ -77,8 +80,8 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Controller", "[ControlSystem][Unit]") {
   }
 }
 
-SPECTRE_TEST_CASE("Unit.ControlSystem.Controller.TimeOffsets",
-                  "[ControlSystem][Unit]") {
+void test_timeoffsets() {
+  INFO("Test time offsets");
   const double decrease_timescale_threshold = 1.0e-2;
   const double increase_timescale_threshold = 1.0e-4;
   const double increase_factor = 1.01;
@@ -158,8 +161,8 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Controller.TimeOffsets",
   }
 }
 
-SPECTRE_TEST_CASE("Unit.ControlSystem.Controller.TimeOffsets_DontAverageQ",
-                  "[ControlSystem][Unit]") {
+void test_timeoffsets_noaverageq() {
+  INFO("Test time offsets not averaging Q");
   const double decrease_timescale_threshold = 1.0e-2;
   const double increase_timescale_threshold = 1.0e-4;
   const double increase_factor = 1.01;
@@ -239,4 +242,32 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Controller.TimeOffsets_DontAverageQ",
     // update the timescale
     tst.update_timescale({{avg_qs[0], avg_qs[1]}});
   }
+}
+
+void test_equality_and_serialization() {
+  INFO("Test equality and serialization");
+  Controller<2> controller1{0.5};
+  Controller<2> controller2{1.0};
+  Controller<2> controller3{0.5};
+  controller3.assign_time_between_updates(2.0);
+
+  CHECK(controller1 != controller2);
+  CHECK_FALSE(controller1 == controller2);
+  CHECK(controller1 != controller3);
+
+  controller1.assign_time_between_updates(2.0);
+
+  CHECK(controller1 == controller3);
+
+  Controller<2> controller1_serialized = serialize_and_deserialize(controller1);
+
+  CHECK(controller1 == controller1_serialized);
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.ControlSystem.Controller", "[ControlSystem][Unit]") {
+  test_controller();
+  test_timeoffsets();
+  test_timeoffsets_noaverageq();
+  test_equality_and_serialization();
 }
