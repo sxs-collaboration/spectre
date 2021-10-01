@@ -505,6 +505,7 @@ std::string create_option_string(const bool excise_A, const bool excise_B,
          "\n"
          "  EnvelopingCube:\n"
          "    Radius: 22.0\n"
+         "    UseProjectiveMap: true\n"
          "  OuterSphere:\n"
          "    Radius: 25.0\n"
          "    UseLogarithmicMap: false\n" +
@@ -524,8 +525,7 @@ std::string create_option_string(const bool excise_A, const bool excise_B,
          "    OuterShell: [1, 1, " +
          std::to_string(1 + additional_refinement_outer) +
          "]\n"
-         "  InitialGridPoints: 3\n"
-         "  UseProjectiveMap: true\n" +
+         "  InitialGridPoints: 3\n" +
          time_dependence;
 }
 

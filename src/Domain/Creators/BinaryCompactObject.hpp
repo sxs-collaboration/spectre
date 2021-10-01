@@ -369,6 +369,7 @@ class BinaryCompactObject : public DomainCreator<3> {
   };
 
   struct UseProjectiveMap {
+    using group = EnvelopingCube;
     using type = bool;
     static constexpr Options::String help = {
         "Use projective scaling on the frustal cloak."};
