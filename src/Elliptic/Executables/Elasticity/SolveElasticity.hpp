@@ -204,6 +204,7 @@ struct Metavariables {
                     volume_dim, linear_solver_iteration_id,
                     tmpl::list<
                         Elasticity::Tags::PotentialEnergyDensity<volume_dim>>,
+                    tmpl::list<>,
                     LinearSolver::multigrid::Tags::IsFinestGrid>>>>,
         tmpl::pair<Trigger, elliptic::Triggers::all_triggers<
                                 typename linear_solver::options_group>>>;

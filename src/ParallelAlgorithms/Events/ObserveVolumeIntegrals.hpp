@@ -40,11 +40,13 @@ struct Inertial;
 }  // namespace Frame
 /// \endcond
 
-namespace dg {
-namespace Events {
+namespace dg::Events {
+/// \cond
 template <size_t VolumeDim, typename ObservationValueTag, typename Tensors,
+          typename NonTensorComputeTagsList = tmpl::list<>,
           typename ArraySectionIdTag = void>
 class ObserveVolumeIntegrals;
+/// \endcond
 
 /*!
  * \ingroup DiscontinuousGalerkinGroup
@@ -63,10 +65,10 @@ class ObserveVolumeIntegrals;
  * for the path in the output file.
  */
 template <size_t VolumeDim, typename ObservationValueTag, typename... Tensors,
-          typename ArraySectionIdTag>
-class ObserveVolumeIntegrals<VolumeDim, ObservationValueTag,
-                             tmpl::list<Tensors...>, ArraySectionIdTag>
-    : public Event {
+          typename... NonTensorComputeTags, typename ArraySectionIdTag>
+class ObserveVolumeIntegrals<
+    VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
+    tmpl::list<NonTensorComputeTags...>, ArraySectionIdTag> : public Event {
  private:
   using VolumeIntegralDatum =
       Parallel::ReductionDatum<std::vector<double>, funcl::VectorPlus>;
@@ -111,8 +113,8 @@ class ObserveVolumeIntegrals<VolumeDim, ObservationValueTag,
   using observed_reduction_data_tags =
       observers::make_reduction_data_tags<tmpl::list<ReductionData>>;
 
-
-  using compute_tags_for_observation_box = tmpl::list<>;
+  using compute_tags_for_observation_box =
+      tmpl::list<Tensors..., NonTensorComputeTags...>;
 
   using argument_tags = tmpl::list<
       ::Tags::ObservationBox, ObservationValueTag,
@@ -220,19 +222,19 @@ class ObserveVolumeIntegrals<VolumeDim, ObservationValueTag,
 };
 
 template <size_t VolumeDim, typename ObservationValueTag, typename... Tensors,
-          typename ArraySectionIdTag>
-ObserveVolumeIntegrals<
-    VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
-    ArraySectionIdTag>::ObserveVolumeIntegrals(const std::string& subfile_name)
+          typename... NonTensorComputeTags, typename ArraySectionIdTag>
+ObserveVolumeIntegrals<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
+                       tmpl::list<NonTensorComputeTags...>, ArraySectionIdTag>::
+    ObserveVolumeIntegrals(const std::string& subfile_name)
     : subfile_path_("/" + subfile_name) {}
 
 /// \cond
 template <size_t VolumeDim, typename ObservationValueTag, typename... Tensors,
-          typename ArraySectionIdTag>
+          typename... NonTensorComputeTags, typename ArraySectionIdTag>
 PUP::able::PUP_ID ObserveVolumeIntegrals<VolumeDim, ObservationValueTag,
                                          tmpl::list<Tensors...>,
+                                         tmpl::list<NonTensorComputeTags...>,
                                          ArraySectionIdTag>::my_PUP_ID =
     0;  // NOLINT
 /// \endcond
-}  // namespace Events
-}  // namespace dg
+}  // namespace dg::Events

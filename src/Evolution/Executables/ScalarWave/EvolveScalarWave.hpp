@@ -134,17 +134,17 @@ struct EvolutionMetavars {
     using factory_classes = tmpl::map<
         tmpl::pair<DenseTrigger, DenseTriggers::standard_dense_triggers>,
         tmpl::pair<DomainCreator<volume_dim>, domain_creators<volume_dim>>,
-        tmpl::pair<
-            Event,
-            tmpl::flatten<tmpl::list<
-                Events::Completion,
-                dg::Events::field_observations<
-                    volume_dim, Tags::Time, observe_fields,
-                    analytic_solution_fields, tmpl::list<>>,
-                dg::Events::ObserveVolumeIntegrals<
-                    volume_dim, Tags::Time,
-                    tmpl::list<ScalarWave::Tags::EnergyDensity<volume_dim>>>,
-                Events::time_events<system>>>>,
+        tmpl::pair<Event,
+                   tmpl::flatten<tmpl::list<
+                       Events::Completion,
+                       dg::Events::field_observations<
+                           volume_dim, Tags::Time, observe_fields,
+                           analytic_solution_fields, tmpl::list<>>,
+                       dg::Events::ObserveVolumeIntegrals<
+                           volume_dim, Tags::Time,
+                           tmpl::list<ScalarWave::Tags::EnergyDensityCompute<
+                               volume_dim>>>,
+                       Events::time_events<system>>>>,
         tmpl::pair<MathFunction<1, Frame::Inertial>,
                    MathFunctions::all_math_functions<1, Frame::Inertial>>,
         tmpl::pair<
@@ -248,9 +248,8 @@ struct EvolutionMetavars {
                  ScalarWave::Actions::InitializeConstraints<volume_dim>,
                  Initialization::Actions::AddComputeTags<tmpl::push_back<
                      StepChoosers::step_chooser_compute_tags<EvolutionMetavars>,
-                     evolution::Tags::AnalyticCompute<Dim, initial_data_tag,
-                                                      analytic_solution_fields>,
-                     ScalarWave::Tags::EnergyDensityCompute<volume_dim>>>,
+                     evolution::Tags::AnalyticCompute<
+                         Dim, initial_data_tag, analytic_solution_fields>>>,
                  ::evolution::dg::Initialization::Mortars<volume_dim, system>,
                  evolution::Actions::InitializeRunEventsAndDenseTriggers,
                  Initialization::Actions::RemoveOptionsAndTerminatePhase>;

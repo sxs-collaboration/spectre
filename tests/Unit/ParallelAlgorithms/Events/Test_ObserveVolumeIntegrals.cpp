@@ -135,6 +135,10 @@ struct ScalarVar : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
 
+struct ScalarVarTimesTwo : db::SimpleTag {
+  using type = Scalar<DataVector>;
+};
+
 template <size_t SpatialDim>
 struct VectorVar : db::SimpleTag {
   using type = tnsr::I<DataVector, SpatialDim>;
@@ -145,9 +149,22 @@ struct TensorVar : db::SimpleTag {
   using type = tnsr::Ij<DataVector, SpatialDim>;
 };
 
+struct ScalarVarTimesTwoCompute
+    : db::ComputeTag,
+      ::Tags::Variables<tmpl::list<ScalarVarTimesTwo>> {
+  using base = ::Tags::Variables<tmpl::list<ScalarVarTimesTwo>>;
+  using return_type = typename base::type;
+  using argument_tags = tmpl::list<ScalarVar>;
+  static void function(const gsl::not_null<type*> result,
+                       const Scalar<DataVector>& scalar_var) {
+    result->initialize(get(scalar_var).size());
+    get(get<ScalarVarTimesTwo>(*result)) = 2.0 * get(scalar_var);
+  }
+};
+
 template <size_t SpatialDim>
-using variables_for_test =
-    tmpl::list<ScalarVar, VectorVar<SpatialDim>, TensorVar<SpatialDim>>;
+using variables_for_test = tmpl::list<ScalarVar, VectorVar<SpatialDim>,
+                                      TensorVar<SpatialDim>, ScalarVarTimesTwo>;
 
 template <size_t VolumeDim, typename ArraySectionIdTag>
 struct Metavariables {
@@ -155,12 +172,14 @@ struct Metavariables {
                                     MockObserverComponent<Metavariables>>;
   using const_global_cache_tags = tmpl::list<>;  //  unused
 
+  using ObserveEvent = dg::Events::ObserveVolumeIntegrals<
+      VolumeDim, ObservationTimeTag, variables_for_test<VolumeDim>,
+      tmpl::list<ScalarVarTimesTwoCompute>, ArraySectionIdTag>;
+
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
-    using factory_classes = tmpl::map<tmpl::pair<
-        Event, tmpl::list<dg::Events::ObserveVolumeIntegrals<
-                   VolumeDim, ObservationTimeTag, variables_for_test<VolumeDim>,
-                   ArraySectionIdTag>>>>;
+    using factory_classes =
+        tmpl::map<tmpl::pair<Event, tmpl::list<ObserveEvent>>>;
   };
   enum class Phase { Initialization, Testing, Exit };
 };
@@ -288,19 +307,16 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe,
 template <size_t VolumeDim, typename ArraySectionIdTag = void>
 void test_observe_system(
     const std::optional<std::string>& section = std::nullopt) {
-  using vars_for_test = variables_for_test<VolumeDim>;
-
+  using metavariables = Metavariables<VolumeDim, ArraySectionIdTag>;
   {
     INFO("Testing observation for Dim = " << VolumeDim);
     test_observe<VolumeDim, ArraySectionIdTag>(
-        std::make_unique<dg::Events::ObserveVolumeIntegrals<
-            VolumeDim, ObservationTimeTag, vars_for_test, ArraySectionIdTag>>(
+        std::make_unique<typename metavariables::ObserveEvent>(
             "volume_integrals"),
         section);
   }
   {
     INFO("Testing create/serialize for Dim = " << VolumeDim);
-    using metavariables = Metavariables<VolumeDim, ArraySectionIdTag>;
     Parallel::register_factory_classes_with_charm<metavariables>();
     const auto factory_event =
         TestHelpers::test_creation<std::unique_ptr<Event>, metavariables>(
