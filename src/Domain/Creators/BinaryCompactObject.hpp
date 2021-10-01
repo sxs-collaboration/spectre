@@ -11,6 +11,8 @@
 #include <string>
 #include <type_traits>
 #include <unordered_map>
+#include <unordered_set>
+#include <variant>
 #include <vector>
 
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
@@ -261,13 +263,6 @@ class BinaryCompactObject : public DomainCreator<3> {
           "Use a logarithmically spaced radial grid in the part of Layer 1 "
           "enveloping the object (requires the interior is excised)"};
     };
-    struct AdditionToRadialRefinementLevel {
-      using type = size_t;
-      static constexpr Options::String help = {
-          "Addition to radial refinement level in the part of Layer 1 "
-          "enveloping the object, beyond the refinement level set by "
-          "InitialRefinement."};
-    };
     template <typename Metavariables>
     using options = tmpl::list<
         InnerRadius, OuterRadius, XCoord,
@@ -275,12 +270,11 @@ class BinaryCompactObject : public DomainCreator<3> {
             domain::BoundaryConditions::has_boundary_conditions_base_v<
                 typename Metavariables::system>,
             Interior, ExciseInterior>,
-        UseLogarithmicMap, AdditionToRadialRefinementLevel>;
+        UseLogarithmicMap>;
     Object() = default;
     Object(double local_inner_radius, double local_outer_radius,
            double local_x_coord, std::optional<Excision> interior,
-           bool local_use_logarithmic_map,
-           size_t local_addition_to_radial_refinement_level) noexcept
+           bool local_use_logarithmic_map) noexcept
         : inner_radius(local_inner_radius),
           outer_radius(local_outer_radius),
           x_coord(local_x_coord),
@@ -288,13 +282,10 @@ class BinaryCompactObject : public DomainCreator<3> {
               interior.has_value()
                   ? std::make_optional(std::move(interior->boundary_condition))
                   : std::nullopt),
-          use_logarithmic_map(local_use_logarithmic_map),
-          addition_to_radial_refinement_level(
-              local_addition_to_radial_refinement_level) {}
+          use_logarithmic_map(local_use_logarithmic_map) {}
     Object(double local_inner_radius, double local_outer_radius,
            double local_x_coord, bool local_excise_interior,
-           bool local_use_logarithmic_map,
-           size_t local_addition_to_radial_refinement_level) noexcept
+           bool local_use_logarithmic_map) noexcept
         : inner_radius(local_inner_radius),
           outer_radius(local_outer_radius),
           x_coord(local_x_coord),
@@ -303,9 +294,7 @@ class BinaryCompactObject : public DomainCreator<3> {
                   ? std::optional<std::unique_ptr<
                         domain::BoundaryConditions::BoundaryCondition>>{nullptr}
                   : std::nullopt),
-          use_logarithmic_map(local_use_logarithmic_map),
-          addition_to_radial_refinement_level(
-              local_addition_to_radial_refinement_level) {}
+          use_logarithmic_map(local_use_logarithmic_map) {}
 
     /// Whether or not the object should be excised from the domain, leaving a
     /// spherical hole. When this is true, `inner_boundary_condition` is
@@ -320,7 +309,6 @@ class BinaryCompactObject : public DomainCreator<3> {
         std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>
         inner_boundary_condition;
     bool use_logarithmic_map;
-    size_t addition_to_radial_refinement_level;
   };
 
   struct ObjectA {
@@ -363,15 +351,23 @@ class BinaryCompactObject : public DomainCreator<3> {
   };
 
   struct InitialRefinement {
-    using type = size_t;
+    using type =
+        std::variant<size_t, std::array<size_t, 3>,
+                     std::vector<std::array<size_t, 3>>,
+                     std::unordered_map<std::string, std::array<size_t, 3>>>;
     static constexpr Options::String help = {
-        "Initial refinement level. Applied to each dimension."};
+        "Initial refinement level in each block of the domain. See main help "
+        "text for details."};
   };
 
   struct InitialGridPoints {
-    using type = size_t;
+    using type =
+        std::variant<size_t, std::array<size_t, 3>,
+                     std::vector<std::array<size_t, 3>>,
+                     std::unordered_map<std::string, std::array<size_t, 3>>>;
     static constexpr Options::String help = {
-        "Initial number of grid points in each dim per element."};
+        "Initial number of grid points in the elements of each block of the "
+        "domain. See main help text for details."};
   };
 
   struct UseProjectiveMap {
@@ -387,18 +383,6 @@ class BinaryCompactObject : public DomainCreator<3> {
     static constexpr Options::String help = {
         "Use a logarithmically spaced radial grid in Layer 5, the outer "
         "spherical shell that covers the wave zone."};
-  };
-
-  struct AdditionToOuterLayerRadialRefinementLevel {
-    using group = OuterSphere;
-    static std::string name() noexcept {
-      return "AdditionToRadialRefinementLevel";
-    }
-    using type = size_t;
-    static constexpr Options::String help = {
-        "Addition to radial refinement level in Layer 5 (the outer spherical "
-        "shell that covers that wave zone), beyond the refinement "
-        "level set by InitialRefinement."};
   };
 
   template <typename BoundaryConditionsBase>
@@ -582,8 +566,7 @@ class BinaryCompactObject : public DomainCreator<3> {
   using time_independent_options = tmpl::append<
       tmpl::list<ObjectA, ObjectB, RadiusEnvelopingCube, RadiusOuterSphere,
                  InitialRefinement, InitialGridPoints, UseProjectiveMap,
-                 UseLogarithmicMapOuterSphericalShell,
-                 AdditionToOuterLayerRadialRefinementLevel>,
+                 UseLogarithmicMapOuterSphericalShell>,
       tmpl::conditional_t<
           domain::BoundaryConditions::has_boundary_conditions_base_v<
               typename Metavariables::system>,
@@ -612,30 +595,36 @@ class BinaryCompactObject : public DomainCreator<3> {
   static constexpr Options::String help{
       "The BinaryCompactObject domain is a general domain for two compact "
       "objects. The user must provide the inner and outer radii of the "
-      "spherical shells surrounding each of the two compact objects A and "
-      "B. The radial refinement levels for these shells are (InitialRefinement "
-      "+ Object{A,B}.AdditionToRadialRefinementLevel).\n\n"
-      "The user must also provide the radius of the sphere that "
-      "circumscribes the cube containing both compact objects, and the "
-      "radius of the outer boundary. The options Object{A,B}.Interior (or "
+      "spherical shells surrounding each of the two compact objects A and B "
+      "(\"ObjectAShell\" and \"ObjectBShell\"). Each object is enveloped in "
+      "a cube (\"ObjectACube\" and \"ObjectBCube\")."
+      "The user must also provide the radius of the sphere that circumscribes "
+      "the cube containing both compact objects (\"EnvelopingCube\"). "
+      "A radial layer transitions from the enveloping cube to a sphere "
+      "(\"CubedShell\"). A final radial layer transitions to the outer "
+      "boundary (\"OuterShell\"). The options Object{A,B}.Interior (or "
       "Object{A,B}.ExciseInterior if we're not working with boundary "
-      "conditions) determine whether the layer-zero blocks are present "
-      "inside each compact object. If set to a boundary condition or 'false', "
-      "the domain will not contain layer zero for that object. The user "
+      "conditions) determine whether blocks are present inside each compact "
+      "object (\"ObjectAInterior\" and \"ObjectBInterior\"). If set to a "
+      "boundary condition or 'false', the region will be excised. The user "
       "specifies Object{A,B}.XCoord, the x-coordinates of the locations of the "
       "centers of each compact object. In these coordinates, the location for "
       "the axis of rotation is x=0. ObjectA is located on the left and ObjectB "
       "is located on the right. Please make sure that your choices of "
       "x-coordinate locations are such that the resulting center of mass "
-      "is located at zero.\n\n"
-      "Two radial layers join the enveloping cube to the spherical outer "
-      "boundary. The first of these layers transitions from sphericity == 0.0 "
-      "on the inner boundary to sphericity == 1.0 on the outer boundary. The "
-      "second has sphericity == 1 (so either linear or logarithmic mapping can "
-      "be used in the radial direction), extends to the spherical outer "
-      "boundary of the domain, and has a radial refinement level of "
-      "(InitialRefinement + OuterSphere.AdditionToRadialRefinementLevel)."
-      "Note that the domain optionally includes time-dependent maps; enabling "
+      "is located at zero.\n"
+      "\n"
+      "Both the InitialRefinement and the InitialGridPoints can be one of "
+      "the following:\n"
+      "  - A single number: Uniform refinement in all blocks and "
+      "dimensions\n"
+      "  - Three numbers: Refinement in [polar, azimuthal, radial] direction "
+      "in all blocks\n"
+      "  - A map from block names or groups to three numbers: Per-block "
+      "refinement in [polar, azimuthal, radial] direction\n"
+      "  - A list, with [polar, azimuthal, radial] refinement for each block\n"
+      "\n"
+      "The domain optionally includes time-dependent maps. Enabling "
       "the time-dependent maps requires adding a "
       "struct named domain to the Metavariables, with this "
       "struct conforming to domain::protocols::Metavariables. To enable the "
@@ -650,10 +639,11 @@ class BinaryCompactObject : public DomainCreator<3> {
   // Metavariables::domain::enable_time_dependent_maps)
   BinaryCompactObject(
       Object object_A, Object object_B, double radius_enveloping_cube,
-      double radius_enveloping_sphere, size_t initial_refinement,
-      size_t initial_grid_points_per_dim, bool use_projective_map = true,
+      double radius_enveloping_sphere,
+      const typename InitialRefinement::type& initial_refinement,
+      const typename InitialGridPoints::type& initial_number_of_grid_points,
+      bool use_projective_map = true,
       bool use_logarithmic_map_outer_spherical_shell = false,
-      size_t addition_to_outer_layer_radial_refinement_level = 0,
       std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
           outer_boundary_condition = nullptr,
       const Options::Context& context = {});
@@ -676,10 +666,11 @@ class BinaryCompactObject : public DomainCreator<3> {
       std::array<double, 2> initial_size_map_accelerations,
       std::array<std::string, 2> size_map_function_of_time_names,
       Object object_A, Object object_B, double radius_enveloping_cube,
-      double radius_enveloping_sphere, size_t initial_refinement,
-      size_t initial_grid_points_per_dim, bool use_projective_map = true,
+      double radius_enveloping_sphere,
+      const typename InitialRefinement::type& initial_refinement,
+      const typename InitialGridPoints::type& initial_number_of_grid_points,
+      bool use_projective_map = true,
       bool use_logarithmic_map_outer_spherical_shell = false,
-      size_t addition_to_outer_layer_radial_refinement_level = 0,
       std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
           outer_boundary_condition = nullptr,
       const Options::Context& context = {});
@@ -693,30 +684,39 @@ class BinaryCompactObject : public DomainCreator<3> {
 
   Domain<3> create_domain() const noexcept override;
 
-  std::vector<std::array<size_t, 3>> initial_extents() const noexcept override;
+  std::vector<std::array<size_t, 3>> initial_extents() const noexcept override {
+    return initial_number_of_grid_points_;
+  }
 
-  std::vector<std::array<size_t, 3>> initial_refinement_levels() const
-      noexcept override;
+  std::vector<std::array<size_t, 3>> initial_refinement_levels()
+      const noexcept override {
+    return initial_refinement_;
+  }
+
+  std::vector<std::string> block_names() const noexcept override {
+    return block_names_;
+  }
+
+  std::unordered_map<std::string, std::unordered_set<std::string>>
+  block_groups() const noexcept override {
+    return block_groups_;
+  }
 
   auto functions_of_time() const noexcept -> std::unordered_map<
       std::string,
       std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;
 
  private:
-  void check_for_parse_errors(const Options::Context& context) const;
-  void initialize_calculated_member_variables() noexcept;
-
   Object object_A_{};
   Object object_B_{};
   double radius_enveloping_cube_{};
   double radius_enveloping_sphere_{};
-  size_t initial_refinement_{};
-  size_t initial_grid_points_per_dim_{};
+  std::vector<std::array<size_t, 3>> initial_refinement_{};
+  std::vector<std::array<size_t, 3>> initial_number_of_grid_points_{};
   static constexpr bool use_equiangular_map_ =
       false;  // Doesn't work properly yet
   bool use_projective_map_ = true;
   bool use_logarithmic_map_outer_spherical_shell_ = false;
-  size_t addition_to_outer_layer_radial_refinement_level_{};
   double projective_scale_factor_{};
   double translation_{};
   double length_inner_cube_{};
@@ -724,23 +724,38 @@ class BinaryCompactObject : public DomainCreator<3> {
   size_t number_of_blocks_{};
   std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
       outer_boundary_condition_;
+  std::vector<std::string> block_names_{};
+  std::unordered_map<std::string, std::unordered_set<std::string>>
+      block_groups_{};
 
   // Variables for FunctionsOfTime options
-  bool enable_time_dependence_;
-  double initial_time_;
-  std::optional<double> initial_expiration_delta_t_;
-  double expansion_map_outer_boundary_;
-  double initial_expansion_;
-  double initial_expansion_velocity_;
+  bool enable_time_dependence_{false};
+  double initial_time_{std::numeric_limits<double>::signaling_NaN()};
+  std::optional<double> initial_expiration_delta_t_{
+      std::numeric_limits<double>::signaling_NaN()};
+  double expansion_map_outer_boundary_{
+      std::numeric_limits<double>::signaling_NaN()};
+  double initial_expansion_{std::numeric_limits<double>::signaling_NaN()};
+  double initial_expansion_velocity_{
+      std::numeric_limits<double>::signaling_NaN()};
   std::string expansion_function_of_time_name_;
-  double asymptotic_velocity_outer_boundary_;
-  double decay_timescale_outer_boundary_velocity_;
-  double initial_rotation_angle_;
-  double initial_angular_velocity_;
+  double asymptotic_velocity_outer_boundary_{
+      std::numeric_limits<double>::signaling_NaN()};
+  double decay_timescale_outer_boundary_velocity_{
+      std::numeric_limits<double>::signaling_NaN()};
+  double initial_rotation_angle_{std::numeric_limits<double>::signaling_NaN()};
+  double initial_angular_velocity_{
+      std::numeric_limits<double>::signaling_NaN()};
   std::string rotation_about_z_axis_function_of_time_name_;
-  std::array<double, 2> initial_size_map_values_;
-  std::array<double, 2> initial_size_map_velocities_;
-  std::array<double, 2> initial_size_map_accelerations_;
+  std::array<double, 2> initial_size_map_values_{
+      std::numeric_limits<double>::signaling_NaN(),
+      std::numeric_limits<double>::signaling_NaN()};
+  std::array<double, 2> initial_size_map_velocities_{
+      std::numeric_limits<double>::signaling_NaN(),
+      std::numeric_limits<double>::signaling_NaN()};
+  std::array<double, 2> initial_size_map_accelerations_{
+      std::numeric_limits<double>::signaling_NaN(),
+      std::numeric_limits<double>::signaling_NaN()};
   std::array<std::string, 2> size_map_function_of_time_names_;
 };
 }  // namespace creators
