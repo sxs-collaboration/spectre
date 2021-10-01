@@ -10,11 +10,11 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 
 namespace evolution::dg::subcell::fd::Tags {
-/// \brief The inverse Jacobian from the logical frame to the grid frame at the
-/// cell centers.
+/// \brief The inverse Jacobian from the element logical frame to the grid frame
+/// at the cell centers.
 ///
 /// Specifically, \f$\partial x^{\bar{i}} / \partial x^i\f$, where \f$\bar{i}\f$
-/// denotes the logical frame and \f$i\f$ denotes the grid frame.
+/// denotes the element logical frame and \f$i\f$ denotes the grid frame.
 ///
 /// \note stored as a `std::optional` so we can reset it when switching to DG
 /// and reduce the memory footprint.
@@ -25,8 +25,8 @@ struct InverseJacobianLogicalToGrid : db::SimpleTag {
       ::InverseJacobian<DataVector, Dim, Frame::ElementLogical, Frame::Grid>>;
 };
 
-/// \brief The determinant of the inverse Jacobian from the logical frame to the
-/// grid frame at the cell centers.
+/// \brief The determinant of the inverse Jacobian from the element logical
+/// frame to the grid frame at the cell centers.
 ///
 /// \note stored as a `std::optional` so we can reset it when switching to DG
 /// and reduce the memory footprint.

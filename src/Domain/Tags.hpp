@@ -109,7 +109,7 @@ struct Mesh : db::SimpleTag {
 
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ComputationalDomainGroup
-/// The coordinate map from logical to grid coordinate
+/// The coordinate map from the ElementLogical frame to the TargetFrame
 template <size_t VolumeDim, typename TargetFrame = Frame::Inertial>
 struct ElementMap : db::SimpleTag {
   static constexpr size_t dim = VolumeDim;

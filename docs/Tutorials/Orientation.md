@@ -10,8 +10,8 @@ for computations in its own local coordinate system. These are referred to
 as the logical directions \f$\xi\f$, \f$\eta\f$, and \f$\zeta\f$, where
 \f$\xi\f$ is the first dimension, \f$\eta\f$ is the second dimension, and
 \f$\zeta\f$ is the third dimension. In a
-domain with multiple elements, the logical directions are not necessarily
-aligned on the interfaces between two elements, as shown in the figure below.
+domain with multiple Blocks, the logical directions are not necessarily
+aligned on the interfaces between two Blocks, as shown in the figure below.
 As certain operations (e.g. fluxes, limiting) communicate information across
 the boundaries of adjacent elements, there needs to be a class that takes
 into account the relative orientations of elements which neighbor each other.

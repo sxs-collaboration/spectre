@@ -93,7 +93,7 @@ struct Component {
 
   using inverse_jacobian = domain::Tags::InverseJacobianCompute<
       domain::Tags::ElementMap<1>,
-      domain::Tags::Coordinates<1, Frame::Logical>>;
+      domain::Tags::Coordinates<1, Frame::ElementLogical>>;
 
   template <typename Tag>
   using interface_compute_tag =
@@ -103,7 +103,7 @@ struct Component {
       domain::Tags::LogicalCoordinates<1>,
       domain::Tags::MappedCoordinates<
           domain::Tags::ElementMap<1>,
-          domain::Tags::Coordinates<1, Frame::Logical>>,
+          domain::Tags::Coordinates<1, Frame::ElementLogical>>,
       inverse_jacobian,
       Tags::DerivCompute<variables_tag, inverse_jacobian,
                          typename metavariables::system::gradients_tags>,
@@ -171,10 +171,10 @@ std::pair<tnsr::I<DataVector, 1>, EvolvedVariables> evaluate_rhs(
                      Spectral::Quadrature::GaussLobatto};
 
   PUPable_reg(
-      SINGLE_ARG(domain::CoordinateMap<Frame::Logical, Frame::Inertial,
+      SINGLE_ARG(domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial,
                                        domain::CoordinateMaps::Affine>));
   const auto block_map =
-      domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
           domain::CoordinateMaps::Affine(-1.0, 1.0, 0.0, 2.0 * M_PI));
 
   const auto emplace_element =

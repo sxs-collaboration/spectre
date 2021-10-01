@@ -308,7 +308,7 @@ void test_suite(const gsl::not_null<std::mt19937*> generator) {
   const auto check_map_equality = [&random_point, &time, &functions_of_time](
                                       const auto& map_one,
                                       const auto& map_two) {
-    tnsr::I<double, 3, Frame::Logical> source_point{};
+    tnsr::I<double, 3, Frame::BlockLogical> source_point{};
     for (size_t i = 0; i < 3; ++i) {
       source_point.get(i) = gsl::at(random_point, i);
     }
@@ -323,8 +323,8 @@ void test_suite(const gsl::not_null<std::mt19937*> generator) {
   };
   const auto map2 = serialize_and_deserialize(map);
   check_map_equality(
-      domain::make_coordinate_map<Frame::Logical, Frame::Grid>(map),
-      domain::make_coordinate_map<Frame::Logical, Frame::Grid>(map2));
+      domain::make_coordinate_map<Frame::BlockLogical, Frame::Grid>(map),
+      domain::make_coordinate_map<Frame::BlockLogical, Frame::Grid>(map2));
   test_helper(map2);
 }
 

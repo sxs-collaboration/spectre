@@ -127,10 +127,9 @@ namespace Limiters {
 /// means the limiter can operate on generic deformed grids --- however, some
 /// things can start to break down, especially on strongly deformed grids:
 /// 1. When the Jacobian (from `Frame::ElementLogical` to `Frame::Inertial`)
-/// varies
-///    across the element, then the limiter fails to be conservative. This is
-///    because the integral of a tensor `u` over the element will change after
-///    the limiter activates on `u`.
+///    varies across the element, then the limiter fails to be conservative.
+///    This is because the integral of a tensor `u` over the element will change
+///    after the limiter activates on `u`.
 /// 2. When there is a sudden change in the size of the elements (perhaps at an
 ///    h-refinement boundary, or at the boundary between two blocks with very
 ///    different mappings), a smooth solution in `Frame::Inertial` can appear
@@ -263,7 +262,8 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
   /// \param tensors The tensors to be limited.
   /// \param mesh The mesh on which the tensor values are measured.
   /// \param element The element on which the tensors to limit live.
-  /// \param logical_coords The logical coordinates of the mesh gridpoints.
+  /// \param logical_coords The element logical coordinates of the mesh
+  ///        gridpoints.
   /// \param element_size The size of the element, in the inertial coordinates.
   /// \param neighbor_data The data from each neighbor.
   ///

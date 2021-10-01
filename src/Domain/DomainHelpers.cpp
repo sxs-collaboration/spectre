@@ -1495,12 +1495,12 @@ template class domain::CoordinateMaps::ProductOf3Maps<
 template class domain::CoordinateMaps::ProductOf2Maps<
     domain::CoordinateMaps::Affine, domain::CoordinateMaps::Identity<2>>;
 
-INSTANTIATE_MAPS_FUNCTIONS(
-    ((Affine2d), (Affine3d), (Equiangular3d),
-     (domain::CoordinateMaps::Wedge<3>,
-      domain::CoordinateMaps::EquatorialCompression, AffineIdentity)),
-    (Frame::BlockLogical, Frame::ElementLogical, Frame::Logical),
-    (Frame::Grid, Frame::Inertial), (double, DataVector))
+INSTANTIATE_MAPS_FUNCTIONS(((Affine2d), (Affine3d), (Equiangular3d),
+                            (domain::CoordinateMaps::Wedge<3>,
+                             domain::CoordinateMaps::EquatorialCompression,
+                             AffineIdentity)),
+                           (Frame::BlockLogical, Frame::ElementLogical),
+                           (Frame::Grid, Frame::Inertial), (double, DataVector))
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(1, data)

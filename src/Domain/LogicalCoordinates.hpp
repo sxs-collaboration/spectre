@@ -59,7 +59,7 @@ tnsr::I<DataVector, VolumeDim, Frame::ElementLogical> logical_coordinates(
  * \ingroup ComputationalDomainGroup
  * \brief Compute the logical coordinates on a face of an Element.
  *
- * \returns logical-frame vector holding coordinates
+ * \returns element logical-frame vector holding coordinates
  *
  * \example
  * \snippet Test_LogicalCoordinates.cpp interface_logical_coordinates_example

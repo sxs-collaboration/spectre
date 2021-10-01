@@ -157,7 +157,7 @@ namespace intrp {
 /// `InterpolationTargetTag::compute_target_points::frame`.  Then the
 /// function `block_logical_coordinates` (and eventually
 /// `element_logical_coordinates`) is called to convert those points
-/// to the logical frame to do the interpolation.  If
+/// to the element logical frame to do the interpolation.  If
 /// `InterpolationTargetTag::compute_target_points::frame` is
 /// different from the grid frame, and if the `CoordinateMap` is
 /// time-dependent, then `block_logical_coordinates` grabs

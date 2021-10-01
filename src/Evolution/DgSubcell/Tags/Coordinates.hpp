@@ -29,7 +29,7 @@ struct Coordinates : db::SimpleTag {
   using type = tnsr::I<DataVector, Dim, Frame>;
 };
 
-/// The logical coordinates on the subcell grid
+/// The element logical coordinates on the subcell grid
 template <size_t VolumeDim>
 struct LogicalCoordinatesCompute
     : Coordinates<VolumeDim, Frame::ElementLogical>,

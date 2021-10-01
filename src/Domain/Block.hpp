@@ -38,8 +38,9 @@ class er;
 /// A Block has logical coordinates that go from -1 to +1 in each
 /// dimension.  The global coordinates are obtained from the logical
 /// coordinates from the Coordinatemap:  CoordinateMap::operator() takes
-/// Points in the Logical Frame (i.e., logical coordinates) and
-/// returns Points in the Inertial Frame (i.e., global coordinates).
+/// Points in the BlockLogical Frame (i.e., block logical coordinates) and
+/// returns Points in the Inertial Frame (i.e., the global coordinate frame in
+/// which the problem to be solved is set up).
 template <size_t VolumeDim>
 class Block {
  public:

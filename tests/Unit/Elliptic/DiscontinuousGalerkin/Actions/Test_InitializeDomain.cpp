@@ -106,7 +106,7 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
         logical_coords_for_element_map{{{{-1., -0.5, 0., 0.1, 1.}}}};
     const auto inertial_coords_from_element_map =
         element_map(logical_coords_for_element_map);
-    const tnsr::I<DataVector, 1, Frame::Logical> expected_inertial_coords{
+    const tnsr::I<DataVector, 1, Frame::Inertial> expected_inertial_coords{
         {{{0., 0.125, 0.25, 0.275, 0.5}}}};
     CHECK_ITERABLE_APPROX(get<0>(inertial_coords_from_element_map),
                           get<0>(expected_inertial_coords));
@@ -181,7 +181,7 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
             {{{-1., -0.5, 0., 0.1, 1.}, {-1., -0.5, 0., 0.1, 1.}}}};
     const auto inertial_coords_from_element_map =
         element_map(logical_coords_for_element_map);
-    const tnsr::I<DataVector, 2, Frame::Logical> expected_inertial_coords{
+    const tnsr::I<DataVector, 2, Frame::Inertial> expected_inertial_coords{
         {{{0., 0.125, 0.25, 0.275, 0.5}, {0., 0.5, 1., 1.1, 2.}}}};
     CHECK_ITERABLE_APPROX(get<0>(inertial_coords_from_element_map),
                           get<0>(expected_inertial_coords));
@@ -263,7 +263,7 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
                                          {-1., -0.5, 0., 0.1, 1.}}}};
     const auto inertial_coords_from_element_map =
         element_map(logical_coords_for_element_map);
-    const tnsr::I<DataVector, 3, Frame::Logical> expected_inertial_coords{
+    const tnsr::I<DataVector, 3, Frame::Inertial> expected_inertial_coords{
         {{{0., 0.125, 0.25, 0.275, 0.5},
           {0., 0.5, 1., 1.1, 2.},
           {1., 1.5, 2., 2.1, 3.}}}};

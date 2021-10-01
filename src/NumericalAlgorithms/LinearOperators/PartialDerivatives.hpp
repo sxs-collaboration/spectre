@@ -89,7 +89,7 @@ struct spacetime_deriv<Tag, Dim, Frame,
 /// @{
 /// \ingroup NumericalAlgorithmsGroup
 /// \brief Compute the partial derivatives of each variable with respect to
-/// the logical coordinate.
+/// the element logical coordinate.
 ///
 /// \requires `DerivativeTags` to be the head of `VariableTags`
 ///
