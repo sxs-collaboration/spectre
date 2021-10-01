@@ -1147,19 +1147,19 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Iterating",
   for (size_t k = 0; k < dim2; k++) {
     for (size_t i = 0; i < dim2; i++) {
       for (size_t j = i; j < dim2; j++) {
-        tensor_c.get(k, i, j)[0] = 100 * (k + 1) + 10 * (i + 1) + j + 1;
+        tensor_c.get(k, i, j)[0] = 100. * (k + 1.) + 10 * (i + 1.) + j + 1.;
       }
     }
   }
 
   count = 0;
-  int sum = 0;
+  double sum = 0.;
   for (const auto& elem : tensor_c) {
     ++count;
     sum += elem[0];
   }
   CHECK(count == 18);
-  CHECK(sum == 3942);
+  CHECK(sum == 3942.);
 }
 
 SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.IndexByVector",
