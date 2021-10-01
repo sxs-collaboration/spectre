@@ -37,13 +37,15 @@ target_link_libraries(
   ${LIBRARY}
   PUBLIC
   Blas
-  Boost::boost
   DataStructures
-  Domain
   ErrorHandling
-  GSL::gsl
   Options
   Spectral
+  Utilities
+  PRIVATE
+  Boost::boost
+  Domain
+  GSL::gsl
   )
 
 add_subdirectory(Python)

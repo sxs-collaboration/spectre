@@ -2,9 +2,10 @@
 // See LICENSE.txt for details.
 
 #include "NumericalAlgorithms/Interpolation/CubicSpanInterpolator.hpp"
-#include "Utilities/ForceInline.hpp"
 
 #include "Parallel/CharmPupable.hpp"
+#include "Utilities/ForceInline.hpp"
+#include "Utilities/Gsl.hpp"
 
 namespace intrp {
 
