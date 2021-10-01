@@ -11,6 +11,7 @@ set(LIBRARY_SOURCES
   Test_Direction.cpp
   Test_Element.cpp
   Test_ElementId.cpp
+  Test_ExcisionSphere.cpp
   Test_Hypercube.cpp
   Test_IndexToSliceAt.cpp
   Test_InitialElementIds.cpp
