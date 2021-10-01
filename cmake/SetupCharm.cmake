@@ -27,6 +27,37 @@ endif(NOT TARGET Charmxx)
 # Note: The -pthread is necessary with Charm v6.10 to get linking working
 #       with GCC
 if (USE_SCOTCH_LB)
+  find_package(Scotch REQUIRED)
+
+  message(STATUS "Scotch libs: " ${SCOTCH_LIBRARIES})
+  message(STATUS "Scotch incl: " ${SCOTCH_INCLUDE_DIR})
+  message(STATUS "Scotch vers: " ${SCOTCH_VERSION})
+
+  file(APPEND
+    "${CMAKE_BINARY_DIR}/BuildInfo.txt"
+    "Scotch version: ${SCOTCH_VERSION}\n"
+    )
+
+  add_library(Scotch INTERFACE IMPORTED)
+  set_property(TARGET Scotch
+    APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${SCOTCH_INCLUDE_DIRS})
+  set_property(TARGET Scotch
+    APPEND PROPERTY INTERFACE_LINK_LIBRARIES ${SCOTCH_LIBRARIES})
+
+  add_interface_lib_headers(
+    TARGET Scotch
+    HEADERS
+    scotch.h
+    )
+  # We can't actually use the Scotch target until we have a Charm++ CMake
+  # target. We can then override the `-lscotch` and `-lscotcherr` libs specified
+  # in charmc and instead have CMake handle the dependency. Until then we
+  # extract the directory in which we found Scotch and append that to the global
+  # list of directories.
+  list(GET SCOTCH_LIBRARIES 0 SCOTCH_LINK_LIB)
+  get_filename_component(SCOTCH_LINK_LIB "${SCOTCH_LINK_LIB}" DIRECTORY)
+  link_directories(BEFORE "${SCOTCH_LINK_LIB}")
+
   set(SCOTCH_LB_FLAG "-module ScotchLB")
 else()
   set(SCOTCH_LB_FLAG "")
