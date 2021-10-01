@@ -75,6 +75,7 @@ all of these dependencies.
 * [yapf](https://github.com/google/yapf) 0.29.0 - to format python code
 * [Scotch](https://gitlab.inria.fr/scotch/scotch) - to build the `ScotchLB`
   graph partition based load balancer in charm++.
+* [ffmpeg](https://www.ffmpeg.org/) - for animating 1d simulations with matplotlib
 
 ## Using Docker to obtain a SpECTRE environment
 
