@@ -28,9 +28,10 @@ DomainCreator:
     EnvelopingCube:
       Radius: 100.0
       UseProjectiveMap: true
-    OuterSphere:
-      Radius: 590.0
-      UseLogarithmicMap: false
+    OuterShell:
+      InnerRadius: Auto
+      OuterRadius: 590.0
+      RadialDistribution: Linear
     InitialRefinement:
       ObjectAShell:   [0, 0, 1]
       ObjectBShell:   [0, 0, 1]

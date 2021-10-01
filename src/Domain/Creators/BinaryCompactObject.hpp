@@ -18,6 +18,7 @@
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Domain/BoundaryConditions/GetBoundaryConditionsBase.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/CoordinateMaps/Distribution.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Domain.hpp"
 #include "Options/Auto.hpp"
@@ -336,16 +337,25 @@ class BinaryCompactObject : public DomainCreator<3> {
         "Radius of Layer 3 which circumscribes the Frustums."};
   };
 
-  struct OuterSphere {
+  struct OuterShell {
     static constexpr Options::String help = {
         "Options for the outer spherical shell."};
   };
 
-  struct RadiusOuterSphere {
-    using group = OuterSphere;
-    static std::string name() { return "Radius"; }
+  struct OuterRadius {
+    using group = OuterShell;
     using type = double;
     static constexpr Options::String help = {"Radius of the entire domain."};
+  };
+
+  struct RadiusEnvelopingSphere {
+    using group = OuterShell;
+    static std::string name() { return "InnerRadius"; }
+    using type = Options::Auto<double>;
+    static constexpr Options::String help = {
+        "Inner radius of the outer spherical shell. Set to 'Auto' to compute a "
+        "reasonable value automatically based on the "
+        "'OuterShell.RadialDistribution'."};
   };
 
   struct InitialRefinement {
@@ -375,18 +385,18 @@ class BinaryCompactObject : public DomainCreator<3> {
         "Use projective scaling on the frustal cloak."};
   };
 
-  struct UseLogarithmicMapOuterSphericalShell {
-    using group = OuterSphere;
-    static std::string name() { return "UseLogarithmicMap"; }
-    using type = bool;
+  struct RadialDistributionOuterShell {
+    using group = OuterShell;
+    static std::string name() { return "RadialDistribution"; }
+    using type = CoordinateMaps::Distribution;
     static constexpr Options::String help = {
-        "Use a logarithmically spaced radial grid in Layer 5, the outer "
+        "The distribution of radial grid points in Layer 5, the outer "
         "spherical shell that covers the wave zone."};
   };
 
   template <typename BoundaryConditionsBase>
   struct OuterBoundaryCondition {
-    using group = OuterSphere;
+    using group = OuterShell;
     static std::string name() { return "BoundaryCondition"; }
     static constexpr Options::String help =
         "Options for the outer boundary conditions.";
@@ -563,9 +573,9 @@ class BinaryCompactObject : public DomainCreator<3> {
 
   template <typename Metavariables>
   using time_independent_options = tmpl::append<
-      tmpl::list<ObjectA, ObjectB, RadiusEnvelopingCube, RadiusOuterSphere,
+      tmpl::list<ObjectA, ObjectB, RadiusEnvelopingCube, OuterRadius,
                  InitialRefinement, InitialGridPoints, UseProjectiveMap,
-                 UseLogarithmicMapOuterSphericalShell>,
+                 RadiusEnvelopingSphere, RadialDistributionOuterShell>,
       tmpl::conditional_t<
           domain::BoundaryConditions::has_boundary_conditions_base_v<
               typename Metavariables::system>,
@@ -638,11 +648,13 @@ class BinaryCompactObject : public DomainCreator<3> {
   // Metavariables::domain::enable_time_dependent_maps)
   BinaryCompactObject(
       Object object_A, Object object_B, double radius_enveloping_cube,
-      double radius_enveloping_sphere,
+      double outer_radius_domain,
       const typename InitialRefinement::type& initial_refinement,
       const typename InitialGridPoints::type& initial_number_of_grid_points,
       bool use_projective_map = true,
-      bool use_logarithmic_map_outer_spherical_shell = false,
+      const std::optional<double>& radius_enveloping_sphere = std::nullopt,
+      CoordinateMaps::Distribution radial_distribution_outer_shell =
+          CoordinateMaps::Distribution::Linear,
       std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
           outer_boundary_condition = nullptr,
       const Options::Context& context = {});
@@ -665,11 +677,13 @@ class BinaryCompactObject : public DomainCreator<3> {
       std::array<double, 2> initial_size_map_accelerations,
       std::array<std::string, 2> size_map_function_of_time_names,
       Object object_A, Object object_B, double radius_enveloping_cube,
-      double radius_enveloping_sphere,
+      double outer_radius_domain,
       const typename InitialRefinement::type& initial_refinement,
       const typename InitialGridPoints::type& initial_number_of_grid_points,
       bool use_projective_map = true,
-      bool use_logarithmic_map_outer_spherical_shell = false,
+      const std::optional<double>& radius_enveloping_sphere = std::nullopt,
+      CoordinateMaps::Distribution radial_distribution_outer_shell =
+          CoordinateMaps::Distribution::Linear,
       std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
           outer_boundary_condition = nullptr,
       const Options::Context& context = {});
@@ -710,12 +724,14 @@ class BinaryCompactObject : public DomainCreator<3> {
   Object object_B_{};
   double radius_enveloping_cube_{};
   double radius_enveloping_sphere_{};
+  double outer_radius_domain_{};
   std::vector<std::array<size_t, 3>> initial_refinement_{};
   std::vector<std::array<size_t, 3>> initial_number_of_grid_points_{};
   static constexpr bool use_equiangular_map_ =
       false;  // Doesn't work properly yet
   bool use_projective_map_ = true;
-  bool use_logarithmic_map_outer_spherical_shell_ = false;
+  CoordinateMaps::Distribution radial_distribution_outer_shell_ =
+      CoordinateMaps::Distribution::Linear;
   double projective_scale_factor_{};
   double translation_{};
   double length_inner_cube_{};

@@ -30,9 +30,10 @@ DomainCreator:
     EnvelopingCube:
       Radius: 100.0
       UseProjectiveMap: true
-    OuterSphere:
-      Radius: 1493.0
-      UseLogarithmicMap: false
+    OuterShell:
+      InnerRadius: Auto
+      OuterRadius: 1493.0
+      RadialDistribution: Linear
       BoundaryCondition:
         ConstraintPreservingBjorhus:
           Type: ConstraintPreservingPhysical
