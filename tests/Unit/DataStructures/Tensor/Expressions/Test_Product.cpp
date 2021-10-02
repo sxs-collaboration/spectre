@@ -37,18 +37,14 @@ void assign_unique_values_to_tensor(
   }
 }
 
-// \brief Test the outer product and quotient of a tensor and `double` is
+// \brief Test the outer product and of a tensor expression and `double` is
 // correctly evaluated
 //
 // \details
-// The outer product cases tested are:
+// The cases tested are:
 // - \f$L_{ij} = R * S_{ij}\f$
 // - \f$L_{ij} = S_{ij} * R\f$
 // - \f$L_{ij} = R * S_{ij} * T\f$
-//
-// The division cases tested are:
-// - \f$L_{ij} = S_{ij} / R\f$
-// - \f$L_{ij} = R * S_{ij} / T\f$
 //
 // where \f$R\f$ and \f$T\f$ are `double`s and \f$S\f$ and \f$L\f$ are Tensors
 // with data type `double` or DataVector.
@@ -56,7 +52,7 @@ void assign_unique_values_to_tensor(
 // \tparam DataType the type of data being stored in the tensor operand of the
 // products
 template <typename DataType>
-void test_outer_product_quotient_double(const DataType& used_for_size) {
+void test_outer_product_double(const DataType& used_for_size) {
   constexpr size_t dim = 3;
   using tensor_type =
       Tensor<DataType, Symmetry<1, 1>,
@@ -78,21 +74,11 @@ void test_outer_product_quotient_double(const DataType& used_for_size) {
   const tensor_type Lij_from_R_Sij_T =
       TensorExpressions::evaluate<ti_i, ti_j>(-1.7 * S(ti_i, ti_j) * 0.6);
 
-  // \f$L_{ij} = S_{ij} / R\f$
-  const tensor_type Lij_from_Sij_over_R =
-      TensorExpressions::evaluate<ti_i, ti_j>(S(ti_i, ti_j) / 4.3);
-  // \f$L_{ij} = R * S_{ij} / T\f$
-  const tensor_type Lij_from_R_Sij_over_T =
-      TensorExpressions::evaluate<ti_i, ti_j>(-5.2 * S(ti_i, ti_j) / 1.6);
-
   for (size_t i = 0; i < dim; i++) {
     for (size_t j = 0; j < dim; j++) {
       CHECK(Lij_from_R_Sij.get(i, j) == 5.6 * S.get(i, j));
       CHECK(Lij_from_Sij_R.get(i, j) == S.get(i, j) * -8.1);
       CHECK(Lij_from_R_Sij_T.get(i, j) == -1.7 * S.get(i, j) * 0.6);
-
-      CHECK(Lij_from_Sij_over_R.get(i, j) == S.get(i, j) / 4.3);
-      CHECK(Lij_from_R_Sij_over_T.get(i, j) == -5.2 * S.get(i, j) / 1.6);
     }
   }
 }
@@ -1339,7 +1325,7 @@ void test_time_index(const DataType& used_for_size) {
 template <typename DataType>
 void test_products(const DataType& used_for_size) {
   // Test evaluation of outer products
-  test_outer_product_quotient_double(used_for_size);
+  test_outer_product_double(used_for_size);
   test_outer_product_rank_0_operand(used_for_size);
   test_outer_product_rank_1_operand(used_for_size);
   test_outer_product_rank_2x2_operands(used_for_size);

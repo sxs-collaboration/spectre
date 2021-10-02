@@ -7,11 +7,13 @@ spectre_target_headers(
   HEADERS
   AddSubtract.hpp
   Contract.hpp
+  Divide.hpp
   Evaluate.hpp
   IndexPropertyCheck.hpp
   LhsTensorSymmAndIndices.hpp
-  Product.hpp
+  Negate.hpp
   NumberAsExpression.hpp
+  Product.hpp
   SpatialSpacetimeIndex.hpp
   SquareRoot.hpp
   TensorAsExpression.hpp
