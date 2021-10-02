@@ -34,7 +34,7 @@ CubicScale<MeshDim>::CubicScale(
     std::array<std::string, 2> functions_of_time_names,
     const std::array<double, 2>& initial_expansion,
     const std::array<double, 2>& velocity,
-    const std::array<double, 2>& acceleration) noexcept
+    const std::array<double, 2>& acceleration)
     : initial_time_(initial_time),
       initial_expiration_delta_t_(initial_expiration_delta_t),
       outer_boundary_(outer_boundary),
@@ -45,7 +45,7 @@ CubicScale<MeshDim>::CubicScale(
 
 template <size_t MeshDim>
 std::unique_ptr<TimeDependence<MeshDim>> CubicScale<MeshDim>::get_clone()
-    const noexcept {
+    const {
   return std::make_unique<CubicScale>(
       initial_time_, initial_expiration_delta_t_, outer_boundary_,
       functions_of_time_names_, initial_expansion_, velocity_, acceleration_);
@@ -54,7 +54,7 @@ std::unique_ptr<TimeDependence<MeshDim>> CubicScale<MeshDim>::get_clone()
 template <size_t MeshDim>
 std::vector<std::unique_ptr<
     domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, MeshDim>>>
-CubicScale<MeshDim>::block_maps(const size_t number_of_blocks) const noexcept {
+CubicScale<MeshDim>::block_maps(const size_t number_of_blocks) const {
   ASSERT(number_of_blocks > 0, "Must have at least one block to create.");
   std::vector<std::unique_ptr<
       domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, MeshDim>>>
@@ -69,7 +69,7 @@ CubicScale<MeshDim>::block_maps(const size_t number_of_blocks) const noexcept {
 template <size_t MeshDim>
 std::unordered_map<std::string,
                    std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
-CubicScale<MeshDim>::functions_of_time() const noexcept {
+CubicScale<MeshDim>::functions_of_time() const {
   std::unordered_map<std::string,
                      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
       result{};
@@ -99,16 +99,14 @@ CubicScale<MeshDim>::functions_of_time() const noexcept {
 }
 
 template <size_t MeshDim>
-auto CubicScale<MeshDim>::map_for_composition() const noexcept
-    -> MapForComposition {
+auto CubicScale<MeshDim>::map_for_composition() const -> MapForComposition {
   return MapForComposition{CubicScaleMap{outer_boundary_,
                                          functions_of_time_names_[0],
                                          functions_of_time_names_[1]}};
 }
 
 template <size_t Dim>
-bool operator==(const CubicScale<Dim>& lhs,
-                const CubicScale<Dim>& rhs) noexcept {
+bool operator==(const CubicScale<Dim>& lhs, const CubicScale<Dim>& rhs) {
   return lhs.initial_time_ == rhs.initial_time_ and
          lhs.initial_expiration_delta_t_ == rhs.initial_expiration_delta_t_ and
          lhs.outer_boundary_ == rhs.outer_boundary_ and
@@ -119,21 +117,18 @@ bool operator==(const CubicScale<Dim>& lhs,
 }
 
 template <size_t Dim>
-bool operator!=(const CubicScale<Dim>& lhs,
-                const CubicScale<Dim>& rhs) noexcept {
+bool operator!=(const CubicScale<Dim>& lhs, const CubicScale<Dim>& rhs) {
   return not(lhs == rhs);
 }
 
 #define GET_DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATION(r, data)                                    \
-  template class CubicScale<GET_DIM(data)>;                       \
-  template bool operator==                                        \
-      <GET_DIM(data)>(const CubicScale<GET_DIM(data)>&,           \
-                      const CubicScale<GET_DIM(data)>&) noexcept; \
-  template bool operator!=                                        \
-      <GET_DIM(data)>(const CubicScale<GET_DIM(data)>&,           \
-                      const CubicScale<GET_DIM(data)>&) noexcept;
+#define INSTANTIATION(r, data)                                               \
+  template class CubicScale<GET_DIM(data)>;                                  \
+  template bool operator==<GET_DIM(data)>(const CubicScale<GET_DIM(data)>&,  \
+                                          const CubicScale<GET_DIM(data)>&); \
+  template bool operator!=<GET_DIM(data)>(const CubicScale<GET_DIM(data)>&,  \
+                                          const CubicScale<GET_DIM(data)>&);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 

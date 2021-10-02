@@ -65,7 +65,7 @@
 
 namespace {
 template <size_t SpatialDim, typename Frame, typename DataType>
-void test_three_index_constraint(const DataType& used_for_size) noexcept {
+void test_three_index_constraint(const DataType& used_for_size) {
   pypp::check_with_random_values<1>(
       static_cast<tnsr::iaa<DataType, SpatialDim, Frame> (*)(
           const tnsr::iaa<DataType, SpatialDim, Frame>&,
@@ -77,7 +77,7 @@ void test_three_index_constraint(const DataType& used_for_size) noexcept {
 
 // Test the return-by-value gauge constraint function using random values
 template <size_t SpatialDim, typename Frame, typename DataType>
-void test_gauge_constraint_random(const DataType& used_for_size) noexcept {
+void test_gauge_constraint_random(const DataType& used_for_size) {
   pypp::check_with_random_values<1>(
       static_cast<tnsr::a<DataType, SpatialDim, Frame> (*)(
           const tnsr::a<DataType, SpatialDim, Frame>&,
@@ -93,10 +93,10 @@ void test_gauge_constraint_random(const DataType& used_for_size) noexcept {
 
 // Test the return-by-reference gauge constraint by comparing to Kerr-Schild
 template <typename Solution>
-void test_gauge_constraint_analytic(
-    const Solution& solution, const size_t grid_size_each_dimension,
-    const std::array<double, 3>& lower_bound,
-    const std::array<double, 3>& upper_bound) noexcept {
+void test_gauge_constraint_analytic(const Solution& solution,
+                                    const size_t grid_size_each_dimension,
+                                    const std::array<double, 3>& lower_bound,
+                                    const std::array<double, 3>& upper_bound) {
   // Check vs. time-independent analytic solution
   // Set up grid
   Mesh<3> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
@@ -170,7 +170,7 @@ void test_gauge_constraint_analytic(
 
 // Test the return-by-value two-index constraint function using random values
 template <size_t SpatialDim, typename Frame, typename DataType>
-void test_two_index_constraint_random(const DataType& used_for_size) noexcept {
+void test_two_index_constraint_random(const DataType& used_for_size) {
   pypp::check_with_random_values<1>(
       static_cast<tnsr::ia<DataType, SpatialDim, Frame> (*)(
           const tnsr::ab<DataType, SpatialDim, Frame>&,
@@ -195,8 +195,7 @@ template <typename Solution>
 void test_two_index_constraint_analytic(
     const Solution& solution, const size_t grid_size_each_dimension,
     const std::array<double, 3>& lower_bound,
-    const std::array<double, 3>& upper_bound,
-    const double error_tolerance) noexcept {
+    const std::array<double, 3>& upper_bound, const double error_tolerance) {
   // Shorter names for tags.
   using SpacetimeMetric = gr::Tags::SpacetimeMetric<3, Frame::Inertial>;
   using Pi = ::GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>;
@@ -327,7 +326,7 @@ void test_two_index_constraint_analytic(
 
 // Test the return-by-value four-index constraint function using random values
 template <size_t SpatialDim, typename Frame, typename DataType>
-void test_four_index_constraint_random(const DataType& used_for_size) noexcept {
+void test_four_index_constraint_random(const DataType& used_for_size) {
   pypp::check_with_random_values<1>(
       static_cast<tnsr::iaa<DataType, SpatialDim, Frame> (*)(
           const tnsr::ijaa<DataType, SpatialDim, Frame>&)>(
@@ -342,8 +341,7 @@ template <typename Solution>
 void test_four_index_constraint_analytic(
     const Solution& solution, const size_t grid_size_each_dimension,
     const std::array<double, 3>& lower_bound,
-    const std::array<double, 3>& upper_bound,
-    const double error_tolerance) noexcept {
+    const std::array<double, 3>& upper_bound, const double error_tolerance) {
   // Shorter names for tags.
   using Phi = ::GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>;
   using VariablesTags = tmpl::list<Phi>;
@@ -413,7 +411,7 @@ void test_four_index_constraint_analytic(
 
 // Test the return-by-value F constraint function using random values
 template <size_t SpatialDim, typename Frame, typename DataType>
-void test_f_constraint_random(const DataType& used_for_size) noexcept {
+void test_f_constraint_random(const DataType& used_for_size) {
   pypp::check_with_random_values<1>(
       static_cast<tnsr::a<DataType, SpatialDim, Frame> (*)(
           const tnsr::a<DataType, SpatialDim, Frame>&,
@@ -457,7 +455,7 @@ void test_f_constraint_analytic(const Solution& solution,
                                 const size_t grid_size_each_dimension,
                                 const std::array<double, 3>& lower_bound,
                                 const std::array<double, 3>& upper_bound,
-                                const double error_tolerance) noexcept {
+                                const double error_tolerance) {
   // Shorter names for tags.
   using SpacetimeMetric = gr::Tags::SpacetimeMetric<3, Frame::Inertial>;
   using Pi = ::GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>;
@@ -587,7 +585,7 @@ void test_f_constraint_analytic(const Solution& solution,
 
 // Test the return-by-value constraint energy function using random values
 template <size_t SpatialDim, typename Frame, typename DataType>
-void test_constraint_energy_random(const DataType& used_for_size) noexcept {
+void test_constraint_energy_random(const DataType& used_for_size) {
   pypp::check_with_random_values<1>(
       static_cast<Scalar<DataType> (*)(
           const tnsr::a<DataType, SpatialDim, Frame>&,
@@ -608,7 +606,7 @@ void test_constraint_energy_analytic(const Solution& solution,
                                      const size_t grid_size_each_dimension,
                                      const std::array<double, 3>& lower_bound,
                                      const std::array<double, 3>& upper_bound,
-                                     const double error_tolerance) noexcept {
+                                     const double error_tolerance) {
   // Shorter names for tags.
   using SpacetimeMetric = gr::Tags::SpacetimeMetric<3, Frame::Inertial>;
   using Pi = ::GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>;
@@ -753,10 +751,10 @@ void test_constraint_energy_analytic(const Solution& solution,
 // Test compute items for various constraints via insertion and retrieval
 // in a databox
 template <typename Solution>
-void test_constraint_compute_items(
-    const Solution& solution, const size_t grid_size,
-    const std::array<double, 3>& lower_bound,
-    const std::array<double, 3>& upper_bound) noexcept {
+void test_constraint_compute_items(const Solution& solution,
+                                   const size_t grid_size,
+                                   const std::array<double, 3>& lower_bound,
+                                   const std::array<double, 3>& upper_bound) {
   // Check that compute items are named correctly
   TestHelpers::db::test_compute_tag<
       GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma0Compute<

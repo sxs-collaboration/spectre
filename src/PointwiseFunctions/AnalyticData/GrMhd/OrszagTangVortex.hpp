@@ -71,60 +71,52 @@ class OrszagTangVortex : public MarkAsAnalyticData {
   /// @{
   /// Retrieve hydro variable at `x`
   template <typename DataType>
-  auto variables(
-      const tnsr::I<DataType, 3>& x,
-      tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/) const
-      noexcept -> tuples::TaggedTuple<hydro::Tags::RestMassDensity<DataType>>;
+  auto variables(const tnsr::I<DataType, 3>& x,
+                 tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/)
+      const -> tuples::TaggedTuple<hydro::Tags::RestMassDensity<DataType>>;
 
   template <typename DataType>
   auto variables(
       const tnsr::I<DataType, 3>& x,
       tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>> /*meta*/) const
-      noexcept
       -> tuples::TaggedTuple<hydro::Tags::SpecificInternalEnergy<DataType>>;
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x,
                  tmpl::list<hydro::Tags::Pressure<DataType>> /*meta*/) const
-      noexcept -> tuples::TaggedTuple<hydro::Tags::Pressure<DataType>>;
+      -> tuples::TaggedTuple<hydro::Tags::Pressure<DataType>>;
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x,
                  tmpl::list<hydro::Tags::SpatialVelocity<DataType, 3>> /*meta*/)
-      const noexcept
-      -> tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, 3>>;
+      const -> tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, 3>>;
 
   template <typename DataType>
-  auto variables(
-      const tnsr::I<DataType, 3>& x,
-      tmpl::list<hydro::Tags::MagneticField<DataType, 3>> /*meta*/) const
-      noexcept -> tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3>>;
+  auto variables(const tnsr::I<DataType, 3>& x,
+                 tmpl::list<hydro::Tags::MagneticField<DataType, 3>> /*meta*/)
+      const -> tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3>>;
 
   template <typename DataType>
   auto variables(
       const tnsr::I<DataType, 3>& x,
       tmpl::list<hydro::Tags::DivergenceCleaningField<DataType>> /*meta*/) const
-      noexcept
       -> tuples::TaggedTuple<hydro::Tags::DivergenceCleaningField<DataType>>;
 
   template <typename DataType>
-  auto variables(
-      const tnsr::I<DataType, 3>& x,
-      tmpl::list<hydro::Tags::LorentzFactor<DataType>> /*meta*/) const noexcept
-      -> tuples::TaggedTuple<hydro::Tags::LorentzFactor<DataType>>;
+  auto variables(const tnsr::I<DataType, 3>& x,
+                 tmpl::list<hydro::Tags::LorentzFactor<DataType>> /*meta*/)
+      const -> tuples::TaggedTuple<hydro::Tags::LorentzFactor<DataType>>;
 
   template <typename DataType>
-  auto variables(
-      const tnsr::I<DataType, 3>& x,
-      tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>> /*meta*/) const
-      noexcept -> tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DataType>>;
+  auto variables(const tnsr::I<DataType, 3>& x,
+                 tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>> /*meta*/)
+      const -> tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DataType>>;
   /// @}
 
   /// Retrieve a collection of hydro variables at `x`
   template <typename DataType, typename... Tags>
   tuples::TaggedTuple<Tags...> variables(const tnsr::I<DataType, 3>& x,
-                                         tmpl::list<Tags...> /*meta*/) const
-      noexcept {
+                                         tmpl::list<Tags...> /*meta*/) const {
     static_assert(sizeof...(Tags) > 1,
                   "The generic template will recurse infinitely if only one "
                   "tag is being retrieved.");
@@ -136,27 +128,25 @@ class OrszagTangVortex : public MarkAsAnalyticData {
             Requires<not tmpl::list_contains_v<hydro::grmhd_tags<DataType>,
                                                Tag>> = nullptr>
   tuples::TaggedTuple<Tag> variables(const tnsr::I<DataType, 3>& x,
-                                     tmpl::list<Tag> /*meta*/) const noexcept {
+                                     tmpl::list<Tag> /*meta*/) const {
     constexpr double dummy_time = 0.;
     return {std::move(get<Tag>(gr::Solutions::Minkowski<3>{}.variables(
         x, dummy_time, tmpl::list<Tag>{})))};
   }
 
-  const equation_of_state_type& equation_of_state() const noexcept {
+  const equation_of_state_type& equation_of_state() const {
     return equation_of_state_;
   }
 
-  void pup(PUP::er& /*p*/) noexcept;  //  NOLINT(google-runtime-references)
+  void pup(PUP::er& /*p*/);  //  NOLINT(google-runtime-references)
 
  private:
   EquationsOfState::IdealFluid<true> equation_of_state_{5. / 3.};
 };
 
-bool operator==(const OrszagTangVortex& lhs,
-                const OrszagTangVortex& rhs) noexcept;
+bool operator==(const OrszagTangVortex& lhs, const OrszagTangVortex& rhs);
 
-bool operator!=(const OrszagTangVortex& lhs,
-                const OrszagTangVortex& rhs) noexcept;
+bool operator!=(const OrszagTangVortex& lhs, const OrszagTangVortex& rhs);
 
 }  // namespace AnalyticData
 }  // namespace grmhd

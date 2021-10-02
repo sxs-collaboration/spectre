@@ -35,7 +35,7 @@ struct Registration {
             typename ArrayIndex>
   static std::pair<observers::TypeOfObservation, observers::ObservationKey>
   register_info(const db::DataBox<DbTagsList>& /*box*/,
-                const ArrayIndex& /*array_index*/) noexcept {
+                const ArrayIndex& /*array_index*/) {
     return {observers::TypeOfObservation::Reduction,
             observers::ObservationKey{pretty_type::get_name<OptionsGroup>()}};
   }
@@ -48,7 +48,7 @@ template <typename OptionsGroup, typename ParallelComponent,
           typename Metavariables>
 void contribute_to_reduction_observer(
     const size_t iteration_id, const double residual_magnitude,
-    Parallel::GlobalCache<Metavariables>& cache) noexcept {
+    Parallel::GlobalCache<Metavariables>& cache) {
   const auto observation_id = observers::ObservationId(
       iteration_id, pretty_type::get_name<OptionsGroup>());
   auto& reduction_writer = Parallel::get_parallel_component<

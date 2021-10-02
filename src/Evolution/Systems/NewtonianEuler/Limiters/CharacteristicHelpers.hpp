@@ -42,7 +42,7 @@ std::pair<Matrix, Matrix> right_and_left_eigenvectors(
     const EquationsOfState::EquationOfState<false, ThermodynamicDim>&
         equation_of_state,
     const tnsr::i<double, VolumeDim>& unit_vector,
-    bool compute_char_transformation_numerically = false) noexcept;
+    bool compute_char_transformation_numerically = false);
 
 /// @{
 /// \brief Compute characteristic fields from conserved fields
@@ -67,7 +67,7 @@ void characteristic_fields(
         ::Tags::Mean<NewtonianEuler::Tags::MassDensityCons>,
         ::Tags::Mean<NewtonianEuler::Tags::MomentumDensity<VolumeDim>>,
         ::Tags::Mean<NewtonianEuler::Tags::EnergyDensity>>& cons_means,
-    const Matrix& left) noexcept;
+    const Matrix& left);
 
 template <size_t VolumeDim>
 void characteristic_fields(
@@ -76,7 +76,7 @@ void characteristic_fields(
     gsl::not_null<Scalar<DataVector>*> char_v_plus,
     const Scalar<DataVector>& cons_mass_density,
     const tnsr::I<DataVector, VolumeDim>& cons_momentum_density,
-    const Scalar<DataVector>& cons_energy_density, const Matrix& left) noexcept;
+    const Scalar<DataVector>& cons_energy_density, const Matrix& left);
 
 template <size_t VolumeDim>
 void characteristic_fields(
@@ -88,7 +88,7 @@ void characteristic_fields(
     const Variables<tmpl::list<NewtonianEuler::Tags::MassDensityCons,
                                NewtonianEuler::Tags::MomentumDensity<VolumeDim>,
                                NewtonianEuler::Tags::EnergyDensity>>& cons_vars,
-    const Matrix& left) noexcept;
+    const Matrix& left);
 /// @}
 
 /// \brief Compute conserved fields from characteristic fields
@@ -109,7 +109,7 @@ void conserved_fields_from_characteristic_fields(
     gsl::not_null<Scalar<DataVector>*> cons_energy_density,
     const Scalar<DataVector>& char_v_minus,
     const tnsr::I<DataVector, VolumeDim>& char_v_momentum,
-    const Scalar<DataVector>& char_v_plus, const Matrix& right) noexcept;
+    const Scalar<DataVector>& char_v_plus, const Matrix& right);
 
 /// \brief Apply a limiter to the characteristic fields computed with respect
 /// to each direction in the volume, then take average of results
@@ -147,7 +147,7 @@ bool apply_limiter_to_characteristic_fields_in_all_directions(
     const EquationsOfState::EquationOfState<false, ThermodynamicDim>&
         equation_of_state,
     const LimiterLambda& prepare_and_apply_limiter,
-    const bool compute_char_transformation_numerically = false) noexcept {
+    const bool compute_char_transformation_numerically = false) {
   // Temp variables for calculations
   // There are quite a few tensors in this allocation because in general we need
   // to preserve the input (cons field) tensors until they are overwritten at
@@ -185,7 +185,7 @@ bool apply_limiter_to_characteristic_fields_in_all_directions(
   // Cellwise means, used in computing the cons/char transformations
   const auto mean_density =
       Scalar<double>{mean_value(get(*mass_density_cons), mesh)};
-  const auto mean_momentum = [&momentum_density, &mesh]() noexcept {
+  const auto mean_momentum = [&momentum_density, &mesh]() {
     tnsr::I<double, VolumeDim> result{};
     for (size_t i = 0; i < VolumeDim; ++i) {
       result.get(i) = mean_value(momentum_density->get(i), mesh);
@@ -199,7 +199,7 @@ bool apply_limiter_to_characteristic_fields_in_all_directions(
 
   // Loop over directions, then compute chars w.r.t. this direction and limit
   for (size_t d = 0; d < VolumeDim; ++d) {
-    const auto unit_vector = [&d]() noexcept {
+    const auto unit_vector = [&d]() {
       auto components = make_array<VolumeDim>(0.);
       components[d] = 1.;
       return tnsr::i<double, VolumeDim>(components);

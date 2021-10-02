@@ -144,7 +144,7 @@ void test_element_id() {
 }
 
 template <size_t VolumeDim>
-void test_serialization() noexcept {
+void test_serialization() {
   constexpr size_t volume_dim = VolumeDim;
   const ElementId<volume_dim> unused_id(0);
   const auto initial_ref_levels = make_array<volume_dim>(1_st);

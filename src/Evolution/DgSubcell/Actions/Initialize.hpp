@@ -113,7 +113,7 @@ struct Initialize {
       const tuples::TaggedTuple<InboxTags...>& inboxes,
       const Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index, ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     const SubcellOptions& subcell_options = db::get<Tags::SubcellOptions>(box);
     const Mesh<Dim>& dg_mesh = db::get<::domain::Tags::Mesh<Dim>>(box);
     const Mesh<Dim> subcell_mesh = fd::mesh(dg_mesh);
@@ -138,7 +138,7 @@ struct Initialize {
             const gsl::not_null<ActiveGrid*> active_grid_ptr,
             const gsl::not_null<bool*> did_rollback_ptr,
             const auto inactive_vars_ptr, const auto active_vars_ptr,
-            const auto&... args_for_tci) noexcept {
+            const auto&... args_for_tci) {
           // We don't consider setting the initial grid to subcell as rolling
           // back. Since no time step is undone, we just continue on the
           // subcells as a normal solve.
@@ -171,8 +171,7 @@ struct Initialize {
       // Set variables on subcells.
       if constexpr (System::has_primitive_and_conservative_vars) {
         db::mutate<typename System::primitive_variables_tag>(
-            make_not_null(&box),
-            [&subcell_mesh](const auto prim_vars_ptr) noexcept {
+            make_not_null(&box), [&subcell_mesh](const auto prim_vars_ptr) {
               prim_vars_ptr->initialize(subcell_mesh.number_of_grid_points());
             });
       }
@@ -183,7 +182,7 @@ struct Initialize {
       db::mutate<
           db::add_tag_prefix<::Tags::dt, typename System::variables_tag>>(
           make_not_null(&box),
-          [&dg_mesh, &subcell_mesh](const auto dt_vars_ptr) noexcept {
+          [&dg_mesh, &subcell_mesh](const auto dt_vars_ptr) {
             ASSERT(dt_vars_ptr->number_of_grid_points() ==
                        dg_mesh.number_of_grid_points(),
                    "Subcell is resizing the time derivative variables and "

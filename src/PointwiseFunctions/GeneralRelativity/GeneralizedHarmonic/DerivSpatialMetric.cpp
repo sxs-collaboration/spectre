@@ -18,7 +18,7 @@ template <size_t SpatialDim, typename Frame, typename DataType>
 void deriv_spatial_metric(
     const gsl::not_null<tnsr::ijj<DataType, SpatialDim, Frame>*>
         d_spatial_metric,
-    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept {
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) {
   if (UNLIKELY(get_size(get<0, 0, 0>(*d_spatial_metric)) !=
                get_size(get<0, 0, 0>(phi)))) {
     *d_spatial_metric =
@@ -35,7 +35,7 @@ void deriv_spatial_metric(
 
 template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::ijj<DataType, SpatialDim, Frame> deriv_spatial_metric(
-    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept {
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) {
   tnsr::ijj<DataType, SpatialDim, Frame> d_spatial_metric{};
   GeneralizedHarmonic::deriv_spatial_metric<SpatialDim, Frame, DataType>(
       make_not_null(&d_spatial_metric), phi);
@@ -51,10 +51,10 @@ tnsr::ijj<DataType, SpatialDim, Frame> deriv_spatial_metric(
   template void GeneralizedHarmonic::deriv_spatial_metric(                 \
       const gsl::not_null<tnsr::ijj<DTYPE(data), DIM(data), FRAME(data)>*> \
           d_spatial_metric,                                                \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi) noexcept; \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi);          \
   template tnsr::ijj<DTYPE(data), DIM(data), FRAME(data)>                  \
   GeneralizedHarmonic::deriv_spatial_metric(                               \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi) noexcept;
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
                         (Frame::Grid, Frame::Inertial))

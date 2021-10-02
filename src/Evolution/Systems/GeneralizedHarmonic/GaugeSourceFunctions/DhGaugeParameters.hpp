@@ -88,7 +88,7 @@ struct DhGaugeParameters<true> {
   DhGaugeParameters() = default;
 
   // clang-tidy: google-runtime-references
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
 };
 
 template <>
@@ -134,7 +134,7 @@ struct DhGaugeParameters<false> {
   DhGaugeParameters() = default;
 
   // clang-tidy: google-runtime-references
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
 };
 /// \endcond
 }  // namespace GeneralizedHarmonic::gauges

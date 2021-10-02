@@ -26,7 +26,7 @@ namespace {
 // Generate a point in a random direction at a given radius
 auto points_in_random_direction_generator(
     const gsl::not_null<std::mt19937*> generator,
-    const std::array<double, 3>& center) noexcept {
+    const std::array<double, 3>& center) {
   std::uniform_real_distribution<> phi_dis(0, 2.0 * M_PI);
   std::uniform_real_distribution<> theta_dis(0, M_PI);
   const double theta{theta_dis(*generator)};
@@ -61,8 +61,7 @@ void generate_map_time_and_f_of_time(
     const gsl::not_null<double*> max_radius,
     const gsl::not_null<std::array<double, 3>*> center,
     const gsl::not_null<std::mt19937*> generator,
-    const bool bad_max_radius = false,
-    const bool missing_f_of_t = false) noexcept {
+    const bool bad_max_radius = false, const bool missing_f_of_t = false) {
   std::string f_of_t_name{"ExpansionFactor"};
   // Set up the map
   if (missing_f_of_t) {
@@ -125,8 +124,7 @@ void generate_map_time_and_f_of_time(
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>*>
         functions_of_time,
     const gsl::not_null<std::mt19937*> generator,
-    const bool bad_max_radius = false,
-    const bool missing_f_of_t = false) noexcept {
+    const bool bad_max_radius = false, const bool missing_f_of_t = false) {
   double min_radius{std::numeric_limits<double>::signaling_NaN()};
   double max_radius{std::numeric_limits<double>::signaling_NaN()};
   std::array<double, 3> center{};
@@ -136,13 +134,13 @@ void generate_map_time_and_f_of_time(
       bad_max_radius, missing_f_of_t);
 }
 
-bool random_bool(const gsl::not_null<std::mt19937*> generator) noexcept {
+bool random_bool(const gsl::not_null<std::mt19937*> generator) {
   std::uniform_int_distribution<> bool_dis{0, 1};
   return static_cast<bool>(bool_dis(*generator));
 }
 
 template <bool InteriorMap>
-void test_out_of_bounds(const gsl::not_null<std::mt19937*> generator) noexcept {
+void test_out_of_bounds(const gsl::not_null<std::mt19937*> generator) {
   domain::CoordinateMaps::TimeDependent::SphericalCompression<InteriorMap>
       map{};
   double time{std::numeric_limits<double>::signaling_NaN()};
@@ -189,8 +187,7 @@ void test_out_of_bounds(const gsl::not_null<std::mt19937*> generator) noexcept {
 }
 
 template <bool InteriorMap>
-void test_out_of_bounds_inverse(
-    const gsl::not_null<std::mt19937*> generator) noexcept {
+void test_out_of_bounds_inverse(const gsl::not_null<std::mt19937*> generator) {
   domain::CoordinateMaps::TimeDependent::SphericalCompression<InteriorMap>
       map{};
   double time{std::numeric_limits<double>::signaling_NaN()};
@@ -239,7 +236,7 @@ void test_out_of_bounds_inverse(
 namespace domain {
 namespace {
 template <bool InteriorMap>
-void test_suite(const gsl::not_null<std::mt19937*> generator) noexcept {
+void test_suite(const gsl::not_null<std::mt19937*> generator) {
   INFO("Suite");
 
   // Create the map, select a time, and create a FunctionsOfTime
@@ -294,8 +291,8 @@ void test_suite(const gsl::not_null<std::mt19937*> generator) noexcept {
        radius * sin(theta) * sin(phi) + center[1],
        radius * cos(theta) + center[2]}};
 
-  const auto test_helper = [&random_point, &time, &functions_of_time](
-                               const auto& map_to_test) noexcept {
+  const auto test_helper = [&random_point, &time,
+                            &functions_of_time](const auto& map_to_test) {
     test_serialization(map_to_test);
     CHECK_FALSE(map_to_test != map_to_test);
 
@@ -332,7 +329,7 @@ void test_suite(const gsl::not_null<std::mt19937*> generator) noexcept {
 }
 
 template <bool InteriorMap>
-void test_map(const gsl::not_null<std::mt19937*> generator) noexcept {
+void test_map(const gsl::not_null<std::mt19937*> generator) {
   INFO("Map");
   // Create a map, choose a time, and create a FunctionOfTime.
   // Set up the map
@@ -452,7 +449,7 @@ void test_map(const gsl::not_null<std::mt19937*> generator) noexcept {
 }
 
 template <bool InteriorMap>
-void test_is_identity(const gsl::not_null<std::mt19937*> generator) noexcept {
+void test_is_identity(const gsl::not_null<std::mt19937*> generator) {
   INFO("Is identity");
   CoordinateMaps::TimeDependent::SphericalCompression<InteriorMap> map{};
   double time{std::numeric_limits<double>::signaling_NaN()};

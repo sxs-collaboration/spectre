@@ -24,7 +24,7 @@ struct WrapScriPlusComputationImpl<FixedLMax, FixedNumberOfRadialPoints,
                                    Mutator, ReturnType,
                                    tmpl::list<Arguments...>> {
   static void apply(const gsl::not_null<ReturnType*> pass_by_pointer,
-                    const Arguments&... arguments) noexcept {
+                    const Arguments&... arguments) {
     Mutator::apply(pass_by_pointer, arguments..., FixedLMax,
                    FixedNumberOfRadialPoints);
   }
@@ -37,7 +37,7 @@ using WrapScriPlusComputation = WrapScriPlusComputationImpl<
     tmpl::transform<typename Mutator::tensor_argument_tags,
                     tmpl::bind<tmpl::type_from, tmpl::_1>>>;
 
-void pypp_test_scri_plus_computation_steps() noexcept {
+void pypp_test_scri_plus_computation_steps() {
   pypp::SetupLocalPythonEnvironment local_python_env{"Evolution/Systems/Cce/"};
 
   constexpr size_t l_max = 3;
@@ -92,7 +92,7 @@ void pypp_test_scri_plus_computation_steps() noexcept {
       DataVector{Spectral::Swsh::number_of_swsh_collocation_points(l_max)});
 }
 
-void check_inertial_retarded_time_utilities() noexcept {
+void check_inertial_retarded_time_utilities() {
   MAKE_GENERATOR(gen);
 
   UniformCustomDistribution<double> value_dist{0.1, 0.5};
@@ -116,9 +116,9 @@ void check_inertial_retarded_time_utilities() noexcept {
 
   db::mutate<Tags::Exp2Beta>(
       make_not_null(&time_box),
-      [&gen, &value_dist ](
+      [&gen, &value_dist](
           const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
-              exp_2_beta) noexcept {
+              exp_2_beta) {
         fill_with_random_values(make_not_null(&get(*exp_2_beta).data()),
                                 make_not_null(&gen),
                                 make_not_null(&value_dist));
@@ -166,7 +166,7 @@ void check_inertial_retarded_time_utilities() noexcept {
       [&random_time_delta](
           const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
               complex_retarded_time,
-          const Scalar<DataVector>& dt_inertial_time) noexcept {
+          const Scalar<DataVector>& dt_inertial_time) {
         get(*complex_retarded_time) = std::complex<double>(1.0, 0.0) *
                                       random_time_delta * get(dt_inertial_time);
       },

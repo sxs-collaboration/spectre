@@ -301,7 +301,7 @@ struct EvolutionMetavars {
     // reconstruction to the external side of the element face.
     template <typename DbTagsList>
     static constexpr size_t ghost_zone_size(
-        const db::DataBox<DbTagsList>& box) noexcept {
+        const db::DataBox<DbTagsList>& box) {
       return db::get<grmhd::ValenciaDivClean::fd::Tags::Reconstructor>(box)
           .ghost_zone_size();
     }
@@ -407,7 +407,7 @@ struct EvolutionMetavars {
     Exit
   };
 
-  static std::string phase_name(Phase phase) noexcept {
+  static std::string phase_name(Phase phase) {
     if (phase == Phase::LoadBalancing) {
       return "LoadBalancing";
     } else if (phase == Phase::WriteCheckpoint) {
@@ -540,8 +540,7 @@ struct EvolutionMetavars {
       const gsl::not_null<tuples::TaggedTuple<Tags...>*>
           phase_change_decision_data,
       const Phase& current_phase,
-      const Parallel::CProxy_GlobalCache<EvolutionMetavars>&
-          cache_proxy) noexcept {
+      const Parallel::CProxy_GlobalCache<EvolutionMetavars>& cache_proxy) {
     const auto next_phase = PhaseControl::arbitrate_phase_change<phase_changes>(
         phase_change_decision_data, current_phase,
         *(cache_proxy.ckLocalBranch()));
@@ -569,7 +568,7 @@ struct EvolutionMetavars {
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& /*p*/) noexcept {}
+  void pup(PUP::er& /*p*/) {}
 };
 
 struct CenterOfStar {
@@ -582,7 +581,7 @@ struct CenterOfStar {
     using base = MaxOfScalar;
     using return_type = double;
     static void function(const gsl::not_null<double*> max_of_scalar,
-                         const Scalar<DataVector>& scalar) noexcept {
+                         const Scalar<DataVector>& scalar) {
       *max_of_scalar = max(get(scalar));
     };
     using argument_tags = tmpl::list<TagOfScalar>;

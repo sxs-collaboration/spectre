@@ -28,7 +28,7 @@ FlattenerAction flatten_solution(
     const Mesh<VolumeDim>& mesh,
     const Scalar<DataVector>& det_logical_to_inertial_jacobian,
     const EquationsOfState::EquationOfState<false, ThermodynamicDim>&
-        equation_of_state) noexcept {
+        equation_of_state) {
   // A note on the design behind the handling of the cell-averaged fields:
   //
   // The cell averages are needed for
@@ -50,7 +50,7 @@ FlattenerAction flatten_solution(
   const auto compute_means = [&mean_density, &mean_momentum, &mean_energy,
                               &mass_density_cons, &momentum_density,
                               &energy_density, &mesh,
-                              &det_logical_to_inertial_jacobian]() noexcept {
+                              &det_logical_to_inertial_jacobian]() {
     // Compute the means w.r.t. the inertial coords
     // (Note that several other parts of the limiter code take means w.r.t. the
     // logical coords, and therefore might not be conservative on curved grids)
@@ -58,7 +58,7 @@ FlattenerAction flatten_solution(
         definite_integral(get(det_logical_to_inertial_jacobian), mesh);
     const auto inertial_coord_mean =
         [&mesh, &det_logical_to_inertial_jacobian,
-         &volume_of_cell](const DataVector& u) noexcept {
+         &volume_of_cell](const DataVector& u) {
           // Note that the term `det_jac * u` below results in an allocation.
           // If this function needs to be optimized, a buffer for the product
           // could be allocated outside the lambda, and updated in the lambda.
@@ -144,8 +144,7 @@ FlattenerAction flatten_solution(
       gsl::not_null<tnsr::I<DataVector, DIM(data)>*>,             \
       gsl::not_null<Scalar<DataVector>*>, const Mesh<DIM(data)>&, \
       const Scalar<DataVector>&,                                  \
-      const EquationsOfState::EquationOfState<false,              \
-                                              THERMODIM(data)>&) noexcept;
+      const EquationsOfState::EquationOfState<false, THERMODIM(data)>&);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (1, 2))
 

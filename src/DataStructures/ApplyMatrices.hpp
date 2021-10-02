@@ -25,12 +25,12 @@ struct Impl {
   static void apply(gsl::not_null<ElementType*> result,
                     const std::array<MatrixType, Dim>& matrices,
                     const ElementType* data, const Index<Dim>& extents,
-                    size_t number_of_independent_components) noexcept;
+                    size_t number_of_independent_components);
 };
 
 template <typename MatrixType, size_t Dim>
 size_t result_size(const std::array<MatrixType, Dim>& matrices,
-                   const Index<Dim>& extents) noexcept {
+                   const Index<Dim>& extents) {
   size_t num_points_result = 1;
   for (size_t d = 0; d < Dim; ++d) {
     const size_t cols = dereference_wrapper(gsl::at(matrices, d)).columns();
@@ -67,7 +67,7 @@ template <typename VariableTags, typename MatrixType, size_t Dim>
 void apply_matrices(const gsl::not_null<Variables<VariableTags>*> result,
                     const std::array<MatrixType, Dim>& matrices,
                     const Variables<VariableTags>& u,
-                    const Index<Dim>& extents) noexcept {
+                    const Index<Dim>& extents) {
   ASSERT(u.number_of_grid_points() == extents.product(),
          "Mismatch between extents (" << extents.product()
                                       << ") and variables ("
@@ -86,7 +86,7 @@ void apply_matrices(const gsl::not_null<Variables<VariableTags>*> result,
 template <typename VariableTags, typename MatrixType, size_t Dim>
 Variables<VariableTags> apply_matrices(
     const std::array<MatrixType, Dim>& matrices,
-    const Variables<VariableTags>& u, const Index<Dim>& extents) noexcept {
+    const Variables<VariableTags>& u, const Index<Dim>& extents) {
   Variables<VariableTags> result(
       apply_matrices_detail::result_size(matrices, extents));
   apply_matrices(make_not_null(&result), matrices, u, extents);
@@ -98,7 +98,7 @@ template <typename ResultType, typename MatrixType, typename VectorType,
           size_t Dim>
 void apply_matrices(const gsl::not_null<ResultType*> result,  // NOLINT
                     const std::array<MatrixType, Dim>& matrices,
-                    const VectorType& u, const Index<Dim>& extents) noexcept {
+                    const VectorType& u, const Index<Dim>& extents) {
   const size_t number_of_independent_components = u.size() / extents.product();
   ASSERT(u.size() == number_of_independent_components * extents.product(),
          "The size of the vector u ("
@@ -119,8 +119,7 @@ void apply_matrices(const gsl::not_null<ResultType*> result,  // NOLINT
 
 template <typename MatrixType, typename VectorType, size_t Dim>
 VectorType apply_matrices(const std::array<MatrixType, Dim>& matrices,
-                          const VectorType& u,
-                          const Index<Dim>& extents) noexcept {
+                          const VectorType& u, const Index<Dim>& extents) {
   const size_t number_of_independent_components = u.size() / extents.product();
   VectorType result(number_of_independent_components *
                     apply_matrices_detail::result_size(matrices, extents));
@@ -131,8 +130,7 @@ VectorType apply_matrices(const std::array<MatrixType, Dim>& matrices,
 template <typename ResultType, typename MatrixType, typename VectorType,
           size_t Dim>
 ResultType apply_matrices(const std::array<MatrixType, Dim>& matrices,
-                          const VectorType& u,
-                          const Index<Dim>& extents) noexcept {
+                          const VectorType& u, const Index<Dim>& extents) {
   const size_t number_of_independent_components = u.size() / extents.product();
   ResultType result(number_of_independent_components *
                     apply_matrices_detail::result_size(matrices, extents));

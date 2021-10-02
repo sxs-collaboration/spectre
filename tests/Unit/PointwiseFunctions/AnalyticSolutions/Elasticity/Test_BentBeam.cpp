@@ -49,14 +49,14 @@ struct BentBeamProxy : Elasticity::Solutions::BentBeam<> {
       tmpl::list<Tags::FixedSource<Elasticity::Tags::Displacement<2>>>;
 
   tuples::tagged_tuple_from_typelist<field_tags> field_variables(
-      const tnsr::I<DataVector, 2>& x) const noexcept {
+      const tnsr::I<DataVector, 2>& x) const {
     return Elasticity::Solutions::BentBeam<>::variables(x, field_tags{});
   }
 
   // check_with_random_values() does not allow for arguments to be static
   // NOLINTNEXTLINE(readability-convert-member-functions-to-static)
   tuples::tagged_tuple_from_typelist<source_tags> source_variables(
-      const tnsr::I<DataVector, 2>& x) const noexcept {
+      const tnsr::I<DataVector, 2>& x) const {
     return Elasticity::Solutions::BentBeam<>::variables(x, source_tags{});
   }
 };

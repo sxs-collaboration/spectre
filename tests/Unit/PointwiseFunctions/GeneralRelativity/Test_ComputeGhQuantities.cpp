@@ -122,7 +122,7 @@ void test_compute_gauge_source(const DataType& used_for_size) {
           const tnsr::iJ<DataType, Dim, Frame::Inertial>&,
           const tnsr::ii<DataType, Dim, Frame::Inertial>&,
           const Scalar<DataType>&,
-          const tnsr::i<DataType, Dim, Frame::Inertial>&) noexcept>(
+          const tnsr::i<DataType, Dim, Frame::Inertial>&)>(
           &::GeneralizedHarmonic::gauge_source<Dim, Frame::Inertial, DataType>),
       "GeneralRelativity.ComputeGhQuantities", "gauge_source", {{{-1., 1.}}},
       used_for_size, 1.e-11);
@@ -204,7 +204,7 @@ void test_compute_extrinsic_curvature_and_deriv_metric(const T& used_for_size) {
 }
 
 template <typename DataType, size_t SpatialDim, typename Frame>
-void test_lapse_deriv_functions(const DataVector& used_for_size) noexcept {
+void test_lapse_deriv_functions(const DataVector& used_for_size) {
   // spatial_deriv_of_lapse
   pypp::check_with_random_values<1>(
       static_cast<tnsr::i<DataType, SpatialDim, Frame> (*)(
@@ -229,7 +229,7 @@ void test_lapse_deriv_functions(const DataVector& used_for_size) noexcept {
 }
 
 template <typename DataType, size_t SpatialDim, typename Frame>
-void test_gij_deriv_functions(const DataVector& used_for_size) noexcept {
+void test_gij_deriv_functions(const DataVector& used_for_size) {
   // time_deriv_of_spatial_metric
   pypp::check_with_random_values<1>(
       static_cast<tnsr::ii<DataType, SpatialDim, Frame> (*)(
@@ -253,8 +253,7 @@ void test_gij_deriv_functions(const DataVector& used_for_size) noexcept {
 }
 
 template <typename DataType, size_t SpatialDim, typename Frame>
-void test_spacetime_metric_deriv_functions(
-    const DataVector& used_for_size) noexcept {
+void test_spacetime_metric_deriv_functions(const DataVector& used_for_size) {
   pypp::check_with_random_values<1>(
       static_cast<tnsr::aa<DataType, SpatialDim, Frame> (*)(
           const Scalar<DataType>&, const tnsr::I<DataType, SpatialDim, Frame>&,
@@ -271,7 +270,7 @@ template <typename Solution>
 void test_lapse_deriv_functions_analytic(
     const Solution& solution, const size_t grid_size_each_dimension,
     const std::array<double, 3>& lower_bound,
-    const std::array<double, 3>& upper_bound) noexcept {
+    const std::array<double, 3>& upper_bound) {
   // Setup grid
   const size_t spatial_dim = 3;
   Mesh<spatial_dim> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
@@ -333,7 +332,7 @@ void test_lapse_deriv_functions_analytic(
 }
 
 template <typename DataType, size_t SpatialDim, typename Frame>
-void test_shift_deriv_functions(const DataVector& used_for_size) noexcept {
+void test_shift_deriv_functions(const DataVector& used_for_size) {
   // spatial_deriv_of_shift
   pypp::check_with_random_values<1>(
       static_cast<tnsr::iJ<DataType, SpatialDim, Frame> (*)(
@@ -393,7 +392,7 @@ template <typename Solution>
 void test_shift_deriv_functions_analytic(
     const Solution& solution, const size_t grid_size_each_dimension,
     const std::array<double, 3>& lower_bound,
-    const std::array<double, 3>& upper_bound) noexcept {
+    const std::array<double, 3>& upper_bound) {
   // Setup grid
   const size_t SpatialDim = 3;
   Mesh<SpatialDim> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
@@ -510,7 +509,7 @@ template <typename Solution>
 void test_gij_deriv_functions_analytic(
     const Solution& solution, const size_t grid_size_each_dimension,
     const std::array<double, 3>& lower_bound,
-    const std::array<double, 3>& upper_bound) noexcept {
+    const std::array<double, 3>& upper_bound) {
   // Setup grid
   const size_t SpatialDim = 3;
   Mesh<SpatialDim> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
@@ -606,8 +605,7 @@ void test_gij_deriv_functions_analytic(
 }
 
 template <typename DataType, size_t SpatialDim, typename Frame>
-void test_spacetime_derivative_of_spacetime_metric(
-    const size_t num_pts) noexcept {
+void test_spacetime_derivative_of_spacetime_metric(const size_t num_pts) {
   CAPTURE(SpatialDim);
   MAKE_GENERATOR(generator);
   std::uniform_real_distribution<> distribution(0.1, 1.0);
@@ -645,8 +643,7 @@ void test_spacetime_derivative_of_spacetime_metric(
 }
 
 template <size_t SpatialDim, typename Frame, typename DataType>
-void test_cov_deriv_extrinsic_curvature(
-    const DataType& used_for_size) noexcept {
+void test_cov_deriv_extrinsic_curvature(const DataType& used_for_size) {
   pypp::check_with_random_values<1>(
       static_cast<tnsr::ijj<DataType, SpatialDim, Frame> (*)(
           const tnsr::ii<DataType, SpatialDim, Frame>&,
@@ -663,7 +660,7 @@ void test_cov_deriv_extrinsic_curvature(
 }
 
 template <typename DataType, size_t SpatialDim, typename Frame>
-void test_spatial_ricci_tensor(const DataVector& used_for_size) noexcept {
+void test_spatial_ricci_tensor(const DataVector& used_for_size) {
   pypp::check_with_random_values<1>(
       static_cast<tnsr::ii<DataType, SpatialDim, Frame> (*)(
           const tnsr::iaa<DataType, SpatialDim, Frame>&,
@@ -677,10 +674,9 @@ void test_spatial_ricci_tensor(const DataVector& used_for_size) noexcept {
 
 // Test GeneralizedHarmonic::ricci_tensor by comparing to specific values
 // c.f. SpEC
-void test_spatial_ricci_tensor_spec(
-    const size_t grid_size_each_dimension,
-    const std::array<double, 3>& lower_bound,
-    const std::array<double, 3>& upper_bound) noexcept {
+void test_spatial_ricci_tensor_spec(const size_t grid_size_each_dimension,
+                                    const std::array<double, 3>& lower_bound,
+                                    const std::array<double, 3>& upper_bound) {
   using frame = Frame::Inertial;
   constexpr size_t VolumeDim = 3;
   // Setup grid

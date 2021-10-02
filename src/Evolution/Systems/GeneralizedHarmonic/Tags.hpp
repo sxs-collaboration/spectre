@@ -186,7 +186,7 @@ namespace OptionTags {
  * Groups option tags related to the GeneralizedHarmonic evolution system.
  */
 struct Group {
-  static std::string name() noexcept { return "GeneralizedHarmonic"; }
+  static std::string name() { return "GeneralizedHarmonic"; }
   static constexpr Options::String help{"Options for the GH evolution system"};
   using group = evolution::OptionTags::SystemGroup;
 };

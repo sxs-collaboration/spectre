@@ -23,7 +23,7 @@ template <size_t SpatialDim, typename Frame, typename DataType>
 void two_index_constraint_add_term_1_of_11(
     const gsl::not_null<tnsr::ia<DataType, SpatialDim, Frame>*> constraint,
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
-    const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi) noexcept {
+    const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi) {
   for (size_t i = 0; i < SpatialDim; ++i) {
     for (size_t a = 0; a < SpatialDim + 1; ++a) {
       for (size_t j = 0; j < SpatialDim; ++j) {
@@ -42,7 +42,7 @@ void two_index_constraint_add_term_2_of_11(
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_normal_vector,
     const tnsr::a<DataType, SpatialDim, Frame>& spacetime_normal_one_form,
     const tnsr::AA<DataType, SpatialDim, Frame>& inverse_spacetime_metric,
-    const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi) noexcept {
+    const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi) {
   for (size_t i = 0; i < SpatialDim; ++i) {
     for (size_t a = 0; a < SpatialDim + 1; ++a) {
       for (size_t c = 0; c < SpatialDim + 1; ++c) {
@@ -67,7 +67,7 @@ template <size_t SpatialDim, typename Frame, typename DataType>
 void two_index_constraint_add_term_3_of_11(
     const gsl::not_null<tnsr::ia<DataType, SpatialDim, Frame>*> constraint,
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_normal_vector,
-    const tnsr::iaa<DataType, SpatialDim, Frame>& d_pi) noexcept {
+    const tnsr::iaa<DataType, SpatialDim, Frame>& d_pi) {
   for (size_t i = 0; i < SpatialDim; ++i) {
     for (size_t a = 0; a < SpatialDim + 1; ++a) {
       for (size_t b = 0; b < SpatialDim + 1; ++b) {
@@ -83,7 +83,7 @@ void two_index_constraint_add_term_4_of_11(
     const gsl::not_null<tnsr::ia<DataType, SpatialDim, Frame>*> constraint,
     const tnsr::a<DataType, SpatialDim, Frame>& spacetime_normal_one_form,
     const tnsr::AA<DataType, SpatialDim, Frame>& inverse_spacetime_metric,
-    const tnsr::iaa<DataType, SpatialDim, Frame>& d_pi) noexcept {
+    const tnsr::iaa<DataType, SpatialDim, Frame>& d_pi) {
   for (size_t i = 0; i < SpatialDim; ++i) {
     for (size_t a = 0; a < SpatialDim + 1; ++a) {
       for (size_t c = 0; c < SpatialDim + 1; ++c) {
@@ -100,8 +100,7 @@ void two_index_constraint_add_term_4_of_11(
 template <size_t SpatialDim, typename Frame, typename DataType>
 void two_index_constraint_add_term_5_of_11(
     const gsl::not_null<tnsr::ia<DataType, SpatialDim, Frame>*> constraint,
-    const tnsr::ab<DataType, SpatialDim, Frame>&
-        spacetime_d_gauge_function) noexcept {
+    const tnsr::ab<DataType, SpatialDim, Frame>& spacetime_d_gauge_function) {
   for (size_t i = 0; i < SpatialDim; ++i) {
     for (size_t a = 0; a < SpatialDim + 1; ++a) {
       constraint->get(i, a) += spacetime_d_gauge_function.get(i + 1, a);
@@ -115,8 +114,7 @@ void two_index_constraint_add_term_6_of_11(
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_normal_vector,
     const tnsr::a<DataType, SpatialDim, Frame>& spacetime_normal_one_form,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
-    const tnsr::AA<DataType, SpatialDim, Frame>&
-        inverse_spacetime_metric) noexcept {
+    const tnsr::AA<DataType, SpatialDim, Frame>& inverse_spacetime_metric) {
   for (size_t i = 0; i < SpatialDim; ++i) {
     for (size_t a = 0; a < SpatialDim + 1; ++a) {
       for (size_t c = 0; c < SpatialDim + 1; ++c) {
@@ -151,8 +149,7 @@ void two_index_constraint_add_term_7_of_11(
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
     const tnsr::AA<DataType, SpatialDim, Frame>& inverse_spacetime_metric,
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_normal_vector,
-    const tnsr::a<DataType, SpatialDim, Frame>&
-        spacetime_normal_one_form) noexcept {
+    const tnsr::a<DataType, SpatialDim, Frame>& spacetime_normal_one_form) {
   for (size_t i = 0; i < SpatialDim; ++i) {
     for (size_t a = 0; a < SpatialDim + 1; ++a) {
       for (size_t j = 0; j < SpatialDim; ++j) {
@@ -178,7 +175,7 @@ template <size_t SpatialDim, typename Frame, typename DataType>
 void two_index_constraint_add_term_8_of_11(
     const gsl::not_null<tnsr::ia<DataType, SpatialDim, Frame>*> constraint,
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
-    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept {
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) {
   for (size_t i = 0; i < SpatialDim; ++i) {
     for (size_t a = 0; a < SpatialDim + 1; ++a) {
       for (size_t j = 0; j < SpatialDim; ++j) {
@@ -204,8 +201,7 @@ void two_index_constraint_add_term_9_of_11(
     const tnsr::aa<DataType, SpatialDim, Frame>& pi,
     const tnsr::a<DataType, SpatialDim, Frame>& spacetime_normal_one_form,
     const tnsr::AA<DataType, SpatialDim, Frame>& inverse_spacetime_metric,
-    const tnsr::A<DataType, SpatialDim, Frame>&
-        spacetime_normal_vector) noexcept {
+    const tnsr::A<DataType, SpatialDim, Frame>& spacetime_normal_vector) {
   for (size_t i = 0; i < SpatialDim; ++i) {
     for (size_t a = 0; a < SpatialDim + 1; ++a) {
       for (size_t b = 0; b < SpatialDim + 1; ++b) {
@@ -234,8 +230,7 @@ void two_index_constraint_add_term_10_of_11(
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
     const tnsr::aa<DataType, SpatialDim, Frame>& pi,
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_normal_vector,
-    const tnsr::AA<DataType, SpatialDim, Frame>&
-        inverse_spacetime_metric) noexcept {
+    const tnsr::AA<DataType, SpatialDim, Frame>& inverse_spacetime_metric) {
   for (size_t i = 0; i < SpatialDim; ++i) {
     for (size_t a = 0; a < SpatialDim + 1; ++a) {
       for (size_t b = 0; b < SpatialDim + 1; ++b) {
@@ -260,8 +255,7 @@ void two_index_constraint_add_term_11_of_11(
     const tnsr::a<DataType, SpatialDim, Frame>& spacetime_normal_one_form,
     const tnsr::AA<DataType, SpatialDim, Frame>& inverse_spacetime_metric,
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_normal_vector,
-    const tnsr::iaa<DataType, SpatialDim, Frame>&
-        three_index_constraint) noexcept {
+    const tnsr::iaa<DataType, SpatialDim, Frame>& three_index_constraint) {
   for (size_t i = 0; i < SpatialDim; ++i) {
     for (size_t a = 0; a < SpatialDim + 1; ++a) {
       for (size_t d = 0; d < SpatialDim + 1; ++d) {
@@ -288,7 +282,7 @@ void f_constraint_add_term_1_of_25(
     const tnsr::a<DataType, SpatialDim, Frame>& spacetime_normal_one_form,
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_normal_vector,
     const tnsr::AA<DataType, SpatialDim, Frame>& inverse_spacetime_metric,
-    const tnsr::iaa<DataType, SpatialDim, Frame>& d_pi) noexcept {
+    const tnsr::iaa<DataType, SpatialDim, Frame>& d_pi) {
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
     for (size_t b = 0; b < SpatialDim + 1; ++b) {
       for (size_t c = 0; c < SpatialDim + 1; ++c) {
@@ -311,7 +305,7 @@ template <size_t SpatialDim, typename Frame, typename DataType>
 void f_constraint_add_term_2_of_25(
     const gsl::not_null<tnsr::a<DataType, SpatialDim, Frame>*> constraint,
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
-    const tnsr::iaa<DataType, SpatialDim, Frame>& d_pi) noexcept {
+    const tnsr::iaa<DataType, SpatialDim, Frame>& d_pi) {
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
     for (size_t i = 0; i < SpatialDim; ++i) {
       for (size_t j = 0; j < SpatialDim; ++j) {
@@ -327,7 +321,7 @@ void f_constraint_add_term_3_of_25(
     const gsl::not_null<tnsr::a<DataType, SpatialDim, Frame>*> constraint,
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_normal_vector,
-    const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi) noexcept {
+    const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi) {
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
     for (size_t i = 0; i < SpatialDim; ++i) {
       for (size_t j = 0; j < SpatialDim; ++j) {
@@ -347,7 +341,7 @@ void f_constraint_add_term_4_of_25(
     const tnsr::a<DataType, SpatialDim, Frame>& spacetime_normal_one_form,
     const tnsr::AA<DataType, SpatialDim, Frame>& inverse_spacetime_metric,
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
-    const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi) noexcept {
+    const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi) {
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
     for (size_t b = 0; b < SpatialDim + 1; ++b) {
       for (size_t c = 0; c < SpatialDim + 1; ++c) {
@@ -369,8 +363,7 @@ void f_constraint_add_term_5_of_25(
     const gsl::not_null<tnsr::a<DataType, SpatialDim, Frame>*> constraint,
     const tnsr::a<DataType, SpatialDim, Frame>& spacetime_normal_one_form,
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
-    const tnsr::ab<DataType, SpatialDim, Frame>&
-        spacetime_d_gauge_function) noexcept {
+    const tnsr::ab<DataType, SpatialDim, Frame>& spacetime_d_gauge_function) {
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
     for (size_t i = 0; i < SpatialDim; ++i) {
       for (size_t j = 0; j < SpatialDim; ++j) {
@@ -389,8 +382,7 @@ void f_constraint_add_term_6_of_25(
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_normal_vector,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
-    const tnsr::AA<DataType, SpatialDim, Frame>&
-        inverse_spacetime_metric) noexcept {
+    const tnsr::AA<DataType, SpatialDim, Frame>& inverse_spacetime_metric) {
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
     for (size_t b = 0; b < SpatialDim + 1; ++b) {
       for (size_t c = 0; c < SpatialDim + 1; ++c) {
@@ -427,8 +419,7 @@ void f_constraint_add_term_7_of_25(
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_normal_vector,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
-    const tnsr::AA<DataType, SpatialDim, Frame>&
-        inverse_spacetime_metric) noexcept {
+    const tnsr::AA<DataType, SpatialDim, Frame>& inverse_spacetime_metric) {
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
     for (size_t b = 0; b < SpatialDim + 1; ++b) {
       for (size_t c = 0; c < SpatialDim + 1; ++c) {
@@ -463,8 +454,7 @@ void f_constraint_add_term_8_of_25(
     const gsl::not_null<tnsr::a<DataType, SpatialDim, Frame>*> constraint,
     const tnsr::a<DataType, SpatialDim, Frame>& spacetime_normal_one_form,
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_normal_vector,
-    const tnsr::ab<DataType, SpatialDim, Frame>&
-        spacetime_d_gauge_function) noexcept {
+    const tnsr::ab<DataType, SpatialDim, Frame>& spacetime_d_gauge_function) {
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
     for (size_t b = 0; b < SpatialDim + 1; ++b) {
       if (a > 0) {
@@ -487,8 +477,7 @@ void f_constraint_add_term_9_of_25(
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
     const tnsr::AA<DataType, SpatialDim, Frame>& inverse_spacetime_metric,
-    const tnsr::A<DataType, SpatialDim, Frame>&
-        spacetime_normal_vector) noexcept {
+    const tnsr::A<DataType, SpatialDim, Frame>& spacetime_normal_vector) {
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
     for (size_t b = 0; b < SpatialDim + 1; ++b) {
       for (size_t c = 0; c < SpatialDim + 1; ++c) {
@@ -513,8 +502,7 @@ void f_constraint_add_term_10_of_25(
     const tnsr::a<DataType, SpatialDim, Frame>& spacetime_normal_one_form,
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
-    const tnsr::AA<DataType, SpatialDim, Frame>&
-        inverse_spacetime_metric) noexcept {
+    const tnsr::AA<DataType, SpatialDim, Frame>& inverse_spacetime_metric) {
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
     for (size_t c = 0; c < SpatialDim + 1; ++c) {
       for (size_t d = 0; d < SpatialDim + 1; ++d) {
@@ -542,8 +530,7 @@ void f_constraint_add_term_11_of_25(
     const tnsr::a<DataType, SpatialDim, Frame>& spacetime_normal_one_form,
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
-    const tnsr::AA<DataType, SpatialDim, Frame>&
-        inverse_spacetime_metric) noexcept {
+    const tnsr::AA<DataType, SpatialDim, Frame>& inverse_spacetime_metric) {
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
     for (size_t b = 0; b < SpatialDim + 1; ++b) {
       for (size_t c = 0; c < SpatialDim + 1; ++c) {
@@ -570,8 +557,7 @@ void f_constraint_add_term_12_of_25(
     const gsl::not_null<tnsr::a<DataType, SpatialDim, Frame>*> constraint,
     const tnsr::a<DataType, SpatialDim, Frame>& spacetime_normal_one_form,
     const tnsr::aa<DataType, SpatialDim, Frame>& pi,
-    const tnsr::AA<DataType, SpatialDim, Frame>&
-        inverse_spacetime_metric) noexcept {
+    const tnsr::AA<DataType, SpatialDim, Frame>& inverse_spacetime_metric) {
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
     for (size_t b = 0; b < SpatialDim + 1; ++b) {
       for (size_t c = 0; c < SpatialDim + 1; ++c) {
@@ -593,7 +579,7 @@ void f_constraint_add_term_13_of_25(
     const gsl::not_null<tnsr::a<DataType, SpatialDim, Frame>*> constraint,
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
     const tnsr::a<DataType, SpatialDim, Frame>& gauge_function,
-    const tnsr::aa<DataType, SpatialDim, Frame>& pi) noexcept {
+    const tnsr::aa<DataType, SpatialDim, Frame>& pi) {
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
     for (size_t i = 0; i < SpatialDim; ++i) {
       for (size_t j = 0; j < SpatialDim; ++j) {
@@ -609,7 +595,7 @@ void f_constraint_add_term_14_of_25(
     const gsl::not_null<tnsr::a<DataType, SpatialDim, Frame>*> constraint,
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_normal_vector,
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
-    const tnsr::aa<DataType, SpatialDim, Frame>& pi) noexcept {
+    const tnsr::aa<DataType, SpatialDim, Frame>& pi) {
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
     for (size_t b = 0; b < SpatialDim + 1; ++b) {
       for (size_t i = 0; i < SpatialDim; ++i) {
@@ -630,7 +616,7 @@ void f_constraint_add_term_15_of_25(
     const tnsr::a<DataType, SpatialDim, Frame>& spacetime_normal_one_form,
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_normal_vector,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
-    const tnsr::aa<DataType, SpatialDim, Frame>& pi) noexcept {
+    const tnsr::aa<DataType, SpatialDim, Frame>& pi) {
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
     for (size_t b = 0; b < SpatialDim + 1; ++b) {
       for (size_t c = 0; c < SpatialDim + 1; ++c) {
@@ -663,8 +649,7 @@ void f_constraint_add_term_16_of_25(
     const tnsr::a<DataType, SpatialDim, Frame>& spacetime_normal_one_form,
     const tnsr::aa<DataType, SpatialDim, Frame>& pi,
     const tnsr::AA<DataType, SpatialDim, Frame>& inverse_spacetime_metric,
-    const tnsr::A<DataType, SpatialDim, Frame>&
-        spacetime_normal_vector) noexcept {
+    const tnsr::A<DataType, SpatialDim, Frame>& spacetime_normal_vector) {
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
     for (size_t b = 0; b < SpatialDim + 1; ++b) {
       for (size_t c = 0; c < SpatialDim + 1; ++c) {
@@ -688,7 +673,7 @@ void f_constraint_add_term_17_of_25(
     const tnsr::a<DataType, SpatialDim, Frame>& spacetime_normal_one_form,
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_normal_vector,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
-    const tnsr::aa<DataType, SpatialDim, Frame>& pi) noexcept {
+    const tnsr::aa<DataType, SpatialDim, Frame>& pi) {
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
     for (size_t b = 0; b < SpatialDim + 1; ++b) {
       for (size_t c = 0; c < SpatialDim + 1; ++c) {
@@ -721,7 +706,7 @@ void f_constraint_add_term_18_of_25(
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_normal_vector,
-    const tnsr::aa<DataType, SpatialDim, Frame>& pi) noexcept {
+    const tnsr::aa<DataType, SpatialDim, Frame>& pi) {
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
     for (size_t b = 0; b < SpatialDim + 1; ++b) {
       for (size_t e = 0; e < SpatialDim + 1; ++e) {
@@ -744,7 +729,7 @@ void f_constraint_add_term_19_of_25(
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_normal_vector,
-    const tnsr::aa<DataType, SpatialDim, Frame>& pi) noexcept {
+    const tnsr::aa<DataType, SpatialDim, Frame>& pi) {
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
     for (size_t c = 0; c < SpatialDim + 1; ++c) {
       for (size_t d = 0; d < SpatialDim + 1; ++d) {
@@ -767,8 +752,7 @@ void f_constraint_add_term_20_of_25(
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
     const tnsr::a<DataType, SpatialDim, Frame>& gauge_function,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
-    const tnsr::A<DataType, SpatialDim, Frame>&
-        spacetime_normal_vector) noexcept {
+    const tnsr::A<DataType, SpatialDim, Frame>& spacetime_normal_vector) {
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
     for (size_t b = 0; b < SpatialDim + 1; ++b) {
       for (size_t i = 0; i < SpatialDim; ++i) {
@@ -789,8 +773,7 @@ void f_constraint_add_term_21_of_25(
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_normal_vector,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
     const tnsr::a<DataType, SpatialDim, Frame>& gauge_function,
-    const tnsr::AA<DataType, SpatialDim, Frame>&
-        inverse_spacetime_metric) noexcept {
+    const tnsr::AA<DataType, SpatialDim, Frame>& inverse_spacetime_metric) {
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
     for (size_t b = 0; b < SpatialDim + 1; ++b) {
       for (size_t c = 0; c < SpatialDim + 1; ++c) {
@@ -820,8 +803,7 @@ void f_constraint_add_term_22_of_25(
     const tnsr::AA<DataType, SpatialDim, Frame>& inverse_spacetime_metric,
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_normal_vector,
     const tnsr::iaa<DataType, SpatialDim, Frame>& three_index_constraint,
-    const tnsr::a<DataType, SpatialDim, Frame>&
-        spacetime_normal_one_form) noexcept {
+    const tnsr::a<DataType, SpatialDim, Frame>& spacetime_normal_one_form) {
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
     for (size_t d = 0; d < SpatialDim + 1; ++d) {
       for (size_t i = 0; i < SpatialDim; ++i) {
@@ -858,8 +840,7 @@ void f_constraint_add_term_23_of_25(
     const tnsr::aa<DataType, SpatialDim, Frame>& pi,
     const tnsr::AA<DataType, SpatialDim, Frame>& inverse_spacetime_metric,
     const tnsr::a<DataType, SpatialDim, Frame>& gauge_function,
-    const tnsr::A<DataType, SpatialDim, Frame>&
-        spacetime_normal_vector) noexcept {
+    const tnsr::A<DataType, SpatialDim, Frame>& spacetime_normal_vector) {
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
     for (size_t b = 0; b < SpatialDim + 1; ++b) {
       for (size_t c = 0; c < SpatialDim + 1; ++c) {
@@ -881,8 +862,7 @@ void f_constraint_add_term_24_of_25(
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
     const tnsr::a<DataType, SpatialDim, Frame>& gauge_function,
-    const tnsr::AA<DataType, SpatialDim, Frame>&
-        inverse_spacetime_metric) noexcept {
+    const tnsr::AA<DataType, SpatialDim, Frame>& inverse_spacetime_metric) {
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
     for (size_t c = 0; c < SpatialDim + 1; ++c) {
       for (size_t d = 0; d < SpatialDim + 1; ++d) {
@@ -906,8 +886,7 @@ void f_constraint_add_term_25_of_25(
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
     const tnsr::a<DataType, SpatialDim, Frame>& gauge_function,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
-    const tnsr::AA<DataType, SpatialDim, Frame>&
-        inverse_spacetime_metric) noexcept {
+    const tnsr::AA<DataType, SpatialDim, Frame>& inverse_spacetime_metric) {
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
     for (size_t c = 0; c < SpatialDim + 1; ++c) {
       for (size_t d = 0; d < SpatialDim + 1; ++d) {
@@ -930,8 +909,7 @@ void f_constraint_add_stress_energy_term(
     const tnsr::AA<DataType, SpatialDim, Frame>& inverse_spacetime_metric,
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_normal_vector,
     const tnsr::a<DataType, SpatialDim, Frame>& spacetime_normal_one_form,
-    const tnsr::aa<DataType, SpatialDim, Frame>&
-        trace_reversed_stress_energy) noexcept {
+    const tnsr::aa<DataType, SpatialDim, Frame>& trace_reversed_stress_energy) {
   // This term, like many terms in the f constraint, may benefit from
   // allocating a temporary for the trace. However, once we apply that
   // optimization it should be applied to all terms that can benefit from
@@ -954,7 +932,7 @@ namespace GeneralizedHarmonic {
 template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::iaa<DataType, SpatialDim, Frame> three_index_constraint(
     const tnsr::iaa<DataType, SpatialDim, Frame>& d_spacetime_metric,
-    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept {
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) {
   auto constraint =
       make_with_value<tnsr::iaa<DataType, SpatialDim, Frame>>(phi, 0.0);
   three_index_constraint<SpatialDim, Frame, DataType>(&constraint,
@@ -966,7 +944,7 @@ template <size_t SpatialDim, typename Frame, typename DataType>
 void three_index_constraint(
     const gsl::not_null<tnsr::iaa<DataType, SpatialDim, Frame>*> constraint,
     const tnsr::iaa<DataType, SpatialDim, Frame>& d_spacetime_metric,
-    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept {
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) {
   // Declare iterators for d_spacetime_metric and phi outside the for loop,
   // because they are const but constraint is not
   // clang-tidy: llvm-qualified-auto
@@ -989,7 +967,7 @@ tnsr::a<DataType, SpatialDim, Frame> gauge_constraint(
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
     const tnsr::AA<DataType, SpatialDim, Frame>& inverse_spacetime_metric,
     const tnsr::aa<DataType, SpatialDim, Frame>& pi,
-    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept {
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) {
   auto constraint =
       make_with_value<tnsr::a<DataType, SpatialDim, Frame>>(pi, 0.0);
   gauge_constraint<SpatialDim, Frame, DataType>(
@@ -1008,7 +986,7 @@ void gauge_constraint(
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
     const tnsr::AA<DataType, SpatialDim, Frame>& inverse_spacetime_metric,
     const tnsr::aa<DataType, SpatialDim, Frame>& pi,
-    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept {
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) {
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
     (*constraint).get(a) = gauge_function.get(a);
     for (size_t i = 0; i < SpatialDim; ++i) {
@@ -1050,8 +1028,7 @@ tnsr::ia<DataType, SpatialDim, Frame> two_index_constraint(
     const tnsr::iaa<DataType, SpatialDim, Frame>& d_pi,
     const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi,
     const Scalar<DataType>& gamma2,
-    const tnsr::iaa<DataType, SpatialDim, Frame>&
-        three_index_constraint) noexcept {
+    const tnsr::iaa<DataType, SpatialDim, Frame>& three_index_constraint) {
   auto constraint =
       make_with_value<tnsr::ia<DataType, SpatialDim, Frame>>(pi, 0.0);
   two_index_constraint<SpatialDim, Frame, DataType>(
@@ -1074,8 +1051,7 @@ void two_index_constraint(
     const tnsr::iaa<DataType, SpatialDim, Frame>& d_pi,
     const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi,
     const Scalar<DataType>& gamma2,
-    const tnsr::iaa<DataType, SpatialDim, Frame>&
-        three_index_constraint) noexcept {
+    const tnsr::iaa<DataType, SpatialDim, Frame>& three_index_constraint) {
   destructive_resize_components(constraint, get_size(get(gamma2)));
   for (auto& component : *constraint) {
     component = 0.0;
@@ -1111,7 +1087,7 @@ void two_index_constraint(
 
 template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::iaa<DataType, SpatialDim, Frame> four_index_constraint(
-    const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi) noexcept {
+    const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi) {
   static_assert(
       SpatialDim == 3,
       "four_index_constraint() currently only supports 3 spatial dimensions");
@@ -1124,7 +1100,7 @@ tnsr::iaa<DataType, SpatialDim, Frame> four_index_constraint(
 template <size_t SpatialDim, typename Frame, typename DataType>
 void four_index_constraint(
     const gsl::not_null<tnsr::iaa<DataType, SpatialDim, Frame>*> constraint,
-    const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi) noexcept {
+    const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi) {
   static_assert(
       SpatialDim == 3,
       "four_index_constraint() currently only supports 3 spatial dimensions");
@@ -1159,8 +1135,7 @@ tnsr::a<DataType, SpatialDim, Frame> f_constraint(
     const tnsr::iaa<DataType, SpatialDim, Frame>& d_pi,
     const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi,
     const Scalar<DataType>& gamma2,
-    const tnsr::iaa<DataType, SpatialDim, Frame>&
-        three_index_constraint) noexcept {
+    const tnsr::iaa<DataType, SpatialDim, Frame>& three_index_constraint) {
   auto constraint =
       make_with_value<tnsr::a<DataType, SpatialDim, Frame>>(pi, 0.0);
   f_constraint<SpatialDim, Frame, DataType>(
@@ -1185,8 +1160,7 @@ tnsr::a<DataType, SpatialDim, Frame> f_constraint(
     const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi,
     const Scalar<DataType>& gamma2,
     const tnsr::iaa<DataType, SpatialDim, Frame>& three_index_constraint,
-    const tnsr::aa<DataType, SpatialDim, Frame>&
-        trace_reversed_stress_energy) noexcept {
+    const tnsr::aa<DataType, SpatialDim, Frame>& trace_reversed_stress_energy) {
   auto constraint =
       make_with_value<tnsr::a<DataType, SpatialDim, Frame>>(pi, 0.0);
   f_constraint<SpatialDim, Frame, DataType>(
@@ -1212,8 +1186,7 @@ void f_constraint(
     const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi,
     const Scalar<DataType>& gamma2,
     const tnsr::iaa<DataType, SpatialDim, Frame>& three_index_constraint,
-    const tnsr::aa<DataType, SpatialDim, Frame>&
-        trace_reversed_stress_energy) noexcept {
+    const tnsr::aa<DataType, SpatialDim, Frame>& trace_reversed_stress_energy) {
   f_constraint<SpatialDim, Frame, DataType>(
       constraint, gauge_function, spacetime_d_gauge_function,
       spacetime_normal_one_form, spacetime_normal_vector,
@@ -1238,8 +1211,7 @@ void f_constraint(
     const tnsr::iaa<DataType, SpatialDim, Frame>& d_pi,
     const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi,
     const Scalar<DataType>& gamma2,
-    const tnsr::iaa<DataType, SpatialDim, Frame>&
-        three_index_constraint) noexcept {
+    const tnsr::iaa<DataType, SpatialDim, Frame>& three_index_constraint) {
   if (get_size(get<0>(*constraint)) != get_size(get<0, 0>(pi))) {
     *constraint = tnsr::a<DataType, SpatialDim, Frame>{get<0, 0>(pi)};
   }
@@ -1324,7 +1296,7 @@ Scalar<DataType> constraint_energy(
     const Scalar<DataType>& spatial_metric_determinant,
     double gauge_constraint_multiplier, double two_index_constraint_multiplier,
     double three_index_constraint_multiplier,
-    double four_index_constraint_multiplier) noexcept {
+    double four_index_constraint_multiplier) {
   auto energy = make_with_value<Scalar<DataType>>(gauge_constraint, 0.0);
   constraint_energy<SpatialDim, Frame, DataType>(
       &energy, gauge_constraint, f_constraint, two_index_constraint,
@@ -1347,7 +1319,7 @@ void constraint_energy(
     const Scalar<DataType>& spatial_metric_determinant,
     double gauge_constraint_multiplier, double two_index_constraint_multiplier,
     double three_index_constraint_multiplier,
-    double four_index_constraint_multiplier) noexcept {
+    double four_index_constraint_multiplier) {
   if (get_size(get(*energy)) != get_size(get<0>(f_constraint))) {
     *energy = Scalar<DataType>{get_size(get<0>(f_constraint))};
   }
@@ -1394,13 +1366,13 @@ void constraint_energy(
   GeneralizedHarmonic::three_index_constraint(                              \
       const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>&                 \
           d_spacetime_metric,                                               \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi) noexcept;  \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi);           \
   template void GeneralizedHarmonic::three_index_constraint(                \
       const gsl::not_null<tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>*>  \
           constraint,                                                       \
       const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>&                 \
           d_spacetime_metric,                                               \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi) noexcept;  \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi);           \
   template tnsr::a<DTYPE(data), DIM(data), FRAME(data)>                     \
   GeneralizedHarmonic::gauge_constraint(                                    \
       const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>& gauge_function,   \
@@ -1413,7 +1385,7 @@ void constraint_energy(
       const tnsr::AA<DTYPE(data), DIM(data), FRAME(data)>&                  \
           inverse_spacetime_metric,                                         \
       const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi,              \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi) noexcept;  \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi);           \
   template void GeneralizedHarmonic::gauge_constraint(                      \
       const gsl::not_null<tnsr::a<DTYPE(data), DIM(data), FRAME(data)>*>    \
           constraint,                                                       \
@@ -1427,7 +1399,7 @@ void constraint_energy(
       const tnsr::AA<DTYPE(data), DIM(data), FRAME(data)>&                  \
           inverse_spacetime_metric,                                         \
       const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi,              \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi) noexcept;  \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi);           \
   template tnsr::ia<DTYPE(data), DIM(data), FRAME(data)>                    \
   GeneralizedHarmonic::two_index_constraint(                                \
       const tnsr::ab<DTYPE(data), DIM(data), FRAME(data)>&                  \
@@ -1446,7 +1418,7 @@ void constraint_energy(
       const tnsr::ijaa<DTYPE(data), DIM(data), FRAME(data)>& d_phi,         \
       const Scalar<DTYPE(data)>& gamma2,                                    \
       const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>&                 \
-          three_index_constraint) noexcept;                                 \
+          three_index_constraint);                                          \
   template void GeneralizedHarmonic::two_index_constraint(                  \
       const gsl::not_null<tnsr::ia<DTYPE(data), DIM(data), FRAME(data)>*>   \
           constraint,                                                       \
@@ -1466,7 +1438,7 @@ void constraint_energy(
       const tnsr::ijaa<DTYPE(data), DIM(data), FRAME(data)>& d_phi,         \
       const Scalar<DTYPE(data)>& gamma2,                                    \
       const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>&                 \
-          three_index_constraint) noexcept;                                 \
+          three_index_constraint);                                          \
   template tnsr::a<DTYPE(data), DIM(data), FRAME(data)>                     \
   GeneralizedHarmonic::f_constraint(                                        \
       const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>& gauge_function,   \
@@ -1486,7 +1458,7 @@ void constraint_energy(
       const tnsr::ijaa<DTYPE(data), DIM(data), FRAME(data)>& d_phi,         \
       const Scalar<DTYPE(data)>& gamma2,                                    \
       const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>&                 \
-          three_index_constraint) noexcept;                                 \
+          three_index_constraint);                                          \
   template tnsr::a<DTYPE(data), DIM(data), FRAME(data)>                     \
   GeneralizedHarmonic::f_constraint(                                        \
       const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>& gauge_function,   \
@@ -1508,7 +1480,7 @@ void constraint_energy(
       const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>&                 \
           three_index_constraint,                                           \
       const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>&                  \
-          trace_reversed_stress_energy) noexcept;                           \
+          trace_reversed_stress_energy);                                    \
   template void GeneralizedHarmonic::f_constraint(                          \
       const gsl::not_null<tnsr::a<DTYPE(data), DIM(data), FRAME(data)>*>    \
           constraint,                                                       \
@@ -1529,7 +1501,7 @@ void constraint_energy(
       const tnsr::ijaa<DTYPE(data), DIM(data), FRAME(data)>& d_phi,         \
       const Scalar<DTYPE(data)>& gamma2,                                    \
       const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>&                 \
-          three_index_constraint) noexcept;                                 \
+          three_index_constraint);                                          \
   template void GeneralizedHarmonic::f_constraint(                          \
       const gsl::not_null<tnsr::a<DTYPE(data), DIM(data), FRAME(data)>*>    \
           constraint,                                                       \
@@ -1552,7 +1524,7 @@ void constraint_energy(
       const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>&                 \
           three_index_constraint,                                           \
       const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>&                  \
-          trace_reversed_stress_energy) noexcept;                           \
+          trace_reversed_stress_energy);                                    \
   template Scalar<DTYPE(data)> GeneralizedHarmonic::constraint_energy(      \
       const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>& gauge_constraint, \
       const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>& f_constraint,     \
@@ -1568,7 +1540,7 @@ void constraint_energy(
       double gauge_constraint_multiplier,                                   \
       double two_index_constraint_multiplier,                               \
       double three_index_constraint_multiplier,                             \
-      double four_index_constraint_multiplier) noexcept;                    \
+      double four_index_constraint_multiplier);                             \
   template void GeneralizedHarmonic::constraint_energy(                     \
       const gsl::not_null<Scalar<DTYPE(data)>*> energy,                     \
       const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>& gauge_constraint, \
@@ -1585,16 +1557,16 @@ void constraint_energy(
       double gauge_constraint_multiplier,                                   \
       double two_index_constraint_multiplier,                               \
       double three_index_constraint_multiplier,                             \
-      double four_index_constraint_multiplier) noexcept;
+      double four_index_constraint_multiplier);
 
-#define INSTANTIATE_ONLY_3D(_, data)                                          \
-  template tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>                     \
-  GeneralizedHarmonic::four_index_constraint(                                 \
-      const tnsr::ijaa<DTYPE(data), DIM(data), FRAME(data)>& d_phi) noexcept; \
-  template void GeneralizedHarmonic::four_index_constraint(                   \
-      const gsl::not_null<tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>*>    \
-          constraint,                                                         \
-      const tnsr::ijaa<DTYPE(data), DIM(data), FRAME(data)>& d_phi) noexcept;
+#define INSTANTIATE_ONLY_3D(_, data)                                       \
+  template tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>                  \
+  GeneralizedHarmonic::four_index_constraint(                              \
+      const tnsr::ijaa<DTYPE(data), DIM(data), FRAME(data)>& d_phi);       \
+  template void GeneralizedHarmonic::four_index_constraint(                \
+      const gsl::not_null<tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>*> \
+          constraint,                                                      \
+      const tnsr::ijaa<DTYPE(data), DIM(data), FRAME(data)>& d_phi);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
                         (Frame::Grid, Frame::Inertial))

@@ -52,8 +52,7 @@ namespace {
 template <size_t VolumeDim>
 std::vector<size_t> get_common_global_corners(
     const std::array<size_t, two_to_the(VolumeDim)>& block_1_global_corners,
-    const std::array<size_t, two_to_the(VolumeDim)>&
-        block_2_global_corners) noexcept {
+    const std::array<size_t, two_to_the(VolumeDim)>& block_2_global_corners) {
   std::vector<size_t> result;
 
   for (size_t id_i : block_1_global_corners) {
@@ -78,7 +77,7 @@ create_correspondence_between_blocks(
     const std::vector<Direction<VolumeDim>>&
         alignment_of_shared_face_in_self_frame,
     const std::vector<Direction<VolumeDim>>&
-        alignment_of_shared_face_in_neighbor_frame) noexcept {
+        alignment_of_shared_face_in_neighbor_frame) {
   std::array<Direction<VolumeDim>, VolumeDim> result1;
   result1[0] = direction_to_neighbor_in_self_frame;
 
@@ -101,12 +100,12 @@ template <size_t VolumeDim>
 size_t find_block_id_of_external_face(
     const std::vector<size_t>& global_corners_external_face,
     const std::vector<std::array<size_t, two_to_the(VolumeDim)>>&
-        corners_of_all_blocks) noexcept {
+        corners_of_all_blocks) {
   size_t number_of_blocks_found = 0;
   size_t id_of_found_block = std::numeric_limits<size_t>::max();
   for (size_t j = 0; j < corners_of_all_blocks.size(); j++) {
     const auto& corners_set = corners_of_all_blocks[j];
-    auto is_in_corners_set = [&corners_set](const auto element) noexcept {
+    auto is_in_corners_set = [&corners_set](const auto element) {
       return alg::find(corners_set, element) != corners_set.end();
     };
     if (alg::all_of(global_corners_external_face, is_in_corners_set)) {
@@ -122,7 +121,7 @@ size_t find_block_id_of_external_face(
 template <size_t VolumeDim>
 std::array<size_t, two_to_the(VolumeDim - 1)> get_common_local_corners(
     const std::array<size_t, two_to_the(VolumeDim)>& block_global_corners,
-    const std::vector<size_t>& block_global_common_corners) noexcept {
+    const std::vector<size_t>& block_global_common_corners) {
   std::array<size_t, two_to_the(VolumeDim - 1)> result{{0}};
   size_t i = 0;
   for (const auto global_id : block_global_common_corners) {
@@ -142,12 +141,12 @@ template <size_t VolumeDim>
 std::array<tnsr::I<double, VolumeDim, Frame::BlockLogical>,
            two_to_the(VolumeDim - 1)>
 logical_coords_of_corners(
-    const std::array<size_t, two_to_the(VolumeDim - 1)>& local_ids) noexcept {
+    const std::array<size_t, two_to_the(VolumeDim - 1)>& local_ids) {
   std::array<tnsr::I<double, VolumeDim, Frame::BlockLogical>,
              two_to_the(VolumeDim - 1)>
       result{};
   std::transform(local_ids.begin(), local_ids.end(), result.begin(),
-                 [](const size_t id) noexcept {
+                 [](const size_t id) {
                    tnsr::I<double, VolumeDim, Frame::BlockLogical> point{};
                    for (size_t i = 0; i < VolumeDim; i++) {
                      point[i] = 2.0 * get_nth_bit(id, i) - 1.0;
@@ -160,12 +159,11 @@ logical_coords_of_corners(
 template <size_t VolumeDim>
 Direction<VolumeDim> get_direction_normal_to_face(
     const std::array<tnsr::I<double, VolumeDim, Frame::BlockLogical>,
-                     two_to_the(VolumeDim - 1)>& face_pts) noexcept {
+                     two_to_the(VolumeDim - 1)>& face_pts) {
   const auto summed_point = alg::accumulate(
       face_pts, tnsr::I<double, VolumeDim, Frame::BlockLogical>(0.0),
       [](tnsr::I<double, VolumeDim, Frame::BlockLogical>& prior,
-         const tnsr::I<double, VolumeDim, Frame::BlockLogical>&
-             point) noexcept {
+         const tnsr::I<double, VolumeDim, Frame::BlockLogical>& point) {
         for (size_t i = 0; i < prior.size(); i++) {
           prior[i] += point[i];
         }
@@ -175,8 +173,7 @@ Direction<VolumeDim> get_direction_normal_to_face(
                               summed_point.begin(), summed_point.end(), 0.0)),
          "The face_pts passed in do not correspond to a face.");
   const auto index = static_cast<size_t>(
-      alg::find_if(summed_point,
-                   [](const double x) noexcept { return x != 0; }) -
+      alg::find_if(summed_point, [](const double x) { return x != 0; }) -
       summed_point.begin());
   return Direction<VolumeDim>(
       index, summed_point[index] > 0 ? Side::Upper : Side::Lower);
@@ -184,8 +181,7 @@ Direction<VolumeDim> get_direction_normal_to_face(
 
 template <size_t VolumeDim>
 std::vector<Direction<VolumeDim>> get_directions_along_face(
-    const std::array<size_t, two_to_the(VolumeDim - 1)>&
-        face_local_corners) noexcept {
+    const std::array<size_t, two_to_the(VolumeDim - 1)>& face_local_corners) {
   std::vector<Direction<VolumeDim>> result;
 
   // Directions encoded as powers of 2. (xi:1, eta:2, zeta:4)
@@ -230,7 +226,7 @@ Direction<VolumeDim> mapped(
     size_t block_id1, size_t block_id2,
     const Direction<VolumeDim>& dir_in_block1,
     const std::vector<std::array<size_t, two_to_the(VolumeDim)>>&
-        corners_of_all_blocks) noexcept {
+        corners_of_all_blocks) {
   const auto correspondence = obtain_correspondence_between_blocks(
       block_id1, block_id2, corners_of_all_blocks);
   for (size_t i = 0; i < VolumeDim; i++) {
@@ -249,7 +245,7 @@ std::pair<std::array<Direction<VolumeDim>, VolumeDim>,
 obtain_correspondence_between_blocks(
     size_t block_id1, size_t block_id2,
     const std::vector<std::array<size_t, two_to_the(VolumeDim)>>&
-        corners_of_all_blocks) noexcept {
+        corners_of_all_blocks) {
   const auto& self = corners_of_all_blocks[block_id1];
   const auto& nhbr = corners_of_all_blocks[block_id2];
   const auto common = get_common_global_corners<VolumeDim>(self, nhbr);
@@ -271,7 +267,7 @@ std::vector<std::array<size_t, two_to_the(VolumeDim)>> corners_from_two_maps(
     const std::unique_ptr<domain::CoordinateMapBase<
         Frame::BlockLogical, Frame::Inertial, VolumeDim>>& map1,
     const std::unique_ptr<domain::CoordinateMapBase<
-        Frame::BlockLogical, Frame::Inertial, VolumeDim>>& map2) noexcept {
+        Frame::BlockLogical, Frame::Inertial, VolumeDim>>& map2) {
   std::array<size_t, two_to_the(VolumeDim)> corners_for_block1{};
   std::array<size_t, two_to_the(VolumeDim)> corners_for_block2{};
   for (VolumeCornerIterator<VolumeDim> vci{}; vci; ++vci) {
@@ -328,7 +324,7 @@ std::pair<std::array<Direction<VolumeDim>, VolumeDim>,
 obtain_correspondence_between_maps(
     const size_t map_id1, const size_t map_id2,
     const std::vector<std::unique_ptr<domain::CoordinateMapBase<
-        Frame::BlockLogical, Frame::Inertial, VolumeDim>>>& maps) noexcept {
+        Frame::BlockLogical, Frame::Inertial, VolumeDim>>>& maps) {
   return obtain_correspondence_between_blocks<VolumeDim>(
       0, 1, corners_from_two_maps(maps[map_id1], maps[map_id2]));
 }
@@ -352,7 +348,7 @@ void set_cartesian_periodic_boundaries(
     const std::vector<OrientationMap<VolumeDim>>& orientations_of_all_blocks,
     const gsl::not_null<
         std::vector<DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>>*>
-        neighbors_of_all_blocks) noexcept {
+        neighbors_of_all_blocks) {
   ASSERT(orientations_of_all_blocks.size() == corners_of_all_blocks.size(),
          "Each block must have an OrientationMap relative to an edifice.");
   size_t block_id = 0;
@@ -448,7 +444,7 @@ void set_internal_boundaries(
         std::vector<DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>>*>
         neighbors_of_all_blocks,
     const std::vector<std::array<size_t, two_to_the(VolumeDim)>>&
-        corners_of_all_blocks) noexcept {
+        corners_of_all_blocks) {
   for (size_t block1_index = 0; block1_index < corners_of_all_blocks.size();
        block1_index++) {
     DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>> neighbor;
@@ -479,7 +475,7 @@ void set_internal_boundaries(
         std::vector<DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>>*>
         neighbors_of_all_blocks,
     const std::vector<std::unique_ptr<domain::CoordinateMapBase<
-        Frame::BlockLogical, Frame::Inertial, VolumeDim>>>& maps) noexcept {
+        Frame::BlockLogical, Frame::Inertial, VolumeDim>>>& maps) {
   for (size_t block1_index = 0; block1_index < maps.size(); block1_index++) {
     DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>> neighbor;
     for (size_t block2_index = 0; block2_index < maps.size(); block2_index++) {
@@ -511,7 +507,7 @@ void set_identified_boundaries(
         corners_of_all_blocks,
     const gsl::not_null<
         std::vector<DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>>*>
-        neighbors_of_all_blocks) noexcept {
+        neighbors_of_all_blocks) {
   for (const auto& pair : identifications) {
     const auto& face1 = pair.first;
     const auto& face2 = pair.second;
@@ -558,7 +554,7 @@ void set_identified_boundaries(
 // the original Block(s). In the BBH Domain, this occurs several times, using
 // both Wedges and Frustums. The simplest example in which wrapping is used is
 // Sphere, where the central Block is wrapped with six Wedge<3>s.
-std::array<OrientationMap<3>, 6> orientations_for_wrappings() noexcept {
+std::array<OrientationMap<3>, 6> orientations_for_wrappings() {
   return {{
       // Upper Z
       OrientationMap<3>{},
@@ -613,7 +609,7 @@ sph_wedge_coordinate_maps(
     const std::vector<double>& radial_partitioning,
     const std::vector<domain::CoordinateMaps::Distribution>&
         radial_distribution,
-    const ShellWedges which_wedges) noexcept {
+    const ShellWedges which_wedges) {
   ASSERT(not use_half_wedges or which_wedges == ShellWedges::All,
          "If we are using half wedges we must also be using ShellWedges::All.");
   ASSERT(radial_partitioning.empty() or inner_sphericity == outer_sphericity,
@@ -708,7 +704,7 @@ frustum_coordinate_maps(const double length_inner_cube,
                         const double length_outer_cube,
                         const bool use_equiangular_map,
                         const std::array<double, 3>& origin_preimage,
-                        const double projective_scale_factor) noexcept {
+                        const double projective_scale_factor) {
   ASSERT(length_inner_cube < 0.5 * length_outer_cube,
          "The outer cube is too small! The inner cubes will pierce the surface "
          "of the outer cube.");
@@ -793,20 +789,19 @@ frustum_coordinate_maps(const double length_inner_cube,
 }
 
 namespace {
-std::array<size_t, 8> concatenate_faces(
-    const std::array<size_t, 4>& face1,
-    const std::array<size_t, 4>& face2) noexcept {
+std::array<size_t, 8> concatenate_faces(const std::array<size_t, 4>& face1,
+                                        const std::array<size_t, 4>& face2) {
   return {{face1[0], face1[1], face1[2], face1[3], face2[0], face2[1], face2[2],
            face2[3]}};
 }
 
 std::array<size_t, 4> next_face_in_radial_direction(
-    const std::array<size_t, 4>& face) noexcept {
+    const std::array<size_t, 4>& face) {
   return {{face[0] + 8, face[1] + 8, face[2] + 8, face[3] + 8}};
 }
 
 std::array<std::array<size_t, 4>, 6> next_layer_in_radial_direction(
-    const std::array<std::array<size_t, 4>, 6>& layer) noexcept {
+    const std::array<std::array<size_t, 4>, 6>& layer) {
   return {{next_face_in_radial_direction(layer[0]),
            next_face_in_radial_direction(layer[1]),
            next_face_in_radial_direction(layer[2]),
@@ -817,7 +812,7 @@ std::array<std::array<size_t, 4>, 6> next_layer_in_radial_direction(
 
 void identify_corners_with_each_other(
     const gsl::not_null<std::vector<std::array<size_t, 8>>*> corners,
-    const size_t corner_1, const size_t corner_2) noexcept {
+    const size_t corner_1, const size_t corner_2) {
   for (auto& block_corners : *corners) {
     for (auto& corner : block_corners) {
       if (corner == corner_2) {
@@ -831,7 +826,7 @@ void identify_corners_with_each_other(
 std::vector<std::array<size_t, 8>> corners_for_radially_layered_domains(
     const size_t number_of_layers, const bool include_central_block,
     const std::array<size_t, 8>& central_block_corners,
-    ShellWedges which_wedges) noexcept {
+    ShellWedges which_wedges) {
   const std::array<size_t, 8>& c = central_block_corners;
   std::array<std::array<size_t, 4>, 6> faces_layer_zero{
       {{{c[4], c[5], c[6], c[7]}},    // Upper z
@@ -865,7 +860,7 @@ std::vector<std::array<size_t, 8>> corners_for_biradially_layered_domains(
     const size_t number_of_radial_layers,
     const size_t number_of_biradial_layers,
     const bool include_central_block_lhs, const bool include_central_block_rhs,
-    const std::array<size_t, 8>& central_block_corners_lhs) noexcept {
+    const std::array<size_t, 8>& central_block_corners_lhs) {
   const size_t total_number_of_layers =
       number_of_radial_layers + number_of_biradial_layers;
   const std::array<size_t, 8> central_block_corners_rhs = [&]() {
@@ -942,7 +937,7 @@ cyl_wedge_coord_map_center_blocks(
     const double upper_z_bound, const bool use_equiangular_map,
     const std::vector<double>& partitioning_in_z,
     const std::vector<domain::CoordinateMaps::Distribution>& distribution_in_z,
-    const CylindricalDomainParityFlip parity_flip) noexcept {
+    const CylindricalDomainParityFlip parity_flip) {
   using Interval = domain::CoordinateMaps::Interval;
   using Interval3D =
       domain::CoordinateMaps::ProductOf3Maps<Interval, Interval, Interval>;
@@ -989,7 +984,7 @@ cyl_wedge_coord_map_surrounding_blocks(
     const std::vector<domain::CoordinateMaps::Distribution>&
         radial_distribution,
     const std::vector<domain::CoordinateMaps::Distribution>& distribution_in_z,
-    const CylindricalDomainParityFlip parity_flip) noexcept {
+    const CylindricalDomainParityFlip parity_flip) {
   using Interval = domain::CoordinateMaps::Interval;
   using Wedge2D = domain::CoordinateMaps::Wedge<2>;
   using Wedge3DPrism =
@@ -1073,7 +1068,7 @@ cyl_wedge_coordinate_maps(
     const std::vector<domain::CoordinateMaps::Distribution>&
         radial_distribution,
     const std::vector<domain::CoordinateMaps::Distribution>&
-        distribution_in_z) noexcept {
+        distribution_in_z) {
   std::vector<std::unique_ptr<
       domain::CoordinateMapBase<Frame::BlockLogical, TargetFrame, 3>>>
       cylinder_mapping;
@@ -1088,8 +1083,8 @@ cyl_wedge_coordinate_maps(
   // partition and then the surrounding blocks at that height
   // partition.
   auto add_to_cylinder_mapping = [&cylinder_mapping, &partitioning_in_z,
-                                  &radial_partitioning, &maps_surrounding](
-                                     const auto& maps_center) noexcept {
+                                  &radial_partitioning,
+                                  &maps_surrounding](const auto& maps_center) {
     size_t surrounding_block_index = 0;
     for (size_t height = 0; height < 1 + partitioning_in_z.size(); ++height) {
       cylinder_mapping.emplace_back(
@@ -1116,7 +1111,7 @@ cyl_wedge_coordinate_maps(
 }
 
 std::vector<std::array<size_t, 8>> corners_for_cylindrical_layered_domains(
-    const size_t number_of_shells, const size_t number_of_discs) noexcept {
+    const size_t number_of_shells, const size_t number_of_discs) {
   using BlockCorners = std::array<size_t, 8>;
   std::vector<BlockCorners> corners;
   const size_t n_L = 4 * (number_of_shells + 1);  // number of corners per layer
@@ -1141,7 +1136,7 @@ std::vector<std::array<size_t, 8>> corners_for_cylindrical_layered_domains(
 template <size_t VolumeDim>
 auto indices_for_rectilinear_domains(
     const Index<VolumeDim>& domain_extents,
-    const std::vector<Index<VolumeDim>>& block_indices_to_exclude) noexcept
+    const std::vector<Index<VolumeDim>>& block_indices_to_exclude)
     -> std::vector<Index<VolumeDim>> {
   std::vector<Index<VolumeDim>> block_indices;
   for (IndexIterator<VolumeDim> ii(domain_extents); ii; ++ii) {
@@ -1158,7 +1153,7 @@ template <size_t VolumeDim>
 std::vector<std::array<size_t, two_to_the(VolumeDim)>>
 corners_for_rectilinear_domains(
     const Index<VolumeDim>& domain_extents,
-    const std::vector<Index<VolumeDim>>& block_indices_to_exclude) noexcept {
+    const std::vector<Index<VolumeDim>>& block_indices_to_exclude) {
   std::vector<std::array<size_t, two_to_the(VolumeDim)>> corners{};
 
   // The number of blocks is one less than
@@ -1186,7 +1181,7 @@ corners_for_rectilinear_domains(
 template <typename TargetFrame, typename Map>
 std::unique_ptr<domain::CoordinateMapBase<Frame::BlockLogical, TargetFrame, 1>>
 product_of_1d_maps(std::array<Map, 1>& maps,
-                   const OrientationMap<1>& rotation = {}) noexcept {
+                   const OrientationMap<1>& rotation = {}) {
   if (rotation == OrientationMap<1>{}) {
     return domain::make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(
         maps[0]);
@@ -1198,7 +1193,7 @@ product_of_1d_maps(std::array<Map, 1>& maps,
 template <typename TargetFrame, typename Map>
 std::unique_ptr<domain::CoordinateMapBase<Frame::BlockLogical, TargetFrame, 2>>
 product_of_1d_maps(std::array<Map, 2>& maps,
-                   const OrientationMap<2>& rotation = {}) noexcept {
+                   const OrientationMap<2>& rotation = {}) {
   if (rotation == OrientationMap<2>{}) {
     return domain::make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(
         domain::CoordinateMaps::ProductOf2Maps<Map, Map>(maps[0], maps[1]));
@@ -1211,7 +1206,7 @@ product_of_1d_maps(std::array<Map, 2>& maps,
 template <typename TargetFrame, typename Map>
 std::unique_ptr<domain::CoordinateMapBase<Frame::BlockLogical, TargetFrame, 3>>
 product_of_1d_maps(std::array<Map, 3>& maps,
-                   const OrientationMap<3>& rotation = {}) noexcept {
+                   const OrientationMap<3>& rotation = {}) {
   if (rotation == OrientationMap<3>{}) {
     return domain::make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(
         domain::CoordinateMaps::ProductOf3Maps<Map, Map, Map>(maps[0], maps[1],
@@ -1231,7 +1226,7 @@ maps_for_rectilinear_domains(
     const std::array<std::vector<double>, VolumeDim>& block_demarcations,
     const std::vector<Index<VolumeDim>>& block_indices_to_exclude,
     const std::vector<OrientationMap<VolumeDim>>& orientations_of_all_blocks,
-    const bool use_equiangular_map) noexcept {
+    const bool use_equiangular_map) {
   for (size_t d = 0; d < VolumeDim; d++) {
     ASSERT(gsl::at(block_demarcations, d).size() == domain_extents[d] + 1,
            "If there are N blocks, there must be N+1 demarcations.");
@@ -1288,12 +1283,11 @@ maps_for_rectilinear_domains(
 template <size_t VolumeDim>
 std::array<size_t, two_to_the(VolumeDim)> discrete_rotation(
     const OrientationMap<VolumeDim>& orientation,
-    const std::array<size_t, two_to_the(VolumeDim)>&
-        corners_of_aligned) noexcept {
+    const std::array<size_t, two_to_the(VolumeDim)>& corners_of_aligned) {
   // compute the mapped logical corners, as
   // they are the indices into the global corners.
   const std::array<size_t, two_to_the(VolumeDim)> mapped_logical_corners =
-      [&orientation]() noexcept {
+      [&orientation]() {
         std::array<size_t, two_to_the(VolumeDim)> result{};
         for (VolumeCornerIterator<VolumeDim> vci{}; vci; ++vci) {
           const std::array<Direction<VolumeDim>, VolumeDim>
@@ -1339,7 +1333,7 @@ Domain<VolumeDim> rectilinear_domain(
     const std::vector<OrientationMap<VolumeDim>>& orientations_of_all_blocks,
     const std::array<bool, VolumeDim>& dimension_is_periodic,
     const std::vector<PairOfFaces>& identifications,
-    const bool use_equiangular_map) noexcept {
+    const bool use_equiangular_map) {
   std::vector<Block<VolumeDim>> blocks{};
   auto corners_of_all_blocks =
       corners_for_rectilinear_domains(domain_extents, block_indices_to_exclude);
@@ -1383,8 +1377,7 @@ Domain<VolumeDim> rectilinear_domain(
   return Domain<VolumeDim>(std::move(blocks));
 }
 
-std::ostream& operator<<(std::ostream& os,
-                         const ShellWedges& which_wedges) noexcept {
+std::ostream& operator<<(std::ostream& os, const ShellWedges& which_wedges) {
   switch (which_wedges) {
     case ShellWedges::All:
       return os << "All";
@@ -1424,7 +1417,7 @@ sph_wedge_coordinate_maps(
     const std::vector<double>& radial_partitioning,
     const std::vector<domain::CoordinateMaps::Distribution>&
         radial_distribution,
-    const ShellWedges which_wedges) noexcept;
+    const ShellWedges which_wedges);
 template std::vector<std::unique_ptr<
     domain::CoordinateMapBase<Frame::BlockLogical, Frame::Grid, 3>>>
 sph_wedge_coordinate_maps(
@@ -1435,21 +1428,21 @@ sph_wedge_coordinate_maps(
     const std::vector<double>& radial_partitioning,
     const std::vector<domain::CoordinateMaps::Distribution>&
         radial_distribution,
-    const ShellWedges which_wedges) noexcept;
+    const ShellWedges which_wedges);
 template std::vector<std::unique_ptr<
     domain::CoordinateMapBase<Frame::BlockLogical, Frame::Inertial, 3>>>
 frustum_coordinate_maps(const double length_inner_cube,
                         const double length_outer_cube,
                         const bool use_equiangular_map,
                         const std::array<double, 3>& origin_preimage,
-                        const double projective_scale_factor) noexcept;
+                        const double projective_scale_factor);
 template std::vector<std::unique_ptr<
     domain::CoordinateMapBase<Frame::BlockLogical, Frame::Grid, 3>>>
 frustum_coordinate_maps(const double length_inner_cube,
                         const double length_outer_cube,
                         const bool use_equiangular_map,
                         const std::array<double, 3>& origin_preimage,
-                        const double projective_scale_factor) noexcept;
+                        const double projective_scale_factor);
 template std::vector<std::unique_ptr<
     domain::CoordinateMapBase<Frame::BlockLogical, Frame::Inertial, 3>>>
 cyl_wedge_coordinate_maps(
@@ -1460,8 +1453,7 @@ cyl_wedge_coordinate_maps(
     const std::vector<double>& partitioning_in_z,
     const std::vector<domain::CoordinateMaps::Distribution>&
         radial_distribution,
-    const std::vector<domain::CoordinateMaps::Distribution>&
-        distribution_in_z) noexcept;
+    const std::vector<domain::CoordinateMaps::Distribution>& distribution_in_z);
 template std::vector<std::unique_ptr<
     domain::CoordinateMapBase<Frame::BlockLogical, Frame::Grid, 3>>>
 cyl_wedge_coordinate_maps(
@@ -1472,8 +1464,7 @@ cyl_wedge_coordinate_maps(
     const std::vector<double>& partitioning_in_z,
     const std::vector<domain::CoordinateMaps::Distribution>&
         radial_distribution,
-    const std::vector<domain::CoordinateMaps::Distribution>&
-        distribution_in_z) noexcept;
+    const std::vector<domain::CoordinateMaps::Distribution>& distribution_in_z);
 // Explicit instantiations
 using Affine2d =
     domain::CoordinateMaps::ProductOf2Maps<domain::CoordinateMaps::Affine,
@@ -1511,60 +1502,59 @@ INSTANTIATE_MAPS_FUNCTIONS(
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATE(_, data)                                                   \
-  template void set_internal_boundaries(                                       \
-      const gsl::not_null<                                                     \
-          std::vector<DirectionMap<DIM(data), BlockNeighbor<DIM(data)>>>*>     \
-          neighbors_of_all_blocks,                                             \
-      const std::vector<std::array<size_t, two_to_the(DIM(data))>>&            \
-          corners_of_all_blocks) noexcept;                                     \
-  template void set_internal_boundaries(                                       \
-      const gsl::not_null<                                                     \
-          std::vector<DirectionMap<DIM(data), BlockNeighbor<DIM(data)>>>*>     \
-          neighbors_of_all_blocks,                                             \
-      const std::vector<std::unique_ptr<domain::CoordinateMapBase<             \
-          Frame::BlockLogical, Frame::Inertial, DIM(data)>>>& maps) noexcept;  \
-  template void set_identified_boundaries(                                     \
-      const std::vector<PairOfFaces>& identifications,                         \
-      const std::vector<std::array<size_t, two_to_the(DIM(data))>>&            \
-          corners_of_all_blocks,                                               \
-      const gsl::not_null<                                                     \
-          std::vector<DirectionMap<DIM(data), BlockNeighbor<DIM(data)>>>*>     \
-          neighbors_of_all_blocks) noexcept;                                   \
-  template auto indices_for_rectilinear_domains(                               \
-      const Index<DIM(data)>& domain_extents,                                  \
-      const std::vector<Index<DIM(data)>>& block_indices_to_exclude) noexcept  \
-      ->std::vector<Index<DIM(data)>>;                                         \
-  template std::vector<std::array<size_t, two_to_the(DIM(data))>>              \
-  corners_for_rectilinear_domains(                                             \
-      const Index<DIM(data)>& domain_extents,                                  \
-      const std::vector<Index<DIM(data)>>& block_indices_to_exclude) noexcept; \
-  template std::vector<std::unique_ptr<domain::CoordinateMapBase<              \
-      Frame::BlockLogical, Frame::Inertial, DIM(data)>>>                       \
-  maps_for_rectilinear_domains(                                                \
-      const Index<DIM(data)>& domain_extents,                                  \
-      const std::array<std::vector<double>, DIM(data)>& block_demarcations,    \
-      const std::vector<Index<DIM(data)>>& block_indices_to_exclude,           \
-      const std::vector<OrientationMap<DIM(data)>>&                            \
-          orientations_of_all_blocks,                                          \
-      const bool use_equiangular_map) noexcept;                                \
-  template std::array<size_t, two_to_the(DIM(data))> discrete_rotation(        \
-      const OrientationMap<DIM(data)>& orientation,                            \
-      const std::array<size_t, two_to_the(DIM(data))>&                         \
-          corners_of_aligned) noexcept;                                        \
-  template Domain<DIM(data)> rectilinear_domain(                               \
-      const Index<DIM(data)>& domain_extents,                                  \
-      const std::array<std::vector<double>, DIM(data)>& block_demarcations,    \
-      std::vector<DirectionMap<                                                \
-          DIM(data),                                                           \
-          std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>     \
-          boundary_conditions,                                                 \
-      const std::vector<Index<DIM(data)>>& block_indices_to_exclude,           \
-      const std::vector<OrientationMap<DIM(data)>>&                            \
-          orientations_of_all_blocks,                                          \
-      const std::array<bool, DIM(data)>& dimension_is_periodic,                \
-      const std::vector<PairOfFaces>& identifications,                         \
-      const bool use_equiangular_map) noexcept;
+#define INSTANTIATE(_, data)                                                \
+  template void set_internal_boundaries(                                    \
+      const gsl::not_null<                                                  \
+          std::vector<DirectionMap<DIM(data), BlockNeighbor<DIM(data)>>>*>  \
+          neighbors_of_all_blocks,                                          \
+      const std::vector<std::array<size_t, two_to_the(DIM(data))>>&         \
+          corners_of_all_blocks);                                           \
+  template void set_internal_boundaries(                                    \
+      const gsl::not_null<                                                  \
+          std::vector<DirectionMap<DIM(data), BlockNeighbor<DIM(data)>>>*>  \
+          neighbors_of_all_blocks,                                          \
+      const std::vector<std::unique_ptr<domain::CoordinateMapBase<          \
+          Frame::BlockLogical, Frame::Inertial, DIM(data)>>>& maps);        \
+  template void set_identified_boundaries(                                  \
+      const std::vector<PairOfFaces>& identifications,                      \
+      const std::vector<std::array<size_t, two_to_the(DIM(data))>>&         \
+          corners_of_all_blocks,                                            \
+      const gsl::not_null<                                                  \
+          std::vector<DirectionMap<DIM(data), BlockNeighbor<DIM(data)>>>*>  \
+          neighbors_of_all_blocks);                                         \
+  template auto indices_for_rectilinear_domains(                            \
+      const Index<DIM(data)>& domain_extents,                               \
+      const std::vector<Index<DIM(data)>>& block_indices_to_exclude)        \
+      ->std::vector<Index<DIM(data)>>;                                      \
+  template std::vector<std::array<size_t, two_to_the(DIM(data))>>           \
+  corners_for_rectilinear_domains(                                          \
+      const Index<DIM(data)>& domain_extents,                               \
+      const std::vector<Index<DIM(data)>>& block_indices_to_exclude);       \
+  template std::vector<std::unique_ptr<domain::CoordinateMapBase<           \
+      Frame::BlockLogical, Frame::Inertial, DIM(data)>>>                    \
+  maps_for_rectilinear_domains(                                             \
+      const Index<DIM(data)>& domain_extents,                               \
+      const std::array<std::vector<double>, DIM(data)>& block_demarcations, \
+      const std::vector<Index<DIM(data)>>& block_indices_to_exclude,        \
+      const std::vector<OrientationMap<DIM(data)>>&                         \
+          orientations_of_all_blocks,                                       \
+      const bool use_equiangular_map);                                      \
+  template std::array<size_t, two_to_the(DIM(data))> discrete_rotation(     \
+      const OrientationMap<DIM(data)>& orientation,                         \
+      const std::array<size_t, two_to_the(DIM(data))>& corners_of_aligned); \
+  template Domain<DIM(data)> rectilinear_domain(                            \
+      const Index<DIM(data)>& domain_extents,                               \
+      const std::array<std::vector<double>, DIM(data)>& block_demarcations, \
+      std::vector<DirectionMap<                                             \
+          DIM(data),                                                        \
+          std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>  \
+          boundary_conditions,                                              \
+      const std::vector<Index<DIM(data)>>& block_indices_to_exclude,        \
+      const std::vector<OrientationMap<DIM(data)>>&                         \
+          orientations_of_all_blocks,                                       \
+      const std::array<bool, DIM(data)>& dimension_is_periodic,             \
+      const std::vector<PairOfFaces>& identifications,                      \
+      const bool use_equiangular_map);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1_st, 2_st, 3_st))
 

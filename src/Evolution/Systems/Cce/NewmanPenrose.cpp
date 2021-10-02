@@ -19,7 +19,7 @@ void weyl_psi0_impl(
     const SpinWeighted<ComplexDataVector, 2>& dy_dy_j,
     const SpinWeighted<ComplexDataVector, 0>& bondi_k,
     const SpinWeighted<ComplexDataVector, 0>& bondi_r,
-    const SpinWeighted<ComplexDataVector, 0>& one_minus_y) noexcept {
+    const SpinWeighted<ComplexDataVector, 0>& one_minus_y) {
   *psi_0 = pow<4>(one_minus_y) * 0.0625 / (square(bondi_r) * bondi_k) *
            (0.125 * one_minus_y *
                 (dy_j * conj(dy_j) -
@@ -43,7 +43,7 @@ void VolumeWeyl<Tags::Psi0>::apply(
     const Scalar<SpinWeighted<ComplexDataVector, 2>>& dy_dy_j,
     const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_k,
     const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_r,
-    const Scalar<SpinWeighted<ComplexDataVector, 0>>& one_minus_y) noexcept {
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& one_minus_y) {
   weyl_psi0_impl(make_not_null(&get(*psi_0)), get(bondi_j), get(dy_j),
                  get(dy_dy_j), get(bondi_k), get(bondi_r), get(one_minus_y));
 }

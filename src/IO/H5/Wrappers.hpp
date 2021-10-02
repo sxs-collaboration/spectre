@@ -10,7 +10,7 @@
 // H5F wrappers
 namespace h5 {
 /// \ingroup HDF5Group
-SPECTRE_ALWAYS_INLINE auto h5f_acc_rdonly() noexcept {
+SPECTRE_ALWAYS_INLINE auto h5f_acc_rdonly() {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wold-style-cast"
   return H5F_ACC_RDONLY;
@@ -18,15 +18,14 @@ SPECTRE_ALWAYS_INLINE auto h5f_acc_rdonly() noexcept {
 }
 
 /// \ingroup HDF5Group
-SPECTRE_ALWAYS_INLINE auto h5f_acc_rdwr() noexcept {
+SPECTRE_ALWAYS_INLINE auto h5f_acc_rdwr() {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wold-style-cast"
   return H5F_ACC_RDWR;
 #pragma GCC diagnostic pop
 }
 
-
-SPECTRE_ALWAYS_INLINE auto h5f_acc_trunc() noexcept {
+SPECTRE_ALWAYS_INLINE auto h5f_acc_trunc() {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wold-style-cast"
   return H5F_ACC_TRUNC;
@@ -37,7 +36,7 @@ SPECTRE_ALWAYS_INLINE auto h5f_acc_trunc() noexcept {
 // H5P wrappers
 namespace h5 {
 /// \ingroup HDF5Group
-SPECTRE_ALWAYS_INLINE auto h5p_default() noexcept {
+SPECTRE_ALWAYS_INLINE auto h5p_default() {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wold-style-cast"
   return H5P_DEFAULT;
@@ -48,7 +47,7 @@ SPECTRE_ALWAYS_INLINE auto h5p_default() noexcept {
 // H5S wrappers
 namespace h5 {
 /// \ingroup HDF5Group
-SPECTRE_ALWAYS_INLINE auto h5s_all() noexcept {
+SPECTRE_ALWAYS_INLINE auto h5s_all() {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wold-style-cast"
   return H5S_ALL;
@@ -56,7 +55,7 @@ SPECTRE_ALWAYS_INLINE auto h5s_all() noexcept {
 }
 
 /// \ingroup HDF5Group
-SPECTRE_ALWAYS_INLINE auto h5s_unlimited() noexcept {
+SPECTRE_ALWAYS_INLINE auto h5s_unlimited() {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wold-style-cast"
   return H5S_UNLIMITED;
@@ -64,7 +63,7 @@ SPECTRE_ALWAYS_INLINE auto h5s_unlimited() noexcept {
 }
 
 /// \ingroup HDF5Group
-SPECTRE_ALWAYS_INLINE auto h5s_scalar() noexcept {
+SPECTRE_ALWAYS_INLINE auto h5s_scalar() {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wold-style-cast"
   return H5S_SCALAR;

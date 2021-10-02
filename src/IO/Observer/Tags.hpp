@@ -155,7 +155,7 @@ struct H5FileLock : db::SimpleTag {
 template <typename Tag>
 struct ObservationKey : db::SimpleTag {
   using type = std::optional<std::string>;
-  static std::string name() noexcept {
+  static std::string name() {
     return "ObservationKey(" + Options::name<Tag>() + ")";
   }
 };
@@ -200,8 +200,7 @@ struct VolumeFileName : db::SimpleTag {
   using option_tags = tmpl::list<::observers::OptionTags::VolumeFileName>;
 
   static constexpr bool pass_metavariables = false;
-  static std::string create_from_options(
-      const std::string& volume_file_name) noexcept {
+  static std::string create_from_options(const std::string& volume_file_name) {
     return volume_file_name;
   }
 };
@@ -219,7 +218,7 @@ struct ReductionFileName : db::SimpleTag {
 
   static constexpr bool pass_metavariables = false;
   static std::string create_from_options(
-      const std::string& reduction_file_name) noexcept {
+      const std::string& reduction_file_name) {
     return reduction_file_name;
   }
 };

@@ -92,7 +92,7 @@ class Minmod {
 
   struct VariablesToLimit {
     using type = NewtonianEuler::Limiters::VariablesToLimit;
-    static type suggested_value() noexcept {
+    static type suggested_value() {
       return NewtonianEuler::Limiters::VariablesToLimit::Characteristic;
     }
     static constexpr Options::String help = {
@@ -109,35 +109,35 @@ class Minmod {
                  typename ConservativeVarsMinmod::DisableForDebugging>;
   static constexpr Options::String help = {
       "A Minmod limiter specialized to the NewtonianEuler system"};
-  static std::string name() noexcept { return "NewtonianEulerMinmod"; };
+  static std::string name() { return "NewtonianEulerMinmod"; };
 
   explicit Minmod(::Limiters::MinmodType minmod_type,
                   NewtonianEuler::Limiters::VariablesToLimit vars_to_limit,
                   double tvb_constant, bool apply_flattener,
-                  bool disable_for_debugging = false) noexcept;
+                  bool disable_for_debugging = false);
 
-  Minmod() noexcept = default;
+  Minmod() = default;
   Minmod(const Minmod& /*rhs*/) = default;
   Minmod& operator=(const Minmod& /*rhs*/) = default;
-  Minmod(Minmod&& /*rhs*/) noexcept = default;
-  Minmod& operator=(Minmod&& /*rhs*/) noexcept = default;
+  Minmod(Minmod&& /*rhs*/) = default;
+  Minmod& operator=(Minmod&& /*rhs*/) = default;
   ~Minmod() = default;
 
   // clang-tidy: google-runtime-references
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
 
   using PackagedData = typename ConservativeVarsMinmod::PackagedData;
   using package_argument_tags =
       typename ConservativeVarsMinmod::package_argument_tags;
 
   /// \brief Package data for sending to neighbor elements.
-  void package_data(
-      gsl::not_null<PackagedData*> packaged_data,
-      const Scalar<DataVector>& mass_density_cons,
-      const tnsr::I<DataVector, VolumeDim>& momentum_density,
-      const Scalar<DataVector>& energy_density, const Mesh<VolumeDim>& mesh,
-      const std::array<double, VolumeDim>& element_size,
-      const OrientationMap<VolumeDim>& orientation_map) const noexcept;
+  void package_data(gsl::not_null<PackagedData*> packaged_data,
+                    const Scalar<DataVector>& mass_density_cons,
+                    const tnsr::I<DataVector, VolumeDim>& momentum_density,
+                    const Scalar<DataVector>& energy_density,
+                    const Mesh<VolumeDim>& mesh,
+                    const std::array<double, VolumeDim>& element_size,
+                    const OrientationMap<VolumeDim>& orientation_map) const;
 
   using limit_tags =
       tmpl::list<NewtonianEuler::Tags::MassDensityCons,
@@ -166,13 +166,13 @@ class Minmod {
       const std::unordered_map<
           std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
           boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
-          neighbor_data) const noexcept;
+          neighbor_data) const;
 
  private:
   template <size_t LocalDim>
   // NOLINTNEXTLINE(readability-redundant-declaration) false positive
   friend bool operator==(const Minmod<LocalDim>& lhs,
-                         const Minmod<LocalDim>& rhs) noexcept;
+                         const Minmod<LocalDim>& rhs);
 
   ::Limiters::MinmodType minmod_type_;
   NewtonianEuler::Limiters::VariablesToLimit vars_to_limit_;
@@ -183,8 +183,7 @@ class Minmod {
 };
 
 template <size_t VolumeDim>
-bool operator!=(const Minmod<VolumeDim>& lhs,
-                const Minmod<VolumeDim>& rhs) noexcept;
+bool operator!=(const Minmod<VolumeDim>& lhs, const Minmod<VolumeDim>& rhs);
 
 }  // namespace Limiters
 }  // namespace NewtonianEuler

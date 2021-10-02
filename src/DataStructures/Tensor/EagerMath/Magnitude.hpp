@@ -25,14 +25,13 @@
  */
 template <typename DataType, typename Index>
 Scalar<DataType> magnitude(
-    const Tensor<DataType, Symmetry<1>, index_list<Index>>& vector) noexcept {
+    const Tensor<DataType, Symmetry<1>, index_list<Index>>& vector) {
   return Scalar<DataType>{sqrt(get(dot_product(vector, vector)))};
 }
 
 template <typename DataType, typename Index>
-void magnitude(
-    const gsl::not_null<Scalar<DataType>*> magnitude,
-    const Tensor<DataType, Symmetry<1>, index_list<Index>>& vector) noexcept {
+void magnitude(const gsl::not_null<Scalar<DataType>*> magnitude,
+               const Tensor<DataType, Symmetry<1>, index_list<Index>>& vector) {
   destructive_resize_components(magnitude, get_size(get<0>(vector)));
   dot_product(magnitude, vector, vector);
   get(*magnitude) = sqrt(get(*magnitude));
@@ -53,19 +52,18 @@ Scalar<DataType> magnitude(
     const Tensor<DataType, Symmetry<1>, index_list<Index>>& vector,
     const Tensor<DataType, Symmetry<1, 1>,
                  index_list<change_index_up_lo<Index>,
-                            change_index_up_lo<Index>>>& metric) noexcept {
+                            change_index_up_lo<Index>>>& metric) {
   Scalar<DataType> local_magnitude{get_size(get<0>(vector))};
   magnitude(make_not_null(&local_magnitude), vector, metric);
   return local_magnitude;
 }
 
 template <typename DataType, typename Index>
-void magnitude(
-    const gsl::not_null<Scalar<DataType>*> magnitude,
-    const Tensor<DataType, Symmetry<1>, index_list<Index>>& vector,
-    const Tensor<DataType, Symmetry<1, 1>,
-                 index_list<change_index_up_lo<Index>,
-                            change_index_up_lo<Index>>>& metric) noexcept {
+void magnitude(const gsl::not_null<Scalar<DataType>*> magnitude,
+               const Tensor<DataType, Symmetry<1>, index_list<Index>>& vector,
+               const Tensor<DataType, Symmetry<1, 1>,
+                            index_list<change_index_up_lo<Index>,
+                                       change_index_up_lo<Index>>>& metric) {
   dot_product(magnitude, vector, vector, metric);
   get(*magnitude) = sqrt(get(*magnitude));
 }
@@ -78,13 +76,13 @@ void magnitude(
 /// \details
 /// Computes the square root of the absolute value of the scalar.
 template <typename DataType>
-Scalar<DataType> sqrt_magnitude(const Scalar<DataType>& input) noexcept {
+Scalar<DataType> sqrt_magnitude(const Scalar<DataType>& input) {
   return Scalar<DataType>{sqrt(abs(get(input)))};
 }
 
 template <typename DataType>
 void sqrt_magnitude(const gsl::not_null<Scalar<DataType>*> sqrt_magnitude,
-                    const Scalar<DataType>& input) noexcept {
+                    const Scalar<DataType>& input) {
   destructive_resize_components(sqrt_magnitude, get_size(get(input)));
   get(*sqrt_magnitude) = sqrt(abs(get(input)));
 }
@@ -111,7 +109,7 @@ struct EuclideanMagnitude : Magnitude<Tag>, db::ComputeTag {
   using return_type = typename base::type;
   static constexpr auto function =
       static_cast<void (*)(const gsl::not_null<return_type*>,
-                           const typename Tag::type&) noexcept>(&magnitude);
+                           const typename Tag::type&)>(&magnitude);
   using argument_tags = tmpl::list<Tag>;
 };
 
@@ -126,7 +124,7 @@ struct NonEuclideanMagnitude : Magnitude<Tag>, db::ComputeTag {
   using return_type = typename base::type;
   static constexpr auto function = static_cast<void (*)(
       const gsl::not_null<return_type*>, const typename Tag::type&,
-      const typename MetricTag::type&) noexcept>(&magnitude);
+      const typename MetricTag::type&)>(&magnitude);
   using argument_tags = tmpl::list<Tag, MetricTag>;
 };
 
@@ -148,10 +146,9 @@ template <typename Tag>
 struct NormalizedCompute : Normalized<Tag>, db::ComputeTag {
   using base = Normalized<Tag>;
   using return_type = typename base::type;
-  static void function(
-      const gsl::not_null<return_type*> normalized_vector,
-      const typename Tag::type& vector_in,
-      const typename Magnitude<Tag>::type& magnitude) noexcept {
+  static void function(const gsl::not_null<return_type*> normalized_vector,
+                       const typename Tag::type& vector_in,
+                       const typename Magnitude<Tag>::type& magnitude) {
     destructive_resize_components(normalized_vector, get_size(get(magnitude)));
     *normalized_vector = vector_in;
     for (size_t d = 0; d < normalized_vector->index_dim(0); ++d) {
@@ -179,9 +176,9 @@ template <typename Tag>
 struct SqrtCompute : Sqrt<Tag>, db::ComputeTag {
   using base = Sqrt<Tag>;
   using return_type = Scalar<DataVector>;
-  static constexpr auto function = static_cast<void (*)(
-      const gsl::not_null<return_type*>, const typename Tag::type&) noexcept>(
-      &sqrt_magnitude);
+  static constexpr auto function =
+      static_cast<void (*)(const gsl::not_null<return_type*>,
+                           const typename Tag::type&)>(&sqrt_magnitude);
   using argument_tags = tmpl::list<Tag>;
 };
 }  // namespace Tags

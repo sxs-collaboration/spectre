@@ -40,7 +40,7 @@ void check_impl(
     const std::string& python_function_prefix, const T& used_for_size,
     const std::array<std::pair<double, double>, 1> random_value_bounds,
     const std::vector<std::string>& function_of_time_names,
-    const MemberArgs&... member_args) noexcept {
+    const MemberArgs&... member_args) {
   using GhDampingFunc =
       ::GeneralizedHarmonic::ConstraintDamping::DampingFunction<VolumeDim, Fr>;
 
@@ -48,7 +48,7 @@ void check_impl(
   const auto helper =
       [&python_function_prefix, &random_value_bounds, &member_args_tuple,
        &function_of_time_names, &used_for_size](
-          const std::unique_ptr<GhDampingFunc>& gh_damping_function) noexcept {
+          const std::unique_ptr<GhDampingFunc>& gh_damping_function) {
         INFO("Testing call operator...")
         // Make a lambda that calls the damping function's call operator
         // with a hard-coded FunctionsOfTime, since check_with_random_values
@@ -141,7 +141,7 @@ void check(std::unique_ptr<DampingFunctionType> in_gh_damping_function,
            const std::string& python_function_prefix, const T& used_for_size,
            const std::array<std::pair<double, double>, 1>& random_value_bounds,
            const std::vector<std::string>& function_of_time_names,
-           const MemberArgs&... member_args) noexcept {
+           const MemberArgs&... member_args) {
   detail::check_impl(
       std::unique_ptr<::GeneralizedHarmonic::ConstraintDamping::DampingFunction<
           DampingFunctionType::volume_dim,
@@ -156,7 +156,7 @@ void check(DampingFunctionType in_gh_damping_function,
            const std::string& python_function_prefix, const T& used_for_size,
            const std::array<std::pair<double, double>, 1>& random_value_bounds,
            const std::vector<std::string>& function_of_time_names,
-           const MemberArgs&... member_args) noexcept {
+           const MemberArgs&... member_args) {
   detail::check_impl(
       std::unique_ptr<::GeneralizedHarmonic::ConstraintDamping::DampingFunction<
           DampingFunctionType::volume_dim,

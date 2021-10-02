@@ -24,7 +24,7 @@ struct D4gBuffer;
 
 template <size_t SpatialDim, typename Frame>
 struct D4gBuffer<SpatialDim, Frame, double> {
-  explicit D4gBuffer(const size_t /*size*/) noexcept {}
+  explicit D4gBuffer(const size_t /*size*/) {}
 
   tnsr::ijj<double, SpatialDim, Frame> deriv_of_g{};
   Scalar<double> det_spatial_metric{};
@@ -39,7 +39,7 @@ struct D4gBuffer<SpatialDim, Frame, DataVector> {
       buffer_;
 
  public:
-  explicit D4gBuffer(const size_t size) noexcept
+  explicit D4gBuffer(const size_t size)
       : buffer_(size),
         deriv_of_g(
             get<::Tags::Tempijj<0, SpatialDim, Frame, DataVector>>(buffer_)),
@@ -57,7 +57,7 @@ void spacetime_deriv_of_det_spatial_metric(
     const Scalar<DataType>& sqrt_det_spatial_metric,
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
     const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric,
-    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept {
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) {
   if (UNLIKELY(get_size(get<0>(*d4_det_spatial_metric)) !=
                get_size(get(sqrt_det_spatial_metric)))) {
     *d4_det_spatial_metric = tnsr::a<DataType, SpatialDim, Frame>(
@@ -103,7 +103,7 @@ tnsr::a<DataType, SpatialDim, Frame> spacetime_deriv_of_det_spatial_metric(
     const Scalar<DataType>& sqrt_det_spatial_metric,
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
     const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric,
-    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept {
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) {
   tnsr::a<DataType, SpatialDim, Frame> d4_det_spatial_metric{};
   GeneralizedHarmonic::spacetime_deriv_of_det_spatial_metric<SpatialDim, Frame,
                                                              DataType>(
@@ -125,14 +125,14 @@ tnsr::a<DataType, SpatialDim, Frame> spacetime_deriv_of_det_spatial_metric(
       const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                    \
           inverse_spatial_metric,                                             \
       const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& dt_spatial_metric, \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi) noexcept;    \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi);             \
   template tnsr::a<DTYPE(data), DIM(data), FRAME(data)>                       \
   GeneralizedHarmonic::spacetime_deriv_of_det_spatial_metric(                 \
       const Scalar<DTYPE(data)>& det_spatial_metric,                          \
       const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                    \
           inverse_spatial_metric,                                             \
       const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& dt_spatial_metric, \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi) noexcept;
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
                         (Frame::Grid, Frame::Inertial))

@@ -15,19 +15,19 @@ namespace domain::FunctionsOfTime {
 FixedSpeedCubic::FixedSpeedCubic(const double initial_function_value,
                                  const double initial_time,
                                  const double velocity,
-                                 const double decay_timescale) noexcept
+                                 const double decay_timescale)
     : initial_function_value_(initial_function_value),
       initial_time_(initial_time),
       velocity_(velocity),
       squared_decay_timescale_(square(decay_timescale)) {}
 
-std::unique_ptr<FunctionOfTime> FixedSpeedCubic::get_clone() const noexcept {
+std::unique_ptr<FunctionOfTime> FixedSpeedCubic::get_clone() const {
   return std::make_unique<FixedSpeedCubic>(*this);
 }
 
 template <size_t MaxDerivReturned>
 std::array<DataVector, MaxDerivReturned + 1> FixedSpeedCubic::func_and_derivs(
-    const double t) const noexcept {
+    const double t) const {
   static_assert(MaxDerivReturned < 3, "The maximum available derivative is 2.");
 
   // initialize result for the number of derivs requested
@@ -64,16 +64,14 @@ void FixedSpeedCubic::pup(PUP::er& p) {
   p | squared_decay_timescale_;
 }
 
-bool operator==(const FixedSpeedCubic& lhs,
-                const FixedSpeedCubic& rhs) noexcept {
+bool operator==(const FixedSpeedCubic& lhs, const FixedSpeedCubic& rhs) {
   return lhs.initial_function_value_ == rhs.initial_function_value_ and
          lhs.initial_time_ == rhs.initial_time_ and
          lhs.velocity_ == rhs.velocity_ and
          lhs.squared_decay_timescale_ == rhs.squared_decay_timescale_;
 }
 
-bool operator!=(const FixedSpeedCubic& lhs,
-                const FixedSpeedCubic& rhs) noexcept {
+bool operator!=(const FixedSpeedCubic& lhs, const FixedSpeedCubic& rhs) {
   return not(lhs == rhs);
 }
 
@@ -83,7 +81,7 @@ PUP::able::PUP_ID FixedSpeedCubic::my_PUP_ID = 0;  // NOLINT
 
 #define INSTANTIATE(_, data)                       \
   template std::array<DataVector, DERIV(data) + 1> \
-  FixedSpeedCubic::func_and_derivs<DERIV(data)>(const double) const noexcept;
+  FixedSpeedCubic::func_and_derivs<DERIV(data)>(const double) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (0, 1, 2))
 

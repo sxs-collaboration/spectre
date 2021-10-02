@@ -41,7 +41,7 @@ class Bump : public MarkAsAnalyticSolution {
     using type = double;
     static constexpr Options::String help{
         "The distance from the center to the zero of the bump"};
-    static type lower_bound() noexcept { return 0.; }
+    static type lower_bound() { return 0.; }
   };
 
   struct Height {
@@ -58,30 +58,30 @@ class Bump : public MarkAsAnalyticSolution {
   static constexpr Options::String help{"A bump solution"};
 
   Bump() = default;
-  Bump(const Bump&) noexcept = delete;
-  Bump& operator=(const Bump&) noexcept = delete;
-  Bump(Bump&&) noexcept = default;
-  Bump& operator=(Bump&&) noexcept = default;
-  ~Bump() noexcept = default;
+  Bump(const Bump&) = delete;
+  Bump& operator=(const Bump&) = delete;
+  Bump(Bump&&) = default;
+  Bump& operator=(Bump&&) = default;
+  ~Bump() = default;
 
-  Bump(double half_width, double height, double center = 0.) noexcept;
-
-  template <typename T>
-  Scalar<T> u(const tnsr::I<T, 1>& x, double t) const noexcept;
+  Bump(double half_width, double height, double center = 0.);
 
   template <typename T>
-  Scalar<T> du_dt(const tnsr::I<T, 1>& x, double t) const noexcept;
+  Scalar<T> u(const tnsr::I<T, 1>& x, double t) const;
 
-  tuples::TaggedTuple<Tags::U> variables(
-      const tnsr::I<DataVector, 1>& x, double t,
-      tmpl::list<Tags::U> /*meta*/) const noexcept;
+  template <typename T>
+  Scalar<T> du_dt(const tnsr::I<T, 1>& x, double t) const;
+
+  tuples::TaggedTuple<Tags::U> variables(const tnsr::I<DataVector, 1>& x,
+                                         double t,
+                                         tmpl::list<Tags::U> /*meta*/) const;
 
   tuples::TaggedTuple<::Tags::dt<Burgers::Tags::U>> variables(
       const tnsr::I<DataVector, 1>& x, double t,
-      tmpl::list<::Tags::dt<Tags::U>> /*meta*/) const noexcept;
+      tmpl::list<::Tags::dt<Tags::U>> /*meta*/) const;
 
   // clang-tidy: no pass by reference
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
 
  private:
   double half_width_ = std::numeric_limits<double>::signaling_NaN();

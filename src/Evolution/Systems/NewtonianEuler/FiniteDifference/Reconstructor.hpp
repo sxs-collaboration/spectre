@@ -40,16 +40,16 @@ class Reconstructor : public PUP::able {
   ~Reconstructor() override = default;
 
   /// \cond
-  explicit Reconstructor(CkMigrateMessage* msg) noexcept;
+  explicit Reconstructor(CkMigrateMessage* msg);
   WRAPPED_PUPable_abstract(Reconstructor<Dim>);  // NOLINT
   /// \endcond
 
   using creatable_classes =
       tmpl::list<AoWeno53Prim<Dim>, MonotisedCentralPrim<Dim>>;
 
-  virtual std::unique_ptr<Reconstructor<Dim>> get_clone() const noexcept = 0;
+  virtual std::unique_ptr<Reconstructor<Dim>> get_clone() const = 0;
 
-  virtual size_t ghost_zone_size() const noexcept = 0;
+  virtual size_t ghost_zone_size() const = 0;
 
   void pup(PUP::er& p) override;
 };

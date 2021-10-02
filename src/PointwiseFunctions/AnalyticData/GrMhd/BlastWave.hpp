@@ -68,42 +68,42 @@ class BlastWave : public MarkAsAnalyticData, public AnalyticDataBase {
     using type = double;
     static constexpr Options::String help = {
         "Inside InnerRadius, density is InnerDensity."};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
   /// Outside OuterRadius, density is OuterDensity.
   struct OuterRadius {
     using type = double;
     static constexpr Options::String help = {
         "Outside OuterRadius, density is OuterDensity."};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
   /// Density at radii less than InnerRadius.
   struct InnerDensity {
     using type = double;
     static constexpr Options::String help = {
         "Density at radii less than InnerRadius."};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
   /// Density at radii greater than OuterRadius.
   struct OuterDensity {
     using type = double;
     static constexpr Options::String help = {
         "Density at radii greater than OuterRadius."};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
   /// Pressure at radii less than InnerRadius.
   struct InnerPressure {
     using type = double;
     static constexpr Options::String help = {
         "Pressure at radii less than InnerRadius."};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
   /// Pressure at radii greater than OuterRadius.
   struct OuterPressure {
     using type = double;
     static constexpr Options::String help = {
         "Pressure at radii greater than OuterRadius."};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
   /// The x,y,z components of the uniform magnetic field threading the matter.
   struct MagneticField {
@@ -116,11 +116,11 @@ class BlastWave : public MarkAsAnalyticData, public AnalyticDataBase {
     using type = double;
     static constexpr Options::String help = {
         "The adiabatic index of the ideal fluid."};
-    static type lower_bound() noexcept { return 1.0; }
+    static type lower_bound() { return 1.0; }
   };
   /// The geometry of the blast wave, i.e. Cylindrical or Spherical.
   struct GeometryOption {
-    static std::string name() noexcept { return "Geometry"; }
+    static std::string name() { return "Geometry"; }
     using type = Geometry;
     static constexpr Options::String help = {
         "The geometry of the blast wave, i.e. Cylindrical or Spherical."};
@@ -136,8 +136,8 @@ class BlastWave : public MarkAsAnalyticData, public AnalyticDataBase {
   BlastWave() = default;
   BlastWave(const BlastWave& /*rhs*/) = delete;
   BlastWave& operator=(const BlastWave& /*rhs*/) = delete;
-  BlastWave(BlastWave&& /*rhs*/) noexcept = default;
-  BlastWave& operator=(BlastWave&& /*rhs*/) noexcept = default;
+  BlastWave(BlastWave&& /*rhs*/) = default;
+  BlastWave& operator=(BlastWave&& /*rhs*/) = default;
   ~BlastWave() = default;
 
   BlastWave(double inner_radius, double outer_radius, double inner_density,
@@ -145,65 +145,57 @@ class BlastWave : public MarkAsAnalyticData, public AnalyticDataBase {
             const std::array<double, 3>& magnetic_field, double adiabatic_index,
             Geometry geometry, const Options::Context& context = {});
 
-  explicit BlastWave(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit BlastWave(CkMigrateMessage* /*unused*/) {}
 
   /// @{
   /// Retrieve the GRMHD variables at a given position.
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x,
                  tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/)
-      const noexcept
-      -> tuples::TaggedTuple<hydro::Tags::RestMassDensity<DataType>>;
+      const -> tuples::TaggedTuple<hydro::Tags::RestMassDensity<DataType>>;
 
   template <typename DataType>
   auto variables(
       const tnsr::I<DataType, 3>& x,
-      tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>> /*meta*/)
-      const noexcept
+      tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>> /*meta*/) const
       -> tuples::TaggedTuple<hydro::Tags::SpecificInternalEnergy<DataType>>;
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x,
-                 tmpl::list<hydro::Tags::Pressure<DataType>> /*meta*/)
-      const noexcept -> tuples::TaggedTuple<hydro::Tags::Pressure<DataType>>;
+                 tmpl::list<hydro::Tags::Pressure<DataType>> /*meta*/) const
+      -> tuples::TaggedTuple<hydro::Tags::Pressure<DataType>>;
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x,
                  tmpl::list<hydro::Tags::SpatialVelocity<DataType, 3>> /*meta*/)
-      const noexcept
-      -> tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, 3>>;
+      const -> tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, 3>>;
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x,
                  tmpl::list<hydro::Tags::MagneticField<DataType, 3>> /*meta*/)
-      const noexcept
-      -> tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3>>;
+      const -> tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3>>;
 
   template <typename DataType>
   auto variables(
       const tnsr::I<DataType, 3>& x,
-      tmpl::list<hydro::Tags::DivergenceCleaningField<DataType>> /*meta*/)
-      const noexcept
+      tmpl::list<hydro::Tags::DivergenceCleaningField<DataType>> /*meta*/) const
       -> tuples::TaggedTuple<hydro::Tags::DivergenceCleaningField<DataType>>;
 
   template <typename DataType>
-  auto variables(
-      const tnsr::I<DataType, 3>& x,
-      tmpl::list<hydro::Tags::LorentzFactor<DataType>> /*meta*/) const noexcept
-      -> tuples::TaggedTuple<hydro::Tags::LorentzFactor<DataType>>;
+  auto variables(const tnsr::I<DataType, 3>& x,
+                 tmpl::list<hydro::Tags::LorentzFactor<DataType>> /*meta*/)
+      const -> tuples::TaggedTuple<hydro::Tags::LorentzFactor<DataType>>;
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x,
                  tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>> /*meta*/)
-      const noexcept
-      -> tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DataType>>;
+      const -> tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DataType>>;
   /// @}
 
   /// Retrieve a collection of hydrodynamic variables at position x
   template <typename DataType, typename... Tags>
-  tuples::TaggedTuple<Tags...> variables(
-      const tnsr::I<DataType, 3>& x,
-      tmpl::list<Tags...> /*meta*/) const noexcept {
+  tuples::TaggedTuple<Tags...> variables(const tnsr::I<DataType, 3>& x,
+                                         tmpl::list<Tags...> /*meta*/) const {
     static_assert(sizeof...(Tags) > 1,
                   "The generic template will recurse infinitely if only one "
                   "tag is being retrieved.");
@@ -213,17 +205,17 @@ class BlastWave : public MarkAsAnalyticData, public AnalyticDataBase {
   /// Retrieve the metric variables
   template <typename DataType, typename Tag>
   tuples::TaggedTuple<Tag> variables(const tnsr::I<DataType, 3>& x,
-                                     tmpl::list<Tag> /*meta*/) const noexcept {
+                                     tmpl::list<Tag> /*meta*/) const {
     constexpr double dummy_time = 0.0;
     return background_spacetime_.variables(x, dummy_time, tmpl::list<Tag>{});
   }
 
-  const EquationsOfState::IdealFluid<true>& equation_of_state() const noexcept {
+  const EquationsOfState::IdealFluid<true>& equation_of_state() const {
     return equation_of_state_;
   }
 
   // clang-tidy: no runtime references
-  void pup(PUP::er& /*p*/) noexcept;  //  NOLINT
+  void pup(PUP::er& /*p*/);  //  NOLINT
 
  private:
   double inner_radius_ = std::numeric_limits<double>::signaling_NaN();
@@ -241,9 +233,9 @@ class BlastWave : public MarkAsAnalyticData, public AnalyticDataBase {
   EquationsOfState::IdealFluid<true> equation_of_state_{};
   gr::Solutions::Minkowski<3> background_spacetime_{};
 
-  friend bool operator==(const BlastWave& lhs, const BlastWave& rhs) noexcept;
+  friend bool operator==(const BlastWave& lhs, const BlastWave& rhs);
 
-  friend bool operator!=(const BlastWave& lhs, const BlastWave& rhs) noexcept;
+  friend bool operator!=(const BlastWave& lhs, const BlastWave& rhs);
 };
 
 }  // namespace grmhd::AnalyticData

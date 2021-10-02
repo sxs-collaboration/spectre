@@ -90,7 +90,7 @@ struct NegateCompute : Negate<Tag>, db::ComputeTag {
   using base = Negate<Tag>;
   static constexpr void function(
       const gsl::not_null<typename Tag::type*> result,
-      const typename Tag::type& x) noexcept {
+      const typename Tag::type& x) {
     *result = -x;
   }
   using argument_tags = tmpl::list<Tag>;
@@ -105,7 +105,7 @@ struct NegateDoubleAddIntCompute : NegateDoubleAddInt, db::ComputeTag {
   using base = NegateDoubleAddInt;
   using return_type = double;
   static constexpr void function(const gsl::not_null<double*> result,
-                                 const double x, const int y) noexcept {
+                                 const double x, const int y) {
     *result = -x + y;
   }
   using argument_tags = tmpl::list<Double, BaseInt>;
@@ -114,7 +114,7 @@ struct NegateDoubleAddIntCompute : NegateDoubleAddInt, db::ComputeTag {
 
 struct IntCompute : db::ComputeTag, Int {
   static constexpr void function(const gsl::not_null<int*> result,
-                                 const int x) noexcept {
+                                 const int x) {
     *result = x + 3;
   }
   using argument_tags = tmpl::list<Int>;
@@ -133,7 +133,7 @@ struct ComplexItemCompute : ComplexItem<VolumeDim>, db::ComputeTag {
   static constexpr void function(
       const gsl::not_null<std::pair<int, double>*> result, const int i,
       const double d, const domain::NoCopy<1>& /*unused*/,
-      const domain::NoCopy<2>& /*unused*/) noexcept {
+      const domain::NoCopy<2>& /*unused*/) {
     *result = std::make_pair(i, d);
   }
   using argument_tags = tmpl::list<Int, Double, NoCopy<1>, NoCopy<2>>;
@@ -315,8 +315,8 @@ struct Dirs : db::SimpleTag {
 };
 
 struct DirsCompute : Dirs, db::ComputeTag {
-  static void function(const gsl::not_null<std::unordered_set<Direction<dim>>*>
-                           result) noexcept {
+  static void function(
+      const gsl::not_null<std::unordered_set<Direction<dim>>*> result) {
     *result = std::unordered_set<Direction<dim>>{Direction<dim>::lower_xi(),
                                                  Direction<dim>::upper_eta()};
   }
@@ -341,7 +341,7 @@ struct VarPlusFive : db::SimpleTag {
 template <size_t N>
 struct VarPlusFiveCompute : VarPlusFive<N>, db::ComputeTag {
   static void function(const gsl::not_null<Scalar<DataVector>*> result,
-                       const Scalar<DataVector>& var) noexcept {
+                       const Scalar<DataVector>& var) {
     *result = Scalar<DataVector>{get(var) + 5.0};
   }
   using argument_tags = tmpl::list<Var<N>>;
@@ -370,8 +370,8 @@ struct ComputeCompute : Compute<VolumeDim>, db::ComputeTag {
 
 template <size_t N>
 auto make_interface_variables(const DataVector& value_xi,
-                              const DataVector& value_eta) noexcept {
-  const auto make = [](const DataVector& value) noexcept {
+                              const DataVector& value_eta) {
+  const auto make = [](const DataVector& value) {
     Variables<tmpl::list<Var<N>>> v(value.size());
     get(get<Var<N>>(v)) = value;
     return v;
@@ -386,9 +386,8 @@ template <size_t N0, size_t N1>
 auto make_interface_variables(const DataVector& value_xi0,
                               const DataVector& value_xi1,
                               const DataVector& value_eta0,
-                              const DataVector& value_eta1) noexcept {
-  const auto make =
-      [](const DataVector& value0, const DataVector& value1) noexcept {
+                              const DataVector& value_eta1) {
+  const auto make = [](const DataVector& value0, const DataVector& value1) {
     Variables<tmpl::list<Var<N0>, Var<N1>>> v(value0.size());
     get(get<Var<N0>>(v)) = value0;
     get(get<Var<N1>>(v)) = value1;
@@ -401,7 +400,7 @@ auto make_interface_variables(const DataVector& value_xi0,
   return ret;
 }
 
-auto make_interface_tensor(DataVector value_xi, DataVector value_eta) noexcept {
+auto make_interface_tensor(DataVector value_xi, DataVector value_eta) {
   std::unordered_map<Direction<dim>, Scalar<DataVector>> ret;
   ret.emplace(Direction<dim>::lower_xi(),
               Scalar<DataVector>(std::move(value_xi)));
@@ -471,7 +470,7 @@ void test_interface_subitems() {
       "Interface<Dirs, Var>");
 
   db::mutate<Tags::Interface<Dirs, Var<0>>>(
-      make_not_null(&box), [](const auto boundary_tensor) noexcept {
+      make_not_null(&box), [](const auto boundary_tensor) {
         get(boundary_tensor->at(Direction<dim>::lower_xi())) *= 3.;
       });
   CHECK((db::get<Tags::Interface<Dirs, Var<0>>>(box)) ==
@@ -584,7 +583,7 @@ void test_interface_slice(){
 template <size_t Dim>
 struct Directions : db::SimpleTag {
   static constexpr size_t volume_dim = Dim;
-  static std::string name() noexcept { return "Directions"; }
+  static std::string name() { return "Directions"; }
   using type = std::unordered_set<Direction<Dim>>;
 };
 
@@ -676,7 +675,7 @@ void test_boundary_coordinates_moving_mesh() {
   const auto perform_checks = [&functions_of_time, &times_to_check](
                                   const auto& element_id,
                                   const auto& time_independent_map,
-                                  const auto& time_dependent_map) noexcept {
+                                  const auto& time_dependent_map) {
     INFO(std::decay_t<decltype(element_id)>::volume_dim);
     const ElementMap<std::decay_t<decltype(element_id)>::volume_dim,
                      Frame::Grid>
@@ -727,8 +726,7 @@ struct ComputeBase : db::SimpleTag {
 struct ComputeDerived : ComputeBase, db::ComputeTag {
   using base = ComputeBase;
   using return_type = double;
-  static void function(const gsl::not_null<double*> result,
-                       const int& arg) noexcept {
+  static void function(const gsl::not_null<double*> result, const int& arg) {
     *result = arg + 1.5;
   }
   using argument_tags = tmpl::list<SimpleBase>;
@@ -736,8 +734,7 @@ struct ComputeDerived : ComputeBase, db::ComputeTag {
 }  // namespace
 
 void test_interface_base_tags() {
-  const auto interface = [](const auto xi_value,
-                            const auto eta_value) noexcept {
+  const auto interface = [](const auto xi_value, const auto eta_value) {
     return std::unordered_map<Direction<2>, std::decay_t<decltype(xi_value)>>{
         {Direction<2>::lower_xi(), xi_value},
         {Direction<2>::upper_eta(), eta_value}};

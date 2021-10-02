@@ -47,7 +47,7 @@ struct ZeroImpl {
                 "Unexpected boundary condition type. Supported are Dirichlet "
                 "and Neumann.");
 
-  static std::string name() noexcept;
+  static std::string name();
   using options = tmpl::list<>;
   static constexpr Options::String help =
       ZeroHelpString<BoundaryConditionType>::help;
@@ -57,23 +57,23 @@ struct ZeroImpl {
 
   static void apply(
       gsl::not_null<tnsr::I<DataVector, Dim>*> displacement,
-      gsl::not_null<tnsr::I<DataVector, Dim>*> n_dot_minus_stress) noexcept;
+      gsl::not_null<tnsr::I<DataVector, Dim>*> n_dot_minus_stress);
 
   using argument_tags_linearized = tmpl::list<>;
   using volume_tags_linearized = tmpl::list<>;
 
   static void apply_linearized(
       gsl::not_null<tnsr::I<DataVector, Dim>*> displacement,
-      gsl::not_null<tnsr::I<DataVector, Dim>*> n_dot_minus_stress) noexcept;
+      gsl::not_null<tnsr::I<DataVector, Dim>*> n_dot_minus_stress);
 };
 
 template <size_t Dim, elliptic::BoundaryConditionType BoundaryConditionType>
 bool operator==(const ZeroImpl<Dim, BoundaryConditionType>& lhs,
-                const ZeroImpl<Dim, BoundaryConditionType>& rhs) noexcept;
+                const ZeroImpl<Dim, BoundaryConditionType>& rhs);
 
 template <size_t Dim, elliptic::BoundaryConditionType BoundaryConditionType>
 bool operator!=(const ZeroImpl<Dim, BoundaryConditionType>& lhs,
-                const ZeroImpl<Dim, BoundaryConditionType>& rhs) noexcept;
+                const ZeroImpl<Dim, BoundaryConditionType>& rhs);
 
 }  // namespace detail
 
@@ -105,20 +105,20 @@ class Zero
 
  public:
   Zero() = default;
-  Zero(const Zero&) noexcept = default;
-  Zero& operator=(const Zero&) noexcept = default;
-  Zero(Zero&&) noexcept = default;
-  Zero& operator=(Zero&&) noexcept = default;
-  ~Zero() noexcept = default;
+  Zero(const Zero&) = default;
+  Zero& operator=(const Zero&) = default;
+  Zero(Zero&&) = default;
+  Zero& operator=(Zero&&) = default;
+  ~Zero() = default;
 
   /// \cond
-  explicit Zero(CkMigrateMessage* m) noexcept : Base(m) {}
+  explicit Zero(CkMigrateMessage* m) : Base(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Zero);
   /// \endcond
 
   std::unique_ptr<domain::BoundaryConditions::BoundaryCondition> get_clone()
-      const noexcept override {
+      const override {
     return std::make_unique<Zero>(*this);
   }
 };

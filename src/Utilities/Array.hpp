@@ -43,41 +43,41 @@ struct array {
   using difference_type = std::ptrdiff_t;
 
   // clang-tidy: mark explicit. We want implicit conversion
-  constexpr operator std::array<T, Size>() const noexcept {  // NOLINT
+  constexpr operator std::array<T, Size>() const {  // NOLINT
     return detail::convert_to_array(data_, std::make_index_sequence<Size>{});
   }
 
-  constexpr iterator begin() noexcept {
+  constexpr iterator begin() {
     return iterator(data_);  // NOLINT
   }
-  constexpr const_iterator begin() const noexcept {
+  constexpr const_iterator begin() const {
     return const_iterator(data_);  // NOLINT
   }
-  constexpr iterator end() noexcept {
+  constexpr iterator end() {
     return iterator(data_ + Size);  // NOLINT
   }
-  constexpr const_iterator end() const noexcept {
+  constexpr const_iterator end() const {
     return const_iterator(data_ + Size);  // NOLINT
   }
 
-  constexpr const_iterator cbegin() const noexcept { return begin(); }
-  constexpr const_iterator cend() const noexcept { return end(); }
+  constexpr const_iterator cbegin() const { return begin(); }
+  constexpr const_iterator cend() const { return end(); }
 
-  constexpr size_type size() const noexcept { return Size; }
-  constexpr size_type max_size() const noexcept { return Size; }
-  constexpr bool empty() const noexcept { return Size == 0; }
+  constexpr size_type size() const { return Size; }
+  constexpr size_type max_size() const { return Size; }
+  constexpr bool empty() const { return Size == 0; }
 
-  constexpr reference operator[](const size_type i) noexcept {
+  constexpr reference operator[](const size_type i) {
     return data_[i];  // NOLINT
   }
-  constexpr const_reference operator[](const size_type i) const noexcept {
+  constexpr const_reference operator[](const size_type i) const {
     return data_[i];  // NOLINT
   }
 
-  constexpr reference at(const size_type i) noexcept {
+  constexpr reference at(const size_type i) {
     return data_[i];  // NOLINT
   }
-  constexpr const_reference at(const size_type i) const noexcept {
+  constexpr const_reference at(const size_type i) const {
     return data_[i];  // NOLINT
   }
 
@@ -88,8 +88,8 @@ struct array {
     return data_[Size > 0 ? Size - 1 : 0];
   }
 
-  constexpr value_type* data() noexcept { return data_; }
-  constexpr const value_type* data() const noexcept { return data_; }
+  constexpr value_type* data() { return data_; }
+  constexpr const value_type* data() const { return data_; }
 
   // NOLINTNEXTLINE(modernize-avoid-c-arrays)
   value_type data_[Size > 0 ? Size : 1];
@@ -105,8 +105,7 @@ struct Equal : std::binary_function<T, T, bool> {
 template <>
 struct Equal<void> {
   template <class T0, class T1>
-  constexpr bool inline operator()(T0&& lhs, T1&& rhs) const
-      noexcept(noexcept(std::forward<T0>(lhs) == std::forward<T1>(rhs))) {
+  constexpr bool inline operator()(T0&& lhs, T1&& rhs) const {
     return std::forward<T0>(lhs) == std::forward<T1>(rhs);
   }
 };
@@ -177,14 +176,12 @@ inline constexpr bool operator>=(const array<T, Size>& lhs,
 }
 
 template <typename T>
-inline std::ostream& operator<<(std::ostream& os,
-                                const array<T, 0>& /*a*/) noexcept {
+inline std::ostream& operator<<(std::ostream& os, const array<T, 0>& /*a*/) {
   return os << "()";
 }
 
 template <typename T, size_t N>
-inline std::ostream& operator<<(std::ostream& os,
-                                const array<T, N>& a) noexcept {
+inline std::ostream& operator<<(std::ostream& os, const array<T, N>& a) {
   os << '(';
   for (size_t i = 0; i < N - 1; ++i) {
     os << a[i] << ',';
@@ -237,15 +234,14 @@ template <typename T, size_t Size, size_t... Is>
 inline constexpr cpp20::array<T, Size> convert_to_cpp20_array_impl(
     const std::array<T, Size>& t,
     std::index_sequence<
-        Is...> /*meta*/) noexcept(noexcept(cpp20::array<T, Size>{{t[Is]...}})) {
+        Is...> /*meta*/) {
   return {{t[Is]...}};
 }
 }  // namespace detail
 
 template <typename T, size_t Size, size_t... Is>
 inline constexpr cpp20::array<T, Size>
-convert_to_cpp20_array(const std::array<T, Size>& t) noexcept(noexcept(
-    detail::convert_to_cpp20_array_impl(t, std::make_index_sequence<Size>{}))) {
+convert_to_cpp20_array(const std::array<T, Size>& t) {
   return detail::convert_to_cpp20_array_impl(t,
                                              std::make_index_sequence<Size>{});
 }

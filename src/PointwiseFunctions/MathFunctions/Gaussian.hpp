@@ -41,7 +41,7 @@ class Gaussian<1, Fr> : public MathFunction<1, Fr> {
   struct Width {
     using type = double;
     static constexpr Options::String help = {"The width."};
-    static type lower_bound() noexcept { return 0.; }
+    static type lower_bound() { return 0.; }
   };
 
   struct Center {
@@ -57,33 +57,32 @@ class Gaussian<1, Fr> : public MathFunction<1, Fr> {
   WRAPPED_PUPable_decl_base_template(SINGLE_ARG(MathFunction<1, Fr>),
                                      Gaussian);  // NOLINT
 
-  explicit Gaussian(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit Gaussian(CkMigrateMessage* /*unused*/) {}
 
-  Gaussian(double amplitude, double width, double center) noexcept;
-  Gaussian(double amplitude, double width,
-           const std::array<double, 1>& center) noexcept;
+  Gaussian(double amplitude, double width, double center);
+  Gaussian(double amplitude, double width, const std::array<double, 1>& center);
 
   Gaussian() = default;
   ~Gaussian() override = default;
   Gaussian(const Gaussian& /*rhs*/) = delete;
   Gaussian& operator=(const Gaussian& /*rhs*/) = delete;
-  Gaussian(Gaussian&& /*rhs*/) noexcept = default;
-  Gaussian& operator=(Gaussian&& /*rhs*/) noexcept = default;
+  Gaussian(Gaussian&& /*rhs*/) = default;
+  Gaussian& operator=(Gaussian&& /*rhs*/) = default;
 
-  double operator()(const double& x) const noexcept override;
-  DataVector operator()(const DataVector& x) const noexcept override;
+  double operator()(const double& x) const override;
+  DataVector operator()(const DataVector& x) const override;
   using MathFunction<1, Fr>::operator();
 
-  double first_deriv(const double& x) const noexcept override;
-  DataVector first_deriv(const DataVector& x) const noexcept override;
+  double first_deriv(const double& x) const override;
+  DataVector first_deriv(const DataVector& x) const override;
   using MathFunction<1, Fr>::first_deriv;
 
-  double second_deriv(const double& x) const noexcept override;
-  DataVector second_deriv(const DataVector& x) const noexcept override;
+  double second_deriv(const double& x) const override;
+  DataVector second_deriv(const DataVector& x) const override;
   using MathFunction<1, Fr>::second_deriv;
 
-  double third_deriv(const double& x) const noexcept override;
-  DataVector third_deriv(const DataVector& x) const noexcept override;
+  double third_deriv(const double& x) const override;
+  DataVector third_deriv(const DataVector& x) const override;
   using MathFunction<1, Fr>::third_deriv;
 
   // clang-tidy: google-runtime-references
@@ -94,20 +93,20 @@ class Gaussian<1, Fr> : public MathFunction<1, Fr> {
   double inverse_width_{};
   double center_{};
   friend bool operator==(const Gaussian<1, Fr>& lhs,
-                         const Gaussian<1, Fr>& rhs) noexcept {
+                         const Gaussian<1, Fr>& rhs) {
     return lhs.amplitude_ == rhs.amplitude_ and
            lhs.inverse_width_ == rhs.inverse_width_ and
            lhs.center_ == rhs.center_;
   }
 
   template <typename T>
-  T apply_call_operator(const T& x) const noexcept;
+  T apply_call_operator(const T& x) const;
   template <typename T>
-  T apply_first_deriv(const T& x) const noexcept;
+  T apply_first_deriv(const T& x) const;
   template <typename T>
-  T apply_second_deriv(const T& x) const noexcept;
+  T apply_second_deriv(const T& x) const;
   template <typename T>
-  T apply_third_deriv(const T& x) const noexcept;
+  T apply_third_deriv(const T& x) const;
 };
 
 /*!
@@ -131,7 +130,7 @@ class Gaussian : public MathFunction<VolumeDim, Fr> {
   struct Width {
     using type = double;
     static constexpr Options::String help = {"The width."};
-    static type lower_bound() noexcept { return 0.; }
+    static type lower_bound() { return 0.; }
   };
 
   struct Center {
@@ -147,37 +146,37 @@ class Gaussian : public MathFunction<VolumeDim, Fr> {
   WRAPPED_PUPable_decl_base_template(SINGLE_ARG(MathFunction<VolumeDim, Fr>),
                                      Gaussian);  // NOLINT
 
-  explicit Gaussian(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit Gaussian(CkMigrateMessage* /*unused*/) {}
 
   Gaussian(double amplitude, double width,
-           const std::array<double, VolumeDim>& center) noexcept;
+           const std::array<double, VolumeDim>& center);
 
   Gaussian() = default;
   ~Gaussian() override = default;
   Gaussian(const Gaussian& /*rhs*/) = delete;
   Gaussian& operator=(const Gaussian& /*rhs*/) = delete;
-  Gaussian(Gaussian&& /*rhs*/) noexcept = default;
-  Gaussian& operator=(Gaussian&& /*rhs*/) noexcept = default;
+  Gaussian(Gaussian&& /*rhs*/) = default;
+  Gaussian& operator=(Gaussian&& /*rhs*/) = default;
 
   Scalar<double> operator()(
-      const tnsr::I<double, VolumeDim, Fr>& x) const noexcept override;
+      const tnsr::I<double, VolumeDim, Fr>& x) const override;
   Scalar<DataVector> operator()(
-      const tnsr::I<DataVector, VolumeDim, Fr>& x) const noexcept override;
+      const tnsr::I<DataVector, VolumeDim, Fr>& x) const override;
 
   tnsr::i<double, VolumeDim, Fr> first_deriv(
-      const tnsr::I<double, VolumeDim, Fr>& x) const noexcept override;
+      const tnsr::I<double, VolumeDim, Fr>& x) const override;
   tnsr::i<DataVector, VolumeDim, Fr> first_deriv(
-      const tnsr::I<DataVector, VolumeDim, Fr>& x) const noexcept override;
+      const tnsr::I<DataVector, VolumeDim, Fr>& x) const override;
 
   tnsr::ii<double, VolumeDim, Fr> second_deriv(
-      const tnsr::I<double, VolumeDim, Fr>& x) const noexcept override;
+      const tnsr::I<double, VolumeDim, Fr>& x) const override;
   tnsr::ii<DataVector, VolumeDim, Fr> second_deriv(
-      const tnsr::I<DataVector, VolumeDim, Fr>& x) const noexcept override;
+      const tnsr::I<DataVector, VolumeDim, Fr>& x) const override;
 
   tnsr::iii<double, VolumeDim, Fr> third_deriv(
-      const tnsr::I<double, VolumeDim, Fr>& x) const noexcept override;
+      const tnsr::I<double, VolumeDim, Fr>& x) const override;
   tnsr::iii<DataVector, VolumeDim, Fr> third_deriv(
-      const tnsr::I<DataVector, VolumeDim, Fr>& x) const noexcept override;
+      const tnsr::I<DataVector, VolumeDim, Fr>& x) const override;
 
   // clang-tidy: google-runtime-references
   void pup(PUP::er& p) override;  // NOLINT
@@ -186,7 +185,7 @@ class Gaussian : public MathFunction<VolumeDim, Fr> {
   double amplitude_{};
   double inverse_width_{};
   std::array<double, VolumeDim> center_{};
-  friend bool operator==(const Gaussian& lhs, const Gaussian& rhs) noexcept {
+  friend bool operator==(const Gaussian& lhs, const Gaussian& rhs) {
     return lhs.amplitude_ == rhs.amplitude_ and
            lhs.inverse_width_ == rhs.inverse_width_ and
            lhs.center_ == rhs.center_;
@@ -194,29 +193,29 @@ class Gaussian : public MathFunction<VolumeDim, Fr> {
 
   template <typename T>
   tnsr::I<T, VolumeDim, Fr> centered_coordinates(
-      const tnsr::I<T, VolumeDim, Fr>& x) const noexcept;
+      const tnsr::I<T, VolumeDim, Fr>& x) const;
   template <typename T>
   Scalar<T> apply_call_operator(
-      const tnsr::I<T, VolumeDim, Fr>& centered_coords) const noexcept;
+      const tnsr::I<T, VolumeDim, Fr>& centered_coords) const;
   template <typename T>
   tnsr::i<T, VolumeDim, Fr> apply_first_deriv(
       const tnsr::I<T, VolumeDim, Fr>& centered_coords,
-      const Scalar<T>& gaussian) const noexcept;
+      const Scalar<T>& gaussian) const;
   template <typename T>
   tnsr::ii<T, VolumeDim, Fr> apply_second_deriv(
       const tnsr::I<T, VolumeDim, Fr>& centered_coords,
       const Scalar<T>& gaussian,
-      const tnsr::i<T, VolumeDim, Fr>& d_gaussian) const noexcept;
+      const tnsr::i<T, VolumeDim, Fr>& d_gaussian) const;
   template <typename T>
   tnsr::iii<T, VolumeDim, Fr> apply_third_deriv(
       const tnsr::I<T, VolumeDim, Fr>& centered_coords,
       const Scalar<T>& gaussian, const tnsr::i<T, VolumeDim, Fr>& d_gaussian,
-      const tnsr::ii<T, VolumeDim, Fr>& d2_gaussian) const noexcept;
+      const tnsr::ii<T, VolumeDim, Fr>& d2_gaussian) const;
 };
 
 template <size_t VolumeDim, typename Fr>
 bool operator!=(const Gaussian<VolumeDim, Fr>& lhs,
-                const Gaussian<VolumeDim, Fr>& rhs) noexcept {
+                const Gaussian<VolumeDim, Fr>& rhs) {
   return not(lhs == rhs);
 }
 }  // namespace MathFunctions

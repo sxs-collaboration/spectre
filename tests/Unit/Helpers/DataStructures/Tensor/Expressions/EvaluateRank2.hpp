@@ -47,7 +47,7 @@ namespace TestHelpers::TensorExpressions {
 template <typename DataType, typename RhsSymmetry,
           typename RhsTensorIndexTypeList, auto& TensorIndexA,
           auto& TensorIndexB>
-void test_evaluate_rank_2_impl() noexcept {
+void test_evaluate_rank_2_impl() {
   const size_t used_for_size = 5;
   Tensor<DataType, RhsSymmetry, RhsTensorIndexTypeList> R_ab(used_for_size);
   std::iota(R_ab.begin(), R_ab.end(), 0.0);
@@ -153,7 +153,7 @@ template <typename DataType,
           template <size_t, UpLo, typename> class TensorIndexTypeA,
           template <size_t, UpLo, typename> class TensorIndexTypeB,
           UpLo ValenceA, UpLo ValenceB, auto& TensorIndexA, auto& TensorIndexB>
-void test_evaluate_rank_2_no_symmetry() noexcept {
+void test_evaluate_rank_2_no_symmetry() {
 #define DIM_A(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DIM_B(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(2, data)
@@ -179,7 +179,7 @@ void test_evaluate_rank_2_no_symmetry() noexcept {
 template <typename DataType,
           template <size_t, UpLo, typename> class TensorIndexType, UpLo Valence,
           auto& TensorIndexA, auto& TensorIndexB>
-void test_evaluate_rank_2_symmetric() noexcept {
+void test_evaluate_rank_2_symmetric() {
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(1, data)
 

@@ -45,13 +45,13 @@ struct ProductOfSinusoidsProxy : Poisson::Solutions::ProductOfSinusoids<Dim> {
   using source_tags = tmpl::list<Tags::FixedSource<Poisson::Tags::Field>>;
 
   tuples::tagged_tuple_from_typelist<field_tags> field_variables(
-      const tnsr::I<DataVector, Dim, Frame::Inertial>& x) const noexcept {
+      const tnsr::I<DataVector, Dim, Frame::Inertial>& x) const {
     return Poisson::Solutions::ProductOfSinusoids<Dim>::variables(x,
                                                                   field_tags{});
   }
 
   tuples::tagged_tuple_from_typelist<source_tags> source_variables(
-      const tnsr::I<DataVector, Dim, Frame::Inertial>& x) const noexcept {
+      const tnsr::I<DataVector, Dim, Frame::Inertial>& x) const {
     return Poisson::Solutions::ProductOfSinusoids<Dim>::variables(
         x, source_tags{});
   }
@@ -99,7 +99,7 @@ SPECTRE_TEST_CASE(
         coord_map{{-1., 1., 0., M_PI}};
     FirstOrderEllipticSolutionsTestHelpers::verify_smooth_solution<system>(
         solution, coord_map, 1.e5, 3.,
-        [](const auto&... /*unused*/) noexcept { return std::tuple<>{}; });
+        [](const auto&... /*unused*/) { return std::tuple<>{}; });
   }
   {
     INFO("2D");
@@ -115,7 +115,7 @@ SPECTRE_TEST_CASE(
         coord_map{{{-1., 1., 0., M_PI}, {-1., 1., 0., M_PI}}};
     FirstOrderEllipticSolutionsTestHelpers::verify_smooth_solution<system>(
         solution, coord_map, 1.e5, 3.,
-        [](const auto&... /*unused*/) noexcept { return std::tuple<>{}; });
+        [](const auto&... /*unused*/) { return std::tuple<>{}; });
   }
   {
     INFO("3D");
@@ -132,6 +132,6 @@ SPECTRE_TEST_CASE(
             {{-1., 1., 0., M_PI}, {-1., 1., 0., M_PI}, {-1., 1., 0., M_PI}}};
     FirstOrderEllipticSolutionsTestHelpers::verify_smooth_solution<system>(
         solution, coord_map, 1.e5, 3.,
-        [](const auto&... /*unused*/) noexcept { return std::tuple<>{}; });
+        [](const auto&... /*unused*/) { return std::tuple<>{}; });
   }
 }

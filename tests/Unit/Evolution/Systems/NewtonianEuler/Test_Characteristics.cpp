@@ -36,10 +36,9 @@
 namespace {
 
 template <size_t Dim>
-void test_compute_item_in_databox(
-    const tnsr::I<DataVector, Dim>& velocity,
-    const Scalar<DataVector>& sound_speed,
-    const tnsr::i<DataVector, Dim>& normal) noexcept {
+void test_compute_item_in_databox(const tnsr::I<DataVector, Dim>& velocity,
+                                  const Scalar<DataVector>& sound_speed,
+                                  const tnsr::i<DataVector, Dim>& normal) {
   TestHelpers::db::test_compute_tag<
       NewtonianEuler::Tags::CharacteristicSpeedsCompute<Dim>>(
       "CharacteristicSpeeds");
@@ -56,7 +55,7 @@ void test_compute_item_in_databox(
 }
 
 template <size_t Dim>
-void test_characteristic_speeds(const DataVector& used_for_size) noexcept {
+void test_characteristic_speeds(const DataVector& used_for_size) {
   MAKE_GENERATOR(generator);
   std::uniform_real_distribution<> distribution(0.0, 1.0);
 
@@ -94,8 +93,7 @@ void test_characteristic_speeds(const DataVector& used_for_size) noexcept {
 }
 
 template <size_t Dim>
-void test_largest_characteristic_speed(
-    const DataVector& used_for_size) noexcept {
+void test_largest_characteristic_speed(const DataVector& used_for_size) {
   MAKE_GENERATOR(generator);
   std::uniform_real_distribution<> distribution(-1.0, 1.0);
 
@@ -120,7 +118,7 @@ void test_left_and_right_eigenvectors_impl(
     const Scalar<double>& specific_internal_energy,
     const tnsr::i<double, Dim>& unit_normal,
     const EquationsOfState::EquationOfState<false, ThermodynamicDim>&
-        equation_of_state) noexcept {
+        equation_of_state) {
   Scalar<double> pressure{};
   Scalar<double> kappa_over_density{};
   if constexpr (ThermodynamicDim == 1) {
@@ -196,7 +194,7 @@ void test_left_and_right_eigenvectors_impl(
 }
 
 template <size_t Dim>
-void test_right_and_left_eigenvectors() noexcept {
+void test_right_and_left_eigenvectors() {
   // This test verifies that the eigenvectors satisfy the conditions by which
   // they are defined:
   // - the right and left eigenvectors are matrix inverses of each other, i.e.,
@@ -214,7 +212,7 @@ void test_right_and_left_eigenvectors() noexcept {
   const double used_for_size = 0.;
   // This computes a unit normal. It is NOT uniformly distributed in angle,
   // but for this test the angular distribution is not important.
-  const auto unit_normal = [&]() noexcept {
+  const auto unit_normal = [&]() {
     auto result = make_with_random_values<tnsr::i<double, Dim>>(
         nn_generator, nn_distribution, used_for_size);
     double normal_magnitude = get(magnitude(result));
@@ -228,8 +226,7 @@ void test_right_and_left_eigenvectors() noexcept {
       n_i /= normal_magnitude;
     }
     return result;
-  }
-  ();
+  }();
 
   // To check the diagonalization of the Jacobian, we need a self consistent set
   // of primitive and derived-from-primitive variables -- so generate everything
@@ -262,7 +259,7 @@ void test_right_and_left_eigenvectors() noexcept {
 }
 
 template <size_t Dim>
-void test_numerical_eigenvectors() noexcept {
+void test_numerical_eigenvectors() {
   // This test verifies that the eigenvectors satisfy the conditions by which
   // they are defined:
   // - the right and left eigenvectors are matrix inverses of each other, i.e.,
@@ -280,7 +277,7 @@ void test_numerical_eigenvectors() noexcept {
   const double used_for_size = 0.;
   // This computes a unit normal. It is NOT uniformly distributed in angle,
   // but for this test the distribution is not important.
-  const auto unit_normal = [&]() noexcept {
+  const auto unit_normal = [&]() {
     auto result = make_with_random_values<tnsr::i<double, Dim>>(
         nn_generator, nn_distribution, used_for_size);
     const double normal_magnitude = get(magnitude(result));
@@ -288,8 +285,7 @@ void test_numerical_eigenvectors() noexcept {
       n_i /= normal_magnitude;
     }
     return result;
-  }
-  ();
+  }();
 
   // To check the diagonalization of the Jacobian, we need a self consistent set
   // of primitive and derived-from-primitive variables -- so generate everything
@@ -329,14 +325,13 @@ void test_numerical_eigenvectors() noexcept {
   const auto vals_and_vecs = NewtonianEuler::numerical_eigensystem(
       velocity, sound_speed_squared, specific_enthalpy, kappa_over_density,
       unit_normal);
-  const Matrix num_eigenvalues = [&vals_and_vecs]() noexcept {
+  const Matrix num_eigenvalues = [&vals_and_vecs]() {
     Matrix result(Dim + 2, Dim + 2, 0.);
     for (size_t i = 0; i < Dim + 2; ++i) {
       result(i, i) = vals_and_vecs.first[i];
     }
     return result;
-  }
-  ();
+  }();
   const Matrix& num_right = vals_and_vecs.second.first;
   const Matrix& num_left = vals_and_vecs.second.second;
   const Matrix id1 = num_right * num_left;

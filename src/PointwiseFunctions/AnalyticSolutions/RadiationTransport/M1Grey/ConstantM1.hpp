@@ -59,35 +59,35 @@ class ConstantM1 : public MarkAsAnalyticSolution {
   ConstantM1() = default;
   ConstantM1(const ConstantM1& /*rhs*/) = delete;
   ConstantM1& operator=(const ConstantM1& /*rhs*/) = delete;
-  ConstantM1(ConstantM1&& /*rhs*/) noexcept = default;
-  ConstantM1& operator=(ConstantM1&& /*rhs*/) noexcept = default;
+  ConstantM1(ConstantM1&& /*rhs*/) = default;
+  ConstantM1& operator=(ConstantM1&& /*rhs*/) = default;
   ~ConstantM1() = default;
 
   ConstantM1(const std::array<double, 3>& mean_velocity,
-             double comoving_energy_density) noexcept;
+             double comoving_energy_density);
 
-  explicit ConstantM1(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit ConstantM1(CkMigrateMessage* /*unused*/) {}
 
   /// @{
   /// Retrieve fluid and neutrino variables at `(x, t)`
   template <typename NeutrinoSpecies>
   auto variables(const tnsr::I<DataVector, 3>& x, double t,
                  tmpl::list<RadiationTransport::M1Grey::Tags::TildeE<
-                     Frame::Inertial, NeutrinoSpecies>> /*meta*/) const noexcept
+                     Frame::Inertial, NeutrinoSpecies>> /*meta*/) const
       -> tuples::TaggedTuple<RadiationTransport::M1Grey::Tags::TildeE<
           Frame::Inertial, NeutrinoSpecies>>;
 
   template <typename NeutrinoSpecies>
   auto variables(const tnsr::I<DataVector, 3>& x, double t,
                  tmpl::list<RadiationTransport::M1Grey::Tags::TildeS<
-                     Frame::Inertial, NeutrinoSpecies>> /*meta*/) const noexcept
+                     Frame::Inertial, NeutrinoSpecies>> /*meta*/) const
       -> tuples::TaggedTuple<RadiationTransport::M1Grey::Tags::TildeS<
           Frame::Inertial, NeutrinoSpecies>>;
 
   template <typename NeutrinoSpecies>
   auto variables(const tnsr::I<DataVector, 3>& x, double t,
                  tmpl::list<RadiationTransport::M1Grey::Tags::GreyEmissivity<
-                     NeutrinoSpecies>> /*meta*/) const noexcept
+                     NeutrinoSpecies>> /*meta*/) const
       -> tuples::TaggedTuple<
           RadiationTransport::M1Grey::Tags::GreyEmissivity<NeutrinoSpecies>>;
 
@@ -95,7 +95,7 @@ class ConstantM1 : public MarkAsAnalyticSolution {
   auto variables(
       const tnsr::I<DataVector, 3>& x, double t,
       tmpl::list<RadiationTransport::M1Grey::Tags::GreyAbsorptionOpacity<
-          NeutrinoSpecies>> /*meta*/) const noexcept
+          NeutrinoSpecies>> /*meta*/) const
       -> tuples::TaggedTuple<RadiationTransport::M1Grey::Tags::
                                  GreyAbsorptionOpacity<NeutrinoSpecies>>;
 
@@ -103,19 +103,17 @@ class ConstantM1 : public MarkAsAnalyticSolution {
   auto variables(
       const tnsr::I<DataVector, 3>& x, double t,
       tmpl::list<RadiationTransport::M1Grey::Tags::GreyScatteringOpacity<
-          NeutrinoSpecies>> /*meta*/) const noexcept
+          NeutrinoSpecies>> /*meta*/) const
       -> tuples::TaggedTuple<RadiationTransport::M1Grey::Tags::
                                  GreyScatteringOpacity<NeutrinoSpecies>>;
 
-  auto variables(
-      const tnsr::I<DataVector, 3>& x, double t,
-      tmpl::list<hydro::Tags::LorentzFactor<DataVector>> /*meta*/) const
-      noexcept -> tuples::TaggedTuple<hydro::Tags::LorentzFactor<DataVector>>;
+  auto variables(const tnsr::I<DataVector, 3>& x, double t,
+                 tmpl::list<hydro::Tags::LorentzFactor<DataVector>> /*meta*/)
+      const -> tuples::TaggedTuple<hydro::Tags::LorentzFactor<DataVector>>;
 
   auto variables(
       const tnsr::I<DataVector, 3>& x, double t,
       tmpl::list<hydro::Tags::SpatialVelocity<DataVector, 3>> /*meta*/) const
-      noexcept
       -> tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataVector, 3>>;
   /// @}
 
@@ -123,8 +121,7 @@ class ConstantM1 : public MarkAsAnalyticSolution {
   template <typename... Tags>
   tuples::TaggedTuple<Tags...> variables(const tnsr::I<DataVector, 3>& x,
                                          double t,
-                                         tmpl::list<Tags...> /*meta*/) const
-      noexcept {
+                                         tmpl::list<Tags...> /*meta*/) const {
     static_assert(sizeof...(Tags) > 1,
                   "The generic template will recurse infinitely if only one "
                   "tag is being retrieved.");
@@ -134,15 +131,15 @@ class ConstantM1 : public MarkAsAnalyticSolution {
   /// Retrieve the metric variables
   template <typename Tag>
   tuples::TaggedTuple<Tag> variables(const tnsr::I<DataVector, 3>& x, double t,
-                                     tmpl::list<Tag> /*meta*/) const noexcept {
+                                     tmpl::list<Tag> /*meta*/) const {
     return background_spacetime_.variables(x, t, tmpl::list<Tag>{});
   }
 
   // clang-tidy: no runtime references
-  void pup(PUP::er& /*p*/) noexcept;  //  NOLINT
+  void pup(PUP::er& /*p*/);  //  NOLINT
 
  private:
-  friend bool operator==(const ConstantM1& lhs, const ConstantM1& rhs) noexcept;
+  friend bool operator==(const ConstantM1& lhs, const ConstantM1& rhs);
 
   std::array<double, 3> mean_velocity_{
       {std::numeric_limits<double>::signaling_NaN(),
@@ -153,7 +150,7 @@ class ConstantM1 : public MarkAsAnalyticSolution {
   gr::Solutions::Minkowski<3> background_spacetime_{};
 };
 
-bool operator!=(const ConstantM1& lhs, const ConstantM1& rhs) noexcept;
+bool operator!=(const ConstantM1& lhs, const ConstantM1& rhs);
 }  // namespace Solutions
 }  // namespace M1Grey
 }  // namespace RadiationTransport

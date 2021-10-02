@@ -18,7 +18,7 @@ struct SomeInitialDataType {
 
 namespace {
 template <size_t Dim>
-void test_tags() noexcept {
+void test_tags() {
   TestHelpers::db::test_simple_tag<NewtonianEuler::Tags::MassDensityCons>(
       "MassDensityCons");
   TestHelpers::db::test_simple_tag<

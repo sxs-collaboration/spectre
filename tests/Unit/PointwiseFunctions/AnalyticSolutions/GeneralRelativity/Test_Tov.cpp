@@ -19,7 +19,7 @@
 namespace {
 
 constexpr double polytropic_constant = 8.0;
-double expected_newtonian_radius() noexcept {
+double expected_newtonian_radius() {
   /* Analytic solution in Newtonian limit for polytropic TOV integration has
   $R = \pi / \alpha$ ; $M = 4\pi^{2}\rho_{0c} / \alpha^{3}$
    Here $\rho_{0c}$ is the central mass density and $\alpha = sqrt(2\pi/K)$
@@ -28,7 +28,7 @@ double expected_newtonian_radius() noexcept {
   return M_PI / sqrt(2.0 * M_PI / polytropic_constant);
 }
 
-double expected_newtonian_mass(const double central_mass_density) noexcept {
+double expected_newtonian_mass(const double central_mass_density) {
   return 4.0 * central_mass_density * square(M_PI) /
          (cube(sqrt(2.0 * M_PI / polytropic_constant)));
 }
@@ -36,7 +36,7 @@ double expected_newtonian_mass(const double central_mass_density) noexcept {
 void test_tov(
     const EquationsOfState::EquationOfState<true, 1>& equation_of_state,
     const double central_mass_density, const size_t num_pts,
-    const size_t current_iteration, const bool newtonian_limit) noexcept {
+    const size_t current_iteration, const bool newtonian_limit) {
   Approx custom_approx = Approx::custom().epsilon(1.0e-08).scale(1.0);
   const double initial_log_enthalpy =
       std::log(get(equation_of_state.specific_enthalpy_from_density(

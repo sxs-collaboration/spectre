@@ -16,7 +16,7 @@ namespace gr {
 template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::A<DataType, SpatialDim, Frame> spacetime_normal_vector(
     const Scalar<DataType>& lapse,
-    const tnsr::I<DataType, SpatialDim, Frame>& shift) noexcept {
+    const tnsr::I<DataType, SpatialDim, Frame>& shift) {
   tnsr::A<DataType, SpatialDim, Frame> local_spacetime_normal_vector{
       get_size(get(lapse))};
   spacetime_normal_vector(make_not_null(&local_spacetime_normal_vector), lapse,
@@ -29,7 +29,7 @@ void spacetime_normal_vector(
     const gsl::not_null<tnsr::A<DataType, SpatialDim, Frame>*>
         spacetime_normal_vector,
     const Scalar<DataType>& lapse,
-    const tnsr::I<DataType, SpatialDim, Frame>& shift) noexcept {
+    const tnsr::I<DataType, SpatialDim, Frame>& shift) {
   destructive_resize_components(spacetime_normal_vector, get_size(get(lapse)));
   get<0>(*spacetime_normal_vector) = 1. / get(lapse);
   for (size_t i = 0; i < SpatialDim; i++) {
@@ -43,16 +43,16 @@ void spacetime_normal_vector(
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(2, data)
 
-#define INSTANTIATE(_, data)                                               \
-  template tnsr::A<DTYPE(data), DIM(data), FRAME(data)>                    \
-  gr::spacetime_normal_vector(                                             \
-      const Scalar<DTYPE(data)>& lapse,                                    \
-      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift) noexcept; \
-  template void gr::spacetime_normal_vector(                               \
-      const gsl::not_null<tnsr::A<DTYPE(data), DIM(data), FRAME(data)>*>   \
-          spacetime_normal_vector,                                         \
-      const Scalar<DTYPE(data)>& lapse,                                    \
-      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift) noexcept;
+#define INSTANTIATE(_, data)                                             \
+  template tnsr::A<DTYPE(data), DIM(data), FRAME(data)>                  \
+  gr::spacetime_normal_vector(                                           \
+      const Scalar<DTYPE(data)>& lapse,                                  \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift);        \
+  template void gr::spacetime_normal_vector(                             \
+      const gsl::not_null<tnsr::A<DTYPE(data), DIM(data), FRAME(data)>*> \
+          spacetime_normal_vector,                                       \
+      const Scalar<DTYPE(data)>& lapse,                                  \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
                         (Frame::Grid, Frame::Inertial))

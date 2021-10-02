@@ -16,7 +16,7 @@
 namespace CurvedScalarWave ::AnalyticData {
 
 template <typename ScalarFieldData, typename BackgroundGrData>
-void ScalarWaveGr<ScalarFieldData, BackgroundGrData>::pup(PUP::er& p) noexcept {
+void ScalarWaveGr<ScalarFieldData, BackgroundGrData>::pup(PUP::er& p) {
   p | flat_space_scalar_wave_data_;
   p | background_gr_data_;
 }
@@ -25,7 +25,7 @@ template <typename ScalarFieldData, typename BackgroundGrData>
 tuples::TaggedTuple<Pi>
 ScalarWaveGr<ScalarFieldData, BackgroundGrData>::variables(
     const tnsr::I<DataVector, volume_dim>& x, tmpl::list<Pi> /*meta*/) const
-    noexcept {
+    {
   constexpr double default_initial_time = 0.;
   const auto flat_space_scalar_wave_vars =
       flat_space_scalar_wave_data_.variables(
@@ -53,14 +53,14 @@ template <typename LocalScalarFieldData, typename LocalBackgroundData>
 bool operator==(
     const ScalarWaveGr<LocalScalarFieldData, LocalBackgroundData>& lhs,
     const ScalarWaveGr<LocalScalarFieldData, LocalBackgroundData>&
-        rhs) noexcept {
+        rhs) {
   return lhs.background_gr_data_ == rhs.background_gr_data_;
 }
 
 template <typename ScalarFieldData, typename BackgroundData>
 bool operator!=(
     const ScalarWaveGr<ScalarFieldData, BackgroundData>& lhs,
-    const ScalarWaveGr<ScalarFieldData, BackgroundData>& rhs) noexcept {
+    const ScalarWaveGr<ScalarFieldData, BackgroundData>& rhs) {
   return not(lhs == rhs);
 }
 }  // namespace CurvedScalarWave::AnalyticData

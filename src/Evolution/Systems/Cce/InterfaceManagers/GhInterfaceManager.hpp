@@ -62,28 +62,28 @@ class GhInterfaceManager : public PUP::able {
 
   WRAPPED_PUPable_abstract(GhInterfaceManager);  // NOLINT
 
-  virtual std::unique_ptr<GhInterfaceManager> get_clone() const noexcept = 0;
+  virtual std::unique_ptr<GhInterfaceManager> get_clone() const = 0;
 
   virtual void insert_gh_data(
       TimeStepId time_id, const tnsr::aa<DataVector, 3>& spacetime_metric,
       const tnsr::iaa<DataVector, 3>& phi, const tnsr::aa<DataVector, 3>& pi,
       const tnsr::aa<DataVector, 3>& dt_spacetime_metric,
       const tnsr::iaa<DataVector, 3>& dt_phi,
-      const tnsr::aa<DataVector, 3>& dt_pi) noexcept = 0;
+      const tnsr::aa<DataVector, 3>& dt_pi) = 0;
 
   virtual void insert_next_gh_time(TimeStepId time_id,
-                                   TimeStepId next_time_id) noexcept = 0;
+                                   TimeStepId next_time_id) = 0;
 
-  virtual void request_gh_data(const TimeStepId&) noexcept = 0;
+  virtual void request_gh_data(const TimeStepId&) = 0;
 
-  virtual auto retrieve_and_remove_first_ready_gh_data() noexcept
+  virtual auto retrieve_and_remove_first_ready_gh_data()
       -> std::optional<std::tuple<TimeStepId, gh_variables>> = 0;
 
-  virtual size_t number_of_pending_requests() const noexcept = 0;
+  virtual size_t number_of_pending_requests() const = 0;
 
-  virtual size_t number_of_gh_times() const noexcept = 0;
+  virtual size_t number_of_gh_times() const = 0;
 
-  virtual InterpolationStrategy get_interpolation_strategy() const noexcept = 0;
+  virtual InterpolationStrategy get_interpolation_strategy() const = 0;
 };
 
 }  // namespace InterfaceManagers

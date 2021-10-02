@@ -16,7 +16,7 @@
 // IWYU pragma: no_forward_declare Tensor
 
 template <typename DataType>
-void check_cross_product(const DataType& used_for_size) noexcept {
+void check_cross_product(const DataType& used_for_size) {
   // Make constants used to create vectors and one_forms
   const auto zero = make_with_value<DataType>(used_for_size, 0.0);
   const auto one_over_three_hundred_twenty_seven =

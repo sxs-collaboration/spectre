@@ -111,7 +111,7 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
   };
 
   /// \cond
-  explicit ObserveFields(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit ObserveFields(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ObserveFields);  // NOLINT
   /// \endcond
@@ -185,7 +185,7 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
       const typename NonSolutionTensors::type&... non_solution_tensors,
       Parallel::GlobalCache<Metavariables>& cache,
       const ElementId<VolumeDim>& array_index,
-      const ParallelComponent* const component) const noexcept {
+      const ParallelComponent* const component) const {
     std::optional<
         Variables<tmpl::list<::Tags::Analytic<AnalyticSolutionTensors>...>>>
         analytic_solution_variables{};
@@ -193,7 +193,7 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
         [&analytic_solution_variables, &cache, &observation_value](
             const Mesh<VolumeDim>& mesh,
             const tnsr::I<DataVector, VolumeDim, Frame::Inertial>&
-                inertial_coords) noexcept {
+                inertial_coords) {
           if constexpr (evolution::is_analytic_solution_v<
                             typename Metavariables::initial_data>) {
             Variables<tmpl::list<AnalyticSolutionTensors...>> soln_vars{
@@ -247,7 +247,7 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
       const typename NonSolutionTensors::type&... non_solution_tensors,
       Parallel::GlobalCache<Metavariables>& cache,
       const ElementId<VolumeDim>& array_index,
-      const ParallelComponent* const component) const noexcept {
+      const ParallelComponent* const component) const {
     this->operator()(observation_value, mesh, inertial_coordinates,
                      non_solution_tensors..., std::nullopt, cache, array_index,
                      component);
@@ -255,13 +255,13 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
 
   using observation_registration_tags = tmpl::list<>;
   std::pair<observers::TypeOfObservation, observers::ObservationKey>
-  get_observation_type_and_key_for_registration() const noexcept {
+  get_observation_type_and_key_for_registration() const {
     return {observers::TypeOfObservation::Volume,
             observers::ObservationKey(subfile_path_ + ".vol")};
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept override {
+  void pup(PUP::er& p) override {
     Event::pup(p);
     p | subfile_path_;
     p | variables_to_observe_;
@@ -273,11 +273,11 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
   template <typename Metavariables, typename ArrayIndex, typename Component>
   bool is_ready(Parallel::GlobalCache<Metavariables>& /*cache*/,
                 const ArrayIndex& /*array_index*/,
-                const Component* const /*meta*/) const noexcept {
+                const Component* const /*meta*/) const {
     return true;
   }
 
-  bool needs_evolved_variables() const noexcept override { return true; }
+  bool needs_evolved_variables() const override { return true; }
 
  private:
   std::string subfile_path_;

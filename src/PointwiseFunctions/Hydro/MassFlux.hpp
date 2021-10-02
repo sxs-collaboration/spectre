@@ -51,7 +51,7 @@ void mass_flux(gsl::not_null<tnsr::I<DataType, Dim, Frame>*> result,
                const Scalar<DataType>& lorentz_factor,
                const Scalar<DataType>& lapse,
                const tnsr::I<DataType, Dim, Frame>& shift,
-               const Scalar<DataType>& sqrt_det_spatial_metric) noexcept;
+               const Scalar<DataType>& sqrt_det_spatial_metric);
 
 template <typename DataType, size_t Dim, typename Frame>
 tnsr::I<DataType, Dim, Frame> mass_flux(
@@ -59,7 +59,7 @@ tnsr::I<DataType, Dim, Frame> mass_flux(
     const tnsr::I<DataType, Dim, Frame>& spatial_velocity,
     const Scalar<DataType>& lorentz_factor, const Scalar<DataType>& lapse,
     const tnsr::I<DataType, Dim, Frame>& shift,
-    const Scalar<DataType>& sqrt_det_spatial_metric) noexcept;
+    const Scalar<DataType>& sqrt_det_spatial_metric);
 /// @}
 
 namespace Tags {
@@ -83,7 +83,7 @@ struct MassFluxCompute : MassFlux<DataType, Dim, Frame>,
       gsl::not_null<tnsr::I<DataType, Dim, Frame>*>, const Scalar<DataType>&,
       const tnsr::I<DataType, Dim, Frame>&, const Scalar<DataType>&,
       const Scalar<DataType>&, const tnsr::I<DataType, Dim, Frame>&,
-      const Scalar<DataType>&) noexcept>(&mass_flux<DataType, Dim, Frame>);
+      const Scalar<DataType>&)>(&mass_flux<DataType, Dim, Frame>);
 
   using base = MassFlux<DataType, Dim, Frame>;
 };

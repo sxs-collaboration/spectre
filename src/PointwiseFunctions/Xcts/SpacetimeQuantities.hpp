@@ -60,74 +60,69 @@ using SpacetimeQuantities = CachedTempBuffer<
 struct SpacetimeQuantitiesComputer {
   using Cache = SpacetimeQuantities;
 
-  void operator()(gsl::not_null<tnsr::ii<DataVector, 3>*> spatial_metric,
-                  gsl::not_null<Cache*> cache,
-                  gr::Tags::SpatialMetric<3, Frame::Inertial,
-                                          DataVector> /*meta*/) const noexcept;
   void operator()(
-      gsl::not_null<tnsr::II<DataVector, 3>*> inv_spatial_metric,
+      gsl::not_null<tnsr::ii<DataVector, 3>*> spatial_metric,
       gsl::not_null<Cache*> cache,
-      gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector> /*meta*/)
-      const noexcept;
+      gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector> /*meta*/) const;
+  void operator()(gsl::not_null<tnsr::II<DataVector, 3>*> inv_spatial_metric,
+                  gsl::not_null<Cache*> cache,
+                  gr::Tags::InverseSpatialMetric<3, Frame::Inertial,
+                                                 DataVector> /*meta*/) const;
   void operator()(
       gsl::not_null<tnsr::ijj<DataVector, 3>*> deriv_spatial_metric,
       gsl::not_null<Cache*> cache,
       ::Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
-                    tmpl::size_t<3>, Frame::Inertial> /*meta*/) const noexcept;
+                    tmpl::size_t<3>, Frame::Inertial> /*meta*/) const;
   void operator()(
       gsl::not_null<tnsr::Ijj<DataVector, 3>*> christoffel_second_kind,
       gsl::not_null<Cache*> cache,
-      gr::Tags::SpatialChristoffelSecondKind<
-          3, Frame::Inertial, DataVector> /*meta*/) const noexcept;
+      gr::Tags::SpatialChristoffelSecondKind<3, Frame::Inertial,
+                                             DataVector> /*meta*/) const;
   void operator()(
       gsl::not_null<tnsr::iJkk<DataVector, 3>*> deriv_christoffel_second_kind,
       gsl::not_null<Cache*> cache,
       ::Tags::deriv<gr::Tags::SpatialChristoffelSecondKind<3, Frame::Inertial,
                                                            DataVector>,
-                    tmpl::size_t<3>, Frame::Inertial> /*meta*/) const noexcept;
-  void operator()(gsl::not_null<tnsr::ii<DataVector, 3>*> ricci_tensor,
-                  gsl::not_null<Cache*> cache,
-                  gr::Tags::SpatialRicci<3, Frame::Inertial,
-                                         DataVector> /*meta*/) const noexcept;
+                    tmpl::size_t<3>, Frame::Inertial> /*meta*/) const;
+  void operator()(
+      gsl::not_null<tnsr::ii<DataVector, 3>*> ricci_tensor,
+      gsl::not_null<Cache*> cache,
+      gr::Tags::SpatialRicci<3, Frame::Inertial, DataVector> /*meta*/) const;
   void operator()(gsl::not_null<Scalar<DataVector>*> lapse,
                   gsl::not_null<Cache*> cache,
-                  gr::Tags::Lapse<DataVector> /*meta*/) const noexcept;
+                  gr::Tags::Lapse<DataVector> /*meta*/) const;
   void operator()(
       gsl::not_null<tnsr::I<DataVector, 3>*> shift, gsl::not_null<Cache*> cache,
-      gr::Tags::Shift<3, Frame::Inertial, DataVector> /*meta*/) const noexcept;
+      gr::Tags::Shift<3, Frame::Inertial, DataVector> /*meta*/) const;
   void operator()(
       gsl::not_null<tnsr::iJ<DataVector, 3>*> deriv_shift,
       gsl::not_null<Cache*> cache,
       ::Tags::deriv<gr::Tags::Shift<3, Frame::Inertial, DataVector>,
-                    tmpl::size_t<3>, Frame::Inertial> /*meta*/) const noexcept;
+                    tmpl::size_t<3>, Frame::Inertial> /*meta*/) const;
   void operator()(gsl::not_null<tnsr::ii<DataVector, 3>*> dt_spatial_metric,
                   gsl::not_null<Cache*> cache,
                   ::Tags::dt<gr::Tags::SpatialMetric<
-                      3, Frame::Inertial, DataVector>> /*meta*/) const noexcept;
-  void operator()(
-      gsl::not_null<tnsr::ii<DataVector, 3>*> extrinsic_curvature,
-      gsl::not_null<Cache*> cache,
-      gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataVector> /*meta*/)
-      const noexcept;
-  void operator()(
-      gsl::not_null<Scalar<DataVector>*> extrinsic_curvature_square,
-      gsl::not_null<Cache*> cache,
-      detail::ExtrinsicCurvatureSquare<DataVector> /*meta*/) const noexcept;
+                      3, Frame::Inertial, DataVector>> /*meta*/) const;
+  void operator()(gsl::not_null<tnsr::ii<DataVector, 3>*> extrinsic_curvature,
+                  gsl::not_null<Cache*> cache,
+                  gr::Tags::ExtrinsicCurvature<3, Frame::Inertial,
+                                               DataVector> /*meta*/) const;
+  void operator()(gsl::not_null<Scalar<DataVector>*> extrinsic_curvature_square,
+                  gsl::not_null<Cache*> cache,
+                  detail::ExtrinsicCurvatureSquare<DataVector> /*meta*/) const;
   void operator()(
       gsl::not_null<tnsr::ijj<DataVector, 3>*> deriv_extrinsic_curvature,
       gsl::not_null<Cache*> cache,
       ::Tags::deriv<
           gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataVector>,
-          tmpl::size_t<3>, Frame::Inertial> /*meta*/) const noexcept;
-  void operator()(
-      gsl::not_null<Scalar<DataVector>*> hamiltonian_constraint,
-      gsl::not_null<Cache*> cache,
-      gr::Tags::HamiltonianConstraint<DataVector> /*meta*/) const noexcept;
-  void operator()(
-      gsl::not_null<tnsr::i<DataVector, 3>*> momentum_constraint,
-      gsl::not_null<Cache*> cache,
-      gr::Tags::MomentumConstraint<3, Frame::Inertial, DataVector> /*meta*/)
-      const noexcept;
+          tmpl::size_t<3>, Frame::Inertial> /*meta*/) const;
+  void operator()(gsl::not_null<Scalar<DataVector>*> hamiltonian_constraint,
+                  gsl::not_null<Cache*> cache,
+                  gr::Tags::HamiltonianConstraint<DataVector> /*meta*/) const;
+  void operator()(gsl::not_null<tnsr::i<DataVector, 3>*> momentum_constraint,
+                  gsl::not_null<Cache*> cache,
+                  gr::Tags::MomentumConstraint<3, Frame::Inertial,
+                                               DataVector> /*meta*/) const;
 
   const Scalar<DataVector>& conformal_factor;
   const Scalar<DataVector>& lapse_times_conformal_factor;
@@ -156,17 +151,16 @@ struct SpacetimeQuantitiesCompute : ::Tags::Variables<Tags>, db::ComputeTag {
       domain::Tags::InverseJacobian<3, Frame::ElementLogical, Frame::Inertial>>;
   template <typename... Args>
   static void function(const gsl::not_null<typename base::type*> result,
-                       const Mesh<3>& mesh, const Args&... args) noexcept {
+                       const Mesh<3>& mesh, const Args&... args) {
     const size_t num_points = mesh.number_of_grid_points();
     if (result->number_of_grid_points() != num_points) {
       result->initialize(num_points);
     }
     SpacetimeQuantities spacetime_quantities{num_points, {args...}};
-    tmpl::for_each<Tags>(
-        [&spacetime_quantities, &result](const auto tag_v) noexcept {
-          using tag = tmpl::type_from<std::decay_t<decltype(tag_v)>>;
-          get<tag>(*result) = spacetime_quantities.get_var(tag{});
-        });
+    tmpl::for_each<Tags>([&spacetime_quantities, &result](const auto tag_v) {
+      using tag = tmpl::type_from<std::decay_t<decltype(tag_v)>>;
+      get<tag>(*result) = spacetime_quantities.get_var(tag{});
+    });
   }
 };
 }  // namespace Tags

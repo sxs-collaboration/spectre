@@ -72,11 +72,11 @@ class StaticCache {
  public:
   template <typename Gen>
   // NOLINTNEXTLINE(bugprone-forwarding-reference-overload)
-  explicit StaticCache(Gen&& generator) noexcept
+  explicit StaticCache(Gen&& generator)
       : generator_{std::forward<Gen>(generator)} {}
 
   template <typename... Args>
-  const T& operator()(const Args... parameters) const noexcept {
+  const T& operator()(const Args... parameters) const {
     static_assert(sizeof...(parameters) == sizeof...(Ranges),
                   "Number of arguments must match number of ranges.");
     return unwrap_cache(generate_tuple<Ranges>(parameters)...);
@@ -85,7 +85,7 @@ class StaticCache {
  private:
   template <typename Range, typename T1,
             Requires<not std::is_enum<T1>::value> = nullptr>
-  auto generate_tuple(const T1 parameter) const noexcept {
+  auto generate_tuple(const T1 parameter) const {
     static_assert(
         tt::is_integer_v<std::remove_cv_t<T1>>,
         "The parameter passed for a CacheRange must be an integer type.");
@@ -98,7 +98,7 @@ class StaticCache {
   template <typename Range, typename T1,
             Requires<std::is_enum<T1>::value> = nullptr>
   std::tuple<std::remove_cv_t<T1>, Range> generate_tuple(
-      const T1 parameter) const noexcept {
+      const T1 parameter) const {
     static_assert(
         std::is_same<typename Range::value_type, std::remove_cv_t<T1>>::value,
         "Mismatched enum parameter type and cached type.");
@@ -106,7 +106,7 @@ class StaticCache {
   }
 
   template <typename... IntegralConstantValues>
-  const T& unwrap_cache() const noexcept {
+  const T& unwrap_cache() const {
     static const T cached_object = generator_(IntegralConstantValues::value...);
     return cached_object;
   }
@@ -120,7 +120,7 @@ class StaticCache {
                                  IndexOffset>,
           std::integer_sequence<std::remove_cv_t<decltype(IndexOffset)>, Is...>>
           parameter0,
-      Args... parameters) const noexcept {
+      Args... parameters) const {
     if (UNLIKELY(IndexOffset > std::get<0>(parameter0) or
                  std::get<0>(parameter0) >=
                      IndexOffset +
@@ -149,7 +149,7 @@ class StaticCache {
   const T& unwrap_cache(
       std::tuple<EnumType, CacheEnumeration<EnumType, EnumValues...>>
           parameter0,
-      Args... parameters) const noexcept {
+      Args... parameters) const {
     size_t array_location = std::numeric_limits<size_t>::max();
     static const std::array<EnumType, sizeof...(EnumValues)> values{
         {EnumValues...}};
@@ -181,7 +181,7 @@ class StaticCache {
 /// \ingroup UtilitiesGroup
 /// Create a StaticCache, inferring the cached type from the generator.
 template <typename... Ranges, typename Generator>
-auto make_static_cache(Generator&& generator) noexcept {
+auto make_static_cache(Generator&& generator) {
   using CachedType = std::remove_cv_t<decltype(
       generator(std::declval<typename Ranges::value_type>()...))>;
   return StaticCache<std::remove_cv_t<Generator>, CachedType, Ranges...>(

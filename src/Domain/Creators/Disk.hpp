@@ -80,7 +80,7 @@ class Disk : public DomainCreator<2> {
 
   template <typename BoundaryConditionsBase>
   struct BoundaryCondition {
-    static std::string name() noexcept { return "BoundaryCondition"; }
+    static std::string name() { return "BoundaryCondition"; }
     static constexpr Options::String help =
         "The boundary condition to impose on all sides.";
     using type = std::unique_ptr<BoundaryConditionsBase>;
@@ -121,17 +121,16 @@ class Disk : public DomainCreator<2> {
 
   Disk() = default;
   Disk(const Disk&) = delete;
-  Disk(Disk&&) noexcept = default;
+  Disk(Disk&&) = default;
   Disk& operator=(const Disk&) = delete;
-  Disk& operator=(Disk&&) noexcept = default;
-  ~Disk() noexcept override = default;
+  Disk& operator=(Disk&&) = default;
+  ~Disk() override = default;
 
-  Domain<2> create_domain() const noexcept override;
+  Domain<2> create_domain() const override;
 
-  std::vector<std::array<size_t, 2>> initial_extents() const noexcept override;
+  std::vector<std::array<size_t, 2>> initial_extents() const override;
 
-  std::vector<std::array<size_t, 2>> initial_refinement_levels() const
-      noexcept override;
+  std::vector<std::array<size_t, 2>> initial_refinement_levels() const override;
 
  private:
   typename InnerRadius::type inner_radius_{};

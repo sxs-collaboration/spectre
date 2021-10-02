@@ -44,15 +44,14 @@ struct FormatErrors
     : tt::ConformsTo<observers::protocols::ReductionDataFormatter> {
   using reduction_data = helpers::reduction_data_from_doubles;
   std::string operator()(const double time, const size_t num_points,
-                         const double error1, const double error2) const
-      noexcept {
+                         const double error1, const double error2) const {
     return "Errors at time " + std::to_string(time) + " over " +
            std::to_string(num_points) +
            " grid points:\n  Field1: " + std::to_string(error1) +
            "\n  Field2: " + std::to_string(error2);
   }
   // NOLINTNEXTLINE
-  void pup(PUP::er& /*p*/) noexcept {}
+  void pup(PUP::er& /*p*/) {}
 };
 // [formatter_example]
 static_assert(tt::assert_conforms_to<
@@ -147,7 +146,7 @@ void test_reduction_observer(const bool observe_per_core) {
 
   const auto make_fake_reduction_data = make_overloader(
       [](const observers::ArrayComponentId& id, const double time,
-         const helpers::reduction_data_from_doubles& /*meta*/) noexcept {
+         const helpers::reduction_data_from_doubles& /*meta*/) {
         const auto hashed_id =
             static_cast<double>(std::hash<observers::ArrayComponentId>{}(id));
         constexpr size_t number_of_grid_points = 4;
@@ -157,7 +156,7 @@ void test_reduction_observer(const bool observe_per_core) {
                                                     error0, error1};
       },
       [](const observers::ArrayComponentId& id, const double time,
-         const helpers::reduction_data_from_vector& /*meta*/) noexcept {
+         const helpers::reduction_data_from_vector& /*meta*/) {
         const auto hashed_id =
             static_cast<double>(std::hash<observers::ArrayComponentId>{}(id));
         constexpr size_t number_of_grid_points = 4;
@@ -168,7 +167,7 @@ void test_reduction_observer(const bool observe_per_core) {
                                                    data};
       },
       [](const observers::ArrayComponentId& id, const double time,
-         const helpers::reduction_data_from_ds_and_vs& /*meta*/) noexcept {
+         const helpers::reduction_data_from_ds_and_vs& /*meta*/) {
         const auto hashed_id =
             static_cast<double>(std::hash<observers::ArrayComponentId>{}(id));
         constexpr size_t number_of_grid_points = 4;
@@ -190,7 +189,7 @@ void test_reduction_observer(const bool observe_per_core) {
                                        &runner, &output_file_prefix,
                                        &observe_per_core, &num_cores_per_node,
                                        &get_global_core_id](
-                                          auto reduction_data_v) noexcept {
+                                          auto reduction_data_v) {
     using reduction_data = tmpl::type_from<decltype(reduction_data_v)>;
 
     const double time = 3.0;
@@ -295,8 +294,8 @@ void test_reduction_observer(const bool observe_per_core) {
       const auto expected =
           alg::accumulate(
               element_ids, data,
-              [&time, &make_fake_reduction_data](
-                  reduction_data state, const ElementId<2>& id) noexcept {
+              [&time, &make_fake_reduction_data](reduction_data state,
+                                                 const ElementId<2>& id) {
                 const observers::ArrayComponentId array_id(
                     std::add_pointer_t<element_comp>{nullptr},
                     Parallel::ArrayIndex<ElementId<2>>{ElementId<2>{id}});

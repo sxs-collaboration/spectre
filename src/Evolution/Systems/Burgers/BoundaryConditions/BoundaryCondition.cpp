@@ -8,7 +8,7 @@
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
 
 namespace Burgers::BoundaryConditions {
-BoundaryCondition::BoundaryCondition(CkMigrateMessage* const msg) noexcept
+BoundaryCondition::BoundaryCondition(CkMigrateMessage* const msg)
     : domain::BoundaryConditions::BoundaryCondition(msg) {}
 
 void BoundaryCondition::pup(PUP::er& p) {

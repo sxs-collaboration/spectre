@@ -70,19 +70,18 @@ namespace Sources {
  * were solving a coupled Euler + Poisson system).
  */
 struct LaneEmdenGravitationalField {
-  LaneEmdenGravitationalField() noexcept = default;
+  LaneEmdenGravitationalField() = default;
   LaneEmdenGravitationalField(const LaneEmdenGravitationalField& /*rhs*/) =
       default;
   LaneEmdenGravitationalField& operator=(
       const LaneEmdenGravitationalField& /*rhs*/) = default;
-  LaneEmdenGravitationalField(LaneEmdenGravitationalField&& /*rhs*/) noexcept =
-      default;
+  LaneEmdenGravitationalField(LaneEmdenGravitationalField&& /*rhs*/) = default;
   LaneEmdenGravitationalField& operator=(
-      LaneEmdenGravitationalField&& /*rhs*/) noexcept = default;
+      LaneEmdenGravitationalField&& /*rhs*/) = default;
   ~LaneEmdenGravitationalField() = default;
 
   // clang-tidy: google-runtime-references
-  void pup(PUP::er& /*p*/) noexcept {}  // NOLINT
+  void pup(PUP::er& /*p*/) {}  // NOLINT
 
   using sourced_variables =
       tmpl::list<Tags::MomentumDensity<3>, Tags::EnergyDensity>;
@@ -98,7 +97,7 @@ struct LaneEmdenGravitationalField {
       const Scalar<DataVector>& mass_density_cons,
       const tnsr::I<DataVector, 3>& momentum_density,
       const NewtonianEuler::Solutions::LaneEmdenStar& star,
-      const tnsr::I<DataVector, 3>& x) noexcept;
+      const tnsr::I<DataVector, 3>& x);
 };
 
 }  // namespace Sources

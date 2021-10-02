@@ -45,22 +45,22 @@ using Affine2D = domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>;
 using Affine3D = domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
 
 template <size_t VolumeDim>
-auto make_affine_map() noexcept;
+auto make_affine_map();
 
 template <>
-auto make_affine_map<1>() noexcept {
+auto make_affine_map<1>() {
   return domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
       Affine{-1.0, 1.0, -0.3, 0.7});
 }
 
 template <>
-auto make_affine_map<2>() noexcept {
+auto make_affine_map<2>() {
   return domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
       Affine2D{Affine{-1.0, 1.0, -0.3, 0.7}, Affine{-1.0, 1.0, 0.3, 0.55}});
 }
 
 template <>
-auto make_affine_map<3>() noexcept {
+auto make_affine_map<3>() {
   return domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
       Affine3D{Affine{-1.0, 1.0, -0.3, 0.7}, Affine{-1.0, 1.0, 0.3, 0.55},
                Affine{-1.0, 1.0, 2.3, 2.8}});
@@ -70,7 +70,7 @@ template <size_t Dim, typename Frame>
 struct Flux1 : db::SimpleTag {
   using type = tnsr::I<DataVector, Dim, Frame>;
   static auto flux(const MathFunctions::TensorProduct<Dim>& f,
-                   const tnsr::I<DataVector, Dim, Frame>& x) noexcept {
+                   const tnsr::I<DataVector, Dim, Frame>& x) {
     auto result = make_with_value<tnsr::I<DataVector, Dim, Frame>>(x, 0.);
     const auto f_of_x = f(x);
     for (size_t d = 0; d < Dim; ++d) {
@@ -78,9 +78,8 @@ struct Flux1 : db::SimpleTag {
     }
     return result;
   }
-  static auto divergence_of_flux(
-      const MathFunctions::TensorProduct<Dim>& f,
-      const tnsr::I<DataVector, Dim, Frame>& x) noexcept {
+  static auto divergence_of_flux(const MathFunctions::TensorProduct<Dim>& f,
+                                 const tnsr::I<DataVector, Dim, Frame>& x) {
     auto result = make_with_value<Scalar<DataVector>>(x, 0.);
     const auto df = f.first_derivatives(x);
     for (size_t d = 0; d < Dim; ++d) {
@@ -94,7 +93,7 @@ template <size_t Dim, typename Frame>
 struct Flux2 : db::SimpleTag {
   using type = tnsr::Ij<DataVector, Dim, Frame>;
   static auto flux(const MathFunctions::TensorProduct<Dim>& f,
-                   const tnsr::I<DataVector, Dim, Frame>& x) noexcept {
+                   const tnsr::I<DataVector, Dim, Frame>& x) {
     auto result = make_with_value<tnsr::Ij<DataVector, Dim, Frame>>(x, 0.);
     const auto f_of_x = f(x);
     for (size_t d = 0; d < Dim; ++d) {
@@ -104,9 +103,8 @@ struct Flux2 : db::SimpleTag {
     }
     return result;
   }
-  static auto divergence_of_flux(
-      const MathFunctions::TensorProduct<Dim>& f,
-      const tnsr::I<DataVector, Dim, Frame>& x) noexcept {
+  static auto divergence_of_flux(const MathFunctions::TensorProduct<Dim>& f,
+                                 const tnsr::I<DataVector, Dim, Frame>& x) {
     auto result = make_with_value<tnsr::i<DataVector, Dim, Frame>>(x, 0.);
     const auto df = f.first_derivatives(x);
     for (size_t j = 0; j < Dim; ++j) {
@@ -124,8 +122,7 @@ using two_fluxes = tmpl::list<Flux1<Dim, Frame>, Flux2<Dim, Frame>>;
 template <size_t Dim, typename Frame = Frame::Inertial>
 void test_divergence_impl(
     const Mesh<Dim>& mesh,
-    std::array<std::unique_ptr<MathFunction<1, Frame>>, Dim>
-        functions) noexcept {
+    std::array<std::unique_ptr<MathFunction<1, Frame>>, Dim> functions) {
   const auto coordinate_map = make_affine_map<Dim>();
   const size_t num_grid_points = mesh.number_of_grid_points();
   const auto xi = logical_coordinates(mesh);
@@ -136,8 +133,7 @@ void test_divergence_impl(
   Variables<flux_tags> fluxes(num_grid_points);
   Variables<db::wrap_tags_in<Tags::div, flux_tags>> expected_div_fluxes(
       num_grid_points);
-  tmpl::for_each<flux_tags>([&x, &f, &fluxes,
-                             &expected_div_fluxes ](auto tag) noexcept {
+  tmpl::for_each<flux_tags>([&x, &f, &fluxes, &expected_div_fluxes](auto tag) {
     using FluxTag = tmpl::type_from<decltype(tag)>;
     get<FluxTag>(fluxes) = FluxTag::flux(f, x);
     using DivFluxTag = Tags::div<FluxTag>;
@@ -158,7 +154,7 @@ void test_divergence_impl(
   CHECK(get<Tags::div<Flux1<Dim, Frame>>>(div_fluxes) == div_vector);
 }
 
-void test_divergence() noexcept {
+void test_divergence() {
   using TensorTag = Flux1<1, Frame::Inertial>;
   TestHelpers::db::test_prefix_tag<Tags::div<TensorTag>>("div(Flux1)");
 
@@ -211,8 +207,7 @@ struct MapTag : db::SimpleTag {
 template <size_t Dim, typename Frame = Frame::Inertial>
 void test_divergence_compute_item_impl(
     const Mesh<Dim>& mesh,
-    std::array<std::unique_ptr<MathFunction<1, Frame>>, Dim>
-        functions) noexcept {
+    std::array<std::unique_ptr<MathFunction<1, Frame>>, Dim> functions) {
   const auto coordinate_map = make_affine_map<Dim>();
   using map_tag = MapTag<std::decay_t<decltype(coordinate_map)>>;
   using inv_jac_tag = domain::Tags::InverseJacobianCompute<
@@ -234,8 +229,7 @@ void test_divergence_compute_item_impl(
   Variables<flux_tags> fluxes(num_grid_points);
   Variables<div_tags> expected_div_fluxes(num_grid_points);
 
-  tmpl::for_each<flux_tags>([&x, &f, &fluxes,
-                             &expected_div_fluxes ](auto tag) noexcept {
+  tmpl::for_each<flux_tags>([&x, &f, &fluxes, &expected_div_fluxes](auto tag) {
     using FluxTag = tmpl::type_from<decltype(tag)>;
     get<FluxTag>(fluxes) = FluxTag::flux(f, x);
     using DivFluxTag = Tags::div<FluxTag>;
@@ -264,7 +258,7 @@ void test_divergence_compute_item_impl(
   CHECK(get<Tags::div<Flux1<Dim, Frame>>>(div_fluxes) == div_flux1);
 }
 
-void test_divergence_compute() noexcept {
+void test_divergence_compute() {
   const size_t n0 =
       Spectral::maximum_number_of_points<Spectral::Basis::Legendre> / 2;
   const size_t n1 =

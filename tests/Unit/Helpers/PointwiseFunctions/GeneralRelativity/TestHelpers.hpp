@@ -25,15 +25,14 @@ namespace TestHelpers {
 namespace gr {
 template <typename DataType>
 Scalar<DataType> random_lapse(gsl::not_null<std::mt19937*> generator,
-                              const DataType& used_for_size) noexcept;
+                              const DataType& used_for_size);
 
 template <size_t Dim, typename DataType>
 tnsr::I<DataType, Dim> random_shift(gsl::not_null<std::mt19937*> generator,
-                                    const DataType& used_for_size) noexcept;
+                                    const DataType& used_for_size);
 
 template <size_t Dim, typename DataType, typename Fr = Frame::Inertial>
 tnsr::ii<DataType, Dim, Fr> random_spatial_metric(
-    gsl::not_null<std::mt19937*> generator,
-    const DataType& used_for_size) noexcept;
+    gsl::not_null<std::mt19937*> generator, const DataType& used_for_size);
 }  // namespace gr
 }  // namespace TestHelpers

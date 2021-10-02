@@ -43,7 +43,7 @@ tuples::TaggedTuple<CurvedScalarWave::Pi, CurvedScalarWave::Phi<3>,
 PureSphericalHarmonic::variables(
     const tnsr::I<DataVector, 3>& x, double /*t*/,
     tmpl::list<CurvedScalarWave::Pi, CurvedScalarWave::Phi<3>,
-               CurvedScalarWave::Psi> /*meta*/) const noexcept {
+               CurvedScalarWave::Psi> /*meta*/) const {
   Scalar<DataVector> pi{get(magnitude(x)) - radius_};
   get(pi) = exp(-get(pi) * get(pi) / width_sq_);
   const Spectral::Swsh::SpinWeightedSphericalHarmonic spherical_harmonic(
@@ -58,19 +58,19 @@ PureSphericalHarmonic::variables(
       make_with_value<Scalar<DataVector>>(x, 0.)};
 }
 
-void PureSphericalHarmonic::pup(PUP::er& p) noexcept {
+void PureSphericalHarmonic::pup(PUP::er& p) {
   p | radius_;
   p | width_sq_;
   p | mode_;
 }
 
 bool operator==(const PureSphericalHarmonic& lhs,
-                const PureSphericalHarmonic& rhs) noexcept {
+                const PureSphericalHarmonic& rhs) {
   return lhs.radius_ == rhs.radius_ and lhs.width_sq_ == rhs.width_sq_ and
          lhs.mode_ == rhs.mode_;
 }
 bool operator!=(const PureSphericalHarmonic& lhs,
-                const PureSphericalHarmonic& rhs) noexcept {
+                const PureSphericalHarmonic& rhs) {
   return not(lhs == rhs);
 }
 }  // namespace CurvedScalarWave::AnalyticData

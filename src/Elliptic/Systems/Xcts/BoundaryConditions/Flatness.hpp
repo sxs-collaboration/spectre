@@ -30,16 +30,16 @@ struct FlatnessImpl {
   using argument_tags = tmpl::list<>;
   using volume_tags = tmpl::list<>;
 
-  static void apply(gsl::not_null<Scalar<DataVector>*> conformal_factor,
-                    gsl::not_null<Scalar<DataVector>*>
-                        n_dot_conformal_factor_gradient) noexcept;
+  static void apply(
+      gsl::not_null<Scalar<DataVector>*> conformal_factor,
+      gsl::not_null<Scalar<DataVector>*> n_dot_conformal_factor_gradient);
 
   static void apply(
       gsl::not_null<Scalar<DataVector>*> conformal_factor,
       gsl::not_null<Scalar<DataVector>*> lapse_times_conformal_factor,
       gsl::not_null<Scalar<DataVector>*> n_dot_conformal_factor_gradient,
       gsl::not_null<Scalar<DataVector>*>
-          n_dot_lapse_times_conformal_factor_gradient) noexcept;
+          n_dot_lapse_times_conformal_factor_gradient);
 
   static void apply(
       gsl::not_null<Scalar<DataVector>*> conformal_factor,
@@ -48,8 +48,7 @@ struct FlatnessImpl {
       gsl::not_null<Scalar<DataVector>*> n_dot_conformal_factor_gradient,
       gsl::not_null<Scalar<DataVector>*>
           n_dot_lapse_times_conformal_factor_gradient,
-      gsl::not_null<tnsr::I<DataVector, 3>*>
-          n_dot_longitudinal_shift_excess) noexcept;
+      gsl::not_null<tnsr::I<DataVector, 3>*> n_dot_longitudinal_shift_excess);
 
   using argument_tags_linearized = tmpl::list<>;
   using volume_tags_linearized = tmpl::list<>;
@@ -57,7 +56,7 @@ struct FlatnessImpl {
   static void apply_linearized(
       gsl::not_null<Scalar<DataVector>*> conformal_factor_correction,
       gsl::not_null<Scalar<DataVector>*>
-          n_dot_conformal_factor_gradient_correction) noexcept;
+          n_dot_conformal_factor_gradient_correction);
 
   static void apply_linearized(
       gsl::not_null<Scalar<DataVector>*> conformal_factor_correction,
@@ -66,7 +65,7 @@ struct FlatnessImpl {
       gsl::not_null<Scalar<DataVector>*>
           n_dot_conformal_factor_gradient_correction,
       gsl::not_null<Scalar<DataVector>*>
-          n_dot_lapse_times_conformal_factor_gradient_correction) noexcept;
+          n_dot_lapse_times_conformal_factor_gradient_correction);
 
   static void apply_linearized(
       gsl::not_null<Scalar<DataVector>*> conformal_factor_correction,
@@ -78,12 +77,12 @@ struct FlatnessImpl {
       gsl::not_null<Scalar<DataVector>*>
           n_dot_lapse_times_conformal_factor_gradient_correction,
       gsl::not_null<tnsr::I<DataVector, 3>*>
-          n_dot_longitudinal_shift_excess_correction) noexcept;
+          n_dot_longitudinal_shift_excess_correction);
 };
 
-bool operator==(const FlatnessImpl& lhs, const FlatnessImpl& rhs) noexcept;
+bool operator==(const FlatnessImpl& lhs, const FlatnessImpl& rhs);
 
-bool operator!=(const FlatnessImpl& lhs, const FlatnessImpl& rhs) noexcept;
+bool operator!=(const FlatnessImpl& lhs, const FlatnessImpl& rhs);
 
 }  // namespace detail
 
@@ -120,20 +119,20 @@ class Flatness
 
  public:
   Flatness() = default;
-  Flatness(const Flatness&) noexcept = default;
-  Flatness& operator=(const Flatness&) noexcept = default;
-  Flatness(Flatness&&) noexcept = default;
-  Flatness& operator=(Flatness&&) noexcept = default;
-  ~Flatness() noexcept = default;
+  Flatness(const Flatness&) = default;
+  Flatness& operator=(const Flatness&) = default;
+  Flatness(Flatness&&) = default;
+  Flatness& operator=(Flatness&&) = default;
+  ~Flatness() = default;
 
   /// \cond
-  explicit Flatness(CkMigrateMessage* m) noexcept : Base(m) {}
+  explicit Flatness(CkMigrateMessage* m) : Base(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Flatness);
   /// \endcond
 
   std::unique_ptr<domain::BoundaryConditions::BoundaryCondition> get_clone()
-      const noexcept override {
+      const override {
     return std::make_unique<Flatness>(*this);
   }
 };

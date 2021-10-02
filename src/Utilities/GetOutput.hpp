@@ -11,7 +11,7 @@
  * \brief Get the streamed output of `t` as a `std::string`
  */
 template <typename T>
-std::string get_output(const T& t) noexcept {
+std::string get_output(const T& t) {
   std::ostringstream os;
   os << t;
   return os.str();

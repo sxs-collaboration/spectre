@@ -490,44 +490,43 @@ namespace CoordinateMaps {
 class BulgedCube {
  public:
   static constexpr size_t dim = 3;
-  BulgedCube(double radius, double sphericity,
-             bool use_equiangular_map) noexcept;
-  BulgedCube() noexcept = default;
-  ~BulgedCube() noexcept = default;
-  BulgedCube(BulgedCube&&) noexcept = default;
-  BulgedCube(const BulgedCube&) noexcept = default;
-  BulgedCube& operator=(const BulgedCube&) noexcept = default;
-  BulgedCube& operator=(BulgedCube&&) noexcept = default;
+  BulgedCube(double radius, double sphericity, bool use_equiangular_map);
+  BulgedCube() = default;
+  ~BulgedCube() = default;
+  BulgedCube(BulgedCube&&) = default;
+  BulgedCube(const BulgedCube&) = default;
+  BulgedCube& operator=(const BulgedCube&) = default;
+  BulgedCube& operator=(BulgedCube&&) = default;
 
   template <typename T>
   std::array<tt::remove_cvref_wrap_t<T>, 3> operator()(
-      const std::array<T, 3>& source_coords) const noexcept;
+      const std::array<T, 3>& source_coords) const;
 
   /// The inverse function is only callable with doubles because the inverse
   /// might fail if called for a point out of range, and it is unclear
   /// what should happen if the inverse were to succeed for some points in a
   /// DataVector but fail for other points.
   std::optional<std::array<double, 3>> inverse(
-      const std::array<double, 3>& target_coords) const noexcept;
+      const std::array<double, 3>& target_coords) const;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> jacobian(
-      const std::array<T, 3>& source_coords) const noexcept;
+      const std::array<T, 3>& source_coords) const;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> inv_jacobian(
-      const std::array<T, 3>& source_coords) const noexcept;
+      const std::array<T, 3>& source_coords) const;
 
   // clang-tidy: google runtime references
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
 
-  bool is_identity() const noexcept { return is_identity_; }
+  bool is_identity() const { return is_identity_; }
 
  private:
   template <typename T>
   std::array<tt::remove_cvref_wrap_t<T>, 3> xi_derivative(
-      const std::array<T, 3>& source_coords) const noexcept;
-  friend bool operator==(const BulgedCube& lhs, const BulgedCube& rhs) noexcept;
+      const std::array<T, 3>& source_coords) const;
+  friend bool operator==(const BulgedCube& lhs, const BulgedCube& rhs);
 
   double radius_{std::numeric_limits<double>::signaling_NaN()};
   double sphericity_{std::numeric_limits<double>::signaling_NaN()};
@@ -535,6 +534,6 @@ class BulgedCube {
   bool is_identity_ = false;
 };
 
-bool operator!=(const BulgedCube& lhs, const BulgedCube& rhs) noexcept;
+bool operator!=(const BulgedCube& lhs, const BulgedCube& rhs);
 }  // namespace CoordinateMaps
 }  // namespace domain

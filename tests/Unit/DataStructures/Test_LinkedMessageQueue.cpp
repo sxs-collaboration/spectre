@@ -24,7 +24,7 @@ struct MyQueue {
   using type = std::unique_ptr<double>;
 };
 
-void test_id() noexcept {
+void test_id() {
   const LinkedMessageId<int> id_one_nothing{1, {}};
   const LinkedMessageId<int> id_one_two{1, 2};
   const LinkedMessageId<int> id_two_nothing{2, {}};
@@ -37,7 +37,7 @@ void test_id() noexcept {
   CHECK(get_output(id_one_two) == "1 (2)");
 }
 
-void test_queue() noexcept {
+void test_queue() {
   LinkedMessageQueue<int, tmpl::list<MyQueue<Label1>, MyQueue<Label2>>> queue{};
   CHECK(not queue.next_ready_id().has_value());
 
@@ -58,7 +58,7 @@ void test_queue() noexcept {
   CHECK(not queue.next_ready_id().has_value());
   queue.insert<MyQueue<Label1>>({2, {3}}, std::make_unique<double>(2.2));
 
-  const auto finish_checks = [](decltype(queue) test_queue) noexcept {
+  const auto finish_checks = [](decltype(queue) test_queue) {
     CHECK(not test_queue.next_ready_id().has_value());
     test_queue.insert<MyQueue<Label1>>({3, {1}}, std::make_unique<double>(3.3));
 

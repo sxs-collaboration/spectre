@@ -9,7 +9,7 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 
 namespace vis::detail {
-std::ostream& operator<<(std::ostream& os, const Topology& topology) noexcept {
+std::ostream& operator<<(std::ostream& os, const Topology& topology) {
   switch (topology) {
     case Topology::Line:
       return os << "Line";
@@ -96,7 +96,7 @@ std::vector<CellInTopology> tensor_product_cells(
 }
 
 template <size_t Dim>
-std::vector<CellInTopology> compute_cells(const Index<Dim>& extents) noexcept {
+std::vector<CellInTopology> compute_cells(const Index<Dim>& extents) {
   std::vector<CellInTopology> cells;
   std::vector<std::vector<CellInTopology>> cells_per_topology;
   std::vector<size_t> size_per_topology;
@@ -117,8 +117,7 @@ std::vector<CellInTopology> compute_cells(const Index<Dim>& extents) noexcept {
   return cells;
 }
 
-std::vector<CellInTopology> compute_cells(
-    const std::vector<size_t>& extents) noexcept {
+std::vector<CellInTopology> compute_cells(const std::vector<size_t>& extents) {
   if (extents.size() == 1) {
     return compute_cells(Index<1>{extents[0]});
   } else if (extents.size() == 2) {
@@ -133,11 +132,8 @@ std::vector<CellInTopology> compute_cells(
 }
 
 // Explicit instantiations
-template std::vector<CellInTopology> compute_cells<1>(
-    const Index<1>& extents) noexcept;
-template std::vector<CellInTopology> compute_cells<2>(
-    const Index<2>& extents) noexcept;
-template std::vector<CellInTopology> compute_cells<3>(
-    const Index<3>& extents) noexcept;
+template std::vector<CellInTopology> compute_cells<1>(const Index<1>& extents);
+template std::vector<CellInTopology> compute_cells<2>(const Index<2>& extents);
+template std::vector<CellInTopology> compute_cells<3>(const Index<3>& extents);
 }  // namespace vis::detail
 

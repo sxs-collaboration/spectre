@@ -104,7 +104,7 @@ struct Metavariables {
 
   struct SubcellOptions {
     template <typename DbTagsList>
-    static size_t ghost_zone_size(const db::DataBox<DbTagsList>& box) noexcept {
+    static size_t ghost_zone_size(const db::DataBox<DbTagsList>& box) {
       CHECK(db::get<domain::Tags::Mesh<Dim>>(box) ==
             Mesh<Dim>(5, Spectral::Basis::Legendre,
                       Spectral::Quadrature::GaussLobatto));
@@ -117,7 +117,7 @@ struct Metavariables {
     using return_tags = tmpl::list<>;
     using argument_tags = tmpl::list<Tags::Variables<tmpl::list<Var1>>>;
     static Variables<tmpl::list<Var1>> apply(
-        const Variables<tmpl::list<Var1>>& vars) noexcept {
+        const Variables<tmpl::list<Var1>>& vars) {
       ghost_data_mutator_invoked = true;
       // make some trivial but testable modification
       auto result = vars;

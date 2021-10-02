@@ -22,8 +22,7 @@ extern void dgesv_(int*, int*, double*, int*, int*, double*, int*,  // NOLINT
 namespace lapack {
 int general_matrix_linear_solve(
     const gsl::not_null<DataVector*> rhs_in_solution_out,
-    const gsl::not_null<Matrix*> matrix_operator,
-    const int number_of_rhs) noexcept {
+    const gsl::not_null<Matrix*> matrix_operator, const int number_of_rhs) {
   const size_t rhs_vector_size = matrix_operator->rows();
   std::vector<int> ipiv(rhs_vector_size);
   return general_matrix_linear_solve(rhs_in_solution_out, make_not_null(&ipiv),
@@ -33,7 +32,7 @@ int general_matrix_linear_solve(
 int general_matrix_linear_solve(
     const gsl::not_null<DataVector*> rhs_in_solution_out,
     const gsl::not_null<std::vector<int>*> pivots,
-    const gsl::not_null<Matrix*> matrix_operator, int number_of_rhs) noexcept {
+    const gsl::not_null<Matrix*> matrix_operator, int number_of_rhs) {
   int output_vector_size = matrix_operator->columns();
   int rhs_vector_size = matrix_operator->rows();
   int matrix_spacing = matrix_operator->spacing();
@@ -69,7 +68,7 @@ int general_matrix_linear_solve(
 int general_matrix_linear_solve(const gsl::not_null<DataVector*> solution,
                                 const gsl::not_null<Matrix*> matrix_operator,
                                 const DataVector& rhs,
-                                const int number_of_rhs) noexcept {
+                                const int number_of_rhs) {
   const size_t rhs_vector_size = matrix_operator->rows();
   std::vector<int> ipiv(rhs_vector_size);
   return general_matrix_linear_solve(solution, make_not_null(&ipiv),
@@ -79,8 +78,7 @@ int general_matrix_linear_solve(const gsl::not_null<DataVector*> solution,
 int general_matrix_linear_solve(const gsl::not_null<DataVector*> solution,
                                 const gsl::not_null<std::vector<int>*> pivots,
                                 const gsl::not_null<Matrix*> matrix_operator,
-                                const DataVector& rhs,
-                                int number_of_rhs) noexcept {
+                                const DataVector& rhs, int number_of_rhs) {
   // NOLINTNEXTLINE(clang-analyzer-deadcode)
   const int output_vector_size = matrix_operator->columns();
   const int rhs_vector_size = matrix_operator->rows();
@@ -111,7 +109,7 @@ int general_matrix_linear_solve(const gsl::not_null<DataVector*> solution,
 
 int general_matrix_linear_solve(
     const gsl::not_null<DataVector*> rhs_in_solution_out,
-    const Matrix& matrix_operator, const int number_of_rhs) noexcept {
+    const Matrix& matrix_operator, const int number_of_rhs) {
   // LAPACK is permitted to modify the matrix in-place, so we copy before
   // providing the operator if the original must be preserved.
   Matrix copied_matrix_operator = matrix_operator;
@@ -123,7 +121,7 @@ int general_matrix_linear_solve(
 int general_matrix_linear_solve(const gsl::not_null<DataVector*> solution,
                                 const Matrix& matrix_operator,
                                 const DataVector& rhs,
-                                const int number_of_rhs) noexcept {
+                                const int number_of_rhs) {
   // LAPACK is permitted to modify the matrix in-place, so we copy before
   // providing the operator if the original must be preserved.
   Matrix copied_matrix_operator = matrix_operator;

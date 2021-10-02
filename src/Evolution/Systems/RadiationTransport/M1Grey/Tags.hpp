@@ -30,7 +30,7 @@ struct CharacteristicSpeeds : db::SimpleTag {
 template <typename Fr, class Species>
 struct TildeE : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static std::string name() noexcept {
+  static std::string name() {
     return Frame::prefix<Fr>() + "TildeE_" + neutrinos::get_name(Species{});
   }
 };
@@ -40,7 +40,7 @@ struct TildeE : db::SimpleTag {
 template <typename Fr, class Species>
 struct TildeS : db::SimpleTag {
   using type = tnsr::i<DataVector, 3, Fr>;
-  static std::string name() noexcept {
+  static std::string name() {
     return Frame::prefix<Fr>() + "TildeS_" + neutrinos::get_name(Species{});
   }
 };
@@ -51,7 +51,7 @@ struct TildeS : db::SimpleTag {
 template <typename Fr, class Species>
 struct TildeP : db::SimpleTag {
   using type = tnsr::II<DataVector, 3, Fr>;
-  static std::string name() noexcept {
+  static std::string name() {
     return Frame::prefix<Fr>() + "TildeP_" + neutrinos::get_name(Species{});
   }
 };
@@ -63,9 +63,7 @@ struct TildeP : db::SimpleTag {
 template <typename Fr>
 struct TildeSVector : db::SimpleTag {
   using type = tnsr::I<DataVector, 3, Fr>;
-  static std::string name() noexcept {
-    return Frame::prefix<Fr>() + "TildeSVector";
-  }
+  static std::string name() { return Frame::prefix<Fr>() + "TildeSVector"; }
 };
 
 /// The M1 closure factor of neutrinos of
@@ -73,7 +71,7 @@ struct TildeSVector : db::SimpleTag {
 template <class Species>
 struct ClosureFactor : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static std::string name() noexcept {
+  static std::string name() {
     return "ClosureFactor_" + neutrinos::get_name(Species{});
   }
 };
@@ -83,7 +81,7 @@ struct ClosureFactor : db::SimpleTag {
 template <class Species>
 struct TildeJ : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static std::string name() noexcept {
+  static std::string name() {
     return "TildeJ_" + neutrinos::get_name(Species{});
   }
 };
@@ -93,7 +91,7 @@ struct TildeJ : db::SimpleTag {
 template <class Species>
 struct TildeHNormal : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static std::string name() noexcept {
+  static std::string name() {
     return "TildeHNormal_" + neutrinos::get_name(Species{});
   }
 };
@@ -103,7 +101,7 @@ struct TildeHNormal : db::SimpleTag {
 template <typename Fr, class Species>
 struct TildeHSpatial : db::SimpleTag {
   using type = tnsr::i<DataVector, 3, Fr>;
-  static std::string name() noexcept {
+  static std::string name() {
     return Frame::prefix<Fr>() + "TildeHSpatial_" +
            neutrinos::get_name(Species{});
   }
@@ -115,7 +113,7 @@ struct TildeHSpatial : db::SimpleTag {
 template <class Species>
 struct GreyEmissivity : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static std::string name() noexcept {
+  static std::string name() {
     return "GreyEmissivity_" + neutrinos::get_name(Species{});
   }
 };
@@ -128,7 +126,7 @@ struct GreyEmissivity : db::SimpleTag {
 template <class Species>
 struct GreyAbsorptionOpacity : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static std::string name() noexcept {
+  static std::string name() {
     return "GreyAbsorptionOpacity_" + neutrinos::get_name(Species{});
   }
 };
@@ -140,7 +138,7 @@ struct GreyAbsorptionOpacity : db::SimpleTag {
 template <class Species>
 struct GreyScatteringOpacity : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static std::string name() noexcept {
+  static std::string name() {
     return "GreyScatteringOpacity_" + neutrinos::get_name(Species{});
   }
 };
@@ -153,7 +151,7 @@ struct GreyScatteringOpacity : db::SimpleTag {
 template <class Species>
 struct M1HydroCouplingNormal : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static std::string name() noexcept {
+  static std::string name() {
     return "M1HydroCouplingNormal_" + neutrinos::get_name(Species{});
   }
 };
@@ -167,7 +165,7 @@ struct M1HydroCouplingNormal : db::SimpleTag {
 template <typename Fr, class Species>
 struct M1HydroCouplingSpatial : db::SimpleTag {
   using type = tnsr::i<DataVector, 3, Fr>;
-  static std::string name() noexcept {
+  static std::string name() {
     return Frame::prefix<Fr>() + "M1HydroCouplingSpatial_" +
            neutrinos::get_name(Species{});
   }

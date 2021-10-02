@@ -15,7 +15,7 @@
 #include "Utilities/TMPL.hpp"
 
 namespace domain::FunctionsOfTime {
-void register_derived_with_charm() noexcept {
+void register_derived_with_charm() {
   Parallel::register_classes_with_charm<
       FunctionsOfTime::FixedSpeedCubic,
       FunctionsOfTime::PiecewisePolynomial<0>,

@@ -33,14 +33,14 @@
 
 namespace {
 
-auto make_two_neighbors(const double left, const double right) noexcept {
+auto make_two_neighbors(const double left, const double right) {
   DirectionMap<1, double> result;
   result[Direction<1>::lower_xi()] = left;
   result[Direction<1>::upper_xi()] = right;
   return result;
 }
 
-auto make_four_neighbors(const std::array<double, 4>& values) noexcept {
+auto make_four_neighbors(const std::array<double, 4>& values) {
   DirectionMap<2, double> result;
   result[Direction<2>::lower_xi()] = values[0];
   result[Direction<2>::upper_xi()] = values[1];
@@ -49,7 +49,7 @@ auto make_four_neighbors(const std::array<double, 4>& values) noexcept {
   return result;
 }
 
-auto make_six_neighbors(const std::array<double, 6>& values) noexcept {
+auto make_six_neighbors(const std::array<double, 6>& values) {
   DirectionMap<3, double> result;
   result[Direction<3>::lower_xi()] = values[0];
   result[Direction<3>::upper_xi()] = values[1];
@@ -68,7 +68,7 @@ void test_tci_detection(
     const Element<VolumeDim>& element,
     const std::array<double, VolumeDim>& element_size,
     const DirectionMap<VolumeDim, double>& effective_neighbor_means,
-    const DirectionMap<VolumeDim, double>& effective_neighbor_sizes) noexcept {
+    const DirectionMap<VolumeDim, double>& effective_neighbor_sizes) {
   Limiters::Minmod_detail::BufferWrapper<VolumeDim> buffer(mesh);
   const bool detection = Limiters::Tci::tvb_minmod_indicator(
       make_not_null(&buffer), tvb_constant, input, mesh, element, element_size,
@@ -76,9 +76,8 @@ void test_tci_detection(
   CHECK(detection == expected_detection);
 }
 
-void test_tci_on_linear_function(
-    const size_t number_of_grid_points,
-    const Spectral::Quadrature quadrature) noexcept {
+void test_tci_on_linear_function(const size_t number_of_grid_points,
+                                 const Spectral::Quadrature quadrature) {
   INFO("Testing TCI on linear function");
   CAPTURE(number_of_grid_points);
   CAPTURE(quadrature);
@@ -91,7 +90,7 @@ void test_tci_on_linear_function(
   const auto test_tci = [&mesh, &element](
                             const bool expected, const DataVector& input,
                             const double left_mean, const double right_mean,
-                            const double tvb_scale) noexcept {
+                            const double tvb_scale) {
     const double h = 1.2;
     const double tvb_constant = tvb_scale / square(h);
     const auto element_size = make_array<1>(h);
@@ -102,7 +101,7 @@ void test_tci_on_linear_function(
 
   // mean = 1.6
   // delta_left = delta_right = 0.2
-  const DataVector input = [&mesh]() noexcept {
+  const DataVector input = [&mesh]() {
     const auto x = get<0>(logical_coordinates(mesh));
     return DataVector{1.6 + 0.2 * x};
   }();
@@ -126,9 +125,8 @@ void test_tci_on_linear_function(
   test_tci(false, input, 1.45, 1.5, 0.21);
 }
 
-void test_tci_on_quadratic_function(
-    const size_t number_of_grid_points,
-    const Spectral::Quadrature quadrature) noexcept {
+void test_tci_on_quadratic_function(const size_t number_of_grid_points,
+                                    const Spectral::Quadrature quadrature) {
   INFO("Testing TCI on quadratic function");
   CAPTURE(number_of_grid_points);
   CAPTURE(quadrature);
@@ -141,7 +139,7 @@ void test_tci_on_quadratic_function(
   const auto test_tci = [&mesh, &element](
                             const bool expected, const DataVector& input,
                             const double left_mean, const double right_mean,
-                            const double tvb_scale) noexcept {
+                            const double tvb_scale) {
     const double h = 1.2;
     const double tvb_constant = tvb_scale / square(h);
     const auto element_size = make_array<1>(h);
@@ -153,7 +151,7 @@ void test_tci_on_quadratic_function(
   // mean = 1.5
   // delta_left = 0.1
   // delta_right = 0.3
-  const DataVector input = [&mesh]() noexcept {
+  const DataVector input = [&mesh]() {
     const auto x = get<0>(logical_coordinates(mesh));
     return DataVector{1.45 + 0.2 * x + 0.15 * square(x)};
   }();
@@ -172,7 +170,7 @@ void test_tci_on_quadratic_function(
   // mean = 1.5
   // delta_left = -0.1
   // delta_right = 0.3
-  const DataVector input2 = [&mesh]() noexcept {
+  const DataVector input2 = [&mesh]() {
     const auto x = get<0>(logical_coordinates(mesh));
     return DataVector{1.4 + 0.1 * x + 0.3 * square(x)};
   }();
@@ -200,7 +198,7 @@ void test_tci_on_quadratic_function(
 }
 
 void test_tci_at_boundary(const size_t number_of_grid_points,
-                          const Spectral::Quadrature quadrature) noexcept {
+                          const Spectral::Quadrature quadrature) {
   INFO("Testing TCI at boundary");
   CAPTURE(number_of_grid_points);
   CAPTURE(quadrature);
@@ -209,7 +207,7 @@ void test_tci_at_boundary(const size_t number_of_grid_points,
                      quadrature);
   const auto element_size = make_array<1>(2.0);
 
-  const auto input = [&mesh]() noexcept {
+  const auto input = [&mesh]() {
     const auto coords = logical_coordinates(mesh);
     return DataVector{1.2 * get<0>(coords)};
   }();
@@ -245,8 +243,7 @@ void test_tci_at_boundary(const size_t number_of_grid_points,
 }
 
 void test_tci_with_different_size_neighbor(
-    const size_t number_of_grid_points,
-    const Spectral::Quadrature quadrature) noexcept {
+    const size_t number_of_grid_points, const Spectral::Quadrature quadrature) {
   INFO("Testing TCI with neighboring elements of different size");
   CAPTURE(number_of_grid_points);
   CAPTURE(quadrature);
@@ -261,7 +258,7 @@ void test_tci_with_different_size_neighbor(
                             const bool expected_detection,
                             const DataVector& local_input, const double left,
                             const double right, const double left_size,
-                            const double right_size) noexcept {
+                            const double right_size) {
     test_tci_detection(expected_detection, tvb_constant, local_input, mesh,
                        element, element_size, make_two_neighbors(left, right),
                        make_two_neighbors(left_size, right_size));
@@ -269,7 +266,7 @@ void test_tci_with_different_size_neighbor(
 
   const double eps = 100.0 * std::numeric_limits<double>::epsilon();
 
-  const auto input = [&mesh]() noexcept {
+  const auto input = [&mesh]() {
     const auto coords = logical_coordinates(mesh);
     return DataVector{2.0 + 1.2 * get<0>(coords)};
   }();
@@ -299,7 +296,7 @@ void test_tci_with_different_size_neighbor(
 
 // In 1D, test combinations of TVB constant, polynomial order, etc.
 // Check that each combination has the expected TCI behavior.
-void test_tvb_minmod_tci_1d() noexcept {
+void test_tvb_minmod_tci_1d() {
   INFO("Testing MinmodTci in 1D");
   for (const auto quadrature :
        {Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss}) {
@@ -314,8 +311,7 @@ void test_tvb_minmod_tci_1d() noexcept {
   }
 }
 
-void test_tvb_minmod_tci_2d_impl(
-    const Spectral::Quadrature quadrature) noexcept {
+void test_tvb_minmod_tci_2d_impl(const Spectral::Quadrature quadrature) {
   CAPTURE(quadrature);
   const double tvb_constant = 0.0;
   const auto element = TestHelpers::Limiters::make_element<2>();
@@ -325,14 +321,14 @@ void test_tvb_minmod_tci_2d_impl(
   const auto test_tci =
       [&tvb_constant, &element, &mesh, &element_size](
           const bool expected_detection, const DataVector& local_input,
-          const std::array<double, 4>& neighbor_means) noexcept {
+          const std::array<double, 4>& neighbor_means) {
         test_tci_detection(expected_detection, tvb_constant, local_input, mesh,
                            element, element_size,
                            make_four_neighbors(neighbor_means),
                            make_four_neighbors(make_array<4>(2.0)));
       };
 
-  const auto input = [&mesh]() noexcept {
+  const auto input = [&mesh]() {
     const auto coords = logical_coordinates(mesh);
     const auto& x = get<0>(coords);
     const auto& y = get<1>(coords);
@@ -357,14 +353,13 @@ void test_tvb_minmod_tci_2d_impl(
 
 // In 2D, test that the dimension-by-dimension application of the TCI works as
 // expected.
-void test_tvb_minmod_tci_2d() noexcept {
+void test_tvb_minmod_tci_2d() {
   INFO("Testing MinmodTci in 2D");
   test_tvb_minmod_tci_2d_impl(Spectral::Quadrature::GaussLobatto);
   test_tvb_minmod_tci_2d_impl(Spectral::Quadrature::Gauss);
 }
 
-void test_tvb_minmod_tci_3d_impl(
-    const Spectral::Quadrature quadrature) noexcept {
+void test_tvb_minmod_tci_3d_impl(const Spectral::Quadrature quadrature) {
   CAPTURE(quadrature);
   const double tvb_constant = 0.0;
   const auto element = TestHelpers::Limiters::make_element<3>();
@@ -374,14 +369,14 @@ void test_tvb_minmod_tci_3d_impl(
   const auto test_tci =
       [&tvb_constant, &element, &mesh, &element_size](
           const bool expected_detection, const DataVector& local_input,
-          const std::array<double, 6>& neighbor_means) noexcept {
+          const std::array<double, 6>& neighbor_means) {
         test_tci_detection(expected_detection, tvb_constant, local_input, mesh,
                            element, element_size,
                            make_six_neighbors(neighbor_means),
                            make_six_neighbors(make_array<6>(2.0)));
       };
 
-  const auto input = [&mesh]() noexcept {
+  const auto input = [&mesh]() {
     const auto coords = logical_coordinates(mesh);
     const auto& x = get<0>(coords);
     const auto& y = get<1>(coords);
@@ -412,7 +407,7 @@ void test_tvb_minmod_tci_3d_impl(
 
 // In 3D, test that the dimension-by-dimension application of the TCI works as
 // expected.
-void test_tvb_minmod_tci_3d() noexcept {
+void test_tvb_minmod_tci_3d() {
   INFO("Testing MinmodTci in 3D");
   test_tvb_minmod_tci_3d_impl(Spectral::Quadrature::GaussLobatto);
   test_tvb_minmod_tci_3d_impl(Spectral::Quadrature::Gauss);
@@ -420,16 +415,16 @@ void test_tvb_minmod_tci_3d() noexcept {
 
 struct ScalarTag : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static std::string name() noexcept { return "Scalar"; }
+  static std::string name() { return "Scalar"; }
 };
 
 template <size_t VolumeDim>
 struct VectorTag : db::SimpleTag {
   using type = tnsr::I<DataVector, VolumeDim>;
-  static std::string name() noexcept { return "Vector"; }
+  static std::string name() { return "Vector"; }
 };
 
-void test_tvb_minmod_tci_several_tensors() noexcept {
+void test_tvb_minmod_tci_several_tensors() {
   INFO("Testing MinmodTci action on several tensors");
   // Test that TCI returns true if just one component needs limiting, which
   // we do by limiting a scalar and vector in 3D
@@ -441,8 +436,7 @@ void test_tvb_minmod_tci_several_tensors() noexcept {
   const auto element_size = make_array<3>(1.0);
 
   const auto linear_data = [&mesh](const double mean, const double slope_x,
-                                   const double slope_y,
-                                   const double slope_z) noexcept {
+                                   const double slope_y, const double slope_z) {
     const auto coords = logical_coordinates(mesh);
     const auto& x = get<0>(coords);
     const auto& y = get<1>(coords);

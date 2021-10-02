@@ -92,8 +92,8 @@ SPECTRE_TEST_CASE(
   const auto domain_creator =
       domain::creators::Shell(1.8, 2.2, 1, {{5, 5}}, false);
 
-  const auto expected_block_coord_holders =
-      [&domain_creator, &center, &radius ]() noexcept {
+  const auto expected_block_coord_holders = [&domain_creator, &center,
+                                             &radius]() {
     // How many points are supposed to be in a Strahlkorper,
     // reproduced here by hand for the test.
     const auto l_mesh = static_cast<size_t>(std::floor(1.5 * l_max));
@@ -101,7 +101,7 @@ SPECTRE_TEST_CASE(
     const size_t n_phi = 2 * l_mesh + 1;
 
     // The theta points of a Strahlkorper are Gauss-Legendre points.
-    const std::vector<double> theta_points = [&n_theta]() noexcept {
+    const std::vector<double> theta_points = [&n_theta]() {
       std::vector<double> thetas(n_theta);
       std::vector<double> work(n_theta + 1);
       std::vector<double> unused_weights(n_theta);
@@ -109,8 +109,7 @@ SPECTRE_TEST_CASE(
       gaqd_(static_cast<int>(n_theta), thetas.data(), unused_weights.data(),
             work.data(), static_cast<int>(n_theta + 1), &err);
       return thetas;
-    }
-    ();
+    }();
 
     const double two_pi_over_n_phi = 2.0 * M_PI / n_phi;
     tnsr::I<DataVector, 3, Frame::Inertial> points(n_theta * n_phi);
@@ -126,8 +125,7 @@ SPECTRE_TEST_CASE(
       }
     }
     return block_logical_coordinates(domain_creator.create_domain(), points);
-  }
-  ();
+  }();
 
   TestHelpers::db::test_simple_tag<intrp::Tags::ApparentHorizon<
       MockMetavariables::InterpolationTargetA, Frame::Inertial>>(

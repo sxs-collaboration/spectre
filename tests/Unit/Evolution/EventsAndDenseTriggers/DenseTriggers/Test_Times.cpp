@@ -40,7 +40,7 @@ void check_one_direction(const std::vector<double>& trigger_times,
                          const double current_time,
                          const bool expected_is_triggered,
                          const double expected_next_check,
-                         const bool time_runs_forward) noexcept {
+                         const bool time_runs_forward) {
   CAPTURE(time_runs_forward);
 
   std::stringstream creation_string;
@@ -77,7 +77,7 @@ void check_one_direction(const std::vector<double>& trigger_times,
     CHECK_FALSE(trigger->previous_trigger_time().has_value());
     db::mutate<::Tags::Time>(
         make_not_null(&box),
-        [](const gsl::not_null<double*> time) noexcept { *time += 0.01; });
+        [](const gsl::not_null<double*> time) { *time += 0.01; });
     CHECK_FALSE(trigger->is_triggered(box).is_triggered);
     REQUIRE(trigger->previous_trigger_time().has_value());
     CHECK(trigger->previous_trigger_time().value() == current_time);
@@ -85,7 +85,7 @@ void check_one_direction(const std::vector<double>& trigger_times,
     CHECK_FALSE(trigger->previous_trigger_time().has_value());
     db::mutate<::Tags::Time>(
         make_not_null(&box),
-        [](const gsl::not_null<double*> time) noexcept { *time += 0.01; });
+        [](const gsl::not_null<double*> time) { *time += 0.01; });
     CHECK_FALSE(trigger->is_triggered(box).is_triggered);
     CHECK_FALSE(trigger->previous_trigger_time().has_value());
   }
@@ -94,10 +94,10 @@ void check_one_direction(const std::vector<double>& trigger_times,
 void check_both_directions(std::vector<double> trigger_times,
                            const double current_time,
                            const bool expected_is_triggered,
-                           const double expected_next_check) noexcept {
+                           const double expected_next_check) {
   check_one_direction(trigger_times, current_time, expected_is_triggered,
                       expected_next_check, true);
-  alg::for_each(trigger_times, [](double& t) noexcept { t = -t; });
+  alg::for_each(trigger_times, [](double& t) { t = -t; });
   check_one_direction(trigger_times, -current_time, expected_is_triggered,
                       -expected_next_check, false);
 }

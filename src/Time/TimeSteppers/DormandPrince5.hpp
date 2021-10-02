@@ -66,60 +66,58 @@ class DormandPrince5 : public TimeStepper::Inherit {
       "The standard Dormand-Prince 5th-order time stepper."};
 
   DormandPrince5() = default;
-  DormandPrince5(const DormandPrince5&) noexcept = default;
-  DormandPrince5& operator=(const DormandPrince5&) noexcept = default;
-  DormandPrince5(DormandPrince5&&) noexcept = default;
-  DormandPrince5& operator=(DormandPrince5&&) noexcept = default;
-  ~DormandPrince5() noexcept override = default;
+  DormandPrince5(const DormandPrince5&) = default;
+  DormandPrince5& operator=(const DormandPrince5&) = default;
+  DormandPrince5(DormandPrince5&&) = default;
+  DormandPrince5& operator=(DormandPrince5&&) = default;
+  ~DormandPrince5() override = default;
 
   template <typename Vars, typename DerivVars>
   void update_u(gsl::not_null<Vars*> u,
                 gsl::not_null<History<Vars, DerivVars>*> history,
-                const TimeDelta& time_step) const noexcept;
+                const TimeDelta& time_step) const;
 
   template <typename Vars, typename ErrVars, typename DerivVars>
   bool update_u(gsl::not_null<Vars*> u, gsl::not_null<ErrVars*> u_error,
                 gsl::not_null<History<Vars, DerivVars>*> history,
-                const TimeDelta& time_step) const noexcept;
+                const TimeDelta& time_step) const;
 
   template <typename Vars, typename DerivVars>
   bool dense_update_u(gsl::not_null<Vars*> u,
                       const History<Vars, DerivVars>& history,
-                      double time) const noexcept;
+                      double time) const;
 
-  size_t order() const noexcept override;
+  size_t order() const override;
 
-  size_t error_estimate_order() const noexcept override;
+  size_t error_estimate_order() const override;
 
-  uint64_t number_of_substeps() const noexcept override;
+  uint64_t number_of_substeps() const override;
 
-  uint64_t number_of_substeps_for_error() const noexcept override;
+  uint64_t number_of_substeps_for_error() const override;
 
-  size_t number_of_past_steps() const noexcept override;
+  size_t number_of_past_steps() const override;
 
-  double stable_step() const noexcept override;
+  double stable_step() const override;
 
   TimeStepId next_time_id(const TimeStepId& current_id,
-                          const TimeDelta& time_step) const noexcept override;
+                          const TimeDelta& time_step) const override;
 
-  TimeStepId next_time_id_for_error(
-      const TimeStepId& current_id,
-      const TimeDelta& time_step) const noexcept override;
+  TimeStepId next_time_id_for_error(const TimeStepId& current_id,
+                                    const TimeDelta& time_step) const override;
 
   template <typename Vars, typename DerivVars>
   bool can_change_step_size(
       const TimeStepId& time_id,
-      const TimeSteppers::History<Vars, DerivVars>& /*history*/) const
-      noexcept {
+      const TimeSteppers::History<Vars, DerivVars>& /*history*/) const {
     return time_id.substep() == 0;
   }
 
   WRAPPED_PUPable_decl_template(DormandPrince5);  // NOLINT
 
-  explicit DormandPrince5(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit DormandPrince5(CkMigrateMessage* /*unused*/) {}
 
   // clang-tidy: do not pass by non-const reference
-  void pup(PUP::er& p) noexcept override {  // NOLINT
+  void pup(PUP::er& p) override {  // NOLINT
     TimeStepper::Inherit::pup(p);
   }
 
@@ -155,12 +153,12 @@ class DormandPrince5 : public TimeStepper::Inherit {
 };
 
 inline bool constexpr operator==(const DormandPrince5& /*lhs*/,
-                                 const DormandPrince5& /*rhs*/) noexcept {
+                                 const DormandPrince5& /*rhs*/) {
   return true;
 }
 
 inline bool constexpr operator!=(const DormandPrince5& /*lhs*/,
-                                 const DormandPrince5& /*rhs*/) noexcept {
+                                 const DormandPrince5& /*rhs*/) {
   return false;
 }
 
@@ -168,7 +166,7 @@ template <typename Vars, typename DerivVars>
 void DormandPrince5::update_u(
     const gsl::not_null<Vars*> u,
     const gsl::not_null<History<Vars, DerivVars>*> history,
-    const TimeDelta& time_step) const noexcept {
+    const TimeDelta& time_step) const {
   ASSERT(history->integration_order() == 5,
          "Fixed-order stepper cannot run at order "
          << history->integration_order());
@@ -181,9 +179,8 @@ void DormandPrince5::update_u(
 
   const double dt = time_step.value();
 
-  const auto increment_u = [&u, &history, &dt](
-                               const auto& coeffs_last,
-                               const auto& coeffs_this) noexcept {
+  const auto increment_u = [&u, &history, &dt](const auto& coeffs_last,
+                                               const auto& coeffs_this) {
     static_assert(std::tuple_size_v<std::decay_t<decltype(coeffs_last)>> + 1 ==
                       std::tuple_size_v<std::decay_t<decltype(coeffs_this)>>,
                   "Unexpected coefficient vector sizes.");
@@ -217,7 +214,7 @@ template <typename Vars, typename ErrVars, typename DerivVars>
 bool DormandPrince5::update_u(
     const gsl::not_null<Vars*> u, const gsl::not_null<ErrVars*> u_error,
     const gsl::not_null<History<Vars, DerivVars>*> history,
-    const TimeDelta& time_step) const noexcept {
+    const TimeDelta& time_step) const {
   ASSERT(history->integration_order() == 5,
          "Fixed-order stepper cannot run at order "
          << history->integration_order());
@@ -246,7 +243,7 @@ bool DormandPrince5::update_u(
 template <typename Vars, typename DerivVars>
 bool DormandPrince5::dense_update_u(const gsl::not_null<Vars*> u,
                                     const History<Vars, DerivVars>& history,
-                                    const double time) const noexcept {
+                                    const double time) const {
   if ((history.end() - 1).time_step_id().substep() != 0) {
     return false;
   }
@@ -274,7 +271,7 @@ bool DormandPrince5::dense_update_u(const gsl::not_null<Vars*> u,
   // The formula for dense output is given in Numerical Recipes Sec. 17.2.3.
   // This version is modified to eliminate all the values of the function
   // except the most recent.
-  const auto common = [&output_fraction](const size_t n) noexcept {
+  const auto common = [&output_fraction](const size_t n) {
     return square(output_fraction) * gsl::at(d_, n) -
            (1.0 + 2.0 * output_fraction) * gsl::at(b_, n);
   };

@@ -53,7 +53,7 @@ struct Metavariables {
       using argument_tags = tmpl::list<CharacteristicSpeed>;
       using return_type = double;
       static void function(const gsl::not_null<double*> return_speed,
-                           const double& speed) noexcept {
+                           const double& speed) {
         *return_speed = speed;
       }
     };
@@ -73,7 +73,7 @@ struct Metavariables {
 template <size_t Dim>
 std::pair<double, bool> get_suggestion(
     const double safety_factor, const double characteristic_speed,
-    ElementMap<Dim, Frame::Grid>&& element_map) noexcept {
+    ElementMap<Dim, Frame::Grid>&& element_map) {
   const Parallel::GlobalCache<Metavariables<Dim>> cache{};
   auto box = db::create<
       db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<Metavariables<Dim>>,

@@ -63,13 +63,13 @@ class TestBoundaryCondition : public BoundaryCondition<1, Registrars> {
   TestBoundaryCondition& operator=(const TestBoundaryCondition&) = default;
   TestBoundaryCondition& operator=(TestBoundaryCondition&&) = default;
   ~TestBoundaryCondition() override = default;
-  explicit TestBoundaryCondition(CkMigrateMessage* m) noexcept : Base(m) {}
+  explicit TestBoundaryCondition(CkMigrateMessage* m) : Base(m) {}
   WRAPPED_PUPable_decl_base_template(
       SINGLE_ARG(BoundaryCondition<1, Registrars>),
       SINGLE_ARG(TestBoundaryCondition<Registrars>));  // NOLINT
 
   std::unique_ptr<domain::BoundaryConditions::BoundaryCondition> get_clone()
-      const noexcept override {
+      const override {
     return std::make_unique<TestBoundaryCondition>(*this);
   }
 
@@ -81,7 +81,7 @@ class TestBoundaryCondition : public BoundaryCondition<1, Registrars> {
   static void apply(const gsl::not_null<Scalar<DataVector>*> field,
                     const gsl::not_null<Scalar<DataVector>*> n_dot_flux,
                     const int arg_on_face, const bool arg_from_volume,
-                    const int arg_nonlinear) noexcept {
+                    const int arg_nonlinear) {
     // [example_poisson_fields]
     CHECK(arg_on_face == 1);
     CHECK(arg_from_volume);
@@ -96,7 +96,7 @@ class TestBoundaryCondition : public BoundaryCondition<1, Registrars> {
   static void apply_linearized(
       const gsl::not_null<Scalar<DataVector>*> field_correction,
       const gsl::not_null<Scalar<DataVector>*> n_dot_flux_correction,
-      const int arg_on_face, const bool arg_from_volume) noexcept {
+      const int arg_on_face, const bool arg_from_volume) {
     CHECK(arg_on_face == 1);
     CHECK(arg_from_volume);
     std::fill(field_correction->begin(), field_correction->end(), 3.);

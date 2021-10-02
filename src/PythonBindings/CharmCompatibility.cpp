@@ -104,17 +104,15 @@ void realCkExit(int exitcode) { exit(exitcode); }
 #pragma GCC diagnostic pop
 
 namespace formaline {
-std::vector<char> get_archive() noexcept {
+std::vector<char> get_archive() {
   return {'N', 'o', 't', ' ', 's', 'u', 'p', 'p', 'o', 'r', 't', 'e', 'd'};
 }
 
-std::string get_environment_variables() noexcept {
-  return "Not supported on macOS";
-}
+std::string get_environment_variables() { return "Not supported on macOS"; }
 
-std::string get_build_info() noexcept { return "Not supported in python"; }
+std::string get_build_info() { return "Not supported in python"; }
 
-std::string get_paths() noexcept { return "Not supported in python."; }
+std::string get_paths() { return "Not supported in python."; }
 }  // namespace formaline
 
 /*

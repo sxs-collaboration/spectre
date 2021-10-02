@@ -31,10 +31,10 @@ struct FieldTag : db::SimpleTag {
 struct AnalyticSolution {
   static tuples::TaggedTuple<FieldTag> variables(
       const tnsr::I<DataVector, 1>& x, const double t,
-      const tmpl::list<FieldTag> /*meta*/) noexcept {
+      const tmpl::list<FieldTag> /*meta*/) {
     return {Scalar<DataVector>{t * get<0>(x)}};
   }
-  void pup(PUP::er& /*p*/) noexcept {}  // NOLINT
+  void pup(PUP::er& /*p*/) {}  // NOLINT
 };
 
 struct AnalyticSolutionTag : db::SimpleTag {

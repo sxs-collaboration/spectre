@@ -35,41 +35,38 @@ class Element {
   /// \param id a unique identifier for the Element.
   /// \param neighbors info about the Elements that share an interface
   /// with this Element.
-  Element(ElementId<VolumeDim> id, Neighbors_t neighbors) noexcept;
+  Element(ElementId<VolumeDim> id, Neighbors_t neighbors);
 
   /// Default needed for serialization
   Element() = default;
 
   ~Element() = default;
   Element(const Element<VolumeDim>& /*rhs*/) = default;
-  Element(Element<VolumeDim>&& /*rhs*/) noexcept = default;
+  Element(Element<VolumeDim>&& /*rhs*/) = default;
   Element<VolumeDim>& operator=(const Element<VolumeDim>& /*rhs*/) = default;
-  Element<VolumeDim>& operator=(Element<VolumeDim>&& /*rhs*/) noexcept =
-      default;
+  Element<VolumeDim>& operator=(Element<VolumeDim>&& /*rhs*/) = default;
 
   /// The directions of the faces of the Element that are external boundaries.
-  const std::unordered_set<Direction<VolumeDim>>& external_boundaries() const
-      noexcept {
+  const std::unordered_set<Direction<VolumeDim>>& external_boundaries() const {
     return external_boundaries_;
   }
 
   /// The directions of the faces of the Element that are internal boundaries.
-  const std::unordered_set<Direction<VolumeDim>>& internal_boundaries() const
-      noexcept {
+  const std::unordered_set<Direction<VolumeDim>>& internal_boundaries() const {
     return internal_boundaries_;
   }
 
   /// A unique ID for the Element.
-  const ElementId<VolumeDim>& id() const noexcept { return id_; }
+  const ElementId<VolumeDim>& id() const { return id_; }
 
   /// Information about the neighboring Elements.
-  const Neighbors_t& neighbors() const noexcept { return neighbors_; }
+  const Neighbors_t& neighbors() const { return neighbors_; }
 
   /// The number of neighbors this element has
-  size_t number_of_neighbors() const noexcept { return number_of_neighbors_; }
+  size_t number_of_neighbors() const { return number_of_neighbors_; }
 
   // clang-tidy: google-runtime-references
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
 
  private:
   ElementId<VolumeDim> id_{};
@@ -80,13 +77,10 @@ class Element {
 };
 
 template <size_t VolumeDim>
-std::ostream& operator<<(std::ostream& os,
-                         const Element<VolumeDim>& element) noexcept;
+std::ostream& operator<<(std::ostream& os, const Element<VolumeDim>& element);
 
 template <size_t VolumeDim>
-bool operator==(const Element<VolumeDim>& lhs,
-                const Element<VolumeDim>& rhs) noexcept;
+bool operator==(const Element<VolumeDim>& lhs, const Element<VolumeDim>& rhs);
 
 template <size_t VolumeDim>
-bool operator!=(const Element<VolumeDim>& lhs,
-                const Element<VolumeDim>& rhs) noexcept;
+bool operator!=(const Element<VolumeDim>& lhs, const Element<VolumeDim>& rhs);

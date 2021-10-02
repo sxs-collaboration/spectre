@@ -57,7 +57,7 @@ void test_rotated_intervals_construction(
         expected_grid_to_inertial_maps,
     const std::vector<DirectionMap<
         1, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>&
-        expected_boundary_conditions) noexcept {
+        expected_boundary_conditions) {
   const auto domain = rotated_intervals.create_domain();
 
   CHECK(domain.blocks().size() == expected_extents.size());

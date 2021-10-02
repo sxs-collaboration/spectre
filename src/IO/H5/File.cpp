@@ -62,7 +62,7 @@ H5File<Access_t>::H5File(std::string file_name, bool append_to_file)
 }
 
 template <AccessType Access_t>
-H5File<Access_t>::H5File(H5File&& rhs) noexcept {
+H5File<Access_t>::H5File(H5File&& rhs) {
   file_name_ = std::move(rhs.file_name_);
   file_id_ = std::move(rhs.file_id_);
   current_object_ = std::move(rhs.current_object_);
@@ -71,7 +71,7 @@ H5File<Access_t>::H5File(H5File&& rhs) noexcept {
 }
 
 template <AccessType Access_t>
-H5File<Access_t>& H5File<Access_t>::operator=(H5File&& rhs) noexcept {
+H5File<Access_t>& H5File<Access_t>::operator=(H5File&& rhs) {
   if (file_id_ != -1) {
     CHECK_H5(H5Fclose(file_id_),
              "Failed to close file: '" << file_name_ << "'");
@@ -94,11 +94,11 @@ H5File<Access_t>::~H5File() {
 }
 
 template <>
-void H5File<AccessType::ReadWrite>::insert_source_archive() noexcept {
+void H5File<AccessType::ReadWrite>::insert_source_archive() {
   insert<h5::SourceArchive>("/src");
 }
 template <>
-void H5File<AccessType::ReadOnly>::insert_source_archive() noexcept {}
+void H5File<AccessType::ReadOnly>::insert_source_archive() {}
 }  // namespace h5
 
 template class h5::H5File<h5::AccessType::ReadOnly>;

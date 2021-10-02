@@ -104,7 +104,7 @@ std::array<DataVector, 9> characteristic_speeds(
     const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
     const tnsr::i<DataVector, 3>& unit_normal,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
-        equation_of_state) noexcept;
+        equation_of_state);
 
 template <size_t ThermodynamicDim>
 void characteristic_speeds(
@@ -119,7 +119,7 @@ void characteristic_speeds(
     const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
     const tnsr::i<DataVector, 3>& unit_normal,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
-        equation_of_state) noexcept;
+        equation_of_state);
 /// @}
 
 namespace Tags {
@@ -159,8 +159,7 @@ struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds,
       const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
       const tnsr::i<DataVector, 3>& unit_normal,
       const EquationsOfState::EquationOfState<
-          true, EquationOfStateType::thermodynamic_dim>&
-          equation_of_state) noexcept {
+          true, EquationOfStateType::thermodynamic_dim>& equation_of_state) {
     characteristic_speeds<EquationOfStateType::thermodynamic_dim>(
         result, rest_mass_density, specific_internal_energy, specific_enthalpy,
         spatial_velocity, lorentz_factor, magnetic_field, lapse, shift,
@@ -177,7 +176,7 @@ struct ComputeLargestCharacteristicSpeed : db::ComputeTag,
   using argument_tags = tmpl::list<>;
   using return_type = double;
   using base = LargestCharacteristicSpeed;
-  static void function(const gsl::not_null<double*> speed) noexcept {
+  static void function(const gsl::not_null<double*> speed) {
     // note: this is an approximation valid only in flat spacetime. For better
     // CFL estimates, this should be updated to calculate the characteristic
     // speed based on the lapse and shift.

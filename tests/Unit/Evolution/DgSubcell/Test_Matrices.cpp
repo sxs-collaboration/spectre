@@ -25,7 +25,7 @@ namespace evolution::dg::subcell::fd {
 namespace {
 template <size_t MaxPts, size_t Dim, Spectral::Basis BasisType,
           Spectral::Quadrature QuadratureType>
-void test_projection_matrix() noexcept {
+void test_projection_matrix() {
   CAPTURE(Dim);
   CAPTURE(BasisType);
   CAPTURE(QuadratureType);
@@ -62,7 +62,7 @@ void test_projection_matrix() noexcept {
 
 template <size_t MaxPts, size_t Dim, Spectral::Basis BasisType,
           Spectral::Quadrature QuadratureType>
-void reconstruction_matrix(const double eps) noexcept {
+void reconstruction_matrix(const double eps) {
   CAPTURE(Dim);
   CAPTURE(BasisType);
   CAPTURE(QuadratureType);

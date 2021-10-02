@@ -27,7 +27,7 @@ template <size_t Dim>
 IsentropicVortex<Dim>::IsentropicVortex(
     const double adiabatic_index, const std::array<double, Dim>& center,
     const std::array<double, Dim>& mean_velocity, const double strength,
-    const double perturbation_amplitude) noexcept
+    const double perturbation_amplitude)
     : adiabatic_index_(adiabatic_index),
       center_(center),
       mean_velocity_(mean_velocity),
@@ -50,7 +50,7 @@ IsentropicVortex<Dim>::IsentropicVortex(
 }
 
 template <size_t Dim>
-void IsentropicVortex<Dim>::pup(PUP::er& p) noexcept {
+void IsentropicVortex<Dim>::pup(PUP::er& p) {
   p | adiabatic_index_;
   p | center_;
   p | mean_velocity_;
@@ -63,15 +63,14 @@ void IsentropicVortex<Dim>::pup(PUP::er& p) noexcept {
 // Can be any smooth function of z. For testing purposes, we choose sin(z).
 template <size_t Dim>
 template <typename DataType>
-DataType IsentropicVortex<Dim>::perturbation_profile(const DataType& z) const
-    noexcept {
+DataType IsentropicVortex<Dim>::perturbation_profile(const DataType& z) const {
   return sin(z);
 }
 
 template <size_t Dim>
 template <typename DataType>
 DataType IsentropicVortex<Dim>::deriv_of_perturbation_profile(
-    const DataType& z) const noexcept {
+    const DataType& z) const {
   return cos(z);
 }
 
@@ -80,8 +79,7 @@ template <typename DataType>
 IsentropicVortex<Dim>::IntermediateVariables<DataType>::IntermediateVariables(
     const tnsr::I<DataType, Dim, Frame::Inertial>& x, const double t,
     const std::array<double, Dim>& center,
-    const std::array<double, Dim>& mean_velocity,
-    const double strength) noexcept {
+    const std::array<double, Dim>& mean_velocity, const double strength) {
   x_tilde = get<0>(x) - center[0] - t * mean_velocity[0];
   y_tilde = get<1>(x) - center[1] - t * mean_velocity[1];
   profile = 0.5 * strength *
@@ -96,7 +94,7 @@ template <typename DataType>
 tuples::TaggedTuple<Tags::MassDensity<DataType>>
 IsentropicVortex<Dim>::variables(
     tmpl::list<Tags::MassDensity<DataType>> /*meta*/,
-    const IntermediateVariables<DataType>& vars) const noexcept {
+    const IntermediateVariables<DataType>& vars) const {
   const double adiabatic_index_minus_one = adiabatic_index_ - 1.0;
   return Scalar<DataType>(pow(1.0 - 0.5 * adiabatic_index_minus_one *
                                         square(vars.profile) / adiabatic_index_,
@@ -108,7 +106,7 @@ template <typename DataType>
 tuples::TaggedTuple<Tags::Velocity<DataType, Dim>>
 IsentropicVortex<Dim>::variables(
     tmpl::list<Tags::Velocity<DataType, Dim>> /*meta*/,
-    const IntermediateVariables<DataType>& vars) const noexcept {
+    const IntermediateVariables<DataType>& vars) const {
   auto velocity = make_with_value<tnsr::I<DataType, Dim, Frame::Inertial>>(
       vars.y_tilde, 0.0);
   for (size_t i = 0; i < Dim; ++i) {
@@ -128,7 +126,7 @@ template <typename DataType>
 tuples::TaggedTuple<Tags::SpecificInternalEnergy<DataType>>
 IsentropicVortex<Dim>::variables(
     tmpl::list<Tags::SpecificInternalEnergy<DataType>> /*meta*/,
-    const IntermediateVariables<DataType>& vars) const noexcept {
+    const IntermediateVariables<DataType>& vars) const {
   return equation_of_state_.specific_internal_energy_from_density(
       get<Tags::MassDensity<DataType>>(
           variables(tmpl::list<Tags::MassDensity<DataType>>{}, vars)));
@@ -138,7 +136,7 @@ template <size_t Dim>
 template <typename DataType>
 tuples::TaggedTuple<Tags::Pressure<DataType>> IsentropicVortex<Dim>::variables(
     tmpl::list<Tags::Pressure<DataType>> /*meta*/,
-    const IntermediateVariables<DataType>& vars) const noexcept {
+    const IntermediateVariables<DataType>& vars) const {
   return equation_of_state_.pressure_from_density(
       get<Tags::MassDensity<DataType>>(
           variables(tmpl::list<Tags::MassDensity<DataType>>{}, vars)));
@@ -146,7 +144,7 @@ tuples::TaggedTuple<Tags::Pressure<DataType>> IsentropicVortex<Dim>::variables(
 
 template <size_t Dim>
 bool operator==(const IsentropicVortex<Dim>& lhs,
-                const IsentropicVortex<Dim>& rhs) noexcept {
+                const IsentropicVortex<Dim>& rhs) {
   // No comparison for equation_of_state_ or source_term_. Comparing individual
   // members should suffice.
   return lhs.adiabatic_index_ == rhs.adiabatic_index_ and
@@ -158,7 +156,7 @@ bool operator==(const IsentropicVortex<Dim>& lhs,
 
 template <size_t Dim>
 bool operator!=(const IsentropicVortex<Dim>& lhs,
-                const IsentropicVortex<Dim>& rhs) noexcept {
+                const IsentropicVortex<Dim>& rhs) {
   return not(lhs == rhs);
 }
 
@@ -166,12 +164,12 @@ bool operator!=(const IsentropicVortex<Dim>& lhs,
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define TAG(data) BOOST_PP_TUPLE_ELEM(2, data)
 
-#define INSTANTIATE_CLASS(_, data)                                       \
-  template class IsentropicVortex<DIM(data)>;                            \
-  template bool operator==(const IsentropicVortex<DIM(data)>&,           \
-                           const IsentropicVortex<DIM(data)>&) noexcept; \
-  template bool operator!=(const IsentropicVortex<DIM(data)>&,           \
-                           const IsentropicVortex<DIM(data)>&) noexcept;
+#define INSTANTIATE_CLASS(_, data)                              \
+  template class IsentropicVortex<DIM(data)>;                   \
+  template bool operator==(const IsentropicVortex<DIM(data)>&,  \
+                           const IsentropicVortex<DIM(data)>&); \
+  template bool operator!=(const IsentropicVortex<DIM(data)>&,  \
+                           const IsentropicVortex<DIM(data)>&);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_CLASS, (2, 3))
 
@@ -180,28 +178,28 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_CLASS, (2, 3))
       data)>;                                                                  \
   template DTYPE(data)                                                         \
       IsentropicVortex<DIM(data)>::perturbation_profile(const DTYPE(data) & z) \
-          const noexcept;                                                      \
+          const;                                                               \
   template DTYPE(data)                                                         \
       IsentropicVortex<DIM(data)>::deriv_of_perturbation_profile(              \
-          const DTYPE(data) & z) const noexcept;
+          const DTYPE(data) & z) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_MEMBERS, (2, 3), (double, DataVector))
 
-#define INSTANTIATE_SCALARS(_, data)                     \
-  template tuples::TaggedTuple<TAG(data) < DTYPE(data)>> \
-      IsentropicVortex<DIM(data)>::variables(            \
-          tmpl::list<TAG(data) < DTYPE(data)>>,          \
-          const IntermediateVariables<DTYPE(data)>&) const noexcept;
+#define INSTANTIATE_SCALARS(_, data)                      \
+  template tuples::TaggedTuple<TAG(data) < DTYPE(data)> > \
+      IsentropicVortex<DIM(data)>::variables(             \
+          tmpl::list<TAG(data) < DTYPE(data)> >,          \
+          const IntermediateVariables<DTYPE(data)>&) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_SCALARS, (2, 3), (double, DataVector),
                         (Tags::MassDensity, Tags::SpecificInternalEnergy,
                          Tags::Pressure))
 
-#define INSTANTIATE_VELOCITY(_, data)                               \
-  template tuples::TaggedTuple<TAG(data) < DTYPE(data), DIM(data)>> \
-      IsentropicVortex<DIM(data)>::variables(                       \
-          tmpl::list<TAG(data) < DTYPE(data), DIM(data)>>,          \
-          const IntermediateVariables<DTYPE(data)>&) const noexcept;
+#define INSTANTIATE_VELOCITY(_, data)                                \
+  template tuples::TaggedTuple<TAG(data) < DTYPE(data), DIM(data)> > \
+      IsentropicVortex<DIM(data)>::variables(                        \
+          tmpl::list<TAG(data) < DTYPE(data), DIM(data)> >,          \
+          const IntermediateVariables<DTYPE(data)>&) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_VELOCITY, (2, 3), (double, DataVector),
                         (Tags::Velocity))

@@ -45,7 +45,7 @@ struct MockMetavariables {
   enum class Phase { Initialization, Testing, Exit };
 };
 
-void test_r_theta_lgl() noexcept {
+void test_r_theta_lgl() {
   const size_t num_radial = 3;
   const size_t num_theta = 4;
   const size_t num_phi = 5;
@@ -58,8 +58,7 @@ void test_r_theta_lgl() noexcept {
       domain::creators::Shell(0.9, 4.9, 1, {{5, 5}}, false);
 
   const size_t num_total = num_radial * num_theta * num_phi;
-  const auto expected_block_coord_holders = [&domain_creator,
-                                             &num_total]() noexcept {
+  const auto expected_block_coord_holders = [&domain_creator, &num_total]() {
     tnsr::I<DataVector, 3, Frame::Inertial> points(num_total);
     for (size_t r = 0; r < num_radial; ++r) {
       const double radius =
@@ -93,7 +92,7 @@ void test_r_theta_lgl() noexcept {
       expected_block_coord_holders);
 }
 
-void test_r_theta_uniform() noexcept {
+void test_r_theta_uniform() {
   const size_t num_radial = 4;
   const size_t num_theta = 5;
   const size_t num_phi = 6;
@@ -106,8 +105,7 @@ void test_r_theta_uniform() noexcept {
       domain::creators::Shell(0.9, 4.9, 1, {{5, 5}}, false);
 
   const size_t num_total = num_radial * num_theta * num_phi;
-  const auto expected_block_coord_holders = [&domain_creator,
-                                             &num_total]() noexcept {
+  const auto expected_block_coord_holders = [&domain_creator, &num_total]() {
     tnsr::I<DataVector, 3, Frame::Inertial> points(num_total);
     for (size_t r = 0; r < num_radial; ++r) {
       const double radius = 1.8 + 1.8 * r / (num_radial - 1.0);

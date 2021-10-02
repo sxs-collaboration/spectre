@@ -48,10 +48,10 @@ struct Context {
   int column{-1};
 
   /// Append a line to the context.  Automatically appends a colon.
-  void append(const std::string& c) noexcept { context += c + ":\n"; }
+  void append(const std::string& c) { context += c + ":\n"; }
 };
 
-inline std::ostream& operator<<(std::ostream& s, const Context& c) noexcept {
+inline std::ostream& operator<<(std::ostream& s, const Context& c) {
   s << c.context;
   if (c.line >= 0 and c.column >= 0) {
     s << "At line " << c.line + 1 << " column " << c.column + 1 << ":\n";
@@ -86,11 +86,11 @@ namespace Options_detail {
 class propagate_context : public std::exception {
  public:
   // cppcheck-suppress passedByValue
-  explicit propagate_context(std::string message) noexcept
+  explicit propagate_context(std::string message)
       : message_(std::move(message)) {}
 
   const char* what() const noexcept override { return message_.c_str(); }
-  const std::string& message() const noexcept { return message_; }
+  const std::string& message() const { return message_; }
 
  private:
   std::string message_;
@@ -107,10 +107,10 @@ class propagate_context : public std::exception {
 /// `create_from_yaml::create` function.
 class Option {
  public:
-  const Context& context() const noexcept;
+  const Context& context() const;
 
   /// Append a line to the contained context.
-  void append_context(const std::string& context) noexcept;
+  void append_context(const std::string& context);
 
   /// Convert to an object of type `T`.
   template <typename T, typename Metavariables = NoSuchType>
@@ -120,18 +120,18 @@ class Option {
   /// context with the one from the node.
   ///
   /// \warning This method is for internal use of the option parser.
-  explicit Option(YAML::Node node, Context context = {}) noexcept;
+  explicit Option(YAML::Node node, Context context = {});
 
   /// \warning This method is for internal use of the option parser.
-  explicit Option(Context context) noexcept;
+  explicit Option(Context context);
 
   /// \warning This method is for internal use of the option parser.
-  const YAML::Node& node() const noexcept;
+  const YAML::Node& node() const;
 
   /// Sets the node and updates the context's mark to correspond to it.
   ///
   /// \warning This method is for internal use of the option parser.
-  void set_node(YAML::Node node) noexcept;
+  void set_node(YAML::Node node);
 
  private:
   std::unique_ptr<YAML::Node> node_;
@@ -153,18 +153,18 @@ struct create_from_yaml {
 namespace Options_detail {
 template <typename T, typename = std::void_t<>>
 struct name_helper {
-  static std::string name() noexcept { return pretty_type::short_name<T>(); }
+  static std::string name() { return pretty_type::short_name<T>(); }
 };
 
 template <typename T>
 struct name_helper<T, std::void_t<decltype(T::name())>> {
-  static std::string name() noexcept { return T::name(); }
+  static std::string name() { return T::name(); }
 };
 }  // namespace Options_detail
 
 // The name in the YAML file for a struct.
 template <typename T>
-std::string name() noexcept {
+std::string name() {
   return Options_detail::name_helper<T>::name();
 }
 

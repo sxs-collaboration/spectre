@@ -20,7 +20,7 @@ template <size_t Dim>
 Mesh<Dim> create_initial_mesh(
     const std::vector<std::array<size_t, Dim>>& initial_extents,
     const ElementId<Dim>& element_id, const Spectral::Quadrature quadrature,
-    const OrientationMap<Dim>& orientation) noexcept {
+    const OrientationMap<Dim>& orientation) {
   const auto& unoriented_extents = initial_extents[element_id.block_id()];
   Index<Dim> extents;
   for (size_t i = 0; i < Dim; ++i) {
@@ -37,7 +37,7 @@ Mesh<Dim> create_initial_mesh(
   domain::Initialization::create_initial_mesh<DIM(data)>(                 \
       const std::vector<std::array<size_t, DIM(data)>>&,                  \
       const ElementId<DIM(data)>&, const Spectral::Quadrature quadrature, \
-      const OrientationMap<DIM(data)>&) noexcept;
+      const OrientationMap<DIM(data)>&);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 

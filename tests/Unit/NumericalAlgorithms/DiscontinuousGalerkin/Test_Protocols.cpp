@@ -25,13 +25,12 @@ struct CentralFlux : tt::ConformsTo<dg::protocols::NumericalFlux> {
   using package_extra_tags = tmpl::list<>;
   static void package_data(
       const gsl::not_null<Scalar<DataVector>*> packaged_normal_dot_flux,
-      const Scalar<DataVector>& normal_dot_flux) noexcept {
+      const Scalar<DataVector>& normal_dot_flux) {
     *packaged_normal_dot_flux = normal_dot_flux;
   }
   void operator()(const gsl::not_null<Scalar<DataVector>*> numerical_flux,
                   const Scalar<DataVector>& normal_dot_flux_interior,
-                  const Scalar<DataVector>& normal_dot_flux_exterior) const
-      noexcept {
+                  const Scalar<DataVector>& normal_dot_flux_exterior) const {
     // The minus sign appears because the `normal_dot_flux_exterior` was
     // computed with the interface normal from the neighboring element
     get(*numerical_flux) =

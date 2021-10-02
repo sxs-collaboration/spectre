@@ -42,13 +42,12 @@ void apply_boundary_condition(
     const elliptic::BoundaryConditions::BoundaryCondition<Dim, Registrars>&
         boundary_condition,
     const db::DataBox<DbTagsList>& box, const MapKeys& map_keys_to_direction,
-    const gsl::not_null<FieldsAndFluxes*>... fields_and_fluxes) noexcept {
+    const gsl::not_null<FieldsAndFluxes*>... fields_and_fluxes) {
   call_with_dynamic_type<
       void, typename elliptic::BoundaryConditions::BoundaryCondition<
                 Dim, Registrars>::creatable_classes>(
-      &boundary_condition,
-      [&map_keys_to_direction, &box,
-       &fields_and_fluxes...](const auto* const derived) noexcept {
+      &boundary_condition, [&map_keys_to_direction, &box,
+                            &fields_and_fluxes...](const auto* const derived) {
         using Derived = std::decay_t<std::remove_pointer_t<decltype(derived)>>;
         using volume_tags =
             tmpl::conditional_t<Linearized,
@@ -70,7 +69,7 @@ void apply_boundary_condition(
                                 tmpl::transform<volume_tags, ArgsTransform>>;
         elliptic::util::apply_at<argument_tags_transformed,
                                  volume_tags_transformed>(
-            [&derived, &fields_and_fluxes...](const auto&... args) noexcept {
+            [&derived, &fields_and_fluxes...](const auto&... args) {
               if constexpr (Linearized) {
                 derived->apply_linearized(fields_and_fluxes..., args...);
               } else {

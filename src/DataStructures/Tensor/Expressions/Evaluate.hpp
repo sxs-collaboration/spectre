@@ -26,7 +26,7 @@ namespace TensorExpressions {
 namespace detail {
 template <size_t NumIndices>
 constexpr bool contains_indices_to_contract(
-    const std::array<size_t, NumIndices>& tensorindices) noexcept {
+    const std::array<size_t, NumIndices>& tensorindices) {
   if constexpr (NumIndices < 2) {
     return false;
   } else {
@@ -74,7 +74,7 @@ constexpr bool is_evaluated_lhs_multi_index(
     const std::array<size_t, NumLhsSpatialSpacetimeIndices>&
         lhs_spatial_spacetime_index_positions,
     const std::array<size_t, NumLhsConcreteTimeIndices>&
-        lhs_time_index_positions) noexcept {
+        lhs_time_index_positions) {
   for (size_t i = 0; i < lhs_spatial_spacetime_index_positions.size(); i++) {
     if (gsl::at(lhs_multi_index,
                 gsl::at(lhs_spatial_spacetime_index_positions, i)) == 0) {

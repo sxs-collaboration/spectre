@@ -27,13 +27,12 @@
 
 namespace NewtonianEuler::fd {
 template <size_t Dim>
-MonotisedCentralPrim<Dim>::MonotisedCentralPrim(
-    CkMigrateMessage* const msg) noexcept
+MonotisedCentralPrim<Dim>::MonotisedCentralPrim(CkMigrateMessage* const msg)
     : Reconstructor<Dim>(msg) {}
 
 template <size_t Dim>
 std::unique_ptr<Reconstructor<Dim>> MonotisedCentralPrim<Dim>::get_clone()
-    const noexcept {
+    const {
   return std::make_unique<MonotisedCentralPrim>(*this);
 }
 
@@ -61,7 +60,7 @@ void MonotisedCentralPrim<Dim>::reconstruct(
                        evolution::dg::subcell::NeighborData,
                        boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
         neighbor_data,
-    const Mesh<Dim>& subcell_mesh) const noexcept {
+    const Mesh<Dim>& subcell_mesh) const {
   reconstruct_prims_work(
       vars_on_lower_face, vars_on_upper_face,
       [](auto upper_face_vars_ptr, auto lower_face_vars_ptr,
@@ -88,7 +87,7 @@ void MonotisedCentralPrim<Dim>::reconstruct_fd_neighbor(
                        boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
         neighbor_data,
     const Mesh<Dim>& subcell_mesh,
-    const Direction<Dim> direction_to_reconstruct) const noexcept {
+    const Direction<Dim> direction_to_reconstruct) const {
   reconstruct_fd_neighbor_work(
       vars_on_face,
       [](const auto tensor_component_on_face_ptr,
@@ -96,7 +95,7 @@ void MonotisedCentralPrim<Dim>::reconstruct_fd_neighbor(
          const auto& tensor_component_neighbor,
          const Index<Dim>& subcell_extents,
          const Index<Dim>& ghost_data_extents,
-         const Direction<Dim>& local_direction_to_reconstruct) noexcept {
+         const Direction<Dim>& local_direction_to_reconstruct) {
         ::fd::reconstruction::reconstruct_neighbor<
             Side::Lower,
             ::fd::reconstruction::detail::MonotisedCentralReconstructor>(
@@ -109,7 +108,7 @@ void MonotisedCentralPrim<Dim>::reconstruct_fd_neighbor(
          const auto& tensor_component_neighbor,
          const Index<Dim>& subcell_extents,
          const Index<Dim>& ghost_data_extents,
-         const Direction<Dim>& local_direction_to_reconstruct) noexcept {
+         const Direction<Dim>& local_direction_to_reconstruct) {
         ::fd::reconstruction::reconstruct_neighbor<
             Side::Upper,
             ::fd::reconstruction::detail::MonotisedCentralReconstructor>(
@@ -155,7 +154,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
           evolution::dg::subcell::NeighborData,                                \
           boost::hash<std::pair<Direction<DIM(data)>, ElementId<DIM(data)>>>>& \
           neighbor_data,                                                       \
-      const Mesh<DIM(data)>& subcell_mesh) const noexcept;                     \
+      const Mesh<DIM(data)>& subcell_mesh) const;                              \
   template void MonotisedCentralPrim<DIM(data)>::reconstruct_fd_neighbor(      \
       gsl::not_null<Variables<TAGS_LIST(data)>*> vars_on_face,                 \
       const Variables<prims_tags>& subcell_volume_prims,                       \
@@ -168,7 +167,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
           boost::hash<std::pair<Direction<DIM(data)>, ElementId<DIM(data)>>>>& \
           neighbor_data,                                                       \
       const Mesh<DIM(data)>& subcell_mesh,                                     \
-      const Direction<DIM(data)> direction_to_reconstruct) const noexcept;
+      const Direction<DIM(data)> direction_to_reconstruct) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (1, 2))
 

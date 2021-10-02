@@ -161,7 +161,7 @@ class FishboneMoncriefDisk : public MarkAsAnalyticSolution,
   struct BhMass {
     using type = double;
     static constexpr Options::String help = {"The mass of the black hole."};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
   /// The dimensionless black hole spin, \f$\chi = a/M\f$.
   struct BhDimlessSpin {
@@ -188,14 +188,14 @@ class FishboneMoncriefDisk : public MarkAsAnalyticSolution,
     using type = double;
     static constexpr Options::String help = {
         "The polytropic constant of the fluid."};
-    static type lower_bound() noexcept { return 0.; }
+    static type lower_bound() { return 0.; }
   };
   /// The polytropic exponent of the fluid.
   struct PolytropicExponent {
     using type = double;
     static constexpr Options::String help = {
         "The polytropic exponent of the fluid."};
-    static type lower_bound() noexcept { return 1.; }
+    static type lower_bound() { return 1.; }
   };
 
   using options =
@@ -207,46 +207,43 @@ class FishboneMoncriefDisk : public MarkAsAnalyticSolution,
   FishboneMoncriefDisk() = default;
   FishboneMoncriefDisk(const FishboneMoncriefDisk& /*rhs*/) = delete;
   FishboneMoncriefDisk& operator=(const FishboneMoncriefDisk& /*rhs*/) = delete;
-  FishboneMoncriefDisk(FishboneMoncriefDisk&& /*rhs*/) noexcept = default;
-  FishboneMoncriefDisk& operator=(FishboneMoncriefDisk&& /*rhs*/) noexcept =
-      default;
+  FishboneMoncriefDisk(FishboneMoncriefDisk&& /*rhs*/) = default;
+  FishboneMoncriefDisk& operator=(FishboneMoncriefDisk&& /*rhs*/) = default;
   ~FishboneMoncriefDisk() = default;
 
   FishboneMoncriefDisk(double bh_mass, double bh_dimless_spin,
                        double inner_edge_radius, double max_pressure_radius,
-                       double polytropic_constant,
-                       double polytropic_exponent) noexcept;
+                       double polytropic_constant, double polytropic_exponent);
 
   // Eventually, if we implement a gr::Solutions::BoyerLindquist
   // black hole, the following two functions aren't needed, and the algebra
   // of the three functions after can be simplified by using the corresponding
   // lapse, shift, and spatial metric.
   template <typename DataType>
-  DataType sigma(const DataType& r_sqrd, const DataType& sin_theta_sqrd) const
-      noexcept;
+  DataType sigma(const DataType& r_sqrd, const DataType& sin_theta_sqrd) const;
 
   template <typename DataType>
   DataType inv_ucase_a(const DataType& r_sqrd, const DataType& sin_theta_sqrd,
-                       const DataType& delta) const noexcept;
+                       const DataType& delta) const;
 
   template <typename DataType>
   DataType four_velocity_t_sqrd(const DataType& r_sqrd,
-                                const DataType& sin_theta_sqrd) const noexcept;
+                                const DataType& sin_theta_sqrd) const;
 
   template <typename DataType>
   DataType angular_velocity(const DataType& r_sqrd,
-                            const DataType& sin_theta_sqrd) const noexcept;
+                            const DataType& sin_theta_sqrd) const;
 
   template <typename DataType>
   DataType potential(const DataType& r_sqrd,
-                     const DataType& sin_theta_sqrd) const noexcept;
+                     const DataType& sin_theta_sqrd) const;
 
   SPECTRE_ALWAYS_INLINE static size_t index_helper(
-      tmpl::no_such_type_ /*meta*/) noexcept {
+      tmpl::no_such_type_ /*meta*/) {
     return std::numeric_limits<size_t>::max();
   }
   template <typename T>
-  SPECTRE_ALWAYS_INLINE size_t index_helper(T /*meta*/) const noexcept {
+  SPECTRE_ALWAYS_INLINE size_t index_helper(T /*meta*/) const {
     return T::value;
   }
 
@@ -259,7 +256,7 @@ class FishboneMoncriefDisk : public MarkAsAnalyticSolution,
   tuples::TaggedTuple<Tags...> variables(
       const tnsr::I<DataType, 3>& x,
       const double t,  // NOLINT(readability-avoid-const-params-in-decls)
-      tmpl::list<Tags...> /*meta*/) const noexcept {
+      tmpl::list<Tags...> /*meta*/) const {
     // Can't store IntermediateVariables as member variable because we need to
     // be threadsafe.
     IntermediateVariables<
@@ -283,7 +280,7 @@ class FishboneMoncriefDisk : public MarkAsAnalyticSolution,
   template <typename DataType, typename Tag>
   tuples::TaggedTuple<Tag> variables(const tnsr::I<DataType, 3>& x,
                                      const double t,  // NOLINT
-                                     tmpl::list<Tag> /*meta*/) const noexcept {
+                                     tmpl::list<Tag> /*meta*/) const {
     // Can't store IntermediateVariables as member variable because we need to
     // be threadsafe.
     IntermediateVariables<
@@ -299,10 +296,9 @@ class FishboneMoncriefDisk : public MarkAsAnalyticSolution,
   /// @}
 
   // clang-tidy: no runtime references
-  void pup(PUP::er& /*p*/) noexcept;  //  NOLINT
+  void pup(PUP::er& /*p*/);  //  NOLINT
 
-  const EquationsOfState::PolytropicFluid<true>& equation_of_state() const
-      noexcept {
+  const EquationsOfState::PolytropicFluid<true>& equation_of_state() const {
     return equation_of_state_;
   }
 
@@ -311,21 +307,21 @@ class FishboneMoncriefDisk : public MarkAsAnalyticSolution,
   auto variables(const tnsr::I<DataType, 3>& x,
                  tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/,
                  const IntermediateVariables<DataType, NeedSpacetime>& vars,
-                 size_t index) const noexcept
+                 size_t index) const
       -> tuples::TaggedTuple<hydro::Tags::RestMassDensity<DataType>>;
 
   template <typename DataType, bool NeedSpacetime>
   auto variables(const tnsr::I<DataType, 3>& x,
                  tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>> /*meta*/,
                  const IntermediateVariables<DataType, NeedSpacetime>& vars,
-                 size_t index) const noexcept
+                 size_t index) const
       -> tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DataType>>;
 
   template <typename DataType, bool NeedSpacetime>
   auto variables(const tnsr::I<DataType, 3>& x,
                  tmpl::list<hydro::Tags::Pressure<DataType>> /*meta*/,
                  const IntermediateVariables<DataType, NeedSpacetime>& vars,
-                 size_t index) const noexcept
+                 size_t index) const
       -> tuples::TaggedTuple<hydro::Tags::Pressure<DataType>>;
 
   template <typename DataType, bool NeedSpacetime>
@@ -333,28 +329,28 @@ class FishboneMoncriefDisk : public MarkAsAnalyticSolution,
       const tnsr::I<DataType, 3>& x,
       tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>> /*meta*/,
       const IntermediateVariables<DataType, NeedSpacetime>& vars,
-      size_t index) const noexcept
+      size_t index) const
       -> tuples::TaggedTuple<hydro::Tags::SpecificInternalEnergy<DataType>>;
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x,
                  tmpl::list<hydro::Tags::SpatialVelocity<DataType, 3>> /*meta*/,
                  const IntermediateVariables<DataType, true>& vars,
-                 size_t index) const noexcept
+                 size_t index) const
       -> tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, 3>>;
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x,
                  tmpl::list<hydro::Tags::LorentzFactor<DataType>> /*meta*/,
                  const IntermediateVariables<DataType, true>& vars,
-                 size_t index) const noexcept
+                 size_t index) const
       -> tuples::TaggedTuple<hydro::Tags::LorentzFactor<DataType>>;
 
   template <typename DataType, bool NeedSpacetime>
   auto variables(const tnsr::I<DataType, 3>& x,
                  tmpl::list<hydro::Tags::MagneticField<DataType, 3>> /*meta*/,
                  const IntermediateVariables<DataType, NeedSpacetime>& vars,
-                 size_t index) const noexcept
+                 size_t index) const
       -> tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3>>;
 
   template <typename DataType, bool NeedSpacetime>
@@ -362,7 +358,7 @@ class FishboneMoncriefDisk : public MarkAsAnalyticSolution,
       const tnsr::I<DataType, 3>& x,
       tmpl::list<hydro::Tags::DivergenceCleaningField<DataType>> /*meta*/,
       const IntermediateVariables<DataType, NeedSpacetime>& vars,
-      size_t index) const noexcept
+      size_t index) const
       -> tuples::TaggedTuple<hydro::Tags::DivergenceCleaningField<DataType>>;
 
   // Grab the metric variables
@@ -371,8 +367,7 @@ class FishboneMoncriefDisk : public MarkAsAnalyticSolution,
                                                Tag>> = nullptr>
   tuples::TaggedTuple<Tag> variables(
       const tnsr::I<DataType, 3>& /*x*/, tmpl::list<Tag> /*meta*/,
-      IntermediateVariables<DataType, true>& vars, const size_t index) const
-      noexcept {
+      IntermediateVariables<DataType, true>& vars, const size_t index) const {
     // The only hydro variables that use the GR solution are spatial velocity
     // and Lorentz factor. If those have already been set (their index in the
     // typelist is lower than our index) then we can safely std::move the GR
@@ -391,8 +386,7 @@ class FishboneMoncriefDisk : public MarkAsAnalyticSolution,
 
   template <typename DataType, bool NeedSpacetime, typename Func>
   void variables_impl(
-      const IntermediateVariables<DataType, NeedSpacetime>& vars, Func f) const
-      noexcept;
+      const IntermediateVariables<DataType, NeedSpacetime>& vars, Func f) const;
 
   // Intermediate variables needed to set several of the Fishbone-Moncrief
   // solution's variables.
@@ -402,7 +396,7 @@ class FishboneMoncriefDisk : public MarkAsAnalyticSolution,
                           const gr::Solutions::KerrSchild& background_spacetime,
                           const tnsr::I<DataType, 3>& x, double t,
                           size_t in_spatial_velocity_index,
-                          size_t in_lorentz_factor_index) noexcept;
+                          size_t in_lorentz_factor_index);
 
     DataType r_squared{};
     DataType sin_theta_squared{};
@@ -414,7 +408,7 @@ class FishboneMoncriefDisk : public MarkAsAnalyticSolution,
   };
 
   friend bool operator==(const FishboneMoncriefDisk& lhs,
-                         const FishboneMoncriefDisk& rhs) noexcept;
+                         const FishboneMoncriefDisk& rhs);
 
   double bh_mass_ = std::numeric_limits<double>::signaling_NaN();
   double bh_spin_a_ = std::numeric_limits<double>::signaling_NaN();
@@ -428,6 +422,6 @@ class FishboneMoncriefDisk : public MarkAsAnalyticSolution,
 };
 
 bool operator!=(const FishboneMoncriefDisk& lhs,
-                const FishboneMoncriefDisk& rhs) noexcept;
+                const FishboneMoncriefDisk& rhs);
 }  // namespace Solutions
 }  // namespace RelativisticEuler

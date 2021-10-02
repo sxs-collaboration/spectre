@@ -66,7 +66,7 @@ struct ExpectedResult : db::SimpleTag {
 // The vector `x` we want to solve for
 struct VectorTag : db::SimpleTag {
   using type = DenseVector<double>;
-  static std::string name() noexcept { return "VectorTag"; }
+  static std::string name() { return "VectorTag"; }
 };
 
 using fields_tag = VectorTag;
@@ -84,7 +84,7 @@ struct TestResult {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& cache,
       const int /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     const auto& has_converged =
         get<Convergence::Tags::HasConverged<OptionsGroup>>(box);
     SPECTRE_PARALLEL_REQUIRE(has_converged);
@@ -109,7 +109,7 @@ struct InitializeElement {
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::GlobalCache<Metavariables>& cache,
                     const int /*array_index*/, const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     const auto& b = get<Source>(cache);
     const auto& x0 = get<InitialGuess>(cache);
 
@@ -164,7 +164,7 @@ struct ElementArray {
   static void allocate_array(
       Parallel::CProxy_GlobalCache<Metavariables>& global_cache,
       const tuples::tagged_tuple_from_typelist<initialization_tags>&
-          initialization_items) noexcept {
+          initialization_items) {
     auto& local_component = Parallel::get_parallel_component<ElementArray>(
         *(global_cache.ckLocalBranch()));
     local_component[0].insert(global_cache, initialization_items, 0);
@@ -173,7 +173,7 @@ struct ElementArray {
 
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
-      Parallel::CProxy_GlobalCache<Metavariables>& global_cache) noexcept {
+      Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
     auto& local_component = Parallel::get_parallel_component<ElementArray>(
         *(global_cache.ckLocalBranch()));
     local_component.start_phase(next_phase);
@@ -198,8 +198,7 @@ static Phase determine_next_phase(
     const gsl::not_null<
         tuples::TaggedTuple<Tags...>*> /*phase_change_decision_data*/,
     const Phase& current_phase,
-    const Parallel::CProxy_GlobalCache<
-        Metavariables>& /*cache_proxy*/) noexcept {
+    const Parallel::CProxy_GlobalCache<Metavariables>& /*cache_proxy*/) {
   switch (current_phase) {
     case Phase::Initialization:
       return Phase::RegisterWithObserver;

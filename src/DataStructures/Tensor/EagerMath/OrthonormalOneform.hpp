@@ -34,12 +34,12 @@ template <typename DataType, size_t VolumeDim, typename Frame>
 void orthonormal_oneform(
     gsl::not_null<tnsr::i<DataType, VolumeDim, Frame>*> orthonormal_form,
     const tnsr::i<DataType, VolumeDim, Frame>& unit_form,
-    const tnsr::II<DataType, VolumeDim, Frame>& inv_spatial_metric) noexcept;
+    const tnsr::II<DataType, VolumeDim, Frame>& inv_spatial_metric);
 
 template <typename DataType, size_t VolumeDim, typename Frame>
 tnsr::i<DataType, VolumeDim, Frame> orthonormal_oneform(
     const tnsr::i<DataType, VolumeDim, Frame>& unit_form,
-    const tnsr::II<DataType, VolumeDim, Frame>& inv_spatial_metric) noexcept;
+    const tnsr::II<DataType, VolumeDim, Frame>& inv_spatial_metric);
 /// @}
 
 /// @{
@@ -65,12 +65,12 @@ void orthonormal_oneform(
     const tnsr::i<DataType, 3, Frame>& first_unit_form,
     const tnsr::i<DataType, 3, Frame>& second_unit_form,
     const tnsr::ii<DataType, 3, Frame>& spatial_metric,
-    const Scalar<DataType>& det_spatial_metric) noexcept;
+    const Scalar<DataType>& det_spatial_metric);
 
 template <typename DataType, typename Frame>
 tnsr::i<DataType, 3, Frame> orthonormal_oneform(
     const tnsr::i<DataType, 3, Frame>& first_unit_form,
     const tnsr::i<DataType, 3, Frame>& second_unit_form,
     const tnsr::ii<DataType, 3, Frame>& spatial_metric,
-    const Scalar<DataType>& det_spatial_metric) noexcept;
+    const Scalar<DataType>& det_spatial_metric);
 /// @}

@@ -58,25 +58,24 @@ class DenseTrigger : public PUP::able {
   ~DenseTrigger() override = default;
 
   /// \cond
-  explicit DenseTrigger(CkMigrateMessage* const msg) noexcept
-      : PUP::able(msg) {}
+  explicit DenseTrigger(CkMigrateMessage* const msg) : PUP::able(msg) {}
   WRAPPED_PUPable_abstract(DenseTrigger);  // NOLINT
   /// \endcond
 
   /// Check whether the trigger fires.
   template <typename DbTags>
-  Result is_triggered(const db::DataBox<DbTags>& box) noexcept {
+  Result is_triggered(const db::DataBox<DbTags>& box) {
     using factory_classes =
         typename std::decay_t<decltype(db::get<Parallel::Tags::Metavariables>(
             box))>::factory_creation::factory_classes;
     previous_trigger_time_ = next_previous_trigger_time_;
     return call_with_dynamic_type<Result,
                                   tmpl::at<factory_classes, DenseTrigger>>(
-        this, [&box, this](auto* const trigger) noexcept {
+        this, [&box, this](auto* const trigger) {
           using TriggerType = std::decay_t<decltype(*trigger)>;
           const auto result =
               db::apply<typename TriggerType::is_triggered_argument_tags>(
-                  [&trigger](const auto&... args) noexcept {
+                  [&trigger](const auto&... args) {
                     return trigger->is_triggered(args...);
                   },
                   box);
@@ -96,18 +95,17 @@ class DenseTrigger : public PUP::able {
   bool is_ready(const db::DataBox<DbTags>& box,
                 Parallel::GlobalCache<Metavariables>& cache,
                 const ArrayIndex& array_index,
-                const Component* const component) const noexcept {
+                const Component* const component) const {
     using factory_classes =
         typename std::decay_t<decltype(db::get<Parallel::Tags::Metavariables>(
             box))>::factory_creation::factory_classes;
     return call_with_dynamic_type<bool,
                                   tmpl::at<factory_classes, DenseTrigger>>(
-        this,
-        [&array_index, &box, &cache, &component](auto* const trigger) noexcept {
+        this, [&array_index, &box, &cache, &component](auto* const trigger) {
           using TriggerType = std::decay_t<decltype(*trigger)>;
           return db::apply<typename TriggerType::is_ready_argument_tags>(
               [&array_index, &cache, &component,
-               &trigger](const auto&... args) noexcept {
+               &trigger](const auto&... args) {
                 return trigger->is_ready(cache, array_index, component,
                                          args...);
               },
@@ -124,11 +122,11 @@ class DenseTrigger : public PUP::able {
   /// event. Without ignoring the most recent call of `is_triggered`, we'd just
   /// always be reporting the current time to the event, because events always
   /// run after their associated triggers fire via a call to `is_triggered`.
-  std::optional<double> previous_trigger_time() const noexcept {
+  std::optional<double> previous_trigger_time() const {
     return previous_trigger_time_;
   }
 
-  void pup(PUP::er& p) noexcept override {
+  void pup(PUP::er& p) override {
     p | next_previous_trigger_time_;
     p | previous_trigger_time_;
   }

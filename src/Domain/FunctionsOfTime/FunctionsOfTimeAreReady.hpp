@@ -48,7 +48,7 @@ bool functions_of_time_are_ready(
     Parallel::GlobalCache<Metavariables>& cache, const ArrayIndex& array_index,
     const Component* /*meta*/, const double time,
     const std::array<std::string, N>& functions_to_check =
-        std::array<std::string, 0>{}) noexcept {
+        std::array<std::string, 0>{}) {
   const auto& proxy =
       ::Parallel::get_parallel_component<Component>(cache)[array_index];
 
@@ -57,13 +57,12 @@ bool functions_of_time_are_ready(
               &time](const std::unordered_map<
                      std::string,
                      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-                         functions_of_time) noexcept {
-        ASSERT(alg::all_of(functions_to_check,
-                           [&functions_of_time](
-                               const std::string& function_to_check) noexcept {
-                             return functions_of_time.count(
-                                        function_to_check) == 1;
-                           }),
+                         functions_of_time) {
+        ASSERT(alg::all_of(
+                   functions_to_check,
+                   [&functions_of_time](const std::string& function_to_check) {
+                     return functions_of_time.count(function_to_check) == 1;
+                   }),
                "Not all functions to check ("
                    << functions_to_check << ") are in the global cache ("
                    << keys_of(functions_of_time) << ")");
@@ -98,7 +97,7 @@ struct CheckFunctionsOfTimeAreReady {
       db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index, ActionList /*meta*/,
-      const ParallelComponent* component) noexcept {
+      const ParallelComponent* component) {
     const bool ready =
         functions_of_time_are_ready<domain::Tags::FunctionsOfTime>(
             cache, array_index, component, db::get<::Tags::Time>(box));

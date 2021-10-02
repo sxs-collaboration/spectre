@@ -49,7 +49,7 @@ Scalar<DataVector> speed_with_index(
 }
 
 template <size_t Dim>
-void test_characteristic_speeds() noexcept {
+void test_characteristic_speeds() {
   TestHelpers::db::test_compute_tag<
       ScalarWave::Tags::CharacteristicSpeedsCompute<Dim>>(
       "CharacteristicSpeeds");
@@ -71,7 +71,7 @@ void test_characteristic_speeds() noexcept {
 // Test return-by-reference char speeds by comparing to analytic solution
 template <size_t Dim>
 void test_characteristic_speeds_analytic(
-    const size_t grid_size_each_dimension) noexcept {
+    const size_t grid_size_each_dimension) {
   // Setup mesh
   Mesh<Dim> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
                  Spectral::Quadrature::GaussLobatto};
@@ -123,7 +123,7 @@ typename Tag::type field_with_tag(
 }
 
 template <size_t Dim>
-void test_characteristic_fields() noexcept {
+void test_characteristic_fields() {
   TestHelpers::db::test_compute_tag<
       ScalarWave::Tags::CharacteristicFieldsCompute<Dim>>(
       "CharacteristicFields");
@@ -151,7 +151,7 @@ template <size_t Dim, typename Solution>
 void test_characteristic_fields_analytic(
     const Solution& solution, const size_t grid_size_each_dimension,
     const std::array<double, 3>& lower_bound,
-    const std::array<double, 3>& upper_bound) noexcept {
+    const std::array<double, 3>& upper_bound) {
   // Set up grid
   Mesh<Dim> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
                  Spectral::Quadrature::GaussLobatto};
@@ -240,7 +240,7 @@ typename Tag::type evol_field_with_tag(
 }
 
 template <size_t Dim>
-void test_evolved_from_characteristic_fields() noexcept {
+void test_evolved_from_characteristic_fields() {
   TestHelpers::db::test_compute_tag<
       ScalarWave::Tags::EvolvedFieldsFromCharacteristicFieldsCompute<Dim>>(
       "EvolvedFieldsFromCharacteristicFields");
@@ -264,7 +264,7 @@ template <size_t Dim, typename Solution>
 void test_evolved_from_characteristic_fields_analytic(
     const Solution& solution, const size_t grid_size_each_dimension,
     const std::array<double, 3>& lower_bound,
-    const std::array<double, 3>& upper_bound) noexcept {
+    const std::array<double, 3>& upper_bound) {
   // Set up grid
   Mesh<Dim> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
                  Spectral::Quadrature::GaussLobatto};

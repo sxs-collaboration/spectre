@@ -22,7 +22,7 @@ void test_compute_deriv_conformal_christoffel_second_kind(
           const tnsr::II<DataType, Dim, Frame::Inertial>&,
           const tnsr::ijj<DataType, Dim, Frame::Inertial>&,
           const tnsr::ijkk<DataType, Dim, Frame::Inertial>&,
-          const tnsr::iJJ<DataType, Dim, Frame::Inertial>&) noexcept>(
+          const tnsr::iJJ<DataType, Dim, Frame::Inertial>&)>(
           &Ccz4::deriv_conformal_christoffel_second_kind<Dim, Frame::Inertial,
                                                          DataType>),
       "DerivChristoffel", "deriv_conformal_christoffel_second_kind",

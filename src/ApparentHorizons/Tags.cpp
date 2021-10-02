@@ -19,7 +19,7 @@ namespace StrahlkorperTags {
 template <typename Frame>
 void ThetaPhiCompute<Frame>::function(
     const gsl::not_null<aliases::ThetaPhi<Frame>*> theta_phi,
-    const ::Strahlkorper<Frame>& strahlkorper) noexcept {
+    const ::Strahlkorper<Frame>& strahlkorper) {
   auto temp = strahlkorper.ylm_spherepack().theta_phi_points();
   destructive_resize_components(theta_phi, temp[0].size());
   get<0>(*theta_phi) = temp[0];
@@ -29,7 +29,7 @@ void ThetaPhiCompute<Frame>::function(
 template <typename Frame>
 void RhatCompute<Frame>::function(
     const gsl::not_null<aliases::OneForm<Frame>*> r_hat,
-    const aliases::ThetaPhi<Frame>& theta_phi) noexcept {
+    const aliases::ThetaPhi<Frame>& theta_phi) {
   const auto& theta = get<0>(theta_phi);
   const auto& phi = get<1>(theta_phi);
 
@@ -43,7 +43,7 @@ void RhatCompute<Frame>::function(
 template <typename Frame>
 void JacobianCompute<Frame>::function(
     const gsl::not_null<aliases::Jacobian<Frame>*> jac,
-    const aliases::ThetaPhi<Frame>& theta_phi) noexcept {
+    const aliases::ThetaPhi<Frame>& theta_phi) {
   const auto& theta = get<0>(theta_phi);
   const auto& phi = get<1>(theta_phi);
   const DataVector sin_phi = sin(phi);
@@ -62,7 +62,7 @@ void JacobianCompute<Frame>::function(
 template <typename Frame>
 void InvJacobianCompute<Frame>::function(
     const gsl::not_null<aliases::InvJacobian<Frame>*> inv_jac,
-    const aliases::ThetaPhi<Frame>& theta_phi) noexcept {
+    const aliases::ThetaPhi<Frame>& theta_phi) {
   const auto& theta = get<0>(theta_phi);
   const auto& phi = get<1>(theta_phi);
   const DataVector sin_phi = sin(phi);
@@ -81,7 +81,7 @@ void InvJacobianCompute<Frame>::function(
 template <typename Frame>
 void InvHessianCompute<Frame>::function(
     const gsl::not_null<aliases::InvHessian<Frame>*> inv_hess,
-    const aliases::ThetaPhi<Frame>& theta_phi) noexcept {
+    const aliases::ThetaPhi<Frame>& theta_phi) {
   const auto& theta = get<0>(theta_phi);
   const auto& phi = get<1>(theta_phi);
   const DataVector sin_phi = sin(phi);
@@ -143,7 +143,7 @@ void InvHessianCompute<Frame>::function(
 template <typename Frame>
 void RadiusCompute<Frame>::function(
     const gsl::not_null<Scalar<DataVector>*> radius,
-    const ::Strahlkorper<Frame>& strahlkorper) noexcept {
+    const ::Strahlkorper<Frame>& strahlkorper) {
   get(*radius).destructive_resize(
       strahlkorper.ylm_spherepack().physical_size());
   get(*radius) =
@@ -153,7 +153,7 @@ void RadiusCompute<Frame>::function(
 template <typename Frame>
 void PhysicalCenterCompute<Frame>::function(
     const gsl::not_null<std::array<double, 3>*> physical_center,
-    const ::Strahlkorper<Frame>& strahlkorper) noexcept {
+    const ::Strahlkorper<Frame>& strahlkorper) {
   *physical_center = strahlkorper.physical_center();
 }
 
@@ -161,7 +161,7 @@ template <typename Frame>
 void CartesianCoordsCompute<Frame>::function(
     const gsl::not_null<aliases::Vector<Frame>*> coords,
     const ::Strahlkorper<Frame>& strahlkorper, const Scalar<DataVector>& radius,
-    const aliases::OneForm<Frame>& r_hat) noexcept {
+    const aliases::OneForm<Frame>& r_hat) {
   destructive_resize_components(coords, get(radius).size());
   for (size_t d = 0; d < 3; ++d) {
     coords->get(d) =
@@ -173,7 +173,7 @@ template <typename Frame>
 void DxRadiusCompute<Frame>::function(
     const gsl::not_null<aliases::OneForm<Frame>*> dx_radius,
     const ::Strahlkorper<Frame>& strahlkorper, const Scalar<DataVector>& radius,
-    const aliases::InvJacobian<Frame>& inv_jac) noexcept {
+    const aliases::InvJacobian<Frame>& inv_jac) {
   destructive_resize_components(dx_radius, get(radius).size());
   const DataVector one_over_r = 1.0 / get(radius);
   const auto dr = strahlkorper.ylm_spherepack().gradient(get(radius));
@@ -191,7 +191,7 @@ void D2xRadiusCompute<Frame>::function(
     const gsl::not_null<aliases::SecondDeriv<Frame>*> d2x_radius,
     const ::Strahlkorper<Frame>& strahlkorper, const Scalar<DataVector>& radius,
     const aliases::InvJacobian<Frame>& inv_jac,
-    const aliases::InvHessian<Frame>& inv_hess) noexcept {
+    const aliases::InvHessian<Frame>& inv_hess) {
   destructive_resize_components(d2x_radius, get(radius).size());
   for (auto& component : *d2x_radius) {
     component = 0.0;
@@ -231,7 +231,7 @@ template <typename Frame>
 void LaplacianRadiusCompute<Frame>::function(
     const gsl::not_null<DataVector*> lap_radius,
     const ::Strahlkorper<Frame>& strahlkorper, const Scalar<DataVector>& radius,
-    const aliases::ThetaPhi<Frame>& theta_phi) noexcept {
+    const aliases::ThetaPhi<Frame>& theta_phi) {
   lap_radius->destructive_resize(get(radius).size());
   const auto derivs =
       strahlkorper.ylm_spherepack().first_and_second_derivative(get(radius));
@@ -243,7 +243,7 @@ template <typename Frame>
 void NormalOneFormCompute<Frame>::function(
     const gsl::not_null<aliases::OneForm<Frame>*> one_form,
     const aliases::OneForm<Frame>& dx_radius,
-    const aliases::OneForm<Frame>& r_hat) noexcept {
+    const aliases::OneForm<Frame>& r_hat) {
   destructive_resize_components(one_form, r_hat.begin()->size());
   for (size_t d = 0; d < 3; ++d) {
     one_form->get(d) = r_hat.get(d) - dx_radius.get(d);
@@ -254,8 +254,7 @@ template <typename Frame>
 void TangentsCompute<Frame>::function(
     const gsl::not_null<aliases::Jacobian<Frame>*> tangents,
     const ::Strahlkorper<Frame>& strahlkorper, const Scalar<DataVector>& radius,
-    const aliases::OneForm<Frame>& r_hat,
-    const aliases::Jacobian<Frame>& jac) noexcept {
+    const aliases::OneForm<Frame>& r_hat, const aliases::Jacobian<Frame>& jac) {
   destructive_resize_components(tangents, get(radius).size());
   const auto dr = strahlkorper.ylm_spherepack().gradient(get(radius));
   for (size_t i = 0; i < 2; ++i) {

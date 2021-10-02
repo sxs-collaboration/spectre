@@ -53,7 +53,7 @@ KhInstability<Dim>::KhInstability(
 }
 
 template <size_t Dim>
-void KhInstability<Dim>::pup(PUP::er& p) noexcept {
+void KhInstability<Dim>::pup(PUP::er& p) {
   p | adiabatic_index_;
   p | strip_bimedian_height_;
   p | strip_half_thickness_;
@@ -71,7 +71,7 @@ template <size_t Dim>
 template <typename DataType>
 tuples::TaggedTuple<Tags::MassDensity<DataType>> KhInstability<Dim>::variables(
     const tnsr::I<DataType, Dim, Frame::Inertial>& x,
-    tmpl::list<Tags::MassDensity<DataType>> /*meta*/) const noexcept {
+    tmpl::list<Tags::MassDensity<DataType>> /*meta*/) const {
   auto result = make_with_value<Scalar<DataType>>(x, 0.0);
   const size_t n_pts = get_size(get<0>(x));
   for (size_t s = 0; s < n_pts; ++s) {
@@ -89,8 +89,7 @@ template <typename DataType>
 tuples::TaggedTuple<Tags::Velocity<DataType, Dim, Frame::Inertial>>
 KhInstability<Dim>::variables(
     const tnsr::I<DataType, Dim, Frame::Inertial>& x,
-    tmpl::list<Tags::Velocity<DataType, Dim, Frame::Inertial>> /*meta*/) const
-    noexcept {
+    tmpl::list<Tags::Velocity<DataType, Dim, Frame::Inertial>> /*meta*/) const {
   auto result =
       make_with_value<tnsr::I<DataType, Dim, Frame::Inertial>>(x, 0.0);
 
@@ -122,8 +121,7 @@ template <typename DataType>
 tuples::TaggedTuple<Tags::SpecificInternalEnergy<DataType>>
 KhInstability<Dim>::variables(
     const tnsr::I<DataType, Dim, Frame::Inertial>& x,
-    tmpl::list<Tags::SpecificInternalEnergy<DataType>> /*meta*/) const
-    noexcept {
+    tmpl::list<Tags::SpecificInternalEnergy<DataType>> /*meta*/) const {
   return equation_of_state_.specific_internal_energy_from_density_and_pressure(
       get<Tags::MassDensity<DataType>>(
           variables(x, tmpl::list<Tags::MassDensity<DataType>>{})),
@@ -135,13 +133,12 @@ template <size_t Dim>
 template <typename DataType>
 tuples::TaggedTuple<Tags::Pressure<DataType>> KhInstability<Dim>::variables(
     const tnsr::I<DataType, Dim, Frame::Inertial>& x,
-    tmpl::list<Tags::Pressure<DataType>> /*meta*/) const noexcept {
+    tmpl::list<Tags::Pressure<DataType>> /*meta*/) const {
   return make_with_value<Scalar<DataType>>(x, pressure_);
 }
 
 template <size_t Dim>
-bool operator==(const KhInstability<Dim>& lhs,
-                const KhInstability<Dim>& rhs) noexcept {
+bool operator==(const KhInstability<Dim>& lhs, const KhInstability<Dim>& rhs) {
   // No comparison for equation_of_state_. Comparing adiabatic_index_ should
   // suffice.
   return lhs.adiabatic_index_ == rhs.adiabatic_index_ and
@@ -157,8 +154,7 @@ bool operator==(const KhInstability<Dim>& lhs,
 }
 
 template <size_t Dim>
-bool operator!=(const KhInstability<Dim>& lhs,
-                const KhInstability<Dim>& rhs) noexcept {
+bool operator!=(const KhInstability<Dim>& lhs, const KhInstability<Dim>& rhs) {
   return not(lhs == rhs);
 }
 
@@ -166,32 +162,32 @@ bool operator!=(const KhInstability<Dim>& lhs,
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define TAG(data) BOOST_PP_TUPLE_ELEM(2, data)
 
-#define INSTANTIATE_CLASS(_, data)                                    \
-  template class KhInstability<DIM(data)>;                            \
-  template bool operator==(const KhInstability<DIM(data)>&,           \
-                           const KhInstability<DIM(data)>&) noexcept; \
-  template bool operator!=(const KhInstability<DIM(data)>&,           \
-                           const KhInstability<DIM(data)>&) noexcept;
+#define INSTANTIATE_CLASS(_, data)                           \
+  template class KhInstability<DIM(data)>;                   \
+  template bool operator==(const KhInstability<DIM(data)>&,  \
+                           const KhInstability<DIM(data)>&); \
+  template bool operator!=(const KhInstability<DIM(data)>&,  \
+                           const KhInstability<DIM(data)>&);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_CLASS, (2, 3))
 
 #define INSTANTIATE_SCALARS(_, data)                                 \
-  template tuples::TaggedTuple<TAG(data) < DTYPE(data)>>             \
+  template tuples::TaggedTuple<TAG(data) < DTYPE(data)> >            \
       KhInstability<DIM(data)>::variables(                           \
           const tnsr::I<DTYPE(data), DIM(data), Frame::Inertial>& x, \
-          tmpl::list<TAG(data) < DTYPE(data)>>) const noexcept;
+          tmpl::list<TAG(data) < DTYPE(data)> >) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_SCALARS, (2, 3), (double, DataVector),
                         (Tags::MassDensity, Tags::SpecificInternalEnergy,
                          Tags::Pressure))
 
-#define INSTANTIATE_VELOCITY(_, data)                                       \
-  template tuples::TaggedTuple<TAG(data) < DTYPE(data), DIM(data),          \
-                               Frame::Inertial>>                            \
-      KhInstability<DIM(data)>::variables(                                  \
-          const tnsr::I<DTYPE(data), DIM(data), Frame::Inertial>& x,        \
-          tmpl::list<TAG(data) < DTYPE(data), DIM(data), Frame::Inertial>>) \
-          const noexcept;
+#define INSTANTIATE_VELOCITY(_, data)                                        \
+  template tuples::TaggedTuple<TAG(data) < DTYPE(data), DIM(data),           \
+                               Frame::Inertial> >                            \
+      KhInstability<DIM(data)>::variables(                                   \
+          const tnsr::I<DTYPE(data), DIM(data), Frame::Inertial>& x,         \
+          tmpl::list<TAG(data) < DTYPE(data), DIM(data), Frame::Inertial> >) \
+          const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_VELOCITY, (2, 3), (double, DataVector),
                         (Tags::Velocity))

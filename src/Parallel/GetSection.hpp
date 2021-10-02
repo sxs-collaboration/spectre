@@ -29,8 +29,8 @@ namespace Parallel {
  */
 template <typename ParallelComponent, typename SectionIdTag,
           typename DbTagsList>
-auto& get_section([[maybe_unused]] const gsl::not_null<db::DataBox<DbTagsList>*>
-                      box) noexcept {
+auto& get_section(
+    [[maybe_unused]] const gsl::not_null<db::DataBox<DbTagsList>*> box) {
   if constexpr (std::is_same_v<SectionIdTag, void>) {
     return Parallel::no_section();
   } else {

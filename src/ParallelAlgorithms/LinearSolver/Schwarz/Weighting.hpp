@@ -46,7 +46,7 @@ namespace LinearSolver::Schwarz {
  * `A` and at the `side` of `A` that faces `B`.
  */
 DataVector extruding_weight(const DataVector& logical_coords, double width,
-                            const Side& side) noexcept;
+                            const Side& side);
 
 /// @{
 /*!
@@ -68,13 +68,13 @@ void element_weight(
     gsl::not_null<Scalar<DataVector>*> element_weight,
     const tnsr::I<DataVector, Dim, Frame::ElementLogical>& logical_coords,
     const std::array<double, Dim>& overlap_widths,
-    const std::unordered_set<Direction<Dim>>& external_boundaries) noexcept;
+    const std::unordered_set<Direction<Dim>>& external_boundaries);
 
 template <size_t Dim>
 Scalar<DataVector> element_weight(
     const tnsr::I<DataVector, Dim, Frame::ElementLogical>& logical_coords,
     const std::array<double, Dim>& overlap_widths,
-    const std::unordered_set<Direction<Dim>>& external_boundaries) noexcept;
+    const std::unordered_set<Direction<Dim>>& external_boundaries);
 /// @}
 
 /*!
@@ -86,7 +86,7 @@ Scalar<DataVector> element_weight(
  * \see `LinearSolver::Schwarz::extruding_weight`
  */
 DataVector intruding_weight(const DataVector& logical_coords, double width,
-                            const Side& side) noexcept;
+                            const Side& side);
 
 /// @{
 /*!
@@ -117,7 +117,7 @@ void intruding_weight(
     const Direction<Dim>& direction,
     const std::array<double, Dim>& overlap_widths,
     size_t num_intruding_overlaps,
-    const std::unordered_set<Direction<Dim>>& external_boundaries) noexcept;
+    const std::unordered_set<Direction<Dim>>& external_boundaries);
 
 template <size_t Dim>
 Scalar<DataVector> intruding_weight(
@@ -125,7 +125,7 @@ Scalar<DataVector> intruding_weight(
     const Direction<Dim>& direction,
     const std::array<double, Dim>& overlap_widths,
     size_t num_intruding_overlaps,
-    const std::unordered_set<Direction<Dim>>& external_boundaries) noexcept;
+    const std::unordered_set<Direction<Dim>>& external_boundaries);
 /// @}
 
 }  // namespace LinearSolver::Schwarz

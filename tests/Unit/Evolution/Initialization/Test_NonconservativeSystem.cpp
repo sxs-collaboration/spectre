@@ -57,7 +57,7 @@ struct Metavariables {
 };
 
 template <size_t Dim>
-void test() noexcept {
+void test() {
   using metavars = Metavariables<Dim>;
   using comp = component<Dim, metavars>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;

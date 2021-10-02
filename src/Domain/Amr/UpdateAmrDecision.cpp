@@ -21,7 +21,7 @@ template <size_t VolumeDim>
 bool update_amr_decision(
     const gsl::not_null<std::array<amr::Flag, VolumeDim>*> my_current_amr_flags,
     const Element<VolumeDim>& element, const ElementId<VolumeDim>& neighbor_id,
-    const std::array<amr::Flag, VolumeDim>& neighbor_amr_flags) noexcept {
+    const std::array<amr::Flag, VolumeDim>& neighbor_amr_flags) {
   const auto& element_id = element.id();
   bool my_amr_decision_changed = false;
   bool neighbor_found = false;
@@ -110,7 +110,7 @@ bool update_amr_decision(
           my_current_amr_flags,                              \
       const Element<DIM(data)>& element,                     \
       const ElementId<DIM(data)>& neighbor_id,               \
-      const std::array<amr::Flag, DIM(data)>& neighbor_amr_flags) noexcept;
+      const std::array<amr::Flag, DIM(data)>& neighbor_amr_flags);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 

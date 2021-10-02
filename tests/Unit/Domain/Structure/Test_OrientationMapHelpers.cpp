@@ -47,7 +47,7 @@ struct Coords : db::SimpleTag {
   using type = tnsr::I<DataVector, SpatialDim, Frame::Inertial>;
 };
 
-void test_1d_orient_variables() noexcept {
+void test_1d_orient_variables() {
   const Index<1> extents{4};
   Variables<tmpl::list<ScalarTensor, Coords<1>>> vars(extents.product());
   get(get<ScalarTensor>(vars)) = DataVector{{1.0, 2.0, 3.0, 4.0}};
@@ -87,7 +87,7 @@ void test_1d_orient_variables() noexcept {
 // identical to) one of the cases hit by `test_2d_orient_variables`. However, by
 // writing it out by hand, we provide a sanity check and a clearer example of
 // how to use `orient_variables`.
-void test_2d_orient_variables_simple_case_by_hand() noexcept {
+void test_2d_orient_variables_simple_case_by_hand() {
   const OrientationMap<2> orientation_map(std::array<Direction<2>, 2>{
       {Direction<2>::lower_eta(), Direction<2>::upper_xi()}});
   const auto extents = Index<2>{2, 3};
@@ -115,8 +115,7 @@ void test_2d_orient_variables_simple_case_by_hand() noexcept {
 // `orient_variables`. We do this by computing the coordinates of a rectangular
 // grid using two different coordinate maps and orientations of the grid,
 // this provides both the input tensor and the expected output tensor.
-void test_2d_with_orientation(
-    const OrientationMap<2>& orientation_map) noexcept {
+void test_2d_with_orientation(const OrientationMap<2>& orientation_map) {
   const auto extents = Index<2>{3, 4};
   const auto mesh = Mesh<2>(extents.indices(), Spectral::Basis::Legendre,
                             Spectral::Quadrature::GaussLobatto);
@@ -155,7 +154,7 @@ void test_2d_with_orientation(
   CHECK(oriented_vars_vector == expected_vars_vector);
 }
 
-void test_2d_orient_variables() noexcept {
+void test_2d_orient_variables() {
   size_t number_of_orientations_checked = 0;
   auto dimensions = make_array(0_st, 1_st);
   do {
@@ -179,7 +178,7 @@ void test_2d_orient_variables() noexcept {
 // identical to) one of the cases hit by `test_3d_orient_variables`. However, by
 // writing it out by hand, we provide a sanity check and a clearer example of
 // how to use `orient_variables`.
-void test_3d_orient_variables_simple_case_by_hand() noexcept {
+void test_3d_orient_variables_simple_case_by_hand() {
   const OrientationMap<3> orientation_map(std::array<Direction<3>, 3>{
       {Direction<3>::upper_zeta(), Direction<3>::upper_eta(),
        Direction<3>::upper_xi()}});
@@ -211,8 +210,7 @@ void test_3d_orient_variables_simple_case_by_hand() noexcept {
 // `orient_variables`. We do this by computing the coordinates of a rectangular
 // grid using two different coordinate maps and orientations of the grid,
 // this provides both the input tensor and the expected output tensor.
-void test_3d_with_orientation(
-    const OrientationMap<3>& orientation_map) noexcept {
+void test_3d_with_orientation(const OrientationMap<3>& orientation_map) {
   const auto extents = Index<3>{2, 3, 4};
   const auto mesh = Mesh<3>(extents.indices(), Spectral::Basis::Legendre,
                             Spectral::Quadrature::GaussLobatto);
@@ -247,7 +245,7 @@ void test_3d_with_orientation(
   CHECK(oriented_vars == expected_vars);
 }
 
-void test_3d_orient_variables() noexcept {
+void test_3d_orient_variables() {
   size_t number_of_orientations_checked = 0;
   auto dimensions = make_array(0_st, 1_st, 2_st);
   do {
@@ -286,7 +284,7 @@ void check_vector(const Variables<TagsList>& vars,
 }
 
 // Test 0D slice of a 1D element
-void test_0d_orient_variables_on_slice() noexcept {
+void test_0d_orient_variables_on_slice() {
   const Index<0> slice_extents{1};
   Variables<tmpl::list<ScalarTensor, Coords<1>>> vars(slice_extents.product());
   get(get<ScalarTensor>(vars)) = DataVector{{-0.5}};
@@ -303,8 +301,7 @@ void test_0d_orient_variables_on_slice() noexcept {
   }
 }
 
-void test_1d_slice_with_orientation(
-    const OrientationMap<2>& orientation_map) noexcept {
+void test_1d_slice_with_orientation(const OrientationMap<2>& orientation_map) {
   const auto slice_extents = Index<1>{4};
   const auto slice_mesh =
       Mesh<1>(slice_extents.indices(), Spectral::Basis::Legendre,
@@ -351,7 +348,7 @@ void test_1d_slice_with_orientation(
 }
 
 // Test 1D slice of a 2D element
-void test_1d_orient_variables_on_slice() noexcept {
+void test_1d_orient_variables_on_slice() {
   size_t number_of_orientations_checked = 0;
   auto dimensions = make_array(0_st, 1_st);
   do {
@@ -371,8 +368,7 @@ void test_1d_orient_variables_on_slice() noexcept {
   CHECK(number_of_orientations_checked == 8);
 }
 
-void test_2d_slice_with_orientation(
-    const OrientationMap<3>& orientation_map) noexcept {
+void test_2d_slice_with_orientation(const OrientationMap<3>& orientation_map) {
   const auto slice_extents = Index<2>{3, 4};
   const auto slice_mesh =
       Mesh<2>(slice_extents.indices(), Spectral::Basis::Legendre,
@@ -389,8 +385,7 @@ void test_2d_slice_with_orientation(
     // Because `orientation_map` transforms between directions in the volume, we
     // make a new OrientationMap that transforms between directions on the
     // slices. In the case of a 2D slice, this is a 2D OrientationMap.
-    const auto slice_orientation_map =
-        [&orientation_map, &sliced_dim ]() noexcept {
+    const auto slice_orientation_map = [&orientation_map, &sliced_dim]() {
       const auto dims_of_slice =
           (sliced_dim == 0 ? make_array(1_st, 2_st)
                            : (sliced_dim == 1 ? make_array(0_st, 2_st)
@@ -411,8 +406,7 @@ void test_2d_slice_with_orientation(
                 neighbor_second_slice_dim,
                 orientation_map(Direction<3>(dims_of_slice[1], Side::Upper))
                     .side())}}));
-    }
-    ();
+    }();
 
     const auto logical_coords = logical_coordinates(slice_mesh);
     const std::array<DataVector, 2> oriented_logical_coords = discrete_rotation(
@@ -445,7 +439,7 @@ void test_2d_slice_with_orientation(
 }
 
 // Test 2D slice of a 3D element
-void test_2d_orient_variables_on_slice() noexcept {
+void test_2d_orient_variables_on_slice() {
   size_t number_of_orientations_checked = 0;
   auto dimensions = make_array(0_st, 1_st, 2_st);
   do {

@@ -69,7 +69,7 @@ struct InitializeDomain {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ElementId<Dim>& element_id, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     db::mutate_apply<typename InitializeGeometry::return_tags,
                      typename InitializeGeometry::argument_tags>(
         InitializeGeometry{}, make_not_null(&box), element_id);

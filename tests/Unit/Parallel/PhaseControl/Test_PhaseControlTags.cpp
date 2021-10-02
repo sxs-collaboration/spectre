@@ -54,11 +54,11 @@ template <size_t Val, typename PhaseChangeRegistrars>
 struct TestCreatable : public PhaseChange<PhaseChangeRegistrars> {
 
   TestCreatable() = default;
-  explicit TestCreatable(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit TestCreatable(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(TestCreatable);  // NOLINT
 
-  static std::string name() noexcept {
+  static std::string name() {
     if constexpr(Val == 1_st) {
       return "TestCreatable(1)";
     } else if constexpr(Val == 2_st) {
@@ -83,10 +83,9 @@ struct TestCreatable : public PhaseChange<PhaseChangeRegistrars> {
       tmpl::conditional_t<(1_st < Val), tmpl::list<Tags::DummyDecisionTag1>,
                           tmpl::list<Tags::DummyDecisionTag2>>;
 
-  explicit TestCreatable(int option_value) noexcept
-      : option_value_{option_value} {}
+  explicit TestCreatable(int option_value) : option_value_{option_value} {}
 
-  void pup(PUP::er& p) noexcept override { p | option_value_; }  // NOLINT
+  void pup(PUP::er& p) override { p | option_value_; }  // NOLINT
 
   int option_value_ = 0;
 };

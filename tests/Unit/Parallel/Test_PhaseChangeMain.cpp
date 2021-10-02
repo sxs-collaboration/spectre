@@ -65,7 +65,7 @@ struct InitializeStepTag {
       tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     Initialization::mutate_assign<simple_tags>(make_not_null(&box), 0_st);
     return {std::move(box), true};
   }
@@ -80,12 +80,10 @@ struct IncrementStep {
       tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     db::mutate<StepNumber>(
         make_not_null(&box),
-        [](const gsl::not_null<size_t*> step_number) noexcept {
-          ++(*step_number);
-        });
+        [](const gsl::not_null<size_t*> step_number) { ++(*step_number); });
     SPECTRE_PARALLEL_REQUIRE(db::get<StepNumber>(box) < 31);
     return {std::move(box)};
   }
@@ -98,7 +96,7 @@ struct ReportArrayPhaseControlDataAndTerminate{
       db::DataBox<tmpl::list<DbTags...>>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache, const int array_index,
-      ActionList /*meta*/, const ParallelComponent* const /*meta*/) noexcept {
+      ActionList /*meta*/, const ParallelComponent* const /*meta*/) {
     Parallel::contribute_to_phase_change_reduction<
         ArrayComponent<Metavariables>>(
         tuples::TaggedTuple<IsDone>{array_index == 0
@@ -118,7 +116,7 @@ struct ReportGroupPhaseControlDataAndTerminate {
       tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     Parallel::contribute_to_phase_change_reduction<
         GroupComponent<Metavariables>>(
         tuples::TaggedTuple<IsDone, PhaseChangeStepNumber>{
@@ -171,7 +169,7 @@ struct ArrayComponent {
   static void allocate_array(
       Parallel::CProxy_GlobalCache<Metavariables>& global_cache,
       const tuples::tagged_tuple_from_typelist<initialization_tags>&
-      /*initialization_items*/) noexcept {
+      /*initialization_items*/) {
     auto& local_cache = *(global_cache.ckLocalBranch());
     auto& array_proxy =
         Parallel::get_parallel_component<ArrayComponent>(local_cache);
@@ -224,7 +222,7 @@ struct TestMetavariables {
         const gsl::not_null<tuples::tagged_tuple_from_typelist<
             phase_change_tags_and_combines_list>*>
             phase_change_decision_data,
-        const Parallel::GlobalCache<TestMetavariables>& /*cache*/) noexcept {
+        const Parallel::GlobalCache<TestMetavariables>& /*cache*/) {
       tuples::get<PhaseChangeTest::IsDone>(*phase_change_decision_data) = false;
       tuples::get<PhaseChangeTest::PhaseChangeStepNumber>(
           *phase_change_decision_data) = 0;
@@ -236,8 +234,7 @@ struct TestMetavariables {
       const gsl::not_null<tuples::TaggedTuple<Tags...>*>
           phase_change_decision_data,
       const Phase& current_phase,
-      const Parallel::CProxy_GlobalCache<
-          TestMetavariables>& /*cache_proxy*/) noexcept {
+      const Parallel::CProxy_GlobalCache<TestMetavariables>& /*cache_proxy*/) {
     switch (current_phase) {
       case Phase::Initialization:
         return Phase::Evolution;
@@ -269,7 +266,7 @@ struct TestMetavariables {
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& /*p*/) noexcept {}
+  void pup(PUP::er& /*p*/) {}
 };
 
 static const std::vector<void (*)()> charm_init_node_funcs{

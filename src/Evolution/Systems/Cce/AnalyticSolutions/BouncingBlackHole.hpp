@@ -38,29 +38,29 @@ struct BouncingBlackHole : public WorldtubeData {
     using type = double;
     static constexpr Options::String help{
         "The coordinate distance of the gauge oscillation"};
-    static type lower_bound() noexcept { return 0.0; }
-    static type suggested_value() noexcept { return 2.0; }
+    static type lower_bound() { return 0.0; }
+    static type suggested_value() { return 2.0; }
   };
   struct ExtractionRadius {
     using type = double;
     static constexpr Options::String help{
         "The extraction radius of the spherical solution"};
-    static type lower_bound() noexcept { return 0.0; }
-    static type suggested_value() noexcept { return 20.0; }
+    static type lower_bound() { return 0.0; }
+    static type suggested_value() { return 20.0; }
   };
   struct Mass {
     using type = double;
     static constexpr Options::String help{
         "The mass of the Schwarzschild black hole"};
-    static type lower_bound() noexcept { return 0.0; }
-    static type suggested_value() noexcept { return 1.0; }
+    static type lower_bound() { return 0.0; }
+    static type suggested_value() { return 1.0; }
   };
   struct Period {
     using type = double;
     static constexpr Options::String help{
         "The period of the coordinate oscillation"};
-    static type lower_bound() noexcept { return 0.0; }
-    static type suggested_value() noexcept { return 40.0; }
+    static type lower_bound() { return 0.0; }
+    static type suggested_value() { return 40.0; }
   };
 
   static constexpr Options::String help{
@@ -71,25 +71,24 @@ struct BouncingBlackHole : public WorldtubeData {
 
   WRAPPED_PUPable_decl_template(BouncingBlackHole);  // NOLINT
 
-  explicit BouncingBlackHole(CkMigrateMessage* msg) noexcept
-      : WorldtubeData(msg) {}
+  explicit BouncingBlackHole(CkMigrateMessage* msg) : WorldtubeData(msg) {}
 
   // clang doesn't manage to use = default correctly in this case
   // NOLINTNEXTLINE(modernize-use-equals-default)
-  BouncingBlackHole() noexcept {}
+  BouncingBlackHole() {}
 
   BouncingBlackHole(double amplitude, double extraction_radius, double mass,
-                    double period) noexcept;
+                    double period);
 
-  std::unique_ptr<WorldtubeData> get_clone() const noexcept override;
+  std::unique_ptr<WorldtubeData> get_clone() const override;
 
-  void pup(PUP::er& p) noexcept override;
+  void pup(PUP::er& p) override;
 
  protected:
   // The bouncing black hole solution is easily computed directly, so requires
   // no additional preparation.
   void prepare_solution(const size_t /*l_max*/,
-                        const double /*time*/) const noexcept override{};
+                        const double /*time*/) const override{};
 
   using WorldtubeData::variables_impl;
 
@@ -116,7 +115,7 @@ struct BouncingBlackHole : public WorldtubeData {
       double time,
       tmpl::type_<
           gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>> /*meta*/)
-      const noexcept override;
+      const override;
 
   /*!
    * \brief The implementation function that computes the first time derivative
@@ -144,7 +143,7 @@ struct BouncingBlackHole : public WorldtubeData {
       gsl::not_null<tnsr::aa<DataVector, 3>*> dt_spacetime_metric, size_t l_max,
       double time,
       tmpl::type_<::Tags::dt<gr::Tags::SpacetimeMetric<
-          3, ::Frame::Inertial, DataVector>>> /*meta*/) const noexcept override;
+          3, ::Frame::Inertial, DataVector>>> /*meta*/) const override;
 
   /*!
    * \brief The implementation function that computes the first spatial
@@ -175,14 +174,14 @@ struct BouncingBlackHole : public WorldtubeData {
       double time,
       tmpl::type_<
           GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>> /*meta*/)
-      const noexcept override;
+      const override;
 
   /// The News in the bouncing black hole solution vanishes, as the oscillation
   /// comes entirely from a coordinate transform.
   void variables_impl(
       gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, -2>>*> news,
       size_t output_l_max, double time,
-      tmpl::type_<Tags::News> /*meta*/) const noexcept override;
+      tmpl::type_<Tags::News> /*meta*/) const override;
 
   double amplitude_ = std::numeric_limits<double>::signaling_NaN();
   double mass_ = std::numeric_limits<double>::signaling_NaN();

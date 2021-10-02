@@ -31,7 +31,7 @@ void test_conservation(const NumericalFluxComputer& numerical_flux_computer,
   const auto make_random_packaged_data = [&numerical_flux_computer,
                                           &make_random_args, &num_points]() {
     return std::apply(
-        [&numerical_flux_computer, &num_points](const auto... args) noexcept {
+        [&numerical_flux_computer, &num_points](const auto... args) {
           PackagedData packaged_data{num_points};
           dg::NumericalFluxes::package_data(make_not_null(&packaged_data),
                                             numerical_flux_computer, args...);

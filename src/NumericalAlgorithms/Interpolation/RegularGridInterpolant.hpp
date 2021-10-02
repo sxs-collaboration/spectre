@@ -55,21 +55,20 @@ class RegularGrid {
   /// coordinates which will override the default coordinates of `target_mesh`.
   RegularGrid(const Mesh<Dim>& source_mesh, const Mesh<Dim>& target_mesh,
               const std::array<DataVector, Dim>&
-                  override_target_mesh_with_1d_logical_coords = {}) noexcept;
+                  override_target_mesh_with_1d_logical_coords = {});
 
   RegularGrid();
 
   // clang-tidy: no runtime references
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
 
   /// @{
   /// \brief Interpolate a Variables onto the target points.
   template <typename TagsList>
   void interpolate(gsl::not_null<Variables<TagsList>*> result,
-                   const Variables<TagsList>& vars) const noexcept;
+                   const Variables<TagsList>& vars) const;
   template <typename TagsList>
-  Variables<TagsList> interpolate(
-      const Variables<TagsList>& vars) const noexcept;
+  Variables<TagsList> interpolate(const Variables<TagsList>& vars) const;
   /// @}
 
   /// @{
@@ -80,8 +79,8 @@ class RegularGrid {
   /// where only some components of a Tensor or Variables need to be
   /// interpolated.
   void interpolate(gsl::not_null<DataVector*> result,
-                   const DataVector& input) const noexcept;
-  DataVector interpolate(const DataVector& input) const noexcept;
+                   const DataVector& input) const;
+  DataVector interpolate(const DataVector& input) const;
   /// @}
 
   /// \brief Return the internally-stored matrices that interpolate from the
@@ -90,13 +89,13 @@ class RegularGrid {
   /// Each matrix interpolates in one logical direction, and can be empty if the
   /// interpolation in that direction is the identity (i.e., if the source
   /// and target grids have the same logical coordinates in this direction).
-  const std::array<Matrix, Dim>& interpolation_matrices() const noexcept;
+  const std::array<Matrix, Dim>& interpolation_matrices() const;
 
  private:
   template <size_t LocalDim>
   // NOLINTNEXTLINE(readability-redundant-declaration)
   friend bool operator==(const RegularGrid<LocalDim>& lhs,
-                         const RegularGrid<LocalDim>& rhs) noexcept;
+                         const RegularGrid<LocalDim>& rhs);
 
   size_t number_of_target_points_{};
   Index<Dim> source_extents_;
@@ -107,7 +106,7 @@ template <size_t Dim>
 template <typename TagsList>
 void RegularGrid<Dim>::interpolate(
     const gsl::not_null<Variables<TagsList>*> result,
-    const Variables<TagsList>& vars) const noexcept {
+    const Variables<TagsList>& vars) const {
   if (result->number_of_grid_points() != number_of_target_points_) {
     result->initialize(number_of_target_points_);
   }
@@ -117,14 +116,13 @@ void RegularGrid<Dim>::interpolate(
 template <size_t Dim>
 template <typename TagsList>
 Variables<TagsList> RegularGrid<Dim>::interpolate(
-    const Variables<TagsList>& vars) const noexcept {
+    const Variables<TagsList>& vars) const {
   Variables<TagsList> result;
   interpolate(make_not_null(&result), vars);
   return result;
 }
 
 template <size_t Dim>
-bool operator!=(const RegularGrid<Dim>& lhs,
-                const RegularGrid<Dim>& rhs) noexcept;
+bool operator!=(const RegularGrid<Dim>& lhs, const RegularGrid<Dim>& rhs);
 
 }  // namespace intrp

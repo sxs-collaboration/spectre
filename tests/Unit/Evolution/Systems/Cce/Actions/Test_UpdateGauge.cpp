@@ -96,7 +96,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.UpdateGauge",
 
   tmpl::for_each<real_tags_to_generate>([&real_variables, &gen,
                                          &coefficient_distribution,
-                                         &l_max](auto tag_v) noexcept {
+                                         &l_max](auto tag_v) {
     using tag = typename decltype(tag_v)::type;
     SpinWeighted<ComplexModalVector, 0> generated_modes{
         Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max)};
@@ -160,9 +160,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.UpdateGauge",
         make_not_null(&expected_box));
   }
 
-  tmpl::for_each<
-      tmpl::append<real_tags_to_compute, swsh_tags_to_compute>>(
-      [&runner, &expected_box](auto tag_v) noexcept {
+  tmpl::for_each<tmpl::append<real_tags_to_compute, swsh_tags_to_compute>>(
+      [&runner, &expected_box](auto tag_v) {
         using tag = typename decltype(tag_v)::type;
         const auto& test_lhs =
             ActionTesting::get_databox_tag<component, tag>(runner, 0);

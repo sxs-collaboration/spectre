@@ -94,8 +94,7 @@ struct BoundaryComputeAndSendToEvolution<H5WorldtubeBoundary<Metavariables>,
                 DbTags>...>> = nullptr>
   static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
-                    const ArrayIndex& /*array_index*/,
-                    const TimeStepId& time) noexcept {
+                    const ArrayIndex& /*array_index*/, const TimeStepId& time) {
     auto hdf5_lock = Parallel::get_parallel_component<
                          observers::ObserverWriter<Metavariables>>(cache)
                          .ckLocalBranch()
@@ -112,7 +111,7 @@ struct BoundaryComputeAndSendToEvolution<H5WorldtubeBoundary<Metavariables>,
                 worldtube_data_manager,
             const gsl::not_null<Variables<
                 typename Metavariables::cce_boundary_communication_tags>*>
-                boundary_variables) noexcept {
+                boundary_variables) {
           successfully_populated =
               (*worldtube_data_manager)
                   ->populate_hypersurface_boundary_data(
@@ -154,8 +153,7 @@ struct BoundaryComputeAndSendToEvolution<
   template <typename ParallelComponent, typename DbTagList, typename ArrayIndex>
   static void apply(db::DataBox<DbTagList>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
-                    const ArrayIndex& /*array_index*/,
-                    const TimeStepId& time) noexcept {
+                    const ArrayIndex& /*array_index*/, const TimeStepId& time) {
     if constexpr (tmpl::list_contains_v<
                       DbTagList,
                       ::Tags::Variables<typename Metavariables::
@@ -170,7 +168,7 @@ struct BoundaryComputeAndSendToEvolution<
                   worldtube_data_manager,
               const gsl::not_null<Variables<
                   typename Metavariables::cce_boundary_communication_tags>*>
-                  boundary_variables) noexcept {
+                  boundary_variables) {
             successfully_populated =
                 (*worldtube_data_manager)
                     .populate_hypersurface_boundary_data(
@@ -227,12 +225,11 @@ struct BoundaryComputeAndSendToEvolution<GhWorldtubeBoundary<Metavariables>,
                 DbTags>...>> = nullptr>
   static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
-                    const ArrayIndex& /*array_index*/,
-                    const TimeStepId& time) noexcept {
+                    const ArrayIndex& /*array_index*/, const TimeStepId& time) {
     auto retrieve_data_and_send_to_evolution =
         [&time, &cache](const gsl::not_null<
                         std::unique_ptr<InterfaceManagers::GhInterfaceManager>*>
-                            interface_manager) noexcept {
+                            interface_manager) {
           (*interface_manager)->request_gh_data(time);
           const auto gh_data =
               (*interface_manager)->retrieve_and_remove_first_ready_gh_data();
@@ -262,11 +259,11 @@ struct SendToEvolution<GhWorldtubeBoundary<Metavariables>, EvolutionComponent> {
                 ::Tags::Variables<
                     typename Metavariables::cce_boundary_communication_tags>,
                 DbTags>...>> = nullptr>
-  static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
-                    Parallel::GlobalCache<Metavariables>& cache,
-                    const ArrayIndex& /*array_index*/, const TimeStepId& time,
-                    const InterfaceManagers::GhInterfaceManager::gh_variables&
-                        gh_variables) noexcept {
+  static void apply(
+      db::DataBox<tmpl::list<DbTags...>>& box,
+      Parallel::GlobalCache<Metavariables>& cache,
+      const ArrayIndex& /*array_index*/, const TimeStepId& time,
+      const InterfaceManagers::GhInterfaceManager::gh_variables& gh_variables) {
     db::mutate<::Tags::Variables<
         typename Metavariables::cce_boundary_communication_tags>>(
         make_not_null(&box),
@@ -274,7 +271,7 @@ struct SendToEvolution<GhWorldtubeBoundary<Metavariables>, EvolutionComponent> {
             const gsl::not_null<Variables<
                 typename Metavariables::cce_boundary_communication_tags>*>
                 boundary_variables,
-            const double extraction_radius, const double l_max) noexcept {
+            const double extraction_radius, const double l_max) {
           create_bondi_boundary_data(
               boundary_variables,
               get<GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>>(

@@ -30,7 +30,7 @@ namespace {
 class TestTrigger : public Trigger {
  public:
   TestTrigger() = default;
-  explicit TestTrigger(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit TestTrigger(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
@@ -45,13 +45,13 @@ class TestTrigger : public Trigger {
   using options = tmpl::list<Result>;
   constexpr static Options::String help = "help";
 
-  explicit TestTrigger(const bool result) noexcept : result_(result) {}
+  explicit TestTrigger(const bool result) : result_(result) {}
 
   using argument_tags = tmpl::list<>;
-  bool operator()() const noexcept { return result_; }
+  bool operator()() const { return result_; }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept override {
+  void pup(PUP::er& p) override {
     Trigger::pup(p);
     p | result_;
   }
@@ -76,12 +76,9 @@ struct Metavariables {
   };
 };
 
-void check(const bool expected_is_ready,
-           const bool expected_is_triggered,
-           const double expected_next_check,
-           const bool dense_is_ready,
-           const bool dense_is_triggered,
-           const bool non_dense_is_triggered) noexcept {
+void check(const bool expected_is_ready, const bool expected_is_triggered,
+           const double expected_next_check, const bool dense_is_ready,
+           const bool dense_is_triggered, const bool non_dense_is_triggered) {
   std::stringstream creation_string;
   creation_string << std::boolalpha;
   creation_string << "Filter:\n"
@@ -125,7 +122,7 @@ struct ExampleMetavariables {
   };
 };
 
-void example() noexcept {
+void example() {
   const std::string input = R"(
 # [example]
 Filter:
@@ -142,7 +139,7 @@ Filter:
 )";
   const auto trigger = TestHelpers::test_creation<std::unique_ptr<DenseTrigger>,
                                                   ExampleMetavariables>(input);
-  const auto run_trigger = [&trigger](const double time) noexcept {
+  const auto run_trigger = [&trigger](const double time) {
     const auto box = db::create<db::AddSimpleTags<
         Parallel::Tags::MetavariablesImpl<ExampleMetavariables>, ::Tags::Time,
         ::Tags::TimeStepId>>(ExampleMetavariables{}, time,

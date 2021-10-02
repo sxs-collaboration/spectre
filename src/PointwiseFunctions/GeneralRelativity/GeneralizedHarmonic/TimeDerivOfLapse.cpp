@@ -21,7 +21,7 @@ void time_deriv_of_lapse(
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_unit_normal,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
-    const tnsr::aa<DataType, SpatialDim, Frame>& pi) noexcept {
+    const tnsr::aa<DataType, SpatialDim, Frame>& pi) {
   if (UNLIKELY(get_size(get(*dt_lapse)) != get_size(get(lapse)))) {
     *dt_lapse = Scalar<DataType>(get_size(get(lapse)));
   }
@@ -52,7 +52,7 @@ Scalar<DataType> time_deriv_of_lapse(
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_unit_normal,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
-    const tnsr::aa<DataType, SpatialDim, Frame>& pi) noexcept {
+    const tnsr::aa<DataType, SpatialDim, Frame>& pi) {
   Scalar<DataType> dt_lapse{};
   GeneralizedHarmonic::time_deriv_of_lapse<SpatialDim, Frame, DataType>(
       make_not_null(&dt_lapse), lapse, shift, spacetime_unit_normal, phi, pi);
@@ -72,14 +72,14 @@ Scalar<DataType> time_deriv_of_lapse(
       const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                \
           spacetime_unit_normal,                                         \
       const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,         \
-      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi) noexcept; \
+      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi);          \
   template Scalar<DTYPE(data)> GeneralizedHarmonic::time_deriv_of_lapse( \
       const Scalar<DTYPE(data)>& lapse,                                  \
       const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,         \
       const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                \
           spacetime_unit_normal,                                         \
       const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,         \
-      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi) noexcept;
+      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
                         (Frame::Grid, Frame::Inertial))

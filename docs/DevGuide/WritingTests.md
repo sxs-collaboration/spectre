@@ -89,7 +89,7 @@ class MyFreeClass {
   /* ... */
 };
 
-void my_free_function() noexcept {
+void my_free_function() {
   /* ... */
 }
 }  // namespace

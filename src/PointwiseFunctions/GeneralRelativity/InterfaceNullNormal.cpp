@@ -15,7 +15,7 @@ template <size_t VolumeDim, typename Frame, typename DataType>
 tnsr::a<DataType, VolumeDim, Frame> interface_null_normal(
     const tnsr::a<DataType, VolumeDim, Frame>& spacetime_normal_one_form,
     const tnsr::i<DataType, VolumeDim, Frame>& interface_unit_normal_one_form,
-    const double sign) noexcept {
+    const double sign) {
   ASSERT((sign == 1.) or (sign == -1.),
          "Calculation of interface null normal accepts only +1/-1 to indicate "
          "whether the outgoing/incoming normal is needed.");
@@ -32,7 +32,7 @@ void interface_null_normal(
     gsl::not_null<tnsr::a<DataType, VolumeDim, Frame>*> null_one_form,
     const tnsr::a<DataType, VolumeDim, Frame>& spacetime_normal_one_form,
     const tnsr::i<DataType, VolumeDim, Frame>& interface_unit_normal_one_form,
-    const double sign) noexcept {
+    const double sign) {
   ASSERT((sign == 1.) or (sign == -1.),
          "Calculation of interface null normal accepts only +1/-1 to indicate "
          "whether the outgoing/incoming normal is needed.");
@@ -52,7 +52,7 @@ template <size_t VolumeDim, typename Frame, typename DataType>
 tnsr::A<DataType, VolumeDim, Frame> interface_null_normal(
     const tnsr::A<DataType, VolumeDim, Frame>& spacetime_normal_vector,
     const tnsr::I<DataType, VolumeDim, Frame>& interface_unit_normal_vector,
-    const double sign) noexcept {
+    const double sign) {
   ASSERT((sign == 1.) or (sign == -1.),
          "Calculation of interface null normal accepts only +1/-1 to indicate "
          "whether the outgoing/incoming normal is needed.");
@@ -68,7 +68,7 @@ void interface_null_normal(
     gsl::not_null<tnsr::A<DataType, VolumeDim, Frame>*> null_vector,
     const tnsr::A<DataType, VolumeDim, Frame>& spacetime_normal_vector,
     const tnsr::I<DataType, VolumeDim, Frame>& interface_unit_normal_vector,
-    const double sign) noexcept {
+    const double sign) {
   ASSERT((sign == 1.) or (sign == -1.),
          "Calculation of interface null normal accepts only +1/-1 to indicate "
          "whether the outgoing/incoming normal is needed.");
@@ -96,7 +96,7 @@ void interface_null_normal(
           spacetime_normal_one_form,                                     \
       const tnsr::i<DTYPE(data), DIM(data), FRAME(data)>&                \
           interface_unit_normal_one_form,                                \
-      const double sign) noexcept;                                       \
+      const double sign);                                                \
   template void gr::interface_null_normal(                               \
       const gsl::not_null<tnsr::a<DTYPE(data), DIM(data), FRAME(data)>*> \
           null_one_form,                                                 \
@@ -104,14 +104,14 @@ void interface_null_normal(
           spacetime_normal_one_form,                                     \
       const tnsr::i<DTYPE(data), DIM(data), FRAME(data)>&                \
           interface_unit_normal_one_form,                                \
-      const double sign) noexcept;                                       \
+      const double sign);                                                \
   template tnsr::A<DTYPE(data), DIM(data), FRAME(data)>                  \
   gr::interface_null_normal(                                             \
       const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                \
           spacetime_normal_vector,                                       \
       const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>&                \
           interface_unit_normal_vector,                                  \
-      const double sign) noexcept;                                       \
+      const double sign);                                                \
   template void gr::interface_null_normal(                               \
       const gsl::not_null<tnsr::A<DTYPE(data), DIM(data), FRAME(data)>*> \
           null_vector,                                                   \
@@ -119,7 +119,7 @@ void interface_null_normal(
           spacetime_normal_vector,                                       \
       const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>&                \
           interface_unit_normal_vector,                                  \
-      const double sign) noexcept;
+      const double sign);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
                         (Frame::Grid, Frame::Inertial))

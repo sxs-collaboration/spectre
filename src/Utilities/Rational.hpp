@@ -27,7 +27,7 @@ class er;
 class Rational {
  public:
   Rational() = default;
-  Rational(std::int32_t numerator, std::int32_t denominator) noexcept;
+  Rational(std::int32_t numerator, std::int32_t denominator);
 
   // Allow implicit conversion of integers to Rationals, but don't
   // allow doubles to implicitly convert to an integer and then to a
@@ -36,47 +36,47 @@ class Rational {
   // NOLINTNEXTLINE(google-explicit-constructor,readability-avoid-const-params-in-decls)
   Rational(const T integral_value) : Rational(integral_value, 1) {}
 
-  std::int32_t numerator() const noexcept { return numerator_; }
-  std::int32_t denominator() const noexcept { return denominator_; }
+  std::int32_t numerator() const { return numerator_; }
+  std::int32_t denominator() const { return denominator_; }
 
-  double value() const noexcept;
+  double value() const;
 
-  Rational inverse() const noexcept;
+  Rational inverse() const;
 
-  Rational& operator+=(const Rational& other) noexcept;
-  Rational& operator-=(const Rational& other) noexcept;
-  Rational& operator*=(const Rational& other) noexcept;
-  Rational& operator/=(const Rational& other) noexcept;
+  Rational& operator+=(const Rational& other);
+  Rational& operator-=(const Rational& other);
+  Rational& operator*=(const Rational& other);
+  Rational& operator/=(const Rational& other);
 
   // clang-tidy: google-runtime-references
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
 
-  friend Rational operator-(Rational r) noexcept;
+  friend Rational operator-(Rational r);
 
  private:
   std::int32_t numerator_{0};
   std::int32_t denominator_{1};
 };
 
-Rational operator+(const Rational& a, const Rational& b) noexcept;
-Rational operator-(const Rational& a, const Rational& b) noexcept;
-Rational operator*(const Rational& a, const Rational& b) noexcept;
-Rational operator/(const Rational& a, const Rational& b) noexcept;
+Rational operator+(const Rational& a, const Rational& b);
+Rational operator-(const Rational& a, const Rational& b);
+Rational operator*(const Rational& a, const Rational& b);
+Rational operator/(const Rational& a, const Rational& b);
 
-bool operator==(const Rational& a, const Rational& b) noexcept;
-bool operator!=(const Rational& a, const Rational& b) noexcept;
-bool operator<(const Rational& a, const Rational& b) noexcept;
-bool operator>(const Rational& a, const Rational& b) noexcept;
-bool operator<=(const Rational& a, const Rational& b) noexcept;
-bool operator>=(const Rational& a, const Rational& b) noexcept;
+bool operator==(const Rational& a, const Rational& b);
+bool operator!=(const Rational& a, const Rational& b);
+bool operator<(const Rational& a, const Rational& b);
+bool operator>(const Rational& a, const Rational& b);
+bool operator<=(const Rational& a, const Rational& b);
+bool operator>=(const Rational& a, const Rational& b);
 
-std::ostream& operator<<(std::ostream& os, const Rational& r) noexcept;
+std::ostream& operator<<(std::ostream& os, const Rational& r);
 
-size_t hash_value(const Rational& r) noexcept;
+size_t hash_value(const Rational& r);
 
 namespace std {
 template <>
 struct hash<Rational> {
-  size_t operator()(const Rational& r) const noexcept;
+  size_t operator()(const Rational& r) const;
 };
 }  // namespace std

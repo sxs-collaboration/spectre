@@ -24,7 +24,7 @@
 
 namespace domain::CoordinateMaps::TimeDependent {
 
-Rotation3D::Rotation3D(std::string function_of_time_name) noexcept
+Rotation3D::Rotation3D(std::string function_of_time_name)
     : f_of_t_name_(std::move(function_of_time_name)) {}
 
 template <typename T>
@@ -32,7 +32,7 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> Rotation3D::operator()(
     const std::array<T, 3>& source_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time) const noexcept {
+        functions_of_time) const {
   ASSERT(functions_of_time.find(f_of_t_name_) != functions_of_time.end(),
          "Could not find function of time: '"
              << f_of_t_name_ << "' in functions of time. Known functions are "
@@ -55,7 +55,7 @@ std::optional<std::array<double, 3>> Rotation3D::inverse(
     const std::array<double, 3>& target_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time) const noexcept {
+        functions_of_time) const {
   ASSERT(functions_of_time.find(f_of_t_name_) != functions_of_time.end(),
          "Could not find function of time: '"
              << f_of_t_name_ << "' in functions of time. Known functions are "
@@ -81,7 +81,7 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> Rotation3D::frame_velocity(
     const std::array<T, 3>& source_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time) const noexcept {
+        functions_of_time) const {
   ASSERT(functions_of_time.find(f_of_t_name_) != functions_of_time.end(),
          "Could not find function of time: '"
              << f_of_t_name_ << "' in functions of time. Known functions are "
@@ -109,7 +109,7 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Rotation3D::jacobian(
     const std::array<T, 3>& source_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time) const noexcept {
+        functions_of_time) const {
   ASSERT(functions_of_time.find(f_of_t_name_) != functions_of_time.end(),
          "Could not find function of time: '"
              << f_of_t_name_ << "' in functions of time. Known functions are "
@@ -138,7 +138,7 @@ Rotation3D::inv_jacobian(
     const std::array<T, 3>& source_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time) const noexcept {
+        functions_of_time) const {
   ASSERT(functions_of_time.find(f_of_t_name_) != functions_of_time.end(),
          "Could not find function of time: '"
              << f_of_t_name_ << "' in functions of time. Known functions are "
@@ -162,13 +162,13 @@ Rotation3D::inv_jacobian(
   return inv_jacobian_matrix;
 }
 
-void Rotation3D::pup(PUP::er& p) noexcept { p | f_of_t_name_; }
+void Rotation3D::pup(PUP::er& p) { p | f_of_t_name_; }
 
-bool operator==(const Rotation3D& lhs, const Rotation3D& rhs) noexcept {
+bool operator==(const Rotation3D& lhs, const Rotation3D& rhs) {
   return lhs.f_of_t_name_ == rhs.f_of_t_name_;
 }
 
-bool operator!=(const Rotation3D& lhs, const Rotation3D& rhs) noexcept {
+bool operator!=(const Rotation3D& lhs, const Rotation3D& rhs) {
   return not(lhs == rhs);
 }
 
@@ -181,28 +181,28 @@ bool operator!=(const Rotation3D& lhs, const Rotation3D& rhs) noexcept {
       const std::unordered_map<                                              \
           std::string,                                                       \
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&         \
-          functions_of_time) const noexcept;                                 \
+          functions_of_time) const;                                          \
   template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>               \
   Rotation3D::frame_velocity(                                                \
       const std::array<DTYPE(data), 3>& source_coords, const double time,    \
       const std::unordered_map<                                              \
           std::string,                                                       \
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&         \
-          functions_of_time) const noexcept;                                 \
+          functions_of_time) const;                                          \
   template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame> \
   Rotation3D::jacobian(                                                      \
       const std::array<DTYPE(data), 3>& source_coords, double time,          \
       const std::unordered_map<                                              \
           std::string,                                                       \
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&         \
-          functions_of_time) const noexcept;                                 \
+          functions_of_time) const;                                          \
   template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame> \
   Rotation3D::inv_jacobian(                                                  \
       const std::array<DTYPE(data), 3>& source_coords, double time,          \
       const std::unordered_map<                                              \
           std::string,                                                       \
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&         \
-          functions_of_time) const noexcept;
+          functions_of_time) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector,
                                       std::reference_wrapper<const double>,

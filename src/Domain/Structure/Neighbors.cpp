@@ -15,7 +15,7 @@
 
 template <size_t VolumeDim>
 Neighbors<VolumeDim>::Neighbors(std::unordered_set<ElementId<VolumeDim>> ids,
-                                OrientationMap<VolumeDim> orientation) noexcept
+                                OrientationMap<VolumeDim> orientation)
     : ids_(std::move(ids)), orientation_(std::move(orientation)) {
   // Assuming a maximum 2-to-1 refinement between neighboring elements:
   ASSERT(ids_.size() <= maximum_number_of_neighbors_per_direction(VolumeDim),
@@ -25,7 +25,7 @@ Neighbors<VolumeDim>::Neighbors(std::unordered_set<ElementId<VolumeDim>> ids,
 
 template <size_t VolumeDim>
 void Neighbors<VolumeDim>::add_ids(
-    const std::unordered_set<ElementId<VolumeDim>>& additional_ids) noexcept {
+    const std::unordered_set<ElementId<VolumeDim>>& additional_ids) {
   for (const auto& id : additional_ids) {
     ids_.insert(id);
   }
@@ -36,40 +36,39 @@ void Neighbors<VolumeDim>::add_ids(
 }
 
 template <size_t VolumeDim>
-std::ostream& operator<<(std::ostream& os,
-                         const Neighbors<VolumeDim>& n) noexcept {
+std::ostream& operator<<(std::ostream& os, const Neighbors<VolumeDim>& n) {
   os << "Ids = " << n.ids() << "; orientation = " << n.orientation();
   return os;
 }
 
 template <size_t VolumeDim>
 bool operator==(const Neighbors<VolumeDim>& lhs,
-                const Neighbors<VolumeDim>& rhs) noexcept {
+                const Neighbors<VolumeDim>& rhs) {
   return (lhs.ids() == rhs.ids() and lhs.orientation() == rhs.orientation());
 }
 
 template <size_t VolumeDim>
 bool operator!=(const Neighbors<VolumeDim>& lhs,
-                const Neighbors<VolumeDim>& rhs) noexcept {
+                const Neighbors<VolumeDim>& rhs) {
   return not(lhs == rhs);
 }
 
 template <size_t VolumeDim>
-void Neighbors<VolumeDim>::pup(PUP::er& p) noexcept {
+void Neighbors<VolumeDim>::pup(PUP::er& p) {
   p | ids_;
   p | orientation_;
 }
 
 #define GET_DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATION(r, data)                                            \
-  template class Neighbors<GET_DIM(data)>;                                \
-  template std::ostream& operator<<(                                      \
-      std::ostream& os, const Neighbors<GET_DIM(data)>& block) noexcept;  \
-  template bool operator==(const Neighbors<GET_DIM(data)>& lhs,           \
-                           const Neighbors<GET_DIM(data)>& rhs) noexcept; \
-  template bool operator!=(const Neighbors<GET_DIM(data)>& lhs,           \
-                           const Neighbors<GET_DIM(data)>& rhs) noexcept;
+#define INSTANTIATION(r, data)                                              \
+  template class Neighbors<GET_DIM(data)>;                                  \
+  template std::ostream& operator<<(std::ostream& os,                       \
+                                    const Neighbors<GET_DIM(data)>& block); \
+  template bool operator==(const Neighbors<GET_DIM(data)>& lhs,             \
+                           const Neighbors<GET_DIM(data)>& rhs);            \
+  template bool operator!=(const Neighbors<GET_DIM(data)>& lhs,             \
+                           const Neighbors<GET_DIM(data)>& rhs);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 

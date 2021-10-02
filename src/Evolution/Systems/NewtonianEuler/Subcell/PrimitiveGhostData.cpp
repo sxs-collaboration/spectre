@@ -15,13 +15,12 @@
 
 namespace NewtonianEuler::subcell {
 template <size_t Dim>
-auto PrimitiveGhostDataOnSubcells<Dim>::apply(
-    const Variables<prim_tags>& prims) noexcept
+auto PrimitiveGhostDataOnSubcells<Dim>::apply(const Variables<prim_tags>& prims)
     -> Variables<prims_to_reconstruct_tags> {
   Variables<prims_to_reconstruct_tags> prims_for_reconstruction{
       prims.number_of_grid_points()};
   tmpl::for_each<prims_to_reconstruct_tags>(
-      [&prims, &prims_for_reconstruction](auto tag_v) noexcept {
+      [&prims, &prims_for_reconstruction](auto tag_v) {
         using tag = tmpl::type_from<decltype(tag_v)>;
         get<tag>(prims_for_reconstruction) = get<tag>(prims);
       });
@@ -29,16 +28,16 @@ auto PrimitiveGhostDataOnSubcells<Dim>::apply(
 }
 
 template <size_t Dim>
-auto PrimitiveGhostDataToSlice<Dim>::apply(
-    const Variables<prim_tags>& prims, const Mesh<Dim>& dg_mesh,
-    const Mesh<Dim>& subcell_mesh) noexcept
+auto PrimitiveGhostDataToSlice<Dim>::apply(const Variables<prim_tags>& prims,
+                                           const Mesh<Dim>& dg_mesh,
+                                           const Mesh<Dim>& subcell_mesh)
     -> Variables<prims_to_reconstruct_tags> {
   // We send the projected prims. There are truncation level errors
   // introduced here, but let's try it!
   Variables<prims_to_reconstruct_tags> prims_for_reconstruction{
       prims.number_of_grid_points()};
   tmpl::for_each<prims_to_reconstruct_tags>(
-      [&prims, &prims_for_reconstruction](auto tag_v) noexcept {
+      [&prims, &prims_for_reconstruction](auto tag_v) {
         using tag = tmpl::type_from<decltype(tag_v)>;
         get<tag>(prims_for_reconstruction) = get<tag>(prims);
       });

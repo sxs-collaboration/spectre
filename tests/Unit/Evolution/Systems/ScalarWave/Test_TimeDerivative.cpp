@@ -38,16 +38,15 @@ struct ConstraintGamma2Copy : db::SimpleTag {
 
 template <size_t Dim>
 auto add_scalar_to_tensor_components(
-    const tnsr::i<DataVector, Dim, Frame::Inertial>& input,
-    double constant) noexcept {
-  tnsr::i<DataVector, Dim, Frame::Inertial> copy_of_input =
-      [&input, &constant]() noexcept {
-        auto local_copy_of_input = input;
-        for (size_t i = 0; i < Dim; ++i) {
-          local_copy_of_input.get(i) += constant;
-        }
-        return local_copy_of_input;
-      }();
+    const tnsr::i<DataVector, Dim, Frame::Inertial>& input, double constant) {
+  tnsr::i<DataVector, Dim, Frame::Inertial> copy_of_input = [&input,
+                                                             &constant]() {
+    auto local_copy_of_input = input;
+    for (size_t i = 0; i < Dim; ++i) {
+      local_copy_of_input.get(i) += constant;
+    }
+    return local_copy_of_input;
+  }();
   return copy_of_input;
 }
 template <size_t Dim>
@@ -83,7 +82,7 @@ void check_du_dt(const size_t npts, const double time) {
         Scalar<DataVector>(pow<Dim>(npts), 0.0),
         Scalar<DataVector>(-1.0 * solution.dpsi_dt(x, time).get()),
         add_scalar_to_tensor_components(solution.dpsi_dx(x, time), constraint),
-        [&x, &time, &solution]() noexcept {
+        [&x, &time, &solution]() {
           auto dpi_dx = solution.d2psi_dtdx(x, time);
           for (size_t i = 0; i < Dim; ++i) {
             dpi_dx.get(i) *= -1.0;
@@ -91,7 +90,7 @@ void check_du_dt(const size_t npts, const double time) {
           return dpi_dx;
         }(),
         solution.dpsi_dx(x, time),
-        [&npts, &x, &time, &solution]() noexcept {
+        [&npts, &x, &time, &solution]() {
           tnsr::ij<DataVector, Dim, Frame::Inertial> d2psi_dxdx{pow<Dim>(npts),
                                                                 0.0};
           const tnsr::ii<DataVector, Dim, Frame::Inertial> ddpsi_soln =

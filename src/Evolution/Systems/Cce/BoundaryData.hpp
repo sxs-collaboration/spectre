@@ -46,7 +46,7 @@ void trigonometric_functions_on_swsh_collocation(
     gsl::not_null<Scalar<DataVector>*> cos_phi,
     gsl::not_null<Scalar<DataVector>*> cos_theta,
     gsl::not_null<Scalar<DataVector>*> sin_phi,
-    gsl::not_null<Scalar<DataVector>*> sin_theta, size_t l_max) noexcept;
+    gsl::not_null<Scalar<DataVector>*> sin_theta, size_t l_max);
 
 /*!
  * \brief Creates both the Jacobian and inverse Jacobian between Cartesian and
@@ -81,7 +81,7 @@ void cartesian_to_spherical_coordinates_and_jacobians(
         inverse_cartesian_to_spherical_jacobian,
     const Scalar<DataVector>& cos_phi, const Scalar<DataVector>& cos_theta,
     const Scalar<DataVector>& sin_phi, const Scalar<DataVector>& sin_theta,
-    double extraction_radius) noexcept;
+    double extraction_radius);
 
 /*
  * \brief Compute \f$g_{i j}\f$, \f$g^{i j}\f$, \f$\partial_i g_{j k}\f$, and
@@ -108,7 +108,7 @@ void cartesian_spatial_metric_and_derivatives_from_modes(
     const tnsr::ii<ComplexModalVector, 3>& dr_spatial_metric_coefficients,
     const tnsr::ii<ComplexModalVector, 3>& dt_spatial_metric_coefficients,
     const CartesianiSphericalJ& inverse_cartesian_to_spherical_jacobian,
-    size_t l_max) noexcept;
+    size_t l_max);
 
 /*!
  * \brief Compute \f$\beta^{i}\f$, \f$\partial_i \beta^{j}\f$, and
@@ -134,7 +134,7 @@ void cartesian_shift_and_derivatives_from_modes(
     const tnsr::I<ComplexModalVector, 3>& dr_shift_coefficients,
     const tnsr::I<ComplexModalVector, 3>& dt_shift_coefficients,
     const CartesianiSphericalJ& inverse_cartesian_to_spherical_jacobian,
-    size_t l_max) noexcept;
+    size_t l_max);
 
 /*!
  * \brief Compute \f$\alpha\f$, \f$\partial_i \alpha\f$, and
@@ -160,7 +160,7 @@ void cartesian_lapse_and_derivatives_from_modes(
     const Scalar<ComplexModalVector>& dr_lapse_coefficients,
     const Scalar<ComplexModalVector>& dt_lapse_coefficients,
     const CartesianiSphericalJ& inverse_cartesian_to_spherical_jacobian,
-    size_t l_max) noexcept;
+    size_t l_max);
 
 /*!
  * \brief Computes the spacetime metric and its first derivative in the
@@ -193,7 +193,7 @@ void null_metric_and_derivative(
     gsl::not_null<tnsr::aa<DataVector, 3, Frame::RadialNull>*> null_metric,
     const SphericaliCartesianJ& cartesian_to_spherical_jacobian,
     const tnsr::aa<DataVector, 3>& dt_spacetime_metric,
-    const tnsr::aa<DataVector, 3>& spacetime_metric) noexcept;
+    const tnsr::aa<DataVector, 3>& spacetime_metric);
 
 /*!
  * \brief Computes the spatial unit normal vector \f$s^i\f$ to the spherical
@@ -212,7 +212,7 @@ void worldtube_normal_and_derivatives(
     const tnsr::aa<DataVector, 3>& spacetime_metric,
     const tnsr::aa<DataVector, 3>& dt_spacetime_metric,
     const Scalar<DataVector>& sin_phi, const Scalar<DataVector>& sin_theta,
-    const tnsr::II<DataVector, 3>& inverse_spatial_metric) noexcept;
+    const tnsr::II<DataVector, 3>& inverse_spatial_metric);
 
 /*!
  * \brief Computes the null 4-vector \f$l^\mu\f$ on the worldtube surface that
@@ -234,7 +234,7 @@ void null_vector_l_and_derivatives(
     const tnsr::I<DataVector, 3>& dt_shift, const Scalar<DataVector>& lapse,
     const tnsr::aa<DataVector, 3>& spacetime_metric,
     const tnsr::I<DataVector, 3>& shift,
-    const tnsr::I<DataVector, 3>& worldtube_normal) noexcept;
+    const tnsr::I<DataVector, 3>& worldtube_normal);
 
 /*!
  * \brief Computes the partial derivative of the spacetime metric and inverse
@@ -259,7 +259,7 @@ void dlambda_null_metric_and_inverse(
     const tnsr::A<DataVector, 3>& du_null_l,
     const tnsr::AA<DataVector, 3, Frame::RadialNull>& inverse_null_metric,
     const tnsr::A<DataVector, 3>& null_l,
-    const tnsr::aa<DataVector, 3>& spacetime_metric) noexcept;
+    const tnsr::aa<DataVector, 3>& spacetime_metric);
 
 /*!
  * \brief Computes the Bondi radius of the worldtube.
@@ -275,9 +275,8 @@ void dlambda_null_metric_and_inverse(
  *
  * where \f$q_{A B}\f$ is the unit sphere metric.
  */
-void bondi_r(
-    gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*> bondi_r,
-    const tnsr::aa<DataVector, 3, Frame::RadialNull>& null_metric) noexcept;
+void bondi_r(gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*> bondi_r,
+             const tnsr::aa<DataVector, 3, Frame::RadialNull>& null_metric);
 
 /*!
  * \brief Computes the full 4-dimensional partial of the Bondi radius with
@@ -301,7 +300,7 @@ void d_bondi_r(
     const tnsr::aa<DataVector, 3, Frame::RadialNull>& dlambda_null_metric,
     const tnsr::aa<DataVector, 3, Frame::RadialNull>& du_null_metric,
     const tnsr::AA<DataVector, 3, Frame::RadialNull>& inverse_null_metric,
-    size_t l_max) noexcept;
+    size_t l_max);
 
 /*!
  * \brief Compute the complex angular dyads used to define the spin-weighted
@@ -321,8 +320,7 @@ void d_bondi_r(
  */
 void dyads(
     gsl::not_null<tnsr::i<ComplexDataVector, 2, Frame::RadialNull>*> down_dyad,
-    gsl::not_null<tnsr::I<ComplexDataVector, 2, Frame::RadialNull>*>
-        up_dyad) noexcept;
+    gsl::not_null<tnsr::I<ComplexDataVector, 2, Frame::RadialNull>*> up_dyad);
 
 /*!
  * \brief Compute the \f$\beta\f$ (lapse) function for the CCE Bondi-like
@@ -338,7 +336,7 @@ void dyads(
  */
 void beta_worldtube_data(
     gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*> beta,
-    const tnsr::a<DataVector, 3, Frame::RadialNull>& d_bondi_r) noexcept;
+    const tnsr::a<DataVector, 3, Frame::RadialNull>& d_bondi_r);
 
 /*!
  * \brief Compute the \f$U\f$ (shift) function for the CCE Bondi-like metric.
@@ -357,8 +355,7 @@ void bondi_u_worldtube_data(
     gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 1>>*> bondi_u,
     const tnsr::i<ComplexDataVector, 2, Frame::RadialNull>& dyad,
     const tnsr::a<DataVector, 3, Frame::RadialNull>& d_bondi_r,
-    const tnsr::AA<DataVector, 3, Frame::RadialNull>&
-        inverse_null_metric) noexcept;
+    const tnsr::AA<DataVector, 3, Frame::RadialNull>& inverse_null_metric);
 
 /*!
  * \brief Compute the \f$W\f$ (mass aspect) function for the CCE Bondi-like
@@ -379,7 +376,7 @@ void bondi_w_worldtube_data(
     gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*> bondi_w,
     const tnsr::a<DataVector, 3, Frame::RadialNull>& d_bondi_r,
     const tnsr::AA<DataVector, 3, Frame::RadialNull>& inverse_null_metric,
-    const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_r) noexcept;
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_r);
 
 /*!
  * \brief Compute the \f$J\f$ (intuitively similar to the transverse-traceless
@@ -394,7 +391,7 @@ void bondi_j_worldtube_data(
     gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 2>>*> bondi_j,
     const tnsr::aa<DataVector, 3, Frame::RadialNull>& null_metric,
     const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_r,
-    const tnsr::I<ComplexDataVector, 2, Frame::RadialNull>& dyad) noexcept;
+    const tnsr::I<ComplexDataVector, 2, Frame::RadialNull>& dyad);
 
 /*!
  * \brief Compute the radial derivative of the angular metric spin-weighted
@@ -418,7 +415,7 @@ void dr_bondi_j(
     const tnsr::a<DataVector, 3, Frame::RadialNull>& d_bondi_r,
     const Scalar<SpinWeighted<ComplexDataVector, 2>>& bondi_j,
     const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_r,
-    const tnsr::I<ComplexDataVector, 2, Frame::RadialNull>& dyad) noexcept;
+    const tnsr::I<ComplexDataVector, 2, Frame::RadialNull>& dyad);
 
 /*!
  * \brief Compute the second derivative of the Bondi radius with respect to the
@@ -443,7 +440,7 @@ void d2lambda_bondi_r(
     const tnsr::a<DataVector, 3, Frame::RadialNull>& d_bondi_r,
     const Scalar<SpinWeighted<ComplexDataVector, 2>>& dr_bondi_j,
     const Scalar<SpinWeighted<ComplexDataVector, 2>>& bondi_j,
-    const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_r) noexcept;
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_r);
 
 /*!
  * \brief Compute the Bondi metric contribution \f$Q\f$ (radial derivative of
@@ -486,7 +483,7 @@ void bondi_q_worldtube_data(
     const tnsr::AA<DataVector, 3, Frame::RadialNull>& inverse_null_metric,
     const Scalar<SpinWeighted<ComplexDataVector, 2>>& bondi_j,
     const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_r,
-    const Scalar<SpinWeighted<ComplexDataVector, 1>>& bondi_u) noexcept;
+    const Scalar<SpinWeighted<ComplexDataVector, 1>>& bondi_u);
 
 /*!
  * \brief Compute the Bondi metric contribution \f$(\partial_u J)_{y} \equiv
@@ -513,7 +510,7 @@ void bondi_h_worldtube_data(
     const Scalar<SpinWeighted<ComplexDataVector, 2>>& bondi_j,
     const tnsr::aa<DataVector, 3, Frame::RadialNull>& du_null_metric,
     const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_r,
-    const tnsr::I<ComplexDataVector, 2, Frame::RadialNull>& dyad) noexcept;
+    const tnsr::I<ComplexDataVector, 2, Frame::RadialNull>& dyad);
 
 /*!
  * \brief Compute the Bondi metric contribution \f$(\partial_u J)_r\f$ (the
@@ -540,7 +537,7 @@ void du_j_worldtube_data(
     const tnsr::aa<DataVector, 3, Frame::RadialNull>& du_null_metric,
     const tnsr::aa<DataVector, 3, Frame::RadialNull>& dlambda_null_metric,
     const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_r,
-    const tnsr::I<ComplexDataVector, 2, Frame::RadialNull>& dyad) noexcept;
+    const tnsr::I<ComplexDataVector, 2, Frame::RadialNull>& dyad);
 
 namespace Tags {
 /// The collection of tags mutated by `create_bondi_boundary_data`
@@ -569,7 +566,7 @@ void create_bondi_boundary_data(
     const tnsr::A<DataVector, 3>& null_l,
     const tnsr::A<DataVector, 3>& du_null_l,
     const SphericaliCartesianJ& cartesian_to_spherical_jacobian,
-    const size_t l_max, const double extraction_radius) noexcept {
+    const size_t l_max, const double extraction_radius) {
   const size_t size = Spectral::Swsh::number_of_swsh_collocation_points(l_max);
 
   // unfortunately, because the dyads are not themselves spin-weighted, they
@@ -793,7 +790,7 @@ void create_bondi_boundary_data(
     const gsl::not_null<Variables<BoundaryTagList>*> bondi_boundary_data,
     const tnsr::iaa<DataVector, 3>& phi, const tnsr::aa<DataVector, 3>& pi,
     const tnsr::aa<DataVector, 3>& spacetime_metric,
-    const double extraction_radius, const size_t l_max) noexcept {
+    const double extraction_radius, const size_t l_max) {
   const size_t size = Spectral::Swsh::number_of_swsh_collocation_points(l_max);
   // Most allocations required for the full boundary computation are merged into
   // a single, large Variables allocation. There remain a handful of cases in
@@ -997,7 +994,7 @@ void create_bondi_boundary_data(
     const Scalar<ComplexModalVector>& lapse_coefficients,
     const Scalar<ComplexModalVector>& dt_lapse_coefficients,
     const Scalar<ComplexModalVector>& dr_lapse_coefficients,
-    const double extraction_radius, const size_t l_max) noexcept {
+    const double extraction_radius, const size_t l_max) {
   const size_t size = Spectral::Swsh::number_of_swsh_collocation_points(l_max);
 
   // Most allocations required for the full boundary computation are merged into

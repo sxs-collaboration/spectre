@@ -98,14 +98,13 @@ struct MockReceivePoints {
       std::vector<std::optional<
           IdPair<domain::BlockId,
                  tnsr::I<double, VolumeDim, typename Frame::BlockLogical>>>>&&
-          block_coord_holders) noexcept {
+          block_coord_holders) {
     db::mutate<intrp::Tags::InterpolatedVarsHolders<Metavariables>>(
         make_not_null(&box),
-        [
-          &temporal_id, &block_coord_holders
-        ](const gsl::not_null<
-            typename intrp::Tags::InterpolatedVarsHolders<Metavariables>::type*>
-              vars_holders) noexcept {
+        [&temporal_id, &block_coord_holders](
+            const gsl::not_null<typename intrp::Tags::InterpolatedVarsHolders<
+                Metavariables>::type*>
+                vars_holders) {
           auto& vars_infos =
               get<intrp::Vars::HolderTag<InterpolationTargetTag,
                                          Metavariables>>(*vars_holders)
@@ -151,7 +150,7 @@ template <typename MetaVariables, typename InterpolationTargetOptionTag,
 void test_interpolation_target(
     const DomainCreator& domain_creator,
     typename InterpolationTargetOptionTag::type options,
-    const BlockCoordHolder& expected_block_coord_holders) noexcept {
+    const BlockCoordHolder& expected_block_coord_holders) {
   using metavars = MetaVariables;
   using temporal_id_type =
       typename metavars::InterpolationTargetA::temporal_id::type;

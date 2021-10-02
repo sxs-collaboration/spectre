@@ -22,7 +22,7 @@ void interpolate_dt_terms_gauss_points_impl_xi_dir(
     const size_t num_independent_components, const size_t num_volume_pts,
     const size_t num_boundary_pts,
     const gsl::span<const double>& dt_corrections,
-    const DataVector& boundary_interpolation_term) noexcept {
+    const DataVector& boundary_interpolation_term) {
   DataVector volume_dt_vars_view{};
   for (size_t component_index = 0; component_index < num_independent_components;
        ++component_index) {
@@ -47,7 +47,7 @@ void interpolate_dt_terms_gauss_points_impl(
     const size_t num_independent_components, const Mesh<Dim>& volume_mesh,
     const size_t dimension, const size_t num_boundary_pts,
     const gsl::span<const double>& dt_corrections,
-    const DataVector& boundary_interpolation_term) noexcept {
+    const DataVector& boundary_interpolation_term) {
   const size_t num_volume_pts = volume_mesh.number_of_grid_points();
   if (dimension == 0) {
     interpolate_dt_terms_gauss_points_impl_xi_dir(
@@ -89,7 +89,7 @@ void interpolate_dt_terms_gauss_points_impl(
       size_t num_independent_components, const Mesh<DIM(data)>& volume_mesh, \
       size_t dimension, size_t num_boundary_pts,                             \
       const gsl::span<const double>& dt_corrections,                         \
-      const DataVector& boundary_interpolation_term) noexcept;
+      const DataVector& boundary_interpolation_term);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 

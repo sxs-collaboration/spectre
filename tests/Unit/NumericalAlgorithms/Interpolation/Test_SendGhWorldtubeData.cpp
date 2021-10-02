@@ -30,7 +30,7 @@ struct dispatch_to_send_gh_worldtube_data {
                 std::is_same_v<::Tags::TimeStepId, DbTags>...>> = nullptr>
   static void apply(const db::DataBox<tmpl::list<DbTags...>>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
-                    const ArrayIndex& /*array_index*/) noexcept {
+                    const ArrayIndex& /*array_index*/) {
     intrp::callbacks::SendGhWorldtubeData<
         Cce::CharacteristicEvolution<Metavariables>,
         ::Tags::TimeStepId>::apply(box, cache,
@@ -57,7 +57,7 @@ struct test_receive_gh_data {
                     const tnsr::aa<DataVector, 3>& pi,
                     const tnsr::aa<DataVector, 3>& dt_spacetime_metric,
                     const tnsr::iaa<DataVector, 3>& dt_phi,
-                    const tnsr::aa<DataVector, 3>& dt_pi) noexcept {
+                    const tnsr::aa<DataVector, 3>& dt_pi) {
     received_time_step_id = time_step_id;
     received_spacetime_metric = spacetime_metric;
     received_phi = phi;
@@ -128,7 +128,7 @@ SPECTRE_TEST_CASE(
   Variables<spacetime_tags> spacetime_variables{
       Spectral::Swsh::number_of_swsh_collocation_points(l_max)};
   tmpl::for_each<spacetime_tags>([&gen, &value_distribution,
-                                  &spacetime_variables](auto tag_v) noexcept {
+                                  &spacetime_variables](auto tag_v) {
     using tag = typename decltype(tag_v)::type;
     fill_with_random_values(make_not_null(&get<tag>(spacetime_variables)),
                             make_not_null(&gen),

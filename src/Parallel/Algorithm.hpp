@@ -185,18 +185,17 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
 
   /// \cond
   // Needed for serialization
-  AlgorithmImpl() noexcept;
+  AlgorithmImpl();
   /// \endcond
 
   /// Constructor used by Main to initialize the algorithm
   template <class... InitializationTags>
   AlgorithmImpl(
-      const Parallel::CProxy_GlobalCache<metavariables>&
-          global_cache_proxy,
-      tuples::TaggedTuple<InitializationTags...> initialization_items) noexcept;
+      const Parallel::CProxy_GlobalCache<metavariables>& global_cache_proxy,
+      tuples::TaggedTuple<InitializationTags...> initialization_items);
 
   /// Charm++ migration constructor, used after a chare is migrated
-  explicit AlgorithmImpl(CkMigrateMessage* /*msg*/) noexcept;
+  explicit AlgorithmImpl(CkMigrateMessage* /*msg*/);
 
   /// \cond
   ~AlgorithmImpl() override;
@@ -208,18 +207,18 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
   /// \endcond
 
   /// Print the expanded type aliases
-  std::string print_types() const noexcept;
+  std::string print_types() const;
 
   /// Print the current state of the algorithm
-  std::string print_state() const noexcept;
+  std::string print_state() const;
 
   /// Print the current contents of the inboxes
-  std::string print_inbox() const noexcept;
+  std::string print_inbox() const;
 
   /// Print the current contents of the DataBox
-  std::string print_databox() const noexcept;
+  std::string print_databox() const;
 
-  void pup(PUP::er& p) noexcept override;  // NOLINT
+  void pup(PUP::er& p) override;  // NOLINT
 
   /*!
    * \brief Calls the `apply` function `Action` after a reduction has been
@@ -228,15 +227,15 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
    * The `apply` function must take `arg` as its last argument.
    */
   template <typename Action, typename Arg>
-  void reduction_action(Arg arg) noexcept;
+  void reduction_action(Arg arg);
 
   /// \brief Explicitly call the action `Action`. If the returned DataBox type
   /// is not one of the types of the algorithm then a compilation error occurs.
   template <typename Action, typename... Args>
-  void simple_action(std::tuple<Args...> args) noexcept;
+  void simple_action(std::tuple<Args...> args);
 
   template <typename Action>
-  void simple_action() noexcept;
+  void simple_action();
 
   /// \brief Call the `Action` sychronously, returning a result without any
   /// parallelization. The action is called immediately and control flow returns
@@ -246,8 +245,7 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
   /// type. This constraint is to simplify the variant visitation logic for the
   /// \ref DataBoxGroup "DataBox".
   template <typename Action, typename... Args>
-  typename Action::return_type local_synchronous_action(
-      Args&&... args) noexcept;
+  typename Action::return_type local_synchronous_action(Args&&... args);
 
   /// @{
   /// Call an Action on a local nodegroup requiring the Action to handle thread
@@ -263,7 +261,7 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
       typename Action, typename... Args,
       Requires<(sizeof...(Args), std::is_same_v<Parallel::Algorithms::Nodegroup,
                                                 chare_type>)> = nullptr>
-  void threaded_action(std::tuple<Args...> args) noexcept {
+  void threaded_action(std::tuple<Args...> args) {
     // Note: this method is defined inline because GCC fails to compile when the
     // definition is out of line.
     (void)Parallel::charmxx::RegisterThreadedAction<ParallelComponent, Action,
@@ -273,7 +271,7 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
   }
 
   template <typename Action>
-  void threaded_action() noexcept;
+  void threaded_action();
   /// @}
 
   /// \brief Receive data and store it in the Inbox, and try to continue
@@ -284,73 +282,66 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
   /// re-enabling of algorithms
   template <typename ReceiveTag, typename ReceiveDataType>
   void receive_data(typename ReceiveTag::temporal_id instance,
-                    ReceiveDataType&& t,
-                    bool enable_if_disabled = false) noexcept;
+                    ReceiveDataType&& t, bool enable_if_disabled = false);
 
   /// @{
   /// Start evaluating the algorithm until it is stopped by an action.
-  constexpr void perform_algorithm() noexcept;
+  constexpr void perform_algorithm();
 
-  constexpr void perform_algorithm(const bool restart_if_terminated) noexcept;
+  constexpr void perform_algorithm(const bool restart_if_terminated);
   /// @}
 
   /// Start execution of the phase-dependent action list in `next_phase`. If
   /// `next_phase` has already been visited, execution will resume at the point
   /// where the previous execution of the same phase left off.
-  void start_phase(const PhaseType next_phase) noexcept;
+  void start_phase(const PhaseType next_phase);
 
   /// Tell the Algorithm it should no longer execute the algorithm. This does
   /// not mean that the execution of the program is terminated, but only that
   /// the algorithm has terminated. An algorithm can be restarted by passing
   /// `true` as the second argument to the `receive_data` method or by calling
   /// perform_algorithm(true).
-  constexpr void set_terminate(const bool t) noexcept { terminate_ = t; }
+  constexpr void set_terminate(const bool t) { terminate_ = t; }
 
   /// Check if an algorithm should continue being evaluated
-  constexpr bool get_terminate() const noexcept { return terminate_; }
+  constexpr bool get_terminate() const { return terminate_; }
 
   /// @{
   /// Wrappers for charm++ informational functions.
 
   /// Number of processing elements
-  inline int number_of_procs() const noexcept {
-    return sys::number_of_procs();
-  }
+  inline int number_of_procs() const { return sys::number_of_procs(); }
 
   /// %Index of my processing element.
-  inline int my_proc() const noexcept { return sys::my_proc(); }
+  inline int my_proc() const { return sys::my_proc(); }
 
   /// Number of nodes.
-  inline int number_of_nodes() const noexcept {
-    return sys::number_of_nodes();
-  }
+  inline int number_of_nodes() const { return sys::number_of_nodes(); }
 
   /// %Index of my node.
-  inline int my_node() const noexcept { return sys::my_node(); }
+  inline int my_node() const { return sys::my_node(); }
 
   /// Number of processing elements on the given node.
-  inline int procs_on_node(const int node_index) const noexcept {
+  inline int procs_on_node(const int node_index) const {
     return sys::procs_on_node(node_index);
   }
 
   /// The local index of my processing element on my node.
   /// This is in the interval 0, ..., procs_on_node(my_node()) - 1.
-  inline int my_local_rank() const noexcept {
-    return sys::my_local_rank();
-  }
+  inline int my_local_rank() const { return sys::my_local_rank(); }
 
   /// %Index of first processing element on the given node.
-  inline int first_proc_on_node(const int node_index) const noexcept {
+  inline int first_proc_on_node(const int node_index) const {
     return sys::first_proc_on_node(node_index);
   }
 
   /// %Index of the node for the given processing element.
-  inline int node_of(const int proc_index) const noexcept {
+  inline int node_of(const int proc_index) const {
     return sys::node_of(proc_index);
   }
 
   /// The local index for the given processing element on its node.
-  inline int local_rank_of(const int proc_index) const noexcept {
+  inline int local_rank_of(const int proc_index) const {
     return sys::local_rank_of(proc_index);
   }
   /// @}
@@ -359,37 +350,35 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
   template <typename ThisVariant, typename... Variants>
   void touch_global_cache_proxy_in_databox_impl(
       boost::variant<Variants...>& box, const gsl::not_null<int*> iter,
-      const gsl::not_null<bool*> already_visited) noexcept;
+      const gsl::not_null<bool*> already_visited);
 
   template <typename... Variants>
-  void touch_global_cache_proxy_in_databox(
-      boost::variant<Variants...>& box) noexcept;
+  void touch_global_cache_proxy_in_databox(boost::variant<Variants...>& box);
 
   template <typename ThisVariant, typename... Variants, typename... Args>
   void perform_registration_or_deregistration_impl(
       PUP::er& p, const boost::variant<Variants...>& box,
       const gsl::not_null<int*> iter,
-      const gsl::not_null<bool*> already_visited) noexcept;
+      const gsl::not_null<bool*> already_visited);
 
   template <typename... Variants, typename... Args>
   void perform_registration_or_deregistration(
-      PUP::er& p, const boost::variant<Variants...>& box) noexcept;
+      PUP::er& p, const boost::variant<Variants...>& box);
 
-  void set_array_index() noexcept;
+  void set_array_index();
 
   template <typename PhaseDepActions, size_t... Is>
-  constexpr bool iterate_over_actions(
-      std::index_sequence<Is...> /*meta*/) noexcept;
+  constexpr bool iterate_over_actions(std::index_sequence<Is...> /*meta*/);
 
   template <typename Action, typename... Args, size_t... Is>
   void forward_tuple_to_action(std::tuple<Args...>&& args,
-                               std::index_sequence<Is...> /*meta*/) noexcept;
+                               std::index_sequence<Is...> /*meta*/);
 
   template <typename Action, typename... Args, size_t... Is>
   void forward_tuple_to_threaded_action(
-      std::tuple<Args...>&& args, std::index_sequence<Is...> /*meta*/) noexcept;
+      std::tuple<Args...>&& args, std::index_sequence<Is...> /*meta*/);
 
-  size_t number_of_actions_in_phase(const PhaseType phase) const noexcept;
+  size_t number_of_actions_in_phase(const PhaseType phase) const;
 
   // Invoke the static `apply` method of `ThisAction`. The if constexprs are for
   // handling the cases where the `apply` method returns a tuple of one, two,
@@ -406,7 +395,7 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
   // Returns whether the action ran successfully, i.e., did not return
   // AlgorithmExecution::Retry.
   template <typename ThisAction, typename ActionList, typename DbTags>
-  bool invoke_iterable_action(db::DataBox<DbTags>& my_box) noexcept;
+  bool invoke_iterable_action(db::DataBox<DbTags>& my_box);
 
   // Member variables
 
@@ -466,7 +455,7 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
 /// \cond
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
-    AlgorithmImpl() noexcept {
+    AlgorithmImpl() {
   set_array_index();
 }
 
@@ -476,7 +465,7 @@ AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
     AlgorithmImpl(
         const Parallel::CProxy_GlobalCache<metavariables>& global_cache_proxy,
         tuples::TaggedTuple<InitializationTags...>
-            initialization_items) noexcept
+            initialization_items)
     : AlgorithmImpl() {
   (void)initialization_items;  // avoid potential compiler warnings if unused
   // When we are using the LoadBalancing phase, we want the Main component to
@@ -507,7 +496,7 @@ AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
-    AlgorithmImpl(CkMigrateMessage* msg) noexcept
+    AlgorithmImpl(CkMigrateMessage* msg)
     : cbase_type(msg) {}
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
@@ -523,7 +512,7 @@ AlgorithmImpl<ParallelComponent,
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 std::string AlgorithmImpl<ParallelComponent,
                           tmpl::list<PhaseDepActionListsPack...>>::print_types()
-    const noexcept {
+    const {
   std::ostringstream os;
   os << "Algorithm type aliases:\n";
   os << "using all_actions_list = " << pretty_type::get_name<all_actions_list>()
@@ -558,7 +547,7 @@ std::string AlgorithmImpl<ParallelComponent,
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 std::string AlgorithmImpl<ParallelComponent,
                           tmpl::list<PhaseDepActionListsPack...>>::print_state()
-    const noexcept {
+    const {
   std::ostringstream os;
   os << "State:\n";
   os << "performing_action_ = " << std::boolalpha << performing_action_
@@ -576,16 +565,16 @@ std::string AlgorithmImpl<ParallelComponent,
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 std::string AlgorithmImpl<ParallelComponent,
                           tmpl::list<PhaseDepActionListsPack...>>::print_inbox()
-    const noexcept {
+    const {
   std::ostringstream os;
   os << "inboxes_ = " << inboxes_ << ";\n";
   return os.str();
 }
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
-std::string AlgorithmImpl<
-    ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::print_databox()
-    const noexcept {
+std::string
+AlgorithmImpl<ParallelComponent,
+              tmpl::list<PhaseDepActionListsPack...>>::print_databox() const {
   std::ostringstream os;
   os << "box_:\n" << box_;
   return os.str();
@@ -593,7 +582,7 @@ std::string AlgorithmImpl<
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
-    pup(PUP::er& p) noexcept {  // NOLINT
+    pup(PUP::er& p) {  // NOLINT
 #ifdef SPECTRE_CHARM_PROJECTIONS
   p | non_action_time_start_;
 #endif
@@ -644,7 +633,7 @@ void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 template <typename Action, typename Arg>
 void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
-    reduction_action(Arg arg) noexcept {
+    reduction_action(Arg arg) {
   (void)Parallel::charmxx::RegisterReductionAction<
       ParallelComponent, Action, std::decay_t<Arg>>::registrar;
   if constexpr (std::is_same_v<Parallel::NodeLock, decltype(node_lock_)>) {
@@ -671,7 +660,7 @@ void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 template <typename Action, typename... Args>
 void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
-    simple_action(std::tuple<Args...> args) noexcept {
+    simple_action(std::tuple<Args...> args) {
   (void)Parallel::charmxx::RegisterSimpleAction<ParallelComponent, Action,
                                                 Args...>::registrar;
   if constexpr (std::is_same_v<Parallel::NodeLock, decltype(node_lock_)>) {
@@ -696,8 +685,8 @@ void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 template <typename Action>
-void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
-    simple_action() noexcept {
+void AlgorithmImpl<ParallelComponent,
+                   tmpl::list<PhaseDepActionListsPack...>>::simple_action() {
   (void)Parallel::charmxx::RegisterSimpleAction<ParallelComponent,
                                                 Action>::registrar;
   if constexpr (std::is_same_v<Parallel::NodeLock, decltype(node_lock_)>) {
@@ -725,7 +714,7 @@ template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 template <typename Action, typename... Args>
 typename Action::return_type
 AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
-    local_synchronous_action(Args&&... args) noexcept {
+    local_synchronous_action(Args&&... args) {
   static_assert(Parallel::is_node_group_proxy<cproxy_type>::value,
                 "Cannot call a (blocking) local synchronous action on a "
                 "chare that is not a NodeGroup");
@@ -737,7 +726,7 @@ AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 template <typename Action>
 void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
-    threaded_action() noexcept {
+    threaded_action() {
   // NOLINTNEXTLINE(modernize-redundant-void-arg)
   (void)Parallel::charmxx::RegisterThreadedAction<ParallelComponent,
                                                   Action>::registrar;
@@ -751,7 +740,7 @@ template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 template <typename ReceiveTag, typename ReceiveDataType>
 void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
     receive_data(typename ReceiveTag::temporal_id instance, ReceiveDataType&& t,
-                 const bool enable_if_disabled) noexcept {
+                 const bool enable_if_disabled) {
   (void)Parallel::charmxx::RegisterReceiveData<ParallelComponent,
                                                ReceiveTag>::registrar;
   try {
@@ -775,9 +764,9 @@ void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
 }
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
-constexpr void AlgorithmImpl<
-    ParallelComponent,
-    tmpl::list<PhaseDepActionListsPack...>>::perform_algorithm() noexcept {
+constexpr void
+AlgorithmImpl<ParallelComponent,
+              tmpl::list<PhaseDepActionListsPack...>>::perform_algorithm() {
   if (performing_action_ or get_terminate() or
       halt_algorithm_until_next_phase_) {
     return;
@@ -788,7 +777,7 @@ constexpr void AlgorithmImpl<
   if constexpr (std::is_same_v<Parallel::NodeLock, decltype(node_lock_)>) {
     node_lock_.lock();
   }
-  const auto invoke_for_phase = [this](auto phase_dep_v) noexcept {
+  const auto invoke_for_phase = [this](auto phase_dep_v) {
     using PhaseDep = decltype(phase_dep_v);
     constexpr PhaseType phase = PhaseDep::phase;
     using actions_list = typename PhaseDep::action_list;
@@ -817,7 +806,7 @@ constexpr void AlgorithmImpl<
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 constexpr void
 AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
-    perform_algorithm(const bool restart_if_terminated) noexcept {
+    perform_algorithm(const bool restart_if_terminated) {
   if (restart_if_terminated) {
     set_terminate(false);
   }
@@ -826,7 +815,7 @@ AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
-    start_phase(const PhaseType next_phase) noexcept {
+    start_phase(const PhaseType next_phase) {
   // terminate should be true since we exited a phase previously.
   if (not get_terminate() and not halt_algorithm_until_next_phase_) {
     ERROR(
@@ -864,14 +853,14 @@ template <typename ThisVariant, typename... Variants>
 void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
     touch_global_cache_proxy_in_databox_impl(
         boost::variant<Variants...>& box, const gsl::not_null<int*> iter,
-        const gsl::not_null<bool*> already_visited) noexcept {
+        const gsl::not_null<bool*> already_visited) {
   if constexpr (db::tag_is_retrievable_v<Tags::GlobalCacheProxy<metavariables>,
                                          ThisVariant>) {
     if (box.which() == *iter and not *already_visited) {
       db::mutate<Tags::GlobalCacheProxy<metavariables>>(
           make_not_null(&(boost::get<ThisVariant>(box))),
           [](const gsl::not_null<CProxy_GlobalCache<metavariables>*>
-                 proxy) noexcept { (void)proxy; });
+                 proxy) { (void)proxy; });
       *already_visited = true;
     }
   } else {
@@ -885,7 +874,7 @@ template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 template <typename... Variants>
 void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
     touch_global_cache_proxy_in_databox(
-        boost::variant<Variants...>& box) noexcept {
+        boost::variant<Variants...>& box) {
   int iter = 0;
   bool already_visited = false;
   EXPAND_PACK_LEFT_TO_RIGHT(touch_global_cache_proxy_in_databox_impl<Variants>(
@@ -898,7 +887,7 @@ void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
     perform_registration_or_deregistration_impl(
         PUP::er& p, const boost::variant<Variants...>& box,
         const gsl::not_null<int*> iter,
-        const gsl::not_null<bool*> already_visited) noexcept {
+        const gsl::not_null<bool*> already_visited) {
   // void cast to avoid compiler warnings about the unused variable in the
   // false branch of the constexpr
   (void)already_visited;
@@ -912,7 +901,7 @@ void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
               ParallelComponent>::type;
       if (p.isPacking()) {
         tmpl::for_each<registration_list>(
-            [this, &box](auto registration_v) noexcept {
+            [this, &box](auto registration_v) {
               using registration = typename decltype(registration_v)::type;
               registration::template perform_deregistration<ParallelComponent>(
                   boost::get<ThisVariant>(box),
@@ -921,7 +910,7 @@ void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
       }
       if (p.isUnpacking()) {
         tmpl::for_each<registration_list>(
-            [this, &box](auto registration_v) noexcept {
+            [this, &box](auto registration_v) {
               using registration = typename decltype(registration_v)::type;
               registration::template perform_registration<ParallelComponent>(
                   boost::get<ThisVariant>(box),
@@ -938,7 +927,7 @@ template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 template <typename... Variants, typename... Args>
 void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
     perform_registration_or_deregistration(
-        PUP::er& p, const boost::variant<Variants...>& box) noexcept {
+        PUP::er& p, const boost::variant<Variants...>& box) {
   int iter = 0;
   bool already_visited = false;
   EXPAND_PACK_LEFT_TO_RIGHT(
@@ -948,7 +937,7 @@ void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
-    set_array_index() noexcept {
+    set_array_index() {
   if constexpr (not is_singleton) {
     // down cast to the algorithm_type, so that the `thisIndex` method can be
     // called, which is defined in the CBase class
@@ -962,9 +951,9 @@ template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 template <typename PhaseDepActions, size_t... Is>
 constexpr bool
 AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
-    iterate_over_actions(const std::index_sequence<Is...> /*meta*/) noexcept {
+    iterate_over_actions(const std::index_sequence<Is...> /*meta*/) {
   bool take_next_action = true;
-  const auto helper = [this, &take_next_action](auto iteration) noexcept {
+  const auto helper = [this, &take_next_action](auto iteration) {
     constexpr size_t iter = decltype(iteration)::value;
     if (not(take_next_action and not terminate_ and
             not halt_algorithm_until_next_phase_ and algorithm_step_ == iter)) {
@@ -985,8 +974,7 @@ AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
         tmpl::integral_list<size_t, iter>>;
     bool box_found = false;
     tmpl::for_each<potential_databox_indices>(
-        [this, &box_found,
-         &take_next_action](auto potential_databox_index_v) noexcept {
+        [this, &box_found, &take_next_action](auto potential_databox_index_v) {
           constexpr size_t potential_databox_index =
               decltype(potential_databox_index_v)::type::value;
           using this_databox =
@@ -1032,7 +1020,7 @@ template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 template <typename Action, typename... Args, size_t... Is>
 void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
     forward_tuple_to_action(std::tuple<Args...>&& args,
-                            std::index_sequence<Is...> /*meta*/) noexcept {
+                            std::index_sequence<Is...> /*meta*/) {
   Algorithm_detail::simple_action_visitor<Action, ParallelComponent>(
       box_, *(global_cache_proxy_.ckLocalBranch()),
       static_cast<const array_index&>(array_index_),
@@ -1044,7 +1032,7 @@ template <typename Action, typename... Args, size_t... Is>
 void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
     forward_tuple_to_threaded_action(
         std::tuple<Args...>&& args,
-        std::index_sequence<Is...> /*meta*/) noexcept {
+        std::index_sequence<Is...> /*meta*/) {
   const gsl::not_null<Parallel::NodeLock*> node_lock{&node_lock_};
   Algorithm_detail::simple_action_visitor<Action, ParallelComponent>(
       box_, *(global_cache_proxy_.ckLocalBranch()),
@@ -1055,7 +1043,7 @@ void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 size_t
 AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
-    number_of_actions_in_phase(const PhaseType phase) const noexcept {
+    number_of_actions_in_phase(const PhaseType phase) const {
   size_t number_of_actions = 0;
   const auto helper = [&number_of_actions, phase](auto pdal_v) {
     if (pdal_v.phase == phase) {
@@ -1069,7 +1057,7 @@ AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 template <typename ThisAction, typename ActionList, typename DbTags>
 bool AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
-    invoke_iterable_action(db::DataBox<DbTags>& my_box) noexcept {
+    invoke_iterable_action(db::DataBox<DbTags>& my_box) {
   static_assert(not Algorithm_detail::is_is_ready_callable_t<
                     ThisAction, db::DataBox<DbTags>&,
                     tuples::tagged_tuple_from_typelist<inbox_tags_list>&,
@@ -1139,7 +1127,7 @@ template <typename ParallelComponent, typename PhaseDepActionLists>
 std::ostream& operator<<(
     std::ostream& os,
     const AlgorithmImpl<ParallelComponent, PhaseDepActionLists>&
-        algorithm_impl) noexcept {
+        algorithm_impl) {
   os << algorithm_impl.print_types() << "\n";
   os << algorithm_impl.print_state() << "\n";
   os << algorithm_impl.print_inbox() << "\n";

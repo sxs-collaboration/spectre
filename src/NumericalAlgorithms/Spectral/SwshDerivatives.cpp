@@ -21,7 +21,7 @@ namespace Spectral::Swsh {
 namespace detail {
 namespace {
 template <typename DerivativeKind, int Spin>
-ComplexDiagonalModalOperator derivative_factors(const size_t l_max) noexcept {
+ComplexDiagonalModalOperator derivative_factors(const size_t l_max) {
   ComplexDiagonalModalOperator derivative_factors{
       size_of_libsharp_coefficient_vector(l_max)};
   for (const auto mode : cached_coefficients_metadata(l_max)) {
@@ -50,10 +50,10 @@ ComplexDiagonalModalOperator derivative_factors(const size_t l_max) noexcept {
 
 template <typename DerivativeKind, int Spin>
 const ComplexDiagonalModalOperator& cached_derivative_factors(
-    const size_t l_max) noexcept {
+    const size_t l_max) {
   const static auto lazy_derivative_operator_cache =
       make_static_cache<CacheRange<0_st, swsh_derivative_maximum_l_max>>(
-          [](const size_t generator_l_max) noexcept {
+          [](const size_t generator_l_max) {
             return derivative_factors<DerivativeKind, Spin>(generator_l_max);
           });
   return lazy_derivative_operator_cache(l_max);
@@ -68,7 +68,7 @@ void compute_coefficients_of_derivative(
         derivative_modes,
     const gsl::not_null<SpinWeighted<ComplexModalVector, Spin>*>
         pre_derivative_modes,
-    const size_t l_max, const size_t number_of_radial_points) noexcept {
+    const size_t l_max, const size_t number_of_radial_points) {
   derivative_modes->data().destructive_resize(pre_derivative_modes->size());
   const ComplexDiagonalModalOperator& modal_derivative_operator =
       cached_derivative_factors<DerivativeKind, Spin>(l_max);
@@ -91,7 +91,7 @@ template <typename DerivKind, ComplexRepresentation Representation, int Spin>
 SpinWeighted<ComplexDataVector, Tags::derivative_spin_weight<DerivKind> + Spin>
 angular_derivative(
     const size_t l_max, const size_t number_of_radial_points,
-    const SpinWeighted<ComplexDataVector, Spin>& to_differentiate) noexcept {
+    const SpinWeighted<ComplexDataVector, Spin>& to_differentiate) {
   auto result =
       SpinWeighted<ComplexDataVector, Tags::derivative_spin_weight<DerivKind> +
                                           Spin>{to_differentiate.size()};
@@ -113,7 +113,7 @@ angular_derivative(
           derivative_modes,                                                  \
       const gsl::not_null<SpinWeighted<ComplexModalVector, GET_SPIN(data)>*> \
           pre_derivative_modes,                                              \
-      const size_t l_max, const size_t number_of_radial_points) noexcept;    \
+      const size_t l_max, const size_t number_of_radial_points);             \
   }
 
 GENERATE_INSTANTIATIONS(DERIVKIND_AND_SPIN_INSTANTIATION,
@@ -147,7 +147,7 @@ GENERATE_INSTANTIATIONS(DERIVKIND_AND_SPIN_INSTANTIATION, (Tags::EthbarEthbar),
                      GET_SPIN(data)>(                                       \
       const size_t l_max, const size_t number_of_radial_points,             \
       const SpinWeighted<ComplexDataVector, GET_SPIN(data)>&                \
-          to_differentiate) noexcept;
+          to_differentiate);
 
 GENERATE_INSTANTIATIONS(FULL_DERIVATIVE_INSTANTIATION,
                         (ComplexRepresentation::Interleaved,

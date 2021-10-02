@@ -90,7 +90,7 @@ class Filter<FilterType, tmpl::list<TagsToFilter...>> {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     constexpr size_t volume_dim = Metavariables::system::volume_dim;
     using evolved_vars_tag = typename Metavariables::system::variables_tag;
     using evolved_vars_tags_list = typename evolved_vars_tag::tags_list;
@@ -121,7 +121,7 @@ class Filter<FilterType, tmpl::list<TagsToFilter...>> {
           [&filter](const gsl::not_null<
                         typename Metavariables::system::variables_tag::type*>
                         vars,
-                    const auto& local_mesh) noexcept {
+                    const auto& local_mesh) {
             *vars = apply_matrices(filter, *vars, local_mesh.extents());
           },
           mesh);
@@ -130,10 +130,10 @@ class Filter<FilterType, tmpl::list<TagsToFilter...>> {
           make_not_null(&box),
           [&filter](const gsl::not_null<
                         typename TagsToFilter::type*>... tensors_to_filter,
-                    const auto& local_mesh) noexcept {
+                    const auto& local_mesh) {
             DataVector temp(local_mesh.number_of_grid_points(), 0.0);
-            const auto helper =
-                [&local_mesh, &filter, &temp ](const auto tensor) noexcept {
+            const auto helper = [&local_mesh, &filter,
+                                 &temp](const auto tensor) {
               for (auto& component : *tensor) {
                 temp = 0.0;
                 apply_matrices(make_not_null(&temp), filter, component,

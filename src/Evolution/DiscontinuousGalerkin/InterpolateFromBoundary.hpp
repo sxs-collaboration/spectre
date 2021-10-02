@@ -21,7 +21,7 @@ void interpolate_dt_terms_gauss_points_impl(
     gsl::not_null<double*> volume_dt_vars, size_t num_independent_components,
     const Mesh<Dim>& volume_mesh, size_t dimension, size_t num_boundary_pts,
     const gsl::span<const double>& dt_corrections,
-    const DataVector& boundary_interpolation_term) noexcept;
+    const DataVector& boundary_interpolation_term);
 }  // namespace detail
 
 /*!
@@ -47,10 +47,10 @@ template <size_t Dim, typename DtTagsList>
 void interpolate_dt_terms_gauss_points(
     const gsl::not_null<Variables<DtTagsList>*> dt_vars,
     const Mesh<Dim>& volume_mesh, const Direction<Dim>& direction,
-    const Variables<DtTagsList>& dt_corrections) noexcept {
+    const Variables<DtTagsList>& dt_corrections) {
   ASSERT(std::all_of(volume_mesh.quadrature().begin(),
                      volume_mesh.quadrature().end(),
-                     [](const Spectral::Quadrature quadrature) noexcept {
+                     [](const Spectral::Quadrature quadrature) {
                        return quadrature == Spectral::Quadrature::Gauss;
                      }),
          "Must use Gauss points in all directions but got the mesh: "

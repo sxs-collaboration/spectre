@@ -8,5 +8,5 @@
 namespace TestHelpers::evolution::dg::Actions {
 enum SystemType { Conservative, Nonconservative, Mixed };
 
-std::ostream& operator<<(std::ostream& os, SystemType t) noexcept;
+std::ostream& operator<<(std::ostream& os, SystemType t);
 }  // namespace TestHelpers::evolution::dg::Actions

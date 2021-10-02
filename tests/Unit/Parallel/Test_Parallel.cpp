@@ -16,7 +16,7 @@ struct TestStream {
   std::vector<int> b{0, 4, 8, -7};
 };
 
-std::ostream& operator<<(std::ostream& os, const TestStream& t) noexcept {
+std::ostream& operator<<(std::ostream& os, const TestStream& t) {
   os << t.a << " (";
   for (size_t i = 0; i < t.b.size() - 1; ++i) {
     os << t.b[i] << ",";
@@ -27,7 +27,7 @@ std::ostream& operator<<(std::ostream& os, const TestStream& t) noexcept {
 
 enum class TestEnum { Value1, Value2 };
 
-std::ostream& operator<<(std::ostream& os, const TestEnum& t) noexcept {
+std::ostream& operator<<(std::ostream& os, const TestEnum& t) {
   switch (t) {
     case TestEnum::Value1:
       return os << "Value 1";

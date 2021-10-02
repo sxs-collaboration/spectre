@@ -45,7 +45,7 @@ double adjust_angular_coordinates_for_j(
         angular_cauchy_coordinates,
     const SpinWeighted<ComplexDataVector, 2>& surface_j, const size_t l_max,
     const double tolerance, const size_t max_steps,
-    const bool adjust_volume_gauge) noexcept {
+    const bool adjust_volume_gauge) {
   const size_t number_of_angular_points =
       Spectral::Swsh::number_of_swsh_collocation_points(l_max);
 
@@ -348,7 +348,7 @@ void GaugeAdjustInitialJ::apply(
     const Scalar<SpinWeighted<ComplexDataVector, 0>>& gauge_omega,
     const tnsr::i<DataVector, 2, ::Frame::Spherical<::Frame::Inertial>>&
         cauchy_angular_coordinates,
-    const size_t l_max) noexcept {
+    const size_t l_max) {
   const size_t number_of_angular_points =
       Spectral::Swsh::number_of_swsh_collocation_points(l_max);
   const size_t number_of_radial_points =

@@ -26,7 +26,7 @@ template <typename FieldTag>
 void weight_char_field(
     const gsl::not_null<typename FieldTag::type*> weighted_char_field,
     const typename FieldTag::type& char_field, const DataVector& char_speed,
-    const double sign) noexcept {
+    const double sign) {
   auto weighted_char_field_it = weighted_char_field->begin();
 
   // pass sign = -1 for weighting internal fields, +1 for external fields
@@ -55,7 +55,7 @@ void weight_char_fields(
     const Scalar<DataVector>& v_psi_ext,
     const tnsr::i<DataVector, Dim, Frame::Inertial>& v_zero_ext,
     const Scalar<DataVector>& v_plus_ext, const Scalar<DataVector>& v_minus_ext,
-    const tnsr::a<DataVector, 3, Frame::Inertial>& char_speeds_ext) noexcept {
+    const tnsr::a<DataVector, 3, Frame::Inertial>& char_speeds_ext) {
   weight_char_field<Tags::VPsi>(
       make_not_null(&get<Tags::VPsi>(*weighted_char_fields_int)), v_psi_int,
       get<0>(char_speeds_int), -1.);
@@ -86,12 +86,11 @@ void weight_char_fields(
 
 namespace CurvedScalarWave::BoundaryCorrections {
 template <size_t Dim>
-UpwindPenalty<Dim>::UpwindPenalty(CkMigrateMessage* msg) noexcept
+UpwindPenalty<Dim>::UpwindPenalty(CkMigrateMessage* msg)
     : BoundaryCorrection<Dim>(msg) {}
 
 template <size_t Dim>
-std::unique_ptr<BoundaryCorrection<Dim>> UpwindPenalty<Dim>::get_clone()
-    const noexcept {
+std::unique_ptr<BoundaryCorrection<Dim>> UpwindPenalty<Dim>::get_clone() const {
   return std::make_unique<UpwindPenalty>(*this);
 }
 
@@ -128,8 +127,7 @@ double UpwindPenalty<Dim>::dg_package_data(
                   Frame::Inertial>& /* interface_unit_normal_vector */,
     const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
     /*mesh_velocity*/,
-    const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity)
-    const noexcept {
+    const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity) const {
   *packaged_gamma2 = constraint_gamma2;
   *packaged_interface_unit_normal = interface_unit_normal;
 
@@ -186,7 +184,7 @@ void UpwindPenalty<Dim>::dg_boundary_terms(
     const Scalar<DataVector>& gamma2_ext,
     const tnsr::i<DataVector, Dim, Frame::Inertial>& interface_unit_normal_ext,
     const tnsr::a<DataVector, 3, Frame::Inertial>& char_speeds_ext,
-    dg::Formulation /*dg_formulation*/) const noexcept {
+    dg::Formulation /*dg_formulation*/) const {
   // Declare a Tempbuffer to contain all memory needed
   TempBuffer<tmpl::list<
       ::Tags::TempScalar<0, DataVector>,

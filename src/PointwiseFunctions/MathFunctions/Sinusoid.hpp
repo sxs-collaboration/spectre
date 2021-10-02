@@ -49,37 +49,37 @@ class Sinusoid<1, Fr> : public MathFunction<1, Fr> {
   static constexpr Options::String help = {
       "Applies a Sinusoid function to the input value"};
 
-  Sinusoid(double amplitude, double wavenumber, double phase) noexcept;
+  Sinusoid(double amplitude, double wavenumber, double phase);
 
   Sinusoid() = default;
   ~Sinusoid() override = default;
   Sinusoid(const Sinusoid& /*rhs*/) = delete;
   Sinusoid& operator=(const Sinusoid& /*rhs*/) = delete;
-  Sinusoid(Sinusoid&& /*rhs*/) noexcept = default;
-  Sinusoid& operator=(Sinusoid&& /*rhs*/) noexcept = default;
+  Sinusoid(Sinusoid&& /*rhs*/) = default;
+  Sinusoid& operator=(Sinusoid&& /*rhs*/) = default;
 
   WRAPPED_PUPable_decl_base_template(SINGLE_ARG(MathFunction<1, Fr>),
                                      Sinusoid);  // NOLINT
 
-  explicit Sinusoid(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit Sinusoid(CkMigrateMessage* /*unused*/) {}
 
-  double operator()(const double& x) const noexcept override;
-  DataVector operator()(const DataVector& x) const noexcept override;
+  double operator()(const double& x) const override;
+  DataVector operator()(const DataVector& x) const override;
 
-  double first_deriv(const double& x) const noexcept override;
-  DataVector first_deriv(const DataVector& x) const noexcept override;
+  double first_deriv(const double& x) const override;
+  DataVector first_deriv(const DataVector& x) const override;
 
-  double second_deriv(const double& x) const noexcept override;
-  DataVector second_deriv(const DataVector& x) const noexcept override;
+  double second_deriv(const double& x) const override;
+  DataVector second_deriv(const DataVector& x) const override;
 
-  double third_deriv(const double& x) const noexcept override;
-  DataVector third_deriv(const DataVector& x) const noexcept override;
+  double third_deriv(const double& x) const override;
+  DataVector third_deriv(const DataVector& x) const override;
 
   // clang-tidy: google-runtime-references
   void pup(PUP::er& p) override;  // NOLINT
 
  private:
-  friend bool operator==(const Sinusoid& lhs, const Sinusoid& rhs) noexcept {
+  friend bool operator==(const Sinusoid& lhs, const Sinusoid& rhs) {
     return lhs.amplitude_ == rhs.amplitude_ and
            lhs.wavenumber_ == rhs.wavenumber_ and lhs.phase_ == rhs.phase_;
   }
@@ -88,18 +88,17 @@ class Sinusoid<1, Fr> : public MathFunction<1, Fr> {
   double phase_{};
 
   template <typename T>
-  T apply_call_operator(const T& x) const noexcept;
+  T apply_call_operator(const T& x) const;
   template <typename T>
-  T apply_first_deriv(const T& x) const noexcept;
+  T apply_first_deriv(const T& x) const;
   template <typename T>
-  T apply_second_deriv(const T& x) const noexcept;
+  T apply_second_deriv(const T& x) const;
   template <typename T>
-  T apply_third_deriv(const T& x) const noexcept;
+  T apply_third_deriv(const T& x) const;
 };
 
 template <typename Fr>
-bool operator!=(const Sinusoid<1, Fr>& lhs,
-                const Sinusoid<1, Fr>& rhs) noexcept {
+bool operator!=(const Sinusoid<1, Fr>& lhs, const Sinusoid<1, Fr>& rhs) {
   return not(lhs == rhs);
 }
 }  // namespace MathFunctions

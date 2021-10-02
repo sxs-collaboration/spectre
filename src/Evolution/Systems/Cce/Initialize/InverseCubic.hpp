@@ -46,11 +46,11 @@ struct InverseCubic<true> : InitializeJ<true> {
       "worldtube"};
 
   WRAPPED_PUPable_decl_template(InverseCubic);  // NOLINT
-  explicit InverseCubic(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit InverseCubic(CkMigrateMessage* /*unused*/) {}
 
   InverseCubic() = default;
 
-  std::unique_ptr<InitializeJ> get_clone() const noexcept override;
+  std::unique_ptr<InitializeJ> get_clone() const override;
 
   void operator()(
       gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 2>>*> j,
@@ -65,9 +65,9 @@ struct InverseCubic<true> : InitializeJ<true> {
       const Scalar<SpinWeighted<ComplexDataVector, 2>>& boundary_j,
       const Scalar<SpinWeighted<ComplexDataVector, 2>>& boundary_dr_j,
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& r, size_t l_max,
-      size_t number_of_radial_points) const noexcept override;
+      size_t number_of_radial_points) const override;
 
-  void pup(PUP::er& /*p*/) noexcept override;
+  void pup(PUP::er& /*p*/) override;
 };
 
 /*!
@@ -95,11 +95,11 @@ struct InverseCubic<false> : InitializeJ<false> {
       "worldtube"};
 
   WRAPPED_PUPable_decl_template(InverseCubic);  // NOLINT
-  explicit InverseCubic(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit InverseCubic(CkMigrateMessage* /*unused*/) {}
 
   InverseCubic() = default;
 
-  std::unique_ptr<InitializeJ> get_clone() const noexcept override;
+  std::unique_ptr<InitializeJ> get_clone() const override;
 
   void operator()(
       gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 2>>*> j,
@@ -110,9 +110,9 @@ struct InverseCubic<false> : InitializeJ<false> {
       const Scalar<SpinWeighted<ComplexDataVector, 2>>& boundary_j,
       const Scalar<SpinWeighted<ComplexDataVector, 2>>& boundary_dr_j,
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& r, size_t l_max,
-      size_t number_of_radial_points) const noexcept override;
+      size_t number_of_radial_points) const override;
 
-  void pup(PUP::er& /*p*/) noexcept override;
+  void pup(PUP::er& /*p*/) override;
 };
 }  // namespace InitializeJ
 }  // namespace Cce

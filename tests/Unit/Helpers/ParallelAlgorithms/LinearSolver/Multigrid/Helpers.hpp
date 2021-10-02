@@ -62,7 +62,7 @@ struct LinearOperator : db::SimpleTag {
       std::vector<std::vector<DenseMatrix<double, blaze::columnMajor>>>;
   using option_tags = tmpl::list<OptionTags::LinearOperator>;
   static constexpr bool pass_metavariables = false;
-  static type create_from_options(const type& linear_operator) noexcept {
+  static type create_from_options(const type& linear_operator) {
     return linear_operator;
   }
 };
@@ -71,7 +71,7 @@ struct OperatorIsMassive : db::SimpleTag {
   using type = bool;
   using option_tags = tmpl::list<OptionTags::OperatorIsMassive>;
   static constexpr bool pass_metavariables = false;
-  static bool create_from_options(const bool value) noexcept { return value; }
+  static bool create_from_options(const bool value) { return value; }
 };
 
 using fields_tag = helpers_distributed::fields_tag;
@@ -96,7 +96,7 @@ struct InitializeElement {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ElementId<1>& element_id, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     // Initialize geometry
     const auto& initial_extents =
         db::get<::domain::Tags::InitialExtents<1>>(box);
@@ -143,7 +143,7 @@ struct ComputeOperatorAction {
         const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
         const Parallel::GlobalCache<Metavariables>& /*cache*/,
         const ElementId<1>& element_id, const ActionList /*meta*/,
-        const ParallelComponent* const /*meta*/) noexcept {
+        const ParallelComponent* const /*meta*/) {
     const size_t multigrid_level = element_id.grid_index();
     const size_t element_index = helpers_distributed::get_index(element_id);
     const auto& operator_matrices = get<LinearOperator>(box)[multigrid_level];
@@ -187,7 +187,7 @@ struct CollectOperatorAction {
       db::DataBox<DbTagsList>& box, Parallel::GlobalCache<Metavariables>& cache,
       const ElementId<1>& element_id,
       const typename OperandTag::type& operator_applied_to_operand_global_data,
-      const size_t broadcasting_multigrid_level) noexcept {
+      const size_t broadcasting_multigrid_level) {
     // We're receiving broadcasts also from reductions over other sections. See
     // issue: https://github.com/sxs-collaboration/spectre/issues/3220
     const size_t multigrid_level = element_id.grid_index();
@@ -202,7 +202,7 @@ struct CollectOperatorAction {
     db::mutate<OperatorAppliedToOperandTag>(
         make_not_null(&box),
         [&operator_applied_to_operand_global_data, &number_of_grid_points,
-         &element_index](auto operator_applied_to_operand) noexcept {
+         &element_index](auto operator_applied_to_operand) {
           operator_applied_to_operand->initialize(number_of_grid_points);
           for (size_t i = 0; i < number_of_grid_points; ++i) {
             operator_applied_to_operand->data()[i] =
@@ -228,7 +228,7 @@ struct TestResult {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ElementId<1>& element_id, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     if (element_id.grid_index() > 0) {
       return {std::move(box), true};
     }

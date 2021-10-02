@@ -11,21 +11,12 @@
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/MakeArray.hpp"
 
-// AppleClang does not correctly compute noexcept
-#ifndef __APPLE__
-static_assert(noexcept(convert_to_cpp20_array(make_array<2>(0))),
-              "Failed testing cpp20::array noexcept calculation");
-static_assert(noexcept(convert_to_cpp20_array(make_array<2>(DoesNotThrow{}))),
-              "Failed testing cpp20::array noexcept calculation");
-static_assert(not noexcept(convert_to_cpp20_array(make_array<2>(DoesThrow{}))),
-              "Failed testing cpp20::array noexcept calculation");
 static_assert(convert_to_cpp20_array(make_array<4>(7.8)) ==
                   cpp20::array<double, 4>{{7.8, 7.8, 7.8, 7.8}},
               "Failed testing cpp20::array conversion from std::array");
 static_assert(convert_to_cpp20_array(make_array(3.2, 4.3, 5.4, 6.5, 7.8)) ==
                   cpp20::array<double, 5>{{3.2, 4.3, 5.4, 6.5, 7.8}},
               "Failed testing cpp20::array conversion from std::array");
-#endif
 
 namespace {
 constexpr auto array_n = convert_to_cpp20_array(make_array<6>(5));
@@ -35,7 +26,7 @@ static_assert(
     "Failed testing cpp20::array type from make_array");
 static_assert(array_n.size() == 6,
               "Failed testing cpp20::array size from make_array");
-constexpr bool test_constexpr_iter() noexcept {
+constexpr bool test_constexpr_iter() {
   bool result = true;
   for (const auto& p : array_n) {
     result = result && 5 == p;
@@ -69,7 +60,7 @@ constexpr const auto array_from_truncated_sequence = convert_to_cpp20_array(
 static_assert(cpp20::array<int, 3>{{2, 8, 6}} == array_from_truncated_sequence,
               "Failed testing cpp20::array from sequence");
 
-constexpr cpp20::array<int, 3> create_an_array() noexcept {
+constexpr cpp20::array<int, 3> create_an_array() {
   cpp20::array<int, 3> a{};
   a[0] = 8;
   a[1] = -9;
@@ -81,7 +72,7 @@ static_assert(create_an_array() == cpp20::array<int, 3>{{8, -9, 10}},
 static_assert(create_an_array().back() == 10, "Failed testing cpp20::array");
 static_assert(create_an_array().front() == 8, "Failed testing cpp20::array");
 
-constexpr cpp20::array<int, 3> create_an_array_with_at() noexcept {
+constexpr cpp20::array<int, 3> create_an_array_with_at() {
   cpp20::array<int, 3> a{};
   a.at(0) = 10;
   a.at(1) = -9;

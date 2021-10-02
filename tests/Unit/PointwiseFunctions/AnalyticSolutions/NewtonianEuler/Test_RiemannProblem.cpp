@@ -38,7 +38,7 @@ struct RiemannProblemProxy : NewtonianEuler::Solutions::RiemannProblem<Dim> {
   template <typename DataType>
   tuples::tagged_tuple_from_typelist<variables_tags<DataType>>
   primitive_variables(const tnsr::I<DataType, Dim, Frame::Inertial>& x,
-                      double t) const noexcept {
+                      double t) const {
     return this->variables(x, t, variables_tags<DataType>{});
   }
 };
@@ -48,7 +48,7 @@ void test_solution(const std::array<double, Dim> left_velocity,
                    const std::string& left_velocity_opt,
                    const std::array<double, Dim> right_velocity,
                    const std::string& right_velocity_opt,
-                   const DataType& used_for_size) noexcept {
+                   const DataType& used_for_size) {
   // Member variables correspond to Sod tube test. For other test cases,
   // new parameters in the star region must be given in the python modules.
   RiemannProblemProxy<Dim> solution(1.4, 0.5, 1.0, left_velocity, 1.0, 0.125,

@@ -26,10 +26,10 @@ struct TempTag : db::SimpleTag {
   using type = T;
 };
 template <typename U, typename T, size_t Dim, typename DerivativeFrame>
-auto deriv_tensor(
-    const gsl::not_null<U*> deriv, const T& tensor, const Mesh<Dim>& mesh,
-    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
-                          DerivativeFrame>& inv_jacobian) noexcept {
+auto deriv_tensor(const gsl::not_null<U*> deriv, const T& tensor,
+                  const Mesh<Dim>& mesh,
+                  const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                                        DerivativeFrame>& inv_jacobian) {
   Variables<tmpl::list<TempTag<T>>> vars{tensor.begin()->size()};
   get<TempTag<T>>(vars) = tensor;
   const auto deriv_vars =
@@ -42,8 +42,7 @@ auto deriv_tensor(
 void SpacetimeQuantitiesComputer::operator()(
     const gsl::not_null<tnsr::ii<DataVector, 3>*> spatial_metric,
     const gsl::not_null<Cache*> /*cache*/,
-    gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector> /*meta*/)
-    const noexcept {
+    gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector> /*meta*/) const {
   *spatial_metric = conformal_metric;
   for (auto& spatial_metric_component : *spatial_metric) {
     spatial_metric_component *= pow<4>(get(conformal_factor));
@@ -54,7 +53,7 @@ void SpacetimeQuantitiesComputer::operator()(
     const gsl::not_null<tnsr::II<DataVector, 3>*> inv_spatial_metric,
     const gsl::not_null<Cache*> /*cache*/,
     gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector> /*meta*/)
-    const noexcept {
+    const {
   *inv_spatial_metric = inv_conformal_metric;
   for (auto& inv_spatial_metric_component : *inv_spatial_metric) {
     inv_spatial_metric_component /= pow<4>(get(conformal_factor));
@@ -65,7 +64,7 @@ void SpacetimeQuantitiesComputer::operator()(
     const gsl::not_null<tnsr::ijj<DataVector, 3>*> deriv_spatial_metric,
     const gsl::not_null<Cache*> cache,
     ::Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
-                  tmpl::size_t<3>, Frame::Inertial> /*meta*/) const noexcept {
+                  tmpl::size_t<3>, Frame::Inertial> /*meta*/) const {
   const auto& spatial_metric =
       cache->get_var(gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>{});
   detail::deriv_tensor(deriv_spatial_metric, spatial_metric, mesh,
@@ -75,8 +74,8 @@ void SpacetimeQuantitiesComputer::operator()(
 void SpacetimeQuantitiesComputer::operator()(
     const gsl::not_null<tnsr::Ijj<DataVector, 3>*> christoffel_second_kind,
     const gsl::not_null<Cache*> cache,
-    gr::Tags::SpatialChristoffelSecondKind<
-        3, Frame::Inertial, DataVector> /*meta*/) const noexcept {
+    gr::Tags::SpatialChristoffelSecondKind<3, Frame::Inertial,
+                                           DataVector> /*meta*/) const {
   const auto& deriv_spatial_metric = cache->get_var(
       ::Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
                     tmpl::size_t<3>, Frame::Inertial>{});
@@ -92,7 +91,7 @@ void SpacetimeQuantitiesComputer::operator()(
     const gsl::not_null<Cache*> cache,
     ::Tags::deriv<
         gr::Tags::SpatialChristoffelSecondKind<3, Frame::Inertial, DataVector>,
-        tmpl::size_t<3>, Frame::Inertial> /*meta*/) const noexcept {
+        tmpl::size_t<3>, Frame::Inertial> /*meta*/) const {
   const auto& christoffel_second_kind = cache->get_var(
       gr::Tags::SpatialChristoffelSecondKind<3, Frame::Inertial, DataVector>{});
   detail::deriv_tensor(deriv_christoffel_second_kind, christoffel_second_kind,
@@ -102,8 +101,7 @@ void SpacetimeQuantitiesComputer::operator()(
 void SpacetimeQuantitiesComputer::operator()(
     const gsl::not_null<tnsr::ii<DataVector, 3>*> ricci_tensor,
     const gsl::not_null<Cache*> cache,
-    gr::Tags::SpatialRicci<3, Frame::Inertial, DataVector> /*meta*/)
-    const noexcept {
+    gr::Tags::SpatialRicci<3, Frame::Inertial, DataVector> /*meta*/) const {
   const auto& christoffel_second_kind = cache->get_var(
       gr::Tags::SpatialChristoffelSecondKind<3, Frame::Inertial, DataVector>{});
   const auto& deriv_christoffel_second_kind = cache->get_var(
@@ -117,14 +115,14 @@ void SpacetimeQuantitiesComputer::operator()(
 void SpacetimeQuantitiesComputer::operator()(
     const gsl::not_null<Scalar<DataVector>*> lapse,
     const gsl::not_null<Cache*> /*cache*/,
-    gr::Tags::Lapse<DataVector> /*meta*/) const noexcept {
+    gr::Tags::Lapse<DataVector> /*meta*/) const {
   get(*lapse) = get(lapse_times_conformal_factor) / get(conformal_factor);
 }
 
 void SpacetimeQuantitiesComputer::operator()(
     const gsl::not_null<tnsr::I<DataVector, 3>*> shift,
     const gsl::not_null<Cache*> /*cache*/,
-    gr::Tags::Shift<3, Frame::Inertial, DataVector> /*meta*/) const noexcept {
+    gr::Tags::Shift<3, Frame::Inertial, DataVector> /*meta*/) const {
   for (size_t i = 0; i < 3; ++i) {
     shift->get(i) = shift_excess.get(i) + shift_background.get(i);
   }
@@ -134,7 +132,7 @@ void SpacetimeQuantitiesComputer::operator()(
     const gsl::not_null<tnsr::iJ<DataVector, 3>*> deriv_shift,
     const gsl::not_null<Cache*> cache,
     ::Tags::deriv<gr::Tags::Shift<3, Frame::Inertial, DataVector>,
-                  tmpl::size_t<3>, Frame::Inertial> /*meta*/) const noexcept {
+                  tmpl::size_t<3>, Frame::Inertial> /*meta*/) const {
   const auto& shift =
       cache->get_var(gr::Tags::Shift<3, Frame::Inertial, DataVector>{});
   detail::deriv_tensor(deriv_shift, shift, mesh, inv_jacobian);
@@ -144,7 +142,7 @@ void SpacetimeQuantitiesComputer::operator()(
     const gsl::not_null<tnsr::ii<DataVector, 3>*> dt_spatial_metric,
     const gsl::not_null<Cache*> /*cache*/,
     ::Tags::dt<gr::Tags::SpatialMetric<3, Frame::Inertial,
-                                       DataVector>> /*meta*/) const noexcept {
+                                       DataVector>> /*meta*/) const {
   for (auto& dt_spatial_metric_component : *dt_spatial_metric) {
     dt_spatial_metric_component = 0.;
   }
@@ -154,7 +152,7 @@ void SpacetimeQuantitiesComputer::operator()(
     const gsl::not_null<tnsr::ii<DataVector, 3>*> extrinsic_curvature,
     const gsl::not_null<Cache*> cache,
     gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataVector> /*meta*/)
-    const noexcept {
+    const {
   const auto& lapse = cache->get_var(gr::Tags::Lapse<DataVector>{});
   const auto& shift =
       cache->get_var(gr::Tags::Shift<3, Frame::Inertial, DataVector>{});
@@ -176,7 +174,7 @@ void SpacetimeQuantitiesComputer::operator()(
 void SpacetimeQuantitiesComputer::operator()(
     const gsl::not_null<Scalar<DataVector>*> extrinsic_curvature_square,
     const gsl::not_null<Cache*> cache,
-    detail::ExtrinsicCurvatureSquare<DataVector> /*meta*/) const noexcept {
+    detail::ExtrinsicCurvatureSquare<DataVector> /*meta*/) const {
   const auto& extrinsic_curvature = cache->get_var(
       gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataVector>{});
   const auto& inv_spatial_metric = cache->get_var(
@@ -199,7 +197,7 @@ void SpacetimeQuantitiesComputer::operator()(
     const gsl::not_null<tnsr::ijj<DataVector, 3>*> deriv_extrinsic_curvature,
     const gsl::not_null<Cache*> cache,
     ::Tags::deriv<gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataVector>,
-                  tmpl::size_t<3>, Frame::Inertial> /*meta*/) const noexcept {
+                  tmpl::size_t<3>, Frame::Inertial> /*meta*/) const {
   const auto& extrinsic_curvature = cache->get_var(
       gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataVector>{});
   const auto& christoffel = cache->get_var(
@@ -223,7 +221,7 @@ void SpacetimeQuantitiesComputer::operator()(
 void SpacetimeQuantitiesComputer::operator()(
     const gsl::not_null<Scalar<DataVector>*> hamiltonian_constraint,
     const gsl::not_null<Cache*> cache,
-    gr::Tags::HamiltonianConstraint<DataVector> /*meta*/) const noexcept {
+    gr::Tags::HamiltonianConstraint<DataVector> /*meta*/) const {
   const auto& ricci_tensor =
       cache->get_var(gr::Tags::SpatialRicci<3, Frame::Inertial, DataVector>{});
   const auto& extrinsic_curvature = cache->get_var(
@@ -242,7 +240,7 @@ void SpacetimeQuantitiesComputer::operator()(
     const gsl::not_null<tnsr::i<DataVector, 3>*> momentum_constraint,
     const gsl::not_null<Cache*> cache,
     gr::Tags::MomentumConstraint<3, Frame::Inertial, DataVector> /*meta*/)
-    const noexcept {
+    const {
   const auto& deriv_extrinsic_curvature = cache->get_var(
       ::Tags::deriv<
           gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataVector>,

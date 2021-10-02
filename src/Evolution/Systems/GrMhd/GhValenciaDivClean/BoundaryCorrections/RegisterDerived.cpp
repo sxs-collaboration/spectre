@@ -5,7 +5,7 @@
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 
 namespace grmhd::GhValenciaDivClean::BoundaryCorrections {
-void register_derived_with_charm() noexcept {
+void register_derived_with_charm() {
   Parallel::register_derived_classes_with_charm<BoundaryCorrection>();
 }
 }  // namespace grmhd::GhValenciaDivClean::BoundaryCorrections

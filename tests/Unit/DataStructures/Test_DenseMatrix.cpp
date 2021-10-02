@@ -48,12 +48,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DenseMatrix", "[DataStructures][Unit]") {
   test_serialization(A);
   test_copy_semantics(A);
   auto matrix_copy = A;
-  // Currently, the `columnMajor` storage order for Blaze matrix types does not
-  // qualify as `nothrow`, so the move semantics must be tested using the
-  // alternative test helper. If, in the future, the Matrix types' move
-  // assignment and constructors become appropriately `noexcept`, this call
-  // should be reverted to `test_move_semantics`.
-  test_throwing_move_semantics(std::move(A), matrix_copy);
+  test_move_semantics(std::move(A), matrix_copy);
 
   {
     const DenseMatrix<double> expected{{1., 2.}, {3., 4.}};

@@ -20,7 +20,7 @@ namespace {
 
 template <Spectral::Basis BasisType, Spectral::Quadrature QuadratureType>
 void test_exponential_filter(const double alpha, const unsigned half_power,
-                             const double eps) noexcept {
+                             const double eps) {
   Approx local_approx = Approx::custom().epsilon(eps).scale(1.0);
   CAPTURE(BasisType);
   CAPTURE(QuadratureType);
@@ -82,7 +82,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.ExponentialFilter",
 }
 
 template <Spectral::Basis BasisType, Spectral::Quadrature QuadratureType>
-void test_zero_lowest_modes() noexcept {
+void test_zero_lowest_modes() {
   Approx local_approx = Approx::custom().epsilon(1.0e-13);
   CAPTURE(BasisType);
   CAPTURE(QuadratureType);

@@ -106,8 +106,7 @@ inline void printf(const std::string& format, Args&&... args) {
 #pragma GCC diagnostic ignored "-Wformat-security"
   detail::call_printer(
       // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg)
-      [](auto... a) noexcept { CkPrintf(a...); }, format,
-      std::forward<Args>(args)...);
+      [](auto... a) { CkPrintf(a...); }, format, std::forward<Args>(args)...);
 #pragma GCC diagnostic pop
 }
 
@@ -124,8 +123,7 @@ inline void printf_error(const std::string& format, Args&&... args) {
 #pragma GCC diagnostic ignored "-Wformat-security"
   detail::call_printer(
       // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg)
-      [](auto... a) noexcept { CkError(a...); }, format,
-      std::forward<Args>(args)...);
+      [](auto... a) { CkError(a...); }, format, std::forward<Args>(args)...);
 #pragma GCC diagnostic pop
 }
 }  // namespace Parallel

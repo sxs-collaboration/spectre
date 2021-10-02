@@ -21,7 +21,7 @@ namespace domain::CoordinateMaps {
 
 Interval::Interval(const double A, const double B, const double a,
                    const double b, const Distribution distribution,
-                   const std::optional<double> singularity_pos) noexcept
+                   const std::optional<double> singularity_pos)
     : A_(A),
       B_(B),
       a_(a),
@@ -52,7 +52,7 @@ Interval::Interval(const double A, const double B, const double a,
 
 template <typename T>
 std::array<tt::remove_cvref_wrap_t<T>, 1> Interval::operator()(
-    const std::array<T, 1>& source_coords) const noexcept {
+    const std::array<T, 1>& source_coords) const {
   switch (distribution_) {
     case Distribution::Linear: {
       return {{((b_ - a_) * source_coords[0] + a_ * B_ - b_ * A_) / (B_ - A_)}};
@@ -91,7 +91,7 @@ std::array<tt::remove_cvref_wrap_t<T>, 1> Interval::operator()(
 }
 
 std::optional<std::array<double, 1>> Interval::inverse(
-    const std::array<double, 1>& target_coords) const noexcept {
+    const std::array<double, 1>& target_coords) const {
   switch (distribution_) {
     case Distribution::Linear: {
       return {
@@ -134,7 +134,7 @@ std::optional<std::array<double, 1>> Interval::inverse(
 
 template <typename T>
 tnsr::Ij<tt::remove_cvref_wrap_t<T>, 1, Frame::NoFrame> Interval::jacobian(
-    const std::array<T, 1>& source_coords) const noexcept {
+    const std::array<T, 1>& source_coords) const {
   auto jacobian_matrix =
       make_with_value<tnsr::Ij<tt::remove_cvref_wrap_t<T>, 1, Frame::NoFrame>>(
           dereference_wrapper(source_coords[0]), 0.0);
@@ -181,7 +181,7 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 1, Frame::NoFrame> Interval::jacobian(
 
 template <typename T>
 tnsr::Ij<tt::remove_cvref_wrap_t<T>, 1, Frame::NoFrame> Interval::inv_jacobian(
-    const std::array<T, 1>& source_coords) const noexcept {
+    const std::array<T, 1>& source_coords) const {
   auto inv_jacobian_matrix =
       make_with_value<tnsr::Ij<tt::remove_cvref_wrap_t<T>, 1, Frame::NoFrame>>(
           dereference_wrapper(source_coords[0]), 0.0);
@@ -226,7 +226,7 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 1, Frame::NoFrame> Interval::inv_jacobian(
   }
 }
 
-void Interval::pup(PUP::er& p) noexcept {
+void Interval::pup(PUP::er& p) {
   p | A_;
   p | B_;
   p | a_;
@@ -237,7 +237,7 @@ void Interval::pup(PUP::er& p) noexcept {
 }
 
 bool operator==(const CoordinateMaps::Interval& lhs,
-                const CoordinateMaps::Interval& rhs) noexcept {
+                const CoordinateMaps::Interval& rhs) {
   return lhs.A_ == rhs.A_ and lhs.B_ == rhs.B_ and lhs.a_ == rhs.a_ and
          lhs.b_ == rhs.b_ and lhs.distribution_ == rhs.distribution_ and
          lhs.singularity_pos_ == rhs.singularity_pos_;
@@ -246,16 +246,14 @@ bool operator==(const CoordinateMaps::Interval& lhs,
 // Explicit instantiations
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                                 \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 1>               \
-  Interval::operator()(const std::array<DTYPE(data), 1>& source_coords)      \
-      const noexcept;                                                        \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 1, Frame::NoFrame> \
-  Interval::jacobian(const std::array<DTYPE(data), 1>& source_coords)        \
-      const noexcept;                                                        \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 1, Frame::NoFrame> \
-  Interval::inv_jacobian(const std::array<DTYPE(data), 1>& source_coords)    \
-      const noexcept;
+#define INSTANTIATE(_, data)                                                   \
+  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 1>                 \
+  Interval::operator()(const std::array<DTYPE(data), 1>& source_coords) const; \
+  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 1, Frame::NoFrame>   \
+  Interval::jacobian(const std::array<DTYPE(data), 1>& source_coords) const;   \
+  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 1, Frame::NoFrame>   \
+  Interval::inv_jacobian(const std::array<DTYPE(data), 1>& source_coords)      \
+      const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector,
                                       std::reference_wrapper<const double>,

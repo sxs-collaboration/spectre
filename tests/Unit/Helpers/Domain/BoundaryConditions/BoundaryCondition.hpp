@@ -40,13 +40,13 @@ class BoundaryConditionBase
       ::domain::BoundaryConditions::Periodic<BoundaryConditionBase<Dim>>>;
 
   BoundaryConditionBase() = default;
-  BoundaryConditionBase(BoundaryConditionBase&&) noexcept = default;
-  BoundaryConditionBase& operator=(BoundaryConditionBase&&) noexcept = default;
+  BoundaryConditionBase(BoundaryConditionBase&&) = default;
+  BoundaryConditionBase& operator=(BoundaryConditionBase&&) = default;
   BoundaryConditionBase(const BoundaryConditionBase&) = default;
   BoundaryConditionBase& operator=(const BoundaryConditionBase&) = default;
   ~BoundaryConditionBase() override = default;
 
-  explicit BoundaryConditionBase(CkMigrateMessage* msg) noexcept;
+  explicit BoundaryConditionBase(CkMigrateMessage* msg);
 
   void pup(PUP::er& p) override;
 
@@ -60,22 +60,22 @@ class TestBoundaryCondition final : public BoundaryConditionBase<Dim> {
   TestBoundaryCondition() = default;
   explicit TestBoundaryCondition(Direction<Dim> direction, size_t block_id = 0);
   TestBoundaryCondition(const std::string& direction, size_t block_id);
-  TestBoundaryCondition(TestBoundaryCondition&&) noexcept = default;
-  TestBoundaryCondition& operator=(TestBoundaryCondition&&) noexcept = default;
+  TestBoundaryCondition(TestBoundaryCondition&&) = default;
+  TestBoundaryCondition& operator=(TestBoundaryCondition&&) = default;
   TestBoundaryCondition(const TestBoundaryCondition&) = default;
   TestBoundaryCondition& operator=(const TestBoundaryCondition&) = default;
   ~TestBoundaryCondition() override = default;
-  explicit TestBoundaryCondition(CkMigrateMessage* const msg) noexcept;
+  explicit TestBoundaryCondition(CkMigrateMessage* const msg);
 
   struct DirectionOptionTag {
     using type = std::string;
-    static std::string name() noexcept { return "Direction"; }
+    static std::string name() { return "Direction"; }
     static constexpr Options::String help =
         "The direction the boundary condition operates in.";
   };
   struct BlockIdOptionTag {
     using type = size_t;
-    static std::string name() noexcept { return "BlockId"; }
+    static std::string name() { return "BlockId"; }
     static constexpr Options::String help =
         "The id of the block the boundary condition operates in.";
   };
@@ -88,10 +88,10 @@ class TestBoundaryCondition final : public BoundaryConditionBase<Dim> {
       ::domain::BoundaryConditions::BoundaryCondition,
       TestBoundaryCondition<Dim>);
 
-  const Direction<Dim>& direction() const noexcept { return direction_; }
-  size_t block_id() const noexcept { return block_id_; }
+  const Direction<Dim>& direction() const { return direction_; }
+  size_t block_id() const { return block_id_; }
 
-  auto get_clone() const noexcept -> std::unique_ptr<
+  auto get_clone() const -> std::unique_ptr<
       ::domain::BoundaryConditions::BoundaryCondition> override;
 
   void pup(PUP::er& p) override;
@@ -103,11 +103,11 @@ class TestBoundaryCondition final : public BoundaryConditionBase<Dim> {
 
 template <size_t Dim>
 bool operator==(const TestBoundaryCondition<Dim>& lhs,
-                const TestBoundaryCondition<Dim>& rhs) noexcept;
+                const TestBoundaryCondition<Dim>& rhs);
 
 template <size_t Dim>
 bool operator!=(const TestBoundaryCondition<Dim>& lhs,
-                const TestBoundaryCondition<Dim>& rhs) noexcept;
+                const TestBoundaryCondition<Dim>& rhs);
 
 template <size_t Dim>
 using TestPeriodicBoundaryCondition =
@@ -149,5 +149,5 @@ struct MetavariablesWithoutBoundaryConditions {
   };
 };
 
-void register_derived_with_charm() noexcept;
+void register_derived_with_charm();
 }  // namespace TestHelpers::domain::BoundaryConditions

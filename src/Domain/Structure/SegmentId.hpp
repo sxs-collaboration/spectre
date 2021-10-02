@@ -46,50 +46,48 @@
 class SegmentId {
  public:
   /// Default constructor needed for Charm++ serialization.
-  SegmentId() noexcept = default;
-  SegmentId(const SegmentId& segment_id) noexcept = default;
-  SegmentId(SegmentId&& segment_id) noexcept = default;
-  ~SegmentId() noexcept = default;
-  SegmentId& operator=(const SegmentId& segment_id) noexcept = default;
-  SegmentId& operator=(SegmentId&& segment_id) noexcept = default;
+  SegmentId() = default;
+  SegmentId(const SegmentId& segment_id) = default;
+  SegmentId(SegmentId&& segment_id) = default;
+  ~SegmentId() = default;
+  SegmentId& operator=(const SegmentId& segment_id) = default;
+  SegmentId& operator=(SegmentId&& segment_id) = default;
 
-  SegmentId(size_t refinement_level, size_t index) noexcept;
+  SegmentId(size_t refinement_level, size_t index);
 
-  constexpr size_t refinement_level() const noexcept {
-    return refinement_level_;
-  }
+  constexpr size_t refinement_level() const { return refinement_level_; }
 
-  constexpr size_t index() const noexcept { return index_; }
+  constexpr size_t index() const { return index_; }
 
-  SegmentId id_of_parent() const noexcept;
+  SegmentId id_of_parent() const;
 
-  SegmentId id_of_child(Side side) const noexcept;
+  SegmentId id_of_child(Side side) const;
 
   /// The other child of the parent of this segment
-  SegmentId id_of_sibling() const noexcept;
+  SegmentId id_of_sibling() const;
 
   /// The child of the sibling of this segment that shares an endpoint with it
-  SegmentId id_of_abutting_nibling() const noexcept;
+  SegmentId id_of_abutting_nibling() const;
 
   /// The side on which this segment shares an endpoint with its sibling
-  Side side_of_sibling() const noexcept;
+  Side side_of_sibling() const;
 
   /// The id this segment would have if the coordinate axis were flipped.
-  SegmentId id_if_flipped() const noexcept;
+  SegmentId id_if_flipped() const;
 
   /// The logical coordinate of the endpoint of the segment on the given Side.
-  double endpoint(Side side) const noexcept;
+  double endpoint(Side side) const;
 
   /// The logical coordinate of the midpoint of the segment
-  double midpoint() const noexcept {
+  double midpoint() const {
     return -1.0 + (1.0 + 2.0 * index_) / two_to_the(refinement_level_);
   }
 
   /// Does the segment overlap with another?
-  bool overlaps(const SegmentId& other) const noexcept;
+  bool overlaps(const SegmentId& other) const;
 
   // NOLINTNEXTLINE
-  void pup(PUP::er& p) noexcept;
+  void pup(PUP::er& p);
 
  private:
   static constexpr size_t max_refinement_level = 16;
@@ -98,26 +96,26 @@ class SegmentId {
 };
 
 /// Output operator for SegmentId.
-std::ostream& operator<<(std::ostream& os, const SegmentId& id) noexcept;
+std::ostream& operator<<(std::ostream& os, const SegmentId& id);
 
 /// Equivalence operator for SegmentId.
-bool operator==(const SegmentId& lhs, const SegmentId& rhs) noexcept;
+bool operator==(const SegmentId& lhs, const SegmentId& rhs);
 
 /// Inequivalence operator for SegmentId.
-bool operator!=(const SegmentId& lhs, const SegmentId& rhs) noexcept;
+bool operator!=(const SegmentId& lhs, const SegmentId& rhs);
 
 //##############################################################################
 // INLINE DEFINITIONS
 //##############################################################################
 
-inline SegmentId SegmentId::id_of_parent() const noexcept {
+inline SegmentId SegmentId::id_of_parent() const {
   ASSERT(0 != refinement_level_,
          "Cannot call id_of_parent() on root refinement level!");
   // The parent has half as many segments as the child.
   return {refinement_level() - 1, index() / 2};
 }
 
-inline SegmentId SegmentId::id_of_child(Side side) const noexcept {
+inline SegmentId SegmentId::id_of_child(Side side) const {
   // We cannot ASSERT on the maximum level because it's only known at runtime
   // and only known elsewhere in the code, not by SegmentId. I.e. SegmentId is
   // too low-level to know about this.
@@ -129,37 +127,37 @@ inline SegmentId SegmentId::id_of_child(Side side) const noexcept {
   return {refinement_level() + 1, 1 + index() * 2};
 }
 
-inline SegmentId SegmentId::id_of_sibling() const noexcept {
+inline SegmentId SegmentId::id_of_sibling() const {
   ASSERT(0 != refinement_level(),
          "The segment on the root refinement level has no sibling");
   return {refinement_level(), (0 == index() % 2 ? index() + 1 : index() - 1)};
 }
 
-inline SegmentId SegmentId::id_of_abutting_nibling() const noexcept {
+inline SegmentId SegmentId::id_of_abutting_nibling() const {
   ASSERT(0 != refinement_level(),
          "The segment on the root refinement level has no abutting nibling");
   return {refinement_level() + 1,
           (0 == index() % 2 ? 2 * index() + 2 : 2 * index() - 1)};
 }
 
-inline Side SegmentId::side_of_sibling() const noexcept {
+inline Side SegmentId::side_of_sibling() const {
   ASSERT(0 != refinement_level(),
          "The segment on the root refinement level has no sibling");
   return 0 == index() % 2 ? Side::Upper : Side::Lower;
 }
 
-inline SegmentId SegmentId::id_if_flipped() const noexcept {
+inline SegmentId SegmentId::id_if_flipped() const {
   return {refinement_level(), two_to_the(refinement_level()) - 1 - index()};
 }
 
-inline double SegmentId::endpoint(Side side) const noexcept {
+inline double SegmentId::endpoint(Side side) const {
   if (Side::Lower == side) {
     return -1.0 + (2.0 * index()) / two_to_the(refinement_level());
   }
   return -1.0 + (2.0 * index() + 2.0) / two_to_the(refinement_level());
 }
 
-inline bool SegmentId::overlaps(const SegmentId& other) const noexcept {
+inline bool SegmentId::overlaps(const SegmentId& other) const {
   const size_t this_denom = two_to_the(refinement_level());
   const size_t other_denom = two_to_the(other.refinement_level());
   return index() * other_denom < (other.index() + 1) * this_denom and
@@ -170,20 +168,20 @@ inline bool SegmentId::overlaps(const SegmentId& other) const noexcept {
 // unordered_set or unordered_map.
 
 // hash_value is called by boost::hash and related functions.
-size_t hash_value(const SegmentId& s) noexcept;
+size_t hash_value(const SegmentId& s);
 
 namespace std {
 template <>
 struct hash<SegmentId> {
-  size_t operator()(const SegmentId& segment_id) const noexcept;
+  size_t operator()(const SegmentId& segment_id) const;
 };
 }  // namespace std
 
-inline bool operator==(const SegmentId& lhs, const SegmentId& rhs) noexcept {
+inline bool operator==(const SegmentId& lhs, const SegmentId& rhs) {
   return (lhs.refinement_level() == rhs.refinement_level() and
           lhs.index() == rhs.index());
 }
 
-inline bool operator!=(const SegmentId& lhs, const SegmentId& rhs) noexcept {
+inline bool operator!=(const SegmentId& lhs, const SegmentId& rhs) {
   return not(lhs == rhs);
 }

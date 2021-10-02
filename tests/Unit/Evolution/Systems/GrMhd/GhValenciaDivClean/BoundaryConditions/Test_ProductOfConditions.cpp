@@ -57,7 +57,7 @@ struct ComputeBoundaryConditionHelper<
       const gsl::not_null<MutatedVariables*> mutated_variables,
       const ArgumentVariables& argument_variables,
       const GridlessBox& gridless_box,
-      const DerivedCondition& derived_condition) noexcept {
+      const DerivedCondition& derived_condition) {
     return derived_condition.dg_ghost(
         make_not_null(&get<MutatedTags>(*mutated_variables))...,
         tuples::get<ArgumentTags>(argument_variables)...,
@@ -68,7 +68,7 @@ struct ComputeBoundaryConditionHelper<
   static std::optional<std::string> dg_outflow(
       const ArgumentVariables& argument_variables,
       const GridlessBox& gridless_box,
-      const DerivedCondition& derived_condition) noexcept {
+      const DerivedCondition& derived_condition) {
     return derived_condition.dg_outflow(
         tuples::get<ArgumentTags>(argument_variables)...,
         db::get<GridlessTags>(gridless_box)...);
@@ -80,7 +80,7 @@ struct ComputeBoundaryConditionHelper<
       const gsl::not_null<MutatedVariables*> mutated_variables,
       const ArgumentVariables& argument_variables,
       const GridlessBox& gridless_box,
-      const DerivedCondition& derived_condition) noexcept {
+      const DerivedCondition& derived_condition) {
     return derived_condition.dg_time_derivative(
         make_not_null(&get<EvolvedTags>(*mutated_variables))...,
         tuples::get<ArgumentTags>(argument_variables)...,
@@ -97,7 +97,7 @@ void test_boundary_condition_combination(
     const grmhd::GhValenciaDivClean::BoundaryConditions::ProductOfConditions<
         DerivedGhCondition, DerivedValenciaCondition>&
         derived_product_condition,
-    const GridlessBox& gridless_box) noexcept {
+    const GridlessBox& gridless_box) {
   using product_condition_type =
       grmhd::GhValenciaDivClean::BoundaryConditions::ProductOfConditions<
           DerivedGhCondition, DerivedValenciaCondition>;
@@ -185,7 +185,7 @@ void test_boundary_condition_combination(
           make_not_null(&gen), make_not_null(&dist), element_size);
   tuples::tagged_tuple_from_typelist<product_arg_tags> argument_variables;
   tmpl::for_each<product_arg_tags>([&dist, &optional_dist, &gen, &element_size,
-                                    &argument_variables](auto tag_v) noexcept {
+                                    &argument_variables](auto tag_v) {
     using tag = typename decltype(tag_v)::type;
     if constexpr (tt::is_a_v<std::optional, typename tag::type>) {
       if (optional_dist(gen) == 1) {
@@ -292,8 +292,7 @@ void test_boundary_condition_combination(
         typename GeneralizedHarmonic::System<3_st>::variables_tag::tags_list,
         ::GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1,
         ::GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2>>(
-        [&expected_mutable_variables,
-         &argument_variables](auto tag_v) noexcept {
+        [&expected_mutable_variables, &argument_variables](auto tag_v) {
           using tag = typename decltype(tag_v)::type;
           get<tag>(expected_mutable_variables) = get<tag>(argument_variables);
         });
@@ -327,8 +326,7 @@ void test_boundary_condition_combination(
             ::Tags::Flux,
             typename grmhd::ValenciaDivClean::System::flux_variables,
             tmpl::size_t<3_st>, Frame::Inertial>>>(
-        [&expected_mutable_variables,
-         &argument_variables](auto tag_v) noexcept {
+        [&expected_mutable_variables, &argument_variables](auto tag_v) {
           using tag = typename decltype(tag_v)::type;
           get<tag>(expected_mutable_variables) = get<tag>(argument_variables);
         });

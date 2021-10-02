@@ -59,5 +59,5 @@ template void volume_terms<::grmhd::ValenciaDivClean::TimeDerivativeTerms>(
     const Scalar<DataVector>& rest_mass_density,
     const Scalar<DataVector>& specific_enthalpy,
     const tnsr::ii<DataVector, 3, Frame::Inertial>& extrinsic_curvature,
-    const double& constraint_damping_parameter) noexcept;
+    const double& constraint_damping_parameter);
 }  // namespace evolution::dg::Actions::detail

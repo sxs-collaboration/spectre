@@ -29,21 +29,19 @@ class er;
  */
 struct TensorComponent {
   TensorComponent() = default;
-  TensorComponent(std::string in_name, DataVector in_data) noexcept;
-  TensorComponent(std::string in_name, std::vector<float> in_data) noexcept;
+  TensorComponent(std::string in_name, DataVector in_data);
+  TensorComponent(std::string in_name, std::vector<float> in_data);
 
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
   std::string name{};
   std::variant<DataVector, std::vector<float>> data{};
 };
 
-std::ostream& operator<<(std::ostream& os, const TensorComponent& t) noexcept;
+std::ostream& operator<<(std::ostream& os, const TensorComponent& t);
 
-bool operator==(const TensorComponent& lhs,
-                const TensorComponent& rhs) noexcept;
+bool operator==(const TensorComponent& lhs, const TensorComponent& rhs);
 
-bool operator!=(const TensorComponent& lhs,
-                const TensorComponent& rhs) noexcept;
+bool operator!=(const TensorComponent& lhs, const TensorComponent& rhs);
 
 /*!
  * \ingroup DataStructuresGroup
@@ -58,9 +56,9 @@ bool operator!=(const TensorComponent& lhs,
 struct ExtentsAndTensorVolumeData {
   ExtentsAndTensorVolumeData() = default;
   ExtentsAndTensorVolumeData(std::vector<size_t> extents_in,
-                             std::vector<TensorComponent> components) noexcept;
+                             std::vector<TensorComponent> components);
 
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
   std::vector<size_t> extents{};
   std::vector<TensorComponent> tensor_components{};
 };
@@ -75,9 +73,9 @@ struct ElementVolumeData : ExtentsAndTensorVolumeData {
   ElementVolumeData(std::vector<size_t> extents_in,
                     std::vector<TensorComponent> components,
                     std::vector<Spectral::Basis> basis_in,
-                    std::vector<Spectral::Quadrature> quadrature_in) noexcept;
+                    std::vector<Spectral::Quadrature> quadrature_in);
 
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
   std::vector<Spectral::Basis> basis{};
   std::vector<Spectral::Quadrature> quadrature{};
 };

@@ -94,7 +94,7 @@ template <typename System, bool AlwaysHasAnalyticSolutions>
 void test_observe(
     const std::unique_ptr<Event> observe,
     const std::optional<Mesh<System::volume_dim>>& interpolating_mesh,
-    const evolution::dg::subcell::ActiveGrid active_grid) noexcept {
+    const evolution::dg::subcell::ActiveGrid active_grid) {
   // The subcell code doesn't yet support interpolation.
   REQUIRE_FALSE(interpolating_mesh.has_value());
   CAPTURE(active_grid);
@@ -224,15 +224,15 @@ void test_observe(
   // non-const, so we capture a pointer instead.
   const auto check_component =
       [&element_name, &num_components_observed,
-       tensor_data = &results.in_received_tensor_data, &interpolant](
-          const std::string& component, const DataVector& expected) noexcept {
+       tensor_data = &results.in_received_tensor_data,
+       &interpolant](const std::string& component, const DataVector& expected) {
         CAPTURE(*tensor_data);
         CAPTURE(component);
         const DataVector interpolated_expected =
             interpolant.interpolate(expected);
-        const auto it =
-            alg::find_if(*tensor_data, [name = element_name + "/" + component](
-                                           const TensorComponent& tc) noexcept {
+        const auto it = alg::find_if(
+            *tensor_data,
+            [name = element_name + "/" + component](const TensorComponent& tc) {
               return tc.name == name;
             });
         CHECK(it != tensor_data->end());
@@ -253,13 +253,13 @@ void test_observe(
   }
   System::check_data([&check_component, &vars](const std::string& name,
                                                auto tag,
-                                               const auto... indices) noexcept {
+                                               const auto... indices) {
     check_component(name, get<decltype(tag)>(vars).get(indices...));
   });
   if (AlwaysHasAnalyticSolutions) {
     System::solution_for_test::check_data(
         [&check_component, &errors](const std::string& name, auto tag,
-                                    const auto... indices) noexcept {
+                                    const auto... indices) {
           check_component(name, get<decltype(tag)>(errors).get(indices...));
         });
   }
@@ -269,9 +269,9 @@ void test_observe(
 }
 
 template <typename System, bool AlwaysHasAnalyticSolutions = true>
-void test_system(const std::string& mesh_creation_string,
-                 const std::optional<Mesh<System::volume_dim>>&
-                     interpolating_mesh = {}) noexcept {
+void test_system(
+    const std::string& mesh_creation_string,
+    const std::optional<Mesh<System::volume_dim>>& interpolating_mesh = {}) {
   INFO(pretty_type::get_name<System>());
   CAPTURE(AlwaysHasAnalyticSolutions);
   CAPTURE(mesh_creation_string);

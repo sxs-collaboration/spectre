@@ -23,8 +23,7 @@
 
 namespace {
 template <typename T>
-void check_single_not_null0(const gsl::not_null<T*> result,
-                            const T& t0) noexcept {
+void check_single_not_null0(const gsl::not_null<T*> result, const T& t0) {
   if constexpr (tt::is_a_v<Tensor, T>) {
     get(*result) = get(t0) + 5.0;
   } else {
@@ -34,7 +33,7 @@ void check_single_not_null0(const gsl::not_null<T*> result,
 
 template <typename T>
 void check_single_not_null1(const gsl::not_null<T*> result, const T& t0,
-                            const T& t1) noexcept {
+                            const T& t1) {
   if constexpr (tt::is_a_v<Tensor, T>) {
     get(*result) = get(t0) + get(t1);
   } else {
@@ -44,7 +43,7 @@ void check_single_not_null1(const gsl::not_null<T*> result, const T& t0,
 
 template <typename T>
 void check_single_not_null2(const gsl::not_null<T*> result, const T& t0,
-                            const T& t1) noexcept {
+                            const T& t1) {
   if constexpr (tt::is_a_v<Tensor, T>) {
     get(*result) = sqrt(get(t0)) + 1.0 / sqrt(-get(t1));
   } else {
@@ -53,8 +52,7 @@ void check_single_not_null2(const gsl::not_null<T*> result, const T& t0,
 }
 
 template <typename T>
-void check_single_not_null3(const gsl::not_null<T*> result,
-                            const T& t0) noexcept {
+void check_single_not_null3(const gsl::not_null<T*> result, const T& t0) {
   // This function _adds_ to the result tensor, instead of assigning to it
   if constexpr (tt::is_a_v<Tensor, T>) {
     get(*result) += get(t0) + 3.0;
@@ -65,8 +63,7 @@ void check_single_not_null3(const gsl::not_null<T*> result,
 
 template <typename T>
 void check_double_not_null0(const gsl::not_null<T*> result0,
-                            const gsl::not_null<T*> result1,
-                            const T& t0) noexcept {
+                            const gsl::not_null<T*> result1, const T& t0) {
   if constexpr (tt::is_a_v<Tensor, T>) {
     get(*result0) = get(t0) + 5.0;
     get(*result1) = 2.0 * get(t0) + 5.0;
@@ -79,7 +76,7 @@ void check_double_not_null0(const gsl::not_null<T*> result0,
 template <typename T>
 void check_double_not_null1(const gsl::not_null<T*> result0,
                             const gsl::not_null<T*> result1, const T& t0,
-                            const T& t1) noexcept {
+                            const T& t1) {
   if constexpr (tt::is_a_v<Tensor, T>) {
     get(*result0) = get(t0) + get(t1);
     get(*result1) = 2.0 * get(t0) + get(t1);
@@ -92,7 +89,7 @@ void check_double_not_null1(const gsl::not_null<T*> result0,
 template <typename T>
 void check_double_not_null2(const gsl::not_null<T*> result0,
                             const gsl::not_null<T*> result1, const T& t0,
-                            const T& t1) noexcept {
+                            const T& t1) {
   if constexpr (tt::is_a_v<Tensor, T>) {
     get(*result0) = sqrt(get(t0)) + 1.0 / sqrt(-get(t1));
     get(*result1) = 2.0 * get(t0) + get(t1);
@@ -103,7 +100,7 @@ void check_double_not_null2(const gsl::not_null<T*> result0,
 }
 
 template <typename T>
-T check_by_value0(const T& t0) noexcept {
+T check_by_value0(const T& t0) {
   if constexpr (tt::is_a_v<Tensor, T>) {
     return T{get(t0) + 5.0};
   } else {
@@ -112,7 +109,7 @@ T check_by_value0(const T& t0) noexcept {
 }
 
 template <typename T>
-T check_by_value1(const T& t0, const T& t1) noexcept {
+T check_by_value1(const T& t0, const T& t1) {
   if constexpr (tt::is_a_v<Tensor, T>) {
     return T{get(t0) + get(t1)};
   } else {
@@ -121,7 +118,7 @@ T check_by_value1(const T& t0, const T& t1) noexcept {
 }
 
 template <typename T>
-T check_by_value2(const T& t0, const T& t1) noexcept {
+T check_by_value2(const T& t0, const T& t1) {
   if constexpr (tt::is_a_v<Tensor, T>) {
     return T{sqrt(get(t0)) + 1.0 / sqrt(-get(t1))};
   } else {
@@ -132,12 +129,12 @@ T check_by_value2(const T& t0, const T& t1) noexcept {
 class RandomValuesTests {
  public:
   RandomValuesTests(const double a, const double b,
-                    const std::array<double, 3>& c) noexcept
+                    const std::array<double, 3>& c)
       : a_(a), b_(b), c_(c) {}
 
   // by value, single argument
   template <typename T>
-  T check_by_value0(const T& t0) const noexcept {
+  T check_by_value0(const T& t0) const {
     if constexpr (tt::is_a_v<Tensor, T>) {
       return T{get(t0) + 5.0};
     } else {
@@ -146,7 +143,7 @@ class RandomValuesTests {
   }
 
   template <typename T>
-  T check_by_value1(const T& t0) const noexcept {
+  T check_by_value1(const T& t0) const {
     if constexpr (tt::is_a_v<Tensor, T>) {
       return T{get(t0) + 5.0 * a_};
     } else {
@@ -155,7 +152,7 @@ class RandomValuesTests {
   }
 
   template <typename T>
-  T check_by_value2(const T& t0) const noexcept {
+  T check_by_value2(const T& t0) const {
     if constexpr (tt::is_a_v<Tensor, T>) {
       return T{get(t0) + 5.0 * a_ + b_};
     } else {
@@ -164,7 +161,7 @@ class RandomValuesTests {
   }
 
   template <typename T>
-  T check_by_value3(const T& t0) const noexcept {
+  T check_by_value3(const T& t0) const {
     if constexpr (tt::is_a_v<Tensor, T>) {
       return T{get(t0) + 5.0 * a_ + b_ + c_[0] - 2.0 * c_[1] - c_[2]};
     } else {
@@ -174,7 +171,7 @@ class RandomValuesTests {
 
   // by value, two arguments
   template <typename T>
-  T check2_by_value0(const T& t0, const T& t1) const noexcept {
+  T check2_by_value0(const T& t0, const T& t1) const {
     if constexpr (tt::is_a_v<Tensor, T>) {
       return T{get(t0) + get(t1)};
     } else {
@@ -183,7 +180,7 @@ class RandomValuesTests {
   }
 
   template <typename T>
-  T check2_by_value1(const T& t0, const T& t1) const noexcept {
+  T check2_by_value1(const T& t0, const T& t1) const {
     if constexpr (tt::is_a_v<Tensor, T>) {
       return T{get(t0) + get(t1) + 5.0 * a_};
     } else {
@@ -192,7 +189,7 @@ class RandomValuesTests {
   }
 
   template <typename T>
-  T check2_by_value2(const T& t0, const T& t1) const noexcept {
+  T check2_by_value2(const T& t0, const T& t1) const {
     if constexpr (tt::is_a_v<Tensor, T>) {
       return T{get(t0) + 5.0 * a_ + b_ * get(t1)};
     } else {
@@ -201,7 +198,7 @@ class RandomValuesTests {
   }
 
   template <typename T>
-  T check2_by_value3(const T& t0, const T& t1) const noexcept {
+  T check2_by_value3(const T& t0, const T& t1) const {
     if constexpr (tt::is_a_v<Tensor, T>) {
       return T{get(t0) * c_[0] + 5.0 * a_ + b_ * get(t1) + c_[1] - c_[2]};
     } else {
@@ -211,8 +208,7 @@ class RandomValuesTests {
 
   // single not_null, single argument
   template <typename T>
-  void check_by_not_null0(const gsl::not_null<T*> result0,
-                          const T& t0) const noexcept {
+  void check_by_not_null0(const gsl::not_null<T*> result0, const T& t0) const {
     if constexpr (tt::is_a_v<Tensor, T>) {
       get(*result0) = get(t0) + 5.0;
     } else {
@@ -221,8 +217,7 @@ class RandomValuesTests {
   }
 
   template <typename T>
-  void check_by_not_null1(const gsl::not_null<T*> result0,
-                          const T& t0) const noexcept {
+  void check_by_not_null1(const gsl::not_null<T*> result0, const T& t0) const {
     if constexpr (tt::is_a_v<Tensor, T>) {
       get(*result0) = get(t0) + 5.0 * a_;
     } else {
@@ -231,8 +226,7 @@ class RandomValuesTests {
   }
 
   template <typename T>
-  void check_by_not_null2(const gsl::not_null<T*> result0,
-                          const T& t0) const noexcept {
+  void check_by_not_null2(const gsl::not_null<T*> result0, const T& t0) const {
     if constexpr (tt::is_a_v<Tensor, T>) {
       get(*result0) = get(t0) + 5.0 * a_ + b_;
     } else {
@@ -241,8 +235,7 @@ class RandomValuesTests {
   }
 
   template <typename T>
-  void check_by_not_null3(const gsl::not_null<T*> result0,
-                          const T& t0) const noexcept {
+  void check_by_not_null3(const gsl::not_null<T*> result0, const T& t0) const {
     if constexpr (tt::is_a_v<Tensor, T>) {
       get(*result0) = get(t0) + 5.0 * a_ + b_ + c_[0] - 2.0 * c_[1] - c_[2];
     } else {
@@ -253,7 +246,7 @@ class RandomValuesTests {
   // by value, two arguments
   template <typename T>
   void check2_by_not_null0(const gsl::not_null<T*> result0, const T& t0,
-                           const T& t1) const noexcept {
+                           const T& t1) const {
     if constexpr (tt::is_a_v<Tensor, T>) {
       *result0 = T{get(t0) + get(t1)};
     } else {
@@ -263,7 +256,7 @@ class RandomValuesTests {
 
   template <typename T>
   void check2_by_not_null1(const gsl::not_null<T*> result0, const T& t0,
-                           const T& t1) const noexcept {
+                           const T& t1) const {
     if constexpr (tt::is_a_v<Tensor, T>) {
       *result0 = T{get(t0) + get(t1) + 5.0 * a_};
     } else {
@@ -273,7 +266,7 @@ class RandomValuesTests {
 
   template <typename T>
   void check2_by_not_null2(const gsl::not_null<T*> result0, const T& t0,
-                           const T& t1) const noexcept {
+                           const T& t1) const {
     if constexpr (tt::is_a_v<Tensor, T>) {
       *result0 = T{get(t0) + 5.0 * a_ + b_ * get(t1)};
     } else {
@@ -283,7 +276,7 @@ class RandomValuesTests {
 
   template <typename T>
   void check2_by_not_null3(const gsl::not_null<T*> result0, const T& t0,
-                           const T& t1) const noexcept {
+                           const T& t1) const {
     if constexpr (tt::is_a_v<Tensor, T>) {
       *result0 = T{get(t0) * c_[0] + 5.0 * a_ + b_ * get(t1) + c_[1] - c_[2]};
     } else {
@@ -295,7 +288,7 @@ class RandomValuesTests {
   template <typename T>
   void check3_by_not_null0(const gsl::not_null<T*> result0,
                            const gsl::not_null<T*> result1, const T& t0,
-                           const T& t1) const noexcept {
+                           const T& t1) const {
     if constexpr (tt::is_a_v<Tensor, T>) {
       *result0 = T{get(t0) + get(t1)};
       *result1 = T{2.0 * get(t0) + get(t1)};
@@ -308,7 +301,7 @@ class RandomValuesTests {
   template <typename T>
   void check3_by_not_null1(const gsl::not_null<T*> result0,
                            const gsl::not_null<T*> result1, const T& t0,
-                           const T& t1) const noexcept {
+                           const T& t1) const {
     if constexpr (tt::is_a_v<Tensor, T>) {
       *result0 = T{get(t0) + get(t1) + 5.0 * a_};
       *result1 = T{2.0 * get(t0) + get(t1) + 5.0 * a_};
@@ -321,7 +314,7 @@ class RandomValuesTests {
   template <typename T>
   void check3_by_not_null2(const gsl::not_null<T*> result0,
                            const gsl::not_null<T*> result1, const T& t0,
-                           const T& t1) const noexcept {
+                           const T& t1) const {
     if constexpr (tt::is_a_v<Tensor, T>) {
       *result0 = T{get(t0) + 5.0 * a_ + b_ * get(t1)};
       *result1 = T{2.0 * get(t0) + 5.0 * a_ + b_ * get(t1)};

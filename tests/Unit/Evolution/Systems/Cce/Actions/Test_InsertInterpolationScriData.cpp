@@ -46,7 +46,7 @@ struct MockWriteSimpleData {
                     const gsl::not_null<Parallel::NodeLock*> /*node_lock*/,
                     const std::vector<std::string>& /*file_legend*/,
                     const std::vector<double>& data_row,
-                    const std::string& subfile_name) noexcept {
+                    const std::string& subfile_name) {
     written_modes[subfile_name] = data_row;
   }
 };
@@ -59,13 +59,12 @@ struct RotatingSchwarzschildWithNoninertialNews
 #pragma GCC diagnostic ignored "-Wunused-function"
   WRAPPED_PUPable_decl_template(RotatingSchwarzschildWithNoninertialNews);
 #pragma GCC diagnostic pop
-  bool use_noninertial_news() const noexcept override { return true; }
+  bool use_noninertial_news() const override { return true; }
 
-  std::unique_ptr<Cce::Solutions::WorldtubeData> get_clone()
-      const noexcept override {
+  std::unique_ptr<Cce::Solutions::WorldtubeData> get_clone() const override {
     return std::make_unique<RotatingSchwarzschildWithNoninertialNews>(*this);
   }
-  void pup(PUP::er& p) noexcept override {
+  void pup(PUP::er& p) override {
     Cce::Solutions::RotatingSchwarzschild::pup(p);
   }
 };
@@ -81,16 +80,16 @@ struct SetRandomBoundaryValues {
                     Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     MAKE_GENERATOR(gen);
     UniformCustomDistribution<double> value_dist{0.1, 0.5};
     tmpl::for_each<typename Metavariables::cce_scri_tags>(
-        [&gen, &value_dist, &box](auto tag_v) noexcept {
+        [&gen, &value_dist, &box](auto tag_v) {
           using tag = typename decltype(tag_v)::type;
           db::mutate<tag>(
               make_not_null(&box),
-              [&gen, &value_dist](const gsl::not_null<typename tag::type*>
-                                      scri_value) noexcept {
+              [&gen, &value_dist](
+                  const gsl::not_null<typename tag::type*> scri_value) {
                 fill_with_random_values(make_not_null(&get(*scri_value).data()),
                                         make_not_null(&gen),
                                         make_not_null(&value_dist));
@@ -99,8 +98,8 @@ struct SetRandomBoundaryValues {
 
     db::mutate<Tags::InertialRetardedTime>(
         make_not_null(&box),
-        [&gen, &value_dist](
-            const gsl::not_null<Scalar<DataVector>*> scri_value) noexcept {
+        [&gen,
+         &value_dist](const gsl::not_null<Scalar<DataVector>*> scri_value) {
           fill_with_random_values(make_not_null(&get(*scri_value)),
                                   make_not_null(&gen),
                                   make_not_null(&value_dist));

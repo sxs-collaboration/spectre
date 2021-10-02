@@ -58,7 +58,7 @@ Disk::Disk(typename InnerRadius::type inner_radius,
   }
 }
 
-Domain<2> Disk::create_domain() const noexcept {
+Domain<2> Disk::create_domain() const {
   using Wedge2DMap = CoordinateMaps::Wedge<2>;
   using Affine = CoordinateMaps::Affine;
   using Affine2D = CoordinateMaps::ProductOf2Maps<Affine, Affine>;
@@ -133,7 +133,7 @@ Domain<2> Disk::create_domain() const noexcept {
                    std::move(boundary_conditions_all_blocks)};
 }
 
-std::vector<std::array<size_t, 2>> Disk::initial_extents() const noexcept {
+std::vector<std::array<size_t, 2>> Disk::initial_extents() const {
   return {
       initial_number_of_grid_points_,
       initial_number_of_grid_points_,
@@ -142,8 +142,7 @@ std::vector<std::array<size_t, 2>> Disk::initial_extents() const noexcept {
       {{initial_number_of_grid_points_[1], initial_number_of_grid_points_[1]}}};
 }
 
-std::vector<std::array<size_t, 2>> Disk::initial_refinement_levels()
-    const noexcept {
+std::vector<std::array<size_t, 2>> Disk::initial_refinement_levels() const {
   return {5, make_array<2>(initial_refinement_)};
 }
 }  // namespace domain::creators

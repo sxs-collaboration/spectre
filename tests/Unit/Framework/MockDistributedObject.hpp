@@ -87,7 +87,7 @@ struct ForwardAllOptionsToDataBox<tmpl::list<SimpleTags...>> {
   using simple_tags = tmpl::list<SimpleTags...>;
 
   template <typename DbTagsList, typename... Args>
-  static auto apply(db::DataBox<DbTagsList>&& box, Args&&... args) noexcept {
+  static auto apply(db::DataBox<DbTagsList>&& box, Args&&... args) {
     static_assert(
         sizeof...(SimpleTags) == sizeof...(Args),
         "The number of arguments passed to ForwardAllOptionsToDataBox must "
@@ -126,11 +126,11 @@ struct NodeId {
   size_t value;
 };
 
-inline bool operator==(const NodeId& lhs, const NodeId& rhs) noexcept {
+inline bool operator==(const NodeId& lhs, const NodeId& rhs) {
   return lhs.value == rhs.value;
 }
 
-inline bool operator!=(const NodeId& lhs, const NodeId& rhs) noexcept {
+inline bool operator!=(const NodeId& lhs, const NodeId& rhs) {
   return not(lhs==rhs);
 }
 
@@ -149,13 +149,11 @@ struct LocalCoreId {
   size_t value;
 };
 
-inline bool operator==(const LocalCoreId& lhs,
-                       const LocalCoreId& rhs) noexcept {
+inline bool operator==(const LocalCoreId& lhs, const LocalCoreId& rhs) {
   return lhs.value == rhs.value;
 }
 
-inline bool operator!=(const LocalCoreId& lhs,
-                       const LocalCoreId& rhs) noexcept {
+inline bool operator!=(const LocalCoreId& lhs, const LocalCoreId& rhs) {
   return not(lhs==rhs);
 }
 
@@ -170,13 +168,11 @@ struct GlobalCoreId {
   size_t value;
 };
 
-inline bool operator==(const GlobalCoreId& lhs,
-                       const GlobalCoreId& rhs) noexcept {
+inline bool operator==(const GlobalCoreId& lhs, const GlobalCoreId& rhs) {
   return lhs.value == rhs.value;
 }
 
-inline bool operator!=(const GlobalCoreId& lhs,
-                       const GlobalCoreId& rhs) noexcept {
+inline bool operator!=(const GlobalCoreId& lhs, const GlobalCoreId& rhs) {
   return not(lhs==rhs);
 }
 }  // namespace ActionTesting
@@ -235,7 +231,7 @@ class MockDistributedObject {
     InvokeActionBase(InvokeActionBase&&) = default;
     InvokeActionBase& operator=(InvokeActionBase&&) = default;
     virtual ~InvokeActionBase() = default;
-    virtual void invoke_action() noexcept = 0;
+    virtual void invoke_action() = 0;
   };
 
   // Holds the arguments to be passed to the simple action once it is invoked.
@@ -255,7 +251,7 @@ class MockDistributedObject {
     explicit InvokeSimpleAction(MockDistributedObject* mock_distributed_object)
         : mock_distributed_object_(mock_distributed_object) {}
 
-    void invoke_action() noexcept override {
+    void invoke_action() override {
       if (not valid_) {
         ERROR(
             "Cannot invoke the exact same simple action twice. This is an "
@@ -268,13 +264,13 @@ class MockDistributedObject {
 
    private:
     template <typename Arg0, typename... Rest>
-    void invoke_action_impl(std::tuple<Arg0, Rest...> args) noexcept {
+    void invoke_action_impl(std::tuple<Arg0, Rest...> args) {
       mock_distributed_object_->simple_action<Action>(std::move(args), true);
     }
 
     template <typename... LocalArgs,
               Requires<sizeof...(LocalArgs) == 0> = nullptr>
-    void invoke_action_impl(std::tuple<LocalArgs...> /*args*/) noexcept {
+    void invoke_action_impl(std::tuple<LocalArgs...> /*args*/) {
       mock_distributed_object_->simple_action<Action>(true);
     }
 
@@ -297,7 +293,7 @@ class MockDistributedObject {
         MockDistributedObject* mock_distributed_object)
         : mock_distributed_object_(mock_distributed_object) {}
 
-    void invoke_action() noexcept override {
+    void invoke_action() override {
       if (not valid_) {
         ERROR(
             "Cannot invoke the exact same threaded action twice. This is an "
@@ -310,13 +306,13 @@ class MockDistributedObject {
 
    private:
     template <typename Arg0, typename... Rest>
-    void invoke_action_impl(std::tuple<Arg0, Rest...> args) noexcept {
+    void invoke_action_impl(std::tuple<Arg0, Rest...> args) {
       mock_distributed_object_->threaded_action<Action>(std::move(args), true);
     }
 
     template <typename... LocalArgs,
               Requires<sizeof...(LocalArgs) == 0> = nullptr>
-    void invoke_action_impl(std::tuple<LocalArgs...> /*args*/) noexcept {
+    void invoke_action_impl(std::tuple<LocalArgs...> /*args*/) {
       mock_distributed_object_->threaded_action<Action>(true);
     }
 
@@ -404,22 +400,22 @@ class MockDistributedObject {
         std::forward<Options>(opts)...);
   }
 
-  void set_phase(PhaseType phase) noexcept {
+  void set_phase(PhaseType phase) {
     phase_ = phase;
     algorithm_step_ = 0;
     terminate_ = number_of_actions_in_phase(phase) == 0;
     halt_algorithm_until_next_phase_ = false;
   }
-  PhaseType get_phase() const noexcept { return phase_; }
+  PhaseType get_phase() const { return phase_; }
 
-  void set_terminate(bool t) noexcept { terminate_ = t; }
-  bool get_terminate() const noexcept { return terminate_; }
+  void set_terminate(bool t) { terminate_ = t; }
+  bool get_terminate() const { return terminate_; }
 
   // Actions may call this, but since tests step through actions manually it has
   // no effect.
-  void perform_algorithm() noexcept {}
+  void perform_algorithm() {}
 
-  size_t number_of_actions_in_phase(const PhaseType phase) const noexcept {
+  size_t number_of_actions_in_phase(const PhaseType phase) const {
     size_t number_of_actions = 0;
     tmpl::for_each<phase_dependent_action_lists>(
         [&number_of_actions, phase](auto pdal_v) {
@@ -436,14 +432,14 @@ class MockDistributedObject {
   /// tags in `AdditionalTagsList`. If the DataBox type is incorrect
   /// `std::terminate` is called.
   template <typename AdditionalTagsList>
-  auto& get_databox() noexcept {
+  auto& get_databox() {
     using box_type = db::compute_databox_type<
         tmpl::flatten<tmpl::list<initial_tags, AdditionalTagsList>>>;
     return boost::get<box_type>(box_);
   }
 
   template <typename AdditionalTagsList>
-  const auto& get_databox() const noexcept {
+  const auto& get_databox() const {
     using box_type = db::compute_databox_type<
         tmpl::flatten<tmpl::list<initial_tags, AdditionalTagsList>>>;
     return boost::get<box_type>(box_);
@@ -454,44 +450,44 @@ class MockDistributedObject {
   /// current one, if the current DataBox has the tag. If the current DataBox
   /// does not have the requested tag it is an error.
   template <typename Tag>
-  const auto& get_databox_tag() const noexcept {
+  const auto& get_databox_tag() const {
     return get_databox_tag_visitation<Tag>(box_);
   }
 
   template <typename Tag>
-  bool box_contains() const noexcept {
+  bool box_contains() const {
     return box_contains_visitation<Tag>(box_);
   }
 
   template <typename Tag>
-  bool tag_is_retrievable() const noexcept {
+  bool tag_is_retrievable() const {
     return tag_is_retrievable_visitation<Tag>(box_);
   }
 
   /// @{
   /// Returns the `boost::variant` of DataBoxes.
-  auto& get_variant_box() noexcept { return box_; }
+  auto& get_variant_box() { return box_; }
 
-  const auto& get_variant_box() const noexcept { return box_; }
+  const auto& get_variant_box() const { return box_; }
   /// @}
 
   /// Force the next action invoked to be the `next_action_id`th action in the
   /// current phase.
-  void force_next_action_to_be(const size_t next_action_id) noexcept {
+  void force_next_action_to_be(const size_t next_action_id) {
     algorithm_step_ = next_action_id;
   }
 
   /// Returns which action (by integer) will be invoked next in the current
   /// phase.
-  size_t get_next_action_index() const noexcept { return algorithm_step_; }
+  size_t get_next_action_index() const { return algorithm_step_; }
 
   /// Invoke the next action in the action list for the current phase,
   /// failing if it was not ready.
-  void next_action() noexcept;
+  void next_action();
 
   /// Invoke the next action in the action list for the current phase,
   /// returning whether the action was ready.
-  bool next_action_if_ready() noexcept;
+  bool next_action_if_ready();
 
   /// Defines the methods used for invoking threaded and simple actions. Since
   /// the two cases are so similar we use a macro to reduce the amount of
@@ -502,7 +498,7 @@ class MockDistributedObject {
                 detail::replace_these_##NAME##s_t<Component>, Action>> =      \
                 nullptr>                                                      \
   void NAME(std::tuple<Args...> args,                                         \
-            const bool direct_from_action_runner = false) noexcept {          \
+            const bool direct_from_action_runner = false) {                   \
     if (direct_from_action_runner) {                                          \
       performing_action_ = true;                                              \
       forward_tuple_to_##NAME<Action>(                                        \
@@ -520,7 +516,7 @@ class MockDistributedObject {
                 detail::replace_these_##NAME##s_t<Component>, Action>> =      \
                 nullptr>                                                      \
   void NAME(std::tuple<Args...> args,                                         \
-            const bool direct_from_action_runner = false) noexcept {          \
+            const bool direct_from_action_runner = false) {                   \
     using index_of_action =                                                   \
         tmpl::index_of<detail::replace_these_##NAME##s_t<Component>, Action>; \
     using new_action = tmpl::at_c<detail::with_these_##NAME##s_t<Component>,  \
@@ -541,7 +537,7 @@ class MockDistributedObject {
             Requires<not tmpl::list_contains_v<                               \
                 detail::replace_these_##NAME##s_t<Component>, Action>> =      \
                 nullptr>                                                      \
-  void NAME(const bool direct_from_action_runner = false) noexcept {          \
+  void NAME(const bool direct_from_action_runner = false) {                   \
     if (direct_from_action_runner) {                                          \
       performing_action_ = true;                                              \
       Parallel::Algorithm_detail::simple_action_visitor<Action, Component>(   \
@@ -561,7 +557,7 @@ class MockDistributedObject {
             Requires<tmpl::list_contains_v<                                   \
                 detail::replace_these_##NAME##s_t<Component>, Action>> =      \
                 nullptr>                                                      \
-  void NAME(const bool direct_from_action_runner = false) noexcept {          \
+  void NAME(const bool direct_from_action_runner = false) {                   \
     using index_of_action =                                                   \
         tmpl::index_of<detail::replace_these_##NAME##s_t<Component>, Action>; \
     using new_action = tmpl::at_c<detail::with_these_##NAME##s_t<Component>,  \
@@ -591,8 +587,7 @@ class MockDistributedObject {
   // regardless, so their 'mocking' implementation is no different from their
   // original implementation
   template <typename Action, typename... Args>
-  typename Action::return_type local_synchronous_action(
-      Args&&... args) noexcept {
+  typename Action::return_type local_synchronous_action(Args&&... args) {
     static_assert(std::is_same_v<typename Component::chare_type,
                                  ActionTesting::MockNodeGroupChare>,
                   "Cannot call a local synchronous action on a chare that is "
@@ -602,15 +597,15 @@ class MockDistributedObject {
                            std::forward<Args>(args)...);
   }
 
-  bool is_simple_action_queue_empty() const noexcept {
+  bool is_simple_action_queue_empty() const {
     return simple_action_queue_.empty();
   }
 
-  size_t simple_action_queue_size() const noexcept {
+  size_t simple_action_queue_size() const {
     return simple_action_queue_.size();
   }
 
-  void invoke_queued_simple_action() noexcept {
+  void invoke_queued_simple_action() {
     if (simple_action_queue_.empty()) {
       ERROR(
           "There are no queued simple actions to invoke. Are you sure a "
@@ -620,15 +615,15 @@ class MockDistributedObject {
     simple_action_queue_.pop_front();
   }
 
-  bool is_threaded_action_queue_empty() const noexcept {
+  bool is_threaded_action_queue_empty() const {
     return threaded_action_queue_.empty();
   }
 
-  size_t threaded_action_queue_size() const noexcept {
+  size_t threaded_action_queue_size() const {
     return threaded_action_queue_.size();
   }
 
-  void invoke_queued_threaded_action() noexcept {
+  void invoke_queued_threaded_action() {
     if (threaded_action_queue_.empty()) {
       ERROR(
           "There are no queued threaded actions to invoke. Are you sure a "
@@ -650,7 +645,7 @@ class MockDistributedObject {
         std::forward<Data>(data));
   }
 
-  Parallel::GlobalCache<typename Component::metavariables>& cache() noexcept {
+  Parallel::GlobalCache<typename Component::metavariables>& cache() {
     return *global_cache_;
   }
 
@@ -658,55 +653,53 @@ class MockDistributedObject {
   /// Wrappers for charm++ informational functions.
 
   /// Number of processing elements
-  int number_of_procs() const noexcept;
+  int number_of_procs() const;
 
   /// Global %Index of my processing element.
-  int my_proc() const noexcept;
+  int my_proc() const;
 
   /// Number of nodes.
-  int number_of_nodes() const noexcept;
+  int number_of_nodes() const;
 
   /// %Index of my node.
-  int my_node() const noexcept;
+  int my_node() const;
 
   /// Number of processing elements on the given node.
-  int procs_on_node(int node_index) const noexcept;
+  int procs_on_node(int node_index) const;
 
   /// The local index of my processing element on my node.
   /// This is in the interval 0, ..., procs_on_node(my_node()) - 1.
-  int my_local_rank() const noexcept;
+  int my_local_rank() const;
 
   /// %Index of first processing element on the given node.
-  int first_proc_on_node(int node_index) const noexcept;
+  int first_proc_on_node(int node_index) const;
 
   /// %Index of the node for the given processing element.
-  int node_of(int proc_index) const noexcept;
+  int node_of(int proc_index) const;
 
   /// The local index for the given processing element on its node.
-  int local_rank_of(int proc_index) const noexcept;
+  int local_rank_of(int proc_index) const;
   /// @}
 
  private:
   template <typename Action, typename... Args, size_t... Is>
-  void forward_tuple_to_simple_action(
-      std::tuple<Args...>&& args,
-      std::index_sequence<Is...> /*meta*/) noexcept {
+  void forward_tuple_to_simple_action(std::tuple<Args...>&& args,
+                                      std::index_sequence<Is...> /*meta*/) {
     Parallel::Algorithm_detail::simple_action_visitor<Action, Component>(
         box_, *global_cache_, std::as_const(array_index_),
         std::forward<Args>(std::get<Is>(args))...);
   }
 
   template <typename Action, typename... Args, size_t... Is>
-  void forward_tuple_to_threaded_action(
-      std::tuple<Args...>&& args,
-      std::index_sequence<Is...> /*meta*/) noexcept {
+  void forward_tuple_to_threaded_action(std::tuple<Args...>&& args,
+                                        std::index_sequence<Is...> /*meta*/) {
     Parallel::Algorithm_detail::simple_action_visitor<Action, Component>(
         box_, *global_cache_, std::as_const(array_index_),
         make_not_null(&node_lock_), std::forward<Args>(std::get<Is>(args))...);
   }
 
   template <typename ThisAction, typename ActionList, typename DbTags>
-  bool invoke_iterable_action(db::DataBox<DbTags>& my_box) noexcept {
+  bool invoke_iterable_action(db::DataBox<DbTags>& my_box) {
     auto action_return = ThisAction::apply(
         my_box, *inboxes_, *global_cache_, std::as_const(array_index_),
         ActionList{}, std::add_pointer_t<Component>{});
@@ -760,7 +753,7 @@ class MockDistributedObject {
   }
 
   template <typename PhaseDepActions, size_t... Is>
-  bool next_action_impl(std::index_sequence<Is...> /*meta*/) noexcept;
+  bool next_action_impl(std::index_sequence<Is...> /*meta*/);
 
   template <typename Tag, typename ThisVariantBox, typename Type,
             typename... Variants,
@@ -771,7 +764,7 @@ class MockDistributedObject {
   void get_databox_tag_visitation_impl(
       const Type** result, const gsl::not_null<int*> iter,
       const gsl::not_null<bool*> already_visited,
-      const boost::variant<Variants...>& box) const noexcept {
+      const boost::variant<Variants...>& box) const {
     if (box.which() == *iter and not *already_visited) {
       *result = &db::get<Tag>(boost::get<ThisVariantBox>(box));
       (void)result;
@@ -788,7 +781,7 @@ class MockDistributedObject {
   void get_databox_tag_visitation_impl(
       const Type** /*result*/, const gsl::not_null<int*> iter,
       const gsl::not_null<bool*> already_visited,
-      const boost::variant<Variants...>& box) const noexcept {
+      const boost::variant<Variants...>& box) const {
     if (box.which() == *iter and not *already_visited) {
       ERROR("Cannot retrieve tag: "
             << db::tag_name<Tag>()
@@ -799,7 +792,7 @@ class MockDistributedObject {
 
   template <typename Tag, typename... Variants>
   const auto& get_databox_tag_visitation(
-      const boost::variant<Variants...>& box) const noexcept {
+      const boost::variant<Variants...>& box) const {
     using item_types = tmpl::remove_duplicates<tmpl::remove_if<
         tmpl::list<cpp20::remove_cvref_t<
             detail::item_type_if_contained_t<Tag, Variants>>...>,
@@ -831,7 +824,7 @@ class MockDistributedObject {
                                            Tag>> = nullptr>
   void box_contains_visitation_impl(
       bool* const contains_tag, const gsl::not_null<int*> iter,
-      const boost::variant<Variants...>& box) const noexcept {
+      const boost::variant<Variants...>& box) const {
     if (box.which() == *iter) {
       *contains_tag =
           tmpl::list_contains_v<typename ThisVariantBox::tags_list, Tag>;
@@ -843,13 +836,12 @@ class MockDistributedObject {
                 typename ThisVariantBox::tags_list, Tag>> = nullptr>
   void box_contains_visitation_impl(
       bool* const /*contains_tag*/, const gsl::not_null<int*> iter,
-      const boost::variant<Variants...>& /*box*/) const noexcept {
+      const boost::variant<Variants...>& /*box*/) const {
     (*iter)++;
   }
 
   template <typename Tag, typename... Variants>
-  bool box_contains_visitation(
-      const boost::variant<Variants...>& box) const noexcept {
+  bool box_contains_visitation(const boost::variant<Variants...>& box) const {
     bool contains_tag = false;
     int iter = 0;
     EXPAND_PACK_LEFT_TO_RIGHT(
@@ -859,9 +851,9 @@ class MockDistributedObject {
 
   template <typename Tag, typename... Variants>
   bool tag_is_retrievable_visitation(
-      const boost::variant<Variants...>& box) const noexcept {
+      const boost::variant<Variants...>& box) const {
     bool is_retrievable = false;
-    const auto helper = [&box, &is_retrievable](auto box_type) noexcept {
+    const auto helper = [&box, &is_retrievable](auto box_type) {
       using DataBoxType = typename decltype(box_type)::type;
       if (static_cast<int>(
               tmpl::index_of<tmpl::list<Variants...>, DataBoxType>::value) ==
@@ -900,7 +892,7 @@ class MockDistributedObject {
 };
 
 template <typename Component>
-void MockDistributedObject<Component>::next_action() noexcept {
+void MockDistributedObject<Component>::next_action() {
   if (not next_action_if_ready()) {
     ERROR("Attempted to run an action, but it returned "
           "AlgorithmExecution::Retry.  Actions that are expected to retry "
@@ -909,11 +901,11 @@ void MockDistributedObject<Component>::next_action() noexcept {
 }
 
 template <typename Component>
-bool MockDistributedObject<Component>::next_action_if_ready() noexcept {
+bool MockDistributedObject<Component>::next_action_if_ready() {
   bool found_matching_phase = false;
   bool was_ready = false;
   const auto invoke_for_phase =
-      [this, &found_matching_phase, &was_ready](auto phase_dep_v) noexcept {
+      [this, &found_matching_phase, &was_ready](auto phase_dep_v) {
         using PhaseDep = typename decltype(phase_dep_v)::type;
         constexpr PhaseType phase = PhaseDep::phase;
         using actions_list = typename PhaseDep::action_list;
@@ -934,7 +926,7 @@ bool MockDistributedObject<Component>::next_action_if_ready() noexcept {
 template <typename Component>
 template <typename PhaseDepActions, size_t... Is>
 bool MockDistributedObject<Component>::next_action_impl(
-    std::index_sequence<Is...> /*meta*/) noexcept {
+    std::index_sequence<Is...> /*meta*/) {
   if (UNLIKELY(performing_action_)) {
     ERROR(
         "Cannot call an Action while already calling an Action on the same "
@@ -951,7 +943,7 @@ bool MockDistributedObject<Component>::next_action_impl(
   bool already_did_an_action = false;
   bool was_ready = true;
   const auto helper = [this, &already_did_an_action,
-                       &was_ready](auto iteration) noexcept {
+                       &was_ready](auto iteration) {
     constexpr size_t iter = decltype(iteration)::value;
     if (already_did_an_action or algorithm_step_ != iter) {
       return;
@@ -972,8 +964,7 @@ bool MockDistributedObject<Component>::next_action_impl(
         tmpl::integral_list<size_t, iter>>;
     bool box_found = false;
     tmpl::for_each<potential_databox_indices>(
-        [this, &box_found,
-         &was_ready](auto potential_databox_index_v) noexcept {
+        [this, &box_found, &was_ready](auto potential_databox_index_v) {
           constexpr size_t potential_databox_index =
               decltype(potential_databox_index_v)::type::value;
           using this_databox =
@@ -1016,42 +1007,42 @@ bool MockDistributedObject<Component>::next_action_impl(
 }
 
 template <typename Component>
-int MockDistributedObject<Component>::number_of_procs() const noexcept {
+int MockDistributedObject<Component>::number_of_procs() const {
   return static_cast<int>(mock_nodes_and_local_cores_.size());
 }
 
 template <typename Component>
-int MockDistributedObject<Component>::my_proc() const noexcept {
+int MockDistributedObject<Component>::my_proc() const {
   return static_cast<int>(mock_global_cores_.at(NodeId{mock_node_})
                               .at(LocalCoreId{mock_local_core_})
                               .value);
 }
 
 template <typename Component>
-int MockDistributedObject<Component>::number_of_nodes() const noexcept {
+int MockDistributedObject<Component>::number_of_nodes() const {
   return static_cast<int>(mock_global_cores_.size());
 }
 
 template <typename Component>
-int MockDistributedObject<Component>::my_node() const noexcept {
+int MockDistributedObject<Component>::my_node() const {
   return static_cast<int>(mock_node_);
 }
 
 template <typename Component>
 int MockDistributedObject<Component>::procs_on_node(
-    const int node_index) const noexcept {
+    const int node_index) const {
   return static_cast<int>(
       mock_global_cores_.at(NodeId{static_cast<size_t>(node_index)}).size());
 }
 
 template <typename Component>
-int MockDistributedObject<Component>::my_local_rank() const noexcept {
+int MockDistributedObject<Component>::my_local_rank() const {
   return static_cast<int>(mock_local_core_);
 }
 
 template <typename Component>
 int MockDistributedObject<Component>::first_proc_on_node(
-    const int node_index) const noexcept {
+    const int node_index) const {
   return static_cast<int>(
       mock_global_cores_.at(NodeId{static_cast<size_t>(node_index)})
           .at(LocalCoreId{0})
@@ -1059,8 +1050,7 @@ int MockDistributedObject<Component>::first_proc_on_node(
 }
 
 template <typename Component>
-int MockDistributedObject<Component>::node_of(
-    const int proc_index) const noexcept {
+int MockDistributedObject<Component>::node_of(const int proc_index) const {
   return static_cast<int>(mock_nodes_and_local_cores_
                               .at(GlobalCoreId{static_cast<size_t>(proc_index)})
                               .first.value);
@@ -1068,7 +1058,7 @@ int MockDistributedObject<Component>::node_of(
 
 template <typename Component>
 int MockDistributedObject<Component>::local_rank_of(
-    const int proc_index) const noexcept {
+    const int proc_index) const {
   return static_cast<int>(mock_nodes_and_local_cores_
                               .at(GlobalCoreId{static_cast<size_t>(proc_index)})
                               .second.value);

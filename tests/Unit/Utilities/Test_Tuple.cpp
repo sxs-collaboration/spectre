@@ -140,40 +140,6 @@ SPECTRE_TEST_CASE("Unit.Utilities.tuple_fold", "[Utilities][Unit]") {
         sum_value);
     CHECK(sum_value == approx(20.9));
   }
-  {
-    // Check noexcept specifications are properly calculated
-    const auto my_tupull = std::make_tuple(2, 7, -3.8, 20.9);
-    double sum_value = 0.0;
-    const auto is_noexcept_lambda = [](
-        const auto& element, const size_t /*index*/, double& state) noexcept {
-      if (state < 8.0) {
-        state += element;
-      }
-    };
-    const auto not_noexcept_lambda = [](const auto& element,
-                                        const size_t /*index*/,
-                                        double& state) noexcept(false) {
-      if (state < 8.0) {
-        state += element;
-      }
-    };
-    static_assert(noexcept(tuple_fold(my_tupull, is_noexcept_lambda, size_t(1),
-                                      sum_value)),
-                  "Failed testing noexcept-ness is properly propagated out of "
-                  "tuple_fold");
-    static_assert(not noexcept(tuple_fold(my_tupull, not_noexcept_lambda,
-                                          size_t(1), sum_value)),
-                  "Failed testing noexcept-ness is properly propagated out of "
-                  "tuple_fold");
-    static_assert(
-        noexcept(tuple_counted_fold(my_tupull, is_noexcept_lambda, sum_value)),
-        "Failed testing noexcept-ness is properly propagated out of "
-        "tuple_counted_fold");
-    static_assert(not noexcept(tuple_counted_fold(
-                      my_tupull, not_noexcept_lambda, sum_value)),
-                  "Failed testing noexcept-ness is properly propagated out of "
-                  "tuple_counted_fold");
-  }
 }
 
 namespace {
@@ -181,7 +147,7 @@ namespace {
 struct negate {
   template <typename T, typename Index, typename S>
   void operator()(const T& element, Index /*index*/,
-                  S& second_tuple_element) const noexcept {
+                  S& second_tuple_element) const {
     std::get<Index::value>(second_tuple_element) = -element;
   }
 };
@@ -191,7 +157,7 @@ struct negate_if_sum_less {
   void operator()(const T& element, Index /*index*/, S& second_tuple_element,
                   const gsl::not_null<double*> state,
                   const std::string& test_sentence,
-                  const std::string& test_sentence2) const noexcept(false) {
+                  const std::string& test_sentence2) const {
     CHECK(test_sentence == "test sentence");
     CHECK(test_sentence2 == "test sentence2");
     if (*state < 8.0) {
@@ -241,11 +207,4 @@ SPECTRE_TEST_CASE("Unit.Utilities.tuple_transform", "[Utilities][Unit]") {
   CHECK(std::get<2>(out_tupull) == -3.8);
   CHECK(std::get<3>(out_tupull) == -20.9);
   CHECK(sum_value == approx(20.9));
-
-  static_assert(noexcept(tuple_transform(my_tupull, negate{}, out_tupull)),
-                "Failed testing noexcept-ness of tuple_transform");
-  static_assert(not noexcept(tuple_transform<true>(
-                    my_tupull, negate_if_sum_less{}, out_tupull, &sum_value,
-                    std::string("test sentence"), test_sentence2)),
-                "Failed testing noexcept-ness of tuple_transform");
 }

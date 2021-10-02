@@ -37,8 +37,7 @@ void compute_closure_impl(
     const tnsr::I<DataVector, 3, Frame::Inertial>& fluid_velocity,
     const Scalar<DataVector>& fluid_lorentz_factor,
     const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
-    const tnsr::II<DataVector, 3, Frame::Inertial>&
-        inv_spatial_metric) noexcept;
+    const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric);
 }  // namespace detail
 
 template <typename NeutrinoSpeciesList>
@@ -146,7 +145,7 @@ struct ComputeM1Closure<tmpl::list<NeutrinoSpecies...>> {
       const tnsr::I<DataVector, 3>& spatial_velocity,
       const Scalar<DataVector>& lorentz_factor,
       const tnsr::ii<DataVector, 3>& spatial_metric,
-      const tnsr::II<DataVector, 3>& inv_spatial_metric) noexcept {
+      const tnsr::II<DataVector, 3>& inv_spatial_metric) {
     EXPAND_PACK_LEFT_TO_RIGHT(detail::compute_closure_impl(
         closure_factor, tilde_p, tilde_j, tilde_hn, tilde_hi, tilde_e, tilde_s,
         spatial_velocity, lorentz_factor, spatial_metric, inv_spatial_metric));

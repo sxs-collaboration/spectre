@@ -33,50 +33,49 @@ namespace detail {
 // Factors that appear in the modal representation of spin-weighted angular
 // derivatives, needed for compute_coefficients_of_derivative
 template <typename DerivativeKind>
-SPECTRE_ALWAYS_INLINE std::complex<double> derivative_factor(int l,
-                                                             int s) noexcept;
+SPECTRE_ALWAYS_INLINE std::complex<double> derivative_factor(int l, int s);
 
 template <>
 SPECTRE_ALWAYS_INLINE std::complex<double> derivative_factor<Tags::Eth>(
-    const int l, const int s) noexcept {
+    const int l, const int s) {
   return sqrt(static_cast<std::complex<double>>((l - s) * (l + s + 1)));
 }
 
 template <>
 SPECTRE_ALWAYS_INLINE std::complex<double> derivative_factor<Tags::Ethbar>(
-    const int l, const int s) noexcept {
+    const int l, const int s) {
   return -sqrt(static_cast<std::complex<double>>((l + s) * (l - s + 1)));
 }
 
 template <>
 SPECTRE_ALWAYS_INLINE std::complex<double> derivative_factor<Tags::EthEth>(
-    const int l, const int s) noexcept {
+    const int l, const int s) {
   return sqrt(static_cast<std::complex<double>>((l - s - 1) * (l + s + 2) *
                                                 (l - s) * (l + s + 1)));
 }
 
 template <>
 SPECTRE_ALWAYS_INLINE std::complex<double>
-derivative_factor<Tags::EthbarEthbar>(const int l, const int s) noexcept {
+derivative_factor<Tags::EthbarEthbar>(const int l, const int s) {
   return sqrt(static_cast<std::complex<double>>((l + s - 1) * (l - s + 2) *
                                                 (l + s) * (l - s + 1)));
 }
 
 template <>
 SPECTRE_ALWAYS_INLINE std::complex<double> derivative_factor<Tags::EthbarEth>(
-    const int l, const int s) noexcept {
+    const int l, const int s) {
   return static_cast<std::complex<double>>(-(l - s) * (l + s + 1));
 }
 
 template <>
 SPECTRE_ALWAYS_INLINE std::complex<double> derivative_factor<Tags::EthEthbar>(
-    const int l, const int s) noexcept {
+    const int l, const int s) {
   return static_cast<std::complex<double>>(-(l + s) * (l - s + 1));
 }
 
 template <>
 SPECTRE_ALWAYS_INLINE std::complex<double> derivative_factor<Tags::InverseEth>(
-    const int l, const int s) noexcept {
+    const int l, const int s) {
   return (l - s + 1) * (l + s) == 0
              ? 0.0
              : 1.0 / sqrt(static_cast<std::complex<double>>((l - s + 1) *
@@ -85,7 +84,7 @@ SPECTRE_ALWAYS_INLINE std::complex<double> derivative_factor<Tags::InverseEth>(
 
 template <>
 SPECTRE_ALWAYS_INLINE std::complex<double>
-derivative_factor<Tags::InverseEthbar>(const int l, const int s) noexcept {
+derivative_factor<Tags::InverseEthbar>(const int l, const int s) {
   return (l + s + 1) * (l - s) == 0
              ? 0.0
              : 1.0 / -sqrt(static_cast<std::complex<double>>((l + s + 1) *
@@ -102,7 +101,7 @@ void compute_coefficients_of_derivative(
                      Spin + Tags::derivative_spin_weight<DerivativeKind>>*>
         derivative_modes,
     gsl::not_null<SpinWeighted<ComplexModalVector, Spin>*> pre_derivative_modes,
-    size_t l_max, size_t number_of_radial_points) noexcept;
+    size_t l_max, size_t number_of_radial_points);
 
 // Helper function for dealing with the parameter packs in the utilities which
 // evaluate several spin-weighted derivatives at once. The `apply` function of
@@ -115,8 +114,7 @@ struct dispatch_to_compute_coefficients_of_derivative {
   static void apply(const gsl::not_null<SpinWeighted<ComplexModalVector, Spin>*>
                         derivative_modes,
                     const std::tuple<ModalTypes...>& pre_derivative_mode_tuple,
-                    const size_t l_max,
-                    const size_t number_of_radial_points) noexcept {
+                    const size_t l_max, const size_t number_of_radial_points) {
     compute_coefficients_of_derivative<typename DerivativeTag::derivative_kind>(
         derivative_modes,
         get<tmpl::index_of<PreDerivativeTagList,
@@ -151,8 +149,7 @@ struct dispatch_to_transform<
   template <typename... ModalTypes, typename... NodalTypes>
   static void apply(const gsl::not_null<std::tuple<ModalTypes...>*> modal_tuple,
                     const std::tuple<NodalTypes...>& nodal_tuple,
-                    const size_t l_max,
-                    const size_t number_of_radial_points) noexcept {
+                    const size_t l_max, const size_t number_of_radial_points) {
     SwshTransform<tmpl::list<TransformTags...>, Representation>::
         apply_to_vectors(
             get<tmpl::index_of<TagList, TransformTags>::value>(*modal_tuple)...,
@@ -169,8 +166,7 @@ struct dispatch_to_transform<
   template <typename... NodalTypes, typename... ModalTypes>
   static void apply(const gsl::not_null<std::tuple<NodalTypes...>*> nodal_tuple,
                     const std::tuple<ModalTypes...>& modal_tuple,
-                    const size_t l_max,
-                    const size_t number_of_radial_points) noexcept {
+                    const size_t l_max, const size_t number_of_radial_points) {
     InverseSwshTransform<tmpl::list<TransformTags...>, Representation>::
         apply_to_vectors(
             get<tmpl::index_of<TagList, TransformTags>::value>(*nodal_tuple)...,
@@ -205,7 +201,7 @@ struct AngularDerivativesImpl<tmpl::list<DerivativeTags...>,
       const gsl::not_null<typename Tags::SwshTransform<
           UniqueDifferentiatedFromTags>::type*>... transform_of_input_scalars,
       const typename UniqueDifferentiatedFromTags::type&... input_scalars,
-      const size_t l_max, const size_t number_of_radial_points) noexcept {
+      const size_t l_max, const size_t number_of_radial_points) {
     apply_to_vectors(make_not_null(&get(*transform_of_derivative_scalars))...,
                      make_not_null(&get(*transform_of_input_scalars))...,
                      make_not_null(&get(*derivative_scalars))...,
@@ -216,10 +212,11 @@ struct AngularDerivativesImpl<tmpl::list<DerivativeTags...>,
             typename... DerivativeKinds, typename... ArgumentTypes,
             size_t... Is>
   // NOLINTNEXTLINE(readability-redundant-declaration)
-  friend void angular_derivatives_impl(
-      const std::tuple<ArgumentTypes...>&, size_t, size_t,
-      std::index_sequence<Is...>, tmpl::list<DerivativeKinds...>,
-      std::bool_constant<true>) noexcept;
+  friend void angular_derivatives_impl(const std::tuple<ArgumentTypes...>&,
+                                       size_t, size_t,
+                                       std::index_sequence<Is...>,
+                                       tmpl::list<DerivativeKinds...>,
+                                       std::bool_constant<true>);
 
  private:
   // note inputs reordered to accommodate the alternative tag-free functions
@@ -231,7 +228,7 @@ struct AngularDerivativesImpl<tmpl::list<DerivativeTags...>,
           UniqueDifferentiatedFromTags>::type::type*>... transform_of_inputs,
       const gsl::not_null<typename DerivativeTags::type::type*>... derivatives,
       const typename UniqueDifferentiatedFromTags::type::type&... inputs,
-      const size_t l_max, const size_t number_of_radial_points) noexcept {
+      const size_t l_max, const size_t number_of_radial_points) {
     // perform the forward transform on the minimal set of input nodal
     // quantities to obtain all of the requested derivatives
     using ForwardTransformList =
@@ -240,7 +237,7 @@ struct AngularDerivativesImpl<tmpl::list<DerivativeTags...>,
 
     tmpl::for_each<ForwardTransformList>(
         [&number_of_radial_points, &l_max, &inputs...,
-         &transform_of_inputs...](auto transform_v) noexcept {
+         &transform_of_inputs...](auto transform_v) {
           using transform = typename decltype(transform_v)::type;
           auto input_transforms = std::make_tuple(transform_of_inputs...);
           dispatch_to_transform<transform,
@@ -268,7 +265,7 @@ struct AngularDerivativesImpl<tmpl::list<DerivativeTags...>,
     tmpl::for_each<InverseTransformList>([&number_of_radial_points, &l_max,
                                           &derivatives...,
                                           &transform_of_derivatives...](
-                                             auto transform_v) noexcept {
+                                             auto transform_v) {
       using transform = typename decltype(transform_v)::type;
       auto derivative_tuple = std::make_tuple(derivatives...);
       dispatch_to_transform<transform, tmpl::list<DerivativeTags...>>::apply(
@@ -339,8 +336,7 @@ using AngularDerivatives = detail::AngularDerivativesImpl<
  * possible. This utility eases the creation of those buffers.
  */
 template <int Spin>
-auto swsh_buffer(const size_t l_max,
-                 const size_t number_of_radial_points) noexcept {
+auto swsh_buffer(const size_t l_max, const size_t number_of_radial_points) {
   return SpinWeighted<ComplexModalVector, Spin>{
       size_of_libsharp_coefficient_vector(l_max) * number_of_radial_points};
 }
@@ -355,7 +351,7 @@ void angular_derivatives_impl(
     const std::tuple<ArgumentTypes...>& argument_tuple, const size_t l_max,
     const size_t number_of_radial_points, std::index_sequence<Is...> /*meta*/,
     tmpl::list<DerivativeKinds...> /*meta*/,
-    std::bool_constant<true> /*buffers_included_in_arguments*/) noexcept {
+    std::bool_constant<true> /*buffers_included_in_arguments*/) {
   AngularDerivatives<
       tmpl::list<Tags::Derivative<
           ::Tags::SpinWeighted<
@@ -381,7 +377,7 @@ void angular_derivatives_impl(
     const size_t number_of_radial_points,
     std::index_sequence<Is...> index_sequence,
     tmpl::list<DerivativeKinds...> derivative_kinds,
-    std::bool_constant<false> /*buffers_included_in_arguments*/) noexcept {
+    std::bool_constant<false> /*buffers_included_in_arguments*/) {
   auto derivative_buffer_tuple = std::make_tuple(
       swsh_buffer<std::decay_t<decltype(*get<Is>(argument_tuple))>::spin>(
           l_max, number_of_radial_points)...);
@@ -456,7 +452,7 @@ template <
     typename... ArgumentTypes>
 void angular_derivatives(const size_t l_max,                    // NOLINT
                          const size_t number_of_radial_points,  // NOLINT
-                         const ArgumentTypes&... arguments) noexcept {
+                         const ArgumentTypes&... arguments) {
   static_assert(
       tmpl::size<DerivativeKindList>::value * 2 == sizeof...(ArgumentTypes) or
           tmpl::size<DerivativeKindList>::value * 4 == sizeof...(ArgumentTypes),
@@ -485,6 +481,6 @@ template <
 SpinWeighted<ComplexDataVector, Tags::derivative_spin_weight<DerivKind> + Spin>
 angular_derivative(
     size_t l_max, size_t number_of_radial_points,
-    const SpinWeighted<ComplexDataVector, Spin>& to_differentiate) noexcept;
+    const SpinWeighted<ComplexDataVector, Spin>& to_differentiate);
 }  // namespace Swsh
 }  // namespace Spectral

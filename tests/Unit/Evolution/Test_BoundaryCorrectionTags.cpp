@@ -23,8 +23,7 @@ struct BoundaryCorrectionBase {
   BoundaryCorrectionBase& operator=(BoundaryCorrectionBase&&) = default;
   virtual ~BoundaryCorrectionBase() = 0;
 
-  virtual std::unique_ptr<BoundaryCorrectionBase> get_clone()
-      const noexcept = 0;
+  virtual std::unique_ptr<BoundaryCorrectionBase> get_clone() const = 0;
 };
 
 BoundaryCorrectionBase::~BoundaryCorrectionBase() = default;
@@ -40,7 +39,7 @@ struct BoundaryCorrection : public BoundaryCorrectionBase {
   using options = tmpl::list<>;
   static constexpr Options::String help = {"Halp"};
 
-  std::unique_ptr<BoundaryCorrectionBase> get_clone() const noexcept override {
+  std::unique_ptr<BoundaryCorrectionBase> get_clone() const override {
     return std::make_unique<BoundaryCorrection>(*this);
   }
 };

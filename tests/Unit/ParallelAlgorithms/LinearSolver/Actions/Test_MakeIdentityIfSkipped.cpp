@@ -52,7 +52,7 @@ struct RunIfSkipped {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     db::mutate<CheckRunIfSkippedTag>(
         make_not_null(&box),
         [](const gsl::not_null<bool*> flag) { *flag = true; });

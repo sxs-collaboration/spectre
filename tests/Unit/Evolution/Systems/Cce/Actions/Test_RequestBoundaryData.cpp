@@ -52,8 +52,7 @@ struct MockBoundaryComputeAndSendToEvolution {
                 DbTags>...>> = nullptr>
   static void apply(const db::DataBox<tmpl::list<DbTags...>>& /*box*/,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const TimeStepId& time) noexcept {
+                    const ArrayIndex& /*array_index*/, const TimeStepId& time) {
     times_requested.push_back(time.substep_time().value());
   }
 };

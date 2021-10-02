@@ -32,12 +32,12 @@ class CachedTempBuffer {
 
   /// Construct the buffer with the given computer.  `size` is passed
   /// to the underlying `TempBuffer` constructor.
-  CachedTempBuffer(const size_t size, Computer computer) noexcept
+  CachedTempBuffer(const size_t size, Computer computer)
       : data_(size), computer_(std::move(computer)) {}
 
   /// Obtain a value from the buffer, computing it if necessary.
   template <typename Tag>
-  const typename Tag::type& get_var(Tag /*meta*/) noexcept {
+  const typename Tag::type& get_var(Tag /*meta*/) {
     static_assert(tmpl::list_contains_v<tmpl::list<Tags...>, Tag>,
                   "The requested tag is not available. See the template "
                   "parameters of 'CachedTempBuffer' for the computer type and "

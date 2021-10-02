@@ -41,18 +41,17 @@ struct ProcessorCalls : db::SimpleTag {
 
 struct Processor {
 // [Processor::apply]
-  template <typename DbTags, typename Metavariables, typename ArrayIndex>
-  static void apply(const gsl::not_null<db::DataBox<DbTags>*> box,
-                    Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/, const int id,
-                    tuples::TaggedTuple<Queue1, Queue2> data) noexcept {
-// [Processor::apply]
-    db::mutate<ProcessorCalls>(
-        box, [&id, &data](
-                 const gsl::not_null<ProcessorCalls::type*> calls) noexcept {
-          calls->emplace_back(id, std::move(data));
-        });
-  }
+template <typename DbTags, typename Metavariables, typename ArrayIndex>
+static void apply(const gsl::not_null<db::DataBox<DbTags>*> box,
+                  Parallel::GlobalCache<Metavariables>& /*cache*/,
+                  const ArrayIndex& /*array_index*/, const int id,
+                  tuples::TaggedTuple<Queue1, Queue2> data) {
+  // [Processor::apply]
+  db::mutate<ProcessorCalls>(
+      box, [&id, &data](const gsl::not_null<ProcessorCalls::type*> calls) {
+        calls->emplace_back(id, std::move(data));
+      });
+}
 };
 
 template <typename Metavariables>
@@ -83,9 +82,9 @@ SPECTRE_TEST_CASE("Unit.Actions.UpdateMessageQueue", "[Unit][Actions]") {
   ActionTesting::set_phase(make_not_null(&runner),
                            Metavariables::Phase::Testing);
 
-  const auto processed_by_call =
-      [&runner](auto queue_v, const LinkedMessageId<int>& id,
-                auto data) noexcept -> decltype(auto) {
+  const auto processed_by_call = [&runner](auto queue_v,
+                                           const LinkedMessageId<int>& id,
+                                           auto data) -> decltype(auto) {
     ActionTesting::simple_action<
         component, Actions::UpdateMessageQueue<
                        decltype(queue_v), LinkedMessageQueueTag, Processor>>(
@@ -93,7 +92,7 @@ SPECTRE_TEST_CASE("Unit.Actions.UpdateMessageQueue", "[Unit][Actions]") {
     return db::mutate<ProcessorCalls>(
         make_not_null(&ActionTesting::get_databox<component, tmpl::list<>>(
             make_not_null(&runner), 0)),
-        [](const gsl::not_null<ProcessorCalls::type*> calls) noexcept {
+        [](const gsl::not_null<ProcessorCalls::type*> calls) {
           auto ret = std::move(*calls);
           calls->clear();
           return ret;

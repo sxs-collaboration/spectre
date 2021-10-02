@@ -67,14 +67,14 @@ class FixToAtmosphere {
   /// \brief Rest mass density of the atmosphere
   struct DensityOfAtmosphere {
     using type = double;
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
     static constexpr Options::String help = {"Density of atmosphere"};
   };
   /// \brief Rest mass density at which to impose the atmosphere. Should be
   /// greater than or equal to the density of the atmosphere.
   struct DensityCutoff {
     using type = double;
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
     static constexpr Options::String help = {
         "Density to impose atmosphere at. Must be >= rho_atm"};
   };
@@ -85,7 +85,7 @@ class FixToAtmosphere {
   /// This value must not be larger than `10 * DensityOfAtmosphere`.
   struct TransitionDensityCutoff {
     using type = double;
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
     static constexpr Options::String help = {
         "For densities between DensityOfAtmosphere and TransitionDensityCutoff "
         "the velocity is transitioned away from atmosphere to avoid abrupt "
@@ -96,8 +96,8 @@ class FixToAtmosphere {
   /// `TransitionDensityCutoff`
   struct MaxVelocityMagnitude {
     using type = double;
-    static type lower_bound() noexcept { return 0.0; }
-    static type upper_bound() noexcept { return 1.0; }
+    static type lower_bound() { return 0.0; }
+    static type upper_bound() { return 1.0; }
     static constexpr Options::String help = {
         "The maximum sqrt(v^i v^j gamma_{ij}) allowed when the density is "
         "below TransitionDensityCutoff."};
@@ -122,12 +122,12 @@ class FixToAtmosphere {
   FixToAtmosphere() = default;
   FixToAtmosphere(const FixToAtmosphere& /*rhs*/) = default;
   FixToAtmosphere& operator=(const FixToAtmosphere& /*rhs*/) = default;
-  FixToAtmosphere(FixToAtmosphere&& /*rhs*/) noexcept = default;
-  FixToAtmosphere& operator=(FixToAtmosphere&& /*rhs*/) noexcept = default;
+  FixToAtmosphere(FixToAtmosphere&& /*rhs*/) = default;
+  FixToAtmosphere& operator=(FixToAtmosphere&& /*rhs*/) = default;
   ~FixToAtmosphere() = default;
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept;
+  void pup(PUP::er& p);
 
   using return_tags =
       tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
@@ -152,7 +152,7 @@ class FixToAtmosphere {
       gsl::not_null<Scalar<DataVector>*> specific_enthalpy,
       const tnsr::ii<DataVector, Dim, Frame::Inertial>& spatial_metric,
       const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
-      equation_of_state) const noexcept;
+          equation_of_state) const;
 
  private:
   template <size_t ThermodynamicDim>
@@ -163,7 +163,7 @@ class FixToAtmosphere {
       gsl::not_null<Scalar<DataVector>*> specific_enthalpy,
       const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
           equation_of_state,
-      size_t grid_index) const noexcept;
+      size_t grid_index) const;
 
   void set_to_magnetic_free_transition(
       gsl::not_null<Scalar<DataVector>*> rest_mass_density,
@@ -171,12 +171,12 @@ class FixToAtmosphere {
           spatial_velocity,
       gsl::not_null<Scalar<DataVector>*> lorentz_factor,
       const tnsr::ii<DataVector, Dim, Frame::Inertial>& spatial_metric,
-      size_t grid_index) const noexcept;
+      size_t grid_index) const;
 
   template <size_t SpatialDim>
   // NOLINTNEXTLINE(readability-redundant-declaration)
   friend bool operator==(const FixToAtmosphere<SpatialDim>& lhs,
-                         const FixToAtmosphere<SpatialDim>& rhs) noexcept;
+                         const FixToAtmosphere<SpatialDim>& rhs);
 
   double density_of_atmosphere_{std::numeric_limits<double>::signaling_NaN()};
   double density_cutoff_{std::numeric_limits<double>::signaling_NaN()};
@@ -187,6 +187,6 @@ class FixToAtmosphere {
 
 template <size_t Dim>
 bool operator!=(const FixToAtmosphere<Dim>& lhs,
-                const FixToAtmosphere<Dim>& rhs) noexcept;
+                const FixToAtmosphere<Dim>& rhs);
 
 }  // namespace VariableFixing

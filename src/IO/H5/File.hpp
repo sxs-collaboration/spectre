@@ -61,7 +61,7 @@ class H5File {
  public:
   // empty constructor for classes which store an H5File and need to be
   // charm-compatible.
-  H5File() noexcept = default;
+  H5File() = default;
 
   /*!
    * \requires `file_name` is a valid path and ends in `.h5`.
@@ -87,15 +87,15 @@ class H5File {
   /// @}
 
   /// \cond HIDDEN_SYMBOLS
-  H5File(H5File&& rhs) noexcept;             // NOLINT
-  H5File& operator=(H5File&& rhs) noexcept;  // NOLINT
+  H5File(H5File&& rhs);             // NOLINT
+  H5File& operator=(H5File&& rhs);  // NOLINT
   /// \endcond
 
   /// Get name of the H5 file
-  const std::string& name() const noexcept { return file_name_; }
+  const std::string& name() const { return file_name_; }
 
   /// Get a std::vector of the names of all immediate subgroups of the file
-  const std::vector<std::string> groups() const noexcept {
+  const std::vector<std::string> groups() const {
     return h5::get_group_names(file_id_, "/");
   }
 
@@ -143,15 +143,15 @@ class H5File {
    * object if it does.
    */
   template <typename ObjectType, typename... Args>
-  ObjectType& try_insert(const std::string& path, Args&&... args) noexcept;
+  ObjectType& try_insert(const std::string& path, Args&&... args);
 
   /*!
    * \effects Closes the current object, if there is none then has no effect
    */
-  void close_current_object() const noexcept { current_object_ = nullptr; }
+  void close_current_object() const { current_object_ = nullptr; }
 
   template <typename ObjectType>
-  bool exists(const std::string& path) const noexcept {
+  bool exists(const std::string& path) const {
     auto exists_group_name = check_if_object_exists<ObjectType>(path);
     return std::get<0>(exists_group_name);
   }
@@ -168,7 +168,7 @@ class H5File {
       const std::unique_ptr<h5::Object>& current_object) const;
 
   void insert_header();
-  void insert_source_archive() noexcept;
+  void insert_source_archive();
 
   template <typename ObjectType>
   std::tuple<bool, detail::OpenGroup, std::string> check_if_object_exists(
@@ -267,7 +267,7 @@ ObjectType& H5File<Access_t>::insert(const std::string& path, Args&&... args) {
 template <AccessType Access_t>
 template <typename ObjectType, typename... Args>
 ObjectType& H5File<Access_t>::try_insert(const std::string& path,
-                                         Args&&... args) noexcept {
+                                         Args&&... args) {
   static_assert(AccessType::ReadWrite == Access_t,
                 "Can only insert into ReadWrite access H5 files.");
   current_object_ = nullptr;

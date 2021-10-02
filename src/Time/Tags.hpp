@@ -61,7 +61,7 @@ struct SubstepTimeCompute : SubstepTime, db::ComputeTag {
   using base = SubstepTime;
   using return_type = typename base::type;
   static void function(const gsl::not_null<return_type*> substep_time,
-                       const ::TimeStepId& id) noexcept {
+                       const ::TimeStepId& id) {
     *substep_time = id.substep_time();
   }
   using argument_tags = tmpl::list<TimeStepId>;
@@ -116,7 +116,7 @@ using get_all_history_tags =
 /// \brief Tag for the stepper error measure.
 template <typename Tag>
 struct StepperError : db::PrefixTag, db::SimpleTag {
-  static std::string name() noexcept {
+  static std::string name() {
     return "StepperError(" + db::tag_name<Tag>() + ")";
   }
   using type = typename Tag::type;
@@ -147,7 +147,7 @@ namespace OptionTags {
 /// \ingroup TimeGroup
 template <typename StepperType>
 struct TimeStepper {
-  static std::string name() noexcept { return "TimeStepper"; }
+  static std::string name() { return "TimeStepper"; }
   static constexpr Options::String help{"The time stepper"};
   using type = std::unique_ptr<StepperType>;
   using group = evolution::OptionTags::Group;
@@ -159,7 +159,7 @@ struct StepChoosers {
   static constexpr Options::String help{"Limits on LTS step size"};
   using type =
       std::vector<std::unique_ptr<::StepChooser<StepChooserUse::LtsStep>>>;
-  static size_t lower_bound_on_size() noexcept { return 1; }
+  static size_t lower_bound_on_size() { return 1; }
   using group = evolution::OptionTags::Group;
 };
 
@@ -178,7 +178,7 @@ struct InitialTime {
   using type = double;
   static constexpr Options::String help = {
       "The time at which the evolution is started."};
-  static type suggested_value() noexcept { return 0.0; }
+  static type suggested_value() { return 0.0; }
   using group = evolution::OptionTags::Group;
 };
 
@@ -199,7 +199,7 @@ struct InitialTimeStep {
 struct InitialSlabSize {
   using type = double;
   static constexpr Options::String help = "The initial slab size";
-  static type lower_bound() noexcept { return 0.; }
+  static type lower_bound() { return 0.; }
   using group = evolution::OptionTags::Group;
 };
 }  // namespace OptionTags
@@ -224,7 +224,7 @@ struct TimeStepper : TimeStepper<>, db::SimpleTag {
 
   static constexpr bool pass_metavariables = false;
   static std::unique_ptr<StepperType> create_from_options(
-      const std::unique_ptr<StepperType>& time_stepper) noexcept {
+      const std::unique_ptr<StepperType>& time_stepper) {
     return deserialize<type>(serialize<type>(time_stepper).data());
   }
 };
@@ -239,7 +239,7 @@ struct StepChoosers : db::SimpleTag {
   using option_tags = tmpl::list<::OptionTags::StepChoosers>;
 
   static constexpr bool pass_metavariables = false;
-  static type create_from_options(const type& step_choosers) noexcept {
+  static type create_from_options(const type& step_choosers) {
     return deserialize<type>(serialize<type>(step_choosers).data());
   }
 };
@@ -253,7 +253,7 @@ struct StepController : db::SimpleTag {
 
   static constexpr bool pass_metavariables = false;
   static std::unique_ptr<::StepController> create_from_options(
-      const std::unique_ptr<::StepController>& step_controller) noexcept {
+      const std::unique_ptr<::StepController>& step_controller) {
     return deserialize<type>(serialize<type>(step_controller).data());
   }
 };

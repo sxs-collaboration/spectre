@@ -106,7 +106,7 @@ struct PrimVarsCompute : db::ComputeTag,
   using base = Tags::Variables<tmpl::list<PrimVar1, PrimVar2<Dim>>>;
   using return_type = typename base::type;
   static void function(const gsl::not_null<return_type*> result,
-                       const Mesh<Dim>& mesh) noexcept {
+                       const Mesh<Dim>& mesh) {
     result->initialize(mesh.number_of_grid_points());
     get(get<PrimVar1>(*result)) = 5.0;
     for (size_t i = 0; i < Dim; ++i) {
@@ -137,7 +137,7 @@ struct SimpleUnnormalizedFaceNormal
   using return_type = typename base::type;
   static void function(const gsl::not_null<return_type*> result,
                        const Mesh<Dim - 1>& face_mesh,
-                       const Direction<Dim>& direction) noexcept {
+                       const Direction<Dim>& direction) {
     for (size_t i = 0; i < Dim; ++i) {
       result->get(i) =
           DataVector{face_mesh.number_of_grid_points(),
@@ -158,7 +158,7 @@ struct FaceMeshVelocity : db::ComputeTag, domain::Tags::MeshVelocity<Dim> {
   using return_type = typename base::type;
   static void function(const gsl::not_null<return_type*> result,
                        const Mesh<Dim - 1>& face_mesh,
-                       const Direction<Dim>& direction) noexcept {
+                       const Direction<Dim>& direction) {
     if constexpr (UseMovingMesh) {
       tnsr::I<DataVector, Dim> mesh_velocity{face_mesh.number_of_grid_points()};
       for (size_t i = 0; i < Dim; ++i) {
@@ -205,7 +205,7 @@ struct TimeDerivativeTerms {
       // Arguments listed in argument_tags above
       const Scalar<DataVector>& var1,
       const tnsr::I<DataVector, Dim, Frame::Inertial>& var2,
-      const Scalar<DataVector>& var3) noexcept {
+      const Scalar<DataVector>& var3) {
     get(*square_var3) = square(get(var3));
 
     // Set source terms
@@ -239,7 +239,7 @@ struct TimeDerivativeTerms {
       const Scalar<DataVector>& var1,
       const tnsr::I<DataVector, Dim, Frame::Inertial>& var2,
       const Scalar<DataVector>& var3,
-      const Scalar<DataVector>& prim_var1) noexcept {
+      const Scalar<DataVector>& prim_var1) {
     apply(dt_var1, dt_var2, flux_var1, flux_var2, square_var3, var1, var2,
           var3);
     get(*dt_var1) += get(prim_var1);
@@ -264,7 +264,7 @@ struct TimeDerivativeTerms {
       // Arguments listed in argument_tags above
       const Scalar<DataVector>& var1,
       const tnsr::I<DataVector, Dim, Frame::Inertial>& var2,
-      const Scalar<DataVector>& var3) noexcept {
+      const Scalar<DataVector>& var3) {
     get(*square_var3) = square(get(var3));
 
     // Set source terms and nonconservative products
@@ -293,7 +293,7 @@ struct TimeDerivativeTerms {
 
       const Scalar<DataVector>& var1,
       const tnsr::I<DataVector, Dim, Frame::Inertial>& var2,
-      const Scalar<DataVector>& var3) noexcept {
+      const Scalar<DataVector>& var3) {
     get(*square_var3) = square(get(var3));
 
     // Set source terms and nonconservative products
@@ -328,7 +328,7 @@ struct TimeDerivativeTerms {
       const Scalar<DataVector>& var1,
       const tnsr::I<DataVector, Dim, Frame::Inertial>& var2,
       const Scalar<DataVector>& var3,
-      const Scalar<DataVector>& prim_var1) noexcept {
+      const Scalar<DataVector>& prim_var1) {
     apply(dt_var1, dt_var2, flux_var2, square_var3, d_var1, var1, var2, var3);
     get(*dt_var1) += get(prim_var1);
   }
@@ -341,7 +341,7 @@ struct NonconservativeNormalDotFlux {
   static void apply(
       const gsl::not_null<Scalar<DataVector>*> var1_normal_dot_flux,
       const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
-          var2_normal_dot_flux) noexcept {
+          var2_normal_dot_flux) {
     get(*var1_normal_dot_flux) = 1.1;
     for (size_t i = 0; i < Dim; ++i) {
       var2_normal_dot_flux->get(i) = 1.3 + i;
@@ -375,7 +375,7 @@ struct BoundaryTerms final : public BoundaryCorrection<Dim, HasPrims> {
   };
 
   /// \cond
-  explicit BoundaryTerms(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit BoundaryTerms(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(BoundaryTerms);  // NOLINT
   /// \endcond
@@ -430,7 +430,7 @@ struct BoundaryTerms final : public BoundaryCorrection<Dim, HasPrims> {
       const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
           mesh_velocity,
       const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity)
-      const noexcept {
+      const {
     *out_normal_dot_flux_var1 = dot_product(flux_var1, normal_covector);
     if (mesh_velocity.has_value()) {
       get(*out_normal_dot_flux_var1) -=
@@ -487,7 +487,7 @@ struct BoundaryTerms final : public BoundaryCorrection<Dim, HasPrims> {
           mesh_velocity,
       const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity,
 
-      const TimeStepId& time_step_id) const noexcept {
+      const TimeStepId& time_step_id) const {
     dg_package_data(out_normal_dot_flux_var1, out_normal_dot_flux_var2,
                     out_var1, out_var2, max_abs_char_speed, var1, var2,
                     flux_var1, flux_var2, var3_squared, normal_covector,
@@ -515,7 +515,7 @@ struct BoundaryTerms final : public BoundaryCorrection<Dim, HasPrims> {
       const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
           mesh_velocity,
       const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity)
-      const noexcept {
+      const {
     get(*out_normal_dot_flux_var1) =
         get(var1) + get(dot_product(var2, normal_covector));
     if (mesh_velocity.has_value()) {
@@ -569,7 +569,7 @@ struct BoundaryTerms final : public BoundaryCorrection<Dim, HasPrims> {
       const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
           mesh_velocity,
       const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity)
-      const noexcept {
+      const {
     get(*out_normal_dot_flux_var1) =
         get(var1) + get(dot_product(var2, normal_covector));
     if (mesh_velocity.has_value()) {
@@ -627,7 +627,7 @@ struct BoundaryTerms final : public BoundaryCorrection<Dim, HasPrims> {
           mesh_velocity,
       const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity,
 
-      const TimeStepId& time_step_id) const noexcept {
+      const TimeStepId& time_step_id) const {
     dg_package_data(out_normal_dot_flux_var1, out_normal_dot_flux_var2,
                     out_var1, out_var2, max_abs_char_speed, var1, var2,
                     flux_var2, var3_squared, normal_covector, mesh_velocity,
@@ -651,12 +651,12 @@ template <size_t Dim>
 class BoundaryCondition : public domain::BoundaryConditions::BoundaryCondition {
  public:
   BoundaryCondition() = default;
-  BoundaryCondition(BoundaryCondition&&) noexcept = default;
-  BoundaryCondition& operator=(BoundaryCondition&&) noexcept = default;
+  BoundaryCondition(BoundaryCondition&&) = default;
+  BoundaryCondition& operator=(BoundaryCondition&&) = default;
   BoundaryCondition(const BoundaryCondition&) = default;
   BoundaryCondition& operator=(const BoundaryCondition&) = default;
   ~BoundaryCondition() override = default;
-  explicit BoundaryCondition(CkMigrateMessage* msg) noexcept
+  explicit BoundaryCondition(CkMigrateMessage* msg)
       : domain::BoundaryConditions::BoundaryCondition(msg) {}
 
   void pup(PUP::er& p) override {
@@ -668,19 +668,19 @@ template <size_t Dim>
 class Outflow : public BoundaryCondition<Dim> {
  public:
   Outflow() = default;
-  Outflow(Outflow&&) noexcept = default;
-  Outflow& operator=(Outflow&&) noexcept = default;
+  Outflow(Outflow&&) = default;
+  Outflow& operator=(Outflow&&) = default;
   Outflow(const Outflow&) = default;
   Outflow& operator=(const Outflow&) = default;
   ~Outflow() override = default;
 
-  explicit Outflow(CkMigrateMessage* msg) noexcept
+  explicit Outflow(CkMigrateMessage* msg)
       : BoundaryCondition<Dim>(msg) {}
 
   WRAPPED_PUPable_decl_base_template(
       domain::BoundaryConditions::BoundaryCondition, Outflow);
 
-  auto get_clone() const noexcept -> std::unique_ptr<
+  auto get_clone() const -> std::unique_ptr<
       domain::BoundaryConditions::BoundaryCondition> override {
     return std::make_unique<Outflow<Dim>>(*this);
   }
@@ -699,7 +699,7 @@ class Outflow : public BoundaryCondition<Dim> {
       const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
       /*face_mesh_velocity*/,
       const tnsr::i<DataVector, Dim, Frame::Inertial>&
-      /*outward_directed_normal_covector*/) noexcept {
+      /*outward_directed_normal_covector*/) {
     Outflow<Dim>::number_of_times_called += 1;
     return std::nullopt;
   }
@@ -869,7 +869,7 @@ double dg_package_data(
     const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
         mesh_velocity,
     const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity,
-    const TagRetriever& get_tag, tmpl::list<VolumeTags...> /*meta*/) noexcept {
+    const TagRetriever& get_tag, tmpl::list<VolumeTags...> /*meta*/) {
   return boundary_correction.dg_package_data(
       make_not_null(&get<PackagedFieldTags>(*packaged_data))...,
       get<ProjectedFieldTags>(projected_fields)..., normal_covector,
@@ -879,7 +879,7 @@ double dg_package_data(
 template <bool LocalTimeStepping, bool UseMovingMesh, size_t Dim,
           SystemType system_type, bool HasPrims>
 void test_impl(const Spectral::Quadrature quadrature,
-               const ::dg::Formulation dg_formulation) noexcept {
+               const ::dg::Formulation dg_formulation) {
   CAPTURE(LocalTimeStepping);
   CAPTURE(UseMovingMesh);
   CAPTURE(Dim);
@@ -952,7 +952,7 @@ void test_impl(const Spectral::Quadrature quadrature,
 
   const Element<Dim> element{self_id, neighbors};
   MockRuntimeSystem runner = [&dg_formulation, &element,
-                              &grid_to_inertial_map]() noexcept {
+                              &grid_to_inertial_map]() {
     std::vector<DirectionMap<
         Dim, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
         boundary_conditions{2};
@@ -1560,7 +1560,7 @@ void test_impl(const Spectral::Quadrature quadrature,
        &variables_before_compute_time_derivatives](
           const Direction<Dim>& local_direction,
           const ElementId<Dim>& local_neighbor_id,
-          const bool local_data) noexcept {
+          const bool local_data) {
         const auto& face_mesh = mesh.slice_away(local_direction.dimension());
         // First project data to the face in the direction of the mortar
         Variables<
@@ -1794,7 +1794,7 @@ void test_impl(const Spectral::Quadrature quadrature,
 }
 
 template <SystemType system_type, size_t Dim>
-void test() noexcept {
+void test() {
   // The test impl is structured in the following way:
   // - the static mesh volume contributions are computed "by-hand" and used more
   //   or less as a regression test. This is relatively easy for Gauss-Lobatto
@@ -1853,7 +1853,7 @@ void test() noexcept {
 
   const auto invoke_tests_with_quadrature_and_formulation =
       [](const Spectral::Quadrature quadrature,
-         const ::dg::Formulation local_dg_formulation) noexcept {
+         const ::dg::Formulation local_dg_formulation) {
         const auto moving_mesh_helper = [&local_dg_formulation,
                                          &quadrature](auto moving_mesh) {
           const auto prim_helper = [&local_dg_formulation, &moving_mesh,

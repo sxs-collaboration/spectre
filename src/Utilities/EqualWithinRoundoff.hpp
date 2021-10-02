@@ -15,6 +15,6 @@
 constexpr SPECTRE_ALWAYS_INLINE bool equal_within_roundoff(
     const double a, const double b,
     const double eps = std::numeric_limits<double>::epsilon() * 100.0,
-    const double scale = 1.0) noexcept {
+    const double scale = 1.0) {
   return ce_fabs(a - b) < (std::max(ce_fabs(a), ce_fabs(b)) + scale) * eps;
 }

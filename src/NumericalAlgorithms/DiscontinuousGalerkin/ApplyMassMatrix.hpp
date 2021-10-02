@@ -14,8 +14,7 @@ namespace dg {
 
 namespace detail {
 template <size_t Dim>
-void apply_mass_matrix_impl(gsl::not_null<double*> data,
-                            const Mesh<Dim>& mesh) noexcept;
+void apply_mass_matrix_impl(gsl::not_null<double*> data, const Mesh<Dim>& mesh);
 }  // namespace detail
 
 /*!
@@ -50,7 +49,7 @@ void apply_mass_matrix_impl(gsl::not_null<double*> data,
 /// @{
 template <size_t Dim>
 void apply_mass_matrix(const gsl::not_null<DataVector*> data,
-                       const Mesh<Dim>& mesh) noexcept {
+                       const Mesh<Dim>& mesh) {
   ASSERT(data->size() == mesh.number_of_grid_points(),
          "The DataVector has size " << data->size() << ", but expected size "
                                     << mesh.number_of_grid_points()
@@ -60,7 +59,7 @@ void apply_mass_matrix(const gsl::not_null<DataVector*> data,
 
 template <size_t Dim, typename TagsList>
 void apply_mass_matrix(const gsl::not_null<Variables<TagsList>*> data,
-                       const Mesh<Dim>& mesh) noexcept {
+                       const Mesh<Dim>& mesh) {
   const size_t num_points = data->number_of_grid_points();
   ASSERT(num_points == mesh.number_of_grid_points(),
          "The Variables data has "

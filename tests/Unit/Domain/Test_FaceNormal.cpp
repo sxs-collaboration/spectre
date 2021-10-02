@@ -56,7 +56,7 @@ namespace {
 template <size_t Dim>
 struct Directions : db::SimpleTag {
   static constexpr size_t volume_dim = Dim;
-  static std::string name() noexcept { return "Directions"; }
+  static std::string name() { return "Directions"; }
   using type = std::unordered_set<Direction<Dim>>;
 };
 
@@ -446,7 +446,7 @@ void test_compute_item() {
                                        false))));
 
   auto invert = [](std::unordered_map<Direction<2>, tnsr::i<DataVector, 2>>
-                       map_of_vectors) noexcept {
+                       map_of_vectors) {
     for (auto& vector : map_of_vectors) {
       for (auto& dv : vector.second) {
         dv *= -1.;

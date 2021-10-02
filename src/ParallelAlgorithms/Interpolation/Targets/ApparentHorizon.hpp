@@ -70,17 +70,17 @@ struct ApparentHorizon {
       "options."};
 
   ApparentHorizon(Strahlkorper<Frame> initial_guess_in, ::FastFlow fast_flow_in,
-                  ::Verbosity verbosity_in) noexcept;
+                  ::Verbosity verbosity_in);
 
   ApparentHorizon() = default;
   ApparentHorizon(const ApparentHorizon& /*rhs*/) = default;
   ApparentHorizon& operator=(const ApparentHorizon& /*rhs*/) = delete;
-  ApparentHorizon(ApparentHorizon&& /*rhs*/) noexcept = default;
-  ApparentHorizon& operator=(ApparentHorizon&& /*rhs*/) noexcept = default;
+  ApparentHorizon(ApparentHorizon&& /*rhs*/) = default;
+  ApparentHorizon& operator=(ApparentHorizon&& /*rhs*/) = default;
   ~ApparentHorizon() = default;
 
   // clang-tidy non-const reference pointer.
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
 
   Strahlkorper<Frame> initial_guess{};
   ::FastFlow fast_flow{};
@@ -89,10 +89,10 @@ struct ApparentHorizon {
 
 template <typename Frame>
 bool operator==(const ApparentHorizon<Frame>& lhs,
-                const ApparentHorizon<Frame>& rhs) noexcept;
+                const ApparentHorizon<Frame>& rhs);
 template <typename Frame>
 bool operator!=(const ApparentHorizon<Frame>& lhs,
-                const ApparentHorizon<Frame>& rhs) noexcept;
+                const ApparentHorizon<Frame>& rhs);
 
 }  // namespace OptionHolders
 
@@ -106,9 +106,7 @@ struct ApparentHorizon {
   using type = OptionHolders::ApparentHorizon<Frame>;
   static constexpr Options::String help{
       "Options for interpolation onto apparent horizon."};
-  static std::string name() noexcept {
-    return Options::name<InterpolationTargetTag>();
-  }
+  static std::string name() { return Options::name<InterpolationTargetTag>(); }
   using group = ApparentHorizons;
 };
 }  // namespace OptionTags
@@ -121,9 +119,7 @@ struct ApparentHorizon : db::SimpleTag {
       tmpl::list<OptionTags::ApparentHorizon<InterpolationTargetTag, Frame>>;
 
   static constexpr bool pass_metavariables = false;
-  static type create_from_options(const type& option) noexcept {
-    return option;
-  }
+  static type create_from_options(const type& option) { return option; }
 };
 }  // namespace Tags
 
@@ -156,9 +152,8 @@ struct ApparentHorizon {
   using compute_tags = typename StrahlkorperTags::compute_items_tags<Frame>;
 
   template <typename DbTags, typename Metavariables>
-  static void initialize(
-      const gsl::not_null<db::DataBox<DbTags>*> box,
-      const Parallel::GlobalCache<Metavariables>& cache) noexcept {
+  static void initialize(const gsl::not_null<db::DataBox<DbTags>*> box,
+                         const Parallel::GlobalCache<Metavariables>& cache) {
     const auto& options =
         Parallel::get<Tags::ApparentHorizon<InterpolationTargetTag, Frame>>(
             cache);
@@ -179,7 +174,7 @@ struct ApparentHorizon {
   static tnsr::I<DataVector, 3, Frame> points(
       const db::DataBox<DbTags>& box,
       const tmpl::type_<Metavariables>& /*meta*/,
-      const TemporalId& /*temporal_id*/) noexcept {
+      const TemporalId& /*temporal_id*/) {
     const auto& fast_flow = db::get<::ah::Tags::FastFlow>(box);
     const auto& strahlkorper =
         db::get<StrahlkorperTags::Strahlkorper<Frame>>(box);

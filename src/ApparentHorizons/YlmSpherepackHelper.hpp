@@ -33,9 +33,9 @@ struct Storage {
 class MemoryPool {
  public:
   MemoryPool() = default;
-  std::vector<double>& get(size_t n_pts) noexcept;
-  void free(const std::vector<double>& to_be_freed) noexcept;
-  void free(gsl::not_null<double*> to_be_freed) noexcept;
+  std::vector<double>& get(size_t n_pts);
+  void free(const std::vector<double>& to_be_freed);
+  void free(gsl::not_null<double*> to_be_freed);
 
  private:
   struct StorageAndAvailability {

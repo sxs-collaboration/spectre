@@ -17,7 +17,7 @@
 template <typename DataType>
 tnsr::I<DataType, 1> random_unit_normal(
     const gsl::not_null<std::mt19937*> generator,
-    const tnsr::ii<DataType, 1>& spatial_metric) noexcept {
+    const tnsr::ii<DataType, 1>& spatial_metric) {
   std::uniform_int_distribution<> distribution(0, 1);
   auto unit_normal = make_with_value<tnsr::I<DataType, 1>>(
       spatial_metric, 1.0 - 2.0 * distribution(*generator));
@@ -28,7 +28,7 @@ tnsr::I<DataType, 1> random_unit_normal(
 template <typename DataType>
 tnsr::I<DataType, 2> random_unit_normal(
     const gsl::not_null<std::mt19937*> generator,
-    const tnsr::ii<DataType, 2>& spatial_metric) noexcept {
+    const tnsr::ii<DataType, 2>& spatial_metric) {
   std::uniform_real_distribution<> distribution(-M_PI, M_PI);
   // non-const to reuse allocation
   auto phi = make_with_random_values<DataType>(
@@ -46,7 +46,7 @@ tnsr::I<DataType, 2> random_unit_normal(
 template <typename DataType>
 tnsr::I<DataType, 3> random_unit_normal(
     const gsl::not_null<std::mt19937*> generator,
-    const tnsr::ii<DataType, 3>& spatial_metric) noexcept {
+    const tnsr::ii<DataType, 3>& spatial_metric) {
   std::uniform_real_distribution<> nz_distribution(-1.0, 1.0);
   // non-const to reuse allocation
   auto nz = make_with_random_values<DataType>(
@@ -73,7 +73,7 @@ tnsr::I<DataType, 3> random_unit_normal(
 #define INSTANTIATION(_, data)                                 \
   template tnsr::I<DTYPE(data), DIM(data)> random_unit_normal( \
       const gsl::not_null<std::mt19937*> generator,            \
-      const tnsr::ii<DTYPE(data), DIM(data)>& spatial_metric) noexcept;
+      const tnsr::ii<DTYPE(data), DIM(data)>& spatial_metric);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (double, DataVector), (1, 2, 3))
 

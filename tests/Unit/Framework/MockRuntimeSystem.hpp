@@ -139,7 +139,7 @@ class MockRuntimeSystem {
       CacheTuple cache_contents, MutableCacheTuple mutable_cache_contents = {},
       const std::vector<size_t>& number_of_mock_cores_on_each_mock_node = {1})
       : mock_global_cores_(
-            [&number_of_mock_cores_on_each_mock_node]() noexcept {
+            [&number_of_mock_cores_on_each_mock_node]() {
               std::unordered_map<NodeId,
                                  std::unordered_map<LocalCoreId, GlobalCoreId>>
                   mock_global_cores{};
@@ -159,7 +159,7 @@ class MockRuntimeSystem {
               return mock_global_cores;
             }()),
         mock_nodes_and_local_cores_(
-            [&number_of_mock_cores_on_each_mock_node]() noexcept {
+            [&number_of_mock_cores_on_each_mock_node]() {
               std::unordered_map<GlobalCoreId, std::pair<NodeId, LocalCoreId>>
                   mock_nodes_and_local_cores{};
               size_t global_core = 0;
@@ -227,8 +227,7 @@ class MockRuntimeSystem {
   template <typename Component, typename... Options>
   void emplace_array_component(
       const NodeId node_id, const LocalCoreId local_core_id,
-      const typename Component::array_index& array_index,
-      Options&&... opts) noexcept {
+      const typename Component::array_index& array_index, Options&&... opts) {
     mock_distributed_objects<Component>().emplace(
         array_index,
         MockDistributedObject<Component>(
@@ -245,7 +244,7 @@ class MockRuntimeSystem {
   template <typename Component, typename... Options>
   void emplace_singleton_component(const NodeId node_id,
                                    const LocalCoreId local_core_id,
-                                   Options&&... opts) noexcept {
+                                   Options&&... opts) {
     static_assert(
         std::is_same_v<typename Component::chare_type, MockSingletonChare>,
         "emplace_singleton_component expects a MockSingletonChare");
@@ -265,7 +264,7 @@ class MockRuntimeSystem {
 
   /// Emplace a group component that does not need to be initialized.
   template <typename Component, typename... Options>
-  void emplace_group_component(Options&&... opts) noexcept {
+  void emplace_group_component(Options&&... opts) {
     static_assert(
         std::is_same_v<typename Component::chare_type, MockGroupChare>,
         "emplace_group_component expects a MockGroupChare");
@@ -288,7 +287,7 @@ class MockRuntimeSystem {
 
   /// Emplace a nodegroup component that does not need to be initialized.
   template <typename Component, typename... Options>
-  void emplace_nodegroup_component(Options&&... opts) noexcept {
+  void emplace_nodegroup_component(Options&&... opts) {
     static_assert(
         std::is_same_v<typename Component::chare_type, MockNodeGroupChare>,
         "emplace_nodegroup_component expects a MockNodeGroupChare");
@@ -316,7 +315,7 @@ class MockRuntimeSystem {
   /// emplace_group_component, and emplace_nodegroup_component.
   template <typename Component, typename... Options>
   void emplace_component(const typename Component::array_index& array_index,
-                         Options&&... opts) noexcept {
+                         Options&&... opts) {
     emplace_array_component<Component>(NodeId{0}, LocalCoreId{0}, array_index,
                                        std::forward<Options>(opts)...);
   }
@@ -328,7 +327,7 @@ class MockRuntimeSystem {
       const typename Component::array_index& array_index,
       const typename detail::get_initialization<Component>::InitialValues&
           initial_values,
-      Options&&... opts) noexcept {
+      Options&&... opts) {
     detail::get_initialization<Component>::initialize_databox_action::
         set_initial_values(initial_values);
     auto [iterator, emplace_was_successful] =
@@ -359,7 +358,7 @@ class MockRuntimeSystem {
       const NodeId node_id, const LocalCoreId local_core_id,
       const typename detail::get_initialization<Component>::InitialValues&
           initial_values,
-      Options&&... opts) noexcept {
+      Options&&... opts) {
     static_assert(
         std::is_same_v<typename Component::chare_type, MockSingletonChare>,
         "emplace_singleton_component_and_initialize expects a "
@@ -395,7 +394,7 @@ class MockRuntimeSystem {
   void emplace_group_component_and_initialize(
       const typename detail::get_initialization<Component>::InitialValues&
           initial_values,
-      Options&&... opts) noexcept {
+      Options&&... opts) {
     static_assert(
         std::is_same_v<typename Component::chare_type, MockGroupChare>,
         "emplace_group_component_and_initialize expects a MockGroupChare");
@@ -434,7 +433,7 @@ class MockRuntimeSystem {
   void emplace_nodegroup_component_and_initialize(
       const typename detail::get_initialization<Component>::InitialValues&
           initial_values,
-      Options&&... opts) noexcept {
+      Options&&... opts) {
     static_assert(
         std::is_same_v<typename Component::chare_type, MockNodeGroupChare>,
         "emplace_nodegroup_component_and_initialize expects a "
@@ -468,7 +467,7 @@ class MockRuntimeSystem {
       iterator->second.set_phase(Metavariables::Phase::Initialization);
       iterator->second.next_action();
     }
-    }
+  }
 
   /// Emplace a component that needs to be initialized.
   /// emplace_component_and_initialize is deprecated in favor of
@@ -483,7 +482,7 @@ class MockRuntimeSystem {
       const typename Component::array_index& array_index,
       const typename detail::get_initialization<Component>::InitialValues&
           initial_values,
-      Options&&... opts) noexcept {
+      Options&&... opts) {
     emplace_array_component_and_initialize<Component>(
         NodeId{0}, LocalCoreId{0}, array_index, initial_values,
         std::forward<Options>(opts)...);
@@ -495,7 +494,7 @@ class MockRuntimeSystem {
   template <typename Component, typename Action, typename Arg0,
             typename... Args>
   void simple_action(const typename Component::array_index& array_index,
-                     Arg0&& arg0, Args&&... args) noexcept {
+                     Arg0&& arg0, Args&&... args) {
     mock_distributed_objects<Component>()
         .at(array_index)
         .template simple_action<Action>(
@@ -505,8 +504,7 @@ class MockRuntimeSystem {
   }
 
   template <typename Component, typename Action>
-  void simple_action(
-      const typename Component::array_index& array_index) noexcept {
+  void simple_action(const typename Component::array_index& array_index) {
     mock_distributed_objects<Component>()
         .at(array_index)
         .template simple_action<Action>(true);
@@ -519,7 +517,7 @@ class MockRuntimeSystem {
   template <typename Component, typename Action, typename Arg0,
             typename... Args>
   void threaded_action(const typename Component::array_index& array_index,
-                       Arg0&& arg0, Args&&... args) noexcept {
+                       Arg0&& arg0, Args&&... args) {
     mock_distributed_objects<Component>()
         .at(array_index)
         .template threaded_action<Action>(
@@ -529,8 +527,7 @@ class MockRuntimeSystem {
   }
 
   template <typename Component, typename Action>
-  void threaded_action(
-      const typename Component::array_index& array_index) noexcept {
+  void threaded_action(const typename Component::array_index& array_index) {
     mock_distributed_objects<Component>()
         .at(array_index)
         .template threaded_action<Action>(true);
@@ -541,7 +538,7 @@ class MockRuntimeSystem {
   /// `Component` labeled by `array_index`.
   template <typename Component>
   bool is_simple_action_queue_empty(
-      const typename Component::array_index& array_index) const noexcept {
+      const typename Component::array_index& array_index) const {
     return mock_distributed_objects<Component>()
         .at(array_index)
         .is_simple_action_queue_empty();
@@ -551,7 +548,7 @@ class MockRuntimeSystem {
   /// `Component` labeled by `array_index`.
   template <typename Component>
   size_t number_of_queued_simple_actions(
-      const typename Component::array_index& array_index) const noexcept {
+      const typename Component::array_index& array_index) const {
     return mock_distributed_objects<Component>()
         .at(array_index)
         .simple_action_queue_size();
@@ -561,7 +558,7 @@ class MockRuntimeSystem {
   /// `array_index`.
   template <typename Component>
   void invoke_queued_simple_action(
-      const typename Component::array_index& array_index) noexcept {
+      const typename Component::array_index& array_index) {
     mock_distributed_objects<Component>()
         .at(array_index)
         .invoke_queued_simple_action();
@@ -571,7 +568,7 @@ class MockRuntimeSystem {
   /// `Component` labeled by `array_index`.
   template <typename Component>
   bool is_threaded_action_queue_empty(
-      const typename Component::array_index& array_index) const noexcept {
+      const typename Component::array_index& array_index) const {
     return mock_distributed_objects<Component>()
         .at(array_index)
         .is_threaded_action_queue_empty();
@@ -581,7 +578,7 @@ class MockRuntimeSystem {
   /// `Component` labeled by `array_index`.
   template <typename Component>
   size_t number_of_queued_threaded_actions(
-      const typename Component::array_index& array_index) const noexcept {
+      const typename Component::array_index& array_index) const {
     return mock_distributed_objects<Component>()
         .at(array_index)
         .threaded_action_queue_size();
@@ -591,7 +588,7 @@ class MockRuntimeSystem {
   /// `array_index`.
   template <typename Component>
   void invoke_queued_threaded_action(
-      const typename Component::array_index& array_index) noexcept {
+      const typename Component::array_index& array_index) {
     mock_distributed_objects<Component>()
         .at(array_index)
         .invoke_queued_threaded_action();
@@ -601,7 +598,7 @@ class MockRuntimeSystem {
   /// the action list, force the next action to be `Action`
   template <typename Component, typename Action>
   void force_next_action_to_be(
-      const typename Component::array_index& array_index) noexcept {
+      const typename Component::array_index& array_index) {
     static_assert(
         tmpl::list_contains_v<
             typename MockDistributedObject<Component>::all_actions_list,
@@ -612,7 +609,7 @@ class MockRuntimeSystem {
         "parameter for the action.");
     bool found_matching_phase = false;
     const auto invoke_for_phase =
-        [this, &array_index, &found_matching_phase](auto phase_dep_v) noexcept {
+        [this, &array_index, &found_matching_phase](auto phase_dep_v) {
           using PhaseDep = decltype(phase_dep_v);
           constexpr typename Metavariables::Phase phase = PhaseDep::type::phase;
           using actions_list = typename PhaseDep::type::action_list;
@@ -645,7 +642,7 @@ class MockRuntimeSystem {
   /// Obtain the index into the action list of the next action.
   template <typename Component>
   size_t get_next_action_index(
-      const typename Component::array_index& array_index) const noexcept {
+      const typename Component::array_index& array_index) const {
     return mock_distributed_objects<Component>()
         .at(array_index)
         .get_next_action_index();
@@ -655,8 +652,7 @@ class MockRuntimeSystem {
   /// `Component` on the component labeled by `array_index`, failing if it was
   /// not ready.
   template <typename Component>
-  void next_action(
-      const typename Component::array_index& array_index) noexcept {
+  void next_action(const typename Component::array_index& array_index) {
     mock_distributed_objects<Component>().at(array_index).next_action();
   }
 
@@ -665,7 +661,7 @@ class MockRuntimeSystem {
   /// it was ready.
   template <typename Component>
   bool next_action_if_ready(
-      const typename Component::array_index& array_index) noexcept {
+      const typename Component::array_index& array_index) {
     return mock_distributed_objects<Component>()
         .at(array_index)
         .next_action_if_ready();
@@ -674,7 +670,7 @@ class MockRuntimeSystem {
   /// @{
   /// Access the inboxes for a given component.
   template <typename Component>
-  auto inboxes() noexcept -> std::unordered_map<
+  auto inboxes() -> std::unordered_map<
       typename Component::array_index,
       tuples::tagged_tuple_from_typelist<
           typename MockDistributedObject<Component>::inbox_tags_list>>& {
@@ -682,7 +678,7 @@ class MockRuntimeSystem {
   }
 
   template <typename Component>
-  auto inboxes() const noexcept -> const std::unordered_map<
+  auto inboxes() const -> const std::unordered_map<
       typename Component::array_index,
       tuples::tagged_tuple_from_typelist<
           typename MockDistributedObject<Component>::inbox_tags_list>>& {
@@ -693,7 +689,7 @@ class MockRuntimeSystem {
   /// Find the set of array indices on Component where the specified
   /// inbox is not empty.
   template <typename Component, typename InboxTag>
-  auto nonempty_inboxes() noexcept
+  auto nonempty_inboxes()
       -> std::unordered_set<typename Component::array_index> {
     std::unordered_set<typename Component::array_index> result;
     for (const auto& element_box : inboxes<Component>()) {
@@ -707,21 +703,21 @@ class MockRuntimeSystem {
   /// Access the mocked distributed objects for a component, indexed by array
   /// index.
   template <typename Component>
-  auto& mock_distributed_objects() noexcept {
+  auto& mock_distributed_objects() {
     return tuples::get<MockDistributedObjectsTag<Component>>(
         mock_distributed_objects_);
   }
 
   template <typename Component>
-  const auto& mock_distributed_objects() const noexcept {
+  const auto& mock_distributed_objects() const {
     return tuples::get<MockDistributedObjectsTag<Component>>(
         mock_distributed_objects_);
   }
 
   /// Set the phase of all parallel components to `next_phase`
-  void set_phase(const typename Metavariables::Phase next_phase) noexcept {
+  void set_phase(const typename Metavariables::Phase next_phase) {
     tmpl::for_each<mock_objects_tags>(
-        [this, &next_phase](auto component_v) noexcept {
+        [this, &next_phase](auto component_v) {
           for (auto& object : tuples::get<typename decltype(component_v)::type>(
                    mock_distributed_objects_)) {
             object.second.set_phase(next_phase);
@@ -730,12 +726,10 @@ class MockRuntimeSystem {
   }
 
   /// Return number of (mock) global cores.
-  size_t num_global_cores() const noexcept {
-    return mock_nodes_and_local_cores_.size();
-  }
+  size_t num_global_cores() const { return mock_nodes_and_local_cores_.size(); }
 
   /// Return number of (mock) nodes.
-  size_t num_nodes() const noexcept { return mock_global_cores_.size(); }
+  size_t num_nodes() const { return mock_global_cores_.size(); }
 
  private:
   std::unordered_map<NodeId, std::unordered_map<LocalCoreId, GlobalCoreId>>

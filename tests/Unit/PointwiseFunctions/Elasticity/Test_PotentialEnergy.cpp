@@ -27,7 +27,7 @@ Scalar<DataVector> potential_energy_density(
     // check_with_random_values.
     const tnsr::ii<DataVector, Dim, Frame::Inertial>& strain,
     const tnsr::I<DataVector, Dim>& coordinates, const double bulk_modulus,
-    const double shear_modulus) noexcept {
+    const double shear_modulus) {
   Elasticity::ConstitutiveRelations::IsotropicHomogeneous<Dim>
       constitutive_relation{bulk_modulus, shear_modulus};
   return Elasticity::potential_energy_density<Dim>(
@@ -43,7 +43,7 @@ void test_elastic_potential_energy(const DataVector& used_for_size) {
 }
 
 template <size_t Dim>
-void test_compute_tags(const DataVector& used_for_size) noexcept {
+void test_compute_tags(const DataVector& used_for_size) {
   CAPTURE(Dim);
   using strain_tag = Elasticity::Tags::Strain<Dim>;
   using energy_tag = Elasticity::Tags::PotentialEnergyDensity<Dim>;

@@ -130,7 +130,7 @@ class IsentropicVortex : public MarkAsAnalyticSolution {
   struct Strength {
     using type = double;
     static constexpr Options::String help = {"The strength of the vortex."};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
 
   using options = tmpl::conditional_t<
@@ -145,22 +145,21 @@ class IsentropicVortex : public MarkAsAnalyticSolution {
   IsentropicVortex() = default;
   IsentropicVortex(const IsentropicVortex& /*rhs*/) = delete;
   IsentropicVortex& operator=(const IsentropicVortex& /*rhs*/) = delete;
-  IsentropicVortex(IsentropicVortex&& /*rhs*/) noexcept = default;
-  IsentropicVortex& operator=(IsentropicVortex&& /*rhs*/) noexcept = default;
+  IsentropicVortex(IsentropicVortex&& /*rhs*/) = default;
+  IsentropicVortex& operator=(IsentropicVortex&& /*rhs*/) = default;
   ~IsentropicVortex() = default;
 
   IsentropicVortex(double adiabatic_index,
                    const std::array<double, Dim>& center,
                    const std::array<double, Dim>& mean_velocity,
-                   double strength,
-                   double perturbation_amplitude = 0.0) noexcept;
+                   double strength, double perturbation_amplitude = 0.0);
 
   /// Retrieve a collection of hydrodynamic variables at position x and time t
   template <typename DataType, typename... Tags>
   tuples::TaggedTuple<Tags...> variables(
       const tnsr::I<DataType, Dim, Frame::Inertial>& x,
       const double t,  // NOLINT
-      tmpl::list<Tags...> /*meta*/) const noexcept {
+      tmpl::list<Tags...> /*meta*/) const {
     static_assert(sizeof...(Tags) > 1,
                   "The generic template will recurse infinitely if only one "
                   "tag is being retrieved.");
@@ -172,50 +171,46 @@ class IsentropicVortex : public MarkAsAnalyticSolution {
   /// Function of `z` coordinate to compute the perturbation generating
   /// a source term. Public so the corresponding source class can also use it.
   template <typename DataType>
-  DataType perturbation_profile(const DataType& z) const noexcept;
+  DataType perturbation_profile(const DataType& z) const;
 
   template <typename DataType>
-  DataType deriv_of_perturbation_profile(const DataType& z) const noexcept;
+  DataType deriv_of_perturbation_profile(const DataType& z) const;
 
   // To be used by VortexPerturbation source term
-  double perturbation_amplitude() const noexcept {
-    return perturbation_amplitude_;
-  }
+  double perturbation_amplitude() const { return perturbation_amplitude_; }
 
-  const EquationsOfState::PolytropicFluid<false>& equation_of_state() const
-      noexcept {
+  const EquationsOfState::PolytropicFluid<false>& equation_of_state() const {
     return equation_of_state_;
   }
 
-  const Sources::VortexPerturbation<Dim>& source_term() const noexcept {
+  const Sources::VortexPerturbation<Dim>& source_term() const {
     return source_term_;
   }
 
   // clang-tidy: no runtime references
-  void pup(PUP::er& /*p*/) noexcept;  //  NOLINT
+  void pup(PUP::er& /*p*/);  //  NOLINT
 
  private:
   /// @{
   /// Retrieve hydro variable at `(x, t)`
   template <typename DataType>
   auto variables(tmpl::list<Tags::MassDensity<DataType>> /*meta*/,
-                 const IntermediateVariables<DataType>& vars) const noexcept
+                 const IntermediateVariables<DataType>& vars) const
       -> tuples::TaggedTuple<Tags::MassDensity<DataType>>;
 
   template <typename DataType>
-  auto variables(
-      tmpl::list<Tags::Velocity<DataType, Dim>> /*meta*/,
-      const IntermediateVariables<DataType>& vars) const noexcept
+  auto variables(tmpl::list<Tags::Velocity<DataType, Dim>> /*meta*/,
+                 const IntermediateVariables<DataType>& vars) const
       -> tuples::TaggedTuple<Tags::Velocity<DataType, Dim>>;
 
   template <typename DataType>
   auto variables(tmpl::list<Tags::SpecificInternalEnergy<DataType>> /*meta*/,
-                 const IntermediateVariables<DataType>& vars) const noexcept
+                 const IntermediateVariables<DataType>& vars) const
       -> tuples::TaggedTuple<Tags::SpecificInternalEnergy<DataType>>;
 
   template <typename DataType>
   auto variables(tmpl::list<Tags::Pressure<DataType>> /*meta*/,
-                 const IntermediateVariables<DataType>& vars) const noexcept
+                 const IntermediateVariables<DataType>& vars) const
       -> tuples::TaggedTuple<Tags::Pressure<DataType>>;
   /// @}
 
@@ -225,7 +220,7 @@ class IsentropicVortex : public MarkAsAnalyticSolution {
     IntermediateVariables(const tnsr::I<DataType, Dim, Frame::Inertial>& x,
                           double t, const std::array<double, Dim>& center,
                           const std::array<double, Dim>& mean_velocity,
-                          double strength) noexcept;
+                          double strength);
     DataType x_tilde{};
     DataType y_tilde{};
     DataType profile{};
@@ -237,7 +232,7 @@ class IsentropicVortex : public MarkAsAnalyticSolution {
   friend bool
   operator==(  // NOLINT (clang-tidy: readability-redundant-declaration)
       const IsentropicVortex<SpatialDim>& lhs,
-      const IsentropicVortex<SpatialDim>& rhs) noexcept;
+      const IsentropicVortex<SpatialDim>& rhs);
 
   double adiabatic_index_ = std::numeric_limits<double>::signaling_NaN();
   std::array<double, Dim> center_ =
@@ -262,7 +257,7 @@ class IsentropicVortex : public MarkAsAnalyticSolution {
 
 template <size_t Dim>
 bool operator!=(const IsentropicVortex<Dim>& lhs,
-                const IsentropicVortex<Dim>& rhs) noexcept;
+                const IsentropicVortex<Dim>& rhs);
 
 }  // namespace Solutions
 }  // namespace NewtonianEuler

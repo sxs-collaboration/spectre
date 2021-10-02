@@ -131,7 +131,7 @@ struct TciAndSwitchToDg {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     static_assert(
         tmpl::count_if<
             ActionList,
@@ -141,9 +141,7 @@ struct TciAndSwitchToDg {
 
     db::mutate<subcell::Tags::DidRollback>(
         make_not_null(&box),
-        [](const gsl::not_null<bool*> did_rollback) noexcept {
-          *did_rollback = false;
-        });
+        [](const gsl::not_null<bool*> did_rollback) { *did_rollback = false; });
 
     const TimeStepId& time_step_id = db::get<::Tags::TimeStepId>(box);
     const SubcellOptions& subcell_options = db::get<Tags::SubcellOptions>(box);
@@ -175,7 +173,7 @@ struct TciAndSwitchToDg {
     db::mutate<Tags::Inactive<variables_tag>>(
         make_not_null(&box),
         [&dg_mesh, &subcell_mesh](const auto inactive_vars_ptr,
-                                  const auto& active_vars) noexcept {
+                                  const auto& active_vars) {
           // Note: strictly speaking, to be conservative this should reconstruct
           // uJ instead of u.
           fd::reconstruct(inactive_vars_ptr, active_vars, dg_mesh,
@@ -235,7 +233,7 @@ struct TciAndSwitchToDg {
         not cell_is_troubled and
         (is_substep_method or
          (tci_history.size() == time_stepper.order() and
-          alg::all_of(tci_history, [](const ActiveGrid tci_decision) noexcept {
+          alg::all_of(tci_history, [](const ActiveGrid tci_decision) {
             return tci_decision == ActiveGrid::Dg;
           })))) {
       db::mutate<variables_tag, Tags::Inactive<variables_tag>,
@@ -251,7 +249,7 @@ struct TciAndSwitchToDg {
               const auto subcell_neighbor_data_ptr,
               const gsl::not_null<
                   std::deque<evolution::dg::subcell::ActiveGrid>*>
-                  tci_grid_history_ptr) noexcept {
+                  tci_grid_history_ptr) {
             using std::swap;
             swap(*active_vars_ptr, *inactive_vars_ptr);
 
@@ -295,7 +293,7 @@ struct TciAndSwitchToDg {
           [cell_is_troubled,
            &time_stepper](const gsl::not_null<
                           std::deque<evolution::dg::subcell::ActiveGrid>*>
-                              tci_grid_history) noexcept {
+                              tci_grid_history) {
             tci_grid_history->push_front(cell_is_troubled ? ActiveGrid::Subcell
                                                           : ActiveGrid::Dg);
             if (tci_grid_history->size() > time_stepper.order()) {

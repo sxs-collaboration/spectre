@@ -22,7 +22,7 @@ struct F {
   double operator()(double x) const { return 2.0 - square(x); }
 };
 
-void test_simple() noexcept {
+void test_simple() {
   const double abs_tol = 1e-15;
   const double rel_tol = 1e-15;
   const double upper = 2.0;
@@ -41,7 +41,7 @@ void test_simple() noexcept {
   CHECK(root_from_free == root_from_functor);
 }
 
-void test_bounds() noexcept {
+void test_bounds() {
   // [double_root_find]
   const double abs_tol = 1e-15;
   const double rel_tol = 1e-15;
@@ -94,7 +94,7 @@ void test_bounds() noexcept {
       std::domain_error(prefix));
 }
 
-void test_datavector() noexcept {
+void test_datavector() {
   // [datavector_root_find]
   const double abs_tol = 1e-15;
   const double rel_tol = 1e-15;
@@ -102,7 +102,7 @@ void test_datavector() noexcept {
   const DataVector lower{sqrt(2.0) - abs_tol, sqrt(2.0), -2.0, -3.0};
 
   const DataVector constant{2.0, 4.0, 2.0, 4.0};
-  const auto f_lambda = [&constant](const double x, const size_t i) noexcept {
+  const auto f_lambda = [&constant](const double x, const size_t i) {
     return constant[i] - square(x);
   };
 
@@ -110,7 +110,7 @@ void test_datavector() noexcept {
       RootFinder::toms748(f_lambda, lower, upper, abs_tol, rel_tol);
   // [datavector_root_find]
 
-  auto check_root = [&abs_tol,&rel_tol](const DataVector& root) noexcept {
+  auto check_root = [&abs_tol, &rel_tol](const DataVector& root) {
     CHECK(std::abs(root[0] - sqrt(2.0)) < abs_tol);
     CHECK(std::abs(root[0] - sqrt(2.0)) / sqrt(2.0) < rel_tol);
     CHECK(std::abs(root[1] - 2.0) < abs_tol);
@@ -124,8 +124,7 @@ void test_datavector() noexcept {
 
   // Test the version of toms748 where function values are supplied
   // at lower and upper bounds.
-  const auto generate_function_values = [&f_lambda](
-      const DataVector& x) noexcept {
+  const auto generate_function_values = [&f_lambda](const DataVector& x) {
     DataVector f(x.size());
     for (size_t i = 0; i < x.size(); ++i) {
       f[i] = f_lambda(x[i], i);
@@ -138,7 +137,7 @@ void test_datavector() noexcept {
   check_root(root_function_values);
 }
 
-void test_convergence_error_double() noexcept {
+void test_convergence_error_double() {
   test_throw_exception(
       []() {
         const double abs_tol = 1e-15;
@@ -151,7 +150,7 @@ void test_convergence_error_double() noexcept {
       convergence_error("toms748 reached max iterations without converging"));
 }
 
-void test_convergence_error_datavector() noexcept {
+void test_convergence_error_datavector() {
   test_throw_exception(
       []() {
         const double abs_tol = 1e-15;
@@ -159,7 +158,7 @@ void test_convergence_error_datavector() noexcept {
         const DataVector upper{2.0, 3.0, -sqrt(2.0) + abs_tol, -sqrt(2.0)};
         const DataVector lower{sqrt(2.0) - abs_tol, sqrt(2.0), -2.0, -3.0};
         const DataVector constant{2.0, 4.0, 2.0, 4.0};
-        const auto f = [&constant](const double x, const size_t i) noexcept {
+        const auto f = [&constant](const double x, const size_t i) {
           return constant[i] - square(x);
         };
         RootFinder::toms748(f, lower, upper, abs_tol, rel_tol, 2);
@@ -188,7 +187,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.TOMS748",
   const DataVector lower{sqrt(2.0) - abs_tol, sqrt(2.0), -2.0, -3.0};
 
   const DataVector constant{2.0, 4.0, 2.0, 4.0};
-  const auto f_lambda = [&constant](const double x, const size_t i) noexcept {
+  const auto f_lambda = [&constant](const double x, const size_t i) {
     return constant[i] - square(x);
   };
 

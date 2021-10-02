@@ -98,8 +98,7 @@ void test_implementation(const double youngs_modulus,
   pypp::check_with_random_values<1>(
       static_cast<void (Elasticity::ConstitutiveRelations::CubicCrystal::*)(
           gsl::not_null<tnsr::II<DataVector, 3>*>,
-          const tnsr::ii<DataVector, 3>&, const tnsr::I<DataVector, 3>&)
-                      const noexcept>(
+          const tnsr::ii<DataVector, 3>&, const tnsr::I<DataVector, 3>&) const>(
           &Elasticity::ConstitutiveRelations::CubicCrystal::stress),
       relation, "CubicCrystal", {"stress"}, {{{-1., 1.}}},
       std::tuple<double, double, double>{youngs_modulus, poisson_ratio,

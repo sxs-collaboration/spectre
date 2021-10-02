@@ -53,7 +53,7 @@ template <typename Mutator, typename OutputTag, typename... ArgumentTags,
           size_t NumberOfGridPoints, typename... Args>
 struct MutationFromArguments<Mutator, OutputTag, tmpl::list<ArgumentTags...>,
                              NumberOfGridPoints, Args...> {
-  static ComplexDataVector evaluate(const Args&... args) noexcept {
+  static ComplexDataVector evaluate(const Args&... args) {
     auto box = db::create<db::AddSimpleTags<OutputTag, ArgumentTags...>>(
         typename OutputTag::type{typename OutputTag::type::type{
             ComplexDataVector{NumberOfGridPoints}}},
@@ -70,7 +70,7 @@ struct MutationFromArguments<Mutator, OutputTag, tmpl::list<ArgumentTags...>,
 template <typename Mutator, typename ArgumentTagList, typename OutputTag,
           size_t NumberOfGridPoints, typename DataType, size_t... ScalarIndices>
 void forward_to_pypp_with(std::index_sequence<ScalarIndices...> /*meta*/,
-                          const std::string& python_function) noexcept {
+                          const std::string& python_function) {
   using Evaluatable =
       MutationFromArguments<Mutator, OutputTag, ArgumentTagList,
                             NumberOfGridPoints,
@@ -91,64 +91,50 @@ struct python_function_for_bondi_integrand;
 
 template <>
 struct python_function_for_bondi_integrand<Tags::Integrand<Tags::BondiBeta>> {
-  static std::string name() noexcept { return "integrand_for_beta"; }
+  static std::string name() { return "integrand_for_beta"; }
 };
 template <>
 struct python_function_for_bondi_integrand<
     Tags::PoleOfIntegrand<Tags::BondiQ>> {
-  static std::string name() noexcept {
-    return "integrand_for_q_pole_part";
-  }
+  static std::string name() { return "integrand_for_q_pole_part"; }
 };
 template <>
 struct python_function_for_bondi_integrand<
     Tags::RegularIntegrand<Tags::BondiQ>> {
-  static std::string name() noexcept {
-    return "integrand_for_q_regular_part";
-  }
+  static std::string name() { return "integrand_for_q_regular_part"; }
 };
 template <>
 struct python_function_for_bondi_integrand<Tags::Integrand<Tags::BondiU>> {
-  static std::string name() noexcept { return "integrand_for_u"; }
+  static std::string name() { return "integrand_for_u"; }
 };
 template <>
 struct python_function_for_bondi_integrand<
     Tags::PoleOfIntegrand<Tags::BondiW>> {
-  static std::string name() noexcept {
-    return "integrand_for_w_pole_part";
-  }
+  static std::string name() { return "integrand_for_w_pole_part"; }
 };
 template <>
 struct python_function_for_bondi_integrand<
     Tags::RegularIntegrand<Tags::BondiW>> {
-  static std::string name() noexcept {
-    return "integrand_for_w_regular_part";
-  }
+  static std::string name() { return "integrand_for_w_regular_part"; }
 };
 template <>
 struct python_function_for_bondi_integrand<
     Tags::PoleOfIntegrand<Tags::BondiH>> {
-  static std::string name() noexcept {
-    return "integrand_for_h_pole_part";
-  }
+  static std::string name() { return "integrand_for_h_pole_part"; }
 };
 template <>
 struct python_function_for_bondi_integrand<
     Tags::RegularIntegrand<Tags::BondiH>> {
-  static std::string name() noexcept {
-    return "integrand_for_h_regular_part";
-  }
+  static std::string name() { return "integrand_for_h_regular_part"; }
 };
 template <>
 struct python_function_for_bondi_integrand<Tags::LinearFactor<Tags::BondiH>> {
-  static std::string name() noexcept { return "linear_factor_for_h"; }
+  static std::string name() { return "linear_factor_for_h"; }
 };
 template <>
 struct python_function_for_bondi_integrand<
     Tags::LinearFactorForConjugate<Tags::BondiH>> {
-  static std::string name() noexcept {
-    return "linear_factor_for_conjugate_h";
-  }
+  static std::string name() { return "linear_factor_for_conjugate_h"; }
 };
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Equations", "[Unit][Cce]") {

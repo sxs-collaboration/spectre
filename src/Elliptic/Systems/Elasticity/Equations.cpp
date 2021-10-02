@@ -23,7 +23,7 @@ void primal_fluxes(
     const tnsr::ii<DataVector, Dim>& strain,
     const ConstitutiveRelations::ConstitutiveRelation<Dim>&
         constitutive_relation,
-    const tnsr::I<DataVector, Dim>& coordinates) noexcept {
+    const tnsr::I<DataVector, Dim>& coordinates) {
   constitutive_relation.stress(flux_for_displacement, strain, coordinates);
   for (auto& component : *flux_for_displacement) {
     component *= -1.;
@@ -35,7 +35,7 @@ void add_curved_sources(
     const gsl::not_null<tnsr::I<DataVector, Dim>*> source_for_displacement,
     const tnsr::Ijj<DataVector, Dim>& christoffel_second_kind,
     const tnsr::i<DataVector, Dim>& christoffel_contracted,
-    const tnsr::II<DataVector, Dim>& stress) noexcept {
+    const tnsr::II<DataVector, Dim>& stress) {
   for (size_t i = 0; i < Dim; ++i) {
     for (size_t j = 0; j < Dim; ++j) {
       source_for_displacement->get(j) -=
@@ -51,7 +51,7 @@ void add_curved_sources(
 template <size_t Dim>
 void auxiliary_fluxes(
     const gsl::not_null<tnsr::Ijj<DataVector, Dim>*> flux_for_strain,
-    const tnsr::I<DataVector, Dim>& displacement) noexcept {
+    const tnsr::I<DataVector, Dim>& displacement) {
   std::fill(flux_for_strain->begin(), flux_for_strain->end(), 0.);
   // The off-diagonal elements are calculated by going over the upper triangular
   // matrix (the lower triangular matrix, excluding the diagonal elements, is
@@ -69,7 +69,7 @@ template <size_t Dim>
 void curved_auxiliary_fluxes(
     const gsl::not_null<tnsr::Ijj<DataVector, Dim>*> flux_for_strain,
     const tnsr::ii<DataVector, Dim>& metric,
-    const tnsr::I<DataVector, Dim>& displacement) noexcept {
+    const tnsr::I<DataVector, Dim>& displacement) {
   const auto co_displacement = raise_or_lower_index(displacement, metric);
   std::fill(flux_for_strain->begin(), flux_for_strain->end(), 0.);
   for (size_t d = 0; d < Dim; ++d) {
@@ -84,7 +84,7 @@ template <size_t Dim>
 void add_curved_auxiliary_sources(
     const gsl::not_null<tnsr::ii<DataVector, Dim>*> source_for_strain,
     const tnsr::ijj<DataVector, Dim>& christoffel_first_kind,
-    const tnsr::I<DataVector, Dim>& displacement) noexcept {
+    const tnsr::I<DataVector, Dim>& displacement) {
   for (size_t i = 0; i < Dim; ++i) {
     for (size_t j = 0; j <= i; ++j) {
       for (size_t k = 0; k < Dim; ++k) {
@@ -101,7 +101,7 @@ void Fluxes<Dim>::apply(
     const ConstitutiveRelations::ConstitutiveRelation<Dim>&
         constitutive_relation,
     const tnsr::I<DataVector, Dim>& coordinates,
-    const tnsr::ii<DataVector, Dim>& strain) noexcept {
+    const tnsr::ii<DataVector, Dim>& strain) {
   primal_fluxes(flux_for_displacement, strain, constitutive_relation,
                 coordinates);
 }
@@ -112,7 +112,7 @@ void Fluxes<Dim>::apply(
     const ConstitutiveRelations::ConstitutiveRelation<
         Dim>& /*constitutive_relation*/,
     const tnsr::I<DataVector, Dim>& /*coordinates*/,
-    const tnsr::I<DataVector, Dim>& displacement) noexcept {
+    const tnsr::I<DataVector, Dim>& displacement) {
   auxiliary_fluxes(flux_for_strain, displacement);
 }
 
@@ -121,12 +121,12 @@ void Sources<Dim>::apply(
     const gsl::not_null<
         tnsr::I<DataVector, Dim>*> /*equation_for_displacement*/,
     const tnsr::I<DataVector, Dim>& /*displacement*/,
-    const tnsr::II<DataVector, Dim>& /*minus_stress*/) noexcept {}
+    const tnsr::II<DataVector, Dim>& /*minus_stress*/) {}
 
 template <size_t Dim>
 void Sources<Dim>::apply(
     const gsl::not_null<tnsr::ii<DataVector, Dim>*> /*equation_for_strain*/,
-    const tnsr::I<DataVector, Dim>& /*displacement*/) noexcept {}
+    const tnsr::I<DataVector, Dim>& /*displacement*/) {}
 
 }  // namespace Elasticity
 
@@ -138,23 +138,23 @@ void Sources<Dim>::apply(
       const tnsr::ii<DataVector, DIM(data)>&,                            \
       const Elasticity::ConstitutiveRelations::ConstitutiveRelation<DIM( \
           data)>&,                                                       \
-      const tnsr::I<DataVector, DIM(data)>&) noexcept;                   \
+      const tnsr::I<DataVector, DIM(data)>&);                            \
   template void Elasticity::add_curved_sources<DIM(data)>(               \
       gsl::not_null<tnsr::I<DataVector, DIM(data)>*>,                    \
       const tnsr::Ijj<DataVector, DIM(data)>&,                           \
       const tnsr::i<DataVector, DIM(data)>&,                             \
-      const tnsr::II<DataVector, DIM(data)>&) noexcept;                  \
+      const tnsr::II<DataVector, DIM(data)>&);                           \
   template void Elasticity::auxiliary_fluxes<DIM(data)>(                 \
       gsl::not_null<tnsr::Ijj<DataVector, DIM(data)>*>,                  \
-      const tnsr::I<DataVector, DIM(data)>&) noexcept;                   \
+      const tnsr::I<DataVector, DIM(data)>&);                            \
   template void Elasticity::curved_auxiliary_fluxes<DIM(data)>(          \
       gsl::not_null<tnsr::Ijj<DataVector, DIM(data)>*>,                  \
       const tnsr::ii<DataVector, DIM(data)>&,                            \
-      const tnsr::I<DataVector, DIM(data)>&) noexcept;                   \
+      const tnsr::I<DataVector, DIM(data)>&);                            \
   template void Elasticity::add_curved_auxiliary_sources<DIM(data)>(     \
       gsl::not_null<tnsr::ii<DataVector, DIM(data)>*>,                   \
       const tnsr::ijj<DataVector, DIM(data)>&,                           \
-      const tnsr::I<DataVector, DIM(data)>&) noexcept;                   \
+      const tnsr::I<DataVector, DIM(data)>&);                            \
   template class Elasticity::Sources<DIM(data)>;                         \
   template class Elasticity::Fluxes<DIM(data)>;
 

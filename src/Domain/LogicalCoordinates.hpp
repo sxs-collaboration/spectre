@@ -48,11 +48,11 @@ template <size_t VolumeDim>
 void logical_coordinates(
     gsl::not_null<tnsr::I<DataVector, VolumeDim, Frame::ElementLogical>*>
         logical_coords,
-    const Mesh<VolumeDim>& mesh) noexcept;
+    const Mesh<VolumeDim>& mesh);
 
 template <size_t VolumeDim>
 tnsr::I<DataVector, VolumeDim, Frame::ElementLogical> logical_coordinates(
-    const Mesh<VolumeDim>& mesh) noexcept;
+    const Mesh<VolumeDim>& mesh);
 /// @}
 
 /*!
@@ -67,7 +67,7 @@ tnsr::I<DataVector, VolumeDim, Frame::ElementLogical> logical_coordinates(
 template <size_t VolumeDim>
 tnsr::I<DataVector, VolumeDim, Frame::ElementLogical>
 interface_logical_coordinates(const Mesh<VolumeDim - 1>& mesh,
-                              const Direction<VolumeDim>& direction) noexcept;
+                              const Direction<VolumeDim>& direction);
 
 namespace domain {
 namespace Tags {
@@ -81,7 +81,7 @@ struct LogicalCoordinates : Coordinates<VolumeDim, Frame::ElementLogical>,
   using return_type = typename base::type;
   using argument_tags = tmpl::list<Mesh<VolumeDim>>;
   static constexpr auto function = static_cast<void (*)(
-      gsl::not_null<return_type*>, const ::Mesh<VolumeDim>&) noexcept>(
+      gsl::not_null<return_type*>, const ::Mesh<VolumeDim>&)>(
       &logical_coordinates<VolumeDim>);
 };
 }  // namespace Tags

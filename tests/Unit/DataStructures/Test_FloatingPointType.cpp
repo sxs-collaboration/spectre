@@ -12,7 +12,7 @@
 
 namespace {
 template <FloatingPointType FloatType>
-void test_construct_from_options() noexcept {
+void test_construct_from_options() {
   const auto created =
       TestHelpers::test_creation<FloatingPointType>(get_output(FloatType));
   CHECK(created == FloatType);

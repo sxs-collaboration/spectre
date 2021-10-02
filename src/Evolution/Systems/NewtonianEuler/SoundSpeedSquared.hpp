@@ -29,14 +29,14 @@ void sound_speed_squared(
     const Scalar<DataType>& mass_density,
     const Scalar<DataType>& specific_internal_energy,
     const EquationsOfState::EquationOfState<false, ThermodynamicDim>&
-        equation_of_state) noexcept;
+        equation_of_state);
 
 template <typename DataType, size_t ThermodynamicDim>
 Scalar<DataType> sound_speed_squared(
     const Scalar<DataType>& mass_density,
     const Scalar<DataType>& specific_internal_energy,
     const EquationsOfState::EquationOfState<false, ThermodynamicDim>&
-        equation_of_state) noexcept;
+        equation_of_state);
 /// @}
 
 namespace Tags {
@@ -50,7 +50,7 @@ struct SoundSpeedCompute : SoundSpeed<DataType>, db::ComputeTag {
   using return_type = Scalar<DataType>;
 
   static void function(const gsl::not_null<Scalar<DataType>*> result,
-                       const Scalar<DataType>& sound_speed_squared) noexcept {
+                       const Scalar<DataType>& sound_speed_squared) {
     get(*result) = sqrt(get(sound_speed_squared));
   }
 
@@ -73,7 +73,7 @@ struct SoundSpeedSquaredCompute : SoundSpeedSquared<DataType>, db::ComputeTag {
   static void function(const gsl::not_null<Scalar<DataType>*> result,
                        const Scalar<DataType>& mass_density,
                        const Scalar<DataType>& specific_internal_energy,
-                       const EquationOfStateType& equation_of_state) noexcept {
+                       const EquationOfStateType& equation_of_state) {
     sound_speed_squared(result, mass_density, specific_internal_energy,
                         equation_of_state);
   }

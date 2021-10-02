@@ -92,24 +92,24 @@ class TimescaleTuner {
                  double max_timescale, double min_timescale,
                  double decrease_timescale_threshold,
                  double increase_timescale_threshold, double increase_factor,
-                 double decrease_factor) noexcept;
+                 double decrease_factor);
 
   TimescaleTuner() = default;
-  TimescaleTuner(TimescaleTuner&&) noexcept = default;
-  TimescaleTuner& operator=(TimescaleTuner&&) noexcept = default;
+  TimescaleTuner(TimescaleTuner&&) = default;
+  TimescaleTuner& operator=(TimescaleTuner&&) = default;
   TimescaleTuner(const TimescaleTuner&) = delete;
   TimescaleTuner& operator=(const TimescaleTuner&) = delete;
   ~TimescaleTuner() = default;
 
   /// returns the current timescale for each component of a FunctionOfTime
-  const DataVector& current_timescale() const noexcept { return timescale_; }
+  const DataVector& current_timescale() const { return timescale_; }
   /// manually sets all timescales to a specified value, unless the value is
   /// outside of the specified minimum and maximum timescale bounds, in which
   /// case it is set to the nearest bounded value
-  void set_timescale_if_in_allowable_range(double suggested_timescale) noexcept;
+  void set_timescale_if_in_allowable_range(double suggested_timescale);
   /// the update function responsible for modifying the timescale based on
   /// the control system errors
-  void update_timescale(const std::array<DataVector, 2>& q_and_dtq) noexcept;
+  void update_timescale(const std::array<DataVector, 2>& q_and_dtq);
 
   void pup(PUP::er& p);
 

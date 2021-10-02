@@ -18,7 +18,7 @@ namespace OptionTags {
 
 template <typename OptionsGroup>
 struct Criteria {
-  static std::string name() noexcept { return "ConvergenceCriteria"; }
+  static std::string name() { return "ConvergenceCriteria"; }
   static constexpr Options::String help =
       "Determine convergence of the algorithm";
   using type = Convergence::Criteria;
@@ -41,7 +41,7 @@ namespace Tags {
 /// `Convergence::Criteria` that determine the iterative algorithm has converged
 template <typename OptionsGroup>
 struct Criteria : db::SimpleTag {
-  static std::string name() noexcept {
+  static std::string name() {
     return "ConvergenceCriteria(" + Options::name<OptionsGroup>() + ")";
   }
   using type = Convergence::Criteria;
@@ -49,7 +49,7 @@ struct Criteria : db::SimpleTag {
   using option_tags = tmpl::list<OptionTags::Criteria<OptionsGroup>>;
   static constexpr bool pass_metavariables = false;
   static Convergence::Criteria create_from_options(
-      const Convergence::Criteria& convergence_criteria) noexcept {
+      const Convergence::Criteria& convergence_criteria) {
     return convergence_criteria;
   }
 };
@@ -57,14 +57,14 @@ struct Criteria : db::SimpleTag {
 /// A fixed number of iterations to run the iterative algorithm
 template <typename OptionsGroup>
 struct Iterations : db::SimpleTag {
-  static std::string name() noexcept {
+  static std::string name() {
     return "Iterations(" + Options::name<OptionsGroup>() + ")";
   }
   using type = size_t;
 
   static constexpr bool pass_metavariables = false;
   using option_tags = tmpl::list<OptionTags::Iterations<OptionsGroup>>;
-  static size_t create_from_options(const size_t max_iterations) noexcept {
+  static size_t create_from_options(const size_t max_iterations) {
     return max_iterations;
   }
 };
@@ -72,7 +72,7 @@ struct Iterations : db::SimpleTag {
 /// Identifies a step in an iterative algorithm
 template <typename Label>
 struct IterationId : db::SimpleTag {
-  static std::string name() noexcept {
+  static std::string name() {
     return "IterationId(" + pretty_type::short_name<Label>() + ")";
   }
   using type = size_t;
@@ -84,7 +84,7 @@ struct IterationId : db::SimpleTag {
  */
 template <typename Label>
 struct HasConverged : db::SimpleTag {
-  static std::string name() noexcept {
+  static std::string name() {
     return "HasConverged(" + pretty_type::short_name<Label>() + ")";
   }
   using type = Convergence::HasConverged;

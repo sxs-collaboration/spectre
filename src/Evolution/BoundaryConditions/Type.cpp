@@ -8,8 +8,7 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 
 namespace evolution::BoundaryConditions {
-std::ostream& operator<<(std::ostream& os,
-                         const Type boundary_condition_type) noexcept {
+std::ostream& operator<<(std::ostream& os, const Type boundary_condition_type) {
   switch (boundary_condition_type) {
     case Type::Ghost:
       return os << "Ghost";

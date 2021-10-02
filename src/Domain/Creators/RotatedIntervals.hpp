@@ -91,7 +91,7 @@ class RotatedIntervals : public DomainCreator<1> {
   };
   template <typename BoundaryConditionsBase>
   struct UpperBoundaryCondition {
-    static std::string name() noexcept { return "UpperBoundary"; }
+    static std::string name() { return "UpperBoundary"; }
     static constexpr Options::String help =
         "Options for the boundary condition applied at the upper boundary.";
     using type = std::unique_ptr<BoundaryConditionsBase>;
@@ -99,7 +99,7 @@ class RotatedIntervals : public DomainCreator<1> {
   };
   template <typename BoundaryConditionsBase>
   struct LowerBoundaryCondition {
-    static std::string name() noexcept { return "LowerBoundary"; }
+    static std::string name() { return "LowerBoundary"; }
     static constexpr Options::String help =
         "Options for the boundary condition applied at the lower boundary.";
     using type = std::unique_ptr<BoundaryConditionsBase>;
@@ -141,7 +141,7 @@ class RotatedIntervals : public DomainCreator<1> {
       std::array<std::array<size_t, 2>, 1> initial_number_of_grid_points_in_x,
       std::array<bool, 1> is_periodic_in,
       std::unique_ptr<domain::creators::time_dependence::TimeDependence<1>>
-          time_dependence) noexcept;
+          time_dependence);
 
   RotatedIntervals(
       std::array<double, 1> lower_x, std::array<double, 1> midpoint_x,
@@ -158,19 +158,18 @@ class RotatedIntervals : public DomainCreator<1> {
 
   RotatedIntervals() = default;
   RotatedIntervals(const RotatedIntervals&) = delete;
-  RotatedIntervals(RotatedIntervals&&) noexcept = default;
+  RotatedIntervals(RotatedIntervals&&) = default;
   RotatedIntervals& operator=(const RotatedIntervals&) = delete;
-  RotatedIntervals& operator=(RotatedIntervals&&) noexcept = default;
+  RotatedIntervals& operator=(RotatedIntervals&&) = default;
   ~RotatedIntervals() override = default;
 
-  Domain<1> create_domain() const noexcept override;
+  Domain<1> create_domain() const override;
 
-  std::vector<std::array<size_t, 1>> initial_extents() const noexcept override;
+  std::vector<std::array<size_t, 1>> initial_extents() const override;
 
-  std::vector<std::array<size_t, 1>> initial_refinement_levels() const
-      noexcept override;
+  std::vector<std::array<size_t, 1>> initial_refinement_levels() const override;
 
-  auto functions_of_time() const noexcept -> std::unordered_map<
+  auto functions_of_time() const -> std::unordered_map<
       std::string,
       std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;
 

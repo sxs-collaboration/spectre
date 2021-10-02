@@ -23,13 +23,13 @@ template <size_t MaxDeriv>
 QuaternionFunctionOfTime<MaxDeriv>::QuaternionFunctionOfTime(
     const double t, std::array<DataVector, 1> initial_quat_func,
     std::array<DataVector, MaxDeriv + 1> initial_omega_func,
-    const double expiration_time) noexcept
+    const double expiration_time)
     : stored_quaternions_and_times_{{t, std::move(initial_quat_func)}},
       omega_f_of_t_(t, std::move(initial_omega_func), expiration_time) {}
 
 template <size_t MaxDeriv>
 std::unique_ptr<FunctionOfTime> QuaternionFunctionOfTime<MaxDeriv>::get_clone()
-    const noexcept {
+    const {
   return std::make_unique<QuaternionFunctionOfTime>(*this);
 }
 
@@ -43,14 +43,14 @@ void QuaternionFunctionOfTime<MaxDeriv>::pup(PUP::er& p) {
 template <size_t MaxDeriv>
 void QuaternionFunctionOfTime<MaxDeriv>::update(
     const double time_of_update, DataVector updated_max_deriv,
-    const double next_expiration_time) noexcept {
+    const double next_expiration_time) {
   omega_f_of_t_.update(time_of_update, std::move(updated_max_deriv),
                        next_expiration_time);
   update_stored_info();
 }
 
 template <size_t MaxDeriv>
-void QuaternionFunctionOfTime<MaxDeriv>::update_stored_info() noexcept {
+void QuaternionFunctionOfTime<MaxDeriv>::update_stored_info() {
   const auto& omega_deriv_info = omega_f_of_t_.get_deriv_info();
 
   ASSERT(
@@ -88,12 +88,11 @@ template <size_t MaxDeriv>
 void QuaternionFunctionOfTime<MaxDeriv>::solve_quaternion_ode(
     const gsl::not_null<boost::math::quaternion<double>*>
         quaternion_to_integrate,
-    const double t0, const double t) const noexcept {
+    const double t0, const double t) const {
   // lambda that stores the internals of the ode
   const auto quaternion_ode_system =
       [this](const boost::math::quaternion<double>& state,
-             boost::math::quaternion<double>& dt_state,
-             const double time) noexcept {
+             boost::math::quaternion<double>& dt_state, const double time) {
         const boost::math::quaternion<double> omega =
             datavector_to_quaternion(omega_f_of_t_.func(time)[0]);
         dt_state = 0.5 * state * omega;
@@ -115,7 +114,7 @@ void QuaternionFunctionOfTime<MaxDeriv>::solve_quaternion_ode(
 
 template <size_t MaxDeriv>
 boost::math::quaternion<double> QuaternionFunctionOfTime<MaxDeriv>::setup_func(
-    const double t) const noexcept {
+    const double t) const {
   // Get quaternion and time at closest time before t
   const auto& stored_info_at_t0 =
       stored_info_from_upper_bound(t, stored_quaternions_and_times_);
@@ -134,14 +133,13 @@ boost::math::quaternion<double> QuaternionFunctionOfTime<MaxDeriv>::setup_func(
 
 template <size_t MaxDeriv>
 std::array<DataVector, 1> QuaternionFunctionOfTime<MaxDeriv>::quat_func(
-    const double t) const noexcept {
+    const double t) const {
   return std::array<DataVector, 1>{quaternion_to_datavector(setup_func(t))};
 }
 
 template <size_t MaxDeriv>
 std::array<DataVector, 2>
-QuaternionFunctionOfTime<MaxDeriv>::quat_func_and_deriv(
-    const double t) const noexcept {
+QuaternionFunctionOfTime<MaxDeriv>::quat_func_and_deriv(const double t) const {
   boost::math::quaternion<double> quat = setup_func(t);
 
   // Get omega and however many derivatives we need
@@ -159,7 +157,7 @@ QuaternionFunctionOfTime<MaxDeriv>::quat_func_and_deriv(
 template <size_t MaxDeriv>
 std::array<DataVector, 3>
 QuaternionFunctionOfTime<MaxDeriv>::quat_func_and_2_derivs(
-    const double t) const noexcept {
+    const double t) const {
   boost::math::quaternion<double> quat = setup_func(t);
 
   // Get omega and however many derivatives we need
@@ -182,7 +180,7 @@ QuaternionFunctionOfTime<MaxDeriv>::quat_func_and_2_derivs(
 
 template <size_t MaxDeriv>
 bool operator==(const QuaternionFunctionOfTime<MaxDeriv>& lhs,
-                const QuaternionFunctionOfTime<MaxDeriv>& rhs) noexcept {
+                const QuaternionFunctionOfTime<MaxDeriv>& rhs) {
   return lhs.stored_quaternions_and_times_ ==
              rhs.stored_quaternions_and_times_ and
          lhs.omega_f_of_t_ == rhs.omega_f_of_t_;
@@ -190,21 +188,21 @@ bool operator==(const QuaternionFunctionOfTime<MaxDeriv>& lhs,
 
 template <size_t MaxDeriv>
 bool operator!=(const QuaternionFunctionOfTime<MaxDeriv>& lhs,
-                const QuaternionFunctionOfTime<MaxDeriv>& rhs) noexcept {
+                const QuaternionFunctionOfTime<MaxDeriv>& rhs) {
   return not(lhs == rhs);
 }
 
 // do explicit instantiation of MaxDeriv = {2,3,4}
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                            \
-  template class QuaternionFunctionOfTime<DIM(data)>;                   \
-  template bool operator==                                              \
-      <DIM(data)>(const QuaternionFunctionOfTime<DIM(data)>&,           \
-                  const QuaternionFunctionOfTime<DIM(data)>&) noexcept; \
-  template bool operator!=                                              \
-      <DIM(data)>(const QuaternionFunctionOfTime<DIM(data)>&,           \
-                  const QuaternionFunctionOfTime<DIM(data)>&) noexcept;
+#define INSTANTIATE(_, data)                                   \
+  template class QuaternionFunctionOfTime<DIM(data)>;          \
+  template bool operator==                                     \
+      <DIM(data)>(const QuaternionFunctionOfTime<DIM(data)>&,  \
+                  const QuaternionFunctionOfTime<DIM(data)>&); \
+  template bool operator!=                                     \
+      <DIM(data)>(const QuaternionFunctionOfTime<DIM(data)>&,  \
+                  const QuaternionFunctionOfTime<DIM(data)>&);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (2, 3, 4))
 

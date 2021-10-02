@@ -23,9 +23,8 @@
 
 namespace {
 template <typename DataType>
-void test_in_databox(
-    const Scalar<DataType>& mass_density,
-    const Scalar<DataType>& specific_internal_energy) noexcept {
+void test_in_databox(const Scalar<DataType>& mass_density,
+                     const Scalar<DataType>& specific_internal_energy) {
   TestHelpers::db::test_compute_tag<
       NewtonianEuler::Tags::InternalEnergyDensityCompute<DataType>>(
       "InternalEnergyDensity");
@@ -44,7 +43,7 @@ void test_in_databox(
 }
 
 template <typename DataType>
-void test(const DataType& used_for_size) noexcept {
+void test(const DataType& used_for_size) {
   MAKE_GENERATOR(generator);
   std::uniform_real_distribution<> distribution(-1.0, 1.0);
   std::uniform_real_distribution<> positive_distribution(0.0, 1.0);

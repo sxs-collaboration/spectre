@@ -17,7 +17,7 @@
 namespace sr {
 template <size_t SpatialDim>
 tnsr::Ab<double, SpatialDim, Frame::NoFrame> lorentz_boost_matrix(
-    const tnsr::I<double, SpatialDim, Frame::NoFrame>& velocity) noexcept {
+    const tnsr::I<double, SpatialDim, Frame::NoFrame>& velocity) {
   auto boost_matrix =
       make_with_value<tnsr::Ab<double, SpatialDim, Frame::NoFrame>>(
           get<0>(velocity), std::numeric_limits<double>::signaling_NaN());
@@ -28,7 +28,7 @@ tnsr::Ab<double, SpatialDim, Frame::NoFrame> lorentz_boost_matrix(
 template <size_t SpatialDim>
 void lorentz_boost_matrix(
     gsl::not_null<tnsr::Ab<double, SpatialDim, Frame::NoFrame>*> boost_matrix,
-    const tnsr::I<double, SpatialDim, Frame::NoFrame>& velocity) noexcept {
+    const tnsr::I<double, SpatialDim, Frame::NoFrame>& velocity) {
   const double velocity_squared{get(dot_product(velocity, velocity))};
   const double lorentz_factor{1.0 / sqrt(1.0 - velocity_squared)};
 
@@ -63,14 +63,14 @@ void lorentz_boost_matrix(
 // Explicit Instantiations
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                                \
-  template tnsr::Ab<double, DIM(data), Frame::NoFrame>                      \
-  sr::lorentz_boost_matrix(                                                 \
-      const tnsr::I<double, DIM(data), Frame::NoFrame>& velocity) noexcept; \
-  template void sr::lorentz_boost_matrix(                                   \
-      gsl::not_null<tnsr::Ab<double, DIM(data), Frame::NoFrame>*>           \
-          boost_matrix,                                                     \
-      const tnsr::I<double, DIM(data), Frame::NoFrame>& velocity) noexcept;
+#define INSTANTIATE(_, data)                                       \
+  template tnsr::Ab<double, DIM(data), Frame::NoFrame>             \
+  sr::lorentz_boost_matrix(                                        \
+      const tnsr::I<double, DIM(data), Frame::NoFrame>& velocity); \
+  template void sr::lorentz_boost_matrix(                          \
+      gsl::not_null<tnsr::Ab<double, DIM(data), Frame::NoFrame>*>  \
+          boost_matrix,                                            \
+      const tnsr::I<double, DIM(data), Frame::NoFrame>& velocity);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 

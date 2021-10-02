@@ -36,21 +36,20 @@ namespace {
 void test_create_initial_element(
     const ElementId<2>& element_id, const Block<2>& block,
     const std::vector<std::array<size_t, 2>>& refinement_levels,
-    const DirectionMap<2, Neighbors<2>>& expected_neighbors) noexcept {
+    const DirectionMap<2, Neighbors<2>>& expected_neighbors) {
   const auto created_element = domain::Initialization::create_initial_element(
       element_id, block, refinement_levels);
   const Element<2> expected_element{element_id, expected_neighbors};
   CHECK(created_element == expected_element);
 }
 
-void test_h_refinement() noexcept {
+void test_h_refinement() {
   const auto make_check = [](const ElementId<3>& self_id,
-                             const Direction<3>& neighbor_direction) noexcept {
+                             const Direction<3>& neighbor_direction) {
     return [self_id, neighbor_direction](
                const OrientationMap<3>& neighbor_orientation,
                const std::array<size_t, 3>& neighbor_refinement,
-               const std::unordered_set<ElementId<3>>&
-                   expected_neighbors) noexcept {
+               const std::unordered_set<ElementId<3>>& expected_neighbors) {
       CAPTURE(neighbor_orientation);
       CAPTURE(neighbor_refinement);
       const Block<3> self_block(

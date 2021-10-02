@@ -16,7 +16,7 @@
  * the version of the code used in a simulation, as well as which host, the
  * date the code was compiled, and the time of linkage.
  */
-std::string info_from_build() noexcept;
+std::string info_from_build();
 
 // We declare these functions `extern "C"` so their symbols are not mangled and
 // we can ignore that they are undefined until link time (see `CMakeLists.txt`).
@@ -57,10 +57,10 @@ std::string spectre_version();
  * \ingroup LoggingGroup
  * \brief Returns the path to the Unit test directory.
  */
-std::string unit_test_src_path() noexcept;
+std::string unit_test_src_path();
 
 /*!
  * \ingroup LoggingGroup
  * \brief Returns the path to the Unit test directory in the build directory.
  */
-std::string unit_test_build_path() noexcept;
+std::string unit_test_build_path();

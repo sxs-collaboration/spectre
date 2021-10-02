@@ -29,7 +29,7 @@ struct BlockNames : db::SimpleTag {
   static constexpr bool pass_metavariables = false;
   using option_tags = tmpl::list<domain::OptionTags::DomainCreator<Dim>>;
   static type create_from_options(
-      const std::unique_ptr<::DomainCreator<Dim>>& domain_creator) noexcept {
+      const std::unique_ptr<::DomainCreator<Dim>>& domain_creator) {
     return domain_creator->block_names();
   }
 };
@@ -44,7 +44,7 @@ struct BlockGroups : db::SimpleTag {
   static constexpr bool pass_metavariables = false;
   using option_tags = tmpl::list<domain::OptionTags::DomainCreator<Dim>>;
   static type create_from_options(
-      const std::unique_ptr<::DomainCreator<Dim>>& domain_creator) noexcept {
+      const std::unique_ptr<::DomainCreator<Dim>>& domain_creator) {
     return domain_creator->block_groups();
   }
 };

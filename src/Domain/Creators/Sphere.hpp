@@ -96,7 +96,7 @@ class Sphere : public DomainCreator<3> {
 
   template <typename BoundaryConditionsBase>
   struct BoundaryCondition {
-    static std::string name() noexcept { return "BoundaryCondition"; }
+    static std::string name() { return "BoundaryCondition"; }
     static constexpr Options::String help =
         "Options for the boundary conditions.";
     using type = std::unique_ptr<BoundaryConditionsBase>;
@@ -139,17 +139,16 @@ class Sphere : public DomainCreator<3> {
 
   Sphere() = default;
   Sphere(const Sphere&) = delete;
-  Sphere(Sphere&&) noexcept = default;
+  Sphere(Sphere&&) = default;
   Sphere& operator=(const Sphere&) = delete;
-  Sphere& operator=(Sphere&&) noexcept = default;
-  ~Sphere() noexcept override = default;
+  Sphere& operator=(Sphere&&) = default;
+  ~Sphere() override = default;
 
-  Domain<3> create_domain() const noexcept override;
+  Domain<3> create_domain() const override;
 
-  std::vector<std::array<size_t, 3>> initial_extents() const noexcept override;
+  std::vector<std::array<size_t, 3>> initial_extents() const override;
 
-  std::vector<std::array<size_t, 3>> initial_refinement_levels() const
-      noexcept override;
+  std::vector<std::array<size_t, 3>> initial_refinement_levels() const override;
 
  private:
   typename InnerRadius::type inner_radius_{};

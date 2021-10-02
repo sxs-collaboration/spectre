@@ -30,14 +30,14 @@ class FunctionOfZ {
               const Scalar<DataVector>& tilde_s_magnitude,
               const Scalar<DataVector>& sqrt_det_spatial_metric,
               const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
-                  equation_of_state) noexcept
+                  equation_of_state)
       : tilde_d_(tilde_d),
         tilde_tau_(tilde_tau),
         tilde_s_magnitude_(tilde_s_magnitude),
         sqrt_det_spatial_metric_(sqrt_det_spatial_metric),
         equation_of_state_(equation_of_state) {}
 
-  double operator()(const double z, const size_t i = 0) const noexcept {
+  double operator()(const double z, const size_t i = 0) const {
     const double r =
         get_element(get(tilde_s_magnitude_), i) / get_element(get(tilde_d_), i);
     const double q =
@@ -89,7 +89,7 @@ void PrimitiveFromConservative<Dim>::apply(
     const tnsr::II<DataVector, Dim, Frame::Inertial>& inv_spatial_metric,
     const Scalar<DataVector>& sqrt_det_spatial_metric,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
-        equation_of_state) noexcept {
+        equation_of_state) {
   const auto tilde_s_M = raise_or_lower_index(tilde_s, inv_spatial_metric);
   const Scalar<DataVector> tilde_s_magnitude{
       sqrt(get(dot_product(tilde_s, tilde_s_M)))};
@@ -167,7 +167,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
           inv_spatial_metric,                                                 \
       const Scalar<DataVector>& sqrt_det_spatial_metric,                      \
       const EquationsOfState::EquationOfState<true, THERMODIM(data)>&         \
-          equation_of_state) noexcept;
+          equation_of_state);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (1, 2))
 

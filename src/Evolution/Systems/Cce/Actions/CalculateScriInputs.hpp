@@ -47,16 +47,16 @@ struct CalculateScriInputs {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     tmpl::for_each<
         tmpl::append<all_pre_swsh_derivative_tags_for_scri,
-                     all_boundary_pre_swsh_derivative_tags_for_scri>>([&box](
-        auto pre_swsh_derivative_tag_v) noexcept {
-      using pre_swsh_derivative_tag =
-          typename decltype(pre_swsh_derivative_tag_v)::type;
-      db::mutate_apply<PreSwshDerivatives<pre_swsh_derivative_tag>>(
-          make_not_null(&box));
-    });
+                     all_boundary_pre_swsh_derivative_tags_for_scri>>(
+        [&box](auto pre_swsh_derivative_tag_v) {
+          using pre_swsh_derivative_tag =
+              typename decltype(pre_swsh_derivative_tag_v)::type;
+          db::mutate_apply<PreSwshDerivatives<pre_swsh_derivative_tag>>(
+              make_not_null(&box));
+        });
 
     db::mutate_apply<
         Spectral::Swsh::AngularDerivatives<all_swsh_derivative_tags_for_scri>>(
@@ -64,8 +64,8 @@ struct CalculateScriInputs {
     boundary_derivative_impl(box, db::get<Tags::LMax>(box),
                              all_boundary_swsh_derivative_tags_for_scri{});
 
-    tmpl::for_each<all_swsh_derivative_tags_for_scri>([&box](
-        auto derivative_tag_v) noexcept {
+    tmpl::for_each<
+        all_swsh_derivative_tags_for_scri>([&box](auto derivative_tag_v) {
       using derivative_tag = typename decltype(derivative_tag_v)::type;
       ::Cce::detail::apply_swsh_jacobian_helper<derivative_tag>(
           make_not_null(&box), typename ApplySwshJacobianInplace<
@@ -75,14 +75,13 @@ struct CalculateScriInputs {
   }
 
   template <typename DbTags, typename... TagPack>
-  static void boundary_derivative_impl(
-      db::DataBox<DbTags>& box, const size_t l_max,
-      tmpl::list<TagPack...> /*meta*/) noexcept {
+  static void boundary_derivative_impl(db::DataBox<DbTags>& box,
+                                       const size_t l_max,
+                                       tmpl::list<TagPack...> /*meta*/) {
     db::mutate<TagPack...>(
         make_not_null(&box),
         [&l_max](const gsl::not_null<typename TagPack::type*>... derivatives,
-                 const typename TagPack::derivative_of::
-                     type&... arguments) noexcept {
+                 const typename TagPack::derivative_of::type&... arguments) {
           Spectral::Swsh::angular_derivatives<
               tmpl::list<typename TagPack::derivative_kind...>>(
               l_max, 1, make_not_null(&get(*derivatives))...,

@@ -54,18 +54,18 @@ struct MagnetizedFmDiskProxy : grmhd::AnalyticData::MagnetizedFmDisk {
 
   template <typename DataType>
   tuples::tagged_tuple_from_typelist<hydro_variables_tags<DataType>>
-  hydro_variables(const tnsr::I<DataType, 3>& x) const noexcept {
+  hydro_variables(const tnsr::I<DataType, 3>& x) const {
     return variables(x, hydro_variables_tags<DataType>{});
   }
 
   template <typename DataType>
   tuples::tagged_tuple_from_typelist<grmhd_variables_tags<DataType>>
-  grmhd_variables(const tnsr::I<DataType, 3>& x) const noexcept {
+  grmhd_variables(const tnsr::I<DataType, 3>& x) const {
     return variables(x, grmhd_variables_tags<DataType>{});
   }
 };
 
-void test_create_from_options() noexcept {
+void test_create_from_options() {
   const auto disk =
       TestHelpers::test_creation<grmhd::AnalyticData::MagnetizedFmDisk>(
           "BhMass: 1.3\n"
@@ -81,7 +81,7 @@ void test_create_from_options() noexcept {
                     1.3, 0.345, 6.123, 14.2, 0.065, 1.654, 0.42, 85.0, 6));
 }
 
-void test_move() noexcept {
+void test_move() {
   grmhd::AnalyticData::MagnetizedFmDisk disk(3.51, 0.87, 7.43, 15.3, 42.67,
                                              1.87, 0.13, 0.015, 4);
   grmhd::AnalyticData::MagnetizedFmDisk disk_copy(3.51, 0.87, 7.43, 15.3, 42.67,
@@ -89,7 +89,7 @@ void test_move() noexcept {
   test_move_semantics(std::move(disk), disk_copy);  //  NOLINT
 }
 
-void test_serialize() noexcept {
+void test_serialize() {
   grmhd::AnalyticData::MagnetizedFmDisk disk(3.51, 0.87, 7.43, 15.3, 42.67,
                                              1.87, 0.13, 0.015, 4);
   test_serialization(disk);

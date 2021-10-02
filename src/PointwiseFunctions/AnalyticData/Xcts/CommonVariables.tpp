@@ -36,7 +36,7 @@ void CommonVariables<DataType, Cache>::operator()(
     const gsl::not_null<tnsr::II<DataType, Dim>*> inv_conformal_metric,
     const gsl::not_null<Cache*> cache,
     Tags::InverseConformalMetric<DataType, Dim, Frame::Inertial> /*meta*/)
-    const noexcept {
+    const {
   const auto& conformal_metric =
       cache->get_var(Tags::ConformalMetric<DataType, Dim, Frame::Inertial>{});
   Scalar<DataType> unused_det{get_size(*conformal_metric.begin())};
@@ -50,7 +50,7 @@ void CommonVariables<DataType, Cache>::operator()(
         conformal_christoffel_first_kind,
     const gsl::not_null<Cache*> cache,
     Tags::ConformalChristoffelFirstKind<
-        DataType, Dim, Frame::Inertial> /*meta*/) const noexcept {
+        DataType, Dim, Frame::Inertial> /*meta*/) const {
   const auto& deriv_conformal_metric = cache->get_var(
       ::Tags::deriv<Tags::ConformalMetric<DataType, 3, Frame::Inertial>,
                     tmpl::size_t<3>, Frame::Inertial>{});
@@ -64,7 +64,7 @@ void CommonVariables<DataType, Cache>::operator()(
         conformal_christoffel_second_kind,
     const gsl::not_null<Cache*> cache,
     Tags::ConformalChristoffelSecondKind<
-        DataType, Dim, Frame::Inertial> /*meta*/) const noexcept {
+        DataType, Dim, Frame::Inertial> /*meta*/) const {
   const auto& conformal_christoffel_first_kind = cache->get_var(
       Tags::ConformalChristoffelFirstKind<DataType, Dim, Frame::Inertial>{});
   const auto& inv_conformal_metric = cache->get_var(
@@ -80,7 +80,7 @@ void CommonVariables<DataType, Cache>::operator()(
         conformal_christoffel_contracted,
     const gsl::not_null<Cache*> cache,
     Tags::ConformalChristoffelContracted<
-        DataType, Dim, Frame::Inertial> /*meta*/) const noexcept {
+        DataType, Dim, Frame::Inertial> /*meta*/) const {
   const auto& conformal_christoffel_second_kind = cache->get_var(
       Tags::ConformalChristoffelSecondKind<DataType, Dim, Frame::Inertial>{});
   for (size_t i = 0; i < Dim; ++i) {
@@ -99,7 +99,7 @@ void CommonVariables<DataType, Cache>::operator()(
         fixed_source_for_hamiltonian_constraint,
     const gsl::not_null<Cache*> /*cache*/,
     ::Tags::FixedSource<Tags::ConformalFactor<DataType>> /*meta*/)
-    const noexcept {
+    const {
   std::fill(fixed_source_for_hamiltonian_constraint->begin(),
             fixed_source_for_hamiltonian_constraint->end(), 0.);
 }
@@ -109,7 +109,7 @@ void CommonVariables<DataType, Cache>::operator()(
     const gsl::not_null<Scalar<DataType>*> fixed_source_for_lapse_equation,
     const gsl::not_null<Cache*> /*cache*/,
     ::Tags::FixedSource<Tags::LapseTimesConformalFactor<DataType>> /*meta*/)
-    const noexcept {
+    const {
   std::fill(fixed_source_for_lapse_equation->begin(),
             fixed_source_for_lapse_equation->end(), 0.);
 }
@@ -120,7 +120,7 @@ void CommonVariables<DataType, Cache>::operator()(
     const gsl::not_null<Cache*> /*cache*/,
     ::Tags::FixedSource<
         Tags::ShiftExcess<DataType, 3, Frame::Inertial>> /*meta*/)
-    const noexcept {
+    const {
   std::fill(fixed_source_momentum_constraint->begin(),
             fixed_source_momentum_constraint->end(), 0.);
 }
@@ -136,7 +136,7 @@ void CommonVariables<DataType, Cache>::operator()(
     const gsl::not_null<Cache*> cache,
     ::Tags::deriv<
         Tags::ConformalChristoffelSecondKind<DataType, Dim, Frame::Inertial>,
-        tmpl::size_t<Dim>, Frame::Inertial> /*meta*/) const noexcept {
+        tmpl::size_t<Dim>, Frame::Inertial> /*meta*/) const {
   ASSERT(mesh.has_value() and inv_jacobian.has_value(),
          "Need a mesh and a Jacobian for numeric differentiation.");
   if constexpr (std::is_same_v<DataType, DataVector>) {
@@ -170,7 +170,7 @@ void CommonVariables<DataType, Cache>::operator()(
     const gsl::not_null<tnsr::ii<DataType, Dim>*> conformal_ricci_tensor,
     const gsl::not_null<Cache*> cache,
     Tags::ConformalRicciTensor<DataType, Dim, Frame::Inertial> /*meta*/)
-    const noexcept {
+    const {
   const auto& conformal_christoffel_second_kind = cache->get_var(
       Tags::ConformalChristoffelSecondKind<DataType, Dim, Frame::Inertial>{});
   const auto& deriv_conformal_christoffel_second_kind = cache->get_var(
@@ -185,7 +185,7 @@ template <typename DataType, typename Cache>
 void CommonVariables<DataType, Cache>::operator()(
     const gsl::not_null<Scalar<DataType>*> conformal_ricci_scalar,
     const gsl::not_null<Cache*> cache,
-    Tags::ConformalRicciScalar<DataType> /*meta*/) const noexcept {
+    Tags::ConformalRicciScalar<DataType> /*meta*/) const {
   const auto& conformal_ricci_tensor = cache->get_var(
       Tags::ConformalRicciTensor<DataType, Dim, Frame::Inertial>{});
   const auto& inv_conformal_metric = cache->get_var(
@@ -203,7 +203,7 @@ void CommonVariables<DataType, Cache>::operator()(
         deriv_extrinsic_curvature_trace,
     const gsl::not_null<Cache*> cache,
     ::Tags::deriv<gr::Tags::TraceExtrinsicCurvature<DataType>,
-                  tmpl::size_t<Dim>, Frame::Inertial> /*meta*/) const noexcept {
+                  tmpl::size_t<Dim>, Frame::Inertial> /*meta*/) const {
   ASSERT(mesh.has_value() and inv_jacobian.has_value(),
          "Need a mesh and a Jacobian for numeric differentiation.");
   if constexpr (std::is_same_v<DataType, DataVector>) {
@@ -234,7 +234,7 @@ void CommonVariables<DataType, Cache>::operator()(
         div_longitudinal_shift_background,
     const gsl::not_null<Cache*> cache,
     ::Tags::div<Tags::LongitudinalShiftBackgroundMinusDtConformalMetric<
-        DataType, Dim, Frame::Inertial>> /*meta*/) const noexcept {
+        DataType, Dim, Frame::Inertial>> /*meta*/) const {
   ASSERT(mesh.has_value() and inv_jacobian.has_value(),
          "Need a mesh and a Jacobian for numeric differentiation.");
   if constexpr (std::is_same_v<DataType, DataVector>) {

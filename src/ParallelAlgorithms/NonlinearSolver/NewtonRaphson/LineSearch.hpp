@@ -54,5 +54,5 @@ namespace NonlinearSolver::newton_raphson {
 double next_step_length(size_t globalization_iteration_id, double step_length,
                         double prev_step_length, double residual,
                         double residual_slope, double next_residual,
-                        double prev_residual) noexcept;
+                        double prev_residual);
 }  // namespace NonlinearSolver::newton_raphson

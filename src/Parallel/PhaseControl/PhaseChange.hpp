@@ -99,7 +99,7 @@ enum ArbitrationStrategy {
  * template <typename... DecisionTags>
  * void initialize_phase_data_impl(
  *     const gsl::not_null<tuples::TaggedTuple<DecisionTags...>*>
- *         phase_change_decision_data) const noexcept;
+ *         phase_change_decision_data) const;
  * ```
  * - Must set all tags in `phase_change_tags_and_combines_list` to useful
  *   initial states in the `phase_change_decision_data`.
@@ -109,7 +109,7 @@ enum ArbitrationStrategy {
  * void contribute_phase_data_impl(
  *     [DataBox return tags...], [DataBox argument tags...],
  *     Parallel::GlobalCache<Metavariables>& cache,
- *     const ArrayIndex& array_index) const noexcept;
+ *     const ArrayIndex& array_index) const;
  * ```
  * - Should send any data relevant for the associated phase change decision made
  *   in `arbitrate_phase_change_impl` to the Main chare via function
@@ -123,7 +123,7 @@ enum ArbitrationStrategy {
  *     const gsl::not_null<tuples::TaggedTuple<DecisionTags...>*>
  *         phase_change_decision_data,
  *     const typename Metavariables::Phase current_phase,
- *     const Parallel::GlobalCache<Metavariables>& cache) const noexcept;
+ *     const Parallel::GlobalCache<Metavariables>& cache) const;
  * ```
  * - Should examine the collected data in `phase_change_decision_data` and
  *   optionally return a `std::pair` with the desired `Metavariables::Phase` and
@@ -149,7 +149,7 @@ struct PhaseChange : public PUP::able {
   /// \endcond
 
  public:
-  PhaseChange(CkMigrateMessage* msg) noexcept : PUP::able(msg) {};
+  PhaseChange(CkMigrateMessage* msg) : PUP::able(msg){};
 
   ~PhaseChange() override = default;
 
@@ -163,11 +163,10 @@ struct PhaseChange : public PUP::able {
             typename ArrayIndex>
   void contribute_phase_data(const gsl::not_null<db::DataBox<DbTags>*> box,
                              Parallel::GlobalCache<Metavariables>& cache,
-                             const ArrayIndex& array_index) const noexcept {
+                             const ArrayIndex& array_index) const {
     call_with_dynamic_type<
         void, creatable_classes>(this, [&box, &cache, &array_index](
-                                           const auto* const
-                                               phase_change) noexcept {
+                                           const auto* const phase_change) {
       using phase_change_t = typename std::decay_t<decltype(*phase_change)>;
       if constexpr (tmpl::list_contains_v<
                         typename phase_change_t::
@@ -175,7 +174,7 @@ struct PhaseChange : public PUP::able {
                         ParallelComponent>) {
         db::mutate_apply<typename phase_change_t::return_tags,
                          typename phase_change_t::argument_tags>(
-            [&phase_change, &cache, &array_index](auto&&... args) noexcept {
+            [&phase_change, &cache, &array_index](auto&&... args) {
               phase_change
                   ->template contribute_phase_data_impl<ParallelComponent>(
                       args..., cache, array_index);
@@ -194,27 +193,24 @@ struct PhaseChange : public PUP::able {
       const gsl::not_null<tuples::TaggedTuple<DecisionTags...>*>
           phase_change_decision_data,
       const typename Metavariables::Phase current_phase,
-      const Parallel::GlobalCache<Metavariables>& cache) const noexcept {
+      const Parallel::GlobalCache<Metavariables>& cache) const {
     return call_with_dynamic_type<
         std::optional<std::pair<typename Metavariables::Phase,
                                 PhaseControl::ArbitrationStrategy>>,
-        creatable_classes>(
-        this, [&current_phase, &phase_change_decision_data,
-               &cache](const auto* const phase_change) noexcept {
-          return phase_change->arbitrate_phase_change_impl(
-              phase_change_decision_data, current_phase, cache);
-        });
+        creatable_classes>(this, [&current_phase, &phase_change_decision_data,
+                                  &cache](const auto* const phase_change) {
+      return phase_change->arbitrate_phase_change_impl(
+          phase_change_decision_data, current_phase, cache);
+    });
   }
 
   /// Initialize the `phase_change_decision_data` on the main chare to starting
   /// values.
   template <typename... Tags>
-  void initialize_phase_data(
-      const gsl::not_null<tuples::TaggedTuple<Tags...>*>
-          phase_change_decision_data) const noexcept {
+  void initialize_phase_data(const gsl::not_null<tuples::TaggedTuple<Tags...>*>
+                                 phase_change_decision_data) const {
     return call_with_dynamic_type<void, creatable_classes>(
-        this, [&phase_change_decision_data](
-                  const auto* const phase_change) noexcept {
+        this, [&phase_change_decision_data](const auto* const phase_change) {
           return phase_change->initialize_phase_data_impl(
               phase_change_decision_data);
         });

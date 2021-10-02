@@ -57,18 +57,18 @@ struct AlfvenWaveProxy : grmhd::Solutions::AlfvenWave {
 
   template <typename DataType>
   tuples::tagged_tuple_from_typelist<hydro_variables_tags<DataType>>
-  hydro_variables(const tnsr::I<DataType, 3>& x, double t) const noexcept {
+  hydro_variables(const tnsr::I<DataType, 3>& x, double t) const {
     return variables(x, t, hydro_variables_tags<DataType>{});
   }
 
   template <typename DataType>
   tuples::tagged_tuple_from_typelist<grmhd_variables_tags<DataType>>
-  grmhd_variables(const tnsr::I<DataType, 3>& x, double t) const noexcept {
+  grmhd_variables(const tnsr::I<DataType, 3>& x, double t) const {
     return variables(x, t, grmhd_variables_tags<DataType>{});
   }
 };
 
-void test_create_from_options() noexcept {
+void test_create_from_options() {
   const auto wave = TestHelpers::test_creation<grmhd::Solutions::AlfvenWave>(
       "WaveNumber: 2.2\n"
       "Pressure: 1.23\n"
@@ -81,7 +81,7 @@ void test_create_from_options() noexcept {
                                              {{0.75, 0.0, 0.0}}));
 }
 
-void test_move() noexcept {
+void test_move() {
   grmhd::Solutions::AlfvenWave wave(3.0, 2.1, 1.3, 1.5, {{0.0, 0.0, 0.24}},
                                     {{0.01, 0.0, 0.0}});
   grmhd::Solutions::AlfvenWave wave_copy(3.0, 2.1, 1.3, 1.5, {{0.0, 0.0, 0.24}},
@@ -89,7 +89,7 @@ void test_move() noexcept {
   test_move_semantics(std::move(wave), wave_copy);  //  NOLINT
 }
 
-void test_serialize() noexcept {
+void test_serialize() {
   grmhd::Solutions::AlfvenWave wave(3.0, 2.1, 1.3, 1.5, {{0.0, 0.0, 0.24}},
                                     {{0.01, 0.0, 0.0}});
   test_serialization(wave);
@@ -164,7 +164,7 @@ void test_variables(const DataType& used_for_size) {
   CHECK_ITERABLE_APPROX(expected_spatial_metric, spatial_metric);
 }
 
-void test_solution() noexcept {
+void test_solution() {
   grmhd::Solutions::AlfvenWave solution(2.2, 1.23, 0.2, 1.4, {{0.0, 0.0, 2.0}},
                                         {{0.75, 0.0, 0.0}});
   const std::array<double, 3> x{{1.0, 2.3, -0.4}};

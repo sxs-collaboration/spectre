@@ -58,24 +58,24 @@ class Kuzmin : public MarkAsAnalyticSolution {
       "A rotating 2D scalar advecting problem adopted from Kuzmin2014 paper"};
 
   Kuzmin() = default;
-  Kuzmin(const Kuzmin&) noexcept = default;
-  Kuzmin& operator=(const Kuzmin&) noexcept = default;
-  Kuzmin(Kuzmin&&) noexcept = default;
-  Kuzmin& operator=(Kuzmin&&) noexcept = default;
-  ~Kuzmin() noexcept = default;
+  Kuzmin(const Kuzmin&) = default;
+  Kuzmin& operator=(const Kuzmin&) = default;
+  Kuzmin(Kuzmin&&) = default;
+  Kuzmin& operator=(Kuzmin&&) = default;
+  ~Kuzmin() = default;
 
   template <typename DataType>
   tuples::TaggedTuple<ScalarAdvection::Tags::U> variables(
       const tnsr::I<DataType, 2>& x, double t,
-      tmpl::list<ScalarAdvection::Tags::U> /*meta*/) const noexcept;
+      tmpl::list<ScalarAdvection::Tags::U> /*meta*/) const;
 
   // clang-tidy: no pass by reference
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
 };
 
-bool operator==(const Kuzmin& /*lhs*/, const Kuzmin& /*rhs*/) noexcept;
+bool operator==(const Kuzmin& /*lhs*/, const Kuzmin& /*rhs*/);
 
-bool operator!=(const Kuzmin& lhs, const Kuzmin& rhs) noexcept;
+bool operator!=(const Kuzmin& lhs, const Kuzmin& rhs);
 
 }  // namespace Solutions
 }  // namespace ScalarAdvection

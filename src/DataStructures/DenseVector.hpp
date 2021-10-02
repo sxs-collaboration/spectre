@@ -42,7 +42,7 @@ class DenseVector : public blaze::DynamicVector<T, TF> {
 
   /// Charm++ serialization
   // clang-tidy: runtime-references
-  void pup(PUP::er& p) noexcept {  // NOLINT
+  void pup(PUP::er& p) {  // NOLINT
     auto size = blaze::DynamicVector<T, TF>::size();
     p | size;
     if (p.isUnpacking()) {
@@ -62,7 +62,7 @@ namespace MakeWithValueImpls {
 template <bool TF>
 struct NumberOfPoints<DenseVector<double, TF>> {
   static SPECTRE_ALWAYS_INLINE size_t
-  apply(const DenseVector<double, TF>& input) noexcept {
+  apply(const DenseVector<double, TF>& input) {
     return input.size();
   }
 };
@@ -72,7 +72,7 @@ struct MakeWithSize<DenseVector<double, TF>> {
   /// \brief Returns a `DenseVector` with the given size, with each element
   /// equal to `value`.
   static SPECTRE_ALWAYS_INLINE DenseVector<double, TF> apply(
-      const size_t size, const double value) noexcept {
+      const size_t size, const double value) {
     return DenseVector<double, TF>(size, value);
   }
 };

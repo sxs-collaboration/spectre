@@ -21,7 +21,7 @@ void sound_speed_squared(
     const Scalar<DataType>& specific_internal_energy,
     const Scalar<DataType>& specific_enthalpy,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
-        equation_of_state) noexcept {
+        equation_of_state) {
   destructive_resize_components(result, get_size(get(rest_mass_density)));
   if constexpr (ThermodynamicDim == 1) {
     get(*result) =
@@ -45,7 +45,7 @@ Scalar<DataType> sound_speed_squared(
     const Scalar<DataType>& specific_internal_energy,
     const Scalar<DataType>& specific_enthalpy,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
-        equation_of_state) noexcept {
+        equation_of_state) {
   Scalar<DataType> result{};
   sound_speed_squared(make_not_null(&result), rest_mass_density,
                       specific_internal_energy, specific_enthalpy,
@@ -63,13 +63,13 @@ Scalar<DataType> sound_speed_squared(
       const Scalar<DTYPE(data)>& specific_internal_energy,             \
       const Scalar<DTYPE(data)>& specific_enthalpy,                    \
       const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>& \
-          equation_of_state) noexcept;                                 \
+          equation_of_state);                                          \
   template Scalar<DTYPE(data)> sound_speed_squared(                    \
       const Scalar<DTYPE(data)>& rest_mass_density,                    \
       const Scalar<DTYPE(data)>& specific_internal_energy,             \
       const Scalar<DTYPE(data)>& specific_enthalpy,                    \
       const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>& \
-          equation_of_state) noexcept;
+          equation_of_state);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector), (1, 2))
 

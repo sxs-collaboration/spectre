@@ -29,8 +29,7 @@ class BoundaryCorrection : public PUP::able {
   BoundaryCorrection& operator=(BoundaryCorrection&&) = default;
   ~BoundaryCorrection() override = default;
 
-  explicit BoundaryCorrection(CkMigrateMessage* msg) noexcept
-      : PUP::able(msg) {}
+  explicit BoundaryCorrection(CkMigrateMessage* msg) : PUP::able(msg) {}
 
   /// \cond
   WRAPPED_PUPable_abstract(BoundaryCorrection);  // NOLINT
@@ -38,6 +37,6 @@ class BoundaryCorrection : public PUP::able {
 
   using creatable_classes = tmpl::list<Hll, Rusanov>;
 
-  virtual std::unique_ptr<BoundaryCorrection> get_clone() const noexcept = 0;
+  virtual std::unique_ptr<BoundaryCorrection> get_clone() const = 0;
 };
 }  // namespace Burgers::BoundaryCorrections

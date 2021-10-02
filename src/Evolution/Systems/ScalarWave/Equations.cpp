@@ -19,7 +19,7 @@ void ComputeNormalDotFluxes<Dim>::apply(
     const gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*>
         phi_normal_dot_flux,
     const gsl::not_null<Scalar<DataVector>*> psi_normal_dot_flux,
-    const Scalar<DataVector>& pi) noexcept {
+    const Scalar<DataVector>& pi) {
   destructive_resize_components(pi_normal_dot_flux, get(pi).size());
   destructive_resize_components(phi_normal_dot_flux, get(pi).size());
   destructive_resize_components(psi_normal_dot_flux, get(pi).size());

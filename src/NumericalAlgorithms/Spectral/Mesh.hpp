@@ -78,7 +78,7 @@ class Mesh {
       "through a choice of basis functions, quadrature and number of points "
       "in each dimension.";
 
-  Mesh() noexcept = default;
+  Mesh() = default;
 
   /*!
    * \brief Construct a computational grid with the same number of collocation
@@ -95,7 +95,7 @@ class Mesh {
    * independent of the value of `isotropic_extents`.
    */
   Mesh(const size_t isotropic_extents, const Spectral::Basis basis,
-       const Spectral::Quadrature quadrature) noexcept
+       const Spectral::Quadrature quadrature)
       : extents_(isotropic_extents) {
     ASSERT(basis != Spectral::Basis::SphericalHarmonic,
            "SphericalHarmonic is not a valid basis for the Mesh");
@@ -114,7 +114,7 @@ class Mesh {
    * the collocation points
    */
   Mesh(std::array<size_t, Dim> extents, const Spectral::Basis basis,
-       const Spectral::Quadrature quadrature) noexcept
+       const Spectral::Quadrature quadrature)
       : extents_(std::move(extents)) {
     ASSERT(basis != Spectral::Basis::SphericalHarmonic,
            "SphericalHarmonic is not a valid basis for the Mesh");
@@ -133,7 +133,7 @@ class Mesh {
    * the collocation points per dimension
    */
   Mesh(std::array<size_t, Dim> extents, std::array<Spectral::Basis, Dim> bases,
-       std::array<Spectral::Quadrature, Dim> quadratures) noexcept
+       std::array<Spectral::Quadrature, Dim> quadratures)
       : extents_(std::move(extents)), quadratures_(std::move(quadratures)) {
     for (auto it = bases.begin(); it != bases.end(); it++) {
       ASSERT(*it != Spectral::Basis::SphericalHarmonic,
@@ -145,13 +145,13 @@ class Mesh {
   /*!
    * \brief The number of grid points in each dimension of the grid.
    */
-  const Index<Dim>& extents() const noexcept { return extents_; }
+  const Index<Dim>& extents() const { return extents_; }
 
   /*!
    * \brief The number of grid points in dimension \p d of the grid
    * (zero-indexed).
    */
-  size_t extents(const size_t d) const noexcept { return extents_[d]; }
+  size_t extents(const size_t d) const { return extents_[d]; }
 
   /*!
    * \brief The total number of grid points in all dimensions.
@@ -162,7 +162,7 @@ class Mesh {
    * \note A zero-dimensional mesh has one grid point, since it is the slice
    * through a one-dimensional mesh (a line).
    */
-  size_t number_of_grid_points() const noexcept { return extents_.product(); }
+  size_t number_of_grid_points() const { return extents_.product(); }
 
   /*!
    * \brief Returns the 1-dimensional index corresponding to the `Dim`
@@ -172,35 +172,31 @@ class Mesh {
    *
    * \see collapsed_index()
    */
-  size_t storage_index(const Index<Dim>& index) const noexcept {
+  size_t storage_index(const Index<Dim>& index) const {
     return collapsed_index(index, extents_);
   }
 
   /*!
    * \brief The basis chosen in each dimension of the grid.
    */
-  const std::array<Spectral::Basis, Dim>& basis() const noexcept {
-    return bases_;
-  }
+  const std::array<Spectral::Basis, Dim>& basis() const { return bases_; }
 
   /*!
    * \brief The basis chosen in dimension \p d of the grid (zero-indexed).
    */
-  Spectral::Basis basis(const size_t d) const noexcept {
-    return gsl::at(bases_, d);
-  }
+  Spectral::Basis basis(const size_t d) const { return gsl::at(bases_, d); }
 
   /*!
    * \brief The quadrature chosen in each dimension of the grid.
    */
-  const std::array<Spectral::Quadrature, Dim>& quadrature() const noexcept {
+  const std::array<Spectral::Quadrature, Dim>& quadrature() const {
     return quadratures_;
   }
 
   /*!
    * \brief The quadrature chosen in dimension \p d of the grid (zero-indexed).
    */
-  Spectral::Quadrature quadrature(const size_t d) const noexcept {
+  Spectral::Quadrature quadrature(const size_t d) const {
     return gsl::at(quadratures_, d);
   }
 
@@ -211,7 +207,7 @@ class Mesh {
    */
   // clang-tidy: incorrectly reported redundancy in template expression
   template <size_t N = Dim, Requires<(N > 0 and N == Dim)> = nullptr>  // NOLINT
-  Mesh<Dim - 1> slice_away(size_t d) const noexcept;
+  Mesh<Dim - 1> slice_away(size_t d) const;
 
   /*!
    * \brief Returns a Mesh with the dimensions \p d, ... present (zero-indexed).
@@ -224,7 +220,7 @@ class Mesh {
    * \see slice_away()
    */
   template <typename... D, Requires<(sizeof...(D) <= Dim)> = nullptr>
-  Mesh<sizeof...(D)> slice_through(D... d) const noexcept {
+  Mesh<sizeof...(D)> slice_through(D... d) const {
     static_assert(std::conjunction_v<tt::is_integer<D>...>,
                   "The dimensions must be integers.");
     const std::array<size_t, sizeof...(D)> dims{{static_cast<size_t>(d)...}};
@@ -237,8 +233,7 @@ class Mesh {
    * \see slice_through() The templated overload of this function
    */
   template <size_t SliceDim, Requires<(SliceDim <= Dim)> = nullptr>
-  Mesh<SliceDim> slice_through(
-      const std::array<size_t, SliceDim>& dims) const noexcept;
+  Mesh<SliceDim> slice_through(const std::array<size_t, SliceDim>& dims) const;
 
   /*!
    * \brief Returns the Meshes representing 1D slices of this Mesh.
@@ -247,10 +242,10 @@ class Mesh {
    * `d` from `0` to `Dim - 1` except in dimension 0 where
    * `slice_through(d)` is not defined.
    */
-  std::array<Mesh<1>, Dim> slices() const noexcept;
+  std::array<Mesh<1>, Dim> slices() const;
 
   // clang-tidy: runtime-references
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
 
  private:
   Index<Dim> extents_{};
@@ -260,11 +255,11 @@ class Mesh {
 
 /// \cond HIDDEN_SYMBOLS
 template <size_t Dim>
-bool operator==(const Mesh<Dim>& lhs, const Mesh<Dim>& rhs) noexcept;
+bool operator==(const Mesh<Dim>& lhs, const Mesh<Dim>& rhs);
 
 template <size_t Dim>
-bool operator!=(const Mesh<Dim>& lhs, const Mesh<Dim>& rhs) noexcept;
+bool operator!=(const Mesh<Dim>& lhs, const Mesh<Dim>& rhs);
 
 template <size_t Dim>
-std::ostream& operator<<(std::ostream& os, const Mesh<Dim>& mesh) noexcept;
+std::ostream& operator<<(std::ostream& os, const Mesh<Dim>& mesh);
 /// \endcond

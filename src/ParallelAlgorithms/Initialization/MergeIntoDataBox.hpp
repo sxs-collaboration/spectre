@@ -33,13 +33,12 @@ namespace detail {
 template <typename AddingAction, typename SimpleTag, MergePolicy Policy,
           typename DbTagsList,
           Requires<Policy == MergePolicy::Overwrite> = nullptr>
-void merge_simple_tag_value(
-    const gsl::not_null<db::DataBox<DbTagsList>*> box,
-    typename SimpleTag::type&& simple_tag_value) noexcept {
+void merge_simple_tag_value(const gsl::not_null<db::DataBox<DbTagsList>*> box,
+                            typename SimpleTag::type&& simple_tag_value) {
   db::mutate<SimpleTag>(
       box,
       [](const gsl::not_null<typename SimpleTag::type*> stored_simple_tag_value,
-         typename SimpleTag::type&& local_simple_tag_value) noexcept {
+         typename SimpleTag::type&& local_simple_tag_value) {
         *stored_simple_tag_value = std::move(local_simple_tag_value);
       },
       std::move(simple_tag_value));
@@ -51,7 +50,7 @@ template <typename AddingAction, typename SimpleTag, MergePolicy Policy,
                     Policy == MergePolicy::IgnoreIncomparable) and
                    tt::has_inequivalence_v<typename SimpleTag::type>> = nullptr>
 void merge_simple_tag_value(const gsl::not_null<db::DataBox<DbTagsList>*> box,
-                            typename SimpleTag::type&& simple_tag) noexcept {
+                            typename SimpleTag::type&& simple_tag) {
   if (db::get<SimpleTag>(*box) != simple_tag) {
     ERROR("While adding the simple tag "
           << db::tag_name<SimpleTag>()
@@ -73,7 +72,7 @@ template <
              not tt::has_inequivalence_v<typename SimpleTag::type>> = nullptr>
 void merge_simple_tag_value(
     const gsl::not_null<db::DataBox<DbTagsList>*> /*box*/,
-    typename SimpleTag::type&& /*simple_tag*/) noexcept {
+    typename SimpleTag::type&& /*simple_tag*/) {
   static_assert(Policy != MergePolicy::Error,
                 "The tag being added does not have an equivalence operator and "
                 "is already in the DataBox. See the first template parameter "
@@ -85,11 +84,10 @@ void merge_simple_tag_value(
 template <typename AddingAction, typename ComputeTagsList, MergePolicy Policy,
           typename... SimpleTags, typename DbTagsList,
           typename... SimpleTagsToAdd, typename... SimpleTagsToCheck>
-auto merge_into_databox_impl(
-    db::DataBox<DbTagsList>&& box,
-    tuples::TaggedTuple<SimpleTags...>&& simple_tags,
-    tmpl::list<SimpleTagsToAdd...> /*meta*/,
-    tmpl::list<SimpleTagsToCheck...> /*meta*/) noexcept {
+auto merge_into_databox_impl(db::DataBox<DbTagsList>&& box,
+                             tuples::TaggedTuple<SimpleTags...>&& simple_tags,
+                             tmpl::list<SimpleTagsToAdd...> /*meta*/,
+                             tmpl::list<SimpleTagsToCheck...> /*meta*/) {
   EXPAND_PACK_LEFT_TO_RIGHT(
       merge_simple_tag_value<AddingAction, SimpleTagsToCheck, Policy>(
           make_not_null(&box),
@@ -131,8 +129,7 @@ template <typename AddingAction, typename SimpleTagsList,
           typename ComputeTagsList = tmpl::list<>,
           MergePolicy Policy = MergePolicy::Error, typename... SimpleTags,
           typename DbTagsList, typename... Args>
-auto merge_into_databox(db::DataBox<DbTagsList>&& box,
-                        Args&&... args) noexcept {
+auto merge_into_databox(db::DataBox<DbTagsList>&& box, Args&&... args) {
   using simple_tags_to_check = tmpl::filter<
       SimpleTagsList,
       tmpl::bind<tmpl::list_contains,

@@ -44,7 +44,7 @@ class Mesh;
  * \param mesh the Mesh defining the grid points on the manifold.
  */
 template <size_t Dim>
-double mean_value(const DataVector& f, const Mesh<Dim>& mesh) noexcept {
+double mean_value(const DataVector& f, const Mesh<Dim>& mesh) {
   return definite_integral(f, mesh) / two_to_the(Dim);
 }
 
@@ -74,26 +74,25 @@ double mean_value(const DataVector& f, const Mesh<Dim>& mesh) noexcept {
  */
 template <size_t Dim>
 double mean_value_on_boundary(const DataVector& f, const Mesh<Dim>& mesh,
-                              size_t d, Side side) noexcept;
+                              size_t d, Side side);
 
 template <size_t Dim>
 double mean_value_on_boundary(gsl::not_null<DataVector*> boundary_buffer,
                               const DataVector& f, const Mesh<Dim>& mesh,
-                              size_t d, Side side) noexcept;
+                              size_t d, Side side);
 
 double mean_value_on_boundary(gsl::not_null<DataVector*> /*boundary_buffer*/,
                               const DataVector& f, const Mesh<1>& mesh,
-                              size_t d, Side side) noexcept;
+                              size_t d, Side side);
 
 template <size_t Dim>
 double mean_value_on_boundary(
     gsl::not_null<DataVector*> boundary_buffer,
     gsl::span<std::pair<size_t, size_t>> volume_and_slice_indices,
-    const DataVector& f, const Mesh<Dim>& mesh, size_t d,
-    Side /*side*/) noexcept;
+    const DataVector& f, const Mesh<Dim>& mesh, size_t d, Side /*side*/);
 
 double mean_value_on_boundary(
     gsl::not_null<DataVector*> /*boundary_buffer*/,
     gsl::span<std::pair<size_t, size_t>> /*volume_and_slice_indices*/,
-    const DataVector& f, const Mesh<1>& mesh, size_t d, Side side) noexcept;
+    const DataVector& f, const Mesh<1>& mesh, size_t d, Side side);
 /// @}

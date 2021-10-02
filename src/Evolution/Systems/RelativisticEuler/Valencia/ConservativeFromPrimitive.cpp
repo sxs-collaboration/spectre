@@ -27,7 +27,7 @@ void ConservativeFromPrimitive<Dim>::apply(
     const tnsr::I<DataVector, Dim, Frame::Inertial>& spatial_velocity,
     const Scalar<DataVector>& lorentz_factor,
     const Scalar<DataVector>& sqrt_det_spatial_metric,
-    const tnsr::ii<DataVector, Dim, Frame::Inertial>& spatial_metric) noexcept {
+    const tnsr::ii<DataVector, Dim, Frame::Inertial>& spatial_metric) {
   Variables<tmpl::list<hydro::Tags::SpatialVelocityOneForm<DataVector, Dim>,
                        hydro::Tags::SpatialVelocitySquared<DataVector>>>
       temp_tensors{get(rest_mass_density).size()};

@@ -118,8 +118,7 @@ Variables<valencia_tags> numerical_dt(
 template <typename Solution>
 void verify_grmhd_solution(const Solution& solution, const Block<3>& block,
                            const Mesh<3>& mesh, const double error_tolerance,
-                           const double time,
-                           const double delta_time) noexcept {
+                           const double time, const double delta_time) {
   static_assert(evolution::is_analytic_solution_v<Solution>,
                 "Solution was not derived from AnalyticSolution");
   // Set up coordinates

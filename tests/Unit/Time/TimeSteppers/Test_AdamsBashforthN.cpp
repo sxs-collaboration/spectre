@@ -64,7 +64,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN", "[Unit][Time]") {
   const TimeStepId mid(true, 0, slab.start() + slab.duration() / 2);
   const TimeStepId end(true, 0, slab.end());
   const auto can_change = [](const TimeStepId& first, const TimeStepId& second,
-                             const TimeStepId& now) noexcept {
+                             const TimeStepId& now) {
     const TimeSteppers::AdamsBashforthN stepper(2);
     TimeSteppers::History<double, double> history(2);
     history.insert(first, 0.);
@@ -130,7 +130,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Backwards",
   const TimeStepId mid(false, 0, slab.start() + slab.duration() / 2);
   const TimeStepId end(false, 0, slab.end());
   const auto can_change = [](const TimeStepId& first, const TimeStepId& second,
-                             const TimeStepId& now) noexcept {
+                             const TimeStepId& now) {
     const TimeSteppers::AdamsBashforthN stepper(2);
     TimeSteppers::History<double, double> history(2);
     history.insert(first, 0.);
@@ -203,14 +203,14 @@ double quartic_answer(double x) {
 namespace MakeWithValueImpls {
 template <>
 template <typename ValueType>
-SPECTRE_ALWAYS_INLINE NCd MakeWithValueImpl<NCd, NCd>::apply(
-    const NCd& /*unused*/, ValueType value) noexcept {
+SPECTRE_ALWAYS_INLINE NCd
+MakeWithValueImpl<NCd, NCd>::apply(const NCd& /*unused*/, ValueType value) {
   return NCd(value);
 }
 }  // namespace MakeWithValueImpls
 
 namespace {
-void do_lts_test(const std::array<TimeDelta, 2>& dt) noexcept {
+void do_lts_test(const std::array<TimeDelta, 2>& dt) {
   // For general time steppers the boundary stepper cannot be run
   // without simultaneously running the volume stepper.  For
   // Adams-Bashforth methods, however, the volume contribution is zero
@@ -218,12 +218,11 @@ void do_lts_test(const std::array<TimeDelta, 2>& dt) noexcept {
   // can leave it out.
 
   const bool forward_in_time = dt[0].is_positive();
-  const auto simulation_less =
-      [forward_in_time](const Time& a, const Time& b) noexcept {
+  const auto simulation_less = [forward_in_time](const Time& a, const Time& b) {
     return forward_in_time ? a < b : b < a;
   };
 
-  const auto make_time_id = [forward_in_time](const Time& t) noexcept {
+  const auto make_time_id = [forward_in_time](const Time& t) {
     return TimeStepId(forward_in_time, 0, t);
   };
 
@@ -281,10 +280,10 @@ void do_lts_test(const std::array<TimeDelta, 2>& dt) noexcept {
   }
 }
 
-void check_lts_vts() noexcept {
+void check_lts_vts() {
   const Slab slab(0., 1.);
 
-  const auto make_time_id = [](const Time& t) noexcept {
+  const auto make_time_id = [](const Time& t) {
     return TimeStepId(true, 0, t);
   };
 
@@ -396,16 +395,14 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Reversal",
                   "[Unit][Time]") {
   const TimeSteppers::AdamsBashforthN ab3(3);
 
-  const auto f = [](const double t) noexcept {
+  const auto f = [](const double t) {
     return 1. + t * (2. + t * (3. + t * 4.));
   };
-  const auto df = [](const double t) noexcept {
-    return 2. + t * (6. + t * 12.);
-  };
+  const auto df = [](const double t) { return 2. + t * (6. + t * 12.); };
 
   const Slab slab(0., 1.);
   TimeSteppers::History<double, double> history{3};
-  const auto add_history = [&df, &f, &history](const Time& time) noexcept {
+  const auto add_history = [&df, &f, &history](const Time& time) {
     history.insert(TimeStepId(true, 0, time), df(time.value()));
     history.most_recent_value() = f(time.value());
   };
@@ -421,16 +418,14 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Boundary.Reversal",
                   "[Unit][Time]") {
   const TimeSteppers::AdamsBashforthN ab3(3);
 
-  const auto f = [](const double t) noexcept {
+  const auto f = [](const double t) {
     return 1. + t * (2. + t * (3. + t * 4.));
   };
-  const auto df = [](const double t) noexcept {
-    return 2. + t * (6. + t * 12.);
-  };
+  const auto df = [](const double t) { return 2. + t * (6. + t * 12.); };
 
   const Slab slab(0., 1.);
   TimeSteppers::BoundaryHistory<double, double, double> history{3};
-  const auto add_history = [&df, &history](const TimeStepId& time_id) noexcept {
+  const auto add_history = [&df, &history](const TimeStepId& time_id) {
     history.local_insert(time_id, df(time_id.step_time().value()));
     history.remote_insert(time_id, 0.);
   };
@@ -439,9 +434,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Boundary.Reversal",
   add_history(TimeStepId(true, 1, slab.start() + slab.duration() / 3));
   double y = f(1. / 3.);
   y += ab3.compute_boundary_delta(
-      [](const double local, const double /*remote*/) noexcept {
-        return local;
-      },
+      [](const double local, const double /*remote*/) { return local; },
       make_not_null(&history), slab.duration() / 3);
   CHECK(y == approx(f(2. / 3.)));
 }

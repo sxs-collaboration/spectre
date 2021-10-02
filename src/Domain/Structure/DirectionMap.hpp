@@ -22,13 +22,13 @@ class DirectionMap
 namespace PUP {
 template <size_t Dim, typename T>
 // NOLINTNEXTLINE(google-runtime-references)
-void pup(PUP::er& p, DirectionMap<Dim, T>& t) noexcept {
+void pup(PUP::er& p, DirectionMap<Dim, T>& t) {
   pup(p, static_cast<typename DirectionMap<Dim, T>::base&>(t));
 }
 
 template <size_t Dim, typename T>
 // NOLINTNEXTLINE(google-runtime-references)
-void operator|(PUP::er& p, DirectionMap<Dim, T>& t) noexcept {
+void operator|(PUP::er& p, DirectionMap<Dim, T>& t) {
   p | static_cast<typename DirectionMap<Dim, T>::base&>(t);
 }
 }  // namespace PUP

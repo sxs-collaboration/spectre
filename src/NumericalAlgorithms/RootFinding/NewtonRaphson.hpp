@@ -103,8 +103,8 @@ DataVector newton_raphson(const Function& f, const DataVector& initial_guess,
     boost::uintmax_t max_iters = max_iterations;
     // clang-tidy: internal boost warning, can't fix it.
     result_vector[i] = boost::math::tools::newton_raphson_iterate(  // NOLINT
-        [&f, i ](double x) noexcept { return f(x, i); }, initial_guess[i],
-        lower_bound[i], upper_bound[i], digits_binary, max_iters);
+        [&f, i](double x) { return f(x, i); }, initial_guess[i], lower_bound[i],
+        upper_bound[i], digits_binary, max_iters);
     if (max_iters >= max_iterations) {
       throw convergence_error(MakeString{}
                               << "newton_raphson reached max iterations of "

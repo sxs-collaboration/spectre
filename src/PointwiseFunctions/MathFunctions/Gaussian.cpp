@@ -17,70 +17,70 @@ namespace MathFunctions {
 
 template <typename Fr>
 Gaussian<1, Fr>::Gaussian(const double amplitude, const double width,
-                          const double center) noexcept
+                          const double center)
     : amplitude_(amplitude), inverse_width_(1.0 / width), center_(center) {}
 
 template <typename Fr>
 Gaussian<1, Fr>::Gaussian(double amplitude, double width,
-                          const std::array<double, 1>& center) noexcept
+                          const std::array<double, 1>& center)
     : Gaussian(amplitude, width, center[0]) {}
 
 template <typename Fr>
-double Gaussian<1, Fr>::operator()(const double& x) const noexcept {
+double Gaussian<1, Fr>::operator()(const double& x) const {
   return apply_call_operator(x);
 }
 
 template <typename Fr>
-DataVector Gaussian<1, Fr>::operator()(const DataVector& x) const noexcept {
+DataVector Gaussian<1, Fr>::operator()(const DataVector& x) const {
   return apply_call_operator(x);
 }
 
 template <typename Fr>
-double Gaussian<1, Fr>::first_deriv(const double& x) const noexcept {
+double Gaussian<1, Fr>::first_deriv(const double& x) const {
   return apply_first_deriv(x);
 }
 
 template <typename Fr>
-DataVector Gaussian<1, Fr>::first_deriv(const DataVector& x) const noexcept {
+DataVector Gaussian<1, Fr>::first_deriv(const DataVector& x) const {
   return apply_first_deriv(x);
 }
 
 template <typename Fr>
-double Gaussian<1, Fr>::second_deriv(const double& x) const noexcept {
+double Gaussian<1, Fr>::second_deriv(const double& x) const {
   return apply_second_deriv(x);
 }
 
 template <typename Fr>
-DataVector Gaussian<1, Fr>::second_deriv(const DataVector& x) const noexcept {
+DataVector Gaussian<1, Fr>::second_deriv(const DataVector& x) const {
   return apply_second_deriv(x);
 }
 
 template <typename Fr>
-double Gaussian<1, Fr>::third_deriv(const double& x) const noexcept {
+double Gaussian<1, Fr>::third_deriv(const double& x) const {
   return apply_third_deriv(x);
 }
 
 template <typename Fr>
-DataVector Gaussian<1, Fr>::third_deriv(const DataVector& x) const noexcept {
+DataVector Gaussian<1, Fr>::third_deriv(const DataVector& x) const {
   return apply_third_deriv(x);
 }
 
 template <typename Fr>
 template <typename T>
-T Gaussian<1, Fr>::apply_call_operator(const T& x) const noexcept {
+T Gaussian<1, Fr>::apply_call_operator(const T& x) const {
   return amplitude_ * exp(-square((x - center_) * inverse_width_));
 }
 
 template <typename Fr>
 template <typename T>
-T Gaussian<1, Fr>::apply_first_deriv(const T& x) const noexcept {
+T Gaussian<1, Fr>::apply_first_deriv(const T& x) const {
   return (-2.0 * amplitude_ * square(inverse_width_)) * (x - center_) *
          exp(-square((x - center_) * inverse_width_));
 }
 
 template <typename Fr>
 template <typename T>
-T Gaussian<1, Fr>::apply_second_deriv(const T& x) const noexcept {
+T Gaussian<1, Fr>::apply_second_deriv(const T& x) const {
   return (-2.0 * amplitude_ * square(inverse_width_)) *
          (1.0 - 2.0 * square(x - center_) * square(inverse_width_)) *
          exp(-square((x - center_) * inverse_width_));
@@ -88,7 +88,7 @@ T Gaussian<1, Fr>::apply_second_deriv(const T& x) const noexcept {
 
 template <typename Fr>
 template <typename T>
-T Gaussian<1, Fr>::apply_third_deriv(const T& x) const noexcept {
+T Gaussian<1, Fr>::apply_third_deriv(const T& x) const {
   return 4.0 * amplitude_ * pow<4>(inverse_width_) * (x - center_) *
          (3.0 - 2.0 * square((x - center_) * inverse_width_)) *
          exp(-square((x - center_) * inverse_width_));
@@ -103,15 +103,14 @@ void Gaussian<1, Fr>::pup(PUP::er& p) {
 }
 
 template <size_t VolumeDim, typename Fr>
-Gaussian<VolumeDim, Fr>::Gaussian(
-    const double amplitude, const double width,
-    const std::array<double, VolumeDim>& center) noexcept
+Gaussian<VolumeDim, Fr>::Gaussian(const double amplitude, const double width,
+                                  const std::array<double, VolumeDim>& center)
     : amplitude_(amplitude), inverse_width_(1.0 / width), center_(center) {}
 
 template <size_t VolumeDim, typename Fr>
 template <typename T>
 tnsr::I<T, VolumeDim, Fr> Gaussian<VolumeDim, Fr>::centered_coordinates(
-    const tnsr::I<T, VolumeDim, Fr>& x) const noexcept {
+    const tnsr::I<T, VolumeDim, Fr>& x) const {
   tnsr::I<T, VolumeDim, Fr> centered_coords = x;
   for (size_t i = 0; i < VolumeDim; ++i) {
     centered_coords.get(i) -= gsl::at(center_, i);
@@ -122,7 +121,7 @@ tnsr::I<T, VolumeDim, Fr> Gaussian<VolumeDim, Fr>::centered_coordinates(
 template <size_t VolumeDim, typename Fr>
 template <typename T>
 Scalar<T> Gaussian<VolumeDim, Fr>::apply_call_operator(
-    const tnsr::I<T, VolumeDim, Fr>& centered_coords) const noexcept {
+    const tnsr::I<T, VolumeDim, Fr>& centered_coords) const {
   Scalar<T> result = dot_product(centered_coords, centered_coords);
   get(result) = amplitude_ * exp(-get(result) * square(inverse_width_));
   return result;
@@ -132,7 +131,7 @@ template <size_t VolumeDim, typename Fr>
 template <typename T>
 tnsr::i<T, VolumeDim, Fr> Gaussian<VolumeDim, Fr>::apply_first_deriv(
     const tnsr::I<T, VolumeDim, Fr>& centered_coords,
-    const Scalar<T>& gaussian) const noexcept {
+    const Scalar<T>& gaussian) const {
   auto result = make_with_value<tnsr::i<T, VolumeDim, Fr>>(get(gaussian), 0.0);
   for (size_t i = 0; i < VolumeDim; ++i) {
     result.get(i) =
@@ -145,7 +144,7 @@ template <size_t VolumeDim, typename Fr>
 template <typename T>
 tnsr::ii<T, VolumeDim, Fr> Gaussian<VolumeDim, Fr>::apply_second_deriv(
     const tnsr::I<T, VolumeDim, Fr>& centered_coords, const Scalar<T>& gaussian,
-    const tnsr::i<T, VolumeDim, Fr>& d_gaussian) const noexcept {
+    const tnsr::i<T, VolumeDim, Fr>& d_gaussian) const {
   auto result = make_with_value<tnsr::ii<T, VolumeDim, Fr>>(get(gaussian), 0.0);
   for (size_t i = 0; i < VolumeDim; ++i) {
     for (size_t j = i; j < VolumeDim; ++j) {
@@ -164,7 +163,7 @@ template <typename T>
 tnsr::iii<T, VolumeDim, Fr> Gaussian<VolumeDim, Fr>::apply_third_deriv(
     const tnsr::I<T, VolumeDim, Fr>& centered_coords, const Scalar<T>& gaussian,
     const tnsr::i<T, VolumeDim, Fr>& d_gaussian,
-    const tnsr::ii<T, VolumeDim, Fr>& d2_gaussian) const noexcept {
+    const tnsr::ii<T, VolumeDim, Fr>& d2_gaussian) const {
   auto result =
       make_with_value<tnsr::iii<T, VolumeDim, Fr>>(get(gaussian), 0.0);
   for (size_t i = 0; i < VolumeDim; ++i) {
@@ -186,18 +185,18 @@ tnsr::iii<T, VolumeDim, Fr> Gaussian<VolumeDim, Fr>::apply_third_deriv(
 
 template <size_t VolumeDim, typename Fr>
 Scalar<double> Gaussian<VolumeDim, Fr>::operator()(
-    const tnsr::I<double, VolumeDim, Fr>& x) const noexcept {
+    const tnsr::I<double, VolumeDim, Fr>& x) const {
   return apply_call_operator(centered_coordinates(x));
 }
 template <size_t VolumeDim, typename Fr>
 Scalar<DataVector> Gaussian<VolumeDim, Fr>::operator()(
-    const tnsr::I<DataVector, VolumeDim, Fr>& x) const noexcept {
+    const tnsr::I<DataVector, VolumeDim, Fr>& x) const {
   return apply_call_operator(centered_coordinates(x));
 }
 
 template <size_t VolumeDim, typename Fr>
 tnsr::i<double, VolumeDim, Fr> Gaussian<VolumeDim, Fr>::first_deriv(
-    const tnsr::I<double, VolumeDim, Fr>& x) const noexcept {
+    const tnsr::I<double, VolumeDim, Fr>& x) const {
   const tnsr::I<double, VolumeDim, Fr>& centered_coords =
       centered_coordinates(x);
   return apply_first_deriv(centered_coords,
@@ -205,7 +204,7 @@ tnsr::i<double, VolumeDim, Fr> Gaussian<VolumeDim, Fr>::first_deriv(
 }
 template <size_t VolumeDim, typename Fr>
 tnsr::i<DataVector, VolumeDim, Fr> Gaussian<VolumeDim, Fr>::first_deriv(
-    const tnsr::I<DataVector, VolumeDim, Fr>& x) const noexcept {
+    const tnsr::I<DataVector, VolumeDim, Fr>& x) const {
   const tnsr::I<DataVector, VolumeDim, Fr>& centered_coords =
       centered_coordinates(x);
   return apply_first_deriv(centered_coords,
@@ -214,7 +213,7 @@ tnsr::i<DataVector, VolumeDim, Fr> Gaussian<VolumeDim, Fr>::first_deriv(
 
 template <size_t VolumeDim, typename Fr>
 tnsr::ii<double, VolumeDim, Fr> Gaussian<VolumeDim, Fr>::second_deriv(
-    const tnsr::I<double, VolumeDim, Fr>& x) const noexcept {
+    const tnsr::I<double, VolumeDim, Fr>& x) const {
   const tnsr::I<double, VolumeDim, Fr> centered_coords =
       centered_coordinates(x);
   const Scalar<double>& gauss = apply_call_operator(centered_coords);
@@ -223,7 +222,7 @@ tnsr::ii<double, VolumeDim, Fr> Gaussian<VolumeDim, Fr>::second_deriv(
 }
 template <size_t VolumeDim, typename Fr>
 tnsr::ii<DataVector, VolumeDim, Fr> Gaussian<VolumeDim, Fr>::second_deriv(
-    const tnsr::I<DataVector, VolumeDim, Fr>& x) const noexcept {
+    const tnsr::I<DataVector, VolumeDim, Fr>& x) const {
   const tnsr::I<DataVector, VolumeDim, Fr> centered_coords =
       centered_coordinates(x);
   const Scalar<DataVector>& gauss = apply_call_operator(centered_coords);
@@ -233,7 +232,7 @@ tnsr::ii<DataVector, VolumeDim, Fr> Gaussian<VolumeDim, Fr>::second_deriv(
 
 template <size_t VolumeDim, typename Fr>
 tnsr::iii<double, VolumeDim, Fr> Gaussian<VolumeDim, Fr>::third_deriv(
-    const tnsr::I<double, VolumeDim, Fr>& x) const noexcept {
+    const tnsr::I<double, VolumeDim, Fr>& x) const {
   const tnsr::I<double, VolumeDim, Fr> centered_coords =
       centered_coordinates(x);
   const Scalar<double>& gauss = apply_call_operator(centered_coords);
@@ -244,7 +243,7 @@ tnsr::iii<double, VolumeDim, Fr> Gaussian<VolumeDim, Fr>::third_deriv(
 }
 template <size_t VolumeDim, typename Fr>
 tnsr::iii<DataVector, VolumeDim, Fr> Gaussian<VolumeDim, Fr>::third_deriv(
-    const tnsr::I<DataVector, VolumeDim, Fr>& x) const noexcept {
+    const tnsr::I<DataVector, VolumeDim, Fr>& x) const {
   const tnsr::I<DataVector, VolumeDim, Fr> centered_coords =
       centered_coordinates(x);
   const Scalar<DataVector>& gauss = apply_call_operator(centered_coords);
@@ -268,7 +267,7 @@ void Gaussian<VolumeDim, Fr>::pup(PUP::er& p) {
 #define INSTANTIATE(_, data)                                          \
   template MathFunctions::Gaussian<DIM(data), FRAME(data)>::Gaussian( \
       const double amplitude, const double width,                     \
-      const std::array<double, DIM(data)>& center) noexcept;          \
+      const std::array<double, DIM(data)>& center);                   \
   template void MathFunctions::Gaussian<DIM(data), FRAME(data)>::pup( \
       PUP::er& p);
 
@@ -281,19 +280,19 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (2, 3), (Frame::Grid, Frame::Inertial))
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(2, data)
 
-#define INSTANTIATE(_, data)                                                 \
-  template Scalar<DTYPE(data)>                                               \
-  MathFunctions::Gaussian<DIM(data), FRAME(data)>::operator()(               \
-      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& x) const noexcept; \
-  template tnsr::i<DTYPE(data), DIM(data), FRAME(data)>                      \
-  MathFunctions::Gaussian<DIM(data), FRAME(data)>::first_deriv(              \
-      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& x) const noexcept; \
-  template tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>                     \
-  MathFunctions::Gaussian<DIM(data), FRAME(data)>::second_deriv(             \
-      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& x) const noexcept; \
-  template tnsr::iii<DTYPE(data), DIM(data), FRAME(data)>                    \
-  MathFunctions::Gaussian<DIM(data), FRAME(data)>::third_deriv(              \
-      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& x) const noexcept;
+#define INSTANTIATE(_, data)                                        \
+  template Scalar<DTYPE(data)>                                      \
+  MathFunctions::Gaussian<DIM(data), FRAME(data)>::operator()(      \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& x) const; \
+  template tnsr::i<DTYPE(data), DIM(data), FRAME(data)>             \
+  MathFunctions::Gaussian<DIM(data), FRAME(data)>::first_deriv(     \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& x) const; \
+  template tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>            \
+  MathFunctions::Gaussian<DIM(data), FRAME(data)>::second_deriv(    \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& x) const; \
+  template tnsr::iii<DTYPE(data), DIM(data), FRAME(data)>           \
+  MathFunctions::Gaussian<DIM(data), FRAME(data)>::third_deriv(     \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& x) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (2, 3), (Frame::Grid, Frame::Inertial),
                         (double, DataVector))
@@ -303,15 +302,13 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (2, 3), (Frame::Grid, Frame::Inertial),
 #undef INSTANTIATE
 
 template MathFunctions::Gaussian<1, Frame::Grid>::Gaussian(
-    const double amplitude, const double width, const double center) noexcept;
+    const double amplitude, const double width, const double center);
 template MathFunctions::Gaussian<1, Frame::Inertial>::Gaussian(
-    const double amplitude, const double width, const double center) noexcept;
+    const double amplitude, const double width, const double center);
 template MathFunctions::Gaussian<1, Frame::Grid>::Gaussian(
-    double amplitude, double width,
-    const std::array<double, 1>& center) noexcept;
+    double amplitude, double width, const std::array<double, 1>& center);
 template MathFunctions::Gaussian<1, Frame::Inertial>::Gaussian(
-    double amplitude, double width,
-    const std::array<double, 1>& center) noexcept;
+    double amplitude, double width, const std::array<double, 1>& center);
 template void MathFunctions::Gaussian<1, Frame::Grid>::pup(PUP::er& p);
 template void MathFunctions::Gaussian<1, Frame::Inertial>::pup(PUP::er& p);
 
@@ -320,25 +317,25 @@ template void MathFunctions::Gaussian<1, Frame::Inertial>::pup(PUP::er& p);
 
 #define INSTANTIATE(_, data)                                                  \
   template DTYPE(data) MathFunctions::Gaussian<1, FRAME(data)>::operator()(   \
-      const DTYPE(data) & x) const noexcept;                                  \
+      const DTYPE(data) & x) const;                                           \
   template DTYPE(data) MathFunctions::Gaussian<1, FRAME(data)>::first_deriv(  \
-      const DTYPE(data) & x) const noexcept;                                  \
+      const DTYPE(data) & x) const;                                           \
   template DTYPE(data) MathFunctions::Gaussian<1, FRAME(data)>::second_deriv( \
-      const DTYPE(data) & x) const noexcept;                                  \
+      const DTYPE(data) & x) const;                                           \
   template DTYPE(data) MathFunctions::Gaussian<1, FRAME(data)>::third_deriv(  \
-      const DTYPE(data) & x) const noexcept;                                  \
+      const DTYPE(data) & x) const;                                           \
   template DTYPE(data)                                                        \
       MathFunctions::Gaussian<1, FRAME(data)>::apply_call_operator(           \
-          const DTYPE(data) & x) const noexcept;                              \
+          const DTYPE(data) & x) const;                                       \
   template DTYPE(data)                                                        \
       MathFunctions::Gaussian<1, FRAME(data)>::apply_first_deriv(             \
-          const DTYPE(data) & x) const noexcept;                              \
+          const DTYPE(data) & x) const;                                       \
   template DTYPE(data)                                                        \
       MathFunctions::Gaussian<1, FRAME(data)>::apply_second_deriv(            \
-          const DTYPE(data) & x) const noexcept;                              \
+          const DTYPE(data) & x) const;                                       \
   template DTYPE(data)                                                        \
       MathFunctions::Gaussian<1, FRAME(data)>::apply_third_deriv(             \
-          const DTYPE(data) & x) const noexcept;
+          const DTYPE(data) & x) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (Frame::Grid, Frame::Inertial),
                         (double, DataVector))

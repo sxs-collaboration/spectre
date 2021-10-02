@@ -20,7 +20,7 @@ namespace evolution::dg::subcell::fd::Tags {
 /// and reduce the memory footprint.
 template <size_t Dim>
 struct InverseJacobianLogicalToGrid : db::SimpleTag {
-  static std::string name() noexcept { return "InverseJacobian(Logical,Grid)"; }
+  static std::string name() { return "InverseJacobian(Logical,Grid)"; }
   using type = std::optional<
       ::InverseJacobian<DataVector, Dim, Frame::ElementLogical, Frame::Grid>>;
 };
@@ -31,9 +31,7 @@ struct InverseJacobianLogicalToGrid : db::SimpleTag {
 /// \note stored as a `std::optional` so we can reset it when switching to DG
 /// and reduce the memory footprint.
 struct DetInverseJacobianLogicalToGrid : db::SimpleTag {
-  static std::string name() noexcept {
-    return "Det(InverseJacobian(Logical,Grid))";
-  }
+  static std::string name() { return "Det(InverseJacobian(Logical,Grid))"; }
   using type = std::optional<Scalar<DataVector>>;
 };
 }  // namespace evolution::dg::subcell::fd::Tags

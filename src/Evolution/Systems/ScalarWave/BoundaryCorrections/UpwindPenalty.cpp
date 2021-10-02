@@ -19,12 +19,11 @@
 
 namespace ScalarWave::BoundaryCorrections {
 template <size_t Dim>
-UpwindPenalty<Dim>::UpwindPenalty(CkMigrateMessage* msg) noexcept
+UpwindPenalty<Dim>::UpwindPenalty(CkMigrateMessage* msg)
     : BoundaryCorrection<Dim>(msg) {}
 
 template <size_t Dim>
-std::unique_ptr<BoundaryCorrection<Dim>> UpwindPenalty<Dim>::get_clone()
-    const noexcept {
+std::unique_ptr<BoundaryCorrection<Dim>> UpwindPenalty<Dim>::get_clone() const {
   return std::make_unique<UpwindPenalty>(*this);
 }
 
@@ -57,8 +56,7 @@ double UpwindPenalty<Dim>::dg_package_data(
     const tnsr::i<DataVector, Dim, Frame::Inertial>& normal_covector,
     const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
     /*mesh_velocity*/,
-    const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity)
-    const noexcept {
+    const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity) const {
   if (normal_dot_mesh_velocity.has_value()) {
     get<0>(*packaged_char_speeds) = -get(*normal_dot_mesh_velocity);
     get<1>(*packaged_char_speeds) = 1.0 - get(*normal_dot_mesh_velocity);
@@ -138,7 +136,7 @@ void UpwindPenalty<Dim>::dg_boundary_terms(
         char_speed_minus_normal_times_v_minus_ext,
     const Scalar<DataVector>& char_speed_constraint_gamma2_v_psi_ext,
     const tnsr::i<DataVector, 3, Frame::Inertial>& char_speeds_ext,
-    dg::Formulation /*dg_formulation*/) const noexcept {
+    dg::Formulation /*dg_formulation*/) const {
   const size_t num_pts = char_speeds_int[0].size();
   Variables<tmpl::list<::Tags::TempScalar<0>, ::Tags::TempScalar<1>,
                        ::Tags::TempScalar<2>, ::Tags::TempScalar<3>,

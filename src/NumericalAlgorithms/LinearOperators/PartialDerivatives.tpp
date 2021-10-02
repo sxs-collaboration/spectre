@@ -60,7 +60,7 @@ void partial_derivatives_impl(
         du,
     const std::array<const double*, Dim>& logical_partial_derivatives_of_u,
     const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
-                          DerivativeFrame>& inverse_jacobian) noexcept {
+                          DerivativeFrame>& inverse_jacobian) {
   constexpr size_t number_of_independent_components =
       Variables<DerivativeTags>::number_of_independent_components;
   double* pdu = du->data();
@@ -115,7 +115,7 @@ template <typename DerivativeTags, typename VariableTags, size_t Dim>
 void logical_partial_derivatives(
     const gsl::not_null<std::array<Variables<DerivativeTags>, Dim>*>
         logical_partial_derivatives_of_u,
-    const Variables<VariableTags>& u, const Mesh<Dim>& mesh) noexcept {
+    const Variables<VariableTags>& u, const Mesh<Dim>& mesh) {
   if (UNLIKELY((*logical_partial_derivatives_of_u)[0].number_of_grid_points() !=
                u.number_of_grid_points())) {
     for (auto& deriv : *logical_partial_derivatives_of_u) {
@@ -141,7 +141,7 @@ void logical_partial_derivatives(
 
 template <typename DerivativeTags, typename VariableTags, size_t Dim>
 std::array<Variables<DerivativeTags>, Dim> logical_partial_derivatives(
-    const Variables<VariableTags>& u, const Mesh<Dim>& mesh) noexcept {
+    const Variables<VariableTags>& u, const Mesh<Dim>& mesh) {
   auto logical_partial_derivatives_of_u =
       make_array<Dim>(Variables<DerivativeTags>(u.number_of_grid_points()));
   logical_partial_derivatives<DerivativeTags>(
@@ -157,7 +157,7 @@ void partial_derivatives(
     const std::array<Variables<DerivativeTags>, Dim>&
         logical_partial_derivatives_of_u,
     const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
-                          DerivativeFrame>& inverse_jacobian) noexcept {
+                          DerivativeFrame>& inverse_jacobian) {
   auto& partial_derivatives_of_u = *du;
   // For mutating compute items we must set the size.
   if (UNLIKELY(partial_derivatives_of_u.number_of_grid_points() !=
@@ -184,7 +184,7 @@ void partial_derivatives(
         du,
     const Variables<VariableTags>& u, const Mesh<Dim>& mesh,
     const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
-                          DerivativeFrame>& inverse_jacobian) noexcept {
+                          DerivativeFrame>& inverse_jacobian) {
   auto& partial_derivatives_of_u = *du;
   // For mutating compute items we must set the size.
   if (UNLIKELY(partial_derivatives_of_u.number_of_grid_points() !=
@@ -223,7 +223,7 @@ Variables<db::wrap_tags_in<Tags::deriv, DerivativeTags, tmpl::size_t<Dim>,
 partial_derivatives(
     const Variables<VariableTags>& u, const Mesh<Dim>& mesh,
     const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
-                          DerivativeFrame>& inverse_jacobian) noexcept {
+                          DerivativeFrame>& inverse_jacobian) {
   Variables<db::wrap_tags_in<Tags::deriv, DerivativeTags, tmpl::size_t<Dim>,
                              DerivativeFrame>>
       partial_derivatives_of_u(u.number_of_grid_points());
@@ -240,7 +240,7 @@ struct LogicalImpl<1, VariableTags, DerivativeTags> {
   static void apply(const gsl::not_null<std::array<double*, Dim>*> logical_du,
                     Variables<T>* /*unused_in_1d*/,
                     const Variables<VariableTags>& u,
-                    const Mesh<Dim>& mesh) noexcept {
+                    const Mesh<Dim>& mesh) {
     auto& logical_partial_derivatives_of_u = *logical_du;
     const size_t deriv_size =
         Variables<DerivativeTags>::number_of_independent_components *
@@ -261,7 +261,7 @@ struct LogicalImpl<2, VariableTags, DerivativeTags> {
   static void apply(const gsl::not_null<std::array<double*, Dim>*> logical_du,
                     Variables<T>* const partial_u_wrt_eta,
                     const Variables<VariableTags>& u,
-                    const Mesh<2>& mesh) noexcept {
+                    const Mesh<2>& mesh) {
     static_assert(
         Variables<DerivativeTags>::number_of_independent_components <=
             Variables<T>::number_of_independent_components,
@@ -302,7 +302,7 @@ struct LogicalImpl<3, VariableTags, DerivativeTags> {
   static void apply(const gsl::not_null<std::array<double*, Dim>*> logical_du,
                     Variables<T>* const partial_u_wrt_eta_or_zeta,
                     const Variables<VariableTags>& u,
-                    const Mesh<3>& mesh) noexcept {
+                    const Mesh<3>& mesh) {
     static_assert(
         Variables<DerivativeTags>::number_of_independent_components <=
             Variables<T>::number_of_independent_components,

@@ -12,7 +12,7 @@
 
 std::ostream& NewtonianEuler::Limiters::operator<<(
     std::ostream& os,
-    const NewtonianEuler::Limiters::VariablesToLimit vars_to_limit) noexcept {
+    const NewtonianEuler::Limiters::VariablesToLimit vars_to_limit) {
   switch (vars_to_limit) {
     case NewtonianEuler::Limiters::VariablesToLimit::Conserved:
       return os << "Conserved";

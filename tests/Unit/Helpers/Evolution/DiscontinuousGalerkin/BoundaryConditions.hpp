@@ -159,8 +159,7 @@ template <typename BoundaryConditionHelper, typename AllTagsOnFaceList,
 void apply_boundary_condition_impl(
     BoundaryConditionHelper& boundary_condition_helper,
     const Variables<AllTagsOnFaceList>& fields_on_interior_face,
-    tmpl::list<TagsFromFace...> /*meta*/,
-    const VolumeArgs&... volume_args) noexcept {
+    tmpl::list<TagsFromFace...> /*meta*/, const VolumeArgs&... volume_args) {
   boundary_condition_helper(get<TagsFromFace>(fields_on_interior_face)...,
                             volume_args...);
 }
@@ -296,7 +295,7 @@ void test_boundary_condition_with_python_impl(
     const auto apply_bc =
         [&boundary_condition, &face_mesh_velocity, &interior_normal_covector,
          &python_boundary_condition_functions,
-         &python_module](const auto&... face_and_volume_args) noexcept {
+         &python_module](const auto&... face_and_volume_args) {
           const std::optional<std::string> error_msg =
               boundary_condition.dg_outflow(face_mesh_velocity,
                                             interior_normal_covector,

@@ -48,18 +48,18 @@ class DirichletAnalytic final : public BoundaryCondition<Dim> {
       "solution or analytic data."};
 
   DirichletAnalytic() = default;
-  DirichletAnalytic(DirichletAnalytic&&) noexcept = default;
-  DirichletAnalytic& operator=(DirichletAnalytic&&) noexcept = default;
+  DirichletAnalytic(DirichletAnalytic&&) = default;
+  DirichletAnalytic& operator=(DirichletAnalytic&&) = default;
   DirichletAnalytic(const DirichletAnalytic&) = default;
   DirichletAnalytic& operator=(const DirichletAnalytic&) = default;
   ~DirichletAnalytic() override = default;
 
-  explicit DirichletAnalytic(CkMigrateMessage* msg) noexcept;
+  explicit DirichletAnalytic(CkMigrateMessage* msg);
 
   WRAPPED_PUPable_decl_base_template(
       domain::BoundaryConditions::BoundaryCondition, DirichletAnalytic);
 
-  auto get_clone() const noexcept -> std::unique_ptr<
+  auto get_clone() const -> std::unique_ptr<
       domain::BoundaryConditions::BoundaryCondition> override;
 
   static constexpr evolution::BoundaryConditions::Type bc_type =
@@ -94,11 +94,10 @@ class DirichletAnalytic final : public BoundaryCondition<Dim> {
       const tnsr::I<DataVector, Dim, Frame::Inertial>& coords,
       const Scalar<DataVector>& interior_gamma1,
       const Scalar<DataVector>& interior_gamma2, const double time,
-      const AnalyticSolutionOrData& analytic_solution_or_data) const noexcept {
+      const AnalyticSolutionOrData& analytic_solution_or_data) const {
     *gamma1 = interior_gamma1;
     *gamma2 = interior_gamma2;
-    auto boundary_values = [&analytic_solution_or_data, &coords,
-                            &time]() noexcept {
+    auto boundary_values = [&analytic_solution_or_data, &coords, &time]() {
       if constexpr (std::is_base_of_v<MarkAsAnalyticSolution,
                                       AnalyticSolutionOrData>) {
         return analytic_solution_or_data.variables(
@@ -139,7 +138,6 @@ class DirichletAnalytic final : public BoundaryCondition<Dim> {
       gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*> shift,
       gsl::not_null<tnsr::II<DataVector, Dim, Frame::Inertial>*>
           inv_spatial_metric,
-      const tnsr::aa<DataVector, Dim, Frame::Inertial>& spacetime_metric)
-      const noexcept;
+      const tnsr::aa<DataVector, Dim, Frame::Inertial>& spacetime_metric) const;
 };
 }  // namespace GeneralizedHarmonic::BoundaryConditions

@@ -46,71 +46,69 @@ class RungeKutta3 : public TimeStepper::Inherit {
       "A third-order strong stability-preserving Runge-Kutta time-stepper."};
 
   RungeKutta3() = default;
-  RungeKutta3(const RungeKutta3&) noexcept = default;
-  RungeKutta3& operator=(const RungeKutta3&) noexcept = default;
-  RungeKutta3(RungeKutta3&&) noexcept = default;
-  RungeKutta3& operator=(RungeKutta3&&) noexcept = default;
-  ~RungeKutta3() noexcept override = default;
+  RungeKutta3(const RungeKutta3&) = default;
+  RungeKutta3& operator=(const RungeKutta3&) = default;
+  RungeKutta3(RungeKutta3&&) = default;
+  RungeKutta3& operator=(RungeKutta3&&) = default;
+  ~RungeKutta3() override = default;
 
   template <typename Vars, typename DerivVars>
   void update_u(gsl::not_null<Vars*> u,
                 gsl::not_null<History<Vars, DerivVars>*> history,
-                const TimeDelta& time_step) const noexcept;
+                const TimeDelta& time_step) const;
 
   template <typename Vars, typename ErrVars, typename DerivVars>
   bool update_u(gsl::not_null<Vars*> u, gsl::not_null<ErrVars*> u_error,
                 gsl::not_null<History<Vars, DerivVars>*> history,
-                const TimeDelta& time_step) const noexcept;
+                const TimeDelta& time_step) const;
 
   template <typename Vars, typename DerivVars>
   bool dense_update_u(gsl::not_null<Vars*> u,
                       const History<Vars, DerivVars>& history,
-                      double time) const noexcept;
+                      double time) const;
 
-  size_t order() const noexcept override;
+  size_t order() const override;
 
-  size_t error_estimate_order() const noexcept override;
+  size_t error_estimate_order() const override;
 
-  uint64_t number_of_substeps() const noexcept override;
+  uint64_t number_of_substeps() const override;
 
-  uint64_t number_of_substeps_for_error() const noexcept override;
+  uint64_t number_of_substeps_for_error() const override;
 
-  size_t number_of_past_steps() const noexcept override;
+  size_t number_of_past_steps() const override;
 
-  double stable_step() const noexcept override;
+  double stable_step() const override;
 
   TimeStepId next_time_id(const TimeStepId& current_id,
-                          const TimeDelta& time_step) const noexcept override;
+                          const TimeDelta& time_step) const override;
 
-  TimeStepId next_time_id_for_error(
-      const TimeStepId& current_id,
-      const TimeDelta& time_step) const noexcept override;
+  TimeStepId next_time_id_for_error(const TimeStepId& current_id,
+                                    const TimeDelta& time_step) const override;
 
   template <typename Vars, typename DerivVars>
   bool can_change_step_size(
       const TimeStepId& time_id,
-      const TimeSteppers::History<Vars, DerivVars>& /*history*/) const
-      noexcept {
+      const TimeSteppers::History<Vars, DerivVars>& /*history*/) const {
     return time_id.substep() == 0;
   }
 
   WRAPPED_PUPable_decl_template(RungeKutta3);  // NOLINT
 
-  explicit RungeKutta3(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit RungeKutta3(CkMigrateMessage* /*unused*/) {}
 
   // clang-tidy: do not pass by non-const reference
-  void pup(PUP::er& p) noexcept override {  // NOLINT
+  void pup(PUP::er& p) override {  // NOLINT
     TimeStepper::Inherit::pup(p);
   }
 };
 
 inline bool constexpr operator==(const RungeKutta3& /*lhs*/,
-                                 const RungeKutta3& /*rhs*/) noexcept {
+                                 const RungeKutta3& /*rhs*/) {
   return true;
 }
 
 inline bool constexpr operator!=(const RungeKutta3& /*lhs*/,
-                                 const RungeKutta3& /*rhs*/) noexcept {
+                                 const RungeKutta3& /*rhs*/) {
   return false;
 }
 
@@ -118,7 +116,7 @@ template <typename Vars, typename DerivVars>
 void RungeKutta3::update_u(
     const gsl::not_null<Vars*> u,
     const gsl::not_null<History<Vars, DerivVars>*> history,
-    const TimeDelta& time_step) const noexcept {
+    const TimeDelta& time_step) const {
   ASSERT(history->integration_order() == 3,
          "Fixed-order stepper cannot run at order "
          << history->integration_order());
@@ -165,7 +163,7 @@ template <typename Vars, typename ErrVars, typename DerivVars>
 bool RungeKutta3::update_u(
     const gsl::not_null<Vars*> u, const gsl::not_null<ErrVars*> u_error,
     const gsl::not_null<History<Vars, DerivVars>*> history,
-    const TimeDelta& time_step) const noexcept {
+    const TimeDelta& time_step) const {
   ASSERT(history->integration_order() == 3,
          "Fixed-order stepper cannot run at order "
          << history->integration_order());
@@ -186,7 +184,7 @@ bool RungeKutta3::update_u(
 template <typename Vars, typename DerivVars>
 bool RungeKutta3::dense_update_u(gsl::not_null<Vars*> u,
                                  const History<Vars, DerivVars>& history,
-                                 const double time) const noexcept {
+                                 const double time) const {
   if ((history.end() - 1).time_step_id().substep() != 0) {
     return false;
   }

@@ -38,7 +38,7 @@ double dg_package_data(
     const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
         mesh_velocity,
     tmpl::list<ProjectedFieldTagsForCorrection...> /*meta*/,
-    const VolumeArgs&... volume_args) noexcept {
+    const VolumeArgs&... volume_args) {
   std::optional<Scalar<DataVector>> normal_dot_mesh_velocity{};
   if (mesh_velocity.has_value()) {
     normal_dot_mesh_velocity =
@@ -76,7 +76,7 @@ double dg_package_data(
     const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
         mesh_velocity,
     const db::DataBox<DbTagsList>& box, tmpl::list<VolumeTags...> /*meta*/,
-    tmpl::list<ProjectedFieldTagsForCorrection...> /*meta*/) noexcept {
+    tmpl::list<ProjectedFieldTagsForCorrection...> /*meta*/) {
   return dg_package_data<System>(
       packaged_data, boundary_correction, projected_fields,
       unit_normal_covector, mesh_velocity,

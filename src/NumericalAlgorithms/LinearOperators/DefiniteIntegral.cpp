@@ -27,7 +27,7 @@
 // a 0-dimensional mesh arises at the boundary of a 1-dimensional element.
 template <>
 double definite_integral<0>(const DataVector& integrand,
-                            const Mesh<0>& /*mesh*/) noexcept {
+                            const Mesh<0>& /*mesh*/) {
   ASSERT(integrand.size() == 1,
          "A 0-dimensional mesh has one point, but integrand has "
              << integrand.size() << " points");
@@ -35,8 +35,7 @@ double definite_integral<0>(const DataVector& integrand,
 }
 
 template <>
-double definite_integral<1>(const DataVector& integrand,
-                            const Mesh<1>& mesh) noexcept {
+double definite_integral<1>(const DataVector& integrand, const Mesh<1>& mesh) {
   const size_t num_grid_points = mesh.number_of_grid_points();
   ASSERT(integrand.size() == num_grid_points,
          "num_grid_points = " << num_grid_points
@@ -46,8 +45,7 @@ double definite_integral<1>(const DataVector& integrand,
 }
 
 template <>
-double definite_integral<2>(const DataVector& integrand,
-                            const Mesh<2>& mesh) noexcept {
+double definite_integral<2>(const DataVector& integrand, const Mesh<2>& mesh) {
   ASSERT(integrand.size() == mesh.number_of_grid_points(),
          "num_grid_points = " << mesh.number_of_grid_points()
                               << ", integrand size = " << integrand.size());
@@ -77,8 +75,7 @@ double definite_integral<2>(const DataVector& integrand,
 }
 
 template <>
-double definite_integral<3>(const DataVector& integrand,
-                            const Mesh<3>& mesh) noexcept {
+double definite_integral<3>(const DataVector& integrand, const Mesh<3>& mesh) {
   ASSERT(integrand.size() == mesh.number_of_grid_points(),
          "num_grid_points = " << mesh.number_of_grid_points()
                               << ", integrand size = " << integrand.size());

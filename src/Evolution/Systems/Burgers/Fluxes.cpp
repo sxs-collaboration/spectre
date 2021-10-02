@@ -15,7 +15,7 @@
 
 namespace Burgers {
 void Fluxes::apply(const gsl::not_null<tnsr::I<DataVector, 1>*> flux,
-                   const Scalar<DataVector>& u) noexcept {
+                   const Scalar<DataVector>& u) {
   get<0>(*flux) = 0.5 * square(get(u));
 }
 }  // namespace Burgers

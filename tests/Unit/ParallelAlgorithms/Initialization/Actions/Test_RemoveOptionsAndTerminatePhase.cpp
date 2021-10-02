@@ -44,8 +44,7 @@ template <typename Tag>
 struct MultiplyByTwoCompute : MultiplyByTwo<Tag>, db::ComputeTag {
   using return_type = double;
   using base = MultiplyByTwo<Tag>;
-  static void function(const gsl::not_null<double*> result,
-                       const double t) noexcept {
+  static void function(const gsl::not_null<double*> result, const double t) {
     *result = t * 2.0;
   }
   using argument_tags = tmpl::list<Tag>;
@@ -62,7 +61,7 @@ struct Action0 {
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     const double initial_time_value = db::get<InitialTime>(box);
     return std::make_tuple(
         Initialization::merge_into_databox<Action0,
@@ -79,7 +78,7 @@ struct Action0 {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     return {std::move(box)};
   }
 };
@@ -94,7 +93,7 @@ struct Action1 {
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     return std::make_tuple(Initialization::merge_into_databox<
                            Action1, db::AddSimpleTags<>,
                            db::AddComputeTags<MultiplyByTwoCompute<DummyTime>>>(

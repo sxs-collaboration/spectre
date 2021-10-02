@@ -192,14 +192,14 @@ class MagnetizedTovStar : public MarkAsAnalyticData,
   MagnetizedTovStar() = default;
   MagnetizedTovStar(const MagnetizedTovStar& /*rhs*/) = delete;
   MagnetizedTovStar& operator=(const MagnetizedTovStar& /*rhs*/) = delete;
-  MagnetizedTovStar(MagnetizedTovStar&& /*rhs*/) noexcept = default;
-  MagnetizedTovStar& operator=(MagnetizedTovStar&& /*rhs*/) noexcept = default;
+  MagnetizedTovStar(MagnetizedTovStar&& /*rhs*/) = default;
+  MagnetizedTovStar& operator=(MagnetizedTovStar&& /*rhs*/) = default;
   ~MagnetizedTovStar() = default;
 
   MagnetizedTovStar(double central_rest_mass_density,
                     double polytropic_constant, double polytropic_exponent,
                     size_t pressure_exponent, double cutoff_pressure_fraction,
-                    double vector_potential_amplitude) noexcept;
+                    double vector_potential_amplitude);
 
   // Overload the variables function from the base class.
   using tov_star::equation_of_state;
@@ -208,19 +208,18 @@ class MagnetizedTovStar : public MarkAsAnalyticData,
 
   /// Retrieve a collection of variables at `(x)`
   template <typename DataType, typename... Tags>
-  tuples::TaggedTuple<Tags...> variables(
-      const tnsr::I<DataType, 3>& x,
-      tmpl::list<Tags...> /*meta*/) const noexcept {
+  tuples::TaggedTuple<Tags...> variables(const tnsr::I<DataType, 3>& x,
+                                         tmpl::list<Tags...> /*meta*/) const {
     auto radial_vars =
         radial_tov_solution().radial_variables(equation_of_state(), x);
     return {get<Tags>(variables(x, tmpl::list<Tags>{}, radial_vars))...};
   }
 
-  void pup(PUP::er& p) noexcept;  //  NOLINT
+  void pup(PUP::er& p);  //  NOLINT
 
  private:
   friend bool operator==(const MagnetizedTovStar& lhs,
-                         const MagnetizedTovStar& rhs) noexcept;
+                         const MagnetizedTovStar& rhs);
 
  protected:
   template <typename DataType>
@@ -228,7 +227,7 @@ class MagnetizedTovStar : public MarkAsAnalyticData,
   variables(const tnsr::I<DataType, 3>& coords,
             tmpl::list<hydro::Tags::MagneticField<DataType, 3,
                                                   Frame::Inertial>> /*meta*/,
-            const RadialVariables<DataType>& radial_vars) const noexcept;
+            const RadialVariables<DataType>& radial_vars) const;
 
   size_t pressure_exponent_ = std::numeric_limits<size_t>::max();
   double cutoff_pressure_ = std::numeric_limits<double>::signaling_NaN();
@@ -236,6 +235,5 @@ class MagnetizedTovStar : public MarkAsAnalyticData,
       std::numeric_limits<double>::signaling_NaN();
 };
 
-bool operator!=(const MagnetizedTovStar& lhs,
-                const MagnetizedTovStar& rhs) noexcept;
+bool operator!=(const MagnetizedTovStar& lhs, const MagnetizedTovStar& rhs);
 }  // namespace grmhd::AnalyticData

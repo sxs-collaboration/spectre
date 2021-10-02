@@ -38,8 +38,7 @@ void TimeDerivative<Dim>::apply(
     const tnsr::II<DataVector, Dim>& upper_spatial_metric,
     const tnsr::I<DataVector, Dim>& trace_spatial_christoffel,
     const Scalar<DataVector>& trace_extrinsic_curvature,
-    const Scalar<DataVector>& gamma1,
-    const Scalar<DataVector>& gamma2) noexcept {
+    const Scalar<DataVector>& gamma1, const Scalar<DataVector>& gamma2) {
   *result_lapse = lapse;
   *result_shift = shift;
   *result_inverse_spatial_metric = upper_spatial_metric;
@@ -106,7 +105,7 @@ using derivative_frame = Frame::Inertial;
       const Variables<variables_tags<DIM(data)>>& u,                         \
       const Mesh<DIM(data)>& mesh,                                           \
       const InverseJacobian<DataVector, DIM(data), Frame::ElementLogical,    \
-                            derivative_frame>& inverse_jacobian) noexcept;
+                            derivative_frame>& inverse_jacobian);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 

@@ -23,27 +23,27 @@ namespace OrientationMapHelpers_detail {
 template <typename T>
 void orient_each_component(gsl::not_null<gsl::span<T>*> oriented_variables,
                            const gsl::span<const T>& variables, size_t num_pts,
-                           const std::vector<size_t>& oriented_offset) noexcept;
+                           const std::vector<size_t>& oriented_offset);
 
 template <size_t VolumeDim>
 std::vector<size_t> oriented_offset(
     const Index<VolumeDim>& extents,
-    const OrientationMap<VolumeDim>& orientation_of_neighbor) noexcept;
+    const OrientationMap<VolumeDim>& orientation_of_neighbor);
 
 inline std::vector<size_t> oriented_offset_on_slice(
     const Index<0>& /*slice_extents*/, const size_t /*sliced_dim*/,
-    const OrientationMap<1>& /*orientation_of_neighbor*/) noexcept {
+    const OrientationMap<1>& /*orientation_of_neighbor*/) {
   // There is only one point on a slice of a 1D mesh
   return {0};
 }
 
 std::vector<size_t> oriented_offset_on_slice(
     const Index<1>& slice_extents, size_t sliced_dim,
-    const OrientationMap<2>& orientation_of_neighbor) noexcept;
+    const OrientationMap<2>& orientation_of_neighbor);
 
 std::vector<size_t> oriented_offset_on_slice(
     const Index<2>& slice_extents, size_t sliced_dim,
-    const OrientationMap<3>& orientation_of_neighbor) noexcept;
+    const OrientationMap<3>& orientation_of_neighbor);
 
 }  // namespace OrientationMapHelpers_detail
 
@@ -54,7 +54,7 @@ std::vector<size_t> oriented_offset_on_slice(
 template <size_t VolumeDim, typename TagsList>
 Variables<TagsList> orient_variables(
     const Variables<TagsList>& variables, const Index<VolumeDim>& extents,
-    const OrientationMap<VolumeDim>& orientation_of_neighbor) noexcept {
+    const OrientationMap<VolumeDim>& orientation_of_neighbor) {
   // Skip work (aside from a copy) if neighbor is aligned
   if (orientation_of_neighbor.is_aligned()) {
     return variables;
@@ -83,7 +83,7 @@ template <size_t VolumeDim, typename TagsList>
 Variables<TagsList> orient_variables_on_slice(
     const Variables<TagsList>& variables_on_slice,
     const Index<VolumeDim - 1>& slice_extents, const size_t sliced_dim,
-    const OrientationMap<VolumeDim>& orientation_of_neighbor) noexcept {
+    const OrientationMap<VolumeDim>& orientation_of_neighbor) {
   // Skip work (aside from a copy) if neighbor slice is aligned
   if (orientation_of_neighbor.is_aligned()) {
     return variables_on_slice;
@@ -126,11 +126,11 @@ Variables<TagsList> orient_variables_on_slice(
 template <size_t VolumeDim>
 std::vector<double> orient_variables(
     const std::vector<double>& variables, const Index<VolumeDim>& extents,
-    const OrientationMap<VolumeDim>& orientation_of_neighbor) noexcept;
+    const OrientationMap<VolumeDim>& orientation_of_neighbor);
 
 template <size_t VolumeDim>
 std::vector<double> orient_variables_on_slice(
     const std::vector<double>& variables_on_slice,
     const Index<VolumeDim - 1>& slice_extents, size_t sliced_dim,
-    const OrientationMap<VolumeDim>& orientation_of_neighbor) noexcept;
+    const OrientationMap<VolumeDim>& orientation_of_neighbor);
 /// @}

@@ -61,14 +61,14 @@ template <size_t Dim, typename Frame>
 std::array<DataVector, 4> characteristic_speeds(
     const Scalar<DataVector>& gamma_1, const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, Dim, Frame>& shift,
-    const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form) noexcept;
+    const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form);
 
 template <size_t Dim, typename Frame>
 void characteristic_speeds(
     gsl::not_null<std::array<DataVector, 4>*> char_speeds,
     const Scalar<DataVector>& gamma_1, const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, Dim, Frame>& shift,
-    const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form) noexcept;
+    const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form);
 
 template <size_t Dim, typename Frame>
 struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds<Dim, Frame>,
@@ -86,7 +86,7 @@ struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds<Dim, Frame>,
       const gsl::not_null<return_type*> result,
       const Scalar<DataVector>& gamma_1, const Scalar<DataVector>& lapse,
       const tnsr::I<DataVector, Dim, Frame>& shift,
-      const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form) noexcept {
+      const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form) {
     characteristic_speeds(result, gamma_1, lapse, shift, unit_normal_one_form);
   };
 };
@@ -145,7 +145,7 @@ typename Tags::CharacteristicFields<Dim, Frame>::type characteristic_fields(
     const tnsr::aa<DataVector, Dim, Frame>& spacetime_metric,
     const tnsr::aa<DataVector, Dim, Frame>& pi,
     const tnsr::iaa<DataVector, Dim, Frame>& phi,
-    const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form) noexcept;
+    const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form);
 
 template <size_t Dim, typename Frame>
 void characteristic_fields(
@@ -156,7 +156,7 @@ void characteristic_fields(
     const tnsr::aa<DataVector, Dim, Frame>& spacetime_metric,
     const tnsr::aa<DataVector, Dim, Frame>& pi,
     const tnsr::iaa<DataVector, Dim, Frame>& phi,
-    const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form) noexcept;
+    const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form);
 
 template <size_t Dim, typename Frame>
 struct CharacteristicFieldsCompute : Tags::CharacteristicFields<Dim, Frame>,
@@ -176,7 +176,7 @@ struct CharacteristicFieldsCompute : Tags::CharacteristicFields<Dim, Frame>,
       const tnsr::aa<DataVector, Dim, Frame>&,
       const tnsr::aa<DataVector, Dim, Frame>&,
       const tnsr::iaa<DataVector, Dim, Frame>&,
-      const tnsr::i<DataVector, Dim, Frame>&) noexcept>(&characteristic_fields);
+      const tnsr::i<DataVector, Dim, Frame>&)>(&characteristic_fields);
 };
 /// @}
 
@@ -193,7 +193,7 @@ evolved_fields_from_characteristic_fields(
     const tnsr::iaa<DataVector, Dim, Frame>& u_zero,
     const tnsr::aa<DataVector, Dim, Frame>& u_plus,
     const tnsr::aa<DataVector, Dim, Frame>& u_minus,
-    const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form) noexcept;
+    const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form);
 
 template <size_t Dim, typename Frame>
 void evolved_fields_from_characteristic_fields(
@@ -205,7 +205,7 @@ void evolved_fields_from_characteristic_fields(
     const tnsr::iaa<DataVector, Dim, Frame>& u_zero,
     const tnsr::aa<DataVector, Dim, Frame>& u_plus,
     const tnsr::aa<DataVector, Dim, Frame>& u_minus,
-    const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form) noexcept;
+    const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form);
 
 template <size_t Dim, typename Frame>
 struct EvolvedFieldsFromCharacteristicFieldsCompute
@@ -225,7 +225,7 @@ struct EvolvedFieldsFromCharacteristicFieldsCompute
       const tnsr::iaa<DataVector, Dim, Frame>& u_zero,
       const tnsr::aa<DataVector, Dim, Frame>& u_plus,
       const tnsr::aa<DataVector, Dim, Frame>& u_minus,
-      const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form) noexcept>(
+      const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form)>(
       &evolved_fields_from_characteristic_fields);
 };
 /// @}
@@ -246,11 +246,11 @@ struct ComputeLargestCharacteristicSpeed : db::ComputeTag,
       gr::Tags::SpatialMetric<Dim, Frame, DataVector>>;
   using return_type = double;
   using base = LargestCharacteristicSpeed;
-  static void function(
-      const gsl::not_null<double*> speed, const Scalar<DataVector>& gamma_1,
-      const Scalar<DataVector>& lapse,
-      const tnsr::I<DataVector, Dim, Frame>& shift,
-      const tnsr::ii<DataVector, Dim, Frame>& spatial_metric) noexcept;
+  static void function(const gsl::not_null<double*> speed,
+                       const Scalar<DataVector>& gamma_1,
+                       const Scalar<DataVector>& lapse,
+                       const tnsr::I<DataVector, Dim, Frame>& shift,
+                       const tnsr::ii<DataVector, Dim, Frame>& spatial_metric);
 };
 }  // namespace Tags
 }  // namespace GeneralizedHarmonic

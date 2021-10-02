@@ -28,30 +28,29 @@ namespace intrp {
  */
 class CubicSpline {
  public:
-  CubicSpline(std::vector<double> x_values,
-              std::vector<double> y_values) noexcept;
+  CubicSpline(std::vector<double> x_values, std::vector<double> y_values);
 
-  CubicSpline() noexcept = default;
+  CubicSpline() = default;
   CubicSpline(const CubicSpline& /*rhs*/) = delete;
   CubicSpline& operator=(const CubicSpline& /*rhs*/) = delete;
-  CubicSpline(CubicSpline&& /*rhs*/) noexcept = default;
-  CubicSpline& operator=(CubicSpline&& rhs) noexcept = default;
-  ~CubicSpline() noexcept = default;
+  CubicSpline(CubicSpline&& /*rhs*/) = default;
+  CubicSpline& operator=(CubicSpline&& rhs) = default;
+  ~CubicSpline() = default;
 
-  double operator()(double x_to_interp_to) const noexcept;
+  double operator()(double x_to_interp_to) const;
 
   // clang-tidy: no runtime references
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
 
  private:
   struct gsl_interp_accel_deleter {
-    void operator()(gsl_interp_accel* acc) const noexcept;
+    void operator()(gsl_interp_accel* acc) const;
   };
   struct gsl_spline_deleter {
-    void operator()(gsl_spline* spline) const noexcept;
+    void operator()(gsl_spline* spline) const;
   };
 
-  void initialize_interpolant() noexcept;
+  void initialize_interpolant();
 
   std::vector<double> x_values_;
   std::vector<double> y_values_;

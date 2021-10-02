@@ -22,7 +22,7 @@ struct create_from_yaml;
 /// the data.
 enum FloatingPointType { Float, Double };
 
-std::ostream& operator<<(std::ostream& os, const FloatingPointType& t) noexcept;
+std::ostream& operator<<(std::ostream& os, const FloatingPointType& t);
 
 template <>
 struct Options::create_from_yaml<FloatingPointType> {

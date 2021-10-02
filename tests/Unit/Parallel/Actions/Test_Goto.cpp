@@ -28,7 +28,7 @@ struct HasConverged : db::SimpleTag {
 struct HasConvergedCompute : HasConverged, db::ComputeTag {
   using argument_tags = tmpl::list<Counter>;
   static void function(const gsl::not_null<bool*> result,
-                       const size_t counter) noexcept {
+                       const size_t counter) {
     *result = (counter >= 2);
   }
   using return_type = bool;
@@ -44,11 +44,10 @@ struct Increment {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     db::mutate<Counter>(
-        make_not_null(&box), [](const gsl::not_null<size_t*> counter) noexcept {
-          (*counter)++;
-        });
+        make_not_null(&box),
+        [](const gsl::not_null<size_t*> counter) { (*counter)++; });
     return {std::move(box)};
   }
 };

@@ -29,11 +29,11 @@ class Comparator {
     GreaterThanOrEqualTo
   };
 
-  Comparator() noexcept = default;
-  Comparator(Comparison comparison) noexcept;
+  Comparator() = default;
+  Comparator(Comparison comparison);
 
   template <typename T1, typename T2>
-  bool operator()(const T1& t1, const T2& t2) const noexcept {
+  bool operator()(const T1& t1, const T2& t2) const {
     switch (comparison_) {
       case Comparison::EqualTo:
         return t1 == t2;
@@ -53,7 +53,7 @@ class Comparator {
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept;
+  void pup(PUP::er& p);
 
  private:
   Comparison comparison_;

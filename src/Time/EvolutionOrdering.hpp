@@ -19,7 +19,7 @@
 template <typename T, template <typename> typename Comparator>
 struct evolution_comparator {
   bool time_runs_forward = true;
-  constexpr bool operator()(const T& x, const T& y) const noexcept {
+  constexpr bool operator()(const T& x, const T& y) const {
     return time_runs_forward ? Comparator<T>{}(x, y) : Comparator<T>{}(y, x);
   }
 
@@ -27,14 +27,14 @@ struct evolution_comparator {
   /// std::numeric_limits::infinity()) value that compares greater
   /// than any other value in the evolution ordering.
   template <typename U = T>
-  constexpr U infinity() const noexcept {
+  constexpr U infinity() const {
     static_assert(std::numeric_limits<U>::has_infinity);
     return time_runs_forward ? std::numeric_limits<U>::infinity()
                              : -std::numeric_limits<U>::infinity();
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept { p | time_runs_forward; }
+  void pup(PUP::er& p) { p | time_runs_forward; }
 };
 
 template <template <typename> typename Comparator>
@@ -42,7 +42,7 @@ struct evolution_comparator<void, Comparator> {
   bool time_runs_forward = true;
 
   template <typename T, typename U>
-  constexpr decltype(auto) operator()(T&& t, U&& u) const noexcept {
+  constexpr decltype(auto) operator()(T&& t, U&& u) const {
     static_assert(std::is_same_v<decltype(Comparator<void>{}(
                                      std::forward<T>(t), std::forward<U>(u))),
                                  decltype(Comparator<void>{}(
@@ -56,14 +56,14 @@ struct evolution_comparator<void, Comparator> {
 
   /// \copydoc evolution_comparator::infinity
   template <typename U>
-  constexpr U infinity() const noexcept {
+  constexpr U infinity() const {
     static_assert(std::numeric_limits<U>::has_infinity);
     return time_runs_forward ? std::numeric_limits<U>::infinity()
                              : -std::numeric_limits<U>::infinity();
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept { p | time_runs_forward; }
+  void pup(PUP::er& p) { p | time_runs_forward; }
 };
 /// @}
 

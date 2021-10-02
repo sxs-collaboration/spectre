@@ -21,7 +21,7 @@ ShuOsherTube::ShuOsherTube(const double jump_position,
                            const double mass_density_l, const double velocity_l,
                            const double pressure_l, const double velocity_r,
                            const double pressure_r, const double epsilon,
-                           const double lambda) noexcept
+                           const double lambda)
     : mass_density_l_(mass_density_l),
       velocity_l_(velocity_l),
       pressure_l_(pressure_l),
@@ -43,7 +43,7 @@ ShuOsherTube::ShuOsherTube(const double jump_position,
          "The sinusoid amplitude must be less than 1 but is " << epsilon_);
 }
 
-void ShuOsherTube::pup(PUP::er& p) noexcept {
+void ShuOsherTube::pup(PUP::er& p) {
   p | mass_density_l_;
   p | velocity_l_;
   p | pressure_l_;
@@ -56,7 +56,7 @@ void ShuOsherTube::pup(PUP::er& p) noexcept {
   p | equation_of_state_;
 }
 
-bool operator==(const ShuOsherTube& lhs, const ShuOsherTube& rhs) noexcept {
+bool operator==(const ShuOsherTube& lhs, const ShuOsherTube& rhs) {
   // No comparison for equation_of_state_. Comparing adiabatic_index_ should
   // suffice.
   return lhs.mass_density_l_ == rhs.mass_density_l_ and
@@ -69,14 +69,14 @@ bool operator==(const ShuOsherTube& lhs, const ShuOsherTube& rhs) noexcept {
          lhs.adiabatic_index_ == rhs.adiabatic_index_;
 }
 
-bool operator!=(const ShuOsherTube& lhs, const ShuOsherTube& rhs) noexcept {
+bool operator!=(const ShuOsherTube& lhs, const ShuOsherTube& rhs) {
   return not(lhs == rhs);
 }
 
 template <typename DataType>
 tuples::TaggedTuple<Tags::MassDensity<DataType>> ShuOsherTube::variables(
     const tnsr::I<DataType, 1, Frame::Inertial>& x,
-    tmpl::list<Tags::MassDensity<DataType>> /*meta*/) const noexcept {
+    tmpl::list<Tags::MassDensity<DataType>> /*meta*/) const {
   auto mass_density = make_with_value<Scalar<DataType>>(x, 0.0);
   for (size_t s = 0; s < get_size(get<0>(x)); ++s) {
     const double x_s = get_element(get<0>(x), s);
@@ -91,8 +91,7 @@ template <typename DataType>
 tuples::TaggedTuple<Tags::Velocity<DataType, 1, Frame::Inertial>>
 ShuOsherTube::variables(
     const tnsr::I<DataType, 1, Frame::Inertial>& x,
-    tmpl::list<Tags::Velocity<DataType, 1, Frame::Inertial>> /*meta*/)
-    const noexcept {
+    tmpl::list<Tags::Velocity<DataType, 1, Frame::Inertial>> /*meta*/) const {
   auto velocity =
       make_with_value<tnsr::I<DataType, 1, Frame::Inertial>>(x, 0.0);
   for (size_t s = 0; s < get_size(get<0>(x)); ++s) {
@@ -106,7 +105,7 @@ ShuOsherTube::variables(
 template <typename DataType>
 tuples::TaggedTuple<Tags::Pressure<DataType>> ShuOsherTube::variables(
     const tnsr::I<DataType, 1, Frame::Inertial>& x,
-    tmpl::list<Tags::Pressure<DataType>> /*meta*/) const noexcept {
+    tmpl::list<Tags::Pressure<DataType>> /*meta*/) const {
   auto pressure = make_with_value<Scalar<DataType>>(x, 0.0);
   for (size_t s = 0; s < get_size(get<0>(x)); ++s) {
     const double x_s = get_element(get<0>(x), s);
@@ -120,8 +119,7 @@ template <typename DataType>
 tuples::TaggedTuple<Tags::SpecificInternalEnergy<DataType>>
 ShuOsherTube::variables(
     const tnsr::I<DataType, 1, Frame::Inertial>& x,
-    tmpl::list<Tags::SpecificInternalEnergy<DataType>> /*meta*/)
-    const noexcept {
+    tmpl::list<Tags::SpecificInternalEnergy<DataType>> /*meta*/) const {
   return equation_of_state_.specific_internal_energy_from_density_and_pressure(
       get<Tags::MassDensity<DataType>>(
           variables(x, tmpl::list<Tags::MassDensity<DataType>>{})),
@@ -137,7 +135,7 @@ ShuOsherTube::variables(
   template tuples::TaggedTuple<TAG(data) < DTYPE(data)> >                    \
       ShuOsherTube::variables(                                               \
           const tnsr::I<DTYPE(data), DIM(data), Frame::Inertial>& x_shifted, \
-          tmpl::list<TAG(data) < DTYPE(data)> >) const noexcept;
+          tmpl::list<TAG(data) < DTYPE(data)> >) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_SCALARS, (1), (double, DataVector),
                         (Tags::MassDensity, Tags::Pressure,
@@ -149,7 +147,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_SCALARS, (1), (double, DataVector),
       ShuOsherTube::variables(                                               \
           const tnsr::I<DTYPE(data), DIM(data), Frame::Inertial>& x_shifted, \
           tmpl::list<TAG(data) < DTYPE(data), DIM(data), Frame::Inertial> >) \
-          const noexcept;
+          const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_VELOCITY, (1), (double, DataVector),
                         (Tags::Velocity))

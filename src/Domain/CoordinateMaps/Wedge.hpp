@@ -301,7 +301,7 @@ class Wedge {
         double sphericity_outer, OrientationMap<Dim> orientation_of_wedge,
         bool with_equiangular_map,
         WedgeHalves halves_to_use = WedgeHalves::Both,
-        Distribution radial_distribution = Distribution::Linear) noexcept;
+        Distribution radial_distribution = Distribution::Linear);
 
   Wedge() = default;
   ~Wedge() = default;
@@ -312,7 +312,7 @@ class Wedge {
 
   template <typename T>
   std::array<tt::remove_cvref_wrap_t<T>, Dim> operator()(
-      const std::array<T, Dim>& source_coords) const noexcept;
+      const std::array<T, Dim>& source_coords) const;
 
   /// For a \f$+z\f$-oriented `Wedge`, returns invalid if \f$z<=0\f$
   /// or if \f$(x,y,z)\f$ is on or outside the cone defined
@@ -327,20 +327,20 @@ class Wedge {
   /// what should happen if the inverse were to succeed for some points in a
   /// DataVector but fail for other points.
   std::optional<std::array<double, Dim>> inverse(
-      const std::array<double, Dim>& target_coords) const noexcept;
+      const std::array<double, Dim>& target_coords) const;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame> jacobian(
-      const std::array<T, Dim>& source_coords) const noexcept;
+      const std::array<T, Dim>& source_coords) const;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame> inv_jacobian(
-      const std::array<T, Dim>& source_coords) const noexcept;
+      const std::array<T, Dim>& source_coords) const;
 
   // clang-tidy: google runtime references
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
 
-  static constexpr bool is_identity() noexcept { return false; }
+  static constexpr bool is_identity() { return false; }
 
  private:
   // maps between 2D and 3D choices for coordinate axis orientations
@@ -353,13 +353,13 @@ class Wedge {
 
   // factors out calculation of z needed for mapping and jacobian
   template <typename T>
-  tt::remove_cvref_wrap_t<T> default_physical_z(
-      const T& zeta, const T& one_over_rho) const noexcept;
+  tt::remove_cvref_wrap_t<T> default_physical_z(const T& zeta,
+                                                const T& one_over_rho) const;
 
   template <size_t LocalDim>
   // NOLINTNEXTLINE(readability-redundant-declaration)
   friend bool operator==(const Wedge<LocalDim>& lhs,
-                         const Wedge<LocalDim>& rhs) noexcept;
+                         const Wedge<LocalDim>& rhs);
 
   double radius_inner_{std::numeric_limits<double>::signaling_NaN()};
   double radius_outer_{std::numeric_limits<double>::signaling_NaN()};
@@ -376,5 +376,5 @@ class Wedge {
 };
 
 template <size_t Dim>
-bool operator!=(const Wedge<Dim>& lhs, const Wedge<Dim>& rhs) noexcept;
+bool operator!=(const Wedge<Dim>& lhs, const Wedge<Dim>& rhs);
 }  // namespace domain::CoordinateMaps

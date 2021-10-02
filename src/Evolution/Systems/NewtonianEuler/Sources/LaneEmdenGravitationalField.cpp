@@ -24,7 +24,7 @@ void LaneEmdenGravitationalField::apply(
     const Scalar<DataVector>& mass_density_cons,
     const tnsr::I<DataVector, 3>& momentum_density,
     const NewtonianEuler::Solutions::LaneEmdenStar& star,
-    const tnsr::I<DataVector, 3>& x) noexcept {
+    const tnsr::I<DataVector, 3>& x) {
   const auto gravitational_field = star.gravitational_field(x);
   for (size_t i = 0; i < 3; ++i) {
     source_momentum_density->get(i) =

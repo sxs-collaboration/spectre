@@ -21,7 +21,7 @@ void time_deriv_of_spatial_metric(
     const Scalar<DataType>& lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
-    const tnsr::aa<DataType, SpatialDim, Frame>& pi) noexcept {
+    const tnsr::aa<DataType, SpatialDim, Frame>& pi) {
   if (UNLIKELY(get_size(get<0, 0>(*dt_spatial_metric)) !=
                get_size(get(lapse)))) {
     *dt_spatial_metric =
@@ -42,7 +42,7 @@ tnsr::ii<DataType, SpatialDim, Frame> time_deriv_of_spatial_metric(
     const Scalar<DataType>& lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
-    const tnsr::aa<DataType, SpatialDim, Frame>& pi) noexcept {
+    const tnsr::aa<DataType, SpatialDim, Frame>& pi) {
   tnsr::ii<DataType, SpatialDim, Frame> dt_spatial_metric{};
   GeneralizedHarmonic::time_deriv_of_spatial_metric<SpatialDim, Frame,
                                                     DataType>(
@@ -62,13 +62,13 @@ tnsr::ii<DataType, SpatialDim, Frame> time_deriv_of_spatial_metric(
       const Scalar<DTYPE(data)>& lapse,                                   \
       const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,          \
       const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,          \
-      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi) noexcept;  \
+      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi);           \
   template tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>                  \
   GeneralizedHarmonic::time_deriv_of_spatial_metric(                      \
       const Scalar<DTYPE(data)>& lapse,                                   \
       const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,          \
       const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,          \
-      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi) noexcept;
+      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
                         (Frame::Grid, Frame::Inertial))

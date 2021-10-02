@@ -63,10 +63,9 @@ class Main : public CBase_Main<Metavariables> {
           Metavariables, tmpl::list<>>;
   /// \cond HIDDEN_SYMBOLS
   /// The constructor used to register the class
-  explicit Main(
-      const Parallel::charmxx::
-          MainChareRegistrationConstructor& /*used_for_reg*/) noexcept {}
-  ~Main() noexcept override {
+  explicit Main(const Parallel::charmxx::
+                    MainChareRegistrationConstructor& /*used_for_reg*/) {}
+  ~Main() override {
     (void)Parallel::charmxx::RegisterChare<
         Main<Metavariables>, CkIndex_Main<Metavariables>>::registrar;
   }
@@ -76,30 +75,30 @@ class Main : public CBase_Main<Metavariables> {
   Main& operator=(Main&&) = default;
   /// \endcond
 
-  explicit Main(CkArgMsg* msg) noexcept;
-  explicit Main(CkMigrateMessage* msg) noexcept;
+  explicit Main(CkArgMsg* msg);
+  explicit Main(CkMigrateMessage* msg);
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept override;
+  void pup(PUP::er& p) override;
 
   /// Allocate the initial elements of array components, and then execute the
   /// initialization phase on each component
-  void allocate_array_components_and_execute_initialization_phase() noexcept;
+  void allocate_array_components_and_execute_initialization_phase();
 
   /// Determine the next phase of the simulation and execute it.
-  void execute_next_phase() noexcept;
+  void execute_next_phase();
 
   /// Place the Charm++ call that starts load balancing
   ///
   /// \details This call is wrapped within an entry method so that it may be
   /// used as the callback after a quiescence detection.
-  void start_load_balance() noexcept;
+  void start_load_balance();
 
   /// Place the Charm++ call that starts writing a checkpoint
   ///
   /// \details This call is wrapped within an entry method so that it may be
   /// used as the callback after a quiescence detection.
-  void start_write_checkpoint() noexcept;
+  void start_write_checkpoint();
 
   /// Reduction target for data used in phase change decisions.
   ///
@@ -109,21 +108,21 @@ class Main : public CBase_Main<Metavariables> {
   void phase_change_reduction(
       ReductionData<ReductionDatum<tuples::TaggedTuple<Tags...>, InvokeCombine,
                                    funcl::Identity, std::index_sequence<>>>
-          reduction_data) noexcept;
+          reduction_data);
 
  private:
   // Return the dir name for the next Charm++ checkpoint as well as the pieces
   // from which the name is built up: the basename and the padding. This is a
   // "detail" function so that these pieces can be defined in one place only.
   std::tuple<std::string, std::string, size_t> checkpoint_dir_basename_pad()
-      const noexcept;
+      const;
 
   // Return the dir name for the next Charm++ checkpoint; check and error if
   // this name already exists and writing the checkpoint would be unsafe.
-  std::string checkpoint_dir() const noexcept;
+  std::string checkpoint_dir() const;
 
   // Check if future checkpoint dirs are available; error if any already exist.
-  void check_future_checkpoint_dirs_available() const noexcept;
+  void check_future_checkpoint_dirs_available() const;
 
   template <typename ParallelComponent>
   using parallel_component_options =
@@ -171,41 +170,40 @@ namespace detail {
 template <typename Metavariables>
 class AtSyncIndicator : public CBase_AtSyncIndicator<Metavariables> {
  public:
-  AtSyncIndicator(CProxy_Main<Metavariables> main_proxy) noexcept;
+  AtSyncIndicator(CProxy_Main<Metavariables> main_proxy);
   AtSyncIndicator(const AtSyncIndicator&) = default;
   AtSyncIndicator& operator=(const AtSyncIndicator&) = default;
   AtSyncIndicator(AtSyncIndicator&&) = default;
   AtSyncIndicator& operator=(AtSyncIndicator&&) = default;
-  ~AtSyncIndicator() noexcept override {
+  ~AtSyncIndicator() override {
     (void)Parallel::charmxx::RegisterChare<
         AtSyncIndicator<Metavariables>,
         CkIndex_AtSyncIndicator<Metavariables>>::registrar;
   }
 
-  void IndicateAtSync() noexcept;
+  void IndicateAtSync();
 
   void ResumeFromSync() override;
 
-  explicit AtSyncIndicator(CkMigrateMessage* msg) noexcept
+  explicit AtSyncIndicator(CkMigrateMessage* msg)
       : CBase_AtSyncIndicator<Metavariables>(msg) {}
 
-  void pup(PUP::er& p) noexcept override {
-    p | main_proxy_;
-  }
+  void pup(PUP::er& p) override { p | main_proxy_; }
+
  private:
   CProxy_Main<Metavariables> main_proxy_;
 };
 
 template <typename Metavariables>
 AtSyncIndicator<Metavariables>::AtSyncIndicator(
-    CProxy_Main<Metavariables> main_proxy) noexcept
+    CProxy_Main<Metavariables> main_proxy)
     : main_proxy_{main_proxy} {
   this->usesAtSync = true;
   this->setMigratable(false);
 }
 
 template <typename Metavariables>
-void AtSyncIndicator<Metavariables>::IndicateAtSync() noexcept {
+void AtSyncIndicator<Metavariables>::IndicateAtSync() {
   this->AtSync();
 }
 
@@ -218,7 +216,7 @@ void AtSyncIndicator<Metavariables>::ResumeFromSync() {
 // ================================================================
 
 template <typename Metavariables>
-Main<Metavariables>::Main(CkArgMsg* msg) noexcept {
+Main<Metavariables>::Main(CkArgMsg* msg) {
   Informer::print_startup_info(msg);
 
   /// \todo detail::register_events_to_trace();
@@ -376,8 +374,8 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept {
       sys::exit();
     }
 
-    options_ = options.template apply<option_list, Metavariables>(
-        [](auto... args) noexcept {
+    options_ =
+        options.template apply<option_list, Metavariables>([](auto... args) {
           return tuples::tagged_tuple_from_typelist<option_list>(
               std::move(args)...);
         });
@@ -420,7 +418,7 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept {
   // Print info on DataBox variants
 #ifdef SPECTRE_DEBUG
   Parallel::printf("\nParallel components:\n");
-  tmpl::for_each<component_list>([](auto parallel_component_v) noexcept {
+  tmpl::for_each<component_list>([](auto parallel_component_v) {
     using parallel_component = tmpl::type_from<decltype(parallel_component_v)>;
     using chare_type = typename parallel_component::chare_type;
     using charm_type = Parallel::charm_types_with_parameters<
@@ -432,7 +430,7 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept {
                      pretty_type::short_name<parallel_component>(),
                      pretty_type::short_name<chare_type>(),
                      tmpl::size<databox_types>::value);
-    tmpl::for_each<databox_types>([](auto databox_type_v) noexcept {
+    tmpl::for_each<databox_types>([](auto databox_type_v) {
       using databox_type = tmpl::type_from<decltype(databox_type_v)>;
       Parallel::printf("%u",
                        tmpl::size<typename databox_type::tags_list>::value);
@@ -459,7 +457,7 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept {
 
   tmpl::for_each<group_component_list>([this, &the_parallel_components,
                                         &global_cache_dependency](
-                                           auto parallel_component_v) noexcept {
+                                           auto parallel_component_v) {
     using parallel_component = tmpl::type_from<decltype(parallel_component_v)>;
     using ParallelComponentProxy =
         Parallel::proxy_from_parallel_component<parallel_component>;
@@ -477,7 +475,7 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept {
                    Parallel::is_chare_proxy<tmpl::bind<
                        Parallel::proxy_from_parallel_component, tmpl::_1>>>;
   tmpl::for_each<singleton_component_list>(
-      [this, &the_parallel_components](auto parallel_component_v) noexcept {
+      [this, &the_parallel_components](auto parallel_component_v) {
         using parallel_component =
             tmpl::type_from<decltype(parallel_component_v)>;
         using ParallelComponentProxy =
@@ -500,7 +498,7 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept {
                      Parallel::proxy_from_parallel_component, tmpl::_1>>,
                  tmpl::not_<Parallel::is_bound_array<tmpl::_1>>>>;
   tmpl::for_each<array_component_list>([&the_parallel_components](
-      auto parallel_component) noexcept {
+                                           auto parallel_component) {
     using ParallelComponentProxy = Parallel::proxy_from_parallel_component<
         tmpl::type_from<decltype(parallel_component)>>;
     tuples::get<tmpl::type_<ParallelComponentProxy>>(the_parallel_components) =
@@ -514,7 +512,7 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept {
                      Parallel::proxy_from_parallel_component, tmpl::_1>>,
                  Parallel::is_bound_array<tmpl::_1>>>;
   tmpl::for_each<bound_array_component_list>([&the_parallel_components](
-      auto parallel_component) noexcept {
+                                                 auto parallel_component) {
     using ParallelComponentProxy = Parallel::proxy_from_parallel_component<
         tmpl::type_from<decltype(parallel_component)>>;
     CkArrayOptions opts;
@@ -545,11 +543,11 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept {
 }
 
 template <typename Metavariables>
-Main<Metavariables>::Main(CkMigrateMessage* msg) noexcept
+Main<Metavariables>::Main(CkMigrateMessage* msg)
     : CBase_Main<Metavariables>(msg) {}
 
 template <typename Metavariables>
-void Main<Metavariables>::pup(PUP::er& p) noexcept {  // NOLINT
+void Main<Metavariables>::pup(PUP::er& p) {  // NOLINT
   p | current_phase_;
   p | mutable_global_cache_proxy_;
   p | global_cache_proxy_;
@@ -599,15 +597,14 @@ void Main<Metavariables>::pup(PUP::er& p) noexcept {  // NOLINT
 
 template <typename Metavariables>
 void Main<Metavariables>::
-    allocate_array_components_and_execute_initialization_phase() noexcept {
+    allocate_array_components_and_execute_initialization_phase() {
   ASSERT(current_phase_ == Metavariables::Phase::Initialization,
          "Must be in the Initialization phase.");
   using array_component_list =
       tmpl::filter<component_list,
                    Parallel::is_array_proxy<tmpl::bind<
                        Parallel::proxy_from_parallel_component, tmpl::_1>>>;
-  tmpl::for_each<array_component_list>([this](
-                                           auto parallel_component_v) noexcept {
+  tmpl::for_each<array_component_list>([this](auto parallel_component_v) {
     using parallel_component = tmpl::type_from<decltype(parallel_component_v)>;
     parallel_component::allocate_array(
         global_cache_proxy_,
@@ -618,7 +615,7 @@ void Main<Metavariables>::
   // Free any resources from the initial option parsing.
   options_ = decltype(options_){};
 
-  tmpl::for_each<component_list>([this](auto parallel_component_v) noexcept {
+  tmpl::for_each<component_list>([this](auto parallel_component_v) {
     using parallel_component = tmpl::type_from<decltype(parallel_component_v)>;
     Parallel::get_parallel_component<parallel_component>(
         *(global_cache_proxy_.ckLocalBranch()))
@@ -629,7 +626,7 @@ void Main<Metavariables>::
 }
 
 template <typename Metavariables>
-void Main<Metavariables>::execute_next_phase() noexcept {
+void Main<Metavariables>::execute_next_phase() {
   current_phase_ = Metavariables::determine_next_phase(
       make_not_null(&phase_change_decision_data_), current_phase_,
       global_cache_proxy_);
@@ -637,7 +634,7 @@ void Main<Metavariables>::execute_next_phase() noexcept {
     Informer::print_exit_info();
     sys::exit();
   }
-  tmpl::for_each<component_list>([this](auto parallel_component) noexcept {
+  tmpl::for_each<component_list>([this](auto parallel_component) {
     tmpl::type_from<decltype(parallel_component)>::execute_next_phase(
         current_phase_, global_cache_proxy_);
   });
@@ -678,14 +675,14 @@ void Main<Metavariables>::execute_next_phase() noexcept {
 }
 
 template <typename Metavariables>
-void Main<Metavariables>::start_load_balance() noexcept {
+void Main<Metavariables>::start_load_balance() {
   at_sync_indicator_proxy_.IndicateAtSync();
   // No need for a callback to return to execute_next_phase: this is done by
   // ResumeFromSync instead.
 }
 
 template <typename Metavariables>
-void Main<Metavariables>::start_write_checkpoint() noexcept {
+void Main<Metavariables>::start_write_checkpoint() {
   const std::string dir = checkpoint_dir();
   checkpoint_dir_counter_++;
   CkStartCheckpoint(
@@ -698,7 +695,7 @@ template <typename InvokeCombine, typename... Tags>
 void Main<Metavariables>::phase_change_reduction(
     ReductionData<ReductionDatum<tuples::TaggedTuple<Tags...>, InvokeCombine,
                                  funcl::Identity, std::index_sequence<>>>
-        reduction_data) noexcept {
+        reduction_data) {
   using tagged_tuple_type = std::decay_t<
       std::tuple_element_t<0, std::decay_t<decltype(reduction_data.data())>>>;
   (void)Parallel::charmxx::RegisterPhaseChangeReduction<
@@ -728,7 +725,7 @@ template <typename SenderComponent, typename ArrayIndex, typename Metavariables,
 void contribute_to_phase_change_reduction(
     tuples::TaggedTuple<Ts...> data_for_reduction,
     Parallel::GlobalCache<Metavariables>& cache,
-    const ArrayIndex& array_index) noexcept {
+    const ArrayIndex& array_index) {
   if constexpr (detail::has_phase_change_tags_and_combines_list_v<
                     Metavariables>) {
     using reduction_data_type = PhaseControl::reduction_data<
@@ -759,7 +756,7 @@ void contribute_to_phase_change_reduction(
 template <typename SenderComponent, typename Metavariables, class... Ts>
 void contribute_to_phase_change_reduction(
     tuples::TaggedTuple<Ts...> data_for_reduction,
-    Parallel::GlobalCache<Metavariables>& cache) noexcept {
+    Parallel::GlobalCache<Metavariables>& cache) {
   if constexpr (detail::has_phase_change_tags_and_combines_list_v<
                     Metavariables>) {
     using reduction_data_type = PhaseControl::reduction_data<
@@ -800,7 +797,7 @@ void contribute_to_phase_change_reduction(
 
 template <typename Metavariables>
 std::tuple<std::string, std::string, size_t>
-Main<Metavariables>::checkpoint_dir_basename_pad() const noexcept {
+Main<Metavariables>::checkpoint_dir_basename_pad() const {
   const std::string basename = "SpectreCheckpoint";
   constexpr size_t pad = 6;
 
@@ -812,7 +809,7 @@ Main<Metavariables>::checkpoint_dir_basename_pad() const noexcept {
 }
 
 template <typename Metavariables>
-std::string Main<Metavariables>::checkpoint_dir() const noexcept {
+std::string Main<Metavariables>::checkpoint_dir() const {
   const auto [checkpoint_dir, basename, pad] = checkpoint_dir_basename_pad();
   (void)basename;
   (void)pad;
@@ -823,8 +820,7 @@ std::string Main<Metavariables>::checkpoint_dir() const noexcept {
 }
 
 template <typename Metavariables>
-void Main<Metavariables>::check_future_checkpoint_dirs_available()
-    const noexcept {
+void Main<Metavariables>::check_future_checkpoint_dirs_available() const {
   // Can't lambda-capture from structured binding in clang-11
   std::string checkpoint_dir;
   std::string basename;
@@ -835,17 +831,15 @@ void Main<Metavariables>::check_future_checkpoint_dirs_available()
   const auto all_files = file_system::ls();
   const std::regex re(basename + "[0-9]{" + std::to_string(pad) + "}");
   std::vector<std::string> checkpoint_files;
-  std::copy_if(
-      all_files.begin(), all_files.end(), std::back_inserter(checkpoint_files),
-      [&re](const std::string& s) noexcept { return std::regex_match(s, re); });
+  std::copy_if(all_files.begin(), all_files.end(),
+               std::back_inserter(checkpoint_files),
+               [&re](const std::string& s) { return std::regex_match(s, re); });
 
   // Using string comparison of filenames, check that all the files we found
   // are from older checkpoints, but not from future checkpoints
-  const bool found_older_checkpoints_only =
-      std::all_of(checkpoint_files.begin(), checkpoint_files.end(),
-                  [&checkpoint_dir](const std::string& s) noexcept {
-                    return s < checkpoint_dir;
-                  });
+  const bool found_older_checkpoints_only = std::all_of(
+      checkpoint_files.begin(), checkpoint_files.end(),
+      [&checkpoint_dir](const std::string& s) { return s < checkpoint_dir; });
   if (not found_older_checkpoints_only) {
     ERROR(
         "Can't start run: found checkpoints that may be overwritten!\n"

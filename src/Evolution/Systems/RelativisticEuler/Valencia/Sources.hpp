@@ -98,8 +98,7 @@ struct ComputeSources {
       const tnsr::ijj<DataVector, Dim, Frame::Inertial>& d_spatial_metric,
       const tnsr::II<DataVector, Dim, Frame::Inertial>& inv_spatial_metric,
       const Scalar<DataVector>& sqrt_det_spatial_metric,
-      const tnsr::ii<DataVector, Dim, Frame::Inertial>&
-          extrinsic_curvature) noexcept;
+      const tnsr::ii<DataVector, Dim, Frame::Inertial>& extrinsic_curvature);
 };
 }  // namespace Valencia
 }  // namespace RelativisticEuler

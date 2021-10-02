@@ -24,7 +24,7 @@ namespace GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail {
 template <size_t SpatialDim, typename Frame, typename DataType>
 void spatial_weight_function(const gsl::not_null<Scalar<DataType>*> weight,
                              const tnsr::I<DataType, SpatialDim, Frame>& coords,
-                             const double sigma_r) noexcept {
+                             const double sigma_r) {
   destructive_resize_components(weight, get_size(get<0>(coords)));
   const auto r_squared = dot_product(coords, coords);
   get(*weight) = exp(-get(r_squared) / pow<2>(sigma_r));
@@ -34,7 +34,7 @@ template <size_t SpatialDim, typename Frame, typename DataType>
 void spacetime_deriv_of_spatial_weight_function(
     const gsl::not_null<tnsr::a<DataType, SpatialDim, Frame>*> d4_weight,
     const tnsr::I<DataType, SpatialDim, Frame>& coords, const double sigma_r,
-    const Scalar<DataType>& weight_function) noexcept {
+    const Scalar<DataType>& weight_function) {
   destructive_resize_components(d4_weight, get_size(get<0>(coords)));
   // use 0th component to avoid allocations
   get<0>(*d4_weight) = get(weight_function) * (-2. / pow<2>(sigma_r));
@@ -49,7 +49,7 @@ template <typename DataType>
 void log_factor_metric_lapse(const gsl::not_null<Scalar<DataType>*> logfac,
                              const Scalar<DataType>& lapse,
                              const Scalar<DataType>& sqrt_det_spatial_metric,
-                             const double exponent) noexcept {
+                             const double exponent) {
   destructive_resize_components(logfac, get_size(get(lapse)));
   // branching below is to avoid using pow for performance reasons
   if (exponent == 0.) {
@@ -65,8 +65,7 @@ void log_factor_metric_lapse(const gsl::not_null<Scalar<DataType>*> logfac,
 template <typename DataType>
 Scalar<DataType> log_factor_metric_lapse(
     const Scalar<DataType>& lapse,
-    const Scalar<DataType>& sqrt_det_spatial_metric,
-    const double exponent) noexcept {
+    const Scalar<DataType>& sqrt_det_spatial_metric, const double exponent) {
   Scalar<DataType> logfac{get_size(get(lapse))};
   log_factor_metric_lapse(make_not_null(&logfac), lapse,
                           sqrt_det_spatial_metric, exponent);
@@ -83,8 +82,7 @@ void spacetime_deriv_of_log_factor_metric_lapse(
     const Scalar<DataType>& sqrt_det_spatial_metric,
     const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric,
     const tnsr::aa<DataType, SpatialDim, Frame>& pi,
-    const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
-    const double exponent) noexcept {
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi, const double exponent) {
   destructive_resize_components(d4_logfac, get_size(get(lapse)));
   // Use a TempBuffer to reduce total number of allocations. This is especially
   // important in a multithreaded environment.
@@ -137,8 +135,7 @@ tnsr::a<DataType, SpatialDim, Frame> spacetime_deriv_of_log_factor_metric_lapse(
     const Scalar<DataType>& sqrt_det_spatial_metric,
     const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric,
     const tnsr::aa<DataType, SpatialDim, Frame>& pi,
-    const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
-    const double exponent) noexcept {
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi, const double exponent) {
   tnsr::a<DataType, SpatialDim, Frame> d4_logfac{get_size(get(lapse))};
   spacetime_deriv_of_log_factor_metric_lapse(
       make_not_null(&d4_logfac), lapse, shift, spacetime_unit_normal,
@@ -158,7 +155,7 @@ void spacetime_deriv_of_power_log_factor_metric_lapse(
     const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric,
     const tnsr::aa<DataType, SpatialDim, Frame>& pi,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi, const double g_exponent,
-    const int exponent) noexcept {
+    const int exponent) {
   destructive_resize_components(d4_powlogfac, get_size(get(lapse)));
   // Use a TempBuffer to reduce total number of allocations. This is especially
   // important in a multithreaded environment.
@@ -206,7 +203,7 @@ spacetime_deriv_of_power_log_factor_metric_lapse(
     const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric,
     const tnsr::aa<DataType, SpatialDim, Frame>& pi,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi, const double g_exponent,
-    const int exponent) noexcept {
+    const int exponent) {
   tnsr::a<DataType, SpatialDim, Frame> d4_powlogfac{get_size(get(lapse))};
   spacetime_deriv_of_power_log_factor_metric_lapse(
       make_not_null(&d4_powlogfac), lapse, shift, spacetime_unit_normal,
@@ -224,13 +221,12 @@ spacetime_deriv_of_power_log_factor_metric_lapse(
   template void spatial_weight_function(                                      \
       const gsl::not_null<Scalar<DTYPE(data)>*> weight,                       \
       const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& coords,             \
-      const double sigma_r) noexcept;                                         \
+      const double sigma_r);                                                  \
   template void spacetime_deriv_of_spatial_weight_function(                   \
       const gsl::not_null<tnsr::a<DTYPE(data), DIM(data), FRAME(data)>*>      \
           d4_weight,                                                          \
       const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& coords,             \
-      const double sigma_r,                                                   \
-      const Scalar<DTYPE(data)>& weight_function) noexcept;                   \
+      const double sigma_r, const Scalar<DTYPE(data)>& weight_function);      \
   template void spacetime_deriv_of_log_factor_metric_lapse(                   \
       const gsl::not_null<tnsr::a<DTYPE(data), DIM(data), FRAME(data)>*>      \
           d4_logfac,                                                          \
@@ -244,7 +240,7 @@ spacetime_deriv_of_power_log_factor_metric_lapse(
       const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& dt_spatial_metric, \
       const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi,                \
       const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,              \
-      const double exponent) noexcept;                                        \
+      const double exponent);                                                 \
   template tnsr::a<DTYPE(data), DIM(data), FRAME(data)>                       \
   spacetime_deriv_of_log_factor_metric_lapse(                                 \
       const Scalar<DTYPE(data)>& lapse,                                       \
@@ -257,7 +253,7 @@ spacetime_deriv_of_power_log_factor_metric_lapse(
       const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& dt_spatial_metric, \
       const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi,                \
       const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,              \
-      const double exponent) noexcept;                                        \
+      const double exponent);                                                 \
   template void spacetime_deriv_of_power_log_factor_metric_lapse(             \
       const gsl::not_null<tnsr::a<DTYPE(data), DIM(data), FRAME(data)>*>      \
           d4_powlogfac,                                                       \
@@ -271,7 +267,7 @@ spacetime_deriv_of_power_log_factor_metric_lapse(
       const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& dt_spatial_metric, \
       const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi,                \
       const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,              \
-      const double g_exponent, const int exponent) noexcept;                  \
+      const double g_exponent, const int exponent);                           \
   template tnsr::a<DTYPE(data), DIM(data), FRAME(data)>                       \
   spacetime_deriv_of_power_log_factor_metric_lapse(                           \
       const Scalar<DTYPE(data)>& lapse,                                       \
@@ -284,7 +280,7 @@ spacetime_deriv_of_power_log_factor_metric_lapse(
       const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& dt_spatial_metric, \
       const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi,                \
       const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,              \
-      const double g_exponent, const int exponent) noexcept;
+      const double g_exponent, const int exponent);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
                         (Frame::Inertial))
@@ -296,11 +292,11 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
       const gsl::not_null<Scalar<DTYPE_SCAL(data)>*> logfac,   \
       const Scalar<DTYPE_SCAL(data)>& lapse,                   \
       const Scalar<DTYPE_SCAL(data)>& sqrt_det_spatial_metric, \
-      const double exponent) noexcept;                         \
+      const double exponent);                                  \
   template Scalar<DTYPE_SCAL(data)> log_factor_metric_lapse(   \
       const Scalar<DTYPE_SCAL(data)>& lapse,                   \
       const Scalar<DTYPE_SCAL(data)>& sqrt_det_spatial_metric, \
-      const double exponent) noexcept;
+      const double exponent);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
 

@@ -23,7 +23,7 @@
 
 namespace {
 template <typename VectorType>
-void test_variables_slice() noexcept {
+void test_variables_slice() {
   MAKE_GENERATOR(gen);
   UniformCustomDistribution<size_t> sdist{5, 10};
 
@@ -83,7 +83,7 @@ void test_variables_slice() noexcept {
 }
 
 template <typename VectorType>
-void test_variables_add_slice_to_data() noexcept {
+void test_variables_add_slice_to_data() {
   MAKE_GENERATOR(gen);
   UniformCustomDistribution<
       tt::get_fundamental_type_t<typename VectorType::value_type>>

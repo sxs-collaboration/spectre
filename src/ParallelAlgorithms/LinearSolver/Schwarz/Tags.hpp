@@ -41,7 +41,7 @@ struct SubdomainSolver {
 
 template <typename OptionsGroup>
 struct SkipSubdomainSolverResets {
-  static std::string name() noexcept { return "SkipResets"; }
+  static std::string name() { return "SkipResets"; }
   using type = bool;
   using group = OptionsGroup;
   static constexpr Options::String help =
@@ -70,19 +70,19 @@ namespace Tags {
 /// Number of points a subdomain can overlap with its neighbor
 template <typename OptionsGroup>
 struct MaxOverlap : db::SimpleTag {
-  static std::string name() noexcept {
+  static std::string name() {
     return "MaxOverlap(" + Options::name<OptionsGroup>() + ")";
   }
   using type = size_t;
   static constexpr bool pass_metavariables = false;
   using option_tags = tmpl::list<OptionTags::MaxOverlap<OptionsGroup>>;
-  static type create_from_options(const type& value) noexcept { return value; }
+  static type create_from_options(const type& value) { return value; }
 };
 
 /// The serial linear solver used to solve subdomain operators
 template <typename OptionsGroup>
 struct SubdomainSolverBase : db::BaseTag {
-  static std::string name() noexcept {
+  static std::string name() {
     return "SubdomainSolver(" + Options::name<OptionsGroup>() + ")";
   }
 };
@@ -95,7 +95,7 @@ struct SubdomainSolver : SubdomainSolverBase<OptionsGroup>, db::SimpleTag {
   static constexpr bool pass_metavariables = false;
   using option_tags =
       tmpl::list<OptionTags::SubdomainSolver<SolverType, OptionsGroup>>;
-  static type create_from_options(const type& value) noexcept {
+  static type create_from_options(const type& value) {
     return deserialize<type>(serialize<type>(value).data());
   }
 };
@@ -109,7 +109,7 @@ struct SkipSubdomainSolverResets : db::SimpleTag {
   static constexpr bool pass_metavariables = false;
   using option_tags =
       tmpl::list<OptionTags::SkipSubdomainSolverResets<OptionsGroup>>;
-  static bool create_from_options(const bool value) noexcept { return value; }
+  static bool create_from_options(const bool value) { return value; }
 };
 
 /// Enable per-core reduction observations
@@ -119,7 +119,7 @@ struct ObservePerCoreReductions : db::SimpleTag {
   static constexpr bool pass_metavariables = false;
   using option_tags =
       tmpl::list<OptionTags::ObservePerCoreReductions<OptionsGroup>>;
-  static bool create_from_options(const bool value) noexcept { return value; }
+  static bool create_from_options(const bool value) { return value; }
 };
 
 /*!
@@ -132,7 +132,7 @@ struct ObservePerCoreReductions : db::SimpleTag {
  */
 template <typename Tag, size_t Dim, typename OptionsGroup>
 struct Overlaps : db::SimpleTag {
-  static std::string name() noexcept {
+  static std::string name() {
     return "Overlaps(" + db::tag_name<Tag>() + ", " +
            Options::name<OptionsGroup>() + ")";
   }
@@ -143,7 +143,7 @@ struct Overlaps : db::SimpleTag {
 /// The number of points a neighbor's subdomain extends into the element
 template <size_t Dim, typename OptionsGroup>
 struct IntrudingExtents : db::SimpleTag {
-  static std::string name() noexcept {
+  static std::string name() {
     return "IntrudingExtents(" + Options::name<OptionsGroup>() + ")";
   }
   using type = std::array<size_t, Dim>;
@@ -153,7 +153,7 @@ struct IntrudingExtents : db::SimpleTag {
 /// into the element
 template <size_t Dim, typename OptionsGroup>
 struct IntrudingOverlapWidths : db::SimpleTag {
-  static std::string name() noexcept {
+  static std::string name() {
     return "IntrudingOverlapWidths(" + Options::name<OptionsGroup>() + ")";
   }
   using type = std::array<double, Dim>;
@@ -162,7 +162,7 @@ struct IntrudingOverlapWidths : db::SimpleTag {
 /// Weighting field for combining data from multiple overlapping subdomains
 template <typename OptionsGroup>
 struct Weight : db::SimpleTag {
-  static std::string name() noexcept {
+  static std::string name() {
     return "Weight(" + Options::name<OptionsGroup>() + ")";
   }
   using type = Scalar<DataVector>;
@@ -177,7 +177,7 @@ struct Weight : db::SimpleTag {
  */
 template <typename OptionsGroup>
 struct SummedIntrudingOverlapWeights : db::SimpleTag {
-  static std::string name() noexcept {
+  static std::string name() {
     return "SummedIntrudingOverlapWeights(" + Options::name<OptionsGroup>() +
            ")";
   }
@@ -207,7 +207,7 @@ struct OverlapSubitemsImpl<VariablesTag, Dim, OptionsGroup,
   template <typename Subtag>
   static void create_item(
       const gsl::not_null<typename tag::type*> parent_value,
-      const gsl::not_null<typename Subtag::type*> sub_value) noexcept {
+      const gsl::not_null<typename Subtag::type*> sub_value) {
     sub_value->clear();
     for (auto& [overlap_id, parent_overlap_vars] : *parent_value) {
       auto& parent_overlap_field =
@@ -221,7 +221,7 @@ struct OverlapSubitemsImpl<VariablesTag, Dim, OptionsGroup,
   template <typename Subtag>
   static void create_compute_item(
       const gsl::not_null<typename Subtag::type*> sub_value,
-      const typename tag::type& parent_value) noexcept {
+      const typename tag::type& parent_value) {
     for (const auto& [overlap_id, parent_overlap_vars] : parent_value) {
       const auto& parent_overlap_field =
           get<typename Subtag::tag>(parent_overlap_vars);

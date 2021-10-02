@@ -17,7 +17,7 @@
 }
 
 namespace {
-void test_two_locks() noexcept {
+void test_two_locks() {
   Parallel::NodeLock first{};
   Parallel::NodeLock second{};
   CHECK_FALSE(first.is_destroyed());
@@ -43,7 +43,7 @@ void test_two_locks() noexcept {
   CHECK_FALSE(second.try_lock());
 }
 
-void test_move_semantics() noexcept {
+void test_move_semantics() {
   Parallel::NodeLock unlocked{};
   Parallel::NodeLock move_of_unlocked(std::move(unlocked));
   CHECK(move_of_unlocked.try_lock());
@@ -70,7 +70,7 @@ void test_move_semantics() noexcept {
   CHECK(move_of_destroyed.is_destroyed());
 }
 
-void test_move_assign_semantics() noexcept {
+void test_move_assign_semantics() {
   Parallel::NodeLock unlocked_1{};
   Parallel::NodeLock move_assign_from_unlocked_to_unlocked{};
   move_assign_from_unlocked_to_unlocked = std::move(unlocked_1);
@@ -153,7 +153,7 @@ void test_move_assign_semantics() noexcept {
   CHECK(move_assign_from_destroyed_to_destroyed.is_destroyed());
 }
 
-void test_serialization() noexcept {
+void test_serialization() {
   Parallel::NodeLock unlocked{};
   Parallel::NodeLock serialized_unlocked = serialize_and_deserialize(unlocked);
   CHECK_FALSE(unlocked.is_destroyed());

@@ -56,7 +56,7 @@ void reconstruct_prims_work(
                        evolution::dg::subcell::NeighborData,
                        boost::hash<std::pair<Direction<3>, ElementId<3>>>>
         neighbor_data,
-    const Mesh<3>& subcell_mesh, size_t ghost_zone_size) noexcept;
+    const Mesh<3>& subcell_mesh, size_t ghost_zone_size);
 
 /*!
  * \brief Reconstructs the mass density, velocity, and pressure, then computes
@@ -80,5 +80,5 @@ void reconstruct_fd_neighbor_work(
                        boost::hash<std::pair<Direction<3>, ElementId<3>>>>
         neighbor_data,
     const Mesh<3>& subcell_mesh, const Direction<3>& direction_to_reconstruct,
-    const size_t ghost_zone_size) noexcept;
+    const size_t ghost_zone_size);
 }  // namespace grmhd::ValenciaDivClean::fd

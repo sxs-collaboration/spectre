@@ -29,7 +29,7 @@ namespace TestHelpers {
 // value can be given for larger input quantities. Note that the spin-weighted
 // harmonic function requires a factorial of l + m, so harmonics above l~12
 // would be untestable if the factorial only returned size_t's.
-double factorial(size_t arg) noexcept;
+double factorial(size_t arg);
 
 // Note that the methods for computing the spin-weighted spherical harmonics and
 // their derivatives below are both 1) poorly optimized (they use many
@@ -43,8 +43,7 @@ double factorial(size_t arg) noexcept;
 // purposes. The formula is from [Goldberg
 // et. al.](https://aip.scitation.org/doi/10.1063/1.1705135)
 std::complex<double> spin_weighted_spherical_harmonic(int s, int l, int m,
-                                                      double theta,
-                                                      double phi) noexcept;
+                                                      double theta, double phi);
 
 // Returns the value of the spin-weighted derivative `DerivativeKind` of the
 // spherical harmonic basis function \f${}_s Y_{l m}\f$ at angular location
@@ -52,7 +51,7 @@ std::complex<double> spin_weighted_spherical_harmonic(int s, int l, int m,
 // derivatives.
 template <typename DerivativeKind>
 std::complex<double> derivative_of_spin_weighted_spherical_harmonic(
-    int s, int l, int m, double theta, double phi) noexcept;
+    int s, int l, int m, double theta, double phi);
 
 // Performs the generation of spin-weighted coefficients into a supplied
 // ComplexModalVector `to_fill`, passed by pointer. The resulting random
@@ -69,7 +68,7 @@ void generate_swsh_modes(const gsl::not_null<ComplexModalVector*> to_fill,
                          const gsl::not_null<Generator*> generator,
                          const gsl::not_null<Distribution*> distribution,
                          const size_t number_of_radial_points,
-                         const size_t l_max) noexcept {
+                         const size_t l_max) {
   fill_with_random_values(to_fill, generator, distribution);
 
   auto* spherical_harmonic_lm =
@@ -124,8 +123,7 @@ template <int Spin, ComplexRepresentation Representation,
 void swsh_collocation_from_coefficients_and_basis_func(
     const gsl::not_null<ComplexDataVector*> collocation_data,
     const ComplexModalVector& coefficient_data, const size_t l_max,
-    const size_t number_of_radial_points,
-    const BasisFunction basis_function) noexcept {
+    const size_t number_of_radial_points, const BasisFunction basis_function) {
   auto& spherical_harmonic_collocation =
       cached_collocation_metadata<Representation>(l_max);
   auto* spherical_harmonic_lm =

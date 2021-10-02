@@ -27,7 +27,7 @@ namespace Parallel::Tags {
  */
 template <typename ParallelComponent, typename SectionIdTag>
 struct Section : db::SimpleTag {
-  static std::string name() noexcept {
+  static std::string name() {
     return "Section(" + db::tag_name<SectionIdTag>() + ")";
   }
   using type =
@@ -36,7 +36,7 @@ struct Section : db::SimpleTag {
   // to the tag in a parallel component's `allocate_array` function.
   constexpr static bool pass_metavariables = false;
   using option_tags = tmpl::list<>;
-  static type create_from_options() noexcept { return {}; };
+  static type create_from_options() { return {}; };
 };
 
 }  // namespace Parallel::Tags

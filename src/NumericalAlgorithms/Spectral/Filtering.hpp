@@ -40,7 +40,7 @@ namespace filtering {
  * or not the matrix should be cached.
  */
 Matrix exponential_filter(const Mesh<1>& mesh, double alpha,
-                          unsigned half_power) noexcept;
+                          unsigned half_power);
 
 /*!
  * \brief Zeros the lowest `number_of_modes_to_zero` modal coefficients. Note
@@ -65,6 +65,6 @@ Matrix exponential_filter(const Mesh<1>& mesh, double alpha,
  * also in the *nodal* representation.
  */
 const Matrix& zero_lowest_modes(const Mesh<1>& mesh,
-                                size_t number_of_modes_to_zero) noexcept;
+                                size_t number_of_modes_to_zero);
 }  // namespace filtering
 }  // namespace Spectral

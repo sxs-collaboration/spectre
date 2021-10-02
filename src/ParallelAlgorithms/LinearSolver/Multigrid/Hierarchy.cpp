@@ -18,7 +18,7 @@ namespace LinearSolver::multigrid {
 
 template <size_t Dim>
 std::vector<std::array<size_t, Dim>> coarsen(
-    std::vector<std::array<size_t, Dim>> initial_refinement_levels) noexcept {
+    std::vector<std::array<size_t, Dim>> initial_refinement_levels) {
   for (auto& block_refinement : initial_refinement_levels) {
     for (size_t d = 0; d < Dim; ++d) {
       auto& refinement_level = gsl::at(block_refinement, d);
@@ -31,7 +31,7 @@ std::vector<std::array<size_t, Dim>> coarsen(
 }
 
 template <size_t Dim>
-ElementId<Dim> parent_id(const ElementId<Dim>& child_id) noexcept {
+ElementId<Dim> parent_id(const ElementId<Dim>& child_id) {
   std::array<SegmentId, Dim> parent_segment_ids = child_id.segment_ids();
   for (size_t d = 0; d < Dim; ++d) {
     auto& segment_id = gsl::at(parent_segment_ids, d);
@@ -47,7 +47,7 @@ namespace {
 template <size_t Dim>
 void assert_finest_grid(
     const std::array<SegmentId, Dim>& parent_segment_ids,
-    const std::array<size_t, Dim>& children_refinement_levels) noexcept {
+    const std::array<size_t, Dim>& children_refinement_levels) {
   for (size_t d = 0; d < Dim; ++d) {
     ASSERT(gsl::at(children_refinement_levels, d) ==
                gsl::at(parent_segment_ids, d).refinement_level(),
@@ -60,7 +60,7 @@ void assert_finest_grid(
 
 std::unordered_set<SegmentId> child_segment_ids_impl(
     const SegmentId& parent_segment_id,
-    const size_t children_refinement_level) noexcept {
+    const size_t children_refinement_level) {
   ASSERT(parent_segment_id.refinement_level() == children_refinement_level or
              (children_refinement_level > 0 and
               parent_segment_id.refinement_level() ==
@@ -81,7 +81,7 @@ std::unordered_set<SegmentId> child_segment_ids_impl(
 template <>
 std::unordered_set<ElementId<1>> child_ids<1>(
     const ElementId<1>& parent_id,
-    const std::array<size_t, 1>& children_refinement_levels) noexcept {
+    const std::array<size_t, 1>& children_refinement_levels) {
   if (parent_id.grid_index() == 0) {
 #ifdef SPECTRE_DEBUG
     assert_finest_grid(parent_id.segment_ids(), children_refinement_levels);
@@ -103,7 +103,7 @@ std::unordered_set<ElementId<1>> child_ids<1>(
 template <>
 std::unordered_set<ElementId<2>> child_ids<2>(
     const ElementId<2>& parent_id,
-    const std::array<size_t, 2>& children_refinement_levels) noexcept {
+    const std::array<size_t, 2>& children_refinement_levels) {
   if (parent_id.grid_index() == 0) {
 #ifdef SPECTRE_DEBUG
     assert_finest_grid(parent_id.segment_ids(), children_refinement_levels);
@@ -130,7 +130,7 @@ std::unordered_set<ElementId<2>> child_ids<2>(
 template <>
 std::unordered_set<ElementId<3>> child_ids<3>(
     const ElementId<3>& parent_id,
-    const std::array<size_t, 3>& children_refinement_levels) noexcept {
+    const std::array<size_t, 3>& children_refinement_levels) {
   if (parent_id.grid_index() == 0) {
 #ifdef SPECTRE_DEBUG
     assert_finest_grid(parent_id.segment_ids(), children_refinement_levels);
@@ -158,12 +158,10 @@ std::unordered_set<ElementId<3>> child_ids<3>(
 }
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
-#define INSTANTIATE(r, data)                                   \
-  template std::vector<std::array<size_t, DIM(data)>> coarsen( \
-      std::vector<std::array<size_t, DIM(data)>>               \
-          initial_refinement_levels) noexcept;                 \
-  template ElementId<DIM(data)> parent_id(                     \
-      const ElementId<DIM(data)>& child_id) noexcept;
+#define INSTANTIATE(r, data)                                                 \
+  template std::vector<std::array<size_t, DIM(data)>> coarsen(               \
+      std::vector<std::array<size_t, DIM(data)>> initial_refinement_levels); \
+  template ElementId<DIM(data)> parent_id(const ElementId<DIM(data)>& child_id);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 

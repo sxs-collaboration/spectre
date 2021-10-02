@@ -24,7 +24,7 @@
 
 namespace Spectral {
 
-std::ostream& operator<<(std::ostream& os, const Basis& basis) noexcept {
+std::ostream& operator<<(std::ostream& os, const Basis& basis) {
   switch (basis) {
     case Basis::Legendre:
       return os << "Legendre";
@@ -39,8 +39,7 @@ std::ostream& operator<<(std::ostream& os, const Basis& basis) noexcept {
   }
 }
 
-std::ostream& operator<<(std::ostream& os,
-                         const Quadrature& quadrature) noexcept {
+std::ostream& operator<<(std::ostream& os, const Quadrature& quadrature) {
   switch (quadrature) {
     case Quadrature::Gauss:
       return os << "Gauss";
@@ -56,7 +55,7 @@ std::ostream& operator<<(std::ostream& os,
 }
 
 template <Basis BasisType>
-Matrix spectral_indefinite_integral_matrix(size_t num_points) noexcept;
+Matrix spectral_indefinite_integral_matrix(size_t num_points);
 
 namespace {
 
@@ -64,7 +63,7 @@ namespace {
 
 template <Basis BasisType, Quadrature QuadratureType,
           typename SpectralQuantityGenerator>
-const auto& precomputed_spectral_quantity(const size_t num_points) noexcept {
+const auto& precomputed_spectral_quantity(const size_t num_points) {
   constexpr size_t max_num_points =
       Spectral::maximum_number_of_points<BasisType>;
   constexpr size_t min_num_points =
@@ -86,8 +85,7 @@ const auto& precomputed_spectral_quantity(const size_t num_points) noexcept {
 
 template <Basis BasisType, Quadrature QuadratureType>
 struct CollocationPointsAndWeightsGenerator {
-  std::pair<DataVector, DataVector> operator()(
-      const size_t num_points) const noexcept {
+  std::pair<DataVector, DataVector> operator()(const size_t num_points) const {
     return compute_collocation_points_and_weights<BasisType, QuadratureType>(
         num_points);
   }
@@ -97,7 +95,7 @@ struct CollocationPointsAndWeightsGenerator {
 
 template <Basis BasisType, Quadrature QuadratureType>
 struct QuadratureWeightsGenerator {
-  DataVector operator()(const size_t num_points) const noexcept {
+  DataVector operator()(const size_t num_points) const {
     const auto& pts_and_weights = precomputed_spectral_quantity<
         BasisType, QuadratureType,
         CollocationPointsAndWeightsGenerator<BasisType, QuadratureType>>(
@@ -110,7 +108,7 @@ struct QuadratureWeightsGenerator {
 
 template <Basis BasisType, Quadrature QuadratureType>
 struct BarycentricWeightsGenerator {
-  DataVector operator()(const size_t num_points) const noexcept {
+  DataVector operator()(const size_t num_points) const {
     // Algorithm 30 in Kopriva, p. 75
     // This is valid for any collocation points.
     const DataVector& x =
@@ -132,7 +130,7 @@ struct BarycentricWeightsGenerator {
 // We don't need this as part of the public interface, but precompute it since
 // `interpolation_matrix` needs it at runtime.
 template <Basis BasisType, Quadrature QuadratureType>
-const DataVector& barycentric_weights(const size_t num_points) noexcept {
+const DataVector& barycentric_weights(const size_t num_points) {
   return precomputed_spectral_quantity<
       BasisType, QuadratureType,
       BarycentricWeightsGenerator<BasisType, QuadratureType>>(num_points);
@@ -140,7 +138,7 @@ const DataVector& barycentric_weights(const size_t num_points) noexcept {
 
 template <Basis BasisType, Quadrature QuadratureType>
 struct DifferentiationMatrixGenerator {
-  Matrix operator()(const size_t num_points) const noexcept {
+  Matrix operator()(const size_t num_points) const {
     // Algorithm 37 in Kopriva, p. 82
     // It is valid for any collocation points and barycentric weights.
     const DataVector& collocation_pts =
@@ -165,7 +163,7 @@ struct DifferentiationMatrixGenerator {
 
 template <Basis BasisType, Quadrature QuadratureType>
 struct WeakFluxDifferentiationMatrixGenerator {
-  Matrix operator()(const size_t num_points) const noexcept {
+  Matrix operator()(const size_t num_points) const {
     if (BasisType != Basis::Legendre) {
       // We cannot use a `static_assert` because of the way our instantiation
       // macros work for creating matrices
@@ -191,7 +189,7 @@ struct WeakFluxDifferentiationMatrixGenerator {
 
 template <Basis BasisType, Quadrature QuadratureType>
 struct IntegrationMatrixGenerator {
-  Matrix operator()(const size_t num_points) const noexcept {
+  Matrix operator()(const size_t num_points) const {
     return Spectral::modal_to_nodal_matrix<BasisType, QuadratureType>(
                num_points) *
            spectral_indefinite_integral_matrix<BasisType>(num_points) *
@@ -202,7 +200,7 @@ struct IntegrationMatrixGenerator {
 
 template <Basis BasisType, Quadrature QuadratureType>
 struct ModalToNodalMatrixGenerator {
-  Matrix operator()(const size_t num_points) const noexcept {
+  Matrix operator()(const size_t num_points) const {
     // To obtain the Vandermonde matrix we need to compute the basis function
     // values at the collocation points. Constructing the matrix proceeds
     // the same for any basis.
@@ -222,7 +220,7 @@ struct ModalToNodalMatrixGenerator {
 
 template <Basis BasisType, Quadrature QuadratureType>
 struct NodalToModalMatrixGenerator {
-  Matrix operator()(const size_t num_points) const noexcept {
+  Matrix operator()(const size_t num_points) const {
     // Numerically invert the matrix for this generic case
     return inv(modal_to_nodal_matrix<BasisType, QuadratureType>(num_points));
   }
@@ -231,7 +229,7 @@ struct NodalToModalMatrixGenerator {
 template <Basis BasisType>
 struct NodalToModalMatrixGenerator<BasisType, Quadrature::Gauss> {
   using data_type = Matrix;
-  Matrix operator()(const size_t num_points) const noexcept {
+  Matrix operator()(const size_t num_points) const {
     // For Gauss quadrature we implement the analytic expression
     // \f$\mathcal{V}^{-1}_{ij}=\mathcal{V}_{ji}\frac{w_j}{\gamma_i}\f$
     // (see description of `nodal_to_modal_matrix`).
@@ -258,7 +256,7 @@ struct NodalToModalMatrixGenerator<BasisType, Quadrature::Gauss> {
 
 template <Basis BasisType, Quadrature QuadratureType>
 struct LinearFilterMatrixGenerator {
-  Matrix operator()(const size_t num_points) const noexcept {
+  Matrix operator()(const size_t num_points) const {
     // We implement the expression
     // \f$\mathcal{V}^{-1}\cdot\mathrm{diag}(1,1,0,0,...)\cdot\mathcal{V}\f$
     // (see description of `linear_filter_matrix`)
@@ -282,7 +280,7 @@ struct LinearFilterMatrixGenerator {
 // Public interface
 
 template <Basis BasisType, Quadrature QuadratureType>
-const DataVector& collocation_points(const size_t num_points) noexcept {
+const DataVector& collocation_points(const size_t num_points) {
   return precomputed_spectral_quantity<
              BasisType, QuadratureType,
              CollocationPointsAndWeightsGenerator<BasisType, QuadratureType>>(
@@ -291,7 +289,7 @@ const DataVector& collocation_points(const size_t num_points) noexcept {
 }
 
 template <Basis BasisType, Quadrature QuadratureType>
-const DataVector& quadrature_weights(const size_t num_points) noexcept {
+const DataVector& quadrature_weights(const size_t num_points) {
   return precomputed_spectral_quantity<
       BasisType, QuadratureType,
       QuadratureWeightsGenerator<BasisType, QuadratureType>>(num_points);
@@ -299,14 +297,14 @@ const DataVector& quadrature_weights(const size_t num_points) noexcept {
 
 // clang-tidy: Macro arguments should be in parentheses, but we want to append
 // template parameters here.
-#define PRECOMPUTED_SPECTRAL_QUANTITY(function_name, return_type,      \
-                                      generator_name)                  \
-  template <Basis BasisType, Quadrature QuadratureType>                \
-  const return_type& function_name(const size_t num_points) noexcept { \
-    return precomputed_spectral_quantity<                              \
-        BasisType, QuadratureType,                                     \
-        generator_name<BasisType, QuadratureType>>(/* NOLINT */        \
-                                                   num_points);        \
+#define PRECOMPUTED_SPECTRAL_QUANTITY(function_name, return_type, \
+                                      generator_name)             \
+  template <Basis BasisType, Quadrature QuadratureType>           \
+  const return_type& function_name(const size_t num_points) {     \
+    return precomputed_spectral_quantity<                         \
+        BasisType, QuadratureType,                                \
+        generator_name<BasisType, QuadratureType>>(/* NOLINT */   \
+                                                   num_points);   \
   }
 
 PRECOMPUTED_SPECTRAL_QUANTITY(differentiation_matrix, Matrix,
@@ -325,8 +323,7 @@ PRECOMPUTED_SPECTRAL_QUANTITY(linear_filter_matrix, Matrix,
 #undef PRECOMPUTED_SPECTRAL_QUANTITY
 
 template <Basis BasisType, Quadrature QuadratureType, typename T>
-Matrix interpolation_matrix(const size_t num_points,
-                            const T& target_points) noexcept {
+Matrix interpolation_matrix(const size_t num_points, const T& target_points) {
   constexpr size_t max_num_points =
       Spectral::maximum_number_of_points<BasisType>;
   constexpr size_t min_num_points =
@@ -374,7 +371,7 @@ Matrix interpolation_matrix(const size_t num_points,
 
 template <Basis BasisType, Quadrature QuadratureType>
 const std::pair<Matrix, Matrix>& boundary_interpolation_matrices(
-    const size_t num_points) noexcept {
+    const size_t num_points) {
   static_assert(BasisType == Spectral::Basis::Legendre);
   static_assert(
       QuadratureType == Spectral::Quadrature::Gauss,
@@ -383,7 +380,7 @@ const std::pair<Matrix, Matrix>& boundary_interpolation_matrices(
   static const auto cache = make_static_cache<
       CacheRange<Spectral::minimum_number_of_points<BasisType, QuadratureType>,
                  Spectral::maximum_number_of_points<BasisType>>>(
-      [](const size_t local_num_points) noexcept {
+      [](const size_t local_num_points) {
         return std::pair<Matrix, Matrix>{
             interpolation_matrix<BasisType, QuadratureType>(local_num_points,
                                                             -1.0),
@@ -394,7 +391,7 @@ const std::pair<Matrix, Matrix>& boundary_interpolation_matrices(
 }
 
 const std::pair<Matrix, Matrix>& boundary_interpolation_matrices(
-    const Mesh<1>& mesh) noexcept {
+    const Mesh<1>& mesh) {
   ASSERT(mesh.basis(0) == Spectral::Basis::Legendre,
          "We only support DG with a Legendre basis.");
   ASSERT(mesh.quadrature(0) == Spectral::Quadrature::Gauss,
@@ -407,7 +404,7 @@ const std::pair<Matrix, Matrix>& boundary_interpolation_matrices(
 
 template <Basis BasisType, Quadrature QuadratureType>
 const std::pair<DataVector, DataVector>& boundary_interpolation_term(
-    const size_t num_points) noexcept {
+    const size_t num_points) {
   static_assert(BasisType == Spectral::Basis::Legendre);
   static_assert(
       QuadratureType == Spectral::Quadrature::Gauss,
@@ -417,7 +414,7 @@ const std::pair<DataVector, DataVector>& boundary_interpolation_term(
   static const auto cache = make_static_cache<
       CacheRange<Spectral::minimum_number_of_points<BasisType, QuadratureType>,
                  Spectral::maximum_number_of_points<BasisType>>>(
-      [](const size_t local_num_points) noexcept {
+      [](const size_t local_num_points) {
         const Matrix interp_matrix =
             interpolation_matrix<BasisType, Quadrature::GaussLobatto>(
                 local_num_points == 1 ? 2 : local_num_points,
@@ -436,7 +433,7 @@ const std::pair<DataVector, DataVector>& boundary_interpolation_term(
 }
 
 const std::pair<DataVector, DataVector>& boundary_interpolation_term(
-    const Mesh<1>& mesh) noexcept {
+    const Mesh<1>& mesh) {
   ASSERT(mesh.basis(0) == Spectral::Basis::Legendre,
          "We only support DG with a Legendre basis.");
   ASSERT(
@@ -451,7 +448,7 @@ const std::pair<DataVector, DataVector>& boundary_interpolation_term(
 
 template <Basis BasisType, Quadrature QuadratureType>
 const std::pair<DataVector, DataVector>& boundary_lifting_term(
-    const size_t num_points) noexcept {
+    const size_t num_points) {
   static_assert(BasisType == Spectral::Basis::Legendre);
   static_assert(
       QuadratureType == Spectral::Quadrature::Gauss,
@@ -460,7 +457,7 @@ const std::pair<DataVector, DataVector>& boundary_lifting_term(
   static const auto cache = make_static_cache<
       CacheRange<Spectral::minimum_number_of_points<BasisType, QuadratureType>,
                  Spectral::maximum_number_of_points<BasisType>>>(
-      [](const size_t local_num_points) noexcept {
+      [](const size_t local_num_points) {
         const auto& matrices =
             boundary_interpolation_matrices<BasisType, QuadratureType>(
                 local_num_points);
@@ -480,7 +477,7 @@ const std::pair<DataVector, DataVector>& boundary_lifting_term(
 }
 
 const std::pair<DataVector, DataVector>& boundary_lifting_term(
-    const Mesh<1>& mesh) noexcept {
+    const Mesh<1>& mesh) {
   ASSERT(mesh.basis(0) == Spectral::Basis::Legendre,
          "We only support DG with a Legendre basis.");
   ASSERT(mesh.quadrature(0) == Spectral::Quadrature::Gauss,
@@ -493,8 +490,7 @@ const std::pair<DataVector, DataVector>& boundary_lifting_term(
 namespace {
 
 template <typename F>
-decltype(auto) get_spectral_quantity_for_mesh(F&& f,
-                                              const Mesh<1>& mesh) noexcept {
+decltype(auto) get_spectral_quantity_for_mesh(F&& f, const Mesh<1>& mesh) {
   const auto num_points = mesh.extents(0);
   // Switch on runtime values of basis and quadrature to select
   // corresponding template specialization. For basis functions spanning
@@ -557,10 +553,10 @@ decltype(auto) get_spectral_quantity_for_mesh(F&& f,
 // clang-tidy: Macro arguments should be in parentheses, but we want to append
 // template parameters here.
 #define SPECTRAL_QUANTITY_FOR_MESH(function_name, return_type)           \
-  const return_type& function_name(const Mesh<1>& mesh) noexcept {       \
+  const return_type& function_name(const Mesh<1>& mesh) {                \
     return get_spectral_quantity_for_mesh(                               \
         [](const auto basis, const auto quadrature,                      \
-           const size_t num_points) noexcept -> const return_type& {     \
+           const size_t num_points) -> const return_type& {              \
           return function_name</* NOLINT */ decltype(basis)::value,      \
                                decltype(quadrature)::value>(num_points); \
         },                                                               \
@@ -579,11 +575,10 @@ SPECTRAL_QUANTITY_FOR_MESH(linear_filter_matrix, Matrix)
 #undef SPECTRAL_QUANTITY_FOR_MESH
 
 template <typename T>
-Matrix interpolation_matrix(const Mesh<1>& mesh,
-                            const T& target_points) noexcept {
+Matrix interpolation_matrix(const Mesh<1>& mesh, const T& target_points) {
   return get_spectral_quantity_for_mesh(
       [target_points](const auto basis, const auto quadrature,
-                      const size_t num_points) noexcept -> Matrix {
+                      const size_t num_points) -> Matrix {
         return interpolation_matrix<decltype(basis)::value,
                                     decltype(quadrature)::value>(num_points,
                                                                  target_points);
@@ -595,36 +590,32 @@ Matrix interpolation_matrix(const Mesh<1>& mesh,
 
 #define BASIS(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define QUAD(data) BOOST_PP_TUPLE_ELEM(1, data)
-#define INSTANTIATE(_, data)                                                  \
-  template const DataVector&                                                  \
-      Spectral::collocation_points<BASIS(data), QUAD(data)>(size_t) noexcept; \
-  template const DataVector&                                                  \
-      Spectral::quadrature_weights<BASIS(data), QUAD(data)>(size_t) noexcept; \
-  template const Matrix&                                                      \
-      Spectral::differentiation_matrix<BASIS(data), QUAD(data)>(              \
-          size_t) noexcept;                                                   \
-  template const Matrix&                                                      \
-      Spectral::weak_flux_differentiation_matrix<BASIS(data), QUAD(data)>(    \
-          size_t) noexcept;                                                   \
-  template const Matrix&                                                      \
-      Spectral::integration_matrix<BASIS(data), QUAD(data)>(size_t) noexcept; \
-  template const Matrix&                                                      \
-      Spectral::nodal_to_modal_matrix<BASIS(data), QUAD(data)>(               \
-          size_t) noexcept;                                                   \
-  template const Matrix&                                                      \
-      Spectral::modal_to_nodal_matrix<BASIS(data), QUAD(data)>(               \
-          size_t) noexcept;                                                   \
-  template const Matrix&                                                      \
-      Spectral::linear_filter_matrix<BASIS(data), QUAD(data)>(                \
-          size_t) noexcept;                                                   \
-  template Matrix Spectral::interpolation_matrix<BASIS(data), QUAD(data)>(    \
-      size_t, const DataVector&) noexcept;                                    \
-  template Matrix Spectral::interpolation_matrix<BASIS(data), QUAD(data)>(    \
-      size_t, const std::vector<double>&) noexcept;
+#define INSTANTIATE(_, data)                                               \
+  template const DataVector&                                               \
+      Spectral::collocation_points<BASIS(data), QUAD(data)>(size_t);       \
+  template const DataVector&                                               \
+      Spectral::quadrature_weights<BASIS(data), QUAD(data)>(size_t);       \
+  template const Matrix&                                                   \
+      Spectral::differentiation_matrix<BASIS(data), QUAD(data)>(size_t);   \
+  template const Matrix&                                                   \
+      Spectral::weak_flux_differentiation_matrix<BASIS(data), QUAD(data)>( \
+          size_t);                                                         \
+  template const Matrix&                                                   \
+      Spectral::integration_matrix<BASIS(data), QUAD(data)>(size_t);       \
+  template const Matrix&                                                   \
+      Spectral::nodal_to_modal_matrix<BASIS(data), QUAD(data)>(size_t);    \
+  template const Matrix&                                                   \
+      Spectral::modal_to_nodal_matrix<BASIS(data), QUAD(data)>(size_t);    \
+  template const Matrix&                                                   \
+      Spectral::linear_filter_matrix<BASIS(data), QUAD(data)>(size_t);     \
+  template Matrix Spectral::interpolation_matrix<BASIS(data), QUAD(data)>( \
+      size_t, const DataVector&);                                          \
+  template Matrix Spectral::interpolation_matrix<BASIS(data), QUAD(data)>( \
+      size_t, const std::vector<double>&);
 template Matrix Spectral::interpolation_matrix(const Mesh<1>&,
-                                               const DataVector&) noexcept;
-template Matrix Spectral::interpolation_matrix(
-    const Mesh<1>&, const std::vector<double>&) noexcept;
+                                               const DataVector&);
+template Matrix Spectral::interpolation_matrix(const Mesh<1>&,
+                                               const std::vector<double>&);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE,
                         (Spectral::Basis::Chebyshev, Spectral::Basis::Legendre),
@@ -635,18 +626,18 @@ GENERATE_INSTANTIATIONS(INSTANTIATE,
 #undef QUAD
 #undef INSTANTIATE
 
-template const DataVector& Spectral::collocation_points<
-    Spectral::Basis::FiniteDifference, Spectral::Quadrature::CellCentered>(
-    size_t) noexcept;
-template const DataVector& Spectral::quadrature_weights<
-    Spectral::Basis::FiniteDifference, Spectral::Quadrature::CellCentered>(
-    size_t) noexcept;
-template const DataVector& Spectral::collocation_points<
-    Spectral::Basis::FiniteDifference, Spectral::Quadrature::FaceCentered>(
-    size_t) noexcept;
-template const DataVector& Spectral::quadrature_weights<
-    Spectral::Basis::FiniteDifference, Spectral::Quadrature::FaceCentered>(
-    size_t) noexcept;
+template const DataVector&
+    Spectral::collocation_points<Spectral::Basis::FiniteDifference,
+                                 Spectral::Quadrature::CellCentered>(size_t);
+template const DataVector&
+    Spectral::quadrature_weights<Spectral::Basis::FiniteDifference,
+                                 Spectral::Quadrature::CellCentered>(size_t);
+template const DataVector&
+    Spectral::collocation_points<Spectral::Basis::FiniteDifference,
+                                 Spectral::Quadrature::FaceCentered>(size_t);
+template const DataVector&
+    Spectral::quadrature_weights<Spectral::Basis::FiniteDifference,
+                                 Spectral::Quadrature::FaceCentered>(size_t);
 
 template <>
 Spectral::Quadrature

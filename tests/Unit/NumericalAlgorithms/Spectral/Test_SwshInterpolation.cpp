@@ -48,7 +48,7 @@ namespace {
 }
 
 template <typename Generator>
-void test_basis_function(const gsl::not_null<Generator*> generator) noexcept {
+void test_basis_function(const gsl::not_null<Generator*> generator) {
   UniformCustomDistribution<double> phi_dist{0.0, 2.0 * M_PI};
   const double phi = phi_dist(*generator);
   UniformCustomDistribution<double> theta_dist{0.01, M_PI - 0.01};
@@ -86,7 +86,7 @@ void test_basis_function(const gsl::not_null<Generator*> generator) noexcept {
 }
 
 template <int spin, typename Generator>
-void test_interpolation(const gsl::not_null<Generator*> generator) noexcept {
+void test_interpolation(const gsl::not_null<Generator*> generator) {
   INFO("Testing interpolation for spin " << spin);
   UniformCustomDistribution<double> coefficient_distribution{-2.0, 2.0};
   const size_t l_max = 16;

@@ -41,14 +41,14 @@ struct TildeTau : db::SimpleTag {
 template <typename Fr>
 struct TildeS : db::SimpleTag {
   using type = tnsr::i<DataVector, 3, Fr>;
-  static std::string name() noexcept { return Frame::prefix<Fr>() + "TildeS"; }
+  static std::string name() { return Frame::prefix<Fr>() + "TildeS"; }
 };
 
 /// The densitized magnetic field \f${\tilde B^i}\f$
 template <typename Fr>
 struct TildeB : db::SimpleTag {
   using type = tnsr::I<DataVector, 3, Fr>;
-  static std::string name() noexcept { return Frame::prefix<Fr>() + "TildeB"; }
+  static std::string name() { return Frame::prefix<Fr>() + "TildeB"; }
 };
 
 /// The densitized divergence-cleaning field \f${\tilde \Phi}\f$
@@ -68,14 +68,14 @@ namespace OptionTags {
 /// \ingroup OptionGroupsGroup
 /// Groups option tags related to the ValenciaDivClean evolution system.
 struct ValenciaDivCleanGroup {
-  static std::string name() noexcept { return "ValenciaDivClean"; }
+  static std::string name() { return "ValenciaDivClean"; }
   static constexpr Options::String help{"Options for the evolution system"};
   using group = evolution::OptionTags::SystemGroup;
 };
 
 /// \brief The constraint damping parameter
 struct DampingParameter {
-  static std::string name() noexcept { return "DampingParameter"; }
+  static std::string name() { return "DampingParameter"; }
   using type = double;
   static constexpr Options::String help{
       "Constraint damping parameter for divergence cleaning"};
@@ -90,8 +90,7 @@ struct ConstraintDampingParameter : db::SimpleTag {
   using option_tags = tmpl::list<OptionTags::DampingParameter>;
 
   static constexpr bool pass_metavariables = false;
-  static double create_from_options(
-      const double constraint_damping_parameter) noexcept {
+  static double create_from_options(const double constraint_damping_parameter) {
     return constraint_damping_parameter;
   }
 };

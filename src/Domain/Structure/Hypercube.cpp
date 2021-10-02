@@ -17,19 +17,19 @@
 template <size_t ElementDim, size_t HypercubeDim>
 HypercubeElement<ElementDim, HypercubeDim>::HypercubeElement(
     std::array<size_t, ElementDim> dimensions_in_parent,
-    std::array<Side, HypercubeDim - ElementDim> index) noexcept
+    std::array<Side, HypercubeDim - ElementDim> index)
     : dimensions_in_parent_{std::move(dimensions_in_parent)},
       index_{std::move(index)} {
   ASSERT(
-      not std::any_of(
-          dimensions_in_parent_.begin(), dimensions_in_parent_.end(),
-          [](const size_t d) noexcept { return d >= HypercubeDim; }),
+      not std::any_of(dimensions_in_parent_.begin(),
+                      dimensions_in_parent_.end(),
+                      [](const size_t d) { return d >= HypercubeDim; }),
       "Found dimension that exceeds the hypercube dimension in construction of "
           << HypercubeDim << "D element: " << dimensions_in_parent_);
   if constexpr (ElementDim > 1) {
     std::sort(dimensions_in_parent_.begin(), dimensions_in_parent_.end());
     ASSERT(
-        [this]() noexcept {
+        [this]() {
           for (size_t d = 1; d < ElementDim; ++d) {
             if (gsl::at(dimensions_in_parent_, d) ==
                 gsl::at(dimensions_in_parent_, d - 1)) {
@@ -46,13 +46,13 @@ HypercubeElement<ElementDim, HypercubeDim>::HypercubeElement(
 template <size_t ElementDim, size_t HypercubeDim>
 template <size_t LocalElementDim, Requires<LocalElementDim == 0>>
 HypercubeElement<ElementDim, HypercubeDim>::HypercubeElement(
-    std::array<Side, HypercubeDim> index) noexcept
+    std::array<Side, HypercubeDim> index)
     : index_{std::move(index)} {}
 
 template <size_t ElementDim, size_t HypercubeDim>
 template <size_t LocalElementDim, Requires<LocalElementDim == 1>>
 HypercubeElement<ElementDim, HypercubeDim>::HypercubeElement(
-    size_t dim_in_parent, std::array<Side, HypercubeDim - 1> index) noexcept
+    size_t dim_in_parent, std::array<Side, HypercubeDim - 1> index)
     : dimensions_in_parent_{dim_in_parent}, index_{std::move(index)} {
   ASSERT(dim_in_parent < HypercubeDim,
          "Dimension " << dim_in_parent << " exceeds hypercube dimension in "
@@ -61,33 +61,29 @@ HypercubeElement<ElementDim, HypercubeDim>::HypercubeElement(
 
 template <size_t ElementDim, size_t HypercubeDim>
 const std::array<size_t, ElementDim>&
-HypercubeElement<ElementDim, HypercubeDim>::dimensions_in_parent() const
-    noexcept {
+HypercubeElement<ElementDim, HypercubeDim>::dimensions_in_parent() const {
   return dimensions_in_parent_;
 }
 
 template <size_t ElementDim, size_t HypercubeDim>
 template <size_t LocalElementDim, Requires<LocalElementDim == 1>>
-size_t HypercubeElement<ElementDim, HypercubeDim>::dimension_in_parent() const
-    noexcept {
+size_t HypercubeElement<ElementDim, HypercubeDim>::dimension_in_parent() const {
   return dimensions_in_parent_[0];
 }
 
 template <size_t ElementDim, size_t HypercubeDim>
 const std::array<Side, HypercubeDim - ElementDim>&
-HypercubeElement<ElementDim, HypercubeDim>::index() const noexcept {
+HypercubeElement<ElementDim, HypercubeDim>::index() const {
   return index_;
 }
 
 template <size_t ElementDim, size_t HypercubeDim>
 const Side&
 HypercubeElement<ElementDim, HypercubeDim>::side_in_parent_dimension(
-    size_t d) const noexcept {
-  ASSERT(not std::any_of(dimensions_in_parent_.begin(),
-                         dimensions_in_parent_.end(),
-                         [&d](const size_t dim_in_parent) noexcept {
-                           return dim_in_parent == d;
-                         }),
+    size_t d) const {
+  ASSERT(not std::any_of(
+             dimensions_in_parent_.begin(), dimensions_in_parent_.end(),
+             [&d](const size_t dim_in_parent) { return dim_in_parent == d; }),
          "The parent dimension "
              << d << " is aligned with the hypercube element '" << *this
              << "', so the element is not located at a particular side in this "
@@ -104,7 +100,7 @@ HypercubeElement<ElementDim, HypercubeDim>::side_in_parent_dimension(
 template <size_t ElementDim, size_t HypercubeDim>
 std::ostream& operator<<(
     std::ostream& os,
-    const HypercubeElement<ElementDim, HypercubeDim>& element) noexcept {
+    const HypercubeElement<ElementDim, HypercubeDim>& element) {
   if constexpr (ElementDim == 0) {
     os << "Vertex";
   } else if constexpr (ElementDim == 1) {
@@ -121,8 +117,7 @@ std::ostream& operator<<(
 }
 
 template <size_t ElementDim, size_t HypercubeDim>
-HypercubeElementsIterator<ElementDim,
-                          HypercubeDim>::HypercubeElementsIterator() noexcept
+HypercubeElementsIterator<ElementDim, HypercubeDim>::HypercubeElementsIterator()
     : index_{0} {
   if constexpr (ElementDim > 0) {
     for (size_t d = 0; d < ElementDim; ++d) {
@@ -133,13 +128,13 @@ HypercubeElementsIterator<ElementDim,
 
 template <size_t ElementDim, size_t HypercubeDim>
 HypercubeElementsIterator<ElementDim, HypercubeDim>
-HypercubeElementsIterator<ElementDim, HypercubeDim>::begin() noexcept {
+HypercubeElementsIterator<ElementDim, HypercubeDim>::begin() {
   return {};
 }
 
 template <size_t ElementDim, size_t HypercubeDim>
 HypercubeElementsIterator<ElementDim, HypercubeDim>
-HypercubeElementsIterator<ElementDim, HypercubeDim>::end() noexcept {
+HypercubeElementsIterator<ElementDim, HypercubeDim>::end() {
   HypercubeElementsIterator end_iterator{};
   if constexpr (ElementDim > 0) {
     for (size_t d = 0; d < ElementDim; ++d) {
@@ -153,8 +148,8 @@ HypercubeElementsIterator<ElementDim, HypercubeDim>::end() noexcept {
 
 template <size_t ElementDim, size_t HypercubeDim>
 template <size_t LocalElementDim, Requires<(LocalElementDim > 0)>>
-void HypercubeElementsIterator<ElementDim, HypercubeDim>::
-    increment_dimension_in_parent(const size_t d) noexcept {
+void HypercubeElementsIterator<
+    ElementDim, HypercubeDim>::increment_dimension_in_parent(const size_t d) {
   ++gsl::at(dimensions_in_parent_, d);
   if (gsl::at(dimensions_in_parent_, d) == num_indices + d + 1 and d > 0) {
     increment_dimension_in_parent(d - 1);
@@ -165,7 +160,7 @@ void HypercubeElementsIterator<ElementDim, HypercubeDim>::
 
 template <size_t ElementDim, size_t HypercubeDim>
 HypercubeElementsIterator<ElementDim, HypercubeDim>&
-HypercubeElementsIterator<ElementDim, HypercubeDim>::operator++() noexcept {
+HypercubeElementsIterator<ElementDim, HypercubeDim>::operator++() {
   ++index_;
   if constexpr (ElementDim > 0) {
     if (index_ == two_to_the(num_indices)) {
@@ -179,7 +174,7 @@ HypercubeElementsIterator<ElementDim, HypercubeDim>::operator++() noexcept {
 template <size_t ElementDim, size_t HypercubeDim>
 // NOLINTNEXTLINE(cert-dcl21-cpp) see declaration
 HypercubeElementsIterator<ElementDim, HypercubeDim>
-HypercubeElementsIterator<ElementDim, HypercubeDim>::operator++(int) noexcept {
+HypercubeElementsIterator<ElementDim, HypercubeDim>::operator++(int) {
   const auto ret = *this;
   operator++();
   return ret;
@@ -187,8 +182,7 @@ HypercubeElementsIterator<ElementDim, HypercubeDim>::operator++(int) noexcept {
 
 template <size_t ElementDim, size_t HypercubeDim>
 HypercubeElement<ElementDim, HypercubeDim>
-    HypercubeElementsIterator<ElementDim, HypercubeDim>::operator*() const
-    noexcept {
+HypercubeElementsIterator<ElementDim, HypercubeDim>::operator*() const {
   const std::bitset<num_indices> index_bits{index_};
   std::array<Side, num_indices> sides{};
   for (size_t d = 0; d < num_indices; ++d) {
@@ -201,7 +195,7 @@ HypercubeElement<ElementDim, HypercubeDim>
 template <size_t ElementDim, size_t HypercubeDim>
 bool operator==(
     const HypercubeElementsIterator<ElementDim, HypercubeDim>& lhs,
-    const HypercubeElementsIterator<ElementDim, HypercubeDim>& rhs) noexcept {
+    const HypercubeElementsIterator<ElementDim, HypercubeDim>& rhs) {
   return lhs.dimensions_in_parent_ == rhs.dimensions_in_parent_ and
          lhs.index_ == rhs.index_;
 }
@@ -209,35 +203,32 @@ bool operator==(
 template <size_t ElementDim, size_t HypercubeDim>
 bool operator!=(
     const HypercubeElementsIterator<ElementDim, HypercubeDim>& lhs,
-    const HypercubeElementsIterator<ElementDim, HypercubeDim>& rhs) noexcept {
+    const HypercubeElementsIterator<ElementDim, HypercubeDim>& rhs) {
   return not(lhs == rhs);
 }
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
-#define INSTANTIATE(ELEMENT_DIM, HYPERCUBE_DIM)                              \
-  template struct HypercubeElement<ELEMENT_DIM, HYPERCUBE_DIM>;              \
-  template std::ostream& operator<<(                                         \
-      std::ostream& os,                                                      \
-      const HypercubeElement<ELEMENT_DIM, HYPERCUBE_DIM>& element) noexcept; \
-  template struct HypercubeElementsIterator<ELEMENT_DIM, HYPERCUBE_DIM>;     \
-  template bool operator==(                                                  \
-      const HypercubeElementsIterator<ELEMENT_DIM, HYPERCUBE_DIM>& lhs,      \
-      const HypercubeElementsIterator<ELEMENT_DIM, HYPERCUBE_DIM>&           \
-          rhs) noexcept;                                                     \
-  template bool operator!=(                                                  \
-      const HypercubeElementsIterator<ELEMENT_DIM, HYPERCUBE_DIM>& lhs,      \
-      const HypercubeElementsIterator<ELEMENT_DIM, HYPERCUBE_DIM>&           \
-          rhs) noexcept;
+#define INSTANTIATE(ELEMENT_DIM, HYPERCUBE_DIM)                          \
+  template struct HypercubeElement<ELEMENT_DIM, HYPERCUBE_DIM>;          \
+  template std::ostream& operator<<(                                     \
+      std::ostream& os,                                                  \
+      const HypercubeElement<ELEMENT_DIM, HYPERCUBE_DIM>& element);      \
+  template struct HypercubeElementsIterator<ELEMENT_DIM, HYPERCUBE_DIM>; \
+  template bool operator==(                                              \
+      const HypercubeElementsIterator<ELEMENT_DIM, HYPERCUBE_DIM>& lhs,  \
+      const HypercubeElementsIterator<ELEMENT_DIM, HYPERCUBE_DIM>& rhs); \
+  template bool operator!=(                                              \
+      const HypercubeElementsIterator<ELEMENT_DIM, HYPERCUBE_DIM>& lhs,  \
+      const HypercubeElementsIterator<ELEMENT_DIM, HYPERCUBE_DIM>& rhs);
 #define INSTANTIATE_VERTEX(r, data)                          \
   INSTANTIATE(0, DIM(data))                                  \
   template HypercubeElement<0, DIM(data)>::HypercubeElement( \
       std::array<Side, DIM(data)>);
-#define INSTANTIATE_EDGE(r, data)                                       \
-  INSTANTIATE(1, DIM(data))                                             \
-  template HypercubeElement<1, DIM(data)>::HypercubeElement(            \
-      size_t, std::array<Side, DIM(data) - 1>);                         \
-  template size_t HypercubeElement<1, DIM(data)>::dimension_in_parent() \
-      const noexcept;
+#define INSTANTIATE_EDGE(r, data)                            \
+  INSTANTIATE(1, DIM(data))                                  \
+  template HypercubeElement<1, DIM(data)>::HypercubeElement( \
+      size_t, std::array<Side, DIM(data) - 1>);              \
+  template size_t HypercubeElement<1, DIM(data)>::dimension_in_parent() const;
 #define INSTANTIATE_FACE(r, data) INSTANTIATE(2, DIM(data))
 #define INSTANTIATE_CELL(r, data) INSTANTIATE(3, DIM(data))
 

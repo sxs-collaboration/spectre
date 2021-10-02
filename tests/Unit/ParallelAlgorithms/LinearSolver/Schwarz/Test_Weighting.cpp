@@ -66,7 +66,7 @@ void test_element_weight() {
 template <size_t Dim>
 void test_weights_conservation(const Element<Dim>& element,
                                const Mesh<Dim>& mesh,
-                               const size_t max_overlap) noexcept {
+                               const size_t max_overlap) {
   INFO("Weight conservation");
   CAPTURE(Dim);
   CAPTURE(element);
@@ -103,7 +103,7 @@ void test_weights_conservation(const Element<Dim>& element,
 }
 
 template <size_t Dim>
-void test_weights(const Mesh<Dim>& mesh, const size_t max_overlap) noexcept {
+void test_weights(const Mesh<Dim>& mesh, const size_t max_overlap) {
   typename Element<Dim>::Neighbors_t neighbors{};
   for (size_t d = 0; d < Dim; ++d) {
     for (const auto& side : std::array<Side, 2>{{Side::Lower, Side::Upper}}) {

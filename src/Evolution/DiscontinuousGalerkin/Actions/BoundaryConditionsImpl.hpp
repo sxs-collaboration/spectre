@@ -57,8 +57,7 @@ template <typename BoundaryConditionHelper, typename AllTagsOnFaceList,
 std::optional<std::string> apply_boundary_condition_impl(
     BoundaryConditionHelper& boundary_condition_helper,
     const Variables<AllTagsOnFaceList>& fields_on_interior_face,
-    tmpl::list<TagsFromFace...> /*meta*/,
-    const VolumeArgs&... volume_args) noexcept {
+    tmpl::list<TagsFromFace...> /*meta*/, const VolumeArgs&... volume_args) {
   return boundary_condition_helper(
       get<TagsFromFace>(fields_on_interior_face)..., volume_args...);
 }
@@ -103,7 +102,7 @@ void apply_boundary_condition_on_face(
     tmpl::list<PackageDataVolumeTags...> /*meta*/,
     tmpl::list<PackageFieldTags...> /*meta*/,
     tmpl::list<BoundaryCorrectionPackagedDataInputTags...> /*meta*/,
-    tmpl::list<BoundaryConditionVolumeTags...> /*meta*/) noexcept {
+    tmpl::list<BoundaryConditionVolumeTags...> /*meta*/) {
   using variables_tag = typename System::variables_tag;
   using variables_tags = typename variables_tag::tags_list;
   using flux_variables = typename System::flux_variables;
@@ -281,7 +280,7 @@ void apply_boundary_condition_on_face(
       [&direction, mesh_is_moving = not moving_mesh_map.is_identity(),
        number_of_points_on_face, &volume_inverse_jacobian,
        &volume_mesh](const auto normal_covector_magnitude_in_direction_ptr,
-                     auto fields_on_face_ptr) noexcept {
+                     auto fields_on_face_ptr) {
         if (auto& normal_covector_quantity =
                 *normal_covector_magnitude_in_direction_ptr;
             has_inv_spatial_metric or mesh_is_moving or
@@ -330,7 +329,7 @@ void apply_boundary_condition_on_face(
   // Normalize the outward facing normal vector on the interior side
   db::mutate<evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>>(
       box, [&direction, &interior_face_fields, &normalize_normal_vectors](
-               const auto normal_covector_and_magnitude_ptr) noexcept {
+               const auto normal_covector_and_magnitude_ptr) {
         normalize_normal_vectors(
             make_not_null(&normal_covector_and_magnitude_ptr->at(direction)),
             make_not_null(&interior_face_fields));
@@ -356,7 +355,7 @@ void apply_boundary_condition_on_face(
     // fields then the boundary condition should error.
     const auto apply_bc = [&boundary_condition, &face_mesh_velocity,
                            &interior_normal_covector](
-                              const auto&... face_and_volume_args) noexcept {
+                              const auto&... face_and_volume_args) {
       return boundary_condition.dg_outflow(face_mesh_velocity,
                                            interior_normal_covector,
                                            face_and_volume_args...);
@@ -474,7 +473,7 @@ void apply_boundary_condition_on_face(
     // Subtract mesh velocity from the _exterior_ fluxes
     if (face_mesh_velocity.has_value()) {
       tmpl::for_each<flux_variables>(
-          [&face_mesh_velocity, &exterior_face_fields](auto tag_v) noexcept {
+          [&face_mesh_velocity, &exterior_face_fields](auto tag_v) {
             // Modify fluxes for moving mesh
             using var_tag = typename decltype(tag_v)::type;
             using flux_var_tag =
@@ -580,7 +579,7 @@ void apply_boundary_condition_on_face(
       // Add the flux contribution to the volume data
       db::mutate<dt_variables_tag>(
           box, [&direction, &boundary_corrections_on_face,
-                &volume_mesh](const auto dt_variables_ptr) noexcept {
+                &volume_mesh](const auto dt_variables_ptr) {
             add_slice_to_data(
                 dt_variables_ptr, boundary_corrections_on_face,
                 volume_mesh.extents(), direction.dimension(),
@@ -611,7 +610,7 @@ void apply_boundary_condition_on_face(
       db::mutate<dt_variables_tag>(
           box, [&direction, &boundary_corrections_on_face, &face_det_jacobian,
                 &magnitude_of_interior_face_normal, &volume_det_inv_jacobian,
-                &volume_mesh](const auto dt_variables_ptr) noexcept {
+                &volume_mesh](const auto dt_variables_ptr) {
             evolution::dg::lift_boundary_terms_gauss_points(
                 dt_variables_ptr, volume_det_inv_jacobian, volume_mesh,
                 direction, boundary_corrections_on_face,
@@ -624,7 +623,7 @@ void apply_boundary_condition_on_face(
     if (volume_mesh.quadrature(0) == Spectral::Quadrature::GaussLobatto) {
       db::mutate<dt_variables_tag>(
           box, [&direction, &dt_time_derivative_correction,
-                &volume_mesh](const auto dt_variables_ptr) noexcept {
+                &volume_mesh](const auto dt_variables_ptr) {
             add_slice_to_data(
                 dt_variables_ptr, dt_time_derivative_correction,
                 volume_mesh.extents(), direction.dimension(),
@@ -633,7 +632,7 @@ void apply_boundary_condition_on_face(
     } else {
       db::mutate<dt_variables_tag>(
           box, [&direction, &dt_time_derivative_correction,
-                &volume_mesh](const auto dt_variables_ptr) noexcept {
+                &volume_mesh](const auto dt_variables_ptr) {
             interpolate_dt_terms_gauss_points(dt_variables_ptr, volume_mesh,
                                               direction,
                                               dt_time_derivative_correction);
@@ -666,7 +665,7 @@ void apply_boundary_conditions_on_all_external_faces(
         db::wrap_tags_in<::Tags::deriv, typename System::gradient_variables,
                          tmpl::size_t<Dim>, Frame::Inertial>>& partial_derivs,
     const Variables<detail::get_primitive_vars_tags_from_system<System>>* const
-        primitive_vars) noexcept {
+        primitive_vars) {
   using factory_classes =
       typename std::decay_t<decltype(db::get<Parallel::Tags::Metavariables>(
           *box))>::factory_creation::factory_classes;
@@ -695,8 +694,7 @@ void apply_boundary_conditions_on_all_external_faces(
   tmpl::for_each<derived_boundary_conditions>(
       [&boundary_correction, &box, &element, &external_boundary_conditions,
        &number_of_boundaries_left, &partial_derivs, &primitive_vars,
-       &temporaries,
-       &volume_fluxes](auto derived_boundary_condition_v) noexcept {
+       &temporaries, &volume_fluxes](auto derived_boundary_condition_v) {
         using DerivedBoundaryCondition =
             tmpl::type_from<decltype(derived_boundary_condition_v)>;
 

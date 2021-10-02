@@ -35,7 +35,7 @@ FastFlow::FastFlow(FastFlow::Flow::type flow, FastFlow::Alpha::type alpha,
                    FastFlow::TruncationTol::type trunc_tol,
                    FastFlow::DivergenceTol::type divergence_tol,
                    FastFlow::DivergenceIter::type divergence_iter,
-                   FastFlow::MaxIts::type max_its) noexcept
+                   FastFlow::MaxIts::type max_its)
     : alpha_(alpha),
       beta_(beta),
       abs_tol_(abs_tol),
@@ -50,8 +50,7 @@ FastFlow::FastFlow(FastFlow::Flow::type flow, FastFlow::Alpha::type alpha,
       iter_at_min_residual_mesh_norm_(0) {}
 
 template <typename Frame>
-size_t FastFlow::current_l_mesh(const Strahlkorper<Frame>& strahlkorper) const
-    noexcept {
+size_t FastFlow::current_l_mesh(const Strahlkorper<Frame>& strahlkorper) const {
   const size_t l_max = strahlkorper.ylm_spherepack().l_max();
   // This is the formula used in SpEC (if l_max>=4). We may want to make this
   // formula an option in the future, if we want to experiment with it.
@@ -63,7 +62,7 @@ template <typename Frame>
 DataVector fast_flow_weight(
     const Scalar<DataVector>& one_form_magnitude,
     const tnsr::i<DataVector, 3, Frame>& r_hat, const DataVector& radius,
-    const tnsr::II<DataVector, 3, Frame>& inverse_surface_metric) noexcept {
+    const tnsr::II<DataVector, 3, Frame>& inverse_surface_metric) {
   // Form Euclidean surface metric
   auto flat_metric =
       make_with_value<tnsr::ii<DataVector, 3, Frame>>(radius, 0.0);
@@ -91,7 +90,7 @@ FastFlow::iterate_horizon_finder(
     const gsl::not_null<Strahlkorper<Frame>*> current_strahlkorper,
     const tnsr::II<DataVector, 3, Frame>& upper_spatial_metric,
     const tnsr::ii<DataVector, 3, Frame>& extrinsic_curvature,
-    const tnsr::Ijj<DataVector, 3, Frame>& christoffel_2nd_kind) noexcept {
+    const tnsr::Ijj<DataVector, 3, Frame>& christoffel_2nd_kind) {
   const size_t l_surface = current_strahlkorper->l_max();
   const size_t l_mesh = current_l_mesh(*current_strahlkorper);
 
@@ -273,7 +272,7 @@ FastFlow::iterate_horizon_finder(
 }
 
 std::ostream& operator<<(std::ostream& os,
-                         const FastFlow::FlowType& flow_type) noexcept {
+                         const FastFlow::FlowType& flow_type) {
   switch (flow_type) {
     case FastFlow::FlowType::Jacobi:
       return os << "Jacobi";
@@ -288,7 +287,7 @@ std::ostream& operator<<(std::ostream& os,
   }
 }
 
-void FastFlow::pup(PUP::er& p) noexcept {
+void FastFlow::pup(PUP::er& p) {
   p | alpha_;
   p | beta_;
   p | abs_tol_;
@@ -303,8 +302,7 @@ void FastFlow::pup(PUP::er& p) noexcept {
   p | iter_at_min_residual_mesh_norm_;
 }
 
-std::ostream& operator<<(std::ostream& os,
-                         const FastFlow::Status& status) noexcept {
+std::ostream& operator<<(std::ostream& os, const FastFlow::Status& status) {
   switch (status) {
     case FastFlow::Status::SuccessfulIteration:
       return os << "Still iterating";
@@ -327,7 +325,7 @@ std::ostream& operator<<(std::ostream& os,
   }
 }
 
-bool operator==(const FastFlow& lhs, const FastFlow& rhs) noexcept {
+bool operator==(const FastFlow& lhs, const FastFlow& rhs) {
   return lhs.alpha_ == rhs.alpha_ and lhs.beta_ == rhs.beta_ and
          lhs.abs_tol_ == rhs.abs_tol_ and lhs.trunc_tol_ == rhs.trunc_tol_ and
          lhs.divergence_tol_ == rhs.divergence_tol_ and
@@ -361,14 +359,13 @@ FastFlow::FlowType Options::create_from_yaml<FastFlow::FlowType>::create<void>(
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define INSTANTIATE(_, data)                                                \
   template size_t FastFlow::current_l_mesh(                                 \
-      const Strahlkorper<FRAME(data)>& strahlkorper) const noexcept;        \
+      const Strahlkorper<FRAME(data)>& strahlkorper) const;                 \
   template std::pair<FastFlow::Status, FastFlow::IterInfo>                  \
   FastFlow::iterate_horizon_finder<FRAME(data)>(                            \
       const gsl::not_null<Strahlkorper<FRAME(data)>*> current_strahlkorper, \
       const tnsr::II<DataVector, 3, FRAME(data)>& upper_spatial_metric,     \
       const tnsr::ii<DataVector, 3, FRAME(data)>& extrinsic_curvature,      \
-      const tnsr::Ijj<DataVector, 3, FRAME(data)>&                          \
-          christoffel_2nd_kind) noexcept;
+      const tnsr::Ijj<DataVector, 3, FRAME(data)>& christoffel_2nd_kind);
 GENERATE_INSTANTIATIONS(INSTANTIATE, (Frame::Grid, Frame::Inertial))
 #undef INSTANTIATE
 #undef FRAME

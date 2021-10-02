@@ -92,62 +92,58 @@ using options_in_group =
 // information.
 template <typename T>
 struct yaml_type {
-  static std::string value() noexcept { return pretty_type::short_name<T>(); }
+  static std::string value() { return pretty_type::short_name<T>(); }
 };
 
 template <typename T>
 struct yaml_type<std::unique_ptr<T>> {
-  static std::string value() noexcept { return yaml_type<T>::value(); }
+  static std::string value() { return yaml_type<T>::value(); }
 };
 
 template <typename T>
 struct yaml_type<std::vector<T>> {
-  static std::string value() noexcept {
-    return "[" + yaml_type<T>::value() + ", ...]";
-  }
+  static std::string value() { return "[" + yaml_type<T>::value() + ", ...]"; }
 };
 
 template <typename T>
 struct yaml_type<std::list<T>> {
-  static std::string value() noexcept {
-    return "[" + yaml_type<T>::value() + ", ...]";
-  }
+  static std::string value() { return "[" + yaml_type<T>::value() + ", ...]"; }
 };
 
 template <typename T, size_t N>
 struct yaml_type<std::array<T, N>> {
-  static std::string value() noexcept {
+  static std::string value() {
     return "[" + yaml_type<T>::value() + " x" + std::to_string(N) + "]";
   }
 };
 
 template <typename K, typename V, typename C>
 struct yaml_type<std::map<K, V, C>> {
-  static std::string value() noexcept {
+  static std::string value() {
     return "{" + yaml_type<K>::value() + ": " + yaml_type<V>::value() + "}";
   }
 };
 
 template <typename K, typename V, typename H, typename E>
 struct yaml_type<std::unordered_map<K, V, H, E>> {
-  static std::string value() noexcept {
+  static std::string value() {
     return "{" + yaml_type<K>::value() + ": " + yaml_type<V>::value() + "}";
   }
 };
 
 template <typename T, typename U>
 struct yaml_type<std::pair<T, U>> {
-  static std::string value() noexcept {
+  static std::string value() {
     return "[" + yaml_type<T>::value() + ", " + yaml_type<U>::value() + "]";
   }
 };
 
 template <typename... T>
 struct yaml_type<std::variant<T...>> {
-  static std::string value() noexcept {
+  static std::string value() {
     bool first = true;
     std::string result;
-    const auto add_type = [&first, &result](auto alternative) noexcept {
+    const auto add_type = [&first, &result](auto alternative) {
       if (not first) {
         result += " or ";
       }
@@ -198,14 +194,14 @@ template <typename OptionList>
 struct print {
   using value_type = std::string;
   template <typename Tag>
-  void operator()(tmpl::type_<Tag> /*meta*/) noexcept;
+  void operator()(tmpl::type_<Tag> /*meta*/);
   std::string indent{"  "};
   value_type value{};
 };
 
 template <typename Tag, typename OptionList>
 struct print_impl {
-  static std::string apply(const std::string& indent) noexcept {
+  static std::string apply(const std::string& indent) {
     if constexpr (tmpl::list_contains_v<OptionList, Tag>) {
       const std::string new_line = "\n" + indent + "  ";
       std::ostringstream ss;
@@ -216,7 +212,7 @@ struct print_impl {
           call_with_dynamic_type<
               void, typename Tag::type::element_type::creatable_classes>(
               Tag::suggested_value().get(),
-              [&new_line, &ss](const auto* derived) noexcept {
+              [&new_line, &ss](const auto* derived) {
                 ss << new_line << "suggested=" << std::boolalpha
                    << pretty_type::short_name<decltype(*derived)>();
               });
@@ -253,10 +249,10 @@ template <typename FirstAlternative, typename... OtherAlternatives,
           typename OptionList>
 struct print_impl<Alternatives<FirstAlternative, OtherAlternatives...>,
                   OptionList> {
-  static std::string apply(const std::string& indent) noexcept {
+  static std::string apply(const std::string& indent) {
     std::ostringstream ss;
     const auto print_alternatives = [&indent, &ss](const std::string& header,
-                                                   auto alternatives) noexcept {
+                                                   auto alternatives) {
       using AlternativeOptions = decltype(alternatives);
       ss << indent << header << "\n"
          << tmpl::for_each<AlternativeOptions>(
@@ -272,7 +268,7 @@ struct print_impl<Alternatives<FirstAlternative, OtherAlternatives...>,
 
 template <typename OptionList>
 template <typename Tag>
-void print<OptionList>::operator()(tmpl::type_<Tag> /*meta*/) noexcept {
+void print<OptionList>::operator()(tmpl::type_<Tag> /*meta*/) {
   value += print_impl<Tag, OptionList>::apply(indent);
 }
 

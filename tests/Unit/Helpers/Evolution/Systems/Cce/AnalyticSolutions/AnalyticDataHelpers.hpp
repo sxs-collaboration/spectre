@@ -48,7 +48,7 @@ struct SphericalSolutionWrapper : public SphericalSolution {
   template <typename... Args>
   void test_spherical_metric(const std::string python_file, const size_t l_max,
                              const double time, Approx custom_approx,
-                             const Args... args) const noexcept {
+                             const Args... args) const {
     const size_t size =
         Spectral::Swsh::number_of_swsh_collocation_points(l_max);
     Scalar<DataVector> sin_theta{size};
@@ -114,8 +114,7 @@ struct SphericalSolutionWrapper : public SphericalSolution {
     }
   }
 
-  void test_serialize_and_deserialize(const size_t l_max,
-                                      const double time) noexcept {
+  void test_serialize_and_deserialize(const size_t l_max, const double time) {
     const size_t size =
         Spectral::Swsh::number_of_swsh_collocation_points(l_max);
     tnsr::aa<DataVector, 3, ::Frame::Spherical<::Frame::Inertial>>
@@ -141,7 +140,7 @@ void test_initialize_j(
     size_t l_max, size_t number_of_radial_points, double extraction_radius,
     double time,
     std::unique_ptr<InitializeJ::InitializeJ<false>> expected_initialize_j,
-    std::unique_ptr<WorldtubeData> analytic_solution) noexcept;
+    std::unique_ptr<WorldtubeData> analytic_solution);
 
 // This function determines the Bondi-Sachs scalars from a Cartesian spacetime
 // metric, assuming that the metric is already in null form, so the spatial
@@ -150,8 +149,7 @@ void test_initialize_j(
 tuples::TaggedTuple<Tags::BondiBeta, Tags::BondiU, Tags::BondiW, Tags::BondiJ>
 extract_bondi_scalars_from_cartesian_metric(
     const tnsr::aa<DataVector, 3>& spacetime_metric,
-    const CartesianiSphericalJ& inverse_jacobian,
-    double extraction_radius) noexcept;
+    const CartesianiSphericalJ& inverse_jacobian, double extraction_radius);
 
 // This function determines the time derivative of the Bondi-Sachs scalars
 // from the time derivative of a Cartesian spacetime metric, the Cartesian
@@ -163,8 +161,7 @@ tuples::TaggedTuple<::Tags::dt<Tags::BondiBeta>, ::Tags::dt<Tags::BondiU>,
 extract_dt_bondi_scalars_from_cartesian_metric(
     const tnsr::aa<DataVector, 3>& dt_spacetime_metric,
     const tnsr::aa<DataVector, 3>& spacetime_metric,
-    const CartesianiSphericalJ& inverse_jacobian,
-    double extraction_radius) noexcept;
+    const CartesianiSphericalJ& inverse_jacobian, double extraction_radius);
 
 // This function determines the radial derivative of the Bondi-Sachs scalars
 // from the radial derivative of a Cartesian spacetime metric, the Cartesian
@@ -177,8 +174,7 @@ extract_dr_bondi_scalars_from_cartesian_metric(
     const tnsr::aa<DataVector, 3>& dr_spacetime_metric,
     const tnsr::aa<DataVector, 3>& spacetime_metric,
     const CartesianiSphericalJ& inverse_jacobian,
-    const CartesianiSphericalJ& dr_inverse_jacobian,
-    double extraction_radius) noexcept;
+    const CartesianiSphericalJ& dr_inverse_jacobian, double extraction_radius);
 
 // This function checks the consistency of the 3+1 ADM quantities in the
 // `boundary_tuple` with quantities computed from `expected_spacetime_metric`,
@@ -192,7 +188,7 @@ void check_adm_metric_quantities(
     const tuples::TaggedTuple<TupleTags...>& boundary_tuple,
     const tnsr::aa<DataVector, 3>& expected_spacetime_metric,
     const tnsr::aa<DataVector, 3>& expected_dt_spacetime_metric,
-    const tnsr::iaa<DataVector, 3>& expected_d_spacetime_metric) noexcept {
+    const tnsr::iaa<DataVector, 3>& expected_d_spacetime_metric) {
   // check the 3+1 quantities are computed correctly in the abstract base class
   // `WorldtubeData`
   const auto& dr_cartesian_coordinates =

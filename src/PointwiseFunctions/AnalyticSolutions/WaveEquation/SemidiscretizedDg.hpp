@@ -57,8 +57,7 @@ class SemidiscretizedDg : public MarkAsAnalyticSolution {
       "A solution of the semidiscretized DG system on linear elements\n"
       "with spatial period 2 pi.";
 
-  SemidiscretizedDg(int harmonic,
-                    const std::array<double, 4>& amplitudes) noexcept;
+  SemidiscretizedDg(int harmonic, const std::array<double, 4>& amplitudes);
 
   SemidiscretizedDg() = default;
 
@@ -66,8 +65,7 @@ class SemidiscretizedDg : public MarkAsAnalyticSolution {
   template <typename... Tags>
   tuples::TaggedTuple<Tags...> variables(const tnsr::I<DataVector, 1>& x,
                                          double t,
-                                         tmpl::list<Tags...> /*meta*/) const
-      noexcept {
+                                         tmpl::list<Tags...> /*meta*/) const {
     static_assert(
         tmpl2::flat_all_v<tmpl::list_contains_v<tags, Tags>...>,
         "At least one of the requested tags is not supported. The requested "
@@ -78,18 +76,18 @@ class SemidiscretizedDg : public MarkAsAnalyticSolution {
   /// \cond
   tuples::TaggedTuple<ScalarWave::Pi> variables(
       const tnsr::I<DataVector, 1>& x, double t,
-      tmpl::list<ScalarWave::Pi> /*meta*/) const noexcept;
+      tmpl::list<ScalarWave::Pi> /*meta*/) const;
 
   tuples::TaggedTuple<ScalarWave::Phi<1>> variables(
       const tnsr::I<DataVector, 1>& x, double t,
-      tmpl::list<ScalarWave::Phi<1>> /*meta*/) const noexcept;
+      tmpl::list<ScalarWave::Phi<1>> /*meta*/) const;
 
   tuples::TaggedTuple<ScalarWave::Psi> variables(
       const tnsr::I<DataVector, 1>& x, double t,
-      tmpl::list<ScalarWave::Psi> /*meta*/) const noexcept;
+      tmpl::list<ScalarWave::Psi> /*meta*/) const;
   /// \endcond
 
-  void pup(PUP::er& p) noexcept;  // NOLINT(google-runtime-references)
+  void pup(PUP::er& p);  // NOLINT(google-runtime-references)
 
  private:
   int harmonic_;

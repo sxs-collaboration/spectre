@@ -18,9 +18,8 @@
 
 namespace domain::CoordinateMaps::FocallyLiftedInnerMaps {
 
-FlatEndcap::FlatEndcap(const std::array<double, 3>& center,
-                       double radius) noexcept
-    : center_(center), radius_([&radius]() noexcept {
+FlatEndcap::FlatEndcap(const std::array<double, 3>& center, double radius)
+    : center_(center), radius_([&radius]() {
         ASSERT(
             not equal_within_roundoff(radius, 0.0),
             "Cannot have zero radius.  Note that this ASSERT implicitly "
@@ -35,7 +34,7 @@ template <typename T>
 void FlatEndcap::forward_map(
     const gsl::not_null<std::array<tt::remove_cvref_wrap_t<T>, 3>*>
         target_coords,
-    const std::array<T, 3>& source_coords) const noexcept {
+    const std::array<T, 3>& source_coords) const {
   using ReturnType = tt::remove_cvref_wrap_t<T>;
   const ReturnType& xbar = source_coords[0];
   const ReturnType& ybar = source_coords[1];
@@ -55,7 +54,7 @@ void FlatEndcap::jacobian(
     const gsl::not_null<
         tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>*>
         jacobian_out,
-    const std::array<T, 3>& source_coords) const noexcept {
+    const std::array<T, 3>& source_coords) const {
   using ReturnType = tt::remove_cvref_wrap_t<T>;
 
   if constexpr (not std::is_same_v<ReturnType, double>) {
@@ -78,7 +77,7 @@ void FlatEndcap::inv_jacobian(
     const gsl::not_null<
         tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>*>
         inv_jacobian_out,
-    const std::array<T, 3>& source_coords) const noexcept {
+    const std::array<T, 3>& source_coords) const {
   using ReturnType = tt::remove_cvref_wrap_t<T>;
 
   if constexpr (not std::is_same_v<ReturnType, double>) {
@@ -97,8 +96,7 @@ void FlatEndcap::inv_jacobian(
 }
 
 std::optional<std::array<double, 3>> FlatEndcap::inverse(
-    const std::array<double, 3>& target_coords,
-    const double sigma_in) const noexcept {
+    const std::array<double, 3>& target_coords, const double sigma_in) const {
   const double xbar = (target_coords[0] - center_[0]) / radius_;
   const double ybar = (target_coords[1] - center_[1]) / radius_;
   const double zbar = 2.0 * sigma_in - 1.0;
@@ -117,7 +115,7 @@ std::optional<std::array<double, 3>> FlatEndcap::inverse(
 template <typename T>
 void FlatEndcap::sigma(
     const gsl::not_null<tt::remove_cvref_wrap_t<T>*> sigma_out,
-    const std::array<T, 3>& source_coords) const noexcept {
+    const std::array<T, 3>& source_coords) const {
   *sigma_out = 0.5 * (source_coords[2] + 1.0);
 }
 
@@ -125,7 +123,7 @@ template <typename T>
 void FlatEndcap::deriv_sigma(
     const gsl::not_null<std::array<tt::remove_cvref_wrap_t<T>, 3>*>
         deriv_sigma_out,
-    const std::array<T, 3>& source_coords) const noexcept {
+    const std::array<T, 3>& source_coords) const {
   using ReturnType = tt::remove_cvref_wrap_t<T>;
   if constexpr (not std::is_same_v<ReturnType, double>) {
     destructive_resize_components(
@@ -140,7 +138,7 @@ template <typename T>
 void FlatEndcap::dxbar_dsigma(
     const gsl::not_null<std::array<tt::remove_cvref_wrap_t<T>, 3>*>
         dxbar_dsigma_out,
-    const std::array<T, 3>& source_coords) const noexcept {
+    const std::array<T, 3>& source_coords) const {
   using ReturnType = tt::remove_cvref_wrap_t<T>;
   if constexpr (not std::is_same_v<ReturnType, double>) {
     destructive_resize_components(
@@ -154,7 +152,7 @@ void FlatEndcap::dxbar_dsigma(
 std::optional<double> FlatEndcap::lambda_tilde(
     const std::array<double, 3>& parent_mapped_target_coords,
     const std::array<double, 3>& projection_point,
-    const bool /*source_is_between_focus_and_target*/) const noexcept {
+    const bool /*source_is_between_focus_and_target*/) const {
   const double result = (center_[2] - projection_point[2]) /
                         (parent_mapped_target_coords[2] - projection_point[2]);
   if (result < 1.0) {
@@ -168,7 +166,7 @@ void FlatEndcap::deriv_lambda_tilde(
     const gsl::not_null<std::array<tt::remove_cvref_wrap_t<T>, 3>*>
         deriv_lambda_tilde_out,
     const std::array<T, 3>& target_coords, const T& lambda_tilde,
-    const std::array<double, 3>& projection_point) const noexcept {
+    const std::array<double, 3>& projection_point) const {
   using ReturnType = tt::remove_cvref_wrap_t<T>;
 
   if constexpr (not std::is_same_v<ReturnType, double>) {
@@ -183,16 +181,16 @@ void FlatEndcap::deriv_lambda_tilde(
       -square(lambda_tilde) / (center_[2] - projection_point[2]);
 }
 
-void FlatEndcap::pup(PUP::er& p) noexcept {
+void FlatEndcap::pup(PUP::er& p) {
   p | center_;
   p | radius_;
 }
 
-bool operator==(const FlatEndcap& lhs, const FlatEndcap& rhs) noexcept {
+bool operator==(const FlatEndcap& lhs, const FlatEndcap& rhs) {
   return lhs.center_ == rhs.center_ and lhs.radius_ == rhs.radius_;
 }
 
-bool operator!=(const FlatEndcap& lhs, const FlatEndcap& rhs) noexcept {
+bool operator!=(const FlatEndcap& lhs, const FlatEndcap& rhs) {
   return not(lhs == rhs);
 }
 // Explicit instantiations
@@ -203,37 +201,37 @@ bool operator!=(const FlatEndcap& lhs, const FlatEndcap& rhs) noexcept {
       const gsl::not_null<                                                    \
           std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>*>               \
           target_coords,                                                      \
-      const std::array<DTYPE(data), 3>& source_coords) const noexcept;        \
+      const std::array<DTYPE(data), 3>& source_coords) const;                 \
   template void FlatEndcap::jacobian(                                         \
       const gsl::not_null<                                                    \
           tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame>*> \
           jacobian_out,                                                       \
-      const std::array<DTYPE(data), 3>& source_coords) const noexcept;        \
+      const std::array<DTYPE(data), 3>& source_coords) const;                 \
   template void FlatEndcap::inv_jacobian(                                     \
       const gsl::not_null<                                                    \
           tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame>*> \
           inv_jacobian_out,                                                   \
-      const std::array<DTYPE(data), 3>& source_coords) const noexcept;        \
+      const std::array<DTYPE(data), 3>& source_coords) const;                 \
   template void FlatEndcap::sigma(                                            \
       const gsl::not_null<tt::remove_cvref_wrap_t<DTYPE(data)>*> sigma_out,   \
-      const std::array<DTYPE(data), 3>& source_coords) const noexcept;        \
+      const std::array<DTYPE(data), 3>& source_coords) const;                 \
   template void FlatEndcap::deriv_sigma(                                      \
       const gsl::not_null<                                                    \
           std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>*>               \
           deriv_sigma_out,                                                    \
-      const std::array<DTYPE(data), 3>& source_coords) const noexcept;        \
+      const std::array<DTYPE(data), 3>& source_coords) const;                 \
   template void FlatEndcap::dxbar_dsigma(                                     \
       const gsl::not_null<                                                    \
           std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>*>               \
           dxbar_dsigma_out,                                                   \
-      const std::array<DTYPE(data), 3>& source_coords) const noexcept;        \
+      const std::array<DTYPE(data), 3>& source_coords) const;                 \
   template void FlatEndcap::deriv_lambda_tilde(                               \
       const gsl::not_null<                                                    \
           std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>*>               \
           deriv_lambda_tilde_out,                                             \
       const std::array<DTYPE(data), 3>& target_coords,                        \
       const DTYPE(data) & lambda_tilde,                                       \
-      const std::array<double, 3>& projection_point) const noexcept;
+      const std::array<double, 3>& projection_point) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector,
                                       std::reference_wrapper<const double>,

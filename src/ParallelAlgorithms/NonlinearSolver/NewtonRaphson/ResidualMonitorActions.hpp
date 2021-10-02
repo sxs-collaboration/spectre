@@ -45,8 +45,7 @@ struct CheckResidualMagnitude {
   template <typename ParallelComponent, typename DataBox,
             typename Metavariables, typename ArrayIndex, typename... Args>
   static void apply(DataBox& box, Parallel::GlobalCache<Metavariables>& cache,
-                    const ArrayIndex& /*array_index*/,
-                    Args&&... args) noexcept {
+                    const ArrayIndex& /*array_index*/, Args&&... args) {
     if constexpr (db::tag_is_retrievable_v<residual_magnitude_square_tag,
                                            DataBox>) {
       apply_impl<ParallelComponent>(box, cache, std::forward<Args>(args)...);
@@ -65,7 +64,7 @@ struct CheckResidualMagnitude {
                          const size_t iteration_id,
                          const size_t globalization_iteration_id,
                          const double next_residual_magnitude_square,
-                         const double step_length) noexcept {
+                         const double step_length) {
     const double residual_magnitude = sqrt(next_residual_magnitude_square);
 
     NonlinearSolver::observe_detail::contribute_to_reduction_observer<
@@ -76,8 +75,8 @@ struct CheckResidualMagnitude {
     if (UNLIKELY(iteration_id == 0)) {
       db::mutate<initial_residual_magnitude_tag>(
           make_not_null(&box),
-          [residual_magnitude](const gsl::not_null<double*>
-                                   initial_residual_magnitude) noexcept {
+          [residual_magnitude](
+              const gsl::not_null<double*> initial_residual_magnitude) {
             *initial_residual_magnitude = residual_magnitude;
           });
     } else {
@@ -125,8 +124,7 @@ struct CheckResidualMagnitude {
               make_not_null(&box),
               [step_length, next_residual_magnitude_square](
                   const gsl::not_null<double*> prev_step_length,
-                  const gsl::not_null<double*>
-                      prev_residual_magnitude_square) noexcept {
+                  const gsl::not_null<double*> prev_residual_magnitude_square) {
                 *prev_step_length = step_length;
                 *prev_residual_magnitude_square =
                     next_residual_magnitude_square;
@@ -168,9 +166,9 @@ struct CheckResidualMagnitude {
     }      // initial iteration
 
     db::mutate<residual_magnitude_square_tag>(
-        make_not_null(&box), [next_residual_magnitude_square](
-                                 const gsl::not_null<double*>
-                                     local_residual_magnitude_square) noexcept {
+        make_not_null(&box),
+        [next_residual_magnitude_square](
+            const gsl::not_null<double*> local_residual_magnitude_square) {
           *local_residual_magnitude_square = next_residual_magnitude_square;
         });
 

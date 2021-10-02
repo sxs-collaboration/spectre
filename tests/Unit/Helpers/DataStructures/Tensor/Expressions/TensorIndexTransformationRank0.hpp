@@ -16,7 +16,7 @@ namespace TestHelpers::TensorExpressions {
 /// \details The functions tested are:
 /// - `TensorExpressions::compute_tensorindex_transformation`
 /// - `TensorExpressions::transform_multi_index`
-void test_tensor_index_transformation_rank_0() noexcept {
+void test_tensor_index_transformation_rank_0() {
   const std::array<size_t, 0> index_order = {};
 
   const std::array<size_t, 0> actual_transformation =

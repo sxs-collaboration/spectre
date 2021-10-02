@@ -54,7 +54,7 @@
 #endif
 }
 
-void test_complex_modal_vector_math() noexcept {
+void test_complex_modal_vector_math() {
   const TestHelpers::VectorImpl::Bound generic{{-100.0, 100.0}};
 
   const auto unary_ops = std::make_tuple(

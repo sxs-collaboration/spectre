@@ -71,32 +71,32 @@
 
 namespace SolveXcts::OptionTags {
 struct NonlinearSolverGroup {
-  static std::string name() noexcept { return "NonlinearSolver"; }
+  static std::string name() { return "NonlinearSolver"; }
   static constexpr Options::String help = "The iterative nonlinear solver";
 };
 struct NewtonRaphsonGroup {
-  static std::string name() noexcept { return "NewtonRaphson"; }
+  static std::string name() { return "NewtonRaphson"; }
   static constexpr Options::String help =
       "Options for the Newton-Raphson nonlinear solver";
   using group = NonlinearSolverGroup;
 };
 struct LinearSolverGroup {
-  static std::string name() noexcept { return "LinearSolver"; }
+  static std::string name() { return "LinearSolver"; }
   static constexpr Options::String help =
       "The iterative Krylov-subspace linear solver";
 };
 struct GmresGroup {
-  static std::string name() noexcept { return "Gmres"; }
+  static std::string name() { return "Gmres"; }
   static constexpr Options::String help = "Options for the GMRES linear solver";
   using group = LinearSolverGroup;
 };
 struct SchwarzSmootherGroup {
-  static std::string name() noexcept { return "SchwarzSmoother"; }
+  static std::string name() { return "SchwarzSmoother"; }
   static constexpr Options::String help = "Options for the Schwarz smoother";
   using group = LinearSolverGroup;
 };
 struct MultigridGroup {
-  static std::string name() noexcept { return "Multigrid"; }
+  static std::string name() { return "Multigrid"; }
   static constexpr Options::String help = "Options for the multigrid";
   using group = LinearSolverGroup;
 };
@@ -336,8 +336,7 @@ struct Metavariables {
       const gsl::not_null<
           tuples::TaggedTuple<Tags...>*> /*phase_change_decision_data*/,
       const Phase& current_phase,
-      const Parallel::CProxy_GlobalCache<
-          Metavariables>& /*cache_proxy*/) noexcept {
+      const Parallel::CProxy_GlobalCache<Metavariables>& /*cache_proxy*/) {
     switch (current_phase) {
       case Phase::Initialization:
         return Phase::RegisterWithObserver;
@@ -357,7 +356,7 @@ struct Metavariables {
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& /*p*/) noexcept {}
+  void pup(PUP::er& /*p*/) {}
 };
 
 static const std::vector<void (*)()> charm_init_node_funcs{

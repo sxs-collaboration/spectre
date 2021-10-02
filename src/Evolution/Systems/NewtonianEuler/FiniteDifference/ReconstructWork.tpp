@@ -42,7 +42,7 @@ void reconstruct_prims_work(
                        evolution::dg::subcell::NeighborData,
                        boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>
         neighbor_data,
-    const Mesh<Dim>& subcell_mesh, const size_t ghost_zone_size) noexcept {
+    const Mesh<Dim>& subcell_mesh, const size_t ghost_zone_size) {
   // Conservative vars tags
   using MassDensityCons = Tags::MassDensityCons;
   using EnergyDensity = Tags::EnergyDensity;
@@ -71,7 +71,7 @@ void reconstruct_prims_work(
       [&element, &neighbor_data, neighbor_num_pts, &reconstruct,
        reconstructed_num_pts, volume_num_pts, &volume_prims,
        &vars_in_neighbor_count, &vars_on_lower_face, &vars_on_upper_face,
-       &subcell_mesh](auto tag_v) noexcept {
+       &subcell_mesh](auto tag_v) {
         using tag = tmpl::type_from<decltype(tag_v)>;
         auto& volume_tensor = get<tag>(volume_prims);
 
@@ -167,7 +167,7 @@ void reconstruct_fd_neighbor_work(
         neighbor_data,
     const Mesh<Dim>& subcell_mesh,
     const Direction<Dim>& direction_to_reconstruct,
-    const size_t ghost_zone_size) noexcept {
+    const size_t ghost_zone_size) {
   // Conservative vars tags
   using MassDensityCons = Tags::MassDensityCons;
   using EnergyDensity = Tags::EnergyDensity;
@@ -206,7 +206,7 @@ void reconstruct_fd_neighbor_work(
   tmpl::for_each<prim_tags_for_reconstruction>(
       [&direction_to_reconstruct, &ghost_data_extents, &neighbor_prims,
        &reconstruct_lower_neighbor, &reconstruct_upper_neighbor, &subcell_mesh,
-       &subcell_volume_prims, &vars_on_face](auto tag_v) noexcept {
+       &subcell_volume_prims, &vars_on_face](auto tag_v) {
         using tag = tmpl::type_from<decltype(tag_v)>;
         const auto& tensor_volume = get<tag>(subcell_volume_prims);
         const auto& tensor_neighbor = get<tag>(neighbor_prims);

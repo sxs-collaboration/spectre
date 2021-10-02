@@ -22,14 +22,13 @@ namespace Cce::Solutions {
 
 BouncingBlackHole::BouncingBlackHole(const double amplitude,
                                      const double extraction_radius,
-                                     const double mass,
-                                     const double period) noexcept
+                                     const double mass, const double period)
     : WorldtubeData(extraction_radius),
       amplitude_{amplitude},
       mass_{mass},
       frequency_{2.0 * M_PI / period} {}
 
-std::unique_ptr<WorldtubeData> BouncingBlackHole::get_clone() const noexcept {
+std::unique_ptr<WorldtubeData> BouncingBlackHole::get_clone() const {
   return std::make_unique<BouncingBlackHole>(*this);
 }
 
@@ -37,8 +36,7 @@ void BouncingBlackHole::variables_impl(
     const gsl::not_null<tnsr::aa<DataVector, 3>*> spacetime_metric,
     const size_t l_max, const double time,
     tmpl::type_<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial,
-                                          DataVector>> /*meta*/) const
-    noexcept {
+                                          DataVector>> /*meta*/) const {
   const auto& cartesian_coordinates =
       cache_or_compute<Tags::CauchyCartesianCoords>(l_max, time);
 
@@ -97,7 +95,7 @@ void BouncingBlackHole::variables_impl(
     const size_t l_max, const double time,
     tmpl::type_<::Tags::dt<
         gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>> /*meta*/)
-    const noexcept {
+    const {
   const auto& cartesian_coordinates =
       cache_or_compute<Tags::CauchyCartesianCoords>(l_max, time);
 
@@ -175,7 +173,7 @@ void BouncingBlackHole::variables_impl(
     const gsl::not_null<tnsr::iaa<DataVector, 3>*> d_spacetime_metric,
     const size_t l_max, const double time,
     tmpl::type_<GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>> /*meta*/)
-    const noexcept {
+    const {
   const auto& cartesian_coordinates =
       cache_or_compute<Tags::CauchyCartesianCoords>(l_max, time);
 
@@ -301,11 +299,11 @@ void BouncingBlackHole::variables_impl(
 void BouncingBlackHole::variables_impl(
     const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, -2>>*> news,
     const size_t /*output_l_max*/, const double /*time*/,
-    tmpl::type_<Tags::News> /*meta*/) const noexcept {
+    tmpl::type_<Tags::News> /*meta*/) const {
   get(*news).data() = 0.0;
 }
 
-void BouncingBlackHole::pup(PUP::er& p) noexcept {
+void BouncingBlackHole::pup(PUP::er& p) {
   WorldtubeData::pup(p);
   p | amplitude_;
   p | mass_;

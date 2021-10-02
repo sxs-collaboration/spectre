@@ -34,7 +34,7 @@ namespace Poisson {
 template <size_t Dim>
 void flat_cartesian_fluxes(
     gsl::not_null<tnsr::I<DataVector, Dim>*> flux_for_field,
-    const tnsr::i<DataVector, Dim>& field_gradient) noexcept;
+    const tnsr::i<DataVector, Dim>& field_gradient);
 
 /*!
  * \brief Compute the fluxes \f$F^i=\gamma^{ij}\partial_j u(x)\f$
@@ -43,7 +43,7 @@ void flat_cartesian_fluxes(
 template <size_t Dim>
 void curved_fluxes(gsl::not_null<tnsr::I<DataVector, Dim>*> flux_for_field,
                    const tnsr::II<DataVector, Dim>& inv_spatial_metric,
-                   const tnsr::i<DataVector, Dim>& field_gradient) noexcept;
+                   const tnsr::i<DataVector, Dim>& field_gradient);
 
 /*!
  * \brief Add the sources \f$S=-\Gamma^i_{ij}v^j\f$
@@ -53,10 +53,9 @@ void curved_fluxes(gsl::not_null<tnsr::I<DataVector, Dim>*> flux_for_field,
  * non-Euclidean background.
  */
 template <size_t Dim>
-void add_curved_sources(
-    gsl::not_null<Scalar<DataVector>*> source_for_field,
-    const tnsr::i<DataVector, Dim>& christoffel_contracted,
-    const tnsr::I<DataVector, Dim>& flux_for_field) noexcept;
+void add_curved_sources(gsl::not_null<Scalar<DataVector>*> source_for_field,
+                        const tnsr::i<DataVector, Dim>& christoffel_contracted,
+                        const tnsr::I<DataVector, Dim>& flux_for_field);
 
 /*!
  * \brief Compute the fluxes \f$F^i_j=\delta^i_j u(x)\f$ for the auxiliary
@@ -67,7 +66,7 @@ void add_curved_sources(
 template <size_t Dim>
 void auxiliary_fluxes(
     gsl::not_null<tnsr::Ij<DataVector, Dim>*> flux_for_gradient,
-    const Scalar<DataVector>& field) noexcept;
+    const Scalar<DataVector>& field);
 
 /*!
  * \brief Compute the fluxes \f$F^i_A\f$ for the Poisson equation on a flat
@@ -80,9 +79,9 @@ struct Fluxes<Dim, Geometry::FlatCartesian> {
   using argument_tags = tmpl::list<>;
   using volume_tags = tmpl::list<>;
   static void apply(gsl::not_null<tnsr::I<DataVector, Dim>*> flux_for_field,
-                    const tnsr::i<DataVector, Dim>& field_gradient) noexcept;
+                    const tnsr::i<DataVector, Dim>& field_gradient);
   static void apply(gsl::not_null<tnsr::Ij<DataVector, Dim>*> flux_for_gradient,
-                    const Scalar<DataVector>& field) noexcept;
+                    const Scalar<DataVector>& field);
 };
 
 /*!
@@ -98,10 +97,10 @@ struct Fluxes<Dim, Geometry::Curved> {
   using volume_tags = tmpl::list<>;
   static void apply(gsl::not_null<tnsr::I<DataVector, Dim>*> flux_for_field,
                     const tnsr::II<DataVector, Dim>& inv_spatial_metric,
-                    const tnsr::i<DataVector, Dim>& field_gradient) noexcept;
+                    const tnsr::i<DataVector, Dim>& field_gradient);
   static void apply(gsl::not_null<tnsr::Ij<DataVector, Dim>*> flux_for_gradient,
                     const tnsr::II<DataVector, Dim>& inv_spatial_metric,
-                    const Scalar<DataVector>& field) noexcept;
+                    const Scalar<DataVector>& field);
 };
 
 /*!
@@ -115,10 +114,10 @@ struct Sources<Dim, Geometry::FlatCartesian> {
   using argument_tags = tmpl::list<>;
   static void apply(gsl::not_null<Scalar<DataVector>*> equation_for_field,
                     const Scalar<DataVector>& field,
-                    const tnsr::I<DataVector, Dim>& field_flux) noexcept;
+                    const tnsr::I<DataVector, Dim>& field_flux);
   static void apply(
       gsl::not_null<tnsr::i<DataVector, Dim>*> equation_for_field_gradient,
-      const Scalar<DataVector>& field) noexcept;
+      const Scalar<DataVector>& field);
 };
 
 /*!
@@ -135,11 +134,11 @@ struct Sources<Dim, Geometry::Curved> {
   static void apply(gsl::not_null<Scalar<DataVector>*> equation_for_field,
                     const tnsr::i<DataVector, Dim>& christoffel_contracted,
                     const Scalar<DataVector>& field,
-                    const tnsr::I<DataVector, Dim>& field_flux) noexcept;
+                    const tnsr::I<DataVector, Dim>& field_flux);
   static void apply(
       gsl::not_null<tnsr::i<DataVector, Dim>*> equation_for_field_gradient,
       const tnsr::i<DataVector, Dim>& christoffel_contracted,
-      const Scalar<DataVector>& field) noexcept;
+      const Scalar<DataVector>& field);
 };
 
 }  // namespace Poisson

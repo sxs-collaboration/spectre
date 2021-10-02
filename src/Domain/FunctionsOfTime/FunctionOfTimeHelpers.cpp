@@ -14,8 +14,7 @@
 namespace domain::FunctionsOfTime::FunctionOfTimeHelpers {
 template <size_t MaxDerivPlusOne, bool StoreCoefs>
 StoredInfo<MaxDerivPlusOne, StoreCoefs>::StoredInfo(
-    const double t,
-    std::array<DataVector, MaxDerivPlusOne> init_quantities) noexcept
+    const double t, std::array<DataVector, MaxDerivPlusOne> init_quantities)
     : time(t), stored_quantities{std::move(init_quantities)} {
   // Convert derivs to coefficients for polynomial evaluation
   // The coefficient of x^N is the Nth deriv rescaled by 1/factorial(N)
@@ -30,24 +29,23 @@ StoredInfo<MaxDerivPlusOne, StoreCoefs>::StoredInfo(
 
 template <size_t MaxDerivPlusOne>
 StoredInfo<MaxDerivPlusOne, false>::StoredInfo(
-    const double t,
-    std::array<DataVector, MaxDerivPlusOne> init_quantities) noexcept
+    const double t, std::array<DataVector, MaxDerivPlusOne> init_quantities)
     : time(t), stored_quantities{std::move(init_quantities)} {}
 
 template <size_t MaxDerivPlusOne, bool StoreCoefs>
-void StoredInfo<MaxDerivPlusOne, StoreCoefs>::pup(PUP::er& p) noexcept {
+void StoredInfo<MaxDerivPlusOne, StoreCoefs>::pup(PUP::er& p) {
   p | time;
   p | stored_quantities;
 }
 
 template <size_t MaxDerivPlusOne>
-void StoredInfo<MaxDerivPlusOne, false>::pup(PUP::er& p) noexcept {
+void StoredInfo<MaxDerivPlusOne, false>::pup(PUP::er& p) {
   p | time;
   p | stored_quantities;
 }
 
 void reset_expiration_time(const gsl::not_null<double*> prev_expiration_time,
-                           const double next_expiration_time) noexcept {
+                           const double next_expiration_time) {
   if (next_expiration_time < *prev_expiration_time) {
     ERROR("Attempted to change expiration time to "
           << next_expiration_time
@@ -60,7 +58,7 @@ void reset_expiration_time(const gsl::not_null<double*> prev_expiration_time,
 template <size_t MaxDerivPlusOne, bool StoreCoefs>
 const StoredInfo<MaxDerivPlusOne, StoreCoefs>& stored_info_from_upper_bound(
     const double t, const std::vector<StoredInfo<MaxDerivPlusOne, StoreCoefs>>&
-                        all_stored_infos) noexcept {
+                        all_stored_infos) {
   // this function assumes that the times in stored_info_at_update_times is
   // sorted, which is enforced by the update function of a piecewise polynomial.
 
@@ -96,7 +94,7 @@ bool operator==(
     const domain::FunctionsOfTime::FunctionOfTimeHelpers::StoredInfo<
         MaxDerivPlusOne, StoreCoefs>& lhs,
     const domain::FunctionsOfTime::FunctionOfTimeHelpers::StoredInfo<
-        MaxDerivPlusOne, StoreCoefs>& rhs) noexcept {
+        MaxDerivPlusOne, StoreCoefs>& rhs) {
   return lhs.time == rhs.time and
          lhs.stored_quantities == rhs.stored_quantities;
 }
@@ -106,14 +104,13 @@ bool operator!=(
     const domain::FunctionsOfTime::FunctionOfTimeHelpers::StoredInfo<
         MaxDerivPlusOne, StoreCoefs>& lhs,
     const domain::FunctionsOfTime::FunctionOfTimeHelpers::StoredInfo<
-        MaxDerivPlusOne, StoreCoefs>& rhs) noexcept {
+        MaxDerivPlusOne, StoreCoefs>& rhs) {
   return not(lhs == rhs);
 }
 
 template <size_t MaxDerivPlusOne, bool StoreCoefs>
-std::ostream& operator<<(
-    std::ostream& os,
-    const StoredInfo<MaxDerivPlusOne, StoreCoefs>& info) noexcept {
+std::ostream& operator<<(std::ostream& os,
+                         const StoredInfo<MaxDerivPlusOne, StoreCoefs>& info) {
   os << "t=" << info.time << ": ";
   for (size_t i = 0; i < MaxDerivPlusOne - 1; ++i) {
     os << gsl::at(info.stored_quantities, i) << " ";
@@ -127,16 +124,16 @@ std::ostream& operator<<(
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define STORECOEF(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATE(_, data)                                   \
-  template class StoredInfo<DIM(data), STORECOEF(data)>;       \
-  template bool operator==<DIM(data), STORECOEF(data)>(        \
-      const StoredInfo<DIM(data), STORECOEF(data)>&,           \
-      const StoredInfo<DIM(data), STORECOEF(data)>&) noexcept; \
-  template bool operator!=<DIM(data), STORECOEF(data)>(        \
-      const StoredInfo<DIM(data), STORECOEF(data)>&,           \
-      const StoredInfo<DIM(data), STORECOEF(data)>&) noexcept; \
-  template std::ostream& operator<<(                           \
-      std::ostream&, const StoredInfo<DIM(data), STORECOEF(data)>&) noexcept;
+#define INSTANTIATE(_, data)                             \
+  template class StoredInfo<DIM(data), STORECOEF(data)>; \
+  template bool operator==<DIM(data), STORECOEF(data)>(  \
+      const StoredInfo<DIM(data), STORECOEF(data)>&,     \
+      const StoredInfo<DIM(data), STORECOEF(data)>&);    \
+  template bool operator!=<DIM(data), STORECOEF(data)>(  \
+      const StoredInfo<DIM(data), STORECOEF(data)>&,     \
+      const StoredInfo<DIM(data), STORECOEF(data)>&);    \
+  template std::ostream& operator<<(                     \
+      std::ostream&, const StoredInfo<DIM(data), STORECOEF(data)>&);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3, 4, 5), (true, false))
 
@@ -146,7 +143,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3, 4, 5), (true, false))
   template const StoredInfo<DIM(data), STORECOEF(data)>& \
   stored_info_from_upper_bound(                          \
       const double,                                      \
-      const std::vector<StoredInfo<DIM(data), STORECOEF(data)>>&) noexcept;
+      const std::vector<StoredInfo<DIM(data), STORECOEF(data)>>&);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3, 4, 5), (true, false))
 

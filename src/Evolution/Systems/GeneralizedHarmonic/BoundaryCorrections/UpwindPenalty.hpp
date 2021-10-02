@@ -204,13 +204,13 @@ class UpwindPenalty final : public BoundaryCorrection<Dim> {
   ~UpwindPenalty() override = default;
 
   /// \cond
-  explicit UpwindPenalty(CkMigrateMessage* msg) noexcept;
+  explicit UpwindPenalty(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(UpwindPenalty);  // NOLINT
   /// \endcond
   void pup(PUP::er& p) override;  // NOLINT
 
-  std::unique_ptr<BoundaryCorrection<Dim>> get_clone() const noexcept override;
+  std::unique_ptr<BoundaryCorrection<Dim>> get_clone() const override;
 
   using dg_package_field_tags =
       tmpl::list<Tags::VSpacetimeMetric<Dim, Frame::Inertial>,
@@ -257,8 +257,7 @@ class UpwindPenalty final : public BoundaryCorrection<Dim> {
       const tnsr::I<DataVector, Dim, Frame::Inertial>& normal_vector,
       const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
       /*mesh_velocity*/,
-      const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity)
-      const noexcept;
+      const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity) const;
 
   void dg_boundary_terms(
       gsl::not_null<tnsr::aa<DataVector, Dim, Frame::Inertial>*>
@@ -293,6 +292,6 @@ class UpwindPenalty final : public BoundaryCorrection<Dim> {
       const tnsr::aa<DataVector, Dim, Frame::Inertial>&
           char_speed_constraint_gamma2_v_spacetime_metric_ext,
       const tnsr::a<DataVector, 3, Frame::Inertial>& char_speeds_ext,
-      dg::Formulation /*dg_formulation*/) const noexcept;
+      dg::Formulation /*dg_formulation*/) const;
 };
 }  // namespace GeneralizedHarmonic::BoundaryCorrections

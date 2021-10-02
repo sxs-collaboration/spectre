@@ -87,7 +87,7 @@ struct SendOverlapFields<tmpl::list<OverlapFields...>, OptionsGroup,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
       const ElementId<Dim>& element_id, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     const auto& element = get<domain::Tags::Element<Dim>>(box);
 
     // Skip communicating if the overlap is empty
@@ -130,7 +130,7 @@ struct SendOverlapFields<tmpl::list<OverlapFields...>, OptionsGroup,
       // We elide the tagged tuple in the inbox tag if only a single tag is
       // communicated. This optimization allows moving the overlap-map into the
       // DataBox in one piece.
-      auto& collapsed_overlap_fields = [&overlap_fields]() noexcept -> auto& {
+      auto& collapsed_overlap_fields = [&overlap_fields]() -> auto& {
         if constexpr (sizeof...(OverlapFields) > 1) {
           return overlap_fields;
         } else {
@@ -195,7 +195,7 @@ struct ReceiveOverlapFields<Dim, tmpl::list<OverlapFields...>, OptionsGroup> {
         tuples::TaggedTuple<InboxTags...>& inboxes,
         const Parallel::GlobalCache<Metavariables>& /*cache*/,
         const ElementId<Dim>& element_id, const ActionList /*meta*/,
-        const ParallelComponent* const /*meta*/) noexcept {
+        const ParallelComponent* const /*meta*/) {
     const auto& iteration_id =
         get<Convergence::Tags::IterationId<OptionsGroup>>(box);
     const auto& element = get<domain::Tags::Element<Dim>>(box);
@@ -224,8 +224,8 @@ struct ReceiveOverlapFields<Dim, tmpl::list<OverlapFields...>, OptionsGroup> {
                       .extract(iteration_id)
                       .mapped());
     db::mutate<Tags::Overlaps<OverlapFields, Dim, OptionsGroup>...>(
-        make_not_null(&box), [&received_overlap_fields](
-                                 const auto... local_overlap_fields) noexcept {
+        make_not_null(&box),
+        [&received_overlap_fields](const auto... local_overlap_fields) {
           if constexpr (sizeof...(OverlapFields) > 1) {
             for (auto& [overlap_id, overlap_fields] : received_overlap_fields) {
               expand_pack((*local_overlap_fields)[overlap_id] =

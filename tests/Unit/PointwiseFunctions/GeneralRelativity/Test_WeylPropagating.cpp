@@ -22,7 +22,7 @@ tnsr::ii<DataType, SpatialDim, Frame> weyl_propagating_plus_wrapper(
     const tnsr::I<DataType, SpatialDim, Frame>& unit_interface_normal_vector,
     const tnsr::II<DataType, SpatialDim, Frame>& projection_IJ,
     const tnsr::ii<DataType, SpatialDim, Frame>& projection_ij,
-    const tnsr::Ij<DataType, SpatialDim, Frame>& projection_Ij) noexcept {
+    const tnsr::Ij<DataType, SpatialDim, Frame>& projection_Ij) {
   return gr::weyl_propagating<SpatialDim, Frame, DataType>(
       ricci, extrinsic_curvature, inverse_spatial_metric,
       cov_deriv_extrinsic_curvature, unit_interface_normal_vector,
@@ -37,7 +37,7 @@ tnsr::ii<DataType, SpatialDim, Frame> weyl_propagating_minus_wrapper(
     const tnsr::I<DataType, SpatialDim, Frame>& unit_interface_normal_vector,
     const tnsr::II<DataType, SpatialDim, Frame>& projection_IJ,
     const tnsr::ii<DataType, SpatialDim, Frame>& projection_ij,
-    const tnsr::Ij<DataType, SpatialDim, Frame>& projection_Ij) noexcept {
+    const tnsr::Ij<DataType, SpatialDim, Frame>& projection_Ij) {
   return gr::weyl_propagating<SpatialDim, Frame, DataType>(
       ricci, extrinsic_curvature, inverse_spatial_metric,
       cov_deriv_extrinsic_curvature, unit_interface_normal_vector,

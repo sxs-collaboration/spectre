@@ -68,16 +68,15 @@ namespace Sources {
  */
 template <size_t Dim>
 struct VortexPerturbation {
-  VortexPerturbation() noexcept = default;
+  VortexPerturbation() = default;
   VortexPerturbation(const VortexPerturbation& /*rhs*/) = default;
   VortexPerturbation& operator=(const VortexPerturbation& /*rhs*/) = default;
-  VortexPerturbation(VortexPerturbation&& /*rhs*/) noexcept = default;
-  VortexPerturbation& operator=(VortexPerturbation&& /*rhs*/) noexcept =
-      default;
+  VortexPerturbation(VortexPerturbation&& /*rhs*/) = default;
+  VortexPerturbation& operator=(VortexPerturbation&& /*rhs*/) = default;
   ~VortexPerturbation() = default;
 
   // clang-tidy: google-runtime-references
-  void pup(PUP::er& /*p*/) noexcept {}  // NOLINT
+  void pup(PUP::er& /*p*/) {}  // NOLINT
 
   using sourced_variables = tmpl::conditional_t<
       Dim == 3,
@@ -93,14 +92,14 @@ struct VortexPerturbation {
       tmpl::list<>>;
 
   // Overload required for 2d simulations, where no variable is sourced.
-  void apply() const noexcept;
+  void apply() const;
 
   // Function to be used in 3d.
   void apply(gsl::not_null<Scalar<DataVector>*> source_mass_density_cons,
              gsl::not_null<tnsr::I<DataVector, Dim>*> source_momentum_density,
              gsl::not_null<Scalar<DataVector>*> source_energy_density,
              const NewtonianEuler::Solutions::IsentropicVortex<Dim>& vortex,
-             const tnsr::I<DataVector, Dim>& x, double time) const noexcept;
+             const tnsr::I<DataVector, Dim>& x, double time) const;
 };
 }  // namespace Sources
 }  // namespace NewtonianEuler

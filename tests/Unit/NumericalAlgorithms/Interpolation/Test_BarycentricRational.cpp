@@ -15,7 +15,7 @@ namespace {
 template <class F>
 void test_barycentric_rational(const F& function, const double lower_bound,
                                const double upper_bound, const size_t size,
-                               const size_t order) noexcept {
+                               const size_t order) {
   std::vector<double> x_values(size), y_values(size);
   const double delta_x = (upper_bound - lower_bound) / size;
   MAKE_GENERATOR(gen);
@@ -45,7 +45,7 @@ void single_call(const size_t number_of_points, const size_t order,
                  const size_t expo) {
   INFO("Polynomial degree := " << expo);
   test_barycentric_rational(
-      [expo](const auto& x) noexcept {
+      [expo](const auto& x) {
         auto result = x;
         for (size_t j = 2; j < expo; ++j) {
           result += pow(x, j);

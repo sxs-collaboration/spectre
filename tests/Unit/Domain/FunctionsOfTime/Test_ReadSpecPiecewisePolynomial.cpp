@@ -42,7 +42,7 @@ struct Metavariables {
   static constexpr size_t volume_dim = 3;
 };
 
-void test_options() noexcept {
+void test_options() {
   CHECK(
       db::tag_name<domain::FunctionsOfTime::OptionTags::FunctionOfTimeFile>() ==
       "FunctionOfTimeFile");

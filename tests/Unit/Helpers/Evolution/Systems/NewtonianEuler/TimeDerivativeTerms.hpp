@@ -50,7 +50,7 @@ struct SomeSourceType {
       const Scalar<DataVector>& first_arg,
       const tnsr::I<DataVector, Dim>& second_arg,
       const Scalar<DataVector>& third_arg,
-      const tnsr::i<DataVector, Dim>& fourth_arg) const noexcept {
+      const tnsr::i<DataVector, Dim>& fourth_arg) const {
     get(*source_mass_density_cons) = exp(get(first_arg));
     for (size_t i = 0; i < Dim; ++i) {
       source_momentum_density->get(i) =
@@ -79,7 +79,7 @@ struct SomeOtherSourceType {
       const Scalar<DataVector>& first_arg,
       const tnsr::I<DataVector, Dim>& second_arg,
       const Scalar<DataVector>& third_arg,
-      const tnsr::i<DataVector, Dim>& fourth_arg) const noexcept {
+      const tnsr::i<DataVector, Dim>& fourth_arg) const {
     for (size_t i = 0; i < Dim; ++i) {
       source_momentum_density->get(i) =
           (get(first_arg) - 1.5 * get(third_arg)) * second_arg.get(i);

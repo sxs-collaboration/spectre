@@ -57,7 +57,7 @@ struct Metavariables {
       using argument_tags = tmpl::list<CharacteristicSpeed>;
       using return_type = double;
       static void function(const gsl::not_null<double*> return_speed,
-                           const double& speed) noexcept {
+                           const double& speed) {
         *return_speed = speed;
       }
     };
@@ -80,7 +80,7 @@ template <typename Use>
 std::pair<double, bool> get_suggestion(const size_t stepper_order,
                                        const double safety_factor,
                                        const double characteristic_speed,
-                                       const DataVector& coordinates) noexcept {
+                                       const DataVector& coordinates) {
   using Cfl = Metavariables::Cfl<Use>;
 
   const Parallel::GlobalCache<Metavariables> cache{};
@@ -132,7 +132,7 @@ std::pair<double, bool> get_suggestion(const size_t stepper_order,
 }
 
 template <typename Use>
-void test_use() noexcept {
+void test_use() {
   CHECK(get_suggestion<Use>(1, 1., 1., {0., 2., 3., 5.}).first == approx(1.));
   CHECK(get_suggestion<Use>(2, 1., 1., {0., 2., 3., 5.}).first < 1.);
   CHECK(get_suggestion<Use>(1, 2., 1., {0., 2., 3., 5.}).first == approx(2.));

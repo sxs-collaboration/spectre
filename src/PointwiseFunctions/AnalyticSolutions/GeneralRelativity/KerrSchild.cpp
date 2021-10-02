@@ -43,7 +43,7 @@ KerrSchild::KerrSchild(const double mass,
   }
 }
 
-void KerrSchild::pup(PUP::er& p) noexcept {
+void KerrSchild::pup(PUP::er& p) {
   p | mass_;
   p | dimensionless_spin_;
   p | center_;
@@ -52,14 +52,14 @@ void KerrSchild::pup(PUP::er& p) noexcept {
 template <typename DataType, typename Frame>
 KerrSchild::IntermediateComputer<DataType, Frame>::IntermediateComputer(
     const KerrSchild& solution, const tnsr::I<DataType, 3, Frame>& x,
-    const double null_vector_0) noexcept
+    const double null_vector_0)
     : solution_(solution), x_(x), null_vector_0_(null_vector_0) {}
 
 template <typename DataType, typename Frame>
 void KerrSchild::IntermediateComputer<DataType, Frame>::operator()(
     const gsl::not_null<tnsr::I<DataType, 3, Frame>*> x_minus_center,
     const gsl::not_null<CachedBuffer*> /*cache*/,
-    internal_tags::x_minus_center<DataType, Frame> /*meta*/) const noexcept {
+    internal_tags::x_minus_center<DataType, Frame> /*meta*/) const {
   *x_minus_center = x_;
   for (size_t d = 0; d < 3; ++d) {
     x_minus_center->get(d) -= gsl::at(solution_.center(), d);
@@ -70,7 +70,7 @@ template <typename DataType, typename Frame>
 void KerrSchild::IntermediateComputer<DataType, Frame>::operator()(
     const gsl::not_null<Scalar<DataType>*> a_dot_x,
     const gsl::not_null<CachedBuffer*> cache,
-    internal_tags::a_dot_x<DataType> /*meta*/) const noexcept {
+    internal_tags::a_dot_x<DataType> /*meta*/) const {
   const auto& x_minus_center =
       cache->get_var(internal_tags::x_minus_center<DataType, Frame>{});
 
@@ -84,7 +84,7 @@ template <typename DataType, typename Frame>
 void KerrSchild::IntermediateComputer<DataType, Frame>::operator()(
     const gsl::not_null<Scalar<DataType>*> a_dot_x_squared,
     const gsl::not_null<CachedBuffer*> cache,
-    internal_tags::a_dot_x_squared<DataType> /*meta*/) const noexcept {
+    internal_tags::a_dot_x_squared<DataType> /*meta*/) const {
   const auto& a_dot_x = get(cache->get_var(internal_tags::a_dot_x<DataType>{}));
 
   get(*a_dot_x_squared) = square(a_dot_x);
@@ -94,7 +94,7 @@ template <typename DataType, typename Frame>
 void KerrSchild::IntermediateComputer<DataType, Frame>::operator()(
     const gsl::not_null<Scalar<DataType>*> half_xsq_minus_asq,
     const gsl::not_null<CachedBuffer*> cache,
-    internal_tags::half_xsq_minus_asq<DataType> /*meta*/) const noexcept {
+    internal_tags::half_xsq_minus_asq<DataType> /*meta*/) const {
   const auto& x_minus_center =
       cache->get_var(internal_tags::x_minus_center<DataType, Frame>{});
 
@@ -111,7 +111,7 @@ template <typename DataType, typename Frame>
 void KerrSchild::IntermediateComputer<DataType, Frame>::operator()(
     const gsl::not_null<Scalar<DataType>*> r_squared,
     const gsl::not_null<CachedBuffer*> cache,
-    internal_tags::r_squared<DataType> /*meta*/) const noexcept {
+    internal_tags::r_squared<DataType> /*meta*/) const {
   const auto& half_xsq_minus_asq =
       get(cache->get_var(internal_tags::half_xsq_minus_asq<DataType>{}));
   const auto& a_dot_x_squared =
@@ -125,7 +125,7 @@ template <typename DataType, typename Frame>
 void KerrSchild::IntermediateComputer<DataType, Frame>::operator()(
     const gsl::not_null<Scalar<DataType>*> r,
     const gsl::not_null<CachedBuffer*> cache,
-    internal_tags::r<DataType> /*meta*/) const noexcept {
+    internal_tags::r<DataType> /*meta*/) const {
   const auto& r_squared =
       get(cache->get_var(internal_tags::r_squared<DataType>{}));
 
@@ -136,7 +136,7 @@ template <typename DataType, typename Frame>
 void KerrSchild::IntermediateComputer<DataType, Frame>::operator()(
     const gsl::not_null<Scalar<DataType>*> a_dot_x_over_rsquared,
     const gsl::not_null<CachedBuffer*> cache,
-    internal_tags::a_dot_x_over_rsquared<DataType> /*meta*/) const noexcept {
+    internal_tags::a_dot_x_over_rsquared<DataType> /*meta*/) const {
   const auto& a_dot_x = get(cache->get_var(internal_tags::a_dot_x<DataType>{}));
   const auto& r_squared =
       get(cache->get_var(internal_tags::r_squared<DataType>{}));
@@ -148,7 +148,7 @@ template <typename DataType, typename Frame>
 void KerrSchild::IntermediateComputer<DataType, Frame>::operator()(
     const gsl::not_null<Scalar<DataType>*> deriv_log_r_denom,
     const gsl::not_null<CachedBuffer*> cache,
-    internal_tags::deriv_log_r_denom<DataType> /*meta*/) const noexcept {
+    internal_tags::deriv_log_r_denom<DataType> /*meta*/) const {
   const auto& r_squared =
       get(cache->get_var(internal_tags::r_squared<DataType>{}));
   const auto& half_xsq_minus_asq =
@@ -161,7 +161,7 @@ template <typename DataType, typename Frame>
 void KerrSchild::IntermediateComputer<DataType, Frame>::operator()(
     const gsl::not_null<tnsr::i<DataType, 3, Frame>*> deriv_log_r,
     const gsl::not_null<CachedBuffer*> cache,
-    internal_tags::deriv_log_r<DataType, Frame> /*meta*/) const noexcept {
+    internal_tags::deriv_log_r<DataType, Frame> /*meta*/) const {
   const auto& x_minus_center =
       cache->get_var(internal_tags::x_minus_center<DataType, Frame>{});
   const auto& a_dot_x_over_rsquared =
@@ -181,7 +181,7 @@ template <typename DataType, typename Frame>
 void KerrSchild::IntermediateComputer<DataType, Frame>::operator()(
     const gsl::not_null<Scalar<DataType>*> H_denom,
     const gsl::not_null<CachedBuffer*> cache,
-    internal_tags::H_denom<DataType> /*meta*/) const noexcept {
+    internal_tags::H_denom<DataType> /*meta*/) const {
   const auto& r_squared =
       get(cache->get_var(internal_tags::r_squared<DataType>{}));
   const auto& a_dot_x_squared =
@@ -194,7 +194,7 @@ template <typename DataType, typename Frame>
 void KerrSchild::IntermediateComputer<DataType, Frame>::operator()(
     const gsl::not_null<Scalar<DataType>*> H,
     const gsl::not_null<CachedBuffer*> cache,
-    internal_tags::H<DataType> /*meta*/) const noexcept {
+    internal_tags::H<DataType> /*meta*/) const {
   const auto& r = get(cache->get_var(internal_tags::r<DataType>{}));
   const auto& r_squared =
       get(cache->get_var(internal_tags::r_squared<DataType>{}));
@@ -207,7 +207,7 @@ template <typename DataType, typename Frame>
 void KerrSchild::IntermediateComputer<DataType, Frame>::operator()(
     const gsl::not_null<Scalar<DataType>*> deriv_H_temp1,
     const gsl::not_null<CachedBuffer*> cache,
-    internal_tags::deriv_H_temp1<DataType> /*meta*/) const noexcept {
+    internal_tags::deriv_H_temp1<DataType> /*meta*/) const {
   const auto& H = get(cache->get_var(internal_tags::H<DataType>{}));
   const auto& r_squared =
       get(cache->get_var(internal_tags::r_squared<DataType>{}));
@@ -220,7 +220,7 @@ template <typename DataType, typename Frame>
 void KerrSchild::IntermediateComputer<DataType, Frame>::operator()(
     const gsl::not_null<Scalar<DataType>*> deriv_H_temp2,
     const gsl::not_null<CachedBuffer*> cache,
-    internal_tags::deriv_H_temp2<DataType> /*meta*/) const noexcept {
+    internal_tags::deriv_H_temp2<DataType> /*meta*/) const {
   const auto& H = get(cache->get_var(internal_tags::H<DataType>{}));
   const auto& H_denom = get(cache->get_var(internal_tags::H_denom<DataType>{}));
   const auto& a_dot_x = get(cache->get_var(internal_tags::a_dot_x<DataType>{}));
@@ -232,7 +232,7 @@ template <typename DataType, typename Frame>
 void KerrSchild::IntermediateComputer<DataType, Frame>::operator()(
     const gsl::not_null<tnsr::i<DataType, 3, Frame>*> deriv_H,
     const gsl::not_null<CachedBuffer*> cache,
-    internal_tags::deriv_H<DataType, Frame> /*meta*/) const noexcept {
+    internal_tags::deriv_H<DataType, Frame> /*meta*/) const {
   const auto& deriv_log_r =
       cache->get_var(internal_tags::deriv_log_r<DataType, Frame>{});
   const auto& deriv_H_temp1 =
@@ -251,7 +251,7 @@ template <typename DataType, typename Frame>
 void KerrSchild::IntermediateComputer<DataType, Frame>::operator()(
     const gsl::not_null<Scalar<DataType>*> denom,
     const gsl::not_null<CachedBuffer*> cache,
-    internal_tags::denom<DataType> /*meta*/) const noexcept {
+    internal_tags::denom<DataType> /*meta*/) const {
   const auto& r_squared =
       get(cache->get_var(internal_tags::r_squared<DataType>{}));
 
@@ -266,7 +266,7 @@ template <typename DataType, typename Frame>
 void KerrSchild::IntermediateComputer<DataType, Frame>::operator()(
     const gsl::not_null<Scalar<DataType>*> a_dot_x_over_r,
     const gsl::not_null<CachedBuffer*> cache,
-    internal_tags::a_dot_x_over_r<DataType> /*meta*/) const noexcept {
+    internal_tags::a_dot_x_over_r<DataType> /*meta*/) const {
   const auto& a_dot_x = get(cache->get_var(internal_tags::a_dot_x<DataType>{}));
   const auto& r = get(cache->get_var(internal_tags::r<DataType>{}));
 
@@ -277,7 +277,7 @@ template <typename DataType, typename Frame>
 void KerrSchild::IntermediateComputer<DataType, Frame>::operator()(
     const gsl::not_null<tnsr::i<DataType, 3, Frame>*> null_form,
     const gsl::not_null<CachedBuffer*> cache,
-    internal_tags::null_form<DataType, Frame> /*meta*/) const noexcept {
+    internal_tags::null_form<DataType, Frame> /*meta*/) const {
   const auto& a_dot_x_over_r =
       get(cache->get_var(internal_tags::a_dot_x_over_r<DataType>{}));
   const auto& r = get(cache->get_var(internal_tags::r<DataType>{}));
@@ -302,7 +302,7 @@ template <typename DataType, typename Frame>
 void KerrSchild::IntermediateComputer<DataType, Frame>::operator()(
     const gsl::not_null<tnsr::ij<DataType, 3, Frame>*> deriv_null_form,
     const gsl::not_null<CachedBuffer*> cache,
-    internal_tags::deriv_null_form<DataType, Frame> /*meta*/) const noexcept {
+    internal_tags::deriv_null_form<DataType, Frame> /*meta*/) const {
   const auto spin_a = solution_.dimensionless_spin() * solution_.mass();
   const auto& denom = get(cache->get_var(internal_tags::denom<DataType>{}));
   const auto& r = get(cache->get_var(internal_tags::r<DataType>{}));
@@ -342,7 +342,7 @@ template <typename DataType, typename Frame>
 void KerrSchild::IntermediateComputer<DataType, Frame>::operator()(
     const gsl::not_null<Scalar<DataType>*> lapse_squared,
     const gsl::not_null<CachedBuffer*> cache,
-    internal_tags::lapse_squared<DataType> /*meta*/) const noexcept {
+    internal_tags::lapse_squared<DataType> /*meta*/) const {
   const auto& H = get(cache->get_var(internal_tags::H<DataType>{}));
   get(*lapse_squared) = 1.0 / (1.0 + 2.0 * square(null_vector_0_) * H);
 }
@@ -351,7 +351,7 @@ template <typename DataType, typename Frame>
 void KerrSchild::IntermediateComputer<DataType, Frame>::operator()(
     const gsl::not_null<Scalar<DataType>*> lapse,
     const gsl::not_null<CachedBuffer*> cache,
-    gr::Tags::Lapse<DataType> /*meta*/) const noexcept {
+    gr::Tags::Lapse<DataType> /*meta*/) const {
   const auto& lapse_squared =
       get(cache->get_var(internal_tags::lapse_squared<DataType>{}));
   get(*lapse) = sqrt(lapse_squared);
@@ -361,7 +361,7 @@ template <typename DataType, typename Frame>
 void KerrSchild::IntermediateComputer<DataType, Frame>::operator()(
     const gsl::not_null<Scalar<DataType>*> deriv_lapse_multiplier,
     const gsl::not_null<CachedBuffer*> cache,
-    internal_tags::deriv_lapse_multiplier<DataType> /*meta*/) const noexcept {
+    internal_tags::deriv_lapse_multiplier<DataType> /*meta*/) const {
   const auto& lapse = get(cache->get_var(gr::Tags::Lapse<DataType>{}));
   const auto& lapse_squared =
       get(cache->get_var(internal_tags::lapse_squared<DataType>{}));
@@ -373,7 +373,7 @@ template <typename DataType, typename Frame>
 void KerrSchild::IntermediateComputer<DataType, Frame>::operator()(
     const gsl::not_null<Scalar<DataType>*> shift_multiplier,
     const gsl::not_null<CachedBuffer*> cache,
-    internal_tags::shift_multiplier<DataType> /*meta*/) const noexcept {
+    internal_tags::shift_multiplier<DataType> /*meta*/) const {
   const auto& H = get(cache->get_var(internal_tags::H<DataType>{}));
   const auto& lapse_squared =
       get(cache->get_var(internal_tags::lapse_squared<DataType>{}));
@@ -385,7 +385,7 @@ template <typename DataType, typename Frame>
 void KerrSchild::IntermediateComputer<DataType, Frame>::operator()(
     const gsl::not_null<tnsr::I<DataType, 3, Frame>*> shift,
     const gsl::not_null<CachedBuffer*> cache,
-    gr::Tags::Shift<3, Frame, DataType> /*meta*/) const noexcept {
+    gr::Tags::Shift<3, Frame, DataType> /*meta*/) const {
   const auto& null_form =
       cache->get_var(internal_tags::null_form<DataType, Frame>{});
   const auto& shift_multiplier =
@@ -400,7 +400,7 @@ template <typename DataType, typename Frame>
 void KerrSchild::IntermediateComputer<DataType, Frame>::operator()(
     const gsl::not_null<tnsr::iJ<DataType, 3, Frame>*> deriv_shift,
     const gsl::not_null<CachedBuffer*> cache,
-    DerivShift<DataType, Frame> /*meta*/) const noexcept {
+    DerivShift<DataType, Frame> /*meta*/) const {
   const auto& H = get(cache->get_var(internal_tags::H<DataType>{}));
   const auto& null_form =
       cache->get_var(internal_tags::null_form<DataType, Frame>{});
@@ -427,8 +427,7 @@ template <typename DataType, typename Frame>
 void KerrSchild::IntermediateComputer<DataType, Frame>::operator()(
     const gsl::not_null<tnsr::ii<DataType, 3, Frame>*> spatial_metric,
     const gsl::not_null<CachedBuffer*> cache,
-    gr::Tags::SpatialMetric<3, Frame, DataType> /*meta*/)
-    const noexcept {
+    gr::Tags::SpatialMetric<3, Frame, DataType> /*meta*/) const {
   const auto& H = get(cache->get_var(internal_tags::H<DataType>{}));
   const auto& null_form =
       cache->get_var(internal_tags::null_form<DataType, Frame>{});
@@ -447,7 +446,7 @@ template <typename DataType, typename Frame>
 void KerrSchild::IntermediateComputer<DataType, Frame>::operator()(
     const gsl::not_null<tnsr::ijj<DataType, 3, Frame>*> deriv_spatial_metric,
     const gsl::not_null<CachedBuffer*> cache,
-    DerivSpatialMetric<DataType, Frame> /*meta*/) const noexcept {
+    DerivSpatialMetric<DataType, Frame> /*meta*/) const {
   const auto& null_form =
       cache->get_var(internal_tags::null_form<DataType, Frame>{});
   const auto& deriv_H =
@@ -473,21 +472,20 @@ template <typename DataType, typename Frame>
 void KerrSchild::IntermediateComputer<DataType, Frame>::operator()(
     const gsl::not_null<tnsr::ii<DataType, 3, Frame>*> dt_spatial_metric,
     const gsl::not_null<CachedBuffer*> /*cache*/,
-    ::Tags::dt<gr::Tags::SpatialMetric<3, Frame, DataType>> /*meta*/)
-    const noexcept {
+    ::Tags::dt<gr::Tags::SpatialMetric<3, Frame, DataType>> /*meta*/) const {
   std::fill(dt_spatial_metric->begin(), dt_spatial_metric->end(), 0.);
 }
 
 template <typename DataType, typename Frame>
 KerrSchild::IntermediateVars<DataType, Frame>::IntermediateVars(
-    const KerrSchild& solution, const tnsr::I<DataType, 3, Frame>& x) noexcept
+    const KerrSchild& solution, const tnsr::I<DataType, 3, Frame>& x)
     : CachedBuffer(get_size(::get<0>(x)), IntermediateComputer<DataType, Frame>(
                                               solution, x, null_vector_0_)) {}
 
 template <typename DataType, typename Frame>
 tnsr::i<DataType, 3, Frame>
 KerrSchild::IntermediateVars<DataType, Frame>::get_var(
-    DerivLapse<DataType, Frame> /*meta*/) noexcept {
+    DerivLapse<DataType, Frame> /*meta*/) {
   tnsr::i<DataType, 3, Frame> result{};
   const auto& deriv_H = get_var(internal_tags::deriv_H<DataType, Frame>{});
   const auto& deriv_lapse_multiplier =
@@ -501,7 +499,7 @@ KerrSchild::IntermediateVars<DataType, Frame>::get_var(
 
 template <typename DataType, typename Frame>
 Scalar<DataType> KerrSchild::IntermediateVars<DataType, Frame>::get_var(
-    ::Tags::dt<gr::Tags::Lapse<DataType>> /*meta*/) noexcept {
+    ::Tags::dt<gr::Tags::Lapse<DataType>> /*meta*/) {
   const auto& H = get(get_var(internal_tags::H<DataType>{}));
   return make_with_value<Scalar<DataType>>(H, 0.);
 }
@@ -509,21 +507,21 @@ Scalar<DataType> KerrSchild::IntermediateVars<DataType, Frame>::get_var(
 template <typename DataType, typename Frame>
 tnsr::I<DataType, 3, Frame>
 KerrSchild::IntermediateVars<DataType, Frame>::get_var(
-    ::Tags::dt<gr::Tags::Shift<3, Frame, DataType>> /*meta*/) noexcept {
+    ::Tags::dt<gr::Tags::Shift<3, Frame, DataType>> /*meta*/) {
   const auto& H = get(get_var(internal_tags::H<DataType>()));
   return make_with_value<tnsr::I<DataType, 3, Frame>>(H, 0.);
 }
 
 template <typename DataType, typename Frame>
 Scalar<DataType> KerrSchild::IntermediateVars<DataType, Frame>::get_var(
-    gr::Tags::SqrtDetSpatialMetric<DataType> /*meta*/) noexcept {
+    gr::Tags::SqrtDetSpatialMetric<DataType> /*meta*/) {
   return Scalar<DataType>(1.0 / get(get_var(gr::Tags::Lapse<DataType>{})));
 }
 
 template <typename DataType, typename Frame>
 tnsr::II<DataType, 3, Frame>
 KerrSchild::IntermediateVars<DataType, Frame>::get_var(
-    gr::Tags::InverseSpatialMetric<3, Frame, DataType> /*meta*/) noexcept {
+    gr::Tags::InverseSpatialMetric<3, Frame, DataType> /*meta*/) {
   const auto& H = get(get_var(internal_tags::H<DataType>{}));
   const auto& lapse_squared =
       get(get_var(internal_tags::lapse_squared<DataType>{}));
@@ -544,7 +542,7 @@ KerrSchild::IntermediateVars<DataType, Frame>::get_var(
 template <typename DataType, typename Frame>
 tnsr::ii<DataType, 3, Frame>
 KerrSchild::IntermediateVars<DataType, Frame>::get_var(
-    gr::Tags::ExtrinsicCurvature<3, Frame, DataType> /*meta*/) noexcept {
+    gr::Tags::ExtrinsicCurvature<3, Frame, DataType> /*meta*/) {
   return gr::extrinsic_curvature(
       get_var(gr::Tags::Lapse<DataType>{}),
       get_var(gr::Tags::Shift<3, Frame, DataType>{}),

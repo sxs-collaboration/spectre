@@ -28,7 +28,7 @@ struct print_derived {
   // Not a stream because brigand requires the functor to be copyable.
   std::string value;
   template <typename T>
-  void operator()(tmpl::type_<T> /*meta*/) noexcept {
+  void operator()(tmpl::type_<T> /*meta*/) {
     // These are zero-based
     const size_t name_col = 2;
     const size_t help_col = 22;
@@ -55,7 +55,7 @@ struct print_derived {
 };
 
 template <typename CreatableClasses>
-std::string help_derived() noexcept {
+std::string help_derived() {
   return "Known Ids:\n" +
          tmpl::for_each<CreatableClasses>(
              Factory_detail::print_derived{})

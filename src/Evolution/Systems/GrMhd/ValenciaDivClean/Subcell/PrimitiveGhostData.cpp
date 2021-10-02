@@ -14,7 +14,7 @@
 
 namespace grmhd::ValenciaDivClean::subcell {
 auto PrimitiveGhostDataOnSubcells::apply(
-    const Variables<hydro::grmhd_tags<DataVector>>& prims) noexcept
+    const Variables<hydro::grmhd_tags<DataVector>>& prims)
     -> Variables<prims_to_reconstruct_tags> {
   Variables<prims_to_reconstruct_tags> vars_to_reconstruct(
       prims.number_of_grid_points());
@@ -40,7 +40,7 @@ auto PrimitiveGhostDataOnSubcells::apply(
 
 auto PrimitiveGhostDataToSlice::apply(
     const Variables<hydro::grmhd_tags<DataVector>>& prims,
-    const Mesh<3>& dg_mesh, const Mesh<3>& subcell_mesh) noexcept
+    const Mesh<3>& dg_mesh, const Mesh<3>& subcell_mesh)
     -> Variables<prims_to_reconstruct_tags> {
   return evolution::dg::subcell::fd::project(
       PrimitiveGhostDataOnSubcells::apply(prims), dg_mesh,

@@ -31,7 +31,7 @@ void radial_evolve_psi0_condition(
     const SpinWeighted<ComplexDataVector, 2>& boundary_j,
     const SpinWeighted<ComplexDataVector, 2>& boundary_dr_j,
     const SpinWeighted<ComplexDataVector, 0>& r, const size_t l_max,
-    const size_t number_of_radial_points) noexcept {
+    const size_t number_of_radial_points) {
   // use the maximum to measure the scale for the vector quantities
   const double j_scale = max(abs(boundary_j.data()));
   const double dy_j_scale = max(abs(0.5 * boundary_dr_j.data() * r.data()));
@@ -45,8 +45,7 @@ void radial_evolve_psi0_condition(
 
   const auto psi_0_condition_system =
       [](const std::array<ComplexDataVector, 2>& bondi_j_and_i,
-         std::array<ComplexDataVector, 2>& dy_j_and_dy_i,
-         const double y) noexcept {
+         std::array<ComplexDataVector, 2>& dy_j_and_dy_i, const double y) {
         dy_j_and_dy_i[0] = bondi_j_and_i[1];
         const auto& bondi_j = bondi_j_and_i[0];
         const auto& bondi_i = bondi_j_and_i[1];
@@ -104,13 +103,12 @@ void radial_evolve_psi0_condition(
 
 NoIncomingRadiation::NoIncomingRadiation(
     const double angular_coordinate_tolerance, const size_t max_iterations,
-    const bool require_convergence) noexcept
+    const bool require_convergence)
     : require_convergence_{require_convergence},
       angular_coordinate_tolerance_{angular_coordinate_tolerance},
       max_iterations_{max_iterations} {}
 
-std::unique_ptr<InitializeJ<false>> NoIncomingRadiation::get_clone()
-    const noexcept {
+std::unique_ptr<InitializeJ<false>> NoIncomingRadiation::get_clone() const {
   return std::make_unique<NoIncomingRadiation>(*this);
 }
 
@@ -123,7 +121,7 @@ void NoIncomingRadiation::operator()(
     const Scalar<SpinWeighted<ComplexDataVector, 2>>& boundary_j,
     const Scalar<SpinWeighted<ComplexDataVector, 2>>& boundary_dr_j,
     const Scalar<SpinWeighted<ComplexDataVector, 0>>& r, const size_t l_max,
-    const size_t number_of_radial_points) const noexcept {
+    const size_t number_of_radial_points) const {
   const size_t number_of_angular_points =
       Spectral::Swsh::number_of_swsh_collocation_points(l_max);
   detail::radial_evolve_psi0_condition(make_not_null(&get(*j)), get(boundary_j),
@@ -164,7 +162,7 @@ void NoIncomingRadiation::operator()(
   }
 }
 
-void NoIncomingRadiation::pup(PUP::er& p) noexcept {
+void NoIncomingRadiation::pup(PUP::er& p) {
   p | require_convergence_;
   p | angular_coordinate_tolerance_;
   p | max_iterations_;

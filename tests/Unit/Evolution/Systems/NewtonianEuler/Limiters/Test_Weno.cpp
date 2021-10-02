@@ -43,7 +43,7 @@
 
 namespace {
 
-void test_neuler_weno_option_parsing() noexcept {
+void test_neuler_weno_option_parsing() {
   INFO("Testing option parsing");
   const auto sweno =
       TestHelpers::test_creation<NewtonianEuler::Limiters::Weno<1>>(
@@ -201,7 +201,7 @@ void test_neuler_weno_option_parsing() noexcept {
   CHECK(sweno_3d == expected_sweno_3d);
 }
 
-void test_neuler_weno_serialization() noexcept {
+void test_neuler_weno_serialization() {
   INFO("Testing serialization");
   const NewtonianEuler::Limiters::Weno<1> weno(
       Limiters::WenoType::SimpleWeno,
@@ -216,7 +216,7 @@ DirectionMap<Dim, std::optional<Variables<
                                  evolution::dg::Tags::NormalCovector<Dim>>>>>
 compute_normals_and_magnitudes(
     const Mesh<Dim>& mesh,
-    const ElementMap<Dim, Frame::Inertial>& element_map) noexcept {
+    const ElementMap<Dim, Frame::Inertial>& element_map) {
   DirectionMap<Dim, std::optional<Variables<
                         tmpl::list<evolution::dg::Tags::MagnitudeOfNormal,
                                    evolution::dg::Tags::NormalCovector<Dim>>>>>
@@ -274,7 +274,7 @@ void test_neuler_vs_generic_weno_work(
         std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
         typename NewtonianEuler::Limiters::Weno<VolumeDim>::PackagedData,
         boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
-        neighbor_data) noexcept {
+        neighbor_data) {
   // Sanity check that
   // - input momentum satisfies simplifying assumptions
   // - limiter type is consistent with these simplifying assumptions
@@ -344,7 +344,7 @@ void test_neuler_vs_generic_weno_work(
     // Cellwise means, for cons/char transforms
     const auto mean_density =
         Scalar<double>{mean_value(get(input_density), mesh)};
-    const auto mean_momentum = [&input_momentum, &mesh]() noexcept {
+    const auto mean_momentum = [&input_momentum, &mesh]() {
       tnsr::I<double, VolumeDim> result{};
       for (size_t i = 0; i < VolumeDim; ++i) {
         result.get(i) = mean_value(input_momentum.get(i), mesh);
@@ -357,7 +357,7 @@ void test_neuler_vs_generic_weno_work(
     // Compute characteristic transformation using x-direction...
     // Note that in 2D and 3D we know the fluid velocity is 0, so this
     // choice is arbitrary in these higher dimensions.
-    const auto unit_vector = []() noexcept {
+    const auto unit_vector = []() {
       auto components = make_array<VolumeDim>(0.);
       components[0] = 1.;
       return tnsr::i<double, VolumeDim>(components);
@@ -451,7 +451,7 @@ void test_neuler_vs_generic_weno_work(
   }
 }
 
-void test_neuler_vs_generic_weno_1d() noexcept {
+void test_neuler_vs_generic_weno_1d() {
   INFO("Testing NewtonianEuler::Limiters::Weno limiter in 1D");
   const auto mesh =
       Mesh<1>(3, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto);
@@ -471,13 +471,13 @@ void test_neuler_vs_generic_weno_1d() noexcept {
       compute_normals_and_magnitudes(mesh, element_map);
 
   const auto& x = get<0>(logical_coords);
-  const auto mass_density_cons = [&x]() noexcept {
+  const auto mass_density_cons = [&x]() {
     return Scalar<DataVector>{{{1. + 0.2 * x + 0.05 * square(x)}}};
   }();
-  const auto momentum_density = [&x]() noexcept {
+  const auto momentum_density = [&x]() {
     return tnsr::I<DataVector, 1>{{{0.2 - 0.3 * x}}};
   }();
-  const auto energy_density = [&mesh]() noexcept {
+  const auto energy_density = [&mesh]() {
     return Scalar<DataVector>{DataVector(mesh.number_of_grid_points(), 1.)};
   }();
 
@@ -531,7 +531,7 @@ void test_neuler_vs_generic_weno_1d() noexcept {
       normals_and_magnitudes, neighbor_data);
 }
 
-void test_neuler_vs_generic_weno_2d() noexcept {
+void test_neuler_vs_generic_weno_2d() {
   INFO("Testing NewtonianEuler::Limiters::Weno limiter in 2D");
   const auto mesh =
       Mesh<2>(3, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto);
@@ -555,14 +555,14 @@ void test_neuler_vs_generic_weno_2d() noexcept {
 
   const auto& x = get<0>(logical_coords);
   const auto& y = get<1>(logical_coords);
-  const auto mass_density_cons = [&x, &y]() noexcept {
+  const auto mass_density_cons = [&x, &y]() {
     return Scalar<DataVector>{
         {{1. + 0.2 * x - 0.1 * y + 0.05 * x * square(y)}}};
   }();
-  const auto momentum_density = [&mesh]() noexcept {
+  const auto momentum_density = [&mesh]() {
     return tnsr::I<DataVector, 2>{DataVector(mesh.number_of_grid_points(), 0.)};
   }();
-  const auto energy_density = [&x, &y]() noexcept {
+  const auto energy_density = [&x, &y]() {
     return Scalar<DataVector>{{{1.3 + 0.1 * y - 0.06 * square(x) * y}}};
   }();
 
@@ -607,7 +607,7 @@ void test_neuler_vs_generic_weno_2d() noexcept {
       normals_and_magnitudes, neighbor_data);
 }
 
-void test_neuler_vs_generic_weno_3d() noexcept {
+void test_neuler_vs_generic_weno_3d() {
   INFO("Testing NewtonianEuler::Limiters::Weno limiter in 3D");
   const auto mesh =
       Mesh<3>(3, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto);
@@ -634,13 +634,13 @@ void test_neuler_vs_generic_weno_3d() noexcept {
   const auto& x = get<0>(logical_coords);
   const auto& y = get<1>(logical_coords);
   const auto& z = get<2>(logical_coords);
-  const auto mass_density_cons = [&x, &y, &z]() noexcept {
+  const auto mass_density_cons = [&x, &y, &z]() {
     return Scalar<DataVector>{{{1. + 0.2 * x - 0.1 * y + 0.4 * z}}};
   }();
-  const auto momentum_density = [&mesh]() noexcept {
+  const auto momentum_density = [&mesh]() {
     return tnsr::I<DataVector, 3>{DataVector(mesh.number_of_grid_points(), 0.)};
   }();
-  const auto energy_density = [&x, &y, &z]() noexcept {
+  const auto energy_density = [&x, &y, &z]() {
     return Scalar<DataVector>{{{1.8 - 0.1 * square(x) * y * square(z)}}};
   }();
 
@@ -697,7 +697,7 @@ void test_neuler_vs_generic_weno_3d() noexcept {
 }
 
 template <size_t VolumeDim>
-void test_neuler_weno_flattener() noexcept {
+void test_neuler_weno_flattener() {
   INFO("Testing flattener use in NewtonianEuler::Limiters::Weno limiter");
   CAPTURE(VolumeDim);
 
@@ -712,16 +712,16 @@ void test_neuler_weno_flattener() noexcept {
   const EquationsOfState::IdealFluid<false> equation_of_state{5. / 3.};
 
   const size_t num_points = mesh.number_of_grid_points();
-  const auto input_density = [&num_points]() noexcept {
+  const auto input_density = [&num_points]() {
     // One negative value to trigger flattener
     Scalar<DataVector> density{DataVector(num_points, 0.8)};
     get(density)[0] = -0.2;
     return density;
   }();
-  const auto input_momentum = [&num_points]() noexcept {
+  const auto input_momentum = [&num_points]() {
     return tnsr::I<DataVector, VolumeDim>{DataVector(num_points, 0.1)};
   }();
-  const auto input_energy = [&num_points]() noexcept {
+  const auto input_energy = [&num_points]() {
     return Scalar<DataVector>{DataVector(num_points, 1.4)};
   }();
 

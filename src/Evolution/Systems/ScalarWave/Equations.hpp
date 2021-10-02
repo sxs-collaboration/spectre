@@ -33,6 +33,6 @@ struct ComputeNormalDotFluxes {
                     gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*>
                         phi_normal_dot_flux,
                     gsl::not_null<Scalar<DataVector>*> psi_normal_dot_flux,
-                    const Scalar<DataVector>& pi) noexcept;
+                    const Scalar<DataVector>& pi);
 };
 }  // namespace ScalarWave

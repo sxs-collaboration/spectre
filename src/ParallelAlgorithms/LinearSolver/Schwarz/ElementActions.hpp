@@ -82,14 +82,14 @@ template <typename OptionsGroup>
 struct SubdomainStatsFormatter
     : tt::ConformsTo<observers::protocols::ReductionDataFormatter> {
   using reduction_data = Schwarz::detail::reduction_data;
-  SubdomainStatsFormatter() noexcept = default;
-  SubdomainStatsFormatter(std::string local_section_observation_key) noexcept
+  SubdomainStatsFormatter() = default;
+  SubdomainStatsFormatter(std::string local_section_observation_key)
       : section_observation_key(std::move(local_section_observation_key)) {}
   std::string operator()(const size_t iteration_id, const size_t num_subdomains,
                          const double avg_subdomain_its,
                          const size_t min_subdomain_its,
                          const size_t max_subdomain_its,
-                         const size_t total_subdomain_its) const noexcept {
+                         const size_t total_subdomain_its) const {
     return Options::name<OptionsGroup>() + section_observation_key + "(" +
            get_output(iteration_id) + ") completed all " +
            get_output(num_subdomains) +
@@ -100,7 +100,7 @@ struct SubdomainStatsFormatter
            get_output(total_subdomain_its) + ").";
   }
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept { p | section_observation_key; }
+  void pup(PUP::er& p) { p | section_observation_key; }
   std::string section_observation_key{};
 };
 
@@ -110,7 +110,7 @@ struct RegisterObservers {
             typename ArrayIndex>
   static std::pair<observers::TypeOfObservation, observers::ObservationKey>
   register_info(const db::DataBox<DbTagsList>& box,
-                const ArrayIndex& /*array_index*/) noexcept {
+                const ArrayIndex& /*array_index*/) {
     // Get the observation key, or "Unused" if the element does not belong
     // to a section with this tag. In the latter case, no observations will
     // ever be contributed.
@@ -138,8 +138,7 @@ template <typename OptionsGroup, typename ParallelComponent,
 void contribute_to_subdomain_stats_observation(
     const size_t iteration_id, const size_t subdomain_solve_num_iterations,
     Parallel::GlobalCache<Metavariables>& cache, const ArrayIndex& array_index,
-    const std::string& section_observation_key,
-    const bool observe_per_core) noexcept {
+    const std::string& section_observation_key, const bool observe_per_core) {
   auto& local_observer =
       *Parallel::get_parallel_component<observers::Observer<Metavariables>>(
            cache)
@@ -172,7 +171,7 @@ void contribute_to_subdomain_stats_observation(
 
 template <typename SubdomainDataType, typename OptionsGroup>
 struct SubdomainDataBufferTag : db::SimpleTag {
-  static std::string name() noexcept {
+  static std::string name() {
     return "SubdomainData(" + Options::name<OptionsGroup>() + ")";
   }
   using type = SubdomainDataType;
@@ -225,7 +224,7 @@ struct InitializeElement {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ElementId<Dim>& /*element_id*/,
                     const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     const auto& element = db::get<domain::Tags::Element<Dim>>(box);
     const auto& mesh = db::get<domain::Tags::Mesh<Dim>>(box);
     const size_t num_points = mesh.number_of_grid_points();
@@ -333,7 +332,7 @@ struct SolveSubdomain {
         tuples::TaggedTuple<InboxTags...>& inboxes,
         Parallel::GlobalCache<Metavariables>& cache,
         const ElementId<Dim>& element_id, const ActionList /*meta*/,
-        const ParallelComponent* const /*meta*/) noexcept {
+        const ParallelComponent* const /*meta*/) {
     const size_t iteration_id =
         get<Convergence::Tags::IterationId<OptionsGroup>>(box);
     const auto& element = db::get<domain::Tags::Element<Dim>>(box);
@@ -361,7 +360,7 @@ struct SolveSubdomain {
         make_not_null(&box),
         [&inboxes, &iteration_id, &has_overlap_data](
             const gsl::not_null<SubdomainData*> subdomain_data,
-            const auto& residual) noexcept {
+            const auto& residual) {
           subdomain_data->element_data = residual;
           // Nothing was communicated if the overlaps are empty
           if (LIKELY(has_overlap_data)) {
@@ -432,7 +431,7 @@ struct SolveSubdomain {
 
     // Apply solution to central element
     db::mutate<fields_tag>(make_not_null(&box),
-                           [&subdomain_solution](const auto fields) noexcept {
+                           [&subdomain_solution](const auto fields) {
                              *fields += subdomain_solution.element_data;
                            });
 
@@ -485,7 +484,7 @@ struct ReceiveOverlapSolution {
         tuples::TaggedTuple<InboxTags...>& inboxes,
         const Parallel::GlobalCache<Metavariables>& /*cache*/,
         const ElementId<Dim>& element_id, const ActionList /*meta*/,
-        const ParallelComponent* const /*meta*/) noexcept {
+        const ParallelComponent* const /*meta*/) {
     const size_t iteration_id =
         get<Convergence::Tags::IterationId<OptionsGroup>>(box);
     const auto& element = db::get<domain::Tags::Element<Dim>>(box);
@@ -519,7 +518,7 @@ struct ReceiveOverlapSolution {
             const auto fields, const Index<Dim>& full_extents,
             const std::array<size_t, Dim>& all_intruding_extents,
             const DirectionMap<Dim, Scalar<DataVector>>&
-                all_intruding_overlap_weights) noexcept {
+                all_intruding_overlap_weights) {
           for (const auto& [overlap_id, overlap_solution] :
                received_overlap_solutions) {
             const auto& direction = overlap_id.first;

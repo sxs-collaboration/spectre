@@ -10,13 +10,13 @@
 #include "Utilities/Gsl.hpp"
 
 DataVector quaternion_to_datavector(
-    const boost::math::quaternion<double>& input) noexcept {
+    const boost::math::quaternion<double>& input) {
   return DataVector{input.R_component_1(), input.R_component_2(),
                     input.R_component_3(), input.R_component_4()};
 }
 
 boost::math::quaternion<double> datavector_to_quaternion(
-    const DataVector& input) noexcept {
+    const DataVector& input) {
   ASSERT(input.size() == 3 or input.size() == 4,
          "To form a quaternion, a DataVector can either have 3 or 4 components "
          "only. This DataVector has "
@@ -31,6 +31,6 @@ boost::math::quaternion<double> datavector_to_quaternion(
 
 // Normalize a `boost::math::quaternion`
 void normalize_quaternion(
-    const gsl::not_null<boost::math::quaternion<double>*> input) noexcept {
+    const gsl::not_null<boost::math::quaternion<double>*> input) {
   *input /= abs(*input);
 }

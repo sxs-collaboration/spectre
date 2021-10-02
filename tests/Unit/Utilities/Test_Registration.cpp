@@ -23,7 +23,7 @@ class Base {
   virtual ~Base() = default;
   using creatable_classes = Registration::registrants<Registrars>;
 
-  virtual int func() const noexcept = 0;
+  virtual int func() const = 0;
 };
 
 template <typename Registrars>
@@ -38,7 +38,7 @@ class Derived1 : public Base<Registrars> {
  public:
   static constexpr Options::String help = "help";
   using options = tmpl::list<>;
-  int func() const noexcept override { return 1; }
+  int func() const override { return 1; }
 };
 // [registrar_structure]
 
@@ -57,7 +57,7 @@ class Derived2 : public Base<Registrars> {
  public:
   static constexpr Options::String help = "help";
   using options = tmpl::list<>;
-  int func() const noexcept override { return 2; }
+  int func() const override { return 2; }
 };
 // [registrar]
 
@@ -78,7 +78,7 @@ class Derived3 : public Base<Registrars> {
  public:
   static constexpr Options::String help = "help";
   using options = tmpl::list<>;
-  int func() const noexcept override { return N; }
+  int func() const override { return N; }
 };
 // [custom_registrar]
 }  // namespace

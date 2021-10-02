@@ -29,8 +29,7 @@ namespace detail {
  * reducers.
  */
 template <class... Ts>
-CkReductionMsg* new_reduction_msg(
-    ReductionData<Ts...>& reduction_data) noexcept {
+CkReductionMsg* new_reduction_msg(ReductionData<Ts...>& reduction_data) {
   return CkReductionMsg::buildNew(static_cast<int>(reduction_data.size()),
                                   reduction_data.packed().get());
 }
@@ -81,15 +80,14 @@ struct ReductionData<ReductionDatum<Ts, InvokeCombines, InvokeFinals,
                                     InvokeFinalExtraArgsIndices>...> {
   static_assert(sizeof...(Ts) > 0,
                 "Must be reducing at least one piece of data.");
-  static constexpr size_t pack_size() noexcept { return sizeof...(Ts); }
+  static constexpr size_t pack_size() { return sizeof...(Ts); }
   using datum_list = tmpl::list<ReductionDatum<Ts, InvokeCombines, InvokeFinals,
                                                InvokeFinalExtraArgsIndices>...>;
 
-  explicit ReductionData(
-      ReductionDatum<Ts, InvokeCombines, InvokeFinals,
-                     InvokeFinalExtraArgsIndices>... args) noexcept;
+  explicit ReductionData(ReductionDatum<Ts, InvokeCombines, InvokeFinals,
+                                        InvokeFinalExtraArgsIndices>... args);
 
-  explicit ReductionData(Ts... args) noexcept;
+  explicit ReductionData(Ts... args);
 
   ReductionData() = default;
   ReductionData(const ReductionData& /*rhs*/) = default;
@@ -98,50 +96,48 @@ struct ReductionData<ReductionDatum<Ts, InvokeCombines, InvokeFinals,
   ReductionData& operator=(ReductionData&& /*rhs*/) = default;
   ~ReductionData() = default;
 
-  explicit ReductionData(CkReductionMsg* const message) noexcept {
+  explicit ReductionData(CkReductionMsg* const message) {
     PUP::fromMem creator(message->getData());
     creator | *this;
   }
 
-  static CkReductionMsg* combine(int number_of_messages,
-                                 CkReductionMsg** msgs) noexcept;
+  static CkReductionMsg* combine(int number_of_messages, CkReductionMsg** msgs);
 
-  ReductionData& combine(ReductionData&& t) noexcept {
+  ReductionData& combine(ReductionData&& t) {
     ReductionData::combine_helper(this, std::move(t),
                                   std::make_index_sequence<sizeof...(Ts)>{});
     return *this;
   }
 
-  ReductionData& finalize() noexcept {
+  ReductionData& finalize() {
     invoke_final_loop_over_tuple(std::make_index_sequence<sizeof...(Ts)>{});
     return *this;
   }
 
   /// \cond
   // clang-tidy: non-const reference
-  void pup(PUP::er& p) noexcept { p | data_; }  // NOLINT
+  void pup(PUP::er& p) { p | data_; }  // NOLINT
 
   // NOLINTNEXTLINE(modernize-avoid-c-arrays)
-  std::unique_ptr<char[]> packed() noexcept;
+  std::unique_ptr<char[]> packed();
 
-  size_t size() noexcept;
+  size_t size();
 
-  const std::tuple<Ts...>& data() const noexcept { return data_; }
+  const std::tuple<Ts...>& data() const { return data_; }
 
-  std::tuple<Ts...>& data() noexcept { return data_; }
+  std::tuple<Ts...>& data() { return data_; }
 
  private:
   template <size_t... Is>
   static void combine_helper(gsl::not_null<ReductionData*> reduced,
                              ReductionData&& current,
-                             std::index_sequence<Is...> /*meta*/) noexcept;
+                             std::index_sequence<Is...> /*meta*/);
 
   template <size_t I, class InvokeFinal, size_t... Js>
-  void invoke_final_helper(std::index_sequence<Js...> /*meta*/) noexcept;
+  void invoke_final_helper(std::index_sequence<Js...> /*meta*/);
 
   template <size_t... Is>
-  void invoke_final_loop_over_tuple(
-      std::index_sequence<Is...> /*meta*/) noexcept;
+  void invoke_final_loop_over_tuple(std::index_sequence<Is...> /*meta*/);
 
   std::tuple<Ts...> data_;
   /// \endcond
@@ -153,22 +149,21 @@ template <class... Ts, class... InvokeCombines, class... InvokeFinals,
 ReductionData<ReductionDatum<Ts, InvokeCombines, InvokeFinals,
                              InvokeFinalExtraArgsIndices>...>::
     ReductionData(ReductionDatum<Ts, InvokeCombines, InvokeFinals,
-                                 InvokeFinalExtraArgsIndices>... args) noexcept
+                                 InvokeFinalExtraArgsIndices>... args)
     : data_(std::move(args.value)...) {}
 
 template <class... Ts, class... InvokeCombines, class... InvokeFinals,
           class... InvokeFinalExtraArgsIndices>
-ReductionData<ReductionDatum<Ts, InvokeCombines, InvokeFinals,
-                             InvokeFinalExtraArgsIndices>...>::
-    ReductionData(Ts... args) noexcept
+ReductionData<
+    ReductionDatum<Ts, InvokeCombines, InvokeFinals,
+                   InvokeFinalExtraArgsIndices>...>::ReductionData(Ts... args)
     : data_(std::move(args)...) {}
 
 template <class... Ts, class... InvokeCombines, class... InvokeFinals,
           class... InvokeFinalExtraArgsIndices>
 CkReductionMsg* ReductionData<ReductionDatum<Ts, InvokeCombines, InvokeFinals,
                                              InvokeFinalExtraArgsIndices>...>::
-    combine(const int number_of_messages,
-            CkReductionMsg** const msgs) noexcept {
+    combine(const int number_of_messages, CkReductionMsg** const msgs) {
   // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
   ReductionData reduced(msgs[0]);
   for (int msg_id = 1; msg_id < number_of_messages; ++msg_id) {
@@ -183,9 +178,9 @@ CkReductionMsg* ReductionData<ReductionDatum<Ts, InvokeCombines, InvokeFinals,
 template <class... Ts, class... InvokeCombines, class... InvokeFinals,
           class... InvokeFinalExtraArgsIndices>
 // NOLINTNEXTLINE(modernize-avoid-c-arrays)
-std::unique_ptr<char[]> ReductionData<
-    ReductionDatum<Ts, InvokeCombines, InvokeFinals,
-                   InvokeFinalExtraArgsIndices>...>::packed() noexcept {
+std::unique_ptr<char[]>
+ReductionData<ReductionDatum<Ts, InvokeCombines, InvokeFinals,
+                             InvokeFinalExtraArgsIndices>...>::packed() {
   // NOLINTNEXTLINE(modernize-avoid-c-arrays)
   auto result = std::make_unique<char[]>(size());
   PUP::toMem packer(result.get());
@@ -195,9 +190,8 @@ std::unique_ptr<char[]> ReductionData<
 
 template <class... Ts, class... InvokeCombines, class... InvokeFinals,
           class... InvokeFinalExtraArgsIndices>
-size_t
-ReductionData<ReductionDatum<Ts, InvokeCombines, InvokeFinals,
-                             InvokeFinalExtraArgsIndices>...>::size() noexcept {
+size_t ReductionData<ReductionDatum<Ts, InvokeCombines, InvokeFinals,
+                                    InvokeFinalExtraArgsIndices>...>::size() {
   PUP::sizer size_pup;
   size_pup | *this;
   return size_pup.size();
@@ -210,7 +204,7 @@ void ReductionData<ReductionDatum<Ts, InvokeCombines, InvokeFinals,
                                   InvokeFinalExtraArgsIndices>...>::
     combine_helper(const gsl::not_null<ReductionData*> reduced,
                    ReductionData&& current,
-                   std::index_sequence<Is...> /*meta*/) noexcept {
+                   std::index_sequence<Is...> /*meta*/) {
   EXPAND_PACK_LEFT_TO_RIGHT((std::get<Is>(reduced->data_) = InvokeCombines{}(
                                  std::move(std::get<Is>(reduced->data_)),
                                  std::move(std::get<Is>(current.data_)))));
@@ -221,7 +215,7 @@ template <class... Ts, class... InvokeCombines, class... InvokeFinals,
 template <size_t I, class InvokeFinal, size_t... Js>
 void ReductionData<ReductionDatum<Ts, InvokeCombines, InvokeFinals,
                                   InvokeFinalExtraArgsIndices>...>::
-    invoke_final_helper(std::index_sequence<Js...> /*meta*/) noexcept {
+    invoke_final_helper(std::index_sequence<Js...> /*meta*/) {
   std::get<I>(data_) = InvokeFinal{}(std::move(std::get<I>(data_)),
                                      std::as_const(std::get<Js>(data_))...);
 }
@@ -231,7 +225,7 @@ template <class... Ts, class... InvokeCombines, class... InvokeFinals,
 template <size_t... Is>
 void ReductionData<ReductionDatum<Ts, InvokeCombines, InvokeFinals,
                                   InvokeFinalExtraArgsIndices>...>::
-    invoke_final_loop_over_tuple(std::index_sequence<Is...> /*meta*/) noexcept {
+    invoke_final_loop_over_tuple(std::index_sequence<Is...> /*meta*/) {
   EXPAND_PACK_LEFT_TO_RIGHT(
       invoke_final_helper<Is, InvokeFinals>(InvokeFinalExtraArgsIndices{}));
 }
@@ -242,7 +236,7 @@ void ReductionData<ReductionDatum<Ts, InvokeCombines, InvokeFinals,
 /// \see Parallel::contribute_to_reduction
 /// @{
 struct NoSection {};
-NoSection& no_section() noexcept;
+NoSection& no_section();
 /// @}
 
 /*!
@@ -273,7 +267,7 @@ void contribute_to_reduction(ReductionData<Ts...> reduction_data,
                              const SenderProxy& sender_component,
                              const TargetProxy& target_component,
                              [[maybe_unused]] const gsl::not_null<SectionType*>
-                                 section = &no_section()) noexcept {
+                                 section = &no_section()) {
   (void)Parallel::charmxx::RegisterReducerFunction<
       &ReductionData<Ts...>::combine>::registrar;
   CkCallback callback(

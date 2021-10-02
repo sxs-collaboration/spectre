@@ -27,7 +27,7 @@ Step::Step(const double left_value, const double right_value,
 }
 
 template <typename T>
-Scalar<T> Step::u(const tnsr::I<T, 1>& x, const double t) const noexcept {
+Scalar<T> Step::u(const tnsr::I<T, 1>& x, const double t) const {
   const double current_shock_position =
       initial_shock_position_ + 0.5 * (left_value_ + right_value_) * t;
   return Scalar<T>(left_value_ -
@@ -36,25 +36,23 @@ Scalar<T> Step::u(const tnsr::I<T, 1>& x, const double t) const noexcept {
 }
 
 template <typename T>
-Scalar<T> Step::du_dt(const tnsr::I<T, 1>& x, const double /*t*/) const
-    noexcept {
+Scalar<T> Step::du_dt(const tnsr::I<T, 1>& x, const double /*t*/) const {
   return make_with_value<Scalar<T>>(x, 0.0);
 }
 
-tuples::TaggedTuple<Tags::U> Step::variables(const tnsr::I<DataVector, 1>& x,
-                                             const double t,
-                                             tmpl::list<Tags::U> /*meta*/) const
-    noexcept {
+tuples::TaggedTuple<Tags::U> Step::variables(
+    const tnsr::I<DataVector, 1>& x, const double t,
+    tmpl::list<Tags::U> /*meta*/) const {
   return {u(x, t)};
 }
 
 tuples::TaggedTuple<::Tags::dt<Tags::U>> Step::variables(
     const tnsr::I<DataVector, 1>& x, const double t,
-    tmpl::list<::Tags::dt<Tags::U>> /*meta*/) const noexcept {
+    tmpl::list<::Tags::dt<Tags::U>> /*meta*/) const {
   return {du_dt(x, t)};
 }
 
-void Step::pup(PUP::er& p) noexcept {
+void Step::pup(PUP::er& p) {
   p | left_value_;
   p | right_value_;
   p | initial_shock_position_;
@@ -65,11 +63,11 @@ void Step::pup(PUP::er& p) noexcept {
 
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                      \
-  template Scalar<DTYPE(data)> Burgers::Solutions::Step::u(       \
-      const tnsr::I<DTYPE(data), 1>& x, double t) const noexcept; \
-  template Scalar<DTYPE(data)> Burgers::Solutions::Step::du_dt(   \
-      const tnsr::I<DTYPE(data), 1>& x, double t) const noexcept;
+#define INSTANTIATE(_, data)                                    \
+  template Scalar<DTYPE(data)> Burgers::Solutions::Step::u(     \
+      const tnsr::I<DTYPE(data), 1>& x, double t) const;        \
+  template Scalar<DTYPE(data)> Burgers::Solutions::Step::du_dt( \
+      const tnsr::I<DTYPE(data), 1>& x, double t) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
 

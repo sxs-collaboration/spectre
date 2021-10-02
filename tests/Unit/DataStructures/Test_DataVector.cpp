@@ -19,7 +19,7 @@
 
 // IWYU pragma: no_include <algorithm>
 
-void test_data_vector_unary_math() noexcept {
+void test_data_vector_unary_math() {
   // [test_functions_with_vector_arguments_example]
   const TestHelpers::VectorImpl::Bound generic{{-100.0, 100.0}};
   const TestHelpers::VectorImpl::Bound mone_one{{-1.0, 1.0}};
@@ -66,7 +66,7 @@ void test_data_vector_unary_math() noexcept {
 }
 
 namespace {
-void test_norms() noexcept {
+void test_norms() {
   // Test l1Norm and l2Norm:
   MAKE_GENERATOR(gen);
   UniformCustomDistribution<double> dist{-5, 10};

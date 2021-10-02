@@ -67,22 +67,22 @@ namespace h5 {
  */
 class VolumeData : public h5::Object {
  public:
-  static std::string extension() noexcept { return ".vol"; }
+  static std::string extension() { return ".vol"; }
 
   VolumeData(bool subfile_exists, detail::OpenGroup&& group, hid_t location,
-             const std::string& name, uint32_t version = 1) noexcept;
+             const std::string& name, uint32_t version = 1);
 
   VolumeData(const VolumeData& /*rhs*/) = delete;
   VolumeData& operator=(const VolumeData& /*rhs*/) = delete;
-  VolumeData(VolumeData&& /*rhs*/) noexcept = delete;             // NOLINT
-  VolumeData& operator=(VolumeData&& /*rhs*/) noexcept = delete;  // NOLINT
+  VolumeData(VolumeData&& /*rhs*/) = delete;             // NOLINT
+  VolumeData& operator=(VolumeData&& /*rhs*/) = delete;  // NOLINT
 
   ~VolumeData() override = default;
 
   /*!
    * \returns the header of the VolumeData file
    */
-  const std::string& get_header() const noexcept { return header_; }
+  const std::string& get_header() const { return header_; }
 
   /*!
    * \returns the user-specified version number of the VolumeData file
@@ -90,26 +90,25 @@ class VolumeData : public h5::Object {
    * \note h5::Version returns a uint32_t, so we return one here too for the
    * version
    */
-  uint32_t get_version() const noexcept { return version_; }
+  uint32_t get_version() const { return version_; }
 
   /// Insert tensor components at `observation_id` with floating point value
   /// `observation_value`
   ///
   /// \requires The names of the tensor components is of the form
   /// `GRID_NAME/TENSOR_NAME_COMPONENT`, e.g. `Element0/T_xx`
-  void write_volume_data(
-      size_t observation_id, double observation_value,
-      const std::vector<ElementVolumeData>& elements) noexcept;
+  void write_volume_data(size_t observation_id, double observation_value,
+                         const std::vector<ElementVolumeData>& elements);
 
   /// List all the integral observation ids in the subfile
-  std::vector<size_t> list_observation_ids() const noexcept;
+  std::vector<size_t> list_observation_ids() const;
 
   /// Get the observation value at the the integral observation id in the
   /// subfile
-  double get_observation_value(size_t observation_id) const noexcept;
+  double get_observation_value(size_t observation_id) const;
 
   /// Find the observation ID that matches the `observation_value`
-  size_t find_observation_id(const double observation_value) const noexcept {
+  size_t find_observation_id(const double observation_value) const {
     for (auto& observation_id : list_observation_ids()) {
       if (get_observation_value(observation_id) == observation_value) {
         return observation_id;
@@ -120,39 +119,35 @@ class VolumeData : public h5::Object {
   }
 
   /// List all the tensor components at observation id `observation_id`
-  std::vector<std::string> list_tensor_components(
-      size_t observation_id) const noexcept;
+  std::vector<std::string> list_tensor_components(size_t observation_id) const;
 
   /// List the names of all the grids at observation id `observation_id`
-  std::vector<std::string> get_grid_names(size_t observation_id) const noexcept;
+  std::vector<std::string> get_grid_names(size_t observation_id) const;
 
   /// Read a tensor component with name `tensor_component` at observation id
   /// `observation_id` from all grids in the file
-  DataVector get_tensor_component(
-      size_t observation_id,
-      const std::string& tensor_component) const noexcept;
+  DataVector get_tensor_component(size_t observation_id,
+                                  const std::string& tensor_component) const;
 
   /// Read the extents of all the grids stored in the file at the observation id
   /// `observation_id`
-  std::vector<std::vector<size_t>> get_extents(
-      size_t observation_id) const noexcept;
+  std::vector<std::vector<size_t>> get_extents(size_t observation_id) const;
 
   /// Read the dimensionality of the grids.  Note : This is the dimension of
   /// the grids as manifolds, not the dimension of the embedding space.  For
   /// example, the volume data of a sphere is 2-dimensional, even though
   /// each point has an x, y, and z coordinate.
-  size_t get_dimension() const noexcept;
+  size_t get_dimension() const;
 
   /// Return the character used as a separator between grids in the subfile.
-  static char separator() noexcept { return ':'; }
+  static char separator() { return ':'; }
 
   /// Return the basis being used for each element along each axis
-  std::vector<std::vector<std::string>> get_bases(
-      size_t observation_id) const noexcept;
+  std::vector<std::vector<std::string>> get_bases(size_t observation_id) const;
 
   /// Return the quadrature being used for each element along each axis
   std::vector<std::vector<std::string>> get_quadratures(
-      size_t observation_id) const noexcept;
+      size_t observation_id) const;
 
  private:
   detail::OpenGroup group_{};
@@ -186,6 +181,6 @@ class VolumeData : public h5::Object {
 std::pair<size_t, size_t> offset_and_length_for_grid(
     const std::string& grid_name,
     const std::vector<std::string>& all_grid_names,
-    const std::vector<std::vector<size_t>>& all_extents) noexcept;
+    const std::vector<std::vector<size_t>>& all_extents);
 
 }  // namespace h5

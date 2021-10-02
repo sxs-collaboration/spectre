@@ -74,7 +74,7 @@ class DummyLimiterForTest {
   // NOLINTNEXTLINE(readability-convert-member-functions-to-static)
   void package_data(const gsl::not_null<PackagedData*> packaged_data,
                     const Scalar<DataVector>& var, const Mesh<2>& mesh,
-                    const OrientationMap<2>& orientation_map) const noexcept {
+                    const OrientationMap<2>& orientation_map) const {
     packaged_data->mean_ = mean_value(get(var), mesh);
     packaged_data->mesh_ = orientation_map(mesh);
   }
@@ -88,7 +88,7 @@ class DummyLimiterForTest {
                       std::pair<Direction<2>, ElementId<2>>,
                       DummyLimiterForTest::PackagedData,
                       boost::hash<std::pair<Direction<2>, ElementId<2>>>>&
-                      neighbor_packaged_data) const noexcept {
+                      neighbor_packaged_data) const {
     // Zero the data as an easy check that the limiter got called
     get(*var) = 0.;
     for (const auto& data : neighbor_packaged_data) {
@@ -96,7 +96,7 @@ class DummyLimiterForTest {
     }
   }
 
-  void pup(const PUP::er& /*p*/) const noexcept {}
+  void pup(const PUP::er& /*p*/) const {}
 };
 
 struct LimiterTag : db::SimpleTag {
@@ -206,7 +206,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.LimiterActions.Generic",
                                     const ElementId<2>& id,
                                     const Direction<2>& direction,
                                     const OrientationMap<2>& orientation,
-                                    const Scalar<DataVector>& var) noexcept {
+                                    const Scalar<DataVector>& var) {
     const Element<2> element(id, {{direction, {{self_id}, orientation}}});
     auto map = ElementMap<2, Frame::Inertial>(id, coordmap->get_clone());
     ActionTesting::emplace_component_and_initialize<my_component>(
@@ -234,7 +234,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.LimiterActions.Generic",
           std::unordered_set<ElementId<2>>{west_id, east_id, south_id});
     const auto check_sent_data = [&runner, &self_id](
                                      const ElementId<2>& id,
-                                     const Direction<2>& direction) noexcept {
+                                     const Direction<2>& direction) {
       const auto& inboxes = runner.inboxes<my_component>();
       const auto& inbox = tuples::get<limiter_comm_tag>(inboxes.at(id));
       CHECK(inbox.size() == 1);
@@ -263,7 +263,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.LimiterActions.Generic",
                                  const ElementId<2>& id,
                                  const Direction<2>& direction,
                                  const double expected_mean_data,
-                                 const Mesh<2>& expected_mesh) noexcept {
+                                 const Mesh<2>& expected_mesh) {
       const auto received_package =
           tuples::get<limiter_comm_tag>(
               runner.inboxes<my_component>().at(self_id))

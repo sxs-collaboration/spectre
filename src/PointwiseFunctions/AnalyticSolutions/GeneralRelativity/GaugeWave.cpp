@@ -20,8 +20,7 @@ namespace {
 // compute gauge wave H
 template <typename DataType, size_t Dim>
 DataType gauge_wave_h(const tnsr::I<DataType, Dim>& x, const double t,
-                      const double amplitude,
-                      const double wavelength) noexcept {
+                      const double amplitude, const double wavelength) {
   return {-1.0 * amplitude * sin((get<0>(x) - t) * (2.0 * M_PI / wavelength)) +
           1.0};
 }
@@ -29,8 +28,7 @@ DataType gauge_wave_h(const tnsr::I<DataType, Dim>& x, const double t,
 // compute gauge wave derivH: \partial_x H
 template <typename DataType, size_t Dim>
 DataType gauge_wave_deriv_h(const tnsr::I<DataType, Dim>& x, const double t,
-                            const double amplitude,
-                            const double wavelength) noexcept {
+                            const double amplitude, const double wavelength) {
   return {-1.0 * amplitude * (2.0 * M_PI / wavelength) *
           cos((get<0>(x) - t) * (2.0 * M_PI / wavelength))};
 }
@@ -54,7 +52,7 @@ GaugeWave<Dim>::GaugeWave(const double amplitude, const double wavelength,
 }
 
 template <size_t Dim>
-void GaugeWave<Dim>::pup(PUP::er& p) noexcept {
+void GaugeWave<Dim>::pup(PUP::er& p) {
   p | amplitude_;
   p | wavelength_;
 }
@@ -63,8 +61,7 @@ template <size_t Dim>
 template <typename DataType>
 GaugeWave<Dim>::IntermediateVars<DataType>::IntermediateVars(
     const double amplitude, const double wavelength,
-    const tnsr::I<DataType, volume_dim, Frame::Inertial>& x,
-    const double t) noexcept {
+    const tnsr::I<DataType, volume_dim, Frame::Inertial>& x, const double t) {
   h = gauge_wave_h(x, t, amplitude, wavelength);
   dx_h = gauge_wave_deriv_h(x, t, amplitude, wavelength);
   sqrt_h = sqrt(h);
@@ -76,7 +73,7 @@ template <typename DataType>
 auto GaugeWave<Dim>::variables(
     const tnsr::I<DataType, volume_dim, Frame::Inertial>& /*x*/,
     const double /*t*/, const IntermediateVars<DataType>& vars,
-    tmpl::list<gr::Tags::Lapse<DataType>> /*meta*/) const noexcept
+    tmpl::list<gr::Tags::Lapse<DataType>> /*meta*/) const
     -> tuples::TaggedTuple<gr::Tags::Lapse<DataType>> {
   return {Scalar<DataType>{vars.sqrt_h}};
 }
@@ -86,7 +83,7 @@ template <typename DataType>
 auto GaugeWave<Dim>::variables(
     const tnsr::I<DataType, volume_dim, Frame::Inertial>& /*x*/,
     const double /*t*/, const IntermediateVars<DataType>& vars,
-    tmpl::list<::Tags::dt<gr::Tags::Lapse<DataType>>> /*meta*/) const noexcept
+    tmpl::list<::Tags::dt<gr::Tags::Lapse<DataType>>> /*meta*/) const
     -> tuples::TaggedTuple<::Tags::dt<gr::Tags::Lapse<DataType>>> {
   return {Scalar<DataType>{-1.0 * vars.dx_h_over_2_sqrt_h}};
 }
@@ -96,7 +93,7 @@ template <typename DataType>
 auto GaugeWave<Dim>::variables(
     const tnsr::I<DataType, volume_dim, Frame::Inertial>& x, const double /*t*/,
     const IntermediateVars<DataType>& vars,
-    tmpl::list<DerivLapse<DataType>> /*meta*/) const noexcept
+    tmpl::list<DerivLapse<DataType>> /*meta*/) const
     -> tuples::TaggedTuple<DerivLapse<DataType>> {
   // most parts of d_lapse are zero, so make_with_value() here
   auto d_lapse =
@@ -111,7 +108,7 @@ auto GaugeWave<Dim>::variables(
     const tnsr::I<DataType, volume_dim, Frame::Inertial>& x, const double /*t*/,
     const IntermediateVars<DataType>& /*vars*/,
     tmpl::list<gr::Tags::Shift<volume_dim, Frame::Inertial, DataType>> /*meta*/)
-    const noexcept -> tuples::TaggedTuple<
+    const -> tuples::TaggedTuple<
         gr::Tags::Shift<volume_dim, Frame::Inertial, DataType>> {
   return {
       make_with_value<tnsr::I<DataType, volume_dim, Frame::Inertial>>(x, 0.0)};
@@ -124,7 +121,7 @@ auto GaugeWave<Dim>::variables(
     const IntermediateVars<DataType>& /*vars*/,
     tmpl::list<::Tags::dt<
         gr::Tags::Shift<volume_dim, Frame::Inertial, DataType>>> /*meta*/) const
-    noexcept -> tuples::TaggedTuple<
+    -> tuples::TaggedTuple<
         ::Tags::dt<gr::Tags::Shift<volume_dim, Frame::Inertial, DataType>>> {
   return {
       make_with_value<tnsr::I<DataType, volume_dim, Frame::Inertial>>(x, 0.0)};
@@ -135,7 +132,7 @@ template <typename DataType>
 auto GaugeWave<Dim>::variables(
     const tnsr::I<DataType, volume_dim, Frame::Inertial>& x, const double /*t*/,
     const IntermediateVars<DataType>& /*vars*/,
-    tmpl::list<DerivShift<DataType>> /*meta*/) const noexcept
+    tmpl::list<DerivShift<DataType>> /*meta*/) const
     -> tuples::TaggedTuple<DerivShift<DataType>> {
   return {
       make_with_value<tnsr::iJ<DataType, volume_dim, Frame::Inertial>>(x, 0.0)};
@@ -147,7 +144,7 @@ auto GaugeWave<Dim>::variables(
     const tnsr::I<DataType, volume_dim, Frame::Inertial>& x, const double /*t*/,
     const IntermediateVars<DataType>& vars,
     tmpl::list<gr::Tags::SpatialMetric<volume_dim, Frame::Inertial,
-                                       DataType>> /*meta*/) const noexcept
+                                       DataType>> /*meta*/) const
     -> tuples::TaggedTuple<
         gr::Tags::SpatialMetric<volume_dim, Frame::Inertial, DataType>> {
   auto spatial_metric =
@@ -166,7 +163,7 @@ auto GaugeWave<Dim>::variables(
     const IntermediateVars<DataType>& vars,
     tmpl::list<::Tags::dt<gr::Tags::SpatialMetric<volume_dim, Frame::Inertial,
                                                   DataType>>> /*meta*/) const
-    noexcept -> tuples::TaggedTuple<::Tags::dt<
+    -> tuples::TaggedTuple<::Tags::dt<
         gr::Tags::SpatialMetric<volume_dim, Frame::Inertial, DataType>>> {
   auto dt_spatial_metric =
       make_with_value<tnsr::ii<DataType, volume_dim, Frame::Inertial>>(x, 0.0);
@@ -179,7 +176,7 @@ template <typename DataType>
 auto GaugeWave<Dim>::variables(
     const tnsr::I<DataType, volume_dim, Frame::Inertial>& x, const double /*t*/,
     const IntermediateVars<DataType>& vars,
-    tmpl::list<DerivSpatialMetric<DataType>> /*meta*/) const noexcept
+    tmpl::list<DerivSpatialMetric<DataType>> /*meta*/) const
     -> tuples::TaggedTuple<DerivSpatialMetric<DataType>> {
   auto d_spatial_metric =
       make_with_value<tnsr::ijj<DataType, volume_dim, Frame::Inertial>>(x, 0.0);
@@ -193,7 +190,7 @@ auto GaugeWave<Dim>::variables(
     const tnsr::I<DataType, volume_dim, Frame::Inertial>& /*x*/,
     const double /*t*/, const IntermediateVars<DataType>& vars,
     tmpl::list<gr::Tags::SqrtDetSpatialMetric<DataType>> /*meta*/) const
-    noexcept -> tuples::TaggedTuple<gr::Tags::SqrtDetSpatialMetric<DataType>> {
+    -> tuples::TaggedTuple<gr::Tags::SqrtDetSpatialMetric<DataType>> {
   return {Scalar<DataType>{vars.sqrt_h}};
 }
 
@@ -203,7 +200,7 @@ auto GaugeWave<Dim>::variables(
     const tnsr::I<DataType, volume_dim, Frame::Inertial>& x, const double /*t*/,
     const IntermediateVars<DataType>& vars,
     tmpl::list<gr::Tags::ExtrinsicCurvature<volume_dim, Frame::Inertial,
-                                            DataType>> /*meta*/) const noexcept
+                                            DataType>> /*meta*/) const
     -> tuples::TaggedTuple<
         gr::Tags::ExtrinsicCurvature<volume_dim, Frame::Inertial, DataType>> {
   auto extrinsic_curvature =
@@ -219,7 +216,7 @@ auto GaugeWave<Dim>::variables(
     const IntermediateVars<DataType>& vars,
     tmpl::list<gr::Tags::InverseSpatialMetric<volume_dim, Frame::Inertial,
                                               DataType>> /*meta*/) const
-    noexcept -> tuples::TaggedTuple<
+    -> tuples::TaggedTuple<
         gr::Tags::InverseSpatialMetric<volume_dim, Frame::Inertial, DataType>> {
   auto inverse_spatial_metric =
       make_with_value<tnsr::II<DataType, volume_dim, Frame::Inertial>>(x, 0.0);
@@ -231,13 +228,13 @@ auto GaugeWave<Dim>::variables(
 }
 
 template <size_t Dim>
-bool operator==(const GaugeWave<Dim>& lhs, const GaugeWave<Dim>& rhs) noexcept {
+bool operator==(const GaugeWave<Dim>& lhs, const GaugeWave<Dim>& rhs) {
   return lhs.amplitude() == rhs.amplitude() and
          lhs.wavelength() == rhs.wavelength();
 }
 
 template <size_t Dim>
-bool operator!=(const GaugeWave<Dim>& lhs, const GaugeWave<Dim>& rhs) noexcept {
+bool operator!=(const GaugeWave<Dim>& lhs, const GaugeWave<Dim>& rhs) {
   return not(lhs == rhs);
 }
 
@@ -249,19 +246,18 @@ bool operator!=(const GaugeWave<Dim>& lhs, const GaugeWave<Dim>& rhs) noexcept {
       IntermediateVars(                                                        \
           const double amplitude, const double wavelength,                     \
           const tnsr::I<DTYPE(data), DIM(data), Frame::Inertial>& x,           \
-          const double t) noexcept;                                            \
+          const double t);                                                     \
   template tuples::TaggedTuple<gr::Tags::Lapse<DTYPE(data)>>                   \
   GaugeWave<DIM(data)>::variables(                                             \
       const tnsr::I<DTYPE(data), DIM(data), Frame::Inertial>& /*x*/,           \
       const double /*t*/,                                                      \
       const GaugeWave<DIM(data)>::IntermediateVars<DTYPE(data)>& vars,         \
-      tmpl::list<gr::Tags::Lapse<DTYPE(data)>> /*meta*/) const noexcept;       \
+      tmpl::list<gr::Tags::Lapse<DTYPE(data)>> /*meta*/) const;                \
   template tuples::TaggedTuple<::Tags::dt<gr::Tags::Lapse<DTYPE(data)>>>       \
   GaugeWave<DIM(data)>::variables(                                             \
       const tnsr::I<DTYPE(data), DIM(data)>& /*x*/, const double /*t*/,        \
       const GaugeWave<DIM(data)>::IntermediateVars<DTYPE(data)>& vars,         \
-      tmpl::list<::Tags::dt<gr::Tags::Lapse<DTYPE(data)>>> /*meta*/)           \
-      const noexcept;                                                          \
+      tmpl::list<::Tags::dt<gr::Tags::Lapse<DTYPE(data)>>> /*meta*/) const;    \
   template tuples::TaggedTuple<::Tags::deriv<                                  \
       gr::Tags::Lapse<DTYPE(data)>, tmpl::size_t<DIM(data)>, Frame::Inertial>> \
   GaugeWave<DIM(data)>::variables(                                             \
@@ -269,7 +265,7 @@ bool operator!=(const GaugeWave<Dim>& lhs, const GaugeWave<Dim>& rhs) noexcept {
       const GaugeWave<DIM(data)>::IntermediateVars<DTYPE(data)>& vars,         \
       tmpl::list<                                                              \
           ::Tags::deriv<gr::Tags::Lapse<DTYPE(data)>, tmpl::size_t<DIM(data)>, \
-                        Frame::Inertial>> /*meta*/) const noexcept;            \
+                        Frame::Inertial>> /*meta*/) const;                     \
   template tuples::TaggedTuple<                                                \
       gr::Tags::Shift<DIM(data), Frame::Inertial, DTYPE(data)>>                \
   GaugeWave<DIM(data)>::variables(                                             \
@@ -277,7 +273,7 @@ bool operator!=(const GaugeWave<Dim>& lhs, const GaugeWave<Dim>& rhs) noexcept {
       const GaugeWave<DIM(data)>::IntermediateVars<DTYPE(data)>& vars,         \
       tmpl::list<                                                              \
           gr::Tags::Shift<DIM(data), Frame::Inertial, DTYPE(data)>> /*meta*/)  \
-      const noexcept;                                                          \
+      const;                                                                   \
   template tuples::TaggedTuple<                                                \
       ::Tags::dt<gr::Tags::Shift<DIM(data), Frame::Inertial, DTYPE(data)>>>    \
   GaugeWave<DIM(data)>::variables(                                             \
@@ -285,7 +281,7 @@ bool operator!=(const GaugeWave<Dim>& lhs, const GaugeWave<Dim>& rhs) noexcept {
       const GaugeWave<DIM(data)>::IntermediateVars<DTYPE(data)>& vars,         \
       tmpl::list<::Tags::dt<                                                   \
           gr::Tags::Shift<DIM(data), Frame::Inertial, DTYPE(data)>>> /*meta*/) \
-      const noexcept;                                                          \
+      const;                                                                   \
   template tuples::TaggedTuple<                                                \
       ::Tags::deriv<gr::Tags::Shift<DIM(data), Frame::Inertial, DTYPE(data)>,  \
                     tmpl::size_t<DIM(data)>, Frame::Inertial>>                 \
@@ -294,22 +290,21 @@ bool operator!=(const GaugeWave<Dim>& lhs, const GaugeWave<Dim>& rhs) noexcept {
       const GaugeWave<DIM(data)>::IntermediateVars<DTYPE(data)>& vars,         \
       tmpl::list<::Tags::deriv<                                                \
           gr::Tags::Shift<DIM(data), Frame::Inertial, DTYPE(data)>,            \
-          tmpl::size_t<DIM(data)>, Frame::Inertial>> /*meta*/) const noexcept; \
+          tmpl::size_t<DIM(data)>, Frame::Inertial>> /*meta*/) const;          \
   template tuples::TaggedTuple<                                                \
       gr::Tags::SpatialMetric<DIM(data), Frame::Inertial, DTYPE(data)>>        \
   GaugeWave<DIM(data)>::variables(                                             \
       const tnsr::I<DTYPE(data), DIM(data)>& x, const double /*t*/,            \
       const GaugeWave<DIM(data)>::IntermediateVars<DTYPE(data)>& vars,         \
       tmpl::list<gr::Tags::SpatialMetric<DIM(data), Frame::Inertial,           \
-                                         DTYPE(data)>> /*meta*/)               \
-      const noexcept;                                                          \
+                                         DTYPE(data)>> /*meta*/) const;        \
   template tuples::TaggedTuple<::Tags::dt<                                     \
       gr::Tags::SpatialMetric<DIM(data), Frame::Inertial, DTYPE(data)>>>       \
   GaugeWave<DIM(data)>::variables(                                             \
       const tnsr::I<DTYPE(data), DIM(data)>& x, const double /*t*/,            \
       const GaugeWave<DIM(data)>::IntermediateVars<DTYPE(data)>& vars,         \
       tmpl::list<::Tags::dt<gr::Tags::SpatialMetric<                           \
-          DIM(data), Frame::Inertial, DTYPE(data)>>> /*meta*/) const noexcept; \
+          DIM(data), Frame::Inertial, DTYPE(data)>>> /*meta*/) const;          \
   template tuples::TaggedTuple<::Tags::deriv<                                  \
       gr::Tags::SpatialMetric<DIM(data), Frame::Inertial, DTYPE(data)>,        \
       tmpl::size_t<DIM(data)>, Frame::Inertial>>                               \
@@ -318,39 +313,36 @@ bool operator!=(const GaugeWave<Dim>& lhs, const GaugeWave<Dim>& rhs) noexcept {
       const GaugeWave<DIM(data)>::IntermediateVars<DTYPE(data)>& vars,         \
       tmpl::list<::Tags::deriv<                                                \
           gr::Tags::SpatialMetric<DIM(data), Frame::Inertial, DTYPE(data)>,    \
-          tmpl::size_t<DIM(data)>, Frame::Inertial>> /*meta*/) const noexcept; \
+          tmpl::size_t<DIM(data)>, Frame::Inertial>> /*meta*/) const;          \
   template tuples::TaggedTuple<                                                \
       gr::Tags::InverseSpatialMetric<DIM(data), Frame::Inertial, DTYPE(data)>> \
   GaugeWave<DIM(data)>::variables(                                             \
       const tnsr::I<DTYPE(data), DIM(data)>& x, const double /*t*/,            \
       const GaugeWave<DIM(data)>::IntermediateVars<DTYPE(data)>& vars,         \
       tmpl::list<gr::Tags::InverseSpatialMetric<DIM(data), Frame::Inertial,    \
-                                                DTYPE(data)>> /*meta*/)        \
-      const noexcept;                                                          \
+                                                DTYPE(data)>> /*meta*/) const; \
   template tuples::TaggedTuple<                                                \
       gr::Tags::ExtrinsicCurvature<DIM(data), Frame::Inertial, DTYPE(data)>>   \
   GaugeWave<DIM(data)>::variables(                                             \
       const tnsr::I<DTYPE(data), DIM(data)>& x, const double /*t*/,            \
       const GaugeWave<DIM(data)>::IntermediateVars<DTYPE(data)>& vars,         \
       tmpl::list<gr::Tags::ExtrinsicCurvature<DIM(data), Frame::Inertial,      \
-                                              DTYPE(data)>> /*meta*/)          \
-      const noexcept;                                                          \
+                                              DTYPE(data)>> /*meta*/) const;   \
   template tuples::TaggedTuple<gr::Tags::SqrtDetSpatialMetric<DTYPE(data)>>    \
   GaugeWave<DIM(data)>::variables(                                             \
       const tnsr::I<DTYPE(data), DIM(data)>& /*x*/, const double /*t*/,        \
       const GaugeWave<DIM(data)>::IntermediateVars<DTYPE(data)>& vars,         \
-      tmpl::list<gr::Tags::SqrtDetSpatialMetric<DTYPE(data)>> /*meta*/)        \
-      const noexcept;
+      tmpl::list<gr::Tags::SqrtDetSpatialMetric<DTYPE(data)>> /*meta*/) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector))
 
 #undef INSTANTIATE
-#define INSTANTIATE(_, data)                                          \
-  template class GaugeWave<DIM(data)>;                                \
-  template bool operator==(const GaugeWave<DIM(data)>& lhs,           \
-                           const GaugeWave<DIM(data)>& rhs) noexcept; \
-  template bool operator!=(const GaugeWave<DIM(data)>& lhs,           \
-                           const GaugeWave<DIM(data)>& rhs) noexcept;
+#define INSTANTIATE(_, data)                                 \
+  template class GaugeWave<DIM(data)>;                       \
+  template bool operator==(const GaugeWave<DIM(data)>& lhs,  \
+                           const GaugeWave<DIM(data)>& rhs); \
+  template bool operator!=(const GaugeWave<DIM(data)>& lhs,  \
+                           const GaugeWave<DIM(data)>& rhs);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 

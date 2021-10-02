@@ -40,40 +40,40 @@ class MathFunction : public PUP::able {
   MathFunction() = default;
   MathFunction(const MathFunction& /*rhs*/) = delete;
   MathFunction& operator=(const MathFunction& /*rhs*/) = delete;
-  MathFunction(MathFunction&& /*rhs*/) noexcept = default;
-  MathFunction& operator=(MathFunction&& /*rhs*/) noexcept = default;
+  MathFunction(MathFunction&& /*rhs*/) = default;
+  MathFunction& operator=(MathFunction&& /*rhs*/) = default;
   ~MathFunction() override = default;
 
   /// @{
   /// Returns the value of the function at the coordinate 'x'.
   virtual Scalar<double> operator()(
-      const tnsr::I<double, VolumeDim, Fr>& x) const noexcept = 0;
+      const tnsr::I<double, VolumeDim, Fr>& x) const = 0;
   virtual Scalar<DataVector> operator()(
-      const tnsr::I<DataVector, VolumeDim, Fr>& x) const noexcept = 0;
+      const tnsr::I<DataVector, VolumeDim, Fr>& x) const = 0;
   /// @}
 
   /// @{
   /// Returns the first partial derivatives of the function at 'x'.
   virtual tnsr::i<double, VolumeDim, Fr> first_deriv(
-      const tnsr::I<double, VolumeDim, Fr>& x) const noexcept = 0;
+      const tnsr::I<double, VolumeDim, Fr>& x) const = 0;
   virtual tnsr::i<DataVector, VolumeDim, Fr> first_deriv(
-      const tnsr::I<DataVector, VolumeDim, Fr>& x) const noexcept = 0;
+      const tnsr::I<DataVector, VolumeDim, Fr>& x) const = 0;
   /// @}
 
   /// @{
   /// Returns the second partial derivatives of the function at 'x'.
   virtual tnsr::ii<double, VolumeDim, Fr> second_deriv(
-      const tnsr::I<double, VolumeDim, Fr>& x) const noexcept = 0;
+      const tnsr::I<double, VolumeDim, Fr>& x) const = 0;
   virtual tnsr::ii<DataVector, VolumeDim, Fr> second_deriv(
-      const tnsr::I<DataVector, VolumeDim, Fr>& x) const noexcept = 0;
+      const tnsr::I<DataVector, VolumeDim, Fr>& x) const = 0;
   /// @}
 
   /// @{
   /// Returns the third partial derivatives of the function at 'x'.
   virtual tnsr::iii<double, VolumeDim, Fr> third_deriv(
-      const tnsr::I<double, VolumeDim, Fr>& x) const noexcept = 0;
+      const tnsr::I<double, VolumeDim, Fr>& x) const = 0;
   virtual tnsr::iii<DataVector, VolumeDim, Fr> third_deriv(
-      const tnsr::I<DataVector, VolumeDim, Fr>& x) const noexcept = 0;
+      const tnsr::I<DataVector, VolumeDim, Fr>& x) const = 0;
   /// @}
 };
 
@@ -94,64 +94,60 @@ class MathFunction<1, Fr> : public PUP::able {
   MathFunction() = default;
   MathFunction(const MathFunction& /*rhs*/) = delete;
   MathFunction& operator=(const MathFunction& /*rhs*/) = delete;
-  MathFunction(MathFunction&& /*rhs*/) noexcept = default;
-  MathFunction& operator=(MathFunction&& /*rhs*/) noexcept = default;
+  MathFunction(MathFunction&& /*rhs*/) = default;
+  MathFunction& operator=(MathFunction&& /*rhs*/) = default;
   ~MathFunction() override = default;
 
   /// Returns the function value at the coordinate 'x'
-  virtual double operator()(const double& x) const noexcept = 0;
-  virtual DataVector operator()(const DataVector& x) const noexcept = 0;
-  Scalar<double> operator()(const tnsr::I<double, 1, Fr>& x) const noexcept {
+  virtual double operator()(const double& x) const = 0;
+  virtual DataVector operator()(const DataVector& x) const = 0;
+  Scalar<double> operator()(const tnsr::I<double, 1, Fr>& x) const {
     return Scalar<double>{{{operator()(get<0>(x))}}};
   }
-  Scalar<DataVector> operator()(
-      const tnsr::I<DataVector, 1, Fr>& x) const noexcept {
+  Scalar<DataVector> operator()(const tnsr::I<DataVector, 1, Fr>& x) const {
     return Scalar<DataVector>{{{operator()(get<0>(x))}}};
   }
 
   /// Returns the first derivative at 'x'
-  virtual double first_deriv(const double& x) const noexcept = 0;
-  virtual DataVector first_deriv(const DataVector& x) const noexcept = 0;
-  tnsr::i<double, 1, Fr> first_deriv(
-      const tnsr::I<double, 1, Fr>& x) const noexcept {
+  virtual double first_deriv(const double& x) const = 0;
+  virtual DataVector first_deriv(const DataVector& x) const = 0;
+  tnsr::i<double, 1, Fr> first_deriv(const tnsr::I<double, 1, Fr>& x) const {
     auto result = make_with_value<tnsr::i<double, 1, Fr>>(get<0>(x), 0.0);
     get<0>(result) = first_deriv(get<0>(x));
     return result;
   }
   tnsr::i<DataVector, 1, Fr> first_deriv(
-      const tnsr::I<DataVector, 1, Fr>& x) const noexcept {
+      const tnsr::I<DataVector, 1, Fr>& x) const {
     auto result = make_with_value<tnsr::i<DataVector, 1, Fr>>(get<0>(x), 0.0);
     get<0>(result) = first_deriv(get<0>(x));
     return result;
   }
 
   /// Returns the second derivative at 'x'
-  virtual double second_deriv(const double& x) const noexcept = 0;
-  virtual DataVector second_deriv(const DataVector& x) const noexcept = 0;
-  tnsr::ii<double, 1, Fr> second_deriv(
-      const tnsr::I<double, 1, Fr>& x) const noexcept {
+  virtual double second_deriv(const double& x) const = 0;
+  virtual DataVector second_deriv(const DataVector& x) const = 0;
+  tnsr::ii<double, 1, Fr> second_deriv(const tnsr::I<double, 1, Fr>& x) const {
     auto result = make_with_value<tnsr::ii<double, 1, Fr>>(get<0>(x), 0.0);
     get<0, 0>(result) = second_deriv(get<0>(x));
     return result;
   }
   tnsr::ii<DataVector, 1, Fr> second_deriv(
-      const tnsr::I<DataVector, 1, Fr>& x) const noexcept {
+      const tnsr::I<DataVector, 1, Fr>& x) const {
     auto result = make_with_value<tnsr::ii<DataVector, 1, Fr>>(get<0>(x), 0.0);
     get<0, 0>(result) = second_deriv(get<0>(x));
     return result;
   }
 
   /// Returns the third derivative at 'x'
-  virtual double third_deriv(const double& x) const noexcept = 0;
-  virtual DataVector third_deriv(const DataVector& x) const noexcept = 0;
-  tnsr::iii<double, 1, Fr> third_deriv(
-      const tnsr::I<double, 1, Fr>& x) const noexcept {
+  virtual double third_deriv(const double& x) const = 0;
+  virtual DataVector third_deriv(const DataVector& x) const = 0;
+  tnsr::iii<double, 1, Fr> third_deriv(const tnsr::I<double, 1, Fr>& x) const {
     auto result = make_with_value<tnsr::iii<double, 1, Fr>>(get<0>(x), 0.0);
     get<0, 0, 0>(result) = third_deriv(get<0>(x));
     return result;
   }
   tnsr::iii<DataVector, 1, Fr> third_deriv(
-      const tnsr::I<DataVector, 1, Fr>& x) const noexcept {
+      const tnsr::I<DataVector, 1, Fr>& x) const {
     auto result = make_with_value<tnsr::iii<DataVector, 1, Fr>>(get<0>(x), 0.0);
     get<0, 0, 0>(result) = third_deriv(get<0>(x));
     return result;

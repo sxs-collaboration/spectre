@@ -20,7 +20,7 @@ namespace SpatialDiscretization::OptionTags {
  * discretization group.
  */
 struct SpatialDiscretizationGroup {
-  static std::string name() noexcept { return "SpatialDiscretization"; }
+  static std::string name() { return "SpatialDiscretization"; }
   static constexpr Options::String help{
       "Options controlling the spatial discretization of the PDE system.\n\n"
       "In a DG-subcell hybrid scheme subgroups would hold options for the DG "

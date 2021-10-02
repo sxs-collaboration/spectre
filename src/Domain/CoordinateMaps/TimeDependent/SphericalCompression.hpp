@@ -255,7 +255,7 @@ class SphericalCompression {
 
   explicit SphericalCompression(std::string function_of_time_name,
                                 double min_radius, double max_radius,
-                                const std::array<double, 3>& center) noexcept;
+                                const std::array<double, 3>& center);
   SphericalCompression() = default;
 
   template <typename T>
@@ -264,7 +264,7 @@ class SphericalCompression {
       const std::unordered_map<
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-          functions_of_time) const noexcept;
+          functions_of_time) const;
 
   /// The inverse function is only callable with doubles because the inverse
   /// might fail if called for a point out of range, and it is unclear
@@ -275,7 +275,7 @@ class SphericalCompression {
       const std::unordered_map<
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-          functions_of_time) const noexcept;
+          functions_of_time) const;
 
   template <typename T>
   std::array<tt::remove_cvref_wrap_t<T>, 3> frame_velocity(
@@ -283,7 +283,7 @@ class SphericalCompression {
       const std::unordered_map<
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-          functions_of_time) const noexcept;
+          functions_of_time) const;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> jacobian(
@@ -291,7 +291,7 @@ class SphericalCompression {
       const std::unordered_map<
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-          functions_of_time) const noexcept;
+          functions_of_time) const;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> inv_jacobian(
@@ -299,15 +299,15 @@ class SphericalCompression {
       const std::unordered_map<
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-          functions_of_time) const noexcept;
+          functions_of_time) const;
 
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
 
-  static bool is_identity() noexcept { return false; }
+  static bool is_identity() { return false; }
 
  private:
   friend bool operator==(const SphericalCompression& lhs,
-                         const SphericalCompression& rhs) noexcept {
+                         const SphericalCompression& rhs) {
     return lhs.f_of_t_name_ == rhs.f_of_t_name_ and
            lhs.min_radius_ == rhs.min_radius_ and
            lhs.max_radius_ == rhs.max_radius_ and lhs.center_ == rhs.center_;
@@ -320,7 +320,7 @@ class SphericalCompression {
 
 template <bool InteriorMap>
 bool operator!=(const SphericalCompression<InteriorMap>& lhs,
-                const SphericalCompression<InteriorMap>& rhs) noexcept {
+                const SphericalCompression<InteriorMap>& rhs) {
   return not(lhs == rhs);
 }
 }  // namespace domain::CoordinateMaps::TimeDependent

@@ -19,8 +19,7 @@ void compute_boundary_terms(
         boundary_corrections_on_face,
     const BoundaryCorrection& boundary_correction,
     const Variables<tmpl::list<PackageFieldTags...>>& upper_packaged_data,
-    const Variables<tmpl::list<PackageFieldTags...>>&
-        lower_packaged_data) noexcept {
+    const Variables<tmpl::list<PackageFieldTags...>>& lower_packaged_data) {
   ASSERT(
       upper_packaged_data.number_of_grid_points() ==
           lower_packaged_data.number_of_grid_points(),

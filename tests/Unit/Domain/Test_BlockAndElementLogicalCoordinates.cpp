@@ -45,11 +45,11 @@ template <size_t Dim>
 void fuzzy_test_block_and_element_logical_coordinates(
     const Domain<Dim>& domain,
     const std::vector<std::array<size_t, Dim>>& refinement_levels,
-    const size_t n_pts) noexcept {
+    const size_t n_pts) {
   const auto all_element_ids = initial_element_ids<Dim>(refinement_levels);
 
   // Random element_id for each point.
-  const auto element_ids = [&all_element_ids, &n_pts]() noexcept {
+  const auto element_ids = [&all_element_ids, &n_pts]() {
     std::uniform_int_distribution<size_t> ran(0, all_element_ids.size() - 1);
     MAKE_GENERATOR(gen);
     std::vector<ElementId<Dim>> ids(n_pts);
@@ -61,7 +61,7 @@ void fuzzy_test_block_and_element_logical_coordinates(
   CAPTURE(element_ids);
 
   // Random element logical coords for each point
-  const auto element_coords = [&n_pts]() noexcept {
+  const auto element_coords = [&n_pts]() {
     // Assumes logical coords go from -1 to 1.
     std::uniform_real_distribution<double> ran(-1.0, 1.0);
     MAKE_GENERATOR(gen);
@@ -80,7 +80,7 @@ void fuzzy_test_block_and_element_logical_coordinates(
   // element_coords into the same structure that will be returned by
   // the function we are testing.
   const auto expected_coord_holders = [&element_ids, &element_coords,
-                                       &n_pts]() noexcept {
+                                       &n_pts]() {
     // This is complicated because we don't know ahead of time
     // how many points are in each element.  So we do a first pass
     // filling a structure that you can easily push_back to.
@@ -123,7 +123,7 @@ void fuzzy_test_block_and_element_logical_coordinates(
 
   // Transform element_coords to inertial coords
   const auto inertial_coords = [&n_pts, &domain, &element_ids,
-                                &element_coords]() noexcept {
+                                &element_coords]() {
     tnsr::I<DataVector, Dim, Frame::Inertial> coords(n_pts);
     for (size_t s = 0; s < n_pts; ++s) {
       const auto& my_block = domain.blocks()[element_ids[s].block_id()];
@@ -183,12 +183,11 @@ void fuzzy_test_block_and_element_logical_coordinates_unrefined(
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time = std::unordered_map<
             std::string,
-            std::unique_ptr<
-                domain::FunctionsOfTime::FunctionOfTime>>{}) noexcept {
+            std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{}) {
   const size_t n_blocks = domain.blocks().size();
 
   // Random block_id for each point.
-  const auto block_ids = [&n_pts, &n_blocks]() noexcept {
+  const auto block_ids = [&n_pts, &n_blocks]() {
     std::uniform_int_distribution<size_t> ran(0, n_blocks - 1);
     MAKE_GENERATOR(gen);
     std::vector<size_t> ids(n_pts);
@@ -201,7 +200,7 @@ void fuzzy_test_block_and_element_logical_coordinates_unrefined(
 
   // Random block logical coords for each point
   // (block logical coords == element logical coords)
-  const auto block_coords = [&n_pts]() noexcept {
+  const auto block_coords = [&n_pts]() {
     // Assumes logical coords go from -1 to 1.
     std::uniform_real_distribution<double> ran(-1.0, 1.0);
     MAKE_GENERATOR(gen);
@@ -216,9 +215,8 @@ void fuzzy_test_block_and_element_logical_coordinates_unrefined(
   CAPTURE(block_coords);
 
   // Map to inertial coords
-  const auto inertial_coords = [
-    &n_pts, &domain, &block_ids, &block_coords, &time, &functions_of_time
-  ]() noexcept {
+  const auto inertial_coords = [&n_pts, &domain, &block_ids, &block_coords,
+                                &time, &functions_of_time]() {
     tnsr::I<DataVector, Dim, Frame::Inertial> coords(n_pts);
     for (size_t s = 0; s < n_pts; ++s) {
       tnsr::I<double, Dim, Frame::Inertial> coord_one_point{};
@@ -250,8 +248,7 @@ void fuzzy_test_block_and_element_logical_coordinates_unrefined(
   }
 
   // Map to grid coords
-  const auto grid_coords =
-      [&n_pts, &domain, &block_ids, &block_coords ]() noexcept {
+  const auto grid_coords = [&n_pts, &domain, &block_ids, &block_coords]() {
     tnsr::I<DataVector, Dim, Frame::Grid> coords(n_pts);
     for (size_t s = 0; s < n_pts; ++s) {
       tnsr::I<double, Dim, Frame::Grid> coord_one_point{};
@@ -286,7 +283,7 @@ void fuzzy_test_block_and_element_logical_coordinates_unrefined(
 }
 
 void fuzzy_test_block_and_element_logical_coordinates_shell(
-    const size_t n_pts) noexcept {
+    const size_t n_pts) {
   const auto shell = domain::creators::Shell(1.5, 2.5, 2, {{1, 1}}, true, 1.0);
   const auto domain = shell.create_domain();
   fuzzy_test_block_and_element_logical_coordinates_unrefined(domain, n_pts);
@@ -295,7 +292,7 @@ void fuzzy_test_block_and_element_logical_coordinates_shell(
 }
 
 void fuzzy_test_block_and_element_logical_coordinates_time_dependent_brick(
-    const size_t n_pts) noexcept {
+    const size_t n_pts) {
   const auto uniform_translation =
       domain::creators::time_dependence::UniformTranslation<3>(
           0.0, 2.5, {{0.1, 0.2, 0.3}});
@@ -311,8 +308,7 @@ void fuzzy_test_block_and_element_logical_coordinates_time_dependent_brick(
                                                              functions_of_time);
 }
 
-void fuzzy_test_block_and_element_logical_coordinates3(
-    const size_t n_pts) noexcept {
+void fuzzy_test_block_and_element_logical_coordinates3(const size_t n_pts) {
   Domain<3> domain(maps_for_rectilinear_domains<Frame::Inertial>(
                        Index<3>{2, 2, 2},
                        std::array<std::vector<double>, 3>{
@@ -332,8 +328,7 @@ void fuzzy_test_block_and_element_logical_coordinates3(
                                                    n_pts);
 }
 
-void fuzzy_test_block_and_element_logical_coordinates2(
-    const size_t n_pts) noexcept {
+void fuzzy_test_block_and_element_logical_coordinates2(const size_t n_pts) {
   Domain<2> domain(maps_for_rectilinear_domains<Frame::Inertial>(
                        Index<2>{2, 3},
                        std::array<std::vector<double>, 2>{
@@ -346,8 +341,7 @@ void fuzzy_test_block_and_element_logical_coordinates2(
       n_pts);
 }
 
-void fuzzy_test_block_and_element_logical_coordinates1(
-    const size_t n_pts) noexcept {
+void fuzzy_test_block_and_element_logical_coordinates1(const size_t n_pts) {
   Domain<1> domain(
       maps_for_rectilinear_domains<Frame::Inertial>(
           Index<1>{2}, std::array<std::vector<double>, 1>{{{0.0, 0.5, 1.0}}},
@@ -368,7 +362,7 @@ void test_block_and_element_logical_coordinates(
     const std::vector<size_t>& expected_element_id_indices,
     const std::vector<std::vector<size_t>>& expected_offset,
     const std::vector<std::vector<std::array<double, Dim>>>&
-        expected_element_logical) noexcept {
+        expected_element_logical) {
   tnsr::I<DataVector, Dim, Frame::Inertial> inertial_coords(x_inertial.size());
   std::vector<tnsr::I<double, Dim, Frame::BlockLogical>>
       expected_logical_coords(x_inertial.size());
@@ -429,7 +423,7 @@ void test_block_and_element_logical_coordinates(
   }
 }
 
-void test_block_and_element_logical_coordinates1() noexcept {
+void test_block_and_element_logical_coordinates1() {
   Domain<1> domain(
       maps_for_rectilinear_domains<Frame::Inertial>(
           Index<1>{2}, std::array<std::vector<double>, 1>{{{0.0, 0.5, 1.0}}},
@@ -471,7 +465,7 @@ void test_block_and_element_logical_coordinates1() noexcept {
       expected_id_indices, expected_offset, expected_elem_log);
 }
 
-void test_block_logical_coordinates1fail() noexcept {
+void test_block_logical_coordinates1fail() {
   Domain<1> domain(
       maps_for_rectilinear_domains<Frame::Inertial>(
           Index<1>{2}, std::array<std::vector<double>, 1>{{{0.0, 0.5, 1.0}}},
@@ -497,7 +491,7 @@ void test_block_logical_coordinates1fail() noexcept {
   CHECK(block_logical_result[3]);
 }
 
-void test_block_and_element_logical_coordinates3() noexcept {
+void test_block_and_element_logical_coordinates3() {
   Domain<3> domain(maps_for_rectilinear_domains<Frame::Inertial>(
                        Index<3>{2, 2, 2},
                        std::array<std::vector<double>, 3>{

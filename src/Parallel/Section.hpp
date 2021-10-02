@@ -46,7 +46,7 @@ struct Section {
   using cproxy_section = typename charm_type::cproxy_section;
   using section_id_tag = SectionIdTag;
 
-  Section(IdType id, cproxy_section proxy) noexcept
+  Section(IdType id, cproxy_section proxy)
       : id_(id), proxy_(std::move(proxy)), cookie_(proxy_.ckGetSectionInfo()) {}
 
   Section() = default;
@@ -60,12 +60,12 @@ struct Section {
   ~Section() = default;
 
   /// The section ID corresponding to the `SectionIdTag`
-  const IdType& id() const noexcept { return id_; }
+  const IdType& id() const { return id_; }
 
   /// @{
   /// The Charm++ section proxy
-  const cproxy_section& proxy() const noexcept { return proxy_; }
-  cproxy_section& proxy() noexcept { return proxy_; }
+  const cproxy_section& proxy() const { return proxy_; }
+  cproxy_section& proxy() { return proxy_; }
   /// @}
 
   /*!
@@ -77,12 +77,12 @@ struct Section {
    * https://charm.readthedocs.io/en/latest/charm++/manual.html?#sections-subsets-of-a-chare-array-group
    */
   /// @{
-  const CkSectionInfo& cookie() const noexcept { return cookie_; }
-  CkSectionInfo& cookie() noexcept { return cookie_; }
+  const CkSectionInfo& cookie() const { return cookie_; }
+  CkSectionInfo& cookie() { return cookie_; }
   /// @}
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept {
+  void pup(PUP::er& p) {
     p | id_;
     p | proxy_;
     p | cookie_;

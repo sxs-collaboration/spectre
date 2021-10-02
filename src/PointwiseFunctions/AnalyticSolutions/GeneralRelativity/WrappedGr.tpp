@@ -24,7 +24,7 @@ WrappedGr<SolutionType>::variables(
     tmpl::list<gr::Tags::SpacetimeMetric<
         GeneralizedHarmonic::Solutions::WrappedGr<SolutionType>::volume_dim,
         Frame::Inertial, DataVector>> /*meta*/,
-    const IntermediateVars& intermediate_vars) const noexcept {
+    const IntermediateVars& intermediate_vars) const {
   const auto& lapse = get<gr::Tags::Lapse<DataVector>>(intermediate_vars);
   const auto& shift = get<gr::Tags::Shift<
       GeneralizedHarmonic::Solutions::WrappedGr<SolutionType>::volume_dim,
@@ -46,7 +46,7 @@ WrappedGr<SolutionType>::variables(
     tmpl::list<GeneralizedHarmonic::Tags::Phi<
         GeneralizedHarmonic::Solutions::WrappedGr<SolutionType>::volume_dim,
         Frame::Inertial>> /*meta*/,
-    const IntermediateVars& intermediate_vars) const noexcept {
+    const IntermediateVars& intermediate_vars) const {
   const auto& lapse = get<gr::Tags::Lapse<DataVector>>(intermediate_vars);
   const auto& deriv_lapse =
       get<typename WrappedGr<SolutionType>::DerivLapse>(intermediate_vars);
@@ -78,7 +78,7 @@ WrappedGr<SolutionType>::variables(
     tmpl::list<GeneralizedHarmonic::Tags::Pi<
         GeneralizedHarmonic::Solutions::WrappedGr<SolutionType>::volume_dim,
         Frame::Inertial>> /*meta*/,
-    const IntermediateVars& intermediate_vars) const noexcept {
+    const IntermediateVars& intermediate_vars) const {
   const auto& lapse = get<gr::Tags::Lapse<DataVector>>(intermediate_vars);
   const auto& dt_lapse =
       get<typename WrappedGr<SolutionType>::TimeDerivLapse>(intermediate_vars);
@@ -128,7 +128,7 @@ WrappedGr<SolutionType>::variables(
               GeneralizedHarmonic::Solutions::WrappedGr<WRAPPED_GR_STYPE(      \
                   data)>::volume_dim,                                          \
               Frame::Inertial, DataVector>> /*meta*/,                          \
-          const IntermediateVars& intermediate_vars) const noexcept;           \
+          const IntermediateVars& intermediate_vars) const;           \
   template tuples::TaggedTuple<                                                \
       GeneralizedHarmonic::Tags::Pi<GeneralizedHarmonic::Solutions::WrappedGr< \
                                         WRAPPED_GR_STYPE(data)>::volume_dim,   \
@@ -142,7 +142,7 @@ WrappedGr<SolutionType>::variables(
               GeneralizedHarmonic::Solutions::WrappedGr<WRAPPED_GR_STYPE(      \
                   data)>::volume_dim,                                          \
               Frame::Inertial>> /*meta*/,                                      \
-          const IntermediateVars& intermediate_vars) const noexcept;           \
+          const IntermediateVars& intermediate_vars) const;           \
   template tuples::TaggedTuple<GeneralizedHarmonic::Tags::Phi<                 \
       GeneralizedHarmonic::Solutions::WrappedGr<WRAPPED_GR_STYPE(              \
           data)>::volume_dim,                                                  \
@@ -156,4 +156,4 @@ WrappedGr<SolutionType>::variables(
               GeneralizedHarmonic::Solutions::WrappedGr<WRAPPED_GR_STYPE(      \
                   data)>::volume_dim,                                          \
               Frame::Inertial>> /*meta*/,                                      \
-          const IntermediateVars& intermediate_vars) const noexcept;
+          const IntermediateVars& intermediate_vars) const;

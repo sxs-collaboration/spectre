@@ -40,9 +40,8 @@ struct ConvertPlaneWave {
     return {amplitude, wavelength};
   }
 
-  static inline unpacked_container unpack(
-      const packed_container& /*packed*/,
-      const size_t /*grid_point_index*/) noexcept {
+  static inline unpacked_container unpack(const packed_container& /*packed*/,
+                                          const size_t /*grid_point_index*/) {
     // No way of getting the args from the boundary condition.
     return Dim;
   }
@@ -53,7 +52,7 @@ struct ConvertPlaneWave {
     *packed = create_container();
   }
 
-  static inline size_t get_size(const packed_container& /*packed*/) noexcept {
+  static inline size_t get_size(const packed_container& /*packed*/) {
     return 1;
   }
 };

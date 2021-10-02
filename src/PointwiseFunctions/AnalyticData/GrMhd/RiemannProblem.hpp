@@ -124,43 +124,43 @@ class RiemannProblem : public MarkAsAnalyticData {
     using type = double;
     static constexpr Options::String help = {
         "The adiabatic index of the ideal fluid"};
-    static type lower_bound() noexcept { return 1.0; }
+    static type lower_bound() { return 1.0; }
   };
   struct LeftRestMassDensity {
     using type = double;
-    static std::string name() noexcept { return "LeftDensity"; };
+    static std::string name() { return "LeftDensity"; };
     static constexpr Options::String help = {
         "Fluid rest mass density in the left half-domain"};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
   struct RightRestMassDensity {
     using type = double;
-    static std::string name() noexcept { return "RightDensity"; };
+    static std::string name() { return "RightDensity"; };
     static constexpr Options::String help = {
         "Fluid rest mass density in the right half-domain"};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
   struct LeftPressure {
     using type = double;
     static constexpr Options::String help = {
         "Fluid pressure in the left half-domain"};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
   struct RightPressure {
     using type = double;
     static constexpr Options::String help = {
         "Fluid pressure in the right half-domain"};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
   struct LeftSpatialVelocity {
     using type = std::array<double, 3>;
-    static std::string name() noexcept { return "LeftVelocity"; };
+    static std::string name() { return "LeftVelocity"; };
     static constexpr Options::String help = {
         "Fluid spatial velocity in the left half-domain"};
   };
   struct RightSpatialVelocity {
     using type = std::array<double, 3>;
-    static std::string name() noexcept { return "RightVelocity"; };
+    static std::string name() { return "RightVelocity"; };
     static constexpr Options::String help = {
         "Fluid spatial velocity in the right half-domain"};
   };
@@ -178,7 +178,7 @@ class RiemannProblem : public MarkAsAnalyticData {
     using type = double;
     static constexpr Options::String help = {
         "The value of the lapse. Standard is 1."};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
   struct ShiftX {
     using type = double;
@@ -200,8 +200,8 @@ class RiemannProblem : public MarkAsAnalyticData {
   RiemannProblem() = default;
   RiemannProblem(const RiemannProblem& /*rhs*/) = delete;
   RiemannProblem& operator=(const RiemannProblem& /*rhs*/) = delete;
-  RiemannProblem(RiemannProblem&& /*rhs*/) noexcept = default;
-  RiemannProblem& operator=(RiemannProblem&& /*rhs*/) noexcept = default;
+  RiemannProblem(RiemannProblem&& /*rhs*/) = default;
+  RiemannProblem& operator=(RiemannProblem&& /*rhs*/) = default;
   ~RiemannProblem() = default;
 
   RiemannProblem(double adiabatic_index, double left_rest_mass_density,
@@ -211,79 +211,70 @@ class RiemannProblem : public MarkAsAnalyticData {
                  const std::array<double, 3>& right_spatial_velocity,
                  const std::array<double, 3>& left_magnetic_field,
                  const std::array<double, 3>& right_magnetic_field,
-                 double lapse, double shift) noexcept;
+                 double lapse, double shift);
 
-  explicit RiemannProblem(CkMigrateMessage* /*unused*/) noexcept;
+  explicit RiemannProblem(CkMigrateMessage* /*unused*/);
 
   /// @{
   /// Retrieve the GRMHD variables at a given position.
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x,
                  tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/)
-      const noexcept
-      -> tuples::TaggedTuple<hydro::Tags::RestMassDensity<DataType>>;
+      const -> tuples::TaggedTuple<hydro::Tags::RestMassDensity<DataType>>;
 
   template <typename DataType>
   auto variables(
       const tnsr::I<DataType, 3>& x,
-      tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>> /*meta*/)
-      const noexcept
+      tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>> /*meta*/) const
       -> tuples::TaggedTuple<hydro::Tags::SpecificInternalEnergy<DataType>>;
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x,
-                 tmpl::list<hydro::Tags::Pressure<DataType>> /*meta*/)
-      const noexcept -> tuples::TaggedTuple<hydro::Tags::Pressure<DataType>>;
+                 tmpl::list<hydro::Tags::Pressure<DataType>> /*meta*/) const
+      -> tuples::TaggedTuple<hydro::Tags::Pressure<DataType>>;
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x,
                  tmpl::list<hydro::Tags::SpatialVelocity<DataType, 3>> /*meta*/)
-      const noexcept
-      -> tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, 3>>;
+      const -> tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, 3>>;
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x,
                  tmpl::list<hydro::Tags::MagneticField<DataType, 3>> /*meta*/)
-      const noexcept
-      -> tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3>>;
+      const -> tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3>>;
 
   template <typename DataType>
   auto variables(
       const tnsr::I<DataType, 3>& x,
-      tmpl::list<hydro::Tags::DivergenceCleaningField<DataType>> /*meta*/)
-      const noexcept
+      tmpl::list<hydro::Tags::DivergenceCleaningField<DataType>> /*meta*/) const
       -> tuples::TaggedTuple<hydro::Tags::DivergenceCleaningField<DataType>>;
 
   template <typename DataType>
-  auto variables(
-      const tnsr::I<DataType, 3>& x,
-      tmpl::list<hydro::Tags::LorentzFactor<DataType>> /*meta*/) const noexcept
-      -> tuples::TaggedTuple<hydro::Tags::LorentzFactor<DataType>>;
+  auto variables(const tnsr::I<DataType, 3>& x,
+                 tmpl::list<hydro::Tags::LorentzFactor<DataType>> /*meta*/)
+      const -> tuples::TaggedTuple<hydro::Tags::LorentzFactor<DataType>>;
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x,
                  tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>> /*meta*/)
-      const noexcept
-      -> tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DataType>>;
+      const -> tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DataType>>;
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x,
-                 tmpl::list<gr::Tags::Lapse<DataType>> /*meta*/) const noexcept
+                 tmpl::list<gr::Tags::Lapse<DataType>> /*meta*/) const
       -> tuples::TaggedTuple<gr::Tags::Lapse<DataType>>;
 
   template <typename DataType>
   auto variables(
       const tnsr::I<DataType, 3>& x,
-      tmpl::list<gr::Tags::Shift<3, Frame::Inertial, DataType>> /*meta*/)
-      const noexcept
+      tmpl::list<gr::Tags::Shift<3, Frame::Inertial, DataType>> /*meta*/) const
       -> tuples::TaggedTuple<gr::Tags::Shift<3, Frame::Inertial, DataType>>;
   /// @}
 
   /// Retrieve a collection of hydrodynamic variables at position x
   template <typename DataType, typename... Tags>
-  tuples::TaggedTuple<Tags...> variables(
-      const tnsr::I<DataType, 3>& x,
-      tmpl::list<Tags...> /*meta*/) const noexcept {
+  tuples::TaggedTuple<Tags...> variables(const tnsr::I<DataType, 3>& x,
+                                         tmpl::list<Tags...> /*meta*/) const {
     static_assert(sizeof...(Tags) > 1,
                   "The generic template will recurse infinitely if only one "
                   "tag is being retrieved.");
@@ -293,23 +284,21 @@ class RiemannProblem : public MarkAsAnalyticData {
   /// Retrieve the metric variables
   template <typename DataType, typename Tag>
   tuples::TaggedTuple<Tag> variables(const tnsr::I<DataType, 3>& x,
-                                     tmpl::list<Tag> /*meta*/) const noexcept {
+                                     tmpl::list<Tag> /*meta*/) const {
     return background_spacetime_.variables(x, 0.0, tmpl::list<Tag>{});
   }
 
-  const EquationsOfState::IdealFluid<true>& equation_of_state() const noexcept {
+  const EquationsOfState::IdealFluid<true>& equation_of_state() const {
     return equation_of_state_;
   }
 
   // clang-tidy: no runtime references
-  void pup(PUP::er& /*p*/) noexcept;  //  NOLINT
+  void pup(PUP::er& /*p*/);  //  NOLINT
 
  private:
-  friend bool operator==(const RiemannProblem& lhs,
-                         const RiemannProblem& rhs) noexcept;
+  friend bool operator==(const RiemannProblem& lhs, const RiemannProblem& rhs);
 
-  friend bool operator!=(const RiemannProblem& lhs,
-                         const RiemannProblem& rhs) noexcept;
+  friend bool operator!=(const RiemannProblem& lhs, const RiemannProblem& rhs);
 
   EquationsOfState::IdealFluid<true> equation_of_state_{};
   gr::Solutions::Minkowski<3> background_spacetime_{};

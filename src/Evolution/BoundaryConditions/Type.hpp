@@ -42,6 +42,5 @@ enum class Type {
   Outflow
 };
 
-std::ostream& operator<<(std::ostream& os,
-                         Type boundary_condition_type) noexcept;
+std::ostream& operator<<(std::ostream& os, Type boundary_condition_type);
 }  // namespace evolution::BoundaryConditions

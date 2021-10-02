@@ -34,13 +34,13 @@ void deriv_conformal_christoffel_second_kind(
     const tnsr::II<DataType, Dim, Frame>& inverse_conformal_spatial_metric,
     const tnsr::ijj<DataType, Dim, Frame>& field_d,
     const tnsr::ijkk<DataType, Dim, Frame>& d_field_d,
-    const tnsr::iJJ<DataType, Dim, Frame>& field_d_up) noexcept;
+    const tnsr::iJJ<DataType, Dim, Frame>& field_d_up);
 
 template <size_t Dim, typename Frame, typename DataType>
 tnsr::iJkk<DataType, Dim, Frame> deriv_conformal_christoffel_second_kind(
     const tnsr::II<DataType, Dim, Frame>& inverse_conformal_spatial_metric,
     const tnsr::ijj<DataType, Dim, Frame>& field_d,
     const tnsr::ijkk<DataType, Dim, Frame>& d_field_d,
-    const tnsr::iJJ<DataType, Dim, Frame>& field_d_up) noexcept;
+    const tnsr::iJJ<DataType, Dim, Frame>& field_d_up);
 /// @}
 }  // namespace Ccz4

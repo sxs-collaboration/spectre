@@ -23,7 +23,7 @@ namespace Spectral {
 
 namespace {
 template <typename T>
-T compute_basis_function_value_impl(const size_t k, const T& x) noexcept {
+T compute_basis_function_value_impl(const size_t k, const T& x) {
   // Algorithm 21 in Kopriva, p. 60
   switch (k) {
     case 0:
@@ -50,26 +50,26 @@ T compute_basis_function_value_impl(const size_t k, const T& x) noexcept {
 }  // namespace
 
 template <>
-DataVector compute_basis_function_value<Basis::Chebyshev>(
-    const size_t k, const DataVector& x) noexcept {
+DataVector compute_basis_function_value<Basis::Chebyshev>(const size_t k,
+                                                          const DataVector& x) {
   return compute_basis_function_value_impl(k, x);
 }
 
 template <>
-double compute_basis_function_value<Basis::Chebyshev>(
-    const size_t k, const double& x) noexcept {
+double compute_basis_function_value<Basis::Chebyshev>(const size_t k,
+                                                      const double& x) {
   return compute_basis_function_value_impl(k, x);
 }
 
 template <>
 DataVector compute_inverse_weight_function_values<Basis::Chebyshev>(
-    const DataVector& x) noexcept {
+    const DataVector& x) {
   return sqrt(1. - square(x));
 }
 
 template <>
 double compute_basis_function_normalization_square<Basis::Chebyshev>(
-    const size_t k) noexcept {
+    const size_t k) {
   if (k == 0) {
     return M_PI;
   } else {
@@ -82,7 +82,7 @@ double compute_basis_function_normalization_square<Basis::Chebyshev>(
 template <>
 std::pair<DataVector, DataVector>
 compute_collocation_points_and_weights<Basis::Chebyshev, Quadrature::Gauss>(
-    const size_t num_points) noexcept {
+    const size_t num_points) {
   // Algorithm 26 in Kopriva, p. 67
   ASSERT(num_points >= 1,
          "Chebyshev-Gauss quadrature requires at least one collocation point.");
@@ -99,8 +99,7 @@ compute_collocation_points_and_weights<Basis::Chebyshev, Quadrature::Gauss>(
 
 template <>
 std::pair<DataVector, DataVector> compute_collocation_points_and_weights<
-    Basis::Chebyshev, Quadrature::GaussLobatto>(
-    const size_t num_points) noexcept {
+    Basis::Chebyshev, Quadrature::GaussLobatto>(const size_t num_points) {
   // Algorithm 27 in Kopriva, p. 68
   ASSERT(num_points >= 2,
          "Chebyshev-Gauss-Lobatto quadrature requires at least two collocation "
@@ -117,11 +116,11 @@ std::pair<DataVector, DataVector> compute_collocation_points_and_weights<
 }
 
 template <Basis BasisType>
-Matrix spectral_indefinite_integral_matrix(size_t num_points) noexcept;
+Matrix spectral_indefinite_integral_matrix(size_t num_points);
 
 template <>
 Matrix spectral_indefinite_integral_matrix<Basis::Chebyshev>(
-    const size_t num_points) noexcept {
+    const size_t num_points) {
   // Tridiagonal matrix that gives the indefinite integral modulo a constant
   Matrix indef_int(num_points, num_points, 0.0);
   if (LIKELY(num_points > 1)) {

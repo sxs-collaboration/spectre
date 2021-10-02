@@ -100,7 +100,7 @@ struct SendDataForReconstruction {
       db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     using variables_tag = typename Metavariables::system::variables_tag;
 
     ASSERT(db::get<Tags::ActiveGrid>(box) == ActiveGrid::Subcell,
@@ -109,7 +109,7 @@ struct SendDataForReconstruction {
 
     db::mutate<Tags::NeighborDataForReconstructionAndRdmpTci<Dim>>(
         make_not_null(&box),
-        [](const auto neighbor_data_ptr, const auto& active_vars) noexcept {
+        [](const auto neighbor_data_ptr, const auto& active_vars) {
           auto [max_of_vars, min_of_vars] =
               rdmp_max_min(active_vars, {}, false);
 
@@ -148,7 +148,7 @@ struct SendDataForReconstruction {
             std::pair{Direction<Dim>::lower_xi(),
                       ElementId<Dim>::external_boundary_id()});
     const TimeStepId& time_step_id = db::get<::Tags::TimeStepId>(box);
-    const TimeStepId& next_time_step_id = [&box]() noexcept {
+    const TimeStepId& next_time_step_id = [&box]() {
       if (Metavariables::local_time_stepping) {
         return db::get<::Tags::Next<::Tags::TimeStepId>>(box);
       } else {
@@ -251,7 +251,7 @@ struct ReceiveDataForReconstruction {
       db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& inboxes,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     static_assert(
         not Metavariables::local_time_stepping,
         "DG-subcell does not yet support local time stepping. The "
@@ -306,7 +306,7 @@ struct ReceiveDataForReconstruction {
                 mortar_data,
             const gsl::not_null<
                 std::unordered_map<Key, TimeStepId, boost::hash<Key>>*>
-                mortar_next_time_step_id) noexcept {
+                mortar_next_time_step_id) {
           // Get the next time step id, and also the fluxes data if the neighbor
           // is doing DG.
           for (auto& received_mortar_data : received_data) {

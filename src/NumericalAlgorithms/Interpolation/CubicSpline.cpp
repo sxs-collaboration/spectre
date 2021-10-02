@@ -15,7 +15,7 @@
 
 namespace intrp {
 CubicSpline::CubicSpline(std::vector<double> x_values,
-                         std::vector<double> y_values) noexcept
+                         std::vector<double> y_values)
     : x_values_(std::move(x_values)), y_values_(std::move(y_values)) {
   ASSERT(x_values_.size() == y_values_.size(),
          "The x-value and y-value vectors must be of the same length, but "
@@ -28,16 +28,16 @@ CubicSpline::CubicSpline(std::vector<double> x_values,
 }
 
 void CubicSpline::gsl_interp_accel_deleter::operator()(
-    gsl_interp_accel* const acc) const noexcept {
+    gsl_interp_accel* const acc) const {
   gsl_interp_accel_free(acc);
 }
 
-void CubicSpline::gsl_spline_deleter::operator()(gsl_spline* const spline) const
-    noexcept {
+void CubicSpline::gsl_spline_deleter::operator()(
+    gsl_spline* const spline) const {
   gsl_spline_free(spline);
 }
 
-void CubicSpline::initialize_interpolant() noexcept {
+void CubicSpline::initialize_interpolant() {
   const size_t num_points = x_values_.size();
   acc_ = std::unique_ptr<gsl_interp_accel, gsl_interp_accel_deleter>{
       gsl_interp_accel_alloc()};
@@ -47,7 +47,7 @@ void CubicSpline::initialize_interpolant() noexcept {
                   num_points);
 }
 
-double CubicSpline::operator()(const double x_to_interp_to) const noexcept {
+double CubicSpline::operator()(const double x_to_interp_to) const {
   ASSERT(
       x_to_interp_to >= x_values_.front() and
           x_to_interp_to <= x_values_.back(),
@@ -58,7 +58,7 @@ double CubicSpline::operator()(const double x_to_interp_to) const noexcept {
   return gsl_spline_eval(spline_.get(), x_to_interp_to, acc_.get());
 }
 
-void CubicSpline::pup(PUP::er& p) noexcept {
+void CubicSpline::pup(PUP::er& p) {
   p | x_values_;
   p | y_values_;
   if (p.isUnpacking()) {

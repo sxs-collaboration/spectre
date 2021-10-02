@@ -25,7 +25,7 @@ namespace {
 // We will call with this function with arguments that are designed
 // to fail in a certain way.
 void cubic_scale_non_invertible(const double a0, const double b0,
-                                const double outer_boundary) noexcept {
+                                const double outer_boundary) {
   double t = 4.0;
   const double delta_t = 20.0;
   constexpr size_t deriv_order = 2;

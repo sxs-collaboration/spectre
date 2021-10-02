@@ -25,8 +25,7 @@ namespace Cce {
 namespace {
 
 template <typename Generator>
-void test_gh_lockstep_interface_manager(
-    const gsl::not_null<Generator*> gen) noexcept {
+void test_gh_lockstep_interface_manager(const gsl::not_null<Generator*> gen) {
   UniformCustomDistribution<double> value_dist{-5.0, 5.0};
   UniformCustomDistribution<size_t> timestep_dist{1, 5};
 
@@ -77,8 +76,7 @@ void test_gh_lockstep_interface_manager(
       [&expected_gh_data](
           const gsl::not_null<InterfaceManagers::GhInterfaceManager*>
               local_interface_manager,
-          const size_t expected_number_of_gh_times,
-          const size_t vector_index) noexcept {
+          const size_t expected_number_of_gh_times, const size_t vector_index) {
         CHECK(local_interface_manager->number_of_pending_requests() == 0);
         CHECK(local_interface_manager->number_of_gh_times() ==
               expected_number_of_gh_times);

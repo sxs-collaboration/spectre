@@ -17,7 +17,7 @@ bool DgInitialDataTci<Dim>::apply(
     const Variables<tmpl::list<Inactive<ScalarAdvection::Tags::U>>>&
         subcell_vars,
     const Mesh<Dim>& dg_mesh, const double persson_exponent,
-    const double rdmp_delta0, const double rdmp_epsilon) noexcept {
+    const double rdmp_delta0, const double rdmp_epsilon) {
   constexpr double persson_tci_epsilon = 1.0e-18;
   return evolution::dg::subcell::persson_tci(
              get<ScalarAdvection::Tags::U>(dg_vars), dg_mesh, persson_exponent,

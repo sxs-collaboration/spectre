@@ -51,7 +51,7 @@ namespace TestHelpers::TensorExpressions {
 template <typename DataType, typename RhsSymmetry,
           typename RhsTensorIndexTypeList, auto& TensorIndexA,
           auto& TensorIndexB, auto& TensorIndexC>
-void test_evaluate_rank_3_impl() noexcept {
+void test_evaluate_rank_3_impl() {
   const size_t used_for_size = 5;
   Tensor<DataType, RhsSymmetry, RhsTensorIndexTypeList> R_abc(used_for_size);
   std::iota(R_abc.begin(), R_abc.end(), 0.0);
@@ -311,7 +311,7 @@ template <typename DataType,
           template <size_t, UpLo, typename> class TensorIndexTypeC,
           UpLo ValenceA, UpLo ValenceB, UpLo ValenceC, auto& TensorIndexA,
           auto& TensorIndexB, auto& TensorIndexC>
-void test_evaluate_rank_3_no_symmetry() noexcept {
+void test_evaluate_rank_3_no_symmetry() {
 #define DIM_A(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DIM_B(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define DIM_C(data) BOOST_PP_TUPLE_ELEM(2, data)
@@ -342,7 +342,7 @@ template <typename DataType,
           template <size_t, UpLo, typename> class TensorIndexTypeC,
           UpLo ValenceAB, UpLo ValenceC, auto& TensorIndexA, auto& TensorIndexB,
           auto& TensorIndexC>
-void test_evaluate_rank_3_ab_symmetry() noexcept {
+void test_evaluate_rank_3_ab_symmetry() {
 #define DIM_AB(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DIM_C(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(2, data)
@@ -371,7 +371,7 @@ template <typename DataType,
           template <size_t, UpLo, typename> class TensorIndexTypeB,
           UpLo ValenceAC, UpLo ValenceB, auto& TensorIndexA, auto& TensorIndexB,
           auto& TensorIndexC>
-void test_evaluate_rank_3_ac_symmetry() noexcept {
+void test_evaluate_rank_3_ac_symmetry() {
 #define DIM_AC(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DIM_B(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(2, data)
@@ -399,7 +399,7 @@ template <
     typename DataType, template <size_t, UpLo, typename> class TensorIndexTypeA,
     template <size_t, UpLo, typename> class TensorIndexTypeBC, UpLo ValenceA,
     UpLo ValenceBC, auto& TensorIndexA, auto& TensorIndexB, auto& TensorIndexC>
-void test_evaluate_rank_3_bc_symmetry() noexcept {
+void test_evaluate_rank_3_bc_symmetry() {
 #define DIM_A(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DIM_BC(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(2, data)
@@ -426,7 +426,7 @@ void test_evaluate_rank_3_bc_symmetry() noexcept {
 template <typename DataType,
           template <size_t, UpLo, typename> class TensorIndexType, UpLo Valence,
           auto& TensorIndexA, auto& TensorIndexB, auto& TensorIndexC>
-void test_evaluate_rank_3_abc_symmetry() noexcept {
+void test_evaluate_rank_3_abc_symmetry() {
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(1, data)
 

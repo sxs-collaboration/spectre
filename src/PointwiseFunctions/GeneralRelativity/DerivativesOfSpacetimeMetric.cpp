@@ -18,7 +18,7 @@ tnsr::abb<DataType, Dim, Frame> derivatives_of_spacetime_metric(
     const tnsr::iJ<DataType, Dim, Frame>& deriv_shift,
     const tnsr::ii<DataType, Dim, Frame>& spatial_metric,
     const tnsr::ii<DataType, Dim, Frame>& dt_spatial_metric,
-    const tnsr::ijj<DataType, Dim, Frame>& deriv_spatial_metric) noexcept {
+    const tnsr::ijj<DataType, Dim, Frame>& deriv_spatial_metric) {
   tnsr::abb<DataType, Dim, Frame> spacetime_deriv_spacetime_metric{};
   derivatives_of_spacetime_metric(
       make_not_null(&spacetime_deriv_spacetime_metric), lapse, dt_lapse,
@@ -38,7 +38,7 @@ void derivatives_of_spacetime_metric(
     const tnsr::iJ<DataType, Dim, Frame>& deriv_shift,
     const tnsr::ii<DataType, Dim, Frame>& spatial_metric,
     const tnsr::ii<DataType, Dim, Frame>& dt_spatial_metric,
-    const tnsr::ijj<DataType, Dim, Frame>& deriv_spatial_metric) noexcept {
+    const tnsr::ijj<DataType, Dim, Frame>& deriv_spatial_metric) {
   destructive_resize_components(spacetime_deriv_spacetime_metric,
                                 get_size(get(lapse)));
   for (size_t a = 0; a < Dim + 1; ++a) {
@@ -112,7 +112,7 @@ void derivatives_of_spacetime_metric(
       const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& spatial_metric,    \
       const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& dt_spatial_metric, \
       const tnsr::ijj<DTYPE(data), DIM(data), FRAME(data)>&                   \
-          deriv_spatial_metric) noexcept;                                     \
+          deriv_spatial_metric);                                              \
   template tnsr::abb<DTYPE(data), DIM(data), FRAME(data)>                     \
   gr::derivatives_of_spacetime_metric(                                        \
       const Scalar<DTYPE(data)>& lapse, const Scalar<DTYPE(data)>& dt_lapse,  \
@@ -123,7 +123,7 @@ void derivatives_of_spacetime_metric(
       const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& spatial_metric,    \
       const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& dt_spatial_metric, \
       const tnsr::ijj<DTYPE(data), DIM(data), FRAME(data)>&                   \
-          deriv_spatial_metric) noexcept;
+          deriv_spatial_metric);
 }  // namespace gr
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),

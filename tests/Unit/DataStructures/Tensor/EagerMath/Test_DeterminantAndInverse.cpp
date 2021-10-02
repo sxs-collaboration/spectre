@@ -261,11 +261,11 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.DeterminantAndInverse",
       using my_tnsr_det_type = Scalar<DataVector>;
 
       struct MyDetTag : db::SimpleTag {
-        static std::string name() noexcept { return "DummyDetTag"; }
+        static std::string name() { return "DummyDetTag"; }
         using type = my_tnsr_det_type;
       };
       struct MyInvTag : db::SimpleTag {
-        static std::string name() noexcept { return "DummyInvTag"; }
+        static std::string name() { return "DummyInvTag"; }
         using type = my_tnsr_inv_type;
       };
 
@@ -292,11 +292,11 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.DeterminantAndInverse",
       using my_tnsr_det_type = Scalar<DataVector>;
 
       struct MyDetTag : db::SimpleTag {
-        static std::string name() noexcept { return "DummyDetTag"; }
+        static std::string name() { return "DummyDetTag"; }
         using type = my_tnsr_det_type;
       };
       struct MyInvTag : db::SimpleTag {
-        static std::string name() noexcept { return "DummyInvTag"; }
+        static std::string name() { return "DummyInvTag"; }
         using type = my_tnsr_inv_type;
       };
 

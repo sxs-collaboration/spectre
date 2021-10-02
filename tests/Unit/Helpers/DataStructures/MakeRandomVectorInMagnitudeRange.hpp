@@ -26,7 +26,7 @@ template <typename DataType, size_t Dim, UpLo Ul, typename Fr = Frame::Inertial,
 tnsr::I<DataType, Dim, Fr> make_random_vector_in_magnitude_range(
     const gsl::not_null<std::mt19937*> nn_generator,
     const tnsr::ii<DataType, Dim, Fr>& metric, const double min_magnitude,
-    const double max_magnitude) noexcept {
+    const double max_magnitude) {
   if (min_magnitude < 0) {
     ERROR("min_magnitude < 0. Magnitude must be non-negative");
   }
@@ -54,7 +54,7 @@ template <typename DataType, size_t Dim, UpLo Ul, typename Fr = Frame::Inertial,
 tnsr::i<DataType, Dim, Fr> make_random_vector_in_magnitude_range(
     const gsl::not_null<std::mt19937*> nn_generator,
     const tnsr::ii<DataType, Dim, Fr>& metric, const double min_magnitude,
-    const double max_magnitude) noexcept {
+    const double max_magnitude) {
   const tnsr::I<DataType, Dim, Fr> x_up =
       make_random_vector_in_magnitude_range<DataType, Dim, UpLo::Up, Fr>(
           nn_generator, metric, min_magnitude, max_magnitude);
@@ -71,7 +71,7 @@ template <typename DataType, size_t Dim, UpLo Ul, typename Fr = Frame::Inertial,
 Tensor<DataType, Symmetry<1>, index_list<SpatialIndex<Dim, Ul, Fr>>>
 make_random_vector_in_magnitude_range_flat(
     const gsl::not_null<std::mt19937*> nn_generator, const T& used_for_size,
-    const double min_magnitude, const double max_magnitude) noexcept {
+    const double min_magnitude, const double max_magnitude) {
   // construct flat spatial metric
   tnsr::ii<DataType, Dim, Fr> metric =
       make_with_value<tnsr::ii<DataType, Dim, Fr>>(used_for_size, 0.0);

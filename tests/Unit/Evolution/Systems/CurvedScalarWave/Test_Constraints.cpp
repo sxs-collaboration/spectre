@@ -23,8 +23,7 @@
 namespace {
 // Test the return-by-value one-index constraint function using random values
 template <size_t SpatialDim>
-void test_one_index_constraint_random(
-    const DataVector& used_for_size) noexcept {
+void test_one_index_constraint_random(const DataVector& used_for_size) {
   pypp::check_with_random_values<1>(
       static_cast<tnsr::i<DataVector, SpatialDim, Frame::Inertial> (*)(
           const tnsr::i<DataVector, SpatialDim, Frame::Inertial>&,
@@ -35,8 +34,7 @@ void test_one_index_constraint_random(
 
 // Test the return-by-value two-index constraint function using random values
 template <size_t SpatialDim>
-void test_two_index_constraint_random(
-    const DataVector& used_for_size) noexcept {
+void test_two_index_constraint_random(const DataVector& used_for_size) {
   pypp::check_with_random_values<1>(
       static_cast<tnsr::ij<DataVector, SpatialDim, Frame::Inertial> (*)(
           const tnsr::ij<DataVector, SpatialDim, Frame::Inertial>&)>(
@@ -48,7 +46,7 @@ void test_two_index_constraint_random(
 // Test compute items for various constraints via insertion and retrieval
 // in a databox
 template <size_t SpatialDim>
-void test_constraint_compute_items(const DataVector& used_for_size) noexcept {
+void test_constraint_compute_items(const DataVector& used_for_size) {
   MAKE_GENERATOR(generator);
   std::uniform_real_distribution<> distribution(0.0, 1.0);
   const auto nn_generator = make_not_null(&generator);

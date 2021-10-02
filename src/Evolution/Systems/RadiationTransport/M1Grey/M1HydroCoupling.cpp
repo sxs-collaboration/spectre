@@ -47,7 +47,7 @@ void compute_m1_hydro_coupling_impl(
     const Scalar<DataVector>& fluid_lorentz_factor,
     const Scalar<DataVector>& lapse,
     const tnsr::ii<DataVector, 3>& spatial_metric,
-    const Scalar<DataVector>& sqrt_det_spatial_metric) noexcept {
+    const Scalar<DataVector>& sqrt_det_spatial_metric) {
   Variables<tmpl::list<hydro::Tags::SpatialVelocityOneForm<DataVector, 3>,
                        densitized_eta_minus_kappaJ, kappaT_lapse>>
       temp_tensors(get(lapse).size());

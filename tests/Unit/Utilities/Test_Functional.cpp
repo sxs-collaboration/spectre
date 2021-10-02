@@ -33,16 +33,15 @@ using std::min;
 
 // clang-tidy : suppress warning from no-paren on macro parameter, macro doesn't
 // work when it's in parens. Same for all subsequent macros.
-#define MAKE_UNARY_TEST(STRUCTNAME, FUNC)                      \
-  struct TestFuncEval##STRUCTNAME {                            \
-    template <typename T, typename DistT, typename UniformGen> \
-    void operator()(const gsl::not_null<UniformGen*> gen,      \
-                    UniformCustomDistribution<DistT> dist,     \
-                    T /*meta*/) noexcept {                     \
-      auto val = make_with_random_values<typename T::type>(    \
-          gen, make_not_null(&dist));                          \
-      CHECK(STRUCTNAME<>{}(val) == FUNC(val)); /*NOLINT*/      \
-    }                                                          \
+#define MAKE_UNARY_TEST(STRUCTNAME, FUNC)                                \
+  struct TestFuncEval##STRUCTNAME {                                      \
+    template <typename T, typename DistT, typename UniformGen>           \
+    void operator()(const gsl::not_null<UniformGen*> gen,                \
+                    UniformCustomDistribution<DistT> dist, T /*meta*/) { \
+      auto val = make_with_random_values<typename T::type>(              \
+          gen, make_not_null(&dist));                                    \
+      CHECK(STRUCTNAME<>{}(val) == FUNC(val)); /*NOLINT*/                \
+    }                                                                    \
   }
 
 #define MAKE_BINARY_TEST(STRUCTNAME, FUNC)                                \
@@ -52,7 +51,7 @@ using std::min;
     void operator()(const gsl::not_null<UniformGen*> gen,                 \
                     UniformCustomDistribution<DistT1> dist1,              \
                     UniformCustomDistribution<DistT2> dist2, T1 /*meta*/, \
-                    T2 /*meta*/) noexcept {                               \
+                    T2 /*meta*/) {                                        \
       auto val1 = make_with_random_values<typename T1::type>(             \
           gen, make_not_null(&dist1));                                    \
       auto val2 = make_with_random_values<typename T2::type>(             \
@@ -68,7 +67,7 @@ using std::min;
     void operator()(const gsl::not_null<UniformGen*> gen,                 \
                     UniformCustomDistribution<DistT1> dist1,              \
                     UniformCustomDistribution<DistT2> dist2, T1 /*meta*/, \
-                    T2 /*meta*/) noexcept {                               \
+                    T2 /*meta*/) {                                        \
       auto val1 = make_with_random_values<typename T1::type>(             \
           gen, make_not_null(&dist1));                                    \
       auto val2 = make_with_random_values<typename T2::type>(             \
@@ -88,7 +87,7 @@ using std::min;
     void operator()(const gsl::not_null<UniformGen*> gen,                      \
                     UniformCustomDistribution<DistT1> dist1,                   \
                     UniformCustomDistribution<DistT2> dist2, T1 /*meta*/,      \
-                    T2 /*meta*/) noexcept {                                    \
+                    T2 /*meta*/) {                                             \
       auto val1 = make_with_random_values<typename T1::type>(                  \
           gen, make_not_null(&dist1));                                         \
       auto val2 = make_with_random_values<typename T2::type>(                  \
@@ -110,7 +109,7 @@ using std::min;
     void operator()(const gsl::not_null<UniformGen*> /*gen*/,                  \
                     UniformCustomDistribution<DistT1> /*dist1*/,               \
                     UniformCustomDistribution<DistT2> /*dist2*/, T1 /*meta*/,  \
-                    T2 /*meta*/) noexcept {}                                   \
+                    T2 /*meta*/) {}                                            \
   }
 
 namespace {
@@ -150,7 +149,7 @@ template <int N>
 struct TestFuncEvalUnaryPow {
   template <typename T, typename DistT, typename UniformGen>
   void operator()(const gsl::not_null<UniformGen*> gen,
-                  UniformCustomDistribution<DistT> dist, T /*meta*/) noexcept {
+                  UniformCustomDistribution<DistT> dist, T /*meta*/) {
     auto val =
         make_with_random_values<typename T::type>(gen, make_not_null(&dist));
     CHECK(UnaryPow<N>{}(val) == pow<N>(val)); /*NOLINT*/
@@ -185,7 +184,7 @@ template <typename C, typename ValType, typename Func, typename Gen,
           size_t... Is>
 void test_functional_against_function(
     const Func func, const gsl::not_null<Gen*> gen, const Bound& bounds,
-    const std::index_sequence<Is...> /*meta*/) noexcept {
+    const std::index_sequence<Is...> /*meta*/) {
   static_assert(sizeof...(Is) == C::arity,
                 "test was passed incorrect number of arguments");
   UniformCustomDistribution<typename tt::get_fundamental_type_t<ValType>> dist{
@@ -211,7 +210,7 @@ using GaussianExp =
 using Gaussian = funcl::Exp<GaussianExp>;
 // [using_gaussian]
 
-void test_get_argument() noexcept {
+void test_get_argument() {
   CHECK(GetArgument<1>{}(-2) == -2);
   CHECK(GetArgument<1, 0>{}(-2) == -2);
   CHECK(GetArgument<2, 0>{}(-2, 1) == -2);
@@ -221,10 +220,10 @@ void test_get_argument() noexcept {
   CHECK(GetArgument<3, 2>{}(-2, 8, -10) == -10);
 }
 
-void test_assert_equal() noexcept { CHECK(AssertEqual<>{}(7, 7) == 7); }
+void test_assert_equal() { CHECK(AssertEqual<>{}(7, 7) == 7); }
 
 template <typename Gen>
-void test_functional_combinations(const gsl::not_null<Gen*> gen) noexcept {
+void test_functional_combinations(const gsl::not_null<Gen*> gen) {
   const Bound generic{{-50.0, 50.0}};
   const Bound small{{-5.0, 5.0}};
 
@@ -267,7 +266,7 @@ void test_functional_combinations(const gsl::not_null<Gen*> gen) noexcept {
 }
 
 template <typename Gen>
-void test_generic_unaries(const gsl::not_null<Gen*> gen) noexcept {
+void test_generic_unaries(const gsl::not_null<Gen*> gen) {
   const Bound generic{{-50.0, 50.0}};
   const Bound gt_one{{1.0, 100.0}};
   const Bound mone_one{{-1.0, 1.0}};
@@ -298,15 +297,14 @@ void test_generic_unaries(const gsl::not_null<Gen*> gen) noexcept {
                       std::make_tuple(TestFuncEvalUnaryPow<-2>{}, generic),
                       std::make_tuple(TestFuncEvalUnaryPow<3>{}, generic));
 
-  tmpl::for_each<AllTypeList>([&gen, &generic_unaries ](auto x) noexcept {
+  tmpl::for_each<AllTypeList>([&gen, &generic_unaries](auto x) {
     using DistType =
         typename tt::get_fundamental_type_t<typename decltype(x)::type>;
     tmpl::for_each<
         tmpl::make_sequence<std::integral_constant<size_t, 0>,
                             std::tuple_size<decltype(generic_unaries)>::value,
-                            tmpl::next<tmpl::_1>>>([
-      &gen, &x, &generic_unaries
-    ](auto index) noexcept {
+                            tmpl::next<tmpl::_1>>>([&gen, &x, &generic_unaries](
+                                                       auto index) {
       auto& tup = std::get<decltype(index)::type::value>(generic_unaries);
       std::get<0>(tup)(
           gen, UniformCustomDistribution<DistType>{std::get<Bound>(tup)}, x);
@@ -315,7 +313,7 @@ void test_generic_unaries(const gsl::not_null<Gen*> gen) noexcept {
 }
 
 template <typename Gen>
-void test_floating_point_functions(const gsl::not_null<Gen*> gen) noexcept {
+void test_floating_point_functions(const gsl::not_null<Gen*> gen) {
   const Bound generic{{-50.0, 50.0}};
   const Bound gt_one{{1.0, 100.0}};
   const Bound positive{{.001, 100.0}};
@@ -341,27 +339,27 @@ void test_floating_point_functions(const gsl::not_null<Gen*> gen) noexcept {
       std::tuple_cat(generic_binaries, just_floating_binaries);
 
   tmpl::for_each<DoubleSet>([&gen, &floating_unaries,
-                             &floating_binaries ](auto x) noexcept {
+                             &floating_binaries](auto x) {
     using DistType1 =
         typename tt::get_fundamental_type_t<typename decltype(x)::type>;
     tmpl::for_each<
         tmpl::make_sequence<std::integral_constant<size_t, 0>,
                             std::tuple_size<decltype(floating_unaries)>::value,
-                            tmpl::next<tmpl::_1>>>([
-      &gen, &x, &floating_unaries
-    ](auto index) noexcept {
+                            tmpl::next<tmpl::_1>>>([&gen, &x,
+                                                    &floating_unaries](
+                                                       auto index) {
       auto& tup = std::get<decltype(index)::type::value>(floating_unaries);
       std::get<0>(tup)(
           gen, UniformCustomDistribution<DistType1>{std::get<Bound>(tup)}, x);
     });
-    tmpl::for_each<DoubleSet>([&gen, &floating_binaries, &x ](auto y) noexcept {
+    tmpl::for_each<DoubleSet>([&gen, &floating_binaries, &x](auto y) {
       using DistType2 =
           typename tt::get_fundamental_type_t<typename decltype(y)::type>;
       tmpl::for_each<tmpl::make_sequence<
           std::integral_constant<size_t, 0>,
           std::tuple_size<decltype(floating_binaries)>::value,
           tmpl::next<tmpl::_1>>>([&gen, &x, &y,
-                                  &floating_binaries ](auto index) noexcept {
+                                  &floating_binaries](auto index) {
         auto& tup = std::get<decltype(index)::type::value>(floating_binaries);
         std::get<0>(tup)(
             gen, UniformCustomDistribution<DistType1>{std::get<Bound>(tup)},
@@ -372,9 +370,9 @@ void test_floating_point_functions(const gsl::not_null<Gen*> gen) noexcept {
 }
 
 template <typename Gen>
-void test_boolean_functions(const gsl::not_null<Gen*> gen) noexcept {
+void test_boolean_functions(const gsl::not_null<Gen*> gen) {
   auto boolean_binaries = std::make_tuple(TestFuncEvalAnd{}, TestFuncEvalOr{});
-  tuple_fold(boolean_binaries, [&gen](auto binary_test_func) noexcept {
+  tuple_fold(boolean_binaries, [&gen](auto binary_test_func) {
     binary_test_func(gen, UniformCustomDistribution<bool>{},
                      UniformCustomDistribution<bool>{}, tmpl::type_<bool>{},
                      tmpl::type_<bool>{});
@@ -382,7 +380,7 @@ void test_boolean_functions(const gsl::not_null<Gen*> gen) noexcept {
 }
 
 template <typename Gen>
-void test_real_functions(const gsl::not_null<Gen*> gen) noexcept {
+void test_real_functions(const gsl::not_null<Gen*> gen) {
   const Bound generic{{-50.0, 50.0}};
   const Bound gt_one{{1.0, 100.0}};
   const Bound positive{{.001, 100.0}};
@@ -417,15 +415,14 @@ void test_real_functions(const gsl::not_null<Gen*> gen) noexcept {
 
   auto real_binaries = std::tuple_cat(just_real_binaries, generic_binaries);
 
-  tmpl::for_each<RealTypeList>([
-    &gen, &real_binaries, &same_just_real_binaries, &real_unaries
-  ](auto x) noexcept {
+  tmpl::for_each<RealTypeList>([&gen, &real_binaries, &same_just_real_binaries,
+                                &real_unaries](auto x) {
     using DistType1 =
         typename tt::get_fundamental_type_t<typename decltype(x)::type>;
     tmpl::for_each<tmpl::make_sequence<
         std::integral_constant<size_t, 0>,
         std::tuple_size<decltype(real_unaries)>::value, tmpl::next<tmpl::_1>>>(
-        [&gen, &x, &real_unaries ](auto index) noexcept {
+        [&gen, &x, &real_unaries](auto index) {
           auto& tup = std::get<decltype(index)::type::value>(real_unaries);
           std::get<0>(tup)(
               gen, UniformCustomDistribution<DistType1>{std::get<Bound>(tup)},
@@ -436,7 +433,7 @@ void test_real_functions(const gsl::not_null<Gen*> gen) noexcept {
         std::integral_constant<size_t, 0>,
         std::tuple_size<decltype(same_just_real_binaries)>::value,
         tmpl::next<tmpl::_1>>>(
-        [&gen, &x, &same_just_real_binaries ](auto index) noexcept {
+        [&gen, &x, &same_just_real_binaries](auto index) {
           auto& tup =
               std::get<decltype(index)::type::value>(same_just_real_binaries);
           std::get<0>(tup)(
@@ -444,15 +441,15 @@ void test_real_functions(const gsl::not_null<Gen*> gen) noexcept {
               UniformCustomDistribution<DistType1>{std::get<Bound>(tup)}, x, x);
         });
 
-    tmpl::for_each<RealTypeList>([&gen, &real_binaries, &x ](auto y) noexcept {
+    tmpl::for_each<RealTypeList>([&gen, &real_binaries, &x](auto y) {
       using DistType2 =
           typename tt::get_fundamental_type_t<typename decltype(y)::type>;
       tmpl::for_each<
           tmpl::make_sequence<std::integral_constant<size_t, 0>,
                               std::tuple_size<decltype(real_binaries)>::value,
-                              tmpl::next<tmpl::_1>>>([
-        &gen, &x, &y, &real_binaries
-      ](auto index) noexcept {
+                              tmpl::next<tmpl::_1>>>([&gen, &x, &y,
+                                                      &real_binaries](
+                                                         auto index) {
         auto& tup = std::get<decltype(index)::type::value>(real_binaries);
         std::get<0>(tup)(
             gen, UniformCustomDistribution<DistType1>(std::get<Bound>(tup)),
@@ -462,7 +459,7 @@ void test_real_functions(const gsl::not_null<Gen*> gen) noexcept {
   });
 }
 
-void test_vector_plus() noexcept {
+void test_vector_plus() {
   CHECK_ITERABLE_APPROX(VectorPlus{}(std::vector<double>{0.12, -20.87, 3.2},
                                      std::vector<double>{-11.04, 7.5, 6.18}),
                         (std::vector<double>{-10.92, -13.37, 9.38}));

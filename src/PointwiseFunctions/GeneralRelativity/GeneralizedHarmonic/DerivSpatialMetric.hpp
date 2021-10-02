@@ -49,11 +49,11 @@ namespace GeneralizedHarmonic {
 template <size_t SpatialDim, typename Frame, typename DataType>
 void deriv_spatial_metric(
     gsl::not_null<tnsr::ijj<DataType, SpatialDim, Frame>*> d_spatial_metric,
-    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept;
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi);
 
 template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::ijj<DataType, SpatialDim, Frame> deriv_spatial_metric(
-    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept;
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi);
 /// @}
 
 namespace Tags {
@@ -75,7 +75,7 @@ struct DerivSpatialMetricCompute
 
   static constexpr auto function = static_cast<void (*)(
       gsl::not_null<tnsr::ijj<DataVector, SpatialDim, Frame>*>,
-      const tnsr::iaa<DataVector, SpatialDim, Frame>&) noexcept>(
+      const tnsr::iaa<DataVector, SpatialDim, Frame>&)>(
       &deriv_spatial_metric<SpatialDim, Frame>);
 
   using base =

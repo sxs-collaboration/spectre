@@ -94,7 +94,7 @@ void volume_terms(
     const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
         mesh_velocity,
     const std::optional<Scalar<DataVector>>& div_mesh_velocity,
-    const TimeDerivativeArguments&... time_derivative_args) noexcept {
+    const TimeDerivativeArguments&... time_derivative_args) {
   static constexpr bool has_partial_derivs = sizeof...(PartialDerivTags) != 0;
   static constexpr bool has_fluxes = sizeof...(FluxVariablesTags) != 0;
   static_assert(
@@ -135,7 +135,7 @@ void volume_terms(
   if (mesh_velocity.has_value()) {
     tmpl::for_each<flux_variables>([&div_mesh_velocity, &dt_vars_ptr,
                                     &evolved_vars, &mesh_velocity,
-                                    &volume_fluxes](auto tag_v) noexcept {
+                                    &volume_fluxes](auto tag_v) {
       // Modify fluxes for moving mesh
       using var_tag = typename decltype(tag_v)::type;
       using flux_var_tag =
@@ -183,7 +183,7 @@ void volume_terms(
         tmpl::list_difference<tmpl::list<VariablesTags...>, flux_variables>;
 
     tmpl::for_each<non_flux_tags>([&dt_vars_ptr, &mesh_velocity,
-                                   &partial_derivs](auto var_tag_v) noexcept {
+                                   &partial_derivs](auto var_tag_v) {
       using var_tag = typename decltype(var_tag_v)::type;
       using dt_var_tag = ::Tags::dt<var_tag>;
       using deriv_var_tag =
@@ -248,7 +248,7 @@ void volume_terms(
       ERROR("Unsupported DG formulation: " << dg_formulation);
     }
     tmpl::for_each<flux_variables>(
-        [&dg_formulation, &dt_vars_ptr, &div_fluxes](auto var_tag_v) noexcept {
+        [&dg_formulation, &dt_vars_ptr, &div_fluxes](auto var_tag_v) {
           using var_tag = typename decltype(var_tag_v)::type;
           auto& dt_var = get<::Tags::dt<var_tag>>(*dt_vars_ptr);
           const auto& div_flux = get<::Tags::div<

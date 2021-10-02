@@ -83,7 +83,7 @@ class Brick : public DomainCreator<3> {
 
   template <typename BoundaryConditionsBase>
   struct BoundaryCondition {
-    static std::string name() noexcept { return "BoundaryCondition"; }
+    static std::string name() { return "BoundaryCondition"; }
     static constexpr Options::String help =
         "The boundary condition to impose on all sides.";
     using type = std::unique_ptr<BoundaryConditionsBase>;
@@ -113,7 +113,7 @@ class Brick : public DomainCreator<3> {
         typename InitialGridPoints::type initial_number_of_grid_points_in_xyz,
         typename IsPeriodicIn::type is_periodic_in_xyz,
         std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
-            time_dependence = nullptr) noexcept;
+            time_dependence = nullptr);
 
   Brick(typename LowerBound::type lower_xyz,
         typename UpperBound::type upper_xyz,
@@ -127,19 +127,18 @@ class Brick : public DomainCreator<3> {
 
   Brick() = default;
   Brick(const Brick&) = delete;
-  Brick(Brick&&) noexcept = default;
+  Brick(Brick&&) = default;
   Brick& operator=(const Brick&) = delete;
-  Brick& operator=(Brick&&) noexcept = default;
-  ~Brick() noexcept override = default;
+  Brick& operator=(Brick&&) = default;
+  ~Brick() override = default;
 
-  Domain<3> create_domain() const noexcept override;
+  Domain<3> create_domain() const override;
 
-  std::vector<std::array<size_t, 3>> initial_extents() const noexcept override;
+  std::vector<std::array<size_t, 3>> initial_extents() const override;
 
-  std::vector<std::array<size_t, 3>> initial_refinement_levels() const
-      noexcept override;
+  std::vector<std::array<size_t, 3>> initial_refinement_levels() const override;
 
-  auto functions_of_time() const noexcept -> std::unordered_map<
+  auto functions_of_time() const -> std::unordered_map<
       std::string,
       std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;
 

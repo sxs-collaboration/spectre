@@ -17,11 +17,13 @@
 
 namespace grmhd::AnalyticData {
 
-BondiHoyleAccretion::BondiHoyleAccretion(
-    const double bh_mass, const double bh_dimless_spin,
-    const double rest_mass_density, const double flow_speed,
-    const double magnetic_field_strength, const double polytropic_constant,
-    const double polytropic_exponent) noexcept
+BondiHoyleAccretion::BondiHoyleAccretion(const double bh_mass,
+                                         const double bh_dimless_spin,
+                                         const double rest_mass_density,
+                                         const double flow_speed,
+                                         const double magnetic_field_strength,
+                                         const double polytropic_constant,
+                                         const double polytropic_exponent)
     : bh_mass_(bh_mass),
       bh_spin_a_(bh_mass * bh_dimless_spin),
       rest_mass_density_(rest_mass_density),
@@ -34,7 +36,7 @@ BondiHoyleAccretion::BondiHoyleAccretion(
           bh_mass, {{0.0, 0.0, bh_dimless_spin}}, {{0.0, 0.0, 0.0}}},
       kerr_schild_coords_{bh_mass, bh_dimless_spin} {}
 
-void BondiHoyleAccretion::pup(PUP::er& p) noexcept {
+void BondiHoyleAccretion::pup(PUP::er& p) {
   p | bh_mass_;
   p | bh_spin_a_;
   p | rest_mass_density_;
@@ -50,7 +52,7 @@ void BondiHoyleAccretion::pup(PUP::er& p) noexcept {
 template <typename DataType>
 tnsr::I<DataType, 3, Frame::NoFrame> BondiHoyleAccretion::spatial_velocity(
     const DataType& r_squared, const DataType& cos_theta,
-    const DataType& sin_theta) const noexcept {
+    const DataType& sin_theta) const {
   auto result =
       make_with_value<tnsr::I<DataType, 3, Frame::NoFrame>>(r_squared, 0.0);
 
@@ -66,7 +68,7 @@ tnsr::I<DataType, 3, Frame::NoFrame> BondiHoyleAccretion::spatial_velocity(
 template <typename DataType>
 tnsr::I<DataType, 3, Frame::NoFrame> BondiHoyleAccretion::magnetic_field(
     const DataType& r_squared, const DataType& cos_theta,
-    const DataType& sin_theta) const noexcept {
+    const DataType& sin_theta) const {
   const double a_squared = bh_spin_a_ * bh_spin_a_;
   const DataType cos_theta_squared = square(cos_theta);
   const DataType two_m_r = 2.0 * bh_mass_ * sqrt(r_squared);
@@ -105,8 +107,7 @@ template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::RestMassDensity<DataType>>
 BondiHoyleAccretion::variables(
     const tnsr::I<DataType, 3>& x,
-    tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/) const
-    noexcept {
+    tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/) const {
   return {make_with_value<Scalar<DataType>>(x, rest_mass_density_)};
 }
 
@@ -114,8 +115,7 @@ template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, 3>>
 BondiHoyleAccretion::variables(
     const tnsr::I<DataType, 3>& x,
-    tmpl::list<hydro::Tags::SpatialVelocity<DataType, 3>> /*meta*/) const
-    noexcept {
+    tmpl::list<hydro::Tags::SpatialVelocity<DataType, 3>> /*meta*/) const {
   const DataType r_squared = get(kerr_schild_coords_.r_coord_squared(x));
   return kerr_schild_coords_.cartesian_from_spherical_ks(
       spatial_velocity(r_squared, DataType{get<2>(x) / sqrt(r_squared)},
@@ -128,8 +128,7 @@ template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::SpecificInternalEnergy<DataType>>
 BondiHoyleAccretion::variables(
     const tnsr::I<DataType, 3>& x,
-    tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>> /*meta*/) const
-    noexcept {
+    tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>> /*meta*/) const {
   return equation_of_state_.specific_internal_energy_from_density(
       get<hydro::Tags::RestMassDensity<DataType>>(
           variables(x, tmpl::list<hydro::Tags::RestMassDensity<DataType>>{})));
@@ -139,7 +138,7 @@ template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::Pressure<DataType>>
 BondiHoyleAccretion::variables(
     const tnsr::I<DataType, 3>& x,
-    tmpl::list<hydro::Tags::Pressure<DataType>> /*meta*/) const noexcept {
+    tmpl::list<hydro::Tags::Pressure<DataType>> /*meta*/) const {
   return equation_of_state_.pressure_from_density(
       get<hydro::Tags::RestMassDensity<DataType>>(
           variables(x, tmpl::list<hydro::Tags::RestMassDensity<DataType>>{})));
@@ -149,8 +148,7 @@ template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3>>
 BondiHoyleAccretion::variables(
     const tnsr::I<DataType, 3>& x,
-    tmpl::list<hydro::Tags::MagneticField<DataType, 3>> /*meta*/) const
-    noexcept {
+    tmpl::list<hydro::Tags::MagneticField<DataType, 3>> /*meta*/) const {
   const DataType r_squared = get(kerr_schild_coords_.r_coord_squared(x));
   return kerr_schild_coords_.cartesian_from_spherical_ks(
       magnetic_field(r_squared, DataType{get<2>(x) / sqrt(r_squared)},
@@ -163,8 +161,7 @@ template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::DivergenceCleaningField<DataType>>
 BondiHoyleAccretion::variables(
     const tnsr::I<DataType, 3>& x,
-    tmpl::list<hydro::Tags::DivergenceCleaningField<DataType>> /*meta*/) const
-    noexcept {
+    tmpl::list<hydro::Tags::DivergenceCleaningField<DataType>> /*meta*/) const {
   return {make_with_value<Scalar<DataType>>(x, 0.0)};
 }
 
@@ -172,7 +169,7 @@ template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::LorentzFactor<DataType>>
 BondiHoyleAccretion::variables(
     const tnsr::I<DataType, 3>& x,
-    tmpl::list<hydro::Tags::LorentzFactor<DataType>> /*meta*/) const noexcept {
+    tmpl::list<hydro::Tags::LorentzFactor<DataType>> /*meta*/) const {
   return {make_with_value<Scalar<DataType>>(
       x, 1.0 / sqrt(1.0 - square(flow_speed_)))};
 }
@@ -181,15 +178,14 @@ template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DataType>>
 BondiHoyleAccretion::variables(
     const tnsr::I<DataType, 3>& x,
-    tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>> /*meta*/) const
-    noexcept {
+    tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>> /*meta*/) const {
   return equation_of_state_.specific_enthalpy_from_density(
       get<hydro::Tags::RestMassDensity<DataType>>(
           variables(x, tmpl::list<hydro::Tags::RestMassDensity<DataType>>{})));
 }
 
 bool operator==(const BondiHoyleAccretion& lhs,
-                const BondiHoyleAccretion& rhs) noexcept {
+                const BondiHoyleAccretion& rhs) {
   // There is no comparison operator for the `equation_of_state` and the
   // `background_spacetime`, but should be okay as the `bh_mass`s,
   // `bh_dimless_spin`s, `polytropic_exponent`s and `polytropic_constant`s are
@@ -203,18 +199,18 @@ bool operator==(const BondiHoyleAccretion& lhs,
 }
 
 bool operator!=(const BondiHoyleAccretion& lhs,
-                const BondiHoyleAccretion& rhs) noexcept {
+                const BondiHoyleAccretion& rhs) {
   return not(lhs == rhs);
 }
 
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define TAG(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATE_SCALARS(_, data)                     \
-  template tuples::TaggedTuple<TAG(data) < DTYPE(data)>> \
-      BondiHoyleAccretion::variables(                    \
-          const tnsr::I<DTYPE(data), 3>& x,              \
-          tmpl::list<TAG(data) < DTYPE(data)>> /*meta*/) const noexcept;
+#define INSTANTIATE_SCALARS(_, data)                      \
+  template tuples::TaggedTuple<TAG(data) < DTYPE(data)> > \
+      BondiHoyleAccretion::variables(                     \
+          const tnsr::I<DTYPE(data), 3>& x,               \
+          tmpl::list<TAG(data) < DTYPE(data)> > /*meta*/) const;
 
 GENERATE_INSTANTIATIONS(
     INSTANTIATE_SCALARS, (double, DataVector),
@@ -222,11 +218,11 @@ GENERATE_INSTANTIATIONS(
      hydro::Tags::Pressure, hydro::Tags::DivergenceCleaningField,
      hydro::Tags::LorentzFactor, hydro::Tags::SpecificEnthalpy))
 
-#define INSTANTIATE_VECTORS(_, data)                        \
-  template tuples::TaggedTuple<TAG(data) < DTYPE(data), 3>> \
-      BondiHoyleAccretion::variables(                       \
-          const tnsr::I<DTYPE(data), 3>& x,                 \
-          tmpl::list<TAG(data) < DTYPE(data), 3>> /*meta*/) const noexcept;
+#define INSTANTIATE_VECTORS(_, data)                         \
+  template tuples::TaggedTuple<TAG(data) < DTYPE(data), 3> > \
+      BondiHoyleAccretion::variables(                        \
+          const tnsr::I<DTYPE(data), 3>& x,                  \
+          tmpl::list<TAG(data) < DTYPE(data), 3> > /*meta*/) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_VECTORS, (double, DataVector),
                         (hydro::Tags::SpatialVelocity,

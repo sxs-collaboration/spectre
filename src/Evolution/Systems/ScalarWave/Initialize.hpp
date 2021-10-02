@@ -59,7 +59,7 @@ struct InitializeConstraints {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     const auto& mesh = db::get<domain::Tags::Mesh<Dim>>(box);
     Scalar<DataVector> gamma_2{mesh.number_of_grid_points(), 0.};
 

@@ -58,8 +58,7 @@ struct BoundaryTerms {
       const tnsr::I<DataVector, Dim, Frame::Inertial>& normal_vector,
       const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
       /*mesh_velocity*/,
-      const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity)
-      const noexcept {
+      const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity) const {
     *out_normal_dot_flux_var1 = dot_product(normal_covector, flux_var1);
     *out_var1 = var1;
 

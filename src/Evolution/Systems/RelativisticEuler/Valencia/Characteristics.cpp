@@ -27,7 +27,7 @@ void characteristic_speeds(
     const tnsr::I<DataVector, Dim>& spatial_velocity,
     const Scalar<DataVector>& spatial_velocity_squared,
     const Scalar<DataVector>& sound_speed_squared,
-    const tnsr::i<DataVector, Dim>& normal) noexcept {
+    const tnsr::i<DataVector, Dim>& normal) {
   const size_t num_grid_points = get<0>(shift).size();
   // Allocating a single large buffer is much faster than many small buffers
   Variables<tmpl::list<::Tags::TempScalar<0>, ::Tags::TempScalar<1>,
@@ -82,7 +82,7 @@ std::array<DataVector, Dim + 2> characteristic_speeds(
     const tnsr::I<DataVector, Dim>& spatial_velocity,
     const Scalar<DataVector>& spatial_velocity_squared,
     const Scalar<DataVector>& sound_speed_squared,
-    const tnsr::i<DataVector, Dim>& normal) noexcept {
+    const tnsr::i<DataVector, Dim>& normal) {
   std::array<DataVector, Dim + 2> char_speeds{};
   characteristic_speeds(make_not_null(&char_speeds), lapse, shift,
                         spatial_velocity, spatial_velocity_squared,
@@ -102,7 +102,7 @@ Matrix right_eigenvectors(const Scalar<double>& rest_mass_density,
                           const tnsr::ii<double, Dim>& spatial_metric,
                           const tnsr::II<double, Dim>& inv_spatial_metric,
                           const Scalar<double>& det_spatial_metric,
-                          const tnsr::i<double, Dim>& unit_normal) noexcept {
+                          const tnsr::i<double, Dim>& unit_normal) {
   const auto spatial_velocity_oneform =
       raise_or_lower_index(spatial_velocity, spatial_metric);
 
@@ -174,24 +174,23 @@ Matrix right_eigenvectors(const Scalar<double>& rest_mass_density,
     const auto unit_tangent_oneform =
         orthonormal_oneform(unit_normal, inv_spatial_metric);
     const auto set_degenerate_eigenvector =
-        [
-          &result, &lorentz_factor, &spatial_velocity,
-          &spatial_velocity_oneform, &two_h_w_minus_one, &specific_enthalpy
-        ](const size_t vector_id,
-          const tnsr::i<double, Dim>& tangent_oneform) noexcept {
-      result(0, vector_id) =
-          get(lorentz_factor) *
-          get(dot_product(tangent_oneform, spatial_velocity));
-      result(1, vector_id) = two_h_w_minus_one * result(0, vector_id);
-      const double local_prefactor =
-          2.0 * get(lorentz_factor) * result(0, vector_id);
-      for (size_t i = 0; i < Dim; ++i) {
-        result(i + 2, vector_id) =
-            get(specific_enthalpy) *
-            (tangent_oneform.get(i) +
-             local_prefactor * spatial_velocity_oneform.get(i));
-      }
-    };
+        [&result, &lorentz_factor, &spatial_velocity, &spatial_velocity_oneform,
+         &two_h_w_minus_one,
+         &specific_enthalpy](const size_t vector_id,
+                             const tnsr::i<double, Dim>& tangent_oneform) {
+          result(0, vector_id) =
+              get(lorentz_factor) *
+              get(dot_product(tangent_oneform, spatial_velocity));
+          result(1, vector_id) = two_h_w_minus_one * result(0, vector_id);
+          const double local_prefactor =
+              2.0 * get(lorentz_factor) * result(0, vector_id);
+          for (size_t i = 0; i < Dim; ++i) {
+            result(i + 2, vector_id) =
+                get(specific_enthalpy) *
+                (tangent_oneform.get(i) +
+                 local_prefactor * spatial_velocity_oneform.get(i));
+          }
+        };
     set_degenerate_eigenvector(1, unit_tangent_oneform);
 
     if constexpr (Dim > 2) {
@@ -218,7 +217,7 @@ Matrix left_eigenvectors(const Scalar<double>& rest_mass_density,
                          const tnsr::ii<double, Dim>& spatial_metric,
                          const tnsr::II<double, Dim>& inv_spatial_metric,
                          const Scalar<double>& det_spatial_metric,
-                         const tnsr::i<double, Dim>& unit_normal) noexcept {
+                         const tnsr::i<double, Dim>& unit_normal) {
   const auto unit_normal_vector =
       raise_or_lower_index(unit_normal, inv_spatial_metric);
 
@@ -312,22 +311,22 @@ Matrix left_eigenvectors(const Scalar<double>& rest_mass_density,
     const auto unit_tangent_oneform =
         orthonormal_oneform(unit_normal, inv_spatial_metric);
     const auto set_degenerate_eigenvector =
-        [
-          &result, &prefactor, &spatial_velocity, &inv_spatial_metric,
-          &normal_velocity, &inv_specific_enthalpy, &unit_normal_vector
-        ](const size_t vector_id,
-          const tnsr::i<double, Dim>& tangent_oneform) noexcept {
-      result(vector_id, 0) =
-          prefactor * get(dot_product(tangent_oneform, spatial_velocity));
-      result(vector_id, 1) = result(vector_id, 0);
-      const auto unit_tangent =
-          raise_or_lower_index(tangent_oneform, inv_spatial_metric);
-      const double local_prefactor = result(vector_id, 0) * normal_velocity;
-      for (size_t i = 0; i < Dim; ++i) {
-        result(vector_id, i + 2) = inv_specific_enthalpy * unit_tangent.get(i) -
-                                   local_prefactor * unit_normal_vector.get(i);
-      }
-    };
+        [&result, &prefactor, &spatial_velocity, &inv_spatial_metric,
+         &normal_velocity, &inv_specific_enthalpy,
+         &unit_normal_vector](const size_t vector_id,
+                              const tnsr::i<double, Dim>& tangent_oneform) {
+          result(vector_id, 0) =
+              prefactor * get(dot_product(tangent_oneform, spatial_velocity));
+          result(vector_id, 1) = result(vector_id, 0);
+          const auto unit_tangent =
+              raise_or_lower_index(tangent_oneform, inv_spatial_metric);
+          const double local_prefactor = result(vector_id, 0) * normal_velocity;
+          for (size_t i = 0; i < Dim; ++i) {
+            result(vector_id, i + 2) =
+                inv_specific_enthalpy * unit_tangent.get(i) -
+                local_prefactor * unit_normal_vector.get(i);
+          }
+        };
     set_degenerate_eigenvector(1, unit_tangent_oneform);
 
     if constexpr (Dim > 2) {
@@ -354,7 +353,7 @@ Matrix left_eigenvectors(const Scalar<double>& rest_mass_density,
       const tnsr::I<DataVector, DIM(data)>& spatial_velocity,                  \
       const Scalar<DataVector>& spatial_velocity_squared,                      \
       const Scalar<DataVector>& sound_speed_squared,                           \
-      const tnsr::i<DataVector, DIM(data)>& normal) noexcept;                  \
+      const tnsr::i<DataVector, DIM(data)>& normal);                           \
   template Matrix RelativisticEuler::Valencia::right_eigenvectors(             \
       const Scalar<double>& rest_mass_density,                                 \
       const tnsr::I<double, DIM(data)>& spatial_velocity,                      \
@@ -366,7 +365,7 @@ Matrix left_eigenvectors(const Scalar<double>& rest_mass_density,
       const tnsr::ii<double, DIM(data)>& spatial_metric,                       \
       const tnsr::II<double, DIM(data)>& inv_spatial_metric,                   \
       const Scalar<double>& det_spatial_metric,                                \
-      const tnsr::i<double, DIM(data)>& unit_normal) noexcept;                 \
+      const tnsr::i<double, DIM(data)>& unit_normal);                          \
   template Matrix RelativisticEuler::Valencia::left_eigenvectors(              \
       const Scalar<double>& rest_mass_density,                                 \
       const tnsr::I<double, DIM(data)>& spatial_velocity,                      \
@@ -378,7 +377,7 @@ Matrix left_eigenvectors(const Scalar<double>& rest_mass_density,
       const tnsr::ii<double, DIM(data)>& spatial_metric,                       \
       const tnsr::II<double, DIM(data)>& inv_spatial_metric,                   \
       const Scalar<double>& det_spatial_metric,                                \
-      const tnsr::i<double, DIM(data)>& unit_normal) noexcept;
+      const tnsr::i<double, DIM(data)>& unit_normal);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 

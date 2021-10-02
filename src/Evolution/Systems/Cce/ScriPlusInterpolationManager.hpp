@@ -51,7 +51,7 @@ struct ScriPlusInterpolationManager {
 
   ScriPlusInterpolationManager(
       const size_t target_number_of_points, const size_t vector_size,
-      std::unique_ptr<intrp::SpanInterpolator> interpolator) noexcept
+      std::unique_ptr<intrp::SpanInterpolator> interpolator)
       : vector_size_{vector_size},
         target_number_of_points_{target_number_of_points},
         interpolator_{std::move(interpolator)} {}
@@ -61,7 +61,7 @@ struct ScriPlusInterpolationManager {
   /// \details `u_bondi` is a vector of inertial times, and `to_interpolate` is
   /// the vector of values that will be interpolated to target times.
   void insert_data(const DataVector& u_bondi,
-                   const VectorTypeToInterpolate& to_interpolate) noexcept {
+                   const VectorTypeToInterpolate& to_interpolate) {
     ASSERT(to_interpolate.size() == vector_size_,
            "Inserted data must be of size specified at construction: "
                << vector_size_
@@ -75,7 +75,7 @@ struct ScriPlusInterpolationManager {
   /// been accumulated.
   ///
   /// For optimization, we assume that these are inserted in ascending order.
-  void insert_target_time(const double time) noexcept {
+  void insert_target_time(const double time) {
     target_times_.push_back(time);
     // if this is the first time in the deque, we should use it to determine
     // whether some of the old data is ready to be removed. In other cases, this
@@ -96,10 +96,9 @@ struct ScriPlusInterpolationManager {
   /// function always returns false if all of the provided data is earlier than
   /// the next target time, indicating that the caller should wait until more
   /// data has been provided before interpolating.
-  bool first_time_is_ready_to_interpolate() const noexcept;
+  bool first_time_is_ready_to_interpolate() const;
 
-  const std::deque<std::pair<double, double>>& get_u_bondi_ranges() const
-      noexcept {
+  const std::deque<std::pair<double, double>>& get_u_bondi_ranges() const {
     return u_bondi_ranges_;
   }
 
@@ -116,7 +115,7 @@ struct ScriPlusInterpolationManager {
   /// data is available, but for full accuracy, check
   /// `first_time_is_ready_to_interpolate` before calling the interpolation
   /// functions
-  std::pair<double, VectorTypeToInterpolate> interpolate_first_time() noexcept;
+  std::pair<double, VectorTypeToInterpolate> interpolate_first_time();
 
   /// \brief Interpolate to the first target time in the queue, returning both
   /// the time and the interpolated data at that time, and remove the first time
@@ -132,21 +131,16 @@ struct ScriPlusInterpolationManager {
   /// data is available, but for full accuracy, check
   /// `first_time_is_ready_to_interpolate` before calling the interpolation
   /// functions
-  std::pair<double, VectorTypeToInterpolate>
-  interpolate_and_pop_first_time() noexcept;
+  std::pair<double, VectorTypeToInterpolate> interpolate_and_pop_first_time();
 
   /// \brief return the number of times in the target times queue
-  size_t number_of_target_times() const noexcept {
-    return target_times_.size();
-  }
+  size_t number_of_target_times() const { return target_times_.size(); }
 
   /// \brief return the number of data points that have been provided to the
   /// interpolation manager
-  size_t number_of_data_points() const noexcept {
-    return u_bondi_ranges_.size();
-  }
+  size_t number_of_data_points() const { return u_bondi_ranges_.size(); }
 
-  void pup(PUP::er& p) noexcept {  // NOLINT
+  void pup(PUP::er& p) {  // NOLINT
     p | u_bondi_values_;
     p | to_interpolate_values_;
     p | u_bondi_ranges_;
@@ -157,7 +151,7 @@ struct ScriPlusInterpolationManager {
   }
 
  private:
-  void remove_unneeded_early_times() noexcept;
+  void remove_unneeded_early_times();
 
   friend struct ScriPlusInterpolationManager<VectorTypeToInterpolate,
                                              Tags::Du<Tag>>;
@@ -173,19 +167,18 @@ struct ScriPlusInterpolationManager {
 
 template <typename VectorTypeToInterpolate, typename Tag>
 bool ScriPlusInterpolationManager<
-    VectorTypeToInterpolate, Tag>::first_time_is_ready_to_interpolate() const
-    noexcept {
+    VectorTypeToInterpolate, Tag>::first_time_is_ready_to_interpolate() const {
   if (target_times_.empty()) {
     return false;
   }
   auto maxes_below = alg::count_if(
-      u_bondi_ranges_, [this](const std::pair<double, double> time) noexcept {
+      u_bondi_ranges_, [this](const std::pair<double, double> time) {
         return time.second <= target_times_.front();
       });
-  auto mins_above = alg::count_if(
-      u_bondi_ranges_, [this](const std::pair<double, double> time) noexcept {
-        return time.first > target_times_.front();
-      });
+  auto mins_above = alg::count_if(u_bondi_ranges_,
+                                  [this](const std::pair<double, double> time) {
+                                    return time.first > target_times_.front();
+                                  });
 
   // we might ask for a time that's too close to the end or the beginning of
   // our data, in which case we will settle for at least one point below and
@@ -200,7 +193,7 @@ bool ScriPlusInterpolationManager<
 
 template <typename VectorTypeToInterpolate, typename Tag>
 std::pair<double, VectorTypeToInterpolate> ScriPlusInterpolationManager<
-    VectorTypeToInterpolate, Tag>::interpolate_first_time() noexcept {
+    VectorTypeToInterpolate, Tag>::interpolate_first_time() {
   if (target_times_.empty()) {
     ERROR("There are no target times to interpolate.");
   }
@@ -219,12 +212,11 @@ std::pair<double, VectorTypeToInterpolate> ScriPlusInterpolationManager<
     // binary search assumes times placed in sorted order
     auto upper_bound_offset = static_cast<size_t>(std::distance(
         u_bondi_values_.begin(),
-        std::upper_bound(
-            u_bondi_values_.begin(), u_bondi_values_.end(),
-            target_times_.front(),
-            [&i](const double rhs, const DataVector& lhs) noexcept {
-              return rhs < lhs[i];
-            })));
+        std::upper_bound(u_bondi_values_.begin(), u_bondi_values_.end(),
+                         target_times_.front(),
+                         [&i](const double rhs, const DataVector& lhs) {
+                           return rhs < lhs[i];
+                         })));
     size_t lower_bound_offset =
         upper_bound_offset == 0 ? 0 : upper_bound_offset - 1;
 
@@ -269,7 +261,7 @@ std::pair<double, VectorTypeToInterpolate> ScriPlusInterpolationManager<
 
 template <typename VectorTypeToInterpolate, typename Tag>
 std::pair<double, VectorTypeToInterpolate> ScriPlusInterpolationManager<
-    VectorTypeToInterpolate, Tag>::interpolate_and_pop_first_time() noexcept {
+    VectorTypeToInterpolate, Tag>::interpolate_and_pop_first_time() {
   std::pair<double, VectorTypeToInterpolate> interpolated =
       interpolate_first_time();
   target_times_.pop_front();
@@ -282,7 +274,7 @@ std::pair<double, VectorTypeToInterpolate> ScriPlusInterpolationManager<
 
 template <typename VectorTypeToInterpolate, typename Tag>
 void ScriPlusInterpolationManager<VectorTypeToInterpolate,
-                                  Tag>::remove_unneeded_early_times() noexcept {
+                                  Tag>::remove_unneeded_early_times() {
   // pop times we no longer need because their maxes are too far in the past
   auto time_it = u_bondi_ranges_.begin();
   size_t times_counter = 0;
@@ -330,7 +322,7 @@ struct ScriPlusInterpolationManager<
   ScriPlusInterpolationManager() = default;
   ScriPlusInterpolationManager(
       const size_t target_number_of_points, const size_t vector_size,
-      std::unique_ptr<intrp::SpanInterpolator> interpolator) noexcept
+      std::unique_ptr<intrp::SpanInterpolator> interpolator)
       : interpolation_manager_lhs_{target_number_of_points, vector_size,
                                    interpolator->get_clone()},
         interpolation_manager_rhs_{target_number_of_points, vector_size,
@@ -344,7 +336,7 @@ struct ScriPlusInterpolationManager<
   /// of the interpolated lhs and rhs vectors.
   void insert_data(const DataVector& u_bondi,
                    const VectorTypeToInterpolate& to_interpolate_lhs,
-                   const VectorTypeToInterpolate& to_interpolate_rhs) noexcept {
+                   const VectorTypeToInterpolate& to_interpolate_rhs) {
     interpolation_manager_lhs_.insert_data(u_bondi, to_interpolate_lhs);
     interpolation_manager_rhs_.insert_data(u_bondi, to_interpolate_rhs);
   }
@@ -353,7 +345,7 @@ struct ScriPlusInterpolationManager<
   /// been accumulated.
   ///
   /// For optimization, we assume that these are inserted in ascending order.
-  void insert_target_time(const double time) noexcept {
+  void insert_target_time(const double time) {
     interpolation_manager_lhs_.insert_target_time(time);
     interpolation_manager_rhs_.insert_target_time(time);
   }
@@ -368,13 +360,12 @@ struct ScriPlusInterpolationManager<
   /// function always returns false if all of the provided data is earlier than
   /// the next target time, indicating that the caller should wait until more
   /// data has been provided before interpolating.
-  bool first_time_is_ready_to_interpolate() const noexcept {
+  bool first_time_is_ready_to_interpolate() const {
     return interpolation_manager_lhs_.first_time_is_ready_to_interpolate() and
            interpolation_manager_rhs_.first_time_is_ready_to_interpolate();
   }
 
-  const std::deque<std::pair<double, double>>& get_u_bondi_ranges() const
-      noexcept {
+  const std::deque<std::pair<double, double>>& get_u_bondi_ranges() const {
     return interpolation_manager_lhs_.get_u_bondi_ranges();
   }
 
@@ -391,7 +382,7 @@ struct ScriPlusInterpolationManager<
   /// data is available, but for full accuracy, check
   /// `first_time_is_ready_to_interpolate` before calling the interpolation
   /// functions
-  std::pair<double, VectorTypeToInterpolate> interpolate_first_time() noexcept {
+  std::pair<double, VectorTypeToInterpolate> interpolate_first_time() {
     const auto lhs_interpolation =
         interpolation_manager_lhs_.interpolate_first_time();
     const auto rhs_interpolation =
@@ -414,8 +405,7 @@ struct ScriPlusInterpolationManager<
   /// data is available, but for full accuracy, check
   /// `first_time_is_ready_to_interpolate` before calling the interpolation
   /// functions
-  std::pair<double, VectorTypeToInterpolate>
-  interpolate_and_pop_first_time() noexcept {
+  std::pair<double, VectorTypeToInterpolate> interpolate_and_pop_first_time() {
     const auto lhs_interpolation =
         interpolation_manager_lhs_.interpolate_and_pop_first_time();
     const auto rhs_interpolation =
@@ -425,17 +415,17 @@ struct ScriPlusInterpolationManager<
   }
 
   /// \brief return the number of times in the target times queue
-  size_t number_of_target_times() const noexcept {
+  size_t number_of_target_times() const {
     return interpolation_manager_lhs_.number_of_target_times();
   }
 
   /// \brief return the number of data points that have been provided to the
   /// interpolation manager
-  size_t number_of_data_points() const noexcept {
+  size_t number_of_data_points() const {
     return interpolation_manager_lhs_.number_of_data_points();
   }
 
-  void pup(PUP::er& p) noexcept {  // NOLINT
+  void pup(PUP::er& p) {  // NOLINT
     p | interpolation_manager_lhs_;
     p | interpolation_manager_rhs_;
   }
@@ -476,7 +466,7 @@ struct ScriPlusInterpolationManager<VectorTypeToInterpolate, Tags::Du<Tag>> {
   ScriPlusInterpolationManager() = default;
   ScriPlusInterpolationManager(
       const size_t target_number_of_points, const size_t vector_size,
-      std::unique_ptr<intrp::SpanInterpolator> interpolator) noexcept
+      std::unique_ptr<intrp::SpanInterpolator> interpolator)
       : argument_interpolation_manager_{target_number_of_points, vector_size,
                                         std::move(interpolator)} {}
 
@@ -485,9 +475,8 @@ struct ScriPlusInterpolationManager<VectorTypeToInterpolate, Tags::Du<Tag>> {
   /// \details `u_bondi` is a vector of
   /// inertial times, and `to_interpolate_argument` is the vector of values that
   /// will be interpolated to target times and differentiated.
-  void insert_data(
-      const DataVector& u_bondi,
-      const VectorTypeToInterpolate& to_interpolate_argument) noexcept {
+  void insert_data(const DataVector& u_bondi,
+                   const VectorTypeToInterpolate& to_interpolate_argument) {
     argument_interpolation_manager_.insert_data(u_bondi,
                                                 to_interpolate_argument);
   }
@@ -496,7 +485,7 @@ struct ScriPlusInterpolationManager<VectorTypeToInterpolate, Tags::Du<Tag>> {
   /// been accumulated.
   ///
   /// For optimization, we assume that these are inserted in ascending order.
-  void insert_target_time(const double time) noexcept {
+  void insert_target_time(const double time) {
     argument_interpolation_manager_.insert_target_time(time);
   }
 
@@ -510,12 +499,11 @@ struct ScriPlusInterpolationManager<VectorTypeToInterpolate, Tags::Du<Tag>> {
   /// function always returns false if all of the provided data is earlier than
   /// the next target time, indicating that the caller should wait until more
   /// data has been provided before interpolating.
-  bool first_time_is_ready_to_interpolate() const noexcept {
+  bool first_time_is_ready_to_interpolate() const {
     return argument_interpolation_manager_.first_time_is_ready_to_interpolate();
   }
 
-  const std::deque<std::pair<double, double>>& get_u_bondi_ranges() const
-      noexcept {
+  const std::deque<std::pair<double, double>>& get_u_bondi_ranges() const {
     return argument_interpolation_manager_.get_u_bondi_ranges();
   }
 
@@ -532,7 +520,7 @@ struct ScriPlusInterpolationManager<VectorTypeToInterpolate, Tags::Du<Tag>> {
   /// data is available, but for full accuracy, check
   /// `first_time_is_ready_to_interpolate` before calling the interpolation
   /// functions
-  std::pair<double, VectorTypeToInterpolate> interpolate_first_time() noexcept;
+  std::pair<double, VectorTypeToInterpolate> interpolate_first_time();
 
   /// \brief Interpolate to the first target time in the queue, returning both
   /// the time and the interpolated data at that time, and remove the first time
@@ -548,21 +536,20 @@ struct ScriPlusInterpolationManager<VectorTypeToInterpolate, Tags::Du<Tag>> {
   /// data is available, but for full accuracy, check
   /// `first_time_is_ready_to_interpolate` before calling the interpolation
   /// functions
-  std::pair<double, VectorTypeToInterpolate>
-  interpolate_and_pop_first_time() noexcept;
+  std::pair<double, VectorTypeToInterpolate> interpolate_and_pop_first_time();
 
   /// \brief return the number of times in the target times queue
-  size_t number_of_target_times() const noexcept {
+  size_t number_of_target_times() const {
     return argument_interpolation_manager_.number_of_target_times();
   }
 
   /// \brief return the number of data points that have been provided to the
   /// interpolation manager
-  size_t number_of_data_points() const noexcept {
+  size_t number_of_data_points() const {
     return argument_interpolation_manager_.number_of_data_points();
   }
 
-  void pup(PUP::er& p) noexcept {  // NOLINT
+  void pup(PUP::er& p) {  // NOLINT
     p | argument_interpolation_manager_;
   }
 
@@ -578,7 +565,7 @@ struct ScriPlusInterpolationManager<VectorTypeToInterpolate, Tags::Du<Tag>> {
 
 template <typename VectorTypeToInterpolate, typename Tag>
 std::pair<double, VectorTypeToInterpolate> ScriPlusInterpolationManager<
-    VectorTypeToInterpolate, Tags::Du<Tag>>::interpolate_first_time() noexcept {
+    VectorTypeToInterpolate, Tags::Du<Tag>>::interpolate_first_time() {
   const size_t target_number_of_points =
       argument_interpolation_manager_.target_number_of_points_;
   if (argument_interpolation_manager_.target_times_.empty()) {
@@ -619,7 +606,7 @@ std::pair<double, VectorTypeToInterpolate> ScriPlusInterpolationManager<
             argument_interpolation_manager_.u_bondi_values_.begin(),
             argument_interpolation_manager_.u_bondi_values_.end(),
             argument_interpolation_manager_.target_times_.front(),
-            [&i](const double rhs, const DataVector& lhs) noexcept {
+            [&i](const double rhs, const DataVector& lhs) {
               return rhs < lhs[i];
             })));
     size_t lower_bound_offset =
@@ -704,8 +691,7 @@ std::pair<double, VectorTypeToInterpolate> ScriPlusInterpolationManager<
 
 template <typename VectorTypeToInterpolate, typename Tag>
 std::pair<double, VectorTypeToInterpolate> ScriPlusInterpolationManager<
-    VectorTypeToInterpolate,
-    Tags::Du<Tag>>::interpolate_and_pop_first_time() noexcept {
+    VectorTypeToInterpolate, Tags::Du<Tag>>::interpolate_and_pop_first_time() {
   std::pair<double, VectorTypeToInterpolate> interpolated =
       interpolate_first_time();
   argument_interpolation_manager_.target_times_.pop_front();

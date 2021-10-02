@@ -18,8 +18,8 @@ namespace Parallel {
 /// classes as a function argument.
 template <typename... Registrants>
 void register_classes_with_charm(
-    const tmpl::list<Registrants...> /*meta*/ = {}) noexcept {
-  const auto helper = [](auto class_v) noexcept {
+    const tmpl::list<Registrants...> /*meta*/ = {}) {
+  const auto helper = [](auto class_v) {
     using class_to_register = typename decltype(class_v)::type;
     // We use PUPable_reg2 because this takes as a second argument the name of
     // the class as a `const char*`, while PUPable_reg converts the argument
@@ -32,13 +32,13 @@ void register_classes_with_charm(
 
 /// Register derived classes of the `Base` class
 template <typename Base>
-void register_derived_classes_with_charm() noexcept {
+void register_derived_classes_with_charm() {
   register_classes_with_charm(typename Base::creatable_classes{});
 }
 
 /// Register all classes in Metavariables::factory_classes
 template <typename Metavariables>
-void register_factory_classes_with_charm() noexcept {
+void register_factory_classes_with_charm() {
   register_classes_with_charm(
       tmpl::filter<
           tmpl::flatten<tmpl::values_as_sequence<

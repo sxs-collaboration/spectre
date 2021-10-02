@@ -23,7 +23,7 @@ namespace {
 constexpr auto quadratures = {Spectral::Quadrature::Gauss,
                               Spectral::Quadrature::GaussLobatto};
 
-DataVector apply_matrix(const Matrix& m, const DataVector& v) noexcept {
+DataVector apply_matrix(const Matrix& m, const DataVector& v) {
   ASSERT(m.columns() == v.size(), "Bad apply_matrix");
   DataVector result(m.rows(), 0.);
   for (size_t i = 0; i < m.rows(); ++i) {
@@ -165,13 +165,9 @@ void test_p_element_to_mortar() {
   }
 }
 
-DataVector to_upper_half(const DataVector& p) noexcept {
-  return 0.5 * (p + 1.);
-}
+DataVector to_upper_half(const DataVector& p) { return 0.5 * (p + 1.); }
 
-DataVector to_lower_half(const DataVector& p) noexcept {
-  return 0.5 * (p - 1.);
-}
+DataVector to_lower_half(const DataVector& p) { return 0.5 * (p - 1.); }
 
 // `to_element_self` (`to_element_other`) is the function mapping the
 // [-1,1] interval to the half that we are (are not) interpolating
@@ -181,7 +177,7 @@ void check_mortar_to_element_projection(const Spectral::MortarSize mortar_size,
                                         const Mesh<1>& mesh_element,
                                         const Mesh<1>& mesh_self_mortar,
                                         F1&& to_element_self,
-                                        F2&& to_element_other) noexcept {
+                                        F2&& to_element_other) {
   // Notation for variables in this function:
   // _self indicates the half of the interval we projected from.
   // _other indicates the half of the interval we did not project from.
@@ -200,7 +196,7 @@ void check_mortar_to_element_projection(const Spectral::MortarSize mortar_size,
        test_order < num_points_self_mortar;
        ++test_order) {
     CAPTURE(test_order);
-    const auto test_func_self_mortar = [test_order](const auto& x) noexcept {
+    const auto test_func_self_mortar = [test_order](const auto& x) {
       return pow(x, test_order);
     };
 

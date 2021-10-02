@@ -179,7 +179,7 @@ function(write_test_registration_function
   foreach(TEST_FUNCTION ${TEST_FUNCTIONS})
     set(
       REGISTERING_FUNCTIONS_DECL
-      "${REGISTERING_FUNCTIONS_DECL}void ${TEST_FUNCTION}() noexcept;\n")
+      "${REGISTERING_FUNCTIONS_DECL}void ${TEST_FUNCTION}();\n")
     set(
       REGISTERING_FUNCTIONS_CALL
       "${REGISTERING_FUNCTIONS_CALL}  ${TEST_FUNCTION}();\n")
@@ -190,7 +190,7 @@ function(write_test_registration_function
     "${FILENAME}.tmp"
     "#pragma once\n"
     "${REGISTERING_FUNCTIONS_DECL}\n"
-    "inline void ${FUNCTION_NAME}() noexcept {\n"
+    "inline void ${FUNCTION_NAME}() {\n"
     "${REGISTERING_FUNCTIONS_CALL}"
     "}\n"
     )

@@ -35,7 +35,7 @@ struct BondiBeta : db::SimpleTag {
 /// Bondi parameter \f$J\f$
 struct BondiJ : db::SimpleTag {
   using type = Scalar<SpinWeighted<ComplexDataVector, 2>>;
-  static std::string name() noexcept { return "J"; }
+  static std::string name() { return "J"; }
 };
 
 }  // namespace Tags
@@ -45,7 +45,7 @@ namespace Tags {
 /// \cond
 template <>
 struct dt<Cce::Tags::BondiJ> : db::PrefixTag, db::SimpleTag {
-  static std::string name() noexcept { return "H"; }
+  static std::string name() { return "H"; }
   using type = Scalar<::SpinWeighted<ComplexDataVector, 2>>;
   using tag = Cce::Tags::BondiJ;
 };
@@ -66,31 +66,31 @@ using BondiH = ::Tags::dt<BondiJ>;
 /// Bondi parameter \f$\bar{J}\f$
 struct BondiJbar : db::SimpleTag {
   using type = Scalar<SpinWeighted<ComplexDataVector, -2>>;
-  static std::string name() noexcept { return "Jbar"; }
+  static std::string name() { return "Jbar"; }
 };
 
 /// Bondi parameter \f$K = \sqrt{1 + J \bar{J}}\f$
 struct BondiK : db::SimpleTag {
   using type = Scalar<SpinWeighted<ComplexDataVector, 0>>;
-  static std::string name() noexcept { return "K"; }
+  static std::string name() { return "K"; }
 };
 
 /// Bondi parameter \f$Q\f$
 struct BondiQ : db::SimpleTag {
   using type = Scalar<SpinWeighted<ComplexDataVector, 1>>;
-  static std::string name() noexcept { return "Q"; }
+  static std::string name() { return "Q"; }
 };
 
 /// Bondi parameter \f$\bar{Q}\f$
 struct BondiQbar : db::SimpleTag {
   using type = Scalar<SpinWeighted<ComplexDataVector, -1>>;
-  static std::string name() noexcept { return "Qbar"; }
+  static std::string name() { return "Qbar"; }
 };
 
 /// Bondi parameter \f$U\f$
 struct BondiU : db::SimpleTag {
   using type = Scalar<SpinWeighted<ComplexDataVector, 1>>;
-  static std::string name() noexcept { return "U"; }
+  static std::string name() { return "U"; }
 };
 
 /// The surface quantity of Bondi \f$U\f$ evaluated at the null spacetime
@@ -102,13 +102,13 @@ struct BondiUAtScri : db::SimpleTag {
 /// Bondi parameter \f$\bar{U}\f$
 struct BondiUbar : db::SimpleTag {
   using type = Scalar<SpinWeighted<ComplexDataVector, -1>>;
-  static std::string name() noexcept { return "Ubar"; }
+  static std::string name() { return "Ubar"; }
 };
 
 /// Bondi parameter \f$W\f$
 struct BondiW : db::SimpleTag {
   using type = Scalar<SpinWeighted<ComplexDataVector, 0>>;
-  static std::string name() noexcept { return "W"; }
+  static std::string name() { return "W"; }
 };
 
 /// Bondi parameter \f$\bar{J}\f$ in the Cauchy frame
@@ -352,7 +352,7 @@ struct JbarQMinus2EthBeta : db::SimpleTag {
 /// The Bondi radius \f$R(u, \theta, \phi)\f$ is of the worldtube.
 struct BondiR : db::SimpleTag {
   using type = Scalar<SpinWeighted<ComplexDataVector, 0>>;
-  static std::string name() noexcept { return "R"; }
+  static std::string name() { return "R"; }
 };
 
 struct EndTime : db::BaseTag {};
@@ -418,7 +418,7 @@ struct ScriPlusFactor : db::PrefixTag, db::SimpleTag {
 template <typename ToInterpolate, typename ObservationTag>
 struct InterpolationManager : db::SimpleTag {
   using type = ScriPlusInterpolationManager<ToInterpolate, ObservationTag>;
-  static std::string name() noexcept {
+  static std::string name() {
     return "InterpolationManager(" + db::tag_name<ObservationTag>() + ")";
   }
 };
@@ -431,7 +431,7 @@ struct SelfStartGhInterfaceManager : db::SimpleTag {
 
   static constexpr bool pass_metavariables = false;
   static std::unique_ptr<InterfaceManagers::GhInterfaceManager>
-  create_from_options() noexcept {
+  create_from_options() {
     return std::make_unique<Cce::InterfaceManagers::GhLockstep>();
   }
 };

@@ -22,7 +22,7 @@ namespace TestHelpers::TensorExpressions {
 /// \tparam TensorIndex the first generic tensor index, e.g. type of `ti_a`
 template <typename TensorIndex>
 void test_tensor_index_transformation_rank_1(
-    const TensorIndex& /*tensorindex*/) noexcept {
+    const TensorIndex& /*tensorindex*/) {
   const size_t dim = 3;
 
   const std::array<size_t, 1> index_order = {TensorIndex::value};

@@ -95,7 +95,7 @@ class Weno {
 
   struct VariablesToLimit {
     using type = NewtonianEuler::Limiters::VariablesToLimit;
-    static type suggested_value() noexcept {
+    static type suggested_value() {
       return NewtonianEuler::Limiters::VariablesToLimit::Characteristic;
     }
     static constexpr Options::String help = {
@@ -126,7 +126,7 @@ class Weno {
                  typename ConservativeVarsWeno::DisableForDebugging>;
   static constexpr Options::String help = {
       "A WENO limiter specialized to the NewtonianEuler system"};
-  static std::string name() noexcept { return "NewtonianEulerWeno"; };
+  static std::string name() { return "NewtonianEulerWeno"; };
 
   Weno(::Limiters::WenoType weno_type,
        NewtonianEuler::Limiters::VariablesToLimit vars_to_limit,
@@ -135,28 +135,28 @@ class Weno {
        bool disable_for_debugging = false,
        const Options::Context& context = {});
 
-  Weno() noexcept = default;
+  Weno() = default;
   Weno(const Weno& /*rhs*/) = default;
   Weno& operator=(const Weno& /*rhs*/) = default;
-  Weno(Weno&& /*rhs*/) noexcept = default;
-  Weno& operator=(Weno&& /*rhs*/) noexcept = default;
+  Weno(Weno&& /*rhs*/) = default;
+  Weno& operator=(Weno&& /*rhs*/) = default;
   ~Weno() = default;
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept;
+  void pup(PUP::er& p);
 
   using PackagedData = typename ConservativeVarsWeno::PackagedData;
   using package_argument_tags =
       typename ConservativeVarsWeno::package_argument_tags;
 
   /// \brief Package data for sending to neighbor elements
-  void package_data(
-      gsl::not_null<PackagedData*> packaged_data,
-      const Scalar<DataVector>& mass_density_cons,
-      const tnsr::I<DataVector, VolumeDim>& momentum_density,
-      const Scalar<DataVector>& energy_density, const Mesh<VolumeDim>& mesh,
-      const std::array<double, VolumeDim>& element_size,
-      const OrientationMap<VolumeDim>& orientation_map) const noexcept;
+  void package_data(gsl::not_null<PackagedData*> packaged_data,
+                    const Scalar<DataVector>& mass_density_cons,
+                    const tnsr::I<DataVector, VolumeDim>& momentum_density,
+                    const Scalar<DataVector>& energy_density,
+                    const Mesh<VolumeDim>& mesh,
+                    const std::array<double, VolumeDim>& element_size,
+                    const OrientationMap<VolumeDim>& orientation_map) const;
 
   using limit_tags =
       tmpl::list<NewtonianEuler::Tags::MassDensityCons,
@@ -185,13 +185,12 @@ class Weno {
       const std::unordered_map<
           std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
           boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
-          neighbor_data) const noexcept;
+          neighbor_data) const;
 
  private:
   template <size_t LocalDim>
   // NOLINTNEXTLINE(readability-redundant-declaration) false positive
-  friend bool operator==(const Weno<LocalDim>& lhs,
-                         const Weno<LocalDim>& rhs) noexcept;
+  friend bool operator==(const Weno<LocalDim>& lhs, const Weno<LocalDim>& rhs);
 
   ::Limiters::WenoType weno_type_;
   NewtonianEuler::Limiters::VariablesToLimit vars_to_limit_;
@@ -212,8 +211,7 @@ class Weno {
 };
 
 template <size_t VolumeDim>
-bool operator!=(const Weno<VolumeDim>& lhs,
-                const Weno<VolumeDim>& rhs) noexcept;
+bool operator!=(const Weno<VolumeDim>& lhs, const Weno<VolumeDim>& rhs);
 
 }  // namespace Limiters
 }  // namespace NewtonianEuler

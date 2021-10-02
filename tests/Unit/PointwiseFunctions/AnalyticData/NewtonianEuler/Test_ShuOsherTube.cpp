@@ -32,14 +32,13 @@ struct ShuOsherTubeProxy : NewtonianEuler::AnalyticData::ShuOsherTube {
 
   template <typename DataType>
   tuples::tagged_tuple_from_typelist<variables_tags<DataType>>
-  primitive_variables(
-      const tnsr::I<DataType, 1, Frame::Inertial>& x) const noexcept {
+  primitive_variables(const tnsr::I<DataType, 1, Frame::Inertial>& x) const {
     return this->variables(x, variables_tags<DataType>{});
   }
 };
 
 template <size_t Dim, typename DataType>
-void test_analytic_data(const DataType& used_for_size) noexcept {
+void test_analytic_data(const DataType& used_for_size) {
   const double mass_density_l = 3.857143;
   const double velocity_l = 2.629369;
   const double pressure_l = 10.33333;

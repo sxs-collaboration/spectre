@@ -13,7 +13,7 @@ double next_step_length(const size_t globalization_iteration_id,
                         const double step_length, const double prev_step_length,
                         const double residual, const double residual_slope,
                         const double next_residual,
-                        const double prev_residual) noexcept {
+                        const double prev_residual) {
   ASSERT(residual_slope < 0.,
          "The residual slope must be negative but is: " << residual_slope);
   ASSERT(step_length > 0.,

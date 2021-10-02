@@ -693,7 +693,7 @@ std::string get_runtime_type_name(const T& x) {
 }
 
 namespace detail {
-std::string extract_short_name(const std::string& name) noexcept;
+std::string extract_short_name(const std::string& name);
 }  // namespace detail
 
 /*!

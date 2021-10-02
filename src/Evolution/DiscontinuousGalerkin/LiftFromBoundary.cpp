@@ -25,7 +25,7 @@ void lift_boundary_terms_gauss_points_impl_xi_dir(
     const gsl::span<const double>& boundary_corrections,
     const DataVector& boundary_lifting_term,
     const Scalar<DataVector>& magnitude_of_face_normal,
-    const Scalar<DataVector>& face_det_jacobian) noexcept {
+    const Scalar<DataVector>& face_det_jacobian) {
   DataVector volume_dt_vars_view{};
   DataVector volume_inv_det_jacobian_view{};
   for (size_t component_index = 0; component_index < num_independent_components;
@@ -68,7 +68,7 @@ void lift_boundary_terms_gauss_points_impl_xi_dir(
     const gsl::span<const double>& lower_boundary_corrections,
     const DataVector& lower_boundary_lifting_term,
     const Scalar<DataVector>& lower_magnitude_of_face_normal,
-    const Scalar<DataVector>& lower_face_det_jacobian) noexcept {
+    const Scalar<DataVector>& lower_face_det_jacobian) {
   DataVector volume_dt_vars_view{};
   DataVector volume_inv_det_jacobian_view{};
   for (size_t component_index = 0; component_index < num_independent_components;
@@ -112,7 +112,7 @@ void lift_boundary_terms_gauss_points_impl(
     const gsl::span<const double>& boundary_corrections,
     const DataVector& boundary_lifting_term,
     const Scalar<DataVector>& magnitude_of_face_normal,
-    const Scalar<DataVector>& face_det_jacobian) noexcept {
+    const Scalar<DataVector>& face_det_jacobian) {
   const size_t num_volume_pts = volume_mesh.number_of_grid_points();
   if (dimension == 0) {
     lift_boundary_terms_gauss_points_impl_xi_dir(
@@ -164,7 +164,7 @@ void lift_boundary_terms_gauss_points_impl(
     const gsl::span<const double>& lower_boundary_corrections,
     const DataVector& lower_boundary_lifting_term,
     const Scalar<DataVector>& lower_magnitude_of_face_normal,
-    const Scalar<DataVector>& lower_face_det_jacobian) noexcept {
+    const Scalar<DataVector>& lower_face_det_jacobian) {
   const size_t num_volume_pts = volume_mesh.number_of_grid_points();
   if (dimension == 0) {
     lift_boundary_terms_gauss_points_impl_xi_dir(
@@ -221,7 +221,7 @@ void lift_boundary_terms_gauss_points_impl(
       const gsl::span<const double>& boundary_corrections,                   \
       const DataVector& boundary_lifting_term,                               \
       const Scalar<DataVector>& magnitude_of_face_normal,                    \
-      const Scalar<DataVector>& face_det_jacobian) noexcept;                 \
+      const Scalar<DataVector>& face_det_jacobian);                          \
   template void lift_boundary_terms_gauss_points_impl(                       \
       gsl::not_null<double*> volume_dt_vars,                                 \
       size_t num_independent_components, const Mesh<DIM(data)>& volume_mesh, \
@@ -234,7 +234,7 @@ void lift_boundary_terms_gauss_points_impl(
       const gsl::span<const double>& lower_boundary_corrections,             \
       const DataVector& lower_boundary_lifting_term,                         \
       const Scalar<DataVector>& lower_magnitude_of_face_normal,              \
-      const Scalar<DataVector>& lower_face_det_jacobian) noexcept;
+      const Scalar<DataVector>& lower_face_det_jacobian);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 

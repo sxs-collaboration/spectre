@@ -37,5 +37,4 @@ class Mesh;
  * \param mesh the Mesh defining the grid points on the manifold.
  */
 template <size_t Dim>
-double definite_integral(const DataVector& integrand,
-                         const Mesh<Dim>& mesh) noexcept;
+double definite_integral(const DataVector& integrand, const Mesh<Dim>& mesh);

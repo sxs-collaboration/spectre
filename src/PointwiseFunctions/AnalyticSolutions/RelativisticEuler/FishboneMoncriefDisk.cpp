@@ -27,10 +27,12 @@
 
 namespace RelativisticEuler::Solutions {
 
-FishboneMoncriefDisk::FishboneMoncriefDisk(
-    const double bh_mass, const double bh_dimless_spin,
-    const double inner_edge_radius, const double max_pressure_radius,
-    const double polytropic_constant, const double polytropic_exponent) noexcept
+FishboneMoncriefDisk::FishboneMoncriefDisk(const double bh_mass,
+                                           const double bh_dimless_spin,
+                                           const double inner_edge_radius,
+                                           const double max_pressure_radius,
+                                           const double polytropic_constant,
+                                           const double polytropic_exponent)
     : bh_mass_(bh_mass),
       bh_spin_a_(bh_mass * bh_dimless_spin),
       inner_edge_radius_(bh_mass * inner_edge_radius),
@@ -53,7 +55,7 @@ FishboneMoncriefDisk::FishboneMoncriefDisk(
        (rmax - 3.0 * bh_mass_) * rmax_squared);
 }
 
-void FishboneMoncriefDisk::pup(PUP::er& p) noexcept {
+void FishboneMoncriefDisk::pup(PUP::er& p) {
   p | bh_mass_;
   p | bh_spin_a_;
   p | inner_edge_radius_;
@@ -67,16 +69,14 @@ void FishboneMoncriefDisk::pup(PUP::er& p) noexcept {
 
 template <typename DataType>
 DataType FishboneMoncriefDisk::sigma(const DataType& r_sqrd,
-                                     const DataType& sin_theta_sqrd) const
-    noexcept {
+                                     const DataType& sin_theta_sqrd) const {
   return r_sqrd + square(bh_spin_a_) * (1.0 - sin_theta_sqrd);
 }
 
 template <typename DataType>
 DataType FishboneMoncriefDisk::inv_ucase_a(const DataType& r_sqrd,
                                            const DataType& sin_theta_sqrd,
-                                           const DataType& delta) const
-    noexcept {
+                                           const DataType& delta) const {
   const double a_sqrd = square(bh_spin_a_);
   const DataType r_sqrd_plus_a_sqrd = r_sqrd + a_sqrd;
   return 1.0 / (square(r_sqrd_plus_a_sqrd) - delta * a_sqrd * sin_theta_sqrd);
@@ -84,7 +84,7 @@ DataType FishboneMoncriefDisk::inv_ucase_a(const DataType& r_sqrd,
 
 template <typename DataType>
 DataType FishboneMoncriefDisk::four_velocity_t_sqrd(
-    const DataType& r_sqrd, const DataType& sin_theta_sqrd) const noexcept {
+    const DataType& r_sqrd, const DataType& sin_theta_sqrd) const {
   const DataType delta =
       r_sqrd - 2.0 * bh_mass_ * sqrt(r_sqrd) + square(bh_spin_a_);
   const DataType prefactor = 0.5 / (inv_ucase_a(r_sqrd, sin_theta_sqrd, delta) *
@@ -97,7 +97,7 @@ DataType FishboneMoncriefDisk::four_velocity_t_sqrd(
 
 template <typename DataType>
 DataType FishboneMoncriefDisk::angular_velocity(
-    const DataType& r_sqrd, const DataType& sin_theta_sqrd) const noexcept {
+    const DataType& r_sqrd, const DataType& sin_theta_sqrd) const {
   const DataType r = sqrt(r_sqrd);
   return inv_ucase_a(
              r_sqrd, sin_theta_sqrd,
@@ -109,8 +109,7 @@ DataType FishboneMoncriefDisk::angular_velocity(
 
 template <typename DataType>
 DataType FishboneMoncriefDisk::potential(const DataType& r_sqrd,
-                                         const DataType& sin_theta_sqrd) const
-    noexcept {
+                                         const DataType& sin_theta_sqrd) const {
   return angular_momentum_ * angular_velocity(r_sqrd, sin_theta_sqrd) -
          log(sqrt(four_velocity_t_sqrd(r_sqrd, sin_theta_sqrd)));
 }
@@ -121,7 +120,7 @@ FishboneMoncriefDisk::IntermediateVariables<DataType, NeedSpacetime>::
                           const gr::Solutions::KerrSchild& background_spacetime,
                           const tnsr::I<DataType, 3>& x, const double t,
                           size_t in_spatial_velocity_index,
-                          size_t in_lorentz_factor_index) noexcept
+                          size_t in_lorentz_factor_index)
     : spatial_velocity_index(in_spatial_velocity_index),
       lorentz_factor_index(in_lorentz_factor_index) {
   const double a_squared = bh_spin_a * bh_spin_a;
@@ -142,14 +141,14 @@ FishboneMoncriefDisk::variables(
     const tnsr::I<DataType, 3>& x,
     tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/,
     const IntermediateVariables<DataType, NeedSpacetime>& vars,
-    const size_t index) const noexcept {
+    const size_t index) const {
   const auto specific_enthalpy = get<hydro::Tags::SpecificEnthalpy<DataType>>(
       variables(x, tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>>{}, vars,
                 index));
   auto rest_mass_density = make_with_value<Scalar<DataType>>(x, 0.0);
   variables_impl(
-      vars, [&rest_mass_density, &specific_enthalpy, this ](
-                const size_t s, const double /*potential_at_s*/) noexcept {
+      vars, [&rest_mass_density, &specific_enthalpy, this](
+                const size_t s, const double /*potential_at_s*/) {
         get_element(get(rest_mass_density), s) =
             get(equation_of_state_.rest_mass_density_from_enthalpy(
                 Scalar<double>{get_element(get(specific_enthalpy), s)}));
@@ -163,16 +162,15 @@ FishboneMoncriefDisk::variables(
     const tnsr::I<DataType, 3>& x,
     tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>> /*meta*/,
     const IntermediateVariables<DataType, NeedSpacetime>& vars,
-    const size_t /*index*/) const noexcept {
+    const size_t /*index*/) const {
   const double inner_edge_potential =
       potential(square(inner_edge_radius_), 1.0);
   auto specific_enthalpy = make_with_value<Scalar<DataType>>(x, 1.0);
-  variables_impl(vars,
-                 [&specific_enthalpy, inner_edge_potential ](
-                     const size_t s, const double potential_at_s) noexcept {
-                   get_element(get(specific_enthalpy), s) =
-                       exp(inner_edge_potential - potential_at_s);
-                 });
+  variables_impl(vars, [&specific_enthalpy, inner_edge_potential](
+                           const size_t s, const double potential_at_s) {
+    get_element(get(specific_enthalpy), s) =
+        exp(inner_edge_potential - potential_at_s);
+  });
   return {std::move(specific_enthalpy)};
 }
 
@@ -182,14 +180,14 @@ FishboneMoncriefDisk::variables(
     const tnsr::I<DataType, 3>& x,
     tmpl::list<hydro::Tags::Pressure<DataType>> /*meta*/,
     const IntermediateVariables<DataType, NeedSpacetime>& vars,
-    const size_t index) const noexcept {
+    const size_t index) const {
   const auto rest_mass_density = get<hydro::Tags::RestMassDensity<DataType>>(
       variables(x, tmpl::list<hydro::Tags::RestMassDensity<DataType>>{}, vars,
                 index));
   auto pressure = make_with_value<Scalar<DataType>>(x, 0.0);
   variables_impl(
-      vars, [&pressure, &rest_mass_density, this ](
-                const size_t s, const double /*potential_at_s*/) noexcept {
+      vars, [&pressure, &rest_mass_density, this](
+                const size_t s, const double /*potential_at_s*/) {
         get_element(get(pressure), s) =
             get(equation_of_state_.pressure_from_density(
                 Scalar<double>{get_element(get(rest_mass_density), s)}));
@@ -203,14 +201,14 @@ FishboneMoncriefDisk::variables(
     const tnsr::I<DataType, 3>& x,
     tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>> /*meta*/,
     const IntermediateVariables<DataType, NeedSpacetime>& vars,
-    const size_t index) const noexcept {
+    const size_t index) const {
   const auto rest_mass_density = get<hydro::Tags::RestMassDensity<DataType>>(
       variables(x, tmpl::list<hydro::Tags::RestMassDensity<DataType>>{}, vars,
                 index));
   auto specific_internal_energy = make_with_value<Scalar<DataType>>(x, 0.0);
   variables_impl(
-      vars, [&specific_internal_energy, &rest_mass_density, this ](
-                const size_t s, const double /*potential_at_s*/) noexcept {
+      vars, [&specific_internal_energy, &rest_mass_density, this](
+                const size_t s, const double /*potential_at_s*/) {
         get_element(get(specific_internal_energy), s) =
             get(equation_of_state_.specific_internal_energy_from_density(
                 Scalar<double>{get_element(get(rest_mass_density), s)}));
@@ -224,11 +222,10 @@ FishboneMoncriefDisk::variables(
     const tnsr::I<DataType, 3>& x,
     tmpl::list<hydro::Tags::SpatialVelocity<DataType, 3>> /*meta*/,
     const IntermediateVariables<DataType, true>& vars,
-    const size_t /*index*/) const noexcept {
+    const size_t /*index*/) const {
   auto spatial_velocity = make_with_value<tnsr::I<DataType, 3>>(x, 0.0);
-  variables_impl(vars, [
-    &spatial_velocity, &vars, &x, this
-  ](const size_t s, const double /*potential_at_s*/) noexcept {
+  variables_impl(vars, [&spatial_velocity, &vars, &x, this](
+                           const size_t s, const double /*potential_at_s*/) {
     const double ang_velocity = angular_velocity(
         get_element(vars.r_squared, s), get_element(vars.sin_theta_squared, s));
 
@@ -255,8 +252,8 @@ tuples::TaggedTuple<hydro::Tags::LorentzFactor<DataType>>
 FishboneMoncriefDisk::variables(
     const tnsr::I<DataType, 3>& x,
     tmpl::list<hydro::Tags::LorentzFactor<DataType>> /*meta*/,
-    const IntermediateVariables<DataType, true>& vars, const size_t index) const
-    noexcept {
+    const IntermediateVariables<DataType, true>& vars,
+    const size_t index) const {
   const auto spatial_velocity = get<hydro::Tags::SpatialVelocity<DataType, 3>>(
       variables(x, tmpl::list<hydro::Tags::SpatialVelocity<DataType, 3>>{},
                 vars, index));
@@ -275,7 +272,7 @@ FishboneMoncriefDisk::variables(
     const tnsr::I<DataType, 3>& x,
     tmpl::list<hydro::Tags::MagneticField<DataType, 3>> /*meta*/,
     const IntermediateVariables<DataType, NeedSpacetime>& /*vars*/,
-    const size_t /*index*/) const noexcept {
+    const size_t /*index*/) const {
   return {make_with_value<tnsr::I<DataType, 3>>(x, 0.0)};
 }
 
@@ -285,14 +282,13 @@ FishboneMoncriefDisk::variables(
     const tnsr::I<DataType, 3>& x,
     tmpl::list<hydro::Tags::DivergenceCleaningField<DataType>> /*meta*/,
     const IntermediateVariables<DataType, NeedSpacetime>& /*vars*/,
-    const size_t /*index*/) const noexcept {
+    const size_t /*index*/) const {
   return {make_with_value<Scalar<DataType>>(x, 0.0)};
 }
 
 template <typename DataType, bool NeedSpacetime, typename Func>
 void FishboneMoncriefDisk::variables_impl(
-    const IntermediateVariables<DataType, NeedSpacetime>& vars, Func f) const
-    noexcept {
+    const IntermediateVariables<DataType, NeedSpacetime>& vars, Func f) const {
   const DataType& r_squared = vars.r_squared;
   const DataType& sin_theta_squared = vars.sin_theta_squared;
   const double inner_edge_potential =
@@ -316,7 +312,7 @@ void FishboneMoncriefDisk::variables_impl(
 }
 
 bool operator==(const FishboneMoncriefDisk& lhs,
-                const FishboneMoncriefDisk& rhs) noexcept {
+                const FishboneMoncriefDisk& rhs) {
   return lhs.bh_mass_ == rhs.bh_mass_ and lhs.bh_spin_a_ == rhs.bh_spin_a_ and
          lhs.inner_edge_radius_ == rhs.inner_edge_radius_ and
          lhs.max_pressure_radius_ == rhs.max_pressure_radius_ and
@@ -325,7 +321,7 @@ bool operator==(const FishboneMoncriefDisk& lhs,
 }
 
 bool operator!=(const FishboneMoncriefDisk& lhs,
-                const FishboneMoncriefDisk& rhs) noexcept {
+                const FishboneMoncriefDisk& rhs) {
   return not(lhs == rhs);
 }
 
@@ -341,21 +337,21 @@ bool operator!=(const FishboneMoncriefDisk& lhs,
       tmpl::list<hydro::Tags::RestMassDensity<DTYPE(data)>> /*meta*/,         \
       const FishboneMoncriefDisk::IntermediateVariables<                      \
           DTYPE(data), NEED_SPACETIME(data)>& vars,                           \
-      const size_t) const noexcept;                                           \
+      const size_t) const;                                                    \
   template tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DTYPE(data)>>    \
   FishboneMoncriefDisk::variables(                                            \
       const tnsr::I<DTYPE(data), 3>& x,                                       \
       tmpl::list<hydro::Tags::SpecificEnthalpy<DTYPE(data)>> /*meta*/,        \
       const FishboneMoncriefDisk::IntermediateVariables<                      \
           DTYPE(data), NEED_SPACETIME(data)>& vars,                           \
-      const size_t) const noexcept;                                           \
+      const size_t) const;                                                    \
   template tuples::TaggedTuple<hydro::Tags::Pressure<DTYPE(data)>>            \
   FishboneMoncriefDisk::variables(                                            \
       const tnsr::I<DTYPE(data), 3>& x,                                       \
       tmpl::list<hydro::Tags::Pressure<DTYPE(data)>> /*meta*/,                \
       const FishboneMoncriefDisk::IntermediateVariables<                      \
           DTYPE(data), NEED_SPACETIME(data)>& vars,                           \
-      const size_t) const noexcept;                                           \
+      const size_t) const;                                                    \
   template tuples::TaggedTuple<                                               \
       hydro::Tags::SpecificInternalEnergy<DTYPE(data)>>                       \
   FishboneMoncriefDisk::variables(                                            \
@@ -363,7 +359,7 @@ bool operator!=(const FishboneMoncriefDisk& lhs,
       tmpl::list<hydro::Tags::SpecificInternalEnergy<DTYPE(data)>> /*meta*/,  \
       const FishboneMoncriefDisk::IntermediateVariables<                      \
           DTYPE(data), NEED_SPACETIME(data)>& vars,                           \
-      const size_t) const noexcept;                                           \
+      const size_t) const;                                                    \
   template tuples::TaggedTuple<hydro::Tags::MagneticField<DTYPE(data), 3>>    \
   FishboneMoncriefDisk::variables(                                            \
       const tnsr::I<DTYPE(data), 3>& x,                                       \
@@ -371,7 +367,7 @@ bool operator!=(const FishboneMoncriefDisk& lhs,
                                             Frame::Inertial>> /*meta*/,       \
       const FishboneMoncriefDisk::IntermediateVariables<                      \
           DTYPE(data), NEED_SPACETIME(data)>& vars,                           \
-      const size_t) const noexcept;                                           \
+      const size_t) const;                                                    \
   template tuples::TaggedTuple<                                               \
       hydro::Tags::DivergenceCleaningField<DTYPE(data)>>                      \
   FishboneMoncriefDisk::variables(                                            \
@@ -379,7 +375,7 @@ bool operator!=(const FishboneMoncriefDisk& lhs,
       tmpl::list<hydro::Tags::DivergenceCleaningField<DTYPE(data)>> /*meta*/, \
       const FishboneMoncriefDisk::IntermediateVariables<                      \
           DTYPE(data), NEED_SPACETIME(data)>& vars,                           \
-      const size_t) const noexcept;
+      const size_t) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector), (true, false))
 #undef INSTANTIATE
@@ -391,14 +387,14 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector), (true, false))
       tmpl::list<hydro::Tags::SpatialVelocity<DTYPE(data), 3>> /*meta*/,     \
       const FishboneMoncriefDisk::IntermediateVariables<DTYPE(data), true>&  \
           vars,                                                              \
-      const size_t) const noexcept;                                          \
+      const size_t) const;                                                   \
   template tuples::TaggedTuple<hydro::Tags::LorentzFactor<DTYPE(data)>>      \
   FishboneMoncriefDisk::variables(                                           \
       const tnsr::I<DTYPE(data), 3>& x,                                      \
       tmpl::list<hydro::Tags::LorentzFactor<DTYPE(data)>> /*meta*/,          \
       const FishboneMoncriefDisk::IntermediateVariables<DTYPE(data), true>&  \
           vars,                                                              \
-      const size_t) const noexcept;
+      const size_t) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
 

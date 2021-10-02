@@ -25,7 +25,7 @@ template <typename R_t, typename S_t, typename G_t, typename H_t, typename T_t,
           typename DataType>
 G_t compute_expected_result1(const R_t& R, const S_t& S, const G_t& G,
                              const H_t& H, const T_t& T,
-                             const DataType& used_for_size) noexcept {
+                             const DataType& used_for_size) {
   using result_tensor_type = G_t;
   result_tensor_type expected_result{};
   const size_t dim = tmpl::front<typename R_t::index_list>::dim;
@@ -53,7 +53,7 @@ template <typename DataType>
 Scalar<DataType> compute_expected_result2(
     const tnsr::II<DataType, 3, Frame::Inertial>& spatial_metric,
     const tnsr::aa<DataType, 3, Frame::Inertial>& spacetime_metric,
-    const DataType& used_for_size) noexcept {
+    const DataType& used_for_size) {
   DataType expected_gamma_g_g_product =
       make_with_value<DataType>(used_for_size, 0.0);
   for (size_t i = 0; i < 3; i++) {
@@ -81,7 +81,7 @@ tnsr::abb<DataType, 3, Frame::Inertial> compute_expected_result3(
     const tnsr::I<DataType, 3, Frame::Inertial>& beta,
     const tnsr::aa<DataType, 3, Frame::Inertial>& pi,
     const tnsr::iaa<DataType, 3, Frame::Inertial>& phi,
-    const DataType& used_for_size) noexcept {
+    const DataType& used_for_size) {
   tnsr::abb<DataType, 3, Frame::Inertial> expected_result{};
 
   for (size_t a = 0; a < 4; a++) {
@@ -104,7 +104,7 @@ tnsr::abb<DataType, 3, Frame::Inertial> compute_expected_result3(
 // product, a contraction, and a scalar
 template <typename DataType, typename Generator>
 void test_case1(const DataType& used_for_size,
-                const gsl::not_null<Generator*> generator) noexcept {
+                const gsl::not_null<Generator*> generator) {
   std::uniform_real_distribution<> distribution(0.1, 1.0);
 
   const auto R = make_with_random_values<tnsr::ab<DataType, 3, Frame::Grid>>(
@@ -168,7 +168,7 @@ void test_case1(const DataType& used_for_size,
 // metric and spacetime metric.
 template <typename DataType, typename Generator>
 void test_case2(const DataType& used_for_size,
-                const gsl::not_null<Generator*> generator) noexcept {
+                const gsl::not_null<Generator*> generator) {
   // Use a higher distribution for sptial metric than spacetime metric to ensure
   // we do not take the square root of a negative number
   std::uniform_real_distribution<> spatial_metric_distribution(3.0, 4.0);
@@ -228,7 +228,7 @@ void test_case2(const DataType& used_for_size,
 // metric, \f$\partial_c g_{ab}\f$
 template <typename DataType, typename Generator>
 void test_case3(const DataType& used_for_size,
-                const gsl::not_null<Generator*> generator) noexcept {
+                const gsl::not_null<Generator*> generator) {
   std::uniform_real_distribution<> distribution(0.1, 1.0);
 
   const auto alpha = make_with_random_values<Scalar<DataType>>(
@@ -293,7 +293,7 @@ void test_case3(const DataType& used_for_size,
 
 template <typename DataType, typename Generator>
 void test_mixed_operations(const DataType& used_for_size,
-                           const gsl::not_null<Generator*> generator) noexcept {
+                           const gsl::not_null<Generator*> generator) {
   test_case1(used_for_size, generator);
   test_case2(used_for_size, generator);
   test_case3(used_for_size, generator);

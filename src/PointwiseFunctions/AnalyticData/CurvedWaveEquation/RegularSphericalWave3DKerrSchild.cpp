@@ -12,10 +12,10 @@ template bool operator==(
     const ScalarWaveGr<ScalarWave::Solutions::RegularSphericalWave,
                        gr::Solutions::KerrSchild>& lhs,
     const ScalarWaveGr<ScalarWave::Solutions::RegularSphericalWave,
-                       gr::Solutions::KerrSchild>& rhs) noexcept;
+                       gr::Solutions::KerrSchild>& rhs);
 template bool operator!=(
     const ScalarWaveGr<ScalarWave::Solutions::RegularSphericalWave,
                        gr::Solutions::KerrSchild>& lhs,
     const ScalarWaveGr<ScalarWave::Solutions::RegularSphericalWave,
-                       gr::Solutions::KerrSchild>& rhs) noexcept;
+                       gr::Solutions::KerrSchild>& rhs);
 }  // namespace CurvedScalarWave::AnalyticData

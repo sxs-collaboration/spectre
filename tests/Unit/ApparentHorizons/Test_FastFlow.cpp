@@ -128,13 +128,13 @@ void test_construct_from_options_curvature() {
                             1e-3, 1.1, 6, 200));
 }
 
-void test_serialize() noexcept {
+void test_serialize() {
   FastFlow fastflow(FastFlow::FlowType::Jacobi, 1.1, 0.6, 1e-10, 1e-3, 1.1, 6,
                     200);
   test_serialization(fastflow);
 }
 
-void test_copy_and_move() noexcept {
+void test_copy_and_move() {
   FastFlow fastflow(FastFlow::FlowType::Curvature, 1.1, 0.6, 1e-10, 1e-3, 1.1,
                     6, 200);
   test_copy_semantics(fastflow);
@@ -143,7 +143,7 @@ void test_copy_and_move() noexcept {
   test_move_semantics(std::move(fastflow), fastflow_copy);  // NOLINT
 }
 
-void test_ostream() noexcept {
+void test_ostream() {
   CHECK(get_output(FastFlow::FlowType::Curvature) == "Curvature");
   CHECK(get_output(FastFlow::FlowType::Jacobi) == "Jacobi");
   CHECK(get_output(FastFlow::FlowType::Fast) == "Fast");
@@ -188,7 +188,7 @@ void test_schwarzschild(FastFlow::Flow::type type_of_flow,
 
   const gr::Solutions::KerrSchild solution(1.0, {{0., 0., 0.}}, {{0., 0., 0.}});
 
-  const auto iterate_and_check = [&strahlkorper, &flow, &solution ]() noexcept {
+  const auto iterate_and_check = [&strahlkorper, &flow, &solution]() {
     const auto status = do_iteration(&strahlkorper, &flow, solution);
     CHECK(converged(status));
 
@@ -210,8 +210,7 @@ void test_schwarzschild(FastFlow::Flow::type type_of_flow,
   // We have found the horizon once.  Now perturb the strahlkorper
   // and find the horizon again. This checks that fastflow is reset
   // correctly.
-  strahlkorper = [](
-      const Strahlkorper<Frame::Inertial>& strahlkorper_l) noexcept {
+  strahlkorper = [](const Strahlkorper<Frame::Inertial>& strahlkorper_l) {
     MAKE_GENERATOR(generator);
     std::uniform_real_distribution<> dist(0.0, 0.1);
     auto coefs = strahlkorper_l.coefficients();
@@ -223,8 +222,7 @@ void test_schwarzschild(FastFlow::Flow::type type_of_flow,
       coefs[coef_iter()] *= 1.0 + dist(generator) / square(coef_iter.l() + 1.0);
     }
     return Strahlkorper<Frame::Inertial>(coefs, strahlkorper_l);
-  }
-  (strahlkorper);
+  }(strahlkorper);
 
   flow.reset_for_next_find();
   iterate_and_check();

@@ -28,9 +28,8 @@ struct ConvertPolytropic {
   using packed_container = EquationsOfState::PolytropicFluid<false>;
   using packed_type = bool;
 
-  static inline unpacked_container unpack(
-      const packed_container& /*packed*/,
-      const size_t /*grid_point_index*/) noexcept {
+  static inline unpacked_container unpack(const packed_container& /*packed*/,
+                                          const size_t /*grid_point_index*/) {
     return true;
   }
 
@@ -41,7 +40,7 @@ struct ConvertPolytropic {
     ERROR("Should not be converting an EOS from an unpacked to a packed type");
   }
 
-  static inline size_t get_size(const packed_container& /*packed*/) noexcept {
+  static inline size_t get_size(const packed_container& /*packed*/) {
     return 1;
   }
 };
@@ -51,9 +50,8 @@ struct ConvertIdeal {
   using packed_container = EquationsOfState::IdealFluid<false>;
   using packed_type = bool;
 
-  static inline unpacked_container unpack(
-      const packed_container& /*packed*/,
-      const size_t /*grid_point_index*/) noexcept {
+  static inline unpacked_container unpack(const packed_container& /*packed*/,
+                                          const size_t /*grid_point_index*/) {
     return false;
   }
 
@@ -64,7 +62,7 @@ struct ConvertIdeal {
     ERROR("Should not be converting an EOS from an unpacked to a packed type");
   }
 
-  static inline size_t get_size(const packed_container& /*packed*/) noexcept {
+  static inline size_t get_size(const packed_container& /*packed*/) {
     return 1;
   }
 };

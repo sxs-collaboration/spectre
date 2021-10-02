@@ -51,7 +51,7 @@ namespace {
 template <size_t VolumeDim>
 boost::rational<size_t> fraction_of_block_face_area(
     const ElementId<VolumeDim>& element_id,
-    const Direction<VolumeDim>& direction) noexcept {
+    const Direction<VolumeDim>& direction) {
   const auto segment_ids = element_id.segment_ids();
   size_t sum_of_refinement_levels = 0;
   const size_t dim_normal_to_face = direction.dimension();
@@ -66,7 +66,7 @@ boost::rational<size_t> fraction_of_block_face_area(
 template <size_t VolumeDim>
 bool is_a_neighbor_of_my_neighbor_me(
     const ElementId<VolumeDim>& my_id, const Element<VolumeDim>& my_neighbor,
-    const Direction<VolumeDim>& direction_to_me_in_neighbor) noexcept {
+    const Direction<VolumeDim>& direction_to_me_in_neighbor) {
   size_t number_of_matches = 0;
   for (const auto& id_of_neighbor_of_neighbor :
        my_neighbor.neighbors().at(direction_to_me_in_neighbor).ids()) {
@@ -81,7 +81,7 @@ template <size_t VolumeDim>
 void test_domain_connectivity(
     const Domain<VolumeDim>& domain,
     const std::unordered_map<ElementId<VolumeDim>, Element<VolumeDim>>&
-        elements_in_domain) noexcept {
+        elements_in_domain) {
   boost::rational<size_t> volume_of_elements{0};
   boost::rational<size_t> surface_area_of_external_boundaries{0};
   // For internal boundaries within a Block, lower/upper is defined with
@@ -145,8 +145,8 @@ void test_domain_connectivity(
 }
 
 template <size_t AllowedDifference>
-SPECTRE_ALWAYS_INLINE void check_if_levels_are_within(
-    const size_t level_1, const size_t level_2) noexcept {
+SPECTRE_ALWAYS_INLINE void check_if_levels_are_within(const size_t level_1,
+                                                      const size_t level_2) {
   // clang-tidy complains about a catch-internal do {} while (false) loop.
   // NOLINTNEXTLINE(bugprone-infinite-loop)
   CHECK(level_1 <= level_2 + AllowedDifference);
@@ -157,7 +157,7 @@ SPECTRE_ALWAYS_INLINE void check_if_levels_are_within(
 template <size_t AllowedTangentialDifference, size_t VolumeDim>
 void test_refinement_levels_of_neighbors(
     const std::unordered_map<ElementId<VolumeDim>, Element<VolumeDim>>&
-        elements) noexcept {
+        elements) {
   for (const auto& key_value : elements) {
     const auto& element_id = key_value.first;
     const auto& element = key_value.second;
@@ -185,7 +185,7 @@ void test_refinement_levels_of_neighbors(
 
 template <size_t VolumeDim>
 bool blocks_are_neighbors(const Block<VolumeDim>& host_block,
-                          const Block<VolumeDim>& neighbor_block) noexcept {
+                          const Block<VolumeDim>& neighbor_block) {
   return alg::any_of(host_block.neighbors(),
                      [&neighbor_block](const auto& neighbor) {
                        return neighbor.second.id() == neighbor_block.id();
@@ -196,7 +196,7 @@ bool blocks_are_neighbors(const Block<VolumeDim>& host_block,
 template <size_t VolumeDim>
 OrientationMap<VolumeDim> find_neighbor_orientation(
     const Block<VolumeDim>& host_block,
-    const Block<VolumeDim>& neighbor_block) noexcept {
+    const Block<VolumeDim>& neighbor_block) {
   for (const auto& neighbor : host_block.neighbors()) {
     if (neighbor.second.id() == neighbor_block.id()) {
       return neighbor.second.orientation();
@@ -209,7 +209,7 @@ OrientationMap<VolumeDim> find_neighbor_orientation(
 template <size_t VolumeDim>
 Direction<VolumeDim> find_direction_to_neighbor(
     const Block<VolumeDim>& host_block,
-    const Block<VolumeDim>& neighbor_block) noexcept {
+    const Block<VolumeDim>& neighbor_block) {
   for (const auto& neighbor : host_block.neighbors()) {
     if (neighbor.second.id() == neighbor_block.id()) {
       return neighbor.first;
@@ -221,7 +221,7 @@ Direction<VolumeDim> find_direction_to_neighbor(
 // Convert Point to Directions, for use with OrientationMap
 template <size_t VolumeDim>
 std::array<Direction<VolumeDim>, VolumeDim> get_orthant(
-    const tnsr::I<double, VolumeDim, Frame::BlockLogical>& point) noexcept {
+    const tnsr::I<double, VolumeDim, Frame::BlockLogical>& point) {
   std::array<Direction<VolumeDim>, VolumeDim> result;
   for (size_t i = 0; i < VolumeDim; i++) {
     gsl::at(result, i) =
@@ -233,7 +233,7 @@ std::array<Direction<VolumeDim>, VolumeDim> get_orthant(
 // Convert Directions to Point, for use with CoordinateMap
 template <size_t VolumeDim>
 tnsr::I<double, VolumeDim, Frame::BlockLogical> get_corner_of_orthant(
-    const std::array<Direction<VolumeDim>, VolumeDim>& directions) noexcept {
+    const std::array<Direction<VolumeDim>, VolumeDim>& directions) {
   tnsr::I<double, VolumeDim, Frame::BlockLogical> result{};
   for (size_t i = 0; i < VolumeDim; i++) {
     result[gsl::at(directions, i).dimension()] =
@@ -247,7 +247,7 @@ tnsr::I<double, VolumeDim, Frame::BlockLogical> get_corner_of_orthant(
 template <size_t VolumeDim>
 tnsr::I<double, VolumeDim, Frame::BlockLogical> point_in_neighbor_frame(
     const OrientationMap<VolumeDim>& orientation,
-    const tnsr::I<double, VolumeDim, Frame::BlockLogical>& point) noexcept {
+    const tnsr::I<double, VolumeDim, Frame::BlockLogical>& point) {
   auto point_get_orthant = get_orthant(point);
   std::for_each(
       point_get_orthant.begin(), point_get_orthant.end(),
@@ -264,7 +264,7 @@ double physical_separation(
     double time = std::numeric_limits<double>::signaling_NaN(),
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time = {}) noexcept {
+        functions_of_time = {}) {
   double max_separation = 0;
   const auto direction = find_direction_to_neighbor(block1, block2);
   const auto orientation = find_neighbor_orientation(block1, block2);
@@ -334,7 +334,7 @@ void dispatch_check_if_maps_are_equal(
     const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time) noexcept {
+        functions_of_time) {
   check_if_maps_are_equal(expected_map, block.stationary_map(), time,
                           functions_of_time);
 }
@@ -347,7 +347,7 @@ void dispatch_check_if_maps_are_equal(
     const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time) noexcept {
+        functions_of_time) {
   check_if_maps_are_equal(expected_map,
                           block.moving_mesh_grid_to_inertial_map(), time,
                           functions_of_time);
@@ -361,7 +361,7 @@ void dispatch_check_if_maps_are_equal(
     const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time) noexcept {
+        functions_of_time) {
   check_if_maps_are_equal(expected_map, block.moving_mesh_logical_to_grid_map(),
                           time, functions_of_time);
 }
@@ -463,7 +463,7 @@ void test_physical_separation(
     const std::vector<Block<VolumeDim>>& blocks, double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time) noexcept {
+        functions_of_time) {
   double tolerance = 1e-10;
   for (size_t i = 0; i < blocks.size() - 1; i++) {
     for (size_t j = i + 1; j < blocks.size(); j++) {
@@ -482,7 +482,7 @@ void test_det_jac_positive(
     const std::vector<Block<VolumeDim>>& blocks, double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time) noexcept {
+        functions_of_time) {
   std::array<tnsr::I<double, VolumeDim, Frame::BlockLogical>,
              two_to_the(VolumeDim)>
       corner_points{};
@@ -518,7 +518,7 @@ void test_det_jac_positive(
 
 template <size_t VolumeDim>
 boost::rational<size_t> fraction_of_block_volume(
-    const ElementId<VolumeDim>& element_id) noexcept {
+    const ElementId<VolumeDim>& element_id) {
   const auto segment_ids = element_id.segment_ids();
   size_t sum_of_refinement_levels = 0;
   for (const auto& segment_id : segment_ids) {
@@ -530,7 +530,7 @@ boost::rational<size_t> fraction_of_block_volume(
 template <size_t VolumeDim>
 void test_initial_domain(const Domain<VolumeDim>& domain,
                          const std::vector<std::array<size_t, VolumeDim>>&
-                             initial_refinement_levels) noexcept {
+                             initial_refinement_levels) {
   const auto element_ids = initial_element_ids(initial_refinement_levels);
   const auto& blocks = domain.blocks();
   CHECK(blocks.size() == initial_refinement_levels.size());
@@ -547,8 +547,7 @@ void test_initial_domain(const Domain<VolumeDim>& domain,
 
 template <typename DataType, size_t SpatialDim>
 tnsr::i<DataType, SpatialDim> euclidean_basis_vector(
-    const Direction<SpatialDim>& direction,
-    const DataType& used_for_size) noexcept {
+    const Direction<SpatialDim>& direction, const DataType& used_for_size) {
   auto basis_vector =
       make_with_value<tnsr::i<DataType, SpatialDim>>(used_for_size, 0.0);
 
@@ -561,7 +560,7 @@ tnsr::i<DataType, SpatialDim> euclidean_basis_vector(
 template <typename DataType, size_t SpatialDim>
 tnsr::i<DataType, SpatialDim> unit_basis_form(
     const Direction<SpatialDim>& direction,
-    const tnsr::II<DataType, SpatialDim>& inv_spatial_metric) noexcept {
+    const tnsr::II<DataType, SpatialDim>& inv_spatial_metric) {
   auto basis_form =
       euclidean_basis_vector(direction, get<0, 0>(inv_spatial_metric));
   const DataType inv_norm =
@@ -576,23 +575,23 @@ tnsr::i<DataType, SpatialDim> unit_basis_form(
 
 #define INSTANTIATE(_, data)                                          \
   template boost::rational<size_t> fraction_of_block_volume(          \
-      const ElementId<DIM(data)>& element_id) noexcept;               \
+      const ElementId<DIM(data)>& element_id);                        \
   template void test_initial_domain(                                  \
       const Domain<DIM(data)>& domain,                                \
       const std::vector<std::array<size_t, DIM(data)>>&               \
-          initial_refinement_levels) noexcept;                        \
+          initial_refinement_levels);                                 \
   template void test_physical_separation(                             \
       const std::vector<Block<DIM(data)>>& blocks, const double time, \
       const std::unordered_map<                                       \
           std::string,                                                \
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&  \
-          functions_of_time) noexcept;                                \
+          functions_of_time);                                         \
   template void test_det_jac_positive(                                \
       const std::vector<Block<DIM(data)>>& blocks, const double time, \
       const std::unordered_map<                                       \
           std::string,                                                \
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&  \
-          functions_of_time) noexcept;
+          functions_of_time);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
@@ -632,10 +631,10 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Grid, Frame::Inertial))
 #define INSTANTIATE_BASIS_VECTOR(_, data)                          \
   template tnsr::i<DTYPE(data), DIM(data)> euclidean_basis_vector( \
       const Direction<DIM(data)>& direction,                       \
-      const DTYPE(data) & used_for_size) noexcept;                 \
+      const DTYPE(data) & used_for_size);                          \
   template tnsr::i<DTYPE(data), DIM(data)> unit_basis_form(        \
       const Direction<DIM(data)>& direction,                       \
-      const tnsr::II<DTYPE(data), DIM(data)>& inv_spatial_metric) noexcept;
+      const tnsr::II<DTYPE(data), DIM(data)>& inv_spatial_metric);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_BASIS_VECTOR, (1, 2, 3),
                         (double, DataVector))

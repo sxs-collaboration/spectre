@@ -108,10 +108,10 @@ struct IncrementTime {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     db::mutate<Tags::Time>(
         make_not_null(&box),
-        [](const gsl::not_null<double*> time) noexcept { *time += 1.2; });
+        [](const gsl::not_null<double*> time) { *time += 1.2; });
     return std::forward_as_tuple(std::move(box));
   }
 };
@@ -152,7 +152,7 @@ struct Metavariables {
 };
 
 template <size_t Dim, bool TimeDependent>
-void test(const Spectral::Quadrature quadrature) noexcept {
+void test(const Spectral::Quadrature quadrature) {
   CAPTURE(Dim);
   CAPTURE(TimeDependent);
   CAPTURE(quadrature);
@@ -231,8 +231,7 @@ void test(const Spectral::Quadrature quadrature) noexcept {
                                                  &logical_coords,
                                                  &logical_to_grid_map, num_pts,
                                                  &runner, &self_id,
-                                                 &velocity](const double
-                                                                time) noexcept {
+                                                 &velocity](const double time) {
     REQUIRE(ActionTesting::get_databox_tag<component, Tags::Time>(
                 runner, self_id) == time);
     CHECK(ActionTesting::get_databox_tag<
@@ -378,8 +377,7 @@ void test(const Spectral::Quadrature quadrature) noexcept {
   const auto check_domain_tags_time_independent = [&logical_coords,
                                                    &logical_to_grid_map,
                                                    &runner, &self_id](
-                                                      const double
-                                                          time) noexcept {
+                                                      const double time) {
     const auto logical_to_inertial_map =
         create_affine_map<Dim, Frame::ElementLogical, Frame::Inertial>();
     REQUIRE(ActionTesting::get_databox_tag<component, Tags::Time>(

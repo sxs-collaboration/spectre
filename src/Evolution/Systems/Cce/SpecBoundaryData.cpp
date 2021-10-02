@@ -37,8 +37,7 @@ void cartesian_spatial_metric_and_derivatives_from_unnormalized_spec_modes(
     const tnsr::ii<ComplexModalVector, 3>& dr_spatial_metric_coefficients,
     const tnsr::ii<ComplexModalVector, 3>& dt_spatial_metric_coefficients,
     const CartesianiSphericalJ& inverse_cartesian_to_spherical_jacobian,
-    const tnsr::I<DataVector, 3>& unit_cartesian_coords,
-    const size_t l_max) noexcept {
+    const tnsr::I<DataVector, 3>& unit_cartesian_coords, const size_t l_max) {
   const size_t size = get<0, 0>(inverse_cartesian_to_spherical_jacobian).size();
   destructive_resize_components(cartesian_spatial_metric, size);
   destructive_resize_components(d_cartesian_spatial_metric, size);
@@ -147,7 +146,7 @@ void cartesian_shift_and_derivatives_from_unnormalized_spec_modes(
     const tnsr::I<ComplexModalVector, 3>& dt_shift_coefficients,
     const CartesianiSphericalJ& inverse_cartesian_to_spherical_jacobian,
     const Scalar<DataVector>& radial_derivative_correction_factor,
-    const size_t l_max) noexcept {
+    const size_t l_max) {
   const size_t size = get<0, 0>(inverse_cartesian_to_spherical_jacobian).size();
   destructive_resize_components(cartesian_shift, size);
   destructive_resize_components(d_cartesian_shift, size);
@@ -222,7 +221,7 @@ void cartesian_lapse_and_derivatives_from_unnormalized_spec_modes(
     const Scalar<ComplexModalVector>& dt_lapse_coefficients,
     const CartesianiSphericalJ& inverse_cartesian_to_spherical_jacobian,
     const Scalar<DataVector>& radial_derivative_correction_factor,
-    const size_t l_max) noexcept {
+    const size_t l_max) {
   const size_t size = get<0, 0>(inverse_cartesian_to_spherical_jacobian).size();
   destructive_resize_components(cartesian_lapse, size);
   destructive_resize_components(d_cartesian_lapse, size);

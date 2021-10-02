@@ -82,7 +82,7 @@ struct MockInterpolationTargetReceiveVars {
       const std::vector<::Variables<
           typename InterpolationTargetTag::vars_to_interpolate_to_target>>&
       /*vars_src*/,
-      const std::vector<std::vector<size_t>>& /*global_offsets*/) noexcept {
+      const std::vector<std::vector<size_t>>& /*global_offsets*/) {
     // InterpolationTargetReceiveVars will not be called in this test,
     // because we are not supplying volume data (so try_to_interpolate
     // inside TryToInterpolate.hpp will not actually interpolate). However, the
@@ -196,7 +196,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceivePoints",
   runner.simple_action<interp_component, ::intrp::Actions::RegisterElement>(0);
 
   const auto domain = domain_creator.create_domain();
-  const auto block_logical_coords = [&domain]() noexcept {
+  const auto block_logical_coords = [&domain]() {
     const size_t n_pts = 15;
     tnsr::I<DataVector, 3, Frame::Inertial> points(n_pts);
     for (size_t d = 0; d < 3; ++d) {
@@ -205,8 +205,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceivePoints",
       }
     }
     return block_logical_coordinates(domain, points);
-  }
-  ();
+  }();
   Slab slab(0.0, 1.0);
   TimeStepId temporal_id(true, 0, Time(slab, Rational(11, 15)));
 

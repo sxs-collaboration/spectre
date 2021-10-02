@@ -31,29 +31,29 @@ class Time {
   using rational_t = Rational;
 
   /// Default constructor gives an invalid Time.
-  Time() noexcept = default;
+  Time() = default;
 
   /// A time a given fraction of the way through the given slab.
-  Time(Slab slab, rational_t fraction) noexcept;
+  Time(Slab slab, rational_t fraction);
 
   /// Move the time to a different slab.  The time must be at an end
   /// of the current slab and the new slab must share that endpoint.
-  Time with_slab(const Slab& new_slab) const noexcept;
+  Time with_slab(const Slab& new_slab) const;
 
   /// Approximate numerical value of the Time.
-  double value() const noexcept { return value_; }
-  const Slab& slab() const noexcept { return slab_; }
-  const rational_t& fraction() const noexcept { return fraction_; }
+  double value() const { return value_; }
+  const Slab& slab() const { return slab_; }
+  const rational_t& fraction() const { return fraction_; }
 
-  Time& operator+=(const TimeDelta& delta) noexcept;
-  Time& operator-=(const TimeDelta& delta) noexcept;
+  Time& operator+=(const TimeDelta& delta);
+  Time& operator-=(const TimeDelta& delta);
 
-  bool is_at_slab_start() const noexcept;
-  bool is_at_slab_end() const noexcept;
-  bool is_at_slab_boundary() const noexcept;
+  bool is_at_slab_start() const;
+  bool is_at_slab_end() const;
+  bool is_at_slab_boundary() const;
 
   // clang-tidy: google-runtime-references
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
 
   /// A comparison operator that compares Times structurally, i.e.,
   /// just looking at the class members.  This is only intended for
@@ -75,9 +75,9 @@ class Time {
   // The value is precomputed so that we can avoid doing the rational
   // math repeatedly.  The value of a Time should almost always be
   // needed at some point.
-  void compute_value() noexcept;
+  void compute_value();
 
-  void range_check() const noexcept;
+  void range_check() const;
 
   friend class TimeDelta;
 };
@@ -90,34 +90,34 @@ class TimeDelta {
   using rational_t = Time::rational_t;
 
   /// Default constructor gives an invalid TimeDelta.
-  TimeDelta() noexcept = default;
+  TimeDelta() = default;
 
   /// An interval covering a given fraction of the slab.
-  TimeDelta(Slab slab, rational_t fraction) noexcept;
+  TimeDelta(Slab slab, rational_t fraction);
 
   /// Move the interval to a different slab.  The resulting interval
   /// will in general not be the same length, but will take up the
   /// same fraction of its slab.
-  TimeDelta with_slab(const Slab& new_slab) const noexcept;
+  TimeDelta with_slab(const Slab& new_slab) const;
 
-  Slab slab() const noexcept { return slab_; }
-  rational_t fraction() const noexcept { return fraction_; }
+  Slab slab() const { return slab_; }
+  rational_t fraction() const { return fraction_; }
 
   /// Approximate numerical length of the interval.
-  double value() const noexcept;
+  double value() const;
 
   /// Test if the interval is oriented towards larger time.
-  bool is_positive() const noexcept;
+  bool is_positive() const;
 
-  TimeDelta& operator+=(const TimeDelta& other) noexcept;
-  TimeDelta& operator-=(const TimeDelta& other) noexcept;
-  TimeDelta operator+() const noexcept;
-  TimeDelta operator-() const noexcept;
-  TimeDelta& operator*=(const rational_t& mult) noexcept;
-  TimeDelta& operator/=(const rational_t& div) noexcept;
+  TimeDelta& operator+=(const TimeDelta& other);
+  TimeDelta& operator-=(const TimeDelta& other);
+  TimeDelta operator+() const;
+  TimeDelta operator-() const;
+  TimeDelta& operator*=(const rational_t& mult);
+  TimeDelta& operator/=(const rational_t& div);
 
   // clang-tidy: google-runtime-references
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
 
  private:
   Slab slab_;
@@ -129,57 +129,57 @@ class TimeDelta {
 // Time <cmp> Time
 // clang-tidy: clang-tidy wants this removed in favor of friend
 // declaration in different header.
-bool operator==(const Time& a, const Time& b) noexcept;  // NOLINT
-bool operator!=(const Time& a, const Time& b) noexcept;
-bool operator<(const Time& a, const Time& b) noexcept;
-bool operator>(const Time& a, const Time& b) noexcept;
-bool operator<=(const Time& a, const Time& b) noexcept;
-bool operator>=(const Time& a, const Time& b) noexcept;
+bool operator==(const Time& a, const Time& b);  // NOLINT
+bool operator!=(const Time& a, const Time& b);
+bool operator<(const Time& a, const Time& b);
+bool operator>(const Time& a, const Time& b);
+bool operator<=(const Time& a, const Time& b);
+bool operator>=(const Time& a, const Time& b);
 
 // TimeDelta <cmp> TimeDelta
-bool operator==(const TimeDelta& a, const TimeDelta& b) noexcept;
-bool operator!=(const TimeDelta& a, const TimeDelta& b) noexcept;
-bool operator<(const TimeDelta& a, const TimeDelta& b) noexcept;
-bool operator>(const TimeDelta& a, const TimeDelta& b) noexcept;
-bool operator<=(const TimeDelta& a, const TimeDelta& b) noexcept;
-bool operator>=(const TimeDelta& a, const TimeDelta& b) noexcept;
+bool operator==(const TimeDelta& a, const TimeDelta& b);
+bool operator!=(const TimeDelta& a, const TimeDelta& b);
+bool operator<(const TimeDelta& a, const TimeDelta& b);
+bool operator>(const TimeDelta& a, const TimeDelta& b);
+bool operator<=(const TimeDelta& a, const TimeDelta& b);
+bool operator>=(const TimeDelta& a, const TimeDelta& b);
 
 // Time <op> Time
-TimeDelta operator-(const Time& a, const Time& b) noexcept;
+TimeDelta operator-(const Time& a, const Time& b);
 
 // Time <op> TimeDelta, TimeDelta <op> Time
-Time operator+(Time a, const TimeDelta& b) noexcept;
-Time operator+(const TimeDelta& a, Time b) noexcept;
-Time operator-(Time a, const TimeDelta& b) noexcept;
+Time operator+(Time a, const TimeDelta& b);
+Time operator+(const TimeDelta& a, Time b);
+Time operator-(Time a, const TimeDelta& b);
 
 // TimeDelta <op> TimeDelta
-TimeDelta operator+(TimeDelta a, const TimeDelta& b) noexcept;
-TimeDelta operator-(TimeDelta a, const TimeDelta& b) noexcept;
+TimeDelta operator+(TimeDelta a, const TimeDelta& b);
+TimeDelta operator-(TimeDelta a, const TimeDelta& b);
 
 // This returns a double rather than a rational so we can compare dt
 // in different slabs.
-double operator/(const TimeDelta& a, const TimeDelta& b) noexcept;
+double operator/(const TimeDelta& a, const TimeDelta& b);
 
 // rational <op> TimeDelta, TimeDelta <op> rational
-TimeDelta operator*(TimeDelta a, const TimeDelta::rational_t& b) noexcept;
-TimeDelta operator*(const TimeDelta::rational_t& a, TimeDelta b) noexcept;
-TimeDelta operator/(TimeDelta a, const TimeDelta::rational_t& b) noexcept;
+TimeDelta operator*(TimeDelta a, const TimeDelta::rational_t& b);
+TimeDelta operator*(const TimeDelta::rational_t& a, TimeDelta b);
+TimeDelta operator/(TimeDelta a, const TimeDelta::rational_t& b);
 
 // Miscellaneous other functions for Time
 
-std::ostream& operator<<(std::ostream& os, const Time& t) noexcept;
+std::ostream& operator<<(std::ostream& os, const Time& t);
 
-size_t hash_value(const Time& t) noexcept;
+size_t hash_value(const Time& t);
 
 namespace std {
 template <>
 struct hash<Time> {
-  size_t operator()(const Time& t) const noexcept;
+  size_t operator()(const Time& t) const;
 };
 }  // namespace std
 
 // Miscellaneous other functions for TimeDelta
 
-TimeDelta abs(TimeDelta t) noexcept;
+TimeDelta abs(TimeDelta t);
 
-std::ostream& operator<<(std::ostream& os, const TimeDelta& dt) noexcept;
+std::ostream& operator<<(std::ostream& os, const TimeDelta& dt);

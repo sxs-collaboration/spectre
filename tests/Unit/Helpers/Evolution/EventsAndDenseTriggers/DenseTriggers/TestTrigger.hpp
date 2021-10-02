@@ -26,8 +26,7 @@ class TestTrigger : public DenseTrigger {
  public:
   /// \cond
   TestTrigger() = default;
-  explicit TestTrigger(CkMigrateMessage* const msg) noexcept
-      : DenseTrigger(msg) {}
+  explicit TestTrigger(CkMigrateMessage* const msg) : DenseTrigger(msg) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(TestTrigger);  // NOLINT
   /// \endcond
@@ -51,13 +50,13 @@ class TestTrigger : public DenseTrigger {
   constexpr static Options::String help = "help";
 
   TestTrigger(const bool is_ready_arg, const bool is_triggered,
-              const double next_check) noexcept
+              const double next_check)
       : is_ready_(is_ready_arg),
         is_triggered_(is_triggered),
         next_check_(next_check) {}
 
   using is_triggered_argument_tags = tmpl::list<>;
-  Result is_triggered() const noexcept {
+  Result is_triggered() const {
     CHECK(is_ready_);
     return {is_triggered_, next_check_};
   }
@@ -66,12 +65,12 @@ class TestTrigger : public DenseTrigger {
   template <typename Metavariables, typename ArrayIndex, typename Component>
   bool is_ready(Parallel::GlobalCache<Metavariables>& /*cache*/,
                 const ArrayIndex& /*array_index*/,
-                const Component* const /*meta*/) const noexcept {
+                const Component* const /*meta*/) const {
     return is_ready_;
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept override {
+  void pup(PUP::er& p) override {
     DenseTrigger::pup(p);
     p | is_ready_;
     p | is_triggered_;
@@ -89,13 +88,12 @@ class BoxTrigger : public DenseTrigger {
  public:
   /// \cond
   BoxTrigger() = default;
-  explicit BoxTrigger(CkMigrateMessage* const msg) noexcept
-      : DenseTrigger(msg) {}
+  explicit BoxTrigger(CkMigrateMessage* const msg) : DenseTrigger(msg) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(BoxTrigger);  // NOLINT
   /// \endcond
 
-  static std::string name() noexcept {
+  static std::string name() {
     return "BoxTrigger<" + Options::name<Label>() + ">";
   }
 
@@ -117,7 +115,7 @@ class BoxTrigger : public DenseTrigger {
   using is_triggered_argument_tags =
       tmpl::list<IsReady, IsTriggered, NextCheck>;
   Result is_triggered(const bool is_ready_arg, const bool is_triggered,
-                      const double next_check) const noexcept {
+                      const double next_check) const {
     CHECK(is_ready_arg);
     return {is_triggered, next_check};
   }
@@ -127,10 +125,10 @@ class BoxTrigger : public DenseTrigger {
   bool is_ready(Parallel::GlobalCache<Metavariables>& /*cache*/,
                 const ArrayIndex& /*array_index*/,
                 const Component* const /*meta*/,
-                const bool is_ready_arg) const noexcept {
+                const bool is_ready_arg) const {
     return is_ready_arg;
   }
-  void pup(PUP::er& p) noexcept { DenseTrigger::pup(p); }
+  void pup(PUP::er& p) { DenseTrigger::pup(p); }
 };
 
 /// \cond

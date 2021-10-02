@@ -61,7 +61,7 @@ void test_1d() {
   const auto domain_creator = domain::creators::Interval(
       {{-1.0}}, {{1.0}}, {{1}}, {{3}}, {{false}}, nullptr);
 
-  const auto expected_block_coord_holders = [&domain_creator]() noexcept {
+  const auto expected_block_coord_holders = [&domain_creator]() {
     tnsr::I<DataVector, 1, Frame::Inertial> points;
     get<0>(points) = DataVector({{1.0, 0.3}});
     return block_logical_coordinates(domain_creator.create_domain(), points);
@@ -92,7 +92,7 @@ void test_2d() {
   const auto domain_creator = domain::creators::Rectangle(
       {{-1.0, -1.0}}, {{1.0, 2.0}}, {{1, 1}}, {{3, 4}}, {{false, false}});
 
-  const auto expected_block_coord_holders = [&domain_creator]() noexcept {
+  const auto expected_block_coord_holders = [&domain_creator]() {
     tnsr::I<DataVector, 2, Frame::Inertial> points;
     get<0>(points) = DataVector({{0.0, -0.2, 0.3}});
     get<1>(points) = DataVector({{1.0, 0.1, 1.9}});
@@ -128,7 +128,7 @@ void test_3d() {
       {{-1.0, -1.0, -1.0}}, {{1.0, 2.0, 3.0}}, {{1, 1, 1}}, {{3, 4, 5}},
       {{false, false, false}});
 
-  const auto expected_block_coord_holders = [&domain_creator]() noexcept {
+  const auto expected_block_coord_holders = [&domain_creator]() {
     tnsr::I<DataVector, 3, Frame::Inertial> points;
     get<0>(points) = DataVector({{0.0, 1.0, -0.8, 0.0}});
     get<1>(points) = DataVector({{0.0, -0.3, 1.6, 1.0}});

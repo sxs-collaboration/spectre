@@ -25,7 +25,7 @@ void lift_boundary_terms_gauss_points_impl(
     const gsl::span<const double>& boundary_corrections,
     const DataVector& boundary_lifting_term,
     const Scalar<DataVector>& magnitude_of_face_normal,
-    const Scalar<DataVector>& face_det_jacobian) noexcept;
+    const Scalar<DataVector>& face_det_jacobian);
 
 template <size_t Dim>
 void lift_boundary_terms_gauss_points_impl(
@@ -39,7 +39,7 @@ void lift_boundary_terms_gauss_points_impl(
     const gsl::span<const double>& lower_boundary_corrections,
     const DataVector& lower_boundary_lifting_term,
     const Scalar<DataVector>& lower_magnitude_of_face_normal,
-    const Scalar<DataVector>& lower_face_det_jacobian) noexcept;
+    const Scalar<DataVector>& lower_face_det_jacobian);
 }  // namespace detail
 
 /*!
@@ -75,10 +75,10 @@ void lift_boundary_terms_gauss_points(
     const Mesh<Dim>& volume_mesh, const Direction<Dim>& direction,
     const Variables<BoundaryCorrectionTagsList>& boundary_corrections,
     const Scalar<DataVector>& magnitude_of_face_normal,
-    const Scalar<DataVector>& face_det_jacobian) noexcept {
+    const Scalar<DataVector>& face_det_jacobian) {
   ASSERT(std::all_of(volume_mesh.quadrature().begin(),
                      volume_mesh.quadrature().end(),
-                     [](const Spectral::Quadrature quadrature) noexcept {
+                     [](const Spectral::Quadrature quadrature) {
                        return quadrature == Spectral::Quadrature::Gauss;
                      }),
          "Must use Gauss points in all directions but got the mesh: "
@@ -149,10 +149,10 @@ void lift_boundary_terms_gauss_points(
     const Scalar<DataVector>& upper_face_det_jacobian,
     const Variables<BoundaryCorrectionTagsList>& lower_boundary_corrections,
     const Scalar<DataVector>& lower_magnitude_of_face_normal,
-    const Scalar<DataVector>& lower_face_det_jacobian) noexcept {
+    const Scalar<DataVector>& lower_face_det_jacobian) {
   ASSERT(std::all_of(volume_mesh.quadrature().begin(),
                      volume_mesh.quadrature().end(),
-                     [](const Spectral::Quadrature quadrature) noexcept {
+                     [](const Spectral::Quadrature quadrature) {
                        return quadrature == Spectral::Quadrature::Gauss;
                      }),
          "Must use Gauss points in all directions but got the mesh: "

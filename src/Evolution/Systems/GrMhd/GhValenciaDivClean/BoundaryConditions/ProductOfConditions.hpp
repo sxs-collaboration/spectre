@@ -127,7 +127,7 @@ struct ValenciaDoNothingGhostCondition {
       const tnsr::I<DataVector, 3, Frame::Inertial>& interior_tilde_phi_flux,
 
       const tnsr::aa<DataVector, 3, Frame::Inertial>&
-          interior_spacetime_metric) noexcept {
+          interior_spacetime_metric) {
     *tilde_d = interior_tilde_d;
     *tilde_tau = interior_tilde_tau;
     *tilde_s = interior_tilde_s;
@@ -175,7 +175,7 @@ struct GhDoNothingGhostCondition {
       const tnsr::aa<DataVector, 3, Frame::Inertial>& interior_pi,
       const tnsr::iaa<DataVector, 3, Frame::Inertial>& interior_phi,
       const Scalar<DataVector>& interior_gamma1,
-      const Scalar<DataVector>& interior_gamma2) noexcept {
+      const Scalar<DataVector>& interior_gamma2) {
     *gamma1 = interior_gamma1;
     *gamma2 = interior_gamma2;
     *spacetime_metric = interior_spacetime_metric;
@@ -280,7 +280,7 @@ struct ProductOfConditionsImpl<
       const typename ValenciaInteriorDerivTags::
           type&... valencia_int_deriv_variables,
 
-      const GridlessVariables&... gridless_variables) noexcept {
+      const GridlessVariables&... gridless_variables) {
     using gridless_tags_and_types =
         tmpl::map<tmpl::pair<DeduplicatedGridlessTags, GridlessVariables>...>;
 
@@ -397,7 +397,7 @@ struct ProductOfConditionsImpl<
       const typename ValenciaInteriorDerivTags::
           type&... valencia_int_deriv_variables,
 
-      const GridlessVariables&... gridless_variables) noexcept {
+      const GridlessVariables&... gridless_variables) {
     using gridless_tags_and_types =
         tmpl::map<tmpl::pair<DeduplicatedGridlessTags, GridlessVariables>...>;
 
@@ -475,7 +475,7 @@ struct ProductOfConditionsImpl<
       const typename ValenciaInteriorDerivTags::
           type&... valencia_int_deriv_variables,
 
-      const GridlessVariables&... gridless_variables) noexcept {
+      const GridlessVariables&... gridless_variables) {
     using gridless_tags_and_types =
         tmpl::map<tmpl::pair<DeduplicatedGridlessTags, GridlessVariables>...>;
 
@@ -645,14 +645,14 @@ class ProductOfConditions final : public BoundaryCondition {
       typename DerivedGhCondition::dg_gridless_tags,
       typename DerivedValenciaCondition::dg_gridless_tags, dg_gridless_tags>;
 
-  static std::string name() noexcept {
+  static std::string name() {
     return "Product" + Options::name<DerivedGhCondition>() + "And" +
            Options::name<DerivedValenciaCondition>();
   }
 
   struct GhCondition {
     using type = DerivedGhCondition;
-    static std::string name() noexcept {
+    static std::string name() {
       return "GeneralizedHarmonic" + Options::name<DerivedGhCondition>();
     }
     static constexpr Options::String help{
@@ -660,7 +660,7 @@ class ProductOfConditions final : public BoundaryCondition {
   };
   struct ValenciaCondition {
     using type = DerivedValenciaCondition;
-    static std::string name() noexcept {
+    static std::string name() {
       return "Valencia" + Options::name<DerivedValenciaCondition>();
     }
     static constexpr Options::String help{
@@ -676,7 +676,7 @@ class ProductOfConditions final : public BoundaryCondition {
 
   ProductOfConditions() = default;
   ProductOfConditions(DerivedGhCondition gh_condition,
-                      DerivedValenciaCondition valencia_condition) noexcept
+                      DerivedValenciaCondition valencia_condition)
       : derived_gh_condition_{gh_condition},
         derived_valencia_condition_{valencia_condition} {}
   ProductOfConditions(const ProductOfConditions&) = default;
@@ -686,34 +686,34 @@ class ProductOfConditions final : public BoundaryCondition {
   ~ProductOfConditions() override = default;
 
   /// \cond
-  explicit ProductOfConditions(CkMigrateMessage* msg) noexcept
+  explicit ProductOfConditions(CkMigrateMessage* msg)
       : BoundaryCondition(msg) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_base_template(
       domain::BoundaryConditions::BoundaryCondition, ProductOfConditions);
   /// \endcond
 
-  void pup(PUP::er& p) noexcept override;
+  void pup(PUP::er& p) override;
 
-  auto get_clone() const noexcept -> std::unique_ptr<
+  auto get_clone() const -> std::unique_ptr<
       domain::BoundaryConditions::BoundaryCondition> override;
 
   template <typename... Args>
-  std::optional<std::string> dg_ghost(Args&&... args) const noexcept {
+  std::optional<std::string> dg_ghost(Args&&... args) const {
     return product_of_conditions_impl::dg_ghost(derived_gh_condition_,
                                                 derived_valencia_condition_,
                                                 std::forward<Args>(args)...);
   }
 
   template <typename... Args>
-  std::optional<std::string> dg_outflow(Args&&... args) const noexcept {
+  std::optional<std::string> dg_outflow(Args&&... args) const {
     return product_of_conditions_impl::dg_outflow(derived_gh_condition_,
                                                   derived_valencia_condition_,
                                                   std::forward<Args>(args)...);
   }
 
   template <typename... Args>
-  std::optional<std::string> dg_time_derivative(Args&&... args) const noexcept {
+  std::optional<std::string> dg_time_derivative(Args&&... args) const {
     return product_of_conditions_impl::dg_time_derivative(
         derived_gh_condition_, derived_valencia_condition_,
         std::forward<Args>(args)...);
@@ -726,7 +726,7 @@ class ProductOfConditions final : public BoundaryCondition {
 
 template <typename DerivedGhCondition, typename DerivedValenciaCondition>
 void ProductOfConditions<DerivedGhCondition, DerivedValenciaCondition>::pup(
-    PUP::er& p) noexcept {
+    PUP::er& p) {
   p | derived_gh_condition_;
   p | derived_valencia_condition_;
   BoundaryCondition::pup(p);
@@ -734,7 +734,7 @@ void ProductOfConditions<DerivedGhCondition, DerivedValenciaCondition>::pup(
 
 template <typename DerivedGhCondition, typename DerivedValenciaCondition>
 auto ProductOfConditions<DerivedGhCondition,
-                         DerivedValenciaCondition>::get_clone() const noexcept
+                         DerivedValenciaCondition>::get_clone() const
     -> std::unique_ptr<domain::BoundaryConditions::BoundaryCondition> {
   return std::make_unique<ProductOfConditions>(*this);
 }

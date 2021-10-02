@@ -16,7 +16,7 @@ template <typename SolutionOrData, typename Coordinates, typename... Tags,
           Requires<evolution::is_analytic_solution_v<SolutionOrData>> = nullptr>
 decltype(auto) initial_data(const SolutionOrData& solution_or_data,
                             Coordinates&& coordinates, const double time,
-                            const tmpl::list<Tags...> tags) noexcept {
+                            const tmpl::list<Tags...> tags) {
   return solution_or_data.variables(std::forward<Coordinates>(coordinates),
                                     time, tags);
 }
@@ -26,7 +26,7 @@ template <typename SolutionOrData, typename Coordinates, typename... Tags,
           Requires<evolution::is_analytic_data_v<SolutionOrData>> = nullptr>
 decltype(auto) initial_data(const SolutionOrData& solution_or_data,
                             Coordinates&& coordinates, const double /*time*/,
-                            const tmpl::list<Tags...> tags) noexcept {
+                            const tmpl::list<Tags...> tags) {
   return solution_or_data.variables(std::forward<Coordinates>(coordinates),
                                     tags);
 }

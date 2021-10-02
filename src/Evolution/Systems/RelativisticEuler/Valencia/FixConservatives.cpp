@@ -44,7 +44,7 @@ FixConservatives<Dim>::FixConservatives(
 }
 
 template <size_t Dim>
-void FixConservatives<Dim>::pup(PUP::er& p) noexcept {
+void FixConservatives<Dim>::pup(PUP::er& p) {
   p | minimum_rest_mass_density_times_lorentz_factor_;
   p | rest_mass_density_times_lorentz_factor_cutoff_;
   p | one_minus_safety_factor_for_momentum_density_;
@@ -56,7 +56,7 @@ void FixConservatives<Dim>::operator()(
     const gsl::not_null<Scalar<DataVector>*> tilde_tau,
     const gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*> tilde_s,
     const tnsr::II<DataVector, Dim, Frame::Inertial>& inv_spatial_metric,
-    const Scalar<DataVector>& sqrt_det_spatial_metric) const noexcept {
+    const Scalar<DataVector>& sqrt_det_spatial_metric) const {
   const size_t number_of_points = get(sqrt_det_spatial_metric).size();
   Variables<tmpl::list<::Tags::TempScalar<0>, ::Tags::TempScalar<1>>>
       temp_buffer(number_of_points);
@@ -105,7 +105,7 @@ void FixConservatives<Dim>::operator()(
 
 template <size_t Dim>
 bool operator==(const FixConservatives<Dim>& lhs,
-                const FixConservatives<Dim>& rhs) noexcept {
+                const FixConservatives<Dim>& rhs) {
   return lhs.minimum_rest_mass_density_times_lorentz_factor_ ==
              rhs.minimum_rest_mass_density_times_lorentz_factor_ and
          lhs.rest_mass_density_times_lorentz_factor_cutoff_ ==
@@ -116,18 +116,18 @@ bool operator==(const FixConservatives<Dim>& lhs,
 
 template <size_t Dim>
 bool operator!=(const FixConservatives<Dim>& lhs,
-                const FixConservatives<Dim>& rhs) noexcept {
+                const FixConservatives<Dim>& rhs) {
   return not(lhs == rhs);
 }
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE_CLASS(_, data)                                       \
-  template class FixConservatives<DIM(data)>;                            \
-  template bool operator==(const FixConservatives<DIM(data)>&,           \
-                           const FixConservatives<DIM(data)>&) noexcept; \
-  template bool operator!=(const FixConservatives<DIM(data)>&,           \
-                           const FixConservatives<DIM(data)>&) noexcept;
+#define INSTANTIATE_CLASS(_, data)                              \
+  template class FixConservatives<DIM(data)>;                   \
+  template bool operator==(const FixConservatives<DIM(data)>&,  \
+                           const FixConservatives<DIM(data)>&); \
+  template bool operator!=(const FixConservatives<DIM(data)>&,  \
+                           const FixConservatives<DIM(data)>&);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_CLASS, (1, 2, 3))
 

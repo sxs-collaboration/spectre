@@ -50,8 +50,7 @@ void derivatives_of_spacetime_metric(
     const tnsr::iJ<DataType, SpatialDim, Frame>& deriv_shift,
     const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
     const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric,
-    const tnsr::ijj<DataType, SpatialDim, Frame>&
-        deriv_spatial_metric) noexcept;
+    const tnsr::ijj<DataType, SpatialDim, Frame>& deriv_spatial_metric);
 
 template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::abb<DataType, SpatialDim, Frame> derivatives_of_spacetime_metric(
@@ -62,8 +61,7 @@ tnsr::abb<DataType, SpatialDim, Frame> derivatives_of_spacetime_metric(
     const tnsr::iJ<DataType, SpatialDim, Frame>& deriv_shift,
     const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
     const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric,
-    const tnsr::ijj<DataType, SpatialDim, Frame>&
-        deriv_spatial_metric) noexcept;
+    const tnsr::ijj<DataType, SpatialDim, Frame>& deriv_spatial_metric);
 /// @}
 
 namespace Tags {
@@ -103,7 +101,7 @@ struct DerivativesOfSpacetimeMetricCompute
       const tnsr::iJ<DataVector, SpatialDim, Frame>&,
       const tnsr::ii<DataVector, SpatialDim, Frame>&,
       const tnsr::ii<DataVector, SpatialDim, Frame>&,
-      const tnsr::ijj<DataVector, SpatialDim, Frame>&) noexcept>(
+      const tnsr::ijj<DataVector, SpatialDim, Frame>&)>(
       &gr::derivatives_of_spacetime_metric<SpatialDim, Frame, DataVector>);
 
   using base =

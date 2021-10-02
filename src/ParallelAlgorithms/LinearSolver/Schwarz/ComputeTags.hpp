@@ -41,7 +41,7 @@ struct SummedIntrudingOverlapWeightsCompute
       const std::unordered_map<Direction<Dim>, Scalar<DataVector>>&
           all_intruding_weights,
       const Mesh<Dim>& mesh,
-      const std::array<size_t, Dim>& all_intruding_extents) noexcept {
+      const std::array<size_t, Dim>& all_intruding_extents) {
     destructive_resize_components(summed_intruding_overlap_weights,
                                   mesh.number_of_grid_points());
     get(*summed_intruding_overlap_weights) = 0.;

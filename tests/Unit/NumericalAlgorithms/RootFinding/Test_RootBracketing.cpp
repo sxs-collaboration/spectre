@@ -14,21 +14,21 @@
 #include "Utilities/Gsl.hpp"
 
 namespace {
-std::optional<double> f_free(double x) noexcept {
+std::optional<double> f_free(double x) {
   return (x < 1.0 or x > 2.0) ? std::nullopt
                               : std::optional<double>(2.0 - square(x));
 }
 struct F {
-  std::optional<double> operator()(double x) const noexcept {
+  std::optional<double> operator()(double x) const {
     return (x < 1.0 or x > 2.0) ? std::nullopt
                                 : std::optional<double>(2.0 - square(x));
   }
 };
 
 template <typename Function>
-void test_bracketing_simple_one_function(
-    const Function& f, const std::array<double, 2>& bounds,
-    const std::optional<double>& guess) noexcept {
+void test_bracketing_simple_one_function(const Function& f,
+                                         const std::array<double, 2>& bounds,
+                                         const std::optional<double>& guess) {
   double lower = bounds[0];
   double upper = bounds[1];
   double f_at_lower = std::numeric_limits<double>::signaling_NaN();
@@ -46,9 +46,8 @@ void test_bracketing_simple_one_function(
 }
 
 void test_bracketing_simple_multiple_functions(
-    const std::array<double, 2>& bounds,
-    const std::optional<double>& guess) noexcept {
-  const auto f_lambda = [](double x) noexcept -> std::optional<double> {
+    const std::array<double, 2>& bounds, const std::optional<double>& guess) {
+  const auto f_lambda = [](double x) -> std::optional<double> {
     return (x < 1.0 or x > 2.0) ? std::nullopt
                                 : std::optional<double>(2.0 - square(x));
   };
@@ -59,7 +58,7 @@ void test_bracketing_simple_multiple_functions(
   test_bracketing_simple_one_function(f_functor, bounds, guess);
 }
 
-void test_bracketing_simple() noexcept {
+void test_bracketing_simple() {
   // Set up random number generator
   MAKE_GENERATOR(gen);
   std::uniform_real_distribution<> unit_dis(0.0, 1.0);
@@ -85,11 +84,11 @@ void test_bracketing_simple() noexcept {
                        unit_dis(gen)}};
 
   const auto test_with_and_without_guess =
-      [&gen, &unit_dis ](const std::array<double, 2>& bounds) noexcept {
-    test_bracketing_simple_multiple_functions(bounds, std::nullopt);
-    test_bracketing_simple_multiple_functions(
-        bounds, bounds[0] + unit_dis(gen) * (bounds[1] - bounds[0]));
-  };
+      [&gen, &unit_dis](const std::array<double, 2>& bounds) {
+        test_bracketing_simple_multiple_functions(bounds, std::nullopt);
+        test_bracketing_simple_multiple_functions(
+            bounds, bounds[0] + unit_dis(gen) * (bounds[1] - bounds[0]));
+      };
 
   test_with_and_without_guess(bounds_invalid);
   test_with_and_without_guess(bounds_upper_is_invalid);
@@ -97,7 +96,7 @@ void test_bracketing_simple() noexcept {
   test_with_and_without_guess(bounds_valid);
 }
 
-void test_bracketing_datavector() noexcept {
+void test_bracketing_datavector() {
   MAKE_GENERATOR(gen);
   std::uniform_real_distribution<> unit_dis(0.0, 1.0);
 
@@ -115,15 +114,13 @@ void test_bracketing_datavector() noexcept {
       sqrt(2.0) + (2.0 - sqrt(2.0) + std::numeric_limits<double>::epsilon()) *
                       unit_dis(gen)};
 
-  const auto f_lambda = [](double x,
-                           size_t /*i*/) noexcept -> std::optional<double> {
+  const auto f_lambda = [](double x, size_t /*i*/) -> std::optional<double> {
     return (x < 1.0 or x > 2.0) ? std::nullopt
                                 : std::optional<double>(2.0 - square(x));
   };
 
-  const auto do_test = [&f_lambda](
-      DataVector lower_l, DataVector upper_l,
-      const std::optional<DataVector>& guess) noexcept {
+  const auto do_test = [&f_lambda](DataVector lower_l, DataVector upper_l,
+                                   const std::optional<DataVector>& guess) {
     DataVector f_at_lower(lower_l.size(),
                           std::numeric_limits<double>::signaling_NaN());
     DataVector f_at_upper(upper_l.size(),

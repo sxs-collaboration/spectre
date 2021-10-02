@@ -75,7 +75,7 @@ void internal_mortar_data_impl(
     const std::optional<tnsr::I<DataVector, Dim>>& volume_mesh_velocity,
     const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
                           Frame::Inertial>& volume_inverse_jacobian,
-    const PackageDataVolumeArgs&... package_data_volume_args) noexcept {
+    const PackageDataVolumeArgs&... package_data_volume_args) {
   using variables_tags = typename System::variables_tag::tags_list;
   using flux_variables = typename System::flux_variables;
   using fluxes_tags = db::wrap_tags_in<::Tags::Flux, flux_variables,
@@ -108,8 +108,7 @@ void internal_mortar_data_impl(
     }
 
     const auto internal_mortars = [&](const Mesh<Dim - 1>& face_mesh,
-                                      const Direction<Dim>&
-                                          local_direction) noexcept {
+                                      const Direction<Dim>& local_direction) {
       // We may not need to bring the volume fluxes or temporaries to the
       // boundary since that depends on the specific boundary correction we
       // are using. Silence compilers warnings about them being unused.
@@ -325,10 +324,9 @@ void internal_mortar_data(
        &moving_mesh_map = db::get<domain::CoordinateMaps::Tags::CoordinateMap<
            Dim, Frame::Grid, Frame::Inertial>>(*box),
        &primitive_vars, &temporaries,
-       &time_step_id = db::get<::Tags::TimeStepId>(*box),
-       &volume_fluxes](const auto normal_covector_and_magnitude_ptr,
-                       const auto mortar_data_ptr,
-                       const auto&... package_data_volume_args) noexcept {
+       &time_step_id = db::get<::Tags::TimeStepId>(*box), &volume_fluxes](
+          const auto normal_covector_and_magnitude_ptr,
+          const auto mortar_data_ptr, const auto&... package_data_volume_args) {
         detail::internal_mortar_data_impl<System>(
             normal_covector_and_magnitude_ptr, mortar_data_ptr,
             boundary_correction, evolved_variables, volume_fluxes, temporaries,

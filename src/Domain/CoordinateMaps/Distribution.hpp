@@ -24,7 +24,7 @@ namespace domain::CoordinateMaps {
  */
 enum class Distribution { Linear, Equiangular, Logarithmic, Inverse };
 
-std::ostream& operator<<(std::ostream& os, Distribution distribution) noexcept;
+std::ostream& operator<<(std::ostream& os, Distribution distribution);
 
 }  // namespace domain::CoordinateMaps
 

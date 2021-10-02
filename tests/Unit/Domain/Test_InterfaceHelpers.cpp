@@ -16,12 +16,12 @@ namespace domain {
 namespace {
 struct SomeNumber : db::SimpleTag {
   using type = double;
-  static std::string name() noexcept { return "SomeNumber"; }
+  static std::string name() { return "SomeNumber"; }
 };
 struct VolumeArgumentBase : db::BaseTag {};
 struct SomeVolumeArgument : VolumeArgumentBase, db::SimpleTag {
   using type = double;
-  static std::string name() noexcept { return "SomeVolumeArgument"; }
+  static std::string name() { return "SomeVolumeArgument"; }
 };
 
 // [interface_invokable_example]
@@ -29,8 +29,7 @@ struct ComputeSomethingOnInterface {
   using argument_tags = tmpl::list<SomeNumber, SomeVolumeArgument>;
   using volume_tags = tmpl::list<SomeVolumeArgument>;
   static double apply(const double& some_number_on_interface,
-                      const double& volume_argument,
-                      const double factor) noexcept {
+                      const double& volume_argument, const double factor) {
     return factor * some_number_on_interface + volume_argument;
   }
 };
@@ -39,7 +38,7 @@ struct ComputeSomethingOnInterface {
 struct ComputeWithTemplateParameters {
   using argument_tags = tmpl::list<SomeNumber>;
   template <typename Arg>
-  static double apply(const Arg& arg) noexcept {
+  static double apply(const Arg& arg) {
     return arg;
   }
 };
@@ -47,8 +46,7 @@ struct ComputeWithTemplateParameters {
 struct ComputeWithVoidReturnType {
   using argument_tags = tmpl::list<SomeNumber>;
   template <typename Arg>
-  static void apply(const Arg& arg,
-                    const gsl::not_null<double*> result) noexcept {
+  static void apply(const Arg& arg, const gsl::not_null<double*> result) {
     *result += arg;
   }
 };
@@ -72,7 +70,7 @@ void test_interface_apply(
       interface_apply<DirectionsTag, tmpl::list<SomeNumber, SomeVolumeArgument>,
                       tmpl::list<SomeVolumeArgument>>(
           [](const double some_number_on_interface,
-             const double volume_argument, const double factor) noexcept {
+             const double volume_argument, const double factor) {
             return factor * some_number_on_interface + volume_argument;
           },
           box, 2.);
@@ -91,7 +89,7 @@ void test_interface_apply(
       interface_apply<DirectionsTag, tmpl::list<SomeNumber, VolumeArgumentBase>,
                       tmpl::list<VolumeArgumentBase>>(
           [](const double some_number_on_interface,
-             const double volume_argument, const double factor) noexcept {
+             const double volume_argument, const double factor) {
             return factor * some_number_on_interface + volume_argument;
           },
           box, 2.);
@@ -117,7 +115,7 @@ void test_interface_apply(
     // Test an invokable with `void` return value
     size_t face_count = 0;
     interface_apply<DirectionsTag, tmpl::list<>, tmpl::list<>>(
-        [&face_count]() noexcept { face_count += 1; }, box);
+        [&face_count]() { face_count += 1; }, box);
     CHECK(face_count == expected_result_on_interfaces.size());
     double sum = 0;
     interface_apply<DirectionsTag, ComputeWithVoidReturnType>(

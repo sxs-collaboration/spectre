@@ -53,7 +53,7 @@ class GaussianPlusConstant : public DampingFunction<VolumeDim, Fr> {
   struct Width {
     using type = double;
     static constexpr Options::String help = {"The width of the Gaussian."};
-    static type lower_bound() noexcept { return 0.; }
+    static type lower_bound() { return 0.; }
   };
 
   struct Center {
@@ -70,35 +70,34 @@ class GaussianPlusConstant : public DampingFunction<VolumeDim, Fr> {
   WRAPPED_PUPable_decl_base_template(SINGLE_ARG(DampingFunction<VolumeDim, Fr>),
                                      GaussianPlusConstant);  // NOLINT
 
-  explicit GaussianPlusConstant(CkMigrateMessage* msg) noexcept;
+  explicit GaussianPlusConstant(CkMigrateMessage* msg);
   /// \endcond
 
   GaussianPlusConstant(double constant, double amplitude, double width,
-                       const std::array<double, VolumeDim>& center) noexcept;
+                       const std::array<double, VolumeDim>& center);
 
   GaussianPlusConstant() = default;
   ~GaussianPlusConstant() override = default;
   GaussianPlusConstant(const GaussianPlusConstant& /*rhs*/) = default;
   GaussianPlusConstant& operator=(const GaussianPlusConstant& /*rhs*/) =
       default;
-  GaussianPlusConstant(GaussianPlusConstant&& /*rhs*/) noexcept = default;
-  GaussianPlusConstant& operator=(GaussianPlusConstant&& /*rhs*/) noexcept =
-      default;
+  GaussianPlusConstant(GaussianPlusConstant&& /*rhs*/) = default;
+  GaussianPlusConstant& operator=(GaussianPlusConstant&& /*rhs*/) = default;
 
   void operator()(const gsl::not_null<Scalar<double>*> value_at_x,
                   const tnsr::I<double, VolumeDim, Fr>& x, double time,
                   const std::unordered_map<
                       std::string,
                       std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-                      functions_of_time) const noexcept override;
+                      functions_of_time) const override;
   void operator()(const gsl::not_null<Scalar<DataVector>*> value_at_x,
                   const tnsr::I<DataVector, VolumeDim, Fr>& x, double time,
                   const std::unordered_map<
                       std::string,
                       std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-                      functions_of_time) const noexcept override;
+                      functions_of_time) const override;
 
-  auto get_clone() const noexcept
+  auto get_clone() const
       -> std::unique_ptr<DampingFunction<VolumeDim, Fr>> override;
 
   // clang-tidy: google-runtime-references
@@ -106,7 +105,7 @@ class GaussianPlusConstant : public DampingFunction<VolumeDim, Fr> {
 
  private:
   friend bool operator==(const GaussianPlusConstant& lhs,
-                         const GaussianPlusConstant& rhs) noexcept {
+                         const GaussianPlusConstant& rhs) {
     return lhs.constant_ == rhs.constant_ and
            lhs.amplitude_ == rhs.amplitude_ and
            lhs.inverse_width_ == rhs.inverse_width_ and
@@ -120,12 +119,12 @@ class GaussianPlusConstant : public DampingFunction<VolumeDim, Fr> {
 
   template <typename T>
   void apply_call_operator(const gsl::not_null<Scalar<T>*> value_at_x,
-                           const tnsr::I<T, VolumeDim, Fr>& x) const noexcept;
+                           const tnsr::I<T, VolumeDim, Fr>& x) const;
 };
 
 template <size_t VolumeDim, typename Fr>
 bool operator!=(const GaussianPlusConstant<VolumeDim, Fr>& lhs,
-                const GaussianPlusConstant<VolumeDim, Fr>& rhs) noexcept {
+                const GaussianPlusConstant<VolumeDim, Fr>& rhs) {
   return not(lhs == rhs);
 }
 }  // namespace GeneralizedHarmonic::ConstraintDamping

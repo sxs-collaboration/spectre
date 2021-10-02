@@ -19,7 +19,7 @@ namespace TestHelpers::evolution::dg::subcell {
 // reconstruct in the tests.
 template <size_t Dim, typename Fr>
 DataVector cell_values(const size_t max_polynomial_degree_plus_one,
-                       const tnsr::I<DataVector, Dim, Fr>& coords) noexcept {
+                       const tnsr::I<DataVector, Dim, Fr>& coords) {
   DataVector result(get<0>(coords).size(), 0.0);
   for (size_t d = 0; d < Dim; ++d) {
     for (size_t i = 0; i < max_polynomial_degree_plus_one; ++i) {
@@ -34,7 +34,7 @@ DataVector cell_values(const size_t max_polynomial_degree_plus_one,
 template <size_t Dim>
 DataVector cell_averages_times_volume(
     const size_t max_polynomial_degree_plus_one,
-    const Index<Dim>& subcell_extents) noexcept {
+    const Index<Dim>& subcell_extents) {
   Index<Dim> subcell_boundary_extents{};
   for (size_t d = 0; d < Dim; ++d) {
     subcell_boundary_extents[d] = subcell_extents[d] + 1;
@@ -140,18 +140,17 @@ DataVector cell_averages_times_volume(
 
 #define GET_DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATION(r, data)                                         \
-  template DataVector cell_values(                                     \
-      size_t max_polynomial_degree_plus_one,                           \
-      const tnsr::I<DataVector, GET_DIM(data), Frame::ElementLogical>& \
-          coords) noexcept;                                            \
-  template DataVector cell_values(                                     \
-      size_t max_polynomial_degree_plus_one,                           \
-      const tnsr::I<DataVector, GET_DIM(data), Frame::Inertial>&       \
-          coords) noexcept;                                            \
-  template DataVector cell_averages_times_volume(                      \
-      size_t max_polynomial_degree_plus_one,                           \
-      const Index<GET_DIM(data)>& subcell_extents) noexcept;
+#define INSTANTIATION(r, data)                                            \
+  template DataVector cell_values(                                        \
+      size_t max_polynomial_degree_plus_one,                              \
+      const tnsr::I<DataVector, GET_DIM(data), Frame::ElementLogical>&    \
+          coords);                                                        \
+  template DataVector cell_values(                                        \
+      size_t max_polynomial_degree_plus_one,                              \
+      const tnsr::I<DataVector, GET_DIM(data), Frame::Inertial>& coords); \
+  template DataVector cell_averages_times_volume(                         \
+      size_t max_polynomial_degree_plus_one,                              \
+      const Index<GET_DIM(data)>& subcell_extents);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 

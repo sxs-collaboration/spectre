@@ -133,9 +133,9 @@ class SphericalCompression final : public TimeDependence<3> {
   SphericalCompression() = default;
   ~SphericalCompression() override = default;
   SphericalCompression(const SphericalCompression&) = delete;
-  SphericalCompression(SphericalCompression&&) noexcept = default;
+  SphericalCompression(SphericalCompression&&) = default;
   SphericalCompression& operator=(const SphericalCompression&) = delete;
-  SphericalCompression& operator=(SphericalCompression&&) noexcept = default;
+  SphericalCompression& operator=(SphericalCompression&&) = default;
 
   SphericalCompression(double initial_time,
                        std::optional<double> initial_expiration_delta_t,
@@ -145,25 +145,24 @@ class SphericalCompression final : public TimeDependence<3> {
                        std::string function_of_time_name = "LambdaFactorA0",
                        const Options::Context& context = {});
 
-  auto get_clone() const noexcept
-      -> std::unique_ptr<TimeDependence<mesh_dim>> override;
+  auto get_clone() const -> std::unique_ptr<TimeDependence<mesh_dim>> override;
 
-  auto block_maps(size_t number_of_blocks) const noexcept
+  auto block_maps(size_t number_of_blocks) const
       -> std::vector<std::unique_ptr<domain::CoordinateMapBase<
           Frame::Grid, Frame::Inertial, mesh_dim>>> override;
 
-  auto functions_of_time() const noexcept -> std::unordered_map<
+  auto functions_of_time() const -> std::unordered_map<
       std::string,
       std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;
 
   /// Returns the map for each block to be used in a composition of
   /// `TimeDependence`s.
-  MapForComposition map_for_composition() const noexcept;
+  MapForComposition map_for_composition() const;
 
  private:
   // NOLINTNEXTLINE(readability-redundant-declaration)
   friend bool operator==(const SphericalCompression& lhs,
-                         const SphericalCompression& rhs) noexcept;
+                         const SphericalCompression& rhs);
 
   double initial_time_{std::numeric_limits<double>::signaling_NaN()};
   std::optional<double> initial_expiration_delta_t_{};
@@ -177,5 +176,5 @@ class SphericalCompression final : public TimeDependence<3> {
 };
 
 bool operator!=(const SphericalCompression& lhs,
-                const SphericalCompression& rhs) noexcept;
+                const SphericalCompression& rhs);
 }  // namespace domain::creators::time_dependence

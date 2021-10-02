@@ -152,8 +152,7 @@ struct TensorContract
   SPECTRE_ALWAYS_INLINE static constexpr std::array<
       size_t, num_uncontracted_tensor_indices>
   get_uncontracted_multi_index_with_uncontracted_values(
-      const std::array<size_t, num_tensor_indices>&
-          contracted_multi_index) noexcept {
+      const std::array<size_t, num_tensor_indices>& contracted_multi_index) {
     std::array<size_t, num_uncontracted_tensor_indices>
         uncontracted_multi_index{};
 
@@ -210,7 +209,7 @@ struct TensorContract
   template <size_t FirstContractedIndexValue, size_t SecondContractedIndexValue>
   static SPECTRE_ALWAYS_INLINE decltype(auto) compute_contraction(
       const T& t, std::array<size_t, num_uncontracted_tensor_indices>
-                      uncontracted_multi_index_to_fill) noexcept {
+                      uncontracted_multi_index_to_fill) {
     // Fill contracted indices in multi-index with `FirstContractedIndexValue`
     // and `SecondContractedIndexValue`
     uncontracted_multi_index_to_fill[FirstContractedIndexPos] =
@@ -283,7 +282,7 @@ struct TensorContract
 template <size_t NumIndices>
 SPECTRE_ALWAYS_INLINE static constexpr std::pair<size_t, size_t>
 get_first_index_positions_to_contract(
-    const std::array<size_t, NumIndices>& tensorindex_values) noexcept {
+    const std::array<size_t, NumIndices>& tensorindex_values) {
   for (size_t i = 0; i < tensorindex_values.size(); ++i) {
     const size_t current_value = gsl::at(tensorindex_values, i);
     // Concrete time indices are not contracted
@@ -327,7 +326,7 @@ template <typename T, typename X, typename Symm, typename IndexList,
           typename... TensorIndices>
 SPECTRE_ALWAYS_INLINE static constexpr auto contract(
     const TensorExpression<T, X, Symm, IndexList, tmpl::list<TensorIndices...>>&
-        t) noexcept {
+        t) {
   constexpr std::array<size_t, sizeof...(TensorIndices)> tensorindex_values = {
       {TensorIndices::value...}};
   constexpr std::pair first_index_positions_to_contract =

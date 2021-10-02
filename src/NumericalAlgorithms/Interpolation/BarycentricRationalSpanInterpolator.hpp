@@ -27,46 +27,45 @@ class BarycentricRationalSpanInterpolator : public SpanInterpolator {
     using type = size_t;
     static constexpr Options::String help = {
         "Order of barycentric interpolation"};
-    static type lower_bound() noexcept { return 1; }
+    static type lower_bound() { return 1; }
   };
 
   struct MaxOrder {
     using type = size_t;
     static constexpr Options::String help = {
         "Order of barycentric interpolation"};
-    static type upper_bound() noexcept { return 10; }
+    static type upper_bound() { return 10; }
   };
 
   using options = tmpl::list<MinOrder, MaxOrder>;
   static constexpr Options::String help = {
       "Barycentric interpolator of option-defined maximum and minimum order."};
 
-  explicit BarycentricRationalSpanInterpolator(
-      CkMigrateMessage* /*unused*/) noexcept {}
+  explicit BarycentricRationalSpanInterpolator(CkMigrateMessage* /*unused*/) {}
 
   WRAPPED_PUPable_decl_template(BarycentricRationalSpanInterpolator);  // NOLINT
 
   // clang-tidy: do not pass by non-const reference
-  void pup(PUP::er& p) noexcept override {  // NOLINT
+  void pup(PUP::er& p) override {  // NOLINT
     p | min_order_;
     p | max_order_;
   }
 
   BarycentricRationalSpanInterpolator() = default;
   BarycentricRationalSpanInterpolator(
-      const BarycentricRationalSpanInterpolator&) noexcept = default;
+      const BarycentricRationalSpanInterpolator&) = default;
   BarycentricRationalSpanInterpolator& operator=(
-      const BarycentricRationalSpanInterpolator&) noexcept = default;
-  BarycentricRationalSpanInterpolator(
-      BarycentricRationalSpanInterpolator&&) noexcept = default;
+      const BarycentricRationalSpanInterpolator&) = default;
+  BarycentricRationalSpanInterpolator(BarycentricRationalSpanInterpolator&&) =
+      default;
   BarycentricRationalSpanInterpolator& operator=(
-      BarycentricRationalSpanInterpolator&&) noexcept = default;
-  ~BarycentricRationalSpanInterpolator() noexcept override = default;
+      BarycentricRationalSpanInterpolator&&) = default;
+  ~BarycentricRationalSpanInterpolator() override = default;
 
   explicit BarycentricRationalSpanInterpolator(size_t min_order,
-                                               size_t max_order) noexcept;
+                                               size_t max_order);
 
-  std::unique_ptr<SpanInterpolator> get_clone() const noexcept override {
+  std::unique_ptr<SpanInterpolator> get_clone() const override {
     return std::make_unique<BarycentricRationalSpanInterpolator>(*this);
   }
 
@@ -75,9 +74,9 @@ class BarycentricRationalSpanInterpolator : public SpanInterpolator {
 
   double interpolate(const gsl::span<const double>& source_points,
                      const gsl::span<const double>& values,
-                     double target_point) const noexcept override;
+                     double target_point) const override;
 
-  size_t required_number_of_points_before_and_after() const noexcept override {
+  size_t required_number_of_points_before_and_after() const override {
     return min_order_ / 2 + 1;
   }
 

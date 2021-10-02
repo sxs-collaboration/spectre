@@ -70,7 +70,7 @@ struct InitializeElement {
                     Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     Initialization::mutate_assign<
         tmpl::list<Convergence::Tags::IterationId<OptionsGroup>,
                    orthogonalization_iteration_id_tag>>(

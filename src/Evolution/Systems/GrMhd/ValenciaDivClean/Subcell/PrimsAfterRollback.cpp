@@ -33,8 +33,7 @@ void PrimsAfterRollback<OrderedListOfRecoverySchemes>::apply(
     const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
     const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
     const Scalar<DataVector>& sqrt_det_spatial_metric,
-    const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
-        eos) noexcept {
+    const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos) {
   if (did_rollback) {
     const size_t num_grid_points = subcell_mesh.number_of_grid_points();
     ASSERT(prim_vars->number_of_grid_points() != num_grid_points,
@@ -96,8 +95,7 @@ using KastaunThenNewmanThenPalenzuela =
       const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,         \
       const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,     \
       const Scalar<DataVector>& sqrt_det_spatial_metric,                      \
-      const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>&        \
-          eos) noexcept;
+      const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>& eos);
 GENERATE_INSTANTIATIONS(INSTANTIATION,
                         (tmpl::list<PrimitiveRecoverySchemes::KastaunEtAl>,
                          tmpl::list<PrimitiveRecoverySchemes::NewmanHamlin>,

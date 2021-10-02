@@ -20,12 +20,12 @@ namespace Cce::InitializeJ {
 
 ZeroNonSmooth::ZeroNonSmooth(const double angular_coordinate_tolerance,
                              const size_t max_iterations,
-                             const bool require_convergence) noexcept
+                             const bool require_convergence)
     : angular_coordinate_tolerance_{angular_coordinate_tolerance},
       max_iterations_{max_iterations},
       require_convergence_{require_convergence} {}
 
-std::unique_ptr<InitializeJ<false>> ZeroNonSmooth::get_clone() const noexcept {
+std::unique_ptr<InitializeJ<false>> ZeroNonSmooth::get_clone() const {
   return std::make_unique<ZeroNonSmooth>(angular_coordinate_tolerance_,
                                          max_iterations_);
 }
@@ -39,7 +39,7 @@ void ZeroNonSmooth::operator()(
     const Scalar<SpinWeighted<ComplexDataVector, 2>>& boundary_j,
     const Scalar<SpinWeighted<ComplexDataVector, 2>>& /* boundary_dr_j*/,
     const Scalar<SpinWeighted<ComplexDataVector, 0>>& /*r*/, const size_t l_max,
-    const size_t /*number_of_radial_points*/) const noexcept {
+    const size_t /*number_of_radial_points*/) const {
   const size_t number_of_angular_points =
       Spectral::Swsh::number_of_swsh_collocation_points(l_max);
 
@@ -77,7 +77,7 @@ void ZeroNonSmooth::operator()(
   }
 }
 
-void ZeroNonSmooth::pup(PUP::er& p) noexcept {
+void ZeroNonSmooth::pup(PUP::er& p) {
   p | angular_coordinate_tolerance_;
   p | max_iterations_;
 }

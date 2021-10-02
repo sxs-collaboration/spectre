@@ -26,14 +26,14 @@ namespace h5 {
 template <typename T>
 void write_data(hid_t group_id, const std::vector<T>& data,
                 const std::vector<size_t>& extents,
-                const std::string& name = "scalar") noexcept;
+                const std::string& name = "scalar");
 
 /*!
  * \ingroup HDF5Group
  * \brief Write a DataVector named `name` to the group `group_id`
  */
 void write_data(hid_t group_id, const DataVector& data,
-                const std::string& name) noexcept;
+                const std::string& name);
 
 /*!
  * \ingroup HDF5Group
@@ -50,7 +50,7 @@ void write_extents(hid_t group_id, const Index<Dim>& extents,
  */
 template <typename Type>
 void write_to_attribute(hid_t location_id, const std::string& name,
-                        const Type& value) noexcept;
+                        const Type& value);
 
 /*!
  * \ingroup HDF5Group
@@ -59,22 +59,21 @@ void write_to_attribute(hid_t location_id, const std::string& name,
  */
 template <typename T>
 void write_to_attribute(hid_t group_id, const std::string& name,
-                        const std::vector<T>& data) noexcept;
+                        const std::vector<T>& data);
 
 /*!
  * \ingroup HDF5Group
  * \brief Read a value of type `Type` from an HDF5 attribute named `name`
  */
 template <typename Type>
-Type read_value_attribute(hid_t location_id, const std::string& name) noexcept;
+Type read_value_attribute(hid_t location_id, const std::string& name);
 
 /*!
  * \ingroup HDF5Group
  * \brief Read rank-1 of type `Type` from an HDF5 attribute named `name`
  */
 template <typename Type>
-std::vector<Type> read_rank1_attribute(hid_t group_id,
-                                    const std::string& name) noexcept;
+std::vector<Type> read_rank1_attribute(hid_t group_id, const std::string& name);
 
 /*!
  * \ingroup HDF5Group
@@ -87,15 +86,14 @@ std::vector<std::string> get_attribute_names(hid_t file_id,
  * \ingroup HDF5Group
  * \brief Write the connectivity into the group in the H5 file
  */
-void write_connectivity(hid_t group_id,
-                        const std::vector<int>& connectivity) noexcept;
+void write_connectivity(hid_t group_id, const std::vector<int>& connectivity);
 
 /*!
  * \ingroup HDF5Group
  * \brief Get the names of all the groups and datasets in a group
  */
-std::vector<std::string> get_group_names(
-    hid_t file_id, const std::string& group_name) noexcept;
+std::vector<std::string> get_group_names(hid_t file_id,
+                                         const std::string& group_name);
 
 /*!
  * \ingroup HDF5Group
@@ -105,7 +103,7 @@ std::vector<std::string> get_group_names(
  * \note To check the current id for `name`, pass `""` as `group_name`.
  */
 bool contains_dataset_or_group(hid_t id, const std::string& group_name,
-                               const std::string& dataset_name) noexcept;
+                               const std::string& dataset_name);
 
 /*!
  * \ingroup HDF5Group
@@ -118,26 +116,25 @@ bool contains_attribute(hid_t file_id, const std::string& group_name,
  * \ingroup HDF5Group
  * \brief Open an HDF5 dataset
  */
-hid_t open_dataset(hid_t group_id,
-                   const std::string& dataset_name) noexcept;
+hid_t open_dataset(hid_t group_id, const std::string& dataset_name);
 
 /*!
  * \ingroup HDF5Group
  * \brief Close an HDF5 dataset
  */
-void close_dataset(hid_t dataset_id) noexcept;
+void close_dataset(hid_t dataset_id);
 
 /*!
  * \ingroup HDF5Group
  * \brief Open an HDF5 dataspace
  */
-hid_t open_dataspace(hid_t dataset_id) noexcept;
+hid_t open_dataspace(hid_t dataset_id);
 
 /*!
  * \ingroup HDF5Group
  * \brief Close an HDF5 dataspace
  */
-void close_dataspace(hid_t dataspace_id) noexcept;
+void close_dataspace(hid_t dataspace_id);
 
 /*!
  * \ingroup HDF5Group
@@ -150,7 +147,7 @@ void close_dataspace(hid_t dataspace_id) noexcept;
  * rank 3: boost::multiarray or DataVector
  */
 template <size_t Rank, typename T>
-T read_data(hid_t group_id, const std::string& dataset_name) noexcept;
+T read_data(hid_t group_id, const std::string& dataset_name);
 
 /*!
  * \ingroup HDF5Group

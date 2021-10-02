@@ -34,7 +34,7 @@ class GlobalCache;
 /// function alternative permits the inclusion of the time step procedure in
 /// the middle of another action.
 template <typename System, typename VariablesTag = NoSuchType, typename DbTags>
-void update_u(const gsl::not_null<db::DataBox<DbTags>*> box) noexcept {
+void update_u(const gsl::not_null<db::DataBox<DbTags>*> box) {
   using variables_tag =
       tmpl::conditional_t<std::is_same_v<VariablesTag, NoSuchType>,
                           typename System::variables_tag, VariablesTag>;
@@ -49,7 +49,7 @@ void update_u(const gsl::not_null<db::DataBox<DbTags>*> box) noexcept {
              const gsl::not_null<typename variables_tag::type*> vars,
              const gsl::not_null<typename error_tag::type*> error,
              const gsl::not_null<typename history_tag::type*> history,
-             const ::TimeDelta& time_step, const auto& time_stepper) noexcept {
+             const ::TimeDelta& time_step, const auto& time_stepper) {
             *stepper_error_updated =
                 time_stepper.update_u(vars, error, history, time_step);
           },
@@ -65,7 +65,7 @@ void update_u(const gsl::not_null<db::DataBox<DbTags>*> box) noexcept {
         box,
         [](const gsl::not_null<typename variables_tag::type*> vars,
            const gsl::not_null<typename history_tag::type*> history,
-           const ::TimeDelta& time_step, const auto& time_stepper) noexcept {
+           const ::TimeDelta& time_step, const auto& time_stepper) {
           time_stepper.update_u(vars, history, time_step);
         },
         db::get<Tags::TimeStep>(*box), db::get<Tags::TimeStepper<>>(*box));
@@ -101,7 +101,7 @@ struct UpdateU {
       db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {  // NOLINT const
+      const ParallelComponent* const /*meta*/) {  // NOLINT const
     update_u<typename Metavariables::system, VariablesTag>(make_not_null(&box));
     return std::forward_as_tuple(std::move(box));
   }

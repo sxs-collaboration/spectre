@@ -170,7 +170,7 @@ class ConstraintPreservingSphericalRadiation final
  public:
   struct TypeOptionTag {
     using type = detail::ConstraintPreservingSphericalRadiationType;
-    static std::string name() noexcept { return "Type"; }
+    static std::string name() { return "Type"; }
     static constexpr Options::String help{
         "Whether to impose Sommerfeld, first-order Bayliss-Turkel, or "
         "second-order Bayliss-Turkel spherical radiation boundary conditions."};
@@ -183,14 +183,14 @@ class ConstraintPreservingSphericalRadiation final
       "violations, and imposing radiation boundary conditions."};
 
   ConstraintPreservingSphericalRadiation(
-      detail::ConstraintPreservingSphericalRadiationType type) noexcept;
+      detail::ConstraintPreservingSphericalRadiationType type);
 
   ConstraintPreservingSphericalRadiation() = default;
   /// \cond
   ConstraintPreservingSphericalRadiation(
-      ConstraintPreservingSphericalRadiation&&) noexcept = default;
+      ConstraintPreservingSphericalRadiation&&) = default;
   ConstraintPreservingSphericalRadiation& operator=(
-      ConstraintPreservingSphericalRadiation&&) noexcept = default;
+      ConstraintPreservingSphericalRadiation&&) = default;
   ConstraintPreservingSphericalRadiation(
       const ConstraintPreservingSphericalRadiation&) = default;
   ConstraintPreservingSphericalRadiation& operator=(
@@ -198,14 +198,13 @@ class ConstraintPreservingSphericalRadiation final
   /// \endcond
   ~ConstraintPreservingSphericalRadiation() override = default;
 
-  explicit ConstraintPreservingSphericalRadiation(
-      CkMigrateMessage* msg) noexcept;
+  explicit ConstraintPreservingSphericalRadiation(CkMigrateMessage* msg);
 
   WRAPPED_PUPable_decl_base_template(
       domain::BoundaryConditions::BoundaryCondition,
       ConstraintPreservingSphericalRadiation);
 
-  auto get_clone() const noexcept -> std::unique_ptr<
+  auto get_clone() const -> std::unique_ptr<
       domain::BoundaryConditions::BoundaryCondition> override;
 
   static constexpr evolution::BoundaryConditions::Type bc_type =
@@ -244,7 +243,7 @@ class ConstraintPreservingSphericalRadiation final
       const Scalar<DataVector>& dt_psi,
       const tnsr::i<DataVector, Dim, Frame::Inertial>& d_pi,
       const tnsr::i<DataVector, Dim, Frame::Inertial>& d_psi,
-      const tnsr::ij<DataVector, Dim, Frame::Inertial>& d_phi) const noexcept;
+      const tnsr::ij<DataVector, Dim, Frame::Inertial>& d_phi) const;
 
  private:
   detail::ConstraintPreservingSphericalRadiationType type_{

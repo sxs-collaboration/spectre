@@ -85,8 +85,8 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeSlabSize", "[Unit][Time][Actions]") {
     Slab slab(1.5, 2.0);
     Time start_time;
 
-    const auto resize_slab = [&slab, &start_time, &time_runs_forward](
-        const double length) noexcept {
+    const auto resize_slab = [&slab, &start_time,
+                              &time_runs_forward](const double length) {
       if (time_runs_forward) {
         slab = slab.with_duration_from_start(length);
         start_time = slab.start();
@@ -98,7 +98,7 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeSlabSize", "[Unit][Time][Actions]") {
 
     resize_slab(slab.duration().value());
 
-    const auto get_step = [](const TimeStepId& id) noexcept {
+    const auto get_step = [](const TimeStepId& id) {
       return (id.time_runs_forward() ? 1 : -1) *
              id.step_time().slab().duration() / 2;
     };
@@ -111,7 +111,7 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeSlabSize", "[Unit][Time][Actions]") {
             const gsl::not_null<TimeStepId*> next_id,
             const gsl::not_null<TimeDelta*> step,
             const gsl::not_null<TimeDelta*> next_step,
-            const TimeStepper& stepper) noexcept {
+            const TimeStepper& stepper) {
           *id = TimeStepId(time_runs_forward, 3, start_time);
           *step = get_step(*id);
           *next_step = get_step(*id);
@@ -124,7 +124,7 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeSlabSize", "[Unit][Time][Actions]") {
     using NewSize = ChangeSlabSize_detail::NewSlabSizeInbox;
     auto& inboxes = runner.inboxes<Component>().at(0);
 
-    const auto check_box = [&box, &get_step](const TimeStepId& id) noexcept {
+    const auto check_box = [&box, &get_step](const TimeStepId& id) {
       CHECK(db::get<Tags::TimeStepId>(box) == id);
       CHECK(db::get<Tags::TimeStep>(box) == get_step(id));
       CHECK(db::get<Tags::Next<Tags::TimeStepId>>(box) ==
@@ -186,7 +186,7 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeSlabSize", "[Unit][Time][Actions]") {
           [&start_time, &time_runs_forward](
               const gsl::not_null<TimeStepId*> id,
               const gsl::not_null<TimeStepId*> next_id, const TimeDelta& step,
-              const TimeStepper& stepper) noexcept {
+              const TimeStepper& stepper) {
             *id = TimeStepId(time_runs_forward, 3, start_time + step);
             *next_id = stepper.next_time_id(*id, step);
           },
@@ -214,7 +214,7 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeSlabSize", "[Unit][Time][Actions]") {
           make_not_null(&box),
           [](const gsl::not_null<TimeStepId*> id,
              const gsl::not_null<TimeStepId*> next_id, const TimeDelta& step,
-             const TimeStepper& stepper) noexcept {
+             const TimeStepper& stepper) {
             while (not id->substep_time().is_at_slab_boundary()) {
               *id = *next_id;
               REQUIRE(id->substep() != 0);

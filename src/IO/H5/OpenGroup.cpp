@@ -62,7 +62,7 @@ OpenGroup::OpenGroup(hid_t file_id, const std::string& group_name,
   group_id_ = group_id;
 }
 
-OpenGroup::OpenGroup(OpenGroup&& rhs) noexcept {
+OpenGroup::OpenGroup(OpenGroup&& rhs) {
   group_path_ = std::move(rhs.group_path_);
   // clang-tidy: moving trivial type has no effect: might change in future
   group_id_ = std::move(rhs.group_id_);  // NOLINT
@@ -70,7 +70,7 @@ OpenGroup::OpenGroup(OpenGroup&& rhs) noexcept {
   rhs.group_id_ = -1;
 }
 
-OpenGroup& OpenGroup::operator=(OpenGroup&& rhs) noexcept {
+OpenGroup& OpenGroup::operator=(OpenGroup&& rhs) {
   if (group_id_ != -1) {
     for (auto rit = group_path_.rbegin(); rit != group_path_.rend(); ++rit) {
       H5Gclose(*rit);

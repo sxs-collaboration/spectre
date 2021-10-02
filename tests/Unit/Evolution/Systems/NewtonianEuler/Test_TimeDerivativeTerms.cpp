@@ -41,7 +41,7 @@ void wrap_time_derivative(
     const Scalar<DataVector>& first_arg,
     const tnsr::I<DataVector, Dim>& second_arg,
     const Scalar<DataVector>& third_arg,
-    const tnsr::i<DataVector, Dim>& fourth_arg) noexcept {
+    const tnsr::i<DataVector, Dim>& fourth_arg) {
   typename InitialDataType::source_term_type source_computer;
   Scalar<DataVector> enthalpy_density{get(energy_density).size()};
   if constexpr (std::is_same_v<

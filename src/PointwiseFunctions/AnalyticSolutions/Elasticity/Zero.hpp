@@ -50,14 +50,14 @@ class Zero : public ::AnalyticData<Dim, Registrars> {
       "The trivial solution, useful as initial guess."};
 
   Zero() = default;
-  Zero(const Zero&) noexcept = default;
-  Zero& operator=(const Zero&) noexcept = default;
-  Zero(Zero&&) noexcept = default;
-  Zero& operator=(Zero&&) noexcept = default;
-  ~Zero() noexcept override = default;
+  Zero(const Zero&) = default;
+  Zero& operator=(const Zero&) = default;
+  Zero(Zero&&) = default;
+  Zero& operator=(Zero&&) = default;
+  ~Zero() override = default;
 
   /// \cond
-  explicit Zero(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit Zero(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Zero);  // NOLINT
   /// \endcond
@@ -66,7 +66,7 @@ class Zero : public ::AnalyticData<Dim, Registrars> {
   template <typename DataType, typename... RequestedTags>
   tuples::TaggedTuple<RequestedTags...> variables(
       const tnsr::I<DataType, Dim>& x,
-      tmpl::list<RequestedTags...> /*meta*/) const noexcept {
+      tmpl::list<RequestedTags...> /*meta*/) const {
     using supported_tags =
         tmpl::list<Tags::Displacement<Dim>, Tags::Strain<Dim>,
                    Tags::MinusStress<Dim>, Tags::PotentialEnergyDensity<Dim>,
@@ -78,7 +78,7 @@ class Zero : public ::AnalyticData<Dim, Registrars> {
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& /*p*/) noexcept override {}
+  void pup(PUP::er& /*p*/) override {}
 };
 
 /// \cond
@@ -88,13 +88,13 @@ PUP::able::PUP_ID Zero<Dim, Registrars>::my_PUP_ID = 0;  // NOLINT
 
 template <size_t Dim, typename Registrars>
 bool operator==(const Zero<Dim, Registrars>& /*lhs*/,
-                const Zero<Dim, Registrars>& /*rhs*/) noexcept {
+                const Zero<Dim, Registrars>& /*rhs*/) {
   return true;
 }
 
 template <size_t Dim, typename Registrars>
 bool operator!=(const Zero<Dim, Registrars>& /*lhs*/,
-                const Zero<Dim, Registrars>& /*rhs*/) noexcept {
+                const Zero<Dim, Registrars>& /*rhs*/) {
   return false;
 }
 }  // namespace Elasticity::Solutions

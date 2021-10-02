@@ -22,10 +22,12 @@ namespace {
 // We use magnitude and angle of dimensionless spin so that
 // we know their bounds.
 template <typename DataType>
-Scalar<DataType> wrap_kerr_horizon_radius(
-    const Scalar<DataType>& theta, const Scalar<DataType>& phi,
-    const double mass, const double dimless_spin_magnitude,
-    const double dimless_spin_theta, const double dimless_spin_phi) noexcept {
+Scalar<DataType> wrap_kerr_horizon_radius(const Scalar<DataType>& theta,
+                                          const Scalar<DataType>& phi,
+                                          const double mass,
+                                          const double dimless_spin_magnitude,
+                                          const double dimless_spin_theta,
+                                          const double dimless_spin_phi) {
   return kerr_horizon_radius<DataType>(
       {{get(theta), get(phi)}}, mass,
       {{dimless_spin_magnitude * sin(dimless_spin_theta) *

@@ -23,12 +23,12 @@ template <typename TT, typename TParallelComponent, typename... TArgs>
 class is_apply_callable {
  private:
   template <typename T, typename ParallelComponent, typename... Args>
-  static auto test_callable(int) noexcept
+  static auto test_callable(int)
       -> decltype(std::declval<T>().template apply<ParallelComponent>(
                       std::declval<Args>()...),
                   std::true_type());
   template <typename, typename...>
-  static auto test_callable(...) noexcept -> std::false_type;
+  static auto test_callable(...) -> std::false_type;
 
  public:
   static constexpr bool value =

@@ -84,7 +84,7 @@ struct MockSendPointsToInterpolator {
       db::DataBox<DbTags>& box, Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/,
       const typename Metavariables::InterpolationTargetA::temporal_id::type&
-          temporal_id) noexcept {
+          temporal_id) {
     using temporal_id_type =
         typename Metavariables::InterpolationTargetA::temporal_id::type;
     CHECK(temporal_id == 14.0 / 16.0);
@@ -96,7 +96,7 @@ struct MockSendPointsToInterpolator {
         [&temporal_id](
             const gsl::not_null<std::unordered_map<temporal_id_type,
                                                    std::unordered_set<size_t>>*>
-                indices) noexcept {
+                indices) {
           (*indices)[temporal_id].insert((*indices)[temporal_id].size() + 1);
         });
   }
@@ -142,14 +142,14 @@ struct MockCleanUpInterpolator {
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/,
       const typename Metavariables::InterpolationTargetA::temporal_id::type&
-          temporal_id) noexcept {
+          temporal_id) {
     CHECK(temporal_id == 13.0 / 16.0);
     // Put something in NumberOfElements so we can check later whether
     // this function was called.  This isn't the usual usage of
     // NumberOfElements.
     db::mutate<intrp::Tags::NumberOfElements>(
         make_not_null(&box),
-        [](const gsl::not_null<size_t*> number_of_elements) noexcept {
+        [](const gsl::not_null<size_t*> number_of_elements) {
           ++(*number_of_elements);
         });
   }
@@ -170,7 +170,7 @@ struct Square : db::SimpleTag {
 };
 struct SquareCompute : Square, db::ComputeTag {
   static void function(gsl::not_null<Scalar<DataVector>*> result,
-                       const Scalar<DataVector>& x) noexcept {
+                       const Scalar<DataVector>& x) {
     get(*result) = square(get(x));
   }
   using argument_tags = tmpl::list<gr::Tags::Lapse<DataVector>>;
@@ -181,7 +181,7 @@ struct SquareCompute : Square, db::ComputeTag {
 
 template <typename DbTags, typename TemporalId>
 void callback_impl(const db::DataBox<DbTags>& box,
-                   const TemporalId& temporal_id) noexcept {
+                   const TemporalId& temporal_id) {
   CHECK(temporal_id == 13.0 / 16.0);
   // The result should be the square of the first 10 integers, in
   // a Scalar<DataVector>.
@@ -196,7 +196,7 @@ struct MockPostInterpolationCallback {
       const db::DataBox<DbTags>& box,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const typename Metavariables::InterpolationTargetA::temporal_id::type&
-          temporal_id) noexcept {
+          temporal_id) {
     callback_impl(box, temporal_id);
   }
 };
@@ -212,7 +212,7 @@ struct MockPostInterpolationCallbackNoCleanup {
       const gsl::not_null<db::DataBox<DbTags>*> box,
       const gsl::not_null<Parallel::GlobalCache<Metavariables>*> /*cache*/,
       const typename Metavariables::InterpolationTargetA::temporal_id::type&
-          temporal_id) noexcept {
+          temporal_id) {
     callback_impl(*box, temporal_id);
     return false;
   }
@@ -227,7 +227,7 @@ struct MockPostInterpolationCallbackWithInvalidPoints {
       const db::DataBox<DbTags>& box,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const typename Metavariables::InterpolationTargetA::temporal_id::type&
-          temporal_id) noexcept {
+          temporal_id) {
     CHECK(temporal_id == 13.0 / 16.0);
 
     // The result should be the square of the first 10 integers, in
@@ -293,7 +293,7 @@ struct MockMetavariables {
 struct MyFunctionOfTimeUpdater {
   static void apply(
       const gsl::not_null<typename domain::Tags::FunctionsOfTime::type*>
-          functions_of_time) noexcept {
+          functions_of_time) {
     for (auto& name_and_function_of_time : *functions_of_time) {
       name_and_function_of_time.second->reset_expiration_time(14.5 / 16.0);
     }
@@ -303,7 +303,7 @@ struct MyFunctionOfTimeUpdater {
 template <typename MockCallbackType, typename IsTimeDependent,
           size_t NumberOfExpectedCleanUpActions,
           size_t NumberOfInvalidPointsToAdd>
-void test_interpolation_target_receive_vars() noexcept {
+void test_interpolation_target_receive_vars() {
   using metavars = MockMetavariables<MockCallbackType, IsTimeDependent>;
   using temporal_id_type =
       typename metavars::InterpolationTargetA::temporal_id::type;

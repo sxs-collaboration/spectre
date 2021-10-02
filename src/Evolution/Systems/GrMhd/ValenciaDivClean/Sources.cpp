@@ -32,7 +32,7 @@ void densitized_stress(
     const Scalar<DataVector>& h_rho_w_squared_plus_b_squared,
     const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,
     const tnsr::I<DataVector, 3, Frame::Inertial>& magnetic_field,
-    const Scalar<DataVector>& sqrt_det_spatial_metric) noexcept {
+    const Scalar<DataVector>& sqrt_det_spatial_metric) {
   *result = inv_spatial_metric;
   for (size_t i = 0; i < 3; ++i) {
     for (size_t j = i; j < 3; ++j) {
@@ -108,7 +108,7 @@ void sources_impl(
     const Scalar<DataVector>& rest_mass_density,
     const Scalar<DataVector>& specific_enthalpy,
     const tnsr::ii<DataVector, 3, Frame::Inertial>& extrinsic_curvature,
-    const double constraint_damping_parameter) noexcept {
+    const double constraint_damping_parameter) {
   get(*h_rho_w_squared_plus_b_squared) =
       get(magnetic_field_squared) + get(rest_mass_density) *
                                         get(specific_enthalpy) *
@@ -190,7 +190,7 @@ void ComputeSources::apply(
     const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
     const Scalar<DataVector>& sqrt_det_spatial_metric,
     const tnsr::ii<DataVector, 3, Frame::Inertial>& extrinsic_curvature,
-    const double constraint_damping_parameter) noexcept {
+    const double constraint_damping_parameter) {
   Variables<tmpl::list<
       TildeSUp, DensitizedStress, MagneticFieldOneForm,
       hydro::Tags::MagneticFieldDotSpatialVelocity<DataVector>,

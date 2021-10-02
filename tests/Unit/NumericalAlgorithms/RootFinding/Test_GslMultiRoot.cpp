@@ -21,14 +21,13 @@ namespace {
 class Rosenbrock {
  public:
   Rosenbrock(const double a, const double b) : a_(a), b_(b) {}
-  std::array<double, 2> operator()(const std::array<double, 2>& x) const
-      noexcept {
+  std::array<double, 2> operator()(const std::array<double, 2>& x) const {
     const double y0 = a_ * (1.0 - x[0]);
     const double y1 = b_ * (x[1] - x[0] * x[0]);
     return std::array<double, 2>{{y0, y1}};
   }
   std::array<std::array<double, 2>, 2> jacobian(
-      const std::array<double, 2>& x) const noexcept {
+      const std::array<double, 2>& x) const {
     return std::array<std::array<double, 2>, 2>{
         {{{-a_, 0.0}}, {{-2.0 * b_ * x[0], b_}}}};
   }
@@ -40,8 +39,7 @@ class Rosenbrock {
 class RosenbrockNoJac {
  public:
   RosenbrockNoJac(const double a, const double b) : a_(a), b_(b) {}
-  std::array<double, 2> operator()(const std::array<double, 2>& x) const
-      noexcept {
+  std::array<double, 2> operator()(const std::array<double, 2>& x) const {
     const double y0 = a_ * (1.0 - x[0]);
     const double y1 = b_ * (x[1] - x[0] * x[0]);
     return std::array<double, 2>{{y0, y1}};
@@ -58,8 +56,7 @@ class BadFunction {
  public:
   BadFunction(const double a, const double b, const double c)
       : a_(a), b_(b), c_(c) {}
-  std::array<double, 2> operator()(const std::array<double, 2>& x) const
-      noexcept {
+  std::array<double, 2> operator()(const std::array<double, 2>& x) const {
     const double y0 = a_ * x[0] * x[0] + b_ * x[1] * x[1] + c_ * c_;
     const double y1 = a_ * x[0] + b_ * x[1] + c_;
     return std::array<double, 2>{{y0, y1}};

@@ -12,15 +12,15 @@ namespace {
 
 struct ConstructionObserver {
   ConstructionObserver() = default;
-  ConstructionObserver(const ConstructionObserver& /*rhs*/) noexcept {
+  ConstructionObserver(const ConstructionObserver& /*rhs*/) {
     status = "copy-constructed";
   }
   ConstructionObserver& operator=(const ConstructionObserver&) = delete;
-  ConstructionObserver(ConstructionObserver&& rhs) noexcept {
+  ConstructionObserver(ConstructionObserver&& rhs) {
     status = "move-constructed";
     rhs.status = "move-constructed-away";
   }
-  ConstructionObserver& operator=(ConstructionObserver&& rhs) noexcept {
+  ConstructionObserver& operator=(ConstructionObserver&& rhs) {
     status = "moved";
     rhs.status = "moved-away";
     return *this;

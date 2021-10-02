@@ -85,5 +85,5 @@ void volume_terms(
     const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
         mesh_velocity,
     const std::optional<Scalar<DataVector>>& div_mesh_velocity,
-    const TimeDerivativeArguments&... time_derivative_args) noexcept;
+    const TimeDerivativeArguments&... time_derivative_args);
 }  // namespace evolution::dg::Actions::detail

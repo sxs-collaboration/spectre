@@ -37,6 +37,6 @@ struct TimeDerivativeTerms {
 
       // Arguments listed in argument_tags above
       const Scalar<DataVector>& u,
-      const tnsr::I<DataVector, Dim>& velocity_field) noexcept;
+      const tnsr::I<DataVector, Dim>& velocity_field);
 };
 }  // namespace ScalarAdvection

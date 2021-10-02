@@ -57,7 +57,7 @@ using spatial_spacetime_index_positions = tmpl::enumerated_fold<
 /// \return the list of positions where the generic index is spatial and the
 /// tensor index is spacetime
 template <typename TensorIndexTypeList, typename TensorIndexList>
-constexpr auto get_spatial_spacetime_index_positions() noexcept {
+constexpr auto get_spatial_spacetime_index_positions() {
   using spatial_spacetime_index_positions_ =
       spatial_spacetime_index_positions<TensorIndexTypeList, TensorIndexList>;
   using make_list_type = std::conditional_t<
@@ -95,7 +95,7 @@ constexpr std::array<std::int32_t, NumIndices>
 get_spatial_spacetime_index_symmetry(
     const std::array<std::int32_t, NumIndices>& symmetry,
     const std::array<size_t, NumSpatialSpacetimeIndices>&
-        spatial_spacetime_index_positions) noexcept {
+        spatial_spacetime_index_positions) {
   std::array<std::int32_t, NumIndices> spatial_spacetime_index_symmetry{};
   const std::int32_t max_symm_value =
       static_cast<std::int32_t>(*alg::max_element(symmetry));
@@ -117,7 +117,7 @@ constexpr std::array<std::int32_t, NumIndices>
 get_spatial_spacetime_index_symmetry(
     const std::array<std::int32_t, NumIndices>& symmetry,
     const std::array<size_t, NumSpatialSpacetimeIndices>&
-    /*spatial_spacetime_index_positions*/) noexcept {
+    /*spatial_spacetime_index_positions*/) {
   return symmetry;
 }
 /// @}
@@ -161,7 +161,7 @@ template <size_t NumIndices, size_t NumPositions1, size_t NumPositions2>
 constexpr std::array<std::int32_t, NumIndices>
 spatial_spacetime_index_transformation_from_positions(
     const std::array<size_t, NumPositions1>& positions1,
-    const std::array<size_t, NumPositions2>& positions2) noexcept {
+    const std::array<size_t, NumPositions2>& positions2) {
   std::array<std::int32_t, NumIndices> transformation =
       make_array<NumIndices, std::int32_t>(0);
   for (size_t i = 0; i < NumPositions1; i++) {

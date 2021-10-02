@@ -36,7 +36,7 @@ class BoundaryCorrection : public PUP::able {
 
   using creatable_classes = tmpl::list<Hll, Rusanov>;
 
-  virtual std::unique_ptr<BoundaryCorrection> get_clone() const noexcept = 0;
+  virtual std::unique_ptr<BoundaryCorrection> get_clone() const = 0;
 };
 }  // namespace BoundaryCorrections
 }  // namespace grmhd::ValenciaDivClean

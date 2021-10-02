@@ -54,7 +54,7 @@ void reconstruct_prims_work(
                        evolution::dg::subcell::NeighborData,
                        boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>
         neighbor_data,
-    const Mesh<Dim>& subcell_mesh, size_t ghost_zone_size) noexcept;
+    const Mesh<Dim>& subcell_mesh, size_t ghost_zone_size);
 
 /*!
  * \brief Reconstructs the mass density, velocity, and pressure, then computes
@@ -78,6 +78,5 @@ void reconstruct_fd_neighbor_work(
                        boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>
         neighbor_data,
     const Mesh<Dim>& subcell_mesh,
-    const Direction<Dim>& direction_to_reconstruct,
-    size_t ghost_zone_size) noexcept;
+    const Direction<Dim>& direction_to_reconstruct, size_t ghost_zone_size);
 }  // namespace NewtonianEuler::fd

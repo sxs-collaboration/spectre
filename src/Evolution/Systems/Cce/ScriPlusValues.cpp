@@ -20,7 +20,7 @@ void CalculateScriPlusValue<Tags::News>::apply(
     const Scalar<SpinWeighted<ComplexDataVector, 1>>& eth_beta,
     const Scalar<SpinWeighted<ComplexDataVector, 2>>& eth_eth_beta,
     const Scalar<SpinWeighted<ComplexDataVector, 0>>& boundary_r,
-    const size_t l_max, const size_t number_of_radial_points) noexcept {
+    const size_t l_max, const size_t number_of_radial_points) {
   const size_t number_of_angular_points =
       Spectral::Swsh::number_of_swsh_collocation_points(l_max);
 
@@ -60,7 +60,7 @@ void CalculateScriPlusValue<Tags::TimeIntegral<Tags::ScriPlus<Tags::Psi4>>>::
           const Scalar<SpinWeighted<ComplexDataVector, 2>>& dy_du_bondi_j,
           const Scalar<SpinWeighted<ComplexDataVector, 0>>& boundary_r,
           const Scalar<SpinWeighted<ComplexDataVector, 1>>& eth_r_divided_by_r,
-          const size_t l_max, const size_t number_of_radial_points) noexcept {
+          const size_t l_max, const size_t number_of_radial_points) {
   const size_t number_of_angular_points =
       Spectral::Swsh::number_of_swsh_collocation_points(l_max);
 
@@ -107,7 +107,7 @@ void CalculateScriPlusValue<Tags::ScriPlus<Tags::Psi3>>::apply(
     const Scalar<SpinWeighted<ComplexDataVector, 1>>& ethbar_dy_du_bondi_j,
     const Scalar<SpinWeighted<ComplexDataVector, 0>>& boundary_r,
     const Scalar<SpinWeighted<ComplexDataVector, 1>>& eth_r_divided_by_r,
-    const size_t l_max, const size_t number_of_radial_points) noexcept {
+    const size_t l_max, const size_t number_of_radial_points) {
   const size_t number_of_angular_points =
       Spectral::Swsh::number_of_swsh_collocation_points(l_max);
 
@@ -175,7 +175,7 @@ void CalculateScriPlusValue<Tags::ScriPlus<Tags::Psi2>>::apply(
     const Scalar<SpinWeighted<ComplexDataVector, 2>>& dy_du_bondi_j,
     const Scalar<SpinWeighted<ComplexDataVector, 0>>& boundary_r,
     const Scalar<SpinWeighted<ComplexDataVector, 1>>& eth_r_divided_by_r,
-    const size_t l_max, const size_t number_of_radial_points) noexcept {
+    const size_t l_max, const size_t number_of_radial_points) {
   const size_t number_of_angular_points =
       Spectral::Swsh::number_of_swsh_collocation_points(l_max);
 
@@ -259,7 +259,7 @@ void CalculateScriPlusValue<Tags::ScriPlus<Tags::Psi1>>::apply(
     const Scalar<SpinWeighted<ComplexDataVector, 1>>& dy_dy_bondi_q,
     const Scalar<SpinWeighted<ComplexDataVector, 0>>& boundary_r,
     const Scalar<SpinWeighted<ComplexDataVector, 1>>& eth_r_divided_by_r,
-    const size_t l_max, const size_t number_of_radial_points) noexcept {
+    const size_t l_max, const size_t number_of_radial_points) {
   const size_t number_of_angular_points =
       Spectral::Swsh::number_of_swsh_collocation_points(l_max);
 
@@ -306,7 +306,7 @@ void CalculateScriPlusValue<Tags::ScriPlus<Tags::Psi0>>::apply(
     const Scalar<SpinWeighted<ComplexDataVector, 2>>& dy_bondi_j,
     const Scalar<SpinWeighted<ComplexDataVector, 2>>& dy_dy_dy_bondi_j,
     const Scalar<SpinWeighted<ComplexDataVector, 0>>& boundary_r,
-    const size_t l_max, const size_t number_of_radial_points) noexcept {
+    const size_t l_max, const size_t number_of_radial_points) {
   const size_t number_of_angular_points =
       Spectral::Swsh::number_of_swsh_collocation_points(l_max);
 
@@ -331,7 +331,7 @@ void CalculateScriPlusValue<Tags::ScriPlus<Tags::Strain>>::apply(
     const Scalar<SpinWeighted<ComplexDataVector, 2>>& dy_bondi_j,
     const Scalar<SpinWeighted<ComplexDataVector, 2>>& eth_eth_retarded_time,
     const Scalar<SpinWeighted<ComplexDataVector, 0>>& boundary_r,
-    const size_t l_max, const size_t number_of_radial_points) noexcept {
+    const size_t l_max, const size_t number_of_radial_points) {
   const size_t number_of_angular_points =
       Spectral::Swsh::number_of_swsh_collocation_points(l_max);
 
@@ -350,14 +350,14 @@ void CalculateScriPlusValue<Tags::EthInertialRetardedTime>::apply(
     gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 1>>*>
         eth_inertial_time,
     const Scalar<SpinWeighted<ComplexDataVector, 0>>& inertial_time,
-    const size_t l_max) noexcept {
+    const size_t l_max) {
   Spectral::Swsh::angular_derivatives<tmpl::list<Spectral::Swsh::Tags::Eth>>(
       l_max, 1, make_not_null(&get(*eth_inertial_time)), get(inertial_time));
 }
 
 void CalculateScriPlusValue<::Tags::dt<Tags::InertialRetardedTime>>::apply(
     const gsl::not_null<Scalar<DataVector>*> dt_inertial_time,
-    const Scalar<SpinWeighted<ComplexDataVector, 0>>& exp_2_beta) noexcept {
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& exp_2_beta) {
   const SpinWeighted<ComplexDataVector, 0> exp_2_beta_at_scri;
   make_const_view(make_not_null(&exp_2_beta_at_scri), get(exp_2_beta),
                   get(exp_2_beta).size() - get(*dt_inertial_time).size(),

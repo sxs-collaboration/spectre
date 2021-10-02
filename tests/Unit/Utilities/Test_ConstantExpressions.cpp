@@ -131,7 +131,7 @@ static_assert(min_by_magnitude({-1, 1}) == -1,
 
 struct TwoN {
   template <typename T>
-  constexpr size_t operator()(T n) noexcept {
+  constexpr size_t operator()(T n) {
     return 2 * n;
   }
 };

@@ -35,5 +35,5 @@ class Controller {
   DataVector operator()(
       const DataVector& timescales,
       const std::array<DataVector, DerivOrder + 1>& q_and_derivs,
-      double q_time_offset, double deriv_time_offset) const noexcept;
+      double q_time_offset, double deriv_time_offset) const;
 };

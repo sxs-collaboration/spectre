@@ -46,7 +46,7 @@ Scalar<DataVector> speed_with_index_from_tnsr(
 }
 
 template <size_t SpatialDim>
-void test_characteristic_speeds() noexcept {
+void test_characteristic_speeds() {
   const DataVector used_for_size(5);
   pypp::check_with_random_values<1>(speed_with_index<0, SpatialDim>,
                                     "Characteristics", "char_speed_vpsi",
@@ -89,7 +89,7 @@ typename Tag::type field_with_tag(
 }
 
 template <size_t SpatialDim>
-void test_characteristic_fields() noexcept {
+void test_characteristic_fields() {
   const DataVector used_for_size(5);
   // VPsi
   pypp::check_with_random_values<1>(
@@ -122,7 +122,7 @@ typename Tag::type evolved_field_with_tag(
 }
 
 template <size_t SpatialDim>
-void test_evolved_from_characteristic_fields() noexcept {
+void test_evolved_from_characteristic_fields() {
   const DataVector used_for_size(5);
   // Psi
   pypp::check_with_random_values<1>(
@@ -139,7 +139,7 @@ void test_evolved_from_characteristic_fields() noexcept {
 }
 
 template <size_t SpatialDim>
-void test_characteristics_compute_tags() noexcept {
+void test_characteristics_compute_tags() {
   TestHelpers::db::test_compute_tag<
       CurvedScalarWave::CharacteristicSpeedsCompute<SpatialDim>>(
       "CharacteristicSpeeds");
@@ -261,7 +261,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedScalarWave.Characteristics",
 
 namespace {
 template <size_t SpatialDim>
-void check_max_char_speed(const DataVector& used_for_size) noexcept {
+void check_max_char_speed(const DataVector& used_for_size) {
   CAPTURE(SpatialDim);
   MAKE_GENERATOR(gen);
 
@@ -346,8 +346,7 @@ void check_max_char_speed(const DataVector& used_for_size) noexcept {
 }
 
 template <size_t SpatialDim>
-void check_max_char_speed_compute_tag(
-    const DataVector& used_for_size) noexcept {
+void check_max_char_speed_compute_tag(const DataVector& used_for_size) {
   MAKE_GENERATOR(generator);
   std::uniform_real_distribution<> distribution(0.0, 1.0);
 

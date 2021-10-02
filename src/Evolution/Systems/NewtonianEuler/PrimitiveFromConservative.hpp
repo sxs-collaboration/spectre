@@ -71,6 +71,6 @@ struct PrimitiveFromConservative {
       const tnsr::I<DataVector, Dim>& momentum_density,
       const Scalar<DataVector>& energy_density,
       const EquationsOfState::EquationOfState<false, ThermodynamicDim>&
-          equation_of_state) noexcept;
+          equation_of_state);
 };
 }  // namespace NewtonianEuler

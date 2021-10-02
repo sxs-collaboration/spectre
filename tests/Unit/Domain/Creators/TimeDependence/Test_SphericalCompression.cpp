@@ -45,7 +45,7 @@ ConcreteMap create_coord_map(const std::string& f_of_t_name,
 void test(const std::unique_ptr<TimeDependence<3>>& time_dep_unique_ptr,
           const double initial_time, const std::string& f_of_t_name,
           const double min_radius, const double max_radius,
-          const std::array<double, 3>& center) noexcept {
+          const std::array<double, 3>& center) {
   MAKE_GENERATOR(gen);
   CAPTURE(initial_time);
   CAPTURE(f_of_t_name);
@@ -144,7 +144,7 @@ void test(const std::unique_ptr<TimeDependence<3>>& time_dep_unique_ptr,
   }
 }
 
-void test_equivalence() noexcept {
+void test_equivalence() {
   SphericalCompression sc0{
       1.0, 2.5, 0.4, 4.0, {{-0.2, 1.3, 2.4}}, 3.5, -4.6, 5.7, "LambdaFactorA0"};
   SphericalCompression sc1{

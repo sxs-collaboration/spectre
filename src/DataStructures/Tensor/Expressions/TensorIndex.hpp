@@ -102,7 +102,7 @@ namespace TensorExpressions {
  * opposite valence
  */
 SPECTRE_ALWAYS_INLINE static constexpr size_t
-get_tensorindex_value_with_opposite_valence(const size_t i) noexcept {
+get_tensorindex_value_with_opposite_valence(const size_t i) {
   assert(i < TensorIndex_detail::max_sentinel);  // NOLINT
   if ((i >= TensorIndex_detail::upper_sentinel and
        i < TensorIndex_detail::spatial_sentinel) or

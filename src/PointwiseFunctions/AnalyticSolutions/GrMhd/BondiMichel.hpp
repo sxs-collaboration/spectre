@@ -174,7 +174,7 @@ class BondiMichel : public AnalyticSolution, public MarkAsAnalyticSolution {
   struct Mass {
     using type = double;
     static constexpr Options::String help = {"Mass of the black hole."};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
 
   /// The radius at which the fluid becomes supersonic.
@@ -182,7 +182,7 @@ class BondiMichel : public AnalyticSolution, public MarkAsAnalyticSolution {
     using type = double;
     static constexpr Options::String help = {
         "Schwarzschild radius where fluid becomes supersonic."};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
 
   /// The rest mass density of the fluid at the sonic radius.
@@ -190,7 +190,7 @@ class BondiMichel : public AnalyticSolution, public MarkAsAnalyticSolution {
     using type = double;
     static constexpr Options::String help = {
         "The density of the fluid at the sonic radius."};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
 
   /// The polytropic exponent for the polytropic fluid.
@@ -198,7 +198,7 @@ class BondiMichel : public AnalyticSolution, public MarkAsAnalyticSolution {
     using type = double;
     static constexpr Options::String help = {
         "The polytropic exponent for the polytropic fluid."};
-    static type lower_bound() noexcept { return 1.0; }
+    static type lower_bound() { return 1.0; }
   };
 
   /// The strength of the radial magnetic field.
@@ -219,19 +219,18 @@ class BondiMichel : public AnalyticSolution, public MarkAsAnalyticSolution {
   BondiMichel() = default;
   BondiMichel(const BondiMichel& /*rhs*/) = delete;
   BondiMichel& operator=(const BondiMichel& /*rhs*/) = delete;
-  BondiMichel(BondiMichel&& /*rhs*/) noexcept = default;
-  BondiMichel& operator=(BondiMichel&& /*rhs*/) noexcept = default;
+  BondiMichel(BondiMichel&& /*rhs*/) = default;
+  BondiMichel& operator=(BondiMichel&& /*rhs*/) = default;
   ~BondiMichel() = default;
 
   BondiMichel(double mass, double sonic_radius, double sonic_density,
-              double polytropic_exponent, double mag_field_strength) noexcept;
+              double polytropic_exponent, double mag_field_strength);
 
   /// Retrieve a collection of  hydro variables at `(x, t)`
   template <typename DataType, typename... Tags>
   tuples::TaggedTuple<Tags...> variables(const tnsr::I<DataType, 3>& x,
                                          const double /*t*/,
-                                         tmpl::list<Tags...> /*meta*/) const
-      noexcept {
+                                         tmpl::list<Tags...> /*meta*/) const {
     // non-const so we can move out the metric vars. We assume that no variable
     // is being retrieved more than once, which would cause problems with
     // TaggedTuple anyway.
@@ -254,7 +253,7 @@ class BondiMichel : public AnalyticSolution, public MarkAsAnalyticSolution {
   template <typename DataType, typename Tag>
   tuples::TaggedTuple<Tag> variables(const tnsr::I<DataType, 3>& x,
                                      const double /*t*/,  // NOLINT
-                                     tmpl::list<Tag> /*meta*/) const noexcept {
+                                     tmpl::list<Tag> /*meta*/) const {
     return variables(
         x, tmpl::list<Tag>{},
         IntermediateVars<DataType>{
@@ -267,64 +266,62 @@ class BondiMichel : public AnalyticSolution, public MarkAsAnalyticSolution {
   }
 
   // clang-tidy: no runtime references
-  void pup(PUP::er& /*p*/) noexcept;  //  NOLINT
-  const EquationsOfState::PolytropicFluid<true>& equation_of_state() const
-      noexcept {
+  void pup(PUP::er& /*p*/);  //  NOLINT
+  const EquationsOfState::PolytropicFluid<true>& equation_of_state() const {
     return equation_of_state_;
   }
 
  protected:
-  friend bool operator==(const BondiMichel& lhs,
-                         const BondiMichel& rhs) noexcept;
+  friend bool operator==(const BondiMichel& lhs, const BondiMichel& rhs);
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x,
                  tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/,
-                 const IntermediateVars<DataType>& vars) const noexcept
+                 const IntermediateVars<DataType>& vars) const
       -> tuples::TaggedTuple<hydro::Tags::RestMassDensity<DataType>>;
 
   template <typename DataType>
   auto variables(
       const tnsr::I<DataType, 3>& x,
       tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>> /*meta*/,
-      const IntermediateVars<DataType>& vars) const noexcept
+      const IntermediateVars<DataType>& vars) const
       -> tuples::TaggedTuple<hydro::Tags::SpecificInternalEnergy<DataType>>;
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x,
                  tmpl::list<hydro::Tags::Pressure<DataType>> /*meta*/,
-                 const IntermediateVars<DataType>& vars) const noexcept
+                 const IntermediateVars<DataType>& vars) const
       -> tuples::TaggedTuple<hydro::Tags::Pressure<DataType>>;
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x,
                  tmpl::list<hydro::Tags::SpatialVelocity<DataType, 3>> /*meta*/,
-                 const IntermediateVars<DataType>& vars) const noexcept
+                 const IntermediateVars<DataType>& vars) const
       -> tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, 3>>;
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x,
                  tmpl::list<hydro::Tags::MagneticField<DataType, 3>> /*meta*/,
-                 const IntermediateVars<DataType>& vars) const noexcept
+                 const IntermediateVars<DataType>& vars) const
       -> tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3>>;
 
   template <typename DataType>
   auto variables(
       const tnsr::I<DataType, 3>& x,
       tmpl::list<hydro::Tags::DivergenceCleaningField<DataType>> /*meta*/,
-      const IntermediateVars<DataType>& vars) const noexcept
+      const IntermediateVars<DataType>& vars) const
       -> tuples::TaggedTuple<hydro::Tags::DivergenceCleaningField<DataType>>;
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x,
                  tmpl::list<hydro::Tags::LorentzFactor<DataType>> /*meta*/,
-                 const IntermediateVars<DataType>& vars) const noexcept
+                 const IntermediateVars<DataType>& vars) const
       -> tuples::TaggedTuple<hydro::Tags::LorentzFactor<DataType>>;
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x,
                  tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>> /*meta*/,
-                 const IntermediateVars<DataType>& vars) const noexcept
+                 const IntermediateVars<DataType>& vars) const
       -> tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DataType>>;
 
   template <typename DataType, typename Tag,
@@ -332,20 +329,20 @@ class BondiMichel : public AnalyticSolution, public MarkAsAnalyticSolution {
                                                Tag>> = nullptr>
   tuples::TaggedTuple<Tag> variables(
       const tnsr::I<DataType, 3>& /*x*/, tmpl::list<Tag> /*meta*/,
-      const IntermediateVars<DataType>& vars) const noexcept {
+      const IntermediateVars<DataType>& vars) const {
     return {std::move(get<Tag>(vars.kerr_schild_soln))};
   }
 
   template <typename DataType>
   struct IntermediateVars {
-    IntermediateVars(
-        double rest_mass_density_at_infinity,
-        double in_mass_accretion_rate_over_four_pi, double in_mass,
-        double in_polytropic_constant, double in_polytropic_exponent,
-        double in_bernoulli_constant_squared_minus_one, double in_sonic_radius,
-        double in_sonic_density, const tnsr::I<DataType, 3>& x,
-        bool need_spacetime,
-        const gr::Solutions::KerrSchild& background_spacetime) noexcept;
+    IntermediateVars(double rest_mass_density_at_infinity,
+                     double in_mass_accretion_rate_over_four_pi, double in_mass,
+                     double in_polytropic_constant,
+                     double in_polytropic_exponent,
+                     double in_bernoulli_constant_squared_minus_one,
+                     double in_sonic_radius, double in_sonic_density,
+                     const tnsr::I<DataType, 3>& x, bool need_spacetime,
+                     const gr::Solutions::KerrSchild& background_spacetime);
     DataType radius{};
     DataType rest_mass_density{};
     double mass_accretion_rate_over_four_pi{};
@@ -356,7 +353,7 @@ class BondiMichel : public AnalyticSolution, public MarkAsAnalyticSolution {
     double sonic_radius{};
     double sonic_density{};
     double bernoulli_root_function(double rest_mass_density_guess,
-                                   double current_radius) const noexcept;
+                                   double current_radius) const;
     tuples::tagged_tuple_from_typelist<
         typename gr::Solutions::KerrSchild::tags<DataType>>
         kerr_schild_soln{};
@@ -382,7 +379,7 @@ class BondiMichel : public AnalyticSolution, public MarkAsAnalyticSolution {
   gr::Solutions::KerrSchild background_spacetime_{};
 };
 
-bool operator!=(const BondiMichel& lhs, const BondiMichel& rhs) noexcept;
+bool operator!=(const BondiMichel& lhs, const BondiMichel& rhs);
 
 }  // namespace Solutions
 }  // namespace grmhd

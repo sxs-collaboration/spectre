@@ -41,7 +41,7 @@ struct EventsAndTriggers {
   // OptionParser run-time error saying that an option name is greater
   // than 21 characters.  Adding the name() function below bypasses
   // pretty_type::short_name().
-  static std::string name() noexcept { return "EventsAndTriggers"; }
+  static std::string name() { return "EventsAndTriggers"; }
 };
 }  // namespace OptionTags
 
@@ -53,7 +53,7 @@ struct EventsAndTriggers : db::SimpleTag {
   using option_tags = tmpl::list<::OptionTags::EventsAndTriggers>;
 
   static constexpr bool pass_metavariables = false;
-  static type create_from_options(const type& events_and_triggers) noexcept {
+  static type create_from_options(const type& events_and_triggers) {
     return deserialize<type>(serialize<type>(events_and_triggers).data());
   }
 };

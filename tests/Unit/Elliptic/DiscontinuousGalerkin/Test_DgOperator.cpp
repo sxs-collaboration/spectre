@@ -75,10 +75,9 @@ struct IncrementTemporalId {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
-    db::mutate<TemporalIdTag>(
-        make_not_null(&box),
-        [](const auto temporal_id) noexcept { (*temporal_id)++; });
+      const ParallelComponent* const /*meta*/) {
+    db::mutate<TemporalIdTag>(make_not_null(&box),
+                              [](const auto temporal_id) { (*temporal_id)++; });
     return {std::move(box)};
   }
 };

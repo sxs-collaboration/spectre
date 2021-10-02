@@ -102,13 +102,13 @@ class GaugeWave : public AnalyticSolution<Dim>, public MarkAsAnalyticSolution {
   struct Amplitude {
     using type = double;
     static constexpr Options::String help = {"Amplitude of the gauge wave"};
-    static type upper_bound() noexcept { return 1.; }
-    static type lower_bound() noexcept { return -1.; }
+    static type upper_bound() { return 1.; }
+    static type lower_bound() { return -1.; }
   };
   struct Wavelength {
     using type = double;
     static constexpr Options::String help = {"Wavelength of the gauge wave"};
-    static type lower_bound() noexcept { return 0.; }
+    static type lower_bound() { return 0.; }
   };
 
   using options = tmpl::list<Amplitude, Wavelength>;
@@ -120,8 +120,8 @@ class GaugeWave : public AnalyticSolution<Dim>, public MarkAsAnalyticSolution {
   GaugeWave() = default;
   GaugeWave(const GaugeWave& /*rhs*/) = default;
   GaugeWave& operator=(const GaugeWave& /*rhs*/) = default;
-  GaugeWave(GaugeWave&& /*rhs*/) noexcept = default;
-  GaugeWave& operator=(GaugeWave&& /*rhs*/) noexcept = default;
+  GaugeWave(GaugeWave&& /*rhs*/) = default;
+  GaugeWave& operator=(GaugeWave&& /*rhs*/) = default;
   ~GaugeWave() = default;
 
   template <typename DataType>
@@ -139,7 +139,7 @@ class GaugeWave : public AnalyticSolution<Dim>, public MarkAsAnalyticSolution {
   template <typename DataType, typename... Tags>
   tuples::TaggedTuple<Tags...> variables(
       const tnsr::I<DataType, volume_dim, Frame::Inertial>& x, double t,
-      tmpl::list<Tags...> /*meta*/) const noexcept {
+      tmpl::list<Tags...> /*meta*/) const {
     const auto& vars =
         IntermediateVars<DataType>{amplitude_, wavelength_, x, t};
     return {get<Tags>(variables(x, t, vars, tmpl::list<Tags>{}))...};
@@ -149,7 +149,7 @@ class GaugeWave : public AnalyticSolution<Dim>, public MarkAsAnalyticSolution {
   tuples::TaggedTuple<Tags...> variables(
       const tnsr::I<DataType, volume_dim, Frame::Inertial>& x, double t,
       const IntermediateVars<DataType>& vars,
-      tmpl::list<Tags...> /*meta*/) const noexcept {
+      tmpl::list<Tags...> /*meta*/) const {
     static_assert(sizeof...(Tags) > 1,
                   "Unrecognized tag requested.  See the function parameters "
                   "for the tag.");
@@ -171,38 +171,35 @@ class GaugeWave : public AnalyticSolution<Dim>, public MarkAsAnalyticSolution {
       gr::Tags::InverseSpatialMetric<volume_dim, Frame::Inertial, DataType>>;
 
   // clang-tidy: no runtime references
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
 
-  SPECTRE_ALWAYS_INLINE double amplitude() const noexcept { return amplitude_; }
-  SPECTRE_ALWAYS_INLINE double wavelength() const noexcept {
-    return wavelength_;
-  }
+  SPECTRE_ALWAYS_INLINE double amplitude() const { return amplitude_; }
+  SPECTRE_ALWAYS_INLINE double wavelength() const { return wavelength_; }
 
  private:
   template <typename DataType>
   auto variables(const tnsr::I<DataType, volume_dim, Frame::Inertial>& x,
                  double t, const IntermediateVars<DataType>& vars,
-                 tmpl::list<gr::Tags::Lapse<DataType>> /*meta*/) const noexcept
+                 tmpl::list<gr::Tags::Lapse<DataType>> /*meta*/) const
       -> tuples::TaggedTuple<gr::Tags::Lapse<DataType>>;
-
-  template <typename DataType>
-  auto variables(
-      const tnsr::I<DataType, volume_dim, Frame::Inertial>& x, double t,
-      const IntermediateVars<DataType>& vars,
-      tmpl::list<::Tags::dt<gr::Tags::Lapse<DataType>>> /*meta*/) const noexcept
-      -> tuples::TaggedTuple<::Tags::dt<gr::Tags::Lapse<DataType>>>;
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, volume_dim, Frame::Inertial>& x,
                  double t, const IntermediateVars<DataType>& vars,
-                 tmpl::list<DerivLapse<DataType>> /*meta*/) const noexcept
+                 tmpl::list<::Tags::dt<gr::Tags::Lapse<DataType>>> /*meta*/)
+      const -> tuples::TaggedTuple<::Tags::dt<gr::Tags::Lapse<DataType>>>;
+
+  template <typename DataType>
+  auto variables(const tnsr::I<DataType, volume_dim, Frame::Inertial>& x,
+                 double t, const IntermediateVars<DataType>& vars,
+                 tmpl::list<DerivLapse<DataType>> /*meta*/) const
       -> tuples::TaggedTuple<DerivLapse<DataType>>;
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, volume_dim, Frame::Inertial>& x,
                  double t, const IntermediateVars<DataType>& vars,
                  tmpl::list<gr::Tags::Shift<volume_dim, Frame::Inertial,
-                                            DataType>> /*meta*/) const noexcept
+                                            DataType>> /*meta*/) const
       -> tuples::TaggedTuple<
           gr::Tags::Shift<volume_dim, Frame::Inertial, DataType>>;
 
@@ -211,13 +208,13 @@ class GaugeWave : public AnalyticSolution<Dim>, public MarkAsAnalyticSolution {
                  double t, const IntermediateVars<DataType>& vars,
                  tmpl::list<::Tags::dt<gr::Tags::Shift<
                      volume_dim, Frame::Inertial, DataType>>> /*meta*/) const
-      noexcept -> tuples::TaggedTuple<
+      -> tuples::TaggedTuple<
           ::Tags::dt<gr::Tags::Shift<volume_dim, Frame::Inertial, DataType>>>;
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, volume_dim, Frame::Inertial>& x,
                  double t, const IntermediateVars<DataType>& vars,
-                 tmpl::list<DerivShift<DataType>> /*meta*/) const noexcept
+                 tmpl::list<DerivShift<DataType>> /*meta*/) const
       -> tuples::TaggedTuple<DerivShift<DataType>>;
 
   template <typename DataType>
@@ -225,7 +222,7 @@ class GaugeWave : public AnalyticSolution<Dim>, public MarkAsAnalyticSolution {
                  double t, const IntermediateVars<DataType>& vars,
                  tmpl::list<gr::Tags::SpatialMetric<volume_dim, Frame::Inertial,
                                                     DataType>> /*meta*/) const
-      noexcept -> tuples::TaggedTuple<
+      -> tuples::TaggedTuple<
           gr::Tags::SpatialMetric<volume_dim, Frame::Inertial, DataType>>;
 
   template <typename DataType>
@@ -233,28 +230,27 @@ class GaugeWave : public AnalyticSolution<Dim>, public MarkAsAnalyticSolution {
                  double t, const IntermediateVars<DataType>& vars,
                  tmpl::list<::Tags::dt<gr::Tags::SpatialMetric<
                      volume_dim, Frame::Inertial, DataType>>> /*meta*/) const
-      noexcept -> tuples::TaggedTuple<::Tags::dt<
+      -> tuples::TaggedTuple<::Tags::dt<
           gr::Tags::SpatialMetric<volume_dim, Frame::Inertial, DataType>>>;
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, volume_dim, Frame::Inertial>& /*x*/,
                  double /*t*/, const IntermediateVars<DataType>& vars,
                  tmpl::list<DerivSpatialMetric<DataType>> /*meta*/) const
-      noexcept -> tuples::TaggedTuple<DerivSpatialMetric<DataType>>;
+      -> tuples::TaggedTuple<DerivSpatialMetric<DataType>>;
 
   template <typename DataType>
-  auto variables(
-      const tnsr::I<DataType, volume_dim, Frame::Inertial>& /*x*/, double /*t*/,
-      const IntermediateVars<DataType>& vars,
-      tmpl::list<gr::Tags::SqrtDetSpatialMetric<DataType>> /*meta*/) const
-      noexcept -> tuples::TaggedTuple<gr::Tags::SqrtDetSpatialMetric<DataType>>;
+  auto variables(const tnsr::I<DataType, volume_dim, Frame::Inertial>& /*x*/,
+                 double /*t*/, const IntermediateVars<DataType>& vars,
+                 tmpl::list<gr::Tags::SqrtDetSpatialMetric<DataType>> /*meta*/)
+      const -> tuples::TaggedTuple<gr::Tags::SqrtDetSpatialMetric<DataType>>;
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, volume_dim, Frame::Inertial>& x,
                  double t, const IntermediateVars<DataType>& vars,
                  tmpl::list<gr::Tags::ExtrinsicCurvature<
                      volume_dim, Frame::Inertial, DataType>> /*meta*/) const
-      noexcept -> tuples::TaggedTuple<
+      -> tuples::TaggedTuple<
           gr::Tags::ExtrinsicCurvature<volume_dim, Frame::Inertial, DataType>>;
 
   template <typename DataType>
@@ -262,14 +258,14 @@ class GaugeWave : public AnalyticSolution<Dim>, public MarkAsAnalyticSolution {
                  double t, const IntermediateVars<DataType>& vars,
                  tmpl::list<gr::Tags::InverseSpatialMetric<
                      volume_dim, Frame::Inertial, DataType>> /*meta*/) const
-      noexcept -> tuples::TaggedTuple<gr::Tags::InverseSpatialMetric<
+      -> tuples::TaggedTuple<gr::Tags::InverseSpatialMetric<
           volume_dim, Frame::Inertial, DataType>>;
 
   template <typename DataType>
   struct IntermediateVars {
     IntermediateVars(double amplitude, double wavelength,
                      const tnsr::I<DataType, volume_dim, Frame::Inertial>& x,
-                     double t) noexcept;
+                     double t);
     DataType h{};
     DataType dx_h{};
     DataType sqrt_h{};
@@ -281,8 +277,8 @@ class GaugeWave : public AnalyticSolution<Dim>, public MarkAsAnalyticSolution {
 };
 
 template <size_t Dim>
-bool operator==(const GaugeWave<Dim>& lhs, const GaugeWave<Dim>& rhs) noexcept;
+bool operator==(const GaugeWave<Dim>& lhs, const GaugeWave<Dim>& rhs);
 template <size_t Dim>
-bool operator!=(const GaugeWave<Dim>& lhs, const GaugeWave<Dim>& rhs) noexcept;
+bool operator!=(const GaugeWave<Dim>& lhs, const GaugeWave<Dim>& rhs);
 }  // namespace Solutions
 }  // namespace gr

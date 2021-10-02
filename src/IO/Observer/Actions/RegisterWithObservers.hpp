@@ -50,7 +50,7 @@ struct RegisterWithObservers {
             typename DbTagList, typename Metavariables, typename ArrayIndex>
   static void register_or_deregister_impl(
       db::DataBox<DbTagList>& box, Parallel::GlobalCache<Metavariables>& cache,
-      const ArrayIndex& array_index) noexcept {
+      const ArrayIndex& array_index) {
     auto& observer =
         *Parallel::get_parallel_component<observers::Observer<Metavariables>>(
              cache)
@@ -66,12 +66,13 @@ struct RegisterWithObservers {
             Parallel::ArrayIndex<std::decay_t<ArrayIndex>>{array_index}),
         type_of_observation);
   }
+
  public:
   template <typename ParallelComponent, typename DbTagList,
             typename Metavariables, typename ArrayIndex>
   static void perform_registration(db::DataBox<DbTagList>& box,
                                    Parallel::GlobalCache<Metavariables>& cache,
-                                   const ArrayIndex& array_index) noexcept {
+                                   const ArrayIndex& array_index) {
     register_or_deregister_impl<ParallelComponent,
                                 RegisterContributorWithObserver>(box, cache,
                                                                  array_index);
@@ -81,7 +82,7 @@ struct RegisterWithObservers {
             typename Metavariables, typename ArrayIndex>
   static void perform_deregistration(
       db::DataBox<DbTagList>& box, Parallel::GlobalCache<Metavariables>& cache,
-      const ArrayIndex& array_index) noexcept {
+      const ArrayIndex& array_index) {
     register_or_deregister_impl<ParallelComponent,
                                 DeregisterContributorWithObserver>(box, cache,
                                                                    array_index);
@@ -95,7 +96,7 @@ struct RegisterWithObservers {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     perform_registration<ParallelComponent>(box, cache, array_index);
     return {std::move(box)};
   }

@@ -15,7 +15,7 @@ namespace intrp {
 std::complex<double> SpanInterpolator::interpolate(
     const gsl::span<const double>& source_points,
     const gsl::span<const std::complex<double>>& values,
-    const double target_point) const noexcept {
+    const double target_point) const {
   // the operation below to get the real and imag parts does not alter the
   // contents of the span, so the const-cast is safe.
   const ComplexDataVector view{

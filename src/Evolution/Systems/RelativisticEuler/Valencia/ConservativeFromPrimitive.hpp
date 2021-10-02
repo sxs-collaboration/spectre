@@ -74,8 +74,7 @@ struct ConservativeFromPrimitive {
       const tnsr::I<DataVector, Dim, Frame::Inertial>& spatial_velocity,
       const Scalar<DataVector>& lorentz_factor,
       const Scalar<DataVector>& sqrt_det_spatial_metric,
-      const tnsr::ii<DataVector, Dim, Frame::Inertial>&
-          spatial_metric) noexcept;
+      const tnsr::ii<DataVector, Dim, Frame::Inertial>& spatial_metric);
 };
 }  // namespace Valencia
 }  // namespace RelativisticEuler

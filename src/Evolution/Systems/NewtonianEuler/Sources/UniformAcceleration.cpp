@@ -17,11 +17,11 @@ namespace Sources {
 
 template <size_t Dim>
 UniformAcceleration<Dim>::UniformAcceleration(
-    const std::array<double, Dim>& acceleration_field) noexcept
+    const std::array<double, Dim>& acceleration_field)
     : acceleration_field_(acceleration_field) {}
 
 template <size_t Dim>
-void UniformAcceleration<Dim>::pup(PUP::er& p) noexcept {
+void UniformAcceleration<Dim>::pup(PUP::er& p) {
   p | acceleration_field_;
 }
 
@@ -30,7 +30,7 @@ void UniformAcceleration<Dim>::apply(
     const gsl::not_null<tnsr::I<DataVector, Dim>*> source_momentum_density,
     const gsl::not_null<Scalar<DataVector>*> source_energy_density,
     const Scalar<DataVector>& mass_density_cons,
-    const tnsr::I<DataVector, Dim>& momentum_density) const noexcept {
+    const tnsr::I<DataVector, Dim>& momentum_density) const {
   get(*source_energy_density) = 0.0;
   for (size_t i = 0; i < Dim; ++i) {
     source_momentum_density->get(i) =
@@ -42,24 +42,24 @@ void UniformAcceleration<Dim>::apply(
 
 template <size_t Dim>
 bool operator==(const UniformAcceleration<Dim>& lhs,
-                const UniformAcceleration<Dim>& rhs) noexcept {
+                const UniformAcceleration<Dim>& rhs) {
   return lhs.acceleration_field_ == rhs.acceleration_field_;
 }
 
 template <size_t Dim>
 bool operator!=(const UniformAcceleration<Dim>& lhs,
-                const UniformAcceleration<Dim>& rhs) noexcept {
+                const UniformAcceleration<Dim>& rhs) {
   return not(lhs == rhs);
 }
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                                \
-  template struct UniformAcceleration<DIM(data)>;                           \
-  template bool operator==(const UniformAcceleration<DIM(data)>&,           \
-                           const UniformAcceleration<DIM(data)>&) noexcept; \
-  template bool operator!=(const UniformAcceleration<DIM(data)>&,           \
-                           const UniformAcceleration<DIM(data)>&) noexcept;
+#define INSTANTIATE(_, data)                                       \
+  template struct UniformAcceleration<DIM(data)>;                  \
+  template bool operator==(const UniformAcceleration<DIM(data)>&,  \
+                           const UniformAcceleration<DIM(data)>&); \
+  template bool operator!=(const UniformAcceleration<DIM(data)>&,  \
+                           const UniformAcceleration<DIM(data)>&);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 

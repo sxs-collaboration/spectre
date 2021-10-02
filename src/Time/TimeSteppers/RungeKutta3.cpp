@@ -10,26 +10,23 @@
 
 namespace TimeSteppers {
 
-size_t RungeKutta3::order() const noexcept { return 3; }
+size_t RungeKutta3::order() const { return 3; }
 
-size_t RungeKutta3::error_estimate_order() const noexcept { return 2; }
+size_t RungeKutta3::error_estimate_order() const { return 2; }
 
-uint64_t RungeKutta3::number_of_substeps() const noexcept { return 3; }
+uint64_t RungeKutta3::number_of_substeps() const { return 3; }
 
-uint64_t RungeKutta3::number_of_substeps_for_error() const noexcept {
-  return 3;
-}
+uint64_t RungeKutta3::number_of_substeps_for_error() const { return 3; }
 
-size_t RungeKutta3::number_of_past_steps() const noexcept { return 0; }
+size_t RungeKutta3::number_of_past_steps() const { return 0; }
 
-double RungeKutta3::stable_step() const noexcept {
+double RungeKutta3::stable_step() const {
   // This is the condition for  y' = -k y  to go to zero.
   return 0.5 * (1. + cbrt(4. + sqrt(17.)) - 1. / cbrt(4. + sqrt(17.)));
 }
 
-TimeStepId RungeKutta3::next_time_id(
-    const TimeStepId& current_id,
-    const TimeDelta& time_step) const noexcept {
+TimeStepId RungeKutta3::next_time_id(const TimeStepId& current_id,
+                                     const TimeDelta& time_step) const {
   switch (current_id.substep()) {
     case 0:
       ASSERT(current_id.substep_time() == current_id.step_time(),
@@ -54,8 +51,7 @@ TimeStepId RungeKutta3::next_time_id(
 }
 
 TimeStepId RungeKutta3::next_time_id_for_error(
-    const TimeStepId& current_id,
-    const TimeDelta& time_step) const noexcept {
+    const TimeStepId& current_id, const TimeDelta& time_step) const {
   return next_time_id(current_id, time_step);
 }
 }  // namespace TimeSteppers

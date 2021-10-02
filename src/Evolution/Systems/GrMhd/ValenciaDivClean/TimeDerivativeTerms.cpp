@@ -39,7 +39,7 @@ void fluxes_impl(
     const Scalar<DataVector>& tilde_phi, const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, 3, Frame::Inertial>& shift,
     const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity) noexcept;
+    const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity);
 
 void sources_impl(
     gsl::not_null<Scalar<DataVector>*> source_tilde_tau,
@@ -74,7 +74,7 @@ void sources_impl(
     const Scalar<DataVector>& rest_mass_density,
     const Scalar<DataVector>& specific_enthalpy,
     const tnsr::ii<DataVector, 3, Frame::Inertial>& extrinsic_curvature,
-    double constraint_damping_parameter) noexcept;
+    double constraint_damping_parameter);
 }  // namespace detail
 
 void TimeDerivativeTerms::apply(
@@ -144,7 +144,7 @@ void TimeDerivativeTerms::apply(
     const Scalar<DataVector>& rest_mass_density,
     const Scalar<DataVector>& specific_enthalpy,
     const tnsr::ii<DataVector, 3, Frame::Inertial>& extrinsic_curvature,
-    const double constraint_damping_parameter) noexcept {
+    const double constraint_damping_parameter) {
   // Note that if the temp_lapse and lapse arguments point to the same object
   // then the copy is elided internally.
   *temp_lapse = lapse;

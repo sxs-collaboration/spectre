@@ -13,7 +13,7 @@
 // and `formaline::get_paths` are generated at link time and defined in the
 // script `tools/Formaline.sh` for non-macOS builds.
 namespace formaline {
-void write_to_file(const std::string& filename_without_extension) noexcept {
+void write_to_file(const std::string& filename_without_extension) {
   std::FILE* outfile = nullptr;
   const auto archive = get_archive();
 
@@ -27,16 +27,14 @@ void write_to_file(const std::string& filename_without_extension) noexcept {
 }
 
 #ifdef SPECTRE_NO_FORMALINE
-std::vector<char> get_archive() noexcept {
+std::vector<char> get_archive() {
   return {'N', 'o', 't', ' ', 's', 'u', 'p', 'p', 'o', 'r', 't', 'e', 'd'};
 }
 
-std::string get_environment_variables() noexcept {
-  return "Not supported on macOS";
-}
+std::string get_environment_variables() { return "Not supported on macOS"; }
 
-std::string get_build_info() noexcept { return "Not supported on macOS"; }
+std::string get_build_info() { return "Not supported on macOS"; }
 
-std::string get_paths() noexcept { return "Not supported on macOS"; }
+std::string get_paths() { return "Not supported on macOS"; }
 #endif  // defined(__APPLE__)
 }  // namespace formaline

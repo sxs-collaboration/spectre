@@ -45,14 +45,14 @@ class PureSphericalHarmonic : public MarkAsAnalyticData {
     using type = double;
     static constexpr Options::String help = {
         "The radius of the spherical harmonic profile"};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
 
   struct Width {
     using type = double;
     static constexpr Options::String help = {
         "The width of the spherical harmonic profile."};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
 
   struct Mode {
@@ -79,10 +79,10 @@ class PureSphericalHarmonic : public MarkAsAnalyticData {
                       CurvedScalarWave::Psi>
   variables(const tnsr::I<DataVector, 3>& x, double /*t*/,
             tmpl::list<CurvedScalarWave::Pi, CurvedScalarWave::Phi<3>,
-                       CurvedScalarWave::Psi> /*meta*/) const noexcept;
+                       CurvedScalarWave::Psi> /*meta*/) const;
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& /*p*/) noexcept;
+  void pup(PUP::er& /*p*/);
 
  private:
   double radius_{std::numeric_limits<double>::signaling_NaN()};
@@ -91,10 +91,10 @@ class PureSphericalHarmonic : public MarkAsAnalyticData {
                                std::numeric_limits<int>::signaling_NaN()};
 
   friend bool operator==(const PureSphericalHarmonic& lhs,
-                         const PureSphericalHarmonic& rhs) noexcept;
+                         const PureSphericalHarmonic& rhs);
 
   friend bool operator!=(const PureSphericalHarmonic& lhs,
-                         const PureSphericalHarmonic& rhs) noexcept;
+                         const PureSphericalHarmonic& rhs);
 };
 
 }  // namespace CurvedScalarWave::AnalyticData

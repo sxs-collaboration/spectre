@@ -34,28 +34,26 @@ class ExcisionSphere {
   /// computational domain.
   /// \param center the coordinate center of the excision sphere
   /// in the computational domain.
-  ExcisionSphere(double radius, std::array<double, VolumeDim> center) noexcept;
+  ExcisionSphere(double radius, std::array<double, VolumeDim> center);
 
   /// Default constructor needed for Charm++ serialization.
-  ExcisionSphere() noexcept = default;
-  ~ExcisionSphere() noexcept = default;
-  ExcisionSphere(const ExcisionSphere<VolumeDim>& /*rhs*/) noexcept = default;
-  ExcisionSphere(ExcisionSphere<VolumeDim>&& /*rhs*/) noexcept = default;
+  ExcisionSphere() = default;
+  ~ExcisionSphere() = default;
+  ExcisionSphere(const ExcisionSphere<VolumeDim>& /*rhs*/) = default;
+  ExcisionSphere(ExcisionSphere<VolumeDim>&& /*rhs*/) = default;
   ExcisionSphere<VolumeDim>& operator=(
-      const ExcisionSphere<VolumeDim>& /*rhs*/) noexcept = default;
-  ExcisionSphere<VolumeDim>& operator=(
-      ExcisionSphere<VolumeDim>&& /*rhs*/) noexcept = default;
+      const ExcisionSphere<VolumeDim>& /*rhs*/) = default;
+  ExcisionSphere<VolumeDim>& operator=(ExcisionSphere<VolumeDim>&& /*rhs*/) =
+      default;
 
   /// The radius of the ExcisionSphere.
-  double radius() const noexcept { return radius_; }
+  double radius() const { return radius_; }
 
   /// The coodinate center of the ExcisionSphere.
-  const std::array<double, VolumeDim>& center() const noexcept {
-    return center_;
-  }
+  const std::array<double, VolumeDim>& center() const { return center_; }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept;
+  void pup(PUP::er& p);
 
  private:
   double radius_{std::numeric_limits<double>::signaling_NaN()};
@@ -64,14 +62,13 @@ class ExcisionSphere {
 };
 
 template <size_t VolumeDim>
-std::ostream& operator<<(
-    std::ostream& os,
-    const ExcisionSphere<VolumeDim>& excision_sphere) noexcept;
+std::ostream& operator<<(std::ostream& os,
+                         const ExcisionSphere<VolumeDim>& excision_sphere);
 
 template <size_t VolumeDim>
 bool operator==(const ExcisionSphere<VolumeDim>& lhs,
-                const ExcisionSphere<VolumeDim>& rhs) noexcept;
+                const ExcisionSphere<VolumeDim>& rhs);
 
 template <size_t VolumeDim>
 bool operator!=(const ExcisionSphere<VolumeDim>& lhs,
-                const ExcisionSphere<VolumeDim>& rhs) noexcept;
+                const ExcisionSphere<VolumeDim>& rhs);

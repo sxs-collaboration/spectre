@@ -210,9 +210,7 @@ class BinaryCompactObject : public DomainCreator<3> {
         "absence."};
     template <typename BoundaryConditionsBase>
     struct BoundaryCondition {
-      static std::string name() noexcept {
-        return "ExciseWithBoundaryCondition";
-      }
+      static std::string name() { return "ExciseWithBoundaryCondition"; }
       using type = std::unique_ptr<BoundaryConditionsBase>;
       static constexpr Options::String help = {
           "The boundary condition to impose on the excision surface."};
@@ -233,13 +231,13 @@ class BinaryCompactObject : public DomainCreator<3> {
       using type = double;
       static constexpr Options::String help = {
           "Inner coordinate radius of Layer 1."};
-      static double lower_bound() noexcept { return 0.; }
+      static double lower_bound() { return 0.; }
     };
     struct OuterRadius {
       using type = double;
       static constexpr Options::String help = {
           "Outer coordinate radius of Layer 1"};
-      static double lower_bound() noexcept { return 0.; }
+      static double lower_bound() { return 0.; }
     };
     struct XCoord {
       using type = double;
@@ -274,7 +272,7 @@ class BinaryCompactObject : public DomainCreator<3> {
     Object() = default;
     Object(double local_inner_radius, double local_outer_radius,
            double local_x_coord, std::optional<Excision> interior,
-           bool local_use_logarithmic_map) noexcept
+           bool local_use_logarithmic_map)
         : inner_radius(local_inner_radius),
           outer_radius(local_outer_radius),
           x_coord(local_x_coord),
@@ -285,7 +283,7 @@ class BinaryCompactObject : public DomainCreator<3> {
           use_logarithmic_map(local_use_logarithmic_map) {}
     Object(double local_inner_radius, double local_outer_radius,
            double local_x_coord, bool local_excise_interior,
-           bool local_use_logarithmic_map) noexcept
+           bool local_use_logarithmic_map)
         : inner_radius(local_inner_radius),
           outer_radius(local_outer_radius),
           x_coord(local_x_coord),
@@ -300,7 +298,7 @@ class BinaryCompactObject : public DomainCreator<3> {
     /// spherical hole. When this is true, `inner_boundary_condition` is
     /// guaranteed to hold a value (though it might be a `nullptr` if we are not
     /// working with boundary conditions).
-    bool is_excised() const noexcept;
+    bool is_excised() const;
 
     double inner_radius;
     double outer_radius;
@@ -332,7 +330,7 @@ class BinaryCompactObject : public DomainCreator<3> {
 
   struct RadiusEnvelopingCube {
     using group = EnvelopingCube;
-    static std::string name() noexcept { return "Radius"; }
+    static std::string name() { return "Radius"; }
     using type = double;
     static constexpr Options::String help = {
         "Radius of Layer 3 which circumscribes the Frustums."};
@@ -345,7 +343,7 @@ class BinaryCompactObject : public DomainCreator<3> {
 
   struct RadiusOuterSphere {
     using group = OuterSphere;
-    static std::string name() noexcept { return "Radius"; }
+    static std::string name() { return "Radius"; }
     using type = double;
     static constexpr Options::String help = {"Radius of the entire domain."};
   };
@@ -378,7 +376,7 @@ class BinaryCompactObject : public DomainCreator<3> {
 
   struct UseLogarithmicMapOuterSphericalShell {
     using group = OuterSphere;
-    static std::string name() noexcept { return "UseLogarithmicMap"; }
+    static std::string name() { return "UseLogarithmicMap"; }
     using type = bool;
     static constexpr Options::String help = {
         "Use a logarithmically spaced radial grid in Layer 5, the outer "
@@ -388,7 +386,7 @@ class BinaryCompactObject : public DomainCreator<3> {
   template <typename BoundaryConditionsBase>
   struct OuterBoundaryCondition {
     using group = OuterSphere;
-    static std::string name() noexcept { return "BoundaryCondition"; }
+    static std::string name() { return "BoundaryCondition"; }
     static constexpr Options::String help =
         "Options for the outer boundary conditions.";
     using type = std::unique_ptr<BoundaryConditionsBase>;
@@ -430,7 +428,7 @@ class BinaryCompactObject : public DomainCreator<3> {
     static constexpr Options::String help = {
         "Outer boundary or pivot point of the map"};
     using group = ExpansionMap;
-    static std::string name() noexcept { return "OuterBoundary"; }
+    static std::string name() { return "OuterBoundary"; }
   };
   /// \brief The initial value of the expansion factor.
   struct InitialExpansion {
@@ -467,7 +465,7 @@ class BinaryCompactObject : public DomainCreator<3> {
     using type = std::string;
     static constexpr Options::String help = {"Names of the functions of time."};
     using group = ExpansionMap;
-    static std::string name() noexcept { return "FunctionOfTimeName"; }
+    static std::string name() { return "FunctionOfTimeName"; }
   };
 
   struct RotationAboutZAxisMap {
@@ -493,7 +491,7 @@ class BinaryCompactObject : public DomainCreator<3> {
     using type = std::string;
     static constexpr Options::String help = {"Name of the function of time."};
     using group = RotationAboutZAxisMap;
-    static std::string name() noexcept { return "FunctionOfTimeName"; }
+    static std::string name() { return "FunctionOfTimeName"; }
   };
 
   struct SizeMap {
@@ -514,7 +512,7 @@ class BinaryCompactObject : public DomainCreator<3> {
     static constexpr Options::String help = {
         "SizeMapA, SizeMapB values at initial time."};
     using group = SizeMap;
-    static std::string name() noexcept { return "InitialValues"; }
+    static std::string name() { return "InitialValues"; }
   };
   /// \brief Initial velocities for functions of time for size maps for objects
   /// A,B.
@@ -529,7 +527,7 @@ class BinaryCompactObject : public DomainCreator<3> {
     static constexpr Options::String help = {
         "SizeMapA, SizeMapB initial velocities."};
     using group = SizeMap;
-    static std::string name() noexcept { return "InitialVelocities"; }
+    static std::string name() { return "InitialVelocities"; }
   };
   /// \brief Initial accelerations for functions of time for size maps for
   /// objects A,B
@@ -544,7 +542,7 @@ class BinaryCompactObject : public DomainCreator<3> {
     static constexpr Options::String help = {
         "SizeMapA, SizeMapB initial accelerations."};
     using group = SizeMap;
-    static std::string name() noexcept { return "InitialAccelerations"; }
+    static std::string name() { return "InitialAccelerations"; }
   };
   /// \brief The names of the functions of times to be added to the added to the
   /// DataBox for the size map.
@@ -559,7 +557,7 @@ class BinaryCompactObject : public DomainCreator<3> {
     static constexpr Options::String help = {
         "Names of SizeMapA, SizeMapB functions of time."};
     using group = SizeMap;
-    static std::string name() noexcept { return "FunctionOfTimeNames"; }
+    static std::string name() { return "FunctionOfTimeNames"; }
   };
 
   template <typename Metavariables>
@@ -677,32 +675,32 @@ class BinaryCompactObject : public DomainCreator<3> {
 
   BinaryCompactObject() = default;
   BinaryCompactObject(const BinaryCompactObject&) = delete;
-  BinaryCompactObject(BinaryCompactObject&&) noexcept = default;
+  BinaryCompactObject(BinaryCompactObject&&) = default;
   BinaryCompactObject& operator=(const BinaryCompactObject&) = delete;
-  BinaryCompactObject& operator=(BinaryCompactObject&&) noexcept = default;
-  ~BinaryCompactObject() noexcept override = default;
+  BinaryCompactObject& operator=(BinaryCompactObject&&) = default;
+  ~BinaryCompactObject() override = default;
 
-  Domain<3> create_domain() const noexcept override;
+  Domain<3> create_domain() const override;
 
-  std::vector<std::array<size_t, 3>> initial_extents() const noexcept override {
+  std::vector<std::array<size_t, 3>> initial_extents() const override {
     return initial_number_of_grid_points_;
   }
 
   std::vector<std::array<size_t, 3>> initial_refinement_levels()
-      const noexcept override {
+      const override {
     return initial_refinement_;
   }
 
-  std::vector<std::string> block_names() const noexcept override {
+  std::vector<std::string> block_names() const override {
     return block_names_;
   }
 
   std::unordered_map<std::string, std::unordered_set<std::string>>
-  block_groups() const noexcept override {
+  block_groups() const override {
     return block_groups_;
   }
 
-  auto functions_of_time() const noexcept -> std::unordered_map<
+  auto functions_of_time() const -> std::unordered_map<
       std::string,
       std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;
 

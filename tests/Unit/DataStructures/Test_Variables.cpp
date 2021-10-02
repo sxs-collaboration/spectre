@@ -40,14 +40,13 @@
 // IWYU pragma: no_forward_declare Variables
 
 static_assert(
-    std::is_nothrow_move_constructible<
+    std::is_move_constructible<
         Variables<tmpl::list<TestHelpers::Tags::Scalar<DataVector>,
-                             TestHelpers::Tags::Vector<DataVector>>>>::value,
-    "Missing move semantics in Variables.");
+                             TestHelpers::Tags::Vector<DataVector>>>>::value);
 
 namespace {
 std::string repeat_string_with_commas(const std::string& str,
-                                      const size_t repeats) noexcept {
+                                      const size_t repeats) {
   MakeString t;
   for (size_t i = 0; i < repeats - 1; ++i) {
     t << str << ",";
@@ -58,7 +57,7 @@ std::string repeat_string_with_commas(const std::string& str,
 
 // An empty Variables is a separate implementation, so we put tests
 // for it in a separate function here.
-void test_empty_variables() noexcept {
+void test_empty_variables() {
   Variables<tmpl::list<>> empty_vars;
   auto serialized_empty_vars = serialize_and_deserialize(empty_vars);
   CHECK(serialized_empty_vars == empty_vars);
@@ -76,7 +75,7 @@ void test_empty_variables() noexcept {
 }
 
 template <typename VectorType>
-void test_variables_construction_and_access() noexcept {
+void test_variables_construction_and_access() {
   using value_type = typename VectorType::value_type;
   MAKE_GENERATOR(gen);
   UniformCustomDistribution<tt::get_fundamental_type_t<value_type>> dist{-100.0,
@@ -230,7 +229,7 @@ void test_variables_construction_and_access() noexcept {
 }
 
 template <typename VectorType>
-void test_variables_move() noexcept {
+void test_variables_move() {
   using value_type = typename VectorType::value_type;
   MAKE_GENERATOR(gen);
   UniformCustomDistribution<tt::get_fundamental_type_t<value_type>> dist{-100.0,
@@ -324,7 +323,7 @@ void test_variables_move() noexcept {
 }
 
 template <typename VectorType>
-void test_variables_math() noexcept {
+void test_variables_math() {
   using value_type = typename VectorType::value_type;
   using TestVariablesType =
       Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>,
@@ -418,10 +417,10 @@ void test_variables_math() noexcept {
   test_assignment2 = test_assignment2 * 1.0;
   CHECK(test_assignment2 == test_assignment);
 
-  const auto check_components =
-      [](const auto& variables, const VectorType& tensor) noexcept {
+  const auto check_components = [](const auto& variables,
+                                   const VectorType& tensor) {
     tmpl::for_each<typename std::decay_t<decltype(variables)>::tags_list>(
-        [&variables, &tensor ](auto tag) noexcept {
+        [&variables, &tensor](auto tag) {
           using Tag = tmpl::type_from<decltype(tag)>;
           for (const auto& component : get<Tag>(variables)) {
             CHECK_ITERABLE_APPROX(component, tensor);
@@ -449,7 +448,7 @@ void test_variables_math() noexcept {
 }
 
 template <typename VectorType>
-void test_variables_prefix_semantics() noexcept {
+void test_variables_prefix_semantics() {
   using TagList = tmpl::list<TestHelpers::Tags::Vector<VectorType>,
                              TestHelpers::Tags::Scalar<VectorType>,
                              TestHelpers::Tags::Scalar2<VectorType>>;
@@ -543,7 +542,7 @@ void test_variables_prefix_semantics() noexcept {
 }
 
 template <typename VectorType>
-void test_variables_prefix_math() noexcept {
+void test_variables_prefix_math() {
   using TagList = tmpl::list<TestHelpers::Tags::Vector<VectorType>,
                              TestHelpers::Tags::Scalar<VectorType>,
                              TestHelpers::Tags::Scalar2<VectorType>>;
@@ -673,7 +672,7 @@ void test_variables_prefix_math() noexcept {
 }
 
 template <typename VectorType>
-void test_variables_serialization() noexcept {
+void test_variables_serialization() {
   using value_type = typename VectorType::value_type;
   MAKE_GENERATOR(gen);
   UniformCustomDistribution<tt::get_fundamental_type_t<value_type>> dist{-100.0,
@@ -696,7 +695,7 @@ void test_variables_serialization() noexcept {
 }
 
 template <typename VectorType>
-void test_variables_assign_subset() noexcept {
+void test_variables_assign_subset() {
   using value_type = typename VectorType::value_type;
   MAKE_GENERATOR(gen);
   UniformCustomDistribution<tt::get_fundamental_type_t<value_type>> dist{-100.0,
@@ -710,11 +709,14 @@ void test_variables_assign_subset() noexcept {
 
   // Test assigning a single tag to a Variables with two tags, either from a
   // Variables or a TaggedTuple
-  const auto test_assign_to_vars_with_two_tags =
-      [&number_of_grid_points, &
-       values_in_variables ](const auto& vars_subset0, const auto& vars_subset1,
-                             const value_type& vars_subset0_val,
-                             const value_type& vars_subset1_val) noexcept {
+  const auto test_assign_to_vars_with_two_tags = [&number_of_grid_points,
+                                                  &values_in_variables](
+                                                     const auto& vars_subset0,
+                                                     const auto& vars_subset1,
+                                                     const value_type&
+                                                         vars_subset0_val,
+                                                     const value_type&
+                                                         vars_subset1_val) {
     Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>,
                          TestHelpers::Tags::Scalar<VectorType>>>
         vars_set{number_of_grid_points, values_in_variables[0]};
@@ -752,11 +754,14 @@ void test_variables_assign_subset() noexcept {
 
   // Test assigning a single tag to a Variables with three tags, either from a
   // Variables or a TaggedTuple
-  const auto test_assign_to_vars_with_three_tags =
-      [&number_of_grid_points, &
-       values_in_variables ](const auto& vars_subset0, const auto& vars_subset1,
-                             const value_type& vars_subset0_val,
-                             const value_type& vars_subset1_val) noexcept {
+  const auto test_assign_to_vars_with_three_tags = [&number_of_grid_points,
+                                                    &values_in_variables](
+                                                       const auto& vars_subset0,
+                                                       const auto& vars_subset1,
+                                                       const value_type&
+                                                           vars_subset0_val,
+                                                       const value_type&
+                                                           vars_subset1_val) {
     Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>,
                          TestHelpers::Tags::Scalar<VectorType>,
                          TestHelpers::Tags::Scalar2<VectorType>>>
@@ -801,18 +806,18 @@ void test_variables_assign_subset() noexcept {
 
   // Test assignment to a Variables with a single tag either from a Variables or
   // a TaggedTuple
-  const auto test_assign_to_vars_with_one_tag = [
-    &number_of_grid_points, &values_in_variables
-  ](const auto& vars_subset0, const value_type& vars_subset0_val) noexcept {
-    Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>> vars_set(
-        number_of_grid_points, values_in_variables[0]);
-    CHECK(
-        get<TestHelpers::Tags::Vector<VectorType>>(vars_set) ==
-        tnsr::I<VectorType, 3>(number_of_grid_points, values_in_variables[0]));
-    vars_set.assign_subset(vars_subset0);
-    CHECK(get<TestHelpers::Tags::Vector<VectorType>>(vars_set) ==
-          tnsr::I<VectorType, 3>(number_of_grid_points, vars_subset0_val));
-  };
+  const auto test_assign_to_vars_with_one_tag =
+      [&number_of_grid_points, &values_in_variables](
+          const auto& vars_subset0, const value_type& vars_subset0_val) {
+        Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>> vars_set(
+            number_of_grid_points, values_in_variables[0]);
+        CHECK(get<TestHelpers::Tags::Vector<VectorType>>(vars_set) ==
+              tnsr::I<VectorType, 3>(number_of_grid_points,
+                                     values_in_variables[0]));
+        vars_set.assign_subset(vars_subset0);
+        CHECK(get<TestHelpers::Tags::Vector<VectorType>>(vars_set) ==
+              tnsr::I<VectorType, 3>(number_of_grid_points, vars_subset0_val));
+      };
 
   test_assign_to_vars_with_one_tag(
       Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>>(
@@ -826,7 +831,7 @@ void test_variables_assign_subset() noexcept {
 }
 
 template <typename VectorType>
-void test_variables_extract_subset() noexcept {
+void test_variables_extract_subset() {
   using value_type = typename VectorType::value_type;
   MAKE_GENERATOR(gen);
   UniformCustomDistribution<tt::get_fundamental_type_t<value_type>> dist{-100.0,
@@ -863,7 +868,7 @@ void test_variables_extract_subset() noexcept {
 }
 
 template <typename VectorType>
-void test_variables_from_tagged_tuple() noexcept {
+void test_variables_from_tagged_tuple() {
   using value_type = typename VectorType::value_type;
   MAKE_GENERATOR(gen);
   UniformCustomDistribution<tt::get_fundamental_type_t<value_type>> dist{-100.0,

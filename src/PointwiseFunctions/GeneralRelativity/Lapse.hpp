@@ -39,13 +39,12 @@ namespace gr {
 template <size_t SpatialDim, typename Frame, typename DataType>
 Scalar<DataType> lapse(
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
-    const tnsr::aa<DataType, SpatialDim, Frame>& spacetime_metric) noexcept;
+    const tnsr::aa<DataType, SpatialDim, Frame>& spacetime_metric);
 
 template <size_t SpatialDim, typename Frame, typename DataType>
-void lapse(
-    gsl::not_null<Scalar<DataType>*> lapse,
-    const tnsr::I<DataType, SpatialDim, Frame>& shift,
-    const tnsr::aa<DataType, SpatialDim, Frame>& spacetime_metric) noexcept;
+void lapse(gsl::not_null<Scalar<DataType>*> lapse,
+           const tnsr::I<DataType, SpatialDim, Frame>& shift,
+           const tnsr::aa<DataType, SpatialDim, Frame>& spacetime_metric);
 /// @}
 
 namespace Tags {
@@ -63,11 +62,11 @@ struct LapseCompute : Lapse<DataType>, db::ComputeTag {
 
   using return_type = Scalar<DataType>;
 
-  static constexpr auto function = static_cast<void (*)(
-      const gsl::not_null<Scalar<DataType>*> lapse,
-      const tnsr::I<DataType, SpatialDim, Frame>&,
-      const tnsr::aa<DataType, SpatialDim, Frame>&) noexcept>(
-      &lapse<SpatialDim, Frame, DataType>);
+  static constexpr auto function =
+      static_cast<void (*)(const gsl::not_null<Scalar<DataType>*> lapse,
+                           const tnsr::I<DataType, SpatialDim, Frame>&,
+                           const tnsr::aa<DataType, SpatialDim, Frame>&)>(
+          &lapse<SpatialDim, Frame, DataType>);
 
   using base = Lapse<DataType>;
 };

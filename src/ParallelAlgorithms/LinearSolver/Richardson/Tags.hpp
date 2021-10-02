@@ -30,16 +30,14 @@ namespace Tags {
 /// \see `LinearSolver::Richardson::Richardson`
 template <typename OptionsGroup>
 struct RelaxationParameter : db::SimpleTag {
-  static std::string name() noexcept {
+  static std::string name() {
     return "RelaxationParameter(" + Options::name<OptionsGroup>() + ")";
   }
   using type = double;
 
   static constexpr bool pass_metavariables = false;
   using option_tags = tmpl::list<OptionTags::RelaxationParameter<OptionsGroup>>;
-  static double create_from_options(const double value) noexcept {
-    return value;
-  }
+  static double create_from_options(const double value) { return value; }
 };
 
 }  // namespace Tags

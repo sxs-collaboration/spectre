@@ -38,8 +38,7 @@ struct Observer {
 
   static void execute_next_phase(
       const typename Metavariables::Phase /*next_phase*/,
-      Parallel::CProxy_GlobalCache<
-          Metavariables>& /*global_cache*/) noexcept {}
+      Parallel::CProxy_GlobalCache<Metavariables>& /*global_cache*/) {}
 };
 
 /*!
@@ -63,7 +62,6 @@ struct ObserverWriter {
 
   static void execute_next_phase(
       const typename Metavariables::Phase /*next_phase*/,
-      Parallel::CProxy_GlobalCache<
-          Metavariables>& /*global_cache*/) noexcept {}
+      Parallel::CProxy_GlobalCache<Metavariables>& /*global_cache*/) {}
 };
 }  // namespace observers

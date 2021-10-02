@@ -25,6 +25,6 @@ struct Fluxes {
       tmpl::list<::Tags::Flux<Tags::U, tmpl::size_t<Dim>, Frame::Inertial>>;
   static void apply(gsl::not_null<tnsr::I<DataVector, Dim>*> u_flux,
                     const Scalar<DataVector>& u,
-                    const tnsr::I<DataVector, Dim>& velocity_field) noexcept;
+                    const tnsr::I<DataVector, Dim>& velocity_field);
 };
 }  // namespace ScalarAdvection

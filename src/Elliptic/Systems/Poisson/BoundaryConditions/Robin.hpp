@@ -45,34 +45,33 @@ struct RobinImpl {
   using options = tmpl::list<DirichletWeight, NeumannWeight, Constant>;
 
   RobinImpl() = default;
-  RobinImpl(const RobinImpl&) noexcept = default;
-  RobinImpl& operator=(const RobinImpl&) noexcept = default;
-  RobinImpl(RobinImpl&&) noexcept = default;
-  RobinImpl& operator=(RobinImpl&&) noexcept = default;
-  ~RobinImpl() noexcept = default;
+  RobinImpl(const RobinImpl&) = default;
+  RobinImpl& operator=(const RobinImpl&) = default;
+  RobinImpl(RobinImpl&&) = default;
+  RobinImpl& operator=(RobinImpl&&) = default;
+  ~RobinImpl() = default;
 
   RobinImpl(double dirichlet_weight, double neumann_weight, double constant,
             const Options::Context& context = {});
 
-  double dirichlet_weight() const noexcept;
-  double neumann_weight() const noexcept;
-  double constant() const noexcept;
+  double dirichlet_weight() const;
+  double neumann_weight() const;
+  double constant() const;
 
   using argument_tags = tmpl::list<>;
   using volume_tags = tmpl::list<>;
 
-  void apply(
-      gsl::not_null<Scalar<DataVector>*> field,
-      gsl::not_null<Scalar<DataVector>*> n_dot_field_gradient) const noexcept;
+  void apply(gsl::not_null<Scalar<DataVector>*> field,
+             gsl::not_null<Scalar<DataVector>*> n_dot_field_gradient) const;
 
   using argument_tags_linearized = tmpl::list<>;
   using volume_tags_linearized = tmpl::list<>;
 
-  void apply_linearized(gsl::not_null<Scalar<DataVector>*> field_correction,
-                        gsl::not_null<Scalar<DataVector>*>
-                            n_dot_field_gradient_correction) const noexcept;
+  void apply_linearized(
+      gsl::not_null<Scalar<DataVector>*> field_correction,
+      gsl::not_null<Scalar<DataVector>*> n_dot_field_gradient_correction) const;
 
-  void pup(PUP::er& p) noexcept;
+  void pup(PUP::er& p);
 
  private:
   double dirichlet_weight_ = std::numeric_limits<double>::signaling_NaN();
@@ -80,8 +79,8 @@ struct RobinImpl {
   double constant_ = std::numeric_limits<double>::signaling_NaN();
 };
 
-bool operator==(const RobinImpl& lhs, const RobinImpl& rhs) noexcept;
-bool operator!=(const RobinImpl& lhs, const RobinImpl& rhs) noexcept;
+bool operator==(const RobinImpl& lhs, const RobinImpl& rhs);
+bool operator!=(const RobinImpl& lhs, const RobinImpl& rhs);
 
 }  // namespace detail
 
@@ -112,25 +111,25 @@ class Robin
 
  public:
   Robin() = default;
-  Robin(const Robin&) noexcept = default;
-  Robin& operator=(const Robin&) noexcept = default;
-  Robin(Robin&&) noexcept = default;
-  Robin& operator=(Robin&&) noexcept = default;
-  ~Robin() noexcept = default;
+  Robin(const Robin&) = default;
+  Robin& operator=(const Robin&) = default;
+  Robin(Robin&&) = default;
+  Robin& operator=(Robin&&) = default;
+  ~Robin() = default;
   using RobinImpl::RobinImpl;
 
   /// \cond
-  explicit Robin(CkMigrateMessage* m) noexcept : Base(m) {}
+  explicit Robin(CkMigrateMessage* m) : Base(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Robin);
   /// \endcond
 
   std::unique_ptr<domain::BoundaryConditions::BoundaryCondition> get_clone()
-      const noexcept override {
+      const override {
     return std::make_unique<Robin>(*this);
   }
 
-  void pup(PUP::er& p) noexcept override {
+  void pup(PUP::er& p) override {
     Base::pup(p);
     RobinImpl::pup(p);
   }

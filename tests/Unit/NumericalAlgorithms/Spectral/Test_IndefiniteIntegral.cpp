@@ -17,7 +17,7 @@
 
 namespace Spectral {
 namespace {
-DataVector integrate(const DataVector& u, const Mesh<1>& mesh) noexcept {
+DataVector integrate(const DataVector& u, const Mesh<1>& mesh) {
   const size_t num_pts = mesh.number_of_grid_points();
   DataVector result(num_pts, 0.0);
   const Matrix& indef_int_with_constant = integration_matrix(mesh);
@@ -27,7 +27,7 @@ DataVector integrate(const DataVector& u, const Mesh<1>& mesh) noexcept {
 }
 
 template <Basis BasisType, Quadrature QuadratureType>
-void check_integration(const size_t min_pts, const size_t max_pts) noexcept {
+void check_integration(const size_t min_pts, const size_t max_pts) {
   CAPTURE(BasisType);
   CAPTURE(QuadratureType);
   for (size_t num_pts = min_pts; num_pts < max_pts; ++num_pts) {

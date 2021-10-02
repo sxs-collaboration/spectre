@@ -10,7 +10,7 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 
 namespace dg {
-std::ostream& operator<<(std::ostream& os, const Formulation t) noexcept {
+std::ostream& operator<<(std::ostream& os, const Formulation t) {
   switch (t) {
     case Formulation::StrongInertial:
       return os << "StrongInertial";

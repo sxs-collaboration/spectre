@@ -18,11 +18,11 @@ namespace domain {
  * `child_segment_id`: The full segment, its lower half or its upper half.
  */
 Spectral::ChildSize child_size(const SegmentId& child_segment_id,
-                               const SegmentId& parent_segment_id) noexcept;
+                               const SegmentId& parent_segment_id);
 
 template <size_t Dim>
 std::array<Spectral::ChildSize, Dim> child_size(
     const std::array<SegmentId, Dim>& child_segment_ids,
-    const std::array<SegmentId, Dim>& parent_segment_ids) noexcept;
+    const std::array<SegmentId, Dim>& parent_segment_ids);
 /// @}
 }  // namespace domain

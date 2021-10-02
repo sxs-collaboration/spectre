@@ -167,7 +167,7 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
   /// this parameter is unfortunately problem-dependent.
   struct TvbConstant {
     using type = double;
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
     static constexpr Options::String help = {"TVB constant 'm'"};
   };
   /// \brief Turn the limiter off
@@ -177,7 +177,7 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
   /// approach is to not compile the limiter into the executable.
   struct DisableForDebugging {
     using type = bool;
-    static type suggested_value() noexcept { return false; }
+    static type suggested_value() { return false; }
     static constexpr Options::String help = {"Disable the limiter"};
   };
   using options = tmpl::list<Type, TvbConstant, DisableForDebugging>;
@@ -194,21 +194,21 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
   /// \param tvb_constant The value of the TVB constant.
   /// \param disable_for_debugging Switch to turn the limiter off.
   explicit Minmod(MinmodType minmod_type, double tvb_constant,
-                  bool disable_for_debugging = false) noexcept;
+                  bool disable_for_debugging = false);
 
-  Minmod() noexcept = default;
+  Minmod() = default;
   Minmod(const Minmod& /*rhs*/) = default;
   Minmod& operator=(const Minmod& /*rhs*/) = default;
-  Minmod(Minmod&& /*rhs*/) noexcept = default;
-  Minmod& operator=(Minmod&& /*rhs*/) noexcept = default;
+  Minmod(Minmod&& /*rhs*/) = default;
+  Minmod& operator=(Minmod&& /*rhs*/) = default;
   ~Minmod() = default;
 
   // clang-tidy: google-runtime-references
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
 
   // To facilitate testing
   /// \cond
-  MinmodType minmod_type() const noexcept { return minmod_type_; }
+  MinmodType minmod_type() const { return minmod_type_; }
   /// \endcond
 
   /// \brief Data to send to neighbor elements.
@@ -218,7 +218,7 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
         make_array<VolumeDim>(std::numeric_limits<double>::signaling_NaN());
 
     // clang-tidy: google-runtime-references
-    void pup(PUP::er& p) noexcept {  // NOLINT
+    void pup(PUP::er& p) {  // NOLINT
       p | means;
       p | element_size;
     }
@@ -241,11 +241,11 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
   /// \param element_size The size of the element in inertial coordinates, along
   ///        each dimension of logical coordinates.
   /// \param orientation_map The orientation of the neighbor
-  void package_data(
-      gsl::not_null<PackagedData*> packaged_data,
-      const typename Tags::type&... tensors, const Mesh<VolumeDim>& mesh,
-      const std::array<double, VolumeDim>& element_size,
-      const OrientationMap<VolumeDim>& orientation_map) const noexcept;
+  void package_data(gsl::not_null<PackagedData*> packaged_data,
+                    const typename Tags::type&... tensors,
+                    const Mesh<VolumeDim>& mesh,
+                    const std::array<double, VolumeDim>& element_size,
+                    const OrientationMap<VolumeDim>& orientation_map) const;
 
   using limit_tags = tmpl::list<Tags...>;
   using limit_argument_tags =
@@ -288,13 +288,13 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
       const std::unordered_map<
           std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
           boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
-          neighbor_data) const noexcept;
+          neighbor_data) const;
 
  private:
   template <size_t LocalDim, typename LocalTagList>
   // NOLINTNEXTLINE(readability-redundant-declaration) false positive
   friend bool operator==(const Minmod<LocalDim, LocalTagList>& lhs,
-                         const Minmod<LocalDim, LocalTagList>& rhs) noexcept;
+                         const Minmod<LocalDim, LocalTagList>& rhs);
 
   MinmodType minmod_type_;
   double tvb_constant_;
@@ -302,9 +302,9 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
 };
 
 template <size_t VolumeDim, typename... Tags>
-Minmod<VolumeDim, tmpl::list<Tags...>>::Minmod(
-    const MinmodType minmod_type, const double tvb_constant,
-    const bool disable_for_debugging) noexcept
+Minmod<VolumeDim, tmpl::list<Tags...>>::Minmod(const MinmodType minmod_type,
+                                               const double tvb_constant,
+                                               const bool disable_for_debugging)
     : minmod_type_(minmod_type),
       tvb_constant_(tvb_constant),
       disable_for_debugging_(disable_for_debugging) {
@@ -312,7 +312,7 @@ Minmod<VolumeDim, tmpl::list<Tags...>>::Minmod(
 }
 
 template <size_t VolumeDim, typename... Tags>
-void Minmod<VolumeDim, tmpl::list<Tags...>>::pup(PUP::er& p) noexcept {
+void Minmod<VolumeDim, tmpl::list<Tags...>>::pup(PUP::er& p) {
   p | minmod_type_;
   p | tvb_constant_;
   p | disable_for_debugging_;
@@ -323,14 +323,14 @@ void Minmod<VolumeDim, tmpl::list<Tags...>>::package_data(
     const gsl::not_null<PackagedData*> packaged_data,
     const typename Tags::type&... tensors, const Mesh<VolumeDim>& mesh,
     const std::array<double, VolumeDim>& element_size,
-    const OrientationMap<VolumeDim>& orientation_map) const noexcept {
+    const OrientationMap<VolumeDim>& orientation_map) const {
   if (UNLIKELY(disable_for_debugging_)) {
     // Do not initialize packaged_data
     return;
   }
 
-  const auto wrap_compute_means = [&mesh, &packaged_data](
-                                      auto tag, const auto tensor) noexcept {
+  const auto wrap_compute_means = [&mesh, &packaged_data](auto tag,
+                                                          const auto tensor) {
     for (size_t i = 0; i < tensor.size(); ++i) {
       // Compute the mean using the local orientation of the tensor and mesh:
       // this avoids the work of reorienting the tensor while giving the same
@@ -354,7 +354,7 @@ bool Minmod<VolumeDim, tmpl::list<Tags...>>::operator()(
     const std::unordered_map<
         std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
         boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
-        neighbor_data) const noexcept {
+        neighbor_data) const {
   if (UNLIKELY(disable_for_debugging_)) {
     // Do not modify input tensors
     return false;
@@ -366,8 +366,8 @@ bool Minmod<VolumeDim, tmpl::list<Tags...>>::operator()(
   bool limiter_activated = false;
   const auto wrap_minmod_impl = [this, &limiter_activated, &element, &mesh,
                                  &logical_coords, &element_size, &neighbor_data,
-                                 &u_lin_buffer, &buffer](
-                                    auto tag, const auto tensor) noexcept {
+                                 &u_lin_buffer,
+                                 &buffer](auto tag, const auto tensor) {
     limiter_activated =
         Minmod_detail::minmod_impl<VolumeDim, decltype(tag)>(
             &u_lin_buffer, &buffer, tensor, minmod_type_, tvb_constant_, mesh,
@@ -381,7 +381,7 @@ bool Minmod<VolumeDim, tmpl::list<Tags...>>::operator()(
 
 template <size_t LocalDim, typename LocalTagList>
 bool operator==(const Minmod<LocalDim, LocalTagList>& lhs,
-                const Minmod<LocalDim, LocalTagList>& rhs) noexcept {
+                const Minmod<LocalDim, LocalTagList>& rhs) {
   return lhs.minmod_type_ == rhs.minmod_type_ and
          lhs.tvb_constant_ == rhs.tvb_constant_ and
          lhs.disable_for_debugging_ == rhs.disable_for_debugging_;
@@ -389,7 +389,7 @@ bool operator==(const Minmod<LocalDim, LocalTagList>& lhs,
 
 template <size_t VolumeDim, typename TagList>
 bool operator!=(const Minmod<VolumeDim, TagList>& lhs,
-                const Minmod<VolumeDim, TagList>& rhs) noexcept {
+                const Minmod<VolumeDim, TagList>& rhs) {
   return not(lhs == rhs);
 }
 

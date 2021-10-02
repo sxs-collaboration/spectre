@@ -26,20 +26,20 @@ void add_cartesian_flux_divergence(gsl::not_null<DataVector*> dt_var,
                                    const DataVector& inv_jacobian,
                                    const DataVector& boundary_correction,
                                    const Index<1>& subcell_extents,
-                                   size_t dimension) noexcept;
+                                   size_t dimension);
 
 void add_cartesian_flux_divergence(gsl::not_null<DataVector*> dt_var,
                                    double one_over_delta,
                                    const DataVector& inv_jacobian,
                                    const DataVector& boundary_correction,
                                    const Index<2>& subcell_extents,
-                                   size_t dimension) noexcept;
+                                   size_t dimension);
 
 void add_cartesian_flux_divergence(gsl::not_null<DataVector*> dt_var,
                                    double one_over_delta,
                                    const DataVector& inv_jacobian,
                                    const DataVector& boundary_correction,
                                    const Index<3>& subcell_extents,
-                                   size_t dimension) noexcept;
+                                   size_t dimension);
 /// @}
 }  // namespace evolution::dg::subcell

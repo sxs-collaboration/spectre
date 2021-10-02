@@ -23,7 +23,7 @@ namespace {
 // * in 3D, returns (-1, 0, 0), ..., (0, 0, 1)
 template <size_t VolumeDim>
 inline tnsr::I<double, VolumeDim, Frame::ElementLogical> logical_face_center(
-    const Direction<VolumeDim>& dir) noexcept {
+    const Direction<VolumeDim>& dir) {
   tnsr::I<double, VolumeDim, Frame::ElementLogical> result{{{0.0}}};
   result.get(dir.dimension()) = (dir.side() == Side::Lower ? -1.0 : 1.0);
   return result;
@@ -32,7 +32,7 @@ inline tnsr::I<double, VolumeDim, Frame::ElementLogical> logical_face_center(
 template <size_t VolumeDim>
 inline double distance_between_face_centers(
     const tnsr::I<double, VolumeDim, Frame::Inertial>& lower_center,
-    const tnsr::I<double, VolumeDim, Frame::Inertial>& upper_center) noexcept {
+    const tnsr::I<double, VolumeDim, Frame::Inertial>& upper_center) {
   auto center_to_center = make_array<VolumeDim>(0.0);
   alg::transform(upper_center, lower_center, center_to_center.begin(),
                  std::minus<>{});
@@ -42,12 +42,11 @@ inline double distance_between_face_centers(
 
 template <size_t VolumeDim>
 std::array<double, VolumeDim> size_of_element(
-    const ElementMap<VolumeDim, Frame::Inertial>&
-        logical_to_inertial_map) noexcept {
+    const ElementMap<VolumeDim, Frame::Inertial>& logical_to_inertial_map) {
   auto result = make_array<VolumeDim>(0.0);
   for (size_t logical_index = 0; logical_index < VolumeDim; ++logical_index) {
     const auto inertial_face_center =
-        [&logical_index, &logical_to_inertial_map](const Side& side) noexcept {
+        [&logical_index, &logical_to_inertial_map](const Side& side) {
           const Direction<VolumeDim> dir(logical_index, side);
           return logical_to_inertial_map(logical_face_center(dir));
         };
@@ -67,13 +66,13 @@ std::array<double, VolumeDim> size_of_element(
     const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time) noexcept {
+        functions_of_time) {
   auto result = make_array<VolumeDim>(0.0);
   for (size_t logical_index = 0; logical_index < VolumeDim; ++logical_index) {
     const auto inertial_face_center = [&functions_of_time,
                                        &grid_to_inertial_map, &logical_index,
                                        &logical_to_grid_map,
-                                       time](const Side& side) noexcept {
+                                       time](const Side& side) {
       const Direction<VolumeDim> dir(logical_index, side);
       return grid_to_inertial_map(logical_to_grid_map(logical_face_center(dir)),
                                   time, functions_of_time);
@@ -92,7 +91,7 @@ std::array<double, VolumeDim> size_of_element(
 #define INSTANTIATION(r, data)                                              \
   template std::array<double, GET_DIM(data)> size_of_element(               \
       const ElementMap<GET_DIM(data), Frame::Inertial>&                     \
-          logical_to_inertial_map) noexcept;                                \
+          logical_to_inertial_map);                                         \
   template std::array<double, GET_DIM(data)> size_of_element(               \
       const ElementMap<GET_DIM(data), Frame::Grid>& logical_to_grid_map,    \
       const domain::CoordinateMapBase<Frame::Grid, Frame::Inertial,         \
@@ -101,7 +100,7 @@ std::array<double, VolumeDim> size_of_element(
       const std::unordered_map<                                             \
           std::string,                                                      \
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&        \
-          functions_of_time) noexcept;
+          functions_of_time);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 

@@ -19,18 +19,18 @@
 
 namespace {
 
-void test_create() noexcept {
+void test_create() {
   const auto sol =
       TestHelpers::test_creation<ScalarAdvection::Solutions::Kuzmin>("");
   CHECK(sol == ScalarAdvection::Solutions::Kuzmin());
 }
 
-void test_serialize() noexcept {
+void test_serialize() {
   ScalarAdvection::Solutions::Kuzmin sol;
   test_serialization(sol);
 }
 
-void test_move() noexcept {
+void test_move() {
   ScalarAdvection::Solutions::Kuzmin sol;
   ScalarAdvection::Solutions::Kuzmin sol_copy;
   test_move_semantics(std::move(sol), sol_copy);  //  NOLINT
@@ -43,7 +43,7 @@ struct KuzminProxy : ScalarAdvection::Solutions::Kuzmin {
 
   template <typename DataType>
   tuples::tagged_tuple_from_typelist<variables_tags> retrieve_variables(
-      const tnsr::I<DataType, 2>& x, double t) const noexcept {
+      const tnsr::I<DataType, 2>& x, double t) const {
     return this->variables(x, t, variables_tags{});
   }
 };

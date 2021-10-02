@@ -19,8 +19,8 @@ namespace Elasticity::Solutions::detail {
 template <typename DataType>
 void BentBeamVariables<DataType>::operator()(
     const gsl::not_null<tnsr::I<DataType, 2>*> displacement,
-    const gsl::not_null<Cache*> /*cache*/, Tags::Displacement<2> /*meta*/) const
-    noexcept {
+    const gsl::not_null<Cache*> /*cache*/,
+    Tags::Displacement<2> /*meta*/) const {
   const double youngs_modulus = constitutive_relation.youngs_modulus();
   const double poisson_ratio = constitutive_relation.poisson_ratio();
   const double prefactor =
@@ -35,8 +35,7 @@ void BentBeamVariables<DataType>::operator()(
 template <typename DataType>
 void BentBeamVariables<DataType>::operator()(
     const gsl::not_null<tnsr::ii<DataType, 2>*> strain,
-    const gsl::not_null<Cache*> /*cache*/, Tags::Strain<2> /*meta*/) const
-    noexcept {
+    const gsl::not_null<Cache*> /*cache*/, Tags::Strain<2> /*meta*/) const {
   const double youngs_modulus = constitutive_relation.youngs_modulus();
   const double poisson_ratio = constitutive_relation.poisson_ratio();
   const double prefactor =
@@ -50,7 +49,7 @@ template <typename DataType>
 void BentBeamVariables<DataType>::operator()(
     const gsl::not_null<tnsr::II<DataType, 2>*> minus_stress,
     const gsl::not_null<Cache*> /*cache*/,
-    Tags::MinusStress<2> /*meta*/) const noexcept {
+    Tags::MinusStress<2> /*meta*/) const {
   get<0, 0>(*minus_stress) = -12. * bending_moment / cube(height) * get<1>(x);
   get<1, 1>(*minus_stress) = 0.;
   get<0, 1>(*minus_stress) = 0.;
@@ -60,7 +59,7 @@ template <typename DataType>
 void BentBeamVariables<DataType>::operator()(
     const gsl::not_null<Scalar<DataType>*> potential_energy_density,
     const gsl::not_null<Cache*> /*cache*/,
-    Tags::PotentialEnergyDensity<2> /*meta*/) const noexcept {
+    Tags::PotentialEnergyDensity<2> /*meta*/) const {
   get(*potential_energy_density) = 72. * square(bending_moment) /
                                    constitutive_relation.youngs_modulus() /
                                    pow<6>(height) * square(get<1>(x));
@@ -70,7 +69,7 @@ template <typename DataType>
 void BentBeamVariables<DataType>::operator()(
     const gsl::not_null<tnsr::I<DataType, 2>*> fixed_source_for_displacement,
     const gsl::not_null<Cache*> /*cache*/,
-    ::Tags::FixedSource<Tags::Displacement<2>> /*meta*/) const noexcept {
+    ::Tags::FixedSource<Tags::Displacement<2>> /*meta*/) const {
   std::fill(fixed_source_for_displacement->begin(),
             fixed_source_for_displacement->end(), 0.);
 }

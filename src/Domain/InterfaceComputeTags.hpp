@@ -40,7 +40,7 @@ template <typename ComputeTag, typename VolumeTags, typename... ArgumentTags,
 constexpr void evaluate_compute_item(
     const gsl::not_null<typename ComputeTag::type*> result,
     const ::Direction<Dim>& direction, tmpl::list<ArgumentTags...> /*meta*/,
-    const ArgTypes&... args) noexcept {
+    const ArgTypes&... args) {
   ComputeTag::function(
       result,
       InterfaceHelpers_detail::unmap_interface_args<
@@ -88,7 +88,7 @@ struct InterfaceCompute : Interface<DirectionsTag, typename Tag::base>,
   static constexpr void function(
       const gsl::not_null<return_type*> result,
       const std::unordered_set<::Direction<volume_dim>>& directions,
-      const ArgTypes&... args) noexcept {
+      const ArgTypes&... args) {
     for (const auto& direction : directions) {
       Interface_detail::evaluate_compute_item<Tag, volume_tags>(
           make_not_null(&(*result)[direction]), direction,
@@ -125,7 +125,7 @@ struct Slice : Interface<DirectionsTag, Tag>, db::ComputeTag {
       const gsl::not_null<return_type*> sliced_vars,
       const ::Mesh<volume_dim>& mesh,
       const std::unordered_set<::Direction<volume_dim>>& directions,
-      const typename Tag::type& variables) noexcept {
+      const typename Tag::type& variables) {
     for (const auto& direction : directions) {
       data_on_slice(make_not_null(&((*sliced_vars)[direction])), variables,
                     mesh.extents(), direction.dimension(),
@@ -150,7 +150,7 @@ struct InterfaceCompute<DirectionsTag, Direction<VolumeDim>>
       const gsl::not_null<
           std::unordered_map<::Direction<VolumeDim>, ::Direction<VolumeDim>>*>
           result,
-      const std::unordered_set<::Direction<VolumeDim>>& directions) noexcept {
+      const std::unordered_set<::Direction<VolumeDim>>& directions) {
     for (const auto& d : directions) {
       result->insert_or_assign(d, d);
     }
@@ -168,10 +168,9 @@ struct InterfaceMesh : db::ComputeTag, Tags::Mesh<VolumeDim - 1> {
   using base = Tags::Mesh<VolumeDim - 1>;
   using return_type = typename base::type;
   using argument_tags = tmpl::list<Direction<VolumeDim>, Mesh<VolumeDim>>;
-  static constexpr auto function(
-      const gsl::not_null<return_type*> mesh,
-      const ::Direction<VolumeDim>& direction,
-      const ::Mesh<VolumeDim>& volume_mesh) noexcept {
+  static constexpr auto function(const gsl::not_null<return_type*> mesh,
+                                 const ::Direction<VolumeDim>& direction,
+                                 const ::Mesh<VolumeDim>& volume_mesh) {
     *mesh = volume_mesh.slice_away(direction.dimension());
   }
   using volume_tags = tmpl::list<Mesh<VolumeDim>>;
@@ -187,11 +186,10 @@ struct BoundaryCoordinates : db::ComputeTag,
                              Tags::Coordinates<VolumeDim, Frame::Inertial> {
   using base = Tags::Coordinates<VolumeDim, Frame::Inertial>;
   using return_type = typename base::type;
-  static void function(
-      const gsl::not_null<return_type*> boundary_coords,
-      const ::Direction<VolumeDim>& direction,
-      const ::Mesh<VolumeDim - 1>& interface_mesh,
-      const ::ElementMap<VolumeDim, Frame::Inertial>& map) noexcept {
+  static void function(const gsl::not_null<return_type*> boundary_coords,
+                       const ::Direction<VolumeDim>& direction,
+                       const ::Mesh<VolumeDim - 1>& interface_mesh,
+                       const ::ElementMap<VolumeDim, Frame::Inertial>& map) {
     *boundary_coords =
         map(interface_logical_coordinates(interface_mesh, direction));
   }
@@ -207,7 +205,7 @@ struct BoundaryCoordinates : db::ComputeTag,
       const std::unordered_map<
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-          functions_of_time) noexcept {
+          functions_of_time) {
     *boundary_coords =
         grid_to_inertial_map(logical_to_grid_map(interface_logical_coordinates(
                                  interface_mesh, direction)),
@@ -266,7 +264,7 @@ struct Subitem<::domain::Tags::Interface<DirectionsTag, TensorTag>,
   using parent_tag =
       ::domain::Tags::InterfaceCompute<DirectionsTag, VariablesTag>;
   static void function(const gsl::not_null<return_type*> subitems,
-                       const typename parent_tag::type& parent_value) noexcept {
+                       const typename parent_tag::type& parent_value) {
     ::db::Subitems<parent_tag>::template create_compute_item<base>(
         subitems, parent_value);
   }
@@ -288,7 +286,7 @@ struct Subitem<::domain::Tags::Interface<DirectionsTag, TensorTag>,
   using return_type = typename base::type;
   using parent_tag = ::domain::Tags::Slice<DirectionsTag, VariablesTag>;
   static void function(const gsl::not_null<return_type*> subitems,
-                       const typename parent_tag::type& parent_value) noexcept {
+                       const typename parent_tag::type& parent_value) {
     ::db::Subitems<parent_tag>::template create_compute_item<base>(
         subitems, parent_value);
   }

@@ -118,7 +118,7 @@ class KhInstability : public MarkAsAnalyticData {
   /// The thickness of the strip.
   struct StripThickness {
     using type = double;
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
     static constexpr Options::String help = {
         "The thickness of the horizontal strip."};
   };
@@ -126,7 +126,7 @@ class KhInstability : public MarkAsAnalyticData {
   /// The mass density in the strip
   struct StripDensity {
     using type = double;
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
     static constexpr Options::String help = {
         "The mass density in the horizontal strip."};
   };
@@ -141,7 +141,7 @@ class KhInstability : public MarkAsAnalyticData {
   /// The mass density outside of the strip
   struct BackgroundDensity {
     using type = double;
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
     static constexpr Options::String help = {
         "The mass density outside of the strip."};
   };
@@ -156,7 +156,7 @@ class KhInstability : public MarkAsAnalyticData {
   /// The initial (constant) pressure of the fluid
   struct Pressure {
     using type = double;
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
     static constexpr Options::String help = {
         "The initial (constant) pressure."};
   };
@@ -171,7 +171,7 @@ class KhInstability : public MarkAsAnalyticData {
   /// The characteristic length for the width of the perturbation
   struct PerturbWidth {
     using type = double;
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
     static constexpr Options::String help = {
         "The characteristic length for the width of the perturbation."};
   };
@@ -187,8 +187,8 @@ class KhInstability : public MarkAsAnalyticData {
   KhInstability() = default;
   KhInstability(const KhInstability& /*rhs*/) = delete;
   KhInstability& operator=(const KhInstability& /*rhs*/) = delete;
-  KhInstability(KhInstability&& /*rhs*/) noexcept = default;
-  KhInstability& operator=(KhInstability&& /*rhs*/) noexcept = default;
+  KhInstability(KhInstability&& /*rhs*/) = default;
+  KhInstability& operator=(KhInstability&& /*rhs*/) = default;
   ~KhInstability() = default;
 
   KhInstability(double adiabatic_index, double strip_bimedian_height,
@@ -201,17 +201,16 @@ class KhInstability : public MarkAsAnalyticData {
   template <typename DataType, typename... Tags>
   tuples::TaggedTuple<Tags...> variables(
       const tnsr::I<DataType, Dim, Frame::Inertial>& x,
-      tmpl::list<Tags...> /*meta*/) const noexcept {
+      tmpl::list<Tags...> /*meta*/) const {
     return {tuples::get<Tags>(variables(x, tmpl::list<Tags>{}))...};
   }
 
-  const EquationsOfState::IdealFluid<false>& equation_of_state() const
-      noexcept {
+  const EquationsOfState::IdealFluid<false>& equation_of_state() const {
     return equation_of_state_;
   }
 
   // clang-tidy: no runtime references
-  void pup(PUP::er& /*p*/) noexcept;  //  NOLINT
+  void pup(PUP::er& /*p*/);  //  NOLINT
 
  private:
   /// @{
@@ -219,34 +218,30 @@ class KhInstability : public MarkAsAnalyticData {
   template <typename DataType>
   auto variables(const tnsr::I<DataType, Dim, Frame::Inertial>& x,
                  tmpl::list<Tags::MassDensity<DataType>> /*meta*/
-                 ) const noexcept
-      -> tuples::TaggedTuple<Tags::MassDensity<DataType>>;
+  ) const -> tuples::TaggedTuple<Tags::MassDensity<DataType>>;
 
   template <typename DataType>
   auto variables(
       const tnsr::I<DataType, Dim, Frame::Inertial>& x,
       tmpl::list<Tags::Velocity<DataType, Dim, Frame::Inertial>> /*meta*/) const
-      noexcept
       -> tuples::TaggedTuple<Tags::Velocity<DataType, Dim, Frame::Inertial>>;
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, Dim, Frame::Inertial>& x,
                  tmpl::list<Tags::SpecificInternalEnergy<DataType>> /*meta*/
-                 ) const noexcept
-      -> tuples::TaggedTuple<Tags::SpecificInternalEnergy<DataType>>;
+  ) const -> tuples::TaggedTuple<Tags::SpecificInternalEnergy<DataType>>;
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, Dim, Frame::Inertial>& x,
                  tmpl::list<Tags::Pressure<DataType>> /*meta*/
-                 ) const noexcept
-      -> tuples::TaggedTuple<Tags::Pressure<DataType>>;
+  ) const -> tuples::TaggedTuple<Tags::Pressure<DataType>>;
   /// @}
 
   template <size_t SpatialDim>
   friend bool
   operator==(  // NOLINT (clang-tidy: readability-redundant-declaration)
       const KhInstability<SpatialDim>& lhs,
-      const KhInstability<SpatialDim>& rhs) noexcept;
+      const KhInstability<SpatialDim>& rhs);
 
   double adiabatic_index_ = std::numeric_limits<double>::signaling_NaN();
   double strip_bimedian_height_ = std::numeric_limits<double>::signaling_NaN();
@@ -262,8 +257,7 @@ class KhInstability : public MarkAsAnalyticData {
 };
 
 template <size_t Dim>
-bool operator!=(const KhInstability<Dim>& lhs,
-                const KhInstability<Dim>& rhs) noexcept;
+bool operator!=(const KhInstability<Dim>& lhs, const KhInstability<Dim>& rhs);
 
 }  // namespace AnalyticData
 }  // namespace NewtonianEuler

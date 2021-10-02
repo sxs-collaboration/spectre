@@ -22,7 +22,7 @@ const double spatial_component_placeholder = std::numeric_limits<double>::max();
 // \tparam DataType the type of data being stored in the expression operands
 template <typename Generator, typename DataType>
 void test_rhs(const gsl::not_null<Generator*> generator,
-              const DataType& used_for_size) noexcept {
+              const DataType& used_for_size) {
   std::uniform_real_distribution<> distribution(0.1, 1.0);
   constexpr size_t dim = 3;
 
@@ -50,7 +50,7 @@ void test_rhs(const gsl::not_null<Generator*> generator,
 // \tparam DataType the type of data being stored in the expression operands
 template <typename Generator, typename DataType>
 void test_lhs(const gsl::not_null<Generator*> generator,
-              const DataType& used_for_size) noexcept {
+              const DataType& used_for_size) {
   std::uniform_real_distribution<> distribution(0.1, 1.0);
   constexpr size_t dim = 3;
 
@@ -89,7 +89,7 @@ void test_lhs(const gsl::not_null<Generator*> generator,
 // \tparam DataType the type of data being stored in the expression operands
 template <typename Generator, typename DataType>
 void test_rhs_and_lhs(const gsl::not_null<Generator*> generator,
-                      const DataType& used_for_size) noexcept {
+                      const DataType& used_for_size) {
   std::uniform_real_distribution<> distribution(0.1, 1.0);
   constexpr size_t dim = 3;
 
@@ -133,8 +133,7 @@ void test_rhs_and_lhs(const gsl::not_null<Generator*> generator,
 }
 
 template <typename DataType>
-void test_evaluate_spatial_spacetime_index(
-    const DataType& used_for_size) noexcept {
+void test_evaluate_spatial_spacetime_index(const DataType& used_for_size) {
   MAKE_GENERATOR(generator);
 
   test_rhs(make_not_null(&generator), used_for_size);

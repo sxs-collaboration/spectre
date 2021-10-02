@@ -43,7 +43,7 @@
 // IWYU pragma: no_include <boost/multi_array/subarray.hpp>
 
 namespace {
-void test_access_type() noexcept {
+void test_access_type() {
   CHECK(get_output(h5::AccessType::ReadOnly) == "ReadOnly");
   CHECK(get_output(h5::AccessType::ReadWrite) == "ReadWrite");
 }
@@ -61,7 +61,7 @@ SPECTRE_TEST_CASE("Unit.IO.H5.File", "[Unit][IO][H5]") {
   // [h5file_readwrite_get_header]
   my_file0.close_current_object();
 
-  const auto check_header = [&h5_file_name](const auto& my_file) noexcept {
+  const auto check_header = [&h5_file_name](const auto& my_file) {
     // Check that the header was written correctly
     const std::string my_header =
         my_file.template get<h5::Header>("/header").get_header();
@@ -87,7 +87,7 @@ SPECTRE_TEST_CASE("Unit.IO.H5.File", "[Unit][IO][H5]") {
   check_header(my_file0);
   check_header(h5::H5File<h5::AccessType::ReadOnly>(h5_file_name));
 
-  const auto check_source_archive = [](const auto& my_file) noexcept {
+  const auto check_source_archive = [](const auto& my_file) {
     const std::vector<char> archive =
         my_file.template get<h5::SourceArchive>("/src").get_archive();
     CHECK(archive == formaline::get_archive());
@@ -553,7 +553,7 @@ SPECTRE_TEST_CASE("Unit.IO.H5.ReadData", "[Unit][IO][H5]") {
   CHECK(h5::read_data<0, float>(group_id, "scalar_dataset_float") ==
         static_cast<float>(1.0 / 3.0));
 
-  tmpl::for_each<all_type_list>([&group_id](auto x) noexcept {
+  tmpl::for_each<all_type_list>([&group_id](auto x) {
     using DataType = typename decltype(x)::type;
     const std::vector<DataType> rank1_data{1, 2, 3};
     const std::vector<size_t> rank1_extents{3};
@@ -567,7 +567,7 @@ SPECTRE_TEST_CASE("Unit.IO.H5.ReadData", "[Unit][IO][H5]") {
     CHECK(rank1_data_from_file == std::vector<DataType>{1, 2, 3});
   });
 
-  tmpl::for_each<all_type_list>([&group_id](auto x) noexcept {
+  tmpl::for_each<all_type_list>([&group_id](auto x) {
     using DataType = typename decltype(x)::type;
     const std::vector<DataType> rank2_data{1, 2, 3, 4};
     const std::vector<size_t> rank2_extents{2, 2};
@@ -586,7 +586,7 @@ SPECTRE_TEST_CASE("Unit.IO.H5.ReadData", "[Unit][IO][H5]") {
     CHECK(rank2_data_from_file == expected_rank2_data);
   });
 
-  tmpl::for_each<all_type_list>([&group_id](auto x) noexcept {
+  tmpl::for_each<all_type_list>([&group_id](auto x) {
     using DataType = typename decltype(x)::type;
     const std::vector<DataType> rank3_data{1, 2, 3, 4, 5, 6};
     const std::vector<size_t> rank3_extents{1, 2, 3};

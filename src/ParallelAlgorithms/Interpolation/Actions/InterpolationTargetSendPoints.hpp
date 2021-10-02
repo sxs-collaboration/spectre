@@ -42,7 +42,7 @@ struct InterpolationTargetSendTimeIndepPointsToElements {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     auto coords = InterpolationTarget_detail::block_logical_coords<
         InterpolationTargetTag>(box, tmpl::type_<Metavariables>{});
     auto& receiver_proxy = Parallel::get_parallel_component<

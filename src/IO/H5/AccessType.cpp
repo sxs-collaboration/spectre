@@ -8,7 +8,7 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 
 namespace h5 {
-std::ostream& operator<<(std::ostream& os, const AccessType t) noexcept {
+std::ostream& operator<<(std::ostream& os, const AccessType t) {
   switch (t) {
     case AccessType::ReadOnly:
       return os << "ReadOnly";

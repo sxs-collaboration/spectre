@@ -31,7 +31,7 @@ void angular_derivative_of_r_divided_by_r_impl(
                      Spectral::Swsh::Tags::derivative_spin_weight<DerivKind>>*>
         d_r_divided_by_r,
     const SpinWeighted<ComplexDataVector, 0>& boundary_r, size_t l_max,
-    size_t number_of_radial_points) noexcept;
+    size_t number_of_radial_points);
 
 }  // namespace detail
 
@@ -73,7 +73,7 @@ struct PrecomputeCceDependencies<BoundaryPrefix, Tags::OneMinusY> {
   static void apply(
       const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
           one_minus_y,
-      const size_t l_max, const size_t number_of_radial_points) noexcept {
+      const size_t l_max, const size_t number_of_radial_points) {
     const size_t number_of_angular_points =
         Spectral::Swsh::number_of_swsh_collocation_points(l_max);
     const DataVector one_minus_y_collocation =
@@ -105,7 +105,7 @@ struct PrecomputeCceDependencies<BoundaryPrefix, Tags::BondiR> {
   static void apply(
       const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*> r,
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& boundary_r,
-      const size_t number_of_radial_points) noexcept {
+      const size_t number_of_radial_points) {
     fill_with_n_copies(make_not_null(&get(*r).data()), get(boundary_r).data(),
                        number_of_radial_points);
   }
@@ -128,7 +128,7 @@ struct PrecomputeCceDependencies<BoundaryPrefix, Tags::DuRDividedByR> {
           du_r_divided_by_r,
       const Scalar<SpinWeighted<ComplexDataVector, 0>>&
           boundary_du_r_divided_by_r,
-      const size_t number_of_radial_points) noexcept {
+      const size_t number_of_radial_points) {
     fill_with_n_copies(make_not_null(&get(*du_r_divided_by_r).data()),
                        get(boundary_du_r_divided_by_r).data(),
                        number_of_radial_points);
@@ -152,7 +152,7 @@ struct PrecomputeCceDependencies<BoundaryPrefix, Tags::EthRDividedByR> {
       const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 1>>*>
           eth_r_divided_by_r,
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& boundary_r,
-      const size_t l_max, const size_t number_of_radial_points) noexcept {
+      const size_t l_max, const size_t number_of_radial_points) {
     detail::angular_derivative_of_r_divided_by_r_impl<
         Spectral::Swsh::Tags::Eth>(make_not_null(&get(*eth_r_divided_by_r)),
                                    get(boundary_r), l_max,
@@ -177,7 +177,7 @@ struct PrecomputeCceDependencies<BoundaryPrefix, Tags::EthEthRDividedByR> {
       const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 2>>*>
           eth_eth_r_divided_by_r,
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& boundary_r,
-      const size_t l_max, const size_t number_of_radial_points) noexcept {
+      const size_t l_max, const size_t number_of_radial_points) {
     detail::angular_derivative_of_r_divided_by_r_impl<
         Spectral::Swsh::Tags::EthEth>(
         make_not_null(&get(*eth_eth_r_divided_by_r)), get(boundary_r), l_max,
@@ -202,7 +202,7 @@ struct PrecomputeCceDependencies<BoundaryPrefix, Tags::EthEthbarRDividedByR> {
       const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
           eth_ethbar_r_divided_by_r,
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& boundary_r,
-      const size_t l_max, const size_t number_of_radial_points) noexcept {
+      const size_t l_max, const size_t number_of_radial_points) {
     detail::angular_derivative_of_r_divided_by_r_impl<
         Spectral::Swsh::Tags::EthEthbar>(
         make_not_null(&get(*eth_ethbar_r_divided_by_r)), get(boundary_r), l_max,
@@ -223,7 +223,7 @@ struct PrecomputeCceDependencies<BoundaryPrefix, Tags::BondiK> {
   static void apply(
       const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*> k,
       const size_t /*l_max*/,
-      const Scalar<SpinWeighted<ComplexDataVector, 2>>& j) noexcept {
+      const Scalar<SpinWeighted<ComplexDataVector, 2>>& j) {
     get(*k).data() = sqrt(1.0 + get(j).data() * conj(get(j)).data());
   }
 };
@@ -247,7 +247,7 @@ struct PrecomputeCceDependencies<BoundaryPrefix, Tags::BondiK> {
  */
 template <template <typename> class BoundaryPrefix, typename DataBoxType>
 void mutate_all_precompute_cce_dependencies(
-    const gsl::not_null<DataBoxType*> box) noexcept {
+    const gsl::not_null<DataBoxType*> box) {
   tmpl::for_each<pre_computation_tags>([&box](auto x) {
     using integration_independent_tag = typename decltype(x)::type;
     using mutation =

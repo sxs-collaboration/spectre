@@ -43,19 +43,19 @@ struct TeukolskyWave : public SphericalMetricData {
     using type = double;
     static constexpr Options::String help{
         "The extraction radius of the spherical solution"};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
   struct Amplitude {
     using type = double;
     static constexpr Options::String help{
         "The amplitude of the Teukolsky wave."};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
   struct Duration {
     using type = double;
     static constexpr Options::String help{
         "The characteristic duration of the Gaussian envelope."};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
 
   static constexpr Options::String help{
@@ -65,19 +65,17 @@ struct TeukolskyWave : public SphericalMetricData {
 
   WRAPPED_PUPable_decl_template(TeukolskyWave);  // NOLINT
 
-  explicit TeukolskyWave(CkMigrateMessage* msg) noexcept
-      : SphericalMetricData(msg) {}
+  explicit TeukolskyWave(CkMigrateMessage* msg) : SphericalMetricData(msg) {}
 
   // clang doesn't manage to use = default correctly in this case
   // NOLINTNEXTLINE(modernize-use-equals-default)
-  TeukolskyWave() noexcept {}
+  TeukolskyWave() {}
 
-  TeukolskyWave(double extraction_radius, double amplitude,
-                double duration) noexcept;
+  TeukolskyWave(double extraction_radius, double amplitude, double duration);
 
-  std::unique_ptr<WorldtubeData> get_clone() const noexcept override;
+  std::unique_ptr<WorldtubeData> get_clone() const override;
 
-  void pup(PUP::er& p) noexcept override;
+  void pup(PUP::er& p) override;
 
  private:
   /*
@@ -90,7 +88,7 @@ struct TeukolskyWave : public SphericalMetricData {
    * where \f$r\f$ is the extraction radius, \f$u\f$ the retarded time, \f$a\f$
    * the amplitude of the pulse and \f$k\f$ the duration of the pulse.
    */
-  double pulse_profile_coefficient_a(double time) const noexcept;
+  double pulse_profile_coefficient_a(double time) const;
 
   /*
    * The B coefficient is calculated as
@@ -103,7 +101,7 @@ struct TeukolskyWave : public SphericalMetricData {
    * where \f$r\f$ is the extraction radius, \f$u\f$ the retarded time, \f$a\f$
    * the amplitude of the pulse and \f$k\f$ the duration of the pulse.
    */
-  double pulse_profile_coefficient_b(double time) const noexcept;
+  double pulse_profile_coefficient_b(double time) const;
 
   /*
    * The C coefficient is calculated as
@@ -117,7 +115,7 @@ struct TeukolskyWave : public SphericalMetricData {
    * where \f$r\f$ is the extraction radius, \f$u\f$ the retarded time, \f$a\f$
    * the amplitude of the pulse and \f$k\f$ the duration of the pulse.
    */
-  double pulse_profile_coefficient_c(double time) const noexcept;
+  double pulse_profile_coefficient_c(double time) const;
 
   /*
    * The time derivative of the A coefficient is calculated as
@@ -130,7 +128,7 @@ struct TeukolskyWave : public SphericalMetricData {
    * where \f$r\f$ is the extraction radius, \f$u\f$ the retarded time, \f$a\f$
    * the amplitude of the pulse and \f$k\f$ the duration of the pulse.
    */
-  double dt_pulse_profile_coefficient_a(double time) const noexcept;
+  double dt_pulse_profile_coefficient_a(double time) const;
 
   /*
    * The time derivative of the B coefficient is calculated as
@@ -144,7 +142,7 @@ struct TeukolskyWave : public SphericalMetricData {
    * where \f$r\f$ is the extraction radius, \f$u\f$ the retarded time, \f$a\f$
    * the amplitude of the pulse and \f$k\f$ the duration of the pulse.
    */
-  double dt_pulse_profile_coefficient_b(double time) const noexcept;
+  double dt_pulse_profile_coefficient_b(double time) const;
 
   /*
    * The time derivative of the C coefficient is calculated as
@@ -159,7 +157,7 @@ struct TeukolskyWave : public SphericalMetricData {
    * where \f$r\f$ is the extraction radius, \f$u\f$ the retarded time, \f$a\f$
    * the amplitude of the pulse and \f$k\f$ the duration of the pulse.
    */
-  double dt_pulse_profile_coefficient_c(double time) const noexcept;
+  double dt_pulse_profile_coefficient_c(double time) const;
 
   /*
    * The radial derivative of the A coefficient is calculated as
@@ -172,7 +170,7 @@ struct TeukolskyWave : public SphericalMetricData {
    * where \f$r\f$ is the extraction radius, \f$u\f$ the retarded time, \f$a\f$
    * the amplitude of the pulse and \f$k\f$ the duration of the pulse.
    */
-  double dr_pulse_profile_coefficient_a(double time) const noexcept;
+  double dr_pulse_profile_coefficient_a(double time) const;
 
   /*
    * The radial derivative of the B coefficient is calculated as
@@ -186,7 +184,7 @@ struct TeukolskyWave : public SphericalMetricData {
    * where \f$r\f$ is the extraction radius, \f$u\f$ the retarded time, \f$a\f$
    * the amplitude of the pulse and \f$k\f$ the duration of the pulse.
    */
-  double dr_pulse_profile_coefficient_b(double time) const noexcept;
+  double dr_pulse_profile_coefficient_b(double time) const;
 
   /*
    * The radial derivative of the C coefficient is calculated as
@@ -201,17 +199,17 @@ struct TeukolskyWave : public SphericalMetricData {
    * where \f$r\f$ is the extraction radius, \f$u\f$ the retarded time, \f$a\f$
    * the amplitude of the pulse and \f$k\f$ the duration of the pulse.
    */
-  double dr_pulse_profile_coefficient_c(double time) const noexcept;
+  double dr_pulse_profile_coefficient_c(double time) const;
 
-  static DataVector sin_theta(size_t l_max) noexcept;
+  static DataVector sin_theta(size_t l_max);
 
-  static DataVector cos_theta(size_t l_max) noexcept;
+  static DataVector cos_theta(size_t l_max);
 
  protected:
   /// A no-op as the Teukolsky wave solution does not have substantial
   /// shared computation to prepare before the separate component calculations.
   void prepare_solution(const size_t /*output_l_max*/,
-                        const double /*time*/) const noexcept override {}
+                        const double /*time*/) const override {}
 
   /*!
    * \brief Compute the spherical coordinate metric from the closed-form
@@ -285,7 +283,7 @@ struct TeukolskyWave : public SphericalMetricData {
       gsl::not_null<
           tnsr::aa<DataVector, 3, ::Frame::Spherical<::Frame::Inertial>>*>
           spherical_metric,
-      size_t l_max, double time) const noexcept override;
+      size_t l_max, double time) const override;
 
   /*!
    * \brief Compute the radial derivative of the spherical coordinate metric
@@ -338,7 +336,7 @@ struct TeukolskyWave : public SphericalMetricData {
       gsl::not_null<
           tnsr::aa<DataVector, 3, ::Frame::Spherical<::Frame::Inertial>>*>
           dr_spherical_metric,
-      size_t l_max, double time) const noexcept override;
+      size_t l_max, double time) const override;
 
   /*!
    * \brief Compute the time derivative of the spherical coordinate metric
@@ -384,7 +382,7 @@ struct TeukolskyWave : public SphericalMetricData {
       gsl::not_null<
           tnsr::aa<DataVector, 3, ::Frame::Spherical<::Frame::Inertial>>*>
           dt_spherical_metric,
-      size_t l_max, double time) const noexcept override;
+      size_t l_max, double time) const override;
 
   using WorldtubeData::variables_impl;
 
@@ -417,7 +415,7 @@ struct TeukolskyWave : public SphericalMetricData {
   void variables_impl(
       gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, -2>>*> news,
       size_t l_max, double time,
-      tmpl::type_<Tags::News> /*meta*/) const noexcept override;
+      tmpl::type_<Tags::News> /*meta*/) const override;
 
   double amplitude_ = std::numeric_limits<double>::signaling_NaN();
   double duration_ = std::numeric_limits<double>::signaling_NaN();

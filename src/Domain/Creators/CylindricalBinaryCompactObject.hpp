@@ -219,7 +219,7 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
   };
   template <typename BoundaryConditionsBase>
   struct InnerBoundaryCondition {
-    static std::string name() noexcept { return "InnerBoundary"; }
+    static std::string name() { return "InnerBoundary"; }
     static constexpr Options::String help =
         "Options for the inner boundary conditions.";
     using type = std::unique_ptr<BoundaryConditionsBase>;
@@ -228,7 +228,7 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
 
   template <typename BoundaryConditionsBase>
   struct OuterBoundaryCondition {
-    static std::string name() noexcept { return "OuterBoundary"; }
+    static std::string name() { return "OuterBoundary"; }
     static constexpr Options::String help =
         "Options for the outer boundary conditions.";
     using type = std::unique_ptr<BoundaryConditionsBase>;
@@ -276,31 +276,27 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
   CylindricalBinaryCompactObject() = default;
   CylindricalBinaryCompactObject(const CylindricalBinaryCompactObject&) =
       delete;
-  CylindricalBinaryCompactObject(CylindricalBinaryCompactObject&&) noexcept =
-      default;
+  CylindricalBinaryCompactObject(CylindricalBinaryCompactObject&&) = default;
   CylindricalBinaryCompactObject& operator=(
       const CylindricalBinaryCompactObject&) = delete;
-  CylindricalBinaryCompactObject& operator=(
-      CylindricalBinaryCompactObject&&) noexcept = default;
-  ~CylindricalBinaryCompactObject() noexcept override = default;
+  CylindricalBinaryCompactObject& operator=(CylindricalBinaryCompactObject&&) =
+      default;
+  ~CylindricalBinaryCompactObject() override = default;
 
-  Domain<3> create_domain() const noexcept override;
+  Domain<3> create_domain() const override;
 
-  std::vector<std::array<size_t, 3>> initial_extents() const noexcept override;
+  std::vector<std::array<size_t, 3>> initial_extents() const override;
 
-  std::vector<std::array<size_t, 3>> initial_refinement_levels()
-      const noexcept override;
+  std::vector<std::array<size_t, 3>> initial_refinement_levels() const override;
 
-  auto functions_of_time() const noexcept -> std::unordered_map<
+  auto functions_of_time() const -> std::unordered_map<
       std::string,
       std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;
 
-  std::vector<std::string> block_names() const noexcept override {
-    return block_names_;
-  }
+  std::vector<std::string> block_names() const override { return block_names_; }
 
   std::unordered_map<std::string, std::unordered_set<std::string>>
-  block_groups() const noexcept override {
+  block_groups() const override {
     return block_groups_;
   }
 

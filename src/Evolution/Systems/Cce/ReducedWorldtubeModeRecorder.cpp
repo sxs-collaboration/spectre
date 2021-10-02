@@ -15,8 +15,7 @@ namespace Cce {
 
 void ReducedWorldtubeModeRecorder::append_worldtube_mode_data(
     const std::string& dataset_path, const double time,
-    const ComplexModalVector& modes, const size_t l_max,
-    const bool is_real) noexcept {
+    const ComplexModalVector& modes, const size_t l_max, const bool is_real) {
   std::vector<std::string> legend;
   const size_t output_size = square(l_max + 1);
   legend.reserve(is_real ? output_size + 1 : 2 * output_size + 1);

@@ -115,7 +115,7 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
   };
 
   /// \cond
-  explicit ObserveFields(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit ObserveFields(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ObserveFields);  // NOLINT
   /// \endcond
@@ -123,7 +123,7 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
   struct VariablesToObserve {
     static constexpr Options::String help = "Subset of variables to observe";
     using type = std::vector<std::string>;
-    static size_t lower_bound_on_size() noexcept { return 1; }
+    static size_t lower_bound_on_size() { return 1; }
   };
 
   struct InterpolateToMesh {
@@ -149,11 +149,11 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
         "Must be specified once for all data or individually  for each "
         "variable being observed.";
     using type = std::vector<FloatingPointType>;
-    static size_t upper_bound_on_size() noexcept {
+    static size_t upper_bound_on_size() {
       return sizeof...(Tensors) + sizeof...(AnalyticSolutionTensors) +
              sizeof...(NonSolutionTensors);
     }
-    static size_t lower_bound_on_size() noexcept { return 1; }
+    static size_t lower_bound_on_size() { return 1; }
   };
 
   /// The floating point type/precision with which to write the coordinates to
@@ -205,7 +205,7 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
       const typename NonSolutionTensors::type&... non_solution_tensors,
       Parallel::GlobalCache<Metavariables>& cache,
       const ElementId<VolumeDim>& array_index,
-      const ParallelComponent* const component) const noexcept {
+      const ParallelComponent* const component) const {
     // Skip observation on elements that are not part of a section
     const std::optional<std::string> section_observation_key =
         observers::get_section_observation_key<ArraySectionIdTag>(box);
@@ -213,7 +213,7 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
       return;
     }
     // Get analytic solutions
-    auto&& optional_analytic_solutions = [&box]() noexcept -> decltype(auto) {
+    auto&& optional_analytic_solutions = [&box]() -> decltype(auto) {
       if constexpr (sizeof...(AnalyticSolutionTensors) > 0) {
         return db::get<::Tags::AnalyticSolutionsBase>(box);
       } else {
@@ -248,7 +248,7 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
       const OptionalAnalyticSolutions& optional_analytic_solutions,
       Parallel::GlobalCache<Metavariables>& cache,
       const ElementId<VolumeDim>& array_index,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     const auto analytic_solutions = [&optional_analytic_solutions]() {
       if constexpr (tt::is_a_v<std::optional, OptionalAnalyticSolutions>) {
         return optional_analytic_solutions.has_value()
@@ -283,7 +283,7 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
     const auto record_tensor_components = [&components, &element_name,
                                            &interpolant, &variables_to_observe](
                                               const auto tensor_tag_v,
-                                              const auto& tensor) noexcept {
+                                              const auto& tensor) {
       using tensor_tag = tmpl::type_from<decltype(tensor_tag_v)>;
       if (variables_to_observe.count(db::tag_name<tensor_tag>()) == 1) {
         const auto floating_point_type =
@@ -313,8 +313,7 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
     if (analytic_solutions.has_value()) {
       const auto record_errors =
           [&analytic_solutions, &components, &element_name, &interpolant,
-           &variables_to_observe](const auto tensor_tag_v,
-                                  const auto& tensor) noexcept {
+           &variables_to_observe](const auto tensor_tag_v, const auto& tensor) {
             using tensor_tag = tmpl::type_from<decltype(tensor_tag_v)>;
             if (variables_to_observe.count(db::tag_name<tensor_tag>()) == 1) {
               const auto floating_point_type =
@@ -366,7 +365,7 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
   std::optional<
       std::pair<observers::TypeOfObservation, observers::ObservationKey>>
   get_observation_type_and_key_for_registration(
-      const db::DataBox<DbTagsList>& box) const noexcept {
+      const db::DataBox<DbTagsList>& box) const {
     const std::optional<std::string> section_observation_key =
         observers::get_section_observation_key<ArraySectionIdTag>(box);
     if (not section_observation_key.has_value()) {
@@ -382,14 +381,14 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
   template <typename Metavariables, typename ArrayIndex, typename Component>
   bool is_ready(Parallel::GlobalCache<Metavariables>& /*cache*/,
                 const ArrayIndex& /*array_index*/,
-                const Component* const /*meta*/) const noexcept {
+                const Component* const /*meta*/) const {
     return true;
   }
 
-  bool needs_evolved_variables() const noexcept override { return true; }
+  bool needs_evolved_variables() const override { return true; }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept override {
+  void pup(PUP::er& p) override {
     Event::pup(p);
     p | subfile_path_;
     p | variables_to_observe_;

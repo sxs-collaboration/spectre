@@ -19,7 +19,7 @@ namespace CurvedScalarWave::BoundaryConditions {
 
 template <size_t Dim>
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-Outflow<Dim>::get_clone() const noexcept {
+Outflow<Dim>::get_clone() const {
   return std::make_unique<Outflow>(*this);
 }
 
@@ -29,7 +29,7 @@ void Outflow<Dim>::pup(PUP::er& p) {
 }
 
 template <size_t Dim>
-Outflow<Dim>::Outflow(CkMigrateMessage* const msg) noexcept
+Outflow<Dim>::Outflow(CkMigrateMessage* const msg)
     : BoundaryCondition<Dim>(msg) {}
 
 template <size_t Dim>
@@ -39,7 +39,7 @@ std::optional<std::string> Outflow<Dim>::dg_outflow(
     const tnsr::i<DataVector, Dim>& normal_covector,
     const tnsr::I<DataVector, Dim>& /*normal_vector*/,
     const Scalar<DataVector>& gamma1, const Scalar<DataVector>& lapse,
-    const tnsr::I<DataVector, Dim>& shift) const noexcept {
+    const tnsr::I<DataVector, Dim>& shift) const {
   tnsr::a<DataVector, 3, Frame::Inertial> char_speeds{lapse.size()};
   characteristic_speeds(make_not_null(&char_speeds), gamma1, lapse, shift,
                         normal_covector);

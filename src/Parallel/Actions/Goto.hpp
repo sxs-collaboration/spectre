@@ -44,7 +44,7 @@ struct Label {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     static_assert(
         tmpl::count_if<ActionList,
                        std::is_same<tmpl::_1, tmpl::pin<Label<Tag>>>>::value ==
@@ -75,7 +75,7 @@ struct Goto {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     constexpr size_t index =
         tmpl::index_of<ActionList, Actions::Label<Tag>>::value;
     return std::tuple<db::DataBox<DbTags>&&, bool, size_t>(std::move(box),
@@ -98,7 +98,7 @@ struct RepeatStart {
       tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     return {std::move(box), false,
             db::get<ConditionTag>(box)
                 ? tmpl::index_of<ActionList, RepeatEnd<ConditionTag>>::value + 1
@@ -116,7 +116,7 @@ struct RepeatEnd {
       tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     return {
         std::move(box), false,
         db::get<ConditionTag>(box)

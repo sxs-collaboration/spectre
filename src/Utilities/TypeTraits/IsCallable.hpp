@@ -49,11 +49,11 @@ class is_callable {
   // compiler prefer the first one. If it cannot be used because there's no
   // call operator, then it uses the second one.
   template <typename T, typename... Args>
-  static auto test_callable(int) noexcept
+  static auto test_callable(int)
       -> decltype(std::declval<T>()(std::declval<Args>()...), std::true_type());
 
   template <typename, typename...>
-  static auto test_callable(...) noexcept -> std::false_type;
+  static auto test_callable(...) -> std::false_type;
   /// \endcond
 
  public:

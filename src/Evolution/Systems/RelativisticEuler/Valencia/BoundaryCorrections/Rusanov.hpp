@@ -77,13 +77,13 @@ class Rusanov final : public BoundaryCorrection<Dim> {
   ~Rusanov() override = default;
 
   /// \cond
-  explicit Rusanov(CkMigrateMessage* msg) noexcept;
+  explicit Rusanov(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Rusanov);  // NOLINT
   /// \endcond
   void pup(PUP::er& p) override;  // NOLINT
 
-  std::unique_ptr<BoundaryCorrection<Dim>> get_clone() const noexcept override;
+  std::unique_ptr<BoundaryCorrection<Dim>> get_clone() const override;
 
   using dg_package_field_tags =
       tmpl::list<Tags::TildeD, Tags::TildeTau, Tags::TildeS<Dim>,
@@ -134,7 +134,7 @@ class Rusanov final : public BoundaryCorrection<Dim> {
       /*mesh_velocity*/,
       const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity,
       const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
-          equation_of_state) const noexcept;
+          equation_of_state) const;
 
   void dg_boundary_terms(
       gsl::not_null<Scalar<DataVector>*> boundary_correction_tilde_d,
@@ -157,6 +157,6 @@ class Rusanov final : public BoundaryCorrection<Dim> {
       const tnsr::i<DataVector, Dim, Frame::Inertial>&
           normal_dot_flux_tilde_s_ext,
       const Scalar<DataVector>& abs_char_speed_ext,
-      dg::Formulation dg_formulation) const noexcept;
+      dg::Formulation dg_formulation) const;
 };
 }  // namespace RelativisticEuler::Valencia::BoundaryCorrections

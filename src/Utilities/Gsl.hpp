@@ -84,7 +84,7 @@ namespace gsl {
  * \brief Cast `u` to a type `T` where the cast may result in narrowing
  */
 template <class T, class U>
-SPECTRE_ALWAYS_INLINE constexpr T narrow_cast(U&& u) noexcept {
+SPECTRE_ALWAYS_INLINE constexpr T narrow_cast(U&& u) {
   return static_cast<T>(std::forward<U>(u));
 }
 
@@ -224,7 +224,7 @@ class not_null {
 };
 
 template <class T>
-std::ostream& operator<<(std::ostream& os, const not_null<T>& val) noexcept {
+std::ostream& operator<<(std::ostream& os, const not_null<T>& val) {
   os << val.get();
   return os;
 }
@@ -337,13 +337,12 @@ class span_iterator {
 
   span_iterator() = default;
 
-  constexpr span_iterator(const Span* span,
-                          typename Span::index_type idx) noexcept
+  constexpr span_iterator(const Span* span, typename Span::index_type idx)
       : span_(span), index_(idx) {}
 
   friend span_iterator<Span, true>;
   template <bool B, Requires<!B && IsConst> = nullptr>
-  constexpr span_iterator(const span_iterator<Span, B>& other) noexcept
+  constexpr span_iterator(const span_iterator<Span, B>& other)
       : span_iterator(other.span_, other.index_) {}
 
   constexpr reference operator*() const {
@@ -412,33 +411,27 @@ class span_iterator {
     return *(*this + n);
   }
 
-  constexpr friend bool operator==(span_iterator lhs,
-                                   span_iterator rhs) noexcept {
+  constexpr friend bool operator==(span_iterator lhs, span_iterator rhs) {
     return lhs.span_ == rhs.span_ && lhs.index_ == rhs.index_;
   }
 
-  constexpr friend bool operator!=(span_iterator lhs,
-                                   span_iterator rhs) noexcept {
+  constexpr friend bool operator!=(span_iterator lhs, span_iterator rhs) {
     return !(lhs == rhs);
   }
 
-  constexpr friend bool operator<(span_iterator lhs,
-                                  span_iterator rhs) noexcept {
+  constexpr friend bool operator<(span_iterator lhs, span_iterator rhs) {
     return lhs.index_ < rhs.index_;
   }
 
-  constexpr friend bool operator<=(span_iterator lhs,
-                                   span_iterator rhs) noexcept {
+  constexpr friend bool operator<=(span_iterator lhs, span_iterator rhs) {
     return !(rhs < lhs);
   }
 
-  constexpr friend bool operator>(span_iterator lhs,
-                                  span_iterator rhs) noexcept {
+  constexpr friend bool operator>(span_iterator lhs, span_iterator rhs) {
     return rhs < lhs;
   }
 
-  constexpr friend bool operator>=(span_iterator lhs,
-                                   span_iterator rhs) noexcept {
+  constexpr friend bool operator>=(span_iterator lhs, span_iterator rhs) {
     return !(rhs > lhs);
   }
 
@@ -454,7 +447,7 @@ class extent_type {
 
   static_assert(Ext >= 0, "A fixed-size span must be >= 0 in size.");
 
-  constexpr extent_type() noexcept {}
+  constexpr extent_type() {}
 
   template <index_type Other>
   constexpr extent_type(extent_type<Other> ext) {
@@ -466,7 +459,7 @@ class extent_type {
 
   constexpr extent_type(index_type size) { Expects(size == Ext); }
 
-  constexpr index_type size() const noexcept { return Ext; }
+  constexpr index_type size() const { return Ext; }
 };
 
 template <>
@@ -481,7 +474,7 @@ class extent_type<dynamic_extent> {
     Expects(size >= 0);
   }
 
-  constexpr index_type size() const noexcept { return size_; }
+  constexpr index_type size() const { return size_; }
 
  private:
   index_type size_;
@@ -527,7 +520,7 @@ class span {
             // Extent <= 0>" SFINAE, since "Requires<Extent <= 0>" is
             // ill-formed when Extent is greater than 0.
             Requires<(Dependent || Extent <= 0)> = nullptr>
-  constexpr span() noexcept : storage_(nullptr, detail::extent_type<0>()) {}
+  constexpr span() : storage_(nullptr, detail::extent_type<0>()) {}
 
   constexpr span(pointer ptr, index_type count) : storage_(ptr, count) {}
 
@@ -535,24 +528,22 @@ class span {
       : storage_(firstElem, std::distance(firstElem, lastElem)) {}
 
   template <std::size_t N>
-  constexpr span(element_type (&arr)[N]) noexcept
+  constexpr span(element_type (&arr)[N])
       : storage_(KnownNotNull{std::addressof(arr[0])},
                  detail::extent_type<N>()) {}
 
   template <std::size_t N, Requires<(N > 0)> = nullptr>
-  constexpr span(std::array<std::remove_const_t<element_type>, N>& arr) noexcept
+  constexpr span(std::array<std::remove_const_t<element_type>, N>& arr)
       : storage_(KnownNotNull{arr.data()}, detail::extent_type<N>()) {}
 
-  constexpr span(std::array<std::remove_const_t<element_type>, 0>&) noexcept
+  constexpr span(std::array<std::remove_const_t<element_type>, 0>&)
       : storage_(static_cast<pointer>(nullptr), detail::extent_type<0>()) {}
 
   template <std::size_t N, Requires<(N > 0)> = nullptr>
-  constexpr span(
-      const std::array<std::remove_const_t<element_type>, N>& arr) noexcept
+  constexpr span(const std::array<std::remove_const_t<element_type>, N>& arr)
       : storage_(KnownNotNull{arr.data()}, detail::extent_type<N>()) {}
 
-  constexpr span(
-      const std::array<std::remove_const_t<element_type>, 0>&) noexcept
+  constexpr span(const std::array<std::remove_const_t<element_type>, 0>&)
       : storage_(static_cast<pointer>(nullptr), detail::extent_type<0>()) {}
 
   // NB: the SFINAE here uses .data() as a incomplete/imperfect proxy for the
@@ -581,7 +572,7 @@ class span {
   constexpr span(const Container& cont)
       : span(cont.data(), narrow<index_type>(cont.size())) {}
 
-  constexpr span(const span& other) noexcept = default;
+  constexpr span(const span& other) = default;
 
   template <class OtherElementType, std::ptrdiff_t OtherExtent,
             Requires<detail::is_allowed_extent_conversion<OtherExtent,
@@ -592,8 +583,8 @@ class span {
       : storage_(other.data(), detail::extent_type<OtherExtent>(other.size())) {
   }
 
-  ~span() noexcept = default;
-  constexpr span& operator=(const span& other) noexcept = default;
+  ~span() = default;
+  constexpr span& operator=(const span& other) = default;
 
   // [span.sub], span subviews
   template <std::ptrdiff_t Count>
@@ -635,11 +626,11 @@ class span {
   }
 
   // [span.obs], span observers
-  constexpr index_type size() const noexcept { return storage_.size(); }
-  constexpr index_type size_bytes() const noexcept {
+  constexpr index_type size() const { return storage_.size(); }
+  constexpr index_type size_bytes() const {
     return size() * narrow_cast<index_type>(sizeof(element_type));
   }
-  constexpr bool empty() const noexcept { return size() == 0; }
+  constexpr bool empty() const { return size() == 0; }
 
   // [span.elem], span element access
   constexpr reference operator[](index_type idx) const {
@@ -651,26 +642,22 @@ class span {
   constexpr reference operator()(index_type idx) const {
     return this->operator[](idx);
   }
-  constexpr pointer data() const noexcept { return storage_.data(); }
+  constexpr pointer data() const { return storage_.data(); }
 
   // [span.iter], span iterator support
-  constexpr iterator begin() const noexcept { return {this, 0}; }
-  constexpr iterator end() const noexcept { return {this, size()}; }
+  constexpr iterator begin() const { return {this, 0}; }
+  constexpr iterator end() const { return {this, size()}; }
 
-  constexpr const_iterator cbegin() const noexcept { return {this, 0}; }
-  constexpr const_iterator cend() const noexcept { return {this, size()}; }
+  constexpr const_iterator cbegin() const { return {this, 0}; }
+  constexpr const_iterator cend() const { return {this, size()}; }
 
-  constexpr reverse_iterator rbegin() const noexcept {
-    return reverse_iterator{end()};
-  }
-  constexpr reverse_iterator rend() const noexcept {
-    return reverse_iterator{begin()};
-  }
+  constexpr reverse_iterator rbegin() const { return reverse_iterator{end()}; }
+  constexpr reverse_iterator rend() const { return reverse_iterator{begin()}; }
 
-  constexpr const_reverse_iterator crbegin() const noexcept {
+  constexpr const_reverse_iterator crbegin() const {
     return const_reverse_iterator{cend()};
   }
-  constexpr const_reverse_iterator crend() const noexcept {
+  constexpr const_reverse_iterator crend() const {
     return const_reverse_iterator{cbegin()};
   }
 
@@ -719,7 +706,7 @@ class span {
       Expects(data || ExtentType::size() == 0);
     }
 
-    constexpr pointer data() const noexcept { return data_; }
+    constexpr pointer data() const { return data_; }
 
    private:
     pointer data_;
@@ -810,7 +797,7 @@ constexpr span<ElementType> make_span(ElementType* firstElem,
 }
 
 template <class ElementType, std::size_t N>
-constexpr span<ElementType, N> make_span(ElementType (&arr)[N]) noexcept {
+constexpr span<ElementType, N> make_span(ElementType (&arr)[N]) {
   return span<ElementType, N>(arr);
 }
 
@@ -850,8 +837,7 @@ constexpr ElementType& at(span<ElementType, Extent> s,
 #endif  // __GNUC__ > 6
 
 template <class ElementType, std::ptrdiff_t Extent>
-std::ostream& operator<<(std::ostream& os,
-                         const span<ElementType, Extent> t) noexcept {
+std::ostream& operator<<(std::ostream& os, const span<ElementType, Extent> t) {
   os << "(";
   auto it = t.cbegin();
   if (it != t.cend()) {
@@ -877,6 +863,6 @@ std::ostream& operator<<(std::ostream& os,
 /// \note This is not a standard GSL function, and so is not in the
 /// gsl namespace.
 template <typename T>
-gsl::not_null<T*> make_not_null(T* ptr) noexcept {
+gsl::not_null<T*> make_not_null(T* ptr) {
   return gsl::not_null<T*>(ptr);
 }

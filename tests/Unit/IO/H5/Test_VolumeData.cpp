@@ -25,7 +25,7 @@
 
 namespace {
 template <typename T>
-T multiply(const double obs_value, const T& component) noexcept {
+T multiply(const double obs_value, const T& component) {
   T result = component;
   for (auto& t : result) {
     t *= obs_value;
@@ -62,9 +62,9 @@ void test() {
     auto& volume_file =
         my_file.insert<h5::VolumeData>("/element_data", version_number);
     const auto write_to_file = [&volume_file, &tensor_components_and_coords,
-                                &grid_names, &bases, &quadratures](
-                                   const size_t observation_id,
-                                   const double observation_value) noexcept {
+                                &grid_names, &bases,
+                                &quadratures](const size_t observation_id,
+                                              const double observation_value) {
       std::string first_grid = grid_names.front();
       std::string last_grid = grid_names.back();
       volume_file.write_volume_data(
@@ -137,16 +137,16 @@ void test() {
     std::vector<size_t> found_observation_ids(observation_values.size());
     std::transform(observation_values.begin(), observation_values.end(),
                    found_observation_ids.begin(),
-                   [&volume_file](const double observation_value) noexcept {
+                   [&volume_file](const double observation_value) {
                      return volume_file.find_observation_id(observation_value);
                    });
     CHECK(found_observation_ids == observation_ids);
   }
   // Check that the volume data is correct
   const auto check_time = [&volume_file, &tensor_components_and_coords,
-                           &grid_names, &bases, &quadratures](
-                              const size_t observation_id,
-                              const double observation_value) noexcept {
+                           &grid_names, &bases,
+                           &quadratures](const size_t observation_id,
+                                         const double observation_value) {
     CHECK(std::vector<std::vector<size_t>>{{2, 2, 2}, {2, 2, 2}} ==
           volume_file.get_extents(observation_id));
     CHECK(volume_file.get_observation_value(observation_id) ==
@@ -181,7 +181,7 @@ void test() {
     alg::sort(read_quadratures, std::less<>{});
     // We need non-const bases and quadratures in order to sort them, and we
     // need them in their string form,
-    const auto& stringify = [](const auto& bases_or_quadratures) noexcept {
+    const auto& stringify = [](const auto& bases_or_quadratures) {
       std::vector<std::vector<std::string>> local_target_data{};
       local_target_data.reserve(bases_or_quadratures.size() + 1);
       for (const auto& element_data : bases_or_quadratures) {

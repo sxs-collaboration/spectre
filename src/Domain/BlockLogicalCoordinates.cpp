@@ -27,8 +27,7 @@ using functions_of_time_type = std::unordered_map<
 template <size_t Dim, typename Frame>
 std::vector<block_logical_coord_holder<Dim>> block_logical_coordinates(
     const Domain<Dim>& domain, const tnsr::I<DataVector, Dim, Frame>& x,
-    const double time,
-    const functions_of_time_type& functions_of_time) noexcept {
+    const double time, const functions_of_time_type& functions_of_time) {
   const size_t num_pts = get<0>(x).size();
   std::vector<block_logical_coord_holder<Dim>> block_coord_holders(num_pts);
   for (size_t s = 0; s < num_pts; ++s) {
@@ -136,7 +135,7 @@ std::vector<block_logical_coord_holder<Dim>> block_logical_coordinates(
   block_logical_coordinates(                                                   \
       const Domain<DIM(data)>& domain,                                         \
       const tnsr::I<DataVector, DIM(data), FRAME(data)>& x, const double time, \
-      const functions_of_time_type& functions_of_time) noexcept;
+      const functions_of_time_type& functions_of_time);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
                         (::Frame::Inertial, ::Frame::Grid))

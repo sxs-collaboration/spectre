@@ -26,13 +26,11 @@
 
 namespace Cce::Solutions {
 
-
 void SphericalMetricData::variables_impl(
     const gsl::not_null<tnsr::aa<DataVector, 3>*> spacetime_metric,
     const size_t l_max, const double time,
-    tmpl::type_<
-        gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>> /*meta*/)
-    const noexcept {
+    tmpl::type_<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial,
+                                          DataVector>> /*meta*/) const {
   Variables<
       tmpl::list<Tags::detail::InverseCartesianToSphericalJacobian,
                  gr::Tags::SpacetimeMetric<
@@ -84,7 +82,7 @@ void SphericalMetricData::variables_impl(
     const size_t l_max, const double time,
     tmpl::type_<::Tags::dt<
         gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>> /*meta*/)
-    const noexcept {
+    const {
   Variables<
       tmpl::list<Tags::detail::InverseCartesianToSphericalJacobian,
                  ::Tags::dt<gr::Tags::SpacetimeMetric<
@@ -138,7 +136,7 @@ void SphericalMetricData::variables_impl(
     const gsl::not_null<tnsr::iaa<DataVector, 3>*> d_spacetime_metric,
     const size_t l_max, const double time,
     tmpl::type_<GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>> /*meta*/)
-    const noexcept {
+    const {
   Variables<tmpl::list<
       gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>,
       gr::Tags::SpacetimeMetric<3, ::Frame::Spherical<::Frame::Inertial>,
@@ -269,7 +267,7 @@ void SphericalMetricData::variables_impl(
 
 void SphericalMetricData::inverse_jacobian(
     const gsl::not_null<CartesianiSphericalJ*> inverse_jacobian,
-    const size_t l_max) const noexcept {
+    const size_t l_max) const {
   const auto& collocation = Spectral::Swsh::cached_collocation_metadata<
       Spectral::Swsh::ComplexRepresentation::Interleaved>(l_max);
   for (const auto collocation_point : collocation) {
@@ -300,7 +298,7 @@ void SphericalMetricData::inverse_jacobian(
 
 void SphericalMetricData::jacobian(
     const gsl::not_null<SphericaliCartesianJ*> jacobian,
-    const size_t l_max) const noexcept {
+    const size_t l_max) const {
   const auto& collocation = Spectral::Swsh::cached_collocation_metadata<
       Spectral::Swsh::ComplexRepresentation::Interleaved>(l_max);
   for (const auto collocation_point : collocation) {
@@ -331,7 +329,7 @@ void SphericalMetricData::jacobian(
 
 void SphericalMetricData::dr_inverse_jacobian(
     const gsl::not_null<CartesianiSphericalJ*> dr_inverse_jacobian,
-    const size_t l_max) const noexcept {
+    const size_t l_max) const {
   const auto& collocation = Spectral::Swsh::cached_collocation_metadata<
       Spectral::Swsh::ComplexRepresentation::Interleaved>(l_max);
   for (const auto collocation_point : collocation) {
@@ -362,7 +360,7 @@ void SphericalMetricData::dr_inverse_jacobian(
 
 void SphericalMetricData::dr_jacobian(
     const gsl::not_null<SphericaliCartesianJ*> dr_jacobian,
-    const size_t l_max) noexcept {
+    const size_t l_max) {
   const auto& collocation = Spectral::Swsh::cached_collocation_metadata<
       Spectral::Swsh::ComplexRepresentation::Interleaved>(l_max);
   for (const auto collocation_point : collocation) {
@@ -386,6 +384,6 @@ void SphericalMetricData::dr_jacobian(
   }
 }
 
-void SphericalMetricData::pup(PUP::er& p) noexcept { WorldtubeData::pup(p); }
+void SphericalMetricData::pup(PUP::er& p) { WorldtubeData::pup(p); }
 
 }  // namespace Cce::Solutions

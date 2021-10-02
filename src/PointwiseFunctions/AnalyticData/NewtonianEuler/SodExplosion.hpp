@@ -59,31 +59,31 @@ class SodExplosion : public MarkAsAnalyticData {
     using type = double;
     static constexpr Options::String help = {
         "The initial radius of the discontinuity."};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
 
   struct InnerMassDensity {
     using type = double;
     static constexpr Options::String help = {"The inner mass density."};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
 
   struct InnerPressure {
     using type = double;
     static constexpr Options::String help = {"The inner pressure."};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
 
   struct OuterMassDensity {
     using type = double;
     static constexpr Options::String help = {"The outer mass density."};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
 
   struct OuterPressure {
     using type = double;
     static constexpr Options::String help = {"The outer pressure."};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
 
   using options = tmpl::list<InitialRadius, InnerMassDensity, InnerPressure,
@@ -95,8 +95,8 @@ class SodExplosion : public MarkAsAnalyticData {
   SodExplosion() = default;
   SodExplosion(const SodExplosion& /*rhs*/) = delete;
   SodExplosion& operator=(const SodExplosion& /*rhs*/) = delete;
-  SodExplosion(SodExplosion&& /*rhs*/) noexcept = default;
-  SodExplosion& operator=(SodExplosion&& /*rhs*/) noexcept = default;
+  SodExplosion(SodExplosion&& /*rhs*/) = default;
+  SodExplosion& operator=(SodExplosion&& /*rhs*/) = default;
   ~SodExplosion() = default;
 
   SodExplosion(double initial_radius, double inner_mass_density,
@@ -107,42 +107,40 @@ class SodExplosion : public MarkAsAnalyticData {
   template <typename... Tags>
   tuples::TaggedTuple<Tags...> variables(
       const tnsr::I<DataVector, Dim, Frame::Inertial>& x,
-      tmpl::list<Tags...> /*meta*/) const noexcept {
+      tmpl::list<Tags...> /*meta*/) const {
     return {tuples::get<Tags>(variables(x, tmpl::list<Tags>{}))...};
   }
 
-  const equation_of_state_type& equation_of_state() const noexcept {
+  const equation_of_state_type& equation_of_state() const {
     return equation_of_state_;
   }
 
   // clang-tidy: no runtime references
-  void pup(PUP::er& /*p*/) noexcept;  //  NOLINT
+  void pup(PUP::er& /*p*/);  //  NOLINT
 
  private:
   tuples::TaggedTuple<Tags::MassDensity<DataVector>> variables(
       const tnsr::I<DataVector, Dim, Frame::Inertial>& x,
-      tmpl::list<Tags::MassDensity<DataVector>> /*meta*/) const noexcept;
+      tmpl::list<Tags::MassDensity<DataVector>> /*meta*/) const;
 
   tuples::TaggedTuple<Tags::Velocity<DataVector, Dim, Frame::Inertial>>
   variables(
       const tnsr::I<DataVector, Dim, Frame::Inertial>& x,
       tmpl::list<Tags::Velocity<DataVector, Dim, Frame::Inertial>> /*meta*/)
-      const noexcept;
+      const;
 
   tuples::TaggedTuple<Tags::Pressure<DataVector>> variables(
       const tnsr::I<DataVector, Dim, Frame::Inertial>& x,
-      tmpl::list<Tags::Pressure<DataVector>> /*meta*/) const noexcept;
+      tmpl::list<Tags::Pressure<DataVector>> /*meta*/) const;
 
   tuples::TaggedTuple<Tags::SpecificInternalEnergy<DataVector>> variables(
       const tnsr::I<DataVector, Dim, Frame::Inertial>& x,
-      tmpl::list<Tags::SpecificInternalEnergy<DataVector>> /*meta*/)
-      const noexcept;
+      tmpl::list<Tags::SpecificInternalEnergy<DataVector>> /*meta*/) const;
 
   template <size_t SpatialDim>
   friend bool
   operator==(  // NOLINT (clang-tidy: readability-redundant-declaration)
-      const SodExplosion<SpatialDim>& lhs,
-      const SodExplosion<SpatialDim>& rhs) noexcept;
+      const SodExplosion<SpatialDim>& lhs, const SodExplosion<SpatialDim>& rhs);
 
   double initial_radius_ = std::numeric_limits<double>::signaling_NaN();
   double inner_mass_density_ = std::numeric_limits<double>::signaling_NaN();
@@ -153,6 +151,5 @@ class SodExplosion : public MarkAsAnalyticData {
 };
 
 template <size_t Dim>
-bool operator!=(const SodExplosion<Dim>& lhs,
-                const SodExplosion<Dim>& rhs) noexcept;
+bool operator!=(const SodExplosion<Dim>& lhs, const SodExplosion<Dim>& rhs);
 }  // namespace NewtonianEuler::AnalyticData

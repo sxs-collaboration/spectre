@@ -27,5 +27,5 @@ enum class AccessType {
   ReadOnly
 };
 
-std::ostream& operator<<(std::ostream& os, AccessType t) noexcept;
+std::ostream& operator<<(std::ostream& os, AccessType t);
 }  // namespace h5

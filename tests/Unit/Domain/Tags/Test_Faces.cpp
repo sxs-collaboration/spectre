@@ -33,7 +33,7 @@ struct FacesTestCompute
   static void function(
       const gsl::not_null<
           DirectionMap<Dim, Variables<tmpl::list<::Tags::TempScalar<0>>>>*>
-          vars_on_faces) noexcept {
+          vars_on_faces) {
     (*vars_on_faces)[Direction<Dim>::lower_xi()] =
         Variables<tmpl::list<::Tags::TempScalar<0>>>{3, 1.};
   }
@@ -63,7 +63,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Tags.Faces", "[Unit][Domain]") {
     db::mutate<
         vars_on_faces_tag>(make_not_null(&box), [](const gsl::not_null<
                                                     DirectionMap<Dim, Vars>*>
-                                                       vars_on_faces) noexcept {
+                                                       vars_on_faces) {
       vars_on_faces->emplace(Direction<Dim>::lower_xi(), Vars{size_t{3}, 0.});
     });
     CHECK(db::get<scalar_on_faces_tag>(box).at(Direction<Dim>::lower_xi()) ==
@@ -71,7 +71,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Tags.Faces", "[Unit][Domain]") {
     db::mutate<scalar_on_faces_tag>(
         make_not_null(&box),
         [](const gsl::not_null<DirectionMap<Dim, Scalar<DataVector>>*>
-               scalar_on_faces) noexcept {
+               scalar_on_faces) {
           get(scalar_on_faces->at(Direction<Dim>::lower_xi())) = 1.;
         });
     CHECK(db::get<vars_on_faces_tag>(box).at(Direction<Dim>::lower_xi()) ==

@@ -54,8 +54,7 @@ using MortarMap = std::unordered_map<MortarId<VolumeDim>, ValueType,
 /// passed to `domain::Initialization::create_initial_mesh`, for
 /// example.
 template <size_t Dim>
-Mesh<Dim> mortar_mesh(const Mesh<Dim>& face_mesh1,
-                      const Mesh<Dim>& face_mesh2) noexcept;
+Mesh<Dim> mortar_mesh(const Mesh<Dim>& face_mesh1, const Mesh<Dim>& face_mesh2);
 
 /// \ingroup DiscontinuousGalerkinGroup
 /// Determine the size of the mortar (i.e., the part of the face it
@@ -63,9 +62,10 @@ Mesh<Dim> mortar_mesh(const Mesh<Dim>& face_mesh1,
 /// relative to the size of \p self, and will not generally agree with
 /// that determined by \p neighbor.
 template <size_t Dim>
-MortarSize<Dim - 1> mortar_size(
-    const ElementId<Dim>& self, const ElementId<Dim>& neighbor,
-    size_t dimension, const OrientationMap<Dim>& orientation) noexcept;
+MortarSize<Dim - 1> mortar_size(const ElementId<Dim>& self,
+                                const ElementId<Dim>& neighbor,
+                                size_t dimension,
+                                const OrientationMap<Dim>& orientation);
 
 /// \ingroup DiscontinuousGalerkinGroup
 /// Project variables from a face to a mortar.
@@ -73,7 +73,7 @@ template <typename Tags, size_t Dim>
 Variables<Tags> project_to_mortar(const Variables<Tags>& vars,
                                   const Mesh<Dim>& face_mesh,
                                   const Mesh<Dim>& mortar_mesh,
-                                  const MortarSize<Dim>& mortar_size) noexcept {
+                                  const MortarSize<Dim>& mortar_size) {
   const auto projection_matrices = Spectral::projection_matrix_parent_to_child(
       face_mesh, mortar_mesh, mortar_size);
   return apply_matrices(projection_matrices, vars, face_mesh.extents());
@@ -82,9 +82,10 @@ Variables<Tags> project_to_mortar(const Variables<Tags>& vars,
 /// \ingroup DiscontinuousGalerkinGroup
 /// Project variables from a mortar to a face.
 template <typename Tags, size_t Dim>
-Variables<Tags> project_from_mortar(
-    const Variables<Tags>& vars, const Mesh<Dim>& face_mesh,
-    const Mesh<Dim>& mortar_mesh, const MortarSize<Dim>& mortar_size) noexcept {
+Variables<Tags> project_from_mortar(const Variables<Tags>& vars,
+                                    const Mesh<Dim>& face_mesh,
+                                    const Mesh<Dim>& mortar_mesh,
+                                    const MortarSize<Dim>& mortar_size) {
   ASSERT(Spectral::needs_projection(face_mesh, mortar_mesh, mortar_size),
          "project_from_mortar should not be called if the interface mesh and "
          "mortar mesh are identical. Please elide the copy instead.");

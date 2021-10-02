@@ -41,7 +41,7 @@ class DummyBufferUpdater
                      const double coordinate_amplitude,
                      const double coordinate_frequency, const size_t l_max,
                      const bool apply_normalization_bug = false,
-                     const bool has_version_history = true) noexcept
+                     const bool has_version_history = true)
       : time_buffer_{std::move(time_buffer)},
         solution_{solution},
         extraction_radius_{extraction_radius},
@@ -53,7 +53,7 @@ class DummyBufferUpdater
 
   WRAPPED_PUPable_decl_template(DummyBufferUpdater);  // NOLINT
 
-  explicit DummyBufferUpdater(CkMigrateMessage* /*unused*/) noexcept
+  explicit DummyBufferUpdater(CkMigrateMessage* /*unused*/)
       : extraction_radius_{1.0},
         coordinate_amplitude_{0.0},
         coordinate_frequency_{0.0},
@@ -64,7 +64,7 @@ class DummyBufferUpdater
       const gsl::not_null<size_t*> time_span_start,
       const gsl::not_null<size_t*> time_span_end, const double time,
       const size_t /*l_max*/, const size_t interpolator_length,
-      const size_t buffer_depth) const noexcept override {
+      const size_t buffer_depth) const override {
     if (*time_span_end > interpolator_length and
         time_buffer_[*time_span_end - interpolator_length + 1] > time) {
       // the next time an update will be required
@@ -145,28 +145,26 @@ class DummyBufferUpdater
   }
 
   std::unique_ptr<WorldtubeBufferUpdater<cce_metric_input_tags>> get_clone()
-      const noexcept override {
+      const override {
     return std::make_unique<DummyBufferUpdater>(*this);
   }
 
-  bool time_is_outside_range(const double time) const noexcept override {
+  bool time_is_outside_range(const double time) const override {
     return time < time_buffer_[0] or
            time > time_buffer_[time_buffer_.size() - 1];
   }
 
-  size_t get_l_max() const noexcept override { return l_max_; }
+  size_t get_l_max() const override { return l_max_; }
 
-  double get_extraction_radius() const noexcept override {
+  double get_extraction_radius() const override {
     return extraction_radius_.value_or(default_extraction_radius_);
   }
 
-  bool has_version_history() const noexcept override {
-    return has_version_history_;
-  }
+  bool has_version_history() const override { return has_version_history_; }
 
-  DataVector& get_time_buffer() noexcept override { return time_buffer_; }
+  DataVector& get_time_buffer() override { return time_buffer_; }
 
-  void pup(PUP::er& p) noexcept override {
+  void pup(PUP::er& p) override {
     p | time_buffer_;
     p | solution_;
     p | extraction_radius_;
@@ -184,7 +182,7 @@ class DummyBufferUpdater
       const gsl::not_null<Tensor<ComplexModalVector, Structure...>*>
           tensor_buffer,
       const Tensor<ComplexModalVector, Structure...>& tensor_at_time,
-      const size_t time_index, const size_t time_span_extent) const noexcept {
+      const size_t time_index, const size_t time_span_extent) const {
     for (size_t i = 0; i < tensor_at_time.size(); ++i) {
       for (size_t k = 0; k < tensor_at_time[i].size(); ++k) {
         (*tensor_buffer)[i][time_index + k * time_span_extent] =
@@ -212,8 +210,7 @@ class ReducedDummyBufferUpdater
                             const std::optional<double> extraction_radius,
                             const double coordinate_amplitude,
                             const double coordinate_frequency,
-                            const size_t l_max,
-                            const bool /*unused*/ = false) noexcept
+                            const size_t l_max, const bool /*unused*/ = false)
       : time_buffer_{std::move(time_buffer)},
         solution_{solution},
         extraction_radius_{extraction_radius},
@@ -223,14 +220,14 @@ class ReducedDummyBufferUpdater
 
   WRAPPED_PUPable_decl_template(ReducedDummyBufferUpdater);  // NOLINT
 
-  explicit ReducedDummyBufferUpdater(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit ReducedDummyBufferUpdater(CkMigrateMessage* /*unused*/) {}
 
   double update_buffers_for_time(
       const gsl::not_null<Variables<cce_bondi_input_tags>*> buffers,
       const gsl::not_null<size_t*> time_span_start,
       const gsl::not_null<size_t*> time_span_end, const double time,
       const size_t l_max, const size_t interpolator_length,
-      const size_t buffer_depth) const noexcept override {
+      const size_t buffer_depth) const override {
     if (*time_span_end > interpolator_length and
         time_buffer_[*time_span_end - interpolator_length + 1] > time) {
       // the next time an update will be required
@@ -287,7 +284,7 @@ class ReducedDummyBufferUpdater
       tmpl::for_each<tmpl::transform<
           cce_bondi_input_tags, tmpl::bind<db::remove_tag_prefix, tmpl::_1>>>(
           [this, &boundary_variables, &buffers, &time_index, &time_span_end,
-           &time_span_start, &l_max](auto tag_v) noexcept {
+           &time_span_start, &l_max](auto tag_v) {
             using tag = typename decltype(tag_v)::type;
             this->update_buffer_with_scalar_at_time_index(
                 make_not_null(
@@ -303,28 +300,26 @@ class ReducedDummyBufferUpdater
     return time_buffer_[*time_span_end - interpolator_length + 1];
   }
   std::unique_ptr<WorldtubeBufferUpdater<cce_bondi_input_tags>> get_clone()
-      const noexcept override {
+      const override {
     return std::make_unique<ReducedDummyBufferUpdater>(*this);
   }
 
-  bool time_is_outside_range(const double time) const noexcept override {
+  bool time_is_outside_range(const double time) const override {
     return time < time_buffer_[0] or
            time > time_buffer_[time_buffer_.size() - 1];
   }
 
-  size_t get_l_max() const noexcept override { return l_max_; }
+  size_t get_l_max() const override { return l_max_; }
 
-  double get_extraction_radius() const noexcept override {
+  double get_extraction_radius() const override {
     return extraction_radius_.value_or(default_extraction_radius_);
   }
 
-  DataVector& get_time_buffer() noexcept override { return time_buffer_; }
+  DataVector& get_time_buffer() override { return time_buffer_; }
 
-  bool has_version_history() const noexcept override {
-    return true;
-  }
+  bool has_version_history() const override { return true; }
 
-  void pup(PUP::er& p) noexcept override {
+  void pup(PUP::er& p) override {
     p | time_buffer_;
     p | solution_;
     p | extraction_radius_;
@@ -339,7 +334,7 @@ class ReducedDummyBufferUpdater
       const gsl::not_null<Scalar<SpinWeighted<ComplexModalVector, Spin>>*>
           scalar_buffer,
       const SpinWeighted<ComplexModalVector, Spin>& spin_weighted_at_time,
-      const size_t time_index, const size_t time_span_extent) const noexcept {
+      const size_t time_index, const size_t time_span_extent) const {
     for (size_t k = 0; k < spin_weighted_at_time.size(); ++k) {
       get(*scalar_buffer).data()[time_index + k * time_span_extent] =
           spin_weighted_at_time.data()[k];
@@ -364,7 +359,7 @@ template <typename DataManager, typename DummyUpdater, typename Generator>
 void test_data_manager_with_dummy_buffer_updater(
     const gsl::not_null<Generator*> gen,
     const bool apply_normalization_bug = false, const bool is_spec_input = true,
-    const std::optional<double> extraction_radius = std::nullopt) noexcept {
+    const std::optional<double> extraction_radius = std::nullopt) {
   // note that the default_extraction_radius is what will be reported
   // from the buffer updater when the extraction_radius is the default
   // `std::nullopt`.
@@ -487,7 +482,7 @@ void test_data_manager_with_dummy_buffer_updater(
 template <typename Generator>
 void test_spec_worldtube_buffer_updater(
     const gsl::not_null<Generator*> gen,
-    const bool extraction_radius_in_filename) noexcept {
+    const bool extraction_radius_in_filename) {
   UniformCustomDistribution<double> value_dist{0.1, 0.5};
   // first prepare the input for the modal version
   const double mass = value_dist(*gen);
@@ -571,7 +566,7 @@ void test_spec_worldtube_buffer_updater(
   // check that the data in the buffer matches the expected analytic data.
   tmpl::for_each<cce_metric_input_tags>(
       [&expected_coefficients_buffers, &coefficients_buffers_from_file,
-       &coefficients_buffers_from_serialized](auto tag_v) noexcept {
+       &coefficients_buffers_from_serialized](auto tag_v) {
         using tag = typename decltype(tag_v)::type;
         INFO(db::tag_name<tag>());
         const auto& test_lhs = get<tag>(expected_coefficients_buffers);
@@ -587,7 +582,7 @@ void test_spec_worldtube_buffer_updater(
 template <typename Generator>
 void test_reduced_spec_worldtube_buffer_updater(
     const gsl::not_null<Generator*> gen,
-    const bool extraction_radius_in_filename) noexcept {
+    const bool extraction_radius_in_filename) {
   UniformCustomDistribution<double> value_dist{0.1, 0.5};
   // first prepare the input for the modal version
   const double mass = value_dist(*gen);

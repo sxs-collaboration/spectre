@@ -32,7 +32,7 @@ void test_impl(
     const std::unique_ptr<
         domain::creators::time_dependence::TimeDependence<MeshDim>>&
         expected_time_dep,
-    const std::vector<std::string>& expected_f_of_t_names) noexcept {
+    const std::vector<std::string>& expected_f_of_t_names) {
   // Test coordinate maps
   UniformCustomDistribution<size_t> dist_size_t{1, 10};
   const size_t num_blocks = dist_size_t(*gen);
@@ -112,7 +112,7 @@ void test_impl(
 
 template <typename T>
 void test_composition_1d(const gsl::not_null<T> gen, const double initial_time,
-                         const double update_delta_t) noexcept {
+                         const double update_delta_t) {
   using Composition1d =
       Composition<TimeDependenceCompositionTag<UniformTranslation<1>>,
                   TimeDependenceCompositionTag<UniformTranslation<1>, 1>>;
@@ -146,7 +146,7 @@ void test_composition_1d(const gsl::not_null<T> gen, const double initial_time,
 
 template <typename T>
 void test_composition_2d(const gsl::not_null<T> gen, const double initial_time,
-                         const double update_delta_t) noexcept {
+                         const double update_delta_t) {
   using Composition2d =
       Composition<TimeDependenceCompositionTag<UniformTranslation<2>>,
                   TimeDependenceCompositionTag<UniformTranslation<2>, 1>>;
@@ -180,7 +180,7 @@ void test_composition_2d(const gsl::not_null<T> gen, const double initial_time,
 
 template <typename T>
 void test_composition_3d(const gsl::not_null<T> gen, const double initial_time,
-                         const double update_delta_t) noexcept {
+                         const double update_delta_t) {
   using Composition3d =
       Composition<TimeDependenceCompositionTag<UniformTranslation<3>>,
                   TimeDependenceCompositionTag<UniformTranslation<3>, 1>>;

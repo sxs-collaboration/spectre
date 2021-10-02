@@ -67,10 +67,10 @@ std::unordered_map<
     boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>
 make_neighbor_data_from_neighbor_vars(
     const Mesh<VolumeDim>& mesh, const Element<VolumeDim>& element,
-    const VariablesMap<VolumeDim>& neighbor_vars) noexcept {
+    const VariablesMap<VolumeDim>& neighbor_vars) {
   const auto make_tuple_of_means =
-      [&mesh](const Variables<tmpl::list<VectorTag<VolumeDim>>>&
-                  vars_to_average) noexcept {
+      [&mesh](
+          const Variables<tmpl::list<VectorTag<VolumeDim>>>& vars_to_average) {
         tuples::TaggedTuple<::Tags::Mean<VectorTag<VolumeDim>>> result;
         for (size_t d = 0; d < VolumeDim; ++d) {
           get<::Tags::Mean<VectorTag<VolumeDim>>>(result).get(d) = mean_value(
@@ -108,7 +108,7 @@ void test_simple_weno_work(
         boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
         neighbor_data,
     const VariablesMap<VolumeDim>& expected_neighbor_modified_vars,
-    Approx local_approx = approx) noexcept {
+    Approx local_approx = approx) {
   // First run some sanity checks on the input, and make sure the test function
   // is being called in a reasonable way
   if (element.neighbors().size() != neighbor_data.size()) {
@@ -150,7 +150,7 @@ void test_simple_weno_work(
   }
 
   // WENO should preserve the mean, so expected means = initial means
-  const auto expected_vector_means = [&local_data, &mesh]() noexcept {
+  const auto expected_vector_means = [&local_data, &mesh]() {
     std::array<double, VolumeDim> means{};
     for (size_t d = 0; d < VolumeDim; ++d) {
       gsl::at(means, d) = mean_value(local_data.get(d), mesh);
@@ -191,10 +191,9 @@ void test_simple_weno_work(
   CHECK_ITERABLE_CUSTOM_APPROX(expected_vector, vector_to_limit, local_approx);
 }
 
-void test_simple_weno_1d_impl(
-    const Spectral::Quadrature quadrature,
-    const std::unordered_set<Direction<1>>& directions_of_external_boundaries =
-        {}) noexcept {
+void test_simple_weno_1d_impl(const Spectral::Quadrature quadrature,
+                              const std::unordered_set<Direction<1>>&
+                                  directions_of_external_boundaries = {}) {
   CAPTURE(quadrature);
   CAPTURE(directions_of_external_boundaries);
   const auto mesh = Mesh<1>(3, Spectral::Basis::Legendre, quadrature);
@@ -204,13 +203,13 @@ void test_simple_weno_1d_impl(
 
   // Functions to produce dummy data on each element
   const auto make_center_tensor =
-      [](const tnsr::I<DataVector, 1, Frame::ElementLogical>& coords) noexcept {
+      [](const tnsr::I<DataVector, 1, Frame::ElementLogical>& coords) {
         const auto& x = get<0>(coords);
         return tnsr::I<DataVector, 1>{{{0.4 * x - 0.1 * square(x)}}};
       };
   const auto make_lower_xi_vars =
       [](const tnsr::I<DataVector, 1, Frame::ElementLogical>& coords,
-         const double offset = 0.0) noexcept {
+         const double offset = 0.0) {
         const auto x = get<0>(coords) + offset;
         Variables<tmpl::list<VectorTag<1>>> vars(x.size());
         get<0>(get<VectorTag<1>>(vars)) = -0.1 + 0.3 * x - 0.1 * square(x);
@@ -218,7 +217,7 @@ void test_simple_weno_1d_impl(
       };
   const auto make_upper_xi_vars =
       [](const tnsr::I<DataVector, 1, Frame::ElementLogical>& coords,
-         const double offset = 0.0) noexcept {
+         const double offset = 0.0) {
         const auto x = get<0>(coords) + offset;
         Variables<tmpl::list<VectorTag<1>>> vars(x.size());
         get<0>(get<VectorTag<1>>(vars)) = 0.6 * x - 0.3 * square(x);
@@ -230,8 +229,7 @@ void test_simple_weno_1d_impl(
   VariablesMap<1> neighbor_modified_vars{};
 
   const auto shift_vars_to_local_means =
-      [&mesh,
-       &local_data](const Variables<tmpl::list<VectorTag<1>>>& input) noexcept {
+      [&mesh, &local_data](const Variables<tmpl::list<VectorTag<1>>>& input) {
         auto result = input;
         auto& v = get<VectorTag<1>>(result);
         get<0>(v) +=
@@ -243,7 +241,7 @@ void test_simple_weno_1d_impl(
       [&logical_coords, &directions_of_external_boundaries, &neighbor_vars,
        &neighbor_modified_vars, &shift_vars_to_local_means](
           const std::pair<Direction<1>, ElementId<1>>& neighbor,
-          const auto make_vars) noexcept {
+          const auto make_vars) {
         if (directions_of_external_boundaries.count(neighbor.first) == 0) {
           const double offset =
               (neighbor.first.side() == Side::Lower ? -2.0 : 2.0);
@@ -266,7 +264,7 @@ void test_simple_weno_1d_impl(
                            neighbor_modified_vars);
 }
 
-void test_simple_weno_1d() noexcept {
+void test_simple_weno_1d() {
   INFO("Testing simple_weno_impl in 1D");
   const auto gl = Spectral::Quadrature::GaussLobatto;
   const auto gauss = Spectral::Quadrature::Gauss;
@@ -280,10 +278,9 @@ void test_simple_weno_1d() noexcept {
   test_simple_weno_1d_impl(gl, {{Direction<1>::lower_xi()}});
 }
 
-void test_simple_weno_2d_impl(
-    const Spectral::Quadrature quadrature,
-    const std::unordered_set<Direction<2>>& directions_of_external_boundaries =
-        {}) noexcept {
+void test_simple_weno_2d_impl(const Spectral::Quadrature quadrature,
+                              const std::unordered_set<Direction<2>>&
+                                  directions_of_external_boundaries = {}) {
   CAPTURE(quadrature);
   CAPTURE(directions_of_external_boundaries);
   const auto mesh =
@@ -293,7 +290,7 @@ void test_simple_weno_2d_impl(
   const auto logical_coords = logical_coordinates(mesh);
 
   const auto make_center_tensor =
-      [](const tnsr::I<DataVector, 2, Frame::ElementLogical>& coords) noexcept {
+      [](const tnsr::I<DataVector, 2, Frame::ElementLogical>& coords) {
         const auto& x = get<0>(coords);
         const auto& y = get<1>(coords);
         return tnsr::I<DataVector, 2>{
@@ -302,7 +299,7 @@ void test_simple_weno_2d_impl(
       };
   const auto make_lower_xi_vars =
       [](const tnsr::I<DataVector, 2, Frame::ElementLogical>& coords,
-         const double xi_offset = 0.0) noexcept {
+         const double xi_offset = 0.0) {
         const auto x = get<0>(coords) + xi_offset;
         const auto& y = get<1>(coords);
         Variables<tmpl::list<VectorTag<2>>> vars(x.size());
@@ -312,7 +309,7 @@ void test_simple_weno_2d_impl(
       };
   const auto make_upper_xi_vars =
       [](const tnsr::I<DataVector, 2, Frame::ElementLogical>& coords,
-         const double xi_offset = 0.0) noexcept {
+         const double xi_offset = 0.0) {
         const auto x = get<0>(coords) + xi_offset;
         const auto& y = get<1>(coords);
         Variables<tmpl::list<VectorTag<2>>> vars(x.size());
@@ -322,7 +319,7 @@ void test_simple_weno_2d_impl(
       };
   const auto make_lower_eta_vars =
       [](const tnsr::I<DataVector, 2, Frame::ElementLogical>& coords,
-         const double eta_offset = 0.0) noexcept {
+         const double eta_offset = 0.0) {
         const auto& x = get<0>(coords);
         const auto y = get<1>(coords) + eta_offset;
         Variables<tmpl::list<VectorTag<2>>> vars(x.size());
@@ -332,7 +329,7 @@ void test_simple_weno_2d_impl(
       };
   const auto make_upper_eta_vars =
       [](const tnsr::I<DataVector, 2, Frame::ElementLogical>& coords,
-         const double eta_offset = 0.0) noexcept {
+         const double eta_offset = 0.0) {
         const auto& x = get<0>(coords);
         const auto y = get<1>(coords) + eta_offset;
         Variables<tmpl::list<VectorTag<2>>> vars(x.size());
@@ -346,8 +343,7 @@ void test_simple_weno_2d_impl(
   VariablesMap<2> neighbor_modified_vars{};
 
   const auto shift_vars_to_local_means =
-      [&mesh,
-       &local_data](const Variables<tmpl::list<VectorTag<2>>>& input) noexcept {
+      [&mesh, &local_data](const Variables<tmpl::list<VectorTag<2>>>& input) {
         auto result = input;
         auto& v = get<VectorTag<2>>(result);
         get<0>(v) +=
@@ -361,7 +357,7 @@ void test_simple_weno_2d_impl(
       [&logical_coords, &directions_of_external_boundaries, &neighbor_vars,
        &neighbor_modified_vars, &shift_vars_to_local_means](
           const std::pair<Direction<2>, ElementId<2>>& neighbor,
-          const auto make_vars) noexcept {
+          const auto make_vars) {
         if (directions_of_external_boundaries.count(neighbor.first) == 0) {
           const double offset =
               (neighbor.first.side() == Side::Lower ? -2.0 : 2.0);
@@ -390,7 +386,7 @@ void test_simple_weno_2d_impl(
                            neighbor_modified_vars);
 }
 
-void test_simple_weno_2d() noexcept {
+void test_simple_weno_2d() {
   INFO("Testing simple_weno_impl in 2D");
   const auto gl = Spectral::Quadrature::GaussLobatto;
   const auto gauss = Spectral::Quadrature::Gauss;
@@ -407,10 +403,9 @@ void test_simple_weno_2d() noexcept {
             Direction<2>::upper_eta()}});
 }
 
-void test_simple_weno_3d_impl(
-    const Spectral::Quadrature quadrature,
-    const std::unordered_set<Direction<3>>& directions_of_external_boundaries =
-        {}) noexcept {
+void test_simple_weno_3d_impl(const Spectral::Quadrature quadrature,
+                              const std::unordered_set<Direction<3>>&
+                                  directions_of_external_boundaries = {}) {
   CAPTURE(quadrature);
   CAPTURE(directions_of_external_boundaries);
   const auto mesh = Mesh<3>({{3, 4, 5}}, Spectral::Basis::Legendre, quadrature);
@@ -419,7 +414,7 @@ void test_simple_weno_3d_impl(
   const auto logical_coords = logical_coordinates(mesh);
 
   const auto make_center_tensor =
-      [](const tnsr::I<DataVector, 3, Frame::ElementLogical>& coords) noexcept {
+      [](const tnsr::I<DataVector, 3, Frame::ElementLogical>& coords) {
         const auto& x = get<0>(coords);
         const auto& y = get<1>(coords);
         const auto& z = get<2>(coords);
@@ -428,7 +423,7 @@ void test_simple_weno_3d_impl(
       };
   const auto make_lower_xi_vars =
       [](const tnsr::I<DataVector, 3, Frame::ElementLogical>& coords,
-         const double xi_offset = 0.0) noexcept {
+         const double xi_offset = 0.0) {
         const auto x = get<0>(coords) + xi_offset;
         const auto& y = get<1>(coords);
         const auto& z = get<2>(coords);
@@ -440,7 +435,7 @@ void test_simple_weno_3d_impl(
       };
   const auto make_upper_xi_vars =
       [](const tnsr::I<DataVector, 3, Frame::ElementLogical>& coords,
-         const double xi_offset = 0.0) noexcept {
+         const double xi_offset = 0.0) {
         const auto x = get<0>(coords) + xi_offset;
         const auto& y = get<1>(coords);
         const auto& z = get<2>(coords);
@@ -452,7 +447,7 @@ void test_simple_weno_3d_impl(
       };
   const auto make_lower_eta_vars =
       [](const tnsr::I<DataVector, 3, Frame::ElementLogical>& coords,
-         const double eta_offset = 0.0) noexcept {
+         const double eta_offset = 0.0) {
         const auto& x = get<0>(coords);
         const auto y = get<1>(coords) + eta_offset;
         const auto& z = get<2>(coords);
@@ -464,7 +459,7 @@ void test_simple_weno_3d_impl(
       };
   const auto make_upper_eta_vars =
       [](const tnsr::I<DataVector, 3, Frame::ElementLogical>& coords,
-         const double eta_offset = 0.0) noexcept {
+         const double eta_offset = 0.0) {
         const auto& x = get<0>(coords);
         const auto y = get<1>(coords) + eta_offset;
         const auto& z = get<2>(coords);
@@ -476,7 +471,7 @@ void test_simple_weno_3d_impl(
       };
   const auto make_lower_zeta_vars =
       [](const tnsr::I<DataVector, 3, Frame::ElementLogical>& coords,
-         const double zeta_offset = 0.0) noexcept {
+         const double zeta_offset = 0.0) {
         const auto& x = get<0>(coords);
         const auto& y = get<1>(coords);
         const auto z = get<2>(coords) + zeta_offset;
@@ -488,7 +483,7 @@ void test_simple_weno_3d_impl(
       };
   const auto make_upper_zeta_vars =
       [](const tnsr::I<DataVector, 3, Frame::ElementLogical>& coords,
-         const double zeta_offset = 0.0) noexcept {
+         const double zeta_offset = 0.0) {
         const auto& x = get<0>(coords);
         const auto& y = get<1>(coords);
         const auto z = get<2>(coords) + zeta_offset;
@@ -504,8 +499,7 @@ void test_simple_weno_3d_impl(
   VariablesMap<3> neighbor_modified_vars{};
 
   const auto shift_vars_to_local_means =
-      [&mesh,
-       &local_data](const Variables<tmpl::list<VectorTag<3>>>& input) noexcept {
+      [&mesh, &local_data](const Variables<tmpl::list<VectorTag<3>>>& input) {
         auto result = input;
         auto& v = get<VectorTag<3>>(result);
         get<0>(v) +=
@@ -521,7 +515,7 @@ void test_simple_weno_3d_impl(
       [&logical_coords, &directions_of_external_boundaries, &neighbor_vars,
        &neighbor_modified_vars, &shift_vars_to_local_means](
           const std::pair<Direction<3>, ElementId<3>>& neighbor,
-          const auto make_vars) noexcept {
+          const auto make_vars) {
         if (directions_of_external_boundaries.count(neighbor.first) == 0) {
           const double offset =
               (neighbor.first.side() == Side::Lower ? -2.0 : 2.0);
@@ -561,7 +555,7 @@ void test_simple_weno_3d_impl(
                            neighbor_modified_vars, custom_approx);
 }
 
-void test_simple_weno_3d() noexcept {
+void test_simple_weno_3d() {
   INFO("Testing simple_weno_impl in 3D");
   const auto gl = Spectral::Quadrature::GaussLobatto;
   const auto gauss = Spectral::Quadrature::Gauss;

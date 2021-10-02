@@ -35,7 +35,7 @@ namespace time_dependence {
 template <typename TimeDep, size_t Suffix = std::numeric_limits<size_t>::max()>
 struct TimeDependenceCompositionTag {
   static constexpr size_t mesh_dim = TimeDep::mesh_dim;
-  static std::string name() noexcept {
+  static std::string name() {
     return pretty_type::short_name<TimeDep>() +
            (Suffix == std::numeric_limits<size_t>::max()
                 ? std::string{}
@@ -93,7 +93,7 @@ class Composition final
 
   explicit Composition(
       tmpl::type_from<TimeDependenceCompTag0> first_time_dep,
-      tmpl::type_from<TimeDependenceCompTags>... rest_time_dep) noexcept;
+      tmpl::type_from<TimeDependenceCompTags>... rest_time_dep);
 
   /// Constructor for copying the composition time dependence. Internally
   /// performs all the copying necessary to deal with the functions of time.
@@ -101,16 +101,15 @@ class Composition final
               const std::unordered_map<
                   std::string,
                   std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-                  functions_of_time) noexcept;
+                  functions_of_time);
 
-  auto get_clone() const noexcept
-      -> std::unique_ptr<TimeDependence<mesh_dim>> override;
+  auto get_clone() const -> std::unique_ptr<TimeDependence<mesh_dim>> override;
 
-  auto block_maps(size_t number_of_blocks) const noexcept
+  auto block_maps(size_t number_of_blocks) const
       -> std::vector<std::unique_ptr<domain::CoordinateMapBase<
           Frame::Grid, Frame::Inertial, mesh_dim>>> override;
 
-  auto functions_of_time() const noexcept -> std::unordered_map<
+  auto functions_of_time() const -> std::unordered_map<
       std::string,
       std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;
 

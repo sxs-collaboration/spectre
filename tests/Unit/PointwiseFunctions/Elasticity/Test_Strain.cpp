@@ -76,7 +76,7 @@ auto make_coord_map() {
 }
 
 template <size_t Dim>
-void test_strain() noexcept {
+void test_strain() {
   CAPTURE(Dim);
   {
     INFO("Random-value tests");

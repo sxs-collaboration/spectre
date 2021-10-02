@@ -16,19 +16,19 @@ namespace ScalarAdvection::Solutions {
 template <typename DataType>
 tuples::TaggedTuple<ScalarAdvection::Tags::U> Sinusoid::variables(
     const tnsr::I<DataType, 1>& x, double t,
-    tmpl::list<ScalarAdvection::Tags::U> /*meta*/) const noexcept {
+    tmpl::list<ScalarAdvection::Tags::U> /*meta*/) const {
   auto u = make_with_value<Scalar<DataType>>(get<0>(x), 0.0);
   get(u) = sin(M_PI * (get<0>(x) - t));
   return u;
 }
 
-void Sinusoid::pup(PUP::er& /*p*/) noexcept {}
+void Sinusoid::pup(PUP::er& /*p*/) {}
 
-bool operator==(const Sinusoid& /*lhs*/, const Sinusoid& /*rhs*/) noexcept {
+bool operator==(const Sinusoid& /*lhs*/, const Sinusoid& /*rhs*/) {
   return true;
 }
 
-bool operator!=(const Sinusoid& lhs, const Sinusoid& rhs) noexcept {
+bool operator!=(const Sinusoid& lhs, const Sinusoid& rhs) {
   return not(lhs == rhs);
 }
 
@@ -40,7 +40,7 @@ bool operator!=(const Sinusoid& lhs, const Sinusoid& rhs) noexcept {
   template tuples::TaggedTuple<ScalarAdvection::Tags::U> \
   ScalarAdvection::Solutions::Sinusoid::variables(       \
       const tnsr::I<DTYPE(data), 1>& x, double t,        \
-      tmpl::list<ScalarAdvection::Tags::U> /*meta*/) const noexcept;
+      tmpl::list<ScalarAdvection::Tags::U> /*meta*/) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (DataVector))
 

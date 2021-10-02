@@ -14,9 +14,9 @@
 #include "Utilities/Gsl.hpp"
 
 namespace Burgers::BoundaryCorrections {
-Rusanov::Rusanov(CkMigrateMessage* msg) noexcept : BoundaryCorrection(msg) {}
+Rusanov::Rusanov(CkMigrateMessage* msg) : BoundaryCorrection(msg) {}
 
-std::unique_ptr<BoundaryCorrection> Rusanov::get_clone() const noexcept {
+std::unique_ptr<BoundaryCorrection> Rusanov::get_clone() const {
   return std::make_unique<Rusanov>(*this);
 }
 
@@ -31,8 +31,7 @@ double Rusanov::dg_package_data(
     const tnsr::i<DataVector, 1, Frame::Inertial>& normal_covector,
     const std::optional<tnsr::I<DataVector, 1, Frame::Inertial>>&
     /*mesh_velocity*/,
-    const std::optional<Scalar<DataVector>>&
-        normal_dot_mesh_velocity) noexcept {
+    const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity) {
   if (normal_dot_mesh_velocity.has_value()) {
     get(*packaged_abs_char_speed) =
         abs(get(u) - get(*normal_dot_mesh_velocity));
@@ -52,7 +51,7 @@ void Rusanov::dg_boundary_terms(
     const Scalar<DataVector>& u_ext,
     const Scalar<DataVector>& normal_dot_flux_u_ext,
     const Scalar<DataVector>& abs_char_speed_ext,
-    const dg::Formulation dg_formulation) noexcept {
+    const dg::Formulation dg_formulation) {
   if (dg_formulation == dg::Formulation::WeakInertial) {
     get(*boundary_correction_u) =
         0.5 * (get(normal_dot_flux_u_int) - get(normal_dot_flux_u_ext)) -

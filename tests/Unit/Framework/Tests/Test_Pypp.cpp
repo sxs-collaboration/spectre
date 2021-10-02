@@ -42,8 +42,8 @@ struct ConvertClassForConservionTestA {
   using packed_container = ClassForConversionTest;
   using packed_type = double;
 
-  static inline unpacked_container unpack(
-      const packed_container t, const size_t /*grid_point_index*/) noexcept {
+  static inline unpacked_container unpack(const packed_container t,
+                                          const size_t /*grid_point_index*/) {
     return t.a_;
   }
 
@@ -53,9 +53,7 @@ struct ConvertClassForConservionTestA {
     packed_t->a_ = t;
   }
 
-  static inline size_t get_size(const packed_container& /*t*/) noexcept {
-    return 1;
-  }
+  static inline size_t get_size(const packed_container& /*t*/) { return 1; }
 };
 // [convert_arbitrary_a]
 
@@ -65,8 +63,8 @@ struct ConvertClassForConservionTestB {
   using packed_container = ClassForConversionTest;
   using packed_type = double;
 
-  static inline unpacked_container unpack(
-      const packed_container t, const size_t /*grid_point_index*/) noexcept {
+  static inline unpacked_container unpack(const packed_container t,
+                                          const size_t /*grid_point_index*/) {
     return t.b_;
   }
 
@@ -76,9 +74,7 @@ struct ConvertClassForConservionTestB {
     packed_t->b_ = t;
   }
 
-  static inline size_t get_size(const packed_container& /*t*/) noexcept {
-    return 1;
-  }
+  static inline size_t get_size(const packed_container& /*t*/) { return 1; }
 };
 // [convert_arbitrary_b]
 

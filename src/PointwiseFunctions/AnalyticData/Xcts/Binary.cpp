@@ -24,7 +24,7 @@ namespace Xcts::AnalyticData::detail {
 template <typename DataType>
 void BinaryVariables<DataType>::add_deriv_of_window_function(
     const gsl::not_null<tnsr::ijj<DataType, Dim>*> deriv_conformal_metric)
-    const noexcept {
+    const {
   if (not falloff_widths.has_value()) {
     return;
   }
@@ -52,8 +52,7 @@ template <typename DataType>
 void BinaryVariables<DataType>::operator()(
     const gsl::not_null<tnsr::I<DataType, Dim>*> shift_background,
     const gsl::not_null<Cache*> /*cache*/,
-    Tags::ShiftBackground<DataType, Dim, Frame::Inertial> /*meta*/)
-    const noexcept {
+    Tags::ShiftBackground<DataType, Dim, Frame::Inertial> /*meta*/) const {
   get<0>(*shift_background) = -angular_velocity * get<1>(x);
   get<1>(*shift_background) = angular_velocity * get<0>(x);
   get<2>(*shift_background) = 0.;
@@ -64,7 +63,7 @@ void BinaryVariables<DataType>::operator()(
     const gsl::not_null<tnsr::iJ<DataType, Dim>*> deriv_shift_background,
     const gsl::not_null<Cache*> /*cache*/,
     ::Tags::deriv<Tags::ShiftBackground<DataType, Dim, Frame::Inertial>,
-                  tmpl::size_t<Dim>, Frame::Inertial> /*meta*/) const noexcept {
+                  tmpl::size_t<Dim>, Frame::Inertial> /*meta*/) const {
   std::fill(deriv_shift_background->begin(), deriv_shift_background->end(), 0.);
   get<1, 0>(*deriv_shift_background) = -angular_velocity;
   get<0, 1>(*deriv_shift_background) = angular_velocity;
@@ -75,7 +74,7 @@ void BinaryVariables<DataType>::operator()(
     const gsl::not_null<tnsr::II<DataType, Dim>*> longitudinal_shift_background,
     const gsl::not_null<Cache*> cache,
     Tags::LongitudinalShiftBackgroundMinusDtConformalMetric<
-        DataType, Dim, Frame::Inertial> /*meta*/) const noexcept {
+        DataType, Dim, Frame::Inertial> /*meta*/) const {
   const auto& shift_background =
       cache->get_var(Tags::ShiftBackground<DataType, Dim, Frame::Inertial>{});
   const auto& deriv_shift_background = cache->get_var(

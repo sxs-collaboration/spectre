@@ -4,5 +4,5 @@
 #pragma once
 
 namespace domain::CoordinateMaps::ShapeMapTransitionFunctions {
-void register_derived_with_charm() noexcept;
+void register_derived_with_charm();
 }  // namespace domain::CoordinateMaps::ShapeMapTransitionFunctions

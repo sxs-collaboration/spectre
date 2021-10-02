@@ -15,7 +15,7 @@ template <size_t SpatialDim, typename Frame, typename DataType>
 void christoffel_second_kind(
     const gsl::not_null<tnsr::Ijj<DataType, SpatialDim, Frame>*> christoffel,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
-    const tnsr::II<DataType, SpatialDim, Frame>& inv_metric) noexcept {
+    const tnsr::II<DataType, SpatialDim, Frame>& inv_metric) {
   destructive_resize_components(christoffel, get_size(*phi.begin()));
   for (size_t i = 0; i < SpatialDim; ++i) {
     for (size_t j = i; j < SpatialDim; ++j) {
@@ -37,7 +37,7 @@ void christoffel_second_kind(
 template <size_t SpatialDim, typename Frame, typename DataType>
 auto christoffel_second_kind(
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
-    const tnsr::II<DataType, SpatialDim, Frame>& inv_metric) noexcept
+    const tnsr::II<DataType, SpatialDim, Frame>& inv_metric)
     -> tnsr::Ijj<DataType, SpatialDim, Frame> {
   tnsr::Ijj<DataType, SpatialDim, Frame> christoffel(
       get_size(get<0, 0, 0>(phi)));
@@ -55,13 +55,11 @@ auto christoffel_second_kind(
       const gsl::not_null<tnsr::Ijj<DTYPE(data), DIM(data), FRAME(data)>*> \
           christoffel,                                                     \
       const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,           \
-      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                 \
-          inv_metric) noexcept;                                            \
+      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>& inv_metric);    \
   template tnsr::Ijj<DTYPE(data), DIM(data), FRAME(data)>                  \
   GeneralizedHarmonic::christoffel_second_kind(                            \
       const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,           \
-      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                 \
-          inv_metric) noexcept;
+      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>& inv_metric);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
                         (Frame::Grid, Frame::Inertial,

@@ -27,7 +27,7 @@
 namespace Spectral::Swsh {
 namespace {
 
-void test_swsh_coefficients_class_interface() noexcept {
+void test_swsh_coefficients_class_interface() {
   MAKE_GENERATOR(gen);
   UniformCustomDistribution<size_t> sdist{8, 64};
   const size_t l_max = sdist(gen);

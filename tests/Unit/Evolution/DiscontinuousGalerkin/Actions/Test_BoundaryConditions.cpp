@@ -129,7 +129,7 @@ struct BoundaryTerms final
     using type = Scalar<DataVector>;
   };
 
-  explicit BoundaryTerms(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit BoundaryTerms(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(BoundaryTerms);  // NOLINT
   BoundaryTerms(const bool mesh_is_moving, const double sign_of_normal)
@@ -180,8 +180,7 @@ struct BoundaryTerms final
       const tnsr::i<DataVector, Dim, Frame::Inertial>& normal_covector,
       const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
           mesh_velocity,
-      const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity)
-      const noexcept {
+      const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity) const {
     if (mesh_velocity.has_value()) {
       REQUIRE(normal_dot_mesh_velocity.has_value());
       CHECK_ITERABLE_APPROX(*normal_dot_mesh_velocity,
@@ -241,8 +240,7 @@ struct BoundaryTerms final
       const tnsr::I<DataVector, Dim, Frame::Inertial>& normal_vector,
       const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
           mesh_velocity,
-      const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity)
-      const noexcept {
+      const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity) const {
     CHECK_ITERABLE_APPROX(get(dot_product(normal_covector, normal_vector)),
                           DataVector(get(var1).size(), 1.0));
     return dg_package_data(out_normal_dot_flux_var1, out_normal_dot_flux_var2,
@@ -274,7 +272,7 @@ struct BoundaryTerms final
           mesh_velocity,
       const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity,
 
-      const double volume_number) const noexcept {
+      const double volume_number) const {
     dg_package_data(out_normal_dot_flux_var1, out_normal_dot_flux_var2,
                     out_var1, out_var2, max_abs_char_speed, var1, var2,
                     flux_var1, flux_var2, var3_squared, normal_covector,
@@ -312,7 +310,7 @@ struct BoundaryTerms final
           mesh_velocity,
       const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity,
 
-      const double volume_number) const noexcept {
+      const double volume_number) const {
     CHECK_ITERABLE_APPROX(get(dot_product(normal_covector, normal_vector)),
                           DataVector(get(var1).size(), 1.0));
     return dg_package_data(out_normal_dot_flux_var1, out_normal_dot_flux_var2,
@@ -339,8 +337,7 @@ struct BoundaryTerms final
       const tnsr::i<DataVector, Dim, Frame::Inertial>& normal_covector,
       const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
           mesh_velocity,
-      const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity)
-      const noexcept {
+      const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity) const {
     if (mesh_velocity.has_value()) {
       REQUIRE(normal_dot_mesh_velocity.has_value());
       CHECK_ITERABLE_APPROX(*normal_dot_mesh_velocity,
@@ -398,8 +395,7 @@ struct BoundaryTerms final
       const tnsr::I<DataVector, Dim, Frame::Inertial>& normal_vector,
       const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
           mesh_velocity,
-      const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity)
-      const noexcept {
+      const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity) const {
     CHECK_ITERABLE_APPROX(get(dot_product(normal_covector, normal_vector)),
                           DataVector(get(var1).size(), 1.0));
     return dg_package_data(out_normal_dot_flux_var1, out_normal_dot_flux_var2,
@@ -427,8 +423,7 @@ struct BoundaryTerms final
       const tnsr::i<DataVector, Dim, Frame::Inertial>& normal_covector,
       const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
           mesh_velocity,
-      const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity)
-      const noexcept {
+      const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity) const {
     if (mesh_velocity.has_value()) {
       REQUIRE(normal_dot_mesh_velocity.has_value());
       CHECK_ITERABLE_APPROX(*normal_dot_mesh_velocity,
@@ -488,8 +483,7 @@ struct BoundaryTerms final
       const tnsr::I<DataVector, Dim, Frame::Inertial>& normal_vector,
       const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
           mesh_velocity,
-      const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity)
-      const noexcept {
+      const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity) const {
     CHECK_ITERABLE_APPROX(get(dot_product(normal_covector, normal_vector)),
                           DataVector(get(var1).size(), 1.0));
     return dg_package_data(out_normal_dot_flux_var1, out_normal_dot_flux_var2,
@@ -521,7 +515,7 @@ struct BoundaryTerms final
           mesh_velocity,
       const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity,
 
-      const double volume_number) const noexcept {
+      const double volume_number) const {
     dg_package_data(out_normal_dot_flux_var1, out_normal_dot_flux_var2,
                     out_var1, out_var2, max_abs_char_speed, var1, var2,
                     flux_var2, var3_squared, normal_covector, mesh_velocity,
@@ -554,7 +548,7 @@ struct BoundaryTerms final
           mesh_velocity,
       const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity,
 
-      const double volume_number) const noexcept {
+      const double volume_number) const {
     CHECK_ITERABLE_APPROX(get(dot_product(normal_covector, normal_vector)),
                           DataVector(get(var1).size(), 1.0));
     return dg_package_data(out_normal_dot_flux_var1, out_normal_dot_flux_var2,
@@ -578,7 +572,7 @@ struct BoundaryTerms final
       const Scalar<DataVector>& ext_var1,
       const tnsr::I<DataVector, Dim, Frame::Inertial>& ext_var2,
       const Scalar<DataVector>& ext_max_abs_char_speed,
-      const dg::Formulation formulation) const noexcept {
+      const dg::Formulation formulation) const {
     static_assert(Dim == 1,
                   "Flux dot normal assumes 1d, mostly because normal vector is "
                   "assumed to be 1d.");
@@ -733,12 +727,12 @@ template <typename System>
 class BoundaryCondition : public domain::BoundaryConditions::BoundaryCondition {
  public:
   BoundaryCondition() = default;
-  BoundaryCondition(BoundaryCondition&&) noexcept = default;
-  BoundaryCondition& operator=(BoundaryCondition&&) noexcept = default;
+  BoundaryCondition(BoundaryCondition&&) = default;
+  BoundaryCondition& operator=(BoundaryCondition&&) = default;
   BoundaryCondition(const BoundaryCondition&) = default;
   BoundaryCondition& operator=(const BoundaryCondition&) = default;
   ~BoundaryCondition() override = default;
-  explicit BoundaryCondition(CkMigrateMessage* msg) noexcept
+  explicit BoundaryCondition(CkMigrateMessage* msg)
       : domain::BoundaryConditions::BoundaryCondition(msg) {}
 
   void pup(PUP::er& p) override {
@@ -752,19 +746,18 @@ class Outflow : public BoundaryCondition<System> {
   Outflow() = default;
   explicit Outflow(const bool mesh_is_moving)
       : mesh_is_moving_(mesh_is_moving) {}
-  Outflow(Outflow&&) noexcept = default;
-  Outflow& operator=(Outflow&&) noexcept = default;
+  Outflow(Outflow&&) = default;
+  Outflow& operator=(Outflow&&) = default;
   Outflow(const Outflow&) = default;
   Outflow& operator=(const Outflow&) = default;
   ~Outflow() override = default;
 
-  explicit Outflow(CkMigrateMessage* msg) noexcept
-      : BoundaryCondition<System>(msg) {}
+  explicit Outflow(CkMigrateMessage* msg) : BoundaryCondition<System>(msg) {}
 
   WRAPPED_PUPable_decl_base_template(
       domain::BoundaryConditions::BoundaryCondition, Outflow);
 
-  auto get_clone() const noexcept -> std::unique_ptr<
+  auto get_clone() const -> std::unique_ptr<
       domain::BoundaryConditions::BoundaryCondition> override {
     return std::make_unique<Outflow<System>>(*this);
   }
@@ -794,7 +787,7 @@ class Outflow : public BoundaryCondition<System> {
       const Scalar<DataVector>& var1,
       const tnsr::I<DataVector, System::volume_dim, Frame::Inertial>& var2,
       const Scalar<DataVector>& var3_squared, const Scalar<DataVector>& dt_var1,
-      const double volume_number) const noexcept {
+      const double volume_number) const {
     CHECK(volume_number == 2.5);
     const size_t num_pts = get(var1).size();
     CHECK_ITERABLE_APPROX(get(var3_squared),
@@ -845,7 +838,7 @@ class Outflow : public BoundaryCondition<System> {
       const Scalar<DataVector>& var1,
       const tnsr::I<DataVector, System::volume_dim, Frame::Inertial>& var2,
       const Scalar<DataVector>& var3_squared, const Scalar<DataVector>& dt_var1,
-      const double volume_number) const noexcept {
+      const double volume_number) const {
     dg_outflow(face_mesh_velocity, outward_directed_normal_covector, var1, var2,
                var3_squared, dt_var1, volume_number);
     CHECK_ITERABLE_APPROX(get(dot_product(outward_directed_normal_covector,
@@ -864,7 +857,7 @@ class Outflow : public BoundaryCondition<System> {
       const Scalar<DataVector>& prim_var1,
       const tnsr::i<DataVector, System::volume_dim, Frame::Inertial>& prim_var2,
       const Scalar<DataVector>& var3_squared, const Scalar<DataVector>& dt_var1,
-      const double volume_number) const noexcept {
+      const double volume_number) const {
     dg_outflow(face_mesh_velocity, outward_directed_normal_covector, var1, var2,
                var3_squared, dt_var1, volume_number);
     const size_t num_pts = get(var1).size();
@@ -889,7 +882,7 @@ class Outflow : public BoundaryCondition<System> {
       const Scalar<DataVector>& prim_var1,
       const tnsr::i<DataVector, System::volume_dim, Frame::Inertial>& prim_var2,
       const Scalar<DataVector>& var3_squared, const Scalar<DataVector>& dt_var1,
-      const double volume_number) const noexcept {
+      const double volume_number) const {
     dg_outflow(face_mesh_velocity, outward_directed_normal_covector, var1, var2,
                prim_var1, prim_var2, var3_squared, dt_var1, volume_number);
     CHECK_ITERABLE_APPROX(get(dot_product(outward_directed_normal_covector,
@@ -911,19 +904,18 @@ class Ghost : public BoundaryCondition<System> {
  public:
   Ghost() = default;
   explicit Ghost(const bool mesh_is_moving) : mesh_is_moving_(mesh_is_moving) {}
-  Ghost(Ghost&&) noexcept = default;
-  Ghost& operator=(Ghost&&) noexcept = default;
+  Ghost(Ghost&&) = default;
+  Ghost& operator=(Ghost&&) = default;
   Ghost(const Ghost&) = default;
   Ghost& operator=(const Ghost&) = default;
   ~Ghost() override = default;
 
-  explicit Ghost(CkMigrateMessage* msg) noexcept
-      : BoundaryCondition<System>(msg) {}
+  explicit Ghost(CkMigrateMessage* msg) : BoundaryCondition<System>(msg) {}
 
   WRAPPED_PUPable_decl_base_template(
       domain::BoundaryConditions::BoundaryCondition, Ghost);
 
-  auto get_clone() const noexcept -> std::unique_ptr<
+  auto get_clone() const -> std::unique_ptr<
       domain::BoundaryConditions::BoundaryCondition> override {
     return std::make_unique<Ghost<System>>(*this);
   }
@@ -959,7 +951,7 @@ class Ghost : public BoundaryCondition<System> {
       const Scalar<DataVector>& var1,
       const tnsr::I<DataVector, System::volume_dim, Frame::Inertial>& var2,
       const Scalar<DataVector>& var3_squared, const Scalar<DataVector>& dt_var1,
-      const double volume_number) const noexcept {
+      const double volume_number) const {
     get(*out_var1) = offset_boundary_condition;
     for (size_t i = 0; i < System::volume_dim; ++i) {
       out_var2->get(i) =
@@ -1028,7 +1020,7 @@ class Ghost : public BoundaryCondition<System> {
       const Scalar<DataVector>& var1,
       const tnsr::I<DataVector, System::volume_dim, Frame::Inertial>& var2,
       const Scalar<DataVector>& var3_squared, const Scalar<DataVector>& dt_var1,
-      const double volume_number) const noexcept {
+      const double volume_number) const {
     check_normal_vector_set_inverse_spatial_metric(
         inv_spatial_metric, outward_directed_normal_covector,
         outward_directed_normal_vector);
@@ -1054,7 +1046,7 @@ class Ghost : public BoundaryCondition<System> {
       const Scalar<DataVector>& var1,
       const tnsr::I<DataVector, System::volume_dim, Frame::Inertial>& var2,
       const Scalar<DataVector>& var3_squared, const Scalar<DataVector>& dt_var1,
-      const double volume_number) const noexcept {
+      const double volume_number) const {
     dg_ghost(out_var1, out_var2, out_var3_squared, face_mesh_velocity,
              outward_directed_normal_covector, var1, var2, var3_squared,
              dt_var1, volume_number);
@@ -1090,7 +1082,7 @@ class Ghost : public BoundaryCondition<System> {
       const Scalar<DataVector>& var1,
       const tnsr::I<DataVector, System::volume_dim, Frame::Inertial>& var2,
       const Scalar<DataVector>& var3_squared, const Scalar<DataVector>& dt_var1,
-      const double volume_number) const noexcept {
+      const double volume_number) const {
     check_normal_vector_set_inverse_spatial_metric(
         inv_spatial_metric, outward_directed_normal_covector,
         outward_directed_normal_vector);
@@ -1120,7 +1112,7 @@ class Ghost : public BoundaryCondition<System> {
       const Scalar<DataVector>& prim_var1,
       const tnsr::i<DataVector, System::volume_dim, Frame::Inertial>& prim_var2,
       const Scalar<DataVector>& var3_squared, const Scalar<DataVector>& dt_var1,
-      const double volume_number) const noexcept {
+      const double volume_number) const {
     dg_ghost(out_var1, out_var2, flux_var2, out_var3_squared,
              face_mesh_velocity, outward_directed_normal_covector, var1, var2,
              var3_squared, dt_var1, volume_number);
@@ -1161,7 +1153,7 @@ class Ghost : public BoundaryCondition<System> {
       const Scalar<DataVector>& prim_var1,
       const tnsr::i<DataVector, System::volume_dim, Frame::Inertial>& prim_var2,
       const Scalar<DataVector>& var3_squared, const Scalar<DataVector>& dt_var1,
-      const double volume_number) const noexcept {
+      const double volume_number) const {
     check_normal_vector_set_inverse_spatial_metric(
         inv_spatial_metric, outward_directed_normal_covector,
         outward_directed_normal_vector);
@@ -1191,7 +1183,7 @@ class Ghost : public BoundaryCondition<System> {
       const Scalar<DataVector>& var1,
       const tnsr::I<DataVector, System::volume_dim, Frame::Inertial>& var2,
       const Scalar<DataVector>& var3_squared, const Scalar<DataVector>& dt_var1,
-      const double volume_number) const noexcept {
+      const double volume_number) const {
     dg_ghost(out_var1, out_var2, flux_var2, out_var3_squared,
              face_mesh_velocity, outward_directed_normal_covector, var1, var2,
              var3_squared, dt_var1, volume_number);
@@ -1227,7 +1219,7 @@ class Ghost : public BoundaryCondition<System> {
       const Scalar<DataVector>& var1,
       const tnsr::I<DataVector, System::volume_dim, Frame::Inertial>& var2,
       const Scalar<DataVector>& var3_squared, const Scalar<DataVector>& dt_var1,
-      const double volume_number) const noexcept {
+      const double volume_number) const {
     check_normal_vector_set_inverse_spatial_metric(
         inv_spatial_metric, outward_directed_normal_covector,
         outward_directed_normal_vector);
@@ -1261,7 +1253,7 @@ class Ghost : public BoundaryCondition<System> {
       const Scalar<DataVector>& prim_var1,
       const tnsr::i<DataVector, System::volume_dim, Frame::Inertial>& prim_var2,
       const Scalar<DataVector>& var3_squared, const Scalar<DataVector>& dt_var1,
-      const double volume_number) const noexcept {
+      const double volume_number) const {
     dg_ghost(out_var1, out_var2, flux_var1, flux_var2, out_var3_squared,
              face_mesh_velocity, outward_directed_normal_covector, var1, var2,
              var3_squared, dt_var1, volume_number);
@@ -1305,7 +1297,7 @@ class Ghost : public BoundaryCondition<System> {
       const Scalar<DataVector>& prim_var1,
       const tnsr::i<DataVector, System::volume_dim, Frame::Inertial>& prim_var2,
       const Scalar<DataVector>& var3_squared, const Scalar<DataVector>& dt_var1,
-      const double volume_number) const noexcept {
+      const double volume_number) const {
     check_normal_vector_set_inverse_spatial_metric(
         inv_spatial_metric, outward_directed_normal_covector,
         outward_directed_normal_vector);
@@ -1323,7 +1315,7 @@ class Ghost : public BoundaryCondition<System> {
       const tnsr::i<DataVector, System::volume_dim, Frame::Inertial>&
           outward_directed_normal_covector,
       const tnsr::I<DataVector, System::volume_dim, Frame::Inertial>&
-          outward_directed_normal_vector) const noexcept {
+          outward_directed_normal_vector) const {
     CHECK_ITERABLE_APPROX(
         get(dot_product(outward_directed_normal_covector,
                         outward_directed_normal_vector)),
@@ -1349,19 +1341,19 @@ class TimeDerivative : public BoundaryCondition<System> {
   TimeDerivative() = default;
   TimeDerivative(const bool mesh_is_moving, const double expected_dt_var1)
       : mesh_is_moving_(mesh_is_moving), expected_dt_var1_(expected_dt_var1) {}
-  TimeDerivative(TimeDerivative&&) noexcept = default;
-  TimeDerivative& operator=(TimeDerivative&&) noexcept = default;
+  TimeDerivative(TimeDerivative&&) = default;
+  TimeDerivative& operator=(TimeDerivative&&) = default;
   TimeDerivative(const TimeDerivative&) = default;
   TimeDerivative& operator=(const TimeDerivative&) = default;
   ~TimeDerivative() override = default;
 
-  explicit TimeDerivative(CkMigrateMessage* msg) noexcept
+  explicit TimeDerivative(CkMigrateMessage* msg)
       : BoundaryCondition<System>(msg) {}
 
   WRAPPED_PUPable_decl_base_template(
       domain::BoundaryConditions::BoundaryCondition, TimeDerivative);
 
-  auto get_clone() const noexcept -> std::unique_ptr<
+  auto get_clone() const -> std::unique_ptr<
       domain::BoundaryConditions::BoundaryCondition> override {
     return std::make_unique<TimeDerivative<System>>(*this);
   }
@@ -1401,7 +1393,7 @@ class TimeDerivative : public BoundaryCondition<System> {
       const Scalar<DataVector>& var1,
       const tnsr::I<DataVector, System::volume_dim, Frame::Inertial>& var2,
       const Scalar<DataVector>& var3_squared, const Scalar<DataVector>& dt_var1,
-      const double volume_number) const noexcept {
+      const double volume_number) const {
     CHECK(volume_number == 2.5);
     const size_t num_pts = get(var1).size();
     CHECK_ITERABLE_APPROX(get(var3_squared),
@@ -1461,7 +1453,7 @@ class TimeDerivative : public BoundaryCondition<System> {
       const Scalar<DataVector>& var1,
       const tnsr::I<DataVector, System::volume_dim, Frame::Inertial>& var2,
       const Scalar<DataVector>& var3_squared, const Scalar<DataVector>& dt_var1,
-      const double volume_number) const noexcept {
+      const double volume_number) const {
     check_normal_vector(outward_directed_normal_covector,
                         outward_directed_normal_vector);
     return dg_time_derivative(dt_correction_var1, dt_correction_var2,
@@ -1484,7 +1476,7 @@ class TimeDerivative : public BoundaryCondition<System> {
       const tnsr::I<DataVector, System::volume_dim, Frame::Inertial>& var2,
       const Scalar<DataVector>& var3_squared, const Scalar<DataVector>& dt_var1,
       const tnsr::i<DataVector, System::volume_dim, Frame::Inertial>& d_var1,
-      const double volume_number) const noexcept {
+      const double volume_number) const {
     dg_time_derivative(dt_correction_var1, dt_correction_var2,
                        face_mesh_velocity, outward_directed_normal_covector,
                        var1, var2, var3_squared, dt_var1, volume_number);
@@ -1512,7 +1504,7 @@ class TimeDerivative : public BoundaryCondition<System> {
       const tnsr::I<DataVector, System::volume_dim, Frame::Inertial>& var2,
       const Scalar<DataVector>& var3_squared, const Scalar<DataVector>& dt_var1,
       const tnsr::i<DataVector, System::volume_dim, Frame::Inertial>& d_var1,
-      const double volume_number) const noexcept {
+      const double volume_number) const {
     check_normal_vector(outward_directed_normal_covector,
                         outward_directed_normal_vector);
     return dg_time_derivative(dt_correction_var1, dt_correction_var2,
@@ -1537,7 +1529,7 @@ class TimeDerivative : public BoundaryCondition<System> {
       const tnsr::i<DataVector, System::volume_dim, Frame::Inertial>& prim_var2,
       const Scalar<DataVector>& var3_squared, const Scalar<DataVector>& dt_var1,
       const tnsr::i<DataVector, System::volume_dim, Frame::Inertial>& d_var1,
-      const double volume_number) const noexcept {
+      const double volume_number) const {
     dg_time_derivative(dt_correction_var1, dt_correction_var2,
                        face_mesh_velocity, outward_directed_normal_covector,
                        var1, var2, prim_var1, prim_var2, var3_squared, dt_var1,
@@ -1568,7 +1560,7 @@ class TimeDerivative : public BoundaryCondition<System> {
       const tnsr::i<DataVector, System::volume_dim, Frame::Inertial>& prim_var2,
       const Scalar<DataVector>& var3_squared, const Scalar<DataVector>& dt_var1,
       const tnsr::i<DataVector, System::volume_dim, Frame::Inertial>& d_var1,
-      const double volume_number) const noexcept {
+      const double volume_number) const {
     check_normal_vector(outward_directed_normal_covector,
                         outward_directed_normal_vector);
     return dg_time_derivative(
@@ -1592,7 +1584,7 @@ class TimeDerivative : public BoundaryCondition<System> {
       const Scalar<DataVector>& prim_var1,
       const tnsr::i<DataVector, System::volume_dim, Frame::Inertial>& prim_var2,
       const Scalar<DataVector>& var3_squared, const Scalar<DataVector>& dt_var1,
-      const double volume_number) const noexcept {
+      const double volume_number) const {
     dg_time_derivative(dt_correction_var1, dt_correction_var2,
                        face_mesh_velocity, outward_directed_normal_covector,
                        var1, var2, var3_squared, dt_var1, volume_number);
@@ -1623,7 +1615,7 @@ class TimeDerivative : public BoundaryCondition<System> {
       const Scalar<DataVector>& prim_var1,
       const tnsr::i<DataVector, System::volume_dim, Frame::Inertial>& prim_var2,
       const Scalar<DataVector>& var3_squared, const Scalar<DataVector>& dt_var1,
-      const double volume_number) const noexcept {
+      const double volume_number) const {
     check_normal_vector(outward_directed_normal_covector,
                         outward_directed_normal_vector);
     dg_time_derivative(dt_correction_var1, dt_correction_var2,
@@ -1638,7 +1630,7 @@ class TimeDerivative : public BoundaryCondition<System> {
       const tnsr::i<DataVector, System::volume_dim, Frame::Inertial>&
           outward_directed_normal_covector,
       const tnsr::I<DataVector, System::volume_dim, Frame::Inertial>&
-          outward_directed_normal_vector) const noexcept {
+          outward_directed_normal_vector) const {
     CHECK_ITERABLE_APPROX(
         get(dot_product(outward_directed_normal_covector,
                         outward_directed_normal_vector)),
@@ -1660,20 +1652,19 @@ class GhostAndTimeDerivative : public BoundaryCondition<System> {
   explicit GhostAndTimeDerivative(const bool mesh_is_moving)
       : ghost_{mesh_is_moving},
         time_derivative_{mesh_is_moving, offset_dt_evolved_vars} {}
-  GhostAndTimeDerivative(GhostAndTimeDerivative&&) noexcept = default;
-  GhostAndTimeDerivative& operator=(GhostAndTimeDerivative&&) noexcept =
-      default;
+  GhostAndTimeDerivative(GhostAndTimeDerivative&&) = default;
+  GhostAndTimeDerivative& operator=(GhostAndTimeDerivative&&) = default;
   GhostAndTimeDerivative(const GhostAndTimeDerivative&) = default;
   GhostAndTimeDerivative& operator=(const GhostAndTimeDerivative&) = default;
   ~GhostAndTimeDerivative() override = default;
 
-  explicit GhostAndTimeDerivative(CkMigrateMessage* msg) noexcept
+  explicit GhostAndTimeDerivative(CkMigrateMessage* msg)
       : BoundaryCondition<System>(msg) {}
 
   WRAPPED_PUPable_decl_base_template(
       domain::BoundaryConditions::BoundaryCondition, GhostAndTimeDerivative);
 
-  auto get_clone() const noexcept -> std::unique_ptr<
+  auto get_clone() const -> std::unique_ptr<
       domain::BoundaryConditions::BoundaryCondition> override {
     return std::make_unique<GhostAndTimeDerivative<System>>(*this);
   }
@@ -1715,7 +1706,7 @@ class GhostAndTimeDerivative : public BoundaryCondition<System> {
       const tnsr::I<DataVector, System::volume_dim, Frame::Inertial>& var2,
       const Scalar<DataVector>& var3_squared, const Scalar<DataVector>& dt_var1,
       const tnsr::i<DataVector, System::volume_dim, Frame::Inertial>& d_var1,
-      const double volume_number) const noexcept {
+      const double volume_number) const {
     ghost_.dg_ghost(out_var1, out_var2, out_var3_squared, face_mesh_velocity,
                     outward_directed_normal_covector, var1, var2, var3_squared,
                     dt_var1, volume_number);
@@ -1748,7 +1739,7 @@ class GhostAndTimeDerivative : public BoundaryCondition<System> {
       const tnsr::I<DataVector, System::volume_dim, Frame::Inertial>& var2,
       const Scalar<DataVector>& var3_squared, const Scalar<DataVector>& dt_var1,
       const tnsr::i<DataVector, System::volume_dim, Frame::Inertial>& d_var1,
-      const double volume_number) const noexcept {
+      const double volume_number) const {
     ghost_.check_normal_vector_set_inverse_spatial_metric(
         inv_spatial_metric, outward_directed_normal_covector,
         outward_directed_normal_vector);
@@ -1775,7 +1766,7 @@ class GhostAndTimeDerivative : public BoundaryCondition<System> {
       const tnsr::I<DataVector, System::volume_dim, Frame::Inertial>& var2,
       const Scalar<DataVector>& var3_squared, const Scalar<DataVector>& dt_var1,
       const tnsr::i<DataVector, System::volume_dim, Frame::Inertial>& d_var1,
-      const double volume_number) const noexcept {
+      const double volume_number) const {
     ghost_.dg_ghost(out_var1, out_var2, flux_var2, out_var3_squared,
                     face_mesh_velocity, outward_directed_normal_covector, var1,
                     var2, var3_squared, dt_var1, volume_number);
@@ -1811,7 +1802,7 @@ class GhostAndTimeDerivative : public BoundaryCondition<System> {
       const tnsr::I<DataVector, System::volume_dim, Frame::Inertial>& var2,
       const Scalar<DataVector>& var3_squared, const Scalar<DataVector>& dt_var1,
       const tnsr::i<DataVector, System::volume_dim, Frame::Inertial>& d_var1,
-      const double volume_number) const noexcept {
+      const double volume_number) const {
     ghost_.check_normal_vector_set_inverse_spatial_metric(
         inv_spatial_metric, outward_directed_normal_covector,
         outward_directed_normal_vector);
@@ -1841,7 +1832,7 @@ class GhostAndTimeDerivative : public BoundaryCondition<System> {
       const tnsr::i<DataVector, System::volume_dim, Frame::Inertial>& prim_var2,
       const Scalar<DataVector>& var3_squared, const Scalar<DataVector>& dt_var1,
       const tnsr::i<DataVector, System::volume_dim, Frame::Inertial>& d_var1,
-      const double volume_number) const noexcept {
+      const double volume_number) const {
     ghost_.dg_ghost(out_var1, out_var2, flux_var2, out_var3_squared,
                     out_prim_var1, face_mesh_velocity,
                     outward_directed_normal_covector, var1, var2, prim_var1,
@@ -1881,7 +1872,7 @@ class GhostAndTimeDerivative : public BoundaryCondition<System> {
       const tnsr::i<DataVector, System::volume_dim, Frame::Inertial>& prim_var2,
       const Scalar<DataVector>& var3_squared, const Scalar<DataVector>& dt_var1,
       const tnsr::i<DataVector, System::volume_dim, Frame::Inertial>& d_var1,
-      const double volume_number) const noexcept {
+      const double volume_number) const {
     ghost_.check_normal_vector_set_inverse_spatial_metric(
         inv_spatial_metric, outward_directed_normal_covector,
         outward_directed_normal_vector);
@@ -1911,7 +1902,7 @@ class GhostAndTimeDerivative : public BoundaryCondition<System> {
       const Scalar<DataVector>& var1,
       const tnsr::I<DataVector, System::volume_dim, Frame::Inertial>& var2,
       const Scalar<DataVector>& var3_squared, const Scalar<DataVector>& dt_var1,
-      const double volume_number) const noexcept {
+      const double volume_number) const {
     ghost_.dg_ghost(out_var1, out_var2, flux_var1, flux_var2, out_var3_squared,
                     face_mesh_velocity, outward_directed_normal_covector, var1,
                     var2, var3_squared, dt_var1, volume_number);
@@ -1943,7 +1934,7 @@ class GhostAndTimeDerivative : public BoundaryCondition<System> {
       const Scalar<DataVector>& var1,
       const tnsr::I<DataVector, System::volume_dim, Frame::Inertial>& var2,
       const Scalar<DataVector>& var3_squared, const Scalar<DataVector>& dt_var1,
-      const double volume_number) const noexcept {
+      const double volume_number) const {
     ghost_.check_normal_vector_set_inverse_spatial_metric(
         inv_spatial_metric, outward_directed_normal_covector,
         outward_directed_normal_vector);
@@ -1977,7 +1968,7 @@ class GhostAndTimeDerivative : public BoundaryCondition<System> {
       const Scalar<DataVector>& prim_var1,
       const tnsr::i<DataVector, System::volume_dim, Frame::Inertial>& prim_var2,
       const Scalar<DataVector>& var3_squared, const Scalar<DataVector>& dt_var1,
-      const double volume_number) const noexcept {
+      const double volume_number) const {
     ghost_.dg_ghost(out_var1, out_var2, flux_var1, flux_var2, out_var3_squared,
                     out_prim_var1, face_mesh_velocity,
                     outward_directed_normal_covector, var1, var2, prim_var1,
@@ -2014,7 +2005,7 @@ class GhostAndTimeDerivative : public BoundaryCondition<System> {
       const Scalar<DataVector>& prim_var1,
       const tnsr::i<DataVector, System::volume_dim, Frame::Inertial>& prim_var2,
       const Scalar<DataVector>& var3_squared, const Scalar<DataVector>& dt_var1,
-      const double volume_number) const noexcept {
+      const double volume_number) const {
     ghost_.check_normal_vector_set_inverse_spatial_metric(
         inv_spatial_metric, outward_directed_normal_covector,
         outward_directed_normal_vector);
@@ -2026,7 +2017,7 @@ class GhostAndTimeDerivative : public BoundaryCondition<System> {
   }
 
   template <typename... Args>
-  std::optional<std::string> dg_time_derivative(Args&&... args) const noexcept {
+  std::optional<std::string> dg_time_derivative(Args&&... args) const {
     return time_derivative_.dg_time_derivative(std::forward<Args>(args)...);
   }
 

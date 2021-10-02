@@ -49,37 +49,37 @@ struct GaugeWave : public SphericalMetricData {
     using type = double;
     static constexpr Options::String help{
         "The extraction radius of the spherical solution"};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
   struct Mass {
     using type = double;
     static constexpr Options::String help{
         "The mass of the Schwarzschild solution."};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
   struct Frequency {
     using type = double;
     static constexpr Options::String help{
         "The frequency of the oscillation of the gauge wave."};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
   struct Amplitude {
     using type = double;
     static constexpr Options::String help{
       "The amplitude of the gauge wave."};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
   struct PeakTime {
     using type = double;
     static constexpr Options::String help{
         "The time of the peak of the Gaussian envelope."};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
   struct Duration {
     using type = double;
     static constexpr Options::String help{
         "The characteristic duration of the Gaussian envelope."};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
 
   using options = tmpl::list<ExtractionRadius, Mass, Frequency, Amplitude,
@@ -91,32 +91,31 @@ struct GaugeWave : public SphericalMetricData {
 
   WRAPPED_PUPable_decl_template(GaugeWave);  // NOLINT
 
-  explicit GaugeWave(CkMigrateMessage* msg) noexcept
-      : SphericalMetricData(msg) {}
+  explicit GaugeWave(CkMigrateMessage* msg) : SphericalMetricData(msg) {}
 
   // clang doesn't manage to use = default correctly in this case
   // NOLINTNEXTLINE(modernize-use-equals-default)
-  GaugeWave() noexcept {}
+  GaugeWave() {}
 
   GaugeWave(double extraction_radius, double mass, double frequency,
-            double amplitude, double peak_time, double duration) noexcept;
+            double amplitude, double peak_time, double duration);
 
-  std::unique_ptr<WorldtubeData> get_clone() const noexcept override;
+  std::unique_ptr<WorldtubeData> get_clone() const override;
 
-  void pup(PUP::er& p) noexcept override;
+  void pup(PUP::er& p) override;
 
  private:
-  double coordinate_wave_function(double time) const noexcept;
+  double coordinate_wave_function(double time) const;
 
-  double du_coordinate_wave_function(double time) const noexcept;
+  double du_coordinate_wave_function(double time) const;
 
-  double du_du_coordinate_wave_function(double time) const noexcept;
+  double du_du_coordinate_wave_function(double time) const;
 
  protected:
   /// A no-op as the gauge wave solution does not have substantial
   /// shared computation to prepare before the separate component calculations.
   void prepare_solution(const size_t /*output_l_max*/,
-                        const double /*time*/) const noexcept override {}
+                        const double /*time*/) const override {}
 
   /*!
    * \brief Compute the spherical coordinate metric from the closed-form gauge
@@ -158,7 +157,7 @@ struct GaugeWave : public SphericalMetricData {
       gsl::not_null<
           tnsr::aa<DataVector, 3, ::Frame::Spherical<::Frame::Inertial>>*>
           spherical_metric,
-      size_t l_max, double time) const noexcept override;
+      size_t l_max, double time) const override;
 
   /*!
    * \brief Compute the radial derivative of the spherical coordinate metric
@@ -204,7 +203,7 @@ struct GaugeWave : public SphericalMetricData {
       gsl::not_null<
           tnsr::aa<DataVector, 3, ::Frame::Spherical<::Frame::Inertial>>*>
           dr_spherical_metric,
-      size_t l_max, double time) const noexcept override;
+      size_t l_max, double time) const override;
 
   /*!
    * \brief Compute the spherical coordinate metric from the closed-form gauge
@@ -255,7 +254,7 @@ struct GaugeWave : public SphericalMetricData {
       gsl::not_null<
           tnsr::aa<DataVector, 3, ::Frame::Spherical<::Frame::Inertial>>*>
           dt_spherical_metric,
-      size_t l_max, double time) const noexcept override;
+      size_t l_max, double time) const override;
 
   using WorldtubeData::variables_impl;
 
@@ -265,7 +264,7 @@ struct GaugeWave : public SphericalMetricData {
   void variables_impl(
       gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, -2>>*> News,
       size_t l_max, double time,
-      tmpl::type_<Tags::News> /*meta*/) const noexcept override;
+      tmpl::type_<Tags::News> /*meta*/) const override;
 
   double mass_ = std::numeric_limits<double>::signaling_NaN();
   double frequency_ = std::numeric_limits<double>::signaling_NaN();

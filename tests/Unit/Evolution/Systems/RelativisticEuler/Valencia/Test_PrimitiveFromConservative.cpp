@@ -32,7 +32,7 @@ void test_primitive_from_conservative(
     const gsl::not_null<std::mt19937*> generator,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
         equation_of_state,
-    const DataVector& used_for_size) noexcept {
+    const DataVector& used_for_size) {
   const auto expected_rest_mass_density =
       TestHelpers::hydro::random_density(generator, used_for_size);
   const auto expected_lorentz_factor =

@@ -33,14 +33,14 @@ struct SmoothFlowProxy : hydro::Solutions::SmoothFlow<Dim, IsRelativistic> {
   SmoothFlowProxy() = default;
   SmoothFlowProxy(const SmoothFlowProxy& /*rhs*/) = delete;
   SmoothFlowProxy& operator=(const SmoothFlowProxy& /*rhs*/) = delete;
-  SmoothFlowProxy(SmoothFlowProxy&& /*rhs*/) noexcept = default;
-  SmoothFlowProxy& operator=(SmoothFlowProxy&& /*rhs*/) noexcept = default;
+  SmoothFlowProxy(SmoothFlowProxy&& /*rhs*/) = default;
+  SmoothFlowProxy& operator=(SmoothFlowProxy&& /*rhs*/) = default;
   ~SmoothFlowProxy() = default;
 
   SmoothFlowProxy(const std::array<double, Dim>& mean_velocity,
                   const std::array<double, Dim>& wavevector,
                   const double pressure, const double adiabatic_index,
-                  const double perturbation_size) noexcept
+                  const double perturbation_size)
       : hydro::Solutions::SmoothFlow<Dim, IsRelativistic>(
             mean_velocity, wavevector, pressure, adiabatic_index,
             perturbation_size) {}
@@ -61,9 +61,9 @@ struct SmoothFlowProxy : hydro::Solutions::SmoothFlow<Dim, IsRelativistic> {
                           core_variables_tags<DataType>>;
 
   template <typename DataType, typename... Tags>
-  tuples::TaggedTuple<Tags...> variables(
-      const tnsr::I<DataType, Dim>& x, const double t,
-      tmpl::list<Tags...> /*meta*/) const noexcept {
+  tuples::TaggedTuple<Tags...> variables(const tnsr::I<DataType, Dim>& x,
+                                         const double t,
+                                         tmpl::list<Tags...> /*meta*/) const {
     static_assert(sizeof...(Tags) > 1,
                   "The generic template will recurse infinitely if only one "
                   "tag is being retrieved.");
@@ -74,8 +74,7 @@ struct SmoothFlowProxy : hydro::Solutions::SmoothFlow<Dim, IsRelativistic> {
 
   template <typename DataType>
   tuples::tagged_tuple_from_typelist<variables_tags<DataType>>
-  primitive_variables(const tnsr::I<DataType, Dim>& x,
-                      const double t) const noexcept {
+  primitive_variables(const tnsr::I<DataType, Dim>& x, const double t) const {
     return this->variables(x, t, variables_tags<DataType>{});
   }
 };

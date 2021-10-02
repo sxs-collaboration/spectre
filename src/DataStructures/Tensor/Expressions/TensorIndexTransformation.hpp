@@ -78,7 +78,7 @@ template <size_t NumIndices1, size_t NumIndices2>
 SPECTRE_ALWAYS_INLINE constexpr std::array<size_t, NumIndices2>
 compute_tensorindex_transformation(
     const std::array<size_t, NumIndices1>& tensorindices1,
-    const std::array<size_t, NumIndices2>& tensorindices2) noexcept {
+    const std::array<size_t, NumIndices2>& tensorindices2) {
   std::array<size_t, NumIndices2> tensorindex_transformation{};
   for (size_t i = 0; i < NumIndices2; i++) {
     gsl::at(tensorindex_transformation, i) =
@@ -144,9 +144,9 @@ compute_tensorindex_transformation(
 // (`tensorindex_transformation`)
 template <size_t NumIndicesIn, size_t NumIndicesOut>
 SPECTRE_ALWAYS_INLINE constexpr std::array<size_t, NumIndicesOut>
-transform_multi_index(const std::array<size_t, NumIndicesIn>& input_multi_index,
-                      const std::array<size_t, NumIndicesOut>&
-                          tensorindex_transformation) noexcept {
+transform_multi_index(
+    const std::array<size_t, NumIndicesIn>& input_multi_index,
+    const std::array<size_t, NumIndicesOut>& tensorindex_transformation) {
   std::array<size_t, NumIndicesOut> output_multi_index =
       make_array<NumIndicesOut, size_t>(0);
   for (size_t i = 0; i < NumIndicesOut; i++) {

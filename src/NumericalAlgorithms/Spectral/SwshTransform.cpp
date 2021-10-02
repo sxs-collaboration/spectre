@@ -21,7 +21,7 @@ void append_libsharp_collocation_pointers(
     const gsl::not_null<std::vector<ComplexDataView<Representation>>*>
         collocation_views,
     const gsl::not_null<ComplexDataVector*> vector, const size_t l_max,
-    const bool positive_spin) noexcept {
+    const bool positive_spin) {
   const size_t number_of_angular_points =
       Spectral::Swsh::number_of_swsh_collocation_points(l_max);
   const size_t number_of_radial_points =
@@ -41,8 +41,7 @@ void append_libsharp_collocation_pointers(
 
 void append_libsharp_coefficient_pointers(
     const gsl::not_null<std::vector<std::complex<double>*>*> coefficient_data,
-    const gsl::not_null<ComplexModalVector*> vector,
-    const size_t l_max) noexcept {
+    const gsl::not_null<ComplexModalVector*> vector, const size_t l_max) {
   const size_t number_of_coefficients =
       Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max);
   const size_t number_of_radial_points =
@@ -64,7 +63,7 @@ void execute_libsharp_transform_set(
     const gsl::not_null<std::vector<double*>*> collocation_data,
     const gsl::not_null<const CollocationMetadata<Representation>*>
         collocation_metadata,
-    const sharp_alm_info* alm_info, const size_t num_transforms) noexcept {
+    const sharp_alm_info* alm_info, const size_t num_transforms) {
   // libsharp considers two arrays per transform when spin is not zero.
   const size_t number_of_arrays_per_transform = (spin == 0 ? 1 : 2);
   // libsharp has an internal flag for the maximum number of transforms, so if
@@ -105,7 +104,7 @@ void execute_libsharp_transform_set(
 template <ComplexRepresentation Representation, int Spin>
 SpinWeighted<ComplexModalVector, Spin> swsh_transform(
     const size_t l_max, const size_t number_of_radial_points,
-    const SpinWeighted<ComplexDataVector, Spin>& collocation) noexcept {
+    const SpinWeighted<ComplexDataVector, Spin>& collocation) {
   SpinWeighted<ComplexModalVector, Spin> result_vector{};
   swsh_transform<Representation, Spin>(l_max, number_of_radial_points,
                                        make_not_null(&result_vector),
@@ -116,8 +115,7 @@ SpinWeighted<ComplexModalVector, Spin> swsh_transform(
 template <ComplexRepresentation Representation, int Spin>
 SpinWeighted<ComplexDataVector, Spin> inverse_swsh_transform(
     const size_t l_max, const size_t number_of_radial_points,
-    const SpinWeighted<ComplexModalVector, Spin>&
-        libsharp_coefficients) noexcept {
+    const SpinWeighted<ComplexModalVector, Spin>& libsharp_coefficients) {
   SpinWeighted<ComplexDataVector, Spin> result_vector{};
   inverse_swsh_transform<Representation, Spin>(l_max, number_of_radial_points,
                                                make_not_null(&result_vector),
@@ -130,7 +128,7 @@ void interpolate_to_collocation(
     const gsl::not_null<SpinWeighted<ComplexDataVector, Spin>*> target,
     const SpinWeighted<ComplexDataVector, Spin>& source,
     const size_t target_l_max, const size_t source_l_max,
-    const size_t number_of_radial_points) noexcept {
+    const size_t number_of_radial_points) {
   const auto source_modes =
       swsh_transform(source_l_max, number_of_radial_points, source);
   SpinWeighted<ComplexModalVector, Spin> target_modes{
@@ -196,17 +194,15 @@ void interpolate_to_collocation(
 #define GET_REPRESENTATION(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define GET_SPIN(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define SWSH_TRANSFORM_INSTANTIATION(r, data)                       \
-  template SpinWeighted<ComplexModalVector, GET_SPIN(data)>         \
-  swsh_transform<GET_REPRESENTATION(data), GET_SPIN(data)>(         \
-      const size_t l_max, const size_t number_of_radial_points,     \
-      const SpinWeighted<ComplexDataVector, GET_SPIN(data)>&        \
-          collocation) noexcept;                                    \
-  template SpinWeighted<ComplexDataVector, GET_SPIN(data)>          \
-  inverse_swsh_transform<GET_REPRESENTATION(data), GET_SPIN(data)>( \
-      const size_t l_max, const size_t number_of_radial_points,     \
-      const SpinWeighted<ComplexModalVector, GET_SPIN(data)>&       \
-          coefficients) noexcept;
+#define SWSH_TRANSFORM_INSTANTIATION(r, data)                              \
+  template SpinWeighted<ComplexModalVector, GET_SPIN(data)>                \
+  swsh_transform<GET_REPRESENTATION(data), GET_SPIN(data)>(                \
+      const size_t l_max, const size_t number_of_radial_points,            \
+      const SpinWeighted<ComplexDataVector, GET_SPIN(data)>& collocation); \
+  template SpinWeighted<ComplexDataVector, GET_SPIN(data)>                 \
+  inverse_swsh_transform<GET_REPRESENTATION(data), GET_SPIN(data)>(        \
+      const size_t l_max, const size_t number_of_radial_points,            \
+      const SpinWeighted<ComplexModalVector, GET_SPIN(data)>& coefficients);
 
 #define SWSH_TRANSFORM_UTILITIES_INSTANTIATION(r, data)                   \
   template void append_libsharp_collocation_pointers(                     \
@@ -215,7 +211,7 @@ void interpolate_to_collocation(
           std::vector<ComplexDataView<GET_REPRESENTATION(data)>>*>        \
           collocation_views,                                              \
       const gsl::not_null<ComplexDataVector*> vector, const size_t l_max, \
-      const bool positive_spin) noexcept;                                 \
+      const bool positive_spin);                                          \
   template void execute_libsharp_transform_set(                           \
       const sharp_jobtype& jobtype, const int spin,                       \
       const gsl::not_null<std::vector<std::complex<double>*>*>            \
@@ -224,7 +220,7 @@ void interpolate_to_collocation(
       const gsl::not_null<                                                \
           const CollocationMetadata<GET_REPRESENTATION(data)>*>           \
           collocation_metadata,                                           \
-      const sharp_alm_info* alm_info, const size_t num_transforms) noexcept;
+      const sharp_alm_info* alm_info, const size_t num_transforms);
 
 namespace detail {
 GENERATE_INSTANTIATIONS(SWSH_TRANSFORM_UTILITIES_INSTANTIATION,
@@ -248,7 +244,7 @@ GENERATE_INSTANTIATIONS(SWSH_TRANSFORM_INSTANTIATION,
           target,                                                           \
       const SpinWeighted<ComplexDataVector, GET_SPIN(data)>& source,        \
       const size_t target_l_max, const size_t source_l_max,                 \
-      const size_t number_of_radial_points) noexcept;
+      const size_t number_of_radial_points);
 
 GENERATE_INSTANTIATIONS(SWSH_INTERPOLATION_INSTANTIATION, (-2, -1, 0, 1, 2))
 

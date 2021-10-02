@@ -267,18 +267,14 @@ struct Yards {
   using type = double;
 
   static constexpr bool pass_metavariables = false;
-  static double create_from_options(const double yards) noexcept {
-    return yards;
-  }
+  static double create_from_options(const double yards) { return yards; }
 };
 struct Feet {
   using option_tags = tmpl::list<OptionTags::Yards>;
   using type = double;
 
   static constexpr bool pass_metavariables = false;
-  static double create_from_options(const double yards) noexcept {
-    return 3.0 * yards;
-  }
+  static double create_from_options(const double yards) { return 3.0 * yards; }
 };
 struct Sides {
   using option_tags = tmpl::list<OptionTags::Yards, OptionTags::Dim>;
@@ -286,7 +282,7 @@ struct Sides {
 
   static constexpr bool pass_metavariables = false;
   static std::vector<double> create_from_options(const double yards,
-                                                 const size_t dim) noexcept {
+                                                 const size_t dim) {
     return std::vector<double>(dim, yards);
   }
 };
@@ -298,7 +294,7 @@ struct FullGreeting {
   using option_tags = tmpl::list<OptionTags::Greeting, OptionTags::Name>;
   template <typename Metavariables>
   static std::string create_from_options(const std::string& greeting,
-                                         const std::string& name) noexcept {
+                                         const std::string& name) {
     if (std::is_same<Metavariables, MetavariablesGreeting>::value) {
       return "A special " +  greeting + ' ' + name;
     } else {
@@ -345,8 +341,7 @@ void check_initialization_items(
   using initialization_tags = tmpl::list<InitializationTags...>;
   using option_tags =
       Parallel::get_option_tags<initialization_tags, Metavariables>;
-  const auto options = all_options.apply<option_tags>([](
-      auto... args) noexcept {
+  const auto options = all_options.apply<option_tags>([](auto... args) {
     return tuples::tagged_tuple_from_typelist<option_tags>(std::move(args)...);
   });
   CHECK(Parallel::create_from_options<Metavariables>(

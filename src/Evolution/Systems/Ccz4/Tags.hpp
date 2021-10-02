@@ -238,7 +238,7 @@ namespace OptionTags {
  * Groups option tags related to the Ccz4 evolution system.
  */
 struct Group {
-  static std::string name() noexcept { return "Ccz4"; }
+  static std::string name() { return "Ccz4"; }
   static constexpr Options::String help{
       "Options for the CCZ4 evolution system"};
   using group = evolution::OptionTags::SystemGroup;

@@ -23,10 +23,10 @@ struct Variables : db::SimpleTag {
                 "The TagsList passed to Tags::Variables is not a typelist");
   using tags_list = TagsList;
   using type = ::Variables<TagsList>;
-  static std::string name() noexcept {
+  static std::string name() {
     std::string tag_name{"Variables("};
     size_t iter = 0;
-    tmpl::for_each<TagsList>([&tag_name, &iter ](auto tag) noexcept {
+    tmpl::for_each<TagsList>([&tag_name, &iter](auto tag) {
       tag_name += db::tag_name<tmpl::type_from<decltype(tag)>>();
       if (iter + 1 != tmpl::size<TagsList>::value) {
         tag_name += ",";

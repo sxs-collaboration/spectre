@@ -64,56 +64,56 @@ class FastFlow {
     using type = FlowType;
     static constexpr Options::String help = {
         "Flow method: Jacobi, Curvature, or Fast"};
-    static type suggested_value() noexcept { return FlowType::Fast; }
+    static type suggested_value() { return FlowType::Fast; }
   };
 
   struct Alpha {
     using type = double;
     static constexpr Options::String help = {
         "Alpha parameter in PRD 57, 863 (1998)"};
-    static type suggested_value() noexcept { return 1.0; }
+    static type suggested_value() { return 1.0; }
   };
 
   struct Beta {
     using type = double;
     static constexpr Options::String help = {
         "Beta parameter in PRD 57, 863 (1998)"};
-    static type suggested_value() noexcept { return 0.5; }
+    static type suggested_value() { return 0.5; }
   };
 
   struct AbsTol {
     using type = double;
     static constexpr Options::String help = {
         "Convergence found if R_{Y_lm} < AbsTol"};
-    static type suggested_value() noexcept { return 1.e-12; }
+    static type suggested_value() { return 1.e-12; }
   };
 
   struct TruncationTol {
     using type = double;
     static constexpr Options::String help = {
         "Convergence found if R_{Y_lm} < TruncationTol*R_{mesh}"};
-    static type suggested_value() noexcept { return 1.e-2; }
+    static type suggested_value() { return 1.e-2; }
   };
 
   struct DivergenceTol {
     using type = double;
     static constexpr Options::String help = {
         "Fraction that residual can increase before dying"};
-    static type suggested_value() noexcept { return 1.2; }
-    static type lower_bound() noexcept { return 1.0; }
+    static type suggested_value() { return 1.2; }
+    static type lower_bound() { return 1.0; }
   };
 
   struct DivergenceIter {
     using type = size_t;
     static constexpr Options::String help = {
         "Num iterations residual can increase before dying"};
-    static type suggested_value() noexcept { return 5; }
+    static type suggested_value() { return 5; }
   };
 
   struct MaxIts {
     using type = size_t;
     static constexpr Options::String help = {"Maximum number of iterations."};
-    static type suggested_value() noexcept { return 100; }
+    static type suggested_value() { return 100; }
   };
 
   using options = tmpl::list<Flow, Alpha, Beta, AbsTol, TruncationTol,
@@ -143,19 +143,18 @@ class FastFlow {
   FastFlow(Flow::type flow, Alpha::type alpha, Beta::type beta,
            AbsTol::type abs_tol, TruncationTol::type trunc_tol,
            DivergenceTol::type divergence_tol,
-           DivergenceIter::type divergence_iter, MaxIts::type max_its) noexcept;
+           DivergenceIter::type divergence_iter, MaxIts::type max_its);
 
-  FastFlow() noexcept
-      : FastFlow(FlowType::Fast, 1.0, 0.5, 1.e-12, 1.e-2, 1.2, 5, 100) {}
+  FastFlow() : FastFlow(FlowType::Fast, 1.0, 0.5, 1.e-12, 1.e-2, 1.2, 5, 100) {}
 
   FastFlow(const FastFlow& /*rhs*/) = default;
   FastFlow& operator=(const FastFlow& /*rhs*/) = default;
-  FastFlow(FastFlow&& /*rhs*/) noexcept = default;
-  FastFlow& operator=(FastFlow&& /*rhs*/) noexcept = default;
+  FastFlow(FastFlow&& /*rhs*/) = default;
+  FastFlow& operator=(FastFlow&& /*rhs*/) = default;
   ~FastFlow() = default;
 
   // clang-tidy: no runtime references
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
 
   /// Evaluate residuals and compute the next iteration.  If
   /// Status==SuccessfulIteration, then `current_strahlkorper` is
@@ -167,18 +166,18 @@ class FastFlow {
       gsl::not_null<Strahlkorper<Frame>*> current_strahlkorper,
       const tnsr::II<DataVector, 3, Frame>& upper_spatial_metric,
       const tnsr::ii<DataVector, 3, Frame>& extrinsic_curvature,
-      const tnsr::Ijj<DataVector, 3, Frame>& christoffel_2nd_kind) noexcept;
+      const tnsr::Ijj<DataVector, 3, Frame>& christoffel_2nd_kind);
 
-  size_t current_iteration() const noexcept { return current_iter_; }
+  size_t current_iteration() const { return current_iter_; }
 
   /// Given a Strahlkorper defined up to some maximum Y_lm l called
   /// l_surface, returns a larger value of l, l_mesh, that is used for
   /// evaluating convergence.
   template <typename Frame>
-  size_t current_l_mesh(const Strahlkorper<Frame>& strahlkorper) const noexcept;
+  size_t current_l_mesh(const Strahlkorper<Frame>& strahlkorper) const;
 
   /// Resets the finder.
-  SPECTRE_ALWAYS_INLINE void reset_for_next_find() noexcept {
+  SPECTRE_ALWAYS_INLINE void reset_for_next_find() {
     current_iter_ = 0;
     previous_residual_mesh_norm_ = 0.0;
     min_residual_mesh_norm_ = std::numeric_limits<double>::max();
@@ -186,8 +185,7 @@ class FastFlow {
   }
 
  private:
-  friend bool operator==(const FastFlow& /*lhs*/,
-                         const FastFlow& /*rhs*/) noexcept;
+  friend bool operator==(const FastFlow& /*lhs*/, const FastFlow& /*rhs*/);
   double alpha_, beta_, abs_tol_, trunc_tol_, divergence_tol_;
   size_t divergence_iter_, max_its_;
   FlowType flow_;
@@ -196,18 +194,16 @@ class FastFlow {
   size_t iter_at_min_residual_mesh_norm_;
 };
 
-SPECTRE_ALWAYS_INLINE bool converged(const FastFlow::Status& status) noexcept {
+SPECTRE_ALWAYS_INLINE bool converged(const FastFlow::Status& status) {
   return static_cast<int>(status) > 0;
 }
 
-std::ostream& operator<<(std::ostream& os,
-                         const FastFlow::FlowType& flow_type) noexcept;
+std::ostream& operator<<(std::ostream& os, const FastFlow::FlowType& flow_type);
 
-std::ostream& operator<<(std::ostream& os,
-                         const FastFlow::Status& status) noexcept;
+std::ostream& operator<<(std::ostream& os, const FastFlow::Status& status);
 
 SPECTRE_ALWAYS_INLINE bool operator!=(const FastFlow& lhs,
-                                      const FastFlow& rhs) noexcept {
+                                      const FastFlow& rhs) {
   return not(lhs == rhs);
 }
 

@@ -36,7 +36,6 @@ struct VelocityFieldCompute : VelocityField<Dim>, db::ComputeTag {
 
   static void function(
       const gsl::not_null<tnsr::I<DataVector, Dim>*> velocity_field,
-      const tnsr::I<DataVector, Dim, Frame::Inertial>&
-          inertial_coords) noexcept;
+      const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords);
 };
 }  // namespace ScalarAdvection::Tags

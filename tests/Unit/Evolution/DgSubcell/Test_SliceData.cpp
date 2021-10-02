@@ -38,7 +38,7 @@ void check_slice(
     const Direction<Dim>& direction, const size_t fixed_index,
     const size_t ghost_slice, const size_t component_index,
     const Variables<tmpl::list<Tags::Scalar, Tags::Vector<Dim>>>& volume_vars,
-    const DirectionMap<Dim, std::vector<double>>& sliced_data) noexcept {
+    const DirectionMap<Dim, std::vector<double>>& sliced_data) {
   const size_t volume_offset = component_index * volume_extents.product();
   const size_t slice_offset = component_index * slice_extents.product();
   CAPTURE(volume_offset);
@@ -60,7 +60,7 @@ void check_slice<1>(
     const Direction<1>& direction, const size_t fixed_index,
     const size_t ghost_slice, const size_t component_index,
     const Variables<tmpl::list<Tags::Scalar, Tags::Vector<1>>>& volume_vars,
-    const DirectionMap<1, std::vector<double>>& sliced_data) noexcept {
+    const DirectionMap<1, std::vector<double>>& sliced_data) {
   const size_t volume_offset = component_index * volume_extents.product();
   const size_t slice_offset = component_index * slice_extents.product();
   CAPTURE(volume_offset);

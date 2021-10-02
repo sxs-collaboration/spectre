@@ -242,7 +242,7 @@ void test_1d_domains() {
 template <size_t Dim>
 auto compute_boundary_conditions(
     const std::vector<std::unordered_set<Direction<Dim>>>&
-        external_boundaries) noexcept {
+        external_boundaries) {
   using MapType = DirectionMap<
       Dim, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>;
   std::vector<MapType> boundary_conditions{external_boundaries.size()};

@@ -37,7 +37,7 @@ void primal_fluxes(
         flux_for_displacement,
     const tnsr::ii<DataVector, Dim, Frame::Inertial>& strain,
     const tnsr::I<DataVector, Dim>& coordinates, const double bulk_modulus,
-    const double shear_modulus) noexcept {
+    const double shear_modulus) {
   Elasticity::ConstitutiveRelations::IsotropicHomogeneous<Dim>
       constitutive_relation{bulk_modulus, shear_modulus};
   Elasticity::primal_fluxes<Dim>(flux_for_displacement, strain,

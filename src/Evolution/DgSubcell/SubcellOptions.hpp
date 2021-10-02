@@ -30,61 +30,61 @@ class SubcellOptions {
   /// The \f$\delta_0\f$ parameter in the relaxed discrete maximum principle
   /// troubled-cell indicator when applied to the initial data
   struct InitialDataRdmpDelta0 {
-    static std::string name() noexcept { return "RdmpDelta0"; }
+    static std::string name() { return "RdmpDelta0"; }
     static constexpr Options::String help{"Absolute jump tolerance parameter."};
     using type = double;
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
     using group = InitialData;
   };
   /// The \f$\epsilon\f$ parameter in the relaxed discrete maximum principle
   /// troubled-cell indicator when applied to the initial data
   struct InitialDataRdmpEpsilon {
-    static std::string name() noexcept { return "RdmpEpsilon"; }
+    static std::string name() { return "RdmpEpsilon"; }
     static constexpr Options::String help{
         "The jump-dependent relaxation constant."};
     using type = double;
-    static type lower_bound() noexcept { return 0.0; }
-    static type upper_bound() noexcept { return 1.0; }
+    static type lower_bound() { return 0.0; }
+    static type upper_bound() { return 1.0; }
     using group = InitialData;
   };
   /// The exponent \f$\alpha\f$ passed to the Persson troubled-cell indicator
   /// when applied to the initial data.
   struct InitialDataPerssonExponent {
-    static std::string name() noexcept { return "PerssonExponent"; }
+    static std::string name() { return "PerssonExponent"; }
     static constexpr Options::String help{
         "The exponent at which the error should decrease with N."};
     using type = double;
-    static constexpr type lower_bound() noexcept { return 1.0; }
-    static constexpr type upper_bound() noexcept { return 10.0; }
+    static constexpr type lower_bound() { return 1.0; }
+    static constexpr type upper_bound() { return 10.0; }
     using group = InitialData;
   };
 
   /// The \f$\delta_0\f$ parameter in the relaxed discrete maximum principle
   /// troubled-cell indicator
   struct RdmpDelta0 {
-    static std::string name() noexcept { return "RdmpDelta0"; }
+    static std::string name() { return "RdmpDelta0"; }
     static constexpr Options::String help{"Absolute jump tolerance parameter."};
     using type = double;
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
   /// The \f$\epsilon\f$ parameter in the relaxed discrete maximum principle
   /// troubled-cell indicator
   struct RdmpEpsilon {
-    static std::string name() noexcept { return "RdmpEpsilon"; }
+    static std::string name() { return "RdmpEpsilon"; }
     static constexpr Options::String help{
         "The jump-dependent relaxation constant."};
     using type = double;
-    static type lower_bound() noexcept { return 0.0; }
-    static type upper_bound() noexcept { return 1.0; }
+    static type lower_bound() { return 0.0; }
+    static type upper_bound() { return 1.0; }
   };
   /// The exponent \f$\alpha\f$ passed to the Persson troubled-cell indicator
   struct PerssonExponent {
-    static std::string name() noexcept { return "PerssonExponent"; }
+    static std::string name() { return "PerssonExponent"; }
     static constexpr Options::String help{
         "The exponent at which the error should decrease with N."};
     using type = double;
-    static constexpr type lower_bound() noexcept { return 1.0; }
-    static constexpr type upper_bound() noexcept { return 10.0; }
+    static constexpr type lower_bound() { return 1.0; }
+    static constexpr type upper_bound() { return 10.0; }
   };
   /// If true, then we always use the subcell method, not DG.
   struct AlwaysUseSubcells {
@@ -106,29 +106,27 @@ class SubcellOptions {
   SubcellOptions(double initial_data_rdmp_delta0,
                  double initial_data_rdmp_epsilon, double rdmp_delta0,
                  double rdmp_epsilon, double initial_data_persson_exponent,
-                 double persson_exponent, bool always_use_subcells) noexcept;
+                 double persson_exponent, bool always_use_subcells);
 
-  void pup(PUP::er& p) noexcept;
+  void pup(PUP::er& p);
 
-  double initial_data_rdmp_delta0() const noexcept {
-    return initial_data_rdmp_delta0_;
-  }
+  double initial_data_rdmp_delta0() const { return initial_data_rdmp_delta0_; }
 
-  double initial_data_rdmp_epsilon() const noexcept {
+  double initial_data_rdmp_epsilon() const {
     return initial_data_rdmp_epsilon_;
   }
 
-  double rdmp_delta0() const noexcept { return rdmp_delta0_; }
+  double rdmp_delta0() const { return rdmp_delta0_; }
 
-  double rdmp_epsilon() const noexcept { return rdmp_epsilon_; }
+  double rdmp_epsilon() const { return rdmp_epsilon_; }
 
-  double initial_data_persson_exponent() const noexcept {
+  double initial_data_persson_exponent() const {
     return initial_data_persson_exponent_;
   }
 
-  double persson_exponent() const noexcept { return persson_exponent_; }
+  double persson_exponent() const { return persson_exponent_; }
 
-  bool always_use_subcells() const noexcept { return always_use_subcells_; }
+  bool always_use_subcells() const { return always_use_subcells_; }
 
  private:
   double initial_data_rdmp_delta0_ =
@@ -143,7 +141,7 @@ class SubcellOptions {
   bool always_use_subcells_ = false;
 };
 
-bool operator==(const SubcellOptions& lhs, const SubcellOptions& rhs) noexcept;
+bool operator==(const SubcellOptions& lhs, const SubcellOptions& rhs);
 
-bool operator!=(const SubcellOptions& lhs, const SubcellOptions& rhs) noexcept;
+bool operator!=(const SubcellOptions& lhs, const SubcellOptions& rhs);
 }  // namespace evolution::dg::subcell

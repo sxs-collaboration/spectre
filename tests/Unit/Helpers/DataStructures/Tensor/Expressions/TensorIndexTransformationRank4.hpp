@@ -36,7 +36,7 @@ void test_tensor_index_transformation_rank_4(
     const TensorIndexA& /*tensorindex_a*/,
     const TensorIndexB& /*tensorindex_b*/,
     const TensorIndexC& /*tensorindex_c*/,
-    const TensorIndexD& /*tensorindex_d*/) noexcept {
+    const TensorIndexD& /*tensorindex_d*/) {
   const size_t dim_a = 4;
   const size_t dim_b = 2;
   const size_t dim_c = 3;

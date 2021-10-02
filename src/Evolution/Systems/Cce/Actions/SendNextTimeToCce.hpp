@@ -60,7 +60,7 @@ struct SendNextTimeToCce {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     const auto& block_logical_coords =
         get<intrp::Vars::PointInfoTag<InterpolationTargetTag,
                                       Metavariables::volume_dim>>(
@@ -128,7 +128,7 @@ struct ReceiveNextElementTime {
   static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/, const TimeStepId& time,
-                    const TimeStepId& next_time) noexcept {
+                    const TimeStepId& next_time) {
     if constexpr (tmpl::list_contains_v<tmpl::list<DbTags...>,
                                         Tags::GhInterfaceManager>) {
       db::mutate<Tags::GhInterfaceManager>(
@@ -136,7 +136,7 @@ struct ReceiveNextElementTime {
           [&cache, &time,
            &next_time](const gsl::not_null<
                        std::unique_ptr<InterfaceManagers::GhInterfaceManager>*>
-                           interface_manager) noexcept {
+                           interface_manager) {
             (*interface_manager)->insert_next_gh_time(time, next_time);
             // if this information permits the evaluation of the next time, then
             // immediately do the evaluation

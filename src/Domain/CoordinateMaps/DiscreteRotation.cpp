@@ -15,7 +15,7 @@
 namespace domain::CoordinateMaps {
 template <size_t VolumeDim>
 DiscreteRotation<VolumeDim>::DiscreteRotation(
-    OrientationMap<VolumeDim> orientation) noexcept
+    OrientationMap<VolumeDim> orientation)
     : orientation_(std::move(orientation)),
       is_identity_(orientation_ == OrientationMap<VolumeDim>{}) {
   if constexpr (VolumeDim > 1) {
@@ -31,15 +31,16 @@ DiscreteRotation<VolumeDim>::DiscreteRotation(
 
 template <size_t VolumeDim>
 template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, VolumeDim> DiscreteRotation<VolumeDim>::
-operator()(const std::array<T, VolumeDim>& source_coords) const noexcept {
+std::array<tt::remove_cvref_wrap_t<T>, VolumeDim>
+DiscreteRotation<VolumeDim>::operator()(
+    const std::array<T, VolumeDim>& source_coords) const {
   return discrete_rotation(orientation_, source_coords);
 }
 
 template <size_t VolumeDim>
 std::optional<std::array<double, VolumeDim>>
 DiscreteRotation<VolumeDim>::inverse(
-    const std::array<double, VolumeDim>& target_coords) const noexcept {
+    const std::array<double, VolumeDim>& target_coords) const {
   return discrete_rotation(orientation_.inverse_map(), target_coords);
 }
 
@@ -47,7 +48,7 @@ template <size_t VolumeDim>
 template <typename T>
 tnsr::Ij<tt::remove_cvref_wrap_t<T>, VolumeDim, Frame::NoFrame>
 DiscreteRotation<VolumeDim>::jacobian(
-    const std::array<T, VolumeDim>& source_coords) const noexcept {
+    const std::array<T, VolumeDim>& source_coords) const {
   auto jacobian_matrix = make_with_value<
       tnsr::Ij<tt::remove_cvref_wrap_t<T>, VolumeDim, Frame::NoFrame>>(
       dereference_wrapper(source_coords[0]), 0.0);
@@ -64,7 +65,7 @@ template <size_t VolumeDim>
 template <typename T>
 tnsr::Ij<tt::remove_cvref_wrap_t<T>, VolumeDim, Frame::NoFrame>
 DiscreteRotation<VolumeDim>::inv_jacobian(
-    const std::array<T, VolumeDim>& source_coords) const noexcept {
+    const std::array<T, VolumeDim>& source_coords) const {
   auto inv_jacobian_matrix = make_with_value<
       tnsr::Ij<tt::remove_cvref_wrap_t<T>, VolumeDim, Frame::NoFrame>>(
       dereference_wrapper(source_coords[0]), 0.0);
@@ -78,7 +79,7 @@ DiscreteRotation<VolumeDim>::inv_jacobian(
 }
 
 template <size_t VolumeDim>
-void DiscreteRotation<VolumeDim>::pup(PUP::er& p) noexcept {
+void DiscreteRotation<VolumeDim>::pup(PUP::er& p) {
   p | orientation_;
   p | is_identity_;
 }
@@ -91,18 +92,18 @@ template class DiscreteRotation<3>;
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATE(_, data)                                                   \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data)>         \
-  DiscreteRotation<DIM(data)>::operator()(                                     \
-      const std::array<DTYPE(data), DIM(data)>& source_coords) const noexcept; \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data),           \
-                    Frame::NoFrame>                                            \
-  DiscreteRotation<DIM(data)>::jacobian(                                       \
-      const std::array<DTYPE(data), DIM(data)>& source_coords) const noexcept; \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data),           \
-                    Frame::NoFrame>                                            \
-  DiscreteRotation<DIM(data)>::inv_jacobian(                                   \
-      const std::array<DTYPE(data), DIM(data)>& source_coords) const noexcept;
+#define INSTANTIATE(_, data)                                           \
+  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data)> \
+  DiscreteRotation<DIM(data)>::operator()(                             \
+      const std::array<DTYPE(data), DIM(data)>& source_coords) const;  \
+  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data),   \
+                    Frame::NoFrame>                                    \
+  DiscreteRotation<DIM(data)>::jacobian(                               \
+      const std::array<DTYPE(data), DIM(data)>& source_coords) const;  \
+  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data),   \
+                    Frame::NoFrame>                                    \
+  DiscreteRotation<DIM(data)>::inv_jacobian(                           \
+      const std::array<DTYPE(data), DIM(data)>& source_coords) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
                         (double, DataVector,

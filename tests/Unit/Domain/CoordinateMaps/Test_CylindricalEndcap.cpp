@@ -59,7 +59,7 @@ void test_cylindrical_endcap_sphere_two_small() {
 
   // Choose radius_two.
   const double radius_two = [&radius_one, &dist_between_spheres, &unit_dis,
-                             &gen]() noexcept {
+                             &gen]() {
     // Choose radius_two to be small enough that the space between the
     // two spheres is not too cramped. If dist_between_spheres is too
     // small, then limit it as we did when computing radius_one.
@@ -76,8 +76,7 @@ void test_cylindrical_endcap_sphere_two_small() {
   // Now choose projection point to be very near the center of sphere_two.
   // And make sure that projection point is less than z_plane.
   const auto proj_center =
-      [&center_two, &radius_two, &z_plane, &angle_dis, &unit_dis,
-       &gen]() noexcept {
+      [&center_two, &radius_two, &z_plane, &angle_dis, &unit_dis, &gen]() {
         const double radius =
             std::min(0.1 * radius_two, 0.999 * (z_plane - center_two[2])) *
             unit_dis(gen);
@@ -121,7 +120,7 @@ void test_cylindrical_endcap_sphere_two_large() {
   // inside that cone.
   auto compute_max_proj_center_z =
       [](double radius_one, double z_plane, double max_opening_angle,
-         const std::array<double, 3>& center_one_local) noexcept -> double {
+         const std::array<double, 3>& center_one_local) -> double {
     const double cos_theta = (z_plane - center_one_local[2]) / radius_one;
     return z_plane -
            radius_one * sqrt(1.0 - square(cos_theta)) / tan(max_opening_angle);

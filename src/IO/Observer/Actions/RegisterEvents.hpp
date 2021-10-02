@@ -46,8 +46,8 @@ CREATE_HAS_TYPE_ALIAS_V(observation_registration_tags)
 template <typename DbTagsList>
 std::optional<
     std::pair<::observers::TypeOfObservation, ::observers::ObservationKey>>
-get_registration_observation_type_and_key(
-    const Event& event, const db::DataBox<DbTagsList>& box) noexcept {
+get_registration_observation_type_and_key(const Event& event,
+                                          const db::DataBox<DbTagsList>& box) {
   std::optional<
       std::pair<::observers::TypeOfObservation, ::observers::ObservationKey>>
       result{};
@@ -56,7 +56,7 @@ get_registration_observation_type_and_key(
       typename std::decay_t<decltype(db::get<Parallel::Tags::Metavariables>(
           box))>::factory_creation::factory_classes;
   tmpl::for_each<tmpl::at<factory_classes, Event>>(
-      [&already_registered, &box, &event, &result](auto event_type_v) noexcept {
+      [&already_registered, &box, &event, &result](auto event_type_v) {
         using EventType = typename decltype(event_type_v)::type;
         if constexpr (detail::has_observation_registration_tags_v<EventType>) {
           // We require that each event for which
@@ -81,7 +81,7 @@ get_registration_observation_type_and_key(
             already_registered = true;
             result =
                 db::apply<typename EventType::observation_registration_tags>(
-                    [&derived_class_ptr](const auto&... args) noexcept {
+                    [&derived_class_ptr](const auto&... args) {
                       return derived_class_ptr
                           ->get_observation_type_and_key_for_registration(
                               args...);
@@ -118,7 +118,7 @@ struct RegisterEventsWithObservers {
   static void register_or_deregister_impl(
       const db::DataBox<DbTagList>& box,
       Parallel::GlobalCache<Metavariables>& cache,
-      const ArrayIndex& array_index) noexcept {
+      const ArrayIndex& array_index) {
     auto& observer =
         *Parallel::get_parallel_component<observers::Observer<Metavariables>>(
              cache)
@@ -127,8 +127,8 @@ struct RegisterEventsWithObservers {
         std::pair<observers::TypeOfObservation, observers::ObservationKey>>
         type_of_observation_and_observation_key_pairs;
     const auto collect_observations =
-        [&box, &type_of_observation_and_observation_key_pairs](
-            const auto& event) noexcept {
+        [&box,
+         &type_of_observation_and_observation_key_pairs](const auto& event) {
           if (auto obs_type_and_obs_key =
                   get_registration_observation_type_and_key(event, box);
               obs_type_and_obs_key.has_value()) {
@@ -171,7 +171,7 @@ struct RegisterEventsWithObservers {
             typename Metavariables, typename ArrayIndex>
   static void perform_registration(const db::DataBox<DbTagList>& box,
                                    Parallel::GlobalCache<Metavariables>& cache,
-                                   const ArrayIndex& array_index) noexcept {
+                                   const ArrayIndex& array_index) {
     register_or_deregister_impl<ParallelComponent,
                                 RegisterContributorWithObserver>(box, cache,
                                                                  array_index);
@@ -182,7 +182,7 @@ struct RegisterEventsWithObservers {
   static void perform_deregistration(
       const db::DataBox<DbTagList>& box,
       Parallel::GlobalCache<Metavariables>& cache,
-      const ArrayIndex& array_index) noexcept {
+      const ArrayIndex& array_index) {
     register_or_deregister_impl<ParallelComponent,
                                 DeregisterContributorWithObserver>(box, cache,
                                                                    array_index);
@@ -196,7 +196,7 @@ struct RegisterEventsWithObservers {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     perform_registration<ParallelComponent>(box, cache, array_index);
     return {std::move(box)};
   }

@@ -23,7 +23,7 @@ void transform(const std::tuple<Elements...>& tupull,
   expand_pack(func(std::get<Is>(tupull), std::get<Is>(out_tupull))...);
 }
 
-void test_expand_pack() noexcept {
+void test_expand_pack() {
   std::tuple<int, double, float> my_tupull = std::make_tuple(3, 2.7, 8.2);
   std::tuple<int, double, float> my_tupull_output;
   transform(my_tupull, my_tupull_output, std::make_index_sequence<3>{});
@@ -66,7 +66,7 @@ static_assert(
         tmpl::list<>>,
     "Failed testing list_difference");
 
-void test_get_first_argument() noexcept {
+void test_get_first_argument() {
   const long a0 = 5;
   const long a1 = 6;
   const int a2 = -5;
@@ -93,7 +93,7 @@ static_assert(tmpl::as_pack<tmpl::list<tmpl::size_t<1>, tmpl::size_t<2>,
                 return (... + tmpl::type_from<decltype(args)>::value);
               }) == 6);
 
-void test_as_pack() noexcept {
+void test_as_pack() {
   // [as_pack]
   using List = tmpl::list<tmpl::size_t<1>, tmpl::size_t<2>, tmpl::size_t<3>>;
   const size_t result = tmpl::as_pack<List>([](auto... args) {
@@ -110,7 +110,7 @@ struct make_list {
   using type = tmpl::list<T...>;
 };
 
-void test_transform() noexcept {
+void test_transform() {
   using new_list = tmpl::transform<tmpl::list<Type1>, make_list<tmpl::_1>>;
   static_assert(std::is_same_v<new_list, tmpl::list<tmpl::list<Type1>>>);
   using new_list_2 = tmpl::transform<tmpl::list<Type1>, tmpl::list<Type1>,

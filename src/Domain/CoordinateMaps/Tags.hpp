@@ -32,7 +32,7 @@ static constexpr size_t dim = VolumeDim;
   using target_frame = TargetFrame;
   using source_frame = SourceFrame;
 
-  static std::string name() noexcept {
+  static std::string name() {
     return "CoordinateMap(" + get_output(SourceFrame{}) + "," +
            get_output(TargetFrame{}) + ")";
   }

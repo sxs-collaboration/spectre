@@ -21,7 +21,7 @@ namespace ActionTesting {
 /// Set the phase of all parallel components to `phase`
 template <typename Metavariables>
 void set_phase(const gsl::not_null<MockRuntimeSystem<Metavariables>*> runner,
-               const typename Metavariables::Phase& phase) noexcept {
+               const typename Metavariables::Phase& phase) {
   runner->set_phase(phase);
 }
 
@@ -32,8 +32,7 @@ template <typename Component, typename... Options>
 void emplace_component(
     const gsl::not_null<MockRuntimeSystem<typename Component::metavariables>*>
         runner,
-    const typename Component::array_index& array_index,
-    Options&&... opts) noexcept {
+    const typename Component::array_index& array_index, Options&&... opts) {
   runner->template emplace_component<Component>(array_index,
                                                 std::forward<Options>(opts)...);
 }
@@ -47,8 +46,7 @@ void emplace_array_component(
     const gsl::not_null<MockRuntimeSystem<typename Component::metavariables>*>
         runner,
     const NodeId node_id, const LocalCoreId local_core_id,
-    const typename Component::array_index& array_index,
-    Options&&... opts) noexcept {
+    const typename Component::array_index& array_index, Options&&... opts) {
   runner->template emplace_array_component<Component>(
       node_id, local_core_id, array_index, std::forward<Options>(opts)...);
 }
@@ -61,8 +59,7 @@ template <typename Component, typename... Options>
 void emplace_singleton_component(
     const gsl::not_null<MockRuntimeSystem<typename Component::metavariables>*>
         runner,
-    const NodeId node_id, const LocalCoreId local_core_id,
-    Options&&... opts) noexcept {
+    const NodeId node_id, const LocalCoreId local_core_id, Options&&... opts) {
   runner->template emplace_singleton_component<Component>(
       node_id, local_core_id, std::forward<Options>(opts)...);
 }
@@ -75,7 +72,7 @@ template <typename Component, typename... Options>
 void emplace_group_component(
     const gsl::not_null<MockRuntimeSystem<typename Component::metavariables>*>
         runner,
-    Options&&... opts) noexcept {
+    Options&&... opts) {
   runner->template emplace_group_component<Component>(
       std::forward<Options>(opts)...);
 }
@@ -88,7 +85,7 @@ template <typename Component, typename... Options>
 void emplace_nodegroup_component(
     const gsl::not_null<MockRuntimeSystem<typename Component::metavariables>*>
         runner,
-    Options&&... opts) noexcept {
+    Options&&... opts) {
   runner->template emplace_nodegroup_component<Component>(
       std::forward<Options>(opts)...);
 }
@@ -106,7 +103,7 @@ void emplace_component_and_initialize(
     const typename Component::array_index& array_index,
     const typename detail::get_initialization<Component>::InitialValues&
         initial_values,
-    Options&&... opts) noexcept {
+    Options&&... opts) {
   runner->template emplace_component_and_initialize<Component>(
       array_index, initial_values, std::forward<Options>(opts)...);
 }
@@ -126,7 +123,7 @@ void emplace_array_component_and_initialize(
     const typename Component::array_index& array_index,
     const typename detail::get_initialization<Component>::InitialValues&
         initial_values,
-    Options&&... opts) noexcept {
+    Options&&... opts) {
   runner->template emplace_array_component_and_initialize<Component>(
       node_id, local_core_id, array_index, initial_values,
       std::forward<Options>(opts)...);
@@ -146,7 +143,7 @@ void emplace_singleton_component_and_initialize(
     const NodeId node_id, const LocalCoreId local_core_id,
     const typename detail::get_initialization<Component>::InitialValues&
         initial_values,
-    Options&&... opts) noexcept {
+    Options&&... opts) {
   runner->template emplace_singleton_component_and_initialize<Component>(
       node_id, local_core_id, initial_values, std::forward<Options>(opts)...);
 }
@@ -164,7 +161,7 @@ void emplace_group_component_and_initialize(
         runner,
     const typename detail::get_initialization<Component>::InitialValues&
         initial_values,
-    Options&&... opts) noexcept {
+    Options&&... opts) {
   runner->template emplace_group_component_and_initialize<Component>(
       initial_values, std::forward<Options>(opts)...);
 }
@@ -182,7 +179,7 @@ void emplace_nodegroup_component_and_initialize(
         runner,
     const typename detail::get_initialization<Component>::InitialValues&
         initial_values,
-    Options&&... opts) noexcept {
+    Options&&... opts) {
   runner->template emplace_nodegroup_component_and_initialize<Component>(
       initial_values, std::forward<Options>(opts)...);
 }
@@ -192,9 +189,8 @@ void emplace_nodegroup_component_and_initialize(
 /// and `add_from_options` tags) from the parallel component `Component` with
 /// index `array_index`.
 template <typename Component, typename TagsList, typename Metavariables>
-const auto& get_databox(
-    const MockRuntimeSystem<Metavariables>& runner,
-    const typename Component::array_index& array_index) noexcept {
+const auto& get_databox(const MockRuntimeSystem<Metavariables>& runner,
+                        const typename Component::array_index& array_index) {
   return runner.template mock_distributed_objects<Component>()
       .at(array_index)
       .template get_databox<TagsList>();
@@ -202,7 +198,7 @@ const auto& get_databox(
 
 template <typename Component, typename TagsList, typename Metavariables>
 auto& get_databox(const gsl::not_null<MockRuntimeSystem<Metavariables>*> runner,
-                  const typename Component::array_index& array_index) noexcept {
+                  const typename Component::array_index& array_index) {
   return runner->template mock_distributed_objects<Component>()
       .at(array_index)
       .template get_databox<TagsList>();
@@ -213,7 +209,7 @@ auto& get_databox(const gsl::not_null<MockRuntimeSystem<Metavariables>*> runner,
 template <typename Component, typename Metavariables>
 size_t get_next_action_index(
     const MockRuntimeSystem<Metavariables>& runner,
-    const typename Component::array_index& array_index) noexcept {
+    const typename Component::array_index& array_index) {
   return runner.template get_next_action_index<Component>(array_index);
 }
 
@@ -223,7 +219,7 @@ size_t get_next_action_index(
 template <typename Component, typename Tag, typename Metavariables>
 const auto& get_databox_tag(
     const MockRuntimeSystem<Metavariables>& runner,
-    const typename Component::array_index& array_index) noexcept {
+    const typename Component::array_index& array_index) {
   return runner.template mock_distributed_objects<Component>()
       .at(array_index)
       .template get_databox_tag<Tag>();
@@ -233,9 +229,8 @@ const auto& get_databox_tag(
 /// Returns the `InboxTag` from the parallel component `Component` with array
 /// index `array_index`.
 template <typename Component, typename InboxTag, typename Metavariables>
-const auto& get_inbox_tag(
-    const MockRuntimeSystem<Metavariables>& runner,
-    const typename Component::array_index& array_index) noexcept {
+const auto& get_inbox_tag(const MockRuntimeSystem<Metavariables>& runner,
+                          const typename Component::array_index& array_index) {
   return tuples::get<InboxTag>(
       runner.template inboxes<Component>().at(array_index));
 }
@@ -243,7 +238,7 @@ const auto& get_inbox_tag(
 template <typename Component, typename InboxTag, typename Metavariables>
 auto& get_inbox_tag(
     const gsl::not_null<MockRuntimeSystem<Metavariables>*> runner,
-    const typename Component::array_index& array_index) noexcept {
+    const typename Component::array_index& array_index) {
   return tuples::get<InboxTag>(
       runner->template inboxes<Component>().at(array_index));
 }
@@ -254,7 +249,7 @@ auto& get_inbox_tag(
 /// `false`.
 template <typename Component, typename Tag, typename Metavariables>
 bool box_contains(const MockRuntimeSystem<Metavariables>& runner,
-                  const typename Component::array_index& array_index) noexcept {
+                  const typename Component::array_index& array_index) {
   return runner.template mock_distributed_objects<Component>()
       .at(array_index)
       .template box_contains<Tag>();
@@ -263,9 +258,8 @@ bool box_contains(const MockRuntimeSystem<Metavariables>& runner,
 /// Returns `true` if the tag `Tag` can be retrieved from the current DataBox
 /// of `Component` with index `array_index`.
 template <typename Component, typename Tag, typename Metavariables>
-bool tag_is_retrievable(
-    const MockRuntimeSystem<Metavariables>& runner,
-    const typename Component::array_index& array_index) noexcept {
+bool tag_is_retrievable(const MockRuntimeSystem<Metavariables>& runner,
+                        const typename Component::array_index& array_index) {
   return runner.template mock_distributed_objects<Component>()
       .at(array_index)
       .template tag_is_retrievable<Tag>();
@@ -276,7 +270,7 @@ bool tag_is_retrievable(
 /// not ready.
 template <typename Component, typename Metavariables>
 void next_action(const gsl::not_null<MockRuntimeSystem<Metavariables>*> runner,
-                 const typename Component::array_index& array_index) noexcept {
+                 const typename Component::array_index& array_index) {
   runner->template next_action<Component>(array_index);
 }
 
@@ -286,7 +280,7 @@ void next_action(const gsl::not_null<MockRuntimeSystem<Metavariables>*> runner,
 template <typename Component, typename Metavariables>
 bool next_action_if_ready(
     const gsl::not_null<MockRuntimeSystem<Metavariables>*> runner,
-    const typename Component::array_index& array_index) noexcept {
+    const typename Component::array_index& array_index) {
   return runner->template next_action_if_ready<Component>(array_index);
 }
 
@@ -296,8 +290,7 @@ template <typename Component, typename Action, typename Metavariables,
           typename... Args>
 void simple_action(
     const gsl::not_null<MockRuntimeSystem<Metavariables>*> runner,
-    const typename Component::array_index& array_index,
-    Args&&... args) noexcept {
+    const typename Component::array_index& array_index, Args&&... args) {
   runner->template simple_action<Component, Action>(
       array_index, std::forward<Args>(args)...);
 }
@@ -308,8 +301,7 @@ template <typename Component, typename Action, typename Metavariables,
           typename... Args>
 void threaded_action(
     const gsl::not_null<MockRuntimeSystem<Metavariables>*> runner,
-    const typename Component::array_index& array_index,
-    Args&&... args) noexcept {
+    const typename Component::array_index& array_index, Args&&... args) {
   runner->template threaded_action<Component, Action>(
       array_index, std::forward<Args>(args)...);
 }
@@ -319,7 +311,7 @@ void threaded_action(
 template <typename Component, typename Metavariables>
 void invoke_queued_simple_action(
     const gsl::not_null<MockRuntimeSystem<Metavariables>*> runner,
-    const typename Component::array_index& array_index) noexcept {
+    const typename Component::array_index& array_index) {
   runner->template invoke_queued_simple_action<Component>(array_index);
 }
 
@@ -327,7 +319,7 @@ void invoke_queued_simple_action(
 template <typename Component, typename Metavariables>
 bool is_simple_action_queue_empty(
     const MockRuntimeSystem<Metavariables>& runner,
-    const typename Component::array_index& array_index) noexcept {
+    const typename Component::array_index& array_index) {
   return runner.template is_simple_action_queue_empty<Component>(array_index);
 }
 
@@ -335,7 +327,7 @@ bool is_simple_action_queue_empty(
 template <typename Component, typename Metavariables>
 size_t number_of_queued_simple_actions(
     const MockRuntimeSystem<Metavariables>& runner,
-    const typename Component::array_index& array_index) noexcept {
+    const typename Component::array_index& array_index) {
   return runner.template number_of_queued_simple_actions<Component>(
       array_index);
 }
@@ -345,7 +337,7 @@ size_t number_of_queued_simple_actions(
 template <typename Component, typename Metavariables>
 void invoke_queued_threaded_action(
     const gsl::not_null<MockRuntimeSystem<Metavariables>*> runner,
-    const typename Component::array_index& array_index) noexcept {
+    const typename Component::array_index& array_index) {
   runner->template invoke_queued_threaded_action<Component>(array_index);
 }
 
@@ -353,7 +345,7 @@ void invoke_queued_threaded_action(
 template <typename Component, typename Metavariables>
 bool is_threaded_action_queue_empty(
     const MockRuntimeSystem<Metavariables>& runner,
-    const typename Component::array_index& array_index) noexcept {
+    const typename Component::array_index& array_index) {
   return runner.template is_threaded_action_queue_empty<Component>(array_index);
 }
 
@@ -361,7 +353,7 @@ bool is_threaded_action_queue_empty(
 template <typename Component, typename Metavariables>
 size_t number_of_queued_threaded_actions(
     const MockRuntimeSystem<Metavariables>& runner,
-    const typename Component::array_index& array_index) noexcept {
+    const typename Component::array_index& array_index) {
   return runner.template number_of_queued_threaded_actions<Component>(
       array_index);
 }
@@ -369,9 +361,8 @@ size_t number_of_queued_threaded_actions(
 /// Returns whether or not the `Component` with index `array_index` has been
 /// terminated.
 template <typename Component, typename Metavariables>
-bool get_terminate(
-    const MockRuntimeSystem<Metavariables>& runner,
-    const typename Component::array_index& array_index) noexcept {
+bool get_terminate(const MockRuntimeSystem<Metavariables>& runner,
+                   const typename Component::array_index& array_index) {
   return runner.template mock_distributed_objects<Component>()
       .at(array_index)
       .get_terminate();
@@ -380,8 +371,7 @@ bool get_terminate(
 /// Returns the GlobalCache of `Component` with index `array_index`.
 template <typename Component, typename Metavariables, typename ArrayIndex>
 Parallel::GlobalCache<Metavariables>& cache(
-    MockRuntimeSystem<Metavariables>& runner,
-    const ArrayIndex& array_index) noexcept {
+    MockRuntimeSystem<Metavariables>& runner, const ArrayIndex& array_index) {
   return runner.template mock_distributed_objects<Component>()
       .at(array_index)
       .cache();
@@ -394,10 +384,10 @@ template <typename ComponentList, typename MockRuntimeSystem,
           typename ArrayIndex>
 std::vector<size_t> indices_of_components_with_queued_simple_actions(
     const gsl::not_null<MockRuntimeSystem*> runner,
-    const ArrayIndex& array_index) noexcept {
+    const ArrayIndex& array_index) {
   std::vector<size_t> result{};
   size_t i = 0;
-  tmpl::for_each<ComponentList>([&](auto tag) noexcept {
+  tmpl::for_each<ComponentList>([&](auto tag) {
     using Tag = typename decltype(tag)::type;
     if (not runner->template is_simple_action_queue_empty<Tag>(array_index)) {
       result.push_back(i);
@@ -429,10 +419,10 @@ using array_indices_for_each_component =
 /// simple actions.
 template <typename ComponentList, typename MockRuntimeSystem>
 auto array_indices_with_queued_simple_actions(
-    const gsl::not_null<MockRuntimeSystem*> runner) noexcept
+    const gsl::not_null<MockRuntimeSystem*> runner)
     -> detail::array_indices_for_each_component<ComponentList> {
   detail::array_indices_for_each_component<ComponentList> result;
-  tmpl::for_each<ComponentList>([&](auto component) noexcept {
+  tmpl::for_each<ComponentList>([&](auto component) {
     using Component = typename decltype(component)::type;
     using array_indices_tag = detail::ArrayIndicesTag<Component>;
     auto& result_this_component = tuples::get<array_indices_tag>(result);
@@ -451,9 +441,9 @@ auto array_indices_with_queued_simple_actions(
 template <typename ComponentList>
 size_t number_of_elements_with_queued_simple_actions(
     const detail::array_indices_for_each_component<ComponentList>&
-        array_indices) noexcept {
+        array_indices) {
   size_t num_queued_actions = 0;
-  tmpl::for_each<ComponentList>([&](auto component) noexcept {
+  tmpl::for_each<ComponentList>([&](auto component) {
     using Component = typename decltype(component)::type;
     using array_indices_tag = detail::ArrayIndicesTag<Component>;
     num_queued_actions += tuples::get<array_indices_tag>(array_indices).size();
@@ -470,7 +460,7 @@ void invoke_random_queued_simple_action(
     const gsl::not_null<MockRuntimeSystem*> runner,
     const gsl::not_null<Generator*> generator,
     const detail::array_indices_for_each_component<ComponentList>&
-        array_indices) noexcept {
+        array_indices) {
   // Choose one queued action at random.
   const size_t num_queued_actions =
       number_of_elements_with_queued_simple_actions<ComponentList>(
@@ -482,8 +472,7 @@ void invoke_random_queued_simple_action(
   size_t queued_action_count = 0;
   tmpl::for_each<ComponentList>([&runner, &array_indices,
                                  &index_of_action_to_invoke,
-                                 &queued_action_count](
-                                    auto component) noexcept {
+                                 &queued_action_count](auto component) {
     using Component = typename decltype(component)::type;
     using array_indices_tag = detail::ArrayIndicesTag<Component>;
     const size_t num_queued_actions_this_comp =

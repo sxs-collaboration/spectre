@@ -15,8 +15,8 @@ namespace domain::BoundaryConditions {
 class MarkAsNone {
  public:
   MarkAsNone() = default;
-  MarkAsNone(MarkAsNone&&) noexcept = default;
-  MarkAsNone& operator=(MarkAsNone&&) noexcept = default;
+  MarkAsNone(MarkAsNone&&) = default;
+  MarkAsNone& operator=(MarkAsNone&&) = default;
   MarkAsNone(const MarkAsNone&) = default;
   MarkAsNone& operator=(const MarkAsNone&) = default;
   virtual ~MarkAsNone() = 0;
@@ -51,34 +51,33 @@ struct None final : public SystemBoundaryConditionBaseClass, public MarkAsNone {
   static constexpr Options::String help{
       "None boundary condition. Used only during domain creation to ensure a "
       "consistent state to the domain."};
-  static std::string name() noexcept { return "None"; }
+  static std::string name() { return "None"; }
 
   None() = default;
-  None(None&&) noexcept = default;
-  None& operator=(None&&) noexcept = default;
+  None(None&&) = default;
+  None& operator=(None&&) = default;
   None(const None&) = default;
   None& operator=(const None&) = default;
   ~None() override = default;
 
-  explicit None(CkMigrateMessage* msg) noexcept;
+  explicit None(CkMigrateMessage* msg);
 
   WRAPPED_PUPable_decl_base_template(
       domain::BoundaryConditions::BoundaryCondition, None);
 
-  auto get_clone() const noexcept -> std::unique_ptr<
+  auto get_clone() const -> std::unique_ptr<
       domain::BoundaryConditions::BoundaryCondition> override;
 
   void pup(PUP::er& p) override;
 };
 
 template <typename SystemBoundaryConditionBaseClass>
-None<SystemBoundaryConditionBaseClass>::None(
-    CkMigrateMessage* const msg) noexcept
+None<SystemBoundaryConditionBaseClass>::None(CkMigrateMessage* const msg)
     : SystemBoundaryConditionBaseClass(msg) {}
 
 template <typename SystemBoundaryConditionBaseClass>
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-None<SystemBoundaryConditionBaseClass>::get_clone() const noexcept {
+None<SystemBoundaryConditionBaseClass>::get_clone() const {
   return std::make_unique<None>(*this);
 }
 
@@ -95,6 +94,5 @@ PUP::able::PUP_ID None<SystemBoundaryConditionBaseClass>::my_PUP_ID = 0;
 
 /// Check if a boundary condition inherits from `MarkAsNone`, which
 /// constitutes as it being marked as a none boundary condition.
-bool is_none(
-    const std::unique_ptr<BoundaryCondition>& boundary_condition) noexcept;
+bool is_none(const std::unique_ptr<BoundaryCondition>& boundary_condition);
 }  // namespace domain::BoundaryConditions

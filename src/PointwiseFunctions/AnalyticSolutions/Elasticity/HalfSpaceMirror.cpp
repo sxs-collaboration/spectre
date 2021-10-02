@@ -26,7 +26,7 @@ namespace Elasticity::Solutions::detail {
 namespace {
 double displacement_r_integrand(const double k, const double r, const double z,
                                 const double beam_width,
-                                const double modulus_term_r) noexcept {
+                                const double modulus_term_r) {
   return gsl_sf_bessel_J1(k * r) * exp(-k * z - square(0.5 * k * beam_width)) *
          (modulus_term_r + k * z);
 }
@@ -35,8 +35,7 @@ double displacement_r_integrand(const double k, const double r, const double z,
 template <typename DataType>
 void HalfSpaceMirrorVariables<DataType>::operator()(
     const gsl::not_null<Scalar<DataType>*> displacement_r,
-    const gsl::not_null<Cache*> /*cache*/,
-    DisplacementR /*meta*/) const noexcept {
+    const gsl::not_null<Cache*> /*cache*/, DisplacementR /*meta*/) const {
   const double shear_modulus = constitutive_relation.shear_modulus();
   const double lame_parameter = constitutive_relation.lame_parameter();
   const auto radius = sqrt(square(get<0>(x)) + square(get<1>(x)));
@@ -58,7 +57,7 @@ void HalfSpaceMirrorVariables<DataType>::operator()(
         get(*displacement_r)[i] =
             prefactor *
             integration(
-                [&r, &z, &modulus_term_r, this](const double k) noexcept {
+                [&r, &z, &modulus_term_r, this](const double k) {
                   return displacement_r_integrand(k, r, z, beam_width,
                                                   modulus_term_r);
                 },
@@ -76,8 +75,7 @@ void HalfSpaceMirrorVariables<DataType>::operator()(
 template <typename DataType>
 void HalfSpaceMirrorVariables<DataType>::operator()(
     const gsl::not_null<tnsr::I<DataType, 3>*> displacement,
-    const gsl::not_null<Cache*> cache, Tags::Displacement<3> /*meta*/) const
-    noexcept {
+    const gsl::not_null<Cache*> cache, Tags::Displacement<3> /*meta*/) const {
   const double shear_modulus = constitutive_relation.shear_modulus();
   const double lame_parameter = constitutive_relation.lame_parameter();
   const auto radius = sqrt(square(get<0>(x)) + square(get<1>(x)));
@@ -107,7 +105,7 @@ void HalfSpaceMirrorVariables<DataType>::operator()(
       const double displacement_z =
           prefactor *
           integration(
-              [&r, &z, &modulus_term_z, this](const double k) noexcept {
+              [&r, &z, &modulus_term_z, this](const double k) {
                 return gsl_sf_bessel_J0(k * r) *
                        exp(-k * z - square(0.5 * k * beam_width)) *
                        (modulus_term_z + k * z);
@@ -126,8 +124,7 @@ void HalfSpaceMirrorVariables<DataType>::operator()(
 template <typename DataType>
 void HalfSpaceMirrorVariables<DataType>::operator()(
     const gsl::not_null<tnsr::ii<DataType, 3>*> strain,
-    const gsl::not_null<Cache*> cache, Tags::Strain<3> /*meta*/) const
-    noexcept {
+    const gsl::not_null<Cache*> cache, Tags::Strain<3> /*meta*/) const {
   const double shear_modulus = constitutive_relation.shear_modulus();
   const double lame_parameter = constitutive_relation.lame_parameter();
   const auto radius = sqrt(square(get<0>(x)) + square(get<1>(x)));
@@ -151,7 +148,7 @@ void HalfSpaceMirrorVariables<DataType>::operator()(
       const double trace_term =
           prefactor *
           integration(
-              [&r, &z, &modulus_term_trace, this](const double k) noexcept {
+              [&r, &z, &modulus_term_trace, this](const double k) {
                 return k * gsl_sf_bessel_J0(k * r) *
                        exp(-k * z - square(0.5 * k * beam_width)) *
                        modulus_term_trace;
@@ -161,7 +158,7 @@ void HalfSpaceMirrorVariables<DataType>::operator()(
       const double strain_zz =
           -prefactor *
           integration(
-              [&r, &z, &modulus_term_zz, this](const double k) noexcept {
+              [&r, &z, &modulus_term_zz, this](const double k) {
                 return k * gsl_sf_bessel_J0(k * r) *
                        exp(-k * z - square(0.5 * k * beam_width)) *
                        (modulus_term_zz + k * z);
@@ -172,7 +169,7 @@ void HalfSpaceMirrorVariables<DataType>::operator()(
         const double strain_rz =
             -prefactor *
             integration(
-                [&r, &z, this](const double k) noexcept {
+                [&r, &z, this](const double k) {
                   return k * gsl_sf_bessel_J1(k * r) *
                          exp(-k * z - square(0.5 * k * beam_width)) * (k * z);
                 },
@@ -210,8 +207,7 @@ void HalfSpaceMirrorVariables<DataType>::operator()(
 template <typename DataType>
 void HalfSpaceMirrorVariables<DataType>::operator()(
     const gsl::not_null<tnsr::II<DataType, 3>*> minus_stress,
-    const gsl::not_null<Cache*> cache,
-    Tags::MinusStress<3> /*meta*/) const noexcept {
+    const gsl::not_null<Cache*> cache, Tags::MinusStress<3> /*meta*/) const {
   const auto& strain = cache->get_var(Tags::Strain<3>{});
   constitutive_relation.stress(minus_stress, strain, x);
   for (auto& component : *minus_stress) {
@@ -223,7 +219,7 @@ template <typename DataType>
 void HalfSpaceMirrorVariables<DataType>::operator()(
     const gsl::not_null<Scalar<DataType>*> potential_energy_density,
     const gsl::not_null<Cache*> cache,
-    Tags::PotentialEnergyDensity<3> /*meta*/) const noexcept {
+    Tags::PotentialEnergyDensity<3> /*meta*/) const {
   const auto& strain = cache->get_var(Tags::Strain<3>{});
   Elasticity::potential_energy_density(potential_energy_density, strain, x,
                                        constitutive_relation);
@@ -233,7 +229,7 @@ template <typename DataType>
 void HalfSpaceMirrorVariables<DataType>::operator()(
     const gsl::not_null<tnsr::I<DataType, 3>*> fixed_source_for_displacement,
     const gsl::not_null<Cache*> /*cache*/,
-    ::Tags::FixedSource<Tags::Displacement<3>> /*meta*/) const noexcept {
+    ::Tags::FixedSource<Tags::Displacement<3>> /*meta*/) const {
   std::fill(fixed_source_for_displacement->begin(),
             fixed_source_for_displacement->end(), 0.);
 }

@@ -46,13 +46,13 @@ struct HalfSpaceMirrorProxy : Elasticity::Solutions::HalfSpaceMirror<> {
       tmpl::list<Tags::FixedSource<Elasticity::Tags::Displacement<3>>>;
 
   tuples::tagged_tuple_from_typelist<field_tags> field_variables(
-      const tnsr::I<DataVector, 3>& x) const noexcept {
+      const tnsr::I<DataVector, 3>& x) const {
     return Elasticity::Solutions::HalfSpaceMirror<>::variables(x, field_tags{});
   }
 
   // NOLINTNEXTLINE(readability-convert-member-functions-to-static)
   tuples::tagged_tuple_from_typelist<source_tags> source_variables(
-      const tnsr::I<DataVector, 3>& x) const noexcept {
+      const tnsr::I<DataVector, 3>& x) const {
     return Elasticity::Solutions::HalfSpaceMirror<>::variables(x,
                                                                source_tags{});
   }

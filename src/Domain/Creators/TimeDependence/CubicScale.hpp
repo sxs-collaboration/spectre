@@ -119,9 +119,9 @@ class CubicScale final : public TimeDependence<MeshDim> {
   CubicScale() = default;
   ~CubicScale() override = default;
   CubicScale(const CubicScale&) = delete;
-  CubicScale(CubicScale&&) noexcept = default;
+  CubicScale(CubicScale&&) = default;
   CubicScale& operator=(const CubicScale&) = delete;
-  CubicScale& operator=(CubicScale&&) noexcept = default;
+  CubicScale& operator=(CubicScale&&) = default;
 
   CubicScale(double initial_time,
              std::optional<double> initial_expiration_delta_t,
@@ -129,28 +129,27 @@ class CubicScale final : public TimeDependence<MeshDim> {
              std::array<std::string, 2> functions_of_time_names,
              const std::array<double, 2>& initial_expansion,
              const std::array<double, 2>& velocity,
-             const std::array<double, 2>& acceleration) noexcept;
+             const std::array<double, 2>& acceleration);
 
-  auto get_clone() const noexcept
-      -> std::unique_ptr<TimeDependence<MeshDim>> override;
+  auto get_clone() const -> std::unique_ptr<TimeDependence<MeshDim>> override;
 
-  auto block_maps(size_t number_of_blocks) const noexcept
+  auto block_maps(size_t number_of_blocks) const
       -> std::vector<std::unique_ptr<domain::CoordinateMapBase<
           Frame::Grid, Frame::Inertial, MeshDim>>> override;
 
-  auto functions_of_time() const noexcept -> std::unordered_map<
+  auto functions_of_time() const -> std::unordered_map<
       std::string,
       std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;
 
   /// Returns the map for each block to be used in a composition of
   /// `TimeDependence`s.
-  MapForComposition map_for_composition() const noexcept;
+  MapForComposition map_for_composition() const;
 
  private:
   template <size_t LocalDim>
   // NOLINTNEXTLINE(readability-redundant-declaration)
   friend bool operator==(const CubicScale<LocalDim>& lhs,
-                         const CubicScale<LocalDim>& rhs) noexcept;
+                         const CubicScale<LocalDim>& rhs);
 
   double initial_time_{std::numeric_limits<double>::signaling_NaN()};
   std::optional<double> initial_expiration_delta_t_{};
@@ -162,12 +161,10 @@ class CubicScale final : public TimeDependence<MeshDim> {
 };
 
 template <size_t Dim>
-bool operator==(const CubicScale<Dim>& lhs,
-                const CubicScale<Dim>& rhs) noexcept;
+bool operator==(const CubicScale<Dim>& lhs, const CubicScale<Dim>& rhs);
 
 template <size_t Dim>
-bool operator!=(const CubicScale<Dim>& lhs,
-                const CubicScale<Dim>& rhs) noexcept;
+bool operator!=(const CubicScale<Dim>& lhs, const CubicScale<Dim>& rhs);
 }  // namespace time_dependence
 }  // namespace creators
 }  // namespace domain

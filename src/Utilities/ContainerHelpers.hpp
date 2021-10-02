@@ -17,7 +17,7 @@
 /// will cause a compiler error if no such function exists.
 struct GetContainerSize {
   template <typename T>
-  SPECTRE_ALWAYS_INLINE decltype(auto) operator()(const T& t) const noexcept {
+  SPECTRE_ALWAYS_INLINE decltype(auto) operator()(const T& t) const {
     return t.size();
   }
 };
@@ -26,8 +26,7 @@ struct GetContainerSize {
 /// \brief Callable struct for the subscript operator. Returns `t[i]`
 struct GetContainerElement {
   template <typename T>
-  SPECTRE_ALWAYS_INLINE decltype(auto) operator()(T& t, const size_t i) const
-      noexcept {
+  SPECTRE_ALWAYS_INLINE decltype(auto) operator()(T& t, const size_t i) const {
     return t[i];
   }
 };
@@ -37,8 +36,7 @@ struct GetContainerElement {
 /// operand `t`. This will cause a compiler error if no such function exists.
 struct ContainerDestructiveResize {
   template <typename T>
-  SPECTRE_ALWAYS_INLINE void operator()(T& t, const size_t size) const
-      noexcept {
+  SPECTRE_ALWAYS_INLINE void operator()(T& t, const size_t size) const {
     return t.destructive_resize(size);
   }
 };
@@ -52,20 +50,20 @@ template <>
 struct ContainerImpls<true> {
   template <typename T, typename SubscriptFunction>
   static SPECTRE_ALWAYS_INLINE decltype(auto) get_element(
-      T& t, const size_t /*i*/, const SubscriptFunction /*at*/) noexcept {
+      T& t, const size_t /*i*/, const SubscriptFunction /*at*/) {
     return t;
   }
 
   template <typename T, typename SizeFunction>
-  static SPECTRE_ALWAYS_INLINE size_t
-  get_size(const T& /*t*/, const SizeFunction /*size*/) noexcept {
+  static SPECTRE_ALWAYS_INLINE size_t get_size(const T& /*t*/,
+                                               const SizeFunction /*size*/) {
     return 1;
   }
 
   template <typename T, typename DestructiveResizeFunction>
   static SPECTRE_ALWAYS_INLINE void apply_destructive_resize(
       T& /*t*/, const size_t /*i*/,
-      const DestructiveResizeFunction /*destructive_resize*/) noexcept {
+      const DestructiveResizeFunction /*destructive_resize*/) {
     // no-op for fundamental types.
   }
 };
@@ -74,20 +72,20 @@ template <>
 struct ContainerImpls<false> {
   template <typename T, typename SubscriptFunction>
   static SPECTRE_ALWAYS_INLINE decltype(auto) get_element(
-      T& t, const size_t i, SubscriptFunction at) noexcept {
+      T& t, const size_t i, SubscriptFunction at) {
     return at(t, i);
   }
 
   template <typename T, typename SizeFunction>
-  static SPECTRE_ALWAYS_INLINE decltype(auto) get_size(
-      const T& t, SizeFunction size) noexcept {
+  static SPECTRE_ALWAYS_INLINE decltype(auto) get_size(const T& t,
+                                                       SizeFunction size) {
     return size(t);
   }
 
   template <typename T, typename DestructiveResizeFunction>
   static SPECTRE_ALWAYS_INLINE void apply_destructive_resize(
       T& t, const size_t size,
-      const DestructiveResizeFunction destructive_resize) noexcept {
+      const DestructiveResizeFunction destructive_resize) {
     destructive_resize(t, size);
   }
 };
@@ -115,8 +113,7 @@ struct ContainerImpls<false> {
  */
 template <typename T, typename SubscriptFunction = GetContainerElement>
 SPECTRE_ALWAYS_INLINE decltype(auto) get_element(
-    T& t, const size_t i,
-    SubscriptFunction at = GetContainerElement{}) noexcept {
+    T& t, const size_t i, SubscriptFunction at = GetContainerElement{}) {
   return ContainerHelpers_detail::ContainerImpls<(
       tt::is_complex_of_fundamental_v<std::remove_cv_t<T>> or
       std::is_fundamental_v<std::remove_cv_t<T>>)>::get_element(t, i, at);
@@ -143,7 +140,7 @@ SPECTRE_ALWAYS_INLINE decltype(auto) get_element(
  */
 template <typename T, typename SizeFunction = GetContainerSize>
 SPECTRE_ALWAYS_INLINE decltype(auto) get_size(
-    const T& t, SizeFunction size = GetContainerSize{}) noexcept {
+    const T& t, SizeFunction size = GetContainerSize{}) {
   return ContainerHelpers_detail::ContainerImpls<(
       tt::is_complex_of_fundamental_v<std::remove_cv_t<T>> or
       std::is_fundamental_v<std::remove_cv_t<T>>)>::get_size(t, size);
@@ -178,7 +175,7 @@ void SPECTRE_ALWAYS_INLINE destructive_resize_components(
     // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
     const gsl::not_null<Container*> container, const size_t new_size,
     DestructiveResizeFunction destructive_resize =
-        ContainerDestructiveResize{}) noexcept {
+        ContainerDestructiveResize{}) {
   for (auto& vector : *container) {
     ContainerHelpers_detail::ContainerImpls<(
         tt::is_complex_of_fundamental_v<

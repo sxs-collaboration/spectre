@@ -47,14 +47,13 @@ struct InterpolatorReceiveVolumeData {
       const ArrayIndex& /*array_index*/,
       const typename TemporalId::type& temporal_id,
       const ElementId<VolumeDim>& element_id, const ::Mesh<VolumeDim>& mesh,
-      Variables<typename Metavariables::interpolator_source_vars>&&
-          vars) noexcept {
+      Variables<typename Metavariables::interpolator_source_vars>&& vars) {
     db::mutate<Tags::VolumeVarsInfo<Metavariables, TemporalId>>(
         make_not_null(&box),
         [&temporal_id, &element_id, &mesh,
          &vars](const gsl::not_null<
                 typename Tags::VolumeVarsInfo<Metavariables, TemporalId>::type*>
-                    container) noexcept {
+                    container) {
           if (container->find(temporal_id) == container->end()) {
             container->emplace(
                 temporal_id,
@@ -71,7 +70,7 @@ struct InterpolatorReceiveVolumeData {
 
     // Try to interpolate data for all InterpolationTargets.
     tmpl::for_each<typename Metavariables::interpolation_target_tags>(
-        [&box, &cache, &temporal_id](auto tag_v) noexcept {
+        [&box, &cache, &temporal_id](auto tag_v) {
           using tag = typename decltype(tag_v)::type;
           if constexpr (std::is_same_v<typename tag::temporal_id, TemporalId>) {
             try_to_interpolate<tag>(make_not_null(&box), make_not_null(&cache),

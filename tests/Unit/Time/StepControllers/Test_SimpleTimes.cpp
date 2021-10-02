@@ -18,7 +18,7 @@
 
 SPECTRE_TEST_CASE("Unit.Time.StepControllers.SimpleTimes", "[Unit][Time]") {
   Parallel::register_classes_with_charm<StepControllers::SimpleTimes>();
-  const auto check = [](const auto& st) noexcept {
+  const auto check = [](const auto& st) {
     const Slab slab(1., 4.);
     CHECK(st.choose_step(slab.start(), 4.) == slab.duration());
     CHECK(st.choose_step(slab.start(), 10.) == slab.duration());

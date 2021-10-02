@@ -8,7 +8,7 @@
 #include "ErrorHandling/Error.hpp"
 
 namespace {
-[[noreturn]] void report_failure() noexcept {
+[[noreturn]] void report_failure() {
   // Make sure we don't go into an infinite loop if we fail to
   // allocate in this function.
   std::set_new_handler(nullptr);
@@ -17,7 +17,6 @@ namespace {
 }
 }  // namespace
 
-
-void setup_memory_allocation_failure_reporting() noexcept {
+void setup_memory_allocation_failure_reporting() {
   std::set_new_handler(report_failure);
 }

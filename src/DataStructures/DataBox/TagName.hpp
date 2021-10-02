@@ -38,7 +38,7 @@ CREATE_IS_CALLABLE_V(name)
  * \return string holding the DataBox tag's name
  */
 template <typename Tag>
-std::string tag_name() noexcept {
+std::string tag_name() {
   if constexpr (detail::is_name_callable_v<Tag>) {
     return Tag::name();
   } else if constexpr (detail::has_base_v<Tag>) {

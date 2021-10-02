@@ -49,7 +49,7 @@ struct TestPackagedData {
 
 template <size_t VolumeDim>
 DirectionMap<VolumeDim, DataVector> make_dirmap_of_datavectors_from_value(
-    const size_t size, const double value) noexcept {
+    const size_t size, const double value) {
   DirectionMap<VolumeDim, DataVector> result{};
   for (const auto& dir : Direction<VolumeDim>::all_directions()) {
     result[dir] = DataVector(size, value);
@@ -66,7 +66,7 @@ void test_kxrcf_work(
     const Element<VolumeDim>& element,
     const ElementMap<VolumeDim, Frame::Inertial>& element_map,
     const DirectionMap<VolumeDim, DataVector>& neighbor_densities,
-    const DirectionMap<VolumeDim, DataVector>& neighbor_energies) noexcept {
+    const DirectionMap<VolumeDim, DataVector>& neighbor_energies) {
   // Check that this help function is called correctly
   ASSERT(element.neighbors().size() == neighbor_densities.size(),
          "The test helper was passed inconsistent data.");
@@ -131,7 +131,7 @@ void test_kxrcf_work(
   CHECK(tci_detection == expected_detection);
 }
 
-void test_kxrcf_1d() noexcept {
+void test_kxrcf_1d() {
   const auto element = TestHelpers::Limiters::make_element<1>();
   const Mesh<1> mesh(3, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto);
@@ -205,7 +205,7 @@ void test_kxrcf_1d() noexcept {
                   neighbor_energies);
 }
 
-void test_kxrcf_2d() noexcept {
+void test_kxrcf_2d() {
   const auto element = TestHelpers::Limiters::make_element<2>();
   const Mesh<2> mesh(3, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto);
@@ -290,7 +290,7 @@ void test_kxrcf_2d() noexcept {
                   neighbor_energies);
 }
 
-void test_kxrcf_3d() noexcept {
+void test_kxrcf_3d() {
   const auto element = TestHelpers::Limiters::make_element<3>();
   const Mesh<3> mesh(3, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto);

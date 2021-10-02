@@ -6,19 +6,19 @@
 #include "PointwiseFunctions/AnalyticSolutions/WaveEquation/PlaneWave.hpp"
 
 namespace CurvedScalarWave::AnalyticData {
-#define FUNCS_DECL(dim)                                                 \
-  template class ScalarWaveGr<ScalarWave::Solutions::PlaneWave<dim>,    \
-                              gr::Solutions::Minkowski<dim>>;           \
-  template bool operator==(                                             \
-      const ScalarWaveGr<ScalarWave::Solutions::PlaneWave<dim>,         \
-                         gr::Solutions::Minkowski<dim>>& lhs,           \
-      const ScalarWaveGr<ScalarWave::Solutions::PlaneWave<dim>,         \
-                         gr::Solutions::Minkowski<dim>>& rhs) noexcept; \
-  template bool operator!=(                                             \
-      const ScalarWaveGr<ScalarWave::Solutions::PlaneWave<dim>,         \
-                         gr::Solutions::Minkowski<dim>>& lhs,           \
-      const ScalarWaveGr<ScalarWave::Solutions::PlaneWave<dim>,         \
-                         gr::Solutions::Minkowski<dim>>& rhs) noexcept;
+#define FUNCS_DECL(dim)                                              \
+  template class ScalarWaveGr<ScalarWave::Solutions::PlaneWave<dim>, \
+                              gr::Solutions::Minkowski<dim>>;        \
+  template bool operator==(                                          \
+      const ScalarWaveGr<ScalarWave::Solutions::PlaneWave<dim>,      \
+                         gr::Solutions::Minkowski<dim>>& lhs,        \
+      const ScalarWaveGr<ScalarWave::Solutions::PlaneWave<dim>,      \
+                         gr::Solutions::Minkowski<dim>>& rhs);       \
+  template bool operator!=(                                          \
+      const ScalarWaveGr<ScalarWave::Solutions::PlaneWave<dim>,      \
+                         gr::Solutions::Minkowski<dim>>& lhs,        \
+      const ScalarWaveGr<ScalarWave::Solutions::PlaneWave<dim>,      \
+                         gr::Solutions::Minkowski<dim>>& rhs);
 
 FUNCS_DECL(1)
 FUNCS_DECL(2)

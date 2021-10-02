@@ -18,13 +18,12 @@ class CachedFunction {
   using output = typename Map::mapped_type;
 
   template <typename... MapArgs>
-  explicit CachedFunction(Function function, MapArgs... map_args) noexcept
+  explicit CachedFunction(Function function, MapArgs... map_args)
       : function_(std::move(function)),
         cache_(std::forward<MapArgs>(map_args)...) {}
 
   /// Obtain the function result
-  const output& operator()(
-      const input& x) noexcept(noexcept(std::declval<Function>()(x))) {
+  const output& operator()(const input& x) {
     auto it = cache_.find(x);
     if (it == cache_.end()) {
       it = cache_.emplace(x, function_(x)).first;
@@ -33,7 +32,8 @@ class CachedFunction {
   }
 
   /// Clear the cache entries
-  void clear() noexcept { cache_.clear(); }
+  void clear() { cache_.clear(); }
+
  private:
   Function function_;
   Map cache_;
@@ -50,8 +50,7 @@ class CachedFunction {
 /// \param map_args arguments to pass to the map constructor
 template <typename Input, template <typename...> class Map = std::unordered_map,
           typename... MapArgs, typename Function, typename... PassedMapArgs>
-auto make_cached_function(Function function,
-                          PassedMapArgs... map_args) noexcept {
+auto make_cached_function(Function function, PassedMapArgs... map_args) {
   using output = std::result_of_t<Function&(const Input&)>;
   return CachedFunction<Function, Map<std::decay_t<Input>,
                                       std::decay_t<output>,

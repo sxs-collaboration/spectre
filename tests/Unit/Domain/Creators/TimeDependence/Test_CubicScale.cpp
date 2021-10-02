@@ -51,7 +51,7 @@ void test_impl(
     const double outer_boundary, const std::array<double, 2>& initial_expansion,
     const std::array<double, 2>& velocity,
     const std::array<double, 2>& acceleration,
-    const std::array<std::string, 2>& f_of_t_names) noexcept {
+    const std::array<std::string, 2>& f_of_t_names) {
   MAKE_GENERATOR(gen);
   CAPTURE(initial_time);
   CAPTURE(update_delta_t);
@@ -149,7 +149,7 @@ void test_impl(
 }
 
 template <size_t MeshDim>
-void test() noexcept {
+void test() {
   const double initial_time = 1.3;
   const double update_delta_t = 2.5;
   const double outer_boundary = 10.4;

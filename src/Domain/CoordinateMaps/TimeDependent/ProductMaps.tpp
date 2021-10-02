@@ -31,7 +31,7 @@ std::array<tt::remove_cvref_wrap_t<T>, Size> apply_map(
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time,
     std::integer_sequence<size_t, Is...> /*meta*/,
-    std::integer_sequence<size_t, Js...> /*meta*/) noexcept {
+    std::integer_sequence<size_t, Js...> /*meta*/) {
   using UnwrappedT = tt::remove_cvref_wrap_t<T>;
   return {
       {CoordinateMap_detail::apply_map(
@@ -56,7 +56,7 @@ std::optional<std::array<double, Size>> apply_inverse(
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time,
     std::integer_sequence<size_t, Is...> /*meta*/,
-    std::integer_sequence<size_t, Js...> /*meta*/) noexcept {
+    std::integer_sequence<size_t, Js...> /*meta*/) {
   auto map1_func = CoordinateMap_detail::apply_inverse_map(
       map1, std::array<double, sizeof...(Is)>{{coords[Is]...}}, time,
       functions_of_time, domain::is_map_time_dependent_t<Map1>{});
@@ -79,7 +79,7 @@ std::array<tt::remove_cvref_wrap_t<T>, Size> apply_frame_velocity(
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time,
     std::integer_sequence<size_t, Is...> /*meta*/,
-    std::integer_sequence<size_t, Js...> /*meta*/) noexcept {
+    std::integer_sequence<size_t, Js...> /*meta*/) {
   using UnwrappedT = tt::remove_cvref_wrap_t<T>;
   return {
       {domain::CoordinateMap_detail::apply_frame_velocity(
@@ -102,7 +102,7 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, Size, Frame::NoFrame> apply_jac(
     const std::array<T, Size>& source_coords, const Map1& map1,
     const Map2& map2, const Function func,
     std::integer_sequence<size_t, Is...> /*meta*/,
-    std::integer_sequence<size_t, Js...> /*meta*/) noexcept {
+    std::integer_sequence<size_t, Js...> /*meta*/) {
   using UnwrappedT = tt::remove_cvref_wrap_t<T>;
   auto map1_jac = func(
       std::array<std::reference_wrapper<const UnwrappedT>, sizeof...(Is)>{
@@ -129,7 +129,7 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, Size, Frame::NoFrame> apply_jac(
 }  // namespace product_detail
 
 template <typename Map1, typename Map2>
-ProductOf2Maps<Map1, Map2>::ProductOf2Maps(Map1 map1, Map2 map2) noexcept
+ProductOf2Maps<Map1, Map2>::ProductOf2Maps(Map1 map1, Map2 map2)
     : map1_(std::move(map1)), map2_(std::move(map2)) {}
 
 template <typename Map1, typename Map2>
@@ -139,7 +139,7 @@ ProductOf2Maps<Map1, Map2>::operator()(
     const std::array<T, dim>& source_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time) const noexcept {
+        functions_of_time) const {
   return product_detail::apply_map(source_coords, map1_, map2_, time,
                                    functions_of_time,
                                    std::make_index_sequence<Map1::dim>{},
@@ -152,7 +152,7 @@ ProductOf2Maps<Map1, Map2>::inverse(
     const std::array<double, dim>& target_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time) const noexcept {
+        functions_of_time) const {
   return product_detail::apply_inverse(target_coords, map1_, map2_, time,
                                        functions_of_time,
                                        std::make_index_sequence<Map1::dim>{},
@@ -165,7 +165,7 @@ auto ProductOf2Maps<Map1, Map2>::frame_velocity(
     const std::array<T, dim>& source_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time) const noexcept
+        functions_of_time) const
     -> std::array<tt::remove_cvref_wrap_t<T>, dim> {
   return product_detail::apply_frame_velocity(
       source_coords, map1_, map2_, time, functions_of_time,
@@ -181,11 +181,11 @@ ProductOf2Maps<Map1, Map2>::inv_jacobian(
     const std::array<T, dim>& source_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time) const noexcept {
+        functions_of_time) const {
   using UnwrappedT = tt::remove_cvref_wrap_t<T>;
   return product_detail::apply_jac(
       source_coords, map1_, map2_,
-      [&time, &functions_of_time](const auto& point, const auto& map) noexcept {
+      [&time, &functions_of_time](const auto& point, const auto& map) {
         return CoordinateMap_detail::apply_inverse_jacobian(
             map, point, time, functions_of_time,
             domain::is_jacobian_time_dependent_t<
@@ -204,11 +204,11 @@ ProductOf2Maps<Map1, Map2>::jacobian(
     const std::array<T, dim>& source_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time) const noexcept {
+        functions_of_time) const {
   using UnwrappedT = tt::remove_cvref_wrap_t<T>;
   return product_detail::apply_jac(
       source_coords, map1_, map2_,
-      [&time, &functions_of_time](const auto& point, const auto& map) noexcept {
+      [&time, &functions_of_time](const auto& point, const auto& map) {
         return CoordinateMap_detail::apply_jacobian(
             map, point, time, functions_of_time,
             domain::is_jacobian_time_dependent_t<
@@ -227,13 +227,13 @@ void ProductOf2Maps<Map1, Map2>::pup(PUP::er& p) {
 
 template <typename Map1, typename Map2>
 bool operator!=(const ProductOf2Maps<Map1, Map2>& lhs,
-                const ProductOf2Maps<Map1, Map2>& rhs) noexcept {
+                const ProductOf2Maps<Map1, Map2>& rhs) {
   return not(lhs == rhs);
 }
 
 template <typename Map1, typename Map2, typename Map3>
 ProductOf3Maps<Map1, Map2, Map3>::ProductOf3Maps(Map1 map1, Map2 map2,
-                                                 Map3 map3) noexcept
+                                                 Map3 map3)
     : map1_(std::move(map1)), map2_(std::move(map2)), map3_(std::move(map3)) {}
 
 template <typename Map1, typename Map2, typename Map3>
@@ -243,7 +243,7 @@ ProductOf3Maps<Map1, Map2, Map3>::operator()(
     const std::array<T, dim>& source_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time) const noexcept {
+        functions_of_time) const {
   using UnwrappedT = tt::remove_cvref_wrap_t<T>;
   return {
       {CoordinateMap_detail::apply_map(
@@ -270,7 +270,7 @@ ProductOf3Maps<Map1, Map2, Map3>::inverse(
     const std::array<double, dim>& target_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time) const noexcept {
+        functions_of_time) const {
   const auto c1 = CoordinateMap_detail::apply_inverse_map(
       map1_, std::array<double, 1>{{target_coords[0]}}, time, functions_of_time,
       domain::is_map_time_dependent_t<Map1>{});
@@ -293,7 +293,7 @@ auto ProductOf3Maps<Map1, Map2, Map3>::frame_velocity(
     const std::array<T, dim>& source_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time) const noexcept
+        functions_of_time) const
     -> std::array<tt::remove_cvref_wrap_t<T>, dim> {
   using UnwrappedT = tt::remove_cvref_wrap_t<T>;
   return {
@@ -323,7 +323,7 @@ ProductOf3Maps<Map1, Map2, Map3>::inv_jacobian(
     const std::array<T, dim>& source_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time) const noexcept {
+        functions_of_time) const {
   using UnwrappedT = tt::remove_cvref_wrap_t<T>;
   tnsr::Ij<UnwrappedT, dim, Frame::NoFrame> inv_jacobian_matrix{
       make_with_value<UnwrappedT>(dereference_wrapper(source_coords[0]), 0.0)};
@@ -362,7 +362,7 @@ ProductOf3Maps<Map1, Map2, Map3>::jacobian(
     const std::array<T, dim>& source_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time) const noexcept {
+        functions_of_time) const {
   using UnwrappedT = tt::remove_cvref_wrap_t<T>;
   tnsr::Ij<UnwrappedT, dim, Frame::NoFrame> jacobian_matrix{
       make_with_value<UnwrappedT>(dereference_wrapper(source_coords[0]), 0.0)};
@@ -392,7 +392,7 @@ ProductOf3Maps<Map1, Map2, Map3>::jacobian(
   return jacobian_matrix;
 }
 template <typename Map1, typename Map2, typename Map3>
-void ProductOf3Maps<Map1, Map2, Map3>::pup(PUP::er& p) noexcept {
+void ProductOf3Maps<Map1, Map2, Map3>::pup(PUP::er& p) {
   p | map1_;
   p | map2_;
   p | map3_;
@@ -400,7 +400,7 @@ void ProductOf3Maps<Map1, Map2, Map3>::pup(PUP::er& p) noexcept {
 
 template <typename Map1, typename Map2, typename Map3>
 bool operator!=(const ProductOf3Maps<Map1, Map2, Map3>& lhs,
-                const ProductOf3Maps<Map1, Map2, Map3>& rhs) noexcept {
+                const ProductOf3Maps<Map1, Map2, Map3>& rhs) {
   return not(lhs == rhs);
 }
 }  // namespace TimeDependent

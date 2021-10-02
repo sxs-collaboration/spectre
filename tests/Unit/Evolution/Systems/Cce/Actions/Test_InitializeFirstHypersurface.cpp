@@ -115,7 +115,7 @@ struct metavariables {
 };
 
 template <bool EvolvePartiallyFlatCartesianCoordinates>
-void test_InitializeFirstHypersurface() noexcept {
+void test_InitializeFirstHypersurface() {
   Parallel::register_derived_classes_with_charm<
       InitializeJ::InitializeJ<EvolvePartiallyFlatCartesianCoordinates>>();
 
@@ -150,7 +150,7 @@ void test_InitializeFirstHypersurface() noexcept {
 
   tmpl::for_each<swsh_boundary_tags_to_generate>([&swsh_variables, &gen,
                                                   &coefficient_distribution,
-                                                  &l_max](auto tag_v) noexcept {
+                                                  &l_max](auto tag_v) {
     using tag = typename decltype(tag_v)::type;
     SpinWeighted<ComplexModalVector, tag::type::type::spin> generated_modes{
         Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max)};
@@ -218,7 +218,7 @@ void test_InitializeFirstHypersurface() noexcept {
   tmpl::for_each<tmpl::append<real_cauchy_boundary_tags_to_compute,
                               swsh_cauchy_boundary_tags_to_compute,
                               swsh_volume_tags_to_compute>>(
-      [&runner, &expected_box](auto tag_v) noexcept {
+      [&runner, &expected_box](auto tag_v) {
         using tag = typename decltype(tag_v)::type;
         CAPTURE(db::tag_name<tag>());
         const auto& test_lhs =
@@ -230,7 +230,7 @@ void test_InitializeFirstHypersurface() noexcept {
   if constexpr (EvolvePartiallyFlatCartesianCoordinates) {
     tmpl::for_each<tmpl::append<real_inertial_boundary_tags_to_compute,
                                 swsh_inertial_boundary_tags_to_compute>>(
-        [&runner, &expected_box](auto tag_v) noexcept {
+        [&runner, &expected_box](auto tag_v) {
           using tag = typename decltype(tag_v)::type;
           CAPTURE(db::tag_name<tag>());
           const auto& test_lhs =

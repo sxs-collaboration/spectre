@@ -37,11 +37,11 @@ using TriggerB = TestHelpers::DenseTriggers::BoxTrigger<TriggerLabels::B>;
 template <typename Label>
 class TestEvent : public Event {
  public:
-  explicit TestEvent(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit TestEvent(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(TestEvent);  // NOLINT
 
-  static std::string name() noexcept {
+  static std::string name() {
     return "TestEvent<" + Options::name<Label>() + ">";
   }
 
@@ -58,7 +58,7 @@ class TestEvent : public Event {
                   const std::optional<double>& previous_trigger_time,
                   Parallel::GlobalCache<Metavariables>& /*cache*/,
                   const ArrayIndex& /*array_index*/,
-                  const Component* const /*meta*/) const noexcept {
+                  const Component* const /*meta*/) const {
     event_ran = true;
     time_during_event = time;
     previous_time_during_event = previous_trigger_time;
@@ -74,11 +74,11 @@ class TestEvent : public Event {
   bool is_ready(const bool ready,
                 Parallel::GlobalCache<Metavariables>& /*cache*/,
                 const ArrayIndex& /*array_index*/,
-                const Component* const /*meta*/) const noexcept {
+                const Component* const /*meta*/) const {
     return ready;
   }
 
-  bool needs_evolved_variables() const noexcept override {
+  bool needs_evolved_variables() const override {
     return Label::needs_evolved_variables;
   }
 
@@ -125,7 +125,7 @@ struct Metavariables {
   };
 };
 
-void do_test(const bool time_runs_forward, const bool add_event) noexcept {
+void do_test(const bool time_runs_forward, const bool add_event) {
   const double time_sign = time_runs_forward ? 1.0 : -1.0;
 
   Parallel::GlobalCache<Metavariables> cache{};
@@ -163,17 +163,16 @@ void do_test(const bool time_runs_forward, const bool add_event) noexcept {
       -1.0 * time_sign, std::optional<double>{}, false, false, 2.0 * time_sign,
       false, false, 3.0 * time_sign, false, false, false);
 
-  const auto set_tag = [&box](auto tag_v, const auto value) noexcept {
+  const auto set_tag = [&box](auto tag_v, const auto value) {
     using Tag = decltype(tag_v);
-    db::mutate<Tag>(
-        make_not_null(&box),
-        [&value](const gsl::not_null<typename Tag::type*> var) noexcept {
-          *var = value;
-        });
+    db::mutate<Tag>(make_not_null(&box),
+                    [&value](const gsl::not_null<typename Tag::type*> var) {
+                      *var = value;
+                    });
   };
 
   const auto check_events = [](const bool expected_a, const bool expected_b,
-                               const bool expected_c) noexcept {
+                               const bool expected_c) {
     CHECK(EventA::event_ran == expected_a);
     CHECK(EventB::event_ran == expected_b);
     CHECK(EventC::event_ran == expected_c);
@@ -237,7 +236,7 @@ void do_test(const bool time_runs_forward, const bool add_event) noexcept {
 
   const auto finish_checks =
       [&array_index, &box, &cache, &check_events, &component,
-       &time_sign](evolution::EventsAndDenseTriggers eadt) noexcept {
+       &time_sign](evolution::EventsAndDenseTriggers eadt) {
         EventA::event_ran = false;
         CHECK(eadt.next_trigger(box) == 3.0 * time_sign);
         CHECK(eadt.is_ready(box, cache, array_index, component) ==

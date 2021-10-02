@@ -65,7 +65,7 @@ struct CoordinatesMeshVelocityAndJacobiansCompute
       const std::unordered_map<
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-          functions_of_time) noexcept {
+          functions_of_time) {
     // Use identity to signal time-independent
     if (not grid_to_inertial_map.is_identity()) {
       *result = grid_to_inertial_map.coords_frame_velocity_jacobians(
@@ -97,7 +97,7 @@ struct InertialFromGridCoordinatesCompute
           ::InverseJacobian<DataVector, Dim, Frame::Grid, Frame::Inertial>,
           ::Jacobian<DataVector, Dim, Frame::Grid, Frame::Inertial>,
           tnsr::I<DataVector, Dim, Frame::Inertial>>>&
-          grid_to_inertial_quantities) noexcept;
+          grid_to_inertial_quantities);
 
   using argument_tags = tmpl::list<Tags::Coordinates<Dim, Frame::Grid>,
                                    CoordinatesMeshVelocityAndJacobians<Dim>>;
@@ -124,7 +124,7 @@ struct ElementToInertialInverseJacobian
           ::InverseJacobian<DataVector, Dim, Frame::Grid, Frame::Inertial>,
           ::Jacobian<DataVector, Dim, Frame::Grid, Frame::Inertial>,
           tnsr::I<DataVector, Dim, Frame::Inertial>>>&
-          grid_to_inertial_quantities) noexcept;
+          grid_to_inertial_quantities);
 
   using argument_tags =
       tmpl::list<Tags::InverseJacobian<Dim, Frame::ElementLogical, Frame::Grid>,
@@ -157,7 +157,7 @@ struct InertialMeshVelocityCompute : MeshVelocity<Dim, Frame::Inertial>,
           ::InverseJacobian<DataVector, Dim, Frame::Grid, Frame::Inertial>,
           ::Jacobian<DataVector, Dim, Frame::Grid, Frame::Inertial>,
           tnsr::I<DataVector, Dim, Frame::Inertial>>>&
-          grid_to_inertial_quantities) noexcept;
+          grid_to_inertial_quantities);
 
   using argument_tags = tmpl::list<CoordinatesMeshVelocityAndJacobians<Dim>>;
 };
@@ -165,7 +165,7 @@ struct InertialMeshVelocityCompute : MeshVelocity<Dim, Frame::Inertial>,
 /// The divergence of the mesh velocity
 struct DivMeshVelocity : db::SimpleTag {
   using type = std::optional<Scalar<DataVector>>;
-  static std::string name() noexcept { return "div(MeshVelocity)"; }
+  static std::string name() { return "div(MeshVelocity)"; }
 };
 }  // namespace Tags
 }  // namespace domain

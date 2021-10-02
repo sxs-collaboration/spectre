@@ -28,7 +28,7 @@ namespace {
 
 template <typename Generator>
 void test_gh_local_time_stepping_interface_manager(
-    const gsl::not_null<Generator*> gen) noexcept {
+    const gsl::not_null<Generator*> gen) {
   // the frequency has to be small to be kind to the time stepper for the ~.1
   // step size in this test
   UniformCustomDistribution<double> value_dist{0.1, 1.0};
@@ -68,7 +68,7 @@ void test_gh_local_time_stepping_interface_manager(
 
   const auto check_no_retrieval =
       [](const gsl::not_null<InterfaceManagers::GhLocalTimeStepping*>
-             local_interface_manager) noexcept {
+             local_interface_manager) {
         CHECK_FALSE(
             static_cast<bool>(local_interface_manager
                                   ->retrieve_and_remove_first_ready_gh_data()));
@@ -79,7 +79,7 @@ void test_gh_local_time_stepping_interface_manager(
        &frequency_increment](
           const gsl::not_null<InterfaceManagers::GhLocalTimeStepping*>
               local_interface_manager,
-          const size_t index) noexcept {
+          const size_t index) {
         const auto current_time_step_id = source_time_steps[index];
         const double current_time = current_time_step_id.substep_time().value();
 
@@ -128,7 +128,7 @@ void test_gh_local_time_stepping_interface_manager(
       [&source_time_steps](
           const gsl::not_null<InterfaceManagers::GhLocalTimeStepping*>
               local_interface_manager,
-          const size_t index) noexcept {
+          const size_t index) {
         local_interface_manager->insert_next_gh_time(
             source_time_steps[index], source_time_steps[index + 1]);
       };
@@ -137,7 +137,7 @@ void test_gh_local_time_stepping_interface_manager(
       [&target_time_steps](
           const gsl::not_null<InterfaceManagers::GhLocalTimeStepping*>
               local_interface_manager,
-          const size_t index) noexcept {
+          const size_t index) {
         local_interface_manager->request_gh_data(target_time_steps[index]);
       };
 
@@ -148,7 +148,7 @@ void test_gh_local_time_stepping_interface_manager(
                                        InterfaceManagers::GhLocalTimeStepping*>
                                        local_interface_manager,
                                    const size_t index,
-                                   Approx local_approx = approx) noexcept {
+                                   Approx local_approx = approx) {
     const double current_time = target_time_steps[index].substep_time().value();
     tnsr::aa<DataVector, 3> expected_spacetime_metric{5_st};
     tnsr::iaa<DataVector, 3> expected_phi{5_st};
@@ -263,7 +263,7 @@ void test_gh_local_time_stepping_interface_manager(
       [&request_target_time, &check_no_retrieval, &check_retrieval,
        &insert_source_data, &insert_source_next_time](
           const gsl::not_null<InterfaceManagers::GhLocalTimeStepping*>
-              local_interface_manager) noexcept {
+              local_interface_manager) {
         insert_source_next_time(local_interface_manager, 6_st);
         request_target_time(local_interface_manager, 6_st);
         insert_source_next_time(local_interface_manager, 7_st);

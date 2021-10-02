@@ -46,7 +46,7 @@ class PrimitiveGhostDataOnSubcells {
       tmpl::list<::Tags::Variables<hydro::grmhd_tags<DataVector>>>;
 
   static Variables<prims_to_reconstruct_tags> apply(
-      const Variables<hydro::grmhd_tags<DataVector>>& prims) noexcept;
+      const Variables<hydro::grmhd_tags<DataVector>>& prims);
 };
 
 /*!
@@ -85,6 +85,6 @@ class PrimitiveGhostDataToSlice {
 
   static Variables<prims_to_reconstruct_tags> apply(
       const Variables<hydro::grmhd_tags<DataVector>>& prims,
-      const Mesh<3>& dg_mesh, const Mesh<3>& subcell_mesh) noexcept;
+      const Mesh<3>& dg_mesh, const Mesh<3>& subcell_mesh);
 };
 }  // namespace grmhd::ValenciaDivClean::subcell

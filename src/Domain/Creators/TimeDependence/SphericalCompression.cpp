@@ -53,8 +53,7 @@ SphericalCompression::SphericalCompression(
   }
 }
 
-std::unique_ptr<TimeDependence<3>> SphericalCompression::get_clone()
-    const noexcept {
+std::unique_ptr<TimeDependence<3>> SphericalCompression::get_clone() const {
   return std::make_unique<SphericalCompression>(
       initial_time_, initial_expiration_delta_t_, min_radius_, max_radius_,
       center_, initial_value_, initial_velocity_, initial_acceleration_,
@@ -63,8 +62,7 @@ std::unique_ptr<TimeDependence<3>> SphericalCompression::get_clone()
 
 std::vector<
     std::unique_ptr<domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, 3>>>
-SphericalCompression::block_maps(
-    const size_t number_of_blocks) const noexcept {
+SphericalCompression::block_maps(const size_t number_of_blocks) const {
   ASSERT(number_of_blocks > 0,
          "Must have at least one block on which to create a map.");
   std::vector<std::unique_ptr<
@@ -79,7 +77,7 @@ SphericalCompression::block_maps(
 
 std::unordered_map<std::string,
                    std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
-SphericalCompression::functions_of_time() const noexcept {
+SphericalCompression::functions_of_time() const {
   std::unordered_map<std::string,
                      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
       result{};
@@ -96,14 +94,13 @@ SphericalCompression::functions_of_time() const noexcept {
   return result;
 }
 
-auto SphericalCompression::map_for_composition() const noexcept
-    -> MapForComposition {
+auto SphericalCompression::map_for_composition() const -> MapForComposition {
   return MapForComposition{SphericalCompressionMap{
       function_of_time_name_, min_radius_, max_radius_, center_}};
 }
 
 bool operator==(const SphericalCompression& lhs,
-                const SphericalCompression& rhs) noexcept {
+                const SphericalCompression& rhs) {
   return lhs.initial_time_ == rhs.initial_time_ and
          lhs.initial_expiration_delta_t_ == rhs.initial_expiration_delta_t_ and
          lhs.min_radius_ == rhs.min_radius_ and
@@ -115,7 +112,7 @@ bool operator==(const SphericalCompression& lhs,
 }
 
 bool operator!=(const SphericalCompression& lhs,
-                const SphericalCompression& rhs) noexcept {
+                const SphericalCompression& rhs) {
   return not(lhs == rhs);
 }
 }  // namespace creators::time_dependence

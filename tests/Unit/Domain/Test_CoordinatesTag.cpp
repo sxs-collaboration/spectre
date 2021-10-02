@@ -27,7 +27,7 @@ struct BlockLogical;
 namespace domain {
 namespace {
 template <size_t Dim, typename T>
-void test_coordinates_compute_item(const Mesh<Dim>& mesh, T map) noexcept {
+void test_coordinates_compute_item(const Mesh<Dim>& mesh, T map) {
   using map_tag = Tags::ElementMap<Dim, Frame::Grid>;
   const auto box = db::create<
       db::AddSimpleTags<Tags::Mesh<Dim>, map_tag>,

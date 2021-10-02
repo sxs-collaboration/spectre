@@ -157,7 +157,7 @@ using EvolvedVariables = typename system::variables_tag::type;
 
 std::pair<tnsr::I<DataVector, 1>, EvolvedVariables> evaluate_rhs(
     const double time,
-    const ScalarWave::Solutions::SemidiscretizedDg& solution) noexcept {
+    const ScalarWave::Solutions::SemidiscretizedDg& solution) {
   using component = Component<Metavariables>;
 
   ActionTesting::MockRuntimeSystem<Metavariables> runner{
@@ -180,8 +180,7 @@ std::pair<tnsr::I<DataVector, 1>, EvolvedVariables> evaluate_rhs(
   const auto emplace_element =
       [&block_map, &current_time, &mesh, &next_time, &runner, &solution, &time](
           const ElementId<1>& id,
-          const std::vector<std::pair<Direction<1>, ElementId<1>>>&
-              mortars) noexcept {
+          const std::vector<std::pair<Direction<1>, ElementId<1>>>& mortars) {
         Element<1>::Neighbors_t neighbors;
         for (const auto& mortar_id : mortars) {
           neighbors.insert({mortar_id.first, {{mortar_id.second}, {}}});
@@ -227,10 +226,9 @@ std::pair<tnsr::I<DataVector, 1>, EvolvedVariables> evaluate_rhs(
             make_not_null(&runner), id);
         db::mutate<system::variables_tag>(
             make_not_null(&box),
-            [
-              &solution, &time
-            ](const gsl::not_null<EvolvedVariables*> vars,
-              const tnsr::I<DataVector, 1, Frame::Inertial>& coords) noexcept {
+            [&solution, &time](
+                const gsl::not_null<EvolvedVariables*> vars,
+                const tnsr::I<DataVector, 1, Frame::Inertial>& coords) {
               vars->assign_subset(solution.variables(
                   coords, time, system::variables_tag::tags_list{}));
             },
@@ -268,15 +266,14 @@ std::pair<tnsr::I<DataVector, 1>, EvolvedVariables> evaluate_rhs(
               runner, self_id))};
 }
 
-void check_solution(
-    const ScalarWave::Solutions::SemidiscretizedDg& solution) noexcept {
+void check_solution(const ScalarWave::Solutions::SemidiscretizedDg& solution) {
   const double time = 1.23;
 
   const auto coords_and_deriv_from_system = evaluate_rhs(time, solution);
   const auto& coords = coords_and_deriv_from_system.first;
   const auto& deriv_from_system = coords_and_deriv_from_system.second;
   const auto numerical_deriv = numerical_derivative(
-      [&coords, &solution](const std::array<double, 1>& t) noexcept {
+      [&coords, &solution](const std::array<double, 1>& t) {
         EvolvedVariables result(2);
         result.assign_subset(solution.variables(
             coords, t[0], system::variables_tag::tags_list{}));

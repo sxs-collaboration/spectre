@@ -38,7 +38,7 @@ namespace Xcts {
 template <typename DataType>
 void longitudinal_operator(gsl::not_null<tnsr::II<DataType, 3>*> result,
                            const tnsr::ii<DataType, 3>& strain,
-                           const tnsr::II<DataType, 3>& inv_metric) noexcept;
+                           const tnsr::II<DataType, 3>& inv_metric);
 
 /*!
  * \brief The conformal longitudinal operator \f$(L\beta)^{ij}\f$ on a flat
@@ -49,5 +49,5 @@ void longitudinal_operator(gsl::not_null<tnsr::II<DataType, 3>*> result,
 template <typename DataType>
 void longitudinal_operator_flat_cartesian(
     gsl::not_null<tnsr::II<DataType, 3>*> result,
-    const tnsr::ii<DataType, 3>& strain) noexcept;
+    const tnsr::ii<DataType, 3>& strain);
 }  // namespace Xcts

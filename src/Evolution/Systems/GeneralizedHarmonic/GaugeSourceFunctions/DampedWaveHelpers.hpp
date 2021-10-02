@@ -29,7 +29,7 @@ namespace DampedHarmonicGauge_detail {
 template <size_t SpatialDim, typename Frame, typename DataType>
 void spatial_weight_function(gsl::not_null<Scalar<DataType>*> weight,
                              const tnsr::I<DataType, SpatialDim, Frame>& coords,
-                             double sigma_r) noexcept;
+                             double sigma_r);
 
 /*
  * Spacetime derivatives of the spatial weight function that enters the
@@ -49,7 +49,7 @@ template <size_t SpatialDim, typename Frame, typename DataType>
 void spacetime_deriv_of_spatial_weight_function(
     gsl::not_null<tnsr::a<DataType, SpatialDim, Frame>*> d4_weight,
     const tnsr::I<DataType, SpatialDim, Frame>& coords, double sigma_r,
-    const Scalar<DataType>& weight_function) noexcept;
+    const Scalar<DataType>& weight_function);
 
 /*
  * The log factor that appears in damped harmonic gauge source function.
@@ -60,12 +60,12 @@ template <typename DataType>
 void log_factor_metric_lapse(gsl::not_null<Scalar<DataType>*> logfac,
                              const Scalar<DataType>& lapse,
                              const Scalar<DataType>& sqrt_det_spatial_metric,
-                             double exponent) noexcept;
+                             double exponent);
 
 template <typename DataType>
 Scalar<DataType> log_factor_metric_lapse(
     const Scalar<DataType>& lapse,
-    const Scalar<DataType>& sqrt_det_spatial_metric, double exponent) noexcept;
+    const Scalar<DataType>& sqrt_det_spatial_metric, double exponent);
 
 /*
  * Spacetime derivatives of the log factor that appears in the
@@ -86,8 +86,7 @@ void spacetime_deriv_of_log_factor_metric_lapse(
     const Scalar<DataType>& sqrt_det_spatial_metric,
     const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric,
     const tnsr::aa<DataType, SpatialDim, Frame>& pi,
-    const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
-    double exponent) noexcept;
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi, double exponent);
 
 template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::a<DataType, SpatialDim, Frame> spacetime_deriv_of_log_factor_metric_lapse(
@@ -98,8 +97,7 @@ tnsr::a<DataType, SpatialDim, Frame> spacetime_deriv_of_log_factor_metric_lapse(
     const Scalar<DataType>& sqrt_det_spatial_metric,
     const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric,
     const tnsr::aa<DataType, SpatialDim, Frame>& pi,
-    const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
-    double exponent) noexcept;
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi, double exponent);
 
 /*
  * Spacetime derivatives of the log factor (that appears in
@@ -121,7 +119,7 @@ void spacetime_deriv_of_power_log_factor_metric_lapse(
     const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric,
     const tnsr::aa<DataType, SpatialDim, Frame>& pi,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi, double g_exponent,
-    int exponent) noexcept;
+    int exponent);
 
 template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::a<DataType, SpatialDim, Frame>
@@ -134,7 +132,7 @@ spacetime_deriv_of_power_log_factor_metric_lapse(
     const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric,
     const tnsr::aa<DataType, SpatialDim, Frame>& pi,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi, double g_exponent,
-    int exponent) noexcept;
+    int exponent);
 
 }  // namespace DampedHarmonicGauge_detail
 }  // namespace gauges

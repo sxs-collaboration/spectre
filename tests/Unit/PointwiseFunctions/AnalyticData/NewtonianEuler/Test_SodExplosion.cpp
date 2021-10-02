@@ -35,13 +35,13 @@ struct SodExplosionProxy : NewtonianEuler::AnalyticData::SodExplosion<Dim> {
 
   tuples::tagged_tuple_from_typelist<variables_tags<DataVector>>
   primitive_variables(
-      const tnsr::I<DataVector, Dim, Frame::Inertial>& x) const noexcept {
+      const tnsr::I<DataVector, Dim, Frame::Inertial>& x) const {
     return this->variables(x, variables_tags<DataVector>{});
   }
 };
 
 template <size_t Dim>
-void test_analytic_data(const DataVector& used_for_size) noexcept {
+void test_analytic_data(const DataVector& used_for_size) {
   const double initial_radius = 0.5;
   const double inner_mass_density = 1.0;
   const double inner_pressure = 1.0;

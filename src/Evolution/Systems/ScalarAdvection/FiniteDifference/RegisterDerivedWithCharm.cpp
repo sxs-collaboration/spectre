@@ -8,7 +8,7 @@
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 
 namespace ScalarAdvection::fd {
-void register_derived_with_charm() noexcept {
+void register_derived_with_charm() {
   Parallel::register_derived_classes_with_charm<Reconstructor<1>>();
   Parallel::register_derived_classes_with_charm<Reconstructor<2>>();
 }

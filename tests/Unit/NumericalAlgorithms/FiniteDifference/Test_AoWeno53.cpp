@@ -16,7 +16,7 @@
 
 namespace {
 template <size_t NonlinearWeightExponent, size_t Dim>
-void test_function_pointers() noexcept {
+void test_function_pointers() {
   const auto function_ptrs =
       fd::reconstruction::aoweno_53_function_pointers<Dim>(
           NonlinearWeightExponent);
@@ -25,7 +25,7 @@ void test_function_pointers() noexcept {
   using function_type =
       void (*)(gsl::not_null<DataVector*>, const DataVector&, const DataVector&,
                const Index<Dim>&, const Index<Dim>&, const Direction<Dim>&,
-               const double&, const double&, const double&) noexcept;
+               const double&, const double&, const double&);
   CHECK(get<1>(function_ptrs) ==
         static_cast<function_type>(
             &fd::reconstruction::reconstruct_neighbor<

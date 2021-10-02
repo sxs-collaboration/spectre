@@ -20,9 +20,8 @@
 
 namespace {
 template <typename VectorType, size_t Dim, typename T>
-VectorType integrand(
-    const std::array<size_t, Dim>& exponent, const T& x,
-    const typename VectorType::ElementType overall_factor) noexcept {
+VectorType integrand(const std::array<size_t, Dim>& exponent, const T& x,
+                     const typename VectorType::ElementType overall_factor) {
   VectorType integrand(get<0>(x).size(), overall_factor);
   for (size_t d = 0; d < Dim; ++d) {
     integrand *= pow(x.get(d), gsl::at(exponent, d));
@@ -31,10 +30,9 @@ VectorType integrand(
 }
 
 template <typename VectorType, size_t Dim, typename T>
-VectorType integral(
-    const std::array<size_t, Dim>& exponent, const T& x, const Mesh<Dim>& mesh,
-    const size_t only_this_dim,
-    const typename VectorType::ElementType overall_factor) noexcept {
+VectorType integral(const std::array<size_t, Dim>& exponent, const T& x,
+                    const Mesh<Dim>& mesh, const size_t only_this_dim,
+                    const typename VectorType::ElementType overall_factor) {
   VectorType integral(get<0>(x).size(), overall_factor);
   for (size_t d = 0; d < Dim; ++d) {
     if (d == only_this_dim) {
@@ -58,7 +56,7 @@ VectorType integral(
 
 template <typename VectorType, Spectral::Basis BasisType,
           Spectral::Quadrature QuadratureType>
-void test_zero_bc() noexcept {
+void test_zero_bc() {
   const size_t min_pts = 2;
   REQUIRE(5 <= Spectral::maximum_number_of_points<BasisType>);
 

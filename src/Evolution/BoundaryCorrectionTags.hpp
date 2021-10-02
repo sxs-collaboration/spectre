@@ -39,7 +39,7 @@ struct BoundaryCorrection : db::SimpleTag {
 
   using option_tags = tmpl::list<OptionTags::BoundaryCorrection<System>>;
   static constexpr bool pass_metavariables = false;
-  static type create_from_options(const type& boundary_correction) noexcept {
+  static type create_from_options(const type& boundary_correction) {
     return boundary_correction->get_clone();
   }
 };

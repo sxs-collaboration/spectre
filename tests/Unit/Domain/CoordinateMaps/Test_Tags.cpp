@@ -12,7 +12,7 @@
 namespace domain {
 namespace {
 template <size_t Dim>
-void test() noexcept {
+void test() {
   TestHelpers::db::test_simple_tag<
       CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Logical, Frame::Grid>>(
       "CoordinateMap(Logical,Grid)");

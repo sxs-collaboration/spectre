@@ -19,7 +19,7 @@
 template <typename VariablesTag = NoSuchType, typename DbTags,
           typename Metavariables>
 void take_step(const gsl::not_null<db::DataBox<DbTags>*> box,
-               const Parallel::GlobalCache<Metavariables>& cache) noexcept {
+               const Parallel::GlobalCache<Metavariables>& cache) {
   record_time_stepper_data<typename Metavariables::system, VariablesTag>(box);
   do {
     update_u<typename Metavariables::system, VariablesTag>(box);

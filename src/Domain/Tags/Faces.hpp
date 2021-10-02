@@ -69,7 +69,7 @@ struct Subitems<
   template <typename Subtag>
   static void create_item(
       const gsl::not_null<typename tag::type*> parent_value,
-      const gsl::not_null<typename Subtag::type*> sub_value) noexcept {
+      const gsl::not_null<typename Subtag::type*> sub_value) {
     sub_value->clear();
     for (auto& [direction, all_parent_vars] : *parent_value) {
       auto& parent_var = get<typename Subtag::tag>(all_parent_vars);
@@ -89,7 +89,7 @@ struct Subitems<
   template <typename Subtag>
   static void create_compute_item(
       const gsl::not_null<typename Subtag::type*> sub_value,
-      const typename tag::type& parent_value) noexcept {
+      const typename tag::type& parent_value) {
     for (const auto& [direction, all_parent_vars] : parent_value) {
       const auto& parent_var = get<typename Subtag::tag>(all_parent_vars);
       auto& sub_var = (*sub_value)[direction];
@@ -132,7 +132,7 @@ struct Subitem<
   using parent_tag = FacesComputeTag;
   using argument_tags = tmpl::list<parent_tag>;
   static void function(const gsl::not_null<return_type*> subitems,
-                       const typename parent_tag::type& parent_value) noexcept {
+                       const typename parent_tag::type& parent_value) {
     ::db::Subitems<parent_tag>::template create_compute_item<base>(
         subitems, parent_value);
   }

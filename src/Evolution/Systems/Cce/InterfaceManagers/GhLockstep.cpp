@@ -16,7 +16,7 @@
 
 namespace Cce::InterfaceManagers {
 
-std::unique_ptr<GhInterfaceManager> GhLockstep::get_clone() const noexcept {
+std::unique_ptr<GhInterfaceManager> GhLockstep::get_clone() const {
   return std::make_unique<GhLockstep>(*this);
 }
 
@@ -25,7 +25,7 @@ void GhLockstep::insert_gh_data(
     const tnsr::iaa<DataVector, 3>& phi, const tnsr::aa<DataVector, 3>& pi,
     const tnsr::aa<DataVector, 3>& /*dt_spacetime_metric*/,
     const tnsr::iaa<DataVector, 3>& /*dt_phi*/,
-    const tnsr::aa<DataVector, 3>& /*dt_pi*/) noexcept {
+    const tnsr::aa<DataVector, 3>& /*dt_pi*/) {
   // NOLINTNEXTLINE(performance-move-const-arg)
   gh_variables input_gh_variables{get<0, 0>(spacetime_metric).size()};
   get<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>(
@@ -39,7 +39,7 @@ void GhLockstep::insert_gh_data(
                               std::move(input_gh_variables));
 }
 
-auto GhLockstep::retrieve_and_remove_first_ready_gh_data() noexcept
+auto GhLockstep::retrieve_and_remove_first_ready_gh_data()
     -> std::optional<std::tuple<TimeStepId, gh_variables>> {
   if (provided_data_.empty()) {
     return std::nullopt;
@@ -49,7 +49,7 @@ auto GhLockstep::retrieve_and_remove_first_ready_gh_data() noexcept
   return return_data;
 }
 
-void GhLockstep::pup(PUP::er& p) noexcept { p | provided_data_; }
+void GhLockstep::pup(PUP::er& p) { p | provided_data_; }
 
 PUP::able::PUP_ID GhLockstep::my_PUP_ID = 0;
 }  // namespace Cce::InterfaceManagers

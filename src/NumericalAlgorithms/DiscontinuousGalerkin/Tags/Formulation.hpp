@@ -30,7 +30,7 @@ struct Formulation : db::SimpleTag {
   using option_tags = tmpl::list<OptionTags::Formulation>;
   static constexpr bool pass_metavariables = false;
   static dg::Formulation create_from_options(
-      const dg::Formulation& formulation) noexcept;
+      const dg::Formulation& formulation);
 };
 }  // namespace Tags
 }  // namespace dg

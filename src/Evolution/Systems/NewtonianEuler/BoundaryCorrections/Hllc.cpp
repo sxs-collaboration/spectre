@@ -21,11 +21,10 @@
 
 namespace NewtonianEuler::BoundaryCorrections {
 template <size_t Dim>
-Hllc<Dim>::Hllc(CkMigrateMessage* msg) noexcept
-    : BoundaryCorrection<Dim>(msg) {}
+Hllc<Dim>::Hllc(CkMigrateMessage* msg) : BoundaryCorrection<Dim>(msg) {}
 
 template <size_t Dim>
-std::unique_ptr<BoundaryCorrection<Dim>> Hllc<Dim>::get_clone() const noexcept {
+std::unique_ptr<BoundaryCorrection<Dim>> Hllc<Dim>::get_clone() const {
   return std::make_unique<Hllc>(*this);
 }
 
@@ -72,7 +71,7 @@ double Hllc<Dim>::dg_package_data(
     /*mesh_velocity*/,
     const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity,
     const EquationsOfState::EquationOfState<false, ThermodynamicDim>&
-        equation_of_state) const noexcept {
+        equation_of_state) const {
   {
     // Compute pressure
     if constexpr (ThermodynamicDim == 1) {
@@ -160,7 +159,7 @@ void Hllc<Dim>::dg_boundary_terms(
     const Scalar<DataVector>& normal_dot_velocity_ext,
     const Scalar<DataVector>& largest_outgoing_char_speed_ext,
     const Scalar<DataVector>& largest_ingoing_char_speed_ext,
-    const dg::Formulation dg_formulation) const noexcept {
+    const dg::Formulation dg_formulation) const {
   // Allocate a temp buffer
   const size_t vector_size = get(mass_density_int).size();
   Variables<tmpl::list<::Tags::TempScalar<0>, ::Tags::TempScalar<1>,
@@ -355,7 +354,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
           mesh_velocity,                                                       \
       const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity,       \
       const EquationsOfState::EquationOfState<false, THERMODIM(data)>&         \
-          equation_of_state) const noexcept;
+          equation_of_state) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (1, 2))
 

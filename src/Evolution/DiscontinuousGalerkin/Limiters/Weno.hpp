@@ -176,8 +176,8 @@ class Weno<VolumeDim, tmpl::list<Tags...>> {
   /// smooth problems.
   struct NeighborWeight {
     using type = double;
-    static type lower_bound() noexcept { return 1e-6; }
-    static type upper_bound() noexcept { return 0.1; }
+    static type lower_bound() { return 1e-6; }
+    static type upper_bound() { return 0.1; }
     static constexpr Options::String help = {
         "Linear weight for each neighbor element's solution"};
   };
@@ -186,7 +186,7 @@ class Weno<VolumeDim, tmpl::list<Tags...>> {
   /// See `Limiters::Minmod` documentation for details.
   struct TvbConstant {
     using type = double;
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
     static constexpr Options::String help = {"TVB constant 'm'"};
   };
   /// \brief Turn the limiter off
@@ -196,7 +196,7 @@ class Weno<VolumeDim, tmpl::list<Tags...>> {
   /// approach is to not compile the limiter into the executable.
   struct DisableForDebugging {
     using type = bool;
-    static type suggested_value() noexcept { return false; }
+    static type suggested_value() { return false; }
     static constexpr Options::String help = {"Disable the limiter"};
   };
   using options =
@@ -204,17 +204,17 @@ class Weno<VolumeDim, tmpl::list<Tags...>> {
   static constexpr Options::String help = {"A WENO limiter for DG"};
 
   Weno(WenoType weno_type, double neighbor_linear_weight, double tvb_constant,
-       bool disable_for_debugging = false) noexcept;
+       bool disable_for_debugging = false);
 
-  Weno() noexcept = default;
+  Weno() = default;
   Weno(const Weno& /*rhs*/) = default;
   Weno& operator=(const Weno& /*rhs*/) = default;
-  Weno(Weno&& /*rhs*/) noexcept = default;
-  Weno& operator=(Weno&& /*rhs*/) noexcept = default;
+  Weno(Weno&& /*rhs*/) = default;
+  Weno& operator=(Weno&& /*rhs*/) = default;
   ~Weno() = default;
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept;
+  void pup(PUP::er& p);
 
   /// \brief Data to send to neighbor elements
   struct PackagedData {
@@ -225,7 +225,7 @@ class Weno<VolumeDim, tmpl::list<Tags...>> {
         make_array<VolumeDim>(std::numeric_limits<double>::signaling_NaN());
 
     // NOLINTNEXTLINE(google-runtime-references)
-    void pup(PUP::er& p) noexcept {
+    void pup(PUP::er& p) {
       p | volume_data;
       p | means;
       p | mesh;
@@ -242,8 +242,7 @@ class Weno<VolumeDim, tmpl::list<Tags...>> {
                     const typename Tags::type&... tensors,
                     const Mesh<VolumeDim>& mesh,
                     const std::array<double, VolumeDim>& element_size,
-                    const OrientationMap<VolumeDim>& orientation_map) const
-      noexcept;
+                    const OrientationMap<VolumeDim>& orientation_map) const;
 
   using limit_tags = tmpl::list<Tags...>;
   using limit_argument_tags =
@@ -259,13 +258,13 @@ class Weno<VolumeDim, tmpl::list<Tags...>> {
       const std::unordered_map<
           std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
           boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
-          neighbor_data) const noexcept;
+          neighbor_data) const;
 
  private:
   template <size_t LocalDim, typename LocalTagList>
   // NOLINTNEXTLINE(readability-redundant-declaration) false positive
   friend bool operator==(const Weno<LocalDim, LocalTagList>& lhs,
-                         const Weno<LocalDim, LocalTagList>& rhs) noexcept;
+                         const Weno<LocalDim, LocalTagList>& rhs);
 
   WenoType weno_type_;
   double neighbor_linear_weight_;
@@ -274,9 +273,10 @@ class Weno<VolumeDim, tmpl::list<Tags...>> {
 };
 
 template <size_t VolumeDim, typename... Tags>
-Weno<VolumeDim, tmpl::list<Tags...>>::Weno(
-    const WenoType weno_type, const double neighbor_linear_weight,
-    const double tvb_constant, const bool disable_for_debugging) noexcept
+Weno<VolumeDim, tmpl::list<Tags...>>::Weno(const WenoType weno_type,
+                                           const double neighbor_linear_weight,
+                                           const double tvb_constant,
+                                           const bool disable_for_debugging)
     : weno_type_(weno_type),
       neighbor_linear_weight_(neighbor_linear_weight),
       tvb_constant_(tvb_constant),
@@ -284,7 +284,7 @@ Weno<VolumeDim, tmpl::list<Tags...>>::Weno(
 
 template <size_t VolumeDim, typename... Tags>
 // NOLINTNEXTLINE(google-runtime-references)
-void Weno<VolumeDim, tmpl::list<Tags...>>::pup(PUP::er& p) noexcept {
+void Weno<VolumeDim, tmpl::list<Tags...>>::pup(PUP::er& p) {
   p | weno_type_;
   p | neighbor_linear_weight_;
   p | tvb_constant_;
@@ -296,7 +296,7 @@ void Weno<VolumeDim, tmpl::list<Tags...>>::package_data(
     const gsl::not_null<PackagedData*> packaged_data,
     const typename Tags::type&... tensors, const Mesh<VolumeDim>& mesh,
     const std::array<double, VolumeDim>& element_size,
-    const OrientationMap<VolumeDim>& orientation_map) const noexcept {
+    const OrientationMap<VolumeDim>& orientation_map) const {
   // By always initializing the PackagedData Variables member, we avoid an
   // assertion that arises from having a default-constructed Variables in a
   // disabled limiter. There is a performance cost, because the package_data()
@@ -311,8 +311,8 @@ void Weno<VolumeDim, tmpl::list<Tags...>>::package_data(
     return;
   }
 
-  const auto wrap_compute_means = [&mesh, &packaged_data](
-                                      auto tag, const auto tensor) noexcept {
+  const auto wrap_compute_means = [&mesh, &packaged_data](auto tag,
+                                                          const auto tensor) {
     for (size_t i = 0; i < tensor.size(); ++i) {
       // Compute the mean using the local orientation of the tensor and mesh.
       get<::Tags::Mean<decltype(tag)>>(packaged_data->means)[i] =
@@ -325,8 +325,7 @@ void Weno<VolumeDim, tmpl::list<Tags...>>::package_data(
   packaged_data->element_size =
       orientation_map.permute_from_neighbor(element_size);
 
-  const auto wrap_copy_tensor = [&packaged_data](auto tag,
-                                                 const auto tensor) noexcept {
+  const auto wrap_copy_tensor = [&packaged_data](auto tag, const auto tensor) {
     get<decltype(tag)>(packaged_data->volume_data) = tensor;
     return '0';
   };
@@ -345,7 +344,7 @@ bool Weno<VolumeDim, tmpl::list<Tags...>>::operator()(
     const std::unordered_map<
         std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
         boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
-        neighbor_data) const noexcept {
+        neighbor_data) const {
   if (UNLIKELY(disable_for_debugging_)) {
     // Do not modify input tensors
     return false;
@@ -363,17 +362,17 @@ bool Weno<VolumeDim, tmpl::list<Tags...>>::operator()(
          "Unsupported quadrature: " << mesh);
 
   // Enforce restrictions on h-refinement, p-refinement
-  if (UNLIKELY(alg::any_of(element.neighbors(),
-                           [](const auto& direction_neighbors) noexcept {
-                             return direction_neighbors.second.size() != 1;
-                           }))) {
+  if (UNLIKELY(
+          alg::any_of(element.neighbors(), [](const auto& direction_neighbors) {
+            return direction_neighbors.second.size() != 1;
+          }))) {
     ERROR("The Weno limiter does not yet support h-refinement");
     // Removing this limitation will require:
     // - Generalizing the computation of the modified neighbor solutions.
     // - Generalizing the WENO weighted sum for multiple neighbors in each
     //   direction.
   }
-  alg::for_each(neighbor_data, [&mesh](const auto& neighbor_and_data) noexcept {
+  alg::for_each(neighbor_data, [&mesh](const auto& neighbor_and_data) {
     if (UNLIKELY(neighbor_and_data.second.mesh != mesh)) {
       ERROR("The Weno limiter does not yet support p-refinement");
       // Removing this limitation will require generalizing the
@@ -431,7 +430,7 @@ bool Weno<VolumeDim, tmpl::list<Tags...>>::operator()(
         [this, &some_component_was_limited, &tci_buffer, &interpolator_buffer,
          &modified_neighbor_solution_buffer, &mesh, &element, &element_size,
          &neighbor_data,
-         &effective_neighbor_sizes](auto tag, const auto tensor) noexcept {
+         &effective_neighbor_sizes](auto tag, const auto tensor) {
           for (size_t tensor_storage_index = 0;
                tensor_storage_index < tensor->size(); ++tensor_storage_index) {
             // Check TCI
@@ -474,7 +473,7 @@ bool Weno<VolumeDim, tmpl::list<Tags...>>::operator()(
 
 template <size_t LocalDim, typename LocalTagList>
 bool operator==(const Weno<LocalDim, LocalTagList>& lhs,
-                const Weno<LocalDim, LocalTagList>& rhs) noexcept {
+                const Weno<LocalDim, LocalTagList>& rhs) {
   return lhs.weno_type_ == rhs.weno_type_ and
          lhs.neighbor_linear_weight_ == rhs.neighbor_linear_weight_ and
          lhs.tvb_constant_ == rhs.tvb_constant_ and
@@ -483,7 +482,7 @@ bool operator==(const Weno<LocalDim, LocalTagList>& lhs,
 
 template <size_t VolumeDim, typename TagList>
 bool operator!=(const Weno<VolumeDim, TagList>& lhs,
-                const Weno<VolumeDim, TagList>& rhs) noexcept {
+                const Weno<VolumeDim, TagList>& rhs) {
   return not(lhs == rhs);
 }
 

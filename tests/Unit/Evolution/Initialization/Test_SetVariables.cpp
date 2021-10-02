@@ -63,7 +63,7 @@ struct SystemAnalyticSolution : public MarkAsAnalyticSolution {
   template <size_t Dim>
   tuples::TaggedTuple<Var, NonConservativeVar> variables(
       const tnsr::I<DataVector, Dim>& x, const double t,
-      tmpl::list<Var, NonConservativeVar> /*meta*/) const noexcept {
+      tmpl::list<Var, NonConservativeVar> /*meta*/) const {
     tuples::TaggedTuple<Var, NonConservativeVar> vars(x.get(0), x.get(0));
     for (size_t d = 1; d < Dim; ++d) {
       get(get<Var>(vars)) += square(x.get(d)) + t;
@@ -75,7 +75,7 @@ struct SystemAnalyticSolution : public MarkAsAnalyticSolution {
   template <size_t Dim>
   tuples::TaggedTuple<Var> variables(const tnsr::I<DataVector, Dim>& x,
                                      const double t,
-                                     tmpl::list<Var> /*meta*/) const noexcept {
+                                     tmpl::list<Var> /*meta*/) const {
     tuples::TaggedTuple<Var> vars(x.get(0) + t);
     for (size_t d = 1; d < Dim; ++d) {
       get(get<Var>(vars)) += x.get(d) + t;
@@ -86,7 +86,7 @@ struct SystemAnalyticSolution : public MarkAsAnalyticSolution {
   template <size_t Dim>
   tuples::TaggedTuple<NonConservativeVar> variables(
       const tnsr::I<DataVector, Dim>& x, const double t,
-      tmpl::list<NonConservativeVar> /*meta*/) const noexcept {
+      tmpl::list<NonConservativeVar> /*meta*/) const {
     tuples::TaggedTuple<NonConservativeVar> vars(x.get(0));
     for (size_t d = 1; d < Dim; ++d) {
       get(get<NonConservativeVar>(vars)) += square(x.get(d)) / 5.0 - t;
@@ -97,8 +97,7 @@ struct SystemAnalyticSolution : public MarkAsAnalyticSolution {
   template <size_t Dim>
   tuples::TaggedTuple<PrimVar> variables(const tnsr::I<DataVector, Dim>& x,
                                          const double t,
-                                         tmpl::list<PrimVar> /*meta*/) const
-      noexcept {
+                                         tmpl::list<PrimVar> /*meta*/) const {
     tuples::TaggedTuple<PrimVar> vars(2.0 * x.get(0) + t);
     for (size_t d = 1; d < Dim; ++d) {
       get(get<PrimVar>(vars)) += 2.0 * x.get(d) + t;
@@ -107,17 +106,17 @@ struct SystemAnalyticSolution : public MarkAsAnalyticSolution {
   }
 
   // EoS just needs to be a dummy place holder
-  static double equation_of_state() noexcept { return 7.0; }
+  static double equation_of_state() { return 7.0; }
 
   // clang-tidy: do not use references
-  void pup(PUP::er& /*p*/) noexcept {}  // NOLINT
+  void pup(PUP::er& /*p*/) {}  // NOLINT
 };
 
 struct SystemAnalyticData : public MarkAsAnalyticData {
   template <size_t Dim>
   tuples::TaggedTuple<Var, NonConservativeVar> variables(
       const tnsr::I<DataVector, Dim>& x,
-      tmpl::list<Var, NonConservativeVar> /*meta*/) const noexcept {
+      tmpl::list<Var, NonConservativeVar> /*meta*/) const {
     tuples::TaggedTuple<Var, NonConservativeVar> vars(x.get(0), x.get(0));
     for (size_t d = 1; d < Dim; ++d) {
       get(get<Var>(vars)) += square(x.get(d));
@@ -128,7 +127,7 @@ struct SystemAnalyticData : public MarkAsAnalyticData {
 
   template <size_t Dim>
   tuples::TaggedTuple<Var> variables(const tnsr::I<DataVector, Dim>& x,
-                                     tmpl::list<Var> /*meta*/) const noexcept {
+                                     tmpl::list<Var> /*meta*/) const {
     tuples::TaggedTuple<Var> vars(x.get(0));
     for (size_t d = 1; d < Dim; ++d) {
       get(get<Var>(vars)) += square(x.get(d));
@@ -139,7 +138,7 @@ struct SystemAnalyticData : public MarkAsAnalyticData {
   template <size_t Dim>
   tuples::TaggedTuple<NonConservativeVar> variables(
       const tnsr::I<DataVector, Dim>& x,
-      tmpl::list<NonConservativeVar> /*meta*/) const noexcept {
+      tmpl::list<NonConservativeVar> /*meta*/) const {
     tuples::TaggedTuple<NonConservativeVar> vars(x.get(0));
     for (size_t d = 1; d < Dim; ++d) {
       get(get<NonConservativeVar>(vars)) += square(x.get(d)) / 5.0;
@@ -149,8 +148,7 @@ struct SystemAnalyticData : public MarkAsAnalyticData {
 
   template <size_t Dim>
   tuples::TaggedTuple<PrimVar> variables(const tnsr::I<DataVector, Dim>& x,
-                                         tmpl::list<PrimVar> /*meta*/) const
-      noexcept {
+                                         tmpl::list<PrimVar> /*meta*/) const {
     tuples::TaggedTuple<PrimVar> vars(2.0 * x.get(0));
     for (size_t d = 1; d < Dim; ++d) {
       get(get<PrimVar>(vars)) += square(2.0 * x.get(d));
@@ -159,10 +157,10 @@ struct SystemAnalyticData : public MarkAsAnalyticData {
   }
 
   // EoS just needs to be a dummy place holder
-  static double equation_of_state() noexcept { return 7.0; }
+  static double equation_of_state() { return 7.0; }
 
   // clang-tidy: do not use references
-  void pup(PUP::er& /*p*/) noexcept {}  // NOLINT
+  void pup(PUP::er& /*p*/) {}  // NOLINT
 };
 
 template <size_t Dim, bool HasPrimitiveAndConservativeVars>
@@ -263,7 +261,7 @@ struct MetavariablesAnalyticSolution {
 };
 
 template <size_t Dim, bool HasPrimitives>
-void test_analytic_solution() noexcept {
+void test_analytic_solution() {
   using metavars = MetavariablesAnalyticSolution<Dim, HasPrimitives>;
   using comp = component<Dim, metavars>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
@@ -312,7 +310,7 @@ struct MetavariablesAnalyticData {
 };
 
 template <size_t Dim, bool HasPrimitives>
-void test_analytic_data() noexcept {
+void test_analytic_data() {
   using metavars = MetavariablesAnalyticData<Dim, HasPrimitives>;
   using comp = component<Dim, metavars>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;

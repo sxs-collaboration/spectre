@@ -13,8 +13,7 @@
 
 namespace h5 {
 SourceArchive::SourceArchive(const bool exists, detail::OpenGroup&& group,
-                             const hid_t location,
-                             const std::string& name) noexcept
+                             const hid_t location, const std::string& name)
     : group_(std::move(group)) {
   if (exists) {
     source_archive_ =

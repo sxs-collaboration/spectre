@@ -34,7 +34,7 @@ std::unordered_map<size_t, CkReduction::reducerType> charm_reducer_functions{};
  * \ingroup CharmExtensionsGroup
  * \brief Registers parallel components and their entry methods with Charm++
  */
-void register_parallel_components() noexcept {
+void register_parallel_components() {
   static bool done_registration{false};
   if (done_registration) {
     return;  // LCOV_EXCL_LINE
@@ -86,7 +86,7 @@ void register_parallel_components() noexcept {
  *
  * \see Parallel::contribute_to_reduction()
  */
-void register_custom_reducer_functions() noexcept {
+void register_custom_reducer_functions() {
   for (size_t i = 0; i < charm_reducer_functions_size; ++i) {
     // clang-tidy: do not use pointer arithmetic
     charm_reducer_functions.emplace(
@@ -103,7 +103,7 @@ void register_custom_reducer_functions() noexcept {
  * \note The function that registers the custom reducers is the first init_node
  * function registered.
  */
-void register_init_node_and_proc() noexcept {
+void register_init_node_and_proc() {
   static bool done_registration{false};
   if (done_registration) {
     return;  // LCOV_EXCL_LINE

@@ -34,7 +34,7 @@
 #include "Utilities/TMPL.hpp"
 
 namespace {
-void test_1d() noexcept {
+void test_1d() {
   INFO("1d");
   auto map =
       domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
@@ -47,7 +47,7 @@ void test_1d() noexcept {
   CHECK_ITERABLE_APPROX(size, size_expected);
 }
 
-void test_2d() noexcept {
+void test_2d() {
   INFO("2d");
   using Affine = domain::CoordinateMaps::Affine;
   using Affine2D = domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>;
@@ -64,7 +64,7 @@ void test_2d() noexcept {
   CHECK_ITERABLE_APPROX(size, size_expected);
 }
 
-void test_3d() noexcept {
+void test_3d() {
   INFO("3d");
   using Affine = domain::CoordinateMaps::Affine;
   using Affine3D =
@@ -86,7 +86,7 @@ using CubicScale = domain::CoordinateMaps::TimeDependent::CubicScale<Dim>;
 
 std::unordered_map<std::string,
                    std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
-make_single_expansion_functions_of_time() noexcept {
+make_single_expansion_functions_of_time() {
   const double initial_time = 0.0;
   const double expiration_time = 10.0;
   std::unordered_map<std::string,
@@ -100,7 +100,7 @@ make_single_expansion_functions_of_time() noexcept {
   return functions_of_time;
 }
 
-void test_1d_moving_mesh(const std::array<double, 4>& times_to_check) noexcept {
+void test_1d_moving_mesh(const std::array<double, 4>& times_to_check) {
   INFO("1d with moving mesh");
   auto map = domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
       domain::CoordinateMaps::Affine(-1.0, 1.0, 0.3, 1.2));
@@ -124,7 +124,7 @@ void test_1d_moving_mesh(const std::array<double, 4>& times_to_check) noexcept {
   }
 }
 
-void test_2d_moving_mesh(const std::array<double, 4>& times_to_check) noexcept {
+void test_2d_moving_mesh(const std::array<double, 4>& times_to_check) {
   INFO("2d with moving mesh");
   using Affine = domain::CoordinateMaps::Affine;
   using Affine2D = domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>;
@@ -151,7 +151,7 @@ void test_2d_moving_mesh(const std::array<double, 4>& times_to_check) noexcept {
   }
 }
 
-void test_3d_moving_mesh(const std::array<double, 4>& times_to_check) noexcept {
+void test_3d_moving_mesh(const std::array<double, 4>& times_to_check) {
   INFO("3d with moving mesh");
   using Affine = domain::CoordinateMaps::Affine;
   using Affine3D =
@@ -179,7 +179,7 @@ void test_3d_moving_mesh(const std::array<double, 4>& times_to_check) noexcept {
   }
 }
 
-void test_compute_tag(const std::array<double, 4>& times_to_check) noexcept {
+void test_compute_tag(const std::array<double, 4>& times_to_check) {
   INFO("compute tag in 2d, with moving mesh");
   using Affine = domain::CoordinateMaps::Affine;
   using Affine2D = domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>;
@@ -209,9 +209,7 @@ void test_compute_tag(const std::array<double, 4>& times_to_check) noexcept {
   for (const double time : times_to_check) {
     db::mutate<::Tags::Time>(
         make_not_null(&box),
-        [time](const gsl::not_null<double*> time_ptr) noexcept {
-          *time_ptr = time;
-        });
+        [time](const gsl::not_null<double*> time_ptr) { *time_ptr = time; });
     const auto expected_size_of_element = make_array(0.05, 0.425) * time;
     CHECK_ITERABLE_APPROX(db::get<domain::Tags::SizeOfElement<2>>(box),
                           expected_size_of_element);

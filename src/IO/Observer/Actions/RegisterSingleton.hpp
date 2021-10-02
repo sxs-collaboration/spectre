@@ -36,7 +36,7 @@ struct RegisterSingletonWithObserverWriter {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     const auto [type_of_observation, observation_key] =
         RegisterHelper::template register_info<ParallelComponent>(box,
                                                                   array_index);

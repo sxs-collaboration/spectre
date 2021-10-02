@@ -22,7 +22,7 @@ KerrHorizonConforming::KerrHorizonConforming(std::array<double, 3> spin)
 
 template <typename T>
 std::array<tt::remove_cvref_wrap_t<T>, 3> KerrHorizonConforming::operator()(
-    const std::array<T, 3>& source_coords) const noexcept {
+    const std::array<T, 3>& source_coords) const {
   using ReturnType = tt::remove_cvref_wrap_t<T>;
   std::array<ReturnType, 3> result{};
   ReturnType& stretch_fac = get<2>(result);
@@ -35,7 +35,7 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> KerrHorizonConforming::operator()(
 }
 
 std::optional<std::array<double, 3>> KerrHorizonConforming::inverse(
-    const std::array<double, 3>& target_coords) const noexcept {
+    const std::array<double, 3>& target_coords) const {
   const auto coords_mag_sq = dot(target_coords, target_coords);
   const auto coords_sq_min_spin_sq = coords_mag_sq - spin_mag_sq_;
   const auto coords_dot_spin = dot(target_coords, spin_);
@@ -52,8 +52,7 @@ std::optional<std::array<double, 3>> KerrHorizonConforming::inverse(
 
 template <typename T>
 tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>
-KerrHorizonConforming::jacobian(
-    const std::array<T, 3>& source_coords) const noexcept {
+KerrHorizonConforming::jacobian(const std::array<T, 3>& source_coords) const {
   using ReturnType = tt::remove_cvref_wrap_t<T>;
 
   tnsr::Ij<ReturnType, 3, Frame::NoFrame> jac(
@@ -104,7 +103,7 @@ KerrHorizonConforming::jacobian(
 template <typename T>
 tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>
 KerrHorizonConforming::inv_jacobian(
-    const std::array<T, 3>& source_coords) const noexcept {
+    const std::array<T, 3>& source_coords) const {
   using ReturnType = tt::remove_cvref_wrap_t<T>;
 
   tnsr::Ij<ReturnType, 3, Frame::NoFrame> inv_jac(
@@ -155,7 +154,7 @@ KerrHorizonConforming::inv_jacobian(
 template <typename T>
 void KerrHorizonConforming::stretch_factor_square(
     const gsl::not_null<tt::remove_cvref_wrap_t<T>*> result,
-    const std::array<T, 3>& source_coords) const noexcept {
+    const std::array<T, 3>& source_coords) const {
   auto& source_coords_sq = *result;
   source_coords_sq = dot(source_coords, source_coords);
   *result =
@@ -169,25 +168,25 @@ void KerrHorizonConforming::pup(PUP::er& p) {
 }
 
 bool operator==(const KerrHorizonConforming& lhs,
-                const KerrHorizonConforming& rhs) noexcept {
+                const KerrHorizonConforming& rhs) {
   return lhs.spin_ == rhs.spin_;
 }
 
 bool operator!=(const KerrHorizonConforming& lhs,
-                const KerrHorizonConforming& rhs) noexcept {
+                const KerrHorizonConforming& rhs) {
   return not(lhs == rhs);
 }
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define INSTANTIATE(_, data)                                                 \
   template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>               \
   KerrHorizonConforming::operator()(                                         \
-      const std::array<DTYPE(data), 3>& source_coords) const noexcept;       \
+      const std::array<DTYPE(data), 3>& source_coords) const;                \
   template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame> \
   KerrHorizonConforming::jacobian(                                           \
-      const std::array<DTYPE(data), 3>& source_coords) const noexcept;       \
+      const std::array<DTYPE(data), 3>& source_coords) const;                \
   template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame> \
   KerrHorizonConforming::inv_jacobian(                                       \
-      const std::array<DTYPE(data), 3>& source_coords) const noexcept;
+      const std::array<DTYPE(data), 3>& source_coords) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector,
                                       std::reference_wrapper<const double>,

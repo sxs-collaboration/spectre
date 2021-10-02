@@ -31,7 +31,7 @@ class Slabs : public Trigger {
  public:
   /// \cond
   Slabs() = default;
-  explicit Slabs(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit Slabs(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Slabs);  // NOLINT
   /// \endcond
@@ -39,12 +39,12 @@ class Slabs : public Trigger {
   static constexpr Options::String help{
     "Trigger at specified numbers of slabs after the simulation start."};
 
-  explicit Slabs(std::unique_ptr<TimeSequence<uint64_t>> slabs) noexcept
+  explicit Slabs(std::unique_ptr<TimeSequence<uint64_t>> slabs)
       : slabs_(std::move(slabs)) {}
 
   using argument_tags = tmpl::list<Tags::TimeStepId>;
 
-  bool operator()(const TimeStepId& time_id) const noexcept {
+  bool operator()(const TimeStepId& time_id) const {
     if (not time_id.is_at_slab_boundary() or time_id.slab_number() < 0) {
       return false;
     }
@@ -54,7 +54,7 @@ class Slabs : public Trigger {
   }
 
   // clang-tidy: google-runtime-references
-  void pup(PUP::er& p) noexcept override {  // NOLINT
+  void pup(PUP::er& p) override {  // NOLINT
     p | slabs_;
   }
 

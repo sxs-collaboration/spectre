@@ -81,12 +81,13 @@ struct SendMap {
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     Parallel::receive_data<Tags::MapTag>(
         Parallel::get_parallel_component<ParallelComponent>(cache)[0], 1_st,
         std::make_pair(10, 23));
-    db::mutate<Tags::MapCounter>(make_not_null(&box), [
-    ](const gsl::not_null<size_t*> map_counter) noexcept { (*map_counter)++; });
+    db::mutate<Tags::MapCounter>(
+        make_not_null(&box),
+        [](const gsl::not_null<size_t*> map_counter) { (*map_counter)++; });
     return std::forward_as_tuple(std::move(box));
   }
 };
@@ -102,13 +103,14 @@ struct ReceiveMap {
         const tuples::TaggedTuple<InboxTags...>& inboxes,
         const Parallel::GlobalCache<Metavariables>& /*cache*/,
         const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-        const ParallelComponent* const /*meta*/) noexcept {
+        const ParallelComponent* const /*meta*/) {
     if (get<Tags::MapTag>(inboxes).at(1_st).size() != 1) {
       return {std::move(box), Parallel::AlgorithmExecution::Retry};
     }
 
-    db::mutate<Tags::MapCounter>(make_not_null(&box), [
-    ](const gsl::not_null<size_t*> map_counter) noexcept { (*map_counter)++; });
+    db::mutate<Tags::MapCounter>(
+        make_not_null(&box),
+        [](const gsl::not_null<size_t*> map_counter) { (*map_counter)++; });
     return {std::move(box), Parallel::AlgorithmExecution::Continue};
   }
 };
@@ -121,14 +123,15 @@ struct SendMemberInsert {
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     Parallel::receive_data<Tags::MemberInsertTag>(
         Parallel::get_parallel_component<ParallelComponent>(cache)[0], 1_st,
         23);
-    db::mutate<Tags::MemberInsertCounter>(make_not_null(&box), [
-    ](const gsl::not_null<size_t*> member_insert_counter) noexcept {
-      (*member_insert_counter)++;
-    });
+    db::mutate<Tags::MemberInsertCounter>(
+        make_not_null(&box),
+        [](const gsl::not_null<size_t*> member_insert_counter) {
+          (*member_insert_counter)++;
+        });
     return std::forward_as_tuple(std::move(box));
   }
 };
@@ -144,15 +147,16 @@ struct ReceiveMemberInsert {
         const tuples::TaggedTuple<InboxTags...>& inboxes,
         const Parallel::GlobalCache<Metavariables>& /*cache*/,
         const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-        const ParallelComponent* const /*meta*/) noexcept {
+        const ParallelComponent* const /*meta*/) {
     if (get<Tags::MemberInsertTag>(inboxes).at(1_st).size() != 1) {
       return {std::move(box), Parallel::AlgorithmExecution::Retry};
     }
 
-    db::mutate<Tags::MemberInsertCounter>(make_not_null(&box), [
-    ](const gsl::not_null<size_t*> member_insert_counter) noexcept {
-      (*member_insert_counter)++;
-    });
+    db::mutate<Tags::MemberInsertCounter>(
+        make_not_null(&box),
+        [](const gsl::not_null<size_t*> member_insert_counter) {
+          (*member_insert_counter)++;
+        });
     return {std::move(box), Parallel::AlgorithmExecution::Continue};
   }
 };
@@ -165,14 +169,13 @@ struct SendValue {
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     Parallel::receive_data<Tags::ValueTag>(
         Parallel::get_parallel_component<ParallelComponent>(cache)[0], 1_st,
         23);
-    db::mutate<Tags::ValueCounter>(make_not_null(&box), [
-    ](const gsl::not_null<size_t*> value_counter) noexcept {
-      (*value_counter)++;
-    });
+    db::mutate<Tags::ValueCounter>(
+        make_not_null(&box),
+        [](const gsl::not_null<size_t*> value_counter) { (*value_counter)++; });
     return std::forward_as_tuple(std::move(box));
   }
 };
@@ -188,15 +191,14 @@ struct ReceiveValue {
         const tuples::TaggedTuple<InboxTags...>& inboxes,
         const Parallel::GlobalCache<Metavariables>& /*cache*/,
         const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-        const ParallelComponent* const /*meta*/) noexcept {
+        const ParallelComponent* const /*meta*/) {
     if (get<Tags::ValueTag>(inboxes).count(1_st) != 1) {
       return {std::move(box), Parallel::AlgorithmExecution::Retry};
     }
 
-    db::mutate<Tags::ValueCounter>(make_not_null(&box), [
-    ](const gsl::not_null<size_t*> value_counter) noexcept {
-      (*value_counter)++;
-    });
+    db::mutate<Tags::ValueCounter>(
+        make_not_null(&box),
+        [](const gsl::not_null<size_t*> value_counter) { (*value_counter)++; });
     return {std::move(box), Parallel::AlgorithmExecution::Continue};
   }
 };
@@ -209,14 +211,14 @@ struct SendPushback {
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     Parallel::receive_data<Tags::PushbackTag>(
         Parallel::get_parallel_component<ParallelComponent>(cache)[0], 1_st,
         23);
-    db::mutate<Tags::PushbackCounter>(make_not_null(&box), [
-    ](const gsl::not_null<size_t*> pushback_counter) noexcept {
-      (*pushback_counter)++;
-    });
+    db::mutate<Tags::PushbackCounter>(
+        make_not_null(&box), [](const gsl::not_null<size_t*> pushback_counter) {
+          (*pushback_counter)++;
+        });
     return std::forward_as_tuple(std::move(box));
   }
 };
@@ -232,15 +234,15 @@ struct ReceivePushback {
         const tuples::TaggedTuple<InboxTags...>& inboxes,
         const Parallel::GlobalCache<Metavariables>& /*cache*/,
         const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-        const ParallelComponent* const /*meta*/) noexcept {
+        const ParallelComponent* const /*meta*/) {
     if (get<Tags::PushbackTag>(inboxes).at(1_st).size() != 1) {
       return {std::move(box), Parallel::AlgorithmExecution::Retry};
     }
 
-    db::mutate<Tags::PushbackCounter>(make_not_null(&box), [
-    ](const gsl::not_null<size_t*> pushback_counter) noexcept {
-      (*pushback_counter)++;
-    });
+    db::mutate<Tags::PushbackCounter>(
+        make_not_null(&box), [](const gsl::not_null<size_t*> pushback_counter) {
+          (*pushback_counter)++;
+        });
     return {std::move(box), Parallel::AlgorithmExecution::Continue};
   }
 };

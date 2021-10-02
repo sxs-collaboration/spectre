@@ -25,7 +25,7 @@ namespace detail {
 template <typename... MapsSoFar>
 auto combine_coord_maps(
     CoordinateMap<Frame::Grid, Frame::Inertial, MapsSoFar...>
-        coord_map_so_far) noexcept {
+        coord_map_so_far) {
   return coord_map_so_far;
 }
 
@@ -33,7 +33,7 @@ template <typename... MapsSoFar, typename... NextMaps, typename... RestMaps>
 auto combine_coord_maps(
     CoordinateMap<Frame::Grid, Frame::Inertial, MapsSoFar...> coord_map_so_far,
     CoordinateMap<Frame::Grid, Frame::Inertial, NextMaps...> next_map,
-    RestMaps... rest_maps) noexcept {
+    RestMaps... rest_maps) {
   return combine_coord_maps(
       domain::push_back(std::move(coord_map_so_far), std::move(next_map)),
       std::move(rest_maps)...);
@@ -43,7 +43,7 @@ template <typename... Ts>
 std::unordered_map<std::string,
                    std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
 combine_functions_of_time(const std::vector<std::string>& time_dep_names,
-                          Ts... functions_of_time_pack) noexcept {
+                          Ts... functions_of_time_pack) {
   static_assert(sizeof...(Ts) > 0,
                 "Must have at least one set of function of times to combine. "
                 "We must have one "
@@ -60,7 +60,7 @@ combine_functions_of_time(const std::vector<std::string>& time_dep_names,
                                        std::string,
                                        std::unique_ptr<domain::FunctionsOfTime::
                                                            FunctionOfTime>>&&
-                                       functions_of_time_single_map) noexcept {
+                                       functions_of_time_single_map) {
     for (auto& name_and_func : functions_of_time_single_map) {
       if (UNLIKELY(functions_of_time.count(name_and_func.first) != 0)) {
         ERROR("Inserting already known function '"
@@ -84,7 +84,7 @@ combine_functions_of_time(const std::vector<std::string>& time_dep_names,
 template <typename TimeDependenceCompTag0, typename... TimeDependenceCompTags>
 Composition<TimeDependenceCompTag0, TimeDependenceCompTags...>::Composition(
     tmpl::type_from<TimeDependenceCompTag0> first_time_dep,
-    tmpl::type_from<TimeDependenceCompTags>... rest_time_dep) noexcept
+    tmpl::type_from<TimeDependenceCompTags>... rest_time_dep)
     : coord_map_(detail::combine_coord_maps(
           dynamic_cast<typename TimeDependenceCompTag0::time_dependence&>(
               *first_time_dep)
@@ -103,20 +103,20 @@ Composition<TimeDependenceCompTag0, TimeDependenceCompTags...>::Composition(
     CoordMap coord_map,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time) noexcept
+        functions_of_time)
     : coord_map_(std::move(coord_map)) {
   functions_of_time_ = clone_unique_ptrs(functions_of_time);
 }
 
 template <typename TimeDependenceCompTag0, typename... TimeDependenceCompTags>
 auto Composition<TimeDependenceCompTag0, TimeDependenceCompTags...>::get_clone()
-    const noexcept -> std::unique_ptr<TimeDependence<mesh_dim>> {
+    const -> std::unique_ptr<TimeDependence<mesh_dim>> {
   return std::make_unique<Composition>(coord_map_, functions_of_time_);
 }
 
 template <typename TimeDependenceCompTag0, typename... TimeDependenceCompTags>
 auto Composition<TimeDependenceCompTag0, TimeDependenceCompTags...>::block_maps(
-    const size_t number_of_blocks) const noexcept
+    const size_t number_of_blocks) const
     -> std::vector<std::unique_ptr<
         domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, mesh_dim>>> {
   std::vector<std::unique_ptr<
@@ -131,7 +131,7 @@ auto Composition<TimeDependenceCompTag0, TimeDependenceCompTags...>::block_maps(
 
 template <typename TimeDependenceCompTag0, typename... TimeDependenceCompTags>
 auto Composition<TimeDependenceCompTag0,
-                 TimeDependenceCompTags...>::functions_of_time() const noexcept
+                 TimeDependenceCompTags...>::functions_of_time() const
     -> std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> {
   return clone_unique_ptrs(functions_of_time_);

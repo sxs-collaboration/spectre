@@ -112,12 +112,12 @@ class ErrorControl : public StepChooser<StepChooserUse::LtsStep> {
 
   /// \cond
   ErrorControl() = default;
-  explicit ErrorControl(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit ErrorControl(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ErrorControl);  // NOLINT
   /// \endcond
 
-  static std::string name() noexcept {
+  static std::string name() {
     if constexpr (std::is_same_v<ErrorControlSelector, NoSuchType>) {
       return "ErrorControl";
     } else {
@@ -128,28 +128,28 @@ class ErrorControl : public StepChooser<StepChooserUse::LtsStep> {
   struct AbsoluteTolerance {
     using type = double;
     static constexpr Options::String help{"Target absolute tolerance"};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
 
   struct RelativeTolerance {
     using type = double;
     static constexpr Options::String help{"Target relative tolerance"};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
 
   struct MaxFactor {
     using type = double;
     static constexpr Options::String help{
         "Maximum factor to increase the step by"};
-    static type lower_bound() noexcept { return 1.0; }
+    static type lower_bound() { return 1.0; }
   };
 
   struct MinFactor {
     using type = double;
     static constexpr Options::String help{
         "Minimum factor to increase the step by"};
-    static type lower_bound() noexcept { return 0.0; }
-    static type upper_bound() noexcept { return 1.0; }
+    static type lower_bound() { return 0.0; }
+    static type upper_bound() { return 1.0; }
   };
 
   struct SafetyFactor {
@@ -157,7 +157,7 @@ class ErrorControl : public StepChooser<StepChooserUse::LtsStep> {
     static constexpr Options::String help{
         "Extra factor to apply to step estimate; can be used to decrease step "
         "size to improve step acceptance rate."};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
 
   static constexpr Options::String help{
@@ -167,7 +167,7 @@ class ErrorControl : public StepChooser<StepChooserUse::LtsStep> {
 
   ErrorControl(const double absolute_tolerance, const double relative_tolerance,
                const double max_factor, const double min_factor,
-               const double safety_factor) noexcept
+               const double safety_factor)
       : absolute_tolerance_{absolute_tolerance},
         relative_tolerance_{relative_tolerance},
         max_factor_{max_factor},
@@ -189,7 +189,7 @@ class ErrorControl : public StepChooser<StepChooserUse::LtsStep> {
       const History& history, const error_variable_type& error,
       const bool& stepper_error_updated, const TimeStepper& stepper,
       const double previous_step,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/) const noexcept {
+      const Parallel::GlobalCache<Metavariables>& /*cache*/) const {
     // request that the step size not be changed if there isn't a new error
     // estimate
     if (not stepper_error_updated) {
@@ -222,7 +222,7 @@ class ErrorControl : public StepChooser<StepChooserUse::LtsStep> {
     return std::make_pair(new_step, l_inf_error <= 1.0);
   }
 
-  void pup(PUP::er& p) noexcept override {  // NOLINT
+  void pup(PUP::er& p) override {  // NOLINT
     p | absolute_tolerance_;
     p | relative_tolerance_;
     p | min_factor_;
@@ -233,7 +233,7 @@ class ErrorControl : public StepChooser<StepChooserUse::LtsStep> {
  private:
   template <typename EvolvedType, typename ErrorType>
   double error_calc_impl(const EvolvedType& values,
-                         const ErrorType& errors) const noexcept {
+                         const ErrorType& errors) const {
     if constexpr (std::is_fundamental_v<std::remove_cv_t<EvolvedType>> or
                   tt::is_complex_of_fundamental_v<
                       std::remove_cv_t<EvolvedType>>) {
@@ -257,7 +257,7 @@ class ErrorControl : public StepChooser<StepChooserUse::LtsStep> {
       double recursive_call_result;
       tmpl::for_each<typename EvolvedType::tags_list>(
           [this, &errors, &values, &recursive_call_result,
-           &result](auto tag_v) noexcept {
+           &result](auto tag_v) {
             // clang erroneously warns that `this` is not used despite requiring
             // it in the capture...
             (void)this;
@@ -315,15 +315,14 @@ struct IsUsingTimeSteppingErrorControl : db::SimpleTag,
   static bool create_from_options(
       const std::vector<
           std::unique_ptr<::StepChooser<StepChooserUse::LtsStep>>>&
-          step_choosers) noexcept {
+          step_choosers) {
     bool is_using_error_control = false;
     // unwraps the factory-created classes to determine whether any of the
     // step choosers are the ErrorControl step chooser.
     tmpl::for_each<
         tmpl::at<typename Metavariables::factory_creation::factory_classes,
                  StepChooser<StepChooserUse::LtsStep>>>(
-        [&is_using_error_control,
-         &step_choosers](auto step_chooser_type_v) noexcept {
+        [&is_using_error_control, &step_choosers](auto step_chooser_type_v) {
           if (is_using_error_control) {
             return;
           }
@@ -357,6 +356,6 @@ struct NeverUsingTimeSteppingErrorControl
   using option_tags = tmpl::list<>;
 
   static constexpr bool pass_metavariables = false;
-  static bool create_from_options() noexcept { return false; }
+  static bool create_from_options() { return false; }
 };
 }  // namespace Tags

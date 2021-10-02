@@ -24,7 +24,7 @@ Matrix rotation_matrix(
     const std::string& f_of_t_name, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time) noexcept {
+        functions_of_time) {
   ASSERT(functions_of_time.count(f_of_t_name) == 1,
          "The function of time '" << f_of_t_name
                                   << "' is not one of the known functions of "
@@ -39,7 +39,7 @@ Matrix rotation_matrix(
 
 namespace domain::CoordinateMaps::TimeDependent {
 
-Rotation<2>::Rotation(std::string function_of_time_name) noexcept
+Rotation<2>::Rotation(std::string function_of_time_name)
     : f_of_t_name_(std::move(function_of_time_name)) {}
 
 template <typename T>
@@ -47,7 +47,7 @@ std::array<tt::remove_cvref_wrap_t<T>, 2> Rotation<2>::operator()(
     const std::array<T, 2>& source_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time) const noexcept {
+        functions_of_time) const {
   ASSERT(functions_of_time.find(f_of_t_name_) != functions_of_time.end(),
          "Could not find function of time: '"
              << f_of_t_name_ << "' in functions of time. Known functions are "
@@ -65,7 +65,7 @@ std::optional<std::array<double, 2>> Rotation<2>::inverse(
     const std::array<double, 2>& target_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time) const noexcept {
+        functions_of_time) const {
   ASSERT(functions_of_time.find(f_of_t_name_) != functions_of_time.end(),
          "Could not find function of time: '"
              << f_of_t_name_ << "' in functions of time. Known functions are "
@@ -86,7 +86,7 @@ std::array<tt::remove_cvref_wrap_t<T>, 2> Rotation<2>::frame_velocity(
     const std::array<T, 2>& source_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time) const noexcept {
+        functions_of_time) const {
   ASSERT(functions_of_time.find(f_of_t_name_) != functions_of_time.end(),
          "Could not find function of time: '"
              << f_of_t_name_ << "' in functions of time. Known functions are "
@@ -117,7 +117,7 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 2, Frame::NoFrame> Rotation<2>::jacobian(
     const std::array<T, 2>& source_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time) const noexcept {
+        functions_of_time) const {
   ASSERT(functions_of_time.find(f_of_t_name_) != functions_of_time.end(),
          "Could not find function of time: '"
              << f_of_t_name_ << "' in functions of time. Known functions are "
@@ -140,7 +140,7 @@ Rotation<2>::inv_jacobian(
     const std::array<T, 2>& source_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time) const noexcept {
+        functions_of_time) const {
   ASSERT(functions_of_time.find(f_of_t_name_) != functions_of_time.end(),
          "Could not find function of time: '"
              << f_of_t_name_ << "' in functions of time. Known functions are "
@@ -159,13 +159,13 @@ Rotation<2>::inv_jacobian(
   return inv_jacobian_matrix;
 }
 
-void Rotation<2>::pup(PUP::er& p) noexcept { p | f_of_t_name_; }
+void Rotation<2>::pup(PUP::er& p) { p | f_of_t_name_; }
 
-bool operator==(const Rotation<2>& lhs, const Rotation<2>& rhs) noexcept {
+bool operator==(const Rotation<2>& lhs, const Rotation<2>& rhs) {
   return lhs.f_of_t_name_ == rhs.f_of_t_name_;
 }
 
-bool operator!=(const Rotation<2>& lhs, const Rotation<2>& rhs) noexcept {
+bool operator!=(const Rotation<2>& lhs, const Rotation<2>& rhs) {
   return not(lhs == rhs);
 }
 
@@ -179,7 +179,7 @@ bool operator!=(const Rotation<2>& lhs, const Rotation<2>& rhs) noexcept {
       const std::unordered_map<                                             \
           std::string,                                                      \
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&        \
-          functions_of_time) const noexcept;                                \
+          functions_of_time) const;                                         \
   template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data)>      \
   Rotation<DIM(data)>::frame_velocity(                                      \
       const std::array<DTYPE(data), DIM(data)>& source_coords,              \
@@ -187,7 +187,7 @@ bool operator!=(const Rotation<2>& lhs, const Rotation<2>& rhs) noexcept {
       const std::unordered_map<                                             \
           std::string,                                                      \
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&        \
-          functions_of_time) const noexcept;                                \
+          functions_of_time) const;                                         \
   template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data),        \
                     Frame::NoFrame>                                         \
   Rotation<DIM(data)>::jacobian(                                            \
@@ -195,7 +195,7 @@ bool operator!=(const Rotation<2>& lhs, const Rotation<2>& rhs) noexcept {
       const std::unordered_map<                                             \
           std::string,                                                      \
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&        \
-          functions_of_time) const noexcept;                                \
+          functions_of_time) const;                                         \
   template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data),        \
                     Frame::NoFrame>                                         \
   Rotation<DIM(data)>::inv_jacobian(                                        \
@@ -203,7 +203,7 @@ bool operator!=(const Rotation<2>& lhs, const Rotation<2>& rhs) noexcept {
       const std::unordered_map<                                             \
           std::string,                                                      \
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&        \
-          functions_of_time) const noexcept;
+          functions_of_time) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (2),
                         (double, DataVector,

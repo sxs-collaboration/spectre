@@ -20,7 +20,7 @@ namespace TestHelpers::TensorExpressions {
 ///
 /// \param data the data being stored in the Tensors
 template <typename DataType>
-void test_evaluate_rank_0(const DataType& data) noexcept {
+void test_evaluate_rank_0(const DataType& data) {
   const Tensor<DataType> R{{{data}}};
 
   // Use explicit type (vs auto) so the compiler checks the return type of

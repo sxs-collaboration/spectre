@@ -23,7 +23,7 @@ namespace evolution::dg::subcell::detail {
 template <size_t Dim>
 bool persson_tci_impl(const gsl::not_null<DataVector*> filtered_component,
                       const DataVector& component, const Mesh<Dim>& dg_mesh,
-                      const double alpha, const double zero_cutoff) noexcept {
+                      const double alpha, const double zero_cutoff) {
   ASSERT(component.size() == dg_mesh.number_of_grid_points(),
          "The tensor components being checked must have the same number of "
          "grid points as the DG mesh. The tensor has "
@@ -56,7 +56,7 @@ bool persson_tci_impl(const gsl::not_null<DataVector*> filtered_component,
   template bool persson_tci_impl(                                  \
       gsl::not_null<DataVector*> filtered_component,               \
       const DataVector& component, const Mesh<DIM(data)>& dg_mesh, \
-      double alpha, double zero_cutoff) noexcept;
+      double alpha, double zero_cutoff);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 

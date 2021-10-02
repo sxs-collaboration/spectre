@@ -70,7 +70,7 @@ struct ComputeFluxes {
       const tnsr::I<DataVector, Dim>& momentum_density,
       const Scalar<DataVector>& energy_density,
       const tnsr::I<DataVector, Dim>& velocity,
-      const Scalar<DataVector>& pressure) noexcept;
+      const Scalar<DataVector>& pressure);
 };
 
 }  // namespace NewtonianEuler

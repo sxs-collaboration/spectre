@@ -15,7 +15,7 @@ namespace PUP {
 /// \ingroup ParallelGroup
 /// Serialization of std::optional for Charm++
 template <typename T>
-void pup(er& p, std::optional<T>& t) noexcept {  // NOLINT
+void pup(er& p, std::optional<T>& t) {  // NOLINT
   bool valid = false;
   if (p.isUnpacking()) {
     p | valid;
@@ -42,14 +42,14 @@ void pup(er& p, std::optional<T>& t) noexcept {  // NOLINT
 /// \ingroup ParallelGroup
 /// Serialization of std::optional for Charm++
 template <typename T>
-void operator|(er& p, std::optional<T>& t) noexcept {  // NOLINT
+void operator|(er& p, std::optional<T>& t) {  // NOLINT
   pup(p, t);
 }
 
 /// \ingroup ParallelGroup
 /// Serialization of std::variant for Charm++
 template <typename... Ts>
-void pup(er& p, std::variant<Ts...>& t) noexcept {  // NOLINT
+void pup(er& p, std::variant<Ts...>& t) {  // NOLINT
   // clang tidy: complains about pointer decay, I don't understand the error
   // since nothing here is doing anything with pointers.
   assert(not t.valueless_by_exception());  // NOLINT
@@ -58,8 +58,7 @@ void pup(er& p, std::variant<Ts...>& t) noexcept {  // NOLINT
   size_t send_index = t.index();
   p | send_index;
 
-  const auto pup_helper = [&current_index, &p, send_index,
-                           &t](auto type_v) noexcept {
+  const auto pup_helper = [&current_index, &p, send_index, &t](auto type_v) {
     using type = tmpl::type_from<decltype(type_v)>;
     if (UNLIKELY(current_index == send_index)) {
       if (p.isUnpacking()) {
@@ -78,7 +77,7 @@ void pup(er& p, std::variant<Ts...>& t) noexcept {  // NOLINT
 /// \ingroup ParallelGroup
 /// Serialization of std::variant for Charm++
 template <typename... Ts>
-void operator|(er& p, std::variant<Ts...>& t) noexcept {  // NOLINT
+void operator|(er& p, std::variant<Ts...>& t) {  // NOLINT
   pup(p, t);
 }
 }  // namespace PUP

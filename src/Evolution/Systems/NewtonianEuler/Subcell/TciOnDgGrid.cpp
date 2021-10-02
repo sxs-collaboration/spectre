@@ -27,7 +27,7 @@ bool TciOnDgGrid<Dim>::apply(
     const tnsr::I<DataVector, Dim, Frame::Inertial>& momentum_density,
     const Scalar<DataVector>& energy_density,
     const EquationsOfState::EquationOfState<false, ThermodynamicDim>& eos,
-    const Mesh<Dim>& dg_mesh, const double persson_exponent) noexcept {
+    const Mesh<Dim>& dg_mesh, const double persson_exponent) {
   NewtonianEuler::PrimitiveFromConservative<Dim>::apply(
       make_not_null(&get<MassDensity>(*dg_prim_vars)),
       make_not_null(&get<Velocity>(*dg_prim_vars)),
@@ -59,7 +59,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
       const tnsr::I<DataVector, DIM(data), Frame::Inertial>& momentum_density, \
       const Scalar<DataVector>& energy_density,                                \
       const EquationsOfState::EquationOfState<false, THERMO_DIM(data)>& eos,   \
-      const Mesh<DIM(data)>& dg_mesh, const double persson_exponent) noexcept;
+      const Mesh<DIM(data)>& dg_mesh, const double persson_exponent);
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (1, 2))
 #undef INSTANTIATION
 #undef THERMO_DIM

@@ -31,13 +31,12 @@ template <size_t Dim>
 class Index {
  public:
   /// Construct with each element set to the same value.
-  explicit Index(const size_t i0 = std::numeric_limits<size_t>::max()) noexcept
+  explicit Index(const size_t i0 = std::numeric_limits<size_t>::max())
       : indices_(make_array<Dim>(i0)) {}
 
   /// Construct specifying value in each dimension
   template <typename... I, Requires<(sizeof...(I) > 1)> = nullptr>
-  explicit Index(I... i) noexcept
-      : indices_(make_array(static_cast<size_t>(i)...)) {
+  explicit Index(I... i) : indices_(make_array(static_cast<size_t>(i)...)) {
     static_assert(std::conjunction_v<tt::is_integer<I>...>,
                   "You must pass in a set of size_t's to Index.");
     static_assert(Dim == sizeof...(I),
@@ -45,12 +44,10 @@ class Index {
                   "the dimensionality of the Index.");
   }
 
-  explicit Index(std::array<size_t, Dim> i) noexcept : indices_(std::move(i)) {}
+  explicit Index(std::array<size_t, Dim> i) : indices_(std::move(i)) {}
 
-  size_t operator[](const size_t d) const noexcept {
-    return gsl::at(indices_, d);
-  }
-  size_t& operator[](const size_t d) noexcept { return gsl::at(indices_, d); }
+  size_t operator[](const size_t d) const { return gsl::at(indices_, d); }
+  size_t& operator[](const size_t d) { return gsl::at(indices_, d); }
 
   typename std::array<size_t, Dim>::iterator begin() {
     return indices_.begin();
@@ -64,18 +61,18 @@ class Index {
     return indices_.end();
   }
 
-  size_t size() const noexcept { return Dim; }
+  size_t size() const { return Dim; }
 
   /// The product of the indices.
   /// If Dim = 0, the product is defined as 1.
   template <int N = Dim, Requires<(N > 0)> = nullptr>
-  constexpr size_t product() const noexcept {
+  constexpr size_t product() const {
     return indices_[N - 1] * product<N - 1>();
   }
   /// \cond
   // Specialization for N = 0 to stop recursion
   template <int N = Dim, Requires<(N == 0)> = nullptr>
-  constexpr size_t product() const noexcept {
+  constexpr size_t product() const {
     return 1;
   }
   /// \endcond
@@ -84,7 +81,7 @@ class Index {
   ///
   /// \param d the element to remove.
   template <size_t N = Dim, Requires<(N > 0)> = nullptr>
-  Index<Dim - 1> slice_away(const size_t d) const noexcept {
+  Index<Dim - 1> slice_away(const size_t d) const {
     ASSERT(d < Dim,
            "Can't slice dimension " << d << " from an Index<" << Dim << ">");
     std::array<size_t, Dim - 1> t{};
@@ -100,17 +97,17 @@ class Index {
 
   /// \cond
   // clang-tidy: runtime-references
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
   /// \endcond
 
   template <size_t N>
   friend std::ostream& operator<<(std::ostream& os,  // NOLINT
-                                  const Index<N>& i) noexcept;
+                                  const Index<N>& i);
 
-  const size_t* data() const noexcept { return indices_.data(); }
-  size_t* data() noexcept { return indices_.data(); }
+  const size_t* data() const { return indices_.data(); }
+  size_t* data() { return indices_.data(); }
 
-  const std::array<size_t, Dim>& indices() const noexcept { return indices_; }
+  const std::array<size_t, Dim>& indices() const { return indices_; }
 
  private:
   std::array<size_t, Dim> indices_;
@@ -121,17 +118,16 @@ class Index {
 /// Index. Note that the first dimension of the Index varies fastest when
 /// computing the collapsed index.
 template <size_t N>
-size_t collapsed_index(const Index<N>& index, const Index<N>& extents) noexcept;
+size_t collapsed_index(const Index<N>& index, const Index<N>& extents);
 
 template <size_t N>
-std::ostream& operator<<(std::ostream& os, const Index<N>& i) noexcept;
+std::ostream& operator<<(std::ostream& os, const Index<N>& i);
 
 /// \cond HIDDEN_SYMBOLS
 #ifdef SPECTRE_DEBUG
 namespace Index_detail {
 template <size_t Dim>
-void collapsed_index_check(const Index<Dim>& index,
-                           const Index<Dim>& extents) noexcept {
+void collapsed_index_check(const Index<Dim>& index, const Index<Dim>& extents) {
   for (size_t d = 0; d < Dim; ++d) {
     ASSERT(index[d] < extents[d], "The requested index in the dimension "
                                       << d << " with value " << index[d]
@@ -147,14 +143,14 @@ void collapsed_index_check(const Index<Dim>& index,
 // specializations to avoid having loops since this computation is very
 // straightforward.
 template <>
-SPECTRE_ALWAYS_INLINE size_t collapsed_index(
-    const Index<0>& /*index*/, const Index<0>& /*extents*/) noexcept {
+SPECTRE_ALWAYS_INLINE size_t collapsed_index(const Index<0>& /*index*/,
+                                             const Index<0>& /*extents*/) {
   return 0;
 }
 
 template <>
 SPECTRE_ALWAYS_INLINE size_t collapsed_index(const Index<1>& index,
-                                             const Index<1>& extents) noexcept {
+                                             const Index<1>& extents) {
   (void)extents;
 #ifdef SPECTRE_DEBUG
   Index_detail::collapsed_index_check(index, extents);
@@ -164,7 +160,7 @@ SPECTRE_ALWAYS_INLINE size_t collapsed_index(const Index<1>& index,
 
 template <>
 SPECTRE_ALWAYS_INLINE size_t collapsed_index(const Index<2>& index,
-                                             const Index<2>& extents) noexcept {
+                                             const Index<2>& extents) {
 #ifdef SPECTRE_DEBUG
   Index_detail::collapsed_index_check(index, extents);
 #endif
@@ -173,7 +169,7 @@ SPECTRE_ALWAYS_INLINE size_t collapsed_index(const Index<2>& index,
 
 template <>
 SPECTRE_ALWAYS_INLINE size_t collapsed_index(const Index<3>& index,
-                                             const Index<3>& extents) noexcept {
+                                             const Index<3>& extents) {
 #ifdef SPECTRE_DEBUG
   Index_detail::collapsed_index_check(index, extents);
 #endif
@@ -182,7 +178,7 @@ SPECTRE_ALWAYS_INLINE size_t collapsed_index(const Index<3>& index,
 
 template <>
 SPECTRE_ALWAYS_INLINE size_t collapsed_index(const Index<4>& index,
-                                             const Index<4>& extents) noexcept {
+                                             const Index<4>& extents) {
 #ifdef SPECTRE_DEBUG
   Index_detail::collapsed_index_check(index, extents);
 #endif
@@ -192,8 +188,8 @@ SPECTRE_ALWAYS_INLINE size_t collapsed_index(const Index<4>& index,
 }
 
 template <size_t N>
-bool operator==(const Index<N>& lhs, const Index<N>& rhs) noexcept;
+bool operator==(const Index<N>& lhs, const Index<N>& rhs);
 
 template <size_t N>
-bool operator!=(const Index<N>& lhs, const Index<N>& rhs) noexcept;
+bool operator!=(const Index<N>& lhs, const Index<N>& rhs);
 /// \endcond

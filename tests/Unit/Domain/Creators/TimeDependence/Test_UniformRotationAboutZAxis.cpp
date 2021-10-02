@@ -57,7 +57,7 @@ ConcreteMap<3> create_coord_map<3>(const std::string& f_of_t_name) {
 
 template <size_t MeshDim>
 void test(const std::unique_ptr<TimeDependence<MeshDim>>& time_dep_unique_ptr,
-          const double initial_time, const std::string& f_of_t_name) noexcept {
+          const double initial_time, const std::string& f_of_t_name) {
   MAKE_GENERATOR(gen);
   CAPTURE(initial_time);
   CAPTURE(f_of_t_name);
@@ -146,7 +146,7 @@ void test(const std::unique_ptr<TimeDependence<MeshDim>>& time_dep_unique_ptr,
   }
 }
 
-void test_equivalence() noexcept {
+void test_equivalence() {
   {
     UniformRotationAboutZAxis<2> ur0{1.0, 2.5, 2.0, "RotationAnglePhi"};
     UniformRotationAboutZAxis<2> ur1{1.2, 2.5, 2.0, "RotationAnglePhi"};

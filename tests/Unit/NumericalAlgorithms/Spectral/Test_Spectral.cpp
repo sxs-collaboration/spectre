@@ -153,7 +153,7 @@ void test_weak_differentiation() {
 }
 
 void test_exact_differentiation_matrices() {
-  const auto minus_one = [](const size_t n) noexcept { return n - 1; };
+  const auto minus_one = [](const size_t n) { return n - 1; };
   test_exact_differentiation_impl<Spectral::Basis::Legendre,
                                   Spectral::Quadrature::Gauss>(minus_one);
   test_exact_differentiation_impl<Spectral::Basis::Legendre,
@@ -214,7 +214,7 @@ template <Spectral::Basis BasisType, Spectral::Quadrature QuadratureType,
           typename Function>
 void test_interpolation_matrix(const DataVector& target_points,
                                const Function& max_poly_deg,
-                               const double eps = 0.) noexcept {
+                               const double eps = 0.) {
   DataVector interpolated_u(target_points.size(), 0.);
   for (size_t n = Spectral::minimum_number_of_points<BasisType, QuadratureType>;
        n <= Spectral::maximum_number_of_points<BasisType>; n++) {
@@ -243,7 +243,7 @@ void test_interpolation_matrix(const DataVector& target_points,
 
 template <Spectral::Basis BasisType, Spectral::Quadrature QuadratureType,
           typename Function>
-void test_exact_interpolation_impl(const Function& max_poly_deg) noexcept {
+void test_exact_interpolation_impl(const Function& max_poly_deg) {
   const DataVector target_points{-0.5, -0.4837, 0.5, 0.9378, 1.};
   test_interpolation_matrix<BasisType, QuadratureType>(target_points,
                                                        max_poly_deg);
@@ -260,7 +260,7 @@ void test_exact_extrapolation_impl(const Function& max_poly_deg) {
 }
 
 void test_exact_extrapolation() {
-  const auto minus_one = [](const size_t n) noexcept { return n - 1; };
+  const auto minus_one = [](const size_t n) { return n - 1; };
   {
     INFO(
         "Legendre-Gauss interpolation is exact to polynomial order "
@@ -471,10 +471,8 @@ void test_spectral_quantities_for_mesh() {
       mesh2d.slice_through(1));
 }
 
-void test_gauss_points_boundary_interpolation_and_lifting() noexcept {
-  const auto max_poly_deg = [](const size_t num_pts) noexcept {
-    return num_pts - 1;
-  };
+void test_gauss_points_boundary_interpolation_and_lifting() {
+  const auto max_poly_deg = [](const size_t num_pts) { return num_pts - 1; };
   constexpr Spectral::Basis BasisType = Spectral::Basis::Legendre;
   constexpr Spectral::Quadrature QuadratureType = Spectral::Quadrature::Gauss;
 

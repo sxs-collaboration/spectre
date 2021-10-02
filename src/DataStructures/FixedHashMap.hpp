@@ -102,43 +102,42 @@ class FixedHashMap {
                            key_equal>;
 
   FixedHashMap() = default;
-  FixedHashMap(std::initializer_list<value_type> init) noexcept;
+  FixedHashMap(std::initializer_list<value_type> init);
   FixedHashMap(const FixedHashMap&) = default;
-  FixedHashMap& operator=(const FixedHashMap& other) noexcept(
-      noexcept(std::is_nothrow_copy_constructible<value_type>::value));
+  FixedHashMap& operator=(const FixedHashMap& other);
   FixedHashMap(FixedHashMap&&) = default;
-  FixedHashMap& operator=(FixedHashMap&& other) noexcept;
+  FixedHashMap& operator=(FixedHashMap&& other);
   ~FixedHashMap() = default;
 
-  iterator begin() noexcept { return unconst(cbegin()); }
-  const_iterator begin() const noexcept {
+  iterator begin() { return unconst(cbegin()); }
+  const_iterator begin() const {
     return const_iterator(data_.begin(), data_.end());
   }
-  const_iterator cbegin() const noexcept { return begin(); }
+  const_iterator cbegin() const { return begin(); }
 
-  iterator end() noexcept { return unconst(cend()); }
-  const_iterator end() const noexcept {
+  iterator end() { return unconst(cend()); }
+  const_iterator end() const {
     return const_iterator(data_.end(), data_.end());
   }
-  const_iterator cend() const noexcept { return end(); }
+  const_iterator cend() const { return end(); }
 
-  bool empty() const noexcept { return size_ == 0; }
-  size_t size() const noexcept { return size_; }
+  bool empty() const { return size_ == 0; }
+  size_t size() const { return size_; }
 
-  void clear() noexcept;
+  void clear();
 
   /// @{
   /// Inserts the element if it does not exists.
-  std::pair<iterator, bool> insert(const value_type& value) noexcept {
+  std::pair<iterator, bool> insert(const value_type& value) {
     return insert(value_type(value));
   }
-  std::pair<iterator, bool> insert(value_type&& value) noexcept {
+  std::pair<iterator, bool> insert(value_type&& value) {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
     return insert_or_assign_impl<false>(const_cast<key_type&&>(value.first),
                                         std::move(value.second));
   }
   template <typename... Args>
-  std::pair<iterator, bool> emplace(Args&&... args) noexcept {
+  std::pair<iterator, bool> emplace(Args&&... args) {
     return insert(value_type(std::forward<Args>(args)...));
   }
   /// @}
@@ -146,44 +145,41 @@ class FixedHashMap {
   /// Inserts the element if it does not exists, otherwise assigns to it the new
   /// value.
   template <class M>
-  std::pair<iterator, bool> insert_or_assign(const key_type& key,
-                                             M&& obj) noexcept {
+  std::pair<iterator, bool> insert_or_assign(const key_type& key, M&& obj) {
     return insert_or_assign(key_type{key}, std::forward<M>(obj));
   }
   template <class M>
-  std::pair<iterator, bool> insert_or_assign(key_type&& key, M&& obj) noexcept {
+  std::pair<iterator, bool> insert_or_assign(key_type&& key, M&& obj) {
     return insert_or_assign_impl<true>(std::move(key), std::forward<M>(obj));
   }
   /// @}
 
-  iterator erase(const const_iterator& pos) noexcept;
-  size_t erase(const key_type& key) noexcept;
+  iterator erase(const const_iterator& pos);
+  size_t erase(const key_type& key);
 
   mapped_type& at(const key_type& key);
   const mapped_type& at(const key_type& key) const;
-  mapped_type& operator[](const key_type& key) noexcept;
+  mapped_type& operator[](const key_type& key);
 
-  size_t count(const key_type& key) const noexcept;
-  iterator find(const key_type& key) noexcept {
+  size_t count(const key_type& key) const;
+  iterator find(const key_type& key) {
     return unconst(std::as_const(*this).find(key));
   }
-  const_iterator find(const key_type& key) const noexcept {
+  const_iterator find(const key_type& key) const {
     auto it = get_data_entry(key);
     return it != data_.end() and is_set(*it) ? const_iterator(&*it, data_.end())
                                              : end();
   }
 
   /// Check if `key` is in the map
-  bool contains(const key_type& key) const noexcept {
-    return find(key) != end();
-  }
+  bool contains(const key_type& key) const { return find(key) != end(); }
 
   /// Get key equal function object
-  key_equal key_eq() const noexcept { return key_equal{}; }
+  key_equal key_eq() const { return key_equal{}; }
   /// Get hash function object
-  hasher hash_function() const noexcept { return hasher{}; }
+  hasher hash_function() const { return hasher{}; }
 
-  void pup(PUP::er& p) noexcept {  // NOLINT(google-runtime-references)
+  void pup(PUP::er& p) {  // NOLINT(google-runtime-references)
     p | data_;
     p | size_;
   }
@@ -194,16 +190,14 @@ class FixedHashMap {
   // NOLINTNEXTLINE(readability-redundant-declaration) false positive
   friend bool operator==(
       const FixedHashMap<FMaxSize, FKey, FValueType, FHash, FKeyEqual>& a,
-      const FixedHashMap<FMaxSize, FKey, FValueType, FHash, FKeyEqual>&
-          b) noexcept;
+      const FixedHashMap<FMaxSize, FKey, FValueType, FHash, FKeyEqual>& b);
 
   template <bool Assign, class M>
-  std::pair<iterator, bool> insert_or_assign_impl(key_type&& key,
-                                                  M&& obj) noexcept;
+  std::pair<iterator, bool> insert_or_assign_impl(key_type&& key, M&& obj);
 
   using storage_type = std::array<std::optional<value_type>, MaxSize>;
 
-  SPECTRE_ALWAYS_INLINE size_type hash(const key_type& key) const noexcept {
+  SPECTRE_ALWAYS_INLINE size_type hash(const key_type& key) const {
     if constexpr (hash_is_perfect) {
       return Hash{}(key);
     } else {
@@ -212,21 +206,20 @@ class FixedHashMap {
   }
 
   template <bool IsInserting>
-  typename storage_type::iterator get_data_entry(const Key& key) noexcept;
+  typename storage_type::iterator get_data_entry(const Key& key);
 
-  typename storage_type::const_iterator get_data_entry(const Key& key) const
-      noexcept {
+  typename storage_type::const_iterator get_data_entry(const Key& key) const {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
     return const_cast<FixedHashMap&>(*this).get_data_entry<false>(key);
   }
 
-  iterator unconst(const const_iterator& it) noexcept {
+  iterator unconst(const const_iterator& it) {
     return iterator(&it.get_optional() - data_.begin() + data_.begin(),
                     data_.end());
   }
 
   SPECTRE_ALWAYS_INLINE static bool is_set(
-      const std::optional<value_type>& opt) noexcept {
+      const std::optional<value_type>& opt) {
     return static_cast<bool>(opt);
   }
 
@@ -250,29 +243,29 @@ class FixedHashMapIterator {
   /// Implicit conversion from mutable to const iterator.
   // NOLINTNEXTLINE(google-explicit-constructor)
   operator FixedHashMapIterator<MaxSize, Key, const ValueType, Hash, KeyEqual>()
-      const noexcept {
+      const {
     return {entry_, end_};
   }
 
-  reference operator*() const noexcept {
+  reference operator*() const {
     ASSERT(entry_ != nullptr, "Invalid FixedHashMapIterator");
     ASSERT(is_set(*entry_),
            "FixedHashMapIterator points to an invalid value in the map.");
     // deference pointer, then dereference std::optional
     return entry_->value();
   }
-  pointer operator->() const noexcept {
+  pointer operator->() const {
     ASSERT(entry_ != nullptr, "Invalid FixedHashMapIterator");
     ASSERT(is_set(*entry_),
            "FixedHashMapIterator points to an invalid value in the map.");
     return std::addressof(entry_->value());
   }
 
-  FixedHashMapIterator& operator++() noexcept;
+  FixedHashMapIterator& operator++();
   // clang-tidy wants this to return a const object.  Returning const
   // objects is very strange, and as of June 2018 clang-tidy's
   // explanation for the lint is a dead link.
-  FixedHashMapIterator operator++(int) noexcept;  // NOLINT(cert-dcl21-cpp)
+  FixedHashMapIterator operator++(int);  // NOLINT(cert-dcl21-cpp)
 
  private:
   friend class FixedHashMap<MaxSize, Key, typename value_type::second_type,
@@ -280,11 +273,11 @@ class FixedHashMapIterator {
   friend class FixedHashMapIterator<MaxSize, Key, value_type, Hash, KeyEqual>;
 
   friend bool operator==(const FixedHashMapIterator& a,
-                         const FixedHashMapIterator& b) noexcept {
+                         const FixedHashMapIterator& b) {
     return a.entry_ == b.entry_;
   }
   friend bool operator<(const FixedHashMapIterator& a,
-                        const FixedHashMapIterator& b) noexcept {
+                        const FixedHashMapIterator& b) {
     return a.entry_ < b.entry_;
   }
 
@@ -292,19 +285,19 @@ class FixedHashMapIterator {
   // class internals, but they need to be instantiated for each
   // instantiation of the class.
   friend bool operator!=(const FixedHashMapIterator& a,
-                         const FixedHashMapIterator& b) noexcept {
+                         const FixedHashMapIterator& b) {
     return not(a == b);
   }
   friend bool operator>(const FixedHashMapIterator& a,
-                        const FixedHashMapIterator& b) noexcept {
+                        const FixedHashMapIterator& b) {
     return b < a;
   }
   friend bool operator<=(const FixedHashMapIterator& a,
-                         const FixedHashMapIterator& b) noexcept {
+                         const FixedHashMapIterator& b) {
     return not(b < a);
   }
   friend bool operator>=(const FixedHashMapIterator& a,
-                         const FixedHashMapIterator& b) noexcept {
+                         const FixedHashMapIterator& b) {
     return not(a < b);
   }
 
@@ -313,12 +306,11 @@ class FixedHashMapIterator {
       tmpl::conditional_t<std::is_const<ValueType>::value,
                           const map_optional_type, map_optional_type>;
 
-  SPECTRE_ALWAYS_INLINE static bool is_set(const optional_type& opt) noexcept {
+  SPECTRE_ALWAYS_INLINE static bool is_set(const optional_type& opt) {
     return static_cast<bool>(opt);
   }
 
-  FixedHashMapIterator(optional_type* const entry,
-                       optional_type* const end) noexcept
+  FixedHashMapIterator(optional_type* const entry, optional_type* const end)
       : entry_(entry), end_(end) {
     if (entry_ != end_ and not*entry_) {
       operator++();
@@ -334,8 +326,7 @@ class FixedHashMapIterator {
 template <size_t MaxSize, class Key, class ValueType, class Hash,
           class KeyEqual>
 FixedHashMapIterator<MaxSize, Key, ValueType, Hash, KeyEqual>&
-FixedHashMapIterator<MaxSize, Key, ValueType, Hash, KeyEqual>::
-operator++() noexcept {
+FixedHashMapIterator<MaxSize, Key, ValueType, Hash, KeyEqual>::operator++() {
   ASSERT(entry_ != end_,
          "Tried to increment an end iterator, which is undefined behavior.");
   // Move to next element, which might not be the next element in the std::array
@@ -349,8 +340,7 @@ template <size_t MaxSize, class Key, class ValueType, class Hash,
           class KeyEqual>
 // NOLINTNEXTLINE(cert-dcl21-cpp) see declaration
 FixedHashMapIterator<MaxSize, Key, ValueType, Hash, KeyEqual>
-FixedHashMapIterator<MaxSize, Key, ValueType, Hash, KeyEqual>::operator++(
-    int) noexcept {
+FixedHashMapIterator<MaxSize, Key, ValueType, Hash, KeyEqual>::operator++(int) {
   const auto ret = *this;
   operator++();
   return ret;
@@ -361,10 +351,7 @@ template <size_t MaxSize, class Key, class ValueType, class Hash,
           class KeyEqual>
 FixedHashMap<MaxSize, Key, ValueType, Hash, KeyEqual>&
 FixedHashMap<MaxSize, Key, ValueType, Hash, KeyEqual>::operator=(
-    const FixedHashMap<MaxSize, Key, ValueType, Hash, KeyEqual>&
-        other) noexcept(noexcept(std::
-                                     is_nothrow_copy_constructible<
-                                         value_type>::value)) {
+    const FixedHashMap<MaxSize, Key, ValueType, Hash, KeyEqual>& other) {
   if (this == &other) {
     return *this;
   }
@@ -387,7 +374,7 @@ template <size_t MaxSize, class Key, class ValueType, class Hash,
           class KeyEqual>
 FixedHashMap<MaxSize, Key, ValueType, Hash, KeyEqual>&
 FixedHashMap<MaxSize, Key, ValueType, Hash, KeyEqual>::operator=(
-    FixedHashMap<MaxSize, Key, ValueType, Hash, KeyEqual>&& other) noexcept {
+    FixedHashMap<MaxSize, Key, ValueType, Hash, KeyEqual>&& other) {
   if (this == &other) {
     return *this;
   }
@@ -409,7 +396,7 @@ FixedHashMap<MaxSize, Key, ValueType, Hash, KeyEqual>::operator=(
 template <size_t MaxSize, class Key, class ValueType, class Hash,
           class KeyEqual>
 FixedHashMap<MaxSize, Key, ValueType, Hash, KeyEqual>::FixedHashMap(
-    std::initializer_list<value_type> init) noexcept {
+    std::initializer_list<value_type> init) {
   // size_ is set by calling insert
   for (const auto& entry : init) {
     insert(entry);
@@ -418,7 +405,7 @@ FixedHashMap<MaxSize, Key, ValueType, Hash, KeyEqual>::FixedHashMap(
 
 template <size_t MaxSize, class Key, class ValueType, class Hash,
           class KeyEqual>
-void FixedHashMap<MaxSize, Key, ValueType, Hash, KeyEqual>::clear() noexcept {
+void FixedHashMap<MaxSize, Key, ValueType, Hash, KeyEqual>::clear() {
   for (auto& entry : data_) {
     entry.reset();
   }
@@ -429,8 +416,7 @@ template <size_t MaxSize, class Key, class ValueType, class Hash,
           class KeyEqual>
 template <bool Assign, class M>
 auto FixedHashMap<MaxSize, Key, ValueType, Hash,
-                  KeyEqual>::insert_or_assign_impl(key_type&& key,
-                                                   M&& obj) noexcept
+                  KeyEqual>::insert_or_assign_impl(key_type&& key, M&& obj)
     -> std::pair<iterator, bool> {
   auto data_it = get_data_entry<true>(key);
   if (UNLIKELY(data_it == data_.end())) {
@@ -458,7 +444,7 @@ auto FixedHashMap<MaxSize, Key, ValueType, Hash,
 template <size_t MaxSize, class Key, class ValueType, class Hash,
           class KeyEqual>
 auto FixedHashMap<MaxSize, Key, ValueType, Hash, KeyEqual>::erase(
-    const const_iterator& pos) noexcept -> iterator {
+    const const_iterator& pos) -> iterator {
   auto next_it = &(unconst(pos).get_optional());
   --size_;
   next_it->reset();
@@ -478,7 +464,7 @@ auto FixedHashMap<MaxSize, Key, ValueType, Hash, KeyEqual>::erase(
 template <size_t MaxSize, class Key, class ValueType, class Hash,
           class KeyEqual>
 size_t FixedHashMap<MaxSize, Key, ValueType, Hash, KeyEqual>::erase(
-    const key_type& key) noexcept {
+    const key_type& key) {
   auto it = get_data_entry<false>(key);
   if (it == data_.end() or not is_set(*it)) {
     return 0;
@@ -510,7 +496,7 @@ auto FixedHashMap<MaxSize, Key, ValueType, Hash, KeyEqual>::at(
 template <size_t MaxSize, class Key, class ValueType, class Hash,
           class KeyEqual>
 auto FixedHashMap<MaxSize, Key, ValueType, Hash, KeyEqual>::operator[](
-    const key_type& key) noexcept -> mapped_type& {
+    const key_type& key) -> mapped_type& {
   auto it = get_data_entry<true>(key);
   if (it == data_.end()) {
     ERROR("Unable to insert element into FixedHashMap of maximum size "
@@ -532,7 +518,7 @@ auto FixedHashMap<MaxSize, Key, ValueType, Hash, KeyEqual>::operator[](
 template <size_t MaxSize, class Key, class ValueType, class Hash,
           class KeyEqual>
 size_t FixedHashMap<MaxSize, Key, ValueType, Hash, KeyEqual>::count(
-    const key_type& key) const noexcept {
+    const key_type& key) const {
   const auto it = get_data_entry(key);
   return it == data_.end() or not is_set(*it) ? 0 : 1;
 }
@@ -541,7 +527,7 @@ template <size_t MaxSize, class Key, class ValueType, class Hash,
           class KeyEqual>
 template <bool IsInserting>
 auto FixedHashMap<MaxSize, Key, ValueType, Hash, KeyEqual>::get_data_entry(
-    const Key& key) noexcept -> typename storage_type::iterator {
+    const Key& key) -> typename storage_type::iterator {
   const auto hashed_key = hash(key);
   auto it = data_.begin() + hashed_key;
   if constexpr (not hash_is_perfect) {
@@ -578,7 +564,7 @@ template <size_t MaxSize, class Key, class ValueType, class Hash,
           class KeyEqual>
 bool operator==(
     const FixedHashMap<MaxSize, Key, ValueType, Hash, KeyEqual>& a,
-    const FixedHashMap<MaxSize, Key, ValueType, Hash, KeyEqual>& b) noexcept {
+    const FixedHashMap<MaxSize, Key, ValueType, Hash, KeyEqual>& b) {
   if (a.size_ != b.size_) {
     return false;
   }
@@ -595,7 +581,7 @@ template <size_t MaxSize, class Key, class ValueType, class Hash,
           class KeyEqual>
 bool operator!=(
     const FixedHashMap<MaxSize, Key, ValueType, Hash, KeyEqual>& a,
-    const FixedHashMap<MaxSize, Key, ValueType, Hash, KeyEqual>& b) noexcept {
+    const FixedHashMap<MaxSize, Key, ValueType, Hash, KeyEqual>& b) {
   return not(a == b);
 }
 
@@ -603,12 +589,12 @@ template <size_t MaxSize, class Key, class ValueType, class Hash,
           class KeyEqual>
 std::ostream& operator<<(
     std::ostream& os,
-    const FixedHashMap<MaxSize, Key, ValueType, Hash, KeyEqual>& m) noexcept {
+    const FixedHashMap<MaxSize, Key, ValueType, Hash, KeyEqual>& m) {
   unordered_print_helper(
       os, std::begin(m), std::end(m),
-      [](std::ostream & out,
+      [](std::ostream& out,
          typename FixedHashMap<MaxSize, Key, ValueType, Hash,
-                               KeyEqual>::const_iterator it) noexcept {
+                               KeyEqual>::const_iterator it) {
         out << "[" << it->first << "," << it->second << "]";
       });
   return os;

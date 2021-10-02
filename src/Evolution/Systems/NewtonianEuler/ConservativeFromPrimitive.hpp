@@ -52,12 +52,11 @@ struct ConservativeFromPrimitive {
       tmpl::list<Tags::MassDensity<DataVector>, Tags::Velocity<DataVector, Dim>,
                  Tags::SpecificInternalEnergy<DataVector>>;
 
-  static void apply(
-      gsl::not_null<Scalar<DataVector>*> mass_density_cons,
-      gsl::not_null<tnsr::I<DataVector, Dim>*> momentum_density,
-      gsl::not_null<Scalar<DataVector>*> energy_density,
-      const Scalar<DataVector>& mass_density,
-      const tnsr::I<DataVector, Dim>& velocity,
-      const Scalar<DataVector>& specific_internal_energy) noexcept;
+  static void apply(gsl::not_null<Scalar<DataVector>*> mass_density_cons,
+                    gsl::not_null<tnsr::I<DataVector, Dim>*> momentum_density,
+                    gsl::not_null<Scalar<DataVector>*> energy_density,
+                    const Scalar<DataVector>& mass_density,
+                    const tnsr::I<DataVector, Dim>& velocity,
+                    const Scalar<DataVector>& specific_internal_energy);
 };
 }  // namespace NewtonianEuler

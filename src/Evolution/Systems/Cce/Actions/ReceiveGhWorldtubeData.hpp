@@ -60,14 +60,13 @@ struct ReceiveGhWorldtubeData {
       const tnsr::aa<DataVector, 3>& dt_spacetime_metric =
           tnsr::aa<DataVector, 3>{},
       const tnsr::iaa<DataVector, 3>& dt_phi = tnsr::iaa<DataVector, 3>{},
-      const tnsr::aa<DataVector, 3>& dt_pi =
-          tnsr::aa<DataVector, 3>{}) noexcept {
+      const tnsr::aa<DataVector, 3>& dt_pi = tnsr::aa<DataVector, 3>{}) {
     db::mutate<Tags::GhInterfaceManager>(
         make_not_null(&box),
         [&spacetime_metric, &phi, &pi, &dt_spacetime_metric, &dt_phi, &dt_pi,
          &time, &cache](const gsl::not_null<
                         std::unique_ptr<InterfaceManagers::GhInterfaceManager>*>
-                            interface_manager) noexcept {
+                            interface_manager) {
           (*interface_manager)
               ->insert_gh_data(time, spacetime_metric, phi, pi,
                                dt_spacetime_metric, dt_phi, dt_pi);

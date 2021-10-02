@@ -102,7 +102,7 @@ class AlfvenWave : public AnalyticSolution, public MarkAsAnalyticSolution {
     using type = double;
     static constexpr Options::String help = {
         "The constant pressure throughout the fluid."};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
 
   /// The constant rest mass density throughout the fluid.
@@ -110,7 +110,7 @@ class AlfvenWave : public AnalyticSolution, public MarkAsAnalyticSolution {
     using type = double;
     static constexpr Options::String help = {
         "The constant rest mass density throughout the fluid."};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
 
   /// The adiabatic index for the ideal fluid.
@@ -118,13 +118,13 @@ class AlfvenWave : public AnalyticSolution, public MarkAsAnalyticSolution {
     using type = double;
     static constexpr Options::String help = {
         "The adiabatic index for the ideal fluid."};
-    static type lower_bound() noexcept { return 1.0; }
+    static type lower_bound() { return 1.0; }
   };
 
   /// The background static magnetic field vector.
   struct BackgroundMagneticField {
     using type = std::array<double, 3>;
-    static std::string name() noexcept { return "BkgdMagneticField"; }
+    static std::string name() { return "BkgdMagneticField"; }
     static constexpr Options::String help = {
         "The background magnetic field [B0^x, B0^y, B0^z]."};
   };
@@ -147,73 +147,65 @@ class AlfvenWave : public AnalyticSolution, public MarkAsAnalyticSolution {
   AlfvenWave() = default;
   AlfvenWave(const AlfvenWave& /*rhs*/) = delete;
   AlfvenWave& operator=(const AlfvenWave& /*rhs*/) = delete;
-  AlfvenWave(AlfvenWave&& /*rhs*/) noexcept = default;
-  AlfvenWave& operator=(AlfvenWave&& /*rhs*/) noexcept = default;
+  AlfvenWave(AlfvenWave&& /*rhs*/) = default;
+  AlfvenWave& operator=(AlfvenWave&& /*rhs*/) = default;
   ~AlfvenWave() = default;
 
   AlfvenWave(double wavenumber, double pressure, double rest_mass_density,
              double adiabatic_index,
              const std::array<double, 3>& background_magnetic_field,
-             const std::array<double, 3>& wave_magnetic_field) noexcept;
+             const std::array<double, 3>& wave_magnetic_field);
 
   /// @{
   /// Retrieve hydro variable at `(x, t)`
   template <typename DataType>
-  auto variables(
-      const tnsr::I<DataType, 3>& x, double t,
-      tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/) const
-      noexcept -> tuples::TaggedTuple<hydro::Tags::RestMassDensity<DataType>>;
+  auto variables(const tnsr::I<DataType, 3>& x, double t,
+                 tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/)
+      const -> tuples::TaggedTuple<hydro::Tags::RestMassDensity<DataType>>;
 
   template <typename DataType>
   auto variables(
       const tnsr::I<DataType, 3>& x, double t,
       tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>> /*meta*/) const
-      noexcept
       -> tuples::TaggedTuple<hydro::Tags::SpecificInternalEnergy<DataType>>;
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x, double /*t*/,
                  tmpl::list<hydro::Tags::Pressure<DataType>> /*meta*/) const
-      noexcept -> tuples::TaggedTuple<hydro::Tags::Pressure<DataType>>;
+      -> tuples::TaggedTuple<hydro::Tags::Pressure<DataType>>;
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x, double /*t*/,
                  tmpl::list<hydro::Tags::SpatialVelocity<DataType, 3>> /*meta*/)
-      const noexcept
-      -> tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, 3>>;
+      const -> tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, 3>>;
 
   template <typename DataType>
-  auto variables(
-      const tnsr::I<DataType, 3>& x, double /*t*/,
-      tmpl::list<hydro::Tags::MagneticField<DataType, 3>> /*meta*/) const
-      noexcept -> tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3>>;
+  auto variables(const tnsr::I<DataType, 3>& x, double /*t*/,
+                 tmpl::list<hydro::Tags::MagneticField<DataType, 3>> /*meta*/)
+      const -> tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3>>;
 
   template <typename DataType>
   auto variables(
       const tnsr::I<DataType, 3>& x, double /*t*/,
       tmpl::list<hydro::Tags::DivergenceCleaningField<DataType>> /*meta*/) const
-      noexcept
       -> tuples::TaggedTuple<hydro::Tags::DivergenceCleaningField<DataType>>;
 
   template <typename DataType>
-  auto variables(
-      const tnsr::I<DataType, 3>& x, double /*t*/,
-      tmpl::list<hydro::Tags::LorentzFactor<DataType>> /*meta*/) const noexcept
-      -> tuples::TaggedTuple<hydro::Tags::LorentzFactor<DataType>>;
+  auto variables(const tnsr::I<DataType, 3>& x, double /*t*/,
+                 tmpl::list<hydro::Tags::LorentzFactor<DataType>> /*meta*/)
+      const -> tuples::TaggedTuple<hydro::Tags::LorentzFactor<DataType>>;
 
   template <typename DataType>
-  auto variables(
-      const tnsr::I<DataType, 3>& x, double t,
-      tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>> /*meta*/) const
-      noexcept -> tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DataType>>;
+  auto variables(const tnsr::I<DataType, 3>& x, double t,
+                 tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>> /*meta*/)
+      const -> tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DataType>>;
   /// @}
 
   /// Retrieve a collection of hydro variables at `(x, t)`
   template <typename DataType, typename... Tags>
   tuples::TaggedTuple<Tags...> variables(const tnsr::I<DataType, 3>& x,
                                          double t,
-                                         tmpl::list<Tags...> /*meta*/) const
-      noexcept {
+                                         tmpl::list<Tags...> /*meta*/) const {
     static_assert(sizeof...(Tags) > 1,
                   "The generic template will recurse infinitely if only one "
                   "tag is being retrieved.");
@@ -223,24 +215,23 @@ class AlfvenWave : public AnalyticSolution, public MarkAsAnalyticSolution {
   /// Retrieve the metric variables
   template <typename DataType, typename Tag>
   tuples::TaggedTuple<Tag> variables(const tnsr::I<DataType, 3>& x, double t,
-                                     tmpl::list<Tag> /*meta*/) const noexcept {
+                                     tmpl::list<Tag> /*meta*/) const {
     return background_spacetime_.variables(x, t, tmpl::list<Tag>{});
   }
 
   // clang-tidy: no runtime references
-  void pup(PUP::er& /*p*/) noexcept;  //  NOLINT
+  void pup(PUP::er& /*p*/);  //  NOLINT
 
-  const EquationsOfState::IdealFluid<true>& equation_of_state() const noexcept {
+  const EquationsOfState::IdealFluid<true>& equation_of_state() const {
     return equation_of_state_;
   }
 
  protected:
-  friend bool operator==(const AlfvenWave& lhs, const AlfvenWave& rhs) noexcept;
+  friend bool operator==(const AlfvenWave& lhs, const AlfvenWave& rhs);
 
   // Computes the phase.
   template <typename DataType>
-  DataType k_dot_x_minus_vt(const tnsr::I<DataType, 3>& x, double t) const
-      noexcept;
+  DataType k_dot_x_minus_vt(const tnsr::I<DataType, 3>& x, double t) const;
   double wavenumber_ = std::numeric_limits<double>::signaling_NaN();
   double pressure_ = std::numeric_limits<double>::signaling_NaN();
   double rest_mass_density_ = std::numeric_limits<double>::signaling_NaN();
@@ -265,7 +256,7 @@ class AlfvenWave : public AnalyticSolution, public MarkAsAnalyticSolution {
   gr::Solutions::Minkowski<3> background_spacetime_{};
 };
 
-bool operator!=(const AlfvenWave& lhs, const AlfvenWave& rhs) noexcept;
+bool operator!=(const AlfvenWave& lhs, const AlfvenWave& rhs);
 
 }  // namespace Solutions
 }  // namespace grmhd

@@ -162,6 +162,6 @@ struct TimeDerivative {
       const tnsr::iaa<DataVector, Dim>& phi, const Scalar<DataVector>& gamma0,
       const Scalar<DataVector>& gamma1, const Scalar<DataVector>& gamma2,
       const tnsr::a<DataVector, Dim>& gauge_function,
-      const tnsr::ab<DataVector, Dim>& spacetime_deriv_gauge_function) noexcept;
+      const tnsr::ab<DataVector, Dim>& spacetime_deriv_gauge_function);
 };
 }  // namespace GeneralizedHarmonic

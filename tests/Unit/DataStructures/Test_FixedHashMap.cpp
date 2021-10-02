@@ -25,8 +25,7 @@
 
 namespace {
 template <size_t Dim>
-void check_single_element_map_with_direction(
-    const Direction<Dim>& direction) noexcept {
+void check_single_element_map_with_direction(const Direction<Dim>& direction) {
   FixedHashMap<2 * Dim, Direction<Dim>, std::pair<double, NonCopyable>,
                DirectionHash<Dim>>
       map;
@@ -128,7 +127,7 @@ void test_direction_key() {
   CHECK(&std::as_const(map).find(dir2)->second == &std::as_const(map).at(dir2));
   CHECK(std::as_const(map).find(dir3) == map.end());
 
-  const auto check_exception = [&dir3](auto& passed_map) noexcept {
+  const auto check_exception = [&dir3](auto& passed_map) {
     try {
       passed_map.at(dir3);
       CHECK(false);
@@ -166,7 +165,7 @@ void test_direction_key() {
   CHECK_FALSE(map != map);
   {
     // Test copy and move
-    const auto check_equal = [](const auto& a, const auto& b) noexcept {
+    const auto check_equal = [](const auto& a, const auto& b) {
       CHECK(a == b);
       CHECK(b == a);
       CHECK_FALSE(a != b);
@@ -262,26 +261,23 @@ struct NonCopyableSizeT {
   // NOLINTNEXTLINE(google-explicit-constructor)
   NonCopyableSizeT(size_t t) : value(t) {}
 
-  void pup(PUP::er& p) noexcept { p | value; }  // NOLINT
+  void pup(PUP::er& p) { p | value; }  // NOLINT
 
   size_t value = 0;
 };
-inline bool operator==(const NonCopyableSizeT& a,
-                       const NonCopyableSizeT& b) noexcept {
+inline bool operator==(const NonCopyableSizeT& a, const NonCopyableSizeT& b) {
   return a.value == b.value;
 }
-inline bool operator!=(const NonCopyableSizeT& a,
-                       const NonCopyableSizeT& b) noexcept {
+inline bool operator!=(const NonCopyableSizeT& a, const NonCopyableSizeT& b) {
   return not(a == b);
 }
-inline std::ostream& operator<<(std::ostream& os,
-                                const NonCopyableSizeT& v) noexcept {
+inline std::ostream& operator<<(std::ostream& os, const NonCopyableSizeT& v) {
   return os << v.value;
 }
 
 // A hash that hashes two inputs to the same value
 struct RepeatedHash {
-  size_t operator()(const size_t t) const noexcept {
+  size_t operator()(const size_t t) const {
     if (t == 3) {
       return 2;
     }
@@ -291,7 +287,7 @@ struct RepeatedHash {
     return t;
   }
 
-  size_t operator()(const NonCopyableSizeT& t) const noexcept {
+  size_t operator()(const NonCopyableSizeT& t) const {
     if (t.value == 3) {
       return 2;
     }
@@ -328,10 +324,10 @@ void test_repeated_key() {
   CHECK(std::as_const(map).find(2) == map.end());
 
   make_overloader(
-      [](const gsl::not_null<CopyableKeyMapType*> local_map) noexcept {
+      [](const gsl::not_null<CopyableKeyMapType*> local_map) {
         (*local_map)[2] = 12;
       },
-      [](const gsl::not_null<NonCopyableKeyMapType*> local_map) noexcept {
+      [](const gsl::not_null<NonCopyableKeyMapType*> local_map) {
         local_map->insert({2, 12});
       })(make_not_null(&map));
   CHECK(map.size() == 2);
@@ -356,11 +352,10 @@ void test_repeated_key() {
   CHECK(map.at(3) == 13);
   CHECK(std::as_const(map).at(3) == 13);
   make_overloader(
-      [](const gsl::not_null<CopyableKeyMapType*> local_map) noexcept {
+      [](const gsl::not_null<CopyableKeyMapType*> local_map) {
         CHECK((*local_map)[3] == 13);
       },
-      [
-      ](const gsl::not_null<NonCopyableKeyMapType*> /*local_map*/) noexcept {})(
+      [](const gsl::not_null<NonCopyableKeyMapType*> /*local_map*/) {})(
       make_not_null(&map));
   CHECK(map.count(1) == 1);
   CHECK(map.count(2) == 1);
@@ -408,18 +403,17 @@ void test_repeated_key() {
   CHECK(map.at(4) == 14);
   CHECK(std::as_const(map).at(4) == 14);
   make_overloader(
-      [](const gsl::not_null<CopyableKeyMapType*> local_map) noexcept {
+      [](const gsl::not_null<CopyableKeyMapType*> local_map) {
         CHECK((*local_map)[4] == 14);
       },
-      [
-      ](const gsl::not_null<NonCopyableKeyMapType*> /*local_map*/) noexcept {})(
+      [](const gsl::not_null<NonCopyableKeyMapType*> /*local_map*/) {})(
       make_not_null(&map));
 
   make_overloader(
-      [](const gsl::not_null<CopyableKeyMapType*> local_map) noexcept {
+      [](const gsl::not_null<CopyableKeyMapType*> local_map) {
         (*local_map)[5] = 15;
       },
-      [](const gsl::not_null<NonCopyableKeyMapType*> local_map) noexcept {
+      [](const gsl::not_null<NonCopyableKeyMapType*> local_map) {
         local_map->insert_or_assign(5, 15);
       })(make_not_null(&map));
   CHECK(map.size() == 4);
@@ -439,11 +433,10 @@ void test_repeated_key() {
   CHECK(map.at(5) == 15);
   CHECK(std::as_const(map).at(5) == 15);
   make_overloader(
-      [](const gsl::not_null<CopyableKeyMapType*> local_map) noexcept {
+      [](const gsl::not_null<CopyableKeyMapType*> local_map) {
         CHECK((*local_map)[5] == 15);
       },
-      [
-      ](const gsl::not_null<NonCopyableKeyMapType*> /*local_map*/) noexcept {})(
+      [](const gsl::not_null<NonCopyableKeyMapType*> /*local_map*/) {})(
       make_not_null(&map));
 
   map.erase(4);
@@ -463,17 +456,17 @@ void test_repeated_key() {
   CHECK(map.at(5) == 15);
   CHECK(std::as_const(map).at(5) == 15);
   make_overloader(
-      [](const gsl::not_null<CopyableKeyMapType*> local_map) noexcept {
+      [](const gsl::not_null<CopyableKeyMapType*> local_map) {
         CHECK((*local_map)[5] == 15);
       },
-      [
-      ](const gsl::not_null<NonCopyableKeyMapType*> /*local_map*/) noexcept {})(
+      [](const gsl::not_null<NonCopyableKeyMapType*> /*local_map*/) {})(
       make_not_null(&map));
 
-  const auto check_4 = [](
-      const auto& l_it_bool_to_4, const size_t expected, const bool inserted,
-      // GCC warns about shadowing so we make a very specific name for the map
-      auto check_4_local_map) noexcept {
+  const auto check_4 = [](const auto& l_it_bool_to_4, const size_t expected,
+                          const bool inserted,
+                          // GCC warns about shadowing so we make a very
+                          // specific name for the map
+                          auto check_4_local_map) {
     CHECK(l_it_bool_to_4.second == inserted);
     CHECK(check_4_local_map->size() == 4);
     CHECK_FALSE(check_4_local_map->empty());
@@ -493,17 +486,15 @@ void test_repeated_key() {
     CHECK(check_4_local_map->at(4) == expected);
     CHECK(std::as_const(*check_4_local_map).at(4) == expected);
     make_overloader(
-        [expected](
-            const gsl::not_null<CopyableKeyMapType*> more_local_map) noexcept {
+        [expected](const gsl::not_null<CopyableKeyMapType*> more_local_map) {
           CHECK((*more_local_map)[4] == expected);
         },
-        [](const gsl::not_null<
-            NonCopyableKeyMapType*> /*local_map*/) noexcept {})(
+        [](const gsl::not_null<NonCopyableKeyMapType*> /*local_map*/) {})(
         check_4_local_map);
   };
 
   make_overloader(
-      [&check_4](const gsl::not_null<CopyableKeyMapType*> local_map) noexcept {
+      [&check_4](const gsl::not_null<CopyableKeyMapType*> local_map) {
         // Test serialization and that FixedHashMap works correctly after.
         test_serialization(*local_map);
 
@@ -533,8 +524,7 @@ void test_repeated_key() {
         check_4(after_map.insert_or_assign(key_4, 34), 34, true, &after_map);
         check_4(after_map.insert_or_assign(key_4, 44), 44, false, &after_map);
       },
-      [&check_4](
-          const gsl::not_null<NonCopyableKeyMapType*> local_map) noexcept {
+      [&check_4](const gsl::not_null<NonCopyableKeyMapType*> local_map) {
         check_4(local_map->insert_or_assign(4, 14), 14, true, local_map);
         check_4(local_map->insert_or_assign(4, 24), 24, false, local_map);
 
@@ -546,13 +536,12 @@ void test_repeated_key() {
 
   test_iterators(map);
   make_overloader(
-      [](const gsl::not_null<CopyableKeyMapType*> local_map) noexcept {
+      [](const gsl::not_null<CopyableKeyMapType*> local_map) {
         test_copy_semantics(*local_map);
         const auto map2 = *local_map;
         test_move_semantics(std::move(*local_map), map2);
       },
-      [
-      ](const gsl::not_null<NonCopyableKeyMapType*> /*local_map*/) noexcept {})(
+      [](const gsl::not_null<NonCopyableKeyMapType*> /*local_map*/) {})(
       make_not_null(&map));
 }
 

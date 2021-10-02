@@ -19,7 +19,7 @@ void extrinsic_curvature(
     const gsl::not_null<tnsr::ii<DataType, SpatialDim, Frame>*> ex_curv,
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_normal_vector,
     const tnsr::aa<DataType, SpatialDim, Frame>& pi,
-    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept {
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) {
   destructive_resize_components(ex_curv,
                                 get_size(get<0>(spacetime_normal_vector)));
   for (auto& component : *ex_curv) {
@@ -41,7 +41,7 @@ template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::ii<DataType, SpatialDim, Frame> extrinsic_curvature(
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_normal_vector,
     const tnsr::aa<DataType, SpatialDim, Frame>& pi,
-    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept {
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) {
   tnsr::ii<DataType, SpatialDim, Frame> ex_curv{};
   extrinsic_curvature(make_not_null(&ex_curv), spacetime_normal_vector, pi,
                       phi);
@@ -53,20 +53,20 @@ tnsr::ii<DataType, SpatialDim, Frame> extrinsic_curvature(
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(2, data)
 
-#define INSTANTIATE(_, data)                                               \
-  template void GeneralizedHarmonic::extrinsic_curvature(                  \
-      const gsl::not_null<tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>*>  \
-          ex_curv,                                                         \
-      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                  \
-          spacetime_normal_vector,                                         \
-      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi,             \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi) noexcept; \
-  template tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>                   \
-  GeneralizedHarmonic::extrinsic_curvature(                                \
-      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                  \
-          spacetime_normal_vector,                                         \
-      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi,             \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi) noexcept;
+#define INSTANTIATE(_, data)                                              \
+  template void GeneralizedHarmonic::extrinsic_curvature(                 \
+      const gsl::not_null<tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>*> \
+          ex_curv,                                                        \
+      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                 \
+          spacetime_normal_vector,                                        \
+      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi,            \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi);         \
+  template tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>                  \
+  GeneralizedHarmonic::extrinsic_curvature(                               \
+      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                 \
+          spacetime_normal_vector,                                        \
+      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi,            \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
                         (Frame::Grid, Frame::Inertial))

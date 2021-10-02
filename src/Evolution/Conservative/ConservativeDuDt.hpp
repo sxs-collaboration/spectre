@@ -55,8 +55,7 @@ struct ConservativeDuDt {
                             Frame::Inertial>& inverse_jacobian,
       const Variables<tmpl::list<::Tags::Flux<VarsTags, tmpl::size_t<Dim>,
                                               Frame::Inertial>...>>& fluxes,
-      const Variables<tmpl::list<::Tags::Source<VarsTags>...>>&
-          sources) noexcept {
+      const Variables<tmpl::list<::Tags::Source<VarsTags>...>>& sources) {
     static_assert(DgFormulation == ::dg::Formulation::StrongInertial,
                   "Curently only support StrongInertial DG formulation in "
                   "ConservativeDuDt.");
@@ -73,7 +72,7 @@ struct ConservativeDuDt {
                << div_fluxes.number_of_grid_points());
     *dt_vars = -div_fluxes;
     tmpl::for_each<typename System::sourced_variables>(
-        [&dt_vars, &sources](auto tag_v) noexcept {
+        [&dt_vars, &sources](auto tag_v) {
           using tag = typename decltype(tag_v)::type;
           const auto& source = get<::Tags::Source<tag>>(sources);
           auto& dt_var = get<StepPrefix<tag>>(*dt_vars);

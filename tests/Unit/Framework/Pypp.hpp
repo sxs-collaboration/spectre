@@ -60,8 +60,8 @@ struct ContainerPackAndUnpack<DataVector, ConversionClassList, std::nullptr_t> {
   using packed_container = DataVector;
   using packed_type = packed_container;
 
-  static inline unpacked_container unpack(
-      const packed_container& packed, const size_t grid_point_index) noexcept {
+  static inline unpacked_container unpack(const packed_container& packed,
+                                          const size_t grid_point_index) {
     ASSERT(grid_point_index < packed.size(),
            "Trying to slice DataVector of size " << packed.size()
                                                  << " with grid_point_index "
@@ -75,7 +75,7 @@ struct ContainerPackAndUnpack<DataVector, ConversionClassList, std::nullptr_t> {
     (*packed)[grid_point_index] = unpacked;
   }
 
-  static inline size_t get_size(const packed_container& packed) noexcept {
+  static inline size_t get_size(const packed_container& packed) {
     return packed.size();
   }
 };
@@ -87,8 +87,8 @@ struct ContainerPackAndUnpack<ComplexDataVector, ConversionClassList,
   using packed_container = ComplexDataVector;
   using packed_type = packed_container;
 
-  static inline unpacked_container unpack(
-      const packed_type& packed, const size_t grid_point_index) noexcept {
+  static inline unpacked_container unpack(const packed_type& packed,
+                                          const size_t grid_point_index) {
     ASSERT(grid_point_index < packed.size(),
            "Trying to slice ComplexDataVector of size "
                << packed.size() << " with grid_point_index "
@@ -102,7 +102,7 @@ struct ContainerPackAndUnpack<ComplexDataVector, ConversionClassList,
     (*packed)[grid_point_index] = unpacked;
   }
 
-  static inline size_t get_size(const packed_container& packed) noexcept {
+  static inline size_t get_size(const packed_container& packed) {
     return packed.size();
   }
 };
@@ -120,8 +120,8 @@ struct ContainerPackAndUnpack<Tensor<T, Ts...>, ConversionClassList,
   using packed_type =
       typename ContainerPackAndUnpack<T, ConversionClassList>::packed_type;
 
-  static inline unpacked_container unpack(
-      const packed_container& packed, const size_t grid_point_index) noexcept {
+  static inline unpacked_container unpack(const packed_container& packed,
+                                          const size_t grid_point_index) {
     unpacked_container unpacked{};
     for (size_t storage_index = 0; storage_index < unpacked.size();
          ++storage_index) {
@@ -143,7 +143,7 @@ struct ContainerPackAndUnpack<Tensor<T, Ts...>, ConversionClassList,
     }
   }
 
-  static inline size_t get_size(const packed_container& packed) noexcept {
+  static inline size_t get_size(const packed_container& packed) {
     return ContainerPackAndUnpack<T, ConversionClassList>::get_size(packed[0]);
   }
 };
@@ -161,8 +161,8 @@ struct ContainerPackAndUnpack<std::array<T, Size>, ConversionClassList,
   using packed_type =
       typename ContainerPackAndUnpack<T, ConversionClassList>::packed_type;
 
-  static inline unpacked_container unpack(
-      const packed_container& packed, const size_t grid_point_index) noexcept {
+  static inline unpacked_container unpack(const packed_container& packed,
+                                          const size_t grid_point_index) {
     unpacked_container unpacked{};
     for (size_t i = 0; i < Size; ++i) {
       gsl::at(unpacked, i) =
@@ -182,7 +182,7 @@ struct ContainerPackAndUnpack<std::array<T, Size>, ConversionClassList,
     }
   }
 
-  static inline size_t get_size(const packed_container& packed) noexcept {
+  static inline size_t get_size(const packed_container& packed) {
     return ContainerPackAndUnpack<T, ConversionClassList>::get_size(packed[0]);
   }
 };
@@ -201,8 +201,8 @@ struct ContainerPackAndUnpack<Scalar<SpinWeighted<ValueType, Spin>>,
       typename ContainerPackAndUnpack<ValueType,
                                       ConversionClassList>::packed_type;
 
-  static inline unpacked_container unpack(
-      const packed_container& packed, const size_t grid_point_index) noexcept {
+  static inline unpacked_container unpack(const packed_container& packed,
+                                          const size_t grid_point_index) {
     unpacked_container unpacked{};
     get(unpacked) =
         ContainerPackAndUnpack<ValueType, ConversionClassList>::unpack(
@@ -217,7 +217,7 @@ struct ContainerPackAndUnpack<Scalar<SpinWeighted<ValueType, Spin>>,
         make_not_null(&(get(*packed).data())), get(unpacked), grid_point_index);
   }
 
-  static inline size_t get_size(const packed_container& packed) noexcept {
+  static inline size_t get_size(const packed_container& packed) {
     return ContainerPackAndUnpack<ValueType, ConversionClassList>::get_size(
         packed[0].data());
   }
@@ -233,8 +233,8 @@ struct ContainerPackAndUnpack<std::optional<T>, ConversionClassList,
   using packed_type =
       typename ContainerPackAndUnpack<T, ConversionClassList>::packed_type;
 
-  static inline unpacked_container unpack(
-      const packed_container& packed, const size_t grid_point_index) noexcept {
+  static inline unpacked_container unpack(const packed_container& packed,
+                                          const size_t grid_point_index) {
     if (static_cast<bool>(packed)) {
       return unpacked_container{
           ContainerPackAndUnpack<T, ConversionClassList>::unpack(
@@ -260,7 +260,7 @@ struct ContainerPackAndUnpack<std::optional<T>, ConversionClassList,
         make_not_null(&*packed), unpacked, grid_point_index);
   }
 
-  static inline size_t get_size(const packed_container& packed) noexcept {
+  static inline size_t get_size(const packed_container& packed) {
     if (static_cast<bool>(packed)) {
       return ContainerPackAndUnpack<T, ConversionClassList>::get_size(*packed);
     }
@@ -277,8 +277,8 @@ struct ContainerPackAndUnpack<
   using packed_container = T;
   using packed_type = packed_container;
 
-  static inline unpacked_container unpack(
-      const packed_container t, const size_t /*grid_point_index*/) noexcept {
+  static inline unpacked_container unpack(const packed_container t,
+                                          const size_t /*grid_point_index*/) {
     return t;
   }
 
@@ -288,7 +288,7 @@ struct ContainerPackAndUnpack<
     *packed = unpacked;
   }
 
-  static inline size_t get_size(const packed_container& /*packed*/) noexcept {
+  static inline size_t get_size(const packed_container& /*packed*/) {
     return 1;
   }
 };

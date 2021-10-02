@@ -79,43 +79,42 @@ class PlaneWave : public MarkAsAnalyticSolution {
 
   PlaneWave() = default;
   PlaneWave(std::array<double, Dim> wave_vector, std::array<double, Dim> center,
-            std::unique_ptr<MathFunction<1, Frame::Inertial>> profile) noexcept;
-  PlaneWave(const PlaneWave&) noexcept = delete;
-  PlaneWave& operator=(const PlaneWave&) noexcept = delete;
-  PlaneWave(PlaneWave&&) noexcept = default;
-  PlaneWave& operator=(PlaneWave&&) noexcept = default;
-  ~PlaneWave() noexcept = default;
+            std::unique_ptr<MathFunction<1, Frame::Inertial>> profile);
+  PlaneWave(const PlaneWave&) = delete;
+  PlaneWave& operator=(const PlaneWave&) = delete;
+  PlaneWave(PlaneWave&&) = default;
+  PlaneWave& operator=(PlaneWave&&) = default;
+  ~PlaneWave() = default;
 
   /// The value of the scalar field
   template <typename T>
-  Scalar<T> psi(const tnsr::I<T, Dim>& x, double t) const noexcept;
+  Scalar<T> psi(const tnsr::I<T, Dim>& x, double t) const;
 
   /// The time derivative of the scalar field
   template <typename T>
-  Scalar<T> dpsi_dt(const tnsr::I<T, Dim>& x, double t) const noexcept;
+  Scalar<T> dpsi_dt(const tnsr::I<T, Dim>& x, double t) const;
 
   /// The spatial derivatives of the scalar field
   template <typename T>
-  tnsr::i<T, Dim> dpsi_dx(const tnsr::I<T, Dim>& x, double t) const noexcept;
+  tnsr::i<T, Dim> dpsi_dx(const tnsr::I<T, Dim>& x, double t) const;
 
   /// The second time derivative of the scalar field
   template <typename T>
-  Scalar<T> d2psi_dt2(const tnsr::I<T, Dim>& x, double t) const noexcept;
+  Scalar<T> d2psi_dt2(const tnsr::I<T, Dim>& x, double t) const;
 
   /// The second mixed derivatives of the scalar field
   template <typename T>
-  tnsr::i<T, Dim> d2psi_dtdx(const tnsr::I<T, Dim>& x, double t) const noexcept;
+  tnsr::i<T, Dim> d2psi_dtdx(const tnsr::I<T, Dim>& x, double t) const;
 
   /// The second spatial derivatives of the scalar field
   template <typename T>
-  tnsr::ii<T, Dim> d2psi_dxdx(const tnsr::I<T, Dim>& x, double t) const
-      noexcept;
+  tnsr::ii<T, Dim> d2psi_dxdx(const tnsr::I<T, Dim>& x, double t) const;
 
   /// Retrieve the evolution variables at time `t` and spatial coordinates `x`
   tuples::TaggedTuple<ScalarWave::Pi, ScalarWave::Phi<Dim>, ScalarWave::Psi>
   variables(const tnsr::I<DataVector, Dim>& x, double t,
             tmpl::list<ScalarWave::Pi, ScalarWave::Phi<Dim>,
-                       ScalarWave::Psi> /*meta*/) const noexcept;
+                       ScalarWave::Psi> /*meta*/) const;
 
   /// Retrieve the time derivative of the evolution variables at time `t` and
   /// spatial coordinates `x`
@@ -128,14 +127,14 @@ class PlaneWave : public MarkAsAnalyticSolution {
   variables(
       const tnsr::I<DataVector, Dim>& x, double t,
       tmpl::list<::Tags::dt<ScalarWave::Pi>, ::Tags::dt<ScalarWave::Phi<Dim>>,
-                 ::Tags::dt<ScalarWave::Psi>> /*meta*/) const noexcept;
+                 ::Tags::dt<ScalarWave::Psi>> /*meta*/) const;
 
   // clang-tidy: no pass by reference
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
 
  private:
   template <typename T>
-  T u(const tnsr::I<T, Dim>& x, double t) const noexcept;
+  T u(const tnsr::I<T, Dim>& x, double t) const;
 
   std::array<double, Dim> wave_vector_{};
   std::array<double, Dim> center_{};

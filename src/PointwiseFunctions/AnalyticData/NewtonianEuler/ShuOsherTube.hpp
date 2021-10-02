@@ -73,7 +73,7 @@ class ShuOsherTube : public MarkAsAnalyticData {
   struct LeftMassDensity {
     using type = double;
     static constexpr Options::String help = {"The left mass density."};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
 
   struct LeftVelocity {
@@ -84,7 +84,7 @@ class ShuOsherTube : public MarkAsAnalyticData {
   struct LeftPressure {
     using type = double;
     static constexpr Options::String help = {"The left pressure."};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
 
   struct RightVelocity {
@@ -95,14 +95,14 @@ class ShuOsherTube : public MarkAsAnalyticData {
   struct RightPressure {
     using type = double;
     static constexpr Options::String help = {"The right pressure."};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
 
   struct Epsilon {
     using type = double;
     static constexpr Options::String help = {"Sinusoid amplitude."};
-    static type lower_bound() noexcept { return 0.0; }
-    static type upper_bound() noexcept { return 1.0; }
+    static type lower_bound() { return 0.0; }
+    static type upper_bound() { return 1.0; }
   };
 
   struct Lambda {
@@ -119,56 +119,53 @@ class ShuOsherTube : public MarkAsAnalyticData {
 
   ShuOsherTube(double jump_position, double mass_density_l, double velocity_l,
                double pressure_l, double velocity_r, double pressure_r,
-               double epsilon, double lambda) noexcept;
+               double epsilon, double lambda);
   ShuOsherTube() = default;
   ShuOsherTube(const ShuOsherTube& /*rhs*/) = delete;
   ShuOsherTube& operator=(const ShuOsherTube& /*rhs*/) = delete;
-  ShuOsherTube(ShuOsherTube&& /*rhs*/) noexcept = default;
-  ShuOsherTube& operator=(ShuOsherTube&& /*rhs*/) noexcept = default;
+  ShuOsherTube(ShuOsherTube&& /*rhs*/) = default;
+  ShuOsherTube& operator=(ShuOsherTube&& /*rhs*/) = default;
   ~ShuOsherTube() = default;
 
   template <typename DataType, typename... Tags>
   tuples::TaggedTuple<Tags...> variables(
       const tnsr::I<DataType, 1, Frame::Inertial>& x,
-      tmpl::list<Tags...> /*meta*/) const noexcept {
+      tmpl::list<Tags...> /*meta*/) const {
     return {tuples::get<Tags>(variables(x, tmpl::list<Tags>{}))...};
   }
 
-  const EquationsOfState::IdealFluid<false>& equation_of_state()
-      const noexcept {
+  const EquationsOfState::IdealFluid<false>& equation_of_state() const {
     return equation_of_state_;
   }
 
   // clang-tidy: no runtime references
-  void pup(PUP::er& p) noexcept;  //  NOLINT
+  void pup(PUP::er& p);  //  NOLINT
 
  private:
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 1, Frame::Inertial>& x,
-                 tmpl::list<Tags::MassDensity<DataType>> /*meta*/)
-      const noexcept -> tuples::TaggedTuple<Tags::MassDensity<DataType>>;
+                 tmpl::list<Tags::MassDensity<DataType>> /*meta*/) const
+      -> tuples::TaggedTuple<Tags::MassDensity<DataType>>;
 
   template <typename DataType>
   auto variables(
       const tnsr::I<DataType, 1, Frame::Inertial>& x,
-      tmpl::list<Tags::Velocity<DataType, 1, Frame::Inertial>> /*meta*/)
-      const noexcept
+      tmpl::list<Tags::Velocity<DataType, 1, Frame::Inertial>> /*meta*/) const
       -> tuples::TaggedTuple<Tags::Velocity<DataType, 1, Frame::Inertial>>;
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 1, Frame::Inertial>& x,
-                 tmpl::list<Tags::Pressure<DataType>> /*meta*/) const noexcept
+                 tmpl::list<Tags::Pressure<DataType>> /*meta*/) const
       -> tuples::TaggedTuple<Tags::Pressure<DataType>>;
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 1, Frame::Inertial>& x,
                  tmpl::list<Tags::SpecificInternalEnergy<DataType>> /*meta*/)
-      const noexcept
-      -> tuples::TaggedTuple<Tags::SpecificInternalEnergy<DataType>>;
+      const -> tuples::TaggedTuple<Tags::SpecificInternalEnergy<DataType>>;
 
   friend bool
   operator==(  // NOLINT (clang-tidy: readability-redundant-declaration)
-      const ShuOsherTube& lhs, const ShuOsherTube& rhs) noexcept;
+      const ShuOsherTube& lhs, const ShuOsherTube& rhs);
 
   double mass_density_l_ = std::numeric_limits<double>::signaling_NaN();
   double velocity_l_ = std::numeric_limits<double>::signaling_NaN();
@@ -182,5 +179,5 @@ class ShuOsherTube : public MarkAsAnalyticData {
   EquationsOfState::IdealFluid<false> equation_of_state_{adiabatic_index_};
 };
 
-bool operator!=(const ShuOsherTube& lhs, const ShuOsherTube& rhs) noexcept;
+bool operator!=(const ShuOsherTube& lhs, const ShuOsherTube& rhs);
 }  // namespace NewtonianEuler::AnalyticData

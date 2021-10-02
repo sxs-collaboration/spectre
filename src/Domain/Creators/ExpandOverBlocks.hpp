@@ -45,11 +45,11 @@ namespace domain {
  */
 template <typename T, size_t Dim>
 struct ExpandOverBlocks {
-  ExpandOverBlocks(size_t num_blocks) noexcept;
+  ExpandOverBlocks(size_t num_blocks);
   ExpandOverBlocks(
       std::vector<std::string> block_names,
       std::unordered_map<std::string, std::unordered_set<std::string>>
-          block_groups = {}) noexcept;
+          block_groups = {});
 
   /// Repeat over all blocks and dimensions (isotropic and homogeneous)
   std::vector<std::array<T, Dim>> operator()(const T& value) const;

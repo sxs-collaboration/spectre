@@ -24,7 +24,7 @@ void find_generalized_eigenvalues(
     const gsl::not_null<DataVector*> eigenvalues_real_part,
     const gsl::not_null<DataVector*> eigenvalues_imaginary_part,
     const gsl::not_null<Matrix*> eigenvectors, Matrix matrix_a,
-    Matrix matrix_b) noexcept {
+    Matrix matrix_b) {
   // Sanity checks on the sizes of the vectors and matrices
   const size_t number_of_rows = matrix_a.rows();
   ASSERT(number_of_rows == matrix_a.columns(),

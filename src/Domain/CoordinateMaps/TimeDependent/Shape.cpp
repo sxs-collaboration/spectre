@@ -28,8 +28,7 @@
 namespace domain::CoordinateMaps::TimeDependent {
 
 template <typename T>
-std::array<T, 2> cartesian_to_spherical(
-    const std::array<T, 3>& cartesian) noexcept {
+std::array<T, 2> cartesian_to_spherical(const std::array<T, 3>& cartesian) {
   const auto& [x, y, z] = cartesian;
   return {atan2(hypot(x, y), z), atan2(y, x)};
 }
@@ -38,7 +37,7 @@ Shape::Shape(
     const std::array<double, 3>& center, const size_t l_max, const size_t m_max,
     std::unique_ptr<ShapeMapTransitionFunctions::ShapeMapTransitionFunction>
         transition_func,
-    std::string function_of_time_name) noexcept
+    std::string function_of_time_name)
     : f_of_t_name_(std::move(function_of_time_name)),
       center_(center),
       l_max_(l_max),
@@ -54,7 +53,7 @@ Shape::Shape(
 template <typename T>
 std::array<tt::remove_cvref_wrap_t<T>, 3> Shape::operator()(
     const std::array<T, 3>& source_coords, const double time,
-    const FunctionsOfTimeMap& functions_of_time) const noexcept {
+    const FunctionsOfTimeMap& functions_of_time) const {
   ASSERT(functions_of_time.find(f_of_t_name_) != functions_of_time.end(),
          "Could not find function of time: '"
              << f_of_t_name_ << "' in functions of time. Known functions are "
@@ -93,7 +92,7 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> Shape::operator()(
 
 std::optional<std::array<double, 3>> Shape::inverse(
     const std::array<double, 3>& target_coords, const double time,
-    const FunctionsOfTimeMap& functions_of_time) const noexcept {
+    const FunctionsOfTimeMap& functions_of_time) const {
   ASSERT(functions_of_time.find(f_of_t_name_) != functions_of_time.end(),
          "Could not find function of time: '"
              << f_of_t_name_ << "' in functions of time. Known functions are "
@@ -118,7 +117,7 @@ std::optional<std::array<double, 3>> Shape::inverse(
 template <typename T>
 std::array<tt::remove_cvref_wrap_t<T>, 3> Shape::frame_velocity(
     const std::array<T, 3>& source_coords, const double time,
-    const FunctionsOfTimeMap& functions_of_time) const noexcept {
+    const FunctionsOfTimeMap& functions_of_time) const {
   ASSERT(functions_of_time.find(f_of_t_name_) != functions_of_time.end(),
          "Could not find function of time: '"
              << f_of_t_name_ << "' in functions of time. Known functions are "
@@ -140,7 +139,7 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> Shape::frame_velocity(
 template <typename T>
 tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Shape::jacobian(
     const std::array<T, 3>& source_coords, const double time,
-    const FunctionsOfTimeMap& functions_of_time) const noexcept {
+    const FunctionsOfTimeMap& functions_of_time) const {
   ASSERT(functions_of_time.find(f_of_t_name_) != functions_of_time.end(),
          "Could not find function of time: '"
              << f_of_t_name_ << "' in functions of time. Known functions are "
@@ -287,14 +286,13 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Shape::jacobian(
 template <typename T>
 tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Shape::inv_jacobian(
     const std::array<T, 3>& source_coords, const double time,
-    const FunctionsOfTimeMap& functions_of_time) const noexcept {
+    const FunctionsOfTimeMap& functions_of_time) const {
   return determinant_and_inverse(
              jacobian(source_coords, time, functions_of_time))
       .second;
 }
 
-void Shape::check_coefficients(
-    [[maybe_unused]] const DataVector& coefs) const noexcept {
+void Shape::check_coefficients([[maybe_unused]] const DataVector& coefs) const {
 #ifdef SPECTRE_DEBUG
   // The expected format of the coefficients passed from the control system can
   // be changed depending on what turns out to be most convenient for the
@@ -318,17 +316,15 @@ void Shape::check_coefficients(
 #endif  // SPECTRE_DEBUG
 }
 
-bool operator==(const Shape& lhs, const Shape& rhs) noexcept {
+bool operator==(const Shape& lhs, const Shape& rhs) {
   return lhs.f_of_t_name_ == rhs.f_of_t_name_ and lhs.center_ == rhs.center_ and
          lhs.l_max_ == rhs.l_max_ and lhs.m_max_ == rhs.m_max_ and
          *lhs.transition_func_ == *rhs.transition_func_;
 }
 
-bool operator!=(const Shape& lhs, const Shape& rhs) noexcept {
-  return not(lhs == rhs);
-}
+bool operator!=(const Shape& lhs, const Shape& rhs) { return not(lhs == rhs); }
 
-void Shape::pup(PUP::er& p) noexcept {
+void Shape::pup(PUP::er& p) {
   p | l_max_;
   p | m_max_;
   p | center_;

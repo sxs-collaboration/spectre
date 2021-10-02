@@ -61,7 +61,7 @@ struct Metavariables {
           const db::DataBox<DbTagsList>& box,
           const std::vector<
               std::pair<Direction<volume_dim>, ElementId<volume_dim>>>&
-              mortars_to_reconstruct_to) noexcept {
+              mortars_to_reconstruct_to) {
         const NeighborDataMap<Dim>& neighbor_data =
             db::get<evolution::dg::subcell::Tags::
                         NeighborDataForReconstructionAndRdmpTci<Dim>>(box);

@@ -10,7 +10,7 @@
 
 template <typename T>
 DynamicBuffer<T>::DynamicBuffer(const size_t number_of_vectors,
-                                const size_t number_of_grid_points) noexcept
+                                const size_t number_of_grid_points)
     : number_of_grid_points_(number_of_grid_points), data_(number_of_vectors) {
   if constexpr (is_data_vector_type) {
     buffer_.resize(number_of_vectors * number_of_grid_points);
@@ -30,7 +30,7 @@ DynamicBuffer<T>::DynamicBuffer(const size_t number_of_vectors,
 }
 
 template <typename T>
-DynamicBuffer<T>::DynamicBuffer(const DynamicBuffer<T>& other) noexcept
+DynamicBuffer<T>::DynamicBuffer(const DynamicBuffer<T>& other)
     : number_of_grid_points_(other.number_of_grid_points_) {
   if constexpr (is_data_vector_type) {
     data_.resize(other.size());
@@ -42,8 +42,7 @@ DynamicBuffer<T>::DynamicBuffer(const DynamicBuffer<T>& other) noexcept
 }
 
 template <typename T>
-DynamicBuffer<T>& DynamicBuffer<T>::operator=(
-    const DynamicBuffer& other) noexcept {
+DynamicBuffer<T>& DynamicBuffer<T>::operator=(const DynamicBuffer& other) {
   if (this == &other) {
     return *this;
   }
@@ -59,7 +58,7 @@ DynamicBuffer<T>& DynamicBuffer<T>::operator=(
 }
 
 template <typename T>
-void DynamicBuffer<T>::pup(PUP::er& p) noexcept {
+void DynamicBuffer<T>::pup(PUP::er& p) {
   p | number_of_grid_points_;
   p | buffer_;
   if constexpr (is_data_vector_type) {
@@ -73,7 +72,7 @@ void DynamicBuffer<T>::pup(PUP::er& p) noexcept {
 }
 
 template <typename T>
-void DynamicBuffer<T>::set_references() noexcept {
+void DynamicBuffer<T>::set_references() {
   if constexpr (is_data_vector_type) {
     for (size_t i = 0; i < size(); ++i) {
       data_[i].set_data_ref(&buffer_[number_of_grid_points_ * i],
@@ -83,22 +82,20 @@ void DynamicBuffer<T>::set_references() noexcept {
 }
 
 template <typename T>
-bool operator==(const DynamicBuffer<T>& lhs,
-                const DynamicBuffer<T>& rhs) noexcept {
+bool operator==(const DynamicBuffer<T>& lhs, const DynamicBuffer<T>& rhs) {
   return lhs.data_ == rhs.data_ and
          lhs.number_of_grid_points_ == rhs.number_of_grid_points_;
 }
 
 template <typename T>
-bool operator!=(const DynamicBuffer<T>& lhs,
-                const DynamicBuffer<T>& rhs) noexcept {
+bool operator!=(const DynamicBuffer<T>& lhs, const DynamicBuffer<T>& rhs) {
   return not(lhs == rhs);
 }
 
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define GEN_OP(op, type)                                    \
   template bool operator op(const DynamicBuffer<type>& lhs, \
-                            const DynamicBuffer<type>& rhs) noexcept;
+                            const DynamicBuffer<type>& rhs);
 #define INSTANTIATE(_, data)                 \
   template class DynamicBuffer<DTYPE(data)>; \
   GEN_OP(==, DTYPE(data))                    \

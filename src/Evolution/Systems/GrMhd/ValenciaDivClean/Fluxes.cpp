@@ -45,7 +45,7 @@ void fluxes_impl(
     const Scalar<DataVector>& tilde_phi, const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, 3, Frame::Inertial>& shift,
     const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity) noexcept {
+    const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity) {
   DataVector& transport_velocity_I = get(*transport_velocity);
   for (size_t i = 0; i < 3; ++i) {
     transport_velocity_I = get(lapse) * spatial_velocity.get(i) - shift.get(i);
@@ -89,7 +89,7 @@ void ComputeFluxes::apply(
     const Scalar<DataVector>& pressure,
     const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,
     const Scalar<DataVector>& lorentz_factor,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& magnetic_field) noexcept {
+    const tnsr::I<DataVector, 3, Frame::Inertial>& magnetic_field) {
   Variables<tmpl::list<hydro::Tags::SpatialVelocityOneForm<DataVector, 3>,
                        hydro::Tags::MagneticFieldOneForm<DataVector, 3>,
                        hydro::Tags::MagneticFieldDotSpatialVelocity<DataVector>,

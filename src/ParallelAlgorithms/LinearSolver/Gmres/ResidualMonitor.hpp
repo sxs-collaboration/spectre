@@ -61,7 +61,7 @@ struct ResidualMonitor {
 
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
-      Parallel::CProxy_GlobalCache<Metavariables>& global_cache) noexcept {
+      Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *(global_cache.ckLocalBranch());
     Parallel::get_parallel_component<ResidualMonitor>(local_cache)
         .start_phase(next_phase);
@@ -91,7 +91,7 @@ struct InitializeResidualMonitor {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     // The `InitializeResidualMagnitude` action populates these tags
     // with initial values
     Initialization::mutate_assign<tmpl::list<initial_residual_magnitude_tag>>(

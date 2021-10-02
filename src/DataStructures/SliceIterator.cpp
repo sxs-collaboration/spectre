@@ -49,18 +49,18 @@ std::pair<std::unique_ptr<std::pair<size_t, size_t>[]>,
           std::array<std::pair<gsl::span<std::pair<size_t, size_t>>,
                                gsl::span<std::pair<size_t, size_t>>>,
                      VolumeDim>>
-volume_and_slice_indices(const Index<VolumeDim>& extents) noexcept {
+volume_and_slice_indices(const Index<VolumeDim>& extents) {
   // array over dim, pair over lower/upper, span<pair> over volume/boundary
   std::array<std::pair<gsl::span<std::pair<size_t, size_t>>,
                        gsl::span<std::pair<size_t, size_t>>>,
              VolumeDim>
       volume_and_slice_indices{};
 
-  const size_t half_number_boundary_points = alg::accumulate(
-      alg::iota(std::array<size_t, VolumeDim>{{}}, 0_st),
-      0_st, [&extents](const size_t state, const size_t d) noexcept {
-        return state + extents.slice_away(d).product();
-      });
+  const size_t half_number_boundary_points =
+      alg::accumulate(alg::iota(std::array<size_t, VolumeDim>{{}}, 0_st), 0_st,
+                      [&extents](const size_t state, const size_t d) {
+                        return state + extents.slice_away(d).product();
+                      });
   ASSERT(half_number_boundary_points != 0,
          "If you encounter this assert you've found a bug in the "
          "'volume_and_slice_indices' function. Please file an issue describing "
@@ -110,8 +110,7 @@ volume_and_slice_indices(const Index<VolumeDim>& extents) noexcept {
       std::array<std::pair<gsl::span<std::pair<size_t, size_t>>,               \
                            gsl::span<std::pair<size_t, size_t>>>,              \
                  DIM(data)>>                                                   \
-  volume_and_slice_indices<DIM(data)>(                                         \
-      const Index<DIM(data)>& extents) noexcept;
+  volume_and_slice_indices<DIM(data)>(const Index<DIM(data)>& extents);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 

@@ -50,7 +50,7 @@ void test_compute_item_in_databox(
     const tnsr::I<DataVector, Dim>& spatial_velocity,
     const Scalar<DataVector>& spatial_velocity_squared,
     const Scalar<DataVector>& sound_speed_squared,
-    const tnsr::i<DataVector, Dim>& normal) noexcept {
+    const tnsr::i<DataVector, Dim>& normal) {
   TestHelpers::db::test_compute_tag<
       RelativisticEuler::Valencia::Tags::CharacteristicSpeedsCompute<Dim>>(
       "CharacteristicSpeeds");
@@ -72,7 +72,7 @@ void test_compute_item_in_databox(
 }
 
 template <size_t Dim>
-void test_characteristic_speeds(const DataVector& used_for_size) noexcept {
+void test_characteristic_speeds(const DataVector& used_for_size) {
   MAKE_GENERATOR(generator);
   namespace helper = TestHelpers::hydro;
   namespace gr_helper = TestHelpers::gr;
@@ -128,7 +128,7 @@ template <size_t Dim>
 Matrix matrix_of_eigenvalues(const tnsr::I<double, Dim>& spatial_velocity,
                              const Scalar<double>& spatial_velocity_squared,
                              const Scalar<double>& sound_speed_squared,
-                             const tnsr::i<double, Dim>& normal) noexcept {
+                             const tnsr::i<double, Dim>& normal) {
   const double v_n = get(dot_product(spatial_velocity, normal));
   const double v_squared = get(spatial_velocity_squared);
   const double c_squared = get(sound_speed_squared);
@@ -158,7 +158,7 @@ Matrix expected_flux_jacobian(
     const Scalar<double>& sound_speed_squared,
     const Scalar<double>& kappa_over_density,
     const tnsr::i<double, Dim>& normal,
-    const tnsr::I<double, Dim>& normal_vector) noexcept {
+    const tnsr::I<double, Dim>& normal_vector) {
   const double w = get(lorentz_factor);
   const double w_squared = square(w);
   const double v_n = get(dot_product(spatial_velocity, normal));
@@ -214,7 +214,7 @@ template <size_t Dim, size_t ThermodynamicDim>
 void test_characteristic_matrices_work(
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
         equation_of_state,
-    const double used_for_size) noexcept {
+    const double used_for_size) {
   MAKE_GENERATOR(generator);
   namespace helper = TestHelpers::hydro;
   namespace gr_helper = TestHelpers::gr;
@@ -287,7 +287,7 @@ void test_characteristic_matrices_work(
       lorentz_factor, spatial_metric, det_and_inv_metric.second,
       det_and_inv_metric.first, random_normal);
 
-  const auto check_identity = [](const auto& left, const auto& right) noexcept {
+  const auto check_identity = [](const auto& left, const auto& right) {
     // Very small values of the sound speed lead to large values of some left
     // eigenvectors (e.g Seed = 3106390430), so we use a moderate tolerance.
     Approx local_approx = Approx::custom().epsilon(1.0e-6).scale(1.0);
@@ -305,7 +305,7 @@ void test_characteristic_matrices_work(
 
   const auto check_diagonalization = [](const auto& left, const auto& right,
                                         const auto& eigenvalues,
-                                        const auto& expected) noexcept {
+                                        const auto& expected) {
     Approx local_approx = Approx::custom().epsilon(1.0e-8).scale(1.0);
     const Matrix flux_jacobian = right * eigenvalues * left;
     for (size_t i = 0; i < Dim + 2; ++i) {
@@ -353,7 +353,7 @@ void test_characteristic_matrices_work(
 }
 
 template <size_t Dim>
-void test_characteristic_matrices(const double used_for_size) noexcept {
+void test_characteristic_matrices(const double used_for_size) {
   test_characteristic_matrices_work<Dim>(
       EquationsOfState::IdealFluid<true>{5.0 / 3.0}, used_for_size);
   test_characteristic_matrices_work<Dim>(

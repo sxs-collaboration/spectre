@@ -47,9 +47,8 @@ struct Functions;
 
 template <size_t Dim>
 struct Functions<Tags::Flux<Var1, tmpl::size_t<Dim>, Frame::Inertial>> {
-  static auto flux(
-      const MathFunctions::TensorProduct<Dim>& f,
-      const tnsr::I<DataVector, Dim, Frame::Inertial>& x) noexcept {
+  static auto flux(const MathFunctions::TensorProduct<Dim>& f,
+                   const tnsr::I<DataVector, Dim, Frame::Inertial>& x) {
     auto result =
         make_with_value<tnsr::I<DataVector, Dim, Frame::Inertial>>(x, 0.);
     const auto f_of_x = f(x);
@@ -60,7 +59,7 @@ struct Functions<Tags::Flux<Var1, tmpl::size_t<Dim>, Frame::Inertial>> {
   }
   static auto divergence_of_flux(
       const MathFunctions::TensorProduct<Dim>& f,
-      const tnsr::I<DataVector, Dim, Frame::Inertial>& x) noexcept {
+      const tnsr::I<DataVector, Dim, Frame::Inertial>& x) {
     auto result = make_with_value<Scalar<DataVector>>(x, 0.);
     const auto df = f.first_derivatives(x);
     for (size_t d = 0; d < Dim; ++d) {
@@ -72,9 +71,8 @@ struct Functions<Tags::Flux<Var1, tmpl::size_t<Dim>, Frame::Inertial>> {
 
 template <size_t Dim>
 struct Functions<Tags::Flux<Var2<Dim>, tmpl::size_t<Dim>, Frame::Inertial>> {
-  static auto flux(
-      const MathFunctions::TensorProduct<Dim>& f,
-      const tnsr::I<DataVector, Dim, Frame::Inertial>& x) noexcept {
+  static auto flux(const MathFunctions::TensorProduct<Dim>& f,
+                   const tnsr::I<DataVector, Dim, Frame::Inertial>& x) {
     auto result =
         make_with_value<tnsr::Ij<DataVector, Dim, Frame::Inertial>>(x, 0.);
     const auto f_of_x = f(x);
@@ -87,7 +85,7 @@ struct Functions<Tags::Flux<Var2<Dim>, tmpl::size_t<Dim>, Frame::Inertial>> {
   }
   static auto divergence_of_flux(
       const MathFunctions::TensorProduct<Dim>& f,
-      const tnsr::I<DataVector, Dim, Frame::Inertial>& x) noexcept {
+      const tnsr::I<DataVector, Dim, Frame::Inertial>& x) {
     auto result =
         make_with_value<tnsr::i<DataVector, Dim, Frame::Inertial>>(x, 0.);
     const auto df = f.first_derivatives(x);
@@ -195,22 +193,22 @@ using Affine2D = domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>;
 using Affine3D = domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
 
 template <size_t VolumeDim>
-auto make_affine_map() noexcept;
+auto make_affine_map();
 
 template <>
-auto make_affine_map<1>() noexcept {
+auto make_affine_map<1>() {
   return domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
       Affine{-1.0, 1.0, -0.3, 0.7});
 }
 
 template <>
-auto make_affine_map<2>() noexcept {
+auto make_affine_map<2>() {
   return domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
       Affine2D{Affine{-1.0, 1.0, -0.3, 0.7}, Affine{-1.0, 1.0, 0.3, 0.55}});
 }
 
 template <>
-auto make_affine_map<3>() noexcept {
+auto make_affine_map<3>() {
   return domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
       Affine3D{Affine{-1.0, 1.0, -0.3, 0.7}, Affine{-1.0, 1.0, 0.3, 0.55},
                Affine{-1.0, 1.0, 2.3, 2.8}});
@@ -219,7 +217,7 @@ auto make_affine_map<3>() noexcept {
 template <dg::Formulation DgFormulation, size_t Dim>
 void test(const Mesh<Dim>& mesh,
           std::array<std::unique_ptr<MathFunction<1, Frame::Inertial>>, Dim>
-              functions) noexcept {
+              functions) {
   using flux_tags = tmpl::list<
       db::add_tag_prefix<Tags::Flux, Var1, tmpl::size_t<Dim>, Frame::Inertial>,
       db::add_tag_prefix<Tags::Flux, Var2<Dim>, tmpl::size_t<Dim>,
@@ -243,7 +241,7 @@ void test(const Mesh<Dim>& mesh,
   MathFunctions::TensorProduct<Dim> f(1.0, std::move(functions));
 
   tmpl::for_each<flux_tags>(
-      [&inertial_coords, &f, &fluxes, &expected_div_fluxes](auto tag) noexcept {
+      [&inertial_coords, &f, &fluxes, &expected_div_fluxes](auto tag) {
         using FluxTag = tmpl::type_from<decltype(tag)>;
         get<FluxTag>(fluxes) = Functions<FluxTag>::flux(f, inertial_coords);
         using DivFluxTag = Tags::div<FluxTag>;

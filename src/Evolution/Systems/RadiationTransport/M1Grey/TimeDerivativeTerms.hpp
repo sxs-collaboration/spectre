@@ -80,7 +80,7 @@ struct TimeDerivativeTerms {
       const tnsr::i<DataVector, 3>& d_lapse,
       const tnsr::iJ<DataVector, 3>& d_shift,
       const tnsr::ijj<DataVector, 3>& d_spatial_metric,
-      const tnsr::ii<DataVector, 3>& extrinsic_curvature) noexcept {
+      const tnsr::ii<DataVector, 3>& extrinsic_curvature) {
     *temp_inv_spatial_metric = inv_spatial_metric;
     EXPAND_PACK_LEFT_TO_RIGHT(detail::compute_fluxes_impl(
         tilde_e_flux, tilde_s_flux, tilde_s_M, tilde_e, tilde_s, tilde_p, lapse,

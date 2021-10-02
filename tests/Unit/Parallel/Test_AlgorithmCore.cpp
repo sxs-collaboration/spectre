@@ -48,18 +48,17 @@ struct TestAlgorithmArrayInstance {
   TestAlgorithmArrayInstance() = default;
   int i = 0;
   // clang-tidy: no non-const references
-  void pup(PUP::er& p) noexcept {  // NOLINT
+  void pup(PUP::er& p) {  // NOLINT
     p | i;
   }
 };
 
 bool operator==(const TestAlgorithmArrayInstance& lhs,
-                const TestAlgorithmArrayInstance& rhs) noexcept {
+                const TestAlgorithmArrayInstance& rhs) {
   return lhs.i == rhs.i;
 }
 
-TestAlgorithmArrayInstance& operator++(
-    TestAlgorithmArrayInstance& instance) noexcept {
+TestAlgorithmArrayInstance& operator++(TestAlgorithmArrayInstance& instance) {
   instance.i++;
   return instance;
 }
@@ -76,22 +75,22 @@ struct hash<TestAlgorithmArrayInstance> {
 struct ElementId {};
 
 struct CountActionsCalled : db::SimpleTag {
-  static std::string name() noexcept { return "CountActionsCalled"; }
+  static std::string name() { return "CountActionsCalled"; }
   using type = int;
 };
 
 struct Int0 : db::SimpleTag {
-  static std::string name() noexcept { return "Int0"; }
+  static std::string name() { return "Int0"; }
   using type = int;
 };
 
 struct Int1 : db::SimpleTag {
-  static std::string name() noexcept { return "Int1"; }
+  static std::string name() { return "Int1"; }
   using type = int;
 };
 
 struct TemporalId : db::SimpleTag {
-  static std::string name() noexcept { return "TemporalId"; }
+  static std::string name() { return "TemporalId"; }
   using type = TestAlgorithmArrayInstance;
 };
 
@@ -109,7 +108,7 @@ struct increment_count_actions_called {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     static_assert(
         std::is_same_v<ParallelComponent, NoOpsComponent<TestMetavariables>>,
         "The ParallelComponent is not deduced to be the right type");
@@ -133,7 +132,7 @@ struct no_op {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept
+                    const ParallelComponent* const /*meta*/)
   // [apply_iterative]
   {
     static_assert(
@@ -154,7 +153,7 @@ struct initialize {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     static_assert(
         std::is_same_v<ParallelComponent, NoOpsComponent<TestMetavariables>>,
         "The ParallelComponent is not deduced to be the right type");
@@ -174,7 +173,7 @@ struct initialize {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     return {std::move(box), true};
   }
 };
@@ -241,7 +240,7 @@ struct add_int_value_10 {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     db::mutate<CountActionsCalled>(
         make_not_null(&box),
         [](const gsl::not_null<int*> count_actions_called) {
@@ -263,7 +262,7 @@ struct increment_int0 {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     db::mutate<CountActionsCalled>(
         make_not_null(&box),
         [](const gsl::not_null<int*> count_actions_called) {
@@ -284,7 +283,7 @@ struct remove_int0 {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     SPECTRE_PARALLEL_REQUIRE(db::get<Int0>(box) == 11);
     db::mutate<CountActionsCalled>(
         make_not_null(&box),
@@ -306,7 +305,7 @@ struct test_args {
   static void apply(db::DataBox<DbTags>& box,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/, const double v0,
-                    std::vector<double>&& v1) noexcept {
+                    std::vector<double>&& v1) {
     // [requires_action]
     SPECTRE_PARALLEL_REQUIRE(v0 == 4.82937);
     SPECTRE_PARALLEL_REQUIRE(v1 == (std::vector<double>{3.2, -8.4, 7.5}));
@@ -325,7 +324,7 @@ struct initialize {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     return std::make_tuple(
         db::create_from<db::RemoveTags<>,
                         db::AddSimpleTags<CountActionsCalled, TemporalId>>(
@@ -342,7 +341,7 @@ struct initialize {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     return {std::move(box), true};
   }
 };
@@ -418,7 +417,7 @@ struct add_int0_to_box {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     return std::make_tuple(
         db::create_from<tmpl::list<>, tmpl::list<Int0>>(std::move(box), 0));
   }
@@ -431,12 +430,10 @@ struct set_int0_from_receive {
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
   static std::tuple<db::DataBox<DbTags>&&, Parallel::AlgorithmExecution> apply(
-      db::DataBox<DbTags>& box,
-      tuples::TaggedTuple<InboxTags...>& inboxes,
+      db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& inboxes,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/,
-      const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
     auto& inbox = tuples::get<IntReceiveTag>(inboxes);
     db::mutate<Int1>(make_not_null(&box),
                      [](const gsl::not_null<int*> int1) { ++*int1; });
@@ -474,7 +471,7 @@ struct update_instance {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     db::mutate<TemporalId>(
         make_not_null(&box),
         [](const gsl::not_null<TestAlgorithmArrayInstance*> temporal_id) {
@@ -495,7 +492,7 @@ struct initialize {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     return std::make_tuple(
         db::create_from<db::RemoveTags<>,
                         tmpl::list<CountActionsCalled, Int1, TemporalId>>(
@@ -512,20 +509,20 @@ struct initialize {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     return {std::move(box), true};
   }
 };
 
 struct finalize {
   using inbox_tags = tmpl::list<IntReceiveTag>;
-  template <typename ParallelComponent, typename DbTags,
-            typename Metavariables, typename ArrayIndex,
+  template <typename ParallelComponent, typename DbTags, typename Metavariables,
+            typename ArrayIndex,
             Requires<db::tag_is_retrievable_v<CountActionsCalled,
                                               db::DataBox<DbTags>>> = nullptr>
   static void apply(db::DataBox<DbTags>& box,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/) noexcept {
+                    const ArrayIndex& /*array_index*/) {
     SPECTRE_PARALLEL_REQUIRE(db::get<TemporalId>(box) ==
                              TestAlgorithmArrayInstance{4});
     SPECTRE_PARALLEL_REQUIRE(db::get<CountActionsCalled>(box) == 13);
@@ -592,7 +589,7 @@ struct iterate_increment_int0 {
                     /*cache*/,
                     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
                     const ParallelComponent* const  // NOLINT const
-                    /*meta*/) noexcept
+                    /*meta*/)
       -> std::tuple<db::DataBox<tmpl::list<DbTags...>>&&, bool, size_t> {
     static_assert(
         std::is_same_v<ParallelComponent, AnyOrderComponent<TestMetavariables>>,
@@ -714,8 +711,7 @@ struct TestMetavariables {
       const gsl::not_null<
           tuples::TaggedTuple<Tags...>*> /*phase_change_decision_data*/,
       const Phase& current_phase,
-      const Parallel::CProxy_GlobalCache<
-          TestMetavariables>& /*cache_proxy*/) noexcept {
+      const Parallel::CProxy_GlobalCache<TestMetavariables>& /*cache_proxy*/) {
     switch (current_phase) {
       case Phase::Initialization:
         return Phase::NoOpsStart;
@@ -746,7 +742,7 @@ struct TestMetavariables {
   // [determine_next_phase_example]
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& /*p*/) noexcept {}
+  void pup(PUP::er& /*p*/) {}
 };
 
 // [charm_init_funcs_example]

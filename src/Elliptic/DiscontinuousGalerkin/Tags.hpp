@@ -55,9 +55,7 @@ struct PenaltyParameter : db::SimpleTag {
   using type = double;
   static constexpr bool pass_metavariables = false;
   using option_tags = tmpl::list<OptionTags::PenaltyParameter>;
-  static double create_from_options(const double value) noexcept {
-    return value;
-  }
+  static double create_from_options(const double value) { return value; }
 };
 
 /// Whether or not to multiply the DG operator with the mass matrix. Massive DG
@@ -67,7 +65,7 @@ struct Massive : db::SimpleTag {
   using type = bool;
   static constexpr bool pass_metavariables = false;
   using option_tags = tmpl::list<OptionTags::Massive>;
-  static bool create_from_options(const bool value) noexcept { return value; }
+  static bool create_from_options(const bool value) { return value; }
 };
 
 }  // namespace Tags

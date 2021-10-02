@@ -8,8 +8,7 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 
 namespace observers {
-std::ostream& operator<<(std::ostream& os,
-                         const TypeOfObservation& t) noexcept {
+std::ostream& operator<<(std::ostream& os, const TypeOfObservation& t) {
   switch (t) {
     case TypeOfObservation::Reduction:
       return os << "Reduction";

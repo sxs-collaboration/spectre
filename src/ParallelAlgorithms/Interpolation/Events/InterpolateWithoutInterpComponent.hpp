@@ -62,8 +62,7 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
                                         Metavariables, tmpl::list<Tensors...>>
     : public Event {
   /// \cond
-  explicit InterpolateWithoutInterpComponent(
-      CkMigrateMessage* /*unused*/) noexcept {}
+  explicit InterpolateWithoutInterpComponent(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(InterpolateWithoutInterpComponent);  // NOLINT
   /// \endcond
@@ -73,9 +72,7 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
       "Does interpolation using the given InterpolationTargetTag, "
       "without an Interpolator ParallelComponent.";
 
-  static std::string name() noexcept {
-    return Options::name<InterpolationTargetTag>();
-  }
+  static std::string name() { return Options::name<InterpolationTargetTag>(); }
 
   InterpolateWithoutInterpComponent() = default;
 
@@ -97,7 +94,7 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
       const Mesh<VolumeDim>& mesh, const typename Tensors::type&... tensors,
       Parallel::GlobalCache<Metavariables>& cache,
       const ElementId<VolumeDim>& array_index,
-      const ParallelComponent* const /*meta*/) const noexcept {
+      const ParallelComponent* const /*meta*/) const {
     // Get element logical coordinates of the target points.
     const auto& block_logical_coords =
         get<Vars::PointInfoTag<InterpolationTargetTag, VolumeDim>>(point_infos);
@@ -126,12 +123,12 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
                                                    compute_items_on_source>) {
       // 1.a Copy the tensors directly into the variables; no need to
       // make a DataBox because we have no ComputeItems.
-      [[maybe_unused]] const auto copy_to_variables = [&interp_vars](
-          const auto tensor_tag_v, const auto& tensor) noexcept {
-        using tensor_tag = tmpl::type_from<decltype(tensor_tag_v)>;
-        get<tensor_tag>(interp_vars) = tensor;
-        return 0;
-      };
+      [[maybe_unused]] const auto copy_to_variables =
+          [&interp_vars](const auto tensor_tag_v, const auto& tensor) {
+            using tensor_tag = tmpl::type_from<decltype(tensor_tag_v)>;
+            get<tensor_tag>(interp_vars) = tensor;
+            return 0;
+          };
       expand_pack(copy_to_variables(tmpl::type_<Tensors>{}, tensors)...);
     } else {
       // 1.b Make a DataBox and insert ComputeItems
@@ -143,7 +140,7 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
       // Copy vars_to_interpolate_to_target from databox to vars
       tmpl::for_each<
           typename InterpolationTargetTag::vars_to_interpolate_to_target>(
-          [&box, &interp_vars ](auto tag_v) noexcept {
+          [&box, &interp_vars](auto tag_v) {
             using tag = typename decltype(tag_v)::type;
             get<tag>(interp_vars) = db::get<tag>(box);
           });
@@ -175,7 +172,7 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
       const typename Tensors::type&... tensors,
       Parallel::GlobalCache<Metavariables>& cache,
       const ElementId<VolumeDim>& array_index,
-      const ParallelComponent* const meta) const noexcept {
+      const ParallelComponent* const meta) const {
     if (active_grid == evolution::dg::subcell::ActiveGrid::Dg) {
       this->operator()(temporal_id, point_infos, dg_mesh, tensors..., cache,
                        array_index, meta);
@@ -192,11 +189,11 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
   template <typename ArrayIndex, typename Component>
   bool is_ready(Parallel::GlobalCache<Metavariables>& /*cache*/,
                 const ArrayIndex& /*array_index*/,
-                const Component* const /*meta*/) const noexcept {
+                const Component* const /*meta*/) const {
     return true;
   }
 
-  bool needs_evolved_variables() const noexcept override { return true; }
+  bool needs_evolved_variables() const override { return true; }
 };
 
 /// \cond

@@ -17,7 +17,7 @@ namespace dg::OptionTags {
  * `SpatialDiscretization::OptionTags::SpatialDiscretizationGroup`.
  */
 struct DiscontinuousGalerkinGroup {
-  static std::string name() noexcept { return "DiscontinuousGalerkin"; }
+  static std::string name() { return "DiscontinuousGalerkin"; }
   static constexpr Options::String help{
       "Options controlling the discontinuous Galerkin spatial discretization "
       "of the PDE system.\n\n"

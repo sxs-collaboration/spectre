@@ -20,13 +20,13 @@
 namespace {
 template <typename... Ts>
 void assign_unique_values_to_tensor(
-    gsl::not_null<Tensor<double, Ts...>*> tensor) noexcept {
+    gsl::not_null<Tensor<double, Ts...>*> tensor) {
   std::iota(tensor->begin(), tensor->end(), 0.0);
 }
 
 template <typename... Ts>
 void assign_unique_values_to_tensor(
-    gsl::not_null<Tensor<DataVector, Ts...>*> tensor) noexcept {
+    gsl::not_null<Tensor<DataVector, Ts...>*> tensor) {
   double value = 0.0;
   for (auto index_it = tensor->begin(); index_it != tensor->end(); index_it++) {
     for (auto vector_it = index_it->begin(); vector_it != index_it->end();
@@ -60,7 +60,7 @@ void assign_unique_values_to_tensor(
 //
 // \tparam DataType the type of data being stored in the product operands
 template <typename DataType>
-void test_high_rank_intermediate(const DataType& used_for_size) noexcept {
+void test_high_rank_intermediate(const DataType& used_for_size) {
   using frame = Frame::Inertial;
   using A_index = SpacetimeIndex<3, UpLo::Up, frame>;
   using a_index = SpacetimeIndex<3, UpLo::Lo, frame>;

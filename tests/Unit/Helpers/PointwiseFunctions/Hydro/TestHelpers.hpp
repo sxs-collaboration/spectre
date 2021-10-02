@@ -21,35 +21,33 @@ namespace TestHelpers {
 namespace hydro {
 template <typename DataType>
 Scalar<DataType> random_density(gsl::not_null<std::mt19937*> generator,
-                                const DataType& used_for_size) noexcept;
+                                const DataType& used_for_size);
 
 template <typename DataType>
 Scalar<DataType> random_lorentz_factor(gsl::not_null<std::mt19937*> generator,
-                                       const DataType& used_for_size) noexcept;
+                                       const DataType& used_for_size);
 
 template <typename DataType, size_t Dim>
 tnsr::I<DataType, Dim> random_velocity(
     gsl::not_null<std::mt19937*> generator,
     const Scalar<DataType>& lorentz_factor,
-    const tnsr::ii<DataType, Dim>& spatial_metric) noexcept;
+    const tnsr::ii<DataType, Dim>& spatial_metric);
 
 template <typename DataType>
 Scalar<DataType> random_temperature(gsl::not_null<std::mt19937*> generator,
-                                    const DataType& used_for_size) noexcept;
+                                    const DataType& used_for_size);
 
 template <typename DataType>
 Scalar<DataType> random_specific_internal_energy(
-    gsl::not_null<std::mt19937*> generator,
-    const DataType& used_for_size) noexcept;
+    gsl::not_null<std::mt19937*> generator, const DataType& used_for_size);
 
 template <typename DataType>
 tnsr::I<DataType, 3> random_magnetic_field(
     gsl::not_null<std::mt19937*> generator, const Scalar<DataType>& pressure,
-    const tnsr::ii<DataType, 3>& spatial_metric) noexcept;
+    const tnsr::ii<DataType, 3>& spatial_metric);
 
 template <typename DataType>
 Scalar<DataType> random_divergence_cleaning_field(
-    gsl::not_null<std::mt19937*> generator,
-    const DataType& used_for_size) noexcept;
+    gsl::not_null<std::mt19937*> generator, const DataType& used_for_size);
 }  // namespace hydro
 }  // namespace TestHelpers

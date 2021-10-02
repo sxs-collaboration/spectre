@@ -39,7 +39,7 @@ void sound_speed_squared(
     const Scalar<DataType>& specific_internal_energy,
     const Scalar<DataType>& specific_enthalpy,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
-        equation_of_state) noexcept;
+        equation_of_state);
 
 template <typename DataType, size_t ThermodynamicDim>
 Scalar<DataType> sound_speed_squared(
@@ -47,7 +47,7 @@ Scalar<DataType> sound_speed_squared(
     const Scalar<DataType>& specific_internal_energy,
     const Scalar<DataType>& specific_enthalpy,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
-        equation_of_state) noexcept;
+        equation_of_state);
 /// @}
 
 namespace Tags {
@@ -68,7 +68,7 @@ struct SoundSpeedSquaredCompute : SoundSpeedSquared<DataType>, db::ComputeTag {
                        const Scalar<DataType>& rest_mass_density,
                        const Scalar<DataType>& specific_internal_energy,
                        const Scalar<DataType>& specific_enthalpy,
-                       const EquationOfStateType& equation_of_state) noexcept {
+                       const EquationOfStateType& equation_of_state) {
     sound_speed_squared(result, rest_mass_density, specific_internal_energy,
                         specific_enthalpy, equation_of_state);
   }

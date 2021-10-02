@@ -26,7 +26,7 @@ namespace {
 template <size_t Dim>
 tnsr::i<double, Dim> random_unit_vector(
     const gsl::not_null<std::mt19937*>& gen,
-    const gsl::not_null<std::uniform_real_distribution<>*>& dist) noexcept {
+    const gsl::not_null<std::uniform_real_distribution<>*>& dist) {
   const double used_for_size = 0.;
   auto result =
       make_with_random_values<tnsr::i<double, Dim>>(gen, dist, used_for_size);
@@ -55,7 +55,7 @@ void prepare_hydro_data_for_test(
     const gsl::not_null<Matrix*>& right, const gsl::not_null<Matrix*>& left,
     const Mesh<Dim>& mesh,
     const EquationsOfState::IdealFluid<false>& equation_of_state,
-    const bool generate_random_vector = true) noexcept {
+    const bool generate_random_vector = true) {
   MAKE_GENERATOR(generator);
   std::uniform_real_distribution<> distribution(-1., 1.);
   std::uniform_real_distribution<> distribution_positive(1e-3, 1.);
@@ -65,7 +65,7 @@ void prepare_hydro_data_for_test(
   const auto nn_distribution_positive = make_not_null(&distribution_positive);
 
   const auto unit_vector = [&generate_random_vector, &nn_generator,
-                            &nn_distribution]() noexcept {
+                            &nn_distribution]() {
     if (generate_random_vector) {
       return random_unit_vector<Dim>(nn_generator, nn_distribution);
     } else {
@@ -113,7 +113,7 @@ void prepare_hydro_data_for_test(
 }
 
 template <size_t Dim>
-void test_characteristic_helpers() noexcept {
+void test_characteristic_helpers() {
   INFO("Testing characteristic helpers");
   CAPTURE(Dim);
   const Mesh<Dim> mesh(3, Spectral::Basis::Legendre,
@@ -196,7 +196,7 @@ void test_characteristic_helpers() noexcept {
 }
 
 template <size_t Dim>
-void test_apply_limiter_to_char_fields() noexcept {
+void test_apply_limiter_to_char_fields() {
   INFO("Testing apply_limiter_to_characteristic_fields_in_all_directions");
   CAPTURE(Dim);
   const Mesh<Dim> mesh(3, Spectral::Basis::Legendre,
@@ -228,7 +228,7 @@ void test_apply_limiter_to_char_fields() noexcept {
       [](const gsl::not_null<Scalar<DataVector>*> /*char_v_minus*/,
          const gsl::not_null<tnsr::I<DataVector, Dim>*> /*char_v_momentum*/,
          const gsl::not_null<Scalar<DataVector>*> /*char_v_plus*/,
-         const Matrix& /*left*/) noexcept -> bool { return false; };
+         const Matrix& /*left*/) -> bool { return false; };
 
   const bool noop_result = NewtonianEuler::Limiters::
       apply_limiter_to_characteristic_fields_in_all_directions(
@@ -249,7 +249,7 @@ void test_apply_limiter_to_char_fields() noexcept {
           const gsl::not_null<Scalar<DataVector>*> char_v_minus,
           const gsl::not_null<tnsr::I<DataVector, Dim>*> char_v_momentum,
           const gsl::not_null<Scalar<DataVector>*> char_v_plus,
-          const Matrix& /*left*/) noexcept -> bool {
+          const Matrix& /*left*/) -> bool {
     if (current_dim == Dim - 1) {
       get(*char_v_minus) *= 2.;
       // no change to char_v_momentum

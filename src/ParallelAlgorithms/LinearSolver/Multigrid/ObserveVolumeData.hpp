@@ -39,7 +39,7 @@ struct RegisterWithVolumeObserver {
             typename ArrayIndex>
   static std::pair<observers::TypeOfObservation, observers::ObservationKey>
   register_info(const db::DataBox<DbTagsList>& box,
-                const ArrayIndex& /*array_index*/) noexcept {
+                const ArrayIndex& /*array_index*/) {
     const std::string& level_observation_key =
         *db::get<observers::Tags::ObservationKey<Tags::MultigridLevel>>(box);
     const std::string subfile_path =
@@ -65,7 +65,7 @@ struct ObserveVolumeData {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
       const ElementId<Dim>& element_id, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     if (not db::get<Tags::OutputVolumeData<OptionsGroup>>(box)) {
       return {std::move(box)};
     }
@@ -83,7 +83,7 @@ struct ObserveVolumeData {
                        VolumeDataVars::number_of_independent_components);
     const auto record_tensor_components = [&components, &element_name](
                                               const auto tensor_tag_v,
-                                              const auto& tensor) noexcept {
+                                              const auto& tensor) {
       using tensor_tag = std::decay_t<decltype(tensor_tag_v)>;
       for (size_t i = 0; i < tensor.size(); ++i) {
         components.emplace_back(element_name + db::tag_name<tensor_tag>() +
@@ -94,7 +94,7 @@ struct ObserveVolumeData {
     record_tensor_components(domain::Tags::Coordinates<Dim, Frame::Inertial>{},
                              inertial_coords);
     tmpl::for_each<typename VolumeDataVars::tags_list>(
-        [&volume_data, &record_tensor_components](auto tag_v) noexcept {
+        [&volume_data, &record_tensor_components](auto tag_v) {
           using tag = tmpl::type_from<decltype(tag_v)>;
           record_tensor_components(tag{}, get<tag>(volume_data));
         });
@@ -118,9 +118,8 @@ struct ObserveVolumeData {
 
     // Increment observation ID
     db::mutate<Tags::ObservationId<OptionsGroup>>(
-        make_not_null(&box), [](const auto local_observation_id) noexcept {
-          ++(*local_observation_id);
-        });
+        make_not_null(&box),
+        [](const auto local_observation_id) { ++(*local_observation_id); });
     return {std::move(box)};
   }
 };

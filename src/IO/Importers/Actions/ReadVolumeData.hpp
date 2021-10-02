@@ -78,7 +78,7 @@ struct ReadVolumeData {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     // Not using `ckLocalBranch` here to make sure the simple action invocation
     // is asynchronous.
     auto& reader_component = Parallel::get_parallel_component<
@@ -138,7 +138,7 @@ struct ReadAllVolumeDataAndDistribute {
                db::tag_is_retrievable_v<Tags::ElementDataAlreadyRead,
                                         DataBox>> = nullptr>
   static void apply(DataBox& box, Parallel::GlobalCache<Metavariables>& cache,
-                    const ArrayIndex& /*array_index*/) noexcept {
+                    const ArrayIndex& /*array_index*/) {
     // Only read and distribute the volume data once
     // This action will be invoked by `importers::Actions::ReadVolumeData` from
     // every element on the node, but only the first invocation reads the file
@@ -158,7 +158,7 @@ struct ReadAllVolumeDataAndDistribute {
     db::mutate<Tags::ElementDataAlreadyRead>(
         make_not_null(&box),
         [&volume_data_id](const gsl::not_null<std::unordered_set<std::string>*>
-                              local_has_read_volume_data) noexcept {
+                              local_has_read_volume_data) {
           local_has_read_volume_data->insert(std::move(volume_data_id));
         });
 
@@ -175,7 +175,7 @@ struct ReadAllVolumeDataAndDistribute {
     // stored in the file
     tuples::tagged_tuple_from_typelist<FieldTagsList> all_tensor_data{};
     tmpl::for_each<FieldTagsList>([&all_tensor_data, &volume_file,
-                                   &observation_id](auto field_tag_v) noexcept {
+                                   &observation_id](auto field_tag_v) {
       using field_tag = tmpl::type_from<decltype(field_tag_v)>;
       auto& tensor_data = get<field_tag>(all_tensor_data);
       for (size_t i = 0; i < tensor_data.size(); i++) {
@@ -212,8 +212,7 @@ struct ReadAllVolumeDataAndDistribute {
       tuples::tagged_tuple_from_typelist<FieldTagsList> element_data{};
       tmpl::for_each<FieldTagsList>([&element_data,
                                      &element_data_offset_and_length,
-                                     &all_tensor_data](
-                                        auto field_tag_v) noexcept {
+                                     &all_tensor_data](auto field_tag_v) {
         using field_tag = tmpl::type_from<decltype(field_tag_v)>;
         auto& element_tensor_data = get<field_tag>(element_data);
         // Iterate independent components of the tensor

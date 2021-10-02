@@ -17,7 +17,7 @@ namespace {
 void test(
     const std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>& f_of_t,
     const double match_time, const double f_t0, const double dtf_t0,
-    const double d2tf_t0, const double A) noexcept {
+    const double d2tf_t0, const double A) {
   // check that values agree at the matching time
   const auto lambdas0 = f_of_t->func_and_2_derivs(match_time);
   CHECK(approx(lambdas0[0][0]) == f_t0);

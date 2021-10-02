@@ -35,14 +35,13 @@ struct KhInstabilityProxy : NewtonianEuler::AnalyticData::KhInstability<Dim> {
 
   template <typename DataType>
   tuples::tagged_tuple_from_typelist<variables_tags<DataType>>
-  primitive_variables(const tnsr::I<DataType, Dim, Frame::Inertial>& x) const
-      noexcept {
+  primitive_variables(const tnsr::I<DataType, Dim, Frame::Inertial>& x) const {
     return this->variables(x, variables_tags<DataType>{});
   }
 };
 
 template <size_t Dim, typename DataType>
-void test_analytic_data(const DataType& used_for_size) noexcept {
+void test_analytic_data(const DataType& used_for_size) {
   const double adiabatic_index = 1.43;
   const double strip_bimedian_height = 0.5;
   const double strip_thickness = 0.4;

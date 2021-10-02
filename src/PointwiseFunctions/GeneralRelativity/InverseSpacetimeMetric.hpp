@@ -44,15 +44,13 @@ void inverse_spacetime_metric(
         inverse_spacetime_metric,
     const Scalar<DataType>& lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
-    const tnsr::II<DataType, SpatialDim, Frame>&
-        inverse_spatial_metric) noexcept;
+    const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric);
 
 template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::AA<DataType, SpatialDim, Frame> inverse_spacetime_metric(
     const Scalar<DataType>& lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
-    const tnsr::II<DataType, SpatialDim, Frame>&
-        inverse_spatial_metric) noexcept;
+    const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric);
 /// @}
 
 namespace Tags {
@@ -76,7 +74,7 @@ struct InverseSpacetimeMetricCompute
   static constexpr auto function = static_cast<void (*)(
       gsl::not_null<tnsr::AA<DataType, SpatialDim, Frame>*>,
       const Scalar<DataType>&, const tnsr::I<DataType, SpatialDim, Frame>&,
-      const tnsr::II<DataType, SpatialDim, Frame>&) noexcept>(
+      const tnsr::II<DataType, SpatialDim, Frame>&)>(
       &inverse_spacetime_metric<SpatialDim, Frame, DataType>);
 
   using base = InverseSpacetimeMetric<SpatialDim, Frame, DataType>;

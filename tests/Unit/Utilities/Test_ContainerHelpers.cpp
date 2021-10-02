@@ -19,7 +19,7 @@ struct ArrayOfArraysIndexFunctor {
   template <size_t OuterArraySize, size_t InnerArraySize, typename T>
   T& operator()(std::array<std::array<T, InnerArraySize>, OuterArraySize>&
                     array_of_arrays,
-                size_t index) noexcept {
+                size_t index) {
     return array_of_arrays.at(index % OuterArraySize)
         .at(index / OuterArraySize);
   }
@@ -31,7 +31,7 @@ struct ArrayOfArraysSizeFunctor {
   template <size_t OuterArraySize, size_t InnerArraySize, typename T>
   size_t operator()(
       const std::array<std::array<T, InnerArraySize>, OuterArraySize>&
-      /*array_of_arrays*/) noexcept {
+      /*array_of_arrays*/) {
     return OuterArraySize * InnerArraySize;
   }
 };
@@ -39,12 +39,12 @@ struct ArrayOfArraysSizeFunctor {
 
 namespace {
 struct HalfDataVectorSize {
-  size_t operator()(const DataVector& x) noexcept { return x.size() / 2; }
+  size_t operator()(const DataVector& x) { return x.size() / 2; }
 };
 
 struct ReverseIndexStlVector {
   template <typename T>
-  decltype(auto) operator()(T& x, size_t i) noexcept {
+  decltype(auto) operator()(T& x, size_t i) {
     return x.at(x.size() - i - 1);
   }
 };

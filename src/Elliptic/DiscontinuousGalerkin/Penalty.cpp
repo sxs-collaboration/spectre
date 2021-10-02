@@ -11,7 +11,7 @@
 namespace elliptic::dg {
 
 DataVector penalty(const DataVector& element_size, const size_t num_points,
-                   const double penalty_parameter) noexcept {
+                   const double penalty_parameter) {
   return penalty_parameter * square(num_points) / element_size;
 }
 

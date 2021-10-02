@@ -19,7 +19,7 @@
 
 namespace {
 
-void test_flattener_1d() noexcept {
+void test_flattener_1d() {
   INFO("Testing flatten_solution in 1D");
   const Mesh<1> mesh(4, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto);
@@ -142,7 +142,7 @@ void test_flattener_1d() noexcept {
   }
 }
 
-void test_flattener_2d() noexcept {
+void test_flattener_2d() {
   INFO("Testing flatten_solution in 2D");
   const Mesh<2> mesh({{2, 3}}, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto);
@@ -251,7 +251,7 @@ void test_flattener_2d() noexcept {
   }
 }
 
-void test_flattener_3d() noexcept {
+void test_flattener_3d() {
   INFO("Testing flatten_solution in 3D");
   const Mesh<3> mesh(2, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto);

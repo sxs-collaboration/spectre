@@ -123,9 +123,9 @@ struct RegistrationHelper {
   RegistrationHelper& operator=(RegistrationHelper&&) = default;
   virtual ~RegistrationHelper() = default;
 
-  virtual void register_with_charm() const noexcept = 0;
-  virtual std::string name() const noexcept = 0;
-  virtual bool is_registering_chare() const noexcept { return false; };
+  virtual void register_with_charm() const = 0;
+  virtual std::string name() const = 0;
+  virtual bool is_registering_chare() const { return false; };
 };
 
 /*!
@@ -151,7 +151,7 @@ struct RegisterParallelComponent : RegistrationHelper {
   RegisterParallelComponent& operator=(RegisterParallelComponent&&) = default;
   ~RegisterParallelComponent() override = default;
 
-  void register_with_charm() const noexcept override {
+  void register_with_charm() const override {
     static bool done_registration{false};
     if (done_registration) {
       return;  // LCOV_EXCL_LINE
@@ -161,9 +161,9 @@ struct RegisterParallelComponent : RegistrationHelper {
     ckindex::__register(parallel_component_name.c_str(), sizeof(algorithm));
   }
 
-  bool is_registering_chare() const noexcept override { return true; }
+  bool is_registering_chare() const override { return true; }
 
-  std::string name() const noexcept override {
+  std::string name() const override {
     return get_template_parameters_as_string<RegisterParallelComponent>();
   }
 
@@ -199,7 +199,7 @@ struct RegisterChare : RegistrationHelper {
   RegisterChare& operator=(RegisterChare&&) = default;
   ~RegisterChare() override = default;
 
-  void register_with_charm() const noexcept override {
+  void register_with_charm() const override {
     static bool done_registration{false};
     if (done_registration) {
       return;  // LCOV_EXCL_LINE
@@ -209,9 +209,9 @@ struct RegisterChare : RegistrationHelper {
     CkIndex::__register(chare_name.c_str(), sizeof(Chare));
   }
 
-  bool is_registering_chare() const noexcept override { return true; }
+  bool is_registering_chare() const override { return true; }
 
-  std::string name() const noexcept override {
+  std::string name() const override {
     return get_template_parameters_as_string<RegisterChare>();
   }
 
@@ -241,7 +241,7 @@ struct RegisterSimpleAction : RegistrationHelper {
   RegisterSimpleAction& operator=(RegisterSimpleAction&&) = default;
   ~RegisterSimpleAction() override = default;
 
-  void register_with_charm() const noexcept override {
+  void register_with_charm() const override {
     static bool done_registration{false};
     if (done_registration) {
       return;  // LCOV_EXCL_LINE
@@ -251,7 +251,7 @@ struct RegisterSimpleAction : RegistrationHelper {
         static_cast<void (algorithm::*)(const std::tuple<Args...>&)>(nullptr));
   }
 
-  std::string name() const noexcept override {
+  std::string name() const override {
     return get_template_parameters_as_string<RegisterSimpleAction>();
   }
 
@@ -276,7 +276,7 @@ struct RegisterSimpleAction<ParallelComponent, Action> : RegistrationHelper {
   RegisterSimpleAction& operator=(RegisterSimpleAction&&) = default;
   ~RegisterSimpleAction() override = default;
 
-  void register_with_charm() const noexcept override {
+  void register_with_charm() const override {
     static bool done_registration{false};
     if (done_registration) {
       return;  // LCOV_EXCL_LINE
@@ -286,7 +286,7 @@ struct RegisterSimpleAction<ParallelComponent, Action> : RegistrationHelper {
         static_cast<void (algorithm::*)()>(nullptr));
   }
 
-  std::string name() const noexcept override {
+  std::string name() const override {
     return get_template_parameters_as_string<RegisterSimpleAction>();
   }
 
@@ -317,7 +317,7 @@ struct RegisterThreadedAction : RegistrationHelper {
   RegisterThreadedAction& operator=(RegisterThreadedAction&&) = default;
   ~RegisterThreadedAction() override = default;
 
-  void register_with_charm() const noexcept override {
+  void register_with_charm() const override {
     static bool done_registration{false};
     if (done_registration) {
       return;  // LCOV_EXCL_LINE
@@ -327,7 +327,7 @@ struct RegisterThreadedAction : RegistrationHelper {
         static_cast<void (algorithm::*)(const std::tuple<Args...>&)>(nullptr));
   }
 
-  std::string name() const noexcept override {
+  std::string name() const override {
     return get_template_parameters_as_string<RegisterThreadedAction>();
   }
 
@@ -352,7 +352,7 @@ struct RegisterThreadedAction<ParallelComponent, Action> : RegistrationHelper {
   RegisterThreadedAction& operator=(RegisterThreadedAction&&) = default;
   ~RegisterThreadedAction() override = default;
 
-  void register_with_charm() const noexcept override {
+  void register_with_charm() const override {
     static bool done_registration{false};
     if (done_registration) {
       return;  // LCOV_EXCL_LINE
@@ -362,7 +362,7 @@ struct RegisterThreadedAction<ParallelComponent, Action> : RegistrationHelper {
         static_cast<void (algorithm::*)()>(nullptr));
   }
 
-  std::string name() const noexcept override {
+  std::string name() const override {
     return get_template_parameters_as_string<RegisterThreadedAction>();
   }
 
@@ -441,7 +441,7 @@ struct RegisterReceiveData : RegistrationHelper {
   RegisterReceiveData& operator=(RegisterReceiveData&&) = default;
   ~RegisterReceiveData() override = default;
 
-  void register_with_charm() const noexcept override {
+  void register_with_charm() const override {
     static bool done_registration{false};
     if (done_registration) {
       return;  // LCOV_EXCL_LINE
@@ -455,7 +455,7 @@ struct RegisterReceiveData : RegistrationHelper {
             bool)>(nullptr));
   }
 
-  std::string name() const noexcept override {
+  std::string name() const override {
     return get_template_parameters_as_string<RegisterReceiveData>();
   }
 
@@ -485,7 +485,7 @@ struct RegisterReductionAction : RegistrationHelper {
   RegisterReductionAction& operator=(RegisterReductionAction&&) = default;
   ~RegisterReductionAction() override = default;
 
-  void register_with_charm() const noexcept override {
+  void register_with_charm() const override {
     static bool done_registration{false};
     if (done_registration) {
       return;  // LCOV_EXCL_LINE
@@ -497,7 +497,7 @@ struct RegisterReductionAction : RegistrationHelper {
         nullptr);
   }
 
-  std::string name() const noexcept override {
+  std::string name() const override {
     return get_template_parameters_as_string<RegisterReductionAction>();
   }
 
@@ -519,7 +519,7 @@ struct RegisterPhaseChangeReduction : RegistrationHelper {
       default;
   ~RegisterPhaseChangeReduction() override = default;
 
-  void register_with_charm() const noexcept override {
+  void register_with_charm() const override {
     static bool done_registration{false};
     if (done_registration) {
       return;  // LCOV_EXCL_LINE
@@ -535,7 +535,7 @@ struct RegisterPhaseChangeReduction : RegistrationHelper {
                                                           Tags...>(nullptr);
   }
 
-  std::string name() const noexcept override {
+  std::string name() const override {
     return get_template_parameters_as_string<RegisterPhaseChangeReduction>();
   }
 
@@ -566,7 +566,7 @@ struct RegisterMutableGlobalCacheMutate : RegistrationHelper {
       RegisterMutableGlobalCacheMutate&&) = default;
   ~RegisterMutableGlobalCacheMutate() override = default;
 
-  void register_with_charm() const noexcept override {
+  void register_with_charm() const override {
     static bool done_registration{false};
     if (done_registration) {
       return;  // LCOV_EXCL_LINE
@@ -576,7 +576,7 @@ struct RegisterMutableGlobalCacheMutate : RegistrationHelper {
         static_cast<void (algorithm::*)(const std::tuple<Args...>&)>(nullptr));
   }
 
-  std::string name() const noexcept override {
+  std::string name() const override {
     return get_template_parameters_as_string<
         RegisterMutableGlobalCacheMutate>();
   }
@@ -605,7 +605,7 @@ struct RegisterGlobalCacheMutate : RegistrationHelper {
   RegisterGlobalCacheMutate& operator=(RegisterGlobalCacheMutate&&) = default;
   ~RegisterGlobalCacheMutate() override = default;
 
-  void register_with_charm() const noexcept override {
+  void register_with_charm() const override {
     static bool done_registration{false};
     if (done_registration) {
       return;  // LCOV_EXCL_LINE
@@ -615,7 +615,7 @@ struct RegisterGlobalCacheMutate : RegistrationHelper {
         static_cast<void (algorithm::*)(const std::tuple<Args...>&)>(nullptr));
   }
 
-  std::string name() const noexcept override {
+  std::string name() const override {
     return get_template_parameters_as_string<RegisterGlobalCacheMutate>();
   }
 
@@ -638,7 +638,7 @@ struct RegisterGlobalCacheMutate : RegistrationHelper {
  * use a `std::vector`.
  */
 template <typename Derived>
-bool register_func_with_charm() noexcept {
+bool register_func_with_charm() {
   if (charm_register_list_size >= charm_register_list_capacity) {
     // clang-tidy: use gsl::owner (we don't use raw owning pointers unless
     // necessary)
@@ -795,7 +795,7 @@ struct RegisterReducerFunction {
  * be possible to use a `std::vector`.
  */
 template <ReducerFunctions F>
-bool register_reducer_function() noexcept {
+bool register_reducer_function() {
   if (charm_reducer_functions_size >= charm_reducer_functions_capacity) {
     // clang-tidy: use gsl::owner (we don't use raw owning pointers unless
     // necessary)

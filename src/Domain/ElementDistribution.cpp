@@ -27,7 +27,7 @@ namespace {
 // |    |
 // v  1 |  1   3   5   7
 template <size_t Dim>
-size_t z_curve_index(const ElementId<Dim>& element_id) noexcept {
+size_t z_curve_index(const ElementId<Dim>& element_id) {
   // for the bit manipulation of the element index, we need to interleave the
   // indices in each dimension in order according to how many bits are in the
   // index representation. This variable stores the refinement level and
@@ -94,7 +94,7 @@ size_t z_curve_index(const ElementId<Dim>& element_id) noexcept {
 template <size_t Dim>
 BlockZCurveProcDistribution<Dim>::BlockZCurveProcDistribution(
     size_t number_of_procs,
-    const std::vector<std::array<size_t, Dim>>& refinements_by_block) noexcept {
+    const std::vector<std::array<size_t, Dim>>& refinements_by_block) {
   block_element_distribution_ =
       std::vector<std::vector<std::pair<size_t, size_t>>>(
           refinements_by_block.size());
@@ -143,7 +143,7 @@ BlockZCurveProcDistribution<Dim>::BlockZCurveProcDistribution(
 
 template <size_t Dim>
 size_t BlockZCurveProcDistribution<Dim>::get_proc_for_element(
-    const ElementId<Dim>& element_id) const noexcept {
+    const ElementId<Dim>& element_id) const {
   const size_t element_order_index = z_curve_index(element_id);
   size_t total_so_far = 0;
   for (const std::pair<size_t, size_t>& element_info :

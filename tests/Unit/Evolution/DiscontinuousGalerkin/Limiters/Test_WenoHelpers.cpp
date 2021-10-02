@@ -23,15 +23,14 @@
 
 namespace {
 
-void test_reconstruction_1d_impl(
-    const Spectral::Quadrature quadrature) noexcept {
+void test_reconstruction_1d_impl(const Spectral::Quadrature quadrature) {
   CAPTURE(quadrature);
   const double neighbor_linear_weight = 0.005;
   const Mesh<1> mesh(5, Spectral::Basis::Legendre, quadrature);
   const auto coords = logical_coordinates(mesh);
 
   const auto evaluate_polynomial =
-      [&coords](const std::array<double, 5>& coeffs) noexcept {
+      [&coords](const std::array<double, 5>& coeffs) {
         const auto& x = get<0>(coords);
         return DataVector{coeffs[0] + coeffs[1] * x + coeffs[2] * square(x) +
                           coeffs[3] * cube(x) + coeffs[4] * pow<4>(x)};
@@ -42,7 +41,7 @@ void test_reconstruction_1d_impl(
   const double expected_local_mean = mean_value(local_data, mesh);
 
   const auto shift_data_to_local_mean =
-      [&mesh, &expected_local_mean](const DataVector& neighbor_data) noexcept {
+      [&mesh, &expected_local_mean](const DataVector& neighbor_data) {
         return neighbor_data + expected_local_mean -
                mean_value(neighbor_data, mesh);
       };
@@ -68,21 +67,20 @@ void test_reconstruction_1d_impl(
   CHECK_ITERABLE_APPROX(local_data, expected_reconstructed_data);
 }
 
-void test_reconstruction_1d() noexcept {
+void test_reconstruction_1d() {
   INFO("Testing WENO reconstruction in 1D");
   test_reconstruction_1d_impl(Spectral::Quadrature::GaussLobatto);
   test_reconstruction_1d_impl(Spectral::Quadrature::Gauss);
 }
 
-void test_reconstruction_2d_impl(
-    const Spectral::Quadrature quadrature) noexcept {
+void test_reconstruction_2d_impl(const Spectral::Quadrature quadrature) {
   CAPTURE(quadrature);
   const double neighbor_linear_weight = 0.001;
   const Mesh<2> mesh({{3, 3}}, Spectral::Basis::Legendre, quadrature);
   const auto coords = logical_coordinates(mesh);
 
   const auto evaluate_polynomial =
-      [&coords](const std::array<double, 9>& coeffs) noexcept {
+      [&coords](const std::array<double, 9>& coeffs) {
         const auto& x = get<0>(coords);
         const auto& y = get<1>(coords);
         return DataVector{
@@ -97,7 +95,7 @@ void test_reconstruction_2d_impl(
   const double expected_local_mean = mean_value(local_data, mesh);
 
   const auto shift_data_to_local_mean =
-      [&mesh, &expected_local_mean](const DataVector& neighbor_data) noexcept {
+      [&mesh, &expected_local_mean](const DataVector& neighbor_data) {
         return neighbor_data + expected_local_mean -
                mean_value(neighbor_data, mesh);
       };
@@ -132,14 +130,13 @@ void test_reconstruction_2d_impl(
   CHECK_ITERABLE_APPROX(local_data, expected_reconstructed_data);
 }
 
-void test_reconstruction_2d() noexcept {
+void test_reconstruction_2d() {
   INFO("Testing WENO reconstruction in 2D");
   test_reconstruction_2d_impl(Spectral::Quadrature::GaussLobatto);
   test_reconstruction_2d_impl(Spectral::Quadrature::Gauss);
 }
 
-void test_reconstruction_3d_impl(
-    const Spectral::Quadrature quadrature) noexcept {
+void test_reconstruction_3d_impl(const Spectral::Quadrature quadrature) {
   CAPTURE(quadrature);
   const double neighbor_linear_weight = 0.001;
   const Mesh<3> mesh({{3, 3, 3}}, Spectral::Basis::Legendre, quadrature);
@@ -148,7 +145,7 @@ void test_reconstruction_3d_impl(
   // 3D case has so many modes... so we simplify by only setting 6 of them, the
   // choice of modes to use here is arbitrary.
   const auto evaluate_polynomial =
-      [&coords](const std::array<double, 6>& coeffs) noexcept {
+      [&coords](const std::array<double, 6>& coeffs) {
         const auto& x = get<0>(coords);
         const auto& y = get<1>(coords);
         const auto& z = get<2>(coords);
@@ -162,7 +159,7 @@ void test_reconstruction_3d_impl(
   const double expected_local_mean = mean_value(local_data, mesh);
 
   const auto shift_data_to_local_mean =
-      [&mesh, &expected_local_mean](const DataVector& neighbor_data) noexcept {
+      [&mesh, &expected_local_mean](const DataVector& neighbor_data) {
         return neighbor_data + expected_local_mean -
                mean_value(neighbor_data, mesh);
       };
@@ -200,7 +197,7 @@ void test_reconstruction_3d_impl(
   CHECK_ITERABLE_APPROX(local_data, expected_reconstructed_data);
 }
 
-void test_reconstruction_3d() noexcept {
+void test_reconstruction_3d() {
   INFO("Testing WENO reconstruction in 3D");
   test_reconstruction_3d_impl(Spectral::Quadrature::GaussLobatto);
   test_reconstruction_3d_impl(Spectral::Quadrature::Gauss);

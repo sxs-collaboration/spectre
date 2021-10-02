@@ -21,7 +21,7 @@ namespace {
 // collocation points.
 template <typename Frame>
 tnsr::i<DataVector, 3, Frame> get_rhat(
-    const Strahlkorper<Frame>& strahlkorper) noexcept {
+    const Strahlkorper<Frame>& strahlkorper) {
   const auto new_theta_phi = strahlkorper.ylm_spherepack().theta_phi_points();
   const DataVector sin_theta = sin(new_theta_phi[0]);
   return tnsr::i<DataVector, 3, Frame>{{sin_theta * cos(new_theta_phi[1]),
@@ -34,7 +34,7 @@ template <typename Frame>
 void change_expansion_center(
     const gsl::not_null<Strahlkorper<Frame>*> strahlkorper,
     const std::array<double, 3>& new_center,
-    const tnsr::i<DataVector, 3, Frame>& r_hat) noexcept {
+    const tnsr::i<DataVector, 3, Frame>& r_hat) {
   // Get new_center minus old_center.
   const auto& old_center = strahlkorper->center();
   const std::array<double, 3> center_difference{
@@ -43,8 +43,7 @@ void change_expansion_center(
 
   // For bracketing the root, get the min and max radius with respect
   // to the new center.
-  const auto [r_min, r_max] =
-      [&center_difference, &r_hat, &strahlkorper ]() noexcept {
+  const auto [r_min, r_max] = [&center_difference, &r_hat, &strahlkorper]() {
     const auto radius_old = strahlkorper->ylm_spherepack().spec_to_phys(
         strahlkorper->coefficients());
     DataVector radius_new =
@@ -57,16 +56,15 @@ void change_expansion_center(
     const auto minmax =
         std::minmax_element(radius_new.begin(), radius_new.end());
     return std::make_pair(*(minmax.first), *(minmax.second));
-  }
-  ();
+  }();
 
   // Find the coordinate radius of the surface, with respect to the
   // new center, at each of the angular collocation points of the
   // surface with respect to the new center. To do so, for each index
   // 's' (corresponding to an angular collocation point), find the
   // root 'r_new' that zeroes this lambda function.
-  const auto radius_function = [&center_difference, &r_hat, &strahlkorper ](
-      const double r_new, const size_t s) noexcept {
+  const auto radius_function = [&center_difference, &r_hat, &strahlkorper](
+                                   const double r_new, const size_t s) {
     // Get cartesian coordinates of the point with respect to the old
     // center.
     const std::array<double, 3> x_old{
@@ -110,13 +108,13 @@ void change_expansion_center(
 template <typename Frame>
 void change_expansion_center_of_strahlkorper(
     const gsl::not_null<Strahlkorper<Frame>*> strahlkorper,
-    const std::array<double, 3>& new_center) noexcept {
+    const std::array<double, 3>& new_center) {
   change_expansion_center(strahlkorper, new_center, get_rhat(*strahlkorper));
 }
 
 template <typename Frame>
 void change_expansion_center_of_strahlkorper_to_physical(
-    const gsl::not_null<Strahlkorper<Frame>*> strahlkorper) noexcept {
+    const gsl::not_null<Strahlkorper<Frame>*> strahlkorper) {
   const auto r_hat = get_rhat(*strahlkorper);
 
   // Zeroth iteration.
@@ -146,9 +144,9 @@ void change_expansion_center_of_strahlkorper_to_physical(
 #define INSTANTIATE(_, data)                                         \
   template void change_expansion_center_of_strahlkorper(             \
       const gsl::not_null<Strahlkorper<FRAME(data)>*> strahlkorper,  \
-      const std::array<double, 3>& new_center) noexcept;             \
+      const std::array<double, 3>& new_center);                      \
   template void change_expansion_center_of_strahlkorper_to_physical( \
-      const gsl::not_null<Strahlkorper<FRAME(data)>*> strahlkorper) noexcept;
+      const gsl::not_null<Strahlkorper<FRAME(data)>*> strahlkorper);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (::Frame::Inertial))
 

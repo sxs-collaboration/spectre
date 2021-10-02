@@ -40,7 +40,7 @@ class LimitLorentzFactor {
   /// Do not apply the Lorentz factor cap above this density
   struct MaxDensityCutoff {
     using type = double;
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
     static constexpr Options::String help = {
         "Do not apply the Lorentz factor cap above this density"};
   };
@@ -48,7 +48,7 @@ class LimitLorentzFactor {
   /// velocity to have the Lorentz factor be this value.
   struct LorentzFactorCap {
     using type = double;
-    static type lower_bound() noexcept { return 1.0; }
+    static type lower_bound() { return 1.0; }
     static constexpr Options::String help = {"Largest Lorentz factor allowed."};
   };
 
@@ -59,19 +59,17 @@ class LimitLorentzFactor {
       "density is below MaxDensityCutoff. The Lorentz factor is set to\n"
       "LorentzFactorCap and the spatial velocity is adjusted accordingly."};
 
-  LimitLorentzFactor(double max_density_cutoff,
-                     double lorentz_factor_cap) noexcept;
+  LimitLorentzFactor(double max_density_cutoff, double lorentz_factor_cap);
 
   LimitLorentzFactor() = default;
   LimitLorentzFactor(const LimitLorentzFactor& /*rhs*/) = default;
   LimitLorentzFactor& operator=(const LimitLorentzFactor& /*rhs*/) = default;
-  LimitLorentzFactor(LimitLorentzFactor&& /*rhs*/) noexcept = default;
-  LimitLorentzFactor& operator=(LimitLorentzFactor&& /*rhs*/) noexcept =
-      default;
+  LimitLorentzFactor(LimitLorentzFactor&& /*rhs*/) = default;
+  LimitLorentzFactor& operator=(LimitLorentzFactor&& /*rhs*/) = default;
   ~LimitLorentzFactor() = default;
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept;
+  void pup(PUP::er& p);
 
   using return_tags = tmpl::list<hydro::Tags::LorentzFactor<DataVector>,
                                  hydro::Tags::SpatialVelocity<DataVector, 3>>;
@@ -81,16 +79,15 @@ class LimitLorentzFactor {
   void operator()(
       gsl::not_null<Scalar<DataVector>*> lorentz_factor,
       gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> spatial_velocity,
-      const Scalar<DataVector>& rest_mass_density) const noexcept;
+      const Scalar<DataVector>& rest_mass_density) const;
 
  private:
   friend bool operator==(const LimitLorentzFactor& lhs,
-                         const LimitLorentzFactor& rhs) noexcept;
+                         const LimitLorentzFactor& rhs);
 
   double max_density_cuttoff_;
   double lorentz_factor_cap_;
 };
 
-bool operator!=(const LimitLorentzFactor& lhs,
-                const LimitLorentzFactor& rhs) noexcept;
+bool operator!=(const LimitLorentzFactor& lhs, const LimitLorentzFactor& rhs);
 }  // namespace VariableFixing

@@ -23,9 +23,8 @@ class Mesh;
 /// \ingroup ComputationalDomainGroup
 /// Finds the minimum coordinate distance between grid points.
 template <size_t Dim, typename Frame>
-double minimum_grid_spacing(
-    const Index<Dim>& extents,
-    const tnsr::I<DataVector, Dim, Frame>& coords) noexcept;
+double minimum_grid_spacing(const Index<Dim>& extents,
+                            const tnsr::I<DataVector, Dim, Frame>& coords);
 
 namespace domain {
 namespace Tags {
@@ -43,9 +42,9 @@ struct MinimumGridSpacingCompute : MinimumGridSpacing<Dim, Frame>,
                                    db::ComputeTag {
   using base = MinimumGridSpacing<Dim, Frame>;
   using return_type = double;
-  static void function(
-      const gsl::not_null<double*> result, const ::Mesh<Dim>& mesh,
-      const tnsr::I<DataVector, Dim, Frame>& coordinates) noexcept {
+  static void function(const gsl::not_null<double*> result,
+                       const ::Mesh<Dim>& mesh,
+                       const tnsr::I<DataVector, Dim, Frame>& coordinates) {
     *result = minimum_grid_spacing(mesh.extents(), coordinates);
   }
   using argument_tags = tmpl::list<Mesh<Dim>, Coordinates<Dim, Frame>>;

@@ -33,7 +33,7 @@ struct OtherFunctionsOfTime : db::SimpleTag {
 
 struct UpdateFoT {
   static void apply(const gsl::not_null<FunctionMap*> functions,
-                    const std::string& name, const double expiration) noexcept {
+                    const std::string& name, const double expiration) {
     (*functions).at(name)->reset_expiration_time(expiration);
   }
 };

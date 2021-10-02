@@ -49,8 +49,8 @@ class TovSolution {
   TovSolution() = default;
   TovSolution(const TovSolution& /*rhs*/) = delete;
   TovSolution& operator=(const TovSolution& /*rhs*/) = delete;
-  TovSolution(TovSolution&& /*rhs*/) noexcept = default;
-  TovSolution& operator=(TovSolution&& /*rhs*/) noexcept = default;
+  TovSolution(TovSolution&& /*rhs*/) = default;
+  TovSolution& operator=(TovSolution&& /*rhs*/) = default;
   ~TovSolution() = default;
 
   /// \brief The outer radius of the solution.
@@ -58,13 +58,13 @@ class TovSolution {
   /// \note This is the radius at which `log_specific_enthalpy` is equal
   /// to the value of `log_enthalpy_at_outer_radius` that was given when
   /// constructing this TovSolution
-  double outer_radius() const noexcept;
+  double outer_radius() const;
 
   /// \brief The mass inside the given radius over the radius
   /// \f$\frac{m(r)}{r}\f$
   ///
   /// \note `r` should be non-negative and not greater than `outer_radius()`.
-  double mass_over_radius(double r) const noexcept;
+  double mass_over_radius(double r) const;
 
   /// \brief The mass inside the given radius \f$m(r)\f$
   ///
@@ -72,12 +72,12 @@ class TovSolution {
   /// function instead for greater accuracy.
   ///
   /// \note `r` should be non-negative and not greater than `outer_radius()`
-  double mass(double r) const noexcept;
+  double mass(double r) const;
 
   /// \brief The log of the specific enthalpy at the given radius
   ///
   /// \note `r` should be non-negative and not greater than `outer_radius()`
-  double log_specific_enthalpy(double r) const noexcept;
+  double log_specific_enthalpy(double r) const;
 
   /// \brief The radial variables from which the hydrodynamic quantities and
   /// spacetime metric can be computed.
@@ -90,10 +90,10 @@ class TovSolution {
   RelativisticEuler::Solutions::TovStar<TovSolution>::RadialVariables<DataType>
   radial_variables(
       const EquationsOfState::EquationOfState<true, 1>& equation_of_state,
-      const tnsr::I<DataType, 3>& x) const noexcept;
+      const tnsr::I<DataType, 3>& x) const;
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept;
+  void pup(PUP::er& p);
 
  private:
   double outer_radius_{std::numeric_limits<double>::signaling_NaN()};

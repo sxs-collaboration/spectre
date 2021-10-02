@@ -11,7 +11,7 @@
 
 template <size_t DerivOrder>
 Averager<DerivOrder>::Averager(const double avg_timescale_frac,
-                               const bool average_0th_deriv_of_q) noexcept
+                               const bool average_0th_deriv_of_q)
     : avg_tscale_frac_(avg_timescale_frac),
       average_0th_deriv_of_q_(average_0th_deriv_of_q) {
   if (avg_tscale_frac_ <= 0.0) {
@@ -23,7 +23,7 @@ Averager<DerivOrder>::Averager(const double avg_timescale_frac,
 }
 
 template <size_t DerivOrder>
-Averager<DerivOrder>::Averager(Averager&& rhs) noexcept
+Averager<DerivOrder>::Averager(Averager&& rhs)
     : avg_tscale_frac_(std::move(rhs.avg_tscale_frac_)),
       average_0th_deriv_of_q_(std::move(rhs.average_0th_deriv_of_q_)),
       averaged_values_(std::move(rhs.averaged_values_)),
@@ -34,7 +34,7 @@ Averager<DerivOrder>::Averager(Averager&& rhs) noexcept
       tau_k_(std::move(rhs.tau_k_)) {}
 
 template <size_t DerivOrder>
-Averager<DerivOrder>& Averager<DerivOrder>::operator=(Averager&& rhs) noexcept {
+Averager<DerivOrder>& Averager<DerivOrder>::operator=(Averager&& rhs) {
   if (this != &rhs) {
     avg_tscale_frac_ = std::move(rhs.avg_tscale_frac_);
     average_0th_deriv_of_q_ = std::move(rhs.average_0th_deriv_of_q_);
@@ -50,7 +50,7 @@ Averager<DerivOrder>& Averager<DerivOrder>::operator=(Averager&& rhs) noexcept {
 
 template <size_t DerivOrder>
 const std::optional<std::array<DataVector, DerivOrder + 1>>&
-Averager<DerivOrder>::operator()(const double time) const noexcept {
+Averager<DerivOrder>::operator()(const double time) const {
   if (times_.size() > DerivOrder and time == times_[0]) {
     return averaged_values_;
   }
@@ -58,7 +58,7 @@ Averager<DerivOrder>::operator()(const double time) const noexcept {
 }
 
 template <size_t DerivOrder>
-void Averager<DerivOrder>::clear() noexcept {
+void Averager<DerivOrder>::clear() {
   averaged_values_ = std::nullopt;
   times_.clear();
   raw_qs_.clear();
@@ -68,7 +68,7 @@ void Averager<DerivOrder>::clear() noexcept {
 
 template <size_t DerivOrder>
 void Averager<DerivOrder>::update(const double time, const DataVector& raw_q,
-                                  const DataVector& timescales) noexcept {
+                                  const DataVector& timescales) {
   if (not raw_qs_.empty()) {
     if (UNLIKELY(raw_q.size() != raw_qs_[0].size())) {
       ERROR("The number of components in the raw_q provided ("
@@ -140,7 +140,7 @@ void Averager<DerivOrder>::update(const double time, const DataVector& raw_q,
 }
 
 template <size_t DerivOrder>
-double Averager<DerivOrder>::last_time_updated() const noexcept {
+double Averager<DerivOrder>::last_time_updated() const {
   if (UNLIKELY(times_.empty())) {
     ERROR("The time history has not been updated yet.");
   }
@@ -148,7 +148,7 @@ double Averager<DerivOrder>::last_time_updated() const noexcept {
 }
 
 template <size_t DerivOrder>
-double Averager<DerivOrder>::average_time(const double time) const noexcept {
+double Averager<DerivOrder>::average_time(const double time) const {
   if (LIKELY(times_.size() > DerivOrder and time == times_[0])) {
     return tau_k_;
   }
@@ -158,8 +158,8 @@ double Averager<DerivOrder>::average_time(const double time) const noexcept {
 }
 
 template <size_t DerivOrder>
-std::array<DataVector, DerivOrder + 1> Averager<DerivOrder>::get_derivs() const
-    noexcept {
+std::array<DataVector, DerivOrder + 1> Averager<DerivOrder>::get_derivs()
+    const {
   static_assert(DerivOrder == 2,
                 "Finite differencing currently only implemented for DerivOrder "
                 "= 2. If a different DerivOrder is desired, please add stencil "
@@ -194,7 +194,7 @@ std::array<DataVector, DerivOrder + 1> Averager<DerivOrder>::get_derivs() const
 }
 
 template <size_t DerivOrder>
-void Averager<DerivOrder>::pup(PUP::er& p) noexcept {
+void Averager<DerivOrder>::pup(PUP::er& p) {
   p | avg_tscale_frac_;
   p | average_0th_deriv_of_q_;
   p | averaged_values_;

@@ -26,7 +26,7 @@ namespace {
 using grmhd::AnalyticData::OrszagTangVortex;
 
 template <typename DataType>
-void test_variables(const DataType& used_for_size) noexcept {
+void test_variables(const DataType& used_for_size) {
   using tags = tmpl::list<hydro::Tags::RestMassDensity<DataType>,
                           hydro::Tags::SpatialVelocity<DataType, 3>,
                           hydro::Tags::SpecificInternalEnergy<DataType>,
@@ -41,10 +41,10 @@ void test_variables(const DataType& used_for_size) noexcept {
       "divergence_cleaning_field"s);
 
   tmpl::for_each<tags>([&used_for_size,
-                        name = names.begin() ](auto tag) mutable noexcept {
+                        name = names.begin()](auto tag) mutable {
     using Tag = tmpl::type_from<decltype(tag)>;
     pypp::check_with_random_values<1>(
-        +[](const tnsr::I<DataType, 3>& x) noexcept {
+        +[](const tnsr::I<DataType, 3>& x) {
           const auto result =
               get<Tag>(OrszagTangVortex{}.variables(x, tmpl::list<Tag>{}));
           CHECK(result == get<Tag>(OrszagTangVortex{}.variables(x, tags{})));

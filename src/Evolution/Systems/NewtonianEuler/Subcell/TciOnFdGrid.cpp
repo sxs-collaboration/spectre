@@ -31,7 +31,7 @@ bool TciOnFdGrid<Dim>::apply(
     const tnsr::I<DataVector, Dim, Frame::Inertial>& dg_momentum_density,
     const Scalar<DataVector>& dg_energy_density,
     const EquationsOfState::EquationOfState<false, ThermodynamicDim>& eos,
-    const Mesh<Dim>& dg_mesh, const double persson_exponent) noexcept {
+    const Mesh<Dim>& dg_mesh, const double persson_exponent) {
   constexpr double persson_tci_epsilon = 1.0e-18;
   NewtonianEuler::PrimitiveFromConservative<Dim>::apply(
       make_not_null(&get<MassDensity>(*subcell_grid_prim_vars)),
@@ -82,7 +82,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
           dg_momentum_density,                                               \
       const Scalar<DataVector>& dg_energy_density,                           \
       const EquationsOfState::EquationOfState<false, THERMO_DIM(data)>& eos, \
-      const Mesh<DIM(data)>& dg_mesh, const double persson_exponent) noexcept;
+      const Mesh<DIM(data)>& dg_mesh, const double persson_exponent);
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (1, 2))
 #undef INSTANTIATION
 #undef THERMO_DIM

@@ -92,7 +92,7 @@ class MinusLaplacian
   using solver_type = Solver;
 
   struct SolverOptionTag {
-    static std::string name() noexcept { return "Solver"; }
+    static std::string name() { return "Solver"; }
     using type = StoredSolverType;
     static constexpr Options::String help =
         "The linear solver used to invert the Laplace operator. The solver is "
@@ -108,24 +108,23 @@ class MinusLaplacian
   MinusLaplacian(MinusLaplacian&& /*rhs*/) = default;
   MinusLaplacian& operator=(MinusLaplacian&& /*rhs*/) = default;
   ~MinusLaplacian() = default;
-  MinusLaplacian(const MinusLaplacian& rhs) noexcept
+  MinusLaplacian(const MinusLaplacian& rhs)
       : Base(rhs), solver_(rhs.clone_solver()) {}
-  MinusLaplacian& operator=(const MinusLaplacian& rhs) noexcept {
+  MinusLaplacian& operator=(const MinusLaplacian& rhs) {
     Base::operator=(rhs);
     solver_ = rhs.clone_solver();
     return *this;
   }
 
   /// \cond
-  explicit MinusLaplacian(CkMigrateMessage* m) noexcept : Base(m) {}
+  explicit MinusLaplacian(CkMigrateMessage* m) : Base(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(MinusLaplacian);  // NOLINT
   /// \endcond
 
-  MinusLaplacian(StoredSolverType solver) noexcept
-      : solver_(std::move(solver)) {}
+  MinusLaplacian(StoredSolverType solver) : solver_(std::move(solver)) {}
 
-  const Solver& solver() const noexcept {
+  const Solver& solver() const {
     if constexpr (std::is_abstract_v<Solver>) {
       return *solver_;
     } else {
@@ -141,23 +140,22 @@ class MinusLaplacian
   Convergence::HasConverged solve(
       gsl::not_null<VarsType*> solution, LinearOperator&& linear_operator,
       const SourceType& source,
-      const std::tuple<OperatorArgs...>& operator_args =
-          std::tuple{}) const noexcept;
+      const std::tuple<OperatorArgs...>& operator_args = std::tuple{}) const;
 
-  void reset() noexcept override { mutable_solver().reset(); }
+  void reset() override { mutable_solver().reset(); }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept override {
+  void pup(PUP::er& p) override {
     Base::pup(p);
     p | solver_;
   }
 
-  std::unique_ptr<Base> get_clone() const noexcept override {
+  std::unique_ptr<Base> get_clone() const override {
     return std::make_unique<MinusLaplacian>(*this);
   }
 
  private:
-  Solver& mutable_solver() noexcept {
+  Solver& mutable_solver() {
     if constexpr (std::is_abstract_v<Solver>) {
       return *solver_;
     } else {
@@ -165,7 +163,7 @@ class MinusLaplacian
     }
   }
 
-  StoredSolverType clone_solver() const noexcept {
+  StoredSolverType clone_solver() const {
     if constexpr (std::is_abstract_v<Solver>) {
       return solver_->get_clone();
     } else {
@@ -205,7 +203,7 @@ void assign_component(
         lhs,
     const ::LinearSolver::Schwarz::ElementCenteredSubdomainData<
         Dim, RhsTagsList>& rhs,
-    const size_t lhs_component, const size_t rhs_component) noexcept {
+    const size_t lhs_component, const size_t rhs_component) {
   // Possible optimization: Once we have non-owning Variables we can use a view
   // into the rhs here instead of copying.
   const size_t num_points_element = rhs.element_data.number_of_grid_points();
@@ -232,7 +230,7 @@ Convergence::HasConverged
 MinusLaplacian<Dim, OptionsGroup, Solver, LinearSolverRegistrars>::solve(
     const gsl::not_null<VarsType*> initial_guess_in_solution_out,
     LinearOperator&& /*linear_operator*/, const SourceType& source,
-    const std::tuple<OperatorArgs...>& operator_args) const noexcept {
+    const std::tuple<OperatorArgs...>& operator_args) const {
   source_.destructive_resize(source);
   initial_guess_in_solution_out_.destructive_resize(source);
   // Solve each component of the source variables in turn, assuming the operator

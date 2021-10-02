@@ -20,7 +20,7 @@ struct InitialTime : db::SimpleTag {
   using option_tags = tmpl::list<OptionTags::InitialTime>;
 
   static constexpr bool pass_metavariables = false;
-  static double create_from_options(const double initial_time) noexcept {
+  static double create_from_options(const double initial_time) {
     return initial_time;
   }
 };
@@ -30,7 +30,7 @@ struct InitialTimeDelta : db::SimpleTag {
   using option_tags = tmpl::list<OptionTags::InitialTimeStep>;
 
   static constexpr bool pass_metavariables = false;
-  static double create_from_options(const double initial_time_step) noexcept {
+  static double create_from_options(const double initial_time_step) {
     return initial_time_step;
   }
 };
@@ -41,7 +41,7 @@ struct InitialSlabSize : db::SimpleTag {
   using option_tags = tmpl::list<OptionTags::InitialSlabSize>;
 
   static constexpr bool pass_metavariables = false;
-  static double create_from_options(const double initial_slab_size) noexcept {
+  static double create_from_options(const double initial_slab_size) {
     return initial_slab_size;
   }
 };
@@ -52,7 +52,7 @@ struct InitialSlabSize<false> : db::SimpleTag {
   using option_tags = tmpl::list<OptionTags::InitialTimeStep>;
 
   static constexpr bool pass_metavariables = false;
-  static double create_from_options(const double initial_time_step) noexcept {
+  static double create_from_options(const double initial_time_step) {
     return std::abs(initial_time_step);
   }
 };

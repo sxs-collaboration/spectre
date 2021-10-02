@@ -22,18 +22,16 @@
 
 namespace Spectral::Swsh {
 
-CoefficientsMetadata::CoefficientsMetadata(const size_t l_max) noexcept
-    : l_max_(l_max) {
+CoefficientsMetadata::CoefficientsMetadata(const size_t l_max) : l_max_(l_max) {
   sharp_alm_info* alm_to_initialize = nullptr;
   sharp_make_triangular_alm_info(l_max, l_max, 1, &alm_to_initialize);
   alm_info_.reset(alm_to_initialize);
 }
 
-const CoefficientsMetadata& cached_coefficients_metadata(
-    const size_t l_max) noexcept {
+const CoefficientsMetadata& cached_coefficients_metadata(const size_t l_max) {
   const static auto lazy_coefficients_cache =
       make_static_cache<CacheRange<0_st, detail::coefficients_maximum_l_max>>(
-          [](const size_t generator_l_max) noexcept {
+          [](const size_t generator_l_max) {
             return CoefficientsMetadata{generator_l_max};
           });
   return lazy_coefficients_cache(l_max);
@@ -43,7 +41,7 @@ template <int Spin>
 std::complex<double> libsharp_mode_to_goldberg_plus_m(
     const LibsharpCoefficientInfo& coefficient_info,
     const SpinWeighted<ComplexModalVector, Spin>& libsharp_modes,
-    const size_t radial_offset) noexcept {
+    const size_t radial_offset) {
   return sharp_swsh_sign(Spin, coefficient_info.m, true) *
              libsharp_modes
                  .data()[radial_offset * size_of_libsharp_coefficient_vector(
@@ -61,7 +59,7 @@ template <int Spin>
 std::complex<double> libsharp_mode_to_goldberg_minus_m(
     const LibsharpCoefficientInfo& coefficient_info,
     const SpinWeighted<ComplexModalVector, Spin>& libsharp_modes,
-    const size_t radial_offset) noexcept {
+    const size_t radial_offset) {
   return sharp_swsh_sign(Spin, -static_cast<int>(coefficient_info.m), true) *
              conj(libsharp_modes
                       .data()[radial_offset *
@@ -82,7 +80,7 @@ template <int Spin>
 std::complex<double> libsharp_mode_to_goldberg(
     const size_t l, const int m, const size_t l_max,
     const SpinWeighted<ComplexModalVector, Spin>& libsharp_modes,
-    const size_t radial_offset) noexcept {
+    const size_t radial_offset) {
   const CoefficientsMetadata::CoefficientsIndexIterator coefficients_iterator{
       l_max, l, static_cast<size_t>(abs(m))};
   if (m >= 0) {
@@ -100,7 +98,7 @@ void goldberg_modes_to_libsharp_modes_single_pair(
     const gsl::not_null<SpinWeighted<ComplexModalVector, Spin>*> libsharp_modes,
     const size_t radial_offset,
     const std::complex<double> goldberg_plus_m_mode_value,
-    std::complex<double> goldberg_minus_m_mode_value) noexcept {
+    std::complex<double> goldberg_minus_m_mode_value) {
   const auto sign_determinant = static_cast<double>(
       sharp_swsh_sign(Spin, coefficient_info.m, true) *
           sharp_swsh_sign(Spin, -static_cast<int>(coefficient_info.m), false) +
@@ -135,7 +133,7 @@ void goldberg_modes_to_libsharp_modes_single_pair(
     const gsl::not_null<SpinWeighted<ComplexModalVector, Spin>*> libsharp_modes,
     const size_t radial_offset,
     const std::complex<double> goldberg_plus_m_mode_value,
-    const std::complex<double> goldberg_minus_m_mode_value) noexcept {
+    const std::complex<double> goldberg_minus_m_mode_value) {
   CoefficientsMetadata::CoefficientsIndexIterator coefficients_iterator{
       l_max, l, static_cast<size_t>(abs(m))};
   goldberg_modes_to_libsharp_modes_single_pair(
@@ -147,7 +145,7 @@ template <int Spin>
 void libsharp_to_goldberg_modes(
     const gsl::not_null<SpinWeighted<ComplexModalVector, Spin>*> goldberg_modes,
     const SpinWeighted<ComplexModalVector, Spin>& libsharp_modes,
-    const size_t l_max) noexcept {
+    const size_t l_max) {
   const size_t number_of_radial_grid_points =
       libsharp_modes.data().size() / size_of_libsharp_coefficient_vector(l_max);
 
@@ -173,7 +171,7 @@ void libsharp_to_goldberg_modes(
 template <int Spin>
 SpinWeighted<ComplexModalVector, Spin> libsharp_to_goldberg_modes(
     const SpinWeighted<ComplexModalVector, Spin>& libsharp_modes,
-    const size_t l_max) noexcept {
+    const size_t l_max) {
   const size_t number_of_radial_grid_points =
       libsharp_modes.data().size() / size_of_libsharp_coefficient_vector(l_max);
   SpinWeighted<ComplexModalVector, Spin> result{square(1 + l_max) *
@@ -186,7 +184,7 @@ template <int Spin>
 void goldberg_to_libsharp_modes(
     const gsl::not_null<SpinWeighted<ComplexModalVector, Spin>*> libsharp_modes,
     const SpinWeighted<ComplexModalVector, Spin>& goldberg_modes,
-    const size_t l_max) noexcept {
+    const size_t l_max) {
   const size_t number_of_radial_grid_points =
       goldberg_modes.data().size() / square(l_max + 1);
   for(size_t i = 0; i < number_of_radial_grid_points; ++i) {
@@ -204,7 +202,7 @@ void goldberg_to_libsharp_modes(
 template <int Spin>
 SpinWeighted<ComplexModalVector, Spin> goldberg_to_libsharp_modes(
     const SpinWeighted<ComplexModalVector, Spin>& goldberg_modes,
-    const size_t l_max) noexcept {
+    const size_t l_max) {
   const size_t number_of_radial_grid_points =
       goldberg_modes.data().size() / square(l_max + 1);
   SpinWeighted<ComplexModalVector, Spin> result{
@@ -220,42 +218,42 @@ SpinWeighted<ComplexModalVector, Spin> goldberg_to_libsharp_modes(
   template std::complex<double> libsharp_mode_to_goldberg_plus_m(             \
       const LibsharpCoefficientInfo& coefficient_info,                        \
       const SpinWeighted<ComplexModalVector, GET_SPIN(data)>& libsharp_modes, \
-      const size_t radial_offset) noexcept;                                   \
+      const size_t radial_offset);                                            \
   template std::complex<double> libsharp_mode_to_goldberg_minus_m(            \
       const LibsharpCoefficientInfo& coefficient_info,                        \
       const SpinWeighted<ComplexModalVector, GET_SPIN(data)>& libsharp_modes, \
-      const size_t radial_offset) noexcept;                                   \
+      const size_t radial_offset);                                            \
   template std::complex<double> libsharp_mode_to_goldberg(                    \
       const size_t l, const int m, const size_t l_max,                        \
       const SpinWeighted<ComplexModalVector, GET_SPIN(data)>& libsharp_modes, \
-      const size_t radial_offset) noexcept;                                   \
+      const size_t radial_offset);                                            \
   template void goldberg_modes_to_libsharp_modes_single_pair(                 \
       const LibsharpCoefficientInfo& coefficient_info,                        \
       const gsl::not_null<SpinWeighted<ComplexModalVector, GET_SPIN(data)>*>  \
           libsharp_modes,                                                     \
       const size_t radial_offset,                                             \
       const std::complex<double> goldberg_plus_m_mode_value,                  \
-      const std::complex<double> goldberg_minus_m_mode_value) noexcept;       \
+      const std::complex<double> goldberg_minus_m_mode_value);                \
   template void goldberg_modes_to_libsharp_modes_single_pair(                 \
       const size_t l, const int m, const size_t l_max,                        \
       const gsl::not_null<SpinWeighted<ComplexModalVector, GET_SPIN(data)>*>  \
           libsharp_modes,                                                     \
       const size_t radial_offset,                                             \
       const std::complex<double> goldberg_plus_m_mode_value,                  \
-      const std::complex<double> goldberg_minus_m_mode_value) noexcept;       \
+      const std::complex<double> goldberg_minus_m_mode_value);                \
   template void libsharp_to_goldberg_modes(                                   \
       const gsl::not_null<SpinWeighted<ComplexModalVector, GET_SPIN(data)>*>  \
           goldberg_modes,                                                     \
       const SpinWeighted<ComplexModalVector, GET_SPIN(data)>& libsharp_modes, \
-      const size_t l_max) noexcept;                                           \
+      const size_t l_max);                                                    \
   template SpinWeighted<ComplexModalVector, GET_SPIN(data)>                   \
   libsharp_to_goldberg_modes(                                                 \
       const SpinWeighted<ComplexModalVector, GET_SPIN(data)>& libsharp_modes, \
-      const size_t l_max) noexcept;                                           \
+      const size_t l_max);                                                    \
   template SpinWeighted<ComplexModalVector, GET_SPIN(data)>                   \
   goldberg_to_libsharp_modes(                                                 \
       const SpinWeighted<ComplexModalVector, GET_SPIN(data)>& goldberg_modes, \
-      const size_t l_max) noexcept;
+      const size_t l_max);
 
 GENERATE_INSTANTIATIONS(LIBSHARP_TO_GOLDBERG_INSTANTIATION, (-2, -1, 0, 1, 2))
 

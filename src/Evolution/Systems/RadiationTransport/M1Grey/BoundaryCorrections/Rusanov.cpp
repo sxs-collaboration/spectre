@@ -32,8 +32,7 @@ void dg_package_data_impl(
     const tnsr::I<DataVector, 3, Frame::Inertial>& /*normal_vector*/,
     const std::optional<
         tnsr::I<DataVector, 3, Frame::Inertial>>& /*mesh_velocity*/,
-    const std::optional<
-        Scalar<DataVector>>& /*normal_dot_mesh_velocity*/) noexcept {
+    const std::optional<Scalar<DataVector>>& /*normal_dot_mesh_velocity*/) {
   *packaged_tilde_e = tilde_e;
   *packaged_tilde_s = tilde_s;
 
@@ -55,7 +54,7 @@ void dg_boundary_terms_impl(
     const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s_ext,
     const Scalar<DataVector>& normal_dot_flux_tilde_e_ext,
     const tnsr::i<DataVector, 3, Frame::Inertial>& normal_dot_flux_tilde_s_ext,
-    dg::Formulation dg_formulation) noexcept {
+    dg::Formulation dg_formulation) {
   constexpr double max_abs_char_speed = 1.0;
   if (dg_formulation == dg::Formulation::WeakInertial) {
     get(*boundary_correction_tilde_e) =

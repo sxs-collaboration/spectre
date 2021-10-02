@@ -36,7 +36,7 @@ struct DirectionMapTag : db::SimpleTag {
 };
 // [apply_at_tags]
 
-void test_apply_at() noexcept {
+void test_apply_at() {
   const auto check = [](const auto& box) {
     // [apply_at_example]
     apply_at<tmpl::list<MapTag, NonMapTag, NestedMapTag>,
@@ -71,7 +71,7 @@ void test_apply_at() noexcept {
       DirectionMap<1, bool>{{Direction<1>::lower_xi(), true}}));
 }
 
-void test_mutate_apply_at() noexcept {
+void test_mutate_apply_at() {
   const auto check = [](auto box) {
     // [mutate_apply_at_example]
     mutate_apply_at<tmpl::list<MapTag>, tmpl::list<NonMapTag, NestedMapTag>,

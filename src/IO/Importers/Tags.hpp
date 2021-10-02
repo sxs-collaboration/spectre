@@ -25,7 +25,7 @@ namespace OptionTags {
  * \brief Groups the data importer configurations in the input file
  */
 struct Group {
-  static std::string name() noexcept { return "Importers"; }
+  static std::string name() { return "Importers"; }
   static constexpr Options::String help = "Options for loading data files";
 };
 
@@ -84,16 +84,14 @@ namespace Tags {
  */
 template <typename ImporterOptionsGroup>
 struct FileName : db::SimpleTag {
-  static std::string name() noexcept {
+  static std::string name() {
     return "FileName(" + Options::name<ImporterOptionsGroup>() + ")";
   }
   using type = std::string;
   using option_tags = tmpl::list<OptionTags::FileName<ImporterOptionsGroup>>;
 
   static constexpr bool pass_metavariables = false;
-  static type create_from_options(const type& file_name) noexcept {
-    return file_name;
-  }
+  static type create_from_options(const type& file_name) { return file_name; }
 };
 
 /*!
@@ -103,16 +101,14 @@ struct FileName : db::SimpleTag {
  */
 template <typename ImporterOptionsGroup>
 struct Subgroup : db::SimpleTag {
-  static std::string name() noexcept {
+  static std::string name() {
     return "Subgroup(" + Options::name<ImporterOptionsGroup>() + ")";
   }
   using type = std::string;
   using option_tags = tmpl::list<OptionTags::Subgroup<ImporterOptionsGroup>>;
 
   static constexpr bool pass_metavariables = false;
-  static type create_from_options(const type& subgroup) noexcept {
-    return subgroup;
-  }
+  static type create_from_options(const type& subgroup) { return subgroup; }
 };
 
 /*!
@@ -120,7 +116,7 @@ struct Subgroup : db::SimpleTag {
  */
 template <typename ImporterOptionsGroup>
 struct ObservationValue : db::SimpleTag {
-  static std::string name() noexcept {
+  static std::string name() {
     return "ObservationValue(" + Options::name<ImporterOptionsGroup>() +
            ")";
   }
@@ -129,7 +125,7 @@ struct ObservationValue : db::SimpleTag {
       tmpl::list<OptionTags::ObservationValue<ImporterOptionsGroup>>;
 
   static constexpr bool pass_metavariables = false;
-  static type create_from_options(const type& observation_value) noexcept {
+  static type create_from_options(const type& observation_value) {
     return observation_value;
   }
 };

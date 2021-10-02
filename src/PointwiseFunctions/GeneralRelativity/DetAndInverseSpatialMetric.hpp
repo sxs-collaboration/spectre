@@ -45,10 +45,9 @@ struct DetAndInverseSpatialMetricCompute
   using return_type = typename base::type;
   static constexpr auto function = static_cast<void (*)(
       const gsl::not_null<return_type*>,
-      const Tensor<
-          DataType, tmpl::integral_list<std::int32_t, 1, 1>,
-          tmpl::list<SpatialIndex<SpatialDim, UpLo::Lo, Frame>,
-                     SpatialIndex<SpatialDim, UpLo::Lo, Frame>>>&) noexcept>(
+      const Tensor<DataType, tmpl::integral_list<std::int32_t, 1, 1>,
+                   tmpl::list<SpatialIndex<SpatialDim, UpLo::Lo, Frame>,
+                              SpatialIndex<SpatialDim, UpLo::Lo, Frame>>>&)>(
       &determinant_and_inverse);
 };
 
@@ -66,7 +65,7 @@ struct SqrtDetSpatialMetricCompute : SqrtDetSpatialMetric<DataType>,
   using return_type = Scalar<DataType>;
 
   static void function(const gsl::not_null<Scalar<DataType>*> result,
-                       const Scalar<DataType>& det_spatial_metric) noexcept {
+                       const Scalar<DataType>& det_spatial_metric) {
     destructive_resize_components(result, get_size(get(det_spatial_metric)));
     get(*result) = sqrt(get(det_spatial_metric));
   }

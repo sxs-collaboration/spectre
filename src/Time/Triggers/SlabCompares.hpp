@@ -27,7 +27,7 @@ class SlabCompares : public Trigger {
  public:
   /// \cond
   SlabCompares() = default;
-  explicit SlabCompares(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit SlabCompares(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(SlabCompares);  // NOLINT
   /// \endcond
@@ -47,18 +47,18 @@ class SlabCompares : public Trigger {
       "Trigger based on a comparison with the slab number."};
 
   explicit SlabCompares(const Options::Comparator comparator,
-                        const uint64_t slab_number) noexcept
+                        const uint64_t slab_number)
       : comparator_(comparator), slab_number_(slab_number) {}
 
   using argument_tags = tmpl::list<Tags::TimeStepId>;
 
-  bool operator()(const TimeStepId& time_step_id) const noexcept {
+  bool operator()(const TimeStepId& time_step_id) const {
     return comparator_(static_cast<uint64_t>(time_step_id.slab_number()),
                        slab_number_);
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept {
+  void pup(PUP::er& p) {
     p | comparator_;
     p | slab_number_;
   }

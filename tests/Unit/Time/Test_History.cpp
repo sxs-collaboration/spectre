@@ -25,9 +25,9 @@ namespace {
 
 constexpr double test_most_recent_value = 1234.56;
 
-Time make_time(const double t) noexcept { return Slab(t, t + 0.5).start(); }
+Time make_time(const double t) { return Slab(t, t + 0.5).start(); }
 
-TimeStepId make_time_id(const double t) noexcept {
+TimeStepId make_time_id(const double t) {
   constexpr size_t substeps = 2;
   return {true, 0, make_time(substeps * std::floor(t / substeps)),
           static_cast<size_t>(std::fmod(t, substeps) + substeps) % substeps,
@@ -36,7 +36,7 @@ TimeStepId make_time_id(const double t) noexcept {
 
 // Requires `it` to point at 0. in the sequence of times -1., 0., 1., 2.
 template <typename Iterator>
-void check_iterator(Iterator it) noexcept {
+void check_iterator(Iterator it) {
   CHECK(*it == make_time(0.));
   CHECK(it->value() == 0.);
   CHECK(it[0] == make_time(0.));
@@ -87,7 +87,7 @@ void check_iterator(Iterator it) noexcept {
 
 using HistoryType = TimeSteppers::History<double, std::string>;
 
-void check_history_state(const HistoryType& hist) noexcept {
+void check_history_state(const HistoryType& hist) {
   CHECK(hist.size() == 4);
   {
     auto it = hist.begin();
@@ -180,8 +180,7 @@ using BoundaryHistoryType =
     TimeSteppers::BoundaryHistory<std::string, std::vector<int>, double>;
 
 // Must take a non-const arg for coupling caching
-size_t check_boundary_state(
-    const gsl::not_null<BoundaryHistoryType*> hist) noexcept {
+size_t check_boundary_state(const gsl::not_null<BoundaryHistoryType*> hist) {
   CHECK(hist->local_size() == 4);
   {
     auto it = hist->local_begin();
@@ -207,8 +206,9 @@ size_t check_boundary_state(
   std::string local_arg;
   std::vector<int> remote_arg;
   double coupling_return = std::numeric_limits<double>::signaling_NaN();
-  const auto coupling = [&local_arg, &remote_arg, &coupling_return ](
-      const std::string& local, const std::vector<int>& remote) noexcept {
+  const auto coupling = [&local_arg, &remote_arg, &coupling_return](
+                            const std::string& local,
+                            const std::vector<int>& remote) {
     local_arg = local;
     remote_arg = remote;
     return coupling_return;

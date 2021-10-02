@@ -14,8 +14,7 @@
 namespace detail {
 template <size_t Size>
 constexpr int find_reduced_index(
-    const cpp20::array<std::pair<int, int>, Size>& t,
-    const int value) noexcept {
+    const cpp20::array<std::pair<int, int>, Size>& t, const int value) {
   for (size_t i = 0; i < Size; ++i) {
     if (t[i].first == value) {
       return t[i].second;
@@ -26,7 +25,7 @@ constexpr int find_reduced_index(
 
 template <size_t Size>
 constexpr cpp20::array<int, Size> symmetry(
-    const std::array<int, Size>& input_symm) noexcept {
+    const std::array<int, Size>& input_symm) {
   cpp20::array<int, Size> output_symm{};
   int next_symm_entry = 1;
   cpp20::array<std::pair<int, int>, Size> input_to_output_map{};

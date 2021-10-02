@@ -25,15 +25,14 @@ struct unmap_arg;
 template <typename... MapKeys>
 struct unmap_arg<true, MapKeys...> {
   template <typename T>
-  static constexpr const T& apply(
-      const T& arg, const std::tuple<MapKeys...>& /*map_keys*/) noexcept {
+  static constexpr const T& apply(const T& arg,
+                                  const std::tuple<MapKeys...>& /*map_keys*/) {
     return arg;
   }
 
   template <typename T>
   static constexpr gsl::not_null<T*> apply(
-      const gsl::not_null<T*> arg,
-      const std::tuple<MapKeys...>& /*map_keys*/) noexcept {
+      const gsl::not_null<T*> arg, const std::tuple<MapKeys...>& /*map_keys*/) {
     return arg;
   }
 };
@@ -42,8 +41,7 @@ template <typename FirstMapKey, typename... MapKeys>
 struct unmap_arg<false, FirstMapKey, MapKeys...> {
   template <typename T>
   static constexpr decltype(auto) apply(
-      const T& arg,
-      const std::tuple<FirstMapKey, MapKeys...>& map_keys) noexcept {
+      const T& arg, const std::tuple<FirstMapKey, MapKeys...>& map_keys) {
     return unmap_arg<sizeof...(MapKeys) == 0, MapKeys...>::apply(
         arg.at(std::get<0>(map_keys)),
         tuple_tail<sizeof...(MapKeys)>(map_keys));
@@ -52,7 +50,7 @@ struct unmap_arg<false, FirstMapKey, MapKeys...> {
   template <typename T>
   static constexpr decltype(auto) apply(
       const gsl::not_null<T*> arg,
-      const std::tuple<FirstMapKey, MapKeys...>& map_keys) noexcept {
+      const std::tuple<FirstMapKey, MapKeys...>& map_keys) {
     return unmap_arg<sizeof...(MapKeys) == 0, MapKeys...>::apply(
         make_not_null(&arg->operator[](std::get<0>(map_keys))),
         tuple_tail<sizeof...(MapKeys)>(map_keys));
@@ -65,11 +63,11 @@ template <typename... ArgumentTags, typename PassthroughArgumentTags,
 SPECTRE_ALWAYS_INLINE decltype(auto) apply_at(
     F&& f, const TaggedContainer& box, const std::tuple<MapKeys...>& map_keys,
     tmpl::list<ArgumentTags...> /*meta*/, PassthroughArgumentTags /*meta*/,
-    Args&&... args) noexcept {
+    Args&&... args) {
   using ::db::apply;
   using ::tuples::apply;
   return apply<tmpl::list<ArgumentTags...>>(
-      [&f, &map_keys, &args...](const auto&... args_items) noexcept {
+      [&f, &map_keys, &args...](const auto&... args_items) {
         (void)map_keys;
         return std::forward<F>(f)(
             unmap_arg<
@@ -107,7 +105,7 @@ template <typename ArgumentTags, typename PassthroughArgumentTags,
           typename... Args>
 SPECTRE_ALWAYS_INLINE decltype(auto) apply_at(
     F&& f, const TaggedContainer& box, const std::tuple<MapKeys...>& map_keys,
-    Args&&... args) noexcept {
+    Args&&... args) {
   return detail::apply_at(std::forward<F>(f), box, map_keys, ArgumentTags{},
                           PassthroughArgumentTags{},
                           std::forward<Args>(args)...);
@@ -118,7 +116,7 @@ template <typename ArgumentTags, typename PassthroughArgumentTags,
           typename... Args>
 SPECTRE_ALWAYS_INLINE decltype(auto) apply_at(F&& f, const TaggedContainer& box,
                                               const MapKey& map_key,
-                                              Args&&... args) noexcept {
+                                              Args&&... args) {
   return detail::apply_at(
       std::forward<F>(f), box, std::forward_as_tuple(map_key), ArgumentTags{},
       PassthroughArgumentTags{}, std::forward<Args>(args)...);
@@ -134,18 +132,17 @@ SPECTRE_ALWAYS_INLINE void mutate_apply_at(
     F&& f, const gsl::not_null<TaggedContainer*> box,
     const std::tuple<MapKeys...>& map_keys, tmpl::list<ReturnTags...> /*meta*/,
     tmpl::list<ArgumentTags...> /*meta*/, PassthroughTags /*meta*/,
-    Args&&... args) noexcept {
+    Args&&... args) {
   using ::db::apply;
   using ::db::mutate_apply;
   using ::tuples::apply;
   const auto args_items = apply<tmpl::list<ArgumentTags...>>(
-      [](const auto&... expanded_args_items) noexcept {
+      [](const auto&... expanded_args_items) {
         return std::forward_as_tuple(expanded_args_items...);
       },
       *box);
   mutate_apply<tmpl::list<ReturnTags...>, tmpl::list<>>(
-      [&f, &map_keys, &args_items,
-       &args...](const auto... mutated_items) noexcept {
+      [&f, &map_keys, &args_items, &args...](const auto... mutated_items) {
         (void)map_keys;
         (void)args_items;
         std::forward<F>(f)(
@@ -188,7 +185,7 @@ template <typename MutateTags, typename ArgumentTags, typename PassthroughTags,
           typename... Args>
 SPECTRE_ALWAYS_INLINE void mutate_apply_at(
     F&& f, const gsl::not_null<TaggedContainer*> box,
-    const std::tuple<MapKeys...>& map_keys, Args&&... args) noexcept {
+    const std::tuple<MapKeys...>& map_keys, Args&&... args) {
   detail::mutate_apply_at(std::forward<F>(f), box, map_keys, MutateTags{},
                           ArgumentTags{}, PassthroughTags{},
                           std::forward<Args>(args)...);
@@ -199,7 +196,7 @@ template <typename MutateTags, typename ArgumentTags, typename PassthroughTags,
           typename... Args>
 SPECTRE_ALWAYS_INLINE void mutate_apply_at(
     F&& f, const gsl::not_null<TaggedContainer*> box, const MapKey& map_key,
-    Args&&... args) noexcept {
+    Args&&... args) {
   detail::mutate_apply_at(
       std::forward<F>(f), box, std::forward_as_tuple(map_key), MutateTags{},
       ArgumentTags{}, PassthroughTags{}, std::forward<Args>(args)...);

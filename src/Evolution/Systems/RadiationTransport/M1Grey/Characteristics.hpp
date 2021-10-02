@@ -32,7 +32,7 @@ namespace M1Grey {
  */
 void characteristic_speeds(
     gsl::not_null<std::array<DataVector, 4>*> pchar_speeds,
-    const Scalar<DataVector>& lapse) noexcept;
+    const Scalar<DataVector>& lapse);
 
 namespace Tags {
 /// \brief Compute the characteristic speeds for the M1 system
@@ -50,7 +50,7 @@ struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds,
 
 struct ComputeLargestCharacteristicSpeed {
   using argument_tags = tmpl::list<>;
-  static double apply() noexcept { return 1.0; }
+  static double apply() { return 1.0; }
 };
 
 }  // namespace M1Grey

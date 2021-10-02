@@ -18,12 +18,10 @@
 
 namespace NewtonianEuler::BoundaryCorrections {
 template <size_t Dim>
-Rusanov<Dim>::Rusanov(CkMigrateMessage* msg) noexcept
-    : BoundaryCorrection<Dim>(msg) {}
+Rusanov<Dim>::Rusanov(CkMigrateMessage* msg) : BoundaryCorrection<Dim>(msg) {}
 
 template <size_t Dim>
-std::unique_ptr<BoundaryCorrection<Dim>> Rusanov<Dim>::get_clone()
-    const noexcept {
+std::unique_ptr<BoundaryCorrection<Dim>> Rusanov<Dim>::get_clone() const {
   return std::make_unique<Rusanov>(*this);
 }
 
@@ -63,7 +61,7 @@ double Rusanov<Dim>::dg_package_data(
     /*mesh_velocity*/,
     const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity,
     const EquationsOfState::EquationOfState<false, ThermodynamicDim>&
-        equation_of_state) const noexcept {
+        equation_of_state) const {
   {
     // Compute sound speed
     Scalar<DataVector>& sound_speed = *packaged_mass_density;
@@ -121,7 +119,7 @@ void Rusanov<Dim>::dg_boundary_terms(
         normal_dot_flux_momentum_density_ext,
     const Scalar<DataVector>& normal_dot_flux_energy_density_ext,
     const Scalar<DataVector>& abs_char_speed_ext,
-    const dg::Formulation dg_formulation) const noexcept {
+    const dg::Formulation dg_formulation) const {
   if (dg_formulation == dg::Formulation::WeakInertial) {
     get(*boundary_correction_mass_density) =
         0.5 * (get(normal_dot_flux_mass_density_int) -
@@ -208,7 +206,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
           mesh_velocity,                                                       \
       const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity,       \
       const EquationsOfState::EquationOfState<false, THERMODIM(data)>&         \
-          equation_of_state) const noexcept;
+          equation_of_state) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (1, 2))
 

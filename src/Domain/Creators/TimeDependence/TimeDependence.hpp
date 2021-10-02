@@ -84,22 +84,21 @@ struct TimeDependence {
   TimeDependence& operator=(TimeDependence&&) = default;
 
   /// Returns a `std::unique_ptr` pointing to a copy of the `TimeDependence`.
-  virtual auto get_clone() const noexcept
-      -> std::unique_ptr<TimeDependence> = 0;
+  virtual auto get_clone() const -> std::unique_ptr<TimeDependence> = 0;
 
   /// Returns the coordinate maps from the `Frame::Grid` to the
   /// `Frame::Inertial` frame for each block.
-  virtual auto block_maps(size_t number_of_blocks) const noexcept
-      -> std::vector<std::unique_ptr<domain::CoordinateMapBase<
-          Frame::Grid, Frame::Inertial, MeshDim>>> = 0;
+  virtual auto
+  block_maps(size_t number_of_blocks) const -> std::vector<std::unique_ptr<
+      domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, MeshDim>>> = 0;
 
   /// Returns the functions of time for the domain.
-  virtual auto functions_of_time() const noexcept -> std::unordered_map<
+  virtual auto functions_of_time() const -> std::unordered_map<
       std::string,
       std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> = 0;
 
   /// Returns `true` if the instance is `None`, meaning no time dependence.
-  bool is_none() const noexcept {
+  bool is_none() const {
     return dynamic_cast<const None<MeshDim>*>(this) != nullptr;
   }
 };

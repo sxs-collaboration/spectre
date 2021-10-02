@@ -18,23 +18,23 @@
 #include "Utilities/MakeString.hpp"
 
 namespace {
-std::pair<double, double> func_and_deriv_free(double x) noexcept {
+std::pair<double, double> func_and_deriv_free(double x) {
   return std::make_pair(2. - square(x), -2. * x);
 }
 struct FuncAndDeriv {
-  std::pair<double, double> operator()(double x) const noexcept {
+  std::pair<double, double> operator()(double x) const {
     return std::make_pair(2. - square(x), -2. * x);
   }
 };
 
-void test_simple() noexcept {
+void test_simple() {
   // [double_newton_raphson_root_find]
   const size_t digits = 8;
   const double correct = sqrt(2.);
   const double guess = 1.5;
   const double lower = 1.;
   const double upper = 2.;
-  const auto func_and_deriv_lambda = [](double x) noexcept {
+  const auto func_and_deriv_lambda = [](double x) {
     return std::make_pair(2. - square(x), -2. * x);
   };
   const auto root_from_lambda = RootFinder::newton_raphson(
@@ -50,12 +50,12 @@ void test_simple() noexcept {
   CHECK(root_from_free == root_from_functor);
 }
 
-void test_bounds() noexcept {
+void test_bounds() {
   const size_t digits = 8;
   const double guess = 1.5;
   double upper = 2.;
   double lower = sqrt(2.);
-  const auto func_and_deriv_lambda = [](double x) noexcept {
+  const auto func_and_deriv_lambda = [](double x) {
     return std::make_pair(2. - square(x), -2. * x);
   };
 
@@ -73,7 +73,7 @@ void test_bounds() noexcept {
   CHECK(std::abs(root - correct) < 1.0 / std::pow(10, digits));
 }
 
-void test_datavector() noexcept {
+void test_datavector() {
   // [datavector_newton_raphson_root_find]
   const size_t digits = 8;
   const DataVector guess{1.6, 1.9, -1.6, -1.9};
@@ -82,7 +82,7 @@ void test_datavector() noexcept {
   const DataVector constant{2., 4., 2., 4.};
 
   const auto func_and_deriv_lambda = [&constant](const double x,
-                                                 const size_t i) noexcept {
+                                                 const size_t i) {
     return std::make_pair(constant[i] - square(x), -2. * x);
   };
 
@@ -97,7 +97,7 @@ void test_datavector() noexcept {
   }
 }
 
-void test_convergence_error_double() noexcept {
+void test_convergence_error_double() {
   const size_t max_iterations = 2;
   const size_t digits = 8;
   const double guess = 1.5;
@@ -105,7 +105,7 @@ void test_convergence_error_double() noexcept {
   const double upper = 2.;
   boost::uintmax_t max_iters = max_iterations;
 
-  const auto func_and_deriv = [](double x) noexcept {
+  const auto func_and_deriv = [](double x) {
     return std::make_pair(2. - square(x), -2. * x);
   };
 
@@ -130,7 +130,7 @@ void test_convergence_error_double() noexcept {
                         << func_and_deriv(best_result).first));
 }
 
-void test_convergence_error_datavector() noexcept {
+void test_convergence_error_datavector() {
   const size_t max_iterations = 2;
   const size_t digits = 8;
   const auto digits_binary = std::round(std::log2(std::pow(10, digits)));
@@ -138,8 +138,7 @@ void test_convergence_error_datavector() noexcept {
   const DataVector upper{2., 3., -sqrt(2.), -sqrt(2.)};
   const DataVector constant{2., 4., 2., 4.};
 
-  const auto func_and_deriv = [&constant](const double x,
-                                          const size_t i) noexcept {
+  const auto func_and_deriv = [&constant](const double x, const size_t i) {
     return std::make_pair(constant[i] - square(x), -2. * x);
   };
 
@@ -160,9 +159,7 @@ void test_convergence_error_datavector() noexcept {
       // clang-tidy: internal boost warning, can't fix it.
       best_result_vector[s] =
           boost::math::tools::newton_raphson_iterate(  // NOLINT
-              [&func_and_deriv, s ](double x) noexcept {
-                return func_and_deriv(x, s);
-              },
+              [&func_and_deriv, s](double x) { return func_and_deriv(x, s); },
               current_guess[s], lower[s], upper[s], digits_binary, max_iters);
     }
     for (size_t s = 0; s < best_result_vector.size(); ++s) {
@@ -224,7 +221,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.NewtonRaphson",
   const DataVector constant{2., 4., 2., 4.};
 
   const auto func_and_deriv_lambda = [&constant](const double x,
-                                                 const size_t i) noexcept {
+                                                 const size_t i) {
     return std::make_pair(constant[i] - square(x), -2. * x);
   };
 

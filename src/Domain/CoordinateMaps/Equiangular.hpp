@@ -54,42 +54,41 @@ class Equiangular {
  public:
   static constexpr size_t dim = 1;
 
-  Equiangular(double A, double B, double a, double b) noexcept;
+  Equiangular(double A, double B, double a, double b);
 
   Equiangular() = default;
   ~Equiangular() = default;
   Equiangular(const Equiangular&) = default;
-  Equiangular(Equiangular&&) noexcept = default;
+  Equiangular(Equiangular&&) = default;
   Equiangular& operator=(const Equiangular&) = default;
   Equiangular& operator=(Equiangular&&) = default;
 
   template <typename T>
   std::array<tt::remove_cvref_wrap_t<T>, 1> operator()(
-      const std::array<T, 1>& source_coords) const noexcept;
+      const std::array<T, 1>& source_coords) const;
 
   /// The inverse function is only callable with doubles because the inverse
   /// might fail if called for a point out of range, and it is unclear
   /// what should happen if the inverse were to succeed for some points in a
   /// DataVector but fail for other points.
   std::optional<std::array<double, 1>> inverse(
-      const std::array<double, 1>& target_coords) const noexcept;
+      const std::array<double, 1>& target_coords) const;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, 1, Frame::NoFrame> jacobian(
-      const std::array<T, 1>& source_coords) const noexcept;
+      const std::array<T, 1>& source_coords) const;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, 1, Frame::NoFrame> inv_jacobian(
-      const std::array<T, 1>& source_coords) const noexcept;
+      const std::array<T, 1>& source_coords) const;
 
   // clang-tidy: google-runtime-references
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
 
-  static bool is_identity() noexcept { return false; }
+  static bool is_identity() { return false; }
 
  private:
-  friend bool operator==(const Equiangular& lhs,
-                         const Equiangular& rhs) noexcept;
+  friend bool operator==(const Equiangular& lhs, const Equiangular& rhs);
 
   double A_{-1.0};
   double B_{1.0};
@@ -108,7 +107,7 @@ class Equiangular {
 };
 
 inline bool operator!=(const CoordinateMaps::Equiangular& lhs,
-                       const CoordinateMaps::Equiangular& rhs) noexcept {
+                       const CoordinateMaps::Equiangular& rhs) {
   return not(lhs == rhs);
 }
 

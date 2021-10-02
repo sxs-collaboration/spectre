@@ -43,8 +43,7 @@ struct ComputeHorizonVolumeQuantities {
   /// Single-frame case
   template <typename SrcTagList, typename DestTagList>
   static void apply(const gsl::not_null<Variables<DestTagList>*> target_vars,
-                    const Variables<SrcTagList>& src_vars,
-                    const Mesh<3>& mesh) noexcept;
+                    const Variables<SrcTagList>& src_vars, const Mesh<3>& mesh);
   /// Dual-frame case
   template <typename SrcTagList, typename DestTagList, typename TargetFrame>
   static void apply(
@@ -52,7 +51,7 @@ struct ComputeHorizonVolumeQuantities {
       const Variables<SrcTagList>& src_vars, const Mesh<3>& mesh,
       const Jacobian<DataVector, 3, TargetFrame, Frame::Inertial>& jacobian,
       const InverseJacobian<DataVector, 3, Frame::ElementLogical, TargetFrame>&
-          inverse_jacobian) noexcept;
+          inverse_jacobian);
 
   using allowed_src_tags =
       tmpl::list<gr::Tags::SpacetimeMetric<3, Frame::Inertial>,

@@ -31,7 +31,7 @@ namespace NewtonianEuler::fd {
 template <size_t Dim>
 AoWeno53Prim<Dim>::AoWeno53Prim(const double gamma_hi, const double gamma_lo,
                                 const double epsilon,
-                                const size_t nonlinear_weight_exponent) noexcept
+                                const size_t nonlinear_weight_exponent)
     : gamma_hi_(gamma_hi),
       gamma_lo_(gamma_lo),
       epsilon_(epsilon),
@@ -43,12 +43,11 @@ AoWeno53Prim<Dim>::AoWeno53Prim(const double gamma_hi, const double gamma_lo,
 }
 
 template <size_t Dim>
-AoWeno53Prim<Dim>::AoWeno53Prim(CkMigrateMessage* const msg) noexcept
+AoWeno53Prim<Dim>::AoWeno53Prim(CkMigrateMessage* const msg)
     : Reconstructor<Dim>(msg) {}
 
 template <size_t Dim>
-std::unique_ptr<Reconstructor<Dim>> AoWeno53Prim<Dim>::get_clone()
-    const noexcept {
+std::unique_ptr<Reconstructor<Dim>> AoWeno53Prim<Dim>::get_clone() const {
   return std::make_unique<AoWeno53Prim>(*this);
 }
 
@@ -86,7 +85,7 @@ void AoWeno53Prim<Dim>::reconstruct(
                        evolution::dg::subcell::NeighborData,
                        boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
         neighbor_data,
-    const Mesh<Dim>& subcell_mesh) const noexcept {
+    const Mesh<Dim>& subcell_mesh) const {
   reconstruct_prims_work(
       vars_on_lower_face, vars_on_upper_face,
       [this](auto upper_face_vars_ptr, auto lower_face_vars_ptr,
@@ -113,7 +112,7 @@ void AoWeno53Prim<Dim>::reconstruct_fd_neighbor(
                        boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
         neighbor_data,
     const Mesh<Dim>& subcell_mesh,
-    const Direction<Dim> direction_to_reconstruct) const noexcept {
+    const Direction<Dim> direction_to_reconstruct) const {
   reconstruct_fd_neighbor_work(
       vars_on_face,
       [this](const auto tensor_component_on_face_ptr,
@@ -121,7 +120,7 @@ void AoWeno53Prim<Dim>::reconstruct_fd_neighbor(
              const auto& tensor_component_neighbor,
              const Index<Dim>& subcell_extents,
              const Index<Dim>& ghost_data_extents,
-             const Direction<Dim>& local_direction_to_reconstruct) noexcept {
+             const Direction<Dim>& local_direction_to_reconstruct) {
         reconstruct_lower_neighbor_(
             tensor_component_on_face_ptr, tensor_component_volume,
             tensor_component_neighbor, subcell_extents, ghost_data_extents,
@@ -132,7 +131,7 @@ void AoWeno53Prim<Dim>::reconstruct_fd_neighbor(
              const auto& tensor_component_neighbor,
              const Index<Dim>& subcell_extents,
              const Index<Dim>& ghost_data_extents,
-             const Direction<Dim>& local_direction_to_reconstruct) noexcept {
+             const Direction<Dim>& local_direction_to_reconstruct) {
         reconstruct_upper_neighbor_(
             tensor_component_on_face_ptr, tensor_component_volume,
             tensor_component_neighbor, subcell_extents, ghost_data_extents,
@@ -143,8 +142,7 @@ void AoWeno53Prim<Dim>::reconstruct_fd_neighbor(
 }
 
 template <size_t Dim>
-bool operator==(const AoWeno53Prim<Dim>& lhs,
-                const AoWeno53Prim<Dim>& rhs) noexcept {
+bool operator==(const AoWeno53Prim<Dim>& lhs, const AoWeno53Prim<Dim>& rhs) {
   // Don't check function pointers since they are set from
   // nonlinear_weight_exponent_
   return lhs.gamma_hi_ == rhs.gamma_hi_ and lhs.gamma_lo_ == rhs.gamma_lo_ and
@@ -170,7 +168,7 @@ bool operator==(const AoWeno53Prim<Dim>& lhs,
 #define INSTANTIATION(r, data)                                 \
   template class AoWeno53Prim<DIM(data)>;                      \
   template bool operator==(const AoWeno53Prim<DIM(data)>& lhs, \
-                           const AoWeno53Prim<DIM(data)>& rhs) noexcept;
+                           const AoWeno53Prim<DIM(data)>& rhs);
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 #undef INSTANTIATION
 
@@ -189,7 +187,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
           evolution::dg::subcell::NeighborData,                                \
           boost::hash<std::pair<Direction<DIM(data)>, ElementId<DIM(data)>>>>& \
           neighbor_data,                                                       \
-      const Mesh<DIM(data)>& subcell_mesh) const noexcept;                     \
+      const Mesh<DIM(data)>& subcell_mesh) const;                              \
   template void AoWeno53Prim<DIM(data)>::reconstruct_fd_neighbor(              \
       gsl::not_null<Variables<TAGS_LIST(data)>*> vars_on_face,                 \
       const Variables<prims_tags>& subcell_volume_prims,                       \
@@ -202,7 +200,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
           boost::hash<std::pair<Direction<DIM(data)>, ElementId<DIM(data)>>>>& \
           neighbor_data,                                                       \
       const Mesh<DIM(data)>& subcell_mesh,                                     \
-      const Direction<DIM(data)> direction_to_reconstruct) const noexcept;
+      const Direction<DIM(data)> direction_to_reconstruct) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (1, 2))
 

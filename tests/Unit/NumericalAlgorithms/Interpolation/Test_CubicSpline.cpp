@@ -16,7 +16,7 @@ template <class F>
 void test_cubic_spline(const F& function, const double lower_bound,
                        const double upper_bound, const size_t size,
                        const double tolerance,
-                       const double tolerance_interior) noexcept {
+                       const double tolerance_interior) {
   // Construct random points between lower and upper bound to interpolate
   // through. Always include the bounds in the x-values.
   std::vector<double> x_values(size);
@@ -111,10 +111,8 @@ void test_with_polynomial(const size_t number_of_points,
   CAPTURE(number_of_points);
   std::vector<double> coeffs(polynomial_degree + 1, 1.);
   test_cubic_spline(
-      [&coeffs](const auto& x) noexcept {
-        return evaluate_polynomial(coeffs, x);
-      },
-      -1., 2.3, number_of_points, tolerance, tolerance_interior);
+      [&coeffs](const auto& x) { return evaluate_polynomial(coeffs, x); }, -1.,
+      2.3, number_of_points, tolerance, tolerance_interior);
 }
 
 void test_with_natural_boundary(const size_t number_of_points,
@@ -122,9 +120,8 @@ void test_with_natural_boundary(const size_t number_of_points,
   CAPTURE(number_of_points);
   // Precision at the boundaries should be the same as in the interior since
   // the natural boundary conditions are correct for this function
-  test_cubic_spline(
-      [](const auto& x) noexcept { return cube(sin(x)); }, 0., M_PI,
-      number_of_points, tolerance, tolerance);
+  test_cubic_spline([](const auto& x) { return cube(sin(x)); }, 0., M_PI,
+                    number_of_points, tolerance, tolerance);
 }
 }  // namespace
 

@@ -21,15 +21,14 @@ namespace NewtonianEuler {
  * magnitude of the velocity.
  */
 template <typename DataType, size_t Dim, typename Fr>
-void kinetic_energy_density(
-    gsl::not_null<Scalar<DataType>*> result,
-    const Scalar<DataType>& mass_density,
-    const tnsr::I<DataType, Dim, Fr>& velocity) noexcept;
+void kinetic_energy_density(gsl::not_null<Scalar<DataType>*> result,
+                            const Scalar<DataType>& mass_density,
+                            const tnsr::I<DataType, Dim, Fr>& velocity);
 
 template <typename DataType, size_t Dim, typename Fr>
 Scalar<DataType> kinetic_energy_density(
     const Scalar<DataType>& mass_density,
-    const tnsr::I<DataType, Dim, Fr>& velocity) noexcept;
+    const tnsr::I<DataType, Dim, Fr>& velocity);
 /// @}
 
 namespace Tags {

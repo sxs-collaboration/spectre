@@ -37,22 +37,22 @@ class IndexIterator {
   /// \endcond
 
   /// Returns false if the end of the Index iteration is reached
-  explicit operator bool() const noexcept { return valid_; }
+  explicit operator bool() const { return valid_; }
 
   /// Advance to next Index.
   IndexIterator<Dim>& operator++();
 
-  const Index<Dim>& operator*() const noexcept { return index_; }
-  const Index<Dim>* operator->() const noexcept { return &index_; }
+  const Index<Dim>& operator*() const { return index_; }
+  const Index<Dim>* operator->() const { return &index_; }
 
   /// Returns an index representing the (i, j, ...)th values that the iterator
   /// currently represents
-  const Index<Dim>& operator()() const noexcept { return index_; }
+  const Index<Dim>& operator()() const { return index_; }
 
   /// Get the collapsed index into a 1D array of the data corresponding to the
   /// current Index of the IndexIterator. Note that the first dimension of the
   /// Index varies fastest when computing the collapsed index.
-  size_t collapsed_index() const noexcept { return collapsed_index_; }
+  size_t collapsed_index() const { return collapsed_index_; }
 
  private:
   const Index<Dim> extents_{};

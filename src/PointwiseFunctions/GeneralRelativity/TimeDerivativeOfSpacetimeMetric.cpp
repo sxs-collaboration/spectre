@@ -21,7 +21,7 @@ void time_derivative_of_spacetime_metric(
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
     const tnsr::I<DataType, SpatialDim, Frame>& dt_shift,
     const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
-    const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric) noexcept {
+    const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric) {
   destructive_resize_components(dt_spacetime_metric, get_size(get(dt_lapse)));
   get<0, 0>(*dt_spacetime_metric) = -2.0 * get(lapse) * get(dt_lapse);
   for (size_t i = 0; i < SpatialDim; ++i) {
@@ -56,7 +56,7 @@ tnsr::aa<DataType, SpatialDim, Frame> time_derivative_of_spacetime_metric(
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
     const tnsr::I<DataType, SpatialDim, Frame>& dt_shift,
     const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
-    const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric) noexcept {
+    const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric) {
   tnsr::aa<DataType, SpatialDim, Frame> dt_spacetime_metric{
       get_size(get(lapse))};
   time_derivative_of_spacetime_metric(make_not_null(&dt_spacetime_metric),
@@ -70,24 +70,22 @@ tnsr::aa<DataType, SpatialDim, Frame> time_derivative_of_spacetime_metric(
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(2, data)
 
-#define INSTANTIATE(_, data)                                                 \
-  template tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>                     \
-  gr::time_derivative_of_spacetime_metric(                                   \
-      const Scalar<DTYPE(data)>& lapse, const Scalar<DTYPE(data)>& dt_lapse, \
-      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,             \
-      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& dt_shift,          \
-      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& spatial_metric,   \
-      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>&                   \
-          dt_spatial_metric) noexcept;                                       \
-  template void gr::time_derivative_of_spacetime_metric(                     \
-      const gsl::not_null<tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>*>    \
-          dt_spacetime_metric,                                               \
-      const Scalar<DTYPE(data)>& lapse, const Scalar<DTYPE(data)>& dt_lapse, \
-      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,             \
-      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& dt_shift,          \
-      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& spatial_metric,   \
-      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>&                   \
-          dt_spatial_metric) noexcept;
+#define INSTANTIATE(_, data)                                                   \
+  template tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>                       \
+  gr::time_derivative_of_spacetime_metric(                                     \
+      const Scalar<DTYPE(data)>& lapse, const Scalar<DTYPE(data)>& dt_lapse,   \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,               \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& dt_shift,            \
+      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& spatial_metric,     \
+      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& dt_spatial_metric); \
+  template void gr::time_derivative_of_spacetime_metric(                       \
+      const gsl::not_null<tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>*>      \
+          dt_spacetime_metric,                                                 \
+      const Scalar<DTYPE(data)>& lapse, const Scalar<DTYPE(data)>& dt_lapse,   \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,               \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& dt_shift,            \
+      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& spatial_metric,     \
+      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& dt_spatial_metric);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
                         (Frame::Grid, Frame::Inertial))

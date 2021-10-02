@@ -19,9 +19,9 @@ namespace {
 const Matrix empty_matrix = Matrix{};
 
 template <size_t Dim, size_t... Indices>
-auto make_integration_matrices(
-    const Mesh<Dim>& mesh, const size_t dim_to_integrate,
-    std::index_sequence<Indices...> /*meta*/) noexcept {
+auto make_integration_matrices(const Mesh<Dim>& mesh,
+                               const size_t dim_to_integrate,
+                               std::index_sequence<Indices...> /*meta*/) {
   return std::array<std::reference_wrapper<const Matrix>, Dim>{
       {(Indices == dim_to_integrate
             ? Spectral::integration_matrix(mesh.slice_through(dim_to_integrate))
@@ -32,7 +32,7 @@ auto make_integration_matrices(
 template <size_t Dim, typename VectorType>
 void indefinite_integral(const gsl::not_null<VectorType*> integral,
                          const VectorType& integrand, const Mesh<Dim>& mesh,
-                         const size_t dim_to_integrate) noexcept {
+                         const size_t dim_to_integrate) {
   integral->destructive_resize(integrand.size());
   apply_matrices(integral,
                  make_integration_matrices<Dim>(
@@ -43,7 +43,7 @@ void indefinite_integral(const gsl::not_null<VectorType*> integral,
 template <size_t Dim, typename VectorType>
 VectorType indefinite_integral(const VectorType& integrand,
                                const Mesh<Dim>& mesh,
-                               const size_t dim_to_integrate) noexcept {
+                               const size_t dim_to_integrate) {
   VectorType integral{integrand.size()};
   indefinite_integral(make_not_null(&integral), integrand, mesh,
                       dim_to_integrate);
@@ -54,13 +54,11 @@ VectorType indefinite_integral(const VectorType& integrand,
 #define GET_VECTORTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 
 #define INSTANTIATION(r, data)                                                \
-  template GET_VECTORTYPE(data)                                               \
-      indefinite_integral(const GET_VECTORTYPE(data)&,                        \
-                          const Mesh<GET_DIM(data)>&, const size_t) noexcept; \
+  template GET_VECTORTYPE(data) indefinite_integral(                          \
+      const GET_VECTORTYPE(data)&, const Mesh<GET_DIM(data)>&, const size_t); \
   template void indefinite_integral(                                          \
       const gsl::not_null<GET_VECTORTYPE(data)*> integral,                    \
-      const GET_VECTORTYPE(data)&, const Mesh<GET_DIM(data)>&,                \
-      const size_t) noexcept;
+      const GET_VECTORTYPE(data)&, const Mesh<GET_DIM(data)>&, const size_t);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3),
                         (DataVector, ComplexDataVector))

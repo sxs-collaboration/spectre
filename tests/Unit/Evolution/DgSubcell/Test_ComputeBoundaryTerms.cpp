@@ -19,13 +19,12 @@ struct Var1 : db::SimpleTag {
 
 class BoundaryCorrection {
  public:
-  explicit BoundaryCorrection(const double multiply) noexcept
-      : multiply_(multiply) {}
+  explicit BoundaryCorrection(const double multiply) : multiply_(multiply) {}
   void dg_boundary_terms(
       const gsl::not_null<Scalar<DataVector>*> correction_var1,
       const Scalar<DataVector>& upper_var1,
       const Scalar<DataVector>& lower_var1,
-      const dg::Formulation dg_formulation) const noexcept {
+      const dg::Formulation dg_formulation) const {
     get(*correction_var1) = get(upper_var1) + multiply_ * get(lower_var1);
     CHECK(dg_formulation == dg::Formulation::WeakInertial);
   }

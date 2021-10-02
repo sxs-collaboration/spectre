@@ -12,7 +12,7 @@ namespace M1Grey {
 
 void characteristic_speeds(
     const gsl::not_null<std::array<DataVector, 4>*> pchar_speeds,
-    const Scalar<DataVector>& lapse) noexcept {
+    const Scalar<DataVector>& lapse) {
   const size_t num_grid_points = get(lapse).size();
   auto& char_speeds = *pchar_speeds;
   if (char_speeds[0].size() != num_grid_points) {

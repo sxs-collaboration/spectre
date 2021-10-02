@@ -21,7 +21,7 @@
 namespace {
 struct BurgersSinusoidProxy : Burgers::AnalyticData::Sinusoid {
   tuples::TaggedTuple<Burgers::Tags::U> variables(
-      const tnsr::I<DataVector, 1, Frame::Inertial>& x) const noexcept {
+      const tnsr::I<DataVector, 1, Frame::Inertial>& x) const {
     return Burgers::AnalyticData::Sinusoid::variables(
         x, tmpl::list<Burgers::Tags::U>{});
   }

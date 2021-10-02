@@ -14,7 +14,7 @@
 
 namespace evolution::dg::subcell::fd {
 template <size_t Dim>
-Mesh<Dim> mesh(const Mesh<Dim>& dg_mesh) noexcept {
+Mesh<Dim> mesh(const Mesh<Dim>& dg_mesh) {
   ASSERT(dg_mesh.basis() == make_array<Dim>(Spectral::Basis::Legendre) or
              dg_mesh.basis() == make_array<Dim>(Spectral::Basis::Chebyshev),
          "The DG basis for computing the subcell mesh must be Legendre or "
@@ -34,7 +34,7 @@ Mesh<Dim> mesh(const Mesh<Dim>& dg_mesh) noexcept {
                    Spectral::Quadrature::CellCentered};
 }
 
-template Mesh<1> mesh(const Mesh<1>& dg_mesh) noexcept;
-template Mesh<2> mesh(const Mesh<2>& dg_mesh) noexcept;
-template Mesh<3> mesh(const Mesh<3>& dg_mesh) noexcept;
+template Mesh<1> mesh(const Mesh<1>& dg_mesh);
+template Mesh<2> mesh(const Mesh<2>& dg_mesh);
+template Mesh<3> mesh(const Mesh<3>& dg_mesh);
 }  // namespace evolution::dg::subcell::fd

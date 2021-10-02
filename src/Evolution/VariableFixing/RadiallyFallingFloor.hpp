@@ -63,7 +63,7 @@ class RadiallyFallingFloor {
     static constexpr Options::String help =
         "The radius at which to begin applying the lower bound.";
     using type = double;
-    static double lower_bound() noexcept { return 0.0; }
+    static double lower_bound() { return 0.0; }
   };
 
   /// \brief The scale of the floor of the rest mass density.
@@ -71,7 +71,7 @@ class RadiallyFallingFloor {
     static constexpr Options::String help =
         "The rest mass density floor at r = 1.";
     using type = double;
-    static double lower_bound() noexcept { return 0.0; }
+    static double lower_bound() { return 0.0; }
   };
 
   /// \brief The power of the radius of the floor of the rest mass density.
@@ -85,7 +85,7 @@ class RadiallyFallingFloor {
   struct ScalePressureFloor {
     static constexpr Options::String help = "The pressure floor at r = 1.";
     using type = double;
-    static double lower_bound() noexcept { return 0.0; }
+    static double lower_bound() { return 0.0; }
   };
 
   /// \brief The power of the radius of the floor of the pressure.
@@ -105,35 +105,34 @@ class RadiallyFallingFloor {
   RadiallyFallingFloor(double minimum_radius_at_which_to_apply_floor,
                        double rest_mass_density_scale,
                        double rest_mass_density_power, double pressure_scale,
-                       double pressure_power) noexcept;
+                       double pressure_power);
 
-  RadiallyFallingFloor() noexcept = default;
+  RadiallyFallingFloor() = default;
   RadiallyFallingFloor(const RadiallyFallingFloor& /*rhs*/) = default;
   RadiallyFallingFloor& operator=(const RadiallyFallingFloor& /*rhs*/) =
       default;
-  RadiallyFallingFloor(RadiallyFallingFloor&& /*rhs*/) noexcept = default;
-  RadiallyFallingFloor& operator=(RadiallyFallingFloor&& /*rhs*/) noexcept =
-      default;
+  RadiallyFallingFloor(RadiallyFallingFloor&& /*rhs*/) = default;
+  RadiallyFallingFloor& operator=(RadiallyFallingFloor&& /*rhs*/) = default;
   ~RadiallyFallingFloor() = default;
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept;
+  void pup(PUP::er& p);
 
   using return_tags = tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
                                  hydro::Tags::Pressure<DataVector>>;
   using argument_tags =
       tmpl::list<domain::Tags::Coordinates<Dim, Frame::Inertial>>;
 
-  void operator()(gsl::not_null<Scalar<DataVector>*> density,
-                  gsl::not_null<Scalar<DataVector>*> pressure,
-                  const tnsr::I<DataVector, Dim, Frame::Inertial>& coords) const
-      noexcept;
+  void operator()(
+      gsl::not_null<Scalar<DataVector>*> density,
+      gsl::not_null<Scalar<DataVector>*> pressure,
+      const tnsr::I<DataVector, Dim, Frame::Inertial>& coords) const;
 
  private:
   template <size_t LocalDim>
   // NOLINTNEXTLINE(readability-redundant-declaration)
   friend bool operator==(const RadiallyFallingFloor<LocalDim>& lhs,
-                         const RadiallyFallingFloor<LocalDim>& rhs) noexcept;
+                         const RadiallyFallingFloor<LocalDim>& rhs);
 
   double minimum_radius_at_which_to_apply_floor_{
       std::numeric_limits<double>::signaling_NaN()};
@@ -145,6 +144,6 @@ class RadiallyFallingFloor {
 
 template <size_t Dim>
 bool operator!=(const RadiallyFallingFloor<Dim>& lhs,
-                const RadiallyFallingFloor<Dim>& rhs) noexcept;
+                const RadiallyFallingFloor<Dim>& rhs);
 
 }  // namespace VariableFixing

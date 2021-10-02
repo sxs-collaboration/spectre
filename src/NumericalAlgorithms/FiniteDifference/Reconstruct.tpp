@@ -27,7 +27,7 @@ void reconstruct_impl(
     const gsl::span<const double>& lower_ghost_data,
     const gsl::span<const double>& upper_ghost_data,
     const Index<Dim>& volume_extents, const size_t number_of_variables,
-    const ArgsForReconstructor&... args_for_reconstructor) noexcept {
+    const ArgsForReconstructor&... args_for_reconstructor) {
   constexpr size_t stencil_width = Reconstructor::stencil_width();
   ASSERT(stencil_width % 2 == 1, "The stencil with should be odd but got "
                                      << stencil_width
@@ -157,7 +157,7 @@ void reconstruct(
     const gsl::span<const double>& volume_vars,
     const DirectionMap<Dim, gsl::span<const double>>& ghost_cell_vars,
     const Index<Dim>& volume_extents, const size_t number_of_variables,
-    const ArgsForReconstructor&... args_for_reconstructor) noexcept {
+    const ArgsForReconstructor&... args_for_reconstructor) {
 #ifdef SPECTRE_DEBUG
   ASSERT(volume_extents == Index<Dim>(volume_extents[0]),
          "The extents must be isotropic, but got " << volume_extents);
@@ -287,7 +287,7 @@ void reconstruct_neighbor(
     const DataVector& neighbor_data, const Index<Dim>& volume_extents,
     const Index<Dim>& ghost_data_extents,
     const Direction<Dim>& direction_to_reconstruct,
-    const ArgsForReconstructor&... args_for_reconstructor) noexcept {
+    const ArgsForReconstructor&... args_for_reconstructor) {
   ASSERT(LowerOrUpperSide == direction_to_reconstruct.side(),
          "The template parameter LowerOrUpperSide ("
              << LowerOrUpperSide

@@ -29,16 +29,14 @@
 
 namespace GeneralizedHarmonic::BoundaryConditions {
 namespace helpers {
-double min_characteristic_speed(
-    const std::array<DataVector, 4>& char_speeds) noexcept {
+double min_characteristic_speed(const std::array<DataVector, 4>& char_speeds) {
   std::array<double, 4> min_speeds{{min(char_speeds[0]), min(char_speeds[1]),
                                     min(char_speeds[2]), min(char_speeds[3])}};
   return *std::min_element(min_speeds.begin(), min_speeds.end());
 }
 template <typename T>
 void set_bc_corr_zero_when_char_speed_is_positive(
-    const gsl::not_null<T*> dt_v_corr,
-    const DataVector& char_speed_u) noexcept {
+    const gsl::not_null<T*> dt_v_corr, const DataVector& char_speed_u) {
   for (DataVector& component : *dt_v_corr) {
     for (size_t i = 0; i < component.size(); ++i) {
       if (char_speed_u[i] > 0.) {
@@ -68,17 +66,17 @@ convert_constraint_preserving_bjorhus_type_from_yaml(
 
 template <size_t Dim>
 ConstraintPreservingBjorhus<Dim>::ConstraintPreservingBjorhus(
-    const detail::ConstraintPreservingBjorhusType type) noexcept
+    const detail::ConstraintPreservingBjorhusType type)
     : type_(type) {}
 
 template <size_t Dim>
 ConstraintPreservingBjorhus<Dim>::ConstraintPreservingBjorhus(
-    CkMigrateMessage* const msg) noexcept
+    CkMigrateMessage* const msg)
     : BoundaryCondition<Dim>(msg) {}
 
 template <size_t Dim>
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-ConstraintPreservingBjorhus<Dim>::get_clone() const noexcept {
+ConstraintPreservingBjorhus<Dim>::get_clone() const {
   return std::make_unique<ConstraintPreservingBjorhus>(*this);
 }
 
@@ -125,7 +123,7 @@ std::optional<std::string> ConstraintPreservingBjorhus<Dim>::dg_time_derivative(
     // c.f. dg_interior_deriv_vars_tags
     const tnsr::iaa<DataVector, Dim, Frame::Inertial>& d_spacetime_metric,
     const tnsr::iaa<DataVector, Dim, Frame::Inertial>& d_pi,
-    const tnsr::ijaa<DataVector, Dim, Frame::Inertial>& d_phi) const noexcept {
+    const tnsr::ijaa<DataVector, Dim, Frame::Inertial>& d_phi) const {
   TempBuffer<tmpl::list<::Tags::TempI<0, Dim, Frame::Inertial, DataVector>,
                         ::Tags::Tempiaa<1, Dim, Frame::Inertial, DataVector>,
                         ::Tags::TempII<0, Dim, Frame::Inertial, DataVector>,
@@ -383,7 +381,7 @@ void ConstraintPreservingBjorhus<Dim>::compute_intermediate_vars(
     const tnsr::iaa<DataVector, Dim, Frame::Inertial>& d_pi,
     const tnsr::ijaa<DataVector, Dim, Frame::Inertial>& d_phi,
     const tnsr::iaa<DataVector, Dim, Frame::Inertial>& /* d_spacetime_metric */)
-    const noexcept {
+    const {
   TempBuffer<tmpl::list<::Tags::TempScalar<0, DataVector>,
                         ::Tags::Tempia<0, Dim, Frame::Inertial, DataVector>>>
       local_buffer(get_size(get<0>(normal_covector)), 0.);

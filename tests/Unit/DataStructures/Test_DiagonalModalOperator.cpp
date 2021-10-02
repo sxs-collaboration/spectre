@@ -51,7 +51,7 @@
 #endif
 }
 
-void test_diagonal_modal_operator_math() noexcept {
+void test_diagonal_modal_operator_math() {
   const TestHelpers::VectorImpl::Bound generic{{-100.0, 100.0}};
   const TestHelpers::VectorImpl::Bound positive{{0.01, 100.0}};
 

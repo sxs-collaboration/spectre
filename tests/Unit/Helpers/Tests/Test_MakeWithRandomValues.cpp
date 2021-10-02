@@ -41,7 +41,7 @@ using two_vars = tmpl::list<Var1<Dim>, Var2>;
 void check_random_values(
     const gsl::not_null<std::unordered_set<double>*> values,
     const gsl::not_null<size_t*> counter, const double v,
-    const double lower_bound, const double upper_bound) noexcept {
+    const double lower_bound, const double upper_bound) {
   CHECK(v >= lower_bound);
   CHECK(v <= upper_bound);
   CHECK(values->insert(v).second);
@@ -51,9 +51,9 @@ void check_random_values(
 // clang-tidy is wrong, this is a function definition
 template <typename T>
 void check_random_values(
-    const gsl::not_null<std::unordered_set<double>*> values,        // NOLINT
-    const gsl::not_null<size_t*> counter, const T& c,               // NOLINT
-    const double lower_bound, const double upper_bound) noexcept {  // NOLINT
+    const gsl::not_null<std::unordered_set<double>*> values,  // NOLINT
+    const gsl::not_null<size_t*> counter, const T& c,         // NOLINT
+    const double lower_bound, const double upper_bound) {     // NOLINT
   for (const auto& v : c) {
     check_random_values(values, counter, v, lower_bound, upper_bound);
   }
@@ -64,14 +64,14 @@ void check_random_values(
     const gsl::not_null<std::unordered_set<double>*> values,
     const gsl::not_null<size_t*> counter,
     const Variables<tmpl::list<Tags...>>& v, const double lower_bound,
-    const double upper_bound) noexcept {
+    const double upper_bound) {
   expand_pack((check_random_values<decltype(get<Tags>(v))>(
                    values, counter, get<Tags>(v), lower_bound, upper_bound),
                '0')...);
 }
 
 template <typename T, typename U>
-void test_make_with_random_values(const U& used_for_size) noexcept {
+void test_make_with_random_values(const U& used_for_size) {
   MAKE_GENERATOR(generator);
   std::uniform_real_distribution<> distribution(-10.0, 10.0);
   // check that the data structure is filled with unique random values

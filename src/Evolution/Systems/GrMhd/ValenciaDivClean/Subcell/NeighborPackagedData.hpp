@@ -70,7 +70,7 @@ struct NeighborPackagedData {
       std::vector<double>, boost::hash<std::pair<Direction<3>, ElementId<3>>>>
   apply(const db::DataBox<DbTagsList>& box,
         const std::vector<std::pair<Direction<3>, ElementId<3>>>&
-            mortars_to_reconstruct_to) noexcept {
+            mortars_to_reconstruct_to) {
     using evolved_vars_tag = typename System::variables_tag;
     using evolved_vars_tags = typename evolved_vars_tag::tags_list;
     using prim_tags = typename System::primitive_variables_tag::tags_list;
@@ -113,7 +113,7 @@ struct NeighborPackagedData {
                                        &mortars_to_reconstruct_to,
                                        &nhbr_package_data, &nhbr_subcell_data,
                                        &recons, &subcell_mesh, &volume_prims](
-                                          auto derived_correction_v) noexcept {
+                                          auto derived_correction_v) {
       using DerivedCorrection = tmpl::type_from<decltype(derived_correction_v)>;
       if (typeid(boundary_correction) == typeid(DerivedCorrection)) {
         using dg_package_data_temporary_tags =
@@ -158,7 +158,7 @@ struct NeighborPackagedData {
                &spacetime_vars_on_faces =
                    db::get<evolution::dg::subcell::Tags::OnSubcellFaces<
                        typename System::flux_spacetime_variables_tag, 3>>(box)](
-                  auto tag_v) noexcept {
+                  auto tag_v) {
                 using tag = tmpl::type_from<decltype(tag_v)>;
                 data_on_slice(make_not_null(&get<tag>(vars_on_face)),
                               get<tag>(gsl::at(spacetime_vars_on_faces,
@@ -171,9 +171,9 @@ struct NeighborPackagedData {
 
           call_with_dynamic_type<void, typename grmhd::ValenciaDivClean::fd::
                                            Reconstructor::creatable_classes>(
-              &recons, [&element, &eos, &mortar_id, &nhbr_subcell_data,
-                        &subcell_mesh, &vars_on_face,
-                        &volume_prims](const auto& reconstructor) noexcept {
+              &recons,
+              [&element, &eos, &mortar_id, &nhbr_subcell_data, &subcell_mesh,
+               &vars_on_face, &volume_prims](const auto& reconstructor) {
                 reconstructor->reconstruct_fd_neighbor(
                     make_not_null(&vars_on_face), volume_prims, eos, element,
                     nhbr_subcell_data, subcell_mesh, mortar_id.first);

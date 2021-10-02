@@ -32,15 +32,15 @@ class TensorProduct {
 
   /// The value of the function
   template <typename T>
-  Scalar<T> operator()(const tnsr::I<T, Dim>& x) const noexcept;
+  Scalar<T> operator()(const tnsr::I<T, Dim>& x) const;
 
   /// The partial derivatives of the function
   template <typename T>
-  tnsr::i<T, Dim> first_derivatives(const tnsr::I<T, Dim>& x) const noexcept;
+  tnsr::i<T, Dim> first_derivatives(const tnsr::I<T, Dim>& x) const;
 
   /// The second partial derivatives of the function
   template <typename T>
-  tnsr::ii<T, Dim> second_derivatives(const tnsr::I<T, Dim>& x) const noexcept;
+  tnsr::ii<T, Dim> second_derivatives(const tnsr::I<T, Dim>& x) const;
 
  private:
   double scale_{1.0};

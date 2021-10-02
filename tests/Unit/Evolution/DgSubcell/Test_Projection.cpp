@@ -39,7 +39,7 @@ struct Vector : db::SimpleTag {
 
 template <size_t MaxPts, size_t Dim, Spectral::Basis BasisType,
           Spectral::Quadrature QuadratureType>
-void test_project_fd() noexcept {
+void test_project_fd() {
   CAPTURE(Dim);
   CAPTURE(BasisType);
   CAPTURE(QuadratureType);

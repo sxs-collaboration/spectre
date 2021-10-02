@@ -24,8 +24,7 @@ namespace Limiters::Weno_detail {
 //   derivatives have decreasing weights so are weakly penalized: w(l=4) = 0.222
 enum class DerivativeWeight { Unity, PowTwoEll, PowTwoEllOverEllFactorial };
 
-std::ostream& operator<<(std::ostream& os,
-                         DerivativeWeight derivative_weight) noexcept;
+std::ostream& operator<<(std::ostream& os, DerivativeWeight derivative_weight);
 
 // Compute the WENO oscillation indicator (also called the smoothness indicator)
 //
@@ -41,6 +40,6 @@ std::ostream& operator<<(std::ostream& os,
 template <size_t VolumeDim>
 double oscillation_indicator(DerivativeWeight derivative_weight,
                              const DataVector& data,
-                             const Mesh<VolumeDim>& mesh) noexcept;
+                             const Mesh<VolumeDim>& mesh);
 
 }  // namespace Limiters::Weno_detail

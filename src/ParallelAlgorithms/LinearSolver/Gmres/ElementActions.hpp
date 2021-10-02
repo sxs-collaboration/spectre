@@ -74,12 +74,10 @@ struct PrepareSolve {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     db::mutate<Convergence::Tags::IterationId<OptionsGroup>>(
         make_not_null(&box),
-        [](const gsl::not_null<size_t*> iteration_id) noexcept {
-          *iteration_id = 0;
-        });
+        [](const gsl::not_null<size_t*> iteration_id) { *iteration_id = 0; });
 
     // Skip the initial reduction on elements that are not part of the section
     if constexpr (not std::is_same_v<ArraySectionIdTag, void>) {
@@ -100,8 +98,7 @@ struct PrepareSolve {
         make_not_null(&box),
         [](const auto operand, const auto initial_fields,
            const auto basis_history, const auto& source,
-           const auto& operator_applied_to_fields,
-           const auto& fields) noexcept {
+           const auto& operator_applied_to_fields, const auto& fields) {
           *operand = source - operator_applied_to_fields;
           *initial_fields = fields;
           *basis_history = typename basis_history_tag::type{};
@@ -128,8 +125,7 @@ struct PrepareSolve {
           LinearSolver::Tags::KrylovSubspaceBasis<preconditioned_operand_tag>;
 
       db::mutate<preconditioned_basis_history_tag>(
-          make_not_null(&box),
-          [](const auto preconditioned_basis_history) noexcept {
+          make_not_null(&box), [](const auto preconditioned_basis_history) {
             *preconditioned_basis_history =
                 typename preconditioned_basis_history_tag::type{};
           });
@@ -163,7 +159,7 @@ struct NormalizeInitialOperand {
         tuples::TaggedTuple<InboxTags...>& inboxes,
         const Parallel::GlobalCache<Metavariables>& /*cache*/,
         const ArrayIndex& array_index, const ActionList /*meta*/,
-        const ParallelComponent* const /*meta*/) noexcept {
+        const ParallelComponent* const /*meta*/) {
     const size_t iteration_id =
         db::get<Convergence::Tags::IterationId<OptionsGroup>>(box);
     auto& inbox = get<Tags::InitialOrthogonalization<OptionsGroup>>(inboxes);
@@ -178,7 +174,7 @@ struct NormalizeInitialOperand {
     db::mutate<Convergence::Tags::HasConverged<OptionsGroup>>(
         make_not_null(&box),
         [&has_converged](const gsl::not_null<Convergence::HasConverged*>
-                             local_has_converged) noexcept {
+                             local_has_converged) {
           *local_has_converged = std::move(has_converged);
         });
 
@@ -219,8 +215,7 @@ struct NormalizeInitialOperand {
 
     db::mutate<operand_tag, basis_history_tag>(
         make_not_null(&box),
-        [residual_magnitude](const auto operand,
-                             const auto basis_history) noexcept {
+        [residual_magnitude](const auto operand, const auto basis_history) {
           *operand /= residual_magnitude;
           basis_history->push_back(*operand);
         });
@@ -246,7 +241,7 @@ struct PrepareStep {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& array_index, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     const size_t iteration_id =
         db::get<Convergence::Tags::IterationId<OptionsGroup>>(box);
     if (UNLIKELY(get<logging::Tags::Verbosity<OptionsGroup>>(box) >=
@@ -269,8 +264,7 @@ struct PrepareStep {
       db::mutate<preconditioned_operand_tag, operator_tag>(
           make_not_null(&box),
           [](const auto preconditioned_operand,
-             const auto operator_applied_to_operand,
-             const auto& operand) noexcept {
+             const auto operator_applied_to_operand, const auto& operand) {
             // Start the preconditioner at zero because we have no reason to
             // expect the remaining residual to have a particular form.
             // Another possibility would be to start the preconditioner with an
@@ -316,7 +310,7 @@ struct PerformStep {
         const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
         Parallel::GlobalCache<Metavariables>& cache,
         const ArrayIndex& array_index, const ActionList /*meta*/,
-        const ParallelComponent* const /*meta*/) noexcept {
+        const ParallelComponent* const /*meta*/) {
     // Skip to the end of the step on elements that are not part of the section
     if constexpr (not std::is_same_v<ArraySectionIdTag, void>) {
       if (not db::get<Parallel::Tags::Section<ParallelComponent,
@@ -357,7 +351,7 @@ struct PerformStep {
       db::mutate<preconditioned_basis_history_tag>(
           make_not_null(&box),
           [](const auto preconditioned_basis_history,
-             const auto& preconditioned_operand) noexcept {
+             const auto& preconditioned_operand) {
             preconditioned_basis_history->push_back(preconditioned_operand);
           },
           get<preconditioned_operand_tag>(box));
@@ -367,7 +361,7 @@ struct PerformStep {
         make_not_null(&box),
         [](const auto operand,
            const gsl::not_null<size_t*> orthogonalization_iteration_id,
-           const auto& operator_action) noexcept {
+           const auto& operator_action) {
           *operand = typename operand_tag::type(operator_action);
           *orthogonalization_iteration_id = 0;
         },
@@ -422,7 +416,7 @@ struct OrthogonalizeOperand {
         tuples::TaggedTuple<InboxTags...>& inboxes,
         Parallel::GlobalCache<Metavariables>& cache,
         const ArrayIndex& array_index, const ActionList /*meta*/,
-        const ParallelComponent* const /*meta*/) noexcept {
+        const ParallelComponent* const /*meta*/) {
     const size_t iteration_id =
         db::get<Convergence::Tags::IterationId<OptionsGroup>>(box);
     auto& inbox = get<Tags::Orthogonalization<OptionsGroup>>(inboxes);
@@ -439,7 +433,7 @@ struct OrthogonalizeOperand {
         [orthogonalization](
             const auto operand,
             const gsl::not_null<size_t*> orthogonalization_iteration_id,
-            const auto& basis_history) noexcept {
+            const auto& basis_history) {
           *operand -= orthogonalization *
                       gsl::at(basis_history, *orthogonalization_iteration_id);
           ++(*orthogonalization_iteration_id);
@@ -511,7 +505,7 @@ struct NormalizeOperandAndUpdateField {
         tuples::TaggedTuple<InboxTags...>& inboxes,
         const Parallel::GlobalCache<Metavariables>& /*cache*/,
         const ArrayIndex& array_index, const ActionList /*meta*/,
-        const ParallelComponent* const /*meta*/) noexcept {
+        const ParallelComponent* const /*meta*/) {
     const size_t iteration_id =
         db::get<Convergence::Tags::IterationId<OptionsGroup>>(box);
     auto& inbox = get<Tags::FinalOrthogonalization<OptionsGroup>>(inboxes);
@@ -530,7 +524,7 @@ struct NormalizeOperandAndUpdateField {
         make_not_null(&box),
         [&has_converged](
             const gsl::not_null<Convergence::HasConverged*> local_has_converged,
-            const gsl::not_null<size_t*> local_iteration_id) noexcept {
+            const gsl::not_null<size_t*> local_iteration_id) {
           *local_has_converged = std::move(has_converged);
           ++(*local_iteration_id);
         });
@@ -562,10 +556,9 @@ struct NormalizeOperandAndUpdateField {
 
     db::mutate<operand_tag, basis_history_tag, fields_tag>(
         make_not_null(&box),
-        [normalization, &minres](
-            const auto operand, const auto basis_history, const auto field,
-            const auto& initial_field,
-            const auto& preconditioned_basis_history) noexcept {
+        [normalization, &minres](const auto operand, const auto basis_history,
+                                 const auto field, const auto& initial_field,
+                                 const auto& preconditioned_basis_history) {
           // Avoid an FPE if the new operand norm is exactly zero. In that case
           // the problem is solved and the algorithm will terminate (see
           // Proposition 9.3 in \cite Saad2003). Since there will be no next

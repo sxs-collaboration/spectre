@@ -52,7 +52,7 @@ struct MultiplyByTwo : db::SimpleTag {
 // Compute tag for test.
 struct MultiplyByTwoCompute : MultiplyByTwo, db::ComputeTag {
   static void function(const gsl::not_null<Scalar<DataVector>*> result,
-                       const Scalar<DataVector>& x) noexcept {
+                       const Scalar<DataVector>& x) {
     get<>(*result) = get<>(x) * 2.0;
   }
   using return_type = Scalar<DataVector>;
@@ -62,9 +62,8 @@ struct MultiplyByTwoCompute : MultiplyByTwo, db::ComputeTag {
 }  // namespace Tags
 
 template <typename TagName, typename VarsTagList>
-void fill_variables(
-    const gsl::not_null<Variables<VarsTagList>*> vars,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& coords) noexcept {
+void fill_variables(const gsl::not_null<Variables<VarsTagList>*> vars,
+                    const tnsr::I<DataVector, 3, Frame::Inertial>& coords) {
   // Some analytic solution used to fill the volume data and
   // to test the interpolated data.
   auto& solution = get<TagName>(*vars);
@@ -85,14 +84,13 @@ struct MockInterpolationTargetVarsFromElement {
       typename ArrayIndex, typename TemporalId,
       Requires<tmpl::list_contains_v<DbTags, Tags::TestTargetPoints>> = nullptr>
   static void apply(
-      db::DataBox<DbTags>& box,
-      Parallel::GlobalCache<Metavariables>& /*cache*/,
+      db::DataBox<DbTags>& box, Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/,
       const std::vector<Variables<
           typename InterpolationTargetTag::vars_to_interpolate_to_target>>&
           vars_src,
       const std::vector<std::vector<size_t>>& global_offsets,
-      const TemporalId& /*temporal_id*/) noexcept {
+      const TemporalId& /*temporal_id*/) {
     CHECK(global_offsets.size() == vars_src.size());
     // global_offsets and vars_src always have a size of 1 for calls
     // directly from the elements; the outer vector is used only by
@@ -155,7 +153,7 @@ template <typename DomainCreator>
 std::tuple<Variables<tmpl::list<Tags::TestSolution>>, Mesh<3>>
 make_volume_data_and_mesh(const DomainCreator& domain_creator,
                           const Domain<3>& domain,
-                          const ElementId<3>& element_id) noexcept {
+                          const ElementId<3>& element_id) {
   const auto& block = domain.blocks()[element_id.block_id()];
   Mesh<3> mesh{domain_creator.initial_extents()[element_id.block_id()],
                Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
@@ -178,7 +176,7 @@ template <typename Metavariables, typename elem_component, typename Functor,
           typename... GlobalCacheTypes>
 void test_interpolate_on_element(
     Functor initialize_elements_and_queue_simple_actions,
-    GlobalCacheTypes... global_cache_items) noexcept {
+    GlobalCacheTypes... global_cache_items) {
   using metavars = Metavariables;
   using target_component =
       mock_interpolation_target<metavars,

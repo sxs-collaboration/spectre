@@ -81,7 +81,7 @@ class SphericalRadiation final : public BoundaryCondition<Dim> {
  public:
   struct TypeOptionTag {
     using type = detail::SphericalRadiationType;
-    static std::string name() noexcept { return "Type"; }
+    static std::string name() { return "Type"; }
     static constexpr Options::String help{
         "Whether to impose Sommerfeld or first-order Bayliss-Turkel spherical "
         "radiation boundary conditions."};
@@ -94,19 +94,19 @@ class SphericalRadiation final : public BoundaryCondition<Dim> {
       "method."};
 
   SphericalRadiation() = default;
-  SphericalRadiation(detail::SphericalRadiationType type) noexcept;
-  SphericalRadiation(SphericalRadiation&&) noexcept = default;
-  SphericalRadiation& operator=(SphericalRadiation&&) noexcept = default;
+  SphericalRadiation(detail::SphericalRadiationType type);
+  SphericalRadiation(SphericalRadiation&&) = default;
+  SphericalRadiation& operator=(SphericalRadiation&&) = default;
   SphericalRadiation(const SphericalRadiation&) = default;
   SphericalRadiation& operator=(const SphericalRadiation&) = default;
   ~SphericalRadiation() override = default;
 
-  explicit SphericalRadiation(CkMigrateMessage* msg) noexcept;
+  explicit SphericalRadiation(CkMigrateMessage* msg);
 
   WRAPPED_PUPable_decl_base_template(
       domain::BoundaryConditions::BoundaryCondition, SphericalRadiation);
 
-  auto get_clone() const noexcept -> std::unique_ptr<
+  auto get_clone() const -> std::unique_ptr<
       domain::BoundaryConditions::BoundaryCondition> override;
 
   static constexpr evolution::BoundaryConditions::Type bc_type =
@@ -131,7 +131,7 @@ class SphericalRadiation final : public BoundaryCondition<Dim> {
       const tnsr::i<DataVector, Dim, Frame::Inertial>& phi,
       const Scalar<DataVector>& psi,
       const tnsr::I<DataVector, Dim, Frame::Inertial>& coords,
-      const Scalar<DataVector>& gamma2) const noexcept;
+      const Scalar<DataVector>& gamma2) const;
 
  private:
   detail::SphericalRadiationType type_{

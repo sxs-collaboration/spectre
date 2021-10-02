@@ -81,7 +81,7 @@ struct MockContributeReductionData {
                     const std::vector<std::string>& reduction_names,
                     ReductionData&& reduction_data,
                     std::optional<Formatter>&& formatter,
-                    const bool observe_per_core) noexcept {
+                    const bool observe_per_core) {
     if (results) {
       CHECK(results->observation_id == observation_id);
       CHECK(results->subfile_name == subfile_name);
@@ -168,7 +168,7 @@ struct Metavariables {
 
 template <typename Observer>
 void test_observe(const Observer& observer, const bool backwards_in_time,
-                  const bool observe_per_core = false) noexcept {
+                  const bool observe_per_core = false) {
   using element_component = ElementComponent<Metavariables>;
   using observer_component = MockObserverComponent<Metavariables>;
 
@@ -188,8 +188,8 @@ void test_observe(const Observer& observer, const bool backwards_in_time,
 
   const auto create_element =
       [&backwards_in_time, &element_boxes, &observation_time, &observer,
-       &runner, &slab](const size_t num_points,
-                       TimeDelta::rational_t slab_fraction) noexcept {
+       &runner,
+       &slab](const size_t num_points, TimeDelta::rational_t slab_fraction) {
         if (backwards_in_time) {
           slab_fraction *= -1;
         }

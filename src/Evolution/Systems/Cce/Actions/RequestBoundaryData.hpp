@@ -50,7 +50,7 @@ struct RequestBoundaryData {
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     Parallel::simple_action<Actions::BoundaryComputeAndSendToEvolution<
         WorldtubeBoundaryComponent, EvolutionComponent>>(
         Parallel::get_parallel_component<WorldtubeBoundaryComponent>(cache),
@@ -93,7 +93,7 @@ struct RequestNextBoundaryData {
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     // only request the data if the next step is not after the end time.
     if (db::get<::Tags::Next<::Tags::TimeStepId>>(box).substep_time().value() <
         db::get<Tags::EndTime>(box)) {

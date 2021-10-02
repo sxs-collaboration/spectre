@@ -25,8 +25,7 @@ class FunctionOfTime;
 
 namespace {
 std::array<double, 2> expected_mapped_point(
-    const std::array<double, 2> initial_unmapped_point,
-    const double time) noexcept {
+    const std::array<double, 2> initial_unmapped_point, const double time) {
   const double rotation_angle = square(time);
   return {{initial_unmapped_point[0] * cos(rotation_angle) -
                initial_unmapped_point[1] * sin(rotation_angle),
@@ -35,8 +34,7 @@ std::array<double, 2> expected_mapped_point(
 }
 
 std::array<double, 2> expected_frame_velocity(
-    const std::array<double, 2> initial_unmapped_point,
-    const double time) noexcept {
+    const std::array<double, 2> initial_unmapped_point, const double time) {
   const double rotation_angle = square(time);
   const double angular_velocity = 2.0 * time;
   return {

@@ -43,11 +43,10 @@ struct SomeControlSystemUpdater {
   static void apply(const gsl::not_null<db::DataBox<DbTags>*> box,
                     Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/, const double time,
-                    tuples::TaggedTuple<SubmeasurementTag> data) noexcept {
+                    tuples::TaggedTuple<SubmeasurementTag> data) {
     db::mutate<MeasurementResultTime, MeasurementResultTag>(
-        box,
-        [&time, &data](const gsl::not_null<double*> stored_time,
-                       const gsl::not_null<double*> stored_data) noexcept {
+        box, [&time, &data](const gsl::not_null<double*> stored_time,
+                            const gsl::not_null<double*> stored_data) {
           *stored_time = time;
           *stored_data = tuples::get<SubmeasurementTag>(data);
         });
@@ -65,11 +64,12 @@ struct ExampleSubmeasurement
 
   template <typename Metavariables, typename ParallelComponent,
             typename ControlSystems>
-  static void apply(
-      const double data_from_element,
-      const LinkedMessageId<double>& measurement_id,
-      Parallel::GlobalCache<Metavariables>& cache, const int& /*array_index*/,
-      const ParallelComponent* /*meta*/, ControlSystems /*meta*/) noexcept {
+  static void apply(const double data_from_element,
+                    const LinkedMessageId<double>& measurement_id,
+                    Parallel::GlobalCache<Metavariables>& cache,
+                    const int& /*array_index*/,
+                    const ParallelComponent* /*meta*/,
+                    ControlSystems /*meta*/) {
     // In real cases, we would generally do a reduction to a single
     // chare here and have the below code in the reduction action, but
     // the action testing framework doesn't support reductions, so
@@ -93,7 +93,7 @@ struct ExampleMeasurement
 /// [ControlSystem]
 struct ExampleControlSystem
     : tt::ConformsTo<control_system::protocols::ControlSystem> {
-  static std::string name() noexcept { return "ExampleControlSystem"; }
+  static std::string name() { return "ExampleControlSystem"; }
   using measurement = ExampleMeasurement;
 
   // This is not part of the required interface, but is used by this

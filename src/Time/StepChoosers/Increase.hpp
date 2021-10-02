@@ -28,7 +28,7 @@ class Increase : public StepChooser<StepChooserUse> {
  public:
   /// \cond
   Increase() = default;
-  explicit Increase(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit Increase(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Increase);  // NOLINT
   /// \endcond
@@ -36,13 +36,13 @@ class Increase : public StepChooser<StepChooserUse> {
   struct Factor {
     using type = double;
     static constexpr Options::String help{"Factor to increase by"};
-    static type lower_bound() noexcept { return 1.0; }
+    static type lower_bound() { return 1.0; }
   };
 
   static constexpr Options::String help{"Suggests a constant factor increase."};
   using options = tmpl::list<Factor>;
 
-  explicit Increase(const double factor) noexcept : factor_(factor) {}
+  explicit Increase(const double factor) : factor_(factor) {}
 
   using argument_tags = tmpl::list<>;
   using return_tags = tmpl::list<>;
@@ -50,12 +50,12 @@ class Increase : public StepChooser<StepChooserUse> {
   template <typename Metavariables>
   std::pair<double, bool> operator()(
       const double last_step_magnitude,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/) const noexcept {
+      const Parallel::GlobalCache<Metavariables>& /*cache*/) const {
     return std::make_pair(last_step_magnitude * factor_, true);
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept override { p | factor_; }
+  void pup(PUP::er& p) override { p | factor_; }
 
  private:
   double factor_ = std::numeric_limits<double>::signaling_NaN();

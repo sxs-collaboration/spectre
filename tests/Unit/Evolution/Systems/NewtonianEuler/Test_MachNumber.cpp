@@ -29,7 +29,7 @@ template <typename DataType, size_t Dim, typename EquationOfStateType>
 void test_in_databox(const Scalar<DataType>& mass_density,
                      const tnsr::I<DataType, Dim>& velocity,
                      const Scalar<DataType>& specific_internal_energy,
-                     const EquationOfStateType& equation_of_state) noexcept {
+                     const EquationOfStateType& equation_of_state) {
   TestHelpers::db::test_compute_tag<
       NewtonianEuler::Tags::MachNumberCompute<DataType, Dim>>("MachNumber");
 
@@ -55,7 +55,7 @@ void test_in_databox(const Scalar<DataType>& mass_density,
 }
 
 template <size_t Dim, typename DataType>
-void test(const DataType& used_for_size) noexcept {
+void test(const DataType& used_for_size) {
   MAKE_GENERATOR(generator);
   std::uniform_real_distribution<> distribution(-1.0, 1.0);
   std::uniform_real_distribution<> positive_distribution(0.0, 1.0);

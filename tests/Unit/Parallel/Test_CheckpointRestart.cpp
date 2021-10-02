@@ -52,7 +52,7 @@ struct InitializeLog {
       tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& array_index, ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     const std::string component_name =
         pretty_type::short_name<ParallelComponent>() + " " +
         std::to_string(static_cast<int>(array_index));
@@ -72,10 +72,10 @@ struct MutateLog {
       tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& array_index, ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     db::mutate<Tags::Log>(
         make_not_null(&box),
-        [&array_index](const gsl::not_null<std::string*> log) noexcept {
+        [&array_index](const gsl::not_null<std::string*> log) {
           const std::string component_name =
               pretty_type::short_name<ParallelComponent>() + " " +
               std::to_string(static_cast<int>(array_index));
@@ -94,7 +94,7 @@ struct CheckLog {
       tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& array_index, ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     const std::string& log = db::get<Tags::Log>(box);
     const std::string component_name =
         pretty_type::short_name<ParallelComponent>() + " " +
@@ -129,7 +129,7 @@ struct ArrayComponent {
   static void allocate_array(
       Parallel::CProxy_GlobalCache<Metavariables>& global_cache,
       const tuples::tagged_tuple_from_typelist<initialization_tags>&
-      /*initialization_items*/) noexcept {
+      /*initialization_items*/) {
     auto& local_cache = *(global_cache.ckLocalBranch());
     auto& array_proxy =
         Parallel::get_parallel_component<ArrayComponent>(local_cache);
@@ -255,7 +255,7 @@ struct TestMetavariables {
     static void apply(
         const gsl::not_null<
             tuples::TaggedTuple<>*> /*phase_change_decision_data*/,
-        const Parallel::GlobalCache<TestMetavariables>& /*cache*/) noexcept {}
+        const Parallel::GlobalCache<TestMetavariables>& /*cache*/) {}
   };
 
   template <typename... Tags>
@@ -263,8 +263,7 @@ struct TestMetavariables {
       const gsl::not_null<tuples::TaggedTuple<Tags...>*>
       /*phase_change_decision_data*/,
       const Phase& current_phase,
-      const Parallel::CProxy_GlobalCache<
-          TestMetavariables>& /*cache_proxy*/) noexcept {
+      const Parallel::CProxy_GlobalCache<TestMetavariables>& /*cache_proxy*/) {
     switch (current_phase) {
       case Phase::Initialization:
         return Phase::MutateDatabox;
@@ -281,7 +280,7 @@ struct TestMetavariables {
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& /*p*/) noexcept {}
+  void pup(PUP::er& /*p*/) {}
 };
 
 static const std::vector<void (*)()> charm_init_node_funcs{

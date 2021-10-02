@@ -37,7 +37,7 @@ class ByBlock : public StepChooser<StepChooserUse> {
  public:
   /// \cond
   ByBlock() = default;
-  explicit ByBlock(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit ByBlock(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ByBlock);  // NOLINT
   /// \endcond
@@ -52,8 +52,7 @@ class ByBlock : public StepChooser<StepChooserUse> {
       "Suggests specified step sizes in each block"};
   using options = tmpl::list<Sizes>;
 
-  explicit ByBlock(std::vector<double> sizes) noexcept
-      : sizes_(std::move(sizes)) {}
+  explicit ByBlock(std::vector<double> sizes) : sizes_(std::move(sizes)) {}
 
   using argument_tags = tmpl::list<domain::Tags::Element<Dim>>;
   using return_tags = tmpl::list<>;
@@ -61,8 +60,7 @@ class ByBlock : public StepChooser<StepChooserUse> {
   template <typename Metavariables>
   std::pair<double, bool> operator()(
       const Element<Dim>& element, const double /*last_step_magnitude*/,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/) const
-      noexcept {
+      const Parallel::GlobalCache<Metavariables>& /*cache*/) const {
     const size_t block = element.id().block_id();
     if (block >= sizes_.size()) {
       ERROR("Step size not specified for block " << block);
@@ -71,7 +69,7 @@ class ByBlock : public StepChooser<StepChooserUse> {
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept override { p | sizes_; }
+  void pup(PUP::er& p) override { p | sizes_; }
 
  private:
   std::vector<double> sizes_;

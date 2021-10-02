@@ -39,14 +39,14 @@ class AnalyticData : public ::AnalyticData<Dim, Registrars> {
   ~AnalyticData() override = default;
 
   /// \cond
-  explicit AnalyticData(CkMigrateMessage* m) noexcept : Base(m) {}
+  explicit AnalyticData(CkMigrateMessage* m) : Base(m) {}
   WRAPPED_PUPable_abstract(AnalyticData);  // NOLINT
   /// \endcond
 
   /// A constitutive relation that represents the properties of the elastic
   /// material
   virtual const ConstitutiveRelations::ConstitutiveRelation<Dim>&
-  constitutive_relation() const noexcept = 0;
+  constitutive_relation() const = 0;
 };
 }  // namespace AnalyticData
 }  // namespace Elasticity

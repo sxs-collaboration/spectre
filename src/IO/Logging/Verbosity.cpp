@@ -29,8 +29,7 @@ Verbosity Options::create_from_yaml<Verbosity>::create<void>(
                                         "of Silent, Quiet, Verbose, or Debug.");
 }
 
-std::ostream& operator<<(std::ostream& os,
-                         const Verbosity& verbosity) noexcept {
+std::ostream& operator<<(std::ostream& os, const Verbosity& verbosity) {
   switch (verbosity) {
     case Verbosity::Silent:
       return os << "Silent";

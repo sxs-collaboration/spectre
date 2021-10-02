@@ -15,7 +15,7 @@
 namespace gr {
 template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::ii<DataType, SpatialDim, Frame> spatial_metric(
-    const tnsr::aa<DataType, SpatialDim, Frame>& spacetime_metric) noexcept {
+    const tnsr::aa<DataType, SpatialDim, Frame>& spacetime_metric) {
   tnsr::ii<DataType, SpatialDim, Frame> local_spatial_metric{
       get_size(get<0, 0>(spacetime_metric))};
   spatial_metric(make_not_null(&local_spatial_metric), spacetime_metric);
@@ -25,7 +25,7 @@ tnsr::ii<DataType, SpatialDim, Frame> spatial_metric(
 template <size_t SpatialDim, typename Frame, typename DataType>
 void spatial_metric(
     const gsl::not_null<tnsr::ii<DataType, SpatialDim, Frame>*> spatial_metric,
-    const tnsr::aa<DataType, SpatialDim, Frame>& spacetime_metric) noexcept {
+    const tnsr::aa<DataType, SpatialDim, Frame>& spacetime_metric) {
   destructive_resize_components(spatial_metric,
                                 get_size(get<0, 0>(spacetime_metric)));
   for (size_t i = 0; i < SpatialDim; ++i) {
@@ -40,15 +40,13 @@ void spatial_metric(
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(2, data)
 
-#define INSTANTIATE(_, data)                                                 \
-  template tnsr::ii<DTYPE(data), DIM(data), FRAME(data)> gr::spatial_metric( \
-      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>&                   \
-          spacetime_metric) noexcept;                                        \
-  template void gr::spatial_metric(                                          \
-      const gsl::not_null<tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>*>    \
-          spatial_metric,                                                    \
-      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>&                   \
-          spacetime_metric) noexcept;
+#define INSTANTIATE(_, data)                                                  \
+  template tnsr::ii<DTYPE(data), DIM(data), FRAME(data)> gr::spatial_metric(  \
+      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& spacetime_metric); \
+  template void gr::spatial_metric(                                           \
+      const gsl::not_null<tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>*>     \
+          spatial_metric,                                                     \
+      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& spacetime_metric);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
                         (Frame::Grid, Frame::Inertial))

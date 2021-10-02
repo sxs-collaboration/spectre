@@ -12,7 +12,7 @@
 namespace TestHelpers::gr {
 template <typename DataType>
 Scalar<DataType> random_lapse(const gsl::not_null<std::mt19937*> generator,
-                              const DataType& used_for_size) noexcept {
+                              const DataType& used_for_size) {
   std::uniform_real_distribution<> distribution(0.0, 3.0);
   return make_with_random_values<Scalar<DataType>>(
       generator, make_not_null(&distribution), used_for_size);
@@ -21,7 +21,7 @@ Scalar<DataType> random_lapse(const gsl::not_null<std::mt19937*> generator,
 template <size_t Dim, typename DataType>
 tnsr::I<DataType, Dim> random_shift(
     const gsl::not_null<std::mt19937*> generator,
-    const DataType& used_for_size) noexcept {
+    const DataType& used_for_size) {
   std::uniform_real_distribution<> distribution(-1.0, 1.0);
   return make_with_random_values<tnsr::I<DataType, Dim>>(
       generator, make_not_null(&distribution), used_for_size);
@@ -30,7 +30,7 @@ tnsr::I<DataType, Dim> random_shift(
 template <size_t Dim, typename DataType, typename Fr>
 tnsr::ii<DataType, Dim, Fr> random_spatial_metric(
     const gsl::not_null<std::mt19937*> generator,
-    const DataType& used_for_size) noexcept {
+    const DataType& used_for_size) {
   std::uniform_real_distribution<> distribution(-0.05, 0.05);
   auto spatial_metric = make_with_random_values<tnsr::ii<DataType, Dim, Fr>>(
       generator, make_not_null(&distribution), used_for_size);
@@ -46,17 +46,17 @@ tnsr::ii<DataType, Dim, Fr> random_spatial_metric(
 #define INSTANTIATE_SCALARS(_, data)                \
   template Scalar<DTYPE(data)> random_lapse(        \
       const gsl::not_null<std::mt19937*> generator, \
-      const DTYPE(data) & used_for_size) noexcept;
+      const DTYPE(data) & used_for_size);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_SCALARS, (double, DataVector))
 
 #define INSTANTIATE_TENSORS(_, data)                               \
   template tnsr::I<DTYPE(data), DIM(data)> random_shift(           \
       const gsl::not_null<std::mt19937*> generator,                \
-      const DTYPE(data) & used_for_size) noexcept;                 \
+      const DTYPE(data) & used_for_size);                          \
   template tnsr::ii<DTYPE(data), DIM(data)> random_spatial_metric( \
       const gsl::not_null<std::mt19937*> generator,                \
-      const DTYPE(data) & used_for_size) noexcept;
+      const DTYPE(data) & used_for_size);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_TENSORS, (double, DataVector), (1, 2, 3))
 

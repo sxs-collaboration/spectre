@@ -57,9 +57,9 @@ class PalenzuelaEtAl {
       double momentum_density_dot_magnetic_field, double magnetic_field_squared,
       double rest_mass_density_times_lorentz_factor,
       const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
-          equation_of_state) noexcept;
+          equation_of_state);
 
-  static const std::string name() noexcept { return "PalenzuelaEtAl"; }
+  static const std::string name() { return "PalenzuelaEtAl"; }
 
  private:
   static constexpr size_t max_iterations_ = 100;

@@ -14,12 +14,12 @@
 
 namespace integration::detail {
 
-GslQuadAdaptiveImpl::GslQuadAdaptiveImpl(const size_t max_intervals) noexcept
+GslQuadAdaptiveImpl::GslQuadAdaptiveImpl(const size_t max_intervals)
     : max_intervals_(max_intervals), gsl_integrand_(gsl_function{}) {
   initialize();
 }
 
-void GslQuadAdaptiveImpl::pup(PUP::er& p) noexcept {
+void GslQuadAdaptiveImpl::pup(PUP::er& p) {
   p | max_intervals_;
   if (p.isUnpacking()) {
     initialize();
@@ -27,11 +27,11 @@ void GslQuadAdaptiveImpl::pup(PUP::er& p) noexcept {
 }
 
 void GslQuadAdaptiveImpl::GslIntegrationWorkspaceDeleter::operator()(
-    gsl_integration_workspace* workspace) const noexcept {
+    gsl_integration_workspace* workspace) const {
   gsl_integration_workspace_free(workspace);
 }
 
-void GslQuadAdaptiveImpl::initialize() noexcept {
+void GslQuadAdaptiveImpl::initialize() {
   workspace_ = std::unique_ptr<gsl_integration_workspace,
                                GslIntegrationWorkspaceDeleter>{
       gsl_integration_workspace_alloc(max_intervals_)};
@@ -45,6 +45,6 @@ void check_status_code(const int status_code) {
   }
 }
 
-void disable_gsl_error_handling() noexcept { gsl_set_error_handler_off(); }
+void disable_gsl_error_handling() { gsl_set_error_handler_off(); }
 
 }  // namespace integration::detail

@@ -102,7 +102,7 @@ class CubicScale {
 
   explicit CubicScale(double outer_boundary,
                       std::string function_of_time_name_a,
-                      std::string function_of_time_name_b) noexcept;
+                      std::string function_of_time_name_b);
   CubicScale() = default;
 
   template <typename T>
@@ -111,7 +111,7 @@ class CubicScale {
       const std::unordered_map<
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-          functions_of_time) const noexcept;
+          functions_of_time) const;
 
   /// Returns std::nullopt if the point is outside the range of the map.
   /// The inverse function is only callable with doubles because the inverse
@@ -123,7 +123,7 @@ class CubicScale {
       const std::unordered_map<
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-          functions_of_time) const noexcept;
+          functions_of_time) const;
 
   template <typename T>
   std::array<tt::remove_cvref_wrap_t<T>, Dim> frame_velocity(
@@ -131,7 +131,7 @@ class CubicScale {
       const std::unordered_map<
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-          functions_of_time) const noexcept;
+          functions_of_time) const;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame> inv_jacobian(
@@ -139,7 +139,7 @@ class CubicScale {
       const std::unordered_map<
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-          functions_of_time) const noexcept;
+          functions_of_time) const;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame> jacobian(
@@ -147,18 +147,18 @@ class CubicScale {
       const std::unordered_map<
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-          functions_of_time) const noexcept;
+          functions_of_time) const;
 
   // clang-tidy: google-runtime-references
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
 
-  static bool is_identity() noexcept { return false; }
+  static bool is_identity() { return false; }
 
  private:
   template <size_t LocalDim>
   // NOLINTNEXTLINE(readability-redundant-declaration)
   friend bool operator==(const CubicScale<LocalDim>& lhs,
-                         const CubicScale<LocalDim>& rhs) noexcept;
+                         const CubicScale<LocalDim>& rhs);
 
   std::string f_of_t_a_{};
   std::string f_of_t_b_{};
@@ -167,8 +167,7 @@ class CubicScale {
 };
 
 template <size_t Dim>
-bool operator!=(const CubicScale<Dim>& lhs,
-                const CubicScale<Dim>& rhs) noexcept {
+bool operator!=(const CubicScale<Dim>& lhs, const CubicScale<Dim>& rhs) {
   return not(lhs == rhs);
 }
 

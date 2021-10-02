@@ -26,7 +26,7 @@ struct Inertial;
 
 namespace {
 template <size_t VolumeDim, typename DataType, typename Fr>
-void test_sinusoid_random(const DataType& used_for_size) noexcept {
+void test_sinusoid_random(const DataType& used_for_size) {
   Parallel::register_classes_with_charm<
       MathFunctions::Sinusoid<VolumeDim, Fr>>();
 

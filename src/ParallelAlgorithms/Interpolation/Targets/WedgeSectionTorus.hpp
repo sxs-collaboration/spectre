@@ -64,42 +64,42 @@ struct WedgeSectionTorus {
   struct MinRadius {
     using type = double;
     static constexpr Options::String help = {"Inner radius of torus"};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
   struct MaxRadius {
     using type = double;
     static constexpr Options::String help = {"Outer radius of torus"};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
   struct MinTheta {
     using type = double;
     static constexpr Options::String help = {"Angle of top of wedge (radians)"};
-    static type lower_bound() noexcept { return 0.0; }
-    static type upper_bound() noexcept { return M_PI; }
+    static type lower_bound() { return 0.0; }
+    static type upper_bound() { return M_PI; }
   };
   struct MaxTheta {
     using type = double;
     static constexpr Options::String help = {
         "Angle of bottom of wedge (radians)"};
-    static type lower_bound() noexcept { return 0.0; }
-    static type upper_bound() noexcept { return M_PI; }
+    static type lower_bound() { return 0.0; }
+    static type upper_bound() { return M_PI; }
   };
   struct NumberRadialPoints {
     using type = size_t;
     static constexpr Options::String help = {
         "Number of radial points, including endpoints"};
-    static type lower_bound() noexcept { return 2; }
+    static type lower_bound() { return 2; }
   };
   struct NumberThetaPoints {
     using type = size_t;
     static constexpr Options::String help = {
         "Number of theta points, including endpoints"};
-    static type lower_bound() noexcept { return 2; }
+    static type lower_bound() { return 2; }
   };
   struct NumberPhiPoints {
     using type = size_t;
     static constexpr Options::String help = {"Number of phi points"};
-    static type lower_bound() noexcept { return 1; }
+    static type lower_bound() { return 1; }
   };
   struct UniformRadialGrid {
     using type = bool;
@@ -130,12 +130,12 @@ struct WedgeSectionTorus {
   WedgeSectionTorus() = default;
   WedgeSectionTorus(const WedgeSectionTorus& /*rhs*/) = default;
   WedgeSectionTorus& operator=(const WedgeSectionTorus& /*rhs*/) = delete;
-  WedgeSectionTorus(WedgeSectionTorus&& /*rhs*/) noexcept = default;
-  WedgeSectionTorus& operator=(WedgeSectionTorus&& /*rhs*/) noexcept = default;
+  WedgeSectionTorus(WedgeSectionTorus&& /*rhs*/) = default;
+  WedgeSectionTorus& operator=(WedgeSectionTorus&& /*rhs*/) = default;
   ~WedgeSectionTorus() = default;
 
   // clang-tidy non-const reference pointer
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
 
   double min_radius;
   double max_radius;
@@ -148,10 +148,8 @@ struct WedgeSectionTorus {
   bool use_uniform_theta_grid;
 };
 
-bool operator==(const WedgeSectionTorus& lhs,
-                const WedgeSectionTorus& rhs) noexcept;
-bool operator!=(const WedgeSectionTorus& lhs,
-                const WedgeSectionTorus& rhs) noexcept;
+bool operator==(const WedgeSectionTorus& lhs, const WedgeSectionTorus& rhs);
+bool operator!=(const WedgeSectionTorus& lhs, const WedgeSectionTorus& rhs);
 
 }  // namespace OptionHolders
 
@@ -161,9 +159,7 @@ struct WedgeSectionTorus {
   using type = OptionHolders::WedgeSectionTorus;
   static constexpr Options::String help{
       "Options for interpolation onto Kerr horizon."};
-  static std::string name() noexcept {
-    return Options::name<InterpolationTargetTag>();
-  }
+  static std::string name() { return Options::name<InterpolationTargetTag>(); }
   using group = InterpolationTargets;
 };
 }  // namespace OptionTags
@@ -176,9 +172,7 @@ struct WedgeSectionTorus : db::SimpleTag {
       tmpl::list<OptionTags::WedgeSectionTorus<InterpolationTargetTag>>;
 
   static constexpr bool pass_metavariables = false;
-  static type create_from_options(const type& option) noexcept {
-    return option;
-  }
+  static type create_from_options(const type& option) { return option; }
 };
 }  // namespace Tags
 
@@ -196,13 +190,13 @@ struct WedgeSectionTorus {
   template <typename Metavariables, typename DbTags>
   static tnsr::I<DataVector, 3, Frame::Inertial> points(
       const db::DataBox<DbTags>& box,
-      const tmpl::type_<Metavariables>& /*meta*/) noexcept {
+      const tmpl::type_<Metavariables>& /*meta*/) {
     const auto& options =
         get<Tags::WedgeSectionTorus<InterpolationTargetTag>>(box);
 
     // Compute locations of constant r/theta/phi surfaces
     const size_t num_radial = options.number_of_radial_points;
-    const DataVector radii_1d = [&num_radial, &options ]() noexcept {
+    const DataVector radii_1d = [&num_radial, &options]() {
       DataVector result(num_radial);
       if (options.use_uniform_radial_grid) {
         // uniform point distribution
@@ -221,10 +215,9 @@ struct WedgeSectionTorus {
                               Spectral::Quadrature::GaussLobatto>(num_radial);
       }
       return result;
-    }
-    ();
+    }();
     const size_t num_theta = options.number_of_theta_points;
-    const DataVector thetas_1d = [&num_theta, &options ]() noexcept {
+    const DataVector thetas_1d = [&num_theta, &options]() {
       DataVector result(num_theta);
       if (options.use_uniform_theta_grid) {
         // uniform point distribution
@@ -243,10 +236,9 @@ struct WedgeSectionTorus {
                               Spectral::Quadrature::GaussLobatto>(num_theta);
       }
       return result;
-    }
-    ();
+    }();
     const size_t num_phi = options.number_of_phi_points;
-    const DataVector phis_1d = [&num_phi]() noexcept {
+    const DataVector phis_1d = [&num_phi]() {
       DataVector result(num_phi);
       // We do NOT want a grid point at phi = 2pi, as this would duplicate the
       // phi = 0 data. So, divide by num_phi rather than (n-1) as elsewhere.
@@ -255,8 +247,7 @@ struct WedgeSectionTorus {
         result[phi] = coefficient * phi;
       }
       return result;
-    }
-    ();
+    }();
 
     // Take tensor product to get full 3D r/theta/phi points
     const size_t num_total = num_radial * num_theta * num_phi;
@@ -288,7 +279,7 @@ struct WedgeSectionTorus {
   template <typename Metavariables, typename DbTags, typename TemporalId>
   static tnsr::I<DataVector, 3, Frame::Inertial> points(
       const db::DataBox<DbTags>& box, const tmpl::type_<Metavariables>& meta,
-      const TemporalId& /*temporal_id*/) noexcept {
+      const TemporalId& /*temporal_id*/) {
     return points(box, meta);
   }
 };

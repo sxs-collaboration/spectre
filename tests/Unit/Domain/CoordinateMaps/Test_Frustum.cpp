@@ -60,7 +60,7 @@ void test_suite_for_frustum(const bool with_equiangular_map) {
   }
 }
 
-void test_frustum_fail() noexcept {
+void test_frustum_fail() {
   INFO("Frustum fail");
   const std::array<std::array<double, 2>, 4> face_vertices{
       {{{-2.0, -2.0}}, {{2.0, 2.0}}, {{-4.0, -4.0}}, {{4.0, 4.0}}}};

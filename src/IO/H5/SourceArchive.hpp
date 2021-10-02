@@ -18,23 +18,21 @@ namespace h5 {
 class SourceArchive : public h5::Object {
  public:
   /// \cond HIDDEN_SYMOLS
-  static std::string extension() noexcept { return ".tar.gz"; }
+  static std::string extension() { return ".tar.gz"; }
 
   SourceArchive(bool exists, detail::OpenGroup&& group, hid_t location,
-                const std::string& name) noexcept;
+                const std::string& name);
 
   SourceArchive(const SourceArchive&) = delete;
   SourceArchive& operator=(const SourceArchive&) = delete;
 
-  SourceArchive(SourceArchive&&) noexcept = delete;             // NOLINT
-  SourceArchive& operator=(SourceArchive&&) noexcept = delete;  // NOLINT
+  SourceArchive(SourceArchive&&) = delete;             // NOLINT
+  SourceArchive& operator=(SourceArchive&&) = delete;  // NOLINT
 
   ~SourceArchive() override = default;
   /// \endcond
 
-  const std::vector<char>& get_archive() const noexcept {
-    return source_archive_;
-  }
+  const std::vector<char>& get_archive() const { return source_archive_; }
 
  private:
   /// \cond HIDDEN_SYMBOLS

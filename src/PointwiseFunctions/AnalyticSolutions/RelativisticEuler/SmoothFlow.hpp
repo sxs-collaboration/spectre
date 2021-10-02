@@ -66,15 +66,15 @@ class SmoothFlow : virtual public MarkAsAnalyticSolution,
   SmoothFlow() = default;
   SmoothFlow(const SmoothFlow& /*rhs*/) = delete;
   SmoothFlow& operator=(const SmoothFlow& /*rhs*/) = delete;
-  SmoothFlow(SmoothFlow&& /*rhs*/) noexcept = default;
-  SmoothFlow& operator=(SmoothFlow&& /*rhs*/) noexcept = default;
+  SmoothFlow(SmoothFlow&& /*rhs*/) = default;
+  SmoothFlow& operator=(SmoothFlow&& /*rhs*/) = default;
   ~SmoothFlow() = default;
 
   SmoothFlow(const std::array<double, Dim>& mean_velocity,
              const std::array<double, Dim>& wavevector, double pressure,
-             double adiabatic_index, double perturbation_size) noexcept;
+             double adiabatic_index, double perturbation_size);
 
-  explicit SmoothFlow(CkMigrateMessage* msg) noexcept;
+  explicit SmoothFlow(CkMigrateMessage* msg);
 
   using smooth_flow::equation_of_state;
   using typename smooth_flow::equation_of_state_type;
@@ -84,9 +84,9 @@ class SmoothFlow : virtual public MarkAsAnalyticSolution,
 
   /// Retrieve a collection of hydro variables at `(x, t)`
   template <typename DataType, typename... Tags>
-  tuples::TaggedTuple<Tags...> variables(
-      const tnsr::I<DataType, Dim>& x, const double t,
-      tmpl::list<Tags...> /*meta*/) const noexcept {
+  tuples::TaggedTuple<Tags...> variables(const tnsr::I<DataType, Dim>& x,
+                                         const double t,
+                                         tmpl::list<Tags...> /*meta*/) const {
     static_assert(sizeof...(Tags) > 1,
                   "The generic template will recurse infinitely if only one "
                   "tag is being retrieved.");
@@ -96,36 +96,33 @@ class SmoothFlow : virtual public MarkAsAnalyticSolution,
   /// Retrieve the metric variables
   template <typename DataType, typename Tag>
   tuples::TaggedTuple<Tag> variables(const tnsr::I<DataType, Dim>& x, double t,
-                                     tmpl::list<Tag> /*meta*/) const noexcept {
+                                     tmpl::list<Tag> /*meta*/) const {
     return background_spacetime_.variables(x, t, tmpl::list<Tag>{});
   }
 
   template <typename DataType>
   tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, Dim>> variables(
       const tnsr::I<DataType, Dim>& x, double t,
-      tmpl::list<hydro::Tags::MagneticField<DataType, Dim>> /*meta*/)
-      const noexcept;
+      tmpl::list<hydro::Tags::MagneticField<DataType, Dim>> /*meta*/) const;
 
   template <typename DataType>
   tuples::TaggedTuple<hydro::Tags::DivergenceCleaningField<DataType>> variables(
       const tnsr::I<DataType, Dim>& x, double t,
       tmpl::list<hydro::Tags::DivergenceCleaningField<DataType>> /*meta*/)
-      const noexcept;
+      const;
 
   // clang-tidy: no runtime references
-  void pup(PUP::er& /*p*/) noexcept;  //  NOLINT
+  void pup(PUP::er& /*p*/);  //  NOLINT
 
  private:
   template <size_t SpatialDim>
   friend bool
   operator==(  // NOLINT (clang-tidy: readability-redundant-declaration)
-      const SmoothFlow<SpatialDim>& lhs,
-      const SmoothFlow<SpatialDim>& rhs) noexcept;
+      const SmoothFlow<SpatialDim>& lhs, const SmoothFlow<SpatialDim>& rhs);
 
   gr::Solutions::Minkowski<Dim> background_spacetime_{};
 };
 
 template <size_t Dim>
-bool operator!=(const SmoothFlow<Dim>& lhs,
-                const SmoothFlow<Dim>& rhs) noexcept;
+bool operator!=(const SmoothFlow<Dim>& lhs, const SmoothFlow<Dim>& rhs);
 }  // namespace RelativisticEuler::Solutions

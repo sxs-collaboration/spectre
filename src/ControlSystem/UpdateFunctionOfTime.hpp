@@ -23,8 +23,7 @@ struct UpdateFunctionOfTime {
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>*>
           f_of_t_list,
       const std::string& f_of_t_name, const double update_time,
-      const DataVector update_deriv,
-      const double new_expiration_time) noexcept {
+      const DataVector update_deriv, const double new_expiration_time) {
     (*f_of_t_list)
         .at(f_of_t_name)
         ->update(update_time, std::move(update_deriv), new_expiration_time);
@@ -40,8 +39,7 @@ struct ResetFunctionOfTimeExpirationTime {
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>*>
           f_of_t_list,
-      const std::string& f_of_t_name,
-      const double new_expiration_time) noexcept {
+      const std::string& f_of_t_name, const double new_expiration_time) {
     (*f_of_t_list).at(f_of_t_name)->reset_expiration_time(new_expiration_time);
   }
 };

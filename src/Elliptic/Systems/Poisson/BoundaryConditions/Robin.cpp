@@ -25,15 +25,13 @@ RobinImpl::RobinImpl(const double dirichlet_weight, const double neumann_weight,
   }
 }
 
-double RobinImpl::dirichlet_weight() const noexcept {
-  return dirichlet_weight_;
-}
-double RobinImpl::neumann_weight() const noexcept { return neumann_weight_; }
-double RobinImpl::constant() const noexcept { return constant_; }
+double RobinImpl::dirichlet_weight() const { return dirichlet_weight_; }
+double RobinImpl::neumann_weight() const { return neumann_weight_; }
+double RobinImpl::constant() const { return constant_; }
 
-void RobinImpl::apply(const gsl::not_null<Scalar<DataVector>*> field,
-                      const gsl::not_null<Scalar<DataVector>*>
-                          n_dot_field_gradient) const noexcept {
+void RobinImpl::apply(
+    const gsl::not_null<Scalar<DataVector>*> field,
+    const gsl::not_null<Scalar<DataVector>*> n_dot_field_gradient) const {
   if (neumann_weight_ == 0.) {
     ASSERT(
         not equal_within_roundoff(dirichlet_weight_, 0.),
@@ -52,7 +50,7 @@ void RobinImpl::apply(const gsl::not_null<Scalar<DataVector>*> field,
 void RobinImpl::apply_linearized(
     const gsl::not_null<Scalar<DataVector>*> field_correction,
     const gsl::not_null<Scalar<DataVector>*> n_dot_field_gradient_correction)
-    const noexcept {
+    const {
   if (neumann_weight_ == 0.) {
     get(*field_correction) = 0.;
   } else {
@@ -64,19 +62,19 @@ void RobinImpl::apply_linearized(
   }
 }
 
-void RobinImpl::pup(PUP::er& p) noexcept {
+void RobinImpl::pup(PUP::er& p) {
   p | dirichlet_weight_;
   p | neumann_weight_;
   p | constant_;
 }
 
-bool operator==(const RobinImpl& lhs, const RobinImpl& rhs) noexcept {
+bool operator==(const RobinImpl& lhs, const RobinImpl& rhs) {
   return lhs.dirichlet_weight() == rhs.dirichlet_weight() and
          lhs.neumann_weight() == rhs.neumann_weight() and
          lhs.constant() == rhs.constant();
 }
 
-bool operator!=(const RobinImpl& lhs, const RobinImpl& rhs) noexcept {
+bool operator!=(const RobinImpl& lhs, const RobinImpl& rhs) {
   return not(lhs == rhs);
 }
 

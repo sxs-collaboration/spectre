@@ -54,13 +54,12 @@ SPECTRE_ALWAYS_INLINE T number_of_digits(const T number) {
  * `CoeffsIterable::value_type` and multiplication with `DataType`.
  */
 template <typename CoeffsIterable, typename DataType>
-DataType evaluate_polynomial(const CoeffsIterable& coeffs,
-                             const DataType& x) noexcept {
-  return std::accumulate(
-      coeffs.rbegin(), coeffs.rend(), make_with_value<DataType>(x, 0.),
-      [&x](const DataType& state, const auto& element) noexcept {
-        return state * x + element;
-      });
+DataType evaluate_polynomial(const CoeffsIterable& coeffs, const DataType& x) {
+  return std::accumulate(coeffs.rbegin(), coeffs.rend(),
+                         make_with_value<DataType>(x, 0.),
+                         [&x](const DataType& state, const auto& element) {
+                           return state * x + element;
+                         });
 }
 
 /// \ingroup UtilitiesGroup
@@ -68,7 +67,7 @@ DataType evaluate_polynomial(const CoeffsIterable& coeffs,
 /// \brief Defines the Heaviside step function \f$\Theta\f$ for arithmetic
 /// types.  \f$\Theta(0) = 1\f$.
 template <typename T, Requires<std::is_arithmetic<T>::value> = nullptr>
-constexpr T step_function(const T& arg) noexcept {
+constexpr T step_function(const T& arg) {
   return static_cast<T>((arg >= static_cast<T>(0)) ? 1 : 0);
 }
 
@@ -101,13 +100,13 @@ constexpr T step_function(const T& arg) noexcept {
  */
 template <size_t N, typename DataType>
 DataType smoothstep(const double lower_edge, const double upper_edge,
-                    const DataType& arg) noexcept {
+                    const DataType& arg) {
   ASSERT(lower_edge < upper_edge,
          "Requires lower_edge < upper_edge, but lower_edge="
              << lower_edge << " and upper_edge=" << upper_edge);
   using std::clamp;
   return evaluate_polynomial(
-      []() noexcept -> std::array<double, 2 * N + 2> {
+      []() -> std::array<double, 2 * N + 2> {
         static_assert(N <= 3,
                       "The smoothstep function is currently only implemented "
                       "for N <= 3.");
@@ -131,7 +130,7 @@ DataType smoothstep(const double lower_edge, const double upper_edge,
 /// and complex types
 template <typename T, Requires<std::is_arithmetic<T>::value or
                                tt::is_a_v<std::complex, T>> = nullptr>
-auto invsqrt(const T& arg) noexcept {
+auto invsqrt(const T& arg) {
   return static_cast<T>(1.0) / sqrt(arg);
 }
 
@@ -139,19 +138,19 @@ auto invsqrt(const T& arg) noexcept {
 /// \brief Defines the inverse cube-root (\f$1/\sqrt[3]{x}\f$) for arithmetic
 /// types
 template <typename T, Requires<std::is_arithmetic<T>::value> = nullptr>
-auto invcbrt(const T& arg) noexcept {
+auto invcbrt(const T& arg) {
   return static_cast<T>(1.0) / cbrt(arg);
 }
 
 namespace sgn_detail {
 template <typename T>
-constexpr T sgn(const T& val, std::true_type /*is_signed*/) noexcept {
+constexpr T sgn(const T& val, std::true_type /*is_signed*/) {
   return static_cast<T>(static_cast<T>(0) < val) -
          static_cast<T>(val < static_cast<T>(0));
 }
 
 template <typename T>
-constexpr T sgn(const T& val, std::false_type /*is_signed*/) noexcept {
+constexpr T sgn(const T& val, std::false_type /*is_signed*/) {
   return static_cast<T>(static_cast<T>(0) < val);
 }
 }  // namespace sgn_detail
@@ -160,6 +159,6 @@ constexpr T sgn(const T& val, std::false_type /*is_signed*/) noexcept {
 /// \brief Compute the sign function of `val` defined as `1` if `val > 0`, `0`
 /// if `val == 0`, and `-1` if `val < 0`.
 template <typename T>
-constexpr T sgn(const T& val) noexcept {
+constexpr T sgn(const T& val) {
   return sgn_detail::sgn(val, std::is_signed<T>{});
 }

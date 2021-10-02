@@ -44,7 +44,7 @@
 
 namespace {
 
-void test_neuler_minmod_option_parsing() noexcept {
+void test_neuler_minmod_option_parsing() {
   INFO("Testing option parsing");
   const auto lambda_pi1 =
       TestHelpers::test_creation<NewtonianEuler::Limiters::Minmod<1>>(
@@ -149,7 +149,7 @@ void test_neuler_minmod_option_parsing() noexcept {
   CHECK(lambda_pin_3d == expected_lambda_pin_3d);
 }
 
-void test_neuler_minmod_serialization() noexcept {
+void test_neuler_minmod_serialization() {
   INFO("Testing serialization");
   const NewtonianEuler::Limiters::Minmod<1> minmod(
       Limiters::MinmodType::LambdaPi1,
@@ -183,7 +183,7 @@ void test_neuler_vs_generic_minmod_work(
         std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
         typename NewtonianEuler::Limiters::Minmod<VolumeDim>::PackagedData,
         boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
-        neighbor_data) noexcept {
+        neighbor_data) {
   // Sanity check that input momentum satisfies simplifying assumptions
   if constexpr (VolumeDim > 1) {
     const auto zero_momentum = make_with_value<tnsr::I<DataVector, VolumeDim>>(
@@ -238,7 +238,7 @@ void test_neuler_vs_generic_minmod_work(
     // Cellwise means, for cons/char transforms
     const auto mean_density =
         Scalar<double>{mean_value(get(input_density), mesh)};
-    const auto mean_momentum = [&input_momentum, &mesh]() noexcept {
+    const auto mean_momentum = [&input_momentum, &mesh]() {
       tnsr::I<double, VolumeDim> result{};
       for (size_t i = 0; i < VolumeDim; ++i) {
         result.get(i) = mean_value(input_momentum.get(i), mesh);
@@ -251,7 +251,7 @@ void test_neuler_vs_generic_minmod_work(
     // Compute characteristic transformation using x-direction...
     // Note that in 2D and 3D we know the fluid velocity is 0, so this choice
     // is arbitrary in these higher dimensions.
-    const auto unit_vector = []() noexcept {
+    const auto unit_vector = []() {
       auto components = make_array<VolumeDim>(0.);
       components[0] = 1.;
       return tnsr::i<double, VolumeDim>(components);
@@ -331,7 +331,7 @@ void test_neuler_vs_generic_minmod_work(
   }
 }
 
-void test_neuler_vs_generic_minmod_1d() noexcept {
+void test_neuler_vs_generic_minmod_1d() {
   INFO("Testing NewtonianEuler::Limiters::Minmod limiter in 1D");
   const auto mesh =
       Mesh<1>(3, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto);
@@ -349,13 +349,13 @@ void test_neuler_vs_generic_minmod_1d() noexcept {
       determinant(element_map.inv_jacobian(logical_coords));
 
   const auto& x = get<0>(logical_coords);
-  const auto mass_density_cons = [&x]() noexcept {
+  const auto mass_density_cons = [&x]() {
     return Scalar<DataVector>{{{1. + 0.2 * x + 0.05 * square(x)}}};
   }();
-  const auto momentum_density = [&x]() noexcept {
+  const auto momentum_density = [&x]() {
     return tnsr::I<DataVector, 1>{{{0.2 - 0.3 * x}}};
   }();
-  const auto energy_density = [&mesh]() noexcept {
+  const auto energy_density = [&mesh]() {
     return Scalar<DataVector>{DataVector(mesh.number_of_grid_points(), 1.)};
   }();
 
@@ -387,7 +387,7 @@ void test_neuler_vs_generic_minmod_1d() noexcept {
       element_size, det_inv_logical_to_inertial_jacobian, neighbor_data);
 }
 
-void test_neuler_vs_generic_minmod_2d() noexcept {
+void test_neuler_vs_generic_minmod_2d() {
   INFO("Testing NewtonianEuler::Limiters::Minmod limiter in 2D");
   const auto mesh =
       Mesh<2>(3, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto);
@@ -409,14 +409,14 @@ void test_neuler_vs_generic_minmod_2d() noexcept {
 
   const auto& x = get<0>(logical_coords);
   const auto& y = get<1>(logical_coords);
-  const auto mass_density_cons = [&x, &y]() noexcept {
+  const auto mass_density_cons = [&x, &y]() {
     return Scalar<DataVector>{
         {{1. + 0.2 * x - 0.1 * y + 0.05 * x * square(y)}}};
   }();
-  const auto momentum_density = [&mesh]() noexcept {
+  const auto momentum_density = [&mesh]() {
     return tnsr::I<DataVector, 2>{DataVector(mesh.number_of_grid_points(), 0.)};
   }();
-  const auto energy_density = [&mesh]() noexcept {
+  const auto energy_density = [&mesh]() {
     return Scalar<DataVector>{DataVector(mesh.number_of_grid_points(), 1.)};
   }();
 
@@ -452,7 +452,7 @@ void test_neuler_vs_generic_minmod_2d() noexcept {
       element_size, det_inv_logical_to_inertial_jacobian, neighbor_data);
 }
 
-void test_neuler_vs_generic_minmod_3d() noexcept {
+void test_neuler_vs_generic_minmod_3d() {
   INFO("Testing NewtonianEuler::Limiters::Minmod limiter in 3D");
   const auto mesh =
       Mesh<3>(std::array<size_t, 3>{{3, 3, 4}}, Spectral::Basis::Legendre,
@@ -478,13 +478,13 @@ void test_neuler_vs_generic_minmod_3d() noexcept {
   const auto& x = get<0>(logical_coords);
   const auto& y = get<1>(logical_coords);
   const auto& z = get<2>(logical_coords);
-  const auto mass_density_cons = [&x, &y, &z]() noexcept {
+  const auto mass_density_cons = [&x, &y, &z]() {
     return Scalar<DataVector>{{{1. + 0.2 * x - 0.1 * y + 0.4 * z}}};
   }();
-  const auto momentum_density = [&mesh]() noexcept {
+  const auto momentum_density = [&mesh]() {
     return tnsr::I<DataVector, 3>{DataVector(mesh.number_of_grid_points(), 0.)};
   }();
-  const auto energy_density = [&mesh]() noexcept {
+  const auto energy_density = [&mesh]() {
     return Scalar<DataVector>{DataVector(mesh.number_of_grid_points(), 1.)};
   }();
 
@@ -526,7 +526,7 @@ void test_neuler_vs_generic_minmod_3d() noexcept {
 }
 
 template <size_t VolumeDim>
-void test_neuler_minmod_flattener() noexcept {
+void test_neuler_minmod_flattener() {
   INFO("Testing flattener use in NewtonianEuler::Limiters::Minmod limiter");
   CAPTURE(VolumeDim);
 
@@ -542,16 +542,16 @@ void test_neuler_minmod_flattener() noexcept {
   const EquationsOfState::IdealFluid<false> equation_of_state{5. / 3.};
 
   const size_t num_points = mesh.number_of_grid_points();
-  const auto input_density = [&num_points]() noexcept {
+  const auto input_density = [&num_points]() {
     // One negative value to trigger flattener
     Scalar<DataVector> density{DataVector(num_points, 0.8)};
     get(density)[0] = -0.2;
     return density;
   }();
-  const auto input_momentum = [&num_points]() noexcept {
+  const auto input_momentum = [&num_points]() {
     return tnsr::I<DataVector, VolumeDim>{DataVector(num_points, 0.1)};
   }();
-  const auto input_energy = [&num_points]() noexcept {
+  const auto input_energy = [&num_points]() {
     return Scalar<DataVector>{DataVector(num_points, 1.4)};
   }();
 

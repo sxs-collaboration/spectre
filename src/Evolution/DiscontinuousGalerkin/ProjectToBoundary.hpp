@@ -53,7 +53,7 @@ template <typename VolumeVarsTagsList, typename FaceVarsTagsList, size_t Dim>
 void project_contiguous_data_to_boundary(
     const gsl::not_null<Variables<FaceVarsTagsList>*> face_fields,
     const Variables<VolumeVarsTagsList>& volume_fields,
-    const Mesh<Dim>& volume_mesh, const Direction<Dim>& direction) noexcept {
+    const Mesh<Dim>& volume_mesh, const Direction<Dim>& direction) {
   static_assert(tmpl::size<VolumeVarsTagsList>::value != 0,
                 "Must have non-zero number of volume fields");
   static_assert(tmpl::size<FaceVarsTagsList>::value >=
@@ -153,7 +153,7 @@ template <typename TagsToProjectList, typename VolumeVarsTagsList,
 void project_tensors_to_boundary(
     const gsl::not_null<Variables<FaceVarsTagsList>*> face_fields,
     const Variables<VolumeVarsTagsList>& volume_fields,
-    const Mesh<Dim>& volume_mesh, const Direction<Dim>& direction) noexcept {
+    const Mesh<Dim>& volume_mesh, const Direction<Dim>& direction) {
   static_assert(tmpl::size<VolumeVarsTagsList>::value != 0,
                 "Must have non-zero number of volume fields");
   static_assert(
@@ -176,7 +176,7 @@ void project_tensors_to_boundary(
         direction.side() == Side::Upper ? matrices.second : matrices.first;
     tmpl::for_each<TagsToProjectList>([&face_fields, &interpolation_matrices,
                                        &volume_fields,
-                                       &volume_mesh](auto tag_v) noexcept {
+                                       &volume_mesh](auto tag_v) {
       using tag = typename decltype(tag_v)::type;
       auto& face_field = get<tag>(*face_fields);
       const auto& volume_field = get<tag>(volume_fields);
@@ -203,8 +203,7 @@ void project_tensors_to_boundary(
          ++si) {
       tmpl::for_each<TagsToProjectList>([&face_fields, interface_grid_points,
                                          &si, &volume_fields,
-                                         volume_grid_points](
-                                            auto tag_v) noexcept {
+                                         volume_grid_points](auto tag_v) {
         using tag = typename decltype(tag_v)::type;
 
         const double* vars_data = get<tag>(volume_fields)[0].data();
@@ -233,7 +232,7 @@ template <typename Symm, typename IndexList, size_t Dim>
 void project_tensor_to_boundary(
     const gsl::not_null<Tensor<DataVector, Symm, IndexList>*> face_field,
     const Tensor<DataVector, Symm, IndexList>& volume_field,
-    const Mesh<Dim>& volume_mesh, const Direction<Dim>& direction) noexcept {
+    const Mesh<Dim>& volume_mesh, const Direction<Dim>& direction) {
   const size_t sliced_dim = direction.dimension();
   if (volume_mesh.quadrature(sliced_dim) ==
       Spectral::Quadrature::Gauss) {

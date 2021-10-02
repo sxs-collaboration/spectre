@@ -29,8 +29,7 @@ template <typename... TagsToSlice, size_t VolumeDim>
 void data_on_slice(
     const gsl::not_null<Variables<tmpl::list<TagsToSlice...>>*> interface_vars,
     const Index<VolumeDim>& element_extents, const size_t sliced_dim,
-    const size_t fixed_index,
-    const typename TagsToSlice::type&... tensors) noexcept {
+    const size_t fixed_index, const typename TagsToSlice::type&... tensors) {
   const size_t interface_grid_points =
       element_extents.slice_away(sliced_dim).product();
   if (interface_vars->number_of_grid_points() != interface_grid_points) {
@@ -39,7 +38,7 @@ void data_on_slice(
   }
   for (SliceIterator si(element_extents, sliced_dim, fixed_index); si; ++si) {
     const auto lambda = [&si](auto& interface_tensor,
-                              const auto& volume_tensor) noexcept {
+                              const auto& volume_tensor) {
       for (decltype(auto) interface_and_volume_tensor_components :
            boost::combine(interface_tensor, volume_tensor)) {
         boost::get<0>(
@@ -56,8 +55,7 @@ void data_on_slice(
 template <typename... TagsToSlice, size_t VolumeDim>
 Variables<tmpl::list<TagsToSlice...>> data_on_slice(
     const Index<VolumeDim>& element_extents, const size_t sliced_dim,
-    const size_t fixed_index,
-    const typename TagsToSlice::type&... tensors) noexcept {
+    const size_t fixed_index, const typename TagsToSlice::type&... tensors) {
   Variables<tmpl::list<TagsToSlice...>> interface_vars(
       element_extents.slice_away(sliced_dim).product());
   data_on_slice<TagsToSlice...>(make_not_null(&interface_vars), element_extents,

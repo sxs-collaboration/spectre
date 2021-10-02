@@ -54,11 +54,11 @@ class DampingFunction : public PUP::able {
   DampingFunction() = default;
   DampingFunction(const DampingFunction& /*rhs*/) = default;
   DampingFunction& operator=(const DampingFunction& /*rhs*/) = default;
-  DampingFunction(DampingFunction&& /*rhs*/) noexcept = default;
-  DampingFunction& operator=(DampingFunction&& /*rhs*/) noexcept = default;
+  DampingFunction(DampingFunction&& /*rhs*/) = default;
+  DampingFunction& operator=(DampingFunction&& /*rhs*/) = default;
   ~DampingFunction() override = default;
 
-  explicit DampingFunction(CkMigrateMessage* msg) noexcept : PUP::able(msg) {}
+  explicit DampingFunction(CkMigrateMessage* msg) : PUP::able(msg) {}
 
   /// @{
   /// Returns the value of the function at the coordinate 'x'.
@@ -68,17 +68,17 @@ class DampingFunction : public PUP::able {
       const std::unordered_map<
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-          functions_of_time) const noexcept = 0;
+          functions_of_time) const = 0;
   virtual void operator()(
       const gsl::not_null<Scalar<DataVector>*> value_at_x,
       const tnsr::I<DataVector, VolumeDim, Fr>& x, double time,
       const std::unordered_map<
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-          functions_of_time) const noexcept = 0;
+          functions_of_time) const = 0;
   /// @}
 
-  virtual auto get_clone() const noexcept
+  virtual auto get_clone() const
       -> std::unique_ptr<DampingFunction<VolumeDim, Fr>> = 0;
 };
 }  // namespace GeneralizedHarmonic::ConstraintDamping

@@ -16,7 +16,7 @@ namespace Xcts {
 template <typename DataType>
 void longitudinal_operator(const gsl::not_null<tnsr::II<DataType, 3>*> result,
                            const tnsr::ii<DataType, 3>& strain,
-                           const tnsr::II<DataType, 3>& inv_metric) noexcept {
+                           const tnsr::II<DataType, 3>& inv_metric) {
   for (size_t i = 0; i < 3; ++i) {
     for (size_t j = 0; j <= i; ++j) {
       // Unroll first iteration of the loop over `k` to avoid filling the result
@@ -48,7 +48,7 @@ void longitudinal_operator(const gsl::not_null<tnsr::II<DataType, 3>*> result,
 template <typename DataType>
 void longitudinal_operator_flat_cartesian(
     const gsl::not_null<tnsr::II<DataType, 3>*> result,
-    const tnsr::ii<DataType, 3>& strain) noexcept {
+    const tnsr::ii<DataType, 3>& strain) {
   // Compute trace term in 2-2 component of the result
   get<2, 2>(*result) = get<0, 0>(strain);
   for (size_t d = 1; d < 3; ++d) {
@@ -68,14 +68,14 @@ void longitudinal_operator_flat_cartesian(
 
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                \
-  template void longitudinal_operator(                      \
-      gsl::not_null<tnsr::II<DTYPE(data), 3>*> result,      \
-      const tnsr::ii<DTYPE(data), 3>& strain,               \
-      const tnsr::II<DTYPE(data), 3>& inv_metric) noexcept; \
-  template void longitudinal_operator_flat_cartesian(       \
-      gsl::not_null<tnsr::II<DTYPE(data), 3>*> result,      \
-      const tnsr::ii<DTYPE(data), 3>& strain) noexcept;
+#define INSTANTIATE(_, data)                           \
+  template void longitudinal_operator(                 \
+      gsl::not_null<tnsr::II<DTYPE(data), 3>*> result, \
+      const tnsr::ii<DTYPE(data), 3>& strain,          \
+      const tnsr::II<DTYPE(data), 3>& inv_metric);     \
+  template void longitudinal_operator_flat_cartesian(  \
+      gsl::not_null<tnsr::II<DTYPE(data), 3>*> result, \
+      const tnsr::ii<DTYPE(data), 3>& strain);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
 

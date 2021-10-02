@@ -102,6 +102,6 @@ class TciOnDgGrid {
       const Scalar<DataVector>& sqrt_det_spatial_metric,
       const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
       const Mesh<3>& dg_mesh, const TciOptions& tci_options,
-      double persson_exponent) noexcept;
+      double persson_exponent);
 };
 }  // namespace grmhd::ValenciaDivClean::subcell

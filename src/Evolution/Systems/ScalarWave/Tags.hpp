@@ -19,24 +19,24 @@ class DataVector;
 namespace ScalarWave {
 struct Psi : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static std::string name() noexcept { return "Psi"; }
+  static std::string name() { return "Psi"; }
 };
 
 struct Pi : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static std::string name() noexcept { return "Pi"; }
+  static std::string name() { return "Pi"; }
 };
 
 template <size_t Dim>
 struct Phi : db::SimpleTag {
   using type = tnsr::i<DataVector, Dim, Frame::Inertial>;
-  static std::string name() noexcept { return "Phi"; }
+  static std::string name() { return "Phi"; }
 };
 
 namespace Tags {
 struct ConstraintGamma2 : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static std::string name() noexcept { return "ConstraintGamma2"; }
+  static std::string name() { return "ConstraintGamma2"; }
 };
 
 /*!
@@ -68,41 +68,39 @@ struct TwoIndexConstraint : db::SimpleTag {
 /// CharacteristicSpeedsCompute
 struct VPsi : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static std::string name() noexcept { return "VPsi"; }
+  static std::string name() { return "VPsi"; }
 };
 template <size_t Dim>
 struct VZero : db::SimpleTag {
   using type = tnsr::i<DataVector, Dim, Frame::Inertial>;
-  static std::string name() noexcept { return "VZero"; }
+  static std::string name() { return "VZero"; }
 };
 struct VPlus : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static std::string name() noexcept { return "VPlus"; }
+  static std::string name() { return "VPlus"; }
 };
 struct VMinus : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static std::string name() noexcept { return "VMinus"; }
+  static std::string name() { return "VMinus"; }
 };
 /// @}
 
 template <size_t Dim>
 struct CharacteristicSpeeds : db::SimpleTag {
   using type = std::array<DataVector, 4>;
-  static std::string name() noexcept { return "CharacteristicSpeeds"; }
+  static std::string name() { return "CharacteristicSpeeds"; }
 };
 
 template <size_t Dim>
 struct CharacteristicFields : db::SimpleTag {
   using type = Variables<tmpl::list<VPsi, VZero<Dim>, VPlus, VMinus>>;
-  static std::string name() noexcept { return "CharacteristicFields"; }
+  static std::string name() { return "CharacteristicFields"; }
 };
 
 template <size_t Dim>
 struct EvolvedFieldsFromCharacteristicFields : db::SimpleTag {
   using type = Variables<tmpl::list<Psi, Pi, Phi<Dim>>>;
-  static std::string name() noexcept {
-    return "EvolvedFieldsFromCharacteristicFields";
-  }
+  static std::string name() { return "EvolvedFieldsFromCharacteristicFields"; }
 };
 
 /// The energy density of the scalar wave

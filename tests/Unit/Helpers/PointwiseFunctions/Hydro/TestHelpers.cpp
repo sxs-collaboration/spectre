@@ -19,7 +19,7 @@
 namespace TestHelpers::hydro {
 template <typename DataType>
 Scalar<DataType> random_density(const gsl::not_null<std::mt19937*> generator,
-                                const DataType& used_for_size) noexcept {
+                                const DataType& used_for_size) {
   // 1 g/cm^3 = 1.62e-18 in geometric units
   // Most tests will work fine for any positive density, the exception being
   // tests for primitive inversions in GR hydro and MHD, for which the tolerance
@@ -35,7 +35,7 @@ Scalar<DataType> random_density(const gsl::not_null<std::mt19937*> generator,
 template <typename DataType>
 Scalar<DataType> random_lorentz_factor(
     const gsl::not_null<std::mt19937*> generator,
-    const DataType& used_for_size) noexcept {
+    const DataType& used_for_size) {
   std::uniform_real_distribution<> distribution(-10.0, 3.0);
   return Scalar<DataType>{
       1.0 + exp(make_with_random_values<DataType>(
@@ -46,7 +46,7 @@ template <typename DataType, size_t Dim>
 tnsr::I<DataType, Dim> random_velocity(
     const gsl::not_null<std::mt19937*> generator,
     const Scalar<DataType>& lorentz_factor,
-    const tnsr::ii<DataType, Dim>& spatial_metric) noexcept {
+    const tnsr::ii<DataType, Dim>& spatial_metric) {
   tnsr::I<DataType, Dim> spatial_velocity =
       random_unit_normal(generator, spatial_metric);
   const DataType v = sqrt(1.0 - 1.0 / square(get(lorentz_factor)));
@@ -60,7 +60,7 @@ tnsr::I<DataType, Dim> random_velocity(
 template <typename DataType>
 Scalar<DataType> random_temperature(
     const gsl::not_null<std::mt19937*> generator,
-    const DataType& used_for_size) noexcept {
+    const DataType& used_for_size) {
   constexpr double minimum_temperature = 1.0;
   constexpr double maximum_temperature = 50.0;
   std::uniform_real_distribution<> distribution(log(minimum_temperature),
@@ -72,7 +72,7 @@ Scalar<DataType> random_temperature(
 template <typename DataType>
 Scalar<DataType> random_specific_internal_energy(
     const gsl::not_null<std::mt19937*> generator,
-    const DataType& used_for_size) noexcept {
+    const DataType& used_for_size) {
   // assumes Ideal gas with gamma = 4/3
   // For ideal fluid T = (m/k_b)(gamma - 1) epsilon
   // where m = atomic mass unit, k_b = Boltzmann constant
@@ -85,7 +85,7 @@ template <typename DataType>
 tnsr::I<DataType, 3> random_magnetic_field(
     const gsl::not_null<std::mt19937*> generator,
     const Scalar<DataType>& pressure,
-    const tnsr::ii<DataType, 3>& spatial_metric) noexcept {
+    const tnsr::ii<DataType, 3>& spatial_metric) {
   tnsr::I<DataType, 3> magnetic_field =
       random_unit_normal(generator, spatial_metric);
   std::uniform_real_distribution<> distribution(-8.0, 14.0);
@@ -104,7 +104,7 @@ tnsr::I<DataType, 3> random_magnetic_field(
 template <typename DataType>
 Scalar<DataType> random_divergence_cleaning_field(
     const gsl::not_null<std::mt19937*> generator,
-    const DataType& used_for_size) noexcept {
+    const DataType& used_for_size) {
   std::uniform_real_distribution<> distribution(-10.0, 10.0);
   return make_with_random_values<Scalar<DataType>>(
       generator, make_not_null(&distribution), used_for_size);
@@ -116,36 +116,35 @@ Scalar<DataType> random_divergence_cleaning_field(
 #define INSTANTIATE_SCALARS(_, data)                             \
   template Scalar<DTYPE(data)> random_density(                   \
       const gsl::not_null<std::mt19937*> generator,              \
-      const DTYPE(data) & used_for_size) noexcept;               \
+      const DTYPE(data) & used_for_size);                        \
   template Scalar<DTYPE(data)> random_lorentz_factor(            \
       const gsl::not_null<std::mt19937*> generator,              \
-      const DTYPE(data) & used_for_size) noexcept;               \
+      const DTYPE(data) & used_for_size);                        \
   template Scalar<DTYPE(data)> random_temperature(               \
       const gsl::not_null<std::mt19937*> generator,              \
-      const DTYPE(data) & used_for_size) noexcept;               \
+      const DTYPE(data) & used_for_size);                        \
   template Scalar<DTYPE(data)> random_specific_internal_energy(  \
       const gsl::not_null<std::mt19937*> generator,              \
-      const DTYPE(data) & used_for_size) noexcept;               \
+      const DTYPE(data) & used_for_size);                        \
   template Scalar<DTYPE(data)> random_divergence_cleaning_field( \
       const gsl::not_null<std::mt19937*> generator,              \
-      const DTYPE(data) & used_for_size) noexcept;
+      const DTYPE(data) & used_for_size);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_SCALARS, (double, DataVector))
 
-#define INSTANTIATE_TENSORS(_, data)                                    \
-  template tnsr::I<DTYPE(data), DIM(data)> random_velocity(             \
-      const gsl::not_null<std::mt19937*> generator,                     \
-      const Scalar<DTYPE(data)>& lorentz_factor,                        \
-      const tnsr::ii<DTYPE(data), DIM(data)>& spatial_metric) noexcept;
+#define INSTANTIATE_TENSORS(_, data)                        \
+  template tnsr::I<DTYPE(data), DIM(data)> random_velocity( \
+      const gsl::not_null<std::mt19937*> generator,         \
+      const Scalar<DTYPE(data)>& lorentz_factor,            \
+      const tnsr::ii<DTYPE(data), DIM(data)>& spatial_metric);
 
 template tnsr::I<double, 3> random_magnetic_field(
     const gsl::not_null<std::mt19937*> generator,
-    const Scalar<double>& pressure,
-    const tnsr::ii<double, 3>& spatial_metric) noexcept;
+    const Scalar<double>& pressure, const tnsr::ii<double, 3>& spatial_metric);
 template tnsr::I<DataVector, 3> random_magnetic_field(
     const gsl::not_null<std::mt19937*> generator,
     const Scalar<DataVector>& pressure,
-    const tnsr::ii<DataVector, 3>& spatial_metric) noexcept;
+    const tnsr::ii<DataVector, 3>& spatial_metric);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_TENSORS, (double, DataVector), (1, 2, 3))
 

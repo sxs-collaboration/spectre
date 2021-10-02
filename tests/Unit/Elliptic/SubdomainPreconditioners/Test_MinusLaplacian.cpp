@@ -53,7 +53,7 @@ struct TestSolver {
           initial_guess_in_solution_out,
       const LinearOperator& /*linear_operator*/,
       const PoissonSubdomainData<Dim>& source,
-      const std::tuple<>& /*operator_args*/ = std::tuple{}) const noexcept {
+      const std::tuple<>& /*operator_args*/ = std::tuple{}) const {
     // Check the initial guess for each component is sized correctly and zero
     for (size_t i = 0; i < source.element_data.size(); ++i) {
       CHECK(initial_guess_in_solution_out->element_data.data()[i] == 0.);
@@ -68,9 +68,9 @@ struct TestSolver {
     sources.push_back(source);
     return {0, 0};
   }
-  void reset() noexcept { was_reset = true; }
+  void reset() { was_reset = true; }
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& /*p*/) noexcept {}
+  void pup(PUP::er& /*p*/) {}
 
   mutable std::vector<PoissonSubdomainData<Dim>> sources{};
   bool was_reset{false};

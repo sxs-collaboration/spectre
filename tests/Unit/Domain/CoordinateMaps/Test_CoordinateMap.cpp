@@ -1235,7 +1235,7 @@ void test_push_back() {
       CoordinateMaps::ProductOf3Maps<affine_map, affine_map, affine_map>;
 
   const auto check_coord_map_push = [](const auto& first_map,
-                                       const auto& second_map) noexcept {
+                                       const auto& second_map) {
     const auto first_coord_map =
         make_coordinate_map<Frame::Logical, Frame::Grid>(first_map);
     const auto second_coord_map =
@@ -1269,7 +1269,7 @@ void test_push_back() {
                                      affine_map{-7.0, 7.0, 3.0, 23.0}});
 }
 
-void test_jacobian_is_time_dependent() noexcept {
+void test_jacobian_is_time_dependent() {
   using affine_map = CoordinateMaps::Affine;
   using cubic_scale_map = CoordinateMaps::TimeDependent::CubicScale<1>;
   using map_2d = CoordinateMaps::TimeDependent::ProductOf2Maps<affine_map,
@@ -1316,7 +1316,7 @@ void test_jacobian_is_time_dependent() noexcept {
   CHECK(coord_map_3_base->jacobian_is_time_dependent());
 }
 
-void test_coords_frame_velocity_jacobians() noexcept {
+void test_coords_frame_velocity_jacobians() {
   using affine_map = CoordinateMaps::Affine;
   using trans_map = CoordinateMaps::TimeDependent::Translation<1>;
   using affine_map_2d = CoordinateMaps::ProductOf2Maps<affine_map, affine_map>;

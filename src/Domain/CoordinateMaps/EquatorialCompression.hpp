@@ -56,7 +56,7 @@ namespace CoordinateMaps {
 class EquatorialCompression {
  public:
   static constexpr size_t dim = 3;
-  explicit EquatorialCompression(double aspect_ratio) noexcept;
+  explicit EquatorialCompression(double aspect_ratio);
   EquatorialCompression() = default;
   ~EquatorialCompression() = default;
   EquatorialCompression(EquatorialCompression&&) = default;
@@ -66,44 +66,44 @@ class EquatorialCompression {
 
   template <typename T>
   std::array<tt::remove_cvref_wrap_t<T>, 3> operator()(
-      const std::array<T, 3>& source_coords) const noexcept;
+      const std::array<T, 3>& source_coords) const;
 
   /// The inverse function is only callable with doubles because the inverse
   /// might fail if called for a point out of range, and it is unclear
   /// what should happen if the inverse were to succeed for some points in a
   /// DataVector but fail for other points.
   std::optional<std::array<double, 3>> inverse(
-      const std::array<double, 3>& target_coords) const noexcept;
+      const std::array<double, 3>& target_coords) const;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> jacobian(
-      const std::array<T, 3>& source_coords) const noexcept;
+      const std::array<T, 3>& source_coords) const;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> inv_jacobian(
-      const std::array<T, 3>& source_coords) const noexcept;
+      const std::array<T, 3>& source_coords) const;
 
   // clang-tidy: google runtime references
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
 
-  bool is_identity() const noexcept { return is_identity_; }
+  bool is_identity() const { return is_identity_; }
 
  private:
   template <typename T>
   std::array<tt::remove_cvref_wrap_t<T>, 3> angular_distortion(
-      const std::array<T, 3>& coords, double inverse_alpha) const noexcept;
+      const std::array<T, 3>& coords, double inverse_alpha) const;
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>
   angular_distortion_jacobian(const std::array<T, 3>& coords,
-                              double inverse_alpha) const noexcept;
+                              double inverse_alpha) const;
   friend bool operator==(const EquatorialCompression& lhs,
-                         const EquatorialCompression& rhs) noexcept;
+                         const EquatorialCompression& rhs);
 
   double aspect_ratio_{std::numeric_limits<double>::signaling_NaN()};
   double inverse_aspect_ratio_{std::numeric_limits<double>::signaling_NaN()};
   bool is_identity_{false};
 };
 bool operator!=(const EquatorialCompression& lhs,
-                const EquatorialCompression& rhs) noexcept;
+                const EquatorialCompression& rhs);
 }  // namespace CoordinateMaps
 }  // namespace domain

@@ -33,7 +33,7 @@
 
 namespace {
 template <size_t Dim>
-void test_tags() noexcept {
+void test_tags() {
   TestHelpers::db::test_simple_tag<
       domain::Tags::CoordinatesMeshVelocityAndJacobians<Dim>>(
       "CoordinatesMeshVelocityAndJacobians");
@@ -101,7 +101,7 @@ ConcreteMap<3> create_coord_map<3>(const std::string& f_of_t_name) {
 }
 
 template <size_t Dim, bool IsTimeDependent>
-void test() noexcept {
+void test() {
   using simple_tags = db::AddSimpleTags<
       Tags::Time, domain::Tags::Coordinates<Dim, Frame::Grid>,
       domain::Tags::InverseJacobian<Dim, Frame::ElementLogical, Frame::Grid>,
@@ -159,7 +159,7 @@ void test() noexcept {
 
   const auto check_helper = [&box, &element_to_grid_inverse_jacobian,
                              &grid_coords, &grid_to_inertial_map,
-                             num_pts](const double expected_time) noexcept {
+                             num_pts](const double expected_time) {
     if (IsTimeDependent) {
       const tnsr::I<DataVector, Dim, Frame::Inertial> expected_coords =
           (*grid_to_inertial_map)(grid_coords, expected_time,
@@ -298,10 +298,9 @@ void test() noexcept {
   };
   check_helper(3.0);
 
-  db::mutate<Tags::Time>(make_not_null(&box),
-                         [](const gsl::not_null<double*> local_time) noexcept {
-                           *local_time = 4.5;
-                         });
+  db::mutate<Tags::Time>(
+      make_not_null(&box),
+      [](const gsl::not_null<double*> local_time) { *local_time = 4.5; });
   check_helper(4.5);
 }
 

@@ -83,7 +83,7 @@ struct LocalLaxFriedrichs : tt::ConformsTo<dg::protocols::NumericalFlux> {
         const gsl::not_null<Scalar<DataVector>*> packaged_max_char_speed,
         const typename NormalDotFluxTags::type&... n_dot_f_to_package,
         const typename VariablesTags::type&... u_to_package,
-        const typename char_speeds_tag::type& characteristic_speeds) noexcept {
+        const typename char_speeds_tag::type& characteristic_speeds) {
       ASSERT(get(*packaged_max_char_speed).size() ==
                  characteristic_speeds[0].size(),
              "Size of packaged data ("
@@ -121,12 +121,15 @@ struct LocalLaxFriedrichs : tt::ConformsTo<dg::protocols::NumericalFlux> {
         const Scalar<DataVector>& max_abs_speed_interior,
         const typename NormalDotFluxTags::type&... minus_n_dot_f_exterior,
         const typename VariablesTags::type&... u_exterior,
-        const Scalar<DataVector>& max_abs_speed_exterior) noexcept {
+        const Scalar<DataVector>& max_abs_speed_exterior) {
       const Scalar<DataVector> max_abs_speed(DataVector(
           max(get(max_abs_speed_interior), get(max_abs_speed_exterior))));
       const auto assemble_numerical_flux = [&max_abs_speed](
-          const auto n_dot_num_f, const auto& n_dot_f_in, const auto& u_in,
-          const auto& minus_n_dot_f_ex, const auto& u_ex) noexcept {
+                                               const auto n_dot_num_f,
+                                               const auto& n_dot_f_in,
+                                               const auto& u_in,
+                                               const auto& minus_n_dot_f_ex,
+                                               const auto& u_ex) {
         for (size_t i = 0; i < n_dot_num_f->size(); ++i) {
           (*n_dot_num_f)[i] = 0.5 * (n_dot_f_in[i] - minus_n_dot_f_ex[i] +
                                      get(max_abs_speed) * (u_in[i] - u_ex[i]));
@@ -145,17 +148,17 @@ struct LocalLaxFriedrichs : tt::ConformsTo<dg::protocols::NumericalFlux> {
       "Computes the local Lax-Friedrichs numerical flux."};
 
   // clang-tidy: google-runtime-references
-  void pup(PUP::er& /*p*/) noexcept {}  // NOLINT
+  void pup(PUP::er& /*p*/) {}  // NOLINT
 
   template <class... Args>
-  void package_data(const Args&... args) const noexcept {
+  void package_data(const Args&... args) const {
     package_data_helper<variables_tags,
                         db::wrap_tags_in<::Tags::NormalDotFlux,
                                          variables_tags>>::apply(args...);
   }
 
   template <class... Args>
-  void operator()(const Args&... args) const noexcept {
+  void operator()(const Args&... args) const {
     call_operator_helper<
         db::wrap_tags_in<::Tags::NormalDotNumericalFlux, variables_tags>,
         variables_tags,

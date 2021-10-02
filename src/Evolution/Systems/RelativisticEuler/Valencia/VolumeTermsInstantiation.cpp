@@ -56,8 +56,7 @@ namespace evolution::dg::Actions::detail {
           inv_spatial_metric,                                                  \
       const tnsr::ii<DataVector, DIM(data), Frame::Inertial>&                  \
           extrinsic_curvature,                                                 \
-      const tnsr::ii<DataVector, DIM(data), Frame::Inertial>&                  \
-          spatial_metric) noexcept;
+      const tnsr::ii<DataVector, DIM(data), Frame::Inertial>& spatial_metric);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 

@@ -13,7 +13,7 @@
 namespace tuple_impl_detail {
 template <size_t Start, typename Tuple, size_t... Is>
 constexpr std::tuple<std::tuple_element_t<Is + Start, std::decay_t<Tuple>>...>
-slice_impl(Tuple&& tuple, std::index_sequence<Is...> /*meta*/) noexcept {
+slice_impl(Tuple&& tuple, std::index_sequence<Is...> /*meta*/) {
   return {std::get<Is + Start>(std::forward<Tuple>(tuple))...};
 }
 }  // namespace tuple_impl_detail
@@ -21,7 +21,7 @@ slice_impl(Tuple&& tuple, std::index_sequence<Is...> /*meta*/) noexcept {
 /// \ingroup UtilitiesGroup
 /// The subset of elements in `tuple` from index `Start` to (excluding) `Stop`
 template <size_t Start, size_t Stop, typename Tuple>
-constexpr auto tuple_slice(Tuple&& tuple) noexcept {
+constexpr auto tuple_slice(Tuple&& tuple) {
   constexpr size_t tuple_size = std::tuple_size<std::decay_t<Tuple>>::value;
   static_assert(
       Start <= Stop and Stop <= tuple_size,
@@ -33,7 +33,7 @@ constexpr auto tuple_slice(Tuple&& tuple) noexcept {
 /// \ingroup UtilitiesGroup
 /// The first `Size` elements in `tuple`
 template <size_t Size, typename Tuple>
-constexpr auto tuple_head(Tuple&& tuple) noexcept {
+constexpr auto tuple_head(Tuple&& tuple) {
   constexpr size_t tuple_size = std::tuple_size<std::decay_t<Tuple>>::value;
   static_assert(Size <= tuple_size,
                 "'Size' must not exceed the size of 'Tuple'");
@@ -43,7 +43,7 @@ constexpr auto tuple_head(Tuple&& tuple) noexcept {
 /// \ingroup UtilitiesGroup
 /// The last `Size` elements in `tuple`
 template <size_t Size, typename Tuple>
-constexpr auto tuple_tail(Tuple&& tuple) noexcept {
+constexpr auto tuple_tail(Tuple&& tuple) {
   constexpr size_t tuple_size = std::tuple_size<std::decay_t<Tuple>>::value;
   static_assert(Size <= tuple_size,
                 "'Size' must not exceed the size of 'Tuple'");

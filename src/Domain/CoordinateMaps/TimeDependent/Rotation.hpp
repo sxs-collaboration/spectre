@@ -58,7 +58,7 @@ class Rotation<2> {
  public:
   static constexpr size_t dim = 2;
 
-  explicit Rotation(std::string function_of_time_name) noexcept;
+  explicit Rotation(std::string function_of_time_name);
   Rotation() = default;
 
   template <typename T>
@@ -67,7 +67,7 @@ class Rotation<2> {
       const std::unordered_map<
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-          functions_of_time) const noexcept;
+          functions_of_time) const;
 
   /// The inverse function is only callable with doubles because the inverse
   /// might fail if called for a point out of range, and it is unclear
@@ -78,7 +78,7 @@ class Rotation<2> {
       const std::unordered_map<
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-          functions_of_time) const noexcept;
+          functions_of_time) const;
 
   template <typename T>
   std::array<tt::remove_cvref_wrap_t<T>, 2> frame_velocity(
@@ -86,7 +86,7 @@ class Rotation<2> {
       const std::unordered_map<
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-          functions_of_time) const noexcept;
+          functions_of_time) const;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, 2, Frame::NoFrame> jacobian(
@@ -94,7 +94,7 @@ class Rotation<2> {
       const std::unordered_map<
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-          functions_of_time) const noexcept;
+          functions_of_time) const;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, 2, Frame::NoFrame> inv_jacobian(
@@ -102,19 +102,18 @@ class Rotation<2> {
       const std::unordered_map<
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-          functions_of_time) const noexcept;
+          functions_of_time) const;
 
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
 
-  static bool is_identity() noexcept { return false; }
+  static bool is_identity() { return false; }
 
  private:
-  friend bool operator==(const Rotation<2>& lhs,
-                         const Rotation<2>& rhs) noexcept;
+  friend bool operator==(const Rotation<2>& lhs, const Rotation<2>& rhs);
   std::string f_of_t_name_;
 };
 
-bool operator!=(const Rotation<2>& lhs, const Rotation<2>& rhs) noexcept;
+bool operator!=(const Rotation<2>& lhs, const Rotation<2>& rhs);
 
 }  // namespace TimeDependent
 }  // namespace CoordinateMaps

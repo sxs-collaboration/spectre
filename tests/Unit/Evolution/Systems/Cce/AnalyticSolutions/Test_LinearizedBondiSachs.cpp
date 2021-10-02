@@ -34,7 +34,7 @@ void check_22_and_33_modes(
     const SpinWeighted<ComplexModalVector, Spin>& goldberg_modes,
     const std::complex<double>& expected_22_mode,
     const std::complex<double>& expected_33_mode, const size_t l_max,
-    Approx bondi_approx) noexcept {
+    Approx bondi_approx) {
   CHECK_COMPLEX_CUSTOM_APPROX(
       goldberg_modes.data()[Spectral::Swsh::goldberg_mode_index(l_max, 2, 2)],
       expected_22_mode, bondi_approx);

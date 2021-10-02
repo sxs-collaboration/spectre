@@ -120,14 +120,12 @@ void spatial_ricci_tensor(
     gsl::not_null<tnsr::ii<DataType, VolumeDim, Frame>*> ricci,
     const tnsr::iaa<DataType, VolumeDim, Frame>& phi,
     const tnsr::ijaa<DataType, VolumeDim, Frame>& deriv_phi,
-    const tnsr::II<DataType, VolumeDim, Frame>&
-        inverse_spatial_metric) noexcept;
+    const tnsr::II<DataType, VolumeDim, Frame>& inverse_spatial_metric);
 
 template <size_t VolumeDim, typename Frame, typename DataType>
 tnsr::ii<DataType, VolumeDim, Frame> spatial_ricci_tensor(
     const tnsr::iaa<DataType, VolumeDim, Frame>& phi,
     const tnsr::ijaa<DataType, VolumeDim, Frame>& deriv_phi,
-    const tnsr::II<DataType, VolumeDim, Frame>&
-        inverse_spatial_metric) noexcept;
+    const tnsr::II<DataType, VolumeDim, Frame>& inverse_spatial_metric);
 /// @}
 }  // namespace GeneralizedHarmonic

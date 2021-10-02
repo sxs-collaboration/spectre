@@ -37,15 +37,15 @@ namespace detail {
 // combinations we need
 template <typename Tag>
 struct ScriOutput {
-  static std::string name() noexcept { return db::tag_name<Tag>(); }
+  static std::string name() { return db::tag_name<Tag>(); }
 };
 template <typename Tag>
 struct ScriOutput<Tags::ScriPlus<Tag>> {
-  static std::string name() noexcept { return pretty_type::short_name<Tag>(); }
+  static std::string name() { return pretty_type::short_name<Tag>(); }
 };
 template <>
 struct ScriOutput<Tags::Du<Tags::TimeIntegral<Tags::ScriPlus<Tags::Psi4>>>> {
-  static std::string name() noexcept { return "Psi4"; }
+  static std::string name() { return "Psi4"; }
 };
 
 using weyl_correction_list =
@@ -55,8 +55,7 @@ using weyl_correction_list =
                Tags::EthInertialRetardedTime>;
 
 void correct_weyl_scalars_for_inertial_time(
-    gsl::not_null<Variables<weyl_correction_list>*>
-        weyl_correction_variables) noexcept;
+    gsl::not_null<Variables<weyl_correction_list>*> weyl_correction_variables);
 }  // namespace detail
 
 /*!
@@ -120,7 +119,7 @@ struct ScriObserveInterpolated {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     const size_t observation_l_max = db::get<Tags::ObservationLMax>(box);
     const size_t l_max = db::get<Tags::LMax>(box);
     std::vector<double> data_to_write(2 * square(observation_l_max + 1) + 1);
@@ -153,7 +152,7 @@ struct ScriObserveInterpolated {
       double interpolation_time = 0.0;
       tmpl::for_each<detail::weyl_correction_list>([&interpolation_time,
                                                     &corrected_scri_plus_weyl,
-                                                    &box](auto tag_v) noexcept {
+                                                    &box](auto tag_v) {
         using tag = typename decltype(tag_v)::type;
         std::pair<double, ComplexDataVector> interpolation;
         db::mutate<Tags::InterpolationManager<ComplexDataVector, tag>>(
@@ -176,7 +175,7 @@ struct ScriObserveInterpolated {
       tmpl::for_each<detail::weyl_correction_list>(
           [&data_to_write, &corrected_scri_plus_weyl, &interpolation_time,
            &file_legend, &observation_l_max, &l_max, &cache,
-           &goldberg_modes](auto tag_v) noexcept {
+           &goldberg_modes](auto tag_v) {
             using tag = typename decltype(tag_v)::type;
             if constexpr (tmpl::list_contains_v<
                               typename Metavariables::scri_values_to_observe,
@@ -195,7 +194,7 @@ struct ScriObserveInterpolated {
           tmpl::list_difference<typename Metavariables::scri_values_to_observe,
                                 detail::weyl_correction_list>>(
           [&box, &data_to_write, &file_legend, &observation_l_max, &l_max,
-           &cache, &goldberg_modes](auto tag_v) noexcept {
+           &cache, &goldberg_modes](auto tag_v) {
             using tag = typename decltype(tag_v)::type;
             std::pair<double, ComplexDataVector> interpolation;
             db::mutate<Tags::InterpolationManager<ComplexDataVector, tag>>(
@@ -236,7 +235,7 @@ struct ScriObserveInterpolated {
       const gsl::not_null<std::vector<double>*> data_to_write_buffer,
       const std::vector<std::string>& legend, const size_t l_max,
       const size_t observation_l_max,
-      Parallel::GlobalCache<Metavariables>& cache) noexcept {
+      Parallel::GlobalCache<Metavariables>& cache) {
     const SpinWeighted<ComplexDataVector, Spin> to_transform;
     make_const_view(make_not_null(&to_transform.data()), data, 0, data.size());
     SpinWeighted<ComplexModalVector, Spin> goldberg_modes;

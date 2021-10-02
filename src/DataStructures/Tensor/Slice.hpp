@@ -34,7 +34,7 @@ void data_on_slice(
     const gsl::not_null<Tensor<VectorType, Structure...>*> interface_tensor,
     const Tensor<VectorType, Structure...>& volume_tensor,
     const Index<VolumeDim>& element_extents, const size_t sliced_dim,
-    const size_t fixed_index) noexcept {
+    const size_t fixed_index) {
   const size_t interface_grid_points =
       element_extents.slice_away(sliced_dim).product();
   if (interface_tensor->begin()->size() != interface_grid_points) {
@@ -55,7 +55,7 @@ template <std::size_t VolumeDim, typename VectorType, typename... Structure>
 Tensor<VectorType, Structure...> data_on_slice(
     const Tensor<VectorType, Structure...>& volume_tensor,
     const Index<VolumeDim>& element_extents, const size_t sliced_dim,
-    const size_t fixed_index) noexcept {
+    const size_t fixed_index) {
   Tensor<VectorType, Structure...> interface_tensor(
       element_extents.slice_away(sliced_dim).product());
   data_on_slice(make_not_null(&interface_tensor), volume_tensor,
@@ -69,7 +69,7 @@ void data_on_slice(
         interface_tensor,
     const std::optional<Tensor<VectorType, Structure...>>& volume_tensor,
     const Index<VolumeDim>& element_extents, const size_t sliced_dim,
-    const size_t fixed_index) noexcept {
+    const size_t fixed_index) {
   if (volume_tensor.has_value()) {
     if (not(*interface_tensor)) {
       *interface_tensor = Tensor<VectorType, Structure...>{
@@ -86,7 +86,7 @@ template <std::size_t VolumeDim, typename VectorType, typename... Structure>
 std::optional<Tensor<VectorType, Structure...>> data_on_slice(
     const std::optional<Tensor<VectorType, Structure...>>& volume_tensor,
     const Index<VolumeDim>& element_extents, const size_t sliced_dim,
-    const size_t fixed_index) noexcept {
+    const size_t fixed_index) {
   if (volume_tensor.has_value()) {
     Tensor<VectorType, Structure...> interface_tensor(
         element_extents.slice_away(sliced_dim).product());

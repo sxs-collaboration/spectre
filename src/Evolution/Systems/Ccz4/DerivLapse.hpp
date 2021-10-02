@@ -30,14 +30,14 @@ void grad_grad_lapse(
     const Scalar<DataType>& lapse,
     const tnsr::Ijj<DataType, Dim, Frame>& christoffel_second_kind,
     const tnsr::i<DataType, Dim, Frame>& field_a,
-    const tnsr::ij<DataType, Dim, Frame>& d_field_a) noexcept;
+    const tnsr::ij<DataType, Dim, Frame>& d_field_a);
 
 template <size_t Dim, typename Frame, typename DataType>
 tnsr::ij<DataType, Dim, Frame> grad_grad_lapse(
     const Scalar<DataType>& lapse,
     const tnsr::Ijj<DataType, Dim, Frame>& christoffel_second_kind,
     const tnsr::i<DataType, Dim, Frame>& field_a,
-    const tnsr::ij<DataType, Dim, Frame>& d_field_a) noexcept;
+    const tnsr::ij<DataType, Dim, Frame>& d_field_a);
 /// @}
 
 /// @{
@@ -61,12 +61,12 @@ void divergence_lapse(
     const gsl::not_null<Scalar<DataType>*> result,
     const Scalar<DataType>& conformal_factor,
     const tnsr::II<DataType, Dim, Frame>& inverse_conformal_metric,
-    const tnsr::ij<DataType, Dim, Frame>& grad_grad_lapse) noexcept;
+    const tnsr::ij<DataType, Dim, Frame>& grad_grad_lapse);
 
 template <size_t Dim, typename Frame, typename DataType>
 Scalar<DataType> divergence_lapse(
     const Scalar<DataType>& conformal_factor,
     const tnsr::II<DataType, Dim, Frame>& inverse_conformal_metric,
-    const tnsr::ij<DataType, Dim, Frame>& grad_grad_lapse) noexcept;
+    const tnsr::ij<DataType, Dim, Frame>& grad_grad_lapse);
 /// @}
 }  // namespace Ccz4

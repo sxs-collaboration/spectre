@@ -20,7 +20,7 @@ namespace Tags {
 template <size_t N, typename T>
 struct TempTensor : db::SimpleTag {
   using type = T;
-  static std::string name() noexcept {
+  static std::string name() {
     return std::string("TempTensor") + std::to_string(N);
   }
 };

@@ -62,7 +62,7 @@ struct ThetaPhiCompute : ThetaPhi<Frame>, db::ComputeTag {
   using base = ThetaPhi<Frame>;
   using return_type = aliases::ThetaPhi<Frame>;
   static void function(gsl::not_null<aliases::ThetaPhi<Frame>*> theta_phi,
-                       const ::Strahlkorper<Frame>& strahlkorper) noexcept;
+                       const ::Strahlkorper<Frame>& strahlkorper);
   using argument_tags = tmpl::list<Strahlkorper<Frame>>;
 };
 /// @}
@@ -80,7 +80,7 @@ struct RhatCompute : Rhat<Frame>, db::ComputeTag {
   using base = Rhat<Frame>;
   using return_type = aliases::OneForm<Frame>;
   static void function(gsl::not_null<aliases::OneForm<Frame>*> r_hat,
-                       const aliases::ThetaPhi<Frame>& theta_phi) noexcept;
+                       const aliases::ThetaPhi<Frame>& theta_phi);
   using argument_tags = tmpl::list<ThetaPhi<Frame>>;
 };
 /// @}
@@ -101,7 +101,7 @@ struct JacobianCompute : Jacobian<Frame>, db::ComputeTag {
   using base = Jacobian<Frame>;
   using return_type = aliases::Jacobian<Frame>;
   static void function(gsl::not_null<aliases::Jacobian<Frame>*> jac,
-                       const aliases::ThetaPhi<Frame>& theta_phi) noexcept;
+                       const aliases::ThetaPhi<Frame>& theta_phi);
   using argument_tags = tmpl::list<ThetaPhi<Frame>>;
 };
 /// @}
@@ -121,7 +121,7 @@ struct InvJacobianCompute : InvJacobian<Frame>, db::ComputeTag {
   using base = InvJacobian<Frame>;
   using return_type = aliases::InvJacobian<Frame>;
   static void function(gsl::not_null<aliases::InvJacobian<Frame>*> inv_jac,
-                       const aliases::ThetaPhi<Frame>& theta_phi) noexcept;
+                       const aliases::ThetaPhi<Frame>& theta_phi);
   using argument_tags = tmpl::list<ThetaPhi<Frame>>;
 };
 /// @}
@@ -141,7 +141,7 @@ struct InvHessianCompute : InvHessian<Frame>, db::ComputeTag {
   using base = InvHessian<Frame>;
   using return_type = aliases::InvHessian<Frame>;
   static void function(gsl::not_null<aliases::InvHessian<Frame>*> inv_hess,
-                       const aliases::ThetaPhi<Frame>& theta_phi) noexcept;
+                       const aliases::ThetaPhi<Frame>& theta_phi);
   using argument_tags = tmpl::list<ThetaPhi<Frame>>;
 };
 /// @}
@@ -159,7 +159,7 @@ struct RadiusCompute : Radius<Frame>, db::ComputeTag {
   using base = Radius<Frame>;
   using return_type = Scalar<DataVector>;
   static void function(gsl::not_null<Scalar<DataVector>*> radius,
-                       const ::Strahlkorper<Frame>& strahlkorper) noexcept;
+                       const ::Strahlkorper<Frame>& strahlkorper);
   using argument_tags = tmpl::list<Strahlkorper<Frame>>;
 };
 /// @}
@@ -177,7 +177,7 @@ struct PhysicalCenterCompute : PhysicalCenter<Frame>, db::ComputeTag {
   using base = PhysicalCenter<Frame>;
   using return_type = std::array<double, 3>;
   static void function(gsl::not_null<std::array<double, 3>*> physical_center,
-                       const ::Strahlkorper<Frame>& strahlkorper) noexcept;
+                       const ::Strahlkorper<Frame>& strahlkorper);
   using argument_tags = tmpl::list<Strahlkorper<Frame>>;
 };
 /// @}
@@ -198,7 +198,7 @@ struct CartesianCoordsCompute : CartesianCoords<Frame>, db::ComputeTag {
   static void function(gsl::not_null<aliases::Vector<Frame>*> coords,
                        const ::Strahlkorper<Frame>& strahlkorper,
                        const Scalar<DataVector>& radius,
-                       const aliases::OneForm<Frame>& r_hat) noexcept;
+                       const aliases::OneForm<Frame>& r_hat);
   using argument_tags =
       tmpl::list<Strahlkorper<Frame>, Radius<Frame>, Rhat<Frame>>;
 };
@@ -223,7 +223,7 @@ struct DxRadiusCompute : DxRadius<Frame>, db::ComputeTag {
   static void function(gsl::not_null<aliases::OneForm<Frame>*> dx_radius,
                        const ::Strahlkorper<Frame>& strahlkorper,
                        const Scalar<DataVector>& radius,
-                       const aliases::InvJacobian<Frame>& inv_jac) noexcept;
+                       const aliases::InvJacobian<Frame>& inv_jac);
   using argument_tags =
       tmpl::list<Strahlkorper<Frame>, Radius<Frame>, InvJacobian<Frame>>;
 };
@@ -250,7 +250,7 @@ struct D2xRadiusCompute : D2xRadius<Frame>, db::ComputeTag {
                        const ::Strahlkorper<Frame>& strahlkorper,
                        const Scalar<DataVector>& radius,
                        const aliases::InvJacobian<Frame>& inv_jac,
-                       const aliases::InvHessian<Frame>& inv_hess) noexcept;
+                       const aliases::InvHessian<Frame>& inv_hess);
   using argument_tags = tmpl::list<Strahlkorper<Frame>, Radius<Frame>,
                                    InvJacobian<Frame>, InvHessian<Frame>>;
 };
@@ -272,7 +272,7 @@ struct LaplacianRadiusCompute : LaplacianRadius<Frame>, db::ComputeTag {
   static void function(gsl::not_null<DataVector*> lap_radius,
                        const ::Strahlkorper<Frame>& strahlkorper,
                        const Scalar<DataVector>& radius,
-                       const aliases::ThetaPhi<Frame>& theta_phi) noexcept;
+                       const aliases::ThetaPhi<Frame>& theta_phi);
   using argument_tags =
       tmpl::list<Strahlkorper<Frame>, Radius<Frame>, ThetaPhi<Frame>>;
 };
@@ -299,7 +299,7 @@ struct NormalOneFormCompute : NormalOneForm<Frame>, db::ComputeTag {
   using return_type = aliases::OneForm<Frame>;
   static void function(gsl::not_null<aliases::OneForm<Frame>*> one_form,
                        const aliases::OneForm<Frame>& dx_radius,
-                       const aliases::OneForm<Frame>& r_hat) noexcept;
+                       const aliases::OneForm<Frame>& r_hat);
   using argument_tags = tmpl::list<DxRadius<Frame>, Rhat<Frame>>;
 };
 /// @}
@@ -320,7 +320,7 @@ struct OneOverOneFormMagnitudeCompute : db::ComputeTag,
   static void function(
       const gsl::not_null<DataVector*> one_over_magnitude,
       const tnsr::II<DataType, Dim, Frame>& inverse_spatial_metric,
-      const tnsr::i<DataType, Dim, Frame>& normal_one_form) noexcept {
+      const tnsr::i<DataType, Dim, Frame>& normal_one_form) {
     *one_over_magnitude =
         1.0 / get(magnitude(normal_one_form, inverse_spatial_metric));
   }
@@ -340,7 +340,7 @@ struct UnitNormalOneFormCompute : UnitNormalOneForm<Frame>, db::ComputeTag {
   using base = UnitNormalOneForm<Frame>;
   static constexpr auto function = static_cast<void (*)(
       const gsl::not_null<tnsr::i<DataVector, 3, Frame>*>,
-      const tnsr::i<DataVector, 3, Frame>&, const DataVector&) noexcept>(
+      const tnsr::i<DataVector, 3, Frame>&, const DataVector&)>(
       &::StrahlkorperGr::unit_normal_one_form<Frame>);
   using argument_tags = tmpl::list<StrahlkorperTags::NormalOneForm<Frame>,
                                    OneOverOneFormMagnitude>;
@@ -358,9 +358,10 @@ struct UnitNormalVector : db::SimpleTag {
 template <typename Frame>
 struct UnitNormalVectorCompute : UnitNormalVector<Frame>, db::ComputeTag {
   using base = UnitNormalVector<Frame>;
-  static void function(gsl::not_null<tnsr::I<DataVector, 3, Frame>*> result,
+  static void function(
+      gsl::not_null<tnsr::I<DataVector, 3, Frame>*> result,
       const tnsr::II<DataVector, 3, Frame>& inverse_spatial_metric,
-      const tnsr::i<DataVector, 3, Frame>& unit_normal_one_form) noexcept {
+      const tnsr::i<DataVector, 3, Frame>& unit_normal_one_form) {
     raise_or_lower_index(result, unit_normal_one_form, inverse_spatial_metric);
   }
   using argument_tags =
@@ -384,7 +385,7 @@ struct GradUnitNormalOneFormCompute : GradUnitNormalOneForm<Frame>,
       const tnsr::i<DataVector, 3, Frame>&, const Scalar<DataVector>&,
       const tnsr::i<DataVector, 3, Frame>&,
       const tnsr::ii<DataVector, 3, Frame>&, const DataVector&,
-      const tnsr::Ijj<DataVector, 3, Frame>&) noexcept>(
+      const tnsr::Ijj<DataVector, 3, Frame>&)>(
       &StrahlkorperGr::grad_unit_normal_one_form<Frame>);
   using argument_tags =
       tmpl::list<Rhat<Frame>, Radius<Frame>, UnitNormalOneForm<Frame>,
@@ -407,7 +408,7 @@ struct ExtrinsicCurvatureCompute : ExtrinsicCurvature<Frame>, db::ComputeTag {
       static_cast<void (*)(const gsl::not_null<tnsr::ii<DataVector, 3, Frame>*>,
                            const tnsr::ii<DataVector, 3, Frame>&,
                            const tnsr::i<DataVector, 3, Frame>&,
-                           const tnsr::I<DataVector, 3, Frame>&) noexcept>(
+                           const tnsr::I<DataVector, 3, Frame>&)>(
           &StrahlkorperGr::extrinsic_curvature<Frame>);
   using argument_tags =
       tmpl::list<GradUnitNormalOneForm<Frame>, UnitNormalOneForm<Frame>,
@@ -429,7 +430,7 @@ struct RicciScalarCompute : RicciScalar, db::ComputeTag {
       gsl::not_null<Scalar<DataVector>*>, const tnsr::ii<DataVector, 3, Frame>&,
       const tnsr::I<DataVector, 3, Frame>&,
       const tnsr::ii<DataVector, 3, Frame>&,
-      const tnsr::II<DataVector, 3, Frame>&) noexcept>(
+      const tnsr::II<DataVector, 3, Frame>&)>(
       &StrahlkorperGr::ricci_scalar<Frame>);
   using argument_tags =
       tmpl::list<gr::Tags::SpatialRicci<3, Frame, DataVector>,
@@ -450,7 +451,7 @@ struct MaxRicciScalarCompute : MaxRicciScalar, db::ComputeTag {
   using base = MaxRicciScalar;
   using return_type = double;
   static void function(const gsl::not_null<double*> max_ricci_scalar,
-                       const Scalar<DataVector>& ricci_scalar) noexcept {
+                       const Scalar<DataVector>& ricci_scalar) {
     *max_ricci_scalar = max(get(ricci_scalar));
   }
   using argument_tags = tmpl::list<RicciScalar>;
@@ -468,7 +469,7 @@ struct MinRicciScalarCompute : MinRicciScalar, db::ComputeTag {
   using base = MinRicciScalar;
   using return_type = double;
   static void function(const gsl::not_null<double*> min_ricci_scalar,
-                       const Scalar<DataVector>& ricci_scalar) noexcept {
+                       const Scalar<DataVector>& ricci_scalar) {
     *min_ricci_scalar = min(get(ricci_scalar));
   }
   using argument_tags = tmpl::list<RicciScalar>;
@@ -503,7 +504,7 @@ struct TangentsCompute : Tangents<Frame>, db::ComputeTag {
                        const ::Strahlkorper<Frame>& strahlkorper,
                        const Scalar<DataVector>& radius,
                        const aliases::OneForm<Frame>& r_hat,
-                       const aliases::Jacobian<Frame>& jac) noexcept;
+                       const aliases::Jacobian<Frame>& jac);
   using argument_tags = tmpl::list<Strahlkorper<Frame>, Radius<Frame>,
                                    Rhat<Frame>, Jacobian<Frame>>;
 };
@@ -526,7 +527,7 @@ struct EuclideanAreaElementCompute : EuclideanAreaElement<Frame>,
       gsl::not_null<Scalar<DataVector>*>,
       const StrahlkorperTags::aliases::Jacobian<Frame>&,
       const tnsr::i<DataVector, 3, Frame>&, const Scalar<DataVector>&,
-      const tnsr::i<DataVector, 3, Frame>&) noexcept>(
+      const tnsr::i<DataVector, 3, Frame>&)>(
       &::StrahlkorperGr::euclidean_area_element<Frame>);
   using argument_tags = tmpl::list<
       StrahlkorperTags::Jacobian<Frame>, StrahlkorperTags::NormalOneForm<Frame>,
@@ -538,7 +539,7 @@ struct EuclideanAreaElementCompute : EuclideanAreaElement<Frame>,
 /// Computes the flat-space integral of a scalar over a Strahlkorper.
 template <typename IntegrandTag, typename Frame>
 struct EuclideanSurfaceIntegral : db::SimpleTag {
-  static std::string name() noexcept {
+  static std::string name() {
     return "EuclideanSurfaceIntegral(" + db::tag_name<IntegrandTag>() + ")";
   }
   using type = double;
@@ -553,7 +554,7 @@ struct EuclideanSurfaceIntegralCompute
   static void function(const gsl::not_null<double*> surface_integral,
                        const Scalar<DataVector>& euclidean_area_element,
                        const Scalar<DataVector>& integrand,
-                       const ::Strahlkorper<Frame>& strahlkorper) noexcept {
+                       const ::Strahlkorper<Frame>& strahlkorper) {
     *surface_integral = ::StrahlkorperGr::surface_integral_of_scalar<Frame>(
         euclidean_area_element, integrand, strahlkorper);
   }
@@ -571,7 +572,7 @@ struct EuclideanSurfaceIntegralCompute
 /// effectively normalizes it using the Euclidean metric.
 template <typename IntegrandTag, typename Frame>
 struct EuclideanSurfaceIntegralVector : db::SimpleTag {
-  static std::string name() noexcept {
+  static std::string name() {
     return "EuclideanSurfaceIntegralVector(" + db::tag_name<IntegrandTag>() +
            ")";
   }
@@ -588,7 +589,7 @@ struct EuclideanSurfaceIntegralVectorCompute
                        const Scalar<DataVector>& euclidean_area_element,
                        const tnsr::I<DataVector, 3, Frame>& integrand,
                        const tnsr::i<DataVector, 3, Frame>& normal_one_form,
-                       const ::Strahlkorper<Frame>& strahlkorper) noexcept {
+                       const ::Strahlkorper<Frame>& strahlkorper) {
     *surface_integral =
         ::StrahlkorperGr::euclidean_surface_integral_of_vector<Frame>(
             euclidean_area_element, integrand, normal_one_form, strahlkorper);
@@ -634,7 +635,7 @@ struct AreaElementCompute : AreaElement<Frame>, db::ComputeTag {
       gsl::not_null<Scalar<DataVector>*>, const tnsr::ii<DataVector, 3, Frame>&,
       const StrahlkorperTags::aliases::Jacobian<Frame>&,
       const tnsr::i<DataVector, 3, Frame>&, const Scalar<DataVector>&,
-      const tnsr::i<DataVector, 3, Frame>&) noexcept>(&area_element<Frame>);
+      const tnsr::i<DataVector, 3, Frame>&)>(&area_element<Frame>);
   using argument_tags = tmpl::list<
       gr::Tags::SpatialMetric<3, Frame>, StrahlkorperTags::Jacobian<Frame>,
       StrahlkorperTags::NormalOneForm<Frame>, StrahlkorperTags::Radius<Frame>,
@@ -646,7 +647,7 @@ struct AreaElementCompute : AreaElement<Frame>, db::ComputeTag {
 /// Computes the integral of a scalar over a Strahlkorper.
 template <typename IntegrandTag, typename Frame>
 struct SurfaceIntegral : db::SimpleTag {
-  static std::string name() noexcept {
+  static std::string name() {
     return "SurfaceIntegral(" + db::tag_name<IntegrandTag>() + ")";
   }
   using type = double;
@@ -660,7 +661,7 @@ struct SurfaceIntegralCompute : SurfaceIntegral<IntegrandTag, Frame>,
   static void function(const gsl::not_null<double*> surface_integral,
                        const Scalar<DataVector>& area_element,
                        const Scalar<DataVector>& integrand,
-                       const ::Strahlkorper<Frame>& strahlkorper) noexcept {
+                       const ::Strahlkorper<Frame>& strahlkorper) {
     *surface_integral = ::StrahlkorperGr::surface_integral_of_scalar<Frame>(
         area_element, integrand, strahlkorper);
   }
@@ -682,7 +683,7 @@ struct AreaCompute : Area, db::ComputeTag {
   using return_type = double;
   static void function(const gsl::not_null<double*> result,
                        const Strahlkorper<Frame>& strahlkorper,
-                       const Scalar<DataVector>& area_element) noexcept {
+                       const Scalar<DataVector>& area_element) {
     *result = strahlkorper.ylm_spherepack().definite_integral(
         get(area_element).data());
   }
@@ -700,8 +701,7 @@ template <typename Frame>
 struct IrreducibleMassCompute : IrreducibleMass, db::ComputeTag {
   using base = IrreducibleMass;
   using return_type = double;
-  static void function(const gsl::not_null<double*> result,
-                       const double area) noexcept {
+  static void function(const gsl::not_null<double*> result, const double area) {
     *result = ::StrahlkorperGr::irreducible_mass(area);
   }
 
@@ -724,8 +724,7 @@ struct SpinFunctionCompute : SpinFunction, db::ComputeTag {
       gsl::not_null<Scalar<DataVector>*>,
       const StrahlkorperTags::aliases::Jacobian<Frame>&,
       const Strahlkorper<Frame>&, const tnsr::I<DataVector, 3, Frame>&,
-      const Scalar<DataVector>&,
-      const tnsr::ii<DataVector, 3, Frame>&) noexcept>(
+      const Scalar<DataVector>&, const tnsr::ii<DataVector, 3, Frame>&)>(
       &StrahlkorperGr::spin_function<Frame>);
   using argument_tags =
       tmpl::list<StrahlkorperTags::Tangents<Frame>,
@@ -773,7 +772,7 @@ struct DimensionfulSpinVectorCompute : DimensionfulSpinVector<Frame>,
       const gsl::not_null<std::array<double, 3>*>, double,
       const Scalar<DataVector>&, const Scalar<DataVector>&,
       const tnsr::i<DataVector, 3, Frame>&, const Scalar<DataVector>&,
-      const Scalar<DataVector>&, const Strahlkorper<Frame>&) noexcept>(
+      const Scalar<DataVector>&, const Strahlkorper<Frame>&)>(
       &StrahlkorperGr::spin_vector);
   using argument_tags =
       tmpl::list<DimensionfulSpinMagnitude, AreaElement<Frame>,

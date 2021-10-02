@@ -67,29 +67,29 @@ class ElementId {
   static constexpr size_t volume_dim = VolumeDim;
 
   /// Default constructor needed for Charm++ serialization.
-  ElementId() noexcept = default;
-  ElementId(const ElementId&) noexcept = default;
-  ElementId& operator=(const ElementId&) noexcept = default;
-  ElementId(ElementId&&) noexcept = default;
-  ElementId& operator=(ElementId&&) noexcept = default;
-  ~ElementId() noexcept = default;
+  ElementId() = default;
+  ElementId(const ElementId&) = default;
+  ElementId& operator=(const ElementId&) = default;
+  ElementId(ElementId&&) = default;
+  ElementId& operator=(ElementId&&) = default;
+  ~ElementId() = default;
 
   /// Create the ElementId of the root Element of a Block.
-  explicit ElementId(size_t block_id, size_t grid_index = 0) noexcept;
+  explicit ElementId(size_t block_id, size_t grid_index = 0);
 
   /// Create an arbitrary ElementId.
   ElementId(size_t block_id, std::array<SegmentId, VolumeDim> segment_ids,
-            size_t grid_index = 0) noexcept;
+            size_t grid_index = 0);
 
-  ElementId<VolumeDim> id_of_child(size_t dim, Side side) const noexcept;
+  ElementId<VolumeDim> id_of_child(size_t dim, Side side) const;
 
-  ElementId<VolumeDim> id_of_parent(size_t dim) const noexcept;
+  ElementId<VolumeDim> id_of_parent(size_t dim) const;
 
-  size_t block_id() const noexcept { return block_id_; }
+  size_t block_id() const { return block_id_; }
 
-  size_t grid_index() const noexcept { return grid_index_; }
+  size_t grid_index() const { return grid_index_; }
 
-  std::array<SegmentId, VolumeDim> segment_ids() const noexcept {
+  std::array<SegmentId, VolumeDim> segment_ids() const {
     if constexpr (VolumeDim == 1) {
       return {{SegmentId{refinement_level_xi_, index_xi_}}};
     } else if constexpr (VolumeDim == 2) {
@@ -102,7 +102,7 @@ class ElementId {
     }
   }
 
-  SegmentId segment_id(const size_t dim) const noexcept {
+  SegmentId segment_id(const size_t dim) const {
     ASSERT(dim < VolumeDim, "Dimension must be smaller than "
                                 << VolumeDim << ", but is: " << dim);
     switch (dim) {
@@ -119,7 +119,7 @@ class ElementId {
 
   /// Returns an ElementId meant for identifying data on external boundaries,
   /// which should never correspond to the Id of an actual element.
-  static ElementId<VolumeDim> external_boundary_id() noexcept;
+  static ElementId<VolumeDim> external_boundary_id();
 
  private:
   uint32_t block_id_ : block_id_bits;
@@ -136,43 +136,42 @@ class ElementId {
 /// \cond
 // macro that generate the pup operator for SegmentId
 PUPbytes(ElementId<1>)      // NOLINT
-PUPbytes(ElementId<2>)  // NOLINT
-PUPbytes(ElementId<3>)  // NOLINT
-/// \endcond
+    PUPbytes(ElementId<2>)  // NOLINT
+    PUPbytes(ElementId<3>)  // NOLINT
+    /// \endcond
 
-/// Output operator for ElementId.
-template <size_t VolumeDim>
-std::ostream& operator<<(std::ostream& os,
-                         const ElementId<VolumeDim>& id) noexcept;
+    /// Output operator for ElementId.
+    template <size_t VolumeDim>
+    std::ostream& operator<<(std::ostream& os, const ElementId<VolumeDim>& id);
 
 /// Equivalence operator for ElementId.
 template <size_t VolumeDim>
 bool operator==(const ElementId<VolumeDim>& lhs,
-                const ElementId<VolumeDim>& rhs) noexcept;
+                const ElementId<VolumeDim>& rhs);
 
 /// Inequivalence operator for ElementId.
 template <size_t VolumeDim>
 bool operator!=(const ElementId<VolumeDim>& lhs,
-                const ElementId<VolumeDim>& rhs) noexcept;
+                const ElementId<VolumeDim>& rhs);
 
 // ######################################################################
 // INLINE DEFINITIONS
 // ######################################################################
 
 template <size_t VolumeDim>
-size_t hash_value(const ElementId<VolumeDim>& id) noexcept;
+size_t hash_value(const ElementId<VolumeDim>& id);
 
 // clang-tidy: do not modify namespace std
 namespace std {  // NOLINT
 template <size_t VolumeDim>
 struct hash<ElementId<VolumeDim>> {
-  size_t operator()(const ElementId<VolumeDim>& id) const noexcept;
+  size_t operator()(const ElementId<VolumeDim>& id) const;
 };
 }  // namespace std
 
 template <size_t VolumeDim>
 inline bool operator==(const ElementId<VolumeDim>& lhs,
-                       const ElementId<VolumeDim>& rhs) noexcept {
+                       const ElementId<VolumeDim>& rhs) {
   return lhs.block_id() == rhs.block_id() and
          lhs.segment_ids() == rhs.segment_ids() and
          lhs.grid_index() == rhs.grid_index();
@@ -180,6 +179,6 @@ inline bool operator==(const ElementId<VolumeDim>& lhs,
 
 template <size_t VolumeDim>
 inline bool operator!=(const ElementId<VolumeDim>& lhs,
-                       const ElementId<VolumeDim>& rhs) noexcept {
+                       const ElementId<VolumeDim>& rhs) {
   return not(lhs == rhs);
 }

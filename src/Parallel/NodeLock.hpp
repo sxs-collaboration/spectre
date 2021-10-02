@@ -24,28 +24,28 @@ namespace Parallel {
  */
 class NodeLock {
  public:
-  NodeLock() noexcept;
+  NodeLock();
 
-  explicit NodeLock(CkMigrateMessage* /*message*/) noexcept {}
+  explicit NodeLock(CkMigrateMessage* /*message*/) {}
 
   NodeLock(const NodeLock&) = delete;
   NodeLock& operator=(const NodeLock&) = delete;
-  NodeLock(NodeLock&& moved_lock) noexcept;
-  NodeLock& operator=(NodeLock&& moved_lock) noexcept;
-  ~NodeLock() noexcept;
+  NodeLock(NodeLock&& moved_lock);
+  NodeLock& operator=(NodeLock&& moved_lock);
+  ~NodeLock();
 
-  void lock() noexcept;
+  void lock();
 
-  bool try_lock() noexcept;
+  bool try_lock();
 
-  void unlock() noexcept;
+  void unlock();
 
-  void destroy() noexcept;
+  void destroy();
 
-  bool is_destroyed() noexcept { return nullptr == lock_; }
+  bool is_destroyed() { return nullptr == lock_; }
 
   ///
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
 
  private:
   std::unique_ptr<CmiNodeLock> lock_;

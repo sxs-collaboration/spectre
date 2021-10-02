@@ -31,7 +31,7 @@ MagnetizedFmDisk::MagnetizedFmDisk(
     const double inner_edge_radius, const double max_pressure_radius,
     const double polytropic_constant, const double polytropic_exponent,
     const double threshold_density, const double inverse_plasma_beta,
-    const size_t normalization_grid_res) noexcept
+    const size_t normalization_grid_res)
     : RelativisticEuler::Solutions::FishboneMoncriefDisk(
           bh_mass, bh_dimless_spin, inner_edge_radius, max_pressure_radius,
           polytropic_constant, polytropic_exponent),
@@ -115,7 +115,7 @@ MagnetizedFmDisk::MagnetizedFmDisk(
            inverse_plasma_beta_ / b_squared_max);
 }
 
-void MagnetizedFmDisk::pup(PUP::er& p) noexcept {
+void MagnetizedFmDisk::pup(PUP::er& p) {
   RelativisticEuler::Solutions::FishboneMoncriefDisk::pup(p);
   p | threshold_density_;
   p | inverse_plasma_beta_;
@@ -126,7 +126,7 @@ void MagnetizedFmDisk::pup(PUP::er& p) noexcept {
 
 template <typename DataType>
 tnsr::I<DataType, 3> MagnetizedFmDisk::unnormalized_magnetic_field(
-    const tnsr::I<DataType, 3>& x) const noexcept {
+    const tnsr::I<DataType, 3>& x) const {
   auto magnetic_field =
       make_with_value<tnsr::I<DataType, 3, Frame::NoFrame>>(x, 0.0);
 
@@ -143,9 +143,10 @@ tnsr::I<DataType, 3> MagnetizedFmDisk::unnormalized_magnetic_field(
       fm_disk::potential(square(inner_edge_radius_), 1.0);
 
   // A_phi \propto rho - rho_threshold. Normalization comes later.
-  const auto mag_potential =
-      [ this, &threshold_rest_mass_density, &inner_edge_potential ](
-          const double r, const double sin_theta_squared) noexcept {
+  const auto mag_potential = [this, &threshold_rest_mass_density,
+                              &inner_edge_potential](
+                                 const double r,
+                                 const double sin_theta_squared) {
     // enthalpy = exp(Win - W(r,theta)), as in the Fishbone-Moncrief disk
     return get(equation_of_state_.rest_mass_density_from_enthalpy(
                Scalar<double>{
@@ -218,7 +219,7 @@ MagnetizedFmDisk::variables(
     const tnsr::I<DataType, 3>& x,
     tmpl::list<hydro::Tags::MagneticField<DataType, 3>> /*meta*/,
     const IntermediateVariables<DataType, NeedSpacetime>& /*vars*/,
-    const size_t /*index*/) const noexcept {
+    const size_t /*index*/) const {
   auto result = unnormalized_magnetic_field(x);
   for (size_t i = 0; i < 3; ++i) {
     result.get(i) *= b_field_normalization_;
@@ -226,8 +227,7 @@ MagnetizedFmDisk::variables(
   return result;
 }
 
-bool operator==(const MagnetizedFmDisk& lhs,
-                const MagnetizedFmDisk& rhs) noexcept {
+bool operator==(const MagnetizedFmDisk& lhs, const MagnetizedFmDisk& rhs) {
   using fm_disk = MagnetizedFmDisk::fm_disk;
   return *static_cast<const fm_disk*>(&lhs) ==
              *static_cast<const fm_disk*>(&rhs) and
@@ -237,8 +237,7 @@ bool operator==(const MagnetizedFmDisk& lhs,
          lhs.normalization_grid_res_ == rhs.normalization_grid_res_;
 }
 
-bool operator!=(const MagnetizedFmDisk& lhs,
-                const MagnetizedFmDisk& rhs) noexcept {
+bool operator!=(const MagnetizedFmDisk& lhs, const MagnetizedFmDisk& rhs) {
   return not(lhs == rhs);
 }
 
@@ -252,7 +251,7 @@ bool operator!=(const MagnetizedFmDisk& lhs,
       tmpl::list<hydro::Tags::MagneticField<DTYPE(data), 3>> /*meta*/,     \
       const FishboneMoncriefDisk::IntermediateVariables<                   \
           DTYPE(data), NEED_SPACETIME(data)>& vars,                        \
-      const size_t) const noexcept;
+      const size_t) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector), (true, false))
 

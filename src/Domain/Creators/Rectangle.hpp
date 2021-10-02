@@ -79,7 +79,7 @@ class Rectangle : public DomainCreator<2> {
   };
   template <typename BoundaryConditionsBase>
   struct BoundaryCondition {
-    static std::string name() noexcept { return "BoundaryCondition"; }
+    static std::string name() { return "BoundaryCondition"; }
     static constexpr Options::String help =
         "The boundary condition to impose on all sides.";
     using type = std::unique_ptr<BoundaryConditionsBase>;
@@ -110,7 +110,7 @@ class Rectangle : public DomainCreator<2> {
       typename InitialGridPoints::type initial_number_of_grid_points_in_xy,
       typename IsPeriodicIn::type is_periodic_in_xy,
       std::unique_ptr<domain::creators::time_dependence::TimeDependence<2>>
-          time_dependence = nullptr) noexcept;
+          time_dependence = nullptr);
 
   Rectangle(
       typename LowerBound::type lower_xy, typename UpperBound::type upper_xy,
@@ -124,19 +124,18 @@ class Rectangle : public DomainCreator<2> {
 
   Rectangle() = default;
   Rectangle(const Rectangle&) = delete;
-  Rectangle(Rectangle&&) noexcept = default;
+  Rectangle(Rectangle&&) = default;
   Rectangle& operator=(const Rectangle&) = delete;
-  Rectangle& operator=(Rectangle&&) noexcept = default;
-  ~Rectangle() noexcept override = default;
+  Rectangle& operator=(Rectangle&&) = default;
+  ~Rectangle() override = default;
 
-  Domain<2> create_domain() const noexcept override;
+  Domain<2> create_domain() const override;
 
-  std::vector<std::array<size_t, 2>> initial_extents() const noexcept override;
+  std::vector<std::array<size_t, 2>> initial_extents() const override;
 
-  std::vector<std::array<size_t, 2>> initial_refinement_levels() const
-      noexcept override;
+  std::vector<std::array<size_t, 2>> initial_refinement_levels() const override;
 
-  auto functions_of_time() const noexcept -> std::unordered_map<
+  auto functions_of_time() const -> std::unordered_map<
       std::string,
       std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;
 

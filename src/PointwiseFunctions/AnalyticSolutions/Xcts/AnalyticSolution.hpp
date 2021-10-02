@@ -51,20 +51,20 @@ class AnalyticSolution : public ::AnalyticData<3, Registrars> {
   using creatable_classes = Registration::registrants<registrars>;
 
   /// \cond
-  explicit AnalyticSolution(CkMigrateMessage* m) noexcept : Base(m) {}
+  explicit AnalyticSolution(CkMigrateMessage* m) : Base(m) {}
   WRAPPED_PUPable_abstract(AnalyticSolution);  // NOLINT
   /// \endcond
 
   template <typename DataType, typename... RequestedTags>
   tuples::TaggedTuple<RequestedTags...> variables(
       const tnsr::I<DataType, 3, Frame::Inertial>& x,
-      tmpl::list<RequestedTags...> /*meta*/) const noexcept {
+      tmpl::list<RequestedTags...> /*meta*/) const {
     return call_with_dynamic_type<
         tuples::TaggedTuple<RequestedTags...>,
         tmpl::filter<creatable_classes,
                      std::is_base_of<tmpl::pin<AnalyticSolution<Registrars>>,
                                      tmpl::_1>>>(
-        this, [&x](auto* const derived) noexcept {
+        this, [&x](auto* const derived) {
           return derived->variables(x, tmpl::list<RequestedTags...>{});
         });
   }

@@ -69,10 +69,10 @@ class MortarData {
   /// @{
   void insert_local_mortar_data(TimeStepId time_step_id,
                                 Mesh<Dim - 1> local_interface_mesh,
-                                std::vector<double> local_mortar_vars) noexcept;
-  void insert_neighbor_mortar_data(
-      TimeStepId time_step_id, Mesh<Dim - 1> neighbor_interface_mesh,
-      std::vector<double> neighbor_mortar_vars) noexcept;
+                                std::vector<double> local_mortar_vars);
+  void insert_neighbor_mortar_data(TimeStepId time_step_id,
+                                   Mesh<Dim - 1> neighbor_interface_mesh,
+                                   std::vector<double> neighbor_mortar_vars);
   /// @}
 
   /*!
@@ -94,7 +94,7 @@ class MortarData {
   void insert_local_geometric_quantities(
       const Scalar<DataVector>& local_volume_det_inv_jacobian,
       const Scalar<DataVector>& local_face_det_jacobian,
-      const Scalar<DataVector>& local_face_normal_magnitude) noexcept;
+      const Scalar<DataVector>& local_face_normal_magnitude);
 
   /*!
    * \brief Insert the magnitude of the local face normal. Used for local time
@@ -112,7 +112,7 @@ class MortarData {
    * \f$\gamma^{ij}\f$.
    */
   void insert_local_face_normal_magnitude(
-      const Scalar<DataVector>& local_face_normal_magnitude) noexcept;
+      const Scalar<DataVector>& local_face_normal_magnitude);
 
   /*!
    * \brief Sets the `local_volume_det_inv_jacobian` by setting the DataVector
@@ -121,8 +121,7 @@ class MortarData {
    * \warning The result should never be changed.
    */
   void get_local_volume_det_inv_jacobian(
-      gsl::not_null<Scalar<DataVector>*> local_volume_det_inv_jacobian)
-      const noexcept;
+      gsl::not_null<Scalar<DataVector>*> local_volume_det_inv_jacobian) const;
 
   /*!
    * \brief Sets the `local_face_det_jacobian` by setting the DataVector to
@@ -130,8 +129,8 @@ class MortarData {
    *
    * \warning The result should never be changed.
    */
-  void get_local_face_det_jacobian(gsl::not_null<Scalar<DataVector>*>
-                                       local_face_det_jacobian) const noexcept;
+  void get_local_face_det_jacobian(
+      gsl::not_null<Scalar<DataVector>*> local_face_det_jacobian) const;
 
   /*!
    * \brief Sets the `local_face_normal_magnitude` by setting the DataVector to
@@ -140,37 +139,35 @@ class MortarData {
    * \warning The result should never be changed.
    */
   void get_local_face_normal_magnitude(
-      gsl::not_null<Scalar<DataVector>*> local_face_normal_magnitude)
-      const noexcept;
+      gsl::not_null<Scalar<DataVector>*> local_face_normal_magnitude) const;
 
   /// Return the inserted data and reset the state to empty.
   ///
   /// The first element is the local data while the second element is the
   /// neighbor data.
-  auto extract() noexcept
-      -> std::pair<std::pair<Mesh<Dim - 1>, std::vector<double>>,
-                   std::pair<Mesh<Dim - 1>, std::vector<double>>>;
+  auto extract() -> std::pair<std::pair<Mesh<Dim - 1>, std::vector<double>>,
+                              std::pair<Mesh<Dim - 1>, std::vector<double>>>;
 
-  const TimeStepId& time_step_id() const noexcept { return time_step_id_; }
+  const TimeStepId& time_step_id() const { return time_step_id_; }
 
-  auto local_mortar_data() const noexcept
+  auto local_mortar_data() const
       -> const std::optional<std::pair<Mesh<Dim - 1>, std::vector<double>>>& {
     return local_mortar_data_;
   }
 
-  auto neighbor_mortar_data() const noexcept
+  auto neighbor_mortar_data() const
       -> const std::optional<std::pair<Mesh<Dim - 1>, std::vector<double>>>& {
     return neighbor_mortar_data_;
   }
 
   // clang-tidy: google-runtime-references
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
 
  private:
   template <size_t LocalDim>
   // NOLINTNEXTLINE
   friend bool operator==(const MortarData<LocalDim>& lhs,
-                         const MortarData<LocalDim>& rhs) noexcept;
+                         const MortarData<LocalDim>& rhs);
 
   TimeStepId time_step_id_{};
   std::optional<std::pair<Mesh<Dim - 1>, std::vector<double>>>
@@ -183,6 +180,5 @@ class MortarData {
 };
 
 template <size_t Dim>
-bool operator!=(const MortarData<Dim>& lhs,
-                const MortarData<Dim>& rhs) noexcept;
+bool operator!=(const MortarData<Dim>& lhs, const MortarData<Dim>& rhs);
 }  // namespace evolution::dg

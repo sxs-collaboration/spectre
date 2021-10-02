@@ -65,14 +65,13 @@ struct InterpolationTargetVarsFromElement {
       Requires<tmpl::list_contains_v<DbTags, Tags::TemporalIds<TemporalId>>> =
           nullptr>
   static void apply(
-      db::DataBox<DbTags>& box,
-      Parallel::GlobalCache<Metavariables>& cache,
+      db::DataBox<DbTags>& box, Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/,
       const std::vector<Variables<
           typename InterpolationTargetTag::vars_to_interpolate_to_target>>&
           vars_src,
       const std::vector<std::vector<size_t>>& global_offsets,
-      const TemporalId& temporal_id) noexcept {
+      const TemporalId& temporal_id) {
     static_assert(
         not InterpolationTargetTag::compute_target_points::is_sequential::value,
         "Use InterpolationTargetGetVarsFromElement only with non-sequential"

@@ -21,7 +21,7 @@ namespace {
 // IWYU pragma: no_include <sharp_lowlevel.h>
 
 template <ComplexRepresentation Representation>
-void test_spherical_harmonic_collocation() noexcept {
+void test_spherical_harmonic_collocation() {
   MAKE_GENERATOR(gen);
   UniformCustomDistribution<size_t> sdist{8, 64};
   const size_t l_max = sdist(gen);

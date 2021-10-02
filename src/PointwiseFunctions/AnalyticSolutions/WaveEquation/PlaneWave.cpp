@@ -19,7 +19,7 @@ namespace ScalarWave::Solutions {
 template <size_t Dim>
 PlaneWave<Dim>::PlaneWave(
     std::array<double, Dim> wave_vector, std::array<double, Dim> center,
-    std::unique_ptr<MathFunction<1, Frame::Inertial>> profile) noexcept
+    std::unique_ptr<MathFunction<1, Frame::Inertial>> profile)
     : wave_vector_(std::move(wave_vector)),
       center_(std::move(center)),
       profile_(std::move(profile)),
@@ -27,22 +27,21 @@ PlaneWave<Dim>::PlaneWave(
 
 template <size_t Dim>
 template <typename T>
-Scalar<T> PlaneWave<Dim>::psi(const tnsr::I<T, Dim>& x, const double t) const
-    noexcept {
+Scalar<T> PlaneWave<Dim>::psi(const tnsr::I<T, Dim>& x, const double t) const {
   return Scalar<T>(profile_->operator()(u(x, t)));
 }
 
 template <size_t Dim>
 template <typename T>
 Scalar<T> PlaneWave<Dim>::dpsi_dt(const tnsr::I<T, Dim>& x,
-                                  const double t) const noexcept {
+                                  const double t) const {
   return Scalar<T>(-omega_ * profile_->first_deriv(u(x, t)));
 }
 
 template <size_t Dim>
 template <typename T>
 tnsr::i<T, Dim> PlaneWave<Dim>::dpsi_dx(const tnsr::I<T, Dim>& x,
-                                        const double t) const noexcept {
+                                        const double t) const {
   auto result = make_with_value<tnsr::i<T, Dim>>(x, 0.0);
   const auto du = profile_->first_deriv(u(x, t));
   for (size_t i = 0; i < Dim; ++i) {
@@ -54,14 +53,14 @@ tnsr::i<T, Dim> PlaneWave<Dim>::dpsi_dx(const tnsr::I<T, Dim>& x,
 template <size_t Dim>
 template <typename T>
 Scalar<T> PlaneWave<Dim>::d2psi_dt2(const tnsr::I<T, Dim>& x,
-                                    const double t) const noexcept {
+                                    const double t) const {
   return Scalar<T>(square(omega_) * profile_->second_deriv(u(x, t)));
 }
 
 template <size_t Dim>
 template <typename T>
 tnsr::i<T, Dim> PlaneWave<Dim>::d2psi_dtdx(const tnsr::I<T, Dim>& x,
-                                           const double t) const noexcept {
+                                           const double t) const {
   auto result = make_with_value<tnsr::i<T, Dim>>(x, 0.0);
   const auto d2u = profile_->second_deriv(u(x, t));
   for (size_t i = 0; i < Dim; ++i) {
@@ -73,7 +72,7 @@ tnsr::i<T, Dim> PlaneWave<Dim>::d2psi_dtdx(const tnsr::I<T, Dim>& x,
 template <size_t Dim>
 template <typename T>
 tnsr::ii<T, Dim> PlaneWave<Dim>::d2psi_dxdx(const tnsr::I<T, Dim>& x,
-                                            const double t) const noexcept {
+                                            const double t) const {
   auto result = make_with_value<tnsr::ii<T, Dim>>(x, 0.0);
   const auto d2u = profile_->second_deriv(u(x, t));
   for (size_t i = 0; i < Dim; ++i) {
@@ -89,8 +88,7 @@ template <size_t Dim>
 tuples::TaggedTuple<ScalarWave::Pi, ScalarWave::Phi<Dim>, ScalarWave::Psi>
 PlaneWave<Dim>::variables(const tnsr::I<DataVector, Dim>& x, double t,
                           const tmpl::list<ScalarWave::Pi, ScalarWave::Phi<Dim>,
-                                           ScalarWave::Psi> /*meta*/) const
-    noexcept {
+                                           ScalarWave::Psi> /*meta*/) const {
   tuples::TaggedTuple<ScalarWave::Pi, ScalarWave::Phi<Dim>, ScalarWave::Psi>
       variables{dpsi_dt(x, t), dpsi_dx(x, t), psi(x, t)};
   get<ScalarWave::Pi>(variables).get() *= -1.0;
@@ -105,7 +103,7 @@ PlaneWave<Dim>::variables(
     const tnsr::I<DataVector, Dim>& x, double t,
     const tmpl::list<::Tags::dt<ScalarWave::Pi>,
                      ::Tags::dt<ScalarWave::Phi<Dim>>,
-                     ::Tags::dt<ScalarWave::Psi>> /*meta*/) const noexcept {
+                     ::Tags::dt<ScalarWave::Psi>> /*meta*/) const {
   tuples::TaggedTuple<::Tags::dt<ScalarWave::Pi>,
                       ::Tags::dt<ScalarWave::Phi<Dim>>,
                       ::Tags::dt<ScalarWave::Psi>>
@@ -115,7 +113,7 @@ PlaneWave<Dim>::variables(
 }
 
 template <size_t Dim>
-void PlaneWave<Dim>::pup(PUP::er& p) noexcept {
+void PlaneWave<Dim>::pup(PUP::er& p) {
   p | wave_vector_;
   p | center_;
   p | profile_;
@@ -124,7 +122,7 @@ void PlaneWave<Dim>::pup(PUP::er& p) noexcept {
 
 template <size_t Dim>
 template <typename T>
-T PlaneWave<Dim>::u(const tnsr::I<T, Dim>& x, const double t) const noexcept {
+T PlaneWave<Dim>::u(const tnsr::I<T, Dim>& x, const double t) const {
   auto result = make_with_value<T>(x, -omega_ * t);
   for (size_t d = 0; d < Dim; ++d) {
     result += gsl::at(wave_vector_, d) * (x.get(d) - gsl::at(center_, d));
@@ -137,32 +135,27 @@ T PlaneWave<Dim>::u(const tnsr::I<T, Dim>& x, const double t) const noexcept {
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATE(_, data)                                              \
-  template Scalar<DTYPE(data)>                                            \
-  ScalarWave::Solutions::PlaneWave<DIM(data)>::psi(                       \
-      const tnsr::I<DTYPE(data), DIM(data)>& x, double t) const noexcept; \
-  template Scalar<DTYPE(data)>                                            \
-  ScalarWave::Solutions::PlaneWave<DIM(data)>::dpsi_dt(                   \
-      const tnsr::I<DTYPE(data), DIM(data)>& x, double t) const noexcept; \
-  template tnsr::i<DTYPE(data), DIM(data)>                                \
-  ScalarWave::Solutions::PlaneWave<DIM(data)>::dpsi_dx(                   \
-      const tnsr::I<DTYPE(data), DIM(data)>& x, const double t)           \
-      const noexcept;                                                     \
-  template Scalar<DTYPE(data)>                                            \
-  ScalarWave::Solutions::PlaneWave<DIM(data)>::d2psi_dt2(                 \
-      const tnsr::I<DTYPE(data), DIM(data)>& x, const double t)           \
-      const noexcept;                                                     \
-  template tnsr::i<DTYPE(data), DIM(data)>                                \
-  ScalarWave::Solutions::PlaneWave<DIM(data)>::d2psi_dtdx(                \
-      const tnsr::I<DTYPE(data), DIM(data)>& x, const double t)           \
-      const noexcept;                                                     \
-  template tnsr::ii<DTYPE(data), DIM(data)>                               \
-  ScalarWave::Solutions::PlaneWave<DIM(data)>::d2psi_dxdx(                \
-      const tnsr::I<DTYPE(data), DIM(data)>& x, const double t)           \
-      const noexcept;                                                     \
-  template DTYPE(data) ScalarWave::Solutions::PlaneWave<DIM(data)>::u(    \
-      const tnsr::I<DTYPE(data), DIM(data)>& x, const double t)           \
-      const noexcept;
+#define INSTANTIATE(_, data)                                           \
+  template Scalar<DTYPE(data)>                                         \
+  ScalarWave::Solutions::PlaneWave<DIM(data)>::psi(                    \
+      const tnsr::I<DTYPE(data), DIM(data)>& x, double t) const;       \
+  template Scalar<DTYPE(data)>                                         \
+  ScalarWave::Solutions::PlaneWave<DIM(data)>::dpsi_dt(                \
+      const tnsr::I<DTYPE(data), DIM(data)>& x, double t) const;       \
+  template tnsr::i<DTYPE(data), DIM(data)>                             \
+  ScalarWave::Solutions::PlaneWave<DIM(data)>::dpsi_dx(                \
+      const tnsr::I<DTYPE(data), DIM(data)>& x, const double t) const; \
+  template Scalar<DTYPE(data)>                                         \
+  ScalarWave::Solutions::PlaneWave<DIM(data)>::d2psi_dt2(              \
+      const tnsr::I<DTYPE(data), DIM(data)>& x, const double t) const; \
+  template tnsr::i<DTYPE(data), DIM(data)>                             \
+  ScalarWave::Solutions::PlaneWave<DIM(data)>::d2psi_dtdx(             \
+      const tnsr::I<DTYPE(data), DIM(data)>& x, const double t) const; \
+  template tnsr::ii<DTYPE(data), DIM(data)>                            \
+  ScalarWave::Solutions::PlaneWave<DIM(data)>::d2psi_dxdx(             \
+      const tnsr::I<DTYPE(data), DIM(data)>& x, const double t) const; \
+  template DTYPE(data) ScalarWave::Solutions::PlaneWave<DIM(data)>::u( \
+      const tnsr::I<DTYPE(data), DIM(data)>& x, const double t) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector))
 

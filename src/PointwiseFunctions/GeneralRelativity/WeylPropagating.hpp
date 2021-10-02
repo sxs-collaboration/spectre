@@ -54,7 +54,7 @@ tnsr::ii<DataType, SpatialDim, Frame> weyl_propagating(
     const tnsr::II<DataType, SpatialDim, Frame>& projection_IJ,
     const tnsr::ii<DataType, SpatialDim, Frame>& projection_ij,
     const tnsr::Ij<DataType, SpatialDim, Frame>& projection_Ij,
-    const double sign) noexcept;
+    const double sign);
 
 template <size_t SpatialDim, typename Frame, typename DataType>
 void weyl_propagating(
@@ -67,6 +67,6 @@ void weyl_propagating(
     const tnsr::II<DataType, SpatialDim, Frame>& projection_IJ,
     const tnsr::ii<DataType, SpatialDim, Frame>& projection_ij,
     const tnsr::Ij<DataType, SpatialDim, Frame>& projection_Ij,
-    const double sign) noexcept;
+    const double sign);
 /// @}
 }  // namespace gr

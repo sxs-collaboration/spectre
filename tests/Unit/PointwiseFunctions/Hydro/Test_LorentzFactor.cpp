@@ -21,10 +21,10 @@ namespace hydro {
 namespace {
 template <size_t Dim, typename Frame, typename DataType>
 void test_lorentz_factor(const DataType& used_for_size) {
-  constexpr auto function = static_cast<Scalar<DataType> (*)(
-      const tnsr::I<DataType, Dim, Frame>&,
-      const tnsr::i<DataType, Dim, Frame>&) noexcept>(
-      &lorentz_factor<DataType, Dim, Frame>);
+  constexpr auto function =
+      static_cast<Scalar<DataType> (*)(const tnsr::I<DataType, Dim, Frame>&,
+                                       const tnsr::i<DataType, Dim, Frame>&)>(
+          &lorentz_factor<DataType, Dim, Frame>);
   pypp::check_with_random_values<1>(function, "TestFunctions", "lorentz_factor",
                                     {{{0.0, 1.0 / sqrt(Dim)}}}, used_for_size);
   pypp::check_with_random_values<1>(function, "TestFunctions", "lorentz_factor",

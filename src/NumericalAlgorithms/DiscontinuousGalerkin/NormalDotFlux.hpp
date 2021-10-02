@@ -39,7 +39,7 @@ void normal_dot_flux(
     const tnsr::i<DataVector, VolumeDim, Fr>& normal,
     const Tensor<DataVector, Symm,
                  index_list<SpatialIndex<VolumeDim, UpLo::Up, Fr>,
-                            RemainingIndices...>>& flux_tensor) noexcept {
+                            RemainingIndices...>>& flux_tensor) {
   for (auto it = normal_dot_flux->begin(); it != normal_dot_flux->end(); it++) {
     const auto result_indices = normal_dot_flux->get_tensor_index(it);
     *it = get<0>(normal) * flux_tensor.get(prepend(result_indices, size_t{0}));
@@ -54,7 +54,7 @@ template <typename... ReturnTags, typename... FluxTags, size_t VolumeDim,
 void normal_dot_flux(
     const gsl::not_null<Variables<tmpl::list<ReturnTags...>>*> result,
     const tnsr::i<DataVector, VolumeDim, Fr>& normal,
-    const Variables<tmpl::list<FluxTags...>>& fluxes) noexcept {
+    const Variables<tmpl::list<FluxTags...>>& fluxes) {
   if (result->number_of_grid_points() != fluxes.number_of_grid_points()) {
     result->initialize(fluxes.number_of_grid_points());
   }
@@ -65,9 +65,8 @@ void normal_dot_flux(
 template <typename TagsList, size_t VolumeDim, typename Fr>
 auto normal_dot_flux(
     const tnsr::i<DataVector, VolumeDim, Fr>& normal,
-    const Variables<
-        db::wrap_tags_in<::Tags::Flux, TagsList, tmpl::size_t<VolumeDim>, Fr>>&
-        fluxes) noexcept {
+    const Variables<db::wrap_tags_in<::Tags::Flux, TagsList,
+                                     tmpl::size_t<VolumeDim>, Fr>>& fluxes) {
   auto result = make_with_value<
       Variables<db::wrap_tags_in<::Tags::NormalDotFlux, TagsList>>>(fluxes, 0.);
   normal_dot_flux(make_not_null(&result), normal, fluxes);
@@ -93,10 +92,9 @@ struct NormalDotFluxCompute : db::add_tag_prefix<NormalDotFlux, Tag>,
       Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<VolumeDim, Fr>>;
 
  public:
-  static void function(
-      const gsl::not_null<return_type*> result,
-      const typename flux_tag::type& flux,
-      const tnsr::i<DataVector, VolumeDim, Fr>& normal) noexcept {
+  static void function(const gsl::not_null<return_type*> result,
+                       const typename flux_tag::type& flux,
+                       const tnsr::i<DataVector, VolumeDim, Fr>& normal) {
     *result = normal_dot_flux<typename Tag::tags_list>(normal, flux);
   }
   using argument_tags = tmpl::list<flux_tag, normal_tag>;

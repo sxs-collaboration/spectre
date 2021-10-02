@@ -36,12 +36,11 @@ struct TaggedTupleCombine {
   tuples::TaggedTuple<Tags...> operator()(
       tuples::TaggedTuple<Tags...> current_state,
       const tuples::TaggedTuple<Tags...>& element) {
-    tmpl::for_each<tmpl::list<Tags...>>(
-        [&current_state, &element](auto tag_v) noexcept {
-          using tag = typename decltype(tag_v)::type;
-          tuples::get<tag>(current_state) = typename tag::combine_method{}(
-              tuples::get<tag>(current_state), tuples::get<tag>(element));
-        });
+    tmpl::for_each<tmpl::list<Tags...>>([&current_state, &element](auto tag_v) {
+      using tag = typename decltype(tag_v)::type;
+      tuples::get<tag>(current_state) = typename tag::combine_method{}(
+          tuples::get<tag>(current_state), tuples::get<tag>(element));
+    });
     return current_state;
   }
 };
@@ -61,7 +60,7 @@ struct TaggedTupleMainCombine {
       const gsl::not_null<tuples::TaggedTuple<CurrentTags...>*> current_state,
       const tuples::TaggedTuple<CombineTags...>& element) {
     tmpl::for_each<tmpl::list<CombineTags...>>([&current_state,
-                                                &element](auto tag_v) noexcept {
+                                                &element](auto tag_v) {
       using tag = typename decltype(tag_v)::type;
       tuples::get<tag>(*current_state) = typename tag::main_combine_method{}(
           tuples::get<tag>(*current_state), tuples::get<tag>(element));

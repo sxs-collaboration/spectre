@@ -193,7 +193,7 @@ class RiemannProblem : public MarkAsAnalyticSolution {
     using type = double;
     static constexpr Options::String help = {
         "The tolerance for the numerical solution for p star"};
-    static type suggested_value() noexcept { return 1.e-9; }
+    static type suggested_value() { return 1.e-9; }
   };
 
   // Any of the two states that constitute the initial data, including
@@ -204,16 +204,16 @@ class RiemannProblem : public MarkAsAnalyticSolution {
     InitialData() = default;
     InitialData(const InitialData& /*rhs*/) = default;
     InitialData& operator=(const InitialData& /*rhs*/) = default;
-    InitialData(InitialData&& /*rhs*/) noexcept = default;
-    InitialData& operator=(InitialData&& /*rhs*/) noexcept = default;
+    InitialData(InitialData&& /*rhs*/) = default;
+    InitialData& operator=(InitialData&& /*rhs*/) = default;
     ~InitialData() = default;
 
     InitialData(double mass_density, const std::array<double, Dim>& velocity,
                 double pressure, double adiabatic_index,
-                size_t propagation_axis) noexcept;
+                size_t propagation_axis);
 
     // clang-tidy: no runtime references
-    void pup(PUP::er& /*p*/) noexcept;  //  NOLINT
+    void pup(PUP::er& /*p*/);  //  NOLINT
 
     double mass_density_ = std::numeric_limits<double>::signaling_NaN();
     std::array<double, Dim> velocity_ =
@@ -226,8 +226,7 @@ class RiemannProblem : public MarkAsAnalyticSolution {
     double constant_a_ = std::numeric_limits<double>::signaling_NaN();
     double constant_b_ = std::numeric_limits<double>::signaling_NaN();
 
-    friend bool operator==(const InitialData& lhs,
-                           const InitialData& rhs) noexcept {
+    friend bool operator==(const InitialData& lhs, const InitialData& rhs) {
       return lhs.mass_density_ == rhs.mass_density_ and
              lhs.velocity_ == rhs.velocity_ and lhs.pressure_ == rhs.pressure_;
     }
@@ -243,23 +242,24 @@ class RiemannProblem : public MarkAsAnalyticSolution {
   RiemannProblem() = default;
   RiemannProblem(const RiemannProblem& /*rhs*/) = delete;
   RiemannProblem& operator=(const RiemannProblem& /*rhs*/) = delete;
-  RiemannProblem(RiemannProblem&& /*rhs*/) noexcept = default;
-  RiemannProblem& operator=(RiemannProblem&& /*rhs*/) noexcept = default;
+  RiemannProblem(RiemannProblem&& /*rhs*/) = default;
+  RiemannProblem& operator=(RiemannProblem&& /*rhs*/) = default;
   ~RiemannProblem() = default;
 
-  RiemannProblem(
-      double adiabatic_index, double initial_position, double left_mass_density,
-      const std::array<double, Dim>& left_velocity, double left_pressure,
-      double right_mass_density, const std::array<double, Dim>& right_velocity,
-      double right_pressure,
-      double pressure_star_tol = PressureStarTol::suggested_value()) noexcept;
+  RiemannProblem(double adiabatic_index, double initial_position,
+                 double left_mass_density,
+                 const std::array<double, Dim>& left_velocity,
+                 double left_pressure, double right_mass_density,
+                 const std::array<double, Dim>& right_velocity,
+                 double right_pressure,
+                 double pressure_star_tol = PressureStarTol::suggested_value());
 
   /// Retrieve a collection of hydrodynamic variables at position `x`
   /// and time `t`
   template <typename DataType, typename... Tags>
   tuples::TaggedTuple<Tags...> variables(
       const tnsr::I<DataType, Dim, Frame::Inertial>& x, double t,
-      tmpl::list<Tags...> /*meta*/) const noexcept {
+      tmpl::list<Tags...> /*meta*/) const {
     const Wave left(left_initial_data_, pressure_star_, velocity_star_,
                     adiabatic_index_, Side::Left);
     const Wave right(right_initial_data_, pressure_star_, velocity_star_,
@@ -272,17 +272,15 @@ class RiemannProblem : public MarkAsAnalyticSolution {
         variables(x_shifted, t, tmpl::list<Tags>{}, left, right))...};
   }
 
-  const EquationsOfState::IdealFluid<false>& equation_of_state() const
-      noexcept {
+  const EquationsOfState::IdealFluid<false>& equation_of_state() const {
     return equation_of_state_;
   }
 
   // clang-tidy: no runtime references
-  void pup(PUP::er& /*p*/) noexcept;  //  NOLINT
+  void pup(PUP::er& /*p*/);  //  NOLINT
 
   // Retrieve these member variables for testing purposes.
-  constexpr std::array<double, 2> diagnostic_star_region_values() const
-      noexcept {
+  constexpr std::array<double, 2> diagnostic_star_region_values() const {
     return make_array(pressure_star_, velocity_star_);
   }
 
@@ -292,27 +290,26 @@ class RiemannProblem : public MarkAsAnalyticSolution {
   template <typename DataType>
   auto variables(const tnsr::I<DataType, Dim, Frame::Inertial>& x_shifted,
                  double t, tmpl::list<Tags::MassDensity<DataType>> /*meta*/,
-                 const Wave& left, const Wave& right) const noexcept
+                 const Wave& left, const Wave& right) const
       -> tuples::TaggedTuple<Tags::MassDensity<DataType>>;
 
   template <typename DataType>
-  auto variables(
-      const tnsr::I<DataType, Dim, Frame::Inertial>& x_shifted, double t,
-      tmpl::list<Tags::Velocity<DataType, Dim>> /*meta*/,
-      const Wave& left, const Wave& right) const noexcept
+  auto variables(const tnsr::I<DataType, Dim, Frame::Inertial>& x_shifted,
+                 double t, tmpl::list<Tags::Velocity<DataType, Dim>> /*meta*/,
+                 const Wave& left, const Wave& right) const
       -> tuples::TaggedTuple<Tags::Velocity<DataType, Dim>>;
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, Dim, Frame::Inertial>& x_shifted,
                  double t, tmpl::list<Tags::Pressure<DataType>> /*meta*/,
-                 const Wave& left, const Wave& right) const noexcept
+                 const Wave& left, const Wave& right) const
       -> tuples::TaggedTuple<Tags::Pressure<DataType>>;
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, Dim, Frame::Inertial>& x_shifted,
                  double t,
                  tmpl::list<Tags::SpecificInternalEnergy<DataType>> /*meta*/,
-                 const Wave& left, const Wave& right) const noexcept
+                 const Wave& left, const Wave& right) const
       -> tuples::TaggedTuple<Tags::SpecificInternalEnergy<DataType>>;
   /// @}
 
@@ -326,15 +323,14 @@ class RiemannProblem : public MarkAsAnalyticSolution {
   // Here normal velocity means velocity along the wave propagation.
   struct Wave {
     Wave(const InitialData& data, double pressure_star, double velocity_star,
-         double adiabatic_index, const Side& side) noexcept;
+         double adiabatic_index, const Side& side);
 
-    double mass_density(double x_shifted, double t) const noexcept;
+    double mass_density(double x_shifted, double t) const;
 
     double normal_velocity(double x_shifted, double t,
-                           double velocity_star) const noexcept;
+                           double velocity_star) const;
 
-    double pressure(double x_shifted, double t, double pressure_star) const
-        noexcept;
+    double pressure(double x_shifted, double t, double pressure_star) const;
 
    private:
     // p_* over initial pressure on the corresponding side
@@ -349,15 +345,15 @@ class RiemannProblem : public MarkAsAnalyticSolution {
 
   struct Shock {
     Shock(const InitialData& data, double pressure_ratio,
-          double adiabatic_index, const Side& side) noexcept;
+          double adiabatic_index, const Side& side);
 
     double mass_density(double x_shifted, double t,
-                        const InitialData& data) const noexcept;
+                        const InitialData& data) const;
     double normal_velocity(double x_shifted, double t, const InitialData& data,
-                           double velocity_star) const noexcept;
+                           double velocity_star) const;
 
     double pressure(double x_shifted, double t, const InitialData& data,
-                    double pressure_star) const noexcept;
+                    double pressure_star) const;
 
    private:
     double direction_ = std::numeric_limits<double>::signaling_NaN();
@@ -367,16 +363,15 @@ class RiemannProblem : public MarkAsAnalyticSolution {
 
   struct Rarefaction {
     Rarefaction(const InitialData& data, double pressure_ratio,
-                double velocity_star, double adiabatic_index,
-                const Side& side) noexcept;
+                double velocity_star, double adiabatic_index, const Side& side);
 
     double mass_density(double x_shifted, double t,
-                        const InitialData& data) const noexcept;
+                        const InitialData& data) const;
     double normal_velocity(double x_shifted, double t, const InitialData& data,
-                           double velocity_star) const noexcept;
+                           double velocity_star) const;
 
     double pressure(double x_shifted, double t, const InitialData& data,
-                    double pressure_star) const noexcept;
+                    double pressure_star) const;
 
    private:
     double direction_ = std::numeric_limits<double>::signaling_NaN();
@@ -392,7 +387,7 @@ class RiemannProblem : public MarkAsAnalyticSolution {
   friend bool
   operator==(  // NOLINT (clang-tidy: readability-redundant-declaration)
       const RiemannProblem<SpatialDim>& lhs,
-      const RiemannProblem<SpatialDim>& rhs) noexcept;
+      const RiemannProblem<SpatialDim>& rhs);
 
   double adiabatic_index_ = std::numeric_limits<double>::signaling_NaN();
   double initial_position_ = std::numeric_limits<double>::signaling_NaN();
@@ -410,8 +405,7 @@ class RiemannProblem : public MarkAsAnalyticSolution {
 };
 
 template <size_t Dim>
-bool operator!=(const RiemannProblem<Dim>& lhs,
-                const RiemannProblem<Dim>& rhs) noexcept;
+bool operator!=(const RiemannProblem<Dim>& lhs, const RiemannProblem<Dim>& rhs);
 
 }  // namespace Solutions
 }  // namespace NewtonianEuler

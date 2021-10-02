@@ -8,10 +8,10 @@
 
 namespace DenseTriggers {
 Filter::Filter(std::unique_ptr<DenseTrigger> trigger,
-               std::unique_ptr<Trigger> filter) noexcept
+               std::unique_ptr<Trigger> filter)
     : trigger_(std::move(trigger)), filter_(std::move(filter)) {}
 
-void Filter::pup(PUP::er& p) noexcept {
+void Filter::pup(PUP::er& p) {
   DenseTrigger::pup(p);
   p | trigger_;
   p | filter_;

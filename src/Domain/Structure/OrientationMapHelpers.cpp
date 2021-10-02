@@ -21,7 +21,7 @@ namespace {
 
 // 1D data can be aligned or anti-aligned
 std::vector<size_t> compute_offset_permutation(
-    const Index<1>& extents, const bool neighbor_axis_is_aligned) noexcept {
+    const Index<1>& extents, const bool neighbor_axis_is_aligned) {
   std::vector<size_t> oriented_offsets(extents.product());
   std::iota(oriented_offsets.begin(), oriented_offsets.end(), 0);
   if (not neighbor_axis_is_aligned) {
@@ -37,7 +37,7 @@ std::vector<size_t> compute_offset_permutation(
 std::vector<size_t> compute_offset_permutation(
     const Index<2>& extents, const bool neighbor_first_axis_is_aligned,
     const bool neighbor_second_axis_is_aligned,
-    const bool neighbor_axes_are_transposed) noexcept {
+    const bool neighbor_axes_are_transposed) {
   std::vector<size_t> oriented_offsets(extents.product());
   // Reduce the number of cases to explicitly write out by 4, by encoding the
   // (anti-)alignment of each axis as numerical factors ("offset" and "step")
@@ -83,7 +83,7 @@ std::vector<size_t> compute_offset_permutation(
     const Index<3>& extents, const bool neighbor_first_axis_is_aligned,
     const bool neighbor_second_axis_is_aligned,
     const bool neighbor_third_axis_is_aligned,
-    const std::array<size_t, 3>& neighbor_axis_permutation) noexcept {
+    const std::array<size_t, 3>& neighbor_axis_permutation) {
   std::vector<size_t> oriented_offsets(extents.product());
   // Reduce the number of cases to explicitly write out by 8, by encoding the
   // (anti-)alignment of each axis as numerical factors ("offset" and "step")
@@ -205,8 +205,7 @@ namespace OrientationMapHelpers_detail {
 
 template <>
 std::vector<size_t> oriented_offset(
-    const Index<1>& extents,
-    const OrientationMap<1>& orientation_of_neighbor) noexcept {
+    const Index<1>& extents, const OrientationMap<1>& orientation_of_neighbor) {
   const Direction<1> neighbor_axis =
       orientation_of_neighbor(Direction<1>::upper_xi());
   const bool is_aligned = (neighbor_axis.side() == Side::Upper);
@@ -215,8 +214,7 @@ std::vector<size_t> oriented_offset(
 
 template <>
 std::vector<size_t> oriented_offset(
-    const Index<2>& extents,
-    const OrientationMap<2>& orientation_of_neighbor) noexcept {
+    const Index<2>& extents, const OrientationMap<2>& orientation_of_neighbor) {
   const Direction<2> neighbor_first_axis =
       orientation_of_neighbor(Direction<2>::upper_xi());
   const Direction<2> neighbor_second_axis =
@@ -235,8 +233,7 @@ std::vector<size_t> oriented_offset(
 
 template <>
 std::vector<size_t> oriented_offset(
-    const Index<3>& extents,
-    const OrientationMap<3>& orientation_of_neighbor) noexcept {
+    const Index<3>& extents, const OrientationMap<3>& orientation_of_neighbor) {
   const Direction<3> neighbor_first_axis =
       orientation_of_neighbor(Direction<3>::upper_xi());
   const Direction<3> neighbor_second_axis =
@@ -262,7 +259,7 @@ std::vector<size_t> oriented_offset(
 
 std::vector<size_t> oriented_offset_on_slice(
     const Index<1>& slice_extents, const size_t sliced_dim,
-    const OrientationMap<2>& orientation_of_neighbor) noexcept {
+    const OrientationMap<2>& orientation_of_neighbor) {
   const Direction<2> my_slice_axis =
       (0 == sliced_dim ? Direction<2>::upper_eta() : Direction<2>::upper_xi());
   const Direction<2> neighbor_slice_axis =
@@ -273,7 +270,7 @@ std::vector<size_t> oriented_offset_on_slice(
 
 std::vector<size_t> oriented_offset_on_slice(
     const Index<2>& slice_extents, const size_t sliced_dim,
-    const OrientationMap<3>& orientation_of_neighbor) noexcept {
+    const OrientationMap<3>& orientation_of_neighbor) {
   const std::array<size_t, 2> dims_of_slice =
       (0 == sliced_dim ? make_array(1_st, 2_st)
                        : (1 == sliced_dim) ? make_array(0_st, 2_st)
@@ -299,7 +296,7 @@ template <typename T>
 void orient_each_component(
     const gsl::not_null<gsl::span<T>*> oriented_variables,
     const gsl::span<const T>& variables, const size_t num_pts,
-    const std::vector<size_t>& oriented_offset) noexcept {
+    const std::vector<size_t>& oriented_offset) {
   const size_t num_components = variables.size() / num_pts;
   ASSERT(oriented_variables->size() == variables.size(),
          "The number of oriented variables, "
@@ -319,17 +316,17 @@ void orient_each_component(
 template void orient_each_component(
     const gsl::not_null<gsl::span<double>*> oriented_variables,
     const gsl::span<const double>& variables, const size_t num_pts,
-    const std::vector<size_t>& oriented_offset) noexcept;
+    const std::vector<size_t>& oriented_offset);
 template void orient_each_component(
     const gsl::not_null<gsl::span<std::complex<double>>*> oriented_variables,
     const gsl::span<const std::complex<double>>& variables,
-    const size_t num_pts, const std::vector<size_t>& oriented_offset) noexcept;
+    const size_t num_pts, const std::vector<size_t>& oriented_offset);
 }  // namespace OrientationMapHelpers_detail
 
 template <size_t VolumeDim>
 std::vector<double> orient_variables(
     const std::vector<double>& variables, const Index<VolumeDim>& extents,
-    const OrientationMap<VolumeDim>& orientation_of_neighbor) noexcept {
+    const OrientationMap<VolumeDim>& orientation_of_neighbor) {
   // Skip work (aside from a copy) if neighbor is aligned
   if (orientation_of_neighbor.is_aligned()) {
     return variables;
@@ -355,7 +352,7 @@ template <size_t VolumeDim>
 std::vector<double> orient_variables_on_slice(
     const std::vector<double>& variables_on_slice,
     const Index<VolumeDim - 1>& slice_extents, const size_t sliced_dim,
-    const OrientationMap<VolumeDim>& orientation_of_neighbor) noexcept {
+    const OrientationMap<VolumeDim>& orientation_of_neighbor) {
   // Skip work (aside from a copy) if neighbor slice is aligned
   if (orientation_of_neighbor.is_aligned()) {
     return variables_on_slice;
@@ -385,11 +382,11 @@ std::vector<double> orient_variables_on_slice(
 #define INSTANTIATION(r, data)                                               \
   template std::vector<double> orient_variables<DIM(data)>(                  \
       const std::vector<double>& variables, const Index<DIM(data)>& extents, \
-      const OrientationMap<DIM(data)>& orientation_of_neighbor) noexcept;    \
+      const OrientationMap<DIM(data)>& orientation_of_neighbor);             \
   template std::vector<double> orient_variables_on_slice<DIM(data)>(         \
       const std::vector<double>& variables,                                  \
       const Index<DIM(data) - 1>& extents, size_t sliced_dim,                \
-      const OrientationMap<DIM(data)>& orientation_of_neighbor) noexcept;
+      const OrientationMap<DIM(data)>& orientation_of_neighbor);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 

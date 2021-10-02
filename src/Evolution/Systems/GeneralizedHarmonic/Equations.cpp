@@ -18,7 +18,7 @@ void ComputeNormalDotFluxes<Dim>::apply(
         spacetime_metric_normal_dot_flux,
     const gsl::not_null<tnsr::aa<DataVector, Dim>*> pi_normal_dot_flux,
     const gsl::not_null<tnsr::iaa<DataVector, Dim>*> phi_normal_dot_flux,
-    const tnsr::aa<DataVector, Dim>& spacetime_metric) noexcept {
+    const tnsr::aa<DataVector, Dim>& spacetime_metric) {
   destructive_resize_components(pi_normal_dot_flux,
                                 get<0, 0>(spacetime_metric).size());
   destructive_resize_components(phi_normal_dot_flux,

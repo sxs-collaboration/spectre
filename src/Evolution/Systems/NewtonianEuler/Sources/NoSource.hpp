@@ -22,7 +22,7 @@ struct NoSource {
   using sourced_variables = tmpl::list<>;
   using argument_tags = tmpl::list<>;
   // clang-tidy: google-runtime-references
-  void pup(PUP::er& /*p*/) noexcept {}  // NOLINT
+  void pup(PUP::er& /*p*/) {}  // NOLINT
 };
 }  // namespace Sources
 }  // namespace NewtonianEuler

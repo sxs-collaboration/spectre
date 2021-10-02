@@ -29,7 +29,7 @@ class SimpleTimes : public StepController {
  public:
   /// \cond
   SimpleTimes() = default;
-  explicit SimpleTimes(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit SimpleTimes(CkMigrateMessage* /*unused*/) {}
   WRAPPED_PUPable_decl(SimpleTimes);  // NOLINT
   /// \endcond
 
@@ -40,7 +40,7 @@ class SimpleTimes : public StepController {
       "denominator) fractions of the slab."};
 
   TimeDelta choose_step(const Time& time,
-                        const double desired_step) const noexcept override {
+                        const double desired_step) const override {
     const Time goal =
         desired_step > 0 ? time.slab().end() : time.slab().start();
     const TimeDelta remaining = goal - time;

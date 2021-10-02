@@ -10,7 +10,7 @@
 
 namespace ScalarWave::BoundaryConditions {
 template <size_t Dim>
-BoundaryCondition<Dim>::BoundaryCondition(CkMigrateMessage* const msg) noexcept
+BoundaryCondition<Dim>::BoundaryCondition(CkMigrateMessage* const msg)
     : domain::BoundaryConditions::BoundaryCondition(msg) {}
 
 template <size_t Dim>

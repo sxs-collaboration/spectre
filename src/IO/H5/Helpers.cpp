@@ -43,14 +43,14 @@ struct VectorTo;
 template <typename T>
 struct VectorTo<0, T> {
   static T apply(std::vector<T> raw_data,
-                 const std::array<hsize_t, 0>& /*size*/) noexcept {
+                 const std::array<hsize_t, 0>& /*size*/) {
     return raw_data[0];
   }
 };
 
 template <typename T>
 struct VectorTo<1, T> {
-  static T apply(T raw_data, const std::array<hsize_t, 1>& /*size*/) noexcept {
+  static T apply(T raw_data, const std::array<hsize_t, 1>& /*size*/) {
     return raw_data;
   }
 };
@@ -58,16 +58,15 @@ struct VectorTo<1, T> {
 template <>
 struct VectorTo<2, DataVector> {
   static DataVector apply(DataVector raw_data,
-                          const std::array<hsize_t, 2>& /*size*/) noexcept {
+                          const std::array<hsize_t, 2>& /*size*/) {
     return raw_data;
   }
 };
 
 template <typename T>
 struct VectorTo<2, boost::multi_array<T, 2>> {
-  static boost::multi_array<T, 2> apply(
-      const std::vector<T>& raw_data,
-      const std::array<hsize_t, 2>& size) noexcept {
+  static boost::multi_array<T, 2> apply(const std::vector<T>& raw_data,
+                                        const std::array<hsize_t, 2>& size) {
     DEBUG_STATIC_ASSERT(std::is_fundamental_v<T>,
                         "VectorTo is optimized for fundamentals. Need to "
                         "use move semantics for handling generic data types.");
@@ -84,16 +83,15 @@ struct VectorTo<2, boost::multi_array<T, 2>> {
 template <>
 struct VectorTo<3, DataVector> {
   static DataVector apply(DataVector raw_data,
-                          const std::array<hsize_t, 3>& /*size*/) noexcept {
+                          const std::array<hsize_t, 3>& /*size*/) {
     return raw_data;
   }
 };
 
 template <typename T>
 struct VectorTo<3, boost::multi_array<T, 3>> {
-  static boost::multi_array<T, 3> apply(
-      const std::vector<T>& raw_data,
-      const std::array<hsize_t, 3>& size) noexcept {
+  static boost::multi_array<T, 3> apply(const std::vector<T>& raw_data,
+                                        const std::array<hsize_t, 3>& size) {
     DEBUG_STATIC_ASSERT(std::is_fundamental_v<T>,
                         "VectorTo is optimized for fundamentals. Need to "
                         "use move semantics for handling generic data types.");
@@ -113,8 +111,7 @@ struct VectorTo<3, boost::multi_array<T, 3>> {
 namespace h5 {
 template <typename T>
 void write_data(const hid_t group_id, const std::vector<T>& data,
-                const std::vector<size_t>& extents,
-                const std::string& name) noexcept {
+                const std::vector<size_t>& extents, const std::string& name) {
   std::vector<hsize_t> chunk_size(extents.size());
   for (size_t i = 0; i < chunk_size.size(); ++i) {
     // Setting the target number of bytes per chunk to a power of 2 is important
@@ -125,8 +122,7 @@ void write_data(const hid_t group_id, const std::vector<T>& data,
                         ? extents[i]
                         : target_number_of_bytes_per_chunk / sizeof(T);
   }
-  ASSERT(alg::none_of(extents,
-                      [](const size_t extent) noexcept { return extent == 0; }),
+  ASSERT(alg::none_of(extents, [](const size_t extent) { return extent == 0; }),
          "Got zero extent when trying to write data.");
 
   const std::vector<hsize_t> dims(extents.begin(), extents.end());
@@ -181,7 +177,7 @@ void write_data(const hid_t group_id, const std::vector<T>& data,
 }
 
 void write_data(const hid_t group_id, const DataVector& data,
-                const std::string& name) noexcept {
+                const std::string& name) {
   const auto number_of_points = static_cast<hsize_t>(data.size());
   const hid_t space_id = H5Screate_simple(1, &number_of_points, nullptr);
   CHECK_H5(space_id, "Failed to create dataspace");
@@ -216,7 +212,7 @@ void write_extents(const hid_t group_id, const Index<Dim>& extents,
 }
 
 void write_connectivity(const hid_t group_id,
-                        const std::vector<int>& connectivity) noexcept {
+                        const std::vector<int>& connectivity) {
   const hsize_t size = connectivity.size();
   const hid_t space_id = H5Screate_simple(1, &size, nullptr);
   CHECK_H5(space_id, "Failed to create dataspace");
@@ -232,8 +228,8 @@ void write_connectivity(const hid_t group_id,
   CHECK_H5(H5Dclose(dataset_id), "Failed to close dataset");
 }
 
-std::vector<std::string> get_group_names(
-    const hid_t file_id, const std::string& group_name) noexcept {
+std::vector<std::string> get_group_names(const hid_t file_id,
+                                         const std::string& group_name) {
   // Opens the group, loads the group info and then loops over all the groups
   // retrieving their names and storing them in names
   detail::OpenGroup my_group(file_id, group_name, AccessType::ReadOnly);
@@ -262,13 +258,13 @@ std::vector<std::string> get_group_names(
 }
 
 bool contains_dataset_or_group(const hid_t id, const std::string& group_name,
-                               const std::string& dataset_name) noexcept {
+                               const std::string& dataset_name) {
   return alg::found(get_group_names(id, group_name), dataset_name);
 }
 
 template <typename Type>
 void write_to_attribute(const hid_t location_id, const std::string& name,
-                        const Type& value) noexcept {
+                        const Type& value) {
   const hid_t space_id = H5Screate(H5S_SCALAR);
   CHECK_H5(space_id, "Failed to create scalar");
   const hid_t att_id = H5Acreate2(location_id, name.c_str(), h5_type<Type>(),
@@ -281,8 +277,7 @@ void write_to_attribute(const hid_t location_id, const std::string& name,
 }
 
 template <typename Type>
-Type read_value_attribute(const hid_t location_id,
-                          const std::string& name) noexcept {
+Type read_value_attribute(const hid_t location_id, const std::string& name) {
   const htri_t attribute_exists = H5Aexists(location_id, name.c_str());
   if (not attribute_exists) {
     ERROR("Could not find attribute '" << name << "'");  // LCOV_EXCL_LINE
@@ -299,7 +294,7 @@ Type read_value_attribute(const hid_t location_id,
 
 template <typename T>
 void write_to_attribute(const hid_t group_id, const std::string& name,
-                        const std::vector<T>& data) noexcept {
+                        const std::vector<T>& data) {
   const hsize_t size = data.size();
   const hid_t space_id = H5Screate_simple(1, &size, nullptr);
   CHECK_H5(space_id,
@@ -318,7 +313,7 @@ void write_to_attribute(const hid_t group_id, const std::string& name,
 
 template <typename T>
 std::vector<T> read_rank1_attribute(const hid_t group_id,
-                                    const std::string& name) noexcept {
+                                    const std::string& name) {
   const hid_t attr_id = H5Aopen(group_id, name.c_str(), h5p_default());
   CHECK_H5(attr_id, "Failed to open attribute");
   {  // Check that the datatype in the file matches what we are reading.
@@ -369,9 +364,9 @@ std::vector<T> read_rank1_attribute(const hid_t group_id,
 }
 
 template <>
-void write_to_attribute<std::string>(
-    const hid_t group_id, const std::string& name,
-    const std::vector<std::string>& data) noexcept {
+void write_to_attribute<std::string>(const hid_t group_id,
+                                     const std::string& name,
+                                     const std::vector<std::string>& data) {
   // See the HDF5 example:
   // https://support.hdfgroup.org/ftp/HDF5/examples/examples-by-api/
   // hdf5-examples/1_8/C/H5T/h5ex_t_stringatt.c
@@ -404,7 +399,7 @@ void write_to_attribute<std::string>(
 
 template <>
 std::vector<std::string> read_rank1_attribute<std::string>(
-    const hid_t group_id, const std::string& name) noexcept {
+    const hid_t group_id, const std::string& name) {
   const auto attribute_exists =
       static_cast<bool>(H5Aexists(group_id, name.c_str()));
   if (not attribute_exists) {
@@ -482,30 +477,29 @@ bool contains_attribute(const hid_t file_id, const std::string& group_name,
          std::end(names);
 }
 
-hid_t open_dataset(const hid_t group_id,
-                   const std::string& dataset_name) noexcept {
+hid_t open_dataset(const hid_t group_id, const std::string& dataset_name) {
   const hid_t dataset_id = H5Dopen2(
                            group_id, dataset_name.c_str(), h5p_default());
   CHECK_H5(dataset_id, "Failed to open dataset '" << dataset_name << "'");
   return dataset_id;
 }
 
-void close_dataset(const hid_t dataset_id) noexcept {
+void close_dataset(const hid_t dataset_id) {
   CHECK_H5(H5Dclose(dataset_id), "Failed to close dataset");
 }
 
-hid_t open_dataspace(const hid_t dataset_id) noexcept {
+hid_t open_dataspace(const hid_t dataset_id) {
   const hid_t dataspace_id = H5Dget_space(dataset_id);
   CHECK_H5(dataspace_id, "Failed to open dataspace");
   return dataspace_id;
 }
 
-void close_dataspace(const hid_t dataspace_id) noexcept {
+void close_dataspace(const hid_t dataspace_id) {
   CHECK_H5(H5Sclose(dataspace_id), "Failed to close dataspace");
 }
 
 template <size_t Rank, typename T>
-T read_data(const hid_t group_id, const std::string& dataset_name) noexcept {
+T read_data(const hid_t group_id, const std::string& dataset_name) {
   const hid_t dataset_id = open_dataset(group_id, dataset_name);
   const hid_t dataspace_id = open_dataspace(dataset_id);
   std::array<hsize_t, Rank> size{};
@@ -571,34 +565,33 @@ template Index<3> read_extents<3>(const hid_t group_id,
 #define TYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define RANK(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATE_WRITE_DATA(_, DATA)                            \
-  template void write_data<TYPE(DATA)>(                            \
-      const hid_t group_id, const std::vector<TYPE(DATA)>& data,   \
-      const std::vector<size_t>& extents,                          \
-      const std::string& name) noexcept;
+#define INSTANTIATE_WRITE_DATA(_, DATA)                          \
+  template void write_data<TYPE(DATA)>(                          \
+      const hid_t group_id, const std::vector<TYPE(DATA)>& data, \
+      const std::vector<size_t>& extents, const std::string& name);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_WRITE_DATA,
                         (float, double, int, unsigned int, long, unsigned long,
                          long long, unsigned long long, char))
 
-#define INSTANTIATE_ATTRIBUTE(_, DATA)                                 \
-  template void write_to_attribute<TYPE(DATA)>(                        \
-      const hid_t group_id, const std::string& name,                   \
-      const std::vector<TYPE(DATA)>& data) noexcept;                   \
-  template void write_to_attribute<TYPE(DATA)>(                        \
-      const hid_t location_id, const std::string& name,                \
-      const TYPE(DATA) & value) noexcept;                              \
-  template TYPE(DATA) read_value_attribute<TYPE(DATA)>(                \
-      const hid_t location_id, const std::string& name) noexcept;      \
-  template std::vector<TYPE(DATA)> read_rank1_attribute<TYPE(DATA)>(   \
-      const hid_t group_id, const std::string& name) noexcept;
+#define INSTANTIATE_ATTRIBUTE(_, DATA)                                    \
+  template void write_to_attribute<TYPE(DATA)>(                           \
+      const hid_t group_id, const std::string& name,                      \
+      const std::vector<TYPE(DATA)>& data);                               \
+  template void write_to_attribute<TYPE(DATA)>(const hid_t location_id,   \
+                                               const std::string& name,   \
+                                               const TYPE(DATA) & value); \
+  template TYPE(DATA) read_value_attribute<TYPE(DATA)>(                   \
+      const hid_t location_id, const std::string& name);                  \
+  template std::vector<TYPE(DATA)> read_rank1_attribute<TYPE(DATA)>(      \
+      const hid_t group_id, const std::string& name);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_ATTRIBUTE,
                         (double, unsigned int, unsigned long, int))
 
 #define INSTANTIATE_READ_SCALAR(_, DATA)                 \
   template TYPE(DATA) read_data<RANK(DATA), TYPE(DATA)>( \
-      const hid_t group_id, const std::string& dataset_name) noexcept;
+      const hid_t group_id, const std::string& dataset_name);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_READ_SCALAR,
                         (float, double, int, unsigned int, long, unsigned long,
@@ -608,7 +601,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_READ_SCALAR,
 #define INSTANTIATE_READ_VECTOR(_, DATA)          \
   template std::vector<TYPE(DATA)>                \
   read_data<RANK(DATA), std::vector<TYPE(DATA)>>( \
-      const hid_t group_id, const std::string& dataset_name) noexcept;
+      const hid_t group_id, const std::string& dataset_name);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_READ_VECTOR,
                         (float, double, int, unsigned int, long, unsigned long,
@@ -618,7 +611,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_READ_VECTOR,
 #define INSTANTIATE_READ_MULTIARRAY(_, DATA)                         \
   template boost::multi_array<TYPE(DATA), RANK(DATA)>                \
   read_data<RANK(DATA), boost::multi_array<TYPE(DATA), RANK(DATA)>>( \
-      const hid_t group_id, const std::string& dataset_name) noexcept;
+      const hid_t group_id, const std::string& dataset_name);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_READ_MULTIARRAY,
                         (double, int, unsigned int, long, unsigned long,
@@ -627,7 +620,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_READ_MULTIARRAY,
 
 #define INSTANTIATE_READ_DATAVECTOR(_, DATA)             \
   template TYPE(DATA) read_data<RANK(DATA), TYPE(DATA)>( \
-      const hid_t group_id, const std::string& dataset_name) noexcept;
+      const hid_t group_id, const std::string& dataset_name);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_READ_DATAVECTOR, (DataVector), (1, 2, 3))
 

@@ -26,22 +26,12 @@ struct MyNonCopyable {
   MyNonCopyable(MyNonCopyable&&) = default;
   MyNonCopyable& operator=(MyNonCopyable&&) = default;
 
-  const T& get() const noexcept { return t_; }
+  const T& get() const { return t_; }
 
  private:
   T t_;
 };
 }  // namespace
-
-static_assert(noexcept(make_array<2>(0)),
-              "Failed Unit.Utilities.MakeArray testing noexcept calculation of "
-              "make_array.");
-static_assert(noexcept(make_array<2>(DoesNotThrow{})),
-              "Failed Unit.Utilities.MakeArray testing noexcept calculation of "
-              "make_array.");
-static_assert(not noexcept(make_array<2>(DoesThrow{})),
-              "Failed Unit.Utilities.MakeArray testing noexcept calculation of "
-              "make_array.");
 
 SPECTRE_TEST_CASE("Unit.Utilities.MakeArray", "[Unit][Utilities]") {
   constexpr auto same_array = make_array<4>(7.8);
@@ -135,7 +125,7 @@ SPECTRE_TEST_CASE("Unit.Utilities.MakeArray", "[Unit][Utilities]") {
   {
     struct NonDefaultConstructible {
       NonDefaultConstructible() = delete;
-      explicit NonDefaultConstructible(int /*unused*/) noexcept {}
+      explicit NonDefaultConstructible(int /*unused*/) {}
     };
     const NonDefaultConstructible ndc{1};
     // We just check that these compile, since there's not any

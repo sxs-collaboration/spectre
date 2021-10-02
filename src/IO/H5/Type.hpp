@@ -80,7 +80,7 @@ SPECTRE_ALWAYS_INLINE hid_t h5_type<std::string>() {
  * \ingroup HDF5Group
  * \brief Create an H5 FORTRAN string.
  */
-SPECTRE_ALWAYS_INLINE hid_t fortran_string() noexcept {
+SPECTRE_ALWAYS_INLINE hid_t fortran_string() {
   hid_t datatype = H5Tcopy(H5T_FORTRAN_S1);
   CHECK_H5(datatype, "Failed to allocate string.");
 #pragma GCC diagnostic push

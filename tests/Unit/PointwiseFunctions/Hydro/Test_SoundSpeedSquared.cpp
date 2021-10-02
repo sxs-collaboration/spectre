@@ -25,7 +25,7 @@ void test_compute_item_in_databox(
     const Scalar<DataType>& rest_mass_density,
     const Scalar<DataType>& specific_internal_energy,
     const Scalar<DataType>& specific_enthalpy,
-    const EquationOfStateType& equation_of_state) noexcept {
+    const EquationOfStateType& equation_of_state) {
   TestHelpers::db::test_compute_tag<
       hydro::Tags::SoundSpeedSquaredCompute<DataType>>("SoundSpeedSquared");
   const auto box = db::create<
@@ -45,7 +45,7 @@ void test_compute_item_in_databox(
 }
 
 template <typename DataType>
-void test_sound_speed_squared(const DataType& used_for_size) noexcept {
+void test_sound_speed_squared(const DataType& used_for_size) {
   MAKE_GENERATOR(generator);
 
   const auto rest_mass_density = TestHelpers::hydro::random_density(

@@ -108,37 +108,36 @@ class UniformTranslation final : public TimeDependence<MeshDim> {
   UniformTranslation() = default;
   ~UniformTranslation() override = default;
   UniformTranslation(const UniformTranslation&) = delete;
-  UniformTranslation(UniformTranslation&&) noexcept = default;
+  UniformTranslation(UniformTranslation&&) = default;
   UniformTranslation& operator=(const UniformTranslation&) = delete;
-  UniformTranslation& operator=(UniformTranslation&&) noexcept = default;
+  UniformTranslation& operator=(UniformTranslation&&) = default;
 
   UniformTranslation(
       double initial_time, std::optional<double> initial_expiration_delta_t,
       const std::array<double, MeshDim>& velocity,
-      std::string function_of_time_name = default_function_name()) noexcept;
+      std::string function_of_time_name = default_function_name());
 
-  auto get_clone() const noexcept
-      -> std::unique_ptr<TimeDependence<MeshDim>> override;
+  auto get_clone() const -> std::unique_ptr<TimeDependence<MeshDim>> override;
 
-  auto block_maps(size_t number_of_blocks) const noexcept
+  auto block_maps(size_t number_of_blocks) const
       -> std::vector<std::unique_ptr<domain::CoordinateMapBase<
           Frame::Grid, Frame::Inertial, MeshDim>>> override;
 
-  auto functions_of_time() const noexcept -> std::unordered_map<
+  auto functions_of_time() const -> std::unordered_map<
       std::string,
       std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;
 
   /// Returns the map for each block to be used in a composition of
   /// `TimeDependence`s.
-  MapForComposition map_for_composition() const noexcept;
+  MapForComposition map_for_composition() const;
 
  private:
-  static std::string default_function_name() noexcept;
+  static std::string default_function_name();
 
   template <size_t LocalDim>
   // NOLINTNEXTLINE(readability-redundant-declaration)
   friend bool operator==(const UniformTranslation<LocalDim>& lhs,
-                         const UniformTranslation<LocalDim>& rhs) noexcept;
+                         const UniformTranslation<LocalDim>& rhs);
 
   double initial_time_{std::numeric_limits<double>::signaling_NaN()};
   std::optional<double> initial_expiration_delta_t_{};
@@ -148,11 +147,11 @@ class UniformTranslation final : public TimeDependence<MeshDim> {
 
 template <size_t Dim>
 bool operator==(const UniformTranslation<Dim>& lhs,
-                const UniformTranslation<Dim>& rhs) noexcept;
+                const UniformTranslation<Dim>& rhs);
 
 template <size_t Dim>
 bool operator!=(const UniformTranslation<Dim>& lhs,
-                const UniformTranslation<Dim>& rhs) noexcept;
+                const UniformTranslation<Dim>& rhs);
 }  // namespace time_dependence
 }  // namespace creators
 }  // namespace domain

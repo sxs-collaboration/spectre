@@ -22,7 +22,7 @@ void ConservativeFromPrimitive<Dim>::apply(
     const gsl::not_null<Scalar<DataVector>*> energy_density,
     const Scalar<DataVector>& mass_density,
     const tnsr::I<DataVector, Dim>& velocity,
-    const Scalar<DataVector>& specific_internal_energy) noexcept {
+    const Scalar<DataVector>& specific_internal_energy) {
   get(*mass_density_cons) = get(mass_density);
 
   for (size_t i = 0; i < Dim; ++i) {

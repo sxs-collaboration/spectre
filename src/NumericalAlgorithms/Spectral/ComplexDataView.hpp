@@ -97,11 +97,11 @@ class ComplexDataView {
   // Construct a view which starts at index `offset` of the supplied
   // vector, and extends for `size` elements
   ComplexDataView(gsl::not_null<ComplexDataVector*> vector, size_t size,
-                  size_t offset = 0) noexcept;
+                  size_t offset = 0);
 
   // Construct a view which starts at pointer `start` and extends for
   // `size` elements. Need not be a part of a ComplexDataVector.
-  ComplexDataView(std::complex<double>* start, size_t size) noexcept;
+  ComplexDataView(std::complex<double>* start, size_t size);
 
   // For the lifetime of the data view, it points to the same portion of a
   // single vector. We disallow default move assignment, as it would exhibit
@@ -115,42 +115,39 @@ class ComplexDataView {
   ~ComplexDataView() = default;
 
   // assign into the view the values of a same-sized ComplexDataVector
-  ComplexDataView<Representation>& operator=(
-      const ComplexDataVector& vector) noexcept;
+  ComplexDataView<Representation>& operator=(const ComplexDataVector& vector);
 
   // Assign into the view the values from a same-sized view
   ComplexDataView<Representation>& operator=(
-      const ComplexDataView<Representation>& view) noexcept;
+      const ComplexDataView<Representation>& view);
 
   // Conjugate the data.
-  void conjugate() noexcept;
+  void conjugate();
 
   // Assign into the real components of a view the values from a
   // provided `DataVector`
-  ComplexDataView<Representation>& assign_real(
-      const DataVector& vector) noexcept;
+  ComplexDataView<Representation>& assign_real(const DataVector& vector);
 
   // Assign into the imaginary components of a view the values from a
   // provided `DataVector`
-  ComplexDataView<Representation>& assign_imag(
-      const DataVector& vector) noexcept;
+  ComplexDataView<Representation>& assign_imag(const DataVector& vector);
 
   // Gets the size of the view (the number of complex entries).
-  size_t size() const noexcept { return size_; }
+  size_t size() const { return size_; }
 
   // Gets the stride between successive real or successive imaginary components
   // in memory.
-  static constexpr size_t stride() noexcept { return stride_; }
+  static constexpr size_t stride() { return stride_; }
 
   // Gets the raw pointer to the start of the real data, which are separated
   // from one another by `stride()`.
-  double* real_data() noexcept;
-  const double* real_data() const noexcept;
+  double* real_data();
+  const double* real_data() const;
 
   // Gets the raw pointer to the start of the imaginary data, which are
   // separated from one another by `stride()`.
-  double* imag_data() noexcept;
-  const double* imag_data() const noexcept;
+  double* imag_data();
+  const double* imag_data() const;
 
   // A function for manually flushing the data back to the source. This class
   // minimizes copies wherever possible, so the manual control of bringing the
@@ -159,7 +156,7 @@ class ComplexDataView {
   // Warning: Until this function is called, mutations applied via other member
   // functions or mutations applied via the pointers obtained from other member
   // functions are not guaranteed to be applied to the source vector.
-  void copy_back_to_source() noexcept;
+  void copy_back_to_source();
 
  private:
   size_t size_;

@@ -82,7 +82,7 @@ struct BoundaryTerms final : public BoundaryCorrection<Dim> {
     using type = Scalar<DataVector>;
   };
 
-  explicit BoundaryTerms(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit BoundaryTerms(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(BoundaryTerms);  // NOLINT
   BoundaryTerms() = default;
@@ -122,7 +122,7 @@ struct BoundaryTerms final : public BoundaryCorrection<Dim> {
       const Scalar<DataVector>& exterior_var1,
       const tnsr::I<DataVector, Dim, Frame::Inertial>& exterior_var2,
       const Scalar<DataVector>& exterior_max_abs_char_speed,
-      const dg::Formulation dg_formulation) const noexcept {
+      const dg::Formulation dg_formulation) const {
     // extra minus sign on exterior normal dot flux because normal faces
     // opposite direction
     get(*boundary_correction_var1) =
@@ -160,7 +160,7 @@ struct SetLocalMortarData {
       tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {  // NOLINT
+      const ParallelComponent* const /*meta*/) {  // NOLINT
     const auto& element =
         db::get<domain::Tags::Element<Metavariables::volume_dim>>(box);
     const auto& volume_mesh =
@@ -217,9 +217,9 @@ struct SetLocalMortarData {
                       100 * count + 1000);
 
         db::mutate<evolution::dg::Tags::MortarData<Metavariables::volume_dim>>(
-            make_not_null(&box), [&face_mesh, &mortar_id, &time_step_id,
-                                  &type_erased_boundary_data_on_mortar](
-                                     const auto mortar_data_ptr) noexcept {
+            make_not_null(&box),
+            [&face_mesh, &mortar_id, &time_step_id,
+             &type_erased_boundary_data_on_mortar](const auto mortar_data_ptr) {
               // when using local time stepping, we reset the local mortar data
               // at the end of the SetLocalMortarData action since the
               // ComputeTimeDerivative action would've moved the data into the
@@ -747,9 +747,9 @@ void test_impl(const Spectral::Quadrature quadrature,
       [&det_inv_jacobian, &dg_formulation, &dt_boundary_correction_on_mortar,
        &dt_boundary_correction_projected_onto_face,
        &expected_dt_variables_volume, &mesh, &mortar_id_ptr, &mortar_meshes,
-       &mortar_sizes, &quadrature, &runner, &self_id](
-          const evolution::dg::MortarData<Dim>& local_mortar_data,
-          const evolution::dg::MortarData<Dim>& neighbor_mortar_data) noexcept
+       &mortar_sizes, &quadrature, &runner,
+       &self_id](const evolution::dg::MortarData<Dim>& local_mortar_data,
+                 const evolution::dg::MortarData<Dim>& neighbor_mortar_data)
       -> Variables<db::wrap_tags_in<::Tags::dt, variables_tags>> {
     const auto& mortar_id = *mortar_id_ptr;
     const auto& direction = mortar_id.first;
@@ -812,7 +812,7 @@ void test_impl(const Spectral::Quadrature quadrature,
     auto& dt_boundary_correction =
         [&dt_boundary_correction_on_mortar,
          &dt_boundary_correction_projected_onto_face, &face_mesh, &mortar_mesh,
-         &mortar_size]() noexcept -> Variables<dt_variables_tags>& {
+         &mortar_size]() -> Variables<dt_variables_tags>& {
       if (Spectral::needs_projection(face_mesh, mortar_mesh, mortar_size)) {
         dt_boundary_correction_projected_onto_face =
             ::dg::project_from_mortar(dt_boundary_correction_on_mortar,
@@ -915,7 +915,7 @@ void test_impl(const Spectral::Quadrature quadrature,
     CHECK(expected_dt_variables_volume ==
           get_tag<dt_variables_tag>(runner, self_id));
     tmpl::for_each<variables_tags>([&expected_evolved_variables, &runner,
-                                    &self_id](auto tag_v) noexcept {
+                                    &self_id](auto tag_v) {
       using tag = tmpl::type_from<decltype(tag_v)>;
       CHECK_ITERABLE_APPROX(get<tag>(get_tag<variables_tag>(runner, self_id)),
                             get<tag>(expected_evolved_variables));
@@ -929,7 +929,7 @@ void test_impl(const Spectral::Quadrature quadrature,
       compute_correction_coupling(mortar_data, mortar_data);
     }
     tmpl::for_each<dt_variables_tags>([&expected_dt_variables_volume, &runner,
-                                       &self_id](auto tag_v) noexcept {
+                                       &self_id](auto tag_v) {
       using tag = tmpl::type_from<decltype(tag_v)>;
       CHECK_ITERABLE_APPROX(
           get<tag>(get_tag<dt_variables_tag>(runner, self_id)),

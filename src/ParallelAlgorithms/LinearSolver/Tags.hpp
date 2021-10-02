@@ -38,7 +38,7 @@ namespace Tags {
  */
 template <typename Tag>
 struct Operand : db::PrefixTag, db::SimpleTag {
-  static std::string name() noexcept {
+  static std::string name() {
     // Add "Linear" prefix to abbreviate the namespace for uniqueness
     return "LinearOperand(" + db::tag_name<Tag>() + ")";
   }
@@ -51,7 +51,7 @@ struct Operand : db::PrefixTag, db::SimpleTag {
  */
 template <typename Tag>
 struct OperatorAppliedTo : db::PrefixTag, db::SimpleTag {
-  static std::string name() noexcept {
+  static std::string name() {
     // Add "Linear" prefix to abbreviate the namespace for uniqueness
     return "LinearOperatorAppliedTo(" + db::tag_name<Tag>() + ")";
   }
@@ -64,7 +64,7 @@ struct OperatorAppliedTo : db::PrefixTag, db::SimpleTag {
  */
 template <typename Tag>
 struct Residual : db::PrefixTag, db::SimpleTag {
-  static std::string name() noexcept {
+  static std::string name() {
     // Add "Linear" prefix to abbreviate the namespace for uniqueness
     return "LinearResidual(" + db::tag_name<Tag>() + ")";
   }
@@ -86,7 +86,7 @@ struct ResidualCompute : db::add_tag_prefix<Residual, FieldsTag>,
       const gsl::not_null<return_type*> residual,
       const typename SourceTag::type& source,
       const typename db::add_tag_prefix<OperatorAppliedTo, FieldsTag>::type&
-          operator_applied_to_fields) noexcept {
+          operator_applied_to_fields) {
     *residual = source - operator_applied_to_fields;
   }
 };
@@ -97,7 +97,7 @@ struct ResidualCompute : db::add_tag_prefix<Residual, FieldsTag>,
  */
 template <typename Tag>
 struct MagnitudeSquare : db::PrefixTag, db::SimpleTag {
-  static std::string name() noexcept {
+  static std::string name() {
     // Add "Linear" prefix to abbreviate the namespace for uniqueness
     return "LinearMagnitudeSquare(" + db::tag_name<Tag>() + ")";
   }
@@ -111,7 +111,7 @@ struct MagnitudeSquare : db::PrefixTag, db::SimpleTag {
  */
 template <typename Tag>
 struct Magnitude : db::PrefixTag, db::SimpleTag {
-  static std::string name() noexcept {
+  static std::string name() {
     // Add "Linear" prefix to abbreviate the namespace for uniqueness
     return "LinearMagnitude(" + db::tag_name<Tag>() + ")";
   }
@@ -124,7 +124,7 @@ struct Magnitude : db::PrefixTag, db::SimpleTag {
  */
 template <typename Tag>
 struct Orthogonalization : db::PrefixTag, db::SimpleTag {
-  static std::string name() noexcept {
+  static std::string name() {
     // Add "Linear" prefix to abbreviate the namespace for uniqueness
     return "LinearOrthogonalization(" + db::tag_name<Tag>() + ")";
   }
@@ -137,7 +137,7 @@ struct Orthogonalization : db::PrefixTag, db::SimpleTag {
  */
 template <typename Tag>
 struct OrthogonalizationHistory : db::PrefixTag, db::SimpleTag {
-  static std::string name() noexcept {
+  static std::string name() {
     // Add "Linear" prefix to abbreviate the namespace for uniqueness
     return "LinearOrthogonalizationHistory(" + db::tag_name<Tag>() + ")";
   }

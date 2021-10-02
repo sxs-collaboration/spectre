@@ -18,8 +18,8 @@ class FunctionOfTime;
 }  // namespace domain
 /// \endcond
 
-Matrix get_rotation_matrix(
-    double t, const domain::FunctionsOfTime::FunctionOfTime& fot) noexcept;
+Matrix get_rotation_matrix(double t,
+                           const domain::FunctionsOfTime::FunctionOfTime& fot);
 
 Matrix get_rotation_matrix_deriv(
-    double t, const domain::FunctionsOfTime::FunctionOfTime& fot) noexcept;
+    double t, const domain::FunctionsOfTime::FunctionOfTime& fot);

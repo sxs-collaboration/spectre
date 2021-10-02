@@ -14,7 +14,7 @@ namespace dg::detail {
 
 template <>
 void apply_mass_matrix_impl<1>(const gsl::not_null<double*> data,
-                               const Mesh<1>& mesh) noexcept {
+                               const Mesh<1>& mesh) {
   const size_t x_size = mesh.extents(0);
   const auto& w_x = Spectral::quadrature_weights(mesh);
   for (size_t i = 0; i < x_size; ++i) {
@@ -24,7 +24,7 @@ void apply_mass_matrix_impl<1>(const gsl::not_null<double*> data,
 
 template <>
 void apply_mass_matrix_impl<2>(const gsl::not_null<double*> data,
-                               const Mesh<2>& mesh) noexcept {
+                               const Mesh<2>& mesh) {
   const size_t x_size = mesh.extents(0);
   const size_t y_size = mesh.extents(1);
   const auto& w_x = Spectral::quadrature_weights(mesh.slice_through(0));
@@ -39,7 +39,7 @@ void apply_mass_matrix_impl<2>(const gsl::not_null<double*> data,
 
 template <>
 void apply_mass_matrix_impl<3>(const gsl::not_null<double*> data,
-                               const Mesh<3>& mesh) noexcept {
+                               const Mesh<3>& mesh) {
   const size_t x_size = mesh.extents(0);
   const size_t y_size = mesh.extents(1);
   const size_t z_size = mesh.extents(2);

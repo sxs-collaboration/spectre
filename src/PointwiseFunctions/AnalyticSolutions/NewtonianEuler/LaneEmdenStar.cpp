@@ -20,7 +20,7 @@
 namespace NewtonianEuler::Solutions {
 
 LaneEmdenStar::LaneEmdenStar(const double central_mass_density,
-                             const double polytropic_constant) noexcept
+                             const double polytropic_constant)
     : central_mass_density_(central_mass_density),
       polytropic_constant_(polytropic_constant),
       equation_of_state_{polytropic_constant_, 2.0} {
@@ -30,7 +30,7 @@ LaneEmdenStar::LaneEmdenStar(const double central_mass_density,
          "polytropic_constant = " << polytropic_constant);
 }
 
-void LaneEmdenStar::pup(PUP::er& p) noexcept {
+void LaneEmdenStar::pup(PUP::er& p) {
   p | central_mass_density_;
   p | polytropic_constant_;
   p | equation_of_state_;
@@ -39,7 +39,7 @@ void LaneEmdenStar::pup(PUP::er& p) noexcept {
 
 template <typename DataType>
 tnsr::I<DataType, 3> LaneEmdenStar::gravitational_field(
-    const tnsr::I<DataType, 3>& x) const noexcept {
+    const tnsr::I<DataType, 3>& x) const {
   // Compute alpha for polytrope n==1, units G==1
   const double alpha = sqrt(0.5 * polytropic_constant_ / M_PI);
   const double outer_radius = alpha * M_PI;
@@ -66,7 +66,7 @@ tnsr::I<DataType, 3> LaneEmdenStar::gravitational_field(
 
 template <typename DataType>
 Scalar<DataType> LaneEmdenStar::precompute_mass_density(
-    const tnsr::I<DataType, 3>& x) const noexcept {
+    const tnsr::I<DataType, 3>& x) const {
   // Compute alpha for polytrope n==1, units G==1
   const double alpha = sqrt(0.5 * polytropic_constant_ / M_PI);
   const double outer_radius = alpha * M_PI;
@@ -88,21 +88,21 @@ Scalar<DataType> LaneEmdenStar::precompute_mass_density(
 template <typename DataType>
 tuples::TaggedTuple<Tags::MassDensity<DataType>> LaneEmdenStar::variables(
     tmpl::list<Tags::MassDensity<DataType>> /*meta*/,
-    const Scalar<DataType>& mass_density) const noexcept {
+    const Scalar<DataType>& mass_density) const {
   return mass_density;
 }
 
 template <typename DataType>
 tuples::TaggedTuple<Tags::Velocity<DataType, 3>> LaneEmdenStar::variables(
     tmpl::list<Tags::Velocity<DataType, 3>> /*meta*/,
-    const Scalar<DataType>& mass_density) const noexcept {
+    const Scalar<DataType>& mass_density) const {
   return make_with_value<tnsr::I<DataType, 3>>(get(mass_density), 0.0);
 }
 
 template <typename DataType>
 tuples::TaggedTuple<Tags::Pressure<DataType>> LaneEmdenStar::variables(
     tmpl::list<Tags::Pressure<DataType>> /*meta*/,
-    const Scalar<DataType>& mass_density) const noexcept {
+    const Scalar<DataType>& mass_density) const {
   return equation_of_state_.pressure_from_density(mass_density);
 }
 
@@ -110,11 +110,11 @@ template <typename DataType>
 tuples::TaggedTuple<Tags::SpecificInternalEnergy<DataType>>
 LaneEmdenStar::variables(
     tmpl::list<Tags::SpecificInternalEnergy<DataType>> /*meta*/,
-    const Scalar<DataType>& mass_density) const noexcept {
+    const Scalar<DataType>& mass_density) const {
   return equation_of_state_.specific_internal_energy_from_density(mass_density);
 }
 
-bool operator==(const LaneEmdenStar& lhs, const LaneEmdenStar& rhs) noexcept {
+bool operator==(const LaneEmdenStar& lhs, const LaneEmdenStar& rhs) {
   // There is no comparison operator for the EoS, but should be okay as
   // the `polytropic_constant`s are compared.
   // There is no comparison operator for the LaneEmdenGravitationalField source
@@ -123,7 +123,7 @@ bool operator==(const LaneEmdenStar& lhs, const LaneEmdenStar& rhs) noexcept {
          lhs.polytropic_constant_ == rhs.polytropic_constant_;
 }
 
-bool operator!=(const LaneEmdenStar& lhs, const LaneEmdenStar& rhs) noexcept {
+bool operator!=(const LaneEmdenStar& lhs, const LaneEmdenStar& rhs) {
   return not(lhs == rhs);
 }
 
@@ -131,25 +131,24 @@ bool operator!=(const LaneEmdenStar& lhs, const LaneEmdenStar& rhs) noexcept {
 
 #define INSTANTIATE(_, data)                                                 \
   template tnsr::I<DTYPE(data), 3> LaneEmdenStar::gravitational_field(       \
-      const tnsr::I<DTYPE(data), 3>& x) const noexcept;                      \
+      const tnsr::I<DTYPE(data), 3>& x) const;                               \
   template Scalar<DTYPE(data)> LaneEmdenStar::precompute_mass_density(       \
-      const tnsr::I<DTYPE(data), 3>& x) const noexcept;                      \
+      const tnsr::I<DTYPE(data), 3>& x) const;                               \
   template tuples::TaggedTuple<Tags::MassDensity<DTYPE(data)>>               \
   LaneEmdenStar::variables(                                                  \
       tmpl::list<Tags::MassDensity<DTYPE(data)>> /*meta*/,                   \
-      const Scalar<DTYPE(data)>& mass_density) const noexcept;               \
+      const Scalar<DTYPE(data)>& mass_density) const;                        \
   template tuples::TaggedTuple<Tags::Velocity<DTYPE(data), 3>>               \
   LaneEmdenStar::variables(                                                  \
       tmpl::list<Tags::Velocity<DTYPE(data), 3>> /*meta*/,                   \
-      const Scalar<DTYPE(data)>& mass_density) const noexcept;               \
+      const Scalar<DTYPE(data)>& mass_density) const;                        \
   template tuples::TaggedTuple<Tags::Pressure<DTYPE(data)>>                  \
   LaneEmdenStar::variables(tmpl::list<Tags::Pressure<DTYPE(data)>> /*meta*/, \
-                           const Scalar<DTYPE(data)>& mass_density)          \
-      const noexcept;                                                        \
+                           const Scalar<DTYPE(data)>& mass_density) const;   \
   template tuples::TaggedTuple<Tags::SpecificInternalEnergy<DTYPE(data)>>    \
   LaneEmdenStar::variables(                                                  \
       tmpl::list<Tags::SpecificInternalEnergy<DTYPE(data)>> /*meta*/,        \
-      const Scalar<DTYPE(data)>& mass_density) const noexcept;
+      const Scalar<DTYPE(data)>& mass_density) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
 

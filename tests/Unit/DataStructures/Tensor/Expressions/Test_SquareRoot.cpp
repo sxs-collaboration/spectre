@@ -19,13 +19,13 @@
 namespace {
 template <typename... Ts>
 void assign_unique_values_to_tensor(
-    const gsl::not_null<Tensor<double, Ts...>*> tensor) noexcept {
+    const gsl::not_null<Tensor<double, Ts...>*> tensor) {
   std::iota(tensor->begin(), tensor->end(), 0.0);
 }
 
 template <typename... Ts>
 void assign_unique_values_to_tensor(
-    const gsl::not_null<Tensor<DataVector, Ts...>*> tensor) noexcept {
+    const gsl::not_null<Tensor<DataVector, Ts...>*> tensor) {
   double value = 0.0;
   for (auto index_it = tensor->begin(); index_it != tensor->end(); index_it++) {
     for (auto vector_it = index_it->begin(); vector_it != index_it->end();
@@ -51,7 +51,7 @@ void assign_unique_values_to_tensor(
 // \tparam DataType the type of data being stored in the tensor operands of the
 // expressions tested
 template <typename DataType>
-void test_sqrt(const DataType& used_for_size) noexcept {
+void test_sqrt(const DataType& used_for_size) {
   Tensor<DataType> R{{{used_for_size}}};
   if (std::is_same_v<DataType, double>) {
     // Replace tensor's value from `used_for_size` to a proper test value

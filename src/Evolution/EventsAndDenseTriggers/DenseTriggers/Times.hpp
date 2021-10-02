@@ -33,31 +33,30 @@ class Times : public DenseTrigger {
  public:
   /// \cond
   Times() = default;
-  explicit Times(CkMigrateMessage* const msg) noexcept : DenseTrigger(msg) {}
+  explicit Times(CkMigrateMessage* const msg) : DenseTrigger(msg) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Times);  // NOLINT
   /// \endcond
 
   static constexpr Options::String help{"Trigger at specified times."};
 
-  explicit Times(std::unique_ptr<TimeSequence<double>> times) noexcept;
+  explicit Times(std::unique_ptr<TimeSequence<double>> times);
 
   using is_triggered_argument_tags = tmpl::list<Tags::TimeStepId, Tags::Time>;
 
-  Result is_triggered(const TimeStepId& time_step_id,
-                      const double time) const noexcept;
+  Result is_triggered(const TimeStepId& time_step_id, const double time) const;
 
   using is_ready_argument_tags = tmpl::list<>;
 
   template <typename Metavariables, typename ArrayIndex, typename Component>
   static bool is_ready(Parallel::GlobalCache<Metavariables>& /*cache*/,
                        const ArrayIndex& /*array_index*/,
-                       const Component* const /*meta*/) noexcept {
+                       const Component* const /*meta*/) {
     return true;
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept override;
+  void pup(PUP::er& p) override;
 
  private:
   std::unique_ptr<TimeSequence<double>> times_{};

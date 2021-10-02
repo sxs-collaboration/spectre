@@ -43,7 +43,7 @@ struct InverseSpatialMetricCompute : gr::Tags::InverseSpatialMetric<Dim, Frame>,
   using return_type = tnsr::II<DataVector, Dim, Frame>;
   static void function(
       const gsl::not_null<tnsr::II<DataVector, Dim, Frame>*> result,
-      const tnsr::aa<DataVector, Dim, Frame>& psi) noexcept {
+      const tnsr::aa<DataVector, Dim, Frame>& psi) {
     destructive_resize_components(result, psi.begin()->size());
     *result = determinant_and_inverse(gr::spatial_metric(psi)).second;
   };
@@ -59,7 +59,7 @@ struct ExtrinsicCurvatureCompute : gr::Tags::ExtrinsicCurvature<Dim, Frame>,
       const tnsr::aa<DataVector, Dim, Frame>& psi,
       const tnsr::aa<DataVector, Dim, Frame>& pi,
       const tnsr::iaa<DataVector, Dim, Frame>& phi,
-      const tnsr::II<DataVector, Dim, Frame>& inv_g) noexcept {
+      const tnsr::II<DataVector, Dim, Frame>& inv_g) {
     const auto shift = gr::shift(psi, inv_g);
     destructive_resize_components(result, psi.begin()->size());
     GeneralizedHarmonic::extrinsic_curvature(
@@ -80,7 +80,7 @@ struct SpatialChristoffelSecondKindCompute
   static void function(
       const gsl::not_null<tnsr::Ijj<DataVector, Dim, Frame>*> result,
       const tnsr::iaa<DataVector, Dim, Frame>& phi,
-      const tnsr::II<DataVector, Dim, Frame>& inv_g) noexcept {
+      const tnsr::II<DataVector, Dim, Frame>& inv_g) {
     destructive_resize_components(result, phi.begin()->size());
     raise_or_lower_first_index(
         result,

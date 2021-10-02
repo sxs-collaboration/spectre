@@ -16,7 +16,7 @@
 #include "Time/TimeSequence.hpp"
 
 namespace {
-void test_evenly_spaced() noexcept {
+void test_evenly_spaced() {
   {
     const TimeSequences::EvenlySpaced<std::uint64_t> constructed(3, 5);
     const auto factory = TestHelpers::test_factory_creation<
@@ -25,9 +25,8 @@ void test_evenly_spaced() noexcept {
         "EvenlySpaced:\n"
         "  Interval: 3\n"
         "  Offset: 5\n");
-    const auto check = [&constructed, &factory](
-                           const std::uint64_t arg,
-                           const std::uint64_t result) noexcept {
+    const auto check = [&constructed, &factory](const std::uint64_t arg,
+                                                const std::uint64_t result) {
       using Result = std::array<std::optional<std::uint64_t>, 3>;
       const auto expected = result >= 3
                                 ? Result{{result - 3, result, result + 3}}
@@ -56,7 +55,7 @@ void test_evenly_spaced() noexcept {
             "  Interval: 3.75\n"
             "  Offset: 4.0625\n");
     const auto check = [&constructed, &factory](const double arg,
-                                                const double result) noexcept {
+                                                const double result) {
       const std::array<std::optional<double>, 3> expected{
           {result - 3.75, result, result + 3.75}};
       CHECK(constructed.times_near(arg) == expected);
@@ -70,7 +69,7 @@ void test_evenly_spaced() noexcept {
   }
 }
 
-void test_specified() noexcept {
+void test_specified() {
   {
     using Result = std::array<std::optional<std::uint64_t>, 3>;
     const TimeSequences::Specified<std::uint64_t> constructed(
@@ -79,9 +78,8 @@ void test_specified() noexcept {
         TimeSequence<std::uint64_t>, TimeSequences::Specified<std::uint64_t>>(
         "Specified:\n"
         "  Values: [4, 8, 0, 4, 4, 3, 4]\n");
-    const auto check = [&constructed, &factory](
-                           const std::uint64_t arg,
-                           const Result& expected) noexcept {
+    const auto check = [&constructed, &factory](const std::uint64_t arg,
+                                                const Result& expected) {
       CHECK(constructed.times_near(arg) == expected);
       CHECK(factory->times_near(arg) == expected);
       CHECK(serialize_and_deserialize(factory)->times_near(arg) == expected);
@@ -119,8 +117,8 @@ void test_specified() noexcept {
                                            TimeSequences::Specified<double>>(
             "Specified:\n"
             "  Values: [-5.1, 7.2, -2.3, 0.0, -5.1, -5.1, 3.4, 4.5]\n");
-    const auto check = [&constructed, &factory](
-                           const double arg, const Result& expected) noexcept {
+    const auto check = [&constructed, &factory](const double arg,
+                                                const Result& expected) {
       CHECK(constructed.times_near(arg) == expected);
       CHECK(factory->times_near(arg) == expected);
       CHECK(serialize_and_deserialize(factory)->times_near(arg) == expected);

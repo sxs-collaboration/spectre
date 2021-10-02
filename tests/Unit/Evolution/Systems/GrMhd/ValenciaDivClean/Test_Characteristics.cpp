@@ -28,7 +28,7 @@
 
 namespace {
 
-void test_characteristic_speeds(const DataVector& /*used_for_size*/) noexcept {
+void test_characteristic_speeds(const DataVector& /*used_for_size*/) {
   //  Arbitrary random numbers can produce a negative radicand in Lambda^\pm.
   //  This bound helps to prevent that situation.
   // const double max_value = 1.0 / sqrt(3);
@@ -45,8 +45,7 @@ void test_characteristic_speeds(const DataVector& /*used_for_size*/) noexcept {
   //     used_for_size);
 }
 
-void test_with_normal_along_coordinate_axes(
-    const DataVector& used_for_size) noexcept {
+void test_with_normal_along_coordinate_axes(const DataVector& used_for_size) {
   MAKE_GENERATOR(generator);
   namespace helper = TestHelpers::hydro;
   namespace gr_helper = TestHelpers::gr;

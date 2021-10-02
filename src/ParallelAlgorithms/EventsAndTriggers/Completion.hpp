@@ -15,7 +15,7 @@ namespace Events {
 class Completion : public Event {
  public:
   /// \cond
-  explicit Completion(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit Completion(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Completion);  // NOLINT
   /// \endcond
@@ -31,7 +31,7 @@ class Completion : public Event {
   template <typename Metavariables, typename ArrayIndex, typename Component>
   void operator()(Parallel::GlobalCache<Metavariables>& cache,
                   const ArrayIndex& array_index,
-                  const Component* const /*meta*/) const noexcept {
+                  const Component* const /*meta*/) const {
     auto al_gore =
         Parallel::get_parallel_component<Component>(cache)[array_index]
             .ckLocal();
@@ -43,10 +43,10 @@ class Completion : public Event {
   template <typename Metavariables, typename ArrayIndex, typename Component>
   bool is_ready(Parallel::GlobalCache<Metavariables>& /*cache*/,
                 const ArrayIndex& /*array_index*/,
-                const Component* const /*meta*/) const noexcept {
+                const Component* const /*meta*/) const {
     return true;
   }
 
-  bool needs_evolved_variables() const noexcept override { return false; }
+  bool needs_evolved_variables() const override { return false; }
 };
 }  // namespace Events

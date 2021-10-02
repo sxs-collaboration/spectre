@@ -21,7 +21,7 @@ TimescaleTuner::TimescaleTuner(const std::vector<double>& initial_timescale,
                                const double decrease_timescale_threshold,
                                const double increase_timescale_threshold,
                                const double increase_factor,
-                               const double decrease_factor) noexcept
+                               const double decrease_factor)
     : max_timescale_{max_timescale},
       min_timescale_{min_timescale},
       decrease_timescale_threshold_{decrease_timescale_threshold},
@@ -71,14 +71,14 @@ TimescaleTuner::TimescaleTuner(const std::vector<double>& initial_timescale,
 }
 
 void TimescaleTuner::set_timescale_if_in_allowable_range(
-    const double suggested_timescale) noexcept {
+    const double suggested_timescale) {
   for (auto& t_scale : timescale_) {
     t_scale = std::clamp(suggested_timescale, min_timescale_, max_timescale_);
   }
 }
 
 void TimescaleTuner::update_timescale(
-    const std::array<DataVector, 2>& q_and_dtq) noexcept {
+    const std::array<DataVector, 2>& q_and_dtq) {
   ASSERT(q_and_dtq[0].size() == timescale_.size() and
              q_and_dtq[1].size() == timescale_.size(),
          "One or both of the number of components in q_and_dtq("

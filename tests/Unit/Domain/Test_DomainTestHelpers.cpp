@@ -25,7 +25,7 @@ namespace {
 template <typename DataType, size_t SpatialDim>
 tnsr::II<DataType, SpatialDim> random_inv_spatial_metric(
     const gsl::not_null<std::mt19937*> generator,
-    const DataType& used_for_size) noexcept {
+    const DataType& used_for_size) {
   std::uniform_real_distribution<> distribution(-0.05, 0.05);
   auto inv_spatial_metric =
       make_with_random_values<tnsr::II<DataType, SpatialDim>>(
@@ -37,7 +37,7 @@ tnsr::II<DataType, SpatialDim> random_inv_spatial_metric(
 }
 
 template <size_t SpatialDim, typename DataType>
-void test_euclidean_basis_vector(const DataType& used_for_size) noexcept {
+void test_euclidean_basis_vector(const DataType& used_for_size) {
   for (const auto& direction : Direction<SpatialDim>::all_directions()) {
     auto expected =
         make_with_value<tnsr::i<DataType, SpatialDim>>(used_for_size, 0.0);
@@ -50,7 +50,7 @@ void test_euclidean_basis_vector(const DataType& used_for_size) noexcept {
 }
 
 template <size_t SpatialDim, typename DataType>
-void test_unit_basis_form(const DataType& used_for_size) noexcept {
+void test_unit_basis_form(const DataType& used_for_size) {
   MAKE_GENERATOR(generator);
   const auto inv_spatial_metric =
       random_inv_spatial_metric<DataType, SpatialDim>(make_not_null(&generator),

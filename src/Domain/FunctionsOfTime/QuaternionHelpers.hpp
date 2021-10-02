@@ -23,7 +23,7 @@ class not_null;
 
 /// Convert a `boost::math::quaternion` to a `DataVector`
 DataVector quaternion_to_datavector(
-    const boost::math::quaternion<double>& input) noexcept;
+    const boost::math::quaternion<double>& input);
 
 /// \brief Convert a `DataVector` to a `boost::math::quaternion`
 ///
@@ -32,11 +32,11 @@ DataVector quaternion_to_datavector(
 /// 0 scalar part while the vector part is the `DataVector`. If the `DataVector`
 /// has 4 components, the quaternion is just the `DataVector` itself.
 boost::math::quaternion<double> datavector_to_quaternion(
-    const DataVector& input) noexcept;
+    const DataVector& input);
 
 /// Normalize a `boost::math::quaternion`
 void normalize_quaternion(
-    gsl::not_null<boost::math::quaternion<double>*> input) noexcept;
+    gsl::not_null<boost::math::quaternion<double>*> input);
 
 // Necessary for odeint to be able to integrate boost quaternions
 namespace boost::numeric::odeint {

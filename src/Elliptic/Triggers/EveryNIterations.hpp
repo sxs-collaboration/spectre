@@ -21,7 +21,7 @@ class EveryNIterations : public Trigger {
  public:
   /// \cond
   EveryNIterations() = default;
-  explicit EveryNIterations(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit EveryNIterations(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(EveryNIterations);  // NOLINT
   /// \endcond
@@ -29,7 +29,7 @@ class EveryNIterations : public Trigger {
   struct N {
     using type = uint64_t;
     static constexpr Options::String help{"How frequently to trigger."};
-    static type lower_bound() noexcept { return 1; }
+    static type lower_bound() { return 1; }
   };
   struct Offset {
     using type = uint64_t;
@@ -40,18 +40,18 @@ class EveryNIterations : public Trigger {
   static constexpr Options::String help{
       "Trigger every N iterations after a given offset."};
 
-  EveryNIterations(const uint64_t interval, const uint64_t offset) noexcept
+  EveryNIterations(const uint64_t interval, const uint64_t offset)
       : interval_(interval), offset_(offset) {}
 
   using argument_tags = tmpl::list<Convergence::Tags::IterationId<Label>>;
 
-  bool operator()(const size_t iteration_id) const noexcept {
+  bool operator()(const size_t iteration_id) const {
     const auto step_number = static_cast<uint64_t>(iteration_id);
     return step_number >= offset_ and (step_number - offset_) % interval_ == 0;
   }
 
   // clang-tidy: google-runtime-references
-  void pup(PUP::er& p) noexcept {  // NOLINT
+  void pup(PUP::er& p) {  // NOLINT
     p | interval_;
     p | offset_;
   }

@@ -138,7 +138,7 @@ struct Metavariables {
         const Variables<tmpl::list<
             evolution::dg::subcell::Tags::Inactive<Var1>>>& subcell_vars,
         const Variables<tmpl::list<Var1>>& dg_vars, const Mesh<Dim>& dg_mesh,
-        const double persson_exponent) noexcept {
+        const double persson_exponent) {
       Variables<tmpl::list<evolution::dg::subcell::Tags::Inactive<Var1>>>
           projected_vars{subcell_vars.number_of_grid_points()};
       evolution::dg::subcell::fd::project(

@@ -25,7 +25,7 @@ template <typename DataType>
 Scalar<DataType> compute_piecewise(const tnsr::I<DataType, 3>& x,
                                    const double rotor_radius,
                                    const double rotor_value,
-                                   const double background_value) noexcept {
+                                   const double background_value) {
   const DataType cylindrical_radius =
       sqrt(square(get<0>(x)) + square(get<1>(x)));
   return Scalar<DataType>(rotor_value -
@@ -58,7 +58,7 @@ MagneticRotor::MagneticRotor(
   }
 }
 
-void MagneticRotor::pup(PUP::er& p) noexcept {
+void MagneticRotor::pup(PUP::er& p) {
   p | rotor_radius_;
   p | rotor_density_;
   p | background_density_;
@@ -74,8 +74,7 @@ template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::RestMassDensity<DataType>>
 MagneticRotor::variables(
     const tnsr::I<DataType, 3>& x,
-    tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/) const
-    noexcept {
+    tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/) const {
   return compute_piecewise(x, rotor_radius_, rotor_density_,
                            background_density_);
 }
@@ -84,8 +83,7 @@ template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, 3>>
 MagneticRotor::variables(
     const tnsr::I<DataType, 3>& x,
-    tmpl::list<hydro::Tags::SpatialVelocity<DataType, 3>> /*meta*/) const
-    noexcept {
+    tmpl::list<hydro::Tags::SpatialVelocity<DataType, 3>> /*meta*/) const {
   Scalar<DataType> angular_velocity =
       compute_piecewise(x, rotor_radius_, angular_velocity_, 0.0);
   auto spatial_velocity = make_with_value<tnsr::I<DataType, 3>>(x, 0.0);
@@ -98,8 +96,7 @@ template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::SpecificInternalEnergy<DataType>>
 MagneticRotor::variables(
     const tnsr::I<DataType, 3>& x,
-    tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>> /*meta*/) const
-    noexcept {
+    tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>> /*meta*/) const {
   return equation_of_state_.specific_internal_energy_from_density_and_pressure(
       get<hydro::Tags::RestMassDensity<DataType>>(
           variables(x, tmpl::list<hydro::Tags::RestMassDensity<DataType>>{})),
@@ -110,7 +107,7 @@ MagneticRotor::variables(
 template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::Pressure<DataType>> MagneticRotor::variables(
     const tnsr::I<DataType, 3>& x,
-    tmpl::list<hydro::Tags::Pressure<DataType>> /*meta*/) const noexcept {
+    tmpl::list<hydro::Tags::Pressure<DataType>> /*meta*/) const {
   return make_with_value<Scalar<DataType>>(x, pressure_);
   ;
 }
@@ -119,8 +116,7 @@ template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3>>
 MagneticRotor::variables(
     const tnsr::I<DataType, 3>& x,
-    tmpl::list<hydro::Tags::MagneticField<DataType, 3>> /*meta*/) const
-    noexcept {
+    tmpl::list<hydro::Tags::MagneticField<DataType, 3>> /*meta*/) const {
   auto magnetic_field = make_with_value<tnsr::I<DataType, 3>>(get<0>(x), 0.0);
   get<0>(magnetic_field) = gsl::at(magnetic_field_, 0);
   get<1>(magnetic_field) = gsl::at(magnetic_field_, 1);
@@ -132,8 +128,7 @@ template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::DivergenceCleaningField<DataType>>
 MagneticRotor::variables(
     const tnsr::I<DataType, 3>& x,
-    tmpl::list<hydro::Tags::DivergenceCleaningField<DataType>> /*meta*/) const
-    noexcept {
+    tmpl::list<hydro::Tags::DivergenceCleaningField<DataType>> /*meta*/) const {
   return {make_with_value<Scalar<DataType>>(x, 0.0)};
 }
 
@@ -141,7 +136,7 @@ template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::LorentzFactor<DataType>>
 MagneticRotor::variables(
     const tnsr::I<DataType, 3>& x,
-    tmpl::list<hydro::Tags::LorentzFactor<DataType>> /*meta*/) const noexcept {
+    tmpl::list<hydro::Tags::LorentzFactor<DataType>> /*meta*/) const {
   using velocity_tag = hydro::Tags::SpatialVelocity<DataType, 3>;
   const auto velocity =
       get<velocity_tag>(variables(x, tmpl::list<velocity_tag>{}));
@@ -152,8 +147,7 @@ template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DataType>>
 MagneticRotor::variables(
     const tnsr::I<DataType, 3>& x,
-    tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>> /*meta*/) const
-    noexcept {
+    tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>> /*meta*/) const {
   return equation_of_state_.specific_enthalpy_from_density_and_energy(
       get<hydro::Tags::RestMassDensity<DataType>>(
           variables(x, tmpl::list<hydro::Tags::RestMassDensity<DataType>>{})),
@@ -161,7 +155,7 @@ MagneticRotor::variables(
           x, tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>>{})));
 }
 
-bool operator==(const MagneticRotor& lhs, const MagneticRotor& rhs) noexcept {
+bool operator==(const MagneticRotor& lhs, const MagneticRotor& rhs) {
   // there is no comparison operator for the EoS, but should be okay as
   // the adiabatic_indexs are compared
   return lhs.rotor_radius_ == rhs.rotor_radius_ and
@@ -174,18 +168,18 @@ bool operator==(const MagneticRotor& lhs, const MagneticRotor& rhs) noexcept {
          lhs.background_spacetime_ == rhs.background_spacetime_;
 }
 
-bool operator!=(const MagneticRotor& lhs, const MagneticRotor& rhs) noexcept {
+bool operator!=(const MagneticRotor& lhs, const MagneticRotor& rhs) {
   return not(lhs == rhs);
 }
 
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define TAG(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATE_SCALARS(_, data)                                          \
-  template tuples::TaggedTuple<TAG(data) < DTYPE(data)>>                      \
-      MagneticRotor::variables(const tnsr::I<DTYPE(data), 3>& x,              \
-                               tmpl::list<TAG(data) < DTYPE(data)>> /*meta*/) \
-          const noexcept;
+#define INSTANTIATE_SCALARS(_, data)                                           \
+  template tuples::TaggedTuple<TAG(data) < DTYPE(data)> >                      \
+      MagneticRotor::variables(const tnsr::I<DTYPE(data), 3>& x,               \
+                               tmpl::list<TAG(data) < DTYPE(data)> > /*meta*/) \
+          const;
 
 GENERATE_INSTANTIATIONS(
     INSTANTIATE_SCALARS, (double, DataVector),
@@ -193,11 +187,11 @@ GENERATE_INSTANTIATIONS(
      hydro::Tags::Pressure, hydro::Tags::DivergenceCleaningField,
      hydro::Tags::LorentzFactor, hydro::Tags::SpecificEnthalpy))
 
-#define INSTANTIATE_VECTORS(_, data)                        \
-  template tuples::TaggedTuple<TAG(data) < DTYPE(data), 3>> \
-      MagneticRotor::variables(                             \
-          const tnsr::I<DTYPE(data), 3>& x,                 \
-          tmpl::list<TAG(data) < DTYPE(data), 3>> /*meta*/) const noexcept;
+#define INSTANTIATE_VECTORS(_, data)                         \
+  template tuples::TaggedTuple<TAG(data) < DTYPE(data), 3> > \
+      MagneticRotor::variables(                              \
+          const tnsr::I<DTYPE(data), 3>& x,                  \
+          tmpl::list<TAG(data) < DTYPE(data), 3> > /*meta*/) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_VECTORS, (double, DataVector),
                         (hydro::Tags::SpatialVelocity,

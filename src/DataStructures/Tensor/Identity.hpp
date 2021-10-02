@@ -12,7 +12,7 @@
 /// \brief returns the Identity matrix
 template <size_t Dim, typename DataType>
 tnsr::Ij<DataType, Dim, Frame::NoFrame> identity(
-    const DataType& used_for_type) noexcept {
+    const DataType& used_for_type) {
   auto identity_matrix{make_with_value<tnsr::Ij<DataType, Dim, Frame::NoFrame>>(
       used_for_type, 0.0)};
 

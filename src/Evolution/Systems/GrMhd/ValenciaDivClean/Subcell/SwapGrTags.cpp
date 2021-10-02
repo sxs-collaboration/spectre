@@ -19,7 +19,7 @@ void SwapGrTags::apply(
         typename System::spacetime_variables_tag>::type*>
         inactive_gr_vars,
     const Mesh<3>& dg_mesh, const Mesh<3>& subcell_mesh,
-    const evolution::dg::subcell::ActiveGrid active_grid) noexcept {
+    const evolution::dg::subcell::ActiveGrid active_grid) {
   if (active_grid == evolution::dg::subcell::ActiveGrid::Dg) {
     // We might request a switch to the DG grid even if we are already on the DG
     // grid, and in this case we do nothing. This can occur when applying

@@ -111,10 +111,9 @@ class StepChooser<StepChooserUse::Slab> : public PUP::able {
   /// not have the capability to reject a slab so this function
   /// returns only a `double` indicating the desired slab size.
   template <typename Metavariables, typename DbTags>
-  double desired_slab(
-      const double last_step_magnitude,
-      const db::DataBox<DbTags>& box,
-      const Parallel::GlobalCache<Metavariables>& cache) const noexcept {
+  double desired_slab(const double last_step_magnitude,
+                      const db::DataBox<DbTags>& box,
+                      const Parallel::GlobalCache<Metavariables>& cache) const {
     ASSERT(last_step_magnitude > 0.,
            "Passed non-positive step magnitude: " << last_step_magnitude);
     using factory_classes =
@@ -123,8 +122,8 @@ class StepChooser<StepChooserUse::Slab> : public PUP::able {
     const auto result =
         call_with_dynamic_type<std::pair<double, bool>,
                                tmpl::at<factory_classes, StepChooser>>(
-            this, [&last_step_magnitude, &box,
-                   &cache](const auto* const chooser) noexcept {
+            this,
+            [&last_step_magnitude, &box, &cache](const auto* const chooser) {
               return db::apply(*chooser, box, last_step_magnitude, cache);
             });
     ASSERT(
@@ -166,7 +165,7 @@ class StepChooser<StepChooserUse::LtsStep> : public PUP::able {
   std::pair<double, bool> desired_step(
       const gsl::not_null<db::DataBox<DbTags>*> box,
       const double last_step_magnitude,
-      const Parallel::GlobalCache<Metavariables>& cache) const noexcept {
+      const Parallel::GlobalCache<Metavariables>& cache) const {
     ASSERT(last_step_magnitude > 0.,
            "Passed non-positive step magnitude: " << last_step_magnitude);
     using factory_classes =
@@ -175,8 +174,8 @@ class StepChooser<StepChooserUse::LtsStep> : public PUP::able {
     const auto result =
         call_with_dynamic_type<std::pair<double, bool>,
                                tmpl::at<factory_classes, StepChooser>>(
-            this, [&last_step_magnitude, &box,
-                   &cache](const auto* const chooser) noexcept {
+            this,
+            [&last_step_magnitude, &box, &cache](const auto* const chooser) {
               using chooser_type = typename std::decay_t<decltype(*chooser)>;
               return db::mutate_apply<typename chooser_type::return_tags,
                                       typename chooser_type::argument_tags>(

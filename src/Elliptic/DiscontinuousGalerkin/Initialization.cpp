@@ -48,8 +48,7 @@ void InitializeGeometry<Dim>::operator()(
     const gsl::not_null<Scalar<DataVector>*> det_inv_jacobian,
     const std::vector<std::array<size_t, Dim>>& initial_extents,
     const std::vector<std::array<size_t, Dim>>& initial_refinement,
-    const Domain<Dim>& domain,
-    const ElementId<Dim>& element_id) const noexcept {
+    const Domain<Dim>& domain, const ElementId<Dim>& element_id) const {
   // Mesh
   const auto quadrature = Spectral::Quadrature::GaussLobatto;
   *mesh = domain::Initialization::create_initial_mesh(initial_extents,
@@ -94,7 +93,7 @@ void InitializeFacesAndMortars<Dim>::operator()(
     const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
                           Frame::Inertial>& inv_jacobian,
     const std::vector<std::array<size_t, Dim>>& initial_extents)
-    const noexcept {
+    const {
   const Spectral::Quadrature quadrature = mesh.quadrature(0);
   // Faces
   for (const auto& direction : Direction<Dim>::all_directions()) {

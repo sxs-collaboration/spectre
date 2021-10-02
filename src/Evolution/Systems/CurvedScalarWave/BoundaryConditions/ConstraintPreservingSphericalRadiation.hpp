@@ -109,23 +109,22 @@ class ConstraintPreservingSphericalRadiation final
       "Bayliss-Turkel radiation boundary condition."};
   ConstraintPreservingSphericalRadiation() = default;
   ConstraintPreservingSphericalRadiation(
-      ConstraintPreservingSphericalRadiation&&) noexcept = default;
+      ConstraintPreservingSphericalRadiation&&) = default;
   ConstraintPreservingSphericalRadiation& operator=(
-      ConstraintPreservingSphericalRadiation&&) noexcept = default;
+      ConstraintPreservingSphericalRadiation&&) = default;
   ConstraintPreservingSphericalRadiation(
       const ConstraintPreservingSphericalRadiation&) = default;
   ConstraintPreservingSphericalRadiation& operator=(
       const ConstraintPreservingSphericalRadiation&) = default;
   ~ConstraintPreservingSphericalRadiation() override = default;
 
-  explicit ConstraintPreservingSphericalRadiation(
-      CkMigrateMessage* msg) noexcept;
+  explicit ConstraintPreservingSphericalRadiation(CkMigrateMessage* msg);
 
   WRAPPED_PUPable_decl_base_template(
       domain::BoundaryConditions::BoundaryCondition,
       ConstraintPreservingSphericalRadiation);
 
-  auto get_clone() const noexcept -> std::unique_ptr<
+  auto get_clone() const -> std::unique_ptr<
       domain::BoundaryConditions::BoundaryCondition> override;
 
   static constexpr evolution::BoundaryConditions::Type bc_type =
@@ -160,6 +159,6 @@ class ConstraintPreservingSphericalRadiation final
       const Scalar<DataVector>& lapse, const tnsr::I<DataVector, Dim>& shift,
       const Scalar<DataVector>& dt_pi, const tnsr::i<DataVector, Dim>& dt_phi,
       const Scalar<DataVector>& dt_psi, const tnsr::i<DataVector, Dim>& d_psi,
-      const tnsr::ij<DataVector, Dim>& d_phi) const noexcept;
+      const tnsr::ij<DataVector, Dim>& d_phi) const;
 };
 }  // namespace CurvedScalarWave::BoundaryConditions

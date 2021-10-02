@@ -49,16 +49,16 @@ struct StepRejector : public StepChooser<StepChooserUse::LtsStep> {
 #pragma GCC diagnostic ignored "-Wunused-function"
   WRAPPED_PUPable_decl_template(StepRejector);  // NOLINT
 #pragma GCC diagnostic pop
-  explicit StepRejector(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit StepRejector(CkMigrateMessage* /*unused*/) {}
   StepRejector() = default;
 
   template <typename Metavariables>
   std::pair<double, bool> operator()(
       const double last_step_magnitude,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/) const noexcept {
+      const Parallel::GlobalCache<Metavariables>& /*cache*/) const {
     return {last_step_magnitude, false};
   }
-    void pup(PUP::er& /*p*/) noexcept override {}
+  void pup(PUP::er& /*p*/) override {}
 };
 
 PUP::able::PUP_ID StepRejector::my_PUP_ID = 0;
@@ -116,7 +116,7 @@ struct Metavariables {
 void check(const bool time_runs_forward,
            std::unique_ptr<LtsTimeStepper> time_stepper, const Time& time,
            const double request, const TimeDelta& expected_step,
-           const bool reject_step) noexcept {
+           const bool reject_step) {
   CAPTURE(time);
   CAPTURE(request);
 

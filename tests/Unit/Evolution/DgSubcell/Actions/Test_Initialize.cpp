@@ -60,9 +60,9 @@ struct Var1 : db::SimpleTag {
 
 struct SystemAnalyticSolution : public MarkAsAnalyticSolution {
   template <size_t Dim>
-  tuples::TaggedTuple<Var1> variables(
-      const tnsr::I<DataVector, Dim>& x, const double t,
-      tmpl::list<Var1> /*meta*/) const noexcept {
+  tuples::TaggedTuple<Var1> variables(const tnsr::I<DataVector, Dim>& x,
+                                      const double t,
+                                      tmpl::list<Var1> /*meta*/) const {
     tuples::TaggedTuple<Var1> vars(x.get(0) + t);
     for (size_t d = 1; d < Dim; ++d) {
       get(get<Var1>(vars)) += x.get(d) + t;
@@ -71,7 +71,7 @@ struct SystemAnalyticSolution : public MarkAsAnalyticSolution {
   }
 
   // clang-tidy: do not use references
-  void pup(PUP::er& /*p*/) noexcept {}  // NOLINT
+  void pup(PUP::er& /*p*/) {}  // NOLINT
 };
 
 template <size_t Dim>
@@ -120,7 +120,7 @@ struct Metavariables {
       tmpl::list<Tags::AnalyticSolution<analytic_solution>>;
   enum class Phase { Initialization, Exit };
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& /*p*/) noexcept {}
+  void pup(PUP::er& /*p*/) {}
 
   struct DgInitialDataTci {
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
@@ -134,8 +134,7 @@ struct Metavariables {
             tmpl::list<evolution::dg::subcell::Tags::Inactive<Var1>>>&
             subcell_vars,
         const double rdmp_delta0, const double rdmp_epsilon,
-        const double persson_exponent,
-        const Mesh<volume_dim>& dg_mesh) noexcept {
+        const double persson_exponent, const Mesh<volume_dim>& dg_mesh) {
       CHECK(dg_mesh == Mesh<Dim>(5, Spectral::Basis::Legendre,
                                  Spectral::Quadrature::GaussLobatto));
       CHECK(rdmp_delta0 == 1.0e-3);

@@ -23,7 +23,7 @@ namespace grmhd::Solutions {
 BondiMichel::BondiMichel(const double mass, const double sonic_radius,
                          const double sonic_density,
                          const double polytropic_exponent,
-                         const double mag_field_strength) noexcept
+                         const double mag_field_strength)
     : mass_(mass),
       sonic_radius_(sonic_radius),
       sonic_density_(sonic_density),
@@ -75,7 +75,7 @@ BondiMichel::BondiMichel(const double mass, const double sonic_radius,
                            1.0 / gamma_minus_one);
 }
 
-void BondiMichel::pup(PUP::er& p) noexcept {
+void BondiMichel::pup(PUP::er& p) {
   p | mass_;
   p | sonic_radius_;
   p | sonic_density_;
@@ -99,7 +99,7 @@ BondiMichel::IntermediateVars<DataType>::IntermediateVars(
     const double in_bernoulli_constant_squared_minus_one,
     const double in_sonic_radius, const double in_sonic_density,
     const tnsr::I<DataType, 3>& x, const bool need_spacetime,
-    const gr::Solutions::KerrSchild& background_spacetime) noexcept
+    const gr::Solutions::KerrSchild& background_spacetime)
     : radius((magnitude(x)).get()),
       rest_mass_density(make_with_value<DataType>(x, 0.0)),
       mass_accretion_rate_over_four_pi(in_mass_accretion_rate_over_four_pi),
@@ -125,7 +125,7 @@ BondiMichel::IntermediateVars<DataType>::IntermediateVars(
     get_element(rest_mass_density, i) =
         // NOLINTNEXTLINE(clang-analyzer-core)
         RootFinder::toms748(
-            [&current_radius, this ](const double guess_for_rho) noexcept {
+            [&current_radius, this](const double guess_for_rho) {
               return bernoulli_root_function(guess_for_rho, current_radius);
             },
             current_radius < sonic_radius ? rest_mass_density_at_infinity
@@ -141,8 +141,7 @@ BondiMichel::IntermediateVars<DataType>::IntermediateVars(
 
 template <typename DataType>
 double BondiMichel::IntermediateVars<DataType>::bernoulli_root_function(
-    const double rest_mass_density_guess, const double current_radius) const
-    noexcept {
+    const double rest_mass_density_guess, const double current_radius) const {
   const double gamma_minus_one = polytropic_exponent - 1.0;
   const double polytropic_index_times_newtonian_sound_speed_squared =
       (polytropic_exponent * polytropic_constant *
@@ -171,7 +170,7 @@ tuples::TaggedTuple<hydro::Tags::RestMassDensity<DataType>>
 BondiMichel::variables(
     const tnsr::I<DataType, 3>& /*x*/,
     tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/,
-    const IntermediateVars<DataType>& vars) const noexcept {
+    const IntermediateVars<DataType>& vars) const {
   return {Scalar<DataType>{DataType{vars.rest_mass_density}}};
 }
 
@@ -179,7 +178,7 @@ template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::Pressure<DataType>> BondiMichel::variables(
     const tnsr::I<DataType, 3>& /*x*/,
     tmpl::list<hydro::Tags::Pressure<DataType>> /*meta*/,
-    const IntermediateVars<DataType>& vars) const noexcept {
+    const IntermediateVars<DataType>& vars) const {
   return {Scalar<DataType>{
       DataType{polytropic_constant_ *
                pow(vars.rest_mass_density, polytropic_exponent_)}}};
@@ -190,7 +189,7 @@ tuples::TaggedTuple<hydro::Tags::SpecificInternalEnergy<DataType>>
 BondiMichel::variables(
     const tnsr::I<DataType, 3>& /*x*/,
     tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>> /*meta*/,
-    const IntermediateVars<DataType>& vars) const noexcept {
+    const IntermediateVars<DataType>& vars) const {
   return {Scalar<DataType>{
       DataType{polytropic_constant_ *
                pow(vars.rest_mass_density, polytropic_exponent_ - 1.0) /
@@ -202,7 +201,7 @@ tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DataType>>
 BondiMichel::variables(
     const tnsr::I<DataType, 3>& /*x*/,
     tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>> /*meta*/,
-    const IntermediateVars<DataType>& vars) const noexcept {
+    const IntermediateVars<DataType>& vars) const {
   return {Scalar<DataType>{DataType{
       1.0 + polytropic_exponent_ * polytropic_constant_ *
                 pow(vars.rest_mass_density, polytropic_exponent_ - 1.0) /
@@ -214,7 +213,7 @@ tuples::TaggedTuple<hydro::Tags::DivergenceCleaningField<DataType>>
 BondiMichel::variables(
     const tnsr::I<DataType, 3>& x,
     tmpl::list<hydro::Tags::DivergenceCleaningField<DataType>> /*meta*/,
-    const IntermediateVars<DataType>& /*vars*/) const noexcept {
+    const IntermediateVars<DataType>& /*vars*/) const {
   return {make_with_value<Scalar<DataType>>(x, 0.0)};
 }
 
@@ -223,7 +222,7 @@ tuples::TaggedTuple<hydro::Tags::LorentzFactor<DataType>>
 BondiMichel::variables(
     const tnsr::I<DataType, 3>& x,
     tmpl::list<hydro::Tags::LorentzFactor<DataType>> /*meta*/,
-    const IntermediateVars<DataType>& vars) const noexcept {
+    const IntermediateVars<DataType>& vars) const {
   // Rezzola and Zanotti (2013) Eq. 11.79
   const DataType abs_fluid_four_velocity_u_r =
       mass_accretion_rate_over_four_pi_ /
@@ -248,9 +247,8 @@ template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, 3>>
 BondiMichel::variables(
     const tnsr::I<DataType, 3>& x,
-    tmpl::list<
-        hydro::Tags::SpatialVelocity<DataType, 3>> /*meta*/,
-    const IntermediateVars<DataType>& vars) const noexcept {
+    tmpl::list<hydro::Tags::SpatialVelocity<DataType, 3>> /*meta*/,
+    const IntermediateVars<DataType>& vars) const {
   auto result = make_with_value<tnsr::I<DataType, 3>>(x, 0.0);
   // Rezzola and Zanotti (2013) Eq. 11.79
   const DataType abs_fluid_four_velocity_u_r =
@@ -284,9 +282,8 @@ template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3>>
 BondiMichel::variables(
     const tnsr::I<DataType, 3>& x,
-    tmpl::list<
-        hydro::Tags::MagneticField<DataType, 3>> /*meta*/,
-    const IntermediateVars<DataType>& vars) const noexcept {
+    tmpl::list<hydro::Tags::MagneticField<DataType, 3>> /*meta*/,
+    const IntermediateVars<DataType>& vars) const {
   auto result = make_with_value<tnsr::I<DataType, 3>>(x, 0.0);
   const DataType mag_field_strength_factor =
       mag_field_strength_ * square(mass_) /
@@ -297,7 +294,7 @@ BondiMichel::variables(
   return result;
 }
 
-bool operator==(const BondiMichel& lhs, const BondiMichel& rhs) noexcept {
+bool operator==(const BondiMichel& lhs, const BondiMichel& rhs) {
   // there is no comparison operator for the EoS, but should be okay as
   // the `polytropic_exponent`s and `polytropic_constant`s are compared
   return lhs.mass_ == rhs.mass_ and lhs.sonic_radius_ == rhs.sonic_radius_ and
@@ -316,7 +313,7 @@ bool operator==(const BondiMichel& lhs, const BondiMichel& rhs) noexcept {
          lhs.background_spacetime_ == rhs.background_spacetime_;
 }
 
-bool operator!=(const BondiMichel& lhs, const BondiMichel& rhs) noexcept {
+bool operator!=(const BondiMichel& lhs, const BondiMichel& rhs) {
   return not(lhs == rhs);
 }
 
@@ -327,44 +324,44 @@ bool operator!=(const BondiMichel& lhs, const BondiMichel& rhs) noexcept {
   BondiMichel::variables(                                                     \
       const tnsr::I<DTYPE(data), 3>& x,                                       \
       tmpl::list<hydro::Tags::RestMassDensity<DTYPE(data)>> /*meta*/,         \
-      const BondiMichel::IntermediateVars<DTYPE(data)>& vars) const noexcept; \
+      const BondiMichel::IntermediateVars<DTYPE(data)>& vars) const;          \
   template tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DTYPE(data)>>    \
   BondiMichel::variables(                                                     \
       const tnsr::I<DTYPE(data), 3>& x,                                       \
       tmpl::list<hydro::Tags::SpecificEnthalpy<DTYPE(data)>> meta,            \
-      const BondiMichel::IntermediateVars<DTYPE(data)>& vars) const noexcept; \
+      const BondiMichel::IntermediateVars<DTYPE(data)>& vars) const;          \
   template tuples::TaggedTuple<hydro::Tags::Pressure<DTYPE(data)>>            \
   BondiMichel::variables(                                                     \
       const tnsr::I<DTYPE(data), 3>& x,                                       \
       tmpl::list<hydro::Tags::Pressure<DTYPE(data)>> /*meta*/,                \
-      const BondiMichel::IntermediateVars<DTYPE(data)>& vars) const noexcept; \
+      const BondiMichel::IntermediateVars<DTYPE(data)>& vars) const;          \
   template tuples::TaggedTuple<                                               \
       hydro::Tags::SpecificInternalEnergy<DTYPE(data)>>                       \
   BondiMichel::variables(                                                     \
       const tnsr::I<DTYPE(data), 3>& x,                                       \
       tmpl::list<hydro::Tags::SpecificInternalEnergy<DTYPE(data)>> /*meta*/,  \
-      const BondiMichel::IntermediateVars<DTYPE(data)>& vars) const noexcept; \
+      const BondiMichel::IntermediateVars<DTYPE(data)>& vars) const;          \
   template tuples::TaggedTuple<hydro::Tags::LorentzFactor<DTYPE(data)>>       \
   BondiMichel::variables(                                                     \
       const tnsr::I<DTYPE(data), 3>& x,                                       \
       tmpl::list<hydro::Tags::LorentzFactor<DTYPE(data)>> /*meta*/,           \
-      const BondiMichel::IntermediateVars<DTYPE(data)>& vars) const noexcept; \
+      const BondiMichel::IntermediateVars<DTYPE(data)>& vars) const;          \
   template tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DTYPE(data), 3>>  \
   BondiMichel::variables(                                                     \
       const tnsr::I<DTYPE(data), 3>& x,                                       \
       tmpl::list<hydro::Tags::SpatialVelocity<DTYPE(data), 3>> /*meta*/,      \
-      const BondiMichel::IntermediateVars<DTYPE(data)>& vars) const noexcept; \
+      const BondiMichel::IntermediateVars<DTYPE(data)>& vars) const;          \
   template tuples::TaggedTuple<hydro::Tags::MagneticField<DTYPE(data), 3>>    \
   BondiMichel::variables(                                                     \
       const tnsr::I<DTYPE(data), 3>& x,                                       \
       tmpl::list<hydro::Tags::MagneticField<DTYPE(data), 3>> /*meta*/,        \
-      const BondiMichel::IntermediateVars<DTYPE(data)>& vars) const noexcept; \
+      const BondiMichel::IntermediateVars<DTYPE(data)>& vars) const;          \
   template tuples::TaggedTuple<                                               \
       hydro::Tags::DivergenceCleaningField<DTYPE(data)>>                      \
   BondiMichel::variables(                                                     \
       const tnsr::I<DTYPE(data), 3>& x,                                       \
       tmpl::list<hydro::Tags::DivergenceCleaningField<DTYPE(data)>> /*meta*/, \
-      const BondiMichel::IntermediateVars<DTYPE(data)>& vars) const noexcept;
+      const BondiMichel::IntermediateVars<DTYPE(data)>& vars) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
 

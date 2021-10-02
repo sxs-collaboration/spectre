@@ -104,7 +104,7 @@ class ConstraintPreservingBjorhus final : public BoundaryCondition<Dim> {
  public:
   struct TypeOptionTag {
     using type = detail::ConstraintPreservingBjorhusType;
-    static std::string name() noexcept { return "Type"; }
+    static std::string name() { return "Type"; }
     static constexpr Options::String help{
         "Whether to impose ConstraintPreserving, with or without physical "
         "terms for VMinus."};
@@ -115,29 +115,28 @@ class ConstraintPreservingBjorhus final : public BoundaryCondition<Dim> {
       "ConstraintPreservingBjorhus boundary conditions setting the value of the"
       "time derivatives of the spacetime metric, Phi and Pi to expressions that"
       "prevent the influx of constraint violations and reflections."};
-  static std::string name() noexcept { return "ConstraintPreservingBjorhus"; }
+  static std::string name() { return "ConstraintPreservingBjorhus"; }
 
-  ConstraintPreservingBjorhus(
-      detail::ConstraintPreservingBjorhusType type) noexcept;
+  ConstraintPreservingBjorhus(detail::ConstraintPreservingBjorhusType type);
 
   ConstraintPreservingBjorhus() = default;
   /// \cond
-  ConstraintPreservingBjorhus(ConstraintPreservingBjorhus&&) noexcept = default;
-  ConstraintPreservingBjorhus& operator=(
-      ConstraintPreservingBjorhus&&) noexcept = default;
+  ConstraintPreservingBjorhus(ConstraintPreservingBjorhus&&) = default;
+  ConstraintPreservingBjorhus& operator=(ConstraintPreservingBjorhus&&) =
+      default;
   ConstraintPreservingBjorhus(const ConstraintPreservingBjorhus&) = default;
   ConstraintPreservingBjorhus& operator=(const ConstraintPreservingBjorhus&) =
       default;
   /// \endcond
   ~ConstraintPreservingBjorhus() override = default;
 
-  explicit ConstraintPreservingBjorhus(CkMigrateMessage* msg) noexcept;
+  explicit ConstraintPreservingBjorhus(CkMigrateMessage* msg);
 
   WRAPPED_PUPable_decl_base_template(
       domain::BoundaryConditions::BoundaryCondition,
       ConstraintPreservingBjorhus);
 
-  auto get_clone() const noexcept -> std::unique_ptr<
+  auto get_clone() const -> std::unique_ptr<
       domain::BoundaryConditions::BoundaryCondition> override;
 
   static constexpr evolution::BoundaryConditions::Type bc_type =
@@ -211,7 +210,7 @@ class ConstraintPreservingBjorhus final : public BoundaryCondition<Dim> {
       // c.f. dg_interior_deriv_vars_tags
       const tnsr::iaa<DataVector, Dim, Frame::Inertial>& d_spacetime_metric,
       const tnsr::iaa<DataVector, Dim, Frame::Inertial>& d_pi,
-      const tnsr::ijaa<DataVector, Dim, Frame::Inertial>& d_phi) const noexcept;
+      const tnsr::ijaa<DataVector, Dim, Frame::Inertial>& d_phi) const;
 
  private:
   void compute_intermediate_vars(
@@ -274,7 +273,7 @@ class ConstraintPreservingBjorhus final : public BoundaryCondition<Dim> {
       const tnsr::iaa<DataVector, Dim, Frame::Inertial>& d_pi,
       const tnsr::ijaa<DataVector, Dim, Frame::Inertial>& d_phi,
       const tnsr::iaa<DataVector, Dim, Frame::Inertial>& d_spacetime_metric)
-      const noexcept;
+      const;
 
   detail::ConstraintPreservingBjorhusType type_{
       detail::ConstraintPreservingBjorhusType::ConstraintPreservingPhysical};

@@ -35,7 +35,7 @@ struct CharSpeedCompute : CharSpeedsComputeTag::base, db::ComputeTag {
       const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
           grid_velocity,
       const tnsr::i<DataVector, Dim, Frame::Inertial>& unit_normal_covector,
-      const Ts&... ts) noexcept {
+      const Ts&... ts) {
     // Note that while the CharSpeedsComputeTag almost certainly also needs the
     // unit normal covector for computing the original characteristic speeds, we
     // don't know which of the `ts` it is, and thus we need the unit normal

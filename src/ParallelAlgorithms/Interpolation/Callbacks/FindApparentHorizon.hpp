@@ -132,7 +132,7 @@ struct FindApparentHorizon {
   static bool apply(
       const gsl::not_null<db::DataBox<DbTags>*> box,
       const gsl::not_null<Parallel::GlobalCache<Metavariables>*> cache,
-      const TemporalId& temporal_id) noexcept {
+      const TemporalId& temporal_id) {
     bool horizon_finder_failed = false;
 
     // Before doing anything else, deal with the possibility that some
@@ -163,8 +163,7 @@ struct FindApparentHorizon {
       db::mutate<::ah::Tags::FastFlow, StrahlkorperTags::Strahlkorper<Frame>>(
           box, [&inv_g, &ex_curv, &christoffel, &status_and_info](
                    const gsl::not_null<::FastFlow*> fast_flow,
-                   const gsl::not_null<::Strahlkorper<Frame>*>
-                       strahlkorper) noexcept {
+                   const gsl::not_null<::Strahlkorper<Frame>*> strahlkorper) {
             status_and_info = fast_flow->template iterate_horizon_finder<Frame>(
                 strahlkorper, inv_g, ex_curv, christoffel);
           });
@@ -223,7 +222,7 @@ struct FindApparentHorizon {
                                   ::ah::Tags::FastFlow>>(
           [](const gsl::not_null<Variables<vars_tags>*> vars,
              const Strahlkorper<Frame>& strahlkorper,
-             const FastFlow& fast_flow) noexcept {
+             const FastFlow& fast_flow) {
             const size_t L_mesh = fast_flow.current_l_mesh(strahlkorper);
             const auto prolonged_strahlkorper =
                 Strahlkorper<Frame>(L_mesh, L_mesh, strahlkorper);
@@ -231,7 +230,7 @@ struct FindApparentHorizon {
                 strahlkorper.ylm_spherepack().physical_size());
 
             tmpl::for_each<vars_tags>([&strahlkorper, &prolonged_strahlkorper,
-                                       &vars, &new_vars](auto tag_v) noexcept {
+                                       &vars, &new_vars](auto tag_v) {
               using tag = typename decltype(tag_v)::type;
               const auto& old_var = get<tag>(*vars);
               auto& new_var = get<tag>(new_vars);
@@ -261,7 +260,7 @@ struct FindApparentHorizon {
                 const gsl::not_null<Strahlkorper<::Frame::Inertial>*>
                     inertial_strahlkorper,
                 const Strahlkorper<Frame>& strahlkorper,
-                const Domain<Metavariables::volume_dim>& domain) noexcept {
+                const Domain<Metavariables::volume_dim>& domain) {
               // Note that functions_of_time must already be up to
               // date at temporal_id because they were used in the AH
               // search above.
@@ -286,11 +285,11 @@ struct FindApparentHorizon {
     // Eventually we will do time-extrapolation to set the next guess.
     db::mutate<::ah::Tags::FastFlow, StrahlkorperTags::Strahlkorper<Frame>,
                ::ah::Tags::PreviousStrahlkorper<Frame>>(
-        box, [&horizon_finder_failed](
-                 const gsl::not_null<::FastFlow*> fast_flow,
-                 const gsl::not_null<::Strahlkorper<Frame>*> strahlkorper,
-                 const gsl::not_null<::Strahlkorper<Frame>*>
-                     previous_strahlkorper) noexcept {
+        box,
+        [&horizon_finder_failed](
+            const gsl::not_null<::FastFlow*> fast_flow,
+            const gsl::not_null<::Strahlkorper<Frame>*> strahlkorper,
+            const gsl::not_null<::Strahlkorper<Frame>*> previous_strahlkorper) {
           if (horizon_finder_failed) {
             // Don't keep a partially-converged strahlkorper in the DataBox.
             // Reset to the previous value, even if that previous value

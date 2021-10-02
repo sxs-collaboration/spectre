@@ -34,12 +34,11 @@ struct MultiplyByTwo : db::SimpleTag {
 
 template <typename Tag>
 struct MultiplyByTwoCompute : MultiplyByTwo<Tag>, db::ComputeTag {
-  static void function(const gsl::not_null<int*> result,
-                       const int& t) noexcept {
+  static void function(const gsl::not_null<int*> result, const int& t) {
     *result = t * 2;
   }
   static void function(const gsl::not_null<int*> result,
-                       const TestAddToBox_detail::NoEquivalence& t) noexcept {
+                       const TestAddToBox_detail::NoEquivalence& t) {
     *result = t.value * 2;
   }
   using argument_tags = tmpl::list<Tag>;

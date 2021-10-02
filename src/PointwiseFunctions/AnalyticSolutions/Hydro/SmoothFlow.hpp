@@ -54,14 +54,14 @@ class SmoothFlow : virtual public MarkAsAnalyticSolution {
   SmoothFlow() = default;
   SmoothFlow(const SmoothFlow& /*rhs*/) = delete;
   SmoothFlow& operator=(const SmoothFlow& /*rhs*/) = delete;
-  SmoothFlow(SmoothFlow&& /*rhs*/) noexcept = default;
-  SmoothFlow& operator=(SmoothFlow&& /*rhs*/) noexcept = default;
+  SmoothFlow(SmoothFlow&& /*rhs*/) = default;
+  SmoothFlow& operator=(SmoothFlow&& /*rhs*/) = default;
   ~SmoothFlow() = default;
 
-  explicit SmoothFlow(CkMigrateMessage* /*unused*/) noexcept;
+  explicit SmoothFlow(CkMigrateMessage* /*unused*/);
 
   // clang-tidy: no runtime references
-  void pup(PUP::er& /*p*/) noexcept;  //  NOLINT
+  void pup(PUP::er& /*p*/);  //  NOLINT
 
  protected:
   using equation_of_state_type = EquationsOfState::IdealFluid<IsRelativistic>;
@@ -83,7 +83,7 @@ class SmoothFlow : virtual public MarkAsAnalyticSolution {
     using type = double;
     static constexpr Options::String help = {
         "The constant pressure throughout the fluid."};
-    static type lower_bound() noexcept { return 0.0; }
+    static type lower_bound() { return 0.0; }
   };
 
   /// The adiabatic index for the ideal fluid.
@@ -91,7 +91,7 @@ class SmoothFlow : virtual public MarkAsAnalyticSolution {
     using type = double;
     static constexpr Options::String help = {
         "The adiabatic index for the ideal fluid."};
-    static type lower_bound() noexcept { return 1.0; }
+    static type lower_bound() { return 1.0; }
   };
 
   /// The perturbation amplitude of the rest mass density of the fluid.
@@ -99,8 +99,8 @@ class SmoothFlow : virtual public MarkAsAnalyticSolution {
     using type = double;
     static constexpr Options::String help = {
         "The perturbation size of the rest mass density."};
-    static type lower_bound() noexcept { return -1.0; }
-    static type upper_bound() noexcept { return 1.0; }
+    static type lower_bound() { return -1.0; }
+    static type upper_bound() { return 1.0; }
   };
 
   using options = tmpl::list<MeanVelocity, WaveVector, Pressure, AdiabaticIndex,
@@ -108,52 +108,47 @@ class SmoothFlow : virtual public MarkAsAnalyticSolution {
 
   SmoothFlow(const std::array<double, Dim>& mean_velocity,
              const std::array<double, Dim>& wavevector, double pressure,
-             double adiabatic_index, double perturbation_size) noexcept;
+             double adiabatic_index, double perturbation_size);
 
   /// @{
   /// Retrieve hydro variable at `(x, t)`
   template <typename DataType>
   auto variables(const tnsr::I<DataType, Dim>& x, double t,
                  tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/)
-      const noexcept
-      -> tuples::TaggedTuple<hydro::Tags::RestMassDensity<DataType>>;
+      const -> tuples::TaggedTuple<hydro::Tags::RestMassDensity<DataType>>;
 
   template <typename DataType>
   auto variables(
       const tnsr::I<DataType, Dim>& x, double t,
-      tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>> /*meta*/)
-      const noexcept
+      tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>> /*meta*/) const
       -> tuples::TaggedTuple<hydro::Tags::SpecificInternalEnergy<DataType>>;
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, Dim>& x, double /*t*/,
-                 tmpl::list<hydro::Tags::Pressure<DataType>> /*meta*/)
-      const noexcept -> tuples::TaggedTuple<hydro::Tags::Pressure<DataType>>;
+                 tmpl::list<hydro::Tags::Pressure<DataType>> /*meta*/) const
+      -> tuples::TaggedTuple<hydro::Tags::Pressure<DataType>>;
 
   template <typename DataType>
   auto variables(
       const tnsr::I<DataType, Dim>& x, double /*t*/,
-      tmpl::list<hydro::Tags::SpatialVelocity<DataType, Dim>> /*meta*/)
-      const noexcept
+      tmpl::list<hydro::Tags::SpatialVelocity<DataType, Dim>> /*meta*/) const
       -> tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, Dim>>;
 
   template <typename DataType, bool LocalIsRelativistic = IsRelativistic,
             Requires<IsRelativistic and IsRelativistic == LocalIsRelativistic> =
                 nullptr>
-  auto variables(
-      const tnsr::I<DataType, Dim>& x, double /*t*/,
-      tmpl::list<hydro::Tags::LorentzFactor<DataType>> /*meta*/) const noexcept
-      -> tuples::TaggedTuple<hydro::Tags::LorentzFactor<DataType>>;
+  auto variables(const tnsr::I<DataType, Dim>& x, double /*t*/,
+                 tmpl::list<hydro::Tags::LorentzFactor<DataType>> /*meta*/)
+      const -> tuples::TaggedTuple<hydro::Tags::LorentzFactor<DataType>>;
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, Dim>& x, double t,
                  tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>> /*meta*/)
-      const noexcept
-      -> tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DataType>>;
+      const -> tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DataType>>;
   /// @}
 
   const EquationsOfState::IdealFluid<IsRelativistic>& equation_of_state()
-      const noexcept {
+      const {
     return equation_of_state_;
   }
 
@@ -162,12 +157,11 @@ class SmoothFlow : virtual public MarkAsAnalyticSolution {
   friend bool
   operator==(  // NOLINT (clang-tidy: readability-redundant-declaration)
       const SmoothFlow<LocalDim, LocalIsRelativistic>& lhs,
-      const SmoothFlow<LocalDim, LocalIsRelativistic>& rhs) noexcept;
+      const SmoothFlow<LocalDim, LocalIsRelativistic>& rhs);
 
   // Computes the phase.
   template <typename DataType>
-  DataType k_dot_x_minus_vt(const tnsr::I<DataType, Dim>& x,
-                            double t) const noexcept;
+  DataType k_dot_x_minus_vt(const tnsr::I<DataType, Dim>& x, double t) const;
 
   std::array<double, Dim> mean_velocity_ =
       make_array<Dim>(std::numeric_limits<double>::signaling_NaN());
@@ -183,5 +177,5 @@ class SmoothFlow : virtual public MarkAsAnalyticSolution {
 
 template <size_t Dim, bool IsRelativistic>
 bool operator!=(const SmoothFlow<Dim, IsRelativistic>& lhs,
-                const SmoothFlow<Dim, IsRelativistic>& rhs) noexcept;
+                const SmoothFlow<Dim, IsRelativistic>& rhs);
 }  // namespace hydro::Solutions

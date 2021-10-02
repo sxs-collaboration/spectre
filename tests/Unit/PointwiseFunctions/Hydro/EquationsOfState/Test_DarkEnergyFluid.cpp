@@ -16,7 +16,7 @@
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 
 namespace {
-void check_bounds() noexcept {
+void check_bounds() {
   const auto eos = EquationsOfState::DarkEnergyFluid<true>{1.0};
   CHECK(0.0 == eos.rest_mass_density_lower_bound());
   CHECK(-1.0 == eos.specific_internal_energy_lower_bound(1.0));

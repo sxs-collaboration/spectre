@@ -199,12 +199,12 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.PreSwshDerivatives",
                             Spectral::Swsh::Tags::Derivative<
                                 Tags::BondiBeta, Spectral::Swsh::Tags::Eth>,
                             Tags::DuRDividedByR, Tags::BondiH>>(
-      [&spare_computation_box, &generator, &dist ](auto tag_v) noexcept {
+      [&spare_computation_box, &generator, &dist](auto tag_v) {
         using tag = typename decltype(tag_v)::type;
         db::mutate<tag>(
-            make_not_null(&spare_computation_box), [
-              &generator, &dist
-            ](const gsl::not_null<typename tag::type*> to_generate) noexcept {
+            make_not_null(&spare_computation_box),
+            [&generator,
+             &dist](const gsl::not_null<typename tag::type*> to_generate) {
               fill_with_random_values(to_generate, make_not_null(&generator),
                                       make_not_null(&dist));
             });

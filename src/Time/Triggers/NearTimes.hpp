@@ -44,7 +44,7 @@ class NearTimes : public Trigger {
  public:
   /// \cond
   NearTimes() = default;
-  explicit NearTimes(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit NearTimes(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(NearTimes);  // NOLINT
   /// \endcond
@@ -60,7 +60,7 @@ class NearTimes : public Trigger {
 
     struct Range {
       using type = double;
-      static type lower_bound() noexcept { return 0.0; }
+      static type lower_bound() { return 0.0; }
       static constexpr Options::String help =
           "Maximum time difference to trigger at";
     };
@@ -85,7 +85,7 @@ class NearTimes : public Trigger {
                  typename OptionTags::Unit, typename OptionTags::Direction>;
 
   NearTimes(std::unique_ptr<TimeSequence<double>> times, const double range,
-            const Unit unit, const Direction direction) noexcept
+            const Unit unit, const Direction direction)
       : times_(std::move(times)),
         range_(range),
         unit_(unit),
@@ -93,10 +93,10 @@ class NearTimes : public Trigger {
 
   using argument_tags = tmpl::list<Tags::Time, Tags::TimeStep>;
 
-  bool operator()(const double now, const TimeDelta& time_step) const noexcept;
+  bool operator()(const double now, const TimeDelta& time_step) const;
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept override;
+  void pup(PUP::er& p) override;
 
  private:
   std::unique_ptr<TimeSequence<double>> times_{};

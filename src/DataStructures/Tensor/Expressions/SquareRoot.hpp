@@ -56,8 +56,7 @@ struct SquareRoot
   /// \return the square root of the component of the tensor evaluated from the
   /// contained tensor expression
   SPECTRE_ALWAYS_INLINE decltype(auto) get(
-      const std::array<size_t, num_tensor_indices>& multi_index)
-      const noexcept {
+      const std::array<size_t, num_tensor_indices>& multi_index) const {
     return sqrt(t_.get(multi_index));
   }
 

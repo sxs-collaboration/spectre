@@ -6,7 +6,7 @@
 namespace Cce::Actions::detail {
 void correct_weyl_scalars_for_inertial_time(
     const gsl::not_null<Variables<weyl_correction_list>*>
-        weyl_correction_variables) noexcept {
+        weyl_correction_variables) {
   const auto& psi_4 =
       get<Tags::Du<Tags::TimeIntegral<Tags::ScriPlus<Tags::Psi4>>>>(
           *weyl_correction_variables);

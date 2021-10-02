@@ -26,7 +26,7 @@ struct D0LowerShiftBuffer;
 
 template <size_t SpatialDim, typename Frame>
 struct D0LowerShiftBuffer<SpatialDim, Frame, double> {
-  explicit D0LowerShiftBuffer(const size_t /*size*/) noexcept {}
+  explicit D0LowerShiftBuffer(const size_t /*size*/) {}
 
   tnsr::I<double, SpatialDim, Frame> dt_shift{};
   tnsr::ii<double, SpatialDim, Frame> dt_spatial_metric{};
@@ -41,7 +41,7 @@ struct D0LowerShiftBuffer<SpatialDim, Frame, DataVector> {
       buffer_;
 
  public:
-  explicit D0LowerShiftBuffer(const size_t size) noexcept
+  explicit D0LowerShiftBuffer(const size_t size)
       : buffer_(size),
         dt_shift(get<::Tags::TempI<0, SpatialDim, Frame, DataVector>>(buffer_)),
         dt_spatial_metric(
@@ -60,7 +60,7 @@ void time_deriv_of_lower_shift(
     const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_unit_normal,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
-    const tnsr::aa<DataType, SpatialDim, Frame>& pi) noexcept {
+    const tnsr::aa<DataType, SpatialDim, Frame>& pi) {
   if (UNLIKELY(get_size(get<0>(*dt_lower_shift)) != get_size(get(lapse)))) {
     *dt_lower_shift =
         tnsr::i<DataType, SpatialDim, Frame>(get_size(get(lapse)));
@@ -97,7 +97,7 @@ tnsr::i<DataType, SpatialDim, Frame> time_deriv_of_lower_shift(
     const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_unit_normal,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
-    const tnsr::aa<DataType, SpatialDim, Frame>& pi) noexcept {
+    const tnsr::aa<DataType, SpatialDim, Frame>& pi) {
   tnsr::i<DataType, SpatialDim, Frame> dt_lower_shift{};
   GeneralizedHarmonic::time_deriv_of_lower_shift<SpatialDim, Frame, DataType>(
       make_not_null(&dt_lower_shift), lapse, shift, spatial_metric,
@@ -120,7 +120,7 @@ tnsr::i<DataType, SpatialDim, Frame> time_deriv_of_lower_shift(
       const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                  \
           spacetime_unit_normal,                                           \
       const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,           \
-      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi) noexcept;   \
+      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi);            \
   template tnsr::i<DTYPE(data), DIM(data), FRAME(data)>                    \
   GeneralizedHarmonic::time_deriv_of_lower_shift(                          \
       const Scalar<DTYPE(data)>& lapse,                                    \
@@ -129,7 +129,7 @@ tnsr::i<DataType, SpatialDim, Frame> time_deriv_of_lower_shift(
       const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                  \
           spacetime_unit_normal,                                           \
       const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,           \
-      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi) noexcept;
+      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
                         (Frame::Grid, Frame::Inertial))

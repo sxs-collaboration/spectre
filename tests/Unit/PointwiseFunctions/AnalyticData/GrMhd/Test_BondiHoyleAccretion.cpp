@@ -42,20 +42,18 @@ struct BondiHoyleAccretionProxy : grmhd::AnalyticData::BondiHoyleAccretion {
 
   template <typename DataType>
   tuples::tagged_tuple_from_typelist<hydro_variables_tags<DataType>>
-  hydro_variables(const tnsr::I<DataType, 3, Frame::Inertial>& x) const
-      noexcept {
+  hydro_variables(const tnsr::I<DataType, 3, Frame::Inertial>& x) const {
     return variables(x, hydro_variables_tags<DataType>{});
   }
 
   template <typename DataType>
   tuples::tagged_tuple_from_typelist<grmhd_variables_tags<DataType>>
-  grmhd_variables(const tnsr::I<DataType, 3, Frame::Inertial>& x) const
-      noexcept {
+  grmhd_variables(const tnsr::I<DataType, 3, Frame::Inertial>& x) const {
     return variables(x, grmhd_variables_tags<DataType>{});
   }
 };
 
-void test_create_from_options() noexcept {
+void test_create_from_options() {
   const auto accretion =
       TestHelpers::test_creation<grmhd::AnalyticData::BondiHoyleAccretion>(
           "BhMass: 1.0\n"
@@ -69,7 +67,7 @@ void test_create_from_options() noexcept {
                          1.0, 0.23, 2.7, 0.34, 5.76, 30.0, 1.5));
 }
 
-void test_move() noexcept {
+void test_move() {
   grmhd::AnalyticData::BondiHoyleAccretion accretion(0.2, 0.12, 1.1, 0.63, 3.1,
                                                      251.4, 1.4);
   grmhd::AnalyticData::BondiHoyleAccretion accretion_copy(0.2, 0.12, 1.1, 0.63,
@@ -77,7 +75,7 @@ void test_move() noexcept {
   test_move_semantics(std::move(accretion), accretion_copy);  //  NOLINT
 }
 
-void test_serialize() noexcept {
+void test_serialize() {
   grmhd::AnalyticData::BondiHoyleAccretion accretion(0.2, 0.12, 1.1, 0.63, 3.1,
                                                      133.7, 1.65);
   test_serialization(accretion);

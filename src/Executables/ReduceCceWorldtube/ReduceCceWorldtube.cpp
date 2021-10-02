@@ -35,7 +35,7 @@ void slice_buffers_to_libsharp_modes(
         coefficients_set,
     const Variables<Cce::cce_metric_input_tags>& coefficients_buffers,
     const size_t time_span, const size_t buffer_time_offset, const size_t l_max,
-    const size_t computation_l_max) noexcept {
+    const size_t computation_l_max) {
   SpinWeighted<ComplexModalVector, 0> spin_weighted_buffer;
 
   for (const auto& libsharp_mode :
@@ -48,8 +48,7 @@ void slice_buffers_to_libsharp_modes(
                        Tags::dt<Cce::Tags::detail::SpatialMetric>>>(
             [&i, &j, &libsharp_mode, &spin_weighted_buffer,
              &coefficients_buffers, &coefficients_set, &l_max,
-             &computation_l_max, &time_span,
-             &buffer_time_offset](auto tag_v) noexcept {
+             &computation_l_max, &time_span, &buffer_time_offset](auto tag_v) {
               using tag = typename decltype(tag_v)::type;
               spin_weighted_buffer.set_data_ref(
                   get<tag>(*coefficients_set).get(i, j).data(),
@@ -83,7 +82,7 @@ void slice_buffers_to_libsharp_modes(
                                 Tags::dt<Cce::Tags::detail::Shift>>>(
           [&i, &libsharp_mode, &spin_weighted_buffer, &coefficients_buffers,
            &coefficients_set, &l_max, &computation_l_max, &time_span,
-           &buffer_time_offset](auto tag_v) noexcept {
+           &buffer_time_offset](auto tag_v) {
             using tag = typename decltype(tag_v)::type;
             spin_weighted_buffer.set_data_ref(
                 get<tag>(*coefficients_set).get(i).data(),
@@ -118,7 +117,7 @@ void slice_buffers_to_libsharp_modes(
                               Tags::dt<Cce::Tags::detail::Lapse>>>(
         [&libsharp_mode, &spin_weighted_buffer, &coefficients_buffers,
          &coefficients_set, &l_max, &computation_l_max, &time_span,
-         &buffer_time_offset](auto tag_v) noexcept {
+         &buffer_time_offset](auto tag_v) {
           using tag = typename decltype(tag_v)::type;
           spin_weighted_buffer.set_data_ref(
               get(get<tag>(*coefficients_set)).data(),
@@ -154,7 +153,7 @@ void slice_buffers_to_libsharp_modes(
 void perform_cce_worldtube_reduction(
     const std::string& input_file, const std::string& output_file,
     const size_t buffer_depth, const size_t l_max_factor,
-    const bool fix_spec_normalization = false) noexcept {
+    const bool fix_spec_normalization = false) {
   Cce::MetricWorldtubeH5BufferUpdater buffer_updater{input_file};
   const size_t l_max = buffer_updater.get_l_max();
   // Perform the boundary computation to scalars at twice the input l_max to be
@@ -244,7 +243,7 @@ void perform_cce_worldtube_reduction(
     tmpl::for_each<reduced_boundary_tags>(
         [&recorder, &boundary_data_variables, &output_goldberg_mode_buffer,
          &output_libsharp_mode_buffer, &l_max, &computation_l_max,
-         &time](auto tag_v) noexcept {
+         &time](auto tag_v) {
           using tag = typename decltype(tag_v)::type;
           SpinWeighted<ComplexModalVector, tag::type::type::spin>
               spin_weighted_libsharp_view;

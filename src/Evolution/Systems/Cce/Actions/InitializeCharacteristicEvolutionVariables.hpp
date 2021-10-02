@@ -122,7 +122,7 @@ struct InitializeCharacteristicEvolutionVariables {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     const size_t l_max = db::get<Spectral::Swsh::Tags::LMaxBase>(box);
     const size_t number_of_radial_points =
         db::get<Spectral::Swsh::Tags::NumberOfRadialPointsBase>(box);

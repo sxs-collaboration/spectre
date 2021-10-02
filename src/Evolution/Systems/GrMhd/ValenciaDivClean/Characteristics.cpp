@@ -28,7 +28,7 @@ void compute_characteristic_speeds(
     const Scalar<DataVector>& spatial_velocity_squared,
     const Scalar<DataVector>& sound_speed_squared,
     const Scalar<DataVector>& alfven_speed_squared,
-    const tnsr::i<DataVector, 3>& normal) noexcept {
+    const tnsr::i<DataVector, 3>& normal) {
   const size_t num_grid_points = get(lapse).size();
   auto& char_speeds = *pchar_speeds;
   if (char_speeds[0].size() != num_grid_points) {
@@ -95,7 +95,7 @@ void characteristic_speeds(
     const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
     const tnsr::i<DataVector, 3>& unit_normal,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
-        equation_of_state) noexcept {
+        equation_of_state) {
   // Use a Variables to reduce total number of allocations. This is especially
   // important in a multithreaded environment.
   // Remaining places to reduce allocations:
@@ -192,7 +192,7 @@ std::array<DataVector, 9> characteristic_speeds(
     const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
     const tnsr::i<DataVector, 3>& unit_normal,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
-        equation_of_state) noexcept {
+        equation_of_state) {
   std::array<DataVector, 9> char_speeds{};
   characteristic_speeds(make_not_null(&char_speeds), rest_mass_density,
                         specific_internal_energy, specific_enthalpy,
@@ -215,7 +215,7 @@ std::array<DataVector, 9> characteristic_speeds(
       const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,       \
       const tnsr::i<DataVector, 3>& unit_normal,                            \
       const EquationsOfState::EquationOfState<true, GET_DIM(data)>&         \
-          equation_of_state) noexcept;                                      \
+          equation_of_state);                                               \
   template void characteristic_speeds<GET_DIM(data)>(                       \
       const gsl::not_null<std::array<DataVector, 9>*> char_speeds,          \
       const Scalar<DataVector>& rest_mass_density,                          \
@@ -228,7 +228,7 @@ std::array<DataVector, 9> characteristic_speeds(
       const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,       \
       const tnsr::i<DataVector, 3>& unit_normal,                            \
       const EquationsOfState::EquationOfState<true, GET_DIM(data)>&         \
-          equation_of_state) noexcept;
+          equation_of_state);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2))
 

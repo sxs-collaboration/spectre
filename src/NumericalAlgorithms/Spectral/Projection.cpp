@@ -24,7 +24,7 @@
 
 namespace Spectral {
 
-std::ostream& operator<<(std::ostream& os, ChildSize mortar_size) noexcept {
+std::ostream& operator<<(std::ostream& os, ChildSize mortar_size) {
   switch (mortar_size) {
     case ChildSize::Full:
       return os << "Full";
@@ -41,17 +41,17 @@ std::ostream& operator<<(std::ostream& os, ChildSize mortar_size) noexcept {
 
 template <size_t Dim>
 bool needs_projection(const Mesh<Dim>& mesh1, const Mesh<Dim>& mesh2,
-                      const std::array<ChildSize, Dim>& child_sizes) noexcept {
+                      const std::array<ChildSize, Dim>& child_sizes) {
   return mesh1 != mesh2 or
-         alg::any_of(child_sizes,
-                     [](const Spectral::MortarSize child_size) noexcept {
-                       return child_size != Spectral::ChildSize::Full;
-                     });
+         alg::any_of(child_sizes, [](const Spectral::MortarSize child_size) {
+           return child_size != Spectral::ChildSize::Full;
+         });
 }
 
-const Matrix& projection_matrix_child_to_parent(
-    const Mesh<1>& child_mesh, const Mesh<1>& parent_mesh, const ChildSize size,
-    const bool operand_is_massive) noexcept {
+const Matrix& projection_matrix_child_to_parent(const Mesh<1>& child_mesh,
+                                                const Mesh<1>& parent_mesh,
+                                                const ChildSize size,
+                                                const bool operand_is_massive) {
   constexpr size_t max_points = maximum_number_of_points<Basis::Legendre>;
   ASSERT(parent_mesh.basis(0) == Basis::Legendre and
              child_mesh.basis(0) == Basis::Legendre,
@@ -78,7 +78,7 @@ const Matrix& projection_matrix_child_to_parent(
                          ChildSize::LowerHalf>>(
         [](const Quadrature child_quadrature, const size_t child_extent,
            const Quadrature parent_quadrature, const size_t parent_extent,
-           const ChildSize local_child_size) noexcept -> Matrix {
+           const ChildSize local_child_size) -> Matrix {
           const auto& prolongation_operator = projection_matrix_parent_to_child(
               {parent_extent, Spectral::Basis::Legendre, parent_quadrature},
               {child_extent, Spectral::Basis::Legendre, child_quadrature},
@@ -101,7 +101,7 @@ const Matrix& projection_matrix_child_to_parent(
               [](const Quadrature quadrature_element,
                  const size_t extents_element,
                  const Quadrature quadrature_mortar,
-                 const size_t extents_mortar) noexcept {
+                 const size_t extents_mortar) {
                 if (extents_element > extents_mortar) {
                   return Matrix{};
                 }
@@ -143,7 +143,7 @@ const Matrix& projection_matrix_child_to_parent(
                      max_points + 1>>([](const Quadrature quadrature_element,
                                          const size_t extents_element,
                                          const Quadrature quadrature_mortar,
-                                         const size_t extents_mortar) noexcept {
+                                         const size_t extents_mortar) {
         if (extents_element > extents_mortar) {
           return Matrix{};
         }
@@ -156,8 +156,8 @@ const Matrix& projection_matrix_child_to_parent(
         // interval in spectral space.  This is a rearranged
         // version of the equation given in the header.  This form
         // was easier to code.
-        const auto spectral_transformation =
-            [](const size_t large_index, const size_t small_index) noexcept {
+        const auto spectral_transformation = [](const size_t large_index,
+                                                const size_t small_index) {
           ASSERT(large_index >= small_index,
                  "Above-diagonal entries are zero.  Don't use them.");
           double result = 1.;
@@ -224,7 +224,7 @@ const Matrix& projection_matrix_child_to_parent(
               [](const Quadrature quadrature_element,
                  const size_t extents_element,
                  const Quadrature quadrature_mortar,
-                 const size_t extents_mortar) noexcept {
+                 const size_t extents_mortar) {
                 if (extents_element > extents_mortar) {
                   return Matrix{};
                 }
@@ -263,7 +263,7 @@ std::array<std::reference_wrapper<const Matrix>, Dim>
 projection_matrix_child_to_parent(const Mesh<Dim>& child_mesh,
                                   const Mesh<Dim>& parent_mesh,
                                   const std::array<ChildSize, Dim>& child_sizes,
-                                  const bool operand_is_massive) noexcept {
+                                  const bool operand_is_massive) {
   static const Matrix identity{};
   auto projection_matrix = make_array<Dim>(std::cref(identity));
   const auto child_mesh_slices = child_mesh.slices();
@@ -283,9 +283,9 @@ projection_matrix_child_to_parent(const Mesh<Dim>& child_mesh,
   return projection_matrix;
 }
 
-const Matrix& projection_matrix_parent_to_child(
-    const Mesh<1>& parent_mesh, const Mesh<1>& child_mesh,
-    const ChildSize size) noexcept {
+const Matrix& projection_matrix_parent_to_child(const Mesh<1>& parent_mesh,
+                                                const Mesh<1>& child_mesh,
+                                                const ChildSize size) {
   constexpr size_t max_points = maximum_number_of_points<Basis::Legendre>;
   ASSERT(child_mesh.basis(0) == Basis::Legendre and
              parent_mesh.basis(0) == Basis::Legendre,
@@ -302,11 +302,11 @@ const Matrix& projection_matrix_parent_to_child(
              << parent_mesh.extents(0) << ")");
 
   // Element-to-mortar projections are always interpolations.
-  const auto make_interpolators = [](auto interval_transform) noexcept {
+  const auto make_interpolators = [](auto interval_transform) {
     return [interval_transform = std::move(interval_transform)](
-        const Quadrature quadrature_mortar, const size_t extents_mortar,
-        const Quadrature quadrature_element,
-        const size_t extents_element) noexcept {
+               const Quadrature quadrature_mortar, const size_t extents_mortar,
+               const Quadrature quadrature_element,
+               const size_t extents_element) {
       if (extents_mortar < extents_element) {
         return Matrix{};
       }
@@ -328,8 +328,7 @@ const Matrix& projection_matrix_parent_to_child(
                             CacheEnumeration<Quadrature, Quadrature::Gauss,
                                              Quadrature::GaussLobatto>,
                             CacheRange<2_st, max_points + 1>>(
-              make_interpolators(
-                  [](const DataVector& x) noexcept { return x; }));
+              make_interpolators([](const DataVector& x) { return x; }));
       return cache(child_mesh.quadrature(0), child_mesh.extents(0),
                    parent_mesh.quadrature(0), parent_mesh.extents(0));
     }
@@ -342,7 +341,7 @@ const Matrix& projection_matrix_parent_to_child(
                             CacheEnumeration<Quadrature, Quadrature::Gauss,
                                              Quadrature::GaussLobatto>,
                             CacheRange<2_st, max_points + 1>>(
-              make_interpolators([](const DataVector& x) noexcept {
+              make_interpolators([](const DataVector& x) {
                 return DataVector(0.5 * (x + 1.));
               }));
       return cache(child_mesh.quadrature(0), child_mesh.extents(0),
@@ -357,7 +356,7 @@ const Matrix& projection_matrix_parent_to_child(
                             CacheEnumeration<Quadrature, Quadrature::Gauss,
                                              Quadrature::GaussLobatto>,
                             CacheRange<2_st, max_points + 1>>(
-              make_interpolators([](const DataVector& x) noexcept {
+              make_interpolators([](const DataVector& x) {
                 return DataVector(0.5 * (x - 1.));
               }));
       return cache(child_mesh.quadrature(0), child_mesh.extents(0),
@@ -373,7 +372,7 @@ template <size_t Dim>
 std::array<std::reference_wrapper<const Matrix>, Dim>
 projection_matrix_parent_to_child(
     const Mesh<Dim>& parent_mesh, const Mesh<Dim>& child_mesh,
-    const std::array<ChildSize, Dim>& child_sizes) noexcept {
+    const std::array<ChildSize, Dim>& child_sizes) {
   static const Matrix identity{};
   auto projection_matrix = make_array<Dim>(std::cref(identity));
   const auto child_mesh_slices = child_mesh.slices();
@@ -397,16 +396,16 @@ projection_matrix_parent_to_child(
 #define INSTANTIATE(r, data)                                                 \
   template bool needs_projection(                                            \
       const Mesh<DIM(data)>& mesh1, const Mesh<DIM(data)>& mesh2,            \
-      const std::array<ChildSize, DIM(data)>& child_sizes) noexcept;         \
+      const std::array<ChildSize, DIM(data)>& child_sizes);                  \
   template std::array<std::reference_wrapper<const Matrix>, DIM(data)>       \
   projection_matrix_child_to_parent(                                         \
       const Mesh<DIM(data)>& child_mesh, const Mesh<DIM(data)>& parent_mesh, \
       const std::array<ChildSize, DIM(data)>& child_sizes,                   \
-      bool operand_is_massive) noexcept;                                     \
+      bool operand_is_massive);                                              \
   template std::array<std::reference_wrapper<const Matrix>, DIM(data)>       \
   projection_matrix_parent_to_child(                                         \
       const Mesh<DIM(data)>& parent_mesh, const Mesh<DIM(data)>& child_mesh, \
-      const std::array<ChildSize, DIM(data)>& child_sizes) noexcept;
+      const std::array<ChildSize, DIM(data)>& child_sizes);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (0, 1, 2, 3))
 

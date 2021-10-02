@@ -56,7 +56,7 @@ namespace OptionTags {
  * \brief Holds the `OptionTags::NumericalFlux` option in the input file
  */
 struct NumericalFluxGroup {
-  static std::string name() noexcept { return "NumericalFlux"; }
+  static std::string name() { return "NumericalFlux"; }
   static constexpr Options::String help = "The numerical flux scheme";
 };
 
@@ -67,9 +67,7 @@ struct NumericalFluxGroup {
  */
 template <typename NumericalFluxType>
 struct NumericalFlux {
-  static std::string name() noexcept {
-    return Options::name<NumericalFluxType>();
-  }
+  static std::string name() { return Options::name<NumericalFluxType>(); }
   static constexpr Options::String help = "Options for the numerical flux";
   using type = NumericalFluxType;
   using group = NumericalFluxGroup;
@@ -88,7 +86,7 @@ struct NumericalFlux : db::SimpleTag {
 
   static constexpr bool pass_metavariables = false;
   static NumericalFluxType create_from_options(
-      const NumericalFluxType& numerical_flux) noexcept {
+      const NumericalFluxType& numerical_flux) {
     return numerical_flux;
   }
 };

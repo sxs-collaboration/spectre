@@ -33,7 +33,7 @@ namespace dg {
  */
 enum class Formulation { StrongInertial, WeakInertial };
 
-std::ostream& operator<<(std::ostream& os, Formulation t) noexcept;
+std::ostream& operator<<(std::ostream& os, Formulation t);
 }  // namespace dg
 
 /// \cond

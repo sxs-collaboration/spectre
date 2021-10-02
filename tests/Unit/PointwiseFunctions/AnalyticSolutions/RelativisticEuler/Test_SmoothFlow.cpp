@@ -44,8 +44,7 @@ struct SmoothFlowProxy : RelativisticEuler::Solutions::SmoothFlow<Dim> {
 
   template <typename DataType>
   tuples::tagged_tuple_from_typelist<variables_tags<DataType>>
-  primitive_variables(const tnsr::I<DataType, Dim>& x, double t) const
-      noexcept {
+  primitive_variables(const tnsr::I<DataType, Dim>& x, double t) const {
     return this->variables(x, t, variables_tags<DataType>{});
   }
 };

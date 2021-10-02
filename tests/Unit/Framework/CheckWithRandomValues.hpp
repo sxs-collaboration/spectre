@@ -79,8 +79,7 @@ struct ConvertToTensorImpl;
 
 template <typename UsedForSize>
 struct ConvertToTensorImpl<double, UsedForSize> {
-  static auto apply(const double value,
-                    const UsedForSize& used_for_size) noexcept {
+  static auto apply(const double value, const UsedForSize& used_for_size) {
     return make_with_value<Scalar<DataVector>>(used_for_size, value);
   }
 };
@@ -88,7 +87,7 @@ struct ConvertToTensorImpl<double, UsedForSize> {
 template <size_t Dim, typename UsedForSize>
 struct ConvertToTensorImpl<std::array<double, Dim>, UsedForSize> {
   static auto apply(const std::array<double, Dim>& arr,
-                    const UsedForSize& used_for_size) noexcept {
+                    const UsedForSize& used_for_size) {
     auto array_as_tensor =
         make_with_value<tnsr::i<DataVector, Dim>>(used_for_size, 0.);
     for (size_t i = 0; i < Dim; ++i) {
@@ -102,7 +101,7 @@ template <typename ReturnType, typename = std::nullptr_t>
 struct ForwardToPyppImpl {
   template <typename MemberArg, typename UsedForSize>
   static decltype(auto) apply(const MemberArg& member_arg,
-                              const UsedForSize& /*used_for_size*/) noexcept {
+                              const UsedForSize& /*used_for_size*/) {
     return member_arg;
   }
 };
@@ -115,7 +114,7 @@ struct ForwardToPyppImpl<
                  is_same_v<typename ReturnType::value_type, DataVector>>> {
   template <typename MemberArg, typename UsedForSize>
   static decltype(auto) apply(const MemberArg& member_arg,
-                              const UsedForSize& used_for_size) noexcept {
+                              const UsedForSize& used_for_size) {
     return ConvertToTensorImpl<MemberArg, UsedForSize>::apply(member_arg,
                                                               used_for_size);
   }
@@ -128,7 +127,7 @@ struct ForwardToPyppImpl<
 // DataVectors.
 template <typename PyppReturn, typename MemberArg, typename UsedForSize>
 decltype(auto) forward_to_pypp(const MemberArg& member_arg,
-                               const UsedForSize& used_for_size) noexcept {
+                               const UsedForSize& used_for_size) {
   return ForwardToPyppImpl<PyppReturn>::apply(member_arg, used_for_size);
 }
 
@@ -201,7 +200,7 @@ void check_with_random_values_impl(
   EXPAND_PACK_LEFT_TO_RIGHT(fill_with_random_values(
       make_not_null(&std::get<ArgumentIs>(args)), make_not_null(&generator),
       make_not_null(&(distributions[ArgumentIs]))));
-  const auto result = [&args, &f, &klass]() noexcept {
+  const auto result = [&args, &f, &klass]() {
     (void)args;
     if constexpr (std::is_same_v<NoSuchType, std::decay_t<Klass>>) {
       (void)klass;
@@ -744,7 +743,7 @@ void check_with_random_values(
  *
  * \code
  * template <class Arg1, size_t Arg2, class Arg3>
- * my_function(const double var_1, const int& var_2) noexcept { ... }
+ * my_function(const double var_1, const int& var_2) { ... }
  * \endcode
  *
  * can be invoked by writing
@@ -894,7 +893,7 @@ void check_with_random_values(
  *
  * \code
  * template <size_t Dim, IndexType TypeOfIndex, typename DataType>
- * test_ricci(const DataType& used_for_size) noexcept { ... }
+ * test_ricci(const DataType& used_for_size) { ... }
  * \endcode
  *
  * can be invoked by writing

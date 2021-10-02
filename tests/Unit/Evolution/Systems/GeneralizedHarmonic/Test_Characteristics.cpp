@@ -69,7 +69,7 @@ Scalar<DataVector> speed_with_index(
 }
 
 template <size_t Dim, typename Frame>
-void test_characteristic_speeds() noexcept {
+void test_characteristic_speeds() {
   TestHelpers::db::test_compute_tag<
       GeneralizedHarmonic::CharacteristicSpeedsCompute<Dim, Frame>>(
       "CharacteristicSpeeds");
@@ -93,7 +93,7 @@ template <typename Solution>
 void test_characteristic_speeds_analytic(
     const Solution& solution, const size_t grid_size_each_dimension,
     const std::array<double, 3>& lower_bound,
-    const std::array<double, 3>& upper_bound) noexcept {
+    const std::array<double, 3>& upper_bound) {
   // Set up grid
   const size_t spatial_dim = 3;
   Mesh<spatial_dim> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
@@ -176,7 +176,7 @@ typename Tag::type field_with_tag(
 }
 
 template <size_t Dim, typename Frame>
-void test_characteristic_fields() noexcept {
+void test_characteristic_fields() {
   TestHelpers::db::test_compute_tag<
       GeneralizedHarmonic::CharacteristicFieldsCompute<Dim, Frame>>(
       "CharacteristicFields");
@@ -217,7 +217,7 @@ template <typename Solution>
 void test_characteristic_fields_analytic(
     const Solution& solution, const size_t grid_size_each_dimension,
     const std::array<double, 3>& lower_bound,
-    const std::array<double, 3>& upper_bound) noexcept {
+    const std::array<double, 3>& upper_bound) {
   // Set up grid
   const size_t spatial_dim = 3;
   Mesh<spatial_dim> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
@@ -361,7 +361,7 @@ typename Tag::type evol_field_with_tag(
 }
 
 template <size_t Dim, typename Frame>
-void test_evolved_from_characteristic_fields() noexcept {
+void test_evolved_from_characteristic_fields() {
   TestHelpers::db::test_compute_tag<
       GeneralizedHarmonic::EvolvedFieldsFromCharacteristicFieldsCompute<Dim,
                                                                         Frame>>(
@@ -388,7 +388,7 @@ template <typename Solution>
 void test_evolved_from_characteristic_fields_analytic(
     const Solution& solution, const size_t grid_size_each_dimension,
     const std::array<double, 3>& lower_bound,
-    const std::array<double, 3>& upper_bound) noexcept {
+    const std::array<double, 3>& upper_bound) {
   // Set up grid
   const size_t spatial_dim = 3;
   Mesh<spatial_dim> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
@@ -557,7 +557,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.Characteristics",
 
 namespace {
 template <size_t Dim>
-void check_max_char_speed(const DataVector& used_for_size) noexcept {
+void check_max_char_speed(const DataVector& used_for_size) {
   CAPTURE(Dim);
   MAKE_GENERATOR(gen);
 

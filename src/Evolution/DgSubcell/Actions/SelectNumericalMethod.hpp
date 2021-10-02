@@ -46,7 +46,7 @@ struct SelectNumericalMethod {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     // Note: we jump to the `Label+1` because the label actions don't do
     // anything anyway
     if (db::get<Tags::ActiveGrid>(box) == subcell::ActiveGrid::Dg) {

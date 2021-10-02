@@ -47,9 +47,7 @@ struct Evolution {
 template <typename OptionTag>
 struct CceEvolutionPrefix {
   using type = typename OptionTag::type;
-  static std::string name() noexcept {
-    return Options::template name<OptionTag>();
-  }
+  static std::string name() { return Options::template name<OptionTag>(); }
   static constexpr Options::String help = OptionTag::help;
   using group = Evolution;
 };
@@ -101,7 +99,7 @@ struct ExtractionRadius {
 };
 
 struct StandaloneExtractionRadius {
-  static std::string name() noexcept { return "ExtractionRadius"; }
+  static std::string name() { return "ExtractionRadius"; }
   using type = Options::Auto<double>;
 
   static constexpr Options::String help{
@@ -115,7 +113,7 @@ struct StandaloneExtractionRadius {
 struct EndTime {
   using type = Options::Auto<double>;
   static constexpr Options::String help{"End time for the Cce Evolution."};
-  static type suggested_value() noexcept { return {}; }
+  static type suggested_value() { return {}; }
   using group = Cce;
 };
 
@@ -123,7 +121,7 @@ struct StartTime {
   using type = Options::Auto<double>;
   static constexpr Options::String help{
       "Cce Start time (default to earliest possible time)."};
-  static type suggested_value() noexcept { return {}; }
+  static type suggested_value() { return {}; }
   using group = Cce;
 };
 
@@ -138,7 +136,7 @@ struct H5LookaheadTimes {
   using type = size_t;
   static constexpr Options::String help{
       "Number of times steps from the h5 to cache each read."};
-  static size_t suggested_value() noexcept { return 200; }
+  static size_t suggested_value() { return 200; }
   using group = Cce;
 };
 
@@ -185,11 +183,11 @@ struct GhInterfaceManager {
 };
 
 struct ScriInterpolationOrder {
-  static std::string name() noexcept { return "ScriInterpOrder"; }
+  static std::string name() { return "ScriInterpOrder"; }
   using type = size_t;
   static constexpr Options::String help{
       "Order of time interpolation at scri+."};
-  static size_t suggested_value() noexcept { return 5; }
+  static size_t suggested_value() { return 5; }
   using group = Cce;
 };
 
@@ -197,7 +195,7 @@ struct ScriOutputDensity {
   using type = size_t;
   static constexpr Options::String help{
       "Number of scri output points per timestep."};
-  static size_t suggested_value() noexcept { return 1; }
+  static size_t suggested_value() { return 1; }
   using group = Cce;
 };
 
@@ -218,7 +216,7 @@ struct ScriInterpolationOrder : db::SimpleTag {
 
   static constexpr bool pass_metavariables = false;
   static size_t create_from_options(
-      const size_t scri_plus_interpolation_order) noexcept {
+      const size_t scri_plus_interpolation_order) {
     return scri_plus_interpolation_order;
   }
 };
@@ -228,7 +226,7 @@ struct ExtractionRadius : db::SimpleTag {
   using option_tags = tmpl::list<OptionTags::ExtractionRadius>;
 
   static constexpr bool pass_metavariables = false;
-  static double create_from_options(const double extraction_radius) noexcept {
+  static double create_from_options(const double extraction_radius) {
     return extraction_radius;
   }
 };
@@ -238,7 +236,7 @@ struct ScriOutputDensity : db::SimpleTag {
   using option_tags = tmpl::list<OptionTags::ScriOutputDensity>;
 
   static constexpr bool pass_metavariables = false;
-  static size_t create_from_options(const size_t scri_output_density) noexcept {
+  static size_t create_from_options(const size_t scri_output_density) {
     return scri_output_density;
   }
 };
@@ -252,16 +250,16 @@ struct CceEvolutionPrefix : Tag {
   using type = typename Tag::type;
   using option_tags = db::wrap_tags_in<OptionTags::CceEvolutionPrefix,
                                        typename Tag::option_tags>;
-  static std::string name() noexcept { return Options::template name<Tag>(); }
+  static std::string name() { return Options::template name<Tag>(); }
 
   static constexpr bool pass_metavariables = Tag::pass_metavariables;
   template <typename Metavariables, typename... Args>
-  static type create_from_options(const Args&... args) noexcept {
+  static type create_from_options(const Args&... args) {
     return Tag::template create_from_options<Metavariables>(args...);
   }
 
   template <typename... Args>
-  static type create_from_options(const Args&... args) noexcept {
+  static type create_from_options(const Args&... args) {
     return Tag::create_from_options(args...);
   }
 };
@@ -281,7 +279,7 @@ struct H5WorldtubeBoundaryDataManager : db::SimpleTag {
       const size_t number_of_lookahead_times,
       const std::unique_ptr<intrp::SpanInterpolator>& interpolator,
       const bool h5_is_bondi_data, const bool fix_spec_normalization,
-      const std::optional<double> extraction_radius) noexcept {
+      const std::optional<double> extraction_radius) {
     if (h5_is_bondi_data) {
       if (static_cast<bool>(extraction_radius)) {
         Parallel::printf(
@@ -311,9 +309,7 @@ struct LMax : db::SimpleTag, Spectral::Swsh::Tags::LMaxBase {
   using option_tags = tmpl::list<OptionTags::LMax>;
 
   static constexpr bool pass_metavariables = false;
-  static size_t create_from_options(const size_t l_max) noexcept {
-    return l_max;
-  }
+  static size_t create_from_options(const size_t l_max) { return l_max; }
 };
 
 struct NumberOfRadialPoints : db::SimpleTag,
@@ -322,8 +318,7 @@ struct NumberOfRadialPoints : db::SimpleTag,
   using option_tags = tmpl::list<OptionTags::NumberOfRadialPoints>;
 
   static constexpr bool pass_metavariables = false;
-  static size_t create_from_options(
-      const size_t number_of_radial_points) noexcept {
+  static size_t create_from_options(const size_t number_of_radial_points) {
     return number_of_radial_points;
   }
 };
@@ -333,7 +328,7 @@ struct ObservationLMax : db::SimpleTag {
   using option_tags = tmpl::list<OptionTags::ObservationLMax>;
 
   static constexpr bool pass_metavariables = false;
-  static size_t create_from_options(const size_t observation_l_max) noexcept {
+  static size_t create_from_options(const size_t observation_l_max) {
     return observation_l_max;
   }
 };
@@ -343,7 +338,7 @@ struct FilterLMax : db::SimpleTag {
   using option_tags = tmpl::list<OptionTags::FilterLMax>;
 
   static constexpr bool pass_metavariables = false;
-  static size_t create_from_options(const size_t filter_l_max) noexcept {
+  static size_t create_from_options(const size_t filter_l_max) {
     return filter_l_max;
   }
 };
@@ -353,7 +348,7 @@ struct RadialFilterAlpha : db::SimpleTag {
   using option_tags = tmpl::list<OptionTags::RadialFilterAlpha>;
 
   static constexpr bool pass_metavariables = false;
-  static double create_from_options(const double radial_filter_alpha) noexcept {
+  static double create_from_options(const double radial_filter_alpha) {
     return radial_filter_alpha;
   }
 };
@@ -363,8 +358,7 @@ struct RadialFilterHalfPower : db::SimpleTag {
   using option_tags = tmpl::list<OptionTags::RadialFilterHalfPower>;
 
   static constexpr bool pass_metavariables = false;
-  static size_t create_from_options(
-      const size_t radial_filter_half_power) noexcept {
+  static size_t create_from_options(const size_t radial_filter_half_power) {
     return radial_filter_half_power;
   }
 };
@@ -385,7 +379,7 @@ struct StartTimeFromFile : Tags::StartTime, db::SimpleTag {
   static constexpr bool pass_metavariables = false;
   static double create_from_options(const std::optional<double> start_time,
                                     const std::string& filename,
-                                    const bool is_bondi_data) noexcept {
+                                    const bool is_bondi_data) {
     if (start_time) {
       return *start_time;
     }
@@ -408,8 +402,7 @@ struct SpecifiedStartTime : Tags::StartTime, db::SimpleTag {
   using option_tags = tmpl::list<OptionTags::StartTime>;
 
   static constexpr bool pass_metavariables = false;
-  static double create_from_options(
-      const std::optional<double> start_time) noexcept {
+  static double create_from_options(const std::optional<double> start_time) {
     if (not start_time.has_value()) {
       ERROR(
           "The start time must be explicitly specified for the tag "
@@ -458,7 +451,7 @@ struct NoEndTime : Tags::EndTime, db::SimpleTag {
   using option_tags = tmpl::list<>;
 
   static constexpr bool pass_metavariables = false;
-  static double create_from_options() noexcept {
+  static double create_from_options() {
     return std::numeric_limits<double>::infinity();
   }
 };
@@ -470,8 +463,7 @@ struct SpecifiedEndTime : Tags::EndTime, db::SimpleTag {
   using option_tags = tmpl::list<OptionTags::EndTime>;
 
   static constexpr bool pass_metavariables = false;
-  static double create_from_options(
-      const std::optional<double> end_time) noexcept {
+  static double create_from_options(const std::optional<double> end_time) {
     if (not end_time.has_value()) {
       ERROR(
           "The end time must be explicitly specified for the tag "
@@ -489,7 +481,7 @@ struct GhInterfaceManager : db::SimpleTag {
   static std::unique_ptr<InterfaceManagers::GhInterfaceManager>
   create_from_options(
       const std::unique_ptr<InterfaceManagers::GhInterfaceManager>&
-          interface_manager) noexcept {
+          interface_manager) {
     return interface_manager->get_clone();
   }
 };
@@ -513,7 +505,7 @@ struct InterfaceManagerInterpolationStrategy : db::SimpleTag {
   static constexpr bool pass_metavariables = false;
   static InterfaceManagers::InterpolationStrategy create_from_options(
       const std::unique_ptr<InterfaceManagers::GhInterfaceManager>&
-          interface_manager) noexcept {
+          interface_manager) {
     return interface_manager->get_interpolation_strategy();
   }
 };
@@ -535,7 +527,7 @@ struct InitializeJ : db::SimpleTag, InitializeJBase {
       uses_partially_flat_cartesian_coordinates>>
   create_from_options(
       const std::unique_ptr<::Cce::InitializeJ::InitializeJ<
-          uses_partially_flat_cartesian_coordinates>>& initialize_j) noexcept {
+          uses_partially_flat_cartesian_coordinates>>& initialize_j) {
     return initialize_j->get_clone();
   }
 };
@@ -550,7 +542,7 @@ struct AnalyticInitializeJ : db::SimpleTag, InitializeJBase {
   static std::unique_ptr<::Cce::InitializeJ::InitializeJ<false>>
   create_from_options(
       const std::unique_ptr<Cce::Solutions::WorldtubeData>& worldtube_data,
-      const std::optional<double> start_time) noexcept {
+      const std::optional<double> start_time) {
     return worldtube_data->get_initialize_j(*start_time);
   }
 };
@@ -564,8 +556,7 @@ struct AnalyticBoundaryDataManager : db::SimpleTag {
   static constexpr bool pass_metavariables = false;
   static Cce::AnalyticBoundaryDataManager create_from_options(
       const double extraction_radius, const size_t l_max,
-      const std::unique_ptr<Cce::Solutions::WorldtubeData>&
-          worldtube_data) noexcept {
+      const std::unique_ptr<Cce::Solutions::WorldtubeData>& worldtube_data) {
     return ::Cce::AnalyticBoundaryDataManager(l_max, extraction_radius,
                                               worldtube_data->get_clone());
   }
@@ -581,8 +572,7 @@ struct OutputNoninertialNews : db::SimpleTag {
       tmpl::list<OptionTags::AnalyticSolution>;
   static constexpr bool pass_metavariables = false;
   static bool create_from_options(
-      const std::unique_ptr<Cce::Solutions::WorldtubeData>&
-          worldtube_data) noexcept {
+      const std::unique_ptr<Cce::Solutions::WorldtubeData>& worldtube_data) {
     return worldtube_data->use_noninertial_news();
   }
 };

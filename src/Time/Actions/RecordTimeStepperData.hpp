@@ -30,8 +30,7 @@ class GlobalCache;
 /// This free function alternative permits the inclusion of the time step
 /// procedure in the middle of another action.
 template <typename System, typename VariablesTag = NoSuchType, typename DbTags>
-void record_time_stepper_data(
-    const gsl::not_null<db::DataBox<DbTags>*> box) noexcept {
+void record_time_stepper_data(const gsl::not_null<db::DataBox<DbTags>*> box) {
   using variables_tag =
       tmpl::conditional_t<std::is_same_v<VariablesTag, NoSuchType>,
                           typename System::variables_tag, VariablesTag>;
@@ -43,7 +42,7 @@ void record_time_stepper_data(
       [](const gsl::not_null<typename history_tag::type*> history,
          const TimeStepId& time_step_id,
          const typename variables_tag::type& vars,
-         const typename dt_variables_tag::type& dt_vars) noexcept {
+         const typename dt_variables_tag::type& dt_vars) {
         history->insert(time_step_id, dt_vars);
         history->most_recent_value() = vars;
       },
@@ -82,7 +81,7 @@ struct RecordTimeStepperData {
       db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {  // NOLINT const
+      const ParallelComponent* const /*meta*/) {  // NOLINT const
     record_time_stepper_data<typename Metavariables::system, VariablesTag>(
         make_not_null(&box));
     return std::forward_as_tuple(std::move(box));

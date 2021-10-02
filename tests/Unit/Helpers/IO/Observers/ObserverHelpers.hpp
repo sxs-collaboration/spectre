@@ -35,7 +35,7 @@ struct RegisterObservers {
             typename ArrayIndex>
   static std::pair<observers::TypeOfObservation, observers::ObservationKey>
   register_info(const db::DataBox<DbTagsList>& /*box*/,
-                const ArrayIndex& /*array_index*/) noexcept {
+                const ArrayIndex& /*array_index*/) {
     return {TypeOfObservation,
             observers::ObservationKey{"ElementObservationType"}};
   }

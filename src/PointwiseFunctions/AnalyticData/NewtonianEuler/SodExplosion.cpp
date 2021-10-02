@@ -59,7 +59,7 @@ SodExplosion<Dim>::SodExplosion(const double initial_radius,
 }
 
 template <size_t Dim>
-void SodExplosion<Dim>::pup(PUP::er& p) noexcept {
+void SodExplosion<Dim>::pup(PUP::er& p) {
   p | initial_radius_;
   p | inner_mass_density_;
   p | inner_pressure_;
@@ -69,8 +69,7 @@ void SodExplosion<Dim>::pup(PUP::er& p) noexcept {
 }
 
 template <size_t Dim>
-bool operator==(const SodExplosion<Dim>& lhs,
-                const SodExplosion<Dim>& rhs) noexcept {
+bool operator==(const SodExplosion<Dim>& lhs, const SodExplosion<Dim>& rhs) {
   // No comparison for equation_of_state_. The adiabatic index is hard-coded.
   return lhs.initial_radius_ == rhs.initial_radius_ and
          lhs.inner_mass_density_ == rhs.inner_mass_density_ and
@@ -80,15 +79,14 @@ bool operator==(const SodExplosion<Dim>& lhs,
 }
 
 template <size_t Dim>
-bool operator!=(const SodExplosion<Dim>& lhs,
-                const SodExplosion<Dim>& rhs) noexcept {
+bool operator!=(const SodExplosion<Dim>& lhs, const SodExplosion<Dim>& rhs) {
   return not(lhs == rhs);
 }
 
 template <size_t Dim>
 tuples::TaggedTuple<Tags::MassDensity<DataVector>> SodExplosion<Dim>::variables(
     const tnsr::I<DataVector, Dim, Frame::Inertial>& x,
-    tmpl::list<Tags::MassDensity<DataVector>> /*meta*/) const noexcept {
+    tmpl::list<Tags::MassDensity<DataVector>> /*meta*/) const {
   auto mass_density = make_with_value<Scalar<DataVector>>(x, 0.0);
   std::array<double, Dim> coords{};
   for (size_t s = 0; s < get_size(get<0>(x)); ++s) {
@@ -107,7 +105,7 @@ tuples::TaggedTuple<Tags::Velocity<DataVector, Dim, Frame::Inertial>>
 SodExplosion<Dim>::variables(
     const tnsr::I<DataVector, Dim, Frame::Inertial>& x,
     tmpl::list<Tags::Velocity<DataVector, Dim, Frame::Inertial>> /*meta*/)
-    const noexcept {
+    const {
   auto velocity = make_with_value<tnsr::I<DataVector, Dim, Frame::Inertial>>(
       get<0>(x), 0.0);
   return velocity;
@@ -116,7 +114,7 @@ SodExplosion<Dim>::variables(
 template <size_t Dim>
 tuples::TaggedTuple<Tags::Pressure<DataVector>> SodExplosion<Dim>::variables(
     const tnsr::I<DataVector, Dim, Frame::Inertial>& x,
-    tmpl::list<Tags::Pressure<DataVector>> /*meta*/) const noexcept {
+    tmpl::list<Tags::Pressure<DataVector>> /*meta*/) const {
   auto pressure = make_with_value<Scalar<DataVector>>(x, 0.0);
   std::array<double, Dim> coords{};
   for (size_t s = 0; s < get_size(get<0>(x)); ++s) {
@@ -134,8 +132,7 @@ template <size_t Dim>
 tuples::TaggedTuple<Tags::SpecificInternalEnergy<DataVector>>
 SodExplosion<Dim>::variables(
     const tnsr::I<DataVector, Dim, Frame::Inertial>& x,
-    tmpl::list<Tags::SpecificInternalEnergy<DataVector>> /*meta*/)
-    const noexcept {
+    tmpl::list<Tags::SpecificInternalEnergy<DataVector>> /*meta*/) const {
   return equation_of_state_.specific_internal_energy_from_density_and_pressure(
       get<Tags::MassDensity<DataVector>>(
           variables(x, tmpl::list<Tags::MassDensity<DataVector>>{})),
@@ -146,11 +143,11 @@ SodExplosion<Dim>::variables(
 template class SodExplosion<2>;
 template class SodExplosion<3>;
 template bool operator==(const SodExplosion<2>& lhs,
-                         const SodExplosion<2>& rhs) noexcept;
+                         const SodExplosion<2>& rhs);
 template bool operator==(const SodExplosion<3>& lhs,
-                         const SodExplosion<3>& rhs) noexcept;
+                         const SodExplosion<3>& rhs);
 template bool operator!=(const SodExplosion<2>& lhs,
-                         const SodExplosion<2>& rhs) noexcept;
+                         const SodExplosion<2>& rhs);
 template bool operator!=(const SodExplosion<3>& lhs,
-                         const SodExplosion<3>& rhs) noexcept;
+                         const SodExplosion<3>& rhs);
 }  // namespace NewtonianEuler::AnalyticData

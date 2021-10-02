@@ -175,11 +175,11 @@ using BoundaryData = ::dg::SimpleBoundaryData<
 /// element is zero, and project it to the mortar.
 template <typename PrimalMortarFields, typename PrimalMortarFluxes, size_t Dim>
 BoundaryData<PrimalMortarFields, PrimalMortarFluxes>
-zero_boundary_data_on_mortar(
-    const Direction<Dim>& direction, const Mesh<Dim>& mesh,
-    const Scalar<DataVector>& face_normal_magnitude,
-    const Mesh<Dim - 1>& mortar_mesh,
-    const ::dg::MortarSize<Dim - 1>& mortar_size) noexcept {
+zero_boundary_data_on_mortar(const Direction<Dim>& direction,
+                             const Mesh<Dim>& mesh,
+                             const Scalar<DataVector>& face_normal_magnitude,
+                             const Mesh<Dim - 1>& mortar_mesh,
+                             const ::dg::MortarSize<Dim - 1>& mortar_size) {
   const auto face_mesh = mesh.slice_away(direction.dimension());
   const size_t face_num_points = face_mesh.number_of_grid_points();
   BoundaryData<PrimalMortarFields, PrimalMortarFluxes> boundary_data{
@@ -237,9 +237,7 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
   using SourcesComputer = elliptic::get_sources_computer<System, Linearized>;
 
   struct AllDirections {
-    bool operator()(const Direction<Dim>& /*unused*/) const noexcept {
-      return true;
-    }
+    bool operator()(const Direction<Dim>& /*unused*/) const { return true; }
   };
 
   static constexpr auto full_mortar_size =
@@ -275,8 +273,7 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
       const std::tuple<FluxesArgs...>& fluxes_args,
       const std::tuple<SourcesArgs...>& sources_args,
       const DirectionMap<Dim, std::tuple<FluxesArgs...>>& fluxes_args_on_faces,
-      const DirectionsPredicate& directions_predicate =
-          AllDirections{}) noexcept {
+      const DirectionsPredicate& directions_predicate = AllDirections{}) {
     static_assert(
         sizeof...(PrimalVars) == sizeof...(PrimalFields) and
             sizeof...(AuxiliaryVars) == sizeof...(AuxiliaryFields) and
@@ -333,7 +330,7 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
       auxiliary_fluxes->initialize(num_points);
       std::apply(
           [&auxiliary_fluxes,
-           &primal_vars](const auto&... expanded_fluxes_args) noexcept {
+           &primal_vars](const auto&... expanded_fluxes_args) {
             FluxesComputer::apply(
                 make_not_null(&get<AuxiliaryFluxesVars>(*auxiliary_fluxes))...,
                 expanded_fluxes_args..., get<PrimalVars>(primal_vars)...);
@@ -345,7 +342,7 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
       *auxiliary_vars *= -1.;
       std::apply(
           [&auxiliary_vars,
-           &primal_vars](const auto&... expanded_sources_args) noexcept {
+           &primal_vars](const auto&... expanded_sources_args) {
             SourcesComputer::apply(
                 make_not_null(&get<AuxiliaryVars>(*auxiliary_vars))...,
                 expanded_sources_args..., get<PrimalVars>(primal_vars)...);
@@ -356,7 +353,7 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
       primal_fluxes->initialize(num_points);
       std::apply(
           [&primal_fluxes,
-           &auxiliary_vars](const auto&... expanded_fluxes_args) noexcept {
+           &auxiliary_vars](const auto&... expanded_fluxes_args) {
             FluxesComputer::apply(
                 make_not_null(&get<PrimalFluxesVars>(*primal_fluxes))...,
                 expanded_fluxes_args...,
@@ -367,7 +364,7 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
 
     // Populate the mortar data on this element's side of the boundary so it's
     // ready to be sent to neighbors.
-    for (const auto& direction : [&element]() noexcept -> const auto& {
+    for (const auto& direction : [&element]() -> const auto& {
            if constexpr (DataIsZero) {
              // Skipping internal boundaries for zero data because they won't
              // contribute boundary corrections anyway.
@@ -408,8 +405,8 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
                 &get<::Tags::NormalDotFlux<AuxiliaryFields>>(n_dot_aux_fluxes)),
             face_normal, get<AuxiliaryFluxesVars>(fluxes_on_face)));
         std::apply(
-            [&boundary_data, &n_dot_aux_fluxes](
-                const auto&... expanded_fluxes_args_on_face) noexcept {
+            [&boundary_data,
+             &n_dot_aux_fluxes](const auto&... expanded_fluxes_args_on_face) {
               FluxesComputer::apply(
                   make_not_null(&get<::Tags::NormalDotFlux<PrimalMortarFluxes>>(
                       boundary_data.field_data))...,
@@ -504,8 +501,8 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
         // the n.F_v (Dirichlet-type conditions) from the Dirichlet fields. We
         // re-use the memory buffer from above.
         std::apply(
-            [&fluxes_on_face, &dirichlet_vars](
-                const auto&... expanded_fluxes_args_on_face) noexcept {
+            [&fluxes_on_face,
+             &dirichlet_vars](const auto&... expanded_fluxes_args_on_face) {
               FluxesComputer::apply(
                   make_not_null(&get<AuxiliaryFluxesVars>(fluxes_on_face))...,
                   expanded_fluxes_args_on_face...,
@@ -517,8 +514,8 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
                 &get<::Tags::NormalDotFlux<AuxiliaryFields>>(n_dot_aux_fluxes)),
             face_normal, get<AuxiliaryFluxesVars>(fluxes_on_face)));
         std::apply(
-            [&boundary_data, &n_dot_aux_fluxes](
-                const auto&... expanded_fluxes_args_on_face) noexcept {
+            [&boundary_data,
+             &n_dot_aux_fluxes](const auto&... expanded_fluxes_args_on_face) {
               FluxesComputer::apply(
                   make_not_null(&get<::Tags::NormalDotFlux<PrimalMortarFluxes>>(
                       boundary_data.field_data))...,
@@ -608,8 +605,7 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
       const double penalty_parameter, const bool massive,
       const TemporalId& temporal_id,
       const std::tuple<SourcesArgs...>& sources_args,
-      const DirectionsPredicate& directions_predicate =
-          AllDirections{}) noexcept {
+      const DirectionsPredicate& directions_predicate = AllDirections{}) {
     static_assert(
         sizeof...(PrimalVars) == sizeof...(PrimalFields) and
             sizeof...(PrimalFluxesVars) == sizeof...(PrimalFluxes) and
@@ -694,8 +690,7 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
           Variables<tmpl::list<PrimalMortarFluxes...>>(
               local_data.field_data.template extract_subset<
                   tmpl::list<::Tags::NormalDotFlux<PrimalMortarFluxes>...>>());
-      const auto add_remote_contribution = [](auto& lhs,
-                                              const auto& rhs) noexcept {
+      const auto add_remote_contribution = [](auto& lhs, const auto& rhs) {
         for (size_t i = 0; i < lhs.size(); ++i) {
           lhs[i] += rhs[i];
         }
@@ -741,7 +736,7 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
     // Using the non-boundary-corrected primal fluxes to compute sources here
     std::apply(
         [&operator_applied_to_vars, &primal_vars,
-         &primal_fluxes](const auto&... expanded_sources_args) noexcept {
+         &primal_fluxes](const auto&... expanded_sources_args) {
           SourcesComputer::apply(
               make_not_null(&get<OperatorTags>(*operator_applied_to_vars))...,
               expanded_sources_args..., get<PrimalVars>(primal_vars)...,
@@ -786,8 +781,7 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
           Variables<tmpl::list<PrimalMortarVars...>>(
               local_data.field_data.template extract_subset<tmpl::list<
                   Tags::NormalDotFluxForJump<PrimalMortarVars>...>>());
-      const auto add_remote_jump_contribution = [](auto& lhs,
-                                                   const auto& rhs) noexcept {
+      const auto add_remote_jump_contribution = [](auto& lhs, const auto& rhs) {
         for (size_t i = 0; i < lhs.size(); ++i) {
           lhs[i] -= rhs[i];
         }
@@ -797,8 +791,7 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
           get<Tags::NormalDotFluxForJump<PrimalMortarVars>>(
               remote_data.field_data)));
       primal_boundary_corrections_on_mortar *= penalty;
-      const auto add_remote_avg_contribution = [](auto& lhs,
-                                                  const auto& rhs) noexcept {
+      const auto add_remote_avg_contribution = [](auto& lhs, const auto& rhs) {
         for (size_t i = 0; i < lhs.size(); ++i) {
           lhs[i] += 0.5 * rhs[i];
         }
@@ -855,7 +848,7 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
       const std::tuple<FluxesArgs...>& fluxes_args,
       const std::tuple<SourcesArgs...>& sources_args,
       const DirectionMap<Dim, std::tuple<FluxesArgs...>>&
-          fluxes_args_on_faces) noexcept {
+          fluxes_args_on_faces) {
     // We just feed zero variables through the nonlinear operator to extract the
     // constant contribution at external boundaries. Since the variables are
     // zero the operator simplifies quite a lot. The simplification is probably
@@ -909,7 +902,7 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
  * `elliptic::dg::apply_operator`.
  */
 template <typename System, bool Linearized, typename... Args>
-void prepare_mortar_data(Args&&... args) noexcept {
+void prepare_mortar_data(Args&&... args) {
   detail::DgOperatorImpl<System, Linearized>::template prepare_mortar_data<
       false>(std::forward<Args>(args)...);
 }
@@ -924,7 +917,7 @@ void prepare_mortar_data(Args&&... args) noexcept {
  * "remote" side of the mortars before calling this function.
  */
 template <typename System, bool Linearized, typename... Args>
-void apply_operator(Args&&... args) noexcept {
+void apply_operator(Args&&... args) {
   detail::DgOperatorImpl<System, Linearized>::template apply_operator<false>(
       std::forward<Args>(args)...);
 }
@@ -946,8 +939,7 @@ void apply_operator(Args&&... args) noexcept {
  * and subtracts the result from the fixed sources: `b -= A(x=0)`.
  */
 template <typename System, typename... Args>
-void impose_inhomogeneous_boundary_conditions_on_source(
-    Args&&... args) noexcept {
+void impose_inhomogeneous_boundary_conditions_on_source(Args&&... args) {
   detail::DgOperatorImpl<System, false>::
       impose_inhomogeneous_boundary_conditions_on_source(
           std::forward<Args>(args)...);

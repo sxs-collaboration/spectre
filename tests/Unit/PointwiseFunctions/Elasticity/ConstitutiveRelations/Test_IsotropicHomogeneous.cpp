@@ -55,7 +55,7 @@ void test_implementation(const double incompressibility,
           Elasticity::ConstitutiveRelations::IsotropicHomogeneous<Dim>::*)(
           gsl::not_null<tnsr::II<DataVector, Dim>*>,
           const tnsr::ii<DataVector, Dim>&, const tnsr::I<DataVector, Dim>&)
-                      const noexcept>(
+                      const>(
           &Elasticity::ConstitutiveRelations::IsotropicHomogeneous<
               Dim>::stress),
       relation, "IsotropicHomogeneous", {"stress"}, {{{-10.0, 10.0}}},

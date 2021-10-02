@@ -46,5 +46,4 @@ class not_null;
 void find_generalized_eigenvalues(
     gsl::not_null<DataVector*> eigenvalues_real_part,
     gsl::not_null<DataVector*> eigenvalues_imaginary_part,
-    gsl::not_null<Matrix*> eigenvectors, Matrix matrix_a,
-    Matrix matrix_b) noexcept;
+    gsl::not_null<Matrix*> eigenvectors, Matrix matrix_a, Matrix matrix_b);

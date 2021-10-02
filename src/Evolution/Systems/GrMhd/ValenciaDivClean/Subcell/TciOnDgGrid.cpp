@@ -38,7 +38,7 @@ bool TciOnDgGrid<RecoveryScheme>::apply(
     const Scalar<DataVector>& sqrt_det_spatial_metric,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
     const Mesh<3>& dg_mesh, const TciOptions& tci_options,
-    const double persson_exponent) noexcept {
+    const double persson_exponent) {
   constexpr double persson_tci_epsilon = 1.0e-18;
   const size_t number_of_points = dg_mesh.number_of_grid_points();
   Variables<hydro::grmhd_tags<DataVector>> temp_prims(number_of_points);
@@ -181,7 +181,7 @@ GENERATE_INSTANTIATIONS(
       const Scalar<DataVector>& sqrt_det_spatial_metric,                      \
       const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>& eos,   \
       const Mesh<3>& dg_mesh, const TciOptions& tci_options,                  \
-      const double persson_exponent) noexcept;
+      const double persson_exponent);
 GENERATE_INSTANTIATIONS(
     INSTANTIATION,
     (grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAl,

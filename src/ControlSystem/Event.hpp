@@ -67,7 +67,7 @@ class Event : public ::Event {
  public:
   /// \cond
   // LCOV_EXCL_START
-  explicit Event(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit Event(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Event);  // NOLINT
   // LCOV_EXCL_STOP
@@ -83,13 +83,13 @@ class Event : public ::Event {
   void operator()(const db::DataBox<DbTags>& box,
                   Parallel::GlobalCache<Metavariables>& cache,
                   const ArrayIndex& array_index,
-                  const Component* const component) const noexcept {
+                  const Component* const component) const {
     const LinkedMessageId<double> measurement_id{
         db::get<::Tags::Time>(box),
         db::get<::evolution::Tags::PreviousTriggerTime>(box)};
     tmpl::for_each<typename measurement::submeasurements>(
         [&array_index, &box, &cache, &component,
-         &measurement_id](auto submeasurement) noexcept {
+         &measurement_id](auto submeasurement) {
           using Submeasurement = tmpl::type_from<decltype(submeasurement)>;
           db::apply<Submeasurement>(box, measurement_id, cache, array_index,
                                     component, ControlSystems{});
@@ -101,7 +101,7 @@ class Event : public ::Event {
   template <typename Metavariables, typename ArrayIndex, typename Component>
   bool is_ready(const double time, Parallel::GlobalCache<Metavariables>& cache,
                 const ArrayIndex& array_index,
-                const Component* const component) const noexcept {
+                const Component* const component) const {
     // This checks all the functions of time, not just those the
     // measurement is being made for.  We need all of them to access
     // coordinate-dependent quantities, which almost all control
@@ -110,7 +110,7 @@ class Event : public ::Event {
         cache, array_index, component, time);
   }
 
-  bool needs_evolved_variables() const noexcept override { return true; }
+  bool needs_evolved_variables() const override { return true; }
 };
 
 /// \cond

@@ -10,7 +10,7 @@
 
 namespace ScalarAdvection::fd {
 template <size_t Dim>
-Reconstructor<Dim>::Reconstructor(CkMigrateMessage* const msg) noexcept
+Reconstructor<Dim>::Reconstructor(CkMigrateMessage* const msg)
     : PUP::able(msg) {}
 
 template <size_t Dim>

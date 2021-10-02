@@ -56,8 +56,7 @@ struct Component {
 
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
-      const Parallel::CProxy_GlobalCache<Metavariables>&
-          global_cache) noexcept {
+      const Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
     if (next_phase == Metavariables::Phase::Execute) {
       auto& local_cache = *(global_cache.ckLocalBranch());
       Parallel::simple_action<error_call_single_action_from_action>(*(
@@ -78,8 +77,7 @@ struct TestMetavariables {
       const gsl::not_null<
           tuples::TaggedTuple<Tags...>*> /*phase_change_decision_data*/,
       const Phase& current_phase,
-      const Parallel::CProxy_GlobalCache<
-          TestMetavariables>& /*cache_proxy*/) noexcept {
+      const Parallel::CProxy_GlobalCache<TestMetavariables>& /*cache_proxy*/) {
     if (current_phase == Phase::Initialization) {
       return Phase::Execute;
     }
@@ -87,7 +85,7 @@ struct TestMetavariables {
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& /*p*/) noexcept {}
+  void pup(PUP::er& /*p*/) {}
 };
 
 static const std::vector<void (*)()> charm_init_node_funcs{

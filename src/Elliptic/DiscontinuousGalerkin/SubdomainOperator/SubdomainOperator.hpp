@@ -191,7 +191,7 @@ struct SubdomainOperator
 
  public:
   SubdomainOperator(std::optional<std::unique_ptr<BoundaryConditionsBase>>
-                        override_boundary_conditions = std::nullopt) noexcept
+                        override_boundary_conditions = std::nullopt)
       : override_boundary_conditions_(std::move(override_boundary_conditions)) {
   }
 
@@ -204,10 +204,10 @@ struct SubdomainOperator
           result,
       const LinearSolver::Schwarz::ElementCenteredSubdomainData<
           Dim, OperandTags>& operand,
-      const db::DataBox<DbTagsList>& box) const noexcept {
+      const db::DataBox<DbTagsList>& box) const {
     // Used to retrieve items out of the DataBox to forward to functions. This
     // replaces a long series of db::get calls.
-    const auto get_items = [](const auto&... args) noexcept {
+    const auto get_items = [](const auto&... args) {
       return std::forward_as_tuple(args...);
     };
 
@@ -261,14 +261,14 @@ struct SubdomainOperator
          &override_boundary_conditions = override_boundary_conditions_](
             const ElementId<Dim>& local_element_id,
             const Direction<Dim>& local_direction, auto is_overlap,
-            const auto& map_keys, const auto... fields_and_fluxes) noexcept {
+            const auto& map_keys, const auto... fields_and_fluxes) {
           constexpr bool is_overlap_v =
               std::decay_t<decltype(is_overlap)>::value;
           // Get boundary conditions from domain, or use overridden boundary
           // conditions
-          const auto& boundary_condition =
-              [&local_domain, &local_element_id, &local_direction,
-               &override_boundary_conditions]() noexcept
+          const auto& boundary_condition = [&local_domain, &local_element_id,
+                                            &local_direction,
+                                            &override_boundary_conditions]()
               -> const BoundaryConditionsBase& {
             if (override_boundary_conditions.has_value()) {
               return **override_boundary_conditions;
@@ -324,13 +324,13 @@ struct SubdomainOperator
     const auto apply_boundary_condition_center =
         [&apply_boundary_condition, &local_central_element = central_element](
             const Direction<Dim>& local_direction,
-            const auto... fields_and_fluxes) noexcept {
+            const auto... fields_and_fluxes) {
           apply_boundary_condition(local_central_element.id(), local_direction,
                                    std::false_type{}, local_direction,
                                    fields_and_fluxes...);
         };
     db::apply<prepare_args_tags>(
-        [this, &operand](const auto&... args) noexcept {
+        [this, &operand](const auto&... args) {
           elliptic::dg::prepare_mortar_data<System, linearized>(
               make_not_null(&central_auxiliary_vars_),
               make_not_null(&central_auxiliary_fluxes_),
@@ -410,7 +410,7 @@ struct SubdomainOperator
         const auto apply_boundary_condition_neighbor =
             [&apply_boundary_condition, &local_neighbor_id = neighbor_id,
              &overlap_id](const Direction<Dim>& local_direction,
-                          const auto... fields_and_fluxes) noexcept {
+                          const auto... fields_and_fluxes) {
               apply_boundary_condition(
                   local_neighbor_id, local_direction, std::true_type{},
                   std::forward_as_tuple(overlap_id, local_direction),
@@ -438,7 +438,7 @@ struct SubdomainOperator
 
         elliptic::util::apply_at<prepare_args_tags_overlap,
                                  args_tags_from_center>(
-            [this, &overlap_id](const auto&... args) noexcept {
+            [this, &overlap_id](const auto&... args) {
               elliptic::dg::prepare_mortar_data<System, linearized>(
                   make_not_null(&neighbors_auxiliary_vars_[overlap_id]),
                   make_not_null(&neighbors_auxiliary_fluxes_[overlap_id]),
@@ -476,7 +476,7 @@ struct SubdomainOperator
           const auto send_mortar_data =
               [&neighbor_orientation, &neighbor_mortar_meshes,
                &neighbor_mortar_data, &neighbor_mortar_id,
-               &neighbor_direction](auto& remote_mortar_data) noexcept {
+               &neighbor_direction](auto& remote_mortar_data) {
                 const auto& neighbor_mortar_mesh =
                     neighbor_mortar_meshes.at(neighbor_mortar_id);
                 auto oriented_neighbor_mortar_data =
@@ -498,8 +498,7 @@ struct SubdomainOperator
           // subdomain and find its overlap ID if it does.
           const auto neighbors_neighbor_overlap_id =
               [&local_all_neighbor_mortar_meshes = all_neighbor_mortar_meshes,
-               &neighbors_neighbor_id,
-               &mortar_id_from_neighbors_neighbor]() noexcept
+               &neighbors_neighbor_id, &mortar_id_from_neighbors_neighbor]()
               -> std::optional<LinearSolver::Schwarz::OverlapId<Dim>> {
             for (const auto& [local_overlap_id, local_mortar_meshes] :
                  local_all_neighbor_mortar_meshes) {
@@ -563,7 +562,7 @@ struct SubdomainOperator
     //
     // Apply on central element
     db::apply<apply_args_tags>(
-        [this, &result, &operand](const auto&... args) noexcept {
+        [this, &result, &operand](const auto&... args) {
           elliptic::dg::apply_operator<System, linearized>(
               make_not_null(&result->element_data),
               make_not_null(&central_mortar_data_), operand.element_data,
@@ -586,7 +585,7 @@ struct SubdomainOperator
 
         elliptic::util::apply_at<apply_args_tags_overlap,
                                  args_tags_from_center>(
-            [this, &overlap_id](const auto&... args) noexcept {
+            [this, &overlap_id](const auto&... args) {
               elliptic::dg::apply_operator<System, linearized>(
                   make_not_null(&extended_results_[overlap_id]),
                   make_not_null(&neighbors_mortar_data_.at(overlap_id)),
@@ -620,9 +619,7 @@ struct SubdomainOperator
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept {
-    p | override_boundary_conditions_;
-  }
+  void pup(PUP::er& p) { p | override_boundary_conditions_; }
 
  private:
   std::optional<std::unique_ptr<BoundaryConditionsBase>>

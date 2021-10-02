@@ -29,7 +29,7 @@ namespace {
 template <typename DataType, typename EquationOfStateType>
 void test_in_databox(const Scalar<DataType>& mass_density,
                      const Scalar<DataType>& specific_internal_energy,
-                     const EquationOfStateType& equation_of_state) noexcept {
+                     const EquationOfStateType& equation_of_state) {
   TestHelpers::db::test_compute_tag<
       NewtonianEuler::Tags::SoundSpeedSquaredCompute<DataType>>(
       "SoundSpeedSquared");
@@ -56,7 +56,7 @@ void test_in_databox(const Scalar<DataType>& mass_density,
 }
 
 template <typename DataType>
-void test(const DataType& used_for_size) noexcept {
+void test(const DataType& used_for_size) {
   MAKE_GENERATOR(generator);
   std::uniform_real_distribution<> distribution(-1.0, 1.0);
   std::uniform_real_distribution<> positive_distribution(0.0, 1.0);

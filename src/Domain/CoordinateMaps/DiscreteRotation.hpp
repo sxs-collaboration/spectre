@@ -33,41 +33,41 @@ class DiscreteRotation {
  public:
   static constexpr size_t dim = VolumeDim;
 
-  explicit DiscreteRotation(OrientationMap<VolumeDim> orientation =
-                                OrientationMap<VolumeDim>{}) noexcept;
+  explicit DiscreteRotation(
+      OrientationMap<VolumeDim> orientation = OrientationMap<VolumeDim>{});
   ~DiscreteRotation() = default;
   DiscreteRotation(const DiscreteRotation&) = default;
-  DiscreteRotation(DiscreteRotation&&) noexcept = default;  // NOLINT
+  DiscreteRotation(DiscreteRotation&&) = default;  // NOLINT
   DiscreteRotation& operator=(const DiscreteRotation&) = default;
   DiscreteRotation& operator=(DiscreteRotation&&) = default;
 
   template <typename T>
   std::array<tt::remove_cvref_wrap_t<T>, VolumeDim> operator()(
-      const std::array<T, VolumeDim>& source_coords) const noexcept;
+      const std::array<T, VolumeDim>& source_coords) const;
 
   /// The inverse function is only callable with doubles because the inverse
   /// might fail if called for a point out of range, and it is unclear
   /// what should happen if the inverse were to succeed for some points in a
   /// DataVector but fail for other points.
   std::optional<std::array<double, VolumeDim>> inverse(
-      const std::array<double, VolumeDim>& target_coords) const noexcept;
+      const std::array<double, VolumeDim>& target_coords) const;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, VolumeDim, Frame::NoFrame> jacobian(
-      const std::array<T, VolumeDim>& source_coords) const noexcept;
+      const std::array<T, VolumeDim>& source_coords) const;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, VolumeDim, Frame::NoFrame> inv_jacobian(
-      const std::array<T, VolumeDim>& source_coords) const noexcept;
+      const std::array<T, VolumeDim>& source_coords) const;
 
   // clang-tidy: google-runtime-references
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
 
-  bool is_identity() const noexcept { return is_identity_; }
+  bool is_identity() const { return is_identity_; }
 
  private:
   friend bool operator==(const DiscreteRotation& lhs,
-                         const DiscreteRotation& rhs) noexcept {
+                         const DiscreteRotation& rhs) {
     return lhs.orientation_ == rhs.orientation_ and
            lhs.is_identity_ == rhs.is_identity_;
   }
@@ -77,9 +77,8 @@ class DiscreteRotation {
 };
 
 template <size_t VolumeDim>
-inline bool operator!=(
-    const CoordinateMaps::DiscreteRotation<VolumeDim>& lhs,
-    const CoordinateMaps::DiscreteRotation<VolumeDim>& rhs) noexcept {
+inline bool operator!=(const CoordinateMaps::DiscreteRotation<VolumeDim>& lhs,
+                       const CoordinateMaps::DiscreteRotation<VolumeDim>& rhs) {
   return not(lhs == rhs);
 }
 

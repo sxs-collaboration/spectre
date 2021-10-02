@@ -22,8 +22,7 @@ namespace Limiters::Weno_detail {
 // that this neighbor has the same refinement level as the element.
 template <size_t VolumeDim>
 bool check_element_has_one_similar_neighbor_in_direction(
-    const Element<VolumeDim>& element,
-    const Direction<VolumeDim>& direction) noexcept;
+    const Element<VolumeDim>& element, const Direction<VolumeDim>& direction);
 
 // Compute the coordinate positions of a neighbor element's grid points in the
 // logical coordinates of the local element.
@@ -47,7 +46,7 @@ template <size_t VolumeDim>
 std::array<DataVector, VolumeDim> neighbor_grid_points_in_local_logical_coords(
     const Mesh<VolumeDim>& local_mesh, const Mesh<VolumeDim>& neighbor_mesh,
     const Element<VolumeDim>& element,
-    const Direction<VolumeDim>& direction_to_neighbor) noexcept;
+    const Direction<VolumeDim>& direction_to_neighbor);
 
 // Compute the coordinate positions of the local element's grid points in the
 // logical coordinates of the a neighbor element.
@@ -58,6 +57,6 @@ template <size_t VolumeDim>
 std::array<DataVector, VolumeDim> local_grid_points_in_neighbor_logical_coords(
     const Mesh<VolumeDim>& local_mesh, const Mesh<VolumeDim>& neighbor_mesh,
     const Element<VolumeDim>& element,
-    const Direction<VolumeDim>& direction_to_neighbor) noexcept;
+    const Direction<VolumeDim>& direction_to_neighbor);
 
 }  // namespace Limiters::Weno_detail

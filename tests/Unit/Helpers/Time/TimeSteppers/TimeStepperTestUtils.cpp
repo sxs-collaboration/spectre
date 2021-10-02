@@ -34,7 +34,7 @@ void take_step(
     const gsl::not_null<Time*> time, const gsl::not_null<double*> y,
     const gsl::not_null<TimeSteppers::History<double, double>*> history,
     const TimeStepper& stepper, F&& rhs, const TimeDelta& step_size,
-    bool apply_stepper_twice = false) noexcept {
+    bool apply_stepper_twice = false) {
   TimeStepId time_id(step_size.is_positive(), 0, *time);
   for (uint64_t substep = 0;
        substep < stepper.number_of_substeps();
@@ -60,7 +60,7 @@ void take_step_and_check_error(
     const gsl::not_null<double*> y_error,
     const gsl::not_null<TimeSteppers::History<double, double>*> history,
     const TimeStepper& stepper, F&& rhs, const TimeDelta& step_size,
-    const bool apply_stepper_twice = false) noexcept {
+    const bool apply_stepper_twice = false) {
   TimeStepId time_id(step_size.is_positive(), 0, *time);
   for (uint64_t substep = 0; substep < stepper.number_of_substeps_for_error();
        ++substep) {
@@ -84,7 +84,7 @@ void take_step_and_check_error(
 
 template <typename F>
 double convergence_rate(const int32_t large_steps, const int32_t small_steps,
-                        F&& error) noexcept {
+                        F&& error) {
   // We do a least squares fit on a log-log error-vs-steps plot.  The
   // unequal points caused by the log scale will introduce some bias,
   // but the typical range this is used for is only a factor of a few,
@@ -112,11 +112,11 @@ double convergence_rate(const int32_t large_steps, const int32_t small_steps,
 }
 }  // namespace
 
-void check_multistep_properties(const TimeStepper& stepper) noexcept {
+void check_multistep_properties(const TimeStepper& stepper) {
   CHECK(stepper.number_of_substeps() == 1);
 }
 
-void check_substep_properties(const TimeStepper& stepper) noexcept {
+void check_substep_properties(const TimeStepper& stepper) {
   CHECK(stepper.number_of_past_steps() == 0);
 
   const Slab slab(0., 1.);
@@ -133,11 +133,11 @@ void check_substep_properties(const TimeStepper& stepper) noexcept {
 void integrate_test(const TimeStepper& stepper, const size_t order,
                     const size_t number_of_past_steps,
                     const double integration_time, const double epsilon,
-                    const bool test_apply_twice) noexcept {
-  auto analytic = [](const double t) noexcept { return sin(t); };
-  auto rhs = [](const double v, const double /*t*/) noexcept {
-               return sqrt(1. - square(v));
-             };
+                    const bool test_apply_twice) {
+  auto analytic = [](const double t) { return sin(t); };
+  auto rhs = [](const double v, const double /*t*/) {
+    return sqrt(1. - square(v));
+  };
 
   const uint64_t num_steps = 800;
   const Slab slab = integration_time > 0
@@ -173,9 +173,9 @@ void integrate_test_explicit_time_dependence(const TimeStepper& stepper,
                                              const size_t order,
                                              const size_t number_of_past_steps,
                                              const double integration_time,
-                                             const double epsilon) noexcept {
-  auto analytic = [](const double t) noexcept { return square(t); };
-  auto rhs = [](const double /*v*/, const double t) noexcept { return 2 * t; };
+                                             const double epsilon) {
+  auto analytic = [](const double t) { return square(t); };
+  auto rhs = [](const double /*v*/, const double t) { return 2 * t; };
 
   const uint64_t num_steps = 800;
   const Slab slab = integration_time > 0
@@ -208,11 +208,11 @@ void integrate_error_test(const TimeStepper& stepper, const size_t order,
                           const size_t number_of_past_steps,
                           const double integration_time, const double epsilon,
                           const size_t num_steps, const double error_factor,
-                          const bool test_apply_twice) noexcept {
-  auto analytic = [](const double t) noexcept { return sin(t); };
-  auto rhs = [](const double v, const double /*t*/) noexcept {
-               return sqrt(1. - square(v));
-             };
+                          const bool test_apply_twice) {
+  auto analytic = [](const double t) { return sin(t); };
+  auto rhs = [](const double v, const double /*t*/) {
+    return sqrt(1. - square(v));
+  };
 
   const Slab slab = integration_time > 0
       ? Slab::with_duration_from_start(0., integration_time)
@@ -259,14 +259,13 @@ void integrate_error_test(const TimeStepper& stepper, const size_t order,
   CHECK(history.size() < 20);
 }
 
-void integrate_variable_test(const TimeStepper& stepper,
-                             const size_t order,
+void integrate_variable_test(const TimeStepper& stepper, const size_t order,
                              const size_t number_of_past_steps,
-                             const double epsilon) noexcept {
-  auto analytic = [](const double t) noexcept { return sin(t); };
-  auto rhs = [](const double v, const double /*t*/) noexcept {
-               return sqrt(1. - square(v));
-             };
+                             const double epsilon) {
+  auto analytic = [](const double t) { return sin(t); };
+  auto rhs = [](const double v, const double /*t*/) {
+    return sqrt(1. - square(v));
+  };
 
   const uint64_t num_steps = 800;
   const double average_step = 1. / num_steps;
@@ -291,7 +290,7 @@ void integrate_variable_test(const TimeStepper& stepper,
   }
 }
 
-void stability_test(const TimeStepper& stepper) noexcept {
+void stability_test(const TimeStepper& stepper) {
   const uint64_t num_steps = 5000;
   const double bracket_size = 1.1;
 
@@ -307,12 +306,10 @@ void stability_test(const TimeStepper& stepper) noexcept {
     Time time = slab.start();
     double y = 1.;
     TimeSteppers::History<double, double> history{stepper.order()};
-    const auto rhs = [](const double v, const double /*t*/) noexcept {
-      return -2. * v;
-    };
+    const auto rhs = [](const double v, const double /*t*/) { return -2. * v; };
     initialize_history(
         time, make_not_null(&history),
-        [](const double t) noexcept { return exp(-2. * t); }, rhs, step_size,
+        [](const double t) { return exp(-2. * t); }, rhs, step_size,
         stepper.number_of_past_steps());
 
     for (uint64_t i = 0; i < num_steps; ++i) {
@@ -330,12 +327,10 @@ void stability_test(const TimeStepper& stepper) noexcept {
     Time time = slab.start();
     double y = 1.;
     TimeSteppers::History<double, double> history{stepper.order()};
-    const auto rhs = [](const double v, const double /*t*/) noexcept {
-      return -2. * v;
-    };
+    const auto rhs = [](const double v, const double /*t*/) { return -2. * v; };
     initialize_history(
         time, make_not_null(&history),
-        [](const double t) noexcept { return exp(-2. * t); }, rhs, step_size,
+        [](const double t) { return exp(-2. * t); }, rhs, step_size,
         stepper.number_of_past_steps());
 
     for (uint64_t i = 0; i < num_steps; ++i) {
@@ -348,10 +343,9 @@ void stability_test(const TimeStepper& stepper) noexcept {
   }
 }
 
-void equal_rate_boundary(const LtsTimeStepper& stepper,
-                         const size_t order,
+void equal_rate_boundary(const LtsTimeStepper& stepper, const size_t order,
                          const size_t number_of_past_steps,
-                         const double epsilon, const bool forward) noexcept {
+                         const double epsilon, const bool forward) {
   // This does an integral putting the entire derivative into the
   // boundary term.
   const double unused_local_deriv = 4444.;
@@ -426,21 +420,18 @@ void equal_rate_boundary(const LtsTimeStepper& stepper,
   CHECK(boundary_history.remote_size() < 20);
 }
 
-void check_convergence_order(const TimeStepper& stepper) noexcept {
-  const auto do_integral = [&stepper](const int32_t num_steps) noexcept {
+void check_convergence_order(const TimeStepper& stepper) {
+  const auto do_integral = [&stepper](const int32_t num_steps) {
     const Slab slab(0., 1.);
     const TimeDelta step_size = slab.duration() / num_steps;
 
     Time time = slab.start();
     double y = 1.;
     TimeSteppers::History<double, double> history{stepper.order()};
-    const auto rhs = [](const double v, const double /*t*/) noexcept {
-      return v;
-    };
+    const auto rhs = [](const double v, const double /*t*/) { return v; };
     initialize_history(
-        time, make_not_null(&history),
-        [](const double t) noexcept { return exp(t); }, rhs, step_size,
-        stepper.number_of_past_steps());
+        time, make_not_null(&history), [](const double t) { return exp(t); },
+        rhs, step_size, stepper.number_of_past_steps());
     while (time < slab.end()) {
       take_step(&time, &y, &history, stepper, rhs, step_size);
     }
@@ -454,12 +445,11 @@ void check_convergence_order(const TimeStepper& stepper) noexcept {
 }
 
 void check_dense_output(const TimeStepper& stepper,
-                        const size_t history_integration_order) noexcept {
+                        const size_t history_integration_order) {
   const auto get_dense = [&stepper, &history_integration_order](
-                             const TimeDelta& step_size,
-                             const double time) noexcept {
+                             const TimeDelta& step_size, const double time) {
     const auto impl = [&stepper, &history_integration_order, &step_size,
-                       &time](const bool use_error_methods) noexcept {
+                       &time](const bool use_error_methods) {
       CAPTURE(use_error_methods);
       TimeStepId time_id(step_size.is_positive(), 0,
                          step_size.is_positive() ? step_size.slab().start()
@@ -469,9 +459,9 @@ void check_dense_output(const TimeStepper& stepper,
       TimeSteppers::History<double, double> history{history_integration_order};
       initialize_history(
           time_id.substep_time(), make_not_null(&history),
-          [](const double t) noexcept { return exp(t); },
-          [](const double v, const double /*t*/) noexcept { return v; },
-          step_size, history_integration_order);
+          [](const double t) { return exp(t); },
+          [](const double v, const double /*t*/) { return v; }, step_size,
+          history_integration_order);
       auto step = step_size;
       for (;;) {
         history.insert(time_id, y);
@@ -511,13 +501,10 @@ void check_dense_output(const TimeStepper& stepper,
       Time time = Slab(0., 1.).start().with_slab(time_step.slab());
       double y = 1.;
       TimeSteppers::History<double, double> history{history_integration_order};
-      const auto rhs = [](const double v, const double /*t*/) noexcept {
-        return v;
-      };
+      const auto rhs = [](const double v, const double /*t*/) { return v; };
       initialize_history(
-          time, make_not_null(&history),
-          [](const double t) noexcept { return exp(t); }, rhs, time_step,
-          history_integration_order);
+          time, make_not_null(&history), [](const double t) { return exp(t); },
+          rhs, time_step, history_integration_order);
       take_step(&time, &y, &history, stepper, rhs, time_step);
 
       // Some time steppers special-case the endpoints of the
@@ -538,7 +525,7 @@ void check_dense_output(const TimeStepper& stepper,
     // The high-order solvers have round-off error around here
     const int32_t small_steps = 40;
 
-    const auto error = [&get_dense](const int32_t steps) noexcept {
+    const auto error = [&get_dense](const int32_t steps) {
       const Slab slab(0., 1.);
       return abs(get_dense(slab.duration() / steps, 0.25 * M_PI) -
                  exp(0.25 * M_PI));
@@ -546,7 +533,7 @@ void check_dense_output(const TimeStepper& stepper,
     CHECK(convergence_rate(large_steps, small_steps, error) ==
           approx(history_integration_order).margin(0.4));
 
-    const auto error_backwards = [&get_dense](const int32_t steps) noexcept {
+    const auto error_backwards = [&get_dense](const int32_t steps) {
       const Slab slab(-1., 0.);
       return abs(get_dense(-slab.duration() / steps, -0.25 * M_PI) -
                  exp(-0.25 * M_PI));
@@ -556,7 +543,7 @@ void check_dense_output(const TimeStepper& stepper,
   }
 }
 
-void check_boundary_dense_output(const LtsTimeStepper& stepper) noexcept {
+void check_boundary_dense_output(const LtsTimeStepper& stepper) {
   // We only support variable time-step, multistep LTS integration.
   // Any multistep, variable time-step integrator must give the same
   // results from dense output as from just taking a short step
@@ -567,13 +554,11 @@ void check_boundary_dense_output(const LtsTimeStepper& stepper) noexcept {
 
   // We don't use any meaningful values.  We only care that the dense
   // output gives the same result as normal output.
-  auto get_value = [value = 1.]() mutable noexcept { return value *= 1.1; };
+  auto get_value = [value = 1.]() mutable { return value *= 1.1; };
 
-  const auto coupling = [](const double a, const double b) noexcept {
-    return a * b;
-  };
+  const auto coupling = [](const double a, const double b) { return a * b; };
 
-  const auto make_time_id = [](const Time& t) noexcept {
+  const auto make_time_id = [](const Time& t) {
     return TimeStepId(true, 0, t);
   };
 

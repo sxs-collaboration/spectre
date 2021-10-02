@@ -63,8 +63,7 @@ struct ComplexTensorTag : db::SimpleTag {
 template <typename LocalScalarTag, typename LocalTensorTag, size_t Dim>
 Variables<tmpl::list<LocalScalarTag, LocalTensorTag>> polynomial_data(
     const Mesh<Dim>& mesh, const Index<Dim>& powers,
-    const typename LocalScalarTag::type::type::ElementType
-        fill_value) noexcept {
+    const typename LocalScalarTag::type::type::ElementType fill_value) {
   const auto coords = logical_coordinates(mesh);
   Variables<tmpl::list<LocalScalarTag, LocalTensorTag>> result(
       mesh.number_of_grid_points(), fill_value);
@@ -82,7 +81,7 @@ struct CheckApply {
   static void apply(
       const Mesh<Dim>& source_mesh, const Mesh<Dim>& dest_mesh,
       const Index<Dim>& powers,
-      std::array<Matrix, Dim> matrices = std::array<Matrix, Dim>{}) noexcept {
+      std::array<Matrix, Dim> matrices = std::array<Matrix, Dim>{}) {
     if (source_mesh.extents(FilledDim) == dest_mesh.extents(FilledDim)) {
       // Check implicit identity
       CheckApply<LocalScalarTag, LocalTensorTag, Dim, FilledDim + 1>::apply(
@@ -100,7 +99,7 @@ template <typename LocalScalarTag, typename LocalTensorTag, size_t Dim>
 struct CheckApply<LocalScalarTag, LocalTensorTag, Dim, Dim> {
   static void apply(const Mesh<Dim>& source_mesh, const Mesh<Dim>& dest_mesh,
                     const Index<Dim>& powers,
-                    const std::array<Matrix, Dim>& matrices = {}) noexcept {
+                    const std::array<Matrix, Dim>& matrices = {}) {
     MAKE_GENERATOR(gen);
     UniformCustomDistribution<
         tt::get_fundamental_type_t<typename LocalScalarTag::type::type>>
@@ -156,8 +155,8 @@ struct CheckApply<LocalScalarTag, LocalTensorTag, Dim, Dim> {
 };
 
 template <typename LocalScalarTag, typename LocalTensorTag, size_t Dim>
-void test_interpolation() noexcept {
-  const auto too_few_points = [](const size_t extent) noexcept {
+void test_interpolation() {
+  const auto too_few_points = [](const size_t extent) {
     return extent < Spectral::minimum_number_of_points<basis, quadrature>;
   };
 

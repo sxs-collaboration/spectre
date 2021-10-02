@@ -32,12 +32,12 @@ template <size_t SpatialDim, typename Frame, typename DataType>
 void christoffel_second_kind(
     const gsl::not_null<tnsr::Ijj<DataType, SpatialDim, Frame>*> christoffel,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
-    const tnsr::II<DataType, SpatialDim, Frame>& inv_metric) noexcept;
+    const tnsr::II<DataType, SpatialDim, Frame>& inv_metric);
 
 template <size_t SpatialDim, typename Frame, typename DataType>
 auto christoffel_second_kind(
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
-    const tnsr::II<DataType, SpatialDim, Frame>& inv_metric) noexcept
+    const tnsr::II<DataType, SpatialDim, Frame>& inv_metric)
     -> tnsr::Ijj<DataType, SpatialDim, Frame>;
 /// @}
 }  // namespace GeneralizedHarmonic

@@ -38,9 +38,9 @@ std::pair<Matrix, Matrix> right_and_left_eigenvectors(
     const EquationsOfState::EquationOfState<false, ThermodynamicDim>&
         equation_of_state,
     const tnsr::i<double, VolumeDim>& unit_vector,
-    const bool compute_char_transformation_numerically) noexcept {
+    const bool compute_char_transformation_numerically) {
   // Compute fluid primitives from mean conserved state
-  const auto velocity = [&mean_density, &mean_momentum]() noexcept {
+  const auto velocity = [&mean_density, &mean_momentum]() {
     auto result = mean_momentum;
     for (size_t i = 0; i < VolumeDim; ++i) {
       result.get(i) /= get(mean_density);
@@ -48,7 +48,7 @@ std::pair<Matrix, Matrix> right_and_left_eigenvectors(
     return result;
   }();
   const auto specific_internal_energy = [&mean_density, &mean_energy,
-                                         &mean_momentum]() noexcept {
+                                         &mean_momentum]() {
     auto result = mean_energy;
     get(result) /= get(mean_density);
     get(result) -= 0.5 * get(dot_product(mean_momentum, mean_momentum)) /
@@ -106,7 +106,7 @@ void characteristic_fields(
         ::Tags::Mean<NewtonianEuler::Tags::MassDensityCons>,
         ::Tags::Mean<NewtonianEuler::Tags::MomentumDensity<VolumeDim>>,
         ::Tags::Mean<NewtonianEuler::Tags::EnergyDensity>>& cons_means,
-    const Matrix& left) noexcept {
+    const Matrix& left) {
   auto& char_v_minus =
       get<::Tags::Mean<NewtonianEuler::Tags::VMinus>>(*char_means);
   auto& char_v_momentum =
@@ -155,8 +155,7 @@ void characteristic_fields(
     const gsl::not_null<Scalar<DataVector>*> char_v_plus,
     const Scalar<DataVector>& cons_mass_density,
     const tnsr::I<DataVector, VolumeDim>& cons_momentum_density,
-    const Scalar<DataVector>& cons_energy_density,
-    const Matrix& left) noexcept {
+    const Scalar<DataVector>& cons_energy_density, const Matrix& left) {
   get(*char_v_minus) = left(0, 0) * get(cons_mass_density);
   for (size_t j = 0; j < VolumeDim; ++j) {
     char_v_momentum->get(j) = left(j + 1, 0) * get(cons_mass_density);
@@ -192,7 +191,7 @@ void characteristic_fields(
     const Variables<tmpl::list<NewtonianEuler::Tags::MassDensityCons,
                                NewtonianEuler::Tags::MomentumDensity<VolumeDim>,
                                NewtonianEuler::Tags::EnergyDensity>>& cons_vars,
-    const Matrix& left) noexcept {
+    const Matrix& left) {
   characteristic_fields(
       make_not_null(&get<NewtonianEuler::Tags::VMinus>(*char_vars)),
       make_not_null(
@@ -210,7 +209,7 @@ void conserved_fields_from_characteristic_fields(
     const gsl::not_null<Scalar<DataVector>*> cons_energy_density,
     const Scalar<DataVector>& char_v_minus,
     const tnsr::I<DataVector, VolumeDim>& char_v_momentum,
-    const Scalar<DataVector>& char_v_plus, const Matrix& right) noexcept {
+    const Scalar<DataVector>& char_v_plus, const Matrix& right) {
   get(*cons_mass_density) = right(0, 0) * get(char_v_minus);
   for (size_t j = 0; j < VolumeDim; ++j) {
     cons_momentum_density->get(j) = right(j + 1, 0) * get(char_v_minus);
@@ -244,7 +243,7 @@ void conserved_fields_from_characteristic_fields(
       const Scalar<double>&, const tnsr::I<double, DIM(data)>&,         \
       const Scalar<double>&,                                            \
       const EquationsOfState::EquationOfState<false, THERMODIM(data)>&, \
-      const tnsr::i<double, DIM(data)>&, const bool) noexcept;
+      const tnsr::i<double, DIM(data)>&, const bool);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (1, 2))
 
@@ -261,13 +260,13 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (1, 2))
           ::Tags::Mean<NewtonianEuler::Tags::MassDensityCons>,             \
           ::Tags::Mean<NewtonianEuler::Tags::MomentumDensity<DIM(data)>>,  \
           ::Tags::Mean<NewtonianEuler::Tags::EnergyDensity>>&,             \
-      const Matrix&) noexcept;                                             \
+      const Matrix&);                                                      \
   template void characteristic_fields(                                     \
       const gsl::not_null<Scalar<DataVector>*>,                            \
       const gsl::not_null<tnsr::I<DataVector, DIM(data)>*>,                \
       const gsl::not_null<Scalar<DataVector>*>, const Scalar<DataVector>&, \
       const tnsr::I<DataVector, DIM(data)>&, const Scalar<DataVector>&,    \
-      const Matrix&) noexcept;                                             \
+      const Matrix&);                                                      \
   template void characteristic_fields(                                     \
       const gsl::not_null<                                                 \
           Variables<tmpl::list<NewtonianEuler::Tags::VMinus,               \
@@ -277,13 +276,13 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (1, 2))
           tmpl::list<NewtonianEuler::Tags::MassDensityCons,                \
                      NewtonianEuler::Tags::MomentumDensity<DIM(data)>,     \
                      NewtonianEuler::Tags::EnergyDensity>>&,               \
-      const Matrix&) noexcept;                                             \
+      const Matrix&);                                                      \
   template void conserved_fields_from_characteristic_fields(               \
       const gsl::not_null<Scalar<DataVector>*>,                            \
       const gsl::not_null<tnsr::I<DataVector, DIM(data)>*>,                \
       const gsl::not_null<Scalar<DataVector>*>, const Scalar<DataVector>&, \
       const tnsr::I<DataVector, DIM(data)>&, const Scalar<DataVector>&,    \
-      const Matrix&) noexcept;
+      const Matrix&);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 

@@ -50,7 +50,7 @@ FixToAtmosphere<Dim>::FixToAtmosphere(const double density_of_atmosphere,
 
 // clang-tidy: google-runtime-references
 template <size_t Dim>
-void FixToAtmosphere<Dim>::pup(PUP::er& p) noexcept {  // NOLINT
+void FixToAtmosphere<Dim>::pup(PUP::er& p) {  // NOLINT
   p | density_of_atmosphere_;
   p | density_cutoff_;
   p | transition_density_cutoff_;
@@ -69,7 +69,7 @@ void FixToAtmosphere<Dim>::operator()(
     const gsl::not_null<Scalar<DataVector>*> specific_enthalpy,
     const tnsr::ii<DataVector, Dim, Frame::Inertial>& spatial_metric,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
-        equation_of_state) const noexcept {
+        equation_of_state) const {
   for (size_t i = 0; i < rest_mass_density->get().size(); i++) {
     if (UNLIKELY(rest_mass_density->get()[i] < density_cutoff_)) {
       set_density_to_atmosphere(rest_mass_density, specific_internal_energy,
@@ -96,7 +96,7 @@ void FixToAtmosphere<Dim>::set_density_to_atmosphere(
     const gsl::not_null<Scalar<DataVector>*> specific_enthalpy,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
         equation_of_state,
-    const size_t grid_index) const noexcept {
+    const size_t grid_index) const {
   rest_mass_density->get()[grid_index] = density_of_atmosphere_;
   Scalar<double> atmosphere_density{density_of_atmosphere_};
   if constexpr (ThermodynamicDim == 1) {
@@ -126,7 +126,7 @@ void FixToAtmosphere<Dim>::set_to_magnetic_free_transition(
         spatial_velocity,
     const gsl::not_null<Scalar<DataVector>*> lorentz_factor,
     const tnsr::ii<DataVector, Dim, Frame::Inertial>& spatial_metric,
-    const size_t grid_index) const noexcept {
+    const size_t grid_index) const {
   double magnitude_of_velocity = 0.0;
   for (size_t j = 0; j < Dim; ++j) {
     magnitude_of_velocity += spatial_velocity->get(j)[grid_index] *
@@ -155,7 +155,7 @@ void FixToAtmosphere<Dim>::set_to_magnetic_free_transition(
 
 template <size_t Dim>
 bool operator==(const FixToAtmosphere<Dim>& lhs,
-                const FixToAtmosphere<Dim>& rhs) noexcept {
+                const FixToAtmosphere<Dim>& rhs) {
   return lhs.density_of_atmosphere_ == rhs.density_of_atmosphere_ and
          lhs.density_cutoff_ == rhs.density_cutoff_ and
          lhs.transition_density_cutoff_ == rhs.transition_density_cutoff_ and
@@ -164,19 +164,19 @@ bool operator==(const FixToAtmosphere<Dim>& lhs,
 
 template <size_t Dim>
 bool operator!=(const FixToAtmosphere<Dim>& lhs,
-                const FixToAtmosphere<Dim>& rhs) noexcept {
+                const FixToAtmosphere<Dim>& rhs) {
   return not(lhs == rhs);
 }
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define THERMO_DIM(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATION(r, data)                                              \
-  template class FixToAtmosphere<DIM(data)>;                                \
-  template bool operator==(const FixToAtmosphere<DIM(data)>& lhs,           \
-                           const FixToAtmosphere<DIM(data)>& rhs) noexcept; \
-  template bool operator!=(const FixToAtmosphere<DIM(data)>& lhs,           \
-                           const FixToAtmosphere<DIM(data)>& rhs) noexcept;
+#define INSTANTIATION(r, data)                                     \
+  template class FixToAtmosphere<DIM(data)>;                       \
+  template bool operator==(const FixToAtmosphere<DIM(data)>& lhs,  \
+                           const FixToAtmosphere<DIM(data)>& rhs); \
+  template bool operator!=(const FixToAtmosphere<DIM(data)>& lhs,  \
+                           const FixToAtmosphere<DIM(data)>& rhs);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 
@@ -193,7 +193,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
       const gsl::not_null<Scalar<DataVector>*> specific_enthalpy,             \
       const tnsr::ii<DataVector, DIM(data), Frame::Inertial>& spatial_metric, \
       const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>&        \
-          equation_of_state) const noexcept;
+          equation_of_state) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (1, 2))
 

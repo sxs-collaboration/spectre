@@ -21,7 +21,7 @@ void InertialFromGridCoordinatesCompute<Dim>::function(
         ::InverseJacobian<DataVector, Dim, Frame::Grid, Frame::Inertial>,
         ::Jacobian<DataVector, Dim, Frame::Grid, Frame::Inertial>,
         tnsr::I<DataVector, Dim, Frame::Inertial>>>&
-        grid_to_inertial_quantities) noexcept {
+        grid_to_inertial_quantities) {
   if (not grid_to_inertial_quantities.has_value()) {
     // We use a const_cast to point the data into the existing allocation
     // inside `source_coords` to avoid copying. This is safe because the output
@@ -56,7 +56,7 @@ void ElementToInertialInverseJacobian<Dim>::function(
         ::InverseJacobian<DataVector, Dim, Frame::Grid, Frame::Inertial>,
         ::Jacobian<DataVector, Dim, Frame::Grid, Frame::Inertial>,
         tnsr::I<DataVector, Dim, Frame::Inertial>>>&
-        grid_to_inertial_quantities) noexcept {
+        grid_to_inertial_quantities) {
   if (not grid_to_inertial_quantities.has_value()) {
     // We use a const_cast to point the data into the existing allocation
     // inside `inv_jac_logical_to_grid` to avoid copying. This is safe because
@@ -92,7 +92,7 @@ void InertialMeshVelocityCompute<Dim>::function(
         ::InverseJacobian<DataVector, Dim, Frame::Grid, Frame::Inertial>,
         ::Jacobian<DataVector, Dim, Frame::Grid, Frame::Inertial>,
         tnsr::I<DataVector, Dim, Frame::Inertial>>>&
-        grid_to_inertial_quantities) noexcept {
+        grid_to_inertial_quantities) {
   if (not grid_to_inertial_quantities.has_value()) {
     *mesh_velocity = std::nullopt;
   } else {

@@ -24,7 +24,7 @@ wrap_spacetime_deriv_of_power_log_factor_metric_lapse(
     const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric,
     const tnsr::aa<DataType, SpatialDim, Frame>& pi,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi, const double g_exponent,
-    const double d_exponent) noexcept {
+    const double d_exponent) {
   const auto exponent = static_cast<int>(d_exponent);
   tnsr::a<DataType, SpatialDim, Frame> d4_powlogfac{};
   GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail::
@@ -36,7 +36,7 @@ wrap_spacetime_deriv_of_power_log_factor_metric_lapse(
 }
 
 template <size_t SpatialDim, typename Frame, typename DataType>
-void test_detail_functions(const DataType& used_for_size) noexcept {
+void test_detail_functions(const DataType& used_for_size) {
   // weight_function
   pypp::check_with_random_values<2>(
       &::GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail::

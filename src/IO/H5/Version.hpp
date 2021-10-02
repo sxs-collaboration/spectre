@@ -47,12 +47,12 @@ class Version : public h5::Object {
   Version(const Version& /*rhs*/) = delete;
   Version& operator=(const Version& /*rhs*/) = delete;
 
-  Version(Version&& /*rhs*/) noexcept = delete;             // NOLINT
-  Version& operator=(Version&& /*rhs*/) noexcept = delete;  // NOLINT
+  Version(Version&& /*rhs*/) = delete;             // NOLINT
+  Version& operator=(Version&& /*rhs*/) = delete;  // NOLINT
   ~Version() override = default;
   /// \endcond
 
-  uint32_t get_version() const noexcept { return version_; }
+  uint32_t get_version() const { return version_; }
 
  private:
   /// \cond HIDDEN_SYMBOLS

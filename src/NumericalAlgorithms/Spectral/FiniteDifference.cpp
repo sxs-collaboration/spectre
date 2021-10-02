@@ -14,7 +14,7 @@ namespace Spectral {
 template <>
 std::pair<DataVector, DataVector> compute_collocation_points_and_weights<
     Basis::FiniteDifference, Quadrature::CellCentered>(
-    const size_t num_points) noexcept {
+    const size_t num_points) {
   DataVector x{num_points};
   DataVector w{num_points, std::numeric_limits<double>::signaling_NaN()};
   // The finite difference grid cells cover the interval [-1, 1]
@@ -29,7 +29,7 @@ std::pair<DataVector, DataVector> compute_collocation_points_and_weights<
 template <>
 std::pair<DataVector, DataVector> compute_collocation_points_and_weights<
     Basis::FiniteDifference, Quadrature::FaceCentered>(
-    const size_t num_points) noexcept {
+    const size_t num_points) {
   DataVector x{num_points};
   DataVector w{num_points, std::numeric_limits<double>::signaling_NaN()};
   // The finite difference grid cells cover the interval [-1, 1]
@@ -43,7 +43,7 @@ std::pair<DataVector, DataVector> compute_collocation_points_and_weights<
 
 // The below definitions are necessary to successfully link with some compilers.
 template <Basis BasisType>
-Matrix spectral_indefinite_integral_matrix(size_t num_points) noexcept;
+Matrix spectral_indefinite_integral_matrix(size_t num_points);
 
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic push
@@ -51,25 +51,25 @@ Matrix spectral_indefinite_integral_matrix(size_t num_points) noexcept;
 #endif  // defined(__GNUC__) && !defined(__clang__)
 template <>
 Matrix spectral_indefinite_integral_matrix<Basis::FiniteDifference>(
-    const size_t /*num_points*/) noexcept {
+    const size_t /*num_points*/) {
   ERROR("No indefinite integration matrix exists.\n");
 }
 
 template <>
 DataVector compute_basis_function_value<Basis::FiniteDifference>(
-    const size_t /*k*/, const DataVector& /*x*/) noexcept {
+    const size_t /*k*/, const DataVector& /*x*/) {
   ERROR("No basis functions to compute.\n");
 }
 
 template <>
 double compute_basis_function_value<Basis::FiniteDifference>(
-    const size_t /*k*/, const double& /*x*/) noexcept {
+    const size_t /*k*/, const double& /*x*/) {
   ERROR("No basis functions to compute.\n");
 }
 
 template <>
 DataVector compute_inverse_weight_function_values<Basis::FiniteDifference>(
-    const DataVector& /*x*/) noexcept {
+    const DataVector& /*x*/) {
   ERROR("No no inverse weight function to compute.\n");
 }
 #if defined(__GNUC__) && !defined(__clang__)

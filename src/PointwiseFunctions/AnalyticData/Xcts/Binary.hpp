@@ -98,8 +98,7 @@ struct BinaryVariables
   template <typename Tag,
             Requires<tmpl::list_contains_v<superposed_tags, Tag>> = nullptr>
   void operator()(gsl::not_null<typename Tag::type*> superposed_var,
-                  gsl::not_null<Cache*> /*cache*/,
-                  Tag /*meta*/) const noexcept {
+                  gsl::not_null<Cache*> /*cache*/, Tag /*meta*/) const {
     for (size_t i = 0; i < superposed_var->size(); ++i) {
       (*superposed_var)[i] =
           get<Tag>(flat_vars)[i] +
@@ -117,23 +116,21 @@ struct BinaryVariables
   void operator()(
       gsl::not_null<tnsr::I<DataType, Dim>*> shift_background,
       gsl::not_null<Cache*> cache,
-      Tags::ShiftBackground<DataType, Dim, Frame::Inertial> /*meta*/)
-      const noexcept;
+      Tags::ShiftBackground<DataType, Dim, Frame::Inertial> /*meta*/) const;
   void operator()(
       gsl::not_null<tnsr::iJ<DataType, Dim>*> deriv_shift_background,
       gsl::not_null<Cache*> cache,
       ::Tags::deriv<Tags::ShiftBackground<DataType, Dim, Frame::Inertial>,
-                    tmpl::size_t<Dim>, Frame::Inertial> /*meta*/)
-      const noexcept;
+                    tmpl::size_t<Dim>, Frame::Inertial> /*meta*/) const;
   void operator()(gsl::not_null<tnsr::II<DataType, Dim, Frame::Inertial>*>
                       longitudinal_shift_background_minus_dt_conformal_metric,
                   gsl::not_null<Cache*> cache,
                   Tags::LongitudinalShiftBackgroundMinusDtConformalMetric<
-                      DataType, Dim, Frame::Inertial> /*meta*/) const noexcept;
+                      DataType, Dim, Frame::Inertial> /*meta*/) const;
 
  private:
-  void add_deriv_of_window_function(gsl::not_null<tnsr::ijj<DataType, Dim>*>
-                                        deriv_conformal_metric) const noexcept;
+  void add_deriv_of_window_function(
+      gsl::not_null<tnsr::ijj<DataType, Dim>*> deriv_conformal_metric) const;
 };
 }  // namespace detail
 
@@ -243,20 +240,20 @@ class Binary : public ::AnalyticData<3, Registrars> {
   Binary(std::array<double, 2> xcoords,
          std::unique_ptr<IsolatedObjectBase> object_a,
          std::unique_ptr<IsolatedObjectBase> object_b, double angular_velocity,
-         std::optional<std::array<double, 2>> falloff_widths) noexcept
+         std::optional<std::array<double, 2>> falloff_widths)
       : xcoords_(xcoords),
         superposed_objects_({std::move(object_a), std::move(object_b)}),
         angular_velocity_(angular_velocity),
         falloff_widths_(falloff_widths) {}
 
-  explicit Binary(CkMigrateMessage* m) noexcept : Base(m) {}
+  explicit Binary(CkMigrateMessage* m) : Base(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Binary);
 
   template <typename DataType, typename... RequestedTags>
   tuples::TaggedTuple<RequestedTags...> variables(
       const tnsr::I<DataType, 3, Frame::Inertial>& x,
-      tmpl::list<RequestedTags...> /*meta*/) const noexcept {
+      tmpl::list<RequestedTags...> /*meta*/) const {
     return variables_impl<DataType>(x, std::nullopt, std::nullopt,
                                     tmpl::list<RequestedTags...>{});
   }
@@ -265,13 +262,13 @@ class Binary : public ::AnalyticData<3, Registrars> {
       const tnsr::I<DataVector, 3, Frame::Inertial>& x, const Mesh<3>& mesh,
       const InverseJacobian<DataVector, 3, Frame::ElementLogical,
                             Frame::Inertial>& inv_jacobian,
-      tmpl::list<RequestedTags...> /*meta*/) const noexcept {
+      tmpl::list<RequestedTags...> /*meta*/) const {
     return variables_impl<DataVector>(x, mesh, inv_jacobian,
                                       tmpl::list<RequestedTags...>{});
   }
 
   // NOLINTNEXTLINE
-  void pup(PUP::er& p) noexcept override {
+  void pup(PUP::er& p) override {
     Base::pup(p);
     p | xcoords_;
     p | superposed_objects_;
@@ -279,13 +276,13 @@ class Binary : public ::AnalyticData<3, Registrars> {
     p | falloff_widths_;
   }
 
-  const std::array<double, 2>& x_coords() const noexcept { return xcoords_; }
+  const std::array<double, 2>& x_coords() const { return xcoords_; }
   const std::array<std::unique_ptr<IsolatedObjectBase>, 2>& superposed_objects()
-      const noexcept {
+      const {
     return superposed_objects_;
   }
-  double angular_velocity() const noexcept { return angular_velocity_; }
-  const std::optional<std::array<double, 2>>& falloff_widths() const noexcept {
+  double angular_velocity() const { return angular_velocity_; }
+  const std::optional<std::array<double, 2>>& falloff_widths() const {
     return falloff_widths_;
   }
 
@@ -303,7 +300,7 @@ class Binary : public ::AnalyticData<3, Registrars> {
       std::optional<std::reference_wrapper<const InverseJacobian<
           DataType, 3, Frame::ElementLogical, Frame::Inertial>>>
           inv_jacobian,
-      tmpl::list<RequestedTags...> /*meta*/) const noexcept {
+      tmpl::list<RequestedTags...> /*meta*/) const {
     std::array<tnsr::I<DataVector, 3>, 2> x_isolated{{x, x}};
     std::array<DataVector, 2> euclidean_distance{};
     std::array<DataVector, 2> windows{};

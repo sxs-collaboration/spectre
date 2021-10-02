@@ -16,7 +16,7 @@ namespace cpp20 {
  * https://github.com/llvm-mirror/libcxx/blob/master/include/type_traits
  */
 template <class T>
-constexpr void swap(T& a, T& b) noexcept {
+constexpr void swap(T& a, T& b) {
   T c(std::move(a));
   a = std::move(b);
   b = std::move(c);

@@ -26,7 +26,7 @@
 namespace Cce {
 namespace {
 
-void pypp_test_worldtube_computation_steps() noexcept {
+void pypp_test_worldtube_computation_steps() {
   pypp::SetupLocalPythonEnvironment local_python_env{"Evolution/Systems/Cce/"};
 
   const size_t num_pts = 5;
@@ -97,7 +97,7 @@ void pypp_test_worldtube_computation_steps() noexcept {
 
 template <typename Generator>
 void test_trigonometric_function_identities(
-    const gsl::not_null<Generator*> gen) noexcept {
+    const gsl::not_null<Generator*> gen) {
   UniformCustomDistribution<size_t> l_dist(3, 6);
   const size_t l_max = l_dist(*gen);
   const size_t number_of_angular_points =
@@ -151,7 +151,7 @@ void test_trigonometric_function_identities(
 }
 
 template <typename Generator>
-void test_bondi_r(const gsl::not_null<Generator*> gen) noexcept {
+void test_bondi_r(const gsl::not_null<Generator*> gen) {
   UniformCustomDistribution<size_t> l_dist(3, 6);
   const size_t l_max = l_dist(*gen);
   const size_t number_of_angular_points =
@@ -198,7 +198,7 @@ void test_bondi_r(const gsl::not_null<Generator*> gen) noexcept {
 }
 
 template <typename Generator>
-void test_d_bondi_r_identities(const gsl::not_null<Generator*> gen) noexcept {
+void test_d_bondi_r_identities(const gsl::not_null<Generator*> gen) {
   // more resolution needed because we want high precision on the angular
   // derivative check.
   UniformCustomDistribution<size_t> l_dist(8, 12);
@@ -298,7 +298,7 @@ void test_d_bondi_r_identities(const gsl::not_null<Generator*> gen) noexcept {
 }
 
 template <typename Generator>
-void test_dyad_identities(const gsl::not_null<Generator*> gen) noexcept {
+void test_dyad_identities(const gsl::not_null<Generator*> gen) {
   UniformCustomDistribution<size_t> l_dist(3, 6);
   const size_t l_max = l_dist(*gen);
   const size_t number_of_angular_points =
@@ -329,7 +329,7 @@ template <typename TagList, typename AnalyticSolution>
 void dispatch_to_gh_worldtube_computation_from_analytic(
     const gsl::not_null<Variables<TagList>*> variables,
     const AnalyticSolution& solution, const double extraction_radius,
-    const size_t l_max) noexcept {
+    const size_t l_max) {
   const size_t number_of_angular_points =
       Spectral::Swsh::number_of_swsh_collocation_points(l_max);
   // create the vector of collocation points that we want to interpolate to
@@ -389,7 +389,7 @@ template <typename TagList, typename AnalyticSolution>
 void dispatch_to_modal_worldtube_computation_from_analytic(
     const gsl::not_null<Variables<TagList>*> variables,
     const AnalyticSolution& solution, const double extraction_radius,
-    const size_t l_max) noexcept {
+    const size_t l_max) {
   const size_t number_of_angular_points =
       Spectral::Swsh::number_of_swsh_collocation_points(l_max);
   // create the vector of collocation points that we want to interpolate to
@@ -493,7 +493,7 @@ void dispatch_to_modal_worldtube_computation_from_analytic(
 // quantities.
 template <typename Generator>
 void test_kerr_schild_boundary_consistency(
-    const gsl::not_null<Generator*> gen) noexcept {
+    const gsl::not_null<Generator*> gen) {
   UniformCustomDistribution<double> value_dist{0.1, 0.5};
 
   // first prepare the input for the modal version
@@ -546,7 +546,7 @@ void test_kerr_schild_boundary_consistency(
 // this tests that both execution pathways in Schwarzschild produce the expected
 // Bondi-like scalar quantities.
 template <typename Generator>
-void test_schwarzschild_solution(const gsl::not_null<Generator*> gen) noexcept {
+void test_schwarzschild_solution(const gsl::not_null<Generator*> gen) {
   UniformCustomDistribution<double> value_dist{0.1, 0.5};
 
   // first prepare the input for the modal version

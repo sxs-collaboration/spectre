@@ -44,10 +44,10 @@ class OpenGroup {
   /// \endcond
   /// @}
 
-  OpenGroup(OpenGroup&& rhs) noexcept;             // NOLINT
-  OpenGroup& operator=(OpenGroup&& rhs) noexcept;  // NOLINT
+  OpenGroup(OpenGroup&& rhs);             // NOLINT
+  OpenGroup& operator=(OpenGroup&& rhs);  // NOLINT
 
-  const hid_t& id() const noexcept { return group_id_; }
+  const hid_t& id() const { return group_id_; }
 
  private:
   /// \cond HIDDEN_SYMBOLS

@@ -99,7 +99,7 @@ struct ComputeFluxes {
       const Scalar<DataVector>& pressure,
       const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,
       const Scalar<DataVector>& lorentz_factor,
-      const tnsr::I<DataVector, 3, Frame::Inertial>& magnetic_field) noexcept;
+      const tnsr::I<DataVector, 3, Frame::Inertial>& magnetic_field);
 };
 }  // namespace ValenciaDivClean
 }  // namespace grmhd

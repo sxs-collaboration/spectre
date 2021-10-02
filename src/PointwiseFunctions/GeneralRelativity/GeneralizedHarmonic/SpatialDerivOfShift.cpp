@@ -21,7 +21,7 @@ void spatial_deriv_of_shift(
     const Scalar<DataType>& lapse,
     const tnsr::AA<DataType, SpatialDim, Frame>& inverse_spacetime_metric,
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_unit_normal,
-    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept {
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) {
   if (UNLIKELY(get_size(get<0, 0>(*deriv_shift)) != get_size(get(lapse)))) {
     *deriv_shift = tnsr::iJ<DataType, SpatialDim, Frame>(get_size(get(lapse)));
   }
@@ -52,7 +52,7 @@ tnsr::iJ<DataType, SpatialDim, Frame> spatial_deriv_of_shift(
     const Scalar<DataType>& lapse,
     const tnsr::AA<DataType, SpatialDim, Frame>& inverse_spacetime_metric,
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_unit_normal,
-    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept {
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) {
   tnsr::iJ<DataType, SpatialDim, Frame> deriv_shift{};
   GeneralizedHarmonic::spatial_deriv_of_shift<SpatialDim, Frame, DataType>(
       make_not_null(&deriv_shift), lapse, inverse_spacetime_metric,
@@ -65,24 +65,24 @@ tnsr::iJ<DataType, SpatialDim, Frame> spatial_deriv_of_shift(
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(2, data)
 
-#define INSTANTIATE(_, data)                                               \
-  template void GeneralizedHarmonic::spatial_deriv_of_shift(               \
-      const gsl::not_null<tnsr::iJ<DTYPE(data), DIM(data), FRAME(data)>*>  \
-          deriv_shift,                                                     \
-      const Scalar<DTYPE(data)>& lapse,                                    \
-      const tnsr::AA<DTYPE(data), DIM(data), FRAME(data)>&                 \
-          inverse_spacetime_metric,                                        \
-      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                  \
-          spacetime_unit_normal,                                           \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi) noexcept; \
-  template tnsr::iJ<DTYPE(data), DIM(data), FRAME(data)>                   \
-  GeneralizedHarmonic::spatial_deriv_of_shift(                             \
-      const Scalar<DTYPE(data)>& lapse,                                    \
-      const tnsr::AA<DTYPE(data), DIM(data), FRAME(data)>&                 \
-          inverse_spacetime_metric,                                        \
-      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                  \
-          spacetime_unit_normal,                                           \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi) noexcept;
+#define INSTANTIATE(_, data)                                              \
+  template void GeneralizedHarmonic::spatial_deriv_of_shift(              \
+      const gsl::not_null<tnsr::iJ<DTYPE(data), DIM(data), FRAME(data)>*> \
+          deriv_shift,                                                    \
+      const Scalar<DTYPE(data)>& lapse,                                   \
+      const tnsr::AA<DTYPE(data), DIM(data), FRAME(data)>&                \
+          inverse_spacetime_metric,                                       \
+      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                 \
+          spacetime_unit_normal,                                          \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi);         \
+  template tnsr::iJ<DTYPE(data), DIM(data), FRAME(data)>                  \
+  GeneralizedHarmonic::spatial_deriv_of_shift(                            \
+      const Scalar<DTYPE(data)>& lapse,                                   \
+      const tnsr::AA<DTYPE(data), DIM(data), FRAME(data)>&                \
+          inverse_spacetime_metric,                                       \
+      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                 \
+          spacetime_unit_normal,                                          \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
                         (Frame::Grid, Frame::Inertial))

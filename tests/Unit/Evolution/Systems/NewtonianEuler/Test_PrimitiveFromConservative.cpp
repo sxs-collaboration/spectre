@@ -28,7 +28,7 @@ struct PrimitiveFromConservativeProxyThermoDim1 {
       const gsl::not_null<Scalar<DataVector>*> pressure,
       const Scalar<DataVector>& mass_density_cons,
       const tnsr::I<DataVector, Dim>& momentum_density,
-      const Scalar<DataVector>& energy_density) noexcept {
+      const Scalar<DataVector>& energy_density) {
     NewtonianEuler::PrimitiveFromConservative<Dim>::apply(
         mass_density, velocity, specific_internal_energy, pressure,
         mass_density_cons, momentum_density, energy_density,
@@ -45,7 +45,7 @@ struct PrimitiveFromConservativeProxyThermoDim2 {
       const gsl::not_null<Scalar<DataVector>*> pressure,
       const Scalar<DataVector>& mass_density_cons,
       const tnsr::I<DataVector, Dim>& momentum_density,
-      const Scalar<DataVector>& energy_density) noexcept {
+      const Scalar<DataVector>& energy_density) {
     NewtonianEuler::PrimitiveFromConservative<Dim>::apply(
         mass_density, velocity, specific_internal_energy, pressure,
         mass_density_cons, momentum_density, energy_density,

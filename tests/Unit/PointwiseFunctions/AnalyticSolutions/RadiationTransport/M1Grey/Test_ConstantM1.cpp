@@ -47,17 +47,17 @@ struct ConstantM1Proxy : RadiationTransport::M1Grey::Solutions::ConstantM1 {
                      Frame::Inertial, neutrinos::ElectronNeutrinos<0>>>;
 
   tuples::tagged_tuple_from_typelist<hydro_variables_tags> hydro_variables(
-      const tnsr::I<DataVector, 3>& x, double t) const noexcept {
+      const tnsr::I<DataVector, 3>& x, double t) const {
     return variables(x, t, hydro_variables_tags{});
   }
 
   tuples::tagged_tuple_from_typelist<m1_variables_tags> m1_variables(
-      const tnsr::I<DataVector, 3>& x, double t) const noexcept {
+      const tnsr::I<DataVector, 3>& x, double t) const {
     return variables(x, t, m1_variables_tags{});
   }
 };
 
-void test_create_from_options() noexcept {
+void test_create_from_options() {
   const auto flow = TestHelpers::test_creation<
       RadiationTransport::M1Grey::Solutions::ConstantM1>(
       "MeanVelocity: [0.0, 0.2, 0.1]\n"
@@ -66,7 +66,7 @@ void test_create_from_options() noexcept {
                     {{0.0, 0.2, 0.1}}, 1.3));
 }
 
-void test_move() noexcept {
+void test_move() {
   RadiationTransport::M1Grey::Solutions::ConstantM1 flow({{0.24, 0.11, 0.04}},
                                                          1.3);
   RadiationTransport::M1Grey::Solutions::ConstantM1 flow_copy(
@@ -74,7 +74,7 @@ void test_move() noexcept {
   test_move_semantics(std::move(flow), flow_copy);  //  NOLINT
 }
 
-void test_serialize() noexcept {
+void test_serialize() {
   RadiationTransport::M1Grey::Solutions::ConstantM1 flow({{0.24, 0.11, 0.04}},
                                                          1.3);
   test_serialization(flow);

@@ -30,9 +30,9 @@ class not_null;
  */
 template <size_t Dim>
 void linearize(gsl::not_null<DataVector*> result, const DataVector& u,
-               const Mesh<Dim>& mesh) noexcept;
+               const Mesh<Dim>& mesh);
 template <size_t Dim>
-DataVector linearize(const DataVector& u, const Mesh<Dim>& mesh) noexcept;
+DataVector linearize(const DataVector& u, const Mesh<Dim>& mesh);
 /// @}
 
 /// @{
@@ -51,8 +51,7 @@ DataVector linearize(const DataVector& u, const Mesh<Dim>& mesh) noexcept;
  */
 template <size_t Dim>
 void linearize(gsl::not_null<DataVector*> result, const DataVector& u,
-               const Mesh<Dim>& mesh, size_t d) noexcept;
+               const Mesh<Dim>& mesh, size_t d);
 template <size_t Dim>
-DataVector linearize(const DataVector& u, const Mesh<Dim>& mesh,
-                     size_t d) noexcept;
+DataVector linearize(const DataVector& u, const Mesh<Dim>& mesh, size_t d);
 /// @}

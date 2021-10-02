@@ -16,7 +16,7 @@ template <size_t Dim, typename Frame, typename DataType>
 void conformal_christoffel_second_kind(
     const gsl::not_null<tnsr::Ijj<DataType, Dim, Frame>*> result,
     const tnsr::II<DataType, Dim, Frame>& inverse_conformal_spatial_metric,
-    const tnsr::ijj<DataType, Dim, Frame>& field_d) noexcept {
+    const tnsr::ijj<DataType, Dim, Frame>& field_d) {
   destructive_resize_components(
       result, get_size(get<0, 0>(inverse_conformal_spatial_metric)));
 
@@ -29,7 +29,7 @@ void conformal_christoffel_second_kind(
 template <size_t Dim, typename Frame, typename DataType>
 tnsr::Ijj<DataType, Dim, Frame> conformal_christoffel_second_kind(
     const tnsr::II<DataType, Dim, Frame>& inverse_conformal_spatial_metric,
-    const tnsr::ijj<DataType, Dim, Frame>& field_d) noexcept {
+    const tnsr::ijj<DataType, Dim, Frame>& field_d) {
   tnsr::Ijj<DataType, Dim, Frame> result{};
   conformal_christoffel_second_kind(make_not_null(&result),
                                     inverse_conformal_spatial_metric, field_d);
@@ -42,8 +42,7 @@ void christoffel_second_kind(
     const tnsr::ii<DataType, Dim, Frame>& conformal_spatial_metric,
     const tnsr::II<DataType, Dim, Frame>& inverse_conformal_spatial_metric,
     const tnsr::i<DataType, Dim, Frame>& field_p,
-    const tnsr::Ijj<DataType, Dim, Frame>&
-        conformal_christoffel_second_kind) noexcept {
+    const tnsr::Ijj<DataType, Dim, Frame>& conformal_christoffel_second_kind) {
   destructive_resize_components(result,
                                 get_size(get<0, 0>(conformal_spatial_metric)));
 
@@ -60,8 +59,7 @@ tnsr::Ijj<DataType, Dim, Frame> christoffel_second_kind(
     const tnsr::ii<DataType, Dim, Frame>& conformal_spatial_metric,
     const tnsr::II<DataType, Dim, Frame>& inverse_conformal_spatial_metric,
     const tnsr::i<DataType, Dim, Frame>& field_p,
-    const tnsr::Ijj<DataType, Dim, Frame>&
-        conformal_christoffel_second_kind) noexcept {
+    const tnsr::Ijj<DataType, Dim, Frame>& conformal_christoffel_second_kind) {
   tnsr::Ijj<DataType, Dim, Frame> result{};
   christoffel_second_kind(make_not_null(&result), conformal_spatial_metric,
                           inverse_conformal_spatial_metric, field_p,
@@ -74,37 +72,37 @@ tnsr::Ijj<DataType, Dim, Frame> christoffel_second_kind(
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(2, data)
 
-#define INSTANTIATE(_, data)                                                   \
-  template void Ccz4::conformal_christoffel_second_kind(                       \
-      const gsl::not_null<tnsr::Ijj<DTYPE(data), DIM(data), FRAME(data)>*>     \
-          result,                                                              \
-      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                     \
-          inverse_conformal_spatial_metric,                                    \
-      const tnsr::ijj<DTYPE(data), DIM(data), FRAME(data)>& field_d) noexcept; \
-  template tnsr::Ijj<DTYPE(data), DIM(data), FRAME(data)>                      \
-  Ccz4::conformal_christoffel_second_kind(                                     \
-      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                     \
-          inverse_conformal_spatial_metric,                                    \
-      const tnsr::ijj<DTYPE(data), DIM(data), FRAME(data)>& field_d) noexcept; \
-  template void Ccz4::christoffel_second_kind(                                 \
-      const gsl::not_null<tnsr::Ijj<DTYPE(data), DIM(data), FRAME(data)>*>     \
-          result,                                                              \
-      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>&                     \
-          conformal_spatial_metric,                                            \
-      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                     \
-          inverse_conformal_spatial_metric,                                    \
-      const tnsr::i<DTYPE(data), DIM(data), FRAME(data)>& field_p,             \
-      const tnsr::Ijj<DTYPE(data), DIM(data), FRAME(data)>&                    \
-          conformal_christoffel_second_kind) noexcept;                         \
-  template tnsr::Ijj<DTYPE(data), DIM(data), FRAME(data)>                      \
-  Ccz4::christoffel_second_kind(                                               \
-      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>&                     \
-          conformal_spatial_metric,                                            \
-      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                     \
-          inverse_conformal_spatial_metric,                                    \
-      const tnsr::i<DTYPE(data), DIM(data), FRAME(data)>& field_p,             \
-      const tnsr::Ijj<DTYPE(data), DIM(data), FRAME(data)>&                    \
-          conformal_christoffel_second_kind) noexcept;
+#define INSTANTIATE(_, data)                                               \
+  template void Ccz4::conformal_christoffel_second_kind(                   \
+      const gsl::not_null<tnsr::Ijj<DTYPE(data), DIM(data), FRAME(data)>*> \
+          result,                                                          \
+      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                 \
+          inverse_conformal_spatial_metric,                                \
+      const tnsr::ijj<DTYPE(data), DIM(data), FRAME(data)>& field_d);      \
+  template tnsr::Ijj<DTYPE(data), DIM(data), FRAME(data)>                  \
+  Ccz4::conformal_christoffel_second_kind(                                 \
+      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                 \
+          inverse_conformal_spatial_metric,                                \
+      const tnsr::ijj<DTYPE(data), DIM(data), FRAME(data)>& field_d);      \
+  template void Ccz4::christoffel_second_kind(                             \
+      const gsl::not_null<tnsr::Ijj<DTYPE(data), DIM(data), FRAME(data)>*> \
+          result,                                                          \
+      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>&                 \
+          conformal_spatial_metric,                                        \
+      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                 \
+          inverse_conformal_spatial_metric,                                \
+      const tnsr::i<DTYPE(data), DIM(data), FRAME(data)>& field_p,         \
+      const tnsr::Ijj<DTYPE(data), DIM(data), FRAME(data)>&                \
+          conformal_christoffel_second_kind);                              \
+  template tnsr::Ijj<DTYPE(data), DIM(data), FRAME(data)>                  \
+  Ccz4::christoffel_second_kind(                                           \
+      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>&                 \
+          conformal_spatial_metric,                                        \
+      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                 \
+          inverse_conformal_spatial_metric,                                \
+      const tnsr::i<DTYPE(data), DIM(data), FRAME(data)>& field_p,         \
+      const tnsr::Ijj<DTYPE(data), DIM(data), FRAME(data)>&                \
+          conformal_christoffel_second_kind);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Grid, Frame::Inertial),
                         (double, DataVector))

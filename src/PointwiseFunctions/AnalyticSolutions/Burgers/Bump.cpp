@@ -16,12 +16,11 @@
 namespace Burgers {
 namespace Solutions {
 
-Bump::Bump(const double half_width, const double height,
-           const double center) noexcept
+Bump::Bump(const double half_width, const double height, const double center)
     : half_width_(half_width), height_(height), center_(center) {}
 
 template <typename T>
-Scalar<T> Bump::u(const tnsr::I<T, 1>& x, double t) const noexcept {
+Scalar<T> Bump::u(const tnsr::I<T, 1>& x, double t) const {
   const T center_distance = get<0>(x) - center_;
   // Distance from the current peak location divided by the half width
   // and the time the shock reaches the solution zero.
@@ -35,7 +34,7 @@ Scalar<T> Bump::u(const tnsr::I<T, 1>& x, double t) const noexcept {
 }
 
 template <typename T>
-Scalar<T> Bump::du_dt(const tnsr::I<T, 1>& x, double t) const noexcept {
+Scalar<T> Bump::du_dt(const tnsr::I<T, 1>& x, double t) const {
   const T center_distance = get<0>(x) - center_;
   // Distance from the current peak location divided by the half width
   // and the time the shock reaches the solution zero.
@@ -54,17 +53,17 @@ Scalar<T> Bump::du_dt(const tnsr::I<T, 1>& x, double t) const noexcept {
 
 tuples::TaggedTuple<Tags::U> Bump::variables(
     const tnsr::I<DataVector, 1>& x, double t,
-    tmpl::list<Tags::U> /*meta*/) const noexcept {
+    tmpl::list<Tags::U> /*meta*/) const {
   return {u(x, t)};
 }
 
 tuples::TaggedTuple<::Tags::dt<Tags::U>> Bump::variables(
     const tnsr::I<DataVector, 1>& x, double t,
-    tmpl::list<::Tags::dt<Tags::U>> /*meta*/) const noexcept {
+    tmpl::list<::Tags::dt<Tags::U>> /*meta*/) const {
   return {du_dt(x, t)};
 }
 
-void Bump::pup(PUP::er& p) noexcept {
+void Bump::pup(PUP::er& p) {
   p | half_width_;
   p | height_;
   p | center_;
@@ -75,11 +74,11 @@ void Bump::pup(PUP::er& p) noexcept {
 
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                      \
-  template Scalar<DTYPE(data)> Burgers::Solutions::Bump::u(       \
-      const tnsr::I<DTYPE(data), 1>& x, double t) const noexcept; \
-  template Scalar<DTYPE(data)> Burgers::Solutions::Bump::du_dt(   \
-      const tnsr::I<DTYPE(data), 1>& x, double t) const noexcept;
+#define INSTANTIATE(_, data)                                    \
+  template Scalar<DTYPE(data)> Burgers::Solutions::Bump::u(     \
+      const tnsr::I<DTYPE(data), 1>& x, double t) const;        \
+  template Scalar<DTYPE(data)> Burgers::Solutions::Bump::du_dt( \
+      const tnsr::I<DTYPE(data), 1>& x, double t) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
 

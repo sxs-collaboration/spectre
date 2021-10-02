@@ -11,11 +11,11 @@
 #include "Time/TimeStepId.hpp"
 
 namespace DenseTriggers {
-Times::Times(std::unique_ptr<TimeSequence<double>> times) noexcept
+Times::Times(std::unique_ptr<TimeSequence<double>> times)
     : times_(std::move(times)) {}
 
 DenseTrigger::Result Times::is_triggered(const TimeStepId& time_step_id,
-                                         const double time) const noexcept {
+                                         const double time) const {
   const evolution_less<double> before{time_step_id.time_runs_forward()};
 
   const auto trigger_times = times_->times_near(time);
@@ -30,7 +30,7 @@ DenseTrigger::Result Times::is_triggered(const TimeStepId& time_step_id,
   return {time == trigger_times[1], next_time};
 }
 
-void Times::pup(PUP::er& p) noexcept {
+void Times::pup(PUP::er& p) {
   DenseTrigger::pup(p);
   p | times_;
 }

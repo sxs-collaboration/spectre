@@ -13,7 +13,7 @@
 
 namespace {
 template <size_t Dim>
-void register_derived_with_charm_impl() noexcept {
+void register_derived_with_charm_impl() {
   Parallel::register_derived_classes_with_charm<
       LinearSolver::Serial::LinearSolver<
           tmpl::list<::LinearSolver::Serial::Registrars::Gmres<
@@ -24,7 +24,7 @@ void register_derived_with_charm_impl() noexcept {
 }  // namespace
 
 namespace elliptic::subdomain_preconditioners {
-void register_derived_with_charm() noexcept {
+void register_derived_with_charm() {
   register_derived_with_charm_impl<1>();
   register_derived_with_charm_impl<2>();
   register_derived_with_charm_impl<3>();

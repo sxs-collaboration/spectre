@@ -68,14 +68,14 @@ void test_check_element_no_href() {
 }
 
 template <size_t VolumeDim>
-void check_grid_point_transform_no_href(
-    const Mesh<VolumeDim>& local_mesh, const Mesh<VolumeDim>& neighbor_mesh,
-    const Element<VolumeDim>& element) noexcept {
+void check_grid_point_transform_no_href(const Mesh<VolumeDim>& local_mesh,
+                                        const Mesh<VolumeDim>& neighbor_mesh,
+                                        const Element<VolumeDim>& element) {
   const auto check =
       [&local_mesh, &neighbor_mesh](
           const std::array<DataVector, VolumeDim>& transformed_coords,
           const bool local_mesh_provides_grid_points, const size_t dim,
-          const double offset) noexcept {
+          const double offset) {
         const Mesh<VolumeDim>& source_mesh =
             (local_mesh_provides_grid_points ? local_mesh : neighbor_mesh);
         for (size_t i = 0; i < VolumeDim; ++i) {

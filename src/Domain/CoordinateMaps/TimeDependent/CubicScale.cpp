@@ -34,7 +34,7 @@ namespace domain::CoordinateMaps::TimeDependent {
 template <size_t Dim>
 CubicScale<Dim>::CubicScale(const double outer_boundary,
                             std::string function_of_time_name_a,
-                            std::string function_of_time_name_b) noexcept
+                            std::string function_of_time_name_b)
     : f_of_t_a_(std::move(function_of_time_name_a)),
       f_of_t_b_(std::move(function_of_time_name_b)),
       functions_of_time_equal_(f_of_t_a_ == f_of_t_b_) {
@@ -51,7 +51,7 @@ std::array<tt::remove_cvref_wrap_t<T>, Dim> CubicScale<Dim>::operator()(
     const std::array<T, Dim>& source_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time) const noexcept {
+        functions_of_time) const {
   ASSERT(functions_of_time.find(f_of_t_a_) != functions_of_time.end(),
          "Could not find function of time: '"
              << f_of_t_a_ << "' in functions of time. Known functions are "
@@ -97,7 +97,7 @@ std::optional<std::array<double, Dim>> CubicScale<Dim>::inverse(
     const std::array<double, Dim>& target_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time) const noexcept {
+        functions_of_time) const {
   ASSERT(functions_of_time.find(f_of_t_a_) != functions_of_time.end(),
          "Could not find function of time: '"
              << f_of_t_a_ << "' in functions of time. Known functions are "
@@ -168,8 +168,8 @@ std::optional<std::array<double, Dim>> CubicScale<Dim>::inverse(
   // q * ( (b-a) q^2 + a) - r / R = 0,
   // where q = rho / R, and rho is the source radius
   const auto cubic_and_deriv =
-      [&cubic_coef_a, &a_of_t, &target_dimensionless_radius](
-          const double source_dimensionless_radius) noexcept {
+      [&cubic_coef_a, &a_of_t,
+       &target_dimensionless_radius](const double source_dimensionless_radius) {
         return std::make_pair(
             source_dimensionless_radius *
                     (cubic_coef_a * square(source_dimensionless_radius) +
@@ -208,7 +208,7 @@ std::array<tt::remove_cvref_wrap_t<T>, Dim> CubicScale<Dim>::frame_velocity(
     const std::array<T, Dim>& source_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time) const noexcept {
+        functions_of_time) const {
   ASSERT(functions_of_time.find(f_of_t_a_) != functions_of_time.end(),
          "Could not find function of time: '"
              << f_of_t_a_ << "' in functions of time. Known functions are "
@@ -258,7 +258,7 @@ CubicScale<Dim>::jacobian(
     const std::array<T, Dim>& source_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time) const noexcept {
+        functions_of_time) const {
   ASSERT(functions_of_time.find(f_of_t_a_) != functions_of_time.end(),
          "Could not find function of time: '"
              << f_of_t_a_ << "' in functions of time. Known functions are "
@@ -319,7 +319,7 @@ CubicScale<Dim>::inv_jacobian(
     const std::array<T, Dim>& source_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time) const noexcept {
+        functions_of_time) const {
   ASSERT(functions_of_time.find(f_of_t_a_) != functions_of_time.end(),
          "Could not find function of time: '"
              << f_of_t_a_ << "' in functions of time. Known functions are "
@@ -390,7 +390,7 @@ CubicScale<Dim>::inv_jacobian(
 }
 
 template <size_t Dim>
-void CubicScale<Dim>::pup(PUP::er& p) noexcept {
+void CubicScale<Dim>::pup(PUP::er& p) {
   p | f_of_t_a_;
   p | f_of_t_b_;
   p | one_over_outer_boundary_;
@@ -398,8 +398,7 @@ void CubicScale<Dim>::pup(PUP::er& p) noexcept {
 }
 
 template <size_t Dim>
-bool operator==(const CubicScale<Dim>& lhs,
-                const CubicScale<Dim>& rhs) noexcept {
+bool operator==(const CubicScale<Dim>& lhs, const CubicScale<Dim>& rhs) {
   return lhs.f_of_t_a_ == rhs.f_of_t_a_ and lhs.f_of_t_b_ == rhs.f_of_t_b_ and
          lhs.one_over_outer_boundary_ == rhs.one_over_outer_boundary_ and
          lhs.functions_of_time_equal_ == rhs.functions_of_time_equal_;
@@ -408,10 +407,10 @@ bool operator==(const CubicScale<Dim>& lhs,
 // Explicit instantiations
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                                 \
-  template class CubicScale<DIM(data)>;                                      \
-  template bool operator==(const CubicScale<DIM(data)>&,                     \
-                           const CubicScale<DIM(data)>&) noexcept;
+#define INSTANTIATE(_, data)                             \
+  template class CubicScale<DIM(data)>;                  \
+  template bool operator==(const CubicScale<DIM(data)>&, \
+                           const CubicScale<DIM(data)>&);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
@@ -427,7 +426,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
       const std::unordered_map<                                        \
           std::string,                                                 \
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&   \
-          functions_of_time) const noexcept;                           \
+          functions_of_time) const;                                    \
   template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data)> \
   CubicScale<DIM(data)>::frame_velocity(                               \
       const std::array<DTYPE(data), DIM(data)>& source_coords,         \
@@ -435,7 +434,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
       const std::unordered_map<                                        \
           std::string,                                                 \
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&   \
-          functions_of_time) const noexcept;                           \
+          functions_of_time) const;                                    \
   template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data),   \
                     Frame::NoFrame>                                    \
   CubicScale<DIM(data)>::jacobian(                                     \
@@ -444,7 +443,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
       const std::unordered_map<                                        \
           std::string,                                                 \
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&   \
-          functions_of_time) const noexcept;                           \
+          functions_of_time) const;                                    \
   template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data),   \
                     Frame::NoFrame>                                    \
   CubicScale<DIM(data)>::inv_jacobian(                                 \
@@ -453,7 +452,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
       const std::unordered_map<                                        \
           std::string,                                                 \
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&   \
-          functions_of_time) const noexcept;
+          functions_of_time) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
                         (double, DataVector,

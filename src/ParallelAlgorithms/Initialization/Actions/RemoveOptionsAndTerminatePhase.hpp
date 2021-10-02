@@ -32,7 +32,7 @@ struct RemoveOptionsAndTerminatePhase {
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     using initialization_tags = Parallel::get_initialization_tags<ActionList>;
     using initialization_tags_to_keep =
         Parallel::get_initialization_tags_to_keep<ActionList>;

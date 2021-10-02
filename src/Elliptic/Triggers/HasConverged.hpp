@@ -20,7 +20,7 @@ class HasConverged : public Trigger {
  public:
   /// \cond
   HasConverged() = default;
-  explicit HasConverged(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit HasConverged(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(HasConverged);  // NOLINT
   /// \endcond
@@ -31,8 +31,7 @@ class HasConverged : public Trigger {
 
   using argument_tags = tmpl::list<Convergence::Tags::HasConverged<Label>>;
 
-  bool operator()(
-      const Convergence::HasConverged& has_converged) const noexcept {
+  bool operator()(const Convergence::HasConverged& has_converged) const {
     return static_cast<bool>(has_converged);
   }
 };

@@ -38,12 +38,12 @@ struct threaded_action_b_mock;
 // [tags for const global cache]
 struct ValueTag : db::SimpleTag {
   using type = int;
-  static std::string name() noexcept { return "ValueTag"; }
+  static std::string name() { return "ValueTag"; }
 };
 
 struct PassedToB : db::SimpleTag {
   using type = double;
-  static std::string name() noexcept { return "PassedToB"; }
+  static std::string name() { return "PassedToB"; }
 };
 // [tags for const global cache]
 
@@ -79,13 +79,10 @@ struct simple_action_a_mock {
             Requires<tmpl::list_contains_v<DbTagsList, ValueTag>> = nullptr>
   static void apply(db::DataBox<DbTagsList>& box,  // NOLINT
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const int value) noexcept {
+                    const ArrayIndex& /*array_index*/, const int value) {
     db::mutate<ValueTag>(
-        make_not_null(&box), [&value](
-                                 const gsl::not_null<int*> value_box) noexcept {
-          *value_box = value;
-        });
+        make_not_null(&box),
+        [&value](const gsl::not_null<int*> value_box) { *value_box = value; });
   }
 };
 
@@ -93,21 +90,19 @@ struct simple_action_b {
   template <typename ParallelComponent, typename DbTagsList,
             typename Metavariables, typename ArrayIndex,
             Requires<tmpl::list_contains_v<DbTagsList, PassedToB>> = nullptr>
-  static void apply(db::DataBox<DbTagsList>& box,                      // NOLINT
+  static void apply(db::DataBox<DbTagsList>& box,                 // NOLINT
                     Parallel::GlobalCache<Metavariables>& cache,  // NOLINT
-                    const ArrayIndex& /*array_index*/,
-                    const double to_call) noexcept {
+                    const ArrayIndex& /*array_index*/, const double to_call) {
     // simple_action_b is the action that we are testing, but it calls some
     // other actions that we don't want to test. Those are mocked where the body
     // of the mock actions records something in the DataBox that we check to
     // verify the mock actions were actually called.
     //
     // We do some "work" here by updating the `PassedToB` tag in the DataBox.
-    db::mutate<PassedToB>(
-        make_not_null(&box),
-        [&to_call](const gsl::not_null<double*> passed_to_b) noexcept {
-          *passed_to_b = to_call;
-        });
+    db::mutate<PassedToB>(make_not_null(&box),
+                          [&to_call](const gsl::not_null<double*> passed_to_b) {
+                            *passed_to_b = to_call;
+                          });
     if (to_call == 0) {
       Parallel::simple_action<simple_action_a>(
           Parallel::get_parallel_component<
@@ -138,11 +133,10 @@ struct simple_action_c_mock {
             Requires<tmpl::list_contains_v<DbTagsList, ValueTag>> = nullptr>
   static void apply(db::DataBox<DbTagsList>& box,  // NOLINT
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/) noexcept {
+                    const ArrayIndex& /*array_index*/) {
     db::mutate<ValueTag>(
-        make_not_null(&box), [](const gsl::not_null<int*> value_box) noexcept {
-          *value_box = 25;
-        });
+        make_not_null(&box),
+        [](const gsl::not_null<int*> value_box) { *value_box = 25; });
   }
 };
 
@@ -150,13 +144,13 @@ struct threaded_action_a {
   template <typename ParallelComponent, typename DbTagsList,
             typename Metavariables, typename ArrayIndex,
             Requires<tmpl::list_contains_v<DbTagsList, ValueTag>> = nullptr>
-  static void apply(
-      db::DataBox<DbTagsList>& box,  // NOLINT
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/,
-      const gsl::not_null<Parallel::NodeLock*> /*node_lock*/) noexcept {
-    db::mutate<ValueTag>(make_not_null(&box), [
-    ](const gsl::not_null<int*> value_box) noexcept { *value_box = 35; });
+  static void apply(db::DataBox<DbTagsList>& box,  // NOLINT
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
+                    const ArrayIndex& /*array_index*/,
+                    const gsl::not_null<Parallel::NodeLock*> /*node_lock*/) {
+    db::mutate<ValueTag>(
+        make_not_null(&box),
+        [](const gsl::not_null<int*> value_box) { *value_box = 35; });
   }
 };
 
@@ -168,12 +162,11 @@ struct threaded_action_b_mock {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const gsl::not_null<Parallel::NodeLock*> node_lock,
-                    const int tag) noexcept {
+                    const int tag) {
     node_lock->lock();
-    db::mutate<ValueTag>(make_not_null(&box),
-                         [tag](const gsl::not_null<int*> value_box) noexcept {
-                           *value_box = tag;
-                         });
+    db::mutate<ValueTag>(
+        make_not_null(&box),
+        [tag](const gsl::not_null<int*> value_box) { *value_box = tag; });
     node_lock->unlock();
   }
 };
@@ -294,7 +287,7 @@ SPECTRE_TEST_CASE("Unit.ActionTesting.MockSimpleAction", "[Unit]") {
 
 namespace TestIsRetrievable {
 struct DummyTimeTag : db::SimpleTag {
-  static std::string name() noexcept { return "DummyTime"; }
+  static std::string name() { return "DummyTime"; }
   using type = int;
 };
 
@@ -307,7 +300,7 @@ struct Action0 {
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     return std::make_tuple(
         db::create_from<db::RemoveTags<>, db::AddSimpleTags<DummyTimeTag>>(
             std::move(box), 6));
@@ -322,7 +315,7 @@ struct Action0 {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     return {std::move(box)};
   }
 };
@@ -388,7 +381,7 @@ struct SendValue {
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     Parallel::receive_data<Tags::ValueTag>(
         Parallel::get_parallel_component<ParallelComponent>(cache)[0], 1_st,
         23);
@@ -447,7 +440,7 @@ SPECTRE_TEST_CASE("Unit.ActionTesting.GetInboxTags", "[Unit]") {
 namespace TestComponentMocking {
 struct ValueTag : db::SimpleTag {
   using type = int;
-  static std::string name() noexcept { return "ValueTag"; }
+  static std::string name() { return "ValueTag"; }
 };
 
 template <typename Metavariables>
@@ -488,12 +481,11 @@ struct ActionCalledOnComponentB {
   template <typename ParallelComponent, typename DbTagsList,
             typename Metavariables, typename ArrayIndex,
             Requires<tmpl::list_contains_v<DbTagsList, ValueTag>> = nullptr>
-  static void apply(
-      db::DataBox<DbTagsList>& box,                          // NOLINT
-      Parallel::GlobalCache<Metavariables>& /*cache*/,  // NOLINT
-      const ArrayIndex& /*array_index*/) noexcept {
-    db::mutate<ValueTag>(make_not_null(&box), [
-    ](const gsl::not_null<int*> value) noexcept { *value = 5; });
+  static void apply(db::DataBox<DbTagsList>& box,                     // NOLINT
+                    Parallel::GlobalCache<Metavariables>& /*cache*/,  // NOLINT
+                    const ArrayIndex& /*array_index*/) {
+    db::mutate<ValueTag>(make_not_null(&box),
+                         [](const gsl::not_null<int*> value) { *value = 5; });
   }
 };
 
@@ -501,9 +493,9 @@ struct ActionCalledOnComponentB {
 struct CallActionOnComponentB {
   template <typename ParallelComponent, typename DbTagsList,
             typename Metavariables, typename ArrayIndex>
-  static void apply(db::DataBox<DbTagsList>& /*box*/,                  // NOLINT
+  static void apply(db::DataBox<DbTagsList>& /*box*/,             // NOLINT
                     Parallel::GlobalCache<Metavariables>& cache,  // NOLINT
-                    const ArrayIndex& /*array_index*/) noexcept {
+                    const ArrayIndex& /*array_index*/) {
     Parallel::simple_action<ActionCalledOnComponentB>(
         Parallel::get_parallel_component<ComponentB<Metavariables>>(cache));
   }
@@ -568,35 +560,35 @@ struct ComponentA {
 
 struct MyProc {
   template <typename MyProxy, typename ArrayIndex>
-  static int f(MyProxy& my_proxy, const ArrayIndex& array_index) noexcept {
+  static int f(MyProxy& my_proxy, const ArrayIndex& array_index) {
     return Parallel::my_proc(*my_proxy[array_index].ckLocal());
   }
 };
 
 struct MyNode {
   template <typename MyProxy, typename ArrayIndex>
-  static int f(MyProxy& my_proxy, const ArrayIndex& array_index) noexcept {
+  static int f(MyProxy& my_proxy, const ArrayIndex& array_index) {
     return Parallel::my_node(*my_proxy[array_index].ckLocal());
   }
 };
 
 struct LocalRank {
   template <typename MyProxy, typename ArrayIndex>
-  static int f(MyProxy& my_proxy, const ArrayIndex& array_index) noexcept {
+  static int f(MyProxy& my_proxy, const ArrayIndex& array_index) {
     return Parallel::my_local_rank(*my_proxy[array_index].ckLocal());
   }
 };
 
 struct NumProcs {
   template <typename MyProxy, typename ArrayIndex>
-  static int f(MyProxy& my_proxy, const ArrayIndex& array_index) noexcept {
+  static int f(MyProxy& my_proxy, const ArrayIndex& array_index) {
     return Parallel::number_of_procs(*my_proxy[array_index].ckLocal());
   }
 };
 
 struct NumNodes {
   template <typename MyProxy, typename ArrayIndex>
-  static int f(MyProxy& my_proxy, const ArrayIndex& array_index) noexcept {
+  static int f(MyProxy& my_proxy, const ArrayIndex& array_index) {
     return Parallel::number_of_nodes(*my_proxy[array_index].ckLocal());
   }
 };
@@ -604,7 +596,7 @@ struct NumNodes {
 template<int NodeIndex>
 struct ProcsOnNode {
   template <typename MyProxy, typename ArrayIndex>
-  static int f(MyProxy& my_proxy, const ArrayIndex& array_index) noexcept {
+  static int f(MyProxy& my_proxy, const ArrayIndex& array_index) {
     return Parallel::procs_on_node(NodeIndex, *my_proxy[array_index].ckLocal());
   }
 };
@@ -612,7 +604,7 @@ struct ProcsOnNode {
 template<int NodeIndex>
 struct FirstProcOnNode {
   template <typename MyProxy, typename ArrayIndex>
-  static int f(MyProxy& my_proxy, const ArrayIndex& array_index) noexcept {
+  static int f(MyProxy& my_proxy, const ArrayIndex& array_index) {
     return Parallel::first_proc_on_node(NodeIndex,
                                         *my_proxy[array_index].ckLocal());
   }
@@ -621,7 +613,7 @@ struct FirstProcOnNode {
 template <int ProcIndex>
 struct NodeOf {
   template <typename MyProxy, typename ArrayIndex>
-  static int f(MyProxy& my_proxy, const ArrayIndex& array_index) noexcept {
+  static int f(MyProxy& my_proxy, const ArrayIndex& array_index) {
     return Parallel::node_of(ProcIndex, *my_proxy[array_index].ckLocal());
   }
 };
@@ -629,7 +621,7 @@ struct NodeOf {
 template <int ProcIndex>
 struct LocalRankOf {
   template <typename MyProxy, typename ArrayIndex>
-  static int f(MyProxy& my_proxy, const ArrayIndex& array_index) noexcept {
+  static int f(MyProxy& my_proxy, const ArrayIndex& array_index) {
     return Parallel::local_rank_of(ProcIndex, *my_proxy[array_index].ckLocal());
   }
 };
@@ -641,14 +633,13 @@ struct ActionSetValueTo {
             Requires<tmpl::list_contains_v<DbTagsList, ValueTag>> = nullptr>
   static void apply(db::DataBox<DbTagsList>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
-                    const ArrayIndex& array_index) noexcept {
+                    const ArrayIndex& array_index) {
     auto& my_proxy = Parallel::get_parallel_component<ParallelComponent>(cache);
     auto function_value = Functor::f(my_proxy, array_index);
-    db::mutate<ValueTag>(
-        make_not_null(&box),
-        [&function_value](const gsl::not_null<int*> value) noexcept {
-          *value = function_value;
-        });
+    db::mutate<ValueTag>(make_not_null(&box),
+                         [&function_value](const gsl::not_null<int*> value) {
+                           *value = function_value;
+                         });
   }
 };
 
@@ -658,7 +649,7 @@ struct MetavariablesOneComponent {
   enum class Phase { Initialization, Testing, Exit };
 };
 
-void test_parallel_info_functions() noexcept {
+void test_parallel_info_functions() {
   using metavars = MetavariablesOneComponent;
   using component_a = ComponentA<metavars>;
 
@@ -793,7 +784,6 @@ void test_parallel_info_functions() noexcept {
   CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 4) == 1);
 }
 
-
 template <typename Metavariables>
 struct GroupComponent {
   using metavariables = Metavariables;
@@ -816,7 +806,7 @@ struct MetavariablesGroupComponent {
   enum class Phase { Initialization, Testing, Exit };
 };
 
-void test_group_emplace() noexcept {
+void test_group_emplace() {
   using metavars = MetavariablesGroupComponent;
   using component = GroupComponent<metavars>;
 
@@ -893,7 +883,7 @@ struct MetavariablesNodeGroupComponent {
   enum class Phase { Initialization, Testing, Exit };
 };
 
-void test_nodegroup_emplace() noexcept {
+void test_nodegroup_emplace() {
   using metavars = MetavariablesNodeGroupComponent;
   using component = NodeGroupComponent<metavars>;
 
@@ -982,7 +972,7 @@ struct SimpleActionToTest {
             typename Metavariables, typename ArrayIndex>
   static void apply(const db::DataBox<DbTagsList>& /*box*/,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/) noexcept {
+                    const ArrayIndex& /*array_index*/) {
     simple_action_to_test_was_called = true;
   }
 };
@@ -1007,19 +997,19 @@ SPECTRE_TEST_CASE("Unit.ActionTesting.MutableGlobalCache", "[Unit]") {
   auto& element_proxy = ::Parallel::get_parallel_component<component>(cache)[0];
 
   CHECK(Parallel::mutable_cache_item_is_ready<CacheTag>(
-      cache, [](const int /*value*/) noexcept {
+      cache, [](const int /*value*/) {
         return std::unique_ptr<Parallel::Callback>{};
       }));
 
   CHECK(not Parallel::mutable_cache_item_is_ready<CacheTag>(
-      cache, [&element_proxy](const int /*value*/) noexcept {
+      cache, [&element_proxy](const int /*value*/) {
         return std::unique_ptr<Parallel::Callback>(
             new Parallel::PerformAlgorithmCallback<decltype(element_proxy)>(
                 element_proxy));
       }));
 
   CHECK(not Parallel::mutable_cache_item_is_ready<CacheTag>(
-      cache, [&element_proxy](const int /*value*/) noexcept {
+      cache, [&element_proxy](const int /*value*/) {
         return std::unique_ptr<Parallel::Callback>(
             new Parallel::SimpleActionCallback<SimpleActionToTest,
                                                decltype(element_proxy)>(
@@ -1047,7 +1037,7 @@ SPECTRE_TEST_CASE("Unit.ActionTesting.MutableGlobalCache", "[Unit]") {
   auto& all_elements_proxy =
       ::Parallel::get_parallel_component<component>(cache);
   CHECK(not Parallel::mutable_cache_item_is_ready<CacheTag>(
-      cache, [&all_elements_proxy](const int /*value*/) noexcept {
+      cache, [&all_elements_proxy](const int /*value*/) {
         return std::unique_ptr<Parallel::Callback>(
             new Parallel::SimpleActionCallback<SimpleActionToTest,
                                                decltype(all_elements_proxy)>(

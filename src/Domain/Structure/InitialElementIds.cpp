@@ -14,7 +14,7 @@
 template <>
 std::vector<ElementId<1>> initial_element_ids<1>(
     const size_t block_id, const std::array<size_t, 1> initial_ref_levs,
-    const size_t grid_index) noexcept {
+    const size_t grid_index) {
   std::vector<ElementId<1>> ids;
   ids.reserve(two_to_the(initial_ref_levs[0]));
   for (size_t x_i = 0; x_i < two_to_the(initial_ref_levs[0]); ++x_i) {
@@ -27,7 +27,7 @@ std::vector<ElementId<1>> initial_element_ids<1>(
 template <>
 std::vector<ElementId<2>> initial_element_ids<2>(
     const size_t block_id, const std::array<size_t, 2> initial_ref_levs,
-    const size_t grid_index) noexcept {
+    const size_t grid_index) {
   std::vector<ElementId<2>> ids;
   ids.reserve(two_to_the(initial_ref_levs[0]) *
               two_to_the(initial_ref_levs[1]));
@@ -45,7 +45,7 @@ std::vector<ElementId<2>> initial_element_ids<2>(
 template <>
 std::vector<ElementId<3>> initial_element_ids<3>(
     const size_t block_id, const std::array<size_t, 3> initial_ref_levs,
-    const size_t grid_index) noexcept {
+    const size_t grid_index) {
   std::vector<ElementId<3>> ids;
   ids.reserve(two_to_the(initial_ref_levs[0]) *
               two_to_the(initial_ref_levs[1]) *
@@ -68,7 +68,7 @@ std::vector<ElementId<3>> initial_element_ids<3>(
 template <size_t VolumeDim>
 std::vector<ElementId<VolumeDim>> initial_element_ids(
     const std::vector<std::array<size_t, VolumeDim>>& initial_refinement_levels,
-    const size_t grid_index) noexcept {
+    const size_t grid_index) {
   std::vector<ElementId<VolumeDim>> element_ids;
   for (size_t block_id = 0; block_id < initial_refinement_levels.size();
        ++block_id) {
@@ -88,7 +88,7 @@ std::vector<ElementId<VolumeDim>> initial_element_ids(
   initial_element_ids<GET_DIM(data)>(                       \
       const std::vector<std::array<size_t, GET_DIM(data)>>& \
           initial_refinement_levels,                        \
-      size_t grid_index) noexcept;
+      size_t grid_index);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 

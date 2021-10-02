@@ -62,7 +62,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.LineSegment",
   const auto domain_creator =
       domain::creators::Shell(0.9, 4.9, 1, {{5, 5}}, false);
 
-  const auto expected_block_coord_holders = [&domain_creator]() noexcept {
+  const auto expected_block_coord_holders = [&domain_creator]() {
     const size_t n_pts = 15;
     tnsr::I<DataVector, 3, Frame::Inertial> points(n_pts);
     for (size_t d = 0; d < 3; ++d) {
@@ -71,8 +71,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.LineSegment",
       }
     }
     return block_logical_coordinates(domain_creator.create_domain(), points);
-  }
-  ();
+  }();
 
   TestHelpers::db::test_simple_tag<
       intrp::Tags::LineSegment<MockMetavariables::InterpolationTargetA, 3>>(

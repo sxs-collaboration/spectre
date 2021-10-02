@@ -32,7 +32,7 @@ class SliceIterator {
                 size_t fixed_index);
 
   /// Returns `true` if the iterator is valid
-  explicit operator bool() const noexcept { return volume_offset_ < size_; }
+  explicit operator bool() const { return volume_offset_ < size_; }
 
   /// Step to the next grid point
   SliceIterator& operator++();
@@ -40,13 +40,13 @@ class SliceIterator {
   /// Offset into a Dim-dimensional DataVector at the current gridpoint.
   /// Note that the size of the DataVector is assumed to be the product of the
   /// extents used to construct this SliceIterator
-  size_t volume_offset() const noexcept { return volume_offset_; }
+  size_t volume_offset() const { return volume_offset_; }
 
   /// Offset into a (Dim-1)-dimensional DataVector at the current gridpoint.
   /// Note that the size of the DataVector is assumed to be the product of the
   /// extents used to construct this SliceIterator divided by the extent in
   /// the fixed_dim used to construct this SliceIterator
-  size_t slice_offset() const noexcept { return slice_offset_; }
+  size_t slice_offset() const { return slice_offset_; }
 
   /// Reset the iterator
   void reset();
@@ -79,7 +79,7 @@ class SliceIterator {
  * slice indices, respectively.
  */
 template <size_t VolumeDim>
-auto volume_and_slice_indices(const Index<VolumeDim>& extents) noexcept
+auto volume_and_slice_indices(const Index<VolumeDim>& extents)
     -> std::pair<std::unique_ptr<std::pair<size_t, size_t>[]>,
                  std::array<std::pair<gsl::span<std::pair<size_t, size_t>>,
                                       gsl::span<std::pair<size_t, size_t>>>,

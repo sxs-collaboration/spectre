@@ -41,13 +41,12 @@ struct WorldtubeComponentBase {
 
   using options = tmpl::list<>;
 
-  static void initialize(Parallel::CProxy_GlobalCache<
-                         Metavariables>& /*global_cache*/) noexcept {}
+  static void initialize(
+      Parallel::CProxy_GlobalCache<Metavariables>& /*global_cache*/) {}
 
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
-      const Parallel::CProxy_GlobalCache<Metavariables>&
-          global_cache) noexcept {
+      const Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *(global_cache.ckLocalBranch());
     if (next_phase == Metavariables::Phase::Evolve) {
       Parallel::get_parallel_component<WorldtubeComponent>(local_cache)

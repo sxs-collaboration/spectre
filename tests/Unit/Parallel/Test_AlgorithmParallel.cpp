@@ -54,9 +54,9 @@ struct UnpackCounter {
   UnpackCounter(UnpackCounter&& /*unused*/) = default;
   UnpackCounter& operator=(UnpackCounter&& /*unused*/) = default;
 
-  explicit UnpackCounter(CkMigrateMessage* /*msg*/) noexcept {}
+  explicit UnpackCounter(CkMigrateMessage* /*msg*/) {}
 
-  void pup(PUP::er& p) noexcept {  // NOLINT
+  void pup(PUP::er& p) {  // NOLINT
     p | counter_value;
     if (p.isUnpacking()) {
       ++counter_value;
@@ -68,17 +68,17 @@ struct UnpackCounter {
 
 namespace Tags {
 struct Int0 : db::SimpleTag {
-  static std::string name() noexcept { return "Int0"; }
+  static std::string name() { return "Int0"; }
   using type = int;
 };
 
 struct Int1 : db::SimpleTag {
-  static std::string name() noexcept { return "Int1"; }
+  static std::string name() { return "Int1"; }
   using type = int;
 };
 
 struct CountActionsCalled : db::SimpleTag {
-  static std::string name() noexcept { return "CountActionsCalled"; }
+  static std::string name() { return "CountActionsCalled"; }
   using type = int;
 };
 
@@ -94,7 +94,7 @@ struct IntReceiveTag {
   template <typename Inbox, typename ReceiveDataType>
   static void insert_into_inbox(const gsl::not_null<Inbox*> inbox,
                                 const temporal_id& temporal_id_v,
-                                ReceiveDataType&& data) noexcept {
+                                ReceiveDataType&& data) {
     (*inbox)[temporal_id_v].insert(std::forward<ReceiveDataType>(data));
   }
 };
@@ -130,7 +130,7 @@ struct RestartMe {
   static void apply(db::DataBox<tmpl::list<DbTags...>>& /*box*/,
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
-                    const IndexToRestart index_to_restart) noexcept {
+                    const IndexToRestart index_to_restart) {
     Parallel::get_parallel_component<ComponentToRestart>(
         cache)[index_to_restart]
         .perform_algorithm(true);
@@ -146,12 +146,10 @@ struct CountReceives {
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
   static std::tuple<db::DataBox<DbTags>&&, Parallel::AlgorithmExecution> apply(
-      db::DataBox<DbTags>& box,
-      tuples::TaggedTuple<InboxTags...>& inboxes,
+      db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& inboxes,
       Parallel::GlobalCache<Metavariables>& cache,
-      const ArrayIndex& /*array_index*/,
-      const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
     static_assert(std::is_same_v<ParallelComponent,
                                  SingletonParallelComponent<TestMetavariables>>,
                   "The ParallelComponent is not deduced to be the right type");
@@ -200,7 +198,7 @@ struct Initialize {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     static_assert(std::is_same_v<ParallelComponent,
                                  ArrayParallelComponent<TestMetavariables>>,
                   "The ParallelComponent is not deduced to be the right type");
@@ -222,7 +220,7 @@ struct Initialize {
       tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     static_assert(std::is_same_v<ParallelComponent,
                                  ArrayParallelComponent<TestMetavariables>>,
                   "The ParallelComponent is not deduced to be the right type");
@@ -240,7 +238,7 @@ struct AddIntValue10 {
                     tuples::TaggedTuple<InboxTags...>& inboxes,
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& array_index, const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     static_assert(std::is_same_v<ParallelComponent,
                                  ArrayParallelComponent<TestMetavariables>>,
                   "The ParallelComponent is not deduced to be the right type");
@@ -276,7 +274,7 @@ struct CheckWasUnpacked {
                     Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     // Check to be sure the algorithm has been packed and unpacked at least a
     // few times during the algorithm and retained functionality
     if (sys::number_of_procs() > 1) {
@@ -301,7 +299,7 @@ struct IncrementInt0 {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     static_assert(std::is_same_v<ParallelComponent,
                                  ArrayParallelComponent<TestMetavariables>>,
                   "The ParallelComponent is not deduced to be the right type");
@@ -326,7 +324,7 @@ struct RemoveInt0 {
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& array_index, const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     static_assert(std::is_same_v<ParallelComponent,
                                  ArrayParallelComponent<TestMetavariables>>,
                   "The ParallelComponent is not deduced to be the right type");
@@ -398,7 +396,7 @@ struct Initialize {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     static_assert(std::is_same_v<ParallelComponent,
                                  GroupParallelComponent<TestMetavariables>>,
                   "The ParallelComponent is not deduced to be the right type");
@@ -419,7 +417,7 @@ struct Initialize {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     static_assert(std::is_same_v<ParallelComponent,
                                  GroupParallelComponent<TestMetavariables>>,
                   "The ParallelComponent is not deduced to be the right type");
@@ -482,7 +480,7 @@ struct Initialize {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     static_assert(std::is_same_v<ParallelComponent,
                                  NodegroupParallelComponent<TestMetavariables>>,
                   "The ParallelComponent is not deduced to be the right type");
@@ -503,7 +501,7 @@ struct Initialize {
       tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     static_assert(std::is_same_v<ParallelComponent,
                                  NodegroupParallelComponent<TestMetavariables>>,
                   "The ParallelComponent is not deduced to be the right type");
@@ -527,8 +525,7 @@ struct SingletonParallelComponent {
 
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
-      const Parallel::CProxy_GlobalCache<Metavariables>&
-          global_cache) noexcept {
+      const Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
     if (next_phase == Metavariables::Phase::PerformSingletonAlgorithm) {
       auto& local_cache = *(global_cache.ckLocalBranch());
       Parallel::get_parallel_component<SingletonParallelComponent>(local_cache)
@@ -563,7 +560,7 @@ struct ArrayParallelComponent {
   static void allocate_array(
       Parallel::CProxy_GlobalCache<Metavariables>& global_cache,
       const tuples::tagged_tuple_from_typelist<initialization_tags>&
-      /*initialization_items*/) noexcept {
+      /*initialization_items*/) {
     auto& local_cache = *(global_cache.ckLocalBranch());
     auto& array_proxy =
         Parallel::get_parallel_component<ArrayParallelComponent>(local_cache);
@@ -578,7 +575,7 @@ struct ArrayParallelComponent {
 
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
-      Parallel::CProxy_GlobalCache<Metavariables>& global_cache) noexcept {
+      Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *(global_cache.ckLocalBranch());
     if (next_phase == Metavariables::Phase::PerformArrayAlgorithm or
         next_phase == Metavariables::Phase::FinalizeArray) {
@@ -601,8 +598,7 @@ struct GroupParallelComponent {
 
   static void execute_next_phase(
       const typename Metavariables::Phase /*next_phase*/,
-      Parallel::CProxy_GlobalCache<
-          Metavariables>& /*global_cache*/) noexcept {}
+      Parallel::CProxy_GlobalCache<Metavariables>& /*global_cache*/) {}
 };
 
 template <class Metavariables>
@@ -618,8 +614,7 @@ struct NodegroupParallelComponent {
 
   static void execute_next_phase(
       const typename Metavariables::Phase /*next_phase*/,
-      Parallel::CProxy_GlobalCache<
-          Metavariables>& /*global_cache*/) noexcept {}
+      Parallel::CProxy_GlobalCache<Metavariables>& /*global_cache*/) {}
 };
 
 struct TestMetavariables {
@@ -644,8 +639,7 @@ struct TestMetavariables {
       const gsl::not_null<
           tuples::TaggedTuple<Tags...>*> /*phase_change_decision_data*/,
       const Phase& current_phase,
-      const Parallel::CProxy_GlobalCache<
-          TestMetavariables>& /*cache_proxy*/) noexcept {
+      const Parallel::CProxy_GlobalCache<TestMetavariables>& /*cache_proxy*/) {
     Parallel::printf("Determining next phase\n");
 
     if (current_phase == Phase::Initialization) {
@@ -662,7 +656,7 @@ struct TestMetavariables {
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& /*p*/) noexcept {}
+  void pup(PUP::er& /*p*/) {}
 };
 
 // [charm_include_example]

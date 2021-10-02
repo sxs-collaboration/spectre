@@ -13,8 +13,7 @@
 
 namespace TestHelpers::domain::BoundaryConditions {
 template <size_t Dim>
-BoundaryConditionBase<Dim>::BoundaryConditionBase(
-    CkMigrateMessage* const msg) noexcept
+BoundaryConditionBase<Dim>::BoundaryConditionBase(CkMigrateMessage* const msg)
     : ::domain::BoundaryConditions::BoundaryCondition(msg) {}
 
 template <size_t Dim>
@@ -59,12 +58,11 @@ TestBoundaryCondition<Dim>::TestBoundaryCondition(const std::string& direction,
 }
 
 template <size_t Dim>
-TestBoundaryCondition<Dim>::TestBoundaryCondition(
-    CkMigrateMessage* const msg) noexcept
+TestBoundaryCondition<Dim>::TestBoundaryCondition(CkMigrateMessage* const msg)
     : BoundaryConditionBase<Dim>(msg) {}
 
 template <size_t Dim>
-auto TestBoundaryCondition<Dim>::get_clone() const noexcept
+auto TestBoundaryCondition<Dim>::get_clone() const
     -> std::unique_ptr<::domain::BoundaryConditions::BoundaryCondition> {
   return std::make_unique<TestBoundaryCondition<Dim>>(*this);
 }
@@ -78,21 +76,21 @@ void TestBoundaryCondition<Dim>::pup(PUP::er& p) {
 
 template <size_t Dim>
 bool operator==(const TestBoundaryCondition<Dim>& lhs,
-                const TestBoundaryCondition<Dim>& rhs) noexcept {
+                const TestBoundaryCondition<Dim>& rhs) {
   return lhs.direction() == rhs.direction() and
          lhs.block_id() == rhs.block_id();
 }
 
 template <size_t Dim>
 bool operator!=(const TestBoundaryCondition<Dim>& lhs,
-                const TestBoundaryCondition<Dim>& rhs) noexcept {
+                const TestBoundaryCondition<Dim>& rhs) {
   return not(lhs == rhs);
 }
 
 template <size_t Dim>
 PUP::able::PUP_ID TestBoundaryCondition<Dim>::my_PUP_ID = 0;  // NOLINT
 
-void register_derived_with_charm() noexcept {
+void register_derived_with_charm() {
   Parallel::register_derived_classes_with_charm<BoundaryConditionBase<1>>();
   Parallel::register_derived_classes_with_charm<BoundaryConditionBase<2>>();
   Parallel::register_derived_classes_with_charm<BoundaryConditionBase<3>>();
@@ -100,15 +98,13 @@ void register_derived_with_charm() noexcept {
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATION(r, data)                               \
-  template class BoundaryConditionBase<DIM(data)>;           \
-  template class TestBoundaryCondition<DIM(data)>;           \
-  template bool operator==(                                  \
-      const TestBoundaryCondition<DIM(data)>& lhs,           \
-      const TestBoundaryCondition<DIM(data)>& rhs) noexcept; \
-  template bool operator!=(                                  \
-      const TestBoundaryCondition<DIM(data)>& lhs,           \
-      const TestBoundaryCondition<DIM(data)>& rhs) noexcept;
+#define INSTANTIATION(r, data)                                           \
+  template class BoundaryConditionBase<DIM(data)>;                       \
+  template class TestBoundaryCondition<DIM(data)>;                       \
+  template bool operator==(const TestBoundaryCondition<DIM(data)>& lhs,  \
+                           const TestBoundaryCondition<DIM(data)>& rhs); \
+  template bool operator!=(const TestBoundaryCondition<DIM(data)>& lhs,  \
+                           const TestBoundaryCondition<DIM(data)>& rhs);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 

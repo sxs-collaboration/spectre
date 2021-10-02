@@ -26,7 +26,7 @@ struct LargestCharacteristicSpeedCompute : LargestCharacteristicSpeed,
   using return_type = double;
   using base = LargestCharacteristicSpeed;
   static void function(const gsl::not_null<double*> speed,
-                       const tnsr::I<DataVector, Dim>& velocity_field) noexcept;
+                       const tnsr::I<DataVector, Dim>& velocity_field);
 };
 }  // namespace Tags
 }  // namespace ScalarAdvection

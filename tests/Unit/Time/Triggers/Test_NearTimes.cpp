@@ -43,17 +43,16 @@ SPECTRE_TEST_CASE("Unit.Time.Triggers.NearTimes", "[Unit][Time]") {
   using Direction = Triggers::NearTimes::Direction;
   using Unit = Triggers::NearTimes::Unit;
 
-  const auto check =
-      [](const double time_in, const double range_in,
-         const std::vector<double>& trigger_times_in, const Direction direction,
-         const bool expected) noexcept {
-    const auto check_signs =
-        [&direction, &expected, &trigger_times_in, &time_in](
-            const TimeDelta time_step_in, const double range,
-            const Unit unit) noexcept {
+  const auto check = [](const double time_in, const double range_in,
+                        const std::vector<double>& trigger_times_in,
+                        const Direction direction, const bool expected) {
+    const auto check_signs = [&direction, &expected, &trigger_times_in,
+                              &time_in](const TimeDelta time_step_in,
+                                        const double range, const Unit unit) {
       const auto check_calls = [&direction, &expected, &range, &unit](
-          std::vector<double> trigger_times, const double time,
-          const TimeDelta& time_step) noexcept {
+                                   std::vector<double> trigger_times,
+                                   const double time,
+                                   const TimeDelta& time_step) {
         CAPTURE(trigger_times);
         CAPTURE(range);
         CAPTURE(static_cast<int>(unit));
@@ -78,7 +77,7 @@ SPECTRE_TEST_CASE("Unit.Time.Triggers.NearTimes", "[Unit][Time]") {
 
       check_calls(trigger_times_in, time_in, time_step_in);
       std::vector<double> negated_trigger_times = trigger_times_in;
-      alg::for_each(negated_trigger_times, [](double& x) noexcept { x = -x; });
+      alg::for_each(negated_trigger_times, [](double& x) { x = -x; });
       check_calls(negated_trigger_times, -time_in, -time_step_in);
     };
 

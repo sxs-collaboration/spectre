@@ -62,17 +62,16 @@ class EventsAndDenseTriggers {
     std::vector<std::unique_ptr<Event>> events;
 
     // NOLINTNEXTLINE(google-runtime-references)
-    void pup(PUP::er& p) noexcept;
+    void pup(PUP::er& p);
   };
   using Storage = std::vector<TriggerRecord>;
 
  public:
   EventsAndDenseTriggers() = default;
-  explicit EventsAndDenseTriggers(
-      ConstructionType events_and_triggers) noexcept;
+  explicit EventsAndDenseTriggers(ConstructionType events_and_triggers);
 
   template <typename DbTags>
-  double next_trigger(const db::DataBox<DbTags>& box) noexcept;
+  double next_trigger(const db::DataBox<DbTags>& box);
 
   enum class TriggeringState { Ready, NeedsEvolvedVariables, NotReady };
 
@@ -81,55 +80,53 @@ class EventsAndDenseTriggers {
   TriggeringState is_ready(const db::DataBox<DbTags>& box,
                            Parallel::GlobalCache<Metavariables>& cache,
                            const ArrayIndex& array_index,
-                           const ComponentPointer component) noexcept;
+                           const ComponentPointer component);
 
   template <typename DbTags, typename Metavariables, typename ArrayIndex,
             typename ComponentPointer>
   void run_events(db::DataBox<DbTags>& box,
                   Parallel::GlobalCache<Metavariables>& cache,
                   const ArrayIndex& array_index,
-                  const ComponentPointer component) noexcept;
+                  const ComponentPointer component);
 
   /// Add a new trigger and set of events.  This can only be called
   /// during initialization.
-  void add_trigger_and_events(
-      std::unique_ptr<DenseTrigger> trigger,
-      std::vector<std::unique_ptr<Event>> events) noexcept;
+  void add_trigger_and_events(std::unique_ptr<DenseTrigger> trigger,
+                              std::vector<std::unique_ptr<Event>> events);
 
   template <typename F>
-  void for_each_event(F&& f) const noexcept;
+  void for_each_event(F&& f) const;
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept;
+  void pup(PUP::er& p);
 
  private:
-  typename Storage::iterator heap_end() noexcept {
+  typename Storage::iterator heap_end() {
     return events_and_triggers_.begin() + heap_size_;
   }
 
-  typename Storage::iterator current_trigger() noexcept {
+  typename Storage::iterator current_trigger() {
     return events_and_triggers_.begin() + processing_position_;
   }
 
   template <typename DbTags>
-  void initialize(const db::DataBox<DbTags>& box) noexcept;
+  void initialize(const db::DataBox<DbTags>& box);
 
-  void populate_active_triggers() noexcept;
+  void populate_active_triggers();
 
   void finish_processing_trigger_at_current_time(
-      const typename Storage::iterator& index) noexcept;
+      const typename Storage::iterator& index);
 
   class TriggerTimeAfter {
    public:
     explicit TriggerTimeAfter(const bool time_runs_forward);
 
-    bool operator()(const TriggerRecord& a,
-                    const TriggerRecord& b) const noexcept;
+    bool operator()(const TriggerRecord& a, const TriggerRecord& b) const;
 
-    double infinite_future() const noexcept;
+    double infinite_future() const;
 
     // NOLINTNEXTLINE(google-runtime-references)
-    void pup(PUP::er& p) noexcept;
+    void pup(PUP::er& p);
 
    private:
     evolution_greater<double> time_after_{};
@@ -160,8 +157,7 @@ class EventsAndDenseTriggers {
 };
 
 template <typename DbTags>
-double EventsAndDenseTriggers::next_trigger(
-    const db::DataBox<DbTags>& box) noexcept {
+double EventsAndDenseTriggers::next_trigger(const db::DataBox<DbTags>& box) {
   if (UNLIKELY(heap_size_ == -1)) {
     initialize(box);
   }
@@ -177,7 +173,7 @@ template <typename DbTags, typename Metavariables, typename ArrayIndex,
           typename ComponentPointer>
 EventsAndDenseTriggers::TriggeringState EventsAndDenseTriggers::is_ready(
     const db::DataBox<DbTags>& box, Parallel::GlobalCache<Metavariables>& cache,
-    const ArrayIndex& array_index, const ComponentPointer component) noexcept {
+    const ArrayIndex& array_index, const ComponentPointer component) {
   ASSERT(heap_size_ != -1, "Not initialized");
   ASSERT(not events_and_triggers_.empty(),
          "Should not be calling is_ready with no triggers");
@@ -234,7 +230,7 @@ template <typename DbTags, typename Metavariables, typename ArrayIndex,
           typename ComponentPointer>
 void EventsAndDenseTriggers::run_events(
     db::DataBox<DbTags>& box, Parallel::GlobalCache<Metavariables>& cache,
-    const ArrayIndex& array_index, const ComponentPointer component) noexcept {
+    const ArrayIndex& array_index, const ComponentPointer component) {
   ASSERT(heap_size_ != -1, "Not initialized");
   ASSERT(not events_and_triggers_.empty(),
          "Should not be calling run_events with no triggers");
@@ -244,16 +240,16 @@ void EventsAndDenseTriggers::run_events(
        ++trigger) {
     db::mutate<::evolution::Tags::PreviousTriggerTime>(
         make_not_null(&box),
-        [&trigger](const gsl::not_null<std::optional<double>*>
-                       previous_trigger_time) noexcept {
+        [&trigger](
+            const gsl::not_null<std::optional<double>*> previous_trigger_time) {
           *previous_trigger_time = trigger->trigger->previous_trigger_time();
         });
     for (const auto& event : trigger->events) {
       event->run(box, cache, array_index, component);
     }
     db::mutate<::evolution::Tags::PreviousTriggerTime>(
-        make_not_null(&box), [](const gsl::not_null<std::optional<double>*>
-                                    previous_trigger_time) noexcept {
+        make_not_null(&box),
+        [](const gsl::not_null<std::optional<double>*> previous_trigger_time) {
           *previous_trigger_time = std::numeric_limits<double>::signaling_NaN();
         });
     finish_processing_trigger_at_current_time(trigger);
@@ -263,7 +259,7 @@ void EventsAndDenseTriggers::run_events(
 }
 
 template <typename F>
-void EventsAndDenseTriggers::for_each_event(F&& f) const noexcept {
+void EventsAndDenseTriggers::for_each_event(F&& f) const {
   for (const auto& trigger_and_events : events_and_triggers_) {
     for (const auto& event : trigger_and_events.events) {
       f(*event);
@@ -272,8 +268,7 @@ void EventsAndDenseTriggers::for_each_event(F&& f) const noexcept {
 }
 
 template <typename DbTags>
-void EventsAndDenseTriggers::initialize(
-    const db::DataBox<DbTags>& box) noexcept {
+void EventsAndDenseTriggers::initialize(const db::DataBox<DbTags>& box) {
   next_check_after_ =
       TriggerTimeAfter{db::get<::Tags::TimeStepId>(box).time_runs_forward()};
   next_check_ = db::get<::Tags::Time>(box);

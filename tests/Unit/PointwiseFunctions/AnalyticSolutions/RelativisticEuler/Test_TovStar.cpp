@@ -26,7 +26,7 @@
 
 namespace {
 
-void test_create_from_options() noexcept {
+void test_create_from_options() {
   const auto star = TestHelpers::test_creation<
       RelativisticEuler::Solutions::TovStar<gr::Solutions::TovSolution>>(
       "CentralDensity: 1.0e-5\n"
@@ -37,7 +37,7 @@ void test_create_from_options() noexcept {
             0.00001, 0.001, 1.4));
 }
 
-void test_move() noexcept {
+void test_move() {
   RelativisticEuler::Solutions::TovStar<gr::Solutions::TovSolution> star(
       1.e-4, 4.0, 2.5);
   RelativisticEuler::Solutions::TovStar<gr::Solutions::TovSolution> star_copy(
@@ -45,7 +45,7 @@ void test_move() noexcept {
   test_move_semantics(std::move(star), star_copy);  //  NOLINT
 }
 
-void test_serialize() noexcept {
+void test_serialize() {
   RelativisticEuler::Solutions::TovStar<gr::Solutions::TovSolution> star(
       1.e-3, 8.0, 2.0);
   test_serialization(star);
@@ -53,7 +53,7 @@ void test_serialize() noexcept {
 
 void verify_solution(const RelativisticEuler::Solutions::TovStar<
                          gr::Solutions::TovSolution>& solution,
-                     const std::array<double, 3>& x) noexcept {
+                     const std::array<double, 3>& x) {
   const std::array<double, 3> dx{{1.e-4, 1.e-4, 1.e-4}};
   domain::creators::Brick brick(x - dx, x + dx, {{0, 0, 0}}, {{5, 5, 5}},
                                 {{false, false, false}});

@@ -19,12 +19,11 @@
 
 namespace GeneralizedHarmonic::BoundaryCorrections {
 template <size_t Dim>
-UpwindPenalty<Dim>::UpwindPenalty(CkMigrateMessage* msg) noexcept
+UpwindPenalty<Dim>::UpwindPenalty(CkMigrateMessage* msg)
     : BoundaryCorrection<Dim>(msg) {}
 
 template <size_t Dim>
-std::unique_ptr<BoundaryCorrection<Dim>> UpwindPenalty<Dim>::get_clone()
-    const noexcept {
+std::unique_ptr<BoundaryCorrection<Dim>> UpwindPenalty<Dim>::get_clone() const {
   return std::make_unique<UpwindPenalty>(*this);
 }
 
@@ -65,8 +64,7 @@ double UpwindPenalty<Dim>::dg_package_data(
     const tnsr::I<DataVector, Dim, Frame::Inertial>& normal_vector,
     const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
     /*mesh_velocity*/,
-    const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity)
-    const noexcept {
+    const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity) const {
   // Compute the char speeds without the mesh movement, then add the mesh
   // movement. We compute the zero-speed first since it is just the normal
   // dotted into the shift.
@@ -192,7 +190,7 @@ void UpwindPenalty<Dim>::dg_boundary_terms(
     const tnsr::aa<DataVector, Dim, Frame::Inertial>&
         char_speed_constraint_gamma2_v_spacetime_metric_ext,
     const tnsr::a<DataVector, 3, Frame::Inertial>& char_speeds_ext,
-    dg::Formulation /*dg_formulation*/) const noexcept {
+    dg::Formulation /*dg_formulation*/) const {
   const size_t num_pts = char_speeds_int[0].size();
   Variables<tmpl::list<::Tags::TempScalar<0>, ::Tags::TempScalar<1>,
                        ::Tags::TempScalar<2>, ::Tags::TempScalar<3>,

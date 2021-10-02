@@ -44,22 +44,22 @@ using Affine2D = domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>;
 using Affine3D = domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
 
 template <size_t VolumeDim>
-auto make_affine_map() noexcept;
+auto make_affine_map();
 
 template <>
-auto make_affine_map<1>() noexcept {
+auto make_affine_map<1>() {
   return domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
       Affine{-1.0, 1.0, -0.3, 0.7});
 }
 
 template <>
-auto make_affine_map<2>() noexcept {
+auto make_affine_map<2>() {
   return domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
       Affine2D{Affine{-1.0, 1.0, -0.3, 0.7}, Affine{-1.0, 1.0, 0.3, 0.55}});
 }
 
 template <>
-auto make_affine_map<3>() noexcept {
+auto make_affine_map<3>() {
   return domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
       Affine3D{Affine{-1.0, 1.0, -0.3, 0.7}, Affine{-1.0, 1.0, 0.3, 0.55},
                Affine{-1.0, 1.0, 2.3, 2.8}});
@@ -68,7 +68,7 @@ auto make_affine_map<3>() noexcept {
 template <typename T, size_t VolumeDim>
 Scalar<T> expected_value(const tnsr::I<T, VolumeDim>& x,
                          const std::array<size_t, VolumeDim>& powers,
-                         const double scale) noexcept {
+                         const double scale) {
   auto result = make_with_value<Scalar<T>>(x, scale);
   for (size_t d = 0; d < VolumeDim; ++d) {
     result.get() *= pow(x.get(d), gsl::at(powers, d));
@@ -79,7 +79,7 @@ Scalar<T> expected_value(const tnsr::I<T, VolumeDim>& x,
 template <typename T, size_t VolumeDim>
 tnsr::i<T, VolumeDim> expected_first_derivs(
     const tnsr::I<T, VolumeDim>& x, const std::array<size_t, VolumeDim>& powers,
-    const double scale) noexcept {
+    const double scale) {
   auto result = make_with_value<tnsr::i<T, VolumeDim>>(x, scale);
   for (size_t d = 0; d < VolumeDim; ++d) {
     const size_t p = gsl::at(powers, d);
@@ -101,7 +101,7 @@ tnsr::i<T, VolumeDim> expected_first_derivs(
 template <typename T, size_t VolumeDim>
 tnsr::ii<T, VolumeDim> expected_second_derivs(
     const tnsr::I<T, VolumeDim>& x, const std::array<size_t, VolumeDim>& powers,
-    const double scale) noexcept {
+    const double scale) {
   auto result = make_with_value<tnsr::ii<T, VolumeDim>>(x, scale);
   for (size_t d = 0; d < VolumeDim; ++d) {
     const size_t p = gsl::at(powers, d);
@@ -136,7 +136,7 @@ void test_tensor_product(
     const Mesh<VolumeDim>& mesh, const double scale,
     std::array<std::unique_ptr<MathFunction<1, Frame::Inertial>>, VolumeDim>&&
         functions,
-    const std::array<size_t, VolumeDim>& powers) noexcept {
+    const std::array<size_t, VolumeDim>& powers) {
   const auto coordinate_map = make_affine_map<VolumeDim>();
   const auto x = coordinate_map(logical_coordinates(mesh));
   MathFunctions::TensorProduct<VolumeDim> f(scale, std::move(functions));
@@ -158,13 +158,13 @@ void test_tensor_product(
 
 struct Var1 : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static std::string name() noexcept { return "Var1"; }
+  static std::string name() { return "Var1"; }
 };
 
 template <size_t VolumeDim>
 struct Var2 : db::SimpleTag {
   using type = tnsr::i<DataVector, VolumeDim, Frame::Inertial>;
-  static std::string name() noexcept { return "Var2"; }
+  static std::string name() { return "Var2"; }
 };
 
 template <size_t VolumeDim>
@@ -174,7 +174,7 @@ template <size_t VolumeDim>
 void test_with_numerical_derivatives(
     const Mesh<VolumeDim>& mesh, const double scale,
     std::array<std::unique_ptr<MathFunction<1, Frame::Inertial>>, VolumeDim>&&
-        functions) noexcept {
+        functions) {
   const auto coordinate_map = make_affine_map<VolumeDim>();
   Variables<TwoVars<VolumeDim>> u(mesh.number_of_grid_points());
   const auto xi = logical_coordinates(mesh);

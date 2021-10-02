@@ -34,7 +34,7 @@ namespace detail {
 std::pair<size_t, size_t> create_span_for_time_value(
     const double time, const size_t pad, const size_t interpolator_length,
     const size_t lower_bound, const size_t upper_bound,
-    const DataVector& time_buffer) noexcept {
+    const DataVector& time_buffer) {
   ASSERT(
       lower_bound < upper_bound,
       "The supplied `lower_bound` is greater than `upper_bound`, which is not "
@@ -72,7 +72,7 @@ std::pair<size_t, size_t> create_span_for_time_value(
 
 MetricWorldtubeH5BufferUpdater::MetricWorldtubeH5BufferUpdater(
     const std::string& cce_data_filename,
-    const std::optional<double> extraction_radius) noexcept
+    const std::optional<double> extraction_radius)
     : cce_data_file_{cce_data_filename}, filename_{cce_data_filename} {
   get<Tags::detail::InputDataSet<Tags::detail::SpatialMetric>>(dataset_names_) =
       "/g";
@@ -136,7 +136,7 @@ double MetricWorldtubeH5BufferUpdater::update_buffers_for_time(
     const gsl::not_null<size_t*> time_span_start,
     const gsl::not_null<size_t*> time_span_end, const double time,
     const size_t computation_l_max, const size_t interpolator_length,
-    const size_t buffer_depth) const noexcept {
+    const size_t buffer_depth) const {
   if (*time_span_end >= time_buffer_.size()) {
     return std::numeric_limits<double>::quiet_NaN();
   }
@@ -159,7 +159,7 @@ double MetricWorldtubeH5BufferUpdater::update_buffers_for_time(
                                 Tags::detail::Dr<Tags::detail::SpatialMetric>,
                                 ::Tags::dt<Tags::detail::SpatialMetric>>>(
           [this, &i, &j, &buffers, &time_span_start, &time_span_end,
-           &computation_l_max](auto tag_v) noexcept {
+           &computation_l_max](auto tag_v) {
             using tag = typename decltype(tag_v)::type;
             this->update_buffer(
                 make_not_null(&get<tag>(*buffers).get(i, j)),
@@ -175,7 +175,7 @@ double MetricWorldtubeH5BufferUpdater::update_buffers_for_time(
         tmpl::list<Tags::detail::Shift, Tags::detail::Dr<Tags::detail::Shift>,
                    ::Tags::dt<Tags::detail::Shift>>>(
         [this, &i, &buffers, &time_span_start, &time_span_end,
-         &computation_l_max](auto tag_v) noexcept {
+         &computation_l_max](auto tag_v) {
           using tag = typename decltype(tag_v)::type;
           this->update_buffer(
               make_not_null(&get<tag>(*buffers).get(i)),
@@ -190,7 +190,7 @@ double MetricWorldtubeH5BufferUpdater::update_buffers_for_time(
       tmpl::list<Tags::detail::Lapse, Tags::detail::Dr<Tags::detail::Lapse>,
                  ::Tags::dt<Tags::detail::Lapse>>>(
       [this, &buffers, &time_span_start, &time_span_end,
-       &computation_l_max](auto tag_v) noexcept {
+       &computation_l_max](auto tag_v) {
         using tag = typename decltype(tag_v)::type;
         this->update_buffer(
             make_not_null(&get(get<tag>(*buffers))),
@@ -205,17 +205,17 @@ double MetricWorldtubeH5BufferUpdater::update_buffers_for_time(
 }
 
 std::unique_ptr<WorldtubeBufferUpdater<cce_metric_input_tags>>
-MetricWorldtubeH5BufferUpdater::get_clone() const noexcept {
+MetricWorldtubeH5BufferUpdater::get_clone() const {
   return std::make_unique<MetricWorldtubeH5BufferUpdater>(
       MetricWorldtubeH5BufferUpdater{filename_});
 }
 
 bool MetricWorldtubeH5BufferUpdater::time_is_outside_range(
-    const double time) const noexcept {
+    const double time) const {
   return time < time_buffer_[0] or time > time_buffer_[time_buffer_.size() - 1];
 }
 
-void MetricWorldtubeH5BufferUpdater::pup(PUP::er& p) noexcept {
+void MetricWorldtubeH5BufferUpdater::pup(PUP::er& p) {
   p | time_buffer_;
   p | has_version_history_;
   p | filename_;
@@ -230,7 +230,7 @@ void MetricWorldtubeH5BufferUpdater::pup(PUP::er& p) noexcept {
 void MetricWorldtubeH5BufferUpdater::update_buffer(
     const gsl::not_null<ComplexModalVector*> buffer_to_update,
     const h5::Dat& read_data, const size_t computation_l_max,
-    const size_t time_span_start, const size_t time_span_end) const noexcept {
+    const size_t time_span_start, const size_t time_span_end) const {
   const size_t number_of_columns = read_data.get_dimensions()[1];
   if (UNLIKELY(buffer_to_update->size() != (time_span_end - time_span_start) *
                                                square(computation_l_max + 1))) {
@@ -266,7 +266,7 @@ void MetricWorldtubeH5BufferUpdater::update_buffer(
 
 BondiWorldtubeH5BufferUpdater::BondiWorldtubeH5BufferUpdater(
     const std::string& cce_data_filename,
-    const std::optional<double> extraction_radius) noexcept
+    const std::optional<double> extraction_radius)
     : cce_data_file_{cce_data_filename}, filename_{cce_data_filename} {
   get<Tags::detail::InputDataSet<
       Spectral::Swsh::Tags::SwshTransform<Tags::BondiBeta>>>(dataset_names_) =
@@ -326,7 +326,7 @@ double BondiWorldtubeH5BufferUpdater::update_buffers_for_time(
     const gsl::not_null<size_t*> time_span_start,
     const gsl::not_null<size_t*> time_span_end, const double time,
     const size_t computation_l_max, const size_t interpolator_length,
-    const size_t buffer_depth) const noexcept {
+    const size_t buffer_depth) const {
   if (*time_span_end >= time_buffer_.size()) {
     return std::numeric_limits<double>::quiet_NaN();
   }
@@ -344,7 +344,7 @@ double BondiWorldtubeH5BufferUpdater::update_buffers_for_time(
   // load the desired time spans into the buffers
   tmpl::for_each<cce_bondi_input_tags>(
       [this, &buffers, &time_span_start, &time_span_end,
-       &computation_l_max](auto tag_v) noexcept {
+       &computation_l_max](auto tag_v) {
         using tag = typename decltype(tag_v)::type;
         this->update_buffer(
             make_not_null(&get(get<tag>(*buffers)).data()),
@@ -363,7 +363,7 @@ void BondiWorldtubeH5BufferUpdater::update_buffer(
     const gsl::not_null<ComplexModalVector*> buffer_to_update,
     const h5::Dat& read_data, const size_t computation_l_max,
     const size_t time_span_start, const size_t time_span_end,
-    const bool is_real) const noexcept {
+    const bool is_real) const {
   size_t number_of_columns = read_data.get_dimensions()[1];
   if (UNLIKELY(buffer_to_update->size() !=
                square(computation_l_max + 1) *
@@ -435,7 +435,7 @@ void BondiWorldtubeH5BufferUpdater::update_buffer(
   }
 }
 
-void BondiWorldtubeH5BufferUpdater::pup(PUP::er& p) noexcept {
+void BondiWorldtubeH5BufferUpdater::pup(PUP::er& p) {
   p | time_buffer_;
   p | filename_;
   p | l_max_;

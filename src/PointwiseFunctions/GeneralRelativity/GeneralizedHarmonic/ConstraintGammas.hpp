@@ -57,7 +57,7 @@ struct ConstraintGamma0Compute : ConstraintGamma0, db::ComputeTag {
       const std::unordered_map<
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-          functions_of_time) noexcept {
+          functions_of_time) {
     damping_function(gamma, coords, time, functions_of_time);
   }
 
@@ -87,7 +87,7 @@ struct ConstraintGamma1Compute : ConstraintGamma1, db::ComputeTag {
       const std::unordered_map<
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-          functions_of_time) noexcept {
+          functions_of_time) {
     damping_function(gamma1, coords, time, functions_of_time);
   }
 
@@ -117,7 +117,7 @@ struct ConstraintGamma2Compute : ConstraintGamma2, db::ComputeTag {
       const std::unordered_map<
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-          functions_of_time) noexcept {
+          functions_of_time) {
     damping_function(gamma, coords, time, functions_of_time);
   }
 

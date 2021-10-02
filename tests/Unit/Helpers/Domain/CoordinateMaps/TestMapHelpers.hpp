@@ -43,7 +43,7 @@ template <typename Map>
 bool are_maps_equal(
     const Map& map,
     const domain::CoordinateMapBase<Frame::BlockLogical, Frame::Inertial,
-                                    Map::dim>& map_base) noexcept {
+                                    Map::dim>& map_base) {
   const auto* map_derived = dynamic_cast<const Map*>(&map_base);
   return map_derived == nullptr ? false : (*map_derived == map);
 }
@@ -60,7 +60,7 @@ void check_if_maps_are_equal(
     const double time = std::numeric_limits<double>::quiet_NaN(),
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time = {}) noexcept {
+        functions_of_time = {}) {
   MAKE_GENERATOR(gen);
   std::uniform_real_distribution<> real_dis(-1, 1);
 
@@ -85,7 +85,7 @@ void check_if_maps_are_equal(
 /// \brief Given a coordinate map, check that this map is equal to the identity
 /// by evaluating the map at a random set of points.
 template <typename Map>
-void check_if_map_is_identity(const Map& map) noexcept {
+void check_if_map_is_identity(const Map& map) {
   using IdentityMap = domain::CoordinateMaps::Identity<Map::dim>;
   check_if_maps_are_equal(
       domain::make_coordinate_map<Frame::Inertial, Frame::Grid>(IdentityMap{}),
@@ -101,7 +101,7 @@ void check_if_map_is_identity(const Map& map) noexcept {
  */
 template <typename Map>
 void test_jacobian(const Map& map,
-                   const std::array<double, Map::dim>& test_point) noexcept {
+                   const std::array<double, Map::dim>& test_point) {
   INFO("Test Jacobian");
   CAPTURE(test_point);
   // Our default approx value is too stringent for this test
@@ -123,13 +123,13 @@ void test_jacobian(
     const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time) noexcept {
+        functions_of_time) {
   INFO("Test time-dependent Jacobian");
   CAPTURE(test_point);
   CAPTURE(time);
   const auto compute_map_point =
       [&map, time,
-       &functions_of_time](const std::array<double, Map::dim>& point) noexcept {
+       &functions_of_time](const std::array<double, Map::dim>& point) {
         return map(point, time, functions_of_time);
       };
   // Our default approx value is too stringent for this test
@@ -154,8 +154,8 @@ void test_jacobian(
  * multiply together to produce the identity matrix
  */
 template <typename Map>
-void test_inv_jacobian(
-    const Map& map, const std::array<double, Map::dim>& test_point) noexcept {
+void test_inv_jacobian(const Map& map,
+                       const std::array<double, Map::dim>& test_point) {
   INFO("Test inverse Jacobian");
   CAPTURE(test_point);
   const auto jacobian = map.jacobian(test_point);
@@ -232,11 +232,10 @@ void test_frame_velocity(
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) {
-  const auto compute_map_point =
-      [&map, &test_point,
-       &functions_of_time](const std::array<double, 1>& time_point) noexcept {
-        return map(test_point, time_point[0], functions_of_time);
-      };
+  const auto compute_map_point = [&map, &test_point, &functions_of_time](
+                                     const std::array<double, 1>& time_point) {
+    return map(test_point, time_point[0], functions_of_time);
+  };
   // Our default approx value is too stringent for this test
   Approx local_approx = Approx::custom().epsilon(1e-10).scale(1.0);
   const double dt = 1e-4;
@@ -255,7 +254,7 @@ void test_frame_velocity(
  * the template parameter to the `CoordinateMap` type.
  */
 template <typename Map, typename... Args>
-void test_coordinate_map_implementation(const Map& map) noexcept {
+void test_coordinate_map_implementation(const Map& map) {
   const auto coord_map =
       domain::make_coordinate_map<Frame::Logical, Frame::Grid>(map);
   MAKE_GENERATOR(gen);
@@ -300,15 +299,15 @@ void test_coordinate_map_argument_types(
     const Args&... args) {
   INFO("Test coordinate map argument types")
   CAPTURE(test_point);
-  const auto make_array_data_vector = [](const auto& double_array) noexcept {
+  const auto make_array_data_vector = [](const auto& double_array) {
     std::array<DataVector, Map::dim> result;
     std::transform(double_array.begin(), double_array.end(), result.begin(),
-                   [](const double x) noexcept {
+                   [](const double x) {
                      return DataVector{x, x};
                    });
     return result;
   };
-  const auto add_reference_wrapper = [](const auto& unwrapped_array) noexcept {
+  const auto add_reference_wrapper = [](const auto& unwrapped_array) {
     using Arg = std::decay_t<decltype(unwrapped_array)>;
     return make_array<std::reference_wrapper<const typename Arg::value_type>,
                       Map::dim>(unwrapped_array);
@@ -329,10 +328,10 @@ void test_coordinate_map_argument_types(
   // Here, time_args is a const auto& not const Args& because time_args
   // is allowed to be different than Args (which was the reason for the
   // overloader below that calls this function).
-  const auto check_jac =
-      [](const auto& make_arr_data_vec, const auto& add_ref_wrap,
-         const Map& the_map, const std::array<double, Map::dim>& point,
-         const auto&... time_args) noexcept {
+  const auto check_jac = [](const auto& make_arr_data_vec,
+                            const auto& add_ref_wrap, const Map& the_map,
+                            const std::array<double, Map::dim>& point,
+                            const auto&... time_args) {
     const auto make_tensor_data_vector = [](const auto& double_tensor) {
       using Arg = std::decay_t<decltype(double_tensor)>;
       Tensor<DataVector, typename Arg::symmetry, typename Arg::index_list>
@@ -389,7 +388,7 @@ void test_coordinate_map_argument_types(
  */
 template <typename Map, typename T>
 void test_inverse_map(const Map& map,
-                      const std::array<T, Map::dim>& test_point) noexcept {
+                      const std::array<T, Map::dim>& test_point) {
   INFO("Test inverse map");
   CAPTURE(test_point);
   const auto expected_test_point = map.inverse(map(test_point));
@@ -403,7 +402,7 @@ void test_inverse_map(
     const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time) noexcept {
+        functions_of_time) {
   INFO("Test inverse map time dependent");
   CAPTURE(test_point);
   const auto expected_test_point = map.inverse(
@@ -421,7 +420,7 @@ void test_inverse_map(
  * the origin.  The map is expected to be valid on the boundaries of the cube.
  */
 template <typename Map>
-void test_suite_for_map_on_unit_cube(const Map& map) noexcept {
+void test_suite_for_map_on_unit_cube(const Map& map) {
   // Set up random number generator
   MAKE_GENERATOR(gen);
   std::uniform_real_distribution<> real_dis(-1.0, 1.0);
@@ -433,8 +432,7 @@ void test_suite_for_map_on_unit_cube(const Map& map) noexcept {
     gsl::at(random_point, i) = real_dis(gen);
   }
 
-  const auto test_helper =
-      [&origin, &random_point ](const auto& map_to_test) noexcept {
+  const auto test_helper = [&origin, &random_point](const auto& map_to_test) {
     test_serialization(map_to_test);
     CHECK_FALSE(map_to_test != map_to_test);
     test_coordinate_map_argument_types(map_to_test, origin);
@@ -472,9 +470,9 @@ void test_suite_for_map_on_unit_cube(const Map& map) noexcept {
  * This test works only in 3 dimensions.
  */
 template <typename Map>
-void test_suite_for_map_on_sphere(
-    const Map& map, const bool include_origin = true,
-    const double radius_of_sphere = 1.0) noexcept {
+void test_suite_for_map_on_sphere(const Map& map,
+                                  const bool include_origin = true,
+                                  const double radius_of_sphere = 1.0) {
   static_assert(Map::dim == 3,
                 "test_suite_for_map_on_sphere works only for a 3d map");
 
@@ -511,7 +509,7 @@ void test_suite_for_map_on_sphere(
        {inner_bdry * sin(theta) * cos(phi), inner_bdry * sin(theta) * sin(phi),
         inner_bdry * cos(theta)}}};
 
-  const auto test_helper = [&points_to_test](const auto& map_to_test) noexcept {
+  const auto test_helper = [&points_to_test](const auto& map_to_test) {
     test_serialization(map_to_test);
     CHECK_FALSE(map_to_test != map_to_test);
     for (const auto& point : points_to_test) {
@@ -540,95 +538,95 @@ void test_suite_for_map_on_sphere(
    * in its interior.
    * This test works only in 3 dimensions.
    */
-  template <typename Map>
-  void test_suite_for_map_on_cylinder(const Map& map, const double inner_radius,
-                                      const double outer_radius) noexcept {
-    static_assert(Map::dim == 3,
-                  "test_suite_for_map_on_cylinder works only for a 3d map");
+template <typename Map>
+void test_suite_for_map_on_cylinder(const Map& map, const double inner_radius,
+                                    const double outer_radius) {
+  static_assert(Map::dim == 3,
+                "test_suite_for_map_on_cylinder works only for a 3d map");
 
-    // Set up random number generator
-    MAKE_GENERATOR(gen);
+  // Set up random number generator
+  MAKE_GENERATOR(gen);
 
-    std::uniform_real_distribution<> radius_dis(inner_radius, outer_radius);
-    std::uniform_real_distribution<> phi_dis(0.0, 2.0 * M_PI);
-    std::uniform_real_distribution<> height_dis(-1.0, 1.0);
+  std::uniform_real_distribution<> radius_dis(inner_radius, outer_radius);
+  std::uniform_real_distribution<> phi_dis(0.0, 2.0 * M_PI);
+  std::uniform_real_distribution<> height_dis(-1.0, 1.0);
 
-    const double height = height_dis(gen);
-    CAPTURE(height);
-    const double phi = phi_dis(gen);
-    CAPTURE(phi);
-    const double radius = radius_dis(gen);
-    CAPTURE(radius);
+  const double height = height_dis(gen);
+  CAPTURE(height);
+  const double phi = phi_dis(gen);
+  CAPTURE(phi);
+  const double radius = radius_dis(gen);
+  CAPTURE(radius);
 
-    const std::array<double, 3> random_point{
-        {radius * cos(phi), radius * sin(phi), height}};
+  const std::array<double, 3> random_point{
+      {radius * cos(phi), radius * sin(phi), height}};
 
-    const std::array<double, 3> random_bdry_point_rho{
-        {outer_radius * cos(phi), outer_radius * sin(phi), height}};
+  const std::array<double, 3> random_bdry_point_rho{
+      {outer_radius * cos(phi), outer_radius * sin(phi), height}};
 
-    const std::array<double, 3> random_bdry_point_z{
-        {radius * cos(phi), radius * sin(phi), height > 0.5 ? 1.0 : -1.0}};
+  const std::array<double, 3> random_bdry_point_z{
+      {radius * cos(phi), radius * sin(phi), height > 0.5 ? 1.0 : -1.0}};
 
-    const std::array<double, 3> random_bdry_point_corner{
-        {outer_radius * cos(phi), outer_radius * sin(phi),
-         height > 0.5 ? 1.0 : -1.0}};
+  const std::array<double, 3> random_bdry_point_corner{
+      {outer_radius * cos(phi), outer_radius * sin(phi),
+       height > 0.5 ? 1.0 : -1.0}};
 
-    // If inner_radius is zero, this point is on the axis.
-    const std::array<double, 3> random_inner_bdry_point_or_origin{
-        {inner_radius * cos(phi), inner_radius * sin(phi), height}};
+  // If inner_radius is zero, this point is on the axis.
+  const std::array<double, 3> random_inner_bdry_point_or_origin{
+      {inner_radius * cos(phi), inner_radius * sin(phi), height}};
 
-    // If inner_radius is zero, this point is on the axis.
-    const std::array<double, 3> random_inner_bdry_point_corner{
-        {inner_radius * cos(phi), inner_radius * sin(phi),
-         height > 0.5 ? 1.0 : -1.0}};
+  // If inner_radius is zero, this point is on the axis.
+  const std::array<double, 3> random_inner_bdry_point_corner{
+      {inner_radius * cos(phi), inner_radius * sin(phi),
+       height > 0.5 ? 1.0 : -1.0}};
 
-    const auto test_helper = [&random_bdry_point_rho, &random_bdry_point_z,
-                              &random_bdry_point_corner,
-                              &random_inner_bdry_point_or_origin,
-                              &random_inner_bdry_point_corner,
-                              &random_point](const auto& map_to_test) noexcept {
-      test_serialization(map_to_test);
-      CHECK_FALSE(map_to_test != map_to_test);
+  const auto test_helper = [&random_bdry_point_rho, &random_bdry_point_z,
+                            &random_bdry_point_corner,
+                            &random_inner_bdry_point_or_origin,
+                            &random_inner_bdry_point_corner,
+                            &random_point](const auto& map_to_test) {
+    test_serialization(map_to_test);
+    CHECK_FALSE(map_to_test != map_to_test);
 
-      test_coordinate_map_argument_types(map_to_test,
-                                         random_inner_bdry_point_or_origin);
-      test_jacobian(map_to_test, random_inner_bdry_point_or_origin);
-      test_inv_jacobian(map_to_test, random_inner_bdry_point_or_origin);
-      test_inverse_map(map_to_test, random_inner_bdry_point_or_origin);
+    test_coordinate_map_argument_types(map_to_test,
+                                       random_inner_bdry_point_or_origin);
+    test_jacobian(map_to_test, random_inner_bdry_point_or_origin);
+    test_inv_jacobian(map_to_test, random_inner_bdry_point_or_origin);
+    test_inverse_map(map_to_test, random_inner_bdry_point_or_origin);
 
-      test_coordinate_map_argument_types(map_to_test, random_point);
-      test_jacobian(map_to_test, random_point);
-      test_inv_jacobian(map_to_test, random_point);
-      test_inverse_map(map_to_test, random_point);
+    test_coordinate_map_argument_types(map_to_test, random_point);
+    test_jacobian(map_to_test, random_point);
+    test_inv_jacobian(map_to_test, random_point);
+    test_inverse_map(map_to_test, random_point);
 
-      test_coordinate_map_argument_types(map_to_test, random_bdry_point_rho);
-      test_jacobian(map_to_test, random_bdry_point_rho);
-      test_inv_jacobian(map_to_test, random_bdry_point_rho);
-      test_inverse_map(map_to_test, random_bdry_point_rho);
+    test_coordinate_map_argument_types(map_to_test, random_bdry_point_rho);
+    test_jacobian(map_to_test, random_bdry_point_rho);
+    test_inv_jacobian(map_to_test, random_bdry_point_rho);
+    test_inverse_map(map_to_test, random_bdry_point_rho);
 
-      test_coordinate_map_argument_types(map_to_test, random_bdry_point_z);
-      test_jacobian(map_to_test, random_bdry_point_z);
-      test_inv_jacobian(map_to_test, random_bdry_point_z);
-      test_inverse_map(map_to_test, random_bdry_point_z);
+    test_coordinate_map_argument_types(map_to_test, random_bdry_point_z);
+    test_jacobian(map_to_test, random_bdry_point_z);
+    test_inv_jacobian(map_to_test, random_bdry_point_z);
+    test_inverse_map(map_to_test, random_bdry_point_z);
 
-      test_coordinate_map_argument_types(map_to_test, random_bdry_point_corner);
-      test_jacobian(map_to_test, random_bdry_point_corner);
-      test_inv_jacobian(map_to_test, random_bdry_point_corner);
-      test_inverse_map(map_to_test, random_bdry_point_corner);
+    test_coordinate_map_argument_types(map_to_test, random_bdry_point_corner);
+    test_jacobian(map_to_test, random_bdry_point_corner);
+    test_inv_jacobian(map_to_test, random_bdry_point_corner);
+    test_inverse_map(map_to_test, random_bdry_point_corner);
 
-      test_coordinate_map_argument_types(map_to_test,
-                                         random_inner_bdry_point_corner);
-      test_jacobian(map_to_test, random_inner_bdry_point_corner);
-      test_inv_jacobian(map_to_test, random_inner_bdry_point_corner);
-      test_inverse_map(map_to_test, random_inner_bdry_point_corner);
-    };
-    test_helper(map);
-    const auto map2 = serialize_and_deserialize(map);
-    check_if_maps_are_equal(
-        domain::make_coordinate_map<Frame::Logical, Frame::Grid>(map),
-        domain::make_coordinate_map<Frame::Logical, Frame::Grid>(map2));
-    test_helper(map2);
-  }
+    test_coordinate_map_argument_types(map_to_test,
+                                       random_inner_bdry_point_corner);
+    test_jacobian(map_to_test, random_inner_bdry_point_corner);
+    test_inv_jacobian(map_to_test, random_inner_bdry_point_corner);
+    test_inverse_map(map_to_test, random_inner_bdry_point_corner);
+  };
+  test_helper(map);
+  const auto map2 = serialize_and_deserialize(map);
+  check_if_maps_are_equal(
+      domain::make_coordinate_map<Frame::Logical, Frame::Grid>(map),
+      domain::make_coordinate_map<Frame::Logical, Frame::Grid>(map2));
+  test_helper(map2);
+}
 
 /*!
  * \ingroup TestingFrameworkGroup
@@ -638,11 +636,11 @@ void test_suite_for_map_on_sphere(
 template <size_t VolumeDim>
 class OrientationMapIterator {
  public:
-  OrientationMapIterator() noexcept {
+  OrientationMapIterator() {
     std::iota(dims_.begin(), dims_.end(), 0);
     set_map();
   }
-  void operator++() noexcept {
+  void operator++() {
     ++vci_;
     if (not vci_) {
       not_at_end_ = std::next_permutation(dims_.begin(), dims_.end());
@@ -650,10 +648,10 @@ class OrientationMapIterator {
     }
     set_map();
   }
-  explicit operator bool() const noexcept { return not_at_end_; }
-  const OrientationMap<VolumeDim>& operator()() const noexcept { return map_; }
-  const OrientationMap<VolumeDim>& operator*() const noexcept { return map_; }
-  void set_map() noexcept {
+  explicit operator bool() const { return not_at_end_; }
+  const OrientationMap<VolumeDim>& operator()() const { return map_; }
+  const OrientationMap<VolumeDim>& operator*() const { return map_; }
+  void set_map() {
     for (size_t i = 0; i < VolumeDim; i++) {
       gsl::at(directions_, i) =
           Direction<VolumeDim>{gsl::at(dims_, i), gsl::at(vci_(), i)};
@@ -674,7 +672,7 @@ class OrientationMapIterator {
  * \brief Wedge OrientationMap in each of the six directions used in the
  * Shell and Sphere domain creators.
  */
-inline std::array<OrientationMap<3>, 6> all_wedge_directions() noexcept {
+inline std::array<OrientationMap<3>, 6> all_wedge_directions() {
   const OrientationMap<3> upper_zeta_rotation{};
   const OrientationMap<3> lower_zeta_rotation(std::array<Direction<3>, 3>{
       {Direction<3>::upper_xi(), Direction<3>::lower_eta(),

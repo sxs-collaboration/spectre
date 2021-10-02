@@ -30,22 +30,22 @@ using Affine2D = domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>;
 using Affine3D = domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
 
 template <size_t VolumeDim>
-auto make_affine_map() noexcept;
+auto make_affine_map();
 
 template <>
-auto make_affine_map<1>() noexcept {
+auto make_affine_map<1>() {
   return domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
       Affine{-1.0, 1.0, -0.3, 0.7});
 }
 
 template <>
-auto make_affine_map<2>() noexcept {
+auto make_affine_map<2>() {
   return domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
       Affine2D{Affine{-1.0, 1.0, -0.3, 0.7}, Affine{-1.0, 1.0, 0.3, 0.55}});
 }
 
 template <>
-auto make_affine_map<3>() noexcept {
+auto make_affine_map<3>() {
   return domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
       Affine3D{Affine{-1.0, 1.0, -0.3, 0.7}, Affine{-1.0, 1.0, 0.3, 0.55},
                Affine{-1.0, 1.0, 2.3, 2.8}});
@@ -64,7 +64,7 @@ struct SimpleUnnormalizedFaceNormal
   static void function(const gsl::not_null<return_type*> result,
                        const double scale_zero_index,
                        const Mesh<Dim - 1>& face_mesh,
-                       const Direction<Dim>& direction) noexcept {
+                       const Direction<Dim>& direction) {
     for (size_t i = 0; i < Dim; ++i) {
       result->get(i) =
           DataVector{face_mesh.number_of_grid_points(),
@@ -161,7 +161,7 @@ auto create_box(const size_t number_of_grid_points_per_dim,
 
 template <bool UseFlatSpace, size_t Dim, typename DbTagsList>
 void check_normal_covector_quantities(
-    const gsl::not_null<db::DataBox<DbTagsList>*> box) noexcept {
+    const gsl::not_null<db::DataBox<DbTagsList>*> box) {
   using field_face_tags = tmpl::conditional_t<
       UseFlatSpace,
       tmpl::list<evolution::dg::Actions::detail::OneOverNormalVectorMagnitude>,
@@ -260,8 +260,7 @@ void test(const bool use_moving_mesh) {
     // Mutate the x component of the unnormalized normal vector to simulate
     // moving mesh
     db::mutate<ScaleZeroIndex>(
-        make_not_null(&box),
-        [](const gsl::not_null<double*> scale_zero_index) noexcept {
+        make_not_null(&box), [](const gsl::not_null<double*> scale_zero_index) {
           *scale_zero_index = 2.3;
         });
 

@@ -43,16 +43,16 @@ namespace {
 
 struct ScalarTag : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static std::string name() noexcept { return "Scalar"; }
+  static std::string name() { return "Scalar"; }
 };
 
 template <size_t VolumeDim>
 struct VectorTag : db::SimpleTag {
   using type = tnsr::I<DataVector, VolumeDim>;
-  static std::string name() noexcept { return "Vector"; }
+  static std::string name() { return "Vector"; }
 };
 
-void test_secondary_neighbors_to_exclude_from_fit() noexcept {
+void test_secondary_neighbors_to_exclude_from_fit() {
   INFO("Testing Weno_detail::secondary_neighbors_to_exclude_from_fit");
   struct DummyPackage {
     tuples::TaggedTuple<::Tags::Mean<ScalarTag>> means;
@@ -82,7 +82,7 @@ void test_secondary_neighbors_to_exclude_from_fit() noexcept {
           const std::unordered_set<
               std::pair<Direction<2>, ElementId<2>>,
               boost::hash<std::pair<Direction<2>, ElementId<2>>>>&
-              expected_excluded_neighbors) noexcept {
+              expected_excluded_neighbors) {
         const size_t tensor_index = 0;
         const auto excluded_neighbors_vector =
             Limiters::Weno_detail::secondary_neighbors_to_exclude_from_fit<
@@ -117,7 +117,7 @@ void test_secondary_neighbors_to_exclude_from_fit() noexcept {
 }
 
 void test_constrained_fit_1d(const Spectral::Quadrature quadrature =
-                                 Spectral::Quadrature::GaussLobatto) noexcept {
+                                 Spectral::Quadrature::GaussLobatto) {
   INFO("Testing Weno_detail::solve_constrained_fit in 1D");
   CAPTURE(quadrature);
   using TagsList = tmpl::list<ScalarTag>;
@@ -130,19 +130,19 @@ void test_constrained_fit_1d(const Spectral::Quadrature quadrature =
   const auto upper_xi_neighbor =
       std::make_pair(Direction<1>::upper_xi(), ElementId<1>{2});
 
-  const auto local_data = [&logical_coords]() noexcept {
+  const auto local_data = [&logical_coords]() {
     const auto& x = get<0>(logical_coords);
     return DataVector{1. - 0.2 * x + 0.4 * square(x)};
   }();
 
-  const auto lower_xi_vars = [&mesh, &logical_coords]() noexcept {
+  const auto lower_xi_vars = [&mesh, &logical_coords]() {
     Variables<TagsList> result(mesh.number_of_grid_points());
     const auto x = get<0>(logical_coords) - 2.;
     get(get<ScalarTag>(result)) = 4. - 0.5 * x - 0.1 * square(x);
     return result;
   }();
 
-  const auto upper_xi_vars = [&mesh, &logical_coords]() noexcept {
+  const auto upper_xi_vars = [&mesh, &logical_coords]() {
     Variables<TagsList> result(mesh.number_of_grid_points());
     const auto x = get<0>(logical_coords) + 2.;
     get(get<ScalarTag>(result)) = 1. - 0.2 * x + 0.1 * square(x);
@@ -150,7 +150,7 @@ void test_constrained_fit_1d(const Spectral::Quadrature quadrature =
   }();
 
   const auto make_tuple_of_means =
-      [&mesh](const Variables<TagsList>& vars) noexcept {
+      [&mesh](const Variables<TagsList>& vars) {
         return tuples::TaggedTuple<::Tags::Mean<ScalarTag>>(
             mean_value(get(get<ScalarTag>(vars)), mesh));
       };
@@ -198,7 +198,7 @@ void test_constrained_fit_1d(const Spectral::Quadrature quadrature =
     //     quad3[trial[c0, c1, c2], 0] == quad3[uLocal, 0],
     // {c0, c1, c2}
     // ]
-    const auto expected = [&quadrature, &logical_coords]() noexcept {
+    const auto expected = [&quadrature, &logical_coords]() {
       const auto& x = get<0>(logical_coords);
       const auto c =
           (quadrature == Spectral::Quadrature::GaussLobatto)
@@ -241,7 +241,7 @@ void test_constrained_fit_1d(const Spectral::Quadrature quadrature =
         primary_neighbor, neighbors_to_exclude);
 
     // Coefficients from Mathematica, using code similar to the one above.
-    const auto expected = [&quadrature, &logical_coords]() noexcept {
+    const auto expected = [&quadrature, &logical_coords]() {
       const auto& x = get<0>(logical_coords);
       const auto c =
           (quadrature == Spectral::Quadrature::GaussLobatto)
@@ -293,7 +293,7 @@ void test_constrained_fit_1d(const Spectral::Quadrature quadrature =
     // test is not an orthogonal test of the fitting itself, it is a useful test
     // of the caching mechanism in the corner case of having a single
     // neighboring element.
-    const auto expected = [&quadrature, &logical_coords]() noexcept {
+    const auto expected = [&quadrature, &logical_coords]() {
       const auto& x = get<0>(logical_coords);
       const auto c =
           (quadrature == Spectral::Quadrature::GaussLobatto)
@@ -313,9 +313,8 @@ void test_constrained_fit_1d(const Spectral::Quadrature quadrature =
 
 // Test in 2D using a vector tensor, to test multiple components.
 // Multiple components becomes very tedious in 3D, so 3D will test a scalar.
-void test_constrained_fit_2d_vector(
-    const Spectral::Quadrature quadrature =
-        Spectral::Quadrature::GaussLobatto) noexcept {
+void test_constrained_fit_2d_vector(const Spectral::Quadrature quadrature =
+                                        Spectral::Quadrature::GaussLobatto) {
   INFO("Testing Weno_detail::solve_constrained_fit in 2D");
   CAPTURE(quadrature);
   using TagsList = tmpl::list<VectorTag<2>>;
@@ -332,7 +331,7 @@ void test_constrained_fit_2d_vector(
   const auto upper_eta_neighbor =
       std::make_pair(Direction<2>::upper_eta(), ElementId<2>{4});
 
-  const auto local_tensor = [&logical_coords]() noexcept {
+  const auto local_tensor = [&logical_coords]() {
     const auto& x = get<0>(logical_coords);
     const auto& y = get<1>(logical_coords);
     return VectorTag<2>::type{{{DataVector{1. + 0.1 * x + 0.2 * y +
@@ -340,7 +339,7 @@ void test_constrained_fit_2d_vector(
                                 DataVector(x.size(), 2.)}}};
   }();
 
-  const auto lower_xi_vars = [&mesh, &logical_coords]() noexcept {
+  const auto lower_xi_vars = [&mesh, &logical_coords]() {
     Variables<TagsList> result(mesh.number_of_grid_points());
     const auto x = get<0>(logical_coords) - 2.;
     const auto& y = get<1>(logical_coords);
@@ -349,7 +348,7 @@ void test_constrained_fit_2d_vector(
     return result;
   }();
 
-  const auto upper_xi_vars = [&mesh, &logical_coords]() noexcept {
+  const auto upper_xi_vars = [&mesh, &logical_coords]() {
     Variables<TagsList> result(mesh.number_of_grid_points());
     const auto x = get<0>(logical_coords) + 2.;
     const auto& y = get<1>(logical_coords);
@@ -359,7 +358,7 @@ void test_constrained_fit_2d_vector(
     return result;
   }();
 
-  const auto lower_eta_vars = [&mesh, &logical_coords]() noexcept {
+  const auto lower_eta_vars = [&mesh, &logical_coords]() {
     Variables<TagsList> result(mesh.number_of_grid_points());
     const auto& x = get<0>(logical_coords);
     const auto y = get<1>(logical_coords) - 2.;
@@ -370,7 +369,7 @@ void test_constrained_fit_2d_vector(
     return result;
   }();
 
-  const auto upper_eta_vars = [&mesh, &logical_coords]() noexcept {
+  const auto upper_eta_vars = [&mesh, &logical_coords]() {
     Variables<TagsList> result(mesh.number_of_grid_points());
     const auto& x = get<0>(logical_coords);
     const auto y = get<1>(logical_coords) + 2.;
@@ -380,7 +379,7 @@ void test_constrained_fit_2d_vector(
   }();
 
   const auto make_tuple_of_means =
-      [&mesh](const Variables<TagsList>& vars) noexcept {
+      [&mesh](const Variables<TagsList>& vars) {
         return tuples::TaggedTuple<::Tags::Mean<VectorTag<2>>>(
             tnsr::I<double, 2>{
                 {{mean_value(get<0>(get<VectorTag<2>>(vars)), mesh),
@@ -465,7 +464,7 @@ void test_constrained_fit_2d_vector(
     //            0, 0] == quad43[uLocal, 0, 0],
     // {c0, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11}
     // ]
-    const auto expected = [&quadrature, &logical_coords]() noexcept {
+    const auto expected = [&quadrature, &logical_coords]() {
       const auto& x = get<0>(logical_coords);
       const auto& y = get<1>(logical_coords);
       // x-component coefficients
@@ -559,7 +558,7 @@ void test_constrained_fit_2d_vector(
     }
 
     // Coefficients from Mathematica, using code similar to the one above.
-    const auto expected = [&quadrature, &logical_coords]() noexcept {
+    const auto expected = [&quadrature, &logical_coords]() {
       const auto& x = get<0>(logical_coords);
       const auto& y = get<1>(logical_coords);
       const auto c =
@@ -605,7 +604,7 @@ void test_constrained_fit_2d_vector(
 }
 
 void test_constrained_fit_3d(const Spectral::Quadrature quadrature =
-                                 Spectral::Quadrature::GaussLobatto) noexcept {
+                                 Spectral::Quadrature::GaussLobatto) {
   INFO("Testing Weno_detail::solve_constrained_fit in 3D");
   CAPTURE(quadrature);
   using TagsList = tmpl::list<ScalarTag>;
@@ -632,44 +631,44 @@ void test_constrained_fit_3d(const Spectral::Quadrature quadrature =
   const auto mesh = Mesh<3>{{{3, 3, 4}}, Spectral::Basis::Legendre, quadrature};
   const auto logical_coords = logical_coordinates(mesh);
 
-  const auto local_data = [&logical_coords]() noexcept {
+  const auto local_data = [&logical_coords]() {
     const auto& x = get<0>(logical_coords);
     const auto& y = get<1>(logical_coords);
     const auto& z = get<2>(logical_coords);
     return DataVector{0.5 + 0.2 * x + 0.1 * square(y) * z};
   }();
 
-  const auto lower_xi_vars = [&mesh]() noexcept {
+  const auto lower_xi_vars = [&mesh]() {
     Variables<TagsList> result(mesh.number_of_grid_points());
     get(get<ScalarTag>(result)) = 1.2;
     return result;
   }();
 
-  const auto upper_xi_vars = [&mesh]() noexcept {
+  const auto upper_xi_vars = [&mesh]() {
     Variables<TagsList> result(mesh.number_of_grid_points());
     get(get<ScalarTag>(result)) = 4.;
     return result;
   }();
 
-  const auto lower_eta_vars = [&mesh]() noexcept {
+  const auto lower_eta_vars = [&mesh]() {
     Variables<TagsList> result(mesh.number_of_grid_points());
     get(get<ScalarTag>(result)) = 3.;
     return result;
   }();
 
-  const auto upper_eta_vars = [&mesh]() noexcept {
+  const auto upper_eta_vars = [&mesh]() {
     Variables<TagsList> result(mesh.number_of_grid_points());
     get(get<ScalarTag>(result)) = 2.5;
     return result;
   }();
 
-  const auto lower_zeta_vars = [&mesh]() noexcept {
+  const auto lower_zeta_vars = [&mesh]() {
     Variables<TagsList> result(mesh.number_of_grid_points());
     get(get<ScalarTag>(result)) = 2.;
     return result;
   }();
 
-  const auto upper_zeta_vars = [&mesh, &logical_coords]() noexcept {
+  const auto upper_zeta_vars = [&mesh, &logical_coords]() {
     Variables<TagsList> result(mesh.number_of_grid_points());
     const auto& x = get<0>(logical_coords);
     const auto& y = get<1>(logical_coords);
@@ -680,7 +679,7 @@ void test_constrained_fit_3d(const Spectral::Quadrature quadrature =
   }();
 
   const auto make_tuple_of_means =
-      [&mesh](const Variables<TagsList>& vars) noexcept {
+      [&mesh](const Variables<TagsList>& vars) {
         return tuples::TaggedTuple<::Tags::Mean<ScalarTag>>(
             mean_value(get(get<ScalarTag>(vars)), mesh));
       };
@@ -798,7 +797,7 @@ void test_constrained_fit_3d(const Spectral::Quadrature quadrature =
     //  c15, c16, c17, c18, c19, c20, c21, c22, c23, c24, c25, c26, c27,
     //  c28, c29, c30, c31, c32, c33, c34, c35}
     // ]
-    const auto expected = [&quadrature, &logical_coords]() noexcept {
+    const auto expected = [&quadrature, &logical_coords]() {
       const auto& x = get<0>(logical_coords);
       const auto& y = get<1>(logical_coords);
       const auto& z = get<2>(logical_coords);
@@ -939,7 +938,7 @@ void test_constrained_fit_3d(const Spectral::Quadrature quadrature =
         neighbors_to_exclude);
 
     // Coefficients from Mathematica, using code similar to the one above.
-    const auto expected = [&quadrature, &logical_coords]() noexcept {
+    const auto expected = [&quadrature, &logical_coords]() {
       const auto& x = get<0>(logical_coords);
       const auto& y = get<1>(logical_coords);
       const auto& z = get<2>(logical_coords);
@@ -1017,7 +1016,7 @@ void test_hweno_work(
             VolumeDim>,
         boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
         expected_excluded_neighbors,
-    Approx local_approx = approx) noexcept {
+    Approx local_approx = approx) {
   struct PackagedData {
     tuples::TaggedTuple<::Tags::Mean<VectorTag<VolumeDim>>> means;
     Variables<tmpl::list<VectorTag<VolumeDim>>> volume_data;
@@ -1025,8 +1024,7 @@ void test_hweno_work(
   };
 
   const auto make_tuple_of_means =
-      [&mesh](
-          const Variables<tmpl::list<VectorTag<VolumeDim>>>& vars) noexcept {
+      [&mesh](const Variables<tmpl::list<VectorTag<VolumeDim>>>& vars) {
         tuples::TaggedTuple<::Tags::Mean<VectorTag<VolumeDim>>> result(
             tnsr::I<double, VolumeDim>{});
         for (size_t i = 0; i < VolumeDim; ++i) {
@@ -1101,7 +1099,7 @@ void test_hweno_work(
 }
 
 void test_hweno_impl_1d(const Spectral::Quadrature quadrature =
-                            Spectral::Quadrature::GaussLobatto) noexcept {
+                            Spectral::Quadrature::GaussLobatto) {
   INFO("Testing hweno_impl in 1D");
   CAPTURE(quadrature);
   using TagsList = tmpl::list<VectorTag<1>>;
@@ -1114,19 +1112,19 @@ void test_hweno_impl_1d(const Spectral::Quadrature quadrature =
   const auto upper_xi_neighbor =
       std::make_pair(Direction<1>::upper_xi(), ElementId<1>{2});
 
-  const auto local_tensor = [&logical_coords]() noexcept {
+  const auto local_tensor = [&logical_coords]() {
     const auto& x = get<0>(logical_coords);
     return VectorTag<1>::type{{{DataVector{1. + 2.1 * x + 0.3 * square(x)}}}};
   }();
 
-  const auto lower_xi_vars = [&mesh, &logical_coords]() noexcept {
+  const auto lower_xi_vars = [&mesh, &logical_coords]() {
     Variables<TagsList> result(mesh.number_of_grid_points());
     const auto x = get<0>(logical_coords) - 2.;
     get<0>(get<VectorTag<1>>(result)) = 4. - 0.5 * x - 0.1 * square(x);
     return result;
   }();
 
-  const auto upper_xi_vars = [&mesh, &logical_coords]() noexcept {
+  const auto upper_xi_vars = [&mesh, &logical_coords]() {
     Variables<TagsList> result(mesh.number_of_grid_points());
     const auto x = get<0>(logical_coords) + 2.;
     get<0>(get<VectorTag<1>>(result)) = 1. - 0.2 * x + 0.1 * square(x);
@@ -1150,7 +1148,7 @@ void test_hweno_impl_1d(const Spectral::Quadrature quadrature =
 }
 
 void test_hweno_impl_2d(const Spectral::Quadrature quadrature =
-                            Spectral::Quadrature::GaussLobatto) noexcept {
+                            Spectral::Quadrature::GaussLobatto) {
   INFO("Testing hweno_impl in 2D");
   CAPTURE(quadrature);
   using TagsList = tmpl::list<VectorTag<2>>;
@@ -1167,7 +1165,7 @@ void test_hweno_impl_2d(const Spectral::Quadrature quadrature =
   const auto upper_eta_neighbor =
       std::make_pair(Direction<2>::upper_eta(), ElementId<2>{4});
 
-  const auto local_tensor = [&logical_coords]() noexcept {
+  const auto local_tensor = [&logical_coords]() {
     const auto& x = get<0>(logical_coords);
     const auto& y = get<1>(logical_coords);
     return VectorTag<2>::type{{{DataVector{1. + 0.1 * x + 0.2 * y +
@@ -1175,7 +1173,7 @@ void test_hweno_impl_2d(const Spectral::Quadrature quadrature =
                                 DataVector(x.size(), 2.)}}};
   }();
 
-  const auto lower_xi_vars = [&mesh, &logical_coords]() noexcept {
+  const auto lower_xi_vars = [&mesh, &logical_coords]() {
     Variables<TagsList> result(mesh.number_of_grid_points());
     const auto x = get<0>(logical_coords) - 2.;
     const auto& y = get<1>(logical_coords);
@@ -1184,7 +1182,7 @@ void test_hweno_impl_2d(const Spectral::Quadrature quadrature =
     return result;
   }();
 
-  const auto upper_xi_vars = [&mesh, &logical_coords]() noexcept {
+  const auto upper_xi_vars = [&mesh, &logical_coords]() {
     Variables<TagsList> result(mesh.number_of_grid_points());
     const auto x = get<0>(logical_coords) + 2.;
     const auto& y = get<1>(logical_coords);
@@ -1194,7 +1192,7 @@ void test_hweno_impl_2d(const Spectral::Quadrature quadrature =
     return result;
   }();
 
-  const auto lower_eta_vars = [&mesh, &logical_coords]() noexcept {
+  const auto lower_eta_vars = [&mesh, &logical_coords]() {
     Variables<TagsList> result(mesh.number_of_grid_points());
     const auto& x = get<0>(logical_coords);
     const auto y = get<1>(logical_coords) - 2.;
@@ -1205,7 +1203,7 @@ void test_hweno_impl_2d(const Spectral::Quadrature quadrature =
     return result;
   }();
 
-  const auto upper_eta_vars = [&mesh, &logical_coords]() noexcept {
+  const auto upper_eta_vars = [&mesh, &logical_coords]() {
     Variables<TagsList> result(mesh.number_of_grid_points());
     const auto& x = get<0>(logical_coords);
     const auto y = get<1>(logical_coords) + 2.;
@@ -1242,7 +1240,7 @@ void test_hweno_impl_2d(const Spectral::Quadrature quadrature =
 }
 
 void test_hweno_impl_3d(const Spectral::Quadrature quadrature =
-                            Spectral::Quadrature::GaussLobatto) noexcept {
+                            Spectral::Quadrature::GaussLobatto) {
   INFO("Testing hweno_impl in 3D");
   CAPTURE(quadrature);
   using TagsList = tmpl::list<VectorTag<3>>;
@@ -1263,7 +1261,7 @@ void test_hweno_impl_3d(const Spectral::Quadrature quadrature =
   const auto upper_zeta_neighbor =
       std::make_pair(Direction<3>::upper_zeta(), ElementId<3>{6});
 
-  const auto local_tensor = [&logical_coords]() noexcept {
+  const auto local_tensor = [&logical_coords]() {
     const auto& x = get<0>(logical_coords);
     const auto& y = get<1>(logical_coords);
     const auto& z = get<2>(logical_coords);
@@ -1272,7 +1270,7 @@ void test_hweno_impl_3d(const Spectral::Quadrature quadrature =
                                 DataVector{5. + 0.5 * x * y * z}}}};
   }();
 
-  const auto lower_xi_vars = [&mesh]() noexcept {
+  const auto lower_xi_vars = [&mesh]() {
     Variables<TagsList> result(mesh.number_of_grid_points());
     get<0>(get<VectorTag<3>>(result)) = 1.;
     get<1>(get<VectorTag<3>>(result)) = 1.;
@@ -1280,7 +1278,7 @@ void test_hweno_impl_3d(const Spectral::Quadrature quadrature =
     return result;
   }();
 
-  const auto upper_xi_vars = [&mesh]() noexcept {
+  const auto upper_xi_vars = [&mesh]() {
     Variables<TagsList> result(mesh.number_of_grid_points());
     get<0>(get<VectorTag<3>>(result)) = -8.1;
     get<1>(get<VectorTag<3>>(result)) = -1.5;
@@ -1288,7 +1286,7 @@ void test_hweno_impl_3d(const Spectral::Quadrature quadrature =
     return result;
   }();
 
-  const auto lower_eta_vars = [&mesh]() noexcept {
+  const auto lower_eta_vars = [&mesh]() {
     Variables<TagsList> result(mesh.number_of_grid_points());
     get<0>(get<VectorTag<3>>(result)) = 0.7;
     get<1>(get<VectorTag<3>>(result)) = 0.1;
@@ -1296,7 +1294,7 @@ void test_hweno_impl_3d(const Spectral::Quadrature quadrature =
     return result;
   }();
 
-  const auto upper_eta_vars = [&mesh]() noexcept {
+  const auto upper_eta_vars = [&mesh]() {
     Variables<TagsList> result(mesh.number_of_grid_points());
     get<0>(get<VectorTag<3>>(result)) = -3.9;
     get<1>(get<VectorTag<3>>(result)) = 1.2;
@@ -1304,7 +1302,7 @@ void test_hweno_impl_3d(const Spectral::Quadrature quadrature =
     return result;
   }();
 
-  const auto lower_zeta_vars = [&mesh]() noexcept {
+  const auto lower_zeta_vars = [&mesh]() {
     Variables<TagsList> result(mesh.number_of_grid_points());
     get<0>(get<VectorTag<3>>(result)) = -5.4;
     get<1>(get<VectorTag<3>>(result)) = 0.1;
@@ -1312,7 +1310,7 @@ void test_hweno_impl_3d(const Spectral::Quadrature quadrature =
     return result;
   }();
 
-  const auto upper_zeta_vars = [&mesh]() noexcept {
+  const auto upper_zeta_vars = [&mesh]() {
     Variables<TagsList> result(mesh.number_of_grid_points());
     get<0>(get<VectorTag<3>>(result)) = -2.3;
     get<1>(get<VectorTag<3>>(result)) = -0.9;

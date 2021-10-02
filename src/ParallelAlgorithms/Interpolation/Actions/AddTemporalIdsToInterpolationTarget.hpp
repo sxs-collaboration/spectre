@@ -48,15 +48,15 @@ namespace Actions {
 ///   - `Tags::TemporalIds<TemporalId>`
 template <typename InterpolationTargetTag>
 struct AddTemporalIdsToInterpolationTarget {
-  template <typename ParallelComponent, typename DbTags, typename Metavariables,
-            typename ArrayIndex, typename TemporalId,
-            Requires<tmpl::list_contains_v<
-                DbTags, Tags::TemporalIds<TemporalId>>> = nullptr>
+  template <
+      typename ParallelComponent, typename DbTags, typename Metavariables,
+      typename ArrayIndex, typename TemporalId,
+      Requires<tmpl::list_contains_v<DbTags, Tags::TemporalIds<TemporalId>>> =
+          nullptr>
   static void apply(db::DataBox<DbTags>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
-                    std::vector<TemporalId>&& temporal_ids) noexcept {
-
+                    std::vector<TemporalId>&& temporal_ids) {
     if constexpr (InterpolationTargetTag::compute_target_points::is_sequential::
                       value) {
       // InterpolationTarget is sequential.

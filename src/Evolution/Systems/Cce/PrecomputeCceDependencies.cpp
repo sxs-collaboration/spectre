@@ -25,7 +25,7 @@ void angular_derivative_of_r_divided_by_r_impl(
                      Spectral::Swsh::Tags::derivative_spin_weight<DerivKind>>*>
         d_r_divided_by_r,
     const SpinWeighted<ComplexDataVector, 0>& boundary_r, const size_t l_max,
-    const size_t number_of_radial_points) noexcept {
+    const size_t number_of_radial_points) {
   const size_t number_of_angular_points =
       Spectral::Swsh::number_of_swsh_collocation_points(l_max);
   // first set the first angular view
@@ -56,18 +56,18 @@ angular_derivative_of_r_divided_by_r_impl<Spectral::Swsh::Tags::Eth>(
                                Spectral::Swsh::Tags::Eth>>*>
         d_r_divided_by_r,
     const SpinWeighted<ComplexDataVector, 0>& boundary_r, const size_t l_max,
-    const size_t number_of_radial_points) noexcept;
+    const size_t number_of_radial_points);
 
 template void
 angular_derivative_of_r_divided_by_r_impl<Spectral::Swsh::Tags::EthEth>(
     const gsl::not_null<SpinWeighted<ComplexDataVector, 2>*> d_r_divided_by_r,
     const SpinWeighted<ComplexDataVector, 0>& boundary_r, const size_t l_max,
-    const size_t number_of_radial_points) noexcept;
+    const size_t number_of_radial_points);
 
 template void
 angular_derivative_of_r_divided_by_r_impl<Spectral::Swsh::Tags::EthEthbar>(
     const gsl::not_null<SpinWeighted<ComplexDataVector, 0>*> d_r_divided_by_r,
     const SpinWeighted<ComplexDataVector, 0>& boundary_r, const size_t l_max,
-    const size_t number_of_radial_points) noexcept;
+    const size_t number_of_radial_points);
 }  // namespace detail
 }  // namespace Cce

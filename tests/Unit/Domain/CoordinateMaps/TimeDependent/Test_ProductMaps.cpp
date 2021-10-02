@@ -37,7 +37,7 @@ void test_product_of_2_maps_time_dep(
     const double x_target_b, const double xi, const double x, const double eta,
     const double y, const double y_source_a, const double y_source_b,
     const double y_target_a, const double y_target_b,
-    const std::array<double, 2>& expected_frame_velocity) noexcept {
+    const std::array<double, 2>& expected_frame_velocity) {
   using AffineMap = CoordinateMaps::Affine;
   using TranslationMap = CoordinateMaps::TimeDependent::Translation<1>;
   static_assert(
@@ -76,7 +76,7 @@ void test_product_of_2_maps_time_dep(
   const auto inv_jac_xi = map2d.inv_jacobian(point_xi, time, functions_of_time);
 
   const auto check_jac = [](const auto& jac, const auto& expected_jac_00,
-                            const auto& expected_jac_11) noexcept {
+                            const auto& expected_jac_11) {
     CHECK(get<0, 0>(jac) == expected_jac_00);
     CHECK(get<0, 1>(jac) == 0.0);
     CHECK(get<1, 0>(jac) == 0.0);
@@ -146,7 +146,7 @@ void test_product_of_2_maps_time_dep(
   CHECK_FALSE(map2d != map2d);
 }
 
-void test_product_of_2_maps_time_dep() noexcept {
+void test_product_of_2_maps_time_dep() {
   INFO("Product of two maps with time dependence");
   constexpr size_t deriv_order = 3;
   using affine_map = CoordinateMaps::Affine;
@@ -289,7 +289,7 @@ void test_product_of_3_maps_time_dep(
     const double y_source_b, const double y_target_a, const double y_target_b,
     const double z_source_a, const double z_source_b, const double z_target_a,
     const double z_target_b,
-    const std::array<double, 3>& expected_frame_velocity) noexcept {
+    const std::array<double, 3>& expected_frame_velocity) {
   using AffineMap = CoordinateMaps::Affine;
   using TranslationMap = CoordinateMaps::TimeDependent::Translation<1>;
   static_assert(
@@ -338,7 +338,7 @@ void test_product_of_3_maps_time_dep(
 
   const auto check_jac = [](const auto& jac, const auto& expected_jac_00,
                             const auto& expected_jac_11,
-                            const auto& expected_jac_22) noexcept {
+                            const auto& expected_jac_22) {
     CHECK(get<0, 0>(jac) == expected_jac_00);
     CHECK(get<1, 1>(jac) == expected_jac_11);
     CHECK(get<2, 2>(jac) == expected_jac_22);
@@ -422,7 +422,7 @@ void test_product_of_3_maps_time_dep(
   CHECK_FALSE(map3d != map3d);
 }
 
-void test_product_of_3_maps() noexcept {
+void test_product_of_3_maps() {
   INFO("Product of 3 maps");
   constexpr size_t deriv_order = 3;
   using affine_map = CoordinateMaps::Affine;

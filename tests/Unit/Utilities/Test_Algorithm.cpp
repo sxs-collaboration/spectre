@@ -13,14 +13,14 @@
 #include "Utilities/Numeric.hpp"
 
 namespace {
-constexpr bool check_swap() noexcept {
+constexpr bool check_swap() {
   int x = 4;
   int y = 444;
   cpp20::swap(x, y);
   return x == 444 and y == 4;
 }
 
-constexpr bool check_iter_swap() noexcept {
+constexpr bool check_iter_swap() {
   const size_t size = 6;
   cpp20::array<size_t, size> a{};
   cpp2b::iota(a.begin(), a.end(), size_t(1));
@@ -30,7 +30,7 @@ constexpr bool check_iter_swap() noexcept {
   return a == expected;
 }
 
-constexpr bool check_reverse() noexcept {
+constexpr bool check_reverse() {
   const size_t size = 6;
   cpp20::array<size_t, size> a{};
   cpp2b::iota(a.begin(), a.end(), size_t(1));
@@ -40,7 +40,7 @@ constexpr bool check_reverse() noexcept {
   return a == expected;
 }
 
-constexpr bool check_reverse_random_access() noexcept {
+constexpr bool check_reverse_random_access() {
   const size_t size = 6;
   cpp20::array<size_t, size> a{};
   cpp2b::iota(a.begin(), a.end(), size_t(1));
@@ -52,7 +52,7 @@ constexpr bool check_reverse_random_access() noexcept {
   return a == expected;
 }
 
-constexpr bool check_next_permutation() noexcept {
+constexpr bool check_next_permutation() {
   const size_t size = 6;
   cpp20::array<size_t, size> a{{1, 2, 4, 6, 3, 5}};
   cpp20::next_permutation(a.begin(), a.end());
@@ -61,7 +61,7 @@ constexpr bool check_next_permutation() noexcept {
   return a == expected;
 }
 
-void test_constexpr_swap_iter_swap_reverse_etc() noexcept {
+void test_constexpr_swap_iter_swap_reverse_etc() {
   // Check the functions at runtime
   CHECK(check_swap());
   CHECK(check_iter_swap());
@@ -79,7 +79,7 @@ void test_constexpr_swap_iter_swap_reverse_etc() noexcept {
                 "Failed test Unit.Utilities.Algorithm");
 }
 
-void test_all_of_and_any_of_and_none_of() noexcept {
+void test_all_of_and_any_of_and_none_of() {
   // Test wrappers around STL algorithms
   CHECK(alg::all_of(std::vector<int>{1, 1, 1, 1},
                     [](const int t) { return t == 1; }));
@@ -103,7 +103,7 @@ void test_all_of_and_any_of_and_none_of() noexcept {
                            [](const int t) { return t == 1; }));
 }
 
-void test_count_related() noexcept {
+void test_count_related() {
   std::vector<int> a{1, 2, 3, 4, 3, 5};
   CHECK(alg::count(a, 0) == 0);
   CHECK(alg::count(a, -1) == 0);
@@ -121,22 +121,22 @@ void test_count_related() noexcept {
   CHECK(alg::count_if(a, [](const int t) { return t % 7 == 0; }) == 0);
 }
 
-void test_equal() noexcept {
+void test_equal() {
   // Test alg::equal
   CHECK(alg::equal(std::vector<int>{1, -7, 8, 9},
                    std::array<int, 4>{{1, -7, 8, 9}}));
   CHECK_FALSE(alg::equal(std::vector<int>{1, 7, 8, 9},
                          std::array<int, 4>{{1, -7, 8, 9}}));
 
-  CHECK(alg::equal(
-      std::vector<int>{1, -7, 8, 9}, std::array<int, 4>{{-1, 7, -8, -9}},
-      [](const int lhs, const int rhs) noexcept { return lhs == -rhs; }));
+  CHECK(alg::equal(std::vector<int>{1, -7, 8, 9},
+                   std::array<int, 4>{{-1, 7, -8, -9}},
+                   [](const int lhs, const int rhs) { return lhs == -rhs; }));
   CHECK_FALSE(alg::equal(
       std::vector<int>{1, -7, 8, 9}, std::array<int, 4>{{-1, -7, -8, -9}},
-      [](const int lhs, const int rhs) noexcept { return lhs == -rhs; }));
+      [](const int lhs, const int rhs) { return lhs == -rhs; }));
 }
 
-void test_min_max_element() noexcept {
+void test_min_max_element() {
   std::vector<int> t{3, 5, 8, -1};
   CHECK(*alg::min_element(t) == -1);
   CHECK(*alg::max_element(t) == 8);
@@ -146,7 +146,7 @@ void test_min_max_element() noexcept {
         -1);
 }
 
-void test_find_related() noexcept {
+void test_find_related() {
   const std::vector<int> a{1, 2, 3, 4};
   CHECK(alg::find(a, 3) == a.begin() + 2);
   CHECK(alg::find(a, 5) == a.end());
@@ -157,7 +157,7 @@ void test_find_related() noexcept {
   *alg::find(a_copy, 3) = 4;
   CHECK(alg::find(a_copy, 3) == a_copy.end());
 
-  const auto greater_than_three = [](const int t) noexcept { return t > 3; };
+  const auto greater_than_three = [](const int t) { return t > 3; };
   CHECK(alg::find_if(a, greater_than_three) == a.end() - 1);
   CHECK(alg::find_if(a, [](const int t) { return t < 0; }) == a.end());
   CHECK(alg::found_if(a, greater_than_three));
@@ -167,7 +167,7 @@ void test_find_related() noexcept {
   *alg::find_if(a_copy, greater_than_three) = 1;
   CHECK(alg::find_if(a_copy, greater_than_three) == a_copy.end());
 
-  const auto less_than_three = [](const int t) noexcept { return t < 3; };
+  const auto less_than_three = [](const int t) { return t < 3; };
   CHECK(alg::find_if_not(a, less_than_three) == a.end() - 2);
   CHECK(alg::find_if_not(a, [](const int t) { return t < 8; }) == a.end());
   CHECK(alg::found_if_not(a, less_than_three));
@@ -178,7 +178,7 @@ void test_find_related() noexcept {
   CHECK(alg::find_if_not(a_copy, less_than_three) == a_copy.begin() + 3);
 }
 
-void test_for_each() noexcept {
+void test_for_each() {
   int count = 0;
   const std::vector<size_t> a{1, 7, 234, 987, 32};
   alg::for_each(a, [&count](const size_t value) {
@@ -197,7 +197,7 @@ void test_for_each() noexcept {
   CHECK(b == std::vector<size_t>{1, 7, 2 * 234, 2 * 987, 32});
 }
 
-void test_remove() noexcept {
+void test_remove() {
   std::string str1 = "Test with some   spaces";
   str1.erase(alg::remove(str1, ' '), str1.end());
   CHECK(str1 == "Testwithsomespaces");
@@ -209,7 +209,7 @@ void test_remove() noexcept {
   CHECK(str2 == "Textwithsomewhitespaces");
 }
 
-void test_sort() noexcept {
+void test_sort() {
   std::vector<int> t_orig{3, 5, 8, -1};
   std::vector<int> t0 = t_orig;
   std::vector<int> t0_copy = t0;
@@ -224,7 +224,7 @@ void test_sort() noexcept {
   CHECK(t1 == t1_copy);
 }
 
-void test_transform() noexcept {
+void test_transform() {
   std::vector<int> t0{3, 5, 8, -1};
   std::vector<int> t1{8, 2, 7, -5};
   std::vector<int> result(t0.size());

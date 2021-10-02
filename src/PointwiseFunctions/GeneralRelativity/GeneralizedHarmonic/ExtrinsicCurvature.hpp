@@ -50,13 +50,13 @@ void extrinsic_curvature(
     gsl::not_null<tnsr::ii<DataType, SpatialDim, Frame>*> ex_curv,
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_normal_vector,
     const tnsr::aa<DataType, SpatialDim, Frame>& pi,
-    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept;
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi);
 
 template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::ii<DataType, SpatialDim, Frame> extrinsic_curvature(
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_normal_vector,
     const tnsr::aa<DataType, SpatialDim, Frame>& pi,
-    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept;
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi);
 /// @}
 
 namespace Tags {
@@ -81,7 +81,7 @@ struct ExtrinsicCurvatureCompute
       gsl::not_null<tnsr::ii<DataVector, SpatialDim, Frame>*>,
       const tnsr::A<DataVector, SpatialDim, Frame>&,
       const tnsr::aa<DataVector, SpatialDim, Frame>&,
-      const tnsr::iaa<DataVector, SpatialDim, Frame>&) noexcept>(
+      const tnsr::iaa<DataVector, SpatialDim, Frame>&)>(
       &extrinsic_curvature<SpatialDim, Frame, DataVector>);
 
   using base = gr::Tags::ExtrinsicCurvature<SpatialDim, Frame, DataVector>;
@@ -109,10 +109,11 @@ struct TraceExtrinsicCurvatureCompute
 
   using return_type = Scalar<DataVector>;
 
-  static constexpr auto function = static_cast<void (*)(
-      gsl::not_null<Scalar<DataVector>*>,
-      const tnsr::ii<DataVector, SpatialDim, Frame>&,
-      const tnsr::II<DataVector, SpatialDim, Frame>&) noexcept>(&trace);
+  static constexpr auto function =
+      static_cast<void (*)(gsl::not_null<Scalar<DataVector>*>,
+                           const tnsr::ii<DataVector, SpatialDim, Frame>&,
+                           const tnsr::II<DataVector, SpatialDim, Frame>&)>(
+          &trace);
 
   using base = gr::Tags::TraceExtrinsicCurvature<DataVector>;
 };

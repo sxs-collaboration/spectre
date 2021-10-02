@@ -29,5 +29,5 @@ class StepController : public PUP::able {
   /// \endcond
 
   virtual TimeDelta choose_step(const Time& time,
-                                double desired_step) const noexcept = 0;
+                                double desired_step) const = 0;
 };

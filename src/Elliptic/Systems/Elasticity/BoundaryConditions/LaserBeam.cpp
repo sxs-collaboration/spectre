@@ -16,7 +16,7 @@ void LaserBeamImpl::apply(
     const gsl::not_null<tnsr::I<DataVector, 3>*> /*displacement*/,
     const gsl::not_null<tnsr::I<DataVector, 3>*> n_dot_minus_stress,
     const tnsr::I<DataVector, 3>& x,
-    const tnsr::i<DataVector, 3>& face_normal) const noexcept {
+    const tnsr::i<DataVector, 3>& face_normal) const {
   const auto n_dot_x = get<0>(face_normal) * get<0>(x) +
                        get<1>(face_normal) * get<1>(x) +
                        get<2>(face_normal) * get<2>(x);
@@ -31,17 +31,17 @@ void LaserBeamImpl::apply(
 
 void LaserBeamImpl::apply_linearized(
     const gsl::not_null<tnsr::I<DataVector, 3>*> /*displacement*/,
-    const gsl::not_null<tnsr::I<DataVector, 3>*> n_dot_minus_stress) noexcept {
+    const gsl::not_null<tnsr::I<DataVector, 3>*> n_dot_minus_stress) {
   get<0>(*n_dot_minus_stress) = 0.;
   get<1>(*n_dot_minus_stress) = 0.;
   get<2>(*n_dot_minus_stress) = 0.;
 }
 
-bool operator==(const LaserBeamImpl& lhs, const LaserBeamImpl& rhs) noexcept {
+bool operator==(const LaserBeamImpl& lhs, const LaserBeamImpl& rhs) {
   return lhs.beam_width() == rhs.beam_width();
 }
 
-bool operator!=(const LaserBeamImpl& lhs, const LaserBeamImpl& rhs) noexcept {
+bool operator!=(const LaserBeamImpl& lhs, const LaserBeamImpl& rhs) {
   return not(lhs == rhs);
 }
 

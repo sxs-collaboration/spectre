@@ -23,23 +23,21 @@ class ModalVector;
 namespace {
 struct ComplexScalarTag : db::SimpleTag {
   using type = Scalar<ComplexDataVector>;
-  static std::string name() noexcept { return "ComplexScalar"; }
+  static std::string name() { return "ComplexScalar"; }
 };
 
 struct ScalarTag : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static std::string name() noexcept { return "Scalar"; }
+  static std::string name() { return "Scalar"; }
 };
 
 template <size_t Dim>
 struct VectorTag : db::SimpleTag {
   using type = tnsr::I<DataVector, Dim>;
-  static std::string name() noexcept {
-    return "I<" + std::to_string(Dim) + ">";
-  }
+  static std::string name() { return "I<" + std::to_string(Dim) + ">"; }
 };
 
-void test_mean_tag() noexcept {
+void test_mean_tag() {
   static_assert(
       std::is_same_v<typename Tags::Mean<ScalarTag>::type, Scalar<double>>,
       "Failed testing Tags::Mean<ScalarTag>");
@@ -54,7 +52,7 @@ void test_mean_tag() noexcept {
   TestHelpers::db::test_prefix_tag<Tags::Mean<VectorTag<3>>>("Mean(I<3>)");
 }
 
-void test_modal_tag() noexcept {
+void test_modal_tag() {
   static_assert(std::is_same_v<typename Tags::Modal<ScalarTag>::type,
                                Scalar<ModalVector>>,
                 "Failed testing Tags::Modal<ScalarTag>");
@@ -69,7 +67,7 @@ void test_modal_tag() noexcept {
   TestHelpers::db::test_prefix_tag<Tags::Modal<VectorTag<3>>>("Modal(I<3>)");
 }
 
-void test_spin_weighted_tag() noexcept {
+void test_spin_weighted_tag() {
   static_assert(
       std::is_same_v<
           typename Tags::SpinWeighted<ComplexScalarTag,
@@ -81,8 +79,7 @@ void test_spin_weighted_tag() noexcept {
         "SpinWeighted(ComplexScalar, -2)");
 }
 
-
-void test_multiplies_tag() noexcept {
+void test_multiplies_tag() {
   using test_multiplies_tag = Tags::Multiplies<
       Tags::SpinWeighted<ComplexScalarTag, std::integral_constant<int, 1>>,
       Tags::SpinWeighted<ComplexScalarTag, std::integral_constant<int, -2>>>;

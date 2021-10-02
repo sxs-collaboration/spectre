@@ -19,7 +19,7 @@ namespace ScalarAdvection::Solutions {
 template <typename DataType>
 tuples::TaggedTuple<ScalarAdvection::Tags::U> Krivodonova::variables(
     const tnsr::I<DataType, 1>& x, double t,
-    tmpl::list<ScalarAdvection::Tags::U> /*meta*/) const noexcept {
+    tmpl::list<ScalarAdvection::Tags::U> /*meta*/) const {
   // map each grid points x(t) back to its initial position within [-1, 1] at
   // t=0
   auto x0 = make_with_value<tnsr::I<DataType, 1>>(x, 0.0);
@@ -45,11 +45,11 @@ tuples::TaggedTuple<ScalarAdvection::Tags::U> Krivodonova::variables(
   const double beta{log(2.0) / (36.0 * square(delta))};
 
   const auto F = [](const double x_var, const double alpha_var,
-                    const double a_var) noexcept {
+                    const double a_var) {
     return sqrt(fmax(1.0 - pow(alpha_var, 2.0) * pow(x_var - a_var, 2.0), 0.0));
   };
   const auto G = [](const double x_var, const double beta_var,
-                    const double z_var) noexcept {
+                    const double z_var) {
     return exp(-beta_var * pow(x_var - z_var, 2.0));
   };
 
@@ -78,14 +78,13 @@ tuples::TaggedTuple<ScalarAdvection::Tags::U> Krivodonova::variables(
   return u_variable;
 }
 
-void Krivodonova::pup(PUP::er& /*p*/) noexcept {}
+void Krivodonova::pup(PUP::er& /*p*/) {}
 
-bool operator==(const Krivodonova& /*lhs*/,
-                const Krivodonova& /*rhs*/) noexcept {
+bool operator==(const Krivodonova& /*lhs*/, const Krivodonova& /*rhs*/) {
   return true;
 }
 
-bool operator!=(const Krivodonova& lhs, const Krivodonova& rhs) noexcept {
+bool operator!=(const Krivodonova& lhs, const Krivodonova& rhs) {
   return not(lhs == rhs);
 }
 
@@ -97,7 +96,7 @@ bool operator!=(const Krivodonova& lhs, const Krivodonova& rhs) noexcept {
   template tuples::TaggedTuple<ScalarAdvection::Tags::U> \
   ScalarAdvection::Solutions::Krivodonova::variables(    \
       const tnsr::I<DTYPE(data), 1>& x, double t,        \
-      tmpl::list<ScalarAdvection::Tags::U> /*meta*/) const noexcept;
+      tmpl::list<ScalarAdvection::Tags::U> /*meta*/) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (DataVector))
 

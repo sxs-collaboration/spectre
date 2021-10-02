@@ -24,8 +24,7 @@
 #include "Utilities/Gsl.hpp"
 
 namespace GeneralizedHarmonic::ConstraintDamping {
-TimeDependentTripleGaussian::TimeDependentTripleGaussian(
-    CkMigrateMessage* msg) noexcept
+TimeDependentTripleGaussian::TimeDependentTripleGaussian(CkMigrateMessage* msg)
     : DampingFunction<3, Frame::Grid>(msg) {}
 
 TimeDependentTripleGaussian::TimeDependentTripleGaussian(
@@ -34,7 +33,7 @@ TimeDependentTripleGaussian::TimeDependentTripleGaussian(
     const double width_2, const std::array<double, 3>& center_2,
     const double amplitude_3, const double width_3,
     const std::array<double, 3>& center_3,
-    std::string function_of_time_for_scaling) noexcept
+    std::string function_of_time_for_scaling)
     : constant_(constant),
       amplitude_1_(amplitude_1),
       inverse_width_1_(1.0 / width_1),
@@ -53,7 +52,7 @@ void TimeDependentTripleGaussian::apply_call_operator(
     const tnsr::I<T, 3, Frame::Grid>& x, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time) const noexcept {
+        functions_of_time) const {
   ASSERT(functions_of_time.at(function_of_time_for_scaling_)
                  ->func(time)[0]
                  .size() == 1,
@@ -94,7 +93,7 @@ void TimeDependentTripleGaussian::operator()(
     const tnsr::I<double, 3, Frame::Grid>& x, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time) const noexcept {
+        functions_of_time) const {
   apply_call_operator(value_at_x, x, time, functions_of_time);
 }
 void TimeDependentTripleGaussian::operator()(
@@ -102,7 +101,7 @@ void TimeDependentTripleGaussian::operator()(
     const tnsr::I<DataVector, 3, Frame::Grid>& x, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time) const noexcept {
+        functions_of_time) const {
   destructive_resize_components(value_at_x, get<0>(x).size());
   apply_call_operator(value_at_x, x, time, functions_of_time);
 }
@@ -122,13 +121,13 @@ void TimeDependentTripleGaussian::pup(PUP::er& p) {
   p | function_of_time_for_scaling_;
 }
 
-auto TimeDependentTripleGaussian::get_clone() const noexcept
+auto TimeDependentTripleGaussian::get_clone() const
     -> std::unique_ptr<DampingFunction<3, Frame::Grid>> {
   return std::make_unique<TimeDependentTripleGaussian>(*this);
 }
 
 bool operator!=(const TimeDependentTripleGaussian& lhs,
-                const TimeDependentTripleGaussian& rhs) noexcept {
+                const TimeDependentTripleGaussian& rhs) {
   return not(lhs == rhs);
 }
 }  // namespace GeneralizedHarmonic::ConstraintDamping

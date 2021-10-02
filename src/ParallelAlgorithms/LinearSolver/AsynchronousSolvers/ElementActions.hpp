@@ -70,11 +70,11 @@ template <typename OptionsGroup>
 struct ResidualReductionFormatter
     : tt::ConformsTo<observers::protocols::ReductionDataFormatter> {
   using reduction_data = async_solvers::reduction_data;
-  ResidualReductionFormatter() noexcept = default;
-  ResidualReductionFormatter(std::string local_section_observation_key) noexcept
+  ResidualReductionFormatter() = default;
+  ResidualReductionFormatter(std::string local_section_observation_key)
       : section_observation_key(std::move(local_section_observation_key)) {}
   std::string operator()(const size_t iteration_id,
-                         const double residual) const noexcept {
+                         const double residual) const {
     if (iteration_id == 0) {
       return Options::name<OptionsGroup>() + section_observation_key +
              " initialized with residual: " + get_output(residual);
@@ -86,7 +86,7 @@ struct ResidualReductionFormatter
     }
   }
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept { p | section_observation_key; }
+  void pup(PUP::er& p) { p | section_observation_key; }
   std::string section_observation_key{};
 };
 
@@ -95,7 +95,7 @@ template <typename OptionsGroup, typename ParallelComponent,
 void contribute_to_residual_observation(
     const size_t iteration_id, const double residual_magnitude_square,
     Parallel::GlobalCache<Metavariables>& cache, const ArrayIndex& array_index,
-    const std::string& section_observation_key) noexcept {
+    const std::string& section_observation_key) {
   auto& local_observer =
       *Parallel::get_parallel_component<observers::Observer<Metavariables>>(
            cache)
@@ -166,7 +166,7 @@ struct InitializeElement {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     // The `PrepareSolve` action populates these tags with initial
     // values, except for `operator_applied_to_fields_tag` which is
     // expected to be updated in every iteration of the algorithm
@@ -183,7 +183,7 @@ struct RegisterObservers {
             typename ArrayIndex>
   static std::pair<observers::TypeOfObservation, observers::ObservationKey>
   register_info(const db::DataBox<DbTagsList>& box,
-                const ArrayIndex& /*array_index*/) noexcept {
+                const ArrayIndex& /*array_index*/) {
     // Get the observation key, or "Unused" if the element does not belong
     // to a section with this tag. In the latter case, no observations will
     // ever be contributed.
@@ -255,7 +255,7 @@ struct PrepareSolve {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     constexpr size_t iteration_id = 0;
 
     if (UNLIKELY(get<logging::Tags::Verbosity<OptionsGroup>>(box) >=
@@ -269,7 +269,7 @@ struct PrepareSolve {
         make_not_null(&box),
         [](const gsl::not_null<size_t*> local_iteration_id,
            const gsl::not_null<Convergence::HasConverged*> has_converged,
-           const size_t num_iterations) noexcept {
+           const size_t num_iterations) {
           *local_iteration_id = iteration_id;
           *has_converged =
               Convergence::HasConverged{num_iterations, iteration_id};
@@ -353,14 +353,14 @@ struct CompleteStep {
       tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     // Prepare for next iteration
     db::mutate<Convergence::Tags::IterationId<OptionsGroup>,
                Convergence::Tags::HasConverged<OptionsGroup>>(
         make_not_null(&box),
         [](const gsl::not_null<size_t*> iteration_id,
            const gsl::not_null<Convergence::HasConverged*> has_converged,
-           const size_t num_iterations) noexcept {
+           const size_t num_iterations) {
           ++(*iteration_id);
           *has_converged =
               Convergence::HasConverged{num_iterations, *iteration_id};

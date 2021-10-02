@@ -32,7 +32,7 @@ struct LaneEmdenGravitationalFieldProxy
       const gsl::not_null<Scalar<DataVector>*> source_energy_density,
       const Scalar<DataVector>& mass_density_cons,
       const tnsr::I<DataVector, 3>& momentum_density,
-      const tnsr::I<DataVector, 3>& x) const noexcept {
+      const tnsr::I<DataVector, 3>& x) const {
     this->apply(source_momentum_density, source_energy_density,
                 mass_density_cons, momentum_density, star_, x);
   }
@@ -41,7 +41,7 @@ struct LaneEmdenGravitationalFieldProxy
   NewtonianEuler::Solutions::LaneEmdenStar star_{};
 };
 
-void test_sources() noexcept {
+void test_sources() {
   // Nothing special about these values, we just want them to be non-unity and
   // to be different from each other:
   const double central_mass_density = 0.7;

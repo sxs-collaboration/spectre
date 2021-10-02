@@ -27,7 +27,7 @@ class FullSlab : public StepController {
  public:
   /// \cond
   FullSlab() = default;
-  explicit FullSlab(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit FullSlab(CkMigrateMessage* /*unused*/) {}
   WRAPPED_PUPable_decl(FullSlab);  // NOLINT
   /// \endcond
 
@@ -35,7 +35,7 @@ class FullSlab : public StepController {
   static constexpr Options::String help = {"Chooses the full slab."};
 
   TimeDelta choose_step(const Time& time,
-                        const double desired_step) const noexcept override {
+                        const double desired_step) const override {
     ASSERT(time.is_at_slab_boundary(),
            "Trying to take a full slab step from the middle of a slab.");
     return desired_step > 0 ? time.slab().duration() : -time.slab().duration();

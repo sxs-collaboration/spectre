@@ -37,37 +37,37 @@ struct CommonVariables : AnalyticData::CommonVariables<DataType, Cache> {
       gsl::not_null<tnsr::I<DataType, Dim>*> conformal_factor_flux,
       gsl::not_null<Cache*> cache,
       ::Tags::Flux<Tags::ConformalFactor<DataType>, tmpl::size_t<Dim>,
-                   Frame::Inertial> /*meta*/) const noexcept;
+                   Frame::Inertial> /*meta*/) const;
   void operator()(
       gsl::not_null<tnsr::I<DataType, Dim>*> lapse_times_conformal_factor_flux,
       gsl::not_null<Cache*> cache,
       ::Tags::Flux<Tags::LapseTimesConformalFactor<DataType>, tmpl::size_t<Dim>,
-                   Frame::Inertial> /*meta*/) const noexcept;
+                   Frame::Inertial> /*meta*/) const;
   void operator()(
       gsl::not_null<tnsr::II<DataType, Dim>*> longitudinal_shift_excess,
       gsl::not_null<Cache*> cache,
       Tags::LongitudinalShiftExcess<DataType, Dim, Frame::Inertial> /*meta*/)
-      const noexcept;
+      const;
   void operator()(
       gsl::not_null<tnsr::I<DataType, Dim>*> shift, gsl::not_null<Cache*> cache,
-      gr::Tags::Shift<Dim, Frame::Inertial, DataType> /*meta*/) const noexcept;
+      gr::Tags::Shift<Dim, Frame::Inertial, DataType> /*meta*/) const;
   void operator()(
       gsl::not_null<Scalar<DataType>*>
           longitudinal_shift_minus_dt_conformal_metric_square,
       gsl::not_null<Cache*> cache,
       Tags::LongitudinalShiftMinusDtConformalMetricSquare<DataType> /*meta*/)
-      const noexcept;
+      const;
   void operator()(
       gsl::not_null<Scalar<DataType>*>
           longitudinal_shift_minus_dt_conformal_metric_over_lapse_square,
       gsl::not_null<Cache*> cache,
       Tags::LongitudinalShiftMinusDtConformalMetricOverLapseSquare<
-          DataType> /*meta*/) const noexcept;
-  void operator()(gsl::not_null<Scalar<DataType>*>
-                      shift_dot_deriv_extrinsic_curvature_trace,
-                  gsl::not_null<Cache*> cache,
-                  Tags::ShiftDotDerivExtrinsicCurvatureTrace<DataType> /*meta*/)
-      const noexcept;
+          DataType> /*meta*/) const;
+  void operator()(
+      gsl::not_null<Scalar<DataType>*>
+          shift_dot_deriv_extrinsic_curvature_trace,
+      gsl::not_null<Cache*> cache,
+      Tags::ShiftDotDerivExtrinsicCurvatureTrace<DataType> /*meta*/) const;
 };
 
 }  // namespace Xcts::Solutions

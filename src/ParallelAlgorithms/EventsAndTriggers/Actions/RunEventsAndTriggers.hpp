@@ -32,7 +32,7 @@ struct RunEventsAndTriggers {
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& array_index, const ActionList /*meta*/,
-                    const ParallelComponent* const component) noexcept {
+                    const ParallelComponent* const component) {
     Parallel::get<Tags::EventsAndTriggers>(cache).run_events(
         box, cache, array_index, component);
 

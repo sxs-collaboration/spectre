@@ -44,8 +44,7 @@ namespace evolution::dg::Actions::detail {
           mesh_velocity,                                                      \
       const std::optional<Scalar<DataVector>>& div_mesh_velocity,             \
       const Scalar<DataVector>& u,                                            \
-      const tnsr::I<DataVector, DIM(data), Frame::Inertial>&                  \
-          velocity_field) noexcept;
+      const tnsr::I<DataVector, DIM(data), Frame::Inertial>& velocity_field);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2))
 

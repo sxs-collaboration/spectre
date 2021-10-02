@@ -38,7 +38,7 @@ void primal_fluxes(
     const tnsr::ii<DataVector, Dim>& strain,
     const ConstitutiveRelations::ConstitutiveRelation<Dim>&
         constitutive_relation,
-    const tnsr::I<DataVector, Dim>& coordinates) noexcept;
+    const tnsr::I<DataVector, Dim>& coordinates);
 
 /*!
  * \brief Add the contribution \f$-\Gamma^i_{ik}T^{kj} - \Gamma^j_{ik}T^{ik}\f$
@@ -53,7 +53,7 @@ void add_curved_sources(
     gsl::not_null<tnsr::I<DataVector, Dim>*> source_for_displacement,
     const tnsr::Ijj<DataVector, Dim>& christoffel_second_kind,
     const tnsr::i<DataVector, Dim>& christoffel_contracted,
-    const tnsr::II<DataVector, Dim>& stress) noexcept;
+    const tnsr::II<DataVector, Dim>& stress);
 
 /*!
  * \brief Compute the fluxes \f$F^i_{jk}=\delta^{i}_{(j} \xi_{k)}\f$ for the
@@ -65,7 +65,7 @@ void add_curved_sources(
 template <size_t Dim>
 void auxiliary_fluxes(
     gsl::not_null<tnsr::Ijj<DataVector, Dim>*> flux_for_strain,
-    const tnsr::I<DataVector, Dim>& displacement) noexcept;
+    const tnsr::I<DataVector, Dim>& displacement);
 
 /*!
  * \brief Compute the fluxes \f$F^i_{jk}=\delta^{i}_{(j}\gamma_{k)l}\xi^l\f$
@@ -78,7 +78,7 @@ template <size_t Dim>
 void curved_auxiliary_fluxes(
     gsl::not_null<tnsr::Ijj<DataVector, Dim>*> flux_for_strain,
     const tnsr::ii<DataVector, Dim>& metric,
-    const tnsr::I<DataVector, Dim>& displacement) noexcept;
+    const tnsr::I<DataVector, Dim>& displacement);
 
 /*!
  * \brief Add the contribution \f$\Gamma_{ijk}\xi^i\f$ to the strain source for
@@ -91,7 +91,7 @@ template <size_t Dim>
 void add_curved_auxiliary_sources(
     gsl::not_null<tnsr::ii<DataVector, Dim>*> source_for_strain,
     const tnsr::ijj<DataVector, Dim>& christoffel_first_kind,
-    const tnsr::I<DataVector, Dim>& displacement) noexcept;
+    const tnsr::I<DataVector, Dim>& displacement);
 
 /*!
  * \brief Compute the fluxes \f$F^i_A\f$ for the Elasticity equation on a flat
@@ -110,12 +110,12 @@ struct Fluxes {
       const ConstitutiveRelations::ConstitutiveRelation<Dim>&
           constitutive_relation,
       const tnsr::I<DataVector, Dim>& coordinates,
-      const tnsr::ii<DataVector, Dim>& strain) noexcept;
+      const tnsr::ii<DataVector, Dim>& strain);
   static void apply(gsl::not_null<tnsr::Ijj<DataVector, Dim>*> flux_for_strain,
                     const ConstitutiveRelations::ConstitutiveRelation<Dim>&
                         constitutive_relation,
                     const tnsr::I<DataVector, Dim>& coordinates,
-                    const tnsr::I<DataVector, Dim>& displacement) noexcept;
+                    const tnsr::I<DataVector, Dim>& displacement);
 };
 
 /*!
@@ -129,10 +129,10 @@ struct Sources {
   static void apply(
       gsl::not_null<tnsr::I<DataVector, Dim>*> equation_for_displacement,
       const tnsr::I<DataVector, Dim>& displacement,
-      const tnsr::II<DataVector, Dim>& minus_stress) noexcept;
+      const tnsr::II<DataVector, Dim>& minus_stress);
   static void apply(
       gsl::not_null<tnsr::ii<DataVector, Dim>*> equation_for_strain,
-      const tnsr::I<DataVector, Dim>& displacement) noexcept;
+      const tnsr::I<DataVector, Dim>& displacement);
 };
 
 }  // namespace Elasticity

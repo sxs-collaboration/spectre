@@ -62,10 +62,10 @@ struct Variables;
 namespace intrp {
 
 namespace InterpolationTarget_detail {
-double get_temporal_id_value(double time) noexcept;
-double get_temporal_id_value(const TimeStepId& time_id) noexcept;
-double evaluate_temporal_id_for_expiration(double time) noexcept;
-double evaluate_temporal_id_for_expiration(const TimeStepId& time_id) noexcept;
+double get_temporal_id_value(double time);
+double get_temporal_id_value(const TimeStepId& time_id);
+double evaluate_temporal_id_for_expiration(double time);
+double evaluate_temporal_id_for_expiration(const TimeStepId& time_id);
 
 // apply_callback accomplishes the overload for the
 // two signatures of callback functions.
@@ -75,7 +75,7 @@ template <typename T, typename DbTags, typename Metavariables,
 auto apply_callback(
     const gsl::not_null<db::DataBox<DbTags>*> box,
     const gsl::not_null<Parallel::GlobalCache<Metavariables>*> cache,
-    const TemporalId& temporal_id) noexcept
+    const TemporalId& temporal_id)
     -> decltype(T::post_interpolation_callback::apply(box, cache, temporal_id),
                 bool()) {
   return T::post_interpolation_callback::apply(box, cache, temporal_id);
@@ -86,7 +86,7 @@ template <typename T, typename DbTags, typename Metavariables,
 auto apply_callback(
     const gsl::not_null<db::DataBox<DbTags>*> box,
     const gsl::not_null<Parallel::GlobalCache<Metavariables>*> cache,
-    const TemporalId& temporal_id) noexcept
+    const TemporalId& temporal_id)
     -> decltype(T::post_interpolation_callback::apply(*box, *cache,
                                                       temporal_id),
                 bool()) {
@@ -105,28 +105,29 @@ template <typename InterpolationTargetTag, typename TemporalId, typename DbTags,
               typename InterpolationTargetTag::post_interpolation_callback>> =
               nullptr>
 void fill_invalid_points(const gsl::not_null<db::DataBox<DbTags>*> /*box*/,
-                         const TemporalId& /*temporal_id*/) noexcept {}
+                         const TemporalId& /*temporal_id*/) {}
 
 template <typename InterpolationTargetTag, typename TemporalId, typename DbTags,
           Requires<has_fill_invalid_points_with_v<
               typename InterpolationTargetTag::post_interpolation_callback>> =
               nullptr>
 void fill_invalid_points(const gsl::not_null<db::DataBox<DbTags>*> box,
-                         const TemporalId& temporal_id) noexcept {
+                         const TemporalId& temporal_id) {
   const auto& invalid_indices =
       db::get<Tags::IndicesOfInvalidInterpPoints<TemporalId>>(*box);
   if (invalid_indices.find(temporal_id) != invalid_indices.end() and
       not invalid_indices.at(temporal_id).empty()) {
     db::mutate<Tags::IndicesOfInvalidInterpPoints<TemporalId>,
                Tags::InterpolatedVars<InterpolationTargetTag, TemporalId>>(
-        box, [&temporal_id](
-                 const gsl::not_null<std::unordered_map<
-                     TemporalId, std::unordered_set<size_t>>*>
-                     indices_of_invalid_points,
-                 const gsl::not_null<std::unordered_map<
-                     TemporalId, Variables<typename InterpolationTargetTag::
-                                               vars_to_interpolate_to_target>>*>
-                     vars_dest_all_times) noexcept {
+        box,
+        [&temporal_id](
+            const gsl::not_null<
+                std::unordered_map<TemporalId, std::unordered_set<size_t>>*>
+                indices_of_invalid_points,
+            const gsl::not_null<std::unordered_map<
+                TemporalId, Variables<typename InterpolationTargetTag::
+                                          vars_to_interpolate_to_target>>*>
+                vars_dest_all_times) {
           auto& vars_dest = vars_dest_all_times->at(temporal_id);
           const size_t npts_dest = vars_dest.number_of_grid_points();
           const size_t nvars = vars_dest.number_of_independent_components;
@@ -162,7 +163,7 @@ template <typename InterpolationTargetTag, typename DbTags,
 bool call_callback(
     const gsl::not_null<db::DataBox<DbTags>*> box,
     const gsl::not_null<Parallel::GlobalCache<Metavariables>*> cache,
-    const TemporalId& temporal_id) noexcept {
+    const TemporalId& temporal_id) {
   // Before doing anything else, deal with the possibility that some
   // of the points might be outside of the Domain.
   fill_invalid_points<InterpolationTargetTag>(box, temporal_id);
@@ -181,9 +182,7 @@ bool call_callback(
           const std::unordered_map<
               TemporalId, Variables<typename InterpolationTargetTag::
                                         vars_to_interpolate_to_target>>&
-              vars_at_all_times) noexcept {
-        *vars = vars_at_all_times.at(temporal_id);
-      },
+              vars_at_all_times) { *vars = vars_at_all_times.at(temporal_id); },
       box);
 
   // apply_callback should return true if we are done with this
@@ -204,7 +203,7 @@ bool call_callback(
 template <typename InterpolationTargetTag, typename DbTags, typename TemporalId>
 void clean_up_interpolation_target(
     const gsl::not_null<db::DataBox<DbTags>*> box,
-    const TemporalId& temporal_id) noexcept {
+    const TemporalId& temporal_id) {
   // We are now done with this temporal_id, so we can pop it and
   // clean up data associated with it.
   db::mutate<Tags::TemporalIds<TemporalId>,
@@ -224,7 +223,7 @@ void clean_up_interpolation_target(
                const gsl::not_null<std::unordered_map<
                    TemporalId, Variables<typename InterpolationTargetTag::
                                              vars_to_interpolate_to_target>>*>
-                   interpolated_vars) noexcept {
+                   interpolated_vars) {
         completed_ids->push_back(temporal_id);
         ASSERT(std::find(ids->begin(), ids->end(), temporal_id) != ids->end(),
                "Temporal id " << temporal_id << " does not exist in ids");
@@ -256,20 +255,19 @@ void clean_up_interpolation_target(
 /// - InterpolationTargetVarsFromElement (called by DgElementArray)
 template <typename InterpolationTargetTag, typename DbTags, typename TemporalId>
 bool have_data_at_all_points(const db::DataBox<DbTags>& box,
-                             const TemporalId& temporal_id) noexcept {
+                             const TemporalId& temporal_id) {
   const size_t filled_size =
       db::get<Tags::IndicesOfFilledInterpPoints<TemporalId>>(box)
           .at(temporal_id)
           .size();
-  const size_t invalid_size = [&box, &temporal_id ]() noexcept {
+  const size_t invalid_size = [&box, &temporal_id]() {
     const auto& invalid_indices =
         db::get<Tags::IndicesOfInvalidInterpPoints<TemporalId>>(box);
     if (invalid_indices.count(temporal_id) > 0) {
       return invalid_indices.at(temporal_id).size();
     }
     return 0_st;
-  }
-  ();
+  }();
   const size_t interp_size =
       db::get<Tags::InterpolatedVars<InterpolationTargetTag, TemporalId>>(box)
           .at(temporal_id)
@@ -288,12 +286,11 @@ using cache_contains_functions_of_time =
 /// time-dependent maps.
 template <typename InterpolationTargetTag, typename DbTags,
           typename Metavariables>
-bool maps_are_time_dependent(
-    const db::DataBox<DbTags>& box,
-    const tmpl::type_<Metavariables>& /*meta*/) noexcept {
+bool maps_are_time_dependent(const db::DataBox<DbTags>& box,
+                             const tmpl::type_<Metavariables>& /*meta*/) {
   const auto& domain =
       db::get<domain::Tags::Domain<Metavariables::volume_dim>>(box);
-  return alg::any_of(domain.blocks(), [](const auto& block) noexcept {
+  return alg::any_of(domain.blocks(), [](const auto& block) {
     return block.is_time_dependent();
   });
 }
@@ -313,7 +310,7 @@ bool maps_are_time_dependent(
 template <typename InterpolationTargetTag, typename DbTags, typename TemporalId>
 std::vector<TemporalId> flag_temporal_ids_for_interpolation(
     const gsl::not_null<db::DataBox<DbTags>*> box,
-    const std::vector<TemporalId>& temporal_ids) noexcept {
+    const std::vector<TemporalId>& temporal_ids) {
   // We allow this function to be called multiple times with the same
   // temporal_ids (e.g. from each element, or from each node of a
   // NodeGroup ParallelComponent such as Interpolator). If multiple
@@ -331,9 +328,9 @@ std::vector<TemporalId> flag_temporal_ids_for_interpolation(
 
   db::mutate_apply<tmpl::list<Tags::TemporalIds<TemporalId>>,
                    tmpl::list<Tags::CompletedTemporalIds<TemporalId>>>(
-      [&temporal_ids, &new_temporal_ids ](
+      [&temporal_ids, &new_temporal_ids](
           const gsl::not_null<std::deque<TemporalId>*> ids,
-          const std::deque<TemporalId>& completed_ids) noexcept {
+          const std::deque<TemporalId>& completed_ids) {
         for (auto& id : temporal_ids) {
           if (std::find(completed_ids.begin(), completed_ids.end(), id) ==
                   completed_ids.end() and
@@ -363,7 +360,7 @@ std::vector<TemporalId> flag_temporal_ids_for_interpolation(
 template <typename InterpolationTargetTag, typename DbTags, typename TemporalId>
 std::vector<TemporalId> flag_temporal_ids_as_pending(
     const gsl::not_null<db::DataBox<DbTags>*> box,
-    const std::vector<TemporalId>& temporal_ids) noexcept {
+    const std::vector<TemporalId>& temporal_ids) {
   // We allow this function to be called multiple times with the same
   // temporal_ids (e.g. from each element, or from each node of a
   // NodeGroup ParallelComponent such as Interpolator). If multiple
@@ -385,7 +382,7 @@ std::vector<TemporalId> flag_temporal_ids_as_pending(
       [&temporal_ids, &new_temporal_ids](
           const gsl::not_null<std::deque<TemporalId>*> pending_ids,
           const std::deque<TemporalId>& ids,
-          const std::deque<TemporalId>& completed_ids) noexcept {
+          const std::deque<TemporalId>& completed_ids) {
         for (auto& id : temporal_ids) {
           if (std::find(completed_ids.begin(), completed_ids.end(), id) ==
                   completed_ids.end() and
@@ -424,17 +421,17 @@ void add_received_variables(
         typename InterpolationTargetTag::vars_to_interpolate_to_target>>&
         vars_src,
     const std::vector<std::vector<size_t>>& global_offsets,
-    const TemporalId& temporal_id) noexcept {
+    const TemporalId& temporal_id) {
   db::mutate<Tags::IndicesOfFilledInterpPoints<TemporalId>,
              Tags::InterpolatedVars<InterpolationTargetTag, TemporalId>>(
-      box, [&temporal_id, &vars_src, &global_offsets ](
+      box, [&temporal_id, &vars_src, &global_offsets](
                const gsl::not_null<
                    std::unordered_map<TemporalId, std::unordered_set<size_t>>*>
                    indices_of_filled,
                const gsl::not_null<std::unordered_map<
                    TemporalId, Variables<typename InterpolationTargetTag::
                                              vars_to_interpolate_to_target>>*>
-                   vars_dest_all_times) noexcept {
+                   vars_dest_all_times) {
         auto& vars_dest = vars_dest_all_times->at(temporal_id);
         // Here we assume that vars_dest has been allocated to the correct
         // size (but could contain garbage, since below we are filling it).
@@ -483,7 +480,7 @@ template <typename InterpolationTargetTag, typename DbTags,
           typename Metavariables, typename TemporalId>
 auto block_logical_coords(const db::DataBox<DbTags>& box,
                           Parallel::GlobalCache<Metavariables>& cache,
-                          const TemporalId& temporal_id) noexcept {
+                          const TemporalId& temporal_id) {
   const auto& domain =
       db::get<domain::Tags::Domain<Metavariables::volume_dim>>(box);
   if constexpr (std::is_same_v<typename InterpolationTargetTag::
@@ -537,7 +534,7 @@ auto block_logical_coords(const db::DataBox<DbTags>& box,
 template <typename InterpolationTargetTag, typename DbTags,
           typename Metavariables>
 auto block_logical_coords(const db::DataBox<DbTags>& box,
-                          const tmpl::type_<Metavariables>& meta) noexcept {
+                          const tmpl::type_<Metavariables>& meta) {
   const auto& domain =
       db::get<domain::Tags::Domain<Metavariables::volume_dim>>(box);
   return ::block_logical_coordinates(
@@ -561,11 +558,11 @@ void set_up_interpolation(
     const std::vector<std::optional<
         IdPair<domain::BlockId,
                tnsr::I<double, VolumeDim, typename ::Frame::BlockLogical>>>>&
-        block_logical_coords) noexcept {
+        block_logical_coords) {
   db::mutate<Tags::IndicesOfFilledInterpPoints<TemporalId>,
              Tags::IndicesOfInvalidInterpPoints<TemporalId>,
              Tags::InterpolatedVars<InterpolationTargetTag, TemporalId>>(
-      box, [&block_logical_coords, &temporal_id ](
+      box, [&block_logical_coords, &temporal_id](
                const gsl::not_null<
                    std::unordered_map<TemporalId, std::unordered_set<size_t>>*>
                    indices_of_filled,
@@ -575,7 +572,7 @@ void set_up_interpolation(
                const gsl::not_null<std::unordered_map<
                    TemporalId, Variables<typename InterpolationTargetTag::
                                              vars_to_interpolate_to_target>>*>
-                   vars_dest_all_times) noexcept {
+                   vars_dest_all_times) {
         // Because we are sending new points to the interpolator,
         // we know that none of these points have been interpolated to,
         // so clear the list.

@@ -21,7 +21,7 @@ namespace fd::reconstruction {
       const gsl::span<const double>& volume_vars,                              \
       const DirectionMap<DIM(data), gsl::span<const double>>& ghost_cell_vars, \
       const Index<DIM(data)>& volume_extents,                                  \
-      const size_t number_of_variables) noexcept;
+      const size_t number_of_variables);
 
 namespace detail {
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
@@ -37,7 +37,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
       gsl::not_null<DataVector*> face_data, const DataVector& volume_data,     \
       const DataVector& neighbor_data, const Index<DIM(data)>& volume_extents, \
       const Index<DIM(data)>& ghost_data_extents,                              \
-      const Direction<DIM(data)>& direction_to_reconstruct) noexcept;
+      const Direction<DIM(data)>& direction_to_reconstruct);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (Side::Upper, Side::Lower))
 

@@ -17,8 +17,7 @@ template <typename LhsVectorType, typename RhsVectorType,
           typename ResultVectorType =
               typename blaze::MultTrait<LhsVectorType, RhsVectorType>::Type>
 void outer_product(const gsl::not_null<ResultVectorType*> result,
-                   const LhsVectorType& lhs,
-                   const RhsVectorType& rhs) noexcept {
+                   const LhsVectorType& lhs, const RhsVectorType& rhs) {
   result->destructive_resize(lhs.size() * rhs.size());
   for (size_t i = 0; i < rhs.size(); ++i) {
     ResultVectorType view{result->data() + i * lhs.size(), lhs.size()};
@@ -30,7 +29,7 @@ template <typename LhsVectorType, typename RhsVectorType,
           typename ResultVectorType =
               typename blaze::MultTrait<LhsVectorType, RhsVectorType>::Type>
 ResultVectorType outer_product(const LhsVectorType& lhs,
-                               const RhsVectorType& rhs) noexcept {
+                               const RhsVectorType& rhs) {
   auto result = ResultVectorType{lhs.size() * rhs.size()};
   outer_product(make_not_null(&result), lhs, rhs);
   return result;
@@ -54,7 +53,7 @@ void fill_with_n_copies(
     // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
     const gsl::not_null<VectorType*> result, const VectorType& to_copy,
     // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
-    const size_t times_to_copy) noexcept {
+    const size_t times_to_copy) {
   result->destructive_resize(to_copy.size() * times_to_copy);
   for (size_t i = 0; i < times_to_copy; ++i) {
     VectorType view{result->data() + i * to_copy.size(), to_copy.size()};
@@ -64,9 +63,8 @@ void fill_with_n_copies(
 
 // clang-tidy incorrectly believes this to be a forward-declaration
 template <typename VectorType>
-VectorType create_vector_of_n_copies(
-    const VectorType& to_copy,
-    const size_t times_to_copy) noexcept {  // NOLINT
+VectorType create_vector_of_n_copies(const VectorType& to_copy,
+                                     const size_t times_to_copy) {  // NOLINT
   auto result = VectorType{to_copy.size() * times_to_copy};
   fill_with_n_copies(make_not_null(&result), to_copy, times_to_copy);
   return result;

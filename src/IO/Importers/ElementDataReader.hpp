@@ -45,12 +45,12 @@ struct ElementDataReader {
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
-  static void initialize(Parallel::CProxy_GlobalCache<
-                         Metavariables>& /*global_cache*/) noexcept {}
+  static void initialize(
+      Parallel::CProxy_GlobalCache<Metavariables>& /*global_cache*/) {}
 
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
-      Parallel::CProxy_GlobalCache<Metavariables>& global_cache) noexcept {
+      Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *(global_cache.ckLocalBranch());
     Parallel::get_parallel_component<ElementDataReader>(local_cache)
         .start_phase(next_phase);
@@ -71,7 +71,7 @@ struct InitializeElementDataReader {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) {
     return std::make_tuple(std::move(box), true);
   }
 };

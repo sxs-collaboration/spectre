@@ -107,7 +107,7 @@ struct BoundaryCorrectionAndGhostCellsInbox {
   template <typename Inbox, typename ReceiveDataType>
   static void insert_into_inbox(const gsl::not_null<Inbox*> inbox,
                                 const temporal_id& time_step_id,
-                                ReceiveDataType&& data) noexcept {
+                                ReceiveDataType&& data) {
     auto& current_inbox = (*inbox)[time_step_id];
     auto& [mesh, ghost_cell_data, boundary_data, boundary_data_validity_range] =
         data.second;

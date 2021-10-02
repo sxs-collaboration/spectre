@@ -64,7 +64,7 @@ FrustalCloak::FrustalCloak(
   }
 }
 
-Domain<3> FrustalCloak::create_domain() const noexcept {
+Domain<3> FrustalCloak::create_domain() const {
   std::vector<std::unique_ptr<
       CoordinateMapBase<Frame::BlockLogical, Frame::Inertial, 3>>>
       coord_maps = frustum_coordinate_maps<Frame::Inertial>(
@@ -90,8 +90,7 @@ Domain<3> FrustalCloak::create_domain() const noexcept {
                    std::move(boundary_conditions_all_blocks)};
 }
 
-std::vector<std::array<size_t, 3>> FrustalCloak::initial_extents() const
-    noexcept {
+std::vector<std::array<size_t, 3>> FrustalCloak::initial_extents() const {
   return {
       10,
       {{initial_number_of_grid_points_[1], initial_number_of_grid_points_[1],
@@ -99,7 +98,7 @@ std::vector<std::array<size_t, 3>> FrustalCloak::initial_extents() const
 }
 
 std::vector<std::array<size_t, 3>> FrustalCloak::initial_refinement_levels()
-    const noexcept {
+    const {
   return {10, make_array<3>(initial_refinement_level_)};
 }
 }  // namespace domain::creators

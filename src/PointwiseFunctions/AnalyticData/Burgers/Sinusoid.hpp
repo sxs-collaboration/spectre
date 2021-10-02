@@ -96,25 +96,24 @@ class Sinusoid : public MarkAsAnalyticData {
       "discontinuity at x=pi and t=1."};
 
   Sinusoid() = default;
-  Sinusoid(const Sinusoid&) noexcept = default;
-  Sinusoid& operator=(const Sinusoid&) noexcept = default;
-  Sinusoid(Sinusoid&&) noexcept = default;
-  Sinusoid& operator=(Sinusoid&&) noexcept = default;
-  ~Sinusoid() noexcept = default;
+  Sinusoid(const Sinusoid&) = default;
+  Sinusoid& operator=(const Sinusoid&) = default;
+  Sinusoid(Sinusoid&&) = default;
+  Sinusoid& operator=(Sinusoid&&) = default;
+  ~Sinusoid() = default;
 
   template <typename T>
-  Scalar<T> u(const tnsr::I<T, 1>& x) const noexcept;
+  Scalar<T> u(const tnsr::I<T, 1>& x) const;
 
   tuples::TaggedTuple<Tags::U> variables(const tnsr::I<DataVector, 1>& x,
-                                         tmpl::list<Tags::U> /*meta*/) const
-      noexcept;
+                                         tmpl::list<Tags::U> /*meta*/) const;
 
   // clang-tidy: no pass by reference
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
 };
 
-bool operator==(const Sinusoid& /*lhs*/, const Sinusoid& /*rhs*/) noexcept;
+bool operator==(const Sinusoid& /*lhs*/, const Sinusoid& /*rhs*/);
 
-bool operator!=(const Sinusoid& lhs, const Sinusoid& rhs) noexcept;
+bool operator!=(const Sinusoid& lhs, const Sinusoid& rhs);
 }  // namespace AnalyticData
 }  // namespace Burgers

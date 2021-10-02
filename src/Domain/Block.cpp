@@ -32,7 +32,7 @@ Block<VolumeDim>::Block(
     DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>> neighbors,
     DirectionMap<VolumeDim,
                  std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>
-        external_boundary_conditions) noexcept
+        external_boundary_conditions)
     : stationary_map_(std::move(stationary_map)),
       id_(id),
       neighbors_(std::move(neighbors)) {
@@ -75,7 +75,7 @@ Block<VolumeDim>::Block(
 template <size_t VolumeDim>
 const domain::CoordinateMapBase<Frame::BlockLogical, Frame::Inertial,
                                 VolumeDim>&
-Block<VolumeDim>::stationary_map() const noexcept {
+Block<VolumeDim>::stationary_map() const {
   ASSERT(stationary_map_ != nullptr,
          "The stationary map is set to nullptr and so cannot be retrieved. "
          "This is because the domain is time-dependent and so there are two "
@@ -85,7 +85,7 @@ Block<VolumeDim>::stationary_map() const noexcept {
 
 template <size_t VolumeDim>
 const domain::CoordinateMapBase<Frame::BlockLogical, Frame::Grid, VolumeDim>&
-Block<VolumeDim>::moving_mesh_logical_to_grid_map() const noexcept {
+Block<VolumeDim>::moving_mesh_logical_to_grid_map() const {
   ASSERT(moving_mesh_grid_map_ != nullptr,
          "The moving mesh Logical to Grid map is set to nullptr and so cannot "
          "be retrieved. This is because the domain is time-independent and so "
@@ -95,7 +95,7 @@ Block<VolumeDim>::moving_mesh_logical_to_grid_map() const noexcept {
 
 template <size_t VolumeDim>
 const domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, VolumeDim>&
-Block<VolumeDim>::moving_mesh_grid_to_inertial_map() const noexcept {
+Block<VolumeDim>::moving_mesh_grid_to_inertial_map() const {
   ASSERT(moving_mesh_inertial_map_ != nullptr,
          "The moving mesh Grid to Inertial map is set to nullptr and so cannot "
          "be retrieved. This is because the domain is time-independent and so "
@@ -107,7 +107,7 @@ template <size_t VolumeDim>
 void Block<VolumeDim>::inject_time_dependent_map(
     std::unique_ptr<
         domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, VolumeDim>>
-        moving_mesh_inertial_map) noexcept {
+        moving_mesh_inertial_map) {
   ASSERT(stationary_map_ != nullptr,
          "Cannot inject time-dependent map into a block that already has a "
          "time-dependent map.");
@@ -117,7 +117,7 @@ void Block<VolumeDim>::inject_time_dependent_map(
 }
 
 template <size_t VolumeDim>
-void Block<VolumeDim>::pup(PUP::er& p) noexcept {
+void Block<VolumeDim>::pup(PUP::er& p) {
   p | stationary_map_;
   p | moving_mesh_grid_map_;
   p | moving_mesh_inertial_map_;
@@ -128,8 +128,7 @@ void Block<VolumeDim>::pup(PUP::er& p) noexcept {
 }
 
 template <size_t VolumeDim>
-std::ostream& operator<<(std::ostream& os,
-                         const Block<VolumeDim>& block) noexcept {
+std::ostream& operator<<(std::ostream& os, const Block<VolumeDim>& block) {
   os << "Block " << block.id() << ":\n";
   os << "Neighbors: " << block.neighbors() << '\n';
   os << "External boundaries: " << block.external_boundaries() << '\n';
@@ -138,8 +137,7 @@ std::ostream& operator<<(std::ostream& os,
 }
 
 template <size_t VolumeDim>
-bool operator==(const Block<VolumeDim>& lhs,
-                const Block<VolumeDim>& rhs) noexcept {
+bool operator==(const Block<VolumeDim>& lhs, const Block<VolumeDim>& rhs) {
   // Since the external boundary conditions are all abstract base classes we
   // can't compare them, but we check that the typeid matches between LHS and
   // RHS.
@@ -147,7 +145,7 @@ bool operator==(const Block<VolumeDim>& lhs,
          lhs.external_boundaries() == rhs.external_boundaries() and
          alg::all_of(
              rhs.external_boundaries(),
-             [&lhs, &rhs](const Direction<VolumeDim>& dir) noexcept {
+             [&lhs, &rhs](const Direction<VolumeDim>& dir) {
                return lhs.external_boundary_conditions().contains(dir) and
                       rhs.external_boundary_conditions().contains(dir) and
                       typeid(lhs.external_boundary_conditions().at(dir)) ==
@@ -163,8 +161,7 @@ bool operator==(const Block<VolumeDim>& lhs,
 }
 
 template <size_t VolumeDim>
-bool operator!=(const Block<VolumeDim>& lhs,
-                const Block<VolumeDim>& rhs) noexcept {
+bool operator!=(const Block<VolumeDim>& lhs, const Block<VolumeDim>& rhs) {
   return not(lhs == rhs);
 }
 
@@ -175,9 +172,9 @@ bool operator!=(const Block<VolumeDim>& lhs,
   template std::ostream& operator<<(std::ostream& os,                   \
                                     const Block<GET_DIM(data)>& block); \
   template bool operator==(const Block<GET_DIM(data)>& lhs,             \
-                           const Block<GET_DIM(data)>& rhs) noexcept;   \
+                           const Block<GET_DIM(data)>& rhs);            \
   template bool operator!=(const Block<GET_DIM(data)>& lhs,             \
-                           const Block<GET_DIM(data)>& rhs) noexcept;
+                           const Block<GET_DIM(data)>& rhs);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 

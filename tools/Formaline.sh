@@ -41,12 +41,12 @@ extern char _binary_${formaline_archive_name}_tar_gz_start[];
 extern char _binary_${formaline_archive_name}_tar_gz_end[];
 
 namespace formaline {
-std::vector<char> get_archive() noexcept {
+std::vector<char> get_archive() {
   return std::vector<char>{_binary_${formaline_archive_name}_tar_gz_start,
                            _binary_${formaline_archive_name}_tar_gz_end};
 }
 
-std::string get_environment_variables() noexcept {
+std::string get_environment_variables() {
   // Use a delimiter that's unlikely to appear in the printenv
   // output.
   return R"AZBYCXDWEVFU(
@@ -54,13 +54,13 @@ std::string get_environment_variables() noexcept {
 )AZBYCXDWEVFU";
 }
 
-std::string get_build_info() noexcept {
+std::string get_build_info() {
   return R"AZBYCXDWEVFU(
 `cat @CMAKE_BINARY_DIR@/BuildInfo.txt`
 )AZBYCXDWEVFU";
 }
 
-std::string get_paths() noexcept {
+std::string get_paths() {
   return R"AZBYCXDWEVFU(PATH=${PATH}
 CPATH=${CPATH}
 LD_LIBRARY_PATH=${LD_LIBRARY_PATH}

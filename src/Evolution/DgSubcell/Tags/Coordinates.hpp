@@ -25,9 +25,7 @@ namespace evolution::dg::subcell::Tags {
 /// The coordinates in a given frame.
 template <size_t Dim, typename Frame>
 struct Coordinates : db::SimpleTag {
-  static std::string name() noexcept {
-    return get_output(Frame{}) + "Coordinates";
-  }
+  static std::string name() { return get_output(Frame{}) + "Coordinates"; }
   using type = tnsr::I<DataVector, Dim, Frame>;
 };
 
@@ -40,7 +38,7 @@ struct LogicalCoordinatesCompute
   using return_type = typename base::type;
   using argument_tags = tmpl::list<Mesh<VolumeDim>>;
   static constexpr auto function = static_cast<void (*)(
-      gsl::not_null<return_type*>, const ::Mesh<VolumeDim>&) noexcept>(
+      gsl::not_null<return_type*>, const ::Mesh<VolumeDim>&)>(
       &logical_coordinates<VolumeDim>);
 };
 }  // namespace evolution::dg::subcell::Tags

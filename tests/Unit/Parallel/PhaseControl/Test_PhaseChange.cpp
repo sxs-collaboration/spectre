@@ -74,7 +74,7 @@ template <typename PhaseChangeRegistrars =
               tmpl::list<Registrars::TestPhaseChange>>
 struct TestPhaseChange : public PhaseChange<PhaseChangeRegistrars> {
   TestPhaseChange() = default;
-  explicit TestPhaseChange(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit TestPhaseChange(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(TestPhaseChange);  // NOLINT
 
@@ -93,13 +93,12 @@ struct TestPhaseChange : public PhaseChange<PhaseChangeRegistrars> {
   template <typename Metavariables>
   using participating_components = tmpl::list<TestComponentAlpha>;
 
-  explicit TestPhaseChange(int multiplier) noexcept
-      : stored_multiplier_{multiplier} {}
+  explicit TestPhaseChange(int multiplier) : stored_multiplier_{multiplier} {}
 
   template <typename... DecisionTags>
   void initialize_phase_data_impl(
       const gsl::not_null<tuples::TaggedTuple<DecisionTags...>*>
-          phase_change_decision_data) const noexcept {
+          phase_change_decision_data) const {
     tuples::get<Tags::Request>(*phase_change_decision_data) = false;
   }
 
@@ -108,7 +107,7 @@ struct TestPhaseChange : public PhaseChange<PhaseChangeRegistrars> {
   void contribute_phase_data_impl(
       const gsl::not_null<double*> mutated_value, const int input_value,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/) const noexcept {
+      const ArrayIndex& /*array_index*/) const {
     TestGlobalStateRecord::contributed = true;
     *mutated_value =
         static_cast<double>(square(input_value) * stored_multiplier_);
@@ -121,7 +120,7 @@ struct TestPhaseChange : public PhaseChange<PhaseChangeRegistrars> {
       const gsl::not_null<tuples::TaggedTuple<DecisionTags...>*>
           phase_change_decision_data,
       const typename Metavariables::Phase /*current_phase*/,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/) const noexcept {
+      const Parallel::GlobalCache<Metavariables>& /*cache*/) const {
     if (tuples::get<Tags::Request>(*phase_change_decision_data)) {
       tuples::get<Tags::Request>(*phase_change_decision_data) = false;
       return std::make_pair(
@@ -132,7 +131,7 @@ struct TestPhaseChange : public PhaseChange<PhaseChangeRegistrars> {
     }
   }
 
-  void pup(PUP::er& p) noexcept override { p | stored_multiplier_; }  // NOLINT
+  void pup(PUP::er& p) override { p | stored_multiplier_; }  // NOLINT
 
  private:
   int stored_multiplier_ = 0;

@@ -35,11 +35,11 @@ namespace gr {
 template <size_t SpatialDim, typename Frame, typename DataType>
 void spacetime_normal_one_form(
     gsl::not_null<tnsr::a<DataType, SpatialDim, Frame>*> normal_one_form,
-    const Scalar<DataType>& lapse) noexcept;
+    const Scalar<DataType>& lapse);
 
 template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::a<DataType, SpatialDim, Frame> spacetime_normal_one_form(
-    const Scalar<DataType>& lapse) noexcept;
+    const Scalar<DataType>& lapse);
 /// @}
 
 namespace Tags {
@@ -59,7 +59,7 @@ struct SpacetimeNormalOneFormCompute
 
   static constexpr auto function =
       static_cast<void (*)(gsl::not_null<tnsr::a<DataType, SpatialDim, Frame>*>,
-                           const Scalar<DataType>&) noexcept>(
+                           const Scalar<DataType>&)>(
           &spacetime_normal_one_form<SpatialDim, Frame, DataType>);
 
   using base = SpacetimeNormalOneForm<SpatialDim, Frame, DataType>;

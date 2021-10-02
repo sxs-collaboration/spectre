@@ -12,7 +12,7 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
-double positive_root(const double a, const double b, const double c) noexcept {
+double positive_root(const double a, const double b, const double c) {
   const auto roots = real_roots(a, b, c);
   ASSERT(roots[0] <= 0.0 and roots[1] >= 0.0,
          "There are two positive roots, " << roots[0] << " and " << roots[1]
@@ -21,7 +21,7 @@ double positive_root(const double a, const double b, const double c) noexcept {
 }
 
 std::array<double, 2> real_roots(const double a, const double b,
-                                 const double c) noexcept {
+                                 const double c) {
   double x0 = std::numeric_limits<double>::signaling_NaN();
   double x1 = std::numeric_limits<double>::signaling_NaN();
   // clang-tidy: value stored ... never read (true if in Release Build)
@@ -40,8 +40,9 @@ enum class RootToChoose { min, max };
 }  // namespace detail
 
 template <typename T>
-T smallest_root_greater_than_value_within_roundoff(
-    const T& a, const T& b, const T& c, const double value) noexcept {
+T smallest_root_greater_than_value_within_roundoff(const T& a, const T& b,
+                                                   const T& c,
+                                                   const double value) {
   return detail::root_between_values_impl<T>::function(
       a, b, c, value, std::numeric_limits<double>::max(),
       detail::RootToChoose::min);
@@ -51,7 +52,7 @@ template <typename T>
 T largest_root_between_values_within_roundoff(const T& a, const T& b,
                                               const T& c,
                                               const double min_value,
-                                              const double max_value) noexcept {
+                                              const double max_value) {
   return detail::root_between_values_impl<T>::function(
       a, b, c, min_value, max_value, detail::RootToChoose::max);
 }
@@ -61,7 +62,7 @@ template <>
 struct root_between_values_impl<double> {
   static double function(const double a, const double b, const double c,
                          const double min_value, const double max_value,
-                         const RootToChoose min_or_max) noexcept {
+                         const RootToChoose min_or_max) {
     // Roots are returned in increasing order.
     const auto roots = real_roots(a, b, c);
 
@@ -78,7 +79,7 @@ struct root_between_values_impl<double> {
 
     double return_value = std::numeric_limits<double>::signaling_NaN();
     const auto error_message = [&a, &b, &c,
-                                &roots](const std::string& message) noexcept {
+                                &roots](const std::string& message) {
       ERROR(message << " Roots are " << roots[0] << " and " << roots[1]
                     << ", with a=" << a << " b=" << b << " c=" << c);
     };
@@ -128,7 +129,7 @@ struct root_between_values_impl<DataVector> {
   static DataVector function(const DataVector& a, const DataVector& b,
                              const DataVector& c, const double min_value,
                              const double max_value,
-                             const RootToChoose min_or_max) noexcept {
+                             const RootToChoose min_or_max) {
     ASSERT(a.size() == b.size(),
            "Size mismatch a vs b: " << a.size() << " " << b.size());
     ASSERT(a.size() == c.size(),
@@ -149,10 +150,10 @@ struct root_between_values_impl<DataVector> {
 #define INSTANTIATE(_, data)                                               \
   template DTYPE(data) smallest_root_greater_than_value_within_roundoff(   \
       const DTYPE(data) & a, const DTYPE(data) & b, const DTYPE(data) & c, \
-      double value) noexcept;                                              \
+      double value);                                                       \
   template DTYPE(data) largest_root_between_values_within_roundoff(        \
       const DTYPE(data) & a, const DTYPE(data) & b, const DTYPE(data) & c, \
-      double min_value, double max_value) noexcept;
+      double min_value, double max_value);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
 

@@ -13,13 +13,12 @@
 
 namespace {
 // [integrated_function]
-double gaussian(const double x, const double mean,
-                const double factor) noexcept {
+double gaussian(const double x, const double mean, const double factor) {
   return 2. * factor / sqrt(M_PI) * exp(-square(x - mean));
 }
 // [integrated_function]
 
-double integrable_singularity(const double x, const double factor) noexcept {
+double integrable_singularity(const double x, const double factor) {
   return factor * cos(sqrt(abs(x))) / sqrt(abs(x));
 }
 

@@ -32,9 +32,8 @@ struct Next;
 /// Adjust the step size for local time stepping, returning true if the step
 /// just completed is accepted, and false if it is rejected.
 template <typename DbTags, typename Metavariables>
-bool change_step_size(
-    const gsl::not_null<db::DataBox<DbTags>*> box,
-    const Parallel::GlobalCache<Metavariables>& cache) noexcept {
+bool change_step_size(const gsl::not_null<db::DataBox<DbTags>*> box,
+                      const Parallel::GlobalCache<Metavariables>& cache) {
   const LtsTimeStepper& time_stepper = db::get<Tags::TimeStepper<>>(*box);
   const auto& step_choosers = db::get<Tags::StepChoosers>(*box);
   const auto& step_controller = db::get<Tags::StepController>(*box);
@@ -43,7 +42,7 @@ bool change_step_size(
   using history_tags = ::Tags::get_all_history_tags<DbTags>;
   bool can_change_step_size = true;
   tmpl::for_each<history_tags>([&box, &can_change_step_size, &time_stepper,
-                                &next_time_id](auto tag_v) noexcept {
+                                &next_time_id](auto tag_v) {
     if (not can_change_step_size) {
       return;
     }
@@ -86,7 +85,7 @@ bool change_step_size(
   const auto new_step =
       step_controller.choose_step(next_time_id.step_time(), desired_step);
   db::mutate<Tags::Next<Tags::TimeStep>>(
-      box, [&new_step](const gsl::not_null<TimeDelta*> next_step) noexcept {
+      box, [&new_step](const gsl::not_null<TimeDelta*> next_step) {
         *next_step = new_step;
       });
   // if step accepted, just proceed. Otherwise, change Time::Next and jump
@@ -99,7 +98,7 @@ bool change_step_size(
         [&time_stepper, &step_controller, &desired_step](
             const gsl::not_null<TimeStepId*> local_next_time_id,
             const gsl::not_null<TimeDelta*> time_step,
-            const TimeStepId& time_id) noexcept {
+            const TimeStepId& time_id) {
           *time_step = step_controller.choose_step(
               time_id.step_time(), desired_step);
           *local_next_time_id = time_stepper.next_time_id(
@@ -136,7 +135,7 @@ struct ChangeStepSize {
       db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ParallelComponent* const /*meta*/) {
     static_assert(Metavariables::local_time_stepping,
                   "ChangeStepSize can only be used with local time-stepping.");
     static_assert(

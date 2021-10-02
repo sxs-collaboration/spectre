@@ -83,14 +83,14 @@ class AnalyticSolution<System, Dim, tmpl::list<FieldTags...>,
       "Boundary conditions from the analytic solution";
 
   AnalyticSolution() = default;
-  AnalyticSolution(const AnalyticSolution&) noexcept = default;
-  AnalyticSolution& operator=(const AnalyticSolution&) noexcept = default;
-  AnalyticSolution(AnalyticSolution&&) noexcept = default;
-  AnalyticSolution& operator=(AnalyticSolution&&) noexcept = default;
-  ~AnalyticSolution() noexcept = default;
+  AnalyticSolution(const AnalyticSolution&) = default;
+  AnalyticSolution& operator=(const AnalyticSolution&) = default;
+  AnalyticSolution(AnalyticSolution&&) = default;
+  AnalyticSolution& operator=(AnalyticSolution&&) = default;
+  ~AnalyticSolution() = default;
 
   /// \cond
-  explicit AnalyticSolution(CkMigrateMessage* m) noexcept : Base(m) {}
+  explicit AnalyticSolution(CkMigrateMessage* m) : Base(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(AnalyticSolution);
   /// \endcond
@@ -100,15 +100,15 @@ class AnalyticSolution<System, Dim, tmpl::list<FieldTags...>,
       // This pack expansion repeats the type `elliptic::BoundaryConditionType`
       // for each system field
       const typename elliptic::OptionTags::BoundaryConditionType<
-          FieldTags>::type... boundary_condition_types) noexcept
+          FieldTags>::type... boundary_condition_types)
       : boundary_condition_types_{boundary_condition_types...} {}
 
   std::unique_ptr<domain::BoundaryConditions::BoundaryCondition> get_clone()
-      const noexcept override {
+      const override {
     return std::make_unique<AnalyticSolution>(*this);
   }
 
-  const auto& boundary_condition_types() const noexcept {
+  const auto& boundary_condition_types() const {
     return boundary_condition_types_;
   }
 
@@ -125,8 +125,8 @@ class AnalyticSolution<System, Dim, tmpl::list<FieldTags...>,
              const gsl::not_null<typename FieldTags::type*>... n_dot_fluxes,
              const OptionalAnalyticSolutions& optional_analytic_solutions,
              const Mesh<Dim>& volume_mesh, const Direction<Dim>& direction,
-             const tnsr::i<DataVector, Dim>& face_normal) const noexcept {
-    const auto& analytic_solutions = [&optional_analytic_solutions]() noexcept
+             const tnsr::i<DataVector, Dim>& face_normal) const {
+    const auto& analytic_solutions = [&optional_analytic_solutions]()
         -> const auto& {
       if constexpr (tt::is_a_v<std::optional, OptionalAnalyticSolutions>) {
         if (not optional_analytic_solutions.has_value()) {
@@ -151,7 +151,7 @@ class AnalyticSolution<System, Dim, tmpl::list<FieldTags...>,
                                                auto field_tag_v,
                                                auto flux_tag_v,
                                                const auto field,
-                                               const auto n_dot_flux) noexcept {
+                                               const auto n_dot_flux) {
       using field_tag = decltype(field_tag_v);
       using flux_tag = decltype(flux_tag_v);
       switch (get<elliptic::Tags::BoundaryConditionType<field_tag>>(
@@ -183,12 +183,10 @@ class AnalyticSolution<System, Dim, tmpl::list<FieldTags...>,
 
   void apply_linearized(
       const gsl::not_null<typename FieldTags::type*>... fields,
-      const gsl::not_null<typename FieldTags::type*>... n_dot_fluxes)
-      const noexcept {
-    const auto impose_boundary_condition = [this](
-                                               auto field_tag_v,
-                                               const auto field,
-                                               const auto n_dot_flux) noexcept {
+      const gsl::not_null<typename FieldTags::type*>... n_dot_fluxes) const {
+    const auto impose_boundary_condition = [this](auto field_tag_v,
+                                                  const auto field,
+                                                  const auto n_dot_flux) {
       using field_tag = decltype(field_tag_v);
       switch (get<elliptic::Tags::BoundaryConditionType<field_tag>>(
           boundary_condition_types())) {
@@ -213,16 +211,16 @@ class AnalyticSolution<System, Dim, tmpl::list<FieldTags...>,
   }
 
   // NOLINTNEXTLINE
-  void pup(PUP::er& p) noexcept override;
+  void pup(PUP::er& p) override;
 
  private:
   friend bool operator==(const AnalyticSolution& lhs,
-                         const AnalyticSolution& rhs) noexcept {
+                         const AnalyticSolution& rhs) {
     return lhs.boundary_condition_types_ == rhs.boundary_condition_types_;
   }
 
   friend bool operator!=(const AnalyticSolution& lhs,
-                         const AnalyticSolution& rhs) noexcept {
+                         const AnalyticSolution& rhs) {
     return not(lhs == rhs);
   }
 
@@ -233,8 +231,7 @@ class AnalyticSolution<System, Dim, tmpl::list<FieldTags...>,
 template <typename System, size_t Dim, typename... FieldTags,
           typename... FluxTags, typename Registrars>
 void AnalyticSolution<System, Dim, tmpl::list<FieldTags...>,
-                      tmpl::list<FluxTags...>,
-                      Registrars>::pup(PUP::er& p) noexcept {
+                      tmpl::list<FluxTags...>, Registrars>::pup(PUP::er& p) {
   Base::pup(p);
   p | boundary_condition_types_;
 }

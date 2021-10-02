@@ -25,7 +25,7 @@ Wedge<Dim>::Wedge(const double radius_inner, const double radius_outer,
                   OrientationMap<Dim> orientation_of_wedge,
                   const bool with_equiangular_map,
                   const WedgeHalves halves_to_use,
-                  const Distribution radial_distribution) noexcept
+                  const Distribution radial_distribution)
     : radius_inner_(radius_inner),
       radius_outer_(radius_outer),
       sphericity_inner_(sphericity_inner),
@@ -91,7 +91,7 @@ Wedge<Dim>::Wedge(const double radius_inner, const double radius_outer,
 template <size_t Dim>
 template <typename T>
 tt::remove_cvref_wrap_t<T> Wedge<Dim>::default_physical_z(
-    const T& zeta, const T& one_over_rho) const noexcept {
+    const T& zeta, const T& one_over_rho) const {
   if (radial_distribution_ == Distribution::Linear) {
     // Using auto keeps this as a blaze expression.
     const auto zeta_coefficient =
@@ -108,7 +108,7 @@ tt::remove_cvref_wrap_t<T> Wedge<Dim>::default_physical_z(
 template <size_t Dim>
 template <typename T>
 std::array<tt::remove_cvref_wrap_t<T>, Dim> Wedge<Dim>::operator()(
-    const std::array<T, Dim>& source_coords) const noexcept {
+    const std::array<T, Dim>& source_coords) const {
   using ReturnType = tt::remove_cvref_wrap_t<T>;
 
   // Radial coordinate
@@ -147,7 +147,7 @@ std::array<tt::remove_cvref_wrap_t<T>, Dim> Wedge<Dim>::operator()(
 
 template <size_t Dim>
 std::optional<std::array<double, Dim>> Wedge<Dim>::inverse(
-    const std::array<double, Dim>& target_coords) const noexcept {
+    const std::array<double, Dim>& target_coords) const {
   const std::array<double, Dim> physical_coords =
       discrete_rotation(orientation_of_wedge_.inverse_map(), target_coords);
 
@@ -184,7 +184,7 @@ std::optional<std::array<double, Dim>> Wedge<Dim>::inverse(
   const auto z_zero = (scaled_frustum_zero_ + sphere_zero_ * one_over_rho);
   // Radial coordinate
   const double zeta = [this, physical_z = physical_coords[radial_coord],
-                       &one_over_rho, &z_zero, &zeta_coefficient]() noexcept {
+                       &one_over_rho, &z_zero, &zeta_coefficient]() {
     if (radial_distribution_ == Distribution::Linear) {
       return (physical_z - z_zero) / zeta_coefficient;
     } else if (radial_distribution_ == Distribution::Logarithmic) {
@@ -215,7 +215,7 @@ std::optional<std::array<double, Dim>> Wedge<Dim>::inverse(
 template <size_t Dim>
 template <typename T>
 tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame> Wedge<Dim>::jacobian(
-    const std::array<T, Dim>& source_coords) const noexcept {
+    const std::array<T, Dim>& source_coords) const {
   using ReturnType = tt::remove_cvref_wrap_t<T>;
 
   // Radial coordinate
@@ -248,7 +248,7 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame> Wedge<Dim>::jacobian(
 
   const ReturnType one_over_rho_cubed = pow<3>(one_over_rho);
   const ReturnType physical_z = default_physical_z(zeta, one_over_rho);
-  const ReturnType s_factor = [this, &zeta]() noexcept -> ReturnType {
+  const ReturnType s_factor = [this, &zeta]() -> ReturnType {
     if (radial_distribution_ == Distribution::Linear) {
       return sphere_zero_ + sphere_rate_ * zeta;
     } else if (radial_distribution_ == Distribution::Logarithmic) {
@@ -325,8 +325,7 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame> Wedge<Dim>::jacobian(
 template <size_t Dim>
 template <typename T>
 tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame>
-Wedge<Dim>::inv_jacobian(
-    const std::array<T, Dim>& source_coords) const noexcept {
+Wedge<Dim>::inv_jacobian(const std::array<T, Dim>& source_coords) const {
   using ReturnType = tt::remove_cvref_wrap_t<T>;
 
   // Radial coordinate
@@ -363,7 +362,7 @@ Wedge<Dim>::inv_jacobian(
   const ReturnType scaled_z_frustum =
       scaled_frustum_zero_ + scaled_frustum_rate_ * zeta;
   const ReturnType s_factor_over_rho_cubed =
-      [this, &zeta, &one_over_rho_cubed]() noexcept -> ReturnType {
+      [this, &zeta, &one_over_rho_cubed]() -> ReturnType {
     if (radial_distribution_ == Distribution::Linear) {
       return (sphere_zero_ + sphere_rate_ * zeta) * one_over_rho_cubed;
     } else if (radial_distribution_ == Distribution::Logarithmic) {
@@ -372,8 +371,8 @@ Wedge<Dim>::inv_jacobian(
       return one_over_rho_cubed / (sphere_zero_ + sphere_rate_ * zeta);
     }
   }();
-  const ReturnType one_over_dz_dzeta =
-      [this, &zeta, &one_over_rho]() noexcept -> ReturnType {
+  const ReturnType one_over_dz_dzeta = [this, &zeta,
+                                        &one_over_rho]() -> ReturnType {
     if (radial_distribution_ == Distribution::Linear) {
       return 1.0 / (scaled_frustum_rate_ + sphere_rate_ * one_over_rho);
     } else if (radial_distribution_ == Distribution::Logarithmic) {
@@ -439,7 +438,7 @@ Wedge<Dim>::inv_jacobian(
 }
 
 template <size_t Dim>
-void Wedge<Dim>::pup(PUP::er& p) noexcept {
+void Wedge<Dim>::pup(PUP::er& p) {
   p | radius_inner_;
   p | radius_outer_;
   p | sphericity_inner_;
@@ -455,7 +454,7 @@ void Wedge<Dim>::pup(PUP::er& p) noexcept {
 }
 
 template <size_t Dim>
-bool operator==(const Wedge<Dim>& lhs, const Wedge<Dim>& rhs) noexcept {
+bool operator==(const Wedge<Dim>& lhs, const Wedge<Dim>& rhs) {
   return lhs.radius_inner_ == rhs.radius_inner_ and
          lhs.radius_outer_ == rhs.radius_outer_ and
          lhs.orientation_of_wedge_ == rhs.orientation_of_wedge_ and
@@ -471,7 +470,7 @@ bool operator==(const Wedge<Dim>& lhs, const Wedge<Dim>& rhs) noexcept {
 }
 
 template <size_t Dim>
-bool operator!=(const Wedge<Dim>& lhs, const Wedge<Dim>& rhs) noexcept {
+bool operator!=(const Wedge<Dim>& lhs, const Wedge<Dim>& rhs) {
   return not(lhs == rhs);
 }
 
@@ -479,25 +478,25 @@ bool operator!=(const Wedge<Dim>& lhs, const Wedge<Dim>& rhs) noexcept {
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATE_DIM(_, data)                                  \
-  template class Wedge<DIM(data)>;                                \
-  template bool operator==(const Wedge<DIM(data)>& lhs,           \
-                           const Wedge<DIM(data)>& rhs) noexcept; \
-  template bool operator!=(const Wedge<DIM(data)>& lhs,           \
-                           const Wedge<DIM(data)>& rhs) noexcept;
+#define INSTANTIATE_DIM(_, data)                         \
+  template class Wedge<DIM(data)>;                       \
+  template bool operator==(const Wedge<DIM(data)>& lhs,  \
+                           const Wedge<DIM(data)>& rhs); \
+  template bool operator!=(const Wedge<DIM(data)>& lhs,  \
+                           const Wedge<DIM(data)>& rhs);
 
-#define INSTANTIATE_DTYPE(_, data)                                             \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data)>         \
-  Wedge<DIM(data)>::operator()(                                                \
-      const std::array<DTYPE(data), DIM(data)>& source_coords) const noexcept; \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data),           \
-                    Frame::NoFrame>                                            \
-  Wedge<DIM(data)>::jacobian(                                                  \
-      const std::array<DTYPE(data), DIM(data)>& source_coords) const noexcept; \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data),           \
-                    Frame::NoFrame>                                            \
-  Wedge<DIM(data)>::inv_jacobian(                                              \
-      const std::array<DTYPE(data), DIM(data)>& source_coords) const noexcept;
+#define INSTANTIATE_DTYPE(_, data)                                     \
+  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data)> \
+  Wedge<DIM(data)>::operator()(                                        \
+      const std::array<DTYPE(data), DIM(data)>& source_coords) const;  \
+  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data),   \
+                    Frame::NoFrame>                                    \
+  Wedge<DIM(data)>::jacobian(                                          \
+      const std::array<DTYPE(data), DIM(data)>& source_coords) const;  \
+  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data),   \
+                    Frame::NoFrame>                                    \
+  Wedge<DIM(data)>::inv_jacobian(                                      \
+      const std::array<DTYPE(data), DIM(data)>& source_coords) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_DIM, (2, 3))
 GENERATE_INSTANTIATIONS(INSTANTIATE_DTYPE, (2, 3),

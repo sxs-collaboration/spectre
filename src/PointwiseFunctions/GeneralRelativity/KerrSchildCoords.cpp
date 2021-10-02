@@ -21,7 +21,7 @@
 namespace gr {
 
 KerrSchildCoords::KerrSchildCoords(const double bh_mass,
-                                   const double bh_dimless_spin) noexcept
+                                   const double bh_dimless_spin)
     : spin_a_(bh_mass * bh_dimless_spin) {
   ASSERT(bh_mass > 0,
          "The mass must be positive. The value given was " << bh_mass << ".");
@@ -31,11 +31,11 @@ KerrSchildCoords::KerrSchildCoords(const double bh_mass,
              << bh_dimless_spin << ".");
 }
 
-void KerrSchildCoords::pup(PUP::er& p) noexcept { p | spin_a_; }
+void KerrSchildCoords::pup(PUP::er& p) { p | spin_a_; }
 
 template <typename DataType>
 tnsr::Ij<DataType, 3, Frame::NoFrame> KerrSchildCoords::jacobian_matrix(
-    const DataType& x, const DataType& y, const DataType& z) const noexcept {
+    const DataType& x, const DataType& y, const DataType& z) const {
   auto result = make_with_value<tnsr::Ij<DataType, 3, Frame::NoFrame>>(x, 0.0);
 
   const double a_squared = square(spin_a_);
@@ -63,8 +63,7 @@ template <typename DataType>
 tnsr::I<DataType, 3, Frame::Inertial>
 KerrSchildCoords::cartesian_from_spherical_ks(
     const tnsr::I<DataType, 3, Frame::NoFrame>& spatial_vector,
-    const tnsr::I<DataType, 3, Frame::Inertial>& cartesian_coords) const
-    noexcept {
+    const tnsr::I<DataType, 3, Frame::Inertial>& cartesian_coords) const {
   auto result = make_with_value<tnsr::I<DataType, 3, Frame::Inertial>>(
       cartesian_coords, 0.0);
 
@@ -109,8 +108,7 @@ KerrSchildCoords::cartesian_from_spherical_ks(
 
 template <typename DataType>
 Scalar<DataType> KerrSchildCoords::r_coord_squared(
-    const tnsr::I<DataType, 3, Frame::Inertial>& cartesian_coords) const
-    noexcept {
+    const tnsr::I<DataType, 3, Frame::Inertial>& cartesian_coords) const {
   const double a_squared = square(spin_a_);
   const DataType temp =
       0.5 * (get(dot_product(cartesian_coords, cartesian_coords)) - a_squared);
@@ -118,27 +116,23 @@ Scalar<DataType> KerrSchildCoords::r_coord_squared(
       temp + sqrt(square(temp) + a_squared * square(get<2>(cartesian_coords)))};
 }
 
-bool operator==(const KerrSchildCoords& lhs,
-                const KerrSchildCoords& rhs) noexcept {
+bool operator==(const KerrSchildCoords& lhs, const KerrSchildCoords& rhs) {
   return lhs.spin_a_ == rhs.spin_a_;
 }
 
-bool operator!=(const KerrSchildCoords& lhs,
-                const KerrSchildCoords& rhs) noexcept {
+bool operator!=(const KerrSchildCoords& lhs, const KerrSchildCoords& rhs) {
   return not(lhs == rhs);
 }
 
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                            \
-  template Scalar<DTYPE(data)> KerrSchildCoords::r_coord_squared(       \
-      const tnsr::I<DTYPE(data), 3, Frame::Inertial>& cartesian_coords) \
-      const noexcept;                                                   \
-  template tnsr::I<DTYPE(data), 3, Frame::Inertial>                     \
-  KerrSchildCoords::cartesian_from_spherical_ks(                        \
-      const tnsr::I<DTYPE(data), 3, Frame::NoFrame>& spatial_vector,    \
-      const tnsr::I<DTYPE(data), 3, Frame::Inertial>& cartesian_coords) \
-      const noexcept;
+#define INSTANTIATE(_, data)                                                   \
+  template Scalar<DTYPE(data)> KerrSchildCoords::r_coord_squared(              \
+      const tnsr::I<DTYPE(data), 3, Frame::Inertial>& cartesian_coords) const; \
+  template tnsr::I<DTYPE(data), 3, Frame::Inertial>                            \
+  KerrSchildCoords::cartesian_from_spherical_ks(                               \
+      const tnsr::I<DTYPE(data), 3, Frame::NoFrame>& spatial_vector,           \
+      const tnsr::I<DTYPE(data), 3, Frame::Inertial>& cartesian_coords) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
 
