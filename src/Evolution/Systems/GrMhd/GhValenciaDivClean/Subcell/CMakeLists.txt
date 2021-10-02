@@ -14,4 +14,5 @@ spectre_target_headers(
   InitialDataTci.hpp
   Subcell.hpp
   TciOnDgGrid.hpp
+  TciOnFdGrid.hpp
   )
