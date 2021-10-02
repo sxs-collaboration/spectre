@@ -32,3 +32,9 @@ target_link_libraries(
   PUBLIC
   SystemUtilities
   )
+
+# For `backtrace` functionality
+if (APPLE)
+  target_compile_options(${LIBRARY} INTERFACE "-dynamic")
+  target_link_options(${LIBRARY} INTERFACE "-rdynamic")
+endif()
