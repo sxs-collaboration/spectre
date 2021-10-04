@@ -87,6 +87,11 @@ authors:
   family-names: Boyle
   given-names: Michael
   orcid: https://orcid.org/0000-0002-5075-5116
+- affiliation: Theoretical Astrophysics, Walter Burke Institute for Theoretical Physics,
+    California Institute of Technology, Pasadena, CA 91125, USA
+  family-names: Chaudhary
+  given-names: Himanshu
+  orcid: https://orcid.org/0000-0002-4101-0534
 - affiliation: Department of Physics & Astronomy, University of New Hampshire, 9 Library
     Way, Durham NH 03824, USA
   family-names: Foucart
@@ -121,6 +126,11 @@ authors:
   family-names: Li
   given-names: Dongjun
   orcid: https://orcid.org/0000-0002-1962-680X
+- affiliation: Theoretical Astrophysics, Walter Burke Institute for Theoretical Physics,
+    California Institute of Technology, Pasadena, CA 91125, USA
+  family-names: Ma
+  given-names: Sizheng
+  orcid: https://orcid.org/0000-0002-4645-453X
 - affiliation: Nicholas and Lee Begovich Center for Gravitational-Wave Physics and
     Astronomy, California State University, Fullerton, Fullerton, California 92831,
     USA
@@ -167,6 +177,12 @@ authors:
   family-names: Thomas
   given-names: Sierra
   orcid: https://orcid.org/0000-0003-3574-2090
+- affiliation: Cornell Center for Astrophysics and Planetary Science, Cornell University,
+    Ithaca, New York 14853, USA and I. Physikalisches Institut, Universität zu Köln,
+    Zülpicher Straße 77, 50937, Köln, Germany
+  family-names: Vieira
+  given-names: Daniel
+  orcid: https://orcid.org/0000-0001-8019-0390
 - affiliation: Max Planck Institute for Gravitational Physics (Albert Einstein Institute),
     Am Mühlenberg 1, Potsdam 14476, Germany
   family-names: Wittek
@@ -177,8 +193,8 @@ authors:
   family-names: Wlodarczyk
   given-names: Tom
 cff-version: 1.1.0
-date-released: '2021-09-11'
-doi: 10.5281/zenodo.5501002
+date-released: '2021-10-04'
+doi: 10.5281/zenodo.5547951
 keywords:
 - Software
 - Astrophysics
@@ -196,4 +212,4 @@ message: Please cite SpECTRE in any publications that make use of its code or da
 repository-code: https://github.com/sxs-collaboration/spectre
 title: SpECTRE
 url: https://spectre-code.org/
-version: 2021.09.11
+version: 2021.10.04
