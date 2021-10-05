@@ -50,6 +50,10 @@ void test_simple_tags() {
       Ccz4::Tags::GradGradLapse<Dim, Frame, DataType>>("GradGradLapse");
   TestHelpers::db::test_simple_tag<Ccz4::Tags::DivergenceLapse<DataType>>(
       "DivergenceLapse");
+  TestHelpers::db::test_simple_tag<
+      Ccz4::Tags::ContractedConformalChristoffelSecondKind<Dim, Frame,
+                                                           DataType>>(
+      "ContractedConformalChristoffelSecondKind");
 }
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Ccz4.Tags", "[Unit][Evolution]") {

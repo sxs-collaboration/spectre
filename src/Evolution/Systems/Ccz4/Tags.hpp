@@ -230,6 +230,18 @@ template <typename DataType>
 struct DivergenceLapse : db::SimpleTag {
   using type = Scalar<DataType>;
 };
+
+/*!
+ * \brief The contraction of the conformal spatial Christoffel symbols of the
+ * second kind
+ *
+ * \details See `Ccz4::contracted_conformal_christoffel_second_kind()` for
+ * details.
+ */
+template <size_t Dim, typename Frame, typename DataType>
+struct ContractedConformalChristoffelSecondKind : db::SimpleTag {
+  using type = tnsr::I<DataType, Dim, Frame>;
+};
 }  // namespace Tags
 
 namespace OptionTags {

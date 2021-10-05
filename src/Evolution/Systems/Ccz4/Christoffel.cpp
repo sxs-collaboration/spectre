@@ -66,6 +66,30 @@ tnsr::Ijj<DataType, Dim, Frame> christoffel_second_kind(
                           conformal_christoffel_second_kind);
   return result;
 }
+
+template <size_t Dim, typename Frame, typename DataType>
+void contracted_conformal_christoffel_second_kind(
+    const gsl::not_null<tnsr::I<DataType, Dim, Frame>*> result,
+    const tnsr::II<DataType, Dim, Frame>& inverse_conformal_spatial_metric,
+    const tnsr::Ijj<DataType, Dim, Frame>& conformal_christoffel_second_kind) {
+  destructive_resize_components(
+      result, get_size(get<0, 0>(inverse_conformal_spatial_metric)));
+
+  ::TensorExpressions::evaluate<ti_I>(
+      result, inverse_conformal_spatial_metric(ti_J, ti_L) *
+                  conformal_christoffel_second_kind(ti_I, ti_j, ti_l));
+}
+
+template <size_t Dim, typename Frame, typename DataType>
+tnsr::I<DataType, Dim, Frame> contracted_conformal_christoffel_second_kind(
+    const tnsr::II<DataType, Dim, Frame>& inverse_conformal_spatial_metric,
+    const tnsr::Ijj<DataType, Dim, Frame>& conformal_christoffel_second_kind) {
+  tnsr::I<DataType, Dim, Frame> result{};
+  contracted_conformal_christoffel_second_kind(
+      make_not_null(&result), inverse_conformal_spatial_metric,
+      conformal_christoffel_second_kind);
+  return result;
+}
 }  // namespace Ccz4
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
@@ -101,6 +125,19 @@ tnsr::Ijj<DataType, Dim, Frame> christoffel_second_kind(
       const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                 \
           inverse_conformal_spatial_metric,                                \
       const tnsr::i<DTYPE(data), DIM(data), FRAME(data)>& field_p,         \
+      const tnsr::Ijj<DTYPE(data), DIM(data), FRAME(data)>&                \
+          conformal_christoffel_second_kind);                              \
+  template void Ccz4::contracted_conformal_christoffel_second_kind(        \
+      const gsl::not_null<tnsr::I<DTYPE(data), DIM(data), FRAME(data)>*>   \
+          result,                                                          \
+      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                 \
+          inverse_conformal_spatial_metric,                                \
+      const tnsr::Ijj<DTYPE(data), DIM(data), FRAME(data)>&                \
+          conformal_christoffel_second_kind);                              \
+  template tnsr::I<DTYPE(data), DIM(data), FRAME(data)>                    \
+  Ccz4::contracted_conformal_christoffel_second_kind(                      \
+      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                 \
+          inverse_conformal_spatial_metric,                                \
       const tnsr::Ijj<DTYPE(data), DIM(data), FRAME(data)>&                \
           conformal_christoffel_second_kind);
 
