@@ -25,8 +25,10 @@
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
+#include "Domain/CoordinateMaps/Distribution.hpp"
 #include "Domain/CoordinateMaps/Equiangular.hpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
+#include "Domain/CoordinateMaps/Interval.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/CoordinateMaps/TimeDependent/CubicScale.hpp"
@@ -56,21 +58,21 @@ bool BinaryCompactObject::Object::is_excised() const {
 // Time-independent constructor
 BinaryCompactObject::BinaryCompactObject(
     Object object_A, Object object_B, const double radius_enveloping_cube,
-    const double radius_enveloping_sphere,
+    const double outer_radius_domain,
     const typename InitialRefinement::type& initial_refinement,
     const typename InitialGridPoints::type& initial_number_of_grid_points,
     const bool use_projective_map,
-    const bool use_logarithmic_map_outer_spherical_shell,
+    const std::optional<double>& radius_enveloping_sphere,
+    const CoordinateMaps::Distribution radial_distribution_outer_shell,
     std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
         outer_boundary_condition,
     const Options::Context& context)
     : object_A_(std::move(object_A)),
       object_B_(std::move(object_B)),
       radius_enveloping_cube_(radius_enveloping_cube),
-      radius_enveloping_sphere_(radius_enveloping_sphere),
+      outer_radius_domain_(outer_radius_domain),
       use_projective_map_(use_projective_map),
-      use_logarithmic_map_outer_spherical_shell_(
-          use_logarithmic_map_outer_spherical_shell),
+      radial_distribution_outer_shell_(radial_distribution_outer_shell),
       outer_boundary_condition_(std::move(outer_boundary_condition)) {
   // Determination of parameters for domain construction:
   translation_ = 0.5 * (object_B_.x_coord + object_A_.x_coord);
@@ -232,6 +234,51 @@ BinaryCompactObject::BinaryCompactObject(
   } catch (const std::exception& error) {
     PARSE_ERROR(context, "Invalid 'InitialGridPoints': " << error.what());
   }
+
+  // Compute the inner radius of the outer spherical shell. The computation
+  // makes use of the refinement, so this can't be done earlier.
+  if (radius_enveloping_sphere.has_value()) {
+    radius_enveloping_sphere_ = radius_enveloping_sphere.value();
+    if (radius_enveloping_sphere_ <= radius_enveloping_cube_ or
+        radius_enveloping_sphere_ >= outer_radius_domain_) {
+      PARSE_ERROR(
+          context,
+          "The 'OuterShell.InnerRadius' must be within 'EnvelopingCube.Radius' "
+          "(" << radius_enveloping_cube_
+              << ") and 'OuterShell.OuterRadius' (" << outer_radius_domain_
+              << "), but is: " << radius_enveloping_sphere_
+              << ". Set it to 'Auto' so a reasonable value is chosen "
+                 "automatically.");
+    }
+  } else {
+    // Adjust the outer boundary of the cubed sphere to conform to the spacing
+    // of the spherical shells after refinement, so the cubed sphere is the same
+    // size as the first radial division of the spherical shell (for linear
+    // mapping) or smaller by the same factor as adjacent radial divisions in
+    // the spherical shell (for logarithmic or inverse mapping).
+    const size_t addition_to_outer_layer_radial_refinement_level =
+        initial_refinement_[44][2] - initial_refinement_[34][2];
+    const size_t radial_divisions_in_outer_layers =
+        pow(2, addition_to_outer_layer_radial_refinement_level) + 1;
+    // Use the `Interval` class to divide the interval between
+    // `radius_enveloping_cube_` and `outer_radius_domain_` into
+    // `radial_divisions_in_outer_layers` pieces. Choose
+    // `radius_enveloping_sphere_` as the first of those pieces.
+    radius_enveloping_sphere_ =
+        domain::CoordinateMaps::Interval{// Source interval
+                                         0., 1.,
+                                         // Target interval
+                                         radius_enveloping_cube_,
+                                         outer_radius_domain_,
+                                         // Distribution in target interval
+                                         radial_distribution_outer_shell_,
+                                         // Position of the singularity for log
+                                         // and 1/r maps (in target interval)
+                                         0.}(std::array<double, 1>{
+            {// Inner radius in source interval that is mapped to target
+             // interval
+             1. / static_cast<double>(radial_divisions_in_outer_layers)}})[0];
+  }
 }
 
 // Time-dependent constructor, with additional options for specifying
@@ -249,19 +296,20 @@ BinaryCompactObject::BinaryCompactObject(
     std::array<double, 2> initial_size_map_velocities,
     std::array<double, 2> initial_size_map_accelerations,
     std::array<std::string, 2> size_map_function_of_time_names, Object object_A,
-    Object object_B, double radius_enveloping_cube,
-    double radius_enveloping_sphere,
+    Object object_B, double radius_enveloping_cube, double outer_radius_domain,
     const typename InitialRefinement::type& initial_refinement,
     const typename InitialGridPoints::type& initial_number_of_grid_points,
-    bool use_projective_map, bool use_logarithmic_map_outer_spherical_shell,
+    bool use_projective_map,
+    const std::optional<double>& radius_enveloping_sphere,
+    CoordinateMaps::Distribution radial_distribution_outer_shell,
     std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
         outer_boundary_condition,
     const Options::Context& context)
     : BinaryCompactObject(std::move(object_A), std::move(object_B),
-                          radius_enveloping_cube, radius_enveloping_sphere,
+                          radius_enveloping_cube, outer_radius_domain,
                           initial_refinement, initial_number_of_grid_points,
-                          use_projective_map,
-                          use_logarithmic_map_outer_spherical_shell,
+                          use_projective_map, radius_enveloping_sphere,
+                          radial_distribution_outer_shell,
                           std::move(outer_boundary_condition), context) {
   enable_time_dependence_ = true;
   initial_time_ = initial_time;
@@ -365,45 +413,14 @@ Domain<3> BinaryCompactObject::create_domain() const {
   std::move(maps_frustums.begin(), maps_frustums.end(),
             std::back_inserter(maps));
 
-  // The first shell (Layer 4) goes from sphericity == 0.0 to sphericity
-  // == 1.0. This shell is surrounded by a shell with sphericity == 1.0
-  // throughout (Layer 5) that will have a radial refinement level of
-  // (addition_to_outer_layer_radial_refinement_level_ + initial_refinement_).
-  const double inner_radius_first_outer_shell =
-      sqrt(3.0) * 0.5 * length_outer_cube_;
-
-  // Adjust the outer boundary of the cubed sphere to conform to the
-  // spacing of the spherical shells after refinement, so the cubed sphere is
-  // the same size as the first radial division of the spherical shell
-  // (for linear mapping) or smaller by the same factor as adjacent radial
-  // divisions in the spherical shell (for logarithmic mapping)
-  const size_t addition_to_outer_layer_radial_refinement_level =
-      initial_refinement_[44][2] - initial_refinement_[34][2];
-  const double radial_divisions_in_outer_layers =
-      pow(2, addition_to_outer_layer_radial_refinement_level) + 1;
-  const double outer_radius_first_outer_shell =
-      use_logarithmic_map_outer_spherical_shell_
-          ? inner_radius_first_outer_shell *
-                pow(radius_enveloping_sphere_ / inner_radius_first_outer_shell,
-                    1.0 / static_cast<double>(radial_divisions_in_outer_layers))
-          : inner_radius_first_outer_shell +
-                (radius_enveloping_sphere_ - inner_radius_first_outer_shell) /
-                    static_cast<double>(radial_divisions_in_outer_layers);
-
-  const std::vector<domain::CoordinateMaps::Distribution>
-      outer_spherical_shell_distribution{
-          use_logarithmic_map_outer_spherical_shell_
-              ? domain::CoordinateMaps::Distribution::Logarithmic
-              : domain::CoordinateMaps::Distribution::Linear};
-
   Maps maps_first_outer_shell = sph_wedge_coordinate_maps<Frame::Inertial>(
-      inner_radius_first_outer_shell, outer_radius_first_outer_shell, 0.0, 1.0,
+      radius_enveloping_cube_, radius_enveloping_sphere_, 0.0, 1.0,
       use_equiangular_map_, 0.0, true, 1.0, {},
       {domain::CoordinateMaps::Distribution::Linear}, ShellWedges::All);
   Maps maps_second_outer_shell = sph_wedge_coordinate_maps<Frame::Inertial>(
-      outer_radius_first_outer_shell, radius_enveloping_sphere_, 1.0, 1.0,
+      radius_enveloping_sphere_, outer_radius_domain_, 1.0, 1.0,
       use_equiangular_map_, 0.0, true, 1.0, {},
-      outer_spherical_shell_distribution, ShellWedges::All);
+      {radial_distribution_outer_shell_}, ShellWedges::All);
   if (outer_boundary_condition_ != nullptr) {
     // The outer 10 wedges all have to have the outer boundary condition
     // applied
