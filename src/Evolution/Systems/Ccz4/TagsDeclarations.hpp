@@ -50,6 +50,9 @@ struct DivergenceLapse;
 template <size_t Dim, typename Frame = Frame::Inertial,
           typename DataType = DataVector>
 struct ContractedConformalChristoffelSecondKind;
+template <size_t Dim, typename Frame = Frame::Inertial,
+          typename DataType = DataVector>
+struct DerivContractedConformalChristoffelSecondKind;
 }  // namespace Tags
 
 /// \brief Input option tags for the generalized harmonic evolution system
