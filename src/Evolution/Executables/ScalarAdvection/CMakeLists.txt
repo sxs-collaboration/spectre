@@ -2,11 +2,13 @@
 # See LICENSE.txt for details.
 
 set(LIBS_TO_LINK
+  DgSubcell
   DiscontinuousGalerkin
   DomainCreators
   EventsAndDenseTriggers
   EventsAndTriggers
   Evolution
+  FiniteDifference
   IO
   Informer
   Limiters

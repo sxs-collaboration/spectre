@@ -15,6 +15,17 @@
 #include "Domain/Tags.hpp"
 #include "Evolution/Actions/RunEventsAndDenseTriggers.hpp"
 #include "Evolution/ComputeTags.hpp"
+#include "Evolution/DgSubcell/Actions/Initialize.hpp"
+#include "Evolution/DgSubcell/Actions/Labels.hpp"
+#include "Evolution/DgSubcell/Actions/ReconstructionCommunication.hpp"
+#include "Evolution/DgSubcell/Actions/SelectNumericalMethod.hpp"
+#include "Evolution/DgSubcell/Actions/TakeTimeStep.hpp"
+#include "Evolution/DgSubcell/Actions/TciAndRollback.hpp"
+#include "Evolution/DgSubcell/Actions/TciAndSwitchToDg.hpp"
+#include "Evolution/DgSubcell/Events/ObserveFields.hpp"
+#include "Evolution/DgSubcell/NeighborReconstructedFaceSolution.hpp"
+#include "Evolution/DgSubcell/PrepareNeighborData.hpp"
+#include "Evolution/DgSubcell/Tags/TciStatus.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ApplyBoundaryCorrections.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivative.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"  // IWYU pragma: keep
@@ -33,6 +44,16 @@
 #include "Evolution/Systems/ScalarAdvection/BoundaryConditions/Factory.hpp"
 #include "Evolution/Systems/ScalarAdvection/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/ScalarAdvection/BoundaryCorrections/RegisterDerived.hpp"
+#include "Evolution/Systems/ScalarAdvection/FiniteDifference/Factory.hpp"
+#include "Evolution/Systems/ScalarAdvection/FiniteDifference/RegisterDerivedWithCharm.hpp"
+#include "Evolution/Systems/ScalarAdvection/FiniteDifference/Tags.hpp"
+#include "Evolution/Systems/ScalarAdvection/Subcell/GhostData.hpp"
+#include "Evolution/Systems/ScalarAdvection/Subcell/InitialDataTci.hpp"
+#include "Evolution/Systems/ScalarAdvection/Subcell/NeighborPackagedData.hpp"
+#include "Evolution/Systems/ScalarAdvection/Subcell/TciOnDgGrid.hpp"
+#include "Evolution/Systems/ScalarAdvection/Subcell/TciOnFdGrid.hpp"
+#include "Evolution/Systems/ScalarAdvection/Subcell/TimeDerivative.hpp"
+#include "Evolution/Systems/ScalarAdvection/Subcell/VelocityAtFace.hpp"
 #include "Evolution/Systems/ScalarAdvection/System.hpp"
 #include "Evolution/Systems/ScalarAdvection/VelocityField.hpp"
 #include "IO/Observer/Actions/RegisterEvents.hpp"
@@ -59,6 +80,7 @@
 #include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/AddComputeTags.hpp"
+#include "ParallelAlgorithms/Initialization/Actions/AddSimpleTags.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/ScalarAdvection/Krivodonova.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/AnalyticSolutions/ScalarAdvection/Kuzmin.hpp"  // IWYU pragma: keep
@@ -87,9 +109,6 @@
 // IWYU pragma: no_include <pup.h>
 
 /// \cond
-namespace Frame {
-struct Inertial;
-}  // namespace Frame
 namespace PUP {
 class er;
 }  // namespace PUP
@@ -105,6 +124,10 @@ struct EvolutionMetavars {
   using system = ScalarAdvection::System<Dim>;
   using temporal_id = Tags::TimeStepId;
   static constexpr bool local_time_stepping = false;
+
+  // The use_dg_subcell flag controls whether to use "standard" limiting (false)
+  // or a DG-FD hybrid scheme (true).
+  static constexpr bool use_dg_subcell = true;
 
   using initial_data = InitialData;
   static_assert(
@@ -136,11 +159,16 @@ struct EvolutionMetavars {
             Event,
             tmpl::flatten<tmpl::list<
                 Events::Completion,
-                dg::Events::field_observations<
-                    volume_dim, Tags::Time,
-                    tmpl::push_back<observe_fields,
-                                    ScalarAdvection::Tags::VelocityField<Dim>>,
-                    analytic_solution_fields>,
+                tmpl::conditional_t<
+                    use_dg_subcell,
+                    evolution::dg::subcell::Events::ObserveFields<
+                        volume_dim, Tags::Time,
+                        tmpl::push_back<observe_fields, evolution::dg::subcell::
+                                                            Tags::TciStatus>,
+                        analytic_solution_fields>,
+                    dg::Events::field_observations<volume_dim, Tags::Time,
+                                                   observe_fields,
+                                                   analytic_solution_fields>>,
                 Events::time_events<system>>>>,
         tmpl::pair<ScalarAdvection::BoundaryConditions::BoundaryCondition<Dim>,
                    ScalarAdvection::BoundaryConditions::
@@ -159,11 +187,32 @@ struct EvolutionMetavars {
                                          Triggers::time_triggers>>>;
   };
 
+  struct SubcellOptions {
+    static constexpr bool subcell_enabled = use_dg_subcell;
+
+    // We send `ghost_zone_size` cell-centered grid points for variable
+    // reconstruction, of which we need `ghost_zone_size-1` for reconstruction
+    // to the internal side of the element face, and `ghost_zone_size` for
+    // reconstruction to the external side of the element face.
+    template <typename DbTagsList>
+    static constexpr size_t ghost_zone_size(
+        const db::DataBox<DbTagsList>& box) {
+      return db::get<ScalarAdvection::fd::Tags::Reconstructor<volume_dim>>(box)
+          .ghost_zone_size();
+    }
+
+    using DgComputeSubcellNeighborPackagedData =
+        ScalarAdvection::subcell::NeighborPackagedData<volume_dim>;
+
+    using GhostDataToSlice =
+        ScalarAdvection::subcell::GhostDataToSlice<volume_dim>;
+  };
+
   using observed_reduction_data_tags =
       observers::collect_reduction_data_tags<tmpl::flatten<tmpl::list<
           tmpl::at<typename factory_creation::factory_classes, Event>>>>;
 
-  using step_actions = tmpl::flatten<tmpl::list<
+  using dg_step_actions = tmpl::flatten<tmpl::list<
       evolution::dg::Actions::ComputeTimeDerivative<EvolutionMetavars>,
       evolution::dg::Actions::ApplyBoundaryCorrections<EvolutionMetavars>,
       tmpl::conditional_t<
@@ -173,6 +222,37 @@ struct EvolutionMetavars {
                      Actions::UpdateU<>>>,
       Limiters::Actions::SendData<EvolutionMetavars>,
       Limiters::Actions::Limit<EvolutionMetavars>>>;
+
+  using dg_subcell_step_actions = tmpl::flatten<tmpl::list<
+      evolution::dg::subcell::Actions::SelectNumericalMethod,
+      Actions::Label<evolution::dg::subcell::Actions::Labels::BeginDg>,
+
+      evolution::dg::Actions::ComputeTimeDerivative<EvolutionMetavars>,
+      evolution::dg::Actions::ApplyBoundaryCorrections<EvolutionMetavars>,
+      tmpl::conditional_t<
+          local_time_stepping, tmpl::list<>,
+          tmpl::list<Actions::RecordTimeStepperData<>,
+                     evolution::Actions::RunEventsAndDenseTriggers<>,
+                     Actions::UpdateU<>>>,
+      evolution::dg::subcell::Actions::TciAndRollback<
+          ScalarAdvection::subcell::TciOnDgGrid<Dim>>,
+      Actions::Goto<evolution::dg::subcell::Actions::Labels::EndOfSolvers>,
+      Actions::Label<evolution::dg::subcell::Actions::Labels::BeginSubcell>,
+      evolution::dg::subcell::Actions::SendDataForReconstruction<
+          volume_dim, ScalarAdvection::subcell::GhostDataOnSubcells>,
+      evolution::dg::subcell::Actions::ReceiveDataForReconstruction<volume_dim>,
+      Actions::Label<
+          evolution::dg::subcell::Actions::Labels::BeginSubcellAfterDgRollback>,
+      evolution::dg::subcell::fd::Actions::TakeTimeStep<
+          ScalarAdvection::subcell::TimeDerivative<volume_dim>>,
+      Actions::RecordTimeStepperData<>, Actions::UpdateU<>,
+      evolution::dg::subcell::Actions::TciAndSwitchToDg<
+          ScalarAdvection::subcell::TciOnFdGrid<volume_dim>>,
+      Actions::Label<evolution::dg::subcell::Actions::Labels::EndOfSolvers>>>;
+
+  using step_actions =
+      tmpl::conditional_t<use_dg_subcell, dg_subcell_step_actions,
+                          dg_step_actions>;
 
   enum class Phase {
     Initialization,
@@ -204,6 +284,10 @@ struct EvolutionMetavars {
 
   using const_global_cache_tags =
       tmpl::list<initial_data_tag, Tags::EventsAndTriggers,
+                 tmpl::conditional_t<
+                     use_dg_subcell,
+                     tmpl::list<ScalarAdvection::fd::Tags::Reconstructor<Dim>>,
+                     tmpl::list<>>,
                  PhaseControl::Tags::PhaseChangeAndTriggers<phase_changes>>;
 
   using dg_registration_list =
@@ -217,6 +301,17 @@ struct EvolutionMetavars {
       evolution::Initialization::Actions::SetVariables<
           domain::Tags::Coordinates<Dim, Frame::ElementLogical>>,
       Initialization::Actions::TimeStepperHistory<EvolutionMetavars>,
+
+      tmpl::conditional_t<
+          use_dg_subcell,
+          tmpl::list<
+              evolution::dg::subcell::Actions::Initialize<
+                  volume_dim, system,
+                  ScalarAdvection::subcell::DgInitialDataTci<volume_dim>>,
+              Initialization::Actions::AddSimpleTags<
+                  ScalarAdvection::subcell::VelocityAtFace<volume_dim>>>,
+          tmpl::list<>>,
+
       Initialization::Actions::AddComputeTags<
           tmpl::list<ScalarAdvection::Tags::VelocityFieldCompute<Dim>>>,
       tmpl::conditional_t<
@@ -312,9 +407,11 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &domain::creators::time_dependence::register_derived_with_charm,
     &domain::FunctionsOfTime::register_derived_with_charm,
     &ScalarAdvection::BoundaryCorrections::register_derived_with_charm,
+    &ScalarAdvection::fd::register_derived_with_charm,
     &Parallel::register_derived_classes_with_charm<TimeStepper>,
     &Parallel::register_derived_classes_with_charm<
         PhaseChange<metavariables::phase_changes>>,
     &Parallel::register_factory_classes_with_charm<metavariables>};
+
 static const std::vector<void (*)()> charm_init_proc_funcs{
     &enable_floating_point_exceptions};
