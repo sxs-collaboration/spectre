@@ -34,22 +34,17 @@ struct TaggedTuple;
 }  // namespace tuples
 /// \endcond
 
-namespace elliptic::Actions {
+namespace Actions {
 
 /*!
  * \brief Optionally add random noise to the initial guess.
  *
- * Add this action to the action list just after
- * `elliptic::Actions::InitializeFields` to add random noise to the initial
- * guess. The random noise can be toggled and is configurable with input-file
- * options. A random initial guess can be useful to test the convergence of the
- * elliptic solver.
+ * Use this action to add random noise to variables. The random noise can be
+ * toggled and is configurable with input-file options. Adding random noise to
+ * fields can be useful to test the convergence and stability.
  */
-template <typename System>
-struct RandomizeInitialGuess {
- private:
-  using fields_tag = ::Tags::Variables<typename System::primal_fields>;
-
+template <typename VariablesTag, typename Label>
+struct RandomizeVariables {
  public:
   // Bundle the options so they can be placed in Options::Auto
   struct RandomParameters {
@@ -73,10 +68,10 @@ struct RandomizeInitialGuess {
   };
 
   struct RandomParametersOptionTag {
-    static std::string name() { return "RandomizeInitialGuess"; }
+    static std::string name() { return Options::name<Label>(); }
     using type = Options::Auto<RandomParameters, Options::AutoLabel::None>;
     static constexpr Options::String help =
-        "Add uniform random noise to the initial guess.";
+        "Add uniform random noise to variables.";
   };
 
   struct RandomParametersTag : db::SimpleTag {
@@ -111,14 +106,14 @@ struct RandomizeInitialGuess {
     // Set up the random distribution
     std::uniform_real_distribution<> dist(-amplitude, amplitude);
     // Add noise to the fields
-    db::mutate<fields_tag>(make_not_null(&box),
-                           [&generator, &dist](const auto fields) {
-                             for (size_t i = 0; i < fields->size(); ++i) {
-                               fields->data()[i] += dist(generator);
-                             }
-                           });
+    db::mutate<VariablesTag>(make_not_null(&box),
+                             [&generator, &dist](const auto fields) {
+                               for (size_t i = 0; i < fields->size(); ++i) {
+                                 fields->data()[i] += dist(generator);
+                               }
+                             });
     return {std::move(box)};
   }
 };
 
-}  // namespace elliptic::Actions
+}  // namespace Actions

@@ -14,7 +14,6 @@
 #include "Elliptic/Actions/InitializeAnalyticSolution.hpp"
 #include "Elliptic/Actions/InitializeFields.hpp"
 #include "Elliptic/Actions/InitializeFixedSources.hpp"
-#include "Elliptic/Actions/RandomizeInitialGuess.hpp"
 #include "Elliptic/DiscontinuousGalerkin/Actions/ApplyOperator.hpp"
 #include "Elliptic/DiscontinuousGalerkin/Actions/InitializeDomain.hpp"
 #include "Elliptic/DiscontinuousGalerkin/DgElementArray.hpp"
@@ -36,6 +35,7 @@
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Reduction.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "ParallelAlgorithms/Actions/RandomizeVariables.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Completion.hpp"
@@ -201,6 +201,9 @@ struct Metavariables {
   // Specify all global synchronization points.
   enum class Phase { Initialization, RegisterWithObserver, Solve, Exit };
 
+  // For labeling the yaml option for RandomizeVariables
+  struct RandomizeInitialGuess {};
+
   using initialization_actions = tmpl::list<
       Actions::SetupDataBox,
       elliptic::dg::Actions::InitializeDomain<volume_dim>,
@@ -208,7 +211,9 @@ struct Metavariables {
       typename multigrid::initialize_element,
       typename schwarz_smoother::initialize_element,
       elliptic::Actions::InitializeFields<system, initial_guess_tag>,
-      elliptic::Actions::RandomizeInitialGuess<system>,
+      Actions::RandomizeVariables<
+          ::Tags::Variables<typename system::primal_fields>,
+          RandomizeInitialGuess>,
       elliptic::Actions::InitializeFixedSources<system, analytic_solution_tag>,
       elliptic::Actions::InitializeAnalyticSolution<
           analytic_solution_tag, tmpl::append<typename system::primal_fields,
