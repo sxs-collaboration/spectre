@@ -14,7 +14,7 @@
 
 namespace control_system::TestHelpers {
 namespace TestStructs_detail {
-struct LabelA;
+struct LabelA {};
 }  // namespace TestStructs_detail
 
 template <typename Label>
