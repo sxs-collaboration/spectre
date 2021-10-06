@@ -259,8 +259,8 @@ class KerrSchild : public AnalyticSolution<3_st>,
     return {intermediate.get_var(Tags{})...};
   }
 
-  // clang-tidy: no runtime references
-  void pup(PUP::er& p);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
 
   SPECTRE_ALWAYS_INLINE double mass() const { return mass_; }
   SPECTRE_ALWAYS_INLINE const std::array<double, volume_dim>& center() const {

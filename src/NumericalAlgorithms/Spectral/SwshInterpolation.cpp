@@ -300,7 +300,8 @@ struct ClenshawRecurrenceConstants {
   }
 
   // Serialization for Charm++.
-  void pup(PUP::er& p) {  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p) {
     p | alpha_prefactor;
     p | alpha_constant;
     p | beta_constant;

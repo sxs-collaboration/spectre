@@ -41,8 +41,8 @@ class DenseVector : public blaze::DynamicVector<T, TF> {
   using blaze::DynamicVector<T, TF>::DynamicVector;
 
   /// Charm++ serialization
-  // clang-tidy: runtime-references
-  void pup(PUP::er& p) {  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p) {
     auto size = blaze::DynamicVector<T, TF>::size();
     p | size;
     if (p.isUnpacking()) {

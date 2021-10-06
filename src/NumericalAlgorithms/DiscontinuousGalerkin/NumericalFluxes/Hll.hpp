@@ -206,8 +206,8 @@ struct Hll : tt::ConformsTo<dg::protocols::NumericalFlux> {
   using options = tmpl::list<>;
   static constexpr Options::String help = {"Computes the HLL numerical flux."};
 
-  // clang-tidy: google-runtime-references
-  void pup(PUP::er& /*p*/) {}  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& /*p*/) {}
 
   template <class... Args>
   void package_data(const Args&... args) const {

@@ -134,8 +134,8 @@ struct WedgeSectionTorus {
   WedgeSectionTorus& operator=(WedgeSectionTorus&& /*rhs*/) = default;
   ~WedgeSectionTorus() = default;
 
-  // clang-tidy non-const reference pointer
-  void pup(PUP::er& p);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
 
   double min_radius;
   double max_radius;

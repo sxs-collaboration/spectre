@@ -147,8 +147,8 @@ struct LocalLaxFriedrichs : tt::ConformsTo<dg::protocols::NumericalFlux> {
   static constexpr Options::String help = {
       "Computes the local Lax-Friedrichs numerical flux."};
 
-  // clang-tidy: google-runtime-references
-  void pup(PUP::er& /*p*/) {}  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& /*p*/) {}
 
   template <class... Args>
   void package_data(const Args&... args) const {

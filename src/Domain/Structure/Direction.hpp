@@ -68,7 +68,8 @@ class Direction {
   /// @}
 
   /// Serialization for Charm++
-  void pup(PUP::er& p);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
 
  private:
   Axis axis_{Axis::Xi};

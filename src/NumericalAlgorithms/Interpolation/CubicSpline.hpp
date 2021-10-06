@@ -39,8 +39,8 @@ class CubicSpline {
 
   double operator()(double x_to_interp_to) const;
 
-  // clang-tidy: no runtime references
-  void pup(PUP::er& p);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
 
  private:
   struct gsl_interp_accel_deleter {

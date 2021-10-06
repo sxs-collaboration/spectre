@@ -79,8 +79,8 @@ struct ApparentHorizon {
   ApparentHorizon& operator=(ApparentHorizon&& /*rhs*/) = default;
   ~ApparentHorizon() = default;
 
-  // clang-tidy non-const reference pointer.
-  void pup(PUP::er& p);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
 
   Strahlkorper<Frame> initial_guess{};
   ::FastFlow fast_flow{};

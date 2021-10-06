@@ -113,8 +113,8 @@ class WrappedGr : public SolutionType {
     return {get<Tag>(variables(x, tmpl::list<Tag>{}, intermediate_vars))};
   }
 
-  // clang-tidy: google-runtime-references
-  void pup(PUP::er& p) { SolutionType::pup(p); }  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p) { SolutionType::pup(p); }
 
  private:
   // Preprocessor logic to avoid declaring variables() functions for

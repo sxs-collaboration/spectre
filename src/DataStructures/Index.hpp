@@ -96,8 +96,8 @@ class Index {
   }
 
   /// \cond
-  // clang-tidy: runtime-references
-  void pup(PUP::er& p);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
   /// \endcond
 
   template <size_t N>

@@ -59,8 +59,8 @@ class RegularGrid {
 
   RegularGrid();
 
-  // clang-tidy: no runtime references
-  void pup(PUP::er& p);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
 
   /// @{
   /// \brief Interpolate a Variables onto the target points.

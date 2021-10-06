@@ -75,8 +75,8 @@ class Sinusoid<1, Fr> : public MathFunction<1, Fr> {
   double third_deriv(const double& x) const override;
   DataVector third_deriv(const DataVector& x) const override;
 
-  // clang-tidy: google-runtime-references
-  void pup(PUP::er& p) override;  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p) override;
 
  private:
   friend bool operator==(const Sinusoid& lhs, const Sinusoid& rhs) {

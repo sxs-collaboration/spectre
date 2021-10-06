@@ -39,9 +39,9 @@ class Irregular {
       const tnsr::I<DataVector, Dim, Frame::ElementLogical>& target_points);
   Irregular();
 
-  // clang-tidy: no runtime references
   /// Serialization for Charm++
-  void pup(PUP::er& p);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
 
   /// @{
   /// Performs the interpolation on a `Variables` with grid points corresponding

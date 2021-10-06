@@ -21,9 +21,8 @@ GeneralizedHarmonic::gauges::DhGaugeParameters<false>::DhGaugeParameters(
     const std::array<int, 3>& exps)
     : spatial_decay_width(width), amplitudes(amps), exponents(exps) {}
 
-// clang-tidy: google-runtime-references
-void GeneralizedHarmonic::gauges::DhGaugeParameters<true>::pup(
-    PUP::er& p) {  // NOLINT
+// NOLINTNEXTLINE(google-runtime-references)
+void GeneralizedHarmonic::gauges::DhGaugeParameters<true>::pup(PUP::er& p) {
   p | rollon_start;
   p | rollon_window;
   p | spatial_decay_width;
@@ -31,9 +30,8 @@ void GeneralizedHarmonic::gauges::DhGaugeParameters<true>::pup(
   p | exponents;
 }
 
-// clang-tidy: google-runtime-references
-void GeneralizedHarmonic::gauges::DhGaugeParameters<false>::pup(
-    PUP::er& p) {  // NOLINT
+// NOLINTNEXTLINE(google-runtime-references)
+void GeneralizedHarmonic::gauges::DhGaugeParameters<false>::pup(PUP::er& p) {
   p | spatial_decay_width;
   p | amplitudes;
   p | exponents;

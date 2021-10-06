@@ -32,7 +32,8 @@ struct TensorComponent {
   TensorComponent(std::string in_name, DataVector in_data);
   TensorComponent(std::string in_name, std::vector<float> in_data);
 
-  void pup(PUP::er& p);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
   std::string name{};
   std::variant<DataVector, std::vector<float>> data{};
 };
@@ -58,7 +59,8 @@ struct ExtentsAndTensorVolumeData {
   ExtentsAndTensorVolumeData(std::vector<size_t> extents_in,
                              std::vector<TensorComponent> components);
 
-  void pup(PUP::er& p);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
   std::vector<size_t> extents{};
   std::vector<TensorComponent> tensor_components{};
 };
@@ -75,7 +77,8 @@ struct ElementVolumeData : ExtentsAndTensorVolumeData {
                     std::vector<Spectral::Basis> basis_in,
                     std::vector<Spectral::Quadrature> quadrature_in);
 
-  void pup(PUP::er& p);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
   std::vector<Spectral::Basis> basis{};
   std::vector<Spectral::Quadrature> quadrature{};
 };

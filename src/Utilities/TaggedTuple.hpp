@@ -215,10 +215,8 @@ class TaggedTupleLeaf<Tag, true> : private Tag::type {
     return false;
   }
 
-  // clang-tidy: runtime-references
-  void pup(PUP::er& p) {  // NOLINT
-    p | static_cast<typename Tag::type&>(*this);
-  }
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p) { p | static_cast<typename Tag::type&>(*this); }
 };
 
 struct disable_constructors {
@@ -320,7 +318,8 @@ class TaggedTuple : private tuples_detail::TaggedTupleLeaf<Tags>... {  // NOLINT
   static constexpr size_t size() { return sizeof...(Tags); }
 
   // clang-tidy: runtime-references
-  void pup(PUP::er& p) {  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p) {
     static_cast<void>(std::initializer_list<char>{
         (tuples_detail::TaggedTupleLeaf<Tags>::pup(p), '0')...});
   }

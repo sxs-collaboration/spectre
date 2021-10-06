@@ -76,7 +76,8 @@ class SpinWeightedSphericalHarmonic {
   std::complex<double> evaluate(double theta, double phi) const;
 
   /// Serialization for Charm++.
-  void pup(PUP::er& p);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
 
  private:
   int spin_ = 0;
@@ -354,7 +355,8 @@ class SwshInterpolator {
       int m) const;
 
   /// Serialization for Charm++.
-  void pup(PUP::er& p);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
 
  private:
   size_t l_max_ = 0;

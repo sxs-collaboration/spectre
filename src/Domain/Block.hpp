@@ -121,7 +121,8 @@ class Block {
   }
 
   /// Serialization for Charm++
-  void pup(PUP::er& p);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
 
  private:
   template <size_t LocalVolumeDim>

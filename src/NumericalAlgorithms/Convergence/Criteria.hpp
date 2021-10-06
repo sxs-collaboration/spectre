@@ -64,7 +64,8 @@ struct Criteria {
   Criteria(size_t max_iterations_in, double absolute_residual_in,
            double relative_residual_in);
 
-  void pup(PUP::er& p);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
 
   size_t max_iterations{};
   double absolute_residual{};

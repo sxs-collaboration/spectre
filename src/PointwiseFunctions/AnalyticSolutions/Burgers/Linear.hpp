@@ -59,8 +59,8 @@ class Linear : public MarkAsAnalyticSolution {
       const tnsr::I<DataVector, 1>& x, double t,
       tmpl::list<::Tags::dt<Tags::U>> /*meta*/) const;
 
-  // clang-tidy: no pass by reference
-  void pup(PUP::er& p);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
 
  private:
   double shock_time_ = std::numeric_limits<double>::signaling_NaN();

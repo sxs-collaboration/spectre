@@ -91,7 +91,8 @@ struct ElementCenteredSubdomainData {
   const_iterator cbegin() const { return begin(); }
   const_iterator cend() const { return end(); }
 
-  void pup(PUP::er& p) {  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p) {
     p | element_data;
     p | overlap_data;
   }

@@ -73,8 +73,8 @@ class Slab {
   /// Check if slabs overlap.  Abutting slabs do not overlap.
   bool overlaps(const Slab& other) const;
 
-  // clang-tidy: google-runtime-references
-  void pup(PUP::er& p);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
 
  private:
   double start_ = std::numeric_limits<double>::signaling_NaN();

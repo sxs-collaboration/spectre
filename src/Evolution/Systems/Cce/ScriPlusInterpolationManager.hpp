@@ -140,7 +140,8 @@ struct ScriPlusInterpolationManager {
   /// interpolation manager
   size_t number_of_data_points() const { return u_bondi_ranges_.size(); }
 
-  void pup(PUP::er& p) {  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p) {
     p | u_bondi_values_;
     p | to_interpolate_values_;
     p | u_bondi_ranges_;
@@ -425,7 +426,8 @@ struct ScriPlusInterpolationManager<
     return interpolation_manager_lhs_.number_of_data_points();
   }
 
-  void pup(PUP::er& p) {  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p) {
     p | interpolation_manager_lhs_;
     p | interpolation_manager_rhs_;
   }
@@ -549,9 +551,8 @@ struct ScriPlusInterpolationManager<VectorTypeToInterpolate, Tags::Du<Tag>> {
     return argument_interpolation_manager_.number_of_data_points();
   }
 
-  void pup(PUP::er& p) {  // NOLINT
-    p | argument_interpolation_manager_;
-  }
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p) { p | argument_interpolation_manager_; }
 
  private:
   // to avoid code duplication, most of the details are stored in an

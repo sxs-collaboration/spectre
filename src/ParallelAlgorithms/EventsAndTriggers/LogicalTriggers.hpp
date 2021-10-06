@@ -56,10 +56,8 @@ class Not : public Trigger {
     return not negated_trigger_->is_triggered(box);
   }
 
-  // clang-tidy: google-runtime-references
-  void pup(PUP::er& p) {  // NOLINT
-    p | negated_trigger_;
-  }
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p) { p | negated_trigger_; }
 
  private:
   std::unique_ptr<Trigger> negated_trigger_;
@@ -94,10 +92,8 @@ class And : public Trigger {
     return true;
   }
 
-  // clang-tidy: google-runtime-references
-  void pup(PUP::er& p) {  // NOLINT
-    p | combined_triggers_;
-  }
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p) { p | combined_triggers_; }
 
  private:
   std::vector<std::unique_ptr<Trigger>> combined_triggers_;
@@ -132,10 +128,8 @@ class Or : public Trigger {
     return false;
   }
 
-  // clang-tidy: google-runtime-references
-  void pup(PUP::er& p) {  // NOLINT
-    p | combined_triggers_;
-  }
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p) { p | combined_triggers_; }
 
  private:
   std::vector<std::unique_ptr<Trigger>> combined_triggers_;

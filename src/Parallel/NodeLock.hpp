@@ -44,8 +44,8 @@ class NodeLock {
 
   bool is_destroyed() { return nullptr == lock_; }
 
-  ///
-  void pup(PUP::er& p);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
 
  private:
   std::unique_ptr<CmiNodeLock> lock_;

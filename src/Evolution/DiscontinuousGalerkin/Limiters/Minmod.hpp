@@ -203,8 +203,8 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
   Minmod& operator=(Minmod&& /*rhs*/) = default;
   ~Minmod() = default;
 
-  // clang-tidy: google-runtime-references
-  void pup(PUP::er& p);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
 
   // To facilitate testing
   /// \cond
@@ -217,8 +217,8 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
     std::array<double, VolumeDim> element_size =
         make_array<VolumeDim>(std::numeric_limits<double>::signaling_NaN());
 
-    // clang-tidy: google-runtime-references
-    void pup(PUP::er& p) {  // NOLINT
+    // NOLINTNEXTLINE(google-runtime-references)
+    void pup(PUP::er& p) {
       p | means;
       p | element_size;
     }

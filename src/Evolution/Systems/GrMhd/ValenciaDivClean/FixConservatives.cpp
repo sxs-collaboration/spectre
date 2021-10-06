@@ -80,8 +80,8 @@ FixConservatives::FixConservatives(
   }
 }
 
-// clang-tidy: google-runtime-references
-void FixConservatives::pup(PUP::er& p) {  // NOLINT
+// NOLINTNEXTLINE(google-runtime-references)
+void FixConservatives::pup(PUP::er& p) {
   p | minimum_rest_mass_density_times_lorentz_factor_;
   p | rest_mass_density_times_lorentz_factor_cutoff_;
   p | one_minus_safety_factor_for_magnetic_field_;

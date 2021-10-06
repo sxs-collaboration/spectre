@@ -87,7 +87,8 @@ class SemidiscretizedDg : public MarkAsAnalyticSolution {
       tmpl::list<ScalarWave::Psi> /*meta*/) const;
   /// \endcond
 
-  void pup(PUP::er& p);  // NOLINT(google-runtime-references)
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
 
  private:
   int harmonic_;

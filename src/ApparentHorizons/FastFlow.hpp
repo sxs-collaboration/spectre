@@ -153,8 +153,8 @@ class FastFlow {
   FastFlow& operator=(FastFlow&& /*rhs*/) = default;
   ~FastFlow() = default;
 
-  // clang-tidy: no runtime references
-  void pup(PUP::er& p);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
 
   /// Evaluate residuals and compute the next iteration.  If
   /// Status==SuccessfulIteration, then `current_strahlkorper` is

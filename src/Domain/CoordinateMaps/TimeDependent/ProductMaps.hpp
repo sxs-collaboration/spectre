@@ -96,8 +96,8 @@ class ProductOf2Maps {
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
           functions_of_time) const;
 
-  // clang-tidy: google-runtime-references
-  void pup(PUP::er& p);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
 
   bool is_identity() const {
     return map1_.is_identity() and map2_.is_identity();
@@ -176,8 +176,8 @@ class ProductOf3Maps {
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
           functions_of_time) const;
 
-  // clang-tidy: google-runtime-references
-  void pup(PUP::er& p);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
 
   bool is_identity() const {
     return map1_.is_identity() and map2_.is_identity() and map3_.is_identity();

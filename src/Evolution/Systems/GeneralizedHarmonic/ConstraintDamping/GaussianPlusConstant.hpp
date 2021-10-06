@@ -100,8 +100,8 @@ class GaussianPlusConstant : public DampingFunction<VolumeDim, Fr> {
   auto get_clone() const
       -> std::unique_ptr<DampingFunction<VolumeDim, Fr>> override;
 
-  // clang-tidy: google-runtime-references
-  void pup(PUP::er& p) override;  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p) override;
 
  private:
   friend bool operator==(const GaussianPlusConstant& lhs,

@@ -48,9 +48,9 @@ FixToAtmosphere<Dim>::FixToAtmosphere(const double density_of_atmosphere,
   }
 }
 
-// clang-tidy: google-runtime-references
 template <size_t Dim>
-void FixToAtmosphere<Dim>::pup(PUP::er& p) {  // NOLINT
+// NOLINTNEXTLINE(google-runtime-references)
+void FixToAtmosphere<Dim>::pup(PUP::er& p) {
   p | density_of_atmosphere_;
   p | density_cutoff_;
   p | transition_density_cutoff_;

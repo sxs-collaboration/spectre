@@ -174,8 +174,8 @@ class Minkowski : public AnalyticSolution<Dim>, public MarkAsAnalyticSolution {
       tmpl::list<::Tags::dt<gr::Tags::SqrtDetSpatialMetric<DataType>>> /*meta*/)
       const;
 
-  // clang-tidy: google-runtime-references
-  void pup(PUP::er& /*p*/) {}  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& /*p*/) {}
 };
 
 template <size_t Dim>

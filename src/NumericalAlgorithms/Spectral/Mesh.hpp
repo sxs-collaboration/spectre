@@ -245,7 +245,8 @@ class Mesh {
   std::array<Mesh<1>, Dim> slices() const;
 
   // clang-tidy: runtime-references
-  void pup(PUP::er& p);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
 
  private:
   Index<Dim> extents_{};

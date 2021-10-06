@@ -179,7 +179,8 @@ class FixedHashMap {
   /// Get hash function object
   hasher hash_function() const { return hasher{}; }
 
-  void pup(PUP::er& p) {  // NOLINT(google-runtime-references)
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p) {
     p | data_;
     p | size_;
   }

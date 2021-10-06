@@ -51,8 +51,8 @@ class BarycentricRational {
 
   size_t order() const;
 
-  // clang-tidy: no runtime references
-  void pup(PUP::er& p);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
 
  private:
   std::vector<double> x_values_;

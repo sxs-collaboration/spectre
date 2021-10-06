@@ -62,8 +62,8 @@ struct UniformAcceleration {
   explicit UniformAcceleration(
       const std::array<double, Dim>& acceleration_field);
 
-  // clang-tidy: google-runtime-references
-  void pup(PUP::er& /*p*/);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& /*p*/);
 
   using sourced_variables =
       tmpl::list<Tags::MomentumDensity<Dim>, Tags::EnergyDensity>;

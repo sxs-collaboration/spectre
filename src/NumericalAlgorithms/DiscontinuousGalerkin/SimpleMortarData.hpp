@@ -49,8 +49,8 @@ class SimpleMortarData {
   /// Return the inserted data and reset the state to empty.
   std::pair<LocalVars, RemoteVars> extract();
 
-  // clang-tidy: google-runtime-references
-  void pup(PUP::er& p);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
 
   /// Retrieve the local data at `temporal_id`
   const LocalVars& local_data(const TemporalId& temporal_id) const {

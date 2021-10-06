@@ -140,8 +140,8 @@ class ScalarWaveGr : public MarkAsAnalyticData {
     return {tuples::get<Tags>(variables(x, tmpl::list<Tags>{}))...};
   }
 
-  // clang-tidy: no runtime references
-  void pup(PUP::er& p);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
 
  private:
   template <typename LocalScalarFieldData,                  // NOLINT

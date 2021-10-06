@@ -166,8 +166,8 @@ class ConstantDensityStar {
     return {tuples::get<Tags>(variables(x, tmpl::list<Tags>{}))...};
   }
 
-  // clang-tidy: no pass by reference
-  void pup(PUP::er& p);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
 
  private:
   double density_ = std::numeric_limits<double>::signaling_NaN();

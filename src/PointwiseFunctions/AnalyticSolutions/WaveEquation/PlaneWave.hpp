@@ -129,8 +129,8 @@ class PlaneWave : public MarkAsAnalyticSolution {
       tmpl::list<::Tags::dt<ScalarWave::Pi>, ::Tags::dt<ScalarWave::Phi<Dim>>,
                  ::Tags::dt<ScalarWave::Psi>> /*meta*/) const;
 
-  // clang-tidy: no pass by reference
-  void pup(PUP::er& p);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
 
  private:
   template <typename T>

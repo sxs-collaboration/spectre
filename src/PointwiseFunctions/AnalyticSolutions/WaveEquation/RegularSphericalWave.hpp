@@ -100,8 +100,8 @@ class RegularSphericalWave : public MarkAsAnalyticSolution {
       tmpl::list<::Tags::dt<ScalarWave::Pi>, ::Tags::dt<ScalarWave::Phi<3>>,
                  ::Tags::dt<ScalarWave::Psi>> /*meta*/) const;
 
-  // clang-tidy: no pass by reference
-  void pup(PUP::er& p);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
 
  private:
   std::unique_ptr<MathFunction<1, Frame::Inertial>> profile_;

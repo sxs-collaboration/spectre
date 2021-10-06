@@ -50,8 +50,8 @@ class EveryNIterations : public Trigger {
     return step_number >= offset_ and (step_number - offset_) % interval_ == 0;
   }
 
-  // clang-tidy: google-runtime-references
-  void pup(PUP::er& p) {  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p) {
     p | interval_;
     p | offset_;
   }

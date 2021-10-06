@@ -59,7 +59,8 @@ class Neighbors {
   void add_ids(const std::unordered_set<ElementId<VolumeDim>>& additional_ids);
 
   /// Serialization for Charm++
-  void pup(PUP::er& p);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
 
   /// The number of neighbors
   size_t size() const { return ids_.size(); }

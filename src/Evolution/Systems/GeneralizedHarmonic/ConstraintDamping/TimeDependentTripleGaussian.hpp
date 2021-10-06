@@ -146,8 +146,8 @@ class TimeDependentTripleGaussian : public DampingFunction<3, Frame::Grid> {
   auto get_clone() const
       -> std::unique_ptr<DampingFunction<3, Frame::Grid>> override;
 
-  // clang-tidy: google-runtime-references
-  void pup(PUP::er& p) override;  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p) override;
 
  private:
   friend bool operator==(const TimeDependentTripleGaussian& lhs,

@@ -196,8 +196,8 @@ class Boxed {
   T& operator*() { return *data_; }
   const T& operator*() const { return *data_; }
 
-  // clang-tidy: no non-const references
-  void pup(PUP::er& p) {  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p) {
     if (p.isUnpacking()) {
       T t{};
       p | t;
