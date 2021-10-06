@@ -70,4 +70,32 @@ tnsr::Ijj<DataType, Dim, Frame> christoffel_second_kind(
     const tnsr::i<DataType, Dim, Frame>& field_p,
     const tnsr::Ijj<DataType, Dim, Frame>& conformal_christoffel_second_kind);
 /// @}
+
+/// @{
+/*!
+ * \brief Computes the contraction of the conformal spatial Christoffel symbols
+ * of the second kind.
+ *
+ * \details Computes the contraction as:
+ *
+ * \f{align}
+ *     \tilde{\Gamma}^i &= \tilde{\gamma}^{jl} \tilde{\Gamma}^i_{jl}
+ * \f}
+ *
+ * where \f$\tilde{\gamma}^{ij}\f$ is the inverse conformal spatial metric
+ * defined by `Ccz4::Tags::InverseConformalMetric` and
+ * \f$\tilde{\Gamma}^k_{ij}\f$ is the conformal spatial Christoffel symbols of
+ * the second kind defined by `Ccz4::Tags::ConformalChristoffelSecondKind`.
+ */
+template <size_t Dim, typename Frame, typename DataType>
+void contracted_conformal_christoffel_second_kind(
+    const gsl::not_null<tnsr::I<DataType, Dim, Frame>*> result,
+    const tnsr::II<DataType, Dim, Frame>& inverse_conformal_spatial_metric,
+    const tnsr::Ijj<DataType, Dim, Frame>& conformal_christoffel_second_kind);
+
+template <size_t Dim, typename Frame, typename DataType>
+tnsr::I<DataType, Dim, Frame> contracted_conformal_christoffel_second_kind(
+    const tnsr::II<DataType, Dim, Frame>& inverse_conformal_spatial_metric,
+    const tnsr::Ijj<DataType, Dim, Frame>& conformal_christoffel_second_kind);
+/// @}
 }  // namespace Ccz4

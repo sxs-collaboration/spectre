@@ -20,3 +20,9 @@ def christoffel_second_kind(conformal_spatial_metric,
                    (np.einsum("jl,i", conformal_spatial_metric, field_p) +
                     np.einsum("il,j", conformal_spatial_metric, field_p) -
                     np.einsum("ij,l", conformal_spatial_metric, field_p)))))
+
+
+def contracted_conformal_christoffel_second_kind(
+    inverse_conformal_spatial_metric, conformal_christoffel_second_kind):
+    return np.einsum("jl,ijl", inverse_conformal_spatial_metric,
+                     conformal_christoffel_second_kind)
