@@ -64,6 +64,12 @@ def generate_xdmf(file_prefix, output, subfile_name, start_time, stop_time,
         for h5file in h5files:
             h5temporal = h5file[0].get(subfile_name + '.vol').get(
                 id_and_value[0])
+            # Skip this file if the observation does not exist in it.
+            # Usually this is because the program crashed before
+            # writing it.  Data in other files will still be processed
+            # to allow viewing the part that was written.
+            if not h5temporal:
+                continue
             # Make sure the coordinates are found in the file. We assume there
             # should always be an x-coordinate.
             assert coordinates + '_x' in h5temporal, (
