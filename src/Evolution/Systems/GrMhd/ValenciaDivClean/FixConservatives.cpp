@@ -216,19 +216,19 @@ bool FixConservatives::operator()(
         lorentz_factor = lower_bound_of_lorentz_factor;
       } else {
         try {
-          double f_at_upper{0.0};
-          if (upper_bound_of_lorentz_factor >
+          double f_at_upper = std::numeric_limits<double>::signaling_NaN();
+          if (upper_bound_of_lorentz_factor <
               10.0 * lower_bound_of_lorentz_factor) {
-            const double f_at_10x_lower_bound =
+            f_at_upper = f_of_lorentz_factor(upper_bound_of_lorentz_factor);
+          } else {
+            f_at_upper =
                 f_of_lorentz_factor(10.0 * lower_bound_of_lorentz_factor);
-            if (std::signbit(f_at_10x_lower_bound) !=
-                std::signbit(f_at_lower)) {
+            if (std::signbit(f_at_upper) != std::signbit(f_at_lower)) {
               upper_bound_of_lorentz_factor =
                   10.0 * lower_bound_of_lorentz_factor;
-              f_at_upper = f_at_10x_lower_bound;
+            } else {
+              f_at_upper = f_of_lorentz_factor(upper_bound_of_lorentz_factor);
             }
-          } else {
-            f_at_upper = f_of_lorentz_factor(upper_bound_of_lorentz_factor);
           }
 
           lorentz_factor = RootFinder::toms748(
