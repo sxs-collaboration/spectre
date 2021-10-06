@@ -26,12 +26,15 @@ namespace CoordinateMaps {
  * \brief Redistributes gridpoints on the sphere.
  * \image html EquatorialCompression.png "A sphere with an `aspect_ratio` of 3."
  *
- * \details A mapping from the sphere to itself which depends on a single
- * parameter, the `aspect_ratio` \f$\alpha\f$, which is the ratio of the
- * horizontal length to the vertical height for a given point. This parameter
- * name was chosen because points with \f$\tan \theta = 1\f$ get mapped to
- * points with \f$\tan \theta' = \alpha\f$. In general, gridpoints located
- * at an angle \f$\theta\f$ from the pole are mapped to a new angle
+ * \details A mapping from the sphere to itself which redistributes points
+ * towards (or away from) a user-specifed axis, indicated by `index_pole_axis_`.
+ * Once the axis is selected, the map is determined by a single parameter,
+ * the `aspect_ratio` \f$\alpha\f$, which is the ratio of the distance
+ * perpendicular to the polar axis to the distance along the polar axis for
+ * a given point. This parameter name was chosen because points with
+ * \f$\tan \theta = 1\f$ get mapped to points with \f$\tan \theta' = \alpha\f$.
+ * In general, gridpoints located at an angle \f$\theta\f$ from the pole are
+ * mapped to a new angle
  * \f$\theta'\f$ satisfying \f$\tan \theta' = \alpha \tan \theta\f$.
  *
  * For an `aspect_ratio` greater than one, the gridpoints are mapped towards
@@ -39,7 +42,8 @@ namespace CoordinateMaps {
  * `aspect_ratio` less than one, the gridpoints are mapped towards the poles.
  * Note that the aspect ratio must be positive.
  *
- * We define the auxiliary variables \f$ r := \sqrt{x^2 + y^2 +z^2}\f$
+ * Suppose the polar axis were the z-axis, given by `index_pole_axis_ == 2`.
+ * We can then define the auxiliary variables \f$ r := \sqrt{x^2 + y^2 +z^2}\f$
  * and \f$ \rho := \sqrt{x^2 + y^2 + \alpha^{-2} z^2}\f$.
  *
  * The map corresponding to this transformation in cartesian coordinates
@@ -50,13 +54,15 @@ namespace CoordinateMaps {
  * x\\
  * y\\
  * \alpha^{-1} z\\
- * \end{bmatrix}\f]
+ * \end{bmatrix}.\f]
  *
+ * The mappings for polar axes along the x and y axes are similarly obtained.
  */
 class EquatorialCompression {
  public:
   static constexpr size_t dim = 3;
-  explicit EquatorialCompression(double aspect_ratio);
+  explicit EquatorialCompression(double aspect_ratio,
+                                 size_t index_pole_axis = 2);
   EquatorialCompression() = default;
   ~EquatorialCompression() = default;
   EquatorialCompression(EquatorialCompression&&) = default;
@@ -102,6 +108,7 @@ class EquatorialCompression {
   double aspect_ratio_{std::numeric_limits<double>::signaling_NaN()};
   double inverse_aspect_ratio_{std::numeric_limits<double>::signaling_NaN()};
   bool is_identity_{false};
+  size_t index_pole_axis_{};
 };
 bool operator!=(const EquatorialCompression& lhs,
                 const EquatorialCompression& rhs);
