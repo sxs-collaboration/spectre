@@ -10,7 +10,6 @@
 #include "NumericalAlgorithms/Convergence/Criteria.hpp"
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 #include "Options/Options.hpp"
-#include "Utilities/PrettyType.hpp"
 
 namespace Convergence {
 /// Option tags related to the convergence of iterative algorithms
@@ -73,7 +72,7 @@ struct Iterations : db::SimpleTag {
 template <typename Label>
 struct IterationId : db::SimpleTag {
   static std::string name() {
-    return "IterationId(" + pretty_type::short_name<Label>() + ")";
+    return "IterationId(" + Options::name<Label>() + ")";
   }
   using type = size_t;
 };
@@ -85,7 +84,7 @@ struct IterationId : db::SimpleTag {
 template <typename Label>
 struct HasConverged : db::SimpleTag {
   static std::string name() {
-    return "HasConverged(" + pretty_type::short_name<Label>() + ")";
+    return "HasConverged(" + Options::name<Label>() + ")";
   }
   using type = Convergence::HasConverged;
 };
