@@ -3,10 +3,10 @@
 
 #pragma once
 
+#include "ControlSystem/Component.hpp"
 #include "ControlSystem/Protocols/ControlSystem.hpp"
 #include "ControlSystem/Protocols/Measurement.hpp"
 #include "ControlSystem/Protocols/Submeasurement.hpp"
-#include "ControlSystem/Component.hpp"
 #include "ControlSystem/RunCallbacks.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
