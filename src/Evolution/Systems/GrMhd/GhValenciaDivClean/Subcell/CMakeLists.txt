@@ -6,6 +6,7 @@ spectre_target_sources(
   PRIVATE
   InitialDataTci.cpp
   PrimsAfterRollback.cpp
+  ResizeAndComputePrimitives.cpp
   )
 
 spectre_target_headers(
@@ -14,6 +15,7 @@ spectre_target_headers(
   HEADERS
   InitialDataTci.hpp
   PrimsAfterRollback.hpp
+  ResizeAndComputePrimitives.hpp
   Subcell.hpp
   TciOnDgGrid.hpp
   TciOnFdGrid.hpp
