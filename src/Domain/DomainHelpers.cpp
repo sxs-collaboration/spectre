@@ -606,6 +606,7 @@ sph_wedge_coordinate_maps(
     const double inner_sphericity, const double outer_sphericity,
     const bool use_equiangular_map, const double x_coord_of_shell_center,
     const bool use_half_wedges, const double aspect_ratio,
+    const size_t index_polar_axis,
     const std::vector<double>& radial_partitioning,
     const std::vector<domain::CoordinateMaps::Distribution>&
         radial_distribution,
@@ -689,8 +690,8 @@ sph_wedge_coordinate_maps(
           Identity2D{});
 
   // Set up compression map:
-  const auto compression =
-      domain::CoordinateMaps::EquatorialCompression{aspect_ratio};
+  const auto compression = domain::CoordinateMaps::EquatorialCompression{
+      aspect_ratio, index_polar_axis};
 
   return domain::make_vector_coordinate_map_base<Frame::BlockLogical,
                                                  TargetFrame, 3>(
@@ -1414,6 +1415,7 @@ sph_wedge_coordinate_maps(
     const double inner_sphericity, const double outer_sphericity,
     const bool use_equiangular_map, const double x_coord_of_shell_center,
     const bool use_wedge_halves, const double aspect_ratio,
+    const size_t index_pole_axis,
     const std::vector<double>& radial_partitioning,
     const std::vector<domain::CoordinateMaps::Distribution>&
         radial_distribution,
@@ -1425,6 +1427,7 @@ sph_wedge_coordinate_maps(
     const double inner_sphericity, const double outer_sphericity,
     const bool use_equiangular_map, const double x_coord_of_shell_center,
     const bool use_wedge_halves, const double aspect_ratio,
+    const size_t index_pole_axis,
     const std::vector<double>& radial_partitioning,
     const std::vector<domain::CoordinateMaps::Distribution>&
         radial_distribution,

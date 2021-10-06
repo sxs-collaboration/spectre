@@ -327,11 +327,11 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
         1.9, 2.9, 1,
         std::array<size_t, 2>{grid_points_each_dimension,
                               grid_points_each_dimension},
-        false, 1.0, radial_partitioning, radial_distribution, ShellWedges::All,
+        false, domain::creators::Shell::EquatorialCompressionOptions{1.0, 2},
+        radial_partitioning, radial_distribution, ShellWedges::All,
         std::make_unique<
             domain::creators::time_dependence::UniformTranslation<3>>(
-            0.0, expiration_time,
-            std::array<double, 3>({{0.01, 0.02, 0.03}})));
+            0.0, expiration_time, std::array<double, 3>({{0.01, 0.02, 0.03}})));
     tuples::TaggedTuple<
         domain::Tags::Domain<3>,
         typename ::intrp::Tags::ApparentHorizon<typename metavars::AhA, Frame>>

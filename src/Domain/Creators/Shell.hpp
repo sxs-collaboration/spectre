@@ -49,6 +49,33 @@ class Shell : public DomainCreator<3> {
       CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
                                      CoordinateMaps::Identity<2>>>>;
 
+  /// Options for the EquatorialCompression map
+  struct EquatorialCompressionOptions {
+    static constexpr Options::String help = {
+        "Options for the EquatorialCompression map, used for modifying the "
+        "angular distribution of gridpoints."};
+    struct AspectRatio {
+      using type = double;
+      static constexpr Options::String help = {
+          "Applies the map tan(theta') = AspectRatio * tan(theta) to the "
+          "Shell.\n"
+          "The angle theta is measured with respect to the polar axis, given "
+          "by "
+          "the choice of IndexPolarAxis. This map preserves radial distances."};
+      static double lower_bound() { return 0; }
+    };
+    struct IndexPolarAxis {
+      using type = size_t;
+      static constexpr Options::String help = {
+          "The index (0, 1, or 2) of the axis along which equatorial "
+          "compression is applied, where 0 is x, 1 is y, and 2 is z."};
+    };
+    using options = tmpl::list<AspectRatio, IndexPolarAxis>;
+
+    double aspect_ratio;
+    size_t index_polar_axis;
+  };
+
   struct InnerRadius {
     using type = double;
     static constexpr Options::String help = {"Inner radius of the Shell."};
@@ -84,10 +111,11 @@ class Shell : public DomainCreator<3> {
         "Use equiangular instead of equidistant coordinates."};
   };
 
-  struct AspectRatio {
-    using type = double;
+  struct EquatorialCompression {
+    using type =
+        Options::Auto<EquatorialCompressionOptions, Options::AutoLabel::None>;
     static constexpr Options::String help = {
-        "The equatorial compression factor."};
+        "Options for the EquatorialCompression map."};
   };
 
   struct RadialPartitioning {
@@ -140,7 +168,7 @@ class Shell : public DomainCreator<3> {
 
   using basic_options =
       tmpl::list<InnerRadius, OuterRadius, InitialRefinement, InitialGridPoints,
-                 UseEquiangularMap, AspectRatio, RadialPartitioning,
+                 UseEquiangularMap, EquatorialCompression, RadialPartitioning,
                  RadialDistribution, WhichWedges, TimeDependence>;
 
   template <typename Metavariables>
@@ -164,7 +192,9 @@ class Shell : public DomainCreator<3> {
       "Cartesian grids. However, the option is allowed for testing "
       "purposes. The `aspect_ratio` moves grid points on the shell towards\n"
       "the equator for values greater than 1.0, and towards the poles for\n"
-      "positive values less than 1.0. The user may also choose to use only a "
+      "positive values less than 1.0. The user may also specify the axis\n"
+      "along which this compression is applied. The user may also choose to\n"
+      "use only a "
       "single wedge (along the -x direction), or four wedges along the x-y "
       "plane using the `WhichWedges` option. Using the RadialPartitioning "
       "option, a user may set the locations of boundaries of radial "
@@ -179,7 +209,9 @@ class Shell : public DomainCreator<3> {
 
   Shell(double inner_radius, double outer_radius, size_t initial_refinement,
         std::array<size_t, 2> initial_number_of_grid_points,
-        bool use_equiangular_map = true, double aspect_ratio = 1.0,
+        bool use_equiangular_map = true,
+        std::optional<domain::creators::Shell::EquatorialCompressionOptions>
+            equatorial_compression = {},
         std::vector<double> radial_partitioning = {},
         std::vector<domain::CoordinateMaps::Distribution> radial_distribution =
             {domain::CoordinateMaps::Distribution::Linear},
@@ -216,6 +248,7 @@ class Shell : public DomainCreator<3> {
   std::array<size_t, 2> initial_number_of_grid_points_{};
   bool use_equiangular_map_ = true;
   double aspect_ratio_ = 1.0;
+  size_t index_polar_axis_ = 2;
   std::vector<double> radial_partitioning_ = {};
   std::vector<domain::CoordinateMaps::Distribution> radial_distribution_{};
   ShellWedges which_wedges_ = ShellWedges::All;
