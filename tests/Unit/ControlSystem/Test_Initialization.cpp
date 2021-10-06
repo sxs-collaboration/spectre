@@ -3,6 +3,7 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <cstddef>
 #include <string>
 #include <vector>
 
@@ -26,6 +27,7 @@ struct MockControlSystem
     : tt::ConformsTo<control_system::protocols::ControlSystem> {
   static std::string name() { return pretty_type::short_name<Label>(); }
   using measurement = Measurement;
+  static constexpr size_t deriv_order = 2;
   using simple_tags = tmpl::list<control_system::Tags::ControlSystemName>;
 };
 

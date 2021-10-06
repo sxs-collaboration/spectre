@@ -17,9 +17,9 @@ struct Metavariables;
 
 using MeasurementA = control_system::TestHelpers::Measurement<LabelA>;
 using MeasurementB = control_system::TestHelpers::Measurement<LabelB>;
-using SystemA0 = control_system::TestHelpers::System<LabelA, MeasurementA>;
-using SystemA1 = control_system::TestHelpers::System<LabelB, MeasurementA>;
-using SystemB0 = control_system::TestHelpers::System<LabelC, MeasurementB>;
+using SystemA0 = control_system::TestHelpers::System<2, LabelA, MeasurementA>;
+using SystemA1 = control_system::TestHelpers::System<2, LabelB, MeasurementA>;
+using SystemB0 = control_system::TestHelpers::System<2, LabelC, MeasurementB>;
 using ComponentA = ControlComponent<Metavariables, SystemA0>;
 using ComponentB = ControlComponent<Metavariables, SystemB0>;
 

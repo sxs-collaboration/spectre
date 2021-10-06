@@ -12,11 +12,11 @@ struct LabelB;
 struct LabelC;
 
 using SystemA0 = control_system::TestHelpers::System<
-    LabelA, control_system::TestHelpers::Measurement<LabelA>>;
+    2, LabelA, control_system::TestHelpers::Measurement<LabelA>>;
 using SystemA1 = control_system::TestHelpers::System<
-    LabelB, control_system::TestHelpers::Measurement<LabelA>>;
+    2, LabelB, control_system::TestHelpers::Measurement<LabelA>>;
 using SystemB0 = control_system::TestHelpers::System<
-    LabelC, control_system::TestHelpers::Measurement<LabelB>>;
+    2, LabelC, control_system::TestHelpers::Measurement<LabelB>>;
 
 template <template <typename> typename Metafunction,
           template <typename> typename ResultObject>
