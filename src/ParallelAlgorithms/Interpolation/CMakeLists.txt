@@ -15,6 +15,7 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  Interpolate.hpp
   InterpolatedVars.hpp
   InterpolationTarget.hpp
   InterpolationTargetDetail.hpp

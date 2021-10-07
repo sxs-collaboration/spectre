@@ -222,44 +222,61 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.InterpolateEvent",
       mesh.number_of_grid_points());
   // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
   std::iota(vars.data(), vars.data() + vars.size(), 1.0);
+  auto& cache = ActionTesting::cache<elem_component>(runner, array_index);
+
+  const auto check_results = [&array_index, &element_id, &mesh,
+                              &observation_time, &runner, &vars]() {
+    // Invoke all actions
+    runner.invoke_queued_simple_action<interp_component>(0);
+    runner.invoke_queued_simple_action<interp_target_component>(0);
+
+    // No more queued simple actions.
+    CHECK(runner.is_simple_action_queue_empty<interp_component>(0));
+    CHECK(runner.is_simple_action_queue_empty<interp_target_component>(0));
+    CHECK(runner.is_simple_action_queue_empty<elem_component>(array_index));
+
+    // Make sure MockAddTemporalIdsToInterpolationTarget was called once.
+    CHECK(called_mock_add_temporal_ids_to_interpolation_target == 1);
+
+    const auto& results = MockInterpolatorReceiveVolumeData::results;
+    CHECK(results.temporal_id.substep_time().value() == observation_time);
+    CHECK(results.element_id == element_id);
+    CHECK(results.mesh == mesh);
+    CHECK(results.vars == vars);
+  };
+
+  const TimeStepId temporal_id(true, 0, Slab(0., observation_time).end());
+
+  intrp::interpolate<MockMetavariables::InterpolatorTargetA,
+                     tmpl::list<Tags::Lapse>>(
+      temporal_id, mesh, cache, array_index, get<Tags::Lapse>(vars));
+
+  check_results();
+
+  called_mock_add_temporal_ids_to_interpolation_target = 0;
+  MockInterpolatorReceiveVolumeData::results = {};
+
+  // Test the event version
 
   const auto box = db::create<
       db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<metavars>,
                         metavars::InterpolatorTargetA::temporal_id,
                         domain::Tags::Mesh<metavars::volume_dim>,
                         ::Tags::Variables<typename decltype(vars)::tags_list>>>(
-      metavars{}, TimeStepId(true, 0, Slab(0., observation_time).end()), mesh,
-      vars);
+      metavars{}, temporal_id, mesh, vars);
 
   metavars::event event{};
 
   CHECK(static_cast<const Event&>(event).is_ready(
-      box, ActionTesting::cache<elem_component>(runner, array_index),
-      array_index, std::add_pointer_t<elem_component>{}));
+      box, cache, array_index, std::add_pointer_t<elem_component>{}));
   CHECK(event.needs_evolved_variables());
+
   event.run(
       make_observation_box<
           typename metavars::event::compute_tags_for_observation_box>(box),
-      ActionTesting::cache<elem_component>(runner, array_index), array_index,
-      std::add_pointer_t<elem_component>{});
+      cache, array_index, std::add_pointer_t<elem_component>{});
 
-  // Invoke all actions
-  runner.invoke_queued_simple_action<interp_component>(0);
-  runner.invoke_queued_simple_action<interp_target_component>(0);
-
-  // No more queued simple actions.
-  CHECK(runner.is_simple_action_queue_empty<interp_component>(0));
-  CHECK(runner.is_simple_action_queue_empty<interp_target_component>(0));
-  CHECK(runner.is_simple_action_queue_empty<elem_component>(array_index));
-
-  // Make sure MockAddTemporalIdsToInterpolationTarget was called once.
-  CHECK(called_mock_add_temporal_ids_to_interpolation_target == 1);
-
-  const auto& results = MockInterpolatorReceiveVolumeData::results;
-  CHECK(results.temporal_id.substep_time().value() == observation_time);
-  CHECK(results.element_id == element_id);
-  CHECK(results.mesh == mesh);
-  CHECK(results.vars == vars);
+  check_results();
 }
 
 }  // namespace
