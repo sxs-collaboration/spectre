@@ -120,6 +120,28 @@ std::ostream& operator<<(std::ostream& os, const ElementId<VolumeDim>& id) {
   return os;
 }
 
+template <size_t VolumeDim>
+bool operator<(const ElementId<VolumeDim>& lhs,
+               const ElementId<VolumeDim>& rhs) {
+  if (lhs.grid_index() != rhs.grid_index()) {
+    return lhs.grid_index() < rhs.grid_index();
+  }
+  if (lhs.block_id() != rhs.block_id()) {
+    return lhs.block_id() < rhs.block_id();
+  }
+  for (size_t d = 0; d < VolumeDim; ++d) {
+    if (lhs.segment_id(d).refinement_level() !=
+        rhs.segment_id(d).refinement_level()) {
+      return lhs.segment_id(d).refinement_level() <
+             rhs.segment_id(d).refinement_level();
+    }
+    if (lhs.segment_id(d).index() != rhs.segment_id(d).index()) {
+      return lhs.segment_id(d).index() < rhs.segment_id(d).index();
+    }
+  }
+  return false;
+}
+
 // LCOV_EXCL_START
 template <size_t VolumeDim>
 size_t hash_value(const ElementId<VolumeDim>& id) {
@@ -147,6 +169,8 @@ size_t hash<ElementId<VolumeDim>>::operator()(
   template class ElementId<GET_DIM(data)>;                            \
   template std::ostream& operator<<(std::ostream&,                    \
                                     const ElementId<GET_DIM(data)>&); \
+  template bool operator<(const ElementId<GET_DIM(data)>& lhs,        \
+                          const ElementId<GET_DIM(data)>& rhs);       \
   template size_t hash_value(const ElementId<GET_DIM(data)>&);        \
   namespace std { /* NOLINT */                                        \
   template struct hash<ElementId<GET_DIM(data)>>;                     \
