@@ -97,8 +97,8 @@ class TimescaleTuner {
   TimescaleTuner() = default;
   TimescaleTuner(TimescaleTuner&&) = default;
   TimescaleTuner& operator=(TimescaleTuner&&) = default;
-  TimescaleTuner(const TimescaleTuner&) = delete;
-  TimescaleTuner& operator=(const TimescaleTuner&) = delete;
+  TimescaleTuner(const TimescaleTuner&) = default;
+  TimescaleTuner& operator=(const TimescaleTuner&) = default;
   ~TimescaleTuner() = default;
 
   /// returns the current timescale for each component of a FunctionOfTime

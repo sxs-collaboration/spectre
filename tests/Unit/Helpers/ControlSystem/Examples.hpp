@@ -6,6 +6,7 @@
 #include "ControlSystem/Protocols/ControlSystem.hpp"
 #include "ControlSystem/Protocols/Measurement.hpp"
 #include "ControlSystem/Protocols/Submeasurement.hpp"
+#include "ControlSystem/Component.hpp"
 #include "ControlSystem/RunCallbacks.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
@@ -19,9 +20,6 @@
 #include "Utilities/TaggedTuple.hpp"
 
 namespace control_system::TestHelpers {
-template <typename ControlSystem>
-struct ReplaceThisWithControlSystemComponentWhenThatIsWritten;
-
 struct SomeTagOnElement : db::SimpleTag {
   using type = double;
 };
@@ -96,6 +94,8 @@ struct ExampleControlSystem
   static std::string name() { return "ExampleControlSystem"; }
   using measurement = ExampleMeasurement;
 
+  using simple_tags = tmpl::list<>;
+
   // This is not part of the required interface, but is used by this
   // control system to store the measurement data.  Most control
   // systems will do something like this.
@@ -123,8 +123,7 @@ struct ExampleControlSystem
       // necessary to the control system component.  Usually calls
       // some simple action.
       auto& control_system_proxy = Parallel::get_parallel_component<
-          ReplaceThisWithControlSystemComponentWhenThatIsWritten<
-              ExampleControlSystem>>(cache);
+          ControlComponent<Metavariables, ExampleControlSystem>>(cache);
       Parallel::simple_action<Actions::UpdateMessageQueue<
           ExampleSubmeasurementQueueTag, MeasurementQueue,
           SomeControlSystemUpdater>>(control_system_proxy, measurement_id,

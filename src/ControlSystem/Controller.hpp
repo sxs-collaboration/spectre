@@ -8,6 +8,12 @@
 
 #include "DataStructures/DataVector.hpp"
 
+/// \cond
+namespace PUP {
+class er;
+}  // namespace PUP
+/// \endcond
+
 /// \ingroup ControlSystemGroup
 /// A PND (proportional to Q and N derivatives of Q) controller that computes
 /// the control signal:
@@ -32,6 +38,15 @@
 template <size_t DerivOrder>
 class Controller {
  public:
+  Controller() = default;
+  Controller(Controller&&) = default;
+  Controller& operator=(Controller&&) = default;
+  Controller(const Controller&) = default;
+  Controller& operator=(const Controller&) = default;
+  ~Controller() = default;
+
+  void pup(PUP::er& /*p*/) {}
+
   DataVector operator()(
       const DataVector& timescales,
       const std::array<DataVector, DerivOrder + 1>& q_and_derivs,

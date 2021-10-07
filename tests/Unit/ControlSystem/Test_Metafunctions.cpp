@@ -3,6 +3,7 @@
 
 #include <type_traits>
 
+#include "ControlSystem/Component.hpp"
 #include "ControlSystem/Metafunctions.hpp"
 #include "Helpers/ControlSystem/TestStructs.hpp"
 #include "Utilities/TMPL.hpp"
@@ -12,14 +13,18 @@ namespace {
 struct LabelA;
 struct LabelB;
 struct LabelC;
+struct Metavariables;
 
 using MeasurementA = control_system::TestHelpers::Measurement<LabelA>;
 using MeasurementB = control_system::TestHelpers::Measurement<LabelB>;
 using SystemA0 = control_system::TestHelpers::System<LabelA, MeasurementA>;
 using SystemA1 = control_system::TestHelpers::System<LabelB, MeasurementA>;
 using SystemB0 = control_system::TestHelpers::System<LabelC, MeasurementB>;
+using ComponentA = ControlComponent<Metavariables, SystemA0>;
+using ComponentB = ControlComponent<Metavariables, SystemB0>;
 
 using test_systems = tmpl::list<SystemA0, SystemB0, SystemA1>;
+using fewer_test_systems = tmpl::list<SystemA0, SystemB0>;
 
 static_assert(std::is_same_v<measurement<SystemA0>::type, MeasurementA>);
 
@@ -52,5 +57,13 @@ static_assert(
 static_assert(std::is_same_v<
               control_systems_with_measurement_t<test_systems, MeasurementB>,
               tmpl::list<SystemB0>>);
+
+static_assert(
+    std::is_same_v<control_components<Metavariables, fewer_test_systems>,
+                   tmpl::list<ControlComponent<Metavariables, SystemA0>,
+                              ControlComponent<Metavariables, SystemB0>>> or
+    std::is_same_v<control_components<Metavariables, fewer_test_systems>,
+                   tmpl::list<ControlComponent<Metavariables, SystemB0>,
+                              ControlComponent<Metavariables, SystemA0>>>);
 }  // namespace
 }  // namespace control_system::metafunctions

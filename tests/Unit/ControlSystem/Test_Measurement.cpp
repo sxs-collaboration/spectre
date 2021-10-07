@@ -6,6 +6,7 @@
 #include <optional>
 #include <type_traits>
 
+#include "ControlSystem/Component.hpp"
 #include "ControlSystem/Event.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Evolution/EventsAndDenseTriggers/EventsAndDenseTriggers.hpp"
@@ -36,9 +37,9 @@ struct ElementComponent {
 
 template <typename Metavariables>
 struct MockControlSystemComponent {
-  using component_being_mocked = control_system::TestHelpers::
-      ReplaceThisWithControlSystemComponentWhenThatIsWritten<
-          control_system::TestHelpers::ExampleControlSystem>;
+  using component_being_mocked =
+      ControlComponent<Metavariables,
+                       control_system::TestHelpers::ExampleControlSystem>;
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockSingletonChare;
   using array_index = int;
