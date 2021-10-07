@@ -31,7 +31,10 @@ Domain<VolumeDim>::Domain(
     std::vector<DirectionMap<
         VolumeDim,
         std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
-        boundary_conditions) {
+        boundary_conditions,
+    std::unordered_map<std::string, ExcisionSphere<VolumeDim>>
+        excision_spheres)
+    : excision_spheres_(std::move(excision_spheres)) {
   ASSERT(
       boundary_conditions.size() == maps.size() or boundary_conditions.empty(),
       "There must be either one set of boundary conditions per block or none "
@@ -63,7 +66,10 @@ Domain<VolumeDim>::Domain(
     std::vector<DirectionMap<
         VolumeDim,
         std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
-        boundary_conditions) {
+        boundary_conditions,
+    std::unordered_map<std::string, ExcisionSphere<VolumeDim>>
+        excision_spheres)
+    : excision_spheres_(std::move(excision_spheres)) {
   ASSERT(
       maps.size() == corners_of_all_blocks.size(),
       "Must pass same number of maps as block corner sets, but maps.size() == "
@@ -106,8 +112,10 @@ void Domain<VolumeDim>::inject_time_dependent_map_for_block(
 }
 
 template <size_t VolumeDim>
-bool operator==(const Domain<VolumeDim>& lhs, const Domain<VolumeDim>& rhs) {
-  return lhs.blocks() == rhs.blocks();
+bool operator==(const Domain<VolumeDim>& lhs,
+                const Domain<VolumeDim>& rhs) {
+  return lhs.blocks() == rhs.blocks() and
+         lhs.excision_spheres() == rhs.excision_spheres();
 }
 
 template <size_t VolumeDim>
@@ -122,12 +130,14 @@ std::ostream& operator<<(std::ostream& os, const Domain<VolumeDim>& d) {
   for (const auto& block : blocks) {
     os << block << '\n';
   }
+  os << "Excision spheres:\n" << d.excision_spheres() << '\n';
   return os;
 }
 
 template <size_t VolumeDim>
 void Domain<VolumeDim>::pup(PUP::er& p) {
   p | blocks_;
+  p | excision_spheres_;
 }
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)

@@ -16,6 +16,7 @@
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/Structure/BlockNeighbor.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/ExcisionSphere.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 
@@ -159,7 +160,9 @@ Domain<3> Shell::create_domain() const {
       corners_for_radially_layered_domains(
           number_of_layers_, false, {{1, 2, 3, 4, 5, 6, 7, 8}}, which_wedges_),
       {},
-      std::move(boundary_conditions_all_blocks)};
+      std::move(boundary_conditions_all_blocks),
+      {{"CentralExcisionSphere",
+        ExcisionSphere<3>{inner_radius_, {{0.0, 0.0, 0.0}}}}}};
 
   if (not time_dependence_->is_none()) {
     const size_t number_of_blocks = domain.blocks().size();
