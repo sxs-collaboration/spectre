@@ -32,7 +32,8 @@ Averager<DerivOrder>::Averager(Averager&& rhs)
       times_(std::move(rhs.times_)),
       raw_qs_(std::move(rhs.raw_qs_)),
       weight_k_(std::move(rhs.weight_k_)),
-      tau_k_(std::move(rhs.tau_k_)) {}
+      tau_k_(std::move(rhs.tau_k_)),
+      time_between_measurements_(std::move(rhs.time_between_measurements_)) {}
 
 template <size_t DerivOrder>
 Averager<DerivOrder>& Averager<DerivOrder>::operator=(Averager&& rhs) {
@@ -45,6 +46,7 @@ Averager<DerivOrder>& Averager<DerivOrder>::operator=(Averager&& rhs) {
     raw_qs_ = std::move(rhs.raw_qs_);
     weight_k_ = std::move(rhs.weight_k_);
     tau_k_ = std::move(rhs.tau_k_);
+    time_between_measurements_ = std::move(rhs.time_between_measurements_);
   }
   return *this;
 }
@@ -242,6 +244,7 @@ void Averager<DerivOrder>::pup(PUP::er& p) {
   p | raw_qs_;
   p | weight_k_;
   p | tau_k_;
+  p | time_between_measurements_;
 }
 
 template <size_t DerivOrder>
@@ -251,7 +254,8 @@ bool operator==(const Averager<DerivOrder>& avg1,
          (avg1.average_0th_deriv_of_q_ == avg2.average_0th_deriv_of_q_) and
          (avg1.averaged_values_ == avg2.averaged_values_) and
          (avg1.times_ == avg2.times_) and (avg1.raw_qs_ == avg2.raw_qs_) and
-         (avg1.weight_k_ == avg2.weight_k_) and (avg1.tau_k_ == avg2.tau_k_);
+         (avg1.weight_k_ == avg2.weight_k_) and (avg1.tau_k_ == avg2.tau_k_) and
+         (avg1.time_between_measurements_ == avg2.time_between_measurements_);
 }
 
 template <size_t DerivOrder>

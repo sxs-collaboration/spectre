@@ -319,7 +319,12 @@ void test_move() {
   static_assert(std::is_move_assignable<Averager<DerivOrder>>::value,
                 "Averager is not nothrow move assignable");
   // update with junk data
+  CHECK(averager.is_ready(0.3));
   averager.update(0.3, {0.1}, {0.1});
+  averager.assign_time_between_measurements(0.1);
+  CHECK_FALSE(averager.is_ready(0.35));
+  CHECK(averager.is_ready(0.5));
+  averager.assign_time_between_measurements(0.3);
   averager.update(0.5, {0.2}, {0.1});
   averager.update(0.7, {0.4}, {0.1});
   averager.update(0.9, {0.6}, {0.1});
