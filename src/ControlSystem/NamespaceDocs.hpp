@@ -5,4 +5,8 @@
 
 /// \ingroup ControlSystemGroup
 /// Control systems and related functionality
-namespace control_system {}
+namespace control_system {
+/// \ingroup ControlSystemGroup
+/// All Actions related to the control system
+namespace Actions {}
+}  // namespace control_system

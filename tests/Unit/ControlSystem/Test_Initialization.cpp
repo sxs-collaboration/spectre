@@ -47,10 +47,10 @@ struct MockControlComponent {
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename metavariables::Phase, metavariables::Phase::Initialization,
-      tmpl::list<ActionTesting::InitializeDataBox<simple_tags>,
-                 Initialization::Actions::InitializeControlSystem<
-                     Metavariables, mock_control_sys>,
-                 Initialization::Actions::RemoveOptionsAndTerminatePhase>>>;
+      tmpl::list<
+          ActionTesting::InitializeDataBox<simple_tags>,
+          control_system::Actions::Initialize<Metavariables, mock_control_sys>,
+          Initialization::Actions::RemoveOptionsAndTerminatePhase>>>;
 };
 
 struct MockMetavars {

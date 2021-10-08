@@ -36,10 +36,10 @@ struct ControlComponent {
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename metavariables::Phase, metavariables::Phase::Initialization,
-      tmpl::list<Actions::SetupDataBox,
-                 Initialization::Actions::InitializeControlSystem<
-                     Metavariables, ControlSystem>,
-                 Initialization::Actions::RemoveOptionsAndTerminatePhase>>>;
+      tmpl::list<
+          Actions::SetupDataBox,
+          control_system::Actions::Initialize<Metavariables, ControlSystem>,
+          Initialization::Actions::RemoveOptionsAndTerminatePhase>>>;
 
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
