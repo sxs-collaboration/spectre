@@ -16,11 +16,32 @@
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace control_system {
 /// \cond
+namespace ah {
+enum class ObjectLabel;
+}  // namespace ah
+namespace control_system {
 template <typename ControlSystem>
 struct OptionHolder;
+}  // namespace control_system
 /// \endcond
+
+namespace control_system {
+/// \ingroup ControlSystemGroup
+/// All tags that will be used in the LinkedMessageQueue's within control
+/// systems.
+///
+/// These tags will be used to retreive the results of the measurements that
+/// were sent to the control system which have been placed inside a
+/// LinkedMessageQueue.
+namespace QueueTags {
+/// \ingroup ControlSystemGroup
+/// Holds the centers of each horizon from measurements as DataVectors
+template <::ah::ObjectLabel Horizon>
+struct Center {
+  using type = DataVector;
+};
+}  // namespace QueueTags
 
 /// \ingroup ControlSystemGroup
 /// All option tags related to the control system
