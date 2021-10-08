@@ -27,6 +27,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
@@ -853,6 +854,51 @@ struct NumberOfPoints<Variables<TagList>> {
   }
 };
 }  // namespace MakeWithValueImpls
+
+namespace EqualWithinRoundoffImpls {
+// It would be nice to use `blaze::equal` in these implementations, but it
+// doesn't currently allow to specify a tolerance. See upstream issue:
+// https://bitbucket.org/blaze-lib/blaze/issues/417/adjust-relaxed-equal-accuracy
+template <typename TagList, typename Floating>
+struct EqualWithinRoundoffImpl<Variables<TagList>, Floating,
+                               Requires<std::is_floating_point_v<Floating>>> {
+  static bool apply(const Variables<TagList>& lhs, const Floating& rhs,
+                    const double eps, const double scale) {
+    for (size_t i = 0; i < lhs.size(); ++i) {
+      if (not equal_within_roundoff(lhs.data()[i], rhs, eps, scale)) {
+        return false;
+      }
+    }
+    return true;
+  }
+};
+template <typename TagList, typename Floating>
+struct EqualWithinRoundoffImpl<Floating, Variables<TagList>,
+                               Requires<std::is_floating_point_v<Floating>>> {
+  static SPECTRE_ALWAYS_INLINE bool apply(const Floating& lhs,
+                                          const Variables<TagList>& rhs,
+                                          const double eps,
+                                          const double scale) {
+    return equal_within_roundoff(rhs, lhs, eps, scale);
+  }
+};
+template <typename LhsTagList, typename RhsTagList>
+struct EqualWithinRoundoffImpl<Variables<LhsTagList>, Variables<RhsTagList>> {
+  static bool apply(const Variables<LhsTagList>& lhs,
+                    const Variables<RhsTagList>& rhs, const double eps,
+                    const double scale) {
+    ASSERT(lhs.size() == rhs.size(),
+           "Can only compare two Variables of the same size, but lhs has size "
+               << lhs.size() << " and rhs has size " << rhs.size() << ".");
+    for (size_t i = 0; i < lhs.size(); ++i) {
+      if (not equal_within_roundoff(lhs.data()[i], rhs.data()[i], eps, scale)) {
+        return false;
+      }
+    }
+    return true;
+  }
+};
+}  // namespace EqualWithinRoundoffImpls
 
 namespace db {
 // Enable subitems for ::Tags::Variables and derived tags (e.g. compute tags).
