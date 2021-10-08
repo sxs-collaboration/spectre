@@ -30,6 +30,7 @@ target_link_libraries(
   DiscontinuousGalerkin
   DomainBoundaryConditions
   GeneralRelativity
+  GeneralizedHarmonic
   Utilities
   ValenciaDivClean
   INTERFACE
