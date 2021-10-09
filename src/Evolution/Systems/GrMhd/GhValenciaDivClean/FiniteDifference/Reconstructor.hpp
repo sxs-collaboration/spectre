@@ -16,6 +16,10 @@ class er;
 /// \endcond
 
 namespace grmhd::GhValenciaDivClean::fd {
+/// \cond
+class MonotisedCentralPrim;
+/// \endcond
+
 /*!
  * \brief The base class from which all reconstruction schemes must inherit
  */
@@ -33,7 +37,7 @@ class Reconstructor : public PUP::able {
   WRAPPED_PUPable_abstract(Reconstructor);  // NOLINT
   /// \endcond
 
-  using creatable_classes = tmpl::list<>;
+  using creatable_classes = tmpl::list<MonotisedCentralPrim>;
 
   virtual std::unique_ptr<Reconstructor> get_clone() const = 0;
 
