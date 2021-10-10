@@ -24,9 +24,7 @@ struct LabelA {};
 template <typename Label, typename Measurement>
 struct MockControlSystem
     : tt::ConformsTo<control_system::protocols::ControlSystem> {
-  static std::string name() {
-    return pretty_type::short_name<Label>();
-  }
+  static std::string name() { return pretty_type::short_name<Label>(); }
   using measurement = Measurement;
   using simple_tags = tmpl::list<control_system::Tags::ControlSystemName>;
 };
@@ -49,10 +47,10 @@ struct MockControlComponent {
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename metavariables::Phase, metavariables::Phase::Initialization,
-      tmpl::list<ActionTesting::InitializeDataBox<simple_tags>,
-                 Initialization::Actions::InitializeControlSystem<
-                     Metavariables, mock_control_sys>,
-                 Initialization::Actions::RemoveOptionsAndTerminatePhase>>>;
+      tmpl::list<
+          ActionTesting::InitializeDataBox<simple_tags>,
+          control_system::Actions::Initialize<Metavariables, mock_control_sys>,
+          Initialization::Actions::RemoveOptionsAndTerminatePhase>>>;
 };
 
 struct MockMetavars {

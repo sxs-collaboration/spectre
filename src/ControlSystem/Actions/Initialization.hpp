@@ -17,7 +17,7 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
-namespace Initialization {
+namespace control_system {
 namespace Actions {
 /*!
  * \ingroup ControlSystemGroup
@@ -36,7 +36,7 @@ namespace Actions {
  * phase action list prior to this action.
  */
 template <typename Metavariables, typename ControlSystem>
-struct InitializeControlSystem {
+struct Initialize {
   // The averager here and controller below are hard coded with a DerivOrder=2
   // at the moment, because this is the DerivOrder of most functions of time in
   // the domain creators. If we want to choose the DerivOrder at runtime (i.e.
@@ -66,4 +66,4 @@ struct InitializeControlSystem {
   }
 };
 }  // namespace Actions
-}  // namespace Initialization
+}  // namespace control_system

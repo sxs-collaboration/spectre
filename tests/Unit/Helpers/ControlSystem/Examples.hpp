@@ -124,7 +124,7 @@ struct ExampleControlSystem
       // some simple action.
       auto& control_system_proxy = Parallel::get_parallel_component<
           ControlComponent<Metavariables, ExampleControlSystem>>(cache);
-      Parallel::simple_action<Actions::UpdateMessageQueue<
+      Parallel::simple_action<::Actions::UpdateMessageQueue<
           ExampleSubmeasurementQueueTag, MeasurementQueue,
           SomeControlSystemUpdater>>(control_system_proxy, measurement_id,
                                      measurement_result);
