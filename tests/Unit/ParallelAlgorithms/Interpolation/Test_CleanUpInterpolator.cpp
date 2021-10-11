@@ -11,6 +11,7 @@
 #include <unordered_set>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/Tag.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Interpolation/Actions/CleanUpInterpolator.hpp"  // IWYU pragma: keep
@@ -18,10 +19,7 @@
 #include "ParallelAlgorithms/Interpolation/InterpolatedVars.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
-#include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
-#include "Time/Time.hpp"
-#include "Time/TimeStepId.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/Rational.hpp"
@@ -37,13 +35,17 @@ namespace intrp {
 
 namespace {
 
+struct OtherId : db::SimpleTag {
+  using type = double;
+};
+
 template <typename Metavariables>
 struct mock_interpolator {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
   using simple_tags = typename intrp::Actions::InitializeInterpolator<
-      tmpl::list<intrp::Tags::VolumeVarsInfo<Metavariables, ::Tags::TimeStepId>,
+      tmpl::list<intrp::Tags::VolumeVarsInfo<Metavariables, OtherId>,
                  intrp::Tags::VolumeVarsInfo<Metavariables, ::Tags::Time>>,
       intrp::Tags::InterpolatedVarsHolders<Metavariables>>::simple_tags;
   using phase_dependent_action_list = tmpl::list<
@@ -61,12 +63,12 @@ struct MockMetavariables {
         tmpl::list<gr::Tags::Lapse<DataVector>>;
   };
   struct InterpolationTagB {
-    using temporal_id = ::Tags::TimeStepId;
+    using temporal_id = OtherId;
     using vars_to_interpolate_to_target =
         tmpl::list<gr::Tags::Lapse<DataVector>>;
   };
   struct InterpolationTagC {
-    using temporal_id = ::Tags::TimeStepId;
+    using temporal_id = OtherId;
     using vars_to_interpolate_to_target =
         tmpl::list<gr::Tags::Lapse<DataVector>>;
   };
@@ -83,28 +85,27 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.CleanUp", "[Unit]") {
   using metavars = MockMetavariables;
   using interp_component = mock_interpolator<metavars>;
 
-  Slab slab(0.0, 1.0);
-  TimeStepId temporal_id(true, 0, Time(slab, Rational(12, 13)));
+  double temporal_id = 12.0 / 13.0;
 
   // Make a VolumeVarsInfo that contains a single temporal_id but
   // no data (since we don't need data for this test).
   std::unordered_map<
-      TimeStepId,
+      double,
       std::unordered_map<ElementId<3>, intrp::Tags::VolumeVarsInfo<
-                                           metavars, ::Tags::TimeStepId>::Info>>
+                                           metavars, OtherId>::Info>>
       volume_vars_info_bc{{temporal_id, {}}};
 
   std::unordered_map<
       double,
       std::unordered_map<ElementId<3>, intrp::Tags::VolumeVarsInfo<
                                            metavars, ::Tags::Time>::Info>>
-      volume_vars_info_a{{temporal_id.substep_time().value(), {}}};
+      volume_vars_info_a{{temporal_id, {}}};
 
   ActionTesting::MockRuntimeSystem<metavars> runner{{}};
   ActionTesting::emplace_component_and_initialize<interp_component>(
       &runner, 0,
       {0_st,
-       typename intrp::Tags::VolumeVarsInfo<metavars, ::Tags::TimeStepId>::type{
+       typename intrp::Tags::VolumeVarsInfo<metavars, OtherId>::type{
            std::move(volume_vars_info_bc)},
        typename intrp::Tags::VolumeVarsInfo<metavars, ::Tags::Time>::type{
            std::move(volume_vars_info_a)},
@@ -115,7 +116,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.CleanUp", "[Unit]") {
   CHECK(
       ActionTesting::get_databox_tag<
           interp_component,
-          intrp::Tags::VolumeVarsInfo<metavars, ::Tags::TimeStepId>>(runner, 0)
+          intrp::Tags::VolumeVarsInfo<metavars, OtherId>>(runner, 0)
           .size() == 1);
   CHECK(ActionTesting::get_databox_tag<
             interp_component,
@@ -146,7 +147,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.CleanUp", "[Unit]") {
   runner.simple_action<
       mock_interpolator<metavars>,
       intrp::Actions::CleanUpInterpolator<metavars::InterpolationTagA>>(
-      0, temporal_id.substep_time().value());
+      0, temporal_id);
 
   // There should still be one temporal_id in VolumeVarsInfo for B and C.
   CHECK(ActionTesting::get_databox_tag<
@@ -156,7 +157,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.CleanUp", "[Unit]") {
   CHECK(
       ActionTesting::get_databox_tag<
           interp_component,
-          intrp::Tags::VolumeVarsInfo<metavars, ::Tags::TimeStepId>>(runner, 0)
+          intrp::Tags::VolumeVarsInfo<metavars, OtherId>>(runner, 0)
           .size() == 1);
 
   // temporal_ids_when_data_has_been_interpolated should be empty for B and C,
@@ -194,7 +195,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.CleanUp", "[Unit]") {
   CHECK(
       ActionTesting::get_databox_tag<
           interp_component,
-          intrp::Tags::VolumeVarsInfo<metavars, ::Tags::TimeStepId>>(runner, 0)
+          intrp::Tags::VolumeVarsInfo<metavars, OtherId>>(runner, 0)
           .size() == 1);
 
   // temporal_ids_when_data_has_been_interpolated should be empty for B,
@@ -240,7 +241,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.CleanUp", "[Unit]") {
   CHECK(
       ActionTesting::get_databox_tag<
           interp_component,
-          intrp::Tags::VolumeVarsInfo<metavars, ::Tags::TimeStepId>>(runner, 0)
+          intrp::Tags::VolumeVarsInfo<metavars, OtherId>>(runner, 0)
           .empty());
 
   // temporal_ids_when_data_has_been_interpolated should be empty for each tag.

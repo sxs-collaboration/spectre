@@ -59,10 +59,7 @@
 #include "ParallelAlgorithms/Interpolation/Targets/KerrHorizon.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
-#include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
-#include "Time/Time.hpp"
-#include "Time/TimeStepId.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/Gsl.hpp"
@@ -187,9 +184,7 @@ struct MockInterpolator {
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
           tmpl::list<Actions::SetupDataBox,
                      ::intrp::Actions::InitializeInterpolator<
-                         tmpl::list<intrp::Tags::VolumeVarsInfo<
-                                        Metavariables, ::Tags::TimeStepId>,
-                                    intrp::Tags::VolumeVarsInfo<Metavariables,
+                         tmpl::list<intrp::Tags::VolumeVarsInfo<Metavariables,
                                                                 ::Tags::Time>>,
                          intrp::Tags::InterpolatedVarsHolders<Metavariables>>>>,
       Parallel::PhaseActions<typename Metavariables::Phase,
@@ -219,7 +214,7 @@ struct MockMetavariables {
             SurfaceA, SurfaceA>;
   };
   struct SurfaceB {
-    using temporal_id = ::Tags::TimeStepId;
+    using temporal_id = ::Tags::Time;
     using vars_to_interpolate_to_target =
         tmpl::list<Tags::TestSolution,
                    gr::Tags::SpatialMetric<3, Frame::Inertial>>;
@@ -241,7 +236,7 @@ struct MockMetavariables {
             SurfaceB, SurfaceB>;
   };
   struct SurfaceC {
-    using temporal_id = ::Tags::TimeStepId;
+    using temporal_id = ::Tags::Time;
     using vars_to_interpolate_to_target =
         tmpl::list<Tags::TestSolution,
                    gr::Tags::SpatialMetric<3, Frame::Inertial>>;
@@ -353,8 +348,7 @@ SPECTRE_TEST_CASE(
   ActionTesting::set_phase(make_not_null(&runner),
                            metavars::Phase::Registration);
 
-  Slab slab(0.0, 1.0);
-  TimeStepId temporal_id(true, 0, Time(slab, 0));
+  double temporal_id = 0.0;
   const auto domain = domain_creator.create_domain();
 
   // Create element_ids.
@@ -396,16 +390,15 @@ SPECTRE_TEST_CASE(
   ActionTesting::simple_action<
       target_a_component,
       intrp::Actions::AddTemporalIdsToInterpolationTarget<metavars::SurfaceA>>(
-      make_not_null(&runner), 0,
-      std::vector<double>{temporal_id.substep_time().value()});
+      make_not_null(&runner), 0, std::vector{temporal_id});
   ActionTesting::simple_action<
       target_b_component,
       intrp::Actions::AddTemporalIdsToInterpolationTarget<metavars::SurfaceB>>(
-      make_not_null(&runner), 0, std::vector<TimeStepId>{temporal_id});
+      make_not_null(&runner), 0, std::vector{temporal_id});
   ActionTesting::simple_action<
       target_c_component,
       intrp::Actions::AddTemporalIdsToInterpolationTarget<metavars::SurfaceC>>(
-      make_not_null(&runner), 0, std::vector<TimeStepId>{temporal_id});
+      make_not_null(&runner), 0, std::vector{temporal_id});
 
   // There should be three queued simple actions (registration), so invoke
   // them and check that there are no more.
@@ -460,7 +453,7 @@ SPECTRE_TEST_CASE(
                                  intrp::Actions::InterpolatorReceiveVolumeData<
                                      typename metavars::SurfaceA::temporal_id>>(
         make_not_null(&runner), mock_core_for_each_element.at(element_id),
-        temporal_id.substep_time().value(), element_id, mesh, output_vars);
+        temporal_id, element_id, mesh, output_vars);
     ActionTesting::simple_action<interp_component,
                                  intrp::Actions::InterpolatorReceiveVolumeData<
                                      typename metavars::SurfaceB::temporal_id>>(

@@ -30,10 +30,7 @@
 #include "ParallelAlgorithms/Interpolation/Actions/TryToInterpolate.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolatedVars.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
-#include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
-#include "Time/Time.hpp"
-#include "Time/TimeStepId.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Rational.hpp"
 #include "Utilities/Requires.hpp"
@@ -137,7 +134,7 @@ struct mock_interpolator {
           tmpl::list<::Actions::SetupDataBox,
                      ::intrp::Actions::InitializeInterpolator<
                          intrp::Tags::VolumeVarsInfo<Metavariables,
-                                                     ::Tags::TimeStepId>,
+                                                     ::Tags::Time>,
                          intrp::Tags::InterpolatedVarsHolders<Metavariables>>>>,
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::Testing, tmpl::list<>>>;
@@ -146,7 +143,7 @@ struct mock_interpolator {
 
 struct Metavariables {
   struct InterpolationTargetA {
-    using temporal_id = ::Tags::TimeStepId;
+    using temporal_id = ::Tags::Time;
     using vars_to_interpolate_to_target =
         tmpl::list<gr::Tags::Lapse<DataVector>>;
     using compute_items_on_source = tmpl::list<>;
@@ -206,8 +203,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceivePoints",
     }
     return block_logical_coordinates(domain, points);
   }();
-  Slab slab(0.0, 1.0);
-  TimeStepId temporal_id(true, 0, Time(slab, Rational(11, 15)));
+  double temporal_id = 11.0 / 15.0;
 
   runner.simple_action<
       mock_interpolator<metavars>,

@@ -26,10 +26,7 @@
 #include "ParallelAlgorithms/Interpolation/Actions/InterpolatorRegisterElement.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Interpolation/Events/Interpolate.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolatedVars.hpp"  // IWYU pragma: keep
-#include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
-#include "Time/Time.hpp"
-#include "Time/TimeStepId.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -64,7 +61,7 @@ struct Lapse : db::SimpleTag {
 struct MockInterpolatorReceiveVolumeData {
   struct Results {
     // Hardcode expected types here.
-    ::TimeStepId temporal_id{};
+    double temporal_id{};
     ElementId<3> element_id{};
     Mesh<3> mesh{};
     Variables<tmpl::list<Tags::Lapse>> vars{};
@@ -76,7 +73,7 @@ struct MockInterpolatorReceiveVolumeData {
   static void apply(
       db::DataBox<DbTags>& /*box*/,
       Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/, const ::TimeStepId& temporal_id,
+      const ArrayIndex& /*array_index*/, const double& temporal_id,
       const ElementId<VolumeDim>& element_id, const ::Mesh<VolumeDim>& mesh,
       Variables<typename Metavariables::interpolator_source_vars>&& vars) {
     results.temporal_id = temporal_id;
@@ -111,7 +108,7 @@ template <typename Metavariables>
 struct mock_interpolator {
   using component_being_mocked = intrp::Interpolator<Metavariables>;
   using replace_these_simple_actions = tmpl::list<
-      intrp::Actions::InterpolatorReceiveVolumeData<::Tags::TimeStepId>>;
+      intrp::Actions::InterpolatorReceiveVolumeData<::Tags::Time>>;
   using with_these_simple_actions =
       tmpl::list<MockInterpolatorReceiveVolumeData>;
 
@@ -123,11 +120,11 @@ struct mock_interpolator {
       tmpl::list<
           Actions::SetupDataBox,
           ::intrp::Actions::InitializeInterpolator<
-              intrp::Tags::VolumeVarsInfo<Metavariables, ::Tags::TimeStepId>,
+              intrp::Tags::VolumeVarsInfo<Metavariables, ::Tags::Time>,
               intrp::Tags::InterpolatedVarsHolders<Metavariables>>>>>;
   using initial_databox = db::compute_databox_type<
       typename ::intrp::Actions::InitializeInterpolator<
-          intrp::Tags::VolumeVarsInfo<Metavariables, ::Tags::TimeStepId>,
+          intrp::Tags::VolumeVarsInfo<Metavariables, ::Tags::Time>,
           intrp::Tags::InterpolatedVarsHolders<Metavariables>>::
           return_tag_list>;
 };
@@ -167,7 +164,7 @@ struct mock_element {
 
 struct MockMetavariables {
   struct InterpolatorTargetA {
-    using temporal_id = ::Tags::TimeStepId;
+    using temporal_id = ::Tags::Time;
     using vars_to_interpolate_to_target = tmpl::list<Tags::Lapse>;
   };
   static constexpr size_t volume_dim = 3;
@@ -226,8 +223,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.InterpolateEvent",
                         metavars::InterpolatorTargetA::temporal_id,
                         domain::Tags::Mesh<metavars::volume_dim>,
                         ::Tags::Variables<typename decltype(vars)::tags_list>>>(
-      metavars{}, TimeStepId(true, 0, Slab(0., observation_time).end()), mesh,
-      vars);
+      metavars{}, observation_time, mesh, vars);
 
   metavars::event event{};
 
@@ -251,7 +247,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.InterpolateEvent",
   CHECK(called_mock_add_temporal_ids_to_interpolation_target == 1);
 
   const auto& results = MockInterpolatorReceiveVolumeData::results;
-  CHECK(results.temporal_id.substep_time().value() == observation_time);
+  CHECK(results.temporal_id == observation_time);
   CHECK(results.element_id == element_id);
   CHECK(results.mesh == mesh);
   CHECK(results.vars == vars);

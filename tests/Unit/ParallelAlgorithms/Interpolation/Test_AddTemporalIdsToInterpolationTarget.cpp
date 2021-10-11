@@ -25,10 +25,7 @@
 #include "ParallelAlgorithms/Interpolation/Actions/AddTemporalIdsToInterpolationTarget.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolationTarget.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
-#include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
-#include "Time/Time.hpp"
-#include "Time/TimeStepId.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Rational.hpp"
 #include "Utilities/Requires.hpp"
@@ -108,7 +105,7 @@ struct MockComputeTargetPoints {
 template <typename IsSequential, typename IsTimeDependent>
 struct MockMetavariables {
   struct InterpolationTargetA {
-    using temporal_id = ::Tags::TimeStepId;
+    using temporal_id = ::Tags::Time;
     using vars_to_interpolate_to_target =
         tmpl::list<gr::Tags::Lapse<DataVector>>;
     using compute_items_on_target = tmpl::list<>;
@@ -152,10 +149,7 @@ void test_add_temporal_ids() {
             runner, 0)
             .empty());
 
-  Slab slab(0.0, 1.0);
-  const std::vector<TimeStepId> temporal_ids = {
-      TimeStepId(true, 0, Time(slab, 0)),
-      TimeStepId(true, 0, Time(slab, Rational(1, 3)))};
+  const std::vector<double> temporal_ids = {0.0, 1.0 / 3.0};
 
   ActionTesting::simple_action<
       target_component, ::intrp::Actions::AddTemporalIdsToInterpolationTarget<
@@ -167,7 +161,7 @@ void test_add_temporal_ids() {
   CHECK(ActionTesting::get_databox_tag<
             target_component,
             ::intrp::Tags::PendingTemporalIds<temporal_id_type>>(runner, 0) ==
-        std::deque<TimeStepId>(temporal_ids.begin(), temporal_ids.end()));
+        std::deque<double>(temporal_ids.begin(), temporal_ids.end()));
   CHECK(ActionTesting::get_databox_tag<
             target_component, ::intrp::Tags::TemporalIds<temporal_id_type>>(
             runner, 0)
@@ -186,7 +180,7 @@ void test_add_temporal_ids() {
   CHECK(ActionTesting::get_databox_tag<
             target_component,
             ::intrp::Tags::PendingTemporalIds<temporal_id_type>>(runner, 0) ==
-        std::deque<TimeStepId>(temporal_ids.begin(), temporal_ids.end()));
+        std::deque<double>(temporal_ids.begin(), temporal_ids.end()));
   CHECK(ActionTesting::get_databox_tag<
             target_component, ::intrp::Tags::TemporalIds<temporal_id_type>>(
             runner, 0)
@@ -206,7 +200,7 @@ void test_add_temporal_ids() {
   CHECK(ActionTesting::get_databox_tag<
             target_component, ::intrp::Tags::TemporalIds<temporal_id_type>>(
             runner, 0) ==
-        std::deque<TimeStepId>(temporal_ids.begin(), temporal_ids.end()));
+        std::deque<double>(temporal_ids.begin(), temporal_ids.end()));
   CHECK(ActionTesting::get_databox_tag<
             target_component,
             ::intrp::Tags::PendingTemporalIds<temporal_id_type>>(runner, 0)
@@ -221,7 +215,7 @@ void test_add_temporal_ids() {
   CHECK(ActionTesting::get_databox_tag<
             target_component, ::intrp::Tags::TemporalIds<temporal_id_type>>(
             runner, 0) ==
-        std::deque<TimeStepId>(temporal_ids.begin(), temporal_ids.end()));
+        std::deque<double>(temporal_ids.begin(), temporal_ids.end()));
   CHECK(ActionTesting::get_databox_tag<
             target_component,
             ::intrp::Tags::PendingTemporalIds<temporal_id_type>>(runner, 0)
@@ -267,9 +261,7 @@ void test_add_temporal_ids() {
   // Call again.
   // If sequential, it should not call MockSendPointsToInterpolator this time.
   // Otherwise it should call MockSendPointsToInterpolator twice.
-  const std::vector<TimeStepId> temporal_ids_2 = {
-      TimeStepId(true, 0, Time(slab, Rational(2, 3))),
-      TimeStepId(true, 0, Time(slab, Rational(3, 3)))};
+  const std::vector<double> temporal_ids_2 = {2.0 / 3.0, 3.0 / 3.0};
   ActionTesting::simple_action<
       target_component, ::intrp::Actions::AddTemporalIdsToInterpolationTarget<
                             typename metavars::InterpolationTargetA>>(
@@ -354,14 +346,8 @@ void test_add_temporal_ids_time_dependent() {
   // Two of the temporal_ids are before the expiration_time, the
   // others are afterwards.  Later we will update the FunctionOfTimes
   // so that the later temporal_ids become valid.
-  Slab slab(0.0, 1.0);
-  const std::vector<TimeStepId> temporal_ids = {
-      TimeStepId(true, 0, Time(slab, 0)),
-      TimeStepId(true, 0, Time(slab, Rational(1, 20))),
-      TimeStepId(true, 0, Time(slab, Rational(1, 4))),
-      TimeStepId(true, 0, Time(slab, Rational(1, 3))),
-      TimeStepId(true, 0, Time(slab, Rational(2, 3))),
-      TimeStepId(true, 0, Time(slab, Rational(3, 4)))};
+  const std::vector<double> temporal_ids = {
+      0.0, 1.0 / 20.0, 1.0 / 4.0, 1.0 / 3.0, 2.0 / 3.0, 3.0 / 4.0};
 
   ActionTesting::simple_action<
       target_component, ::intrp::Actions::AddTemporalIdsToInterpolationTarget<
@@ -373,7 +359,7 @@ void test_add_temporal_ids_time_dependent() {
   CHECK(ActionTesting::get_databox_tag<
             target_component,
             ::intrp::Tags::PendingTemporalIds<temporal_id_type>>(runner, 0) ==
-        std::deque<TimeStepId>(temporal_ids.begin(), temporal_ids.end()));
+        std::deque<double>(temporal_ids.begin(), temporal_ids.end()));
   CHECK(ActionTesting::get_databox_tag<
             target_component, ::intrp::Tags::TemporalIds<temporal_id_type>>(
             runner, 0)
@@ -392,7 +378,7 @@ void test_add_temporal_ids_time_dependent() {
   CHECK(ActionTesting::get_databox_tag<
             target_component,
             ::intrp::Tags::PendingTemporalIds<temporal_id_type>>(runner, 0) ==
-        std::deque<TimeStepId>(temporal_ids.begin(), temporal_ids.end()));
+        std::deque<double>(temporal_ids.begin(), temporal_ids.end()));
   CHECK(ActionTesting::get_databox_tag<
             target_component, ::intrp::Tags::TemporalIds<temporal_id_type>>(
             runner, 0)
@@ -413,13 +399,12 @@ void test_add_temporal_ids_time_dependent() {
   // PendingTemporalIds to TemporalIds.
   CHECK(ActionTesting::get_databox_tag<
             target_component, ::intrp::Tags::TemporalIds<temporal_id_type>>(
-            runner, 0) ==
-        std::deque<TimeStepId>({temporal_ids[0], temporal_ids[1]}));
+            runner, 0) == std::deque{temporal_ids[0], temporal_ids[1]});
   CHECK(ActionTesting::get_databox_tag<
             target_component,
             ::intrp::Tags::PendingTemporalIds<temporal_id_type>>(runner, 0) ==
-        std::deque<TimeStepId>({temporal_ids[2], temporal_ids[3],
-                                temporal_ids[4], temporal_ids[5]}));
+        std::deque{temporal_ids[2], temporal_ids[3], temporal_ids[4],
+                   temporal_ids[5]});
 
   if (IsSequential::value) {
     // Only one simple action should be queued,
@@ -445,13 +430,12 @@ void test_add_temporal_ids_time_dependent() {
   // before.
   CHECK(ActionTesting::get_databox_tag<
             target_component, ::intrp::Tags::TemporalIds<temporal_id_type>>(
-            runner, 0) ==
-        std::deque<TimeStepId>({temporal_ids[0], temporal_ids[1]}));
+            runner, 0) == std::deque{temporal_ids[0], temporal_ids[1]});
   CHECK(ActionTesting::get_databox_tag<
             target_component,
             ::intrp::Tags::PendingTemporalIds<temporal_id_type>>(runner, 0) ==
-        std::deque<TimeStepId>({temporal_ids[2], temporal_ids[3],
-                                temporal_ids[4], temporal_ids[5]}));
+        std::deque{temporal_ids[2], temporal_ids[3], temporal_ids[4],
+                   temporal_ids[5]});
   if (IsSequential::value) {
     CHECK(ActionTesting::number_of_queued_simple_actions<target_component>(
               runner, 0) == 1);
@@ -524,13 +508,12 @@ void test_add_temporal_ids_time_dependent() {
     // and the last 2 should be in PendingTemporalIds.
     CHECK(ActionTesting::get_databox_tag<
               target_component, ::intrp::Tags::TemporalIds<temporal_id_type>>(
-              runner, 0) ==
-          std::deque<TimeStepId>({temporal_ids[0], temporal_ids[1],
-                                  temporal_ids[2], temporal_ids[3]}));
+              runner, 0) == std::deque{temporal_ids[0], temporal_ids[1],
+                                       temporal_ids[2], temporal_ids[3]});
     CHECK(ActionTesting::get_databox_tag<
               target_component,
               ::intrp::Tags::PendingTemporalIds<temporal_id_type>>(runner, 0) ==
-          std::deque<TimeStepId>({temporal_ids[4], temporal_ids[5]}));
+          std::deque{temporal_ids[4], temporal_ids[5]});
 
     // Now there should be three queued simple actions.  One is
     // VerifyTemporalIdsAndSendPoints, which was invoked by the last
@@ -582,7 +565,7 @@ void test_add_temporal_ids_time_dependent() {
     CHECK(ActionTesting::get_databox_tag<
               target_component, ::intrp::Tags::TemporalIds<temporal_id_type>>(
               runner, 0) ==
-          std::deque<TimeStepId>(temporal_ids.begin(), temporal_ids.end()));
+          std::deque<double>(temporal_ids.begin(), temporal_ids.end()));
     CHECK(ActionTesting::get_databox_tag<
               target_component,
               ::intrp::Tags::PendingTemporalIds<temporal_id_type>>(runner, 0)

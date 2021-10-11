@@ -44,10 +44,7 @@
 #include "ParallelAlgorithms/Interpolation/Actions/TryToInterpolate.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolatedVars.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
-#include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
-#include "Time/Time.hpp"
-#include "Time/TimeStepId.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
@@ -152,8 +149,7 @@ struct MockInterpolationTargetReceiveVars {
     // indeed called.  Put some unusual temporal_id into Tags::TemporalIds.
     // This is not the usual usage of Tags::TemporalIds; this is done just
     // for the test.
-    Slab slab(0.0, 1.0);
-    TimeStepId strange_temporal_id(true, 0, Time(slab, Rational(111, 135)));
+    double strange_temporal_id = 111.0 / 135.0;
     db::mutate<intrp::Tags::TemporalIds<TemporalId>>(
         make_not_null(&box),
         [&strange_temporal_id](
@@ -198,7 +194,7 @@ struct mock_interpolator {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
   using simple_tags = typename intrp::Actions::InitializeInterpolator<
-      intrp::Tags::VolumeVarsInfo<Metavariables, ::Tags::TimeStepId>,
+      intrp::Tags::VolumeVarsInfo<Metavariables, ::Tags::Time>,
       intrp::Tags::InterpolatedVarsHolders<Metavariables>>::simple_tags;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
@@ -213,7 +209,7 @@ struct mock_interpolator {
 
 struct MockMetavariables {
   struct InterpolationTargetA {
-    using temporal_id = ::Tags::TimeStepId;
+    using temporal_id = ::Tags::Time;
     using vars_to_interpolate_to_target = tmpl::list<Tags::Square>;
     using compute_vars_to_interpolate = ComputeSquare;
     using compute_items_on_target = tmpl::list<>;
@@ -246,8 +242,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceiveVolumeData",
   const auto domain_creator =
       domain::creators::Shell(0.9, 4.9, 1, {{7, 7}}, false);
   const auto domain = domain_creator.create_domain();
-  Slab slab(0.0, 1.0);
-  TimeStepId temporal_id(true, 0, Time(slab, Rational(11, 15)));
+  double temporal_id = 11.0 / 15.0;
   auto vars_holders = [&domain, &temporal_id]() {
     const size_t n_pts = 15;
     tnsr::I<DataVector, 3, Frame::Inertial> points(n_pts);
@@ -349,8 +344,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceiveVolumeData",
   CHECK(ActionTesting::get_databox_tag<
             target_component, intrp::Tags::TemporalIds<temporal_id_type>>(
             runner, 0)
-            .front() ==
-        TimeStepId(true, 0, Time(Slab(0.0, 1.0), Rational(111, 135))));
+            .front() == 111.0 / 135.0);
 
   // No more queued simple actions.
   CHECK(runner.is_simple_action_queue_empty<target_component>(0));

@@ -18,9 +18,7 @@
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolationTarget.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InterpolationTargetVarsFromElement.hpp"
-#include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
-#include "Time/Time.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/Rational.hpp"
 
@@ -79,9 +77,8 @@ struct MockPostInterpolationCallback {
       const typename Metavariables::InterpolationTargetA::temporal_id::type&
           temporal_id) {
     // This callback simply checks that the points are as expected.
-    Slab slab(0.0, 1.0);
-    const TimeStepId first_temporal_id(true, 0, Time(slab, Rational(13, 15)));
-    const TimeStepId second_temporal_id(true, 0, Time(slab, Rational(14, 15)));
+    const double first_temporal_id = 13.0 / 15.0;
+    const double second_temporal_id = 14.0 / 15.0;
     if (temporal_id == first_temporal_id) {
       const Scalar<DataVector> expected{
           DataVector{{0.0, 1.0, 4.0, 9.0, 16.0, 25.0, 36.0, 49.0, 64.0, 81.0}}};
@@ -117,7 +114,7 @@ struct mock_interpolation_target {
 
 struct MockMetavariables {
   struct InterpolationTargetA {
-    using temporal_id = ::Tags::TimeStepId;
+    using temporal_id = ::Tags::Time;
     using vars_to_interpolate_to_target = tmpl::list<Tags::TestSolution>;
     using compute_items_on_target = tmpl::list<Tags::SquareCompute>;
     using compute_target_points = MockComputeTargetPoints;
@@ -142,9 +139,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.TargetVarsFromElement",
       mock_interpolation_target<metavars,
                                 typename metavars::InterpolationTargetA>;
 
-  Slab slab(0.0, 1.0);
-  const TimeStepId first_temporal_id(true, 0, Time(slab, Rational(13, 15)));
-  const TimeStepId second_temporal_id(true, 0, Time(slab, Rational(14, 15)));
+  const double first_temporal_id = 13.0 / 15.0;
+  const double second_temporal_id = 14.0 / 15.0;
   const auto domain_creator =
       domain::creators::Shell(0.9, 4.9, 1, {{5, 5}}, false);
 

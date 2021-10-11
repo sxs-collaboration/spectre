@@ -21,9 +21,6 @@
 #include "ParallelAlgorithms/Interpolation/Actions/SendPointsToInterpolator.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolatedVars.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
-#include "Time/Slab.hpp"
-#include "Time/Time.hpp"
-#include "Time/TimeStepId.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/Requires.hpp"
@@ -176,26 +173,15 @@ void test_interpolation_target(
   }
   ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Testing);
 
-  Slab slab(0.0, 1.0);
-  TimeStepId temporal_id(true, 0, Time(slab, 0));
+  double temporal_id = 0.0;
   static_assert(
       std::is_same_v<typename metavars::InterpolationTargetA::temporal_id::type,
-                     double> or
-          std::is_same_v<
-              typename metavars::InterpolationTargetA::temporal_id::type,
-              TimeStepId>,
+                     double>,
       "Unsupported temporal_id type");
-  if constexpr (std::is_same_v<temporal_id_type, double>) {
-    ActionTesting::simple_action<target_component,
-                                 intrp::Actions::SendPointsToInterpolator<
-                                     typename metavars::InterpolationTargetA>>(
-        make_not_null(&runner), 0, temporal_id.substep_time().value());
-  } else if constexpr (std::is_same_v<temporal_id_type, TimeStepId>) {
-    ActionTesting::simple_action<target_component,
-                                 intrp::Actions::SendPointsToInterpolator<
-                                     typename metavars::InterpolationTargetA>>(
-        make_not_null(&runner), 0, temporal_id);
-  }
+  ActionTesting::simple_action<target_component,
+                               intrp::Actions::SendPointsToInterpolator<
+                                   typename metavars::InterpolationTargetA>>(
+      make_not_null(&runner), 0, temporal_id);
 
   // This should not have changed.
   CHECK(ActionTesting::get_databox_tag<
@@ -242,7 +228,7 @@ void test_interpolation_target(
   }
 
   // Call again at a different temporal_id
-  TimeStepId new_temporal_id(true, 0, Time(slab, 1));
+  double new_temporal_id = 1.0;
   ActionTesting::simple_action<target_component,
                                intrp::Actions::SendPointsToInterpolator<
                                    typename metavars::InterpolationTargetA>>(

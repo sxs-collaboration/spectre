@@ -63,9 +63,7 @@ namespace intrp {
 
 namespace InterpolationTarget_detail {
 double get_temporal_id_value(double time);
-double get_temporal_id_value(const TimeStepId& time_id);
 double evaluate_temporal_id_for_expiration(double time);
-double evaluate_temporal_id_for_expiration(const TimeStepId& time_id);
 
 // apply_callback accomplishes the overload for the
 // two signatures of callback functions.
