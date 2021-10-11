@@ -38,8 +38,8 @@ namespace control_system {
 ///
 /// This event is only intended to be used with the
 /// `control_system::Trigger` trigger.  A specialization of this event
-/// will be created during control system initialization for each \ref
-/// control_system::protocols::Measurement "measurement".
+/// will be created during control system initialization for each
+/// unique \ref control_system::protocols::Measurement "measurement".
 ///
 /// These events must be added to the \ref
 /// Options::protocols::FactoryCreation "factory_creation" struct in
@@ -73,6 +73,8 @@ class Event : public ::Event {
   // LCOV_EXCL_STOP
   /// \endcond
 
+  // This event is created during control system initialization, not
+  // from the input file.
   static constexpr bool factory_creatable = false;
   Event() = default;
 
@@ -117,6 +119,8 @@ class Event : public ::Event {
 template <typename ControlSystems>
 PUP::able::PUP_ID Event<ControlSystems>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
+
+// This metafunction is tested in Test_EventTriggerMetafunctions.cpp
 
 /// \ingroup ControlSystemGroup
 /// The list of events needed for measurements for a list of control

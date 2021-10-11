@@ -23,7 +23,7 @@ struct UpdateFunctionOfTime {
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>*>
           f_of_t_list,
       const std::string& f_of_t_name, const double update_time,
-      const DataVector update_deriv, const double new_expiration_time) {
+      DataVector update_deriv, const double new_expiration_time) {
     (*f_of_t_list)
         .at(f_of_t_name)
         ->update(update_time, std::move(update_deriv), new_expiration_time);
