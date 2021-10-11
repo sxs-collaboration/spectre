@@ -128,7 +128,6 @@ void test_binary_compact_object_construction(
                       binary_compact_object.initial_refinement_levels());
   test_physical_separation(binary_compact_object.create_domain().blocks(), time,
                            functions_of_time);
-
   for (size_t block_id = 0;
        block_id < expected_external_boundary_conditions.size(); ++block_id) {
     CAPTURE(block_id);
@@ -304,6 +303,14 @@ void test_connectivity() {
           }
           CHECK(binary_compact_object.block_names() == expected_block_names);
           CHECK(binary_compact_object.block_groups() == expected_block_groups);
+          CHECK(binary_compact_object.create_domain().excision_spheres() ==
+                std::unordered_map<std::string, ExcisionSphere<3>>{
+                    {"ObjectAExcisionSphere",
+                     ExcisionSphere<3>{inner_radius_objectA,
+                                       {{xcoord_objectA, 0.0, 0.0}}}},
+                    {"ObjectBExcisionSphere",
+                     ExcisionSphere<3>{inner_radius_objectB,
+                                       {{xcoord_objectB, 0.0, 0.0}}}}});
 
           test_binary_compact_object_construction(
               binary_compact_object,

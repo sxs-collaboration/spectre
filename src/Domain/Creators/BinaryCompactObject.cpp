@@ -43,6 +43,7 @@
 #include "Domain/FunctionsOfTime/FixedSpeedCubic.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Domain/Structure/BlockNeighbor.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/ExcisionSphere.hpp"
 #include "Utilities/MakeArray.hpp"
 
 namespace Frame {
@@ -515,7 +516,13 @@ Domain<3> BinaryCompactObject::create_domain() const {
       corners_for_biradially_layered_domains(2, 3, not object_A_.is_excised(),
                                              not object_B_.is_excised()),
       {},
-      std::move(boundary_conditions_all_blocks)};
+      std::move(boundary_conditions_all_blocks),
+      {{"ObjectAExcisionSphere",
+        ExcisionSphere<3>{object_A_.inner_radius,
+                          {{object_A_.x_coord, 0.0, 0.0}}}},
+       {"ObjectBExcisionSphere",
+        ExcisionSphere<3>{object_B_.inner_radius,
+                          {{object_B_.x_coord, 0.0, 0.0}}}}}};
 
   // Inject the hard-coded time-dependence
   if (enable_time_dependence_) {
