@@ -136,8 +136,8 @@ class BoundaryHistory {
   const CouplingResult& coupling(Coupling&& c, const local_iterator& local,
                                  const remote_iterator& remote) const;
 
-  // clang-tidy: google-runtime-references
-  void pup(PUP::er& p);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
 
  private:
   template <size_t Side, typename DataType, typename Iterator>

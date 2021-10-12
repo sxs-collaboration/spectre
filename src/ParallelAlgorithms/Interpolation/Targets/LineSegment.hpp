@@ -70,8 +70,8 @@ struct LineSegment {
   LineSegment& operator=(LineSegment&& /*rhs*/) = default;
   ~LineSegment() = default;
 
-  // clang-tidy non-const reference pointer.
-  void pup(PUP::er& p);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
 
   std::array<double, VolumeDim> begin{};
   std::array<double, VolumeDim> end{};

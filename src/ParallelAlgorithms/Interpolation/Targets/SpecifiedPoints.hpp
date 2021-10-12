@@ -56,8 +56,8 @@ struct SpecifiedPoints {
   SpecifiedPoints& operator=(SpecifiedPoints&& /*rhs*/) = default;
   ~SpecifiedPoints() = default;
 
-  // clang-tidy non-const reference pointer.
-  void pup(PUP::er& p);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
 
   std::vector<std::array<double, VolumeDim>> points{};
 };

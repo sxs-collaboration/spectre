@@ -56,7 +56,8 @@ struct UnpackCounter {
 
   explicit UnpackCounter(CkMigrateMessage* /*msg*/) {}
 
-  void pup(PUP::er& p) {  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p) {
     p | counter_value;
     if (p.isUnpacking()) {
       ++counter_value;

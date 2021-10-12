@@ -468,9 +468,8 @@ class Tensor<X, Symm, IndexList<Indices...>> {
 
   /// \cond HIDDEN_SYMBOLS
   /// Serialization function used by Charm++
-  void pup(PUP::er& p) {  // NOLINT
-    p | data_;
-  }
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p) { p | data_; }
   /// \endcond
 
  private:

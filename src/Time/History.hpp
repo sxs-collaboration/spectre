@@ -108,8 +108,8 @@ class History {
   }
   /// @}
 
-  // clang-tidy: google-runtime-references
-  void pup(PUP::er& p) {  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p) {
     // Don't send cached allocations.  This object is probably going
     // to be thrown away after serialization, so we take the easy
     // route of just throwing them away.

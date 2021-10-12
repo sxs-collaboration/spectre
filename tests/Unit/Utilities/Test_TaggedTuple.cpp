@@ -35,8 +35,8 @@ struct parents {
 struct not_streamable {
   explicit not_streamable(int /*unused*/) {}
   not_streamable() = default;
-  // clang-tidy: google-runtime-references
-  void pup(PUP::er& /*p*/) {}  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& /*p*/) {}
 };
 
 constexpr bool operator==(const not_streamable& /*unused*/,

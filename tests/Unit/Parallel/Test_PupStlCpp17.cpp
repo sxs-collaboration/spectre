@@ -21,9 +21,8 @@ struct LocalNoCopyMove {
   LocalNoCopyMove& operator=(LocalNoCopyMove&&) = delete;
   ~LocalNoCopyMove() = default;
 
-  void pup(PUP::er& p) {  // NOLINT
-    p | t;
-  }
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p) { p | t; }
 
   size_t t;
 };

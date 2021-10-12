@@ -52,8 +52,8 @@ class Time {
   bool is_at_slab_end() const;
   bool is_at_slab_boundary() const;
 
-  // clang-tidy: google-runtime-references
-  void pup(PUP::er& p);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
 
   /// A comparison operator that compares Times structurally, i.e.,
   /// just looking at the class members.  This is only intended for
@@ -116,8 +116,8 @@ class TimeDelta {
   TimeDelta& operator*=(const rational_t& mult);
   TimeDelta& operator/=(const rational_t& div);
 
-  // clang-tidy: google-runtime-references
-  void pup(PUP::er& p);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
 
  private:
   Slab slab_;

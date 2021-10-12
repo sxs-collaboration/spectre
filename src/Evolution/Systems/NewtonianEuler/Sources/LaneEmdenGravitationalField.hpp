@@ -80,8 +80,8 @@ struct LaneEmdenGravitationalField {
       LaneEmdenGravitationalField&& /*rhs*/) = default;
   ~LaneEmdenGravitationalField() = default;
 
-  // clang-tidy: google-runtime-references
-  void pup(PUP::er& /*p*/) {}  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& /*p*/) {}
 
   using sourced_variables =
       tmpl::list<Tags::MomentumDensity<3>, Tags::EnergyDensity>;

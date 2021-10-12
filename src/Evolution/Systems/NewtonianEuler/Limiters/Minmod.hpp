@@ -123,8 +123,8 @@ class Minmod {
   Minmod& operator=(Minmod&& /*rhs*/) = default;
   ~Minmod() = default;
 
-  // clang-tidy: google-runtime-references
-  void pup(PUP::er& p);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
 
   using PackagedData = typename ConservativeVarsMinmod::PackagedData;
   using package_argument_tags =

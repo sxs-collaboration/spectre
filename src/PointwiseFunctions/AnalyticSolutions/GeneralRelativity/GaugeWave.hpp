@@ -170,8 +170,8 @@ class GaugeWave : public AnalyticSolution<Dim>, public MarkAsAnalyticSolution {
       gr::Tags::ExtrinsicCurvature<volume_dim, Frame::Inertial, DataType>,
       gr::Tags::InverseSpatialMetric<volume_dim, Frame::Inertial, DataType>>;
 
-  // clang-tidy: no runtime references
-  void pup(PUP::er& p);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
 
   SPECTRE_ALWAYS_INLINE double amplitude() const { return amplitude_; }
   SPECTRE_ALWAYS_INLINE double wavelength() const { return wavelength_; }

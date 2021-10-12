@@ -46,7 +46,8 @@ class BlockNeighbor {
   const OrientationMap<VolumeDim>& orientation() const { return orientation_; }
 
   // Serialization for Charm++
-  void pup(PUP::er& p);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
 
  private:
   size_t id_{0};

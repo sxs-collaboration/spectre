@@ -103,7 +103,8 @@ struct HasConverged {
   /// is not available yet.
   double initial_residual_magnitude() const;
 
-  void pup(PUP::er& p);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
 
   friend bool operator==(const HasConverged& lhs, const HasConverged& rhs);
   friend bool operator!=(const HasConverged& lhs, const HasConverged& rhs);

@@ -124,8 +124,8 @@ class Domain {
     return excision_spheres_;
   }
 
-  // clang-tidy: google-runtime-references
-  void pup(PUP::er& p);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
 
  private:
   std::vector<Block<VolumeDim>> blocks_{};

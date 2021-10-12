@@ -434,8 +434,8 @@ class CoordinateMap
 
   explicit CoordinateMap(CkMigrateMessage* /*unused*/) {}
 
-  // clang-tidy: google-runtime-references
-  void pup(PUP::er& p) override {  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p) override {
     CoordinateMapBase<SourceFrame, TargetFrame, dim>::pup(p);
     p | maps_;
   }

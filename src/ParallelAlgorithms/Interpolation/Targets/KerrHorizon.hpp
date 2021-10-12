@@ -93,8 +93,8 @@ struct KerrHorizon {
   KerrHorizon& operator=(KerrHorizon&& /*rhs*/) = default;
   ~KerrHorizon() = default;
 
-  // clang-tidy non-const reference pointer.
-  void pup(PUP::er& p);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
 
   size_t l_max{};
   std::array<double, 3> center{};

@@ -88,9 +88,9 @@ class Strahlkorper {
   /// explicitly specifying the coefficients.
   Strahlkorper(DataVector coefs, Strahlkorper&& another_strahlkorper);
 
-  // clang-tidy: no runtime references
   /// Serialization for Charm++
-  void pup(PUP::er& p);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
 
   /*!
    *  These coefficients are stored as SPHEREPACK coefficients.

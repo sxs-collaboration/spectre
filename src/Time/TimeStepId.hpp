@@ -63,8 +63,8 @@ class TimeStepId {
     return substep_ == 0 and substep_time_.is_at_slab_boundary();
   }
 
-  // clang-tidy: google-runtime-references
-  void pup(PUP::er& p);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
 
  private:
   void canonicalize();

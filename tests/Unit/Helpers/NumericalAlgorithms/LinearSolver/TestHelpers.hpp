@@ -100,7 +100,8 @@ struct RichardsonPreconditioner {
 
   static void reset() {}
 
-  void pup(PUP::er& p) {  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p) {
     p | relaxation_parameter_;
     p | num_iterations_;
   }

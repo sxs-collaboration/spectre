@@ -85,7 +85,8 @@ class Rotation3D {
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
           functions_of_time) const;
 
-  void pup(PUP::er& p);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
 
   static bool is_identity() { return false; }
 

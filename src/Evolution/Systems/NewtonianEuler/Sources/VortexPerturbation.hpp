@@ -75,8 +75,8 @@ struct VortexPerturbation {
   VortexPerturbation& operator=(VortexPerturbation&& /*rhs*/) = default;
   ~VortexPerturbation() = default;
 
-  // clang-tidy: google-runtime-references
-  void pup(PUP::er& /*p*/) {}  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& /*p*/) {}
 
   using sourced_variables = tmpl::conditional_t<
       Dim == 3,

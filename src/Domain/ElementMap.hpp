@@ -107,8 +107,8 @@ class ElementMap {
     return jac;
   }
 
-  // clang-tidy: do not use references
-  void pup(PUP::er& p);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
 
  private:
   template <typename T>

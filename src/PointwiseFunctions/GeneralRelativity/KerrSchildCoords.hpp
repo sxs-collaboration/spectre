@@ -173,8 +173,8 @@ class KerrSchildCoords {
   Scalar<DataType> r_coord_squared(
       const tnsr::I<DataType, 3, Frame::Inertial>& cartesian_coords) const;
 
-  // clang-tidy: google-runtime-references
-  void pup(PUP::er& /*p*/);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& /*p*/);
 
  private:
   friend bool operator==(const KerrSchildCoords& lhs,

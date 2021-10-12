@@ -1877,8 +1877,8 @@ class Boxed {
   const T& operator*() const { return *data_; }
   const std::shared_ptr<T>& data() const { return data_; }
 
-  // clang-tidy: no non-const references
-  void pup(PUP::er& p) {  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p) {
     if (p.isUnpacking()) {
       T t{};
       p | t;

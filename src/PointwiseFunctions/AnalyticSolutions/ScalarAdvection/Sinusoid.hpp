@@ -49,8 +49,8 @@ class Sinusoid : public MarkAsAnalyticSolution {
       const tnsr::I<DataType, 1>& x, double t,
       tmpl::list<ScalarAdvection::Tags::U> /*meta*/) const;
 
-  // clang-tidy: no pass by reference
-  void pup(PUP::er& p);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
 };
 
 bool operator==(const Sinusoid& /*lhs*/, const Sinusoid& /*rhs*/);

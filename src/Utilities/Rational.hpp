@@ -48,8 +48,8 @@ class Rational {
   Rational& operator*=(const Rational& other);
   Rational& operator/=(const Rational& other);
 
-  // clang-tidy: google-runtime-references
-  void pup(PUP::er& p);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
 
   friend Rational operator-(Rational r);
 

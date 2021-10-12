@@ -240,8 +240,8 @@ class VectorImpl
   bool is_owning() const { return owning_; }
 
   /// Serialization for Charm++
-  // clang-tidy: google-runtime-references
-  void pup(PUP::er& p);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
 
  protected:
   std::unique_ptr<value_type[]> owned_data_{};

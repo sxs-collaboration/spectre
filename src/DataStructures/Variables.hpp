@@ -220,8 +220,8 @@ class Variables<tmpl::list<Tags...>> {
       const Variables<TagList>& v);
 
   /// Serialization for Charm++.
-  // clang-tidy: google-runtime-references
-  void pup(PUP::er& p);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
 
   /// @{
   /// \brief Assign a subset of the `Tensor`s from another Variables or a

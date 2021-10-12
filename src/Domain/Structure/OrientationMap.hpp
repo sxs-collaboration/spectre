@@ -83,7 +83,8 @@ class OrientationMap {
   OrientationMap<VolumeDim> inverse_map() const;
 
   /// Serialization for Charm++
-  void pup(PUP::er& p);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
 
  private:
   friend bool operator==(const OrientationMap& lhs, const OrientationMap& rhs) {

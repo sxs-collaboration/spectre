@@ -487,8 +487,8 @@ class Krivodonova<VolumeDim, tmpl::list<Tags...>> {
     Variables<tmpl::list<::Tags::Modal<Tags>...>> modal_volume_data;
     Mesh<VolumeDim> mesh;
 
-    // clang-tidy: google-runtime-references
-    void pup(PUP::er& p) {  // NOLINT
+    // NOLINTNEXTLINE(google-runtime-references)
+    void pup(PUP::er& p) {
       p | modal_volume_data;
       p | mesh;
     }

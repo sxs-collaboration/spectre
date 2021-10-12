@@ -248,8 +248,8 @@ class DataBox<tmpl::list<Tags...>> : private detail::Item<Tags>... {
   template <typename Tag>
   auto& get_mutable_reference();
 
-  // clang-tidy: no non-const references
-  void pup(PUP::er& p) {  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p) {
     using non_subitems_tags =
         tmpl::list_difference<mutable_item_tags,
                               mutable_subitem_tags>;

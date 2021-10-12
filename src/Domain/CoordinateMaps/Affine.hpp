@@ -66,8 +66,8 @@ class Affine {
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, 1, Frame::NoFrame> inv_jacobian(
       const std::array<T, 1>& source_coords) const;
 
-  // clang-tidy: google-runtime-references
-  void pup(PUP::er& p);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
 
   bool is_identity() const { return is_identity_; }
 

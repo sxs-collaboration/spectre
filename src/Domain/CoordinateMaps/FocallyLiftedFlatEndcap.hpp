@@ -211,8 +211,8 @@ class FlatEndcap {
       const std::array<T, 3>& target_coords, const T& lambda_tilde,
       const std::array<double, 3>& projection_point) const;
 
-  // clang-tidy: google runtime references
-  void pup(PUP::er& p);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
 
   static bool is_identity() { return false; }
 

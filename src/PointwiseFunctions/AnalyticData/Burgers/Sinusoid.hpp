@@ -108,8 +108,8 @@ class Sinusoid : public MarkAsAnalyticData {
   tuples::TaggedTuple<Tags::U> variables(const tnsr::I<DataVector, 1>& x,
                                          tmpl::list<Tags::U> /*meta*/) const;
 
-  // clang-tidy: no pass by reference
-  void pup(PUP::er& p);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
 };
 
 bool operator==(const Sinusoid& /*lhs*/, const Sinusoid& /*rhs*/);

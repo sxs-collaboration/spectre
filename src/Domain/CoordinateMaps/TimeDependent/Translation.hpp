@@ -77,8 +77,8 @@ class Translation {
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame> jacobian(
       const std::array<T, Dim>& source_coords) const;
 
-  // clang-tidy: google-runtime-references
-  void pup(PUP::er& p);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
 
   static bool is_identity() { return false; }
 

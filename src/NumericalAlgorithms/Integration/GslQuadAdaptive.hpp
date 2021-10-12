@@ -41,7 +41,8 @@ class GslQuadAdaptiveImpl {
   GslQuadAdaptiveImpl& operator=(GslQuadAdaptiveImpl&& rhs) = default;
   ~GslQuadAdaptiveImpl() = default;
 
-  void pup(PUP::er& p);  // NOLINT(google-runtime-references)
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
 
  protected:
   template <typename IntegrandType>

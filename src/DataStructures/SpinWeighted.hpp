@@ -100,7 +100,8 @@ struct SpinWeighted<T, Spin, false> {
   size_t size() const { return data_.size(); }
 
   /// Serialization for Charm++
-  void pup(PUP::er& p);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
 
  private:
   T data_;
@@ -204,7 +205,8 @@ struct SpinWeighted<T, Spin, true> {
   size_t size() const { return data_.size(); }
 
   /// Serialization for Charm++
-  void pup(PUP::er& p);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
 
  private:
   T data_;

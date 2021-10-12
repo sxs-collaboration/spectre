@@ -63,8 +63,8 @@ class ProductOf2Maps {
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, dim, Frame::NoFrame> jacobian(
       const std::array<T, dim>& source_coords) const;
 
-  // clang-tidy: google-runtime-references
-  void pup(PUP::er& p);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
 
   bool is_identity() const { return is_identity_; }
 
@@ -112,8 +112,8 @@ class ProductOf3Maps {
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, dim, Frame::NoFrame> jacobian(
       const std::array<T, dim>& source_coords) const;
 
-  // clang-tidy: google-runtime-references
-  void pup(PUP::er& p);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
 
   bool is_identity() const { return is_identity_; }
 

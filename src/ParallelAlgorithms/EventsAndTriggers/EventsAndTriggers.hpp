@@ -51,10 +51,8 @@ class EventsAndTriggers {
     }
   }
 
-  // clang-tidy: google-runtime-references
-  void pup(PUP::er& p) {  // NOLINT
-    p | events_and_triggers_;
-  }
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p) { p | events_and_triggers_; }
 
   template <typename F>
   void for_each_event(F&& f) const {

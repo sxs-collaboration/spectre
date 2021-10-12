@@ -65,8 +65,8 @@ class Element {
   /// The number of neighbors this element has
   size_t number_of_neighbors() const { return number_of_neighbors_; }
 
-  // clang-tidy: google-runtime-references
-  void pup(PUP::er& p);  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
 
  private:
   ElementId<VolumeDim> id_{};

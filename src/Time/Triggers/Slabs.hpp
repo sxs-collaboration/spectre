@@ -53,10 +53,8 @@ class Slabs : public Trigger {
     return slabs_->times_near(unsigned_slab)[1] == unsigned_slab;
   }
 
-  // clang-tidy: google-runtime-references
-  void pup(PUP::er& p) override {  // NOLINT
-    p | slabs_;
-  }
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p) override { p | slabs_; }
 
  private:
   std::unique_ptr<TimeSequence<uint64_t>> slabs_{};

@@ -47,10 +47,8 @@ struct TestAlgorithmArrayInstance {
   explicit TestAlgorithmArrayInstance(int ii) : i(ii) {}
   TestAlgorithmArrayInstance() = default;
   int i = 0;
-  // clang-tidy: no non-const references
-  void pup(PUP::er& p) {  // NOLINT
-    p | i;
-  }
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p) { p | i; }
 };
 
 bool operator==(const TestAlgorithmArrayInstance& lhs,

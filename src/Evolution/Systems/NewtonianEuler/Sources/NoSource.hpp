@@ -21,8 +21,8 @@ namespace Sources {
 struct NoSource {
   using sourced_variables = tmpl::list<>;
   using argument_tags = tmpl::list<>;
-  // clang-tidy: google-runtime-references
-  void pup(PUP::er& /*p*/) {}  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& /*p*/) {}
 };
 }  // namespace Sources
 }  // namespace NewtonianEuler

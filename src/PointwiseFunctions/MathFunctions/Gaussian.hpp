@@ -85,8 +85,8 @@ class Gaussian<1, Fr> : public MathFunction<1, Fr> {
   DataVector third_deriv(const DataVector& x) const override;
   using MathFunction<1, Fr>::third_deriv;
 
-  // clang-tidy: google-runtime-references
-  void pup(PUP::er& p) override;  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p) override;
 
  private:
   double amplitude_{};
@@ -178,8 +178,8 @@ class Gaussian : public MathFunction<VolumeDim, Fr> {
   tnsr::iii<DataVector, VolumeDim, Fr> third_deriv(
       const tnsr::I<DataVector, VolumeDim, Fr>& x) const override;
 
-  // clang-tidy: google-runtime-references
-  void pup(PUP::er& p) override;  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p) override;
 
  private:
   double amplitude_{};
