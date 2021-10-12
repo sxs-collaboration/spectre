@@ -8,6 +8,7 @@ add_spectre_library(${LIBRARY})
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
+  ATilde.cpp
   Christoffel.cpp
   DerivChristoffel.cpp
   DerivLapse.cpp
@@ -17,6 +18,7 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  ATilde.hpp
   Christoffel.hpp
   DerivChristoffel.hpp
   DerivLapse.hpp

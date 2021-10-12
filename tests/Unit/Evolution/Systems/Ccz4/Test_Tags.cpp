@@ -19,11 +19,15 @@ void test_simple_tags() {
   TestHelpers::db::test_simple_tag<Ccz4::Tags::ConformalFactor<DataType>>(
       "ConformalFactor");
   TestHelpers::db::test_simple_tag<
+      Ccz4::Tags::ConformalFactorSquared<DataType>>("ConformalFactorSquared");
+  TestHelpers::db::test_simple_tag<
       Ccz4::Tags::ConformalMetric<Dim, Frame, DataType>>(
       "Conformal(SpatialMetric)");
   TestHelpers::db::test_simple_tag<
       Ccz4::Tags::InverseConformalMetric<Dim, Frame, DataType>>(
       "Conformal(InverseSpatialMetric)");
+  TestHelpers::db::test_simple_tag<Ccz4::Tags::ATilde<Dim, Frame, DataType>>(
+      "ATilde");
   TestHelpers::db::test_simple_tag<Ccz4::Tags::LogLapse<DataType>>("LogLapse");
   TestHelpers::db::test_simple_tag<Ccz4::Tags::FieldA<Dim, Frame, DataType>>(
       "FieldA");

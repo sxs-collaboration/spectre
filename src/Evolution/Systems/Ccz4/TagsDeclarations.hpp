@@ -15,6 +15,11 @@ namespace Tags {
 template <typename DataType = DataVector>
 struct ConformalFactor;
 template <typename DataType = DataVector>
+struct ConformalFactorSquared;
+template <size_t Dim, typename Frame = Frame::Inertial,
+          typename DataType = DataVector>
+struct ATilde;
+template <typename DataType = DataVector>
 struct LogLapse;
 template <size_t Dim, typename Frame = Frame::Inertial,
           typename DataType = DataVector>

@@ -28,6 +28,17 @@ struct ConformalFactor : db::SimpleTag {
 };
 
 /*!
+ * \brief The square of the conformal factor that rescales the spatial metric
+ *
+ * \details If \f$\gamma_{ij}\f$ is the spatial metric, then we define
+ * \f$\phi^2 = (det(\gamma_{ij}))^{-1/3}\f$.
+ */
+template <typename DataType>
+struct ConformalFactorSquared : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
+
+/*!
  * \brief The conformally scaled spatial metric
  *
  * \details If \f$\phi\f$ is the conformal factor and \f$\gamma_{ij}\f$ is the
@@ -49,6 +60,16 @@ template <size_t Dim, typename Frame, typename DataType>
 using InverseConformalMetric =
     gr::Tags::Conformal<gr::Tags::InverseSpatialMetric<Dim, Frame, DataType>,
                         -2>;
+
+/*!
+ * \brief The trace-free part of the extrinsic curvature
+ *
+ * \details See `Ccz4::a_tilde()` for details.
+ */
+template <size_t Dim, typename Frame, typename DataType>
+struct ATilde : db::SimpleTag {
+  using type = tnsr::ii<DataType, Dim, Frame>;
+};
 
 /*!
  * \brief The natural log of the lapse
