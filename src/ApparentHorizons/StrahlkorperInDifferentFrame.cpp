@@ -121,6 +121,8 @@ void strahlkorper_in_different_frame(
     return center;
   }();
 
+  const auto center_src = src_strahlkorper.center();
+
   // Find the coordinate radius of the destination surface at each of
   // the angular collocation points of the destination surface. To do
   // so, for each index 's' (corresponding to an angular collocation
@@ -130,7 +132,8 @@ void strahlkorper_in_different_frame(
   // because it might fail if r_dest is out of range of the map. Below
   // there is another version of the function that returns a double.
   const auto radius_function_for_bracketing =
-      [&r_hat, &center_dest, &src_strahlkorper, &domain, &functions_of_time,
+      [&r_hat, &center_src, &center_dest, &src_strahlkorper, &domain,
+       &functions_of_time,
        &time](const double r_dest, const size_t s) -> std::optional<double> {
     // Get destination Cartesian coordinates of the point.
     const tnsr::I<double, 3, DestFrame> x_dest{
@@ -168,14 +171,16 @@ void strahlkorper_in_different_frame(
             get<2>(x_logical.value()) <= 1.0 and
             get<2>(x_logical.value()) >= -1.0) {
           // Find (r_src,theta_src,phi_src) in source coordinates.
-          const double r_src = std::hypot(get<0>(x_src.value()),
-                                          get<1>(x_src.value()),
-                                          get<2>(x_src.value()));
+          const double r_src =
+              std::hypot(get<0>(x_src.value()) - center_src[0],
+                         get<1>(x_src.value()) - center_src[1],
+                         get<2>(x_src.value()) - center_src[2]);
           const double theta_src =
-              atan2(std::hypot(get<0>(x_src.value()), get<1>(x_src.value())),
-                    get<2>(x_src.value()));
-          const double phi_src =
-              atan2(get<1>(x_src.value()), get<0>(x_src.value()));
+              atan2(std::hypot(get<0>(x_src.value()) - center_src[0],
+                               get<1>(x_src.value()) - center_src[1]),
+                    get<2>(x_src.value()) - center_src[2]);
+          const double phi_src = atan2(get<1>(x_src.value()) - center_src[1],
+                                       get<0>(x_src.value()) - center_src[0]);
 
           // Evaluate the radius of the surface at (theta_src,phi_src).
           const double r_surf_src = src_strahlkorper.radius(theta_src, phi_src);
