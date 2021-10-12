@@ -7,7 +7,6 @@ set(LIBRARY_SOURCES
   Test_Averager.cpp
   Test_Controller.cpp
   Test_EventTriggerMetafunctions.cpp
-  Test_Initialization.cpp
   Test_Measurement.cpp
   Test_Metafunctions.cpp
   Test_Tags.cpp
