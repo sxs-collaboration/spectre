@@ -28,6 +28,8 @@ void test_simple_tags() {
       "Conformal(InverseSpatialMetric)");
   TestHelpers::db::test_simple_tag<Ccz4::Tags::ATilde<Dim, Frame, DataType>>(
       "ATilde");
+  TestHelpers::db::test_simple_tag<Ccz4::Tags::TraceATilde<DataType>>(
+      "TraceATilde");
   TestHelpers::db::test_simple_tag<Ccz4::Tags::LogLapse<DataType>>("LogLapse");
   TestHelpers::db::test_simple_tag<Ccz4::Tags::FieldA<Dim, Frame, DataType>>(
       "FieldA");

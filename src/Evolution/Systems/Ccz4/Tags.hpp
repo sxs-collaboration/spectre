@@ -72,6 +72,25 @@ struct ATilde : db::SimpleTag {
 };
 
 /*!
+ * \brief The trace of the trace-free part of the extrinsic curvature
+ *
+ * \details We define:
+ *
+ * \f{align}
+ *     tr\tilde{A} &= \tilde{\gamma}^{ij} \tilde{A}_{ij}
+ * \f}
+ *
+ * where \f$\tilde{\gamma}^{ij}\f$ is the inverse conformal spatial metric
+ * defined by `Ccz4::Tags::InverseConformalMetric` and \f$\tilde{A}_{ij}\f$ is
+ * the trace-free part of the extrinsic curvature defined by
+ * `Ccz4::Tags::ATilde`.
+ */
+template <typename DataType>
+struct TraceATilde : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
+
+/*!
  * \brief The natural log of the lapse
  */
 template <typename DataType>

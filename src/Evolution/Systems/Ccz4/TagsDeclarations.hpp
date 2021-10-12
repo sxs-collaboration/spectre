@@ -20,6 +20,8 @@ template <size_t Dim, typename Frame = Frame::Inertial,
           typename DataType = DataVector>
 struct ATilde;
 template <typename DataType = DataVector>
+struct TraceATilde;
+template <typename DataType = DataVector>
 struct LogLapse;
 template <size_t Dim, typename Frame = Frame::Inertial,
           typename DataType = DataVector>
