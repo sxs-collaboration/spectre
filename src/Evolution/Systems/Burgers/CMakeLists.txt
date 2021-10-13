@@ -30,10 +30,12 @@ target_link_libraries(
   ${LIBRARY}
   PUBLIC
   DataStructures
+  DgSubcell
+  DiscontinuousGalerkin
   Domain
   DomainBoundaryConditions
-  DiscontinuousGalerkin
   ErrorHandling
+  FiniteDifference
   Options
   Parallel
   Utilities
@@ -43,3 +45,5 @@ target_link_libraries(
 
 add_subdirectory(BoundaryConditions)
 add_subdirectory(BoundaryCorrections)
+add_subdirectory(FiniteDifference)
+add_subdirectory(Subcell)
