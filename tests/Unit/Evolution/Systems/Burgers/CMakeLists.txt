@@ -10,6 +10,7 @@ set(LIBRARY_SOURCES
   BoundaryConditions/Test_Periodic.cpp
   BoundaryCorrections/Test_Hll.cpp
   BoundaryCorrections/Test_Rusanov.cpp
+  FiniteDifference/Test_Tag.cpp
   Subcell/Test_ComputeFluxes.cpp
   Subcell/Test_GhostData.cpp
   Subcell/Test_InitialDataTci.cpp
