@@ -110,7 +110,8 @@ void test_shell_construction(
     const double outer_radius, const bool use_equiangular_map,
     const std::array<size_t, 2>& expected_shell_extents,
     const std::vector<std::array<size_t, 3>>& expected_refinement_level,
-    const double aspect_ratio = 1.0, const bool use_logarithmic_map = false,
+    const double aspect_ratio = 1.0, const size_t index_polar_axis = 2,
+    const bool use_logarithmic_map = false,
     const ShellWedges which_wedges = ShellWedges::All,
     const std::tuple<std::pair<std::string, FuncsOfTime>...>&
         expected_functions_of_time = {},
@@ -290,7 +291,7 @@ void test_shell_construction(
     }
   } else {
     const auto compression =
-        CoordinateMaps::EquatorialCompression{aspect_ratio};
+        CoordinateMaps::EquatorialCompression{aspect_ratio, index_polar_axis};
     // Set up translation map:
     using Identity2D = domain::CoordinateMaps::Identity<2>;
     using Affine = domain::CoordinateMaps::Affine;
@@ -417,7 +418,7 @@ void test_shell_boundaries() {
         refinement_level,
         grid_points_r_angular,
         use_equiangular_map,
-        1.0,
+        {{1.0, 2}},
         {},
         {domain::CoordinateMaps::Distribution::Linear},
         ShellWedges::All,
@@ -429,8 +430,8 @@ void test_shell_boundaries() {
     test_shell_construction(
         shell_boundary_conditions, inner_radius, outer_radius,
         use_equiangular_map, grid_points_r_angular,
-        {6, make_array<3>(refinement_level)}, 1.0, false, ShellWedges::All, {},
-        {}, create_boundary_conditions(1, ShellWedges::All));
+        {6, make_array<3>(refinement_level)}, 1.0, 2, false, ShellWedges::All,
+        {}, {}, create_boundary_conditions(1, ShellWedges::All));
   }
 }
 
@@ -466,7 +467,7 @@ void test_shell_factory_equiangular() {
         "  InitialRefinement: 2\n"
         "  InitialGridPoints: [2,3]\n"
         "  UseEquiangularMap: true\n"
-        "  AspectRatio: 1.0\n"
+        "  EquatorialCompression: None\n"
         "  RadialPartitioning: []\n"
         "  RadialDistribution: [Linear]\n"
         "  WhichWedges: All\n"
@@ -480,8 +481,8 @@ void test_shell_factory_equiangular() {
     test_shell_construction(
         dynamic_cast<const creators::Shell&>(*shell), inner_radius,
         outer_radius, true, grid_points_r_angular,
-        {6, make_array<3>(refinement_level)}, 1.0, false, ShellWedges::All, {},
-        {}, expected_boundary_conditions);
+        {6, make_array<3>(refinement_level)}, 1.0, 2, false, ShellWedges::All,
+        {}, {}, expected_boundary_conditions);
   };
   helper(BoundaryCondVector{}, std::false_type{});
   helper(create_boundary_conditions(1, ShellWedges::All), std::true_type{});
@@ -506,7 +507,7 @@ void test_shell_factory_equiangular_time_dependent() {
         "  InitialRefinement: 2\n"
         "  InitialGridPoints: [2,3]\n"
         "  UseEquiangularMap: true\n"
-        "  AspectRatio: 1.0\n"
+        "  EquatorialCompression: None\n"
         "  RadialPartitioning: []\n"
         "  RadialDistribution: [Linear]\n"
         "  WhichWedges: All\n"
@@ -525,7 +526,7 @@ void test_shell_factory_equiangular_time_dependent() {
     test_shell_construction(
         dynamic_cast<const creators::Shell&>(*shell), inner_radius,
         outer_radius, true, grid_points_r_angular,
-        {6, make_array<3>(refinement_level)}, 1.0, false, ShellWedges::All,
+        {6, make_array<3>(refinement_level)}, 1.0, 2, false, ShellWedges::All,
         std::make_tuple(
             std::pair<std::string,
                       domain::FunctionsOfTime::PiecewisePolynomial<2>>{
@@ -563,7 +564,7 @@ void test_shell_factory_equidistant() {
         "  InitialRefinement: 2\n"
         "  InitialGridPoints: [2,3]\n"
         "  UseEquiangularMap: false\n"
-        "  AspectRatio: 1.0\n"
+        "  EquatorialCompression: None\n"
         "  RadialPartitioning: []\n"
         "  RadialDistribution: [Linear]\n"
         "  WhichWedges: All\n"
@@ -577,8 +578,8 @@ void test_shell_factory_equidistant() {
     test_shell_construction(
         dynamic_cast<const creators::Shell&>(*shell), inner_radius,
         outer_radius, false, grid_points_r_angular,
-        {6, make_array<3>(refinement_level)}, 1.0, false, ShellWedges::All, {},
-        {}, expected_boundary_conditions);
+        {6, make_array<3>(refinement_level)}, 1.0, 2, false, ShellWedges::All,
+        {}, {}, expected_boundary_conditions);
   };
   helper(BoundaryCondVector{}, std::false_type{});
   helper(create_boundary_conditions(1, ShellWedges::All), std::true_type{});
@@ -591,14 +592,15 @@ void test_shell_boundaries_aspect_ratio() {
   const size_t refinement_level = 2;
   const std::array<size_t, 2> grid_points_r_angular{{4, 4}};
   const double aspect_ratio = 1.3;
+  const size_t index_polar_axis = 1;
 
   const creators::Shell shell{
       inner_radius,          outer_radius, refinement_level,
-      grid_points_r_angular, false,        aspect_ratio};
+      grid_points_r_angular, false,        {{aspect_ratio, index_polar_axis}}};
   test_physical_separation(shell.create_domain().blocks());
-  test_shell_construction(shell, inner_radius, outer_radius, false,
-                          grid_points_r_angular,
-                          {6, make_array<3>(refinement_level)}, aspect_ratio);
+  test_shell_construction(
+      shell, inner_radius, outer_radius, false, grid_points_r_angular,
+      {6, make_array<3>(refinement_level)}, aspect_ratio, index_polar_axis);
 
   const creators::Shell shell_boundary_condition{
       inner_radius,
@@ -606,7 +608,7 @@ void test_shell_boundaries_aspect_ratio() {
       refinement_level,
       grid_points_r_angular,
       false,
-      aspect_ratio,
+      {{aspect_ratio, index_polar_axis}},
       {},
       {domain::CoordinateMaps::Distribution::Linear},
       ShellWedges::All,
@@ -617,7 +619,7 @@ void test_shell_boundaries_aspect_ratio() {
   test_shell_construction(shell_boundary_condition, inner_radius, outer_radius,
                           false, grid_points_r_angular,
                           {6, make_array<3>(refinement_level)}, aspect_ratio,
-                          false, ShellWedges::All, {}, {},
+                          index_polar_axis, false, ShellWedges::All, {}, {},
                           create_boundary_conditions(1, ShellWedges::All));
 }
 
@@ -640,7 +642,9 @@ void test_shell_factory_aspect_ratio() {
         "  InitialRefinement: 2\n"
         "  InitialGridPoints: [2,3]\n"
         "  UseEquiangularMap: false\n"
-        "  AspectRatio: 2.0        \n"
+        "  EquatorialCompression:\n"
+        "    AspectRatio: 2.0        \n"
+        "    IndexPolarAxis: 1\n"
         "  RadialPartitioning: []\n"
         "  RadialDistribution: [Linear]\n"
         "  WhichWedges: All\n"
@@ -652,11 +656,12 @@ void test_shell_factory_aspect_ratio() {
     const size_t refinement_level = 2;
     const std::array<size_t, 2> grid_points_r_angular{{2, 3}};
     const double aspect_ratio = 2.0;
+    const size_t index_polar_axis = 1;
     test_shell_construction(
         dynamic_cast<const creators::Shell&>(*shell), inner_radius,
         outer_radius, false, grid_points_r_angular,
-        {6, make_array<3>(refinement_level)}, aspect_ratio, false,
-        ShellWedges::All, {}, {}, expected_boundary_conditions);
+        {6, make_array<3>(refinement_level)}, aspect_ratio, index_polar_axis,
+        false, ShellWedges::All, {}, {}, expected_boundary_conditions);
   };
   helper(BoundaryCondVector{}, std::false_type{});
   helper(create_boundary_conditions(1, ShellWedges::All), std::true_type{});
@@ -669,6 +674,7 @@ void test_shell_boundaries_logarithmic_map() {
   const size_t refinement_level = 2;
   const std::array<size_t, 2> grid_points_r_angular{{4, 4}};
   const double aspect_ratio = 1.0;
+  const size_t index_polar_axis = 2;
   const bool use_logarithmic_map = true;
   const std::vector<domain::CoordinateMaps::Distribution> radial_distribution{
       domain::CoordinateMaps::Distribution::Logarithmic};
@@ -678,13 +684,14 @@ void test_shell_boundaries_logarithmic_map() {
                               refinement_level,
                               grid_points_r_angular,
                               false,
-                              aspect_ratio,
+                              {{aspect_ratio, index_polar_axis}},
                               {},
                               radial_distribution};
   test_physical_separation(shell.create_domain().blocks());
-  test_shell_construction(
-      shell, inner_radius, outer_radius, false, grid_points_r_angular,
-      {6, make_array<3>(refinement_level)}, aspect_ratio, use_logarithmic_map);
+  test_shell_construction(shell, inner_radius, outer_radius, false,
+                          grid_points_r_angular,
+                          {6, make_array<3>(refinement_level)}, aspect_ratio,
+                          index_polar_axis, use_logarithmic_map);
 
   const creators::Shell shell_boundary_condition{
       inner_radius,
@@ -692,7 +699,7 @@ void test_shell_boundaries_logarithmic_map() {
       refinement_level,
       grid_points_r_angular,
       false,
-      aspect_ratio,
+      {{aspect_ratio, index_polar_axis}},
       {},
       radial_distribution,
       ShellWedges::All,
@@ -700,16 +707,17 @@ void test_shell_boundaries_logarithmic_map() {
       create_inner_boundary_condition(),
       create_outer_boundary_condition()};
   test_physical_separation(shell_boundary_condition.create_domain().blocks());
-  test_shell_construction(shell_boundary_condition, inner_radius, outer_radius,
-                          false, grid_points_r_angular,
-                          {6, make_array<3>(refinement_level)}, aspect_ratio,
-                          use_logarithmic_map, ShellWedges::All, {}, {},
-                          create_boundary_conditions(1, ShellWedges::All));
+  test_shell_construction(
+      shell_boundary_condition, inner_radius, outer_radius, false,
+      grid_points_r_angular, {6, make_array<3>(refinement_level)}, aspect_ratio,
+      index_polar_axis, use_logarithmic_map, ShellWedges::All, {}, {},
+      create_boundary_conditions(1, ShellWedges::All));
 
   CHECK_THROWS_WITH(
       creators::Shell(
           inner_radius, outer_radius, refinement_level, grid_points_r_angular,
-          false, aspect_ratio, {}, radial_distribution, ShellWedges::All,
+          false, {{aspect_ratio, index_polar_axis}}, {}, radial_distribution,
+          ShellWedges::All,
           std::unique_ptr<
               domain::creators::time_dependence::TimeDependence<3>>{},
           std::make_unique<TestHelpers::domain::BoundaryConditions::
@@ -720,7 +728,8 @@ void test_shell_boundaries_logarithmic_map() {
   CHECK_THROWS_WITH(
       creators::Shell(
           inner_radius, outer_radius, refinement_level, grid_points_r_angular,
-          false, aspect_ratio, {}, radial_distribution, ShellWedges::All,
+          false, {{aspect_ratio, index_polar_axis}}, {}, radial_distribution,
+          ShellWedges::All,
           std::unique_ptr<
               domain::creators::time_dependence::TimeDependence<3>>{},
           create_inner_boundary_condition(),
@@ -732,7 +741,8 @@ void test_shell_boundaries_logarithmic_map() {
   CHECK_THROWS_WITH(
       creators::Shell(
           inner_radius, outer_radius, refinement_level, grid_points_r_angular,
-          false, aspect_ratio, {}, radial_distribution, ShellWedges::All,
+          false, {{aspect_ratio, index_polar_axis}}, {}, radial_distribution,
+          ShellWedges::All,
           std::unique_ptr<
               domain::creators::time_dependence::TimeDependence<3>>{},
           create_inner_boundary_condition(),
@@ -745,7 +755,8 @@ void test_shell_boundaries_logarithmic_map() {
   CHECK_THROWS_WITH(
       creators::Shell(
           inner_radius, outer_radius, refinement_level, grid_points_r_angular,
-          false, aspect_ratio, {}, radial_distribution, ShellWedges::All,
+          false, {{aspect_ratio, index_polar_axis}}, {}, radial_distribution,
+          ShellWedges::All,
           std::unique_ptr<
               domain::creators::time_dependence::TimeDependence<3>>{},
           std::make_unique<TestHelpers::domain::BoundaryConditions::
@@ -775,7 +786,9 @@ void test_shell_factory_logarithmic_map() {
         "  InitialRefinement: 2\n"
         "  InitialGridPoints: [2,3]\n"
         "  UseEquiangularMap: false\n"
-        "  AspectRatio: 2.0        \n"
+        "  EquatorialCompression:\n"
+        "    AspectRatio: 2.0        \n"
+        "    IndexPolarAxis: 2\n"
         "  RadialPartitioning: []\n"
         "  RadialDistribution: [Logarithmic]\n"
         "  WhichWedges: All\n"
@@ -787,12 +800,14 @@ void test_shell_factory_logarithmic_map() {
     const size_t refinement_level = 2;
     const std::array<size_t, 2> grid_points_r_angular{{2, 3}};
     const double aspect_ratio = 2.0;
+    const size_t index_polar_axis = 2;
     const bool use_logarithmic_map = true;
     test_shell_construction(
         dynamic_cast<const creators::Shell&>(*shell), inner_radius,
         outer_radius, false, grid_points_r_angular,
-        {6, make_array<3>(refinement_level)}, aspect_ratio, use_logarithmic_map,
-        ShellWedges::All, {}, {}, expected_boundary_conditions);
+        {6, make_array<3>(refinement_level)}, aspect_ratio, index_polar_axis,
+        use_logarithmic_map, ShellWedges::All, {}, {},
+        expected_boundary_conditions);
   };
   helper(BoundaryCondVector{}, std::false_type{});
   helper(create_boundary_conditions(1, ShellWedges::All), std::true_type{});
@@ -808,7 +823,9 @@ void test_shell_factory_logarithmic_map() {
       "  InitialRefinement: 2\n"
       "  InitialGridPoints: [2,3]\n"
       "  UseEquiangularMap: false\n"
-      "  AspectRatio: 2.0        \n"
+      "  EquatorialCompression:\n"
+      "    AspectRatio: 2.0        \n"
+      "    IndexPolarAxis: 2\n"
       "  RadialPartitioning: [1.5, 2.5]\n"
       "  RadialDistribution: [Logarithmic, Logarithmic, Logarithmic]\n"
       "  WhichWedges: All\n"
@@ -856,7 +873,9 @@ void test_shell_factory_wedges_four_on_equator() {
       "  InitialRefinement: 2\n"
       "  InitialGridPoints: [2,3]\n"
       "  UseEquiangularMap: false\n"
-      "  AspectRatio: 2.0        \n"
+      "  EquatorialCompression:\n"
+      "    AspectRatio: 2.0        \n"
+      "    IndexPolarAxis: 2\n"
       "  RadialPartitioning: []\n"
       "  RadialDistribution: [Logarithmic]\n"
       "  WhichWedges: FourOnEquator\n"
@@ -866,12 +885,13 @@ void test_shell_factory_wedges_four_on_equator() {
   const size_t refinement_level = 2;
   const std::array<size_t, 2> grid_points_r_angular{{2, 3}};
   const double aspect_ratio = 2.0;
+  const size_t index_polar_axis = 2;
   const bool use_logarithmic_map = true;
   const ShellWedges which_wedges = ShellWedges::FourOnEquator;
   test_shell_construction(
       dynamic_cast<const creators::Shell&>(*shell), inner_radius, outer_radius,
       false, grid_points_r_angular, {4, make_array<3>(refinement_level)},
-      aspect_ratio, use_logarithmic_map, which_wedges);
+      aspect_ratio, index_polar_axis, use_logarithmic_map, which_wedges);
 }
 
 void test_shell_factory_wedges_one_along_minus_x() {
@@ -886,7 +906,9 @@ void test_shell_factory_wedges_one_along_minus_x() {
       "  InitialRefinement: 2\n"
       "  InitialGridPoints: [2,3]\n"
       "  UseEquiangularMap: true\n"
-      "  AspectRatio: 2.7        \n"
+      "  EquatorialCompression:\n"
+      "    AspectRatio: 2.7        \n"
+      "    IndexPolarAxis: 0\n"
       "  RadialPartitioning: []\n"
       "  RadialDistribution: [Linear]\n"
       "  WhichWedges: OneAlongMinusX \n"
@@ -896,12 +918,13 @@ void test_shell_factory_wedges_one_along_minus_x() {
   const size_t refinement_level = 2;
   const std::array<size_t, 2> grid_points_r_angular{{2, 3}};
   const double aspect_ratio = 2.7;
+  const size_t index_polar_axis = 0;
   const bool use_logarithmic_map = false;
   const ShellWedges which_wedges = ShellWedges::OneAlongMinusX;
   test_shell_construction(
       dynamic_cast<const creators::Shell&>(*shell), inner_radius, outer_radius,
       true, grid_points_r_angular, {1, make_array<3>(refinement_level)},
-      aspect_ratio, use_logarithmic_map, which_wedges);
+      aspect_ratio, index_polar_axis, use_logarithmic_map, which_wedges);
 }
 
 // Tests that the underlying element structure is the same regardless of
@@ -924,6 +947,7 @@ void test_radial_block_layers(const double inner_radius,
   const std::array<size_t, 2> grid_points_r_angular{{2, 3}};
   const bool use_equiangular_map = true;
   const double aspect_ratio = 1.0;
+  const size_t index_polar_axis = 2;
   const ShellWedges which_wedges = ShellWedges::OneAlongMinusX;
   // Points on the interior of Blocks used to check Block structure:
   DataVector x_in_block_interior(number_of_divisions);
@@ -969,9 +993,11 @@ void test_radial_block_layers(const double inner_radius,
       use_logarithmic_map ? domain::CoordinateMaps::Distribution::Logarithmic
                           : domain::CoordinateMaps::Distribution::Linear);
   const creators::Shell shell{
-      inner_radius,          outer_radius,        refinement_level,
-      grid_points_r_angular, use_equiangular_map, aspect_ratio,
-      radial_partitions,     radial_distribution, which_wedges};
+      inner_radius,        outer_radius,
+      refinement_level,    grid_points_r_angular,
+      use_equiangular_map, {{aspect_ratio, index_polar_axis}},
+      radial_partitions,   radial_distribution,
+      which_wedges};
   auto domain = shell.create_domain();
   const auto blogical_coords =
       block_logical_coordinates(domain, interior_inertial_coords);

@@ -134,7 +134,8 @@ test_wedge_map_generation(double inner_radius, double outer_radius,
                           bool use_equiangular_map,
                           double x_coord_of_shell_center = 0.0,
                           bool use_half_wedges = false,
-                          double aspect_ratio = 1.0) {
+                          double aspect_ratio = 1.0,
+                          size_t index_polar_axis = 2) {
   using Wedge3DMap = CoordinateMaps::Wedge<3>;
   using Identity2D = CoordinateMaps::Identity<2>;
   using Affine = CoordinateMaps::Affine;
@@ -142,7 +143,8 @@ test_wedge_map_generation(double inner_radius, double outer_radius,
       Affine{-1.0, 1.0, -1.0 + x_coord_of_shell_center,
              1.0 + x_coord_of_shell_center},
       Identity2D{});
-  const auto compression = CoordinateMaps::EquatorialCompression{aspect_ratio};
+  const auto compression =
+      CoordinateMaps::EquatorialCompression{aspect_ratio, index_polar_axis};
 
   if (use_half_wedges) {
     using Halves = Wedge3DMap::WedgeHalves;
@@ -275,15 +277,15 @@ void test_wedge_map_generation_against_domain_helpers(
     double inner_radius, double outer_radius, double inner_sphericity,
     double outer_sphericity, bool use_equiangular_map,
     double x_coord_of_shell_center = 0.0, bool use_half_wedges = false,
-    double aspect_ratio = 1.0) {
+    double aspect_ratio = 1.0, size_t index_polar_axis = 2) {
   const auto expected_coord_maps = test_wedge_map_generation(
       inner_radius, outer_radius, inner_sphericity, outer_sphericity,
       use_equiangular_map, x_coord_of_shell_center, use_half_wedges,
-      aspect_ratio);
+      aspect_ratio, index_polar_axis);
   const auto maps = sph_wedge_coordinate_maps<Frame::Inertial>(
       inner_radius, outer_radius, inner_sphericity, outer_sphericity,
       use_equiangular_map, x_coord_of_shell_center, use_half_wedges,
-      aspect_ratio);
+      aspect_ratio, index_polar_axis);
   CHECK(maps.size() == expected_coord_maps.size());
   for (size_t i = 0; i < expected_coord_maps.size(); i++) {
     check_if_maps_are_equal(*expected_coord_maps[i], *maps[i]);
@@ -304,13 +306,14 @@ void test_wedge_map_generation_against_domain_helpers(
   const double x_coord_of_shell_center = 0.1;
   const bool use_half_wedges = true;
   const double aspect_ratio = 1.0;
+  const size_t index_polar_axis = 1;
   const std::vector<domain::CoordinateMaps::Distribution> radial_distribution{
       domain::CoordinateMaps::Distribution::Logarithmic};
   const ShellWedges which_wedges = ShellWedges::FourOnEquator;
   static_cast<void>(sph_wedge_coordinate_maps<Frame::Inertial>(
       inner_radius, outer_radius, inner_sphericity, outer_sphericity,
       use_equiangular_map, x_coord_of_shell_center, use_half_wedges,
-      aspect_ratio, {}, radial_distribution, which_wedges));
+      aspect_ratio, index_polar_axis, {}, radial_distribution, which_wedges));
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
@@ -329,6 +332,7 @@ void test_wedge_map_generation_against_domain_helpers(
   const double x_coord_of_shell_center = 0.1;
   const bool use_half_wedges = true;
   const double aspect_ratio = 1.0;
+  const double index_polar_axis = 1;
   std::vector<double> radial_partitioning{1., 1.5};
   const std::vector<domain::CoordinateMaps::Distribution> radial_distribution{
       domain::CoordinateMaps::Distribution::Logarithmic,
@@ -338,7 +342,8 @@ void test_wedge_map_generation_against_domain_helpers(
   static_cast<void>(sph_wedge_coordinate_maps<Frame::Inertial>(
       inner_radius, outer_radius, inner_sphericity, outer_sphericity,
       use_equiangular_map, x_coord_of_shell_center, use_half_wedges,
-      aspect_ratio, radial_partitioning, radial_distribution, which_wedges));
+      aspect_ratio, index_polar_axis, radial_partitioning, radial_distribution,
+      which_wedges));
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
@@ -428,9 +433,11 @@ void test_six_wedge_directions_compressed_equiangular() {
   const bool use_equiangular_map = true;
   const bool use_half_wedges = false;
   const double aspect_ratio = 6.0;
+  const size_t index_polar_axis = 2;
   test_wedge_map_generation_against_domain_helpers(
       inner_radius, outer_radius, inner_sphericity, outer_sphericity,
-      use_equiangular_map, 0.0, use_half_wedges, aspect_ratio);
+      use_equiangular_map, 0.0, use_half_wedges, aspect_ratio,
+      index_polar_axis);
 }
 
 void test_six_wedge_directions_compressed_equidistant() {
@@ -442,9 +449,11 @@ void test_six_wedge_directions_compressed_equidistant() {
   const bool use_equiangular_map = false;
   const bool use_half_wedges = false;
   const double aspect_ratio = 0.6;
+  const size_t index_polar_axis = 1;
   test_wedge_map_generation_against_domain_helpers(
       inner_radius, outer_radius, inner_sphericity, outer_sphericity,
-      use_equiangular_map, 0.0, use_half_wedges, aspect_ratio);
+      use_equiangular_map, 0.0, use_half_wedges, aspect_ratio,
+      index_polar_axis);
 }
 
 void test_six_wedge_directions_compressed_translated_equiangular() {
@@ -456,11 +465,12 @@ void test_six_wedge_directions_compressed_translated_equiangular() {
   const bool use_equiangular_map = true;
   const bool use_half_wedges = false;
   const double aspect_ratio = 6.0;
+  const size_t index_polar_axis = 0;
   const double x_coord_of_shell_center = 2.7;
   test_wedge_map_generation_against_domain_helpers(
       inner_radius, outer_radius, inner_sphericity, outer_sphericity,
       use_equiangular_map, x_coord_of_shell_center, use_half_wedges,
-      aspect_ratio);
+      aspect_ratio, index_polar_axis);
 }
 
 void test_six_wedge_directions_compressed_translated_equidistant() {
@@ -472,11 +482,12 @@ void test_six_wedge_directions_compressed_translated_equidistant() {
   const bool use_equiangular_map = false;
   const bool use_half_wedges = false;
   const double aspect_ratio = 0.6;
+  const size_t index_polar_axis = 2;
   const double x_coord_of_shell_center = 2.7;
   test_wedge_map_generation_against_domain_helpers(
       inner_radius, outer_radius, inner_sphericity, outer_sphericity,
       use_equiangular_map, x_coord_of_shell_center, use_half_wedges,
-      aspect_ratio);
+      aspect_ratio, index_polar_axis);
 }
 
 void test_ten_wedge_directions_compressed_translated_equiangular() {
@@ -488,11 +499,12 @@ void test_ten_wedge_directions_compressed_translated_equiangular() {
   const bool use_equiangular_map = true;
   const bool use_half_wedges = true;
   const double aspect_ratio = 0.6;
+  const size_t index_polar_axis = 1;
   const double x_coord_of_shell_center = 2.7;
   test_wedge_map_generation_against_domain_helpers(
       inner_radius, outer_radius, inner_sphericity, outer_sphericity,
       use_equiangular_map, x_coord_of_shell_center, use_half_wedges,
-      aspect_ratio);
+      aspect_ratio, index_polar_axis);
 }
 
 void test_ten_wedge_directions_compressed_translated_equidistant() {
@@ -504,11 +516,12 @@ void test_ten_wedge_directions_compressed_translated_equidistant() {
   const bool use_equiangular_map = false;
   const bool use_half_wedges = true;
   const double aspect_ratio = 0.6;
+  const size_t index_polar_axis = 0;
   const double x_coord_of_shell_center = 2.7;
   test_wedge_map_generation_against_domain_helpers(
       inner_radius, outer_radius, inner_sphericity, outer_sphericity,
       use_equiangular_map, x_coord_of_shell_center, use_half_wedges,
-      aspect_ratio);
+      aspect_ratio, index_polar_axis);
 }
 
 void test_wedge_map_generation() {

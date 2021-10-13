@@ -155,7 +155,7 @@ auto sph_wedge_coordinate_maps(
     double inner_radius, double outer_radius, double inner_sphericity,
     double outer_sphericity, bool use_equiangular_map,
     double x_coord_of_shell_center = 0.0, bool use_half_wedges = false,
-    double aspect_ratio = 1.0,
+    double aspect_ratio = 1.0, size_t index_polar_axis = 2,
     const std::vector<double>& radial_partitioning = {},
     const std::vector<domain::CoordinateMaps::Distribution>&
         radial_distribution = {domain::CoordinateMaps::Distribution::Linear},

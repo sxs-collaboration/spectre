@@ -28,7 +28,7 @@ DomainCreator:
     InitialRefinement: 0
     InitialGridPoints: [4, 4]
     UseEquiangularMap: True
-    AspectRatio: 1.
+    EquatorialCompression: None
     WhichWedges: All
     RadialPartitioning: []
     RadialDistribution: [Logarithmic]

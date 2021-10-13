@@ -29,7 +29,9 @@ namespace domain::creators {
 Shell::Shell(
     double inner_radius, double outer_radius, size_t initial_refinement,
     std::array<size_t, 2> initial_number_of_grid_points,
-    bool use_equiangular_map, double aspect_ratio,
+    bool use_equiangular_map,
+    std::optional<domain::creators::Shell::EquatorialCompressionOptions>
+        equatorial_compression,
     std::vector<double> radial_partitioning,
     std::vector<domain::CoordinateMaps::Distribution> radial_distribution,
     ShellWedges which_wedges,
@@ -45,7 +47,6 @@ Shell::Shell(
       initial_refinement_(initial_refinement),
       initial_number_of_grid_points_(initial_number_of_grid_points),
       use_equiangular_map_(use_equiangular_map),
-      aspect_ratio_(aspect_ratio),
       radial_partitioning_(std::move(radial_partitioning)),
       radial_distribution_(std::move(radial_distribution)),
       which_wedges_(which_wedges),
@@ -53,6 +54,13 @@ Shell::Shell(
       inner_boundary_condition_(std::move(inner_boundary_condition)),
       outer_boundary_condition_(std::move(outer_boundary_condition)) {
   number_of_layers_ = radial_partitioning_.size() + 1;
+  if (equatorial_compression.has_value()) {
+    aspect_ratio_ = equatorial_compression.value().aspect_ratio;
+    index_polar_axis_ = equatorial_compression.value().index_polar_axis;
+  } else {
+    aspect_ratio_ = 1.0;
+    index_polar_axis_ = 2;
+  }
   if (time_dependence_ == nullptr) {
     time_dependence_ =
         std::make_unique<domain::creators::time_dependence::None<3>>();
@@ -128,8 +136,8 @@ Domain<3> Shell::create_domain() const {
       CoordinateMapBase<Frame::BlockLogical, Frame::Inertial, 3>>>
       coord_maps = sph_wedge_coordinate_maps<Frame::Inertial>(
           inner_radius_, outer_radius_, 1.0, 1.0, use_equiangular_map_, 0.0,
-          false, aspect_ratio_, radial_partitioning_, radial_distribution_,
-          which_wedges_);
+          false, aspect_ratio_, index_polar_axis_, radial_partitioning_,
+          radial_distribution_, which_wedges_);
 
   std::vector<DirectionMap<
       3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>

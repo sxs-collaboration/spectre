@@ -284,7 +284,8 @@ void fuzzy_test_block_and_element_logical_coordinates_unrefined(
 
 void fuzzy_test_block_and_element_logical_coordinates_shell(
     const size_t n_pts) {
-  const auto shell = domain::creators::Shell(1.5, 2.5, 2, {{1, 1}}, true, 1.0);
+  const auto shell =
+      domain::creators::Shell(1.5, 2.5, 2, {{1, 1}}, true, {{1.0, 2}});
   const auto domain = shell.create_domain();
   fuzzy_test_block_and_element_logical_coordinates_unrefined(domain, n_pts);
   fuzzy_test_block_and_element_logical_coordinates(
