@@ -476,7 +476,7 @@ ${{ env.CACHE_KEY_SUFFIX }}"
           make unit-test-coverage
       - name: Upload coverage report to codecov.io
         if: matrix.COVERAGE == 'ON'
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v2
         with:
           file: /work/build/tmp/coverage.info
       - name: Upload coverage report to coveralls.io
