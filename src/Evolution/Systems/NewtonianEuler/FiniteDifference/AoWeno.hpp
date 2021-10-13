@@ -75,7 +75,8 @@ class AoWeno53Prim : public Reconstructor<Dim> {
   using options =
       tmpl::list<GammaHi, GammaLo, Epsilon, NonlinearWeightExponent>;
   static constexpr Options::String help{
-      "Monotised central reconstruction scheme using primitive variables."};
+      "Adaptive-order WENO reconstruction hybridizing orders 5 and 3 using "
+      "primitive variables."};
 
   AoWeno53Prim() = default;
   AoWeno53Prim(AoWeno53Prim&&) = default;
