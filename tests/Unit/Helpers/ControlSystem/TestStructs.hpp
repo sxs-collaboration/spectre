@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <cstddef>
 #include <string>
 
 #include "ControlSystem/Protocols/ControlSystem.hpp"
@@ -13,28 +14,27 @@
 
 namespace control_system::TestHelpers {
 namespace TestStructs_detail {
-struct LabelA;
+struct LabelA {};
 }  // namespace TestStructs_detail
 
 template <typename Label>
-struct Measurement
-    : tt::ConformsTo<control_system::protocols::Measurement> {
+struct Measurement : tt::ConformsTo<control_system::protocols::Measurement> {
   using submeasurements = tmpl::list<>;
 };
 
-static_assert(
-    tt::assert_conforms_to<Measurement<TestStructs_detail::LabelA>,
-                           control_system::protocols::Measurement>);
+static_assert(tt::assert_conforms_to<Measurement<TestStructs_detail::LabelA>,
+                                     control_system::protocols::Measurement>);
 
-template <typename Label, typename Measurement>
+template <size_t DerivOrder, typename Label, typename Measurement>
 struct System : tt::ConformsTo<control_system::protocols::ControlSystem> {
   static std::string name() { return pretty_type::short_name<Label>(); }
   using measurement = Measurement;
   using simple_tags = tmpl::list<>;
+  static constexpr size_t deriv_order = DerivOrder;
 };
 
 static_assert(
-    tt::assert_conforms_to<System<TestStructs_detail::LabelA,
+    tt::assert_conforms_to<System<2, TestStructs_detail::LabelA,
                                   Measurement<TestStructs_detail::LabelA>>,
                            control_system::protocols::ControlSystem>);
 }  // namespace control_system::TestHelpers

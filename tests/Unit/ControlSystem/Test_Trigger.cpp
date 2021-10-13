@@ -33,8 +33,8 @@ struct LabelA {};
 struct LabelB {};
 
 using measurement = control_system::TestHelpers::Measurement<LabelA>;
-using SystemA = control_system::TestHelpers::System<LabelA, measurement>;
-using SystemB = control_system::TestHelpers::System<LabelB, measurement>;
+using SystemA = control_system::TestHelpers::System<2, LabelA, measurement>;
+using SystemB = control_system::TestHelpers::System<2, LabelB, measurement>;
 
 using MeasureTrigger = control_system::Trigger<tmpl::list<SystemA, SystemB>>;
 

@@ -36,7 +36,7 @@ DataVector Controller<DerivOrder>::operator()(
     double fact_denom = 1.0;
     for (size_t j = i; j-- > 0;) {
       // update the factorial coefficient of this term in the series expansion
-      fact_denom *= (i - j);
+      fact_denom *= static_cast<double>(i - j);
       const double t_offset = (j == 0 ? q_dt : deriv_dt);
       gsl::at(coefs, i) += gsl::at(coefs0, j) * t_offset / fact_denom;
       // update the time coefficients for the next term in the series expansion
@@ -54,7 +54,7 @@ DataVector Controller<DerivOrder>::operator()(
   double fact_denom = 1.0;
   for (size_t i = DerivOrder; i-- > 0;) {
     // update the factorial coefficient of this term in the series expansion
-    fact_denom *= (DerivOrder - i);
+    fact_denom *= static_cast<double>(DerivOrder - i);
     const double t_offset = (i == 0 ? q_dt : deriv_dt);
     denom += gsl::at(coefs0, i) * t_offset / fact_denom;
     // update the time coefficients for the next term in the series expansion
@@ -73,5 +73,20 @@ DataVector Controller<DerivOrder>::operator()(
   return control_signal / denom;
 }
 
+template <size_t DerivOrder>
+bool operator==(const Controller<DerivOrder>& lhs,
+                const Controller<DerivOrder>& rhs) {
+  return lhs.update_fraction_ == rhs.update_fraction_ and
+         lhs.time_between_updates_ == rhs.time_between_updates_;
+}
+
+template <size_t DerivOrder>
+bool operator!=(const Controller<DerivOrder>& lhs,
+                const Controller<DerivOrder>& rhs) {
+  return not(lhs == rhs);
+}
+
 // explicit instantiations
 template class Controller<2>;
+template bool operator==(const Controller<2>&, const Controller<2>&);
+template bool operator!=(const Controller<2>&, const Controller<2>&);

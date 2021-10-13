@@ -26,6 +26,10 @@
 #include "Utilities/TMPL.hpp"
 
 namespace control_system {
+/// \cond
+template <size_t DerivOrder>
+struct OptionHolder;
+/// \endcond
 
 /// \ingroup ControlSystemGroup
 /// All option tags related to the control system
@@ -34,37 +38,23 @@ namespace OptionTags {
 /// \ingroup ControlSystemGroup
 /// Options group for all control system options
 struct ControlSystemGroup {
-  static std::string name() { return "ControlSystem"; }
-  static constexpr Options::String help = {"All options for a control system."};
+  static std::string name() { return "ControlSystems"; }
+  static constexpr Options::String help = {
+      "Options for all control systems used in a simulation."};
 };
 
 /// \ingroup OptionTagsGroup
 /// \ingroup ControlSystemGroup
-/// Options for the averager
-template <size_t DerivOrder>
-struct Averager {
-  using type = ::Averager<DerivOrder>;
-  static constexpr Options::String help = {"Options for the averager."};
-  using group = OptionTags::ControlSystemGroup;
-};
-
-/// \ingroup OptionTagsGroup
-/// \ingroup ControlSystemGroup
-/// Options for the controller
-template <size_t DerivOrder>
-struct Controller {
-  using type = ::Controller<DerivOrder>;
-  static constexpr Options::String help = {"Options for the controller."};
-  using group = OptionTags::ControlSystemGroup;
-};
-
-/// \ingroup OptionTagsGroup
-/// \ingroup ControlSystemGroup
-/// Options for the timescale tuner
-struct TimescaleTuner {
-  using type = ::TimescaleTuner;
-  static constexpr Options::String help = {"Options for the timescale tuner."};
-  using group = OptionTags::ControlSystemGroup;
+/// Option tag for each individual control system. The name of this option is
+/// the name of the \p ControlSystem struct it is templated on. This way all
+/// control systems will have a unique name.
+template <typename ControlSystem>
+struct ControlSystemInputs {
+  static constexpr size_t deriv_order = ControlSystem::deriv_order;
+  using type = control_system::OptionHolder<deriv_order>;
+  static constexpr Options::String help{"Options for a control system."};
+  static std::string name() { return ControlSystem::name(); }
+  using group = ControlSystemGroup;
 };
 }  // namespace OptionTags
 
@@ -77,20 +67,31 @@ namespace Tags {
 struct ControlSystemName : db::SimpleTag {
   using type = std::string;
 };
+
+/// \ingroup DataBoxTagsGroup
+/// \ingroup ControlSystemGroup
+/// DataBox tag for all options of a single control system.
+///
+/// Only intended to be used during the initialization phase as a way of getting
+/// options from multiple control systems into their corresponding components
+/// DataBox.
+template <typename ControlSystem>
+struct ControlSystemInputs : db::SimpleTag {
+  static constexpr size_t deriv_order = ControlSystem::deriv_order;
+  using type = control_system::OptionHolder<deriv_order>;
+  using option_tags =
+      tmpl::list<OptionTags::ControlSystemInputs<ControlSystem>>;
+
+  static constexpr bool pass_metavariables = false;
+  static type create_from_options(const type& option) { return option; }
+};
+
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ControlSystemGroup
 /// DataBox tag for the averager
 template <size_t DerivOrder>
 struct Averager : db::SimpleTag {
   using type = ::Averager<DerivOrder>;
-
-  static constexpr bool pass_metavariables = false;
-  using option_tags = tmpl::list<OptionTags::Averager<DerivOrder>>;
-
-  static auto create_from_options(
-      const ::Averager<DerivOrder>& averager) {
-    return averager;
-  }
 };
 
 /// \ingroup DataBoxTagsGroup
@@ -98,14 +99,6 @@ struct Averager : db::SimpleTag {
 /// DataBox tag for the timescale tuner
 struct TimescaleTuner : db::SimpleTag {
   using type = ::TimescaleTuner;
-
-  static constexpr bool pass_metavariables = false;
-  using option_tags = tmpl::list<OptionTags::TimescaleTuner>;
-
-  static auto create_from_options(
-      const ::TimescaleTuner& timescale_tuner) {
-    return timescale_tuner;
-  }
 };
 
 /// \ingroup DataBoxTagsGroup
@@ -114,15 +107,6 @@ struct TimescaleTuner : db::SimpleTag {
 template <size_t DerivOrder>
 struct Controller : db::SimpleTag {
   using type = ::Controller<DerivOrder>;
-
-  static constexpr bool pass_metavariables = false;
-
-  using option_tags = tmpl::list<OptionTags::Controller<DerivOrder>>;
-
-  static auto create_from_options(
-      const ::Controller<DerivOrder>& controller) {
-    return controller;
-  }
 };
 
 /// \ingroup DataBoxTagsGroup
@@ -184,4 +168,64 @@ struct MeasurementTimescales : db::SimpleTag {
   }
 };
 }  // namespace Tags
+
+/// \ingroup ControlSystemGroup
+/// Holds all options for a single control system
+///
+/// This struct collects all the options for a given control system during
+/// option parsing. Then during initialization, the options can be retrieved via
+/// their public member names and assigned to their corresponding DataBox tags.
+template <size_t DerivOrder>
+struct OptionHolder {
+  struct Averager {
+    using type = ::Averager<DerivOrder>;
+    static constexpr Options::String help = {
+        "Averages the derivatives of the control error and possibly the "
+        "control error itself."};
+  };
+
+  struct Controller {
+    using type = ::Controller<DerivOrder>;
+    static constexpr Options::String help = {
+        "Computes the control signal which will be used to reset the functions "
+        "of time."};
+  };
+
+  struct TimescaleTuner {
+    using type = ::TimescaleTuner;
+    static constexpr Options::String help = {
+        "Keeps track of the damping timescales for the control system upon "
+        "which other timescales are based of off."};
+  };
+
+  using options = tmpl::list<Averager, Controller, TimescaleTuner>;
+  static constexpr Options::String help = {"Options for a control system."};
+
+  OptionHolder(::Averager<DerivOrder> input_averager,
+               ::Controller<DerivOrder> input_controller,
+               ::TimescaleTuner input_tuner)
+      : averager(std::move(input_averager)),
+        controller(std::move(input_controller)),
+        tuner(std::move(input_tuner)) {}
+
+  OptionHolder() = default;
+  OptionHolder(const OptionHolder& /*rhs*/) = default;
+  OptionHolder& operator=(const OptionHolder& /*rhs*/) = default;
+  OptionHolder(OptionHolder&& /*rhs*/) = default;
+  OptionHolder& operator=(OptionHolder&& /*rhs*/) = default;
+  ~OptionHolder() = default;
+
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p) {
+    p | averager;
+    p | controller;
+    p | tuner;
+  };
+
+  // These members are specifically made pubic for easy access during
+  // initialization
+  ::Averager<DerivOrder> averager{};
+  ::Controller<DerivOrder> controller{};
+  ::TimescaleTuner tuner{};
+};
 }  // namespace control_system

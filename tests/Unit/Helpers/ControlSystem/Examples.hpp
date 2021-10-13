@@ -3,10 +3,12 @@
 
 #pragma once
 
+#include <cstddef>
+
+#include "ControlSystem/Component.hpp"
 #include "ControlSystem/Protocols/ControlSystem.hpp"
 #include "ControlSystem/Protocols/Measurement.hpp"
 #include "ControlSystem/Protocols/Submeasurement.hpp"
-#include "ControlSystem/Component.hpp"
 #include "ControlSystem/RunCallbacks.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
@@ -95,6 +97,8 @@ struct ExampleControlSystem
   using measurement = ExampleMeasurement;
 
   using simple_tags = tmpl::list<>;
+
+  static constexpr size_t deriv_order = 2;
 
   // This is not part of the required interface, but is used by this
   // control system to store the measurement data.  Most control

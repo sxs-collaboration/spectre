@@ -5,8 +5,10 @@
 
 #include <array>
 #include <cstddef>
+#include <limits>
 
 #include "DataStructures/DataVector.hpp"
+#include "Options/Options.hpp"
 
 /// \cond
 namespace PUP {
@@ -38,6 +40,22 @@ class er;
 template <size_t DerivOrder>
 class Controller {
  public:
+  struct UpdateFraction {
+    using type = double;
+    static constexpr Options::String help = {
+        "Fraction of damping timescale used to determine how often to update "
+        "functions of time."};
+  };
+
+  using options = tmpl::list<UpdateFraction>;
+  static constexpr Options::String help{
+      "Computes control signal used to reset highest derivative of a function "
+      "of time. Also determines when a function of time needs to be updated "
+      "next."};
+
+  Controller(const double update_fraction)
+      : update_fraction_(update_fraction) {}
+
   Controller() = default;
   Controller(Controller&&) = default;
   Controller& operator=(Controller&&) = default;
@@ -45,10 +63,36 @@ class Controller {
   Controller& operator=(const Controller&) = default;
   ~Controller() = default;
 
-  void pup(PUP::er& /*p*/) {}
-
   DataVector operator()(
       const DataVector& timescales,
       const std::array<DataVector, DerivOrder + 1>& q_and_derivs,
       double q_time_offset, double deriv_time_offset) const;
+
+  /// Takes the current minimum of all timescales and uses that to set the time
+  /// between updates
+  void assign_time_between_updates(const double current_min_timescale) {
+    time_between_updates_ = update_fraction_ * current_min_timescale;
+  }
+
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p) {
+    p | update_fraction_;
+    p | time_between_updates_;
+  }
+
+  template <size_t LocalDerivOrder>
+  // NOLINTNEXTLINE(readability-redundant-declaration) false positive
+  friend bool operator==(const Controller<LocalDerivOrder>& lhs,
+                         const Controller<LocalDerivOrder>& rhs);
+
+ private:
+  // If update_fraction_ isn't set we need to error
+  double update_fraction_{std::numeric_limits<double>::signaling_NaN()};
+  // If this time_between_triggers_ isn't set, the default should just be that
+  // the functions of time are never updated (i.e. infinity)
+  double time_between_updates_{std::numeric_limits<double>::infinity()};
 };
+
+template <size_t DerivOrder>
+bool operator!=(const Controller<DerivOrder>& lhs,
+                const Controller<DerivOrder>& rhs);
