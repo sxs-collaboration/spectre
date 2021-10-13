@@ -14,6 +14,7 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  ComputeFluxes.hpp
   GhostData.hpp
   InitialDataTci.hpp
   Subcell.hpp
