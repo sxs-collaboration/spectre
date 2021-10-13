@@ -35,31 +35,6 @@ want to load the modules, source the shell file for your system and run
 8. Build the targets you are interested in by running, e.g.
    `make -j4 test-executables`
 
-## BlueWaters at the National Center for Supercomputing Applications
-
-First run `module load bwpy && bwpy-environ`, then follow the general
-instructions using `bluewaters` as the `SYSTEM_TO_RUN_ON`. Note that once the
-installation is completed, you will still need to run
-`module load bwpy && bwpy-environ` in order to run SpECTRE. Also note that
-adding this command to your `.bashrc` may cause BlueWaters to hang; you must
-run this command from the command line.
-
-#### Running tests on BlueWaters
-
-You cannot just run `make test` or `ctest` on BlueWaters.
-To run the tests:
-1. Get an interactive node using, e.g. `qsub -q debug -I -l nodes=1:ppn=16:xe -l
-   walltime=00:30:00` or see the [BlueWaters documentation]
-   (https://bluewaters.ncsa.illinois.edu/interactive-jobs)
-2. Setup the bwpy environment `module load bwpy && bwpy-environ`
-3. Run the `module use` command you did earlier
-4. Load the module using the `spectre_load_modules` command
-5. Run
-   ```
-   aprun -n1 -d1 -- bwpy-environ -- \
-     $SPECTRE_HOME/build/bin/NonFailureTestsRunTests.sh
-   ```
-
 ## Cedar, Graham, and Niagara at ComputeCanada
 
 Use `compute_canada` as the `SYSTEM_TO_RUN_ON` in the general instructions.
