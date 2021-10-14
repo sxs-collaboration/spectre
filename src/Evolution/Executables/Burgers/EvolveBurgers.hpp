@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <cstddef>
 #include <cstdint>
 #include <vector>
 
@@ -13,6 +14,17 @@
 #include "Domain/Tags.hpp"
 #include "Evolution/Actions/RunEventsAndDenseTriggers.hpp"
 #include "Evolution/ComputeTags.hpp"
+#include "Evolution/DgSubcell/Actions/Initialize.hpp"
+#include "Evolution/DgSubcell/Actions/Labels.hpp"
+#include "Evolution/DgSubcell/Actions/ReconstructionCommunication.hpp"
+#include "Evolution/DgSubcell/Actions/SelectNumericalMethod.hpp"
+#include "Evolution/DgSubcell/Actions/TakeTimeStep.hpp"
+#include "Evolution/DgSubcell/Actions/TciAndRollback.hpp"
+#include "Evolution/DgSubcell/Actions/TciAndSwitchToDg.hpp"
+#include "Evolution/DgSubcell/Events/ObserveFields.hpp"
+#include "Evolution/DgSubcell/NeighborReconstructedFaceSolution.hpp"
+#include "Evolution/DgSubcell/PrepareNeighborData.hpp"
+#include "Evolution/DgSubcell/Tags/TciStatus.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ApplyBoundaryCorrections.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivative.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"  // IWYU pragma: keep
@@ -31,6 +43,15 @@
 #include "Evolution/Systems/Burgers/BoundaryConditions/Factory.hpp"
 #include "Evolution/Systems/Burgers/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/Burgers/BoundaryCorrections/RegisterDerived.hpp"
+#include "Evolution/Systems/Burgers/FiniteDifference/Factory.hpp"
+#include "Evolution/Systems/Burgers/FiniteDifference/RegisterDerivedWithCharm.hpp"
+#include "Evolution/Systems/Burgers/FiniteDifference/Tags.hpp"
+#include "Evolution/Systems/Burgers/Subcell/GhostData.hpp"
+#include "Evolution/Systems/Burgers/Subcell/InitialDataTci.hpp"
+#include "Evolution/Systems/Burgers/Subcell/NeighborPackagedData.hpp"
+#include "Evolution/Systems/Burgers/Subcell/TciOnDgGrid.hpp"
+#include "Evolution/Systems/Burgers/Subcell/TciOnFdGrid.hpp"
+#include "Evolution/Systems/Burgers/Subcell/TimeDerivative.hpp"
 #include "Evolution/Systems/Burgers/System.hpp"
 #include "IO/Observer/Actions/RegisterEvents.hpp"
 #include "IO/Observer/Helpers.hpp"
@@ -63,12 +84,12 @@
 #include "PointwiseFunctions/AnalyticSolutions/Burgers/Linear.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/AnalyticSolutions/Burgers/Step.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
-#include "Time/Actions/AdvanceTime.hpp"                // IWYU pragma: keep
-#include "Time/Actions/ChangeSlabSize.hpp"             // IWYU pragma: keep
-#include "Time/Actions/ChangeStepSize.hpp"             // IWYU pragma: keep
-#include "Time/Actions/RecordTimeStepperData.hpp"      // IWYU pragma: keep
-#include "Time/Actions/SelfStartActions.hpp"           // IWYU pragma: keep
-#include "Time/Actions/UpdateU.hpp"                    // IWYU pragma: keep
+#include "Time/Actions/AdvanceTime.hpp"            // IWYU pragma: keep
+#include "Time/Actions/ChangeSlabSize.hpp"         // IWYU pragma: keep
+#include "Time/Actions/ChangeStepSize.hpp"         // IWYU pragma: keep
+#include "Time/Actions/RecordTimeStepperData.hpp"  // IWYU pragma: keep
+#include "Time/Actions/SelfStartActions.hpp"       // IWYU pragma: keep
+#include "Time/Actions/UpdateU.hpp"                // IWYU pragma: keep
 #include "Time/StepChoosers/Factory.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/StepControllers/Factory.hpp"
@@ -86,9 +107,6 @@
 // IWYU pragma: no_include <pup.h>
 
 /// \cond
-namespace Frame {
-struct Inertial;
-}  // namespace Frame
 namespace PUP {
 class er;
 }  // namespace PUP
@@ -104,6 +122,10 @@ struct EvolutionMetavars {
   using system = Burgers::System;
   using temporal_id = Tags::TimeStepId;
   static constexpr bool local_time_stepping = false;
+
+  // The use_dg_subcell flag controls whether to use "standard" limiting (false)
+  // or a DG-FD hybrid scheme (true).
+  static constexpr bool use_dg_subcell = true;
 
   using initial_data = InitialData;
   static_assert(
@@ -133,12 +155,21 @@ struct EvolutionMetavars {
                    Burgers::BoundaryConditions::standard_boundary_conditions>,
         tmpl::pair<DenseTrigger, DenseTriggers::standard_dense_triggers>,
         tmpl::pair<DomainCreator<volume_dim>, domain_creators<volume_dim>>,
-        tmpl::pair<Event, tmpl::flatten<tmpl::list<
-                              Events::Completion,
-                              dg::Events::field_observations<
-                                  volume_dim, Tags::Time, observe_fields,
-                                  analytic_solution_fields, tmpl::list<>>,
-                              Events::time_events<system>>>>,
+        tmpl::pair<
+            Event,
+            tmpl::flatten<tmpl::list<
+                Events::Completion,
+                tmpl::conditional_t<
+                    use_dg_subcell,
+                    evolution::dg::subcell::Events::ObserveFields<
+                        volume_dim, Tags::Time,
+                        tmpl::push_back<observe_fields, evolution::dg::subcell::
+                                                            Tags::TciStatus>,
+                        analytic_solution_fields>,
+                    dg::Events::field_observations<
+                        volume_dim, Tags::Time, observe_fields,
+                        analytic_solution_fields, tmpl::list<>>>,
+                Events::time_events<system>>>>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                    StepChoosers::standard_step_choosers<system>>,
         tmpl::pair<
@@ -153,11 +184,30 @@ struct EvolutionMetavars {
                                          Triggers::time_triggers>>>;
   };
 
+  struct SubcellOptions {
+    static constexpr bool subcell_enabled = use_dg_subcell;
+
+    // We send `ghost_zone_size` cell-centered grid points for variable
+    // reconstruction, of which we need `ghost_zone_size-1` for reconstruction
+    // to the internal side of the element face, and `ghost_zone_size` for
+    // reconstruction to the external side of the element face.
+    template <typename DbTagsList>
+    static constexpr size_t ghost_zone_size(
+        const db::DataBox<DbTagsList>& box) {
+      return db::get<Burgers::fd::Tags::Reconstructor>(box).ghost_zone_size();
+    }
+
+    using DgComputeSubcellNeighborPackagedData =
+        Burgers::subcell::NeighborPackagedData;
+
+    using GhostDataToSlice = Burgers::subcell::GhostDataToSlice;
+  };
+
   using observed_reduction_data_tags =
       observers::collect_reduction_data_tags<tmpl::flatten<tmpl::list<
           tmpl::at<typename factory_creation::factory_classes, Event>>>>;
 
-  using step_actions = tmpl::flatten<tmpl::list<
+  using dg_step_actions = tmpl::flatten<tmpl::list<
       evolution::dg::Actions::ComputeTimeDerivative<EvolutionMetavars>,
       tmpl::conditional_t<
           local_time_stepping,
@@ -171,6 +221,36 @@ struct EvolutionMetavars {
                      Actions::UpdateU<>>>,
       Limiters::Actions::SendData<EvolutionMetavars>,
       Limiters::Actions::Limit<EvolutionMetavars>>>;
+
+  using dg_subcell_step_actions = tmpl::flatten<tmpl::list<
+      evolution::dg::subcell::Actions::SelectNumericalMethod,
+      Actions::Label<evolution::dg::subcell::Actions::Labels::BeginDg>,
+      evolution::dg::Actions::ComputeTimeDerivative<EvolutionMetavars>,
+      evolution::dg::Actions::ApplyBoundaryCorrections<EvolutionMetavars>,
+      tmpl::conditional_t<
+          local_time_stepping, tmpl::list<>,
+          tmpl::list<Actions::RecordTimeStepperData<>,
+                     evolution::Actions::RunEventsAndDenseTriggers<>,
+                     Actions::UpdateU<>>>,
+      evolution::dg::subcell::Actions::TciAndRollback<
+          Burgers::subcell::TciOnDgGrid>,
+      Actions::Goto<evolution::dg::subcell::Actions::Labels::EndOfSolvers>,
+      Actions::Label<evolution::dg::subcell::Actions::Labels::BeginSubcell>,
+      evolution::dg::subcell::Actions::SendDataForReconstruction<
+          volume_dim, Burgers::subcell::GhostDataOnSubcells>,
+      evolution::dg::subcell::Actions::ReceiveDataForReconstruction<volume_dim>,
+      Actions::Label<
+          evolution::dg::subcell::Actions::Labels::BeginSubcellAfterDgRollback>,
+      evolution::dg::subcell::fd::Actions::TakeTimeStep<
+          Burgers::subcell::TimeDerivative>,
+      Actions::RecordTimeStepperData<>, Actions::UpdateU<>,
+      evolution::dg::subcell::Actions::TciAndSwitchToDg<
+          Burgers::subcell::TciOnFdGrid>,
+      Actions::Label<evolution::dg::subcell::Actions::Labels::EndOfSolvers>>>;
+
+  using step_actions =
+      tmpl::conditional_t<use_dg_subcell, dg_subcell_step_actions,
+                          dg_step_actions>;
 
   enum class Phase {
     Initialization,
@@ -204,9 +284,12 @@ struct EvolutionMetavars {
   using phase_change_tags_and_combines_list =
       PhaseControl::get_phase_change_tags<phase_changes>;
 
-  using const_global_cache_tags =
-      tmpl::list<initial_data_tag, Tags::EventsAndTriggers,
-                 PhaseControl::Tags::PhaseChangeAndTriggers<phase_changes>>;
+  using const_global_cache_tags = tmpl::list<
+      initial_data_tag, Tags::EventsAndTriggers,
+      tmpl::conditional_t<use_dg_subcell,
+                          tmpl::list<Burgers::fd::Tags::Reconstructor>,
+                          tmpl::list<>>,
+      PhaseControl::Tags::PhaseChangeAndTriggers<phase_changes>>;
 
   using dg_registration_list =
       tmpl::list<observers::Actions::RegisterEventsWithObservers>;
@@ -219,6 +302,13 @@ struct EvolutionMetavars {
       evolution::Initialization::Actions::SetVariables<
           domain::Tags::Coordinates<1, Frame::ElementLogical>>,
       Initialization::Actions::TimeStepperHistory<EvolutionMetavars>,
+
+      tmpl::conditional_t<
+          use_dg_subcell,
+          tmpl::list<evolution::dg::subcell::Actions::Initialize<
+              volume_dim, system, Burgers::subcell::DgInitialDataTci>>,
+          tmpl::list<>>,
+
       tmpl::conditional_t<
           evolution::is_analytic_solution_v<initial_data>,
           Initialization::Actions::AddComputeTags<
@@ -248,17 +338,16 @@ struct EvolutionMetavars {
 
           Parallel::PhaseActions<
               Phase, Phase::Evolve,
-              tmpl::list<Actions::RunEventsAndTriggers,
-                         Actions::ChangeSlabSize, step_actions,
-                         Actions::AdvanceTime,
-                         PhaseControl::Actions::ExecutePhaseChange<
-                             phase_changes>>>>>;
+              tmpl::list<
+                  Actions::RunEventsAndTriggers, Actions::ChangeSlabSize,
+                  step_actions, Actions::AdvanceTime,
+                  PhaseControl::Actions::ExecutePhaseChange<phase_changes>>>>>;
 
   template <typename ParallelComponent>
   struct registration_list {
-    using type = std::conditional_t<
-        std::is_same_v<ParallelComponent, dg_element_array>,
-        dg_registration_list, tmpl::list<>>;
+    using type =
+        std::conditional_t<std::is_same_v<ParallelComponent, dg_element_array>,
+                           dg_registration_list, tmpl::list<>>;
   };
 
   using component_list =
@@ -277,10 +366,9 @@ struct EvolutionMetavars {
           phase_change_decision_data,
       const Phase& current_phase,
       const Parallel::CProxy_GlobalCache<EvolutionMetavars>& cache_proxy) {
-    const auto next_phase =
-        PhaseControl::arbitrate_phase_change<phase_changes>(
-            phase_change_decision_data, current_phase,
-            *(cache_proxy.ckLocalBranch()));
+    const auto next_phase = PhaseControl::arbitrate_phase_change<phase_changes>(
+        phase_change_decision_data, current_phase,
+        *(cache_proxy.ckLocalBranch()));
     if (next_phase.has_value()) {
       return next_phase.value();
     }
@@ -309,12 +397,14 @@ struct EvolutionMetavars {
 };
 
 static const std::vector<void (*)()> charm_init_node_funcs{
-    &setup_error_handling, &setup_memory_allocation_failure_reporting,
+    &setup_error_handling,
+    &setup_memory_allocation_failure_reporting,
     &disable_openblas_multithreading,
     &domain::creators::register_derived_with_charm,
     &domain::creators::time_dependence::register_derived_with_charm,
     &domain::FunctionsOfTime::register_derived_with_charm,
     &Burgers::BoundaryCorrections::register_derived_with_charm,
+    &Burgers::fd::register_derived_with_charm,
     &Parallel::register_derived_classes_with_charm<TimeStepper>,
     &Parallel::register_derived_classes_with_charm<
         PhaseChange<metavariables::phase_changes>>,
