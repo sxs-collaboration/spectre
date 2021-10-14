@@ -21,6 +21,7 @@ set(LIBRARY_SOURCES
   Test_ElementMap.cpp
   Test_ElementToBlockLogicalMap.cpp
   Test_FaceNormal.cpp
+  Test_FlatLogicalMetric.cpp
   Test_InterfaceHelpers.cpp
   Test_InterfaceItems.cpp
   Test_InterfaceLogicalCoordinates.cpp
@@ -50,6 +51,7 @@ add_test_library(
 target_link_libraries(
   ${LIBRARY}
   PRIVATE
+  CoordinateMaps
   Domain
   DomainBoundaryConditionsHelpers
   DomainCreators
