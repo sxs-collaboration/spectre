@@ -33,6 +33,7 @@ spectre_unload_modules() {
     module unload charm/7.0.0-intelmpi-smp
     module unload python/anaconda3-2019.10
     module unload pybind11/2.6.1
+    module unload arpack/3.8.0
 }
 
 spectre_load_modules() {
@@ -56,6 +57,7 @@ spectre_load_modules() {
     module load charm/7.0.0-intelmpi-smp
     module load python/anaconda3-2019.10
     module load pybind11/2.6.1
+    module load arpack/3.8.0
 }
 
 spectre_run_cmake() {

@@ -287,6 +287,36 @@ setenv JEMALLOC_HOME $dep_dir/jemalloc/
 prepend-path CMAKE_PREFIX_PATH "$dep_dir/jemalloc/"
 EOF
     fi
+    cd $dep_dir
+
+    if [ -f $dep_dir/arpack/lib64/libarpack.a ]; then
+        echo "arpack is already set up"
+    else
+        echo "Installing arpack..."
+        wget https://github.com/opencollab/arpack-ng/archive/refs/tags/3.8.0.tar.gz
+        tar -xzf 3.8.0.tar.gz
+        mv arpack-ng-3.8.0 arpack-build
+        cd $dep_dir/arpack-build
+        mkdir build
+        cd build
+        cmake -D CMAKE_BUILD_TYPE=Release \
+              -D CMAKE_C_COMPILER=gcc \
+              -D BUILD_SHARED_LIBS=OFF \
+              -D CMAKE_INSTALL_PREFIX=$dep_dir/arpack ..
+        make -j4
+        make install
+        cd $dep_dir
+        rm 3.8.0.tar.gz
+        rm -r arpack-build
+        echo "Installed arpack into $dep_dir/arpack"
+        cat >$dep_dir/modules/arpack <<EOF
+#%Module1.0
+prepend-path LIBRARY_PATH "$dep_dir/arpack/lib64"
+prepend-path LD_LIBRARY_PATH "$dep_dir/arpack/lib64"
+prepend-path CPATH "$dep_dir/arpack/include"
+prepend-path CMAKE_PREFIX_PATH "$dep_dir/arpack/"
+EOF
+    fi
 
     cd $start_dir
 
@@ -312,6 +342,7 @@ spectre_unload_modules() {
     module unload catch
     module unload brigand
     module unload blaze
+    module unload arpack
 
     spectre_unload_sys_modules
 }
@@ -319,6 +350,7 @@ spectre_unload_modules() {
 spectre_load_modules() {
     spectre_load_sys_modules
 
+    module load arpack
     module load blaze
     module load brigand
     module load catch
