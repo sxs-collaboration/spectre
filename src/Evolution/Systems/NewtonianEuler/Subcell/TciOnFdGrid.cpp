@@ -32,7 +32,6 @@ bool TciOnFdGrid<Dim>::apply(
     const Scalar<DataVector>& dg_energy_density,
     const EquationsOfState::EquationOfState<false, ThermodynamicDim>& eos,
     const Mesh<Dim>& dg_mesh, const double persson_exponent) {
-  constexpr double persson_tci_epsilon = 1.0e-18;
   NewtonianEuler::PrimitiveFromConservative<Dim>::apply(
       make_not_null(&get<MassDensity>(*subcell_grid_prim_vars)),
       make_not_null(&get<Velocity>(*subcell_grid_prim_vars)),
@@ -55,11 +54,10 @@ bool TciOnFdGrid<Dim>::apply(
          min(min(get(get<Pressure>(*subcell_grid_prim_vars))),
              min(get(get<Pressure>(dg_grid_prim_vars)))) <
              min_pressure_allowed or
-         evolution::dg::subcell::persson_tci(
-             dg_mass_density, dg_mesh, persson_exponent, persson_tci_epsilon) or
+         evolution::dg::subcell::persson_tci(dg_mass_density, dg_mesh,
+                                             persson_exponent) or
          evolution::dg::subcell::persson_tci(get<Pressure>(dg_grid_prim_vars),
-                                             dg_mesh, persson_exponent,
-                                             persson_tci_epsilon);
+                                             dg_mesh, persson_exponent);
 }
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)

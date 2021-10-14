@@ -17,7 +17,7 @@ namespace detail {
 template <size_t Dim>
 bool persson_tci_impl(gsl::not_null<DataVector*> filtered_component,
                       const DataVector& component, const Mesh<Dim>& dg_mesh,
-                      double alpha, double zero_cutoff);
+                      double alpha);
 }  // namespace detail
 
 /*!
@@ -65,14 +65,12 @@ bool persson_tci_impl(gsl::not_null<DataVector*> filtered_component,
  */
 template <size_t Dim, typename SymmList, typename IndexList>
 bool persson_tci(const Tensor<DataVector, SymmList, IndexList>& tensor,
-                 const Mesh<Dim>& dg_mesh, const double alpha,
-                 const double zero_cutoff) {
+                 const Mesh<Dim>& dg_mesh, const double alpha) {
   DataVector filtered_component(dg_mesh.number_of_grid_points());
   for (size_t component_index = 0; component_index < tensor.size();
        ++component_index) {
     if (detail::persson_tci_impl(make_not_null(&filtered_component),
-                                 tensor[component_index], dg_mesh, alpha,
-                                 zero_cutoff)) {
+                                 tensor[component_index], dg_mesh, alpha)) {
       return true;
     }
   }

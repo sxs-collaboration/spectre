@@ -23,17 +23,14 @@ bool TciOnFdGrid::apply(const Scalar<DataVector>& tilde_d,
       min(get(tilde_d)) <
           tci_options.minimum_rest_mass_density_times_lorentz_factor or
       min(get(tilde_tau)) < tci_options.minimum_tilde_tau or
-      evolution::dg::subcell::persson_tci(tilde_d, dg_mesh, persson_exponent,
-                                          1.0e-18) or
-      evolution::dg::subcell::persson_tci(tilde_tau, dg_mesh, persson_exponent,
-                                          1.0e-18);
+      evolution::dg::subcell::persson_tci(tilde_d, dg_mesh, persson_exponent) or
+      evolution::dg::subcell::persson_tci(tilde_tau, dg_mesh, persson_exponent);
   if (tci_options.magnetic_field_cutoff.has_value() and not cell_is_troubled) {
     const Scalar<DataVector> tilde_b_magnitude = magnitude(tilde_b);
-    cell_is_troubled =
-        (max(get(tilde_b_magnitude)) >
-             tci_options.magnetic_field_cutoff.value() and
-         evolution::dg::subcell::persson_tci(tilde_b_magnitude, dg_mesh,
-                                             persson_exponent, 1.0e-18));
+    cell_is_troubled = (max(get(tilde_b_magnitude)) >
+                            tci_options.magnetic_field_cutoff.value() and
+                        evolution::dg::subcell::persson_tci(
+                            tilde_b_magnitude, dg_mesh, persson_exponent));
   }
   return cell_is_troubled;
 }

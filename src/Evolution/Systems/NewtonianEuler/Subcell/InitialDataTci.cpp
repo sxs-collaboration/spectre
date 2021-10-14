@@ -27,10 +27,9 @@ bool DgInitialDataTci<Dim>::apply(
   return evolution::dg::subcell::two_mesh_rdmp_tci(dg_vars, subcell_vars,
                                                    rdmp_delta0, rdmp_epsilon) or
          evolution::dg::subcell::persson_tci(get<MassDensityCons>(dg_vars),
-                                             dg_mesh, persson_exponent,
-                                             1.0e-18) or
+                                             dg_mesh, persson_exponent) or
          evolution::dg::subcell::persson_tci(dg_pressure, dg_mesh,
-                                             persson_exponent, 1.0e-18);
+                                             persson_exponent);
 }
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)

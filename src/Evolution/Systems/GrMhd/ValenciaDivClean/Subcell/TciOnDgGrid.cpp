@@ -39,7 +39,6 @@ bool TciOnDgGrid<RecoveryScheme>::apply(
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
     const Mesh<3>& dg_mesh, const TciOptions& tci_options,
     const double persson_exponent) {
-  constexpr double persson_tci_epsilon = 1.0e-18;
   const size_t number_of_points = dg_mesh.number_of_grid_points();
   Variables<hydro::grmhd_tags<DataVector>> temp_prims(number_of_points);
 
@@ -134,10 +133,9 @@ bool TciOnDgGrid<RecoveryScheme>::apply(
   }
 
   // Check that tilde_d and tilde_tau satisfy the Persson TCI
-  if (evolution::dg::subcell::persson_tci(tilde_d, dg_mesh, persson_exponent,
-                                          persson_tci_epsilon) or
-      evolution::dg::subcell::persson_tci(tilde_tau, dg_mesh, persson_exponent,
-                                          persson_tci_epsilon)) {
+  if (evolution::dg::subcell::persson_tci(tilde_d, dg_mesh, persson_exponent) or
+      evolution::dg::subcell::persson_tci(tilde_tau, dg_mesh,
+                                          persson_exponent)) {
     return true;
   }
   // Check Cartesian magnitude of magnetic field satisfies the Persson TCI
@@ -147,8 +145,8 @@ bool TciOnDgGrid<RecoveryScheme>::apply(
   if (tci_options.magnetic_field_cutoff.has_value() and
       max(get(tilde_b_magnitude)) >
           tci_options.magnetic_field_cutoff.value() and
-      evolution::dg::subcell::persson_tci(
-          tilde_b_magnitude, dg_mesh, persson_exponent, persson_tci_epsilon)) {
+      evolution::dg::subcell::persson_tci(tilde_b_magnitude, dg_mesh,
+                                          persson_exponent)) {
     return true;
   }
 

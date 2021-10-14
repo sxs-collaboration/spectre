@@ -34,14 +34,12 @@ bool TciOnDgGrid<Dim>::apply(
       make_not_null(&get<SpecificInternalEnergy>(*dg_prim_vars)),
       make_not_null(&get<Pressure>(*dg_prim_vars)), mass_density,
       momentum_density, energy_density, eos);
-  constexpr double persson_tci_epsilon = 1.0e-18;
   return min(get(mass_density)) < min_density_allowed or
          min(get(get<Pressure>(*dg_prim_vars))) < min_pressure_allowed or
-         evolution::dg::subcell::persson_tci(
-             mass_density, dg_mesh, persson_exponent, persson_tci_epsilon) or
+         evolution::dg::subcell::persson_tci(mass_density, dg_mesh,
+                                             persson_exponent) or
          evolution::dg::subcell::persson_tci(get<Pressure>(*dg_prim_vars),
-                                             dg_mesh, persson_exponent,
-                                             persson_tci_epsilon);
+                                             dg_mesh, persson_exponent);
 }
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)

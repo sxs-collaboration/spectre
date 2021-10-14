@@ -63,7 +63,6 @@ void test_persson_impl(
   CAPTURE(tensor_component_to_modify);
   CAPTURE(persson_exponent);
   CAPTURE(expected_tci_triggered);
-  const double zero_cutoff = 1.0e-18;
   const Mesh<Dim> dg_mesh{num_pts_1d, Spectral::Basis::Legendre,
                           Spectral::Quadrature::GaussLobatto};
   const auto logical_coords = logical_coordinates(dg_mesh);
@@ -91,7 +90,7 @@ void test_persson_impl(
   }
 
   CHECK(evolution::dg::subcell::persson_tci(get<TagToCheck>(vars), dg_mesh,
-                                            persson_exponent, zero_cutoff) ==
+                                            persson_exponent) ==
         expected_tci_triggered);
 }
 

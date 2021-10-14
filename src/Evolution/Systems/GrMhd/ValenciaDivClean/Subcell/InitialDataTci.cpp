@@ -44,14 +44,14 @@ bool DgInitialDataTci::apply(
                                                    rdmp_delta0, rdmp_epsilon) or
          evolution::dg::subcell::persson_tci(
              get<ValenciaDivClean::Tags::TildeD>(dg_vars), dg_mesh,
-             persson_exponent, 1.0e-18) or
+             persson_exponent) or
          evolution::dg::subcell::persson_tci(
              get<ValenciaDivClean::Tags::TildeTau>(dg_vars), dg_mesh,
-             persson_exponent, 1.0e-18) or
+             persson_exponent) or
          (tci_options.magnetic_field_cutoff.has_value() and
           max(get(tilde_b_magnitude)) >
               tci_options.magnetic_field_cutoff.value() and
           evolution::dg::subcell::persson_tci(tilde_b_magnitude, dg_mesh,
-                                              persson_exponent, 1.0e-18));
+                                              persson_exponent));
 }
 }  // namespace grmhd::ValenciaDivClean::subcell
