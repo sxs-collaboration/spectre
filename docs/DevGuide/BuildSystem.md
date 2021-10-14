@@ -69,15 +69,33 @@ add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
 
 target_link_libraries(
   ${LIBRARY}
-  <list_of_interfaces>
+  PUBLIC
+  <list_of_public_libraries>
+  PRIVATE
+  <list_of_private_libraries>
+  INTERFACE
+  <list_of_interface_libraries>
   )
 ```
-where `<list_of_interfaces>` is an alphabetized list of lines of the form
+where each `<list_of_X_libraries>` is an alphabetized list
+of libraries of the form
 ```
-  INTERFACE SOME_LIBRARY
+  SomeLibrary
+  SomeOtherLibrary
+  YetAnotherLibrary
 ```
-where `SOME_LIBRARY` is a library that must be linked in order for the
-new library to be successfully linked in an executable.
+The libraries listed under `INTERFACE` are those included in at
+least one `.hpp` file in `LIB` but never used in any `.cpp` files
+in `LIB`.  The libraries listed under `PRIVATE` are used in
+at least one `.cpp` file in `LIB` but not in any `.hpp` file
+in `LIB`.  The libraries listed under `PUBLIC` are used in at
+least one `.hpp` file and at least one `.cpp` file in `LIB`.
+Note that a library counts as being used in a `.cpp` file if the
+corresponding `.hpp` file includes it. In other words, list a dependency
+as `PRIVATE` if it is needed only to compile the library, but not for
+including headers. List a dependency as `INTERFACE` if it is not needed
+to compile the library, but is needed for including headers. List a
+dependency as `PUBLIC` if it is needed for both.
 
 ## Adding Unit Tests {#adding_unit_tests}
 
