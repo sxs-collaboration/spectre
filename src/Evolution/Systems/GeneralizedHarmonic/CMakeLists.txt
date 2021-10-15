@@ -38,6 +38,7 @@ target_link_libraries(
   DomainBoundaryConditions
   ErrorHandling
   GeneralRelativity
+  GeneralRelativitySolutions
   Options
   Spectral
   Utilities

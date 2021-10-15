@@ -32,6 +32,7 @@
 #include "Evolution/Initialization/NonconservativeSystem.hpp"
 #include "Evolution/NumericInitialData.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/Bjorhus.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/DirichletMinkowski.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/Factory.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/Outflow.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/Factory.hpp"
@@ -202,6 +203,8 @@ struct EvolutionMetavars {
                        volume_dim>,
                    tmpl::list<GeneralizedHarmonic::BoundaryConditions::
                                   ConstraintPreservingBjorhus<volume_dim>,
+                              GeneralizedHarmonic::BoundaryConditions::
+                                  DirichletMinkowski<volume_dim>,
                               GeneralizedHarmonic::BoundaryConditions::Outflow<
                                   volume_dim>>>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
