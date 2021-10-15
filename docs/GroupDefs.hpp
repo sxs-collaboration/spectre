@@ -486,6 +486,20 @@
  */
 
 /*!
+ * \defgroup InitialDataGroup Initial Data
+ * \brief Types of initial data used for evolution systems.
+ *
+ * Possible types are
+ * * analytic solution
+ * * analytic initial data (at \f$t=0\f$)
+ * * numeric initial data read from files
+ *
+ * \note (Sep 2021) The transition is currently under development solely based
+ * on the ScalarAdvection system. Later it will be extended to include other
+ * evolution systems as well.
+ */
+
+/*!
  * \defgroup LimitersGroup Limiters
  * \brief Limiters to control shocks and surfaces in the solution.
  */
