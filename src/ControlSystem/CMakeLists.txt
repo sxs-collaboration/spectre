@@ -10,6 +10,7 @@ spectre_target_sources(
   PRIVATE
   Averager.cpp
   Controller.cpp
+  DataVectorHelpers.cpp
   TimescaleTuner.cpp
   )
 
@@ -20,6 +21,7 @@ spectre_target_headers(
   Averager.hpp
   Component.hpp
   Controller.hpp
+  DataVectorHelpers.hpp
   Event.hpp
   InitialExpirationTimes.hpp
   Metafunctions.hpp

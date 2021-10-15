@@ -75,6 +75,22 @@ void test_data_vector_multiple_operand_math() {
   TestHelpers::VectorImpl::test_functions_with_vector_arguments<
       TestHelpers::VectorImpl::TestKind::Strict, std::array<DataVector, 2>>(
       array_binary_ops);
+
+  const auto test_cross = [](const DataVector& dv1, const DataVector& dv2) {
+    return DataVector{{dv1[1] * dv2[2] - dv1[2] * dv2[1],
+                       dv1[2] * dv2[0] - dv1[0] * dv2[2],
+                       dv1[0] * dv2[1] - dv1[1] * dv2[0]}};
+  };
+
+  MAKE_GENERATOR(generator);
+  std::uniform_real_distribution<double> dist{generic[0], generic[1]};
+  const auto dv1 = make_with_random_values<DataVector>(
+      make_not_null(&generator), dist, DataVector{3, 0.0});
+  const auto dv2 = make_with_random_values<DataVector>(
+      make_not_null(&generator), dist, DataVector{3, 0.0});
+
+  // Check Blaze implementation of cross product
+  CHECK(cross(dv1, dv2) == test_cross(dv1, dv2));
 }
 
 SPECTRE_TEST_CASE("Unit.DataStructures.DataVector.MultipleOperands",

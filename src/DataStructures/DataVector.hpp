@@ -60,6 +60,10 @@ class DataVector : public VectorImpl<double, DataVector> {
 namespace blaze {
 VECTOR_BLAZE_TRAIT_SPECIALIZE_ARITHMETIC_TRAITS(DataVector);
 VECTOR_BLAZE_TRAIT_SPECIALIZE_ALL_MAP_TRAITS(DataVector);
+// Only specialize cross product for DataVector because it is unclear what a
+// cross product of other vector types is. This is why this is here and not in
+// VectorImpl.hpp
+BLAZE_TRAIT_SPECIALIZE_BINARY_TRAIT(DataVector, CrossTrait);
 }  // namespace blaze
 
 SPECTRE_ALWAYS_INLINE auto fabs(const DataVector& t) { return abs(*t); }
