@@ -60,10 +60,10 @@
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/ScalarAdvection/Krivodonova.hpp"  // IWYU pragma: keep
-#include "PointwiseFunctions/AnalyticSolutions/ScalarAdvection/Kuzmin.hpp"  // IWYU pragma: keep
-#include "PointwiseFunctions/AnalyticSolutions/ScalarAdvection/Sinusoid.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/AnalyticSolutions/ScalarAdvection/Factory.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
 #include "Time/Actions/AdvanceTime.hpp"            // IWYU pragma: keep
 #include "Time/Actions/ChangeSlabSize.hpp"         // IWYU pragma: keep
 #include "Time/Actions/ChangeStepSize.hpp"         // IWYU pragma: keep
@@ -132,6 +132,9 @@ struct EvolutionMetavars {
     using factory_classes = tmpl::map<
         tmpl::pair<DenseTrigger, DenseTriggers::standard_dense_triggers>,
         tmpl::pair<DomainCreator<volume_dim>, domain_creators<volume_dim>>,
+        tmpl::pair<
+            InitialDataUtilities::InitialData,
+            ScalarAdvection::Solutions::all_analytic_solutions<volume_dim>>,
         tmpl::pair<
             Event,
             tmpl::flatten<tmpl::list<
@@ -203,7 +206,10 @@ struct EvolutionMetavars {
       PhaseControl::get_phase_change_tags<phase_changes>;
 
   using const_global_cache_tags =
-      tmpl::list<initial_data_tag, Tags::EventsAndTriggers,
+      tmpl::list<initial_data_tag,
+                 InitialDataUtilities::Tags::InitialData<
+                     InitialDataUtilities::InitialData>,
+                 Tags::EventsAndTriggers,
                  PhaseControl::Tags::PhaseChangeAndTriggers<phase_changes>>;
 
   using dg_registration_list =
