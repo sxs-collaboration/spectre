@@ -14,6 +14,9 @@
 #     SkipColumns: [0,1]
 #     AbsoluteTolerance: 0.2
 
+InitialData:
+  Kuzmin
+
 Evolution:
   InitialTime: 0.0
   InitialTimeStep: 0.01

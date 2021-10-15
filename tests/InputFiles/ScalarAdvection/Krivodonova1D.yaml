@@ -13,6 +13,9 @@
 #     SkipColumns: [0,1]
 #     AbsoluteTolerance: 0.2
 
+InitialData:
+  Krivodonova
+
 Evolution:
   InitialTime: 0.0
   InitialTimeStep: 0.005

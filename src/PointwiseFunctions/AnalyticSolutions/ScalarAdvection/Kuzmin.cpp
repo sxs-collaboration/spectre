@@ -77,6 +77,8 @@ tuples::TaggedTuple<ScalarAdvection::Tags::U> Kuzmin::variables(
 
 void Kuzmin::pup(PUP::er& /*p*/) {}
 
+PUP::able::PUP_ID Kuzmin::my_PUP_ID = 0;
+
 bool operator==(const Kuzmin& /*lhs*/, const Kuzmin& /*rhs*/) { return true; }
 
 bool operator!=(const Kuzmin& lhs, const Kuzmin& rhs) {

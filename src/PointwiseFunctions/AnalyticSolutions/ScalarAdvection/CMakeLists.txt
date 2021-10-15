@@ -17,6 +17,7 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  Factory.hpp
   Krivodonova.hpp
   Kuzmin.hpp
   Sinusoid.hpp

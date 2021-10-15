@@ -24,6 +24,8 @@ tuples::TaggedTuple<ScalarAdvection::Tags::U> Sinusoid::variables(
 
 void Sinusoid::pup(PUP::er& /*p*/) {}
 
+PUP::able::PUP_ID Sinusoid::my_PUP_ID = 0;
+
 bool operator==(const Sinusoid& /*lhs*/, const Sinusoid& /*rhs*/) {
   return true;
 }

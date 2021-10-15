@@ -13,6 +13,9 @@
 #     SkipColumns: [0,1]
 #     AbsoluteTolerance: 0.02
 
+InitialData:
+  Sinusoid
+
 Evolution:
   InitialTime: 0.0
   InitialTimeStep: 0.0001
