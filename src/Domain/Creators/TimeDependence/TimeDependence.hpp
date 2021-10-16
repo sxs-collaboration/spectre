@@ -35,10 +35,14 @@ template <size_t MeshDim>
 class UniformRotationAboutZAxis;
 template <size_t MeshDim>
 class UniformTranslation;
-template <typename TimeDependenceCompTag0, typename... TimeDependenceCompTags>
-class Composition;
-template <typename TimeDep, size_t Suffix>
+template <size_t MeshDim>
+class CompositionCubicScaleAndUniformRotationAboutZAxis;
+template <size_t MeshDim>
+class CompositionUniformTranslation;
+namespace OptionTags {
+template <typename TimeDep, size_t Index = 0>
 struct TimeDependenceCompositionTag;
+}
 }  // namespace domain::creators::time_dependence
 /// \endcond
 
@@ -56,17 +60,16 @@ template <size_t MeshDim>
 struct TimeDependence {
  private:
   using creatable_classes_1d = tmpl::list<>;
-  using creatable_classes_2d = tmpl::list<UniformRotationAboutZAxis<2>>;
-  using creatable_classes_3d = tmpl::list<
-      SphericalCompression, UniformRotationAboutZAxis<3>,
-      Composition<
-          TimeDependenceCompositionTag<CubicScale<3>,
-                                       std::numeric_limits<size_t>::max()>,
-          TimeDependenceCompositionTag<UniformRotationAboutZAxis<3>,
-                                       std::numeric_limits<size_t>::max()>>>;
+  using creatable_classes_2d =
+      tmpl::list<UniformRotationAboutZAxis<2>,
+                 CompositionCubicScaleAndUniformRotationAboutZAxis<2>>;
+  using creatable_classes_3d =
+      tmpl::list<SphericalCompression, UniformRotationAboutZAxis<3>,
+                 CompositionCubicScaleAndUniformRotationAboutZAxis<3>>;
   using creatable_classes_any_dim =
       tmpl::list<CubicScale<MeshDim>, None<MeshDim>,
-                 UniformTranslation<MeshDim>>;
+                 UniformTranslation<MeshDim>,
+                 CompositionUniformTranslation<MeshDim>>;
 
  public:
   using creatable_classes =
@@ -106,13 +109,14 @@ struct TimeDependence {
 template <size_t MeshDim>
 TimeDependence<MeshDim>::~TimeDependence() = default;
 }  // namespace time_dependence
-}  // namespace creators::namespace domain
+}  // namespace domain::creators
 
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/TimeDependent/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/ProductMaps.tpp"
-#include "Domain/Creators/TimeDependence/Composition.hpp"
+#include "Domain/Creators/TimeDependence/CompositionCubicScaleAndUniformRotationAboutZAxis.hpp"
+#include "Domain/Creators/TimeDependence/CompositionUniformTranslation.hpp"
 #include "Domain/Creators/TimeDependence/CubicScale.hpp"
 #include "Domain/Creators/TimeDependence/None.hpp"
 #include "Domain/Creators/TimeDependence/SphericalCompression.hpp"

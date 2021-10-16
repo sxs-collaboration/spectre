@@ -206,7 +206,7 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.ReadSpecPiecewisePolynomial",
       "  InitialRefinement: [0, 0, 0]\n"
       "  InitialGridPoints: [5, 5, 5]\n"
       "  TimeDependence:\n"
-      "    Composition:\n"
+      "    CompositionCubicScaleAndUniformRotationAboutZAxis:\n"
       "      CubicScale:\n"
       "        CubicScale:\n"
       "            InitialTime: 0.0\n"

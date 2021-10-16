@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   CompositionCubicScaleAndUniformRotationAboutZAxis.cpp
+  CompositionUniformTranslation.cpp
   CubicScale.cpp
   None.cpp
   RegisterDerivedWithCharm.cpp
@@ -21,11 +22,12 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
-  Composition.hpp
-  Composition.tpp
+  CompositionCubicScaleAndUniformRotationAboutZAxis.hpp
+  CompositionUniformTranslation.hpp
   CubicScale.hpp
   GenerateCoordinateMap.hpp
   None.hpp
+  OptionTags.hpp
   RegisterDerivedWithCharm.hpp
   SphericalCompression.hpp
   TimeDependence.hpp
