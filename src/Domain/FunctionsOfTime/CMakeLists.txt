@@ -8,6 +8,7 @@ add_spectre_library(${LIBRARY})
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
+  CombineFunctionsOfTime.cpp
   FixedSpeedCubic.cpp
   FunctionOfTimeHelpers.cpp
   PiecewisePolynomial.cpp
@@ -22,6 +23,7 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  CombineFunctionsOfTime.hpp
   FixedSpeedCubic.hpp
   FunctionOfTime.hpp
   FunctionOfTimeHelpers.hpp
