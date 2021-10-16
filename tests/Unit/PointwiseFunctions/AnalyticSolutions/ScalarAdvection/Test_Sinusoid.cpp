@@ -14,31 +14,43 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/ScalarAdvection/Sinusoid.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 namespace {
 
+using InitialData = evolution::initial_data::InitialData;
+using Sinusoid = ScalarAdvection::Solutions::Sinusoid;
+
 void test_create() {
-  const auto sine_wave =
-      TestHelpers::test_creation<ScalarAdvection::Solutions::Sinusoid>("");
-  CHECK(sine_wave == ScalarAdvection::Solutions::Sinusoid());
+  const auto sine_wave = TestHelpers::test_creation<Sinusoid>("");
+  CHECK(sine_wave == Sinusoid());
 }
 
 void test_serialize() {
-  ScalarAdvection::Solutions::Sinusoid sine_wave;
+  Sinusoid sine_wave;
   test_serialization(sine_wave);
 }
 
 void test_move() {
-  ScalarAdvection::Solutions::Sinusoid sine_wave;
-  ScalarAdvection::Solutions::Sinusoid sine_wave_copy;
+  Sinusoid sine_wave;
+  Sinusoid sine_wave_copy;
   test_move_semantics(std::move(sine_wave), sine_wave_copy);  //  NOLINT
 }
 
-struct SinusoidProxy : ScalarAdvection::Solutions::Sinusoid {
-  using ScalarAdvection::Solutions::Sinusoid::Sinusoid;
+void test_derived() {
+  Parallel::register_classes_with_charm<Sinusoid>();
+  const std::unique_ptr<InitialData> initial_data_ptr =
+      std::make_unique<Sinusoid>();
+  const std::unique_ptr<InitialData> deserialized_initial_data_ptr =
+      serialize_and_deserialize(initial_data_ptr);
+  CHECK(dynamic_cast<Sinusoid*>(deserialized_initial_data_ptr.get()) !=
+        nullptr);
+}
 
+struct SinusoidProxy : Sinusoid {
+  using Sinusoid::Sinusoid;
   using variables_tags = tmpl::list<ScalarAdvection::Tags::U>;
 
   template <typename DataType>
@@ -76,6 +88,7 @@ SPECTRE_TEST_CASE(
   test_create();
   test_serialize();
   test_move();
+  test_derived();
 
   pypp::SetupLocalPythonEnvironment local_python_env{
       "PointwiseFunctions/AnalyticSolutions/ScalarAdvection"};

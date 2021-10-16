@@ -75,7 +75,11 @@ tuples::TaggedTuple<ScalarAdvection::Tags::U> Kuzmin::variables(
   return u_variable;
 }
 
-void Kuzmin::pup(PUP::er& /*p*/) {}
+void Kuzmin::pup(PUP::er& p) { InitialData::pup(p); }
+
+Kuzmin::Kuzmin(CkMigrateMessage* msg) : InitialData(msg) {}
+
+PUP::able::PUP_ID Kuzmin::my_PUP_ID = 0;
 
 bool operator==(const Kuzmin& /*lhs*/, const Kuzmin& /*rhs*/) { return true; }
 

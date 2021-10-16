@@ -14,31 +14,43 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/ScalarAdvection/Krivodonova.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 namespace {
 
+using InitialData = evolution::initial_data::InitialData;
+using Krivodonova = ScalarAdvection::Solutions::Krivodonova;
+
 void test_create() {
-  const auto sol =
-      TestHelpers::test_creation<ScalarAdvection::Solutions::Krivodonova>("");
-  CHECK(sol == ScalarAdvection::Solutions::Krivodonova());
+  const auto sol = TestHelpers::test_creation<Krivodonova>("");
+  CHECK(sol == Krivodonova());
 }
 
 void test_serialize() {
-  ScalarAdvection::Solutions::Krivodonova sol;
+  Krivodonova sol;
   test_serialization(sol);
 }
 
 void test_move() {
-  ScalarAdvection::Solutions::Krivodonova sol;
-  ScalarAdvection::Solutions::Krivodonova sol_copy;
+  Krivodonova sol;
+  Krivodonova sol_copy;
   test_move_semantics(std::move(sol), sol_copy);  //  NOLINT
 }
 
-struct KrivodonovaProxy : ScalarAdvection::Solutions::Krivodonova {
-  using ScalarAdvection::Solutions::Krivodonova::Krivodonova;
+void test_derived() {
+  Parallel::register_classes_with_charm<Krivodonova>();
+  const std::unique_ptr<InitialData> initial_data_ptr =
+      std::make_unique<Krivodonova>();
+  const std::unique_ptr<InitialData> deserialized_initial_data_ptr =
+      serialize_and_deserialize(initial_data_ptr);
+  CHECK(dynamic_cast<Krivodonova*>(deserialized_initial_data_ptr.get()) !=
+        nullptr);
+}
 
+struct KrivodonovaProxy : Krivodonova {
+  using Krivodonova::Krivodonova;
   using variables_tags = tmpl::list<ScalarAdvection::Tags::U>;
 
   template <typename DataType>
@@ -109,6 +121,7 @@ SPECTRE_TEST_CASE(
   test_create();
   test_serialize();
   test_move();
+  test_derived();
 
   pypp::SetupLocalPythonEnvironment local_python_env{
       "PointwiseFunctions/AnalyticSolutions/ScalarAdvection"};
