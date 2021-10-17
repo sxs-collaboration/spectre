@@ -88,6 +88,7 @@ struct BinaryVariables
 
   const tnsr::I<DataVector, Dim>& x;
   const double angular_velocity;
+  const double expansion;
   const std::optional<std::array<double, 2>> falloff_widths;
   const std::array<tnsr::I<DataVector, Dim>, 2> x_isolated;
   const std::array<DataVector, 2> windows;
@@ -184,9 +185,11 @@ struct Binary {
  * coordinates where the two objects are initially at rest we prescribe the
  * background shift
  *
- * \f{equation} \beta^i_\mathrm{background} = (-\Omega y, \Omega x, 0) \f}
+ * \f{equation} \beta^i_\mathrm{background} = (-\Omega y, \Omega x, 0) +
+ * \dot{a}_0 x^i \f}
  *
- * where \f$\Omega\f$ is the angular-velocity parameter.
+ * where \f$\Omega\f$ is the angular-velocity parameter and \f$\dot{a}_0\f$
+ * is an expansion parameter. Both control the eccentricity of the orbit.
  */
 template <typename IsolatedObjectRegistrars,
           typename Registrars = tmpl::list<
@@ -215,7 +218,15 @@ class Binary : public ::AnalyticData<3, Registrars> {
     using type = std::unique_ptr<IsolatedObjectBase>;
   };
   struct AngularVelocity {
-    static constexpr Options::String help = "Orbital angular velocity";
+    static constexpr Options::String help =
+        "Orbital angular velocity 'Omega0' about the z-axis. Added to the "
+        "background shift as a term 'Omega0 x r'.";
+    using type = double;
+  };
+  struct Expansion {
+    static constexpr Options::String help =
+        "The expansion parameter 'adot0', which is a radial velocity over "
+        "radius. Added to the background shift as a term 'adot0 r^i'";
     using type = double;
   };
   struct FalloffWidths {
@@ -224,8 +235,8 @@ class Binary : public ::AnalyticData<3, Registrars> {
         "to disable the Gaussian falloff.";
     using type = Options::Auto<std::array<double, 2>, Options::AutoLabel::None>;
   };
-  using options =
-      tmpl::list<XCoords, ObjectA, ObjectB, AngularVelocity, FalloffWidths>;
+  using options = tmpl::list<XCoords, ObjectA, ObjectB, AngularVelocity,
+                             Expansion, FalloffWidths>;
   static constexpr Options::String help =
       "Binary compact-object data in general relativity, constructed from "
       "superpositions of two isolated objects.";
@@ -240,10 +251,12 @@ class Binary : public ::AnalyticData<3, Registrars> {
   Binary(std::array<double, 2> xcoords,
          std::unique_ptr<IsolatedObjectBase> object_a,
          std::unique_ptr<IsolatedObjectBase> object_b, double angular_velocity,
+         const double expansion,
          std::optional<std::array<double, 2>> falloff_widths)
       : xcoords_(xcoords),
         superposed_objects_({std::move(object_a), std::move(object_b)}),
         angular_velocity_(angular_velocity),
+        expansion_(expansion),
         falloff_widths_(falloff_widths) {}
 
   explicit Binary(CkMigrateMessage* m) : Base(m) {}
@@ -273,6 +286,7 @@ class Binary : public ::AnalyticData<3, Registrars> {
     p | xcoords_;
     p | superposed_objects_;
     p | angular_velocity_;
+    p | expansion_;
     p | falloff_widths_;
   }
 
@@ -282,6 +296,7 @@ class Binary : public ::AnalyticData<3, Registrars> {
     return superposed_objects_;
   }
   double angular_velocity() const { return angular_velocity_; }
+  double expansion() const { return expansion_; }
   const std::optional<std::array<double, 2>>& falloff_widths() const {
     return falloff_widths_;
   }
@@ -291,6 +306,7 @@ class Binary : public ::AnalyticData<3, Registrars> {
   std::array<std::unique_ptr<IsolatedObjectBase>, 2> superposed_objects_{};
   Xcts::Solutions::Flatness<> flatness_{};
   double angular_velocity_ = std::numeric_limits<double>::signaling_NaN();
+  double expansion_ = std::numeric_limits<double>::signaling_NaN();
   std::optional<std::array<double, 2>> falloff_widths_{};
 
   template <typename DataType, typename... RequestedTags>
@@ -330,6 +346,7 @@ class Binary : public ::AnalyticData<3, Registrars> {
         VarsComputer{{std::move(mesh), std::move(inv_jacobian)},
                      x,
                      angular_velocity_,
+                     expansion_,
                      falloff_widths_,
                      std::move(x_isolated),
                      std::move(windows),

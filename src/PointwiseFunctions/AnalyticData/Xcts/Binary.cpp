@@ -53,9 +53,11 @@ void BinaryVariables<DataType>::operator()(
     const gsl::not_null<tnsr::I<DataType, Dim>*> shift_background,
     const gsl::not_null<Cache*> /*cache*/,
     Tags::ShiftBackground<DataType, Dim, Frame::Inertial> /*meta*/) const {
-  get<0>(*shift_background) = -angular_velocity * get<1>(x);
-  get<1>(*shift_background) = angular_velocity * get<0>(x);
-  get<2>(*shift_background) = 0.;
+  get<0>(*shift_background) =
+      -angular_velocity * get<1>(x) + expansion * get<0>(x);
+  get<1>(*shift_background) =
+      angular_velocity * get<0>(x) + expansion * get<1>(x);
+  get<2>(*shift_background) = expansion * get<2>(x);
 }
 
 template <typename DataType>
@@ -67,6 +69,9 @@ void BinaryVariables<DataType>::operator()(
   std::fill(deriv_shift_background->begin(), deriv_shift_background->end(), 0.);
   get<1, 0>(*deriv_shift_background) = -angular_velocity;
   get<0, 1>(*deriv_shift_background) = angular_velocity;
+  get<0, 0>(*deriv_shift_background) = expansion;
+  get<1, 1>(*deriv_shift_background) = expansion;
+  get<2, 2>(*deriv_shift_background) = expansion;
 }
 
 template <typename DataType>
