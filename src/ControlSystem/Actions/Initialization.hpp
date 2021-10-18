@@ -32,9 +32,9 @@ namespace Actions {
  *   - `control_system::Tags::Averager<2>`
  *   - `control_system::Tags::Controller<2>`
  *   - `control_system::Tags::TimescaleTuner`
+ *   - `control_system::Tags::ControlSystemName`
  * - Removes: Nothing
  * - Modifies:
- *   - `control_system::Tags::ControlSystemName`
  *   - `control_system::Tags::Controller<2>`
  *
  * \note This action relies on the `SetupDataBox` aggregated initialization
@@ -51,7 +51,8 @@ struct Initialize {
   using tags_to_be_initialized =
       tmpl::list<control_system::Tags::Averager<deriv_order>,
                  control_system::Tags::Controller<deriv_order>,
-                 control_system::Tags::TimescaleTuner>;
+                 control_system::Tags::TimescaleTuner,
+                 control_system::Tags::ControlSystemName>;
 
   using simple_tags =
       tmpl::append<tags_to_be_initialized, typename ControlSystem::simple_tags>;
@@ -71,7 +72,7 @@ struct Initialize {
         db::get<control_system::Tags::ControlSystemInputs<ControlSystem>>(box);
     ::Initialization::mutate_assign<tags_to_be_initialized>(
         make_not_null(&box), option_holder.averager, option_holder.controller,
-        option_holder.tuner);
+        option_holder.tuner, ControlSystem::name());
 
     // Set the initial time between updates using the initial timescale
     const auto& tuner = db::get<control_system::Tags::TimescaleTuner>(box);
@@ -83,10 +84,6 @@ struct Initialize {
           controller->assign_time_between_updates(current_min_timescale);
         });
 
-    db::mutate<control_system::Tags::ControlSystemName>(
-        make_not_null(&box), [](const gsl::not_null<std::string*> tag0) {
-          *tag0 = ControlSystem::name();
-        });
     return std::forward_as_tuple(std::move(box));
   }
 };

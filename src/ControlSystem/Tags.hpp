@@ -12,6 +12,7 @@
 
 #include "ControlSystem/Averager.hpp"
 #include "ControlSystem/Controller.hpp"
+#include "ControlSystem/Protocols/ControlSystem.hpp"
 #include "ControlSystem/TimescaleTuner.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -23,11 +24,12 @@
 #include "Time/Tags.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/MakeWithValue.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace control_system {
 /// \cond
-template <size_t DerivOrder>
+template <typename ControlSystem>
 struct OptionHolder;
 /// \endcond
 
@@ -50,13 +52,21 @@ struct ControlSystemGroup {
 /// control systems will have a unique name.
 template <typename ControlSystem>
 struct ControlSystemInputs {
-  static constexpr size_t deriv_order = ControlSystem::deriv_order;
-  using type = control_system::OptionHolder<deriv_order>;
+  using type = control_system::OptionHolder<ControlSystem>;
   static constexpr Options::String help{"Options for a control system."};
   static std::string name() { return ControlSystem::name(); }
   using group = ControlSystemGroup;
 };
 }  // namespace OptionTags
+
+/// \ingroup ControlSystemGroup
+/// Alias to get all the option holders from a list of control systems. This is
+/// useful in the `option_tags` alias of simple tags for getting all the options
+/// from control systems.
+template <typename ControlSystems>
+using inputs =
+    tmpl::transform<ControlSystems,
+                    tmpl::bind<OptionTags::ControlSystemInputs, tmpl::_1>>;
 
 /// \ingroup ControlSystemGroup
 /// All DataBox tags related to the control system
@@ -77,8 +87,7 @@ struct ControlSystemName : db::SimpleTag {
 /// DataBox.
 template <typename ControlSystem>
 struct ControlSystemInputs : db::SimpleTag {
-  static constexpr size_t deriv_order = ControlSystem::deriv_order;
-  using type = control_system::OptionHolder<deriv_order>;
+  using type = control_system::OptionHolder<ControlSystem>;
   using option_tags =
       tmpl::list<OptionTags::ControlSystemInputs<ControlSystem>>;
 
@@ -175,17 +184,21 @@ struct MeasurementTimescales : db::SimpleTag {
 /// This struct collects all the options for a given control system during
 /// option parsing. Then during initialization, the options can be retrieved via
 /// their public member names and assigned to their corresponding DataBox tags.
-template <size_t DerivOrder>
+template <typename ControlSystem>
 struct OptionHolder {
+  static_assert(tt::assert_conforms_to<
+                ControlSystem, control_system::protocols::ControlSystem>);
+  using control_system = ControlSystem;
+  static constexpr size_t deriv_order = control_system::deriv_order;
   struct Averager {
-    using type = ::Averager<DerivOrder>;
+    using type = ::Averager<deriv_order>;
     static constexpr Options::String help = {
         "Averages the derivatives of the control error and possibly the "
         "control error itself."};
   };
 
   struct Controller {
-    using type = ::Controller<DerivOrder>;
+    using type = ::Controller<deriv_order>;
     static constexpr Options::String help = {
         "Computes the control signal which will be used to reset the functions "
         "of time."};
@@ -201,8 +214,8 @@ struct OptionHolder {
   using options = tmpl::list<Averager, Controller, TimescaleTuner>;
   static constexpr Options::String help = {"Options for a control system."};
 
-  OptionHolder(::Averager<DerivOrder> input_averager,
-               ::Controller<DerivOrder> input_controller,
+  OptionHolder(::Averager<deriv_order> input_averager,
+               ::Controller<deriv_order> input_controller,
                ::TimescaleTuner input_tuner)
       : averager(std::move(input_averager)),
         controller(std::move(input_controller)),
@@ -222,10 +235,10 @@ struct OptionHolder {
     p | tuner;
   };
 
-  // These members are specifically made pubic for easy access during
+  // These members are specifically made public for easy access during
   // initialization
-  ::Averager<DerivOrder> averager{};
-  ::Controller<DerivOrder> controller{};
+  ::Averager<deriv_order> averager{};
+  ::Controller<deriv_order> controller{};
   ::TimescaleTuner tuner{};
 };
 }  // namespace control_system
