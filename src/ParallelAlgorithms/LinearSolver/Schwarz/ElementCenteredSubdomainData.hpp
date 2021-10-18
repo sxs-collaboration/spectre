@@ -12,10 +12,58 @@
 #include "DataStructures/Variables.hpp"
 #include "NumericalAlgorithms/LinearSolver/InnerProduct.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/OverlapHelpers.hpp"
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace LinearSolver::Schwarz {
+
+namespace detail {
+// Defines a consistent ordering of overlap IDs
+template <size_t Dim, typename ValueType>
+void ordered_overlap_ids(
+    const gsl::not_null<std::vector<OverlapId<Dim>>*> overlap_ids,
+    const OverlapMap<Dim, ValueType>& overlap_map) {
+  // Return early if the overlap IDs haven't changed
+  if (overlap_ids->size() == overlap_map.size() and
+      alg::all_of(*overlap_ids,
+                  [&overlap_map](const OverlapId<Dim>& overlap_id) {
+                    return overlap_map.contains(overlap_id);
+                  })) {
+    return;
+  }
+  overlap_ids->resize(overlap_map.size());
+  std::transform(overlap_map.begin(), overlap_map.end(), overlap_ids->begin(),
+                 [](const auto& overlap_id_and_value) {
+                   return overlap_id_and_value.first;
+                 });
+  std::sort(overlap_ids->begin(), overlap_ids->end(),
+            [](const OverlapId<Dim>& lhs, const OverlapId<Dim>& rhs) {
+              if (lhs.first.axis() != rhs.first.axis()) {
+                return lhs.first.axis() < rhs.first.axis();
+              }
+              if (lhs.first.side() != rhs.first.side()) {
+                return lhs.first.side() < rhs.first.side();
+              }
+              if (lhs.second.block_id() != rhs.second.block_id()) {
+                return lhs.second.block_id() < rhs.second.block_id();
+              }
+              for (size_t d = 0; d < Dim; ++d) {
+                const auto lhs_segment_id = lhs.second.segment_id(d);
+                const auto rhs_segment_id = rhs.second.segment_id(d);
+                if (lhs_segment_id.refinement_level() !=
+                    rhs_segment_id.refinement_level()) {
+                  return lhs_segment_id.refinement_level() <
+                         rhs_segment_id.refinement_level();
+                }
+                if (lhs_segment_id.index() != rhs_segment_id.index()) {
+                  return lhs_segment_id.index() < rhs_segment_id.index();
+                }
+              }
+              return false;
+            });
+}
+}  // namespace detail
 
 /// \cond
 template <bool Const, size_t Dim, typename TagsList>
@@ -84,9 +132,17 @@ struct ElementCenteredSubdomainData {
           return size + overlap_id_and_data.second.size();
         });
   }
-  iterator begin() { return {this}; }
+  iterator begin() {
+    detail::ordered_overlap_ids(make_not_null(&ordered_overlap_ids_),
+                                overlap_data);
+    return {this};
+  }
   iterator end() { return {}; }
-  const_iterator begin() const { return {this}; }
+  const_iterator begin() const {
+    detail::ordered_overlap_ids(make_not_null(&ordered_overlap_ids_),
+                                overlap_data);
+    return {this};
+  }
   const_iterator end() const { return {}; }
   const_iterator cbegin() const { return begin(); }
   const_iterator cend() const { return end(); }
@@ -139,6 +195,14 @@ struct ElementCenteredSubdomainData {
 
   ElementData element_data{};
   OverlapMap<Dim, OverlapData> overlap_data{};
+
+  private:
+   // Cache for iterators, so they don't have to allocate, fill and sort this
+   // vector every time
+   mutable std::vector<OverlapId<Dim>> ordered_overlap_ids_{};
+
+   friend ElementCenteredSubdomainDataIterator<false, Dim, TagsList>;
+   friend ElementCenteredSubdomainDataIterator<true, Dim, TagsList>;
 };
 
 template <size_t Dim, typename LhsTagsList, typename RhsTagsList>
@@ -201,47 +265,6 @@ bool operator!=(const ElementCenteredSubdomainData<Dim, TagsList>& lhs,
   return not(lhs == rhs);
 }
 
-namespace detail {
-// Defines a consistent ordering of overlap IDs
-template <size_t Dim, typename ValueType>
-std::vector<OverlapId<Dim>> ordered_overlap_ids(
-    const OverlapMap<Dim, ValueType>& overlap_map) {
-  std::vector<OverlapId<Dim>> overlap_ids{};
-  overlap_ids.reserve(overlap_map.size());
-  std::transform(overlap_map.begin(), overlap_map.end(),
-                 std::back_inserter(overlap_ids),
-                 [](const auto& overlap_id_and_value) {
-                   return overlap_id_and_value.first;
-                 });
-  std::sort(overlap_ids.begin(), overlap_ids.end(),
-            [](const OverlapId<Dim>& lhs, const OverlapId<Dim>& rhs) {
-              if (lhs.first.axis() != rhs.first.axis()) {
-                return lhs.first.axis() < rhs.first.axis();
-              }
-              if (lhs.first.side() != rhs.first.side()) {
-                return lhs.first.side() < rhs.first.side();
-              }
-              if (lhs.second.block_id() != rhs.second.block_id()) {
-                return lhs.second.block_id() < rhs.second.block_id();
-              }
-              for (size_t d = 0; d < Dim; ++d) {
-                const auto lhs_segment_id = lhs.second.segment_id(d);
-                const auto rhs_segment_id = rhs.second.segment_id(d);
-                if (lhs_segment_id.refinement_level() !=
-                    rhs_segment_id.refinement_level()) {
-                  return lhs_segment_id.refinement_level() <
-                         rhs_segment_id.refinement_level();
-                }
-                if (lhs_segment_id.index() != rhs_segment_id.index()) {
-                  return lhs_segment_id.index() < rhs_segment_id.index();
-                }
-              }
-              return false;
-            });
-  return overlap_ids;
-}
-}  // namespace detail
-
 /*!
  * \brief Iterate over `LinearSolver::Schwarz::ElementCenteredSubdomainData`
  *
@@ -275,12 +298,12 @@ struct ElementCenteredSubdomainDataIterator {
 
   /// Construct begin state
   ElementCenteredSubdomainDataIterator(PtrType data) : data_(data) {
-    overlap_ids_ = detail::ordered_overlap_ids(data_->overlap_data);
     reset();
   }
 
   void reset() {
-    overlap_index_ = (data_->element_data.size() == 0 and overlap_ids_.empty())
+    overlap_index_ = (data_->element_data.size() == 0 and
+                      data_->ordered_overlap_ids_.empty())
                          ? std::numeric_limits<size_t>::max()
                          : 0;
     update_vars_ref();
@@ -300,7 +323,7 @@ struct ElementCenteredSubdomainDataIterator {
       update_vars_ref();
       data_index_ = 0;
     }
-    if (overlap_index_ == overlap_ids_.size() + 1) {
+    if (overlap_index_ == data_->ordered_overlap_ids_.size() + 1) {
       overlap_index_ = std::numeric_limits<size_t>::max();
     }
     return *this;
@@ -316,12 +339,13 @@ struct ElementCenteredSubdomainDataIterator {
     // hash, so it's important for performance to avoid repeating it at every
     // data index. Instead, we update this reference only when the overlap index
     // changes.
-    if (overlap_index_ > overlap_ids_.size()) {
+    if (overlap_index_ > data_->ordered_overlap_ids_.size()) {
       return;
     }
     vars_ref_ = overlap_index_ == 0
                     ? &data_->element_data
-                    : &data_->overlap_data.at(overlap_ids_[overlap_index_ - 1]);
+                    : &data_->overlap_data.at(
+                          data_->ordered_overlap_ids_[overlap_index_ - 1]);
   }
 
   friend bool operator==(const ElementCenteredSubdomainDataIterator& lhs,
@@ -336,7 +360,6 @@ struct ElementCenteredSubdomainDataIterator {
   }
 
   PtrType data_;
-  std::vector<OverlapId<Dim>> overlap_ids_;
   size_t overlap_index_;
   size_t data_index_;
   VarsPtrType vars_ref_ = nullptr;

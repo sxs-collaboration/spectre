@@ -165,7 +165,7 @@ void HalfSpaceMirrorVariables<DataType>::operator()(
               },
               lower_boundary, absolute_tolerance, relative_tolerance);
 
-      if (not equal_within_roundoff(r, 0)) {
+      if (not equal_within_roundoff(r, 0.)) {
         const double strain_rz =
             -prefactor *
             integration(

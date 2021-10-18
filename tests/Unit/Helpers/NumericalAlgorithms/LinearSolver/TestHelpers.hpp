@@ -19,9 +19,11 @@ namespace TestHelpers::LinearSolver {
 
 struct ApplyMatrix {
   DenseMatrix<double> matrix;
+  mutable size_t invocations = 0;
   void operator()(const gsl::not_null<DenseVector<double>*> result,
                   const DenseVector<double>& operand) const {
     *result = matrix * operand;
+    ++invocations;
   }
 };
 

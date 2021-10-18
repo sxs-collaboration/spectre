@@ -64,6 +64,7 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.Gmres",
               local_has_converged.residual_magnitude());
         });
     REQUIRE(has_converged);
+    CHECK(linear_operator.invocations == 3);
     CHECK(has_converged.reason() == Convergence::Reason::AbsoluteResidual);
     CHECK(has_converged.num_iterations() == 2);
     CHECK(has_converged.residual_magnitude() <= 1.e-14);
@@ -78,10 +79,12 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.Gmres",
     // [gmres_example]
     {
       INFO("Check that a solved system terminates early");
+      linear_operator.invocations = 0;
       const auto second_has_converged =
           gmres.solve(make_not_null(&initial_guess_in_solution_out),
                       linear_operator, source);
       REQUIRE(second_has_converged);
+      CHECK(linear_operator.invocations == 1);
       CHECK(second_has_converged.reason() ==
             Convergence::Reason::AbsoluteResidual);
       CHECK(second_has_converged.num_iterations() == 0);
@@ -89,11 +92,15 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.Gmres",
     }
     const auto check_second_solve = [&linear_operator](
                                         const auto& local_gmres) {
+      linear_operator.invocations = 0;
       DenseVector<double> local_initial_guess_in_solution_out{0., 0.};
       const auto local_has_converged = local_gmres.solve(
           make_not_null(&local_initial_guess_in_solution_out), linear_operator,
           DenseVector<double>{2, 1});
       REQUIRE(local_has_converged);
+      // The initial guess is zero, so the initial operator should have been
+      // skipped, leaving only two operator applications for two iterations
+      CHECK(linear_operator.invocations == 2);
       CHECK(local_has_converged.reason() ==
             Convergence::Reason::AbsoluteResidual);
       CHECK(local_has_converged.num_iterations() == 2);

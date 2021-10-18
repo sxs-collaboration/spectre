@@ -21,6 +21,7 @@
 #include "Options/Auto.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
+#include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Registration.hpp"
 #include "Utilities/TMPL.hpp"
@@ -379,13 +380,20 @@ Gmres<VarsType, Preconditioner, LinearSolverRegistrars>::solve(
   while (not has_converged) {
     const auto& initial_guess = *initial_guess_in_solution_out;
     auto& initial_operand = basis_history_[0];
-    std::apply(
-        linear_operator,
-        std::tuple_cat(std::forward_as_tuple(make_not_null(&initial_operand),
-                                             initial_guess),
-                       operator_args));
-    initial_operand *= -1.;
-    initial_operand += source;
+    // Apply the linear operator to the initial guess. This can be skipped if
+    // the initial guess is zero, because then the linear operator applied to it
+    // is also zero.
+    if (equal_within_roundoff(initial_guess, 0.)) {
+      initial_operand = source;
+    } else {
+      std::apply(
+          linear_operator,
+          std::tuple_cat(std::forward_as_tuple(make_not_null(&initial_operand),
+                                               initial_guess),
+                         operator_args));
+      initial_operand *= -1.;
+      initial_operand += source;
+    }
     const double initial_residual_magnitude =
         sqrt(inner_product(initial_operand, initial_operand));
     has_converged = Convergence::HasConverged{convergence_criteria_, iteration,

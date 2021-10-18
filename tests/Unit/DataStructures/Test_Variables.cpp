@@ -29,6 +29,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"  // IWYU pragma: keep
 #include "Utilities/MakeString.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits/GetFundamentalType.hpp"
@@ -896,6 +897,31 @@ void test_variables_from_tagged_tuple() {
   CHECK(assigned == created);
 }
 
+template <typename VectorType>
+void test_variables_equal_within_roundoff() {
+  INFO(pretty_type::short_name<VectorType>());
+  MAKE_GENERATOR(gen);
+  using value_type = typename VectorType::value_type;
+  UniformCustomDistribution<tt::get_fundamental_type_t<value_type>>
+      roundoff_dist{-1.e-12, 1.e-12};
+  UniformCustomDistribution<size_t> sdist{5, 20};
+  const size_t num_points = sdist(gen);
+  using Vars = Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>,
+                                    TestHelpers::Tags::Scalar<VectorType>>>;
+  Vars vars{num_points, 0.};
+  CHECK(equal_within_roundoff(vars, 0.));
+  CHECK(equal_within_roundoff(vars, 0., 0.));
+  CHECK(equal_within_roundoff(0., vars));
+  CHECK(equal_within_roundoff(vars, Vars{num_points, 0.}));
+  get(get<TestHelpers::Tags::Scalar<VectorType>>(vars)) += 1.;
+  CHECK_FALSE(equal_within_roundoff(vars, 0.));
+  CHECK_FALSE(equal_within_roundoff(vars, Vars{num_points, 0.}));
+  vars = make_with_random_values<Vars>(
+      make_not_null(&gen), make_not_null(&roundoff_dist), num_points);
+  CHECK_FALSE(equal_within_roundoff(vars, 0., 0.));
+  CHECK(equal_within_roundoff(vars, 0., 1.e-12));
+}
+
 SPECTRE_TEST_CASE("Unit.DataStructures.Variables", "[DataStructures][Unit]") {
   {
     INFO("Test Variables construction, access, and assignment");
@@ -967,6 +993,14 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables", "[DataStructures][Unit]") {
     test_variables_from_tagged_tuple<ComplexModalVector>();
     test_variables_from_tagged_tuple<DataVector>();
     test_variables_from_tagged_tuple<ModalVector>();
+  }
+
+  {
+    INFO("Test equal_within_roundoff with Variables");
+    test_variables_equal_within_roundoff<ComplexDataVector>();
+    test_variables_equal_within_roundoff<ComplexModalVector>();
+    test_variables_equal_within_roundoff<DataVector>();
+    test_variables_equal_within_roundoff<ModalVector>();
   }
 
   TestHelpers::db::test_simple_tag<Tags::TempScalar<1>>("TempTensor1");
