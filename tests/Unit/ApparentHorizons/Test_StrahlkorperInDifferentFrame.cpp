@@ -26,9 +26,12 @@ void test_strahlkorper_in_different_frame() {
 
   // Set up a Strahlkorper corresponding to a Schwarzschild hole of
   // mass 1, in the grid frame.
+  // Center the Strahlkorper at (0.03,0.02,0.01) so that we test a
+  // nonzero center.
+  const std::array<double, 3> strahlkorper_grid_center = {0.03, 0.02, 0.01};
   const size_t l_max = 8;
   const Strahlkorper<Frame::Grid> strahlkorper_grid(l_max, 2.0,
-                                                   {{0.0, 0.0, 0.0}});
+                                                    strahlkorper_grid_center);
 
   // Create a Domain.
   // We choose a spherical shell domain extending from radius 1.9M to
@@ -59,7 +62,9 @@ void test_strahlkorper_in_different_frame() {
 
   // Now compare.
   const Strahlkorper<Frame::Inertial> strahlkorper_expected(
-      l_max, 2.0, {{0.005, 0.01, 0.015}});
+      l_max, 2.0,
+      {{strahlkorper_grid_center[0] + 0.005, strahlkorper_grid_center[1] + 0.01,
+        strahlkorper_grid_center[2] + 0.015}});
   CHECK_ITERABLE_APPROX(strahlkorper_expected.physical_center(),
                         strahlkorper_inertial.physical_center());
   CHECK_ITERABLE_APPROX(strahlkorper_expected.coefficients(),
