@@ -54,6 +54,16 @@ Shell::Shell(
       inner_boundary_condition_(std::move(inner_boundary_condition)),
       outer_boundary_condition_(std::move(outer_boundary_condition)) {
   number_of_layers_ = radial_partitioning_.size() + 1;
+  blocks_per_layer_ =
+      which_wedges_ == ShellWedges::All             ?  6
+    : which_wedges_ == ShellWedges::AllAndHalvesXY  ? 10
+    : which_wedges_ == ShellWedges::AllAndHalvesXZ  ? 10
+    : which_wedges_ == ShellWedges::AllAndHalvesYZ  ? 10
+    : which_wedges_ == ShellWedges::FourOnEquatorXY ?  4
+    : which_wedges_ == ShellWedges::FourOnEquatorXZ ?  4
+    : which_wedges_ == ShellWedges::FourOnEquatorYZ ?  4
+    : 1;
+
   if (equatorial_compression.has_value()) {
     aspect_ratio_ = equatorial_compression.value().aspect_ratio;
     index_polar_axis_ = equatorial_compression.value().index_polar_axis;
@@ -136,7 +146,7 @@ Domain<3> Shell::create_domain() const {
       CoordinateMapBase<Frame::BlockLogical, Frame::Inertial, 3>>>
       coord_maps = sph_wedge_coordinate_maps<Frame::Inertial>(
           inner_radius_, outer_radius_, 1.0, 1.0, use_equiangular_map_, 0.0,
-          false, aspect_ratio_, index_polar_axis_, radial_partitioning_,
+          aspect_ratio_, index_polar_axis_, radial_partitioning_,
           radial_distribution_, which_wedges_);
 
   std::vector<DirectionMap<
@@ -145,16 +155,12 @@ Domain<3> Shell::create_domain() const {
 
   if (inner_boundary_condition_ != nullptr) {
     // This assumes 6 wedges making up the shell. If you need to support the
-    // FourOnEquator or OneAlongMinusX configurations the below code needs to be
-    // updated. This would require adding more boundary condition options to the
-    // domain creator.
-    const size_t blocks_per_layer =
-        which_wedges_ == ShellWedges::All             ? 6
-        : which_wedges_ == ShellWedges::FourOnEquator ? 4
-                                                      : 1;
-
-    boundary_conditions_all_blocks.resize(blocks_per_layer * number_of_layers_);
-    for (size_t block_id = 0; block_id < blocks_per_layer; ++block_id) {
+    // configurations other than the full Shell with six full wedges,
+    // the below code needs to be updated. This would require adding more
+    // boundary condition options to the domain creator.
+    boundary_conditions_all_blocks.resize(blocks_per_layer_ *
+                                          number_of_layers_);
+    for (size_t block_id = 0; block_id < blocks_per_layer_; ++block_id) {
       boundary_conditions_all_blocks[block_id][Direction<3>::lower_zeta()] =
           inner_boundary_condition_->get_clone();
       boundary_conditions_all_blocks[boundary_conditions_all_blocks.size() -
@@ -184,28 +190,15 @@ Domain<3> Shell::create_domain() const {
 }
 
 std::vector<std::array<size_t, 3>> Shell::initial_extents() const {
-  std::vector<std::array<size_t, 3>>::size_type num_wedges =
-      6 * number_of_layers_;
-  if (UNLIKELY(which_wedges_ == ShellWedges::FourOnEquator)) {
-    num_wedges = 4 * number_of_layers_;
-  } else if (UNLIKELY(which_wedges_ == ShellWedges::OneAlongMinusX)) {
-    num_wedges = number_of_layers_;
-  }
   return {
-      num_wedges,
+      blocks_per_layer_ * number_of_layers_,
       {{initial_number_of_grid_points_[1], initial_number_of_grid_points_[1],
         initial_number_of_grid_points_[0]}}};
 }
 
 std::vector<std::array<size_t, 3>> Shell::initial_refinement_levels() const {
-  std::vector<std::array<size_t, 3>>::size_type num_wedges =
-      6 * number_of_layers_;
-  if (UNLIKELY(which_wedges_ == ShellWedges::FourOnEquator)) {
-    num_wedges = 4 * number_of_layers_;
-  } else if (UNLIKELY(which_wedges_ == ShellWedges::OneAlongMinusX)) {
-    num_wedges = number_of_layers_;
-  }
-  return {num_wedges, make_array<3>(initial_refinement_)};
+  return {blocks_per_layer_ * number_of_layers_,
+          make_array<3>(initial_refinement_)};
 }
 
 std::unordered_map<std::string,

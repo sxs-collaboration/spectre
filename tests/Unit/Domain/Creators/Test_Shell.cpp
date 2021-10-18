@@ -22,6 +22,7 @@
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
+#include "Domain/CoordinateMaps/DiscreteRotation.hpp"
 #include "Domain/CoordinateMaps/EquatorialCompression.hpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
@@ -169,7 +170,7 @@ void test_shell_construction(
       {{Direction<3>::upper_zeta()}, {Direction<3>::lower_zeta()}}};
 
   std::vector<std::array<size_t, 3>>::size_type num_pieces = 6;
-  if (UNLIKELY(which_wedges == ShellWedges::FourOnEquator)) {
+  if (UNLIKELY(which_wedges == ShellWedges::FourOnEquatorXY)) {
     num_pieces = 4;
     expected_block_neighbors = {
         {{Direction<3>::upper_xi(), {2, half_turn_about_zeta}},
@@ -250,7 +251,7 @@ void test_shell_construction(
                        {Direction<3>::lower_zeta(), Direction<3>::lower_xi(),
                         Direction<3>::upper_eta()}}},
                    use_equiangular_map, Halves::Both, radial_distribution});
-    if (UNLIKELY(which_wedges == ShellWedges::FourOnEquator)) {
+    if (UNLIKELY(which_wedges == ShellWedges::FourOnEquatorXY)) {
       vector_of_maps.erase(vector_of_maps.begin(), vector_of_maps.begin() + 2);
     } else if (UNLIKELY(which_wedges == ShellWedges::OneAlongMinusX)) {
       vector_of_maps.erase(vector_of_maps.begin(), vector_of_maps.begin() + 5);
@@ -345,7 +346,7 @@ void test_shell_construction(
                      Direction<3>::upper_eta()}}},
                 use_equiangular_map, Halves::Both, radial_distribution},
             compression, translation));
-    if (UNLIKELY(which_wedges == ShellWedges::FourOnEquator)) {
+    if (UNLIKELY(which_wedges == ShellWedges::FourOnEquatorXY)) {
       vector_of_maps.erase(vector_of_maps.begin(), vector_of_maps.begin() + 2);
     } else if (UNLIKELY(which_wedges == ShellWedges::OneAlongMinusX)) {
       vector_of_maps.erase(vector_of_maps.begin(), vector_of_maps.begin() + 5);
@@ -878,7 +879,7 @@ void test_shell_factory_wedges_four_on_equator() {
       "    IndexPolarAxis: 2\n"
       "  RadialPartitioning: []\n"
       "  RadialDistribution: [Logarithmic]\n"
-      "  WhichWedges: FourOnEquator\n"
+      "  WhichWedges: FourOnEquatorXY\n"
       "  TimeDependence: None\n");
   const double inner_radius = 1.0;
   const double outer_radius = 3.0;
@@ -887,7 +888,7 @@ void test_shell_factory_wedges_four_on_equator() {
   const double aspect_ratio = 2.0;
   const size_t index_polar_axis = 2;
   const bool use_logarithmic_map = true;
-  const ShellWedges which_wedges = ShellWedges::FourOnEquator;
+  const ShellWedges which_wedges = ShellWedges::FourOnEquatorXY;
   test_shell_construction(
       dynamic_cast<const creators::Shell&>(*shell), inner_radius, outer_radius,
       false, grid_points_r_angular, {4, make_array<3>(refinement_level)},
