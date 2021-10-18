@@ -128,6 +128,36 @@ void test_element_id() {
   CHECK(element_five == element_four);
   CHECK(element_six != element_four);
 
+  // Test comparison operator
+  check_cmp(ElementId<1>{1, {{{1, 0}}}, 0}, ElementId<1>{1, {{{1, 1}}}, 0});
+  check_cmp(ElementId<1>{0, {{{1, 0}}}, 0}, ElementId<1>{1, {{{1, 0}}}, 0});
+  check_cmp(ElementId<1>{1, {{{0, 0}}}, 0}, ElementId<1>{1, {{{1, 0}}}, 0});
+  check_cmp(ElementId<1>{1, {{{1, 0}}}, 0}, ElementId<1>{1, {{{1, 0}}}, 1});
+  check_cmp(ElementId<2>{1, {{{1, 0}, {2, 1}}}, 0},
+            ElementId<2>{1, {{{1, 0}, {2, 2}}}, 0});
+  check_cmp(ElementId<2>{1, {{{1, 0}, {2, 1}}}, 0},
+            ElementId<2>{1, {{{1, 1}, {2, 1}}}, 0});
+  check_cmp(ElementId<2>{1, {{{1, 0}, {2, 1}}}, 0},
+            ElementId<2>{1, {{{1, 1}, {1, 1}}}, 0});
+  check_cmp(ElementId<2>{1, {{{0, 0}, {2, 1}}}, 0},
+            ElementId<2>{1, {{{1, 0}, {1, 1}}}, 0});
+  check_cmp(ElementId<2>{1, {{{1, 1}, {1, 1}}}, 0},
+            ElementId<2>{1, {{{1, 1}, {2, 1}}}, 0});
+  check_cmp(ElementId<2>{0, {{{1, 0}, {2, 1}}}, 0},
+            ElementId<2>{1, {{{1, 0}, {2, 1}}}, 0});
+  check_cmp(ElementId<2>{1, {{{1, 0}, {2, 1}}}, 0},
+            ElementId<2>{1, {{{1, 0}, {2, 1}}}, 1});
+  check_cmp(ElementId<3>{1, {{{1, 0}, {2, 1}, {1, 0}}}, 0},
+            ElementId<3>{1, {{{1, 0}, {2, 2}, {1, 0}}}, 0});
+  check_cmp(ElementId<3>{1, {{{1, 0}, {2, 1}, {1, 0}}}, 0},
+            ElementId<3>{1, {{{1, 1}, {2, 1}, {1, 0}}}, 0});
+  check_cmp(ElementId<3>{1, {{{1, 0}, {2, 1}, {1, 0}}}, 0},
+            ElementId<3>{1, {{{1, 0}, {2, 1}, {1, 1}}}, 0});
+  check_cmp(ElementId<3>{0, {{{1, 0}, {2, 1}, {1, 0}}}, 0},
+            ElementId<3>{1, {{{1, 0}, {2, 1}, {1, 0}}}, 0});
+  check_cmp(ElementId<3>{1, {{{1, 0}, {2, 1}, {1, 0}}}, 0},
+            ElementId<3>{1, {{{1, 0}, {2, 1}, {1, 0}}}, 1});
+
   // Test pup operations:
   test_serialization(element_one);
   test_serialization(element_six);

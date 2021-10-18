@@ -148,24 +148,24 @@ inline Direction<VolumeDim> Direction<VolumeDim>::opposite() const {
 template <>
 inline const std::array<Direction<1>, 2>& Direction<1>::all_directions() {
   const static auto directions = std::array<Direction<1>, 2>{
-      {Direction<1>::upper_xi(), Direction<1>::lower_xi()}};
+      {Direction<1>::lower_xi(), Direction<1>::upper_xi()}};
   return directions;
 }
 
 template <>
 inline const std::array<Direction<2>, 4>& Direction<2>::all_directions() {
   const static auto directions = std::array<Direction<2>, 4>{
-      {Direction<2>::upper_xi(), Direction<2>::lower_xi(),
-       Direction<2>::upper_eta(), Direction<2>::lower_eta()}};
+      {Direction<2>::lower_xi(), Direction<2>::upper_xi(),
+       Direction<2>::lower_eta(), Direction<2>::upper_eta()}};
   return directions;
 }
 
 template <>
 inline const std::array<Direction<3>, 6>& Direction<3>::all_directions() {
   const static auto directions = std::array<Direction<3>, 6>{
-      {Direction<3>::upper_xi(), Direction<3>::lower_xi(),
-       Direction<3>::upper_eta(), Direction<3>::lower_eta(),
-       Direction<3>::upper_zeta(), Direction<3>::lower_zeta()}};
+      {Direction<3>::lower_xi(), Direction<3>::upper_xi(),
+       Direction<3>::lower_eta(), Direction<3>::upper_eta(),
+       Direction<3>::lower_zeta(), Direction<3>::upper_zeta()}};
   return directions;
 }
 /// \endcond
@@ -180,6 +180,28 @@ template <size_t VolumeDim>
 bool operator!=(const Direction<VolumeDim>& lhs,
                 const Direction<VolumeDim>& rhs) {
   return not(lhs == rhs);
+}
+
+/// Define an ordering of directions first by axis (xi, eta, zeta), then by side
+/// (lower, upper). There's no particular reason for this choice of ordering.
+template <size_t VolumeDim>
+bool operator<(const Direction<VolumeDim>& lhs,
+               const Direction<VolumeDim>& rhs);
+
+template <size_t VolumeDim>
+bool operator>(const Direction<VolumeDim>& lhs,
+               const Direction<VolumeDim>& rhs) {
+  return rhs < lhs;
+}
+template <size_t VolumeDim>
+bool operator<=(const Direction<VolumeDim>& lhs,
+                const Direction<VolumeDim>& rhs) {
+  return !(lhs > rhs);
+}
+template <size_t VolumeDim>
+bool operator>=(const Direction<VolumeDim>& lhs,
+                const Direction<VolumeDim>& rhs) {
+  return !(lhs < rhs);
 }
 
 template <size_t VolumeDim>

@@ -64,11 +64,22 @@ std::ostream& operator<<(std::ostream& os,
   return os;
 }
 
+template <size_t VolumeDim>
+bool operator<(const Direction<VolumeDim>& lhs,
+               const Direction<VolumeDim>& rhs) {
+  if (lhs.axis() != rhs.axis()) {
+    return lhs.axis() < rhs.axis();
+  }
+  return lhs.side() < rhs.side();
+}
+
 #define GET_DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATION(r, data)                                        \
   template std::ostream& operator<<(std::ostream&,                    \
                                     const Direction<GET_DIM(data)>&); \
+  template bool operator<(const Direction<GET_DIM(data)>& lhs,        \
+                          const Direction<GET_DIM(data)>& rhs);       \
   template void Direction<GET_DIM(data)>::pup(PUP::er&);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))

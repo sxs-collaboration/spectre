@@ -154,6 +154,33 @@ template <size_t VolumeDim>
 bool operator!=(const ElementId<VolumeDim>& lhs,
                 const ElementId<VolumeDim>& rhs);
 
+/// Define an ordering of element IDs first by grid index, then by block ID,
+/// then by segment ID in each dimension in turn. In each dimension, segment IDs
+/// are ordered first by refinement level (which will typically be the same when
+/// comparing two element IDs), and second by index. There's no particular
+/// reason for this choice of ordering. For applications such as distributing
+/// elements among cores, orderings such as defined by
+/// `domain::BlockZCurveProcDistribution` may be more appropriate.
+template <size_t VolumeDim>
+bool operator<(const ElementId<VolumeDim>& lhs,
+               const ElementId<VolumeDim>& rhs);
+
+template <size_t VolumeDim>
+bool operator>(const ElementId<VolumeDim>& lhs,
+               const ElementId<VolumeDim>& rhs) {
+  return rhs < lhs;
+}
+template <size_t VolumeDim>
+bool operator<=(const ElementId<VolumeDim>& lhs,
+                const ElementId<VolumeDim>& rhs) {
+  return !(lhs > rhs);
+}
+template <size_t VolumeDim>
+bool operator>=(const ElementId<VolumeDim>& lhs,
+                const ElementId<VolumeDim>& rhs) {
+  return !(lhs < rhs);
+}
+
 // ######################################################################
 // INLINE DEFINITIONS
 // ######################################################################
