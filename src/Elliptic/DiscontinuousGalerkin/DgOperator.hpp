@@ -187,6 +187,8 @@ zero_boundary_data_on_mortar(const Direction<Dim>& direction,
   boundary_data.field_data.initialize(face_num_points, 0.);
   get<Tags::PerpendicularNumPoints>(boundary_data.extra_data) =
       mesh.extents(direction.dimension());
+  // Possible optimization: Store face-normal magnitude on mortars in DataBox,
+  // so we don't have to project it here.
   get(get<Tags::ElementSize>(boundary_data.field_data)) =
       2. / get(face_normal_magnitude);
   return Spectral::needs_projection(face_mesh, mortar_mesh, mortar_size)
@@ -240,14 +242,19 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
     bool operator()(const Direction<Dim>& /*unused*/) const { return true; }
   };
 
+  struct NoDataIsZero {
+    bool operator()(const ElementId<Dim>& /*unused*/) const { return false; }
+  };
+
   static constexpr auto full_mortar_size =
       make_array<Dim - 1>(Spectral::MortarSize::Full);
 
-  template <bool DataIsZero, typename... PrimalVars, typename... AuxiliaryVars,
-            typename... PrimalFluxesVars, typename... AuxiliaryFluxesVars,
-            typename... PrimalMortarVars, typename... PrimalMortarFluxes,
-            typename TemporalId, typename ApplyBoundaryCondition,
-            typename... FluxesArgs, typename... SourcesArgs,
+  template <bool AllDataIsZero, typename... PrimalVars,
+            typename... AuxiliaryVars, typename... PrimalFluxesVars,
+            typename... AuxiliaryFluxesVars, typename... PrimalMortarVars,
+            typename... PrimalMortarFluxes, typename TemporalId,
+            typename ApplyBoundaryCondition, typename... FluxesArgs,
+            typename... SourcesArgs, typename DataIsZero = NoDataIsZero,
             typename DirectionsPredicate = AllDirections>
   static void prepare_mortar_data(
       const gsl::not_null<Variables<tmpl::list<AuxiliaryVars...>>*>
@@ -273,6 +280,7 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
       const std::tuple<FluxesArgs...>& fluxes_args,
       const std::tuple<SourcesArgs...>& sources_args,
       const DirectionMap<Dim, std::tuple<FluxesArgs...>>& fluxes_args_on_faces,
+      const DataIsZero& data_is_zero = NoDataIsZero{},
       const DirectionsPredicate& directions_predicate = AllDirections{}) {
     static_assert(
         sizeof...(PrimalVars) == sizeof...(PrimalFields) and
@@ -304,6 +312,11 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
                  << "' in dimension " << d << ".");
     }
 #endif  // SPECTRE_DEBUG
+    const bool local_data_is_zero = data_is_zero(element.id());
+    ASSERT(Linearized or not local_data_is_zero,
+           "Only a linear operator can take advantage of the knowledge that "
+           "the operand is zero. Don't return 'true' in 'data_is_zero' unless "
+           "you also set 'Linearized' to 'true'.");
     const size_t num_points = mesh.number_of_grid_points();
 
     // This function and the one below allocate various Variables to compute
@@ -321,9 +334,7 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
     // first derivative have to be added to `F_u(v)`. Therefore the second
     // derivative is taken after a communication break in the `apply_operator`
     // function below.
-    if constexpr (DataIsZero) {
-      (void)auxiliary_vars;
-      (void)auxiliary_fluxes;
+    if (AllDataIsZero or local_data_is_zero) {
       primal_fluxes->initialize(num_points, 0.);
     } else {
       // Compute the auxiliary fluxes
@@ -365,9 +376,12 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
     // Populate the mortar data on this element's side of the boundary so it's
     // ready to be sent to neighbors.
     for (const auto& direction : [&element]() -> const auto& {
-           if constexpr (DataIsZero) {
-             // Skipping internal boundaries for zero data because they won't
-             // contribute boundary corrections anyway.
+           if constexpr (AllDataIsZero) {
+             // Skipping internal boundaries for all-zero data because they
+             // won't contribute boundary corrections anyway (data on both sides
+             // of the boundary is the same). For all-zero data we are
+             // interested in external boundaries, to extract inhomogeneous
+             // boundary conditions from a non-linear operator.
              return element.external_boundaries();
            } else {
              (void)element;
@@ -378,6 +392,16 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
         continue;
       }
       const bool is_internal = element.neighbors().contains(direction);
+      // Skip directions altogether when both this element and all neighbors in
+      // the direction have zero data. These boundaries won't contribute
+      // corrections, because the data is the same on both sides. External
+      // boundaries also count as zero data here, because they are linearized
+      // (see assert above).
+      if (local_data_is_zero and
+          (not is_internal or
+           alg::all_of(element.neighbors().at(direction), data_is_zero))) {
+        continue;
+      }
       const auto face_mesh = mesh.slice_away(direction.dimension());
       const size_t face_num_points = face_mesh.number_of_grid_points();
       const auto& face_normal = face_normals.at(direction);
@@ -385,17 +409,19 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
       const auto& fluxes_args_on_face = fluxes_args_on_faces.at(direction);
       const size_t slice_index = index_to_slice_at(mesh.extents(), direction);
       Variables<tmpl::list<PrimalFluxesVars..., AuxiliaryFluxesVars...>>
-          fluxes_on_face{face_num_points};
+          fluxes_on_face{};
       Variables<tmpl::list<::Tags::NormalDotFlux<AuxiliaryFields>...>>
-          n_dot_aux_fluxes{face_num_points};
+          n_dot_aux_fluxes{};
       BoundaryData<tmpl::list<PrimalMortarVars...>,
                    tmpl::list<PrimalMortarFluxes...>>
           boundary_data{face_num_points};
-      if constexpr (DataIsZero) {
+      if (AllDataIsZero or local_data_is_zero) {
         // Just setting all boundary field data to zero. Variable-independent
         // data such as the element size will be set below.
         boundary_data.field_data.initialize(face_num_points, 0.);
       } else {
+        fluxes_on_face.initialize(face_num_points);
+        n_dot_aux_fluxes.initialize(face_num_points);
         // Compute F_u(n.F_v)
         fluxes_on_face.assign_subset(
             data_on_slice(*auxiliary_fluxes, mesh.extents(),
@@ -441,16 +467,21 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
 
       // Collect the remaining data that's needed on both sides of the boundary
       // These are actually constant throughout the solve, so a performance
-      // optimization could be to store them in the DataBox.
+      // optimization could be to store them in the DataBox. In particular, when
+      // the `local_data_is_zero` we don't have do projections at all if we
+      // store the face-normal magnitude on mortars in the DataBox.
       get<Tags::PerpendicularNumPoints>(boundary_data.extra_data) =
           mesh.extents(direction.dimension());
       get(get<Tags::ElementSize>(boundary_data.field_data)) =
           2. / get(face_normal_magnitude);
 
       if (is_internal) {
-        if constexpr (not DataIsZero) {
+        if constexpr (not AllDataIsZero) {
           // Project boundary data on internal faces to mortars
           for (const auto& neighbor_id : element.neighbors().at(direction)) {
+            if (local_data_is_zero and data_is_zero(neighbor_id)) {
+              continue;
+            }
             const ::dg::MortarId<Dim> mortar_id{direction, neighbor_id};
             const auto& mortar_mesh = all_mortar_meshes.at(mortar_id);
             const auto& mortar_size = all_mortar_sizes.at(mortar_id);
@@ -490,8 +521,13 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
         // the boundary conditions is taken from the "interior" side of the
         // boundary, i.e. with a normal vector that points _out_ of the
         // computational domain.
-        auto dirichlet_vars = data_on_slice(primal_vars, mesh.extents(),
-                                            direction.dimension(), slice_index);
+        Variables<tmpl::list<PrimalVars...>> dirichlet_vars{face_num_points};
+        if constexpr (AllDataIsZero) {
+          dirichlet_vars.initialize(face_num_points, 0.);
+        } else {
+          data_on_slice(make_not_null(&dirichlet_vars), primal_vars,
+                        mesh.extents(), direction.dimension(), slice_index);
+        }
         apply_boundary_condition(
             direction, make_not_null(&get<PrimalVars>(dirichlet_vars))...,
             make_not_null(&get<::Tags::NormalDotFlux<PrimalMortarVars>>(
@@ -500,6 +536,8 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
         // The n.F_u (Neumann-type conditions) are done, but we have to compute
         // the n.F_v (Dirichlet-type conditions) from the Dirichlet fields. We
         // re-use the memory buffer from above.
+        fluxes_on_face.initialize(face_num_points);
+        n_dot_aux_fluxes.initialize(face_num_points);
         std::apply(
             [&fluxes_on_face,
              &dirichlet_vars](const auto&... expanded_fluxes_args_on_face) {
@@ -577,10 +615,11 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
 
   // --- This is essentially a break to communicate the mortar data ---
 
-  template <bool DataIsZero, typename... OperatorTags, typename... PrimalVars,
-            typename... PrimalFluxesVars, typename... PrimalMortarVars,
-            typename... PrimalMortarFluxes, typename TemporalId,
-            typename... FluxesArgs, typename... SourcesArgs,
+  template <bool AllDataIsZero, typename... OperatorTags,
+            typename... PrimalVars, typename... PrimalFluxesVars,
+            typename... PrimalMortarVars, typename... PrimalMortarFluxes,
+            typename TemporalId, typename... FluxesArgs,
+            typename... SourcesArgs, typename DataIsZero = NoDataIsZero,
             typename DirectionsPredicate = AllDirections>
   static void apply_operator(
       const gsl::not_null<Variables<tmpl::list<OperatorTags...>>*>
@@ -595,7 +634,7 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
       // want to modify them by adding boundary corrections. E.g. linearized
       // sources use the nonlinear fields and fluxes as background fields.
       const Variables<tmpl::list<PrimalFluxesVars...>>& primal_fluxes,
-      const Mesh<Dim>& mesh,
+      const Element<Dim>& element, const Mesh<Dim>& mesh,
       const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
                             Frame::Inertial>& inv_jacobian,
       const Scalar<DataVector>& det_inv_jacobian,
@@ -605,6 +644,7 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
       const double penalty_parameter, const bool massive,
       const TemporalId& temporal_id,
       const std::tuple<SourcesArgs...>& sources_args,
+      const DataIsZero& data_is_zero = NoDataIsZero{},
       const DirectionsPredicate& directions_predicate = AllDirections{}) {
     static_assert(
         sizeof...(PrimalVars) == sizeof...(PrimalFields) and
@@ -640,6 +680,12 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
                  << "' in dimension " << d << ".");
     }
 #endif  // SPECTRE_DEBUG
+    const bool local_data_is_zero = data_is_zero(element.id());
+    ASSERT(Linearized or not local_data_is_zero,
+           "Only a linear operator can take advantage of the knowledge that "
+           "the operand is zero. Don't return 'true' in 'data_is_zero' unless "
+           "you also set 'Linearized' to 'true'.");
+    const size_t num_points = mesh.number_of_grid_points();
 
     // This function and the one above allocate various Variables to compute
     // intermediate quantities. It could be a performance optimization to reduce
@@ -663,11 +709,14 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
     // operation with differentiation matrices, which we avoid to implement for
     // now by using the flux-formulation.
     auto primal_fluxes_corrected = primal_fluxes;
+    // Keeping track if any corrections were applied here, for an optimization
+    // below
+    bool has_any_boundary_corrections = false;
     for (const auto& [mortar_id, mortar_data] : *all_mortar_data) {
       const auto& [direction, neighbor_id] = mortar_id;
       const bool is_internal =
           (neighbor_id != ElementId<Dim>::external_boundary_id());
-      if constexpr (DataIsZero) {
+      if constexpr (AllDataIsZero) {
         if (is_internal) {
           continue;
         }
@@ -675,6 +724,14 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
       if (not directions_predicate(direction)) {
         continue;
       }
+      // When the data on both sides of the mortar is zero then we don't need to
+      // handle this mortar at all.
+      if (local_data_is_zero and
+          (not is_internal or data_is_zero(neighbor_id))) {
+        continue;
+      }
+      has_any_boundary_corrections = true;
+
       const auto face_mesh = mesh.slice_away(direction.dimension());
       const size_t slice_index = index_to_slice_at(mesh.extents(), direction);
       const auto& local_data = mortar_data.local_data(temporal_id);
@@ -728,32 +785,48 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
 
     // Compute the primal equation, i.e. the actual DG operator, by taking the
     // second derivative: -div(F_u(v)) + S_u = f(x)
-    divergence(operator_applied_to_vars, primal_fluxes_corrected, mesh,
-               inv_jacobian);
-    // This is the sign flip that makes the operator _minus_ the Laplacian for a
-    // Poisson system
-    *operator_applied_to_vars *= -1.;
-    // Using the non-boundary-corrected primal fluxes to compute sources here
-    std::apply(
-        [&operator_applied_to_vars, &primal_vars,
-         &primal_fluxes](const auto&... expanded_sources_args) {
-          SourcesComputer::apply(
-              make_not_null(&get<OperatorTags>(*operator_applied_to_vars))...,
-              expanded_sources_args..., get<PrimalVars>(primal_vars)...,
-              get<PrimalFluxesVars>(primal_fluxes)...);
-        },
-        sources_args);
+    if (local_data_is_zero and not has_any_boundary_corrections) {
+      operator_applied_to_vars->initialize(num_points, 0.);
+      // We can return here already, since the operator is zero and no boundary
+      // corrections will be added
+      return;
+    } else {
+      divergence(operator_applied_to_vars, primal_fluxes_corrected, mesh,
+                 inv_jacobian);
+      // This is the sign flip that makes the operator _minus_ the Laplacian for
+      // a Poisson system
+      *operator_applied_to_vars *= -1.;
+    }
+    if (not local_data_is_zero) {
+      // Using the non-boundary-corrected primal fluxes to compute sources here
+      std::apply(
+          [&operator_applied_to_vars, &primal_vars,
+           &primal_fluxes](const auto&... expanded_sources_args) {
+            SourcesComputer::apply(
+                make_not_null(&get<OperatorTags>(*operator_applied_to_vars))...,
+                expanded_sources_args..., get<PrimalVars>(primal_vars)...,
+                get<PrimalFluxesVars>(primal_fluxes)...);
+          },
+          sources_args);
+    }
 
     // Add boundary corrections to primal equation
     for (auto& [mortar_id, mortar_data] : *all_mortar_data) {
       const auto& [direction, neighbor_id] = mortar_id;
       const bool is_internal =
           (neighbor_id != ElementId<Dim>::external_boundary_id());
-      if constexpr (DataIsZero) {
+      if constexpr (AllDataIsZero) {
         if (is_internal) {
           continue;
         }
       }
+      // When the data on both sides of the mortar is zero then we don't need to
+      // handle this mortar at all.
+      if (local_data_is_zero and
+          (not is_internal or data_is_zero(neighbor_id))) {
+        continue;
+      }
+
       const auto face_mesh = mesh.slice_away(direction.dimension());
       const size_t slice_index = index_to_slice_at(mesh.extents(), direction);
       const auto [local_data, remote_data] = mortar_data.extract();
@@ -883,7 +956,7 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
         fluxes_args_on_faces);
     apply_operator<true>(make_not_null(&operator_applied_to_zero_vars),
                          make_not_null(&all_mortar_data), zero_primal_vars,
-                         primal_fluxes_buffer, mesh, inv_jacobian,
+                         primal_fluxes_buffer, element, mesh, inv_jacobian,
                          det_inv_jacobian, face_normal_magnitudes,
                          all_mortar_meshes, all_mortar_sizes, penalty_parameter,
                          massive, temporal_id, sources_args);

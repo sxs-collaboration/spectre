@@ -359,15 +359,15 @@ struct ReceiveMortarDataAndApplyOperator<
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
     const auto& temporal_id = get<TemporalIdTag>(box);
+    const auto& element = get<domain::Tags::Element<Dim>>(box);
 
     if (not ::dg::has_received_from_all_mortars<mortar_data_inbox_tag>(
-            temporal_id, get<domain::Tags::Element<Dim>>(box), inboxes)) {
+            temporal_id, element, inboxes)) {
       return {std::move(box), Parallel::AlgorithmExecution::Retry};
     }
 
     // Move received "remote" mortar data into the DataBox
-    if (LIKELY(db::get<domain::Tags::Element<Dim>>(box).number_of_neighbors() >
-               0)) {
+    if (LIKELY(element.number_of_neighbors() > 0)) {
       auto received_mortar_data =
           std::move(tuples::get<mortar_data_inbox_tag>(inboxes)
                         .extract(temporal_id)
@@ -388,7 +388,7 @@ struct ReceiveMortarDataAndApplyOperator<
         [](const auto&... args) {
           elliptic::dg::apply_operator<System, Linearized>(args...);
         },
-        db::get<PrimalFieldsTag>(box), db::get<PrimalFluxesTag>(box),
+        db::get<PrimalFieldsTag>(box), db::get<PrimalFluxesTag>(box), element,
         db::get<domain::Tags::Mesh<Dim>>(box),
         db::get<domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
                                               Frame::Inertial>>(box),
