@@ -318,7 +318,6 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
   // need a large number of grid points to resolve the horizon (which
   // would make the test slower).
   if constexpr (IsTimeDependent::value) {
-    const double expiration_time = 1.0;
     std::vector<double> radial_partitioning{};
     std::vector<domain::CoordinateMaps::Distribution> radial_distribution{
         domain::CoordinateMaps::Distribution::Linear};
@@ -331,7 +330,7 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
         radial_partitioning, radial_distribution, ShellWedges::All,
         std::make_unique<
             domain::creators::time_dependence::UniformTranslation<3>>(
-            0.0, expiration_time, std::array<double, 3>({{0.01, 0.02, 0.03}})));
+            0.0, std::array<double, 3>({{0.01, 0.02, 0.03}})));
     tuples::TaggedTuple<
         domain::Tags::Domain<3>,
         typename ::intrp::Tags::ApparentHorizon<typename metavars::AhA, Frame>>

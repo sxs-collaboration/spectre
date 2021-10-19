@@ -37,16 +37,19 @@ namespace GeneralizedHarmonic::ConstraintDamping {
  * A_\alpha \exp\left(-\frac{(x-(x_0)_\alpha)^2}{w_\alpha^2(t)}\right).
  * \f}
  * Input file options are: `Constant` \f$C\f$, `Amplitude[1-3]`
- * \f$A_\alpha\f$, `Width[1-3]` \f$w_\alpha\f$, `Center[1-3]
- * `\f$(x_0)_\alpha\f$, and `FunctionOfTimeForScaling`, a string naming a
- * domain::FunctionsOfTime::FunctionOfTime in the domain::Tags::FunctionsOfTime
- * that will be passed to the call operator. The function takes input
+ * \f$A_\alpha\f$, `Width[1-3]` \f$w_\alpha\f$, and `Center[1-3]
+ * `\f$(x_0)_\alpha\f$. The function takes input
  * coordinates \f$x\f$ of type `tnsr::I<T, 3, Frame::Grid>`, where `T` is e.g.
  * `double` or `DataVector`; note that this DampingFunction is only defined
  * for three spatial dimensions and for the grid frame. The Gaussian widths
  * \f$w_\alpha\f$ are scaled by the inverse of the value of a scalar
- * domain::FunctionsOfTime::FunctionOfTime \f$f(t)\f$ named
- * `FunctionOfTimeForScaling`: \f$w_\alpha(t) = w_\alpha / f(t)\f$.
+ * domain::FunctionsOfTime::FunctionOfTime \f$f(t)\f$: \f$w_\alpha(t) = w_\alpha
+ * / f(t)\f$.
+ *
+ * The name of the domain::FunctionsOfTime::FunctionOfTime is hardcoded to be
+ * `Expansion` as this class will typically be used with a domain that has an
+ * expansion map and potentially an expansion control system, the names of which
+ * will be `Expansion`.
  */
 class TimeDependentTripleGaussian : public DampingFunction<3, Frame::Grid> {
  public:
@@ -86,17 +89,10 @@ class TimeDependentTripleGaussian : public DampingFunction<3, Frame::Grid> {
     static constexpr Options::String help = {"The center of the Gaussian."};
   };
 
-  struct FunctionOfTimeForScaling {
-    using type = std::string;
-    static constexpr Options::String help = {"The name of the FunctionOfTime."};
-  };
-
-  using options =
-      tmpl::list<Constant, Amplitude<Gaussian<1>>, Width<Gaussian<1>>,
-                 Center<Gaussian<1>>, Amplitude<Gaussian<2>>,
-                 Width<Gaussian<2>>, Center<Gaussian<2>>,
-                 Amplitude<Gaussian<3>>, Width<Gaussian<3>>,
-                 Center<Gaussian<3>>, FunctionOfTimeForScaling>;
+  using options = tmpl::list<
+      Constant, Amplitude<Gaussian<1>>, Width<Gaussian<1>>, Center<Gaussian<1>>,
+      Amplitude<Gaussian<2>>, Width<Gaussian<2>>, Center<Gaussian<2>>,
+      Amplitude<Gaussian<3>>, Width<Gaussian<3>>, Center<Gaussian<3>>>;
 
   static constexpr Options::String help = {
       "Computes a sum of a constant and 3 Gaussians (each with its own "
@@ -117,8 +113,7 @@ class TimeDependentTripleGaussian : public DampingFunction<3, Frame::Grid> {
                               double amplitude_2, double width_2,
                               const std::array<double, 3>& center_2,
                               double amplitude_3, double width_3,
-                              const std::array<double, 3>& center_3,
-                              std::string function_of_time_for_scaling);
+                              const std::array<double, 3>& center_3);
 
   TimeDependentTripleGaussian() = default;
   ~TimeDependentTripleGaussian() override = default;
@@ -161,9 +156,7 @@ class TimeDependentTripleGaussian : public DampingFunction<3, Frame::Grid> {
            lhs.center_2_ == rhs.center_2_ and
            lhs.amplitude_3_ == rhs.amplitude_3_ and
            lhs.inverse_width_3_ == rhs.inverse_width_3_ and
-           lhs.center_3_ == rhs.center_3_ and
-           lhs.function_of_time_for_scaling_ ==
-               rhs.function_of_time_for_scaling_;
+           lhs.center_3_ == rhs.center_3_;
   }
 
   double constant_ = std::numeric_limits<double>::signaling_NaN();
@@ -176,7 +169,7 @@ class TimeDependentTripleGaussian : public DampingFunction<3, Frame::Grid> {
   double amplitude_3_ = std::numeric_limits<double>::signaling_NaN();
   double inverse_width_3_ = std::numeric_limits<double>::signaling_NaN();
   std::array<double, 3> center_3_{};
-  std::string function_of_time_for_scaling_;
+  inline static const std::string function_of_time_for_scaling_{"Expansion"};
 
   template <typename T>
   void apply_call_operator(

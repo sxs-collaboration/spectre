@@ -49,7 +49,6 @@ void test_compute_horizon_volume_quantities() {
   // doesn't have a singularity or horizon in the domain.
   std::unique_ptr<DomainCreator<3>> domain_creator;
   if constexpr (IsTimeDependent::value) {
-    const double expiration_time = 1.0;
     domain_creator = std::make_unique<domain::creators::Brick>(
         std::array<double, 3>{3.1, 3.2, 3.3},
         std::array<double, 3>{4.1, 4.2, 4.3}, std::array<size_t, 3>{0, 0, 0},
@@ -58,7 +57,7 @@ void test_compute_horizon_volume_quantities() {
         std::array<bool, 3>{false, false, false},
         std::make_unique<
             domain::creators::time_dependence::UniformTranslation<3>>(
-            0.0, expiration_time, std::array<double, 3>{0.01, 0.02, 0.03}));
+            0.0, std::array<double, 3>{0.01, 0.02, 0.03}));
   } else {
     domain_creator = std::make_unique<domain::creators::Brick>(
         std::array<double, 3>{3.1, 3.2, 3.3},

@@ -67,14 +67,6 @@ class SphericalCompression final : public TimeDependence<3> {
     static constexpr Options::String help = {
         "The initial time of the function of time"};
   };
-  /// \brief The time interval for updates of the functions of time.
-  struct InitialExpirationDeltaT {
-    using type = Options::Auto<double>;
-    static constexpr Options::String help = {
-        "The initial time interval for updates of the functions of time. If "
-        "Auto, then the functions of time do not expire, nor can they be "
-        "updated."};
-  };
   /// \brief Minimum radius for the SphericalCompression map
   struct MinRadius {
     using type = double;
@@ -113,20 +105,13 @@ class SphericalCompression final : public TimeDependence<3> {
     static constexpr Options::String help = {
         "Spherical compression initial radial acceleration."};
   };
-  /// \brief The name of the functions of time to be added to the added to the
-  /// DataBox for the spherical compression
-  struct FunctionOfTimeName {
-    using type = std::string;
-    static constexpr Options::String help = {
-        "Names of SphericalCompression function of time."};
-  };
 
   using MapForComposition =
       detail::generate_coordinate_map_t<tmpl::list<SphericalCompressionMap>>;
 
-  using options = tmpl::list<InitialTime, InitialExpirationDeltaT, MinRadius,
-                             MaxRadius, Center, InitialValue, InitialVelocity,
-                             InitialAcceleration, FunctionOfTimeName>;
+  using options =
+      tmpl::list<InitialTime, MinRadius, MaxRadius, Center, InitialValue,
+                 InitialVelocity, InitialAcceleration>;
 
   static constexpr Options::String help = {"A spherical compression."};
 
@@ -137,12 +122,10 @@ class SphericalCompression final : public TimeDependence<3> {
   SphericalCompression& operator=(const SphericalCompression&) = delete;
   SphericalCompression& operator=(SphericalCompression&&) = default;
 
-  SphericalCompression(double initial_time,
-                       std::optional<double> initial_expiration_delta_t,
-                       double min_radius, double max_radius,
-                       std::array<double, 3> center, double initial_value,
-                       double initial_velocity, double initial_acceleration,
-                       std::string function_of_time_name = "LambdaFactorA0",
+  SphericalCompression(double initial_time, double min_radius,
+                       double max_radius, std::array<double, 3> center,
+                       double initial_value, double initial_velocity,
+                       double initial_acceleration,
                        const Options::Context& context = {});
 
   auto get_clone() const -> std::unique_ptr<TimeDependence<mesh_dim>> override;
@@ -151,9 +134,11 @@ class SphericalCompression final : public TimeDependence<3> {
       -> std::vector<std::unique_ptr<domain::CoordinateMapBase<
           Frame::Grid, Frame::Inertial, mesh_dim>>> override;
 
-  auto functions_of_time() const -> std::unordered_map<
-      std::string,
-      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;
+  auto functions_of_time(const std::unordered_map<std::string, double>&
+                             initial_expiration_times = {}) const
+      -> std::unordered_map<
+          std::string,
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;
 
   /// Returns the map for each block to be used in a composition of
   /// `TimeDependence`s.
@@ -165,14 +150,13 @@ class SphericalCompression final : public TimeDependence<3> {
                          const SphericalCompression& rhs);
 
   double initial_time_{std::numeric_limits<double>::signaling_NaN()};
-  std::optional<double> initial_expiration_delta_t_{};
   double min_radius_{std::numeric_limits<double>::signaling_NaN()};
   double max_radius_{std::numeric_limits<double>::signaling_NaN()};
   std::array<double, 3> center_{};
   double initial_value_{std::numeric_limits<double>::signaling_NaN()};
   double initial_velocity_{std::numeric_limits<double>::signaling_NaN()};
   double initial_acceleration_{std::numeric_limits<double>::signaling_NaN()};
-  std::string function_of_time_name_{};
+  inline static const std::string function_of_time_name_{"Size"};
 };
 
 bool operator!=(const SphericalCompression& lhs,

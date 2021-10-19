@@ -9,6 +9,7 @@
 #include <unordered_set>
 #include <vector>
 
+#include "ControlSystem/UpdateFunctionOfTime.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "Domain/Creators/Brick.hpp"
@@ -303,18 +304,6 @@ void test_add_temporal_ids() {
       ActionTesting::is_simple_action_queue_empty<target_component>(runner, 0));
 }
 
-// For updating the expiration time in the FunctionOfTimes.
-template <size_t Multiplier>
-struct MyFunctionOfTimeUpdater {
-  static void apply(
-      gsl::not_null<typename domain::Tags::FunctionsOfTimeInitialize::type*>
-          functions_of_time) {
-    for (auto& name_and_function_of_time : *functions_of_time) {
-      name_and_function_of_time.second->reset_expiration_time(0.5 * Multiplier);
-    }
-  }
-};
-
 template <typename IsSequential>
 void test_add_temporal_ids_time_dependent() {
   using metavars = MockMetavariables<IsSequential, std::true_type>;
@@ -324,7 +313,6 @@ void test_add_temporal_ids_time_dependent() {
       mock_interpolation_target<metavars,
                                 typename metavars::InterpolationTargetA>;
 
-  const double expiration_time = 0.1;
   // Create a Domain with time-dependence. For this test we don't care
   // what the Domain actually is, we care only that it has time-dependence.
   const auto domain_creator = domain::creators::Brick(
@@ -332,10 +320,16 @@ void test_add_temporal_ids_time_dependent() {
       {{false, false, false}},
       std::make_unique<
           domain::creators::time_dependence::UniformTranslation<3>>(
-          0.0, expiration_time, std::array<double, 3>({{0.1, 0.2, 0.3}})));
+          0.0, std::array<double, 3>({{0.1, 0.2, 0.3}})));
 
+  // This name must match the hard coded one in UniformTranslation
+  const std::string f_of_t_name = "Translation";
+  std::unordered_map<std::string, double> initial_expiration_times{};
+  initial_expiration_times[f_of_t_name] = 0.1;
+  const double new_expiration_time = 0.5;
   ActionTesting::MockRuntimeSystem<metavars> runner{
-      {domain_creator.create_domain()}, {domain_creator.functions_of_time()}};
+      {domain_creator.create_domain()},
+      {domain_creator.functions_of_time(initial_expiration_times)}};
   ActionTesting::emplace_component<target_component>(&runner, 0);
   for (size_t i = 0; i < 2; ++i) {
     ActionTesting::next_action<target_component>(make_not_null(&runner), 0);
@@ -505,8 +499,9 @@ void test_add_temporal_ids_time_dependent() {
   // started when the previous interpolation is finished
   // (and that code is not included in this test).
   auto& cache = ActionTesting::cache<target_component>(runner, 0_st);
-  Parallel::mutate<domain::Tags::FunctionsOfTime, MyFunctionOfTimeUpdater<1>>(
-      cache);
+  Parallel::mutate<domain::Tags::FunctionsOfTime,
+                   control_system::ResetFunctionOfTimeExpirationTime>(
+      cache, f_of_t_name, new_expiration_time);
 
   if (IsSequential::value) {
     // Check that there are no queued simple actions.
@@ -562,8 +557,9 @@ void test_add_temporal_ids_time_dependent() {
   // no more simple_actions in the queue.  Now we mutate the
   // FunctionsOfTime while there is still (for the nonsequential case) a
   // VerifyTemporalIdsAndSendPoints queued.
-  Parallel::mutate<domain::Tags::FunctionsOfTime, MyFunctionOfTimeUpdater<2>>(
-      cache);
+  Parallel::mutate<domain::Tags::FunctionsOfTime,
+                   control_system::ResetFunctionOfTimeExpirationTime>(
+      cache, f_of_t_name, new_expiration_time * 2.0);
 
   if (IsSequential::value) {
     // Check that there are no queued simple actions.

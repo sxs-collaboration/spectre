@@ -78,15 +78,34 @@ void test(const std::unique_ptr<TimeDependence<3>>& time_dep_unique_ptr,
     CHECK(*block_map == expected_block_map);
   }
 
-  // Test functions of time
+  // Test functions of time without expiration times
+  {
+    const auto functions_of_time = time_dep_unique_ptr->functions_of_time();
+    REQUIRE(functions_of_time.size() == 1);
+    CHECK(functions_of_time.count(f_of_t_name) == 1);
+    CHECK(functions_of_time.at(f_of_t_name)->time_bounds()[1] ==
+          std::numeric_limits<double>::infinity());
+  }
+  // Test functions of time with expiration times
+  {
+    const double init_expr_time = 5.0;
+    std::unordered_map<std::string, double> init_expr_times{};
+    init_expr_times[f_of_t_name] = init_expr_time;
+    const auto functions_of_time =
+        time_dep_unique_ptr->functions_of_time(init_expr_times);
+    REQUIRE(functions_of_time.size() == 1);
+    CHECK(functions_of_time.count(f_of_t_name) == 1);
+    CHECK(functions_of_time.at(f_of_t_name)->time_bounds()[1] ==
+          init_expr_time);
+  }
+
   const auto functions_of_time = time_dep_unique_ptr->functions_of_time();
-  REQUIRE(functions_of_time.size() == 1);
 
   // Test map for composition
   CHECK(time_dep->map_for_composition() == expected_block_map);
 
-  // For a random point at a random time check that the values agree. This is to
-  // check that the internals were assigned the correct function of times.
+  // For a random point at a random time check that the values agree. This is
+  // to check that the internals were assigned the correct function of times.
   // The points are are drawn from the positive x/y/z quadrant in a that
   // guarantees that they are in the region where the map is valid (min_radius
   // <= radius <= max_radius), provided that min_radius is sufficiently small
@@ -145,29 +164,19 @@ void test(const std::unique_ptr<TimeDependence<3>>& time_dep_unique_ptr,
 }
 
 void test_equivalence() {
-  SphericalCompression sc0{
-      1.0, 2.5, 0.4, 4.0, {{-0.2, 1.3, 2.4}}, 3.5, -4.6, 5.7, "LambdaFactorA0"};
-  SphericalCompression sc1{
-      1.0, 2.6, 0.4, 4.0, {{-0.2, 1.3, 2.4}}, 3.5, -4.6, 5.7, "LambdaFactorA0"};
-  SphericalCompression sc2{
-      1.0, 2.5, 0.3, 4.0, {{-0.2, 1.3, 2.4}}, 3.5, -4.6, 5.7, "LambdaFactorA0"};
-  SphericalCompression sc3{
-      1.0, 2.5, 0.4, 4.1, {{-0.2, 1.3, 2.4}}, 3.5, -4.6, 5.7, "LambdaFactorA0"};
-  SphericalCompression sc4{
-      1.0, 2.5, 0.4, 4.0, {{0.2, 1.3, 2.4}}, 3.5, -4.6, 5.7, "LambdaFactorA0"};
-  SphericalCompression sc5{
-      1.0, 2.5, 0.4, 4.0, {{-0.2, 1.3, 2.4}}, 3.8, -4.6, 5.7, "LambdaFactorA0"};
-  SphericalCompression sc6{
-      1.0, 2.5, 0.4, 4.0, {{-0.2, 1.3, 2.4}}, 3.5, 4.6, 5.7, "LambdaFactorA0"};
-  SphericalCompression sc7{
-      1.0, 2.5, 0.4, 4.0, {{-0.2, 1.3, 2.4}}, 3.5, -4.6, 5.9, "LambdaFactorA0"};
-  SphericalCompression sc8{
-      1.0, 2.5, 0.4, 4.0, {{-0.2, 1.3, 2.4}}, 3.5, -4.6, 5.7, "LambdaFactorB0"};
+  SphericalCompression sc0{1.0, 0.4, 4.0, {{-0.2, 1.3, 2.4}}, 3.5, -4.6, 5.7};
+  SphericalCompression sc1{1.0, 0.4, 4.0, {{-0.2, 1.3, 2.4}}, 3.5, -4.6, 5.7};
+  SphericalCompression sc2{1.0, 0.3, 4.0, {{-0.2, 1.3, 2.4}}, 3.5, -4.6, 5.7};
+  SphericalCompression sc3{1.0, 0.4, 4.1, {{-0.2, 1.3, 2.4}}, 3.5, -4.6, 5.7};
+  SphericalCompression sc4{1.0, 0.4, 4.0, {{0.2, 1.3, 2.4}}, 3.5, -4.6, 5.7};
+  SphericalCompression sc5{1.0, 0.4, 4.0, {{-0.2, 1.3, 2.4}}, 3.8, -4.6, 5.7};
+  SphericalCompression sc6{1.0, 0.4, 4.0, {{-0.2, 1.3, 2.4}}, 3.5, 4.6, 5.7};
+  SphericalCompression sc7{1.0, 0.4, 4.0, {{-0.2, 1.3, 2.4}}, 3.5, -4.6, 5.9};
 
   CHECK(sc0 == sc0);
   CHECK_FALSE(sc0 != sc0);
-  CHECK(sc0 != sc1);
-  CHECK_FALSE(sc0 == sc1);
+  CHECK(sc0 == sc1);
+  CHECK_FALSE(sc0 != sc1);
   CHECK(sc0 != sc2);
   CHECK_FALSE(sc0 == sc2);
   CHECK(sc0 != sc3);
@@ -180,26 +189,24 @@ void test_equivalence() {
   CHECK_FALSE(sc0 == sc6);
   CHECK(sc0 != sc7);
   CHECK_FALSE(sc0 == sc7);
-  CHECK(sc0 != sc8);
-  CHECK_FALSE(sc0 == sc8);
 }
 
 SPECTRE_TEST_CASE("Unit.Domain.Creators.TimeDependence.SphericalCompression",
                   "[Domain][Unit]") {
   constexpr double initial_time{1.3};
-  constexpr double update_delta_t{11.0};
   constexpr double min_radius{0.4};
   constexpr double max_radius{4.0};
   const std::array<double, 3> center{{-0.02, 0.013, 0.024}};
   constexpr double initial_value{1.0};
   constexpr double initial_velocity{-0.1};
   constexpr double initial_acceleration{0.01};
-  const std::string f_of_t_name{"LambdaFactorA0"};
+  // This name must match the hard coded one in SphericalCompression
+  const std::string f_of_t_name = "Size";
 
   const std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
       time_dep = std::make_unique<SphericalCompression>(
-          initial_time, update_delta_t, min_radius, max_radius, center,
-          initial_value, initial_velocity, initial_acceleration, f_of_t_name);
+          initial_time, min_radius, max_radius, center, initial_value,
+          initial_velocity, initial_acceleration);
   test(time_dep, initial_time, f_of_t_name, min_radius, max_radius, center);
   test(time_dep->get_clone(), initial_time, f_of_t_name, min_radius, max_radius,
        center);
@@ -207,14 +214,12 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.TimeDependence.SphericalCompression",
   test(TestHelpers::test_creation<std::unique_ptr<TimeDependence<3>>>(
            "SphericalCompression:\n"
            "  InitialTime: 1.3\n"
-           "  InitialExpirationDeltaT: 11.0\n"
            "  MinRadius: 0.4\n"
            "  MaxRadius: 4.0\n"
            "  Center: [-0.02, 0.013, 0.024]\n"
            "  InitialValue: 1.0\n"
            "  InitialVelocity: -0.1\n"
-           "  InitialAcceleration: 0.01\n"
-           "  FunctionOfTimeName: LambdaFactorA0\n"),
+           "  InitialAcceleration: 0.01\n"),
        initial_time, f_of_t_name, min_radius, max_radius, center);
 
   test_equivalence();
@@ -228,14 +233,12 @@ SPECTRE_TEST_CASE(
   TestHelpers::test_creation<std::unique_ptr<TimeDependence<3>>>(
       "SphericalCompression:\n"
       "  InitialTime: 1.3\n"
-      "  InitialExpirationDeltaT: Auto\n"
       "  MinRadius: 4.0\n"
       "  MaxRadius: 0.4\n"
       "  Center: [-0.01, 0.02, 0.01]\n"
       "  InitialValue: 3.5\n"
       "  InitialVelocity: -4.6\n"
-      "  InitialAcceleration: 5.7\n"
-      "  FunctionOfTimeName: LambdaFactorA0\n");
+      "  InitialAcceleration: 5.7\n");
 }
 }  // namespace
 

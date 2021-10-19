@@ -17,9 +17,7 @@ DomainCreator:
     TimeDependence:
       UniformTranslation:
         InitialTime: 0.0
-        InitialExpirationDeltaT: 5.0
         Velocity: [0.5]
-        FunctionOfTimeName: "TranslationX"
 
 SpatialDiscretization:
   DiscontinuousGalerkin:

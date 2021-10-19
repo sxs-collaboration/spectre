@@ -145,9 +145,11 @@ class Interval : public DomainCreator<1> {
 
   std::vector<std::array<size_t, 1>> initial_refinement_levels() const override;
 
-  auto functions_of_time() const -> std::unordered_map<
-      std::string,
-      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;
+  auto functions_of_time(const std::unordered_map<std::string, double>&
+                             initial_expiration_times = {}) const
+      -> std::unordered_map<
+          std::string,
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;
 
  private:
   typename LowerBound::type lower_x_{};

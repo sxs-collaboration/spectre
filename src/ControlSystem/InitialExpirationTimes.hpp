@@ -27,6 +27,11 @@ namespace control_system {
  * with as many components as the corresponding function of time, thus
  * \f$\tau_\mathrm{exp}\f$ will also be a DataVector of the same length).
  *
+ * To protect against bad inputs, if the initial expiration time that is
+ * calculated is smaller than the initial time step, then the expiration time is
+ * simply set to the initial time step. However, the MeasurementTimescales have
+ * the same protection so if this does happen, then something is most likely
+ * wrong with your initial parameters for the control system.
  */
 template <typename... OptionHolders>
 std::unordered_map<std::string, double> initial_expiration_times(

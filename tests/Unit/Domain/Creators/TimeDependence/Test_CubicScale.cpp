@@ -47,15 +47,16 @@ CoordMap<MeshDim> create_coord_map(
 template <size_t MeshDim>
 void test_impl(
     const std::unique_ptr<TimeDependence<MeshDim>>& time_dep_unique_ptr,
-    const double initial_time, const double update_delta_t,
-    const double outer_boundary, const std::array<double, 2>& initial_expansion,
+    const double initial_time, const double outer_boundary,
+    const bool use_linear_scaling,
+    const std::array<double, 2>& initial_expansion,
     const std::array<double, 2>& velocity,
     const std::array<double, 2>& acceleration,
     const std::array<std::string, 2>& f_of_t_names) {
   MAKE_GENERATOR(gen);
   CAPTURE(initial_time);
-  CAPTURE(update_delta_t);
   CAPTURE(outer_boundary);
+  CAPTURE(use_linear_scaling);
   CAPTURE(initial_expansion);
   CAPTURE(velocity);
   CAPTURE(acceleration);
@@ -86,12 +87,40 @@ void test_impl(
     CHECK(*block_map == expected_block_map);
   }
 
-  // Test functions of time
-  const auto functions_of_time = time_dep_unique_ptr->functions_of_time();
-  REQUIRE(functions_of_time.size() == f_of_t_names.size());
-  for (const auto& f_of_t_name : f_of_t_names) {
-    CHECK(functions_of_time.count(f_of_t_name) == 1);
+  // Test functions of time without expiration times
+  {
+    const auto functions_of_time = time_dep_unique_ptr->functions_of_time();
+    bool f_of_t_correct_number =
+        use_linear_scaling ? functions_of_time.size() == 1
+                           : functions_of_time.size() == f_of_t_names.size();
+    REQUIRE(f_of_t_correct_number);
+    for (const auto& f_of_t_name : f_of_t_names) {
+      CHECK(functions_of_time.count(f_of_t_name) == 1);
+      CHECK(functions_of_time.at(f_of_t_name)->time_bounds()[1] ==
+            std::numeric_limits<double>::infinity());
+    }
   }
+  // Test functions of time with expiration times
+  {
+    const double init_expr_time = 5.0;
+    std::unordered_map<std::string, double> init_expr_times{};
+    for (auto& name : f_of_t_names) {
+      init_expr_times[name] = init_expr_time;
+    }
+    const auto functions_of_time =
+        time_dep_unique_ptr->functions_of_time(init_expr_times);
+    bool f_of_t_correct_number =
+        use_linear_scaling ? functions_of_time.size() == 1
+                           : functions_of_time.size() == f_of_t_names.size();
+    REQUIRE(f_of_t_correct_number);
+    for (const auto& f_of_t_name : f_of_t_names) {
+      CHECK(functions_of_time.count(f_of_t_name) == 1);
+      CHECK(functions_of_time.at(f_of_t_name)->time_bounds()[1] ==
+            init_expr_time);
+    }
+  }
+
+  const auto functions_of_time = time_dep_unique_ptr->functions_of_time();
 
   // Test map for composition
   CHECK(time_dep->map_for_composition() == expected_block_map);
@@ -149,78 +178,68 @@ void test_impl(
 }
 
 template <size_t MeshDim>
-void test() {
+void test(const bool use_linear_scaling) {
   const double initial_time = 1.3;
-  const double update_delta_t = 2.5;
   const double outer_boundary = 10.4;
   const std::array<double, 2> initial_expansion{{1.0, 1.0}};
   const std::array<double, 2> velocity{{-0.1, 0.0}};
   const std::array<double, 2> acceleration{{-0.05, 0.0}};
-  const std::array<std::string, 2> f_of_t_names{{"Expansion0", "Expansion1"}};
+  // These names must match the hard coded ones in CubicScale
+  const std::string f_of_t_name0 =
+      "CubicScale"s + (use_linear_scaling ? "" : "A");
+  const std::string f_of_t_name1 =
+      "CubicScale"s + (use_linear_scaling ? "" : "B");
 
   const std::unique_ptr<
       domain::creators::time_dependence::TimeDependence<MeshDim>>
       time_dep = std::make_unique<CubicScale<MeshDim>>(
-          initial_time, update_delta_t, outer_boundary, f_of_t_names,
-          initial_expansion, velocity, acceleration);
-  test_impl(time_dep, initial_time, update_delta_t, outer_boundary,
-            initial_expansion, velocity, acceleration, f_of_t_names);
-  test_impl(time_dep->get_clone(), initial_time, update_delta_t, outer_boundary,
-            initial_expansion, velocity, acceleration, f_of_t_names);
+          initial_time, outer_boundary, use_linear_scaling, initial_expansion,
+          velocity, acceleration);
+  test_impl(time_dep, initial_time, outer_boundary, use_linear_scaling,
+            initial_expansion, velocity, acceleration,
+            {f_of_t_name0, f_of_t_name1});
+  test_impl(time_dep->get_clone(), initial_time, outer_boundary,
+            use_linear_scaling, initial_expansion, velocity, acceleration,
+            {f_of_t_name0, f_of_t_name1});
 
+  const std::string linear_scaling = use_linear_scaling
+                                         ? "  UseLinearScaling: true\n"
+                                         : "  UseLinearScaling: false\n";
   test_impl(
       TestHelpers::test_creation<std::unique_ptr<TimeDependence<MeshDim>>>(
           "CubicScale:\n"
           "  InitialTime: 1.3\n"
-          "  InitialExpirationDeltaT: 2.5\n"
-          "  OuterBoundary: 10.4\n"
+          "  OuterBoundary: 10.4\n" +
+          linear_scaling +
           "  InitialExpansion: [1.0, 1.0]\n"
           "  Velocity: [-0.1, 0.0]\n"
-          "  Acceleration: [0.0, 0.0]\n"
-          "  FunctionOfTimeNames: [Expansion0, Expansion1]\n"),
-      initial_time, update_delta_t, outer_boundary, initial_expansion, velocity,
-      acceleration, f_of_t_names);
+          "  Acceleration: [-0.05, 0.0]\n"),
+      initial_time, outer_boundary, use_linear_scaling, initial_expansion,
+      velocity, acceleration, {f_of_t_name0, f_of_t_name1});
 
   INFO("Check equivalence operators");
-  CubicScale<MeshDim> cubic_scale0{
-      1.0,          2.5,           2.0,         {{"ExpansionA", "ExpansionB"}},
-      {{1.0, 2.0}}, {{-1.0, 3.0}}, {{0.2, 0.9}}};
-  CubicScale<MeshDim> cubic_scale1{
-      1.2,          2.5,           2.0,         {{"ExpansionA", "ExpansionB"}},
-      {{1.0, 2.0}}, {{-1.0, 3.0}}, {{0.2, 0.9}}};
-  CubicScale<MeshDim> cubic_scale2{
-      1.0,          2.5,           3.0,         {{"ExpansionA0", "ExpansionB"}},
-      {{1.0, 2.0}}, {{-1.0, 3.0}}, {{0.2, 0.9}}};
-  CubicScale<MeshDim> cubic_scale3{
-      1.0,          2.5,           2.0,         {{"ExpansionA", "ExpansionB0"}},
-      {{1.0, 2.0}}, {{-1.0, 3.0}}, {{0.2, 0.9}}};
-  CubicScale<MeshDim> cubic_scale4{
-      1.0,          2.5,           2.0,         {{"ExpansionC", "ExpansionB"}},
-      {{1.0, 2.0}}, {{-1.0, 3.0}}, {{0.2, 0.9}}};
-  CubicScale<MeshDim> cubic_scale5{
-      1.0,          2.5,           2.0,         {{"ExpansionA", "ExpansionC"}},
-      {{1.0, 2.0}}, {{-1.0, 3.0}}, {{0.2, 0.9}}};
-  CubicScale<MeshDim> cubic_scale6{
-      1.0,          2.5,           2.0,         {{"ExpansionA", "ExpansionB"}},
-      {{3.0, 2.0}}, {{-1.0, 3.0}}, {{0.2, 0.9}}};
-  CubicScale<MeshDim> cubic_scale7{
-      1.0,          2.5,           2.0,         {{"ExpansionA", "ExpansionB"}},
-      {{1.0, 0.0}}, {{-1.0, 3.0}}, {{0.2, 0.9}}};
-  CubicScale<MeshDim> cubic_scale8{
-      1.0,          2.5,           2.0,         {{"ExpansionA", "ExpansionB"}},
-      {{1.0, 2.0}}, {{-2.0, 3.0}}, {{0.2, 0.9}}};
-  CubicScale<MeshDim> cubic_scale9{
-      1.0,          2.5,           2.0,         {{"ExpansionA", "ExpansionB"}},
-      {{1.0, 2.0}}, {{-1.0, 7.0}}, {{0.2, 0.9}}};
-  CubicScale<MeshDim> cubic_scale10{
-      1.0,          2.5,           2.0,         {{"ExpansionA", "ExpansionB"}},
-      {{1.0, 2.0}}, {{-1.0, 3.0}}, {{3.2, 0.9}}};
-  CubicScale<MeshDim> cubic_scale11{
-      1.0,          2.5,           2.0,          {{"ExpansionA", "ExpansionB"}},
-      {{1.0, 2.0}}, {{-1.0, 3.0}}, {{0.2, 10.9}}};
-  CubicScale<MeshDim> cubic_scale12{
-      1.0,          2.6,           2.0,         {{"ExpansionA", "ExpansionB"}},
-      {{1.0, 2.0}}, {{-1.0, 3.0}}, {{0.2, 0.9}}};
+  CubicScale<MeshDim> cubic_scale0{1.0,          2.0,           false,
+                                   {{1.0, 2.0}}, {{-1.0, 3.0}}, {{0.2, 0.9}}};
+  CubicScale<MeshDim> cubic_scale1{1.2,          2.0,           false,
+                                   {{1.0, 2.0}}, {{-1.0, 3.0}}, {{0.2, 0.9}}};
+  CubicScale<MeshDim> cubic_scale2{1.0,          3.0,           false,
+                                   {{1.0, 2.0}}, {{-1.0, 3.0}}, {{0.2, 0.9}}};
+  CubicScale<MeshDim> cubic_scale3{1.0,          2.0,           true,
+                                   {{1.0, 2.0}}, {{-1.0, 3.0}}, {{0.2, 0.9}}};
+  CubicScale<MeshDim> cubic_scale4{1.0,          2.0,           false,
+                                   {{3.0, 2.0}}, {{-1.0, 3.0}}, {{0.2, 0.9}}};
+  CubicScale<MeshDim> cubic_scale5{1.0,          2.0,           false,
+                                   {{1.0, 0.0}}, {{-1.0, 3.0}}, {{0.2, 0.9}}};
+  CubicScale<MeshDim> cubic_scale6{1.0,          2.0,           false,
+                                   {{1.0, 2.0}}, {{-2.0, 3.0}}, {{0.2, 0.9}}};
+  CubicScale<MeshDim> cubic_scale7{1.0,          2.0,           false,
+                                   {{1.0, 2.0}}, {{-1.0, 7.0}}, {{0.2, 0.9}}};
+  CubicScale<MeshDim> cubic_scale8{1.0,          2.0,           false,
+                                   {{1.0, 2.0}}, {{-1.0, 3.0}}, {{3.2, 0.9}}};
+  CubicScale<MeshDim> cubic_scale9{1.0,          2.0,           false,
+                                   {{1.0, 2.0}}, {{-1.0, 3.0}}, {{0.2, 10.9}}};
+  CubicScale<MeshDim> cubic_scale10{1.0,          2.0,           true,
+                                    {{1.0, 2.0}}, {{-1.0, 3.0}}, {{0.2, 0.9}}};
 
   CHECK(cubic_scale0 == cubic_scale0);
   CHECK_FALSE(cubic_scale0 != cubic_scale0);
@@ -244,17 +263,16 @@ void test() {
   CHECK_FALSE(cubic_scale0 == cubic_scale9);
   CHECK(cubic_scale0 != cubic_scale10);
   CHECK_FALSE(cubic_scale0 == cubic_scale10);
-  CHECK(cubic_scale0 != cubic_scale11);
-  CHECK_FALSE(cubic_scale0 == cubic_scale11);
-  CHECK(cubic_scale0 != cubic_scale12);
-  CHECK_FALSE(cubic_scale0 == cubic_scale12);
 }
 
 SPECTRE_TEST_CASE("Unit.Domain.Creators.TimeDependence.CubicScale",
                   "[Domain][Unit]") {
-  test<1>();
-  test<2>();
-  test<3>();
+  test<1>(true);
+  test<2>(true);
+  test<3>(true);
+  test<1>(false);
+  test<2>(false);
+  test<3>(false);
 }
 }  // namespace
 }  // namespace domain::creators::time_dependence

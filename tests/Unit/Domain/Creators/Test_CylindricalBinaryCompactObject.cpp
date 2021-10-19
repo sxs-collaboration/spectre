@@ -42,6 +42,7 @@ using Translation = domain::CoordinateMaps::TimeDependent::Translation<1>;
 using Translation3D = domain::CoordinateMaps::TimeDependent::Translation<3>;
 using BoundaryCondVector = std::vector<DirectionMap<
     3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>;
+using ExpirationTimeMap = std::unordered_map<std::string, double>;
 
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
 create_inner_boundary_condition() {
@@ -154,7 +155,8 @@ void test_binary_compact_object_construction(
         functions_of_time = {},
     const std::tuple<std::pair<std::string, FuncsOfTime>...>&
         expected_functions_of_time = {},
-    const BoundaryCondVector& expected_external_boundary_conditions = {}) {
+    const BoundaryCondVector& expected_external_boundary_conditions = {},
+    const ExpirationTimeMap& initial_expiration_times = {}) {
   const auto domain = binary_compact_object.create_domain();
   test_initial_domain(domain,
                       binary_compact_object.initial_refinement_levels());
@@ -185,7 +187,8 @@ void test_binary_compact_object_construction(
   }
 
   TestHelpers::domain::creators::test_functions_of_time(
-      binary_compact_object, expected_functions_of_time);
+      binary_compact_object, expected_functions_of_time,
+      initial_expiration_times);
 }
 
 void test_connectivity() {
@@ -333,17 +336,13 @@ void test_connectivity() {
 std::string create_option_string(
     const bool add_time_dependence,
     const bool with_additional_outer_radial_refinement,
-    const bool with_additional_grid_points,
-    const bool add_boundary_condition) {
-  const std::string time_dependence{
-      add_time_dependence
-          ? "  TimeDependence:\n"
-            "    UniformTranslation:\n"
-            "      InitialTime: 1.0\n"
-            "      InitialExpirationDeltaT: 9.0\n"
-            "      Velocity: [2.3, -0.3, 0.5]\n"
-            "      FunctionOfTimeName: Translation\n"
-          : "  TimeDependence: None\n"};
+    const bool with_additional_grid_points, const bool add_boundary_condition) {
+  const std::string time_dependence{add_time_dependence
+                                        ? "  TimeDependence:\n"
+                                          "    UniformTranslation:\n"
+                                          "      InitialTime: 1.0\n"
+                                          "      Velocity: [2.3, -0.3, 0.5]\n"
+                                        : "  TimeDependence: None\n"};
   const std::string boundary_conditions{
       add_boundary_condition ? std::string{"  BoundaryConditions:\n"
                                            "    InnerBoundary:\n"
@@ -376,7 +375,8 @@ std::string create_option_string(
          time_dependence + boundary_conditions;
 }
 
-void test_bbh_time_dependent_factory(const bool with_boundary_conditions) {
+void test_bbh_time_dependent_factory(const bool with_boundary_conditions,
+                                     const bool with_control_systems) {
   const auto binary_compact_object = [&with_boundary_conditions]() {
     if (with_boundary_conditions) {
       return TestHelpers::test_option_tag<
@@ -397,27 +397,31 @@ void test_bbh_time_dependent_factory(const bool with_boundary_conditions) {
   const std::array<double, 4> times_to_check{{0.0, 4.4, 7.8}};
 
   constexpr double initial_time = 0.0;
-  constexpr double expiration_time = 10.0;
-  constexpr double expected_time = 1.0; // matches InitialTime: 1.0 above
-  constexpr double expected_update_delta_t =
-      9.0;  // matches InitialExpirationDeltaT: 9.0 above
+  constexpr double expected_time = 1.0;  // matches InitialTime: 1.0 above
+  const DataVector velocity{{2.3, -0.3, 0.5}};
+  // This name must match the hard coded one in UniformTranslation
+  const std::string f_of_t_name = "Translation";
   std::array<DataVector, 3> function_of_time_coefficients{
-      {{3,0.0}, {2.3,-0.3,0.5}, {3,0.0}}};
+      {{3, 0.0}, velocity, {3, 0.0}}};
+  ExpirationTimeMap initial_expiration_times{};
+  initial_expiration_times[f_of_t_name] =
+      with_control_systems ? 10.0 : std::numeric_limits<double>::infinity();
 
   const std::tuple<
       std::pair<std::string, domain::FunctionsOfTime::PiecewisePolynomial<2>>>
       expected_functions_of_time = std::make_tuple(
           std::pair<std::string,
                     domain::FunctionsOfTime::PiecewisePolynomial<2>>{
-              "Translation"s,
+              f_of_t_name,
               {expected_time, function_of_time_coefficients,
-               expected_time + expected_update_delta_t}});
+               initial_expiration_times[f_of_t_name]}});
   std::unordered_map<std::string,
                      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
       functions_of_time{};
-  functions_of_time["Translation"] =
+  functions_of_time[f_of_t_name] =
       std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<2>>(
-          initial_time, function_of_time_coefficients, expiration_time);
+          initial_time, function_of_time_coefficients,
+          initial_expiration_times[f_of_t_name]);
 
   for (const double time : times_to_check) {
     test_binary_compact_object_construction(
@@ -425,7 +429,8 @@ void test_bbh_time_dependent_factory(const bool with_boundary_conditions) {
             *binary_compact_object),
         time, functions_of_time, expected_functions_of_time,
         with_boundary_conditions ? create_boundary_conditions(false)
-                                 : BoundaryCondVector{});
+                                 : BoundaryCondVector{},
+        with_control_systems ? initial_expiration_times : ExpirationTimeMap{});
   }
 }
 
@@ -518,13 +523,14 @@ void test_parse_errors() {
 }
 }  // namespace
 
-// [[Timeout, 15]]
-SPECTRE_TEST_CASE(
-    "Unit.Domain.Creators.CylindricalBinaryCompactObject",
-    "[Domain][Unit]") {
+// [[Timeout, 20]]
+SPECTRE_TEST_CASE("Unit.Domain.Creators.CylindricalBinaryCompactObject",
+                  "[Domain][Unit]") {
   test_connectivity();
-  test_bbh_time_dependent_factory(true);
-  test_bbh_time_dependent_factory(false);
+  test_bbh_time_dependent_factory(true, true);
+  test_bbh_time_dependent_factory(true, false);
+  test_bbh_time_dependent_factory(false, true);
+  test_bbh_time_dependent_factory(false, false);
   test_binary_factory();
   test_parse_errors();
 }

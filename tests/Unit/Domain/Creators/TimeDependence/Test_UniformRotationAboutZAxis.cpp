@@ -87,9 +87,28 @@ void test(const std::unique_ptr<TimeDependence<MeshDim>>& time_dep_unique_ptr,
     CHECK(*block_map == expected_block_map);
   }
 
-  // Test functions of time
+  // Test functions of time without expiration times
+  {
+    const auto functions_of_time = time_dep_unique_ptr->functions_of_time();
+    REQUIRE(functions_of_time.size() == 1);
+    CHECK(functions_of_time.count(f_of_t_name) == 1);
+    CHECK(functions_of_time.at(f_of_t_name)->time_bounds()[1] ==
+          std::numeric_limits<double>::infinity());
+  }
+  // Test functions of time with expiration times
+  {
+    const double init_expr_time = 5.0;
+    std::unordered_map<std::string, double> init_expr_times{};
+    init_expr_times[f_of_t_name] = init_expr_time;
+    const auto functions_of_time =
+        time_dep_unique_ptr->functions_of_time(init_expr_times);
+    REQUIRE(functions_of_time.size() == 1);
+    CHECK(functions_of_time.count(f_of_t_name) == 1);
+    CHECK(functions_of_time.at(f_of_t_name)->time_bounds()[1] ==
+          init_expr_time);
+  }
+
   const auto functions_of_time = time_dep_unique_ptr->functions_of_time();
-  REQUIRE(functions_of_time.size() == 1);
 
   // Test map for composition
   CHECK(time_dep->map_for_composition() == expected_block_map);
@@ -148,38 +167,26 @@ void test(const std::unique_ptr<TimeDependence<MeshDim>>& time_dep_unique_ptr,
 
 void test_equivalence() {
   {
-    UniformRotationAboutZAxis<2> ur0{1.0, 2.5, 2.0, "RotationAnglePhi"};
-    UniformRotationAboutZAxis<2> ur1{1.2, 2.5, 2.0, "RotationAnglePhi"};
-    UniformRotationAboutZAxis<2> ur2{1.0, 2.5, 3.0, "RotationAnglePhi"};
-    UniformRotationAboutZAxis<2> ur3{1.0, 2.5, 2.0, "RotationAngleTheta"};
-    UniformRotationAboutZAxis<2> ur4{1.0, 2.6, 2.0, "RotationAnglePhi"};
+    UniformRotationAboutZAxis<2> ur0{1.0, 2.0};
+    UniformRotationAboutZAxis<2> ur1{1.2, 2.0};
+    UniformRotationAboutZAxis<2> ur2{1.0, 3.0};
     CHECK(ur0 == ur0);
     CHECK_FALSE(ur0 != ur0);
     CHECK(ur0 != ur1);
     CHECK_FALSE(ur0 == ur1);
     CHECK(ur0 != ur2);
     CHECK_FALSE(ur0 == ur2);
-    CHECK(ur0 != ur3);
-    CHECK_FALSE(ur0 == ur3);
-    CHECK(ur0 != ur4);
-    CHECK_FALSE(ur0 == ur4);
   }
   {
-    UniformRotationAboutZAxis<3> ur0{1.0, 2.5, 2.0, "RotationAnglePhi"};
-    UniformRotationAboutZAxis<3> ur1{1.2, 2.5, 2.0, "RotationAnglePhi"};
-    UniformRotationAboutZAxis<3> ur2{1.0, 2.5, 3.0, "RotationAnglePhi"};
-    UniformRotationAboutZAxis<3> ur3{1.0, 2.5, 2.0, "RotationAngleTheta"};
-    UniformRotationAboutZAxis<3> ur4{1.0, 2.6, 2.0, "RotationAnglePhi"};
+    UniformRotationAboutZAxis<3> ur0{1.0, 2.0};
+    UniformRotationAboutZAxis<3> ur1{1.2, 2.0};
+    UniformRotationAboutZAxis<3> ur2{1.0, 3.0};
     CHECK(ur0 == ur0);
     CHECK_FALSE(ur0 != ur0);
     CHECK(ur0 != ur1);
     CHECK_FALSE(ur0 == ur1);
     CHECK(ur0 != ur2);
     CHECK_FALSE(ur0 == ur2);
-    CHECK(ur0 != ur3);
-    CHECK_FALSE(ur0 == ur3);
-    CHECK(ur0 != ur4);
-    CHECK_FALSE(ur0 == ur4);
   }
 }
 
@@ -187,23 +194,21 @@ SPECTRE_TEST_CASE(
     "Unit.Domain.Creators.TimeDependence.UniformRotationAboutZAxis",
     "[Domain][Unit]") {
   const double initial_time = 1.3;
-  const double update_delta_t = 2.5;
   constexpr double angular_velocity = 2.4;
-  const std::string f_of_t_name{"RotationAngle"};
+  // This name must match the hard coded one in UniformRotationAboutZAxis
+  const std::string f_of_t_name = "Rotation";
   {
     // 2d
     const std::unique_ptr<domain::creators::time_dependence::TimeDependence<2>>
         time_dep = std::make_unique<UniformRotationAboutZAxis<2>>(
-            initial_time, update_delta_t, angular_velocity, f_of_t_name);
+            initial_time, angular_velocity);
     test(time_dep, initial_time, f_of_t_name);
     test(time_dep->get_clone(), initial_time, f_of_t_name);
 
     test(TestHelpers::test_creation<std::unique_ptr<TimeDependence<2>>>(
              "UniformRotationAboutZAxis:\n"
              "  InitialTime: 1.3\n"
-             "  InitialExpirationDeltaT: 2.5\n"
-             "  AngularVelocity: 2.4\n"
-             "  FunctionOfTimeName: RotationAngle\n"),
+             "  AngularVelocity: 2.4\n"),
          initial_time, f_of_t_name);
   }
 
@@ -211,16 +216,14 @@ SPECTRE_TEST_CASE(
     // 3d
     const std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
         time_dep = std::make_unique<UniformRotationAboutZAxis<3>>(
-            initial_time, update_delta_t, angular_velocity, f_of_t_name);
+            initial_time, angular_velocity);
     test(time_dep, initial_time, f_of_t_name);
     test(time_dep->get_clone(), initial_time, f_of_t_name);
 
     test(TestHelpers::test_creation<std::unique_ptr<TimeDependence<3>>>(
              "UniformRotationAboutZAxis:\n"
              "  InitialTime: 1.3\n"
-             "  InitialExpirationDeltaT: Auto\n"
-             "  AngularVelocity: 2.4\n"
-             "  FunctionOfTimeName: RotationAngle\n"),
+             "  AngularVelocity: 2.4\n"),
          initial_time, f_of_t_name);
   }
 

@@ -32,8 +32,7 @@ TimeDependentTripleGaussian::TimeDependentTripleGaussian(
     const std::array<double, 3>& center_1, const double amplitude_2,
     const double width_2, const std::array<double, 3>& center_2,
     const double amplitude_3, const double width_3,
-    const std::array<double, 3>& center_3,
-    std::string function_of_time_for_scaling)
+    const std::array<double, 3>& center_3)
     : constant_(constant),
       amplitude_1_(amplitude_1),
       inverse_width_1_(1.0 / width_1),
@@ -43,8 +42,7 @@ TimeDependentTripleGaussian::TimeDependentTripleGaussian(
       center_2_(center_2),
       amplitude_3_(amplitude_3),
       inverse_width_3_(1.0 / width_3),
-      center_3_(center_3),
-      function_of_time_for_scaling_(std::move(function_of_time_for_scaling)) {}
+      center_3_(center_3) {}
 
 template <typename T>
 void TimeDependentTripleGaussian::apply_call_operator(
@@ -118,7 +116,6 @@ void TimeDependentTripleGaussian::pup(PUP::er& p) {
   p | amplitude_3_;
   p | inverse_width_3_;
   p | center_3_;
-  p | function_of_time_for_scaling_;
 }
 
 auto TimeDependentTripleGaussian::get_clone() const

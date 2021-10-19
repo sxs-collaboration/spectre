@@ -17,6 +17,7 @@
 #include "Domain/Creators/TimeDependence/TimeDependence.hpp"
 #include "Options/Auto.hpp"
 #include "Options/Options.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -41,8 +42,7 @@ namespace time_dependence {
 /// \brief A linear or cubic radial scaling time dependence.
 ///
 /// Adds the `domain::CoordinateMaps::TimeDependent::CubicScale` map. A linear
-/// radial scaling can be used by specifying the two functions of time to have
-/// the same name.
+/// radial scaling can be used by specifying the `UseLinearScaling` bool.
 template <size_t MeshDim>
 class CubicScale final : public TimeDependence<MeshDim> {
  private:
@@ -60,14 +60,6 @@ class CubicScale final : public TimeDependence<MeshDim> {
     using type = double;
     static constexpr Options::String help = {
         "The initial time of the functions of time"};
-  };
-  /// \brief The initial time interval for updates of the functions of time.
-  struct InitialExpirationDeltaT {
-    using type = Options::Auto<double>;
-    static constexpr Options::String help = {
-        "The initial time interval for updates of the functions of time. If "
-        "Auto, then the functions of time do not expire, nor can they be "
-        "updated."};
   };
   /// \brief The outer boundary or pivot point of the
   /// `domain::CoordinateMaps::TimeDependent::CubicScale` map
@@ -92,19 +84,15 @@ class CubicScale final : public TimeDependence<MeshDim> {
     using type = std::array<double, 2>;
     static constexpr Options::String help = {"The acceleration of expansion."};
   };
-  /// \brief The names of the functions of times to be added to the added to the
-  /// DataBox.
-  ///
-  /// If the two names are same then a linear radial scaling is used instead of
-  /// a cubic scaling.
-  struct FunctionOfTimeNames {
-    using type = std::array<std::string, 2>;
-    static constexpr Options::String help = {"Names of the functions of time."};
+  /// \brief Whether to use linear scaling or cubic scaling.
+  struct UseLinearScaling {
+    using type = bool;
+    static constexpr Options::String help = {
+        "Whether or not to turn on cubic scaling."};
   };
 
-  using options =
-      tmpl::list<InitialTime, InitialExpirationDeltaT, OuterBoundary,
-                 FunctionOfTimeNames, InitialExpansion, Velocity, Acceleration>;
+  using options = tmpl::list<InitialTime, OuterBoundary, UseLinearScaling,
+                             InitialExpansion, Velocity, Acceleration>;
 
   static constexpr Options::String help = {
       "A spatial radial scaling either based on a cubic scaling or a simple\n"
@@ -123,10 +111,8 @@ class CubicScale final : public TimeDependence<MeshDim> {
   CubicScale& operator=(const CubicScale&) = delete;
   CubicScale& operator=(CubicScale&&) = default;
 
-  CubicScale(double initial_time,
-             std::optional<double> initial_expiration_delta_t,
-             double outer_boundary,
-             std::array<std::string, 2> functions_of_time_names,
+  CubicScale(double initial_time, double outer_boundary,
+             bool use_linear_scaling,
              const std::array<double, 2>& initial_expansion,
              const std::array<double, 2>& velocity,
              const std::array<double, 2>& acceleration);
@@ -137,9 +123,11 @@ class CubicScale final : public TimeDependence<MeshDim> {
       -> std::vector<std::unique_ptr<domain::CoordinateMapBase<
           Frame::Grid, Frame::Inertial, MeshDim>>> override;
 
-  auto functions_of_time() const -> std::unordered_map<
-      std::string,
-      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;
+  auto functions_of_time(const std::unordered_map<std::string, double>&
+                             initial_expiration_times = {}) const
+      -> std::unordered_map<
+          std::string,
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;
 
   /// Returns the map for each block to be used in a composition of
   /// `TimeDependence`s.
@@ -152,9 +140,13 @@ class CubicScale final : public TimeDependence<MeshDim> {
                          const CubicScale<LocalDim>& rhs);
 
   double initial_time_{std::numeric_limits<double>::signaling_NaN()};
-  std::optional<double> initial_expiration_delta_t_{};
   double outer_boundary_{std::numeric_limits<double>::signaling_NaN()};
-  std::array<std::string, 2> functions_of_time_names_{};
+  bool use_linear_scaling_{false};
+  // Unlike other TimeDependences, these names aren't inline static const
+  // because they can potentially be changed by the run-time option
+  // use_linear_scaling in the constructor
+  std::array<std::string, 2> functions_of_time_names_{
+      {"CubicScaleA", "CubicScaleB"}};
   std::array<double, 2> initial_expansion_{};
   std::array<double, 2> velocity_{};
   std::array<double, 2> acceleration_{};

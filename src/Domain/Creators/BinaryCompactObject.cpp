@@ -285,18 +285,14 @@ BinaryCompactObject::BinaryCompactObject(
 // Time-dependent constructor, with additional options for specifying
 // the time-dependent maps
 BinaryCompactObject::BinaryCompactObject(
-    double initial_time, std::optional<double> initial_expiration_delta_t,
-    double expansion_map_outer_boundary, double initial_expansion,
-    double initial_expansion_velocity,
-    std::string expansion_function_of_time_name,
+    double initial_time, double expansion_map_outer_boundary,
+    double initial_expansion, double initial_expansion_velocity,
     double asymptotic_velocity_outer_boundary,
     double decay_timescale_outer_boundary_velocity,
     double initial_rotation_angle, double initial_angular_velocity,
-    std::string rotation_about_z_axis_function_of_time_name,
     std::array<double, 2> initial_size_map_values,
     std::array<double, 2> initial_size_map_velocities,
-    std::array<double, 2> initial_size_map_accelerations,
-    std::array<std::string, 2> size_map_function_of_time_names, Object object_A,
+    std::array<double, 2> initial_size_map_accelerations, Object object_A,
     Object object_B, double radius_enveloping_cube, double outer_radius_domain,
     const typename InitialRefinement::type& initial_refinement,
     const typename InitialGridPoints::type& initial_number_of_grid_points,
@@ -314,22 +310,17 @@ BinaryCompactObject::BinaryCompactObject(
           std::move(outer_boundary_condition), context) {
   enable_time_dependence_ = true;
   initial_time_ = initial_time;
-  initial_expiration_delta_t_ = initial_expiration_delta_t;
   expansion_map_outer_boundary_ = expansion_map_outer_boundary;
   initial_expansion_ = initial_expansion;
   initial_expansion_velocity_ = initial_expansion_velocity;
-  expansion_function_of_time_name_ = std::move(expansion_function_of_time_name);
   asymptotic_velocity_outer_boundary_ = asymptotic_velocity_outer_boundary;
   decay_timescale_outer_boundary_velocity_ =
       decay_timescale_outer_boundary_velocity;
   initial_rotation_angle_ = initial_rotation_angle;
   initial_angular_velocity_ = initial_angular_velocity;
-  rotation_about_z_axis_function_of_time_name_ =
-      std::move(rotation_about_z_axis_function_of_time_name);
   initial_size_map_values_ = initial_size_map_values;
   initial_size_map_velocities_ = initial_size_map_velocities;
   initial_size_map_accelerations_ = initial_size_map_accelerations;
-  size_map_function_of_time_names_ = std::move(size_map_function_of_time_names);
 }
 
 Domain<3> BinaryCompactObject::create_domain() const {
@@ -656,7 +647,9 @@ Domain<3> BinaryCompactObject::create_domain() const {
 
 std::unordered_map<std::string,
                    std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
-BinaryCompactObject::functions_of_time() const {
+BinaryCompactObject::functions_of_time(
+    const std::unordered_map<std::string, double>& initial_expiration_times)
+    const {
   std::unordered_map<std::string,
                      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
       result{};
@@ -664,9 +657,23 @@ BinaryCompactObject::functions_of_time() const {
     return result;
   }
 
-  const double initial_expiration_time =
-      initial_expiration_delta_t_ ? initial_time_ + *initial_expiration_delta_t_
-                                  : std::numeric_limits<double>::infinity();
+  // Get existing function of time names that are used for the maps and assign
+  // their initial expiration time to infinity (i.e. not expiring)
+  std::unordered_map<std::string, double> expiration_times{
+      {expansion_function_of_time_name_,
+       std::numeric_limits<double>::infinity()},
+      {rotation_about_z_axis_function_of_time_name_,
+       std::numeric_limits<double>::infinity()},
+      {size_map_function_of_time_names_[0],
+       std::numeric_limits<double>::infinity()},
+      {size_map_function_of_time_names_[1],
+       std::numeric_limits<double>::infinity()}};
+
+  // If we have control systems, overwrite these expiration times with the ones
+  // supplied by the control system
+  for (auto& [name, expr_time] : initial_expiration_times) {
+    expiration_times[name] = expr_time;
+  }
 
   // ExpansionMap FunctionOfTime for the function \f$a(t)\f$ in the
   // domain::CoordinateMaps::TimeDependent::CubicScale map
@@ -675,7 +682,7 @@ BinaryCompactObject::functions_of_time() const {
           initial_time_,
           std::array<DataVector, 3>{
               {{initial_expansion_}, {initial_expansion_velocity_}, {0.0}}},
-          initial_expiration_time);
+          expiration_times.at(expansion_function_of_time_name_));
 
   // ExpansionMap FunctionOfTime for the function \f$b(t)\f$ in the
   // domain::CoordinateMaps::TimeDependent::CubicScale map
@@ -693,26 +700,20 @@ BinaryCompactObject::functions_of_time() const {
                                      {initial_angular_velocity_},
                                      {0.0},
                                      {0.0}}},
-          initial_expiration_time);
+          expiration_times.at(rotation_about_z_axis_function_of_time_name_));
 
-  // CompressionMap FunctionOfTime for object A
-  result[size_map_function_of_time_names_[0]] =
-      std::make_unique<FunctionsOfTime::PiecewisePolynomial<3>>(
-          initial_time_,
-          std::array<DataVector, 4>{{{initial_size_map_values_[0]},
-                                     {initial_size_map_velocities_[0]},
-                                     {initial_size_map_accelerations_[0]},
-                                     {0.0}}},
-          initial_expiration_time);
-  // CompressionMap FunctionOfTime for object B
-  result[size_map_function_of_time_names_[1]] =
-      std::make_unique<FunctionsOfTime::PiecewisePolynomial<3>>(
-          initial_time_,
-          std::array<DataVector, 4>{{{initial_size_map_values_[1]},
-                                     {initial_size_map_velocities_[1]},
-                                     {initial_size_map_accelerations_[1]},
-                                     {0.0}}},
-          initial_expiration_time);
+  // CompressionMap FunctionOfTime for objects A and B
+  for (size_t i = 0; i < size_map_function_of_time_names_.size(); i++) {
+    result[gsl::at(size_map_function_of_time_names_, i)] =
+        std::make_unique<FunctionsOfTime::PiecewisePolynomial<3>>(
+            initial_time_,
+            std::array<DataVector, 4>{
+                {{gsl::at(initial_size_map_values_, i)},
+                 {gsl::at(initial_size_map_velocities_, i)},
+                 {gsl::at(initial_size_map_accelerations_, i)},
+                 {0.0}}},
+            expiration_times.at(gsl::at(size_map_function_of_time_names_, i)));
+  }
 
   return result;
 }

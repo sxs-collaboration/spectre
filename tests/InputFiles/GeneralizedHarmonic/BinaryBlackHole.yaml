@@ -49,23 +49,19 @@ DomainCreator:
     InitialGridPoints: 5
     TimeDependentMaps:
       InitialTime: 0.0
-      InitialExpirationDeltaT: Auto
       ExpansionMap:
         InitialExpansion: 1.0
         InitialExpansionVelocity: 0.0
         OuterBoundary: 1493.0
-        FunctionOfTimeName: 'ExpansionFactor'
         AsymptoticVelocityOuterBoundary: -1.0e-6
         DecayTimescaleOuterBoundaryVelocity: 50.0
       RotationAboutZAxisMap:
         InitialRotationAngle: 0.0
         InitialAngularVelocity: 0.0
-        FunctionOfTimeName: RotationAngle
       SizeMap:
         InitialValues: [0.0, 0.0]
         InitialVelocities: [0.0, 0.0]
         InitialAccelerations: [0.0, 0.0]
-        FunctionOfTimeNames: ['LambdaFactorA0', 'LambdaFactorB0']
 
 EventsAndDenseTriggers:
 
@@ -100,7 +96,6 @@ EvolutionSystem:
           Amplitude: 0.75            # 0.75 / (m_A + m_B)
           Width: 38.415              # 2.5 * (x_B - x_A)
           Center: [0.0, 0.0, 0.0]
-        FunctionOfTimeForScaling: ExpansionFactor
     DampingFunctionGamma1:
       GaussianPlusConstant:
         Constant: -0.999
@@ -122,7 +117,6 @@ EvolutionSystem:
           Amplitude: 0.75            # 0.75 / (m_A + m_B)
           Width: 38.415              # 2.5 * (x_B - x_A)
           Center: [0.0, 0.0, 0.0]
-        FunctionOfTimeForScaling: ExpansionFactor
 
 PhaseChangeAndTriggers:
 
@@ -244,7 +238,7 @@ CubicFunctionOfTimeOverride:
   FunctionOfTimeFile: "/path/to/control.h5"
   # Note: SpEC calls the hole on the right hole A, but spectre calls hole A
   # the hole on the left. So reverse the LambdaFactors used here
-  FunctionOfTimeNameMap: {ExpansionFactor: ExpansionFactor,
-                          RotationAngle: RotationAngle,
-                          LambdaFactorA0: LambdaFactorB0,
-                          LambdaFactorB0: LambdaFactorA0}
+  FunctionOfTimeNameMap: {ExpansionFactor: Expansion,
+                          RotationAngle: Rotation,
+                          LambdaFactorA0: SizeB,
+                          LambdaFactorB0: SizeA}
