@@ -54,6 +54,7 @@ struct ControlComponent {
   }
 };
 
+namespace control_system {
 /// \ingroup ControlSystemGroup
 /// List of control componenets to be added to the component list of the
 /// metavars
@@ -61,3 +62,4 @@ template <typename Metavariables, typename ControlSystems>
 using control_components = tmpl::transform<
     ControlSystems,
     tmpl::bind<ControlComponent, tmpl::pin<Metavariables>, tmpl::_1>>;
+}  // namespace control_system

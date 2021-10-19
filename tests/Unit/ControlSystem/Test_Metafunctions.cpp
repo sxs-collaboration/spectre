@@ -64,12 +64,14 @@ static_assert(std::is_same_v<
               tmpl::list<SystemB0>>);
 
 static_assert(
-    std::is_same_v<control_components<Metavariables, fewer_test_systems>,
-                   tmpl::list<ControlComponent<Metavariables, SystemA0>,
-                              ControlComponent<Metavariables, SystemB0>>> or
-    std::is_same_v<control_components<Metavariables, fewer_test_systems>,
-                   tmpl::list<ControlComponent<Metavariables, SystemB0>,
-                              ControlComponent<Metavariables, SystemA0>>>);
+    std::is_same_v<
+        control_system::control_components<Metavariables, fewer_test_systems>,
+        tmpl::list<ControlComponent<Metavariables, SystemA0>,
+                   ControlComponent<Metavariables, SystemB0>>> or
+    std::is_same_v<
+        control_system::control_components<Metavariables, fewer_test_systems>,
+        tmpl::list<ControlComponent<Metavariables, SystemB0>,
+                   ControlComponent<Metavariables, SystemA0>>>);
 }  // namespace Measurements
 
 namespace InterpolationTargetTags {
