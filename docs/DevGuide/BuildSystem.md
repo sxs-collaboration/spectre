@@ -294,6 +294,12 @@ cmake -D FLAG1=OPT1 ... -D FLAGN=OPTN <SPECTRE_ROOT>
   - This needs to be turned `OFF` in order to use
     [include-what-you-use
     (IWYU)](https://github.com/include-what-you-use/include-what-you-use)
+- USE_SLEEF
+  - Whether to use [Sleef](https://github.com/shibatch/sleef) with Blaze to
+    vectorize addition math functions like `sin`, `cos`, and `exp`.
+    (default is `OFF`)
+  - \note Blaze isn't tested super thoroughly across different architectures so
+    there's unfortunately no guarantee that Blaze+Sleef will work everywhere.
 
 ## CMake targets
 
