@@ -34,6 +34,9 @@ void test_simple_tags() {
   TestHelpers::db::test_simple_tag<gr::Tags::SqrtDetSpatialMetric<Type>>(
       "SqrtDetSpatialMetric");
   TestHelpers::db::test_simple_tag<
+      gr::Tags::DerivDetSpatialMetric<Dim, Frame, Type>>(
+      "DerivDetSpatialMetric");
+  TestHelpers::db::test_simple_tag<
       gr::Tags::DerivInverseSpatialMetric<Dim, Frame, Type>>(
       "DerivInverseSpatialMetric");
   TestHelpers::db::test_simple_tag<gr::Tags::Shift<Dim, Frame, Type>>("Shift");
