@@ -258,6 +258,7 @@ void test_equality_and_serialization() {
   controller1.assign_time_between_updates(2.0);
 
   CHECK(controller1 == controller3);
+  CHECK(controller1.get_update_fraction() == 0.5);
 
   Controller<2> controller1_serialized = serialize_and_deserialize(controller1);
 
