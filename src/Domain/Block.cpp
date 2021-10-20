@@ -86,41 +86,77 @@ Block<VolumeDim>::stationary_map() const {
 template <size_t VolumeDim>
 const domain::CoordinateMapBase<Frame::BlockLogical, Frame::Grid, VolumeDim>&
 Block<VolumeDim>::moving_mesh_logical_to_grid_map() const {
-  ASSERT(moving_mesh_grid_map_ != nullptr,
+  ASSERT(moving_mesh_logical_to_grid_map_ != nullptr,
          "The moving mesh Logical to Grid map is set to nullptr and so cannot "
          "be retrieved. This is because the domain is time-independent and so "
          "only the stationary map exists.");
-  return *moving_mesh_grid_map_;
+  return *moving_mesh_logical_to_grid_map_;
 }
 
 template <size_t VolumeDim>
 const domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, VolumeDim>&
 Block<VolumeDim>::moving_mesh_grid_to_inertial_map() const {
-  ASSERT(moving_mesh_inertial_map_ != nullptr,
+  ASSERT(moving_mesh_grid_to_inertial_map_ != nullptr,
          "The moving mesh Grid to Inertial map is set to nullptr and so cannot "
          "be retrieved. This is because the domain is time-independent and so "
          "only the stationary map exists.");
-  return *moving_mesh_inertial_map_;
+  return *moving_mesh_grid_to_inertial_map_;
+}
+
+template <size_t VolumeDim>
+const domain::CoordinateMapBase<Frame::Grid, Frame::Distorted, VolumeDim>&
+Block<VolumeDim>::moving_mesh_grid_to_distorted_map() const {
+  ASSERT(
+      moving_mesh_grid_to_distorted_map_ != nullptr,
+      "The moving mesh Grid to Distorted map is set to nullptr and so cannot "
+      "be retrieved. This is because there is no map from the Grid to the "
+      "Distorted Frame.");
+  return *moving_mesh_grid_to_distorted_map_;
+}
+
+template <size_t VolumeDim>
+const domain::CoordinateMapBase<Frame::Distorted, Frame::Inertial, VolumeDim>&
+Block<VolumeDim>::moving_mesh_distorted_to_inertial_map() const {
+  ASSERT(
+      moving_mesh_distorted_to_inertial_map_ != nullptr,
+      "The moving mesh Distorted to Inertial map is set to nullptr and so "
+      "cannot "
+      "be retrieved. This is because there is no map from the Distorted to the "
+      "Inertial Frame.");
+  return *moving_mesh_distorted_to_inertial_map_;
 }
 
 template <size_t VolumeDim>
 void Block<VolumeDim>::inject_time_dependent_map(
     std::unique_ptr<
         domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, VolumeDim>>
-        moving_mesh_inertial_map) {
+        moving_mesh_grid_to_inertial_map,
+    std::unique_ptr<
+        domain::CoordinateMapBase<Frame::Grid, Frame::Distorted, VolumeDim>>
+        moving_mesh_grid_to_distorted_map,
+    std::unique_ptr<
+        domain::CoordinateMapBase<Frame::Distorted, Frame::Inertial, VolumeDim>>
+        moving_mesh_distorted_to_inertial_map) {
   ASSERT(stationary_map_ != nullptr,
          "Cannot inject time-dependent map into a block that already has a "
          "time-dependent map.");
-  moving_mesh_inertial_map_ = std::move(moving_mesh_inertial_map);
-  moving_mesh_grid_map_ = stationary_map_->get_to_grid_frame();
+  moving_mesh_grid_to_inertial_map_ =
+      std::move(moving_mesh_grid_to_inertial_map);
+  moving_mesh_logical_to_grid_map_ = stationary_map_->get_to_grid_frame();
+  moving_mesh_grid_to_distorted_map_ =
+      std::move(moving_mesh_grid_to_distorted_map);
+  moving_mesh_distorted_to_inertial_map_ =
+      std::move(moving_mesh_distorted_to_inertial_map);
   stationary_map_ = nullptr;
 }
 
 template <size_t VolumeDim>
 void Block<VolumeDim>::pup(PUP::er& p) {
   p | stationary_map_;
-  p | moving_mesh_grid_map_;
-  p | moving_mesh_inertial_map_;
+  p | moving_mesh_logical_to_grid_map_;
+  p | moving_mesh_grid_to_inertial_map_;
+  p | moving_mesh_grid_to_distorted_map_;
+  p | moving_mesh_distorted_to_inertial_map_;
   p | id_;
   p | neighbors_;
   p | external_boundaries_;
@@ -141,23 +177,38 @@ bool operator==(const Block<VolumeDim>& lhs, const Block<VolumeDim>& rhs) {
   // Since the external boundary conditions are all abstract base classes we
   // can't compare them, but we check that the typeid matches between LHS and
   // RHS.
-  return lhs.id() == rhs.id() and lhs.neighbors() == rhs.neighbors() and
-         lhs.external_boundaries() == rhs.external_boundaries() and
-         alg::all_of(
-             rhs.external_boundaries(),
-             [&lhs, &rhs](const Direction<VolumeDim>& dir) {
-               return lhs.external_boundary_conditions().contains(dir) and
-                      rhs.external_boundary_conditions().contains(dir) and
-                      typeid(lhs.external_boundary_conditions().at(dir)) ==
-                          typeid(rhs.external_boundary_conditions().at(dir));
-             }) and
-         lhs.is_time_dependent() == rhs.is_time_dependent() and
-         (lhs.is_time_dependent()
-              ? (lhs.moving_mesh_logical_to_grid_map() ==
-                     rhs.moving_mesh_logical_to_grid_map() and
-                 lhs.moving_mesh_grid_to_inertial_map() ==
-                     rhs.moving_mesh_grid_to_inertial_map())
-              : lhs.stationary_map() == rhs.stationary_map());
+  bool blocks_are_equal =
+      (lhs.id() == rhs.id() and lhs.neighbors() == rhs.neighbors() and
+       lhs.external_boundaries() == rhs.external_boundaries() and
+       alg::all_of(
+           rhs.external_boundaries(),
+           [&lhs, &rhs](const Direction<VolumeDim>& dir) {
+             return lhs.external_boundary_conditions().contains(dir) and
+                    rhs.external_boundary_conditions().contains(dir) and
+                    typeid(lhs.external_boundary_conditions().at(dir)) ==
+                        typeid(rhs.external_boundary_conditions().at(dir));
+           }) and
+       lhs.is_time_dependent() == rhs.is_time_dependent());
+
+  if (lhs.is_time_dependent() and not lhs.has_distorted_frame()) {
+    blocks_are_equal =
+        blocks_are_equal and (lhs.moving_mesh_logical_to_grid_map() ==
+                                  rhs.moving_mesh_logical_to_grid_map() and
+                              lhs.moving_mesh_grid_to_inertial_map() ==
+                                  rhs.moving_mesh_grid_to_inertial_map());
+  } else if (lhs.is_time_dependent() and lhs.has_distorted_frame()) {
+    blocks_are_equal = blocks_are_equal and
+                       (lhs.moving_mesh_logical_to_grid_map() ==
+                        rhs.moving_mesh_logical_to_grid_map()) and
+                       (lhs.moving_mesh_grid_to_distorted_map() ==
+                            rhs.moving_mesh_grid_to_distorted_map() and
+                        lhs.moving_mesh_distorted_to_inertial_map() ==
+                            rhs.moving_mesh_distorted_to_inertial_map());
+  } else {
+    blocks_are_equal =
+        blocks_are_equal and (lhs.stationary_map() == rhs.stationary_map());
+  }
+  return blocks_are_equal;
 }
 
 template <size_t VolumeDim>

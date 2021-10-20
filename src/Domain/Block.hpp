@@ -87,15 +87,45 @@ class Block {
   const domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, VolumeDim>&
   moving_mesh_grid_to_inertial_map() const;
 
+  /// \brief The map going from the last time independent frame to the
+  /// distorted frame. Only used when the coordinate map is
+  /// time-dependent. See \ref domain_concepts to see how the distorted
+  /// frame is defined.
+  ///
+  /// \see is_time_dependent() moving_mesh_distorted_to_grid_map()
+  const domain::CoordinateMapBase<Frame::Grid, Frame::Distorted, VolumeDim>&
+  moving_mesh_grid_to_distorted_map() const;
+
+  /// \brief The map going from the distorted frame to the frame in
+  /// which the equations are solved. Only used when the coordinate map is
+  /// time-dependent. See \ref domain_concepts to see how the distorted
+  /// frame is defined.
+  ///
+  /// \see is_time_dependent() moving_mesh_grid_to_distorted_map()
+  const domain::CoordinateMapBase<Frame::Distorted, Frame::Inertial, VolumeDim>&
+  moving_mesh_distorted_to_inertial_map() const;
+
   /// \brief Returns `true` if the block has time-dependent maps.
   bool is_time_dependent() const { return stationary_map_ == nullptr; }
+
+  /// \brief Returns `true` if the block has a distorted frame.
+  bool has_distorted_frame() const {
+    return moving_mesh_grid_to_distorted_map_ != nullptr and
+           moving_mesh_distorted_to_inertial_map_ != nullptr;
+  }
 
   /// \brief Given a Block that has a time-independent map, injects the
   /// time-dependent map into the Block.
   void inject_time_dependent_map(
       std::unique_ptr<
           domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, VolumeDim>>
-          moving_mesh_inertial_map);
+          moving_mesh_grid_to_inertial_map,
+      std::unique_ptr<
+          domain::CoordinateMapBase<Frame::Grid, Frame::Distorted, VolumeDim>>
+          moving_mesh_grid_to_distorted_map = nullptr,
+      std::unique_ptr<domain::CoordinateMapBase<Frame::Distorted,
+                                                Frame::Inertial, VolumeDim>>
+          moving_mesh_distorted_to_inertial_map = nullptr);
 
   /// A unique identifier for the Block that is in the range
   /// [0, number_of_blocks -1] where number_of_blocks is the number
@@ -134,10 +164,16 @@ class Block {
       stationary_map_{nullptr};
   std::unique_ptr<
       domain::CoordinateMapBase<Frame::BlockLogical, Frame::Grid, VolumeDim>>
-      moving_mesh_grid_map_{nullptr};
+      moving_mesh_logical_to_grid_map_{nullptr};
   std::unique_ptr<
       domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, VolumeDim>>
-      moving_mesh_inertial_map_{nullptr};
+      moving_mesh_grid_to_inertial_map_{nullptr};
+  std::unique_ptr<
+      domain::CoordinateMapBase<Frame::Grid, Frame::Distorted, VolumeDim>>
+      moving_mesh_grid_to_distorted_map_{nullptr};
+  std::unique_ptr<
+      domain::CoordinateMapBase<Frame::Distorted, Frame::Inertial, VolumeDim>>
+      moving_mesh_distorted_to_inertial_map_{nullptr};
 
   size_t id_{0};
   DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>> neighbors_;
