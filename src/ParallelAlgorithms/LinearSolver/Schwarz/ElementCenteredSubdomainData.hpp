@@ -37,31 +37,7 @@ void ordered_overlap_ids(
                  [](const auto& overlap_id_and_value) {
                    return overlap_id_and_value.first;
                  });
-  std::sort(overlap_ids->begin(), overlap_ids->end(),
-            [](const OverlapId<Dim>& lhs, const OverlapId<Dim>& rhs) {
-              if (lhs.first.axis() != rhs.first.axis()) {
-                return lhs.first.axis() < rhs.first.axis();
-              }
-              if (lhs.first.side() != rhs.first.side()) {
-                return lhs.first.side() < rhs.first.side();
-              }
-              if (lhs.second.block_id() != rhs.second.block_id()) {
-                return lhs.second.block_id() < rhs.second.block_id();
-              }
-              for (size_t d = 0; d < Dim; ++d) {
-                const auto lhs_segment_id = lhs.second.segment_id(d);
-                const auto rhs_segment_id = rhs.second.segment_id(d);
-                if (lhs_segment_id.refinement_level() !=
-                    rhs_segment_id.refinement_level()) {
-                  return lhs_segment_id.refinement_level() <
-                         rhs_segment_id.refinement_level();
-                }
-                if (lhs_segment_id.index() != rhs_segment_id.index()) {
-                  return lhs_segment_id.index() < rhs_segment_id.index();
-                }
-              }
-              return false;
-            });
+  std::sort(overlap_ids->begin(), overlap_ids->end());
 }
 }  // namespace detail
 
