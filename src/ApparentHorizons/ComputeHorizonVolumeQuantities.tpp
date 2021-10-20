@@ -64,21 +64,14 @@ void ComputeHorizonVolumeQuantities::apply(
                      tmpl::list<>>,
       "A required src tag is missing");
 
-  using allowed_dest_tags =
-      tmpl::list<gr::Tags::SpatialMetric<3, Frame::Inertial>,
-                 gr::Tags::InverseSpatialMetric<3, Frame::Inertial>,
-                 gr::Tags::ExtrinsicCurvature<3, Frame::Inertial>,
-                 gr::Tags::SpatialChristoffelSecondKind<3, Frame::Inertial>,
-                 gr::Tags::SpatialRicci<3, Frame::Inertial>>;
   static_assert(
-      std::is_same_v<tmpl::list_difference<DestTagList, allowed_dest_tags>,
+      std::is_same_v<tmpl::list_difference<DestTagList,
+                                           allowed_dest_tags<Frame::Inertial>>,
                      tmpl::list<>>,
       "Found a dest tag that is not allowed");
-  using required_dest_tags =
-      tmpl::list<gr::Tags::ExtrinsicCurvature<3, Frame::Inertial>,
-                 gr::Tags::SpatialChristoffelSecondKind<3, Frame::Inertial>>;
   static_assert(
-      std::is_same_v<tmpl::list_difference<required_dest_tags, DestTagList>,
+      std::is_same_v<tmpl::list_difference<required_dest_tags<Frame::Inertial>,
+                                           DestTagList>,
                      tmpl::list<>>,
       "A required dest tag is missing");
 
@@ -179,22 +172,15 @@ void ComputeHorizonVolumeQuantities::apply(
                      tmpl::list<>>,
       "A required src tag is missing");
 
-  using allowed_dest_tags =
-      tmpl::list<gr::Tags::SpatialMetric<3, TargetFrame>,
-                 gr::Tags::InverseSpatialMetric<3, TargetFrame>,
-                 gr::Tags::ExtrinsicCurvature<3, TargetFrame>,
-                 gr::Tags::SpatialChristoffelSecondKind<3, TargetFrame>,
-                 gr::Tags::SpatialRicci<3, TargetFrame>>;
   static_assert(
-      std::is_same_v<tmpl::list_difference<DestTagList, allowed_dest_tags>,
-                     tmpl::list<>>,
+      std::is_same_v<
+          tmpl::list_difference<DestTagList, allowed_dest_tags<TargetFrame>>,
+          tmpl::list<>>,
       "Found a dest tag that is not allowed");
-  using required_dest_tags =
-      tmpl::list<gr::Tags::ExtrinsicCurvature<3, TargetFrame>,
-                 gr::Tags::SpatialChristoffelSecondKind<3, TargetFrame>>;
   static_assert(
-      std::is_same_v<tmpl::list_difference<required_dest_tags, DestTagList>,
-                     tmpl::list<>>,
+      std::is_same_v<
+          tmpl::list_difference<required_dest_tags<TargetFrame>, DestTagList>,
+          tmpl::list<>>,
       "A required dest tag is missing");
 
   const auto& psi =
