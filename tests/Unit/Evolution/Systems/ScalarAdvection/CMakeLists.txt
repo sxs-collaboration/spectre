@@ -13,6 +13,7 @@ set(LIBRARY_SOURCES
   Subcell/Test_InitialDataTci.cpp
   Subcell/Test_TciOnDgGrid.cpp
   Subcell/Test_TciOnFdGrid.cpp
+  Subcell/Test_VelocityAtFace.cpp
   Test_Characteristics.cpp
   Test_Fluxes.cpp
   Test_Tags.cpp
