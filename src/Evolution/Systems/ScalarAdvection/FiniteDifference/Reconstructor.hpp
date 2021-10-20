@@ -11,6 +11,11 @@
 #include "Utilities/TMPL.hpp"
 
 namespace ScalarAdvection::fd {
+/// \cond
+template <size_t Dim>
+class MonotisedCentral;
+/// \endcond
+
 /*!
  * \brief The base class from which all reconstruction schemes must inherit
  */
@@ -31,7 +36,7 @@ class Reconstructor : public PUP::able {
   WRAPPED_PUPable_abstract(Reconstructor<Dim>);  // NOLINT
   /// \endcond
 
-  using creatable_classes = tmpl::list<>;
+  using creatable_classes = tmpl::list<MonotisedCentral<Dim>>;
 
   virtual std::unique_ptr<Reconstructor<Dim>> get_clone() const = 0;
 
