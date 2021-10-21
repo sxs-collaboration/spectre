@@ -9,7 +9,8 @@ set(LIBRARY_SOURCES
   Test_Contract.cpp
   Test_Divide.cpp
   Test_Evaluate.cpp
-  Test_EvaluateRank3.cpp
+  Test_EvaluateRank3NonSymmetric.cpp
+  Test_EvaluateRank3Symmetric.cpp
   Test_EvaluateRank4.cpp
   Test_EvaluateSpatialSpacetimeIndex.cpp
   Test_EvaluateTimeIndex.cpp
