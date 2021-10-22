@@ -37,8 +37,18 @@ namespace ah {
 /// volume; only those computations that require data in the volume
 /// (e.g. volume numerical derivatives) should be done here.
 ///
-/// For the dual-frame case, takes the Jacobians and does numerical
-/// derivatives in order to avoid Hessians.
+/// For the dual-frame case, numerical derivatives of Jacobians are
+/// taken in order to avoid Hessians.
+///
+/// SrcTagList is usually `interpolator_source_vars` in the
+/// Metavariables, and the allowed and required tags in SrcTagList are
+/// given by the type aliases `allowed_src_tags` and `required_src_tags`
+/// below.
+///
+/// DestTagList is usually `vars_to_interpolate_to_target` in the
+/// `InterpolationTarget` that uses `ComputeHorizonVolumeQuantities`.
+/// The allowed and required tags in DestTagList are given by
+/// the type aliases `allowed_dest_tags` and `required_dest_tags` below.
 struct ComputeHorizonVolumeQuantities {
   /// Single-frame case
   template <typename SrcTagList, typename DestTagList>
@@ -63,6 +73,18 @@ struct ComputeHorizonVolumeQuantities {
       tmpl::list<gr::Tags::SpacetimeMetric<3, Frame::Inertial>,
                  GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>,
                  GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>>;
+
+  template <typename TargetFrame>
+  using allowed_dest_tags =
+      tmpl::list<gr::Tags::SpatialMetric<3, TargetFrame>,
+                 gr::Tags::InverseSpatialMetric<3, TargetFrame>,
+                 gr::Tags::ExtrinsicCurvature<3, TargetFrame>,
+                 gr::Tags::SpatialChristoffelSecondKind<3, TargetFrame>,
+                 gr::Tags::SpatialRicci<3, TargetFrame>>;
+  template <typename TargetFrame>
+  using required_dest_tags =
+      tmpl::list<gr::Tags::ExtrinsicCurvature<3, TargetFrame>,
+                 gr::Tags::SpatialChristoffelSecondKind<3, TargetFrame>>;
 };
 
 }  // namespace ah
