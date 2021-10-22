@@ -6,7 +6,6 @@
 #include <array>
 #include <random>
 
-#include "ApparentHorizons/SpherepackIterator.hpp"
 #include "ApparentHorizons/Strahlkorper.hpp"
 #include "ApparentHorizons/StrahlkorperInDifferentFrame.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"
@@ -16,6 +15,7 @@
 #include "Domain/Domain.hpp"
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace {

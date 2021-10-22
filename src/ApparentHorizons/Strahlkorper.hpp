@@ -6,8 +6,8 @@
 #include <array>
 #include <cstddef>
 
-#include "ApparentHorizons/YlmSpherepack.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/YlmSpherepack.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/ForceInline.hpp"
 

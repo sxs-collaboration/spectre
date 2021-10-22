@@ -7,10 +7,10 @@
 #include <random>
 
 #include "ApparentHorizons/ChangeCenterOfStrahlkorper.hpp"
-#include "ApparentHorizons/SpherepackIterator.hpp"
 #include "ApparentHorizons/Strahlkorper.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace Frame {

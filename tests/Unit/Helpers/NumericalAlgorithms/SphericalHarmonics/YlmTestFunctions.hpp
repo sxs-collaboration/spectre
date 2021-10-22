@@ -8,8 +8,8 @@
 #include <cstddef>
 #include <vector>
 
-#include "ApparentHorizons/YlmSpherepack.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/YlmSpherepack.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace YlmTestFunctions {

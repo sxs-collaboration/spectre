@@ -74,7 +74,6 @@ target_link_libraries(
   ${LIBRARY}
   PRIVATE
   PUBLIC
-  ApparentHorizons
   Boost::boost
   DataStructures
   DomainStructure
@@ -83,6 +82,7 @@ target_link_libraries(
   GSL::gsl
   Parallel
   RootFinding
+  SphericalHarmonics
   )
 
 add_subdirectory(TimeDependent)

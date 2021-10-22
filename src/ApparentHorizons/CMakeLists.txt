@@ -10,13 +10,10 @@ spectre_target_sources(
   PRIVATE
   ChangeCenterOfStrahlkorper.cpp
   FastFlow.cpp
-  SpherepackIterator.cpp
   Strahlkorper.cpp
   StrahlkorperGr.cpp
   StrahlkorperInDifferentFrame.cpp
   Tags.cpp
-  YlmSpherepack.cpp
-  YlmSpherepackHelper.cpp
   )
 
 spectre_target_headers(
@@ -28,25 +25,21 @@ spectre_target_headers(
   ComputeHorizonVolumeQuantities.tpp
   ComputeItems.hpp
   FastFlow.hpp
-  SpherepackIterator.hpp
   Strahlkorper.hpp
   StrahlkorperGr.hpp
   StrahlkorperInDifferentFrame.hpp
   Tags.hpp
   TagsDeclarations.hpp
   TagsTypeAliases.hpp
-  YlmSpherepack.hpp
-  YlmSpherepackHelper.hpp
   )
 
 target_link_libraries(
   ${LIBRARY}
   PUBLIC
-  Blas
   DataStructures
   ErrorHandling
   GeneralRelativity
   LinearAlgebra
   Options
-  SPHEREPACK
+  SphericalHarmonics
   )

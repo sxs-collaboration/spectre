@@ -45,6 +45,7 @@ target_link_libraries(
   Options
   Parallel
   Spectral
+  SphericalHarmonics
   Time
   Utilities
   INTERFACE

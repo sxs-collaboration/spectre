@@ -9,12 +9,10 @@ set(LIBRARY_SOURCES
   Test_ComputeHorizonVolumeQuantities.cpp
   Test_ComputeItems.cpp
   Test_FastFlow.cpp
-  Test_SpherepackIterator.cpp
   Test_Strahlkorper.cpp
   Test_StrahlkorperGr.cpp
   Test_StrahlkorperInDifferentFrame.cpp
   Test_Tags.cpp
-  Test_YlmSpherepack.cpp
   )
 
 add_test_library(
@@ -33,6 +31,8 @@ target_link_libraries(
   Logging
   Options
   RootFinding
+  SphericalHarmonics
+  SphericalHarmonicsHelpers
   Utilities
   )
 
