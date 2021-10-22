@@ -9,22 +9,58 @@
 
 #include "Utilities/ConstantExpressions.hpp"
 
-BinaryTrajectories::BinaryTrajectories(double initial_separation)
-    : initial_separation_fourth_power_{square(square(initial_separation))} {}
+BinaryTrajectories::BinaryTrajectories(double initial_separation,
+                                       const std::array<double, 3>& velocity,
+                                       bool newtonian)
+    : initial_separation_fourth_power_{square(square(initial_separation))},
+      velocity_(velocity),
+      newtonian_(newtonian) {}
 
 double BinaryTrajectories::separation(const double time) const {
-  return pow(initial_separation_fourth_power_ - 12.8 * time, 0.25);
+  const double pn_correction_term = newtonian_ ? 0.0 : 12.8 * time;
+  return pow(initial_separation_fourth_power_ - pn_correction_term, 0.25);
 }
 
 double BinaryTrajectories::orbital_frequency(const double time) const {
   return pow(separation(time), -1.5);
 }
 
+double BinaryTrajectories::angular_velocity(const double time) const {
+  // This is d/dt(orbital_frequency) if we are using PN, but 0 if it's newtonian
+  const double pn_correction_term =
+      newtonian_
+          ? 0.0
+          : 4.8 * pow(initial_separation_fourth_power_ - 12.8 * time, -1.375);
+  return orbital_frequency(time) + pn_correction_term * time;
+}
+
 std::pair<std::array<double, 3>, std::array<double, 3>>
 BinaryTrajectories::positions(const double time) const {
   const double sep = separation(time);
-  const double omega = orbital_frequency(time);
-  const double x1 = 0.5 * sep * cos(omega * time);
-  const double y1 = 0.5 * sep * sin(omega * time);
-  return {{x1, y1, 0.0}, {-x1, -y1, 0.0}};
+  return position_impl(time, sep);
+}
+
+std::pair<std::array<double, 3>, std::array<double, 3>>
+BinaryTrajectories::positions_no_expansion(const double time) const {
+  // Separation stays constant while orbital frequency follows PN (or newtonian)
+  // values
+  const double sep = pow(initial_separation_fourth_power_, 0.25);
+  return position_impl(time, sep);
+}
+
+std::pair<std::array<double, 3>, std::array<double, 3>>
+BinaryTrajectories::position_impl(const double time,
+                                  const double separation) const {
+  const double orbital_freq = orbital_frequency(time);
+  double xB = 0.5 * separation * cos(orbital_freq * time);
+  double yB = 0.5 * separation * sin(orbital_freq * time);
+  double xA = -xB;
+  double yA = -yB;
+  xB += velocity_[0] * time;
+  xA += velocity_[0] * time;
+  yB += velocity_[1] * time;
+  yA += velocity_[1] * time;
+  const double zB = velocity_[2] * time;
+  const double zA = zB;
+  return {{xA, yA, zA}, {xB, yB, zB}};
 }
