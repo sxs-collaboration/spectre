@@ -60,6 +60,51 @@ void weyl_magnetic(
     }
   }
 }
+
+template <typename Frame, typename DataType>
+void weyl_magnetic_scalar(
+    const gsl::not_null<Scalar<DataType>*> weyl_magnetic_scalar_result,
+    const tnsr::ii<DataType, 3, Frame>& weyl_magnetic,
+    const tnsr::II<DataType, 3, Frame>& inverse_spatial_metric) {
+  destructive_resize_components(weyl_magnetic_scalar_result,
+                                get_size(get<0, 0>(inverse_spatial_metric)));
+  *weyl_magnetic_scalar_result =
+      make_with_value<Scalar<DataType>>(get<0, 0>(inverse_spatial_metric), 0.0);
+
+  auto weyl_magnetic_up_down = make_with_value<tnsr::Ij<DataType, 3, Frame>>(
+      get<0, 0>(inverse_spatial_metric), 0.0);
+  for (size_t i = 0; i < 3; ++i) {
+    for (size_t j = 0; j < 3; ++j) {
+      for (size_t k = 0; k < 3; ++k) {
+        weyl_magnetic_up_down.get(j, k) +=
+            weyl_magnetic.get(i, k) * inverse_spatial_metric.get(i, j);
+      }
+    }
+  }
+  for (size_t j = 0; j < 3; ++j) {
+    for (size_t k = 0; k < 3; ++k) {
+      if (UNLIKELY(j == 0 and k == 0)) {
+        get(*weyl_magnetic_scalar_result) =
+            weyl_magnetic_up_down.get(j, k) * weyl_magnetic_up_down.get(k, j);
+      } else {
+        get(*weyl_magnetic_scalar_result) +=
+            weyl_magnetic_up_down.get(j, k) * weyl_magnetic_up_down.get(k, j);
+      }
+    }
+  }
+}
+
+template <typename Frame, typename DataType>
+Scalar<DataType> weyl_magnetic_scalar(
+    const tnsr::ii<DataType, 3, Frame>& weyl_magnetic,
+    const tnsr::II<DataType, 3, Frame>& inverse_spatial_metric) {
+  Scalar<DataType> weyl_magnetic_scalar_result{
+      get<0, 0>(inverse_spatial_metric)};
+  weyl_magnetic_scalar<Frame, DataType>(
+      make_not_null(&weyl_magnetic_scalar_result), weyl_magnetic,
+      inverse_spatial_metric);
+  return weyl_magnetic_scalar_result;
+}
 }  // namespace gr
 
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
@@ -75,7 +120,14 @@ void weyl_magnetic(
           weyl_magnetic_part,                                                 \
       const tnsr::ijj<DTYPE(data), 3, FRAME(data)>& grad_extrinsic_curvature, \
       const tnsr::ii<DTYPE(data), 3, FRAME(data)>& spatial_metric,            \
-      const Scalar<DTYPE(data)>& sqrt_det_spatial_metric);
+      const Scalar<DTYPE(data)>& sqrt_det_spatial_metric);                    \
+  template Scalar<DTYPE(data)> gr::weyl_magnetic_scalar(                      \
+      const tnsr::ii<DTYPE(data), 3, FRAME(data)>& weyl_magnetic,             \
+      const tnsr::II<DTYPE(data), 3, FRAME(data)>& inverse_spatial_metric);   \
+  template void gr::weyl_magnetic_scalar(                                     \
+      const gsl::not_null<Scalar<DTYPE(data)>*> weyl_magnetic_scalar_result,  \
+      const tnsr::ii<DTYPE(data), 3, FRAME(data)>& weyl_magnetic,             \
+      const tnsr::II<DTYPE(data), 3, FRAME(data)>& inverse_spatial_metric);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector),
                         (Frame::Grid, Frame::Inertial))

@@ -29,6 +29,7 @@ void make_random_tensors(
     const gsl::not_null<tnsr::ijj<DataType, 3>*> grad_extrinsic_curvature,
     const gsl::not_null<tnsr::ii<DataType, 3>*> spatial_metric,
     const gsl::not_null<Scalar<DataType>*> sqrt_det_spatial_metric,
+    const gsl::not_null<tnsr::II<DataType, 3>*> inverse_spatial_metric,
     const DataType& used_for_size) {
   MAKE_GENERATOR(generator);
   std::uniform_real_distribution<> distribution(-3.0, 3.0);
@@ -47,6 +48,9 @@ void make_random_tensors(
   std::uniform_real_distribution<> positive_distribution(0.1, 1.0);
   *sqrt_det_spatial_metric = make_with_random_values<Scalar<DataType>>(
       make_not_null(&generator), positive_distribution, used_for_size);
+
+  *inverse_spatial_metric = make_with_random_values<tnsr::II<DataType, 3>>(
+      make_not_null(&generator), nn_metric_distribution, used_for_size);
 }
 
 template <typename DataType>
@@ -60,26 +64,38 @@ void test_compute_item_in_databox(const DataType& used_for_size) {
       used_for_size, std::numeric_limits<double>::signaling_NaN());
   auto sqrt_det_spatial_metric = make_with_value<Scalar<DataType>>(
       used_for_size, std::numeric_limits<double>::signaling_NaN());
+  auto inverse_spatial_metric = make_with_value<tnsr::II<DataType, 3>>(
+      used_for_size, std::numeric_limits<double>::signaling_NaN());
 
   make_random_tensors(make_not_null(&grad_extrinsic_curvature),
                       make_not_null(&spatial_metric),
-                      make_not_null(&sqrt_det_spatial_metric), used_for_size);
+                      make_not_null(&sqrt_det_spatial_metric),
+                      make_not_null(&inverse_spatial_metric), used_for_size);
 
   const auto box = db::create<
-      db::AddSimpleTags<::Tags::deriv<gr::Tags::ExtrinsicCurvature<
-                                          3, Frame::Inertial, DataType>,
-                                      tmpl::size_t<3>, Frame::Inertial>,
-                        gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>,
-                        gr::Tags::SqrtDetSpatialMetric<DataType>>,
+      db::AddSimpleTags<
+          ::Tags::deriv<
+              gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataType>,
+              tmpl::size_t<3>, Frame::Inertial>,
+          gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>,
+          gr::Tags::SqrtDetSpatialMetric<DataType>,
+          gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataType>>,
       db::AddComputeTags<
-          gr::Tags::WeylMagneticCompute<Frame::Inertial, DataType>>>(
-      grad_extrinsic_curvature, spatial_metric, sqrt_det_spatial_metric);
+          gr::Tags::WeylMagneticCompute<Frame::Inertial, DataType>,
+          gr::Tags::WeylMagneticScalarCompute<Frame::Inertial, DataType>>>(
+      grad_extrinsic_curvature, spatial_metric, sqrt_det_spatial_metric,
+      inverse_spatial_metric);
 
   const auto expected_weyl_magnetic = gr::weyl_magnetic(
       grad_extrinsic_curvature, spatial_metric, sqrt_det_spatial_metric);
   CHECK_ITERABLE_APPROX(
       (db::get<gr::Tags::WeylMagnetic<Frame::Inertial, DataType>>(box)),
       expected_weyl_magnetic);
+
+  const auto expected_weyl_scalar =
+      gr::weyl_magnetic_scalar(expected_weyl_magnetic, inverse_spatial_metric);
+  CHECK_ITERABLE_APPROX((db::get<gr::Tags::WeylMagneticScalar<DataType>>(box)),
+                        expected_weyl_scalar);
 }
 
 template <size_t SpatialDim, typename DataType>
@@ -92,19 +108,28 @@ void test_weyl_magnetic(const DataType& used_for_size) {
       used_for_size, std::numeric_limits<double>::signaling_NaN());
   auto sqrt_det_spatial_metric = make_with_value<Scalar<DataType>>(
       used_for_size, std::numeric_limits<double>::signaling_NaN());
+  auto inverse_spatial_metric = make_with_value<tnsr::II<DataType, 3>>(
+      used_for_size, std::numeric_limits<double>::signaling_NaN());
 
   // Populating inputs with random values
   make_random_tensors(make_not_null(&grad_extrinsic_curvature),
                       make_not_null(&spatial_metric),
-                      make_not_null(&sqrt_det_spatial_metric), used_for_size);
+                      make_not_null(&sqrt_det_spatial_metric),
+                      make_not_null(&inverse_spatial_metric), used_for_size);
 
   const auto cpp_weyl_magnetic = gr::weyl_magnetic(
       grad_extrinsic_curvature, spatial_metric, sqrt_det_spatial_metric);
+  const auto scalar_weyl_magnetic =
+      gr::weyl_magnetic_scalar(cpp_weyl_magnetic, inverse_spatial_metric);
   const auto python_weyl_magnetic =
       pypp::call<tnsr::ii<DataType, SpatialDim, Frame::Inertial>>(
           "WeylMagnetic", "weyl_magnetic_tensor", grad_extrinsic_curvature,
           spatial_metric, sqrt_det_spatial_metric);
+  const auto python_weyl_scalar =
+      pypp::call<Scalar<DataType>>("WeylMagneticScalar", "weyl_magnetic_scalar",
+                                   cpp_weyl_magnetic, inverse_spatial_metric);
   CHECK_ITERABLE_APPROX(cpp_weyl_magnetic, python_weyl_magnetic);
+  CHECK_ITERABLE_APPROX(scalar_weyl_magnetic, python_weyl_scalar);
 }
 }  // namespace
 

@@ -211,6 +211,15 @@ template <typename DataType>
 struct WeylElectricScalar : db::SimpleTag {
   using type = Scalar<DataType>;
 };
+
+/*!
+ * \brief The square \f$B_{ij} B^{ij}\f$ of the magnetic part of the Weyl tensor
+ * \f$B_{ij}\f$.
+ */
+template <typename DataType>
+struct WeylMagneticScalar : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
 }  // namespace Tags
 
 /// GR Tags commonly needed for the evolution of hydro systems

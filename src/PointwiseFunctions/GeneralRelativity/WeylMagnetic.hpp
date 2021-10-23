@@ -50,6 +50,32 @@ void weyl_magnetic(
     const Scalar<DataType>& sqrt_det_spatial_metric);
 /// @}
 
+/// @{
+/*!
+ * \ingroup GeneralRelativityGroup
+ * \brief Computes the scalar \f$B_{ij} B^{ij}\f$ from the magnetic
+ * part of the Weyl tensor \f$B_{ij}\f$.
+ *
+ * \details Computes the scalar \f$B_{ij} B^{ij}\f$ from the magnetic part
+ * of the Weyl tensor \f$B_{ij}\f$ and the inverse spatial metric
+ * \f$\gamma^{ij}\f$, i.e. \f$B_{ij} = \gamma^{ik}\gamma^{jl}B_{ij}B_{kl}\f$.
+ *
+ * \note The magnetic part of the Weyl tensor in vacuum is available via
+ * `gr::weyl_magnetic()`. The magnetic part of the Weyl tensor needs additional
+ * terms for matter.
+ */
+template <typename Frame, typename DataType>
+Scalar<DataType> weyl_magnetic_scalar(
+    const tnsr::ii<DataType, 3, Frame>& weyl_magnetic,
+    const tnsr::II<DataType, 3, Frame>& inverse_spatial_metric);
+
+template <typename Frame, typename DataType>
+void weyl_magnetic_scalar(
+    gsl::not_null<Scalar<DataType>*> weyl_magnetic_scalar_result,
+    const tnsr::ii<DataType, 3, Frame>& weyl_magnetic,
+    const tnsr::II<DataType, 3, Frame>& inverse_spatial_metric);
+/// @}
+
 namespace Tags {
 /// Compute item for the magnetic part of the weyl tensor in vacuum
 /// Computed from the `ExtrinsicCurvature` and `SpatialMetric`
@@ -71,6 +97,25 @@ struct WeylMagneticCompute : WeylMagnetic<Frame, DataType>, db::ComputeTag {
       const Scalar<DataType>&)>(&weyl_magnetic<Frame, DataType>);
 
   using base = WeylMagnetic<Frame, DataType>;
+};
+
+/// Can be retrieved using gr::Tags::`WeylMagneticScalar`
+/// Computes magnetic part of the Weyl tensor
+template <typename Frame, typename DataType>
+struct WeylMagneticScalarCompute : WeylMagneticScalar<DataType>,
+                                   db::ComputeTag {
+  using argument_tags =
+      tmpl::list<gr::Tags::WeylMagneticCompute<Frame, DataType>,
+                 gr::Tags::InverseSpatialMetric<3, Frame, DataType>>;
+
+  using return_type = Scalar<DataType>;
+
+  static constexpr auto function = static_cast<void (*)(
+      gsl::not_null<Scalar<DataType>*>, const tnsr::ii<DataType, 3, Frame>&,
+      const tnsr::II<DataType, 3, Frame>&)>(
+      &gr::weyl_magnetic_scalar<Frame, DataType>);
+
+  using base = WeylMagneticScalar<DataType>;
 };
 }  // namespace Tags
 }  // namespace gr
