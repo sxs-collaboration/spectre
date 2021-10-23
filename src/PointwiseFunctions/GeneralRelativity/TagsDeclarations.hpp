@@ -91,5 +91,7 @@ struct HamiltonianConstraint;
 template <size_t Dim, typename Frame = Frame::Inertial,
           typename DataType = DataVector>
 struct MomentumConstraint;
+template <typename Frame, typename DataType>
+struct WeylMagnetic;
 }  // namespace Tags
 }  // namespace gr
