@@ -26,6 +26,7 @@ SPECTRE_TEST_CASE("Unit.ErrorHandling.FloatingPointExceptions.Overflow",
   enable_floating_point_exceptions();
   volatile double overflow = std::numeric_limits<double>::max();
   overflow *= 1.0e300;
+  (void)overflow;
   CHECK(true);
 }
 
@@ -36,6 +37,7 @@ SPECTRE_TEST_CASE("Unit.ErrorHandling.FloatingPointExceptions.DivByZero",
   enable_floating_point_exceptions();
   volatile double div_by_zero = 1.0;
   div_by_zero /= 0.0;
+  (void)div_by_zero;
   CHECK(true);
 }
 
@@ -48,7 +50,9 @@ SPECTRE_TEST_CASE("Unit.ErrorHandling.FloatingPointExceptions.Disable",
   static_cast<void>(invalid);
   volatile double overflow = std::numeric_limits<double>::max();
   overflow *= 1.0e300;
+  (void)overflow;
   volatile double div_by_zero = 1.0;
   div_by_zero /= 0.0;
+  (void)div_by_zero;
   CHECK(true);
 }
