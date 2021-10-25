@@ -8,6 +8,7 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "Utilities/TMPL.hpp"
 
 /// \cond
 class DataVector;
@@ -75,12 +76,18 @@ struct ComputeHorizonVolumeQuantities {
                  GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>>;
 
   template <typename TargetFrame>
-  using allowed_dest_tags =
+  using allowed_dest_tags_target_frame =
       tmpl::list<gr::Tags::SpatialMetric<3, TargetFrame>,
                  gr::Tags::InverseSpatialMetric<3, TargetFrame>,
                  gr::Tags::ExtrinsicCurvature<3, TargetFrame>,
                  gr::Tags::SpatialChristoffelSecondKind<3, TargetFrame>,
                  gr::Tags::SpatialRicci<3, TargetFrame>>;
+
+  template <typename TargetFrame>
+  using allowed_dest_tags = tmpl::remove_duplicates<
+      tmpl::append<allowed_dest_tags_target_frame<TargetFrame>,
+                   allowed_dest_tags_target_frame<Frame::Inertial>>>;
+
   template <typename TargetFrame>
   using required_dest_tags =
       tmpl::list<gr::Tags::ExtrinsicCurvature<3, TargetFrame>,
