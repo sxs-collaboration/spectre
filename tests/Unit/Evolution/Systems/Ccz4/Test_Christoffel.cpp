@@ -55,7 +55,7 @@ void test_contracted_conformal_christoffel_second_kind(
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Ccz4.Christoffel",
-                  "[Evolution][Unit]") {
+                  "[Unit][Evolution]") {
   pypp::SetupLocalPythonEnvironment local_python_env("Evolution/Systems/Ccz4/");
 
   GENERATE_UNINITIALIZED_DOUBLE_AND_DATAVECTOR;

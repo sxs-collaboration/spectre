@@ -11,7 +11,6 @@
 namespace Ccz4 {
 /// @{
 /*!
- * \ingroup GeneralRelativityGroup
  * \brief Computes the spatial derivative of the conformal spatial christoffel
  * symbols of the second kind
  *

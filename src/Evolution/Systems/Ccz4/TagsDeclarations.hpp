@@ -15,6 +15,13 @@ namespace Tags {
 template <typename DataType = DataVector>
 struct ConformalFactor;
 template <typename DataType = DataVector>
+struct ConformalFactorSquared;
+template <size_t Dim, typename Frame = Frame::Inertial,
+          typename DataType = DataVector>
+struct ATilde;
+template <typename DataType = DataVector>
+struct TraceATilde;
+template <typename DataType = DataVector>
 struct LogLapse;
 template <size_t Dim, typename Frame = Frame::Inertial,
           typename DataType = DataVector>
@@ -25,9 +32,6 @@ struct FieldB;
 template <size_t Dim, typename Frame = Frame::Inertial,
           typename DataType = DataVector>
 struct FieldD;
-template <size_t Dim, typename Frame = Frame::Inertial,
-          typename DataType = DataVector>
-struct FieldDUp;
 template <typename DataType = DataVector>
 struct LogConformalFactor;
 template <size_t Dim, typename Frame = Frame::Inertial,
@@ -35,13 +39,16 @@ template <size_t Dim, typename Frame = Frame::Inertial,
 struct FieldP;
 template <size_t Dim, typename Frame = Frame::Inertial,
           typename DataType = DataVector>
+struct FieldDUp;
+template <size_t Dim, typename Frame = Frame::Inertial,
+          typename DataType = DataVector>
 struct ConformalChristoffelSecondKind;
 template <size_t Dim, typename Frame = Frame::Inertial,
           typename DataType = DataVector>
-struct ChristoffelSecondKind;
+struct DerivConformalChristoffelSecondKind;
 template <size_t Dim, typename Frame = Frame::Inertial,
           typename DataType = DataVector>
-struct DerivConformalChristoffelSecondKind;
+struct ChristoffelSecondKind;
 template <size_t Dim, typename Frame = Frame::Inertial,
           typename DataType = DataVector>
 struct GradGradLapse;
@@ -55,7 +62,7 @@ template <size_t Dim, typename Frame = Frame::Inertial,
 struct DerivContractedConformalChristoffelSecondKind;
 }  // namespace Tags
 
-/// \brief Input option tags for the generalized harmonic evolution system
+/// \brief Input option tags for the CCZ4 evolution system
 namespace OptionTags {
 struct Group;
 }  // namespace OptionTags

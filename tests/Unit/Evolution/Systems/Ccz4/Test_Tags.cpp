@@ -19,11 +19,17 @@ void test_simple_tags() {
   TestHelpers::db::test_simple_tag<Ccz4::Tags::ConformalFactor<DataType>>(
       "ConformalFactor");
   TestHelpers::db::test_simple_tag<
+      Ccz4::Tags::ConformalFactorSquared<DataType>>("ConformalFactorSquared");
+  TestHelpers::db::test_simple_tag<
       Ccz4::Tags::ConformalMetric<Dim, Frame, DataType>>(
       "Conformal(SpatialMetric)");
   TestHelpers::db::test_simple_tag<
       Ccz4::Tags::InverseConformalMetric<Dim, Frame, DataType>>(
       "Conformal(InverseSpatialMetric)");
+  TestHelpers::db::test_simple_tag<Ccz4::Tags::ATilde<Dim, Frame, DataType>>(
+      "ATilde");
+  TestHelpers::db::test_simple_tag<Ccz4::Tags::TraceATilde<DataType>>(
+      "TraceATilde");
   TestHelpers::db::test_simple_tag<Ccz4::Tags::LogLapse<DataType>>("LogLapse");
   TestHelpers::db::test_simple_tag<Ccz4::Tags::FieldA<Dim, Frame, DataType>>(
       "FieldA");
@@ -31,21 +37,21 @@ void test_simple_tags() {
       Ccz4::Tags::FieldB<Dim, Frame, DataType>>("FieldB");
   TestHelpers::db::test_simple_tag<Ccz4::Tags::FieldD<Dim, Frame, DataType>>(
       "FieldD");
-  TestHelpers::db::test_simple_tag<Ccz4::Tags::FieldDUp<Dim, Frame, DataType>>(
-      "FieldDUp");
   TestHelpers::db::test_simple_tag<Ccz4::Tags::LogConformalFactor<DataType>>(
       "LogConformalFactor");
   TestHelpers::db::test_simple_tag<Ccz4::Tags::FieldP<Dim, Frame, DataType>>(
       "FieldP");
+  TestHelpers::db::test_simple_tag<Ccz4::Tags::FieldDUp<Dim, Frame, DataType>>(
+      "FieldDUp");
   TestHelpers::db::test_simple_tag<
       Ccz4::Tags::ConformalChristoffelSecondKind<Dim, Frame, DataType>>(
       "ConformalChristoffelSecondKind");
   TestHelpers::db::test_simple_tag<
-      Ccz4::Tags::ChristoffelSecondKind<Dim, Frame, DataType>>(
-      "ChristoffelSecondKind");
-  TestHelpers::db::test_simple_tag<
       Ccz4::Tags::DerivConformalChristoffelSecondKind<Dim, Frame, DataType>>(
       "DerivConformalChristoffelSecondKind");
+  TestHelpers::db::test_simple_tag<
+      Ccz4::Tags::ChristoffelSecondKind<Dim, Frame, DataType>>(
+      "ChristoffelSecondKind");
   TestHelpers::db::test_simple_tag<
       Ccz4::Tags::GradGradLapse<Dim, Frame, DataType>>("GradGradLapse");
   TestHelpers::db::test_simple_tag<Ccz4::Tags::DivergenceLapse<DataType>>(

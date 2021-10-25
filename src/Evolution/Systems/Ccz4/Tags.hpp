@@ -28,6 +28,17 @@ struct ConformalFactor : db::SimpleTag {
 };
 
 /*!
+ * \brief The square of the conformal factor that rescales the spatial metric
+ *
+ * \details If \f$\gamma_{ij}\f$ is the spatial metric, then we define
+ * \f$\phi^2 = (det(\gamma_{ij}))^{-1/3}\f$.
+ */
+template <typename DataType>
+struct ConformalFactorSquared : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
+
+/*!
  * \brief The conformally scaled spatial metric
  *
  * \details If \f$\phi\f$ is the conformal factor and \f$\gamma_{ij}\f$ is the
@@ -49,6 +60,35 @@ template <size_t Dim, typename Frame, typename DataType>
 using InverseConformalMetric =
     gr::Tags::Conformal<gr::Tags::InverseSpatialMetric<Dim, Frame, DataType>,
                         -2>;
+
+/*!
+ * \brief The trace-free part of the extrinsic curvature
+ *
+ * \details See `Ccz4::a_tilde()` for details.
+ */
+template <size_t Dim, typename Frame, typename DataType>
+struct ATilde : db::SimpleTag {
+  using type = tnsr::ii<DataType, Dim, Frame>;
+};
+
+/*!
+ * \brief The trace of the trace-free part of the extrinsic curvature
+ *
+ * \details We define:
+ *
+ * \f{align}
+ *     tr\tilde{A} &= \tilde{\gamma}^{ij} \tilde{A}_{ij}
+ * \f}
+ *
+ * where \f$\tilde{\gamma}^{ij}\f$ is the inverse conformal spatial metric
+ * defined by `Ccz4::Tags::InverseConformalMetric` and \f$\tilde{A}_{ij}\f$ is
+ * the trace-free part of the extrinsic curvature defined by
+ * `Ccz4::Tags::ATilde`.
+ */
+template <typename DataType>
+struct TraceATilde : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
 
 /*!
  * \brief The natural log of the lapse
@@ -93,25 +133,6 @@ struct FieldD : db::SimpleTag {
 };
 
 /*!
- * \brief Identity which is analytically negative one half the spatial
- * derivative of the inverse conformal spatial metric
- *
- * \details We define:
- * \f{align}
- *     D_k{}^{ij} &=
- *         \tilde{\gamma}^{in} \tilde{\gamma}^{mj} D_{knm} =
- *         -\frac{1}{2} \partial_k \tilde{\gamma}^{ij}
- * \f}
- * where \f$\tilde{\gamma}^{ij}\f$ and \f$D_{ijk}\f$ are the inverse conformal
- * spatial metric and the CCZ4 auxiliary variable defined by
- * `Ccz4::Tags::FieldD`, respectively.
- */
-template <size_t Dim, typename Frame, typename DataType>
-struct FieldDUp : db::SimpleTag {
-  using type = tnsr::iJJ<DataType, Dim, Frame>;
-};
-
-/*!
  * \brief The natural log of the conformal factor
  */
 template <typename DataType>
@@ -132,6 +153,25 @@ struct FieldP : db::SimpleTag {
 };
 
 /*!
+ * \brief Identity which is analytically negative one half the spatial
+ * derivative of the inverse conformal spatial metric
+ *
+ * \details We define:
+ * \f{align}
+ *     D_k{}^{ij} &=
+ *         \tilde{\gamma}^{in} \tilde{\gamma}^{mj} D_{knm} =
+ *         -\frac{1}{2} \partial_k \tilde{\gamma}^{ij}
+ * \f}
+ * where \f$\tilde{\gamma}^{ij}\f$ and \f$D_{ijk}\f$ are the inverse conformal
+ * spatial metric and the CCZ4 auxiliary variable defined by
+ * `Ccz4::Tags::FieldD`, respectively.
+ */
+template <size_t Dim, typename Frame, typename DataType>
+struct FieldDUp : db::SimpleTag {
+  using type = tnsr::iJJ<DataType, Dim, Frame>;
+};
+
+/*!
  * \brief The conformal spatial christoffel symbols of the second kind
  *
  * \details We define:
@@ -145,30 +185,6 @@ struct FieldP : db::SimpleTag {
  */
 template <size_t Dim, typename Frame, typename DataType>
 struct ConformalChristoffelSecondKind : db::SimpleTag {
-  using type = tnsr::Ijj<DataType, Dim, Frame>;
-};
-
-/*!
- * \brief The spatial christoffel symbols of the second kind
- *
- * \details We define:
- * \details Computes the christoffel symbols as:
- * \f{align}
- *     \Gamma^k_{ij} &= \tilde{\Gamma}^k_{ij} -
- *         \tilde{\gamma}^{kl} (\tilde{\gamma}_{jl} P_i +
- *                              \tilde{\gamma}_{il} P_j -
- *                              \tilde{\gamma}_{ij} P_l)
- * \f}
- * where \f$\tilde{\gamma}^{ij}\f$, \f$\tilde{\gamma}_{ij}\f$,
- * \f$\tilde{\Gamma}^k_{ij}\f$, and \f$P_i\f$ are the conformal spatial metric,
- * the inverse conformal spatial metric, the conformal spatial christoffel
- * symbols of the second kind, and the CCZ4 auxiliary variable defined by
- * `Ccz4::Tags::ConformalMetric`, `Ccz4::Tags::InverseConformalMetric`,
- * `Ccz4::Tags::ConformalChristoffelSecondKind`, and `Ccz4::Tags::FieldP`,
- * respectively.
- */
-template <size_t Dim, typename Frame, typename DataType>
-struct ChristoffelSecondKind : db::SimpleTag {
   using type = tnsr::Ijj<DataType, Dim, Frame>;
 };
 
@@ -192,6 +208,29 @@ struct ChristoffelSecondKind : db::SimpleTag {
 template <size_t Dim, typename Frame, typename DataType>
 struct DerivConformalChristoffelSecondKind : db::SimpleTag {
   using type = tnsr::iJkk<DataType, Dim, Frame>;
+};
+
+/*!
+ * \brief The spatial christoffel symbols of the second kind
+ *
+ * \details We define:
+ * \f{align}
+ *     \Gamma^k_{ij} &= \tilde{\Gamma}^k_{ij} -
+ *         \tilde{\gamma}^{kl} (\tilde{\gamma}_{jl} P_i +
+ *                              \tilde{\gamma}_{il} P_j -
+ *                              \tilde{\gamma}_{ij} P_l)
+ * \f}
+ * where \f$\tilde{\gamma}^{ij}\f$, \f$\tilde{\gamma}_{ij}\f$,
+ * \f$\tilde{\Gamma}^k_{ij}\f$, and \f$P_i\f$ are the conformal spatial metric,
+ * the inverse conformal spatial metric, the conformal spatial christoffel
+ * symbols of the second kind, and the CCZ4 auxiliary variable defined by
+ * `Ccz4::Tags::ConformalMetric`, `Ccz4::Tags::InverseConformalMetric`,
+ * `Ccz4::Tags::ConformalChristoffelSecondKind`, and `Ccz4::Tags::FieldP`,
+ * respectively.
+ */
+template <size_t Dim, typename Frame, typename DataType>
+struct ChristoffelSecondKind : db::SimpleTag {
+  using type = tnsr::Ijj<DataType, Dim, Frame>;
 };
 
 /*!
@@ -259,7 +298,7 @@ struct DerivContractedConformalChristoffelSecondKind : db::SimpleTag {
 namespace OptionTags {
 /*!
  * \ingroup OptionGroupsGroup
- * Groups option tags related to the Ccz4 evolution system.
+ * Groups option tags related to the CCZ4 evolution system.
  */
 struct Group {
   static std::string name() { return "Ccz4"; }
