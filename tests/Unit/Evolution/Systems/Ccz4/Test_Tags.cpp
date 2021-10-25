@@ -64,6 +64,11 @@ void test_simple_tags() {
       Ccz4::Tags::DerivContractedConformalChristoffelSecondKind<Dim, Frame,
                                                                 DataType>>(
       "DerivContractedConformalChristoffelSecondKind");
+  TestHelpers::db::test_simple_tag<Ccz4::Tags::GammaHat<Dim, Frame, DataType>>(
+      "GammaHat");
+  TestHelpers::db::test_simple_tag<
+      Ccz4::Tags::SpatialZ4Constraint<Dim, Frame, DataType>>(
+      "SpatialZ4Constraint");
 }
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Ccz4.Tags", "[Unit][Evolution]") {

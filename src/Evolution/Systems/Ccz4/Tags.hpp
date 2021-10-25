@@ -293,6 +293,37 @@ template <size_t Dim, typename Frame, typename DataType>
 struct DerivContractedConformalChristoffelSecondKind : db::SimpleTag {
   using type = tnsr::iJ<DataType, Dim, Frame>;
 };
+
+/*!
+ * \brief The CCZ4 evolved variable \f$\hat{\Gamma}^i\f$
+ *
+ * \details This must satisfy the identity:
+ *
+ * \f{align}
+ *     \hat{\Gamma}^i &= \tilde{\Gamma}^i + 2 \tilde{\gamma}^{ij} Z_j
+ * \f}
+ *
+ * where \f$\tilde{\gamma}^{ij}\f$ is the inverse conformal spatial metric
+ * defined by `Ccz4::Tags::InverseConformalMetric`, \f$Z_i\f$ is the spatial
+ * part of the Z4 constraint defined by `Ccz4::Tags::SpatialZ4Constraint`, and
+ * \f$\tilde{\Gamma}^i\f$ is the contraction of the conformal spatial
+ * christoffel symbols of the second kind defined by
+ * `Ccz4::Tags::ContractedConformalChristoffelSecondKind`.
+ */
+template <size_t Dim, typename Frame, typename DataType>
+struct GammaHat : db::SimpleTag {
+  using type = tnsr::I<DataType, Dim, Frame>;
+};
+
+/*!
+ * \brief The spatial part of the Z4 constraint
+ *
+ * \details See `Ccz4::spatial_z4_constraint` for details.
+ */
+template <size_t Dim, typename Frame, typename DataType>
+struct SpatialZ4Constraint : db::SimpleTag {
+  using type = tnsr::i<DataType, Dim, Frame>;
+};
 }  // namespace Tags
 
 namespace OptionTags {
