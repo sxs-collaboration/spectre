@@ -16,7 +16,6 @@
 #include "Domain/Creators/TimeDependence/CubicScale.hpp"
 #include "Domain/Creators/TimeDependence/TimeDependence.hpp"
 #include "Domain/Creators/TimeDependence/UniformRotationAboutZAxis.hpp"
-#include "Domain/FunctionsOfTime/CombineFunctionsOfTime.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
@@ -65,10 +64,8 @@ void test_impl(
   auto functions_of_time_for_expected =
       expected_time_deps[0]->functions_of_time();
   for (size_t i = 1; i < expected_time_deps.size(); i++) {
-    functions_of_time_for_expected =
-        domain::FunctionsOfTime::combine_functions_of_time(
-            functions_of_time_for_expected,
-            expected_time_deps[i]->functions_of_time());
+    functions_of_time_for_expected.merge(
+        expected_time_deps[i]->functions_of_time());
   }
 
   REQUIRE(functions_of_time.size() == expected_f_of_t_names.size());
@@ -182,8 +179,7 @@ void test_composition_cubic_scale_uniform_rotation(
   const std::vector<std::string> expected_names{rot_name, cs_name0, cs_name1};
 
   const std::unique_ptr<TimeDependence<Dim>> time_dep =
-      std::make_unique<Composition>(time_dep0.get_clone(),
-                                    time_dep1.get_clone());
+      std::make_unique<Composition>(time_dep0, time_dep1);
 
   test_impl(gen, initial_time, time_dep, expected_time_deps, expected_names);
 
@@ -223,20 +219,18 @@ void test_options(const gsl::not_null<T> gen, const double initial_time,
       TestHelpers::test_creation<std::unique_ptr<TimeDependence<2>>>(
           "CompositionCubicScaleAndUniformRotationAboutZAxis:\n"
           "  CubicScale:\n"
-          "    CubicScale:\n"
-          "      InitialTime: 1.3\n"
-          "      InitialExpirationDeltaT: 2.5\n"
-          "      OuterBoundary: 10.4\n"
-          "      InitialExpansion: [1.0, 1.0]\n"
-          "      Velocity: [-0.1, 0.0]\n"
-          "      Acceleration: [-0.05, 0.0]\n"
-          "      FunctionOfTimeNames: [Expansion0, Expansion1]\n"
+          "    InitialTime: 1.3\n"
+          "    InitialExpirationDeltaT: 2.5\n"
+          "    OuterBoundary: 10.4\n"
+          "    InitialExpansion: [1.0, 1.0]\n"
+          "    Velocity: [-0.1, 0.0]\n"
+          "    Acceleration: [-0.05, 0.0]\n"
+          "    FunctionOfTimeNames: [Expansion0, Expansion1]\n"
           "  UniformRotationAboutZAxis:\n"
-          "    UniformRotationAboutZAxis:\n"
-          "      InitialTime: 1.3\n"
-          "      InitialExpirationDeltaT: 2.5\n"
-          "      AngularVelocity: 2.4\n"
-          "      FunctionOfTimeName: RotationAngle\n");
+          "    InitialTime: 1.3\n"
+          "    InitialExpirationDeltaT: 2.5\n"
+          "    AngularVelocity: 2.4\n"
+          "    FunctionOfTimeName: RotationAngle\n");
 
   test_impl(gen, initial_time, created_with_options, expected_time_deps,
             expected_names);

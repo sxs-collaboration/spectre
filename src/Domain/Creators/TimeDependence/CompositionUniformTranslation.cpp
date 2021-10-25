@@ -6,7 +6,6 @@
 #include <unordered_map>
 
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
-#include "Domain/FunctionsOfTime/CombineFunctionsOfTime.hpp"
 #include "Utilities/CloneUniquePtrs.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
@@ -14,16 +13,13 @@ namespace domain::creators::time_dependence {
 
 template <size_t MeshDim>
 CompositionUniformTranslation<MeshDim>::CompositionUniformTranslation(
-    std::unique_ptr<TimeDependence<MeshDim>> uniform_translation0,
-    std::unique_ptr<TimeDependence<MeshDim>> uniform_translation1)
-    : coord_map_(domain::push_back(
-          dynamic_cast<UniformTranslation<MeshDim>&>(*uniform_translation0)
-              .map_for_composition(),
-          dynamic_cast<UniformTranslation<MeshDim>&>(*uniform_translation1)
-              .map_for_composition())),
-      functions_of_time_(domain::FunctionsOfTime::combine_functions_of_time(
-          uniform_translation0->functions_of_time(),
-          uniform_translation1->functions_of_time())) {}
+    const UniformTranslation<MeshDim>& uniform_translation0,
+    const UniformTranslation<MeshDim>& uniform_translation1)
+    : coord_map_(domain::push_back(uniform_translation0.map_for_composition(),
+                                   uniform_translation1.map_for_composition())),
+      functions_of_time_(uniform_translation0.functions_of_time()) {
+  functions_of_time_.merge(uniform_translation1.functions_of_time());
+}
 
 template <size_t MeshDim>
 CompositionUniformTranslation<MeshDim>::CompositionUniformTranslation(

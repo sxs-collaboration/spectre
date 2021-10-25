@@ -6,7 +6,6 @@
 #include <unordered_map>
 
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
-#include "Domain/FunctionsOfTime/CombineFunctionsOfTime.hpp"
 #include "Utilities/CloneUniquePtrs.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
@@ -15,17 +14,14 @@ namespace domain::creators::time_dependence {
 template <size_t MeshDim>
 CompositionCubicScaleAndUniformRotationAboutZAxis<MeshDim>::
     CompositionCubicScaleAndUniformRotationAboutZAxis(
-        std::unique_ptr<TimeDependence<MeshDim>> cubic_scale,
-        std::unique_ptr<TimeDependence<MeshDim>> uniform_rotation_about_z_axis)
-    : coord_map_(
-          domain::push_back(dynamic_cast<CubicScale<MeshDim>&>(*cubic_scale)
-                                .map_for_composition(),
-                            dynamic_cast<UniformRotationAboutZAxis<MeshDim>&>(
-                                *uniform_rotation_about_z_axis)
-                                .map_for_composition())),
-      functions_of_time_(domain::FunctionsOfTime::combine_functions_of_time(
-          cubic_scale->functions_of_time(),
-          uniform_rotation_about_z_axis->functions_of_time())) {}
+        const CubicScale<MeshDim>& cubic_scale,
+        const UniformRotationAboutZAxis<MeshDim>& uniform_rotation_about_z_axis)
+    : coord_map_(domain::push_back(
+          cubic_scale.map_for_composition(),
+          uniform_rotation_about_z_axis.map_for_composition())),
+      functions_of_time_(cubic_scale.functions_of_time()) {
+  functions_of_time_.merge(uniform_rotation_about_z_axis.functions_of_time());
+}
 
 template <size_t MeshDim>
 CompositionCubicScaleAndUniformRotationAboutZAxis<MeshDim>::

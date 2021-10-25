@@ -42,10 +42,7 @@ class CompositionUniformTranslation final : public TimeDependence<MeshDim> {
  public:
   using CoordMap = domain::CoordinateMap<Frame::Grid, Frame::Inertial,
                                          TranslationMap, TranslationMap>;
-  // using CoordMap = detail::generate_coordinate_map_t<tmpl::flatten<
-  //    tmpl::list<typename UniformTranslation<MeshDim>::maps_list,
-  //               typename UniformTranslation<MeshDim>::maps_list>>>;
-  // static_assert(std::is_same_v<CoordMap, int> , "Hello I failed.");
+
   using maps_list = tmpl::list<CoordMap>;
   static constexpr Options::String help = {
       "A composition of two UniformTranslations."};
@@ -64,8 +61,8 @@ class CompositionUniformTranslation final : public TimeDependence<MeshDim> {
       default;
 
   explicit CompositionUniformTranslation(
-      std::unique_ptr<TimeDependence<MeshDim>> uniform_translation0,
-      std::unique_ptr<TimeDependence<MeshDim>> uniform_translation1);
+      const UniformTranslation<MeshDim>& uniform_translation0,
+      const UniformTranslation<MeshDim>& uniform_translation1);
 
   /// Constructor for copying the composition time dependence. Internally
   /// performs all the copying necessary to deal with the functions of time.

@@ -125,20 +125,17 @@ void test_composition_uniform_translation(const gsl::not_null<T> gen,
   const std::string f_of_t_names0 = "Translation";
   const std::string f_of_t_names1 = "Translation1";
 
-  std::unique_ptr<TimeDependence<Dim>> time_dep0 =
-      std::make_unique<UniformTranslation<Dim>>(initial_time, update_delta_t,
-                                                velocity0, f_of_t_names0);
-  std::unique_ptr<TimeDependence<Dim>> time_dep1 =
-      std::make_unique<UniformTranslation<Dim>>(initial_time, update_delta_t,
-                                                velocity1, f_of_t_names1);
+  UniformTranslation<Dim> time_dep0{initial_time, update_delta_t, velocity0,
+                                    f_of_t_names0};
+  UniformTranslation<Dim> time_dep1{initial_time, update_delta_t, velocity1,
+                                    f_of_t_names1};
 
   std::unique_ptr<TimeDependence<Dim>> expected_time_dep =
       std::make_unique<UniformTranslation<Dim>>(
           initial_time, update_delta_t, velocity0 + velocity1, "TranslationX");
 
   const std::unique_ptr<TimeDependence<Dim>> time_dep{
-      std::make_unique<Composition>(std::move(time_dep0),
-                                    std::move(time_dep1))};
+      std::make_unique<Composition>(time_dep0, time_dep1)};
 
   test_impl(gen, initial_time, time_dep, expected_time_dep,
             {f_of_t_names0, f_of_t_names1});
@@ -165,17 +162,15 @@ void test_options(const gsl::not_null<T> gen, const double initial_time,
       TestHelpers::test_creation<std::unique_ptr<TimeDependence<1>>>(
           "CompositionUniformTranslation:\n"
           "  UniformTranslation:\n"
-          "    UniformTranslation:\n"
-          "      InitialTime: 1.3\n"
-          "      InitialExpirationDeltaT: 2.5\n"
-          "      Velocity: [0.5]\n"
-          "      FunctionOfTimeName: Translation\n"
+          "    InitialTime: 1.3\n"
+          "    InitialExpirationDeltaT: 2.5\n"
+          "    Velocity: [0.5]\n"
+          "    FunctionOfTimeName: Translation\n"
           "  UniformTranslation1:\n"
-          "    UniformTranslation:\n"
-          "      InitialTime: 1.3\n"
-          "      InitialExpirationDeltaT: 2.5\n"
-          "      Velocity: [1.5]\n"
-          "      FunctionOfTimeName: Translation1\n");
+          "    InitialTime: 1.3\n"
+          "    InitialExpirationDeltaT: 2.5\n"
+          "    Velocity: [1.5]\n"
+          "    FunctionOfTimeName: Translation1\n");
 
   test_impl(gen, initial_time, created_with_options, expected_time_dep,
             {f_of_t_names0, f_of_t_names1});

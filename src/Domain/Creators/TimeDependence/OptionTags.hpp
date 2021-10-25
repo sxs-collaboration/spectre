@@ -39,7 +39,7 @@ struct TimeDependenceCompositionTag {
     std::string suffix = Index == 0 ? "" : get_output(Index);
     return pretty_type::short_name<TimeDep>() + suffix;
   }
-  using type = std::unique_ptr<TimeDependence<TimeDep::mesh_dim>>;
+  using type = TimeDep;
   static constexpr Options::String help = {
       "One of the maps in the composition."};
 };

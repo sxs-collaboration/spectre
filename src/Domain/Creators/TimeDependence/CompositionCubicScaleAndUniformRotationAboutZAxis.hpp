@@ -55,9 +55,7 @@ class CompositionCubicScaleAndUniformRotationAboutZAxis final
  public:
   using CoordMap = domain::CoordinateMap<Frame::Grid, Frame::Inertial,
                                          CubicScaleMap, RotationMap>;
-  // using CoordMap = detail::generate_coordinate_map_t<tmpl::flatten<
-  //    tmpl::list<typename CubicScale<MeshDim>::maps_list,
-  //               typename UniformRotationAboutZAxis<MeshDim>::maps_list>>>;
+
   using maps_list = tmpl::list<CoordMap>;
   static constexpr Options::String help = {
       "A composition of a CubicScale and a UniformRotationAboutZAxis "
@@ -80,8 +78,8 @@ class CompositionCubicScaleAndUniformRotationAboutZAxis final
       CompositionCubicScaleAndUniformRotationAboutZAxis&&) = default;
 
   explicit CompositionCubicScaleAndUniformRotationAboutZAxis(
-      std::unique_ptr<TimeDependence<MeshDim>> cubic_scale,
-      std::unique_ptr<TimeDependence<MeshDim>> uniform_rotation_about_z_axis);
+      const CubicScale<MeshDim>& cubic_scale,
+      const UniformRotationAboutZAxis<MeshDim>& uniform_rotation_about_z_axis);
 
   /// Constructor for copying the composition time dependence. Internally
   /// performs all the copying necessary to deal with the functions of time.

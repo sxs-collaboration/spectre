@@ -208,20 +208,18 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.ReadSpecPiecewisePolynomial",
       "  TimeDependence:\n"
       "    CompositionCubicScaleAndUniformRotationAboutZAxis:\n"
       "      CubicScale:\n"
-      "        CubicScale:\n"
-      "            InitialTime: 0.0\n"
-      "            InitialExpirationDeltaT: 0.2\n"
-      "            InitialExpansion: [1.0, 1.0]\n"
-      "            Velocity: [0.0, 0.0]\n"
-      "            Acceleration: [0.0, 0.0]\n"
-      "            OuterBoundary: 839.661030811156\n"
-      "            FunctionOfTimeNames: [\"ExpansionFactor\", \"Unity\"]\n"
-      "      UniformRotationAboutZAxis:\n"
-      "        UniformRotationAboutZAxis:\n"
       "          InitialTime: 0.0\n"
       "          InitialExpirationDeltaT: 0.2\n"
-      "          AngularVelocity: 0.0\n"
-      "          FunctionOfTimeName: \"RotationAngle\"\n");
+      "          InitialExpansion: [1.0, 1.0]\n"
+      "          Velocity: [0.0, 0.0]\n"
+      "          Acceleration: [0.0, 0.0]\n"
+      "          OuterBoundary: 839.661030811156\n"
+      "          FunctionOfTimeNames: [\"ExpansionFactor\", \"Unity\"]\n"
+      "      UniformRotationAboutZAxis:\n"
+      "        InitialTime: 0.0\n"
+      "        InitialExpirationDeltaT: 0.2\n"
+      "        AngularVelocity: 0.0\n"
+      "        FunctionOfTimeName: \"RotationAngle\"\n");
   const auto created_function_of_time_file = TestHelpers::test_option_tag<
       domain::FunctionsOfTime::OptionTags::FunctionOfTimeFile>(test_filename);
   const auto created_function_of_time_name_map = TestHelpers::test_option_tag<
