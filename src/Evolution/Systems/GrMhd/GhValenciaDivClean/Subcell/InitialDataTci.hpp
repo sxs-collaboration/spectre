@@ -8,9 +8,11 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/Tags/Inactive.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/TciOptions.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
-#include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -21,18 +23,7 @@ template <typename TagsList>
 class Variables;
 /// \endcond
 
-namespace grmhd::ValenciaDivClean::subcell {
-namespace detail {
-bool initial_data_tci_work(
-    const Scalar<DataVector>& dg_tilde_d,
-    const Scalar<DataVector>& dg_tilde_tau,
-    const Scalar<DataVector>& subcell_tilde_d,
-    const Scalar<DataVector>& subcell_tilde_tau,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& dg_tilde_b,
-    double persson_exponent, const Mesh<3>& dg_mesh,
-    const TciOptions& tci_options);
-}  // namespace detail
-
+namespace grmhd::GhValenciaDivClean::subcell {
 /*!
  * \brief The troubled-cell indicator run on DG initial data to see if we need
  * to switch to subcell.
@@ -54,20 +45,28 @@ struct DgInitialDataTci {
   using Inactive = evolution::dg::subcell::Tags::Inactive<Tag>;
 
  public:
-  using argument_tags = tmpl::list<domain::Tags::Mesh<3>, Tags::TciOptions>;
+  using argument_tags = tmpl::list<domain::Tags::Mesh<3>,
+                                   ValenciaDivClean::subcell::Tags::TciOptions>;
 
   static bool apply(
       const Variables<tmpl::list<
+          gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>,
+          GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>,
+          GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>,
           ValenciaDivClean::Tags::TildeD, ValenciaDivClean::Tags::TildeTau,
           ValenciaDivClean::Tags::TildeS<>, ValenciaDivClean::Tags::TildeB<>,
           ValenciaDivClean::Tags::TildePhi>>& dg_vars,
-      const Variables<tmpl::list<Inactive<ValenciaDivClean::Tags::TildeD>,
-                                 Inactive<ValenciaDivClean::Tags::TildeTau>,
-                                 Inactive<ValenciaDivClean::Tags::TildeS<>>,
-                                 Inactive<ValenciaDivClean::Tags::TildeB<>>,
-                                 Inactive<ValenciaDivClean::Tags::TildePhi>>>&
-          subcell_vars,
+      const Variables<tmpl::list<
+          Inactive<gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>>,
+          Inactive<GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>>,
+          Inactive<GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>>,
+          Inactive<ValenciaDivClean::Tags::TildeD>,
+          Inactive<ValenciaDivClean::Tags::TildeTau>,
+          Inactive<ValenciaDivClean::Tags::TildeS<>>,
+          Inactive<ValenciaDivClean::Tags::TildeB<>>,
+          Inactive<ValenciaDivClean::Tags::TildePhi>>>& subcell_vars,
       double rdmp_delta0, double rdmp_epsilon, double persson_exponent,
-      const Mesh<3>& dg_mesh, const TciOptions& tci_options);
+      const Mesh<3>& dg_mesh,
+      const ValenciaDivClean::subcell::TciOptions& tci_options);
 };
-}  // namespace grmhd::ValenciaDivClean::subcell
+}  // namespace grmhd::GhValenciaDivClean::subcell
