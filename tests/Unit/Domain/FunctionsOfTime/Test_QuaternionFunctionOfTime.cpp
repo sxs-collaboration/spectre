@@ -9,6 +9,7 @@
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Domain/FunctionsOfTime/QuaternionFunctionOfTime.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
 
 SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.QuaternionFunctionOfTime",
@@ -23,6 +24,25 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.QuaternionFunctionOfTime",
     CHECK(qfot.time_bounds() == std::array<double, 2>({0.0, 0.5}));
     qfot.reset_expiration_time(0.6);
     CHECK(qfot.time_bounds() == std::array<double, 2>({0.0, 0.6}));
+  }
+
+  {
+    INFO("QuaternionFunctionOfTime: Check output");
+    domain::FunctionsOfTime::QuaternionFunctionOfTime<2> qfot{
+        -0.1, std::array<DataVector, 1>{DataVector{{1.0, 0.0, 0.0, 0.0}}},
+        std::array<DataVector, 3>{DataVector{{0.0, 0.0, -0.3}},
+                                  DataVector{0.0, 0.0, 0.145},
+                                  DataVector{3, 0.0}},
+        0.5};
+
+    const std::string expected_output =
+        "Quaternion:\n"
+        "t=-0.1: (1,0,0,0)\n"
+        "Omega:\n"
+        "t=-0.1: (0,0,-0.3) (0,0,0.145) (0,0,0)";
+
+    const std::string output = get_output(qfot);
+    CHECK(output == expected_output);
   }
 
   {

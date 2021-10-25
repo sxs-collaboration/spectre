@@ -8,6 +8,7 @@
 #include "DataStructures/BoostMultiArray.hpp"
 
 #include <boost/numeric/odeint.hpp>
+#include <ostream>
 #include <pup_stl.h>
 
 #include "Domain/FunctionsOfTime/QuaternionHelpers.hpp"
@@ -192,6 +193,22 @@ bool operator!=(const QuaternionFunctionOfTime<MaxDeriv>& lhs,
   return not(lhs == rhs);
 }
 
+template <size_t MaxDeriv>
+std::ostream& operator<<(
+    std::ostream& os,
+    const QuaternionFunctionOfTime<MaxDeriv>& quaternion_f_of_t) {
+  const size_t size = quaternion_f_of_t.stored_quaternions_and_times_.size();
+
+  os << "Quaternion:\n";
+  for (size_t i = 0; i < size; ++i) {
+    os << quaternion_f_of_t.stored_quaternions_and_times_[i];
+    os << "\n";
+  }
+  os << "Omega:\n";
+  os << quaternion_f_of_t.omega_f_of_t_;
+  return os;
+}
+
 // do explicit instantiation of MaxDeriv = {2,3,4}
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
@@ -202,7 +219,9 @@ bool operator!=(const QuaternionFunctionOfTime<MaxDeriv>& lhs,
                   const QuaternionFunctionOfTime<DIM(data)>&); \
   template bool operator!=                                     \
       <DIM(data)>(const QuaternionFunctionOfTime<DIM(data)>&,  \
-                  const QuaternionFunctionOfTime<DIM(data)>&);
+                  const QuaternionFunctionOfTime<DIM(data)>&); \
+  template std::ostream& operator<<(                           \
+      std::ostream& os, const QuaternionFunctionOfTime<DIM(data)>&);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (2, 3, 4))
 

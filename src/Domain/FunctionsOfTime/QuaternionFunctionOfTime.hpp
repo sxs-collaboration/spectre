@@ -146,6 +146,11 @@ class QuaternionFunctionOfTime : public FunctionOfTime {
       const QuaternionFunctionOfTime<LocalMaxDeriv>& lhs,
       const QuaternionFunctionOfTime<LocalMaxDeriv>& rhs);
 
+  template <size_t LocalMaxDeriv>
+  friend std::ostream& operator<<(  // NOLINT(readability-redundant-declaration)
+      std::ostream& os,
+      const QuaternionFunctionOfTime<LocalMaxDeriv>& quaternion_f_of_t);
+
   std::vector<FunctionOfTimeHelpers::StoredInfo<1, false>>
       stored_quaternions_and_times_;
 
