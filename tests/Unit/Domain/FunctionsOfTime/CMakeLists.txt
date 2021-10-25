@@ -4,7 +4,6 @@
 set(LIBRARY "Test_FunctionsOfTime")
 
 set(LIBRARY_SOURCES
-  Test_CombineFunctionsOfTime.cpp
   Test_FixedSpeedCubic.cpp
   Test_FunctionOfTimeHelpers.cpp
   Test_FunctionsOfTimeAreReady.cpp
