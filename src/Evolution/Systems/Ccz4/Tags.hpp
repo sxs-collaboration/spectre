@@ -324,6 +324,16 @@ template <size_t Dim, typename Frame, typename DataType>
 struct SpatialZ4Constraint : db::SimpleTag {
   using type = tnsr::i<DataType, Dim, Frame>;
 };
+
+/*!
+ * \brief The spatial part of the upper Z4 constraint
+ *
+ * \details See `Ccz4::upper_spatial_z4_constraint` for details.
+ */
+template <size_t Dim, typename Frame, typename DataType>
+struct SpatialZ4ConstraintUp : db::SimpleTag {
+  using type = tnsr::I<DataType, Dim, Frame>;
+};
 }  // namespace Tags
 
 namespace OptionTags {

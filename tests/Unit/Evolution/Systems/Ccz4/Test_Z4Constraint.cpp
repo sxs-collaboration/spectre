@@ -23,6 +23,17 @@ void test_compute_spatial_z4_constraint(const DataType& used_for_size) {
           &Ccz4::spatial_z4_constraint<Dim, Frame::Inertial, DataType>),
       "Z4Constraint", "spatial_z4_constraint", {{{-1., 1.}}}, used_for_size);
 }
+
+template <size_t Dim, typename DataType>
+void test_compute_upper_spatial_z4_constraint(const DataType& used_for_size) {
+  pypp::check_with_random_values<1>(
+      static_cast<tnsr::I<DataType, Dim, Frame::Inertial> (*)(
+          const Scalar<DataType>&,
+          const tnsr::I<DataType, Dim, Frame::Inertial>&)>(
+          &Ccz4::upper_spatial_z4_constraint<Dim, Frame::Inertial, DataType>),
+      "Z4Constraint", "upper_spatial_z4_constraint", {{{-1., 1.}}},
+      used_for_size);
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Ccz4.Z4Constraint",
@@ -31,5 +42,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Ccz4.Z4Constraint",
 
   GENERATE_UNINITIALIZED_DOUBLE_AND_DATAVECTOR;
   CHECK_FOR_DOUBLES_AND_DATAVECTORS(test_compute_spatial_z4_constraint,
+                                    (1, 2, 3));
+  CHECK_FOR_DOUBLES_AND_DATAVECTORS(test_compute_upper_spatial_z4_constraint,
                                     (1, 2, 3));
 }
