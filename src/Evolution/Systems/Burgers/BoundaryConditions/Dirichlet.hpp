@@ -20,9 +20,6 @@
 #include "Utilities/TMPL.hpp"
 
 /// \cond
-namespace Burgers::BoundaryConditions {
-class Dirichlet;
-}  // namespace Burgers::boundary_conditions
 class DataVector;
 namespace PUP {
 class er;
@@ -32,6 +29,10 @@ class Variables;
 /// \endcond
 
 namespace Burgers::BoundaryConditions {
+/*
+ * \brief Dirichlet boundary condition setting the value of U to a
+ * time-independent constant.
+ */
 class Dirichlet final : public BoundaryCondition {
  private:
   using flux_tag =
