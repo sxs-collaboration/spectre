@@ -180,40 +180,58 @@ struct EvolutionMetavars {
     static constexpr bool enable_time_dependent_maps = true;
   };
 
-  // Find both horizons in grid frame.
+  // Find horizons in grid frame, but also interpolate
+  // inertial-frame quantities for observers.
   using horizons_vars_to_interpolate_to_target = tmpl::list<
       gr::Tags::SpatialMetric<volume_dim, ::Frame::Grid, DataVector>,
       gr::Tags::InverseSpatialMetric<volume_dim, ::Frame::Grid>,
       gr::Tags::ExtrinsicCurvature<volume_dim, ::Frame::Grid>,
       gr::Tags::SpatialChristoffelSecondKind<volume_dim, ::Frame::Grid>,
-      gr::Tags::SpatialRicci<volume_dim, ::Frame::Grid>>;
-  // Observe both horizons in grid frame too.
+      // everything below here is for observers.
+      gr::Tags::SpatialMetric<volume_dim, ::Frame::Inertial, DataVector>,
+      gr::Tags::InverseSpatialMetric<volume_dim, ::Frame::Inertial, DataVector>,
+      gr::Tags::SpatialChristoffelSecondKind<volume_dim, ::Frame::Inertial>,
+      gr::Tags::ExtrinsicCurvature<volume_dim, ::Frame::Inertial>,
+      gr::Tags::SpatialRicci<volume_dim, ::Frame::Inertial>>;
+  // Observe horizons in inertial frame.
   using horizons_tags_to_observe = tmpl::list<
-      StrahlkorperGr::Tags::AreaCompute<::Frame::Grid>,
-      StrahlkorperGr::Tags::IrreducibleMassCompute<::Frame::Grid>,
+      StrahlkorperGr::Tags::AreaCompute<::Frame::Inertial>,
+      StrahlkorperGr::Tags::IrreducibleMassCompute<::Frame::Inertial>,
       StrahlkorperTags::MaxRicciScalarCompute,
       StrahlkorperTags::MinRicciScalarCompute,
-      StrahlkorperGr::Tags::ChristodoulouMassCompute<::Frame::Grid>,
-      StrahlkorperGr::Tags::DimensionlessSpinMagnitudeCompute<::Frame::Grid>>;
+      StrahlkorperGr::Tags::ChristodoulouMassCompute<::Frame::Inertial>,
+      StrahlkorperGr::Tags::DimensionlessSpinMagnitudeCompute<
+          ::Frame::Inertial>>;
+  // These ComputeItems are used only for observers, since the
+  // actual horizon-finding does not use any ComputeItems.
   using horizons_compute_items_on_target = tmpl::append<
-      tmpl::list<StrahlkorperGr::Tags::AreaElementCompute<::Frame::Grid>,
-                 StrahlkorperTags::ThetaPhiCompute<::Frame::Grid>,
-                 StrahlkorperTags::RadiusCompute<::Frame::Grid>,
-                 StrahlkorperTags::RhatCompute<::Frame::Grid>,
-                 StrahlkorperTags::TangentsCompute<::Frame::Grid>,
-                 StrahlkorperTags::InvJacobianCompute<::Frame::Grid>,
-                 StrahlkorperTags::DxRadiusCompute<::Frame::Grid>,
-                 StrahlkorperTags::OneOverOneFormMagnitudeCompute<
-                     volume_dim, ::Frame::Grid, DataVector>,
-                 StrahlkorperTags::NormalOneFormCompute<::Frame::Grid>,
-                 StrahlkorperTags::UnitNormalOneFormCompute<::Frame::Grid>,
-                 StrahlkorperTags::UnitNormalVectorCompute<::Frame::Grid>,
-                 StrahlkorperTags::GradUnitNormalOneFormCompute<::Frame::Grid>,
-                 StrahlkorperTags::ExtrinsicCurvatureCompute<::Frame::Grid>,
-                 StrahlkorperGr::Tags::SpinFunctionCompute<::Frame::Grid>,
-                 StrahlkorperTags::RicciScalarCompute<::Frame::Grid>,
-                 StrahlkorperGr::Tags::DimensionfulSpinMagnitudeCompute<
-                     ::Frame::Grid>>,
+      tmpl::list<
+          StrahlkorperTags::ThetaPhiCompute<::Frame::Inertial>,
+          StrahlkorperTags::RadiusCompute<::Frame::Inertial>,
+          StrahlkorperTags::RhatCompute<::Frame::Inertial>,
+          StrahlkorperTags::InvJacobianCompute<::Frame::Inertial>,
+          StrahlkorperTags::InvHessianCompute<::Frame::Inertial>,
+          StrahlkorperTags::JacobianCompute<::Frame::Inertial>,
+          StrahlkorperTags::DxRadiusCompute<::Frame::Inertial>,
+          StrahlkorperTags::D2xRadiusCompute<::Frame::Inertial>,
+          StrahlkorperTags::NormalOneFormCompute<::Frame::Inertial>,
+          StrahlkorperTags::OneOverOneFormMagnitudeCompute<
+              volume_dim, ::Frame::Inertial, DataVector>,
+          StrahlkorperTags::TangentsCompute<::Frame::Inertial>,
+          StrahlkorperTags::UnitNormalOneFormCompute<::Frame::Inertial>,
+          StrahlkorperTags::UnitNormalVectorCompute<::Frame::Inertial>,
+          StrahlkorperTags::GradUnitNormalOneFormCompute<::Frame::Inertial>,
+          // Note that StrahlkorperTags::ExtrinsicCurvatureCompute is the
+          // 2d extrinsic curvature of the strahlkorper embedded in the 3d
+          // slice, whereas gr::tags::ExtrinsicCurvature is the 3d extrinsic
+          // curvature of the slice embedded in 4d spacetime.  Both quantities
+          // are in the DataBox.
+          StrahlkorperGr::Tags::AreaElementCompute<::Frame::Inertial>,
+          StrahlkorperTags::ExtrinsicCurvatureCompute<::Frame::Inertial>,
+          StrahlkorperTags::RicciScalarCompute<::Frame::Inertial>,
+          StrahlkorperGr::Tags::SpinFunctionCompute<::Frame::Inertial>,
+          StrahlkorperGr::Tags::DimensionfulSpinMagnitudeCompute<
+              ::Frame::Inertial>>,
       horizons_tags_to_observe>;
 
   struct AhA {
