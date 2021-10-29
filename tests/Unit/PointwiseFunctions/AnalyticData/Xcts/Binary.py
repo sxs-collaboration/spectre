@@ -6,6 +6,7 @@ import numpy as np
 centers = [-5., 6.]
 masses = [1.1, 0.43]
 angular_velocity = 0.02
+radial_velocity = 0.01
 falloff_widths = [7., 8.]
 
 
@@ -26,7 +27,8 @@ def extrinsic_curvature_trace_bbh_isotropic(x):
 
 
 def shift_background(x):
-    return np.array([-angular_velocity * x[1], angular_velocity * x[0], 0.])
+    return (np.array([-angular_velocity * x[1], angular_velocity * x[0], 0.]) +
+            radial_velocity * x)
 
 
 def longitudinal_shift_background_bbh_isotropic(x):
