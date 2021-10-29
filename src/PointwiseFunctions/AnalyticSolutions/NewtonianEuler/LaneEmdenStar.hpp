@@ -74,8 +74,8 @@ class LaneEmdenStar : public MarkAsAnalyticSolution {
       "constant is specifiable"};
 
   LaneEmdenStar() = default;
-  LaneEmdenStar(const LaneEmdenStar& /*rhs*/) = delete;
-  LaneEmdenStar& operator=(const LaneEmdenStar& /*rhs*/) = delete;
+  LaneEmdenStar(const LaneEmdenStar& /*rhs*/) = default;
+  LaneEmdenStar& operator=(const LaneEmdenStar& /*rhs*/) = default;
   LaneEmdenStar(LaneEmdenStar&& /*rhs*/) = default;
   LaneEmdenStar& operator=(LaneEmdenStar&& /*rhs*/) = default;
   ~LaneEmdenStar() = default;

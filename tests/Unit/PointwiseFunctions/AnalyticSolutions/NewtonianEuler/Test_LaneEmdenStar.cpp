@@ -40,6 +40,7 @@ void test_construction_and_serialization() {
   NewtonianEuler::Solutions::LaneEmdenStar star_to_move(central_mass_density,
                                                         polytropic_constant);
   test_move_semantics(std::move(star_to_move), star);  //  NOLINT
+  test_copy_semantics(star);
 
   test_serialization(star);
 }
