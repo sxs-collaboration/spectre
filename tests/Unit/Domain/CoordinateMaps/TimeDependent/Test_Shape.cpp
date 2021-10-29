@@ -14,7 +14,6 @@
 #include <unordered_map>
 #include <vector>
 
-#include "ApparentHorizons/SpherepackIterator.hpp"
 #include "ApparentHorizons/Tags.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/Shape.hpp"
@@ -24,6 +23,7 @@
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/Domain/CoordinateMaps/TestMapHelpers.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 

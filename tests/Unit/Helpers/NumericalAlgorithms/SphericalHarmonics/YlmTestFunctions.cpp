@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Helpers/ApparentHorizons/YlmTestFunctions.hpp"
+#include "Helpers/NumericalAlgorithms/SphericalHarmonics/YlmTestFunctions.hpp"
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/ConstantExpressions.hpp"

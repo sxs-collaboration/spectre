@@ -8,10 +8,9 @@
 #include <optional>
 #include <string>
 
-#include "ApparentHorizons/TagsTypeAliases.hpp"
-#include "ApparentHorizons/YlmSpherepack.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/ShapeMapTransitionFunctions/ShapeMapTransitionFunction.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/YlmSpherepack.hpp"
 #include "Utilities/TypeTraits/RemoveReferenceWrapper.hpp"
 
 /// \cond

@@ -10,11 +10,11 @@
 #include <utility>
 #include <vector>
 
-#include "ApparentHorizons/YlmSpherepack.hpp"
-#include "ApparentHorizons/YlmSpherepackHelper.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "Framework/TestHelpers.hpp"
-#include "Helpers/ApparentHorizons/YlmTestFunctions.hpp"
+#include "Helpers/NumericalAlgorithms/SphericalHarmonics/YlmTestFunctions.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/YlmSpherepack.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/YlmSpherepackHelper.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 
@@ -665,8 +665,8 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.YlmSpherepack",
 }
 
 // [[OutputRegex, Attempt to allocate more than 9 temps.]]
-SPECTRE_TEST_CASE("Unit.ApparentHorizons.YlmSpherepackHelper.alloc_error",
-                  "[ApparentHorizons][Unit]") {
+SPECTRE_TEST_CASE("Unit.SphericalHarmonics.YlmSpherepackHelper.alloc_error",
+                  "[NumericalAlgorithms][Unit]") {
   ERROR_TEST();
   YlmSpherepack_detail::MemoryPool pool;
   for (size_t i = 0; i < 10;
@@ -676,8 +676,8 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.YlmSpherepackHelper.alloc_error",
 }
 
 // [[OutputRegex, Attempt to free temp that was never allocated.]]
-SPECTRE_TEST_CASE("Unit.ApparentHorizons.YlmSpherepackHelper.free_error",
-                  "[ApparentHorizons][Unit]") {
+SPECTRE_TEST_CASE("Unit.SphericalHarmonics.YlmSpherepackHelper.free_error",
+                  "[NumericalAlgorithms][Unit]") {
   ERROR_TEST();
   YlmSpherepack_detail::MemoryPool pool;
   std::vector<double> dum(1, 0.0);
@@ -685,8 +685,9 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.YlmSpherepackHelper.free_error",
 }
 
 // [[OutputRegex, Attempt to free temp that was never allocated.]]
-SPECTRE_TEST_CASE("Unit.ApparentHorizons.YlmSpherepackHelper.free_empty_error",
-                  "[ApparentHorizons][Unit]") {
+SPECTRE_TEST_CASE(
+    "Unit.SphericalHarmonics.YlmSpherepackHelper.free_empty_error",
+    "[NumericalAlgorithms][Unit]") {
   ERROR_TEST();
   YlmSpherepack_detail::MemoryPool pool;
   std::vector<double> dum;
@@ -694,8 +695,8 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.YlmSpherepackHelper.free_empty_error",
 }
 
 // [[OutputRegex, Attempt to free temp that was never allocated.]]
-SPECTRE_TEST_CASE("Unit.ApparentHorizons.YlmSpherepackHelper.free_ptr_error",
-                  "[ApparentHorizons][Unit]") {
+SPECTRE_TEST_CASE("Unit.SphericalHarmonics.YlmSpherepackHelper.free_ptr_error",
+                  "[NumericalAlgorithms][Unit]") {
   ERROR_TEST();
   YlmSpherepack_detail::MemoryPool pool;
   std::vector<double> dum(1, 1.0);
@@ -703,15 +704,15 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.YlmSpherepackHelper.free_ptr_error",
 }
 
 // [[OutputRegex, Must use l_max>=2, not l_max=1]]
-SPECTRE_TEST_CASE("Unit.ApparentHorizons.YlmSpherepack.too_few_theta_pts",
-                  "[ApparentHorizons][Unit]") {
+SPECTRE_TEST_CASE("Unit.SphericalHarmonics.YlmSpherepack.too_few_theta_pts",
+                  "[NumericalAlgorithms][Unit]") {
   ERROR_TEST();
   YlmSpherepack ylm(1, 1);
 }
 
 // [[OutputRegex, Must use m_max>=2, not m_max=1]]
-SPECTRE_TEST_CASE("Unit.ApparentHorizons.YlmSpherepack.too_few_phi_pts",
-                  "[ApparentHorizons][Unit]") {
+SPECTRE_TEST_CASE("Unit.SphericalHarmonics.YlmSpherepack.too_few_phi_pts",
+                  "[NumericalAlgorithms][Unit]") {
   ERROR_TEST();
   YlmSpherepack ylm(2, 1);
 }

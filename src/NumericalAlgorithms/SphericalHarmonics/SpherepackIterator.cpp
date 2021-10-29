@@ -71,7 +71,7 @@
 //     n_ph = 2*m_max_represented+1
 //   which ensures that m_max = m_max_represented.
 
-#include "ApparentHorizons/SpherepackIterator.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
 
 SpherepackIterator::SpherepackIterator(const size_t l_max_input,
                                        const size_t m_max_input,

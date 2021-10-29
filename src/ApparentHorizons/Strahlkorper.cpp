@@ -9,7 +9,7 @@
 #include <pup_stl.h>
 #include <utility>
 
-#include "ApparentHorizons/SpherepackIterator.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 namespace Frame {

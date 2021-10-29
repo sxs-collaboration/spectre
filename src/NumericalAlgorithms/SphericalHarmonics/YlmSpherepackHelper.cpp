@@ -3,7 +3,7 @@
 
 #include <ostream>
 
-#include "ApparentHorizons/YlmSpherepackHelper.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/YlmSpherepackHelper.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 
 namespace YlmSpherepack_detail {

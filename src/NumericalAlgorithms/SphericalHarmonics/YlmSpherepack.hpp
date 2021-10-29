@@ -9,10 +9,10 @@
 #include <utility>
 #include <vector>
 
-#include "ApparentHorizons/YlmSpherepackHelper.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/DynamicBuffer.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/YlmSpherepackHelper.hpp"
 #include "Utilities/Blas.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"

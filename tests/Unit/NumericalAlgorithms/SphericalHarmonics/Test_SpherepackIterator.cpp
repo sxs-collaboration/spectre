@@ -8,13 +8,13 @@
 #include <string>
 #include <vector>
 
-#include "ApparentHorizons/SpherepackIterator.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Literals.hpp"
 
-SPECTRE_TEST_CASE("Unit.ApparentHorizons.SpherepackIterator",
-                  "[ApparentHorizons][Unit]") {
+SPECTRE_TEST_CASE("Unit.SphericalHarmonics.SpherepackIterator",
+                  "[NumericalAlgorithms][Unit]") {
   const std::vector<size_t> test_l = {0, 1, 1, 2, 2, 2, 3, 3, 3, 4,
                                       4, 4, 1, 2, 2, 3, 3, 4, 4};
   const std::vector<size_t> test_m = {0, 0, 1, 0, 1, 2, 0, 1, 2, 0,
