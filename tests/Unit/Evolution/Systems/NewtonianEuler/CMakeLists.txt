@@ -20,6 +20,7 @@ set(LIBRARY_SOURCES
   Subcell/Test_ResizeAndComputePrimitives.cpp
   Subcell/Test_TciOnDgGrid.cpp
   Subcell/Test_TciOnFdGrid.cpp
+  Subcell/Test_TimeDerivative.cpp
   Test_Characteristics.cpp
   Test_ConservativeFromPrimitive.cpp
   Test_Fluxes.cpp
