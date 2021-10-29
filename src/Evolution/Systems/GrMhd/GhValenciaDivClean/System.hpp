@@ -13,10 +13,8 @@
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/TimeDerivativeTerms.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Characteristics.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/ConservativeFromPrimitive.hpp"
-#include "Evolution/Systems/GrMhd/ValenciaDivClean/Fluxes.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/NewmanHamlin.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/PrimitiveFromConservative.hpp"
-#include "Evolution/Systems/GrMhd/ValenciaDivClean/Sources.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/TimeDerivativeTerms.hpp"
@@ -48,7 +46,6 @@ struct System {
       tmpl::append<typename gh_system::gradient_variables,
                    typename grmhd_system::gradient_variables>;
   using gradients_tags = gradient_variables;
-  using sourced_variables = typename grmhd_system::sourced_variables;
   static constexpr bool is_in_flux_conservative_form = false;
 
   using primitive_variables_tag =
@@ -63,8 +60,6 @@ struct System {
       gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataVector>>>;
 
   using compute_volume_time_derivative_terms = TimeDerivativeTerms;
-  using volume_fluxes = typename grmhd_system::volume_fluxes;
-  using volume_sources = typename grmhd_system::volume_sources;
 
   using conservative_from_primitive =
       typename grmhd_system::conservative_from_primitive;

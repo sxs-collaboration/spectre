@@ -10,10 +10,8 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Characteristics.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/ConservativeFromPrimitive.hpp"
-#include "Evolution/Systems/GrMhd/ValenciaDivClean/Fluxes.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/NewmanHamlin.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/PrimitiveFromConservative.hpp"
-#include "Evolution/Systems/GrMhd/ValenciaDivClean/Sources.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/TimeDerivativeTerms.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
@@ -49,9 +47,6 @@ struct System {
                  Tags::TildePhi>;
   using non_conservative_variables = tmpl::list<>;
   using gradient_variables = tmpl::list<>;
-  // skip TildeD as its source is zero.
-  using sourced_variables = tmpl::list<Tags::TildeTau, Tags::TildeS<>,
-                                       Tags::TildeB<>, Tags::TildePhi>;
   using primitive_variables_tag =
       ::Tags::Variables<hydro::grmhd_tags<DataVector>>;
   using spacetime_variables_tag =
@@ -63,8 +58,6 @@ struct System {
       gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>>>;
 
   using compute_volume_time_derivative_terms = TimeDerivativeTerms;
-  using volume_fluxes = ComputeFluxes;
-  using volume_sources = ComputeSources;
 
   using conservative_from_primitive = ConservativeFromPrimitive;
   template <typename OrderedListOfPrimitiveRecoverySchemes>

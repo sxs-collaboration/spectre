@@ -10,9 +10,7 @@
 #include "Evolution/Systems/NewtonianEuler/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/NewtonianEuler/Characteristics.hpp"
 #include "Evolution/Systems/NewtonianEuler/ConservativeFromPrimitive.hpp"
-#include "Evolution/Systems/NewtonianEuler/Fluxes.hpp"
 #include "Evolution/Systems/NewtonianEuler/PrimitiveFromConservative.hpp"
-#include "Evolution/Systems/NewtonianEuler/Sources.hpp"
 #include "Evolution/Systems/NewtonianEuler/Tags.hpp"
 #include "Evolution/Systems/NewtonianEuler/TimeDerivativeTerms.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
@@ -38,8 +36,6 @@ struct System {
                  Tags::EnergyDensity>;
   using non_conservative_variables = tmpl::list<>;
   using gradient_variables = tmpl::list<>;
-  using sourced_variables =
-      typename InitialDataType::source_term_type::sourced_variables;
   // Compute item for pressure not currently implemented in SpECTRE,
   // so its simple tag is passed along with the primitive variables.
   using primitive_variables_tag = ::Tags::Variables<tmpl::list<
@@ -48,8 +44,6 @@ struct System {
 
   using compute_volume_time_derivative_terms =
       TimeDerivativeTerms<Dim, InitialDataType>;
-  using volume_fluxes = ComputeFluxes<Dim>;
-  using volume_sources = ComputeSources<InitialDataType>;
 
   using conservative_from_primitive = ConservativeFromPrimitive<Dim>;
   using primitive_from_conservative = PrimitiveFromConservative<Dim>;

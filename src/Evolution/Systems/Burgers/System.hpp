@@ -9,7 +9,6 @@
 #include "Evolution/Systems/Burgers/BoundaryConditions/BoundaryCondition.hpp"
 #include "Evolution/Systems/Burgers/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/Burgers/Characteristics.hpp"
-#include "Evolution/Systems/Burgers/Fluxes.hpp"
 #include "Evolution/Systems/Burgers/Tags.hpp"  // IWYU pragma: keep
 #include "Evolution/Systems/Burgers/TimeDerivativeTerms.hpp"
 #include "Utilities/TMPL.hpp"
@@ -32,10 +31,8 @@ struct System {
   using variables_tag = ::Tags::Variables<tmpl::list<Tags::U>>;
   using flux_variables = tmpl::list<Tags::U>;
   using gradient_variables = tmpl::list<>;
-  using sourced_variables = tmpl::list<>;
 
   using compute_volume_time_derivative_terms = TimeDerivativeTerms;
-  using volume_fluxes = Fluxes;
 
   using compute_largest_characteristic_speed =
       Tags::ComputeLargestCharacteristicSpeed;
