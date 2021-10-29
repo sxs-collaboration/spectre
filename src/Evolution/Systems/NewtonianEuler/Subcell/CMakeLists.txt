@@ -18,6 +18,7 @@ spectre_target_headers(
   HEADERS
   ComputeFluxes.hpp
   InitialDataTci.hpp
+  NeighborPackagedData.hpp
   PrimitiveGhostData.hpp
   PrimsAfterRollback.hpp
   ResizeAndComputePrimitives.hpp
