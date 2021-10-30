@@ -66,7 +66,6 @@ namespace Sources {
  * from the primitive variables, whose expressions are those in
  * Solutions::IsentropicVortex
  */
-template <size_t Dim>
 struct VortexPerturbation {
   VortexPerturbation() = default;
   VortexPerturbation(const VortexPerturbation& /*rhs*/) = default;
@@ -78,28 +77,20 @@ struct VortexPerturbation {
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) {}
 
-  using sourced_variables = tmpl::conditional_t<
-      Dim == 3,
-      tmpl::list<Tags::MassDensityCons, Tags::MomentumDensity<Dim>,
-                 Tags::EnergyDensity>,
-      tmpl::list<>>;
+  using sourced_variables =
+      tmpl::list<Tags::MassDensityCons, Tags::MomentumDensity<3>,
+                 Tags::EnergyDensity>;
 
-  using argument_tags = tmpl::conditional_t<
-      Dim == 3,
-      tmpl::list<::Tags::AnalyticSolution<
-                     NewtonianEuler::Solutions::IsentropicVortex<Dim>>,
-                 domain::Tags::Coordinates<3, Frame::Inertial>, ::Tags::Time>,
-      tmpl::list<>>;
+  using argument_tags = tmpl::list<
+      ::Tags::AnalyticSolution<NewtonianEuler::Solutions::IsentropicVortex<3>>,
+      domain::Tags::Coordinates<3, Frame::Inertial>, ::Tags::Time>;
 
-  // Overload required for 2d simulations, where no variable is sourced.
-  void apply() const;
-
-  // Function to be used in 3d.
-  void apply(gsl::not_null<Scalar<DataVector>*> source_mass_density_cons,
-             gsl::not_null<tnsr::I<DataVector, Dim>*> source_momentum_density,
-             gsl::not_null<Scalar<DataVector>*> source_energy_density,
-             const NewtonianEuler::Solutions::IsentropicVortex<Dim>& vortex,
-             const tnsr::I<DataVector, Dim>& x, double time) const;
+  static void apply(
+      gsl::not_null<Scalar<DataVector>*> source_mass_density_cons,
+      gsl::not_null<tnsr::I<DataVector, 3>*> source_momentum_density,
+      gsl::not_null<Scalar<DataVector>*> source_energy_density,
+      const NewtonianEuler::Solutions::IsentropicVortex<3>& vortex,
+      const tnsr::I<DataVector, 3>& x, double time);
 };
 }  // namespace Sources
 }  // namespace NewtonianEuler

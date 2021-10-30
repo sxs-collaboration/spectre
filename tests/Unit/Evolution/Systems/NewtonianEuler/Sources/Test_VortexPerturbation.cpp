@@ -19,8 +19,8 @@ namespace {
 // Need this proxy in order for pypp to evaluate function whose arguments
 // include a variable of type `NewtonianEuler::Solutions::IsentropicVortex`
 struct VortexPerturbation3dProxy
-    : NewtonianEuler::Sources::VortexPerturbation<3> {
-  using NewtonianEuler::Sources::VortexPerturbation<3>::VortexPerturbation;
+    : NewtonianEuler::Sources::VortexPerturbation {
+  using NewtonianEuler::Sources::VortexPerturbation::VortexPerturbation;
   VortexPerturbation3dProxy(const double adiabatic_index,
                             const double perturbation_amplitude,
                             const std::array<double, 3>& vortex_center,

@@ -22,16 +22,12 @@
 // IWYU pragma: no_forward_declare Tensor
 
 namespace NewtonianEuler::Sources {
-template <>
-void VortexPerturbation<2>::apply() const {}
-
-template <>
-void VortexPerturbation<3>::apply(
+void VortexPerturbation::apply(
     const gsl::not_null<Scalar<DataVector>*> source_mass_density_cons,
     const gsl::not_null<tnsr::I<DataVector, 3>*> source_momentum_density,
     const gsl::not_null<Scalar<DataVector>*> source_energy_density,
     const NewtonianEuler::Solutions::IsentropicVortex<3>& vortex,
-    const tnsr::I<DataVector, 3>& x, const double time) const {
+    const tnsr::I<DataVector, 3>& x, const double time) {
   const size_t number_of_grid_points = get<0>(x).size();
   const auto vortex_primitives = vortex.variables(
       x, time,
@@ -77,13 +73,4 @@ void VortexPerturbation<3>::apply(
 
   get(*source_mass_density_cons) *= get(vortex_mass_density_cons);
 }
-
-#define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
-
-#define INSTANTIATE(_, data) template struct VortexPerturbation<DIM(data)>;
-
-GENERATE_INSTANTIATIONS(INSTANTIATE, (2, 3))
-
-#undef INSTANTIATE
-#undef DIM
 }  // namespace NewtonianEuler::Sources
