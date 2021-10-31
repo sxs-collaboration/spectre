@@ -11,8 +11,8 @@ namespace Parallel::detail {
 // Allow 64 inline entry method calls before we fall back to Charm++. This is
 // done to avoid blowing the stack.
 inline bool max_inline_entry_methods_reached() {
-  thread_local size_t approx_stack_depth = 0;
 #ifndef SPECTRE_PROFILING
+  thread_local size_t approx_stack_depth = 0;
   approx_stack_depth++;
   if (approx_stack_depth < 64) {
     return false;
