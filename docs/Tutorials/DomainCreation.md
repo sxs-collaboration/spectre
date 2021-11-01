@@ -19,9 +19,9 @@ explained below.
 
 ## CoordinateMaps
 Each Block in the Domain must hold a CoordinateMap which describes how to
-map the logical cube (a domain that goes [-1. 1] in each dimension) to the
-curvilinear hexahedral element the %Block describes. The %CoordinateMap
-also provides the jacobian of the mapping.
+map the logical cube (a reference cell that covers the interval \f$[-1, 1]\f$
+in each dimension) to the curvilinear hexahedral element the %Block describes.
+The %CoordinateMap also provides the jacobian of the mapping.
 
 ### Shortcuts for CoordinateMaps
 For spherical domains, `Wedge<3>` implements the cubed-sphere map, and there

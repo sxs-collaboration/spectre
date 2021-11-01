@@ -19,11 +19,6 @@
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
-namespace Frame {
-struct Inertial;
-struct Logical;
-}  // namespace Frame
-
 template <size_t VolumeDim>
 Block<VolumeDim>::Block(
     std::unique_ptr<domain::CoordinateMapBase<

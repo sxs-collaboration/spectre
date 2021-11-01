@@ -52,9 +52,8 @@ auto compose_jacobians(const Map1& map1, const Map2& map2,
   const auto jac1 = map1.jacobian(point);
   const auto jac2 = map2.jacobian(map1(point));
 
-  auto result =
-      make_with_value<Jacobian<DataType, Dim, Frame::Logical, Frame::Grid>>(
-          point[0], 0.);
+  auto result = make_with_value<
+      Jacobian<DataType, Dim, Frame::BlockLogical, Frame::Grid>>(point[0], 0.);
   for (size_t target = 0; target < Dim; ++target) {
     for (size_t source = 0; source < Dim; ++source) {
       for (size_t dummy = 0; dummy < Dim; ++dummy) {
@@ -73,8 +72,8 @@ auto compose_inv_jacobians(const Map1& map1, const Map2& map2,
   const auto inv_jac2 = map2.inv_jacobian(map1(point));
 
   auto result = make_with_value<
-      InverseJacobian<DataType, Dim, Frame::Logical, Frame::Grid>>(point[0],
-                                                                   0.);
+      InverseJacobian<DataType, Dim, Frame::BlockLogical, Frame::Grid>>(
+      point[0], 0.);
   for (size_t target = 0; target < Dim; ++target) {
     for (size_t source = 0; source < Dim; ++source) {
       for (size_t dummy = 0; dummy < Dim; ++dummy) {
@@ -90,13 +89,13 @@ void test_single_coordinate_map() {
   INFO("Single coordinate map");
   using affine_map1d = CoordinateMaps::Affine;
 
-  const auto affine1d = make_coordinate_map<Frame::Logical, Frame::Grid>(
+  const auto affine1d = make_coordinate_map<Frame::BlockLogical, Frame::Grid>(
       affine_map1d{-1.0, 1.0, 2.0, 8.0});
   const auto affine1d_base_inertial =
-      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
           affine_map1d{-1.0, 1.0, 2.0, 8.0});
   const auto affine1d_base =
-      make_coordinate_map_base<Frame::Logical, Frame::Grid>(
+      make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
           affine_map1d{-1.0, 1.0, 2.0, 8.0});
   const auto affine1d_base_from_inertial =
       affine1d_base_inertial->get_to_grid_frame();
@@ -121,7 +120,8 @@ void test_single_coordinate_map() {
                   .value())) == first_map.inverse(local_coord).value());
 
     const auto expected_jac_no_frame = first_map.jacobian(local_coord);
-    Jacobian<double, dim, Frame::Logical, Frame::Grid> local_expected_jac{};
+    Jacobian<double, dim, Frame::BlockLogical, Frame::Grid>
+        local_expected_jac{};
     REQUIRE(expected_jac_no_frame.size() == local_expected_jac.size());
     for (size_t i = 0; i < local_expected_jac.size(); ++i) {
       local_expected_jac[i] = expected_jac_no_frame[i];
@@ -130,7 +130,7 @@ void test_single_coordinate_map() {
                           local_expected_jac);
 
     const auto expected_inv_jac_no_frame = first_map.inv_jacobian(local_coord);
-    InverseJacobian<double, dim, Frame::Logical, Frame::Grid>
+    InverseJacobian<double, dim, Frame::BlockLogical, Frame::Grid>
         local_expected_inv_jac{};
     REQUIRE(expected_inv_jac_no_frame.size() == local_expected_inv_jac.size());
     for (size_t i = 0; i < local_expected_jac.size(); ++i) {
@@ -151,9 +151,10 @@ void test_single_coordinate_map() {
   };
 
   for (const auto& coord : coords1d) {
-    const tnsr::I<double, 1, Frame::Logical> source_points{{{coord[0]}}};
-    CHECK((make_array<double, 1>(affine1d(tnsr::I<double, 1, Frame::Logical>{
-              {{coord[0]}}}))) == first_affine1d(coord));
+    const tnsr::I<double, 1, Frame::BlockLogical> source_points{{{coord[0]}}};
+    CHECK((make_array<double, 1>(affine1d(
+              tnsr::I<double, 1, Frame::BlockLogical>{{{coord[0]}}}))) ==
+          first_affine1d(coord));
     CHECK((make_array<double, 1>(
               affine1d.inverse(tnsr::I<double, 1, Frame::Grid>{{{coord[0]}}})
                   .value())) == first_affine1d.inverse(coord).value());
@@ -183,11 +184,13 @@ void test_single_coordinate_map() {
 
   const auto first_rotated2d = rotate2d{M_PI_4};
   const auto rotated2d =
-      make_coordinate_map<Frame::Logical, Frame::Grid>(first_rotated2d);
+      make_coordinate_map<Frame::BlockLogical, Frame::Grid>(first_rotated2d);
   const auto rotated2d_base =
-      make_coordinate_map_base<Frame::Logical, Frame::Grid>(first_rotated2d);
+      make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
+          first_rotated2d);
   const auto rotated2d_base_inertial =
-      make_coordinate_map_base<Frame::Logical, Frame::Grid>(first_rotated2d);
+      make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
+          first_rotated2d);
   const auto rotated2d_base_from_inertial =
       rotated2d_base_inertial->get_to_grid_frame();
 
@@ -198,7 +201,7 @@ void test_single_coordinate_map() {
       {{{0.1, 2.8}}, {{-8.2, 2.8}}, {{5.7, -4.9}}, {{2.9, 3.4}}}};
 
   for (const auto& coord : coords2d) {
-    const tnsr::I<double, 2, Frame::Logical> source_points{coord};
+    const tnsr::I<double, 2, Frame::BlockLogical> source_points{coord};
 
     CHECK((make_array<double, 2>(rotated2d(source_points))) ==
           first_rotated2d(coord));
@@ -207,7 +210,7 @@ void test_single_coordinate_map() {
                   .value())) == first_rotated2d.inverse(coord).value());
 
     const auto expected_jac_inertial = first_rotated2d.jacobian(coord);
-    Jacobian<double, 2, Frame::Logical, Frame::Grid> expected_jac_grid{};
+    Jacobian<double, 2, Frame::BlockLogical, Frame::Grid> expected_jac_grid{};
     REQUIRE(decltype(expected_jac_inertial)::size() ==
             decltype(expected_jac_grid)::size());
     for (size_t i = 0; i < decltype(expected_jac_inertial)::size(); ++i) {
@@ -216,7 +219,7 @@ void test_single_coordinate_map() {
     CHECK(rotated2d.jacobian(source_points) == expected_jac_grid);
 
     const auto expected_inv_jac_inertial = first_rotated2d.inv_jacobian(coord);
-    InverseJacobian<double, 2, Frame::Logical, Frame::Grid>
+    InverseJacobian<double, 2, Frame::BlockLogical, Frame::Grid>
         expected_inv_jac_grid{};
     REQUIRE(decltype(expected_inv_jac_inertial)::size() ==
             decltype(expected_inv_jac_grid)::size());
@@ -244,12 +247,13 @@ void test_single_coordinate_map() {
 
   const auto first_rotated3d = rotate3d{M_PI_4, M_PI_4, M_PI_2};
   const auto rotated3d =
-      make_coordinate_map<Frame::Logical, Frame::Grid>(first_rotated3d);
+      make_coordinate_map<Frame::BlockLogical, Frame::Grid>(first_rotated3d);
   const auto rotated3d_base_inertial =
-      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
           first_rotated3d);
   const auto rotated3d_base =
-      make_coordinate_map_base<Frame::Logical, Frame::Grid>(first_rotated3d);
+      make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
+          first_rotated3d);
   const auto rotated3d_base_from_inertial =
       rotated3d_base_inertial->get_to_grid_frame();
 
@@ -262,7 +266,7 @@ void test_single_coordinate_map() {
                                                  {{2.9, 3.4, -7.8}}}};
 
   for (const auto& coord : coords3d) {
-    const tnsr::I<double, 3, Frame::Logical> source_points{
+    const tnsr::I<double, 3, Frame::BlockLogical> source_points{
         {{coord[0], coord[1], coord[2]}}};
 
     CHECK((make_array<double, 3>(rotated3d(source_points))) ==
@@ -274,7 +278,7 @@ void test_single_coordinate_map() {
           first_rotated3d.inverse(coord).value());
 
     const auto expected_jac_inertial = first_rotated3d.jacobian(coord);
-    Jacobian<double, 3, Frame::Logical, Frame::Grid> expected_jac_grid{};
+    Jacobian<double, 3, Frame::BlockLogical, Frame::Grid> expected_jac_grid{};
     REQUIRE(decltype(expected_jac_inertial)::size() ==
             decltype(expected_jac_grid)::size());
     for (size_t i = 0; i < decltype(expected_jac_inertial)::size(); ++i) {
@@ -283,7 +287,7 @@ void test_single_coordinate_map() {
     CHECK(rotated3d.jacobian(source_points) == expected_jac_grid);
 
     const auto expected_inv_jac_inertial = first_rotated3d.inv_jacobian(coord);
-    InverseJacobian<double, 3, Frame::Logical, Frame::Grid>
+    InverseJacobian<double, 3, Frame::BlockLogical, Frame::Grid>
         expected_inv_jac_grid{};
     REQUIRE(decltype(expected_inv_jac_inertial)::size() ==
             decltype(expected_inv_jac_grid)::size());
@@ -318,13 +322,13 @@ void test_coordinate_map_with_affine_map() {
   constexpr size_t number_of_points_checked = 10;
 
   // Test 1D
-  const auto map = make_coordinate_map<Frame::Logical, Frame::Grid>(
+  const auto map = make_coordinate_map<Frame::BlockLogical, Frame::Grid>(
       affine_map{-1.0, 1.0, 0.0, 2.3}, affine_map{0.0, 2.3, -0.5, 0.5});
   for (size_t i = 1; i < number_of_points_checked + 1; ++i) {
-    const tnsr::I<double, 1, Frame::Logical> source_points{2.0 / i + -1.0};
+    const tnsr::I<double, 1, Frame::BlockLogical> source_points{2.0 / i + -1.0};
     CHECK((tnsr::I<double, 1, Frame::Grid>(1.0 / i + -0.5))[0] ==
           approx(map(source_points)[0]));
-    CHECK((tnsr::I<double, 1, Frame::Logical>(2.0 / i + -1.0))[0] ==
+    CHECK((tnsr::I<double, 1, Frame::BlockLogical>(2.0 / i + -1.0))[0] ==
           approx(map.inverse(tnsr::I<double, 1, Frame::Grid>{1.0 / i + -0.5})
                      .value()[0]));
 
@@ -341,13 +345,13 @@ void test_coordinate_map_with_affine_map() {
   }
 
   // Test 2D
-  const auto prod_map2d = make_coordinate_map<Frame::Logical, Frame::Grid>(
+  const auto prod_map2d = make_coordinate_map<Frame::BlockLogical, Frame::Grid>(
       affine_map_2d{affine_map{-1.0, 1.0, 0.0, 2.0},
                     affine_map{0.0, 2.0, -0.5, 0.5}},
       affine_map_2d{affine_map{0.0, 2.0, 2.0, 6.0},
                     affine_map{-0.5, 0.5, 0.0, 8.0}});
   for (size_t i = 1; i < number_of_points_checked + 1; ++i) {
-    const tnsr::I<double, 2, Frame::Logical> source_points{
+    const tnsr::I<double, 2, Frame::BlockLogical> source_points{
         {{-1.0 + 2.0 / i, 0.0 + 2.0 / i}}};
     const auto mapped_point = prod_map2d(source_points);
     const auto expected_mapped_point =
@@ -390,7 +394,7 @@ void test_coordinate_map_with_affine_map() {
   }
 
   // Test 3D
-  const auto prod_map3d = make_coordinate_map<Frame::Logical, Frame::Grid>(
+  const auto prod_map3d = make_coordinate_map<Frame::BlockLogical, Frame::Grid>(
       affine_map_3d{affine_map{-1.0, 1.0, 0.0, 2.0},
                     affine_map{0.0, 2.0, -0.5, 0.5},
                     affine_map{5.0, 7.0, -7.0, 7.0}},
@@ -399,7 +403,7 @@ void test_coordinate_map_with_affine_map() {
                     affine_map{-7.0, 7.0, 3.0, 23.0}});
 
   for (size_t i = 1; i < number_of_points_checked + 1; ++i) {
-    const tnsr::I<double, 3, Frame::Logical> source_points{
+    const tnsr::I<double, 3, Frame::BlockLogical> source_points{
         {{-1.0 + 2.0 / i, 0.0 + 2.0 / i, 5.0 + 2.0 / i}}};
     const auto mapped_point = prod_map3d(source_points);
     const auto expected_mapped_point = tnsr::I<double, 3, Frame::Grid>{
@@ -465,8 +469,8 @@ void test_coordinate_map_with_rotation_map() {
 
   // Test 2D
   const auto double_rotated2d =
-      make_coordinate_map<Frame::Logical, Frame::Grid>(rotate2d{M_PI_4},
-                                                       rotate2d{M_PI_2});
+      make_coordinate_map<Frame::BlockLogical, Frame::Grid>(rotate2d{M_PI_4},
+                                                            rotate2d{M_PI_2});
   const auto first_rotated2d = rotate2d{M_PI_4};
   const auto second_rotated2d = rotate2d{M_PI_2};
 
@@ -476,7 +480,7 @@ void test_coordinate_map_with_rotation_map() {
   for (size_t i = 0; i < coords2d.size(); ++i) {
     INFO(i);
     const auto coord = gsl::at(coords2d, i);
-    const tnsr::I<double, 2, Frame::Logical> source_points{
+    const tnsr::I<double, 2, Frame::BlockLogical> source_points{
         {{coord[0], coord[1]}}};
 
     CHECK((make_array<double, 2>(double_rotated2d(source_points))) ==
@@ -511,7 +515,7 @@ void test_coordinate_map_with_rotation_map() {
 
   // Test 3D
   const auto double_rotated3d =
-      make_coordinate_map<Frame::Logical, Frame::Grid>(
+      make_coordinate_map<Frame::BlockLogical, Frame::Grid>(
           rotate3d{M_PI_4, M_PI_4, M_PI_2}, rotate3d{M_PI_2, M_PI_4, M_PI_4});
   const auto first_rotated3d = rotate3d{M_PI_4, M_PI_4, M_PI_2};
   const auto second_rotated3d = rotate3d{M_PI_2, M_PI_4, M_PI_4};
@@ -524,7 +528,7 @@ void test_coordinate_map_with_rotation_map() {
   for (size_t i = 0; i < coords3d.size(); ++i) {
     INFO(i);
     const auto coord = gsl::at(coords3d, i);
-    const tnsr::I<double, 3, Frame::Logical> source_points{
+    const tnsr::I<double, 3, Frame::BlockLogical> source_points{
         {{coord[0], coord[1], coord[2]}}};
 
     CHECK((make_array<double, 3>(double_rotated3d(source_points))) ==
@@ -572,12 +576,12 @@ void test_coordinate_map_with_rotation_map_datavector() {
   // Test 2D
   {
     const auto double_rotated2d =
-        make_coordinate_map<Frame::Logical, Frame::Grid>(rotate2d{M_PI_4},
-                                                         rotate2d{M_PI_2});
+        make_coordinate_map<Frame::BlockLogical, Frame::Grid>(rotate2d{M_PI_4},
+                                                              rotate2d{M_PI_2});
     const auto first_rotated2d = rotate2d{M_PI_4};
     const auto second_rotated2d = rotate2d{M_PI_2};
 
-    const tnsr::I<DataVector, 2, Frame::Logical> coords2d{
+    const tnsr::I<DataVector, 2, Frame::BlockLogical> coords2d{
         {{DataVector{0.1, -8.2, 5.7, 2.9}, DataVector{2.8, 2.8, -4.9, 3.4}}}};
     const tnsr::I<DataVector, 2, Frame::Grid> coords2d_grid{
         {{DataVector{0.1, -8.2, 5.7, 2.9}, DataVector{2.8, 2.8, -4.9, 3.4}}}};
@@ -613,22 +617,22 @@ void test_coordinate_map_with_rotation_map_datavector() {
     const auto first_rotated3d = rotate3d{M_PI_4, M_PI_4, M_PI_2};
     const auto second_rotated3d = rotate3d{M_PI_2, M_PI_4, M_PI_4};
     const auto double_rotated3d_full =
-        make_coordinate_map<Frame::Logical, Frame::Grid>(first_rotated3d,
-                                                         second_rotated3d);
-    const auto double_rotated3d_base =
-        make_coordinate_map_base<Frame::Logical, Frame::Grid>(first_rotated3d,
+        make_coordinate_map<Frame::BlockLogical, Frame::Grid>(first_rotated3d,
                                                               second_rotated3d);
+    const auto double_rotated3d_base =
+        make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
+            first_rotated3d, second_rotated3d);
     const auto& double_rotated3d = *double_rotated3d_base;
 
     CHECK(double_rotated3d_full == double_rotated3d);
 
     const auto different_rotated3d_base =
-        make_coordinate_map_base<Frame::Logical, Frame::Grid>(second_rotated3d,
-                                                              first_rotated3d);
+        make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
+            second_rotated3d, first_rotated3d);
     CHECK(*different_rotated3d_base == *different_rotated3d_base);
     CHECK(*different_rotated3d_base != double_rotated3d);
 
-    const tnsr::I<DataVector, 3, Frame::Logical> coords3d{
+    const tnsr::I<DataVector, 3, Frame::BlockLogical> coords3d{
         {{DataVector{0.1, -8.2, 5.7, 2.9}, DataVector{2.8, 2.8, -4.9, 3.4},
           DataVector{9.3, -9.7, 8.1, -7.8}}}};
     const tnsr::I<DataVector, 3, Frame::Grid> coords3d_grid{
@@ -679,10 +683,12 @@ void test_coordinate_map_with_rotation_wedge() {
               false);
 
   const auto composed_map =
-      make_coordinate_map<Frame::Logical, Frame::Grid>(first_map, second_map);
+      make_coordinate_map<Frame::BlockLogical, Frame::Grid>(first_map,
+                                                            second_map);
 
   const std::array<double, 2> test_point_array{{0.1, 0.8}};
-  const tnsr::I<double, 2, Frame::Logical> test_point_vector(test_point_array);
+  const tnsr::I<double, 2, Frame::BlockLogical> test_point_vector(
+      test_point_array);
 
   const auto mapped_point_array = second_map(first_map(test_point_array));
   const auto mapped_point_vector = composed_map(test_point_vector);
@@ -714,13 +720,13 @@ void test_make_vector_coordinate_map_base() {
   using Affine = CoordinateMaps::Affine;
   using Affine2D = CoordinateMaps::ProductOf2Maps<Affine, Affine>;
 
-  const auto affine1d = make_coordinate_map<Frame::Logical, Frame::Grid>(
+  const auto affine1d = make_coordinate_map<Frame::BlockLogical, Frame::Grid>(
       Affine{-1.0, 1.0, 2.0, 8.0});
   const auto affine1d_base =
-      make_coordinate_map_base<Frame::Logical, Frame::Grid>(
+      make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
           Affine{-1.0, 1.0, 2.0, 8.0});
   const auto vector_of_affine1d =
-      make_vector_coordinate_map_base<Frame::Logical, Frame::Grid>(
+      make_vector_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
           Affine{-1.0, 1.0, 2.0, 8.0});
 
   CHECK(affine1d == *affine1d_base);
@@ -762,7 +768,7 @@ void test_make_vector_coordinate_map_base() {
                      {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}},
                  true};
   const auto vector_of_wedges =
-      make_vector_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      make_vector_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
           Wedge2DMap{
               1.0, 2.0, 0.0, 1.0,
               OrientationMap<2>{std::array<Direction<2>, 2>{
@@ -784,53 +790,53 @@ void test_make_vector_coordinate_map_base() {
                   {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}},
               true});
 
-  CHECK(make_coordinate_map<Frame::Logical, Frame::Inertial>(upper_xi_wedge) ==
-        *(vector_of_wedges[0]));
-  CHECK(make_coordinate_map<Frame::Logical, Frame::Inertial>(upper_eta_wedge) ==
-        *(vector_of_wedges[1]));
-  CHECK(make_coordinate_map<Frame::Logical, Frame::Inertial>(lower_xi_wedge) ==
-        *(vector_of_wedges[2]));
-  CHECK(make_coordinate_map<Frame::Logical, Frame::Inertial>(lower_eta_wedge) ==
-        *(vector_of_wedges[3]));
-  CHECK(*make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+  CHECK(make_coordinate_map<Frame::BlockLogical, Frame::Inertial>(
             upper_xi_wedge) == *(vector_of_wedges[0]));
-  CHECK(*make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+  CHECK(make_coordinate_map<Frame::BlockLogical, Frame::Inertial>(
             upper_eta_wedge) == *(vector_of_wedges[1]));
-  CHECK(*make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+  CHECK(make_coordinate_map<Frame::BlockLogical, Frame::Inertial>(
             lower_xi_wedge) == *(vector_of_wedges[2]));
-  CHECK(*make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+  CHECK(make_coordinate_map<Frame::BlockLogical, Frame::Inertial>(
+            lower_eta_wedge) == *(vector_of_wedges[3]));
+  CHECK(*make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
+            upper_xi_wedge) == *(vector_of_wedges[0]));
+  CHECK(*make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
+            upper_eta_wedge) == *(vector_of_wedges[1]));
+  CHECK(*make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
+            lower_xi_wedge) == *(vector_of_wedges[2]));
+  CHECK(*make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
             lower_eta_wedge) == *(vector_of_wedges[3]));
 
   const auto wedges = std::vector<Wedge2DMap>{upper_xi_wedge, upper_eta_wedge,
                                               lower_xi_wedge, lower_eta_wedge};
   const auto vector_of_wedges2 =
-      make_vector_coordinate_map_base<Frame::Logical, Frame::Inertial, 2>(
+      make_vector_coordinate_map_base<Frame::BlockLogical, Frame::Inertial, 2>(
           wedges);
-  CHECK(make_coordinate_map<Frame::Logical, Frame::Inertial>(upper_xi_wedge) ==
-        *(vector_of_wedges2[0]));
-  CHECK(make_coordinate_map<Frame::Logical, Frame::Inertial>(upper_eta_wedge) ==
-        *(vector_of_wedges2[1]));
-  CHECK(make_coordinate_map<Frame::Logical, Frame::Inertial>(lower_xi_wedge) ==
-        *(vector_of_wedges2[2]));
-  CHECK(make_coordinate_map<Frame::Logical, Frame::Inertial>(lower_eta_wedge) ==
-        *(vector_of_wedges2[3]));
-  CHECK(*make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+  CHECK(make_coordinate_map<Frame::BlockLogical, Frame::Inertial>(
             upper_xi_wedge) == *(vector_of_wedges2[0]));
-  CHECK(*make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+  CHECK(make_coordinate_map<Frame::BlockLogical, Frame::Inertial>(
             upper_eta_wedge) == *(vector_of_wedges2[1]));
-  CHECK(*make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+  CHECK(make_coordinate_map<Frame::BlockLogical, Frame::Inertial>(
             lower_xi_wedge) == *(vector_of_wedges2[2]));
-  CHECK(*make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+  CHECK(make_coordinate_map<Frame::BlockLogical, Frame::Inertial>(
+            lower_eta_wedge) == *(vector_of_wedges2[3]));
+  CHECK(*make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
+            upper_xi_wedge) == *(vector_of_wedges2[0]));
+  CHECK(*make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
+            upper_eta_wedge) == *(vector_of_wedges2[1]));
+  CHECK(*make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
+            lower_xi_wedge) == *(vector_of_wedges2[2]));
+  CHECK(*make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
             lower_eta_wedge) == *(vector_of_wedges2[3]));
 
   const auto translation =
       Affine2D{Affine{-1.0, 1.0, -1.0, 1.0}, Affine{-1.0, 1.0, 0.0, 2.0}};
   const auto vector_of_translated_wedges =
-      make_vector_coordinate_map_base<Frame::Logical, Frame::Inertial, 2>(
+      make_vector_coordinate_map_base<Frame::BlockLogical, Frame::Inertial, 2>(
           wedges, translation);
 
   const auto translated_upper_xi_wedge =
-      make_coordinate_map<Frame::Logical, Frame::Inertial>(
+      make_coordinate_map<Frame::BlockLogical, Frame::Inertial>(
           Wedge2DMap{
               1.0, 2.0, 0.0, 1.0,
               OrientationMap<2>{std::array<Direction<2>, 2>{
@@ -838,7 +844,7 @@ void test_make_vector_coordinate_map_base() {
               true},
           translation);
   const auto translated_upper_eta_wedge =
-      make_coordinate_map<Frame::Logical, Frame::Inertial>(
+      make_coordinate_map<Frame::BlockLogical, Frame::Inertial>(
           Wedge2DMap{
               1.0, 2.0, 0.0, 1.0,
               OrientationMap<2>{std::array<Direction<2>, 2>{
@@ -846,7 +852,7 @@ void test_make_vector_coordinate_map_base() {
               true},
           translation);
   const auto translated_lower_xi_wedge =
-      make_coordinate_map<Frame::Logical, Frame::Inertial>(
+      make_coordinate_map<Frame::BlockLogical, Frame::Inertial>(
           Wedge2DMap{
               1.0, 2.0, 0.0, 1.0,
               OrientationMap<2>{std::array<Direction<2>, 2>{
@@ -854,7 +860,7 @@ void test_make_vector_coordinate_map_base() {
               true},
           translation);
   const auto translated_lower_eta_wedge =
-      make_coordinate_map<Frame::Logical, Frame::Inertial>(
+      make_coordinate_map<Frame::BlockLogical, Frame::Inertial>(
           Wedge2DMap{
               1.0, 2.0, 0.0, 1.0,
               OrientationMap<2>{std::array<Direction<2>, 2>{
@@ -862,7 +868,7 @@ void test_make_vector_coordinate_map_base() {
               true},
           translation);
   const auto translated_upper_xi_wedge_base =
-      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
           Wedge2DMap{
               1.0, 2.0, 0.0, 1.0,
               OrientationMap<2>{std::array<Direction<2>, 2>{
@@ -870,7 +876,7 @@ void test_make_vector_coordinate_map_base() {
               true},
           translation);
   const auto translated_upper_eta_wedge_base =
-      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
           Wedge2DMap{
               1.0, 2.0, 0.0, 1.0,
               OrientationMap<2>{std::array<Direction<2>, 2>{
@@ -878,7 +884,7 @@ void test_make_vector_coordinate_map_base() {
               true},
           translation);
   const auto translated_lower_xi_wedge_base =
-      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
           Wedge2DMap{
               1.0, 2.0, 0.0, 1.0,
               OrientationMap<2>{std::array<Direction<2>, 2>{
@@ -886,7 +892,7 @@ void test_make_vector_coordinate_map_base() {
               true},
           translation);
   const auto translated_lower_eta_wedge_base =
-      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
           Wedge2DMap{
               1.0, 2.0, 0.0, 1.0,
               OrientationMap<2>{std::array<Direction<2>, 2>{
@@ -907,7 +913,7 @@ void test_make_vector_coordinate_map_base() {
 void test_coordinate_maps_are_identity() {
   INFO("Coordinate maps are identity");
   const auto giant_identity_map =
-      make_coordinate_map<Frame::Logical, Frame::Inertial>(
+      make_coordinate_map<Frame::BlockLogical, Frame::Inertial>(
           CoordinateMaps::Identity<3>{},
           CoordinateMaps::BulgedCube{sqrt(3.0), 0.0, false},
           CoordinateMaps::DiscreteRotation<3>{OrientationMap<3>{}},
@@ -924,7 +930,8 @@ void test_coordinate_maps_are_identity() {
               CoordinateMaps::Affine{-1.0, 1.0, -1.0, 1.0}},
           CoordinateMaps::Rotation<3>{0.0, 0.0, 0.0},
           CoordinateMaps::SpecialMobius{0.0});
-  const std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Inertial, 3>>
+  const std::unique_ptr<
+      CoordinateMapBase<Frame::BlockLogical, Frame::Inertial, 3>>
       giant_identity_map_base =
           std::make_unique<std::decay_t<decltype(giant_identity_map)>>(
               giant_identity_map);
@@ -938,10 +945,10 @@ void test_coordinate_maps_are_identity() {
   CHECK_FALSE(giant_identity_map_base->inv_jacobian_is_time_dependent());
   CHECK_FALSE(giant_identity_map_base->jacobian_is_time_dependent());
 
-  const auto wedge = make_coordinate_map<Frame::Logical, Frame::Inertial>(
+  const auto wedge = make_coordinate_map<Frame::BlockLogical, Frame::Inertial>(
       CoordinateMaps::Wedge<3>(0.2, 4.0, 0.0, 1.0, OrientationMap<3>{}, true));
   const auto wedge_composed_with_giant_identity =
-      make_coordinate_map<Frame::Logical, Frame::Inertial>(
+      make_coordinate_map<Frame::BlockLogical, Frame::Inertial>(
           CoordinateMaps::Wedge<3>(0.2, 4.0, 0.0, 1.0, OrientationMap<3>{},
                                    true),
           CoordinateMaps::Identity<3>{},
@@ -971,7 +978,7 @@ void test_coordinate_maps_are_identity() {
   CHECK_FALSE(wedge_composed_with_giant_identity.jacobian_is_time_dependent());
 
   for (size_t i = 1; i < 11; ++i) {
-    const auto source_point = tnsr::I<double, 3, Frame::Logical>{
+    const auto source_point = tnsr::I<double, 3, Frame::BlockLogical>{
         {{-1.0 + 2.0 / i, -1.0 + 2.0 / i, -1.0 + 2.0 / i}}};
     const auto mapped_point = tnsr::I<double, 3, Frame::Inertial>{
         {{-1.0 + 2.0 / i, -1.0 + 2.0 / i, -1.0 + 2.0 / i}}};
@@ -1085,19 +1092,19 @@ void test_time_dependent_map() {
   domain::CoordinateMaps::Affine affine_map{-1., 1., 4., 7.};
 
   const auto time_dependent_map_first =
-      make_coordinate_map<Frame::Logical, Frame::Inertial>(trans_map,
-                                                           affine_map);
+      make_coordinate_map<Frame::BlockLogical, Frame::Inertial>(trans_map,
+                                                                affine_map);
   const auto time_dependent_map_second =
-      make_coordinate_map<Frame::Logical, Frame::Inertial>(affine_map,
-                                                           trans_map);
+      make_coordinate_map<Frame::BlockLogical, Frame::Inertial>(affine_map,
+                                                                trans_map);
 
   CHECK_FALSE(time_dependent_map_first.inv_jacobian_is_time_dependent());
   CHECK_FALSE(time_dependent_map_first.jacobian_is_time_dependent());
   CHECK_FALSE(time_dependent_map_second.inv_jacobian_is_time_dependent());
   CHECK_FALSE(time_dependent_map_second.jacobian_is_time_dependent());
 
-  const tnsr::I<double, 1, Frame::Logical> tnsr_double_logical{{{3.2}}};
-  const tnsr::I<DataVector, 1, Frame::Logical> tnsr_datavector_logical{
+  const tnsr::I<double, 1, Frame::BlockLogical> tnsr_double_logical{{{3.2}}};
+  const tnsr::I<DataVector, 1, Frame::BlockLogical> tnsr_datavector_logical{
       DataVector{{-4.3, 10.1, -3.5}}};
 
   const tnsr::I<double, 1, Frame::Inertial> tnsr_double_inertial_1{{{39.34}}};
@@ -1237,11 +1244,12 @@ void test_push_back() {
   const auto check_coord_map_push = [](const auto& first_map,
                                        const auto& second_map) {
     const auto first_coord_map =
-        make_coordinate_map<Frame::Logical, Frame::Grid>(first_map);
+        make_coordinate_map<Frame::BlockLogical, Frame::Grid>(first_map);
     const auto second_coord_map =
-        make_coordinate_map<Frame::Logical, Frame::Grid>(second_map);
+        make_coordinate_map<Frame::BlockLogical, Frame::Grid>(second_map);
     const auto composed_map =
-        make_coordinate_map<Frame::Logical, Frame::Grid>(first_map, second_map);
+        make_coordinate_map<Frame::BlockLogical, Frame::Grid>(first_map,
+                                                              second_map);
     const auto composed_push_back_map = push_back(first_coord_map, second_map);
     const auto composed_push_front_map =
         push_front(second_coord_map, first_map);
@@ -1278,25 +1286,28 @@ void test_jacobian_is_time_dependent() {
       CoordinateMaps::TimeDependent::ProductOf3Maps<affine_map, affine_map,
                                                     cubic_scale_map>;
 
-  const auto coord_map_1 = make_coordinate_map<Frame::Logical, Frame::Grid>(
-      cubic_scale_map(10.0, "ExpansionA", "ExpansionB"));
+  const auto coord_map_1 =
+      make_coordinate_map<Frame::BlockLogical, Frame::Grid>(
+          cubic_scale_map(10.0, "ExpansionA", "ExpansionB"));
   const auto coord_map_1_base =
-      make_coordinate_map_base<Frame::Logical, Frame::Grid>(
+      make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
           cubic_scale_map(10.0, "ExpansionA", "ExpansionB"));
 
-  const auto coord_map_2 = make_coordinate_map<Frame::Logical, Frame::Grid>(
-      map_2d(affine_map(-1.0, 1.0, 2.0, 3.0),
-             cubic_scale_map(10.0, "ExpansionA", "ExpansionB")));
+  const auto coord_map_2 =
+      make_coordinate_map<Frame::BlockLogical, Frame::Grid>(
+          map_2d(affine_map(-1.0, 1.0, 2.0, 3.0),
+                 cubic_scale_map(10.0, "ExpansionA", "ExpansionB")));
   const auto coord_map_2_base =
-      make_coordinate_map_base<Frame::Logical, Frame::Grid>(
+      make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
           map_2d(affine_map(-1.0, 1.0, 2.0, 3.0),
                  cubic_scale_map(10.0, "ExpansionA", "ExpansionB")));
 
-  const auto coord_map_3 = make_coordinate_map<Frame::Logical, Frame::Grid>(
-      map_3d(affine_map(-1.0, 1.0, 2.0, 3.0), affine_map(-1.0, 1.0, 2.0, 3.0),
-             cubic_scale_map(10.0, "ExpansionA", "ExpansionB")));
+  const auto coord_map_3 =
+      make_coordinate_map<Frame::BlockLogical, Frame::Grid>(map_3d(
+          affine_map(-1.0, 1.0, 2.0, 3.0), affine_map(-1.0, 1.0, 2.0, 3.0),
+          cubic_scale_map(10.0, "ExpansionA", "ExpansionB")));
   const auto coord_map_3_base =
-      make_coordinate_map_base<Frame::Logical, Frame::Grid>(map_3d(
+      make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(map_3d(
           affine_map(-1.0, 1.0, 2.0, 3.0), affine_map(-1.0, 1.0, 2.0, 3.0),
           cubic_scale_map(10.0, "ExpansionA", "ExpansionB")));
 
@@ -1358,31 +1369,33 @@ void test_coords_frame_velocity_jacobians() {
       final_time);
 
   const auto composed_map_1d =
-      make_coordinate_map<Frame::Logical, Frame::Inertial>(
+      make_coordinate_map<Frame::BlockLogical, Frame::Inertial>(
           trans_map{"trans_1d"}, affine_map{-1.0, 1.0, 0.0, 2.3},
           trans_map{"trans_1d"});
-  CHECK(
-      std::get<3>(composed_map_1d.coords_frame_velocity_jacobians(
-          tnsr::I<double, 1, Frame::Logical>{0.5}, time, functions_of_time)) ==
-      tnsr::I<double, 1, Frame::Inertial>{-2.0 + 1.15 * -2.0});
   CHECK(std::get<3>(composed_map_1d.coords_frame_velocity_jacobians(
-            tnsr::I<DataVector, 1, Frame::Logical>{DataVector{-0.5, 0.0, 0.5}},
+            tnsr::I<double, 1, Frame::BlockLogical>{0.5}, time,
+            functions_of_time)) ==
+        tnsr::I<double, 1, Frame::Inertial>{-2.0 + 1.15 * -2.0});
+  CHECK(std::get<3>(composed_map_1d.coords_frame_velocity_jacobians(
+            tnsr::I<DataVector, 1, Frame::BlockLogical>{
+                DataVector{-0.5, 0.0, 0.5}},
             time, functions_of_time)) ==
         tnsr::I<DataVector, 1, Frame::Inertial>{3_st, -2.0 + 1.15 * -2.0});
 
   const auto composed_map_2d =
-      make_coordinate_map<Frame::Logical, Frame::Inertial>(
+      make_coordinate_map<Frame::BlockLogical, Frame::Inertial>(
           trans_map_2d{"trans_2d"},
           affine_map_2d{affine_map{-1.0, 1.0, 0.0, 2.3},
                         affine_map{-1.0, 1.0, 1.0, 7.2}},
           trans_map_2d{"trans_2d"});
-  CHECK(
-      std::get<3>(composed_map_2d.coords_frame_velocity_jacobians(
-          tnsr::I<double, 2, Frame::Logical>{0.5}, time, functions_of_time)) ==
-      tnsr::I<double, 2, Frame::Inertial>{
-          {{-2.0 + 1.15 * -2.0, 3.0 + 3.1 * 3.0}}});
   CHECK(std::get<3>(composed_map_2d.coords_frame_velocity_jacobians(
-            tnsr::I<DataVector, 2, Frame::Logical>{DataVector{-0.5, 0.0, 0.5}},
+            tnsr::I<double, 2, Frame::BlockLogical>{0.5}, time,
+            functions_of_time)) ==
+        tnsr::I<double, 2, Frame::Inertial>{
+            {{-2.0 + 1.15 * -2.0, 3.0 + 3.1 * 3.0}}});
+  CHECK(std::get<3>(composed_map_2d.coords_frame_velocity_jacobians(
+            tnsr::I<DataVector, 2, Frame::BlockLogical>{
+                DataVector{-0.5, 0.0, 0.5}},
             time, functions_of_time)) ==
         tnsr::I<DataVector, 2, Frame::Inertial>{
             {{DataVector{3_st, -2.0 + 1.15 * -2.0},
@@ -1395,7 +1408,7 @@ void test_coords_frame_velocity_jacobians() {
   const CoordinateMaps::TimeDependent::CubicScale<3> cubic_scale{
       20.0, "ExpansionA", "ExpansionB"};
   const auto composed_map_3d =
-      make_coordinate_map<Frame::Logical, Frame::Inertial>(
+      make_coordinate_map<Frame::BlockLogical, Frame::Inertial>(
           translation3d, affine3d, cubic_scale);
   {
     const std::array<double, 3> source_pt{{0.5, 0.25, -0.34}};
@@ -1422,7 +1435,7 @@ void test_coords_frame_velocity_jacobians() {
               cubic_scale_jac.get(2, 2) * velocity_affine_map_frame[2]}}};
 
     CHECK(std::get<3>(composed_map_3d.coords_frame_velocity_jacobians(
-              tnsr::I<double, 3, Frame::Logical>{source_pt}, time,
+              tnsr::I<double, 3, Frame::BlockLogical>{source_pt}, time,
               functions_of_time)) == expected_velocity);
   }
   {
@@ -1453,7 +1466,7 @@ void test_coords_frame_velocity_jacobians() {
               cubic_scale_jac.get(2, 1) * velocity_affine_map_frame[1] +
               cubic_scale_jac.get(2, 2) * velocity_affine_map_frame[2]}}};
     CHECK(std::get<3>(composed_map_3d.coords_frame_velocity_jacobians(
-              tnsr::I<DataVector, 3, Frame::Logical>{source_pt}, time,
+              tnsr::I<DataVector, 3, Frame::BlockLogical>{source_pt}, time,
               functions_of_time)) == expected_velocity);
   }
 }

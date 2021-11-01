@@ -29,8 +29,8 @@ void test_tags() {
   TestHelpers::db::test_simple_tag<NewtonianEuler::Tags::EnergyDensity>(
       "EnergyDensity");
   TestHelpers::db::test_simple_tag<
-      NewtonianEuler::Tags::Velocity<DataVector, Dim, Frame::Logical>>(
-      "Logical_Velocity");
+      NewtonianEuler::Tags::Velocity<DataVector, Dim, Frame::ElementLogical>>(
+      "ElementLogical_Velocity");
   TestHelpers::db::test_simple_tag<
       NewtonianEuler::Tags::SpecificInternalEnergy<DataVector>>(
       "SpecificInternalEnergy");

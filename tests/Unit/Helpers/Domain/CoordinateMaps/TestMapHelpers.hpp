@@ -256,7 +256,7 @@ void test_frame_velocity(
 template <typename Map, typename... Args>
 void test_coordinate_map_implementation(const Map& map) {
   const auto coord_map =
-      domain::make_coordinate_map<Frame::Logical, Frame::Grid>(map);
+      domain::make_coordinate_map<Frame::BlockLogical, Frame::Grid>(map);
   MAKE_GENERATOR(gen);
   std::uniform_real_distribution<> real_dis(-1, 1);
 
@@ -269,7 +269,7 @@ void test_coordinate_map_implementation(const Map& map) {
   }();
 
   const auto test_point_tensor = [&test_point]() {
-    tnsr::I<double, Map::dim, Frame::Logical> point_as_tensor{};
+    tnsr::I<double, Map::dim, Frame::BlockLogical> point_as_tensor{};
     for (size_t i = 0; i < Map::dim; ++i) {
       point_as_tensor.get(i) = gsl::at(test_point, i);
     }
@@ -454,8 +454,8 @@ void test_suite_for_map_on_unit_cube(const Map& map) {
   test_helper(map);
   const auto map2 = serialize_and_deserialize(map);
   check_if_maps_are_equal(
-      domain::make_coordinate_map<Frame::Logical, Frame::Grid>(map),
-      domain::make_coordinate_map<Frame::Logical, Frame::Grid>(map2));
+      domain::make_coordinate_map<Frame::BlockLogical, Frame::Grid>(map),
+      domain::make_coordinate_map<Frame::BlockLogical, Frame::Grid>(map2));
   test_helper(map2);
 }
 
@@ -523,8 +523,8 @@ void test_suite_for_map_on_sphere(const Map& map,
   test_helper(map);
   const auto map2 = serialize_and_deserialize(map);
   check_if_maps_are_equal(
-      domain::make_coordinate_map<Frame::Logical, Frame::Grid>(map),
-      domain::make_coordinate_map<Frame::Logical, Frame::Grid>(map2));
+      domain::make_coordinate_map<Frame::BlockLogical, Frame::Grid>(map),
+      domain::make_coordinate_map<Frame::BlockLogical, Frame::Grid>(map2));
   test_helper(map2);
 }
 
@@ -541,91 +541,91 @@ void test_suite_for_map_on_sphere(const Map& map,
 template <typename Map>
 void test_suite_for_map_on_cylinder(const Map& map, const double inner_radius,
                                     const double outer_radius) {
-  static_assert(Map::dim == 3,
-                "test_suite_for_map_on_cylinder works only for a 3d map");
+    static_assert(Map::dim == 3,
+                  "test_suite_for_map_on_cylinder works only for a 3d map");
 
-  // Set up random number generator
-  MAKE_GENERATOR(gen);
+    // Set up random number generator
+    MAKE_GENERATOR(gen);
 
-  std::uniform_real_distribution<> radius_dis(inner_radius, outer_radius);
-  std::uniform_real_distribution<> phi_dis(0.0, 2.0 * M_PI);
-  std::uniform_real_distribution<> height_dis(-1.0, 1.0);
+    std::uniform_real_distribution<> radius_dis(inner_radius, outer_radius);
+    std::uniform_real_distribution<> phi_dis(0.0, 2.0 * M_PI);
+    std::uniform_real_distribution<> height_dis(-1.0, 1.0);
 
-  const double height = height_dis(gen);
-  CAPTURE(height);
-  const double phi = phi_dis(gen);
-  CAPTURE(phi);
-  const double radius = radius_dis(gen);
-  CAPTURE(radius);
+    const double height = height_dis(gen);
+    CAPTURE(height);
+    const double phi = phi_dis(gen);
+    CAPTURE(phi);
+    const double radius = radius_dis(gen);
+    CAPTURE(radius);
 
-  const std::array<double, 3> random_point{
-      {radius * cos(phi), radius * sin(phi), height}};
+    const std::array<double, 3> random_point{
+        {radius * cos(phi), radius * sin(phi), height}};
 
-  const std::array<double, 3> random_bdry_point_rho{
-      {outer_radius * cos(phi), outer_radius * sin(phi), height}};
+    const std::array<double, 3> random_bdry_point_rho{
+        {outer_radius * cos(phi), outer_radius * sin(phi), height}};
 
-  const std::array<double, 3> random_bdry_point_z{
-      {radius * cos(phi), radius * sin(phi), height > 0.5 ? 1.0 : -1.0}};
+    const std::array<double, 3> random_bdry_point_z{
+        {radius * cos(phi), radius * sin(phi), height > 0.5 ? 1.0 : -1.0}};
 
-  const std::array<double, 3> random_bdry_point_corner{
-      {outer_radius * cos(phi), outer_radius * sin(phi),
-       height > 0.5 ? 1.0 : -1.0}};
+    const std::array<double, 3> random_bdry_point_corner{
+        {outer_radius * cos(phi), outer_radius * sin(phi),
+         height > 0.5 ? 1.0 : -1.0}};
 
-  // If inner_radius is zero, this point is on the axis.
-  const std::array<double, 3> random_inner_bdry_point_or_origin{
-      {inner_radius * cos(phi), inner_radius * sin(phi), height}};
+    // If inner_radius is zero, this point is on the axis.
+    const std::array<double, 3> random_inner_bdry_point_or_origin{
+        {inner_radius * cos(phi), inner_radius * sin(phi), height}};
 
-  // If inner_radius is zero, this point is on the axis.
-  const std::array<double, 3> random_inner_bdry_point_corner{
-      {inner_radius * cos(phi), inner_radius * sin(phi),
-       height > 0.5 ? 1.0 : -1.0}};
+    // If inner_radius is zero, this point is on the axis.
+    const std::array<double, 3> random_inner_bdry_point_corner{
+        {inner_radius * cos(phi), inner_radius * sin(phi),
+         height > 0.5 ? 1.0 : -1.0}};
 
-  const auto test_helper = [&random_bdry_point_rho, &random_bdry_point_z,
-                            &random_bdry_point_corner,
-                            &random_inner_bdry_point_or_origin,
-                            &random_inner_bdry_point_corner,
+    const auto test_helper = [&random_bdry_point_rho, &random_bdry_point_z,
+                              &random_bdry_point_corner,
+                              &random_inner_bdry_point_or_origin,
+                              &random_inner_bdry_point_corner,
                             &random_point](const auto& map_to_test) {
-    test_serialization(map_to_test);
-    CHECK_FALSE(map_to_test != map_to_test);
+      test_serialization(map_to_test);
+      CHECK_FALSE(map_to_test != map_to_test);
 
-    test_coordinate_map_argument_types(map_to_test,
-                                       random_inner_bdry_point_or_origin);
-    test_jacobian(map_to_test, random_inner_bdry_point_or_origin);
-    test_inv_jacobian(map_to_test, random_inner_bdry_point_or_origin);
-    test_inverse_map(map_to_test, random_inner_bdry_point_or_origin);
+      test_coordinate_map_argument_types(map_to_test,
+                                         random_inner_bdry_point_or_origin);
+      test_jacobian(map_to_test, random_inner_bdry_point_or_origin);
+      test_inv_jacobian(map_to_test, random_inner_bdry_point_or_origin);
+      test_inverse_map(map_to_test, random_inner_bdry_point_or_origin);
 
-    test_coordinate_map_argument_types(map_to_test, random_point);
-    test_jacobian(map_to_test, random_point);
-    test_inv_jacobian(map_to_test, random_point);
-    test_inverse_map(map_to_test, random_point);
+      test_coordinate_map_argument_types(map_to_test, random_point);
+      test_jacobian(map_to_test, random_point);
+      test_inv_jacobian(map_to_test, random_point);
+      test_inverse_map(map_to_test, random_point);
 
-    test_coordinate_map_argument_types(map_to_test, random_bdry_point_rho);
-    test_jacobian(map_to_test, random_bdry_point_rho);
-    test_inv_jacobian(map_to_test, random_bdry_point_rho);
-    test_inverse_map(map_to_test, random_bdry_point_rho);
+      test_coordinate_map_argument_types(map_to_test, random_bdry_point_rho);
+      test_jacobian(map_to_test, random_bdry_point_rho);
+      test_inv_jacobian(map_to_test, random_bdry_point_rho);
+      test_inverse_map(map_to_test, random_bdry_point_rho);
 
-    test_coordinate_map_argument_types(map_to_test, random_bdry_point_z);
-    test_jacobian(map_to_test, random_bdry_point_z);
-    test_inv_jacobian(map_to_test, random_bdry_point_z);
-    test_inverse_map(map_to_test, random_bdry_point_z);
+      test_coordinate_map_argument_types(map_to_test, random_bdry_point_z);
+      test_jacobian(map_to_test, random_bdry_point_z);
+      test_inv_jacobian(map_to_test, random_bdry_point_z);
+      test_inverse_map(map_to_test, random_bdry_point_z);
 
-    test_coordinate_map_argument_types(map_to_test, random_bdry_point_corner);
-    test_jacobian(map_to_test, random_bdry_point_corner);
-    test_inv_jacobian(map_to_test, random_bdry_point_corner);
-    test_inverse_map(map_to_test, random_bdry_point_corner);
+      test_coordinate_map_argument_types(map_to_test, random_bdry_point_corner);
+      test_jacobian(map_to_test, random_bdry_point_corner);
+      test_inv_jacobian(map_to_test, random_bdry_point_corner);
+      test_inverse_map(map_to_test, random_bdry_point_corner);
 
-    test_coordinate_map_argument_types(map_to_test,
-                                       random_inner_bdry_point_corner);
-    test_jacobian(map_to_test, random_inner_bdry_point_corner);
-    test_inv_jacobian(map_to_test, random_inner_bdry_point_corner);
-    test_inverse_map(map_to_test, random_inner_bdry_point_corner);
-  };
-  test_helper(map);
-  const auto map2 = serialize_and_deserialize(map);
-  check_if_maps_are_equal(
-      domain::make_coordinate_map<Frame::Logical, Frame::Grid>(map),
-      domain::make_coordinate_map<Frame::Logical, Frame::Grid>(map2));
-  test_helper(map2);
+      test_coordinate_map_argument_types(map_to_test,
+                                         random_inner_bdry_point_corner);
+      test_jacobian(map_to_test, random_inner_bdry_point_corner);
+      test_inv_jacobian(map_to_test, random_inner_bdry_point_corner);
+      test_inverse_map(map_to_test, random_inner_bdry_point_corner);
+    };
+    test_helper(map);
+    const auto map2 = serialize_and_deserialize(map);
+    check_if_maps_are_equal(
+        domain::make_coordinate_map<Frame::BlockLogical, Frame::Grid>(map),
+        domain::make_coordinate_map<Frame::BlockLogical, Frame::Grid>(map2));
+    test_helper(map2);
 }
 
 /*!

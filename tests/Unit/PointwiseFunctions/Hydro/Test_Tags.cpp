@@ -17,8 +17,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Hydro.Tags", "[Unit][Hydro]") {
   TestHelpers::db::test_simple_tag<hydro::Tags::AlfvenSpeedSquared<DataVector>>(
       "AlfvenSpeedSquared");
   TestHelpers::db::test_simple_tag<
-      hydro::Tags::ComovingMagneticField<DataVector, 3, Frame::Logical>>(
-      "Logical_ComovingMagneticField");
+      hydro::Tags::ComovingMagneticField<DataVector, 3, Frame::ElementLogical>>(
+      "ElementLogical_ComovingMagneticField");
   TestHelpers::db::test_simple_tag<
       hydro::Tags::ComovingMagneticFieldSquared<DataVector>>(
       "ComovingMagneticFieldSquared");
@@ -40,8 +40,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Hydro.Tags", "[Unit][Hydro]") {
       hydro::Tags::MagneticFieldDotSpatialVelocity<DataVector>>(
       "MagneticFieldDotSpatialVelocity");
   TestHelpers::db::test_simple_tag<
-      hydro::Tags::MagneticFieldOneForm<DataVector, 3, Frame::Logical>>(
-      "Logical_MagneticFieldOneForm");
+      hydro::Tags::MagneticFieldOneForm<DataVector, 3, Frame::ElementLogical>>(
+      "ElementLogical_MagneticFieldOneForm");
   TestHelpers::db::test_simple_tag<
       hydro::Tags::MagneticFieldSquared<DataVector>>("MagneticFieldSquared");
   TestHelpers::db::test_simple_tag<hydro::Tags::MagneticPressure<DataVector>>(
@@ -56,9 +56,9 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Hydro.Tags", "[Unit][Hydro]") {
   TestHelpers::db::test_simple_tag<
       hydro::Tags::SpatialVelocity<DataVector, 3, Frame::Grid>>(
       "Grid_SpatialVelocity");
-  TestHelpers::db::test_simple_tag<
-      hydro::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Logical>>(
-      "Logical_SpatialVelocityOneForm");
+  TestHelpers::db::test_simple_tag<hydro::Tags::SpatialVelocityOneForm<
+      DataVector, 3, Frame::ElementLogical>>(
+      "ElementLogical_SpatialVelocityOneForm");
   // [prefix_example]
   TestHelpers::db::test_simple_tag<hydro::Tags::SpatialVelocitySquared<double>>(
       "SpatialVelocitySquared");
@@ -74,13 +74,13 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Hydro.Tags", "[Unit][Hydro]") {
   TestHelpers::db::test_simple_tag<
       hydro::Tags::SpecificInternalEnergy<DataVector>>(
       "SpecificInternalEnergy");
-  TestHelpers::db::test_simple_tag<
-      hydro::Tags::LowerSpatialFourVelocity<DataVector, 3, Frame::Logical>>(
-      "LowerSpatialFourVelocity");
+  TestHelpers::db::test_simple_tag<hydro::Tags::LowerSpatialFourVelocity<
+      DataVector, 3, Frame::ElementLogical>>("LowerSpatialFourVelocity");
   TestHelpers::db::test_simple_tag<
       hydro::Tags::LorentzFactorTimesSpatialVelocity<DataVector, 3,
-                                                     Frame::Logical>>(
+                                                     Frame::ElementLogical>>(
       "LorentzFactorTimesSpatialVelocity");
   TestHelpers::db::test_simple_tag<
-      hydro::Tags::MassFlux<DataVector, 3, Frame::Logical>>("Logical_MassFlux");
+      hydro::Tags::MassFlux<DataVector, 3, Frame::ElementLogical>>(
+      "ElementLogical_MassFlux");
 }

@@ -27,6 +27,7 @@ situations in which there exist better parameterizations than those obtained by
 linear interpolation.
 
 ## Generalized Logical Coordinates
+
 In each of the following examples, we will obtain functions \f$\Xi(\xi),
 \mathrm{H}(\eta),\f$ and \f$\mathrm{Z}(\zeta)\f$ that give better gridpoint
 distributions than using the logical coordinates alone. Where possible, we will

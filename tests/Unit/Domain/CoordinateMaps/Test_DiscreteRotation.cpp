@@ -31,13 +31,13 @@ void test_1d() {
       std::array<Direction<1>, 1>{{Direction<1>::lower_xi()}}}};
 
   check_if_maps_are_equal(
-      make_coordinate_map<Frame::Logical, Frame::Grid>(
+      make_coordinate_map<Frame::BlockLogical, Frame::Grid>(
           CoordinateMaps::Identity<1>{}),
-      make_coordinate_map<Frame::Logical, Frame::Grid>(identity_map1d));
+      make_coordinate_map<Frame::BlockLogical, Frame::Grid>(identity_map1d));
   check_if_maps_are_equal(
-      make_coordinate_map<Frame::Logical, Frame::Grid>(
+      make_coordinate_map<Frame::BlockLogical, Frame::Grid>(
           CoordinateMaps::Affine{-1.0, 1.0, 1.0, -1.0}),
-      make_coordinate_map<Frame::Logical, Frame::Grid>(rotation_nx));
+      make_coordinate_map<Frame::BlockLogical, Frame::Grid>(rotation_nx));
 
   const std::array<double, 1> point_px{{0.5}};
   const std::array<double, 1> point_nx{{-0.5}};
@@ -52,13 +52,13 @@ void test_2d() {
           {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}}};
 
   check_if_maps_are_equal(
-      make_coordinate_map<Frame::Logical, Frame::Grid>(
+      make_coordinate_map<Frame::BlockLogical, Frame::Grid>(
           CoordinateMaps::Identity<2>{}),
-      make_coordinate_map<Frame::Logical, Frame::Grid>(identity_map2d));
+      make_coordinate_map<Frame::BlockLogical, Frame::Grid>(identity_map2d));
   check_if_maps_are_equal(
-      make_coordinate_map<Frame::Logical, Frame::Grid>(
+      make_coordinate_map<Frame::BlockLogical, Frame::Grid>(
           CoordinateMaps::Rotation<2>{M_PI_2}),
-      make_coordinate_map<Frame::Logical, Frame::Grid>(rotation_ny_px));
+      make_coordinate_map<Frame::BlockLogical, Frame::Grid>(rotation_ny_px));
 
   const std::array<double, 2> point_px_py{{0.2, 0.5}};
   const std::array<double, 2> point_ny_px{{-0.5, 0.2}};
@@ -81,12 +81,12 @@ void test_3d() {
   const Identity3D id3d{id1d, id2d};
 
   check_if_maps_are_equal(
-      make_coordinate_map<Frame::Logical, Frame::Grid>(id3d),
-      make_coordinate_map<Frame::Logical, Frame::Grid>(identity_map3d));
+      make_coordinate_map<Frame::BlockLogical, Frame::Grid>(id3d),
+      make_coordinate_map<Frame::BlockLogical, Frame::Grid>(identity_map3d));
   check_if_maps_are_equal(
-      make_coordinate_map<Frame::Logical, Frame::Grid>(
+      make_coordinate_map<Frame::BlockLogical, Frame::Grid>(
           CoordinateMaps::Rotation<3>{M_PI_2, -M_PI_2, 0.0}),
-      make_coordinate_map<Frame::Logical, Frame::Grid>(rotation_ny_nz_px));
+      make_coordinate_map<Frame::BlockLogical, Frame::Grid>(rotation_ny_nz_px));
 
   const std::array<double, 3> point_px_py_pz{{0.2, 0.5, 0.3}};
   const std::array<double, 3> point_ny_nz_px{{-0.5, -0.3, 0.2}};

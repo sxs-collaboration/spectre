@@ -18,6 +18,6 @@ SPECTRE_TEST_CASE("Unit.RelativisticEuler.Valencia.Tags", "[Unit][Evolution]") {
   TestHelpers::db::test_simple_tag<RelativisticEuler::Valencia::Tags::TildeTau>(
       "TildeTau");
   TestHelpers::db::test_simple_tag<
-      RelativisticEuler::Valencia::Tags::TildeS<3, Frame::Logical>>(
-      "Logical_TildeS");
+      RelativisticEuler::Valencia::Tags::TildeS<3, Frame::ElementLogical>>(
+      "ElementLogical_TildeS");
 }

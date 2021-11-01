@@ -15,11 +15,11 @@
 #include "Utilities/ErrorHandling/Assert.hpp"
 
 /*!
- *  \ingroup ComputationalDomainGroup
- *  \brief A SegmentId labels a segment of the interval [-1,1] and is used to
- *  identify the bounds of an Element in a Block in each dimension.
+ * \ingroup ComputationalDomainGroup
+ * \brief A SegmentId labels a segment of the interval \f$[-1,1]\f$ and is used
+ * to identify the bounds of an Element in a Block in each dimension.
  *
- *  In \f$d\f$ dimensions, \f$d\f$ SegmentId%s are used to identify an Element.
+ * In \f$d\f$ dimensions, \f$d\f$ SegmentId%s are used to identify an Element.
  * In each dimension, a segment spans the subinterval \f$[-1 + 2 \frac{i}{N}, -1
  * + 2 \frac{i+1}{N}]\f$ of the logical coordinates of a Block, where \f$i \f$=
  * `index` and \f$N = 2^L\f$ where \f$L\f$ = `refinement_level`.
@@ -75,10 +75,11 @@ class SegmentId {
   /// The id this segment would have if the coordinate axis were flipped.
   SegmentId id_if_flipped() const;
 
-  /// The logical coordinate of the endpoint of the segment on the given Side.
+  /// The block logical coordinate of the endpoint of the segment on the given
+  /// Side.
   double endpoint(Side side) const;
 
-  /// The logical coordinate of the midpoint of the segment
+  /// The block logical coordinate of the midpoint of the segment
   double midpoint() const {
     return -1.0 + (1.0 + 2.0 * index_) / two_to_the(refinement_level_);
   }

@@ -37,16 +37,17 @@ void test_simple_tags() {
       "ElementMap(Grid)");
   TestHelpers::db::test_simple_tag<Tags::Coordinates<Dim, Frame::Grid>>(
       "GridCoordinates");
-  TestHelpers::db::test_simple_tag<Tags::Coordinates<Dim, Frame::Logical>>(
-      "LogicalCoordinates");
+  TestHelpers::db::test_simple_tag<
+      Tags::Coordinates<Dim, Frame::ElementLogical>>(
+      "ElementLogicalCoordinates");
   TestHelpers::db::test_simple_tag<Tags::Coordinates<Dim, Frame::Inertial>>(
       "InertialCoordinates");
   TestHelpers::db::test_simple_tag<
-      Tags::InverseJacobian<Dim, Frame::Logical, Frame::Inertial>>(
-      "InverseJacobian(Logical,Inertial)");
+      Tags::InverseJacobian<Dim, Frame::ElementLogical, Frame::Inertial>>(
+      "InverseJacobian(ElementLogical,Inertial)");
   TestHelpers::db::test_simple_tag<
-      Tags::DetInvJacobian<Frame::Logical, Frame::Inertial>>(
-      "DetInvJacobian(Logical,Inertial)");
+      Tags::DetInvJacobian<Frame::ElementLogical, Frame::Inertial>>(
+      "DetInvJacobian(ElementLogical,Inertial)");
   TestHelpers::db::test_simple_tag<Tags::InternalDirections<Dim>>(
       "InternalDirections");
   TestHelpers::db::test_simple_tag<Tags::BoundaryDirectionsInterior<Dim>>(
@@ -55,8 +56,8 @@ void test_simple_tags() {
       "BoundaryDirectionsExterior");
   TestHelpers::db::test_simple_tag<Tags::Direction<Dim>>("Direction");
   TestHelpers::db::test_simple_tag<
-      Tags::Jacobian<Dim, Frame::Logical, Frame::Inertial>>(
-      "Jacobian(Logical,Inertial)");
+      Tags::Jacobian<Dim, Frame::ElementLogical, Frame::Inertial>>(
+      "Jacobian(ElementLogical,Inertial)");
 }
 
 template <size_t Dim>
@@ -103,11 +104,11 @@ ElementMap<3, Frame::Grid> element_map() {
 template <size_t Dim>
 void test_compute_tags() {
   TestHelpers::db::test_compute_tag<Tags::InverseJacobianCompute<
-      Tags::ElementMap<Dim>, Tags::Coordinates<Dim, Frame::Logical>>>(
+      Tags::ElementMap<Dim>, Tags::Coordinates<Dim, Frame::ElementLogical>>>(
       "InverseJacobian(ElementLogical,Inertial)");
   TestHelpers::db::test_compute_tag<
-      Tags::DetInvJacobianCompute<Dim, Frame::Logical, Frame::Inertial>>(
-      "DetInvJacobian(Logical,Inertial)");
+      Tags::DetInvJacobianCompute<Dim, Frame::ElementLogical, Frame::Inertial>>(
+      "DetInvJacobian(ElementLogical,Inertial)");
   TestHelpers::db::test_compute_tag<Tags::InternalDirectionsCompute<Dim>>(
       "InternalDirections");
   TestHelpers::db::test_compute_tag<
@@ -117,11 +118,11 @@ void test_compute_tags() {
       Tags::BoundaryDirectionsExteriorCompute<Dim>>(
       "BoundaryDirectionsExterior");
   TestHelpers::db::test_compute_tag<Tags::MappedCoordinates<
-      Tags::ElementMap<Dim>, Tags::Coordinates<Dim, Frame::Logical>>>(
+      Tags::ElementMap<Dim>, Tags::Coordinates<Dim, Frame::ElementLogical>>>(
       "InertialCoordinates");
   TestHelpers::db::test_compute_tag<
-      Tags::JacobianCompute<Dim, Frame::Logical, Frame::Inertial>>(
-      "Jacobian(Logical,Inertial)");
+      Tags::JacobianCompute<Dim, Frame::ElementLogical, Frame::Inertial>>(
+      "Jacobian(ElementLogical,Inertial)");
 
   auto map = element_map<Dim>();
   const tnsr::I<DataVector, Dim, Frame::ElementLogical> logical_coords(
