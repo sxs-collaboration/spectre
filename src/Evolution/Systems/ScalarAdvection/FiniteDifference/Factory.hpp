@@ -3,5 +3,6 @@
 
 #pragma once
 
+#include "Evolution/Systems/ScalarAdvection/FiniteDifference/AoWeno.hpp"
 #include "Evolution/Systems/ScalarAdvection/FiniteDifference/MonotisedCentral.hpp"
 #include "Evolution/Systems/ScalarAdvection/FiniteDifference/Reconstructor.hpp"
