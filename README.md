@@ -6,8 +6,8 @@
 [![Build Status](https://github.com/sxs-collaboration/spectre/workflows/Tests/badge.svg?branch=develop)](https://github.com/sxs-collaboration/spectre/actions)
 [![Coverage Status](https://coveralls.io/repos/github/sxs-collaboration/spectre/badge.svg?branch=develop)](https://coveralls.io/github/sxs-collaboration/spectre?branch=develop)
 [![codecov](https://codecov.io/gh/sxs-collaboration/spectre/branch/develop/graph/badge.svg)](https://codecov.io/gh/sxs-collaboration/spectre)
-[![release](https://img.shields.io/badge/release-v2021.10.04-informational)](https://github.com/sxs-collaboration/spectre/releases/tag/v2021.10.04)
-[![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.5547951.svg)](https://doi.org/10.5281/zenodo.5547951)
+[![release](https://img.shields.io/badge/release-v2021.11.01-informational)](https://github.com/sxs-collaboration/spectre/releases/tag/v2021.11.01)
+[![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.5636734.svg)](https://doi.org/10.5281/zenodo.5636734)
 
 ## What is SpECTRE?
 
@@ -29,11 +29,11 @@ Please cite SpECTRE in any publications that make use of its code or data. Cite
 the latest version that you use in your publication. The DOI for this version
 is:
 
-- DOI: [10.5281/zenodo.5547951](https://doi.org/10.5281/zenodo.5547951)
+- DOI: [10.5281/zenodo.5636734](https://doi.org/10.5281/zenodo.5636734)
 
 You can cite this BibTeX entry in your publication:
 
-- [Find BibTeX entry for this version on Zenodo](https://zenodo.org/record/5547951/export/hx)
+- [Find BibTeX entry for this version on Zenodo](https://zenodo.org/record/5636734/export/hx)
 
 To aid reproducibility of your scientific results with SpECTRE, we recommend you
 keep track of the version(s) you used and report this information in your

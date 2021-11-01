@@ -193,8 +193,8 @@ authors:
   family-names: Wlodarczyk
   given-names: Tom
 cff-version: 1.1.0
-date-released: '2021-10-04'
-doi: 10.5281/zenodo.5547951
+date-released: '2021-11-01'
+doi: 10.5281/zenodo.5636734
 keywords:
 - Software
 - Astrophysics
@@ -212,4 +212,4 @@ message: Please cite SpECTRE in any publications that make use of its code or da
 repository-code: https://github.com/sxs-collaboration/spectre
 title: SpECTRE
 url: https://spectre-code.org/
-version: 2021.10.04
+version: 2021.11.01
