@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   FishboneMoncriefDisk.cpp
+  RotatingStar.cpp
   SmoothFlow.cpp
   TovStar.cpp
   )
@@ -18,6 +19,7 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   FishboneMoncriefDisk.hpp
+  RotatingStar.hpp
   SmoothFlow.hpp
   Solutions.hpp
   TovStar.hpp
