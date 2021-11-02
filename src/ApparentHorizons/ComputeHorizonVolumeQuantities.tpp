@@ -203,19 +203,18 @@ void ComputeHorizonVolumeQuantities::apply(
       ::Tags::TempA<2, 3, Frame::Inertial, DataVector>;
 
   // Additional temporary tags used for multiple frames
-  using inertial_metric_tag = ::Tags::Tempii<3, 3, Frame::Inertial, DataVector>;
+  using inertial_metric_tag = gr::Tags::SpatialMetric<3, Frame::Inertial>;
   using inertial_inv_metric_tag =
-      ::Tags::TempII<4, 3, Frame::Inertial, DataVector>;
+      gr::Tags::InverseSpatialMetric<3, Frame::Inertial>;
   using inertial_ex_curvature_tag =
-      ::Tags::Tempii<5, 3, Frame::Inertial, DataVector>;
+      gr::Tags::ExtrinsicCurvature<3, Frame::Inertial>;
   using logical_deriv_metric_tag = ::Tags::TempTensor<
       6, Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1, 1>,
                 index_list<SpatialIndex<3, UpLo::Lo, Frame::ElementLogical>,
                            SpatialIndex<3, UpLo::Lo, TargetFrame>,
                            SpatialIndex<3, UpLo::Lo, TargetFrame>>>>;
   using deriv_metric_tag = ::Tags::Tempijj<7, 3, TargetFrame, DataVector>;
-  using inertial_spatial_ricci_tag =
-      ::Tags::Tempii<8, 3, Frame::Inertial, DataVector>;
+  using inertial_spatial_ricci_tag = gr::Tags::SpatialRicci<3, Frame::Inertial>;
 
   // All of the temporary tags, including some that may be repeated
   // in the target_variables (for now).
@@ -244,13 +243,19 @@ void ComputeHorizonVolumeQuantities::apply(
   auto& lapse = get<lapse_tag>(buffer);
   auto& shift = get<shift_tag>(buffer);
   auto& spacetime_normal_vector = get<spacetime_normal_vector_tag>(buffer);
-  auto& inertial_metric = get<inertial_metric_tag>(buffer);
-  auto& inertial_inv_metric = get<inertial_inv_metric_tag>(buffer);
-  auto& inertial_ex_curvature = get<inertial_ex_curvature_tag>(buffer);
   auto& logical_deriv_metric = get<logical_deriv_metric_tag>(buffer);
   auto& deriv_metric = get<deriv_metric_tag>(buffer);
 
-  // These may or may not be temporaries
+  // These may or may not be temporaries, depending on if they are asked for
+  // in target_vars.
+  auto& inertial_metric = detail::get_from_target_or_temp<inertial_metric_tag>(
+      target_vars, make_not_null(&buffer));
+  auto& inertial_inv_metric =
+      detail::get_from_target_or_temp<inertial_inv_metric_tag>(
+          target_vars, make_not_null(&buffer));
+  auto& inertial_ex_curvature =
+      detail::get_from_target_or_temp<inertial_ex_curvature_tag>(
+          target_vars, make_not_null(&buffer));
   auto& metric = detail::get_from_target_or_temp<metric_tag>(
       target_vars, make_not_null(&buffer));
   auto& inv_metric = detail::get_from_target_or_temp<inv_metric_tag>(
@@ -290,7 +295,24 @@ void ComputeHorizonVolumeQuantities::apply(
   gr::christoffel_second_kind(make_not_null(&spatial_christoffel_second_kind),
                               deriv_metric, inv_metric);
 
+  // We need SpatialChristoffelSecondKind in the inertial frame only if
+  // we ask for it; otherwise we don't need to compute it at all.
   if constexpr (tmpl::list_contains_v<DestTagList,
+                                      gr::Tags::SpatialChristoffelSecondKind<
+                                          3, Frame::Inertial>>) {
+    auto& inertial_christoffel_second_kind =
+        get<gr::Tags::SpatialChristoffelSecondKind<3, Frame::Inertial>>(
+            *target_vars);
+    GeneralizedHarmonic::christoffel_second_kind(
+        make_not_null(&inertial_christoffel_second_kind), phi,
+        inertial_inv_metric);
+  }
+
+  // We need SpatialRicci only if we ask for it (in either frame);
+  // otherwise we don't need to compute it at all.
+  if constexpr (tmpl::list_contains_v<
+                    DestTagList, gr::Tags::SpatialRicci<3, Frame::Inertial>> or
+                tmpl::list_contains_v<DestTagList,
                                       gr::Tags::SpatialRicci<3, TargetFrame>>) {
     static_assert(
         tmpl::list_contains_v<
@@ -299,17 +321,22 @@ void ComputeHorizonVolumeQuantities::apply(
                         tmpl::size_t<3>, Frame::Inertial>>,
         "If Ricci is requested, SrcTags must include deriv of Phi");
 
-    auto& inertial_spatial_ricci = get<inertial_spatial_ricci_tag>(buffer);
+    auto& inertial_spatial_ricci =
+        detail::get_from_target_or_temp<inertial_spatial_ricci_tag>(
+            target_vars, make_not_null(&buffer));
     GeneralizedHarmonic::spatial_ricci_tensor(
         make_not_null(&inertial_spatial_ricci), phi,
         get<Tags::deriv<GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>,
                         tmpl::size_t<3>, Frame::Inertial>>(src_vars),
         inertial_inv_metric);
 
-    auto& spatial_ricci =
-        get<gr::Tags::SpatialRicci<3, TargetFrame>>(*target_vars);
-    transform::to_different_frame(make_not_null(&spatial_ricci),
-                                  inertial_spatial_ricci, jacobian);
+    if constexpr (tmpl::list_contains_v<
+                      DestTagList, gr::Tags::SpatialRicci<3, TargetFrame>>) {
+      auto& spatial_ricci =
+          get<gr::Tags::SpatialRicci<3, TargetFrame>>(*target_vars);
+      transform::to_different_frame(make_not_null(&spatial_ricci),
+                                    inertial_spatial_ricci, jacobian);
+    }
   }
 }
 
