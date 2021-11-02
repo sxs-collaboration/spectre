@@ -13,6 +13,8 @@
 #include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Evolution/Systems/NewtonianEuler/Sources/NoSource.hpp"
+#include "Evolution/Systems/NewtonianEuler/Sources/VortexPerturbation.hpp"
 #include "Evolution/Systems/NewtonianEuler/Tags.hpp"  // IWYU pragma: keep
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
@@ -113,6 +115,14 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.NewtEuler.Vortex",
 SPECTRE_TEST_CASE(
     "Unit.PointwiseFunctions.AnalyticSolutions.NewtEuler.Vortex.Pert",
     "[Unit][PointwiseFunctions]") {
+  static_assert(
+      std::is_same_v<
+          NewtonianEuler::Solutions::IsentropicVortex<3>::source_term_type,
+          NewtonianEuler::Sources::VortexPerturbation>);
+  static_assert(
+      std::is_same_v<
+          NewtonianEuler::Solutions::IsentropicVortex<2>::source_term_type,
+          NewtonianEuler::Sources::NoSource>);
   NewtonianEuler::Solutions::IsentropicVortex<3> vortex(
       1.3, {{3.21, -1.4}}, {{0.12, -0.53}}, 0.05, 1.7);
 

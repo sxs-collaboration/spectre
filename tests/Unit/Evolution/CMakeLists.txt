@@ -3,7 +3,6 @@
 
 add_subdirectory(Actions)
 add_subdirectory(BoundaryConditions)
-add_subdirectory(Conservative)
 add_subdirectory(DgSubcell)
 add_subdirectory(DiscontinuousGalerkin)
 add_subdirectory(EventsAndDenseTriggers)

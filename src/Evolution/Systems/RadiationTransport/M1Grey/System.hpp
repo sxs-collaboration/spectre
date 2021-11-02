@@ -9,8 +9,6 @@
 #include "Evolution/Systems/RadiationTransport/M1Grey/BoundaryConditions/BoundaryCondition.hpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/Characteristics.hpp"
-#include "Evolution/Systems/RadiationTransport/M1Grey/Fluxes.hpp"
-#include "Evolution/Systems/RadiationTransport/M1Grey/Sources.hpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/Tags.hpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/TimeDerivativeTerms.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
@@ -53,9 +51,6 @@ struct System<tmpl::list<NeutrinoSpecies...>> {
       tmpl::list<Tags::TildeE<Frame::Inertial, NeutrinoSpecies>...,
                  Tags::TildeS<Frame::Inertial, NeutrinoSpecies>...>;
   using gradient_variables = tmpl::list<>;
-  using sourced_variables =
-      tmpl::list<Tags::TildeE<Frame::Inertial, NeutrinoSpecies>...,
-                 Tags::TildeS<Frame::Inertial, NeutrinoSpecies>...>;
   using primitive_variables_tag = ::Tags::Variables<tmpl::list<
       Tags::ClosureFactor<NeutrinoSpecies>...,
       Tags::TildeP<Frame::Inertial, NeutrinoSpecies>...,
@@ -87,8 +82,6 @@ struct System<tmpl::list<NeutrinoSpecies...>> {
 
   using compute_volume_time_derivative_terms =
       TimeDerivativeTerms<NeutrinoSpecies...>;
-  using volume_fluxes = ComputeFluxes<NeutrinoSpecies...>;
-  using volume_sources = ComputeSources<NeutrinoSpecies...>;
 
   using inverse_spatial_metric_tag =
       gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>;

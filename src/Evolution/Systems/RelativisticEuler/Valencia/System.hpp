@@ -10,9 +10,7 @@
 #include "Evolution/Systems/RelativisticEuler/Valencia/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/RelativisticEuler/Valencia/Characteristics.hpp"
 #include "Evolution/Systems/RelativisticEuler/Valencia/ConservativeFromPrimitive.hpp"
-#include "Evolution/Systems/RelativisticEuler/Valencia/Fluxes.hpp"
 #include "Evolution/Systems/RelativisticEuler/Valencia/PrimitiveFromConservative.hpp"
-#include "Evolution/Systems/RelativisticEuler/Valencia/Sources.hpp"
 #include "Evolution/Systems/RelativisticEuler/Valencia/Tags.hpp"
 #include "Evolution/Systems/RelativisticEuler/Valencia/TimeDerivativeTerms.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
@@ -42,8 +40,6 @@ struct System {
       tmpl::list<Tags::TildeD, Tags::TildeTau, Tags::TildeS<Dim>>;
   using non_conservative_variables = tmpl::list<>;
   using gradient_variables = tmpl::list<>;
-  // Source for TildeD is zero
-  using sourced_variables = tmpl::list<Tags::TildeTau, Tags::TildeS<Dim>>;
   using primitive_variables_tag = ::Tags::Variables<
       tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
                  hydro::Tags::SpecificInternalEnergy<DataVector>,
@@ -55,8 +51,6 @@ struct System {
       ::Tags::Variables<gr::tags_for_hydro<Dim, DataVector>>;
 
   using compute_volume_time_derivative_terms = TimeDerivativeTerms<Dim>;
-  using volume_fluxes = ComputeFluxes<Dim>;
-  using volume_sources = ComputeSources<Dim>;
 
   using conservative_from_primitive = ConservativeFromPrimitive<Dim>;
   using primitive_from_conservative = PrimitiveFromConservative<Dim>;
