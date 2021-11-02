@@ -72,6 +72,9 @@ void test_simple_tags() {
   TestHelpers::db::test_simple_tag<
       Ccz4::Tags::SpatialZ4ConstraintUp<Dim, Frame, DataType>>(
       "SpatialZ4ConstraintUp");
+  TestHelpers::db::test_simple_tag<
+      Ccz4::Tags::GradSpatialZ4Constraint<Dim, Frame, DataType>>(
+      "GradSpatialZ4Constraint");
 }
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Ccz4.Tags", "[Unit][Evolution]") {
