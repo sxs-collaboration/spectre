@@ -25,7 +25,7 @@
 #include "Utilities/TMPL.hpp"
 
 namespace {
-using FunctionMap = domain::Tags::FunctionsOfTime::type;
+using FunctionMap = domain::Tags::FunctionsOfTimeInitialize::type;
 
 struct OtherFunctionsOfTime : db::SimpleTag {
   using type = FunctionMap;
@@ -46,7 +46,7 @@ struct Component {
 
   using initialization_tags = tmpl::list<Tags::Time>;
   using mutable_global_cache_tags =
-      tmpl::list<domain::Tags::FunctionsOfTime, OtherFunctionsOfTime>;
+      tmpl::list<domain::Tags::FunctionsOfTimeInitialize, OtherFunctionsOfTime>;
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename Metavariables::Phase, Metavariables::Phase::Testing,

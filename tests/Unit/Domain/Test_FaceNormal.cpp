@@ -152,7 +152,7 @@ void check_time_dependent(
                         Tags::ElementMap<Dim, Frame::Grid>,
                         CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
                                                             Frame::Inertial>,
-                        ::Tags::Time, Tags::FunctionsOfTime>,
+                        ::Tags::Time, Tags::FunctionsOfTimeInitialize>,
       db::AddComputeTags<
           Tags::BoundaryDirectionsExteriorCompute<Dim>,
           Tags::InterfaceCompute<Directions<Dim>, Tags::Direction<Dim>>,

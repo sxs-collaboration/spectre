@@ -29,7 +29,8 @@ struct TestSingleton {
   using array_index = size_t;
   using metavariables = Metavariables;
   using get_const_global_cache_tags = tmpl::list<>;
-  using mutable_global_cache_tags = tmpl::list<domain::Tags::FunctionsOfTime>;
+  using mutable_global_cache_tags =
+      tmpl::list<domain::Tags::FunctionsOfTimeInitialize>;
   using phase_dependent_action_list =
       tmpl::list<Parallel::PhaseActions<typename metavariables::Phase,
                                         metavariables::Phase::Initialization,

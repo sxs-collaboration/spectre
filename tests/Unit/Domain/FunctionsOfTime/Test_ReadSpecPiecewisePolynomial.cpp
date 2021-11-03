@@ -280,9 +280,9 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.ReadSpecPiecewisePolynomial",
       };
 
   const auto& functions_of_time =
-      domain::Tags::FunctionsOfTime::create_from_options<Metavariables>(
-          created_domain_creator, created_function_of_time_file,
-          created_function_of_time_name_map);
+      domain::Tags::FunctionsOfTimeInitialize::create_from_options<
+          Metavariables>(created_domain_creator, created_function_of_time_file,
+                         created_function_of_time_name_map);
   check_read_functions_of_time(functions_of_time, expected_functions);
 
   // Read the file again, but this time, only override one FunctionOfTime
@@ -291,9 +291,9 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.ReadSpecPiecewisePolynomial",
           domain::FunctionsOfTime::OptionTags::FunctionOfTimeNameMap>(
           "{ExpansionFactor: ExpansionFactor}");
   const auto& functions_of_time_expansion =
-      domain::Tags::FunctionsOfTime::create_from_options<Metavariables>(
-          created_domain_creator, created_function_of_time_file,
-          created_function_of_time_name_map_expansion);
+      domain::Tags::FunctionsOfTimeInitialize::create_from_options<
+          Metavariables>(created_domain_creator, created_function_of_time_file,
+                         created_function_of_time_name_map_expansion);
 
   // Only override ExpansionFactor this time, so change the expected Rotation
   // and Unity FunctionsOfTime to their initial values

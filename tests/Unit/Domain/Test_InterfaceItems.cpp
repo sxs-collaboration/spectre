@@ -628,7 +628,7 @@ void test_boundary_coordinates_moving_mesh_impl(
                         Tags::ElementMap<Dim, Frame::Grid>,
                         CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
                                                             Frame::Inertial>,
-                        ::Tags::Time, Tags::FunctionsOfTime>,
+                        ::Tags::Time, Tags::FunctionsOfTimeInitialize>,
       db::AddComputeTags<
           Tags::InterfaceCompute<Directions<Dim>, Tags::Direction<Dim>>,
           Tags::InterfaceCompute<Directions<Dim>, Tags::InterfaceMesh<Dim>>,

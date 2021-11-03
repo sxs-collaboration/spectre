@@ -90,7 +90,8 @@ struct Component {
 
   using initial_tags =
       tmpl::list<Initialization::Tags::InitialTime, domain::Tags::Mesh<Dim>,
-                 domain::Tags::Element<Dim>, domain::Tags::FunctionsOfTime,
+                 domain::Tags::Element<Dim>,
+                 domain::Tags::FunctionsOfTimeInitialize,
                  domain::Tags::Coordinates<Dim, Frame::ElementLogical>,
                  domain::Tags::ElementMap<Dim, Frame::Grid>,
                  domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,

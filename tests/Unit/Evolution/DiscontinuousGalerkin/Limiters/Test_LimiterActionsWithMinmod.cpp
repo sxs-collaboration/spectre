@@ -72,7 +72,7 @@ struct component {
       domain::Tags::ElementMap<Dim, Frame::Grid>,
       domain::CoordinateMaps::Tags::CoordinateMap<2, Frame::Grid,
                                                   Frame::Inertial>,
-      ::Tags::Time, domain::Tags::FunctionsOfTime, Var>;
+      ::Tags::Time, domain::Tags::FunctionsOfTimeInitialize, Var>;
   using compute_tags = db::AddComputeTags<
       ::domain::Tags::LogicalCoordinates<Dim>,
       ::domain::Tags::MappedCoordinates<

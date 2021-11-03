@@ -225,7 +225,7 @@ struct mock_interpolation_target {
           typename InterpolationTargetTag::post_interpolation_callback>>;
   using mutable_global_cache_tags =
       tmpl::conditional_t<metavariables::use_time_dependent_maps,
-                          tmpl::list<domain::Tags::FunctionsOfTime>,
+                          tmpl::list<domain::Tags::FunctionsOfTimeInitialize>,
                           tmpl::list<>>;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename Metavariables::Phase, Metavariables::Phase::Initialization,

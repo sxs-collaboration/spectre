@@ -124,7 +124,8 @@ struct Component {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementId<dim>;
   using const_global_cache_tags = tmpl::list<domain::Tags::Domain<dim>>;
-  using mutable_global_cache_tags = tmpl::list<domain::Tags::FunctionsOfTime>;
+  using mutable_global_cache_tags =
+      tmpl::list<domain::Tags::FunctionsOfTimeInitialize>;
 
   using simple_tags =
       db::AddSimpleTags<domain::Tags::InitialExtents<dim>,

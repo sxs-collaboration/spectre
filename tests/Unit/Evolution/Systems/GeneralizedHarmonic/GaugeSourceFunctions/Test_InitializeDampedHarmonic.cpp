@@ -61,7 +61,7 @@ struct component {
 
   using initial_tags = tmpl::conditional_t<
       metavariables::use_rollon,
-      tmpl::list<domain::Tags::FunctionsOfTime, Tags::Time,
+      tmpl::list<domain::Tags::FunctionsOfTimeInitialize, Tags::Time,
                  domain::Tags::Mesh<Dim>,
                  domain::Tags::Coordinates<Dim, Frame::Grid>,
                  domain::Tags::Coordinates<Dim, Frame::Inertial>,
@@ -79,7 +79,7 @@ struct component {
           domain::Tags::ElementMap<Metavariables::volume_dim, Frame::Grid>,
           domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
                                                       Frame::Inertial>,
-          domain::Tags::FunctionsOfTime,
+          domain::Tags::FunctionsOfTimeInitialize,
           domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
                                         Frame::Inertial>,
           typename Metavariables::variables_tag>>;
