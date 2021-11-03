@@ -145,7 +145,7 @@ bool PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
       if constexpr (ErrorOnFailure) {
         ERROR("All primitive inversion schemes failed at s = "
               << s << ".\n"
-              << std::setprecision(std::numeric_limits<double>::digits10 + 1)
+              << std::setprecision(17)
               << "total_energy_density = " << total_energy_density[s] << "\n"
               << "momentum_density_squared = "
               << get(momentum_density_squared)[s] << "\n"
