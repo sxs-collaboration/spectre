@@ -12,6 +12,7 @@ spectre_target_sources(
   Christoffel.cpp
   DerivChristoffel.cpp
   DerivLapse.cpp
+  Z4Constraint.cpp
   )
 
 spectre_target_headers(
@@ -25,6 +26,8 @@ spectre_target_headers(
   System.hpp
   Tags.hpp
   TagsDeclarations.hpp
+  TempTags.hpp
+  Z4Constraint.hpp
   )
 
 target_link_libraries(
