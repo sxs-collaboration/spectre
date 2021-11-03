@@ -8,6 +8,8 @@
 #include <optional>
 #include <string>
 
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/PrimitiveRecoveryData.hpp"
+
 /// \cond
 namespace EquationsOfState {
 template <bool, size_t>
@@ -16,10 +18,6 @@ class EquationOfState;
 /// \endcond
 
 namespace grmhd::ValenciaDivClean::PrimitiveRecoverySchemes {
-
-/// \cond
-struct PrimitiveRecoveryData;
-/// \endcond
 
 /*!
  * \brief Compute the primitive variables from the conservative variables using

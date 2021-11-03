@@ -8,6 +8,7 @@
 #include <optional>
 #include <string>
 
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/PrimitiveRecoveryData.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 
 // IWYU pragma: no_forward_declare EquationsOfState::EquationOfState
@@ -15,10 +16,6 @@
 namespace grmhd {
 namespace ValenciaDivClean {
 namespace PrimitiveRecoverySchemes {
-
-/// \cond
-struct PrimitiveRecoveryData;
-/// \endcond
 
 /*!
  * \brief Compute the primitive variables from the conservative variables using
