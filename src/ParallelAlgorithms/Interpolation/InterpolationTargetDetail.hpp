@@ -275,12 +275,13 @@ bool have_data_at_all_points(const db::DataBox<DbTags>& box,
   return (invalid_size + filled_size == interp_size);
 }
 
-/// Is domain::Tags::FunctionsOfTime in the mutable global cache?
+/// Is domain::Tags::FunctionsOfTime (or a tag derived from
+/// domain::Tags::FunctionsOfTime) in the mutable global cache?
 /// Result is either std::true_type or std::false_type.
 template <typename Metavariables>
 using cache_contains_functions_of_time =
-    tmpl::found<Parallel::get_mutable_global_cache_tags<Metavariables>,
-                std::is_same<tmpl::_1, domain::Tags::FunctionsOfTime>>;
+    tmpl::any<Parallel::get_mutable_global_cache_tags<Metavariables>,
+              std::is_base_of<domain::Tags::FunctionsOfTime, tmpl::_1>>;
 
 /// Returns true if at least one Block in the Domain has
 /// time-dependent maps.
