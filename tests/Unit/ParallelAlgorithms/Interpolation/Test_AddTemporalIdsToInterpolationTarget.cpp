@@ -84,7 +84,7 @@ struct mock_interpolation_target {
   using const_global_cache_tags = tmpl::list<domain::Tags::Domain<3>>;
   using mutable_global_cache_tags =
       tmpl::conditional_t<metavariables::use_time_dependent_maps,
-                          tmpl::list<domain::Tags::FunctionsOfTime>,
+                          tmpl::list<domain::Tags::FunctionsOfTimeInitialize>,
                           tmpl::list<>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
@@ -306,8 +306,9 @@ void test_add_temporal_ids() {
 // For updating the expiration time in the FunctionOfTimes.
 template <size_t Multiplier>
 struct MyFunctionOfTimeUpdater {
-  static void apply(gsl::not_null<typename domain::Tags::FunctionsOfTime::type*>
-                        functions_of_time) {
+  static void apply(
+      gsl::not_null<typename domain::Tags::FunctionsOfTimeInitialize::type*>
+          functions_of_time) {
     for (auto& name_and_function_of_time : *functions_of_time) {
       name_and_function_of_time.second->reset_expiration_time(0.5 * Multiplier);
     }

@@ -81,7 +81,7 @@ std::pair<double, bool> get_suggestion(
                         domain::Tags::ElementMap<Dim, Frame::Grid>,
                         domain::CoordinateMaps::Tags::CoordinateMap<
                             Dim, Frame::Grid, Frame::Inertial>,
-                        ::Tags::Time, domain::Tags::FunctionsOfTime>,
+                        ::Tags::Time, domain::Tags::FunctionsOfTimeInitialize>,
       db::AddComputeTags<domain::Tags::SizeOfElementCompute<Dim>,
                          typename Metavariables<Dim>::system::
                              compute_largest_characteristic_speed>>(
@@ -91,7 +91,7 @@ std::pair<double, bool> get_suggestion(
       std::move(element_map),
       ::domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
           ::domain::CoordinateMaps::Identity<Dim>{}),
-      0.0, typename domain::Tags::FunctionsOfTime::type{});
+      0.0, typename domain::Tags::FunctionsOfTimeInitialize::type{});
   const StepChoosers::ElementSizeCfl<StepChooserUse::LtsStep, Dim,
                                      typename Metavariables<Dim>::system>
       element_size_cfl{safety_factor};

@@ -105,7 +105,7 @@ void test() {
   using simple_tags = db::AddSimpleTags<
       Tags::Time, domain::Tags::Coordinates<Dim, Frame::Grid>,
       domain::Tags::InverseJacobian<Dim, Frame::ElementLogical, Frame::Grid>,
-      domain::Tags::FunctionsOfTime,
+      domain::Tags::FunctionsOfTimeInitialize,
       domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
                                                   Frame::Inertial>>;
   using compute_tags = db::AddComputeTags<

@@ -763,7 +763,7 @@ struct component {
       ::Tags::HistoryEvolvedVariables<
           typename Metavariables::system::variables_tag>,
       Var3, domain::Tags::Mesh<Metavariables::volume_dim>,
-      ::domain::Tags::FunctionsOfTime,
+      ::domain::Tags::FunctionsOfTimeInitialize,
       domain::CoordinateMaps::Tags::CoordinateMap<Metavariables::volume_dim,
                                                   Frame::Grid, Frame::Inertial>,
       domain::Tags::Element<Metavariables::volume_dim>,

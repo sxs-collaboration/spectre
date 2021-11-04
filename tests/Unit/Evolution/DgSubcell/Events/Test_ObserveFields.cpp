@@ -185,7 +185,7 @@ void test_observe(
                         Tags::Variables<typename decltype(vars)::tags_list>,
                         ::domain::CoordinateMaps::Tags::CoordinateMap<
                             volume_dim, Frame::Grid, Frame::Inertial>,
-                        ::domain::Tags::FunctionsOfTime>>(
+                        ::domain::Tags::FunctionsOfTimeInitialize>>(
       metavariables{}, observation_time, dg_mesh, subcell_mesh, active_grid,
       get<dg_coordinates_tag>(dg_coords_vars),
       get<subcell_coordinates_tag>(subcell_coords_vars), vars,

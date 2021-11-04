@@ -48,6 +48,9 @@ struct OptionList<Metavariables, false> {
 }  // namespace detail
 
 namespace domain::Tags {
+/// Tag to retreive the FunctionsOfTime from the GlobalCache.
+struct FunctionsOfTime : db::BaseTag {};
+
 /// \brief The FunctionsOfTime initialized from a DomainCreator or
 /// (if `override_functions_of_time` is true in the metavariables) read
 /// from a file.
@@ -57,11 +60,13 @@ namespace domain::Tags {
 /// one or more of those FunctionsOfTime (which must be cubic piecewise
 /// polynomials) is overriden using data read from an HDF5 file via
 /// domain::Tags::read_spec_piecewise_polynomial()
-struct FunctionsOfTime : db::SimpleTag {
+struct FunctionsOfTimeInitialize : FunctionsOfTime, db::SimpleTag {
   using type = std::unordered_map<
       std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>;
 
   static constexpr bool pass_metavariables = true;
+
+  static std::string name() { return "FunctionsOfTime"; }
 
   template <typename Metavariables>
   using option_tags = typename ::detail::OptionList<

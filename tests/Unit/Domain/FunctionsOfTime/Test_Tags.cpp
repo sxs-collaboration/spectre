@@ -18,17 +18,20 @@ struct Metavariables {
 };
 
 SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.Tags", "[Domain][Unit]") {
-  TestHelpers::db::test_simple_tag<Tags::FunctionsOfTime>("FunctionsOfTime");
+  TestHelpers::db::test_base_tag<Tags::FunctionsOfTime>("FunctionsOfTime");
+  TestHelpers::db::test_simple_tag<Tags::FunctionsOfTimeInitialize>(
+      "FunctionsOfTime");
 
   CHECK(std::is_same_v<
-        Tags::FunctionsOfTime::option_tags<Metavariables<true>>,
+        Tags::FunctionsOfTimeInitialize::option_tags<Metavariables<true>>,
         tmpl::list<
             domain::OptionTags::DomainCreator<Metavariables<true>::volume_dim>,
             domain::FunctionsOfTime::OptionTags::FunctionOfTimeFile,
             domain::FunctionsOfTime::OptionTags::FunctionOfTimeNameMap>>);
 
-  CHECK(std::is_same_v<Tags::FunctionsOfTime::option_tags<Metavariables<false>>,
-                       tmpl::list<domain::OptionTags::DomainCreator<
-                           Metavariables<false>::volume_dim>>>);
+  CHECK(std::is_same_v<
+        Tags::FunctionsOfTimeInitialize::option_tags<Metavariables<false>>,
+        tmpl::list<domain::OptionTags::DomainCreator<
+            Metavariables<false>::volume_dim>>>);
 }
 }  // namespace domain

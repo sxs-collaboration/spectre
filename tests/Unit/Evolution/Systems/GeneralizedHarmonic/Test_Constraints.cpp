@@ -925,7 +925,7 @@ void test_constraint_compute_items(const Solution& solution,
   // Insert into databox
   const auto box = db::create<
       db::AddSimpleTags<
-          domain::Tags::FunctionsOfTime, ::Tags::Time,
+          domain::Tags::FunctionsOfTimeInitialize, ::Tags::Time,
           domain::Tags::Coordinates<3, Frame::Inertial>,
           gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
           gr::Tags::Lapse<DataVector>,

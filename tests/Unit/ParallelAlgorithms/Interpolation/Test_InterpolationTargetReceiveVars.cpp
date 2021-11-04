@@ -113,7 +113,7 @@ struct mock_interpolation_target {
       tmpl::list<domain::Tags::Domain<Metavariables::volume_dim>>;
   using mutable_global_cache_tags =
       tmpl::conditional_t<metavariables::use_time_dependent_maps,
-                          tmpl::list<domain::Tags::FunctionsOfTime>,
+                          tmpl::list<domain::Tags::FunctionsOfTimeInitialize>,
                           tmpl::list<>>;
   using simple_tags = typename intrp::Actions::InitializeInterpolationTarget<
       Metavariables, InterpolationTargetTag>::simple_tags;
@@ -291,9 +291,9 @@ struct MockMetavariables {
 
 // For updating the FunctionsOfTime.
 struct MyFunctionOfTimeUpdater {
-  static void apply(
-      const gsl::not_null<typename domain::Tags::FunctionsOfTime::type*>
-          functions_of_time) {
+  static void apply(const gsl::not_null<
+                    typename domain::Tags::FunctionsOfTimeInitialize::type*>
+                        functions_of_time) {
     for (auto& name_and_function_of_time : *functions_of_time) {
       name_and_function_of_time.second->reset_expiration_time(14.5 / 16.0);
     }

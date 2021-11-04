@@ -197,14 +197,14 @@ void test_compute_tag(const std::array<double, 4>& times_to_check) {
                      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
       functions_of_time = make_single_expansion_functions_of_time();
 
-  auto box =
-      db::create<db::AddSimpleTags<domain::Tags::ElementMap<2, Frame::Grid>,
-                                   domain::CoordinateMaps::Tags::CoordinateMap<
-                                       2, Frame::Grid, Frame::Inertial>,
-                                   ::Tags::Time, domain::Tags::FunctionsOfTime>,
-                 db::AddComputeTags<domain::Tags::SizeOfElementCompute<2>>>(
-          std::move(logical_to_grid_map), std::move(grid_to_inertial_map), 0.0,
-          std::move(functions_of_time));
+  auto box = db::create<
+      db::AddSimpleTags<domain::Tags::ElementMap<2, Frame::Grid>,
+                        domain::CoordinateMaps::Tags::CoordinateMap<
+                            2, Frame::Grid, Frame::Inertial>,
+                        ::Tags::Time, domain::Tags::FunctionsOfTimeInitialize>,
+      db::AddComputeTags<domain::Tags::SizeOfElementCompute<2>>>(
+      std::move(logical_to_grid_map), std::move(grid_to_inertial_map), 0.0,
+      std::move(functions_of_time));
 
   for (const double time : times_to_check) {
     db::mutate<::Tags::Time>(
