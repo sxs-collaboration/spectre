@@ -20,5 +20,6 @@ spectre_target_headers(
   Subcell.hpp
   TciOnDgGrid.hpp
   TciOnFdGrid.hpp
+  TimeDerivative.hpp
   VelocityAtFace.hpp
   )
