@@ -81,6 +81,7 @@ namespace evolution::dg::subcell::Actions {
  *   - `subcell::fd::Tags::DetInverseJacobianLogicalToGrid`
  *   - `subcell::Tags::LogicalCoordinates<Dim>`
  *   - `subcell::Tags::Corodinates<Dim, Frame::Grid>` (as compute tag)
+ *   - `subcell::Tags::Coordinates<Dim, Frame::Inertial>` (as compute tag)
  *   - `subcell::Tags::TciStatusCompute<Dim>`
  * - Removes: nothing
  * - Modifies:
@@ -104,6 +105,9 @@ struct Initialize {
                      ::domain::Tags::ElementMap<Dim, Frame::Grid>,
                      subcell::Tags::Coordinates<Dim, Frame::ElementLogical>,
                      subcell::Tags::Coordinates>,
+                 Tags::InertialCoordinatesCompute<
+                     ::domain::CoordinateMaps::Tags::CoordinateMap<
+                         Dim, Frame::Grid, Frame::Inertial>>,
                  Tags::TciStatusCompute<Dim>>;
 
   template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,

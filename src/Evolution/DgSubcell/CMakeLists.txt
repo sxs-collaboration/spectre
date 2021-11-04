@@ -55,7 +55,9 @@ target_link_libraries(
 
   INTERFACE
   Events
+  FunctionsOfTime
   Parallel
+  Time
 
   PRIVATE
   Blas
