@@ -17,6 +17,7 @@ spectre_target_headers(
   ComputeFluxes.hpp
   GhostData.hpp
   InitialDataTci.hpp
+  NeighborPackagedData.hpp
   Subcell.hpp
   TciOnDgGrid.hpp
   TciOnFdGrid.hpp
