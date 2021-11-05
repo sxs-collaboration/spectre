@@ -6,7 +6,7 @@
 
 Evolution:
   InitialTime: 0.0
-  InitialTimeStep: 0.0001
+  InitialTimeStep: 0.01
   TimeStepper: DormandPrince5
 
 DomainCreator:
@@ -14,57 +14,57 @@ DomainCreator:
     ObjectA:
       InnerRadius: 0.7925
       OuterRadius: 6.683
-      XCoord: -7.683
+      XCoord: &XCoordA -7.683
       Interior:
         ExciseWithBoundaryCondition:
           Outflow:
-      UseLogarithmicMap: false
+      UseLogarithmicMap: true
     ObjectB:
       InnerRadius: 0.7925
       OuterRadius: 6.683
-      XCoord: 7.683
+      XCoord: &XCoordB 7.683
       Interior:
         ExciseWithBoundaryCondition:
           Outflow:
-      UseLogarithmicMap: false
+      UseLogarithmicMap: true
     EnvelopingCube:
       Radius: 100.0
       UseProjectiveMap: true
     OuterShell:
       InnerRadius: Auto
       OuterRadius: 1493.0
-      RadialDistribution: Linear
+      RadialDistribution: Logarithmic
       BoundaryCondition:
         ConstraintPreservingBjorhus:
           Type: ConstraintPreservingPhysical
     InitialRefinement:
-      ObjectAShell:   [2, 2, 3]
-      ObjectACube:    [2, 2, 2]
-      ObjectBShell:   [2, 2, 3]
-      ObjectBCube:    [2, 2, 2]
-      EnvelopingCube: [2, 2, 2]
+      ObjectAShell:   [3, 3, 4]
+      ObjectACube:    [2, 2, 1]
+      ObjectBShell:   [3, 3, 4]
+      ObjectBCube:    [2, 2, 1]
+      EnvelopingCube: [2, 2, 3]
       CubedShell:     [2, 2, 2]
       OuterShell:     [2, 2, 5]
-    InitialGridPoints: 11
+    InitialGridPoints: 5
     TimeDependentMaps:
       InitialTime: 0.0
       InitialExpirationDeltaT: Auto
       ExpansionMap:
         InitialExpansion: 1.0
         InitialExpansionVelocity: 0.0
-        OuterBoundary: 1520.0
-        FunctionOfTimeName: "ExpansionFactor"
-        AsymptoticVelocityOuterBoundary: -1.0e-5
-        DecayTimescaleOuterBoundaryVelocity: 0.05
+        OuterBoundary: 1493.0
+        FunctionOfTimeName: 'ExpansionFactor'
+        AsymptoticVelocityOuterBoundary: -1.0e-6
+        DecayTimescaleOuterBoundaryVelocity: 50.0
       RotationAboutZAxisMap:
         InitialRotationAngle: 0.0
         InitialAngularVelocity: 0.0
-        FunctionOfTimeName: "RotationAngle"
+        FunctionOfTimeName: RotationAngle
       SizeMap:
         InitialValues: [0.0, 0.0]
         InitialVelocities: [0.0, 0.0]
         InitialAccelerations: [0.0, 0.0]
-        FunctionOfTimeNames: ["LambdaFactorA0", "LambdaFactorB0"]
+        FunctionOfTimeNames: ['LambdaFactorA0', 'LambdaFactorB0']
 
 EventsAndDenseTriggers:
 
@@ -90,11 +90,11 @@ EvolutionSystem:
         Gaussian1:
           Amplitude: 8.0             # 4.0 / m_A
           Width: 3.5                 # 7.0 * m_A
-          Center: [-7.683, 0.0, 0.0] # [x_A, 0, 0]
+          Center: [*XCoordA, 0.0, 0.0] # [x_A, 0, 0]
         Gaussian2:
           Amplitude: 8.0             # 4.0 / m_B
           Width: 3.5                 # 7.0 * m_B
-          Center: [7.683, 0.0, 0.0]  # [x_B, 0, 0]
+          Center: [*XCoordB, 0.0, 0.0]  # [x_B, 0, 0]
         Gaussian3:
           Amplitude: 0.75            # 0.75 / (m_A + m_B)
           Width: 38.415              # 2.5 * (x_B - x_A)
@@ -112,11 +112,11 @@ EvolutionSystem:
         Gaussian1:
           Amplitude: 8.0             # 4.0 / m_A
           Width: 3.5                 # 7.0 * m_A
-          Center: [-7.683, 0.0, 0.0] # [x_A, 0, 0]
+          Center: [*XCoordA, 0.0, 0.0] # [x_A, 0, 0]
         Gaussian2:
           Amplitude: 8.0             # 4.0 / m_B
           Width: 3.5                 # 7.0 * m_B
-          Center: [7.683, 0.0, 0.0]  # [x_B, 0, 0]
+          Center: [*XCoordB, 0.0, 0.0]  # [x_B, 0, 0]
         Gaussian3:
           Amplitude: 0.75            # 0.75 / (m_A + m_B)
           Width: 38.415              # 2.5 * (x_B - x_A)
@@ -136,7 +136,7 @@ Filtering:
   ExpFilter0:
     Alpha: 36.0
     HalfPower: 210
-    DisableForDebugging: false
+    DisableForDebugging: true
 
 EventsAndTriggers:
   ? And:
@@ -190,14 +190,44 @@ EventsAndTriggers:
         InterpolateToMesh: None
         CoordinatesFloatingPointType: Double
         FloatingPointTypes: [Double]
+  ? Slabs:
+      EvenlySpaced:
+        Interval: 1
+        Offset: 0
+  : - AhA
+    - AhB
   ? TimeCompares:
       Comparison: GreaterThan
-      Value: 3760.0
+      Value: 0.02
   : - Completion
 
 Observers:
-  VolumeFileName: "GhBBHVolumeData"
-  ReductionFileName: "GhBBHReductionData"
+  VolumeFileName: "GhBinaryBlackHoleVolumeData"
+  ReductionFileName: "GhBinaryBlackHoleReductionData"
+
+ApparentHorizons:
+  AhA:
+    InitialGuess:
+      Lmax: 10
+      Radius: 2.2
+      Center: [*XCoordA, 0.0, 0.0]
+    FastFlow: &DefaultFastFlow
+      Flow: Fast
+      Alpha: 1.0
+      Beta: 0.5
+      AbsTol: 1e-12
+      TruncationTol: 1e-2
+      DivergenceTol: 1.2
+      DivergenceIter: 5
+      MaxIts: 100
+    Verbosity: Verbose
+  AhB:
+    InitialGuess:
+      Lmax: 10
+      Radius: 2.2
+      Center: [*XCoordB, 0.0, 0.0]
+    FastFlow: *DefaultFastFlow
+    Verbosity: Verbose
 
 # initial_data.h5 should contain numerical initial data
 # on the same grid as specified by the domain given above
