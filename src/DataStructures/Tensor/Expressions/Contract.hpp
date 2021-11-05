@@ -232,13 +232,18 @@ struct TensorContract
   /// \brief Return the value of the component of the resultant contracted
   /// tensor at a given multi-index
   ///
+  /// \details Note that this function is not inlined because it has been
+  /// observed that when `Tensor` components are `DataVector`s, the compile time
+  /// for `TensorExpression` inner products scales poorly as the dimension of
+  /// operands' indices increase and as the number of contracted index pairs
+  /// increases.
+  ///
   /// \param contracted_multi_index the multi-index of the resultant contracted
   /// tensor component to retrieve
   /// \return the value of the component at `contracted_multi_index` in the
   /// resultant contracted tensor
-  SPECTRE_ALWAYS_INLINE decltype(auto) get(
-      const std::array<size_t, num_tensor_indices>& contracted_multi_index)
-      const {
+  decltype(auto) get(const std::array<size_t, num_tensor_indices>&
+                         contracted_multi_index) const {
     constexpr size_t initial_first_contracted_index_value =
         first_contracted_index::index_type == IndexType::Spacetime and
                 not tmpl::at_c<ArgsList, FirstContractedIndexPos>::is_spacetime
