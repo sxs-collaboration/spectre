@@ -11,6 +11,7 @@ spectre_target_sources(
   AoWeno.cpp
   Minmod.cpp
   MonotisedCentral.cpp
+  Unlimited.cpp
   )
 
 spectre_target_headers(
@@ -23,6 +24,7 @@ spectre_target_headers(
   MonotisedCentral.hpp
   Reconstruct.hpp
   Reconstruct.tpp
+  Unlimited.hpp
   )
 
 target_link_libraries(
