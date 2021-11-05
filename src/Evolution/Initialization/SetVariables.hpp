@@ -52,8 +52,7 @@ namespace Actions {
 ///   * System::primitive_variables_tag (if system has primitive variables)
 template <typename LogicalCoordinatesTag>
 struct SetVariables {
-  using initialization_option_tags =
-      tmpl::list<::Initialization::Tags::InitialTime>;
+  using initialization_tags = tmpl::list<::Initialization::Tags::InitialTime>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -101,9 +100,10 @@ struct SetVariables {
           box, [&initial_time, &inertial_coords, &solution_or_data](
                    const gsl::not_null<typename primitives_tag::type*>
                        primitive_vars) {
-            primitive_vars->assign_subset(evolution::initial_data(
-                solution_or_data, inertial_coords, initial_time,
-                typename Metavariables::analytic_variables_tags{}));
+            primitive_vars->assign_subset(
+                evolution::Initialization::initial_data(
+                    solution_or_data, inertial_coords, initial_time,
+                    typename Metavariables::analytic_variables_tags{}));
           });
       using non_conservative_variables =
           typename system::non_conservative_variables;
@@ -114,9 +114,10 @@ struct SetVariables {
             box, [&initial_time, &inertial_coords, &solution_or_data](
                      const gsl::not_null<typename variables_tag::type*>
                          evolved_vars) {
-              evolved_vars->assign_subset(evolution::initial_data(
-                  solution_or_data, inertial_coords, initial_time,
-                  non_conservative_variables{}));
+              evolved_vars->assign_subset(
+                  evolution::Initialization::initial_data(
+                      solution_or_data, inertial_coords, initial_time,
+                      non_conservative_variables{}));
             });
       }
     } else {
@@ -127,7 +128,7 @@ struct SetVariables {
       db::mutate<variables_tag>(
           box, [&initial_time, &inertial_coords,
                 &solution_or_data](const gsl::not_null<Vars*> vars) {
-            vars->assign_subset(evolution::initial_data(
+            vars->assign_subset(evolution::Initialization::initial_data(
                 solution_or_data, inertial_coords, initial_time,
                 typename Vars::tags_list{}));
           });

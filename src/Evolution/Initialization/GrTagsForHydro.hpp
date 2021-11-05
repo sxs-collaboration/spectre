@@ -95,7 +95,7 @@ struct GrTagsForHydro {
 
     // Set initial data from analytic solution
     GrVars gr_vars{num_grid_points};
-    gr_vars.assign_subset(evolution::initial_data(
+    gr_vars.assign_subset(evolution::Initialization::initial_data(
         Parallel::get<::Tags::AnalyticSolutionOrData>(cache), inertial_coords,
         initial_time, typename GrVars::tags_list{}));
     Initialization::mutate_assign<simple_tags>(make_not_null(&box),

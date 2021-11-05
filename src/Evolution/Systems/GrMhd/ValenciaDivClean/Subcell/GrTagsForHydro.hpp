@@ -124,9 +124,10 @@ struct GrTagsForHydro {
     // Set cell-centered vars. Need to first do without prefix then move into
     // prefixed Variables.
     GrVars no_prefix_cell_centered_gr_vars{num_grid_points};
-    no_prefix_cell_centered_gr_vars.assign_subset(evolution::initial_data(
-        analytic_data_or_solution, cell_centered_inertial_coords, initial_time,
-        typename GrVars::tags_list{}));
+    no_prefix_cell_centered_gr_vars.assign_subset(
+        evolution::Initialization::initial_data(
+            analytic_data_or_solution, cell_centered_inertial_coords,
+            initial_time, typename GrVars::tags_list{}));
     *cell_centered_gr_vars = std::move(no_prefix_cell_centered_gr_vars);
 
     // Set GR variables needed for computing the fluxes on the faces.
@@ -151,7 +152,7 @@ struct GrTagsForHydro {
       gsl::at(*face_centered_gr_vars, d)
           .initialize(face_centered_mesh.number_of_grid_points());
       gsl::at(*face_centered_gr_vars, d)
-          .assign_subset(evolution::initial_data(
+          .assign_subset(evolution::Initialization::initial_data(
               analytic_data_or_solution, face_centered_inertial_coords,
               initial_time, typename FaceGrVars::tags_list{}));
     }
