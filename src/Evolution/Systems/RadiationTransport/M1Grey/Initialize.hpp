@@ -76,7 +76,7 @@ struct InitializeM1Tags {
         make_not_null(&box),
         [&cache, initial_time,
          &inertial_coords](const gsl::not_null<EvolvedVars*> evolved_vars) {
-          evolved_vars->assign_subset(evolution::initial_data(
+          evolved_vars->assign_subset(evolution::Initialization::initial_data(
               Parallel::get<::Tags::AnalyticSolutionOrData>(cache),
               inertial_coords, initial_time,
               typename evolved_variables_tag::tags_list{}));
@@ -84,7 +84,7 @@ struct InitializeM1Tags {
 
     // Get hydro variables
     HydroVars hydro_variables{num_grid_points};
-    hydro_variables.assign_subset(evolution::initial_data(
+    hydro_variables.assign_subset(evolution::Initialization::initial_data(
         Parallel::get<::Tags::AnalyticSolutionOrData>(cache), inertial_coords,
         initial_time, typename hydro_variables_tag::tags_list{}));
 

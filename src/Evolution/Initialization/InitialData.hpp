@@ -9,7 +9,7 @@
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace evolution {
+namespace evolution::Initialization {
 /// Extract initial data either from analytic data or from an analytic
 /// solution at a specified time.
 template <typename SolutionOrData, typename Coordinates, typename... Tags,
@@ -31,4 +31,4 @@ decltype(auto) initial_data(const SolutionOrData& solution_or_data,
                                     tags);
 }
 /// \endcond
-}  // namespace evolution
+}  // namespace evolution::Initialization
