@@ -34,6 +34,7 @@ target_link_libraries(
   Domain
   DomainStructure
   ErrorHandling
+  InitialDataUtilities
   Options
   Spectral
   Time
