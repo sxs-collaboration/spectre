@@ -71,7 +71,7 @@ std::optional<PrimitiveRecoveryData> NewmanHamlin::apply(
     const double a_in_cubic =
         total_energy_density + current_pressure + 0.5 * magnetic_field_squared;
 
-    if (UNLIKELY(a_in_cubic < 0.0)) {
+    if (UNLIKELY(a_in_cubic <= 0.0)) {
       return std::nullopt;
     }
 
