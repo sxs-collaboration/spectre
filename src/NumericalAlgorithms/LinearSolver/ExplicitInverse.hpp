@@ -5,18 +5,20 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <tuple>
 #include <vector>
 
 #include "DataStructures/DenseMatrix.hpp"
 #include "DataStructures/DenseVector.hpp"
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
+#include "NumericalAlgorithms/LinearSolver/BuildMatrix.hpp"
 #include "NumericalAlgorithms/LinearSolver/LinearSolver.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TypeTraits/CreateIsCallable.hpp"
 
 namespace LinearSolver::Serial {
 
@@ -29,11 +31,6 @@ namespace Registrars {
 /// Registers the `LinearSolver::Serial::ExplicitInverse` linear solver
 using ExplicitInverse = Registration::Registrar<Serial::ExplicitInverse>;
 }  // namespace Registrars
-
-namespace detail {
-CREATE_IS_CALLABLE(reset)
-CREATE_IS_CALLABLE_V(reset)
-}  // namespace detail
 
 /*!
  * \brief Linear solver that builds a matrix representation of the linear
@@ -167,37 +164,10 @@ Convergence::HasConverged ExplicitInverse<LinearSolverRegistrars>::solve(
     inverse_.resize(size_, size_);
     // Construct explicit matrix representation by "sniffing out" the operator,
     // i.e. feeding it unit vectors
-    auto unit_vector = make_with_value<VarsType>(used_for_size, 0.);
+    auto operand_buffer = make_with_value<VarsType>(used_for_size, 0.);
     auto result_buffer = make_with_value<SourceType>(used_for_size, 0.);
-    auto& operator_matrix = inverse_;
-    size_t i = 0;
-    // Re-using the iterators for all operator invocations
-    auto result_iterator_begin = result_buffer.begin();
-    auto result_iterator_end = result_buffer.end();
-    for (double& unit_vector_data : unit_vector) {
-      // Add a 1 at the unit vector location i
-      unit_vector_data = 1.;
-      // Invoke the operator on the unit vector
-      std::apply(linear_operator,
-                 std::tuple_cat(std::forward_as_tuple(
-                                    make_not_null(&result_buffer), unit_vector),
-                                operator_args));
-      // Set the unit vector back to zero
-      unit_vector_data = 0.;
-      // Reset the iterator by calling its `reset` member function or by
-      // re-creating it
-      if constexpr (detail::is_reset_callable_v<decltype(
-                        result_iterator_begin)>) {
-        result_iterator_begin.reset();
-      } else {
-        result_iterator_begin = result_buffer.begin();
-        result_iterator_end = result_buffer.end();
-      }
-      // Store the result in column i of the matrix
-      std::copy(result_iterator_begin, result_iterator_end,
-                column(operator_matrix, i).begin());
-      ++i;
-    }
+    build_matrix(make_not_null(&inverse_), make_not_null(&operand_buffer),
+                 make_not_null(&result_buffer), linear_operator, operator_args);
     // Directly invert the matrix
     try {
       blaze::invert(inverse_);
