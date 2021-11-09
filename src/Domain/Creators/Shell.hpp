@@ -20,6 +20,8 @@
 namespace domain {
 namespace CoordinateMaps {
 class Affine;
+template <size_t VolumeDim>
+class DiscreteRotation;
 class EquatorialCompression;
 template <size_t VolumeDim>
 class Identity;
@@ -45,6 +47,7 @@ class Shell : public DomainCreator<3> {
  public:
   using maps_list = tmpl::list<domain::CoordinateMap<
       Frame::BlockLogical, Frame::Inertial, CoordinateMaps::Wedge<3>,
+      CoordinateMaps::DiscreteRotation<3>,
       CoordinateMaps::EquatorialCompression,
       CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
                                      CoordinateMaps::Identity<2>>>>;
@@ -194,9 +197,10 @@ class Shell : public DomainCreator<3> {
       "the equator for values greater than 1.0, and towards the poles for\n"
       "positive values less than 1.0. The user may also specify the axis\n"
       "along which this compression is applied. The user may also choose to\n"
-      "use only a "
-      "single wedge (along the -x direction), or four wedges along the x-y "
-      "plane using the `WhichWedges` option. Using the RadialPartitioning "
+      "use only a single wedge (along the -x direction), or four wedges\n"
+      "along a chosen plane, or a whole shell with additional half wedges\n"
+      "along a chosen plane using the `WhichWedges` option. Using the\n"
+      "RadialPartitioning "
       "option, a user may set the locations of boundaries of radial "
       "partitions, each of which will have the grid points and refinement "
       "specified from the previous options. The RadialDistribution option "
@@ -255,6 +259,7 @@ class Shell : public DomainCreator<3> {
   std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
       time_dependence_;
   size_t number_of_layers_{};
+  size_t blocks_per_layer_{};
   std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
       inner_boundary_condition_;
   std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>

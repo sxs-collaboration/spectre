@@ -582,14 +582,33 @@ std::array<OrientationMap<3>, 6> orientations_for_wrappings() {
 }
 
 namespace {
-size_t which_wedge_index(const ShellWedges& which_wedges) {
+// The number of wedges that lie along one of the six directions of the Shell
+// domain. The directions are ordered: +z, -z, +y, -y, +x, -x. For the
+// AllAndHalves cases, the wedges are placed in the YZ plane first and then
+// rotated, so all cases of AllAndHalves have their wedges in the YZ plane.
+// The FourOnEquator cases do not have their wedges rotated, so the numbers in
+// the array correspond to the wedges created. The AllAndHalves cases need to
+// be rotated versions of AllAndHalvesYZ because only the wedges on the YZ
+// plane have their xi axes parallel to each other. Since the half wedges are
+// created by splitting the wedge along the xi direction, this is the only
+// configuration in which the eight half wedges have a contiguous boundary
+// forming a equatorial circle.
+std::array<size_t, 6> num_wedges_per_face(const ShellWedges& which_wedges) {
   switch (which_wedges) {
     case ShellWedges::All:
-      return 0;
-    case ShellWedges::FourOnEquator:
-      return 2;
+      return {1, 1, 1, 1, 1, 1};
+    case ShellWedges::AllAndHalvesXY:
+    case ShellWedges::AllAndHalvesXZ:
+    case ShellWedges::AllAndHalvesYZ:
+      return {2, 2, 2, 2, 1, 1};
+    case ShellWedges::FourOnEquatorXY:
+      return {0, 0, 1, 1, 1, 1};
+    case ShellWedges::FourOnEquatorXZ:
+      return {1, 1, 0, 0, 1, 1};
+    case ShellWedges::FourOnEquatorYZ:
+      return {1, 1, 1, 1, 0, 0};
     case ShellWedges::OneAlongMinusX:
-      return 5;
+      return {0, 0, 0, 0, 0, 1};
     default:  // LCOV_EXCL_LINE
       // LCOV_EXCL_START
       ERROR("Unknown ShellWedges type");
@@ -605,14 +624,11 @@ sph_wedge_coordinate_maps(
     const double inner_radius, const double outer_radius,
     const double inner_sphericity, const double outer_sphericity,
     const bool use_equiangular_map, const double x_coord_of_shell_center,
-    const bool use_half_wedges, const double aspect_ratio,
-    const size_t index_polar_axis,
+    const double aspect_ratio, const size_t index_polar_axis,
     const std::vector<double>& radial_partitioning,
     const std::vector<domain::CoordinateMaps::Distribution>&
         radial_distribution,
     const ShellWedges which_wedges) {
-  ASSERT(not use_half_wedges or which_wedges == ShellWedges::All,
-         "If we are using half wedges we must also be using ShellWedges::All.");
   ASSERT(radial_partitioning.empty() or inner_sphericity == outer_sphericity,
          "If we are using more than one layer the inner and outer sphericities "
          "must match.");
@@ -641,35 +657,25 @@ sph_wedge_coordinate_maps(
     }
     // Generate wedges/half-wedges a layer at a time.
     std::vector<Wedge3DMap> wedges_for_this_layer{};
-    if (not use_half_wedges) {
-      for (size_t face_j = which_wedge_index(which_wedges); face_j < 6;
-           face_j++) {
+    const std::array<size_t, 6> indices = num_wedges_per_face(which_wedges);
+    for (size_t face_j = 0; face_j < 6; face_j++) {
+      if (gsl::at(indices, face_j) == 2) {
+        wedges_for_this_layer.emplace_back(
+            temp_inner_radius, temp_outer_radius, inner_sphericity,
+            outer_sphericity, gsl::at(wedge_orientations, face_j),
+            use_equiangular_map, Halves::LowerOnly,
+            radial_distribution_this_layer);
+        wedges_for_this_layer.emplace_back(
+            temp_inner_radius, temp_outer_radius, inner_sphericity,
+            outer_sphericity, gsl::at(wedge_orientations, face_j),
+            use_equiangular_map, Halves::UpperOnly,
+            radial_distribution_this_layer);
+      } else if (gsl::at(indices, face_j) == 1) {
         wedges_for_this_layer.emplace_back(
             temp_inner_radius, temp_outer_radius, inner_sphericity,
             outer_sphericity, gsl::at(wedge_orientations, face_j),
             use_equiangular_map, Halves::Both, radial_distribution_this_layer);
       }
-    } else {
-      for (size_t i = 0; i < 4; i++) {
-        wedges_for_this_layer.emplace_back(
-            temp_inner_radius, temp_outer_radius, inner_sphericity,
-            outer_sphericity, gsl::at(wedge_orientations, i),
-            use_equiangular_map, Halves::LowerOnly,
-            radial_distribution_this_layer);
-        wedges_for_this_layer.emplace_back(
-            temp_inner_radius, temp_outer_radius, inner_sphericity,
-            outer_sphericity, gsl::at(wedge_orientations, i),
-            use_equiangular_map, Halves::UpperOnly,
-            radial_distribution_this_layer);
-      }
-      wedges_for_this_layer.emplace_back(
-          temp_inner_radius, temp_outer_radius, inner_sphericity,
-          outer_sphericity, gsl::at(wedge_orientations, 4), use_equiangular_map,
-          Halves::Both, radial_distribution_this_layer);
-      wedges_for_this_layer.emplace_back(
-          temp_inner_radius, temp_outer_radius, inner_sphericity,
-          outer_sphericity, gsl::at(wedge_orientations, 5), use_equiangular_map,
-          Halves::Both, radial_distribution_this_layer);
     }
     for (const auto& wedge : wedges_for_this_layer) {
       wedges_for_all_layers.push_back(wedge);
@@ -693,9 +699,21 @@ sph_wedge_coordinate_maps(
   const auto compression = domain::CoordinateMaps::EquatorialCompression{
       aspect_ratio, index_polar_axis};
 
+  // Set up rotation map:
+  const auto rotation = domain::CoordinateMaps::DiscreteRotation<3>{
+      which_wedges == ShellWedges::AllAndHalvesXY
+          ? OrientationMap<3>(std::array<Direction<3>, 3>{
+                {Direction<3>::upper_eta(), Direction<3>::upper_zeta(),
+                 Direction<3>::upper_xi()}})
+          : which_wedges == ShellWedges::AllAndHalvesXZ
+                ? OrientationMap<3>(std::array<Direction<3>, 3>{
+                      {Direction<3>::upper_zeta(), Direction<3>::upper_xi(),
+                       Direction<3>::upper_eta()}})
+                : OrientationMap<3>{}};
+
   return domain::make_vector_coordinate_map_base<Frame::BlockLogical,
                                                  TargetFrame, 3>(
-      std::move(wedges_for_all_layers), compression, translation);
+      std::move(wedges_for_all_layers), rotation, compression, translation);
 }
 
 template <typename TargetFrame>
@@ -796,6 +814,28 @@ std::array<size_t, 8> concatenate_faces(const std::array<size_t, 4>& face1,
            face2[3]}};
 }
 
+// The half-wedges in the +x direction are numbered separately from the
+// half-wedges in the -x direction. So that the two numberings do not
+// overlap, an offset must be computed so that the corner numbers used
+// for the +x half-wedges are all different from the half-wedges in the
+// -x direction (until corners on the shared boundaries between half-wedges
+// are identified.) This function creates the block corners for one of the
+// half-wedges in the -x direction, referred to as the `lower_half`.
+std::array<size_t, 8> concatenate_faces_lower_half(
+    const std::array<size_t, 4>& face1, const std::array<size_t, 4>& face2,
+    const size_t offset) {
+  return {{face1[0], face1[0] + offset, face1[2], face1[2] + offset, face2[0],
+           face2[0] + offset, face2[2], face2[2] + offset}};
+}
+
+// See comment for `concatenate_faces_lower_half`.
+std::array<size_t, 8> concatenate_faces_upper_half(
+    const std::array<size_t, 4>& face1, const std::array<size_t, 4>& face2,
+    const size_t offset) {
+  return {{face1[0] + offset, face1[1], face1[2] + offset, face1[3],
+           face2[0] + offset, face2[1], face2[2] + offset, face2[3]}};
+}
+
 std::array<size_t, 4> next_face_in_radial_direction(
     const std::array<size_t, 4>& face) {
   return {{face[0] + 8, face[1] + 8, face[2] + 8, face[3] + 8}};
@@ -838,17 +878,37 @@ std::vector<std::array<size_t, 8>> corners_for_radially_layered_domains(
        {{c[2], c[0], c[6], c[4]}}}};  // Lower x
   std::vector<std::array<std::array<size_t, 4>, 6>> faces_in_each_layer{
       faces_layer_zero};
+
+  // The half-wedges in the +x direction are numbered separately from the
+  // half-wedges in the -x direction. So that the two numberings do not
+  // overlap, an offset must be computed so that the corner numbers used
+  // for the +x half-wedges are all different from the half-wedges in the
+  // -x direction (until corners on the shared boundaries between half-wedges
+  // are identified.)
+  const size_t offset = number_of_layers * 8;
   for (size_t layer_j = 0; layer_j < number_of_layers; layer_j++) {
     faces_in_each_layer.push_back(
         next_layer_in_radial_direction(faces_in_each_layer[layer_j]));
   }
   std::vector<std::array<size_t, 8>> corners{};
+  const std::array<size_t, 6> num_wedges = num_wedges_per_face(which_wedges);
   for (size_t layer_i = 0; layer_i < number_of_layers; layer_i++) {
-    for (size_t face_j = which_wedge_index(which_wedges); face_j < 6;
-         face_j++) {
-      corners.push_back(concatenate_faces(
-          gsl::at(gsl::at(faces_in_each_layer, layer_i), face_j),
-          gsl::at(gsl::at(faces_in_each_layer, layer_i + 1), face_j)));
+    for (size_t face_j = 0; face_j < 6; face_j++) {
+      if (gsl::at(num_wedges, face_j) == 1) {
+        corners.push_back(concatenate_faces(
+            gsl::at(gsl::at(faces_in_each_layer, layer_i), face_j),
+            gsl::at(gsl::at(faces_in_each_layer, layer_i + 1), face_j)));
+      }
+      if (gsl::at(num_wedges, face_j) == 2) {
+        corners.push_back(concatenate_faces_lower_half(
+            gsl::at(gsl::at(faces_in_each_layer, layer_i), face_j),
+            gsl::at(gsl::at(faces_in_each_layer, layer_i + 1), face_j),
+            offset));
+        corners.push_back(concatenate_faces_upper_half(
+            gsl::at(gsl::at(faces_in_each_layer, layer_i), face_j),
+            gsl::at(gsl::at(faces_in_each_layer, layer_i + 1), face_j),
+            offset));
+      }
     }
   }
   if (include_central_block) {
@@ -1382,8 +1442,18 @@ std::ostream& operator<<(std::ostream& os, const ShellWedges& which_wedges) {
   switch (which_wedges) {
     case ShellWedges::All:
       return os << "All";
-    case ShellWedges::FourOnEquator:
-      return os << "FourOnEquator";
+    case ShellWedges::AllAndHalvesXY:
+      return os << "AllAndHalvesXY";
+    case ShellWedges::AllAndHalvesXZ:
+      return os << "AllAndHalvesXZ";
+    case ShellWedges::AllAndHalvesYZ:
+      return os << "AllAndHalvesYZ";
+    case ShellWedges::FourOnEquatorXY:
+      return os << "FourOnEquatorXY";
+    case ShellWedges::FourOnEquatorXZ:
+      return os << "FourOnEquatorXZ";
+    case ShellWedges::FourOnEquatorYZ:
+      return os << "FourOnEquatorYZ";
     case ShellWedges::OneAlongMinusX:
       return os << "OneAlongMinusX";
     default:  // LCOV_EXCL_LINE
@@ -1399,13 +1469,25 @@ ShellWedges Options::create_from_yaml<ShellWedges>::create<void>(
   const auto which_wedges = options.parse_as<std::string>();
   if (which_wedges == "All") {
     return ShellWedges::All;
-  } else if (which_wedges == "FourOnEquator") {
-    return ShellWedges::FourOnEquator;
+  } else if (which_wedges == "AllAndHalvesXY") {
+    return ShellWedges::AllAndHalvesXY;
+  } else if (which_wedges == "AllAndHalvesXZ") {
+    return ShellWedges::AllAndHalvesXZ;
+  } else if (which_wedges == "AllAndHalvesYZ") {
+    return ShellWedges::AllAndHalvesYZ;
+  } else if (which_wedges == "FourOnEquatorXY") {
+    return ShellWedges::FourOnEquatorXY;
+  } else if (which_wedges == "FourOnEquatorXZ") {
+    return ShellWedges::FourOnEquatorXZ;
+  } else if (which_wedges == "FourOnEquatorYZ") {
+    return ShellWedges::FourOnEquatorYZ;
   } else if (which_wedges == "OneAlongMinusX") {
     return ShellWedges::OneAlongMinusX;
   }
   PARSE_ERROR(options.context(),
-              "WhichWedges must be 'All', 'FourOnEquator' or 'OneAlongMinusX'");
+              "WhichWedges must be 'All', 'AllAndHalvesXY', 'AllAndHalvesXZ', "
+              "'AllAndHalvesYZ', 'FourOnEquatorXY', 'FourOnEquatorXZ', "
+              "'FourOnEquatorYZ' or 'OneAlongMinusX'");
 }
 
 template std::vector<std::unique_ptr<
@@ -1414,8 +1496,7 @@ sph_wedge_coordinate_maps(
     const double inner_radius, const double outer_radius,
     const double inner_sphericity, const double outer_sphericity,
     const bool use_equiangular_map, const double x_coord_of_shell_center,
-    const bool use_wedge_halves, const double aspect_ratio,
-    const size_t index_pole_axis,
+    const double aspect_ratio, const size_t index_pole_axis,
     const std::vector<double>& radial_partitioning,
     const std::vector<domain::CoordinateMaps::Distribution>&
         radial_distribution,
@@ -1426,8 +1507,7 @@ sph_wedge_coordinate_maps(
     const double inner_radius, const double outer_radius,
     const double inner_sphericity, const double outer_sphericity,
     const bool use_equiangular_map, const double x_coord_of_shell_center,
-    const bool use_wedge_halves, const double aspect_ratio,
-    const size_t index_pole_axis,
+    const double aspect_ratio, const size_t index_pole_axis,
     const std::vector<double>& radial_partitioning,
     const std::vector<domain::CoordinateMaps::Distribution>&
         radial_distribution,

@@ -123,12 +123,22 @@ auto corners_for_rectilinear_domains(
     -> std::vector<std::array<size_t, two_to_the(VolumeDim)>>;
 
 /// \ingroup ComputationalDomainGroup
-/// The number of wedges to include in the Shell domain.
+/// Which wedges to include in the Shell domain.
 enum class ShellWedges {
   /// Use the entire shell
   All,
-  /// Use only the four equatorial wedges
-  FourOnEquator,
+  /// Use the entire shell and use half wedges on the XY plane.
+  AllAndHalvesXY,
+  /// Use the entire shell and use half wedges on the XZ plane.
+  AllAndHalvesXZ,
+  /// Use the entire shell and use half wedges on the YZ plane.
+  AllAndHalvesYZ,
+  /// Use only the four equatorial wedges on the XY plane.
+  FourOnEquatorXY,
+  /// Use only the four equatorial wedges on the XY plane.
+  FourOnEquatorXZ,
+  /// Use only the four equatorial wedges on the XY plane.
+  FourOnEquatorYZ,
   /// Use only the single wedge along -x
   OneAlongMinusX
 };
@@ -140,10 +150,10 @@ enum class ShellWedges {
 /// The argument `x_coord_of_shell_center` specifies a translation of the Shell
 /// in the x-direction in the TargetFrame. For example, the BBH DomainCreator
 /// uses this to set the position of each BH.
-/// When the argument `use_half_wedges` is set to `true`, the wedges in the
-/// +z,-z,+y,-y directions are cut in half along their xi-axes. The resulting
-/// ten CoordinateMaps are used for the outermost Blocks of the BBH Domain.
-/// The argument `aspect_ratio` sets the equatorial compression factor,
+/// When the argument `which_wedges` is set to `AllAndHalvesYZ`, the wedges in
+/// the +z,-z,+y,-y directions are cut in half along their xi-axes. The
+/// resulting ten CoordinateMaps are used for the outermost Blocks of the BBH
+/// Domain. The argument `aspect_ratio` sets the equatorial compression factor,
 /// used by the EquatorialCompression maps which get composed with the Wedges.
 /// This is done if `aspect_ratio` is set to something other than the default
 /// value of one. The `radial_partitioning` specifies the radial boundaries of
@@ -154,8 +164,8 @@ template <typename TargetFrame>
 auto sph_wedge_coordinate_maps(
     double inner_radius, double outer_radius, double inner_sphericity,
     double outer_sphericity, bool use_equiangular_map,
-    double x_coord_of_shell_center = 0.0, bool use_half_wedges = false,
-    double aspect_ratio = 1.0, size_t index_polar_axis = 2,
+    double x_coord_of_shell_center = 0.0, double aspect_ratio = 1.0,
+    size_t index_polar_axis = 2,
     const std::vector<double>& radial_partitioning = {},
     const std::vector<domain::CoordinateMaps::Distribution>&
         radial_distribution = {domain::CoordinateMaps::Distribution::Linear},
