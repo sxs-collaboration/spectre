@@ -14,31 +14,42 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/ScalarAdvection/Kuzmin.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 namespace {
 
+using InitialData = evolution::initial_data::InitialData;
+using Kuzmin = ScalarAdvection::Solutions::Kuzmin;
+
 void test_create() {
-  const auto sol =
-      TestHelpers::test_creation<ScalarAdvection::Solutions::Kuzmin>("");
-  CHECK(sol == ScalarAdvection::Solutions::Kuzmin());
+  const auto sol = TestHelpers::test_creation<Kuzmin>("");
+  CHECK(sol == Kuzmin());
 }
 
 void test_serialize() {
-  ScalarAdvection::Solutions::Kuzmin sol;
+  Kuzmin sol;
   test_serialization(sol);
 }
 
 void test_move() {
-  ScalarAdvection::Solutions::Kuzmin sol;
-  ScalarAdvection::Solutions::Kuzmin sol_copy;
+  Kuzmin sol;
+  Kuzmin sol_copy;
   test_move_semantics(std::move(sol), sol_copy);  //  NOLINT
 }
 
-struct KuzminProxy : ScalarAdvection::Solutions::Kuzmin {
-  using ScalarAdvection::Solutions::Kuzmin::Kuzmin;
+void test_derived() {
+  Parallel::register_classes_with_charm<Kuzmin>();
+  const std::unique_ptr<InitialData> initial_data_ptr =
+      std::make_unique<Kuzmin>();
+  const std::unique_ptr<InitialData> deserialized_initial_data_ptr =
+      serialize_and_deserialize(initial_data_ptr);
+  CHECK(dynamic_cast<Kuzmin*>(deserialized_initial_data_ptr.get()) != nullptr);
+}
 
+struct KuzminProxy : Kuzmin {
+  using Kuzmin::Kuzmin;
   using variables_tags = tmpl::list<ScalarAdvection::Tags::U>;
 
   template <typename DataType>
@@ -121,6 +132,7 @@ SPECTRE_TEST_CASE(
   test_create();
   test_serialize();
   test_move();
+  test_derived();
 
   pypp::SetupLocalPythonEnvironment local_python_env{
       "PointwiseFunctions/AnalyticSolutions/ScalarAdvection"};

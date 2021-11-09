@@ -3,11 +3,14 @@
 
 #pragma once
 
+#include <pup.h>
+
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/ScalarAdvection/Tags.hpp"
 #include "Options/Options.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -30,7 +33,8 @@ namespace Solutions {
  * \f}
  *
  */
-class Sinusoid : public MarkAsAnalyticSolution {
+class Sinusoid : public evolution::initial_data::InitialData,
+                 public MarkAsAnalyticSolution {
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help{
@@ -51,6 +55,12 @@ class Sinusoid : public MarkAsAnalyticSolution {
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p);
+
+  /// \cond
+  explicit Sinusoid(CkMigrateMessage* msg);
+  using PUP::able::register_constructor;
+  WRAPPED_PUPable_decl_template(Sinusoid);
+  /// \endcond
 };
 
 bool operator==(const Sinusoid& /*lhs*/, const Sinusoid& /*rhs*/);

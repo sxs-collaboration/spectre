@@ -3,10 +3,13 @@
 
 #pragma once
 
+#include <pup.h>
+
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/ScalarAdvection/Tags.hpp"
 #include "Options/Options.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -54,7 +57,8 @@ namespace Solutions {
  * condition. The initial profile is simply advected (translated) to +x
  * direction, going over cycles in the domain every 2.0 time unit.
  */
-class Krivodonova : public MarkAsAnalyticSolution {
+class Krivodonova : public evolution::initial_data::InitialData,
+                    public MarkAsAnalyticSolution {
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help{
@@ -75,6 +79,12 @@ class Krivodonova : public MarkAsAnalyticSolution {
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p);
+
+  /// \cond
+  explicit Krivodonova(CkMigrateMessage* msg);
+  using PUP::able::register_constructor;
+  WRAPPED_PUPable_decl_template(Krivodonova);
+  /// \endcond
 };
 
 bool operator==(const Krivodonova& /*lhs*/, const Krivodonova& /*rhs*/);

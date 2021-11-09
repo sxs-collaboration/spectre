@@ -3,10 +3,13 @@
 
 #pragma once
 
+#include <pup.h>
+
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/ScalarAdvection/Tags.hpp"
 #include "Options/Options.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -51,7 +54,8 @@ namespace Solutions {
  * rotation about \f$(x,y)=(0.5,0.5)\f$ with angular velocity being 1.0. We use
  * the periodic boundary condition for evolving this problem.
  */
-class Kuzmin : public MarkAsAnalyticSolution {
+class Kuzmin : public evolution::initial_data::InitialData,
+               public MarkAsAnalyticSolution {
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help{
@@ -71,6 +75,12 @@ class Kuzmin : public MarkAsAnalyticSolution {
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p);
+
+  /// \cond
+  explicit Kuzmin(CkMigrateMessage* msg);
+  using PUP::able::register_constructor;
+  WRAPPED_PUPable_decl_template(Kuzmin);
+  /// \endcond
 };
 
 bool operator==(const Kuzmin& /*lhs*/, const Kuzmin& /*rhs*/);
