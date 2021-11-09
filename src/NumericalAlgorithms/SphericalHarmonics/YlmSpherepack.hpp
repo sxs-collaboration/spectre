@@ -83,7 +83,8 @@ class YlmSpherepack {
   /// points.
   template <typename T>
   struct InterpolationInfo {
-    InterpolationInfo(size_t m_max, const std::vector<double>& pmm,
+    InterpolationInfo(size_t l_max, size_t m_max,
+                      const std::vector<double>& pmm,
                       const std::array<T, 2>& target_points);
     T cos_theta;
     // cos(m*phi)
@@ -93,9 +94,13 @@ class YlmSpherepack {
     // pbar_factor[m] = Pbar(m,m)*sin(theta)^m
     DynamicBuffer<T> pbar_factor;
 
-    size_t size() const { return num_points_; };
+    size_t size() const { return num_points_; }
+    size_t m_max() const { return m_max_; }
+    size_t l_max() const { return l_max_; }
 
    private:
+    size_t l_max_;
+    size_t m_max_;
     size_t num_points_;
   };
 
@@ -432,6 +437,7 @@ class YlmSpherepack {
                                 size_t physical_stride = 1,
                                 size_t physical_offset = 0,
                                 bool loop_over_offset = false) const;
+  void calculate_interpolation_data() const;
   void fill_scalar_work_arrays() const;
   void fill_vector_work_arrays() const;
   size_t l_max_, m_max_, n_theta_, n_phi_;
