@@ -12,6 +12,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tags/TempTensor.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
+#include "DataStructures/Tensor/ExtractPoint.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "NumericalAlgorithms/RootFinding/TOMS748.hpp"
@@ -265,7 +266,12 @@ bool FixConservatives::operator()(
             << "\n  b_tilde_squared = " << b_tilde_squared
             << "\n  b_squared_over_d = " << b_squared_over_d
             << "\n  tau_over_d = " << tau_over_d
-            << "\n  normalized_s_dot_b = " << normalized_s_dot_b << "\n"
+            << "\n  normalized_s_dot_b = " << normalized_s_dot_b
+            << "\n  tilde_s =\n" << extract_point(*tilde_s, s)
+            << "\n  tilde_b =\n" << extract_point(tilde_b, s)
+            << "\n  spatial_metric =\n" << extract_point(spatial_metric, s)
+            << "\n  inv_spatial_metric =\n"
+            << extract_point(inv_spatial_metric, s) << "\n"
             << "The message of the exception thrown by the root finder "
                "is:\n"
             << exception.what());
