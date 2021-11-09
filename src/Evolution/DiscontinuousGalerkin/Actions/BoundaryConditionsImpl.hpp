@@ -401,12 +401,12 @@ void apply_boundary_condition_on_face(
 
   // Now we populate the fields on the exterior side of the face using the
   // boundary condition.
-  using tags_on_exterior_face =
+  using tags_on_exterior_face = tmpl::remove_duplicates<
       tmpl::append<variables_tags, fluxes_tags, correction_temp_tags,
                    correction_prim_tags, inverse_spatial_metric_list,
                    tmpl::list<detail::OneOverNormalVectorMagnitude,
                               detail::NormalVector<Dim>,
-                              evolution::dg::Tags::NormalCovector<Dim>>>;
+                              evolution::dg::Tags::NormalCovector<Dim>>>>;
   Variables<tags_on_exterior_face> exterior_face_fields{
       number_of_points_on_face};
 
