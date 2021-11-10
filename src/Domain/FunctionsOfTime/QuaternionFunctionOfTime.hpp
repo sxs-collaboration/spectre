@@ -27,38 +27,38 @@ namespace domain::FunctionsOfTime {
 /// will be controlled by the rotation control sytem. To get the quaternion, an
 /// ODE is solved of the form \f$ \dot{q} = \frac{1}{2} q \times \omega \f$
 /// where \f$ \omega \f$ is the orbital angular velocity which is stored
-/// internally in a `PiecewisePolynomial`, and \f$ \times \f$ here is quaternion
-/// multiplication.
+/// internally as the derivative of an angle `PiecewisePolynomial`, and
+/// \f$ \times \f$ here is quaternion multiplication.
 ///
 /// Different from a `PiecewisePolynomial`, only the quaternion
 /// itself is stored, not any of the derivatives because the derivatives must be
 /// calculated from the solved ODE at every function call. Because
 /// derivatives of the quaternion are not stored, the template parameter
-/// `MaxDeriv` refers to both the max derivative of the stored omega
+/// `MaxDeriv` refers to both the max derivative of the stored angle
 /// PiecewisePolynomial and the max derivative returned by the
 /// QuaternionFunctionOfTime. The `update` function is then just a wrapper
 /// around the internal `PiecewisePolynomial::update` function with the addition
 /// that it then updates the stored quaternions as well.
 ///
-/// The omega PiecewisePolynomial is accessible through the `omega_func`,
-/// `omega_func_and_deriv`, and `omega_func_and_2_derivs` functions which
+/// The angle PiecewisePolynomial is accessible through the `angle_func`,
+/// `angle_func_and_deriv`, and `angle_func_and_2_derivs` functions which
 /// correspond to the function calls of a normal PiecewisePolynomial except
-/// without the `omega_` prefix.
+/// without the `angle_` prefix.
 ///
-/// It is encouraged to use `quat_func` and `omega_func` when you want the
+/// It is encouraged to use `quat_func` and `angle_func` when you want the
 /// specific values of the functions to avoid ambiguity in what you are
 /// calling. However, the original three `func` functions inherited from the
 /// FunctionOfTime base class are necessary because the maps use the generic
 /// `func` functions, thus they return the quaternion and its derivatives (which
 /// are needed for the map). This is all to keep the symmetry of naming
-/// `omega_func` and `quat_func` so that function calls won't be ambiguous.
+/// `angle_func` and `quat_func` so that function calls won't be ambiguous.
 template <size_t MaxDeriv>
 class QuaternionFunctionOfTime : public FunctionOfTime {
  public:
   QuaternionFunctionOfTime() = default;
   QuaternionFunctionOfTime(
       double t, std::array<DataVector, 1> initial_quat_func,
-      std::array<DataVector, MaxDeriv + 1> initial_omega_func,
+      std::array<DataVector, MaxDeriv + 1> initial_angle_func,
       double expiration_time);
 
   ~QuaternionFunctionOfTime() override = default;
@@ -79,15 +79,15 @@ class QuaternionFunctionOfTime : public FunctionOfTime {
   WRAPPED_PUPable_decl_template(QuaternionFunctionOfTime<MaxDeriv>);  // NOLINT
 
   void reset_expiration_time(const double next_expiration_time) override {
-    omega_f_of_t_.reset_expiration_time(next_expiration_time);
+    angle_f_of_t_.reset_expiration_time(next_expiration_time);
   }
 
   /// Returns domain of validity for the function of time
   std::array<double, 2> time_bounds() const override {
-    return omega_f_of_t_.time_bounds();
+    return angle_f_of_t_.time_bounds();
   }
 
-  /// Updates the `MaxDeriv`th derivative of the omega piecewisepolynomial at
+  /// Updates the `MaxDeriv`th derivative of the angle piecewisepolynomial at
   /// the given time, then updates the stored quaternions.
   ///
   /// `updated_max_deriv` is a datavector of the `MaxDeriv`s for each component.
@@ -124,20 +124,21 @@ class QuaternionFunctionOfTime : public FunctionOfTime {
   /// time `t`.
   std::array<DataVector, 3> quat_func_and_2_derivs(double t) const;
 
-  /// Returns stored omega at an arbitrary time `t`.
-  std::array<DataVector, 1> omega_func(const double t) const {
-    return omega_f_of_t_.func(t);
+  /// Returns stored angle at an arbitrary time `t`.
+  std::array<DataVector, 1> angle_func(const double t) const {
+    return angle_f_of_t_.func(t);
   }
 
-  /// Returns stored omega and its first derivative at an arbitrary time `t`.
-  std::array<DataVector, 2> omega_func_and_deriv(const double t) const {
-    return omega_f_of_t_.func_and_deriv(t);
+  /// Returns stored angle and its first derivative (omega) at an arbitrary time
+  /// `t`.
+  std::array<DataVector, 2> angle_func_and_deriv(const double t) const {
+    return angle_f_of_t_.func_and_deriv(t);
   }
 
-  /// Returns stored omega and the first two derivatives at an arbitrary
+  /// Returns stored angle and the first two derivatives at an arbitrary
   /// time `t`.
-  std::array<DataVector, 3> omega_func_and_2_derivs(const double t) const {
-    return omega_f_of_t_.func_and_2_derivs(t);
+  std::array<DataVector, 3> angle_func_and_2_derivs(const double t) const {
+    return angle_f_of_t_.func_and_2_derivs(t);
   }
 
  private:
@@ -154,7 +155,7 @@ class QuaternionFunctionOfTime : public FunctionOfTime {
   std::vector<FunctionOfTimeHelpers::StoredInfo<1, false>>
       stored_quaternions_and_times_;
 
-  domain::FunctionsOfTime::PiecewisePolynomial<MaxDeriv> omega_f_of_t_;
+  domain::FunctionsOfTime::PiecewisePolynomial<MaxDeriv> angle_f_of_t_;
 
   /// Integrates the ODE \f$ \dot{q} = \frac{1}{2} q \times \omega \f$ from time
   /// `t0` to time `t`. On input, `quaternion_to_integrate` is the initial
@@ -164,7 +165,7 @@ class QuaternionFunctionOfTime : public FunctionOfTime {
       double t0, double t) const;
 
   /// Updates the `std::vector<StoredInfo>` to have the same number of stored
-  /// quaternions as the `omega_f_of_t_ptr` has stored omegas. This is necessary
+  /// quaternions as the `angle_f_of_t_ptr` has stored angles. This is necessary
   /// to ensure we can solve the ODE at any time `t`
   void update_stored_info();
 

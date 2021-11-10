@@ -38,7 +38,7 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.QuaternionFunctionOfTime",
     const std::string expected_output =
         "Quaternion:\n"
         "t=-0.1: (1,0,0,0)\n"
-        "Omega:\n"
+        "Angle:\n"
         "t=-0.1: (0,0,-0.3) (0,0,0.145) (0,0,0)";
 
     const std::string output = get_output(qfot);
@@ -50,20 +50,20 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.QuaternionFunctionOfTime",
     DataVector init_omega{0.0, 0.0, 3.78};
     domain::FunctionsOfTime::QuaternionFunctionOfTime<2> qfot{
         0.0, std::array<DataVector, 1>{DataVector{{1.0, 0.0, 0.0, 0.0}}},
-        std::array<DataVector, 3>{init_omega, DataVector{3, 0.0},
+        std::array<DataVector, 3>{DataVector{3, 0.0}, init_omega,
                                   DataVector{3, 0.0}},
         0.5};
     domain::FunctionsOfTime::PiecewisePolynomial<2> pp{
         0.0,
-        std::array<DataVector, 3>{init_omega, DataVector{3, 0.0},
+        std::array<DataVector, 3>{DataVector{3, 0.0}, init_omega,
                                   DataVector{3, 0.0}},
         0.5};
     qfot.update(0.6, DataVector{3, 0.0}, 1.0);
     pp.update(0.6, DataVector{3, 0.0}, 1.0);
 
-    CHECK(qfot.omega_func(0.4) == pp.func(0.4));
-    CHECK(qfot.omega_func_and_deriv(0.4) == pp.func_and_deriv(0.4));
-    CHECK(qfot.omega_func_and_2_derivs(0.4) == pp.func_and_2_derivs(0.4));
+    CHECK(qfot.angle_func(0.4) == pp.func(0.4));
+    CHECK(qfot.angle_func_and_deriv(0.4) == pp.func_and_deriv(0.4));
+    CHECK(qfot.angle_func_and_2_derivs(0.4) == pp.func_and_2_derivs(0.4));
   }
 
   {
@@ -71,13 +71,13 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.QuaternionFunctionOfTime",
     DataVector init_omega{0.0, 0.0, 1.0};
     domain::FunctionsOfTime::QuaternionFunctionOfTime<2> qfot{
         0.0, std::array<DataVector, 1>{DataVector{{1.0, 0.0, 0.0, 0.0}}},
-        std::array<DataVector, 3>{init_omega, DataVector{3, 0.0},
+        std::array<DataVector, 3>{DataVector{3, 0.0}, init_omega,
                                   DataVector{3, 0.0}},
         2.5};
     // Different expiration time to check comparison operators
     domain::FunctionsOfTime::QuaternionFunctionOfTime<2> qfot2{
         0.0, std::array<DataVector, 1>{DataVector{{1.0, 0.0, 0.0, 0.0}}},
-        std::array<DataVector, 3>{init_omega, DataVector{3, 0.0},
+        std::array<DataVector, 3>{DataVector{3, 0.0}, init_omega,
                                   DataVector{3, 0.0}},
         3.0};
 
@@ -114,14 +114,14 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.QuaternionFunctionOfTime",
     double expir_time = 0.5;
     const double omega_z = 1.3333;
     DataVector init_quat{1.0, 0.0, 0.0, 0.0};
+    DataVector init_angle{0.0, 0.0, 0.0};
     DataVector init_omega{0.0, 0.0, omega_z};
     DataVector init_dtomega{0.0, 0.0, 0.0};
-    DataVector init_dt2omega{0.0, 0.0, 0.0};
 
     // Construct QuaternionFunctionOfTime
     domain::FunctionsOfTime::QuaternionFunctionOfTime<2> qfot{
         t, std::array<DataVector, 1>{init_quat},
-        std::array<DataVector, 3>{init_omega, init_dtomega, init_dt2omega},
+        std::array<DataVector, 3>{init_angle, init_omega, init_dtomega},
         expir_time};
 
     // Update stored PiecewisePolynomial with 0 2nd derivative so it's
@@ -155,7 +155,7 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.QuaternionFunctionOfTime",
          -0.25 * omega_z * omega_z * sin(0.5 * omega_z * check_time)}};
 
     // Compare analytic solution to numerical
-    Approx custom_approx = Approx::custom().epsilon(1e-12).scale(1.0);
+    Approx custom_approx = Approx::custom().epsilon(1.0e-12).scale(1.0);
     {
       INFO("  Compare quaternion");
       CHECK_ITERABLE_CUSTOM_APPROX(quat_func_and_2_derivs[0], a_quat,
@@ -186,23 +186,23 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.QuaternionFunctionOfTime",
     // dt2omega(t) = 0.0
 
     DataVector init_quat{1.0, 0.0, 0.0, 0.0};
+    DataVector init_angle{3, 0.0};
     DataVector init_omega{{0.0, 0.0, fac2}};
-    DataVector init_dtomega{{0.0, 0.0, 2 * fac1}};
-    DataVector init_dt2omega{3, 0.0};
+    DataVector init_dtomega{{0.0, 0.0, 2.0 * fac1}};
     // Construct QuaternionFunctionOfTime
     domain::FunctionsOfTime::QuaternionFunctionOfTime<2> qfot{
         t, std::array<DataVector, 1>{init_quat},
-        std::array<DataVector, 3>{init_omega, init_dtomega, init_dt2omega},
+        std::array<DataVector, 3>{init_angle, init_omega, init_dtomega},
         expir_time};
 
     // Update internal PiecewisePolynomial with constant 2nd derivative so
-    // it's linear. This will automatically update the stored quaternions as
+    // omega is linear. This will automatically update the stored quaternions as
     // well
     const double time_step = 0.5;
     for (int i = 0; i < 15; i++) {
       t += time_step;
       expir_time += time_step;
-      qfot.update(t, DataVector{{0.0, 0.0, 0.0}}, expir_time);
+      qfot.update(t, DataVector{{0.0, 0.0, 2.0 * fac1}}, expir_time);
     }
 
     // Get the quaternion and 2 derivatives at a certain time.
@@ -231,7 +231,7 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.QuaternionFunctionOfTime",
                           0.5 * (a_dtquat[0] * omega + a_quat[0] * dtomega)}};
 
     // Compare analytic solution to numerical
-    Approx custom_approx = Approx::custom().epsilon(5e-12).scale(1.0);
+    Approx custom_approx = Approx::custom().epsilon(5.0e-12).scale(1.0);
     {
       INFO("  Compare quaternion");
       CHECK_ITERABLE_CUSTOM_APPROX(quat_func_and_2_derivs[0], a_quat,
@@ -263,23 +263,25 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.QuaternionFunctionOfTime",
     // dt2omega(t) = 6 * fac1 (constant)
 
     DataVector init_quat{1.0, 0.0, 0.0, 0.0};
+    DataVector init_angle{3, 0.0};
     DataVector init_omega{{0.0, 0.0, fac3}};
-    DataVector init_dtomega{{0.0, 0.0, 2 * fac2}};
-    DataVector init_dt2omega{{0.0, 0.0, 6 * fac1}};
+    DataVector init_dtomega{{0.0, 0.0, 2.0 * fac2}};
+    DataVector init_dt2omega{{0.0, 0.0, 6.0 * fac1}};
     // Construct QuaternionFunctionOfTime
-    domain::FunctionsOfTime::QuaternionFunctionOfTime<2> qfot{
+    domain::FunctionsOfTime::QuaternionFunctionOfTime<3> qfot{
         t, std::array<DataVector, 1>{init_quat},
-        std::array<DataVector, 3>{init_omega, init_dtomega, init_dt2omega},
+        std::array<DataVector, 4>{init_angle, init_omega, init_dtomega,
+                                  init_dt2omega},
         expir_time};
 
-    // Update PiecewisePolynomial with constant 2nd derivative so it's
+    // Update PiecewisePolynomial with constant 3rd derivative so omega is
     // quadratic. This will automatically update the stored quaternions as
     // well
     const double time_step = 0.5;
     for (int i = 0; i < 15; i++) {
       t += time_step;
       expir_time += time_step;
-      qfot.update(t, DataVector{{0.0, 0.0, 6 * fac1}}, expir_time);
+      qfot.update(t, DataVector{{0.0, 0.0, 6.0 * fac1}}, expir_time);
     }
 
     // Get the quaternion and 2 derivatives at a certain time.
@@ -312,7 +314,7 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.QuaternionFunctionOfTime",
                           0.5 * (a_dtquat[0] * omega + a_quat[0] * dtomega)}};
 
     // Compare analytic solution to numerical
-    Approx custom_approx = Approx::custom().epsilon(1e-12).scale(1.0);
+    Approx custom_approx = Approx::custom().epsilon(5.0e-12).scale(1.0);
     {
       INFO("  Compare quaternion");
       CHECK_ITERABLE_CUSTOM_APPROX(quat_func_and_2_derivs[0], a_quat,

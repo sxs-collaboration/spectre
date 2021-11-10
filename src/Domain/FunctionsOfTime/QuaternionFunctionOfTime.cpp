@@ -23,10 +23,10 @@ namespace domain::FunctionsOfTime {
 template <size_t MaxDeriv>
 QuaternionFunctionOfTime<MaxDeriv>::QuaternionFunctionOfTime(
     const double t, std::array<DataVector, 1> initial_quat_func,
-    std::array<DataVector, MaxDeriv + 1> initial_omega_func,
+    std::array<DataVector, MaxDeriv + 1> initial_angle_func,
     const double expiration_time)
     : stored_quaternions_and_times_{{t, std::move(initial_quat_func)}},
-      omega_f_of_t_(t, std::move(initial_omega_func), expiration_time) {}
+      angle_f_of_t_(t, std::move(initial_angle_func), expiration_time) {}
 
 template <size_t MaxDeriv>
 std::unique_ptr<FunctionOfTime> QuaternionFunctionOfTime<MaxDeriv>::get_clone()
@@ -38,33 +38,33 @@ template <size_t MaxDeriv>
 void QuaternionFunctionOfTime<MaxDeriv>::pup(PUP::er& p) {
   FunctionOfTime::pup(p);
   p | stored_quaternions_and_times_;
-  p | omega_f_of_t_;
+  p | angle_f_of_t_;
 }
 
 template <size_t MaxDeriv>
 void QuaternionFunctionOfTime<MaxDeriv>::update(
     const double time_of_update, DataVector updated_max_deriv,
     const double next_expiration_time) {
-  omega_f_of_t_.update(time_of_update, std::move(updated_max_deriv),
+  angle_f_of_t_.update(time_of_update, std::move(updated_max_deriv),
                        next_expiration_time);
   update_stored_info();
 }
 
 template <size_t MaxDeriv>
 void QuaternionFunctionOfTime<MaxDeriv>::update_stored_info() {
-  const auto& omega_deriv_info = omega_f_of_t_.get_deriv_info();
+  const auto& angle_deriv_info = angle_f_of_t_.get_deriv_info();
 
   ASSERT(
-      omega_deriv_info.size() == stored_quaternions_and_times_.size() + 1,
+      angle_deriv_info.size() == stored_quaternions_and_times_.size() + 1,
       "The number of stored quaternions is not one less than the number of "
-      "stored omegas (which it should be after an update). Currently there are "
-          << omega_deriv_info.size() << " stored omegas and "
+      "stored angles (which it should be after an update). Currently there are "
+          << angle_deriv_info.size() << " stored angles and "
           << stored_quaternions_and_times_.size() << " stored quaternions.");
 
   const size_t last_index = stored_quaternions_and_times_.size();
   // Final time, initial time, and quaternion
-  const double t = omega_deriv_info[last_index].time;
-  const double t0 = omega_deriv_info[last_index - 1].time;
+  const double t = angle_deriv_info[last_index].time;
+  const double t0 = angle_deriv_info[last_index - 1].time;
   boost::math::quaternion<double> quaternion_to_integrate =
       datavector_to_quaternion(
           stored_quaternions_and_times_[last_index - 1].stored_quantities[0]);
@@ -78,10 +78,10 @@ void QuaternionFunctionOfTime<MaxDeriv>::update_stored_info() {
       t, std::array<DataVector, 1>{
              quaternion_to_datavector(quaternion_to_integrate)});
 
-  ASSERT(omega_deriv_info.size() == stored_quaternions_and_times_.size(),
-         "The number of stored omegas must be the same as the number of stored "
+  ASSERT(angle_deriv_info.size() == stored_quaternions_and_times_.size(),
+         "The number of stored angles must be the same as the number of stored "
          "quaternions after updating the missing quaternion. Now there are "
-             << omega_deriv_info.size() << " stored omegas and "
+             << angle_deriv_info.size() << " stored angles and "
              << stored_quaternions_and_times_.size() << " stored quaternions.");
 }
 
@@ -95,7 +95,7 @@ void QuaternionFunctionOfTime<MaxDeriv>::solve_quaternion_ode(
       [this](const boost::math::quaternion<double>& state,
              boost::math::quaternion<double>& dt_state, const double time) {
         const boost::math::quaternion<double> omega =
-            datavector_to_quaternion(omega_f_of_t_.func(time)[0]);
+            datavector_to_quaternion(angle_f_of_t_.func_and_deriv(time)[1]);
         dt_state = 0.5 * state * omega;
       };
 
@@ -143,11 +143,11 @@ std::array<DataVector, 2>
 QuaternionFunctionOfTime<MaxDeriv>::quat_func_and_deriv(const double t) const {
   boost::math::quaternion<double> quat = setup_func(t);
 
-  // Get omega and however many derivatives we need
-  std::array<DataVector, 1> omega_func = omega_f_of_t_.func(t);
+  // Get angle and however many derivatives we need
+  std::array<DataVector, 2> angle_and_deriv = angle_f_of_t_.func_and_deriv(t);
 
   boost::math::quaternion<double> omega =
-      datavector_to_quaternion(omega_func[0]);
+      datavector_to_quaternion(angle_and_deriv[1]);
 
   boost::math::quaternion<double> dtquat = 0.5 * quat * omega;
 
@@ -161,14 +161,14 @@ QuaternionFunctionOfTime<MaxDeriv>::quat_func_and_2_derivs(
     const double t) const {
   boost::math::quaternion<double> quat = setup_func(t);
 
-  // Get omega and however many derivatives we need
-  std::array<DataVector, 2> omega_func_and_deriv =
-      omega_f_of_t_.func_and_deriv(t);
+  // Get angle and however many derivatives we need
+  std::array<DataVector, 3> angle_and_2_derivs =
+      angle_f_of_t_.func_and_2_derivs(t);
 
   boost::math::quaternion<double> omega =
-      datavector_to_quaternion(omega_func_and_deriv[0]);
+      datavector_to_quaternion(angle_and_2_derivs[1]);
   boost::math::quaternion<double> dtomega =
-      datavector_to_quaternion(omega_func_and_deriv[1]);
+      datavector_to_quaternion(angle_and_2_derivs[2]);
 
   boost::math::quaternion<double> dtquat = 0.5 * quat * omega;
   boost::math::quaternion<double> dt2quat =
@@ -184,7 +184,7 @@ bool operator==(const QuaternionFunctionOfTime<MaxDeriv>& lhs,
                 const QuaternionFunctionOfTime<MaxDeriv>& rhs) {
   return lhs.stored_quaternions_and_times_ ==
              rhs.stored_quaternions_and_times_ and
-         lhs.omega_f_of_t_ == rhs.omega_f_of_t_;
+         lhs.angle_f_of_t_ == rhs.angle_f_of_t_;
 }
 
 template <size_t MaxDeriv>
@@ -204,8 +204,8 @@ std::ostream& operator<<(
     os << quaternion_f_of_t.stored_quaternions_and_times_[i];
     os << "\n";
   }
-  os << "Omega:\n";
-  os << quaternion_f_of_t.omega_f_of_t_;
+  os << "Angle:\n";
+  os << quaternion_f_of_t.angle_f_of_t_;
   return os;
 }
 
