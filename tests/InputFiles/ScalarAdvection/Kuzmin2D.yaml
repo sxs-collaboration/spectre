@@ -2,21 +2,13 @@
 # See LICENSE.txt for details.
 
 # Executable: EvolveScalarAdvectionKuzmin2D
-# Check: parse;execute_check_output
-# Timeout: 10
+# Check: parse;execute
 # ExpectedOutput:
 #   ScalarAdvectionKuzmin2DVolume0.h5
-#   ScalarAdvectionKuzmin2DReductions.h5
-# OutputFileChecks:
-#   - Label: check_analytic_solution
-#     Subfile: /ErrorNorms.dat
-#     FileGlob: ScalarAdvectionKuzmin2DReductions.h5
-#     SkipColumns: [0,1]
-#     AbsoluteTolerance: 0.2
 
 Evolution:
   InitialTime: 0.0
-  InitialTimeStep: 0.01
+  InitialTimeStep: 0.001
   TimeStepper: RungeKutta3
 
 PhaseChangeAndTriggers:
@@ -25,8 +17,8 @@ DomainCreator:
   Rectangle:
     LowerBound: [0.0, 0.0]
     UpperBound: [1.0, 1.0]
-    InitialRefinement: [3, 3]
-    InitialGridPoints: [3, 3]
+    InitialRefinement: [2, 2]
+    InitialGridPoints: [5, 5]
     TimeDependence: None
     BoundaryCondition: Periodic
 
@@ -36,17 +28,21 @@ SpatialDiscretization:
   DiscontinuousGalerkin:
     Formulation: StrongInertial
     Quadrature: GaussLobatto
+    Subcell:
+      RdmpDelta0: 1.0e-7
+      RdmpEpsilon: 1.0e-3
+      PerssonExponent: 4.0
+      InitialData:
+        RdmpDelta0: 1.0e-7
+        RdmpEpsilon: 1.0e-3
+        PerssonExponent: 4.0
+      AlwaysUseSubcells: false
+  SubcellSolver:
+    Reconstructor:
+      MonotisedCentral
 
 AnalyticSolution:
   Kuzmin:
-
-Limiter:
-  Minmod:
-    Type: LambdaPi1
-    # The optimal value of the TVB constant is problem-dependent.
-    # This test uses 0 to favor robustness over accuracy.
-    TvbConstant: 0.0
-    DisableForDebugging: false
 
 EventsAndTriggers:
   ? Slabs:
@@ -55,20 +51,14 @@ EventsAndTriggers:
   : - Completion
   ? Slabs:
       EvenlySpaced:
-        Interval: 5
-        Offset: 0
-  : - ObserveErrorNorms:
-        SubfileName: ErrorNorms
-  ? Slabs:
-      EvenlySpaced:
         Interval: 10
         Offset: 0
   : - ObserveFields:
         SubfileName: VolumeData
-        VariablesToObserve: [U, VelocityField]
+        VariablesToObserve: [U, TciStatus]
         InterpolateToMesh: None
         CoordinatesFloatingPointType: Double
-        FloatingPointTypes: [Double, Double]
+        FloatingPointTypes: [Double, Float]
 
 EventsAndDenseTriggers:
 
