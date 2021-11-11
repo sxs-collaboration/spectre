@@ -32,6 +32,10 @@ struct Coordinates;
 /// \endcond
 
 namespace Burgers::BoundaryConditions {
+/*!
+ * \brief Sets Dirichlet boundary conditions using the analytic solution or
+ * analytic data.
+ */
 class DirichletAnalytic final : public BoundaryCondition {
  private:
   using flux_tag =

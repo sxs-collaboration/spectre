@@ -21,6 +21,11 @@
 #include "Utilities/TMPL.hpp"
 
 namespace Burgers::BoundaryConditions {
+/*!
+ * \brief A boundary condition that only verifies that all characteristic speeds
+ * are directed out of the domain; no boundary data is altered by this boundary
+ * condition.
+ */
 class Outflow final : public BoundaryCondition {
  public:
   using options = tmpl::list<>;
