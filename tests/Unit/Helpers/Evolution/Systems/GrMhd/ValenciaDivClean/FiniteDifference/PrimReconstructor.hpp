@@ -339,6 +339,65 @@ void test_prim_reconstructor_impl(
               get<tag_to_check>(gsl::at(vars_on_upper_face, dim)),
               get<tag_to_check>(expected_upper_face_values));
         });
+
+    // Test reconstruct_fd_neighbor
+    const size_t num_pts_on_mortar =
+        face_centered_mesh.slice_away(dim).number_of_grid_points();
+    Variables<dg_package_data_argument_tags> upper_side_vars_on_mortar{
+        num_pts_on_mortar};
+    // Slice GR variables onto the mortar
+    data_on_slice(
+        make_not_null(&get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(
+            upper_side_vars_on_mortar)),
+        get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(
+            expected_upper_face_values),
+        face_centered_mesh.extents(), dim, face_centered_mesh.extents(dim) - 1);
+    data_on_slice(
+        make_not_null(
+            &get<gr::Tags::SpatialMetric<3>>(upper_side_vars_on_mortar)),
+        get<gr::Tags::SpatialMetric<3>>(expected_upper_face_values),
+        face_centered_mesh.extents(), dim, face_centered_mesh.extents(dim) - 1);
+
+    dynamic_cast<const Reconstructor&>(reconstructor)
+        .reconstruct_fd_neighbor(make_not_null(&upper_side_vars_on_mortar),
+                                 volume_prims, eos, element, neighbor_data,
+                                 subcell_mesh, Direction<3>{dim, Side::Upper});
+
+    Variables<dg_package_data_argument_tags> lower_side_vars_on_mortar{
+        num_pts_on_mortar};
+    // Slice GR variables onto the mortar
+    data_on_slice(
+        make_not_null(&get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(
+            lower_side_vars_on_mortar)),
+        get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(
+            expected_lower_face_values),
+        face_centered_mesh.extents(), dim, 0);
+    data_on_slice(make_not_null(&get<gr::Tags::SpatialMetric<3>>(
+                      lower_side_vars_on_mortar)),
+                  get<gr::Tags::SpatialMetric<3>>(expected_lower_face_values),
+                  face_centered_mesh.extents(), dim, 0);
+
+    dynamic_cast<const Reconstructor&>(reconstructor)
+        .reconstruct_fd_neighbor(make_not_null(&lower_side_vars_on_mortar),
+                                 volume_prims, eos, element, neighbor_data,
+                                 subcell_mesh, Direction<3>{dim, Side::Lower});
+
+    tmpl::for_each<tmpl::append<cons_tags, prims_tags>>(
+        [dim, &expected_lower_face_values, &expected_upper_face_values,
+         &lower_side_vars_on_mortar, &face_centered_mesh,
+         &upper_side_vars_on_mortar](auto tag_to_check_v) {
+          using tag_to_check = tmpl::type_from<decltype(tag_to_check_v)>;
+          CAPTURE(db::tag_name<tag_to_check>());
+          CHECK_ITERABLE_APPROX(
+              get<tag_to_check>(lower_side_vars_on_mortar),
+              data_on_slice(get<tag_to_check>(expected_lower_face_values),
+                            face_centered_mesh.extents(), dim, 0));
+          CHECK_ITERABLE_APPROX(
+              get<tag_to_check>(upper_side_vars_on_mortar),
+              data_on_slice(get<tag_to_check>(expected_upper_face_values),
+                            face_centered_mesh.extents(), dim,
+                            face_centered_mesh.extents(dim) - 1));
+        });
   }
 }
 }  // namespace detail
