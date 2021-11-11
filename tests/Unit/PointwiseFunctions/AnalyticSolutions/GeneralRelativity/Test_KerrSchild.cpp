@@ -12,13 +12,24 @@
 
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/EagerMath/Determinant.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/Variables.hpp"
+#include "Domain/CoordinateMaps/Affine.hpp"
+#include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/CoordinateMaps/CoordinateMap.tpp"
+#include "Domain/CoordinateMaps/ProductMaps.hpp"
+#include "Domain/CoordinateMaps/ProductMaps.tpp"
+#include "Domain/LogicalCoordinates.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/PointwiseFunctions/AnalyticSolutions/GeneralRelativity/VerifyGrSolution.hpp"
 #include "Helpers/PointwiseFunctions/AnalyticSolutions/TestHelpers.hpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/ConstantExpressions.hpp"
@@ -29,6 +40,8 @@
 // IWYU pragma: no_forward_declare Tags::deriv
 
 namespace {
+using Affine = domain::CoordinateMaps::Affine;
+using Affine3D = domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
 
 template <typename Frame, typename DataType>
 tnsr::I<DataType, 3, Frame> spatial_coords(const DataType& used_for_size) {
@@ -155,6 +168,77 @@ void test_schwarzschild(const DataType& used_for_size) {
   CHECK_ITERABLE_APPROX(d_g, expected_d_g);
 }
 
+template <typename FrameType>
+void test_numerical_deriv_det_spatial_metric(const DataVector& used_for_size) {
+  // Parameters for KerrSchild solution
+  const double mass = 1.01;
+  const std::array<double, 3> spin{{0.0, 0.0, 0.0}};
+  const std::array<double, 3> center{{0.0, 0.0, 0.0}};
+  gr::Solutions::KerrSchild solution(mass, spin, center);
+
+  // Setup grid
+  const size_t num_points_1d = 8;
+  const std::array<double, 3> lower_bound{{0.82, 1.24, 1.32}};
+  const std::array<double, 3> upper_bound{{0.8, 1.22, 1.30}};
+  const size_t SpatialDim = 3;
+  Mesh<SpatialDim> mesh{num_points_1d, Spectral::Basis::Legendre,
+                        Spectral::Quadrature::GaussLobatto};
+  const auto coord_map =
+      domain::make_coordinate_map<Frame::ElementLogical, FrameType>(Affine3D{
+          Affine{-1., 1., lower_bound[0], upper_bound[0]},
+          Affine{-1., 1., lower_bound[1], upper_bound[1]},
+          Affine{-1., 1., lower_bound[2], upper_bound[2]},
+      });
+  const size_t num_points_3d = num_points_1d * num_points_1d * num_points_1d;
+  // Setup coordinates
+  const auto x_logical = logical_coordinates(mesh);
+  const auto x = coord_map(x_logical);
+  // Arbitrary time for time-independent solution.
+  const double t = std::numeric_limits<double>::signaling_NaN();
+  // Evaluate analytic solution
+  const auto vars = solution.variables(
+      x, t,
+      typename gr::Solutions::KerrSchild::template tags<DataVector,
+                                                        FrameType>{});
+
+  // Compute actual analytical derivative of the determinant
+  gr::Solutions::KerrSchild::IntermediateVars<DataVector, FrameType> ks_cache(
+      solution, x);
+  const auto deriv_det_spatial_metric = ks_cache.get_var(
+      gr::Tags::DerivDetSpatialMetric<3, FrameType, DataVector>{});
+
+  // Compute expected numerical derivative of the determinant
+  const double null_vector_0 = -1.0;
+  gr::Solutions::KerrSchild::IntermediateComputer<DataVector, FrameType>
+      ks_computer(solution, x, null_vector_0);
+  auto H = make_with_value<Scalar<DataVector>>(
+      used_for_size, std::numeric_limits<double>::signaling_NaN());
+  using H_tag = gr::Solutions::KerrSchild::internal_tags::H<DataVector>;
+  ks_computer(make_not_null(&H), make_not_null(&ks_cache), H_tag{});
+
+  Variables<tmpl::list<H_tag>> H_var(num_points_3d);
+  get<H_tag>(H_var) = H;
+  const auto expected_deriv_H_var = partial_derivatives<tmpl::list<H_tag>>(
+      H_var, mesh, coord_map.inv_jacobian(x_logical));
+  const auto& expected_deriv_H =
+      get<Tags::deriv<H_tag, tmpl::size_t<SpatialDim>, FrameType>>(
+          expected_deriv_H_var);
+
+  tnsr::i<DataVector, SpatialDim, FrameType>
+      expected_deriv_det_spatial_metric{};
+  for (size_t i = 0; i < SpatialDim; i++) {
+    expected_deriv_det_spatial_metric.get(i) =
+        2.0 * square(null_vector_0) * expected_deriv_H.get(i);
+  }
+
+  // A custom epsilon is used here because the Legendre polynomials don't fit
+  // the derivative of 1 / r well. This was looked at for various box sizes and
+  // number of 1D grid points.
+  Approx approx = Approx::custom().epsilon(1e-12).scale(1.0);
+  CHECK_ITERABLE_CUSTOM_APPROX(deriv_det_spatial_metric,
+                               expected_deriv_det_spatial_metric, approx);
+}
+
 template <typename Frame, typename DataType>
 void test_tag_retrieval(const DataType& used_for_size) {
   // Parameters for KerrSchild solution
@@ -228,12 +312,14 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.KerrSchild",
 
   test_schwarzschild<Frame::Inertial>(DataVector(5));
   test_schwarzschild<Frame::Inertial>(0.0);
+  test_numerical_deriv_det_spatial_metric<Frame::Inertial>(DataVector(5));
   test_tag_retrieval<Frame::Inertial>(DataVector(5));
   test_tag_retrieval<Frame::Inertial>(0.0);
   test_einstein_solution<Frame::Inertial>();
 
   test_schwarzschild<Frame::Grid>(DataVector(5));
   test_schwarzschild<Frame::Grid>(0.0);
+  test_numerical_deriv_det_spatial_metric<Frame::Grid>(DataVector(5));
   test_tag_retrieval<Frame::Grid>(DataVector(5));
   test_tag_retrieval<Frame::Grid>(0.0);
   test_einstein_solution<Frame::Grid>();

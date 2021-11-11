@@ -33,6 +33,9 @@ template <typename DataType = DataVector>
 struct SqrtDetSpatialMetric;
 template <size_t Dim, typename Frame = Frame::Inertial,
           typename DataType = DataVector>
+struct DerivDetSpatialMetric;
+template <size_t Dim, typename Frame = Frame::Inertial,
+          typename DataType = DataVector>
 struct DerivInverseSpatialMetric;
 template <size_t Dim, typename Frame = Frame::Inertial,
           typename DataType = DataVector>

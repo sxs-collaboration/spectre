@@ -519,6 +519,21 @@ Scalar<DataType> KerrSchild::IntermediateVars<DataType, Frame>::get_var(
 }
 
 template <typename DataType, typename Frame>
+tnsr::i<DataType, 3, Frame>
+KerrSchild::IntermediateVars<DataType, Frame>::get_var(
+    gr::Tags::DerivDetSpatialMetric<3, Frame, DataType> /*meta*/) {
+  const auto& deriv_H = get_var(internal_tags::deriv_H<DataType, Frame>{});
+
+  auto result =
+      make_with_value<tnsr::i<DataType, 3, Frame>>(get<0>(deriv_H), 0.);
+  for (size_t i = 0; i < 3; ++i) {
+    result.get(i) = 2.0 * square(null_vector_0_) * deriv_H.get(i);
+  }
+
+  return result;
+}
+
+template <typename DataType, typename Frame>
 tnsr::II<DataType, 3, Frame>
 KerrSchild::IntermediateVars<DataType, Frame>::get_var(
     gr::Tags::InverseSpatialMetric<3, Frame, DataType> /*meta*/) {
