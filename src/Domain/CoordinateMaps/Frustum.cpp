@@ -13,10 +13,13 @@
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Domain/Structure/Side.hpp"
+#include "IO/Logging/Verbosity.hpp"
+#include "NumericalAlgorithms/RootFinding/GslMultiRoot.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
+#include "Utilities/ErrorHandling/Exceptions.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
@@ -27,7 +30,8 @@ Frustum::Frustum(const std::array<std::array<double, 2>, 4>& face_vertices,
                  OrientationMap<3> orientation_of_frustum,
                  const bool with_equiangular_map,
                  const double projective_scale_factor,
-                 const bool auto_projective_scale_factor)
+                 const bool auto_projective_scale_factor,
+                 const double sphericity)
     // clang-tidy: trivially copyable
     : orientation_of_frustum_(std::move(orientation_of_frustum)),  // NOLINT
       with_equiangular_map_(with_equiangular_map),
@@ -39,7 +43,13 @@ Frustum::Frustum(const std::array<std::array<double, 2>, 4>& face_vertices,
                    lower_bound == -1.0 and upper_bound == 1.0 and
                    orientation_of_frustum_ == OrientationMap<3>{} and
                    not with_equiangular_map and projective_scale_factor == 1.0),
-      with_projective_map_(projective_scale_factor != 1.0) {
+      with_projective_map_(projective_scale_factor != 1.0),
+      sphericity_(sphericity) {
+  ASSERT(sphericity_ >= 0.0 and sphericity_ <= 1.0,
+         "The sphericity must be set between 0.0, corresponding to a flat "
+         "surface, and 1.0, corresponding to a spherical surface, inclusive. "
+         "It is currently set to "
+             << sphericity << ".");
   ASSERT(projective_scale_factor != 0.0,
          "A projective scale factor of zero maps all coordinates to zero! Set "
          "projective_scale_factor to unity to turn off projective scaling.");
@@ -91,6 +101,19 @@ Frustum::Frustum(const std::array<std::array<double, 2>, 4>& face_vertices,
   delta_z_zeta_ = 0.5 * (upper_bound - lower_bound);
   w_plus_ = projective_scale_factor + 1.0;
   w_minus_ = projective_scale_factor - 1.0;
+  // The radius is taken to be the distance from the origin to the vertex of
+  // the Frustum that is furthest away from the origin. This vertex is
+  // assumed to lie on a cube that is centered on the origin. Then the
+  // distance from the origin of the vertex is given by the distance along one
+  // of the x, y, or z axes to the vertex, multiplied by sqrt(3), as the
+  // distance from the origin to the vertex along the other two axes are the
+  // same as the first, assuming it is a vertex of the origin-centered cube.
+  radius_ = std::max({abs(upper_x_upper_base), abs(upper_y_upper_base),
+                      abs(upper_x_lower_base), abs(upper_y_lower_base),
+                      abs(lower_x_upper_base), abs(lower_y_upper_base),
+                      abs(lower_x_lower_base), abs(lower_y_lower_base),
+                      abs(upper_bound), abs(lower_bound)}) *
+            sqrt(3.0);
   if (auto_projective_scale_factor) {
     with_projective_map_ = true;
     const double w_delta = sqrt(((upper_x_lower_base - lower_x_lower_base) *
@@ -123,6 +146,24 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> Frustum::operator()(
       sigma_y_ + delta_y_eta_ * cap_eta +
       (delta_y_zeta_ + delta_y_eta_zeta_ * cap_eta) * cap_zeta;
   ReturnType physical_z = sigma_z_ + delta_z_zeta_ * cap_zeta;
+  if (sphericity_ > 0.0) {
+    const ReturnType upper_surface_x =
+        sigma_x_ + delta_x_xi_ * cap_xi +
+        (delta_x_zeta_ + delta_x_xi_zeta_ * cap_xi);
+    const ReturnType upper_surface_y =
+        sigma_y_ + delta_y_eta_ * cap_eta +
+        (delta_y_zeta_ + delta_y_eta_zeta_ * cap_eta);
+    const double upper_surface_z = sigma_z_ + delta_z_zeta_;
+    const ReturnType upper_surface_r =
+        sqrt(square(upper_surface_x) + square(upper_surface_y) +
+             (square(upper_surface_z)));
+    const ReturnType correction_coefficient = 0.5 * sphericity_ *
+                                              (1.0 + cap_zeta) *
+                                              (radius_ / upper_surface_r - 1.0);
+    physical_x += correction_coefficient * upper_surface_x;
+    physical_y += correction_coefficient * upper_surface_y;
+    physical_z += correction_coefficient * upper_surface_z;
+  }
   std::array<ReturnType, 3> physical_coords{
       {std::move(physical_x), std::move(physical_y), std::move(physical_z)}};
   return discrete_rotation(orientation_of_frustum_, std::move(physical_coords));
@@ -160,6 +201,52 @@ std::optional<std::array<double, 3>> Frustum::inverse(
     logical_coords[2] = (-w_minus_ + w_plus_ * logical_coords[2]) /
                         (w_plus_ - w_minus_ * logical_coords[2]);
   }
+  if (sphericity_ > 0.0) {
+    const double absolute_tolerance = 1.0e-12;
+    const double max_absolute_tolerance = 1.0e-10;
+    const int maximum_iterations = 20;
+    const Verbosity verbosity = Verbosity::Silent;
+    const auto method = RootFinder::Method::Newton;
+    const double relative_tolerance = 1.0e-12;
+    const auto condition = RootFinder::StoppingCondition::AbsoluteAndRelative;
+    struct {
+      std::array<double, 3> operator()(
+          const std::array<double, 3>& source_coords) const {
+        return map(source_coords) - target_coords;
+      }
+      std::array<std::array<double, 3>, 3> jacobian(
+          const std::array<double, 3>& source_coords) const {
+        std::array<std::array<double, 3>, 3> jacobian_matrix_array{};
+        const auto jacobian_matrix_tnsr = map.jacobian(source_coords);
+        for (size_t i = 0; i < 3; i++) {
+          for (size_t j = 0; j < 3; j++) {
+            gsl::at(gsl::at(jacobian_matrix_array, i), j) =
+                jacobian_matrix_tnsr.get(i, j);
+          }
+        }
+        return jacobian_matrix_array;
+      }
+      const Frustum& map;
+      const std::array<double, 3>& target_coords;
+    } const rootfunction{*this, target_coords};
+
+    // The `logical_coords` computed above are computed using the inverse map
+    // to the flat frustum map, which is known analytically.
+    // These `logical_coords` are then used as the initial guess for the
+    // inverse of the bulged frustum map. This reduces the number of iterations
+    // needed by the root finder. The initial guess is constructed to lie within
+    // the logical cube.
+    for (auto& coord : logical_coords) {
+      if (abs(coord) > 1.0) {
+        coord /= abs(coord);
+      }
+    }
+    logical_coords = RootFinder::gsl_multiroot(
+        rootfunction, logical_coords, absolute_tolerance, maximum_iterations,
+        relative_tolerance, verbosity, max_absolute_tolerance, method,
+        condition);
+  }
+
   return logical_coords;
 }
 
@@ -236,6 +323,90 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Frustum::jacobian(
   get<1, 2>(jacobian_matrix) = dX_dzeta[1];
   get<2, 2>(jacobian_matrix) = dX_dzeta[2];
 
+  if (sphericity_ > 0.0) {
+    const ReturnType flat_frustum_x = sigma_x_ + delta_x_xi_ * cap_xi +
+                                      delta_x_zeta_ + delta_x_xi_zeta_ * cap_xi;
+
+    const ReturnType flat_frustum_y = sigma_y_ + delta_y_eta_ * cap_eta +
+                                      delta_y_zeta_ +
+                                      delta_y_eta_zeta_ * cap_eta;
+
+    const double flat_frustum_z = sigma_z_ + delta_z_zeta_;
+
+    const ReturnType one_over_mag_flat =
+        1.0 / sqrt(square(flat_frustum_x) + square(flat_frustum_y) +
+                   square(flat_frustum_z));
+
+    const ReturnType flat_frustum_x_hat = flat_frustum_x * one_over_mag_flat;
+
+    const ReturnType flat_frustum_y_hat = flat_frustum_y * one_over_mag_flat;
+
+    const ReturnType flat_frustum_z_hat = flat_frustum_z * one_over_mag_flat;
+
+    const ReturnType r_over_mag_flat = radius_ * one_over_mag_flat;
+
+    const double s_over_two = 0.5 * sphericity_;
+
+    // delta_dX_dxi
+    std::array<ReturnType, 3> delta_dX_dxi = discrete_rotation(
+        orientation_of_frustum_,
+        s_over_two * (1.0 + cap_zeta) * (delta_x_xi_ + delta_x_xi_zeta_) *
+            std::array<ReturnType, 3>{
+                {(r_over_mag_flat * (1.0 - square(flat_frustum_x_hat)) - 1.0),
+                 -1.0 * r_over_mag_flat * flat_frustum_y_hat *
+                     flat_frustum_x_hat,
+                 -1.0 * r_over_mag_flat * flat_frustum_z_hat *
+                     flat_frustum_x_hat}});
+
+    if (with_equiangular_map_) {
+      delta_dX_dxi[0] *= cap_xi_deriv;
+      delta_dX_dxi[1] *= cap_xi_deriv;
+      delta_dX_dxi[2] *= cap_xi_deriv;
+    }
+
+    get<0, 0>(jacobian_matrix) += delta_dX_dxi[0];
+    get<1, 0>(jacobian_matrix) += delta_dX_dxi[1];
+    get<2, 0>(jacobian_matrix) += delta_dX_dxi[2];
+
+    // delta_dX_deta
+    std::array<ReturnType, 3> delta_dX_deta = discrete_rotation(
+        orientation_of_frustum_,
+        s_over_two * (1.0 + cap_zeta) * (delta_y_eta_ + delta_y_eta_zeta_) *
+            std::array<ReturnType, 3>{
+                {-1.0 * r_over_mag_flat * flat_frustum_x_hat *
+                     flat_frustum_y_hat,
+                 r_over_mag_flat * (1.0 - square(flat_frustum_y_hat)) - 1.0,
+                 -1.0 * r_over_mag_flat * flat_frustum_z_hat *
+                     flat_frustum_y_hat}});
+
+    if (with_equiangular_map_) {
+      delta_dX_deta[0] *= cap_eta_deriv;
+      delta_dX_deta[1] *= cap_eta_deriv;
+      delta_dX_deta[2] *= cap_eta_deriv;
+    }
+
+    get<0, 1>(jacobian_matrix) += delta_dX_deta[0];
+    get<1, 1>(jacobian_matrix) += delta_dX_deta[1];
+    get<2, 1>(jacobian_matrix) += delta_dX_deta[2];
+
+    // delta_dX_dzeta
+    std::array<ReturnType, 3> delta_dX_dzeta = discrete_rotation(
+        orientation_of_frustum_,
+        s_over_two * (r_over_mag_flat - 1.0) *
+            std::array<ReturnType, 3>{
+                {flat_frustum_x, flat_frustum_y,
+                 make_with_value<ReturnType>(zeta, flat_frustum_z)}});
+
+    if (with_projective_map_) {
+      delta_dX_dzeta[0] *= cap_zeta_deriv;
+      delta_dX_dzeta[1] *= cap_zeta_deriv;
+      delta_dX_dzeta[2] *= cap_zeta_deriv;
+    }
+
+    get<0, 2>(jacobian_matrix) += delta_dX_dzeta[0];
+    get<1, 2>(jacobian_matrix) += delta_dX_dzeta[1];
+    get<2, 2>(jacobian_matrix) += delta_dX_dzeta[2];
+  }
   return jacobian_matrix;
 }
 
@@ -263,6 +434,8 @@ void Frustum::pup(PUP::er& p) {
   p | delta_z_zeta_;
   p | w_plus_;
   p | w_minus_;
+  p | sphericity_;
+  p | radius_;
 }
 
 bool operator==(const Frustum& lhs, const Frustum& rhs) {
@@ -280,7 +453,8 @@ bool operator==(const Frustum& lhs, const Frustum& rhs) {
          lhs.delta_y_eta_zeta_ == lhs.delta_y_eta_zeta_ and
          lhs.sigma_z_ == rhs.sigma_z_ and
          lhs.delta_z_zeta_ == rhs.delta_z_zeta_ and
-         lhs.w_plus_ == rhs.w_plus_ and lhs.w_minus_ == rhs.w_minus_;
+         lhs.w_plus_ == rhs.w_plus_ and lhs.w_minus_ == rhs.w_minus_ and
+         lhs.sphericity_ == rhs.sphericity_ and lhs.radius_ == rhs.radius_;
 }
 
 bool operator!=(const Frustum& lhs, const Frustum& rhs) {

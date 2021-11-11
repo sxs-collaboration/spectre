@@ -25,24 +25,26 @@ void test_suite_for_frustum(const bool with_equiangular_map) {
   INFO("Suite for frustum");
   // Set up random number generator
   MAKE_GENERATOR(gen);
-  std::uniform_real_distribution<> lower_bound_dis(-14, -2);
-  std::uniform_real_distribution<> upper_bound_dis(2, 14);
+  std::uniform_real_distribution<> lower_bound_lower_base_dis(-9, -3);
+  std::uniform_real_distribution<> upper_bound_lower_base_dis(3, 9);
+  std::uniform_real_distribution<> lower_bound_upper_base_dis(-14, -9);
+  std::uniform_real_distribution<> upper_bound_upper_base_dis(9, 14);
 
-  const double lower_x_lower_base = lower_bound_dis(gen);
+  const double lower_x_lower_base = lower_bound_lower_base_dis(gen);
   CAPTURE(lower_x_lower_base);
-  const double lower_y_lower_base = lower_bound_dis(gen);
+  const double lower_y_lower_base = lower_bound_lower_base_dis(gen);
   CAPTURE(lower_y_lower_base);
-  const double upper_x_lower_base = upper_bound_dis(gen);
+  const double upper_x_lower_base = upper_bound_lower_base_dis(gen);
   CAPTURE(upper_x_lower_base);
-  const double upper_y_lower_base = upper_bound_dis(gen);
+  const double upper_y_lower_base = upper_bound_lower_base_dis(gen);
   CAPTURE(upper_y_lower_base);
-  const double lower_x_upper_base = lower_bound_dis(gen);
+  const double lower_x_upper_base = lower_bound_upper_base_dis(gen);
   CAPTURE(lower_x_upper_base);
-  const double lower_y_upper_base = lower_bound_dis(gen);
+  const double lower_y_upper_base = lower_bound_upper_base_dis(gen);
   CAPTURE(lower_y_upper_base);
-  const double upper_x_upper_base = upper_bound_dis(gen);
+  const double upper_x_upper_base = upper_bound_upper_base_dis(gen);
   CAPTURE(upper_x_upper_base);
-  const double upper_y_upper_base = upper_bound_dis(gen);
+  const double upper_y_upper_base = upper_bound_upper_base_dis(gen);
   CAPTURE(upper_y_upper_base);
 
   for (OrientationMapIterator<3> map_i{}; map_i; ++map_i) {
@@ -55,7 +57,8 @@ void test_suite_for_frustum(const bool with_equiangular_map) {
          {{lower_x_upper_base, lower_y_upper_base}},
          {{upper_x_upper_base, upper_y_upper_base}}}};
     const CoordinateMaps::Frustum frustum_map(face_vertices, -1.0, 2.0, map_i(),
-                                              with_equiangular_map, 1.01);
+                                              with_equiangular_map, 1.2, false,
+                                              0.5);
     test_suite_for_map_on_unit_cube(frustum_map);
   }
 }
@@ -245,6 +248,60 @@ void test_is_identity() {
       -1.0, 1.0, OrientationMap<3>{}, false, 1.5}
                 .is_identity());
 }
+
+void test_bulged_frustum_jacobian() {
+  INFO("Bulged frustum jacobian");
+  const std::array<std::array<double, 2>, 4> face_vertices{
+      {{{-2.0, -2.0}}, {{2.0, 2.0}}, {{-4.0, -4.0}}, {{4.0, 4.0}}}};
+  const CoordinateMaps::Frustum map(
+      face_vertices, 2.0, 5.0, OrientationMap<3>{}, false, 1.0, false, 1.0);
+
+  const std::array<double, 3> test_point1{{-1.0, 0.25, 0.0}};
+  const std::array<double, 3> test_point2{{1.0, 1.0, -0.5}};
+  const std::array<double, 3> test_point3{{0.7, -0.2, 0.4}};
+  const std::array<double, 3> test_point4{{0.0, 0.0, 0.0}};
+
+  test_jacobian(map, test_point1);
+  test_jacobian(map, test_point2);
+  test_jacobian(map, test_point3);
+  test_jacobian(map, test_point4);
+}
+
+void test_bulged_frustum_inv_jacobian() {
+  INFO("Bulged frustum inverse jacobian");
+  const std::array<std::array<double, 2>, 4> face_vertices{
+      {{{-2.0, -2.0}}, {{2.0, 2.0}}, {{-4.0, -4.0}}, {{4.0, 4.0}}}};
+  const CoordinateMaps::Frustum map(
+      face_vertices, 2.0, 5.0, OrientationMap<3>{}, false, 1.0, false, 1.0);
+
+  const std::array<double, 3> test_point1{{-1.0, 0.25, 0.0}};
+  const std::array<double, 3> test_point2{{1.0, 1.0, -0.5}};
+  const std::array<double, 3> test_point3{{0.7, -0.2, 0.4}};
+  const std::array<double, 3> test_point4{{0.0, 0.0, 0.0}};
+
+  test_inv_jacobian(map, test_point1);
+  test_inv_jacobian(map, test_point2);
+  test_inv_jacobian(map, test_point3);
+  test_inv_jacobian(map, test_point4);
+}
+
+void test_bulged_frustum_inv_map() {
+  INFO("Bulged frustum inverse map");
+  const std::array<std::array<double, 2>, 4> face_vertices{
+      {{{-2.0, -2.0}}, {{2.0, 2.0}}, {{-4.0, -4.0}}, {{4.0, 4.0}}}};
+  const CoordinateMaps::Frustum map(
+      face_vertices, 2.0, 5.0, OrientationMap<3>{}, false, 1.0, false, 1.0);
+
+  const std::array<double, 3> test_point1{{-1.0, 0.25, 0.0}};
+  const std::array<double, 3> test_point2{{1.0, 1.0, -0.5}};
+  const std::array<double, 3> test_point3{{0.7, -0.2, 0.4}};
+  const std::array<double, 3> test_point4{{0.0, 0.0, 0.01}};
+
+  test_inverse_map(map, test_point1);
+  test_inverse_map(map, test_point2);
+  test_inverse_map(map, test_point3);
+  test_inverse_map(map, test_point4);
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Frustum", "[Domain][Unit]") {
@@ -254,6 +311,9 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Frustum", "[Domain][Unit]") {
   test_alignment();
   test_auto_projective_scale_factor();
   test_is_identity();
+  test_bulged_frustum_jacobian();
+  test_bulged_frustum_inv_jacobian();
+  test_bulged_frustum_inv_map();
 }
 
 // [[OutputRegex, A projective scale factor of zero maps all coordinates to
@@ -367,6 +427,30 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Frustum", "[Domain][Unit]") {
 
   auto failed_frustum = CoordinateMaps::Frustum(
       face_vertices, lower_bound, upper_bound, OrientationMap<3>{});
+  static_cast<void>(failed_frustum);
+
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
+}
+
+// [[OutputRegex, The sphericity must be set between 0.0, corresponding to a
+// flat surface, and 1.0, corresponding to a spherical surface, inclusive. It is
+// currently set to 1.3.]]
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Frustum.Assert6",
+                               "[Domain][Unit]") {
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  const std::array<std::array<double, 2>, 4> face_vertices{
+      {{{-2.0, -2.0}}, {{2.0, 2.0}}, {{-4.0, -4.0}}, {{4.0, 4.0}}}};
+  const double lower_bound = 2.0;
+  const double upper_bound = 5.0;
+  const double projective_scale_factor = 1.0;
+  const bool with_equiangular_map = false;
+  const double sphericity = 1.3;
+
+  auto failed_frustum = CoordinateMaps::Frustum(
+      face_vertices, lower_bound, upper_bound, OrientationMap<3>{},
+      with_equiangular_map, projective_scale_factor, false, sphericity);
   static_cast<void>(failed_frustum);
 
   ERROR("Failed to trigger ASSERT in an assertion test");

@@ -705,7 +705,8 @@ frustum_coordinate_maps(const double length_inner_cube,
                         const double length_outer_cube,
                         const bool use_equiangular_map,
                         const std::array<double, 3>& origin_preimage,
-                        const double projective_scale_factor) {
+                        const double projective_scale_factor,
+                        const double sphericity) {
   ASSERT(length_inner_cube < 0.5 * length_outer_cube,
          "The outer cube is too small! The inner cubes will pierce the surface "
          "of the outer cube.");
@@ -739,7 +740,9 @@ frustum_coordinate_maps(const double length_inner_cube,
         top,
         gsl::at(frustum_orientations, i),
         use_equiangular_map,
-        projective_scale_factor});
+        projective_scale_factor,
+        false,
+        sphericity});
     // frustums on the right
     frustums.push_back(FrustumMap{{{{{-displacement_from_origin[0],
                                       -lower - displacement_from_origin[1]}},
@@ -751,7 +754,9 @@ frustum_coordinate_maps(const double length_inner_cube,
                                   top,
                                   gsl::at(frustum_orientations, i),
                                   use_equiangular_map,
-                                  projective_scale_factor});
+                                  projective_scale_factor,
+                                  false,
+                                  sphericity});
   }
   // end cap frustum on the right
   std::array<double, 3> displacement_from_origin =
@@ -766,7 +771,9 @@ frustum_coordinate_maps(const double length_inner_cube,
                                 top,
                                 frustum_orientations[4],
                                 use_equiangular_map,
-                                projective_scale_factor});
+                                projective_scale_factor,
+                                false,
+                                sphericity});
   // end cap frustum on the left
   displacement_from_origin =
       discrete_rotation(frustum_orientations[5].inverse_map(), origin_preimage);
@@ -780,7 +787,9 @@ frustum_coordinate_maps(const double length_inner_cube,
                                 top,
                                 frustum_orientations[5],
                                 use_equiangular_map,
-                                projective_scale_factor});
+                                projective_scale_factor,
+                                false,
+                                sphericity});
 
   // clang-tidy: trivially copyable
   return domain::make_vector_coordinate_map_base<Frame::BlockLogical,
@@ -1438,14 +1447,16 @@ frustum_coordinate_maps(const double length_inner_cube,
                         const double length_outer_cube,
                         const bool use_equiangular_map,
                         const std::array<double, 3>& origin_preimage,
-                        const double projective_scale_factor);
+                        const double projective_scale_factor,
+                        const double sphericity);
 template std::vector<std::unique_ptr<
     domain::CoordinateMapBase<Frame::BlockLogical, Frame::Grid, 3>>>
 frustum_coordinate_maps(const double length_inner_cube,
                         const double length_outer_cube,
                         const bool use_equiangular_map,
                         const std::array<double, 3>& origin_preimage,
-                        const double projective_scale_factor);
+                        const double projective_scale_factor,
+                        const double sphericity);
 template std::vector<std::unique_ptr<
     domain::CoordinateMapBase<Frame::BlockLogical, Frame::Inertial, 3>>>
 cyl_wedge_coordinate_maps(

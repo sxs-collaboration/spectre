@@ -28,6 +28,7 @@ DomainCreator:
     EnvelopingCube:
       Radius: 100.0
       UseProjectiveMap: true
+      Sphericity: 0.0
     OuterShell:
       InnerRadius: Auto
       OuterRadius: 590.0

@@ -179,7 +179,7 @@ auto frustum_coordinate_maps(
     double length_inner_cube, double length_outer_cube,
     bool use_equiangular_map,
     const std::array<double, 3>& origin_preimage = {{0.0, 0.0, 0.0}},
-    double projective_scale_factor = 1.0)
+    double projective_scale_factor = 1.0, double sphericity = 0.0)
     -> std::vector<std::unique_ptr<
         domain::CoordinateMapBase<Frame::BlockLogical, TargetFrame, 3>>>;
 
