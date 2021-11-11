@@ -653,6 +653,139 @@ void test_contractions_rank4(const DataType& used_for_size) {
 }
 
 template <typename DataType>
+void test_spatial_spacetime_index(const DataType& used_for_size) {
+  // Contract (spatial, spacetime) tensor
+  // Use explicit type (vs auto) for LHS Tensor so the compiler checks the
+  // return type of `evaluate`
+  Tensor<DataType, Symmetry<2, 1>,
+         index_list<SpatialIndex<3, UpLo::Up, Frame::Inertial>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::Inertial>>>
+
+      R(used_for_size);
+  create_tensor(make_not_null(&R));
+  const Tensor<DataType> R_contracted =
+      TensorExpressions::evaluate(R(ti_I, ti_i));
+
+  // Contract (spacetime, spatial) tensor
+  Tensor<DataType, Symmetry<2, 1>,
+         index_list<SpacetimeIndex<3, UpLo::Up, Frame::Inertial>,
+                    SpatialIndex<3, UpLo::Lo, Frame::Inertial>>>
+      S(used_for_size);
+  create_tensor(make_not_null(&S));
+  const Tensor<DataType> S_contracted =
+      TensorExpressions::evaluate(S(ti_K, ti_k));
+
+  // Contract (spacetime, spacetime) tensor using generic spatial indices
+  Tensor<DataType, Symmetry<2, 1>,
+         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Up, Frame::Grid>>>
+      T(used_for_size);
+  create_tensor(make_not_null(&T));
+  const Tensor<DataType> T_contracted =
+      TensorExpressions::evaluate(T(ti_j, ti_J));
+
+  DataType expected_R_sum = make_with_value<DataType>(used_for_size, 0.0);
+  DataType expected_S_sum = make_with_value<DataType>(used_for_size, 0.0);
+  DataType expected_T_sum = make_with_value<DataType>(used_for_size, 0.0);
+  for (size_t i = 0; i < 3; i++) {
+    expected_R_sum += R.get(i, i + 1);
+    expected_S_sum += S.get(i + 1, i);
+    expected_T_sum += T.get(i + 1, i + 1);
+  }
+  CHECK_ITERABLE_APPROX(R_contracted.get(), expected_R_sum);
+  CHECK_ITERABLE_APPROX(S_contracted.get(), expected_S_sum);
+  CHECK_ITERABLE_APPROX(T_contracted.get(), expected_T_sum);
+
+  Tensor<DataType, Symmetry<4, 3, 2, 1>,
+         index_list<SpatialIndex<3, UpLo::Up, Frame::Grid>,
+                    SpatialIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Up, Frame::Grid>>>
+      G(used_for_size);
+  create_tensor(make_not_null(&G));
+
+  // Contract one (spatial, spacetime) pair of indices of a tensor that also
+  // takes a generic spatial index for a single non-contracted spacetime index
+  // Use explicit type (vs auto) for LHS Tensor so the compiler checks the
+  // return type of `evaluate`
+  const Tensor<DataType, Symmetry<2, 1>,
+               index_list<SpatialIndex<3, UpLo::Lo, Frame::Grid>,
+                          SpatialIndex<3, UpLo::Up, Frame::Grid>>>
+      G_contracted_1 =
+          TensorExpressions::evaluate<ti_i, ti_K>(G(ti_K, ti_j, ti_i, ti_J));
+
+  for (size_t i = 0; i < 3; i++) {
+    for (size_t k = 0; k < 3; k++) {
+      DataType expected_G_sum_1 = make_with_value<DataType>(used_for_size, 0.0);
+      for (size_t j = 0; j < 3; j++) {
+        expected_G_sum_1 += G.get(k, j, i + 1, j + 1);
+      }
+      CHECK_ITERABLE_APPROX(G_contracted_1.get(i, k), expected_G_sum_1);
+    }
+  }
+
+  // Contract one (spacetime, spacetime) pair of indices using generic spatial
+  // indices and then one (spatial, spatial) pair of indices
+  const Tensor<DataType> G_contracted_2 =
+      TensorExpressions::evaluate(G(ti_I, ti_i, ti_j, ti_J));
+
+  DataType expected_G_sum_2 = make_with_value<DataType>(used_for_size, 0.0);
+  for (size_t i = 0; i < 3; i++) {
+    for (size_t j = 0; j < 3; j++) {
+      expected_G_sum_2 += G.get(i, i, j + 1, j + 1);
+    }
+  }
+  CHECK_ITERABLE_APPROX(G_contracted_2.get(), expected_G_sum_2);
+
+  // Contract two (spatial, spacetime) pairs of indices
+  const Tensor<DataType> G_contracted_3 =
+      TensorExpressions::evaluate(G(ti_I, ti_j, ti_i, ti_J));
+
+  DataType expected_G_sum_3 = make_with_value<DataType>(used_for_size, 0.0);
+  for (size_t i = 0; i < 3; i++) {
+    for (size_t j = 0; j < 3; j++) {
+      expected_G_sum_3 += G.get(i, j, i + 1, j + 1);
+    }
+  }
+  CHECK_ITERABLE_APPROX(G_contracted_3.get(), expected_G_sum_3);
+
+  Tensor<DataType, Symmetry<4, 3, 2, 1>,
+         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Up, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Up, Frame::Grid>>>
+      H(used_for_size);
+  create_tensor(make_not_null(&H));
+
+  // Contract one (spacetime, spacetime) pair of indices using generic spacetime
+  // indices and then one (spacetime, spacetime) pair of indices using generic
+  // spatial indices
+  const Tensor<DataType> H_contracted_1 =
+      TensorExpressions::evaluate(H(ti_i, ti_I, ti_a, ti_A));
+
+  DataType expected_H_sum_1 = make_with_value<DataType>(used_for_size, 0.0);
+  for (size_t i = 0; i < 3; i++) {
+    for (size_t a = 0; a < 4; a++) {
+      expected_H_sum_1 += H.get(i + 1, i + 1, a, a);
+    }
+  }
+  CHECK_ITERABLE_APPROX(H_contracted_1.get(), expected_H_sum_1);
+
+  // Contract two (spacetime, spacetime) pair of indices using generic spatial
+  // indices
+  const Tensor<DataType> H_contracted_2 =
+      TensorExpressions::evaluate(H(ti_j, ti_I, ti_i, ti_J));
+
+  DataType expected_H_sum_2 = make_with_value<DataType>(used_for_size, 0.0);
+  for (size_t j = 0; j < 3; j++) {
+    for (size_t i = 0; i < 3; i++) {
+      expected_H_sum_2 += H.get(j + 1, i + 1, i + 1, j + 1);
+    }
+  }
+  CHECK_ITERABLE_APPROX(H_contracted_2.get(), expected_H_sum_2);
+}
+
+template <typename DataType>
 void test_time_index(const DataType& used_for_size) {
   Tensor<DataType, Symmetry<4, 3, 2, 1>,
          index_list<SpacetimeIndex<3, UpLo::Up, Frame::Inertial>,
@@ -781,6 +914,7 @@ void test_contractions(const DataType& used_for_size) {
   test_contractions_rank2(used_for_size);
   test_contractions_rank3(used_for_size);
   test_contractions_rank4(used_for_size);
+  test_spatial_spacetime_index(used_for_size);
   test_time_index(used_for_size);
 }
 }  // namespace
