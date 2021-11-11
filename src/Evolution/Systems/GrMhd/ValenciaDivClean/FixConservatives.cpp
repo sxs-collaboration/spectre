@@ -12,11 +12,11 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tags/TempTensor.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
+#include "DataStructures/Tensor/ExtractPoint.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "NumericalAlgorithms/RootFinding/TOMS748.hpp"
 #include "Utilities/ConstantExpressions.hpp"
-#include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/Math.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -27,8 +27,10 @@
 namespace {
 
 // This class codes Eq. (B.34), rewritten as a standard-form
-// polynomial in (W - 1) for better numerical behavior.  The
-// implemented function is
+// polynomial in (W - 1) or (W - ((tau/D) - (B^2/D) + 1)) for better
+// numerical behavior.
+//
+// If lower_bound is 0, the implemented function is
 // ((B^2/D) / 2 - (tau/D)) (1 + 2 (B^2/D) mu^2 + (B^2/D)^2 mu^2)
 // + (W-1) (2 ((B^2/D) - (tau/D)) (1 + (B^2/D) mu^2) + (B^2/D) mu^2 + 1)
 // + (W-1)^2 ((B^2/D) - (tau/D) + 3/2 (B^2/D) mu^2 + 2)
@@ -37,25 +39,55 @@ namespace {
 // that, because we've already modified tau to satisfy B.39, its value
 // at W-1 = 0 is guaranteed to be negative, even in the presence of
 // roundoff error.
+//
+// If lower_bound is LB = ((tau/D) - (B^2/D)), the implemented function is
+// - 1/2 (B^2/D) (1 + mu^2 (tau/D) ((tau/D) + 2))
+// + (W-[LB+1]) (1 + (B^2/D) mu^2 + LB ((B^2/D) mu^2 + LB + 2))
+// + (W-[LB+1])^2 (2 LB + 3/2 (B^2/D) mu^2 + 2)
+// + (W-[LB+1])^3
+// This form is only used if LB > 0, so, as in the previous case, it
+// is guaranteed to be negative at W-[LB+1] = 0.
 class FunctionOfLorentzFactor {
  public:
   FunctionOfLorentzFactor(const double b_squared_over_d,
                           const double tau_over_d,
-                          const double normalized_s_dot_b)
+                          const double normalized_s_dot_b,
+                          const double lower_bound)
       : coefficients_{
-            {(0.5 * b_squared_over_d - tau_over_d) *
-                 (square(normalized_s_dot_b) * b_squared_over_d *
-                      (b_squared_over_d + 2.0) +
-                  1.0),
-             2.0 * (square(normalized_s_dot_b) * b_squared_over_d + 1.0) *
-                     (b_squared_over_d - tau_over_d) +
-                 b_squared_over_d * square(normalized_s_dot_b) + 1.0,
-             b_squared_over_d - tau_over_d +
-                 1.5 * square(normalized_s_dot_b) * b_squared_over_d + 2.0,
-             1.0}} {}
+            lower_bound == 0.0
+                ? std::array{(0.5 * b_squared_over_d - tau_over_d) *
+                                 (square(normalized_s_dot_b) *
+                                      b_squared_over_d *
+                                      (b_squared_over_d + 2.0) +
+                                  1.0),
+                             2.0 *
+                                     (square(normalized_s_dot_b) *
+                                          b_squared_over_d +
+                                      1.0) *
+                                     (b_squared_over_d - tau_over_d) +
+                                 b_squared_over_d * square(normalized_s_dot_b) +
+                                 1.0,
+                             b_squared_over_d - tau_over_d +
+                                 1.5 * square(normalized_s_dot_b) *
+                                     b_squared_over_d +
+                                 2.0,
+                             1.0}
+                : std::array{
+                      -0.5 * b_squared_over_d *
+                          (1.0 + square(normalized_s_dot_b) * tau_over_d *
+                                     (tau_over_d + 2.0)),
+                      1.0 + square(normalized_s_dot_b) * b_squared_over_d +
+                          lower_bound *
+                              (2.0 +
+                               square(normalized_s_dot_b) * b_squared_over_d +
+                               lower_bound),
+                      2.0 +
+                          1.5 * square(normalized_s_dot_b) * b_squared_over_d +
+                          2.0 * lower_bound,
+                      1.0}} {}
 
-  double operator()(const double lorentz_factor_minus_one) const {
-    return evaluate_polynomial(coefficients_, lorentz_factor_minus_one);
+  double operator()(const double excess_lorentz_factor) const {
+    return evaluate_polynomial(coefficients_, excess_lorentz_factor);
   }
 
  private:
@@ -177,8 +209,11 @@ bool FixConservatives::operator()(
         std::max(tau_over_d - b_squared_over_d, 0.);
     // Equation B.31 of Foucart
     const auto upper_bound_for_s_tilde_squared =
-        [&b_squared_over_d, &d_tilde,
-         &normalized_s_dot_b](const double local_lorentz_factor_minus_one) {
+        [&b_squared_over_d, &d_tilde, &lower_bound_of_lorentz_factor_minus_one,
+         &normalized_s_dot_b](const double local_excess_lorentz_factor) {
+          const double local_lorentz_factor_minus_one =
+              lower_bound_of_lorentz_factor_minus_one +
+              local_excess_lorentz_factor;
           return square(1.0 + local_lorentz_factor_minus_one +
                         b_squared_over_d) *
                  local_lorentz_factor_minus_one *
@@ -190,8 +225,7 @@ bool FixConservatives::operator()(
                  square(d_tilde);
         };
     const double simple_upper_bound_for_s_tilde_squared =
-        upper_bound_for_s_tilde_squared(
-            lower_bound_of_lorentz_factor_minus_one);
+        upper_bound_for_s_tilde_squared(0.0);
 
     // If s_tilde_squared is small enough, no fix is needed. Otherwise, we need
     // to do some real work.
@@ -216,38 +250,33 @@ bool FixConservatives::operator()(
       //   to the next in a physically meaning situation, and so 10 provides a
       //   reasonable bound.
       const auto f_of_lorentz_factor = FunctionOfLorentzFactor{
-          b_squared_over_d, tau_over_d, normalized_s_dot_b};
-      double upper_bound_of_lorentz_factor_minus_one = tau_over_d;
+          b_squared_over_d, tau_over_d, normalized_s_dot_b,
+          lower_bound_of_lorentz_factor_minus_one};
+      double upper_bound = lower_bound_of_lorentz_factor_minus_one == 0.0
+                               ? tau_over_d
+                               : b_squared_over_d;
 
-      double lorentz_factor_minus_one =
-          std::numeric_limits<double>::signaling_NaN();
-      if (equal_within_roundoff(lower_bound_of_lorentz_factor_minus_one,
-                                upper_bound_of_lorentz_factor_minus_one)) {
-        lorentz_factor_minus_one = lower_bound_of_lorentz_factor_minus_one;
-      } else {
-        try {
-          const double f_at_lower =
-              f_of_lorentz_factor(lower_bound_of_lorentz_factor_minus_one);
-          const double candidate_upper_bound =
-              10.0 * (lower_bound_of_lorentz_factor_minus_one + 1.0) - 1.0;
-          double f_at_upper = std::numeric_limits<double>::signaling_NaN();
-          if (upper_bound_of_lorentz_factor_minus_one < candidate_upper_bound) {
-            f_at_upper =
-                f_of_lorentz_factor(upper_bound_of_lorentz_factor_minus_one);
+      double excess_lorentz_factor = 0.0;
+      if (upper_bound != 0.0) {
+        const double f_at_lower = f_of_lorentz_factor(0.0);
+        const double candidate_upper_bound =
+            9.0 * (lower_bound_of_lorentz_factor_minus_one + 1.0);
+        double f_at_upper = std::numeric_limits<double>::signaling_NaN();
+        if (upper_bound < candidate_upper_bound) {
+          f_at_upper = f_of_lorentz_factor(upper_bound);
+        } else {
+          f_at_upper = f_of_lorentz_factor(candidate_upper_bound);
+          if (f_at_upper > 0.0) {
+            upper_bound = candidate_upper_bound;
           } else {
-            f_at_upper = f_of_lorentz_factor(candidate_upper_bound);
-            if (std::signbit(f_at_upper) != std::signbit(f_at_lower)) {
-              upper_bound_of_lorentz_factor_minus_one = candidate_upper_bound;
-            } else {
-              f_at_upper =
-                  f_of_lorentz_factor(upper_bound_of_lorentz_factor_minus_one);
-            }
+            f_at_upper = f_of_lorentz_factor(upper_bound);
           }
+        }
 
-          lorentz_factor_minus_one = RootFinder::toms748(
-              f_of_lorentz_factor, lower_bound_of_lorentz_factor_minus_one,
-              upper_bound_of_lorentz_factor_minus_one, f_at_lower, f_at_upper,
-              1.e-14, 1.e-14, 100);
+        try {
+          excess_lorentz_factor =
+              RootFinder::toms748(f_of_lorentz_factor, 0.0, upper_bound,
+                                  f_at_lower, f_at_upper, 1.e-14, 1.e-14, 100);
         } catch (std::exception& exception) {
           // clang-format makes the streamed text hard to read in code...
           // clang-format off
@@ -256,8 +285,9 @@ bool FixConservatives::operator()(
             "to find the lorentz factor.\n"
             "  upper_bound = "
             << std::scientific << std::setprecision(18)
-            << upper_bound_of_lorentz_factor_minus_one
-            << "\n  lower_bound = " << lower_bound_of_lorentz_factor_minus_one
+            << upper_bound
+            << "\n  lower_bound_of_lorentz_factor_minus_one = "
+            << lower_bound_of_lorentz_factor_minus_one
             << "\n  s_tilde_squared = " << s_tilde_squared
             << "\n  d_tilde = " << d_tilde
             << "\n  sqrt_det_g = " << sqrt_det_g
@@ -265,7 +295,12 @@ bool FixConservatives::operator()(
             << "\n  b_tilde_squared = " << b_tilde_squared
             << "\n  b_squared_over_d = " << b_squared_over_d
             << "\n  tau_over_d = " << tau_over_d
-            << "\n  normalized_s_dot_b = " << normalized_s_dot_b << "\n"
+            << "\n  normalized_s_dot_b = " << normalized_s_dot_b
+            << "\n  tilde_s =\n" << extract_point(*tilde_s, s)
+            << "\n  tilde_b =\n" << extract_point(tilde_b, s)
+            << "\n  spatial_metric =\n" << extract_point(spatial_metric, s)
+            << "\n  inv_spatial_metric =\n"
+            << extract_point(inv_spatial_metric, s) << "\n"
             << "The message of the exception thrown by the root finder "
                "is:\n"
             << exception.what());
@@ -275,7 +310,7 @@ bool FixConservatives::operator()(
 
       const double rescaling_factor =
           sqrt(one_minus_safety_factor_for_momentum_density_ *
-               upper_bound_for_s_tilde_squared(lorentz_factor_minus_one) /
+               upper_bound_for_s_tilde_squared(excess_lorentz_factor) /
                (s_tilde_squared + 1.e-16 * square(d_tilde)));
       if (rescaling_factor < 1.) {
         needed_fixing = true;
