@@ -334,6 +334,16 @@ template <size_t Dim, typename Frame, typename DataType>
 struct SpatialZ4ConstraintUp : db::SimpleTag {
   using type = tnsr::I<DataType, Dim, Frame>;
 };
+
+/*!
+ * \brief The gradient of the spatial part of the Z4 constraint
+ *
+ * \details See `Ccz4::grad_spatial_z4_constraint` for details.
+ */
+template <size_t Dim, typename Frame, typename DataType>
+struct GradSpatialZ4Constraint : db::SimpleTag {
+  using type = tnsr::ij<DataType, Dim, Frame>;
+};
 }  // namespace Tags
 
 namespace OptionTags {
