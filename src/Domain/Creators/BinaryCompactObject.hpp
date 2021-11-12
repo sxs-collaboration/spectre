@@ -719,9 +719,7 @@ class BinaryCompactObject : public DomainCreator<3> {
     return initial_refinement_;
   }
 
-  std::vector<std::string> block_names() const override {
-    return block_names_;
-  }
+  std::vector<std::string> block_names() const override { return block_names_; }
 
   std::unordered_map<std::string, std::unordered_set<std::string>>
   block_groups() const override {

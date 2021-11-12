@@ -181,29 +181,28 @@ BinaryCompactObject::BinaryCompactObject(
     const std::string block_name = object_name + "Interior";
     block_names_.push_back(block_name);
   };
-  const auto add_outer_region =
-      [this](const std::string& region_name) {
-        for (const std::string& wedge_direction : wedge_directions) {
-          for (const std::string& leftright : {"Left", "Right"}) {
-            if ((wedge_direction == "UpperX" and leftright == "Left") or
-                (wedge_direction == "LowerX" and leftright == "Right")) {
-              // The outer regions are divided in half perpendicular to the
-              // x-axis at x=0. Therefore, the left side only has a block in
-              // negative x-direction, and the right side only has one in
-              // positive x-direction.
-              continue;
-            }
-            // NOLINTNEXTLINE(performance-inefficient-string-concatenation)
-            const std::string block_name =
-                region_name + wedge_direction +
-                (wedge_direction == "UpperX" or wedge_direction == "LowerX"
-                     ? ""
-                     : leftright);
-            block_names_.push_back(block_name);
-            block_groups_[region_name].insert(block_name);
-          }
+  const auto add_outer_region = [this](const std::string& region_name) {
+    for (const std::string& wedge_direction : wedge_directions) {
+      for (const std::string& leftright : {"Left", "Right"}) {
+        if ((wedge_direction == "UpperX" and leftright == "Left") or
+            (wedge_direction == "LowerX" and leftright == "Right")) {
+          // The outer regions are divided in half perpendicular to the
+          // x-axis at x=0. Therefore, the left side only has a block in
+          // negative x-direction, and the right side only has one in
+          // positive x-direction.
+          continue;
         }
-      };
+        // NOLINTNEXTLINE(performance-inefficient-string-concatenation)
+        const std::string block_name =
+            region_name + wedge_direction +
+            (wedge_direction == "UpperX" or wedge_direction == "LowerX"
+                 ? ""
+                 : leftright);
+        block_names_.push_back(block_name);
+        block_groups_[region_name].insert(block_name);
+      }
+    }
+  };
   add_object_region("ObjectA", "Shell");  // 6 blocks
   add_object_region("ObjectA", "Cube");   // 6 blocks
   add_object_region("ObjectB", "Shell");  // 6 blocks
