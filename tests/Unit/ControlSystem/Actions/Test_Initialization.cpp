@@ -27,7 +27,7 @@ struct MockControlSystem
   static std::string name() { return pretty_type::short_name<Label>(); }
   using measurement = Measurement;
   static constexpr size_t deriv_order = 2;
-  using simple_tags = tmpl::list<control_system::Tags::ControlSystemName>;
+  using simple_tags = tmpl::list<>;
 };
 
 using mock_control_sys =
@@ -77,7 +77,8 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Initialization",
   std::string controlsys_name_empty{};
 
   tuples::tagged_tuple_from_typelist<tags> init_tuple{
-      control_system::OptionHolder<2>{averager, controller, tuner},
+      control_system::OptionHolder<mock_control_sys>{averager, controller,
+                                                     tuner},
       averager_empty, tuner_empty, controlsys_name_empty, controller_empty};
 
   MockRuntimeSystem runner{{}};
