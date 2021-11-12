@@ -8,6 +8,7 @@
 #include <type_traits>
 #include <unordered_map>
 
+#include "ControlSystem/InitialExpirationTimes.hpp"
 #include "ControlSystem/Tags.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
@@ -50,24 +51,9 @@ struct FunctionsOfTimeInitialize : domain::Tags::FunctionsOfTime,
           domain_creator,
       const double initial_time, const double initial_time_step,
       const OptionHolders&... option_holders) {
-    std::unordered_map<std::string, double> initial_expiration_times{};
-    [[maybe_unused]] const auto gather_initial_expiration_times =
-        [&initial_expiration_times, &initial_time,
-         &initial_time_step](const auto& option_holder) {
-          const auto& controller = option_holder.controller;
-          const std::string& name =
-              std::decay_t<decltype(option_holder)>::control_system::name();
-          const auto& tuner = option_holder.tuner;
-
-          const double update_fraction = controller.get_update_fraction();
-          const double curr_timescale = min(tuner.current_timescale());
-          const double initial_expiration_time =
-              update_fraction * curr_timescale;
-          initial_expiration_times[name] =
-              initial_time +
-              std::max(initial_time_step, initial_expiration_time);
-        };
-    EXPAND_PACK_LEFT_TO_RIGHT(gather_initial_expiration_times(option_holders));
+    const std::unordered_map<std::string, double> initial_expiration_times =
+        control_system::initial_expiration_times(
+            initial_time, initial_time_step, option_holders...);
     // Until the domain creator infrastructure is modified to take control
     // system information into account when constructing the functions of time,
     // update them retroactively. This is not how this will normally be done,
