@@ -109,7 +109,7 @@ struct FunctionsOfTimeInitialize : FunctionsOfTime, db::SimpleTag {
         if (functions_of_time.count(spectre_name) == 0) {
           ERROR("Trying to import data for key "
                 << spectre_name
-                << "in FunctionsOfTime, but FunctionsOfTime does not "
+                << " in FunctionsOfTime, but FunctionsOfTime does not "
                    "contain that key. This might happen if the option "
                    "FunctionOfTimeNameMap is not specified correctly. Keys "
                    "contained in FunctionsOfTime: "

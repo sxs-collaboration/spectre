@@ -35,7 +35,7 @@ template <size_t MeshDim>
 None<MeshDim>::functions_of_time() const {
   ERROR(
       "The 'functions_of_time' function of the 'None' TimeDependence should "
-      "never be  called because 'None' is only used as a place holder class to "
+      "never be called because 'None' is only used as a place holder class to "
       "mark that the mesh is time-independent.");
 }
 
