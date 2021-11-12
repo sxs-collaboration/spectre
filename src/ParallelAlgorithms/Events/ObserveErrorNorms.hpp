@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataBox/ObservationBox.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
 #include "Domain/Tags.hpp"
@@ -125,13 +126,15 @@ class ObserveErrorNorms<ObservationValueTag, tmpl::list<Tensors...>,
   using observed_reduction_data_tags =
       observers::make_reduction_data_tags<tmpl::list<ReductionData>>;
 
-  using argument_tags = tmpl::list<::Tags::DataBox, ObservationValueTag,
+  using compute_tags_for_observation_box = tmpl::list<>;
+
+  using argument_tags = tmpl::list<::Tags::ObservationBox, ObservationValueTag,
                                    Tensors..., ::Tags::AnalyticSolutionsBase>;
 
-  template <typename DbTagsList, typename OptionalAnalyticSolutions,
-            typename Metavariables, typename ArrayIndex,
-            typename ParallelComponent>
-  void operator()(const db::DataBox<DbTagsList>& box,
+  template <typename DataBoxType, typename ComputeTagsList,
+            typename OptionalAnalyticSolutions, typename Metavariables,
+            typename ArrayIndex, typename ParallelComponent>
+  void operator()(const ObservationBox<DataBoxType, ComputeTagsList>& box,
                   const typename ObservationValueTag::type& observation_value,
                   const typename Tensors::type&... tensors,
                   const OptionalAnalyticSolutions& optional_analytic_solutions,

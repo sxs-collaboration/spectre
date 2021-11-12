@@ -68,6 +68,8 @@ class Interpolate<VolumeDim, InterpolationTargetTag, tmpl::list<Tensors...>>
 
   Interpolate() = default;
 
+  using compute_tags_for_observation_box = tmpl::list<>;
+
   using argument_tags = tmpl::list<typename InterpolationTargetTag::temporal_id,
                                    domain::Tags::Mesh<VolumeDim>, Tensors...>;
 

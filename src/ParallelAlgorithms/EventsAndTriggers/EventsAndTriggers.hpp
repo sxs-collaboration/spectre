@@ -4,13 +4,17 @@
 #pragma once
 
 #include <memory>
+#include <optional>
 #include <pup.h>  // IWYU pragma: keep
 #include <unordered_map>
 #include <vector>
 
+#include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/ObservationBox.hpp"
 #include "Options/Options.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
+#include "Utilities/TMPL.hpp"
 
 /// \cond
 namespace Parallel {
@@ -26,6 +30,12 @@ class DataBox;
 /// \ingroup EventsAndTriggersGroup
 /// Class that checks triggers and runs events
 class EventsAndTriggers {
+ private:
+  template <typename Event>
+  struct get_tags {
+    using type = typename Event::compute_tags_for_observation_box;
+  };
+
  public:
   using Storage = std::unordered_map<std::unique_ptr<Trigger>,
                                      std::vector<std::unique_ptr<Event>>>;
@@ -40,12 +50,23 @@ class EventsAndTriggers {
                   Parallel::GlobalCache<Metavariables>& cache,
                   const ArrayIndex& array_index,
                   const Component* component) const {
+    using compute_tags = tmpl::remove_duplicates<tmpl::filter<
+        tmpl::flatten<tmpl::transform<
+            tmpl::at<typename Metavariables::factory_creation::factory_classes,
+                     Event>,
+            get_tags<tmpl::_1>>>,
+        db::is_compute_tag<tmpl::_1>>>;
+    std::optional<decltype(make_observation_box<compute_tags>(box))>
+        observation_box{};
     for (const auto& trigger_and_events : events_and_triggers_) {
       const auto& trigger = trigger_and_events.first;
       const auto& events = trigger_and_events.second;
       if (trigger->is_triggered(box)) {
+        if (not observation_box.has_value()) {
+          observation_box = make_observation_box<compute_tags>(box);
+        }
         for (const auto& event : events) {
-          event->run(box, cache, array_index, component);
+          event->run(observation_box.value(), cache, array_index, component);
         }
       }
     }

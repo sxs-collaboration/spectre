@@ -139,6 +139,8 @@ struct TestEvent : public Event {
   explicit TestEvent(const bool needs_evolved_variables)
       : needs_evolved_variables_(needs_evolved_variables) {}
 
+  using compute_tags_for_observation_box = tmpl::list<>;
+
   using argument_tags = tmpl::list<Tags::Time, Var, PrimVar>;
 
   template <typename Metavariables, typename ArrayIndex, typename Component>

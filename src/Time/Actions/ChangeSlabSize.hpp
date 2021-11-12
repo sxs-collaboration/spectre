@@ -260,6 +260,8 @@ class ChangeSlabSize : public Event {
                  const uint64_t delay_change)
       : step_choosers_(std::move(step_choosers)), delay_change_(delay_change) {}
 
+  using compute_tags_for_observation_box = tmpl::list<>;
+
   using argument_tags = tmpl::list<Tags::TimeStepId, Tags::DataBox>;
 
   template <typename DbTags, typename Metavariables, typename ArrayIndex,

@@ -34,6 +34,19 @@ struct B {};
 using TriggerA = TestHelpers::DenseTriggers::BoxTrigger<TriggerLabels::A>;
 using TriggerB = TestHelpers::DenseTriggers::BoxTrigger<TriggerLabels::B>;
 
+struct AddTwoToTime : db::SimpleTag {
+  using type = double;
+};
+
+struct AddTwoToTimeCompute : db::ComputeTag, AddTwoToTime {
+  using base = AddTwoToTime;
+  using return_type = double;
+  using argument_tags = tmpl::list<::Tags::Time>;
+  static void function(const gsl::not_null<double*> result, const double time) {
+    *result = time + 2.0;
+  }
+};
+
 template <typename Label>
 class TestEvent : public Event {
  public:
@@ -50,17 +63,22 @@ class TestEvent : public Event {
 
   TestEvent() = default;
 
+  using compute_tags_for_observation_box = tmpl::list<AddTwoToTimeCompute>;
+
   using argument_tags =
-      tmpl::list<Tags::Time, evolution::Tags::PreviousTriggerTime>;
+      tmpl::list<Tags::Time, evolution::Tags::PreviousTriggerTime,
+                 AddTwoToTime>;
 
   template <typename Metavariables, typename ArrayIndex, typename Component>
   void operator()(const double time,
                   const std::optional<double>& previous_trigger_time,
+                  const double time_plus_two,
                   Parallel::GlobalCache<Metavariables>& /*cache*/,
                   const ArrayIndex& /*array_index*/,
                   const Component* const /*meta*/) const {
     event_ran = true;
     time_during_event = time;
+    CHECK(time_plus_two == time + 2.0);
     previous_time_during_event = previous_trigger_time;
   }
 

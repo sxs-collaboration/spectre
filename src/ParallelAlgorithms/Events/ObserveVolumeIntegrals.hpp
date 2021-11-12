@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataBox/ObservationBox.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "Domain/Tags.hpp"
@@ -110,14 +111,19 @@ class ObserveVolumeIntegrals<VolumeDim, ObservationValueTag,
   using observed_reduction_data_tags =
       observers::make_reduction_data_tags<tmpl::list<ReductionData>>;
 
+
+  using compute_tags_for_observation_box = tmpl::list<>;
+
   using argument_tags = tmpl::list<
-      ::Tags::DataBox, ObservationValueTag, domain::Tags::Mesh<VolumeDim>,
+      ::Tags::ObservationBox, ObservationValueTag,
+      domain::Tags::Mesh<VolumeDim>,
       domain::Tags::DetInvJacobian<Frame::ElementLogical, Frame::Inertial>,
       Tensors...>;
 
-  template <typename DbTagsList, typename Metavariables, typename ArrayIndex,
+  template <typename DataBoxType, typename ComputeTagsList,
+            typename Metavariables, typename ArrayIndex,
             typename ParallelComponent>
-  void operator()(const db::DataBox<DbTagsList>& box,
+  void operator()(const ObservationBox<DataBoxType, ComputeTagsList>& box,
                   const typename ObservationValueTag::type& observation_value,
                   const Mesh<VolumeDim>& mesh,
                   const Scalar<DataVector>& det_inv_jacobian,

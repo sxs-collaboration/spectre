@@ -177,7 +177,7 @@ void test(const std::unique_ptr<ObserveEvent> observe,
       box, ActionTesting::cache<element_component>(runner, array_index),
       array_index, std::add_pointer_t<element_component>{}));
 
-  observe->run(box,
+  observe->run(make_observation_box<db::AddComputeTags<>>(box),
                ActionTesting::cache<element_component>(runner, array_index),
                array_index, std::add_pointer_t<element_component>{});
 

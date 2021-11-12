@@ -9,6 +9,7 @@
 #include "ControlSystem/Component.hpp"
 #include "ControlSystem/Event.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/ObservationBox.hpp"
 #include "Evolution/EventsAndDenseTriggers/EventsAndDenseTriggers.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Helpers/ControlSystem/Examples.hpp"
@@ -99,7 +100,8 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Measurement", "[ControlSystem][Unit]") {
 
   const MeasureEvent event{};
   CHECK(event.needs_evolved_variables());
-  event.run(box, cache, 0, element_component_p);
+  event.run(make_observation_box<db::AddComputeTags<>>(box), cache, 0,
+            element_component_p);
 
   ActionTesting::invoke_queued_simple_action<control_system_component>(
       make_not_null(&runner), 0);

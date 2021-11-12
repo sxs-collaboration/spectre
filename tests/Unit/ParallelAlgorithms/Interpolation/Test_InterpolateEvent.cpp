@@ -11,6 +11,7 @@
 #include <type_traits>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/ObservationBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/ElementId.hpp"
@@ -30,6 +31,7 @@
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -235,8 +237,11 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.InterpolateEvent",
       box, ActionTesting::cache<elem_component>(runner, array_index),
       array_index, std::add_pointer_t<elem_component>{}));
   CHECK(event.needs_evolved_variables());
-  event.run(box, ActionTesting::cache<elem_component>(runner, array_index),
-            array_index, std::add_pointer_t<elem_component>{});
+  event.run(
+      make_observation_box<
+          typename metavars::event::compute_tags_for_observation_box>(box),
+      ActionTesting::cache<elem_component>(runner, array_index), array_index,
+      std::add_pointer_t<elem_component>{});
 
   // Invoke all actions
   runner.invoke_queued_simple_action<interp_component>(0);

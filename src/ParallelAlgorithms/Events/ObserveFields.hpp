@@ -14,7 +14,7 @@
 #include <utility>
 #include <vector>
 
-#include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataBox/ObservationBox.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -187,15 +187,17 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
                 std::optional<Mesh<VolumeDim>> interpolation_mesh = {},
                 const Options::Context& context = {});
 
+  using compute_tags_for_observation_box = tmpl::list<>;
+
   using argument_tags =
-      tmpl::list<::Tags::DataBox, ObservationValueTag,
+      tmpl::list<::Tags::ObservationBox, ObservationValueTag,
                  domain::Tags::Mesh<VolumeDim>, coordinates_tag,
                  AnalyticSolutionTensors..., NonSolutionTensors...>;
 
-  template <typename DbTagsList, typename Metavariables,
-            typename ParallelComponent>
+  template <typename DataBoxType, typename ComputeTagsList,
+            typename Metavariables, typename ParallelComponent>
   void operator()(
-      const db::DataBox<DbTagsList>& box,
+      const ObservationBox<DataBoxType, ComputeTagsList>& box,
       const typename ObservationValueTag::type& observation_value,
       const Mesh<VolumeDim>& mesh,
       const tnsr::I<DataVector, VolumeDim, Frame::Inertial>&
@@ -215,7 +217,7 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
     // Get analytic solutions
     auto&& optional_analytic_solutions = [&box]() -> decltype(auto) {
       if constexpr (sizeof...(AnalyticSolutionTensors) > 0) {
-        return db::get<::Tags::AnalyticSolutionsBase>(box);
+        return get<::Tags::AnalyticSolutionsBase>(box);
       } else {
         (void)box;
         return std::nullopt;

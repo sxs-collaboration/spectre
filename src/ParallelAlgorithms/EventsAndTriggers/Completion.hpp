@@ -20,6 +20,7 @@ class Completion : public Event {
   WRAPPED_PUPable_decl_template(Completion);  // NOLINT
   /// \endcond
 
+  using compute_tags_for_observation_box = tmpl::list<>;
   using options = tmpl::list<>;
   static constexpr Options::String help = {
       "Sets the termination flag for the code to exit."};

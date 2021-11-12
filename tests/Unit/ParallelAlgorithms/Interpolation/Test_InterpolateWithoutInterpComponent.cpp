@@ -7,6 +7,7 @@
 #include <type_traits>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/ObservationBox.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Domain.hpp"
@@ -80,9 +81,11 @@ struct initialize_elements_and_queue_simple_actions {
 
       // 3. Run the event.  This will invoke simple actions on
       // InterpolationTarget.
-      event.run(box,
-                ActionTesting::cache<elem_component>(runner, element_id),
-                element_id, std::add_pointer_t<elem_component>{});
+      event.run(
+          make_observation_box<
+              typename metavars::event::compute_tags_for_observation_box>(box),
+          ActionTesting::cache<elem_component>(runner, element_id), element_id,
+          std::add_pointer_t<elem_component>{});
     }
   }
 };
