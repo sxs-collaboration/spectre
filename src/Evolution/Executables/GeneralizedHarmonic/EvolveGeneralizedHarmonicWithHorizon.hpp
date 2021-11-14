@@ -80,22 +80,24 @@ struct EvolutionMetavars<3, InitialData, BoundaryConditions>
                    gr::Tags::SpatialChristoffelSecondKind<volume_dim, frame>,
                    gr::Tags::SpatialRicci<volume_dim, frame>>;
     using compute_items_on_target = tmpl::append<
-        tmpl::list<StrahlkorperGr::Tags::AreaElementCompute<frame>,
-                   StrahlkorperTags::ThetaPhiCompute<frame>,
-                   StrahlkorperTags::RadiusCompute<frame>,
-                   StrahlkorperTags::RhatCompute<frame>,
-                   StrahlkorperTags::TangentsCompute<frame>,
-                   StrahlkorperTags::InvJacobianCompute<frame>,
-                   StrahlkorperTags::DxRadiusCompute<frame>,
-                   StrahlkorperTags::OneOverOneFormMagnitudeCompute<
-                       volume_dim, frame, DataVector>,
-                   StrahlkorperTags::NormalOneFormCompute<frame>,
-                   StrahlkorperTags::UnitNormalOneFormCompute<frame>,
-                   StrahlkorperTags::UnitNormalVectorCompute<frame>,
-                   StrahlkorperTags::GradUnitNormalOneFormCompute<frame>,
-                   StrahlkorperTags::ExtrinsicCurvatureCompute<frame>,
-                   StrahlkorperGr::Tags::SpinFunctionCompute<frame>,
-                   StrahlkorperTags::RicciScalarCompute<frame>>,
+        tmpl::list<
+            StrahlkorperGr::Tags::AreaElementCompute<frame>,
+            StrahlkorperTags::ThetaPhiCompute<frame>,
+            StrahlkorperTags::RadiusCompute<frame>,
+            StrahlkorperTags::RhatCompute<frame>,
+            StrahlkorperTags::TangentsCompute<frame>,
+            StrahlkorperTags::InvJacobianCompute<frame>,
+            StrahlkorperTags::DxRadiusCompute<frame>,
+            StrahlkorperTags::OneOverOneFormMagnitudeCompute<volume_dim, frame,
+                                                             DataVector>,
+            StrahlkorperTags::NormalOneFormCompute<frame>,
+            StrahlkorperTags::UnitNormalOneFormCompute<frame>,
+            StrahlkorperTags::UnitNormalVectorCompute<frame>,
+            StrahlkorperTags::GradUnitNormalOneFormCompute<frame>,
+            StrahlkorperTags::ExtrinsicCurvatureCompute<frame>,
+            StrahlkorperGr::Tags::SpinFunctionCompute<frame>,
+            StrahlkorperTags::RicciScalarCompute<frame>,
+            StrahlkorperGr::Tags::DimensionfulSpinMagnitudeCompute<frame>>,
         tags_to_observe>;
     using compute_target_points =
         intrp::TargetPoints::ApparentHorizon<AhA, ::Frame::Inertial>;
