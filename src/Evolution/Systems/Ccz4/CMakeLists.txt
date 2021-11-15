@@ -13,6 +13,7 @@ spectre_target_sources(
   DerivChristoffel.cpp
   DerivLapse.cpp
   DerivZ4Constraint.cpp
+  Ricci.cpp
   Z4Constraint.cpp
   )
 
@@ -25,6 +26,7 @@ spectre_target_headers(
   DerivChristoffel.hpp
   DerivLapse.hpp
   DerivZ4Constraint.hpp
+  Ricci.hpp
   System.hpp
   Tags.hpp
   TagsDeclarations.hpp
