@@ -195,22 +195,22 @@ void test_numerical_deriv_det_spatial_metric(const DataVector& used_for_size) {
   const auto x = coord_map(x_logical);
   // Arbitrary time for time-independent solution.
   const double t = std::numeric_limits<double>::signaling_NaN();
-  // Evaluate analytic solution
-  const auto vars = solution.variables(
-      x, t,
-      typename gr::Solutions::KerrSchild::template tags<DataVector,
-                                                        FrameType>{});
 
   // Compute actual analytical derivative of the determinant
-  gr::Solutions::KerrSchild::IntermediateVars<DataVector, FrameType> ks_cache(
-      solution, x);
-  const auto deriv_det_spatial_metric = ks_cache.get_var(
-      gr::Tags::DerivDetSpatialMetric<3, FrameType, DataVector>{});
+  const auto deriv_det_spatial_metric =
+      get<gr::Tags::DerivDetSpatialMetric<SpatialDim, FrameType>>(
+          solution.variables(
+              x, t,
+              tmpl::list<
+                  gr::Tags::DerivDetSpatialMetric<SpatialDim, FrameType>>{}));
 
   // Compute expected numerical derivative of the determinant
   const double null_vector_0 = -1.0;
   gr::Solutions::KerrSchild::IntermediateComputer<DataVector, FrameType>
       ks_computer(solution, x, null_vector_0);
+  gr::Solutions::KerrSchild::IntermediateVars<DataVector, FrameType> ks_cache(
+      solution, x);
+
   auto H = make_with_value<Scalar<DataVector>>(
       used_for_size, std::numeric_limits<double>::signaling_NaN());
   using H_tag = gr::Solutions::KerrSchild::internal_tags::H<DataVector>;

@@ -252,8 +252,11 @@ class KerrSchild : public AnalyticSolution<3_st>,
       const tnsr::I<DataType, volume_dim, Frame>& x, double /*t*/,
       tmpl::list<Tags...> /*meta*/) const {
     static_assert(
-        tmpl2::flat_all_v<
-            tmpl::list_contains_v<tags<DataType, Frame>, Tags>...>,
+        tmpl2::flat_all_v<tmpl::list_contains_v<
+            tmpl::push_back<
+                tags<DataType, Frame>,
+                gr::Tags::DerivDetSpatialMetric<3, Frame, DataType>>,
+            Tags>...>,
         "At least one of the requested tags is not supported. The requested "
         "tags are listed as template parameters of the `variables` function.");
     IntermediateVars<DataType, Frame> intermediate(*this, x);
