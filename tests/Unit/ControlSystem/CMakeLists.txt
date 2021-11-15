@@ -18,6 +18,7 @@ set(LIBRARY_SOURCES
 
 add_subdirectory(Actions)
 add_subdirectory(Protocols)
+add_subdirectory(Tags)
 
 add_test_library(
   ${LIBRARY}

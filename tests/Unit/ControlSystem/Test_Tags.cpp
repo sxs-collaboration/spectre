@@ -173,70 +173,6 @@ void test_control_sys_inputs() {
         std::decay_t<decltype(input_holder)>::control_system::name());
 }
 
-template <size_t Index>
-using OptionHolder = control_system::OptionHolder<FakeControlSystem<Index>>;
-
-template <typename ControlSys>
-using ControlSysInputs =
-    control_system::OptionTags::ControlSystemInputs<ControlSys>;
-
-void test_functions_of_time_tag() {
-  INFO("Test FunctionsOfTimeInitialize tag");
-  using fot_tag = control_system::Tags::FunctionsOfTimeInitialize;
-  using Creator = tmpl::front<fot_tag::option_tags<Metavariables>>::type;
-
-  const Creator creator = std::make_unique<TestCreator>(true);
-
-  const double decrease_timescale_threshold = 1.0e-2;
-  const double increase_timescale_threshold = 1.0e-4;
-  const double increase_factor = 1.01;
-  const double decrease_factor = 0.99;
-  const double max_timescale = 10.0;
-  const double min_timescale = 1.0e-3;
-  // Initial expiration times are set to be update_fraction *
-  // min(current_timescale) where update_fraction is the argument to the
-  // Controller. This value for the timescale was chosen to give an expiration
-  // time between the two expiration times used above in the TestCreator
-  const double timescale = 27.0;
-  const TimescaleTuner tuner1(
-      {timescale}, max_timescale, min_timescale, decrease_timescale_threshold,
-      increase_timescale_threshold, increase_factor, decrease_factor);
-  const TimescaleTuner tuner2(
-      {0.1}, max_timescale, min_timescale, decrease_timescale_threshold,
-      increase_timescale_threshold, increase_factor, decrease_factor);
-  const Averager<2> averager(0.25, true);
-  const double update_fraction = 0.3;
-  const Controller<2> controller(update_fraction);
-
-  OptionHolder<1> option_holder1(averager, controller, tuner1);
-  OptionHolder<2> option_holder2(averager, controller, tuner1);
-  OptionHolder<3> option_holder3(averager, controller, tuner2);
-
-  const double initial_time_step = 1.0;
-  fot_tag::type functions_of_time = fot_tag::create_from_options<Metavariables>(
-      creator, initial_time, initial_time_step, option_holder1, option_holder2,
-      option_holder3);
-
-  CHECK(functions_of_time.at("Controlled1")->time_bounds()[1] ==
-        initial_time + update_fraction * timescale);
-  CHECK(functions_of_time.at("Controlled2")->time_bounds()[1] ==
-        initial_time + 10.0);
-  CHECK(functions_of_time.at("Controlled3")->time_bounds()[1] ==
-        initial_time + initial_time_step);
-  CHECK(functions_of_time.at("Uncontrolled")->time_bounds()[1] ==
-        std::numeric_limits<double>::infinity());
-
-  static_assert(
-      std::is_same_v<
-          fot_tag::option_tags<Metavariables>,
-          tmpl::list<
-              domain::OptionTags::DomainCreator<Metavariables::volume_dim>,
-              ::OptionTags::InitialTime, ::OptionTags::InitialTimeStep,
-              ControlSysInputs<FakeControlSystem<1>>,
-              ControlSysInputs<FakeControlSystem<2>>,
-              ControlSysInputs<FakeControlSystem<3>>>>);
-}
-
 void test_measurement_tag() {
   INFO("Test measurement tag");
   using measurement_tag = control_system::Tags::MeasurementTimescales;
@@ -282,7 +218,6 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Tags", "[ControlSystem][Unit]") {
   test_all_tags();
   test_control_sys_inputs();
   test_measurement_tag();
-  test_functions_of_time_tag();
 }
 
 // [[OutputRegex, Control systems can only be used in forward-in-time
