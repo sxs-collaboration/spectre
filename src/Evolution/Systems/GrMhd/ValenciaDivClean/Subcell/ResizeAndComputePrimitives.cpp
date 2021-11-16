@@ -44,10 +44,7 @@ void ResizeAndComputePrims<OrderedListOfRecoverySchemes>::apply(
                << subcell_mesh.number_of_grid_points() << ") but got "
                << prim_vars->number_of_grid_points() << ". The DG grid has "
                << dg_mesh.number_of_grid_points() << " grid points");
-    const size_t num_grid_points =
-        (active_grid == evolution::dg::subcell::ActiveGrid::Dg ? dg_mesh
-                                                               : subcell_mesh)
-            .number_of_grid_points();
+    const size_t num_grid_points = dg_mesh.number_of_grid_points();
     // Reconstruct a copy of the pressure from the FD grid to the DG grid to
     // provide a high-order initial guess.
     const Scalar<DataVector> fd_pressure =
