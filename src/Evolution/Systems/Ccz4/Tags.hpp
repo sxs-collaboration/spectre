@@ -354,6 +354,17 @@ template <size_t Dim, typename Frame, typename DataType>
 struct GradSpatialZ4Constraint : db::SimpleTag {
   using type = tnsr::ij<DataType, Dim, Frame>;
 };
+
+/*!
+ * \brief The sum of the Ricci scalar and twice the divergence of the upper
+ * spatial Z4 constraint
+ *
+ * \details See `Ccz4::ricci_scalar_plus_divergence_z4_constraint` for details.
+ */
+template <typename DataType>
+struct RicciScalarPlusDivergenceZ4Constraint : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
 }  // namespace Tags
 
 namespace OptionTags {

@@ -75,6 +75,8 @@ struct SpatialZ4ConstraintUp;
 template <size_t Dim, typename Frame = Frame::Inertial,
           typename DataType = DataVector>
 struct GradSpatialZ4Constraint;
+template <typename DataType = DataVector>
+struct RicciScalarPlusDivergenceZ4Constraint;
 }  // namespace Tags
 
 /// \brief Input option tags for the CCZ4 evolution system
