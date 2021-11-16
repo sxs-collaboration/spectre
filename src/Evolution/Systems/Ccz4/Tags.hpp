@@ -234,6 +234,16 @@ struct ChristoffelSecondKind : db::SimpleTag {
 };
 
 /*!
+ * \brief The spatial Ricci tensor
+ *
+ * \details See `Ccz4::spatial_ricci_tensor()` for details.
+ */
+template <size_t Dim, typename Frame, typename DataType>
+struct Ricci : db::SimpleTag {
+  using type = tnsr::ii<DataType, Dim, Frame>;
+};
+
+/*!
  * \brief The gradient of the gradient of the lapse
  *
  * \details We define:

@@ -51,6 +51,9 @@ template <size_t Dim, typename Frame = Frame::Inertial,
 struct ChristoffelSecondKind;
 template <size_t Dim, typename Frame = Frame::Inertial,
           typename DataType = DataVector>
+struct Ricci;
+template <size_t Dim, typename Frame = Frame::Inertial,
+          typename DataType = DataVector>
 struct GradGradLapse;
 template <typename DataType = DataVector>
 struct DivergenceLapse;
