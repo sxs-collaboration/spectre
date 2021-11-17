@@ -57,7 +57,6 @@ def raise_for_status(response):
 @uplink.response_handler(raise_for_status)
 class Zenodo(uplink.Consumer):
     """Abstraction of the [Zenodo API](https://developers.zenodo.org)"""
-
     @uplink.returns.json
     @uplink.get('deposit/depositions/{id}')
     def get_deposition(self, id: uplink.Path):
@@ -536,7 +535,8 @@ if __name__ == "__main__":
     parent_parser.add_argument(
         '--zenodo-sandbox',
         action='store_true',
-        help=("Use the Zenodo sandbox instead of the public version of Zenodo"))
+        help=(
+            "Use the Zenodo sandbox instead of the public version of Zenodo"))
     parent_parser.add_argument(
         '--github-token',
         required=False,
