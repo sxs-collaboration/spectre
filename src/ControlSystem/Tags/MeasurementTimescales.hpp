@@ -8,8 +8,10 @@
 #include <string>
 #include <unordered_map>
 
+#include "ControlSystem/Controller.hpp"
 #include "ControlSystem/InitialExpirationTimes.hpp"
 #include "ControlSystem/Tags.hpp"
+#include "ControlSystem/TimescaleTuner.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
@@ -24,7 +26,31 @@ template <class Metavariables, typename ControlSystem>
 struct ControlComponent;
 /// \endcond
 
-namespace control_system::Tags {
+namespace control_system {
+/*!
+ * \ingroup ControlSystemGroup
+ * \brief Calculate the measurement timescale based on the damping timescale,
+ * update fraction, and DerivOrder of the control system
+ *
+ * The update timescale is \f$\tau_\mathrm{update} = \alpha_\mathrm{update}
+ * \tau_\mathrm{damp}\f$ where \f$\tau_\mathrm{damp}\f$ is the damping timescale
+ * (from the TimescaleTuner) and \f$\alpha_\mathrm{update}\f$ is the update
+ * fraction (from the controller). For an Nth order control system, the averager
+ * requires at least N measurements in order to perfom its finitite differencing
+ * to calculate the derivatives of the control error. This implies that the
+ * largest the measurement timescale can be is \f$\tau_\mathrm{m} =
+ * \tau_\mathrm{update} / N\f$. To ensure that we have sufficient measurements,
+ * we calculate the measurement timescales as \f$\tau_\mathrm{m} =
+ * \tau_\mathrm{update} / (N+1)\f$
+ */
+template <size_t DerivOrder>
+DataVector calculate_measurement_timescales(
+    const ::Controller<DerivOrder>& controller, const ::TimescaleTuner& tuner) {
+  return tuner.current_timescale() * controller.get_update_fraction() *
+         (1.0 / static_cast<double>(DerivOrder + 1));
+}
+
+namespace Tags {
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ControlSystemGroup
 /// \brief The measurement timescales associated with
@@ -58,7 +84,7 @@ struct MeasurementTimescales : db::SimpleTag {
         control_system::initial_expiration_times(
             initial_time, initial_time_step, option_holders...);
 
-    [[maybe_unused]] const auto calculate_measurement_timescales =
+    [[maybe_unused]] const auto construct_measurement_timescales =
         [&timescales, &initial_time, &initial_time_step,
          &initial_expiration_times](const auto& option_holder) {
           // This check is intentionally inside the lambda so that it will not
@@ -73,14 +99,9 @@ struct MeasurementTimescales : db::SimpleTag {
           const std::string& name =
               std::decay_t<decltype(option_holder)>::control_system::name();
           const auto& tuner = option_holder.tuner;
-          const auto& averager = option_holder.averager;
-
-          const double update_fraction = controller.get_update_fraction();
-          const double averaging_fraction = averager.avg_timescale_frac();
-          const DataVector& curr_timescale = tuner.current_timescale();
 
           DataVector measurement_timescales =
-              averaging_fraction * update_fraction * curr_timescale;
+              calculate_measurement_timescales(controller, tuner);
           // At a minimum, we can only measure once a time step with GTS.
           for (size_t i = 0; i < measurement_timescales.size(); i++) {
             measurement_timescales[i] =
@@ -94,9 +115,10 @@ struct MeasurementTimescales : db::SimpleTag {
                   initial_expiration_times.at(name)));
         };
 
-    EXPAND_PACK_LEFT_TO_RIGHT(calculate_measurement_timescales(option_holders));
+    EXPAND_PACK_LEFT_TO_RIGHT(construct_measurement_timescales(option_holders));
 
     return timescales;
   }
 };
-}  // namespace control_system::Tags
+}  // namespace Tags
+}  // namespace control_system

@@ -47,6 +47,24 @@ struct MetavariablesNoControlSystems {
   using component_list = tmpl::list<>;
 };
 
+template <size_t DerivOrder>
+void test_calculate_measurement_timescales() {
+  INFO("Test calculate measurement timescales");
+  const double timescale = 20.0;
+  const TimescaleTuner tuner({timescale}, 10.0, 1.0e-3, 1.0e-2, 1.0e-4, 1.01,
+                             0.99);
+  const double update_fraction = 0.25;
+  const Controller<DerivOrder> controller(update_fraction);
+
+  const auto measurment_timescales =
+      control_system::calculate_measurement_timescales(controller, tuner);
+
+  const DataVector expected_measurement_timescales =
+      DataVector{{timescale}} * update_fraction / double(DerivOrder + 1);
+
+  CHECK(expected_measurement_timescales == measurment_timescales);
+}
+
 template <size_t Index>
 using OptionHolder = control_system::OptionHolder<FakeControlSystem<Index>>;
 
@@ -87,7 +105,7 @@ void test_measurement_tag() {
     const double expr_time1 = initial_time + update_fraction * timescale1;
     const double expr_time2 = initial_time + time_step;
     const double measure_time1 =
-        averaging_fraction * (expr_time1 - initial_time);
+        control_system::calculate_measurement_timescales(controller, tuner1)[0];
     const double measure_time2 = time_step;
     CHECK(timescales.at("Controlled1")->time_bounds() ==
           std::array{initial_time, expr_time1});
@@ -126,6 +144,8 @@ void test_measurement_tag() {
 
 SPECTRE_TEST_CASE("Unit.ControlSystem.Tags.MeasurementTimescales",
                   "[ControlSystem][Unit]") {
+  test_calculate_measurement_timescales<2>();
+  test_calculate_measurement_timescales<3>();
   test_measurement_tag();
 }
 
