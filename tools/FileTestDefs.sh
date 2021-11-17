@@ -344,6 +344,7 @@ license() {
               '.style.yapf' \
               '.svg' \
               'LICENSE' \
+              'citation.bib' \
               'cmake/CodeCoverage.cmake$' \
               'cmake/CodeCoverageDetection.cmake$' \
               'cmake/FindCatch.cmake$' \

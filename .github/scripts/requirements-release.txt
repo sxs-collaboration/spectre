@@ -4,6 +4,7 @@
 # Required Python packages for the release workflow
 
 GitPython~=3.1.11
+pybtex~=0.24.0
 PyGithub~=1.53
 PyYAML~=5.3.1
 tqdm~=4.55.1

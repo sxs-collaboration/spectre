@@ -9,9 +9,11 @@ import logging
 import operator
 import os
 import pathlib
+import pybtex.database
 import re
 import requests
 import tempfile
+import textwrap
 import uplink
 import urllib
 import yaml
@@ -238,9 +240,51 @@ def collect_citation_metadata(metadata: dict) -> dict:
     }
 
 
+def build_bibtex_entry(metadata: dict):
+    """Builds a BibTeX entry that we suggest people cite in publications
+
+    Args:
+      metadata: The project metadata read from the YAML file
+
+    Returns:
+      A pybtex.database.Entry. Use the `to_string` member function to convert to
+      a string in BibTeX, YAML or other formats.
+    """
+    # We truncate the author list in the BibTeX entry after 'Developers',
+    # because not all journals are happy with printing an excessively long
+    # author list, e.g. Phys. Rev. wants at most 15 authors. By truncating the
+    # author list here, the user who copies the BibTeX entry doesn't have to
+    # make the decision where to truncate.
+    authors = [
+        pybtex.database.Person(author['Name'])
+        for author in (metadata['Authors']['Core']['List'] +
+                       metadata['Authors']['Developers']['List'])
+    ] + [pybtex.database.Person("others")]
+    entry = pybtex.database.Entry(
+        'software',
+        persons=dict(author=authors),
+        fields=dict(
+            title=(r"\texttt{" + metadata['Name'] + " v" +
+                   metadata['Version'] + "}"),
+            # The 'version' field is not used by revtex4-2, so we also put the
+            # version in the title
+            version=metadata['Version'],
+            publisher="Zenodo",
+            doi=metadata['Doi'],
+            url=metadata['Homepage'],
+            howpublished=(r"\href{https://doi.org/" + metadata['Doi'] + "}{" +
+                          metadata['Doi'] + "}"),
+            license=metadata['License'],
+            year=str(metadata['PublicationDate'].year),
+            month=str(metadata['PublicationDate'].month)))
+    entry.key = "spectrecode"
+    return entry
+
+
 def prepare(metadata: dict, version_name: str, metadata_file: str,
-            citation_file: str, readme_file: str, zenodo: Zenodo,
-            github: Github, update_only: bool, check_only: bool):
+            citation_file: str, bib_file: str, readme_file: str,
+            zenodo: Zenodo, github: Github, update_only: bool,
+            check_only: bool):
     # Validate new version name
     match_version_name = re.match(VERSION_PATTERN + '$', version_name)
     if not match_version_name:
@@ -373,6 +417,23 @@ def prepare(metadata: dict, version_name: str, metadata_file: str,
         with open(citation_file, 'w') as open_citation_file:
             open_citation_file.write(citation_file_content)
 
+    # Get the BibTeX entry and write to file
+    bibtex_entry = build_bibtex_entry(metadata)
+    bib_file_content = bibtex_entry.to_string(
+        'bibtex',
+        # LaTeX-encode special characters, instead of writing unicode symbols
+        encoding='ASCII')
+    # Wrap long lines in BibTeX output
+    bib_file_content = "\n".join([
+        textwrap.fill(line, width=80) for line in bib_file_content.split('\n')
+    ])
+    if check_only:
+        report_check_only("Would write '{}' file:\n{}".format(
+            bib_file, bib_file_content))
+    else:
+        with open(bib_file, 'w') as open_bib_file:
+            open_bib_file.write(bib_file_content)
+
     # Insert the new version information into the README
     def replace_badge_in_readme(content, key, image_url, link_url):
         content, num_subs = re.subn(r'\[!\[{}\]\(.*\)\]\(.*\)'.format(key),
@@ -404,6 +465,21 @@ def prepare(metadata: dict, version_name: str, metadata_file: str,
             f"file '{readme_file}'.")
         return content
 
+    def replace_bibtex_entry_in_readme(content, bibtex_entry):
+        bibtex_entry_string = bibtex_entry.to_string('bibtex')
+        # Work around an issue with escaping LaTeX commands
+        bibtex_entry_string = bibtex_entry_string.replace("\\", "\\\\")
+        FENCE_PATTERN = '<!-- BIBTEX ENTRY -->'
+        content, num_subs = re.subn(
+            (FENCE_PATTERN + '(.*)' + FENCE_PATTERN),
+            (FENCE_PATTERN + "\n```bib\n" + bibtex_entry_string.strip() +
+             "\n```\n" + FENCE_PATTERN),
+            content,
+            flags=re.DOTALL)
+        assert num_subs > 0, (
+            f"Could not find a BibTeX entry in file '{readme_file}'.")
+        return content
+
     with open(readme_file, 'r' if check_only else 'r+') as open_readme_file:
         content = open_readme_file.read()
         content = replace_badge_in_readme(
@@ -414,11 +490,11 @@ def prepare(metadata: dict, version_name: str, metadata_file: str,
         content = replace_badge_in_readme(content, 'DOI',
                                           new_version_draft['links']['badge'],
                                           new_version_draft['links']['doi'])
-        content = replace_link_in_readme(
-            content, "Find BibTeX entry for this version on Zenodo",
-            f'https://zenodo.org/record/{new_version_id}/export/hx')
         content = replace_doi_in_readme(content, new_version_doi,
                                         new_version_draft['links']['doi'])
+        # We don't currently link to the Zenodo BibTeX entry because it isn't
+        # very good. Instead, we generate our own.
+        content = replace_bibtex_entry_in_readme(content, bibtex_entry)
         if not check_only:
             open_readme_file.seek(0)
             open_readme_file.write(content)
@@ -600,10 +676,11 @@ if __name__ == "__main__":
         if args.check_only and not args.version_name:
             args.version_name = args.metadata['Version']
 
-    # Locate the project README.md and CITATION.cff
+    # Locate project files
     if args.subprogram == prepare:
         args.readme_file = os.path.join(repo.working_dir, 'README.md')
         args.citation_file = os.path.join(repo.working_dir, 'CITATION.cff')
+        args.bib_file = os.path.join(repo.working_dir, 'citation.bib')
 
     # Configure the Zenodo API client
     args.zenodo = Zenodo(
