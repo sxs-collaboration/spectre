@@ -7,7 +7,7 @@
 #include <memory>
 #include <utility>
 
-#include "ControlSystem/Tags.hpp"
+#include "ControlSystem/Tags/MeasurementTimescales.hpp"
 #include "ControlSystem/Trigger.hpp"
 #include "ControlSystem/UpdateFunctionOfTime.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"

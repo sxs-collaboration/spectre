@@ -15,97 +15,15 @@
 #include "ControlSystem/Averager.hpp"
 #include "ControlSystem/Component.hpp"
 #include "ControlSystem/Controller.hpp"
-#include "ControlSystem/Protocols/ControlSystem.hpp"
 #include "ControlSystem/Tags.hpp"
 #include "ControlSystem/Tags/FunctionsOfTimeInitialize.hpp"
+#include "ControlSystem/Tags/MeasurementTimescales.hpp"
 #include "ControlSystem/TimescaleTuner.hpp"
-#include "DataStructures/DataVector.hpp"
-#include "Domain/Creators/DomainCreator.hpp"
-#include "Domain/Domain.hpp"
-#include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
-#include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
-#include "Domain/OptionTags.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Helpers/ControlSystem/TestStructs.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
-#include "Time/Tags.hpp"
-#include "Utilities/ErrorHandling/Error.hpp"
-#include "Utilities/GetOutput.hpp"
-#include "Utilities/Literals.hpp"
-#include "Utilities/ProtocolHelpers.hpp"
-#include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace {
-const double initial_time = 2.0;
-
-template <size_t Index>
-struct FakeControlSystem
-    : tt::ConformsTo<control_system::protocols::ControlSystem> {
-  static constexpr size_t deriv_order = 2;
-  static std::string name() { return "Controlled"s + get_output(Index); }
-  using measurement = control_system::TestHelpers::Measurement<
-      control_system::TestHelpers::TestStructs_detail::LabelA>;
-  using simple_tags = tmpl::list<>;
-  struct process_measurement {
-    using argument_tags = tmpl::list<>;
-  };
-};
-
-struct Metavariables {
-  static constexpr size_t volume_dim = 1;
-
-  using control_systems = tmpl::list<FakeControlSystem<1>, FakeControlSystem<2>,
-                                     FakeControlSystem<3>>;
-  using component_list = control_components<Metavariables, control_systems>;
-};
-
-class TestCreator : public DomainCreator<1> {
- public:
-  explicit TestCreator(const bool add_controlled)
-      : add_controlled_(add_controlled) {}
-  Domain<1> create_domain() const override { ERROR(""); }
-  std::vector<std::array<size_t, 1>> initial_extents() const override {
-    ERROR("");
-  }
-  std::vector<std::array<size_t, 1>> initial_refinement_levels()
-      const override {
-    ERROR("");
-  }
-  auto functions_of_time() const -> std::unordered_map<
-      std::string,
-      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override {
-    const std::array<DataVector, 3> initial_values{{{-1.0}, {-2.0}, {-3.0}}};
-
-    std::unordered_map<std::string,
-                       std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
-        result{};
-    if (add_controlled_) {
-      result.insert(
-          {"Controlled1",
-           std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<2>>(
-               initial_time, initial_values, initial_time + 7.0)});
-      result.insert(
-          {"Controlled2",
-           std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<2>>(
-               initial_time, initial_values, initial_time + 10.0)});
-      result.insert(
-          {"Controlled3",
-           std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<2>>(
-               initial_time, initial_values, initial_time + 0.5)});
-    }
-    result.insert(
-        {"Uncontrolled",
-         std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<2>>(
-             initial_time, initial_values,
-             std::numeric_limits<double>::infinity())});
-    return result;
-  }
-
- private:
-  bool add_controlled_{};
-};
-
 void test_all_tags() {
   INFO("Test all tags");
   using name_tag = control_system::Tags::ControlSystemName;
@@ -172,61 +90,9 @@ void test_control_sys_inputs() {
   CHECK(expected_name ==
         std::decay_t<decltype(input_holder)>::control_system::name());
 }
-
-void test_measurement_tag() {
-  INFO("Test measurement tag");
-  using measurement_tag = control_system::Tags::MeasurementTimescales;
-  static_assert(
-      tmpl::size<measurement_tag::option_tags<Metavariables>>::value == 2);
-  using Creator =
-      tmpl::front<measurement_tag::option_tags<Metavariables>>::type;
-  const double time_step = 0.2;
-  {
-    const Creator creator = std::make_unique<TestCreator>(true);
-
-    const measurement_tag::type timescales =
-        measurement_tag::create_from_options<Metavariables>(creator, time_step);
-    CHECK(timescales.size() == 3);
-    // The lack of expiration is a placeholder until the control systems
-    // have been implemented sufficiently to manage their timescales.
-    CHECK(timescales.at("Controlled1")->time_bounds() ==
-          std::array{initial_time, std::numeric_limits<double>::infinity()});
-    CHECK(timescales.at("Controlled1")->func(2.0)[0] == DataVector{time_step});
-    CHECK(timescales.at("Controlled1")->func(3.0)[0] == DataVector{time_step});
-    CHECK(timescales.at("Controlled2")->time_bounds() ==
-          std::array{initial_time, std::numeric_limits<double>::infinity()});
-    CHECK(timescales.at("Controlled2")->func(2.0)[0] == DataVector{time_step});
-    CHECK(timescales.at("Controlled2")->func(3.0)[0] == DataVector{time_step});
-    CHECK(timescales.at("Controlled3")->time_bounds() ==
-          std::array{initial_time, std::numeric_limits<double>::infinity()});
-    CHECK(timescales.at("Controlled3")->func(2.5)[0] == DataVector{time_step});
-  }
-  {
-    const Creator creator = std::make_unique<TestCreator>(false);
-
-    // Verify that negative time steps are accepted with no control
-    // systems.
-    const measurement_tag::type timescales =
-        measurement_tag::create_from_options<Metavariables>(creator,
-                                                            -time_step);
-    CHECK(timescales.empty());
-  }
-}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.ControlSystem.Tags", "[ControlSystem][Unit]") {
   test_all_tags();
   test_control_sys_inputs();
-  test_measurement_tag();
-}
-
-// [[OutputRegex, Control systems can only be used in forward-in-time
-// evolutions.]]
-SPECTRE_TEST_CASE("Unit.ControlSystem.Tags.Backwards",
-                  "[ControlSystem][Unit]") {
-  ERROR_TEST();
-  using measurement_tag = control_system::Tags::MeasurementTimescales;
-  const std::unique_ptr<DomainCreator<1>> creator =
-      std::make_unique<TestCreator>(true);
-  measurement_tag::create_from_options<Metavariables>(creator, -1.0);
 }

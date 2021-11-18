@@ -9,7 +9,7 @@
 
 #include "ControlSystem/Event.hpp"
 #include "ControlSystem/Metafunctions.hpp"
-#include "ControlSystem/Tags.hpp"
+#include "ControlSystem/Tags/MeasurementTimescales.hpp"
 #include "ControlSystem/Trigger.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Evolution/EventsAndDenseTriggers/DenseTrigger.hpp"
