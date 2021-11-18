@@ -9,10 +9,9 @@
 #include "Utilities/TMPL.hpp"
 
 namespace Xcts::BoundaryConditions {
-
 template <typename System>
 using standard_boundary_conditions =
-    tmpl::list<elliptic::BoundaryConditions::AnalyticSolution<System>, Flatness,
+    tmpl::list<elliptic::BoundaryConditions::AnalyticSolution<System>,
+               Flatness<System::enabled_equations>,
                ApparentHorizon<System::conformal_geometry>>;
-
 }
