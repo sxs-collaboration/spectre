@@ -8,6 +8,7 @@
 #include <string>
 #include <unordered_map>
 #include <utility>
+#include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
@@ -25,6 +26,7 @@
 #include "Elliptic/BoundaryConditions/AnalyticSolution.hpp"
 #include "Elliptic/BoundaryConditions/ApplyBoundaryCondition.hpp"
 #include "Elliptic/BoundaryConditions/BoundaryCondition.hpp"
+#include "Elliptic/BoundaryConditions/BoundaryConditionType.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -75,6 +77,13 @@ void test_analytic_solution() {
     test_copy_semantics(boundary_condition);
     auto move_boundary_condition = boundary_condition;
     test_move_semantics(std::move(move_boundary_condition), boundary_condition);
+  }
+  {
+    INFO("Properties");
+    CHECK(boundary_condition.boundary_condition_types() ==
+          std::vector<elliptic::BoundaryConditionType>{
+              elliptic::BoundaryConditionType::Dirichlet,
+              elliptic::BoundaryConditionType::Neumann});
   }
   {
     INFO("Test applying the boundary conditions");

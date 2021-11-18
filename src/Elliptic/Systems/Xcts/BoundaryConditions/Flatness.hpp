@@ -7,9 +7,11 @@
 #include <memory>
 #include <pup.h>
 #include <string>
+#include <vector>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Elliptic/BoundaryConditions/BoundaryCondition.hpp"
+#include "Elliptic/BoundaryConditions/BoundaryConditionType.hpp"
 #include "Elliptic/Systems/Xcts/FluxesAndSources.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
@@ -60,6 +62,21 @@ class Flatness : public elliptic::BoundaryConditions::BoundaryCondition<3> {
   std::unique_ptr<domain::BoundaryConditions::BoundaryCondition> get_clone()
       const override {
     return std::make_unique<Flatness>(*this);
+  }
+
+  std::vector<elliptic::BoundaryConditionType> boundary_condition_types()
+      const override {
+    return {[]() {
+              if constexpr (EnabledEquations == Xcts::Equations::Hamiltonian) {
+                return 1;
+              } else if constexpr (EnabledEquations ==
+                                   Xcts::Equations::HamiltonianAndLapse) {
+                return 2;
+              } else {
+                return 5;
+              }
+            }(),
+            elliptic::BoundaryConditionType::Dirichlet};
   }
 
   using argument_tags = tmpl::list<>;

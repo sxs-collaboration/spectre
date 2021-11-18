@@ -6,12 +6,14 @@
 #include <cstddef>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Elliptic/BoundaryConditions/ApplyBoundaryCondition.hpp"
 #include "Elliptic/BoundaryConditions/BoundaryCondition.hpp"
+#include "Elliptic/BoundaryConditions/BoundaryConditionType.hpp"
 #include "Elliptic/Systems/Elasticity/BoundaryConditions/Zero.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
@@ -35,14 +37,26 @@ SPECTRE_TEST_CASE("Unit.Elasticity.BoundaryConditions.Zero",
   REQUIRE(dynamic_cast<const Free*>(created_free.get()) != nullptr);
   const auto& fixed = dynamic_cast<const Fixed&>(*created_fixed);
   const auto& free = dynamic_cast<const Free&>(*created_free);
-  test_serialization(fixed);
-  test_serialization(free);
-  test_copy_semantics(fixed);
-  test_copy_semantics(free);
-  auto move_fixed = fixed;
-  auto move_free = free;
-  test_move_semantics(std::move(move_fixed), fixed);
-  test_move_semantics(std::move(move_free), free);
+  {
+    INFO("Semantics");
+    test_serialization(fixed);
+    test_serialization(free);
+    test_copy_semantics(fixed);
+    test_copy_semantics(free);
+    auto move_fixed = fixed;
+    auto move_free = free;
+    test_move_semantics(std::move(move_fixed), fixed);
+    test_move_semantics(std::move(move_free), free);
+  }
+  {
+    INFO("Properties");
+    CHECK(fixed.boundary_condition_types() ==
+          std::vector<elliptic::BoundaryConditionType>{
+              2, elliptic::BoundaryConditionType::Dirichlet});
+    CHECK(free.boundary_condition_types() ==
+          std::vector<elliptic::BoundaryConditionType>{
+              2, elliptic::BoundaryConditionType::Neumann});
+  }
 
   // Test applying the boundary conditions
   const auto box = db::create<db::AddSimpleTags<>>();

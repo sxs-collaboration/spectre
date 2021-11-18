@@ -6,12 +6,14 @@
 #include <cstddef>
 #include <pup.h>
 #include <string>
+#include <vector>
 
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/Tags/FaceNormal.hpp"
 #include "Elliptic/BoundaryConditions/BoundaryCondition.hpp"
+#include "Elliptic/BoundaryConditions/BoundaryConditionType.hpp"
 #include "Elliptic/Systems/Xcts/Geometry.hpp"
 #include "Elliptic/Systems/Xcts/Tags.hpp"
 #include "Options/Auto.hpp"
@@ -175,6 +177,20 @@ class ApparentHorizon
   const std::optional<gr::Solutions::KerrSchild>&
   kerr_solution_for_negative_expansion() const {
     return kerr_solution_for_negative_expansion_;
+  }
+
+  std::vector<elliptic::BoundaryConditionType> boundary_condition_types()
+      const override {
+    return {// Conformal factor
+            elliptic::BoundaryConditionType::Neumann,
+            // Lapse times conformal factor
+            this->kerr_solution_for_lapse_.has_value()
+                ? elliptic::BoundaryConditionType::Dirichlet
+                : elliptic::BoundaryConditionType::Neumann,
+            // Shift
+            elliptic::BoundaryConditionType::Dirichlet,
+            elliptic::BoundaryConditionType::Dirichlet,
+            elliptic::BoundaryConditionType::Dirichlet};
   }
 
   using argument_tags = tmpl::flatten<tmpl::list<

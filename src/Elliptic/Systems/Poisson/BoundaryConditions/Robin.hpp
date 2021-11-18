@@ -6,9 +6,11 @@
 #include <cstddef>
 #include <pup.h>
 #include <string>
+#include <vector>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Elliptic/BoundaryConditions/BoundaryCondition.hpp"
+#include "Elliptic/BoundaryConditions/BoundaryConditionType.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Utilities/Gsl.hpp"
@@ -75,6 +77,13 @@ class Robin : public elliptic::BoundaryConditions::BoundaryCondition<Dim> {
   double dirichlet_weight() const { return dirichlet_weight_; }
   double neumann_weight() const { return neumann_weight_; }
   double constant() const { return constant_; }
+
+  std::vector<elliptic::BoundaryConditionType> boundary_condition_types()
+      const override {
+    return {1, neumann_weight_ == 0.
+                   ? elliptic::BoundaryConditionType::Dirichlet
+                   : elliptic::BoundaryConditionType::Neumann};
+  }
 
   using argument_tags = tmpl::list<>;
   using volume_tags = tmpl::list<>;

@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <pup.h>
 #include <string>
+#include <vector>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Elliptic/BoundaryConditions/BoundaryCondition.hpp"
@@ -75,6 +76,11 @@ class Zero : public elliptic::BoundaryConditions::BoundaryCondition<Dim> {
   std::unique_ptr<domain::BoundaryConditions::BoundaryCondition> get_clone()
       const override {
     return std::make_unique<Zero>(*this);
+  }
+
+  std::vector<elliptic::BoundaryConditionType> boundary_condition_types()
+      const override {
+    return {Dim, BoundaryConditionType};
   }
 
   using argument_tags = tmpl::list<>;

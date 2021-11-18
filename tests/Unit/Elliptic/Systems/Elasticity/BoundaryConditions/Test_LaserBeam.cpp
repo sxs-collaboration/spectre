@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -19,6 +20,7 @@
 #include "Domain/Tags/Faces.hpp"
 #include "Elliptic/BoundaryConditions/ApplyBoundaryCondition.hpp"
 #include "Elliptic/BoundaryConditions/BoundaryCondition.hpp"
+#include "Elliptic/BoundaryConditions/BoundaryConditionType.hpp"
 #include "Elliptic/Systems/Elasticity/BoundaryConditions/LaserBeam.hpp"
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
@@ -58,20 +60,28 @@ void apply_boundary_condition(
 
 SPECTRE_TEST_CASE("Unit.Elasticity.BoundaryConditions.LaserBeam",
                   "[Unit][Elliptic]") {
+  const double beam_width = 2.;
   // Test factory-creation
   const auto created = TestHelpers::test_factory_creation<
       elliptic::BoundaryConditions::BoundaryCondition<3>, LaserBeam>(
       "LaserBeam:\n"
       "  BeamWidth: 2.");
+  REQUIRE(dynamic_cast<const LaserBeam*>(created.get()) != nullptr);
+  const auto& laser_beam = dynamic_cast<const LaserBeam&>(*created);
 
   {
     INFO("Semantics");
-    REQUIRE(dynamic_cast<const LaserBeam*>(created.get()) != nullptr);
-    const auto& laser_beam = dynamic_cast<const LaserBeam&>(*created);
     test_serialization(laser_beam);
     test_copy_semantics(laser_beam);
     auto move_laser_beam = laser_beam;
     test_move_semantics(std::move(move_laser_beam), laser_beam);
+  }
+  {
+    INFO("Properties");
+    CHECK(laser_beam.beam_width() == beam_width);
+    CHECK(laser_beam.boundary_condition_types() ==
+          std::vector<elliptic::BoundaryConditionType>{
+              3, elliptic::BoundaryConditionType::Neumann});
   }
 
   // Test applying the boundary conditions
@@ -88,7 +98,6 @@ SPECTRE_TEST_CASE("Unit.Elasticity.BoundaryConditions.LaserBeam",
 
   {
     INFO("Consistency with half-space mirror solution");
-    const double beam_width = 2.;
     const DataVector used_for_size{5};
     // Choose an arbitrary set of points on the z=0 surface of the mirror
     MAKE_GENERATOR(generator);
@@ -117,7 +126,6 @@ SPECTRE_TEST_CASE("Unit.Elasticity.BoundaryConditions.LaserBeam",
     // catch issues with computing the coordinate distance
     get<2>(x) += 2.;
     // Compare to the boundary conditions
-    const LaserBeam laser_beam{beam_width};
     tnsr::I<DataVector, 3> displacement{used_for_size.size(),
                                         std::numeric_limits<double>::max()};
     tnsr::I<DataVector, 3> n_dot_minus_stress{

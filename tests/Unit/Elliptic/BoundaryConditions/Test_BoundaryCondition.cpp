@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
@@ -70,6 +71,11 @@ class TestBoundaryCondition : public BoundaryCondition<1> {
       tmpl::list<ArgumentTag, VolumeArgumentTag, NonlinearArgumentTag>;
   using volume_tags = tmpl::list<VolumeArgumentTag>;
 
+  std::vector<elliptic::BoundaryConditionType> boundary_condition_types()
+      const override {
+    return {elliptic::BoundaryConditionType::Dirichlet};
+  }
+
   // [example_poisson_fields]
   static void apply(const gsl::not_null<Scalar<DataVector>*> field,
                     const gsl::not_null<Scalar<DataVector>*> n_dot_flux,
@@ -107,6 +113,10 @@ SPECTRE_TEST_CASE("Unit.Elliptic.BoundaryConditions.Base", "[Unit][Elliptic]") {
       BoundaryCondition<1>, TestBoundaryCondition>("TestBoundaryCondition");
   const auto& boundary_condition =
       dynamic_cast<const TestBoundaryCondition&>(*created);
+
+  CHECK(created->boundary_condition_types() ==
+        std::vector<elliptic::BoundaryConditionType>{
+            elliptic::BoundaryConditionType::Dirichlet});
 
   // Test applying boundary conditions
   const auto box = db::create<

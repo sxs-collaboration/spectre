@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <pup.h>
 #include <string>
+#include <vector>
 
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
@@ -86,6 +87,11 @@ class LaserBeam : public elliptic::BoundaryConditions::BoundaryCondition<3> {
   LaserBeam(double beam_width) : beam_width_(beam_width) {}
 
   double beam_width() const { return beam_width_; }
+
+  std::vector<elliptic::BoundaryConditionType> boundary_condition_types()
+      const override {
+    return {3, elliptic::BoundaryConditionType::Neumann};
+  }
 
   using argument_tags =
       tmpl::list<domain::Tags::Coordinates<3, Frame::Inertial>,

@@ -15,6 +15,7 @@
 #include "Domain/Tags.hpp"
 #include "Elliptic/BoundaryConditions/ApplyBoundaryCondition.hpp"
 #include "Elliptic/BoundaryConditions/BoundaryCondition.hpp"
+#include "Elliptic/BoundaryConditions/BoundaryConditionType.hpp"
 #include "Elliptic/Systems/Xcts/BoundaryConditions/Flatness.hpp"
 #include "Elliptic/Systems/Xcts/FluxesAndSources.hpp"
 #include "Framework/TestCreation.hpp"
@@ -92,6 +93,24 @@ void test_suite() {
     test_copy_semantics(boundary_condition);
     auto move_boundary_condition = boundary_condition;
     test_move_semantics(std::move(move_boundary_condition), boundary_condition);
+  }
+  {
+    INFO("Properties");
+    if constexpr (EnabledEquations == Xcts::Equations::Hamiltonian) {
+      CHECK(boundary_condition.boundary_condition_types() ==
+            std::vector<elliptic::BoundaryConditionType>{
+                1, elliptic::BoundaryConditionType::Dirichlet});
+    } else if constexpr (EnabledEquations ==
+                         Xcts::Equations::HamiltonianAndLapse) {
+      CHECK(boundary_condition.boundary_condition_types() ==
+            std::vector<elliptic::BoundaryConditionType>{
+                2, elliptic::BoundaryConditionType::Dirichlet});
+    } else if constexpr (EnabledEquations ==
+                         Xcts::Equations::HamiltonianLapseAndShift) {
+      CHECK(boundary_condition.boundary_condition_types() ==
+            std::vector<elliptic::BoundaryConditionType>{
+                5, elliptic::BoundaryConditionType::Dirichlet});
+    }
   }
   test_flatness<EnabledEquations, false>(boundary_condition);
   test_flatness<EnabledEquations, true>(boundary_condition);

@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -13,6 +14,7 @@
 #include "Domain/Structure/Direction.hpp"
 #include "Elliptic/BoundaryConditions/ApplyBoundaryCondition.hpp"
 #include "Elliptic/BoundaryConditions/BoundaryCondition.hpp"
+#include "Elliptic/BoundaryConditions/BoundaryConditionType.hpp"
 #include "Elliptic/Systems/Poisson/BoundaryConditions/Robin.hpp"
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
@@ -65,6 +67,13 @@ SPECTRE_TEST_CASE("Unit.Elasticity.BoundaryConditions.Robin",
     CHECK(boundary_condition.dirichlet_weight() == 2.);
     CHECK(boundary_condition.neumann_weight() == 3.);
     CHECK(boundary_condition.constant() == 4.);
+    CHECK(boundary_condition.boundary_condition_types() ==
+          std::vector<elliptic::BoundaryConditionType>{
+              1, elliptic::BoundaryConditionType::Neumann});
+    Robin<2> dirichlet_type_robin{2., 0., 4.};
+    CHECK(dirichlet_type_robin.boundary_condition_types() ==
+          std::vector<elliptic::BoundaryConditionType>{
+              1, elliptic::BoundaryConditionType::Dirichlet});
   }
   {
     INFO("Semantics");
