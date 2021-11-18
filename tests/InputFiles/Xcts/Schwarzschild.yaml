@@ -94,6 +94,7 @@ LinearSolver:
         Preconditioner:
           MinusLaplacian:
             Solver: ExplicitInverse
+            BoundaryConditions: Auto
     SkipResets: True
     ObservePerCoreReductions: False
 

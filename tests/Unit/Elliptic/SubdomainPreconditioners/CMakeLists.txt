@@ -18,7 +18,9 @@ target_link_libraries(
   ${LIBRARY}
   PRIVATE
   Convergence
+  CoordinateMaps
   DataStructures
+  Domain
   DomainStructure
   EllipticSubdomainPreconditioners
   Options
