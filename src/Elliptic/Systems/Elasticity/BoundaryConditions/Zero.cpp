@@ -13,10 +13,10 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
-namespace Elasticity::BoundaryConditions::detail {
+namespace Elasticity::BoundaryConditions {
 
 template <size_t Dim, elliptic::BoundaryConditionType BoundaryConditionType>
-std::string ZeroImpl<Dim, BoundaryConditionType>::name() {
+std::string Zero<Dim, BoundaryConditionType>::name() {
   if constexpr (BoundaryConditionType ==
                 elliptic::BoundaryConditionType::Dirichlet) {
     return "Fixed";
@@ -26,7 +26,7 @@ std::string ZeroImpl<Dim, BoundaryConditionType>::name() {
 }
 
 template <size_t Dim, elliptic::BoundaryConditionType BoundaryConditionType>
-void ZeroImpl<Dim, BoundaryConditionType>::apply(
+void Zero<Dim, BoundaryConditionType>::apply(
     const gsl::not_null<tnsr::I<DataVector, Dim>*> displacement,
     const gsl::not_null<tnsr::I<DataVector, Dim>*> n_dot_minus_stress) {
   if constexpr (BoundaryConditionType ==
@@ -44,33 +44,16 @@ void ZeroImpl<Dim, BoundaryConditionType>::apply(
 }
 
 template <size_t Dim, elliptic::BoundaryConditionType BoundaryConditionType>
-void ZeroImpl<Dim, BoundaryConditionType>::apply_linearized(
+void Zero<Dim, BoundaryConditionType>::apply_linearized(
     const gsl::not_null<tnsr::I<DataVector, Dim>*> displacement,
     const gsl::not_null<tnsr::I<DataVector, Dim>*> n_dot_minus_stress) {
   apply(displacement, n_dot_minus_stress);
 }
 
-template <size_t Dim, elliptic::BoundaryConditionType BoundaryConditionType>
-bool operator==(const ZeroImpl<Dim, BoundaryConditionType>& /*lhs*/,
-                const ZeroImpl<Dim, BoundaryConditionType>& /*rhs*/) {
-  return true;
-}
-
-template <size_t Dim, elliptic::BoundaryConditionType BoundaryConditionType>
-bool operator!=(const ZeroImpl<Dim, BoundaryConditionType>& lhs,
-                const ZeroImpl<Dim, BoundaryConditionType>& rhs) {
-  return not(lhs == rhs);
-}
-
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define BCTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATE(_, data)                                              \
-  template class ZeroImpl<DIM(data), BCTYPE(data)>;                       \
-  template bool operator==(const ZeroImpl<DIM(data), BCTYPE(data)>& lhs,  \
-                           const ZeroImpl<DIM(data), BCTYPE(data)>& rhs); \
-  template bool operator!=(const ZeroImpl<DIM(data), BCTYPE(data)>& lhs,  \
-                           const ZeroImpl<DIM(data), BCTYPE(data)>& rhs);
+#define INSTANTIATE(_, data) template class Zero<DIM(data), BCTYPE(data)>;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (2, 3),
                         (elliptic::BoundaryConditionType::Dirichlet,
@@ -80,4 +63,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (2, 3),
 #undef BCTYPE
 #undef INSTANTIATE
 
-}  // namespace Elasticity::BoundaryConditions::detail
+}  // namespace Elasticity::BoundaryConditions

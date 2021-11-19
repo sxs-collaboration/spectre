@@ -8,12 +8,14 @@
 #include "Options/Options.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
+#include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
-namespace Poisson::BoundaryConditions::detail {
+namespace Poisson::BoundaryConditions {
 
-RobinImpl::RobinImpl(const double dirichlet_weight, const double neumann_weight,
-                     const double constant, const Options::Context& context)
+template <size_t Dim>
+Robin<Dim>::Robin(const double dirichlet_weight, const double neumann_weight,
+                  const double constant, const Options::Context& context)
     : dirichlet_weight_(dirichlet_weight),
       neumann_weight_(neumann_weight),
       constant_(constant) {
@@ -25,11 +27,8 @@ RobinImpl::RobinImpl(const double dirichlet_weight, const double neumann_weight,
   }
 }
 
-double RobinImpl::dirichlet_weight() const { return dirichlet_weight_; }
-double RobinImpl::neumann_weight() const { return neumann_weight_; }
-double RobinImpl::constant() const { return constant_; }
-
-void RobinImpl::apply(
+template <size_t Dim>
+void Robin<Dim>::apply(
     const gsl::not_null<Scalar<DataVector>*> field,
     const gsl::not_null<Scalar<DataVector>*> n_dot_field_gradient) const {
   if (neumann_weight_ == 0.) {
@@ -47,7 +46,8 @@ void RobinImpl::apply(
   }
 }
 
-void RobinImpl::apply_linearized(
+template <size_t Dim>
+void Robin<Dim>::apply_linearized(
     const gsl::not_null<Scalar<DataVector>*> field_correction,
     const gsl::not_null<Scalar<DataVector>*> n_dot_field_gradient_correction)
     const {
@@ -62,20 +62,38 @@ void RobinImpl::apply_linearized(
   }
 }
 
-void RobinImpl::pup(PUP::er& p) {
+template <size_t Dim>
+void Robin<Dim>::pup(PUP::er& p) {
   p | dirichlet_weight_;
   p | neumann_weight_;
   p | constant_;
 }
 
-bool operator==(const RobinImpl& lhs, const RobinImpl& rhs) {
+template <size_t Dim>
+bool operator==(const Robin<Dim>& lhs, const Robin<Dim>& rhs) {
   return lhs.dirichlet_weight() == rhs.dirichlet_weight() and
          lhs.neumann_weight() == rhs.neumann_weight() and
          lhs.constant() == rhs.constant();
 }
 
-bool operator!=(const RobinImpl& lhs, const RobinImpl& rhs) {
+template <size_t Dim>
+bool operator!=(const Robin<Dim>& lhs, const Robin<Dim>& rhs) {
   return not(lhs == rhs);
 }
 
-}  // namespace Poisson::BoundaryConditions::detail
+template <size_t Dim>
+PUP::able::PUP_ID Robin<Dim>::my_PUP_ID = 0;  // NOLINT
+
+#define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
+
+#define INSTANTIATE(_, data)                                                  \
+  template class Robin<DIM(data)>;                                            \
+  template bool operator==(const Robin<DIM(data)>&, const Robin<DIM(data)>&); \
+  template bool operator!=(const Robin<DIM(data)>&, const Robin<DIM(data)>&);
+
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
+
+#undef INSTANTIATE
+#undef DIM
+
+}  // namespace Poisson::BoundaryConditions

@@ -19,6 +19,7 @@
 #include "Elliptic/BoundaryConditions/ApplyBoundaryCondition.hpp"
 #include "Elliptic/BoundaryConditions/BoundaryCondition.hpp"
 #include "Framework/TestCreation.hpp"
+#include "Framework/TestHelpers.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Utilities/Gsl.hpp"
@@ -40,18 +41,9 @@ struct VolumeArgumentTag : db::SimpleTag {
   using type = bool;
 };
 
-template <typename Registrars>
-class TestBoundaryCondition;
-
-struct TestRegistrar {
-  template <typename Registrars>
-  using f = TestBoundaryCondition<Registrars>;
-};
-
-template <typename Registrars = tmpl::list<TestRegistrar>>
-class TestBoundaryCondition : public BoundaryCondition<1, Registrars> {
+class TestBoundaryCondition : public BoundaryCondition<1> {
  private:
-  using Base = BoundaryCondition<1, Registrars>;
+  using Base = BoundaryCondition<1>;
 
  public:
   using options = tmpl::list<>;
@@ -64,9 +56,10 @@ class TestBoundaryCondition : public BoundaryCondition<1, Registrars> {
   TestBoundaryCondition& operator=(TestBoundaryCondition&&) = default;
   ~TestBoundaryCondition() override = default;
   explicit TestBoundaryCondition(CkMigrateMessage* m) : Base(m) {}
-  WRAPPED_PUPable_decl_base_template(
-      SINGLE_ARG(BoundaryCondition<1, Registrars>),
-      SINGLE_ARG(TestBoundaryCondition<Registrars>));  // NOLINT
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
+  WRAPPED_PUPable_decl_template(TestBoundaryCondition);
+#pragma GCC diagnostic pop
 
   std::unique_ptr<domain::BoundaryConditions::BoundaryCondition> get_clone()
       const override {
@@ -104,19 +97,16 @@ class TestBoundaryCondition : public BoundaryCondition<1, Registrars> {
   }
 };
 
-template <typename Registrars>
-PUP::able::PUP_ID TestBoundaryCondition<Registrars>::my_PUP_ID = 0;
+PUP::able::PUP_ID TestBoundaryCondition::my_PUP_ID = 0;
 
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Elliptic.BoundaryConditions.Base", "[Unit][Elliptic]") {
-  using BoundaryConditionType = TestBoundaryCondition<>;
   // Factory-create a boundary condition and cast down to derived class
-  const auto boundary_condition_base = TestHelpers::test_creation<
-      std::unique_ptr<BoundaryCondition<1, tmpl::list<TestRegistrar>>>>(
-          "TestBoundaryCondition");
+  const auto created = TestHelpers::test_factory_creation<
+      BoundaryCondition<1>, TestBoundaryCondition>("TestBoundaryCondition");
   const auto& boundary_condition =
-      dynamic_cast<const BoundaryConditionType&>(*boundary_condition_base);
+      dynamic_cast<const TestBoundaryCondition&>(*created);
 
   // Test applying boundary conditions
   const auto box = db::create<
@@ -128,13 +118,15 @@ SPECTRE_TEST_CASE("Unit.Elliptic.BoundaryConditions.Base", "[Unit][Elliptic]") {
   Scalar<DataVector> boundary_field{num_points};
   Scalar<DataVector> boundary_n_dot_flux{num_points};
   // Nonlinear
-  elliptic::apply_boundary_condition<false>(
+  elliptic::apply_boundary_condition<false, void,
+                                     tmpl::list<TestBoundaryCondition>>(
       boundary_condition, box, Direction<1>::lower_xi(),
       make_not_null(&boundary_field), make_not_null(&boundary_n_dot_flux));
   CHECK(get(boundary_field) == DataVector{num_points, 1.});
   CHECK(get(boundary_n_dot_flux) == DataVector{num_points, 2.});
   // Linear
-  elliptic::apply_boundary_condition<true>(
+  elliptic::apply_boundary_condition<true, void,
+                                     tmpl::list<TestBoundaryCondition>>(
       boundary_condition, box, Direction<1>::lower_xi(),
       make_not_null(&boundary_field), make_not_null(&boundary_n_dot_flux));
   CHECK(get(boundary_field) == DataVector{num_points, 3.});

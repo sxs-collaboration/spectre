@@ -10,10 +10,8 @@
 
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
-#include "Elliptic/BoundaryConditions/AnalyticSolution.hpp"
 #include "Elliptic/BoundaryConditions/BoundaryCondition.hpp"
 #include "Elliptic/Protocols/FirstOrderSystem.hpp"
-#include "Elliptic/Systems/Poisson/BoundaryConditions/Robin.hpp"
 #include "Elliptic/Systems/Poisson/Equations.hpp"
 #include "Elliptic/Systems/Poisson/Geometry.hpp"
 #include "Elliptic/Systems/Poisson/Tags.hpp"
@@ -97,9 +95,6 @@ struct FirstOrderSystem
   using sources_computer = Sources<Dim, BackgroundGeometry>;
 
   using boundary_conditions_base =
-      elliptic::BoundaryConditions::BoundaryCondition<
-          Dim, tmpl::list<elliptic::BoundaryConditions::Registrars::
-                              AnalyticSolution<FirstOrderSystem>,
-                          Poisson::BoundaryConditions::Registrars::Robin<Dim>>>;
+      elliptic::BoundaryConditions::BoundaryCondition<Dim>;
 };
 }  // namespace Poisson

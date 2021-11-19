@@ -36,7 +36,7 @@ void apply_boundary_condition(
     const gsl::not_null<tnsr::I<DataVector, 3>*> n_dot_minus_stress,
     const tnsr::I<DataVector, 3>& x, tnsr::i<DataVector, 3> face_normal,
     const double beam_width) {
-  const LaserBeam<> laser_beam{beam_width};
+  const LaserBeam laser_beam{beam_width};
   const auto direction = Direction<3>::lower_xi();
   // Normalize the randomly-generated face normal
   const auto face_normal_magnitude = magnitude(face_normal);
@@ -50,25 +50,24 @@ void apply_boundary_condition(
       DirectionMap<3, tnsr::i<DataVector, 3>>{{direction, face_normal}});
   tnsr::I<DataVector, 3> displacement{x.begin()->size(),
                                       std::numeric_limits<double>::max()};
-  elliptic::apply_boundary_condition<Linearized>(laser_beam, box, direction,
-                                                 make_not_null(&displacement),
-                                                 n_dot_minus_stress);
+  elliptic::apply_boundary_condition<Linearized, void, tmpl::list<LaserBeam>>(
+      laser_beam, box, direction, make_not_null(&displacement),
+      n_dot_minus_stress);
 }
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Elasticity.BoundaryConditions.LaserBeam",
                   "[Unit][Elliptic]") {
   // Test factory-creation
-  const auto created = TestHelpers::test_creation<
-      std::unique_ptr<elliptic::BoundaryConditions::BoundaryCondition<
-          3, tmpl::list<Registrars::LaserBeam>>>>(
+  const auto created = TestHelpers::test_factory_creation<
+      elliptic::BoundaryConditions::BoundaryCondition<3>, LaserBeam>(
       "LaserBeam:\n"
       "  BeamWidth: 2.");
 
   {
     INFO("Semantics");
-    REQUIRE(dynamic_cast<const LaserBeam<>*>(created.get()) != nullptr);
-    const auto& laser_beam = dynamic_cast<const LaserBeam<>&>(*created);
+    REQUIRE(dynamic_cast<const LaserBeam*>(created.get()) != nullptr);
+    const auto& laser_beam = dynamic_cast<const LaserBeam&>(*created);
     test_serialization(laser_beam);
     test_copy_semantics(laser_beam);
     auto move_laser_beam = laser_beam;
@@ -118,7 +117,7 @@ SPECTRE_TEST_CASE("Unit.Elasticity.BoundaryConditions.LaserBeam",
     // catch issues with computing the coordinate distance
     get<2>(x) += 2.;
     // Compare to the boundary conditions
-    const LaserBeam<> laser_beam{beam_width};
+    const LaserBeam laser_beam{beam_width};
     tnsr::I<DataVector, 3> displacement{used_for_size.size(),
                                         std::numeric_limits<double>::max()};
     tnsr::I<DataVector, 3> n_dot_minus_stress{

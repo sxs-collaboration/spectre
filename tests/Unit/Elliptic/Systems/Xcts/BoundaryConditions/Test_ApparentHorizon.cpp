@@ -122,7 +122,8 @@ void apply_boundary_condition_impl(
           typename ApparentHorizon<ConformalGeometry>::volume_tags>>>(
       DirectionMap<3, std::decay_t<decltype(args)>>{
           {direction, std::move(args)}}...);
-  elliptic::apply_boundary_condition<Linearized>(
+  elliptic::apply_boundary_condition<
+      Linearized, void, tmpl::list<ApparentHorizon<ConformalGeometry>>>(
       boundary_condition, box, direction, make_not_null(&conformal_factor),
       make_not_null(&lapse_times_conformal_factor), shift_excess,
       n_dot_conformal_factor_gradient,
@@ -255,10 +256,9 @@ void test_creation(
         kerr_solution_for_negative_expansion,
     const std::string& option_string) {
   INFO("Test factory-creation");
-  const auto created = TestHelpers::test_creation<
-      std::unique_ptr<elliptic::BoundaryConditions::BoundaryCondition<
-          3, tmpl::list<Registrars::ApparentHorizon<Xcts::Geometry::Curved>>>>>(
-      option_string);
+  const auto created = TestHelpers::test_factory_creation<
+      elliptic::BoundaryConditions::BoundaryCondition<3>,
+      ApparentHorizon<Xcts::Geometry::Curved>>(option_string);
   REQUIRE(dynamic_cast<const ApparentHorizon<Xcts::Geometry::Curved>*>(
               created.get()) != nullptr);
   const auto& boundary_condition =
