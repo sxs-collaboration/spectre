@@ -137,7 +137,7 @@ struct EvolutionMetavars {
                               Events::Completion,
                               dg::Events::field_observations<
                                   volume_dim, Tags::Time, observe_fields,
-                                  analytic_solution_fields>,
+                                  analytic_solution_fields, tmpl::list<>>,
                               Events::time_events<system>>>>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                    StepChoosers::standard_step_choosers<system>>,

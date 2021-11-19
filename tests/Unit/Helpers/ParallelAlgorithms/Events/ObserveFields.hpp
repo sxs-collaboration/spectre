@@ -139,6 +139,43 @@ struct Metavariables {
   enum class Phase { Initialization, Testing, Exit };
 };
 
+// Helper tags
+namespace Tags {
+struct ScalarVarTimesTwo : db::SimpleTag {
+  using type = Scalar<DataVector>;
+};
+
+template <typename ScalarVar>
+struct ScalarVarTimesTwoCompute : db::ComputeTag, ScalarVarTimesTwo {
+  using base = ScalarVarTimesTwo;
+  using return_type = Scalar<DataVector>;
+  using argument_tags = tmpl::list<ScalarVar>;
+  static void function(const gsl::not_null<Scalar<DataVector>*> result,
+                       const Scalar<DataVector>& scalar_var) {
+    get(*result) = 2.0 * get(scalar_var);
+  }
+};
+
+struct ScalarVarTimesThree : db::SimpleTag {
+  using type = Scalar<DataVector>;
+};
+
+template <typename ScalarVar>
+struct ScalarVarTimesThreeCompute
+    : db::ComputeTag,
+      ::Tags::Variables<tmpl::list<ScalarVarTimesThree>> {
+  using base = ScalarVarTimesThree;
+  using return_type = typename base::type;
+  using argument_tags = tmpl::list<ScalarVar>;
+  static void function(
+      const gsl::not_null<::Variables<tmpl::list<ScalarVarTimesThree>>*> result,
+      const Scalar<DataVector>& scalar_var) {
+    result->initialize(get(scalar_var).size());
+    get(get<ScalarVarTimesThree>(*result)) = 3.0 * get(scalar_var);
+  }
+};
+}  // namespace Tags
+
 // Test systems
 
 template <template <size_t, class...> class ObservationEvent,
@@ -152,11 +189,13 @@ struct ScalarSystem {
   };
 
   static constexpr size_t volume_dim = 1;
-  using variables_tag = Tags::Variables<tmpl::list<ScalarVar>>;
+  using variables_tag = ::Tags::Variables<tmpl::list<ScalarVar>>;
 
   template <typename CheckComponent>
   static void check_data(const CheckComponent& check_component) {
     check_component("Scalar", ScalarVar{});
+    check_component("ScalarVarTimesTwo", Tags::ScalarVarTimesTwo{});
+    check_component("ScalarVarTimesThree", Tags::ScalarVarTimesThree{});
   }
 
   using all_vars_for_test = tmpl::list<ScalarVar>;
@@ -177,21 +216,25 @@ struct ScalarSystem {
     void pup(PUP::er& /*p*/) {}  // NOLINT
   };
 
-  using ObserveEvent =
-      ObservationEvent<volume_dim, ObservationTimeTag, all_vars_for_test,
-                       typename solution_for_test::vars_for_test, ExtraArgs...>;
+  using ObserveEvent = ObservationEvent<
+      volume_dim, ObservationTimeTag,
+      tmpl::push_back<all_vars_for_test,
+                      Tags::ScalarVarTimesTwoCompute<ScalarVar>,
+                      Tags::ScalarVarTimesThree>,
+      tmpl::list<Tags::ScalarVarTimesThreeCompute<ScalarVar>>,
+      typename solution_for_test::vars_for_test, ExtraArgs...>;
   static constexpr auto creation_string_for_test =
       "ObserveFields:\n"
       "  SubfileName: element_data\n"
       "  CoordinatesFloatingPointType: Double\n"
-      "  VariablesToObserve: [Scalar]\n"
+      "  VariablesToObserve: [Scalar, ScalarVarTimesTwo, ScalarVarTimesThree]\n"
       "  FloatingPointTypes: [Double]\n";
   static ObserveEvent make_test_object(
       const std::optional<Mesh<volume_dim>>& interpolating_mesh) {
     return ObserveEvent{"element_data",
                         FloatingPointType::Double,
                         {FloatingPointType::Double},
-                        {"Scalar"},
+                        {"Scalar", "ScalarVarTimesTwo", "ScalarVarTimesThree"},
                         interpolating_mesh};
   }
 };
@@ -233,13 +276,15 @@ struct ComplicatedSystem {
 
   static constexpr size_t volume_dim = 2;
   using variables_tag =
-      Tags::Variables<tmpl::list<TensorVar, ScalarVar, UnobservedVar>>;
+      ::Tags::Variables<tmpl::list<TensorVar, ScalarVar, UnobservedVar>>;
   using primitive_variables_tag =
-      Tags::Variables<tmpl::list<VectorVar, TensorVar2, UnobservedVar2>>;
+      ::Tags::Variables<tmpl::list<VectorVar, TensorVar2, UnobservedVar2>>;
 
   template <typename CheckComponent>
   static void check_data(const CheckComponent& check_component) {
     check_component("Scalar", ScalarVar{});
+    check_component("ScalarVarTimesTwo", Tags::ScalarVarTimesTwo{});
+    check_component("ScalarVarTimesThree", Tags::ScalarVarTimesThree{});
     check_component("Tensor_xx", TensorVar{}, 0, 0);
     check_component("Tensor_yx", TensorVar{}, 0, 1);
     check_component("Tensor_yy", TensorVar{}, 1, 1);
@@ -283,22 +328,29 @@ struct ComplicatedSystem {
     void pup(PUP::er& /*p*/) {}  // NOLINT
   };
 
-  using ObserveEvent =
-      ObservationEvent<volume_dim, ObservationTimeTag, all_vars_for_test,
-                       typename solution_for_test::vars_for_test, ExtraArgs...>;
+  using ObserveEvent = ObservationEvent<
+      volume_dim, ObservationTimeTag,
+      tmpl::push_back<all_vars_for_test,
+                      Tags::ScalarVarTimesTwoCompute<ScalarVar>,
+                      Tags::ScalarVarTimesThree>,
+      tmpl::list<Tags::ScalarVarTimesThreeCompute<ScalarVar>>,
+      typename solution_for_test::vars_for_test, ExtraArgs...>;
   static constexpr auto creation_string_for_test =
       "ObserveFields:\n"
       "  SubfileName: element_data\n"
       "  CoordinatesFloatingPointType: Double\n"
-      "  VariablesToObserve: [Scalar, Vector, Tensor, Tensor2]\n"
-      "  FloatingPointTypes: [Double, Double, Float, Float]\n";
+      "  VariablesToObserve: [Scalar, ScalarVarTimesTwo, ScalarVarTimesThree,"
+      "                       Vector, Tensor, Tensor2]\n"
+      "  FloatingPointTypes: [Double, Double, Double, Double, Float, Float]\n";
 
   static ObserveEvent make_test_object(
       const std::optional<Mesh<volume_dim>>& interpolating_mesh) {
     return ObserveEvent("element_data", FloatingPointType::Double,
                         {FloatingPointType::Double, FloatingPointType::Double,
+                         FloatingPointType::Double, FloatingPointType::Double,
                          FloatingPointType::Float, FloatingPointType::Float},
-                        {"Scalar", "Vector", "Tensor", "Tensor2"},
+                        {"Scalar", "ScalarVarTimesTwo", "ScalarVarTimesThree",
+                         "Vector", "Tensor", "Tensor2"},
                         interpolating_mesh);
   }
 };

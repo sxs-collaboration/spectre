@@ -214,16 +214,18 @@ struct Metavariables {
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
         tmpl::pair<DomainCreator<volume_dim>, domain_creators<volume_dim>>,
-        tmpl::pair<Event,
-                   tmpl::flatten<tmpl::list<
-                       Events::Completion,
-                       dg::Events::field_observations<
-                           volume_dim, nonlinear_solver_iteration_id,
-                           observe_fields, analytic_solution_fields,
-                           LinearSolver::multigrid::Tags::IsFinestGrid>,
-                       Events::ObserveNorms<
-                           nonlinear_solver_iteration_id, constraint_fields,
-                           LinearSolver::multigrid::Tags::IsFinestGrid>>>>,
+        tmpl::pair<
+            Event,
+            tmpl::flatten<tmpl::list<
+                Events::Completion,
+                dg::Events::field_observations<
+                    volume_dim, nonlinear_solver_iteration_id, observe_fields,
+                    analytic_solution_fields, tmpl::list<>,
+                    LinearSolver::multigrid::Tags::IsFinestGrid>,
+                Events::ObserveNorms<
+                    nonlinear_solver_iteration_id, constraint_fields,
+                    tmpl::list<>,
+                    LinearSolver::multigrid::Tags::IsFinestGrid>>>>,
         tmpl::pair<Trigger, elliptic::Triggers::all_triggers<
                                 typename nonlinear_solver::options_group>>>;
   };

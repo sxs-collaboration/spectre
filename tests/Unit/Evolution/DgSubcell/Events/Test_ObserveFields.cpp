@@ -162,7 +162,7 @@ void test_observe(
   // roundoff error.
   // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
   std::iota(vars.data(), vars.data() + vars.size(), 1.0);
-  const Variables<db::wrap_tags_in<Tags::Analytic, solution_variables>>
+  const Variables<db::wrap_tags_in<::Tags::Analytic, solution_variables>>
       solutions{variables_from_tagged_tuple(analytic_solution.variables(
           active_inertial_coords, observation_time, solution_variables{}))};
   const Variables<solution_variables> errors =
@@ -171,7 +171,7 @@ void test_observe(
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavariables>;
   MockRuntimeSystem runner(
       tuples::TaggedTuple<
-          Tags::AnalyticSolution<typename System::solution_for_test>>{
+          ::Tags::AnalyticSolution<typename System::solution_for_test>>{
           std::move(analytic_solution)});
   ActionTesting::emplace_component<element_component>(make_not_null(&runner),
                                                       element_id);
@@ -183,7 +183,7 @@ void test_observe(
                         evolution::dg::subcell::Tags::Mesh<volume_dim>,
                         evolution::dg::subcell::Tags::ActiveGrid,
                         dg_coordinates_tag, subcell_coordinates_tag,
-                        Tags::Variables<typename decltype(vars)::tags_list>,
+                        ::Tags::Variables<typename decltype(vars)::tags_list>,
                         ::domain::CoordinateMaps::Tags::CoordinateMap<
                             volume_dim, Frame::Grid, Frame::Inertial>,
                         ::domain::Tags::FunctionsOfTimeInitialize>>(
@@ -194,9 +194,12 @@ void test_observe(
 
   // Reset to empty
   MockContributeVolumeData::results = MockContributeVolumeData::Results{};
-  observe->run(make_observation_box<db::AddComputeTags<>>(box),
-               ActionTesting::cache<element_component>(runner, array_index),
-               array_index, std::add_pointer_t<element_component>{});
+  observe->run(
+      make_observation_box<tmpl::filter<
+          typename System::ObserveEvent::compute_tags_for_observation_box,
+          db::is_compute_tag<tmpl::_1>>>(box),
+      ActionTesting::cache<element_component>(runner, array_index), array_index,
+      std::add_pointer_t<element_component>{});
 
   // Process the data
   runner.template invoke_queued_simple_action<observer_component>(0);
@@ -255,7 +258,19 @@ void test_observe(
   System::check_data([&check_component, &vars](const std::string& name,
                                                auto tag,
                                                const auto... indices) {
-    check_component(name, get<decltype(tag)>(vars).get(indices...));
+    if constexpr (std::is_same_v<decltype(tag),
+                                 TestHelpers::dg::Events::ObserveFields::Tags::
+                                     ScalarVarTimesTwo>) {
+      check_component(
+          name, DataVector{2.0 * get<typename System::ScalarVar>(vars).get()});
+    } else if constexpr (std::is_same_v<decltype(tag),
+                                        TestHelpers::dg::Events::ObserveFields::
+                                            Tags::ScalarVarTimesThree>) {
+      check_component(
+          name, DataVector{3.0 * get<typename System::ScalarVar>(vars).get()});
+    } else {
+      check_component(name, get<decltype(tag)>(vars).get(indices...));
+    }
   });
   if (AlwaysHasAnalyticSolutions) {
     System::solution_for_test::check_data(

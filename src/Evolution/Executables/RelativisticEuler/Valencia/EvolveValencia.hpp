@@ -161,7 +161,8 @@ struct EvolutionMetavars {
                         typename system::primitive_variables_tag::tags_list>,
                     tmpl::conditional_t<
                         evolution::is_analytic_solution_v<initial_data>,
-                        analytic_variables_tags, tmpl::list<>>>,
+                        analytic_variables_tags, tmpl::list<>>,
+                    tmpl::list<>>,
                 Events::time_events<system>>>>,
         tmpl::pair<RelativisticEuler::Valencia::BoundaryConditions::
                        BoundaryCondition<volume_dim>,

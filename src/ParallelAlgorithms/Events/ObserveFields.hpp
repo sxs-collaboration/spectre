@@ -62,6 +62,7 @@ namespace dg {
 namespace Events {
 /// \cond
 template <size_t VolumeDim, typename ObservationValueTag, typename Tensors,
+          typename NonTensorComputeTagsList = tmpl::list<>,
           typename AnalyticSolutionTensors = tmpl::list<>,
           typename ArraySectionIdTag = void,
           typename NonSolutionTensors =
@@ -83,6 +84,9 @@ class ObserveFields;
  * The user may specify an `interpolation_mesh` to which the
  * data is interpolated.
  *
+ * \note The `NonTensorComputeTags` are intended to be used for `Variables`
+ * compute tags like `Tags::DerivCompute`
+ *
  * \par Array sections
  * This event supports sections (see `Parallel::Section`). Set the
  * `ArraySectionIdTag` template parameter to split up observations into subsets
@@ -91,9 +95,10 @@ class ObserveFields;
  * for the path in the output file.
  */
 template <size_t VolumeDim, typename ObservationValueTag, typename... Tensors,
-          typename... AnalyticSolutionTensors, typename ArraySectionIdTag,
-          typename... NonSolutionTensors>
+          typename... NonTensorComputeTags, typename... AnalyticSolutionTensors,
+          typename ArraySectionIdTag, typename... NonSolutionTensors>
 class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
+                    tmpl::list<NonTensorComputeTags...>,
                     tmpl::list<AnalyticSolutionTensors...>, ArraySectionIdTag,
                     tmpl::list<NonSolutionTensors...>> : public Event {
  private:
@@ -187,7 +192,8 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
                 std::optional<Mesh<VolumeDim>> interpolation_mesh = {},
                 const Options::Context& context = {});
 
-  using compute_tags_for_observation_box = tmpl::list<>;
+  using compute_tags_for_observation_box =
+      tmpl::list<Tensors..., NonTensorComputeTags...>;
 
   using argument_tags =
       tmpl::list<::Tags::ObservationBox, ObservationValueTag,
@@ -404,9 +410,10 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
 };
 
 template <size_t VolumeDim, typename ObservationValueTag, typename... Tensors,
-          typename... AnalyticSolutionTensors, typename ArraySectionIdTag,
-          typename... NonSolutionTensors>
+          typename... NonTensorComputeTags, typename... AnalyticSolutionTensors,
+          typename ArraySectionIdTag, typename... NonSolutionTensors>
 ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
+              tmpl::list<NonTensorComputeTags...>,
               tmpl::list<AnalyticSolutionTensors...>, ArraySectionIdTag,
               tmpl::list<NonSolutionTensors...>>::
     ObserveFields(const std::string& subfile_name,
@@ -463,10 +470,11 @@ ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
 
 /// \cond
 template <size_t VolumeDim, typename ObservationValueTag, typename... Tensors,
-          typename... AnalyticSolutionTensors, typename ArraySectionIdTag,
-          typename... NonSolutionTensors>
+          typename... NonTensorComputeTags, typename... AnalyticSolutionTensors,
+          typename ArraySectionIdTag, typename... NonSolutionTensors>
 PUP::able::PUP_ID
     ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
+                  tmpl::list<NonTensorComputeTags...>,
                   tmpl::list<AnalyticSolutionTensors...>, ArraySectionIdTag,
                   tmpl::list<NonSolutionTensors...>>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
