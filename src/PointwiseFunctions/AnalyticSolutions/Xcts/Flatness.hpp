@@ -86,6 +86,11 @@ class Flatness : public AnalyticSolution<Registrars> {
         Tags::ShiftBackground<DataType, 3, Frame::Inertial>,
         Tags::ShiftExcess<DataType, 3, Frame::Inertial>,
         Tags::ShiftStrain<DataType, 3, Frame::Inertial>,
+        ::Tags::Flux<Tags::ConformalFactor<DataType>, tmpl::size_t<3>,
+                     Frame::Inertial>,
+        ::Tags::Flux<Tags::LapseTimesConformalFactor<DataType>, tmpl::size_t<3>,
+                     Frame::Inertial>,
+        Tags::LongitudinalShiftExcess<DataType, 3, Frame::Inertial>,
         Tags::LongitudinalShiftBackgroundMinusDtConformalMetric<
             DataVector, 3, Frame::Inertial>,
         Tags::LongitudinalShiftMinusDtConformalMetricSquare<DataVector>,
