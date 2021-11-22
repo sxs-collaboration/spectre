@@ -12,7 +12,7 @@
 #include "Elliptic/Systems/Poisson/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "Options/Options.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/Poisson/AnalyticSolution.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/AnalyticSolution.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -47,19 +47,6 @@ struct MoustacheVariables {
 };
 }  // namespace detail
 
-/// \cond
-template <size_t Dim, typename Registrars>
-struct Moustache;
-
-namespace Registrars {
-template <size_t Dim>
-struct Moustache {
-  template <typename Registrars>
-  using f = Solutions::Moustache<Dim, Registrars>;
-};
-}  // namespace Registrars
-/// \endcond
-
 /*!
  * \brief A solution to the Poisson equation with a discontinuous first
  * derivative.
@@ -81,12 +68,8 @@ struct Moustache {
  *
  * This solution is taken from \cite Stamm2010.
  */
-template <size_t Dim, typename Registrars =
-                          tmpl::list<Solutions::Registrars::Moustache<Dim>>>
-class Moustache : public AnalyticSolution<Dim, Registrars> {
- private:
-  using Base = AnalyticSolution<Dim, Registrars>;
-
+template <size_t Dim>
+class Moustache : public elliptic::analytic_data::AnalyticSolution {
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help{
@@ -102,7 +85,8 @@ class Moustache : public AnalyticSolution<Dim, Registrars> {
   ~Moustache() override = default;
 
   /// \cond
-  explicit Moustache(CkMigrateMessage* m) : Base(m) {}
+  explicit Moustache(CkMigrateMessage* m)
+      : elliptic::analytic_data::AnalyticSolution(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Moustache);  // NOLINT
   /// \endcond
@@ -116,25 +100,22 @@ class Moustache : public AnalyticSolution<Dim, Registrars> {
     const VarsComputer computer{x};
     return {cache.get_var(computer, RequestedTags{})...};
   }
-
-  // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& /*p*/) override {}
 };
 
 /// \cond
-template <size_t Dim, typename Registrars>
-PUP::able::PUP_ID Moustache<Dim, Registrars>::my_PUP_ID = 0;  // NOLINT
+template <size_t Dim>
+PUP::able::PUP_ID Moustache<Dim>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
 
-template <size_t Dim, typename Registrars>
-constexpr bool operator==(const Moustache<Dim, Registrars>& /*lhs*/,
-                          const Moustache<Dim, Registrars>& /*rhs*/) {
+template <size_t Dim>
+constexpr bool operator==(const Moustache<Dim>& /*lhs*/,
+                          const Moustache<Dim>& /*rhs*/) {
   return true;
 }
 
-template <size_t Dim, typename Registrars>
-constexpr bool operator!=(const Moustache<Dim, Registrars>& lhs,
-                          const Moustache<Dim, Registrars>& rhs) {
+template <size_t Dim>
+constexpr bool operator!=(const Moustache<Dim>& lhs,
+                          const Moustache<Dim>& rhs) {
   return not(lhs == rhs);
 }
 

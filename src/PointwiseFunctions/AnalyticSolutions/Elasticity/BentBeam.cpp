@@ -14,7 +14,8 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
-namespace Elasticity::Solutions::detail {
+namespace Elasticity::Solutions {
+namespace detail {
 
 template <typename DataType>
 void BentBeamVariables<DataType>::operator()(
@@ -74,13 +75,28 @@ void BentBeamVariables<DataType>::operator()(
             fixed_source_for_displacement->end(), 0.);
 }
 
+}  // namespace detail
+
+PUP::able::PUP_ID BentBeam::my_PUP_ID = 0;  // NOLINT
+
+bool operator==(const BentBeam& lhs, const BentBeam& rhs) {
+  return lhs.length() == rhs.length() and lhs.height() == rhs.height() and
+         lhs.bending_moment() == rhs.bending_moment() and
+         lhs.constitutive_relation() == rhs.constitutive_relation();
+}
+
+bool operator!=(const BentBeam& lhs, const BentBeam& rhs) {
+  return not(lhs == rhs);
+}
+
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data) template class BentBeamVariables<DTYPE(data)>;
+#define INSTANTIATE(_, data) \
+  template class detail::BentBeamVariables<DTYPE(data)>;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (DataVector))
 
 #undef DTYPE
 #undef INSTANTIATE
 
-}  // namespace Elasticity::Solutions::detail
+}  // namespace Elasticity::Solutions

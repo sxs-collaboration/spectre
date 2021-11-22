@@ -84,6 +84,7 @@ ConstantDensityStar::ConstantDensityStar(const double density,
 }
 
 void ConstantDensityStar::pup(PUP::er& p) {
+  elliptic::analytic_data::AnalyticSolution::pup(p);
   p | density_;
   p | radius_;
   if (p.isUnpacking()) {
@@ -151,6 +152,8 @@ ConstantDensityStar::variables(
     tmpl::list<gr::Tags::EnergyDensity<DataType>> /*meta*/) const {
   return {compute_piecewise(magnitude(x), radius_, density_, 0.)};
 }
+
+PUP::able::PUP_ID ConstantDensityStar::my_PUP_ID = 0;  // NOLINT
 
 bool operator==(const ConstantDensityStar& lhs,
                 const ConstantDensityStar& rhs) {

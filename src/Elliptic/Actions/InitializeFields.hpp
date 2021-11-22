@@ -12,6 +12,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Tags.hpp"
+#include "Elliptic/Utilities/GetAnalyticData.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
@@ -59,8 +60,9 @@ struct InitializeFields {
     const auto& inertial_coords =
         get<domain::Tags::Coordinates<Dim, Frame::Inertial>>(box);
     const auto& initial_guess = db::get<InitialGuessTag>(box);
-    auto initial_fields = variables_from_tagged_tuple(initial_guess.variables(
-        inertial_coords, typename fields_tag::tags_list{}));
+    auto initial_fields =
+        elliptic::util::get_analytic_data<typename fields_tag::tags_list>(
+            initial_guess, box, inertial_coords);
     ::Initialization::mutate_assign<simple_tags>(make_not_null(&box),
                                                  std::move(initial_fields));
     return {std::move(box)};

@@ -26,7 +26,12 @@
 #include "Elliptic/DiscontinuousGalerkin/Actions/InitializeDomain.hpp"
 #include "Elliptic/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
+#include "Parallel/CharmPupable.hpp"
+#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialGuess.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
@@ -39,15 +44,28 @@ struct System {
   using primal_fields = tmpl::list<ScalarFieldTag>;
 };
 
-struct InitialGuess {
-  static tuples::TaggedTuple<ScalarFieldTag> variables(
-      const tnsr::I<DataVector, 1>& x, tmpl::list<ScalarFieldTag> /*meta*/) {
+struct InitialGuess : elliptic::analytic_data::InitialGuess {
+  InitialGuess() = default;
+  explicit InitialGuess(CkMigrateMessage* m)
+      : elliptic::analytic_data::InitialGuess(m) {}
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
+  WRAPPED_PUPable_decl_template(InitialGuess);  // NOLINT
+#pragma GCC diagnostic pop
+
+  // NOLINTBEGIN(readability-convert-member-functions-to-static)
+  // [initial_guess_vars_fct]
+  tuples::TaggedTuple<ScalarFieldTag> variables(  // NOLINT
+      const tnsr::I<DataVector, 1>& x,
+      tmpl::list<ScalarFieldTag> /*meta*/) const {
+    // [initial_guess_vars_fct]
     Scalar<DataVector> scalar_field{2. * get<0>(x)};
     return {std::move(scalar_field)};
   }
-  // NOLINTNEXTLINE
-  void pup(PUP::er& /*p*/) {}
+  // NOLINTEND(readability-convert-member-functions-to-static)
 };
+
+PUP::able::PUP_ID InitialGuess::my_PUP_ID = 0;  // NOLINT
 
 template <typename Metavariables>
 struct ElementArray {
@@ -67,15 +85,22 @@ struct ElementArray {
                              Metavariables::Phase::Testing,
                              tmpl::list<elliptic::Actions::InitializeFields<
                                  typename Metavariables::system,
-                                 elliptic::Tags::InitialGuess<InitialGuess>>>>>;
+                                 elliptic::Tags::InitialGuess<
+                                     elliptic::analytic_data::InitialGuess>>>>>;
 };
 
 struct Metavariables {
   using system = System;
   using component_list = tmpl::list<ElementArray<Metavariables>>;
-  using const_global_cache_tags =
-      tmpl::list<elliptic::Tags::InitialGuess<InitialGuess>>;
+  using const_global_cache_tags = tmpl::list<
+      elliptic::Tags::InitialGuess<elliptic::analytic_data::InitialGuess>>;
   enum class Phase { Initialization, Testing, Exit };
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes =
+        tmpl::map<tmpl::pair<elliptic::analytic_data::InitialGuess,
+                             tmpl::list<InitialGuess>>>;
+  };
 };
 
 }  // namespace
@@ -83,6 +108,7 @@ struct Metavariables {
 SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeFields",
                   "[Unit][Elliptic][Actions]") {
   domain::creators::register_derived_with_charm();
+  Parallel::register_factory_classes_with_charm<Metavariables>();
   // Which element we work with does not matter for this test
   const ElementId<1> element_id{0, {{SegmentId{2, 1}}}};
   const domain::creators::Interval domain_creator{{{-0.5}}, {{1.5}},   {{2}},

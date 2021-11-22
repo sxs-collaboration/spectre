@@ -21,7 +21,8 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
-namespace Elasticity::Solutions::detail {
+namespace Elasticity::Solutions {
+namespace detail {
 
 namespace {
 double displacement_r_integrand(const double k, const double r, const double z,
@@ -234,14 +235,30 @@ void HalfSpaceMirrorVariables<DataType>::operator()(
             fixed_source_for_displacement->end(), 0.);
 }
 
+}  // namespace detail
+
+PUP::able::PUP_ID HalfSpaceMirror::my_PUP_ID = 0;  // NOLINT
+
+bool operator==(const HalfSpaceMirror& lhs, const HalfSpaceMirror& rhs) {
+  return lhs.beam_width() == rhs.beam_width() and
+         lhs.constitutive_relation() == rhs.constitutive_relation() and
+         lhs.integration_intervals() == rhs.integration_intervals() and
+         lhs.absolute_tolerance() == rhs.absolute_tolerance() and
+         lhs.relative_tolerance() == rhs.relative_tolerance();
+}
+
+bool operator!=(const HalfSpaceMirror& lhs, const HalfSpaceMirror& rhs) {
+  return not(lhs == rhs);
+}
+
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATE(_, data) \
-  template class HalfSpaceMirrorVariables<DTYPE(data)>;
+  template class detail::HalfSpaceMirrorVariables<DTYPE(data)>;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (DataVector))
 
 #undef DTYPE
 #undef INSTANTIATE
 
-}  // namespace Elasticity::Solutions::detail
+}  // namespace Elasticity::Solutions

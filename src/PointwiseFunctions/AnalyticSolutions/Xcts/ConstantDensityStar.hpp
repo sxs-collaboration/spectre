@@ -4,13 +4,16 @@
 #pragma once
 
 #include <limits>
+#include <pup.h>
 
 #include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
 #include "DataStructures/Tensor/Tensor.hpp"     // IWYU pragma: keep
 #include "Elliptic/Systems/Xcts/Tags.hpp"       // IWYU pragma: keep
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "Options/Options.hpp"
+#include "Parallel/CharmPupable.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/AnalyticSolution.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -87,8 +90,8 @@ namespace Xcts::Solutions {
  * \f$\psi_\mathrm{init}=1\f$ so that a nonlinear iterative numerical solver
  * will converge to the same weak-field solution.
  */
-class ConstantDensityStar {
- private:
+class ConstantDensityStar : public elliptic::analytic_data::AnalyticSolution {
+ public:
   struct Density {
     using type = double;
     static constexpr Options::String help{
@@ -101,17 +104,23 @@ class ConstantDensityStar {
     static double lower_bound() { return 0.; }
   };
 
- public:
   using options = tmpl::list<Density, Radius>;
   static constexpr Options::String help{
       "A constant density star in general relativity"};
 
   ConstantDensityStar() = default;
-  ConstantDensityStar(const ConstantDensityStar&) = delete;
-  ConstantDensityStar& operator=(const ConstantDensityStar&) = delete;
+  ConstantDensityStar(const ConstantDensityStar&) = default;
+  ConstantDensityStar& operator=(const ConstantDensityStar&) = default;
   ConstantDensityStar(ConstantDensityStar&&) = default;
   ConstantDensityStar& operator=(ConstantDensityStar&&) = default;
   ~ConstantDensityStar() = default;
+
+  /// \cond
+  explicit ConstantDensityStar(CkMigrateMessage* m)
+      : elliptic::analytic_data::AnalyticSolution(m) {}
+  using PUP::able::register_constructor;
+  WRAPPED_PUPable_decl_template(ConstantDensityStar);
+  /// \endcond
 
   ConstantDensityStar(double density, double radius,
                       const Options::Context& context = {});
@@ -167,7 +176,7 @@ class ConstantDensityStar {
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p);
+  void pup(PUP::er& p) override;
 
  private:
   double density_ = std::numeric_limits<double>::signaling_NaN();

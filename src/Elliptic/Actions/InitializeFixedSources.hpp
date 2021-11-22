@@ -13,6 +13,7 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
 #include "Elliptic/DiscontinuousGalerkin/Tags.hpp"
+#include "Elliptic/Utilities/GetAnalyticData.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/ApplyMassMatrix.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Utilities/MakeWithValue.hpp"
@@ -76,8 +77,9 @@ struct InitializeFixedSources {
     // Retrieve the fixed-sources of the elliptic system from the background,
     // which (along with the boundary conditions) define the problem we want to
     // solve.
-    auto fixed_sources = variables_from_tagged_tuple(background.variables(
-        inertial_coords, typename fixed_sources_tag::type::tags_list{}));
+    auto fixed_sources = elliptic::util::get_analytic_data<
+        typename fixed_sources_tag::tags_list>(background, box,
+                                               inertial_coords);
 
     // Apply DG mass matrix to the fixed sources if the DG operator is massive
     if (db::get<elliptic::dg::Tags::Massive>(box)) {

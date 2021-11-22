@@ -19,6 +19,7 @@
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticData/Xcts/Binary.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Xcts/Schwarzschild.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/AnalyticSolution.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -36,33 +37,47 @@ using test_tags = tmpl::list<
                                                             Frame::Inertial>,
     Tags::ConformalFactor<DataVector>>;
 
-template <typename IsolatedObjectRegistrars>
+template <typename IsolatedObjectBase, typename IsolatedObjectClasses>
 struct BinaryProxy {
   tuples::tagged_tuple_from_typelist<test_tags> test_variables(
       const tnsr::I<DataVector, 3, Frame::Inertial>& x) const {
     return binary.variables(x, test_tags{});
   }
 
-  const Binary<IsolatedObjectRegistrars>& binary;
+  const Binary<IsolatedObjectBase, IsolatedObjectClasses>& binary;
 };
 
-template <typename IsolatedObjectRegistrars>
+struct Metavariables {
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes = tmpl::map<
+        tmpl::pair<
+            elliptic::analytic_data::Background,
+            tmpl::list<Binary<elliptic::analytic_data::AnalyticSolution,
+                              tmpl::list<Xcts::Solutions::Schwarzschild>>>>,
+        tmpl::pair<elliptic::analytic_data::AnalyticSolution,
+                   tmpl::list<Xcts::Solutions::Schwarzschild>>>;
+  };
+};
+
 void test_data(const std::array<double, 2>& x_coords,
                const double angular_velocity, const double expansion,
                const std::optional<std::array<double, 2>>& falloff_widths,
                const std::array<double, 2>& masses,
                const std::string& py_functions_suffix,
                const std::string& options_string) {
-  const auto created = TestHelpers::test_creation<std::unique_ptr<
-      ::AnalyticData<3, tmpl::list<Registrars::Binary<tmpl::list<
-                            Xcts::Solutions::Registrars::Schwarzschild>>>>>>(
+  using IsolatedObjectBase = elliptic::analytic_data::AnalyticSolution;
+  using IsolatedObjectClasses = tmpl::list<Xcts::Solutions::Schwarzschild>;
+  Parallel::register_classes_with_charm<Xcts::Solutions::Schwarzschild>();
+  const auto created = TestHelpers::test_creation<
+      std::unique_ptr<elliptic::analytic_data::Background>, Metavariables>(
       options_string);
-  REQUIRE(dynamic_cast<const Binary<
-              tmpl::list<Xcts::Solutions::Registrars::Schwarzschild>>*>(
-              created.get()) != nullptr);
-  const auto& derived = dynamic_cast<
-      const Binary<tmpl::list<Xcts::Solutions::Registrars::Schwarzschild>>&>(
-      *created);
+  REQUIRE(
+      dynamic_cast<const Binary<IsolatedObjectBase, IsolatedObjectClasses>*>(
+          created.get()) != nullptr);
+  const auto& derived =
+      dynamic_cast<const Binary<IsolatedObjectBase, IsolatedObjectClasses>&>(
+          *created);
   const auto binary = serialize_and_deserialize(derived);
   {
     INFO("Properties");
@@ -71,17 +86,18 @@ void test_data(const std::array<double, 2>& x_coords,
     CHECK(binary.expansion() == expansion);
     CHECK(binary.falloff_widths() == falloff_widths);
     const auto& superposed_objects = binary.superposed_objects();
-    CHECK(dynamic_cast<const Xcts::Solutions::Schwarzschild<>&>(
+    CHECK(dynamic_cast<const Xcts::Solutions::Schwarzschild&>(
               *superposed_objects[0])
               .mass() == masses[0]);
-    CHECK(dynamic_cast<const Xcts::Solutions::Schwarzschild<>&>(
+    CHECK(dynamic_cast<const Xcts::Solutions::Schwarzschild&>(
               *superposed_objects[1])
               .mass() == masses[1]);
   }
   {
-    const BinaryProxy<IsolatedObjectRegistrars> proxy{binary};
+    const BinaryProxy<IsolatedObjectBase, IsolatedObjectClasses> proxy{binary};
     pypp::check_with_random_values<1>(
-        &BinaryProxy<IsolatedObjectRegistrars>::test_variables, proxy, "Binary",
+        &BinaryProxy<IsolatedObjectBase, IsolatedObjectClasses>::test_variables,
+        proxy, "Binary",
         {"conformal_metric_" + py_functions_suffix,
          "inv_conformal_metric_" + py_functions_suffix,
          "deriv_conformal_metric_" + py_functions_suffix,
@@ -97,24 +113,22 @@ void test_data(const std::array<double, 2>& x_coords,
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticData.Xcts.Binary",
                   "[PointwiseFunctions][Unit]") {
-  Parallel::register_classes_with_charm<Xcts::Solutions::Schwarzschild<>>();
   pypp::SetupLocalPythonEnvironment local_python_env{
       "PointwiseFunctions/AnalyticData/Xcts"};
-  test_data<tmpl::list<Xcts::Solutions::Registrars::Schwarzschild>>(
-      {{-5., 6.}}, 0.02, 0.01, {{7., 8.}}, {{1.1, 0.43}}, "bbh_isotropic",
-      "Binary:\n"
-      "  XCoords: [-5., 6.]\n"
-      "  ObjectA:\n"
-      "    Schwarzschild:\n"
-      "      Mass: 1.1\n"
-      "      Coordinates: Isotropic\n"
-      "  ObjectB:\n"
-      "    Schwarzschild:\n"
-      "      Mass: 0.43\n"
-      "      Coordinates: Isotropic\n"
-      "  AngularVelocity: 0.02\n"
-      "  Expansion: 0.01\n"
-      "  FalloffWidths: [7., 8.]");
+  test_data({{-5., 6.}}, 0.02, 0.01, {{7., 8.}}, {{1.1, 0.43}}, "bbh_isotropic",
+            "Binary:\n"
+            "  XCoords: [-5., 6.]\n"
+            "  ObjectA:\n"
+            "    Schwarzschild:\n"
+            "      Mass: 1.1\n"
+            "      Coordinates: Isotropic\n"
+            "  ObjectB:\n"
+            "    Schwarzschild:\n"
+            "      Mass: 0.43\n"
+            "      Coordinates: Isotropic\n"
+            "  AngularVelocity: 0.02\n"
+            "  Expansion: 0.01\n"
+            "  FalloffWidths: [7., 8.]");
 }
 
 }  // namespace Xcts::AnalyticData

@@ -13,9 +13,9 @@
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/Xcts/AnalyticSolution.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags/Conformal.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/AnalyticSolution.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -28,24 +28,8 @@ class er;
 
 namespace Xcts::Solutions {
 
-/// \cond
-template <typename Registrars>
-struct Flatness;
-
-namespace Registrars {
-struct Flatness {
-  template <typename Registrars>
-  using f = Solutions::Flatness<Registrars>;
-};
-}  // namespace Registrars
-/// \endcond
-
 /// Flat spacetime in general relativity. Useful as initial guess.
-template <typename Registrars = tmpl::list<Solutions::Registrars::Flatness>>
-class Flatness : public AnalyticSolution<Registrars> {
- private:
-  using Base = AnalyticSolution<Registrars>;
-
+class Flatness : public elliptic::analytic_data::AnalyticSolution {
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help{
@@ -59,7 +43,8 @@ class Flatness : public AnalyticSolution<Registrars> {
   ~Flatness() = default;
 
   /// \cond
-  explicit Flatness(CkMigrateMessage* m) : Base(m) {}
+  explicit Flatness(CkMigrateMessage* m)
+      : elliptic::analytic_data::AnalyticSolution(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Flatness);
   /// \endcond
@@ -156,21 +141,8 @@ class Flatness : public AnalyticSolution<Registrars> {
   }
 };
 
-template <typename Registrars>
-bool operator==(const Flatness<Registrars>& /*lhs*/,
-                const Flatness<Registrars>& /*rhs*/) {
-  return true;
-}
+bool operator==(const Flatness& /*lhs*/, const Flatness& /*rhs*/);
 
-template <typename Registrars>
-bool operator!=(const Flatness<Registrars>& lhs,
-                const Flatness<Registrars>& rhs) {
-  return not(lhs == rhs);
-}
-
-/// \cond
-template <typename Registrars>
-PUP::able::PUP_ID Flatness<Registrars>::my_PUP_ID = 0;  // NOLINT
-/// \endcond
+bool operator!=(const Flatness& lhs, const Flatness& rhs);
 
 }  // namespace Xcts::Solutions

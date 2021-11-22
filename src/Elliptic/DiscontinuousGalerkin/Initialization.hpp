@@ -35,6 +35,7 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
+#include "Utilities/FakeVirtual.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -129,7 +130,7 @@ struct InitializeFacesAndMortars {
                  domain::Tags::ElementMap<Dim>,
                  domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
                                                Frame::Inertial>>;
-  template <typename Background = std::nullptr_t>
+  template <typename Background = std::nullptr_t, typename... BackgroundClasses>
   void operator()(
       const gsl::not_null<DirectionMap<Dim, Direction<Dim>>*> face_directions,
       const gsl::not_null<DirectionMap<Dim, tnsr::I<DataVector, Dim>>*>
@@ -152,11 +153,27 @@ struct InitializeFacesAndMortars {
       const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
                             Frame::Inertial>& inv_jacobian,
       const std::vector<std::array<size_t, Dim>>& initial_extents,
-      const Background& background = std::nullptr_t{}) const {
+      const Background& background = std::nullptr_t{},
+      tmpl::list<BackgroundClasses...> /*meta*/ = tmpl::list<>{}) const {
     static_assert(std::is_same_v<InvMetricTag, void> or
                       not(std::is_same_v<Background, std::nullptr_t>),
                   "Supply an analytic background from which the 'InvMetricTag' "
                   "can be retrieved");
+    [[maybe_unused]] const auto get_inv_metric =
+        [&background]([[maybe_unused]] const tnsr::I<DataVector, Dim>&
+                          local_inertial_coords) {
+          if constexpr (not std::is_same_v<InvMetricTag, void>) {
+            return call_with_dynamic_type<tnsr::II<DataVector, Dim>,
+                                          tmpl::list<BackgroundClasses...>>(
+                &background,
+                [&local_inertial_coords](const auto* const derived) {
+                  return get<InvMetricTag>(derived->variables(
+                      local_inertial_coords, tmpl::list<InvMetricTag>{}));
+                });
+          } else {
+            (void)background;
+          }
+        };
     const Spectral::Quadrature quadrature = mesh.quadrature(0);
     ASSERT(std::equal(mesh.quadrature().begin() + 1, mesh.quadrature().end(),
                       mesh.quadrature().begin()),
@@ -177,8 +194,7 @@ struct InitializeFacesAndMortars {
       if constexpr (std::is_same_v<InvMetricTag, void>) {
         magnitude(make_not_null(&face_normal_magnitude), face_normal);
       } else {
-        const auto inv_metric_on_face = get<InvMetricTag>(background.variables(
-            face_inertial_coords, tmpl::list<InvMetricTag>{}));
+        const auto inv_metric_on_face = get_inv_metric(face_inertial_coords);
         magnitude(make_not_null(&face_normal_magnitude), face_normal,
                   inv_metric_on_face);
       }
@@ -237,8 +253,7 @@ struct InitializeFacesAndMortars {
             const auto mortar_inertial_coords =
                 element_map(mortar_logical_coords);
             const auto inv_metric_on_mortar =
-                get<InvMetricTag>(background.variables(
-                    mortar_inertial_coords, tmpl::list<InvMetricTag>{}));
+                get_inv_metric(mortar_inertial_coords);
             magnitude(make_not_null(&mortar_normal_magnitude),
                       unnormalized_mortar_normal, inv_metric_on_mortar);
           }
@@ -271,7 +286,7 @@ struct InitializeBackground {
                  domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
                                                Frame::Inertial>>;
 
-  template <typename Background>
+  template <typename BackgroundBase, typename... BackgroundClasses>
   void operator()(
       const gsl::not_null<Variables<BackgroundFields>*> background_fields,
       const gsl::not_null<DirectionMap<Dim, Variables<BackgroundFields>>*>
@@ -279,9 +294,16 @@ struct InitializeBackground {
       const tnsr::I<DataVector, Dim>& inertial_coords, const Mesh<Dim>& mesh,
       const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
                             Frame::Inertial>& inv_jacobian,
-      const Background& background) const {
-    *background_fields = variables_from_tagged_tuple(background.variables(
-        inertial_coords, mesh, inv_jacobian, BackgroundFields{}));
+      const BackgroundBase& background,
+      tmpl::list<BackgroundClasses...> /*meta*/) const {
+    *background_fields =
+        call_with_dynamic_type<Variables<BackgroundFields>,
+                               tmpl::list<BackgroundClasses...>>(
+            &background, [&inertial_coords, &mesh,
+                          &inv_jacobian](const auto* const derived) {
+              return variables_from_tagged_tuple(derived->variables(
+                  inertial_coords, mesh, inv_jacobian, BackgroundFields{}));
+            });
     ASSERT(mesh.quadrature(0) == Spectral::Quadrature::GaussLobatto,
            "Only Gauss-Lobatto quadrature is currently implemented for "
            "slicing background fields to faces.");

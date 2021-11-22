@@ -14,7 +14,7 @@
 #include "Elliptic/Systems/Poisson/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "Options/Options.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/Poisson/AnalyticSolution.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/AnalyticSolution.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -50,32 +50,14 @@ struct ProductOfSinusoidsVariables {
 };
 }  // namespace detail
 
-/// \cond
-template <size_t Dim, typename Registrars>
-struct ProductOfSinusoids;
-
-namespace Registrars {
-template <size_t Dim>
-struct ProductOfSinusoids {
-  template <typename Registrars>
-  using f = Solutions::ProductOfSinusoids<Dim, Registrars>;
-};
-}  // namespace Registrars
-/// \endcond
-
 /*!
  * \brief A product of sinusoids \f$u(\boldsymbol{x}) = \prod_i \sin(k_i x_i)\f$
  *
  * \details Solves the Poisson equation \f$-\Delta u(x)=f(x)\f$ for a source
  * \f$f(x)=\boldsymbol{k}^2\prod_i \sin(k_i x_i)\f$.
  */
-template <size_t Dim,
-          typename Registrars =
-              tmpl::list<Solutions::Registrars::ProductOfSinusoids<Dim>>>
-class ProductOfSinusoids : public AnalyticSolution<Dim, Registrars> {
- private:
-  using Base = AnalyticSolution<Dim, Registrars>;
-
+template <size_t Dim>
+class ProductOfSinusoids : public elliptic::analytic_data::AnalyticSolution {
  public:
   struct WaveNumbers {
     using type = std::array<double, Dim>;
@@ -95,7 +77,8 @@ class ProductOfSinusoids : public AnalyticSolution<Dim, Registrars> {
   ~ProductOfSinusoids() override = default;
 
   /// \cond
-  explicit ProductOfSinusoids(CkMigrateMessage* m) : Base(m) {}
+  explicit ProductOfSinusoids(CkMigrateMessage* m)
+      : elliptic::analytic_data::AnalyticSolution(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ProductOfSinusoids);  // NOLINT
   /// \endcond
@@ -114,7 +97,10 @@ class ProductOfSinusoids : public AnalyticSolution<Dim, Registrars> {
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) override { p | wave_numbers_; }
+  void pup(PUP::er& p) override {
+    elliptic::analytic_data::AnalyticSolution::pup(p);
+    p | wave_numbers_;
+  }
 
   const std::array<double, Dim>& wave_numbers() const { return wave_numbers_; }
 
@@ -124,19 +110,19 @@ class ProductOfSinusoids : public AnalyticSolution<Dim, Registrars> {
 };
 
 /// \cond
-template <size_t Dim, typename Registrars>
-PUP::able::PUP_ID ProductOfSinusoids<Dim, Registrars>::my_PUP_ID = 0;  // NOLINT
+template <size_t Dim>
+PUP::able::PUP_ID ProductOfSinusoids<Dim>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
 
-template <size_t Dim, typename Registrars>
-bool operator==(const ProductOfSinusoids<Dim, Registrars>& lhs,
-                const ProductOfSinusoids<Dim, Registrars>& rhs) {
+template <size_t Dim>
+bool operator==(const ProductOfSinusoids<Dim>& lhs,
+                const ProductOfSinusoids<Dim>& rhs) {
   return lhs.wave_numbers() == rhs.wave_numbers();
 }
 
-template <size_t Dim, typename Registrars>
-bool operator!=(const ProductOfSinusoids<Dim, Registrars>& lhs,
-                const ProductOfSinusoids<Dim, Registrars>& rhs) {
+template <size_t Dim>
+bool operator!=(const ProductOfSinusoids<Dim>& lhs,
+                const ProductOfSinusoids<Dim>& rhs) {
   return not(lhs == rhs);
 }
 

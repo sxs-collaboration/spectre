@@ -12,34 +12,17 @@
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/Poisson/AnalyticSolution.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/AnalyticSolution.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 namespace Poisson::Solutions {
 
-/// \cond
-template <size_t Dim, typename Registrars>
-struct Zero;
-
-namespace Registrars {
-template <size_t Dim>
-struct Zero {
-  template <typename Registrars>
-  using f = Solutions::Zero<Dim, Registrars>;
-};
-}  // namespace Registrars
-/// \endcond
-
 /// The trivial solution \f$u=0\f$ of a Poisson equation. Useful as initial
 /// guess.
-template <size_t Dim,
-          typename Registrars = tmpl::list<Solutions::Registrars::Zero<Dim>>>
-class Zero : public AnalyticSolution<Dim, Registrars> {
- private:
-  using Base = AnalyticSolution<Dim, Registrars>;
-
+template <size_t Dim>
+class Zero : public elliptic::analytic_data::AnalyticSolution {
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help{
@@ -53,7 +36,8 @@ class Zero : public AnalyticSolution<Dim, Registrars> {
   ~Zero() override = default;
 
   /// \cond
-  explicit Zero(CkMigrateMessage* m) : Base(m) {}
+  explicit Zero(CkMigrateMessage* m)
+      : elliptic::analytic_data::AnalyticSolution(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Zero);  // NOLINT
   /// \endcond
@@ -72,25 +56,20 @@ class Zero : public AnalyticSolution<Dim, Registrars> {
                   "The requested tag is not supported");
     return {make_with_value<typename RequestedTags::type>(x, 0.)...};
   }
-
-  // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& /*p*/) override {}
 };
 
 /// \cond
-template <size_t Dim, typename Registrars>
-PUP::able::PUP_ID Zero<Dim, Registrars>::my_PUP_ID = 0;  // NOLINT
+template <size_t Dim>
+PUP::able::PUP_ID Zero<Dim>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
 
-template <size_t Dim, typename Registrars>
-bool operator==(const Zero<Dim, Registrars>& /*lhs*/,
-                const Zero<Dim, Registrars>& /*rhs*/) {
+template <size_t Dim>
+bool operator==(const Zero<Dim>& /*lhs*/, const Zero<Dim>& /*rhs*/) {
   return true;
 }
 
-template <size_t Dim, typename Registrars>
-bool operator!=(const Zero<Dim, Registrars>& lhs,
-                const Zero<Dim, Registrars>& rhs) {
+template <size_t Dim>
+bool operator!=(const Zero<Dim>& lhs, const Zero<Dim>& rhs) {
   return not(lhs == rhs);
 }
 

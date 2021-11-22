@@ -152,9 +152,11 @@ struct Metavariables {
   enum class Phase { Initialization, Testing, Exit };
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
-    using factory_classes = tmpl::map<tmpl::pair<
-        elliptic::BoundaryConditions::BoundaryCondition<System::volume_dim>,
-        tmpl::list<elliptic::BoundaryConditions::AnalyticSolution<System>>>>;
+    using factory_classes = tmpl::map<
+        tmpl::pair<
+            elliptic::BoundaryConditions::BoundaryCondition<System::volume_dim>,
+            tmpl::list<elliptic::BoundaryConditions::AnalyticSolution<System>>>,
+        tmpl::pair<AnalyticSolution, tmpl::list<AnalyticSolution>>>;
   };
 };
 

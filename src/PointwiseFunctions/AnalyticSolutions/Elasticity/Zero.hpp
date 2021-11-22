@@ -11,39 +11,19 @@
 #include "Elliptic/Systems/Elasticity/Tags.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
-#include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/AnalyticSolution.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 namespace Elasticity::Solutions {
 
-/// \cond
-template <size_t Dim, typename Registrars>
-struct Zero;
-
-namespace Registrars {
-template <size_t Dim>
-struct Zero {
-  template <typename Registrars>
-  using f = Solutions::Zero<Dim, Registrars>;
-};
-}  // namespace Registrars
-/// \endcond
-
 /*!
  * \brief The trivial solution \f$\xi^i(x)=0\f$ of the Elasticity equations.
  * Useful as initial guess.
- *
- * \note This class derives off `::AnalyticData` because, while it is
- * technically an analytic solution, it will only be used as initial guess and
- * thus doesn't need to implement the additional requirements of the
- * `Elasticity::Solutions::AnalyticSolution` base class. In particular, it
- * doesn't need to provide a constitutive relation.
  */
-template <size_t Dim,
-          typename Registrars = tmpl::list<Solutions::Registrars::Zero<Dim>>>
-class Zero : public ::AnalyticData<Dim, Registrars> {
+template <size_t Dim>
+class Zero : public elliptic::analytic_data::AnalyticSolution {
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help{
@@ -57,7 +37,8 @@ class Zero : public ::AnalyticData<Dim, Registrars> {
   ~Zero() override = default;
 
   /// \cond
-  explicit Zero(CkMigrateMessage* /*unused*/) {}
+  explicit Zero(CkMigrateMessage* m)
+      : elliptic::analytic_data::AnalyticSolution(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Zero);  // NOLINT
   /// \endcond
@@ -76,25 +57,20 @@ class Zero : public ::AnalyticData<Dim, Registrars> {
                   "The requested tag is not supported");
     return {make_with_value<typename RequestedTags::type>(x, 0.)...};
   }
-
-  // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& /*p*/) override {}
 };
 
 /// \cond
-template <size_t Dim, typename Registrars>
-PUP::able::PUP_ID Zero<Dim, Registrars>::my_PUP_ID = 0;  // NOLINT
+template <size_t Dim>
+PUP::able::PUP_ID Zero<Dim>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
 
-template <size_t Dim, typename Registrars>
-bool operator==(const Zero<Dim, Registrars>& /*lhs*/,
-                const Zero<Dim, Registrars>& /*rhs*/) {
+template <size_t Dim>
+bool operator==(const Zero<Dim>& /*lhs*/, const Zero<Dim>& /*rhs*/) {
   return true;
 }
 
-template <size_t Dim, typename Registrars>
-bool operator!=(const Zero<Dim, Registrars>& /*lhs*/,
-                const Zero<Dim, Registrars>& /*rhs*/) {
+template <size_t Dim>
+bool operator!=(const Zero<Dim>& /*lhs*/, const Zero<Dim>& /*rhs*/) {
   return false;
 }
 }  // namespace Elasticity::Solutions

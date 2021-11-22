@@ -16,8 +16,8 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
-  AnalyticSolution.hpp
   BentBeam.hpp
+  Factory.hpp
   HalfSpaceMirror.hpp
   Zero.hpp
   )

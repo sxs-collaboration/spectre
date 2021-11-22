@@ -103,17 +103,21 @@ struct InitializeFacesMortarsAndBackground {
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
     if constexpr (has_background_fields) {
+      const auto& background = db::get<BackgroundTag>(box);
+      using background_classes =
+          tmpl::at<typename Metavariables::factory_creation::factory_classes,
+                   std::decay_t<decltype(background)>>;
       // Initialize faces and mortars
       db::mutate_apply<typename InitializeFacesAndMortars::return_tags,
                        typename InitializeFacesAndMortars::argument_tags>(
           InitializeFacesAndMortars{}, make_not_null(&box),
-          db::get<domain::Tags::InitialExtents<Dim>>(box),
-          db::get<BackgroundTag>(box));
+          db::get<domain::Tags::InitialExtents<Dim>>(box), background,
+          background_classes{});
       // Initialize background fields
       db::mutate_apply<typename InitializeBackground::return_tags,
                        typename InitializeBackground::argument_tags>(
-          InitializeBackground{}, make_not_null(&box),
-          db::get<BackgroundTag>(box));
+          InitializeBackground{}, make_not_null(&box), background,
+          background_classes{});
     } else {
       // Initialize faces and mortars
       db::mutate_apply<typename InitializeFacesAndMortars::return_tags,

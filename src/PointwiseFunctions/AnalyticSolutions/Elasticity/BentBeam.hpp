@@ -12,10 +12,9 @@
 #include "Elliptic/Systems/Elasticity/Tags.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/Elasticity/AnalyticSolution.hpp"
 #include "PointwiseFunctions/Elasticity/ConstitutiveRelations/IsotropicHomogeneous.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/AnalyticSolution.hpp"
 #include "Utilities/ContainerHelpers.hpp"
-#include "Utilities/Registration.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -52,15 +51,6 @@ struct BentBeamVariables {
       ::Tags::FixedSource<Tags::Displacement<2>> /*meta*/) const;
 };
 }  // namespace detail
-
-/// \cond
-template <typename Registrars>
-struct BentBeam;
-
-namespace Registrars {
-using BentBeam = ::Registration::Registrar<Solutions::BentBeam>;
-}  // namespace Registrars
-/// \endcond
 
 /*!
  * \brief A state of pure bending of an elastic beam in 2D
@@ -109,8 +99,7 @@ using BentBeam = ::Registration::Registrar<Solutions::BentBeam>;
  * \int_{-L/2}^{L/2} \int_{-H/2}^{H/2} U dy\,dx = \frac{6M^2}{EH^3}L \text{.}
  * \f]
  */
-template <typename Registrars = tmpl::list<Solutions::Registrars::BentBeam>>
-class BentBeam : public AnalyticSolution<2, Registrars> {
+class BentBeam : public elliptic::analytic_data::AnalyticSolution {
  public:
   using constitutive_relation_type =
       Elasticity::ConstitutiveRelations::IsotropicHomogeneous<2>;
@@ -152,7 +141,8 @@ class BentBeam : public AnalyticSolution<2, Registrars> {
   ~BentBeam() override = default;
 
   /// \cond
-  explicit BentBeam(CkMigrateMessage* /*unused*/) {}
+  explicit BentBeam(CkMigrateMessage* m)
+      : elliptic::analytic_data::AnalyticSolution(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(BentBeam);  // NOLINT
   /// \endcond
@@ -168,7 +158,7 @@ class BentBeam : public AnalyticSolution<2, Registrars> {
   double height() const { return height_; }
   double bending_moment() const { return bending_moment_; }
 
-  const constitutive_relation_type& constitutive_relation() const override {
+  const constitutive_relation_type& constitutive_relation() const {
     return constitutive_relation_;
   }
 
@@ -189,8 +179,9 @@ class BentBeam : public AnalyticSolution<2, Registrars> {
     return {cache.get_var(computer, RequestedTags{})...};
   }
 
-  // clang-tidy: no pass by reference
-  void pup(PUP::er& p) override {  // NOLINT
+  /// NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p) override {
+    elliptic::analytic_data::AnalyticSolution::pup(p);
     p | length_;
     p | height_;
     p | bending_moment_;
@@ -204,23 +195,7 @@ class BentBeam : public AnalyticSolution<2, Registrars> {
   constitutive_relation_type constitutive_relation_{};
 };
 
-/// \cond
-template <typename Registrars>
-PUP::able::PUP_ID BentBeam<Registrars>::my_PUP_ID = 0;  // NOLINT
-/// \endcond
-
-template <typename Registrars>
-bool operator==(const BentBeam<Registrars>& lhs,
-                const BentBeam<Registrars>& rhs) {
-  return lhs.length() == rhs.length() and lhs.height() == rhs.height() and
-         lhs.bending_moment() == rhs.bending_moment() and
-         lhs.constitutive_relation() == rhs.constitutive_relation();
-}
-
-template <typename Registrars>
-bool operator!=(const BentBeam<Registrars>& lhs,
-                const BentBeam<Registrars>& rhs) {
-  return not(lhs == rhs);
-}
+bool operator==(const BentBeam& lhs, const BentBeam& rhs);
+bool operator!=(const BentBeam& lhs, const BentBeam& rhs);
 
 }  // namespace Elasticity::Solutions
