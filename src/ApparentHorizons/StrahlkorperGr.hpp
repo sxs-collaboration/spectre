@@ -387,7 +387,8 @@ Scalar<DataVector> spin_function(
  * `unit_normal_vector` can
  * be found by raising the index of the one-form returned by
  * `StrahlkorperGr::unit_normal_one_form`.
- * The argument `ylm` is the `YlmSpherepack` of the `Strahlkorper`.
+ * The argument `strahlkorper` is the surface on which the spin magnitude is
+ * computed.
  * The argument `area_element`
  * can be computed via `StrahlkorperGr::area_element`.
  */
@@ -398,7 +399,8 @@ void dimensionful_spin_magnitude(
     const Scalar<DataVector>& spin_function,
     const tnsr::ii<DataVector, 3, Frame>& spatial_metric,
     const StrahlkorperTags::aliases::Jacobian<Frame>& tangents,
-    const YlmSpherepack& ylm, const Scalar<DataVector>& area_element);
+    const Strahlkorper<Frame>& strahlkorper,
+    const Scalar<DataVector>& area_element);
 
 template <typename Frame>
 double dimensionful_spin_magnitude(
@@ -406,7 +408,8 @@ double dimensionful_spin_magnitude(
     const Scalar<DataVector>& spin_function,
     const tnsr::ii<DataVector, 3, Frame>& spatial_metric,
     const StrahlkorperTags::aliases::Jacobian<Frame>& tangents,
-    const YlmSpherepack& ylm, const Scalar<DataVector>& area_element);
+    const Strahlkorper<Frame>& strahlkorper,
+    const Scalar<DataVector>& area_element);
 
 /*!
  * \ingroup SurfacesGroup
@@ -477,4 +480,25 @@ double irreducible_mass(double area);
  */
 double christodoulou_mass(double dimensionful_spin_magnitude,
                           double irreducible_mass);
+
+/// @{
+/*!
+ * \ingroup SurfacesGroup
+ * \brief Dimensionless spin magnitude of a `Strahlkorper`.
+ *
+ * \details
+ * This function computes the dimensionless spin magnitude \f$\chi\f$
+ * from the dimensionful spin magnitude \f$S\f$ and the christodoulou
+ * mass \f$M\f$ of a black hole. Specifically, computes
+ * \f$\chi = \frac{S}{M^2}\f$.
+ */
+
+void dimensionless_spin_magnitude(const gsl::not_null<double*> result,
+                                  const double dimensionful_spin_magnitude,
+                                  const double christodoulou_mass);
+
+double dimensionless_spin_magnitude(const double dimensionful_spin_magnitude,
+                                    const double christodoulou_mass);
+/// @}
+
 }  // namespace StrahlkorperGr

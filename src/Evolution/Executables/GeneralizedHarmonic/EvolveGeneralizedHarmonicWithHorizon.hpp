@@ -67,11 +67,11 @@ struct EvolutionMetavars<3, InitialData, BoundaryConditions>
 
   struct AhA {
     using temporal_id = ::Tags::Time;
-    using tags_to_observe =
-        tmpl::list<StrahlkorperGr::Tags::AreaCompute<frame>,
-                   StrahlkorperGr::Tags::IrreducibleMassCompute<frame>,
-                   StrahlkorperTags::MaxRicciScalarCompute,
-                   StrahlkorperTags::MinRicciScalarCompute>;
+    using tags_to_observe = tmpl::list<
+        StrahlkorperGr::Tags::AreaCompute<frame>,
+        StrahlkorperGr::Tags::IrreducibleMassCompute<frame>,
+        StrahlkorperTags::MaxRicciScalarCompute,
+        StrahlkorperTags::MinRicciScalarCompute>;
     using compute_vars_to_interpolate = ah::ComputeHorizonVolumeQuantities;
     using vars_to_interpolate_to_target =
         tmpl::list<gr::Tags::SpatialMetric<volume_dim, frame, DataVector>,
