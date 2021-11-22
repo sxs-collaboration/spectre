@@ -19,6 +19,7 @@ spectre_target_headers(
   HEADERS
   ConstitutiveRelation.hpp
   CubicCrystal.hpp
+  Factory.hpp
   IsotropicHomogeneous.hpp
   Tags.hpp
   )

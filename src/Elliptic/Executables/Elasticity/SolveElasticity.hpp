@@ -64,6 +64,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/Elasticity/HalfSpaceMirror.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Elasticity/Zero.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
+#include "PointwiseFunctions/Elasticity/ConstitutiveRelations/Factory.hpp"
 #include "PointwiseFunctions/Elasticity/PotentialEnergy.hpp"
 #include "PointwiseFunctions/Elasticity/Strain.hpp"
 #include "Utilities/Blas.hpp"
@@ -188,7 +189,9 @@ struct Metavariables {
 
   // Collect all items to store in the cache.
   using const_global_cache_tags =
-      tmpl::list<background_tag, initial_guess_tag, Tags::EventsAndTriggers>;
+      tmpl::list<background_tag, initial_guess_tag,
+                 Elasticity::Tags::ConstitutiveRelation<volume_dim>,
+                 Tags::EventsAndTriggers>;
 
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
@@ -197,6 +200,10 @@ struct Metavariables {
         tmpl::pair<elliptic::BoundaryConditions::BoundaryCondition<volume_dim>,
                    Elasticity::BoundaryConditions::standard_boundary_conditions<
                        system>>,
+        tmpl::pair<
+            Elasticity::ConstitutiveRelations::ConstitutiveRelation<volume_dim>,
+            Elasticity::ConstitutiveRelations::standard_constitutive_relations<
+                volume_dim>>,
         tmpl::pair<
             Event,
             tmpl::flatten<tmpl::list<
@@ -233,8 +240,6 @@ struct Metavariables {
       elliptic::Actions::InitializeFields<system, initial_guess_tag>,
       elliptic::Actions::InitializeFixedSources<system, background_tag>,
       Initialization::Actions::AddComputeTags<tmpl::list<
-          Elasticity::Tags::ConstitutiveRelationReference<volume_dim,
-                                                          background_tag>,
           Elasticity::Tags::StrainCompute<volume_dim>,
           Elasticity::Tags::PotentialEnergyDensityCompute<volume_dim>>>,
       elliptic::Actions::InitializeOptionalAnalyticSolution<
