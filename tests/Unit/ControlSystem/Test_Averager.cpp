@@ -290,6 +290,9 @@ void test_equality_and_serialization() {
   CHECK(averager1 != averager3);
   CHECK_FALSE(averager1 == averager3);
 
+  CHECK(averager1.avg_timescale_frac() == 1.0);
+  CHECK(averager3.avg_timescale_frac() == 0.5);
+
   averager2.update(0.1, {0.2}, {0.3});
   CHECK_FALSE(averager1 == averager2);
 

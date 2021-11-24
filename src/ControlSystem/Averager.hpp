@@ -116,6 +116,8 @@ class Averager {
   /// Returns a bool corresponding to whether `average_0th_deriv_of_q`
   /// is `true`/`false`.
   bool using_average_0th_deriv_of_q() const { return average_0th_deriv_of_q_; };
+  /// Returns the averaging timescale fraction
+  double avg_timescale_frac() const { return avg_tscale_frac_; }
 
   void pup(PUP::er& p);
 
