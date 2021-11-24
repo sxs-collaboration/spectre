@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <vector>
 
+#include "DataStructures/Tensor/IndexType.hpp"
 #include "Domain/Creators/Factory1D.hpp"
 #include "Domain/Creators/Factory2D.hpp"
 #include "Domain/Creators/Factory3D.hpp"
@@ -126,25 +127,44 @@ struct EvolutionMetavars {
   using time_stepper_tag = Tags::TimeStepper<
       tmpl::conditional_t<local_time_stepping, LtsTimeStepper, TimeStepper>>;
 
-  using observe_fields = typename system::variables_tag::tags_list;
-  using analytic_solution_fields = observe_fields;
+  using analytic_solution_fields = typename system::variables_tag::tags_list;
+  using deriv_compute = ::Tags::DerivCompute<
+      typename system::variables_tag,
+      domain::Tags::InverseJacobian<volume_dim, Frame::ElementLogical,
+                                    Frame::Inertial>,
+      typename system::gradient_variables>;
+  using analytic_compute =
+      evolution::Tags::AnalyticCompute<Dim, initial_data_tag,
+                                       analytic_solution_fields>;
+
+  using observe_fields =
+      tmpl::push_back<tmpl::append<typename system::variables_tag::tags_list,
+                                   typename deriv_compute::type::tags_list>,
+                      ScalarWave::Tags::EnergyDensityCompute<volume_dim>,
+                      ScalarWave::Tags::OneIndexConstraintCompute<volume_dim>,
+                      ScalarWave::Tags::TwoIndexConstraintCompute<volume_dim>,
+                      ::Tags::PointwiseL2NormCompute<
+                          ScalarWave::Tags::OneIndexConstraint<volume_dim>>,
+                      ::Tags::PointwiseL2NormCompute<
+                          ScalarWave::Tags::TwoIndexConstraint<volume_dim>>>;
 
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
         tmpl::pair<DenseTrigger, DenseTriggers::standard_dense_triggers>,
         tmpl::pair<DomainCreator<volume_dim>, domain_creators<volume_dim>>,
-        tmpl::pair<
-            Event,
-            tmpl::flatten<tmpl::list<
-                Events::Completion,
-                dg::Events::field_observations<
-                    volume_dim, Tags::Time, observe_fields,
-                    analytic_solution_fields, tmpl::list<>>,
-                dg::Events::ObserveVolumeIntegrals<
-                    volume_dim, Tags::Time,
-                    tmpl::list<ScalarWave::Tags::EnergyDensity<volume_dim>>>,
-                Events::time_events<system>>>>,
+        tmpl::pair<Event,
+                   tmpl::flatten<tmpl::list<
+                       Events::Completion,
+                       dg::Events::field_observations<
+                           volume_dim, Tags::Time, observe_fields,
+                           analytic_solution_fields,
+                           tmpl::list<deriv_compute, analytic_compute>>,
+                       dg::Events::ObserveVolumeIntegrals<
+                           volume_dim, Tags::Time,
+                           tmpl::list<ScalarWave::Tags::EnergyDensityCompute<
+                               volume_dim>>>,
+                       Events::time_events<system>>>>,
         tmpl::pair<MathFunction<1, Frame::Inertial>,
                    MathFunctions::all_math_functions<1, Frame::Inertial>>,
         tmpl::pair<
@@ -237,23 +257,20 @@ struct EvolutionMetavars {
   using dg_registration_list =
       tmpl::list<observers::Actions::RegisterEventsWithObservers>;
 
-  using initialization_actions =
-      tmpl::list<Actions::SetupDataBox,
-                 Initialization::Actions::TimeAndTimeStep<EvolutionMetavars>,
-                 evolution::dg::Initialization::Domain<volume_dim>,
-                 Initialization::Actions::NonconservativeSystem<system>,
-                 evolution::Initialization::Actions::SetVariables<
-                     domain::Tags::Coordinates<Dim, Frame::ElementLogical>>,
-                 Initialization::Actions::TimeStepperHistory<EvolutionMetavars>,
-                 ScalarWave::Actions::InitializeConstraints<volume_dim>,
-                 Initialization::Actions::AddComputeTags<tmpl::push_back<
-                     StepChoosers::step_chooser_compute_tags<EvolutionMetavars>,
-                     evolution::Tags::AnalyticCompute<Dim, initial_data_tag,
-                                                      analytic_solution_fields>,
-                     ScalarWave::Tags::EnergyDensityCompute<volume_dim>>>,
-                 ::evolution::dg::Initialization::Mortars<volume_dim, system>,
-                 evolution::Actions::InitializeRunEventsAndDenseTriggers,
-                 Initialization::Actions::RemoveOptionsAndTerminatePhase>;
+  using initialization_actions = tmpl::list<
+      Actions::SetupDataBox,
+      Initialization::Actions::TimeAndTimeStep<EvolutionMetavars>,
+      evolution::dg::Initialization::Domain<volume_dim>,
+      Initialization::Actions::NonconservativeSystem<system>,
+      evolution::Initialization::Actions::SetVariables<
+          domain::Tags::Coordinates<Dim, Frame::ElementLogical>>,
+      Initialization::Actions::TimeStepperHistory<EvolutionMetavars>,
+      ScalarWave::Actions::InitializeConstraints<volume_dim>,
+      Initialization::Actions::AddComputeTags<
+          StepChoosers::step_chooser_compute_tags<EvolutionMetavars>>,
+      ::evolution::dg::Initialization::Mortars<volume_dim, system>,
+      evolution::Actions::InitializeRunEventsAndDenseTriggers,
+      Initialization::Actions::RemoveOptionsAndTerminatePhase>;
 
   using dg_element_array = DgElementArray<
       EvolutionMetavars,
