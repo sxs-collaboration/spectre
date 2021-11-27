@@ -16,6 +16,7 @@
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
+#include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/CreateInitialElement.hpp"
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Structure/Element.hpp"

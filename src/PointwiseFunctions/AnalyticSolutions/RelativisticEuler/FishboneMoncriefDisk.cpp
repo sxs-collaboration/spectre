@@ -394,7 +394,9 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector), (true, false))
       tmpl::list<hydro::Tags::LorentzFactor<DTYPE(data)>> /*meta*/,          \
       const FishboneMoncriefDisk::IntermediateVariables<DTYPE(data), true>&  \
           vars,                                                              \
-      const size_t) const;
+      const size_t) const;                                                   \
+  template DTYPE(data) FishboneMoncriefDisk::potential(                      \
+      const DTYPE(data) & r_sqrd, const DTYPE(data) & sin_theta_sqrd) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
 
