@@ -19,6 +19,7 @@
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Informer/InfoFromBuild.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
+#include "Utilities/FileSystem.hpp"
 
 namespace pypp {
 SetupLocalPythonEnvironment::SetupLocalPythonEnvironment(
@@ -47,6 +48,14 @@ SetupLocalPythonEnvironment::SetupLocalPythonEnvironment(
       pypp::from_py_object<std::vector<std::string>>(pyob_old_paths);
   std::string new_path =
       unit_test_src_path()+cur_dir_relative_to_unit_test_path;
+  if (not file_system::check_if_dir_exists(new_path)) {
+    ERROR_NO_TRACE("Trying to add path '"
+                   << new_path
+                   << "' to the python environment during setup "
+                      "but this directory does not exist. Maybe "
+                      "you have a typo in your path?");
+  }
+
   for (const auto &p : old_paths) {
     new_path += ":";
     new_path += p;
