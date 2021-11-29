@@ -41,6 +41,9 @@ publication. We also recommend you supply the YAML input files and, if
 appropriate, any additional C++ code you wrote to compile SpECTRE executables as
 supplemental material to the publication.
 
+See our [publication policy](https://spectre-code.org/publication_policies.html)
+for more information.
+
 ## Viewing Documentation
 
 The documentation can be viewed at https://spectre-code.org/.
