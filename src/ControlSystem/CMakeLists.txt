@@ -21,6 +21,7 @@ spectre_target_headers(
   Component.hpp
   Controller.hpp
   Event.hpp
+  InitialExpirationTimes.hpp
   Metafunctions.hpp
   NamespaceDocs.hpp
   RunCallbacks.hpp
