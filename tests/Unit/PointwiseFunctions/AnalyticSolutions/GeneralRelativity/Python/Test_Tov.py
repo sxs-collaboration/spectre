@@ -20,13 +20,12 @@ class TestTov(unittest.TestCase):
         outer_radius = tov.outer_radius()
         self.assertAlmostEqual(outer_radius, 3.4685521362)
         expected_mass = 0.0531036941
-        self.assertAlmostEqual(tov.mass(outer_radius), expected_mass)
+        self.assertAlmostEqual(tov.total_mass(), expected_mass)
         self.assertAlmostEqual(
             tov.mass_over_radius(outer_radius) * outer_radius, expected_mass)
         self.assertAlmostEqual(tov.log_specific_enthalpy(outer_radius), 0.)
         # Test vectorization of member functions
         radii = np.array([0., outer_radius])
-        npt.assert_allclose(tov.mass(radii), np.array([0., expected_mass]))
         npt.assert_allclose(
             tov.mass_over_radius(radii) * radii, np.array([0., expected_mass]))
         # Testing `log_specific_enthalpy` only at outer radius because we

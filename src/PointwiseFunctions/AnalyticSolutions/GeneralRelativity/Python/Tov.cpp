@@ -10,9 +10,7 @@
 
 namespace py = pybind11;
 
-namespace gr {
-namespace Solutions {
-namespace py_bindings {
+namespace gr::Solutions::py_bindings {
 
 void bind_tov(py::module& m) {  // NOLINT
   py::class_<TovSolution>(m, "Tov")
@@ -23,12 +21,11 @@ void bind_tov(py::module& m) {  // NOLINT
            py::arg("absolute_tolerance") = 1.e-14,
            py::arg("relative_tolerance") = 1.e-14)
       .def("outer_radius", &TovSolution::outer_radius)
-      .def("mass_over_radius", py::vectorize(&TovSolution::mass_over_radius))
-      .def("mass", py::vectorize(&TovSolution::mass))
+      .def("total_mass", &TovSolution::total_mass)
+      .def("mass_over_radius",
+           py::vectorize(&TovSolution::mass_over_radius<double>))
       .def("log_specific_enthalpy",
-           py::vectorize(&TovSolution::log_specific_enthalpy));
+           py::vectorize(&TovSolution::log_specific_enthalpy<double>));
 }
 
-}  // namespace py_bindings
-}  // namespace Solutions
-}  // namespace gr
+}  // namespace gr::Solutions::py_bindings

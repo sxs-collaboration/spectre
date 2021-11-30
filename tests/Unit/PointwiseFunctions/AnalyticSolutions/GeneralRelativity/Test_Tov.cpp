@@ -50,7 +50,9 @@ void test_tov(
 
   if (newtonian_limit) {
     const double final_radius{tov_out_full.outer_radius()};
-    const double final_mass{tov_out_full.mass(final_radius)};
+    const double final_mass{tov_out_full.total_mass()};
+    CHECK(final_mass ==
+          approx(tov_out_full.mass_over_radius(final_radius) * final_radius));
     CHECK(expected_newtonian_radius() == custom_approx(final_radius));
     CHECK(expected_newtonian_mass(central_mass_density) ==
           custom_approx(final_mass));
@@ -60,7 +62,9 @@ void test_tov(
     constexpr double expected_relativistic_radius = 3.4685521362;
     constexpr double expected_relativistic_mass = 0.0531036941;
     const double final_radius{tov_out_full.outer_radius()};
-    const double final_mass{tov_out_full.mass(final_radius)};
+    const double final_mass{tov_out_full.total_mass()};
+    CHECK(final_mass ==
+          approx(tov_out_full.mass_over_radius(final_radius) * final_radius));
     CHECK(expected_relativistic_radius == custom_approx(final_radius));
     CHECK(expected_relativistic_mass == custom_approx(final_mass));
   }
@@ -70,11 +74,14 @@ void test_tov(
   const gr::Solutions::TovSolution tov_out_intermediate(
       equation_of_state, central_mass_density, final_log_enthalpy);
   const double intermediate_radius{tov_out_intermediate.outer_radius()};
-  const double intermediate_mass{
-      tov_out_intermediate.mass(intermediate_radius)};
+  const double intermediate_mass{tov_out_intermediate.total_mass()};
+  CHECK(intermediate_mass ==
+        approx(tov_out_intermediate.mass_over_radius(intermediate_radius) *
+               intermediate_radius));
   const double intermediate_log_enthalpy{
       tov_out_intermediate.log_specific_enthalpy(intermediate_radius)};
-  const double interpolated_mass{tov_out_full.mass(intermediate_radius)};
+  const double interpolated_mass{
+      tov_out_full.mass_over_radius(intermediate_radius) * intermediate_radius};
   const double interpolated_log_enthalpy{
       tov_out_full.log_specific_enthalpy(intermediate_radius)};
   CHECK(intermediate_mass == custom_approx(interpolated_mass));
@@ -87,12 +94,13 @@ void test_tov(
   const double intermediate_radius_ds{
       deserialized_tov_out_intermediate.outer_radius()};
   const double intermediate_mass_ds{
-      deserialized_tov_out_intermediate.mass(intermediate_radius_ds)};
+      deserialized_tov_out_intermediate.total_mass()};
   const double intermediate_log_enthalpy_ds{
       deserialized_tov_out_intermediate.log_specific_enthalpy(
           intermediate_radius_ds)};
   const double interpolated_mass_ds{
-      deserialized_tov_out_full.mass(intermediate_radius_ds)};
+      deserialized_tov_out_full.mass_over_radius(intermediate_radius_ds) *
+      intermediate_radius_ds};
   const double interpolated_log_enthalpy_ds{
       deserialized_tov_out_full.log_specific_enthalpy(intermediate_radius_ds)};
   CHECK(intermediate_mass_ds == custom_approx(interpolated_mass_ds));
@@ -145,7 +153,7 @@ void test_tov_dp_dr(
     CAPTURE(p);
     CAPTURE(radius);
     if (radius < radial_tov_solution.outer_radius() and radius > 0.0) {
-      const double m = radial_tov_solution.mass(radius);
+      const double m = radial_tov_solution.mass_over_radius(radius) * radius;
       CHECK(approx(dp_dr[i]) == -total_energy_density * m / square(radius) *
                                     (1.0 + p / total_energy_density) *
                                     (1.0 + 4.0 * M_PI * p * cube(radius) / m) /

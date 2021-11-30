@@ -21,6 +21,7 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
+#include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
@@ -200,7 +201,6 @@ TovSolution::TovSolution(
   outer_radius_ = observer.radius.back();
   const double total_mass_over_radius = observer.mass_over_radius.back();
   total_mass_ = total_mass_over_radius * outer_radius_;
-  log_lapse_at_outer_radius_ = 0.5 * log(1.0 - 2.0 * total_mass_over_radius);
   mass_over_radius_interpolant_ =
       intrp::BarycentricRational(observer.radius, observer.mass_over_radius, 5);
   // log_enthalpy(radius) is almost linear so an interpolant of order 3
@@ -209,22 +209,30 @@ TovSolution::TovSolution(
       intrp::BarycentricRational(observer.radius, observer.log_enthalpy, 3);
 }
 
-double TovSolution::outer_radius() const { return outer_radius_; }
-
-double TovSolution::mass_over_radius(const double r) const {
-  ASSERT(r >= 0.0 and r <= outer_radius_,
-         "Invalid radius: " << r << " not in [0.0, " << outer_radius_ << "]\n");
-  return mass_over_radius_interpolant_(r);
+template <typename DataType>
+DataType TovSolution::mass_over_radius(const DataType& r) const {
+  // Possible optimization: Support DataVector in intrp::BarycentricRational
+  auto result = make_with_value<DataType>(r, 0.);
+  for (size_t i = 0; i < get_size(r); ++i) {
+    ASSERT(
+        get_element(r, i) >= 0.0 and get_element(r, i) <= outer_radius_,
+        "Invalid radius: " << r << " not in [0.0, " << outer_radius_ << "]\n");
+    get_element(result, i) = mass_over_radius_interpolant_(get_element(r, i));
+  }
+  return result;
 }
 
-double TovSolution::mass(const double r) const {
-  return mass_over_radius(r) * r;
-}
-
-double TovSolution::log_specific_enthalpy(const double r) const {
-  ASSERT(r >= 0.0 and r <= outer_radius_,
-         "Invalid radius: " << r << " not in [0.0, " << outer_radius_ << "]\n");
-  return log_enthalpy_interpolant_(r);
+template <typename DataType>
+DataType TovSolution::log_specific_enthalpy(const DataType& r) const {
+  // Possible optimization: Support DataVector in intrp::BarycentricRational
+  auto result = make_with_value<DataType>(r, 0.);
+  for (size_t i = 0; i < get_size(r); ++i) {
+    ASSERT(
+        get_element(r, i) >= 0.0 and get_element(r, i) <= outer_radius_,
+        "Invalid radius: " << r << " not in [0.0, " << outer_radius_ << "]\n");
+    get_element(result, i) = log_enthalpy_interpolant_(get_element(r, i));
+  }
+  return result;
 }
 
 template <>
@@ -237,6 +245,8 @@ TovSolution::radial_variables(
   if (radius >= outer_radius_) {
     return vacuum_solution(radius, total_mass_);
   }
+  const double log_lapse_at_outer_radius =
+      0.5 * log(1.0 - 2.0 * total_mass_ / outer_radius_);
   return interior_solution(equation_of_state, radius, mass_over_radius(radius),
                            log_specific_enthalpy(radius),
                            log_lapse_at_outer_radius_);
@@ -252,6 +262,8 @@ TovSolution::radial_variables(
   if (min(radius) >= outer_radius_) {
     return vacuum_solution(radius, total_mass_);
   }
+  const double log_lapse_at_outer_radius =
+      0.5 * log(1.0 - 2.0 * total_mass_ / outer_radius_);
   if (max(radius) <= outer_radius_) {
     DataVector mass_over_radius_data(radius.size());
     DataVector log_of_specific_enthalpy(radius.size());
@@ -262,7 +274,7 @@ TovSolution::radial_variables(
     }
     return interior_solution(equation_of_state, radius, mass_over_radius_data,
                              log_of_specific_enthalpy,
-                             log_lapse_at_outer_radius_);
+                             log_lapse_at_outer_radius);
   }
   RelativisticEuler::Solutions::TovStar<TovSolution>::RadialVariables<
       DataVector>
@@ -273,7 +285,7 @@ TovSolution::radial_variables(
         (r <= outer_radius_
              ? interior_solution(equation_of_state, r, mass_over_radius(r),
                                  log_specific_enthalpy(r),
-                                 log_lapse_at_outer_radius_)
+                                 log_lapse_at_outer_radius)
              : vacuum_solution(r, total_mass_));
     get(result.rest_mass_density)[i] = get(radial_vars_at_r.rest_mass_density);
     get(result.pressure)[i] = get(radial_vars_at_r.pressure);
@@ -297,9 +309,20 @@ TovSolution::radial_variables(
 void TovSolution::pup(PUP::er& p) {  // NOLINT
   p | outer_radius_;
   p | total_mass_;
-  p | log_lapse_at_outer_radius_;
   p | mass_over_radius_interpolant_;
   p | log_enthalpy_interpolant_;
 }
+
+#define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
+
+#define INSTANTIATE(_, data)                                                \
+  template DTYPE(data) TovSolution::mass_over_radius(const DTYPE(data) & r) \
+      const;                                                                \
+  template DTYPE(data)                                                      \
+      TovSolution::log_specific_enthalpy(const DTYPE(data) & r) const;
+
+GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
+
+#undef DTYPE
 
 }  // namespace gr::Solutions

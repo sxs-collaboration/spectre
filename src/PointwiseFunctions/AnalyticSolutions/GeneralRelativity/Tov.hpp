@@ -58,26 +58,23 @@ class TovSolution {
   /// \note This is the radius at which `log_specific_enthalpy` is equal
   /// to the value of `log_enthalpy_at_outer_radius` that was given when
   /// constructing this TovSolution
-  double outer_radius() const;
+  double outer_radius() const { return outer_radius_; }
+
+  /// The total mass \f$m(R)\f$, where \f$R\f$ is the outer radius.
+  double total_mass() const { return total_mass_; }
 
   /// \brief The mass inside the given radius over the radius
   /// \f$\frac{m(r)}{r}\f$
   ///
   /// \note `r` should be non-negative and not greater than `outer_radius()`.
-  double mass_over_radius(double r) const;
-
-  /// \brief The mass inside the given radius \f$m(r)\f$
-  ///
-  /// \warning When computing \f$\frac{m(r)}{r}\f$, use the `mass_over_radius`
-  /// function instead for greater accuracy.
-  ///
-  /// \note `r` should be non-negative and not greater than `outer_radius()`
-  double mass(double r) const;
+  template <typename DataType>
+  DataType mass_over_radius(const DataType& r) const;
 
   /// \brief The log of the specific enthalpy at the given radius
   ///
   /// \note `r` should be non-negative and not greater than `outer_radius()`
-  double log_specific_enthalpy(double r) const;
+  template <typename DataType>
+  DataType log_specific_enthalpy(const DataType& r) const;
 
   /// \brief The radial variables from which the hydrodynamic quantities and
   /// spacetime metric can be computed.
@@ -98,8 +95,6 @@ class TovSolution {
  private:
   double outer_radius_{std::numeric_limits<double>::signaling_NaN()};
   double total_mass_{std::numeric_limits<double>::signaling_NaN()};
-  double log_lapse_at_outer_radius_{
-      std::numeric_limits<double>::signaling_NaN()};
   intrp::BarycentricRational mass_over_radius_interpolant_;
   intrp::BarycentricRational log_enthalpy_interpolant_;
 };
