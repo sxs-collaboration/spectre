@@ -29,8 +29,9 @@ void KerrVariables<DataType>::operator()(
     const gsl::not_null<Cache*> cache,
     Tags::ConformalMetric<DataType, Dim, Frame::Inertial> /*meta*/) const {
   const auto& conformal_factor =
-      cache->get_var(Xcts::Tags::ConformalFactor<DataType>{});
-  *conformal_metric = kerr_schild.get_var(
+      cache->get_var(*this, Xcts::Tags::ConformalFactor<DataType>{});
+  *conformal_metric = kerr_schild_cache.get_var(
+      kerr_schild_computer,
       gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>{});
   for (size_t i = 0; i < Dim; ++i) {
     for (size_t j = 0; j <= i; ++j) {
@@ -46,8 +47,9 @@ void KerrVariables<DataType>::operator()(
     Tags::InverseConformalMetric<DataType, Dim, Frame::Inertial> /*meta*/)
     const {
   const auto& conformal_factor =
-      cache->get_var(Xcts::Tags::ConformalFactor<DataType>{});
-  *inv_conformal_metric = kerr_schild.get_var(
+      cache->get_var(*this, Xcts::Tags::ConformalFactor<DataType>{});
+  *inv_conformal_metric = kerr_schild_cache.get_var(
+      kerr_schild_computer,
       gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataType>{});
   for (size_t i = 0; i < Dim; ++i) {
     for (size_t j = 0; j <= i; ++j) {
@@ -63,13 +65,14 @@ void KerrVariables<DataType>::operator()(
     ::Tags::deriv<Tags::ConformalMetric<DataType, Dim, Frame::Inertial>,
                   tmpl::size_t<Dim>, Frame::Inertial> /*meta*/) const {
   const auto& conformal_factor =
-      cache->get_var(Xcts::Tags::ConformalFactor<DataType>{});
-  const auto& deriv_conformal_factor =
-      cache->get_var(::Tags::deriv<Xcts::Tags::ConformalFactor<DataType>,
-                                   tmpl::size_t<Dim>, Frame::Inertial>{});
+      cache->get_var(*this, Xcts::Tags::ConformalFactor<DataType>{});
+  const auto& deriv_conformal_factor = cache->get_var(
+      *this, ::Tags::deriv<Xcts::Tags::ConformalFactor<DataType>,
+                           tmpl::size_t<Dim>, Frame::Inertial>{});
   const auto& conformal_metric = cache->get_var(
-      Xcts::Tags::ConformalMetric<DataType, Dim, Frame::Inertial>{});
-  *deriv_conformal_metric = kerr_schild.get_var(
+      *this, Xcts::Tags::ConformalMetric<DataType, Dim, Frame::Inertial>{});
+  *deriv_conformal_metric = kerr_schild_cache.get_var(
+      kerr_schild_computer,
       ::Tags::deriv<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>,
                     tmpl::size_t<Dim>, Frame::Inertial>{});
   for (size_t i = 0; i < Dim; ++i) {
@@ -89,9 +92,11 @@ void KerrVariables<DataType>::operator()(
     const gsl::not_null<Scalar<DataType>*> trace_extrinsic_curvature,
     const gsl::not_null<Cache*> /*cache*/,
     gr::Tags::TraceExtrinsicCurvature<DataType> /*meta*/) const {
-  const auto& extrinsic_curvature = kerr_schild.get_var(
+  const auto& extrinsic_curvature = kerr_schild_cache.get_var(
+      kerr_schild_computer,
       gr::Tags::ExtrinsicCurvature<Dim, Frame::Inertial, DataType>{});
-  const auto& inv_spatial_metric = kerr_schild.get_var(
+  const auto& inv_spatial_metric = kerr_schild_cache.get_var(
+      kerr_schild_computer,
       gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataType>{});
   trace(trace_extrinsic_curvature, extrinsic_curvature, inv_spatial_metric);
 }
@@ -127,7 +132,8 @@ void KerrVariables<DataType>::operator()(
     const gsl::not_null<Scalar<DataType>*> lapse,
     const gsl::not_null<Cache*> /*cache*/,
     gr::Tags::Lapse<DataType> /*meta*/) const {
-  *lapse = kerr_schild.get_var(gr::Tags::Lapse<DataType>{});
+  *lapse = kerr_schild_cache.get_var(kerr_schild_computer,
+                                     gr::Tags::Lapse<DataType>{});
 }
 
 template <typename DataType>
@@ -135,9 +141,10 @@ void KerrVariables<DataType>::operator()(
     const gsl::not_null<Scalar<DataType>*> lapse_times_conformal_factor,
     const gsl::not_null<Cache*> cache,
     Tags::LapseTimesConformalFactor<DataType> /*meta*/) const {
-  *lapse_times_conformal_factor = cache->get_var(gr::Tags::Lapse<DataType>{});
+  *lapse_times_conformal_factor =
+      cache->get_var(*this, gr::Tags::Lapse<DataType>{});
   const auto& conformal_factor =
-      cache->get_var(Xcts::Tags::ConformalFactor<DataType>{});
+      cache->get_var(*this, Xcts::Tags::ConformalFactor<DataType>{});
   get(*lapse_times_conformal_factor) *= get(conformal_factor);
 }
 
@@ -149,14 +156,16 @@ void KerrVariables<DataType>::operator()(
     ::Tags::deriv<Tags::LapseTimesConformalFactor<DataType>, tmpl::size_t<Dim>,
                   Frame::Inertial> /*meta*/) const {
   const auto& conformal_factor =
-      cache->get_var(Xcts::Tags::ConformalFactor<DataType>{});
-  const auto& deriv_conformal_factor =
-      cache->get_var(::Tags::deriv<Xcts::Tags::ConformalFactor<DataType>,
-                                   tmpl::size_t<Dim>, Frame::Inertial>{});
-  *lapse_times_conformal_factor_gradient =
-      kerr_schild.get_var(::Tags::deriv<gr::Tags::Lapse<DataType>,
-                                        tmpl::size_t<Dim>, Frame::Inertial>{});
-  const auto& lapse = kerr_schild.get_var(gr::Tags::Lapse<DataType>{});
+      cache->get_var(*this, Xcts::Tags::ConformalFactor<DataType>{});
+  const auto& deriv_conformal_factor = cache->get_var(
+      *this, ::Tags::deriv<Xcts::Tags::ConformalFactor<DataType>,
+                           tmpl::size_t<Dim>, Frame::Inertial>{});
+  *lapse_times_conformal_factor_gradient = kerr_schild_cache.get_var(
+      kerr_schild_computer,
+      ::Tags::deriv<gr::Tags::Lapse<DataType>, tmpl::size_t<Dim>,
+                    Frame::Inertial>{});
+  const auto& lapse = kerr_schild_cache.get_var(kerr_schild_computer,
+                                                gr::Tags::Lapse<DataType>{});
   for (size_t i = 0; i < Dim; ++i) {
     lapse_times_conformal_factor_gradient->get(i) *= get(conformal_factor);
     lapse_times_conformal_factor_gradient->get(i) +=
@@ -188,8 +197,8 @@ void KerrVariables<DataType>::operator()(
     const gsl::not_null<tnsr::I<DataType, Dim>*> shift_excess,
     const gsl::not_null<Cache*> /*cache*/,
     Tags::ShiftExcess<DataType, Dim, Frame::Inertial> /*meta*/) const {
-  *shift_excess =
-      kerr_schild.get_var(gr::Tags::Shift<Dim, Frame::Inertial, DataType>{});
+  *shift_excess = kerr_schild_cache.get_var(
+      kerr_schild_computer, gr::Tags::Shift<Dim, Frame::Inertial, DataType>{});
 }
 
 template <typename DataType>
@@ -197,17 +206,20 @@ void KerrVariables<DataType>::operator()(
     const gsl::not_null<tnsr::ii<DataType, Dim>*> shift_strain,
     const gsl::not_null<Cache*> cache,
     Tags::ShiftStrain<DataType, Dim, Frame::Inertial> /*meta*/) const {
-  const auto& shift =
-      kerr_schild.get_var(gr::Tags::Shift<Dim, Frame::Inertial, DataType>{});
-  const auto& deriv_shift = kerr_schild.get_var(
+  const auto& shift = kerr_schild_cache.get_var(
+      kerr_schild_computer, gr::Tags::Shift<Dim, Frame::Inertial, DataType>{});
+  const auto& deriv_shift = kerr_schild_cache.get_var(
+      kerr_schild_computer,
       ::Tags::deriv<gr::Tags::Shift<Dim, Frame::Inertial, DataType>,
                     tmpl::size_t<Dim>, Frame::Inertial>{});
   const auto& conformal_metric = cache->get_var(
-      Xcts::Tags::ConformalMetric<DataType, Dim, Frame::Inertial>{});
+      *this, Xcts::Tags::ConformalMetric<DataType, Dim, Frame::Inertial>{});
   const auto& deriv_conformal_metric = cache->get_var(
+      *this,
       ::Tags::deriv<Xcts::Tags::ConformalMetric<DataType, Dim, Frame::Inertial>,
                     tmpl::size_t<Dim>, Frame::Inertial>{});
   const auto& conformal_christoffel_first_kind = cache->get_var(
+      *this,
       Tags::ConformalChristoffelFirstKind<DataType, Dim, Frame::Inertial>{});
   Elasticity::strain(shift_strain, deriv_shift, conformal_metric,
                      deriv_conformal_metric, conformal_christoffel_first_kind,

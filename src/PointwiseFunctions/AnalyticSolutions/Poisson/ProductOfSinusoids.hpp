@@ -26,7 +26,7 @@ namespace detail {
 template <typename DataType, size_t Dim>
 struct ProductOfSinusoidsVariables {
   using Cache = CachedTempBuffer<
-      ProductOfSinusoidsVariables, Tags::Field,
+      Tags::Field,
       ::Tags::deriv<Tags::Field, tmpl::size_t<Dim>, Frame::Inertial>,
       ::Tags::Flux<Tags::Field, tmpl::size_t<Dim>, Frame::Inertial>,
       ::Tags::FixedSource<Tags::Field>>;
@@ -108,9 +108,9 @@ class ProductOfSinusoids : public AnalyticSolution<Dim, Registrars> {
       const tnsr::I<DataType, Dim>& x,
       tmpl::list<RequestedTags...> /*meta*/) const {
     using VarsComputer = detail::ProductOfSinusoidsVariables<DataType, Dim>;
-    typename VarsComputer::Cache cache{get_size(*x.begin()),
-                                       VarsComputer{x, wave_numbers_}};
-    return {cache.get_var(RequestedTags{})...};
+    typename VarsComputer::Cache cache{get_size(*x.begin())};
+    const VarsComputer computer{x, wave_numbers_};
+    return {cache.get_var(computer, RequestedTags{})...};
   }
 
   // NOLINTNEXTLINE(google-runtime-references)

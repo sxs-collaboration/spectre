@@ -27,11 +27,7 @@ namespace Xcts::Solutions {
 namespace detail {
 
 template <typename DataType>
-struct KerrVariables;
-
-template <typename DataType>
 using KerrVariablesCache = cached_temp_buffer_from_typelist<
-    KerrVariables<DataType>,
     tmpl::push_back<
         common_tags<DataType>,
         gr::Tags::Conformal<gr::Tags::EnergyDensity<DataType>, 0>,
@@ -52,13 +48,20 @@ struct KerrVariables : CommonVariables<DataType, KerrVariablesCache<DataType>> {
           DataType, Dim, Frame::ElementLogical, Frame::Inertial>>>
           local_inv_jacobian,
       const tnsr::I<DataType, 3>& local_x,
-      gr::Solutions::KerrSchild::IntermediateVars<DataType> local_kerr_schild)
+      gr::Solutions::KerrSchild::IntermediateVars<DataType>
+          local_kerr_schild_cache,
+      gr::Solutions::KerrSchild::IntermediateComputer<DataType>
+          local_kerr_schild_computer)
       : Base(std::move(local_mesh), std::move(local_inv_jacobian)),
         x(local_x),
-        kerr_schild(std::move(local_kerr_schild)) {}
+        kerr_schild_cache(std::move(local_kerr_schild_cache)),
+        kerr_schild_computer(std::move(local_kerr_schild_computer)) {}
 
   const tnsr::I<DataType, Dim>& x;
-  mutable gr::Solutions::KerrSchild::IntermediateVars<DataType> kerr_schild;
+  mutable gr::Solutions::KerrSchild::IntermediateVars<DataType>
+      kerr_schild_cache;
+  gr::Solutions::KerrSchild::IntermediateComputer<DataType>
+      kerr_schild_computer;
 
   void operator()(
       gsl::not_null<tnsr::ii<DataType, Dim>*> conformal_metric,
@@ -191,12 +194,13 @@ class Kerr : public AnalyticSolution<Registrars>,
       const tnsr::I<DataType, 3, Frame::Inertial>& x,
       tmpl::list<RequestedTags...> /*meta*/) const {
     using VarsComputer = detail::KerrVariables<DataType>;
-    typename VarsComputer::Cache cache{
-        get_size(*x.begin()),
-        VarsComputer{
-            std::nullopt, std::nullopt, x,
-            gr::Solutions::KerrSchild::IntermediateVars<DataType>{*this, x}}};
-    return {cache.get_var(RequestedTags{})...};
+    const size_t num_points = get_size(*x.begin());
+    typename VarsComputer::Cache cache{num_points};
+    const VarsComputer computer{
+        std::nullopt, std::nullopt, x,
+        gr::Solutions::KerrSchild::IntermediateVars<DataType>{num_points},
+        gr::Solutions::KerrSchild::IntermediateComputer<DataType>{*this, x}};
+    return {cache.get_var(computer, RequestedTags{})...};
   }
 
   template <typename DataType, typename... RequestedTags>
@@ -206,12 +210,13 @@ class Kerr : public AnalyticSolution<Registrars>,
                             Frame::Inertial>& inv_jacobian,
       tmpl::list<RequestedTags...> /*meta*/) const {
     using VarsComputer = detail::KerrVariables<DataType>;
-    typename VarsComputer::Cache cache{
-        get_size(*x.begin()),
-        VarsComputer{
-            mesh, inv_jacobian, x,
-            gr::Solutions::KerrSchild::IntermediateVars<DataType>{*this, x}}};
-    return {cache.get_var(RequestedTags{})...};
+    const size_t num_points = get_size(*x.begin());
+    typename VarsComputer::Cache cache{get_size(*x.begin())};
+    VarsComputer computer{
+        mesh, inv_jacobian, x,
+        gr::Solutions::KerrSchild::IntermediateVars<DataType>{num_points},
+        gr::Solutions::KerrSchild::IntermediateComputer<DataType>{*this, x}};
+    return {cache.get_var(computer, RequestedTags{})...};
   }
 
   void pup(PUP::er& p) override {

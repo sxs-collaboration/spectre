@@ -15,6 +15,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Solutions.hpp"
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
+#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
@@ -259,8 +260,9 @@ class KerrSchild : public AnalyticSolution<3_st>,
             Tags>...>,
         "At least one of the requested tags is not supported. The requested "
         "tags are listed as template parameters of the `variables` function.");
-    IntermediateVars<DataType, Frame> intermediate(*this, x);
-    return {intermediate.get_var(Tags{})...};
+    IntermediateVars<DataType, Frame> cache(get_size(*x.begin()));
+    IntermediateComputer<DataType, Frame> computer(*this, x);
+    return {cache.get_var(computer, Tags{})...};
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
@@ -320,12 +322,8 @@ class KerrSchild : public AnalyticSolution<3_st>,
     using shift_multiplier = ::Tags::TempScalar<20, DataType>;
   };
 
-  template <typename DataType, typename Frame>
-  class IntermediateComputer;
-
   template <typename DataType, typename Frame = ::Frame::Inertial>
   using CachedBuffer = CachedTempBuffer<
-      IntermediateComputer<DataType, Frame>,
       internal_tags::x_minus_center<DataType, Frame>,
       internal_tags::a_dot_x<DataType>,
       internal_tags::a_dot_x_squared<DataType>,
@@ -355,8 +353,7 @@ class KerrSchild : public AnalyticSolution<3_st>,
     using CachedBuffer = KerrSchild::CachedBuffer<DataType, Frame>;
 
     IntermediateComputer(const KerrSchild& solution,
-                         const tnsr::I<DataType, 3, Frame>& x,
-                         double null_vector_0);
+                         const tnsr::I<DataType, 3, Frame>& x);
 
     void operator()(
         gsl::not_null<tnsr::I<DataType, 3, Frame>*> x_minus_center,
@@ -475,35 +472,45 @@ class KerrSchild : public AnalyticSolution<3_st>,
    private:
     const KerrSchild& solution_;
     const tnsr::I<DataType, 3, Frame>& x_;
-    double null_vector_0_;
+    // Here null_vector_0 is simply -1, but if you have a boosted solution,
+    // then null_vector_0 can be something different, so we leave it coded
+    // in instead of eliminating it.
+    static constexpr double null_vector_0_ = -1.0;
   };
 
   template <typename DataType, typename Frame = ::Frame::Inertial>
   class IntermediateVars : public CachedBuffer<DataType, Frame> {
    public:
     using CachedBuffer = KerrSchild::CachedBuffer<DataType, Frame>;
-
-    IntermediateVars(const KerrSchild& solution,
-                     const tnsr::I<DataType, 3, Frame>& x);
-
+    using CachedBuffer::CachedBuffer;
     using CachedBuffer::get_var;
 
-    tnsr::i<DataType, 3, Frame> get_var(DerivLapse<DataType, Frame> /*meta*/);
+    tnsr::i<DataType, 3, Frame> get_var(
+        const IntermediateComputer<DataType, Frame>& computer,
+        DerivLapse<DataType, Frame> /*meta*/);
 
-    Scalar<DataType> get_var(::Tags::dt<gr::Tags::Lapse<DataType>> /*meta*/);
+    Scalar<DataType> get_var(
+        const IntermediateComputer<DataType, Frame>& computer,
+        ::Tags::dt<gr::Tags::Lapse<DataType>> /*meta*/);
 
     tnsr::I<DataType, 3, Frame> get_var(
+        const IntermediateComputer<DataType, Frame>& computer,
         ::Tags::dt<gr::Tags::Shift<3, Frame, DataType>> /*meta*/);
 
-    Scalar<DataType> get_var(gr::Tags::SqrtDetSpatialMetric<DataType> /*meta*/);
+    Scalar<DataType> get_var(
+        const IntermediateComputer<DataType, Frame>& computer,
+        gr::Tags::SqrtDetSpatialMetric<DataType> /*meta*/);
 
     tnsr::i<DataType, 3, Frame> get_var(
+        const IntermediateComputer<DataType, Frame>& computer,
         gr::Tags::DerivDetSpatialMetric<3, Frame, DataType> /*meta*/);
 
     tnsr::II<DataType, 3, Frame> get_var(
+        const IntermediateComputer<DataType, Frame>& computer,
         gr::Tags::InverseSpatialMetric<3, Frame, DataType> /*meta*/);
 
     tnsr::ii<DataType, 3, Frame> get_var(
+        const IntermediateComputer<DataType, Frame>& computer,
         gr::Tags::ExtrinsicCurvature<3, Frame, DataType> /*meta*/);
 
    private:

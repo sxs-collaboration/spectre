@@ -79,7 +79,7 @@ void HalfSpaceMirrorVariables<DataType>::operator()(
   const double shear_modulus = constitutive_relation.shear_modulus();
   const double lame_parameter = constitutive_relation.lame_parameter();
   const auto radius = sqrt(square(get<0>(x)) + square(get<1>(x)));
-  const auto& displacement_r = get(cache->get_var(DisplacementR{}));
+  const auto& displacement_r = get(cache->get_var(*this, DisplacementR{}));
 
   const integration::GslQuadAdaptive<
       integration::GslIntegralType::UpperBoundaryInfinite>
@@ -128,7 +128,7 @@ void HalfSpaceMirrorVariables<DataType>::operator()(
   const double shear_modulus = constitutive_relation.shear_modulus();
   const double lame_parameter = constitutive_relation.lame_parameter();
   const auto radius = sqrt(square(get<0>(x)) + square(get<1>(x)));
-  const auto& displacement_r = get(cache->get_var(DisplacementR{}));
+  const auto& displacement_r = get(cache->get_var(*this, DisplacementR{}));
 
   const integration::GslQuadAdaptive<
       integration::GslIntegralType::UpperBoundaryInfinite>
@@ -208,7 +208,7 @@ template <typename DataType>
 void HalfSpaceMirrorVariables<DataType>::operator()(
     const gsl::not_null<tnsr::II<DataType, 3>*> minus_stress,
     const gsl::not_null<Cache*> cache, Tags::MinusStress<3> /*meta*/) const {
-  const auto& strain = cache->get_var(Tags::Strain<3>{});
+  const auto& strain = cache->get_var(*this, Tags::Strain<3>{});
   constitutive_relation.stress(minus_stress, strain, x);
   for (auto& component : *minus_stress) {
     component *= -1.;
@@ -220,7 +220,7 @@ void HalfSpaceMirrorVariables<DataType>::operator()(
     const gsl::not_null<Scalar<DataType>*> potential_energy_density,
     const gsl::not_null<Cache*> cache,
     Tags::PotentialEnergyDensity<3> /*meta*/) const {
-  const auto& strain = cache->get_var(Tags::Strain<3>{});
+  const auto& strain = cache->get_var(*this, Tags::Strain<3>{});
   Elasticity::potential_energy_density(potential_energy_density, strain, x,
                                        constitutive_relation);
 }

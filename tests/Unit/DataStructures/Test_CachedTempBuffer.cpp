@@ -43,15 +43,11 @@ struct Count {
 };
 }  // namespace Tags
 
-template <typename DataType>
-struct Computer;
-
 // [alias]
 template <typename DataType>
 using Cache =
-    CachedTempBuffer<Computer<DataType>, Tags::Scalar1<DataType>,
-                     Tags::Scalar2<DataType>, Tags::Vector1<DataType>,
-                     Tags::Vector2<DataType>>;
+    CachedTempBuffer<Tags::Scalar1<DataType>, Tags::Scalar2<DataType>,
+                     Tags::Vector1<DataType>, Tags::Vector2<DataType>>;
 // [alias]
 
 template <typename DataType>
@@ -78,7 +74,7 @@ class Computer {
                   Tags::Scalar2<DataType> /*meta*/) const {
     // [compute_func]
     ++get<Tags::Count<Tags::Scalar2<DataType>>>(*counter_);
-    const auto& vector1 = cache->get_var(Tags::Vector1<DataType>{});
+    const auto& vector1 = cache->get_var(*this, Tags::Vector1<DataType>{});
 
     get(*scalar2) = get<1>(vector1);
   }
@@ -95,8 +91,8 @@ class Computer {
                   const gsl::not_null<Cache<DataType>*> cache,
                   Tags::Vector2<DataType> /*meta*/) const {
     ++get<Tags::Count<Tags::Vector2<DataType>>>(*counter_);
-    const auto& scalar2 = cache->get_var(Tags::Scalar2<DataType>{});
-    const auto& vector1 = cache->get_var(Tags::Vector1<DataType>{});
+    const auto& scalar2 = cache->get_var(*this, Tags::Scalar2<DataType>{});
+    const auto& vector1 = cache->get_var(*this, Tags::Vector1<DataType>{});
 
     get<0>(*vector2) = get<0>(vector1) * get(scalar2);
     get<1>(*vector2) = get<1>(vector1) * get(scalar2);
@@ -123,18 +119,19 @@ void test_cached_temp_buffer(const DataType& used_for_size) {
     CHECK(get<Tags::Count<Tags::Vector2<DataType>>>(counter) == vector2);
   };
 
-  Cache<DataType> cache(get_size(used_for_size), Computer<DataType>(&counter));
+  Cache<DataType> cache(get_size(used_for_size));
+  Computer<DataType> computer(&counter);
   check_counts(0, 0, 0, 0);
-  CHECK(get(cache.get_var(Tags::Scalar1<DataType>{})) == 7.0);
+  CHECK(get(cache.get_var(computer, Tags::Scalar1<DataType>{})) == 7.0);
   check_counts(1, 0, 0, 0);
-  CHECK(get<0>(cache.get_var(Tags::Vector2<DataType>{})) == 110.0);
+  CHECK(get<0>(cache.get_var(computer, Tags::Vector2<DataType>{})) == 110.0);
   check_counts(1, 1, 1, 1);
-  CHECK(get<1>(cache.get_var(Tags::Vector2<DataType>{})) == 121.0);
+  CHECK(get<1>(cache.get_var(computer, Tags::Vector2<DataType>{})) == 121.0);
   check_counts(1, 1, 1, 1);
-  CHECK(get<0>(cache.get_var(Tags::Vector1<DataType>{})) == 10.0);
+  CHECK(get<0>(cache.get_var(computer, Tags::Vector1<DataType>{})) == 10.0);
   check_counts(1, 1, 1, 1);
 
-  CHECK(get_size(get(cache.get_var(Tags::Scalar1<DataType>{}))) ==
+  CHECK(get_size(get(cache.get_var(computer, Tags::Scalar1<DataType>{}))) ==
         get_size(used_for_size));
 }
 }  // namespace

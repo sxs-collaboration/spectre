@@ -20,9 +20,6 @@
 #include "Utilities/TMPL.hpp"
 
 namespace Xcts {
-/// \cond
-struct SpacetimeQuantitiesComputer;
-/// \endcond
 
 namespace detail {
 template <typename DataType>
@@ -33,7 +30,6 @@ struct ExtrinsicCurvatureSquare : db::SimpleTag {
 
 /// General-relativistic 3+1 quantities computed from XCTS variables.
 using SpacetimeQuantities = CachedTempBuffer<
-    SpacetimeQuantitiesComputer,
     gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
     gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>,
     ::Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
@@ -156,11 +152,13 @@ struct SpacetimeQuantitiesCompute : ::Tags::Variables<Tags>, db::ComputeTag {
     if (result->number_of_grid_points() != num_points) {
       result->initialize(num_points);
     }
-    SpacetimeQuantities spacetime_quantities{num_points, {args...}};
-    tmpl::for_each<Tags>([&spacetime_quantities, &result](const auto tag_v) {
-      using tag = tmpl::type_from<std::decay_t<decltype(tag_v)>>;
-      get<tag>(*result) = spacetime_quantities.get_var(tag{});
-    });
+    SpacetimeQuantities spacetime_quantities{num_points};
+    const SpacetimeQuantitiesComputer computer{args...};
+    tmpl::for_each<Tags>(
+        [&spacetime_quantities, &computer, &result](const auto tag_v) {
+          using tag = tmpl::type_from<std::decay_t<decltype(tag_v)>>;
+          get<tag>(*result) = spacetime_quantities.get_var(computer, tag{});
+        });
   }
 };
 }  // namespace Tags

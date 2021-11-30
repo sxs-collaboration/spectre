@@ -24,10 +24,10 @@ namespace Elasticity::Solutions {
 namespace detail {
 template <typename DataType>
 struct BentBeamVariables {
-  using Cache = CachedTempBuffer<BentBeamVariables, Tags::Displacement<2>,
-                                 Tags::Strain<2>, Tags::MinusStress<2>,
-                                 Tags::PotentialEnergyDensity<2>,
-                                 ::Tags::FixedSource<Tags::Displacement<2>>>;
+  using Cache =
+      CachedTempBuffer<Tags::Displacement<2>, Tags::Strain<2>,
+                       Tags::MinusStress<2>, Tags::PotentialEnergyDensity<2>,
+                       ::Tags::FixedSource<Tags::Displacement<2>>>;
 
   const tnsr::I<DataType, 2>& x;
   const double length;
@@ -183,10 +183,10 @@ class BentBeam : public AnalyticSolution<2, Registrars> {
       const tnsr::I<DataType, 2>& x,
       tmpl::list<RequestedTags...> /*meta*/) const {
     using VarsComputer = detail::BentBeamVariables<DataType>;
-    typename VarsComputer::Cache cache{
-        get_size(*x.begin()), VarsComputer{x, length_, height_, bending_moment_,
-                                           constitutive_relation_}};
-    return {cache.get_var(RequestedTags{})...};
+    typename VarsComputer::Cache cache{get_size(*x.begin())};
+    const VarsComputer computer{x, length_, height_, bending_moment_,
+                                constitutive_relation_};
+    return {cache.get_var(computer, RequestedTags{})...};
   }
 
   // clang-tidy: no pass by reference

@@ -39,11 +39,7 @@ namespace Xcts::AnalyticData {
 namespace detail {
 
 template <typename DataType>
-struct BinaryVariables;
-
-template <typename DataType>
 using BinaryVariablesCache = cached_temp_buffer_from_typelist<
-    BinaryVariables<DataType>,
     tmpl::push_front<
         common_tags<DataType>,
         ::Tags::deriv<Tags::ShiftBackground<DataType, 3, Frame::Inertial>,
@@ -419,13 +415,18 @@ class Binary : public ::AnalyticData<3, Registrars> {
               ->variables(gsl::at(x_isolated, i), requested_superposed_tags{});
     }
     auto flat_vars = flatness_.variables(x, requested_superposed_tags{});
-    typename VarsComputer::Cache cache{
-        get_size(*x.begin()),
-        VarsComputer{std::move(mesh), std::move(inv_jacobian), x,
-                     angular_velocity_, expansion_, falloff_widths_,
-                     std::move(x_isolated), std::move(windows),
-                     std::move(flat_vars), std::move(isolated_vars)}};
-    return {cache.get_var(RequestedTags{})...};
+    typename VarsComputer::Cache cache{get_size(*x.begin())};
+    const VarsComputer computer{std::move(mesh),
+                                std::move(inv_jacobian),
+                                x,
+                                angular_velocity_,
+                                expansion_,
+                                falloff_widths_,
+                                std::move(x_isolated),
+                                std::move(windows),
+                                std::move(flat_vars),
+                                std::move(isolated_vars)};
+    return {cache.get_var(computer, RequestedTags{})...};
   }
 };
 

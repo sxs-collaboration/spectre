@@ -207,9 +207,9 @@ void test_numerical_deriv_det_spatial_metric(const DataVector& used_for_size) {
   // Compute expected numerical derivative of the determinant
   const double null_vector_0 = -1.0;
   gr::Solutions::KerrSchild::IntermediateComputer<DataVector, FrameType>
-      ks_computer(solution, x, null_vector_0);
+      ks_computer(solution, x);
   gr::Solutions::KerrSchild::IntermediateVars<DataVector, FrameType> ks_cache(
-      solution, x);
+      num_points_3d);
 
   auto H = make_with_value<Scalar<DataVector>>(
       used_for_size, std::numeric_limits<double>::signaling_NaN());

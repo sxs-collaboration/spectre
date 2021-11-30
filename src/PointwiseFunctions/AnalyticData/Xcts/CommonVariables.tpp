@@ -37,8 +37,8 @@ void CommonVariables<DataType, Cache>::operator()(
     const gsl::not_null<Cache*> cache,
     Tags::InverseConformalMetric<DataType, Dim, Frame::Inertial> /*meta*/)
     const {
-  const auto& conformal_metric =
-      cache->get_var(Tags::ConformalMetric<DataType, Dim, Frame::Inertial>{});
+  const auto& conformal_metric = cache->get_var(
+      *this, Tags::ConformalMetric<DataType, Dim, Frame::Inertial>{});
   Scalar<DataType> unused_det{get_size(*conformal_metric.begin())};
   determinant_and_inverse(make_not_null(&unused_det), inv_conformal_metric,
                           conformal_metric);
@@ -49,11 +49,11 @@ void CommonVariables<DataType, Cache>::operator()(
     const gsl::not_null<tnsr::ijj<DataType, Dim>*>
         conformal_christoffel_first_kind,
     const gsl::not_null<Cache*> cache,
-    Tags::ConformalChristoffelFirstKind<
-        DataType, Dim, Frame::Inertial> /*meta*/) const {
+    Tags::ConformalChristoffelFirstKind<DataType, Dim,
+                                        Frame::Inertial> /*meta*/) const {
   const auto& deriv_conformal_metric = cache->get_var(
-      ::Tags::deriv<Tags::ConformalMetric<DataType, 3, Frame::Inertial>,
-                    tmpl::size_t<3>, Frame::Inertial>{});
+      *this, ::Tags::deriv<Tags::ConformalMetric<DataType, 3, Frame::Inertial>,
+                           tmpl::size_t<3>, Frame::Inertial>{});
   gr::christoffel_first_kind(conformal_christoffel_first_kind,
                              deriv_conformal_metric);
 }
@@ -63,12 +63,13 @@ void CommonVariables<DataType, Cache>::operator()(
     const gsl::not_null<tnsr::Ijj<DataType, Dim>*>
         conformal_christoffel_second_kind,
     const gsl::not_null<Cache*> cache,
-    Tags::ConformalChristoffelSecondKind<
-        DataType, Dim, Frame::Inertial> /*meta*/) const {
+    Tags::ConformalChristoffelSecondKind<DataType, Dim,
+                                         Frame::Inertial> /*meta*/) const {
   const auto& conformal_christoffel_first_kind = cache->get_var(
+      *this,
       Tags::ConformalChristoffelFirstKind<DataType, Dim, Frame::Inertial>{});
   const auto& inv_conformal_metric = cache->get_var(
-      Tags::InverseConformalMetric<DataType, 3, Frame::Inertial>{});
+      *this, Tags::InverseConformalMetric<DataType, 3, Frame::Inertial>{});
   raise_or_lower_first_index(conformal_christoffel_second_kind,
                              conformal_christoffel_first_kind,
                              inv_conformal_metric);
@@ -79,9 +80,10 @@ void CommonVariables<DataType, Cache>::operator()(
     const gsl::not_null<tnsr::i<DataType, Dim>*>
         conformal_christoffel_contracted,
     const gsl::not_null<Cache*> cache,
-    Tags::ConformalChristoffelContracted<
-        DataType, Dim, Frame::Inertial> /*meta*/) const {
+    Tags::ConformalChristoffelContracted<DataType, Dim,
+                                         Frame::Inertial> /*meta*/) const {
   const auto& conformal_christoffel_second_kind = cache->get_var(
+      *this,
       Tags::ConformalChristoffelSecondKind<DataType, Dim, Frame::Inertial>{});
   for (size_t i = 0; i < Dim; ++i) {
     conformal_christoffel_contracted->get(i) =
@@ -98,8 +100,7 @@ void CommonVariables<DataType, Cache>::operator()(
     const gsl::not_null<Scalar<DataType>*>
         fixed_source_for_hamiltonian_constraint,
     const gsl::not_null<Cache*> /*cache*/,
-    ::Tags::FixedSource<Tags::ConformalFactor<DataType>> /*meta*/)
-    const {
+    ::Tags::FixedSource<Tags::ConformalFactor<DataType>> /*meta*/) const {
   std::fill(fixed_source_for_hamiltonian_constraint->begin(),
             fixed_source_for_hamiltonian_constraint->end(), 0.);
 }
@@ -119,8 +120,7 @@ void CommonVariables<DataType, Cache>::operator()(
     const gsl::not_null<tnsr::I<DataType, 3>*> fixed_source_momentum_constraint,
     const gsl::not_null<Cache*> /*cache*/,
     ::Tags::FixedSource<
-        Tags::ShiftExcess<DataType, 3, Frame::Inertial>> /*meta*/)
-    const {
+        Tags::ShiftExcess<DataType, 3, Frame::Inertial>> /*meta*/) const {
   std::fill(fixed_source_momentum_constraint->begin(),
             fixed_source_momentum_constraint->end(), 0.);
 }
@@ -148,7 +148,7 @@ void CommonVariables<DataType, Cache>::operator()(
     using tag =
         Tags::ConformalChristoffelSecondKind<DataType, Dim, Frame::Inertial>;
     Variables<tmpl::list<tag>> vars{mesh->get().number_of_grid_points()};
-    get<tag>(vars) = cache->get_var(tag{});
+    get<tag>(vars) = cache->get_var(*this, tag{});
     const auto derivs = partial_derivatives<tmpl::list<tag>>(
         vars, mesh->get(), inv_jacobian->get());
     *deriv_conformal_christoffel_second_kind =
@@ -169,11 +169,12 @@ template <typename DataType, typename Cache>
 void CommonVariables<DataType, Cache>::operator()(
     const gsl::not_null<tnsr::ii<DataType, Dim>*> conformal_ricci_tensor,
     const gsl::not_null<Cache*> cache,
-    Tags::ConformalRicciTensor<DataType, Dim, Frame::Inertial> /*meta*/)
-    const {
+    Tags::ConformalRicciTensor<DataType, Dim, Frame::Inertial> /*meta*/) const {
   const auto& conformal_christoffel_second_kind = cache->get_var(
+      *this,
       Tags::ConformalChristoffelSecondKind<DataType, Dim, Frame::Inertial>{});
   const auto& deriv_conformal_christoffel_second_kind = cache->get_var(
+      *this,
       ::Tags::deriv<
           Tags::ConformalChristoffelSecondKind<DataType, Dim, Frame::Inertial>,
           tmpl::size_t<Dim>, Frame::Inertial>{});
@@ -187,9 +188,9 @@ void CommonVariables<DataType, Cache>::operator()(
     const gsl::not_null<Cache*> cache,
     Tags::ConformalRicciScalar<DataType> /*meta*/) const {
   const auto& conformal_ricci_tensor = cache->get_var(
-      Tags::ConformalRicciTensor<DataType, Dim, Frame::Inertial>{});
+      *this, Tags::ConformalRicciTensor<DataType, Dim, Frame::Inertial>{});
   const auto& inv_conformal_metric = cache->get_var(
-      Tags::InverseConformalMetric<DataType, Dim, Frame::Inertial>{});
+      *this, Tags::InverseConformalMetric<DataType, Dim, Frame::Inertial>{});
   trace(conformal_ricci_scalar, conformal_ricci_tensor, inv_conformal_metric);
 }
 
@@ -214,7 +215,7 @@ void CommonVariables<DataType, Cache>::operator()(
     // optimization here.
     using tag = gr::Tags::TraceExtrinsicCurvature<DataType>;
     Variables<tmpl::list<tag>> vars{mesh->get().number_of_grid_points()};
-    get<tag>(vars) = cache->get_var(tag{});
+    get<tag>(vars) = cache->get_var(*this, tag{});
     const auto derivs = partial_derivatives<tmpl::list<tag>>(
         vars, mesh->get(), inv_jacobian->get());
     *deriv_extrinsic_curvature_trace =
@@ -245,7 +246,7 @@ void CommonVariables<DataType, Cache>::operator()(
     using tag = Tags::LongitudinalShiftBackgroundMinusDtConformalMetric<
         DataType, Dim, Frame::Inertial>;
     Variables<tmpl::list<tag>> vars{mesh->get().number_of_grid_points()};
-    get<tag>(vars) = cache->get_var(tag{});
+    get<tag>(vars) = cache->get_var(*this, tag{});
     const auto derivs = divergence(vars, mesh->get(), inv_jacobian->get());
     *div_longitudinal_shift_background = get<::Tags::div<tag>>(derivs);
   } else {

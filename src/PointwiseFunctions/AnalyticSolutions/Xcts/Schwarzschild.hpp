@@ -140,11 +140,7 @@ bool operator==(const SchwarzschildImpl& lhs, const SchwarzschildImpl& rhs);
 bool operator!=(const SchwarzschildImpl& lhs, const SchwarzschildImpl& rhs);
 
 template <typename DataType>
-struct SchwarzschildVariables;
-
-template <typename DataType>
 using SchwarzschildVariablesCache = cached_temp_buffer_from_typelist<
-    SchwarzschildVariables<DataType>,
     tmpl::push_front<
         common_tags<DataType>,
         gr::Tags::Conformal<gr::Tags::EnergyDensity<DataType>, 0>,
@@ -310,10 +306,10 @@ class Schwarzschild : public AnalyticSolution<Registrars>,
       const tnsr::I<DataType, 3, Frame::Inertial>& x,
       tmpl::list<RequestedTags...> /*meta*/) const {
     using VarsComputer = detail::SchwarzschildVariables<DataType>;
-    typename VarsComputer::Cache cache{
-        get_size(*x.begin()),
-        VarsComputer{std::nullopt, std::nullopt, x, mass_, coordinate_system_}};
-    return {cache.get_var(RequestedTags{})...};
+    typename VarsComputer::Cache cache{get_size(*x.begin())};
+    const VarsComputer computer{std::nullopt, std::nullopt, x, mass_,
+                                coordinate_system_};
+    return {cache.get_var(computer, RequestedTags{})...};
   }
 
   template <typename... RequestedTags>
@@ -323,10 +319,10 @@ class Schwarzschild : public AnalyticSolution<Registrars>,
                             Frame::Inertial>& inv_jacobian,
       tmpl::list<RequestedTags...> /*meta*/) const {
     using VarsComputer = detail::SchwarzschildVariables<DataVector>;
-    typename VarsComputer::Cache cache{
-        get_size(*x.begin()),
-        VarsComputer{mesh, inv_jacobian, x, mass_, coordinate_system_}};
-    return {cache.get_var(RequestedTags{})...};
+    typename VarsComputer::Cache cache{get_size(*x.begin())};
+    const VarsComputer computer{mesh, inv_jacobian, x, mass_,
+                                coordinate_system_};
+    return {cache.get_var(computer, RequestedTags{})...};
   }
 
   void pup(PUP::er& p) override {
