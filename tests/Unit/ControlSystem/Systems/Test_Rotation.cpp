@@ -39,7 +39,7 @@ template <size_t DerivOrder>
 void test_rotation_control_system(const bool newtonian) {
   // Since we are only doing rotation, turn off the
   // other control systems by passing 0 for their deriv orders
-  using metavars = TestHelpers::MockMetavars<0, DerivOrder, 0>;
+  using metavars = TestHelpers::MockMetavars<0, DerivOrder, 0, 0>;
   using rotation_component = typename metavars::rotation_component;
   using element_component = typename metavars::element_component;
   using rotation_system = typename metavars::rotation_system;

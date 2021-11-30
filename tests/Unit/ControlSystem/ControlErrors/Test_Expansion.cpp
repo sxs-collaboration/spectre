@@ -20,7 +20,7 @@ namespace control_system {
 namespace {
 void test_expansion_control_error() {
   constexpr size_t deriv_order = 2;
-  using metavars = TestHelpers::MockMetavars<0, 0, deriv_order>;
+  using metavars = TestHelpers::MockMetavars<0, 0, deriv_order, 0>;
   using element_component = typename metavars::element_component;
   using expansion_system = typename metavars::expansion_system;
 

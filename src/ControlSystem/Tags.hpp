@@ -16,6 +16,7 @@
 #include "ControlSystem/TimescaleTuner.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
@@ -50,7 +51,7 @@ namespace control_system {
 /// All tags that will be used in the LinkedMessageQueue's within control
 /// systems.
 ///
-/// These tags will be used to retreive the results of the measurements that
+/// These tags will be used to retrieve the results of the measurements that
 /// were sent to the control system which have been placed inside a
 /// LinkedMessageQueue.
 namespace QueueTags {
@@ -59,6 +60,13 @@ namespace QueueTags {
 template <::ah::ObjectLabel Horizon>
 struct Center {
   using type = DataVector;
+};
+
+/// \ingroup ControlSystemGroup
+/// Holds a full strahlkorper from measurements
+template <typename Frame>
+struct Strahlkorper {
+  using type = ::Strahlkorper<Frame>;
 };
 }  // namespace QueueTags
 

@@ -7,5 +7,6 @@ spectre_target_headers(
   HEADERS
   Expansion.hpp
   Rotation.hpp
+  Shape.hpp
   Translation.hpp
   )

@@ -37,7 +37,7 @@ using CoordMap =
 
 template <size_t DerivOrder>
 void test_expansion_control_system() {
-  using metavars = TestHelpers::MockMetavars<0, 0, DerivOrder>;
+  using metavars = TestHelpers::MockMetavars<0, 0, DerivOrder, 0>;
   using expansion_component = typename metavars::expansion_component;
   using element_component = typename metavars::element_component;
   using observer_component = typename metavars::observer_component;

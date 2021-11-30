@@ -45,7 +45,7 @@ template <size_t DerivOrder>
 void test_translation_control_system() {
   // Since we are only doing translation, turn off the
   // other control systems by passing 0 for their deriv orders
-  using metavars = TestHelpers::MockMetavars<DerivOrder, 0, 0>;
+  using metavars = TestHelpers::MockMetavars<DerivOrder, 0, 0, 0>;
   using translation_component = typename metavars::translation_component;
   using element_component = typename metavars::element_component;
   using translation_system = typename metavars::translation_system;

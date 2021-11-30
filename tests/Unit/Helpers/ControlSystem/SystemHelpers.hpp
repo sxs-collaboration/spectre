@@ -20,11 +20,13 @@
 #include "ControlSystem/Component.hpp"
 #include "ControlSystem/ControlErrors/Expansion.hpp"
 #include "ControlSystem/ControlErrors/Rotation.hpp"
+#include "ControlSystem/ControlErrors/Shape.hpp"
 #include "ControlSystem/ControlErrors/Translation.hpp"
 #include "ControlSystem/Controller.hpp"
 #include "ControlSystem/DataVectorHelpers.hpp"
 #include "ControlSystem/Systems/Expansion.hpp"
 #include "ControlSystem/Systems/Rotation.hpp"
+#include "ControlSystem/Systems/Shape.hpp"
 #include "ControlSystem/Systems/Translation.hpp"
 #include "ControlSystem/Tags.hpp"
 #include "ControlSystem/Tags/MeasurementTimescales.hpp"
@@ -52,6 +54,7 @@
 #include "Framework/TestingFramework.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/Tags.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
 #include "Options/ParseOptions.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/CreateFromOptions.hpp"
@@ -194,12 +197,12 @@ struct MockObserverWriter {
 };
 
 template <size_t TranslationDerivOrder, size_t RotationDerivOrder,
-          size_t ExpansionDerivOrder>
+          size_t ExpansionDerivOrder, size_t ShapeDerivOrder>
 struct MockMetavars {
   static constexpr size_t volume_dim = 3;
 
   using metavars = MockMetavars<TranslationDerivOrder, RotationDerivOrder,
-                                ExpansionDerivOrder>;
+                                ExpansionDerivOrder, ShapeDerivOrder>;
 
   using observed_reduction_data_tags = tmpl::list<>;
 
@@ -212,6 +215,7 @@ struct MockMetavars {
   static constexpr bool using_expansion = ExpansionDerivOrder != 0;
   static constexpr bool using_rotation = RotationDerivOrder != 0;
   static constexpr bool using_translation = TranslationDerivOrder != 0;
+  static constexpr bool using_shape = ShapeDerivOrder != 0;
 
   // Even if we aren't using certain control systems, we still need valid deriv
   // orders because everything is constructed by default in the SystemHelper.
@@ -223,6 +227,7 @@ struct MockMetavars {
       using_rotation ? RotationDerivOrder : 2;
   static constexpr size_t trans_deriv_order =
       using_translation ? TranslationDerivOrder : 2;
+  static constexpr size_t shape_deriv_order = using_shape ? ShapeDerivOrder : 2;
 
   using element_component = MockElementComponent<metavars>;
 
@@ -230,17 +235,20 @@ struct MockMetavars {
   using rotation_system = control_system::Systems::Rotation<rot_deriv_order>;
   using translation_system =
       control_system::Systems::Translation<trans_deriv_order>;
+  using shape_system =
+      control_system::Systems::Shape<::ah::ObjectLabel::A, shape_deriv_order>;
 
   using control_systems = tmpl::flatten<tmpl::list<
       tmpl::conditional_t<using_expansion, expansion_system, tmpl::list<>>,
       tmpl::conditional_t<using_rotation, rotation_system, tmpl::list<>>,
-      tmpl::conditional_t<using_translation, translation_system,
-                          tmpl::list<>>>>;
+      tmpl::conditional_t<using_translation, translation_system, tmpl::list<>>,
+      tmpl::conditional_t<using_shape, shape_system, tmpl::list<>>>>;
 
   using expansion_component = MockControlComponent<metavars, expansion_system>;
   using rotation_component = MockControlComponent<metavars, rotation_system>;
   using translation_component =
       MockControlComponent<metavars, translation_system>;
+  using shape_component = MockControlComponent<metavars, shape_system>;
 
   using observer_component = MockObserverWriter<metavars>;
 
@@ -248,7 +256,8 @@ struct MockMetavars {
       tmpl::conditional_t<using_expansion, expansion_component, tmpl::list<>>,
       tmpl::conditional_t<using_rotation, rotation_component, tmpl::list<>>,
       tmpl::conditional_t<using_translation, translation_component,
-                          tmpl::list<>>>>;
+                          tmpl::list<>>,
+      tmpl::conditional_t<using_shape, shape_component, tmpl::list<>>>>;
 
   using component_list = tmpl::flatten<
       tmpl::list<observer_component, element_component, control_components>>;
@@ -686,8 +695,11 @@ struct SystemHelper {
               // system is updated
               LinkedMessageQueue<
                   double,
-                  tmpl::list<QueueTags::Center<::ah::ObjectLabel::A>,
-                             QueueTags::Center<::ah::ObjectLabel::B>>>{}};
+                  tmpl::conditional_t<
+                      std::is_same_v<system, typename Metavars::shape_system>,
+                      tmpl::list<QueueTags::Strahlkorper<::Frame::Grid>>,
+                      tmpl::list<QueueTags::Center<::ah::ObjectLabel::A>,
+                                 QueueTags::Center<::ah::ObjectLabel::B>>>>{}};
     });
   }
 
