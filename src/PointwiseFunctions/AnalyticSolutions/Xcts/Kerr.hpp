@@ -34,22 +34,6 @@ using KerrVariablesCache = cached_temp_buffer_from_typelist<
     KerrVariables<DataType>,
     tmpl::push_back<
         common_tags<DataType>,
-        Tags::ConformalMetric<DataType, 3, Frame::Inertial>,
-        ::Tags::deriv<Tags::ConformalMetric<DataType, 3, Frame::Inertial>,
-                      tmpl::size_t<3>, Frame::Inertial>,
-        gr::Tags::TraceExtrinsicCurvature<DataType>,
-        ::Tags::dt<gr::Tags::TraceExtrinsicCurvature<DataType>>,
-        Tags::ConformalFactor<DataType>,
-        ::Tags::deriv<Tags::ConformalFactor<DataType>, tmpl::size_t<3>,
-                      Frame::Inertial>,
-        gr::Tags::Lapse<DataType>, Tags::LapseTimesConformalFactor<DataType>,
-        ::Tags::deriv<Tags::LapseTimesConformalFactor<DataType>,
-                      tmpl::size_t<3>, Frame::Inertial>,
-        Tags::ShiftBackground<DataType, 3, Frame::Inertial>,
-        Tags::LongitudinalShiftBackgroundMinusDtConformalMetric<
-            DataType, 3, Frame::Inertial>,
-        Tags::ShiftExcess<DataType, 3, Frame::Inertial>,
-        Tags::ShiftStrain<DataType, 3, Frame::Inertial>,
         gr::Tags::Conformal<gr::Tags::EnergyDensity<DataType>, 0>,
         gr::Tags::Conformal<gr::Tags::StressTrace<DataType>, 0>,
         gr::Tags::Conformal<
@@ -59,7 +43,19 @@ template <typename DataType>
 struct KerrVariables : CommonVariables<DataType, KerrVariablesCache<DataType>> {
   static constexpr size_t Dim = 3;
   using Cache = KerrVariablesCache<DataType>;
-  using CommonVariables<DataType, KerrVariablesCache<DataType>>::operator();
+  using Base = CommonVariables<DataType, KerrVariablesCache<DataType>>;
+  using Base::operator();
+
+  KerrVariables(
+      std::optional<std::reference_wrapper<const Mesh<Dim>>> local_mesh,
+      std::optional<std::reference_wrapper<const InverseJacobian<
+          DataType, Dim, Frame::ElementLogical, Frame::Inertial>>>
+          local_inv_jacobian,
+      const tnsr::I<DataType, 3>& local_x,
+      gr::Solutions::KerrSchild::IntermediateVars<DataType> local_kerr_schild)
+      : Base(std::move(local_mesh), std::move(local_inv_jacobian)),
+        x(local_x),
+        kerr_schild(std::move(local_kerr_schild)) {}
 
   const tnsr::I<DataType, Dim>& x;
   mutable gr::Solutions::KerrSchild::IntermediateVars<DataType> kerr_schild;
@@ -67,60 +63,67 @@ struct KerrVariables : CommonVariables<DataType, KerrVariablesCache<DataType>> {
   void operator()(
       gsl::not_null<tnsr::ii<DataType, Dim>*> conformal_metric,
       gsl::not_null<Cache*> cache,
-      Tags::ConformalMetric<DataType, Dim, Frame::Inertial> /*meta*/) const;
-  void operator()(gsl::not_null<tnsr::II<DataType, Dim>*> inv_conformal_metric,
-                  gsl::not_null<Cache*> cache,
-                  Tags::InverseConformalMetric<DataType, Dim,
-                                               Frame::Inertial> /*meta*/) const;
+      Tags::ConformalMetric<DataType, Dim, Frame::Inertial> /*meta*/)
+      const override;
+  void operator()(
+      gsl::not_null<tnsr::II<DataType, Dim>*> inv_conformal_metric,
+      gsl::not_null<Cache*> cache,
+      Tags::InverseConformalMetric<DataType, Dim, Frame::Inertial> /*meta*/)
+      const override;
   void operator()(
       gsl::not_null<tnsr::ijj<DataType, Dim>*> deriv_conformal_metric,
       gsl::not_null<Cache*> cache,
       ::Tags::deriv<Tags::ConformalMetric<DataType, Dim, Frame::Inertial>,
-                    tmpl::size_t<Dim>, Frame::Inertial> /*meta*/) const;
-  void operator()(gsl::not_null<Scalar<DataType>*> trace_extrinsic_curvature,
-                  gsl::not_null<Cache*> cache,
-                  gr::Tags::TraceExtrinsicCurvature<DataType> /*meta*/) const;
+                    tmpl::size_t<Dim>, Frame::Inertial> /*meta*/)
+      const override;
+  void operator()(
+      gsl::not_null<Scalar<DataType>*> trace_extrinsic_curvature,
+      gsl::not_null<Cache*> cache,
+      gr::Tags::TraceExtrinsicCurvature<DataType> /*meta*/) const override;
   void operator()(
       gsl::not_null<Scalar<DataType>*> dt_trace_extrinsic_curvature,
       gsl::not_null<Cache*> cache,
-      ::Tags::dt<gr::Tags::TraceExtrinsicCurvature<DataType>> /*meta*/) const;
+      ::Tags::dt<gr::Tags::TraceExtrinsicCurvature<DataType>> /*meta*/)
+      const override;
   void operator()(gsl::not_null<Scalar<DataType>*> conformal_factor,
                   gsl::not_null<Cache*> cache,
-                  Tags::ConformalFactor<DataType> /*meta*/) const;
+                  Tags::ConformalFactor<DataType> /*meta*/) const override;
   void operator()(
       gsl::not_null<tnsr::i<DataType, Dim>*> conformal_factor_gradient,
       gsl::not_null<Cache*> cache,
       ::Tags::deriv<Xcts::Tags::ConformalFactor<DataType>, tmpl::size_t<Dim>,
-                    Frame::Inertial> /*meta*/) const;
+                    Frame::Inertial> /*meta*/) const override;
   void operator()(gsl::not_null<Scalar<DataType>*> lapse,
                   gsl::not_null<Cache*> cache,
-                  gr::Tags::Lapse<DataType> /*meta*/) const;
-  void operator()(gsl::not_null<Scalar<DataType>*> lapse_times_conformal_factor,
-                  gsl::not_null<Cache*> cache,
-                  Tags::LapseTimesConformalFactor<DataType> /*meta*/) const;
+                  gr::Tags::Lapse<DataType> /*meta*/) const override;
   void operator()(
-      gsl::not_null<tnsr::i<DataType, Dim>*>
-          lapse_times_conformal_factor_gradient,
+      gsl::not_null<Scalar<DataType>*> lapse_times_conformal_factor,
       gsl::not_null<Cache*> cache,
-      ::Tags::deriv<Tags::LapseTimesConformalFactor<DataType>,
-                    tmpl::size_t<Dim>, Frame::Inertial> /*meta*/) const;
+      Tags::LapseTimesConformalFactor<DataType> /*meta*/) const override;
+  void operator()(gsl::not_null<tnsr::i<DataType, Dim>*>
+                      lapse_times_conformal_factor_gradient,
+                  gsl::not_null<Cache*> cache,
+                  ::Tags::deriv<Tags::LapseTimesConformalFactor<DataType>,
+                                tmpl::size_t<Dim>, Frame::Inertial> /*meta*/)
+      const override;
   void operator()(
       gsl::not_null<tnsr::I<DataType, Dim>*> shift_background,
       gsl::not_null<Cache*> cache,
-      Tags::ShiftBackground<DataType, Dim, Frame::Inertial> /*meta*/) const;
+      Tags::ShiftBackground<DataType, Dim, Frame::Inertial> /*meta*/)
+      const override;
   void operator()(gsl::not_null<tnsr::II<DataType, Dim, Frame::Inertial>*>
                       longitudinal_shift_background_minus_dt_conformal_metric,
                   gsl::not_null<Cache*> cache,
                   Tags::LongitudinalShiftBackgroundMinusDtConformalMetric<
-                      DataType, Dim, Frame::Inertial> /*meta*/) const;
-  void operator()(
-      gsl::not_null<tnsr::I<DataType, Dim>*> shift_excess,
-      gsl::not_null<Cache*> cache,
-      Tags::ShiftExcess<DataType, Dim, Frame::Inertial> /*meta*/) const;
-  void operator()(
-      gsl::not_null<tnsr::ii<DataType, Dim>*> shift_strain,
-      gsl::not_null<Cache*> cache,
-      Tags::ShiftStrain<DataType, Dim, Frame::Inertial> /*meta*/) const;
+                      DataType, Dim, Frame::Inertial> /*meta*/) const override;
+  void operator()(gsl::not_null<tnsr::I<DataType, Dim>*> shift_excess,
+                  gsl::not_null<Cache*> cache,
+                  Tags::ShiftExcess<DataType, Dim, Frame::Inertial> /*meta*/)
+      const override;
+  void operator()(gsl::not_null<tnsr::ii<DataType, Dim>*> shift_strain,
+                  gsl::not_null<Cache*> cache,
+                  Tags::ShiftStrain<DataType, Dim, Frame::Inertial> /*meta*/)
+      const override;
   void operator()(
       gsl::not_null<Scalar<DataType>*> energy_density,
       gsl::not_null<Cache*> cache,
@@ -191,8 +194,7 @@ class Kerr : public AnalyticSolution<Registrars>,
     typename VarsComputer::Cache cache{
         get_size(*x.begin()),
         VarsComputer{
-            {{std::nullopt, std::nullopt}},
-            x,
+            std::nullopt, std::nullopt, x,
             gr::Solutions::KerrSchild::IntermediateVars<DataType>{*this, x}}};
     return {cache.get_var(RequestedTags{})...};
   }
@@ -207,8 +209,7 @@ class Kerr : public AnalyticSolution<Registrars>,
     typename VarsComputer::Cache cache{
         get_size(*x.begin()),
         VarsComputer{
-            {{mesh, inv_jacobian}},
-            x,
+            mesh, inv_jacobian, x,
             gr::Solutions::KerrSchild::IntermediateVars<DataType>{*this, x}}};
     return {cache.get_var(RequestedTags{})...};
   }

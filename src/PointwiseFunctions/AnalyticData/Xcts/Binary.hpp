@@ -46,16 +46,8 @@ using BinaryVariablesCache = cached_temp_buffer_from_typelist<
     BinaryVariables<DataType>,
     tmpl::push_front<
         common_tags<DataType>,
-        Tags::ConformalMetric<DataType, 3, Frame::Inertial>,
-        ::Tags::deriv<Tags::ConformalMetric<DataType, 3, Frame::Inertial>,
-                      tmpl::size_t<3>, Frame::Inertial>,
-        gr::Tags::TraceExtrinsicCurvature<DataType>,
-        ::Tags::dt<gr::Tags::TraceExtrinsicCurvature<DataType>>,
-        Tags::ShiftBackground<DataType, 3, Frame::Inertial>,
         ::Tags::deriv<Tags::ShiftBackground<DataType, 3, Frame::Inertial>,
                       tmpl::size_t<3>, Frame::Inertial>,
-        Tags::LongitudinalShiftBackgroundMinusDtConformalMetric<
-            DataType, 3, Frame::Inertial>,
         gr::Tags::Conformal<gr::Tags::EnergyDensity<DataType>, 0>,
         gr::Tags::Conformal<gr::Tags::StressTrace<DataType>, 0>,
         gr::Tags::Conformal<
@@ -70,7 +62,8 @@ struct BinaryVariables
     : CommonVariables<DataType, BinaryVariablesCache<DataType>> {
   static constexpr size_t Dim = 3;
   using Cache = BinaryVariablesCache<DataType>;
-  using CommonVariables<DataType, BinaryVariablesCache<DataType>>::operator();
+  using Base = CommonVariables<DataType, BinaryVariablesCache<DataType>>;
+  using Base::operator();
 
   using superposed_tags = tmpl::list<
       Tags::ConformalMetric<DataType, Dim, Frame::Inertial>,
@@ -86,6 +79,29 @@ struct BinaryVariables
       Tags::LapseTimesConformalFactor<DataType>,
       Tags::ShiftExcess<DataType, Dim, Frame::Inertial>>;
 
+  BinaryVariables(
+      std::optional<std::reference_wrapper<const Mesh<Dim>>> local_mesh,
+      std::optional<std::reference_wrapper<const InverseJacobian<
+          DataType, Dim, Frame::ElementLogical, Frame::Inertial>>>
+          local_inv_jacobian,
+      const tnsr::I<DataVector, Dim>& local_x,
+      const double local_angular_velocity, const double local_expansion,
+      std::optional<std::array<double, 2>> local_falloff_widths,
+      std::array<tnsr::I<DataVector, Dim>, 2> local_x_isolated,
+      std::array<DataVector, 2> local_windows,
+      tuples::tagged_tuple_from_typelist<superposed_tags> local_flat_vars,
+      std::array<tuples::tagged_tuple_from_typelist<superposed_tags>, 2>
+          local_isolated_vars)
+      : Base(std::move(local_mesh), std::move(local_inv_jacobian)),
+        x(local_x),
+        angular_velocity(local_angular_velocity),
+        expansion(local_expansion),
+        falloff_widths(std::move(local_falloff_widths)),
+        x_isolated(std::move(local_x_isolated)),
+        windows(std::move(local_windows)),
+        flat_vars(std::move(local_flat_vars)),
+        isolated_vars(std::move(local_isolated_vars)) {}
+
   const tnsr::I<DataVector, Dim>& x;
   const double angular_velocity;
   const double expansion;
@@ -98,8 +114,8 @@ struct BinaryVariables
 
   template <typename Tag,
             Requires<tmpl::list_contains_v<superposed_tags, Tag>> = nullptr>
-  void operator()(gsl::not_null<typename Tag::type*> superposed_var,
-                  gsl::not_null<Cache*> /*cache*/, Tag /*meta*/) const {
+  void superposition(gsl::not_null<typename Tag::type*> superposed_var,
+                     gsl::not_null<Cache*> /*cache*/, Tag /*meta*/) const {
     for (size_t i = 0; i < superposed_var->size(); ++i) {
       (*superposed_var)[i] =
           get<Tag>(flat_vars)[i] +
@@ -107,17 +123,42 @@ struct BinaryVariables
               (get<Tag>(isolated_vars[0])[i] - get<Tag>(flat_vars)[i]) +
           windows[1] * (get<Tag>(isolated_vars[1])[i] - get<Tag>(flat_vars)[i]);
     }
-    if constexpr (std::is_same_v<
-                      Tag, ::Tags::deriv<Tags::ConformalMetric<DataType, 3,
-                                                               Frame::Inertial>,
-                                         tmpl::size_t<3>, Frame::Inertial>>) {
-      add_deriv_of_window_function(superposed_var);
-    }
+  }
+
+  void operator()(
+      const gsl::not_null<tnsr::ii<DataType, Dim>*> conformal_metric,
+      const gsl::not_null<Cache*> cache,
+      Tags::ConformalMetric<DataType, Dim, Frame::Inertial> meta)
+      const override {
+    superposition(conformal_metric, cache, meta);
+  }
+  void operator()(
+      const gsl::not_null<tnsr::ijj<DataType, Dim>*> deriv_conformal_metric,
+      const gsl::not_null<Cache*> cache,
+      ::Tags::deriv<Tags::ConformalMetric<DataType, Dim, Frame::Inertial>,
+                    tmpl::size_t<Dim>, Frame::Inertial>
+          meta) const override {
+    superposition(deriv_conformal_metric, cache, meta);
+    add_deriv_of_window_function(deriv_conformal_metric);
+  }
+  void operator()(
+      const gsl::not_null<Scalar<DataType>*> extrinsic_curvature_trace,
+      const gsl::not_null<Cache*> cache,
+      gr::Tags::TraceExtrinsicCurvature<DataType> meta) const override {
+    superposition(extrinsic_curvature_trace, cache, meta);
+  }
+  void operator()(
+      const gsl::not_null<Scalar<DataType>*> dt_extrinsic_curvature_trace,
+      const gsl::not_null<Cache*> cache,
+      ::Tags::dt<gr::Tags::TraceExtrinsicCurvature<DataType>> meta)
+      const override {
+    superposition(dt_extrinsic_curvature_trace, cache, meta);
   }
   void operator()(
       gsl::not_null<tnsr::I<DataType, Dim>*> shift_background,
       gsl::not_null<Cache*> cache,
-      Tags::ShiftBackground<DataType, Dim, Frame::Inertial> /*meta*/) const;
+      Tags::ShiftBackground<DataType, Dim, Frame::Inertial> /*meta*/)
+      const override;
   void operator()(
       gsl::not_null<tnsr::iJ<DataType, Dim>*> deriv_shift_background,
       gsl::not_null<Cache*> cache,
@@ -127,7 +168,44 @@ struct BinaryVariables
                       longitudinal_shift_background_minus_dt_conformal_metric,
                   gsl::not_null<Cache*> cache,
                   Tags::LongitudinalShiftBackgroundMinusDtConformalMetric<
-                      DataType, Dim, Frame::Inertial> /*meta*/) const;
+                      DataType, Dim, Frame::Inertial> /*meta*/) const override;
+  void operator()(
+      const gsl::not_null<Scalar<DataType>*> conformal_energy_density,
+      const gsl::not_null<Cache*> cache,
+      gr::Tags::Conformal<gr::Tags::EnergyDensity<DataType>, 0> meta) const {
+    superposition(conformal_energy_density, cache, meta);
+  }
+  void operator()(
+      const gsl::not_null<Scalar<DataType>*> conformal_stress_trace,
+      const gsl::not_null<Cache*> cache,
+      gr::Tags::Conformal<gr::Tags::StressTrace<DataType>, 0> meta) const {
+    superposition(conformal_stress_trace, cache, meta);
+  }
+  void operator()(
+      const gsl::not_null<tnsr::I<DataType, Dim>*> conformal_momentum_density,
+      const gsl::not_null<Cache*> cache,
+      gr::Tags::Conformal<
+          gr::Tags::MomentumDensity<Dim, Frame::Inertial, DataType>, 0>
+          meta) const {
+    superposition(conformal_momentum_density, cache, meta);
+  }
+  void operator()(const gsl::not_null<Scalar<DataType>*> conformal_factor,
+                  const gsl::not_null<Cache*> cache,
+                  Tags::ConformalFactor<DataType> meta) const {
+    superposition(conformal_factor, cache, meta);
+  }
+  void operator()(
+      const gsl::not_null<Scalar<DataType>*> lapse_times_conformal_factor,
+      const gsl::not_null<Cache*> cache,
+      Tags::LapseTimesConformalFactor<DataType> meta) const {
+    superposition(lapse_times_conformal_factor, cache, meta);
+  }
+  void operator()(
+      const gsl::not_null<tnsr::I<DataType, Dim>*> shift_excess,
+      const gsl::not_null<Cache*> cache,
+      Tags::ShiftExcess<DataType, Dim, Frame::Inertial> meta) const {
+    superposition(shift_excess, cache, meta);
+  }
 
  private:
   void add_deriv_of_window_function(
@@ -343,15 +421,10 @@ class Binary : public ::AnalyticData<3, Registrars> {
     auto flat_vars = flatness_.variables(x, requested_superposed_tags{});
     typename VarsComputer::Cache cache{
         get_size(*x.begin()),
-        VarsComputer{{std::move(mesh), std::move(inv_jacobian)},
-                     x,
-                     angular_velocity_,
-                     expansion_,
-                     falloff_widths_,
-                     std::move(x_isolated),
-                     std::move(windows),
-                     std::move(flat_vars),
-                     std::move(isolated_vars)}};
+        VarsComputer{std::move(mesh), std::move(inv_jacobian), x,
+                     angular_velocity_, expansion_, falloff_widths_,
+                     std::move(x_isolated), std::move(windows),
+                     std::move(flat_vars), std::move(isolated_vars)}};
     return {cache.get_var(RequestedTags{})...};
   }
 };

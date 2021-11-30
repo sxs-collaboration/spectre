@@ -147,22 +147,6 @@ using SchwarzschildVariablesCache = cached_temp_buffer_from_typelist<
     SchwarzschildVariables<DataType>,
     tmpl::push_front<
         common_tags<DataType>,
-        Tags::ConformalMetric<DataType, 3, Frame::Inertial>,
-        ::Tags::deriv<Tags::ConformalMetric<DataType, 3, Frame::Inertial>,
-                      tmpl::size_t<3>, Frame::Inertial>,
-        gr::Tags::TraceExtrinsicCurvature<DataType>,
-        ::Tags::dt<gr::Tags::TraceExtrinsicCurvature<DataType>>,
-        Tags::ConformalFactor<DataType>,
-        ::Tags::deriv<Tags::ConformalFactor<DataType>, tmpl::size_t<3>,
-                      Frame::Inertial>,
-        gr::Tags::Lapse<DataType>, Tags::LapseTimesConformalFactor<DataType>,
-        ::Tags::deriv<Tags::LapseTimesConformalFactor<DataType>,
-                      tmpl::size_t<3>, Frame::Inertial>,
-        Tags::ShiftBackground<DataType, 3, Frame::Inertial>,
-        Tags::LongitudinalShiftBackgroundMinusDtConformalMetric<
-            DataType, 3, Frame::Inertial>,
-        Tags::ShiftExcess<DataType, 3, Frame::Inertial>,
-        Tags::ShiftStrain<DataType, 3, Frame::Inertial>,
         gr::Tags::Conformal<gr::Tags::EnergyDensity<DataType>, 0>,
         gr::Tags::Conformal<gr::Tags::StressTrace<DataType>, 0>,
         gr::Tags::Conformal<
@@ -174,75 +158,91 @@ struct SchwarzschildVariables
   static constexpr size_t Dim = 3;
   static constexpr int ConformalMatterScale = 0;
   using Cache = SchwarzschildVariablesCache<DataType>;
-  using CommonVariables<DataType,
-                        SchwarzschildVariablesCache<DataType>>::operator();
+  using Base = CommonVariables<DataType, SchwarzschildVariablesCache<DataType>>;
+  using Base::operator();
+
+  SchwarzschildVariables(
+      std::optional<std::reference_wrapper<const Mesh<Dim>>> local_mesh,
+      std::optional<std::reference_wrapper<const InverseJacobian<
+          DataType, Dim, Frame::ElementLogical, Frame::Inertial>>>
+          local_inv_jacobian,
+      const tnsr::I<DataType, 3>& local_x, const double local_mass,
+      const SchwarzschildCoordinates local_coordinate_system)
+      : Base(std::move(local_mesh), std::move(local_inv_jacobian)),
+        x(local_x),
+        mass(local_mass),
+        coordinate_system(local_coordinate_system) {}
 
   const tnsr::I<DataType, 3>& x;
   double mass;
   SchwarzschildCoordinates coordinate_system;
 
-  void operator()(
-      gsl::not_null<tnsr::ii<DataType, 3>*> conformal_metric,
-      gsl::not_null<Cache*> cache,
-      Tags::ConformalMetric<DataType, 3, Frame::Inertial> /*meta*/) const;
-  void operator()(gsl::not_null<tnsr::II<DataType, 3>*> inv_conformal_metric,
+  void operator()(gsl::not_null<tnsr::ii<DataType, 3>*> conformal_metric,
                   gsl::not_null<Cache*> cache,
-                  Tags::InverseConformalMetric<DataType, 3,
-                                               Frame::Inertial> /*meta*/) const;
+                  Tags::ConformalMetric<DataType, 3, Frame::Inertial> /*meta*/)
+      const override;
+  void operator()(
+      gsl::not_null<tnsr::II<DataType, 3>*> inv_conformal_metric,
+      gsl::not_null<Cache*> cache,
+      Tags::InverseConformalMetric<DataType, 3, Frame::Inertial> /*meta*/)
+      const override;
   void operator()(
       gsl::not_null<tnsr::ijj<DataType, 3>*> deriv_conformal_metric,
       gsl::not_null<Cache*> cache,
       ::Tags::deriv<Tags::ConformalMetric<DataType, 3, Frame::Inertial>,
-                    tmpl::size_t<3>, Frame::Inertial> /*meta*/) const;
-  void operator()(gsl::not_null<Scalar<DataType>*> trace_extrinsic_curvature,
-                  gsl::not_null<Cache*> cache,
-                  gr::Tags::TraceExtrinsicCurvature<DataType> /*meta*/) const;
+                    tmpl::size_t<3>, Frame::Inertial> /*meta*/) const override;
+  void operator()(
+      gsl::not_null<Scalar<DataType>*> trace_extrinsic_curvature,
+      gsl::not_null<Cache*> cache,
+      gr::Tags::TraceExtrinsicCurvature<DataType> /*meta*/) const override;
   void operator()(
       gsl::not_null<tnsr::i<DataType, 3>*> trace_extrinsic_curvature_gradient,
       gsl::not_null<Cache*> cache,
       ::Tags::deriv<gr::Tags::TraceExtrinsicCurvature<DataType>,
-                    tmpl::size_t<3>, Frame::Inertial> /*meta*/) const;
+                    tmpl::size_t<3>, Frame::Inertial> /*meta*/) const override;
   void operator()(
       gsl::not_null<Scalar<DataType>*> dt_trace_extrinsic_curvature,
       gsl::not_null<Cache*> cache,
-      ::Tags::dt<gr::Tags::TraceExtrinsicCurvature<DataType>> /*meta*/) const;
+      ::Tags::dt<gr::Tags::TraceExtrinsicCurvature<DataType>> /*meta*/)
+      const override;
   void operator()(gsl::not_null<Scalar<DataType>*> conformal_factor,
                   gsl::not_null<Cache*> cache,
-                  Tags::ConformalFactor<DataType> /*meta*/) const;
+                  Tags::ConformalFactor<DataType> /*meta*/) const override;
   void operator()(
       gsl::not_null<tnsr::i<DataType, 3>*> conformal_factor_gradient,
       gsl::not_null<Cache*> cache,
       ::Tags::deriv<Xcts::Tags::ConformalFactor<DataType>, tmpl::size_t<3>,
-                    Frame::Inertial> /*meta*/) const;
+                    Frame::Inertial> /*meta*/) const override;
   void operator()(gsl::not_null<Scalar<DataType>*> lapse,
                   gsl::not_null<Cache*> cache,
-                  gr::Tags::Lapse<DataType> /*meta*/) const;
-  void operator()(gsl::not_null<Scalar<DataType>*> lapse_times_conformal_factor,
-                  gsl::not_null<Cache*> cache,
-                  Tags::LapseTimesConformalFactor<DataType> /*meta*/) const;
+                  gr::Tags::Lapse<DataType> /*meta*/) const override;
+  void operator()(
+      gsl::not_null<Scalar<DataType>*> lapse_times_conformal_factor,
+      gsl::not_null<Cache*> cache,
+      Tags::LapseTimesConformalFactor<DataType> /*meta*/) const override;
   void operator()(
       gsl::not_null<tnsr::i<DataType, 3>*>
           lapse_times_conformal_factor_gradient,
       gsl::not_null<Cache*> cache,
       ::Tags::deriv<Tags::LapseTimesConformalFactor<DataType>, tmpl::size_t<3>,
-                    Frame::Inertial> /*meta*/) const;
-  void operator()(
-      gsl::not_null<tnsr::I<DataType, 3>*> shift_background,
-      gsl::not_null<Cache*> cache,
-      Tags::ShiftBackground<DataType, 3, Frame::Inertial> /*meta*/) const;
+                    Frame::Inertial> /*meta*/) const override;
+  void operator()(gsl::not_null<tnsr::I<DataType, 3>*> shift_background,
+                  gsl::not_null<Cache*> cache,
+                  Tags::ShiftBackground<DataType, 3, Frame::Inertial> /*meta*/)
+      const override;
   void operator()(gsl::not_null<tnsr::II<DataType, 3, Frame::Inertial>*>
                       longitudinal_shift_background_minus_dt_conformal_metric,
                   gsl::not_null<Cache*> cache,
                   Tags::LongitudinalShiftBackgroundMinusDtConformalMetric<
-                      DataType, 3, Frame::Inertial> /*meta*/) const;
+                      DataType, 3, Frame::Inertial> /*meta*/) const override;
   void operator()(
       gsl::not_null<tnsr::I<DataType, 3>*> shift_excess,
       gsl::not_null<Cache*> cache,
-      Tags::ShiftExcess<DataType, 3, Frame::Inertial> /*meta*/) const;
+      Tags::ShiftExcess<DataType, 3, Frame::Inertial> /*meta*/) const override;
   void operator()(
       gsl::not_null<tnsr::ii<DataType, 3>*> shift_strain,
       gsl::not_null<Cache*> cache,
-      Tags::ShiftStrain<DataType, 3, Frame::Inertial> /*meta*/) const;
+      Tags::ShiftStrain<DataType, 3, Frame::Inertial> /*meta*/) const override;
   void operator()(gsl::not_null<Scalar<DataType>*> energy_density,
                   gsl::not_null<Cache*> cache,
                   gr::Tags::Conformal<gr::Tags::EnergyDensity<DataType>,
@@ -312,8 +312,7 @@ class Schwarzschild : public AnalyticSolution<Registrars>,
     using VarsComputer = detail::SchwarzschildVariables<DataType>;
     typename VarsComputer::Cache cache{
         get_size(*x.begin()),
-        VarsComputer{
-            {{std::nullopt, std::nullopt}}, x, mass_, coordinate_system_}};
+        VarsComputer{std::nullopt, std::nullopt, x, mass_, coordinate_system_}};
     return {cache.get_var(RequestedTags{})...};
   }
 
@@ -326,7 +325,7 @@ class Schwarzschild : public AnalyticSolution<Registrars>,
     using VarsComputer = detail::SchwarzschildVariables<DataVector>;
     typename VarsComputer::Cache cache{
         get_size(*x.begin()),
-        VarsComputer{{{mesh, inv_jacobian}}, x, mass_, coordinate_system_}};
+        VarsComputer{mesh, inv_jacobian, x, mass_, coordinate_system_}};
     return {cache.get_var(RequestedTags{})...};
   }
 
