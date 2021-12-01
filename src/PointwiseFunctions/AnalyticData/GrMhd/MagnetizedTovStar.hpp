@@ -26,6 +26,46 @@ class er;  // IWYU pragma: keep
 /// \endcond
 
 namespace grmhd::AnalyticData {
+namespace magnetized_tov_detail {
+
+using StarRegion = RelativisticEuler::Solutions::tov_detail::StarRegion;
+
+template <typename DataType, StarRegion Region>
+struct MagnetizedTovVariables
+    : RelativisticEuler::Solutions::tov_detail::TovVariables<DataType, Region> {
+  static constexpr size_t Dim = 3;
+  using Base =
+      RelativisticEuler::Solutions::tov_detail::TovVariables<DataType, Region>;
+  using Cache = typename Base::Cache;
+  using Base::operator();
+  using Base::coords;
+  using Base::eos;
+  using Base::radial_solution;
+  using Base::radius;
+
+  size_t pressure_exponent;
+  double cutoff_pressure;
+  double vector_potential_amplitude;
+
+  MagnetizedTovVariables(
+      const tnsr::I<DataType, 3>& local_x, const DataType& local_radius,
+      const gr::Solutions::TovSolution& local_radial_solution,
+      const EquationsOfState::PolytropicFluid<true>& local_eos,
+      size_t local_pressure_exponent, double local_cutoff_pressure,
+      double local_vector_potential_amplitude)
+      : Base(local_x, local_radius, local_radial_solution, local_eos),
+        pressure_exponent(local_pressure_exponent),
+        cutoff_pressure(local_cutoff_pressure),
+        vector_potential_amplitude(local_vector_potential_amplitude) {}
+
+  void operator()(
+      gsl::not_null<tnsr::I<DataType, 3>*> magnetic_field,
+      gsl::not_null<Cache*> cache,
+      hydro::Tags::MagneticField<DataType, 3> /*meta*/) const override;
+};
+
+}  // namespace magnetized_tov_detail
+
 /*!
  * \brief Magnetized TOV star initial data, where metric terms only account for
  * the hydrodynamics not the magnetic fields.
@@ -150,11 +190,9 @@ namespace grmhd::AnalyticData {
  */
 class MagnetizedTovStar : public virtual evolution::initial_data::InitialData,
                           public MarkAsAnalyticData,
-                          private RelativisticEuler::Solutions::TovStar<
-                              gr::Solutions::TovSolution> {
+                          private RelativisticEuler::Solutions::TovStar {
  private:
-  using tov_star =
-      RelativisticEuler::Solutions::TovStar<gr::Solutions::TovSolution>;
+  using tov_star = RelativisticEuler::Solutions::TovStar;
 
  public:
   struct PressureExponent {
@@ -210,18 +248,16 @@ class MagnetizedTovStar : public virtual evolution::initial_data::InitialData,
   WRAPPED_PUPable_decl_template(MagnetizedTovStar);
   /// \endcond
 
-  // Overload the variables function from the base class.
   using tov_star::equation_of_state;
   using tov_star::equation_of_state_type;
-  using tov_star::variables;
 
   /// Retrieve a collection of variables at `(x)`
   template <typename DataType, typename... Tags>
   tuples::TaggedTuple<Tags...> variables(const tnsr::I<DataType, 3>& x,
                                          tmpl::list<Tags...> /*meta*/) const {
-    auto radial_vars =
-        radial_tov_solution().radial_variables(equation_of_state(), x);
-    return {get<Tags>(variables(x, tmpl::list<Tags>{}, radial_vars))...};
+    return variables_impl<magnetized_tov_detail::MagnetizedTovVariables>(
+        x, tmpl::list<Tags...>{}, pressure_exponent_, cutoff_pressure_,
+        vector_potential_amplitude_);
   }
 
   void pup(PUP::er& p);  //  NOLINT
@@ -231,13 +267,6 @@ class MagnetizedTovStar : public virtual evolution::initial_data::InitialData,
                          const MagnetizedTovStar& rhs);
 
  protected:
-  template <typename DataType>
-  tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>>
-  variables(const tnsr::I<DataType, 3>& coords,
-            tmpl::list<hydro::Tags::MagneticField<DataType, 3,
-                                                  Frame::Inertial>> /*meta*/,
-            const RadialVariables<DataType>& radial_vars) const;
-
   size_t pressure_exponent_ = std::numeric_limits<size_t>::max();
   double cutoff_pressure_ = std::numeric_limits<double>::signaling_NaN();
   double vector_potential_amplitude_ =

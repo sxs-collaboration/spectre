@@ -5,9 +5,7 @@
 
 #include <limits>
 
-#include "DataStructures/Tensor/Tensor.hpp"
 #include "NumericalAlgorithms/Interpolation/BarycentricRational.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/TovStar.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"  // IWYU pragma: keep
 
 /// \cond
@@ -47,8 +45,8 @@ class TovSolution {
       double absolute_tolerance = 1.0e-14, double relative_tolerance = 1.0e-14);
 
   TovSolution() = default;
-  TovSolution(const TovSolution& /*rhs*/) = delete;
-  TovSolution& operator=(const TovSolution& /*rhs*/) = delete;
+  TovSolution(const TovSolution& /*rhs*/) = default;
+  TovSolution& operator=(const TovSolution& /*rhs*/) = default;
   TovSolution(TovSolution&& /*rhs*/) = default;
   TovSolution& operator=(TovSolution&& /*rhs*/) = default;
   ~TovSolution() = default;
@@ -75,19 +73,6 @@ class TovSolution {
   /// \note `r` should be non-negative and not greater than `outer_radius()`
   template <typename DataType>
   DataType log_specific_enthalpy(const DataType& r) const;
-
-  /// \brief The radial variables from which the hydrodynamic quantities and
-  /// spacetime metric can be computed.
-  ///
-  /// For radii greater than the `outer_radius()`, this returns the appropriate
-  /// vacuum spacetime.
-  ///
-  /// \note This solution of the TOV equations is a function of areal radius.
-  template <typename DataType>
-  RelativisticEuler::Solutions::TovStar<TovSolution>::RadialVariables<DataType>
-  radial_variables(
-      const EquationsOfState::EquationOfState<true, 1>& equation_of_state,
-      const tnsr::I<DataType, 3>& x) const;
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p);

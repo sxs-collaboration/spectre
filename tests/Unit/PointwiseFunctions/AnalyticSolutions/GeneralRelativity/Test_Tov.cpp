@@ -108,25 +108,47 @@ void test_tov(
         custom_approx(interpolated_log_enthalpy_ds));
 }
 
-void test_tov_dp_dr(
-    const std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>&
-        equation_of_state) {
-  const gr::Solutions::TovSolution radial_tov_solution(*equation_of_state,
-                                                       1.0e-3);
-  const size_t num_radial_pts = 500;
-  auto coords = make_with_value<tnsr::I<DataVector, 3>>(num_radial_pts, 0.0);
-  const double dx = radial_tov_solution.outer_radius() * 1.1 / num_radial_pts;
-  for (size_t i = 0; i < get<0>(coords).size(); ++i) {
-    get<0>(coords)[i] = i * dx;
-  }
-  const auto vars =
-      radial_tov_solution.radial_variables(*equation_of_state, coords);
-  const auto& pressure = vars.pressure;
-  const auto& density = vars.rest_mass_density;
-  const auto& specific_internal_energy = vars.specific_internal_energy;
-  const auto& dp_dr = vars.dr_pressure;
+void test_tov_dp_dr(const EquationsOfState::EquationOfState<true, 1>& eos) {
+  const double central_rest_mass_density = 1.0e-3;
+  const gr::Solutions::TovSolution radial_tov_solution{
+      eos, central_rest_mass_density};
 
-  const auto& radii = vars.radial_coordinate;
+  // Evaluate the radial solution at equally spaced points
+  const size_t num_radial_pts = 500;
+  const double dx = radial_tov_solution.outer_radius() / num_radial_pts;
+  DataVector radii{num_radial_pts};
+  Scalar<DataVector> density{num_radial_pts};
+  Scalar<DataVector> pressure{num_radial_pts};
+  DataVector dp_dr{num_radial_pts};
+  for (size_t i = 0; i < num_radial_pts; ++i) {
+    const double radius = i * dx;
+    radii[i] = radius;
+    const double mass_over_radius =
+        radial_tov_solution.mass_over_radius(radius);
+    const double specific_enthalpy =
+        exp(radial_tov_solution.log_specific_enthalpy(radius));
+    const Scalar<double> density_i =
+        eos.rest_mass_density_from_enthalpy(Scalar<double>(specific_enthalpy));
+    get(density)[i] = get(density_i);
+    get(pressure)[i] = get(eos.pressure_from_density(density_i));
+    // This is the TOV equation in its standard form
+    if (radius > 0.) {
+      const double specific_internal_energy =
+          get(eos.specific_internal_energy_from_density(density_i));
+      dp_dr[i] =
+          -(get(density)[i] * (1. + specific_internal_energy) +
+            get(pressure)[i]) *
+          (mass_over_radius / radius + 4. * M_PI * radius * get(pressure)[i]) /
+          (1. - 2 * mass_over_radius);
+    } else {
+      dp_dr[i] = 0.;
+      // Check the central density
+      CHECK(get(density)[i] == approx(central_rest_mass_density));
+    }
+  }
+
+  // Take a finite-difference numerical derivative of the pressure from the
+  // radial solution, and compare to the TOV equation dp/dr
   auto custom_approx = Approx::custom().epsilon(1.e-6);
   for (size_t i = 2; i < num_radial_pts - 2; ++i) {
     CAPTURE(i);
@@ -141,25 +163,6 @@ void test_tov_dp_dr(
             custom_approx(dp_dr[i]));
     } else if (radii[i] >= radial_tov_solution.outer_radius()) {
       CHECK(dp_dr[i] == 0.0);
-    }
-  }
-
-  for (size_t i = 0; i < num_radial_pts; ++i) {
-    const double total_energy_density =
-        get(density)[i] * (1.0 + get(specific_internal_energy)[i]);
-    const double p = get(pressure)[i];
-    const double radius = radii[i];
-    CAPTURE(total_energy_density);
-    CAPTURE(p);
-    CAPTURE(radius);
-    if (radius < radial_tov_solution.outer_radius() and radius > 0.0) {
-      const double m = radial_tov_solution.mass_over_radius(radius) * radius;
-      CHECK(approx(dp_dr[i]) == -total_energy_density * m / square(radius) *
-                                    (1.0 + p / total_energy_density) *
-                                    (1.0 + 4.0 * M_PI * p * cube(radius) / m) /
-                                    (1.0 - 2.0 * m / radius));
-    } else {
-      CHECK(approx(dp_dr[i]) == 0.0);
     }
   }
 }
@@ -182,7 +185,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.Tov",
     test_tov(*equation_of_state, 1.0e-03, num_pts, i, false);
   }
 
-  test_tov_dp_dr(equation_of_state);
+  test_tov_dp_dr(*equation_of_state);
 }
 
 }  // namespace

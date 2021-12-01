@@ -112,6 +112,6 @@ add_ghmhd_with_horizon_executable(
 
 add_ghmhd_executable(
   TovStar
-  GeneralizedHarmonic::Solutions::WrappedGr<RelativisticEuler::Solutions::TovStar<gr::Solutions::TovSolution>>
+  GeneralizedHarmonic::Solutions::WrappedGr<RelativisticEuler::Solutions::TovStar>
   "${LIBS_TO_LINK}"
   )
