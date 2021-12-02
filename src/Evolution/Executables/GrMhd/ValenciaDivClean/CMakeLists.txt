@@ -29,6 +29,7 @@ set(LIBS_TO_LINK
   Limiters
   LinearOperators
   MathFunctions
+  ParallelInterpolation
   RelativisticEulerSolutions
   Options
   Parallel
