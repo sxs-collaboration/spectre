@@ -1,7 +1,12 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-find_package(Charm 6.10.2 EXACT REQUIRED)
+# Apple Silicon (arm64) Macs require charm 7.0.0 to run
+if(APPLE AND "${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "arm64")
+  find_package(Charm 7.0.0 EXACT REQUIRED)
+else()
+  find_package(Charm 6.10.2 EXACT REQUIRED)
+endif()
 
 spectre_include_directories("${CHARM_INCLUDE_DIRS}")
 set(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} -L${CHARM_LIBRARIES}")
