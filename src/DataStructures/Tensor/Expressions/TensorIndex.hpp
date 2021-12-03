@@ -224,6 +224,12 @@ static constexpr TensorIndex<
 static constexpr TensorIndex<
     TensorExpressions::TensorIndex_detail::upper_spatial_sentinel + 4>
     ti_M{};
+static constexpr TensorIndex<
+    TensorExpressions::TensorIndex_detail::spatial_sentinel + 5>
+    ti_n{};
+static constexpr TensorIndex<
+    TensorExpressions::TensorIndex_detail::upper_spatial_sentinel + 5>
+    ti_N{};
 /// @}
 
 namespace tt {
