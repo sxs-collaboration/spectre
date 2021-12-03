@@ -58,13 +58,13 @@ tnsr::ij<DataType, Dim, Frame> grad_grad_lapse(
 template <size_t Dim, typename Frame, typename DataType>
 void divergence_lapse(
     const gsl::not_null<Scalar<DataType>*> result,
-    const Scalar<DataType>& conformal_factor,
+    const Scalar<DataType>& conformal_factor_squared,
     const tnsr::II<DataType, Dim, Frame>& inverse_conformal_metric,
     const tnsr::ij<DataType, Dim, Frame>& grad_grad_lapse);
 
 template <size_t Dim, typename Frame, typename DataType>
 Scalar<DataType> divergence_lapse(
-    const Scalar<DataType>& conformal_factor,
+    const Scalar<DataType>& conformal_factor_squared,
     const tnsr::II<DataType, Dim, Frame>& inverse_conformal_metric,
     const tnsr::ij<DataType, Dim, Frame>& grad_grad_lapse);
 /// @}
