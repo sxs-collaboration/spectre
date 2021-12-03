@@ -50,10 +50,11 @@ tnsr::ij<DataType, Dim, Frame> grad_grad_lapse(
 template <size_t Dim, typename Frame, typename DataType>
 void divergence_lapse(
     const gsl::not_null<Scalar<DataType>*> result,
-    const Scalar<DataType>& conformal_factor,
+    const Scalar<DataType>& conformal_factor_squared,
     const tnsr::II<DataType, Dim, Frame>& inverse_conformal_metric,
     const tnsr::ij<DataType, Dim, Frame>& grad_grad_lapse) {
-  destructive_resize_components(result, get_size(get(conformal_factor)));
+  destructive_resize_components(result,
+                                get_size(get(conformal_factor_squared)));
 
   get(*result) = 0.0;
   for (size_t i = 0; i < Dim; ++i) {
@@ -62,16 +63,16 @@ void divergence_lapse(
           inverse_conformal_metric.get(i, j) * grad_grad_lapse.get(i, j);
     }
   }
-  get(*result) *= square(get(conformal_factor));
+  get(*result) *= get(conformal_factor_squared);
 }
 
 template <size_t Dim, typename Frame, typename DataType>
 Scalar<DataType> divergence_lapse(
-    const Scalar<DataType>& conformal_factor,
+    const Scalar<DataType>& conformal_factor_squared,
     const tnsr::II<DataType, Dim, Frame>& inverse_conformal_metric,
     const tnsr::ij<DataType, Dim, Frame>& grad_grad_lapse) {
   Scalar<DataType> result{};
-  divergence_lapse(make_not_null(&result), conformal_factor,
+  divergence_lapse(make_not_null(&result), conformal_factor_squared,
                    inverse_conformal_metric, grad_grad_lapse);
   return result;
 }
@@ -99,12 +100,12 @@ Scalar<DataType> divergence_lapse(
       const tnsr::ij<DTYPE(data), DIM(data), FRAME(data)>& d_field_a);       \
   template void Ccz4::divergence_lapse(                                      \
       const gsl::not_null<Scalar<DTYPE(data)>*> result,                      \
-      const Scalar<DTYPE(data)>& conformal_factor,                           \
+      const Scalar<DTYPE(data)>& conformal_factor_squared,                   \
       const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                   \
           inverse_conformal_metric,                                          \
       const tnsr::ij<DTYPE(data), DIM(data), FRAME(data)>& grad_grad_lapse); \
   template Scalar<DTYPE(data)> Ccz4::divergence_lapse(                       \
-      const Scalar<DTYPE(data)>& conformal_factor,                           \
+      const Scalar<DTYPE(data)>& conformal_factor_squared,                   \
       const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                   \
           inverse_conformal_metric,                                          \
       const tnsr::ij<DTYPE(data), DIM(data), FRAME(data)>& grad_grad_lapse);
