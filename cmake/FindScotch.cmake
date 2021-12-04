@@ -1,0 +1,68 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Find Scotch: https://www.labri.fr/perso/pelegrin/scotch/
+# If not in one of the default paths specify -D SCOTCH_ROOT=/path/to/Scotch
+# to search there as well.
+
+if(NOT SCOTCH_ROOT)
+  # Need to set to empty to avoid warnings with --warn-uninitialized
+  set(SCOTCH_ROOT "")
+  set(SCOTCH_ROOT $ENV{SCOTCH_ROOT})
+endif()
+
+# Find the Scotch include directory
+find_path(SCOTCH_INCLUDE_DIR scotch.h
+  PATH_SUFFIXES include
+  HINTS ${SCOTCH_ROOT})
+
+find_library(SCOTCH_LIB
+  NAMES scotch
+  PATH_SUFFIXES lib64 lib
+  HINTS ${SCOTCH_ROOT})
+
+find_library(SCOTCH_ERR_LIB
+  NAMES scotcherr
+  PATH_SUFFIXES lib64 lib
+  HINTS ${SCOTCH_ROOT})
+
+set(SCOTCH_LIBRARIES "${SCOTCH_LIB};${SCOTCH_ERR_LIB}")
+
+set(SCOTCH_VERSION "")
+
+file(READ "${SCOTCH_INCLUDE_DIR}/scotch.h" SCOTCH_FIND_HEADER_CONTENTS)
+
+set(SCOTCH_MAJOR_PREFIX "#define SCOTCH_VERSION ")
+set(SCOTCH_MINOR_PREFIX "#define SCOTCH_RELEASE ")
+set(SCOTCH_PATCH_PREFIX "#define SCOTCH_PATCHLEVEL ")
+
+string(REGEX MATCH "${SCOTCH_MAJOR_PREFIX}[0-9]+"
+  SCOTCH_MAJOR_VERSION "${SCOTCH_FIND_HEADER_CONTENTS}")
+string(REPLACE "${SCOTCH_MAJOR_PREFIX}" "" SCOTCH_MAJOR_VERSION
+  "${SCOTCH_MAJOR_VERSION}")
+
+string(REGEX MATCH "${SCOTCH_MINOR_PREFIX}[0-9]+"
+  SCOTCH_MINOR_VERSION "${SCOTCH_FIND_HEADER_CONTENTS}")
+string(REPLACE "${SCOTCH_MINOR_PREFIX}" "" SCOTCH_MINOR_VERSION
+  "${SCOTCH_MINOR_VERSION}")
+
+string(REGEX MATCH "${SCOTCH_PATCH_PREFIX}[0-9]+"
+  SCOTCH_SUBMINOR_VERSION "${SCOTCH_FIND_HEADER_CONTENTS}")
+string(REPLACE "${SCOTCH_PATCH_PREFIX}" "" SCOTCH_SUBMINOR_VERSION
+  "${SCOTCH_SUBMINOR_VERSION}")
+
+set(SCOTCH_VERSION
+  "${SCOTCH_MAJOR_VERSION}.${SCOTCH_MINOR_VERSION}.${SCOTCH_SUBMINOR_VERSION}"
+  )
+
+set(Scotch_VERSION ${SCOTCH_VERSION})
+
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(
+  Scotch
+  FOUND_VAR SCOTCH_FOUND
+  REQUIRED_VARS SCOTCH_INCLUDE_DIR SCOTCH_LIBRARIES
+  VERSION_VAR SCOTCH_VERSION)
+mark_as_advanced(SCOTCH_INCLUDE_DIR SCOTCH_LIBRARIES
+  SCOTCH_MAJOR_VERSION SCOTCH_MINOR_VERSION SCOTCH_PATCH_VERSION
+  SCOTCH_VERSION Scotch_VERSION)
