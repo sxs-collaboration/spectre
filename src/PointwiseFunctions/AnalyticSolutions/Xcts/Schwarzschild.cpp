@@ -442,6 +442,50 @@ void SchwarzschildVariables<DataType>::operator()(
 
 template <typename DataType>
 void SchwarzschildVariables<DataType>::operator()(
+    const gsl::not_null<tnsr::i<DataType, 3>*> deriv_lapse,
+    const gsl::not_null<Cache*> cache,
+    ::Tags::deriv<gr::Tags::Lapse<DataType>, tmpl::size_t<3>,
+                  Frame::Inertial> /*meta*/) const {
+  switch (coordinate_system) {
+    case SchwarzschildCoordinates::Isotropic: {
+      const auto& r =
+          get(cache->get_var(*this, detail::Tags::Radius<DataType>{}));
+      const auto& conformal_factor =
+          cache->get_var(*this, Xcts::Tags::ConformalFactor<DataType>{});
+      const DataType isotropic_prefactor =
+          mass / square(get(conformal_factor)) / cube(r);
+      get<0>(*deriv_lapse) = isotropic_prefactor * get<0>(x);
+      get<1>(*deriv_lapse) = isotropic_prefactor * get<1>(x);
+      get<2>(*deriv_lapse) = isotropic_prefactor * get<2>(x);
+      break;
+    }
+    case SchwarzschildCoordinates::PainleveGullstrand: {
+      std::fill(deriv_lapse->begin(), deriv_lapse->end(), 0.);
+      break;
+    }
+    case SchwarzschildCoordinates::KerrSchildIsotropic: {
+      const auto& r =
+          get(cache->get_var(*this, detail::Tags::ArealRadius<DataType>{}));
+      const auto& rbar =
+          get(cache->get_var(*this, detail::Tags::Radius<DataType>{}));
+      const auto& lapse =
+          get(cache->get_var(*this, gr::Tags::Lapse<DataType>{}));
+      const DataType isotropic_prefactor =
+          mass * pow<4>(lapse) / (r * square(rbar));
+      get<0>(*deriv_lapse) = isotropic_prefactor * get<0>(x);
+      get<1>(*deriv_lapse) = isotropic_prefactor * get<1>(x);
+      get<2>(*deriv_lapse) = isotropic_prefactor * get<2>(x);
+      break;
+    }
+      // LCOV_EXCL_START
+    default:
+      ERROR("Missing case for SchwarzschildCoordinates");
+      // LCOV_EXCL_END
+  }
+}
+
+template <typename DataType>
+void SchwarzschildVariables<DataType>::operator()(
     const gsl::not_null<tnsr::i<DataType, 3>*>
         lapse_times_conformal_factor_gradient,
     const gsl::not_null<Cache*> cache,
