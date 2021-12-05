@@ -146,6 +146,12 @@ SPECTRE_ALWAYS_INLINE decltype(auto) get_size(
       std::is_fundamental_v<std::remove_cv_t<T>>)>::get_size(t, size);
 }
 
+/// Fall-back that allows using `min(x)` where `x` can be a vector or a double
+SPECTRE_ALWAYS_INLINE double min(const double val) { return val; }
+
+/// Fall-back that allows using `max(x)` where `x` can be a vector or a double
+SPECTRE_ALWAYS_INLINE double max(const double val) { return val; }
+
 /*!
  * \ingroup UtilitiesGroup
  * \brief Checks the size of each component of the container, and resizes if
