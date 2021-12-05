@@ -47,6 +47,8 @@ void test_move() {
 void test_serialize() {
   TovStar star{1.e-3, 8.0, 2.0};
   test_serialization(star);
+  Approx custom_approx = Approx::custom().epsilon(1.0e-08).scale(1.0);
+  CHECK(star.radial_solution().outer_radius() == custom_approx(3.4685521362));
 }
 
 void verify_solution(const TovStar& solution, const std::array<double, 3>& x) {
@@ -85,6 +87,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.RelEuler.Tov",
           *deserialized_option_solution);
 
   const double radius_of_star = 10.04735006833273303;
+  CHECK(solution.radial_solution().outer_radius() == approx(radius_of_star));
   verify_solution(solution, {{0.0, 0.0, 0.0}});
   verify_solution(solution, {{0.0, 0.0, 0.5 * radius_of_star}});
   verify_solution(solution, {{0.0, radius_of_star, 0.0}});

@@ -337,16 +337,18 @@ class TovStar : public virtual evolution::initial_data::InitialData,
     return equation_of_state_;
   }
 
- protected:
-  const gr::Solutions::TovSolution& radial_tov_solution() const;
+  /// The radial profile of the star
+  const gr::Solutions::TovSolution& radial_solution() const {
+    return radial_solution_;
+  }
 
+ protected:
   template <template <class, tov_detail::StarRegion> class VarsComputer,
             typename DataType, typename... Tags, typename... VarsComputerArgs>
   tuples::TaggedTuple<Tags...> variables_impl(
       const tnsr::I<DataType, 3>& x, tmpl::list<Tags...> /*meta*/,
       VarsComputerArgs&&... vars_computer_args) const {
-    const auto& radial_solution = radial_tov_solution();
-    const double outer_radius = radial_solution.outer_radius();
+    const double outer_radius = radial_solution_.outer_radius();
     const double center_radius_cutoff = 1.e-30 * outer_radius;
     const DataType radius = get(magnitude(x));
     // Dispatch interior and exterior regions of the star.
@@ -364,7 +366,7 @@ class TovStar : public virtual evolution::initial_data::InitialData,
           VarsComputer<DataType, tov_detail::StarRegion::Exterior>;
       typename ExteriorVarsComputer::Cache cache{get_size(radius)};
       ExteriorVarsComputer computer{
-          x, radius, radial_solution, equation_of_state_,
+          x, radius, radial_solution_, equation_of_state_,
           std::forward<VarsComputerArgs>(vars_computer_args)...};
       return {cache.get_var(computer, Tags{})...};
     } else if (max(radius) <= outer_radius and
@@ -374,7 +376,7 @@ class TovStar : public virtual evolution::initial_data::InitialData,
           VarsComputer<DataType, tov_detail::StarRegion::Interior>;
       typename InteriorVarsComputer::Cache cache{get_size(radius)};
       InteriorVarsComputer computer{
-          x, radius, radial_solution, equation_of_state_,
+          x, radius, radial_solution_, equation_of_state_,
           std::forward<VarsComputerArgs>(vars_computer_args)...};
       return {cache.get_var(computer, Tags{})...};
     } else {
@@ -415,19 +417,19 @@ class TovStar : public virtual evolution::initial_data::InitialData,
         if (get_element(radius, i) > outer_radius) {
           typename ExteriorVarsComputer::Cache cache{1};
           ExteriorVarsComputer computer{
-              x_i, get_element(radius, i), radial_solution, equation_of_state_,
+              x_i, get_element(radius, i), radial_solution_, equation_of_state_,
               std::forward<VarsComputerArgs>(vars_computer_args)...};
           expand_pack(get_var(i, cache, computer, Tags{})...);
         } else if (get_element(radius, i) > center_radius_cutoff) {
           typename InteriorVarsComputer::Cache cache{1};
           InteriorVarsComputer computer{
-              x_i, get_element(radius, i), radial_solution, equation_of_state_,
+              x_i, get_element(radius, i), radial_solution_, equation_of_state_,
               std::forward<VarsComputerArgs>(vars_computer_args)...};
           expand_pack(get_var(i, cache, computer, Tags{})...);
         } else {
           typename CenterVarsComputer::Cache cache{1};
           CenterVarsComputer computer{
-              x_i, get_element(radius, i), radial_solution, equation_of_state_,
+              x_i, get_element(radius, i), radial_solution_, equation_of_state_,
               std::forward<VarsComputerArgs>(vars_computer_args)...};
           expand_pack(get_var(i, cache, computer, Tags{})...);
         }
@@ -460,6 +462,7 @@ class TovStar : public virtual evolution::initial_data::InitialData,
   double polytropic_constant_ = std::numeric_limits<double>::signaling_NaN();
   double polytropic_exponent_ = std::numeric_limits<double>::signaling_NaN();
   EquationsOfState::PolytropicFluid<true> equation_of_state_{};
+  gr::Solutions::TovSolution radial_solution_{};
 };
 
 bool operator!=(const TovStar& lhs, const TovStar& rhs);

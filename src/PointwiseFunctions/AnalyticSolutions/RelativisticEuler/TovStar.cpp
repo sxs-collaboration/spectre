@@ -25,7 +25,8 @@ TovStar::TovStar(const double central_rest_mass_density,
     : central_rest_mass_density_(central_rest_mass_density),
       polytropic_constant_(polytropic_constant),
       polytropic_exponent_(polytropic_exponent),
-      equation_of_state_{polytropic_constant_, polytropic_exponent_} {}
+      equation_of_state_{polytropic_constant_, polytropic_exponent_},
+      radial_solution_(equation_of_state_, central_rest_mass_density_) {}
 
 void TovStar::pup(PUP::er& p) {
   InitialData::pup(p);
@@ -33,12 +34,7 @@ void TovStar::pup(PUP::er& p) {
   p | polytropic_constant_;
   p | polytropic_exponent_;
   p | equation_of_state_;
-}
-
-const gr::Solutions::TovSolution& TovStar::radial_tov_solution() const {
-  static const gr::Solutions::TovSolution solution(
-      equation_of_state_, central_rest_mass_density_, 0.0);
-  return solution;
+  p | radial_solution_;
 }
 
 namespace tov_detail {
