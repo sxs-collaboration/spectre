@@ -10,6 +10,7 @@ set(LIBRARY_SOURCES
   Test_Kerr.cpp
   Test_Schwarzschild.cpp
   Test_SphericalKerr.cpp
+  Test_TovStar.cpp
   )
 
 add_test_library(

@@ -39,6 +39,7 @@
 #include "ParallelAlgorithms/LinearSolver/Multigrid/Tags.hpp"
 #include "PointwiseFunctions/AnalyticData/Xcts/Binary.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Xcts/Factory.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/RegisterDerivedWithCharm.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/AnalyticSolution.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/Background.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialGuess.hpp"
@@ -170,6 +171,7 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &Parallel::register_derived_classes_with_charm<
         metavariables::solver::schwarz_smoother::subdomain_solver>,
     &elliptic::subdomain_preconditioners::register_derived_with_charm,
+    &EquationsOfState::register_derived_with_charm,
     &Parallel::register_factory_classes_with_charm<metavariables>};
 static const std::vector<void (*)()> charm_init_proc_funcs{
     &enable_floating_point_exceptions};
