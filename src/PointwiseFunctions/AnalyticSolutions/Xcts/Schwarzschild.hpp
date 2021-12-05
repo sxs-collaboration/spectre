@@ -257,7 +257,7 @@ struct SchwarzschildVariables
   SchwarzschildVariables(
       std::optional<std::reference_wrapper<const Mesh<Dim>>> local_mesh,
       std::optional<std::reference_wrapper<const InverseJacobian<
-          DataType, Dim, Frame::ElementLogical, Frame::Inertial>>>
+          DataVector, Dim, Frame::ElementLogical, Frame::Inertial>>>
           local_inv_jacobian,
       const tnsr::I<DataType, 3>& local_x, const double local_mass,
       const SchwarzschildCoordinates local_coordinate_system)
