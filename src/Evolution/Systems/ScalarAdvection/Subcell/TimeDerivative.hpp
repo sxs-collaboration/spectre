@@ -150,9 +150,9 @@ struct TimeDerivative {
 
         // Variables to store packaged data. Allocate outside of loop to
         // reduce allocations
-        Variables<dg_package_field_tags> packaged_data_upper_face{
+        Variables<dg_package_field_tags> upper_packaged_data{
             num_reconstructed_pts};
-        Variables<dg_package_field_tags> packaged_data_lower_face{
+        Variables<dg_package_field_tags> lower_packaged_data{
             num_reconstructed_pts};
 
         for (size_t dim = 0; dim < Dim; ++dim) {
@@ -176,13 +176,13 @@ struct TimeDerivative {
 
           // Compute the packaged data
           evolution::dg::Actions::detail::dg_package_data<System<Dim>>(
-              make_not_null(&packaged_data_upper_face),
+              make_not_null(&upper_packaged_data),
               dynamic_cast<const derived_correction&>(boundary_correction),
               vars_upper_face, upper_outward_conormal, {std::nullopt}, *box,
               typename derived_correction::dg_package_data_volume_tags{},
               dg_package_data_argument_tags{});
           evolution::dg::Actions::detail::dg_package_data<System<Dim>>(
-              make_not_null(&packaged_data_lower_face),
+              make_not_null(&lower_packaged_data),
               dynamic_cast<const derived_correction&>(boundary_correction),
               vars_lower_face, lower_outward_conormal, {std::nullopt}, *box,
               typename derived_correction::dg_package_data_volume_tags{},
@@ -195,9 +195,8 @@ struct TimeDerivative {
           // Note: We could check this beforehand to avoid the extra work of
           // reconstruction and flux computations at the boundaries.
           evolution::dg::subcell::correct_package_data<true>(
-              make_not_null(&packaged_data_lower_face),
-              make_not_null(&packaged_data_upper_face), dim, element,
-              subcell_mesh,
+              make_not_null(&lower_packaged_data),
+              make_not_null(&upper_packaged_data), dim, element, subcell_mesh,
               db::get<evolution::dg::Tags::MortarData<Dim>>(*box));
 
           // Compute the corrections on the faces. We only need to compute this
@@ -207,7 +206,7 @@ struct TimeDerivative {
           evolution::dg::subcell::compute_boundary_terms(
               make_not_null(&gsl::at(fd_boundary_corrections, dim)),
               dynamic_cast<const derived_correction&>(boundary_correction),
-              packaged_data_upper_face, packaged_data_lower_face);
+              upper_packaged_data, lower_packaged_data);
         }
       }
     });
