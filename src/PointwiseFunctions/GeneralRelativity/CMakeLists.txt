@@ -27,6 +27,7 @@ spectre_target_sources(
   TimeDerivativeOfSpacetimeMetric.cpp
   Transform.cpp
   WeylElectric.cpp
+  WeylMagnetic.cpp
   WeylPropagating.cpp
   )
 
@@ -56,6 +57,7 @@ spectre_target_headers(
   TimeDerivativeOfSpacetimeMetric.hpp
   Transform.hpp
   WeylElectric.hpp
+  WeylMagnetic.hpp
   WeylPropagating.hpp
   )
 

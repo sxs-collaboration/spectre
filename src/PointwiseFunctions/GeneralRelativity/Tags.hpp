@@ -202,12 +202,29 @@ struct WeylElectric : db::SimpleTag {
 };
 
 /*!
+ * \brief The magnetic part of the Weyl tensor in vacuum \f$B_{ij}\f$.
+ */
+template <typename Frame, typename DataType>
+struct WeylMagnetic : db::SimpleTag {
+  using type = tnsr::ii<DataType, 3, Frame>;
+};
+
+/*!
  * \brief Computes the scalar \f$E_{ij} E^{ij}\f$ from the electric part of the
  * Weyl tensor \f$E_{ij}\f$ and the inverse spatial metric \f$\gamma^{ij}\f$,
  * i.e. \f$E_{ij} E^{ij} = \gamma^{ik}\gamma^{jl}E_{ij}E_{kl}\f$.
  */
 template <typename DataType>
 struct WeylElectricScalar : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
+
+/*!
+ * \brief The square \f$B_{ij} B^{ij}\f$ of the magnetic part of the Weyl tensor
+ * \f$B_{ij}\f$.
+ */
+template <typename DataType>
+struct WeylMagneticScalar : db::SimpleTag {
   using type = Scalar<DataType>;
 };
 }  // namespace Tags
