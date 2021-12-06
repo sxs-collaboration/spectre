@@ -4,7 +4,9 @@
 #pragma once
 
 #include <array>
+#include <deque>
 #include <string>
+#include <utility>
 
 #include "ApparentHorizons/Strahlkorper.hpp"
 #include "ApparentHorizons/StrahlkorperGr.hpp"
@@ -30,13 +32,15 @@ namespace ah::Tags {
 struct FastFlow : db::SimpleTag {
   using type = ::FastFlow;
 };
-/// Tag for holding the previously-found value of a Strahlkorper,
-/// which is saved for extrapolation for future initial guesses
-/// and for recovering the initial guess on failure of the algorithm.
+
+/// Tag for holding the previously-found values of a Strahlkorper,
+/// which are saved for extrapolation for future initial guesses
+/// and for computing the time deriv of a Strahlkorper.
 template <typename Frame>
-struct PreviousStrahlkorper : db::SimpleTag {
-  using type = ::Strahlkorper<Frame>;
+struct PreviousStrahlkorpers : db::SimpleTag {
+  using type = std::deque<std::pair<double, ::Strahlkorper<Frame>>>;
 };
+
 }  // namespace ah::Tags
 
 /// \ingroup SurfacesGroup

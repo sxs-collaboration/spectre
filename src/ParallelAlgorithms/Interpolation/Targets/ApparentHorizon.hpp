@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstddef>
+#include <utility>
 
 #include "ApparentHorizons/FastFlow.hpp"
 #include "ApparentHorizons/Strahlkorper.hpp"
@@ -143,7 +144,7 @@ struct ApparentHorizon {
   using common_tags =
       tmpl::push_back<StrahlkorperTags::items_tags<Frame>, ::ah::Tags::FastFlow,
                       logging::Tags::Verbosity<InterpolationTargetTag>,
-                      ::ah::Tags::PreviousStrahlkorper<Frame>>;
+                      ::ah::Tags::PreviousStrahlkorpers<Frame>>;
   using simple_tags = tmpl::append<
       common_tags,
       tmpl::conditional_t<
@@ -158,16 +159,23 @@ struct ApparentHorizon {
         Parallel::get<Tags::ApparentHorizon<InterpolationTargetTag, Frame>>(
             cache);
 
-    // Put Strahlkorper and its ComputeItems, FastFlow,
-    // and verbosity into a new DataBox.
-    // Put the initial guess also into PreviousStrahlkorper.
+    // Put Strahlkorper and its ComputeItems, FastFlow, and verbosity
+    // into a new DataBox.  The first element of PreviousStrahlkorpers
+    // is initialized to (time=NaN, strahlkorper=options.initial_guess).
+    // The NaN is a sentinal value which indicates that the
+    // PreviousStrahlkorper has not been computed but is instead the
+    // supplied initial guess.  Note that the NaN must be quiet_NaN,
+    // so we can test for it later without generating an FPE.
+    //
     // Note that if frame is not inertial,
     // StrahlkorperTags::Strahlkorper<::Frame::Inertial> is already
-    // default initialized so there is no need to do anything special here for
-    // StrahlkorperTags::Strahlkorper<::Frame::Inertial>.
+    // default initialized so there is no need to do anything special
+    // here for StrahlkorperTags::Strahlkorper<::Frame::Inertial>.
     Initialization::mutate_assign<common_tags>(
         box, options.initial_guess, options.fast_flow, options.verbosity,
-        options.initial_guess);
+        std::deque<std::pair<double, ::Strahlkorper<Frame>>>{
+            std::make_pair(std::numeric_limits<double>::quiet_NaN(),
+                           options.initial_guess)});
   }
 
   template <typename Metavariables, typename DbTags, typename TemporalId>
