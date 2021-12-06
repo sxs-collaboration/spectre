@@ -181,8 +181,8 @@ EOF
         tar xzf v6.10.2.tar.gz
         mv charm-6.10.2 charm
         cd $dep_dir/charm
-        ./build charm++ mpi-linux-x86_64 smp mpicxx --with-production -j6
-        ./build LIBS mpi-linux-x86_64 smp mpicxx --with-production -j6
+        MPICC=mpicc MPICXX=mpicxx \
+             ./build LIBS mpi-linux-x86_64 smp mpicxx --with-production -j6
         cd $dep_dir
         rm v6.10.2.tar.gz
         echo "Installed Charm++ into $dep_dir/charm"
