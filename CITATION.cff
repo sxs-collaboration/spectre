@@ -192,9 +192,10 @@ authors:
     Am Mühlenberg 1, Potsdam 14476, Germany
   family-names: Wlodarczyk
   given-names: Tom
+  orcid: https://orcid.org/0000-0003-0005-348X
 cff-version: 1.1.0
-date-released: '2021-11-01'
-doi: 10.5281/zenodo.5636734
+date-released: '2021-12-06'
+doi: 10.5281/zenodo.5762413
 keywords:
 - Software
 - Astrophysics
@@ -212,4 +213,4 @@ message: Please cite SpECTRE in any publications that make use of its code or da
 repository-code: https://github.com/sxs-collaboration/spectre
 title: SpECTRE
 url: https://spectre-code.org/
-version: 2021.11.01
+version: 2021.12.06
