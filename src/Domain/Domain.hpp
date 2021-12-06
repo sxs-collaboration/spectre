@@ -115,7 +115,13 @@ class Domain {
       size_t block_id,
       std::unique_ptr<
           domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, VolumeDim>>
-          moving_mesh_inertial_map);
+          moving_mesh_grid_to_inertial_map,
+      std::unique_ptr<
+          domain::CoordinateMapBase<Frame::Grid, Frame::Distorted, VolumeDim>>
+          moving_mesh_grid_to_distorted_map = nullptr,
+      std::unique_ptr<domain::CoordinateMapBase<Frame::Distorted,
+                                                Frame::Inertial, VolumeDim>>
+          moving_mesh_distorted_to_inertial_map = nullptr);
 
   const std::vector<Block<VolumeDim>>& blocks() const { return blocks_; }
 

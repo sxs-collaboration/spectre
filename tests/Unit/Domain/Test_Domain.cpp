@@ -20,6 +20,7 @@
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
+#include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/Translation.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
@@ -44,7 +45,30 @@ namespace helpers = ::TestHelpers::domain::BoundaryConditions;
 
 void test_1d_domains() {
   using Translation = domain::CoordinateMaps::TimeDependent::Translation<1>;
+  using TranslationGridDistorted =
+      domain::CoordinateMap<Frame::Grid, Frame::Distorted, Translation>;
+  using TranslationDistortedInertial =
+      domain::CoordinateMap<Frame::Distorted, Frame::Inertial, Translation>;
   {
+    using LogicalToGridCoordinateMap =
+        CoordinateMap<Frame::BlockLogical, Frame::Inertial,
+                      CoordinateMaps::Identity<1>>;
+
+    using GridToInertialCoordinateMap =
+        domain::CoordinateMap<Frame::Grid, Frame::Inertial, Translation>;
+    using GridToDistortedCoordinateMap = TranslationGridDistorted;
+    using DistortedToInertialCoordinateMap = TranslationDistortedInertial;
+
+    PUPable_reg(SINGLE_ARG(CoordinateMap<Frame::BlockLogical, Frame::Grid,
+                                         CoordinateMaps::Identity<1>>));
+    PUPable_reg(GridToInertialCoordinateMap);
+
+    PUPable_reg(LogicalToGridCoordinateMap);
+    PUPable_reg(SINGLE_ARG(CoordinateMap<Frame::BlockLogical, Frame::Grid,
+                                         CoordinateMaps::Identity<1>>));
+    PUPable_reg(GridToDistortedCoordinateMap);
+    PUPable_reg(DistortedToInertialCoordinateMap);
+
     PUPable_reg(SINGLE_ARG(CoordinateMap<Frame::BlockLogical, Frame::Inertial,
                                          CoordinateMaps::Affine>));
     PUPable_reg(SINGLE_ARG(CoordinateMap<Frame::BlockLogical, Frame::Grid,
@@ -102,6 +126,14 @@ void test_1d_domains() {
         make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
             CoordinateMaps::Affine{-1., 1., 2., 0.}));
 
+    const GridToDistortedCoordinateMap translation_grid_to_distorted_map =
+        domain::make_coordinate_map<Frame::Grid, Frame::Distorted>(
+            Translation{"TranslationGridToDistorted"});
+    const DistortedToInertialCoordinateMap
+        translation_distorted_to_inertial_map =
+            domain::make_coordinate_map<Frame::Distorted, Frame::Inertial>(
+                Translation{"TranslationDistortedToInertial"});
+
     test_domain_construction(domain_from_corners, expected_neighbors,
                              expected_boundaries, expected_stationary_maps);
 
@@ -121,18 +153,30 @@ void test_1d_domains() {
     REQUIRE(domain_from_corners.blocks().size() == 2);
     REQUIRE(domain_no_corners.blocks().size() == 2);
     domain_from_corners.inject_time_dependent_map_for_block(
-        0, make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
-               Translation{"Translation0"}));
+        0,
+        make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
+            Translation{"Translation0"}),
+        translation_grid_to_distorted_map.get_clone(),
+        translation_distorted_to_inertial_map.get_clone());
     domain_from_corners.inject_time_dependent_map_for_block(
-        1, make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
-               Translation{"Translation1"}));
+        1,
+        make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
+            Translation{"Translation1"}),
+        translation_grid_to_distorted_map.get_clone(),
+        translation_distorted_to_inertial_map.get_clone());
 
     domain_no_corners.inject_time_dependent_map_for_block(
-        0, make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
-               Translation{"Translation0"}));
+        0,
+        make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
+            Translation{"Translation0"}),
+        translation_grid_to_distorted_map.get_clone(),
+        translation_distorted_to_inertial_map.get_clone());
     domain_no_corners.inject_time_dependent_map_for_block(
-        1, make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
-               Translation{"Translation1"}));
+        1,
+        make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
+            Translation{"Translation1"}),
+        translation_grid_to_distorted_map.get_clone(),
+        translation_distorted_to_inertial_map.get_clone());
 
     const auto expected_logical_to_grid_maps =
         make_vector(make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(

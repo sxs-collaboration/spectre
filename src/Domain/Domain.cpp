@@ -102,13 +102,21 @@ void Domain<VolumeDim>::inject_time_dependent_map_for_block(
     const size_t block_id,
     std::unique_ptr<
         domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, VolumeDim>>
-        moving_mesh_inertial_map) {
+        moving_mesh_grid_to_inertial_map,
+    std::unique_ptr<
+        domain::CoordinateMapBase<Frame::Grid, Frame::Distorted, VolumeDim>>
+        moving_mesh_grid_to_distorted_map,
+    std::unique_ptr<
+        domain::CoordinateMapBase<Frame::Distorted, Frame::Inertial, VolumeDim>>
+        moving_mesh_distorted_to_inertial_map) {
   ASSERT(block_id < blocks_.size(),
          "The block id " << block_id
                          << " larger than the total number of blocks, "
                          << blocks_.size());
   blocks_[block_id].inject_time_dependent_map(
-      std::move(moving_mesh_inertial_map));
+      std::move(moving_mesh_grid_to_inertial_map),
+      std::move(moving_mesh_grid_to_distorted_map),
+      std::move(moving_mesh_distorted_to_inertial_map));
 }
 
 template <size_t VolumeDim>
