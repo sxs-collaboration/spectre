@@ -120,9 +120,9 @@ struct TimeDerivative {
                 gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>,
                 evolution::dg::Actions::detail::NormalVector<3>>>>;
         // Computed prims and cons on face via reconstruction
-        auto vars_on_lower_face = make_array<3>(
+        auto package_data_argvars_lower_face = make_array<3>(
             Variables<dg_package_data_argument_tags>(reconstructed_num_pts));
-        auto vars_on_upper_face = make_array<3>(
+        auto package_data_argvars_upper_face = make_array<3>(
             Variables<dg_package_data_argument_tags>(reconstructed_num_pts));
         // Copy over the face values of the metric quantities.
         using spacetime_vars_to_copy = tmpl::list<
@@ -132,16 +132,16 @@ struct TimeDerivative {
             gr::Tags::SqrtDetSpatialMetric<DataVector>,
             gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>>;
         tmpl::for_each<spacetime_vars_to_copy>(
-            [&vars_on_lower_face, &vars_on_upper_face,
+            [&package_data_argvars_lower_face, &package_data_argvars_upper_face,
              &spacetime_vars_on_face =
                  db::get<evolution::dg::subcell::Tags::OnSubcellFaces<
                      typename System::flux_spacetime_variables_tag, 3>>(*box)](
                 auto tag_v) {
               using tag = tmpl::type_from<decltype(tag_v)>;
               for (size_t d = 0; d < 3; ++d) {
-                get<tag>(gsl::at(vars_on_lower_face, d)) =
+                get<tag>(gsl::at(package_data_argvars_lower_face, d)) =
                     get<tag>(gsl::at(spacetime_vars_on_face, d));
-                get<tag>(gsl::at(vars_on_upper_face, d)) =
+                get<tag>(gsl::at(package_data_argvars_upper_face, d)) =
                     get<tag>(gsl::at(spacetime_vars_on_face, d));
               }
             });
@@ -149,15 +149,18 @@ struct TimeDerivative {
         // Reconstruct data to the face
         call_with_dynamic_type<void, typename grmhd::ValenciaDivClean::fd::
                                          Reconstructor::creatable_classes>(
-            &recons, [&box, &vars_on_lower_face,
-                      &vars_on_upper_face](const auto& reconstructor) {
-              db::apply<typename std::decay_t<
-                  decltype(*reconstructor)>::reconstruction_argument_tags>(
-                  [&vars_on_lower_face, &vars_on_upper_face,
+            &recons,
+            [&box, &package_data_argvars_lower_face,
+             &package_data_argvars_upper_face](const auto& reconstructor) {
+              db::apply<typename std::decay_t<decltype(
+                  *reconstructor)>::reconstruction_argument_tags>(
+                  [&package_data_argvars_lower_face,
+                   &package_data_argvars_upper_face,
                    &reconstructor](const auto&... args) {
                     reconstructor->reconstruct(
-                        make_not_null(&vars_on_lower_face),
-                        make_not_null(&vars_on_upper_face), args...);
+                        make_not_null(&package_data_argvars_lower_face),
+                        make_not_null(&package_data_argvars_upper_face),
+                        args...);
                   },
                   *box);
             });
@@ -172,8 +175,8 @@ struct TimeDerivative {
 
         // Compute fluxes on faces
         for (size_t i = 0; i < 3; ++i) {
-          auto& vars_upper_face = gsl::at(vars_on_upper_face, i);
-          auto& vars_lower_face = gsl::at(vars_on_lower_face, i);
+          auto& vars_upper_face = gsl::at(package_data_argvars_upper_face, i);
+          auto& vars_lower_face = gsl::at(package_data_argvars_lower_face, i);
           grmhd::ValenciaDivClean::subcell::compute_fluxes(
               make_not_null(&vars_upper_face));
           grmhd::ValenciaDivClean::subcell::compute_fluxes(
