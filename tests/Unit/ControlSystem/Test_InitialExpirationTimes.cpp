@@ -61,10 +61,11 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.ConstructInitialExpirationTimes",
   const Averager<2> averager(0.25, true);
   const double update_fraction = 0.3;
   const Controller<2> controller(update_fraction);
+  const control_system::TestHelpers::ControlError control_error{};
 
-  OptionHolder<1> option_holder1(averager, controller, tuner1);
-  OptionHolder<2> option_holder2(averager, controller, tuner1);
-  OptionHolder<3> option_holder3(averager, controller, tuner2);
+  OptionHolder<1> option_holder1(averager, controller, tuner1, control_error);
+  OptionHolder<2> option_holder2(averager, controller, tuner1, control_error);
+  OptionHolder<3> option_holder3(averager, controller, tuner2, control_error);
 
   {
     INFO("No control systems");

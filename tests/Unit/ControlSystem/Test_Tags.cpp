@@ -43,6 +43,10 @@ void test_all_tags() {
       2, control_system::TestHelpers::TestStructs_detail::LabelA,
       control_system::TestHelpers::Measurement<
           control_system::TestHelpers::TestStructs_detail::LabelA>>;
+
+  using control_error_tag = control_system::Tags::ControlError<system>;
+  TestHelpers::db::test_simple_tag<control_error_tag>("ControlError");
+
   using control_system_inputs_tag =
       control_system::Tags::ControlSystemInputs<system>;
   TestHelpers::db::test_simple_tag<control_system_inputs_tag>(
@@ -85,7 +89,8 @@ void test_control_sys_inputs() {
       "  DecreaseThreshold: 1e-2\n"
       "  IncreaseThreshold: 1e-4\n"
       "  IncreaseFactor: 1.01\n"
-      "  DecreaseFactor: 0.99\n");
+      "  DecreaseFactor: 0.99\n"
+      "ControlError:\n");
   CHECK(expected_averager == input_holder.averager);
   CHECK(expected_controller == input_holder.controller);
   CHECK(expected_tuner == input_holder.tuner);
@@ -96,6 +101,9 @@ void test_control_sys_inputs() {
       TestHelpers::test_option_tag<control_system::OptionTags::WriteDataToDisk>(
           "true");
   CHECK(write_data);
+  // We don't check the control error because the example one is empty and
+  // doesn't have a comparison operator. Once a control error is added that
+  // contains member data (and thus, options), then it can be tested
 }
 }  // namespace
 

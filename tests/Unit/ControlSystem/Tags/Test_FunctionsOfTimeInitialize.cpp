@@ -183,10 +183,11 @@ void test_functions_of_time_tag() {
   const Averager<2> averager(0.25, true);
   const double update_fraction = 0.3;
   const Controller<2> controller(update_fraction);
+  const control_system::TestHelpers::ControlError control_error{};
 
-  OptionHolder<1> option_holder1(averager, controller, tuner1);
-  OptionHolder<2> option_holder2(averager, controller, tuner1);
-  OptionHolder<3> option_holder3(averager, controller, tuner2);
+  OptionHolder<1> option_holder1(averager, controller, tuner1, control_error);
+  OptionHolder<2> option_holder2(averager, controller, tuner1, control_error);
+  OptionHolder<3> option_holder3(averager, controller, tuner2, control_error);
 
   const double initial_time_step = 1.0;
   fot_tag::type functions_of_time = fot_tag::create_from_options<Metavariables>(
@@ -234,11 +235,12 @@ SPECTRE_TEST_CASE(
   const Averager<2> averager(0.25, true);
   const double update_fraction = 0.3;
   const Controller<2> controller(update_fraction);
+  const control_system::TestHelpers::ControlError control_error{};
 
-  OptionHolder<1> option_holder1(averager, controller, tuner);
-  OptionHolder<2> option_holder2(averager, controller, tuner);
-  OptionHolder<3> option_holder3(averager, controller, tuner);
-  OptionHolder<4> option_holder4(averager, controller, tuner);
+  OptionHolder<1> option_holder1(averager, controller, tuner, control_error);
+  OptionHolder<2> option_holder2(averager, controller, tuner, control_error);
+  OptionHolder<3> option_holder3(averager, controller, tuner, control_error);
+  OptionHolder<4> option_holder4(averager, controller, tuner, control_error);
 
   const double initial_time_step = 1.0;
   fot_tag::type functions_of_time = fot_tag::create_from_options<Metavariables>(
@@ -261,10 +263,11 @@ SPECTRE_TEST_CASE(
   const Averager<2> averager(0.25, true);
   const double update_fraction = 0.3;
   const Controller<2> controller(update_fraction);
+  const control_system::TestHelpers::ControlError control_error{};
 
-  OptionHolder<1> option_holder1(averager, controller, tuner);
-  OptionHolder<2> option_holder2(averager, controller, tuner);
-  OptionHolder<3> option_holder3(averager, controller, tuner);
+  OptionHolder<1> option_holder1(averager, controller, tuner, control_error);
+  OptionHolder<2> option_holder2(averager, controller, tuner, control_error);
+  OptionHolder<3> option_holder3(averager, controller, tuner, control_error);
 
   const double initial_time_step = 1.0;
   fot_tag::type functions_of_time = fot_tag::create_from_options<Metavariables>(
