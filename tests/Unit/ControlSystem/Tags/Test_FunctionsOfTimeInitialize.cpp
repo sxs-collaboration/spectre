@@ -43,6 +43,7 @@ struct FakeControlSystem
   using measurement = control_system::TestHelpers::Measurement<
       control_system::TestHelpers::TestStructs_detail::LabelA>;
   using simple_tags = tmpl::list<>;
+  using control_error = control_system::TestHelpers::ControlError;
   struct process_measurement {
     using argument_tags = tmpl::list<>;
   };

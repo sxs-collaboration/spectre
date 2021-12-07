@@ -7,6 +7,7 @@
 #include <string>
 #include <type_traits>
 
+#include "ControlSystem/Protocols/ControlError.hpp"
 #include "ControlSystem/Protocols/Measurement.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
@@ -34,6 +35,9 @@ namespace control_system::protocols {
 /// - a type alias `simple_tags` to a `tmpl::list` of simple tags needed for the
 ///   control system. These tags will be added to the DataBox of the
 ///   ControlComponent. The list may be empty.
+///
+/// - a type alias `control_error` to a struct that conforms to the ControlError
+///   protocol
 ///
 /// - a static constexpr size_t `deriv_order` which is the order of the highest
 ///   derivative of a FunctionOfTime that you wish to control. Typically, this
@@ -90,6 +94,9 @@ struct ControlSystem {
     };
 
     using simple_tags = typename ConformingType::simple_tags;
+
+    using control_error = typename ConformingType::control_error;
+    static_assert(tt::assert_conforms_to<control_error, ControlError>);
 
     static constexpr size_t deriv_order = ConformingType::deriv_order;
 

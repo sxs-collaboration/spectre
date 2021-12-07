@@ -28,6 +28,7 @@ struct MockControlSystem
   static std::string name() { return pretty_type::short_name<Label>(); }
   static std::string component_name(const size_t i) { return get_output(i); }
   using measurement = Measurement;
+  using control_error = control_system::TestHelpers::ControlError;
   static constexpr size_t deriv_order = 2;
   using simple_tags = tmpl::list<>;
 };

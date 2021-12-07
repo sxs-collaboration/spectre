@@ -128,6 +128,8 @@ struct ExampleControlSystem
 
   static constexpr size_t deriv_order = 2;
 
+  using control_error = ExampleControlError;
+
   // This is not part of the required interface, but is used by this
   // control system to store the measurement data.  Most control
   // systems will do something like this.

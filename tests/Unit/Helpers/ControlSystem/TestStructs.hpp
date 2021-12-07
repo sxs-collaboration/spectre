@@ -53,6 +53,7 @@ struct System : tt::ConformsTo<control_system::protocols::ControlSystem> {
   static std::string component_name(const size_t i) { return get_output(i); }
   using measurement = Measurement;
   using simple_tags = tmpl::list<>;
+  using control_error = ControlError;
   static constexpr size_t deriv_order = DerivOrder;
 };
 
