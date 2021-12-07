@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstddef>
+#include <pup.h>
 
 #include "ControlSystem/Component.hpp"
 #include "ControlSystem/Protocols/ControlSystem.hpp"
@@ -13,6 +14,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/LinkedMessageQueue.hpp"
+#include "Domain/FunctionsOfTime/Tags.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "ParallelAlgorithms/Actions/UpdateMessageQueue.hpp"
@@ -89,6 +91,29 @@ struct ExampleMeasurement
   using submeasurements = tmpl::list<ExampleSubmeasurement>;
 };
 /// [Measurement]
+
+/// [ControlError]
+struct ExampleControlError
+    : tt::ConformsTo<control_system::protocols::ControlError> {
+  void pup(PUP::er& /*p*/) {}
+
+  template <typename Metavariables, typename... QueueTags>
+  DataVector operator()(const Parallel::GlobalCache<Metavariables>& cache,
+                        const double time,
+                        const std::string& function_of_time_name,
+                        const tuples::TaggedTuple<QueueTags...>& measurements) {
+    const auto& functions_of_time =
+        Parallel::get<domain::Tags::FunctionsOfTime>(cache);
+    const double current_map_value =
+        functions_of_time.at(function_of_time_name)->func(time)[0][0];
+    const double measured_value = 0.0;
+    // Would do something like get<QueueTag>(measurements) here
+    (void)measurements;
+
+    return {current_map_value - measured_value};
+  }
+};
+/// [ControlError]
 
 /// [ControlSystem]
 struct ExampleControlSystem

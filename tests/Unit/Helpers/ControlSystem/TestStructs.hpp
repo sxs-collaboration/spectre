@@ -4,14 +4,20 @@
 #pragma once
 
 #include <cstddef>
+#include <pup.h>
 #include <string>
 
+#include "ControlSystem/Protocols/ControlError.hpp"
 #include "ControlSystem/Protocols/ControlSystem.hpp"
 #include "ControlSystem/Protocols/Measurement.hpp"
+#include "DataStructures/DataVector.hpp"
+#include "Options/Options.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TaggedTuple.hpp"
 
 namespace control_system::TestHelpers {
 namespace TestStructs_detail {
@@ -21,6 +27,21 @@ struct LabelA {};
 template <typename Label>
 struct Measurement : tt::ConformsTo<control_system::protocols::Measurement> {
   using submeasurements = tmpl::list<>;
+};
+
+struct ControlError : tt::ConformsTo<control_system::protocols::ControlError> {
+  void pup(PUP::er& /*p*/) {}
+
+  using options = tmpl::list<>;
+  static constexpr Options::String help{"Example control error."};
+
+  template <typename Metavariables, typename... QueueTags>
+  DataVector operator()(
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const double /*time*/, const std::string& /*function_of_time_name*/,
+      const tuples::TaggedTuple<QueueTags...>& /*measurements*/) {
+    return DataVector{};
+  }
 };
 
 static_assert(tt::assert_conforms_to<Measurement<TestStructs_detail::LabelA>,

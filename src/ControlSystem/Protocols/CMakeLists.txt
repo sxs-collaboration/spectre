@@ -5,6 +5,7 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  ControlError.hpp
   ControlSystem.hpp
   Measurement.hpp
   NamespaceDocs.hpp
