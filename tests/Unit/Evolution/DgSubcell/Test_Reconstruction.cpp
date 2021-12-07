@@ -223,7 +223,7 @@ void test_reconstruct_fd(const std::vector<double>& eps) {
 SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Fd.Reconstruction",
                   "[Evolution][Unit]") {
   test_reconstruct_fd<10, 1, Spectral::Basis::Legendre,
-                      Spectral::Quadrature::GaussLobatto>({5.0e-14});
+                      Spectral::Quadrature::GaussLobatto>({1.0e-13});
   test_reconstruct_fd<10, 1, Spectral::Basis::Legendre,
                       Spectral::Quadrature::Gauss>({5.0e-14});
 
