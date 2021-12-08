@@ -460,9 +460,24 @@ void test_real_functions(const gsl::not_null<Gen*> gen) {
 }
 
 void test_vector_plus() {
-  CHECK_ITERABLE_APPROX(VectorPlus{}(std::vector<double>{0.12, -20.87, 3.2},
-                                     std::vector<double>{-11.04, 7.5, 6.18}),
+  CHECK_ITERABLE_APPROX(funcl::ElementWise<funcl::Abs<>>{}(
+                            std::vector<double>{0.12, -20.87, 3.2}),
+                        (std::vector<double>{0.12, 20.87, 3.2}));
+  CHECK_ITERABLE_APPROX(funcl::ElementWise<funcl::Plus<>>{}(
+                            std::vector<double>{0.12, -20.87, 3.2},
+                            std::vector<double>{-11.04, 7.5, 6.18}),
                         (std::vector<double>{-10.92, -13.37, 9.38}));
+  CHECK_ITERABLE_APPROX(funcl::ElementWise<funcl::Max<>>{}(
+                            std::vector<double>{0.12, -20.87, 3.2},
+                            std::vector<double>{-11.04, 7.5, 6.18}),
+                        (std::vector<double>{0.12, 7.5, 6.18}));
+  CHECK_ITERABLE_APPROX(funcl::ElementWise<funcl::Min<>>{}(
+                            std::vector<double>{0.12, -20.87, 3.2},
+                            std::vector<double>{-11.04, 7.5, 6.18}),
+                        (std::vector<double>{-11.04, -20.87, 3.2}));
+  CHECK_ITERABLE_APPROX(funcl::ElementWise<funcl::Divides<>>{}(
+                            std::vector<double>{0.12, -20.87, 3.2}, 0.5),
+                        (std::vector<double>{0.24, -41.74, 6.4}));
 }
 
 SPECTRE_TEST_CASE("Unit.Utilities.Functional", "[Utilities][Unit]") {
@@ -488,13 +503,14 @@ SPECTRE_TEST_CASE("Unit.Utilities.Functional", "[Utilities][Unit]") {
 }
 
     // clang-format off
-// [[OutputRegex, Vector sizes in `funcl::VectorPlus` operator do not match.]]
+// [[OutputRegex, Sizes must be the same but got]]
 [[noreturn]] SPECTRE_TEST_CASE("Unit.Utilities.Functional.VectorPlus",
                                "[Unit][Utilities]") {
   // clang-format on
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  VectorPlus{}(std::vector<double>{2.0}, std::vector<double>{0.4, -19.90});
+  funcl::ElementWise<funcl::Plus<>>{}(std::vector<double>{2.0},
+                                      std::vector<double>{0.4, -19.90});
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }

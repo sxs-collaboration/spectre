@@ -117,41 +117,16 @@ class ObserveNorms<ObservationValueTag, tmpl::list<ObservableTensorTags...>,
     std::string components{};
   };
 
-  template <typename Functional>
-  struct ElementWiseBinary {
-    std::vector<double> operator()(const std::vector<double>& t0,
-                                   const std::vector<double>& t1) const {
-      ASSERT(t0.size() == t1.size(),
-             "Size must be the same but got t0: " << t0.size()
-                                                  << " and t1: " << t1.size());
-      std::vector<double> result(t0.size());
-      for (size_t i = 0; i < t0.size(); ++i) {
-        result[i] = Functional{}(t0[i], t1[i]);
-      }
-      return result;
-    }
-
-    std::vector<double> operator()(const std::vector<double>& t0,
-                                   const double t1) const {
-      // This overload is needed for the L2 norm
-      std::vector<double> result(t0.size());
-      for (size_t i = 0; i < t0.size(); ++i) {
-        result[i] = Functional{}(t0[i], t1);
-      }
-      return result;
-    }
-  };
-
   using ReductionData = tmpl::wrap<
       tmpl::list<Parallel::ReductionDatum<double, funcl::AssertEqual<>>,
                  Parallel::ReductionDatum<size_t, funcl::Plus<>>,
                  Parallel::ReductionDatum<std::vector<double>,
-                                          ElementWiseBinary<funcl::Max<>>>,
+                                          funcl::ElementWise<funcl::Max<>>>,
                  Parallel::ReductionDatum<std::vector<double>,
-                                          ElementWiseBinary<funcl::Min<>>>,
+                                          funcl::ElementWise<funcl::Min<>>>,
                  Parallel::ReductionDatum<
-                     std::vector<double>, ElementWiseBinary<funcl::Plus<>>,
-                     ElementWiseBinary<funcl::Sqrt<funcl::Divides<>>>,
+                     std::vector<double>, funcl::ElementWise<funcl::Plus<>>,
+                     funcl::ElementWise<funcl::Sqrt<funcl::Divides<>>>,
                      std::index_sequence<1>>>,
       Parallel::ReductionData>;
 
