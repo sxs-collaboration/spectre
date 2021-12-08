@@ -18,6 +18,7 @@
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Helpers/ApparentHorizons/StrahlkorperTestHelpers.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/NumericalAlgorithms/SphericalHarmonics/YlmTestFunctions.hpp"
@@ -28,25 +29,6 @@
 #include "Utilities/TMPL.hpp"
 
 namespace {
-
-// Create a strahlkorper with a Im(Y11) dependence, with
-// a given average radius and a given center.
-auto create_strahlkorper_y11(const double y11_amplitude, const double radius,
-                             const std::array<double, 3>& center) {
-  static const size_t l_max = 4;
-  static const size_t m_max = 4;
-
-  Strahlkorper<Frame::Inertial> strahlkorper_sphere(l_max, m_max, radius,
-                                                    center);
-
-  auto coefs = strahlkorper_sphere.coefficients();
-  SpherepackIterator it(l_max, m_max);
-  // Conversion between SPHEREPACK b_lm and real valued harmonic coefficients:
-  // b_lm = (-1)^{m+1} sqrt(1/2pi) d_lm
-  coefs[it.set(1, -1)()] = y11_amplitude * sqrt(0.5 / M_PI);
-  return Strahlkorper<Frame::Inertial>(coefs, strahlkorper_sphere);
-}
-
 void test_average_radius() {
   // Create spherical Strahlkorper
   const std::array<double, 3> center = {{0.1, 0.2, 0.3}};

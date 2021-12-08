@@ -13,6 +13,8 @@
 #include "ApparentHorizons/Strahlkorper.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Helpers/ApparentHorizons/StrahlkorperTestHelpers.hpp"
+#include "Helpers/NumericalAlgorithms/SphericalHarmonics/YlmTestFunctions.hpp"
 #include "NumericalAlgorithms/RootFinding/QuadraticEquation.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/YlmSpherepack.hpp"
@@ -26,7 +28,6 @@ struct Inertial;
 }  // namespace Frame
 
 namespace {
-
 void test_invert_spec_phys_transform() {
   const double avg_radius = 1.0;
   const double delta_radius = 0.1;
