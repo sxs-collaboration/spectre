@@ -306,8 +306,8 @@ class FishboneMoncriefDisk
   }
   /// @}
 
-  // clang-tidy: no runtime references
-  void pup(PUP::er& /*p*/);  //  NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
 
   const EquationsOfState::PolytropicFluid<true>& equation_of_state() const {
     return equation_of_state_;
