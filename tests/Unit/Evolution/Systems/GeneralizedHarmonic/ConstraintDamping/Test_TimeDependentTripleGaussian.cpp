@@ -49,21 +49,13 @@ void test_triple_gaussian_random(const DataType& used_for_size) {
     gsl::at(center_3, i) = real_dis(gen);
   }
 
-  // Name of FunctionOfTime to read
-  const std::string function_of_time_for_scaling{"ExpansionFactor"s};
+  // Name of FunctionOfTime to read. This must match up with the hard coded name
+  // in the TimeDependentTripleGaussian
+  const std::string function_of_time_for_scaling{"Expansion"s};
 
   GeneralizedHarmonic::ConstraintDamping::TimeDependentTripleGaussian
-      triple_gauss{constant,
-                   amplitude_1,
-                   width_1,
-                   center_1,
-                   amplitude_2,
-                   width_2,
-                   center_2,
-                   amplitude_3,
-                   width_3,
-                   center_3,
-                   function_of_time_for_scaling};
+      triple_gauss{constant, amplitude_1, width_1,     center_1, amplitude_2,
+                   width_2,  center_2,    amplitude_3, width_3,  center_3};
 
   TestHelpers::GeneralizedHarmonic::ConstraintDamping::check(
       std::move(triple_gauss), "time_dependent_triple_gaussian", used_for_size,
@@ -76,8 +68,7 @@ void test_triple_gaussian_random(const DataType& used_for_size) {
       triple_gauss_unique_ptr = std::make_unique<
           GeneralizedHarmonic::ConstraintDamping::TimeDependentTripleGaussian>(
           constant, amplitude_1, width_1, center_1, amplitude_2, width_2,
-          center_2, amplitude_3, width_3, center_3,
-          function_of_time_for_scaling);
+          center_2, amplitude_3, width_3, center_3);
 
   TestHelpers::GeneralizedHarmonic::ConstraintDamping::check(
       std::move(triple_gauss_unique_ptr->get_clone()),
@@ -110,20 +101,11 @@ SPECTRE_TEST_CASE(
   const double width_3_3d{1.0};
   const std::array<double, 3> center_3_3d{{7.7, -8.8, 9.9}};
 
-  // Name of FunctionOfTime to read
-  const std::string function_of_time_for_scaling{"ExpansionFactor"s};
   const GeneralizedHarmonic::ConstraintDamping::TimeDependentTripleGaussian
-      triple_gauss_3d{constant_3d,
-                      amplitude_1_3d,
-                      width_1_3d,
-                      center_1_3d,
-                      amplitude_2_3d,
-                      width_2_3d,
-                      center_2_3d,
-                      amplitude_3_3d,
-                      width_3_3d,
-                      center_3_3d,
-                      function_of_time_for_scaling};
+      triple_gauss_3d{constant_3d, amplitude_1_3d, width_1_3d,
+                      center_1_3d, amplitude_2_3d, width_2_3d,
+                      center_2_3d, amplitude_3_3d, width_3_3d,
+                      center_3_3d};
   const auto created_triple_gauss = TestHelpers::test_creation<
       GeneralizedHarmonic::ConstraintDamping::TimeDependentTripleGaussian>(
       "Constant: 5.0\n"
@@ -138,8 +120,7 @@ SPECTRE_TEST_CASE(
       "Gaussian3:\n"
       "  Amplitude: 5.0\n"
       "  Width: 1.0\n"
-      "  Center: [7.7, -8.8, 9.9]\n"
-      "FunctionOfTimeForScaling: ExpansionFactor");
+      "  Center: [7.7, -8.8, 9.9]");
   CHECK(created_triple_gauss == triple_gauss_3d);
   const auto created_triple_gauss_gh_damping_function =
       TestHelpers::test_creation<
@@ -158,8 +139,7 @@ SPECTRE_TEST_CASE(
           "  Gaussian3:\n"
           "    Amplitude: 5.0\n"
           "    Width: 1.0\n"
-          "    Center: [7.7, -8.8, 9.9]\n"
-          "  FunctionOfTimeForScaling: ExpansionFactor");
+          "    Center: [7.7, -8.8, 9.9]");
 
   test_serialization(triple_gauss_3d);
 }

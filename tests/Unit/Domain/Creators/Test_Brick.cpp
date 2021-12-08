@@ -63,7 +63,9 @@ void test_brick_construction(
         Frame::Grid, Frame::Inertial, 3>>>& expected_grid_to_inertial_maps = {},
     const std::vector<DirectionMap<
         3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>&
-        expected_boundary_conditions = {}) {
+        expected_boundary_conditions = {},
+    const std::unordered_map<std::string, double>& initial_expiration_times =
+        {}) {
   const auto domain = brick.create_domain();
 
   CHECK(brick.initial_extents() == expected_extents);
@@ -82,7 +84,7 @@ void test_brick_construction(
       expected_boundary_conditions);
   test_initial_domain(domain, brick.initial_refinement_levels());
   TestHelpers::domain::creators::test_functions_of_time(
-      brick, expected_functions_of_time);
+      brick, expected_functions_of_time, initial_expiration_times);
 
   domain::creators::register_derived_with_charm();
   domain::creators::time_dependence::register_derived_with_charm();
@@ -365,11 +367,16 @@ void test_brick_factory() {
         "  TimeDependence:\n"
         "    UniformTranslation:\n"
         "      InitialTime: 1.0\n"
-        "      InitialExpirationDeltaT: 9.0\n"
-        "      Velocity: [2.3, -0.3, 0.5]\n"
-        "      FunctionOfTimeName: Translation");
+        "      Velocity: [2.3, -0.3, 0.5]\n");
     const auto* brick_creator =
         dynamic_cast<const creators::Brick*>(domain_creator.get());
+    const double initial_time = 1.0;
+    const DataVector velocity{{2.3, -0.3, 0.5}};
+    // This name must match the hard coded one in UniformTranslation
+    const std::string f_of_t_name = "Translation";
+    std::unordered_map<std::string, double> initial_expiration_times{};
+    initial_expiration_times[f_of_t_name] = 10.0;
+    // without expiration times
     test_brick_construction(
         *brick_creator, {{0., 0., 0.}}, {{1., 2., 3.}}, {{{3, 4, 3}}},
         {{{2, 3, 2}}},
@@ -383,13 +390,33 @@ void test_brick_factory() {
         std::make_tuple(
             std::pair<std::string,
                       domain::FunctionsOfTime::PiecewisePolynomial<2>>{
-                "Translation",
-                {1.0,
-                 std::array<DataVector, 3>{
-                     {{3, 0.0}, {2.3, -0.3, 0.5}, {3, 0.0}}},
-                 10.0}}),
+                f_of_t_name,
+                {initial_time,
+                 std::array<DataVector, 3>{{{3, 0.0}, velocity, {3, 0.0}}},
+                 std::numeric_limits<double>::infinity()}}),
         make_vector_coordinate_map_base<Frame::Grid, Frame::Inertial>(
-            Translation3D{"Translation"}));
+            Translation3D{f_of_t_name}));
+    // with expiration times
+    test_brick_construction(
+        *brick_creator, {{0., 0., 0.}}, {{1., 2., 3.}}, {{{3, 4, 3}}},
+        {{{2, 3, 2}}},
+        std::vector<DirectionMap<3, BlockNeighbor<3>>>{
+            {{Direction<3>::lower_xi(), {0, {}}},
+             {Direction<3>::upper_xi(), {0, {}}},
+             {Direction<3>::lower_zeta(), {0, {}}},
+             {Direction<3>::upper_zeta(), {0, {}}}}},
+        std::vector<std::unordered_set<Direction<3>>>{
+            {{Direction<3>::lower_eta()}, {Direction<3>::upper_eta()}}},
+        std::make_tuple(
+            std::pair<std::string,
+                      domain::FunctionsOfTime::PiecewisePolynomial<2>>{
+                f_of_t_name,
+                {initial_time,
+                 std::array<DataVector, 3>{{{3, 0.0}, velocity, {3, 0.0}}},
+                 initial_expiration_times[f_of_t_name]}}),
+        make_vector_coordinate_map_base<Frame::Grid, Frame::Inertial>(
+            Translation3D{f_of_t_name}),
+        {}, initial_expiration_times);
   }
   {
     INFO("Brick factory time dependent");
@@ -405,12 +432,17 @@ void test_brick_factory() {
         "  TimeDependence:\n"
         "    UniformTranslation:\n"
         "      InitialTime: 1.0\n"
-        "      InitialExpirationDeltaT: 9.0\n"
-        "      Velocity: [2.3, -0.3, 0.5]\n"
-        "      FunctionOfTimeName: Translation\n" +
+        "      Velocity: [2.3, -0.3, 0.5]\n" +
         boundary_conditions);
     const auto* brick_creator =
         dynamic_cast<const creators::Brick*>(domain_creator.get());
+    const double initial_time = 1.0;
+    const DataVector velocity{{2.3, -0.3, 0.5}};
+    // This name must match the hard coded one in UniformTranslation
+    const std::string f_of_t_name = "Translation";
+    std::unordered_map<std::string, double> initial_expiration_times{};
+    initial_expiration_times[f_of_t_name] = 10.0;
+    // without expiration times
     test_brick_construction(
         *brick_creator, {{0., 0., 0.}}, {{1., 2., 3.}}, {{{3, 4, 3}}},
         {{{2, 3, 2}}}, {{}},
@@ -424,14 +456,34 @@ void test_brick_factory() {
         std::make_tuple(
             std::pair<std::string,
                       domain::FunctionsOfTime::PiecewisePolynomial<2>>{
-                "Translation",
-                {1.0,
-                 std::array<DataVector, 3>{
-                     {{3, 0.0}, {2.3, -0.3, 0.5}, {3, 0.0}}},
-                 10.0}}),
+                f_of_t_name,
+                {initial_time,
+                 std::array<DataVector, 3>{{{3, 0.0}, velocity, {3, 0.0}}},
+                 std::numeric_limits<double>::infinity()}}),
         make_vector_coordinate_map_base<Frame::Grid, Frame::Inertial>(
-            Translation3D{"Translation"}),
+            Translation3D{f_of_t_name}),
         create_boundary_conditions());
+    // with expiration times
+    test_brick_construction(
+        *brick_creator, {{0., 0., 0.}}, {{1., 2., 3.}}, {{{3, 4, 3}}},
+        {{{2, 3, 2}}}, {{}},
+        std::vector<std::unordered_set<Direction<3>>>{
+            {{Direction<3>::lower_xi()},
+             {Direction<3>::upper_xi()},
+             {Direction<3>::lower_eta()},
+             {Direction<3>::upper_eta()},
+             {Direction<3>::lower_zeta()},
+             {Direction<3>::upper_zeta()}}},
+        std::make_tuple(
+            std::pair<std::string,
+                      domain::FunctionsOfTime::PiecewisePolynomial<2>>{
+                f_of_t_name,
+                {initial_time,
+                 std::array<DataVector, 3>{{{3, 0.0}, velocity, {3, 0.0}}},
+                 initial_expiration_times[f_of_t_name]}}),
+        make_vector_coordinate_map_base<Frame::Grid, Frame::Inertial>(
+            Translation3D{f_of_t_name}),
+        create_boundary_conditions(), initial_expiration_times);
   }
 }
 }  // namespace

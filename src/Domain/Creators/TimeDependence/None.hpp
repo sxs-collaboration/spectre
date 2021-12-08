@@ -58,9 +58,12 @@ class None final : public TimeDependence<MeshDim> {
       -> std::vector<std::unique_ptr<domain::CoordinateMapBase<
           Frame::Grid, Frame::Inertial, MeshDim>>> override;
 
-  [[noreturn]] auto functions_of_time() const -> std::unordered_map<
-      std::string,
-      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;
+  [[noreturn]] auto functions_of_time(
+      const std::unordered_map<std::string, double>& initial_expiration_times =
+          {}) const
+      -> std::unordered_map<
+          std::string,
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;
 };
 
 template <size_t Dim>

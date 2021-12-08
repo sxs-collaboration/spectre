@@ -39,7 +39,8 @@ struct FakeControlSystem
 struct Metavariables {
   using control_systems = tmpl::list<FakeControlSystem<1>, FakeControlSystem<2>,
                                      FakeControlSystem<3>>;
-  using component_list = control_components<Metavariables, control_systems>;
+  using component_list =
+      control_system::control_components<Metavariables, control_systems>;
 };
 
 struct MetavariablesNoControlSystems {

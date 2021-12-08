@@ -22,7 +22,6 @@ namespace {
 
 void test_strahlkorper_in_different_frame() {
   const size_t grid_points_each_dimension = 5;
-  const double expiration_time = 1.0;
 
   // Set up a Strahlkorper corresponding to a Schwarzschild hole of
   // mass 1, in the grid frame.
@@ -49,7 +48,7 @@ void test_strahlkorper_in_different_frame() {
       ShellWedges::All,
       std::make_unique<
           domain::creators::time_dependence::UniformTranslation<3>>(
-          0.0, expiration_time, std::array<double, 3>({{0.01, 0.02, 0.03}})));
+          0.0, std::array<double, 3>({{0.01, 0.02, 0.03}})));
   Domain<3> domain = domain_creator.create_domain();
   const auto functions_of_time = domain_creator.functions_of_time();
 

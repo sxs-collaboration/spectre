@@ -44,9 +44,7 @@ DomainCreator:
     TimeDependence:
       UniformTranslation:
         InitialTime: *InitialTime
-        InitialExpirationDeltaT: Auto
         Velocity: [0.5]
-        FunctionOfTimeName: "Translation"
     BoundaryConditions:
       LowerBoundary: Periodic
       UpperBoundary: Periodic

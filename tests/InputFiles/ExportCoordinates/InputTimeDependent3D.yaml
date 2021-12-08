@@ -44,23 +44,19 @@ DomainCreator:
     InitialGridPoints: 3
     TimeDependentMaps:
       InitialTime: 0.0
-      InitialExpirationDeltaT: Auto
       ExpansionMap:
         OuterBoundary: 590.0
         InitialExpansion: 1.0
         InitialExpansionVelocity: 0.01
-        FunctionOfTimeName: 'ExpansionFactor'
         AsymptoticVelocityOuterBoundary: -0.1
         DecayTimescaleOuterBoundaryVelocity: 5.0
       RotationAboutZAxisMap:
         InitialRotationAngle: 0.0
         InitialAngularVelocity: 0.0
-        FunctionOfTimeName: RotationAngle
       SizeMap:
         InitialValues: [0.0, 0.0]
         InitialVelocities: [-0.1, -0.1]
         InitialAccelerations: [-0.2, -0.2]
-        FunctionOfTimeNames: ['LambdaFactorA0',  'LambdaFactorB0']
 
 SpatialDiscretization:
   DiscontinuousGalerkin:

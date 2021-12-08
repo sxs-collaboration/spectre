@@ -289,9 +289,11 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
 
   std::vector<std::array<size_t, 3>> initial_refinement_levels() const override;
 
-  auto functions_of_time() const -> std::unordered_map<
-      std::string,
-      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;
+  auto functions_of_time(const std::unordered_map<std::string, double>&
+                             initial_expiration_times = {}) const
+      -> std::unordered_map<
+          std::string,
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;
 
   std::vector<std::string> block_names() const override { return block_names_; }
 

@@ -32,10 +32,11 @@ None<MeshDim>::block_maps(const size_t /*number_of_blocks*/) const {
 template <size_t MeshDim>
 [[noreturn]] std::unordered_map<
     std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
-None<MeshDim>::functions_of_time() const {
+None<MeshDim>::functions_of_time(const std::unordered_map<std::string, double>&
+                                 /*initial_expiration_times*/) const {
   ERROR(
       "The 'functions_of_time' function of the 'None' TimeDependence should "
-      "never be  called because 'None' is only used as a place holder class to "
+      "never be called because 'None' is only used as a place holder class to "
       "mark that the mesh is time-independent.");
 }
 

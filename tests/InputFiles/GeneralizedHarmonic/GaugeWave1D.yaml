@@ -34,9 +34,7 @@ DomainCreator:
     TimeDependence:
       UniformTranslation:
          InitialTime: 0.0
-         InitialExpirationDeltaT: Auto
          Velocity: [0.5]
-         FunctionOfTimeName: "Translation"
     BoundaryConditions:
       LowerBoundary:  DirichletAnalytic
       UpperBoundary:  DirichletAnalytic

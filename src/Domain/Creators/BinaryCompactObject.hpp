@@ -140,15 +140,14 @@ namespace creators {
  * time-independent. If domain::enable_time_dependent_maps is set
  * to `true`, then this domain also includes a time-dependent map, along with
  * additional options (and a corresponding constructor) for initializing the
- * time-dependent map. These options include `InitialTime` and
- * `InitialExpirationDeltaT`, which specify the initial time and the
- * initial updating time interval, respectively, for the FunctionsOfTime
- * controlling the map. The time-dependent map itself consists of a composition
- * of a CubicScale expansion map and a Rotation map about the z axis everywhere
- * except possibly in layer 1; in that case, if `ObjectA` or `ObjectB` is
- * excised, then the time-dependent map in the corresponding blocks in
- * layer 1 is a composition of a SphericalCompression size map, a CubicScale
- * expansion map, and a Rotation map about the z axis.
+ * time-dependent map. These options include the `InitialTime` which specifies
+ * the initial time for the FunctionsOfTime controlling the map. The
+ * time-dependent map itself consists of a composition of a CubicScale expansion
+ * map and a Rotation map about the z axis everywhere except possibly in layer
+ * 1; in that case, if `ObjectA` or `ObjectB` is excised, then the
+ * time-dependent map in the corresponding blocks in layer 1 is a composition of
+ * a SphericalCompression size map, a CubicScale expansion map, and a Rotation
+ * map about the z axis.
  */
 class BinaryCompactObject : public DomainCreator<3> {
  public:
@@ -427,15 +426,6 @@ class BinaryCompactObject : public DomainCreator<3> {
         "The initial time of the functions of time"};
     using group = TimeDependentMaps;
   };
-  /// \brief The initial time interval for updates of the functions of time.
-  struct InitialExpirationDeltaT {
-    using type = Options::Auto<double>;
-    static constexpr Options::String help = {
-        "The initial time interval for updates of the functions of time. If "
-        "Auto, then the functions of time do not expire, nor can they be "
-        "updated."};
-    using group = TimeDependentMaps;
-  };
 
   struct ExpansionMap {
     static constexpr Options::String help = {
@@ -482,14 +472,6 @@ class BinaryCompactObject : public DomainCreator<3> {
         "asymptotic value."};
     using group = ExpansionMap;
   };
-  /// \brief The name of the function of time to be added to the DataBox for
-  /// the expansion map.
-  struct ExpansionFunctionOfTimeName {
-    using type = std::string;
-    static constexpr Options::String help = {"Names of the functions of time."};
-    using group = ExpansionMap;
-    static std::string name() { return "FunctionOfTimeName"; }
-  };
 
   struct RotationAboutZAxisMap {
     static constexpr Options::String help = {
@@ -507,14 +489,6 @@ class BinaryCompactObject : public DomainCreator<3> {
     using type = double;
     static constexpr Options::String help = {"The angular velocity."};
     using group = RotationAboutZAxisMap;
-  };
-  /// \brief The name of the function of time to be added to the added to the
-  /// DataBox for the rotation-about-the-z-axis map.
-  struct RotationAboutZAxisFunctionOfTimeName {
-    using type = std::string;
-    static constexpr Options::String help = {"Name of the function of time."};
-    using group = RotationAboutZAxisMap;
-    static std::string name() { return "FunctionOfTimeName"; }
   };
 
   struct SizeMap {
@@ -567,21 +541,6 @@ class BinaryCompactObject : public DomainCreator<3> {
     using group = SizeMap;
     static std::string name() { return "InitialAccelerations"; }
   };
-  /// \brief The names of the functions of times to be added to the added to the
-  /// DataBox for the size map.
-  ///
-  /// \details If object A is not excised, no size map is applied for object A,
-  /// and this option is ignored for object A. If object B is not excised, no
-  /// size map is applied for object B, and this option is ignored for object B.
-  /// If neither object A nor object B are excised, this option is completely
-  /// ignored.
-  struct SizeMapFunctionOfTimeNames {
-    using type = std::array<std::string, 2>;
-    static constexpr Options::String help = {
-        "Names of SizeMapA, SizeMapB functions of time."};
-    using group = SizeMap;
-    static std::string name() { return "FunctionOfTimeNames"; }
-  };
 
   template <typename Metavariables>
   using time_independent_options = tmpl::append<
@@ -598,14 +557,11 @@ class BinaryCompactObject : public DomainCreator<3> {
           tmpl::list<>>>;
 
   using time_dependent_options =
-      tmpl::list<InitialTime, InitialExpirationDeltaT,
-                 ExpansionMapOuterBoundary, InitialExpansion,
-                 InitialExpansionVelocity, ExpansionFunctionOfTimeName,
-                 AsymptoticVelocityOuterBoundary,
+      tmpl::list<InitialTime, ExpansionMapOuterBoundary, InitialExpansion,
+                 InitialExpansionVelocity, AsymptoticVelocityOuterBoundary,
                  DecayTimescaleOuterBoundaryVelocity, InitialRotationAngle,
-                 InitialAngularVelocity, RotationAboutZAxisFunctionOfTimeName,
-                 InitialSizeMapValues, InitialSizeMapVelocities,
-                 InitialSizeMapAccelerations, SizeMapFunctionOfTimeNames>;
+                 InitialAngularVelocity, InitialSizeMapValues,
+                 InitialSizeMapVelocities, InitialSizeMapAccelerations>;
 
   template <typename Metavariables>
   using options = tmpl::conditional_t<
@@ -677,19 +633,15 @@ class BinaryCompactObject : public DomainCreator<3> {
   // Metavariables::domain::enable_time_dependent_maps == true),
   // with parameters corresponding to the additional options
   BinaryCompactObject(
-      double initial_time, std::optional<double> initial_expiration_delta_t,
-      double expansion_map_outer_boundary, double initial_expansion,
-      double initial_expansion_velocity,
-      std::string expansion_function_of_time_name,
+      double initial_time, double expansion_map_outer_boundary,
+      double initial_expansion, double initial_expansion_velocity,
       double asymptotic_velocity_outer_boundary,
       double decay_timescale_outer_boundary_velocity,
       double initial_rotation_angle, double initial_angular_velocity,
-      std::string rotation_about_z_axis_function_of_time_name,
       std::array<double, 2> initial_size_map_values,
       std::array<double, 2> initial_size_map_velocities,
-      std::array<double, 2> initial_size_map_accelerations,
-      std::array<std::string, 2> size_map_function_of_time_names,
-      Object object_A, Object object_B, double radius_enveloping_cube,
+      std::array<double, 2> initial_size_map_accelerations, Object object_A,
+      Object object_B, double radius_enveloping_cube,
       double outer_radius_domain,
       const typename InitialRefinement::type& initial_refinement,
       const typename InitialGridPoints::type& initial_number_of_grid_points,
@@ -719,18 +671,18 @@ class BinaryCompactObject : public DomainCreator<3> {
     return initial_refinement_;
   }
 
-  std::vector<std::string> block_names() const override {
-    return block_names_;
-  }
+  std::vector<std::string> block_names() const override { return block_names_; }
 
   std::unordered_map<std::string, std::unordered_set<std::string>>
   block_groups() const override {
     return block_groups_;
   }
 
-  auto functions_of_time() const -> std::unordered_map<
-      std::string,
-      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;
+  auto functions_of_time(const std::unordered_map<std::string, double>&
+                             initial_expiration_times = {}) const
+      -> std::unordered_map<
+          std::string,
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;
 
  private:
   Object object_A_{};
@@ -760,14 +712,12 @@ class BinaryCompactObject : public DomainCreator<3> {
   // Variables for FunctionsOfTime options
   bool enable_time_dependence_{false};
   double initial_time_{std::numeric_limits<double>::signaling_NaN()};
-  std::optional<double> initial_expiration_delta_t_{
-      std::numeric_limits<double>::signaling_NaN()};
   double expansion_map_outer_boundary_{
       std::numeric_limits<double>::signaling_NaN()};
   double initial_expansion_{std::numeric_limits<double>::signaling_NaN()};
   double initial_expansion_velocity_{
       std::numeric_limits<double>::signaling_NaN()};
-  std::string expansion_function_of_time_name_;
+  inline static const std::string expansion_function_of_time_name_{"Expansion"};
   double asymptotic_velocity_outer_boundary_{
       std::numeric_limits<double>::signaling_NaN()};
   double decay_timescale_outer_boundary_velocity_{
@@ -775,7 +725,8 @@ class BinaryCompactObject : public DomainCreator<3> {
   double initial_rotation_angle_{std::numeric_limits<double>::signaling_NaN()};
   double initial_angular_velocity_{
       std::numeric_limits<double>::signaling_NaN()};
-  std::string rotation_about_z_axis_function_of_time_name_;
+  inline static const std::string rotation_about_z_axis_function_of_time_name_{
+      "Rotation"};
   std::array<double, 2> initial_size_map_values_{
       std::numeric_limits<double>::signaling_NaN(),
       std::numeric_limits<double>::signaling_NaN()};
@@ -785,7 +736,8 @@ class BinaryCompactObject : public DomainCreator<3> {
   std::array<double, 2> initial_size_map_accelerations_{
       std::numeric_limits<double>::signaling_NaN(),
       std::numeric_limits<double>::signaling_NaN()};
-  std::array<std::string, 2> size_map_function_of_time_names_;
+  inline static const std::array<std::string, 2>
+      size_map_function_of_time_names_{{"SizeA", "SizeB"}};
 };
 }  // namespace creators
 }  // namespace domain

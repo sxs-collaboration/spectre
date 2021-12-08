@@ -57,7 +57,9 @@ void test_interval_construction(
         expected_grid_to_inertial_maps,
     const std::vector<DirectionMap<
         1, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>&
-        expected_boundary_conditions) {
+        expected_boundary_conditions,
+    const std::unordered_map<std::string, double>& initial_expiration_times =
+        {}) {
   const auto domain = interval.create_domain();
 
   CHECK(interval.initial_extents() == expected_extents);
@@ -74,7 +76,7 @@ void test_interval_construction(
       expected_boundary_conditions);
   test_initial_domain(domain, interval.initial_refinement_levels());
   TestHelpers::domain::creators::test_functions_of_time(
-      interval, expected_functions_of_time);
+      interval, expected_functions_of_time, initial_expiration_times);
 
   domain::creators::register_derived_with_charm();
   domain::creators::time_dependence::register_derived_with_charm();
@@ -280,36 +282,57 @@ void test_interval_factory() {
   }
   {
     INFO("Interval factory time dependent, no boundary condition");
-    const auto domain_creator = TestHelpers::test_option_tag<
-        domain::OptionTags::DomainCreator<1>,
-        TestHelpers::domain::BoundaryConditions::
-            MetavariablesWithoutBoundaryConditions<
-                1, domain::creators::Interval>>(
-        "Interval:\n"
-        "  LowerBound: [0]\n"
-        "  UpperBound: [1]\n"
-        "  IsPeriodicIn: [True]\n"
-        "  InitialGridPoints: [3]\n"
-        "  InitialRefinement: [2]\n"
-        "  TimeDependence:\n"
-        "    UniformTranslation:\n"
-        "      InitialTime: 1.0\n"
-        "      InitialExpirationDeltaT: 9.0\n"
-        "      Velocity: [2.3]\n"
-        "      FunctionOfTimeName: TranslationX");
+    const auto domain_creator =
+        TestHelpers::test_option_tag<domain::OptionTags::DomainCreator<1>,
+                                     TestHelpers::domain::BoundaryConditions::
+                                         MetavariablesWithoutBoundaryConditions<
+                                             1, domain::creators::Interval>>(
+            "Interval:\n"
+            "  LowerBound: [0]\n"
+            "  UpperBound: [1]\n"
+            "  IsPeriodicIn: [True]\n"
+            "  InitialGridPoints: [3]\n"
+            "  InitialRefinement: [2]\n"
+            "  TimeDependence:\n"
+            "    UniformTranslation:\n"
+            "      InitialTime: 1.0\n"
+            "      Velocity: [2.3]\n");
     const auto* interval_creator =
         dynamic_cast<const creators::Interval*>(domain_creator.get());
+    const double initial_time = 1.0;
+    const DataVector velocity{{2.3}};
+    // This name must match the hard coded one in UniformTranslation
+    const std::string f_of_t_name = "Translation";
+    std::unordered_map<std::string, double> initial_expiration_times{};
+    initial_expiration_times[f_of_t_name] = 10.0;
+    // without expiration times
     test_interval_construction(
         *interval_creator, {{0.}}, {{1.}}, {{{3}}}, {{{2}}}, expected_neighbors,
         std::vector<std::unordered_set<Direction<1>>>{{}},
         std::make_tuple(
             std::pair<std::string,
                       domain::FunctionsOfTime::PiecewisePolynomial<2>>{
-                "TranslationX",
-                {1.0, std::array<DataVector, 3>{{{0.0}, {2.3}, {0.0}}}, 10.0}}),
+                f_of_t_name,
+                {initial_time,
+                 std::array<DataVector, 3>{{{0.0}, velocity, {0.0}}},
+                 std::numeric_limits<double>::infinity()}}),
         make_vector_coordinate_map_base<Frame::Grid, Frame::Inertial>(
-            CoordinateMaps::TimeDependent::Translation<1>{"TranslationX"}),
+            CoordinateMaps::TimeDependent::Translation<1>{f_of_t_name}),
         {});
+    // with expiration times
+    test_interval_construction(
+        *interval_creator, {{0.}}, {{1.}}, {{{3}}}, {{{2}}}, expected_neighbors,
+        std::vector<std::unordered_set<Direction<1>>>{{}},
+        std::make_tuple(
+            std::pair<std::string,
+                      domain::FunctionsOfTime::PiecewisePolynomial<2>>{
+                f_of_t_name,
+                {initial_time,
+                 std::array<DataVector, 3>{{{0.0}, velocity, {0.0}}},
+                 initial_expiration_times[f_of_t_name]}}),
+        make_vector_coordinate_map_base<Frame::Grid, Frame::Inertial>(
+            CoordinateMaps::TimeDependent::Translation<1>{f_of_t_name}),
+        {}, initial_expiration_times);
   }
   {
     INFO("Interval factory time dependent, with boundary condition");
@@ -325,9 +348,7 @@ void test_interval_factory() {
         "  TimeDependence:\n"
         "    UniformTranslation:\n"
         "      InitialTime: 1.0\n"
-        "      InitialExpirationDeltaT: 9.0\n"
         "      Velocity: [2.3]\n"
-        "      FunctionOfTimeName: TranslationX\n"
         "  BoundaryConditions:\n"
         "    LowerBoundary:\n"
         "      TestBoundaryCondition:\n"
@@ -339,17 +360,40 @@ void test_interval_factory() {
         "        BlockId: 0\n");
     const auto* interval_creator =
         dynamic_cast<const creators::Interval*>(domain_creator.get());
+    const double initial_time = 1.0;
+    const DataVector velocity{{2.3}};
+    // This name must match the hard coded one in UniformTranslation
+    const std::string f_of_t_name = "Translation";
+    std::unordered_map<std::string, double> initial_expiration_times{};
+    initial_expiration_times[f_of_t_name] = 10.0;
+    // without expiration times
     test_interval_construction(
         *interval_creator, {{0.}}, {{1.}}, {{{3}}}, {{{2}}}, {{}},
         expected_external_boundaries,
         std::make_tuple(
             std::pair<std::string,
                       domain::FunctionsOfTime::PiecewisePolynomial<2>>{
-                "TranslationX",
-                {1.0, std::array<DataVector, 3>{{{0.0}, {2.3}, {0.0}}}, 10.0}}),
+                f_of_t_name,
+                {initial_time,
+                 std::array<DataVector, 3>{{{0.0}, velocity, {0.0}}},
+                 std::numeric_limits<double>::infinity()}}),
         make_vector_coordinate_map_base<Frame::Grid, Frame::Inertial>(
-            CoordinateMaps::TimeDependent::Translation<1>{"TranslationX"}),
+            CoordinateMaps::TimeDependent::Translation<1>{f_of_t_name}),
         expected_boundary_conditions);
+    // with expiration times
+    test_interval_construction(
+        *interval_creator, {{0.}}, {{1.}}, {{{3}}}, {{{2}}}, {{}},
+        expected_external_boundaries,
+        std::make_tuple(
+            std::pair<std::string,
+                      domain::FunctionsOfTime::PiecewisePolynomial<2>>{
+                f_of_t_name,
+                {initial_time,
+                 std::array<DataVector, 3>{{{0.0}, velocity, {0.0}}},
+                 initial_expiration_times[f_of_t_name]}}),
+        make_vector_coordinate_map_base<Frame::Grid, Frame::Inertial>(
+            CoordinateMaps::TimeDependent::Translation<1>{f_of_t_name}),
+        expected_boundary_conditions, initial_expiration_times);
   }
 }
 }  // namespace

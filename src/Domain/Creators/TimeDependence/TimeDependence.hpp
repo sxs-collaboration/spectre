@@ -4,7 +4,6 @@
 #pragma once
 
 #include <cstddef>
-#include <limits>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -33,11 +32,11 @@ class None;
 class SphericalCompression;
 template <size_t MeshDim>
 class UniformRotationAboutZAxis;
-template <size_t MeshDim>
+template <size_t MeshDim, size_t Index = 0>
 class UniformTranslation;
 template <typename TimeDependenceCompTag0, typename... TimeDependenceCompTags>
 class Composition;
-template <typename TimeDep, size_t Suffix>
+template <typename TimeDep>
 struct TimeDependenceCompositionTag;
 }  // namespace domain::creators::time_dependence
 /// \endcond
@@ -51,7 +50,9 @@ namespace time_dependence {
 ///
 /// The simplest examples of a `TimeDependence` are `None` and
 /// `UniformTranslation`. The `None` class is treated in a special manner to
-/// communicate to the code that the domain is time-independent.
+/// communicate to the code that the domain is time-independent. The
+/// `UniformTranslation` takes an extra template parameter `Index` so that its
+/// name is unique from other `UniformTranslation`s.
 template <size_t MeshDim>
 struct TimeDependence {
  private:
@@ -59,11 +60,8 @@ struct TimeDependence {
   using creatable_classes_2d = tmpl::list<UniformRotationAboutZAxis<2>>;
   using creatable_classes_3d = tmpl::list<
       SphericalCompression, UniformRotationAboutZAxis<3>,
-      Composition<
-          TimeDependenceCompositionTag<CubicScale<3>,
-                                       std::numeric_limits<size_t>::max()>,
-          TimeDependenceCompositionTag<UniformRotationAboutZAxis<3>,
-                                       std::numeric_limits<size_t>::max()>>>;
+      Composition<TimeDependenceCompositionTag<CubicScale<3>>,
+                  TimeDependenceCompositionTag<UniformRotationAboutZAxis<3>>>>;
   using creatable_classes_any_dim =
       tmpl::list<CubicScale<MeshDim>, None<MeshDim>,
                  UniformTranslation<MeshDim>>;
@@ -93,9 +91,11 @@ struct TimeDependence {
       domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, MeshDim>>> = 0;
 
   /// Returns the functions of time for the domain.
-  virtual auto functions_of_time() const -> std::unordered_map<
-      std::string,
-      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> = 0;
+  virtual auto functions_of_time(const std::unordered_map<std::string, double>&
+                                     initial_expiration_times = {}) const
+      -> std::unordered_map<
+          std::string,
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> = 0;
 
   /// Returns `true` if the instance is `None`, meaning no time dependence.
   bool is_none() const {
@@ -106,7 +106,7 @@ struct TimeDependence {
 template <size_t MeshDim>
 TimeDependence<MeshDim>::~TimeDependence() = default;
 }  // namespace time_dependence
-}  // namespace creators::namespace domain
+}  // namespace domain::creators
 
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"

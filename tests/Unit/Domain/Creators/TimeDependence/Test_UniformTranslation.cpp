@@ -72,9 +72,28 @@ void test(const std::unique_ptr<TimeDependence<MeshDim>>& time_dep_unique_ptr,
     CHECK(*block_map == expected_block_map);
   }
 
-  // Test functions of time
+  // Test functions of time without expiration times
+  {
+    const auto functions_of_time = time_dep_unique_ptr->functions_of_time();
+    REQUIRE(functions_of_time.size() == 1);
+    CHECK(functions_of_time.count(f_of_t_name) == 1);
+    CHECK(functions_of_time.at(f_of_t_name)->time_bounds()[1] ==
+          std::numeric_limits<double>::infinity());
+  }
+  // Test functions of time with expiration times
+  {
+    const double init_expr_time = 5.0;
+    std::unordered_map<std::string, double> init_expr_times{};
+    init_expr_times[f_of_t_name] = init_expr_time;
+    const auto functions_of_time =
+        time_dep_unique_ptr->functions_of_time(init_expr_times);
+    REQUIRE(functions_of_time.size() == 1);
+    CHECK(functions_of_time.count(f_of_t_name) == 1);
+    CHECK(functions_of_time.at(f_of_t_name)->time_bounds()[1] ==
+          init_expr_time);
+  }
+
   const auto functions_of_time = time_dep_unique_ptr->functions_of_time();
-  CHECK(functions_of_time.count(f_of_t_name) == 1);
 
   // Test map for composition
   CHECK(time_dep->map_for_composition() == expected_block_map);
@@ -133,30 +152,21 @@ void test(const std::unique_ptr<TimeDependence<MeshDim>>& time_dep_unique_ptr,
 
 void test_equivalence() {
   {
-    UniformTranslation<1> ut0{1.0, 2.5, {{2.0}}, "TranslationX"};
-    UniformTranslation<1> ut1{1.2, 2.5, {{2.0}}, "TranslationX"};
-    UniformTranslation<1> ut2{1.0, 2.5, {{3.0}}, "TranslationX"};
-    UniformTranslation<1> ut3{1.0, 2.5, {{2.0}}, "TranslationY"};
-    UniformTranslation<1> ut4{1.0, 2.6, {{2.0}}, "TranslationX"};
+    UniformTranslation<1> ut0{1.0, {{2.0}}};
+    UniformTranslation<1> ut1{1.2, {{2.0}}};
+    UniformTranslation<1> ut2{1.0, {{3.0}}};
     CHECK(ut0 == ut0);
     CHECK_FALSE(ut0 != ut0);
     CHECK(ut0 != ut1);
     CHECK_FALSE(ut0 == ut1);
     CHECK(ut0 != ut2);
     CHECK_FALSE(ut0 == ut2);
-    CHECK(ut0 != ut3);
-    CHECK_FALSE(ut0 == ut3);
-    CHECK(ut0 != ut4);
-    CHECK_FALSE(ut0 == ut4);
   }
   {
-    UniformTranslation<2> ut0{1.0, 2.5, {{2.0, 4.0}}, "TranslationXY"};
-    UniformTranslation<2> ut1{1.2, 2.5, {{2.0, 4.0}}, "TranslationXY"};
-    UniformTranslation<2> ut2{1.0, 2.5, {{3.0, 4.0}}, "TranslationXY"};
-    UniformTranslation<2> ut3{1.0, 2.5, {{2.0, 5.0}}, "TranslationXY"};
-    UniformTranslation<2> ut4{1.0, 2.5, {{2.0, 4.0}}, "TranslationYZ"};
-    UniformTranslation<2> ut5{1.0, 2.5, {{2.0, 4.0}}, "TranslationXZ"};
-    UniformTranslation<2> ut6{1.0, 2.6, {{2.0, 4.0}}, "TranslationXY"};
+    UniformTranslation<2> ut0{1.0, {{2.0, 4.0}}};
+    UniformTranslation<2> ut1{1.2, {{2.0, 4.0}}};
+    UniformTranslation<2> ut2{1.0, {{3.0, 4.0}}};
+    UniformTranslation<2> ut3{1.0, {{2.0, 5.0}}};
     CHECK(ut0 == ut0);
     CHECK_FALSE(ut0 != ut0);
     CHECK(ut0 != ut1);
@@ -165,23 +175,13 @@ void test_equivalence() {
     CHECK_FALSE(ut0 == ut2);
     CHECK(ut0 != ut3);
     CHECK_FALSE(ut0 == ut3);
-    CHECK(ut0 != ut4);
-    CHECK_FALSE(ut0 == ut4);
-    CHECK(ut0 != ut5);
-    CHECK_FALSE(ut0 == ut5);
-    CHECK(ut0 != ut6);
-    CHECK_FALSE(ut0 == ut6);
   }
   {
-    UniformTranslation<3> ut0{1.0, 2.5, {{2.0, 4.0, 6.0}}, "TranslationXYZ"};
-    UniformTranslation<3> ut1{1.2, 2.5, {{2.0, 4.0, 6.0}}, "TranslationXYZ"};
-    UniformTranslation<3> ut2{1.0, 2.5, {{3.0, 4.0, 6.0}}, "TranslationXYZ"};
-    UniformTranslation<3> ut3{1.0, 2.5, {{2.0, 5.0, 6.0}}, "TranslationXYZ"};
-    UniformTranslation<3> ut4{1.0, 2.5, {{2.0, 4.0, 7.0}}, "TranslationXYZ"};
-    UniformTranslation<3> ut5{1.0, 2.5, {{2.0, 4.0, 6.0}}, "TranslationWYZ"};
-    UniformTranslation<3> ut6{1.0, 2.5, {{2.0, 4.0, 6.0}}, "TranslationXWZ"};
-    UniformTranslation<3> ut7{1.0, 2.5, {{2.0, 4.0, 6.0}}, "TranslationXYW"};
-    UniformTranslation<3> ut8{1.0, 2.6, {{2.0, 4.0, 6.0}}, "TranslationXYZ"};
+    UniformTranslation<3> ut0{1.0, {{2.0, 4.0, 6.0}}};
+    UniformTranslation<3> ut1{1.2, {{2.0, 4.0, 6.0}}};
+    UniformTranslation<3> ut2{1.0, {{3.0, 4.0, 6.0}}};
+    UniformTranslation<3> ut3{1.0, {{2.0, 5.0, 6.0}}};
+    UniformTranslation<3> ut4{1.0, {{2.0, 4.0, 7.0}}};
     CHECK(ut0 == ut0);
     CHECK_FALSE(ut0 != ut0);
     CHECK(ut0 != ut1);
@@ -192,76 +192,64 @@ void test_equivalence() {
     CHECK_FALSE(ut0 == ut3);
     CHECK(ut0 != ut4);
     CHECK_FALSE(ut0 == ut4);
-    CHECK(ut0 != ut5);
-    CHECK_FALSE(ut0 == ut5);
-    CHECK(ut0 != ut6);
-    CHECK_FALSE(ut0 == ut6);
-    CHECK(ut0 != ut7);
-    CHECK_FALSE(ut0 == ut7);
-    CHECK(ut0 != ut8);
-    CHECK_FALSE(ut0 == ut8);
   }
 }
 
 SPECTRE_TEST_CASE("Unit.Domain.Creators.TimeDependence.UniformTranslation",
                   "[Domain][Unit]") {
   const double initial_time = 1.3;
-  const double update_delta_t = 2.5;
 
   {
     // 1d
     const std::array<double, 1> velocity{{2.4}};
-    const std::string f_of_t_name = "TranslationIn1D";
+    // This name must match the hard coded one in UniformTranslation
+    const std::string f_of_t_name = "Translation";
     const std::unique_ptr<domain::creators::time_dependence::TimeDependence<1>>
-        time_dep = std::make_unique<UniformTranslation<1>>(
-            initial_time, update_delta_t, velocity, f_of_t_name);
+        time_dep =
+            std::make_unique<UniformTranslation<1>>(initial_time, velocity);
     test(time_dep, initial_time, f_of_t_name);
     test(time_dep->get_clone(), initial_time, f_of_t_name);
 
     test(TestHelpers::test_creation<std::unique_ptr<TimeDependence<1>>>(
              "UniformTranslation:\n"
              "  InitialTime: 1.3\n"
-             "  InitialExpirationDeltaT: 2.5\n"
-             "  Velocity: [2.4]\n"
-             "  FunctionOfTimeName: TranslationIn1D\n"),
+             "  Velocity: [2.4]\n"),
          initial_time, f_of_t_name);
   }
 
   {
     // 2d
     const std::array<double, 2> velocity{{2.4, 3.1}};
-    const std::string f_of_t_name = "TranslationIn2D";
+    // This name must match the hard coded one in UniformTranslation
+    const std::string f_of_t_name = "Translation";
     const std::unique_ptr<domain::creators::time_dependence::TimeDependence<2>>
-        time_dep = std::make_unique<UniformTranslation<2>>(
-            initial_time, update_delta_t, velocity, f_of_t_name);
+        time_dep =
+            std::make_unique<UniformTranslation<2>>(initial_time, velocity);
     test(time_dep, initial_time, f_of_t_name);
     test(time_dep->get_clone(), initial_time, f_of_t_name);
 
     test(TestHelpers::test_creation<std::unique_ptr<TimeDependence<2>>>(
              "UniformTranslation:\n"
              "  InitialTime: 1.3\n"
-             "  InitialExpirationDeltaT: 2.5\n"
-             "  Velocity: [2.4, 3.1]\n"
-             "  FunctionOfTimeName: TranslationIn2D\n"),
+             "  Velocity: [2.4, 3.1]\n"),
          initial_time, f_of_t_name);
   }
 
   {
     // 3d
     const std::array<double, 3> velocity{{2.4, 3.1, -1.2}};
-    const std::string f_of_t_name = "TranslationIn3D";
+    // This name must match the hard coded one in UniformTranslation
+    const std::string f_of_t_name = "Translation";
     const std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
-        time_dep = std::make_unique<UniformTranslation<3>>(
-            initial_time, update_delta_t, velocity, f_of_t_name);
+        time_dep =
+            std::make_unique<UniformTranslation<3>>(initial_time, velocity);
     test(time_dep, initial_time, f_of_t_name);
     test(time_dep->get_clone(), initial_time, f_of_t_name);
 
     test(TestHelpers::test_creation<std::unique_ptr<TimeDependence<3>>>(
              "UniformTranslation:\n"
              "  InitialTime: 1.3\n"
-             "  InitialExpirationDeltaT: Auto\n"
-             "  Velocity: [2.4, 3.1, -1.2]\n"
-             "  FunctionOfTimeName: TranslationIn3D\n"),
+             "  Velocity: [2.4, 3.1, -1.2]\n"),
          initial_time, f_of_t_name);
   }
 

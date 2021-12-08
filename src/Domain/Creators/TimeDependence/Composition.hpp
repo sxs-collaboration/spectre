@@ -26,22 +26,13 @@ namespace time_dependence {
  * \brief A tag used by the `Composition` class to generate a TimeDependence
  * that is a composition of existing `TimeDependences`.
  *
- * The first template parameter is the existing TimeDependence while the
- * `Suffix` parameter can be used by a composition that contains multiple of the
- * same TimeDependence. This could occur for example when adding a rotation
- * TimeDependence before and after a Translation since the two rotations would
- * be rotating about a different center.
+ * The first template parameter is the existing TimeDependence.
  */
-template <typename TimeDep, size_t Suffix = std::numeric_limits<size_t>::max()>
+template <typename TimeDep>
 struct TimeDependenceCompositionTag {
   static constexpr size_t mesh_dim = TimeDep::mesh_dim;
-  static std::string name() {
-    return pretty_type::short_name<TimeDep>() +
-           (Suffix == std::numeric_limits<size_t>::max()
-                ? std::string{}
-                : std::to_string(Suffix));
-  }
-  using type = std::unique_ptr<TimeDependence<TimeDep::mesh_dim>>;
+  static std::string name() { return Options::name<TimeDep>(); }
+  using type = TimeDep;
   static constexpr Options::String help = {
       "One of the maps in the composition."};
   using time_dependence = TimeDep;
@@ -95,13 +86,14 @@ class Composition final
       tmpl::type_from<TimeDependenceCompTag0> first_time_dep,
       tmpl::type_from<TimeDependenceCompTags>... rest_time_dep);
 
-  /// Constructor for copying the composition time dependence. Internally
-  /// performs all the copying necessary to deal with the functions of time.
-  Composition(CoordMap coord_map,
-              const std::unordered_map<
-                  std::string,
-                  std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-                  functions_of_time);
+  // static_assert above guarantees that all the TimeDependences have the same
+  // dimension so this is ok
+  /// Constructor for copying the composition time dependence.
+  Composition(
+      CoordMap coord_map,
+      const std::vector<
+          std::unique_ptr<TimeDependence<TimeDependenceCompTag0::mesh_dim>>>&
+          time_deps);
 
   auto get_clone() const -> std::unique_ptr<TimeDependence<mesh_dim>> override;
 
@@ -109,16 +101,19 @@ class Composition final
       -> std::vector<std::unique_ptr<domain::CoordinateMapBase<
           Frame::Grid, Frame::Inertial, mesh_dim>>> override;
 
-  auto functions_of_time() const -> std::unordered_map<
-      std::string,
-      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;
+  auto functions_of_time(const std::unordered_map<std::string, double>&
+                             initial_expiration_times = {}) const
+      -> std::unordered_map<
+          std::string,
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;
 
  private:
   CoordMap coord_map_;
 
-  std::unordered_map<std::string,
-                     std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
-      functions_of_time_;
+  // static_assert above guarantees that all the TimeDependences have the same
+  // dimension so this is ok
+  std::vector<std::unique_ptr<TimeDependence<TimeDependenceCompTag0::mesh_dim>>>
+      time_deps_{};
 };
 }  // namespace time_dependence
 }  // namespace creators

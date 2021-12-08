@@ -20,6 +20,7 @@
 #include "Options/Auto.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -83,25 +84,11 @@ class UniformRotationAboutZAxis final : public TimeDependence<MeshDim> {
     static constexpr Options::String help = {
         "The initial time of the function of time"};
   };
-  /// \brief The time interval for updates of the functions of time.
-  struct InitialExpirationDeltaT {
-    using type = Options::Auto<double>;
-    static constexpr Options::String help = {
-        "The initial time interval for updates of the functions of time. If "
-        "Auto, then the functions of time do not expire, nor can they be "
-        "updated."};
-  };
   /// \brief The \f$x\f$-, \f$y\f$-, and \f$z\f$-velocity.
   struct AngularVelocity {
     using type = double;
     static constexpr Options::String help = {
         "The angular velocity of the map."};
-  };
-  /// \brief The name of the function of time to be added to the DataBox.
-  struct FunctionOfTimeName {
-    using type = std::string;
-    static constexpr Options::String help = {
-        "Name of the rotation angle function of time."};
   };
 
   using MapForComposition = detail::generate_coordinate_map_t<
@@ -109,8 +96,7 @@ class UniformRotationAboutZAxis final : public TimeDependence<MeshDim> {
                                      domain::CoordinateMaps::TimeDependent::
                                          ProductOf2Maps<Rotation, Identity>>>>;
 
-  using options = tmpl::list<InitialTime, InitialExpirationDeltaT,
-                             AngularVelocity, FunctionOfTimeName>;
+  using options = tmpl::list<InitialTime, AngularVelocity>;
 
   static constexpr Options::String help = {
       "A spatially uniform rotation about the z axis initialized with a "
@@ -124,10 +110,7 @@ class UniformRotationAboutZAxis final : public TimeDependence<MeshDim> {
       delete;
   UniformRotationAboutZAxis& operator=(UniformRotationAboutZAxis&&) = default;
 
-  UniformRotationAboutZAxis(
-      double initial_time, std::optional<double> initial_expiration_delta_t,
-      double angular_velocity,
-      std::string function_of_time_name = "RotationAngle");
+  UniformRotationAboutZAxis(double initial_time, double angular_velocity);
 
   auto get_clone() const -> std::unique_ptr<TimeDependence<MeshDim>> override;
 
@@ -135,9 +118,11 @@ class UniformRotationAboutZAxis final : public TimeDependence<MeshDim> {
       -> std::vector<std::unique_ptr<domain::CoordinateMapBase<
           Frame::Grid, Frame::Inertial, MeshDim>>> override;
 
-  auto functions_of_time() const -> std::unordered_map<
-      std::string,
-      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;
+  auto functions_of_time(const std::unordered_map<std::string, double>&
+                             initial_expiration_times = {}) const
+      -> std::unordered_map<
+          std::string,
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;
 
   /// Returns the map for each block to be used in a composition of
   /// `TimeDependence`s.
@@ -150,9 +135,8 @@ class UniformRotationAboutZAxis final : public TimeDependence<MeshDim> {
                          const UniformRotationAboutZAxis<LocalDim>& rhs);
 
   double initial_time_{std::numeric_limits<double>::signaling_NaN()};
-  std::optional<double> initial_expiration_delta_t_{};
   double angular_velocity_{std::numeric_limits<double>::signaling_NaN()};
-  std::string function_of_time_name_{};
+  inline static const std::string function_of_time_name_{"Rotation"};
 };
 
 template <size_t Dim>

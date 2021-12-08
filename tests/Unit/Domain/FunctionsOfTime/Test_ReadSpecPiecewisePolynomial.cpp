@@ -87,7 +87,7 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.ReadSpecPiecewisePolynomial",
 
   constexpr size_t number_of_times = 3;
   const std::array<double, number_of_times> expected_times{{0.0, 0.1, 0.2}};
-  const std::array<std::string, 3> expected_names{
+  const std::array<std::string, 3> source_names{
       {"ExpansionFactor", "RotationAngle", "Unity"}};
 
   std::array<DataVector, 4> initial_expansion{
@@ -138,7 +138,7 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.ReadSpecPiecewisePolynomial",
       "Time", "TLastUpdate", "Nc",  "DerivOrder", "Version",
       "a",    "da",          "d2a", "d3a"};
   auto& expansion_file = test_file.insert<h5::Dat>(
-      "/" + expected_names[0], expansion_legend, version_number);
+      "/" + source_names[0], expansion_legend, version_number);
   expansion_file.append(test_expansion);
 
   const std::vector<std::vector<double>> test_rotation{
@@ -159,7 +159,7 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.ReadSpecPiecewisePolynomial",
       "Time", "TLastUpdate", "Nc",    "DerivOrder", "Version",
       "Phi",  "dPhi",        "d2Phi", "d3Phi"};
   auto& rotation_file = test_file.insert<h5::Dat>(
-      "/" + expected_names[1], rotation_legend, version_number);
+      "/" + source_names[1], rotation_legend, version_number);
   rotation_file.append(test_rotation);
 
   const std::vector<std::vector<double>> test_unity{
@@ -170,30 +170,20 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.ReadSpecPiecewisePolynomial",
   const std::vector<std::string> unity_legend{
       "Time",  "TLastUpdate", "Nc",      "DerivOrder", "Version",
       "Unity", "dUnity",      "d2Unity", "d3Unity"};
-  auto& unity_file = test_file.insert<h5::Dat>("/" + expected_names[2],
+  auto& unity_file = test_file.insert<h5::Dat>("/" + source_names[2],
                                                unity_legend, version_number);
   unity_file.append(test_unity);
 
-  std::unordered_map<std::string,
-                     std::unique_ptr<::domain::FunctionsOfTime::FunctionOfTime>>
-      initial_functions_of_time{};
-
-  const std::array<DataVector, 4> initial_coefficients{
-      {{0.0}, {0.0}, {0.0}, {0.0}}};
-  initial_functions_of_time["ExpansionFactor"] =
-      std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<3>>(
-          0.0, initial_coefficients, 0.0);
-  initial_functions_of_time["Unity"] =
-      std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<3>>(
-          0.0, initial_coefficients, 0.0);
-  initial_functions_of_time["RotationAngle"] =
-      std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<3>>(
-          0.0, initial_coefficients, 0.0);
+  // These names must match the hard coded ones in their respective
+  // TimeDependences
+  const std::string expansion_name = "CubicScaleA";
+  const std::string unity_name = "CubicScaleB";
+  const std::string rotation_name = "Rotation";
 
   const std::map<std::string, std::string> expected_set_names{
-      {"ExpansionFactor", "ExpansionFactor"},
-      {"Unity", "Unity"},
-      {"RotationAngle", "RotationAngle"}};
+      {"ExpansionFactor", expansion_name},
+      {"Unity", unity_name},
+      {"RotationAngle", rotation_name}};
 
   const auto created_domain_creator = TestHelpers::test_option_tag<
       domain::OptionTags::DomainCreator<3>,
@@ -208,26 +198,21 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.ReadSpecPiecewisePolynomial",
       "  TimeDependence:\n"
       "    Composition:\n"
       "      CubicScale:\n"
-      "        CubicScale:\n"
-      "            InitialTime: 0.0\n"
-      "            InitialExpirationDeltaT: 0.2\n"
-      "            InitialExpansion: [1.0, 1.0]\n"
-      "            Velocity: [0.0, 0.0]\n"
-      "            Acceleration: [0.0, 0.0]\n"
-      "            OuterBoundary: 839.661030811156\n"
-      "            FunctionOfTimeNames: [\"ExpansionFactor\", \"Unity\"]\n"
+      "        InitialTime: 0.0\n"
+      "        InitialExpansion: [1.0, 1.0]\n"
+      "        UseLinearScaling: false\n"
+      "        Velocity: [0.0, 0.0]\n"
+      "        Acceleration: [0.0, 0.0]\n"
+      "        OuterBoundary: 839.661030811156\n"
       "      UniformRotationAboutZAxis:\n"
-      "        UniformRotationAboutZAxis:\n"
-      "          InitialTime: 0.0\n"
-      "          InitialExpirationDeltaT: 0.2\n"
-      "          AngularVelocity: 0.0\n"
-      "          FunctionOfTimeName: \"RotationAngle\"\n");
+      "        InitialTime: 0.0\n"
+      "        AngularVelocity: 0.0\n");
   const auto created_function_of_time_file = TestHelpers::test_option_tag<
       domain::FunctionsOfTime::OptionTags::FunctionOfTimeFile>(test_filename);
   const auto created_function_of_time_name_map = TestHelpers::test_option_tag<
       domain::FunctionsOfTime::OptionTags::FunctionOfTimeNameMap>(
-      "{ExpansionFactor: ExpansionFactor, Unity: Unity, RotationAngle: "
-      "RotationAngle}");
+      "{ExpansionFactor: " + expansion_name + ", Unity: " + unity_name +
+      ", RotationAngle: " + rotation_name + "}");
 
   // Check that the FunctionOfTime and its derivatives have the expected
   // values
@@ -246,9 +231,12 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.ReadSpecPiecewisePolynomial",
   std::unordered_map<std::string,
                      std::array<std::array<double, 3>, number_of_times>>
       expected_functions;
-  expected_functions[expected_names[0]] = expected_expansion;
-  expected_functions[expected_names[1]] = expected_rotation;
-  expected_functions[expected_names[2]] = expected_unity;
+  expected_functions[expansion_name] = expected_expansion;
+  expected_functions[rotation_name] = expected_rotation;
+  expected_functions[unity_name] = expected_unity;
+
+  const std::array<std::string, 3> expected_names{
+      {expansion_name, rotation_name, unity_name}};
 
   const auto check_read_functions_of_time =
       [&expected_names, &expected_times](
@@ -289,7 +277,7 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.ReadSpecPiecewisePolynomial",
   const auto created_function_of_time_name_map_expansion =
       TestHelpers::test_option_tag<
           domain::FunctionsOfTime::OptionTags::FunctionOfTimeNameMap>(
-          "{ExpansionFactor: ExpansionFactor}");
+          "{ExpansionFactor: " + expansion_name + "}");
   const auto& functions_of_time_expansion =
       domain::Tags::FunctionsOfTimeInitialize::create_from_options<
           Metavariables>(created_domain_creator, created_function_of_time_file,
@@ -297,10 +285,10 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.ReadSpecPiecewisePolynomial",
 
   // Only override ExpansionFactor this time, so change the expected Rotation
   // and Unity FunctionsOfTime to their initial values
-  expected_functions[expected_names[1]] =
+  expected_functions[rotation_name] =
       std::array<std::array<double, 3>, number_of_times>{
           {{{0.0, 0.0, 0.0}}, {{0.0, 0.0, 0.0}}, {{0.0, 0.0, 0.0}}}};
-  expected_functions[expected_names[2]] =
+  expected_functions[unity_name] =
       std::array<std::array<double, 3>, number_of_times>{
           {{{1.0, 0.0, 0.0}}, {{1.0, 0.0, 0.0}}, {{1.0, 0.0, 0.0}}}};
   check_read_functions_of_time(functions_of_time_expansion, expected_functions);
