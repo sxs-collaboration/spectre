@@ -4,6 +4,7 @@
 set(LIBRARY "Test_ParallelAlgorithmsEvents")
 
 set(LIBRARY_SOURCES
+  Test_ObserveAtPoint.cpp
   Test_ObserveFields.cpp
   Test_ObserveNorms.cpp
   Test_ObserveTimeStep.cpp

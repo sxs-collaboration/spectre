@@ -12,6 +12,11 @@
 #     FileGlob: PoissonProductOfSinusoids1DReductions.h5
 #     SkipColumns: [0, 1, 2]
 #     AbsoluteTolerance: 0.004
+#   - Label: Interpolation
+#     Subfile: /Origin.dat
+#     FileGlob: PoissonProductOfSinusoids1DReductions.h5
+#     SkipColumns: [0, 1]
+#     AbsoluteTolerance: 0.005
 
 ResourceInfo:
   AvoidGlobalProc0: false
@@ -79,6 +84,11 @@ EventsAndTriggers:
             - Name: Error(Field)
               NormType: L2Norm
               Components: Sum
+      - ObserveAtPoint:
+          SubfileName: Origin
+          TensorsToObserve:
+            - Field
+          Coordinates: [0.]
       - ObserveFields:
           SubfileName: VolumeData
           VariablesToObserve: [Field]

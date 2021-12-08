@@ -11,6 +11,7 @@ spectre_target_headers(
   HEADERS
   Factory.hpp
   MonitorMemory.hpp
+  ObserveAtPoint.hpp
   ObserveFields.hpp
   ObserveNorms.hpp
   ObserveTimeStep.hpp

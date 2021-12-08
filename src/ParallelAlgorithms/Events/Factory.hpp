@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <type_traits>
 
+#include "ParallelAlgorithms/Events/ObserveAtPoint.hpp"
 #include "ParallelAlgorithms/Events/ObserveFields.hpp"
 #include "ParallelAlgorithms/Events/ObserveNorms.hpp"
 #include "ParallelAlgorithms/Events/ObserveTimeStep.hpp"
@@ -18,6 +19,8 @@ template <size_t VolumeDim, typename TimeTag, typename Fields,
 using field_observations = tmpl::flatten<
     tmpl::list<ObserveFields<VolumeDim, TimeTag, Fields,
                              NonTensorComputeTagsList, ArraySectionIdTag>,
+               ObserveAtPoint<VolumeDim, TimeTag, Fields,
+                              NonTensorComputeTagsList, ArraySectionIdTag>,
                ::Events::ObserveNorms<TimeTag, Fields, NonTensorComputeTagsList,
                                       ArraySectionIdTag>>>;
 }  // namespace dg::Events
