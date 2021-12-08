@@ -115,7 +115,7 @@ void reconstruct_prims_work(
     const FixedHashMap<maximum_number_of_neighbors(3) + 1,
                        std::pair<Direction<3>, ElementId<3>>,
                        evolution::dg::subcell::NeighborData,
-                       boost::hash<std::pair<Direction<3>, ElementId<3>>>>
+                       boost::hash<std::pair<Direction<3>, ElementId<3>>>>&
         neighbor_data,
     const Mesh<3>& subcell_mesh, size_t ghost_zone_size) {
   using prim_tags_for_reconstruction =
@@ -228,7 +228,7 @@ void reconstruct_fd_neighbor_work(
     const FixedHashMap<maximum_number_of_neighbors(3) + 1,
                        std::pair<Direction<3>, ElementId<3>>,
                        evolution::dg::subcell::NeighborData,
-                       boost::hash<std::pair<Direction<3>, ElementId<3>>>>
+                       boost::hash<std::pair<Direction<3>, ElementId<3>>>>&
         neighbor_data,
     const Mesh<3>& subcell_mesh, const Direction<3>& direction_to_reconstruct,
     const size_t ghost_zone_size) {

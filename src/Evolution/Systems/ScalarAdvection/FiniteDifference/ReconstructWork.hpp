@@ -48,7 +48,7 @@ void reconstruct_work(
     const FixedHashMap<maximum_number_of_neighbors(Dim) + 1,
                        std::pair<Direction<Dim>, ElementId<Dim>>,
                        evolution::dg::subcell::NeighborData,
-                       boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>
+                       boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
         neighbor_data,
     const Mesh<Dim>& subcell_mesh, const size_t ghost_zone_size);
 
@@ -70,7 +70,7 @@ void reconstruct_fd_neighbor_work(
     const FixedHashMap<maximum_number_of_neighbors(Dim) + 1,
                        std::pair<Direction<Dim>, ElementId<Dim>>,
                        evolution::dg::subcell::NeighborData,
-                       boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>
+                       boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
         neighbor_data,
     const Mesh<Dim>& subcell_mesh,
     const Direction<Dim>& direction_to_reconstruct,
