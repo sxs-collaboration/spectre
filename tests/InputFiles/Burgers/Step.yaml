@@ -43,14 +43,17 @@ SpatialDiscretization:
   DiscontinuousGalerkin:
     Formulation: StrongInertial
     Quadrature: GaussLobatto
-
-Limiter:
-  Minmod:
-    Type: LambdaPi1
-    # The optimal value of the TVB constant is problem-dependent.
-    # This test uses 0 to favor robustness over accuracy.
-    TvbConstant: 0.0
-    DisableForDebugging: false
+    Subcell:
+      RdmpDelta0: 1.0e-7
+      RdmpEpsilon: 1.0e-3
+      PerssonExponent: 4.0
+      InitialData:
+        RdmpDelta0: 1.0e-7
+        RdmpEpsilon: 1.0e-3
+        PerssonExponent: 4.0
+      AlwaysUseSubcells: false
+  SubcellSolver:
+    Reconstructor: MonotisedCentral
 
 EventsAndTriggers:
   ? Always
