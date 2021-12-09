@@ -10,6 +10,7 @@ spectre_target_sources(
   PRIVATE
   BlastWave.cpp
   BondiHoyleAccretion.cpp
+  KhInstability.cpp
   MagneticFieldLoop.cpp
   MagneticRotor.cpp
   MagnetizedFmDisk.cpp
@@ -25,6 +26,7 @@ spectre_target_headers(
   AnalyticData.hpp
   BlastWave.hpp
   BondiHoyleAccretion.hpp
+  KhInstability.hpp
   MagneticFieldLoop.hpp
   MagneticRotor.hpp
   MagnetizedFmDisk.hpp
