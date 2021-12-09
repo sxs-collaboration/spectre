@@ -203,8 +203,14 @@ class ObserveTimeStep : public Event {
   }
 
   using observation_registration_tags = tmpl::list<>;
+
+  template <typename Metavariables, typename ArrayIndex,
+            typename ParallelComponent>
   std::pair<observers::TypeOfObservation, observers::ObservationKey>
-  get_observation_type_and_key_for_registration() const {
+  get_observation_type_and_key_for_registration(
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/,
+      const ParallelComponent* const /*meta*/) const {
     return {observers::TypeOfObservation::Reduction,
             observers::ObservationKey(subfile_path_ + ".dat")};
   }

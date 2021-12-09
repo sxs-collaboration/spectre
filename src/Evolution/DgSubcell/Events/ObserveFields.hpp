@@ -266,8 +266,13 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
   }
 
   using observation_registration_tags = tmpl::list<>;
+
+  template <typename Metavariables, typename ParallelComponent>
   std::pair<observers::TypeOfObservation, observers::ObservationKey>
-  get_observation_type_and_key_for_registration() const {
+  get_observation_type_and_key_for_registration(
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ElementId<VolumeDim>& /*array_index*/,
+      const ParallelComponent* const /*meta*/) const {
     return {observers::TypeOfObservation::Volume,
             observers::ObservationKey(subfile_path_ + ".vol")};
   }

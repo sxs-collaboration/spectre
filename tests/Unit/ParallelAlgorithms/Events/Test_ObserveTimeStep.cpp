@@ -198,17 +198,21 @@ void test_observe(const Observer& observer, const bool backwards_in_time,
             Metavariables{}, observation_time, slab.duration() * slab_fraction,
             System::variables_tag::type(num_points));
 
+        element_boxes.push_back(std::move(box));
+
+        const size_t index = element_boxes.size() - 1;
+        ActionTesting::emplace_component<element_component>(&runner, index);
+
         const auto ids_to_register =
-            observers::get_registration_observation_type_and_key(observer, box);
+            observers::get_registration_observation_type_and_key(
+                observer, element_boxes.back(),
+                ActionTesting::cache<element_component>(runner, index),
+                static_cast<element_component::array_index>(index),
+                std::add_pointer_t<element_component>{});
         CHECK(ids_to_register->first ==
               observers::TypeOfObservation::Reduction);
         CHECK(ids_to_register->second ==
               observers::ObservationKey("/time_step_subfile.dat"));
-
-        element_boxes.push_back(std::move(box));
-
-        ActionTesting::emplace_component<element_component>(
-            &runner, element_boxes.size() - 1);
       };
 
   create_element(5, {1, 20});

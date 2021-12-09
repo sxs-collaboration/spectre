@@ -194,7 +194,10 @@ void test(const std::unique_ptr<ObserveEvent> observe,
       metavariables{}, observation_time, vars, section);
 
   const auto ids_to_register =
-      observers::get_registration_observation_type_and_key(*observe, box);
+      observers::get_registration_observation_type_and_key(
+          *observe, box,
+          ActionTesting::cache<element_component>(runner, array_index),
+          array_index, std::add_pointer_t<element_component>{});
   const std::string expected_subfile_name{
       "/reduction0" +
       (std::is_same_v<ArraySectionIdTag, void> ? ""

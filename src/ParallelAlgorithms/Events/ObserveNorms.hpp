@@ -212,11 +212,15 @@ class ObserveNorms<ObservationValueTag, tmpl::list<ObservableTensorTags...>,
 
   using observation_registration_tags = tmpl::list<::Tags::DataBox>;
 
-  template <typename DbTagsList>
+  template <typename DbTagsList, typename Metavariables, typename ArrayIndex,
+            typename ParallelComponent>
   std::optional<
       std::pair<observers::TypeOfObservation, observers::ObservationKey>>
   get_observation_type_and_key_for_registration(
-      const db::DataBox<DbTagsList>& box) const {
+      const db::DataBox<DbTagsList>& box,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/,
+      const ParallelComponent* const /*meta*/) const {
     const std::optional<std::string> section_observation_key =
         observers::get_section_observation_key<ArraySectionIdTag>(box);
     if (not section_observation_key.has_value()) {

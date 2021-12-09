@@ -43,11 +43,14 @@ CREATE_HAS_TYPE_ALIAS_V(observation_registration_tags)
  * `ObservationKey`, and a `get_observation_type_and_key_for_registration`
  * member function if it is to be registered automatically.
  */
-template <typename DbTagsList>
+template <typename DbTagsList, typename Metavariables, typename ArrayIndex,
+          typename ParallelComponent>
 std::optional<
     std::pair<::observers::TypeOfObservation, ::observers::ObservationKey>>
-get_registration_observation_type_and_key(const Event& event,
-                                          const db::DataBox<DbTagsList>& box) {
+get_registration_observation_type_and_key(
+    const Event& event, const db::DataBox<DbTagsList>& box,
+    Parallel::GlobalCache<Metavariables>& cache, const ArrayIndex& array_index,
+    const ParallelComponent* const /*meta*/) {
   std::optional<
       std::pair<::observers::TypeOfObservation, ::observers::ObservationKey>>
       result{};
@@ -56,7 +59,8 @@ get_registration_observation_type_and_key(const Event& event,
       typename std::decay_t<decltype(db::get<Parallel::Tags::Metavariables>(
           box))>::factory_creation::factory_classes;
   tmpl::for_each<tmpl::at<factory_classes, Event>>(
-      [&already_registered, &box, &event, &result](auto event_type_v) {
+      [&already_registered, &box, &event, &result, &cache,
+       &array_index](auto event_type_v) {
         using EventType = typename decltype(event_type_v)::type;
         if constexpr (detail::has_observation_registration_tags_v<EventType>) {
           // We require that each event for which
@@ -81,10 +85,12 @@ get_registration_observation_type_and_key(const Event& event,
             already_registered = true;
             result =
                 db::apply<typename EventType::observation_registration_tags>(
-                    [&derived_class_ptr](const auto&... args) {
+                    [&derived_class_ptr, &cache,
+                     &array_index](const auto&... args) {
                       return derived_class_ptr
                           ->get_observation_type_and_key_for_registration(
-                              args...);
+                              args..., cache, array_index,
+                              std::add_pointer_t<ParallelComponent>{});
                     },
                     box);
           }
@@ -127,10 +133,12 @@ struct RegisterEventsWithObservers {
         std::pair<observers::TypeOfObservation, observers::ObservationKey>>
         type_of_observation_and_observation_key_pairs;
     const auto collect_observations =
-        [&box,
+        [&box, &cache, &array_index,
          &type_of_observation_and_observation_key_pairs](const auto& event) {
           if (auto obs_type_and_obs_key =
-                  get_registration_observation_type_and_key(event, box);
+                  get_registration_observation_type_and_key(
+                      event, box, cache, array_index,
+                      std::add_pointer_t<ParallelComponent>{});
               obs_type_and_obs_key.has_value()) {
             type_of_observation_and_observation_key_pairs.push_back(
                 *obs_type_and_obs_key);
