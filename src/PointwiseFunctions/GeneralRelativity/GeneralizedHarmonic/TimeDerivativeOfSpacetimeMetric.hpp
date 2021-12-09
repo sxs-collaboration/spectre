@@ -41,7 +41,7 @@ namespace GeneralizedHarmonic {
  * \details Computes the derivative as:
  *
  * \f{align}{
- * \partial_t \psi_{a b} = \beta^i \Phi_{i a b} - \alpha \Pi_{a b}.
+ * \partial_t g_{a b} = \beta^i \Phi_{i a b} - \alpha \Pi_{a b}.
  * \f}
  */
 template <size_t SpatialDim, typename Frame, typename DataType>

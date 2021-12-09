@@ -37,16 +37,18 @@ namespace GeneralizedHarmonic {
  * \brief Computes time derivative of the shift vector from
  *        the generalized harmonic and geometric variables
  *
- * \details The time derivative of \f$ N^i \f$ can be derived from the following
- * steps:
+ * \details The time derivative of \f$ \beta^i \f$ can be derived from the
+ * following steps:
  * \f{align*}
- * \partial_0 N^i
- *  =& g^{ik} \partial_0 (g_{kj} N^j) - N^j g^{ik} \partial_0 g_{kj} \\
- *  =& N g^{ik} t^b \partial_0 \psi_{kb} \\
- *  =& N g^{ik} t^b (\partial_0 - N^j\partial_j) \psi_{kb}
- *                  + N g^{ik} t^b N^j\partial_j \psi_{kb} \\
- *  =& -N^2 t^b\Pi_{kb} g^{ik} + N N^j t^b\Phi_{jkb} g^{ik} \\
- *  =& -N g^{ik} t^b (N \Pi_{kb} - N^j \Phi_{jkb}) \\
+ * \partial_0 \beta^i
+ *  =& \gamma^{ik} \partial_0 (\gamma_{kj} \beta^j)
+ *         - \beta^j \gamma^{ik} \partial_0 \gamma_{kj} \\
+ *  =& \alpha \gamma^{ik} n^b \partial_0 g_{kb} \\
+ *  =& \alpha \gamma^{ik} n^b (\partial_0 - \beta^j\partial_j) g_{kb}
+ *                  + \alpha \gamma^{ik} n^b \beta^j\partial_j g_{kb} \\
+ *  =& -\alpha^2 n^b\Pi_{kb} \gamma^{ik}
+ *         + \alpha \beta^j n^b\Phi_{jkb} \gamma^{ik} \\
+ *  =& -\alpha \gamma^{ik} n^b (\alpha \Pi_{kb} - \beta^j \Phi_{jkb}) \\
  * \f}
  */
 template <size_t SpatialDim, typename Frame, typename DataType>

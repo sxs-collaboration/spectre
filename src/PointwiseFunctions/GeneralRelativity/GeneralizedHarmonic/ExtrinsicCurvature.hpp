@@ -39,10 +39,10 @@ namespace GeneralizedHarmonic {
  *
  * \details If \f$ \Pi_{ab} \f$ and \f$ \Phi_{iab} \f$ are the generalized
  * harmonic conjugate momentum and spatial derivative variables, and if
- * \f$t^a\f$ is the spacetime normal vector, then the extrinsic curvature
+ * \f$n^a\f$ is the spacetime normal vector, then the extrinsic curvature
  * is computed as
  * \f{align}
- *     K_{ij} &= \frac{1}{2} \Pi_{ij} + \Phi_{(ij)a} t^a
+ *     K_{ij} &= \frac{1}{2} \Pi_{ij} + \Phi_{(ij)a} n^a
  * \f}
  */
 template <size_t SpatialDim, typename Frame, typename DataType>

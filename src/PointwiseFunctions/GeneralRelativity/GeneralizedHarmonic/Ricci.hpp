@@ -28,47 +28,47 @@ namespace GeneralizedHarmonic {
  *
  * \details Lets write the Christoffel symbols of the first kind as
  * \f{align}
- * \Gamma_{kij} = \frac{1}{2}(\partial_i g_{jk} +
- *                             \partial_j g_{ik} -
- *                             \partial_k g_{ij})
+ * \Gamma_{kij} = \frac{1}{2}(\partial_i \gamma_{jk} +
+ *                             \partial_j \gamma_{ik} -
+ *                             \partial_k \gamma_{ij})
  *              = (\Phi_{(ij)k} - \frac{1}{2}\Phi_{kij})
  * \f}
- * substituting \f$\partial_k g_{ij}\rightarrow{}\Phi_{kij}\f$ by
+ * substituting \f$\partial_k \gamma_{ij}\rightarrow{}\Phi_{kij}\f$ by
  * subtracting out the three-index constraint
- * \f$C_{kij}=\partial_{k}g_{ij}-\Phi_{kij}\f$ from every term. We also
- * define contractions \f$d_k=\frac{1}{2}g^{ij}\Phi_{kij}\f$ and
- * \f$b_k=\frac{1}{2}g^{ij}\Phi_{ijk}\f$. This allows us to rewrite the
+ * \f$C_{kij}=\partial_{k}\gamma_{ij}-\Phi_{kij}\f$ from every term. We also
+ * define contractions \f$d_k=\frac{1}{2}\gamma^{ij}\Phi_{kij}\f$ and
+ * \f$b_k=\frac{1}{2}\gamma^{ij}\Phi_{ijk}\f$. This allows us to rewrite the
  * spatial Ricci tensor as:
  * \f{align}
  * R_{i j} =& \partial_k \Gamma^{k}_{ij} - \partial_i \Gamma^{k}_{kj}
  *            + \Gamma^{k}_{kl}\Gamma^{l}_{ij}
  *            - \Gamma^{l}_{ki}\Gamma^{k}_{lj},\\
  *
- *         =& g^{kl}\left(\partial_{k}\Phi_{(ij)l} -
+ *         =& \gamma^{kl}\left(\partial_{k}\Phi_{(ij)l} -
  *                        \frac{1}{2}\partial_{k}\Phi_{lij}\right)
  *            - b^{l} (\Phi_{(ij)l} - \frac{1}{2}\Phi_{lij})\nonumber\\
- *          & - g^{kl}\left(\partial_{i}\Phi_{(kj)l}
+ *          & - \gamma^{kl}\left(\partial_{i}\Phi_{(kj)l}
  *                          - \frac{1}{2}\partial_{i}\Phi_{lkj}\right)
  *            - \Phi_{i}{}^{kl}\left(\Phi_{(kj)l}
  *                                   - \frac{1}{2}\Phi_{lkj}
  *                                   \right)\nonumber\\
- *          & + g^{km}\left(\Phi_{(kl)m} - \frac{1}{2}\Phi_{mkl}\right)
- *              g^{ln}\left(\Phi_{(ij)n} - \frac{1}{2}\Phi_{nij}\right)
+ *          & + \gamma^{km}\left(\Phi_{(kl)m} - \frac{1}{2}\Phi_{mkl}\right)
+ *              \gamma^{ln}\left(\Phi_{(ij)n} - \frac{1}{2}\Phi_{nij}\right)
  *              \nonumber\\
  *
- *          & - g^{km}\left(\Phi_{(il)m} - \frac{1}{2}\Phi_{mil}\right)
- *              g^{ln}\left(\Phi_{(jk)n} - \frac{1}{2}\Phi_{njk}\right).
+ *          & - \gamma^{km}\left(\Phi_{(il)m} - \frac{1}{2}\Phi_{mil}\right)
+ *              \gamma^{ln}\left(\Phi_{(jk)n} - \frac{1}{2}\Phi_{njk}\right).
  * \f}
  * Gathering all terms with second derivatives:
  * \f{align}
- * R_{i j} =& \frac{1}{2} g^{k l} \left(\partial_k\Phi_{ijl}
+ * R_{i j} =& \frac{1}{2} \gamma^{k l} \left(\partial_k\Phi_{ijl}
  *                                      + \partial_k\Phi_{jil}
  *                                      - \partial_k\Phi_{lij}
  *                                      + \partial_i\Phi_{lkj}
  *                                      - \partial_i\Phi_{kjl}
  *                                      - \partial_i\Phi_{jkl}\right)
  *          + \mathcal{O}(\Phi), \nonumber\\
- *         =& \frac{1}{2} g^{kl} \left(\partial_{(j}\Phi_{lki)}
+ *         =& \frac{1}{2} \gamma^{kl} \left(\partial_{(j}\Phi_{lki)}
  *                                     - \partial_{(j}\Phi_{i)kl}
  *                                     + \partial_k \Phi_{(ij)l}
  *                                     - \partial_l \Phi_{kij} \right)
@@ -97,8 +97,8 @@ namespace GeneralizedHarmonic {
  *         + \mathcal{O}(\partial\Phi).
  * \f}
  * Gathering everything together, we compute the spatial Ricci tensor as:
- * \f{eqnarray}\label{eq:rij}
- * R_{i j} &=& \frac{1}{2} g^{kl} \left(\partial_{(j|}\Phi_{lk|i)}
+ * \f{eqnarray}
+ * R_{i j} &=& \frac{1}{2} \gamma^{kl} \left(\partial_{(j|}\Phi_{lk|i)}
  *                                     - \partial_{(j}\Phi_{i)kl}
  *                                     + \partial_k \Phi_{(ij)l}
  *                                     - \partial_l \Phi_{kij}\right)\nonumber\\
@@ -107,6 +107,7 @@ namespace GeneralizedHarmonic {
  *          + \frac{1}{4} \Phi_{ik}{}^l \Phi_{jl}{}^k
  *          + \frac{1}{2} \left(\Phi^k{}_{il} \Phi_{kj}{}^l
  *                              - \Phi^k{}_{li} \Phi^l{}_{kj}\right).
+ * \label{eq:rij}
  * \f}
  * This follows from equations (2.13) - (2.20) of \cite Kidder2001tz .
  *

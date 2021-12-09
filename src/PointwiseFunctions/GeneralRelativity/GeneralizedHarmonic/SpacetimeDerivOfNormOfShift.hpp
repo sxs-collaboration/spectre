@@ -38,8 +38,9 @@ namespace GeneralizedHarmonic {
  *
  * \details The same is computed as:
  * \f{align*}
- * \partial_a (N^i N_i) = (N_i \partial_0 N^i + N^i \partial_0 N_i,
- *                               N_i \partial_j N^i + N^i \partial_j N_i)
+ * \partial_a (\beta^i \beta_i) =
+ *     (\beta_i \partial_0 \beta^i + \beta^i \partial_0 \beta_i,
+ *      \beta_i \partial_j \beta^i + \beta^i \partial_j \beta_i)
  * \f}
  */
 template <size_t SpatialDim, typename Frame, typename DataType>

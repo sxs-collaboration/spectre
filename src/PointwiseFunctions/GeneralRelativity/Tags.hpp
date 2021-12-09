@@ -70,7 +70,7 @@ struct Lapse : db::SimpleTag {
  * \brief Spacetime derivatives of the spacetime metric
  *
  * \details Spacetime derivatives of the spacetime metric
- * \f$\partial_a \psi_{bc}\f$ assembled from the spatial and temporal
+ * \f$\partial_a g_{bc}\f$ assembled from the spatial and temporal
  * derivatives of evolved 3+1 variables.
  */
 template <size_t Dim, typename Frame, typename DataType>
@@ -107,8 +107,8 @@ struct TraceSpacetimeChristoffelFirstKind : db::SimpleTag {
 };
 /*!
  * \brief Trace of the spatial Christoffel symbols of the first kind
- * \f$\Gamma_{i} = \Gamma_{ijk}g^{jk}\f$, where \f$\Gamma_{ijk}\f$ are
- * Christoffel symbols of the first kind and \f$g^{jk}\f$ is the
+ * \f$\Gamma_{i} = \Gamma_{ijk}\gamma^{jk}\f$, where \f$\Gamma_{ijk}\f$ are
+ * Christoffel symbols of the first kind and \f$\gamma^{jk}\f$ is the
  * inverse spatial metric.
  */
 template <size_t Dim, typename Frame, typename DataType>

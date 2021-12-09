@@ -38,7 +38,8 @@ namespace GeneralizedHarmonic {
  *        using the generalized harmonic variables, spatial metric, and its
  *        time derivative.
  *
- * \details Using the relation \f$ \partial_a g = g g^{jk} \partial_a g_{jk} \f$
+ * \details Using the relation
+ * \f$ \partial_a \gamma = \gamma \gamma^{jk} \partial_a \gamma_{jk} \f$
  */
 template <size_t SpatialDim, typename Frame, typename DataType>
 void spacetime_deriv_of_det_spatial_metric(

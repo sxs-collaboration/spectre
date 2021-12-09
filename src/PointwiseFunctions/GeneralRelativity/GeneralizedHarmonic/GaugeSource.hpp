@@ -35,13 +35,15 @@ namespace GeneralizedHarmonic {
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief  Computes generalized harmonic gauge source function.
- * \details If \f$N, N^i, g_{ij}, \Gamma_{ijk}, K\f$ are the lapse, shift,
- * spatial metric, spatial Christoffel symbols, and trace of the extrinsic
- * curvature, then we compute
+ * \details If \f$\alpha, \beta^i, \gamma_{ij}, \Gamma_{ijk}, K\f$ are the
+ * lapse, shift, spatial metric, spatial Christoffel symbols, and trace of the
+ * extrinsic curvature, then we compute
  * \f{align}
- * H_l &= N^{-2} g_{il}(\partial_t N^i - N^k \partial_k N^i)
- * + N^{-1} \partial_l N - g^{km}\Gamma_{lkm} \\
- * H_0 &= -N^{-1} \partial_t N + N^{-1} N^k\partial_k N + N^k H_k - N K
+ * H_l &=
+ * \alpha^{-2} \gamma_{il}(\partial_t \beta^i - \beta^k \partial_k \beta^i)
+ * + \alpha^{-1} \partial_l \alpha - \gamma^{km}\Gamma_{lkm} \\
+ * H_0 &= -\alpha^{-1} \partial_t \alpha + \alpha^{-1} \beta^k\partial_k \alpha
+ * + \beta^k H_k - \alpha K
  * \f}
  * See Eqs. 8 and 9 of \cite Lindblom2005qh
  */

@@ -30,9 +30,9 @@ namespace gr {
  *
  * \details Computes
  * \f{align}
- *    N &= \sqrt{N^i \psi_{it}-\psi_{tt}}
+ *    \alpha &= \sqrt{\beta^i g_{it}-g_{tt}}
  * \f}
- * where \f$ N \f$, \f$ N^i\f$, and \f$\psi_{ab}\f$ are the lapse, shift,
+ * where \f$ \alpha \f$, \f$ \beta^i\f$, and \f$g_{ab}\f$ are the lapse, shift,
  * and spacetime metric.
  * This can be derived, e.g., from Eqs. 2.121--2.122 of Baumgarte & Shapiro.
  */
@@ -49,8 +49,8 @@ void lapse(gsl::not_null<Scalar<DataType>*> lapse,
 
 namespace Tags {
 /*!
- * \brief Compute item for lapse \f$N\f$ from the spacetime metric
- * \f$\psi_{ab}\f$ and the shift \f$N^i\f$.
+ * \brief Compute item for lapse \f$\alpha\f$ from the spacetime metric
+ * \f$g_{ab}\f$ and the shift \f$\beta^i\f$.
  *
  * \details Can be retrieved using `gr::Tags::Lapse`.
  */

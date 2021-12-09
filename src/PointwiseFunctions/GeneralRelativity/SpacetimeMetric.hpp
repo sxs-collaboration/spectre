@@ -24,14 +24,14 @@ namespace gr {
  * \ingroup GeneralRelativityGroup
  * \brief Computes the spacetime metric from the spatial metric, lapse, and
  * shift.
- * \details The spacetime metric \f$ \psi_{ab} \f$ is calculated as
+ * \details The spacetime metric \f$ g_{ab} \f$ is calculated as
  * \f{align}{
- *   \psi_{tt} &= - N^2 + N^m N^n g_{mn} \\
- *   \psi_{ti} &= g_{mi} N^m  \\
- *   \psi_{ij} &= g_{ij}
+ *   g_{tt} &= - \alpha^2 + \beta^m \beta^n \gamma_{mn} \\
+ *   g_{ti} &= \gamma_{mi} \beta^m  \\
+ *   g_{ij} &= \gamma_{ij}
  * \f}
- * where \f$ N, N^i\f$ and \f$ g_{ij}\f$ are the lapse, shift and spatial metric
- * respectively
+ * where \f$ \alpha, \beta^i\f$ and \f$ \gamma_{ij}\f$ are the lapse, shift and
+ * spatial metric respectively
  */
 template <size_t Dim, typename Frame, typename DataType>
 void spacetime_metric(
@@ -48,8 +48,8 @@ tnsr::aa<DataType, SpatialDim, Frame> spacetime_metric(
 
 namespace Tags {
 /*!
- * \brief Compute item for spacetime metric \f$\psi_{ab}\f$ from the
- * lapse \f$N\f$, shift \f$N^i\f$, and spatial metric \f$g_{ij}\f$.
+ * \brief Compute item for spacetime metric \f$g_{ab}\f$ from the lapse
+ * \f$\alpha\f$, shift \f$\beta^i\f$, and spatial metric \f$\gamma_{ij}\f$.
  *
  * \details Can be retrieved using `gr::Tags::SpacetimeMetric`.
  */

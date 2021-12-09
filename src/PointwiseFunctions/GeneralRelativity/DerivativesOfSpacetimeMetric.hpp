@@ -29,15 +29,15 @@ namespace gr {
  *
  * \details Computes the derivatives as:
  * \f{align}
- *     \partial_\mu \psi_{tt} &= - 2 N \partial_\mu N
- *                 + 2 g_{mn} N^m \partial_\mu N^n
- *                 + N^m N^n \partial_\mu g_{mn} \\
- *     \partial_\mu \psi_{ti} &= g_{mi} \partial_\mu N^m
- *                 + N^m \partial_\mu g_{mi} \\
- *     \partial_\mu \psi_{ij} &= \partial_\mu g_{ij}
+ *     \partial_\mu g_{tt} &= - 2 \alpha \partial_\mu \alpha
+ *                 + 2 \gamma_{mn} \beta^m \partial_\mu \beta^n
+ *                 + \beta^m \beta^n \partial_\mu \gamma_{mn} \\
+ *     \partial_\mu g_{ti} &= \gamma_{mi} \partial_\mu \beta^m
+ *                 + \beta^m \partial_\mu \gamma_{mi} \\
+ *     \partial_\mu g_{ij} &= \partial_\mu \gamma_{ij}
  * \f}
- * where \f$ N, N^i, g \f$ are the lapse, shift, and spatial metric
- * respectively.
+ * where \f$ \alpha, \beta^i, \gamma_{ij} \f$ are the lapse, shift, and spatial
+ * metric respectively.
  */
 template <size_t SpatialDim, typename Frame, typename DataType>
 void derivatives_of_spacetime_metric(

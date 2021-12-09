@@ -54,7 +54,7 @@ void weyl_electric(
  *
  * \details Computes the scalar \f$E_{ij} E^{ij}\f$ from the electric part
  * of the Weyl tensor \f$E_{ij}\f$ and the inverse spatial metric
- * \f$g^{ij}\f$, i.e. \f$E_{ij} = \gamma^{ik}\gamma^{jl}E_{ij}E_{kl}\f$.
+ * \f$\gamma^{ij}\f$, i.e. \f$E_{ij} = \gamma^{ik}\gamma^{jl}E_{ij}E_{kl}\f$.
  *
  * \note The electric part of the Weyl tensor in vacuum is available via
  * gr::weyl_electric(). The electric part of the Weyl tensor needs additional

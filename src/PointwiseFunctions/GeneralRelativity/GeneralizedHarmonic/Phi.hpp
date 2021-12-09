@@ -36,16 +36,16 @@ namespace GeneralizedHarmonic {
  * \brief Computes the auxiliary variable \f$\Phi_{iab}\f$ used by the
  * generalized harmonic formulation of Einstein's equations.
  *
- * \details If \f$ N, N^i\f$ and \f$ g_{ij} \f$ are the lapse, shift and spatial
- * metric respectively, then \f$\Phi_{iab} \f$ is computed as
+ * \details If \f$ \alpha, \beta^i\f$ and \f$ \gamma_{ij} \f$ are the lapse,
+ * shift and spatial metric respectively, then \f$\Phi_{iab} \f$ is computed as
  *
  * \f{align}
- *     \Phi_{ktt} &= - 2 N \partial_k N
- *                 + 2 g_{mn} N^m \partial_k N^n
- *                 + N^m N^n \partial_k g_{mn} \\
- *     \Phi_{kti} &= g_{mi} \partial_k N^m
- *                 + N^m \partial_k g_{mi} \\
- *     \Phi_{kij} &= \partial_k g_{ij}
+ *     \Phi_{ktt} &= - 2 \alpha \partial_k \alpha
+ *                 + 2 \gamma_{mn} \beta^m \partial_k \beta^n
+ *                 + \beta^m \beta^n \partial_k \gamma_{mn} \\
+ *     \Phi_{kti} &= \gamma_{mi} \partial_k \beta^m
+ *                 + \beta^m \partial_k \gamma_{mi} \\
+ *     \Phi_{kij} &= \partial_k \gamma_{ij}
  * \f}
  */
 template <size_t SpatialDim, typename Frame, typename DataType>

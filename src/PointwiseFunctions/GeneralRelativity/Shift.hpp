@@ -30,10 +30,10 @@ namespace gr {
  *
  * \details Computes
  * \f{align}
- *    N^i &= g^{ij} \psi_{jt}
+ *    \beta^i &= \gamma^{ij} g_{jt}
  * \f}
- * where \f$ N^i\f$, \f$ g^{ij}\f$, and \f$\psi_{ab}\f$ are the shift, inverse
- * spatial metric, and spacetime metric.
+ * where \f$ \beta^i\f$, \f$ \gamma^{ij}\f$, and \f$g_{ab}\f$ are the shift,
+ * inverse spatial metric, and spacetime metric.
  * This can be derived, e.g., from Eqs. 2.121--2.122 of Baumgarte & Shapiro.
  */
 template <size_t SpatialDim, typename Frame, typename DataType>
@@ -49,8 +49,8 @@ void shift(gsl::not_null<tnsr::I<DataType, SpatialDim, Frame>*> shift,
 
 namespace Tags {
 /*!
- * \brief Compute item for shift \f$N^i\f$ from the spacetime metric
- * \f$\psi_{ab}\f$ and the inverse spatial metric \f$g^{ij}\f$.
+ * \brief Compute item for shift \f$\beta^i\f$ from the spacetime metric
+ * \f$g_{ab}\f$ and the inverse spatial metric \f$\gamma^{ij}\f$.
  *
  * \details Can be retrieved using `gr::Tags::Shift`.
  */

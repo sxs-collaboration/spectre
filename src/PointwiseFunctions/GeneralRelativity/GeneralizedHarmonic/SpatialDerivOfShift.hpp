@@ -37,22 +37,24 @@ namespace GeneralizedHarmonic {
  * \brief Computes spatial derivatives of the shift vector from
  *        the generalized harmonic and geometric variables
  *
- * \details Spatial derivatives of the shift vector \f$N^i\f$ can be derived
+ * \details Spatial derivatives of the shift vector \f$\beta^i\f$ can be derived
  * from the following steps:
  * \f{align*}
- * \partial_i N^j
- *  =& g^{jl} g_{kl} \partial_i N^k \\
- *  =& g^{jl} (N^k \partial_i g_{lk}
- *             + g_{kl}\partial_i N^k - N^k \partial_i g_{kl}) \\
- *  =& g^{jl} (\partial_i N_l - N^k \partial_i g_{lk}) (\because g^{j0} = 0) \\
- *  =& g^{ja} (\partial_i \psi_{a0} - N^k \partial _i \psi_{ak}) \\
- *  =& N g^{ja} t^b \partial_i \psi_{ab} \\
- *  =& (g^{ja} - t^j t^a) N t^b \Phi_{iab} - 2 t^j \partial_i N \\
- *  =& \psi^{ja} N t^b \Phi_{iab} - 2 t^j \partial_i N \\
- *  =& N (\psi^{ja} + t^j t^a) t^b \Phi_{iab}.
+ * \partial_i \beta^j
+ *  =& \gamma^{jl} \gamma_{kl} \partial_i \beta^k \\
+ *  =& \gamma^{jl} (\beta^k \partial_i \gamma_{lk}
+ *         + \gamma_{kl}\partial_i \beta^k - \beta^k \partial_i \gamma_{kl}) \\
+ *  =& \gamma^{jl} (\partial_i \beta_l - \beta^k \partial_i \gamma_{lk})
+ *         (\because \gamma^{j0} = 0) \\
+ *  =& \gamma^{ja} (\partial_i g_{a0} - \beta^k \partial _i g_{ak}) \\
+ *  =& \alpha \gamma^{ja} n^b \partial_i g_{ab} \\
+ *  =& (\gamma^{ja} - n^j n^a) \alpha n^b \Phi_{iab}
+ *         - 2 n^j \partial_i \alpha \\
+ *  =& g^{ja} \alpha n^b \Phi_{iab} - 2 n^j \partial_i \alpha \\
+ *  =& \alpha (g^{ja} + n^j n^a) n^b \Phi_{iab}.
  * \f}
  * where we used the equation from spatial_deriv_of_lapse() for
- * \f$\partial_i N\f$.
+ * \f$\partial_i \alpha\f$.
  */
 template <size_t SpatialDim, typename Frame, typename DataType>
 void spatial_deriv_of_shift(

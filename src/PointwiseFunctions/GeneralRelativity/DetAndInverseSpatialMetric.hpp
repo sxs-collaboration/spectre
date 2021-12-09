@@ -26,8 +26,8 @@ namespace gr {
 
 namespace Tags {
 /*!
- * \brief Compute item for spatial metric determinant \f$g\f$
- * and inverse \f$g^{ij}\f$ in terms of the spatial metric \f$g_{ij}\f$.
+ * \brief Compute item for spatial metric determinant \f$\gamma\f$ and inverse
+ * \f$\gamma^{ij}\f$ in terms of the spatial metric \f$\gamma_{ij}\f$.
  *
  * \details Can be retrieved using `gr::Tags::DetSpatialMetric` and
  * `gr::Tags::InverseSpatialMetric`.
@@ -53,7 +53,7 @@ struct DetAndInverseSpatialMetricCompute
 
 /*!
  * \brief Compute item to get the square root of the determinant of the spatial
- * metric \f$\sqrt{g}\f$ via `gr::Tags::DetAndInverseSpatialMetric`.
+ * metric \f$\sqrt{\gamma}\f$ via `gr::Tags::DetAndInverseSpatialMetric`.
  *
  * \details Can be retrieved using `gr::Tags::SqrtDetSpatialMetric`.
  */

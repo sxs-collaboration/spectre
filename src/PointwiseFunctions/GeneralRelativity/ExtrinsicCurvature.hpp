@@ -28,15 +28,17 @@ namespace gr {
  * \ingroup GeneralRelativityGroup
  * \brief  Computes extrinsic curvature from metric and derivatives.
  * \details Uses the ADM evolution equation for the spatial metric,
- * \f[ K_{ij} = \frac{1}{2N} \left ( -\partial_0 g_{ij}
- * + N^k \partial_k g_{ij} + g_{ki} \partial_j N^k
- * + g_{kj} \partial_i N^k \right ) \f]
- * where \f$K_{ij}\f$ is the extrinsic curvature, \f$N\f$ is the lapse,
- * \f$N^i\f$ is the shift, and \f$g_{ij}\f$ is the spatial metric. In terms
- * of the Lie derivative of the spatial metric with respect to a unit timelike
- * vector \f$t^a\f$ normal to the spatial slice, this corresponds to the sign
- * convention
- * \f[ K_{ab} = - \frac{1}{2} \mathcal{L}_{\mathbf{t}} g_{ab} \f]
+ * \f[ K_{ij} = \frac{1}{2 \alpha} \left ( -\partial_0 \gamma_{ij}
+ * + \beta^k \partial_k \gamma_{ij} + \gamma_{ki} \partial_j \beta^k
+ * + \gamma_{kj} \partial_i \beta^k \right ) \f]
+ * where \f$K_{ij}\f$ is the extrinsic curvature, \f$\alpha\f$ is the lapse,
+ * \f$\beta^i\f$ is the shift, and \f$\gamma_{ij}\f$ is the spatial metric. In
+ * terms of the Lie derivative of the spatial metric with respect to a unit
+ * timelike vector \f$n^a\f$ normal to the spatial slice, this corresponds to
+ * the sign convention
+ * \f[ K_{ab} = - \frac{1}{2} \mathcal{L}_{\mathbf{n}} \gamma_{ab} \f]
+ * where \f$\gamma_{ab}\f$ is the spatial metric. See Eq. (2.53) in
+ * \cite BaumgarteShapiro.
  */
 template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::ii<DataType, SpatialDim, Frame> extrinsic_curvature(

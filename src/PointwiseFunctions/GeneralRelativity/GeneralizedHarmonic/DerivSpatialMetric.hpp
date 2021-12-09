@@ -41,7 +41,7 @@ namespace GeneralizedHarmonic {
  * harmonic spatial derivative variable, then the derivatives of the
  * spatial metric are
  * \f[
- *      \partial_k g_{ij} = \Phi_{kij}
+ *      \partial_k \gamma_{ij} = \Phi_{kij}
  * \f]
  *
  * This quantity is needed for computing spatial Christoffel symbols.

@@ -27,9 +27,13 @@ namespace gr {
 /*!
  * \brief Computes spacetime normal one-form from lapse.
  *
- * \details If \f$N\f$ is the lapse, then
- * \f{align} n_t &= - N \\
- * n_i &= 0 \f}
+ * \details If \f$\alpha\f$ is the lapse, then
+ *
+ * \f{align}
+ *     n_t &= - \alpha \\
+ *     n_i &= 0
+ * \f}
+ *
  * is computed.
  */
 template <size_t SpatialDim, typename Frame, typename DataType>
@@ -45,7 +49,7 @@ tnsr::a<DataType, SpatialDim, Frame> spacetime_normal_one_form(
 namespace Tags {
 /*!
  * \brief Compute item for spacetime normal oneform \f$n_a\f$ from
- * the lapse \f$N\f$.
+ * the lapse \f$\alpha\f$.
  *
  * \details Can be retrieved using `gr::Tags::SpacetimeNormalOneForm`.
  */
