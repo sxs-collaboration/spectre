@@ -27,6 +27,7 @@
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/Inactive.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
+#include "Evolution/DgSubcell/Tags/NeighborData.hpp"
 #include "Evolution/DgSubcell/Tags/OnSubcellFaces.hpp"
 #include "Evolution/Initialization/Tags.hpp"
 #include "Evolution/Systems/ScalarAdvection/BoundaryCorrections/BoundaryCorrection.hpp"
@@ -99,17 +100,16 @@ void test_subcell_timederivative() {
 
   // set the ghost data from neighbor
   const ReconstructionForTest reconstructor{};
-  typename evolution::dg::subcell::Tags::
-      NeighborDataForReconstructionAndRdmpTci<Dim>::type neighbor_data =
-          TestHelpers::ScalarAdvection::fd::compute_neighbor_data(
-              subcell_mesh, logical_coords_subcell, element.neighbors(),
-              reconstructor.ghost_zone_size(), compute_test_solution);
+  typename evolution::dg::subcell::Tags::NeighborDataForReconstruction<
+      Dim>::type neighbor_data =
+      TestHelpers::ScalarAdvection::fd::compute_neighbor_data(
+          subcell_mesh, logical_coords_subcell, element.neighbors(),
+          reconstructor.ghost_zone_size(), compute_test_solution);
 
   auto box = db::create<db::AddSimpleTags<
       domain::Tags::Element<Dim>, evolution::dg::subcell::Tags::Mesh<Dim>,
       evolved_vars_tag, dt_variables_tag,
-      evolution::dg::subcell::Tags::NeighborDataForReconstructionAndRdmpTci<
-          Dim>,
+      evolution::dg::subcell::Tags::NeighborDataForReconstruction<Dim>,
       fd::Tags::Reconstructor<Dim>,
       evolution::Tags::BoundaryCorrection<System<Dim>>,
       Initialization::Tags::InitialTime,

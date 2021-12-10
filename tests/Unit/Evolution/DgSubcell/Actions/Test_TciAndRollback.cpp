@@ -8,6 +8,7 @@
 #include <deque>
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
@@ -26,11 +27,12 @@
 #include "Evolution/DgSubcell/Actions/TciAndRollback.hpp"
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
-#include "Evolution/DgSubcell/NeighborData.hpp"
 #include "Evolution/DgSubcell/Projection.hpp"
+#include "Evolution/DgSubcell/RdmpTciData.hpp"
 #include "Evolution/DgSubcell/Reconstruction.hpp"
 #include "Evolution/DgSubcell/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
+#include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
 #include "Evolution/DgSubcell/Tags/Inactive.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/NeighborData.hpp"
@@ -84,8 +86,8 @@ struct component {
           evolution::dg::subcell::Tags::Mesh<Dim>, domain::Tags::Element<Dim>,
           evolution::dg::subcell::Tags::ActiveGrid,
           evolution::dg::subcell::Tags::DidRollback,
-          evolution::dg::subcell::Tags::NeighborDataForReconstructionAndRdmpTci<
-              Dim>,
+          evolution::dg::subcell::Tags::NeighborDataForReconstruction<Dim>,
+          evolution::dg::subcell::Tags::DataForRdmpTci,
           Tags::Variables<tmpl::list<Var1>>,
           evolution::dg::subcell::Tags::Inactive<
               Tags::Variables<tmpl::list<Var1>>>,
@@ -204,18 +206,15 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
   const evolution::dg::subcell::ActiveGrid active_grid =
       evolution::dg::subcell::ActiveGrid::Dg;
 
-  FixedHashMap<maximum_number_of_neighbors(Dim) + 1,
-               std::pair<Direction<Dim>, ElementId<Dim>>,
-               evolution::dg::subcell::NeighborData,
+  FixedHashMap<maximum_number_of_neighbors(Dim),
+               std::pair<Direction<Dim>, ElementId<Dim>>, std::vector<double>,
                boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>
       neighbor_data{};
-  const std::pair self_id{Direction<Dim>::lower_xi(),
-                          ElementId<Dim>::external_boundary_id()};
-  neighbor_data[self_id] = {};
+  evolution::dg::subcell::RdmpTciData rdmp_tci_data{};
   // max and min of +-2 at last time level means reconstructed vars will be in
   // limit
-  neighbor_data[self_id].max_variables_values.push_back(2.0);
-  neighbor_data[self_id].min_variables_values.push_back(-2.0);
+  rdmp_tci_data.max_variables_values.push_back(2.0);
+  rdmp_tci_data.min_variables_values.push_back(-2.0);
 
   using evolved_vars_tags = tmpl::list<Var1>;
   Variables<evolved_vars_tags> evolved_vars{dg_mesh.number_of_grid_points()};
@@ -259,17 +258,18 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
     ActionTesting::emplace_array_component_and_initialize<comp>(
         &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0}, 0,
         {time_step_id, dg_mesh, subcell_mesh, element, active_grid,
-         did_rollback, neighbor_data, evolved_vars, inactive_evolved_vars,
-         time_stepper_history, initial_value_evolved_vars, prim_vars,
-         initial_value_prim_vars});
+         did_rollback, neighbor_data, rdmp_tci_data, evolved_vars,
+         inactive_evolved_vars, time_stepper_history,
+         initial_value_evolved_vars, prim_vars, initial_value_prim_vars});
   } else {
     (void)prim_vars;
     (void)initial_value_prim_vars;
     ActionTesting::emplace_array_component_and_initialize<comp>(
         &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0}, 0,
         {time_step_id, dg_mesh, subcell_mesh, element, active_grid,
-         did_rollback, neighbor_data, evolved_vars, inactive_evolved_vars,
-         time_stepper_history, initial_value_evolved_vars});
+         did_rollback, neighbor_data, rdmp_tci_data, evolved_vars,
+         inactive_evolved_vars, time_stepper_history,
+         initial_value_evolved_vars});
   }
 
   // Invoke the TciAndSwitchToDg action on the runner
@@ -290,9 +290,6 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
   const auto& time_stepper_history_from_box =
       ActionTesting::get_databox_tag<comp, Tags::HistoryEvolvedVariables<>>(
           runner, 0);
-  const auto& neighbor_data_from_box = ActionTesting::get_databox_tag<
-      comp, evolution::dg::subcell::Tags::
-                NeighborDataForReconstructionAndRdmpTci<Dim>>(runner, 0);
   const auto& did_rollback_from_box =
       ActionTesting::get_databox_tag<comp,
                                      evolution::dg::subcell::Tags::DidRollback>(
@@ -309,7 +306,6 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
   if (expected_rollback) {
     CHECK(ActionTesting::get_next_action_index<comp>(runner, 0) == 4);
     CHECK(active_grid_from_box == evolution::dg::subcell::ActiveGrid::Subcell);
-    CHECK_FALSE(neighbor_data_from_box.empty());
     CHECK(did_rollback_from_box);
 
     CHECK(time_stepper_history_from_box.size() == history_size - 1);
@@ -366,7 +362,6 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
   } else {
     CHECK(ActionTesting::get_next_action_index<comp>(runner, 0) == 2);
     CHECK(active_grid_from_box == evolution::dg::subcell::ActiveGrid::Dg);
-    CHECK(neighbor_data_from_box.empty());
     CHECK_FALSE(did_rollback_from_box);
 
     CHECK(time_stepper_history_from_box.size() == history_size);

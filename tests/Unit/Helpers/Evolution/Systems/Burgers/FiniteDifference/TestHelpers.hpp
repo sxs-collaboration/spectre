@@ -7,6 +7,7 @@
 #include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <utility>
+#include <vector>
 
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -22,7 +23,6 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Domain/Structure/Neighbors.hpp"
-#include "Evolution/DgSubcell/NeighborData.hpp"
 #include "Evolution/DgSubcell/SliceData.hpp"
 #include "Evolution/Systems/Burgers/FiniteDifference/Reconstructor.hpp"
 #include "Evolution/Systems/Burgers/Tags.hpp"
@@ -38,18 +38,16 @@ namespace TestHelpers {
  */
 namespace Burgers::fd {
 template <typename F>
-FixedHashMap<maximum_number_of_neighbors(1) + 1,
-             std::pair<Direction<1>, ElementId<1>>,
-             evolution::dg::subcell::NeighborData,
+FixedHashMap<maximum_number_of_neighbors(1),
+             std::pair<Direction<1>, ElementId<1>>, std::vector<double>,
              boost::hash<std::pair<Direction<1>, ElementId<1>>>>
 compute_neighbor_data(
     const Mesh<1>& subcell_mesh,
     const tnsr::I<DataVector, 1, Frame::ElementLogical>& volume_logical_coords,
     const DirectionMap<1, Neighbors<1>>& neighbors,
     const size_t ghost_zone_size, const F& compute_variables_of_neighbor_data) {
-  FixedHashMap<maximum_number_of_neighbors(1) + 1,
-               std::pair<Direction<1>, ElementId<1>>,
-               evolution::dg::subcell::NeighborData,
+  FixedHashMap<maximum_number_of_neighbors(1),
+               std::pair<Direction<1>, ElementId<1>>, std::vector<double>,
                boost::hash<std::pair<Direction<1>, ElementId<1>>>>
       neighbor_data{};
   for (const auto& [direction, neighbors_in_direction] : neighbors) {
@@ -71,7 +69,7 @@ compute_neighbor_data(
         subcell_mesh.extents(), ghost_zone_size, directions_to_slice);
     REQUIRE(sliced_data.size() == 1);
     REQUIRE(sliced_data.contains(direction.opposite()));
-    neighbor_data[std::pair{direction, neighbor_id}].data_for_reconstruction =
+    neighbor_data[std::pair{direction, neighbor_id}] =
         sliced_data.at(direction.opposite());
   }
   return neighbor_data;
@@ -109,9 +107,8 @@ void test_reconstructor(const size_t num_pts,
   const Mesh<1> subcell_mesh{num_pts, Spectral::Basis::FiniteDifference,
                              Spectral::Quadrature::CellCentered};
   auto logical_coords = logical_coordinates(subcell_mesh);
-  const FixedHashMap<maximum_number_of_neighbors(1) + 1,
-                     std::pair<Direction<1>, ElementId<1>>,
-                     evolution::dg::subcell::NeighborData,
+  const FixedHashMap<maximum_number_of_neighbors(1),
+                     std::pair<Direction<1>, ElementId<1>>, std::vector<double>,
                      boost::hash<std::pair<Direction<1>, ElementId<1>>>>
       neighbor_data = compute_neighbor_data(
           subcell_mesh, logical_coords, element.neighbors(),

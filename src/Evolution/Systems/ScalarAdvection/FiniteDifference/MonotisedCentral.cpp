@@ -9,6 +9,7 @@
 #include <memory>
 #include <pup.h>
 #include <utility>
+#include <vector>
 
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/FixedHashMap.hpp"
@@ -20,7 +21,6 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Domain/Structure/Side.hpp"
-#include "Evolution/DgSubcell/NeighborData.hpp"
 #include "Evolution/Systems/ScalarAdvection/FiniteDifference/ReconstructWork.tpp"
 #include "Evolution/Systems/ScalarAdvection/FiniteDifference/Reconstructor.hpp"
 #include "Evolution/Systems/ScalarAdvection/Tags.hpp"
@@ -57,11 +57,10 @@ void MonotisedCentral<Dim>::reconstruct(
         vars_on_upper_face,
     const Variables<tmpl::list<Tags::U>>& volume_vars,
     const Element<Dim>& element,
-    const FixedHashMap<maximum_number_of_neighbors(Dim) + 1,
-                       std::pair<Direction<Dim>, ElementId<Dim>>,
-                       evolution::dg::subcell::NeighborData,
-                       boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
-        neighbor_data,
+    const FixedHashMap<
+        maximum_number_of_neighbors(Dim),
+        std::pair<Direction<Dim>, ElementId<Dim>>, std::vector<double>,
+        boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>& neighbor_data,
     const Mesh<Dim>& subcell_mesh) const {
   reconstruct_work(
       vars_on_lower_face, vars_on_upper_face,
@@ -81,11 +80,10 @@ void MonotisedCentral<Dim>::reconstruct_fd_neighbor(
     const gsl::not_null<Variables<TagsList>*> vars_on_face,
     const Variables<tmpl::list<Tags::U>>& volume_vars,
     const Element<Dim>& element,
-    const FixedHashMap<maximum_number_of_neighbors(Dim) + 1,
-                       std::pair<Direction<Dim>, ElementId<Dim>>,
-                       evolution::dg::subcell::NeighborData,
-                       boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
-        neighbor_data,
+    const FixedHashMap<
+        maximum_number_of_neighbors(Dim),
+        std::pair<Direction<Dim>, ElementId<Dim>>, std::vector<double>,
+        boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>& neighbor_data,
     const Mesh<Dim>& subcell_mesh,
     const Direction<Dim> direction_to_reconstruct) const {
   reconstruct_fd_neighbor_work(
@@ -156,9 +154,9 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2))
       const Variables<tmpl::list<Tags::U>>& volume_vars,                       \
       const Element<DIM(data)>& element,                                       \
       const FixedHashMap<                                                      \
-          maximum_number_of_neighbors(DIM(data)) + 1,                          \
+          maximum_number_of_neighbors(DIM(data)),                              \
           std::pair<Direction<DIM(data)>, ElementId<DIM(data)>>,               \
-          evolution::dg::subcell::NeighborData,                                \
+          std::vector<double>,                                                 \
           boost::hash<std::pair<Direction<DIM(data)>, ElementId<DIM(data)>>>>& \
           neighbor_data,                                                       \
       const Mesh<DIM(data)>& subcell_mesh) const;                              \
@@ -167,9 +165,9 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2))
       const Variables<tmpl::list<Tags::U>>& volume_vars,                       \
       const Element<DIM(data)>& element,                                       \
       const FixedHashMap<                                                      \
-          maximum_number_of_neighbors(DIM(data)) + 1,                          \
+          maximum_number_of_neighbors(DIM(data)),                              \
           std::pair<Direction<DIM(data)>, ElementId<DIM(data)>>,               \
-          evolution::dg::subcell::NeighborData,                                \
+          std::vector<double>,                                                 \
           boost::hash<std::pair<Direction<DIM(data)>, ElementId<DIM(data)>>>>& \
           neighbor_data,                                                       \
       const Mesh<DIM(data)>& subcell_mesh,                                     \

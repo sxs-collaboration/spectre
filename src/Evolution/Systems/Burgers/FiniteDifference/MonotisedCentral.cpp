@@ -9,6 +9,7 @@
 #include <memory>
 #include <pup.h>
 #include <utility>
+#include <vector>
 
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/FixedHashMap.hpp"
@@ -20,7 +21,6 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Domain/Structure/Side.hpp"
-#include "Evolution/DgSubcell/NeighborData.hpp"
 #include "Evolution/Systems/Burgers/FiniteDifference/ReconstructWork.tpp"
 #include "Evolution/Systems/Burgers/FiniteDifference/Reconstructor.hpp"
 #include "Evolution/Systems/Burgers/Tags.hpp"
@@ -49,11 +49,10 @@ void MonotisedCentral::reconstruct(
         vars_on_upper_face,
     const Variables<tmpl::list<Burgers::Tags::U>>& volume_vars,
     const Element<1>& element,
-    const FixedHashMap<maximum_number_of_neighbors(1) + 1,
-                       std::pair<Direction<1>, ElementId<1>>,
-                       evolution::dg::subcell::NeighborData,
-                       boost::hash<std::pair<Direction<1>, ElementId<1>>>>&
-        neighbor_data,
+    const FixedHashMap<
+        maximum_number_of_neighbors(1), std::pair<Direction<1>, ElementId<1>>,
+        std::vector<double>,
+        boost::hash<std::pair<Direction<1>, ElementId<1>>>>& neighbor_data,
     const Mesh<1>& subcell_mesh) const {
   reconstruct_work(
       vars_on_lower_face, vars_on_upper_face,
@@ -70,11 +69,10 @@ void MonotisedCentral::reconstruct(
 void MonotisedCentral::reconstruct_fd_neighbor(
     const gsl::not_null<Variables<face_vars_tags>*> vars_on_face,
     const Variables<volume_vars_tags>& volume_vars, const Element<1>& element,
-    const FixedHashMap<maximum_number_of_neighbors(1) + 1,
-                       std::pair<Direction<1>, ElementId<1>>,
-                       evolution::dg::subcell::NeighborData,
-                       boost::hash<std::pair<Direction<1>, ElementId<1>>>>&
-        neighbor_data,
+    const FixedHashMap<
+        maximum_number_of_neighbors(1), std::pair<Direction<1>, ElementId<1>>,
+        std::vector<double>,
+        boost::hash<std::pair<Direction<1>, ElementId<1>>>>& neighbor_data,
     const Mesh<1>& subcell_mesh,
     const Direction<1> direction_to_reconstruct) const {
   reconstruct_fd_neighbor_work(

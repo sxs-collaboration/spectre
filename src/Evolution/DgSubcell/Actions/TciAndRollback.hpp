@@ -17,12 +17,13 @@
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/Actions/Labels.hpp"
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
-#include "Evolution/DgSubcell/NeighborData.hpp"
 #include "Evolution/DgSubcell/Projection.hpp"
 #include "Evolution/DgSubcell/RdmpTci.hpp"
+#include "Evolution/DgSubcell/RdmpTciData.hpp"
 #include "Evolution/DgSubcell/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
+#include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
 #include "Evolution/DgSubcell/Tags/DidRollback.hpp"
 #include "Evolution/DgSubcell/Tags/Inactive.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
@@ -132,19 +133,14 @@ struct TciAndRollback {
         std::pair self_id{
             Direction<Metavariables::volume_dim>::lower_xi(),
             ElementId<Metavariables::volume_dim>::external_boundary_id()};
-        ASSERT(db::get<Tags::NeighborDataForReconstructionAndRdmpTci<Dim>>(box)
-                       .count(self_id) != 0,
-               "The self ID is not in the NeighborData.");
-        const NeighborData& self_neighbor_data =
-            db::get<Tags::NeighborDataForReconstructionAndRdmpTci<Dim>>(box).at(
-                self_id);
+        const RdmpTciData& rdmp_tci_data = db::get<Tags::DataForRdmpTci>(box);
         // Note: we assume the max/min over all neighbors and ourselves at the
         // past time step has been collected into
-        // `self_neighbor_data.max/min_variables_values`
+        // `rdmp_tci_data.max/min_variables_values`
         cell_is_troubled = rdmp_tci(db::get<variables_tag>(box),
                                     db::get<Tags::Inactive<variables_tag>>(box),
-                                    self_neighbor_data.max_variables_values,
-                                    self_neighbor_data.min_variables_values,
+                                    rdmp_tci_data.max_variables_values,
+                                    rdmp_tci_data.min_variables_values,
                                     subcell_options.rdmp_delta0(),
                                     subcell_options.rdmp_epsilon());
       }
@@ -259,7 +255,7 @@ struct TciAndRollback {
     }
     // The unlimited DG solver has passed, so we can remove the current neighbor
     // data.
-    db::mutate<subcell::Tags::NeighborDataForReconstructionAndRdmpTci<Dim>>(
+    db::mutate<subcell::Tags::NeighborDataForReconstruction<Dim>>(
         make_not_null(&box),
         [](const auto neighbor_data_ptr) { neighbor_data_ptr->clear(); });
 

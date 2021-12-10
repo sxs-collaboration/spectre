@@ -30,7 +30,6 @@
 #include "Domain/TagsTimeDependent.hpp"
 #include "Evolution/BoundaryCorrectionTags.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
-#include "Evolution/DgSubcell/NeighborData.hpp"
 #include "Evolution/DgSubcell/Projection.hpp"
 #include "Evolution/DgSubcell/Reconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
@@ -122,11 +121,11 @@ void test_neighbor_packaged_data(const size_t num_dg_pts_per_dimension,
     fill_with_random_values(make_not_null(&vars), gen, make_not_null(&dist));
     return vars;
   };
-  typename evolution::dg::subcell::Tags::
-      NeighborDataForReconstructionAndRdmpTci<Dim>::type neighbor_data =
-          TestHelpers::ScalarAdvection::fd::compute_neighbor_data(
-              subcell_mesh, logical_coords_subcell, element.neighbors(),
-              reconstructor.ghost_zone_size(), compute_random_variable);
+  typename evolution::dg::subcell::Tags::NeighborDataForReconstruction<
+      Dim>::type neighbor_data =
+      TestHelpers::ScalarAdvection::fd::compute_neighbor_data(
+          subcell_mesh, logical_coords_subcell, element.neighbors(),
+          reconstructor.ghost_zone_size(), compute_random_variable);
 
   DirectionMap<Dim, std::optional<Variables<
                         tmpl::list<evolution::dg::Tags::MagnitudeOfNormal,
@@ -169,8 +168,7 @@ void test_neighbor_packaged_data(const size_t num_dg_pts_per_dimension,
       domain::Tags::Element<Dim>, domain::Tags::Mesh<Dim>,
       evolution::dg::subcell::Tags::Mesh<Dim>,
       typename System<Dim>::variables_tag,
-      evolution::dg::subcell::Tags::NeighborDataForReconstructionAndRdmpTci<
-          Dim>,
+      evolution::dg::subcell::Tags::NeighborDataForReconstruction<Dim>,
       fd::Tags::Reconstructor<Dim>,
       evolution::Tags::BoundaryCorrection<System<Dim>>,
       Initialization::Tags::InitialTime,

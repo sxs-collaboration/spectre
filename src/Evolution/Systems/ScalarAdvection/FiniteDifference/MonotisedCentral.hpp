@@ -8,6 +8,7 @@
 #include <cstddef>
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/FixedHashMap.hpp"
@@ -34,9 +35,6 @@ template <size_t Dim>
 class Mesh;
 template <typename TagsList>
 class Variables;
-namespace evolution::dg::subcell {
-class NeighborData;
-}  // namespace evolution::dg::subcell
 namespace gsl {
 template <typename>
 class not_null;
@@ -84,8 +82,7 @@ class MonotisedCentral : public Reconstructor<Dim> {
 
   using reconstruction_argument_tags = tmpl::list<
       ::Tags::Variables<volume_vars_tags>, domain::Tags::Element<Dim>,
-      evolution::dg::subcell::Tags::NeighborDataForReconstructionAndRdmpTci<
-          Dim>,
+      evolution::dg::subcell::Tags::NeighborDataForReconstruction<Dim>,
       evolution::dg::subcell::Tags::Mesh<Dim>>;
 
   template <typename TagsList>
@@ -95,9 +92,8 @@ class MonotisedCentral : public Reconstructor<Dim> {
       const Variables<tmpl::list<Tags::U>>& volume_vars,
       const Element<Dim>& element,
       const FixedHashMap<
-          maximum_number_of_neighbors(Dim) + 1,
-          std::pair<Direction<Dim>, ElementId<Dim>>,
-          evolution::dg::subcell::NeighborData,
+          maximum_number_of_neighbors(Dim),
+          std::pair<Direction<Dim>, ElementId<Dim>>, std::vector<double>,
           boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
           neighbor_data,
       const Mesh<Dim>& subcell_mesh) const;
@@ -108,9 +104,8 @@ class MonotisedCentral : public Reconstructor<Dim> {
       const Variables<tmpl::list<Tags::U>>& volume_vars,
       const Element<Dim>& element,
       const FixedHashMap<
-          maximum_number_of_neighbors(Dim) + 1,
-          std::pair<Direction<Dim>, ElementId<Dim>>,
-          evolution::dg::subcell::NeighborData,
+          maximum_number_of_neighbors(Dim),
+          std::pair<Direction<Dim>, ElementId<Dim>>, std::vector<double>,
           boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
           neighbor_data,
       const Mesh<Dim>& subcell_mesh,

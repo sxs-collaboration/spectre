@@ -93,9 +93,8 @@ struct NeighborPackagedData {
         db::get<typename System<Dim>::variables_tag>(box), dg_mesh,
         subcell_mesh.extents());
 
-    const auto& neighbor_subcell_data =
-        db::get<evolution::dg::subcell::Tags::
-                    NeighborDataForReconstructionAndRdmpTci<Dim>>(box);
+    const auto& neighbor_subcell_data = db::get<
+        evolution::dg::subcell::Tags::NeighborDataForReconstruction<Dim>>(box);
 
     const ScalarAdvection::fd::Reconstructor<Dim>& recons =
         db::get<ScalarAdvection::fd::Tags::Reconstructor<Dim>>(box);

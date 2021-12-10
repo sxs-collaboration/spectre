@@ -89,8 +89,8 @@ struct NeighborPackagedData {
         subcell_mesh.extents());
 
     const auto& neighbor_subcell_data =
-        db::get<evolution::dg::subcell::Tags::
-                    NeighborDataForReconstructionAndRdmpTci<1>>(box);
+        db::get<evolution::dg::subcell::Tags::NeighborDataForReconstruction<1>>(
+            box);
 
     const Burgers::fd::Reconstructor& recons =
         db::get<Burgers::fd::Tags::Reconstructor>(box);

@@ -6,6 +6,7 @@
 #include <array>
 #include <cstddef>
 #include <utility>
+#include <vector>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/FixedHashMap.hpp"
@@ -16,7 +17,6 @@
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/MaxNumberOfNeighbors.hpp"
-#include "Evolution/DgSubcell/NeighborData.hpp"
 #include "Evolution/Systems/NewtonianEuler/ConservativeFromPrimitive.hpp"
 #include "Evolution/Systems/NewtonianEuler/FiniteDifference/ReconstructWork.tpp"
 #include "NumericalAlgorithms/FiniteDifference/AoWeno.hpp"
@@ -80,11 +80,10 @@ void AoWeno53Prim<Dim>::reconstruct(
     const Variables<prims_tags>& volume_prims,
     const EquationsOfState::EquationOfState<false, ThermodynamicDim>& eos,
     const Element<Dim>& element,
-    const FixedHashMap<maximum_number_of_neighbors(Dim) + 1,
-                       std::pair<Direction<Dim>, ElementId<Dim>>,
-                       evolution::dg::subcell::NeighborData,
-                       boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
-        neighbor_data,
+    const FixedHashMap<
+        maximum_number_of_neighbors(Dim),
+        std::pair<Direction<Dim>, ElementId<Dim>>, std::vector<double>,
+        boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>& neighbor_data,
     const Mesh<Dim>& subcell_mesh) const {
   reconstruct_prims_work(
       vars_on_lower_face, vars_on_upper_face,
@@ -106,11 +105,10 @@ void AoWeno53Prim<Dim>::reconstruct_fd_neighbor(
     const Variables<prims_tags>& subcell_volume_prims,
     const EquationsOfState::EquationOfState<false, ThermodynamicDim>& eos,
     const Element<Dim>& element,
-    const FixedHashMap<maximum_number_of_neighbors(Dim) + 1,
-                       std::pair<Direction<Dim>, ElementId<Dim>>,
-                       evolution::dg::subcell::NeighborData,
-                       boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
-        neighbor_data,
+    const FixedHashMap<
+        maximum_number_of_neighbors(Dim),
+        std::pair<Direction<Dim>, ElementId<Dim>>, std::vector<double>,
+        boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>& neighbor_data,
     const Mesh<Dim>& subcell_mesh,
     const Direction<Dim> direction_to_reconstruct) const {
   reconstruct_fd_neighbor_work(
@@ -182,9 +180,9 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
       const EquationsOfState::EquationOfState<false, THERMO_DIM(data)>& eos,   \
       const Element<DIM(data)>& element,                                       \
       const FixedHashMap<                                                      \
-          maximum_number_of_neighbors(DIM(data)) + 1,                          \
+          maximum_number_of_neighbors(DIM(data)),                              \
           std::pair<Direction<DIM(data)>, ElementId<DIM(data)>>,               \
-          evolution::dg::subcell::NeighborData,                                \
+          std::vector<double>,                                                 \
           boost::hash<std::pair<Direction<DIM(data)>, ElementId<DIM(data)>>>>& \
           neighbor_data,                                                       \
       const Mesh<DIM(data)>& subcell_mesh) const;                              \
@@ -194,9 +192,9 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
       const EquationsOfState::EquationOfState<false, THERMO_DIM(data)>& eos,   \
       const Element<DIM(data)>& element,                                       \
       const FixedHashMap<                                                      \
-          maximum_number_of_neighbors(DIM(data)) + 1,                          \
+          maximum_number_of_neighbors(DIM(data)),                              \
           std::pair<Direction<DIM(data)>, ElementId<DIM(data)>>,               \
-          evolution::dg::subcell::NeighborData,                                \
+          std::vector<double>,                                                 \
           boost::hash<std::pair<Direction<DIM(data)>, ElementId<DIM(data)>>>>& \
           neighbor_data,                                                       \
       const Mesh<DIM(data)>& subcell_mesh,                                     \

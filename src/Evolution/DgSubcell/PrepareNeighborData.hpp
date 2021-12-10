@@ -16,12 +16,12 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/OrientationMapHelpers.hpp"
 #include "Domain/Tags.hpp"
-#include "Evolution/DgSubcell/NeighborData.hpp"
 #include "Evolution/DgSubcell/RdmpTci.hpp"
+#include "Evolution/DgSubcell/RdmpTciData.hpp"
 #include "Evolution/DgSubcell/SliceData.hpp"
+#include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
 #include "Evolution/DgSubcell/Tags/Inactive.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
-#include "Evolution/DgSubcell/Tags/NeighborData.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
@@ -34,7 +34,7 @@ namespace evolution::dg::subcell {
  * neighbor cells.
  *
  * The local maximum and minimum of the evolved variables is added to
- * `Tags::NeighborDataForReconstructionAndRdmpTci` for the RDMP TCI. Then the
+ * `Tags::DataForRdmpTci` for the RDMP TCI. Then the
  * data needed by neighbor elements to do reconstruction on the FD grid is sent.
  * The data to be sent is computed in the mutator
  * `Metavariables::SubcellOptions::GhostDataToSlice`, which returns a
@@ -52,18 +52,14 @@ DirectionMap<Metavariables::volume_dim, std::vector<double>>
 prepare_neighbor_data(const gsl::not_null<db::DataBox<DbTagsList>*> box) {
   constexpr size_t volume_dim = Metavariables::volume_dim;
   using variables_tag = typename Metavariables::system::variables_tag;
-  const std::pair self_id{Direction<volume_dim>::lower_xi(),
-                          ElementId<volume_dim>::external_boundary_id()};
-  db::mutate<
-      subcell::Tags::NeighborDataForReconstructionAndRdmpTci<volume_dim>>(
+  db::mutate<subcell::Tags::DataForRdmpTci>(
       box,
-      [&self_id](
-          const auto neighbor_data_ptr,
-          std::pair<std::vector<double>, std::vector<double>> max_min_of_vars) {
-        subcell::NeighborData rdmp_data{};
+      [](const auto rdmp_tci_ptr,
+         std::pair<std::vector<double>, std::vector<double>> max_min_of_vars) {
+        subcell::RdmpTciData rdmp_data{};
         rdmp_data.max_variables_values = std::move(max_min_of_vars.first);
         rdmp_data.min_variables_values = std::move(max_min_of_vars.second);
-        (*neighbor_data_ptr)[self_id] = std::move(rdmp_data);
+        *rdmp_tci_ptr = std::move(rdmp_data);
       },
       evolution::dg::subcell::rdmp_max_min(
           db::get<variables_tag>(*box),
@@ -96,18 +92,8 @@ prepare_neighbor_data(const gsl::not_null<db::DataBox<DbTagsList>*> box) {
       db::get<subcell::Tags::Mesh<volume_dim>>(*box).extents(), ghost_zone_size,
       directions_to_slice);
 
-  ASSERT(
-      db::get<
-          subcell::Tags::NeighborDataForReconstructionAndRdmpTci<volume_dim>>(
-          *box)
-          .contains(self_id),
-      "The self info for the RDMP TCI should have been added to the neighbor "
-      "data tag but wasn't.");
-  const subcell::NeighborData& rdmp_data =
-      db::get<
-          subcell::Tags::NeighborDataForReconstructionAndRdmpTci<volume_dim>>(
-          *box)
-          .at(self_id);
+  const subcell::RdmpTciData& rdmp_data =
+      db::get<subcell::Tags::DataForRdmpTci>(*box);
 
   for (const auto& [direction, neighbors] : element.neighbors()) {
     const auto& orientation = neighbors.orientation();

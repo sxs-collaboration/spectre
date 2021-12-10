@@ -9,6 +9,7 @@
 #include <memory>
 #include <pup.h>
 #include <utility>
+#include <vector>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/FixedHashMap.hpp"
@@ -19,7 +20,6 @@
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/MaxNumberOfNeighbors.hpp"
-#include "Evolution/DgSubcell/NeighborData.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/NormalCovectorAndMagnitude.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/ReconstructWork.tpp"
 #include "NumericalAlgorithms/FiniteDifference/MonotisedCentral.hpp"
@@ -51,11 +51,10 @@ void MonotisedCentralPrim::reconstruct(
     const Variables<hydro::grmhd_tags<DataVector>>& volume_prims,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
     const Element<dim>& element,
-    const FixedHashMap<maximum_number_of_neighbors(dim) + 1,
-                       std::pair<Direction<dim>, ElementId<dim>>,
-                       evolution::dg::subcell::NeighborData,
-                       boost::hash<std::pair<Direction<dim>, ElementId<dim>>>>&
-        neighbor_data,
+    const FixedHashMap<
+        maximum_number_of_neighbors(dim),
+        std::pair<Direction<dim>, ElementId<dim>>, std::vector<double>,
+        boost::hash<std::pair<Direction<dim>, ElementId<dim>>>>& neighbor_data,
     const Mesh<dim>& subcell_mesh) const {
   reconstruct_prims_work(
       vars_on_lower_face, vars_on_upper_face,
@@ -76,11 +75,10 @@ void MonotisedCentralPrim::reconstruct_fd_neighbor(
     const Variables<hydro::grmhd_tags<DataVector>>& subcell_volume_prims,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
     const Element<dim>& element,
-    const FixedHashMap<maximum_number_of_neighbors(dim) + 1,
-                       std::pair<Direction<dim>, ElementId<dim>>,
-                       evolution::dg::subcell::NeighborData,
-                       boost::hash<std::pair<Direction<dim>, ElementId<dim>>>>&
-        neighbor_data,
+    const FixedHashMap<
+        maximum_number_of_neighbors(dim),
+        std::pair<Direction<dim>, ElementId<dim>>, std::vector<double>,
+        boost::hash<std::pair<Direction<dim>, ElementId<dim>>>>& neighbor_data,
     const Mesh<dim>& subcell_mesh,
     const Direction<dim> direction_to_reconstruct) const {
   reconstruct_fd_neighbor_work(
@@ -161,22 +159,20 @@ bool operator!=(const MonotisedCentralPrim& lhs,
       const Variables<hydro::grmhd_tags<DataVector>>& volume_prims,           \
       const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>& eos,   \
       const Element<3>& element,                                              \
-      const FixedHashMap<maximum_number_of_neighbors(3) + 1,                  \
-                         std::pair<Direction<3>, ElementId<3>>,               \
-                         evolution::dg::subcell::NeighborData,                \
-                         boost::hash<std::pair<Direction<3>, ElementId<3>>>>& \
-          neighbor_data,                                                      \
+      const FixedHashMap<                                                     \
+          maximum_number_of_neighbors(3),                                     \
+          std::pair<Direction<3>, ElementId<3>>, std::vector<double>,         \
+          boost::hash<std::pair<Direction<3>, ElementId<3>>>>& neighbor_data, \
       const Mesh<3>& subcell_mesh) const;                                     \
   template void MonotisedCentralPrim::reconstruct_fd_neighbor(                \
       gsl::not_null<Variables<TAGS_LIST(data)>*> vars_on_face,                \
       const Variables<hydro::grmhd_tags<DataVector>>& subcell_volume_prims,   \
       const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>& eos,   \
       const Element<3>& element,                                              \
-      const FixedHashMap<maximum_number_of_neighbors(3) + 1,                  \
-                         std::pair<Direction<3>, ElementId<3>>,               \
-                         evolution::dg::subcell::NeighborData,                \
-                         boost::hash<std::pair<Direction<3>, ElementId<3>>>>& \
-          neighbor_data,                                                      \
+      const FixedHashMap<                                                     \
+          maximum_number_of_neighbors(3),                                     \
+          std::pair<Direction<3>, ElementId<3>>, std::vector<double>,         \
+          boost::hash<std::pair<Direction<3>, ElementId<3>>>>& neighbor_data, \
       const Mesh<3>& subcell_mesh,                                            \
       const Direction<3> direction_to_reconstruct) const;
 
