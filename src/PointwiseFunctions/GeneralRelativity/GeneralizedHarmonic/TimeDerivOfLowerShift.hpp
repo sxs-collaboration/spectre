@@ -37,9 +37,10 @@ namespace GeneralizedHarmonic {
  * \brief Computes time derivative of index lowered shift from generalized
  *        harmonic variables, spatial metric and its time derivative.
  *
- * \details The time derivative of \f$ N_i \f$ is given by:
+ * \details The time derivative of \f$ \beta_i \f$ is given by:
  * \f{align*}
- *  \partial_0 N_i = g_{ij} \partial_0 N^j + N^j \partial_0 g_{ij}
+ *  \partial_0 \beta_i =
+ *      \gamma_{ij} \partial_0 \beta^j + \beta^j \partial_0 \gamma_{ij}
  * \f}
  * where the first term is obtained from `time_deriv_of_shift()`, and the latter
  * is a user input.

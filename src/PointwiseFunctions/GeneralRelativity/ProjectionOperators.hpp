@@ -22,8 +22,8 @@ namespace gr {
  * \ingroup GeneralRelativityGroup
  * \brief Compute projection operator onto an interface
  *
- * \details Returns the operator \f$P^{ij} = g^{ij} - n^i n^j\f$,
- * where \f$g^{ij}\f$ is the inverse spatial metric, and
+ * \details Returns the operator \f$P^{ij} = \gamma^{ij} - n^i n^j\f$,
+ * where \f$\gamma^{ij}\f$ is the inverse spatial metric, and
  * \f$n^i\f$ is the normal vector to the interface in question.
  *
  */
@@ -44,8 +44,8 @@ void transverse_projection_operator(
  * \ingroup GeneralRelativityGroup
  * \brief Compute projection operator onto an interface
  *
- * \details Returns the operator \f$P_{ij} = g_{ij} - n_i n_j\f$,
- * where \f$ g_{ij}\f$ is the spatial metric, and \f$ n_i\f$ is
+ * \details Returns the operator \f$P_{ij} = \gamma_{ij} - n_i n_j\f$,
+ * where \f$ \gamma_{ij}\f$ is the spatial metric, and \f$ n_i\f$ is
  * the normal one-form to the interface in question.
  */
 template <size_t VolumeDim, typename Frame, typename DataType>
@@ -86,15 +86,15 @@ void transverse_projection_operator(
  * \ingroup GeneralRelativityGroup
  * \brief Compute spacetime projection operator onto an interface
  *
- * \details Consider an \f$n-1\f$-dimensional surface \f$S\f$ in an
- * \f$n\f$-dimensional spatial hypersurface \f$\Sigma\f$. Let \f$s_a\f$
+ * \details Consider a \f$d-1\f$-dimensional surface \f$S\f$ in a
+ * \f$d\f$-dimensional spatial hypersurface \f$\Sigma\f$. Let \f$s_a\f$
  * be the unit spacelike one-form orthogonal to \f$S\f$ in \f$\Sigma\f$,
  * and \f$n_a\f$ be the timelike unit vector orthogonal to \f$\Sigma\f$.
  * This function returns the projection operator onto \f$S\f$ for
- * \f$n+1\f$ dimensional quantities:
+ * \f$d+1\f$ dimensional quantities:
  *
  * \f{align*}
- * P_{ab} = \psi_{ab} + n_a n_b - s_a s_b.
+ * P_{ab} = g_{ab} + n_a n_b - s_a s_b = \gamma_{ab} - s_a s_b.
  * \f}
  */
 template <size_t VolumeDim, typename Frame, typename DataType>
@@ -116,15 +116,15 @@ void transverse_projection_operator(
  * \ingroup GeneralRelativityGroup
  * \brief Compute spacetime projection operator onto an interface
  *
- * \details Consider an \f$n-1\f$-dimensional surface \f$S\f$ in an
- * \f$n\f$-dimensional spatial hypersurface \f$\Sigma\f$. Let \f$s^a\f$
+ * \details Consider a \f$d-1\f$-dimensional surface \f$S\f$ in a
+ * \f$d\f$-dimensional spatial hypersurface \f$\Sigma\f$. Let \f$s^a\f$
  * be the unit spacelike vector orthogonal to \f$S\f$ in \f$\Sigma\f$,
  * and \f$n^a\f$ be the timelike unit vector orthogonal to \f$\Sigma\f$.
  * This function returns the projection operator onto \f$S\f$ for
- * \f$n+1\f$ dimensional quantities:
+ * \f$d+1\f$ dimensional quantities:
  *
  * \f{align*}
- * P^{ab} = \psi^{ab} + n^a n^b - s^a s^b.
+ * P^{ab} = g^{ab} + n^a n^b - s^a s^b = \gamma_{ab} - s_a s_b.
  * \f}
  */
 template <size_t VolumeDim, typename Frame, typename DataType>
@@ -146,12 +146,12 @@ void transverse_projection_operator(
  * \ingroup GeneralRelativityGroup
  * \brief Compute spacetime projection operator onto an interface
  *
- * \details Consider an \f$n-1\f$-dimensional surface \f$S\f$ in an
- * \f$n\f$-dimensional spatial hypersurface \f$\Sigma\f$. Let \f$s^a\f$
+ * \details Consider a \f$d-1\f$-dimensional surface \f$S\f$ in a
+ * \f$d\f$-dimensional spatial hypersurface \f$\Sigma\f$. Let \f$s^a\f$
  * \f$(s_a)\f$ be the unit spacelike vector (one-form) orthogonal
  * to \f$S\f$ in \f$\Sigma\f$, and \f$n^a\f$ \f$(n_a)\f$ be the timelike
  * unit vector (one-form) orthogonal to \f$\Sigma\f$. This function
- * returns the projection operator onto \f$S\f$ for \f$n+1\f$ dimensional
+ * returns the projection operator onto \f$S\f$ for \f$d+1\f$ dimensional
  * quantities:
  *
  * \f{align*}

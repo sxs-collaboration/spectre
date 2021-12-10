@@ -27,9 +27,12 @@ namespace gr {
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief  Computes spacetime normal vector from lapse and shift.
- * \details If \f$N, N^i\f$ are the lapse and shift respectively, then
- * \f{align} n^t &= 1/N \\
- * n^i &= -\frac{N^i}{N} \f}
+ *
+ * \details If \f$\alpha, \beta^i\f$ are the lapse and shift respectively, then
+ *
+ * \f{align} n^t &= 1/\alpha \\
+ * n^i &= -\frac{\beta^i}{\alpha} \f}
+ *
  * is computed.
  */
 template <size_t SpatialDim, typename Frame, typename DataType>
@@ -48,7 +51,7 @@ void spacetime_normal_vector(
 namespace Tags {
 /*!
  * \brief Compute item for spacetime normal vector \f$n^a\f$ from
- * the lapse \f$N\f$ and the shift \f$N^i\f$.
+ * the lapse \f$\alpha\f$ and the shift \f$\beta^i\f$.
  *
  * \details Can be retrieved using `gr::Tags::SpacetimeNormalVector`.
  */

@@ -34,21 +34,21 @@ namespace GeneralizedHarmonic {
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief Computes the conjugate momentum \f$\Pi_{ab}\f$ of the spacetime metric
- * \f$ \psi_{ab} \f$.
+ * \f$ g_{ab} \f$.
  *
- * \details If \f$ N, N^i\f$ are the lapse and shift
- * respectively, and \f$ \Phi_{iab} = \partial_i \psi_{ab} \f$ then
- * \f$\Pi_{\mu\nu} = -\frac{1}{N} ( \partial_t \psi_{\mu\nu}  -
- *      N^m \Phi_{m\mu\nu}) \f$ where \f$ \partial_t \psi_{ab} \f$ is computed
+ * \details If \f$ \alpha, \beta^i\f$ are the lapse and shift respectively, and
+ * \f$ \Phi_{iab} = \partial_i g_{ab} \f$ then
+ * \f$\Pi_{\mu\nu} = -\frac{1}{\alpha} ( \partial_t g_{\mu\nu}  -
+ *      \beta^m \Phi_{m\mu\nu}) \f$ where \f$ \partial_t g_{ab} \f$ is computed
  * as
  *
  * \f{align}
- *     \partial_t \psi_{tt} &= - 2 N \partial_t N
- *                 + 2 g_{mn} N^m \partial_t N^n
- *                 + N^m N^n \partial_t g_{mn} \\
- *     \partial_t \psi_{ti} &= g_{mi} \partial_t N^m
- *                 + N^m \partial_t g_{mi} \\
- *     \partial_t \psi_{ij} &= \partial_t g_{ij}
+ *     \partial_t g_{tt} &= - 2 \alpha \partial_t \alpha
+ *                 + 2 \gamma_{mn} \beta^m \partial_t \beta^n
+ *                 + \beta^m \beta^n \partial_t \gamma_{mn} \\
+ *     \partial_t g_{ti} &= \gamma_{mi} \partial_t \beta^m
+ *                 + \beta^m \partial_t \gamma_{mi} \\
+ *     \partial_t g_{ij} &= \partial_t \gamma_{ij}
  * \f}
  */
 template <size_t SpatialDim, typename Frame, typename DataType>
@@ -73,7 +73,7 @@ tnsr::aa<DataType, SpatialDim, Frame> pi(
 namespace Tags {
 /*!
  * \brief Compute item the conjugate momentum \f$\Pi_{ab}\f$ of the spacetime
- * metric \f$ \psi_{ab} \f$.
+ * metric \f$ g_{ab} \f$.
  *
  * \details See `pi()`. Can be retrieved using `GeneralizedHarmonic::Tags::Pi`.
  */

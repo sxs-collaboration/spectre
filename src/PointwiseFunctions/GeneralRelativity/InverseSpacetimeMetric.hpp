@@ -29,14 +29,14 @@ namespace gr {
  * \brief Compute inverse spacetime metric from inverse spatial metric, lapse
  * and shift
  *
- * \details The inverse spacetime metric \f$ \psi^{ab} \f$ is calculated as
+ * \details The inverse spacetime metric \f$ g^{ab} \f$ is calculated as
  * \f{align}
- *    \psi^{tt} &= -  1/N^2 \\
- *    \psi^{ti} &= N^i / N^2 \\
- *    \psi^{ij} &= g^{ij} - N^i N^j / N^2
+ *    g^{tt} &= -  1/\alpha^2 \\
+ *    g^{ti} &= \beta^i / \alpha^2 \\
+ *    g^{ij} &= \gamma^{ij} - \beta^i \beta^j / \alpha^2
  * \f}
- * where \f$ N, N^i\f$ and \f$ g^{ij}\f$ are the lapse, shift and inverse
- * spatial metric respectively
+ * where \f$ \alpha, \beta^i\f$ and \f$ \gamma^{ij}\f$ are the lapse, shift and
+ * inverse spatial metric respectively
  */
 template <size_t SpatialDim, typename Frame, typename DataType>
 void inverse_spacetime_metric(
@@ -55,9 +55,9 @@ tnsr::AA<DataType, SpatialDim, Frame> inverse_spacetime_metric(
 
 namespace Tags {
 /*!
- * \brief Compute item for inverse spacetime metric \f$\psi^{ab}\f$
- * in terms of the lapse \f$N\f$, shift \f$N^i\f$, and inverse
- * spatial metric \f$g^{ij}\f$.
+ * \brief Compute item for inverse spacetime metric \f$g^{ab}\f$ in terms of the
+ * lapse \f$\alpha\f$, shift \f$\beta^i\f$, and inverse spatial metric
+ * \f$\gamma^{ij}\f$.
  *
  * \details Can be retrieved using `gr::Tags::InverseSpacetimeMetric`.
  */

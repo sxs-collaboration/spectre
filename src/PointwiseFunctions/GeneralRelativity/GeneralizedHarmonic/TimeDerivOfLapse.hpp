@@ -34,32 +34,43 @@ namespace GeneralizedHarmonic {
 /// @{
 /*!
  * \ingroup GeneralRelativityGroup
- * \brief Computes time derivative of lapse (N) from the generalized
+ * \brief Computes time derivative of lapse (\f$\alpha\f$) from the generalized
  *        harmonic variables, lapse, shift and the spacetime unit normal 1-form.
  *
  * \details Let the generalized harmonic conjugate momentum and spatial
- * derivative variables be \f$\Pi_{ab} = -t^c \partial_c \psi_{ab} \f$ and
- * \f$\Phi_{iab} = \partial_i \psi_{ab} \f$, and the operator
- * \f$D := \partial_0 - N^k \partial_k \f$. The time derivative of N is then:
+ * derivative variables be \f$\Pi_{ab} = -n^c \partial_c g_{ab} \f$ and
+ * \f$\Phi_{iab} = \partial_i g_{ab} \f$, and the operator
+ * \f$D := \partial_0 - \beta^k \partial_k \f$. The time derivative of
+ * \f$\alpha\f$ is then:
+ *
  * \f{align*}
- *  \frac{1}{2} N^2 t^a t^b \Pi_{ab} - \frac{1}{2} N N^i t^a t^b \Phi_{iab}
- *  =& \frac{1}{2} N^2 t^a t^b t^c \partial_c \psi_{ab}
- *       - \frac{1}{2} N N^i (-(2/N) \partial_i N) \\
- *  =& \frac{1}{2} N^2 [-(1/N^3) D[g_{jk} N^j N^k - N^2] \\
- *           &- (N^j N^k / N^3)D[g_{jk}] \\
- *           &+ 2 (N^j / N^3) D[g_{jk} N^k] + (2 / N^2)(N^i \partial_i N)] \\
- *  =& \frac{1}{2N} [-D[g_{jk}N^jN^k - N^2] - N^jN^k D[g_{jk}]
- *            + 2N N^k\partial_k N + 2N^j D[g_{jk}N^k]] \\
- *  =& D[N] + N^k\partial_k N \\
- *  =& \partial_0 N
+ *  \frac{1}{2} \alpha^2 n^a n^b \Pi_{ab}
+ *       - \frac{1}{2} \alpha \beta^i n^a n^b \Phi_{iab}
+ *  =& \frac{1}{2} \alpha^2 n^a n^b n^c \partial_c g_{ab}
+ *       - \frac{1}{2} \alpha \beta^i (-(2/\alpha) \partial_i \alpha) \\
+ *  =& \frac{1}{2} \alpha^2 [ \\
+ *       &-(1/\alpha^3) D[\gamma_{jk} \beta^j \beta^k - \alpha^2] \\
+ *       &- (\beta^j \beta^k / \alpha^3)D[\gamma_{jk}] \\
+ *       &+ 2 (\beta^j / \alpha^3) D[\gamma_{jk} \beta^k] \\
+ *       &+ (2 / \alpha^2)(\beta^i \partial_i \alpha)]] \\
+ *  =& \frac{1}{2\alpha} [-D[\gamma_{jk}\beta^j\beta^k - \alpha^2]
+ *       - \beta^j\beta^k D[\gamma_{jk}] + 2\alpha \beta^k\partial_k \alpha
+ *       + 2\beta^j D[\gamma_{jk}\beta^k]] \\
+ *  =& D[\alpha] + \beta^k\partial_k \alpha \\
+ *  =& \partial_0 \alpha
  * \f}
- * where the simplification done for \f$\partial_i N\f$ is used to substitute
- * for the second term (\f$\frac{1}{2} N N^i t^a t^b \Phi_{iab}\f$).
+ *
+ * where the simplification done for \f$\partial_i \alpha\f$ is used to
+ * substitute for the second term (\f$\frac{1}{2} \alpha \beta^i n^a n^b
+ * \Phi_{iab}\f$).
  *
  * Thus,
+ *
  * \f[
- *  \partial_0 N = (N/2)(N t^a t^b \Pi_{ab} - N^i t^a t^b \Phi_{iab})
+ *  \partial_0 \alpha =
+ *      (\alpha/2)(\alpha n^a n^b \Pi_{ab} - \beta^i n^a n^b \Phi_{iab})
  * \f]
+ *
  */
 template <size_t SpatialDim, typename Frame, typename DataType>
 void time_deriv_of_lapse(
@@ -80,8 +91,9 @@ Scalar<DataType> time_deriv_of_lapse(
 
 namespace Tags {
 /*!
- * \brief Compute item to get time derivative of lapse (N) from the generalized
- *        harmonic variables, lapse, shift and the spacetime unit normal 1-form.
+ * \brief Compute item to get time derivative of lapse (\f$\alpha\f$) from the
+ *        generalized harmonic variables, lapse, shift and the spacetime unit
+ *        normal 1-form.
  *
  * \details See `time_deriv_of_lapse()`. Can be retrieved using
  * `gr::Tags::Lapse` wrapped in `Tags::dt`.

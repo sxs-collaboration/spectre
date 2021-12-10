@@ -18,8 +18,8 @@ namespace GeneralizedHarmonic {
  *
  * \details
  * If \f$ \Phi_{kab} \f$ is the generalized harmonic spatial derivative
- * variable \f$ \Phi_{kab} = \partial_k \psi_{ab}\f$ and \f$\gamma^{ij}\f$
- * is the inverse spatial metric, the Christoffel symbols are
+ * variable \f$ \Phi_{kab} = \partial_k g_{ab}\f$ and \f$\gamma^{ij}\f$ is the
+ * inverse spatial metric, the Christoffel symbols are
  * \f[
  *   \Gamma^m_{ij} = \frac{1}{2}\gamma^{mk}(\Phi_{ijk}+\Phi_{jik}-\Phi_{kij}).
  * \f]

@@ -41,8 +41,8 @@ void spatial_metric(
 
 namespace Tags {
 /*!
- * \brief Compute item for spatial metric \f$g_{ij}\f$ from the
- * spacetime metric \f$\psi_{ab}\f$.
+ * \brief Compute item for spatial metric \f$\gamma_{ij}\f$ from the
+ * spacetime metric \f$g_{ab}\f$.
  *
  * \details Can be retrieved using `gr::Tags::SpatialMetric`.
  */

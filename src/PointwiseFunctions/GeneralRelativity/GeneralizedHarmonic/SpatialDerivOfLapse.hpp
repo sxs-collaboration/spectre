@@ -34,26 +34,31 @@ namespace GeneralizedHarmonic {
 /// @{
 /*!
  * \ingroup GeneralRelativityGroup
- * \brief Computes spatial derivatives of lapse (N) from the generalized
- *        harmonic variables and spacetime unit normal 1-form.
+ * \brief Computes spatial derivatives of lapse (\f$\alpha\f$) from the
+ *        generalized harmonic variables and spacetime unit normal 1-form.
  *
  * \details If the generalized harmonic conjugate momentum and spatial
- * derivative variables are \f$\Pi_{ab} = -t^c \partial_c \psi_{ab} \f$ and
- * \f$\Phi_{iab} = \partial_i \psi_{ab} \f$, the spatial derivatives of N
- * can be obtained from:
+ * derivative variables are \f$\Pi_{ab} = -n^c \partial_c g_{ab} \f$ and
+ * \f$\Phi_{iab} = \partial_i g_{ab} \f$, the spatial derivatives of
+ * \f$\alpha\f$ can be obtained from:
+ *
  * \f{align*}
- *  t^a t^b \Phi_{iab} = -\frac{1}{2N} [\partial_i (-N^2 + N_jN^j)-
- *                               2 N^j \partial_i N_j
- *                               + N^j N^k \partial_i g_{jk}]
- *                     = -\frac{2}{N} \partial_i N,
+ *      n^a n^b \Phi_{iab} =
+ *          -\frac{1}{2\alpha} [\partial_i (-\alpha^2 + \beta_j\beta^j)-
+ *                              2 \beta^j \partial_i \beta_j
+ *                              + \beta^j \beta^k \partial_i \gamma_{jk}]
+ *                         = -\frac{2}{\alpha} \partial_i \alpha,
  * \f}
+ *
  * since
+ *
  * \f[
- * \partial_i (N_jN^j) = 2N^j \partial_i N_j - N^j N^k \partial_i g_{jk}.
+ * \partial_i (\beta_j\beta^j) =
+ *     2\beta^j \partial_i \beta_j - \beta^j \beta^k \partial_i \gamma_{jk}.
  * \f]
  *
  * \f[
- * \Longrightarrow \partial_i N = -(N/2) t^a \Phi_{iab} t^b
+ *     \Longrightarrow \partial_i \alpha = -(\alpha/2) n^a \Phi_{iab} n^b
  * \f]
  */
 template <size_t SpatialDim, typename Frame, typename DataType>

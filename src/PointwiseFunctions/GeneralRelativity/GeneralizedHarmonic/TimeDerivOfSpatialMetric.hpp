@@ -37,17 +37,17 @@ namespace GeneralizedHarmonic {
  * \brief Computes time derivative of the spatial metric.
  *
  * \details Let the generalized harmonic conjugate momentum and spatial
- * derivative variables be \f$\Pi_{ab} = -t^c \partial_c \psi_{ab} \f$ and
- * \f$\Phi_{iab} = \partial_i \psi_{ab} \f$. As \f$ t_i \equiv 0 \f$. The time
+ * derivative variables be \f$\Pi_{ab} = -n^c \partial_c g_{ab} \f$ and
+ * \f$\Phi_{iab} = \partial_i g_{ab} \f$. As \f$ n_i \equiv 0 \f$. The time
  * derivative of the spatial metric is given by the time derivative of the
  * spatial sector of the spacetime metric, i.e.
- * \f$ \partial_0 g_{ij} = \partial_0 \psi_{ij} \f$.
+ * \f$ \partial_0 \gamma_{ij} = \partial_0 g_{ij} \f$.
  *
- * To compute the latter, we use the evolution equation for \f$ \psi_{ij} \f$,
+ * To compute the latter, we use the evolution equation for \f$ g_{ij} \f$,
  * c.f. eq.(35) of \cite Lindblom2005qh (with \f$\gamma_1 = -1\f$):
  *
  * \f[
- * \partial_0 \psi_{ab} = - N \Pi_{ab} + N^k \Phi_{kab}
+ * \partial_0 g_{ab} = - \alpha \Pi_{ab} + \beta^k \Phi_{kab}
  * \f]
  */
 template <size_t SpatialDim, typename Frame, typename DataType>
