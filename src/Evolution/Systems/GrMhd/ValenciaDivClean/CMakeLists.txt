@@ -11,6 +11,7 @@ spectre_target_sources(
   Characteristics.cpp
   ConservativeFromPrimitive.cpp
   FixConservatives.cpp
+  Flattener.cpp
   Fluxes.cpp
   KastaunEtAl.cpp
   NewmanHamlin.cpp
@@ -29,6 +30,7 @@ spectre_target_headers(
   Characteristics.hpp
   ConservativeFromPrimitive.hpp
   FixConservatives.hpp
+  Flattener.hpp
   Fluxes.hpp
   KastaunEtAl.hpp
   NewmanHamlin.hpp
