@@ -252,12 +252,14 @@ spectre_run_cmake() {
         return 1
     fi
     spectre_load_modules
+    # -D USE_LD=ld - ld.gold seems to hang linking the main executables
     cmake -D CHARM_ROOT=$CHARM_ROOT \
           -D CMAKE_BUILD_TYPE=Release \
           -D CMAKE_Fortran_COMPILER=gfortran \
           -D MEMORY_ALLOCATOR=SYSTEM \
           -D BUILD_PYTHON_BINDINGS=off \
           -D Python_EXECUTABLE=`which python3` \
+          -D USE_LD=ld \
           "$@" \
           $SPECTRE_HOME
 }
