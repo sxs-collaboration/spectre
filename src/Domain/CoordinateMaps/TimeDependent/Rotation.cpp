@@ -12,6 +12,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Domain/CoordinateMaps/TimeDependent/RotationMatrixHelpers.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
@@ -19,32 +20,16 @@
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/StdHelpers.hpp"
 
-namespace {
-Matrix rotation_matrix(
-    const std::string& f_of_t_name, const double time,
-    const std::unordered_map<
-        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time) {
-  ASSERT(functions_of_time.count(f_of_t_name) == 1,
-         "The function of time '" << f_of_t_name
-                                  << "' is not one of the known functions of "
-                                     "time. The known functions of time are: "
-                                  << keys_of(functions_of_time));
-  const double rotation_angle =
-      functions_of_time.at(f_of_t_name)->func(time)[0][0];
-  return Matrix{{cos(rotation_angle), -sin(rotation_angle)},
-                          {sin(rotation_angle), cos(rotation_angle)}};
-}
-}  // namespace
-
 namespace domain::CoordinateMaps::TimeDependent {
 
-Rotation<2>::Rotation(std::string function_of_time_name)
+template <size_t Dim>
+Rotation<Dim>::Rotation(std::string function_of_time_name)
     : f_of_t_name_(std::move(function_of_time_name)) {}
 
+template <size_t Dim>
 template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, 2> Rotation<2>::operator()(
-    const std::array<T, 2>& source_coords, const double time,
+std::array<tt::remove_cvref_wrap_t<T>, Dim> Rotation<Dim>::operator()(
+    const std::array<T, Dim>& source_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) const {
@@ -54,15 +39,21 @@ std::array<tt::remove_cvref_wrap_t<T>, 2> Rotation<2>::operator()(
              << keys_of(functions_of_time));
 
   const Matrix rot_matrix =
-      rotation_matrix(f_of_t_name_, time, functions_of_time);
-  return {{source_coords[0] * rot_matrix(0, 0) +
-               source_coords[1] * rot_matrix(0, 1),
-           source_coords[0] * rot_matrix(1, 0) +
-               source_coords[1] * rot_matrix(1, 1)}};
+      rotation_matrix<Dim>(time, *(functions_of_time.at(f_of_t_name_)));
+
+  std::array<tt::remove_cvref_wrap_t<T>, Dim> result{};
+  for (size_t i = 0; i < Dim; i++) {
+    gsl::at(result, i) = rot_matrix(i, 0) * source_coords[0];
+    for (size_t j = 1; j < Dim; j++) {
+      gsl::at(result, i) += rot_matrix(i, j) * gsl::at(source_coords, j);
+    }
+  }
+  return result;
 }
 
-std::optional<std::array<double, 2>> Rotation<2>::inverse(
-    const std::array<double, 2>& target_coords, const double time,
+template <size_t Dim>
+std::optional<std::array<double, Dim>> Rotation<Dim>::inverse(
+    const std::array<double, Dim>& target_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) const {
@@ -72,18 +63,24 @@ std::optional<std::array<double, 2>> Rotation<2>::inverse(
              << keys_of(functions_of_time));
 
   const Matrix rot_matrix =
-      rotation_matrix(f_of_t_name_, time, functions_of_time);
+      rotation_matrix<Dim>(time, *(functions_of_time.at(f_of_t_name_)));
+
   // The inverse map uses the inverse rotation matrix, which is just the
   // transpose of the rotation matrix
-  return {{{target_coords[0] * rot_matrix(0, 0) +
-                target_coords[1] * rot_matrix(1, 0),
-            target_coords[0] * rot_matrix(0, 1) +
-                target_coords[1] * rot_matrix(1, 1)}}};
+  std::array<double, Dim> result{};
+  for (size_t i = 0; i < Dim; i++) {
+    gsl::at(result, i) = rot_matrix(0, i) * target_coords[0];
+    for (size_t j = 1; j < Dim; j++) {
+      gsl::at(result, i) += rot_matrix(j, i) * gsl::at(target_coords, j);
+    }
+  }
+  return result;
 }
 
+template <size_t Dim>
 template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, 2> Rotation<2>::frame_velocity(
-    const std::array<T, 2>& source_coords, const double time,
+std::array<tt::remove_cvref_wrap_t<T>, Dim> Rotation<Dim>::frame_velocity(
+    const std::array<T, Dim>& source_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) const {
@@ -92,29 +89,25 @@ std::array<tt::remove_cvref_wrap_t<T>, 2> Rotation<2>::frame_velocity(
              << f_of_t_name_ << "' in functions of time. Known functions are "
              << keys_of(functions_of_time));
 
-  // The mapped coordinates (x,y) are related to the unmapped
-  // coordinates (\xi, \eta) by
-  //   x = \cos(\alpha) \xi - \sin(\alpha) \eta
-  //   y = \sin(\alpha) \xi + \cos(\alpha) \eta
-  //
-  // The frame velocity is
-  //   dx/dt = (-\sin(\alpha) \xi - \cos(\alpha)\eta) * d\alpha/dt
-  //   dy/dt = (\cos(\alpha) \xi -\sin(\alpha) \eta) * d\alpha/dt
-  const Matrix rot_matrix =
-      rotation_matrix(f_of_t_name_, time, functions_of_time);
-  const double rotation_angular_velocity =
-      functions_of_time.at(f_of_t_name_)->func_and_deriv(time)[1][0];
-  return {{(source_coords[0] * rot_matrix(0, 1) -
-            source_coords[1] * rot_matrix(0, 0)) *
-               rotation_angular_velocity,
-           (source_coords[0] * rot_matrix(0, 0) +
-            source_coords[1] * rot_matrix(0, 1)) *
-               rotation_angular_velocity}};
+  const Matrix rot_matrix_deriv =
+      rotation_matrix_deriv<Dim>(time, *(functions_of_time.at(f_of_t_name_)));
+
+  std::array<tt::remove_cvref_wrap_t<T>, Dim> result{};
+  for (size_t i = 0; i < Dim; i++) {
+    gsl::at(result, i) = rot_matrix_deriv(i, 0) * source_coords[0];
+    for (size_t j = 1; j < Dim; j++) {
+      gsl::at(result, i) += rot_matrix_deriv(i, j) * gsl::at(source_coords, j);
+    }
+  }
+
+  return result;
 }
 
+template <size_t Dim>
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, 2, Frame::NoFrame> Rotation<2>::jacobian(
-    const std::array<T, 2>& source_coords, const double time,
+tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame>
+Rotation<Dim>::jacobian(
+    const std::array<T, Dim>& source_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) const {
@@ -124,20 +117,27 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 2, Frame::NoFrame> Rotation<2>::jacobian(
              << keys_of(functions_of_time));
 
   const Matrix rot_matrix =
-      rotation_matrix(f_of_t_name_, time, functions_of_time);
-  tnsr::Ij<tt::remove_cvref_wrap_t<T>, 2, Frame::NoFrame> jacobian_matrix{
-      make_with_value<tt::remove_cvref_wrap_t<T>>(
-          dereference_wrapper(source_coords[0]), rot_matrix(0, 0))};
-  // rot_matrix(0, 0) == rot_matrix(1, 1), so only set off-diagonal terms
-  get<1, 0>(jacobian_matrix) = rot_matrix(1, 0);
-  get<0, 1>(jacobian_matrix) = rot_matrix(0, 1);
+      rotation_matrix<Dim>(time, *(functions_of_time.at(f_of_t_name_)));
+
+  // Make tensor of zeros with correct type
+  auto jacobian_matrix = make_with_value<
+      tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame>>(
+      dereference_wrapper(source_coords[0]), 0.0);
+
+  for (size_t i = 0; i < Dim; i++) {
+    for (size_t j = 0; j < Dim; j++) {
+      jacobian_matrix.get(i, j) = rot_matrix(i, j);
+    }
+  }
+
   return jacobian_matrix;
 }
 
+template <size_t Dim>
 template <typename T>
-tnsr::Ij<tt::remove_cvref_wrap_t<T>, 2, Frame::NoFrame>
-Rotation<2>::inv_jacobian(
-    const std::array<T, 2>& source_coords, const double time,
+tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame>
+Rotation<Dim>::inv_jacobian(
+    const std::array<T, Dim>& source_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) const {
@@ -147,29 +147,50 @@ Rotation<2>::inv_jacobian(
              << keys_of(functions_of_time));
 
   const Matrix rot_matrix =
-      rotation_matrix(f_of_t_name_, time, functions_of_time);
-  tnsr::Ij<tt::remove_cvref_wrap_t<T>, 2, Frame::NoFrame> inv_jacobian_matrix{
-      make_with_value<tt::remove_cvref_wrap_t<T>>(
-          dereference_wrapper(source_coords[0]), rot_matrix(0, 0))};
+      rotation_matrix<Dim>(time, *(functions_of_time.at(f_of_t_name_)));
+
+  auto inv_jacobian_matrix = make_with_value<
+      tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame>>(
+      dereference_wrapper(source_coords[0]), 0.0);
+
   // The inverse jacobian is just the inverse rotation matrix, which is the
   // transpose of the rotation matrix.
-  // Also, rot_matrix(0, 0) == rot_matrix(1, 1), so only set off-diagonal terms
-  get<1, 0>(inv_jacobian_matrix) = rot_matrix(0, 1);
-  get<0, 1>(inv_jacobian_matrix) = rot_matrix(1, 0);
+  for (size_t i = 0; i < Dim; i++) {
+    for (size_t j = 0; j < Dim; j++) {
+      inv_jacobian_matrix.get(i, j) = rot_matrix(j, i);
+    }
+  }
+
   return inv_jacobian_matrix;
 }
 
-void Rotation<2>::pup(PUP::er& p) { p | f_of_t_name_; }
+template <size_t Dim>
+void Rotation<Dim>::pup(PUP::er& p) {
+  p | f_of_t_name_;
+}
 
-bool operator==(const Rotation<2>& lhs, const Rotation<2>& rhs) {
+template <size_t Dim>
+bool operator==(const Rotation<Dim>& lhs, const Rotation<Dim>& rhs) {
   return lhs.f_of_t_name_ == rhs.f_of_t_name_;
 }
 
-bool operator!=(const Rotation<2>& lhs, const Rotation<2>& rhs) {
+template <size_t Dim>
+bool operator!=(const Rotation<Dim>& lhs, const Rotation<Dim>& rhs) {
   return not(lhs == rhs);
 }
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
+
+#define INSTANTIATE(_, data)                                               \
+  template class Rotation<DIM(data)>;                                      \
+  template bool operator==                                                 \
+      <DIM(data)>(const Rotation<DIM(data)>&, const Rotation<DIM(data)>&); \
+  template bool operator!=                                                 \
+      <DIM(data)>(const Rotation<DIM(data)>&, const Rotation<DIM(data)>&);
+
+GENERATE_INSTANTIATIONS(INSTANTIATE, (2, 3))
+
+#undef INSTANTIATE
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 
 #define INSTANTIATE(_, data)                                                \
@@ -205,10 +226,11 @@ bool operator!=(const Rotation<2>& lhs, const Rotation<2>& rhs) {
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&        \
           functions_of_time) const;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (2),
+GENERATE_INSTANTIATIONS(INSTANTIATE, (2, 3),
                         (double, DataVector,
                          std::reference_wrapper<const double>,
                          std::reference_wrapper<const DataVector>))
+
 #undef DIM
 #undef DTYPE
 #undef INSTANTIATE
