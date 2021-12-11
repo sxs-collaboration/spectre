@@ -217,6 +217,43 @@ struct MortarData : db::SimpleTag {
 }  // namespace Tags
 
 namespace detail {
+
+// Mass-conservative restriction: R = M^{-1}_face P^T M_mortar
+//
+// Note that projecting the mortar data times the Jacobian using
+// `Spectral::projection_matrix_child_to_parent(operand_is_massive=false)` is
+// equivalent to this implementation on Gauss grids. However, on Gauss-Lobatto
+// grids we usually diagonally approximate the mass matrix ("mass lumping") but
+// `projection_matrix_child_to_parent(operand_is_massive=false)` uses the full
+// mass matrix. Therefore, the two implementations differ slightly on
+// Gauss-Lobatto grids. Furthermore, note that
+// `projection_matrix_child_to_parent(operand_is_massive=false)` already
+// includes the factors of two that account for the mortar size, so they must be
+// omitted from the mortar Jacobian when using that approach.
+template <typename TagsList, size_t FaceDim>
+Variables<TagsList> mass_conservative_restriction(
+    Variables<TagsList> mortar_vars,
+    [[maybe_unused]] const Mesh<FaceDim>& mortar_mesh,
+    [[maybe_unused]] const ::dg::MortarSize<FaceDim>& mortar_size,
+    [[maybe_unused]] const Scalar<DataVector>& mortar_jacobian,
+    [[maybe_unused]] const Mesh<FaceDim> face_mesh,
+    [[maybe_unused]] const Scalar<DataVector>& face_jacobian) {
+  if constexpr (FaceDim == 0) {
+    return mortar_vars;
+  } else {
+    const auto projection_matrices =
+        Spectral::projection_matrix_child_to_parent(mortar_mesh, face_mesh,
+                                                    mortar_size, true);
+    mortar_vars *= get(mortar_jacobian);
+    ::dg::apply_mass_matrix(make_not_null(&mortar_vars), mortar_mesh);
+    auto face_vars =
+        apply_matrices(projection_matrices, mortar_vars, mortar_mesh.extents());
+    face_vars /= get(face_jacobian);
+    ::dg::apply_inverse_mass_matrix(make_not_null(&face_vars), face_mesh);
+    return face_vars;
+  }
+}
+
 template <typename System, bool Linearized,
           typename PrimalFields = typename System::primal_fields,
           typename AuxiliaryFields = typename System::auxiliary_fields,
@@ -639,8 +676,10 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
                             Frame::Inertial>& inv_jacobian,
       const Scalar<DataVector>& det_inv_jacobian,
       const DirectionMap<Dim, Scalar<DataVector>>& face_normal_magnitudes,
+      const DirectionMap<Dim, Scalar<DataVector>>& face_jacobians,
       const ::dg::MortarMap<Dim, Mesh<Dim - 1>>& all_mortar_meshes,
       const ::dg::MortarMap<Dim, ::dg::MortarSize<Dim - 1>>& all_mortar_sizes,
+      const ::dg::MortarMap<Dim, Scalar<DataVector>>& mortar_jacobians,
       const double penalty_parameter, const bool massive,
       const TemporalId& temporal_id,
       const std::tuple<SourcesArgs...>& sources_args,
@@ -761,9 +800,10 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
       // Project from the mortar back down to the face if needed
       auto auxiliary_boundary_corrections =
           Spectral::needs_projection(face_mesh, mortar_mesh, mortar_size)
-              ? ::dg::project_from_mortar(
-                    auxiliary_boundary_corrections_on_mortar, face_mesh,
-                    mortar_mesh, mortar_size)
+              ? mass_conservative_restriction(
+                    std::move(auxiliary_boundary_corrections_on_mortar),
+                    mortar_mesh, mortar_size, mortar_jacobians.at(mortar_id),
+                    face_mesh, face_jacobians.at(direction))
               : std::move(auxiliary_boundary_corrections_on_mortar);
 
       // Lift the boundary correction to the volume, but still only provide the
@@ -882,8 +922,10 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
       // to operator. See auxiliary boundary corrections above for details.
       auto primal_boundary_corrections =
           Spectral::needs_projection(face_mesh, mortar_mesh, mortar_size)
-              ? ::dg::project_from_mortar(primal_boundary_corrections_on_mortar,
-                                          face_mesh, mortar_mesh, mortar_size)
+              ? mass_conservative_restriction(
+                    std::move(primal_boundary_corrections_on_mortar),
+                    mortar_mesh, mortar_size, mortar_jacobians.at(mortar_id),
+                    face_mesh, face_jacobians.at(direction))
               : std::move(primal_boundary_corrections_on_mortar);
       ::dg::lift_flux(make_not_null(&primal_boundary_corrections),
                       mesh.extents(direction.dimension()),
@@ -957,9 +999,9 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
     apply_operator<true>(make_not_null(&operator_applied_to_zero_vars),
                          make_not_null(&all_mortar_data), zero_primal_vars,
                          primal_fluxes_buffer, element, mesh, inv_jacobian,
-                         det_inv_jacobian, face_normal_magnitudes,
-                         all_mortar_meshes, all_mortar_sizes, penalty_parameter,
-                         massive, temporal_id, sources_args);
+                         det_inv_jacobian, face_normal_magnitudes, {},
+                         all_mortar_meshes, all_mortar_sizes, {},
+                         penalty_parameter, massive, temporal_id, sources_args);
     // Impose the nonlinear (constant) boundary contribution as fixed sources on
     // the RHS of the equations
     *fixed_sources -= operator_applied_to_zero_vars;

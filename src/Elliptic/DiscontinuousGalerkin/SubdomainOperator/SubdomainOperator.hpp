@@ -21,6 +21,7 @@
 #include "Domain/Tags.hpp"
 #include "Domain/Tags/FaceNormal.hpp"
 #include "Domain/Tags/Faces.hpp"
+#include "Domain/Tags/SurfaceJacobian.hpp"
 #include "Elliptic/BoundaryConditions/ApplyBoundaryCondition.hpp"
 #include "Elliptic/DiscontinuousGalerkin/DgOperator.hpp"
 #include "Elliptic/DiscontinuousGalerkin/SubdomainOperator/Tags.hpp"
@@ -146,8 +147,13 @@ struct SubdomainOperator
       domain::Tags::DetInvJacobian<Frame::ElementLogical, Frame::Inertial>,
       domain::Tags::Faces<Dim,
                           domain::Tags::UnnormalizedFaceNormalMagnitude<Dim>>,
+      domain::Tags::Faces<Dim, domain::Tags::DetSurfaceJacobian<
+                                   Frame::ElementLogical, Frame::Inertial>>,
       ::Tags::Mortars<domain::Tags::Mesh<Dim - 1>, Dim>,
       ::Tags::Mortars<::Tags::MortarSize<Dim - 1>, Dim>,
+      ::Tags::Mortars<domain::Tags::DetSurfaceJacobian<Frame::ElementLogical,
+                                                       Frame::Inertial>,
+                      Dim>,
       elliptic::dg::Tags::PenaltyParameter, elliptic::dg::Tags::Massive>;
   using fluxes_args_tags = typename System::fluxes_computer::argument_tags;
   using sources_args_tags =

@@ -21,6 +21,7 @@
 #include "Domain/Tags.hpp"
 #include "Domain/Tags/FaceNormal.hpp"
 #include "Domain/Tags/Faces.hpp"
+#include "Domain/Tags/SurfaceJacobian.hpp"
 #include "Elliptic/BoundaryConditions/ApplyBoundaryCondition.hpp"
 #include "Elliptic/DiscontinuousGalerkin/DgOperator.hpp"
 #include "Elliptic/DiscontinuousGalerkin/Initialization.hpp"
@@ -393,8 +394,14 @@ struct ReceiveMortarDataAndApplyOperator<
                                              Frame::Inertial>>(box),
         db::get<domain::Tags::Faces<
             Dim, domain::Tags::UnnormalizedFaceNormalMagnitude<Dim>>>(box),
+        db::get<domain::Tags::Faces<
+            Dim, domain::Tags::DetSurfaceJacobian<Frame::ElementLogical,
+                                                  Frame::Inertial>>>(box),
         db::get<::Tags::Mortars<domain::Tags::Mesh<Dim - 1>, Dim>>(box),
         db::get<::Tags::Mortars<::Tags::MortarSize<Dim - 1>, Dim>>(box),
+        db::get<::Tags::Mortars<domain::Tags::DetSurfaceJacobian<
+                                    Frame::ElementLogical, Frame::Inertial>,
+                                Dim>>(box),
         db::get<elliptic::dg::Tags::PenaltyParameter>(box),
         db::get<elliptic::dg::Tags::Massive>(box), temporal_id,
         std::forward_as_tuple(db::get<SourcesArgsTags>(box)...));
