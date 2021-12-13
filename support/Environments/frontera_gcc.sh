@@ -52,7 +52,7 @@ spectre_setup_modules() {
         echo "Installed Catch into $dep_dir/catch"
 cat >$dep_dir/modules/catch <<EOF
 #%Module1.0
-prepend-path CPATH "$dep_dir/catch/include"
+prepend-path CPLUS_INCLUDE_PATH "$dep_dir/catch/include"
 prepend-path CMAKE_PREFIX_PATH "$dep_dir/catch/"
 EOF
     fi
@@ -70,7 +70,7 @@ EOF
         echo "Installed Blaze into $dep_dir/blaze"
         cat >$dep_dir/modules/blaze <<EOF
 #%Module1.0
-prepend-path CPATH "$dep_dir/blaze/include"
+prepend-path CPLUS_INCLUDE_PATH "$dep_dir/blaze/include"
 prepend-path CMAKE_PREFIX_PATH "$dep_dir/blaze/"
 EOF
     fi
@@ -86,7 +86,7 @@ EOF
         echo "Installed Brigand into $dep_dir/brigand"
         cat >$dep_dir/modules/brigand <<EOF
 #%Module1.0
-prepend-path CPATH "$dep_dir/brigand/include"
+prepend-path CPLUS_INCLUDE_PATH "$dep_dir/brigand/include"
 prepend-path CMAKE_PREFIX_PATH "$dep_dir/brigand/"
 EOF
     fi
@@ -109,7 +109,8 @@ EOF
 #%Module1.0
 prepend-path LIBRARY_PATH "$dep_dir/libxsmm/lib"
 prepend-path LD_LIBRARY_PATH "$dep_dir/libxsmm/lib"
-prepend-path CPATH "$dep_dir/libxsmm/include"
+prepend-path C_INCLUDE_PATH "$dep_dir/libxsmm/include"
+prepend-path CPLUS_INCLUDE_PATH "$dep_dir/libxsmm/include"
 prepend-path CMAKE_PREFIX_PATH "$dep_dir/libxsmm/"
 EOF
     fi
@@ -140,7 +141,7 @@ EOF
 #%Module1.0
 prepend-path LIBRARY_PATH "$dep_dir/yaml-cpp/lib"
 prepend-path LD_LIBRARY_PATH "$dep_dir/yaml-cpp/lib"
-prepend-path CPATH "$dep_dir/yaml-cpp/include"
+prepend-path CPLUS_INCLUDE_PATH "$dep_dir/yaml-cpp/include"
 prepend-path CMAKE_PREFIX_PATH "$dep_dir/yaml-cpp/"
 EOF
     fi
@@ -166,7 +167,7 @@ EOF
 #%Module1.0
 prepend-path LIBRARY_PATH "$dep_dir/libsharp/lib"
 prepend-path LD_LIBRARY_PATH "$dep_dir/libsharp/lib"
-prepend-path CPATH "$dep_dir/libsharp/include"
+prepend-path CPLUS_INCLUDE_PATH "$dep_dir/libsharp/include"
 prepend-path CMAKE_PREFIX_PATH "$dep_dir/libsharp/"
 EOF
     fi
@@ -186,15 +187,16 @@ EOF
         cd $dep_dir
         rm v6.10.2.tar.gz
         echo "Installed Charm++ into $dep_dir/charm"
+        charm_config=mpi-linux-x86_64-smp-mpicxx
         cat >$dep_dir/modules/charm <<EOF
 #%Module1.0
-prepend-path LIBRARY_PATH "$dep_dir/charm/mpi-linux-x86_64-smp-mpicxx/lib"
-prepend-path LD_LIBRARY_PATH "$dep_dir/charm/mpi-linux-x86_64-smp-mpicxx/lib"
-prepend-path CPATH "$dep_dir/charm/mpi-linux-x86_64-smp-mpicxx/include"
-prepend-path CMAKE_PREFIX_PATH "$dep_dir/charm/mpi-linux-x86_64-smp-mpicxx/"
+prepend-path LIBRARY_PATH "$dep_dir/charm/${charm_config}/lib"
+prepend-path LD_LIBRARY_PATH "$dep_dir/charm/${charm_config}/lib"
+prepend-path CPLUS_INCLUDE_PATH "$dep_dir/charm/${charm_config}/include"
+prepend-path CMAKE_PREFIX_PATH "$dep_dir/charm/${charm_config}/"
 setenv CHARM_VERSION 6.8.2
-setenv CHARM_HOME $dep_dir/charm/mpi-linux-x86_64-smp-mpicxx
-setenv CHARM_ROOT $dep_dir/charm/mpi-linux-x86_64-smp-mpicxx
+setenv CHARM_HOME $dep_dir/charm/${charm_config}
+setenv CHARM_ROOT $dep_dir/charm/${charm_config}
 EOF
     fi
     cd $dep_dir
@@ -204,7 +206,7 @@ EOF
     else
         cat >$dep_dir/modules/spectre_boost <<EOF
 #%Module1.0
-prepend-path CPATH "$BOOST_ROOT/include"
+prepend-path CPLUS_INCLUDE_PATH "$BOOST_ROOT/include"
 EOF
     fi
     cd $dep_dir
