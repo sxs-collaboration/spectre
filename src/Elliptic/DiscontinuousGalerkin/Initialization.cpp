@@ -115,6 +115,30 @@ void deriv_unnormalized_face_normals_impl(
     }
   }
 }
+
+template <size_t Dim>
+tnsr::I<DataVector, Dim, Frame::ElementLogical> mortar_logical_coordinates(
+    const Mesh<Dim - 1>& mortar_mesh,
+    const ::dg::MortarSize<Dim - 1>& mortar_size,
+    const Direction<Dim>& direction) {
+  auto mortar_logical_coords =
+      interface_logical_coordinates(mortar_mesh, direction);
+  size_t d_m = 0;
+  for (size_t d = 0; d < Dim; ++d) {
+    if (d == direction.dimension()) {
+      continue;
+    }
+    if (mortar_size.at(d_m) == Spectral::MortarSize::LowerHalf) {
+      mortar_logical_coords.get(d) -= 1.;
+      mortar_logical_coords.get(d) *= 0.5;
+    } else if (mortar_size.at(d_m) == Spectral::MortarSize::UpperHalf) {
+      mortar_logical_coords.get(d) += 1.;
+      mortar_logical_coords.get(d) *= 0.5;
+    }
+    ++d_m;
+  }
+  return mortar_logical_coords;
+}
 }  // namespace detail
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
@@ -126,7 +150,12 @@ void deriv_unnormalized_face_normals_impl(
           deriv_unnormalized_face_normals,                                     \
       const Mesh<DIM(data)>& mesh, const Element<DIM(data)>& element,          \
       const InverseJacobian<DataVector, DIM(data), Frame::ElementLogical,      \
-                            Frame::Inertial>& inv_jacobian);
+                            Frame::Inertial>& inv_jacobian);                   \
+  template tnsr::I<DataVector, DIM(data), Frame::ElementLogical>               \
+  detail::mortar_logical_coordinates(                                          \
+      const Mesh<DIM(data) - 1>& mortar_mesh,                                  \
+      const ::dg::MortarSize<DIM(data) - 1>& mortar_size,                      \
+      const Direction<DIM(data)>& direction);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
