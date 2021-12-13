@@ -16,8 +16,21 @@ add_test_library(
   ${LIBRARY}
   "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/"
   "${LIBRARY_SOURCES}"
-  "DataStructures;Domain;GeneralRelativity;GeneralRelativitySolutions;"
-  "GeneralizedHarmonic;Options;Spectral;Utilities"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  DataStructures
+  Domain
+  GeneralRelativity
+  GeneralRelativitySolutions
+  GeneralizedHarmonic
+  Hydro
+  Options
+  Spectral
+  Utilities
   )
 
 add_subdirectory(Python)

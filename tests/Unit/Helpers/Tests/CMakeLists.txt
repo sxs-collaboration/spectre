@@ -13,7 +13,15 @@ add_test_library(
   ${LIBRARY}
   "Helpers/Tests"
   "${LIBRARY_SOURCES}"
-  "DataStructures;DataStructuresHelpers"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  DataStructures
+  DataStructuresHelpers
+  GeneralRelativityHelpers
   )
 
 add_subdirectory(PointwiseFunctions)
