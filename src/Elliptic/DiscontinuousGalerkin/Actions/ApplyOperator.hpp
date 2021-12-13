@@ -78,12 +78,11 @@ struct InitializeFacesMortarsAndBackground {
       "'BackgroundTag' to 'elliptic::dg::Actions::initialize_operator'.");
 
   using InitializeFacesAndMortars =
-      elliptic::dg::InitializeFacesAndMortars<Dim>;
+      elliptic::dg::InitializeFacesAndMortars<Dim,
+                                              typename System::inv_metric_tag>;
   using InitializeBackground =
       elliptic::dg::InitializeBackground<Dim,
                                          typename System::background_fields>;
-  using NormalizeFaceNormal =
-      elliptic::dg::NormalizeFaceNormal<Dim, typename System::inv_metric_tag>;
 
  public:
   using simple_tags = tmpl::append<
@@ -102,26 +101,24 @@ struct InitializeFacesMortarsAndBackground {
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
-    // Initialize faces and mortars
-    db::mutate_apply<typename InitializeFacesAndMortars::return_tags,
-                     typename InitializeFacesAndMortars::argument_tags>(
-        InitializeFacesAndMortars{}, make_not_null(&box),
-        db::get<domain::Tags::InitialExtents<Dim>>(box));
-    // Initialize background fields
     if constexpr (has_background_fields) {
+      // Initialize faces and mortars
+      db::mutate_apply<typename InitializeFacesAndMortars::return_tags,
+                       typename InitializeFacesAndMortars::argument_tags>(
+          InitializeFacesAndMortars{}, make_not_null(&box),
+          db::get<domain::Tags::InitialExtents<Dim>>(box),
+          db::get<BackgroundTag>(box));
+      // Initialize background fields
       db::mutate_apply<typename InitializeBackground::return_tags,
                        typename InitializeBackground::argument_tags>(
           InitializeBackground{}, make_not_null(&box),
           db::get<BackgroundTag>(box));
-    }
-    // Normalize face normals
-    for (auto& direction : Direction<Dim>::all_directions()) {
-      elliptic::util::mutate_apply_at<
-          domain::make_faces_tags<Dim,
-                                  typename NormalizeFaceNormal::return_tags>,
-          domain::make_faces_tags<Dim,
-                                  typename NormalizeFaceNormal::argument_tags>,
-          tmpl::list<>>(NormalizeFaceNormal{}, make_not_null(&box), direction);
+    } else {
+      // Initialize faces and mortars
+      db::mutate_apply<typename InitializeFacesAndMortars::return_tags,
+                       typename InitializeFacesAndMortars::argument_tags>(
+          InitializeFacesAndMortars{}, make_not_null(&box),
+          db::get<domain::Tags::InitialExtents<Dim>>(box));
     }
     return {std::move(box)};
   }
