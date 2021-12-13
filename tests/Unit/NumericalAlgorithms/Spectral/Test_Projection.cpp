@@ -340,16 +340,20 @@ void test_h_element_to_mortar() {
   }
 }
 
-void test_massive_restriction() {
+void test_massive_restriction(const size_t parent_num_points,
+                              const size_t child_num_points) {
   INFO("Massive restriction operator");
+  CAPTURE(parent_num_points);
+  CAPTURE(child_num_points);
+  REQUIRE(parent_num_points < child_num_points);
   // Using Gauss quadrature so the diagonal mass-matrix approximation used in
   // `::dg::apply_mass_matrix` is exact. Note that for Gauss-Lobatto quadrature
   // the mass matrix is diagonally approximated in most places in the code, but
   // the `projection_matrix_child_to_parent` uses the exact mass matrix because
   // it is implemented in terms of Vandermonde matrices.
-  const Mesh<1> parent_mesh{3, Spectral::Basis::Legendre,
+  const Mesh<1> parent_mesh{parent_num_points, Spectral::Basis::Legendre,
                             Spectral::Quadrature::Gauss};
-  const Mesh<1> child_mesh{4, Spectral::Basis::Legendre,
+  const Mesh<1> child_mesh{child_num_points, Spectral::Basis::Legendre,
                            Spectral::Quadrature::Gauss};
   const auto& x_child = Spectral::collocation_points(child_mesh);
   DataVector child_data = square(x_child) + x_child + 1.;
@@ -496,7 +500,14 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.Projection",
   test_p_element_to_mortar();
   test_h_mortar_to_element();
   test_h_element_to_mortar();
-  test_massive_restriction();
+  for (size_t child_num_points = 4;
+       child_num_points <= maximum_number_of_points<Spectral::Basis::Legendre>;
+       ++child_num_points) {
+    for (size_t parent_num_points = 3; parent_num_points < child_num_points;
+         ++parent_num_points) {
+      test_massive_restriction(parent_num_points, child_num_points);
+    }
+  }
   test_exact_restriction();
   test_higher_dimensions<1>();
   test_higher_dimensions<2>();

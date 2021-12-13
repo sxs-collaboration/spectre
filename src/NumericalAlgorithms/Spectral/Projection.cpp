@@ -70,10 +70,10 @@ const Matrix& projection_matrix_child_to_parent(const Mesh<1>& child_mesh,
     const static auto cache = make_static_cache<
         CacheEnumeration<Quadrature, Quadrature::Gauss,
                          Quadrature::GaussLobatto>,
-        CacheRange<2_st, max_points>,
+        CacheRange<2_st, max_points + 1>,
         CacheEnumeration<Quadrature, Quadrature::Gauss,
                          Quadrature::GaussLobatto>,
-        CacheRange<2_st, max_points>,
+        CacheRange<2_st, max_points + 1>,
         CacheEnumeration<ChildSize, ChildSize::Full, ChildSize::UpperHalf,
                          ChildSize::LowerHalf>>(
         [](const Quadrature child_quadrature, const size_t child_extent,
