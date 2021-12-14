@@ -44,11 +44,26 @@ class Mesh;
  * \details
  * Computes the grid-frame normal by taking the logical-frame unit
  * one-form in the given Direction and mapping it to the grid frame
- * with the given map.
+ * with the given map, or the given inverse Jacobian.
  *
  * \example
  * \snippet Test_FaceNormal.cpp face_normal_example
  */
+template <size_t VolumeDim, typename TargetFrame>
+void unnormalized_face_normal(
+    const gsl::not_null<tnsr::i<DataVector, VolumeDim, TargetFrame>*> result,
+    const Mesh<VolumeDim - 1>& interface_mesh,
+    const InverseJacobian<DataVector, VolumeDim, Frame::ElementLogical,
+                          TargetFrame>& inv_jacobian_on_interface,
+    const Direction<VolumeDim>& direction);
+
+template <size_t VolumeDim, typename TargetFrame>
+tnsr::i<DataVector, VolumeDim, TargetFrame> unnormalized_face_normal(
+    const Mesh<VolumeDim - 1>& interface_mesh,
+    const InverseJacobian<DataVector, VolumeDim, Frame::ElementLogical,
+                          TargetFrame>& inv_jacobian_on_interface,
+    const Direction<VolumeDim>& direction);
+
 template <size_t VolumeDim, typename TargetFrame>
 void unnormalized_face_normal(
     gsl::not_null<tnsr::i<DataVector, VolumeDim, TargetFrame>*> result,

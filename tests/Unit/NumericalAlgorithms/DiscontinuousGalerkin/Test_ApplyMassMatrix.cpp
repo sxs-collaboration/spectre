@@ -83,6 +83,8 @@ void test_apply_mass_matrix(
     auto result = scalar_field;
     apply_mass_matrix(make_not_null(&result), mesh);
     CHECK_ITERABLE_APPROX(result, expected_mass_matrix_times_scalar_field);
+    apply_inverse_mass_matrix(make_not_null(&result), mesh);
+    CHECK_ITERABLE_APPROX(result, scalar_field);
   }
   {
     INFO("Test with Variables");
@@ -96,6 +98,9 @@ void test_apply_mass_matrix(
                           expected_mass_matrix_times_scalar_field);
     CHECK_ITERABLE_APPROX(get(get<tag2>(vars)),
                           expected_mass_matrix_times_scalar_field);
+    apply_inverse_mass_matrix(make_not_null(&vars), mesh);
+    CHECK_ITERABLE_APPROX(get(get<tag1>(vars)), scalar_field);
+    CHECK_ITERABLE_APPROX(get(get<tag2>(vars)), scalar_field);
   }
 }
 

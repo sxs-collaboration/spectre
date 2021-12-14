@@ -8,4 +8,5 @@ spectre_target_headers(
   BlockNamesAndGroups.hpp
   FaceNormal.hpp
   Faces.hpp
+  SurfaceJacobian.hpp
   )

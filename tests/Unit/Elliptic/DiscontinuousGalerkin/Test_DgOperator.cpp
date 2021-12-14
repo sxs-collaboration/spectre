@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
+#include "Domain/Creators/AlignedLattice.hpp"
 #include "Domain/Creators/Brick.hpp"
 #include "Domain/Creators/Interval.hpp"
 #include "Domain/Creators/Rectangle.hpp"
@@ -752,6 +753,134 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
             domain_creator, penalty_parameter, use_massive_dg_operator,
             analytic_solution, analytic_solution_aux_approx,
             analytic_solution_operator_approx, {});
+      }
+    }
+  }
+  {
+    INFO("2D with h-nonconforming boundary");
+    using system =
+        Poisson::FirstOrderSystem<2, Poisson::Geometry::FlatCartesian>;
+    Poisson::Solutions::ProductOfSinusoids<2> analytic_solution{{{M_PI, M_PI}}};
+    using boundary_condition_registrars =
+        typename system::boundary_conditions_base::registrars;
+    using AnalyticSolutionBoundaryCondition =
+        typename elliptic::BoundaryConditions::Registrars::AnalyticSolution<
+            system>::template f<boundary_condition_registrars>;
+    Parallel::register_derived_classes_with_charm<
+        typename system::boundary_conditions_base>();
+    {
+      INFO("Regression tests");
+      // Domain decomposition:
+      // ^ eta
+      // +-+-+> xi
+      // | | |
+      // +-+ |
+      // | | |
+      // +-+-+
+      const domain::creators::AlignedLattice<2> domain_creator{
+          // Start with 2 unrefined blocks
+          {{{0., 0.25, 0.5}, {0., 0.5}}},
+          {{0, 0}},
+          {{3, 2}},
+          // Refine once in eta in left block in sketch above
+          {{{{0, 0}}, {{1, 1}}, {{0, 1}}}},
+          {},
+          {},
+          std::make_unique<AnalyticSolutionBoundaryCondition>(
+              elliptic::BoundaryConditionType::Dirichlet)};
+      const ElementId<2> lowerleft_id{0, {{{0, 0}, {1, 0}}}};
+      const ElementId<2> upperleft_id{0, {{{0, 0}, {1, 1}}}};
+      const ElementId<2> right_id{1, {{{0, 0}, {0, 0}}}};
+      using Vars = Variables<tmpl::list<Var<Poisson::Tags::Field>>>;
+      using PrimalFluxes = Variables<tmpl::list<Var<::Tags::Flux<
+          Poisson::Tags::Field, tmpl::size_t<2>, Frame::Inertial>>>>;
+      using OperatorVars =
+          Variables<tmpl::list<DgOperatorAppliedTo<Var<Poisson::Tags::Field>>>>;
+      Vars vars_rnd_lowerleft{6};
+      get(get<Var<Poisson::Tags::Field>>(vars_rnd_lowerleft)) = DataVector{
+          0.9807641983846155, 0.6848297385848633, 0.48093190148436094,
+          0.3921175181941505, 0.3431780161508694, 0.7290497073840416};
+      Vars vars_rnd_upperleft{6};
+      get(get<Var<Poisson::Tags::Field>>(vars_rnd_upperleft)) = DataVector{
+          0.6964691855978616, 0.28613933495037946, 0.2268514535642031,
+          0.5513147690828912, 0.7194689697855631,  0.42310646012446096};
+      Vars vars_rnd_right{6};
+      get(get<Var<Poisson::Tags::Field>>(vars_rnd_right)) = DataVector{
+          0.5315513738418384, 0.5318275870968661, 0.6344009585513211,
+          0.8494317940777896, 0.7244553248606352, 0.6110235106775829};
+      PrimalFluxes expected_primal_fluxes_rnd_lowerleft{6};
+      get<0>(get<Var<::Tags::Flux<Poisson::Tags::Field, tmpl::size_t<2>,
+                                  Frame::Inertial>>>(
+          expected_primal_fluxes_rnd_lowerleft)) = DataVector{
+          -2.73562216919501644, -1.99932918760101819, -1.26303620600701905,
+          -2.13076078945206238, 1.34772875675956438,  4.82621830297119114};
+      get<1>(get<Var<::Tags::Flux<Poisson::Tags::Field, tmpl::size_t<2>,
+                                  Frame::Inertial>>>(
+          expected_primal_fluxes_rnd_lowerleft)) = DataVector{
+          -2.35458672076185982, -1.36660688973597555, 0.99247122359872275,
+          -2.35458672076185982, -1.36660688973597555, 0.99247122359872275};
+      PrimalFluxes expected_primal_fluxes_rnd_right{6};
+      get<0>(get<Var<::Tags::Flux<Poisson::Tags::Field, tmpl::size_t<2>,
+                                  Frame::Inertial>>>(
+          expected_primal_fluxes_rnd_right)) = DataVector{
+          -0.40697892675748815, 0.41139833883793075, 1.22977560443334877,
+          -1.04599037387364335, -0.9536331336008268, -0.86127589332801024};
+      get<1>(get<Var<::Tags::Flux<Poisson::Tags::Field, tmpl::size_t<2>,
+                                  Frame::Inertial>>>(
+          expected_primal_fluxes_rnd_right)) = DataVector{
+          0.6357608404719024, 0.38525547552753836, -0.04675489574747638,
+          0.6357608404719024, 0.38525547552753836, -0.04675489574747638};
+      OperatorVars expected_operator_vars_rnd_lowerleft{6};
+      get(get<DgOperatorAppliedTo<Var<Poisson::Tags::Field>>>(
+          expected_operator_vars_rnd_lowerleft)) = DataVector{
+          16.79306542717521111, 7.74239738894839835, 0.12965837830820104,
+          5.52397488236783918,  0.6884385606128971,  0.92375936190340657};
+      OperatorVars expected_operator_vars_rnd_right{6};
+      get(get<DgOperatorAppliedTo<Var<Poisson::Tags::Field>>>(
+          expected_operator_vars_rnd_right)) = DataVector{
+          2.08951711777856541, 5.07404320722327817, 19.63622686309961551,
+          5.16363816253272567, 6.36875690348678791, 18.87810118239165291};
+      // Large tolerances for the comparison to the analytic solution because
+      // this regression test runs at very low resolution. Below is another
+      // analytic-solution test at higher resolution. The hard-coded numbers
+      // are compared at higher (default) precision.
+      Approx analytic_solution_aux_approx =
+          Approx::custom().epsilon(7.e-1).scale(M_PI);
+      Approx analytic_solution_operator_approx =
+          Approx::custom().epsilon(7.e-1).scale(M_PI * penalty_parameter *
+                                                square(3));
+      test_dg_operator<system, true>(
+          domain_creator, penalty_parameter, true, analytic_solution,
+          analytic_solution_aux_approx, analytic_solution_operator_approx,
+          {{{{lowerleft_id, std::move(vars_rnd_lowerleft)},
+             {upperleft_id, std::move(vars_rnd_upperleft)},
+             {right_id, std::move(vars_rnd_right)}},
+            {{lowerleft_id, std::move(expected_primal_fluxes_rnd_lowerleft)},
+             {right_id, std::move(expected_primal_fluxes_rnd_right)}},
+            {{lowerleft_id, std::move(expected_operator_vars_rnd_lowerleft)},
+             {right_id, std::move(expected_operator_vars_rnd_right)}}}});
+    }
+    {
+      INFO("Higher-resolution analytic-solution tests");
+      const domain::creators::AlignedLattice<2> domain_creator{
+          {{{0., 0.25, 0.5}, {0., 0.5}}},
+          {{1, 1}},
+          {{12, 12}},
+          {{{{0, 0}}, {{1, 1}}, {{1, 2}}}},
+          {},
+          {},
+          std::make_unique<AnalyticSolutionBoundaryCondition>(
+              elliptic::BoundaryConditionType::Dirichlet)};
+      Approx analytic_solution_aux_approx =
+          Approx::custom().epsilon(1.e-12).scale(M_PI);
+      Approx analytic_solution_operator_approx =
+          Approx::custom().epsilon(1.e-12).scale(M_PI * penalty_parameter *
+                                                square(12));
+      for (const bool massive : {true, false}) {
+        test_dg_operator<system, true>(domain_creator, penalty_parameter,
+                                       massive, analytic_solution,
+                                       analytic_solution_aux_approx,
+                                       analytic_solution_operator_approx, {});
       }
     }
   }

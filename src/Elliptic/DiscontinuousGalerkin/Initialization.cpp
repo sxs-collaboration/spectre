@@ -29,6 +29,7 @@
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
+#include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace elliptic::dg {
@@ -74,104 +75,91 @@ void InitializeGeometry<Dim>::operator()(
   *det_inv_jacobian = determinant(*inv_jacobian);
 }
 
+namespace detail {
 template <size_t Dim>
-void InitializeFacesAndMortars<Dim>::operator()(
-    const gsl::not_null<DirectionMap<Dim, Direction<Dim>>*> face_directions,
-    const gsl::not_null<DirectionMap<Dim, tnsr::I<DataVector, Dim>>*>
-        face_inertial_coords,
-    const gsl::not_null<DirectionMap<Dim, tnsr::i<DataVector, Dim>>*>
-        face_normals,
-    const gsl::not_null<DirectionMap<Dim, Scalar<DataVector>>*>
-    /*face_normal_magnitudes*/,
+void deriv_unnormalized_face_normals_impl(
     const gsl::not_null<DirectionMap<Dim, tnsr::ij<DataVector, Dim>>*>
         deriv_unnormalized_face_normals,
-    const gsl::not_null<::dg::MortarMap<Dim, Mesh<Dim - 1>>*> mortar_meshes,
-    const gsl::not_null<::dg::MortarMap<Dim, ::dg::MortarSize<Dim - 1>>*>
-        mortar_sizes,
     const Mesh<Dim>& mesh, const Element<Dim>& element,
-    const ElementMap<Dim, Frame::Inertial>& element_map,
     const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
-                          Frame::Inertial>& inv_jacobian,
-    const std::vector<std::array<size_t, Dim>>& initial_extents)
-    const {
-  const Spectral::Quadrature quadrature = mesh.quadrature(0);
-  // Faces
-  for (const auto& direction : Direction<Dim>::all_directions()) {
-    const auto face_mesh = mesh.slice_away(direction.dimension());
-    (*face_directions)[direction] = direction;
-    // Possible optimization: Not all systems need the coordinates on internal
-    // faces.
-    (*face_inertial_coords)[direction] = element_map.operator()(
-        interface_logical_coordinates(face_mesh, direction));
-    (*face_normals)[direction] =
-        unnormalized_face_normal(face_mesh, element_map, direction);
+                          Frame::Inertial>& inv_jacobian) {
+  if (element.external_boundaries().empty()) {
+    return;
   }
-  // Compute the Jacobian derivative numerically, because our coordinate maps
-  // currently don't provide it analytically.
-  if (not element.external_boundaries().empty()) {
-    ASSERT(mesh.quadrature(0) == Spectral::Quadrature::GaussLobatto,
-           "Slicing the Hessian to the boundary currently supports only "
-           "Gauss-Lobatto grids. Add support to "
-           "'elliptic::dg::InitializeFacesAndMortars'.");
-    using inv_jac_tag =
-        domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
-                                      Frame::Inertial>;
-    Variables<tmpl::list<inv_jac_tag>> vars_to_differentiate{
-        mesh.number_of_grid_points()};
-    get<inv_jac_tag>(vars_to_differentiate) = inv_jacobian;
-    const auto deriv_vars = partial_derivatives<tmpl::list<inv_jac_tag>>(
-        vars_to_differentiate, mesh, inv_jacobian);
-    const auto& deriv_inv_jac =
-        get<::Tags::deriv<inv_jac_tag, tmpl::size_t<Dim>, Frame::Inertial>>(
-            deriv_vars);
-    for (const auto& direction : element.external_boundaries()) {
-      const auto deriv_inv_jac_on_face =
-          data_on_slice(deriv_inv_jac, mesh.extents(), direction.dimension(),
-                        index_to_slice_at(mesh.extents(), direction));
-      auto& deriv_unnormalized_face_normal =
-          (*deriv_unnormalized_face_normals)[direction];
-      for (size_t i = 0; i < Dim; ++i) {
-        for (size_t j = 0; j < Dim; ++j) {
-          deriv_unnormalized_face_normal.get(i, j) =
-              direction.sign() *
-              deriv_inv_jac_on_face.get(i, direction.dimension(), j);
-        }
+  ASSERT(mesh.quadrature(0) == Spectral::Quadrature::GaussLobatto,
+         "Slicing the Hessian to the boundary currently supports only "
+         "Gauss-Lobatto grids. Add support to "
+         "'elliptic::dg::InitializeFacesAndMortars'.");
+  using inv_jac_tag = domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
+                                                    Frame::Inertial>;
+  Variables<tmpl::list<inv_jac_tag>> vars_to_differentiate{
+      mesh.number_of_grid_points()};
+  get<inv_jac_tag>(vars_to_differentiate) = inv_jacobian;
+  const auto deriv_vars = partial_derivatives<tmpl::list<inv_jac_tag>>(
+      vars_to_differentiate, mesh, inv_jacobian);
+  const auto& deriv_inv_jac =
+      get<::Tags::deriv<inv_jac_tag, tmpl::size_t<Dim>, Frame::Inertial>>(
+          deriv_vars);
+  for (const auto& direction : element.external_boundaries()) {
+    const auto deriv_inv_jac_on_face =
+        data_on_slice(deriv_inv_jac, mesh.extents(), direction.dimension(),
+                      index_to_slice_at(mesh.extents(), direction));
+    auto& deriv_unnormalized_face_normal =
+        (*deriv_unnormalized_face_normals)[direction];
+    for (size_t i = 0; i < Dim; ++i) {
+      for (size_t j = 0; j < Dim; ++j) {
+        deriv_unnormalized_face_normal.get(i, j) =
+            direction.sign() *
+            deriv_inv_jac_on_face.get(i, direction.dimension(), j);
       }
     }
   }
-  // Mortars
-  const auto& element_id = element.id();
-  for (const auto& [direction, neighbors] : element.neighbors()) {
-    const auto face_mesh = mesh.slice_away(direction.dimension());
-    const auto& orientation = neighbors.orientation();
-    for (const auto& neighbor_id : neighbors) {
-      const ::dg::MortarId<Dim> mortar_id{direction, neighbor_id};
-      mortar_meshes->emplace(
-          mortar_id, ::dg::mortar_mesh(
-                         face_mesh, domain::Initialization::create_initial_mesh(
-                                        initial_extents, neighbor_id,
-                                        quadrature, orientation)
-                                        .slice_away(direction.dimension())));
-      mortar_sizes->emplace(
-          mortar_id, ::dg::mortar_size(element_id, neighbor_id,
-                                       direction.dimension(), orientation));
-    }  // neighbors
-  }    // internal directions
-  for (const auto& direction : element.external_boundaries()) {
-    const auto face_mesh = mesh.slice_away(direction.dimension());
-    const auto mortar_id =
-        std::make_pair(direction, ElementId<Dim>::external_boundary_id());
-    mortar_meshes->emplace(mortar_id, face_mesh);
-    mortar_sizes->emplace(mortar_id,
-                          make_array<Dim - 1>(Spectral::MortarSize::Full));
-  }  // external directions
 }
 
-template class InitializeGeometry<1>;
-template class InitializeGeometry<2>;
-template class InitializeGeometry<3>;
-template class InitializeFacesAndMortars<1>;
-template class InitializeFacesAndMortars<2>;
-template class InitializeFacesAndMortars<3>;
+template <size_t Dim>
+tnsr::I<DataVector, Dim, Frame::ElementLogical> mortar_logical_coordinates(
+    const Mesh<Dim - 1>& mortar_mesh,
+    const ::dg::MortarSize<Dim - 1>& mortar_size,
+    const Direction<Dim>& direction) {
+  auto mortar_logical_coords =
+      interface_logical_coordinates(mortar_mesh, direction);
+  size_t d_m = 0;
+  for (size_t d = 0; d < Dim; ++d) {
+    if (d == direction.dimension()) {
+      continue;
+    }
+    if (mortar_size.at(d_m) == Spectral::MortarSize::LowerHalf) {
+      mortar_logical_coords.get(d) -= 1.;
+      mortar_logical_coords.get(d) *= 0.5;
+    } else if (mortar_size.at(d_m) == Spectral::MortarSize::UpperHalf) {
+      mortar_logical_coords.get(d) += 1.;
+      mortar_logical_coords.get(d) *= 0.5;
+    }
+    ++d_m;
+  }
+  return mortar_logical_coords;
+}
+}  // namespace detail
+
+#define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
+
+#define INSTANTIATE(_, data)                                                   \
+  template class InitializeGeometry<DIM(data)>;                                \
+  template void detail::deriv_unnormalized_face_normals_impl(                  \
+      gsl::not_null<DirectionMap<DIM(data), tnsr::ij<DataVector, DIM(data)>>*> \
+          deriv_unnormalized_face_normals,                                     \
+      const Mesh<DIM(data)>& mesh, const Element<DIM(data)>& element,          \
+      const InverseJacobian<DataVector, DIM(data), Frame::ElementLogical,      \
+                            Frame::Inertial>& inv_jacobian);                   \
+  template tnsr::I<DataVector, DIM(data), Frame::ElementLogical>               \
+  detail::mortar_logical_coordinates(                                          \
+      const Mesh<DIM(data) - 1>& mortar_mesh,                                  \
+      const ::dg::MortarSize<DIM(data) - 1>& mortar_size,                      \
+      const Direction<DIM(data)>& direction);
+
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
+
+#undef DIM
+#undef INSTANTIATE
 
 }  // namespace elliptic::dg
