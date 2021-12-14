@@ -8,6 +8,7 @@
 #include <array>
 #include <cstddef>
 #include <utility>
+#include <vector>
 
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
@@ -24,7 +25,6 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Domain/Structure/Neighbors.hpp"
-#include "Evolution/DgSubcell/NeighborData.hpp"
 #include "Evolution/DgSubcell/SliceData.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/NormalCovectorAndMagnitude.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/ConservativeFromPrimitive.hpp"
@@ -44,18 +44,16 @@
 namespace TestHelpers::grmhd::ValenciaDivClean::fd {
 namespace detail {
 template <typename F>
-FixedHashMap<maximum_number_of_neighbors(3) + 1,
-             std::pair<Direction<3>, ElementId<3>>,
-             evolution::dg::subcell::NeighborData,
+FixedHashMap<maximum_number_of_neighbors(3),
+             std::pair<Direction<3>, ElementId<3>>, std::vector<double>,
              boost::hash<std::pair<Direction<3>, ElementId<3>>>>
 compute_neighbor_data(
     const Mesh<3>& subcell_mesh,
     const tnsr::I<DataVector, 3, Frame::ElementLogical>& volume_logical_coords,
     const DirectionMap<3, Neighbors<3>>& neighbors,
     const size_t ghost_zone_size, const F& compute_variables_of_neighbor_data) {
-  FixedHashMap<maximum_number_of_neighbors(3) + 1,
-               std::pair<Direction<3>, ElementId<3>>,
-               evolution::dg::subcell::NeighborData,
+  FixedHashMap<maximum_number_of_neighbors(3),
+               std::pair<Direction<3>, ElementId<3>>, std::vector<double>,
                boost::hash<std::pair<Direction<3>, ElementId<3>>>>
       neighbor_data{};
   for (const auto& [direction, neighbors_in_direction] : neighbors) {
@@ -75,7 +73,7 @@ compute_neighbor_data(
         subcell_mesh.extents(), ghost_zone_size, directions_to_slice);
     REQUIRE(sliced_data.size() == 1);
     REQUIRE(sliced_data.contains(direction.opposite()));
-    neighbor_data[std::pair{direction, neighbor_id}].data_for_reconstruction =
+    neighbor_data[std::pair{direction, neighbor_id}] =
         sliced_data.at(direction.opposite());
   }
   return neighbor_data;
@@ -150,9 +148,8 @@ void test_prim_reconstructor_impl(
     return vars;
   };
 
-  const FixedHashMap<maximum_number_of_neighbors(3) + 1,
-                     std::pair<Direction<3>, ElementId<3>>,
-                     evolution::dg::subcell::NeighborData,
+  const FixedHashMap<maximum_number_of_neighbors(3),
+                     std::pair<Direction<3>, ElementId<3>>, std::vector<double>,
                      boost::hash<std::pair<Direction<3>, ElementId<3>>>>
       neighbor_data = compute_neighbor_data(
           subcell_mesh, logical_coords, element.neighbors(),

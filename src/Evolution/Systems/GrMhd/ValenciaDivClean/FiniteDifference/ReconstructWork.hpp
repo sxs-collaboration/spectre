@@ -7,6 +7,7 @@
 #include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <utility>
+#include <vector>
 
 #include "DataStructures/FixedHashMap.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
@@ -27,9 +28,6 @@ template <size_t Dim>
 class Element;
 template <size_t Dim>
 class Mesh;
-namespace evolution::dg::subcell {
-class NeighborData;
-}  // namespace evolution::dg::subcell
 namespace EquationsOfState {
 template <bool IsRelativistic, size_t ThermodynamicDim>
 class EquationOfState;
@@ -51,11 +49,10 @@ void reconstruct_prims_work(
     const F& reconstruct, const Variables<PrimsTags>& volume_prims,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
     const Element<3>& element,
-    const FixedHashMap<maximum_number_of_neighbors(3) + 1,
-                       std::pair<Direction<3>, ElementId<3>>,
-                       evolution::dg::subcell::NeighborData,
-                       boost::hash<std::pair<Direction<3>, ElementId<3>>>>
-        neighbor_data,
+    const FixedHashMap<
+        maximum_number_of_neighbors(3), std::pair<Direction<3>, ElementId<3>>,
+        std::vector<double>,
+        boost::hash<std::pair<Direction<3>, ElementId<3>>>>& neighbor_data,
     const Mesh<3>& subcell_mesh, size_t ghost_zone_size);
 
 /*!
@@ -74,11 +71,10 @@ void reconstruct_fd_neighbor_work(
     const Variables<PrimsTags>& subcell_volume_prims,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
     const Element<3>& element,
-    const FixedHashMap<maximum_number_of_neighbors(3) + 1,
-                       std::pair<Direction<3>, ElementId<3>>,
-                       evolution::dg::subcell::NeighborData,
-                       boost::hash<std::pair<Direction<3>, ElementId<3>>>>
-        neighbor_data,
+    const FixedHashMap<
+        maximum_number_of_neighbors(3), std::pair<Direction<3>, ElementId<3>>,
+        std::vector<double>,
+        boost::hash<std::pair<Direction<3>, ElementId<3>>>>& neighbor_data,
     const Mesh<3>& subcell_mesh, const Direction<3>& direction_to_reconstruct,
     const size_t ghost_zone_size);
 }  // namespace grmhd::ValenciaDivClean::fd

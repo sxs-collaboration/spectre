@@ -8,6 +8,7 @@
 #include <cstddef>
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/FixedHashMap.hpp"
@@ -34,9 +35,6 @@ template <size_t Dim>
 class Mesh;
 template <typename TagsList>
 class Variables;
-namespace evolution::dg::subcell {
-class NeighborData;
-}  // namespace evolution::dg::subcell
 namespace gsl {
 template <typename>
 class not_null;
@@ -81,10 +79,10 @@ class MonotisedCentral : public Reconstructor {
 
   size_t ghost_zone_size() const override { return 2; }
 
-  using reconstruction_argument_tags = tmpl::list<
-      ::Tags::Variables<volume_vars_tags>, domain::Tags::Element<1>,
-      evolution::dg::subcell::Tags::NeighborDataForReconstructionAndRdmpTci<1>,
-      evolution::dg::subcell::Tags::Mesh<1>>;
+  using reconstruction_argument_tags =
+      tmpl::list<::Tags::Variables<volume_vars_tags>, domain::Tags::Element<1>,
+                 evolution::dg::subcell::Tags::NeighborDataForReconstruction<1>,
+                 evolution::dg::subcell::Tags::Mesh<1>>;
 
   void reconstruct(
       gsl::not_null<std::array<Variables<face_vars_tags>, 1>*>
@@ -93,21 +91,19 @@ class MonotisedCentral : public Reconstructor {
           vars_on_upper_face,
       const Variables<tmpl::list<Burgers::Tags::U>>& volume_vars,
       const Element<1>& element,
-      const FixedHashMap<maximum_number_of_neighbors(1) + 1,
-                         std::pair<Direction<1>, ElementId<1>>,
-                         evolution::dg::subcell::NeighborData,
-                         boost::hash<std::pair<Direction<1>, ElementId<1>>>>&
-          neighbor_data,
+      const FixedHashMap<
+          maximum_number_of_neighbors(1), std::pair<Direction<1>, ElementId<1>>,
+          std::vector<double>,
+          boost::hash<std::pair<Direction<1>, ElementId<1>>>>& neighbor_data,
       const Mesh<1>& subcell_mesh) const;
 
   void reconstruct_fd_neighbor(
       gsl::not_null<Variables<face_vars_tags>*> vars_on_face,
       const Variables<volume_vars_tags>& volume_vars, const Element<1>& element,
-      const FixedHashMap<maximum_number_of_neighbors(1) + 1,
-                         std::pair<Direction<1>, ElementId<1>>,
-                         evolution::dg::subcell::NeighborData,
-                         boost::hash<std::pair<Direction<1>, ElementId<1>>>>&
-          neighbor_data,
+      const FixedHashMap<
+          maximum_number_of_neighbors(1), std::pair<Direction<1>, ElementId<1>>,
+          std::vector<double>,
+          boost::hash<std::pair<Direction<1>, ElementId<1>>>>& neighbor_data,
       const Mesh<1>& subcell_mesh,
       const Direction<1> direction_to_reconstruct) const;
 };

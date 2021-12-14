@@ -16,7 +16,8 @@
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/MaxNumberOfNeighbors.hpp"
-#include "Evolution/DgSubcell/NeighborData.hpp"
+#include "Evolution/DgSubcell/RdmpTciData.hpp"
+#include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
 #include "Evolution/DgSubcell/Tags/Inactive.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/NeighborData.hpp"
@@ -33,11 +34,11 @@ namespace evolution::dg::subcell {
  *
  *
  * The data needed for reconstruction is copied over into
- * `subcell::Tags::NeighborDataForReconstructionAndRdmpTci`.
+ * `subcell::Tags::NeighborDataForReconstruction`.
  * Additionally, the max/min of the evolved variables from neighboring elements
  * that is used for the relaxed discrete maximum principle troubled-cell
  * indicator is combined with the data from the local element and stored in
- * `subcell::Tags::NeighborDataForReconstructionAndRdmpTci`. We handle the RDMP
+ * `subcell::Tags::DataForRdmpTci`. We handle the RDMP
  * data now because it is sent in the same buffer as the data for
  * reconstruction.
  *
@@ -77,16 +78,13 @@ void neighbor_reconstructed_face_solution(
                                   ElementId<Metavariables::volume_dim>>>>>*>
         received_temporal_id_and_data) {
   constexpr size_t volume_dim = Metavariables::volume_dim;
-  db::mutate<
-      subcell::Tags::NeighborDataForReconstructionAndRdmpTci<volume_dim>>(
+  db::mutate<subcell::Tags::NeighborDataForReconstruction<volume_dim>,
+             subcell::Tags::DataForRdmpTci>(
       box,
-      [&received_temporal_id_and_data](const auto subcell_neighbor_data_ptr) {
-        subcell::NeighborData& self_neighbor_data =
-            subcell_neighbor_data_ptr->at(
-                std::pair{Direction<volume_dim>::lower_xi(),
-                          ElementId<volume_dim>::external_boundary_id()});
+      [&received_temporal_id_and_data](const auto subcell_neighbor_data_ptr,
+                                       const auto rdmp_tci_data_ptr) {
         const size_t number_of_evolved_vars =
-            self_neighbor_data.max_variables_values.size();
+            rdmp_tci_data_ptr->max_variables_values.size();
         for (auto& received_mortar_data :
              received_temporal_id_and_data->second) {
           const auto& mortar_id = received_mortar_data.first;
@@ -103,11 +101,11 @@ void neighbor_reconstructed_face_solution(
           const size_t offset_for_max = offset_for_min - number_of_evolved_vars;
           for (size_t var_index = 0; var_index < number_of_evolved_vars;
                ++var_index) {
-            self_neighbor_data.max_variables_values[var_index] = std::max(
-                self_neighbor_data.max_variables_values[var_index],
+            rdmp_tci_data_ptr->max_variables_values[var_index] = std::max(
+                rdmp_tci_data_ptr->max_variables_values[var_index],
                 neighbor_ghost_and_subcell_data[offset_for_max + var_index]);
-            self_neighbor_data.min_variables_values[var_index] = std::min(
-                self_neighbor_data.min_variables_values[var_index],
+            rdmp_tci_data_ptr->min_variables_values[var_index] = std::min(
+                rdmp_tci_data_ptr->min_variables_values[var_index],
                 neighbor_ghost_and_subcell_data[offset_for_min + var_index]);
           }
 
@@ -119,13 +117,12 @@ void neighbor_reconstructed_face_solution(
           // Copy over the neighbor data for reconstruction. We need this
           // since we might be doing a step unwind and the DG algorithm deletes
           // the inbox data after lifting the fluxes to the volume.
-          subcell::NeighborData neighbor_data{};
+          std::vector<double> neighbor_data{};
           // The std::prev avoids copying over the data for the RDMP TCI, which
           // is both the maximum and minimum of each evolved variable, so
           // `2*number_of_evolved_vars` components.
-          neighbor_data.data_for_reconstruction.insert(
-              neighbor_data.data_for_reconstruction.end(),
-              neighbor_ghost_and_subcell_data.begin(),
+          neighbor_data.insert(
+              neighbor_data.end(), neighbor_ghost_and_subcell_data.begin(),
               std::prev(
                   neighbor_ghost_and_subcell_data.end(),
                   2 * static_cast<std::ptrdiff_t>(number_of_evolved_vars)));

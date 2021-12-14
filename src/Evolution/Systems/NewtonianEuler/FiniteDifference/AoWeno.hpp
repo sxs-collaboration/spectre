@@ -8,6 +8,7 @@
 #include <cstddef>
 #include <limits>
 #include <memory>
+#include <vector>
 
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
@@ -98,12 +99,11 @@ class AoWeno53Prim : public Reconstructor<Dim> {
 
   size_t ghost_zone_size() const override { return 3; }
 
-  using reconstruction_argument_tags =
-      tmpl::list<::Tags::Variables<prims_tags>,
-                 hydro::Tags::EquationOfStateBase, domain::Tags::Element<Dim>,
-                 evolution::dg::subcell::Tags::
-                     NeighborDataForReconstructionAndRdmpTci<Dim>,
-                 evolution::dg::subcell::Tags::Mesh<Dim>>;
+  using reconstruction_argument_tags = tmpl::list<
+      ::Tags::Variables<prims_tags>, hydro::Tags::EquationOfStateBase,
+      domain::Tags::Element<Dim>,
+      evolution::dg::subcell::Tags::NeighborDataForReconstruction<Dim>,
+      evolution::dg::subcell::Tags::Mesh<Dim>>;
 
   template <size_t ThermodynamicDim, typename TagsList>
   void reconstruct(
@@ -113,9 +113,8 @@ class AoWeno53Prim : public Reconstructor<Dim> {
       const EquationsOfState::EquationOfState<false, ThermodynamicDim>& eos,
       const Element<Dim>& element,
       const FixedHashMap<
-          maximum_number_of_neighbors(Dim) + 1,
-          std::pair<Direction<Dim>, ElementId<Dim>>,
-          evolution::dg::subcell::NeighborData,
+          maximum_number_of_neighbors(Dim),
+          std::pair<Direction<Dim>, ElementId<Dim>>, std::vector<double>,
           boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
           neighbor_data,
       const Mesh<Dim>& subcell_mesh) const;
@@ -128,9 +127,8 @@ class AoWeno53Prim : public Reconstructor<Dim> {
       const EquationsOfState::EquationOfState<false, ThermodynamicDim>& eos,
       const Element<Dim>& element,
       const FixedHashMap<
-          maximum_number_of_neighbors(Dim) + 1,
-          std::pair<Direction<Dim>, ElementId<Dim>>,
-          evolution::dg::subcell::NeighborData,
+          maximum_number_of_neighbors(Dim),
+          std::pair<Direction<Dim>, ElementId<Dim>>, std::vector<double>,
           boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
           neighbor_data,
       const Mesh<Dim>& subcell_mesh,

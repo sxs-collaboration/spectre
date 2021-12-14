@@ -8,6 +8,7 @@
 #include <deque>
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
@@ -26,10 +27,11 @@
 #include "Evolution/DgSubcell/Actions/TciAndSwitchToDg.hpp"
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
-#include "Evolution/DgSubcell/NeighborData.hpp"
+#include "Evolution/DgSubcell/RdmpTciData.hpp"
 #include "Evolution/DgSubcell/Reconstruction.hpp"
 #include "Evolution/DgSubcell/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
+#include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
 #include "Evolution/DgSubcell/Tags/DidRollback.hpp"
 #include "Evolution/DgSubcell/Tags/Inactive.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
@@ -74,8 +76,8 @@ struct component {
       evolution::dg::subcell::Tags::Mesh<Dim>,
       evolution::dg::subcell::Tags::ActiveGrid,
       evolution::dg::subcell::Tags::DidRollback,
-      evolution::dg::subcell::Tags::NeighborDataForReconstructionAndRdmpTci<
-          Dim>,
+      evolution::dg::subcell::Tags::NeighborDataForReconstruction<Dim>,
+      evolution::dg::subcell::Tags::DataForRdmpTci,
       evolution::dg::subcell::Tags::TciGridHistory,
       Tags::Variables<tmpl::list<Var1>>,
       evolution::dg::subcell::Tags::Inactive<Tags::Variables<tmpl::list<Var1>>>,
@@ -191,18 +193,15 @@ void test_impl(const bool multistep_time_stepper, const bool rdmp_fails,
   const std::unique_ptr<TimeStepper> time_stepper =
       make_time_stepper(multistep_time_stepper);
 
-  FixedHashMap<maximum_number_of_neighbors(Dim) + 1,
-               std::pair<Direction<Dim>, ElementId<Dim>>,
-               evolution::dg::subcell::NeighborData,
+  FixedHashMap<maximum_number_of_neighbors(Dim),
+               std::pair<Direction<Dim>, ElementId<Dim>>, std::vector<double>,
                boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>
       neighbor_data{};
-  const std::pair self_id{Direction<Dim>::lower_xi(),
-                          ElementId<Dim>::external_boundary_id()};
-  neighbor_data[self_id] = {};
+  evolution::dg::subcell::RdmpTciData rdmp_tci_data{};
   // max and min of +-2 at last time level means reconstructed vars will be in
   // limit
-  neighbor_data[self_id].max_variables_values.push_back(2.0);
-  neighbor_data[self_id].min_variables_values.push_back(-2.0);
+  rdmp_tci_data.max_variables_values.push_back(2.0);
+  rdmp_tci_data.min_variables_values.push_back(-2.0);
   std::deque<evolution::dg::subcell::ActiveGrid> tci_grid_history{};
   for (size_t i = 0; i < time_stepper->order(); ++i) {
     tci_grid_history.push_back(evolution::dg::subcell::ActiveGrid::Dg);
@@ -239,7 +238,7 @@ void test_impl(const bool multistep_time_stepper, const bool rdmp_fails,
   ActionTesting::emplace_array_component_and_initialize<comp>(
       &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0}, 0,
       {time_step_id, dg_mesh, subcell_mesh, active_grid, true, neighbor_data,
-       tci_grid_history, evolved_vars, inactive_evolved_vars,
+       rdmp_tci_data, tci_grid_history, evolved_vars, inactive_evolved_vars,
        time_stepper_history, make_time_stepper(multistep_time_stepper)});
 
   // Invoke the TciAndSwitchToDg action on the runner
@@ -262,9 +261,6 @@ void test_impl(const bool multistep_time_stepper, const bool rdmp_fails,
           runner, 0);
   const auto& tci_grid_history_from_box = ActionTesting::get_databox_tag<
       comp, evolution::dg::subcell::Tags::TciGridHistory>(runner, 0);
-  const auto& neighbor_data_from_box = ActionTesting::get_databox_tag<
-      comp, evolution::dg::subcell::Tags::
-                NeighborDataForReconstructionAndRdmpTci<Dim>>(runner, 0);
 
   // true if the TCI wasn't invoked at all because we are always using subcell,
   // doing self-start, or took a substep.
@@ -319,7 +315,6 @@ void test_impl(const bool multistep_time_stepper, const bool rdmp_fails,
                 expected_it.derivative(), dg_mesh, subcell_mesh.extents()) ==
             box_it.derivative());
     }
-    CHECK(neighbor_data_from_box.empty());
     CHECK(tci_grid_history_from_box.empty());
   } else {
     // TCI failed
@@ -331,8 +326,6 @@ void test_impl(const bool multistep_time_stepper, const bool rdmp_fails,
       CHECK(expected_it.time_step_id() == box_it.time_step_id());
       CHECK(expected_it.derivative() == box_it.derivative());
     }
-    CHECK(neighbor_data_from_box.size() == 1);
-    CHECK(neighbor_data_from_box.count(self_id) == 1);
     if (avoid_tci) {
       CHECK(tci_grid_history_from_box.front() ==
             evolution::dg::subcell::ActiveGrid::Dg);

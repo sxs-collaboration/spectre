@@ -7,6 +7,7 @@
 #include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <utility>
+#include <vector>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/FixedHashMap.hpp"
@@ -18,7 +19,6 @@
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/MaxNumberOfNeighbors.hpp"
-#include "Evolution/DgSubcell/NeighborData.hpp"
 #include "Evolution/Systems/NewtonianEuler/ConservativeFromPrimitive.hpp"
 #include "Evolution/Systems/NewtonianEuler/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -37,11 +37,10 @@ void reconstruct_prims_work(
     const F& reconstruct, const Variables<PrimsTags>& volume_prims,
     const EquationsOfState::EquationOfState<false, ThermodynamicDim>& eos,
     const Element<Dim>& element,
-    const FixedHashMap<maximum_number_of_neighbors(Dim) + 1,
-                       std::pair<Direction<Dim>, ElementId<Dim>>,
-                       evolution::dg::subcell::NeighborData,
-                       boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>
-        neighbor_data,
+    const FixedHashMap<
+        maximum_number_of_neighbors(Dim),
+        std::pair<Direction<Dim>, ElementId<Dim>>, std::vector<double>,
+        boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>& neighbor_data,
     const Mesh<Dim>& subcell_mesh, const size_t ghost_zone_size) {
   // Conservative vars tags
   using MassDensityCons = Tags::MassDensityCons;
@@ -99,10 +98,10 @@ void reconstruct_prims_work(
                      << neighbors_in_direction.size() << " in direction "
                      << direction);
           ghost_cell_vars[direction] = gsl::make_span(
-              &neighbor_data
-                   .at(std::pair{direction, *neighbors_in_direction.begin()})
-                   .data_for_reconstruction[vars_in_neighbor_count *
-                                            neighbor_num_pts],
+              &neighbor_data.at(std::pair{
+                  direction,
+                  *neighbors_in_direction
+                       .begin()})[vars_in_neighbor_count * neighbor_num_pts],
               number_of_components * neighbor_num_pts);
         }
 
@@ -160,11 +159,10 @@ void reconstruct_fd_neighbor_work(
     const Variables<PrimsTags>& subcell_volume_prims,
     const EquationsOfState::EquationOfState<false, ThermodynamicDim>& eos,
     const Element<Dim>& element,
-    const FixedHashMap<maximum_number_of_neighbors(Dim) + 1,
-                       std::pair<Direction<Dim>, ElementId<Dim>>,
-                       evolution::dg::subcell::NeighborData,
-                       boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>
-        neighbor_data,
+    const FixedHashMap<
+        maximum_number_of_neighbors(Dim),
+        std::pair<Direction<Dim>, ElementId<Dim>>, std::vector<double>,
+        boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>& neighbor_data,
     const Mesh<Dim>& subcell_mesh,
     const Direction<Dim>& direction_to_reconstruct,
     const size_t ghost_zone_size) {
@@ -194,13 +192,12 @@ void reconstruct_fd_neighbor_work(
            "The neighbor data does not contain the mortar: ("
                << mortar_id.first << ',' << mortar_id.second << ")");
     const auto& neighbor_data_in_direction = neighbor_data.at(mortar_id);
-    std::copy(
-        neighbor_data_in_direction.data_for_reconstruction.begin(),
-        std::next(neighbor_data_in_direction.data_for_reconstruction.begin(),
-                  static_cast<std::ptrdiff_t>(
-                      neighbor_prims.number_of_independent_components *
-                      ghost_data_extents.product())),
-        neighbor_prims.data());
+    std::copy(neighbor_data_in_direction.begin(),
+              std::next(neighbor_data_in_direction.begin(),
+                        static_cast<std::ptrdiff_t>(
+                            neighbor_prims.number_of_independent_components *
+                            ghost_data_extents.product())),
+              neighbor_prims.data());
   }
 
   tmpl::for_each<prim_tags_for_reconstruction>(

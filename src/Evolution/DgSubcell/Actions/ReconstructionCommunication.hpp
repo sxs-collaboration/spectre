@@ -29,11 +29,12 @@
 #include "Domain/Structure/OrientationMapHelpers.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
-#include "Evolution/DgSubcell/NeighborData.hpp"
 #include "Evolution/DgSubcell/Projection.hpp"
 #include "Evolution/DgSubcell/RdmpTci.hpp"
+#include "Evolution/DgSubcell/RdmpTciData.hpp"
 #include "Evolution/DgSubcell/SliceData.hpp"
 #include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
+#include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
 #include "Evolution/DgSubcell/Tags/Inactive.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/NeighborData.hpp"
@@ -86,7 +87,8 @@ namespace evolution::dg::subcell::Actions {
  * - Adds: nothing
  * - Removes: nothing
  * - Modifies:
- *   - `subcell::Tags::NeighborDataForReconstructionAndRdmpTci<Dim>`
+ *   - `subcell::Tags::NeighborDataForReconstruction<Dim>`
+ *   - `subcell::Tags::DataForRdmpTci`
  */
 template <size_t Dim, typename GhostDataMutator>
 struct SendDataForReconstruction {
@@ -107,18 +109,17 @@ struct SendDataForReconstruction {
            "The SendDataForReconstruction action can only be called when "
            "Subcell is the active scheme.");
 
-    db::mutate<Tags::NeighborDataForReconstructionAndRdmpTci<Dim>>(
+    db::mutate<Tags::NeighborDataForReconstruction<Dim>, Tags::DataForRdmpTci>(
         make_not_null(&box),
-        [](const auto neighbor_data_ptr, const auto& active_vars) {
+        [](const auto neighbor_data_ptr, const auto rdmp_tci_data_ptr,
+           const auto& active_vars) {
           auto [max_of_vars, min_of_vars] =
               rdmp_max_min(active_vars, {}, false);
 
           // Clear the previous neighbor data and add current local data
           neighbor_data_ptr->clear();
-          (*neighbor_data_ptr)[std::pair{
-              Direction<Dim>::lower_xi(),
-              ElementId<Dim>::external_boundary_id()}] =
-              NeighborData{{}, std::move(max_of_vars), std::move(min_of_vars)};
+          *rdmp_tci_data_ptr =
+              RdmpTciData{std::move(max_of_vars), std::move(min_of_vars)};
         },
         db::get<variables_tag>(box));
 
@@ -143,10 +144,7 @@ struct SendDataForReconstruction {
 
     auto& receiver_proxy =
         Parallel::get_parallel_component<ParallelComponent>(cache);
-    const NeighborData& local_neighbor_data =
-        db::get<Tags::NeighborDataForReconstructionAndRdmpTci<Dim>>(box).at(
-            std::pair{Direction<Dim>::lower_xi(),
-                      ElementId<Dim>::external_boundary_id()});
+    const RdmpTciData& rdmp_tci_data = db::get<Tags::DataForRdmpTci>(box);
     const TimeStepId& time_step_id = db::get<::Tags::TimeStepId>(box);
     const TimeStepId& next_time_step_id = [&box]() {
       if (Metavariables::local_time_stepping) {
@@ -181,14 +179,12 @@ struct SendDataForReconstruction {
         } else {
           subcell_data_to_send = all_sliced_data.at(direction);
         }
-        subcell_data_to_send.insert(
-            subcell_data_to_send.end(),
-            local_neighbor_data.max_variables_values.cbegin(),
-            local_neighbor_data.max_variables_values.cend());
-        subcell_data_to_send.insert(
-            subcell_data_to_send.end(),
-            local_neighbor_data.min_variables_values.cbegin(),
-            local_neighbor_data.min_variables_values.cend());
+        subcell_data_to_send.insert(subcell_data_to_send.end(),
+                                    rdmp_tci_data.max_variables_values.cbegin(),
+                                    rdmp_tci_data.max_variables_values.cend());
+        subcell_data_to_send.insert(subcell_data_to_send.end(),
+                                    rdmp_tci_data.min_variables_values.cbegin(),
+                                    rdmp_tci_data.min_variables_values.cend());
 
         std::tuple<Mesh<Dim - 1>, std::optional<std::vector<double>>,
                    std::optional<std::vector<double>>, ::TimeStepId>
@@ -213,7 +209,7 @@ struct SendDataForReconstruction {
  *
  * Note:
  * - Since we only care about the min/max over all neighbors and ourself at the
- *   past time, we accumulate all data immediately into the self `NeighborData`.
+ *   past time, we accumulate all data immediately into the `RdmpTciData`.
  * - If the neighbor is using DG and therefore sends boundary correction data
  *   then that is added into the `evolution::dg::Tags::MortarData` tag
  * - The next `TimeStepId` is recorded, but we do not yet support local time
@@ -238,7 +234,8 @@ struct SendDataForReconstruction {
  * - Adds: nothing
  * - Removes: nothing
  * - Modifies:
- *   - `subcell::Tags::NeighborDataForReconstructionAndRdmpTci<Dim>`
+ *   - `subcell::Tags::NeighborDataForReconstruction<Dim>`
+ *   - `subcell::Tags::DataForRdmpTci`
  *   - `evolution::dg::Tags::MortarData`
  *   - `evolution::dg::Tags::MortarNextTemporalId`
  */
@@ -291,16 +288,17 @@ struct ReceiveDataForReconstruction {
                  boost::hash<Key>>
         received_data = std::move(inbox[current_time_step_id]);
     inbox.erase(current_time_step_id);
-    db::mutate<Tags::NeighborDataForReconstructionAndRdmpTci<Dim>,
+    db::mutate<Tags::NeighborDataForReconstruction<Dim>, Tags::DataForRdmpTci,
                evolution::dg::Tags::MortarData<Dim>,
                evolution::dg::Tags::MortarNextTemporalId<Dim>>(
         make_not_null(&box),
         [&current_time_step_id, &element, &received_data](
             const gsl::not_null<FixedHashMap<
-                maximum_number_of_neighbors(Dim) + 1,
-                std::pair<Direction<Dim>, ElementId<Dim>>, NeighborData,
+                maximum_number_of_neighbors(Dim),
+                std::pair<Direction<Dim>, ElementId<Dim>>, std::vector<double>,
                 boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>*>
                 neighbor_data_ptr,
+            const gsl::not_null<RdmpTciData*> rdmp_tci_data_ptr,
             const gsl::not_null<std::unordered_map<
                 Key, evolution::dg::MortarData<Dim>, boost::hash<Key>>*>
                 mortar_data,
@@ -328,26 +326,17 @@ struct ReceiveDataForReconstruction {
             }
           }
 
-          ASSERT(neighbor_data_ptr->size() == 1,
-                 "Should only have one element in the neighbor data when "
+          ASSERT(neighbor_data_ptr->empty(),
+                 "Should have no elements in the neighbor data when "
                  "receiving neighbor data");
-          ASSERT(
-              neighbor_data_ptr->count(
-                  std::pair{Direction<Dim>::lower_xi(),
-                            element.id().external_boundary_id()}) == 1,
-              "The self data for the RDMP TCI should have been inserted but it "
-              "wasn't, despite there being one entry in the neighbor data.");
-          NeighborData& self_neighbor_data = (*neighbor_data_ptr)[std::pair{
-              Direction<Dim>::lower_xi(),
-              ElementId<Dim>::external_boundary_id()}];
           const size_t number_of_evolved_vars =
-              self_neighbor_data.max_variables_values.size();
-          ASSERT(self_neighbor_data.min_variables_values.size() ==
+              rdmp_tci_data_ptr->max_variables_values.size();
+          ASSERT(rdmp_tci_data_ptr->min_variables_values.size() ==
                      number_of_evolved_vars,
                  "The number of evolved variables for which we have a maximum "
                  "and minimum should be the same, but we have "
                      << number_of_evolved_vars << " for the max and "
-                     << self_neighbor_data.min_variables_values.size()
+                     << rdmp_tci_data_ptr->min_variables_values.size()
                      << " for the min.");
 
           for (const auto& [direction, neighbors_in_direction] :
@@ -371,25 +360,25 @@ struct ReceiveDataForReconstruction {
                                         number_of_evolved_vars;
               for (size_t var_index = 0; var_index < number_of_evolved_vars;
                    ++var_index) {
-                self_neighbor_data.max_variables_values[var_index] = std::max(
-                    self_neighbor_data.max_variables_values[var_index],
+                rdmp_tci_data_ptr->max_variables_values[var_index] = std::max(
+                    rdmp_tci_data_ptr->max_variables_values[var_index],
                     received_neighbor_subcell_data[max_offset + var_index]);
-                self_neighbor_data.min_variables_values[var_index] = std::min(
-                    self_neighbor_data.min_variables_values[var_index],
+                rdmp_tci_data_ptr->min_variables_values[var_index] = std::min(
+                    rdmp_tci_data_ptr->min_variables_values[var_index],
                     received_neighbor_subcell_data[min_offset + var_index]);
               }
               // Copy over the ghost cell data for subcell reconstruction.
               [[maybe_unused]] const auto insert_result =
                   neighbor_data_ptr->insert(std::pair{
                       directional_element_id,
-                      NeighborData{std::vector<double>{
+                      std::vector<double>{
                           received_neighbor_subcell_data.begin(),
                           std::prev(
                               received_neighbor_subcell_data.end(),
                               2 * static_cast<typename std::iterator_traits<
                                       typename std::vector<double>::iterator>::
                                                   difference_type>(
-                                      number_of_evolved_vars))}}});
+                                      number_of_evolved_vars))}});
               ASSERT(insert_result.second,
                      "Failed to insert the neighbor data in direction "
                          << direction << " from neighbor " << neighbor);

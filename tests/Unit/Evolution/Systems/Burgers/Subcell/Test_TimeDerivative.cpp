@@ -25,6 +25,7 @@
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/Inactive.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
+#include "Evolution/DgSubcell/Tags/NeighborData.hpp"
 #include "Evolution/Systems/Burgers/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/Burgers/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/Burgers/FiniteDifference/Factory.hpp"
@@ -77,16 +78,15 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Burgers.Subcell.TimeDerivative",
 
   // set the ghost data from neighbor
   const ReconstructionForTest reconstructor{};
-  typename evolution::dg::subcell::Tags::
-      NeighborDataForReconstructionAndRdmpTci<1>::type neighbor_data =
-          TestHelpers::Burgers::fd::compute_neighbor_data(
-              subcell_mesh, logical_coords_subcell, element.neighbors(),
-              reconstructor.ghost_zone_size(), compute_test_solution);
+  evolution::dg::subcell::Tags::NeighborDataForReconstruction<1>::type
+      neighbor_data = TestHelpers::Burgers::fd::compute_neighbor_data(
+          subcell_mesh, logical_coords_subcell, element.neighbors(),
+          reconstructor.ghost_zone_size(), compute_test_solution);
 
   auto box = db::create<db::AddSimpleTags<
       domain::Tags::Element<1>, evolution::dg::subcell::Tags::Mesh<1>,
       evolved_vars_tag, dt_variables_tag,
-      evolution::dg::subcell::Tags::NeighborDataForReconstructionAndRdmpTci<1>,
+      evolution::dg::subcell::Tags::NeighborDataForReconstruction<1>,
       fd::Tags::Reconstructor, evolution::Tags::BoundaryCorrection<System>,
       domain::Tags::ElementMap<1, Frame::Grid>,
       domain::CoordinateMaps::Tags::CoordinateMap<1, Frame::Grid,

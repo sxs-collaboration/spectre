@@ -22,12 +22,12 @@
 #include "Domain/Structure/OrientationMapHelpers.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
-#include "Evolution/DgSubcell/NeighborData.hpp"
 #include "Evolution/DgSubcell/PrepareNeighborData.hpp"
 #include "Evolution/DgSubcell/Projection.hpp"
+#include "Evolution/DgSubcell/RdmpTciData.hpp"
+#include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
 #include "Evolution/DgSubcell/Tags/Inactive.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
-#include "Evolution/DgSubcell/Tags/NeighborData.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/Gsl.hpp"
@@ -132,25 +132,18 @@ void test() {
       tmpl::list<GhostZoneSize, evolution::dg::subcell::Tags::Mesh<Dim>,
                  domain::Tags::Element<Dim>, variables_tag,
                  evolution::dg::subcell::Tags::Inactive<variables_tag>,
-                 evolution::dg::subcell::Tags::
-                     NeighborDataForReconstructionAndRdmpTci<Dim>>>(
+                 evolution::dg::subcell::Tags::DataForRdmpTci>>(
       ghost_zone_size, subcell_mesh, element, vars, inactive_vars,
-      typename evolution::dg::subcell::Tags::
-          NeighborDataForReconstructionAndRdmpTci<Dim>::type{});
+      evolution::dg::subcell::RdmpTciData{});
   const auto data_for_neighbors =
       evolution::dg::subcell::prepare_neighbor_data<Metavariables<Dim>>(
           make_not_null(&box));
 
-  const std::pair self_id{Direction<Dim>::lower_xi(),
-                          ElementId<Dim>::external_boundary_id()};
-  const auto& local_neighbor_data =
-      db::get<evolution::dg::subcell::Tags::
-                  NeighborDataForReconstructionAndRdmpTci<Dim>>(box);
-  CHECK(local_neighbor_data.size() == 1);
-  REQUIRE(local_neighbor_data.contains(self_id) == 1);
-  CHECK_ITERABLE_APPROX(local_neighbor_data.at(self_id).min_variables_values,
+  const auto& rdmp_tci_data =
+      db::get<evolution::dg::subcell::Tags::DataForRdmpTci>(box);
+  CHECK_ITERABLE_APPROX(rdmp_tci_data.min_variables_values,
                         std::vector<double>{-1.0});
-  CHECK_ITERABLE_APPROX(local_neighbor_data.at(self_id).max_variables_values,
+  CHECK_ITERABLE_APPROX(rdmp_tci_data.max_variables_values,
                         std::vector<double>{1.0});
 
   // Set all directions to false, enable the desired ones below

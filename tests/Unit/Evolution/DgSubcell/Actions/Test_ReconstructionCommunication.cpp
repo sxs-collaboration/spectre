@@ -9,6 +9,7 @@
 #include <iterator>
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
@@ -27,10 +28,11 @@
 #include "Evolution/DgSubcell/Actions/ReconstructionCommunication.hpp"
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
-#include "Evolution/DgSubcell/NeighborData.hpp"
+#include "Evolution/DgSubcell/RdmpTciData.hpp"
 #include "Evolution/DgSubcell/Reconstruction.hpp"
 #include "Evolution/DgSubcell/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
+#include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
 #include "Evolution/DgSubcell/Tags/Inactive.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/NeighborData.hpp"
@@ -74,8 +76,8 @@ struct component {
       Tags::TimeStepId, Tags::Next<Tags::TimeStepId>, domain::Tags::Mesh<Dim>,
       evolution::dg::subcell::Tags::Mesh<Dim>,
       evolution::dg::subcell::Tags::ActiveGrid, domain::Tags::Element<Dim>,
-      evolution::dg::subcell::Tags::NeighborDataForReconstructionAndRdmpTci<
-          Dim>,
+      evolution::dg::subcell::Tags::NeighborDataForReconstruction<Dim>,
+      evolution::dg::subcell::Tags::DataForRdmpTci,
       Tags::Variables<tmpl::list<Var1>>, evolution::dg::Tags::MortarData<Dim>,
       evolution::dg::Tags::MortarNextTemporalId<Dim>>;
 
@@ -203,13 +205,11 @@ void test() {
   const Element<Dim> element{self_id, neighbors};
 
   using NeighborDataMap =
-      FixedHashMap<maximum_number_of_neighbors(Dim) + 1,
+      FixedHashMap<maximum_number_of_neighbors(Dim),
                    std::pair<Direction<Dim>, ElementId<Dim>>,
-                   evolution::dg::subcell::NeighborData,
+                   std::vector<double>,
                    boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>;
   NeighborDataMap neighbor_data{};
-  const std::pair self_neighbor_id{Direction<Dim>::lower_xi(),
-                                   ElementId<Dim>::external_boundary_id()};
   const std::pair east_neighbor_id{Direction<Dim>::upper_xi(), east_id};
   // insert data from one of the neighbors to make sure the send actions clears
   // it.
@@ -237,7 +237,8 @@ void test() {
   ActionTesting::emplace_array_component_and_initialize<comp>(
       &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0}, self_id,
       {time_step_id, next_time_step_id, dg_mesh, subcell_mesh, active_grid,
-       element, neighbor_data, evolved_vars, mortar_data, mortar_next_id});
+       element, neighbor_data, evolution::dg::subcell::RdmpTciData{},
+       evolved_vars, mortar_data, mortar_next_id});
   for (const auto& [direction, neighbor_ids] : neighbors) {
     (void)direction;
     for (const auto& neighbor_id : neighbor_ids) {
@@ -249,13 +250,14 @@ void test() {
           neighbor_id,
           {time_step_id, next_time_step_id, Mesh<Dim>{}, Mesh<Dim>{},
            active_grid, Element<Dim>{}, NeighborDataMap{},
+           evolution::dg::subcell::RdmpTciData{},
            Variables<evolved_vars_tags>{}, MortarData{}, MortarNextId{}});
     }
   }
 
   using neighbor_data_tag =
-      evolution::dg::subcell::Tags::NeighborDataForReconstructionAndRdmpTci<
-          Dim>;
+      evolution::dg::subcell::Tags::NeighborDataForReconstruction<Dim>;
+  using rdmp_tci_data_tag = evolution::dg::subcell::Tags::DataForRdmpTci;
   using ActionTesting::get_databox_tag;
   CHECK(get_databox_tag<comp, neighbor_data_tag>(runner, self_id).size() == 1);
   CHECK(get_databox_tag<comp, neighbor_data_tag>(runner, self_id)
@@ -264,20 +266,16 @@ void test() {
   // Run the SendDataForReconstruction action on self_id
   ActionTesting::next_action<comp>(make_not_null(&runner), self_id);
 
-  CHECK(get_databox_tag<comp, neighbor_data_tag>(runner, self_id).size() == 1);
-  CHECK(get_databox_tag<comp, neighbor_data_tag>(runner, self_id)
-            .count(self_neighbor_id) == 1);
+  CHECK(get_databox_tag<comp, neighbor_data_tag>(runner, self_id).empty());
 
   // Check local RDMP data
-  const evolution::dg::subcell::NeighborData& local_neighbor_data =
-      get_databox_tag<comp, neighbor_data_tag>(runner, self_id)
-          .find(self_neighbor_id)
-          ->second;
-  CHECK(local_neighbor_data.max_variables_values.size() == 1);
-  CHECK(local_neighbor_data.max_variables_values[0] ==
+  const evolution::dg::subcell::RdmpTciData& rdmp_tci_data =
+      get_databox_tag<comp, rdmp_tci_data_tag>(runner, self_id);
+  CHECK(rdmp_tci_data.max_variables_values.size() == 1);
+  CHECK(rdmp_tci_data.max_variables_values[0] ==
         max(get(get<Var1>(evolved_vars))));
-  CHECK(local_neighbor_data.min_variables_values.size() == 1);
-  CHECK(local_neighbor_data.min_variables_values[0] ==
+  CHECK(rdmp_tci_data.min_variables_values.size() == 1);
+  CHECK(rdmp_tci_data.min_variables_values[0] ==
         min(get(get<Var1>(evolved_vars))));
   // Check data sent to neighbors
   DirectionMap<Dim, bool> directions_to_slice{};
@@ -299,11 +297,11 @@ void test() {
       value *= 2.0;
     }
     expected_east_data.insert(expected_east_data.end(),
-                              local_neighbor_data.max_variables_values.cbegin(),
-                              local_neighbor_data.max_variables_values.cend());
+                              rdmp_tci_data.max_variables_values.cbegin(),
+                              rdmp_tci_data.max_variables_values.cend());
     expected_east_data.insert(expected_east_data.end(),
-                              local_neighbor_data.min_variables_values.cbegin(),
-                              local_neighbor_data.min_variables_values.cend());
+                              rdmp_tci_data.min_variables_values.cbegin(),
+                              rdmp_tci_data.min_variables_values.cend());
     const auto& east_data = ActionTesting::get_inbox_tag<
         comp, evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>>(
         runner, east_id);
@@ -326,14 +324,12 @@ void test() {
     for (double& value : expected_south_data) {
       value *= 2.0;
     }
-    expected_south_data.insert(
-        expected_south_data.end(),
-        local_neighbor_data.max_variables_values.cbegin(),
-        local_neighbor_data.max_variables_values.cend());
-    expected_south_data.insert(
-        expected_south_data.end(),
-        local_neighbor_data.min_variables_values.cbegin(),
-        local_neighbor_data.min_variables_values.cend());
+    expected_south_data.insert(expected_south_data.end(),
+                               rdmp_tci_data.max_variables_values.cbegin(),
+                               rdmp_tci_data.max_variables_values.cend());
+    expected_south_data.insert(expected_south_data.end(),
+                               rdmp_tci_data.min_variables_values.cbegin(),
+                               rdmp_tci_data.min_variables_values.cend());
 
     const auto& south_data = ActionTesting::get_inbox_tag<
         comp, evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>>(
@@ -397,33 +393,31 @@ void test() {
   // Check the received data was stored correctly
   const auto& neighbor_data_from_box =
       get_databox_tag<comp, neighbor_data_tag>(runner, self_id);
-  const evolution::dg::subcell::NeighborData& self_neighbor_data =
-      neighbor_data_from_box.find(self_neighbor_id)->second;
-  CHECK(self_neighbor_data.max_variables_values.size() == 1);
-  CHECK(approx(self_neighbor_data.max_variables_values[0]) ==
+  CHECK(rdmp_tci_data.max_variables_values.size() == 1);
+  CHECK(approx(rdmp_tci_data.max_variables_values[0]) ==
         (Dim > 1 ? static_cast<double>(
                        ghost_zone_size *
                        subcell_mesh.slice_away(1).number_of_grid_points()) +
                        10000.0
                  : static_cast<double>(ghost_zone_size)));
-  CHECK(self_neighbor_data.min_variables_values.size() == 1);
-  CHECK(approx(self_neighbor_data.min_variables_values[0]) ==
+  CHECK(rdmp_tci_data.min_variables_values.size() == 1);
+  CHECK(approx(rdmp_tci_data.min_variables_values[0]) ==
         (Dim > 1 ? -10.0 : min(get<0>(logical_coordinates(subcell_mesh)))));
 
   REQUIRE(neighbor_data_from_box.find(east_neighbor_id) !=
           neighbor_data_from_box.end());
   east_ghost_cells_and_rdmp.pop_back();
   east_ghost_cells_and_rdmp.pop_back();
-  CHECK(neighbor_data_from_box.find(east_neighbor_id)
-            ->second.data_for_reconstruction == east_ghost_cells_and_rdmp);
+  CHECK(neighbor_data_from_box.find(east_neighbor_id)->second ==
+        east_ghost_cells_and_rdmp);
   if constexpr (Dim > 1) {
     const std::pair south_neighbor_id{Direction<Dim>::lower_eta(), south_id};
     REQUIRE(neighbor_data_from_box.find(south_neighbor_id) !=
             neighbor_data_from_box.end());
     south_ghost_cells_and_rdmp.pop_back();
     south_ghost_cells_and_rdmp.pop_back();
-    CHECK(neighbor_data_from_box.find(south_neighbor_id)
-              ->second.data_for_reconstruction == south_ghost_cells_and_rdmp);
+    CHECK(neighbor_data_from_box.find(south_neighbor_id)->second ==
+          south_ghost_cells_and_rdmp);
   }
 }
 

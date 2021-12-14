@@ -13,10 +13,10 @@
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
-#include "Evolution/DgSubcell/NeighborData.hpp"
 #include "Evolution/DgSubcell/Projection.hpp"
 #include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
+#include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
 #include "Evolution/DgSubcell/Tags/DidRollback.hpp"
 #include "Evolution/DgSubcell/Tags/Inactive.hpp"
 #include "Evolution/DgSubcell/Tags/Jacobians.hpp"
@@ -75,7 +75,8 @@ namespace evolution::dg::subcell::Actions {
  *   - `subcell::Tags::DidRollback`
  *   - `subcell::Tags::Inactive<System::variables_tag>`
  *   - `subcell::Tags::TciGridHistory`
- *   - `subcell::Tags::NeighborDataForReconstructionAndRdmpTci<Dim>`
+ *   - `subcell::Tags::NeighborDataForReconstruction<Dim>`
+ *   - `subcell::Tags::DataForRdmpTci`
  *   - `subcell::fd::Tags::InverseJacobianLogicalToGrid<Dim>`
  *   - `subcell::fd::Tags::DetInverseJacobianLogicalToGrid`
  *   - `subcell::Tags::LogicalCoordinates<Dim>`
@@ -93,8 +94,8 @@ struct Initialize {
   using simple_tags =
       tmpl::list<Tags::Mesh<Dim>, Tags::ActiveGrid, Tags::DidRollback,
                  Tags::Inactive<typename System::variables_tag>,
-                 Tags::TciGridHistory,
-                 Tags::NeighborDataForReconstructionAndRdmpTci<Dim>,
+                 Tags::TciGridHistory, Tags::NeighborDataForReconstruction<Dim>,
+                 Tags::DataForRdmpTci,
                  fd::Tags::InverseJacobianLogicalToGrid<Dim>,
                  fd::Tags::DetInverseJacobianLogicalToGrid>;
   using compute_tags =

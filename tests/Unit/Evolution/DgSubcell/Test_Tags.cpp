@@ -11,6 +11,7 @@
 #include "Domain/LogicalCoordinates.hpp"
 #include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
+#include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
 #include "Evolution/DgSubcell/Tags/DidRollback.hpp"
 #include "Evolution/DgSubcell/Tags/Inactive.hpp"
 #include "Evolution/DgSubcell/Tags/Jacobians.hpp"
@@ -40,8 +41,10 @@ void test() {
   TestHelpers::db::test_simple_tag<evolution::dg::subcell::Tags::Mesh<Dim>>(
       "Subcell(Mesh)");
   TestHelpers::db::test_simple_tag<
-      evolution::dg::subcell::Tags::NeighborDataForReconstructionAndRdmpTci<
-          Dim>>("NeighborDataForReconstructionAndRdmpTci");
+      evolution::dg::subcell::Tags::NeighborDataForReconstruction<Dim>>(
+      "NeighborDataForReconstruction");
+  TestHelpers::db::test_simple_tag<
+      evolution::dg::subcell::Tags::DataForRdmpTci>("DataForRdmpTci");
   TestHelpers::db::test_simple_tag<
       evolution::dg::subcell::Tags::Coordinates<Dim, Frame::ElementLogical>>(
       "ElementLogicalCoordinates");

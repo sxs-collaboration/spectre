@@ -30,6 +30,7 @@
 #include "Evolution/DgSubcell/SliceData.hpp"
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
+#include "Evolution/DgSubcell/Tags/NeighborData.hpp"
 #include "Evolution/DgSubcell/Tags/OnSubcellFaces.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/NormalCovectorAndMagnitude.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
@@ -118,7 +119,7 @@ double test(const size_t num_dg_pts) {
   // 1. compute prims from solution
   // 2. compute prims needed for reconstruction
   // 3. set neighbor data
-  evolution::dg::subcell::Tags::NeighborDataForReconstructionAndRdmpTci<3>::type
+  evolution::dg::subcell::Tags::NeighborDataForReconstruction<3>::type
       neighbor_data{};
   using prims_to_reconstruct_tags =
       tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
@@ -158,8 +159,7 @@ double test(const size_t num_dg_pts) {
     // Slice data so we can add it to the element's neighbor data
     DirectionMap<3, bool> directions_to_slice{};
     directions_to_slice[direction.opposite()] = true;
-    evolution::dg::subcell::NeighborData neighbor_data_in_direction{};
-    neighbor_data_in_direction.data_for_reconstruction =
+    std::vector<double> neighbor_data_in_direction =
         evolution::dg::subcell::slice_data(
             prims_to_reconstruct, subcell_mesh.extents(),
             grmhd::ValenciaDivClean::fd::MonotisedCentralPrim{}
@@ -224,8 +224,7 @@ double test(const size_t num_dg_pts) {
           typename System::primitive_variables_tag, variables_tag,
           evolution::dg::subcell::Tags::OnSubcellFaces<
               typename System::flux_spacetime_variables_tag, 3>,
-          evolution::dg::subcell::Tags::NeighborDataForReconstructionAndRdmpTci<
-              3>,
+          evolution::dg::subcell::Tags::NeighborDataForReconstruction<3>,
           Tags::ConstraintDampingParameter, evolution::dg::Tags::MortarData<3>,
           domain::Tags::MeshVelocity<3>,
           evolution::dg::Tags::NormalCovectorAndMagnitude<3>>,

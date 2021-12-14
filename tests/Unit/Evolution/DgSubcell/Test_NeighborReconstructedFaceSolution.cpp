@@ -16,8 +16,9 @@
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/MaxNumberOfNeighbors.hpp"
-#include "Evolution/DgSubcell/NeighborData.hpp"
 #include "Evolution/DgSubcell/NeighborReconstructedFaceSolution.hpp"
+#include "Evolution/DgSubcell/RdmpTciData.hpp"
+#include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
 #include "Evolution/DgSubcell/Tags/NeighborData.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Time/TimeStepId.hpp"
@@ -32,9 +33,8 @@ struct VolumeDouble : db::SimpleTag {
 
 template <size_t Dim>
 using NeighborDataMap =
-    FixedHashMap<maximum_number_of_neighbors(Dim) + 1,
-                 std::pair<Direction<Dim>, ElementId<Dim>>,
-                 evolution::dg::subcell::NeighborData,
+    FixedHashMap<maximum_number_of_neighbors(Dim),
+                 std::pair<Direction<Dim>, ElementId<Dim>>, std::vector<double>,
                  boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>;
 template <size_t Dim>
 using NeighborReconstructionMap =
@@ -63,9 +63,9 @@ struct Metavariables {
           const std::vector<
               std::pair<Direction<volume_dim>, ElementId<volume_dim>>>&
               mortars_to_reconstruct_to) {
-        const NeighborDataMap<Dim>& neighbor_data =
-            db::get<evolution::dg::subcell::Tags::
-                        NeighborDataForReconstructionAndRdmpTci<Dim>>(box);
+        const NeighborDataMap<Dim>& neighbor_data = db::get<
+            evolution::dg::subcell::Tags::NeighborDataForReconstruction<Dim>>(
+            box);
 
         // We just simply copy over the data sent since it doesn't actually
         // matter what we fill the packaged data with in the test, just that
@@ -73,8 +73,7 @@ struct Metavariables {
         // from the stored NeighborData.
         NeighborReconstructionMap<Dim> neighbor_package_data{};
         for (const auto& mortar_id : mortars_to_reconstruct_to) {
-          neighbor_package_data[mortar_id] =
-              neighbor_data.at(mortar_id).data_for_reconstruction;
+          neighbor_package_data[mortar_id] = neighbor_data.at(mortar_id);
         }
         return neighbor_package_data;
       }
@@ -89,16 +88,14 @@ void test() {
   const std::pair self_id{Direction<Dim>::lower_xi(),
                           ElementId<Dim>::external_boundary_id()};
 
-  // Local neighbor data only holds local max/min values of evolved vars.
-  evolution::dg::subcell::NeighborData local_neighbor_data{};
-  local_neighbor_data.max_variables_values = std::vector<double>{1.0, 2.0};
-  local_neighbor_data.min_variables_values = std::vector<double>{-2.0, 0.1};
+  evolution::dg::subcell::RdmpTciData rdmp_tci_data{};
+  rdmp_tci_data.max_variables_values = std::vector<double>{1.0, 2.0};
+  rdmp_tci_data.min_variables_values = std::vector<double>{-2.0, 0.1};
   NeighborDataMap<Dim> neighbor_data_map{};
-  neighbor_data_map[self_id] = std::move(local_neighbor_data);
-  auto box =
-      db::create<tmpl::list<evolution::dg::subcell::Tags::
-                                NeighborDataForReconstructionAndRdmpTci<Dim>,
-                            VolumeDouble>>(std::move(neighbor_data_map), 2.5);
+  auto box = db::create<tmpl::list<
+      evolution::dg::subcell::Tags::NeighborDataForReconstruction<Dim>,
+      evolution::dg::subcell::Tags::DataForRdmpTci, VolumeDouble>>(
+      std::move(neighbor_data_map), std::move(rdmp_tci_data), 2.5);
 
   std::pair<const TimeStepId, MortarDataMap<Dim>> mortar_data_from_neighbors{};
   for (size_t d = 0; d < Dim; ++d) {

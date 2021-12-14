@@ -16,12 +16,12 @@ spectre_target_headers(
   DgSubcell.hpp
   Matrices.hpp
   Mesh.hpp
-  NeighborData.hpp
   NeighborReconstructedFaceSolution.hpp
   PerssonTci.hpp
   PrepareNeighborData.hpp
   Projection.hpp
   RdmpTci.hpp
+  RdmpTciData.hpp
   Reconstruction.hpp
   SliceData.hpp
   SubcellOptions.hpp
@@ -36,9 +36,9 @@ spectre_target_sources(
   CartesianFluxDivergence.cpp
   Matrices.cpp
   Mesh.cpp
-  NeighborData.cpp
   PerssonTci.cpp
   Projection.cpp
+  RdmpTciData.cpp
   Reconstruction.cpp
   SliceData.cpp
   SubcellOptions.cpp

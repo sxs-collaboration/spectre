@@ -25,11 +25,11 @@
 #include "Evolution/DgSubcell/Actions/Initialize.hpp"
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
-#include "Evolution/DgSubcell/NeighborData.hpp"
 #include "Evolution/DgSubcell/Projection.hpp"
 #include "Evolution/DgSubcell/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
+#include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
 #include "Evolution/DgSubcell/Tags/DidRollback.hpp"
 #include "Evolution/DgSubcell/Tags/Inactive.hpp"
 #include "Evolution/DgSubcell/Tags/Jacobians.hpp"
@@ -268,8 +268,10 @@ void test(const bool always_use_subcell, const bool interior_element) {
   CHECK(ActionTesting::tag_is_retrievable<
         comp, evolution::dg::subcell::Tags::TciGridHistory>(runner, 0));
   CHECK(ActionTesting::tag_is_retrievable<
-        comp, evolution::dg::subcell::Tags::
-                  NeighborDataForReconstructionAndRdmpTci<Dim>>(runner, 0));
+        comp, evolution::dg::subcell::Tags::NeighborDataForReconstruction<Dim>>(
+      runner, 0));
+  CHECK(ActionTesting::tag_is_retrievable<
+        comp, evolution::dg::subcell::Tags::DataForRdmpTci>(runner, 0));
   CHECK(ActionTesting::tag_is_retrievable<
         comp,
         evolution::dg::subcell::fd::Tags::InverseJacobianLogicalToGrid<Dim>>(

@@ -18,11 +18,12 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
-#include "Evolution/DgSubcell/NeighborData.hpp"
 #include "Evolution/DgSubcell/RdmpTci.hpp"
+#include "Evolution/DgSubcell/RdmpTciData.hpp"
 #include "Evolution/DgSubcell/Reconstruction.hpp"
 #include "Evolution/DgSubcell/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
+#include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
 #include "Evolution/DgSubcell/Tags/DidRollback.hpp"
 #include "Evolution/DgSubcell/Tags/Inactive.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
@@ -107,7 +108,7 @@ namespace evolution::dg::subcell::Actions {
  *   - `subcell::Tags::Mesh<Dim>`
  *   - `Tags::TimeStepId`
  *   - `subcell::Tags::ActiveGrid`
- *   - `subcell::Tags::NeighborDataForReconstructionAndRdmpTci<Dim>`
+ *   - `subcell::Tags::DataForRdmpTci`
  *   - `subcell::Tags::TciGridHistory`
  * - Adds: nothing
  * - Removes: nothing
@@ -117,7 +118,7 @@ namespace evolution::dg::subcell::Actions {
  *   - `Tags::HistoryEvolvedVariables` if the cell is not troubled
  *   - `subcell::Tags::ActiveGrid` if the cell is not troubled
  *   - `subcell::Tags::DidRollback` sets to `false`
- *   - `subcell::Tags::NeighborDataForReconstructionAndRdmpTci<Dim>`
+ *   - `subcell::Tags::NeighborDataForReconstruction<Dim>`
  *     if the cell is not troubled
  *   - `subcell::Tags::TciGridHistory` if the time stepper is a multistep method
  */
@@ -183,26 +184,16 @@ struct TciAndSwitchToDg {
 
     // Run RDMP TCI since no user info beyond the input file options are needed
     // for that.
-    const std::pair self_id{Direction<Dim>::lower_xi(),
-                            ElementId<Dim>::external_boundary_id()};
-    ASSERT(
-        db::get<Tags::NeighborDataForReconstructionAndRdmpTci<Dim>>(box).count(
-            self_id) != 0,
-        "The self ID is not in the NeighborData but should have been added "
-        "before TciAndSwitchToDg was called.");
-    const NeighborData& self_neighbor_data =
-        db::get<Tags::NeighborDataForReconstructionAndRdmpTci<Dim>>(box).at(
-            self_id);
+    const RdmpTciData& rdmp_tci_data = db::get<Tags::DataForRdmpTci>(box);
 
     // Note: we assume the max/min over all neighbors and ourselves at the past
     // time step has been collected into
-    // `self_neighbor_data.max/min_variables_values`
-    bool cell_is_troubled =
-        rdmp_tci(db::get<variables_tag>(box),
-                 db::get<Tags::Inactive<variables_tag>>(box),
-                 self_neighbor_data.max_variables_values,
-                 self_neighbor_data.min_variables_values,
-                 subcell_options.rdmp_delta0(), subcell_options.rdmp_epsilon());
+    // `rdmp_tci_data.max/min_variables_values`
+    bool cell_is_troubled = rdmp_tci(
+        db::get<variables_tag>(box),
+        db::get<Tags::Inactive<variables_tag>>(box),
+        rdmp_tci_data.max_variables_values, rdmp_tci_data.min_variables_values,
+        subcell_options.rdmp_delta0(), subcell_options.rdmp_epsilon());
 
     // If the RDMP TCI marked the candidate as acceptable, check with the
     // user-specified TCI, since that could be stricter. We pass in the Persson
@@ -239,7 +230,7 @@ struct TciAndSwitchToDg {
       db::mutate<variables_tag, Tags::Inactive<variables_tag>,
                  ::Tags::HistoryEvolvedVariables<variables_tag>,
                  Tags::ActiveGrid,
-                 subcell::Tags::NeighborDataForReconstructionAndRdmpTci<Dim>,
+                 subcell::Tags::NeighborDataForReconstruction<Dim>,
                  evolution::dg::subcell::Tags::TciGridHistory>(
           make_not_null(&box),
           [&dg_mesh, &subcell_mesh](

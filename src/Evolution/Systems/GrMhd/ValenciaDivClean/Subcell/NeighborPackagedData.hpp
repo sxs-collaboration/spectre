@@ -26,7 +26,6 @@
 #include "Domain/Tags.hpp"
 #include "Domain/TagsTimeDependent.hpp"
 #include "Evolution/BoundaryCorrectionTags.hpp"
-#include "Evolution/DgSubcell/NeighborData.hpp"
 #include "Evolution/DgSubcell/Projection.hpp"
 #include "Evolution/DgSubcell/Reconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
@@ -92,8 +91,8 @@ struct NeighborPackagedData {
         nhbr_package_data{};
 
     const auto& nhbr_subcell_data =
-        db::get<evolution::dg::subcell::Tags::
-                    NeighborDataForReconstructionAndRdmpTci<3>>(box);
+        db::get<evolution::dg::subcell::Tags::NeighborDataForReconstruction<3>>(
+            box);
     const Mesh<3>& subcell_mesh =
         db::get<evolution::dg::subcell::Tags::Mesh<3>>(box);
     const Mesh<3>& dg_mesh = db::get<domain::Tags::Mesh<3>>(box);

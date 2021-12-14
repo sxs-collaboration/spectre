@@ -9,6 +9,7 @@ spectre_target_headers(
   HEADERS
   ActiveGrid.hpp
   Coordinates.hpp
+  DataForRdmpTci.hpp
   DidRollback.hpp
   Inactive.hpp
   Jacobians.hpp
