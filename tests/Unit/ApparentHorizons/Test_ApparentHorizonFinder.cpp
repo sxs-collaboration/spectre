@@ -375,13 +375,15 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
   ActionTesting::set_phase(make_not_null(&runner),
                            metavars::Phase::Registration);
 
-  // Find horizon at two temporal_ids.  The horizon find at the second
-  // temporal_id will use the result from the first temporal_id as
-  // an initial guess.  For the time-independent case, the volume data will
-  // not change between horizon finds, so the second horizon find will take
-  // zero iterations.
-  // Having two temporal_ids tests some logic in the interpolator.
-  const std::vector<double> temporal_ids{13.0 / 15.0, 14.0 / 15.0};
+  // Find horizon at three temporal_ids.  The horizon find at the
+  // second temporal_id will use the result from the first temporal_id
+  // as an initial guess.  The horizon find at the third temporal_id
+  // will use an initial guess that was linearly extrapolated from the
+  // first two horizon finds. For the time-independent case, the
+  // volume data will not change between horizon finds, so the second
+  // and third horizon finds will take zero iterations.  Having three
+  // temporal_ids tests some logic in the interpolator.
+  const std::vector<double> temporal_ids{12.0 / 15.0, 13.0 / 15.0, 14.0 / 15.0};
 
   // Create element_ids.
   std::vector<ElementId<3>> element_ids{};
@@ -704,8 +706,8 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
             typename metavars::component_list>(make_not_null(&runner));
   }
 
-  // Make sure function was called twice.
-  CHECK(*test_horizon_called == 2);
+  // Make sure function was called three times.
+  CHECK(*test_horizon_called == 3);
 }
 
 // This tests the entire AH finder including numerical interpolation.

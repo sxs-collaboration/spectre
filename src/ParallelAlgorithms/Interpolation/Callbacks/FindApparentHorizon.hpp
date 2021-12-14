@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <cmath>
+#include <deque>
 #include <utility>
 
 #include "ApparentHorizons/FastFlow.hpp"
@@ -135,8 +137,61 @@ struct FindApparentHorizon {
       const TemporalId& temporal_id) {
     bool horizon_finder_failed = false;
 
-    // Before doing anything else, deal with the possibility that some
-    // of the points might be outside of the Domain.
+    if (get<::ah::Tags::FastFlow>(*box).current_iteration() == 0) {
+      // If we get here, we are in a new apparent horizon search, as
+      // opposed to a subsequent iteration of the same horizon search.
+      //
+      // So put new initial guess into StrahlkorperTags::Strahlkorper<Frame>.
+      // We need to do this now, and not at the end of the previous horizon
+      // search, because only now do we know the temporal_id of this horizon
+      // search.
+      db::mutate<StrahlkorperTags::Strahlkorper<Frame>,
+                 ::ah::Tags::PreviousStrahlkorpers<Frame>>(
+          box, [&temporal_id](
+                   const gsl::not_null<::Strahlkorper<Frame>*> strahlkorper,
+                   const gsl::not_null<
+                       std::deque<std::pair<double, ::Strahlkorper<Frame>>>*>
+                       previous_strahlkorpers) {
+            // If we have zero previous_strahlkorpers, then the
+            // initial guess is already in strahlkorper, so do
+            // nothing.
+            //
+            // If we have one previous_strahlkorper, then we have had
+            // a successful horizon find, and the initial guess for the
+            // next horizon find is already in strahlkorper, so
+            // again we do nothing.
+            //
+            // If we have 2 previous_strahlkorpers and the time of the second
+            // one is a NaN, this means that the corresponding
+            // previous_strahlkorper is the original initial guess, so
+            // again we do nothing.
+            //
+            // If we have 2 or more valid previous_strahlkorpers, then
+            // we set the initial guess by linear extrapolation in time
+            // using the last 2 previous_strahlkorpers.
+            if (previous_strahlkorpers->size() > 1 and
+                not std::isnan((*previous_strahlkorpers)[1].first)) {
+              const double new_time =
+                  InterpolationTarget_detail::get_temporal_id_value(
+                      temporal_id);
+              const double dt_0 = (*previous_strahlkorpers)[0].first - new_time;
+              const double dt_1 = (*previous_strahlkorpers)[1].first - new_time;
+              const double fac_0 = dt_1 / (dt_1 - dt_0);
+              const double fac_1 = 1.0 - fac_0;
+              // Here we assume that
+              // * Expansion center of all the Strahlkorpers are equal.
+              // * Maximum L of all the Strahlkorpers are equal.
+              // It is easy to relax the max L assumption once we start
+              // adaptively changing the L of the strahlkorpers.
+              strahlkorper->coefficients() =
+                  fac_0 * (*previous_strahlkorpers)[0].second.coefficients() +
+                  fac_1 * (*previous_strahlkorpers)[1].second.coefficients();
+            }
+          });
+    }
+
+    // Deal with the possibility that some of the points might be
+    // outside of the Domain.
     const auto& indices_of_invalid_pts =
         db::get<Tags::IndicesOfInvalidInterpPoints<TemporalId>>(*box);
     if (indices_of_invalid_pts.count(temporal_id) > 0 and
@@ -278,26 +333,36 @@ struct FindApparentHorizon {
                                                                 temporal_id);
     }
 
-    // Prepare for finding horizon at a new time.  If the horizon
-    // finder was successful, then do not change the strahlkorper,
-    // which will be the initial guess for finding the horizon at the
-    // next time.
-    // Eventually we will do time-extrapolation to set the next guess.
+    // Prepare for finding horizon at a new time.
     db::mutate<::ah::Tags::FastFlow, StrahlkorperTags::Strahlkorper<Frame>,
-               ::ah::Tags::PreviousStrahlkorper<Frame>>(
-        box,
-        [&horizon_finder_failed](
-            const gsl::not_null<::FastFlow*> fast_flow,
-            const gsl::not_null<::Strahlkorper<Frame>*> strahlkorper,
-            const gsl::not_null<::Strahlkorper<Frame>*> previous_strahlkorper) {
+               ::ah::Tags::PreviousStrahlkorpers<Frame>>(
+        box, [&horizon_finder_failed, &temporal_id](
+                 const gsl::not_null<::FastFlow*> fast_flow,
+                 const gsl::not_null<::Strahlkorper<Frame>*> strahlkorper,
+                 const gsl::not_null<
+                     std::deque<std::pair<double, ::Strahlkorper<Frame>>>*>
+                     previous_strahlkorpers) {
           if (horizon_finder_failed) {
-            // Don't keep a partially-converged strahlkorper in the DataBox.
-            // Reset to the previous value, even if that previous value
-            // is the original initial guess.
-            *strahlkorper = *previous_strahlkorper;
+            // Don't keep a partially-converged strahlkorper in the
+            // DataBox.  Reset to either the original initial guess or
+            // to the last-found Strahlkorper (whichever one happens
+            // to be in previous_strahlkorpers).
+            *strahlkorper = previous_strahlkorpers->front().second;
           } else {
+            // This is the number of previous strahlkorpers that we
+            // keep around.
+            const size_t num_previous_strahlkorpers = 2;
+
             // Save a new previous_strahlkorper.
-            *previous_strahlkorper = *strahlkorper;
+            previous_strahlkorpers->emplace_front(
+                InterpolationTarget_detail::get_temporal_id_value(temporal_id),
+                *strahlkorper);
+
+            // Remove old previous_strahlkorpers that are no longer relevant.
+            while (previous_strahlkorpers->size() >
+                   num_previous_strahlkorpers) {
+              previous_strahlkorpers->pop_back();
+            }
           }
           fast_flow->reset_for_next_find();
         });
