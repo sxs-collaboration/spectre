@@ -5,7 +5,6 @@
 
 #include <boost/functional/hash.hpp>
 #include <cstddef>
-#include <limits>
 #include <optional>
 #include <type_traits>
 #include <utility>
@@ -129,21 +128,13 @@ struct NeighborPackagedData {
           const Direction<Dim>& direction = mortar_id.first;
           Index<Dim> extents = subcell_mesh.extents();
 
-          size_t num_face_pts{std::numeric_limits<size_t>::signaling_NaN()};
-
-          if constexpr (Dim == 1) {
-            // Note : 1D mortar has only one face point
-            num_face_pts = 1;
-            vars_on_face.initialize(num_face_pts);
-          } else {
-            // Switch to face-centered instead of cell-centered points on the
-            // FD. There are num_cell_centered+1 face-centered points.
-            ++extents[direction.dimension()];
-            num_face_pts = subcell_mesh.extents()
-                               .slice_away(direction.dimension())
-                               .product();
-            vars_on_face.initialize(num_face_pts);
-          }
+          // Switch to face-centered instead of cell-centered points on the
+          // FD. There are num_cell_centered+1 face-centered points.
+          ++extents[direction.dimension()];
+          const size_t num_face_pts = subcell_mesh.extents()
+                                          .slice_away(direction.dimension())
+                                          .product();
+          vars_on_face.initialize(num_face_pts);
 
           using velocity_field = ScalarAdvection::Tags::VelocityField<Dim>;
           const auto& velocity_on_face =
