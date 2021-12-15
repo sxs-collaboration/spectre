@@ -58,7 +58,9 @@ void ComputeHorizonVolumeQuantities::apply(
   static_assert(
       std::is_same_v<tmpl::list_difference<SrcTagList, allowed_src_tags>,
                      tmpl::list<>>,
-      "Found a src tag that is not allowed");
+      "Found a src tag that is not allowed. If you want to add a new src tag "
+      "to allowed_src_tags, you also need to add code in "
+      "ComputeHorizonVolumeQuantities.tpp to process that src tag.");
   static_assert(
       std::is_same_v<tmpl::list_difference<required_src_tags, SrcTagList>,
                      tmpl::list<>>,
@@ -68,7 +70,9 @@ void ComputeHorizonVolumeQuantities::apply(
       std::is_same_v<tmpl::list_difference<DestTagList,
                                            allowed_dest_tags<Frame::Inertial>>,
                      tmpl::list<>>,
-      "Found a dest tag that is not allowed");
+      "Found a dest tag that is not allowed. If you want to add a new dest tag "
+      "to allowed_dest_tags, you also need to add code in "
+      "ComputeHorizonVolumeQuantities.tpp to compute that dest tag.");
   static_assert(
       std::is_same_v<tmpl::list_difference<required_dest_tags<Frame::Inertial>,
                                            DestTagList>,
@@ -166,7 +170,9 @@ void ComputeHorizonVolumeQuantities::apply(
   static_assert(
       std::is_same_v<tmpl::list_difference<SrcTagList, allowed_src_tags>,
                      tmpl::list<>>,
-      "Found a src tag that is not allowed");
+      "Found a src tag that is not allowed. If you want to add a new src tag "
+      "to allowed_src_tags, you also need to add code in "
+      "ComputeHorizonVolumeQuantities.tpp to process that src tag.");
   static_assert(
       std::is_same_v<tmpl::list_difference<required_src_tags, SrcTagList>,
                      tmpl::list<>>,
@@ -176,7 +182,9 @@ void ComputeHorizonVolumeQuantities::apply(
       std::is_same_v<
           tmpl::list_difference<DestTagList, allowed_dest_tags<TargetFrame>>,
           tmpl::list<>>,
-      "Found a dest tag that is not allowed");
+      "Found a dest tag that is not allowed. If you want to add a new dest tag "
+      "to allowed_dest_tags, you also need to add code in "
+      "ComputeHorizonVolumeQuantities.tpp to compute that dest tag.");
   static_assert(
       std::is_same_v<
           tmpl::list_difference<required_dest_tags<TargetFrame>, DestTagList>,
