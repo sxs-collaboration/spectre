@@ -501,4 +501,19 @@ double dimensionless_spin_magnitude(const double dimensionful_spin_magnitude,
                                     const double christodoulou_mass);
 /// @}
 
+
+/*!
+ * \ingroup SurfacesGroup
+ * \brief Radial distance between two `Strahlkorper`s.
+ *
+ * \details Computes the pointwise radial distance \f$r_a-r_b\f$ between two
+ * Strahlkorpers `strahlkorper_a` and `strahlkorper_b` that have the same
+ * center, first (if the Strahlkorpers' resolutions are unequal) prolonging the
+ * lower-resolution Strahlkorper to the same resolution as the higher-resolution
+ * Strahlkorper.
+ */
+template <typename Frame>
+void radial_distance(gsl::not_null<Scalar<DataVector>*> radial_distance,
+                     const Strahlkorper<Frame>& strahlkorper_a,
+                     const Strahlkorper<Frame>& strahlkorper_b);
 }  // namespace StrahlkorperGr
