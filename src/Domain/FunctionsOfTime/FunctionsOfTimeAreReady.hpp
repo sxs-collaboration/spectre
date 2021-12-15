@@ -58,6 +58,7 @@ bool functions_of_time_are_ready(
                      std::string,
                      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
                          functions_of_time) {
+        using ::operator<<;
         ASSERT(alg::all_of(
                    functions_to_check,
                    [&functions_of_time](const std::string& function_to_check) {
