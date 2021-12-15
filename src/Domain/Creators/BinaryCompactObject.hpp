@@ -49,8 +49,6 @@ template <size_t VolumeDim>
 class Rotation;
 template <bool InteriorMap>
 class SphericalCompression;
-template <typename Map1, typename Map2>
-class ProductOf2Maps;
 }  // namespace TimeDependent
 }  // namespace CoordinateMaps
 
@@ -143,11 +141,10 @@ namespace creators {
  * time-dependent map. These options include the `InitialTime` which specifies
  * the initial time for the FunctionsOfTime controlling the map. The
  * time-dependent map itself consists of a composition of a CubicScale expansion
- * map and a Rotation map about the z axis everywhere except possibly in layer
- * 1; in that case, if `ObjectA` or `ObjectB` is excised, then the
- * time-dependent map in the corresponding blocks in layer 1 is a composition of
- * a SphericalCompression size map, a CubicScale expansion map, and a Rotation
- * map about the z axis.
+ * map and a Rotation map everywhere except possibly in layer 1; in that case,
+ * if `ObjectA` or `ObjectB` is excised, then the time-dependent map in the
+ * corresponding blocks in layer 1 is a composition of a SphericalCompression
+ * size map, a CubicScale expansion map, and a Rotation map.
  */
 class BinaryCompactObject : public DomainCreator<3> {
  private:
@@ -158,9 +155,6 @@ class BinaryCompactObject : public DomainCreator<3> {
   using Equiangular = CoordinateMaps::Equiangular;
   using Equiangular3D =
       CoordinateMaps::ProductOf3Maps<Equiangular, Equiangular, Equiangular>;
-  using RotationZ = domain::CoordinateMaps::TimeDependent::ProductOf2Maps<
-      domain::CoordinateMaps::TimeDependent::Rotation<2>,
-      domain::CoordinateMaps::Identity<1>>;
 
  public:
   using maps_list = tmpl::list<
@@ -183,11 +177,13 @@ class BinaryCompactObject : public DomainCreator<3> {
                             CoordinateMaps::Wedge<3>, Translation>,
       domain::CoordinateMap<
           Frame::Grid, Frame::Inertial,
-          domain::CoordinateMaps::TimeDependent::CubicScale<3>, RotationZ>,
+          domain::CoordinateMaps::TimeDependent::CubicScale<3>,
+          domain::CoordinateMaps::TimeDependent::Rotation<3>>,
       domain::CoordinateMap<
           Frame::Grid, Frame::Inertial,
           domain::CoordinateMaps::TimeDependent::SphericalCompression<false>,
-          domain::CoordinateMaps::TimeDependent::CubicScale<3>, RotationZ>>;
+          domain::CoordinateMaps::TimeDependent::CubicScale<3>,
+          domain::CoordinateMaps::TimeDependent::Rotation<3>>>;
 
   /// Options for an excision region in the domain
   struct Excision {
@@ -459,22 +455,16 @@ class BinaryCompactObject : public DomainCreator<3> {
     using group = ExpansionMap;
   };
 
-  struct RotationAboutZAxisMap {
+  struct RotationMap {
     static constexpr Options::String help = {
-        "Options for a time-dependent rotation map about the z axis"};
+        "Options for a time-dependent rotation map about an arbitrary axis."};
     using group = TimeDependentMaps;
-  };
-  /// \brief The initial value of the rotation angle.
-  struct InitialRotationAngle {
-    using type = double;
-    static constexpr Options::String help = {"Rotation angle at initial time."};
-    using group = RotationAboutZAxisMap;
   };
   /// \brief The angular velocity of the rotation.
   struct InitialAngularVelocity {
-    using type = double;
+    using type = std::array<double, 3>;
     static constexpr Options::String help = {"The angular velocity."};
-    using group = RotationAboutZAxisMap;
+    using group = RotationMap;
   };
 
   struct SizeMap {
@@ -545,9 +535,9 @@ class BinaryCompactObject : public DomainCreator<3> {
   using time_dependent_options =
       tmpl::list<InitialTime, ExpansionMapOuterBoundary, InitialExpansion,
                  InitialExpansionVelocity, AsymptoticVelocityOuterBoundary,
-                 DecayTimescaleOuterBoundaryVelocity, InitialRotationAngle,
-                 InitialAngularVelocity, InitialSizeMapValues,
-                 InitialSizeMapVelocities, InitialSizeMapAccelerations>;
+                 DecayTimescaleOuterBoundaryVelocity, InitialAngularVelocity,
+                 InitialSizeMapValues, InitialSizeMapVelocities,
+                 InitialSizeMapAccelerations>;
 
   template <typename Metavariables>
   using options = tmpl::conditional_t<
@@ -623,7 +613,7 @@ class BinaryCompactObject : public DomainCreator<3> {
       double initial_expansion, double initial_expansion_velocity,
       double asymptotic_velocity_outer_boundary,
       double decay_timescale_outer_boundary_velocity,
-      double initial_rotation_angle, double initial_angular_velocity,
+      std::array<double, 3> initial_angular_velocity,
       std::array<double, 2> initial_size_map_values,
       std::array<double, 2> initial_size_map_velocities,
       std::array<double, 2> initial_size_map_accelerations, Object object_A,
@@ -708,11 +698,9 @@ class BinaryCompactObject : public DomainCreator<3> {
       std::numeric_limits<double>::signaling_NaN()};
   double decay_timescale_outer_boundary_velocity_{
       std::numeric_limits<double>::signaling_NaN()};
-  double initial_rotation_angle_{std::numeric_limits<double>::signaling_NaN()};
-  double initial_angular_velocity_{
-      std::numeric_limits<double>::signaling_NaN()};
-  inline static const std::string rotation_about_z_axis_function_of_time_name_{
-      "Rotation"};
+  DataVector initial_angular_velocity_{3, 0.0};
+  DataVector initial_quaternion_{4, 0.0};
+  inline static const std::string rotation_function_of_time_name_{"Rotation"};
   std::array<double, 2> initial_size_map_values_{
       std::numeric_limits<double>::signaling_NaN(),
       std::numeric_limits<double>::signaling_NaN()};

@@ -50,9 +50,8 @@ DomainCreator:
         InitialExpansionVelocity: 0.01
         AsymptoticVelocityOuterBoundary: -0.1
         DecayTimescaleOuterBoundaryVelocity: 5.0
-      RotationAboutZAxisMap:
-        InitialRotationAngle: 0.0
-        InitialAngularVelocity: 0.0
+      RotationMap:
+        InitialAngularVelocity: [0.0, 0.0, 0.0]
       SizeMap:
         InitialValues: [0.0, 0.0]
         InitialVelocities: [-0.1, -0.1]

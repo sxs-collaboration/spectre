@@ -44,6 +44,7 @@
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/FunctionsOfTime/FixedSpeedCubic.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
+#include "Domain/FunctionsOfTime/QuaternionFunctionOfTime.hpp"
 #include "Domain/Structure/BlockNeighbor.hpp"  // IWYU pragma: keep
 #include "Domain/Structure/ExcisionSphere.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -291,7 +292,7 @@ BinaryCompactObject::BinaryCompactObject(
     double initial_expansion, double initial_expansion_velocity,
     double asymptotic_velocity_outer_boundary,
     double decay_timescale_outer_boundary_velocity,
-    double initial_rotation_angle, double initial_angular_velocity,
+    std::array<double, 3> initial_angular_velocity,
     std::array<double, 2> initial_size_map_values,
     std::array<double, 2> initial_size_map_velocities,
     std::array<double, 2> initial_size_map_accelerations, Object object_A,
@@ -318,11 +319,16 @@ BinaryCompactObject::BinaryCompactObject(
   asymptotic_velocity_outer_boundary_ = asymptotic_velocity_outer_boundary;
   decay_timescale_outer_boundary_velocity_ =
       decay_timescale_outer_boundary_velocity;
-  initial_rotation_angle_ = initial_rotation_angle;
-  initial_angular_velocity_ = initial_angular_velocity;
+  // quat = (cos(theta/2), nhat*sin(theta/2)) but we always take theta = 0
+  // initially
+  initial_quaternion_ = DataVector{{1.0, 0.0, 0.0, 0.0}};
   initial_size_map_values_ = initial_size_map_values;
   initial_size_map_velocities_ = initial_size_map_velocities;
   initial_size_map_accelerations_ = initial_size_map_accelerations;
+
+  for (size_t i = 0; i < initial_angular_velocity.size(); i++) {
+    initial_angular_velocity_[i] = gsl::at(initial_angular_velocity, i);
+  }
 }
 
 Domain<3> BinaryCompactObject::create_domain() const {
@@ -537,17 +543,13 @@ Domain<3> BinaryCompactObject::create_domain() const {
     using CubicScaleMapForComposition =
         domain::CoordinateMap<Frame::Grid, Frame::Inertial, CubicScaleMap>;
 
-    using IdentityMap1D = domain::CoordinateMaps::Identity<1>;
-    using RotationMap2D = domain::CoordinateMaps::TimeDependent::Rotation<2>;
-    using RotationMap =
-        domain::CoordinateMaps::TimeDependent::ProductOf2Maps<RotationMap2D,
-                                                              IdentityMap1D>;
+    using RotationMap3D = domain::CoordinateMaps::TimeDependent::Rotation<3>;
     using RotationMapForComposition =
-        domain::CoordinateMap<Frame::Grid, Frame::Inertial, RotationMap>;
+        domain::CoordinateMap<Frame::Grid, Frame::Inertial, RotationMap3D>;
 
     using CubicScaleAndRotationMapForComposition =
         domain::CoordinateMap<Frame::Grid, Frame::Inertial, CubicScaleMap,
-                              RotationMap>;
+                              RotationMap3D>;
 
     using CompressionMap =
         domain::CoordinateMaps::TimeDependent::SphericalCompression<false>;
@@ -556,7 +558,7 @@ Domain<3> BinaryCompactObject::create_domain() const {
 
     using CompressionAndCubicScaleAndRotationMapForComposition =
         domain::CoordinateMap<Frame::Grid, Frame::Inertial, CompressionMap,
-                              CubicScaleMap, RotationMap>;
+                              CubicScaleMap, RotationMap3D>;
 
     std::vector<std::unique_ptr<
         domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, 3>>>
@@ -580,9 +582,8 @@ Domain<3> BinaryCompactObject::create_domain() const {
                     expansion_map_outer_boundary_,
                     expansion_function_of_time_name_,
                     expansion_function_of_time_name_ + "OuterBoundary"s}},
-                RotationMapForComposition{RotationMap{
-                    RotationMap2D{rotation_about_z_axis_function_of_time_name_},
-                    IdentityMap1D{}}}));
+                RotationMapForComposition{
+                    RotationMap3D{rotation_function_of_time_name_}}));
 
     // Initialize the first block of the layer 1 blocks for each object
     // (specifically, initialize block 0 and block 12). If excising interior
@@ -604,10 +605,8 @@ Domain<3> BinaryCompactObject::create_domain() const {
                       expansion_map_outer_boundary_,
                       expansion_function_of_time_name_,
                       expansion_function_of_time_name_ + "OuterBoundary"s}},
-                  RotationMapForComposition{RotationMap{
-                      RotationMap2D{
-                          rotation_about_z_axis_function_of_time_name_},
-                      IdentityMap1D{}}})));
+                  RotationMapForComposition{
+                      RotationMap3D{rotation_function_of_time_name_}})));
     } else {
       block_maps[0] = block_maps[number_of_blocks_ - 1]->get_clone();
     }
@@ -625,10 +624,8 @@ Domain<3> BinaryCompactObject::create_domain() const {
                       expansion_map_outer_boundary_,
                       expansion_function_of_time_name_,
                       expansion_function_of_time_name_ + "OuterBoundary"}},
-                  RotationMapForComposition{RotationMap{
-                      RotationMap2D{
-                          rotation_about_z_axis_function_of_time_name_},
-                      IdentityMap1D{}}})));
+                  RotationMapForComposition{
+                      RotationMap3D{rotation_function_of_time_name_}})));
     } else {
       block_maps[12] = block_maps[number_of_blocks_ - 1]->get_clone();
     }
@@ -673,7 +670,7 @@ BinaryCompactObject::functions_of_time(
   std::unordered_map<std::string, double> expiration_times{
       {expansion_function_of_time_name_,
        std::numeric_limits<double>::infinity()},
-      {rotation_about_z_axis_function_of_time_name_,
+      {rotation_function_of_time_name_,
        std::numeric_limits<double>::infinity()},
       {size_map_function_of_time_names_[0],
        std::numeric_limits<double>::infinity()},
@@ -702,16 +699,17 @@ BinaryCompactObject::functions_of_time(
           1.0, initial_time_, asymptotic_velocity_outer_boundary_,
           decay_timescale_outer_boundary_velocity_);
 
-  // RotationAboutZAxisMap FunctionOfTime for the rotation angle about the z
-  // axis \f$\phi\f$.
-  result[rotation_about_z_axis_function_of_time_name_] =
-      std::make_unique<FunctionsOfTime::PiecewisePolynomial<3>>(
-          initial_time_,
-          std::array<DataVector, 4>{{{initial_rotation_angle_},
-                                     {initial_angular_velocity_},
-                                     {0.0},
-                                     {0.0}}},
-          expiration_times.at(rotation_about_z_axis_function_of_time_name_));
+  // RotationMap FunctionOfTime for the rotation angles about each axis.
+  // The initial rotation angles don't matter as we never actually use the
+  // angles themselves. We only use their derivatives (omega) to determine map
+  // parameters. In theory we could determine each initital angle from the input
+  // axis-angle representation, but we don't need to.
+  result[rotation_function_of_time_name_] =
+      std::make_unique<FunctionsOfTime::QuaternionFunctionOfTime<3>>(
+          initial_time_, std::array<DataVector, 1>{initial_quaternion_},
+          std::array<DataVector, 4>{
+              {{3, 0.0}, initial_angular_velocity_, {3, 0.0}, {3, 0.0}}},
+          expiration_times.at(rotation_function_of_time_name_));
 
   // CompressionMap FunctionOfTime for objects A and B
   for (size_t i = 0; i < size_map_function_of_time_names_.size(); i++) {
