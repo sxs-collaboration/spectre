@@ -20,10 +20,22 @@ namespace Xcts::AnalyticData {
 /// Tags for variables that analytic-data classes can share
 template <typename DataType>
 using common_tags = tmpl::list<
+    // Background quantities
+    Tags::ConformalMetric<DataType, 3, Frame::Inertial>,
+    gr::Tags::TraceExtrinsicCurvature<DataType>,
+    ::Tags::dt<gr::Tags::TraceExtrinsicCurvature<DataType>>,
+    Tags::ShiftBackground<DataType, 3, Frame::Inertial>,
+    Tags::LongitudinalShiftBackgroundMinusDtConformalMetric<DataType, 3,
+                                                            Frame::Inertial>,
+    // Analytic derivatives
+    ::Tags::deriv<Tags::ConformalMetric<DataType, 3, Frame::Inertial>,
+                  tmpl::size_t<3>, Frame::Inertial>,
+    // Background quantities derived from the above
     Tags::InverseConformalMetric<DataType, 3, Frame::Inertial>,
     Tags::ConformalChristoffelFirstKind<DataType, 3, Frame::Inertial>,
     Tags::ConformalChristoffelSecondKind<DataType, 3, Frame::Inertial>,
     Tags::ConformalChristoffelContracted<DataType, 3, Frame::Inertial>,
+    // Fixed sources
     ::Tags::FixedSource<Tags::ConformalFactor<DataType>>,
     ::Tags::FixedSource<Tags::LapseTimesConformalFactor<DataType>>,
     ::Tags::FixedSource<Tags::ShiftExcess<DataType, 3, Frame::Inertial>>,
@@ -55,21 +67,64 @@ using common_tags = tmpl::list<
 template <typename DataType, typename Cache>
 struct CommonVariables {
   static constexpr size_t Dim = 3;
-  void operator()(gsl::not_null<tnsr::II<DataType, Dim>*> inv_conformal_metric,
-                  gsl::not_null<Cache*> cache,
-                  Tags::InverseConformalMetric<DataType, Dim,
-                                               Frame::Inertial> /*meta*/) const;
-  void operator()(
+
+  CommonVariables(const CommonVariables&) = default;
+  CommonVariables& operator=(const CommonVariables&) = default;
+  CommonVariables(CommonVariables&&) = default;
+  CommonVariables& operator=(CommonVariables&&) = default;
+  virtual ~CommonVariables() = default;
+
+  CommonVariables(
+      std::optional<std::reference_wrapper<const Mesh<Dim>>> local_mesh,
+      std::optional<std::reference_wrapper<const InverseJacobian<
+          DataType, Dim, Frame::ElementLogical, Frame::Inertial>>>
+          local_inv_jacobian)
+      : mesh(std::move(local_mesh)),
+        inv_jacobian(std::move(local_inv_jacobian)) {}
+
+  virtual void operator()(
+      gsl::not_null<tnsr::ii<DataType, Dim>*> conformal_metric,
+      gsl::not_null<Cache*> cache,
+      Tags::ConformalMetric<DataType, Dim, Frame::Inertial> /*meta*/) const = 0;
+  virtual void operator()(
+      gsl::not_null<Scalar<DataType>*> extrinsic_curvature_trace,
+      gsl::not_null<Cache*> cache,
+      gr::Tags::TraceExtrinsicCurvature<DataType> /*meta*/) const = 0;
+  virtual void operator()(
+      gsl::not_null<Scalar<DataType>*> dt_extrinsic_curvature_trace,
+      gsl::not_null<Cache*> cache,
+      ::Tags::dt<gr::Tags::TraceExtrinsicCurvature<DataType>> /*meta*/)
+      const = 0;
+  virtual void operator()(
+      gsl::not_null<tnsr::I<DataType, Dim>*> shift_background,
+      gsl::not_null<Cache*> cache,
+      Tags::ShiftBackground<DataType, Dim, Frame::Inertial> /*meta*/) const = 0;
+  virtual void operator()(
+      gsl::not_null<tnsr::II<DataType, Dim>*> longitudinal_shift_background,
+      gsl::not_null<Cache*> cache,
+      Tags::LongitudinalShiftBackgroundMinusDtConformalMetric<
+          DataType, Dim, Frame::Inertial> /*meta*/) const = 0;
+  virtual void operator()(
+      gsl::not_null<tnsr::ijj<DataType, Dim>*> deriv_conformal_metric,
+      gsl::not_null<Cache*> cache,
+      ::Tags::deriv<Tags::ConformalMetric<DataType, Dim, Frame::Inertial>,
+                    tmpl::size_t<Dim>, Frame::Inertial> /*meta*/) const = 0;
+  virtual void operator()(
+      gsl::not_null<tnsr::II<DataType, Dim>*> inv_conformal_metric,
+      gsl::not_null<Cache*> cache,
+      Tags::InverseConformalMetric<DataType, Dim, Frame::Inertial> /*meta*/)
+      const;
+  virtual void operator()(
       gsl::not_null<tnsr::ijj<DataType, Dim>*> conformal_christoffel_first_kind,
       gsl::not_null<Cache*> cache,
       Tags::ConformalChristoffelFirstKind<DataType, Dim,
                                           Frame::Inertial> /*meta*/) const;
-  void operator()(gsl::not_null<tnsr::Ijj<DataType, Dim>*>
-                      conformal_christoffel_second_kind,
-                  gsl::not_null<Cache*> cache,
-                  Tags::ConformalChristoffelSecondKind<
-                      DataType, Dim, Frame::Inertial> /*meta*/) const;
-  void operator()(
+  virtual void operator()(gsl::not_null<tnsr::Ijj<DataType, Dim>*>
+                              conformal_christoffel_second_kind,
+                          gsl::not_null<Cache*> cache,
+                          Tags::ConformalChristoffelSecondKind<
+                              DataType, Dim, Frame::Inertial> /*meta*/) const;
+  virtual void operator()(
       gsl::not_null<tnsr::i<DataType, Dim>*> conformal_christoffel_contracted,
       gsl::not_null<Cache*> cache,
       Tags::ConformalChristoffelContracted<DataType, Dim,
@@ -88,27 +143,28 @@ struct CommonVariables {
       gsl::not_null<Cache*> cache,
       ::Tags::FixedSource<
           Tags::ShiftExcess<DataType, 3, Frame::Inertial>> /*meta*/) const;
-  void operator()(
+  virtual void operator()(
       gsl::not_null<tnsr::iJkk<DataType, Dim>*>
           deriv_conformal_christoffel_second_kind,
       gsl::not_null<Cache*> cache,
       ::Tags::deriv<
           Tags::ConformalChristoffelSecondKind<DataType, Dim, Frame::Inertial>,
           tmpl::size_t<Dim>, Frame::Inertial> /*meta*/) const;
-  void operator()(
+  virtual void operator()(
       gsl::not_null<tnsr::ii<DataType, Dim>*> conformal_ricci_tensor,
       gsl::not_null<Cache*> cache,
       Tags::ConformalRicciTensor<DataType, Dim, Frame::Inertial> /*meta*/)
       const;
-  void operator()(gsl::not_null<Scalar<DataType>*> conformal_ricci_scalar,
-                  gsl::not_null<Cache*> cache,
-                  Tags::ConformalRicciScalar<DataType> /*meta*/) const;
-  void operator()(
+  virtual void operator()(
+      gsl::not_null<Scalar<DataType>*> conformal_ricci_scalar,
+      gsl::not_null<Cache*> cache,
+      Tags::ConformalRicciScalar<DataType> /*meta*/) const;
+  virtual void operator()(
       gsl::not_null<tnsr::i<DataType, Dim>*> deriv_extrinsic_curvature_trace,
       gsl::not_null<Cache*> cache,
       ::Tags::deriv<gr::Tags::TraceExtrinsicCurvature<DataType>,
                     tmpl::size_t<Dim>, Frame::Inertial> /*meta*/) const;
-  void operator()(
+  virtual void operator()(
       gsl::not_null<tnsr::I<DataType, Dim>*> div_longitudinal_shift_background,
       gsl::not_null<Cache*> cache,
       ::Tags::div<Tags::LongitudinalShiftBackgroundMinusDtConformalMetric<

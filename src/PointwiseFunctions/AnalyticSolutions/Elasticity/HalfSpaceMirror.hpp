@@ -30,8 +30,7 @@ struct HalfSpaceMirrorVariables {
     using type = Scalar<DataType>;
   };
   using Cache =
-      CachedTempBuffer<HalfSpaceMirrorVariables, DisplacementR,
-                       Tags::Displacement<3>, Tags::Strain<3>,
+      CachedTempBuffer<DisplacementR, Tags::Displacement<3>, Tags::Strain<3>,
                        Tags::MinusStress<3>, Tags::PotentialEnergyDensity<3>,
                        ::Tags::FixedSource<Tags::Displacement<3>>>;
 
@@ -222,12 +221,14 @@ class HalfSpaceMirror : public AnalyticSolution<3, Registrars> {
       }
     }
     using VarsComputer = detail::HalfSpaceMirrorVariables<DataType>;
-    typename VarsComputer::Cache cache{
-        get_size(*x.begin()),
-        VarsComputer{x, beam_width_, constitutive_relation_,
-                     integration_intervals_, absolute_tolerance_,
-                     relative_tolerance_}};
-    return {cache.get_var(RequestedTags{})...};
+    typename VarsComputer::Cache cache{get_size(*x.begin())};
+    const VarsComputer computer{x,
+                                beam_width_,
+                                constitutive_relation_,
+                                integration_intervals_,
+                                absolute_tolerance_,
+                                relative_tolerance_};
+    return {cache.get_var(computer, RequestedTags{})...};
   }
 
   // clang-tidy: no pass by reference

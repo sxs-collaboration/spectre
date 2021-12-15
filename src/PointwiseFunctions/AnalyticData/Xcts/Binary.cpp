@@ -80,19 +80,22 @@ void BinaryVariables<DataType>::operator()(
     const gsl::not_null<Cache*> cache,
     Tags::LongitudinalShiftBackgroundMinusDtConformalMetric<
         DataType, Dim, Frame::Inertial> /*meta*/) const {
-  const auto& shift_background =
-      cache->get_var(Tags::ShiftBackground<DataType, Dim, Frame::Inertial>{});
+  const auto& shift_background = cache->get_var(
+      *this, Tags::ShiftBackground<DataType, Dim, Frame::Inertial>{});
   const auto& deriv_shift_background = cache->get_var(
+      *this,
       ::Tags::deriv<Tags::ShiftBackground<DataType, Dim, Frame::Inertial>,
                     tmpl::size_t<Dim>, Frame::Inertial>{});
-  const auto& conformal_metric =
-      cache->get_var(Tags::ConformalMetric<DataType, Dim, Frame::Inertial>{});
+  const auto& conformal_metric = cache->get_var(
+      *this, Tags::ConformalMetric<DataType, Dim, Frame::Inertial>{});
   const auto& inv_conformal_metric = cache->get_var(
-      Tags::InverseConformalMetric<DataType, Dim, Frame::Inertial>{});
+      *this, Tags::InverseConformalMetric<DataType, Dim, Frame::Inertial>{});
   const auto& deriv_conformal_metric = cache->get_var(
+      *this,
       ::Tags::deriv<Tags::ConformalMetric<DataType, Dim, Frame::Inertial>,
                     tmpl::size_t<Dim>, Frame::Inertial>{});
   const auto& conformal_christoffel_first_kind = cache->get_var(
+      *this,
       Tags::ConformalChristoffelFirstKind<DataType, Dim, Frame::Inertial>{});
   auto shift_background_strain =
       make_with_value<tnsr::ii<DataType, Dim>>(x, 0.);

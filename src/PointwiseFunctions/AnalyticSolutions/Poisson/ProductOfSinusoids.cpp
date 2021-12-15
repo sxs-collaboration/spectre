@@ -52,7 +52,7 @@ void ProductOfSinusoidsVariables<DataType, Dim>::operator()(
     ::Tags::Flux<Tags::Field, tmpl::size_t<Dim>, Frame::Inertial> /*meta*/)
     const {
   const auto& field_gradient = cache->get_var(
-      ::Tags::deriv<Tags::Field, tmpl::size_t<Dim>, Frame::Inertial>{});
+      *this, ::Tags::deriv<Tags::Field, tmpl::size_t<Dim>, Frame::Inertial>{});
   for (size_t d = 0; d < Dim; ++d) {
     flux_for_field->get(d) = field_gradient.get(d);
   }
@@ -63,7 +63,7 @@ void ProductOfSinusoidsVariables<DataType, Dim>::operator()(
     const gsl::not_null<Scalar<DataType>*> fixed_source_for_field,
     const gsl::not_null<Cache*> cache,
     ::Tags::FixedSource<Tags::Field> /*meta*/) const {
-  const auto& field = cache->get_var(Tags::Field{});
+  const auto& field = cache->get_var(*this, Tags::Field{});
   get(*fixed_source_for_field) = get(field) * square(magnitude(wave_numbers));
 }
 

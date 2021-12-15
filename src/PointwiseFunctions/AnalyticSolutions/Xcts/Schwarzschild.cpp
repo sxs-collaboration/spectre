@@ -182,9 +182,9 @@ void SchwarzschildVariables<DataType>::operator()(
     const gsl::not_null<Scalar<DataType>*> lapse,
     const gsl::not_null<Cache*> cache,
     gr::Tags::Lapse<DataType> /*meta*/) const {
-  *lapse = cache->get_var(Tags::LapseTimesConformalFactor<DataType>{});
+  *lapse = cache->get_var(*this, Tags::LapseTimesConformalFactor<DataType>{});
   const auto& conformal_factor =
-      cache->get_var(Tags::ConformalFactor<DataType>{});
+      cache->get_var(*this, Tags::ConformalFactor<DataType>{});
   get(*lapse) /= get(conformal_factor);
 }
 
@@ -196,8 +196,8 @@ void SchwarzschildVariables<DataType>::operator()(
     ::Tags::deriv<Tags::LapseTimesConformalFactor<DataType>, tmpl::size_t<3>,
                   Frame::Inertial> /*meta*/) const {
   *lapse_times_conformal_factor_gradient =
-      cache->get_var(::Tags::deriv<Tags::ConformalFactor<DataType>,
-                                   tmpl::size_t<3>, Frame::Inertial>{});
+      cache->get_var(*this, ::Tags::deriv<Tags::ConformalFactor<DataType>,
+                                          tmpl::size_t<3>, Frame::Inertial>{});
   get<0>(*lapse_times_conformal_factor_gradient) *= -1.;
   get<1>(*lapse_times_conformal_factor_gradient) *= -1.;
   get<2>(*lapse_times_conformal_factor_gradient) *= -1.;

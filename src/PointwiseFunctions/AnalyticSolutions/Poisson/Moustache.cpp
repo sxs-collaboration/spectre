@@ -66,7 +66,7 @@ void MoustacheVariables<DataType, Dim>::operator()(
     ::Tags::Flux<Tags::Field, tmpl::size_t<Dim>, Frame::Inertial> /*meta*/)
     const {
   const auto& field_gradient = cache->get_var(
-      ::Tags::deriv<Tags::Field, tmpl::size_t<Dim>, Frame::Inertial>{});
+      *this, ::Tags::deriv<Tags::Field, tmpl::size_t<Dim>, Frame::Inertial>{});
   for (size_t d = 0; d < Dim; ++d) {
     flux_for_field->get(d) = field_gradient.get(d);
   }

@@ -15,29 +15,28 @@
  * \ingroup DataStructuresGroup
  * A temporary buffer with contents computed on demand.
  *
- * When an entry in the buffer is first requested, it is computed by
- * the `Computer` class.  Subsequent requests just return the cached
- * value.  The computer can itself request data from the cache to use
- * in its computations.
+ * When an entry in the buffer is first requested, it is computed by the
+ * `computer` that is passed to the `get_var` function. Subsequent requests just
+ * return the cached value.  The computer can itself request data from the cache
+ * to use in its computations.
  *
  * For the cache
  * \snippet Test_CachedTempBuffer.cpp alias
  * the function used to compute `Tags::Scalar2<DataType>` is
  * \snippet Test_CachedTempBuffer.cpp compute_func
  */
-template <typename Computer, typename... Tags>
+template <typename... Tags>
 class CachedTempBuffer {
  public:
   using tags_list = tmpl::list<Tags...>;
 
   /// Construct the buffer with the given computer.  `size` is passed
   /// to the underlying `TempBuffer` constructor.
-  CachedTempBuffer(const size_t size, Computer computer)
-      : data_(size), computer_(std::move(computer)) {}
+  CachedTempBuffer(const size_t size) : data_(size) {}
 
   /// Obtain a value from the buffer, computing it if necessary.
-  template <typename Tag>
-  const typename Tag::type& get_var(Tag /*meta*/) {
+  template <typename Computer, typename Tag>
+  const typename Tag::type& get_var(const Computer& computer, Tag /*meta*/) {
     static_assert(tmpl::list_contains_v<tmpl::list<Tags...>, Tag>,
                   "The requested tag is not available. See the template "
                   "parameters of 'CachedTempBuffer' for the computer type and "
@@ -46,7 +45,7 @@ class CachedTempBuffer {
     // This function can't be called "get" because that interferes
     // with the ADL needed to access data_.
     if (not get<Computed<Tag>>(computed_flags_)) {
-      computer_(make_not_null(&get<Tag>(data_)), make_not_null(this), Tag{});
+      computer(make_not_null(&get<Tag>(data_)), make_not_null(this), Tag{});
       get<Computed<Tag>>(computed_flags_) = true;
     }
     return get<Tag>(data_);
@@ -61,20 +60,8 @@ class CachedTempBuffer {
   TempBuffer<tmpl::list<Tags...>> data_;
   tuples::TaggedTuple<Computed<Tags>...> computed_flags_{
       ((void)Tags{}, false)...};
-  Computer computer_;
 };
-
-namespace CachedTempBuffer_detail {
-template <typename Computer, typename Tags>
-struct CachedTempBufferFromTypelistImpl;
-template <typename Computer, typename... Tags>
-struct CachedTempBufferFromTypelistImpl<Computer, tmpl::list<Tags...>> {
-  using type = CachedTempBuffer<Computer, Tags...>;
-};
-}  // namespace CachedTempBuffer_detail
 
 /// Instantiate a `CachedTempBuffer` from a typelist instead of a parameter pack
-template <typename Computer, typename Tags>
-using cached_temp_buffer_from_typelist =
-    typename CachedTempBuffer_detail::CachedTempBufferFromTypelistImpl<
-        Computer, Tags>::type;
+template <typename Tags>
+using cached_temp_buffer_from_typelist = tmpl::wrap<Tags, CachedTempBuffer>;
