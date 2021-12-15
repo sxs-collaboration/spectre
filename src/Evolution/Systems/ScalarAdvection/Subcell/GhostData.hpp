@@ -28,7 +28,7 @@ namespace ScalarAdvection::subcell {
  * This mutator is passed to
  * `evolution::dg::subcell::Actions::SendDataForReconstruction`.
  *
- * \note Called only by FD-solving elements.
+ * \note Only called on elements using FD.
  */
 class GhostDataOnSubcells {
  public:

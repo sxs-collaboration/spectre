@@ -6,9 +6,7 @@
 #include <cstddef>
 
 #include "DataStructures/Variables.hpp"
-#include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/Projection.hpp"
-#include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/Systems/ScalarAdvection/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
