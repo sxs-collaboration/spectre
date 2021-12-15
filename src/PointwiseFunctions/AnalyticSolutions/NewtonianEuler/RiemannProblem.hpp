@@ -240,8 +240,8 @@ class RiemannProblem : public MarkAsAnalyticSolution {
       "Riemann Problem in 1, 2 or 3D along any coordinate axis."};
 
   RiemannProblem() = default;
-  RiemannProblem(const RiemannProblem& /*rhs*/) = delete;
-  RiemannProblem& operator=(const RiemannProblem& /*rhs*/) = delete;
+  RiemannProblem(const RiemannProblem& /*rhs*/) = default;
+  RiemannProblem& operator=(const RiemannProblem& /*rhs*/) = default;
   RiemannProblem(RiemannProblem&& /*rhs*/) = default;
   RiemannProblem& operator=(RiemannProblem&& /*rhs*/) = default;
   ~RiemannProblem() = default;

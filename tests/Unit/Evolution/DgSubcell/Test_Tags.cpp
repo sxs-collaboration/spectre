@@ -8,6 +8,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/VariablesTag.hpp"
+#include "Domain/CoordinateMaps/Tags.hpp"
 #include "Domain/LogicalCoordinates.hpp"
 #include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
@@ -67,6 +68,11 @@ void test() {
   TestHelpers::db::test_compute_tag<
       evolution::dg::subcell::Tags::LogicalCoordinatesCompute<Dim>>(
       "ElementLogicalCoordinates");
+  TestHelpers::db::test_compute_tag<
+      evolution::dg::subcell::Tags::InertialCoordinatesCompute<
+          ::domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
+                                                        Frame::Inertial>>>(
+      "InertialCoordinates");
   Mesh<Dim> subcell_mesh(5, Spectral::Basis::FiniteDifference,
                          Spectral::Quadrature::CellCentered);
   const auto logical_coords_box = db::create<

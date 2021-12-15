@@ -12,12 +12,15 @@ set(LIBRARY_SOURCES
   FiniteDifference/Test_AoWeno.cpp
   FiniteDifference/Test_MonotisedCentral.cpp
   FiniteDifference/Test_Tag.cpp
+  Subcell/Test_ComputeFluxes.cpp
   Subcell/Test_InitialDataTci.cpp
+  Subcell/Test_NeighborPackagedData.cpp
   Subcell/Test_PrimitiveGhostData.cpp
   Subcell/Test_PrimsAfterRollback.cpp
   Subcell/Test_ResizeAndComputePrimitives.cpp
   Subcell/Test_TciOnDgGrid.cpp
   Subcell/Test_TciOnFdGrid.cpp
+  Subcell/Test_TimeDerivative.cpp
   Test_Characteristics.cpp
   Test_ConservativeFromPrimitive.cpp
   Test_Fluxes.cpp
@@ -40,5 +43,23 @@ add_test_library(
   ${LIBRARY}
   "Evolution/Systems/NewtonianEuler/"
   "${LIBRARY_SOURCES}"
-  "NewtonianEuler;Test_Domain"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  CoordinateMaps
+  DataStructures
+  Domain
+  DomainBoundaryConditionsHelpers
+  DomainHelpers
+  Framework
+  Hydro
+  NewtonianEuler
+  NewtonianEulerAnalyticData
+  NewtonianEulerSolutions
+  NewtonianEulerSources
+  Spectral
+  Utilities
   )

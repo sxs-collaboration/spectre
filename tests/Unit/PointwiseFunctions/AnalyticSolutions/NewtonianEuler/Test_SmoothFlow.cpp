@@ -110,6 +110,7 @@ void test_solution(const DataType& used_for_size,
   test_move_semantics(std::move(solution_to_move),
                       solution_from_options);  //  NOLINT
   test_serialization(solution);
+  test_copy_semantics(solution);
 }
 }  // namespace
 

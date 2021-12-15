@@ -83,6 +83,7 @@ void test_solution(const std::array<double, Dim> left_velocity,
                                             0.125, right_velocity, 0.1, 1.e-6);
   test_move_semantics(std::move(solution_to_move), solution);  //  NOLINT
   test_serialization(solution);
+  test_copy_semantics(solution);
 }
 
 }  // namespace

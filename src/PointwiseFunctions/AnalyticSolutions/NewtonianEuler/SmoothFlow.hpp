@@ -61,8 +61,8 @@ class SmoothFlow : virtual public MarkAsAnalyticSolution,
       "Smooth density wave advecting across a domain."};
 
   SmoothFlow() = default;
-  SmoothFlow(const SmoothFlow& /*rhs*/) = delete;
-  SmoothFlow& operator=(const SmoothFlow& /*rhs*/) = delete;
+  SmoothFlow(const SmoothFlow& /*rhs*/) = default;
+  SmoothFlow& operator=(const SmoothFlow& /*rhs*/) = default;
   SmoothFlow(SmoothFlow&& /*rhs*/) = default;
   SmoothFlow& operator=(SmoothFlow&& /*rhs*/) = default;
   ~SmoothFlow() = default;

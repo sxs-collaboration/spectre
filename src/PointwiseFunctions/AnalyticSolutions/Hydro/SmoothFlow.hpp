@@ -52,8 +52,8 @@ template <size_t Dim, bool IsRelativistic>
 class SmoothFlow : virtual public MarkAsAnalyticSolution {
  public:
   SmoothFlow() = default;
-  SmoothFlow(const SmoothFlow& /*rhs*/) = delete;
-  SmoothFlow& operator=(const SmoothFlow& /*rhs*/) = delete;
+  SmoothFlow(const SmoothFlow& /*rhs*/) = default;
+  SmoothFlow& operator=(const SmoothFlow& /*rhs*/) = default;
   SmoothFlow(SmoothFlow&& /*rhs*/) = default;
   SmoothFlow& operator=(SmoothFlow&& /*rhs*/) = default;
   ~SmoothFlow() = default;

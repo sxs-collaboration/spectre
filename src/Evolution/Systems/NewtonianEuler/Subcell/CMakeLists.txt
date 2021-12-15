@@ -16,11 +16,14 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  ComputeFluxes.hpp
   InitialDataTci.hpp
+  NeighborPackagedData.hpp
   PrimitiveGhostData.hpp
   PrimsAfterRollback.hpp
   ResizeAndComputePrimitives.hpp
   Subcell.hpp
   TciOnDgGrid.hpp
   TciOnFdGrid.hpp
+  TimeDerivative.hpp
   )

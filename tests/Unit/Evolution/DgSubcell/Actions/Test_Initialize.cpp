@@ -16,6 +16,7 @@
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
+#include "Domain/CoordinateMaps/Tags.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/LogicalCoordinates.hpp"
@@ -48,6 +49,7 @@
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
+#include "Time/Tags.hpp"
 #include "Utilities/CloneUniquePtrs.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -89,8 +91,8 @@ struct Component {
   using const_global_cache_tag_list = tmpl::list<>;
 
   using initial_tags =
-      tmpl::list<Initialization::Tags::InitialTime, domain::Tags::Mesh<Dim>,
-                 domain::Tags::Element<Dim>,
+      tmpl::list<Initialization::Tags::InitialTime, Tags::Time,
+                 domain::Tags::Mesh<Dim>, domain::Tags::Element<Dim>,
                  domain::Tags::FunctionsOfTimeInitialize,
                  domain::Tags::Coordinates<Dim, Frame::ElementLogical>,
                  domain::Tags::ElementMap<Dim, Frame::Grid>,
@@ -200,9 +202,9 @@ void test(const bool always_use_subcell, const bool interior_element) {
 
   ActionTesting::emplace_array_component_and_initialize<comp>(
       &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0}, 0,
-      {initial_time, dg_mesh, element, clone_unique_ptrs(functions_of_time),
-       logical_coords, std::move(logical_to_grid_map),
-       grid_to_inertial_map->get_clone(), var,
+      {initial_time, initial_time, dg_mesh, element,
+       clone_unique_ptrs(functions_of_time), logical_coords,
+       std::move(logical_to_grid_map), grid_to_inertial_map->get_clone(), var,
        Variables<tmpl::list<::Tags::dt<Var1>>>{
            dg_mesh.number_of_grid_points()}});
   // Invoke the SetupDataBox action on the runner
@@ -288,7 +290,17 @@ void test(const bool always_use_subcell, const bool interior_element) {
         comp, evolution::dg::subcell::Tags::Coordinates<Dim, Frame::Grid>>(
       runner, 0));
   CHECK(ActionTesting::tag_is_retrievable<
+        comp, evolution::dg::subcell::Tags::Coordinates<Dim, Frame::Inertial>>(
+      runner, 0));
+  CHECK(ActionTesting::tag_is_retrievable<
         comp, evolution::dg::subcell::Tags::TciStatus>(runner, 0));
+  const auto& subcell_inertial_coords = ActionTesting::get_databox_tag<
+      comp, evolution::dg::subcell::Tags::Coordinates<Dim, Frame::Inertial>>(
+      runner, 0);
+  const auto subcell_logical_coords = logical_coordinates(subcell_mesh);
+  for (size_t d = 0; d < Dim; ++d) {
+    CHECK(subcell_inertial_coords[d] == subcell_logical_coords[d]);
+  }
 }
 
 SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Actions.Initialize",

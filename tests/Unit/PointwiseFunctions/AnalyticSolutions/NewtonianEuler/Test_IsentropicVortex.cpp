@@ -83,6 +83,7 @@ void test_solution(const DataType& used_for_size,
   IsentropicVortexProxy<Dim> vortex_to_move(1.43, center, mean_velocity, 3.76,
                                             perturbation_amplitude);
   test_move_semantics(std::move(vortex_to_move), vortex);  //  NOLINT
+  test_copy_semantics(vortex);
 
   test_serialization(vortex);
 }

@@ -27,6 +27,18 @@ SpatialDiscretization:
   DiscontinuousGalerkin:
     Formulation: StrongInertial
     Quadrature: GaussLobatto
+    Subcell:
+      InitialData:
+        RdmpDelta0: 1.0e-4
+        RdmpEpsilon: 1.0e-3
+        PerssonExponent: 4.0
+      RdmpDelta0: 1.0e-4
+      RdmpEpsilon: 1.0e-3
+      PerssonExponent: 4.0
+      AlwaysUseSubcells: false
+  SubcellSolver:
+    Reconstructor:
+      MonotisedCentralPrim:
 
 AnalyticSolution:
   RiemannProblem:
@@ -40,23 +52,7 @@ AnalyticSolution:
     RightPressure: 0.1
     PressureStarTol: 1e-9
 
-Limiter:
-  NewtonianEulerMinmod:
-    Type: LambdaPiN
-    VariablesToLimit: Characteristic
-    # The optimal value of the TVB constant is problem-dependent.
-    # This test uses 0 to favor robustness over accuracy.
-    TvbConstant: 0.0
-    ApplyFlattener: true
-    DisableForDebugging: false
-
 EventsAndTriggers:
-  # ? Slabs:
-  #     EvenlySpaced:
-  #       Interval: 100
-  #       Offset: 0
-  # : - ObserveFields:
-  #       VariablesToObserve: [MassDensity]
   ? Slabs:
       Specified:
         Values: [10]

@@ -31,8 +31,8 @@ template <size_t Dim, bool IsRelativistic>
 struct SmoothFlowProxy : hydro::Solutions::SmoothFlow<Dim, IsRelativistic> {
  public:
   SmoothFlowProxy() = default;
-  SmoothFlowProxy(const SmoothFlowProxy& /*rhs*/) = delete;
-  SmoothFlowProxy& operator=(const SmoothFlowProxy& /*rhs*/) = delete;
+  SmoothFlowProxy(const SmoothFlowProxy& /*rhs*/) = default;
+  SmoothFlowProxy& operator=(const SmoothFlowProxy& /*rhs*/) = default;
   SmoothFlowProxy(SmoothFlowProxy&& /*rhs*/) = default;
   SmoothFlowProxy& operator=(SmoothFlowProxy&& /*rhs*/) = default;
   ~SmoothFlowProxy() = default;
@@ -116,6 +116,7 @@ void test_solution(const DataType& used_for_size,
   }
 
   test_serialization(solution);
+  test_copy_semantics(solution);
 }
 
 template <bool IsRelativistic>

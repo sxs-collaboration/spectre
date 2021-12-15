@@ -146,8 +146,8 @@ class IsentropicVortex : public MarkAsAnalyticSolution {
       "Newtonian Isentropic Vortex. Works in 2 and 3 dimensions."};
 
   IsentropicVortex() = default;
-  IsentropicVortex(const IsentropicVortex& /*rhs*/) = delete;
-  IsentropicVortex& operator=(const IsentropicVortex& /*rhs*/) = delete;
+  IsentropicVortex(const IsentropicVortex& /*rhs*/) = default;
+  IsentropicVortex& operator=(const IsentropicVortex& /*rhs*/) = default;
   IsentropicVortex(IsentropicVortex&& /*rhs*/) = default;
   IsentropicVortex& operator=(IsentropicVortex&& /*rhs*/) = default;
   ~IsentropicVortex() = default;
