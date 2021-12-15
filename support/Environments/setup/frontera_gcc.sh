@@ -156,7 +156,8 @@ fi
 cd $dep_dir
 
 # Set up Charm++ because that can be difficult
-if [ -f $dep_dir/charm/mpi-linux-x86_64-smp-mpicxx/lib/libck.a ]; then
+charm_config=ucx-linux-x86_64-smp
+if [ -f $dep_dir/charm/${charm_config}/lib/libck.a ]; then
     echo "Charm++ is already installed"
 else
     echo "Installing Charm++..."
@@ -164,12 +165,10 @@ else
     tar xzf v6.10.2.tar.gz
     mv charm-6.10.2 charm
     cd $dep_dir/charm
-    MPICC=mpicc MPICXX=mpicxx \
-         ./build LIBS mpi-linux-x86_64 smp mpicxx --with-production -j6
+    ./build LIBS ${charm_config} --with-production -j6
     cd $dep_dir
     rm v6.10.2.tar.gz
     echo "Installed Charm++ into $dep_dir/charm"
-    charm_config=mpi-linux-x86_64-smp-mpicxx
     cat >$dep_dir/modules/charm <<EOF
 #%Module1.0
 prepend-path LIBRARY_PATH "$dep_dir/charm/${charm_config}/lib"
