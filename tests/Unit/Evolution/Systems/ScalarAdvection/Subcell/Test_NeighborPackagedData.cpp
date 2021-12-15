@@ -211,7 +211,7 @@ void test_neighbor_packaged_data(const size_t num_dg_pts_per_dimension,
     mortars_to_reconstruct_to.emplace_back(direction, *neighbors.begin());
   }
   const auto packaged_data =
-      subcell::NeighborPackagedData<Dim>::apply(box, mortars_to_reconstruct_to);
+      subcell::NeighborPackagedData::apply(box, mortars_to_reconstruct_to);
 
   // Now for each directions, check that the packaged_data agrees with expected
   // values

@@ -58,9 +58,9 @@ namespace ScalarAdvection::subcell {
  * and can be explained by that we only need strict conservation at shocks, and
  * if one element is doing DG, then we aren't at a shock.
  */
-template <size_t Dim>
+
 struct NeighborPackagedData {
-  template <typename DbTagsList>
+  template <size_t Dim, typename DbTagsList>
   static FixedHashMap<maximum_number_of_neighbors(Dim),
                       std::pair<Direction<Dim>, ElementId<Dim>>,
                       std::vector<double>,
