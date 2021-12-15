@@ -59,9 +59,8 @@ struct TimeDerivative {
                             Frame::Grid>&
           cell_centered_logical_to_grid_inv_jacobian,
       const Scalar<DataVector>& /*cell_centered_det_inv_jacobian*/) {
-    using metavariables =
-        typename std::decay_t<decltype(db::get<Parallel::Tags::Metavariables>(
-            *box))>;
+    using metavariables = typename std::decay_t<decltype(
+        db::get<Parallel::Tags::Metavariables>(*box))>;
     using system = typename metavariables::system;
     using evolved_vars_tag = typename system::variables_tag;
     using evolved_vars_tags = typename evolved_vars_tag::tags_list;
@@ -125,23 +124,26 @@ struct TimeDerivative {
             tmpl::append<evolved_vars_tags, prim_tags, fluxes_tags,
                          dg_package_data_temporary_tags>;
         // Computed prims and cons on face via reconstruction
-        auto vars_on_lower_face = make_array<Dim>(
+        auto package_data_argvars_lower_face = make_array<Dim>(
             Variables<dg_package_data_argument_tags>(reconstructed_num_pts));
-        auto vars_on_upper_face = make_array<Dim>(
+        auto package_data_argvars_upper_face = make_array<Dim>(
             Variables<dg_package_data_argument_tags>(reconstructed_num_pts));
 
         // Reconstruct data to the face
         call_with_dynamic_type<void, typename NewtonianEuler::fd::Reconstructor<
                                          Dim>::creatable_classes>(
-            &recons, [&box, &vars_on_lower_face,
-                      &vars_on_upper_face](const auto& reconstructor) {
-              db::apply<typename std::decay_t<
-                  decltype(*reconstructor)>::reconstruction_argument_tags>(
-                  [&vars_on_lower_face, &vars_on_upper_face,
+            &recons,
+            [&box, &package_data_argvars_lower_face,
+             &package_data_argvars_upper_face](const auto& reconstructor) {
+              db::apply<typename std::decay_t<decltype(
+                  *reconstructor)>::reconstruction_argument_tags>(
+                  [&package_data_argvars_lower_face,
+                   &package_data_argvars_upper_face,
                    &reconstructor](const auto&... args) {
                     reconstructor->reconstruct(
-                        make_not_null(&vars_on_lower_face),
-                        make_not_null(&vars_on_upper_face), args...);
+                        make_not_null(&package_data_argvars_lower_face),
+                        make_not_null(&package_data_argvars_upper_face),
+                        args...);
                   },
                   *box);
             });
@@ -156,8 +158,8 @@ struct TimeDerivative {
 
         // Compute fluxes on faces
         for (size_t i = 0; i < Dim; ++i) {
-          auto& vars_upper_face = gsl::at(vars_on_upper_face, i);
-          auto& vars_lower_face = gsl::at(vars_on_lower_face, i);
+          auto& vars_upper_face = gsl::at(package_data_argvars_upper_face, i);
+          auto& vars_lower_face = gsl::at(package_data_argvars_lower_face, i);
           NewtonianEuler::subcell::compute_fluxes<Dim>(
               make_not_null(&vars_upper_face));
           NewtonianEuler::subcell::compute_fluxes<Dim>(
