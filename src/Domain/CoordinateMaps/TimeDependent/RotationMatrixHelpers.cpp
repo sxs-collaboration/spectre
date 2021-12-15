@@ -27,25 +27,64 @@ void add_bilinear_term(const gsl::not_null<Matrix*> rot_matrix,
 }
 }  // namespace
 
-Matrix get_rotation_matrix(const double t,
-                           const domain::FunctionsOfTime::FunctionOfTime& fot) {
-  std::array<DataVector, 1> quat = fot.func(t);
-  Matrix rot_matrix{{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}};
+template <size_t Dim>
+Matrix rotation_matrix(const double t,
+                       const domain::FunctionsOfTime::FunctionOfTime& fot) {
+  static_assert(
+      Dim == 2 or Dim == 3,
+      "Rotation matrices can only be constructed in 2 or 3 dimensions.");
+  Matrix rotation_matrix{Dim, Dim, 0.0};
 
-  add_bilinear_term(make_not_null(&rot_matrix), quat[0], quat[0]);
+  if constexpr (Dim == 2) {
+    const double rotation_angle = fot.func(t)[0][0];
+    rotation_matrix(0, 0) = cos(rotation_angle);
+    rotation_matrix(0, 1) = -sin(rotation_angle);
+    rotation_matrix(1, 0) = sin(rotation_angle);
+    rotation_matrix(1, 1) = cos(rotation_angle);
+  } else {
+    const DataVector quat = fot.func(t)[0];
+    add_bilinear_term(make_not_null(&rotation_matrix), quat, quat);
+  }
 
-  return rot_matrix;
+  return rotation_matrix;
 }
 
-Matrix get_rotation_matrix_deriv(
+template <size_t Dim>
+Matrix rotation_matrix_deriv(
     const double t, const domain::FunctionsOfTime::FunctionOfTime& fot) {
-  std::array<DataVector, 2> quat_and_deriv = fot.func_and_deriv(t);
-  Matrix rot_matrix_deriv{{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}};
+  static_assert(
+      Dim == 2 or Dim == 3,
+      "Rotation matrices can only be constructed in 2 or 3 dimensions.");
+  Matrix rotation_matrix_deriv{Dim, Dim, 0.0};
 
-  add_bilinear_term(make_not_null(&rot_matrix_deriv), quat_and_deriv[0],
-                    quat_and_deriv[1]);
-  add_bilinear_term(make_not_null(&rot_matrix_deriv), quat_and_deriv[1],
-                    quat_and_deriv[0]);
+  if constexpr (Dim == 2) {
+    const std::array<DataVector, 2> angle_and_deriv = fot.func_and_deriv(t);
+    const double rotation_angle = angle_and_deriv[0][0];
+    const double rotation_angular_velocity = angle_and_deriv[1][0];
+    rotation_matrix_deriv(0, 0) =
+        -rotation_angular_velocity * sin(rotation_angle);
+    rotation_matrix_deriv(0, 1) =
+        -rotation_angular_velocity * cos(rotation_angle);
+    rotation_matrix_deriv(1, 0) =
+        rotation_angular_velocity * cos(rotation_angle);
+    rotation_matrix_deriv(1, 1) =
+        -rotation_angular_velocity * sin(rotation_angle);
+  } else {
+    const std::array<DataVector, 2> quat_and_deriv = fot.func_and_deriv(t);
+    add_bilinear_term(make_not_null(&rotation_matrix_deriv), quat_and_deriv[0],
+                      quat_and_deriv[1]);
+    add_bilinear_term(make_not_null(&rotation_matrix_deriv), quat_and_deriv[1],
+                      quat_and_deriv[0]);
+  }
 
-  return rot_matrix_deriv;
+  return rotation_matrix_deriv;
 }
+
+template Matrix rotation_matrix<2>(
+    const double, const domain::FunctionsOfTime::FunctionOfTime&);
+template Matrix rotation_matrix<3>(
+    const double, const domain::FunctionsOfTime::FunctionOfTime&);
+template Matrix rotation_matrix_deriv<2>(
+    const double, const domain::FunctionsOfTime::FunctionOfTime&);
+template Matrix rotation_matrix_deriv<3>(
+    const double, const domain::FunctionsOfTime::FunctionOfTime&);

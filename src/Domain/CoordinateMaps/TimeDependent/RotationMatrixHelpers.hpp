@@ -7,6 +7,7 @@
 #pragma once
 
 #include <array>
+#include <cstddef>
 
 #include "DataStructures/Matrix.hpp"
 
@@ -18,8 +19,10 @@ class FunctionOfTime;
 }  // namespace domain
 /// \endcond
 
-Matrix get_rotation_matrix(double t,
-                           const domain::FunctionsOfTime::FunctionOfTime& fot);
+template <size_t Dim>
+Matrix rotation_matrix(double t,
+                       const domain::FunctionsOfTime::FunctionOfTime& fot);
 
-Matrix get_rotation_matrix_deriv(
+template <size_t Dim>
+Matrix rotation_matrix_deriv(
     double t, const domain::FunctionsOfTime::FunctionOfTime& fot);

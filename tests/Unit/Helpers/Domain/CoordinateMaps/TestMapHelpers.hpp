@@ -60,7 +60,8 @@ void check_if_maps_are_equal(
     const double time = std::numeric_limits<double>::quiet_NaN(),
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time = {}) {
+        functions_of_time = {},
+    Approx custom_approx = approx) {
   MAKE_GENERATOR(gen);
   std::uniform_real_distribution<> real_dis(-1, 1);
 
@@ -70,14 +71,16 @@ void check_if_maps_are_equal(
       source_point.get(d) = real_dis(gen);
     }
     CAPTURE(source_point);
-    CHECK_ITERABLE_APPROX(map_one(source_point, time, functions_of_time),
-                          map_two(source_point, time, functions_of_time));
-    CHECK_ITERABLE_APPROX(
+    CHECK_ITERABLE_CUSTOM_APPROX(map_one(source_point, time, functions_of_time),
+                                 map_two(source_point, time, functions_of_time),
+                                 custom_approx);
+    CHECK_ITERABLE_CUSTOM_APPROX(
         map_one.jacobian(source_point, time, functions_of_time),
-        map_two.jacobian(source_point, time, functions_of_time));
-    CHECK_ITERABLE_APPROX(
+        map_two.jacobian(source_point, time, functions_of_time), custom_approx);
+    CHECK_ITERABLE_CUSTOM_APPROX(
         map_one.inv_jacobian(source_point, time, functions_of_time),
-        map_two.inv_jacobian(source_point, time, functions_of_time));
+        map_two.inv_jacobian(source_point, time, functions_of_time),
+        custom_approx);
   }
 }
 
