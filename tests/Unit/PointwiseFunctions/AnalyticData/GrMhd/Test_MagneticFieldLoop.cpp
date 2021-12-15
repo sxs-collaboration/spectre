@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <array>
 #include <limits>
+#include <memory>
 #include <tuple>
 
 #include "DataStructures/DataBox/Prefixes.hpp"    // IWYU pragma: keep
@@ -15,8 +16,11 @@
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/MagneticFieldLoop.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -57,15 +61,26 @@ struct MagneticFieldLoopProxy : grmhd::AnalyticData::MagneticFieldLoop {
 };
 
 void test_create_from_options() {
-  const auto magnetic_field_loop =
-      TestHelpers::test_creation<grmhd::AnalyticData::MagneticFieldLoop>(
-          "Pressure: 3.0\n"
-          "RestMassDensity: 1.0\n"
-          "AdiabaticIndex: 1.66666666666666667\n"
-          "AdvectionVelocity: [0.5, 0.04166666666666667, 0.0]\n"
-          "MagFieldStrength: 0.001\n"
-          "InnerRadius: 0.06\n"
-          "OuterRadius: 0.3\n");
+  Parallel::register_classes_with_charm<
+      grmhd::AnalyticData::MagneticFieldLoop>();
+  const std::unique_ptr<evolution::initial_data::InitialData> option_solution =
+      TestHelpers::test_option_tag_factory_creation<
+          evolution::initial_data::OptionTags::InitialData,
+          grmhd::AnalyticData::MagneticFieldLoop>(
+          "MagneticFieldLoop:\n"
+          "  Pressure: 3.0\n"
+          "  RestMassDensity: 1.0\n"
+          "  AdiabaticIndex: 1.66666666666666667\n"
+          "  AdvectionVelocity: [0.5, 0.04166666666666667, 0.0]\n"
+          "  MagFieldStrength: 0.001\n"
+          "  InnerRadius: 0.06\n"
+          "  OuterRadius: 0.3\n");
+  const auto deserialized_option_solution =
+      serialize_and_deserialize(option_solution);
+  const auto& magnetic_field_loop =
+      dynamic_cast<const grmhd::AnalyticData::MagneticFieldLoop&>(
+          *deserialized_option_solution);
+
   CHECK(magnetic_field_loop ==
         grmhd::AnalyticData::MagneticFieldLoop(
             3.0, 1.0, 1.66666666666666667,

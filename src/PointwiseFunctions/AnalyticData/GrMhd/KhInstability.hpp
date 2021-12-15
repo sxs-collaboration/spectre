@@ -8,12 +8,14 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Options/Options.hpp"
+#include "Parallel/CharmPupable.hpp"
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -74,7 +76,9 @@ namespace grmhd::AnalyticData {
  *
  * A uniform magnetic field can be added.
  */
-class KhInstability : public MarkAsAnalyticData, public AnalyticDataBase {
+class KhInstability : public evolution::initial_data::InitialData,
+                      public MarkAsAnalyticData,
+                      public AnalyticDataBase {
  public:
   using equation_of_state_type = EquationsOfState::IdealFluid<true>;
 
@@ -180,7 +184,11 @@ class KhInstability : public MarkAsAnalyticData, public AnalyticDataBase {
                 double perturbation_amplitude, double perturbation_width,
                 const std::array<double, 3>& magnetic_field);
 
-  explicit KhInstability(CkMigrateMessage* /*unused*/) {}
+  /// \cond
+  explicit KhInstability(CkMigrateMessage* msg);
+  using PUP::able::register_constructor;
+  WRAPPED_PUPable_decl_template(KhInstability);
+  /// \endcond
 
   /// @{
   /// Retrieve the GRMHD variables at a given position.

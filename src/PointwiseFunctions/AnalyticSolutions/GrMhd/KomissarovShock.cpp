@@ -64,7 +64,10 @@ KomissarovShock::KomissarovShock(
       right_magnetic_field_(right_magnetic_field),
       shock_speed_(shock_speed) {}
 
+KomissarovShock::KomissarovShock(CkMigrateMessage* msg) : InitialData(msg) {}
+
 void KomissarovShock::pup(PUP::er& p) {
+  InitialData::pup(p);
   p | adiabatic_index_;
   p | left_rest_mass_density_;
   p | right_rest_mass_density_;
@@ -157,6 +160,8 @@ KomissarovShock::variables(
       get<hydro::Tags::SpecificInternalEnergy<DataType>>(variables(
           x, t, tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>>{})));
 }
+
+PUP::able::PUP_ID KomissarovShock::my_PUP_ID = 0;
 
 bool operator==(const KomissarovShock& lhs, const KomissarovShock& rhs) {
   return lhs.adiabatic_index_ == rhs.adiabatic_index_ and

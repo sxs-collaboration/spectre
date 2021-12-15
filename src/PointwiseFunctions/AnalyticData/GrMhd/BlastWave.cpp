@@ -79,7 +79,10 @@ BlastWave::BlastWave(const double inner_radius, const double outer_radius,
   }
 }
 
+BlastWave::BlastWave(CkMigrateMessage* msg) : InitialData(msg) {}
+
 void BlastWave::pup(PUP::er& p) {
+  InitialData::pup(p);
   p | inner_radius_;
   p | outer_radius_;
   p | inner_density_;
@@ -168,6 +171,8 @@ BlastWave::variables(
       get<hydro::Tags::SpecificInternalEnergy<DataType>>(variables(
           x, tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>>{})));
 }
+
+PUP::able::PUP_ID BlastWave::my_PUP_ID = 0;
 
 bool operator==(const BlastWave& lhs, const BlastWave& rhs) {
   return lhs.inner_radius_ == rhs.inner_radius_ and

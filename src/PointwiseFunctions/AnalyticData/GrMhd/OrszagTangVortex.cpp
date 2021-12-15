@@ -18,6 +18,13 @@ namespace grmhd::AnalyticData {
 
 OrszagTangVortex::OrszagTangVortex() = default;
 
+OrszagTangVortex::OrszagTangVortex(CkMigrateMessage* msg) : InitialData(msg) {}
+
+void OrszagTangVortex::pup(PUP::er& p) {
+  InitialData::pup(p);
+  p | equation_of_state_;
+}
+
 template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::RestMassDensity<DataType>>
 OrszagTangVortex::variables(
@@ -98,7 +105,7 @@ OrszagTangVortex::variables(
       get<density_tag>(data), get<energy_tag>(data));
 }
 
-void OrszagTangVortex::pup(PUP::er& p) { p | equation_of_state_; }
+PUP::able::PUP_ID OrszagTangVortex::my_PUP_ID = 0;
 
 bool operator==(const OrszagTangVortex& /*lhs*/,
                 const OrszagTangVortex& /*rhs*/) {

@@ -8,12 +8,14 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Options/Options.hpp"
+#include "Parallel/CharmPupable.hpp"
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Tov.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/TovStar.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -146,7 +148,8 @@ namespace grmhd::AnalyticData {
  * Note that the magnetic field strength goes as \f$A_b\f$ so any desired value
  * can be achieved by a linear scaling.
  */
-class MagnetizedTovStar : public MarkAsAnalyticData,
+class MagnetizedTovStar : public virtual evolution::initial_data::InitialData,
+                          public MarkAsAnalyticData,
                           private RelativisticEuler::Solutions::TovStar<
                               gr::Solutions::TovSolution> {
  private:
@@ -200,6 +203,12 @@ class MagnetizedTovStar : public MarkAsAnalyticData,
                     double polytropic_constant, double polytropic_exponent,
                     size_t pressure_exponent, double cutoff_pressure_fraction,
                     double vector_potential_amplitude);
+
+  /// \cond
+  explicit MagnetizedTovStar(CkMigrateMessage* msg);
+  using PUP::able::register_constructor;
+  WRAPPED_PUPable_decl_template(MagnetizedTovStar);
+  /// \endcond
 
   // Overload the variables function from the base class.
   using tov_star::equation_of_state;

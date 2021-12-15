@@ -9,12 +9,14 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Options/Options.hpp"
+#include "Parallel/CharmPupable.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Hydro/SmoothFlow.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/Solutions.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -52,7 +54,8 @@ namespace RelativisticEuler::Solutions {
  * where the pressure is held constant.
  */
 template <size_t Dim>
-class SmoothFlow : virtual public MarkAsAnalyticSolution,
+class SmoothFlow : public evolution::initial_data::InitialData,
+                   virtual public MarkAsAnalyticSolution,
                    public AnalyticSolution<Dim>,
                    private hydro::Solutions::SmoothFlow<Dim, true> {
   using smooth_flow = hydro::Solutions::SmoothFlow<Dim, true>;
@@ -74,7 +77,11 @@ class SmoothFlow : virtual public MarkAsAnalyticSolution,
              const std::array<double, Dim>& wavevector, double pressure,
              double adiabatic_index, double perturbation_size);
 
+  /// \cond
   explicit SmoothFlow(CkMigrateMessage* msg);
+  using PUP::able::register_constructor;
+  WRAPPED_PUPable_decl_template(SmoothFlow);
+  /// \endcond
 
   using smooth_flow::equation_of_state;
   using typename smooth_flow::equation_of_state_type;

@@ -7,6 +7,7 @@
 #include <array>
 #include <cstddef>
 #include <limits>
+#include <memory>
 #include <string>
 #include <tuple>
 
@@ -22,10 +23,13 @@
 #include "Helpers/PointwiseFunctions/AnalyticSolutions/GrMhd/VerifyGrMhdSolution.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/FishboneMoncriefDisk.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/TMPL.hpp"
@@ -179,8 +183,25 @@ void test_sin_theta_squared(const DataType& used_for_size) {
 }
 
 void test_solution() {
-  RelativisticEuler::Solutions::FishboneMoncriefDisk solution(
-      1.00, 0.9375, 6.0, 12.0, 0.001, 4.0 / 3.0);
+  Parallel::register_classes_with_charm<
+      RelativisticEuler::Solutions::FishboneMoncriefDisk>();
+  const std::unique_ptr<evolution::initial_data::InitialData> option_solution =
+      TestHelpers::test_option_tag_factory_creation<
+          evolution::initial_data::OptionTags::InitialData,
+          RelativisticEuler::Solutions::FishboneMoncriefDisk>(
+          "FishboneMoncriefDisk:\n"
+          "  BhMass: 1.0\n"
+          "  BhDimlessSpin: 0.9375\n"
+          "  InnerEdgeRadius: 6.0\n"
+          "  MaxPressureRadius: 12.0\n"
+          "  PolytropicConstant: 0.001\n"
+          "  PolytropicExponent: 1.33333333333333333\n");
+  const auto deserialized_option_solution =
+      serialize_and_deserialize(option_solution);
+  const auto& solution =
+      dynamic_cast<const RelativisticEuler::Solutions::FishboneMoncriefDisk&>(
+          *deserialized_option_solution);
+
   const std::array<double, 3> x{{5.0, 5.0, 0.0}};
   const std::array<double, 3> dx{{1.e-1, 1.e-1, 1.e-1}};
 

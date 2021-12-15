@@ -27,6 +27,9 @@
 
 namespace RelativisticEuler::Solutions {
 
+FishboneMoncriefDisk::FishboneMoncriefDisk(CkMigrateMessage* msg)
+    : InitialData(msg) {}
+
 FishboneMoncriefDisk::FishboneMoncriefDisk(const double bh_mass,
                                            const double bh_dimless_spin,
                                            const double inner_edge_radius,
@@ -56,6 +59,7 @@ FishboneMoncriefDisk::FishboneMoncriefDisk(const double bh_mass,
 }
 
 void FishboneMoncriefDisk::pup(PUP::er& p) {
+  InitialData::pup(p);
   p | bh_mass_;
   p | bh_spin_a_;
   p | inner_edge_radius_;
@@ -310,6 +314,8 @@ void FishboneMoncriefDisk::variables_impl(
     }
   }
 }
+
+PUP::able::PUP_ID FishboneMoncriefDisk::my_PUP_ID = 0;
 
 bool operator==(const FishboneMoncriefDisk& lhs,
                 const FishboneMoncriefDisk& rhs) {

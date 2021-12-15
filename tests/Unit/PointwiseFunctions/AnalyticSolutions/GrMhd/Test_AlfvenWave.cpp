@@ -22,9 +22,12 @@
 #include "Helpers/PointwiseFunctions/AnalyticSolutions/GrMhd/VerifyGrMhdSolution.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GrMhd/AlfvenWave.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/TMPL.hpp"
@@ -165,8 +168,23 @@ void test_variables(const DataType& used_for_size) {
 }
 
 void test_solution() {
-  grmhd::Solutions::AlfvenWave solution(2.2, 1.23, 0.2, 1.4, {{0.0, 0.0, 2.0}},
-                                        {{0.75, 0.0, 0.0}});
+  Parallel::register_classes_with_charm<grmhd::Solutions::AlfvenWave>();
+  const std::unique_ptr<evolution::initial_data::InitialData> option_solution =
+      TestHelpers::test_option_tag_factory_creation<
+          evolution::initial_data::OptionTags::InitialData,
+          grmhd::Solutions::AlfvenWave>(
+          "AlfvenWave:\n"
+          "  WaveNumber: 2.2\n"
+          "  Pressure: 1.23\n"
+          "  RestMassDensity: 0.2\n"
+          "  AdiabaticIndex: 1.4\n"
+          "  BkgdMagneticField: [0.0, 0.0, 2.0]\n"
+          "  WaveMagneticField: [0.75, 0.0, 0.0]\n");
+  const auto deserialized_option_solution =
+      serialize_and_deserialize(option_solution);
+  const auto& solution = dynamic_cast<const grmhd::Solutions::AlfvenWave&>(
+      *deserialized_option_solution);
+
   const std::array<double, 3> x{{1.0, 2.3, -0.4}};
   const std::array<double, 3> dx{{1.e-4, 1.e-4, 1.e-4}};
 

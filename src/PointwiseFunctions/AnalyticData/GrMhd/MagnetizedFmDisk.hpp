@@ -8,12 +8,14 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Options/Options.hpp"
+#include "Parallel/CharmPupable.hpp"
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/FishboneMoncriefDisk.hpp"
 #include "PointwiseFunctions/GeneralRelativity/KerrSchildCoords.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -25,8 +27,7 @@ class er;  // IWYU pragma: keep
 }  // namespace PUP
 /// \endcond
 
-namespace grmhd {
-namespace AnalyticData {
+namespace grmhd::AnalyticData {
 
 /*!
  * \brief Magnetized fluid disk orbiting a Kerr black hole.
@@ -71,7 +72,8 @@ namespace AnalyticData {
  * the spatial velocity, and \f$W\f$ the Lorentz factor.
  */
 class MagnetizedFmDisk
-    : public MarkAsAnalyticData,
+    : public virtual evolution::initial_data::InitialData,
+      public MarkAsAnalyticData,
       private RelativisticEuler::Solutions::FishboneMoncriefDisk {
  private:
   using fm_disk = RelativisticEuler::Solutions::FishboneMoncriefDisk;
@@ -138,6 +140,12 @@ class MagnetizedFmDisk
       double polytropic_exponent, double threshold_density,
       double inverse_plasma_beta,
       size_t normalization_grid_res = BFieldNormGridRes::suggested_value());
+
+  /// \cond
+  explicit MagnetizedFmDisk(CkMigrateMessage* msg);
+  using PUP::able::register_constructor;
+  WRAPPED_PUPable_decl_template(MagnetizedFmDisk);
+  /// \endcond
 
   // Overload the variables function from the base class.
   using fm_disk::equation_of_state;
@@ -218,5 +226,4 @@ class MagnetizedFmDisk
 
 bool operator!=(const MagnetizedFmDisk& lhs, const MagnetizedFmDisk& rhs);
 
-}  // namespace AnalyticData
-}  // namespace grmhd
+}  // namespace grmhd::AnalyticData

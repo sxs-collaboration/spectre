@@ -7,12 +7,14 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Options/Options.hpp"
+#include "Parallel/CharmPupable.hpp"
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/GeneralRelativity/KerrSchildCoords.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -25,8 +27,7 @@ class er;  // IWYU pragma: keep
 }  // namespace PUP
 /// \endcond
 
-namespace grmhd {
-namespace AnalyticData {
+namespace grmhd::AnalyticData {
 
 /*!
  * \brief Analytic initial data for axially symmetric Bondi-Hoyle accretion.
@@ -77,7 +78,9 @@ namespace AnalyticData {
  * where \f$\gamma = \text{det}(\gamma_{ij})\f$. Wald's solution reproduces a
  * uniform magnetic field far from the black hole.
  */
-class BondiHoyleAccretion : public MarkAsAnalyticData, public AnalyticDataBase {
+class BondiHoyleAccretion : public evolution::initial_data::InitialData,
+                            public MarkAsAnalyticData,
+                            public AnalyticDataBase {
  public:
   using equation_of_state_type = EquationsOfState::PolytropicFluid<true>;
 
@@ -147,6 +150,12 @@ class BondiHoyleAccretion : public MarkAsAnalyticData, public AnalyticDataBase {
                       double rest_mass_density, double flow_speed,
                       double magnetic_field_strength,
                       double polytropic_constant, double polytropic_exponent);
+
+  /// \cond
+  explicit BondiHoyleAccretion(CkMigrateMessage* msg);
+  using PUP::able::register_constructor;
+  WRAPPED_PUPable_decl_template(BondiHoyleAccretion);
+  /// \endcond
 
   /// @{
   /// Retrieve hydro variable at `x`
@@ -251,5 +260,4 @@ class BondiHoyleAccretion : public MarkAsAnalyticData, public AnalyticDataBase {
 
 bool operator!=(const BondiHoyleAccretion& lhs, const BondiHoyleAccretion& rhs);
 
-}  // namespace AnalyticData
-}  // namespace grmhd
+}  // namespace grmhd::AnalyticData

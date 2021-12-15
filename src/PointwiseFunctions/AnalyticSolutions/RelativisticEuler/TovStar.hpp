@@ -9,11 +9,13 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Options/Options.hpp"
+#include "Parallel/CharmPupable.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/Solutions.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -44,7 +46,9 @@ namespace Solutions {
  * more details.
  */
 template <typename RadialSolution>
-class TovStar : public MarkAsAnalyticSolution, public AnalyticSolution<3> {
+class TovStar : public virtual evolution::initial_data::InitialData,
+                public MarkAsAnalyticSolution,
+                public AnalyticSolution<3> {
  public:
   /*!
    * \brief The radial variables needed to compute the full `TOVStar` solution
@@ -156,6 +160,12 @@ class TovStar : public MarkAsAnalyticSolution, public AnalyticSolution<3> {
 
   TovStar(double central_rest_mass_density, double polytropic_constant,
           double polytropic_exponent);
+
+  /// \cond
+  explicit TovStar(CkMigrateMessage* msg);
+  using PUP::able::register_constructor;
+  WRAPPED_PUPable_decl_template(TovStar);
+  /// \endcond
 
   /// Retrieve a collection of variables at `(x, t)`
   template <typename DataType, typename... Tags>

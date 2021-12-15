@@ -8,11 +8,13 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Options/Options.hpp"
+#include "Parallel/CharmPupable.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/Solutions.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
@@ -148,8 +150,10 @@ namespace Solutions {
  * \f$l_* = u_\phi u^t\f$ in order to
  * distinguish this quantity from their own definition \f$l = - u_\phi/u_t\f$.
  */
-class FishboneMoncriefDisk : public MarkAsAnalyticSolution,
-                             public AnalyticSolution<3> {
+class FishboneMoncriefDisk
+    : public virtual evolution::initial_data::InitialData,
+      public MarkAsAnalyticSolution,
+      public AnalyticSolution<3> {
  protected:
   template <typename DataType, bool NeedSpacetime>
   struct IntermediateVariables;
@@ -214,6 +218,12 @@ class FishboneMoncriefDisk : public MarkAsAnalyticSolution,
   FishboneMoncriefDisk(double bh_mass, double bh_dimless_spin,
                        double inner_edge_radius, double max_pressure_radius,
                        double polytropic_constant, double polytropic_exponent);
+
+  /// \cond
+  explicit FishboneMoncriefDisk(CkMigrateMessage* msg);
+  using PUP::able::register_constructor;
+  WRAPPED_PUPable_decl_template(FishboneMoncriefDisk);
+  /// \endcond
 
   // Eventually, if we implement a gr::Solutions::BoyerLindquist
   // black hole, the following two functions aren't needed, and the algebra

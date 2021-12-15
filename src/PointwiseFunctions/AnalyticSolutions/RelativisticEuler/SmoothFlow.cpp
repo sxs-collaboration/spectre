@@ -28,7 +28,8 @@ SmoothFlow<Dim>::SmoothFlow(const std::array<double, Dim>& mean_velocity,
                   perturbation_size} {}
 
 template <size_t Dim>
-SmoothFlow<Dim>::SmoothFlow(CkMigrateMessage* msg) : smooth_flow(msg) {}
+SmoothFlow<Dim>::SmoothFlow(CkMigrateMessage* msg)
+    : InitialData(msg), smooth_flow(msg) {}
 
 template <size_t Dim>
 template <typename DataType>
@@ -50,9 +51,13 @@ SmoothFlow<Dim>::variables(
 
 template <size_t Dim>
 void SmoothFlow<Dim>::pup(PUP::er& p) {
+  InitialData::pup(p);
   hydro::Solutions::SmoothFlow<Dim, true>::pup(p);
   p | background_spacetime_;
 }
+
+template <size_t Dim>
+PUP::able::PUP_ID SmoothFlow<Dim>::my_PUP_ID = 0;
 
 template <size_t Dim>
 bool operator==(const SmoothFlow<Dim>& lhs, const SmoothFlow<Dim>& rhs) {

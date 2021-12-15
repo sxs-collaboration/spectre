@@ -8,11 +8,13 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Options/Options.hpp"
+#include "Parallel/CharmPupable.hpp"
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -24,8 +26,7 @@ class er;  // IWYU pragma: keep
 }  // namespace PUP
 /// \endcond
 
-namespace grmhd {
-namespace AnalyticData {
+namespace grmhd::AnalyticData {
 
 /*!
  * \brief Analytic initial data for an advecting magnetic field loop.
@@ -56,7 +57,9 @@ namespace AnalyticData {
  * -  AdiabaticIndex: 1.66666666666666667
  *
  */
-class MagneticFieldLoop : public MarkAsAnalyticData, public AnalyticDataBase {
+class MagneticFieldLoop : public evolution::initial_data::InitialData,
+                          public MarkAsAnalyticData,
+                          public AnalyticDataBase {
  public:
   using equation_of_state_type = EquationsOfState::IdealFluid<true>;
 
@@ -135,7 +138,11 @@ class MagneticFieldLoop : public MarkAsAnalyticData, public AnalyticDataBase {
                     double magnetic_field_magnitude, double inner_radius,
                     double outer_radius, const Options::Context& context = {});
 
-  explicit MagneticFieldLoop(CkMigrateMessage* /*unused*/) {}
+  /// \cond
+  explicit MagneticFieldLoop(CkMigrateMessage* msg);
+  using PUP::able::register_constructor;
+  WRAPPED_PUPable_decl_template(MagneticFieldLoop);
+  /// \endcond
 
   /// @{
   /// Retrieve the GRMHD variables at a given position.
@@ -230,5 +237,4 @@ class MagneticFieldLoop : public MarkAsAnalyticData, public AnalyticDataBase {
                          const MagneticFieldLoop& rhs);
 };
 
-}  // namespace AnalyticData
-}  // namespace grmhd
+}  // namespace grmhd::AnalyticData

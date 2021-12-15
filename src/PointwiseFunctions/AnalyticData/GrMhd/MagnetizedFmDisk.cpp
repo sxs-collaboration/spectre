@@ -115,6 +115,9 @@ MagnetizedFmDisk::MagnetizedFmDisk(
            inverse_plasma_beta_ / b_squared_max);
 }
 
+MagnetizedFmDisk::MagnetizedFmDisk(CkMigrateMessage* msg)
+    : FishboneMoncriefDisk(msg) {}
+
 void MagnetizedFmDisk::pup(PUP::er& p) {
   RelativisticEuler::Solutions::FishboneMoncriefDisk::pup(p);
   p | threshold_density_;
@@ -226,6 +229,8 @@ MagnetizedFmDisk::variables(
   }
   return result;
 }
+
+PUP::able::PUP_ID MagnetizedFmDisk::my_PUP_ID = 0;
 
 bool operator==(const MagnetizedFmDisk& lhs, const MagnetizedFmDisk& rhs) {
   using fm_disk = MagnetizedFmDisk::fm_disk;

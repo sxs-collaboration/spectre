@@ -8,17 +8,18 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Options/Options.hpp"
+#include "Parallel/CharmPupable.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GrMhd/Solutions.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
-namespace grmhd {
-namespace Solutions {
+namespace grmhd::Solutions {
 
 /*!
  * \brief Bondi-Michel accretion \cite Michel1972 with superposed magnetic field
@@ -162,7 +163,9 @@ namespace Solutions {
  *
  * The magnetic field \f$b^2\f$ is the same as the \f$\gamma\ne5/3\f$.
  */
-class BondiMichel : public AnalyticSolution, public MarkAsAnalyticSolution {
+class BondiMichel : public evolution::initial_data::InitialData,
+                    public AnalyticSolution,
+                    public MarkAsAnalyticSolution {
  protected:
   template <typename DataType>
   struct IntermediateVars;
@@ -225,6 +228,12 @@ class BondiMichel : public AnalyticSolution, public MarkAsAnalyticSolution {
 
   BondiMichel(double mass, double sonic_radius, double sonic_density,
               double polytropic_exponent, double mag_field_strength);
+
+  /// \cond
+  explicit BondiMichel(CkMigrateMessage* msg);
+  using PUP::able::register_constructor;
+  WRAPPED_PUPable_decl_template(BondiMichel);
+  /// \endcond
 
   /// Retrieve a collection of  hydro variables at `(x, t)`
   template <typename DataType, typename... Tags>
@@ -381,5 +390,4 @@ class BondiMichel : public AnalyticSolution, public MarkAsAnalyticSolution {
 
 bool operator!=(const BondiMichel& lhs, const BondiMichel& rhs);
 
-}  // namespace Solutions
-}  // namespace grmhd
+}  // namespace grmhd::Solutions

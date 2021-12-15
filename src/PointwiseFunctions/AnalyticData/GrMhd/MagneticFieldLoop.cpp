@@ -51,7 +51,11 @@ MagneticFieldLoop::MagneticFieldLoop(
   }
 }
 
+MagneticFieldLoop::MagneticFieldLoop(CkMigrateMessage* msg)
+    : InitialData(msg) {}
+
 void MagneticFieldLoop::pup(PUP::er& p) {
+  InitialData::pup(p);
   p | pressure_;
   p | rest_mass_density_;
   p | adiabatic_index_;
@@ -163,6 +167,8 @@ MagneticFieldLoop::variables(
       get<hydro::Tags::SpecificInternalEnergy<DataType>>(variables(
           x, tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>>{})));
 }
+
+PUP::able::PUP_ID MagneticFieldLoop::my_PUP_ID = 0;
 
 bool operator==(const MagneticFieldLoop& lhs, const MagneticFieldLoop& rhs) {
   // there is no comparison operator for the EoS, but should be okay as

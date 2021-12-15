@@ -36,7 +36,11 @@ BondiHoyleAccretion::BondiHoyleAccretion(const double bh_mass,
           bh_mass, {{0.0, 0.0, bh_dimless_spin}}, {{0.0, 0.0, 0.0}}},
       kerr_schild_coords_{bh_mass, bh_dimless_spin} {}
 
+BondiHoyleAccretion::BondiHoyleAccretion(CkMigrateMessage* msg)
+    : InitialData(msg) {}
+
 void BondiHoyleAccretion::pup(PUP::er& p) {
+  InitialData::pup(p);
   p | bh_mass_;
   p | bh_spin_a_;
   p | rest_mass_density_;
@@ -183,6 +187,8 @@ BondiHoyleAccretion::variables(
       get<hydro::Tags::RestMassDensity<DataType>>(
           variables(x, tmpl::list<hydro::Tags::RestMassDensity<DataType>>{})));
 }
+
+PUP::able::PUP_ID BondiHoyleAccretion::my_PUP_ID = 0;
 
 bool operator==(const BondiHoyleAccretion& lhs,
                 const BondiHoyleAccretion& rhs) {

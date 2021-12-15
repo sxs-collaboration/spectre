@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <memory>
 #include <string>
 #include <tuple>
 
@@ -16,10 +17,13 @@
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/MagnetizedFmDisk.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
@@ -66,17 +70,27 @@ struct MagnetizedFmDiskProxy : grmhd::AnalyticData::MagnetizedFmDisk {
 };
 
 void test_create_from_options() {
-  const auto disk =
-      TestHelpers::test_creation<grmhd::AnalyticData::MagnetizedFmDisk>(
-          "BhMass: 1.3\n"
-          "BhDimlessSpin: 0.345\n"
-          "InnerEdgeRadius: 6.123\n"
-          "MaxPressureRadius: 14.2\n"
-          "PolytropicConstant: 0.065\n"
-          "PolytropicExponent: 1.654\n"
-          "ThresholdDensity: 0.42\n"
-          "InversePlasmaBeta: 85.0\n"
-          "BFieldNormGridRes: 6");
+  Parallel::register_classes_with_charm<
+      grmhd::AnalyticData::MagnetizedFmDisk>();
+  const std::unique_ptr<evolution::initial_data::InitialData> option_solution =
+      TestHelpers::test_option_tag_factory_creation<
+          evolution::initial_data::OptionTags::InitialData,
+          grmhd::AnalyticData::MagnetizedFmDisk>(
+          "MagnetizedFmDisk:\n"
+          "  BhMass: 1.3\n"
+          "  BhDimlessSpin: 0.345\n"
+          "  InnerEdgeRadius: 6.123\n"
+          "  MaxPressureRadius: 14.2\n"
+          "  PolytropicConstant: 0.065\n"
+          "  PolytropicExponent: 1.654\n"
+          "  ThresholdDensity: 0.42\n"
+          "  InversePlasmaBeta: 85.0\n"
+          "  BFieldNormGridRes: 6");
+  const auto deserialized_option_solution =
+      serialize_and_deserialize(option_solution);
+  const auto& disk = dynamic_cast<const grmhd::AnalyticData::MagnetizedFmDisk&>(
+      *deserialized_option_solution);
+
   CHECK(disk == grmhd::AnalyticData::MagnetizedFmDisk(
                     1.3, 0.345, 6.123, 14.2, 0.065, 1.654, 0.42, 85.0, 6));
 }
