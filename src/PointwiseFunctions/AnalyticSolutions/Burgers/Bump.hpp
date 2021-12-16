@@ -9,7 +9,9 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/Burgers/Tags.hpp"  // IWYU pragma: keep
 #include "Options/Options.hpp"
+#include "Parallel/CharmPupable.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -21,8 +23,7 @@ class er;
 }  // namespace PUP
 /// \endcond
 
-namespace Burgers {
-namespace Solutions {
+namespace Burgers::Solutions {
 /*!
  * \brief A solution resembling a bump.
  *
@@ -35,7 +36,8 @@ namespace Solutions {
  * from infinity and reaches one of the zeros at \f$t = \frac{w}{2
  * h}\f$.
  */
-class Bump : public MarkAsAnalyticSolution {
+class Bump : public evolution::initial_data::InitialData,
+             public MarkAsAnalyticSolution {
  public:
   struct HalfWidth {
     using type = double;
@@ -66,6 +68,12 @@ class Bump : public MarkAsAnalyticSolution {
 
   Bump(double half_width, double height, double center = 0.);
 
+  /// \cond
+  explicit Bump(CkMigrateMessage* msg);
+  using PUP::able::register_constructor;
+  WRAPPED_PUPable_decl_template(Bump);
+  /// \endcond
+
   template <typename T>
   Scalar<T> u(const tnsr::I<T, 1>& x, double t) const;
 
@@ -88,5 +96,4 @@ class Bump : public MarkAsAnalyticSolution {
   double height_ = std::numeric_limits<double>::signaling_NaN();
   double center_ = std::numeric_limits<double>::signaling_NaN();
 };
-}  // namespace Solutions
-}  // namespace Burgers
+}  // namespace Burgers::Solutions

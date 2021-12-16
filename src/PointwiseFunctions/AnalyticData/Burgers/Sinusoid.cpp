@@ -20,12 +20,16 @@ Scalar<T> Sinusoid::u(const tnsr::I<T, 1>& x) const {
   return Scalar<T>{sin(get<0>(x))};
 }
 
+Sinusoid::Sinusoid(CkMigrateMessage* msg) : InitialData(msg) {}
+
 tuples::TaggedTuple<Tags::U> Sinusoid::variables(
     const tnsr::I<DataVector, 1>& x, tmpl::list<Tags::U> /*meta*/) const {
   return {u(x)};
 }
 
-void Sinusoid::pup(PUP::er& /*p*/) {}
+void Sinusoid::pup(PUP::er& p) { InitialData::pup(p); }
+
+PUP::able::PUP_ID Sinusoid::my_PUP_ID = 0;
 
 bool operator==(const Sinusoid& /*lhs*/, const Sinusoid& /*rhs*/) {
   return true;

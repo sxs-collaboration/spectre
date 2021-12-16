@@ -9,7 +9,9 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/Burgers/Tags.hpp"  // IWYU pragma: keep
 #include "Options/Options.hpp"
+#include "Parallel/CharmPupable.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -21,12 +23,12 @@ class er;
 }  // namespace PUP
 /// \endcond
 
-namespace Burgers {
-namespace Solutions {
+namespace Burgers::Solutions {
 /// A solution that is linear in space at all times.
 ///
 /// \f$u(x, t) = x / (t - t_0)\f$ where \f$t_0\f$ is the shock time.
-class Linear : public MarkAsAnalyticSolution {
+class Linear : public evolution::initial_data::InitialData,
+               public MarkAsAnalyticSolution {
  public:
   struct ShockTime {
     using type = double;
@@ -44,6 +46,12 @@ class Linear : public MarkAsAnalyticSolution {
   ~Linear() = default;
 
   explicit Linear(double shock_time);
+
+  /// \cond
+  explicit Linear(CkMigrateMessage* msg);
+  using PUP::able::register_constructor;
+  WRAPPED_PUPable_decl_template(Linear);
+  /// \endcond
 
   template <typename T>
   Scalar<T> u(const tnsr::I<T, 1>& x, double t) const;
@@ -65,5 +73,4 @@ class Linear : public MarkAsAnalyticSolution {
  private:
   double shock_time_ = std::numeric_limits<double>::signaling_NaN();
 };
-}  // namespace Solutions
-}  // namespace Burgers
+}  // namespace Burgers::Solutions

@@ -12,10 +12,11 @@
 
 // IWYU pragma: no_forward_declare Tensor
 
-namespace Burgers {
-namespace Solutions {
+namespace Burgers::Solutions {
 
 Linear::Linear(const double shock_time) : shock_time_(shock_time) {}
+
+Linear::Linear(CkMigrateMessage* msg) : InitialData(msg) {}
 
 template <typename T>
 Scalar<T> Linear::u(const tnsr::I<T, 1>& x, double t) const {
@@ -43,10 +44,13 @@ tuples::TaggedTuple<::Tags::dt<Tags::U>> Linear::variables(
   return {du_dt(x, t)};
 }
 
-void Linear::pup(PUP::er& p) { p | shock_time_; }
+void Linear::pup(PUP::er& p) {
+  InitialData::pup(p);
+  p | shock_time_;
+}
 
-}  // namespace Solutions
-}  // namespace Burgers
+PUP::able::PUP_ID Linear::my_PUP_ID = 0;
+}  // namespace Burgers::Solutions
 
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 

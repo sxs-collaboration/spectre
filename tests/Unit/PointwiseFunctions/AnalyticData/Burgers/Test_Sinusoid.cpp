@@ -4,6 +4,7 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <cmath>
+#include <memory>
 #include <string>
 
 #include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
@@ -14,7 +15,10 @@
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticData/Burgers/Sinusoid.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -32,8 +36,15 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticData.Burgers.Sinusoid",
   pypp::SetupLocalPythonEnvironment local_python_env{""};
 
   test_serialization(Burgers::AnalyticData::Sinusoid{});
-  const auto periodic =
-      TestHelpers::test_creation<Burgers::AnalyticData::Sinusoid>("");
+  Parallel::register_classes_with_charm<Burgers::AnalyticData::Sinusoid>();
+  const std::unique_ptr<evolution::initial_data::InitialData> option_solution =
+      TestHelpers::test_option_tag_factory_creation<
+          evolution::initial_data::OptionTags::InitialData,
+          Burgers::AnalyticData::Sinusoid>("Sinusoid:\n");
+  const auto deserialized_option_solution =
+      serialize_and_deserialize(option_solution);
+  const auto& periodic = dynamic_cast<const Burgers::AnalyticData::Sinusoid&>(
+      *deserialized_option_solution);
   CHECK(periodic == Burgers::AnalyticData::Sinusoid{});
   test_move_semantics(Burgers::AnalyticData::Sinusoid{},
                       Burgers::AnalyticData::Sinusoid{});
