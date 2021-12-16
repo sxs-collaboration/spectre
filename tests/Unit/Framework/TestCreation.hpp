@@ -14,6 +14,7 @@
 #include "Utilities/NoSuchType.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TypeTraits/IsA.hpp"
 
 namespace TestHelpers {
 namespace TestCreation_detail {
@@ -132,5 +133,30 @@ std::unique_ptr<BaseClass> test_factory_creation(
       std::unique_ptr<BaseClass>,
       TestCreation_detail::SingleFactoryMetavariables<BaseClass, DerivedClass>>(
       construction_string);
+}
+
+/*!
+ * \ingroup TestingFrameworkGroup
+ * \brief A wrapper that allows testing an option tag without having to write a
+ * Metavariables class. Combines `TestHelpers::test_factory_creation()` and
+ * `TestHelpers::test_option_tag()`.
+ *
+ * \note Assumes that the option tag holds a `std::unique_ptr<BaseClass>`.
+ *
+ * \snippet Test_TestCreation.cpp test_option_tag_factory_creation_tag
+ * \snippet Test_TestCreation.cpp test_option_tag_factory_creation
+ */
+template <typename OptionTag, typename DerivedClass>
+typename OptionTag::type test_option_tag_factory_creation(
+    const std::string& construction_string) {
+  static_assert(
+      tt::is_a_v<std::unique_ptr, typename OptionTag::type>,
+      "test_option_tag_factory_creation assumes the OptionTag holds a "
+      "std::unique_ptr<BaseClass>, but this does not appear to be the case.");
+  using metavars = TestCreation_detail::SingleFactoryMetavariables<
+      typename OptionTag::type::element_type, DerivedClass>;
+  auto created = test_option_tag<OptionTag, metavars>(construction_string);
+  REQUIRE(dynamic_cast<const DerivedClass*>(created.get()) != nullptr);
+  return created;
 }
 }  // namespace TestHelpers
