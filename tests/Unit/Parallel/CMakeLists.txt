@@ -5,7 +5,11 @@ add_subdirectory(Actions)
 
 add_subdirectory(PhaseControl)
 
-function(add_algorithm_test EXECUTABLE_NAME)
+function(add_algorithm_test_executable EXECUTABLE_NAME)
+  if (TARGET ${EXECUTABLE_NAME})
+    return()
+  endif()
+
   add_spectre_executable(
     ${EXECUTABLE_NAME}
     ${EXECUTABLE_NAME}.cpp
@@ -35,34 +39,6 @@ function(add_algorithm_test EXECUTABLE_NAME)
   add_dependencies(unit-tests ${EXECUTABLE_NAME})
 endfunction()
 
-add_algorithm_test(Test_AlgorithmBadBoxApply)
-add_algorithm_test(Test_AlgorithmCore)
-add_algorithm_test(Test_AlgorithmGlobalCache)
-add_algorithm_test(Test_AlgorithmLocalSyncAction)
-add_algorithm_test(Test_AlgorithmNestedApply1)
-add_algorithm_test(Test_AlgorithmNestedApply2)
-add_algorithm_test(Test_AlgorithmNodelock)
-add_algorithm_test(Test_AlgorithmParallel)
-add_algorithm_test(Test_AlgorithmPhaseControl)
-add_algorithm_test(Test_AlgorithmReduction)
-add_algorithm_test(Test_CheckpointRestart)
-add_algorithm_test(Test_GlobalCache)
-add_algorithm_test(Test_PhaseChangeMain)
-add_algorithm_test(Test_SectionReductions)
-
-# Test GlobalCache
-add_charm_module(Test_GlobalCache)
-
-add_dependencies(
-  module_Test_GlobalCache
-  module_GlobalCache
-  )
-
-add_dependencies(
-  Test_GlobalCache
-  module_Test_GlobalCache
-  )
-
 # Add unit tests. For tests that result in a failure it is necessary to
 # redirect output from stderr to stdout. However, it was necessary at least on
 # some systems to do this redirect inside a shell command.
@@ -73,6 +49,7 @@ if ("${SHELL_EXECUTABLE}" STREQUAL "")
 endif()
 
 function(add_algorithm_test TEST_NAME REGEX_TO_MATCH)
+  add_algorithm_test_executable("Test_${TEST_NAME}")
   add_test(
     NAME Unit.Parallel.${TEST_NAME}
     COMMAND
@@ -102,6 +79,7 @@ function(add_algorithm_test TEST_NAME REGEX_TO_MATCH)
 endfunction()
 
 function(add_algorithm_test_with_input_file TEST_NAME INPUT_FILE_DIR)
+  add_algorithm_test_executable("Test_${TEST_NAME}")
   add_test(
     NAME "\"Unit.Parallel.${TEST_NAME}\""
     COMMAND
@@ -128,6 +106,7 @@ endfunction()
 # due to balancing so much that the test computation doesn't get much of a
 # chance to execute.
 function(add_algorithm_test_with_balancing TEST_NAME EXECUTABLE_NAME REGEX_TO_MATCH)
+  add_algorithm_test_executable("Test_${EXECUTABLE_NAME}")
   add_test(
     NAME "\"Unit.Parallel.${TEST_NAME}\""
     COMMAND
@@ -163,6 +142,7 @@ endfunction()
 # to avoid it getting in the way of future test invocations (which would try
 # to overwrite the prior checkpoint file and error).
 function(add_algorithm_test_with_restart_from_checkpoint TEST_NAME)
+  add_algorithm_test_executable("Test_${TEST_NAME}")
   # Executable writes checkpoint file into the dir where it runs:
   set(CHECKPOINT
     "${CMAKE_BINARY_DIR}/tests/Unit/Parallel/SpectreCheckpoint000000")
@@ -184,6 +164,20 @@ function(add_algorithm_test_with_restart_from_checkpoint TEST_NAME)
     ENVIRONMENT "ASAN_OPTIONS=detect_leaks=0")
 endfunction()
 
+# Test GlobalCache
+add_algorithm_test("GlobalCache" "")
+add_charm_module(Test_GlobalCache)
+
+add_dependencies(
+  module_Test_GlobalCache
+  module_GlobalCache
+  )
+
+add_dependencies(
+  Test_GlobalCache
+  module_Test_GlobalCache
+  )
+
 add_algorithm_test(
   "AlgorithmBadBoxApply"
   "Cannot call apply function of 'error_size_zero' with DataBox \
@@ -203,7 +197,6 @@ function is not invoked via a proxy, which we do not allow.")
 add_algorithm_test("AlgorithmNodelock" "")
 add_algorithm_test("AlgorithmParallel" "")
 add_algorithm_test("AlgorithmReduction" "")
-add_algorithm_test("GlobalCache" "")
 add_algorithm_test("PhaseChangeMain" "")
 add_algorithm_test("SectionReductions"
   "Element 0 received reduction: Counted 2 odd elements.")
