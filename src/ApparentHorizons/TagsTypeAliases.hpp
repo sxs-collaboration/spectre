@@ -36,6 +36,13 @@ using InvHessian =
                       SpatialIndex<3, UpLo::Lo, Frame>,
                       SpatialIndex<3, UpLo::Lo, Frame>>>;
 template <typename Frame>
+using Hessian =
+    Tensor<DataVector, tmpl::integral_list<std::int32_t, 3, 2, 1>,
+           index_list<SpatialIndex<3, UpLo::Up, Frame>,
+                      SpatialIndex<2, UpLo::Lo, ::Frame::Spherical<Frame>>,
+                      SpatialIndex<2, UpLo::Lo, ::Frame::Spherical<Frame>>>>;
+
+template <typename Frame>
 using SecondDeriv = tnsr::ii<DataVector, 3, Frame>;
 }  // namespace aliases
 }  // namespace StrahlkorperTags

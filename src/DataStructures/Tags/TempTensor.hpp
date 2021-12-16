@@ -124,5 +124,33 @@ using TempabC = TempTensor<N, tnsr::abC<DataType, SpatialDim, Fr>>;
 template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
           typename DataType = DataVector>
 using Tempijaa = TempTensor<N, tnsr::ijaa<DataType, SpatialDim, Fr>>;
+
+// Temporary tensor types used in the file `ApparentHorizons/StrahlkorperGr.cpp`
+template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
+          typename DataType = DataVector>
+using Temp_hessian =
+    TempTensor<N, Tensor<DataType, tmpl::integral_list<std::int32_t, 3, 2, 1>,
+                         index_list<SpatialIndex<SpatialDim, UpLo::Up, Fr>,
+                                    SpatialIndex<SpatialDim - 1, UpLo::Lo,
+                                                 ::Frame::Spherical<Fr>>,
+                                    SpatialIndex<SpatialDim - 1, UpLo::Lo,
+                                                 ::Frame::Spherical<Fr>>>>>;
+
+template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
+          typename DataType = DataVector>
+using Temp_surface_dual_basis =
+    TempTensor<N, Tensor<DataType, tmpl::integral_list<std::int32_t, 1, 2>,
+                         index_list<SpatialIndex<SpatialDim - 1, UpLo::Lo, Fr>,
+                                    SpatialIndex<SpatialDim, UpLo::Lo, Fr>>>>;
+
+template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
+          typename DataType = DataVector>
+using Temp_grad_spatial_metric =
+    TempTensor<N,
+               Tensor<DataType, tmpl::integral_list<std::int32_t, 1, 1, 2>,
+                      index_list<SpatialIndex<SpatialDim, UpLo::Lo, Fr>,
+                                 SpatialIndex<SpatialDim, UpLo::Lo, Fr>,
+                                 SpatialIndex<SpatialDim - 1, UpLo::Lo, Fr>>>>;
+
 /// @}
 }  // namespace Tags

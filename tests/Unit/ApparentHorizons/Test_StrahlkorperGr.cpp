@@ -691,8 +691,12 @@ void test_dimensionful_spin_magnitude(
       horizon_radius_with_spin_on_z_axis, ylm_with_spin_on_z_axis, ylm, mass,
       dimensionless_spin);
 
+  const auto& inv_hessian =
+      db::get<StrahlkorperTags::InvHessian<Frame::Inertial>>(box);
+
   const double spin_magnitude = StrahlkorperGr::dimensionful_spin_magnitude(
-      ricci_scalar, spin_function, spatial_metric, tangents, ylm, area_element);
+      ricci_scalar, spin_function, spatial_metric, tangents, ylm, area_element,
+      radius, r_hat, jacobian, inv_hessian, cart_coords);
 
   Approx custom_approx = Approx::custom().epsilon(tolerance).scale(1.0);
   CHECK_ITERABLE_CUSTOM_APPROX(spin_magnitude, expected, custom_approx);

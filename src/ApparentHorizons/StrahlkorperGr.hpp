@@ -339,7 +339,7 @@ double euclidean_surface_integral_of_vector(
  * The argument `unit_normal_vector` can be found by raising the
  * index of the one-form returned by `StrahlkorperGr::unit_normal_oneform`.
  * The argument `tangents` is a Tangents that can be obtained from the
- * StrahlkorperDataBox using the `StrahlkorperTags::Tangents` tag.
+ * DataBox using the `StrahlkorperTags::Tangents` tag.
  */
 template <typename Frame>
 void spin_function(gsl::not_null<Scalar<DataVector>*> result,
@@ -382,7 +382,7 @@ Scalar<DataVector> spin_function(
  * Eq. (A22) of \cite Lovelace2008tw.
  * The argument `spatial_metric` is the metric of the 3D spatial slice
  * evaluated on the `Strahlkorper`.
- * The argument `tangents` can be obtained from the StrahlkorperDataBox
+ * The argument `tangents` can be obtained from the DataBox
  * using the `StrahlkorperTags::Tangents` tag, and the argument
  * `unit_normal_vector` can
  * be found by raising the index of the one-form returned by
@@ -390,6 +390,126 @@ Scalar<DataVector> spin_function(
  * The argument `ylm` is the `YlmSpherepack` of the `Strahlkorper`.
  * The argument `area_element`
  * can be computed via `StrahlkorperGr::area_element`.
+ * The arguments `radius`, `r_hat`, `jacobian`, `inv_hessian` and
+ * `cartesian_coords` can be obtained from the DataBox using the
+ * tags `StrahlkorperTags::Radius`, `StrahlkorperTags::Rhat`,
+ * `StrahlkorperTags::Jacobian`, `StrahlkorperTags::InvHessian` and
+ * `StrahlkorperTags::CartesianCoords` respectively.
+ *
+ * Computing the covariant laplacian requires \f$\Gamma^C\f$ (\f$g^{AB}
+ * \Gamma^C_{AB}\f$):
+ * \f{align}{ \nabla^2 z = g^{AB} z_{AB} - \Gamma^C z_C, \f}
+ * where \f$g^{AB}\f$ is the inverse surface metric, \f$z_C\f$ and \f$z_{AB}\f$
+ * are ylm.first_and_second_derivative(f).first.get(C) and
+ * ylm.first_and_second_derivative(f).second.get(A,B), respectively.
+ * \f$\Gamma^C\f$ is calculated in the function
+ * `get_trace_christoffel_second_kind`. Because of the non-coordinate,
+ * non-orthonormal basis used by spherepack to compute derivatives the
+ * calculation of \f$\Gamma^c\f$ is not straightforward. Following are the notes
+ * written by Rob where he derives various quantities used in the function
+ * `get_trace_christoffel_second_kind`.
+ *
+ * To construct the connection coefficients for the laplacian of a scalar on a
+ * Strahlkorper, I need the hessian of the transformation from unit-sphere
+ * coordinates \f$\{\sin\theta\cos\phi, \sin\theta\sin\phi,
+ * \cos\theta\}\f$(In fact, the quantities that I actually need are the
+ * derivatives of the ``star-shaped surface'' coordinates \f$\{r
+ * \sin\theta\cos\phi, r \sin\theta\sin\phi, r \cos\theta\}\f$, where \f$r\f$ is
+ * a nonconstant function. However the \f$r\f$-scaling can be handled with some
+ * simple correction terms, summarized at the end of this note. For the moment,
+ * because the relevant SpECTRE functions handle the unit-sphere case I'll defer
+ * the consideration of nonconstant \f$r\f$ to the end.) to surface coordinates
+ * \f$\{\theta, \phi\}\f$. Specifically, I need: \f{equation}{ H^k_{AB} := D_A
+ * D_B x^k, \f} where \f$ijk...\f$ index the 3-space and \f$ABC...\f$ index the
+ * 2-dimensional tangent spaces. The derivative operators \f$D_A\f$ are the
+ * spherepack derivative operators \f$\{\partial_\theta, (1/\sin\theta)
+ * \partial_\phi\}\f$ (which, notably, do not commute).
+ *
+ * These quantities could be computed simply from Spherepack's derivative
+ * operators. However that
+ * would involve taking three numerical second derivatives, which can be avoided
+ * using the inverse hessian (`StrahlkorperTags::InvHessian`),
+ * which I'll call \f$h^C_{ij}\f$. The most familiar expression for this is:
+ * \f{equation}{ H^k_{AB} \stackrel{?}{=} - J^k_C J^i_A J^j_B
+ * h^C_{ij},\label{e:QuestionableIdentity} \f} where \f$J^k_C\f$ is the jacobian
+ * (`StrahlkorperTags::Jacobian`). Unfortunately, in this case, the
+ * relationship is slightly more elaborate than that. The issue has to do with
+ * the fact that the "coordinate transformation" is from a 3-dimensional space
+ * to a 2-dimensional space, so the jacobian and inverse jacobian are inverse
+ * matrices in one ordering but not the other:
+ * \f{align}{
+ *   I^A_k J^k_B &= \delta^A_B\label{e:RightInverse}\\
+ *   J^k_B I^B_i &= P^k_i = \delta^k_i - n^k n_i \neq
+ * \delta^k_i.\label{e:Projector} \f}
+ *
+ * Here, \f$I^B_i\f$ refers to the inverse
+ * jacobian. Because these jacobians are not
+ * square matrices, \f$I\f$ can be the left inverse of \f$J\f$ but not its right
+ * inverse. The product traced on 2-d indices is instead the projector to the
+ * 2-surface, where \f$n\f$ is the normal (radial unit vector, since we're
+ * working with a coordinate sphere).
+ *
+ * The derivation that normally leads to Eq.
+ * (\f$\ref{e:QuestionableIdentity}\f$) starts with a decomposition of unity.
+ * We'll take the same strategy here, but include the term involving \f$n\f$ in
+ * Eq. (\f$\ref{e:Projector}\f$): \f{align}{
+ *   0 &= D_A \left( \delta^k_i \right)\\
+ *   &= D_A \left( J^k_B I^B_i + n^k n_i \right)\\
+ *   &= J^k_B D_A I^B_i + I^B_i D_A J^k_B + D_A \left(n^k n_i  \right)\\
+ *   &= J^k_B J^j_A \partial_j I^B_i + I^B_i H^k_{AB} + D_A \left(n^k n_i
+ * \right)\\
+ *   &= J^k_B J^j_A h^B_{ji} + I^B_i H^k_{AB} + D_A \left(n^k n_i  \right)
+ * \f}
+ * So we can rewrite this as:
+ * \f{align}{
+ * I^B_i H^k_{AB} = - J^k_C J^j_A h^C_{ji} - D_A \left(n^k n_i  \right),
+ * \f}
+ * And then because \f$I\f$ has a true right-inverse
+ * (Eq. (\f$\ref{e:RightInverse}\f$)), we conclude:
+ * \f{align}{
+ *   H^k_{AB} &= - J^i_B J^k_C J^j_A h^C_{ji} - J^i_B D_A \left(n^k n_i
+ * \right)\\
+ *   &= - J^k_C J^i_A J^j_B h^C_{ij} - J^i_B D_A \left(n^k n_i  \right).
+ * \f}
+ *
+ * So we've recovered the standard formula apart from the correction term:
+ * \f{align}{
+ *   J^i_B D_A \left(n^k n_i  \right) &= J^i_B J^j_A \partial_j \left(n^k n_i
+ * \right)\\
+ *   &= J^i_B J^j_A \left(n^k \partial_j n_i + n_i \partial_j n^k \right).
+ * \f}
+ *
+ * From here, we can apply the familiar result \f$\partial_j n^k = P^k_j\f$,
+ * which comes from taking \f$n^k = (1/r) x^k\f$, working out the derivative,
+ * and letting \f$r=1\f$ at the end since we're specializing to a unit sphere.
+ * This then gives us the result: \f{align}{ H^k_{AB} &= - J^k_C J^i_A J^j_B
+ * h^C_{ij} - n^k g_{AB},\label{e:Result} \f} where \f$g_{AB}\f$ is the
+ * intrinsic metric on the unit sphere (an identity matrix in Spherepack's
+ * basis). I have confirmed in a few test cases that this gives the same result
+ * (up to truncation error) as the explicit second derivative taken with
+ * Spherepack.
+ *
+ * As a final note, I should also clarify the extra correction terms that arise
+ * from the true surface being a star-shaped surface rather than a unit-sphere.
+ * The deformed surface is parametrized as: \f{align}{ x^i = r x_0^i, \f} where
+ * \f$r(\theta, \phi)\f$ is the non-constant radius and now \f$x_0^i\f$ refers
+ * to the unit-sphere coordinates \f$\{\sin\theta\cos\phi, \sin\theta\sin\phi,
+ * \cos\theta\}\f$. Explicitly taking surface derivatives of this, we get:
+ * \f{align}{
+ *   D_B x^i &= r D_B x_0^i + x_0^i D_B r\\
+ *   D_A D_B x^i &= r D_A D_B x_0^i + 2 J^i_{0(A} D_{B)} r + x_0^i D_A D_B r\\
+ *   H^i_{AB} &= r H^i_{0AB} + 2 J^i_{0(A} D_{B)} r + x_0^i D_A D_B r.
+ * \f}
+ *
+ * The quantity \f$H^i_{0AB}\f$ is the unit-sphere hessian computed via
+ * Eq. (\f$\ref{e:Result}\f$), and \f$J^i_{0A}\f$ is the
+ * Jacobian(`StrahlkorperTags::Jacobian`). So to get the hessian of the deformed
+ * sphere, we simply add correction terms. The same maneuver is used for the
+ * SurfaceTangents method. This does mean that the calculation once again
+ * involves numerical derivatives, but only of \f$r\f$ rather than all three
+ * spatial coordinates. The derivatives of \f$r\f$ are unfortunately unavoidable
+ * unless the whole calculation is done in coordinates where \f$r\f$ is
+ * constant, which I'd rather not assume.
  */
 template <typename Frame>
 double dimensionful_spin_magnitude(
@@ -397,7 +517,12 @@ double dimensionful_spin_magnitude(
     const Scalar<DataVector>& spin_function,
     const tnsr::ii<DataVector, 3, Frame>& spatial_metric,
     const StrahlkorperTags::aliases::Jacobian<Frame>& tangents,
-    const YlmSpherepack& ylm, const Scalar<DataVector>& area_element);
+    const YlmSpherepack& ylm, const Scalar<DataVector>& area_element,
+    const Scalar<DataVector>& radius,
+    const tnsr::i<DataVector, 3, Frame>& r_hat,
+    const StrahlkorperTags::aliases::Jacobian<Frame>& jacobian,
+    const StrahlkorperTags::aliases::InvHessian<Frame>& inv_hessian,
+    const StrahlkorperTags::aliases::Vector<Frame>& cartesian_coords);
 
 /*!
  * \ingroup SurfacesGroup
