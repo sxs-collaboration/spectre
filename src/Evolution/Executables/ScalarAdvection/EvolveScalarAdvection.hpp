@@ -202,7 +202,7 @@ struct EvolutionMetavars {
     }
 
     using DgComputeSubcellNeighborPackagedData =
-        ScalarAdvection::subcell::NeighborPackagedData<volume_dim>;
+        ScalarAdvection::subcell::NeighborPackagedData;
 
     using GhostDataToSlice =
         ScalarAdvection::subcell::GhostDataToSlice<volume_dim>;
