@@ -11,7 +11,9 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"  // IWYU pragma: keep
 #include "Options/Options.hpp"
+#include "Parallel/CharmPupable.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -36,8 +38,7 @@ class er;
 }  // namespace PUP
 /// \endcond
 
-namespace ScalarWave {
-namespace Solutions {
+namespace ScalarWave::Solutions {
 /*!
  * \brief A 3D spherical wave solution to the Euclidean wave equation that is
  * regular at the origin
@@ -63,7 +64,8 @@ namespace Solutions {
  * because of the scale invariance of the wave equation. The profile could be a
  * Gausssian centered at 0 with width 1, for instance.
  */
-class RegularSphericalWave : public MarkAsAnalyticSolution {
+class RegularSphericalWave : public evolution::initial_data::InitialData,
+                             public MarkAsAnalyticSolution {
  public:
   static constexpr size_t volume_dim = 3;
   struct Profile {
@@ -91,6 +93,12 @@ class RegularSphericalWave : public MarkAsAnalyticSolution {
   RegularSphericalWave& operator=(RegularSphericalWave&&) = default;
   ~RegularSphericalWave() = default;
 
+  /// \cond
+  explicit RegularSphericalWave(CkMigrateMessage* msg);
+  using PUP::able::register_constructor;
+  WRAPPED_PUPable_decl_template(RegularSphericalWave);
+  /// \endcond
+
   tuples::TaggedTuple<Tags::Psi, Tags::Pi, Tags::Phi<3>> variables(
       const tnsr::I<DataVector, 3>& x, double t,
       tmpl::list<Tags::Psi, Tags::Pi, Tags::Phi<3>> /*meta*/) const;
@@ -107,5 +115,4 @@ class RegularSphericalWave : public MarkAsAnalyticSolution {
  private:
   std::unique_ptr<MathFunction<1, Frame::Inertial>> profile_;
 };
-}  // namespace Solutions
-}  // namespace ScalarWave
+}  // namespace ScalarWave::Solutions

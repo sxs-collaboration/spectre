@@ -18,6 +18,8 @@
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/WaveEquation/PlaneWave.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
 #include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
 #include "PointwiseFunctions/MathFunctions/PowX.hpp"
 #include "Utilities/ConstantExpressions.hpp"
@@ -30,12 +32,15 @@
 // IWYU pragma: no_forward_declare Tensor
 
 namespace {
+template <size_t Dim>
 struct Metavariables {
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
         tmpl::pair<MathFunction<1, Frame::Inertial>,
-                   tmpl::list<MathFunctions::PowX<1, Frame::Inertial>>>>;
+                   tmpl::list<MathFunctions::PowX<1, Frame::Inertial>>>,
+        tmpl::pair<evolution::initial_data::InitialData,
+                   tmpl::list<ScalarWave::Solutions::PlaneWave<Dim>>>>;
   };
 };
 
@@ -162,7 +167,7 @@ void test_1d() {
       std::array<DataVector, 2>{{-6.0 * omega * kx * u, 6.0 * square(kx) * u}},
       pw, x, t);
 
-  Parallel::register_factory_classes_with_charm<Metavariables>();
+  Parallel::register_factory_classes_with_charm<Metavariables<1>>();
   const auto deserialized_pw = serialize_and_deserialize(pw);
   check_solution<1>(
       cube(u), -3.0 * omega * square(u), 6.0 * square(omega) * u,
@@ -170,14 +175,21 @@ void test_1d() {
       std::array<DataVector, 2>{{-6.0 * omega * kx * u, 6.0 * square(kx) * u}},
       deserialized_pw, x, t);
 
-  const auto created_solution =
-      TestHelpers::test_creation<ScalarWave::Solutions::PlaneWave<1>,
-                                 Metavariables>(
-          "WaveVector: [-1.5]\n"
-          "Center: [2.4]\n"
-          "Profile:\n"
-          "  PowX:\n"
-          "    Power: 3");
+  const std::unique_ptr<evolution::initial_data::InitialData> option_solution =
+      TestHelpers::test_option_tag<
+          evolution::initial_data::OptionTags::InitialData, Metavariables<1>>(
+          "PlaneWave:\n"
+          "  WaveVector: [-1.5]\n"
+          "  Center: [2.4]\n"
+          "  Profile:\n"
+          "    PowX:\n"
+          "      Power: 3");
+  const auto deserialized_option_solution =
+      serialize_and_deserialize(option_solution);
+  const auto& created_solution =
+      dynamic_cast<const ScalarWave::Solutions::PlaneWave<1>&>(
+          *deserialized_option_solution);
+
   CHECK(created_solution.variables(
             x, t,
             tmpl::list<ScalarWave::Tags::Psi, ScalarWave::Tags::Pi,
@@ -217,7 +229,7 @@ void test_2d() {
           {-6.0 * omega * ky * u, 6.0 * kx * ky * u, 6.0 * square(ky) * u}},
       pw, x, t);
 
-  Parallel::register_factory_classes_with_charm<Metavariables>();
+  Parallel::register_factory_classes_with_charm<Metavariables<2>>();
   const auto deserialized_pw = serialize_and_deserialize(pw);
   check_solution<1>(
       cube(u), -3.0 * omega * square(u), 6.0 * square(omega) * u,
@@ -231,14 +243,21 @@ void test_2d() {
           {-6.0 * omega * ky * u, 6.0 * kx * ky * u, 6.0 * square(ky) * u}},
       deserialized_pw, x, t);
 
-  const auto created_solution =
-      TestHelpers::test_creation<ScalarWave::Solutions::PlaneWave<2>,
-                                 Metavariables>(
-          "WaveVector: [1.5, -7.2]\n"
-          "Center: [2.4, -4.8]\n"
-          "Profile:\n"
-          "  PowX:\n"
-          "    Power: 3");
+  const std::unique_ptr<evolution::initial_data::InitialData> option_solution =
+      TestHelpers::test_option_tag<
+          evolution::initial_data::OptionTags::InitialData, Metavariables<2>>(
+          "PlaneWave:\n"
+          "  WaveVector: [1.5, -7.2]\n"
+          "  Center: [2.4, -4.8]\n"
+          "  Profile:\n"
+          "    PowX:\n"
+          "      Power: 3");
+  const auto deserialized_option_solution =
+      serialize_and_deserialize(option_solution);
+  const auto& created_solution =
+      dynamic_cast<const ScalarWave::Solutions::PlaneWave<2>&>(
+          *deserialized_option_solution);
+
   CHECK(created_solution.variables(
             x, t,
             tmpl::list<ScalarWave::Tags::Psi, ScalarWave::Tags::Pi,
@@ -290,7 +309,7 @@ void test_3d() {
                                  6.0 * ky * kz * u, 6.0 * square(kz) * u}},
       pw, x, t);
 
-  Parallel::register_factory_classes_with_charm<Metavariables>();
+  Parallel::register_factory_classes_with_charm<Metavariables<3>>();
   const auto deserialized_pw = serialize_and_deserialize(pw);
   check_solution<1>(
       cube(u), -3.0 * omega * square(u), 6.0 * square(omega) * u,
@@ -310,14 +329,21 @@ void test_3d() {
                                  6.0 * ky * kz * u, 6.0 * square(kz) * u}},
       deserialized_pw, x, t);
 
-  const auto created_solution =
-      TestHelpers::test_creation<ScalarWave::Solutions::PlaneWave<3>,
-                                 Metavariables>(
-          "WaveVector: [1.5, -7.2, 2.7]\n"
-          "Center: [2.4, -4.8, 8.4]\n"
-          "Profile:\n"
-          "  PowX:\n"
-          "    Power: 3");
+  const std::unique_ptr<evolution::initial_data::InitialData> option_solution =
+      TestHelpers::test_option_tag<
+          evolution::initial_data::OptionTags::InitialData, Metavariables<3>>(
+          "PlaneWave:\n"
+          "  WaveVector: [1.5, -7.2, 2.7]\n"
+          "  Center: [2.4, -4.8, 8.4]\n"
+          "  Profile:\n"
+          "    PowX:\n"
+          "      Power: 3");
+  const auto deserialized_option_solution =
+      serialize_and_deserialize(option_solution);
+  const auto& created_solution =
+      dynamic_cast<const ScalarWave::Solutions::PlaneWave<3>&>(
+          *deserialized_option_solution);
+
   CHECK(created_solution.variables(
             x, t,
             tmpl::list<ScalarWave::Tags::Psi, ScalarWave::Tags::Pi,
