@@ -14,10 +14,10 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Fluxes.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Sources.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/System.hpp"
-#include "Evolution/TypeTraits.hpp"
 #include "NumericalAlgorithms/LinearOperators/Divergence.tpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/Gsl.hpp"
@@ -119,7 +119,7 @@ template <typename Solution>
 void verify_grmhd_solution(const Solution& solution, const Block<3>& block,
                            const Mesh<3>& mesh, const double error_tolerance,
                            const double time, const double delta_time) {
-  static_assert(evolution::is_analytic_solution_v<Solution>,
+  static_assert(is_analytic_solution_v<Solution>,
                 "Solution was not derived from AnalyticSolution");
   // Set up coordinates
   const auto x_logical = logical_coordinates(mesh);

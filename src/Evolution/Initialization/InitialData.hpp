@@ -5,7 +5,8 @@
 
 #include <utility>
 
-#include "Evolution/TypeTraits.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -13,7 +14,7 @@ namespace evolution::Initialization {
 /// Extract initial data either from analytic data or from an analytic
 /// solution at a specified time.
 template <typename SolutionOrData, typename Coordinates, typename... Tags,
-          Requires<evolution::is_analytic_solution_v<SolutionOrData>> = nullptr>
+          Requires<is_analytic_solution_v<SolutionOrData>> = nullptr>
 decltype(auto) initial_data(const SolutionOrData& solution_or_data,
                             Coordinates&& coordinates, const double time,
                             const tmpl::list<Tags...> tags) {
@@ -23,7 +24,7 @@ decltype(auto) initial_data(const SolutionOrData& solution_or_data,
 
 /// \cond
 template <typename SolutionOrData, typename Coordinates, typename... Tags,
-          Requires<evolution::is_analytic_data_v<SolutionOrData>> = nullptr>
+          Requires<is_analytic_data_v<SolutionOrData>> = nullptr>
 decltype(auto) initial_data(const SolutionOrData& solution_or_data,
                             Coordinates&& coordinates, const double /*time*/,
                             const tmpl::list<Tags...> tags) {

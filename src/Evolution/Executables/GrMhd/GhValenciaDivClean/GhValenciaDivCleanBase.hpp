@@ -112,6 +112,7 @@
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/ApparentHorizon.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/KerrHorizon.hpp"
+#include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/BlastWave.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/BondiHoyleAccretion.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/MagneticFieldLoop.hpp"
@@ -119,6 +120,7 @@
 #include "PointwiseFunctions/AnalyticData/GrMhd/MagnetizedFmDisk.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/OrszagTangVortex.hpp"
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Tov.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/WrappedGr.hpp"
@@ -263,8 +265,7 @@ struct GhValenciaDivCleanTemplateBase<
 
   using initial_data = InitialData;
   static_assert(
-      evolution::is_analytic_data_v<initial_data> xor
-          evolution::is_analytic_solution_v<initial_data>,
+      is_analytic_data_v<initial_data> xor is_analytic_solution_v<initial_data>,
       "initial_data must be either an analytic_data, an "
       "analytic_solution, or externally provided numerical initial data");
   // note: numeric initial data not yet fully supported; I think it will need a
@@ -274,7 +275,7 @@ struct GhValenciaDivCleanTemplateBase<
       hydro::Tags::EquationOfState<equation_of_state_type>;
 
   using initial_data_tag =
-      tmpl::conditional_t<evolution::is_analytic_solution_v<initial_data>,
+      tmpl::conditional_t<is_analytic_solution_v<initial_data>,
                           Tags::AnalyticSolution<initial_data>,
                           Tags::AnalyticData<initial_data>>;
 
@@ -299,9 +300,8 @@ struct GhValenciaDivCleanTemplateBase<
                 Events::Completion,
                 dg::Events::field_observations<
                     volume_dim, Tags::Time, observe_fields,
-                    tmpl::conditional_t<
-                        evolution::is_analytic_solution_v<initial_data>,
-                        analytic_solution_fields, tmpl::list<>>,
+                    tmpl::conditional_t<is_analytic_solution_v<initial_data>,
+                                        analytic_solution_fields, tmpl::list<>>,
                     tmpl::list<>>,
                 Events::time_events<system>,
                 intrp::Events::Interpolate<3, InterpolationTargetTags,
@@ -423,7 +423,7 @@ struct GhValenciaDivCleanTemplateBase<
           VariableFixing::FixToAtmosphere<volume_dim>>,
       GeneralizedHarmonic::Actions::InitializeGhAnd3Plus1Variables<volume_dim>,
       tmpl::conditional_t<
-          evolution::is_analytic_solution_v<initial_data>,
+          is_analytic_solution_v<initial_data>,
           Initialization::Actions::AddComputeTags<
               tmpl::list<evolution::Tags::AnalyticCompute<
                   3, initial_data_tag, analytic_solution_fields>>>,

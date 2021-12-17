@@ -37,7 +37,6 @@
 #include "Evolution/Systems/CurvedScalarWave/PsiSquared.hpp"
 #include "Evolution/Systems/CurvedScalarWave/System.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Tags.hpp"
-#include "Evolution/TypeTraits.hpp"
 #include "IO/Observer/Actions/RegisterEvents.hpp"
 #include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
@@ -78,9 +77,11 @@
 #include "ParallelAlgorithms/Interpolation/InterpolationTarget.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/Sphere.hpp"
+#include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticData/CurvedWaveEquation/PureSphericalHarmonic.hpp"
 #include "PointwiseFunctions/AnalyticData/CurvedWaveEquation/ScalarWaveGr.hpp"
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrHorizon.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
@@ -125,12 +126,11 @@ template <size_t Dim, typename InitialData>
 struct EvolutionMetavars {
   static constexpr size_t volume_dim = Dim;
   using initial_data_tag =
-      tmpl::conditional_t<evolution::is_analytic_solution_v<InitialData>,
+      tmpl::conditional_t<is_analytic_solution_v<InitialData>,
                           Tags::AnalyticSolution<InitialData>,
                           Tags::AnalyticData<InitialData>>;
   static_assert(
-      evolution::is_analytic_data_v<InitialData> xor
-          evolution::is_analytic_solution_v<InitialData>,
+      is_analytic_data_v<InitialData> xor is_analytic_solution_v<InitialData>,
       "initial_data must be either an analytic_data or an analytic_solution");
 
   using system = CurvedScalarWave::System<Dim>;

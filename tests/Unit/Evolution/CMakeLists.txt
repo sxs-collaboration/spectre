@@ -18,7 +18,6 @@ set(LIBRARY_SOURCES
   Test_NumericInitialData.cpp
   Test_Protocols.cpp
   Test_TagsDomain.cpp
-  Test_TypeTraits.cpp
   )
 
 add_test_library(

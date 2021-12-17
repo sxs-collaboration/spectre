@@ -79,7 +79,9 @@
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
+#include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticData/Burgers/Sinusoid.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Burgers/Bump.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/AnalyticSolutions/Burgers/Linear.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/AnalyticSolutions/Burgers/Step.hpp"  // IWYU pragma: keep
@@ -129,11 +131,10 @@ struct EvolutionMetavars {
 
   using initial_data = InitialData;
   static_assert(
-      evolution::is_analytic_data_v<initial_data> xor
-          evolution::is_analytic_solution_v<initial_data>,
+      is_analytic_data_v<initial_data> xor is_analytic_solution_v<initial_data>,
       "initial_data must be either an analytic_data or an analytic_solution");
   using initial_data_tag =
-      tmpl::conditional_t<evolution::is_analytic_solution_v<initial_data>,
+      tmpl::conditional_t<is_analytic_solution_v<initial_data>,
                           Tags::AnalyticSolution<initial_data>,
                           Tags::AnalyticData<initial_data>>;
 
@@ -145,8 +146,8 @@ struct EvolutionMetavars {
 
   using observe_fields = typename system::variables_tag::tags_list;
   using analytic_solution_fields =
-      tmpl::conditional_t<evolution::is_analytic_solution_v<initial_data>,
-                          observe_fields, tmpl::list<>>;
+      tmpl::conditional_t<is_analytic_solution_v<initial_data>, observe_fields,
+                          tmpl::list<>>;
 
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
@@ -311,7 +312,7 @@ struct EvolutionMetavars {
           tmpl::list<>>,
 
       tmpl::conditional_t<
-          evolution::is_analytic_solution_v<initial_data>,
+          is_analytic_solution_v<initial_data>,
           Initialization::Actions::AddComputeTags<
               tmpl::list<evolution::Tags::AnalyticCompute<
                   1, initial_data_tag, analytic_solution_fields>>>,

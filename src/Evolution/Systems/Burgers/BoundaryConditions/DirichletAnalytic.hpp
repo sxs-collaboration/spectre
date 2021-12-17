@@ -16,7 +16,6 @@
 #include "Evolution/BoundaryConditions/Type.hpp"
 #include "Evolution/Systems/Burgers/BoundaryConditions/BoundaryCondition.hpp"
 #include "Evolution/Systems/Burgers/Tags.hpp"
-#include "Evolution/TypeTraits.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
@@ -84,7 +83,7 @@ class DirichletAnalytic final : public BoundaryCondition {
       const tnsr::I<DataVector, 1, Frame::Inertial>& coords,
       [[maybe_unused]] const double time,
       const AnalyticSolutionOrData& analytic_solution_or_data) const {
-    if constexpr (evolution::is_analytic_solution_v<AnalyticSolutionOrData>) {
+    if constexpr (is_analytic_solution_v<AnalyticSolutionOrData>) {
       *u = get<Burgers::Tags::U>(analytic_solution_or_data.variables(
           coords, time, tmpl::list<Burgers::Tags::U>{}));
     } else {

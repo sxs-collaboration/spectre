@@ -4,6 +4,7 @@
 set(LIBRARY "Test_AnalyticSolutions")
 
 set(LIBRARY_SOURCES
+  Test_AnalyticSolution.cpp
   Test_Tags.cpp
   )
 
