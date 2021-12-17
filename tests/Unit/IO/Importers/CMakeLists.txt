@@ -21,9 +21,10 @@ add_dependencies(
   )
 
 function(add_algorithm_test TEST_NAME DIM)
+  set(TEST_BASE ${TEST_NAME}${DIM}D)
   set(HPP_NAME Test_${TEST_NAME})
   set(EXECUTABLE_NAME ${HPP_NAME}${DIM}D)
-  set(TEST_IDENTIFIER Integration.Importers.${TEST_NAME}${DIM}D)
+  set(TEST_IDENTIFIER Integration.Importers.${TEST_BASE})
 
   add_spectre_parallel_executable(
     ${EXECUTABLE_NAME}
@@ -33,20 +34,9 @@ function(add_algorithm_test TEST_NAME DIM)
     "DataStructures;Domain;ErrorHandling;Informer;IO;Options;Parallel;SystemUtilities"
     )
 
-  add_dependencies(test-executables ${EXECUTABLE_NAME})
-
-  add_test(
-    NAME ${TEST_IDENTIFIER}
-    COMMAND ${CMAKE_BINARY_DIR}/bin/${EXECUTABLE_NAME} --input-file
-    ${CMAKE_CURRENT_SOURCE_DIR}/${EXECUTABLE_NAME}.yaml
-    )
-
-  set_tests_properties(
-    ${TEST_IDENTIFIER}
-    PROPERTIES
-    TIMEOUT 5
-    LABELS "integration"
-    ENVIRONMENT "ASAN_OPTIONS=detect_leaks=0")
+  add_standalone_test(
+    "${TEST_IDENTIFIER}"
+    INPUT_FILE "Test_${TEST_BASE}.yaml")
 endfunction()
 
 add_algorithm_test("VolumeDataReaderAlgorithm" 1)

@@ -644,9 +644,17 @@ cmakelists_hardcoded_libraries() {
     [[ $1 =~ CMakeLists\.txt$ ]] && \
         whitelist "$1" \
                   "tests/Unit/Parallel/CMakeLists.txt$" \
-                  "tests/Unit/ParallelAlgorithms/LinearSolver/Schwarz/\
+                  "tests/Unit/ParallelAlgorithms/LinearSolver/\
+ConjugateGradient/CMakeLists.txt$" \
+                  "tests/Unit/ParallelAlgorithms/LinearSolver/Gmres/\
 CMakeLists.txt$" \
                   "tests/Unit/ParallelAlgorithms/LinearSolver/Multigrid/\
+CMakeLists.txt$" \
+                  "tests/Unit/ParallelAlgorithms/LinearSolver/Richardson/\
+CMakeLists.txt$" \
+                  "tests/Unit/ParallelAlgorithms/LinearSolver/Schwarz/\
+CMakeLists.txt$" \
+                  "tests/Unit/ParallelAlgorithms/NonlinearSolver/NewtonRaphson/\
 CMakeLists.txt$" && \
         staged_grep -E -A1 "(${CHECKED_COMMANDS})\(\$" "$1" | \
             grep -Ev -- "--|${CHECKED_COMMANDS}" | \

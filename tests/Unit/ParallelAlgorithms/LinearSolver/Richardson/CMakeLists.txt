@@ -14,5 +14,17 @@ add_test_library(
   "ParallelLinearSolver"
   )
 
-add_linear_solver_algorithm_test("RichardsonAlgorithm")
-add_distributed_linear_solver_algorithm_test("DistributedRichardsonAlgorithm")
+add_standalone_test(
+  "Integration.LinearSolver.RichardsonAlgorithm"
+  INPUT_FILE "Test_RichardsonAlgorithm.yaml")
+target_link_libraries(
+  "Test_RichardsonAlgorithm"
+  PRIVATE
+  "${INTEGRATION_TEST_LINK_LIBRARIES}")
+add_standalone_test(
+  "Integration.LinearSolver.DistributedRichardsonAlgorithm"
+  INPUT_FILE "Test_DistributedRichardsonAlgorithm.yaml")
+target_link_libraries(
+  "Test_DistributedRichardsonAlgorithm"
+  PRIVATE
+  "${DISTRIBUTED_INTEGRATION_TEST_LINK_LIBRARIES}")

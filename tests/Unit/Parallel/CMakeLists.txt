@@ -5,96 +5,27 @@ add_subdirectory(Actions)
 
 add_subdirectory(PhaseControl)
 
-function(add_algorithm_test_executable EXECUTABLE_NAME)
-  if (TARGET ${EXECUTABLE_NAME})
-    return()
-  endif()
-
-  add_spectre_executable(
-    ${EXECUTABLE_NAME}
-    ${EXECUTABLE_NAME}.cpp
-    )
-
-  add_dependencies(
-    ${EXECUTABLE_NAME}
-    module_GlobalCache
-    module_Main
-    )
-
-  target_link_libraries(
-    ${EXECUTABLE_NAME}
-    PRIVATE
-    # Link against Boost::program_options for now until we have proper
-    # dependency handling for header-only libs
-    Boost::program_options
-    ErrorHandling
-    Informer
-    Options
-    Parallel
-    PhaseControl
-    SystemUtilities
-    Utilities
-    )
-
-  add_dependencies(unit-tests ${EXECUTABLE_NAME})
-endfunction()
+set(ALGORITHM_TEST_LINK_LIBRARIES
+  # Link against Boost::program_options for now until we have proper
+  # dependency handling for header-only libs
+  Boost::program_options
+  ErrorHandling
+  Informer
+  Options
+  Parallel
+  PhaseControl
+  SystemUtilities
+  Utilities
+  )
 
 # Add unit tests. For tests that result in a failure it is necessary to
 # redirect output from stderr to stdout. However, it was necessary at least on
 # some systems to do this redirect inside a shell command.
 find_program(SHELL_EXECUTABLE "sh")
-if ("${SHELL_EXECUTABLE}" STREQUAL "")
+if (NOT SHELL_EXECUTABLE)
   message(FATAL_ERROR
     "Could not find 'sh' shell to execute failure tests of algorithms")
 endif()
-
-function(add_algorithm_test TEST_NAME REGEX_TO_MATCH)
-  add_algorithm_test_executable("Test_${TEST_NAME}")
-  add_test(
-    NAME Unit.Parallel.${TEST_NAME}
-    COMMAND
-    ${SHELL_EXECUTABLE}
-    -c
-    "${CMAKE_BINARY_DIR}/bin/Test_${TEST_NAME} 2>&1"
-    )
-
-  if("${REGEX_TO_MATCH}" STREQUAL "")
-    set_tests_properties(
-      Unit.Parallel.${TEST_NAME}
-      PROPERTIES
-      FAIL_REGULAR_EXPRESSION "ERROR"
-      TIMEOUT 10
-      LABELS "unit"
-      ENVIRONMENT "ASAN_OPTIONS=detect_leaks=0")
-  else()
-    set_tests_properties(
-      Unit.Parallel.${TEST_NAME}
-      PROPERTIES
-      PASS_REGULAR_EXPRESSION
-      "${REGEX_TO_MATCH}"
-      TIMEOUT 10
-      LABELS "unit"
-      ENVIRONMENT "ASAN_OPTIONS=detect_leaks=0")
-  endif()
-endfunction()
-
-function(add_algorithm_test_with_input_file TEST_NAME INPUT_FILE_DIR)
-  add_algorithm_test_executable("Test_${TEST_NAME}")
-  add_test(
-    NAME "\"Unit.Parallel.${TEST_NAME}\""
-    COMMAND
-    ${SHELL_EXECUTABLE}
-    -c
-    "${CMAKE_BINARY_DIR}/bin/Test_${TEST_NAME} --input-file \
-     ${CMAKE_SOURCE_DIR}/tests/${INPUT_FILE_DIR}/Test_${TEST_NAME}.yaml 2>&1"
-    )
-  set_tests_properties(
-    "\"Unit.Parallel.${TEST_NAME}\""
-    PROPERTIES
-    TIMEOUT 10
-    LABELS "unit"
-    ENVIRONMENT "ASAN_OPTIONS=detect_leaks=0")
-endfunction()
 
 # Note that we have a 'balance' here that happens 2.5e4 of times per second just
 # to be completely certain that the desired number of migrations occur during
@@ -106,7 +37,11 @@ endfunction()
 # due to balancing so much that the test computation doesn't get much of a
 # chance to execute.
 function(add_algorithm_test_with_balancing TEST_NAME EXECUTABLE_NAME REGEX_TO_MATCH)
-  add_algorithm_test_executable("Test_${EXECUTABLE_NAME}")
+  add_standalone_test_executable("Test_${EXECUTABLE_NAME}")
+  target_link_libraries(
+    "Test_${EXECUTABLE_NAME}"
+    PRIVATE
+    "${ALGORITHM_TEST_LINK_LIBRARIES}")
   add_test(
     NAME "\"Unit.Parallel.${TEST_NAME}\""
     COMMAND
@@ -121,7 +56,7 @@ function(add_algorithm_test_with_balancing TEST_NAME EXECUTABLE_NAME REGEX_TO_MA
       PROPERTIES
       FAIL_REGULAR_EXPRESSION "ERROR"
       TIMEOUT 10
-      LABELS "unit"
+      LABELS "standalone"
       ENVIRONMENT "ASAN_OPTIONS=detect_leaks=0")
   else()
     set_tests_properties(
@@ -131,7 +66,7 @@ function(add_algorithm_test_with_balancing TEST_NAME EXECUTABLE_NAME REGEX_TO_MA
       "${REGEX_TO_MATCH}"
       FAIL_REGULAR_EXPRESSION "ERROR"
       TIMEOUT 10
-      LABELS "unit"
+      LABELS "standalone"
       ENVIRONMENT "ASAN_OPTIONS=detect_leaks=0")
   endif()
 endfunction()
@@ -142,7 +77,11 @@ endfunction()
 # to avoid it getting in the way of future test invocations (which would try
 # to overwrite the prior checkpoint file and error).
 function(add_algorithm_test_with_restart_from_checkpoint TEST_NAME)
-  add_algorithm_test_executable("Test_${TEST_NAME}")
+  add_standalone_test_executable("Test_${TEST_NAME}")
+  target_link_libraries(
+    "Test_${TEST_NAME}"
+    PRIVATE
+    "${ALGORITHM_TEST_LINK_LIBRARIES}")
   # Executable writes checkpoint file into the dir where it runs:
   set(CHECKPOINT
     "${CMAKE_BINARY_DIR}/tests/Unit/Parallel/SpectreCheckpoint000000")
@@ -160,12 +99,20 @@ function(add_algorithm_test_with_restart_from_checkpoint TEST_NAME)
     "\"Unit.Parallel.${TEST_NAME}\""
     PROPERTIES
     TIMEOUT 10
-    LABELS "unit"
+    LABELS "standalone"
     ENVIRONMENT "ASAN_OPTIONS=detect_leaks=0")
 endfunction()
 
+function(add_algorithm_test BASE_NAME)
+  add_standalone_test("Unit.Parallel.${BASE_NAME}" ${ARGN})
+  target_link_libraries(
+    "Test_${BASE_NAME}"
+    PRIVATE
+    "${ALGORITHM_TEST_LINK_LIBRARIES}")
+endfunction()
+
 # Test GlobalCache
-add_algorithm_test("GlobalCache" "")
+add_algorithm_test("GlobalCache")
 add_charm_module(Test_GlobalCache)
 
 add_dependencies(
@@ -180,25 +127,30 @@ add_dependencies(
 
 add_algorithm_test(
   "AlgorithmBadBoxApply"
+  REGEX_TO_MATCH
   "Cannot call apply function of 'error_size_zero' with DataBox \
 type 'db::DataBox<brigand::list<")
-add_algorithm_test("AlgorithmCore" "")
-add_algorithm_test("AlgorithmLocalSyncAction" "")
+add_algorithm_test("AlgorithmCore")
+add_algorithm_test("AlgorithmLocalSyncAction")
 add_algorithm_test(
   "AlgorithmNestedApply1"
+  REGEX_TO_MATCH
   "Already performing an Action and cannot execute additional Actions \
 from inside of an Action. This is only possible if the simple_action \
 function is not invoked via a proxy, which we do not allow.")
 add_algorithm_test(
   "AlgorithmNestedApply2"
+  REGEX_TO_MATCH
   "Already performing an Action and cannot execute additional Actions \
 from inside of an Action. This is only possible if the simple_action \
 function is not invoked via a proxy, which we do not allow.")
-add_algorithm_test("AlgorithmNodelock" "")
-add_algorithm_test("AlgorithmParallel" "")
-add_algorithm_test("AlgorithmReduction" "")
-add_algorithm_test("PhaseChangeMain" "")
-add_algorithm_test("SectionReductions"
+add_algorithm_test("AlgorithmNodelock")
+add_algorithm_test("AlgorithmParallel")
+add_algorithm_test("AlgorithmReduction")
+add_algorithm_test("PhaseChangeMain")
+add_algorithm_test(
+  "SectionReductions"
+  REGEX_TO_MATCH
   "Element 0 received reduction: Counted 2 odd elements.")
 
 # macOS builds on Apple Silicon use Charm 7.0.0, which has different
@@ -211,8 +163,12 @@ else()
     "AlgorithmParallel" "Objects migrating: 14")
 endif()
 
-add_algorithm_test_with_input_file("AlgorithmGlobalCache" "Unit/Parallel")
-add_algorithm_test_with_input_file("AlgorithmPhaseControl" "Unit/Parallel")
+add_algorithm_test(
+  "AlgorithmGlobalCache"
+  INPUT_FILE "Test_AlgorithmGlobalCache.yaml")
+add_algorithm_test(
+  "AlgorithmPhaseControl"
+  INPUT_FILE "Test_AlgorithmPhaseControl.yaml")
 
 add_algorithm_test_with_restart_from_checkpoint("CheckpointRestart")
 

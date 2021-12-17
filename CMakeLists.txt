@@ -137,6 +137,7 @@ include(SetupPypp)
 include(SpectreAddTestLibs)
 include(SpectreAddCatchTests)
 include(AddInputFileTests)
+include(AddStandaloneTests)
 
 include_directories(${CMAKE_SOURCE_DIR}/external)
 include_directories(${CMAKE_SOURCE_DIR}/src)

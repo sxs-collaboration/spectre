@@ -18,13 +18,12 @@ add_test_library(
   "DataStructures;Domain;DomainStructure;LinearSolver;ParallelSchwarz;Spectral"
   )
 
-add_distributed_linear_solver_algorithm_test("SchwarzAlgorithm")
+add_standalone_test(
+  "Integration.LinearSolver.SchwarzAlgorithm"
+  INPUT_FILE "Test_SchwarzAlgorithm.yaml")
 target_link_libraries(
-  Test_SchwarzAlgorithm
+  "Test_SchwarzAlgorithm"
   PRIVATE
-  Domain
-  DomainStructure
-  ParallelSchwarz
-)
+  "${DISTRIBUTED_INTEGRATION_TEST_LINK_LIBRARIES};Domain;DomainStructure;ParallelSchwarz")
 
 add_subdirectory(Actions)
