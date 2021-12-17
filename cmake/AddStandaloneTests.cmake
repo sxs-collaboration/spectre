@@ -1,6 +1,10 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+option(SPECTRE_STANDALONE_TEST_TIMEOUT_FACTOR
+  "Multiply timeout for standalone tests by this factor"
+  1)
+
 # Helper function to set up a CMake target for a test executable.  It
 # can safely be called multiple times for the same executable.
 function(add_standalone_test_executable EXECUTABLE_NAME)
@@ -20,6 +24,23 @@ function(add_standalone_test_executable EXECUTABLE_NAME)
     module_GlobalCache
     module_Main
     )
+endfunction()
+
+# Helper function to set standard test properties for standalone tests.
+function(set_standalone_test_properties TEST_NAME)
+  set(TIMEOUT 10)
+  # Multiply timeout by the user option
+  # Note: "1" is parsed as "ON" by cmake
+  if (NOT "${SPECTRE_STANDALONE_TEST_TIMEOUT_FACTOR}" STREQUAL ON)
+    math(EXPR TIMEOUT "${SPECTRE_STANDALONE_TEST_TIMEOUT_FACTOR} * ${TIMEOUT}")
+  endif()
+
+  set_tests_properties(
+    "${TEST_NAME}"
+    PROPERTIES
+    TIMEOUT "${TIMEOUT}"
+    LABELS "standalone"
+    ENVIRONMENT "ASAN_OPTIONS=detect_leaks=0")
 endfunction()
 
 # For tests that result in a failure it is necessary to redirect
@@ -80,22 +101,17 @@ function(add_standalone_test TEST_NAME)
     "${CMAKE_BINARY_DIR}/bin/${EXECUTABLE_NAME} ${INPUT_FILE_ARGS} 2>&1"
     )
 
+  set_standalone_test_properties("${TEST_NAME}")
   if(NOT DEFINED ARG_REGEX_TO_MATCH)
     set_tests_properties(
       "${TEST_NAME}"
       PROPERTIES
-      FAIL_REGULAR_EXPRESSION "ERROR"
-      TIMEOUT 10
-      LABELS "standalone"
-      ENVIRONMENT "ASAN_OPTIONS=detect_leaks=0")
+      FAIL_REGULAR_EXPRESSION "ERROR")
   else()
     set_tests_properties(
       "${TEST_NAME}"
       PROPERTIES
       PASS_REGULAR_EXPRESSION
-      "${ARG_REGEX_TO_MATCH}"
-      TIMEOUT 10
-      LABELS "standalone"
-      ENVIRONMENT "ASAN_OPTIONS=detect_leaks=0")
+      "${ARG_REGEX_TO_MATCH}")
   endif()
 endfunction()

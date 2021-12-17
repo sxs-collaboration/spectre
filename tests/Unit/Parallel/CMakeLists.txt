@@ -43,31 +43,26 @@ function(add_algorithm_test_with_balancing TEST_NAME EXECUTABLE_NAME REGEX_TO_MA
     PRIVATE
     "${ALGORITHM_TEST_LINK_LIBRARIES}")
   add_test(
-    NAME "\"Unit.Parallel.${TEST_NAME}\""
+    NAME "Unit.Parallel.${TEST_NAME}"
     COMMAND
     ${SHELL_EXECUTABLE}
     -c "${CMAKE_BINARY_DIR}/bin/Test_${EXECUTABLE_NAME} +p2 +balancer \
      RotateLB +LBPeriod 4.0e-5 +LBDebug 3 2>&1"
     )
 
+  set_standalone_test_properties("Unit.Parallel.${TEST_NAME}")
   if("${REGEX_TO_MATCH}" STREQUAL "")
     set_tests_properties(
-      "\"Unit.Parallel.${TEST_NAME}\""
+      "Unit.Parallel.${TEST_NAME}"
       PROPERTIES
-      FAIL_REGULAR_EXPRESSION "ERROR"
-      TIMEOUT 10
-      LABELS "standalone"
-      ENVIRONMENT "ASAN_OPTIONS=detect_leaks=0")
+      FAIL_REGULAR_EXPRESSION "ERROR")
   else()
     set_tests_properties(
-      "\"Unit.Parallel.${TEST_NAME}\""
+      "Unit.Parallel.${TEST_NAME}"
       PROPERTIES
       PASS_REGULAR_EXPRESSION
       "${REGEX_TO_MATCH}"
-      FAIL_REGULAR_EXPRESSION "ERROR"
-      TIMEOUT 10
-      LABELS "standalone"
-      ENVIRONMENT "ASAN_OPTIONS=detect_leaks=0")
+      FAIL_REGULAR_EXPRESSION "ERROR")
   endif()
 endfunction()
 
@@ -86,7 +81,7 @@ function(add_algorithm_test_with_restart_from_checkpoint TEST_NAME)
   set(CHECKPOINT
     "${CMAKE_BINARY_DIR}/tests/Unit/Parallel/SpectreCheckpoint000000")
   add_test(
-    NAME "\"Unit.Parallel.${TEST_NAME}\""
+    NAME "Unit.Parallel.${TEST_NAME}"
     COMMAND
     ${SHELL_EXECUTABLE}
     -c
@@ -95,12 +90,7 @@ function(add_algorithm_test_with_restart_from_checkpoint TEST_NAME)
     && ${CMAKE_BINARY_DIR}/bin/Test_${TEST_NAME} +restart ${CHECKPOINT} 2>&1 \
     && rm -rf ${CHECKPOINT}"
     )
-  set_tests_properties(
-    "\"Unit.Parallel.${TEST_NAME}\""
-    PROPERTIES
-    TIMEOUT 10
-    LABELS "standalone"
-    ENVIRONMENT "ASAN_OPTIONS=detect_leaks=0")
+  set_standalone_test_properties("Unit.Parallel.${TEST_NAME}")
 endfunction()
 
 function(add_algorithm_test BASE_NAME)
