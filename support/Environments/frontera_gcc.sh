@@ -78,6 +78,7 @@ spectre_run_cmake() {
           -D BUILD_PYTHON_BINDINGS=off \
           -D Python_EXECUTABLE=`which python3` \
           -D USE_LD=ld \
+          -D SPECTRE_TEST_RUNNER="$(pwd)/bin/charmrun" \
           "$@" \
           $SPECTRE_HOME
 }
