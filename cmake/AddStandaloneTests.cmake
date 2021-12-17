@@ -98,7 +98,7 @@ function(add_standalone_test TEST_NAME)
     COMMAND
     ${SHELL_EXECUTABLE}
     -c
-    "${CMAKE_BINARY_DIR}/bin/${EXECUTABLE_NAME} ${INPUT_FILE_ARGS} 2>&1"
+    "${SPECTRE_TEST_RUNNER} ${CMAKE_BINARY_DIR}/bin/${EXECUTABLE_NAME} ${INPUT_FILE_ARGS} 2>&1"
     )
 
   set_standalone_test_properties("${TEST_NAME}")

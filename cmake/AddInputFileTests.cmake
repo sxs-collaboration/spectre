@@ -40,7 +40,7 @@ function(add_single_input_file_test INPUT_FILE EXECUTABLE COMMAND_LINE_ARGS
   if ("${CHECK_TYPE}" STREQUAL "parse")
     add_test(
       NAME ${CTEST_NAME}
-      COMMAND ${CMAKE_BINARY_DIR}/bin/${EXECUTABLE}
+      COMMAND ${SPECTRE_TEST_RUNNER} ${CMAKE_BINARY_DIR}/bin/${EXECUTABLE}
       --check-options --input-file ${INPUT_FILE}
       )
   elseif("${CHECK_TYPE}" STREQUAL "execute")
@@ -186,7 +186,7 @@ file(
 #!/bin/sh\n\
 ${Python_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/CleanOutput.py -v --force \
 --input-file $2 --output-dir ${CMAKE_BINARY_DIR}
-${CMAKE_BINARY_DIR}/bin/$1 --input-file $2 \${3} && \
+${SPECTRE_TEST_RUNNER} ${CMAKE_BINARY_DIR}/bin/$1 --input-file $2 \${3} && \
 ${Python_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/CleanOutput.py -v \
 --input-file $2 --output-dir ${CMAKE_BINARY_DIR}\n"
 )

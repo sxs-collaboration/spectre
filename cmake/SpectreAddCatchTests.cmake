@@ -213,7 +213,7 @@ function(spectre_parse_file SOURCE_FILE TEST_TARGET)
 
     # Add the test and set its properties
     add_test(NAME ${CTEST_NAME}
-      COMMAND $<TARGET_FILE:${TEST_TARGET}>
+      COMMAND ${SPECTRE_TEST_RUNNER} $<TARGET_FILE:${TEST_TARGET}>
       \"${NAME}\" --durations yes
       --warn NoAssertions
       --name "\"$<CONFIGURATION>.${CTEST_NAME}\"")

@@ -46,8 +46,8 @@ function(add_algorithm_test_with_balancing TEST_NAME EXECUTABLE_NAME REGEX_TO_MA
     NAME "Unit.Parallel.${TEST_NAME}"
     COMMAND
     ${SHELL_EXECUTABLE}
-    -c "${CMAKE_BINARY_DIR}/bin/Test_${EXECUTABLE_NAME} +p2 +balancer \
-     RotateLB +LBPeriod 4.0e-5 +LBDebug 3 2>&1"
+    -c "${SPECTRE_TEST_RUNNER} ${CMAKE_BINARY_DIR}/bin/Test_${EXECUTABLE_NAME} \
+    +p2 +balancer RotateLB +LBPeriod 4.0e-5 +LBDebug 3 2>&1"
     )
 
   set_standalone_test_properties("Unit.Parallel.${TEST_NAME}")
@@ -86,8 +86,9 @@ function(add_algorithm_test_with_restart_from_checkpoint TEST_NAME)
     ${SHELL_EXECUTABLE}
     -c
     "rm -rf ${CHECKPOINT} \
-    && ${CMAKE_BINARY_DIR}/bin/Test_${TEST_NAME} 2>&1 \
-    && ${CMAKE_BINARY_DIR}/bin/Test_${TEST_NAME} +restart ${CHECKPOINT} 2>&1 \
+    && ${SPECTRE_TEST_RUNNER} ${CMAKE_BINARY_DIR}/bin/Test_${TEST_NAME} 2>&1 \
+    && ${SPECTRE_TEST_RUNNER} ${CMAKE_BINARY_DIR}/bin/Test_${TEST_NAME} \
+       +restart ${CHECKPOINT} 2>&1 \
     && rm -rf ${CHECKPOINT}"
     )
   set_standalone_test_properties("Unit.Parallel.${TEST_NAME}")

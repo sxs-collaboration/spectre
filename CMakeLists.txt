@@ -132,6 +132,9 @@ include(SetupSphinx)
 include(CodeCoverageDetection)
 include(SpectreAddLibraries)
 
+set(SPECTRE_TEST_RUNNER "" CACHE STRING
+  "Run test executables through the given wrapper.")
+
 enable_testing(true)
 include(SetupPypp)
 include(SpectreAddTestLibs)
