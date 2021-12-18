@@ -63,7 +63,7 @@ struct AnalyticSolution : elliptic::analytic_data::AnalyticSolution {
 PUP::able::PUP_ID AnalyticSolution::my_PUP_ID = 0;  // NOLINT
 #pragma GCC diagnostic pop
 
-template <bool Optional, typename Metavariables>
+template <typename Metavariables>
 struct ElementArray {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
@@ -77,25 +77,17 @@ struct ElementArray {
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Testing,
           tmpl::list<Actions::SetupDataBox,
-                     tmpl::conditional_t<
-                         Optional,
-                         elliptic::Actions::InitializeOptionalAnalyticSolution<
-                             elliptic::Tags::Background<
-                                 elliptic::analytic_data::Background>,
-                             tmpl::list<ScalarFieldTag>,
-                             elliptic::analytic_data::AnalyticSolution>,
-                         elliptic::Actions::InitializeAnalyticSolution<
-                             elliptic::Tags::Background<
-                                 elliptic::analytic_data::AnalyticSolution>,
-                             tmpl::list<ScalarFieldTag>>>>>>;
+                     elliptic::Actions::InitializeOptionalAnalyticSolution<
+                         elliptic::Tags::Background<
+                             elliptic::analytic_data::Background>,
+                         tmpl::list<ScalarFieldTag>,
+                         elliptic::analytic_data::AnalyticSolution>>>>;
 };
 
-template <bool Optional>
 struct Metavariables {
-  using element_array = ElementArray<Optional, Metavariables>;
-  using const_global_cache_tags = tmpl::list<tmpl::conditional_t<
-      Optional, elliptic::Tags::Background<elliptic::analytic_data::Background>,
-      elliptic::Tags::Background<elliptic::analytic_data::AnalyticSolution>>>;
+  using element_array = ElementArray<Metavariables>;
+  using const_global_cache_tags = tmpl::list<
+      elliptic::Tags::Background<elliptic::analytic_data::Background>>;
   using component_list = tmpl::list<element_array>;
   enum class Phase { Initialization, Testing, Exit };
   struct factory_creation
@@ -108,11 +100,10 @@ struct Metavariables {
   };
 };
 
-template <bool Optional>
 void test_initialize_analytic_solution(
     const tnsr::I<DataVector, 1>& inertial_coords,
     const Scalar<DataVector>& expected_solution) {
-  using metavariables = Metavariables<Optional>;
+  using metavariables = Metavariables;
   using element_array = typename metavariables::element_array;
 
   Parallel::register_factory_classes_with_charm<metavariables>();
@@ -135,28 +126,20 @@ void test_initialize_analytic_solution(
             runner, element_id);
       };
 
-  if constexpr (Optional) {
-    {
-      INFO("Analytic solution is available");
-      const auto analytic_solutions =
-          initialize_analytic_solution(std::make_unique<AnalyticSolution>());
-      REQUIRE(analytic_solutions.has_value());
-      CHECK_ITERABLE_APPROX(
-          get(get<::Tags::Analytic<ScalarFieldTag>>(*analytic_solutions)),
-          get(expected_solution));
-    }
-    {
-      INFO("No analytic solution is available");
-      const auto no_analytic_solutions =
-          initialize_analytic_solution(std::make_unique<NoAnalyticSolution>());
-      CHECK_FALSE(no_analytic_solutions.has_value());
-    }
-  } else {
+  {
+    INFO("Analytic solution is available");
     const auto analytic_solutions =
         initialize_analytic_solution(std::make_unique<AnalyticSolution>());
+    REQUIRE(analytic_solutions.has_value());
     CHECK_ITERABLE_APPROX(
-        get(get<::Tags::Analytic<ScalarFieldTag>>(analytic_solutions)),
+        get(get<::Tags::Analytic<ScalarFieldTag>>(*analytic_solutions)),
         get(expected_solution));
+  }
+  {
+    INFO("No analytic solution is available");
+    const auto no_analytic_solutions =
+        initialize_analytic_solution(std::make_unique<NoAnalyticSolution>());
+    CHECK_FALSE(no_analytic_solutions.has_value());
   }
 }
 
@@ -164,10 +147,7 @@ void test_initialize_analytic_solution(
 
 SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeAnalyticSolution",
                   "[Unit][Elliptic][Actions]") {
-  test_initialize_analytic_solution<false>(
-      tnsr::I<DataVector, 1>{{{{1., 2., 3., 4.}}}},
-      Scalar<DataVector>{{{{2., 4., 6., 8.}}}});
-  test_initialize_analytic_solution<true>(
+  test_initialize_analytic_solution(
       tnsr::I<DataVector, 1>{{{{1., 2., 3., 4.}}}},
       Scalar<DataVector>{{{{2., 4., 6., 8.}}}});
 }
