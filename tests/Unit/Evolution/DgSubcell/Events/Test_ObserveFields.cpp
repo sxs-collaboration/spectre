@@ -162,7 +162,8 @@ void test_observe(
   // roundoff error.
   // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
   std::iota(vars.data(), vars.data() + vars.size(), 1.0);
-  const Variables<db::wrap_tags_in<::Tags::Analytic, solution_variables>>
+  const Variables<
+      db::wrap_tags_in<::Tags::detail::AnalyticImpl, solution_variables>>
       solutions{variables_from_tagged_tuple(analytic_solution.variables(
           active_inertial_coords, observation_time, solution_variables{}))};
   const Variables<solution_variables> errors =

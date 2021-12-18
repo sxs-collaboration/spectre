@@ -281,12 +281,11 @@ struct EvolutionMetavars {
       Initialization::Actions::AddComputeTags<
           tmpl::list<NewtonianEuler::Tags::SoundSpeedSquaredCompute<DataVector>,
                      NewtonianEuler::Tags::SoundSpeedCompute<DataVector>>>,
-      tmpl::conditional_t<
-          is_analytic_solution_v<initial_data>,
-          Initialization::Actions::AddComputeTags<
-              tmpl::list<evolution::Tags::AnalyticCompute<
-                  Dim, initial_data_tag, analytic_variables_tags>>>,
-          tmpl::list<>>,
+      tmpl::conditional_t<is_analytic_solution_v<initial_data>,
+                          Initialization::Actions::AddComputeTags<tmpl::list<
+                              evolution::Tags::AnalyticSolutionsCompute<
+                                  Dim, analytic_variables_tags>>>,
+                          tmpl::list<>>,
       Initialization::Actions::AddComputeTags<
           StepChoosers::step_chooser_compute_tags<EvolutionMetavars>>,
       ::evolution::dg::Initialization::Mortars<volume_dim, system>,

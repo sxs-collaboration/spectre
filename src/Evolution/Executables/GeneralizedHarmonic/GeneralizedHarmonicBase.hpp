@@ -356,11 +356,11 @@ struct GeneralizedHarmonicTemplateBase<
           typename system::gradient_variables>>,
       Initialization::Actions::TimeStepperHistory<derived_metavars>,
       GeneralizedHarmonic::Actions::InitializeGhAnd3Plus1Variables<volume_dim>,
-      Initialization::Actions::AddComputeTags<tmpl::push_back<
-          StepChoosers::step_chooser_compute_tags<
-              GeneralizedHarmonicTemplateBase>,
-          evolution::Tags::AnalyticCompute<volume_dim, analytic_solution_tag,
-                                           analytic_solution_fields>>>,
+      Initialization::Actions::AddComputeTags<
+          tmpl::push_back<StepChoosers::step_chooser_compute_tags<
+                              GeneralizedHarmonicTemplateBase>,
+                          evolution::Tags::AnalyticSolutionsCompute<
+                              volume_dim, analytic_solution_fields>>>,
       ::evolution::dg::Initialization::Mortars<volume_dim, system>,
       evolution::Actions::InitializeRunEventsAndDenseTriggers,
       Initialization::Actions::RemoveOptionsAndTerminatePhase>;

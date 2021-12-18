@@ -55,8 +55,7 @@ template <typename BackgroundTag, typename AnalyticSolutionFields,
           typename AnalyticSolutionType>
 struct InitializeOptionalAnalyticSolution {
  private:
-  using analytic_fields_tag =
-      ::Tags::AnalyticSolutionsOptional<AnalyticSolutionFields>;
+  using analytic_fields_tag = ::Tags::AnalyticSolutions<AnalyticSolutionFields>;
 
  public:
   using simple_tags = tmpl::list<analytic_fields_tag>;

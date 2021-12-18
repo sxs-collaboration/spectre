@@ -154,13 +154,15 @@ class AnalyticSolution<System, Dim, tmpl::list<FieldTags...>,
           boundary_condition_types_)) {
         case elliptic::BoundaryConditionType::Dirichlet:
           data_on_slice(
-              field, get<::Tags::Analytic<field_tag>>(analytic_solutions),
+              field,
+              get<::Tags::detail::AnalyticImpl<field_tag>>(analytic_solutions),
               volume_mesh.extents(), direction.dimension(), slice_index);
           break;
         case elliptic::BoundaryConditionType::Neumann:
           normal_dot_flux(
               n_dot_flux, face_normal,
-              data_on_slice(get<::Tags::Analytic<flux_tag>>(analytic_solutions),
+              data_on_slice(get<::Tags::detail::AnalyticImpl<flux_tag>>(
+                                analytic_solutions),
                             volume_mesh.extents(), direction.dimension(),
                             slice_index));
           break;

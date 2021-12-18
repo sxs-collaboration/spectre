@@ -311,12 +311,11 @@ struct EvolutionMetavars {
               volume_dim, system, Burgers::subcell::DgInitialDataTci>>,
           tmpl::list<>>,
 
-      tmpl::conditional_t<
-          is_analytic_solution_v<initial_data>,
-          Initialization::Actions::AddComputeTags<
-              tmpl::list<evolution::Tags::AnalyticCompute<
-                  1, initial_data_tag, analytic_solution_fields>>>,
-          tmpl::list<>>,
+      tmpl::conditional_t<is_analytic_solution_v<initial_data>,
+                          Initialization::Actions::AddComputeTags<tmpl::list<
+                              evolution::Tags::AnalyticSolutionsCompute<
+                                  1, analytic_solution_fields>>>,
+                          tmpl::list<>>,
       Initialization::Actions::AddComputeTags<
           StepChoosers::step_chooser_compute_tags<EvolutionMetavars>>,
       ::evolution::dg::Initialization::Mortars<volume_dim, system>,

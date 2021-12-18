@@ -196,8 +196,8 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
       Parallel::GlobalCache<Metavariables>& cache,
       const ElementId<VolumeDim>& array_index,
       const ParallelComponent* const component) const {
-    std::optional<
-        Variables<tmpl::list<::Tags::Analytic<AnalyticSolutionTensors>...>>>
+    std::optional<Variables<
+        tmpl::list<::Tags::detail::AnalyticImpl<AnalyticSolutionTensors>...>>>
         analytic_solution_variables{};
     const auto set_analytic_soln =
         [&analytic_solution_variables, &cache, &observation_value](

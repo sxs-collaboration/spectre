@@ -131,9 +131,9 @@ void test_initialize_analytic_solution(
     const auto analytic_solutions =
         initialize_analytic_solution(std::make_unique<AnalyticSolution>());
     REQUIRE(analytic_solutions.has_value());
-    CHECK_ITERABLE_APPROX(
-        get(get<::Tags::Analytic<ScalarFieldTag>>(*analytic_solutions)),
-        get(expected_solution));
+    CHECK_ITERABLE_APPROX(get(get<::Tags::detail::AnalyticImpl<ScalarFieldTag>>(
+                              *analytic_solutions)),
+                          get(expected_solution));
   }
   {
     INFO("No analytic solution is available");

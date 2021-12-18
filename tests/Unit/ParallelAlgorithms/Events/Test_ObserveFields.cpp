@@ -74,14 +74,14 @@ namespace {
 // NOLINTNEXTLINE(google-build-using-namespace)
 using namespace TestHelpers::dg::Events::ObserveFields;
 
-template <typename System, bool AlwaysHasAnalyticSolutions,
-          typename ArraySectionIdTag = void, typename ObserveEvent>
+template <typename System, typename ArraySectionIdTag = void,
+          typename ObserveEvent>
 void test_observe(
     const std::unique_ptr<ObserveEvent> observe,
     const std::optional<Mesh<System::volume_dim>>& interpolating_mesh,
     const bool has_analytic_solutions,
     const std::optional<std::string>& section = std::nullopt) {
-  using metavariables = Metavariables<System, AlwaysHasAnalyticSolutions>;
+  using metavariables = Metavariables<System, false>;
   constexpr size_t volume_dim = System::volume_dim;
   using element_component = ElementComponent<metavariables>;
   using observer_component = MockObserverComponent<metavariables>;
@@ -107,7 +107,8 @@ void test_observe(
 
   const typename System::solution_for_test analytic_solution{};
   using solution_variables = typename System::solution_for_test::vars_for_test;
-  const Variables<db::wrap_tags_in<::Tags::Analytic, solution_variables>>
+  const Variables<
+      db::wrap_tags_in<::Tags::detail::AnalyticImpl, solution_variables>>
       solutions{variables_from_tagged_tuple(analytic_solution.variables(
           get<coordinates_tag>(vars), observation_time, solution_variables{}))};
   const Variables<solution_variables> errors =
@@ -122,25 +123,16 @@ void test_observe(
                                                       element_id);
   ActionTesting::emplace_group_component<observer_component>(&runner);
 
-  const auto box = db::create<db::AddSimpleTags<
-      Parallel::Tags::MetavariablesImpl<metavariables>, ObservationTimeTag,
-      domain::Tags::Mesh<volume_dim>,
-      ::Tags::Variables<typename decltype(vars)::tags_list>,
-      tmpl::conditional_t<
-          AlwaysHasAnalyticSolutions,
-          ::Tags::AnalyticSolutions<solution_variables>,
-          ::Tags::AnalyticSolutionsOptional<solution_variables>>,
-      observers::Tags::ObservationKey<ArraySectionIdTag>>>(
+  const auto box = db::create<
+      db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<metavariables>,
+                        ObservationTimeTag, domain::Tags::Mesh<volume_dim>,
+                        ::Tags::Variables<typename decltype(vars)::tags_list>,
+                        ::Tags::AnalyticSolutions<solution_variables>,
+                        observers::Tags::ObservationKey<ArraySectionIdTag>>>(
       metavariables{}, observation_time, mesh, vars,
       [&solutions, &has_analytic_solutions]() {
-        if constexpr (AlwaysHasAnalyticSolutions) {
-          (void)has_analytic_solutions;
-          // NOLINTNEXTLINE(performance-no-automatic-move)
-          return solutions;
-        } else {
-          return has_analytic_solutions ? std::make_optional(solutions)
-                                        : std::nullopt;
-        }
+        return has_analytic_solutions ? std::make_optional(solutions)
+                                      : std::nullopt;
       }(),
       section);
 
@@ -233,7 +225,7 @@ void test_observe(
       check_component(name, get<decltype(tag)>(vars).get(indices...));
     }
   });
-  if (AlwaysHasAnalyticSolutions or has_analytic_solutions) {
+  if (has_analytic_solutions) {
     System::solution_for_test::check_data(
         [&check_component, &errors](const std::string& name, auto tag,
                                     const auto... indices) {
@@ -248,22 +240,21 @@ void test_observe(
   CHECK(observe->needs_evolved_variables());
 }
 
-template <typename System, bool AlwaysHasAnalyticSolutions = true>
+template <typename System>
 void test_system(
     const std::string& mesh_creation_string,
     const std::optional<Mesh<System::volume_dim>>& interpolating_mesh = {},
     const bool has_analytic_solutions = true,
     const std::optional<std::string>& section = std::nullopt) {
   INFO(pretty_type::get_name<System>());
-  CAPTURE(AlwaysHasAnalyticSolutions);
   CAPTURE(has_analytic_solutions);
   CAPTURE(mesh_creation_string);
   using ArraySectionIdTag =
       tmpl::front<tmpl::push_back<typename System::extra_args, void>>;
   INFO(pretty_type::get_name<ArraySectionIdTag>());
   CAPTURE(section);
-  using metavariables = Metavariables<System, AlwaysHasAnalyticSolutions>;
-  test_observe<System, AlwaysHasAnalyticSolutions, ArraySectionIdTag>(
+  using metavariables = Metavariables<System, false>;
+  test_observe<System, ArraySectionIdTag>(
       std::make_unique<typename System::ObserveEvent>(
           System::make_test_object(interpolating_mesh)),
       interpolating_mesh, has_analytic_solutions, section);
@@ -275,9 +266,9 @@ void test_system(
       TestHelpers::test_creation<std::unique_ptr<Event>, metavariables>(
           creation_string);
   auto serialized_event = serialize_and_deserialize(factory_event);
-  test_observe<System, AlwaysHasAnalyticSolutions, ArraySectionIdTag>(
-      std::move(serialized_event), interpolating_mesh, has_analytic_solutions,
-      section);
+  test_observe<System, ArraySectionIdTag>(std::move(serialized_event),
+                                          interpolating_mesh,
+                                          has_analytic_solutions, section);
 }
 }  // namespace
 
@@ -291,18 +282,15 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields", "[Unit][Evolution]") {
     INVOKE_TEST_FUNCTION(
         test_system, (interpolating_mesh_str, std::nullopt, true, std::nullopt),
         (system_no_section, system_with_section,
-         ComplicatedSystem<dg::Events::ObserveFields>),
-        (true));
+         ComplicatedSystem<dg::Events::ObserveFields>));
     INVOKE_TEST_FUNCTION(
         test_system, (interpolating_mesh_str, std::nullopt, true, "Section0"),
         (system_no_section, system_with_section,
-         ComplicatedSystem<dg::Events::ObserveFields>),
-        (true));
+         ComplicatedSystem<dg::Events::ObserveFields>));
     INVOKE_TEST_FUNCTION(test_system,
                          (interpolating_mesh_str, std::nullopt, false),
                          (ScalarSystem<dg::Events::ObserveFields>,
-                          ComplicatedSystem<dg::Events::ObserveFields>),
-                         (true, false));
+                          ComplicatedSystem<dg::Events::ObserveFields>));
   }
 
   {
@@ -316,10 +304,10 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields", "[Unit][Evolution]") {
                                         Spectral::Quadrature::GaussLobatto};
     INVOKE_TEST_FUNCTION(test_system,
                          (interpolating_mesh_str, interpolating_mesh_1d, true),
-                         (ScalarSystem<dg::Events::ObserveFields>), (true));
-    INVOKE_TEST_FUNCTION(
-        test_system, (interpolating_mesh_str, interpolating_mesh_1d, false),
-        (ScalarSystem<dg::Events::ObserveFields>), (true, false));
+                         (ScalarSystem<dg::Events::ObserveFields>));
+    INVOKE_TEST_FUNCTION(test_system,
+                         (interpolating_mesh_str, interpolating_mesh_1d, false),
+                         (ScalarSystem<dg::Events::ObserveFields>));
     const Mesh<2> interpolating_mesh_2d{12, Spectral::Basis::Legendre,
                                         Spectral::Quadrature::GaussLobatto};
     test_system<ComplicatedSystem<dg::Events::ObserveFields>>(
@@ -401,7 +389,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields", "[Unit][Evolution]") {
         {3, 9}, {Spectral::Basis::Legendre, Spectral::Basis::Chebyshev},
         {Spectral::Quadrature::Gauss, Spectral::Quadrature::GaussLobatto});
 
-    test_observe<ComplicatedSystem<dg::Events::ObserveFields>, true>(
+    test_observe<ComplicatedSystem<dg::Events::ObserveFields>>(
         std::make_unique<typename ComplicatedSystem<
             dg::Events::ObserveFields>::ObserveEvent>(
             ComplicatedSystem<dg::Events::ObserveFields>::make_test_object(

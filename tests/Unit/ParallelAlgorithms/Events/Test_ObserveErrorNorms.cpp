@@ -232,8 +232,7 @@ struct ComplicatedSystem {
   };
 };
 
-template <typename System, bool HasAnalyticSolutions,
-          typename ArraySectionIdTag, typename ObserveEvent>
+template <typename System, typename ArraySectionIdTag, typename ObserveEvent>
 void test_observe(const std::unique_ptr<ObserveEvent> observe,
                   const bool has_analytic_solutions,
                   const std::optional<std::string>& section) {
@@ -257,7 +256,8 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe,
 
   const typename System::solution_for_test analytic_solution{};
   using solution_variables = typename System::vars_for_test;
-  const Variables<db::wrap_tags_in<Tags::Analytic, solution_variables>>
+  const Variables<
+      db::wrap_tags_in<Tags::detail::AnalyticImpl, solution_variables>>
       solutions{variables_from_tagged_tuple(analytic_solution.variables(
           get<coordinates_tag>(vars), observation_time, solution_variables{}))};
   const Variables<solution_variables> errors =
@@ -274,20 +274,12 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe,
   const auto box = db::create<db::AddSimpleTags<
       Parallel::Tags::MetavariablesImpl<metavariables>, ObservationTimeTag,
       Tags::Variables<typename decltype(vars)::tags_list>,
-      tmpl::conditional_t<
-          HasAnalyticSolutions, ::Tags::AnalyticSolutions<solution_variables>,
-          ::Tags::AnalyticSolutionsOptional<solution_variables>>,
+      ::Tags::AnalyticSolutions<solution_variables>,
       observers::Tags::ObservationKey<ArraySectionIdTag>>>(
       metavariables{}, observation_time, vars,
       [&solutions, &has_analytic_solutions]() {
-        if constexpr (HasAnalyticSolutions) {
-          (void)has_analytic_solutions;
-          // NOLINTNEXTLINE(performance-no-automatic-move)
-          return solutions;
-        } else {
-          return has_analytic_solutions ? std::make_optional(solutions)
-                                        : std::nullopt;
-        }
+        return has_analytic_solutions ? std::make_optional(solutions)
+                                      : std::nullopt;
       }(),
       section);
 
@@ -310,7 +302,7 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe,
                ActionTesting::cache<element_component>(runner, array_index),
                array_index, std::add_pointer_t<element_component>{});
 
-  if ((not HasAnalyticSolutions and not has_analytic_solutions) or
+  if (not has_analytic_solutions or
       (not std::is_same_v<ArraySectionIdTag, void> and
        not section.has_value())) {
     CHECK(runner.template is_simple_action_queue_empty<observer_component>(0));
@@ -340,29 +332,29 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe,
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-lambda-capture"
 #endif  // __clang__
-  System::solution_for_test::check_data([&errors, &num_tensors_observed,
-                                         &results](const std::string& name,
-                                                   auto tag) {
+  System::solution_for_test::check_data(
+      [&errors, &num_tensors_observed, &results](const std::string& name,
+                                                 auto tag) {
 #if defined(__clang__) && __clang_major__ > 4
 #pragma GCC diagnostic pop
 #endif  // __clang__
-    double expected = 0.0;
-    for (const auto& component : get<decltype(tag)>(errors)) {
-      // The rest of the RMS calculation is done later by the writer.
-      expected += alg::accumulate(square(component), 0.0);
-    }
+        double expected = 0.0;
+        for (const auto& component : get<decltype(tag)>(errors)) {
+          // The rest of the RMS calculation is done later by the writer.
+          expected += alg::accumulate(square(component), 0.0);
+        }
 
-    CAPTURE(results.reduction_names);
-    CAPTURE(name);
-    const auto it = alg::find(results.reduction_names, name);
-    CHECK(it != results.reduction_names.end());
-    if (it != results.reduction_names.end()) {
-      CHECK(results.errors[static_cast<size_t>(
-                               it - results.reduction_names.begin()) -
-                           2] == expected);
-    }
-    ++num_tensors_observed;
-  });
+        CAPTURE(results.reduction_names);
+        CAPTURE(name);
+        const auto it = alg::find(results.reduction_names, name);
+        CHECK(it != results.reduction_names.end());
+        if (it != results.reduction_names.end()) {
+          CHECK(results.errors[static_cast<size_t>(
+                                   it - results.reduction_names.begin()) -
+                               2] == expected);
+        }
+        ++num_tensors_observed;
+      });
   CHECK(results.errors.size() == num_tensors_observed);
 
   CHECK(static_cast<const Event&>(*observe).is_ready(
@@ -371,18 +363,16 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe,
   CHECK(observe->needs_evolved_variables());
 }
 
-template <typename System, bool HasAnalyticSolutions,
-          typename ArraySectionIdTag>
+template <typename System, typename ArraySectionIdTag>
 void test_system(const bool has_analytic_solutions,
                  const std::optional<std::string>& section) {
   INFO(pretty_type::get_name<System>());
-  CAPTURE(HasAnalyticSolutions);
   CAPTURE(has_analytic_solutions);
   INFO(pretty_type::get_name<ArraySectionIdTag>());
   CAPTURE(section);
 
   using metavariables = Metavariables<System, ArraySectionIdTag>;
-  test_observe<System, HasAnalyticSolutions, ArraySectionIdTag>(
+  test_observe<System, ArraySectionIdTag>(
       std::make_unique<dg::Events::ObserveErrorNorms<
           ObservationTimeTag, typename System::vars_for_test,
           ArraySectionIdTag>>("reduction0"),
@@ -395,19 +385,19 @@ void test_system(const bool has_analytic_solutions,
           "ObserveErrorNorms:\n"
           "  SubfileName: reduction0");
   auto serialized_event = serialize_and_deserialize(factory_event);
-  test_observe<System, HasAnalyticSolutions, ArraySectionIdTag>(
-      std::move(serialized_event), has_analytic_solutions, section);
+  test_observe<System, ArraySectionIdTag>(std::move(serialized_event),
+                                          has_analytic_solutions, section);
 }
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveErrorNorms", "[Unit][Evolution]") {
   INVOKE_TEST_FUNCTION(test_system, (true, std::nullopt),
-                       (ScalarSystem, ComplicatedSystem), (true, false),
+                       (ScalarSystem, ComplicatedSystem),
                        (void, TestSectionIdTag));
   INVOKE_TEST_FUNCTION(test_system, (true, "Section0"),
-                       (ScalarSystem, ComplicatedSystem), (true, false),
+                       (ScalarSystem, ComplicatedSystem),
                        (void, TestSectionIdTag));
   INVOKE_TEST_FUNCTION(test_system, (false, std::nullopt),
-                       (ScalarSystem, ComplicatedSystem), (true, false),
+                       (ScalarSystem, ComplicatedSystem),
                        (void, TestSectionIdTag));
 }

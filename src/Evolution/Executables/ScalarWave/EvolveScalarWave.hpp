@@ -134,8 +134,7 @@ struct EvolutionMetavars {
                                     Frame::Inertial>,
       typename system::gradient_variables>;
   using analytic_compute =
-      evolution::Tags::AnalyticCompute<Dim, initial_data_tag,
-                                       analytic_solution_fields>;
+      evolution::Tags::AnalyticSolutionsCompute<Dim, analytic_solution_fields>;
 
   using observe_fields =
       tmpl::push_back<tmpl::append<typename system::variables_tag::tags_list,

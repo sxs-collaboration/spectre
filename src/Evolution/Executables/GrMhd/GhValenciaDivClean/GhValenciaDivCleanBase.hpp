@@ -422,12 +422,11 @@ struct GhValenciaDivCleanTemplateBase<
       VariableFixing::Actions::FixVariables<
           VariableFixing::FixToAtmosphere<volume_dim>>,
       GeneralizedHarmonic::Actions::InitializeGhAnd3Plus1Variables<volume_dim>,
-      tmpl::conditional_t<
-          is_analytic_solution_v<initial_data>,
-          Initialization::Actions::AddComputeTags<
-              tmpl::list<evolution::Tags::AnalyticCompute<
-                  3, initial_data_tag, analytic_solution_fields>>>,
-          tmpl::list<>>,
+      tmpl::conditional_t<is_analytic_solution_v<initial_data>,
+                          Initialization::Actions::AddComputeTags<tmpl::list<
+                              evolution::Tags::AnalyticSolutionsCompute<
+                                  3, analytic_solution_fields>>>,
+                          tmpl::list<>>,
       Initialization::Actions::AddComputeTags<
           StepChoosers::step_chooser_compute_tags<
               GhValenciaDivCleanTemplateBase>>,

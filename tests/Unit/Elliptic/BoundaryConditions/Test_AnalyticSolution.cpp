@@ -96,10 +96,10 @@ void test_analytic_solution() {
     tnsr::i<DataVector, Dim> face_normal{face_num_points, 0.};
     get<0>(face_normal) = -2.;
     // Create arbitrary analytic solution data
-    Variables<tmpl::list<::Tags::Analytic<ScalarFieldTag<1>>,
-                         ::Tags::Analytic<ScalarFieldTag<2>>,
-                         ::Tags::Analytic<FluxTag<Dim, 1>>,
-                         ::Tags::Analytic<FluxTag<Dim, 2>>>>
+    Variables<tmpl::list<::Tags::detail::AnalyticImpl<ScalarFieldTag<1>>,
+                         ::Tags::detail::AnalyticImpl<ScalarFieldTag<2>>,
+                         ::Tags::detail::AnalyticImpl<FluxTag<Dim, 1>>,
+                         ::Tags::detail::AnalyticImpl<FluxTag<Dim, 2>>>>
         analytic_solutions{volume_num_points};
     std::iota(analytic_solutions.data(),
               analytic_solutions.data() + analytic_solutions.size(), 1.);
@@ -110,7 +110,7 @@ void test_analytic_solution() {
                        FluxTag<Dim, 2>>>,
         domain::Tags::Faces<Dim, domain::Tags::Direction<Dim>>,
         domain::Tags::Faces<Dim, domain::Tags::FaceNormal<Dim>>>>(
-        volume_mesh, std::move(analytic_solutions),
+        volume_mesh, std::make_optional(std::move(analytic_solutions)),
         DirectionMap<Dim, Direction<Dim>>{{direction, direction}},
         DirectionMap<Dim, tnsr::i<DataVector, Dim>>{{direction, face_normal}});
     Variables<tmpl::list<ScalarFieldTag<1>, ScalarFieldTag<2>,

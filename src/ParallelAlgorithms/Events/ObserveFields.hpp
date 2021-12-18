@@ -327,9 +327,9 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
               const auto floating_point_type =
                   variables_to_observe.at(db::tag_name<tensor_tag>());
               for (size_t i = 0; i < tensor.size(); ++i) {
-                DataVector error = interpolant.interpolate(
-                    DataVector(tensor[i] - get<::Tags::Analytic<tensor_tag>>(
-                                               analytic_solutions->get())[i]));
+                DataVector error = interpolant.interpolate(DataVector(
+                    tensor[i] - get<::Tags::detail::AnalyticImpl<tensor_tag>>(
+                                    analytic_solutions->get())[i]));
                 if (floating_point_type == FloatingPointType::Float) {
                   components.emplace_back(
                       element_name + "Error(" + db::tag_name<tensor_tag>() +
