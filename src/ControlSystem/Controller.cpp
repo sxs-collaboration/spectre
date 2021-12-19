@@ -4,13 +4,16 @@
 #include "ControlSystem/Controller.hpp"
 
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
 template <size_t DerivOrder>
 DataVector Controller<DerivOrder>::operator()(
-    const DataVector& timescales,
-    const std::array<DataVector, DerivOrder + 1>& q_and_derivs,
-    const double q_time_offset, const double deriv_time_offset) const {
+    const double time, const DataVector& timescales,
+    const std::array<DataVector, DerivOrder>& q_and_derivs,
+    const double q_time_offset, const double deriv_time_offset) {
+  last_update_time_ = time;
+  assign_time_between_updates(min(timescales));
   // helper lambda for computing the binomial coefficients
   const auto binomial = [](size_t N, size_t k) {
     return falling_factorial(N, k) / factorial(k);
@@ -77,7 +80,8 @@ template <size_t DerivOrder>
 bool operator==(const Controller<DerivOrder>& lhs,
                 const Controller<DerivOrder>& rhs) {
   return lhs.update_fraction_ == rhs.update_fraction_ and
-         lhs.time_between_updates_ == rhs.time_between_updates_;
+         lhs.time_between_updates_ == rhs.time_between_updates_ and
+         lhs.last_update_time_ == rhs.last_update_time_;
 }
 
 template <size_t DerivOrder>
@@ -86,7 +90,19 @@ bool operator!=(const Controller<DerivOrder>& lhs,
   return not(lhs == rhs);
 }
 
-// explicit instantiations
-template class Controller<2>;
-template bool operator==(const Controller<2>&, const Controller<2>&);
-template bool operator!=(const Controller<2>&, const Controller<2>&);
+// explicit instantiations for deriv order (2, 3)
+// Currently we only support control systems with DerivOrder=2 or 3. If we want
+// a higher order control system, we'll need to add the instantiation later.
+#define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
+
+#define INSTANTIATE(_, data)                              \
+  template class Controller<DIM(data)>;                   \
+  template bool operator==(const Controller<DIM(data)>&,  \
+                           const Controller<DIM(data)>&); \
+  template bool operator!=(const Controller<DIM(data)>&,  \
+                           const Controller<DIM(data)>&);
+
+GENERATE_INSTANTIATIONS(INSTANTIATE, (2, 3))
+
+#undef INSTANTIATE
+#undef DIM

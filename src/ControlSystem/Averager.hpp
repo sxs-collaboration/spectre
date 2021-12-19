@@ -14,6 +14,7 @@
 #include "Options/Options.hpp"
 #include "Parallel/PupStlCpp17.hpp"
 #include "Utilities/BoostHelpers.hpp"
+#include "Utilities/Gsl.hpp"
 
 /// \ingroup ControlSystemGroup
 /// A weighted exponential averager of \f$Q\f$ and its derivatives
@@ -119,6 +120,21 @@ class Averager {
   /// Returns the averaging timescale fraction
   double avg_timescale_frac() const { return avg_tscale_frac_; }
 
+  /// Assign the minimum of the measurement timescales related to a specific
+  /// control system to time_between_measurements_
+  void assign_time_between_measurements(
+      const double current_time_between_measurements) {
+    time_between_measurements_ = current_time_between_measurements;
+  }
+
+  /// Returns `true` if the averager is ready to receive a measurement
+  bool is_ready(const double time) const {
+    if (UNLIKELY(times_.empty())) {
+      return true;
+    }
+    return time >= times_[0] + time_between_measurements_;
+  }
+
   void pup(PUP::er& p);
 
  private:
@@ -138,6 +154,9 @@ class Averager {
   std::deque<DataVector> raw_qs_;
   double weight_k_ = 0.0;
   double tau_k_ = 0.0;
+  // If this time_between_measurements_ isn't set, the default should just be
+  // that no measurements happen (i.e. infinity)
+  double time_between_measurements_{std::numeric_limits<double>::infinity()};
 };
 
 template <size_t DDerivOrder>

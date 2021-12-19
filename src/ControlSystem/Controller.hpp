@@ -63,23 +63,40 @@ class Controller {
   Controller& operator=(const Controller&) = default;
   ~Controller() = default;
 
-  DataVector operator()(
-      const DataVector& timescales,
-      const std::array<DataVector, DerivOrder + 1>& q_and_derivs,
-      double q_time_offset, double deriv_time_offset) const;
+  DataVector operator()(const double time, const DataVector& timescales,
+                        const std::array<DataVector, DerivOrder>& q_and_derivs,
+                        double q_time_offset, double deriv_time_offset);
 
-  /// Takes the current minimum of all timescales and uses that to set the time
-  /// between updates
+  /// Takes the current minimum of all timescales for a specific control system
+  /// and uses that to set the time between updates
   void assign_time_between_updates(const double current_min_timescale) {
     time_between_updates_ = update_fraction_ * current_min_timescale;
   }
 
+  /// Returns `true` if the controller is ready to calculate the control signal
+  bool is_ready(const double time) {
+    return time >= last_update_time_ + time_between_updates_;
+  }
+
+  /// Calculates the new expiration time as the old expiration time plus the
+  /// time between updates
+  double next_expiration_time(const double current_expiration_time) {
+    return current_expiration_time + time_between_updates_;
+  }
+
+  /// Sets the last time updated to the initial time
+  void set_initial_update_time(const double initial_time) {
+    last_update_time_ = initial_time;
+  }
+
+  /// Return the update fraction
   double get_update_fraction() const { return update_fraction_; }
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) {
     p | update_fraction_;
     p | time_between_updates_;
+    p | last_update_time_;
   }
 
   template <size_t LocalDerivOrder>
@@ -90,9 +107,12 @@ class Controller {
  private:
   // If update_fraction_ isn't set we need to error
   double update_fraction_{std::numeric_limits<double>::signaling_NaN()};
-  // If this time_between_triggers_ isn't set, the default should just be that
+  // If this time_between_updates_ isn't set, the default should just be that
   // the functions of time are never updated (i.e. infinity)
   double time_between_updates_{std::numeric_limits<double>::infinity()};
+  // Set to a large negative number to signify that we haven't updated yet and
+  // should as early as possible
+  double last_update_time_{-std::numeric_limits<double>::max()};
 };
 
 template <size_t DerivOrder>
