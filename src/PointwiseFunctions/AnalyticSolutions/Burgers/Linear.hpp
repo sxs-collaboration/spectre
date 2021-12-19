@@ -39,8 +39,8 @@ class Linear : public evolution::initial_data::InitialData,
   static constexpr Options::String help{"A spatially linear solution"};
 
   Linear() = default;
-  Linear(const Linear&) = delete;
-  Linear& operator=(const Linear&) = delete;
+  Linear(const Linear&) = default;
+  Linear& operator=(const Linear&) = default;
   Linear(Linear&&) = default;
   Linear& operator=(Linear&&) = default;
   ~Linear() = default;

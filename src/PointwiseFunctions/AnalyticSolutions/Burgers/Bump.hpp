@@ -60,8 +60,8 @@ class Bump : public evolution::initial_data::InitialData,
   static constexpr Options::String help{"A bump solution"};
 
   Bump() = default;
-  Bump(const Bump&) = delete;
-  Bump& operator=(const Bump&) = delete;
+  Bump(const Bump&) = default;
+  Bump& operator=(const Bump&) = default;
   Bump(Bump&&) = default;
   Bump& operator=(Bump&&) = default;
   ~Bump() = default;
