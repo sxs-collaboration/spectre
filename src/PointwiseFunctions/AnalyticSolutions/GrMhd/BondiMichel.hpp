@@ -220,8 +220,8 @@ class BondiMichel : public evolution::initial_data::InitialData,
       "where the fluid speed overtakes the sound speed."};
 
   BondiMichel() = default;
-  BondiMichel(const BondiMichel& /*rhs*/) = delete;
-  BondiMichel& operator=(const BondiMichel& /*rhs*/) = delete;
+  BondiMichel(const BondiMichel& /*rhs*/) = default;
+  BondiMichel& operator=(const BondiMichel& /*rhs*/) = default;
   BondiMichel(BondiMichel&& /*rhs*/) = default;
   BondiMichel& operator=(BondiMichel&& /*rhs*/) = default;
   ~BondiMichel() = default;

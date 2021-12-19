@@ -138,8 +138,8 @@ class BlastWave : public evolution::initial_data::InitialData,
       "Cylindrical or spherical blast wave analytic initial data."};
 
   BlastWave() = default;
-  BlastWave(const BlastWave& /*rhs*/) = delete;
-  BlastWave& operator=(const BlastWave& /*rhs*/) = delete;
+  BlastWave(const BlastWave& /*rhs*/) = default;
+  BlastWave& operator=(const BlastWave& /*rhs*/) = default;
   BlastWave(BlastWave&& /*rhs*/) = default;
   BlastWave& operator=(BlastWave&& /*rhs*/) = default;
   ~BlastWave() = default;

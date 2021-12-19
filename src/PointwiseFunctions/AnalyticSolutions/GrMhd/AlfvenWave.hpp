@@ -148,8 +148,8 @@ class AlfvenWave : public evolution::initial_data::InitialData,
       "Circularly polarized Alfven wave in Minkowski spacetime."};
 
   AlfvenWave() = default;
-  AlfvenWave(const AlfvenWave& /*rhs*/) = delete;
-  AlfvenWave& operator=(const AlfvenWave& /*rhs*/) = delete;
+  AlfvenWave(const AlfvenWave& /*rhs*/) = default;
+  AlfvenWave& operator=(const AlfvenWave& /*rhs*/) = default;
   AlfvenWave(AlfvenWave&& /*rhs*/) = default;
   AlfvenWave& operator=(AlfvenWave&& /*rhs*/) = default;
   ~AlfvenWave() = default;

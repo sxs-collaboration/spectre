@@ -126,8 +126,8 @@ class MagneticFieldLoop : public evolution::initial_data::InitialData,
       "Periodic advection of a magnetic field loop in Minkowski."};
 
   MagneticFieldLoop() = default;
-  MagneticFieldLoop(const MagneticFieldLoop& /*rhs*/) = delete;
-  MagneticFieldLoop& operator=(const MagneticFieldLoop& /*rhs*/) = delete;
+  MagneticFieldLoop(const MagneticFieldLoop& /*rhs*/) = default;
+  MagneticFieldLoop& operator=(const MagneticFieldLoop& /*rhs*/) = default;
   MagneticFieldLoop(MagneticFieldLoop&& /*rhs*/) = default;
   MagneticFieldLoop& operator=(MagneticFieldLoop&& /*rhs*/) = default;
   ~MagneticFieldLoop() = default;

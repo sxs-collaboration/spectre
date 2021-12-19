@@ -69,8 +69,8 @@ class OrszagTangVortex : public evolution::initial_data::InitialData,
       "The relativistic Orszag-Tang vortex"};
 
   OrszagTangVortex();
-  OrszagTangVortex(const OrszagTangVortex& /*rhs*/) = delete;
-  OrszagTangVortex& operator=(const OrszagTangVortex& /*rhs*/) = delete;
+  OrszagTangVortex(const OrszagTangVortex& /*rhs*/) = default;
+  OrszagTangVortex& operator=(const OrszagTangVortex& /*rhs*/) = default;
   OrszagTangVortex(OrszagTangVortex&& /*rhs*/) = default;
   OrszagTangVortex& operator=(OrszagTangVortex&& /*rhs*/) = default;
   ~OrszagTangVortex() = default;

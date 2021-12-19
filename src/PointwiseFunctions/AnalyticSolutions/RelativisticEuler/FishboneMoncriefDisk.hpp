@@ -209,8 +209,9 @@ class FishboneMoncriefDisk
       "Fluid disk orbiting a Kerr black hole."};
 
   FishboneMoncriefDisk() = default;
-  FishboneMoncriefDisk(const FishboneMoncriefDisk& /*rhs*/) = delete;
-  FishboneMoncriefDisk& operator=(const FishboneMoncriefDisk& /*rhs*/) = delete;
+  FishboneMoncriefDisk(const FishboneMoncriefDisk& /*rhs*/) = default;
+  FishboneMoncriefDisk& operator=(const FishboneMoncriefDisk& /*rhs*/) =
+      default;
   FishboneMoncriefDisk(FishboneMoncriefDisk&& /*rhs*/) = default;
   FishboneMoncriefDisk& operator=(FishboneMoncriefDisk&& /*rhs*/) = default;
   ~FishboneMoncriefDisk() = default;

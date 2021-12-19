@@ -119,8 +119,8 @@ class KomissarovShock : public evolution::initial_data::InitialData,
       "x=0."};
 
   KomissarovShock() = default;
-  KomissarovShock(const KomissarovShock& /*rhs*/) = delete;
-  KomissarovShock& operator=(const KomissarovShock& /*rhs*/) = delete;
+  KomissarovShock(const KomissarovShock& /*rhs*/) = default;
+  KomissarovShock& operator=(const KomissarovShock& /*rhs*/) = default;
   KomissarovShock(KomissarovShock&& /*rhs*/) = default;
   KomissarovShock& operator=(KomissarovShock&& /*rhs*/) = default;
   ~KomissarovShock() = default;

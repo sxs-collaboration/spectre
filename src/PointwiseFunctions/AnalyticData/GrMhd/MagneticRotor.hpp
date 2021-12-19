@@ -124,8 +124,8 @@ class MagneticRotor : public evolution::initial_data::InitialData,
       "Magnetic rotor analytic initial data."};
 
   MagneticRotor() = default;
-  MagneticRotor(const MagneticRotor& /*rhs*/) = delete;
-  MagneticRotor& operator=(const MagneticRotor& /*rhs*/) = delete;
+  MagneticRotor(const MagneticRotor& /*rhs*/) = default;
+  MagneticRotor& operator=(const MagneticRotor& /*rhs*/) = default;
   MagneticRotor(MagneticRotor&& /*rhs*/) = default;
   MagneticRotor& operator=(MagneticRotor&& /*rhs*/) = default;
   ~MagneticRotor() = default;

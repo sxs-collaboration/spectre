@@ -152,8 +152,8 @@ class TovStar : public virtual evolution::initial_data::InitialData,
       "density and polytropic fluid."};
 
   TovStar() = default;
-  TovStar(const TovStar& /*rhs*/) = delete;
-  TovStar& operator=(const TovStar& /*rhs*/) = delete;
+  TovStar(const TovStar& /*rhs*/) = default;
+  TovStar& operator=(const TovStar& /*rhs*/) = default;
   TovStar(TovStar&& /*rhs*/) = default;
   TovStar& operator=(TovStar&& /*rhs*/) = default;
   ~TovStar() = default;

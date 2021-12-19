@@ -193,8 +193,8 @@ class MagnetizedTovStar : public virtual evolution::initial_data::InitialData,
   using tags = typename tov_star::template tags<DataType>;
 
   MagnetizedTovStar() = default;
-  MagnetizedTovStar(const MagnetizedTovStar& /*rhs*/) = delete;
-  MagnetizedTovStar& operator=(const MagnetizedTovStar& /*rhs*/) = delete;
+  MagnetizedTovStar(const MagnetizedTovStar& /*rhs*/) = default;
+  MagnetizedTovStar& operator=(const MagnetizedTovStar& /*rhs*/) = default;
   MagnetizedTovStar(MagnetizedTovStar&& /*rhs*/) = default;
   MagnetizedTovStar& operator=(MagnetizedTovStar&& /*rhs*/) = default;
   ~MagnetizedTovStar() = default;

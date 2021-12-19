@@ -151,8 +151,8 @@ namespace gr {
 class KerrSchildCoords {
  public:
   KerrSchildCoords() = default;
-  KerrSchildCoords(const KerrSchildCoords& /*rhs*/) = delete;
-  KerrSchildCoords& operator=(const KerrSchildCoords& /*rhs*/) = delete;
+  KerrSchildCoords(const KerrSchildCoords& /*rhs*/) = default;
+  KerrSchildCoords& operator=(const KerrSchildCoords& /*rhs*/) = default;
   KerrSchildCoords(KerrSchildCoords&& /*rhs*/) = default;
   KerrSchildCoords& operator=(KerrSchildCoords&& /*rhs*/) = default;
   ~KerrSchildCoords() = default;

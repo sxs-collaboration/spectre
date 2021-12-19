@@ -140,8 +140,8 @@ class BondiHoyleAccretion : public evolution::initial_data::InitialData,
       "Axially symmetric accretion on to a Kerr black hole."};
 
   BondiHoyleAccretion() = default;
-  BondiHoyleAccretion(const BondiHoyleAccretion& /*rhs*/) = delete;
-  BondiHoyleAccretion& operator=(const BondiHoyleAccretion& /*rhs*/) = delete;
+  BondiHoyleAccretion(const BondiHoyleAccretion& /*rhs*/) = default;
+  BondiHoyleAccretion& operator=(const BondiHoyleAccretion& /*rhs*/) = default;
   BondiHoyleAccretion(BondiHoyleAccretion&& /*rhs*/) = default;
   BondiHoyleAccretion& operator=(BondiHoyleAccretion&& /*rhs*/) = default;
   ~BondiHoyleAccretion() = default;

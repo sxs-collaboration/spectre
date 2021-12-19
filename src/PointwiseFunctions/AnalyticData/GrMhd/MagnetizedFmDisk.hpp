@@ -128,8 +128,8 @@ class MagnetizedFmDisk
       "Magnetized Fishbone-Moncrief disk."};
 
   MagnetizedFmDisk() = default;
-  MagnetizedFmDisk(const MagnetizedFmDisk& /*rhs*/) = delete;
-  MagnetizedFmDisk& operator=(const MagnetizedFmDisk& /*rhs*/) = delete;
+  MagnetizedFmDisk(const MagnetizedFmDisk& /*rhs*/) = default;
+  MagnetizedFmDisk& operator=(const MagnetizedFmDisk& /*rhs*/) = default;
   MagnetizedFmDisk(MagnetizedFmDisk&& /*rhs*/) = default;
   MagnetizedFmDisk& operator=(MagnetizedFmDisk&& /*rhs*/) = default;
   ~MagnetizedFmDisk() = default;
