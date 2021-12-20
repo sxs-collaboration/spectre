@@ -160,6 +160,7 @@ spectre_include_directories(${CMAKE_BINARY_DIR}/src/Parallel)
 
 add_subdirectory(external)
 add_subdirectory(src)
+add_subdirectory(support)
 if(BUILD_TESTING)
   add_subdirectory(tests)
 endif()

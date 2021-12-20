@@ -114,5 +114,6 @@ spectre_run_cmake() {
       -D BUILD_SHARED_LIBS=ON \
       -D MEMORY_ALLOCATOR=SYSTEM \
       -D BUILD_PYTHON_BINDINGS=ON \
+      -D MACHINE=Minerva \
       -Wno-dev "$@" $SPECTRE_HOME
 }

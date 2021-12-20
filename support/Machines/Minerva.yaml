@@ -1,0 +1,12 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+Machine:
+  Name: Minerva
+  Description: |
+    Supercomputer at the AEI Potsdam.
+    More information: https://minerva.aei.mpg.de
+  Scheduler: 'sbatch'
+  DefaultProcsPerNode: 15
+  DefaultQueue: 'nr'
+  DefaultTimeLimit: '24:00:00'
