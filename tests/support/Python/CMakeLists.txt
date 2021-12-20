@@ -9,3 +9,9 @@ if (BUILD_PYTHON_BINDINGS)
     PASS_REGULAR_EXPRESSION "${SPECTRE_VERSION}"
     LABELS "python")
 endif()
+
+spectre_add_python_bindings_test(
+  "support.Machines"
+  Test_Machines.py
+  "Machines"
+  None)
