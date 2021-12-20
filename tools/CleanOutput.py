@@ -1,6 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+import click
 import logging
 import os
 import re
@@ -22,6 +23,8 @@ def clean_output(input_file, output_dir, force):
 
     The `input_file` must list its expected output files in a comment, with the
     list of files indented by two spaces:
+
+    \b
     ```yaml
     # ExpectedOutput:
     #   Reduction.h5
@@ -68,30 +71,25 @@ def clean_output(input_file, output_dir, force):
         raise MissingExpectedOutputError(missing_files)
 
 
-def parse_args():
-    import argparse as ap
-    parser = ap.ArgumentParser(description="")
-    parser.add_argument('--input-file',
-                        required=True,
-                        help="Path to the input file of the run to clean up")
-    parser.add_argument('--output-dir',
-                        required=True,
-                        help="Output directory of the run to clean up")
-    parser.add_argument('-v',
-                        '--verbose',
-                        action='count',
-                        default=0,
-                        help="Verbosity (-v, -vv, ...)")
-    parser.add_argument('--force',
-                        action='store_true',
-                        help="Suppress all errors")
-    return parser.parse_args()
+@click.command(help=clean_output.__doc__)
+@click.argument('input_file',
+                type=click.Path(exists=True,
+                                file_okay=True,
+                                dir_okay=False,
+                                readable=True))
+@click.option('--output-dir',
+              '-o',
+              type=click.Path(exists=True,
+                              file_okay=False,
+                              dir_okay=True,
+                              readable=True),
+              required=True,
+              help="Output directory of the run to clean up")
+@click.option('--force', '-f', is_flag=True, help="Suppress all errors")
+def clean_output_command(**kwargs):
+    _rich_traceback_guard = True  # Hide traceback until here
+    clean_output(**kwargs)
 
 
 if __name__ == "__main__":
-    args = parse_args()
-
-    # Set the log level
-    logging.basicConfig(level=logging.WARNING - args.verbose * 10)
-
-    clean_output(args.input_file, args.output_dir, args.force)
+    clean_output_command(help_option_names=["-h", "--help"])
