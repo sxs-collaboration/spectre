@@ -110,8 +110,7 @@ above).
 
 The `DataVector` bindings serve as an example with code comments on how to write
 bindings for a class. There is also extensive documentation available directly
-from [pybind11](https://pybind11.readthedocs.io/). SpECTRE currently aims to
-support both Python 2.7 and Python 3 and as such all bindings must support both.
+from [pybind11](https://pybind11.readthedocs.io/).
 
 \note Exceptions should be allowed to propagate through the bindings so that
 error handling via exceptions is possible from python rather than having the

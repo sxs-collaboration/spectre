@@ -337,6 +337,8 @@ jobs:
           - compiler: gcc-11
             build_type: Debug
             PYTHON_EXECUTABLE: /usr/bin/python2
+            # We make no effort to keep Python bindings compatible with Py2.
+            BUILD_PYTHON_BINDINGS: OFF
           # Add a test without PCH to the build matrix, which only builds core
           # libraries. Building all the tests without the PCH takes very long
           # and the most we would catch is a missing include of something that's
