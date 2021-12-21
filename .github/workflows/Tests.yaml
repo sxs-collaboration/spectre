@@ -331,6 +331,8 @@ jobs:
           - compiler: gcc-8
             build_type: Debug
             PYTHON_EXECUTABLE: /usr/bin/python2
+            # We make no effort to keep Python bindings compatible with Py2.
+            BUILD_PYTHON_BINDINGS: OFF
           # Test compatibility with oldest supported CMake version
           - compiler: gcc-9
             build_type: Debug

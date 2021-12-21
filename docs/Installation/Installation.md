@@ -73,7 +73,9 @@ all of these dependencies.
 * [LIBXSMM](https://github.com/hfp/libxsmm) version 1.16.1 or later
 * [yaml-cpp](https://github.com/jbeder/yaml-cpp) version 0.6.3 is
   recommended. Building with shared library support is also recommended.
-* [Python](https://www.python.org/) 2.7, or 3.5 or later
+* [Python](https://www.python.org/) 2.7, or 3.5 or later. We retain
+  compatibility with Python 2 only for core functionality. Python bindings
+  require Python 3.7.
 * [NumPy](http://www.numpy.org/) 1.10 or later
 * [SciPy](https://www.scipy.org)
 * [matplotlib](https://matplotlib.org/)

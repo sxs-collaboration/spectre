@@ -5,7 +5,7 @@ option(BUILD_PYTHON_BINDINGS "Build the python bindings for SpECTRE" OFF)
 
 if(BUILD_PYTHON_BINDINGS)
   # Make sure to find Python first so it's consistent with pybind11
-  find_package(Python COMPONENTS Interpreter Development)
+  find_package(Python 3.7 REQUIRED COMPONENTS Interpreter Development)
 
   # Try to find the pybind11-config tool to find pybind11's CMake config files
   find_program(PYBIND11_CONFIG_TOOL pybind11-config)
