@@ -8,6 +8,7 @@ spectre_target_sources(
   Cerk2.cpp
   Cerk3.cpp
   Cerk4.cpp
+  Cerk5.cpp
   DormandPrince5.cpp
   RungeKutta3.cpp
   RungeKutta4.cpp
@@ -21,6 +22,7 @@ spectre_target_headers(
   Cerk2.hpp
   Cerk3.hpp
   Cerk4.hpp
+  Cerk5.hpp
   DormandPrince5.hpp
   RungeKutta3.hpp
   RungeKutta4.hpp
