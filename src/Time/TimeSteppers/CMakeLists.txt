@@ -5,6 +5,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   AdamsBashforthN.cpp
+  Cerk2.cpp
   DormandPrince5.cpp
   RungeKutta3.cpp
   RungeKutta4.cpp
@@ -15,6 +16,7 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   AdamsBashforthN.hpp
+  Cerk2.hpp
   DormandPrince5.hpp
   RungeKutta3.hpp
   RungeKutta4.hpp
