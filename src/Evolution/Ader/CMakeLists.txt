@@ -3,11 +3,27 @@
 
 set(LIBRARY Ader)
 
-add_spectre_library(${LIBRARY} INTERFACE)
+add_spectre_library(${LIBRARY})
+
+spectre_target_sources(
+  ${LIBRARY}
+  PRIVATE
+  Matrices.cpp
+  )
 
 spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   Ader.hpp
+  Matrices.hpp
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PUBLIC
+  DataStructures
+  Domain
+  ErrorHandling
+  Spectral
   )
