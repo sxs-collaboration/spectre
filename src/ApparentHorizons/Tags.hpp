@@ -751,8 +751,12 @@ struct DimensionfulSpinMagnitudeCompute : DimensionfulSpinMagnitude,
                                           db::ComputeTag {
   using base = DimensionfulSpinMagnitude;
   using return_type = double;
-  static constexpr auto function =
-      &StrahlkorperGr::dimensionful_spin_magnitude<Frame>;
+  static constexpr auto function = static_cast<void (*)(
+      const gsl::not_null<double*>, const Scalar<DataVector>&,
+      const Scalar<DataVector>&, const tnsr::ii<DataVector, 3, Frame>&,
+      const StrahlkorperTags::aliases::Jacobian<Frame>&, const YlmSpherepack&,
+      const Scalar<DataVector>&)>(
+      &StrahlkorperGr::dimensionful_spin_magnitude<Frame>);
   using argument_tags =
       tmpl::list<StrahlkorperTags::RicciScalar, SpinFunction,
                  gr::Tags::SpatialMetric<3, Frame>,
