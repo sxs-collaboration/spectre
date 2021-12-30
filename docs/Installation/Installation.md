@@ -281,60 +281,50 @@ To build SpECTRE with Singularity you must:
 ## Using Spack to set up a SpECTRE environment
 
 SpECTRE's dependencies can be installed with
-[Spack](https://github.com/LLNL/spack), a package manager tailored for HPC use.
-Install Spack by cloning it into `SPACK_DIR` (a directory of your choice),
-then add `SPACK_DIR/bin` to your `PATH`.
+[Spack](https://github.com/spack/spack), a package manager tailored for HPC use.
+[Install Spack](https://spack.readthedocs.io/en/latest/getting_started.html) by
+cloning it into `SPACK_DIR` (a directory of your choice). Then, enable Spack's
+shell support with `source SPACK_DIR/share/spack/setup-env.sh`. Consider adding
+this line to your `.bash_profile`, `.bashrc`, or similar. Refer to [Spack's
+getting started guide](https://spack.readthedocs.io/en/latest/getting_started.html)
+for more information.
 
-For security, it is good practice to make Spack use the system's OpenSSL
-rather than allow it to install a new copy — see Spack's documentation for
-[instructions](https://spack.readthedocs.io/en/latest/getting_started.html#openssl).
-You may need to install the development version of OpenSSL:
-* On Ubuntu (16.04), run `sudo apt-get install libssl-dev`
-* On Fedora (27), run `sudo dnf install openssl-devel`
+Once you have Spack installed, one way to install the SpECTRE dependencies is
+with a [Spack environment](https://spack.readthedocs.io/en/latest/environments.html):
 
-Spack works well with a module environment. We recommend
-[LMod](https://github.com/TACC/Lmod), which is available on many systems:
-* On macOS, install LMod from [brew](https://brew.sh/), then source the LMod
-  shell script by adding `. /usr/local/Cellar/lmod/YOUR_VERSION_NUMBER/init/sh`
-  to your `.bash_profile`.
-* On Ubuntu, run `sudo apt-get install -y lmod` and, for Ubuntu 17.04, add
-  `. /etc/profile.d/lmod.sh` to your `.bashrc`. For Ubuntu 16.04, the correct
-  path to add is `. /usr/share/lmod/lmod/init/bash`.
-* On Arch Linux, run `yaourt -Sy lmod` and add `. /etc/profile.d/lmod.sh` to
-  your `.bashrc`,
-* On Fedora/RHEL, GNU Environment Modules comes out-of-the-box and works equally
-  well.
-* Instructions for other Linux distros are available online.
+\include support/DevEnvironments/spack.yaml
 
-To use modules with Spack, enable Spack's shell support by adding
-`. SPACK_DIR/share/spack/setup-env.sh` to your `.bash_profile` or `.bashrc`.
+You can also install the Spack packages listed in the environment file above
+with a plain `spack install` if you prefer.
 
-Once you have Spack installed and configured with OpenSSL and LMod, you can
-install the SpECTRE dependencies using
-```
-spack install blaze@3.7
-spack install brigand@master
-spack install libsharp -openmp -mpi
-spack install catch2
-spack install gsl
-spack install jemalloc # or from your package manager
-spack install libxsmm
-spack install yaml-cpp@develop
-```
-You can also install CMake, OpenBLAS, Boost, and HDF5 from Spack.
-To load the packages you've installed from Spack run `spack load PACKAGE`,
-or (equivalently) use the `module load` command.
+**Notes:**
+- Spack allows very flexible configurations and we recommended you read the
+  [documentation](https://spack.readthedocs.io) if you require features such as
+  packages installed with different compilers.
+- For security, it is good practice to make Spack [use the system's
+  OpenSSL](https://spack.readthedocs.io/en/latest/getting_started.html#openssl)
+  rather than allow it to install a new copy.
+- To avoid reinstalling lots of system-provided packages with Spack, use the
+  `spack external find` feature and the `--reuse` flag to `spack concretize` (or
+  `spack install`). You can also install some of the dependencies with your
+  system's package manager in advance, e.g., with `apt` or `brew`. If they are
+  not picked up by `spack external find` automatically, register them with Spack
+  manually. See the [Spack documentation on external
+  packages](https://spack.readthedocs.io/en/latest/build_settings.html#external-packages)
+  for details.
+- Spack works well with a module environment, such as
+  [LMod](https://github.com/TACC/Lmod). See the [Spack documentation on
+  modules](https://spack.readthedocs.io/en/latest/module_file_support.html) for
+  details.
+- On macOS:
+  - Spack's Charm++ 6.10.2 installation is broken, so install `charmpp@7.0.0` or
+    [build Charm++ manually](#building-charm).
+  - Brigand has an issue with AppleClang 13 when compiling tests (see
+    https://github.com/edouarda/brigand/issues/274). Since it is header-only,
+    you can simply clone the [Brigand repository](https://github.com/edouarda/brigand)
+    instead of installing it with Spack.
 
-**Note**: Spack allows very flexible configurations and
-it is recommended you read the [documentation](https://spack.readthedocs.io) if
-you require features such as packages installed with different compilers.
-
-**Note**: On a Mac, you may need to `spack install
-yaml-cpp@develop~shared` (note that is a tilde and not a dash in front
-of shared) in order to force the building of the static libraries in
-order to avoid dynamic linking errors.
-
-### Building SpECTRE
+## Building Charm++ {#building-charm}
 
 After the dependencies have been installed, Charm++ and SpECTRE can be compiled.
 Follow these steps:
