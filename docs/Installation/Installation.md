@@ -4,11 +4,13 @@ See LICENSE.txt for details.
 \endcond
 # Installation {#installation}
 
-This page details the installation procedure for SpECTRE on personal computers.
-For instructions on installing SpECTRE on clusters please refer to the
-\subpage installation_on_clusters page. Refer to the
-\subpage versioning_and_releases page for information on specific versions to
-install.
+This page details the installation procedure for SpECTRE on personal computers
+using x86-64 processors. For instructions on installing SpECTRE on clusters
+please refer to the \subpage installation_on_clusters page. For instructions on
+installing SpECTRE on Apple Silicon Macs, please refer to the
+\subpage installation_on_apple_silicon page. Refer to the
+\subpage versioning_and_releases page for information on specific versions
+to install.
 
 ### Install a specific version with Spack
 
