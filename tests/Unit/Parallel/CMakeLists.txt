@@ -144,9 +144,8 @@ add_algorithm_test(
   REGEX_TO_MATCH
   "Element 0 received reduction: Counted 2 odd elements.")
 
-# macOS builds on Apple Silicon use Charm 7.0.0, which has different
-# output in the following test.
-if(APPLE AND "${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "arm64")
+# Charm 7.0.0 has different output in the following test.
+if(CHARM_VERSION VERSION_GREATER 6.10.2)
   add_algorithm_test_with_balancing("AlgorithmParallelWithBalancing"
     "AlgorithmParallel" "num_objs=14")
 else()

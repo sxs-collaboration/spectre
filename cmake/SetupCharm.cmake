@@ -3,9 +3,13 @@
 
 # Apple Silicon (arm64) Macs require charm 7.0.0 to run
 if(APPLE AND "${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "arm64")
-  find_package(Charm 7.0.0 EXACT REQUIRED)
+  find_package(Charm 7.0.0 REQUIRED)
 else()
-  find_package(Charm 6.10.2 EXACT REQUIRED)
+  find_package(Charm 6.10.2 REQUIRED)
+endif()
+if(CHARM_VERSION VERSION_GREATER 6.10.2)
+  message(WARNING "Builds with Charm++ versions greater than 6.10.2 are \
+considered experimental. Please file any issues you encounter.")
 endif()
 
 spectre_include_directories("${CHARM_INCLUDE_DIRS}")
