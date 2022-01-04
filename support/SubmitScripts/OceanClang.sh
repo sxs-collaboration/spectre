@@ -105,3 +105,34 @@ chmod u+x ${SPECTRE_RUN_DIR}/runscript.${SLURM_JOBID}
 
 charmrun ++runscript ${SPECTRE_RUN_DIR}/runscript.${SLURM_JOBID} \
          ${SPECTRE_COMMAND} --input-file ${SPECTRE_INPUT_FILE}
+
+#Section for checkpoint files and automatic resubmission of jobs.
+sleep 10s
+checkpoints=1
+current_checkpoint=000000
+# If a checkpoint file is found, then it will copy the OceanClang.sh file
+# and modify it so that it can be resubmitted starting at the checkpoint.
+if test -e "${PWD}/SpectreCheckpoint$current_checkpoint";
+then
+  cp ../OceanClang.sh .
+  next_num_of_checkpoints=$(($checkpoints + 1))
+  next_checkpoint=$(python -c 'print(str(1).zfill(6))')
+  # Taking out charmrun ++runscript to add script to start from checkpoint.
+  sed -i '106,107d' OceanClang.sh
+  sed -i '105 a ln -s '${PWD}'/SpectreCheckpoint'$current_checkpoint' .' \
+          OceanClang.sh
+  sed -i '106 a charmrun ${SPECTRE_COMMAND} +restart \\' OceanClang.sh
+  sed -i '107 a SpectreCheckpoint'$current_checkpoint' \\' OceanClang.sh
+  sed -i '108 a --input-file ${SPECTRE_INPUT_FILE}' OceanClang.sh
+  # Updating variables for the next possible checkpoint file.
+  # All are shifted 2 because of the new lines required for checkpoint command.
+  sed -i '113d' OceanClang.sh
+  sed -i '112 a checkpoints='$next_num_of_checkpoints'' OceanClang.sh
+  sed -i '114d' OceanClang.sh
+  sed -i '113 a current_checkpoint='$next_checkpoint'' OceanClang.sh
+  sed -i '121 s/'$checkpoints'/'$next_num_of_checkpoints'/1' OceanClang.sh
+  # Updating the new amount of lines to delete in line 121
+  sed -i '123 s/107d/109d/1' OceanClang.sh
+  sed -i '137,138d' OceanClang.sh
+  sbatch OceanClang.sh
+fi
