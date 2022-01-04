@@ -1,9 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-option(SPECTRE_PYTHON_TEST_TIMEOUT_FACTOR
-  "Multiply timeout for Python tests by this factor"
-  1)
+spectre_define_test_timeout_factor_option(PYTHON "Python")
 
 set(SPECTRE_PYTHON_PREFIX "${CMAKE_BINARY_DIR}/bin/python/spectre/")
 get_filename_component(
@@ -368,13 +366,7 @@ function(SPECTRE_ADD_PYTHON_TEST TEST_NAME FILE TAGS
     ${FILE}
     )
 
-  set(TIMEOUT 2)
-
-  # Multiply timeout by the user option
-  # Note: "1" is parsed as "ON" by cmake
-  if (NOT "${SPECTRE_PYTHON_TEST_TIMEOUT_FACTOR}" STREQUAL ON)
-    math(EXPR TIMEOUT "${SPECTRE_PYTHON_TEST_TIMEOUT_FACTOR} * ${TIMEOUT}")
-  endif()
+  spectre_test_timeout(TIMEOUT PYTHON 2)
 
   set(_TEST_ENV_VARS
     "PYTHONPATH=${SPECTRE_PYTHON_PREFIX_PARENT}:\$PYTHONPATH"

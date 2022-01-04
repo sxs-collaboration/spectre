@@ -1,9 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-option(SPECTRE_INPUT_FILE_TEST_TIMEOUT_FACTOR
-  "Multiply timeout for input file tests by this factor"
-  1)
+spectre_define_test_timeout_factor_option(INPUT_FILE "input file")
 
 find_package(Python REQUIRED)
 
@@ -71,11 +69,7 @@ function(add_single_input_file_test INPUT_FILE EXECUTABLE COMMAND_LINE_ARGS
     math(EXPR TIMEOUT "3 * ${TIMEOUT}")
   endif()
 
-  # Multiply timeout by the user option
-  # Note: "1" is parsed as "ON" by cmake
-  if (NOT "${SPECTRE_INPUT_FILE_TEST_TIMEOUT_FACTOR}" STREQUAL ON)
-    math(EXPR TIMEOUT "${SPECTRE_INPUT_FILE_TEST_TIMEOUT_FACTOR} * ${TIMEOUT}")
-  endif()
+  spectre_test_timeout(TIMEOUT INPUT_FILE ${TIMEOUT})
 
   set_tests_properties(
     ${CTEST_NAME}

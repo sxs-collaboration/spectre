@@ -109,7 +109,6 @@ include(SetupLibsharp)
 include(SetupYamlCpp)
 
 include(SetupLIBCXXCharm)
-include(SpectreSetupPythonPackage)
 # The precompiled header must be setup after all libraries have been found
 include(SetupPch)
 
@@ -132,10 +131,8 @@ include(SetupSphinx)
 include(CodeCoverageDetection)
 include(SpectreAddLibraries)
 
-set(SPECTRE_TEST_RUNNER "" CACHE STRING
-  "Run test executables through the given wrapper.")
-
-enable_testing(true)
+include(SpectreSetupTesting)
+include(SpectreSetupPythonPackage)
 include(SetupPypp)
 include(SpectreAddTestLibs)
 include(SpectreAddCatchTests)

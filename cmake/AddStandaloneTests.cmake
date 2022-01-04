@@ -1,9 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-option(SPECTRE_STANDALONE_TEST_TIMEOUT_FACTOR
-  "Multiply timeout for standalone tests by this factor"
-  1)
+spectre_define_test_timeout_factor_option(STANDALONE "standalone")
 
 # Helper function to set up a CMake target for a test executable.  It
 # can safely be called multiple times for the same executable.
@@ -28,12 +26,7 @@ endfunction()
 
 # Helper function to set standard test properties for standalone tests.
 function(set_standalone_test_properties TEST_NAME)
-  set(TIMEOUT 10)
-  # Multiply timeout by the user option
-  # Note: "1" is parsed as "ON" by cmake
-  if (NOT "${SPECTRE_STANDALONE_TEST_TIMEOUT_FACTOR}" STREQUAL ON)
-    math(EXPR TIMEOUT "${SPECTRE_STANDALONE_TEST_TIMEOUT_FACTOR} * ${TIMEOUT}")
-  endif()
+  spectre_test_timeout(TIMEOUT STANDALONE 10)
 
   set_tests_properties(
     "${TEST_NAME}"
