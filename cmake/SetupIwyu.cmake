@@ -1,6 +1,8 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+option(USE_IWYU "Enable include-what-you-use tools" OFF)
+
 function(add_iwyu_tool_targets IWYU_TOOL)
   # Run IWYU in parallel using half the available cores. On single
   # core machines using only 1 core
@@ -52,7 +54,9 @@ function(add_iwyu_tool_targets IWYU_TOOL)
     )
 endfunction(add_iwyu_tool_targets IWYU_TOOL)
 
-if(NOT ${USE_PCH})
+if(NOT ${USE_IWYU})
+  message(STATUS "Disabled include-what-you-use.")
+elseif(NOT ${USE_PCH})
   if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     set(IWYU_REQUIRED_VERSION 0.9)
     find_program(IWYU_BINARY include-what-you-use)
@@ -87,8 +91,8 @@ if(NOT ${USE_PCH})
       "iwyu: Cannot use include-what-you-use without clang compiler. "
       "Compile with clang to use iwyu.")
   endif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-else(NOT ${USE_PCH})
+else()
   message(STATUS
     "iwyu: Cannot use include-what-you-use with precompiled header. "
     "Pass USE_PCH=OFF to CMake to disable the precompiled header.")
-endif(NOT ${USE_PCH})
+endif()
