@@ -1,6 +1,11 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+set(SPECTRE_PYTHON_INSTALL_LIBDIR
+  "lib/python${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}/site-packages"
+  CACHE STRING "Location where the Python package is installed. Defaults to \
+CMAKE_INSTALL_PREFIX/lib/pythonX.Y/site-packages/.")
+
 spectre_define_test_timeout_factor_option(PYTHON "Python")
 
 set(SPECTRE_PYTHON_PREFIX "${CMAKE_BINARY_DIR}/bin/python/spectre/")
@@ -41,6 +46,12 @@ file(WRITE
 configure_file(
   "${CMAKE_BINARY_DIR}/tmp/LoadPython.sh"
   "${CMAKE_BINARY_DIR}/bin/LoadPython.sh")
+
+# Install the SpECTRE Python package to the user-specified location.
+install(
+  DIRECTORY ${SPECTRE_PYTHON_PREFIX}
+  DESTINATION ${SPECTRE_PYTHON_INSTALL_LIBDIR}
+  )
 
 add_custom_target(all-pybindings)
 

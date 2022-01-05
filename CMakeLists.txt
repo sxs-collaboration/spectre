@@ -33,6 +33,11 @@ if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.19)
   cmake_policy(SET CMP0110 NEW)
 endif ()
 
+# Disable `make install` depending on `make all` since we want to control what
+# we install more closely. With this setting, and targets marked as `OPTIONAL`,
+# only targets that were built will be installed.
+set(CMAKE_SKIP_INSTALL_ALL_DEPENDENCY ON)
+
 set(CMAKE_VERBOSE_MAKEFILE OFF)
 
 include(SpectreGetGitHash)
