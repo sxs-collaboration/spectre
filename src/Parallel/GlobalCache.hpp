@@ -215,12 +215,24 @@ void MutableGlobalCache<Metavariables>::mutate(
       },
       args);
 
-  // Call the callbacks and clear the list of callbacks.
-  for (auto& callback : std::get<1>(tuples::get<tag>(mutable_global_cache_))) {
-    callback->invoke();
-  }
+  // A callback might call mutable_cache_item_is_ready, which might
+  // add yet another callback to the vector of callbacks.  We don't
+  // want to immediately invoke this new callback and we don't want to
+  // remove it from the vector of callbacks before it is
+  // invoked. Therefore, std::move the vector of callbacks into a
+  // temporary vector, clear the original vector, and invoke the callbacks
+  // in the temporary vector.
+  std::vector<std::unique_ptr<Callback>> callbacks(
+      std::move(std::get<1>(tuples::get<tag>(mutable_global_cache_))));
   std::get<1>(tuples::get<tag>(mutable_global_cache_)).clear();
   std::get<1>(tuples::get<tag>(mutable_global_cache_)).shrink_to_fit();
+
+  // Invoke the callbacks.  Any new callbacks that are added to the
+  // list (if a callback calls mutable_cache_item_is_ready) will be
+  // saved and will not be invoked here.
+  for (auto& callback : callbacks) {
+    callback->invoke();
+  }
 }
 
 template <typename Metavariables>
