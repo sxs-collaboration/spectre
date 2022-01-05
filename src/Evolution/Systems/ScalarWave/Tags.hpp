@@ -16,7 +16,7 @@
 
 class DataVector;
 
-namespace ScalarWave {
+namespace ScalarWave::Tags {
 struct Psi : db::SimpleTag {
   using type = Scalar<DataVector>;
   static std::string name() { return "Psi"; }
@@ -33,7 +33,6 @@ struct Phi : db::SimpleTag {
   static std::string name() { return "Phi"; }
 };
 
-namespace Tags {
 struct ConstraintGamma2 : db::SimpleTag {
   using type = Scalar<DataVector>;
   static std::string name() { return "ConstraintGamma2"; }
@@ -108,5 +107,4 @@ template <size_t Dim>
 struct EnergyDensity : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
-}  // namespace Tags
-}  // namespace ScalarWave
+}  // namespace ScalarWave::Tags

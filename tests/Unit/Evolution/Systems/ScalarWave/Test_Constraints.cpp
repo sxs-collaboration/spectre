@@ -103,28 +103,29 @@ void test_constraints_and_compute_tags_analytic(
   // Evaluate analytic solution
   const auto vars = solution.variables(
       x, t,
-      tmpl::list<ScalarWave::Pi, ScalarWave::Phi<spatial_dim>,
-                 ScalarWave::Psi>{});
-  const auto& psi = get<ScalarWave::Psi>(vars);
-  const auto& phi = get<ScalarWave::Phi<spatial_dim>>(vars);
-  const auto& pi = get<ScalarWave::Pi>(vars);
+      tmpl::list<ScalarWave::Tags::Pi, ScalarWave::Tags::Phi<spatial_dim>,
+                 ScalarWave::Tags::Psi>{});
+  const auto& psi = get<ScalarWave::Tags::Psi>(vars);
+  const auto& phi = get<ScalarWave::Tags::Phi<spatial_dim>>(vars);
+  const auto& pi = get<ScalarWave::Tags::Pi>(vars);
   // Compute derivatives d_phi and d_psi numerically
   // First, prepare
   using variables_tags_to_differentiate =
-      tmpl::list<ScalarWave::Psi, ScalarWave::Phi<3>>;
+      tmpl::list<ScalarWave::Tags::Psi, ScalarWave::Tags::Phi<3>>;
   Variables<variables_tags_to_differentiate> local_vars(data_size);
-  get<ScalarWave::Psi>(local_vars) = psi;
-  get<ScalarWave::Phi<spatial_dim>>(local_vars) = phi;
+  get<ScalarWave::Tags::Psi>(local_vars) = psi;
+  get<ScalarWave::Tags::Phi<spatial_dim>>(local_vars) = phi;
   // Second, compute derivatives
   const auto local_derivs =
       partial_derivatives<variables_tags_to_differentiate>(
           local_vars, mesh, coord_map.inv_jacobian(x_logical));
-  const auto& deriv_psi = get<
-      Tags::deriv<ScalarWave::Psi, tmpl::size_t<spatial_dim>, Frame::Inertial>>(
-      local_derivs);
-  const auto& deriv_phi =
-      get<Tags::deriv<ScalarWave::Phi<spatial_dim>, tmpl::size_t<spatial_dim>,
+  const auto& deriv_psi =
+      get<Tags::deriv<ScalarWave::Tags::Psi, tmpl::size_t<spatial_dim>,
                       Frame::Inertial>>(local_derivs);
+  const auto& deriv_phi =
+      get<Tags::deriv<ScalarWave::Tags::Phi<spatial_dim>,
+                      tmpl::size_t<spatial_dim>, Frame::Inertial>>(
+          local_derivs);
 
   // (1.) Get the constraints, and check that they vanish to error_tolerance
   auto one_index_constraint =
@@ -151,18 +152,19 @@ void test_constraints_and_compute_tags_analytic(
       numerical_approx);
 
   // (2.) Test that compute tags return expected values
-  const auto box = db::create<
-      db::AddSimpleTags<
-          domain::Tags::Coordinates<spatial_dim, Frame::Inertial>,
-          ScalarWave::Psi, ScalarWave::Phi<spatial_dim>, ScalarWave::Pi,
-          ::Tags::deriv<ScalarWave::Psi, tmpl::size_t<spatial_dim>,
-                        Frame::Inertial>,
-          ::Tags::deriv<ScalarWave::Phi<spatial_dim>, tmpl::size_t<spatial_dim>,
-                        Frame::Inertial>>,
-      db::AddComputeTags<
-          ScalarWave::Tags::OneIndexConstraintCompute<spatial_dim>,
-          ScalarWave::Tags::TwoIndexConstraintCompute<spatial_dim>>>(
-      x, psi, phi, pi, deriv_psi, deriv_phi);
+  const auto box =
+      db::create<db::AddSimpleTags<
+                     domain::Tags::Coordinates<spatial_dim, Frame::Inertial>,
+                     ScalarWave::Tags::Psi, ScalarWave::Tags::Phi<spatial_dim>,
+                     ScalarWave::Tags::Pi,
+                     ::Tags::deriv<ScalarWave::Tags::Psi,
+                                   tmpl::size_t<spatial_dim>, Frame::Inertial>,
+                     ::Tags::deriv<ScalarWave::Tags::Phi<spatial_dim>,
+                                   tmpl::size_t<spatial_dim>, Frame::Inertial>>,
+                 db::AddComputeTags<
+                     ScalarWave::Tags::OneIndexConstraintCompute<spatial_dim>,
+                     ScalarWave::Tags::TwoIndexConstraintCompute<spatial_dim>>>(
+          x, psi, phi, pi, deriv_psi, deriv_phi);
 
   // Check that their compute items in databox furnish identical values
   CHECK(db::get<ScalarWave::Tags::OneIndexConstraint<spatial_dim>>(box) ==

@@ -85,30 +85,27 @@ tnsr::ii<T, Dim> PlaneWave<Dim>::d2psi_dxdx(const tnsr::I<T, Dim>& x,
 }
 
 template <size_t Dim>
-tuples::TaggedTuple<ScalarWave::Pi, ScalarWave::Phi<Dim>, ScalarWave::Psi>
-PlaneWave<Dim>::variables(const tnsr::I<DataVector, Dim>& x, double t,
-                          const tmpl::list<ScalarWave::Pi, ScalarWave::Phi<Dim>,
-                                           ScalarWave::Psi> /*meta*/) const {
-  tuples::TaggedTuple<ScalarWave::Pi, ScalarWave::Phi<Dim>, ScalarWave::Psi>
-      variables{dpsi_dt(x, t), dpsi_dx(x, t), psi(x, t)};
-  get<ScalarWave::Pi>(variables).get() *= -1.0;
+tuples::TaggedTuple<Tags::Pi, Tags::Phi<Dim>, Tags::Psi>
+PlaneWave<Dim>::variables(
+    const tnsr::I<DataVector, Dim>& x, double t,
+    const tmpl::list<Tags::Pi, Tags::Phi<Dim>, Tags::Psi> /*meta*/) const {
+  tuples::TaggedTuple<Tags::Pi, Tags::Phi<Dim>, Tags::Psi> variables{
+      dpsi_dt(x, t), dpsi_dx(x, t), psi(x, t)};
+  get<Tags::Pi>(variables).get() *= -1.0;
   return variables;
 }
 
 template <size_t Dim>
-tuples::TaggedTuple<::Tags::dt<ScalarWave::Pi>,
-                    ::Tags::dt<ScalarWave::Phi<Dim>>,
-                    ::Tags::dt<ScalarWave::Psi>>
+tuples::TaggedTuple<::Tags::dt<Tags::Pi>, ::Tags::dt<Tags::Phi<Dim>>,
+                    ::Tags::dt<Tags::Psi>>
 PlaneWave<Dim>::variables(
     const tnsr::I<DataVector, Dim>& x, double t,
-    const tmpl::list<::Tags::dt<ScalarWave::Pi>,
-                     ::Tags::dt<ScalarWave::Phi<Dim>>,
-                     ::Tags::dt<ScalarWave::Psi>> /*meta*/) const {
-  tuples::TaggedTuple<::Tags::dt<ScalarWave::Pi>,
-                      ::Tags::dt<ScalarWave::Phi<Dim>>,
-                      ::Tags::dt<ScalarWave::Psi>>
+    const tmpl::list<::Tags::dt<Tags::Pi>, ::Tags::dt<Tags::Phi<Dim>>,
+                     ::Tags::dt<Tags::Psi>> /*meta*/) const {
+  tuples::TaggedTuple<::Tags::dt<Tags::Pi>, ::Tags::dt<Tags::Phi<Dim>>,
+                      ::Tags::dt<Tags::Psi>>
       dt_variables{d2psi_dt2(x, t), d2psi_dtdx(x, t), dpsi_dt(x, t)};
-  get<::Tags::dt<ScalarWave::Pi>>(dt_variables).get() *= -1.0;
+  get<::Tags::dt<Tags::Pi>>(dt_variables).get() *= -1.0;
   return dt_variables;
 }
 

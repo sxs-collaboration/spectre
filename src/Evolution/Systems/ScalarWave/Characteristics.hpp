@@ -174,7 +174,7 @@ struct CharacteristicFieldsCompute : Tags::CharacteristicFields<Dim>,
  * see \ref Tags::CharacteristicFieldsCompute.
  */
 template <size_t Dim>
-Variables<tmpl::list<Psi, Pi, Phi<Dim>>>
+Variables<tmpl::list<Tags::Psi, Tags::Pi, Tags::Phi<Dim>>>
 evolved_fields_from_characteristic_fields(
     const Scalar<DataVector>& gamma_2, const Scalar<DataVector>& v_psi,
     const tnsr::i<DataVector, Dim, Frame::Inertial>& v_zero,
@@ -183,7 +183,8 @@ evolved_fields_from_characteristic_fields(
 
 template <size_t Dim>
 void evolved_fields_from_characteristic_fields(
-    gsl::not_null<Variables<tmpl::list<Psi, Pi, Phi<Dim>>>*> evolved_fields,
+    gsl::not_null<Variables<tmpl::list<Tags::Psi, Tags::Pi, Tags::Phi<Dim>>>*>
+        evolved_fields,
     const Scalar<DataVector>& gamma_2, const Scalar<DataVector>& v_psi,
     const tnsr::i<DataVector, Dim, Frame::Inertial>& v_zero,
     const Scalar<DataVector>& v_plus, const Scalar<DataVector>& v_minus,

@@ -44,7 +44,7 @@ namespace Tags {
 /// \brief Computes the energy density using ScalarWave::energy_density()
 template <size_t SpatialDim>
 struct EnergyDensityCompute : EnergyDensity<SpatialDim>, db::ComputeTag {
-  using argument_tags = tmpl::list<ScalarWave::Pi, ScalarWave::Phi<SpatialDim>>;
+  using argument_tags = tmpl::list<Pi, Phi<SpatialDim>>;
 
   using return_type = Scalar<DataVector>;
 

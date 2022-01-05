@@ -28,7 +28,7 @@ namespace ScalarWave {
  */
 template <size_t Dim>
 struct ComputeNormalDotFluxes {
-  using argument_tags = tmpl::list<Pi>;
+  using argument_tags = tmpl::list<Tags::Pi>;
   static void apply(gsl::not_null<Scalar<DataVector>*> pi_normal_dot_flux,
                     gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*>
                         phi_normal_dot_flux,

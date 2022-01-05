@@ -37,7 +37,7 @@ namespace Solutions {
  */
 class SemidiscretizedDg : public MarkAsAnalyticSolution {
  public:
-  using tags = tmpl::list<ScalarWave::Pi, ScalarWave::Phi<1>, ScalarWave::Psi>;
+  using tags = tmpl::list<Tags::Pi, Tags::Phi<1>, Tags::Psi>;
 
   struct Harmonic {
     using type = int;
@@ -74,17 +74,17 @@ class SemidiscretizedDg : public MarkAsAnalyticSolution {
   }
 
   /// \cond
-  tuples::TaggedTuple<ScalarWave::Pi> variables(
-      const tnsr::I<DataVector, 1>& x, double t,
-      tmpl::list<ScalarWave::Pi> /*meta*/) const;
+  tuples::TaggedTuple<Tags::Pi> variables(const tnsr::I<DataVector, 1>& x,
+                                          double t,
+                                          tmpl::list<Tags::Pi> /*meta*/) const;
 
-  tuples::TaggedTuple<ScalarWave::Phi<1>> variables(
+  tuples::TaggedTuple<Tags::Phi<1>> variables(
       const tnsr::I<DataVector, 1>& x, double t,
-      tmpl::list<ScalarWave::Phi<1>> /*meta*/) const;
+      tmpl::list<Tags::Phi<1>> /*meta*/) const;
 
-  tuples::TaggedTuple<ScalarWave::Psi> variables(
+  tuples::TaggedTuple<Tags::Psi> variables(
       const tnsr::I<DataVector, 1>& x, double t,
-      tmpl::list<ScalarWave::Psi> /*meta*/) const;
+      tmpl::list<Tags::Psi> /*meta*/) const;
   /// \endcond
 
   // NOLINTNEXTLINE(google-runtime-references)
