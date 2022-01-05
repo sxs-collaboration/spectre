@@ -5,6 +5,7 @@
 # - every comment line in the checks must end with a comma
 # - every line in the checks must start at the beginning of the line
 Checks: '*,
+-altera-*,
 -android-*,
 -bugprone-exception-escape,
 # complains about Catch macros having infinite loops,
