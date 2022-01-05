@@ -128,3 +128,9 @@ add_grmhd_executable(
   grmhd::AnalyticData::RiemannProblem
   "${LIBS_TO_LINK}"
   )
+
+add_grmhd_executable(
+  RotatingStar
+  RelativisticEuler::Solutions::RotatingStar
+  "${LIBS_TO_LINK}"
+  )

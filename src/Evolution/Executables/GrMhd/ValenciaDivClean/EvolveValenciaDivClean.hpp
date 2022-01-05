@@ -144,6 +144,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/GrMhd/KomissarovShock.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GrMhd/SmoothFlow.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/FishboneMoncriefDisk.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/RotatingStar.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/TovStar.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "PointwiseFunctions/Hydro/MassFlux.hpp"
