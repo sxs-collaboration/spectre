@@ -30,8 +30,8 @@ ScalarWaveGr<ScalarFieldData, BackgroundGrData>::variables(
   const auto flat_space_scalar_wave_vars =
       flat_space_scalar_wave_data_.variables(
           x, default_initial_time,
-          tmpl::list<ScalarWave::Tags::Pi, ScalarWave::Tags::Phi<volume_dim>,
-                     ScalarWave::Tags::Psi>{});
+          tmpl::list<ScalarWave::Tags::Psi, ScalarWave::Tags::Pi,
+                     ScalarWave::Tags::Phi<volume_dim>>{});
   const auto spacetime_variables = background_gr_data_.variables(
       x, default_initial_time, spacetime_tags<DataVector>{});
   auto result = make_with_value<tuples::TaggedTuple<Tags::Pi>>(x, 0.);

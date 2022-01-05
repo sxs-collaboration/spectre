@@ -174,16 +174,16 @@ void test_characteristic_fields_analytic(
   const double t = 0.;
 
   // Evaluate analytic solution
-  const auto vars = solution.variables(
-      x, t,
-      tmpl::list<ScalarWave::Tags::Pi, ScalarWave::Tags::Phi<Dim>,
-                 ScalarWave::Tags::Psi>{});
+  const auto vars =
+      solution.variables(x, t,
+                         tmpl::list<ScalarWave::Tags::Psi, ScalarWave::Tags::Pi,
+                                    ScalarWave::Tags::Phi<Dim>>{});
   // Get ingredients
   const size_t n_pts = mesh.number_of_grid_points();
   const auto gamma_2 = make_with_value<Scalar<DataVector>>(x, 0.1);
   const auto& psi = get<ScalarWave::Tags::Psi>(vars);
-  const auto& phi = get<ScalarWave::Tags::Phi<Dim>>(vars);
   const auto& pi = get<ScalarWave::Tags::Pi>(vars);
+  const auto& phi = get<ScalarWave::Tags::Phi<Dim>>(vars);
   // Outward 3-normal to the surface on which characteristic fields are needed
   const auto unit_normal_one_form =
       make_with_value<tnsr::i<DataVector, Dim, Frame::Inertial>>(
@@ -289,16 +289,16 @@ void test_evolved_from_characteristic_fields_analytic(
   const double t = 0.;
 
   // Evaluate analytic solution
-  const auto vars = solution.variables(
-      x, t,
-      tmpl::list<ScalarWave::Tags::Pi, ScalarWave::Tags::Phi<Dim>,
-                 ScalarWave::Tags::Psi>{});
+  const auto vars =
+      solution.variables(x, t,
+                         tmpl::list<ScalarWave::Tags::Psi, ScalarWave::Tags::Pi,
+                                    ScalarWave::Tags::Phi<Dim>>{});
   // Get ingredients
   const size_t n_pts = mesh.number_of_grid_points();
   const auto gamma_2 = make_with_value<Scalar<DataVector>>(x, 0.1);
   const auto& psi_expected = get<ScalarWave::Tags::Psi>(vars);
-  const auto& phi_expected = get<ScalarWave::Tags::Phi<Dim>>(vars);
   const auto& pi_expected = get<ScalarWave::Tags::Pi>(vars);
+  const auto& phi_expected = get<ScalarWave::Tags::Phi<Dim>>(vars);
   // Outward 3-normal to the surface on which characteristic fields are needed
   const auto unit_normal_one_form =
       make_with_value<tnsr::i<DataVector, Dim, Frame::Inertial>>(

@@ -21,8 +21,8 @@
 /// \cond
 class DataVector;
 namespace ScalarWave::Tags {
-struct Pi;
 struct Psi;
+struct Pi;
 template <size_t Dim>
 struct Phi;
 }  // namespace ScalarWave::Tags
@@ -111,20 +111,20 @@ class PlaneWave : public MarkAsAnalyticSolution {
   tnsr::ii<T, Dim> d2psi_dxdx(const tnsr::I<T, Dim>& x, double t) const;
 
   /// Retrieve the evolution variables at time `t` and spatial coordinates `x`
-  tuples::TaggedTuple<Tags::Pi, Tags::Phi<Dim>, Tags::Psi> variables(
+  tuples::TaggedTuple<Tags::Psi, Tags::Pi, Tags::Phi<Dim>> variables(
       const tnsr::I<DataVector, Dim>& x, double t,
-      tmpl::list<Tags::Pi, Tags::Phi<Dim>, Tags::Psi> /*meta*/) const;
+      tmpl::list<Tags::Psi, Tags::Pi, Tags::Phi<Dim>> /*meta*/) const;
 
   /// Retrieve the time derivative of the evolution variables at time `t` and
   /// spatial coordinates `x`
   ///
   /// \note This function's expected use case is setting the past time
   /// derivative values for Adams-Bashforth-like steppers.
-  tuples::TaggedTuple<::Tags::dt<Tags::Pi>, ::Tags::dt<Tags::Phi<Dim>>,
-                      ::Tags::dt<Tags::Psi>>
+  tuples::TaggedTuple<::Tags::dt<Tags::Psi>, ::Tags::dt<Tags::Pi>,
+                      ::Tags::dt<Tags::Phi<Dim>>>
   variables(const tnsr::I<DataVector, Dim>& x, double t,
-            tmpl::list<::Tags::dt<Tags::Pi>, ::Tags::dt<Tags::Phi<Dim>>,
-                       ::Tags::dt<Tags::Psi>> /*meta*/) const;
+            tmpl::list<::Tags::dt<Tags::Psi>, ::Tags::dt<Tags::Pi>,
+                       ::Tags::dt<Tags::Phi<Dim>>> /*meta*/) const;
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p);

@@ -39,10 +39,10 @@ SPECTRE_TEST_CASE("Unit.AnalyticSolutions.WaveEquation.RegularSphericalWave",
   const tnsr::I<DataVector, 3> x{std::array<DataVector, 3>{
       {DataVector({0., 1., 2., 3.}), DataVector({0., 0., 0., 0.}),
        DataVector({0., 0., 0., 0.})}}};
-  auto vars = solution.variables(
-      x, 1.,
-      tmpl::list<ScalarWave::Tags::Pi, ScalarWave::Tags::Phi<3>,
-                 ScalarWave::Tags::Psi>{});
+  auto vars =
+      solution.variables(x, 1.,
+                         tmpl::list<ScalarWave::Tags::Psi, ScalarWave::Tags::Pi,
+                                    ScalarWave::Tags::Phi<3>>{});
   CHECK_ITERABLE_APPROX(
       get<ScalarWave::Tags::Psi>(vars).get(),
       DataVector({{1.471517764685769, 0.9816843611112658, 0.1838780156836778,
@@ -61,9 +61,9 @@ SPECTRE_TEST_CASE("Unit.AnalyticSolutions.WaveEquation.RegularSphericalWave",
                         DataVector({{0., 0., 0., 0.}}));
   auto dt_vars =
       solution.variables(x, 1.,
-                         tmpl::list<Tags::dt<ScalarWave::Tags::Pi>,
-                                    Tags::dt<ScalarWave::Tags::Phi<3>>,
-                                    Tags::dt<ScalarWave::Tags::Psi>>{});
+                         tmpl::list<Tags::dt<ScalarWave::Tags::Psi>,
+                                    Tags::dt<ScalarWave::Tags::Pi>,
+                                    Tags::dt<ScalarWave::Tags::Phi<3>>>{});
   CHECK_ITERABLE_APPROX(
       get<Tags::dt<ScalarWave::Tags::Psi>>(dt_vars).get(),
       DataVector({{-1.471517764685769, 0.07326255555493672, 0.3682496705837024,
@@ -90,6 +90,6 @@ SPECTRE_TEST_CASE("Unit.AnalyticSolutions.WaveEquation.RegularSphericalWave",
           "    Center: 0.\n");
   CHECK(created_solution.variables(
             x, 1.,
-            tmpl::list<ScalarWave::Tags::Pi, ScalarWave::Tags::Phi<3>,
-                       ScalarWave::Tags::Psi>{}) == vars);
+            tmpl::list<ScalarWave::Tags::Psi, ScalarWave::Tags::Pi,
+                       ScalarWave::Tags::Phi<3>>{}) == vars);
 }

@@ -25,10 +25,10 @@ RegularSphericalWave::RegularSphericalWave(
     std::unique_ptr<MathFunction<1, Frame::Inertial>> profile)
     : profile_(std::move(profile)) {}
 
-tuples::TaggedTuple<Tags::Pi, Tags::Phi<3>, Tags::Psi>
+tuples::TaggedTuple<Tags::Psi, Tags::Pi, Tags::Phi<3>>
 RegularSphericalWave::variables(
     const tnsr::I<DataVector, 3>& x, double t,
-    const tmpl::list<Tags::Pi, Tags::Phi<3>, Tags::Psi> /*meta*/) const {
+    const tmpl::list<Tags::Psi, Tags::Pi, Tags::Phi<3>> /*meta*/) const {
   const DataVector r = get(magnitude(x));
   // See class documentation for choice of cutoff
   const double r_cutoff = cbrt(std::numeric_limits<double>::epsilon());
@@ -57,18 +57,18 @@ RegularSphericalWave::variables(
       }
     }
   }
-  tuples::TaggedTuple<Tags::Pi, Tags::Phi<3>, Tags::Psi> variables{
-      std::move(dpsi_dt), std::move(dpsi_dx), std::move(psi)};
+  tuples::TaggedTuple<Tags::Psi, Tags::Pi, Tags::Phi<3>> variables{
+      std::move(psi), std::move(dpsi_dt), std::move(dpsi_dx)};
   get<Tags::Pi>(variables).get() *= -1.0;
   return variables;
 }
 
-tuples::TaggedTuple<::Tags::dt<Tags::Pi>, ::Tags::dt<Tags::Phi<3>>,
-                    ::Tags::dt<Tags::Psi>>
+tuples::TaggedTuple<::Tags::dt<Tags::Psi>, ::Tags::dt<Tags::Pi>,
+                    ::Tags::dt<Tags::Phi<3>>>
 RegularSphericalWave::variables(
     const tnsr::I<DataVector, 3>& x, double t,
-    const tmpl::list<::Tags::dt<Tags::Pi>, ::Tags::dt<Tags::Phi<3>>,
-                     ::Tags::dt<Tags::Psi>> /*meta*/) const {
+    const tmpl::list<::Tags::dt<Tags::Psi>, ::Tags::dt<Tags::Pi>,
+                     ::Tags::dt<Tags::Phi<3>>> /*meta*/) const {
   const DataVector r = get(magnitude(x));
   // See class documentation for choice of cutoff
   const double r_cutoff = cbrt(std::numeric_limits<double>::epsilon());
@@ -97,10 +97,10 @@ RegularSphericalWave::variables(
       }
     }
   }
-  tuples::TaggedTuple<::Tags::dt<Tags::Pi>, ::Tags::dt<Tags::Phi<3>>,
-                      ::Tags::dt<Tags::Psi>>
-      dt_variables{std::move(d2psi_dt2), std::move(d2psi_dtdx),
-                   std::move(dpsi_dt)};
+  tuples::TaggedTuple<::Tags::dt<Tags::Psi>, ::Tags::dt<Tags::Pi>,
+                      ::Tags::dt<Tags::Phi<3>>>
+      dt_variables{std::move(dpsi_dt), std::move(d2psi_dt2),
+                   std::move(d2psi_dtdx)};
   get<::Tags::dt<Tags::Pi>>(dt_variables).get() *= -1.0;
   return dt_variables;
 }

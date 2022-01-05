@@ -115,8 +115,8 @@ class ScalarWaveGr : public MarkAsAnalyticData {
     return {std::move(get<ScalarWave::Tags::Phi<volume_dim>>(
         flat_space_scalar_wave_data_.variables(
             x, default_initial_time,
-            tmpl::list<ScalarWave::Tags::Pi, ScalarWave::Tags::Phi<volume_dim>,
-                       ScalarWave::Tags::Psi>{})))};
+            tmpl::list<ScalarWave::Tags::Psi, ScalarWave::Tags::Pi,
+                       ScalarWave::Tags::Phi<volume_dim>>{})))};
   }
   tuples::TaggedTuple<Tags::Psi> variables(
       const tnsr::I<DataVector, volume_dim>& x,
@@ -125,8 +125,8 @@ class ScalarWaveGr : public MarkAsAnalyticData {
     return {std::move(
         get<ScalarWave::Tags::Psi>(flat_space_scalar_wave_data_.variables(
             x, default_initial_time,
-            tmpl::list<ScalarWave::Tags::Pi, ScalarWave::Tags::Phi<volume_dim>,
-                       ScalarWave::Tags::Psi>{})))};
+            tmpl::list<ScalarWave::Tags::Psi, ScalarWave::Tags::Pi,
+                       ScalarWave::Tags::Phi<volume_dim>>{})))};
   }
 
   // Retrieve one or more tags

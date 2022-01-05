@@ -219,7 +219,7 @@ void test_flat_spacetime(const gsl::not_null<std::mt19937*> gen) {
       make_not_null(&sw_char_speed_n_times_v_plus_int),
       make_not_null(&sw_char_speed_n_times_v_minus_int),
       make_not_null(&sw_char_speed_gamma2_v_psi_int),
-      make_not_null(&sw_char_speeds_int), pi, phi, psi, gamma2, normal_int,
+      make_not_null(&sw_char_speeds_int), psi, pi, phi, gamma2, normal_int,
       mesh_velocity, normal_dot_mesh_velociy_int);
   sw_flux_computer.dg_package_data(
       make_not_null(&sw_char_speed_v_psi_ext),
@@ -229,11 +229,11 @@ void test_flat_spacetime(const gsl::not_null<std::mt19937*> gen) {
       make_not_null(&sw_char_speed_n_times_v_plus_ext),
       make_not_null(&sw_char_speed_n_times_v_minus_ext),
       make_not_null(&sw_char_speed_gamma2_v_psi_ext),
-      make_not_null(&sw_char_speeds_ext), pi, phi, psi, gamma2, normal_ext,
+      make_not_null(&sw_char_speeds_ext), psi, pi, phi, gamma2, normal_ext,
       mesh_velocity, normal_dot_mesh_velociy_ext);
   sw_flux_computer.dg_boundary_terms(
-      make_not_null(&sw_pi_bcorr), make_not_null(&sw_phi_bcorr),
-      make_not_null(&sw_psi_bcorr), sw_char_speed_v_psi_int,
+      make_not_null(&sw_psi_bcorr), make_not_null(&sw_pi_bcorr),
+      make_not_null(&sw_phi_bcorr), sw_char_speed_v_psi_int,
       sw_char_speed_v_zero_int, sw_char_speed_v_plus_int,
       sw_char_speed_v_minus_int, sw_char_speed_n_times_v_plus_int,
       sw_char_speed_n_times_v_minus_int, sw_char_speed_gamma2_v_psi_int,
