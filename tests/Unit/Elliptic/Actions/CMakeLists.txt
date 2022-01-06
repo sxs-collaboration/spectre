@@ -8,7 +8,6 @@ set(LIBRARY_SOURCES
   Test_InitializeBackgroundFields.cpp
   Test_InitializeFields.cpp
   Test_InitializeFixedSources.cpp
-  Test_RandomizeInitialGuess.cpp
   )
 
 add_test_library(

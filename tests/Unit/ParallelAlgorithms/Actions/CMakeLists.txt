@@ -6,6 +6,7 @@ set(LIBRARY "Test_ParallelAlgorithmsActions")
 set(LIBRARY_SOURCES
   Test_MutateApply.cpp
   Test_SetData.cpp
+  Test_RandomizeVariables.cpp
   Test_UpdateMessageQueue.cpp
   )
 
