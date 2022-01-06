@@ -9,6 +9,8 @@ set(LIBRARY_SOURCES
   BoundaryConditions/Test_Outflow.cpp
   Test_Constraints.cpp
   Test_Characteristics.cpp
+  Test_InitializeConstraintDampingGammas.cpp
+  Test_InitializeGrVars.cpp
   Test_Tags.cpp
   Test_TimeDerivative.cpp
   )

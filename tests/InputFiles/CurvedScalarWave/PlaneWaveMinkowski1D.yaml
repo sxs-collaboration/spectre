@@ -1,0 +1,71 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Executable: EvolvePlaneWaveMinkowski1D
+# Check: parse;execute
+
+AnalyticData:
+  ScalarWaveGr:
+    Background:
+    ScalarField:
+      WaveVector: [1.0]
+      Center: [0.0]
+      Profile:
+        Sinusoid:
+          Amplitude: 1.0
+          Wavenumber: 1.0
+          Phase: 0.0
+
+
+PhaseChangeAndTriggers:
+
+Evolution:
+  InitialTime: 0.0
+  InitialTimeStep: 0.001
+  InitialSlabSize: 0.01
+  TimeStepper:
+    AdamsBashforthN:
+      Order: 3
+  StepController: BinaryFraction
+  StepChoosers:
+    - Constant: 0.05
+    - Increase:
+        Factor: 2
+    - Cfl:
+        SafetyFactor: 0.2
+
+DomainCreator:
+  Interval:
+    LowerBound: [0.0]
+    UpperBound: [6.283185307179586]
+    InitialRefinement: [1]
+    InitialGridPoints: [5]
+    TimeDependence: None
+    BoundaryConditions:
+      LowerBoundary: Periodic
+      UpperBoundary: Periodic
+
+SpatialDiscretization:
+  BoundaryCorrection:
+    UpwindPenalty:
+  DiscontinuousGalerkin:
+    Formulation: StrongInertial
+    Quadrature: GaussLobatto
+
+Filtering:
+  ExpFilter0:
+    Alpha: 12
+    HalfPower: 32
+    DisableForDebugging: true
+
+EventsAndTriggers:
+  ? Slabs:
+      Specified:
+        Values: [100]
+  : - Completion
+
+EventsAndDenseTriggers:
+
+Observers:
+  VolumeFileName: "PlaneWaveMinkowski3DVolume"
+  ReductionFileName: "PlaneWaveMinkowski3DReductions"

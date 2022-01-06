@@ -5,7 +5,9 @@
 
 #include <cstddef>
 
+#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/VariablesTag.hpp"
+#include "Evolution/Systems/CurvedScalarWave/BoundaryConditions/BoundaryCondition.hpp"
 #include "Evolution/Systems/CurvedScalarWave/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Characteristics.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Equations.hpp"
@@ -27,6 +29,7 @@ struct System {
   static constexpr size_t volume_dim = Dim;
   static constexpr bool is_euclidean = false;
 
+  using boundary_conditions_base = BoundaryConditions::BoundaryCondition<Dim>;
   using boundary_correction_base = BoundaryCorrections::BoundaryCorrection<Dim>;
 
   using variables_tag =
@@ -37,6 +40,23 @@ struct System {
   // Relic alias: needs to be removed once all evolution systems
   // convert to using dg::ComputeTimeDerivative
   using gradients_tags = gradient_variables;
+
+  using spacetime_variables_tag = ::Tags::Variables<tmpl::list<
+      gr::Tags::Lapse<DataVector>, ::Tags::dt<gr::Tags::Lapse<DataVector>>,
+      ::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<Dim>,
+                    Frame::Inertial>,
+      gr::Tags::Shift<volume_dim, Frame::Inertial, DataVector>,
+      ::Tags::dt<gr::Tags::Shift<volume_dim, Frame::Inertial, DataVector>>,
+      ::Tags::deriv<gr::Tags::Shift<Dim, Frame::Inertial, DataVector>,
+                    tmpl::size_t<Dim>, Frame::Inertial>,
+      gr::Tags::SpatialMetric<volume_dim, Frame::Inertial, DataVector>,
+      ::Tags::dt<
+          gr::Tags::SpatialMetric<volume_dim, Frame::Inertial, DataVector>>,
+      ::Tags::deriv<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataVector>,
+                    tmpl::size_t<Dim>, Frame::Inertial>,
+      gr::Tags::SqrtDetSpatialMetric<DataVector>,
+      gr::Tags::ExtrinsicCurvature<volume_dim, Frame::Inertial, DataVector>,
+      gr::Tags::InverseSpatialMetric<volume_dim, Frame::Inertial, DataVector>>>;
 
   using compute_volume_time_derivative_terms = TimeDerivative<Dim>;
   using normal_dot_fluxes = ComputeNormalDotFluxes<Dim>;

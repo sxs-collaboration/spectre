@@ -3,6 +3,7 @@
 
 add_subdirectory(Burgers)
 add_subdirectory(Cce)
+add_subdirectory(CurvedScalarWave)
 add_subdirectory(GeneralizedHarmonic)
 add_subdirectory(GrMhd)
 add_subdirectory(NewtonianEuler)

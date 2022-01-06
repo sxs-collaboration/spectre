@@ -1,0 +1,114 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Executable: EvolvePlaneWaveMinkowski3D
+# Check: parse;execute_check_output
+# Timeout: 15
+# ExpectedOutput:
+#   PlaneWaveMinkowski3DVolume0.h5
+#   PlaneWaveMinkowski3DReductions.h5
+# OutputFileChecks:
+#   - Label: constraint violations
+#     Subfile: /Norms.dat
+#     FileGlob: PlaneWaveMinkowski3DReductions.h5
+#     SkipColumns: [0, 1]
+#     AbsoluteTolerance: 0.02
+
+AnalyticData:
+  ScalarWaveGr:
+    Background:
+    ScalarField:
+      WaveVector: [1.0, 1.0, 1.0]
+      Center: [0.0, 0.0, 0.0]
+      Profile:
+        Sinusoid:
+          Amplitude: 1.0
+          Wavenumber: 1.0
+          Phase: 0.0
+
+PhaseChangeAndTriggers:
+
+Evolution:
+  InitialTime: 0.0
+  InitialTimeStep: 0.001
+  InitialSlabSize: 0.01
+  TimeStepper:
+    AdamsBashforthN:
+      Order: 3
+  StepController: BinaryFraction
+  StepChoosers:
+    - Constant: 0.05
+    - Increase:
+        Factor: 2
+    - Cfl:
+        SafetyFactor: 0.2
+
+DomainCreator:
+  Brick:
+    LowerBound: [0.0, 0.0, 0.0]
+    UpperBound: [6.283185307179586, 6.283185307179586, 6.283185307179586]
+    InitialRefinement: [1, 1, 1]
+    InitialGridPoints: [6, 6, 6]
+    TimeDependence: None
+    BoundaryCondition: Periodic
+
+SpatialDiscretization:
+  BoundaryCorrection:
+    UpwindPenalty:
+  DiscontinuousGalerkin:
+    Formulation: StrongInertial
+    Quadrature: GaussLobatto
+
+Filtering:
+  ExpFilter0:
+    Alpha: 12
+    HalfPower: 32
+    DisableForDebugging: true
+
+EventsAndTriggers:
+  ? Slabs:
+      Specified:
+        Values: [30]
+  : - Completion
+  ? Slabs:
+      Specified:
+        Values: [0, 15]
+  : - ObserveFields:
+        SubfileName: VolumePsi0And25
+        VariablesToObserve: ["Psi"]
+        InterpolateToMesh: None
+        CoordinatesFloatingPointType: Double
+        FloatingPointTypes: [Double]
+  ? Slabs:
+      EvenlySpaced:
+        Interval: 10
+        Offset: 0
+  : - ObserveFields:
+        SubfileName: VolumeVarsConstraintsEvery10Slabs
+        VariablesToObserve:
+          - Psi
+          - Pi
+          - Phi
+          - PointwiseL2Norm(OneIndexConstraint)
+        InterpolateToMesh: None
+        CoordinatesFloatingPointType: Double
+        FloatingPointTypes: [Double]
+  ? Slabs:
+      EvenlySpaced:
+        Interval: 10
+        Offset: 0
+  : - ObserveNorms:
+        SubfileName: Norms
+        TensorsToObserve:
+          - Name: PointwiseL2Norm(OneIndexConstraint)
+            NormType: L2Norm
+            Components: Individual
+          - Name: PointwiseL2Norm(TwoIndexConstraint)
+            NormType: L2Norm
+            Components: Individual
+
+EventsAndDenseTriggers:
+
+Observers:
+  VolumeFileName: "PlaneWaveMinkowski3DVolume"
+  ReductionFileName: "PlaneWaveMinkowski3DReductions"
