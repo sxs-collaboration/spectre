@@ -126,15 +126,16 @@ void test_evolved_from_characteristic_fields() {
   const DataVector used_for_size(5);
   // Psi
   pypp::check_with_random_values<1>(
-      evolved_field_with_tag<CurvedScalarWave::Psi, SpatialDim>,
+      evolved_field_with_tag<CurvedScalarWave::Tags::Psi, SpatialDim>,
       "Characteristics", "evol_field_psi", {{{-2.0, 2.0}}}, used_for_size);
   // Pi
   pypp::check_with_random_values<1>(
-      evolved_field_with_tag<CurvedScalarWave::Pi, SpatialDim>,
+      evolved_field_with_tag<CurvedScalarWave::Tags::Pi, SpatialDim>,
       "Characteristics", "evol_field_pi", {{{-2.0, 2.0}}}, used_for_size);
   // Phi
   pypp::check_with_random_values<1>(
-      evolved_field_with_tag<CurvedScalarWave::Phi<SpatialDim>, SpatialDim>,
+      evolved_field_with_tag<CurvedScalarWave::Tags::Phi<SpatialDim>,
+                             SpatialDim>,
       "Characteristics", "evol_field_phi", {{{-2.0, 2.0}}}, used_for_size);
 }
 
@@ -190,8 +191,8 @@ void test_characteristics_compute_tags() {
           gr::Tags::Shift<SpatialDim, Frame::Inertial, DataVector>,
           gr::Tags::InverseSpatialMetric<SpatialDim, Frame::Inertial,
                                          DataVector>,
-          CurvedScalarWave::Psi, CurvedScalarWave::Pi,
-          CurvedScalarWave::Phi<SpatialDim>,
+          CurvedScalarWave::Tags::Psi, CurvedScalarWave::Tags::Pi,
+          CurvedScalarWave::Tags::Phi<SpatialDim>,
           ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<SpatialDim>>>,
       db::AddComputeTags<
           CurvedScalarWave::CharacteristicSpeedsCompute<SpatialDim>,

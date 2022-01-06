@@ -170,7 +170,7 @@ struct CharacteristicFieldsCompute : Tags::CharacteristicFields<SpatialDim>,
   using argument_tags = tmpl::list<
       Tags::ConstraintGamma2,
       gr::Tags::InverseSpatialMetric<SpatialDim, Frame::Inertial, DataVector>,
-      Psi, Pi, Phi<SpatialDim>,
+      Tags::Psi, Tags::Pi, Tags::Phi<SpatialDim>,
       ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<SpatialDim>>>;
 
   static constexpr void function(
@@ -193,7 +193,7 @@ struct CharacteristicFieldsCompute : Tags::CharacteristicFields<SpatialDim>,
  * characteristic ones, see \ref CharacteristicFieldsCompute.
  */
 template <size_t SpatialDim>
-Variables<tmpl::list<Psi, Pi, Phi<SpatialDim>>>
+Variables<tmpl::list<Tags::Psi, Tags::Pi, Tags::Phi<SpatialDim>>>
 evolved_fields_from_characteristic_fields(
     const Scalar<DataVector>& gamma_2, const Scalar<DataVector>& v_psi,
     const tnsr::i<DataVector, SpatialDim, Frame::Inertial>& v_zero,
@@ -203,7 +203,8 @@ evolved_fields_from_characteristic_fields(
 
 template <size_t SpatialDim>
 void evolved_fields_from_characteristic_fields(
-    gsl::not_null<Variables<tmpl::list<Psi, Pi, Phi<SpatialDim>>>*>
+    gsl::not_null<
+        Variables<tmpl::list<Tags::Psi, Tags::Pi, Tags::Phi<SpatialDim>>>*>
         evolved_fields,
     const Scalar<DataVector>& gamma_2, const Scalar<DataVector>& v_psi,
     const tnsr::i<DataVector, SpatialDim, Frame::Inertial>& v_zero,

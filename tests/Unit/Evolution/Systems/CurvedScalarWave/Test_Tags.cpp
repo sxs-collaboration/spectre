@@ -8,9 +8,9 @@
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedScalarWave.Tags",
                   "[Unit][Evolution]") {
-  TestHelpers::db::test_simple_tag<CurvedScalarWave::Psi>("Psi");
-  TestHelpers::db::test_simple_tag<CurvedScalarWave::Pi>("Pi");
-  TestHelpers::db::test_simple_tag<CurvedScalarWave::Phi<3>>("Phi");
+  TestHelpers::db::test_simple_tag<CurvedScalarWave::Tags::Psi>("Psi");
+  TestHelpers::db::test_simple_tag<CurvedScalarWave::Tags::Pi>("Pi");
+  TestHelpers::db::test_simple_tag<CurvedScalarWave::Tags::Phi<3>>("Phi");
   TestHelpers::db::test_simple_tag<CurvedScalarWave::Tags::ConstraintGamma1>(
       "ConstraintGamma1");
   TestHelpers::db::test_simple_tag<CurvedScalarWave::Tags::ConstraintGamma2>(

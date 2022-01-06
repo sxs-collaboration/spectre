@@ -22,10 +22,10 @@ void ScalarWaveGr<ScalarFieldData, BackgroundGrData>::pup(PUP::er& p) {
 }
 
 template <typename ScalarFieldData, typename BackgroundGrData>
-tuples::TaggedTuple<Pi>
+tuples::TaggedTuple<Tags::Pi>
 ScalarWaveGr<ScalarFieldData, BackgroundGrData>::variables(
-    const tnsr::I<DataVector, volume_dim>& x, tmpl::list<Pi> /*meta*/) const
-    {
+    const tnsr::I<DataVector, volume_dim>& x,
+    tmpl::list<Tags::Pi> /*meta*/) const {
   constexpr double default_initial_time = 0.;
   const auto flat_space_scalar_wave_vars =
       flat_space_scalar_wave_data_.variables(
@@ -34,14 +34,14 @@ ScalarWaveGr<ScalarFieldData, BackgroundGrData>::variables(
                      ScalarWave::Psi>{});
   const auto spacetime_variables = background_gr_data_.variables(
       x, default_initial_time, spacetime_tags<DataVector>{});
-  auto result = make_with_value<tuples::TaggedTuple<Pi>>(x, 0.);
+  auto result = make_with_value<tuples::TaggedTuple<Tags::Pi>>(x, 0.);
 
   const auto shift_dot_dpsi = dot_product(
       get<gr::Tags::Shift<volume_dim, Frame::Inertial, DataVector>>(
           spacetime_variables),
       get<ScalarWave::Phi<volume_dim>>(flat_space_scalar_wave_vars));
 
-  get(get<Pi>(result)) =
+  get(get<Tags::Pi>(result)) =
       (get(shift_dot_dpsi) +
        get(get<ScalarWave::Pi>(flat_space_scalar_wave_vars))) /
       get(get<gr::Tags::Lapse<DataVector>>(spacetime_variables));
@@ -52,15 +52,13 @@ ScalarWaveGr<ScalarFieldData, BackgroundGrData>::variables(
 template <typename LocalScalarFieldData, typename LocalBackgroundData>
 bool operator==(
     const ScalarWaveGr<LocalScalarFieldData, LocalBackgroundData>& lhs,
-    const ScalarWaveGr<LocalScalarFieldData, LocalBackgroundData>&
-        rhs) {
+    const ScalarWaveGr<LocalScalarFieldData, LocalBackgroundData>& rhs) {
   return lhs.background_gr_data_ == rhs.background_gr_data_;
 }
 
 template <typename ScalarFieldData, typename BackgroundData>
-bool operator!=(
-    const ScalarWaveGr<ScalarFieldData, BackgroundData>& lhs,
-    const ScalarWaveGr<ScalarFieldData, BackgroundData>& rhs) {
+bool operator!=(const ScalarWaveGr<ScalarFieldData, BackgroundData>& lhs,
+                const ScalarWaveGr<ScalarFieldData, BackgroundData>& rhs) {
   return not(lhs == rhs);
 }
 }  // namespace CurvedScalarWave::AnalyticData

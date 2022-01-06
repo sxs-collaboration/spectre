@@ -59,7 +59,7 @@ struct TimeDerivative {
       Tags::ConstraintGamma1, Tags::ConstraintGamma2>;
 
   using argument_tags = tmpl::list<
-      Pi, Phi<Dim>, gr::Tags::Lapse<DataVector>,
+      Tags::Pi, Tags::Phi<Dim>, gr::Tags::Lapse<DataVector>,
       gr::Tags::Shift<Dim, Frame::Inertial, DataVector>,
       ::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<Dim>,
                     Frame::Inertial>,

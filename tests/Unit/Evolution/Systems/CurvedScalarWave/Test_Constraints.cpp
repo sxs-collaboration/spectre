@@ -62,10 +62,10 @@ void test_constraint_compute_items(const DataVector& used_for_size) {
   // Insert into databox
   const auto box = db::create<
       db::AddSimpleTags<
-          CurvedScalarWave::Phi<SpatialDim>,
-          ::Tags::deriv<CurvedScalarWave::Phi<SpatialDim>,
+          CurvedScalarWave::Tags::Phi<SpatialDim>,
+          ::Tags::deriv<CurvedScalarWave::Tags::Phi<SpatialDim>,
                         tmpl::size_t<SpatialDim>, Frame::Inertial>,
-          ::Tags::deriv<CurvedScalarWave::Psi, tmpl::size_t<SpatialDim>,
+          ::Tags::deriv<CurvedScalarWave::Tags::Psi, tmpl::size_t<SpatialDim>,
                         Frame::Inertial>>,
       db::AddComputeTags<
           CurvedScalarWave::Tags::OneIndexConstraintCompute<SpatialDim>,

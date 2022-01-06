@@ -19,7 +19,7 @@ template <class>
 class Variables;
 /// \endcond
 
-namespace CurvedScalarWave {
+namespace CurvedScalarWave::Tags {
 struct Psi : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
@@ -33,7 +33,6 @@ struct Phi : db::SimpleTag {
   using type = tnsr::i<DataVector, SpatialDim>;
 };
 
-namespace Tags {
 struct ConstraintGamma1 : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
@@ -104,5 +103,4 @@ template <size_t Dim>
 struct EvolvedFieldsFromCharacteristicFields : db::SimpleTag {
   using type = Variables<tmpl::list<Psi, Pi, Phi<Dim>>>;
 };
-}  // namespace Tags
-}  // namespace CurvedScalarWave
+}  // namespace CurvedScalarWave::Tags

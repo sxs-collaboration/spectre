@@ -200,8 +200,10 @@ void UpwindPenalty<Dim>::dg_boundary_terms(
       weighted_char_fields_int{};
   Variables<CurvedScalarWave_detail::char_field_tags<Dim>>
       weighted_char_fields_ext{};
-  Variables<tmpl::list<Psi, Pi, Phi<Dim>>> weighted_evolved_fields_int{};
-  Variables<tmpl::list<Psi, Pi, Phi<Dim>>> weighted_evolved_fields_ext{};
+  Variables<tmpl::list<Tags::Psi, Tags::Pi, Tags::Phi<Dim>>>
+      weighted_evolved_fields_int{};
+  Variables<tmpl::list<Tags::Psi, Tags::Pi, Tags::Phi<Dim>>>
+      weighted_evolved_fields_ext{};
 
   // Set memory refs
   get(get<Tags::VPsi>(weighted_char_fields_int))
@@ -238,14 +240,14 @@ void UpwindPenalty<Dim>::dg_boundary_terms(
       .set_data_ref(
           make_not_null(&get(get<::Tags::TempScalar<5, DataVector>>(buffer))));
 
-  get(get<Psi>(weighted_evolved_fields_int))
+  get(get<Tags::Psi>(weighted_evolved_fields_int))
       .set_data_ref(
           make_not_null(&get(get<::Tags::TempScalar<6, DataVector>>(buffer))));
-  get(get<Pi>(weighted_evolved_fields_int))
+  get(get<Tags::Pi>(weighted_evolved_fields_int))
       .set_data_ref(
           make_not_null(&get(get<::Tags::TempScalar<7, DataVector>>(buffer))));
   for (size_t i = 0; i < Dim; ++i) {
-    get<Phi<Dim>>(weighted_evolved_fields_int)
+    get<Tags::Phi<Dim>>(weighted_evolved_fields_int)
         .get(i)
         .set_data_ref(make_not_null(
             &get<::Tags::Tempi<2, Dim, Frame::Inertial, DataVector>>(buffer)
@@ -266,14 +268,14 @@ void UpwindPenalty<Dim>::dg_boundary_terms(
       get<Tags::VMinus>(weighted_char_fields_int), interface_unit_normal_int);
 
   // Set memory refs
-  get(get<Psi>(weighted_evolved_fields_ext))
+  get(get<Tags::Psi>(weighted_evolved_fields_ext))
       .set_data_ref(
           make_not_null(&get(get<::Tags::TempScalar<0, DataVector>>(buffer))));
-  get(get<Pi>(weighted_evolved_fields_ext))
+  get(get<Tags::Pi>(weighted_evolved_fields_ext))
       .set_data_ref(
           make_not_null(&get(get<::Tags::TempScalar<1, DataVector>>(buffer))));
   for (size_t i = 0; i < Dim; ++i) {
-    get<Phi<Dim>>(weighted_evolved_fields_ext)
+    get<Tags::Phi<Dim>>(weighted_evolved_fields_ext)
         .get(i)
         .set_data_ref(make_not_null(
             &get<::Tags::Tempi<0, Dim, Frame::Inertial, DataVector>>(buffer)
@@ -287,14 +289,16 @@ void UpwindPenalty<Dim>::dg_boundary_terms(
       get<Tags::VPlus>(weighted_char_fields_ext),
       get<Tags::VMinus>(weighted_char_fields_ext), interface_unit_normal_ext);
 
-  get(*psi_boundary_correction) = get(get<Psi>(weighted_evolved_fields_ext)) -
-                                  get(get<Psi>(weighted_evolved_fields_int));
-  get(*pi_boundary_correction) = get(get<Pi>(weighted_evolved_fields_ext)) -
-                                 get(get<Pi>(weighted_evolved_fields_int));
+  get(*psi_boundary_correction) =
+      get(get<Tags::Psi>(weighted_evolved_fields_ext)) -
+      get(get<Tags::Psi>(weighted_evolved_fields_int));
+  get(*pi_boundary_correction) =
+      get(get<Tags::Pi>(weighted_evolved_fields_ext)) -
+      get(get<Tags::Pi>(weighted_evolved_fields_int));
   for (size_t i = 0; i < Dim; ++i) {
     phi_boundary_correction->get(i) =
-        get<Phi<Dim>>(weighted_evolved_fields_ext).get(i) -
-        get<Phi<Dim>>(weighted_evolved_fields_int).get(i);
+        get<Tags::Phi<Dim>>(weighted_evolved_fields_ext).get(i) -
+        get<Tags::Phi<Dim>>(weighted_evolved_fields_int).get(i);
   }
 }
 
