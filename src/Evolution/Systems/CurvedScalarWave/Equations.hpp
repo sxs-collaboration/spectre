@@ -52,7 +52,7 @@ template <size_t Dim>
 struct ComputeNormalDotFluxes {
  public:
   using argument_tags =
-      tmpl::list<Pi, Phi<Dim>, Psi, Tags::ConstraintGamma1,
+      tmpl::list<Tags::Pi, Tags::Phi<Dim>, Tags::Psi, Tags::ConstraintGamma1,
                  Tags::ConstraintGamma2, gr::Tags::Lapse<>,
                  gr::Tags::Shift<Dim>, gr::Tags::InverseSpatialMetric<Dim>,
                  ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<

@@ -75,11 +75,13 @@ class PureSphericalHarmonic : public MarkAsAnalyticData {
                         const Options::Context& context = {});
 
   /// Retrieve the evolution variables at spatial coordinates `x`
-  tuples::TaggedTuple<CurvedScalarWave::Pi, CurvedScalarWave::Phi<3>,
-                      CurvedScalarWave::Psi>
-  variables(const tnsr::I<DataVector, 3>& x, double /*t*/,
-            tmpl::list<CurvedScalarWave::Pi, CurvedScalarWave::Phi<3>,
-                       CurvedScalarWave::Psi> /*meta*/) const;
+  tuples::TaggedTuple<CurvedScalarWave::Tags::Pi,
+                      CurvedScalarWave::Tags::Phi<3>,
+                      CurvedScalarWave::Tags::Psi>
+  variables(
+      const tnsr::I<DataVector, 3>& x, double /*t*/,
+      tmpl::list<CurvedScalarWave::Tags::Pi, CurvedScalarWave::Tags::Phi<3>,
+                 CurvedScalarWave::Tags::Psi> /*meta*/) const;
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/);

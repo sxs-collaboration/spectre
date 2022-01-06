@@ -132,17 +132,19 @@ class ConstraintPreservingSphericalRadiation final
 
   void pup(PUP::er& p) override;
 
-  using dg_interior_evolved_variables_tags = tmpl::list<Phi<Dim>, Psi>;
+  using dg_interior_evolved_variables_tags =
+      tmpl::list<Tags::Phi<Dim>, Tags::Psi>;
   using dg_interior_temporary_tags =
       tmpl::list<domain::Tags::Coordinates<Dim, Frame::Inertial>,
                  Tags::ConstraintGamma1, Tags::ConstraintGamma2,
                  gr::Tags::Lapse<DataVector>,
                  gr::Tags::Shift<Dim, Frame::Inertial, DataVector>>;
   using dg_interior_dt_vars_tags =
-      tmpl::list<::Tags::dt<Pi>, ::Tags::dt<Phi<Dim>>, ::Tags::dt<Psi>>;
-  using dg_interior_deriv_vars_tags =
-      tmpl::list<::Tags::deriv<Psi, tmpl::size_t<Dim>, Frame::Inertial>,
-                 ::Tags::deriv<Phi<Dim>, tmpl::size_t<Dim>, Frame::Inertial>>;
+      tmpl::list<::Tags::dt<Tags::Pi>, ::Tags::dt<Tags::Phi<Dim>>,
+                 ::Tags::dt<Tags::Psi>>;
+  using dg_interior_deriv_vars_tags = tmpl::list<
+      ::Tags::deriv<Tags::Psi, tmpl::size_t<Dim>, Frame::Inertial>,
+      ::Tags::deriv<Tags::Phi<Dim>, tmpl::size_t<Dim>, Frame::Inertial>>;
   using dg_gridless_tags = tmpl::list<>;
 
   std::optional<std::string> dg_time_derivative(

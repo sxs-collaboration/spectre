@@ -59,19 +59,19 @@ void test_no_hole(const CurvedScalarWave::AnalyticData::ScalarWaveGr<
       {DataVector({0., 1., 2., 3.}), DataVector({0., 0., 0., 0.}),
        DataVector({0., 0., 0., 0.})}}};
   auto vars = curved_wave_data.variables(
-      x, tmpl::list<CurvedScalarWave::Pi, CurvedScalarWave::Phi<3>,
-                    CurvedScalarWave::Psi>{});
+      x, tmpl::list<CurvedScalarWave::Tags::Pi, CurvedScalarWave::Tags::Phi<3>,
+                    CurvedScalarWave::Tags::Psi>{});
   auto flat_vars = flat_wave_solution.variables(
       x, 0., tmpl::list<ScalarWave::Pi, ScalarWave::Phi<3>, ScalarWave::Psi>{});
-  CHECK_ITERABLE_APPROX(get(get<CurvedScalarWave::Psi>(vars)),
+  CHECK_ITERABLE_APPROX(get(get<CurvedScalarWave::Tags::Psi>(vars)),
                         get(get<ScalarWave::Psi>(flat_vars)));
-  CHECK_ITERABLE_APPROX(get(get<CurvedScalarWave::Pi>(vars)),
+  CHECK_ITERABLE_APPROX(get(get<CurvedScalarWave::Tags::Pi>(vars)),
                         get(get<ScalarWave::Pi>(flat_vars)));
-  CHECK_ITERABLE_APPROX(get<0>(get<CurvedScalarWave::Phi<3>>(vars)),
+  CHECK_ITERABLE_APPROX(get<0>(get<CurvedScalarWave::Tags::Phi<3>>(vars)),
                         get<0>(get<ScalarWave::Phi<3>>(flat_vars)));
-  CHECK_ITERABLE_APPROX(get<1>(get<CurvedScalarWave::Phi<3>>(vars)),
+  CHECK_ITERABLE_APPROX(get<1>(get<CurvedScalarWave::Tags::Phi<3>>(vars)),
                         get<1>(get<ScalarWave::Phi<3>>(flat_vars)));
-  CHECK_ITERABLE_APPROX(get<2>(get<CurvedScalarWave::Phi<3>>(vars)),
+  CHECK_ITERABLE_APPROX(get<2>(get<CurvedScalarWave::Tags::Phi<3>>(vars)),
                         get<2>(get<ScalarWave::Phi<3>>(flat_vars)));
 }
 
@@ -85,8 +85,8 @@ void test_kerr(
       {DataVector({0., 1., 2., 3.}), DataVector({0., 0., 0., 0.}),
        DataVector({0., 0., 0., 0.})}}};
   auto vars = curved_wave_data.variables(
-      x, tmpl::list<CurvedScalarWave::Pi, CurvedScalarWave::Phi<3>,
-                    CurvedScalarWave::Psi>{});
+      x, tmpl::list<CurvedScalarWave::Tags::Pi, CurvedScalarWave::Tags::Phi<3>,
+                    CurvedScalarWave::Tags::Psi>{});
 
   const auto flat_wave_vars = flat_wave_solution.variables(
       x, 0., ScalarWave::System<3>::variables_tag::tags_list{});
@@ -107,13 +107,15 @@ void test_kerr(
         get(get<gr::Tags::Lapse<DataVector>>(kerr_variables));
   }
 
-  CHECK_ITERABLE_APPROX(get(get<CurvedScalarWave::Psi>(vars)), get(local_psi));
-  CHECK_ITERABLE_APPROX(get(get<CurvedScalarWave::Pi>(vars)), get(local_pi));
-  CHECK_ITERABLE_APPROX(get<0>(get<CurvedScalarWave::Phi<3>>(vars)),
+  CHECK_ITERABLE_APPROX(get(get<CurvedScalarWave::Tags::Psi>(vars)),
+                        get(local_psi));
+  CHECK_ITERABLE_APPROX(get(get<CurvedScalarWave::Tags::Pi>(vars)),
+                        get(local_pi));
+  CHECK_ITERABLE_APPROX(get<0>(get<CurvedScalarWave::Tags::Phi<3>>(vars)),
                         get<0>(local_phi));
-  CHECK_ITERABLE_APPROX(get<1>(get<CurvedScalarWave::Phi<3>>(vars)),
+  CHECK_ITERABLE_APPROX(get<1>(get<CurvedScalarWave::Tags::Phi<3>>(vars)),
                         get<1>(local_phi));
-  CHECK_ITERABLE_APPROX(get<2>(get<CurvedScalarWave::Phi<3>>(vars)),
+  CHECK_ITERABLE_APPROX(get<2>(get<CurvedScalarWave::Tags::Phi<3>>(vars)),
                         get<2>(local_phi));
 }
 

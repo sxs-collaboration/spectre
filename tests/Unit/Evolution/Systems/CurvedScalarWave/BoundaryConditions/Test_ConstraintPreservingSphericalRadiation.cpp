@@ -38,12 +38,13 @@ void test() {
       make_not_null(&gen),
       "Evolution.Systems.CurvedScalarWave.BoundaryConditions."
       "ConstraintPreservingSphericalRadiation",
-      tuples::TaggedTuple<
-          helpers::Tags::PythonFunctionForErrorMessage<>,
-          helpers::Tags::PythonFunctionName<::Tags::dt<CurvedScalarWave::Pi>>,
-          helpers::Tags::PythonFunctionName<
-              ::Tags::dt<CurvedScalarWave::Phi<Dim>>>,
-          helpers::Tags::PythonFunctionName<::Tags::dt<CurvedScalarWave::Psi>>>{
+      tuples::TaggedTuple<helpers::Tags::PythonFunctionForErrorMessage<>,
+                          helpers::Tags::PythonFunctionName<
+                              ::Tags::dt<CurvedScalarWave::Tags::Pi>>,
+                          helpers::Tags::PythonFunctionName<
+                              ::Tags::dt<CurvedScalarWave::Tags::Phi<Dim>>>,
+                          helpers::Tags::PythonFunctionName<
+                              ::Tags::dt<CurvedScalarWave::Tags::Psi>>>{
           "error", "dt_pi_constraint_preserving_spherical_radiation",
           "dt_phi_constraint_preserving_spherical_radiation",
           "dt_psi_constraint_preserving_spherical_radiation"},
