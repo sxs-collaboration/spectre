@@ -6,15 +6,15 @@ from Evolution.Systems.CurvedScalarWave.Characteristics import (
     char_speed_vpsi, char_speed_vzero, char_speed_vplus, char_speed_vminus)
 
 
-def error(face_mesh_velocity, normal_covector, normal_vector, phi, psi,
-          inertial_coords, gamma1, gamma2, lapse, shift, dt_pi, dt_phi, dt_psi,
+def error(face_mesh_velocity, normal_covector, normal_vector, psi, phi,
+          inertial_coords, gamma1, gamma2, lapse, shift, dt_psi, dt_pi, dt_phi,
           d_psi, d_phi):
     return None
 
 
 def dt_psi_constraint_preserving_spherical_radiation(
-    face_mesh_velocity, normal_covector, normal_vector, phi, psi,
-    inertial_coords, gamma1, gamma2, lapse, shift, dt_pi, dt_phi, dt_psi,
+    face_mesh_velocity, normal_covector, normal_vector, psi, phi,
+    inertial_coords, gamma1, gamma2, lapse, shift, dt_psi, dt_pi, dt_phi,
     d_psi, d_phi):
     char_speed_psi = char_speed_vpsi(gamma1, lapse, shift, normal_covector)
 
@@ -25,8 +25,8 @@ def dt_psi_constraint_preserving_spherical_radiation(
 
 
 def dt_phi_constraint_preserving_spherical_radiation(
-    face_mesh_velocity, normal_covector, normal_vector, phi, psi,
-    inertial_coords, gamma1, gamma2, lapse, shift, dt_pi, dt_phi, dt_psi,
+    face_mesh_velocity, normal_covector, normal_vector, psi, phi,
+    inertial_coords, gamma1, gamma2, lapse, shift, dt_psi, dt_pi, dt_phi,
     d_psi, d_phi):
     char_speed_zero = char_speed_vzero(gamma1, lapse, shift, normal_covector)
     if face_mesh_velocity is not None:
@@ -36,12 +36,12 @@ def dt_phi_constraint_preserving_spherical_radiation(
 
 
 def dt_pi_constraint_preserving_spherical_radiation(
-    face_mesh_velocity, normal_covector, normal_vector, phi, psi,
-    inertial_coords, gamma1, gamma2, lapse, shift, dt_pi, dt_phi, dt_psi,
+    face_mesh_velocity, normal_covector, normal_vector, psi, phi,
+    inertial_coords, gamma1, gamma2, lapse, shift, dt_psi, dt_pi, dt_phi,
     d_psi, d_phi):
     dt_psi_correction = dt_psi_constraint_preserving_spherical_radiation(
-        face_mesh_velocity, normal_covector, normal_vector, phi, psi,
-        inertial_coords, gamma1, gamma2, lapse, shift, dt_pi, dt_phi, dt_psi,
+        face_mesh_velocity, normal_covector, normal_vector, psi, phi,
+        inertial_coords, gamma1, gamma2, lapse, shift, dt_psi, dt_pi, dt_phi,
         d_psi, d_phi)
     inv_radius = 1. / np.linalg.norm(inertial_coords)
     bc_dt_pi = (2. * inv_radius**2 * psi + 4. * inv_radius * dt_psi +
