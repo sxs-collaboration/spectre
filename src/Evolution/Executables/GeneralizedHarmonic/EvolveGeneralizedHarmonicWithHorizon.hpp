@@ -71,7 +71,9 @@ struct EvolutionMetavars<3, InitialData, BoundaryConditions>
         StrahlkorperGr::Tags::AreaCompute<frame>,
         StrahlkorperGr::Tags::IrreducibleMassCompute<frame>,
         StrahlkorperTags::MaxRicciScalarCompute,
-        StrahlkorperTags::MinRicciScalarCompute>;
+        StrahlkorperTags::MinRicciScalarCompute,
+        StrahlkorperGr::Tags::ChristodoulouMassCompute<frame>,
+        StrahlkorperGr::Tags::DimensionlessSpinMagnitudeCompute<frame>>;
     using compute_vars_to_interpolate = ah::ComputeHorizonVolumeQuantities;
     using vars_to_interpolate_to_target =
         tmpl::list<gr::Tags::SpatialMetric<volume_dim, frame, DataVector>,
