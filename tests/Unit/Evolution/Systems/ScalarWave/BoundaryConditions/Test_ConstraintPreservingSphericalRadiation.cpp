@@ -37,10 +37,11 @@ void test() {
         make_not_null(&gen), "ConstraintPreservingSphericalRadiation",
         tuples::TaggedTuple<
             helpers::Tags::PythonFunctionForErrorMessage<>,
-            helpers::Tags::PythonFunctionName<::Tags::dt<ScalarWave::Psi>>,
-            helpers::Tags::PythonFunctionName<::Tags::dt<ScalarWave::Pi>>,
             helpers::Tags::PythonFunctionName<
-                ::Tags::dt<ScalarWave::Phi<Dim>>>>{
+                ::Tags::dt<ScalarWave::Tags::Psi>>,
+            helpers::Tags::PythonFunctionName<::Tags::dt<ScalarWave::Tags::Pi>>,
+            helpers::Tags::PythonFunctionName<
+                ::Tags::dt<ScalarWave::Tags::Phi<Dim>>>>{
             "error", "dt_psi", "dt_pi_" + bc_string, "dt_phi"},
         "ConstraintPreservingSphericalRadiation:\n"
         "  Type: " +

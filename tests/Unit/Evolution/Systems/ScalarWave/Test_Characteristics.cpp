@@ -176,13 +176,14 @@ void test_characteristic_fields_analytic(
   // Evaluate analytic solution
   const auto vars = solution.variables(
       x, t,
-      tmpl::list<ScalarWave::Pi, ScalarWave::Phi<Dim>, ScalarWave::Psi>{});
+      tmpl::list<ScalarWave::Tags::Pi, ScalarWave::Tags::Phi<Dim>,
+                 ScalarWave::Tags::Psi>{});
   // Get ingredients
   const size_t n_pts = mesh.number_of_grid_points();
   const auto gamma_2 = make_with_value<Scalar<DataVector>>(x, 0.1);
-  const auto& psi = get<ScalarWave::Psi>(vars);
-  const auto& phi = get<ScalarWave::Phi<Dim>>(vars);
-  const auto& pi = get<ScalarWave::Pi>(vars);
+  const auto& psi = get<ScalarWave::Tags::Psi>(vars);
+  const auto& phi = get<ScalarWave::Tags::Phi<Dim>>(vars);
+  const auto& pi = get<ScalarWave::Tags::Pi>(vars);
   // Outward 3-normal to the surface on which characteristic fields are needed
   const auto unit_normal_one_form =
       make_with_value<tnsr::i<DataVector, Dim, Frame::Inertial>>(
@@ -231,7 +232,8 @@ typename Tag::type evol_field_with_tag(
     const tnsr::i<DataVector, Dim, Frame::Inertial>& v_zero,
     const Scalar<DataVector>& v_plus, const Scalar<DataVector>& v_minus,
     const tnsr::i<DataVector, Dim, Frame::Inertial>& unit_normal_one_form) {
-  Variables<tmpl::list<ScalarWave::Psi, ScalarWave::Pi, ScalarWave::Phi<Dim>>>
+  Variables<tmpl::list<ScalarWave::Tags::Psi, ScalarWave::Tags::Pi,
+                       ScalarWave::Tags::Phi<Dim>>>
       evolved_vars{};
   ScalarWave::Tags::EvolvedFieldsFromCharacteristicFieldsCompute<Dim>::function(
       make_not_null(&evolved_vars), gamma_2, v_psi, v_zero, v_plus, v_minus,
@@ -246,16 +248,16 @@ void test_evolved_from_characteristic_fields() {
       "EvolvedFieldsFromCharacteristicFields");
   const DataVector used_for_size(5);
   // Psi
-  pypp::check_with_random_values<1>(evol_field_with_tag<ScalarWave::Psi, Dim>,
-                                    "Characteristics", "evol_field_psi",
-                                    {{{-100., 100.}}}, used_for_size);
+  pypp::check_with_random_values<1>(
+      evol_field_with_tag<ScalarWave::Tags::Psi, Dim>, "Characteristics",
+      "evol_field_psi", {{{-100., 100.}}}, used_for_size);
   // Pi
-  pypp::check_with_random_values<1>(evol_field_with_tag<ScalarWave::Pi, Dim>,
-                                    "Characteristics", "evol_field_pi",
-                                    {{{-100., 100.}}}, used_for_size);
+  pypp::check_with_random_values<1>(
+      evol_field_with_tag<ScalarWave::Tags::Pi, Dim>, "Characteristics",
+      "evol_field_pi", {{{-100., 100.}}}, used_for_size);
   // Phi
   pypp::check_with_random_values<1>(
-      evol_field_with_tag<ScalarWave::Phi<Dim>, Dim>, "Characteristics",
+      evol_field_with_tag<ScalarWave::Tags::Phi<Dim>, Dim>, "Characteristics",
       "evol_field_phi", {{{-100., 100.}}}, used_for_size);
 }
 
@@ -289,13 +291,14 @@ void test_evolved_from_characteristic_fields_analytic(
   // Evaluate analytic solution
   const auto vars = solution.variables(
       x, t,
-      tmpl::list<ScalarWave::Pi, ScalarWave::Phi<Dim>, ScalarWave::Psi>{});
+      tmpl::list<ScalarWave::Tags::Pi, ScalarWave::Tags::Phi<Dim>,
+                 ScalarWave::Tags::Psi>{});
   // Get ingredients
   const size_t n_pts = mesh.number_of_grid_points();
   const auto gamma_2 = make_with_value<Scalar<DataVector>>(x, 0.1);
-  const auto& psi_expected = get<ScalarWave::Psi>(vars);
-  const auto& phi_expected = get<ScalarWave::Phi<Dim>>(vars);
-  const auto& pi_expected = get<ScalarWave::Pi>(vars);
+  const auto& psi_expected = get<ScalarWave::Tags::Psi>(vars);
+  const auto& phi_expected = get<ScalarWave::Tags::Phi<Dim>>(vars);
+  const auto& pi_expected = get<ScalarWave::Tags::Pi>(vars);
   // Outward 3-normal to the surface on which characteristic fields are needed
   const auto unit_normal_one_form =
       make_with_value<tnsr::i<DataVector, Dim, Frame::Inertial>>(
@@ -321,14 +324,15 @@ void test_evolved_from_characteristic_fields_analytic(
                                   get(gamma_2) * get(psi_expected)};
   // Second, obtain evolved fields using compute tag
   {
-    Variables<tmpl::list<ScalarWave::Psi, ScalarWave::Pi, ScalarWave::Phi<Dim>>>
+    Variables<tmpl::list<ScalarWave::Tags::Psi, ScalarWave::Tags::Pi,
+                         ScalarWave::Tags::Phi<Dim>>>
         fields{};
     ScalarWave::Tags::EvolvedFieldsFromCharacteristicFieldsCompute<
         Dim>::function(make_not_null(&fields), gamma_2, vpsi, vzero, vplus,
                        vminus, unit_normal_one_form);
-    const auto& psi = get<ScalarWave::Psi>(fields);
-    const auto& pi = get<ScalarWave::Pi>(fields);
-    const auto& phi = get<ScalarWave::Phi<Dim>>(fields);
+    const auto& psi = get<ScalarWave::Tags::Psi>(fields);
+    const auto& pi = get<ScalarWave::Tags::Pi>(fields);
+    const auto& phi = get<ScalarWave::Tags::Phi<Dim>>(fields);
 
     CHECK_ITERABLE_APPROX(psi_expected, psi);
     CHECK_ITERABLE_APPROX(pi_expected, pi);
@@ -338,9 +342,9 @@ void test_evolved_from_characteristic_fields_analytic(
   {
     const auto fields = ScalarWave::evolved_fields_from_characteristic_fields(
         gamma_2, vpsi, vzero, vplus, vminus, unit_normal_one_form);
-    const auto& psi = get<ScalarWave::Psi>(fields);
-    const auto& pi = get<ScalarWave::Pi>(fields);
-    const auto& phi = get<ScalarWave::Phi<Dim>>(fields);
+    const auto& psi = get<ScalarWave::Tags::Psi>(fields);
+    const auto& pi = get<ScalarWave::Tags::Pi>(fields);
+    const auto& phi = get<ScalarWave::Tags::Phi<Dim>>(fields);
 
     CHECK_ITERABLE_APPROX(psi_expected, psi);
     CHECK_ITERABLE_APPROX(pi_expected, pi);

@@ -114,7 +114,8 @@ class SphericalRadiation final : public BoundaryCondition<Dim> {
 
   void pup(PUP::er& p) override;
 
-  using dg_interior_evolved_variables_tags = tmpl::list<Phi<Dim>, Psi>;
+  using dg_interior_evolved_variables_tags =
+      tmpl::list<Tags::Phi<Dim>, Tags::Psi>;
   using dg_interior_temporary_tags =
       tmpl::list<domain::Tags::Coordinates<Dim, Frame::Inertial>,
                  Tags::ConstraintGamma2>;

@@ -30,8 +30,8 @@ ScalarWaveGr<ScalarFieldData, BackgroundGrData>::variables(
   const auto flat_space_scalar_wave_vars =
       flat_space_scalar_wave_data_.variables(
           x, default_initial_time,
-          tmpl::list<ScalarWave::Pi, ScalarWave::Phi<volume_dim>,
-                     ScalarWave::Psi>{});
+          tmpl::list<ScalarWave::Tags::Pi, ScalarWave::Tags::Phi<volume_dim>,
+                     ScalarWave::Tags::Psi>{});
   const auto spacetime_variables = background_gr_data_.variables(
       x, default_initial_time, spacetime_tags<DataVector>{});
   auto result = make_with_value<tuples::TaggedTuple<Tags::Pi>>(x, 0.);
@@ -39,11 +39,11 @@ ScalarWaveGr<ScalarFieldData, BackgroundGrData>::variables(
   const auto shift_dot_dpsi = dot_product(
       get<gr::Tags::Shift<volume_dim, Frame::Inertial, DataVector>>(
           spacetime_variables),
-      get<ScalarWave::Phi<volume_dim>>(flat_space_scalar_wave_vars));
+      get<ScalarWave::Tags::Phi<volume_dim>>(flat_space_scalar_wave_vars));
 
   get(get<Tags::Pi>(result)) =
       (get(shift_dot_dpsi) +
-       get(get<ScalarWave::Pi>(flat_space_scalar_wave_vars))) /
+       get(get<ScalarWave::Tags::Pi>(flat_space_scalar_wave_vars))) /
       get(get<gr::Tags::Lapse<DataVector>>(spacetime_variables));
 
   return result;

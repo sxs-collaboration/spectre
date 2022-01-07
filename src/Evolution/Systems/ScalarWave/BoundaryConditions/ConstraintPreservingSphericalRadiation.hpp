@@ -213,17 +213,20 @@ class ConstraintPreservingSphericalRadiation final
   void pup(PUP::er& p) override;
 
   using dg_interior_evolved_variables_tags =
-      tmpl::list<ScalarWave::Pi, ScalarWave::Phi<Dim>, ScalarWave::Psi>;
+      tmpl::list<ScalarWave::Tags::Pi, ScalarWave::Tags::Phi<Dim>,
+                 ScalarWave::Tags::Psi>;
   using dg_interior_temporary_tags =
       tmpl::list<domain::Tags::Coordinates<Dim, Frame::Inertial>,
                  Tags::ConstraintGamma2>;
   using dg_interior_dt_vars_tags =
-      tmpl::list<::Tags::dt<ScalarWave::Pi>, ::Tags::dt<ScalarWave::Phi<Dim>>,
-                 ::Tags::dt<ScalarWave::Psi>>;
+      tmpl::list<::Tags::dt<ScalarWave::Tags::Pi>,
+                 ::Tags::dt<ScalarWave::Tags::Phi<Dim>>,
+                 ::Tags::dt<ScalarWave::Tags::Psi>>;
   using dg_interior_deriv_vars_tags = tmpl::list<
-      ::Tags::deriv<ScalarWave::Pi, tmpl::size_t<Dim>, Frame::Inertial>,
-      ::Tags::deriv<ScalarWave::Psi, tmpl::size_t<Dim>, Frame::Inertial>,
-      ::Tags::deriv<ScalarWave::Phi<Dim>, tmpl::size_t<Dim>, Frame::Inertial>>;
+      ::Tags::deriv<ScalarWave::Tags::Pi, tmpl::size_t<Dim>, Frame::Inertial>,
+      ::Tags::deriv<ScalarWave::Tags::Psi, tmpl::size_t<Dim>, Frame::Inertial>,
+      ::Tags::deriv<ScalarWave::Tags::Phi<Dim>, tmpl::size_t<Dim>,
+                    Frame::Inertial>>;
   using dg_gridless_tags = tmpl::list<>;
 
   std::optional<std::string> dg_time_derivative(

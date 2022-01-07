@@ -36,9 +36,9 @@ void test() {
         make_not_null(&gen), "SphericalRadiation",
         tuples::TaggedTuple<
             helpers::Tags::PythonFunctionForErrorMessage<>,
-            helpers::Tags::PythonFunctionName<ScalarWave::Psi>,
-            helpers::Tags::PythonFunctionName<ScalarWave::Pi>,
-            helpers::Tags::PythonFunctionName<ScalarWave::Phi<Dim>>,
+            helpers::Tags::PythonFunctionName<ScalarWave::Tags::Psi>,
+            helpers::Tags::PythonFunctionName<ScalarWave::Tags::Pi>,
+            helpers::Tags::PythonFunctionName<ScalarWave::Tags::Phi<Dim>>,
             helpers::Tags::PythonFunctionName<
                 ScalarWave::Tags::ConstraintGamma2>>{
             "error", "psi", "pi_" + bc_string, "phi", "constraint_gamma2"},

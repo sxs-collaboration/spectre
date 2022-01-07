@@ -5,14 +5,13 @@
 
 #include <cstddef>
 
-namespace ScalarWave {
+/// \brief Tags for the ScalarWave evolution system
+namespace ScalarWave::Tags {
 struct Psi;
 struct Pi;
 template <size_t Dim>
 struct Phi;
 
-/// \brief Tags for the ScalarWave evolution system
-namespace Tags {
 struct ConstraintGamma2;
 
 template <size_t Dim>
@@ -34,5 +33,4 @@ template <size_t Dim>
 struct EvolvedFieldsFromCharacteristicFields;
 template <size_t Dim>
 struct EnergyDensity;
-}  // namespace Tags
-}  // namespace ScalarWave
+}  // namespace ScalarWave::Tags

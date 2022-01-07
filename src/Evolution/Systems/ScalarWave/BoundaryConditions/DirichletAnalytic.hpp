@@ -89,19 +89,19 @@ class DirichletAnalytic final : public BoundaryCondition<Dim> {
                                       AnalyticSolutionOrData>) {
         return analytic_solution_or_data.variables(
             coords, time,
-            tmpl::list<ScalarWave::Pi, ScalarWave::Phi<Dim>,
-                       ScalarWave::Psi>{});
+            tmpl::list<ScalarWave::Tags::Pi, ScalarWave::Tags::Phi<Dim>,
+                       ScalarWave::Tags::Psi>{});
 
       } else {
         (void)time;
         return analytic_solution_or_data.variables(
-            coords, tmpl::list<ScalarWave::Pi, ScalarWave::Phi<Dim>,
-                               ScalarWave::Psi>{});
+            coords, tmpl::list<ScalarWave::Tags::Pi, ScalarWave::Tags::Phi<Dim>,
+                               ScalarWave::Tags::Psi>{});
       }
     }();
-    *pi = get<ScalarWave::Pi>(boundary_values);
-    *phi = get<ScalarWave::Phi<Dim>>(boundary_values);
-    *psi = get<ScalarWave::Psi>(boundary_values);
+    *pi = get<ScalarWave::Tags::Pi>(boundary_values);
+    *phi = get<ScalarWave::Tags::Phi<Dim>>(boundary_values);
+    *psi = get<ScalarWave::Tags::Psi>(boundary_values);
     return {};
   }
 };
