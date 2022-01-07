@@ -152,6 +152,11 @@ class Variables<tmpl::list<Tags...>> {
 
   Variables(size_t number_of_grid_points, value_type value);
 
+  /// Construct a non-owning Variables that points to `start`. `size` is the
+  /// size of the allocation, which must be
+  /// `number_of_grid_points * Variables::number_of_independent_components`
+  Variables(pointer start, size_t size);
+
   Variables(Variables&& rhs);
   Variables& operator=(Variables&& rhs);
 
@@ -196,6 +201,36 @@ class Variables<tmpl::list<Tags...>> {
   void initialize(size_t number_of_grid_points, value_type value);
   /// @}
 
+  /// @{
+  /// Set the VectorImpl to be a reference to another VectorImpl object
+  void set_data_ref(const gsl::not_null<Variables*> rhs) {
+    set_data_ref(rhs->data(), rhs->size());
+  }
+
+  void set_data_ref(pointer const start, const size_t size) {
+    variable_data_impl_.reset();
+    if (start == nullptr) {
+      variable_data_ = pointer_type{};
+      size_ = 0;
+      number_of_grid_points_ = 0;
+    } else {
+      size_ = size;
+      variable_data_.reset(start, size_);
+      ASSERT(
+          size_ % number_of_independent_components == 0,
+          "The size (" << size_
+                       << ") must be a multiple of the number of independent "
+                          "components ("
+                       << number_of_independent_components
+                       << ") since we calculate the number of grid points from "
+                          "the size and number of independent components.");
+      number_of_grid_points_ = size_ / number_of_independent_components;
+    }
+    owning_ = false;
+    add_reference_variable_data();
+  }
+  /// @}
+
   constexpr SPECTRE_ALWAYS_INLINE size_t number_of_grid_points() const {
     return number_of_grid_points_;
   }
@@ -215,6 +250,9 @@ class Variables<tmpl::list<Tags...>> {
   /// class templates
   const auto& get_variable_data() const { return variable_data_; }
   /// \endcond
+
+  /// Returns true if the class owns the data
+  bool is_owning() const { return owning_; }
 
   // clang-tidy: redundant-declaration
   template <typename Tag, typename TagList>
@@ -438,6 +476,7 @@ class Variables<tmpl::list<Tags...>> {
   friend class Variables;
 
   std::unique_ptr<value_type[]> variable_data_impl_{};
+  bool owning_{true};
   size_t size_ = 0;
   size_t number_of_grid_points_ = 0;
 
@@ -510,6 +549,18 @@ Variables<tmpl::list<Tags...>>::Variables(const size_t number_of_grid_points,
 template <typename... Tags>
 void Variables<tmpl::list<Tags...>>::initialize(
     const size_t number_of_grid_points) {
+  if (number_of_grid_points_ == 0) {
+    variable_data_impl_ = nullptr;
+    size_ = 0;
+    number_of_grid_points_ = 0;
+  }
+  if (UNLIKELY(variable_data_impl_ == nullptr and size_ != 0)) {
+    ERROR(
+        "Variables::initialize_vector cannot be called when "
+        "variable_data_impl_ is nullptr. This likely happened because you are "
+        "trying to resize a non-owning Variables. The size is: "
+        << size_ << " and number of grid points: " << number_of_grid_points_);
+  }
   if (number_of_grid_points_ != number_of_grid_points) {
     number_of_grid_points_ = number_of_grid_points;
     size_ = number_of_grid_points * number_of_independent_components;
@@ -520,6 +571,7 @@ void Variables<tmpl::list<Tags...>>::initialize(
       std::fill(variable_data_impl_.get(), variable_data_impl_.get() + size_,
                 make_signaling_NaN<value_type>());
 #endif  // SPECTRE_DEBUG
+      variable_data_.reset(variable_data_impl_.get(), size_);
       add_reference_variable_data();
     }
   }
@@ -529,8 +581,7 @@ template <typename... Tags>
 void Variables<tmpl::list<Tags...>>::initialize(
     const size_t number_of_grid_points, const value_type value) {
   initialize(number_of_grid_points);
-  std::fill(variable_data_impl_.get(), variable_data_impl_.get() + size_,
-            value);
+  std::fill(variable_data_.data(), variable_data_.data() + size_, value);
 }
 
 /// \cond HIDDEN_SYMBOLS
@@ -559,16 +610,15 @@ Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
 template <typename... Tags>
 Variables<tmpl::list<Tags...>>::Variables(Variables<tmpl::list<Tags...>>&& rhs)
     : variable_data_impl_(std::move(rhs.variable_data_impl_)),
+      owning_(rhs.owning_),
       size_(rhs.size()),
       number_of_grid_points_(rhs.number_of_grid_points()),
+      variable_data_(std::move(rhs.variable_data_)),
       reference_variable_data_(std::move(rhs.reference_variable_data_)) {
   rhs.variable_data_impl_.reset();
+  rhs.owning_ = true;
   rhs.size_ = 0;
   rhs.number_of_grid_points_ = 0;
-  if (size_ == 0) {
-    return;
-  }
-  variable_data_.reset(variable_data_impl_.get(), size_);
 }
 
 template <typename... Tags>
@@ -578,10 +628,14 @@ Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
     return *this;
   }
   variable_data_impl_ = std::move(rhs.variable_data_impl_);
-  rhs.variable_data_impl_.reset();
+  owning_ = rhs.owning_;
   size_ = rhs.size_;
-  rhs.size_ = 0;
   number_of_grid_points_ = std::move(rhs.number_of_grid_points_);
+  variable_data_ = std::move(rhs.variable_data_);
+
+  rhs.variable_data_impl_.reset();
+  rhs.owning_ = true;
+  rhs.size_ = 0;
   rhs.number_of_grid_points_ = 0;
   add_reference_variable_data();
   return *this;
@@ -628,19 +682,18 @@ template <typename... WrappedTags,
 Variables<tmpl::list<Tags...>>::Variables(
     Variables<tmpl::list<WrappedTags...>>&& rhs)
     : variable_data_impl_(std::move(rhs.variable_data_impl_)),
+      owning_(rhs.owning_),
       size_(rhs.size()),
       number_of_grid_points_(rhs.number_of_grid_points()),
+      variable_data_(std::move(rhs.variable_data_)),
       reference_variable_data_(std::move(rhs.reference_variable_data_)) {
   static_assert(
       (std::is_same_v<typename Tags::type, typename WrappedTags::type> and ...),
       "Tensor types do not match!");
   rhs.variable_data_impl_.reset();
   rhs.size_ = 0;
+  rhs.owning_ = true;
   rhs.number_of_grid_points_ = 0;
-  if (size_ == 0) {
-    return;
-  }
-  variable_data_.reset(variable_data_impl_.get(), size_);
 }
 
 template <typename... Tags>
@@ -654,17 +707,31 @@ Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
       (std::is_same_v<typename Tags::type, typename WrappedTags::type> and ...),
       "Tensor types do not match!");
   variable_data_impl_ = std::move(rhs.variable_data_impl_);
-  rhs.variable_data_impl_.reset();
+  variable_data_ = std::move(rhs.variable_data_);
+  owning_ = rhs.owning_;
   size_ = rhs.size_;
-  rhs.size_ = 0;
   number_of_grid_points_ = std::move(rhs.number_of_grid_points_);
+  rhs.variable_data_impl_.reset();
+  rhs.size_ = 0;
+  rhs.owning_ = true;
   rhs.number_of_grid_points_ = 0;
   add_reference_variable_data();
   return *this;
 }
 
 template <typename... Tags>
+Variables<tmpl::list<Tags...>>::Variables(const pointer start,
+                                          const size_t size) {
+  set_data_ref(start, size);
+}
+
+template <typename... Tags>
 void Variables<tmpl::list<Tags...>>::pup(PUP::er& p) {
+  ASSERT(
+      owning_,
+      "Cannot pup a non-owning Variables! It may be reasonable to pack a "
+      "non-owning Variables, but not to unpack one. This should be discussed "
+      "in an issue with the core devs if the feature seems necessary.");
   size_t number_of_grid_points = number_of_grid_points_;
   p | number_of_grid_points;
   if (p.isUnpacking()) {
@@ -732,7 +799,13 @@ void Variables<tmpl::list<Tags...>>::add_reference_variable_data() {
   if (size_ == 0) {
     return;
   }
-  variable_data_.reset(variable_data_impl_.get(), size_);
+  ASSERT(variable_data_.size() == size_ and
+             size_ == number_of_grid_points_ * number_of_independent_components,
+         "Size mismatch: variable_data_.size() = "
+             << variable_data_.size() << " size_ = " << size_ << " should be: "
+             << number_of_grid_points_ * number_of_independent_components
+             << "\nThis is an internal inconsistency bug in Variables. Please "
+                "file an issue.");
   size_t variable_offset = 0;
   tmpl::for_each<tags_list>([this, &variable_offset](auto tag_v) {
     using Tag = tmpl::type_from<decltype(tag_v)>;
