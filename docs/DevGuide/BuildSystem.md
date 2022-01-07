@@ -268,6 +268,9 @@ cmake -D FLAG1=OPT1 ... -D FLAGN=OPTN <SPECTRE_ROOT>
     the same checks are performed during CI and there is a good reason why the
     checks exist in the first place.
     (default is `ON`)
+- USE_IWYU
+  - Enable [include-what-you-use (IWYU)](https://github.com/include-what-you-use/include-what-you-use)
+    tools. (default is `OFF`)
 - USE_LD
   - Override the automatically chosen linker. The options are `ld`, `gold`, and
     `lld`.
