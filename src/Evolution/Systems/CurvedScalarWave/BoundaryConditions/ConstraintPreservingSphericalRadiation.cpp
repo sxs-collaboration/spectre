@@ -38,20 +38,21 @@ ConstraintPreservingSphericalRadiation<
 template <size_t Dim>
 std::optional<std::string>
 ConstraintPreservingSphericalRadiation<Dim>::dg_time_derivative(
+    const gsl::not_null<Scalar<DataVector>*> dt_psi_correction,
     const gsl::not_null<Scalar<DataVector>*> dt_pi_correction,
     const gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*>
         dt_phi_correction,
-    const gsl::not_null<Scalar<DataVector>*> dt_psi_correction,
     const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
         face_mesh_velocity,
     const tnsr::i<DataVector, Dim>& normal_covector,
     const tnsr::I<DataVector, Dim>& normal_vector,
-    const tnsr::i<DataVector, Dim>& phi, const Scalar<DataVector>& psi,
+    const Scalar<DataVector>& psi, const tnsr::i<DataVector, Dim>& phi,
     const tnsr::I<DataVector, Dim, Frame::Inertial>& coords,
     const Scalar<DataVector>& gamma1, const Scalar<DataVector>& gamma2,
     const Scalar<DataVector>& lapse, const tnsr::I<DataVector, Dim>& shift,
-    const Scalar<DataVector>& dt_pi, const tnsr::i<DataVector, Dim>& dt_phi,
-    const Scalar<DataVector>& dt_psi, const tnsr::i<DataVector, Dim>& d_psi,
+    const Scalar<DataVector>& dt_psi, const Scalar<DataVector>& dt_pi,
+    const tnsr::i<DataVector, Dim>& dt_phi,
+    const tnsr::i<DataVector, Dim>& d_psi,
     const tnsr::ij<DataVector, Dim>& d_phi) const {
   Variables<tmpl::list<::Tags::Tempa<0, 3>, ::Tags::TempScalar<1>,
                        ::Tags::TempScalar<2>>>

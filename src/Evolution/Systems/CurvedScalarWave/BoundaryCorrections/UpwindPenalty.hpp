@@ -134,9 +134,8 @@ class UpwindPenalty final : public BoundaryCorrection<Dim> {
       gsl::not_null<tnsr::a<DataVector, 3, Frame::Inertial>*>
           packaged_char_speeds,
 
-      const Scalar<DataVector>& pi,
+      const Scalar<DataVector>& psi, const Scalar<DataVector>& pi,
       const tnsr::i<DataVector, Dim, Frame::Inertial>& phi,
-      const Scalar<DataVector>& psi,
 
       const Scalar<DataVector>& lapse,
       const tnsr::I<DataVector, Dim, Frame::Inertial>& shift,
@@ -152,10 +151,10 @@ class UpwindPenalty final : public BoundaryCorrection<Dim> {
       const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity) const;
 
   void dg_boundary_terms(
+      gsl::not_null<Scalar<DataVector>*> psi_boundary_correction,
       gsl::not_null<Scalar<DataVector>*> pi_boundary_correction,
       gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*>
           phi_boundary_correction,
-      gsl::not_null<Scalar<DataVector>*> psi_boundary_correction,
 
       const Scalar<DataVector>& v_psi_int,
       const tnsr::i<DataVector, Dim, Frame::Inertial>& v_zero_int,

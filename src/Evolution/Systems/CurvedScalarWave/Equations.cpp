@@ -20,11 +20,11 @@ class Tensor;
 namespace CurvedScalarWave {
 template <size_t Dim>
 void ComputeNormalDotFluxes<Dim>::apply(
+    const gsl::not_null<Scalar<DataVector>*> psi_normal_dot_flux,
     const gsl::not_null<Scalar<DataVector>*> pi_normal_dot_flux,
     const gsl::not_null<tnsr::i<DataVector, Dim>*> phi_normal_dot_flux,
-    const gsl::not_null<Scalar<DataVector>*> psi_normal_dot_flux,
-    const Scalar<DataVector>& pi, const tnsr::i<DataVector, Dim>& phi,
-    const Scalar<DataVector>& psi, const Scalar<DataVector>& gamma1,
+    const Scalar<DataVector>& psi, const Scalar<DataVector>& pi,
+    const tnsr::i<DataVector, Dim>& phi, const Scalar<DataVector>& gamma1,
     const Scalar<DataVector>& gamma2, const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, Dim>& shift,
     const tnsr::II<DataVector, Dim>& inverse_spatial_metric,

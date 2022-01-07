@@ -102,11 +102,11 @@ calculate_du_dt(const DataVector& used_for_size) {
   auto r_gamma1 = make_with_value<Scalar<DataVector>>(used_for_size, 0.);
   auto r_gamma2 = make_with_value<Scalar<DataVector>>(used_for_size, 0.);
   CurvedScalarWave::TimeDerivative<Dim>::apply(
-      make_not_null(&dt_pi), make_not_null(&dt_phi), make_not_null(&dt_psi),
+      make_not_null(&dt_psi), make_not_null(&dt_pi), make_not_null(&dt_phi),
       make_not_null(&r_lapse), make_not_null(&r_shift),
       make_not_null(&r_inv_spatial_metric), make_not_null(&r_gamma1),
-      make_not_null(&r_gamma2), make_d_pi<Dim>(used_for_size),
-      make_d_phi<Dim>(used_for_size), make_d_psi<Dim>(used_for_size),
+      make_not_null(&r_gamma2), make_d_psi<Dim>(used_for_size),
+      make_d_pi<Dim>(used_for_size), make_d_phi<Dim>(used_for_size),
       make_pi(used_for_size), make_phi<Dim>(used_for_size),
       make_lapse(used_for_size), make_shift<Dim>(used_for_size),
       make_deriv_lapse<Dim>(used_for_size),

@@ -40,14 +40,14 @@ void test() {
       "ConstraintPreservingSphericalRadiation",
       tuples::TaggedTuple<helpers::Tags::PythonFunctionForErrorMessage<>,
                           helpers::Tags::PythonFunctionName<
+                              ::Tags::dt<CurvedScalarWave::Tags::Psi>>,
+                          helpers::Tags::PythonFunctionName<
                               ::Tags::dt<CurvedScalarWave::Tags::Pi>>,
                           helpers::Tags::PythonFunctionName<
-                              ::Tags::dt<CurvedScalarWave::Tags::Phi<Dim>>>,
-                          helpers::Tags::PythonFunctionName<
-                              ::Tags::dt<CurvedScalarWave::Tags::Psi>>>{
-          "error", "dt_pi_constraint_preserving_spherical_radiation",
-          "dt_phi_constraint_preserving_spherical_radiation",
-          "dt_psi_constraint_preserving_spherical_radiation"},
+                              ::Tags::dt<CurvedScalarWave::Tags::Phi<Dim>>>>{
+          "error", "dt_psi_constraint_preserving_spherical_radiation",
+          "dt_pi_constraint_preserving_spherical_radiation",
+          "dt_phi_constraint_preserving_spherical_radiation"},
       "ConstraintPreservingSphericalRadiation:\n",
       Index<Dim - 1>{Dim == 1 ? 1 : 5}, db::DataBox<tmpl::list<>>{},
       tuples::TaggedTuple<>{});

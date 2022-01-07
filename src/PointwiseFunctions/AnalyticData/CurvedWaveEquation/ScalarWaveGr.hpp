@@ -90,7 +90,7 @@ class ScalarWaveGr : public MarkAsAnalyticData {
   using spacetime_tags = typename BackgroundGrData::template tags<DataType>;
   using tags =
       tmpl::append<spacetime_tags<DataVector>,
-                   tmpl::list<Tags::Pi, Tags::Phi<volume_dim>, Tags::Psi>>;
+                   tmpl::list<Tags::Psi, Tags::Pi, Tags::Phi<volume_dim>>>;
 
   /// Retrieve spacetime variables
   template <

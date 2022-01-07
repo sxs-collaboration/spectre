@@ -30,9 +30,9 @@ struct System {
   using boundary_correction_base = BoundaryCorrections::BoundaryCorrection<Dim>;
 
   using variables_tag =
-      ::Tags::Variables<tmpl::list<Tags::Pi, Tags::Phi<Dim>, Tags::Psi>>;
+      ::Tags::Variables<tmpl::list<Tags::Psi, Tags::Pi, Tags::Phi<Dim>>>;
   using flux_variables = tmpl::list<>;
-  using gradient_variables = tmpl::list<Tags::Pi, Tags::Phi<Dim>, Tags::Psi>;
+  using gradient_variables = tmpl::list<Tags::Psi, Tags::Pi, Tags::Phi<Dim>>;
 
   // Relic alias: needs to be removed once all evolution systems
   // convert to using dg::ComputeTimeDerivative
