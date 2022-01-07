@@ -293,6 +293,18 @@ cmake -D FLAG1=OPT1 ... -D FLAGN=OPTN <SPECTRE_ROOT>
     [include-what-you-use
     (IWYU)](https://github.com/include-what-you-use/include-what-you-use)
 
+## CMake targets
+
+In addition to individual simulation executables, the following targets are
+available to build with `make` or `ninja`:
+
+- all-pybindings
+  - Build Python bindings. See \ref spectre_using_python for details.
+- install
+  - Install targets that have been built to the `CMAKE_INSTALL_PREFIX`. Doesn't
+    try to build anything else. Only supports static libraries so far, i.e.
+    builds with `BUILD_SHARED_LIBS=OFF`.
+
 ## Checking Dependencies
 
 Getting dependencies of libraries correct is quite difficult. SpECTRE offers the
