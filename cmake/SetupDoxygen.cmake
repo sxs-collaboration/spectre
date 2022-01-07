@@ -28,12 +28,11 @@ if (DOXYGEN_FOUND)
   # - The Doxygen release v1.9.1 has a bug so namespaces don't show up in
   #   groups. It is fixed in v1.9.2.
   # - The Doxygen release v1.9.2 breaks the ordering of pages in the tree view
-  #   (sidebar). This issue is already fixed upstream:
-  #   https://github.com/doxygen/doxygen/issues/8767
-  if(DOXYGEN_VERSION VERSION_LESS 1.9.2)
+  #   (sidebar). It is fixed in v1.9.3.
+  if(DOXYGEN_VERSION VERSION_LESS 1.9.3)
     set(_DOX_WARNING "Your Doxygen version ${DOXYGEN_VERSION} may not be \
 compatible with the stylesheet, so the documentation may look odd or not \
-function correctly. Use Doxygen version 1.9.2 or higher.")
+function correctly. Use Doxygen version 1.9.3 or higher.")
     message(STATUS ${_DOX_WARNING})
     # The 'warning' in this message will fail the `doc-check` target (see below)
     set(
