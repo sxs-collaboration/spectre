@@ -185,16 +185,22 @@ struct EvolutionMetavars {
       gr::Tags::SpatialMetric<volume_dim, ::Frame::Grid, DataVector>,
       gr::Tags::InverseSpatialMetric<volume_dim, ::Frame::Grid>,
       gr::Tags::ExtrinsicCurvature<volume_dim, ::Frame::Grid>,
-      gr::Tags::SpatialChristoffelSecondKind<volume_dim, ::Frame::Grid>>;
+      gr::Tags::SpatialChristoffelSecondKind<volume_dim, ::Frame::Grid>,
+      gr::Tags::SpatialRicci<volume_dim, ::Frame::Grid>>;
   // Observe both horizons in grid frame too.
-  using horizons_tags_to_observe =
-      tmpl::list<StrahlkorperGr::Tags::AreaCompute<::Frame::Grid>,
-                 StrahlkorperGr::Tags::IrreducibleMassCompute<::Frame::Grid>>;
+  using horizons_tags_to_observe = tmpl::list<
+      StrahlkorperGr::Tags::AreaCompute<::Frame::Grid>,
+      StrahlkorperGr::Tags::IrreducibleMassCompute<::Frame::Grid>,
+      StrahlkorperTags::MaxRicciScalarCompute,
+      StrahlkorperTags::MinRicciScalarCompute,
+      StrahlkorperGr::Tags::ChristodoulouMassCompute<::Frame::Grid>,
+      StrahlkorperGr::Tags::DimensionlessSpinMagnitudeCompute<::Frame::Grid>>;
   using horizons_compute_items_on_target = tmpl::append<
       tmpl::list<StrahlkorperGr::Tags::AreaElementCompute<::Frame::Grid>,
                  StrahlkorperTags::ThetaPhiCompute<::Frame::Grid>,
                  StrahlkorperTags::RadiusCompute<::Frame::Grid>,
                  StrahlkorperTags::RhatCompute<::Frame::Grid>,
+                 StrahlkorperTags::TangentsCompute<::Frame::Grid>,
                  StrahlkorperTags::InvJacobianCompute<::Frame::Grid>,
                  StrahlkorperTags::DxRadiusCompute<::Frame::Grid>,
                  StrahlkorperTags::OneOverOneFormMagnitudeCompute<
@@ -204,7 +210,10 @@ struct EvolutionMetavars {
                  StrahlkorperTags::UnitNormalVectorCompute<::Frame::Grid>,
                  StrahlkorperTags::GradUnitNormalOneFormCompute<::Frame::Grid>,
                  StrahlkorperTags::ExtrinsicCurvatureCompute<::Frame::Grid>,
-                 StrahlkorperGr::Tags::SpinFunctionCompute<::Frame::Grid>>,
+                 StrahlkorperGr::Tags::SpinFunctionCompute<::Frame::Grid>,
+                 StrahlkorperTags::RicciScalarCompute<::Frame::Grid>,
+                 StrahlkorperGr::Tags::DimensionfulSpinMagnitudeCompute<
+                     ::Frame::Grid>>,
       horizons_tags_to_observe>;
 
   struct AhA {
@@ -242,10 +251,12 @@ struct EvolutionMetavars {
   };
 
   using interpolation_target_tags = tmpl::list<AhA,AhB>;
-  using interpolator_source_vars =
-      tmpl::list<gr::Tags::SpacetimeMetric<volume_dim, ::Frame::Inertial>,
-                 GeneralizedHarmonic::Tags::Pi<volume_dim, ::Frame::Inertial>,
-                 GeneralizedHarmonic::Tags::Phi<volume_dim, ::Frame::Inertial>>;
+  using interpolator_source_vars = tmpl::list<
+      gr::Tags::SpacetimeMetric<volume_dim, ::Frame::Inertial>,
+      GeneralizedHarmonic::Tags::Pi<volume_dim, ::Frame::Inertial>,
+      GeneralizedHarmonic::Tags::Phi<volume_dim, ::Frame::Inertial>,
+      Tags::deriv<GeneralizedHarmonic::Tags::Phi<volume_dim, Frame::Inertial>,
+                  tmpl::size_t<3>, Frame::Inertial>>;
 
   using observe_fields = tmpl::list<
       gr::Tags::Lapse<DataVector>,
