@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "Elliptic/DiscontinuousGalerkin/SubdomainOperator/SubdomainOperator.hpp"
+#include "Elliptic/Systems/Poisson/BoundaryConditions/Robin.hpp"
 #include "Elliptic/Systems/Poisson/FirstOrderSystem.hpp"
 #include "Elliptic/Systems/Poisson/Tags.hpp"
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
@@ -84,9 +85,9 @@ class MinusLaplacian
   using options_group = OptionsGroup;
   using poisson_system =
       Poisson::FirstOrderSystem<Dim, Poisson::Geometry::FlatCartesian>;
-  using SubdomainOperator =
-      elliptic::dg::subdomain_operator::SubdomainOperator<poisson_system,
-                                                          OptionsGroup>;
+  using SubdomainOperator = elliptic::dg::subdomain_operator::SubdomainOperator<
+      poisson_system, OptionsGroup, tmpl::list<>,
+      tmpl::list<Poisson::BoundaryConditions::Robin<Dim>>>;
   using SubdomainData = ::LinearSolver::Schwarz::ElementCenteredSubdomainData<
       Dim, tmpl::list<Poisson::Tags::Field>>;
   using solver_type = Solver;
@@ -188,9 +189,7 @@ class MinusLaplacian
       // real boundary conditions. In particular, the correct choice Dirichlet
       // vs. Neumann b.c. is relevant for the effectiveness of the
       // preconditioner.
-      std::make_unique<Poisson::BoundaryConditions::Robin<
-          Dim, typename poisson_system::boundary_conditions_base::registrars>>(
-          1., 0., 0.)};
+      std::make_unique<Poisson::BoundaryConditions::Robin<Dim>>(1., 0., 0.)};
   mutable SubdomainData source_{};
   mutable SubdomainData initial_guess_in_solution_out_{};
 };

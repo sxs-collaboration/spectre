@@ -25,7 +25,7 @@ namespace Xcts::BoundaryConditions {
 
 namespace {
 template <size_t EnabledEquations, bool Linearized>
-void test_flatness(const Flatness<>& boundary_condition) {
+void test_flatness(const Flatness& boundary_condition) {
   const size_t num_points = 3;
   const auto box = db::create<db::AddSimpleTags<>>();
   Scalar<DataVector> conformal_factor{
@@ -33,7 +33,7 @@ void test_flatness(const Flatness<>& boundary_condition) {
   Scalar<DataVector> n_dot_conformal_factor_gradient{
       num_points, std::numeric_limits<double>::signaling_NaN()};
   if constexpr (EnabledEquations == 1) {
-    elliptic::apply_boundary_condition<Linearized>(
+    elliptic::apply_boundary_condition<Linearized, void, tmpl::list<Flatness>>(
         boundary_condition, box, Direction<3>::lower_xi(),
         make_not_null(&conformal_factor),
         make_not_null(&n_dot_conformal_factor_gradient));
@@ -43,7 +43,8 @@ void test_flatness(const Flatness<>& boundary_condition) {
     Scalar<DataVector> n_dot_lapse_times_conformal_factor_gradient{
         num_points, std::numeric_limits<double>::signaling_NaN()};
     if constexpr (EnabledEquations == 2) {
-      elliptic::apply_boundary_condition<Linearized>(
+      elliptic::apply_boundary_condition<Linearized, void,
+                                         tmpl::list<Flatness>>(
           boundary_condition, box, Direction<3>::lower_xi(),
           make_not_null(&conformal_factor),
           make_not_null(&lapse_times_conformal_factor),
@@ -54,7 +55,8 @@ void test_flatness(const Flatness<>& boundary_condition) {
           num_points, std::numeric_limits<double>::signaling_NaN()};
       tnsr::I<DataVector, 3> n_dot_longitudinal_shift_excess{
           num_points, std::numeric_limits<double>::signaling_NaN()};
-      elliptic::apply_boundary_condition<Linearized>(
+      elliptic::apply_boundary_condition<Linearized, void,
+                                         tmpl::list<Flatness>>(
           boundary_condition, box, Direction<3>::lower_xi(),
           make_not_null(&conformal_factor),
           make_not_null(&lapse_times_conformal_factor),
@@ -75,11 +77,10 @@ void test_flatness(const Flatness<>& boundary_condition) {
 
 SPECTRE_TEST_CASE("Unit.Xcts.BoundaryConditions.Flatness", "[Unit][Elliptic]") {
   // Test factory-creation
-  const auto created = TestHelpers::test_creation<
-      std::unique_ptr<elliptic::BoundaryConditions::BoundaryCondition<
-          3, tmpl::list<Registrars::Flatness>>>>("Flatness");
-  REQUIRE(dynamic_cast<const Flatness<>*>(created.get()) != nullptr);
-  const auto& boundary_condition = dynamic_cast<const Flatness<>&>(*created);
+  const auto created = TestHelpers::test_factory_creation<
+      elliptic::BoundaryConditions::BoundaryCondition<3>, Flatness>("Flatness");
+  REQUIRE(dynamic_cast<const Flatness*>(created.get()) != nullptr);
+  const auto& boundary_condition = dynamic_cast<const Flatness&>(*created);
   {
     INFO("Semantics");
     test_serialization(boundary_condition);

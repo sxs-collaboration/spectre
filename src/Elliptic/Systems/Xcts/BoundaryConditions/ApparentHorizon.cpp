@@ -24,10 +24,10 @@
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
 
-namespace Xcts::BoundaryConditions::detail {
+namespace Xcts::BoundaryConditions {
 
 template <Xcts::Geometry ConformalGeometry>
-ApparentHorizonImpl<ConformalGeometry>::ApparentHorizonImpl(
+ApparentHorizon<ConformalGeometry>::ApparentHorizon(
     std::array<double, 3> center, std::array<double, 3> rotation,
     std::optional<gr::Solutions::KerrSchild> kerr_solution_for_lapse,
     std::optional<gr::Solutions::KerrSchild>
@@ -267,7 +267,7 @@ void apparent_horizon_impl(
       get<::Tags::TempScalar<3>>(buffer);
   Scalar<DataVector>& beta_orthogonal = get<::Tags::TempScalar<1>>(buffer);
   if (kerr_solution_for_negative_expansion.has_value()) {
-    detail::negative_expansion_quantities(
+    negative_expansion_quantities(
         make_not_null(&expansion_of_solution), make_not_null(&beta_orthogonal),
         *kerr_solution_for_negative_expansion, x, face_normal,
         face_normal_magnitude, deriv_unnormalized_face_normal);
@@ -391,11 +391,11 @@ void linearized_apparent_horizon_impl(
     get<0>(x) -= center[0];
     get<1>(x) -= center[1];
     get<2>(x) -= center[2];
-    detail::negative_expansion_quantities(
-        make_not_null(&expansion_of_solution),
-        make_not_null(&beta_orthogonal_correction),
-        *kerr_solution_for_negative_expansion, x, face_normal,
-        face_normal_magnitude, deriv_unnormalized_face_normal);
+    negative_expansion_quantities(make_not_null(&expansion_of_solution),
+                                  make_not_null(&beta_orthogonal_correction),
+                                  *kerr_solution_for_negative_expansion, x,
+                                  face_normal, face_normal_magnitude,
+                                  deriv_unnormalized_face_normal);
   }
 
   tnsr::I<DataVector, 3>& face_normal_raised = get<::Tags::TempI<0, 3>>(buffer);
@@ -494,7 +494,7 @@ void linearized_apparent_horizon_impl(
 }
 
 template <Xcts::Geometry ConformalGeometry>
-void ApparentHorizonImpl<ConformalGeometry>::apply(
+void ApparentHorizon<ConformalGeometry>::apply(
     const gsl::not_null<Scalar<DataVector>*> conformal_factor,
     const gsl::not_null<Scalar<DataVector>*> lapse_times_conformal_factor,
     const gsl::not_null<tnsr::I<DataVector, 3>*> shift_excess,
@@ -522,7 +522,7 @@ void ApparentHorizonImpl<ConformalGeometry>::apply(
 }
 
 template <Xcts::Geometry ConformalGeometry>
-void ApparentHorizonImpl<ConformalGeometry>::apply(
+void ApparentHorizon<ConformalGeometry>::apply(
     const gsl::not_null<Scalar<DataVector>*> conformal_factor,
     const gsl::not_null<Scalar<DataVector>*> lapse_times_conformal_factor,
     const gsl::not_null<tnsr::I<DataVector, 3>*> shift_excess,
@@ -553,7 +553,7 @@ void ApparentHorizonImpl<ConformalGeometry>::apply(
 }
 
 template <Xcts::Geometry ConformalGeometry>
-void ApparentHorizonImpl<ConformalGeometry>::apply_linearized(
+void ApparentHorizon<ConformalGeometry>::apply_linearized(
     const gsl::not_null<Scalar<DataVector>*> conformal_factor_correction,
     const gsl::not_null<Scalar<DataVector>*>
         lapse_times_conformal_factor_correction,
@@ -586,7 +586,7 @@ void ApparentHorizonImpl<ConformalGeometry>::apply_linearized(
 }
 
 template <Xcts::Geometry ConformalGeometry>
-void ApparentHorizonImpl<ConformalGeometry>::apply_linearized(
+void ApparentHorizon<ConformalGeometry>::apply_linearized(
     const gsl::not_null<Scalar<DataVector>*> conformal_factor_correction,
     const gsl::not_null<Scalar<DataVector>*>
         lapse_times_conformal_factor_correction,
@@ -622,7 +622,7 @@ void ApparentHorizonImpl<ConformalGeometry>::apply_linearized(
 }
 
 template <Xcts::Geometry ConformalGeometry>
-void ApparentHorizonImpl<ConformalGeometry>::pup(PUP::er& p) {
+void ApparentHorizon<ConformalGeometry>::pup(PUP::er& p) {
   p | center_;
   p | rotation_;
   p | kerr_solution_for_lapse_;
@@ -630,8 +630,8 @@ void ApparentHorizonImpl<ConformalGeometry>::pup(PUP::er& p) {
 }
 
 template <Xcts::Geometry ConformalGeometry>
-bool operator==(const ApparentHorizonImpl<ConformalGeometry>& lhs,
-                const ApparentHorizonImpl<ConformalGeometry>& rhs) {
+bool operator==(const ApparentHorizon<ConformalGeometry>& lhs,
+                const ApparentHorizon<ConformalGeometry>& rhs) {
   return lhs.center() == rhs.center() and lhs.rotation() == rhs.rotation() and
          lhs.kerr_solution_for_lapse() == rhs.kerr_solution_for_lapse() and
          lhs.kerr_solution_for_negative_expansion() ==
@@ -639,24 +639,25 @@ bool operator==(const ApparentHorizonImpl<ConformalGeometry>& lhs,
 }
 
 template <Xcts::Geometry ConformalGeometry>
-bool operator!=(const ApparentHorizonImpl<ConformalGeometry>& lhs,
-                const ApparentHorizonImpl<ConformalGeometry>& rhs) {
+bool operator!=(const ApparentHorizon<ConformalGeometry>& lhs,
+                const ApparentHorizon<ConformalGeometry>& rhs) {
   return not(lhs == rhs);
 }
 
-template class ApparentHorizonImpl<Xcts::Geometry::FlatCartesian>;
-template class ApparentHorizonImpl<Xcts::Geometry::Curved>;
-template bool operator==(
-    const ApparentHorizonImpl<Xcts::Geometry::FlatCartesian>& lhs,
-    const ApparentHorizonImpl<Xcts::Geometry::FlatCartesian>& rhs);
-template bool operator!=(
-    const ApparentHorizonImpl<Xcts::Geometry::FlatCartesian>& lhs,
-    const ApparentHorizonImpl<Xcts::Geometry::FlatCartesian>& rhs);
-template bool operator==(
-    const ApparentHorizonImpl<Xcts::Geometry::Curved>& lhs,
-    const ApparentHorizonImpl<Xcts::Geometry::Curved>& rhs);
-template bool operator!=(
-    const ApparentHorizonImpl<Xcts::Geometry::Curved>& lhs,
-    const ApparentHorizonImpl<Xcts::Geometry::Curved>& rhs);
+template <Xcts::Geometry ConformalGeometry>
+PUP::able::PUP_ID ApparentHorizon<ConformalGeometry>::my_PUP_ID = 0;  // NOLINT
 
-}  // namespace Xcts::BoundaryConditions::detail
+template class ApparentHorizon<Xcts::Geometry::FlatCartesian>;
+template class ApparentHorizon<Xcts::Geometry::Curved>;
+template bool operator==(
+    const ApparentHorizon<Xcts::Geometry::FlatCartesian>& lhs,
+    const ApparentHorizon<Xcts::Geometry::FlatCartesian>& rhs);
+template bool operator!=(
+    const ApparentHorizon<Xcts::Geometry::FlatCartesian>& lhs,
+    const ApparentHorizon<Xcts::Geometry::FlatCartesian>& rhs);
+template bool operator==(const ApparentHorizon<Xcts::Geometry::Curved>& lhs,
+                         const ApparentHorizon<Xcts::Geometry::Curved>& rhs);
+template bool operator!=(const ApparentHorizon<Xcts::Geometry::Curved>& lhs,
+                         const ApparentHorizon<Xcts::Geometry::Curved>& rhs);
+
+}  // namespace Xcts::BoundaryConditions

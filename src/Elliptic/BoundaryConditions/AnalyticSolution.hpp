@@ -30,27 +30,9 @@
 namespace elliptic::BoundaryConditions {
 
 /// \cond
-template <typename System, size_t Dim, typename FieldTags, typename FluxTags,
-          typename Registrars>
-struct AnalyticSolution;
-
-namespace Registrars {
 template <typename System, size_t Dim = System::volume_dim,
           typename FieldTags = typename System::primal_fields,
           typename FluxTags = typename System::primal_fluxes>
-struct AnalyticSolution {
-  template <typename Registrars>
-  using f = BoundaryConditions::AnalyticSolution<System, Dim, FieldTags,
-                                                 FluxTags, Registrars>;
-};
-}  // namespace Registrars
-
-template <typename System, size_t Dim = System::volume_dim,
-          typename FieldTags = typename System::primal_fields,
-          typename FluxTags = typename System::primal_fluxes,
-          typename Registrars =
-              tmpl::list<BoundaryConditions::Registrars::AnalyticSolution<
-                  System, Dim, FieldTags, FluxTags>>>
 struct AnalyticSolution;
 /// \endcond
 
@@ -69,12 +51,12 @@ struct AnalyticSolution;
  * add the analytic solutions to the DataBox.
  */
 template <typename System, size_t Dim, typename... FieldTags,
-          typename... FluxTags, typename Registrars>
+          typename... FluxTags>
 class AnalyticSolution<System, Dim, tmpl::list<FieldTags...>,
-                       tmpl::list<FluxTags...>, Registrars>
-    : public BoundaryCondition<Dim, Registrars> {
+                       tmpl::list<FluxTags...>>
+    : public BoundaryCondition<Dim> {
  private:
-  using Base = BoundaryCondition<Dim, Registrars>;
+  using Base = BoundaryCondition<Dim>;
 
  public:
   using options =
@@ -229,19 +211,19 @@ class AnalyticSolution<System, Dim, tmpl::list<FieldTags...>,
 };
 
 template <typename System, size_t Dim, typename... FieldTags,
-          typename... FluxTags, typename Registrars>
+          typename... FluxTags>
 void AnalyticSolution<System, Dim, tmpl::list<FieldTags...>,
-                      tmpl::list<FluxTags...>, Registrars>::pup(PUP::er& p) {
+                      tmpl::list<FluxTags...>>::pup(PUP::er& p) {
   Base::pup(p);
   p | boundary_condition_types_;
 }
 
 /// \cond
 template <typename System, size_t Dim, typename... FieldTags,
-          typename... FluxTags, typename Registrars>
+          typename... FluxTags>
 PUP::able::PUP_ID AnalyticSolution<System, Dim, tmpl::list<FieldTags...>,
-                                   tmpl::list<FluxTags...>,
-                                   Registrars>::my_PUP_ID = 0;  // NOLINT
+                                   tmpl::list<FluxTags...>>::my_PUP_ID =
+    0;  // NOLINT
 /// \endcond
 
 }  // namespace elliptic::BoundaryConditions

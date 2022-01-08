@@ -23,21 +23,14 @@ namespace Elasticity::BoundaryConditions {
 SPECTRE_TEST_CASE("Unit.Elasticity.BoundaryConditions.Zero",
                   "[Unit][Elliptic]") {
   // Test factory-creation
-  using registrar_fixed =
-      Registrars::Zero<2, elliptic::BoundaryConditionType::Dirichlet>;
-  using registrar_free =
-      Registrars::Zero<2, elliptic::BoundaryConditionType::Neumann>;
-  const auto created_fixed = TestHelpers::test_creation<
-      std::unique_ptr<elliptic::BoundaryConditions::BoundaryCondition<
-          2, tmpl::list<registrar_fixed>>>>("Fixed");
-  const auto created_free = TestHelpers::test_creation<
-      std::unique_ptr<elliptic::BoundaryConditions::BoundaryCondition<
-          2, tmpl::list<registrar_free>>>>("Free");
+  using Fixed = Zero<2, elliptic::BoundaryConditionType::Dirichlet>;
+  using Free = Zero<2, elliptic::BoundaryConditionType::Neumann>;
+  const auto created_fixed = TestHelpers::test_factory_creation<
+      elliptic::BoundaryConditions::BoundaryCondition<2>, Fixed>("Fixed");
+  const auto created_free = TestHelpers::test_factory_creation<
+      elliptic::BoundaryConditions::BoundaryCondition<2>, Free>("Free");
 
   // Test semantics
-  using Fixed =
-      typename registrar_fixed::template f<tmpl::list<registrar_fixed>>;
-  using Free = typename registrar_free::template f<tmpl::list<registrar_free>>;
   REQUIRE(dynamic_cast<const Fixed*>(created_fixed.get()) != nullptr);
   REQUIRE(dynamic_cast<const Free*>(created_free.get()) != nullptr);
   const auto& fixed = dynamic_cast<const Fixed&>(*created_fixed);
@@ -59,7 +52,7 @@ SPECTRE_TEST_CASE("Unit.Elasticity.BoundaryConditions.Zero",
                                         std::numeric_limits<double>::max()};
     tnsr::I<DataVector, 2> n_dot_minus_stress{
         3_st, std::numeric_limits<double>::max()};
-    elliptic::apply_boundary_condition<false>(
+    elliptic::apply_boundary_condition<false, void, tmpl::list<Fixed>>(
         fixed, box, Direction<2>::lower_xi(), make_not_null(&displacement),
         make_not_null(&n_dot_minus_stress));
     CHECK_ITERABLE_APPROX(get<0>(displacement), SINGLE_ARG(DataVector{3, 0.}));
@@ -71,7 +64,7 @@ SPECTRE_TEST_CASE("Unit.Elasticity.BoundaryConditions.Zero",
                                         std::numeric_limits<double>::max()};
     tnsr::I<DataVector, 2> n_dot_minus_stress{
         3_st, std::numeric_limits<double>::max()};
-    elliptic::apply_boundary_condition<true>(
+    elliptic::apply_boundary_condition<true, void, tmpl::list<Fixed>>(
         fixed, box, Direction<2>::lower_xi(), make_not_null(&displacement),
         make_not_null(&n_dot_minus_stress));
     CHECK_ITERABLE_APPROX(get<0>(displacement), SINGLE_ARG(DataVector{3, 0.}));
@@ -83,7 +76,7 @@ SPECTRE_TEST_CASE("Unit.Elasticity.BoundaryConditions.Zero",
                                         std::numeric_limits<double>::max()};
     tnsr::I<DataVector, 2> n_dot_minus_stress{
         3_st, std::numeric_limits<double>::max()};
-    elliptic::apply_boundary_condition<false>(
+    elliptic::apply_boundary_condition<false, void, tmpl::list<Free>>(
         free, box, Direction<2>::lower_xi(), make_not_null(&displacement),
         make_not_null(&n_dot_minus_stress));
     CHECK_ITERABLE_APPROX(get<0>(n_dot_minus_stress),
@@ -97,7 +90,7 @@ SPECTRE_TEST_CASE("Unit.Elasticity.BoundaryConditions.Zero",
                                         std::numeric_limits<double>::max()};
     tnsr::I<DataVector, 2> n_dot_minus_stress{
         3_st, std::numeric_limits<double>::max()};
-    elliptic::apply_boundary_condition<true>(
+    elliptic::apply_boundary_condition<true, void, tmpl::list<Free>>(
         free, box, Direction<2>::lower_xi(), make_not_null(&displacement),
         make_not_null(&n_dot_minus_stress));
     CHECK_ITERABLE_APPROX(get<0>(n_dot_minus_stress),

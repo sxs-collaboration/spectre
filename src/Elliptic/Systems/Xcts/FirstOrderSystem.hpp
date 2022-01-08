@@ -7,11 +7,8 @@
 
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
-#include "Elliptic/BoundaryConditions/AnalyticSolution.hpp"
 #include "Elliptic/BoundaryConditions/BoundaryCondition.hpp"
 #include "Elliptic/Protocols/FirstOrderSystem.hpp"
-#include "Elliptic/Systems/Xcts/BoundaryConditions/ApparentHorizon.hpp"
-#include "Elliptic/Systems/Xcts/BoundaryConditions/Flatness.hpp"
 #include "Elliptic/Systems/Xcts/FluxesAndSources.hpp"
 #include "Elliptic/Systems/Xcts/Geometry.hpp"
 #include "Elliptic/Systems/Xcts/Tags.hpp"
@@ -139,6 +136,11 @@ template <Equations EnabledEquations, Geometry ConformalGeometry,
           int ConformalMatterScale>
 struct FirstOrderSystem
     : tt::ConformsTo<elliptic::protocols::FirstOrderSystem> {
+ public:
+  static constexpr Equations enabled_equations = EnabledEquations;
+  static constexpr Geometry conformal_geometry = ConformalGeometry;
+  static constexpr int conformal_matter_scale = ConformalMatterScale;
+
  private:
   using conformal_factor = Tags::ConformalFactor<DataVector>;
   using conformal_factor_gradient =
@@ -267,12 +269,7 @@ struct FirstOrderSystem
                         ConformalMatterScale>;
 
   using boundary_conditions_base =
-      elliptic::BoundaryConditions::BoundaryCondition<
-          3, tmpl::list<elliptic::BoundaryConditions::Registrars::
-                            AnalyticSolution<FirstOrderSystem>,
-                        BoundaryConditions::Registrars::Flatness,
-                        BoundaryConditions::Registrars::ApparentHorizon<
-                            ConformalGeometry>>>;
+      elliptic::BoundaryConditions::BoundaryCondition<3>;
 };
 
 }  // namespace Xcts

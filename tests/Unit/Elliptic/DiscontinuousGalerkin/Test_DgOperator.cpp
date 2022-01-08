@@ -20,6 +20,8 @@
 #include "Domain/Structure/InitialElementIds.hpp"
 #include "Elliptic/Actions/InitializeAnalyticSolution.hpp"
 #include "Elliptic/Actions/InitializeFixedSources.hpp"
+#include "Elliptic/BoundaryConditions/AnalyticSolution.hpp"
+#include "Elliptic/BoundaryConditions/BoundaryCondition.hpp"
 #include "Elliptic/DiscontinuousGalerkin/Actions/ApplyOperator.hpp"
 #include "Elliptic/DiscontinuousGalerkin/Actions/InitializeDomain.hpp"
 #include "Elliptic/DiscontinuousGalerkin/Tags.hpp"
@@ -30,6 +32,7 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/Actions/Goto.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
@@ -39,6 +42,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/Poisson/ProductOfSinusoids.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "Utilities/Literals.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 
 namespace {
 
@@ -146,6 +150,12 @@ struct Metavariables {
   using const_global_cache_tags =
       tmpl::list<::Tags::AnalyticSolution<AnalyticSolution>>;
   enum class Phase { Initialization, Testing, Exit };
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes = tmpl::map<tmpl::pair<
+        elliptic::BoundaryConditions::BoundaryCondition<System::volume_dim>,
+        tmpl::list<elliptic::BoundaryConditions::AnalyticSolution<System>>>>;
+  };
 };
 
 template <
@@ -182,6 +192,8 @@ void test_dg_operator(
   using Vars = typename vars_tag::type;
   using PrimalFluxesVars = typename primal_fluxes_vars_tag::type;
   using OperatorAppliedToVars = typename operator_applied_to_vars_tag::type;
+
+  Parallel::register_factory_classes_with_charm<Metavars>();
 
   // Get a list of all elements in the domain
   auto domain = domain_creator.create_domain();
@@ -413,13 +425,6 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
     using system =
         Poisson::FirstOrderSystem<1, Poisson::Geometry::FlatCartesian>;
     Poisson::Solutions::ProductOfSinusoids<1> analytic_solution{{{M_PI}}};
-    using boundary_condition_registrars =
-        typename system::boundary_conditions_base::registrars;
-    using AnalyticSolutionBoundaryCondition =
-        typename elliptic::BoundaryConditions::Registrars::AnalyticSolution<
-            system>::template f<boundary_condition_registrars>;
-    Parallel::register_derived_classes_with_charm<
-        typename system::boundary_conditions_base>();
     {
       INFO("Regression tests");
       // Domain decomposition:
@@ -429,9 +434,11 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
           {{1.5}},
           {{2}},
           {{4}},
-          std::make_unique<AnalyticSolutionBoundaryCondition>(
+          std::make_unique<
+              elliptic::BoundaryConditions::AnalyticSolution<system>>(
               elliptic::BoundaryConditionType::Dirichlet),
-          std::make_unique<AnalyticSolutionBoundaryCondition>(
+          std::make_unique<
+              elliptic::BoundaryConditions::AnalyticSolution<system>>(
               elliptic::BoundaryConditionType::Neumann),
           nullptr};
       const ElementId<1> left_id{0, {{{2, 0}}}};
@@ -509,9 +516,11 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
           {{1.5}},
           {{1}},
           {{12}},
-          std::make_unique<AnalyticSolutionBoundaryCondition>(
+          std::make_unique<
+              elliptic::BoundaryConditions::AnalyticSolution<system>>(
               elliptic::BoundaryConditionType::Dirichlet),
-          std::make_unique<AnalyticSolutionBoundaryCondition>(
+          std::make_unique<
+              elliptic::BoundaryConditions::AnalyticSolution<system>>(
               elliptic::BoundaryConditionType::Neumann),
           nullptr};
       Approx analytic_solution_aux_approx =
@@ -532,13 +541,6 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
     using system =
         Poisson::FirstOrderSystem<2, Poisson::Geometry::FlatCartesian>;
     Poisson::Solutions::ProductOfSinusoids<2> analytic_solution{{{M_PI, M_PI}}};
-    using boundary_condition_registrars =
-        typename system::boundary_conditions_base::registrars;
-    using AnalyticSolutionBoundaryCondition =
-        typename elliptic::BoundaryConditions::Registrars::AnalyticSolution<
-            system>::template f<boundary_condition_registrars>;
-    Parallel::register_derived_classes_with_charm<
-        typename system::boundary_conditions_base>();
     {
       INFO("Regression tests");
       // Domain decomposition:
@@ -553,7 +555,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
           {{1.5, 1.}},
           {{1, 1}},
           {{3, 2}},
-          std::make_unique<AnalyticSolutionBoundaryCondition>(
+          std::make_unique<
+              elliptic::BoundaryConditions::AnalyticSolution<system>>(
               elliptic::BoundaryConditionType::Dirichlet),
           nullptr};
       const ElementId<2> northwest_id{0, {{{1, 0}, {1, 1}}}};
@@ -617,7 +620,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
           {{1.5, 1.}},
           {{1, 1}},
           {{12, 12}},
-          std::make_unique<AnalyticSolutionBoundaryCondition>(
+          std::make_unique<
+              elliptic::BoundaryConditions::AnalyticSolution<system>>(
               elliptic::BoundaryConditionType::Dirichlet),
           nullptr};
       Approx analytic_solution_aux_approx =
@@ -639,13 +643,6 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
         Poisson::FirstOrderSystem<3, Poisson::Geometry::FlatCartesian>;
     Poisson::Solutions::ProductOfSinusoids<3> analytic_solution{
         {{M_PI, M_PI, M_PI}}};
-    using boundary_condition_registrars =
-        typename system::boundary_conditions_base::registrars;
-    using AnalyticSolutionBoundaryCondition =
-        typename elliptic::BoundaryConditions::Registrars::AnalyticSolution<
-            system>::template f<boundary_condition_registrars>;
-    Parallel::register_derived_classes_with_charm<
-        typename system::boundary_conditions_base>();
     {
       INFO("Regression tests");
       const domain::creators::Brick domain_creator{
@@ -653,7 +650,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
           {{1.5, 1., 3.}},
           {{1, 1, 1}},
           {{2, 3, 4}},
-          std::make_unique<AnalyticSolutionBoundaryCondition>(
+          std::make_unique<
+              elliptic::BoundaryConditions::AnalyticSolution<system>>(
               elliptic::BoundaryConditionType::Dirichlet),
           nullptr};
       const ElementId<3> self_id{0, {{{1, 0}, {1, 0}, {1, 0}}}};
@@ -740,7 +738,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
           {{1.5, 1., 3.}},
           {{1, 1, 1}},
           {{12, 12, 12}},
-          std::make_unique<AnalyticSolutionBoundaryCondition>(
+          std::make_unique<
+              elliptic::BoundaryConditions::AnalyticSolution<system>>(
               elliptic::BoundaryConditionType::Dirichlet),
           nullptr};
       Approx analytic_solution_aux_approx =
@@ -761,13 +760,6 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
     using system =
         Poisson::FirstOrderSystem<2, Poisson::Geometry::FlatCartesian>;
     Poisson::Solutions::ProductOfSinusoids<2> analytic_solution{{{M_PI, M_PI}}};
-    using boundary_condition_registrars =
-        typename system::boundary_conditions_base::registrars;
-    using AnalyticSolutionBoundaryCondition =
-        typename elliptic::BoundaryConditions::Registrars::AnalyticSolution<
-            system>::template f<boundary_condition_registrars>;
-    Parallel::register_derived_classes_with_charm<
-        typename system::boundary_conditions_base>();
     {
       INFO("Regression tests");
       // Domain decomposition:
@@ -786,7 +778,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
           {{{{0, 0}}, {{1, 1}}, {{0, 1}}}},
           {},
           {},
-          std::make_unique<AnalyticSolutionBoundaryCondition>(
+          std::make_unique<
+              elliptic::BoundaryConditions::AnalyticSolution<system>>(
               elliptic::BoundaryConditionType::Dirichlet)};
       const ElementId<2> lowerleft_id{0, {{{0, 0}, {1, 0}}}};
       const ElementId<2> upperleft_id{0, {{{0, 0}, {1, 1}}}};
@@ -869,7 +862,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
           {{{{0, 0}}, {{1, 1}}, {{1, 2}}}},
           {},
           {},
-          std::make_unique<AnalyticSolutionBoundaryCondition>(
+          std::make_unique<
+              elliptic::BoundaryConditions::AnalyticSolution<system>>(
               elliptic::BoundaryConditionType::Dirichlet)};
       Approx analytic_solution_aux_approx =
           Approx::custom().epsilon(1.e-12).scale(M_PI);
