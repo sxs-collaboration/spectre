@@ -215,7 +215,7 @@ struct EvolutionMetavars {
           use_filtering,
           dg::Actions::Filter<
               Filters::Exponential<0>,
-              tmpl::list<ScalarWave::Tags::Pi, ScalarWave::Tags::Psi,
+              tmpl::list<ScalarWave::Tags::Psi, ScalarWave::Tags::Pi,
                          ScalarWave::Tags::Phi<Dim>>>,
           tmpl::list<>>>>;
 

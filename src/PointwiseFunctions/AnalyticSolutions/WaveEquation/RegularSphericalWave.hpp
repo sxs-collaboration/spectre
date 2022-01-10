@@ -87,15 +87,15 @@ class RegularSphericalWave : public MarkAsAnalyticSolution {
   RegularSphericalWave& operator=(RegularSphericalWave&&) = default;
   ~RegularSphericalWave() = default;
 
-  tuples::TaggedTuple<Tags::Pi, Tags::Phi<3>, Tags::Psi> variables(
+  tuples::TaggedTuple<Tags::Psi, Tags::Pi, Tags::Phi<3>> variables(
       const tnsr::I<DataVector, 3>& x, double t,
-      tmpl::list<Tags::Pi, Tags::Phi<3>, Tags::Psi> /*meta*/) const;
+      tmpl::list<Tags::Psi, Tags::Pi, Tags::Phi<3>> /*meta*/) const;
 
-  tuples::TaggedTuple<::Tags::dt<Tags::Pi>, ::Tags::dt<Tags::Phi<3>>,
-                      ::Tags::dt<Tags::Psi>>
+  tuples::TaggedTuple<::Tags::dt<Tags::Psi>, ::Tags::dt<Tags::Pi>,
+                      ::Tags::dt<Tags::Phi<3>>>
   variables(const tnsr::I<DataVector, 3>& x, double t,
-            tmpl::list<::Tags::dt<Tags::Pi>, ::Tags::dt<Tags::Phi<3>>,
-                       ::Tags::dt<Tags::Psi>> /*meta*/) const;
+            tmpl::list<::Tags::dt<Tags::Psi>, ::Tags::dt<Tags::Pi>,
+                       ::Tags::dt<Tags::Phi<3>>> /*meta*/) const;
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p);

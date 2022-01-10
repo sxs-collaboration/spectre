@@ -12,15 +12,16 @@
 namespace ScalarWave {
 template <size_t Dim>
 void TimeDerivative<Dim>::apply(
+    const gsl::not_null<Scalar<DataVector>*> dt_psi,
     const gsl::not_null<Scalar<DataVector>*> dt_pi,
     const gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*> dt_phi,
-    const gsl::not_null<Scalar<DataVector>*> dt_psi,
 
     const gsl::not_null<Scalar<DataVector>*> result_gamma2,
 
+    const tnsr::i<DataVector, Dim, Frame::Inertial>& d_psi,
     const tnsr::i<DataVector, Dim, Frame::Inertial>& d_pi,
     const tnsr::ij<DataVector, Dim, Frame::Inertial>& d_phi,
-    const tnsr::i<DataVector, Dim, Frame::Inertial>& d_psi,
+
     const Scalar<DataVector>& pi,
     const tnsr::i<DataVector, Dim, Frame::Inertial>& phi,
     const Scalar<DataVector>& gamma2) {

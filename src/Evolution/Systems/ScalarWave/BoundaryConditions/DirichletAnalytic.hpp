@@ -73,9 +73,9 @@ class DirichletAnalytic final : public BoundaryCondition<Dim> {
 
   template <typename AnalyticSolutionOrData>
   std::optional<std::string> dg_ghost(
+      const gsl::not_null<Scalar<DataVector>*> psi,
       const gsl::not_null<Scalar<DataVector>*> pi,
       const gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*> phi,
-      const gsl::not_null<Scalar<DataVector>*> psi,
       const gsl::not_null<Scalar<DataVector>*> gamma2,
       const std::optional<
           tnsr::I<DataVector, Dim, Frame::Inertial>>& /*face_mesh_velocity*/,
@@ -89,19 +89,19 @@ class DirichletAnalytic final : public BoundaryCondition<Dim> {
                                       AnalyticSolutionOrData>) {
         return analytic_solution_or_data.variables(
             coords, time,
-            tmpl::list<ScalarWave::Tags::Pi, ScalarWave::Tags::Phi<Dim>,
-                       ScalarWave::Tags::Psi>{});
+            tmpl::list<ScalarWave::Tags::Psi, ScalarWave::Tags::Pi,
+                       ScalarWave::Tags::Phi<Dim>>{});
 
       } else {
         (void)time;
         return analytic_solution_or_data.variables(
-            coords, tmpl::list<ScalarWave::Tags::Pi, ScalarWave::Tags::Phi<Dim>,
-                               ScalarWave::Tags::Psi>{});
+            coords, tmpl::list<ScalarWave::Tags::Psi, ScalarWave::Tags::Pi,
+                               ScalarWave::Tags::Phi<Dim>>{});
       }
     }();
+    *psi = get<ScalarWave::Tags::Psi>(boundary_values);
     *pi = get<ScalarWave::Tags::Pi>(boundary_values);
     *phi = get<ScalarWave::Tags::Phi<Dim>>(boundary_values);
-    *psi = get<ScalarWave::Tags::Psi>(boundary_values);
     return {};
   }
 };

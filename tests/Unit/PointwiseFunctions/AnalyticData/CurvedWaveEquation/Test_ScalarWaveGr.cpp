@@ -59,12 +59,12 @@ void test_no_hole(const CurvedScalarWave::AnalyticData::ScalarWaveGr<
       {DataVector({0., 1., 2., 3.}), DataVector({0., 0., 0., 0.}),
        DataVector({0., 0., 0., 0.})}}};
   auto vars = curved_wave_data.variables(
-      x, tmpl::list<CurvedScalarWave::Tags::Pi, CurvedScalarWave::Tags::Phi<3>,
-                    CurvedScalarWave::Tags::Psi>{});
+      x, tmpl::list<CurvedScalarWave::Tags::Psi, CurvedScalarWave::Tags::Pi,
+                    CurvedScalarWave::Tags::Phi<3>>{});
   auto flat_vars = flat_wave_solution.variables(
       x, 0.,
-      tmpl::list<ScalarWave::Tags::Pi, ScalarWave::Tags::Phi<3>,
-                 ScalarWave::Tags::Psi>{});
+      tmpl::list<ScalarWave::Tags::Psi, ScalarWave::Tags::Pi,
+                 ScalarWave::Tags::Phi<3>>{});
   CHECK_ITERABLE_APPROX(get(get<CurvedScalarWave::Tags::Psi>(vars)),
                         get(get<ScalarWave::Tags::Psi>(flat_vars)));
   CHECK_ITERABLE_APPROX(get(get<CurvedScalarWave::Tags::Pi>(vars)),
@@ -87,8 +87,8 @@ void test_kerr(
       {DataVector({0., 1., 2., 3.}), DataVector({0., 0., 0., 0.}),
        DataVector({0., 0., 0., 0.})}}};
   auto vars = curved_wave_data.variables(
-      x, tmpl::list<CurvedScalarWave::Tags::Pi, CurvedScalarWave::Tags::Phi<3>,
-                    CurvedScalarWave::Tags::Psi>{});
+      x, tmpl::list<CurvedScalarWave::Tags::Psi, CurvedScalarWave::Tags::Pi,
+                    CurvedScalarWave::Tags::Phi<3>>{});
 
   const auto flat_wave_vars = flat_wave_solution.variables(
       x, 0., ScalarWave::System<3>::variables_tag::tags_list{});

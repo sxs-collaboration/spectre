@@ -101,13 +101,13 @@ void test_constraints_and_compute_tags_analytic(
   const double t = 0.;
 
   // Evaluate analytic solution
-  const auto vars = solution.variables(
-      x, t,
-      tmpl::list<ScalarWave::Tags::Pi, ScalarWave::Tags::Phi<spatial_dim>,
-                 ScalarWave::Tags::Psi>{});
+  const auto vars =
+      solution.variables(x, t,
+                         tmpl::list<ScalarWave::Tags::Psi, ScalarWave::Tags::Pi,
+                                    ScalarWave::Tags::Phi<spatial_dim>>{});
   const auto& psi = get<ScalarWave::Tags::Psi>(vars);
-  const auto& phi = get<ScalarWave::Tags::Phi<spatial_dim>>(vars);
   const auto& pi = get<ScalarWave::Tags::Pi>(vars);
+  const auto& phi = get<ScalarWave::Tags::Phi<spatial_dim>>(vars);
   // Compute derivatives d_phi and d_psi numerically
   // First, prepare
   using variables_tags_to_differentiate =

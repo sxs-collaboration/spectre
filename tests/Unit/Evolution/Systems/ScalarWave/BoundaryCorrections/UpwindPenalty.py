@@ -4,7 +4,7 @@
 import numpy as np
 
 
-def dg_package_data_char_speed_v_psi(pi, phi, psi, constraint_gamma2,
+def dg_package_data_char_speed_v_psi(psi, pi, phi, constraint_gamma2,
                                      normal_covector, mesh_velocity,
                                      normal_dot_mesh_velocity):
     if normal_dot_mesh_velocity is None:
@@ -13,7 +13,7 @@ def dg_package_data_char_speed_v_psi(pi, phi, psi, constraint_gamma2,
         return -normal_dot_mesh_velocity * psi
 
 
-def dg_package_data_char_speed_v_zero(pi, phi, psi, constraint_gamma2,
+def dg_package_data_char_speed_v_zero(psi, pi, phi, constraint_gamma2,
                                       normal_covector, mesh_velocity,
                                       normal_dot_mesh_velocity):
     if normal_dot_mesh_velocity is None:
@@ -28,7 +28,7 @@ def dg_package_data_char_speed_v_zero(pi, phi, psi, constraint_gamma2,
         return result
 
 
-def dg_package_data_char_speed_v_plus(pi, phi, psi, constraint_gamma2,
+def dg_package_data_char_speed_v_plus(psi, pi, phi, constraint_gamma2,
                                       normal_covector, mesh_velocity,
                                       normal_dot_mesh_velocity):
     result = pi + np.dot(phi, normal_covector) - constraint_gamma2 * psi
@@ -37,7 +37,7 @@ def dg_package_data_char_speed_v_plus(pi, phi, psi, constraint_gamma2,
     return result
 
 
-def dg_package_data_char_speed_v_minus(pi, phi, psi, constraint_gamma2,
+def dg_package_data_char_speed_v_minus(psi, pi, phi, constraint_gamma2,
                                        normal_covector, mesh_velocity,
                                        normal_dot_mesh_velocity):
     result = pi - np.dot(phi, normal_covector) - constraint_gamma2 * psi
@@ -46,27 +46,27 @@ def dg_package_data_char_speed_v_minus(pi, phi, psi, constraint_gamma2,
     return result
 
 
-def dg_package_data_char_speed_v_plus_times_normal(pi, phi, psi,
+def dg_package_data_char_speed_v_plus_times_normal(psi, pi, phi,
                                                    constraint_gamma2,
                                                    normal_covector,
                                                    mesh_velocity,
                                                    normal_dot_mesh_velocity):
     return normal_covector * dg_package_data_char_speed_v_plus(
-        pi, phi, psi, constraint_gamma2, normal_covector, mesh_velocity,
+        psi, pi, phi, constraint_gamma2, normal_covector, mesh_velocity,
         normal_dot_mesh_velocity)
 
 
-def dg_package_data_char_speed_v_minus_times_normal(pi, phi, psi,
+def dg_package_data_char_speed_v_minus_times_normal(psi, pi, phi,
                                                     constraint_gamma2,
                                                     normal_covector,
                                                     mesh_velocity,
                                                     normal_dot_mesh_velocity):
     return normal_covector * dg_package_data_char_speed_v_minus(
-        pi, phi, psi, constraint_gamma2, normal_covector, mesh_velocity,
+        psi, pi, phi, constraint_gamma2, normal_covector, mesh_velocity,
         normal_dot_mesh_velocity)
 
 
-def dg_package_data_char_speed_gamma2_v_psi(pi, phi, psi, constraint_gamma2,
+def dg_package_data_char_speed_gamma2_v_psi(psi, pi, phi, constraint_gamma2,
                                             normal_covector, mesh_velocity,
                                             normal_dot_mesh_velocity):
     if normal_dot_mesh_velocity is None:
@@ -75,7 +75,7 @@ def dg_package_data_char_speed_gamma2_v_psi(pi, phi, psi, constraint_gamma2,
         return -normal_dot_mesh_velocity * psi * constraint_gamma2
 
 
-def dg_package_data_char_speeds(pi, phi, psi, constraint_gamma2,
+def dg_package_data_char_speeds(psi, pi, phi, constraint_gamma2,
                                 normal_covector, mesh_velocity,
                                 normal_dot_mesh_velocity):
     result = np.zeros([3])

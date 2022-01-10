@@ -115,22 +115,22 @@ class SphericalRadiation final : public BoundaryCondition<Dim> {
   void pup(PUP::er& p) override;
 
   using dg_interior_evolved_variables_tags =
-      tmpl::list<Tags::Phi<Dim>, Tags::Psi>;
+      tmpl::list<Tags::Psi, Tags::Phi<Dim>>;
   using dg_interior_temporary_tags =
       tmpl::list<domain::Tags::Coordinates<Dim, Frame::Inertial>,
                  Tags::ConstraintGamma2>;
   using dg_gridless_tags = tmpl::list<>;
 
   std::optional<std::string> dg_ghost(
+      gsl::not_null<Scalar<DataVector>*> psi_ext,
       gsl::not_null<Scalar<DataVector>*> pi_ext,
       gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*> phi_ext,
-      gsl::not_null<Scalar<DataVector>*> psi_ext,
       gsl::not_null<Scalar<DataVector>*> gamma2_ext,
       const std::optional<
           tnsr::I<DataVector, Dim, Frame::Inertial>>& /*face_mesh_velocity*/,
       const tnsr::i<DataVector, Dim, Frame::Inertial>& normal_covector,
-      const tnsr::i<DataVector, Dim, Frame::Inertial>& phi,
       const Scalar<DataVector>& psi,
+      const tnsr::i<DataVector, Dim, Frame::Inertial>& phi,
       const tnsr::I<DataVector, Dim, Frame::Inertial>& coords,
       const Scalar<DataVector>& gamma2) const;
 

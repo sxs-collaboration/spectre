@@ -59,15 +59,15 @@ void SphericalRadiation<Dim>::pup(PUP::er& p) {
 
 template <size_t Dim>
 std::optional<std::string> SphericalRadiation<Dim>::dg_ghost(
+    const gsl::not_null<Scalar<DataVector>*> psi_ext,
     const gsl::not_null<Scalar<DataVector>*> pi_ext,
     const gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*> phi_ext,
-    const gsl::not_null<Scalar<DataVector>*> psi_ext,
     const gsl::not_null<Scalar<DataVector>*> gamma2_ext,
     const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
         face_mesh_velocity,
     const tnsr::i<DataVector, Dim, Frame::Inertial>& normal_covector,
-    const tnsr::i<DataVector, Dim, Frame::Inertial>& phi,
     const Scalar<DataVector>& psi,
+    const tnsr::i<DataVector, Dim, Frame::Inertial>& phi,
     const tnsr::I<DataVector, Dim, Frame::Inertial>& coords,
     const Scalar<DataVector>& gamma2) const {
   *gamma2_ext = gamma2;
