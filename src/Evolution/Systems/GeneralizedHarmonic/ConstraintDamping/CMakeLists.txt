@@ -30,4 +30,7 @@ target_link_libraries(
   DataStructures
   ErrorHandling
   Options
+  Utilities
+  PRIVATE
+  FunctionsOfTime
   )

@@ -1,0 +1,70 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# SpECTRE development environment that can be installed with the Spack package
+# manager, both on clusters and personal machines.
+#
+# To install this environment, first clone
+# [Spack](https://github.com/spack/spack) and refer to the
+# [docs](https://spack.readthedocs.io/) for an introduction to Spack. Then:
+#
+#   $ spack env create YOUR_ENV_NAME support/DevEnvironments/spack.yaml
+#   $ spack env activate YOUR_ENV_NAME -p
+#
+# Now you can adjust the environment for your system. You may want to `spack
+# remove` and `spack add` some packages, e.g., to customize the Charm++
+# installation or to omit packages provided by your system or installed via
+# another package manager. To generate the list of packages that will be
+# installed, run:
+#
+#   $ spack concretize -f [--reuse]
+#
+# You may want to run `spack external find` and concretize with `--reuse` to
+# avoid reinstalling a bunch of system-provided packages. When you are happy
+# with the concretized environment, run:
+#
+#   $ spack install
+#
+# All dependencies will be installed in the Spack build tree and linked into the
+# environment. Now you can run CMake, build SpECTRE, etc. To pass options like
+# `CHARM_ROOT` to CMake, if necessary, you can find the location of installed
+# packages with `spack location --install-dir`.
+#
+# Since the `spack` command is quite slow, you can also generate a module file
+# that is much faster to source:
+#
+#   $ spack env loads -r
+#
+# Now you can activate the environment by sourcing the generated module file.
+#
+# See the [Spack docs on environments](https://spack.readthedocs.io/en/latest/environments.html)
+# for more information.
+
+spack:
+  specs:
+  - blaze@3.8
+  - 'boost@1.60:1.72'
+  - brigand@master
+  - 'catch2@2.8:'
+  # Charm++:
+  # - The 'multicore' backend runs with shared memory on a single node. On
+  #   clusters you should choose one of the multi-node backends instead.
+  - charmpp@6.10.2 backend=multicore
+  - 'cmake@3.12:'
+  - 'doxygen@1.9.2:'
+  - git
+  - gsl
+  - hdf5 -mpi
+  - jemalloc
+  - libsharp -mpi -openmp
+  - 'libxsmm@1.16.1:'
+  - openblas
+  - 'python@3.7:'
+  - py-h5py -mpi
+  - py-numpy
+  - py-pip
+  - py-scipy
+  - 'py-pybind11@2.6:'
+  - yaml-cpp
+  concretization: together
+  view: true

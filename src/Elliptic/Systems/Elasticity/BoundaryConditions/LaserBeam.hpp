@@ -23,76 +23,6 @@ class DataVector;
 /// \endcond
 
 namespace Elasticity::BoundaryConditions {
-namespace detail {
-
-struct LaserBeamImpl {
-  struct BeamWidth {
-    using type = double;
-    static constexpr Options::String help =
-        "The width r_0 of the Gaussian beam profile, such that FWHM = 2 * "
-        "sqrt(ln 2) * r_0";
-    static type lower_bound() { return 0.0; }
-  };
-
-  static constexpr Options::String help =
-      "A laser beam with Gaussian profile normally incident to the surface.";
-  using options = tmpl::list<BeamWidth>;
-
-  LaserBeamImpl() = default;
-  LaserBeamImpl(const LaserBeamImpl&) = default;
-  LaserBeamImpl& operator=(const LaserBeamImpl&) = default;
-  LaserBeamImpl(LaserBeamImpl&&) = default;
-  LaserBeamImpl& operator=(LaserBeamImpl&&) = default;
-  ~LaserBeamImpl() = default;
-
-  LaserBeamImpl(double beam_width) : beam_width_(beam_width) {}
-
-  double beam_width() const { return beam_width_; }
-
-  using argument_tags =
-      tmpl::list<domain::Tags::Coordinates<3, Frame::Inertial>,
-                 ::Tags::Normalized<
-                     domain::Tags::UnnormalizedFaceNormal<3, Frame::Inertial>>>;
-  using volume_tags = tmpl::list<>;
-
-  void apply(gsl::not_null<tnsr::I<DataVector, 3>*> displacement,
-             gsl::not_null<tnsr::I<DataVector, 3>*> n_dot_minus_stress,
-             const tnsr::I<DataVector, 3>& x,
-             const tnsr::i<DataVector, 3>& face_normal) const;
-
-  using argument_tags_linearized = tmpl::list<>;
-  using volume_tags_linearized = tmpl::list<>;
-
-  static void apply_linearized(
-      gsl::not_null<tnsr::I<DataVector, 3>*> displacement,
-      gsl::not_null<tnsr::I<DataVector, 3>*> n_dot_minus_stress);
-
-  // NOLINTNEXTLINE
-  void pup(PUP::er& p) { p | beam_width_; }
-
- private:
-  double beam_width_{std::numeric_limits<double>::signaling_NaN()};
-};
-
-bool operator==(const LaserBeamImpl& lhs, const LaserBeamImpl& rhs);
-
-bool operator!=(const LaserBeamImpl& lhs, const LaserBeamImpl& rhs);
-
-}  // namespace detail
-
-// The following implements the registration and factory-creation mechanism
-
-/// \cond
-template <typename Registrars>
-struct LaserBeam;
-
-namespace Registrars {
-struct LaserBeam {
-  template <typename Registrars>
-  using f = BoundaryConditions::LaserBeam<Registrars>;
-};
-}  // namespace Registrars
-/// \endcond
 
 /*!
  * \brief A laser beam with Gaussian profile normally incident to the surface
@@ -118,22 +48,29 @@ struct LaserBeam {
  * \cite Lovelace2017xyf. See also `Elasticity::Solutions::HalfSpaceMirror` for
  * an analytic solution that involves this boundary condition.
  */
-template <typename Registrars = tmpl::list<Registrars::LaserBeam>>
-class LaserBeam
-    : public elliptic::BoundaryConditions::BoundaryCondition<3, Registrars>,
-      public detail::LaserBeamImpl {
+class LaserBeam : public elliptic::BoundaryConditions::BoundaryCondition<3> {
  private:
-  using Base = elliptic::BoundaryConditions::BoundaryCondition<3, Registrars>;
+  using Base = elliptic::BoundaryConditions::BoundaryCondition<3>;
 
  public:
+  struct BeamWidth {
+    using type = double;
+    static constexpr Options::String help =
+        "The width r_0 of the Gaussian beam profile, such that FWHM = 2 * "
+        "sqrt(ln 2) * r_0";
+    static type lower_bound() { return 0.0; }
+  };
+
+  static constexpr Options::String help =
+      "A laser beam with Gaussian profile normally incident to the surface.";
+  using options = tmpl::list<BeamWidth>;
+
   LaserBeam() = default;
   LaserBeam(const LaserBeam&) = default;
   LaserBeam& operator=(const LaserBeam&) = default;
   LaserBeam(LaserBeam&&) = default;
   LaserBeam& operator=(LaserBeam&&) = default;
   ~LaserBeam() = default;
-
-  using LaserBeamImpl::LaserBeamImpl;
 
   /// \cond
   explicit LaserBeam(CkMigrateMessage* m) : Base(m) {}
@@ -146,15 +83,37 @@ class LaserBeam
     return std::make_unique<LaserBeam>(*this);
   }
 
-  void pup(PUP::er& p) override {
-    Base::pup(p);
-    detail::LaserBeamImpl::pup(p);
-  }
+  LaserBeam(double beam_width) : beam_width_(beam_width) {}
+
+  double beam_width() const { return beam_width_; }
+
+  using argument_tags =
+      tmpl::list<domain::Tags::Coordinates<3, Frame::Inertial>,
+                 ::Tags::Normalized<
+                     domain::Tags::UnnormalizedFaceNormal<3, Frame::Inertial>>>;
+  using volume_tags = tmpl::list<>;
+
+  void apply(gsl::not_null<tnsr::I<DataVector, 3>*> displacement,
+             gsl::not_null<tnsr::I<DataVector, 3>*> n_dot_minus_stress,
+             const tnsr::I<DataVector, 3>& x,
+             const tnsr::i<DataVector, 3>& face_normal) const;
+
+  using argument_tags_linearized = tmpl::list<>;
+  using volume_tags_linearized = tmpl::list<>;
+
+  static void apply_linearized(
+      gsl::not_null<tnsr::I<DataVector, 3>*> displacement,
+      gsl::not_null<tnsr::I<DataVector, 3>*> n_dot_minus_stress);
+
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p) override { p | beam_width_; }
+
+ private:
+  double beam_width_{std::numeric_limits<double>::signaling_NaN()};
 };
 
-/// \cond
-template <typename Registrars>
-PUP::able::PUP_ID LaserBeam<Registrars>::my_PUP_ID = 0;  // NOLINT
-/// \endcond
+bool operator==(const LaserBeam& lhs, const LaserBeam& rhs);
+
+bool operator!=(const LaserBeam& lhs, const LaserBeam& rhs);
 
 }  // namespace Elasticity::BoundaryConditions

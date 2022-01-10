@@ -32,7 +32,7 @@ void apply_dirichlet_boundary_condition(
   const auto box = db::create<db::AddSimpleTags<>>();
   auto n_dot_field_gradient = make_with_value<Scalar<DataVector>>(
       *field, std::numeric_limits<double>::signaling_NaN());
-  elliptic::apply_boundary_condition<Linearized>(
+  elliptic::apply_boundary_condition<Linearized, void, tmpl::list<Robin<1>>>(
       boundary_condition, box, Direction<1>::lower_xi(), field,
       make_not_null(&n_dot_field_gradient));
 }
@@ -43,7 +43,7 @@ void apply_neumann_boundary_condition(
     const double neumann_weight, const double constant) {
   const Robin<1> boundary_condition{dirichlet_weight, neumann_weight, constant};
   const auto box = db::create<db::AddSimpleTags<>>();
-  elliptic::apply_boundary_condition<Linearized>(
+  elliptic::apply_boundary_condition<Linearized, void, tmpl::list<Robin<1>>>(
       boundary_condition, box, Direction<1>::lower_xi(), make_not_null(&field),
       n_dot_field_gradient);
 }
@@ -52,9 +52,8 @@ void apply_neumann_boundary_condition(
 SPECTRE_TEST_CASE("Unit.Elasticity.BoundaryConditions.Robin",
                   "[Unit][Elliptic]") {
   // Test factory-creation
-  const auto created = TestHelpers::test_creation<
-      std::unique_ptr<elliptic::BoundaryConditions::BoundaryCondition<
-          1, tmpl::list<Registrars::Robin<1>>>>>(
+  const auto created = TestHelpers::test_factory_creation<
+      elliptic::BoundaryConditions::BoundaryCondition<1>, Robin<1>>(
       "Robin:\n"
       "  DirichletWeight: 2.\n"
       "  NeumannWeight: 3.\n"

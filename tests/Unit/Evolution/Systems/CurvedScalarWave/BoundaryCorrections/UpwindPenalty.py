@@ -9,7 +9,7 @@ from Evolution.Systems.CurvedScalarWave.Characteristics import (
     evol_field_psi, evol_field_pi, evol_field_phi)
 
 
-def dg_package_data_v_psi(pi, phi, psi, lapse, shift, inverse_spatial_metric,
+def dg_package_data_v_psi(psi, pi, phi, lapse, shift, inverse_spatial_metric,
                           constraint_gamma1, constraint_gamma2,
                           interface_unit_normal, interface_unit_normal_vector,
                           mesh_velocity, normal_dot_mesh_velocity):
@@ -17,7 +17,7 @@ def dg_package_data_v_psi(pi, phi, psi, lapse, shift, inverse_spatial_metric,
                            phi, interface_unit_normal)
 
 
-def dg_package_data_v_zero(pi, phi, psi, lapse, shift, inverse_spatial_metric,
+def dg_package_data_v_zero(psi, pi, phi, lapse, shift, inverse_spatial_metric,
                            constraint_gamma1, constraint_gamma2,
                            interface_unit_normal, interface_unit_normal_vector,
                            mesh_velocity, normal_dot_mesh_velocity):
@@ -25,7 +25,7 @@ def dg_package_data_v_zero(pi, phi, psi, lapse, shift, inverse_spatial_metric,
                             phi, interface_unit_normal)
 
 
-def dg_package_data_v_plus(pi, phi, psi, lapse, shift, inverse_spatial_metric,
+def dg_package_data_v_plus(psi, pi, phi, lapse, shift, inverse_spatial_metric,
                            constraint_gamma1, constraint_gamma2,
                            interface_unit_normal, interface_unit_normal_vector,
                            mesh_velocity, normal_dot_mesh_velocity):
@@ -33,7 +33,7 @@ def dg_package_data_v_plus(pi, phi, psi, lapse, shift, inverse_spatial_metric,
                             phi, interface_unit_normal)
 
 
-def dg_package_data_v_minus(pi, phi, psi, lapse, shift, inverse_spatial_metric,
+def dg_package_data_v_minus(psi, pi, phi, lapse, shift, inverse_spatial_metric,
                             constraint_gamma1, constraint_gamma2,
                             interface_unit_normal,
                             interface_unit_normal_vector, mesh_velocity,
@@ -42,7 +42,7 @@ def dg_package_data_v_minus(pi, phi, psi, lapse, shift, inverse_spatial_metric,
                              pi, phi, interface_unit_normal)
 
 
-def dg_package_data_gamma2(pi, phi, psi, lapse, shift, inverse_spatial_metric,
+def dg_package_data_gamma2(psi, pi, phi, lapse, shift, inverse_spatial_metric,
                            constraint_gamma1, constraint_gamma2,
                            interface_unit_normal, interface_unit_normal_vector,
                            mesh_velocity, normal_dot_mesh_velocity):
@@ -50,13 +50,13 @@ def dg_package_data_gamma2(pi, phi, psi, lapse, shift, inverse_spatial_metric,
 
 
 def dg_package_data_interface_unit_normal(
-    pi, phi, psi, lapse, shift, inverse_spatial_metric, constraint_gamma1,
+    psi, pi, phi, lapse, shift, inverse_spatial_metric, constraint_gamma1,
     constraint_gamma2, interface_unit_normal, interface_unit_normal_vector,
     mesh_velocity, normal_dot_mesh_velocity):
     return interface_unit_normal
 
 
-def dg_package_data_char_speeds(pi, phi, psi, lapse, shift,
+def dg_package_data_char_speeds(psi, pi, phi, lapse, shift,
                                 inverse_spatial_metric, constraint_gamma1,
                                 constraint_gamma2, interface_unit_normal,
                                 interface_unit_normal_vector, mesh_velocity,

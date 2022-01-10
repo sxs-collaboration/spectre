@@ -1,25 +1,24 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY Actions)
+set(LIBRARY "GhConstraintDampingHelpers")
 
 add_spectre_library(${LIBRARY} INTERFACE)
 
 spectre_target_headers(
   ${LIBRARY}
-  INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
+  INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/tests/Unit/
   HEADERS
-  MutateApply.hpp
-  RandomizeVariables.hpp
-  SetData.hpp
-  UpdateMessageQueue.hpp
+  TestHelpers.hpp
   )
 
 target_link_libraries(
   ${LIBRARY}
   INTERFACE
   DataStructures
-  Domain
-  ErrorHandling
+  DataStructuresHelpers
+  FunctionsOfTime
+  GhConstraintDamping
+  Parallel
   Utilities
   )

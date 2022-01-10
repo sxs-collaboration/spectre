@@ -59,18 +59,16 @@ template <size_t Dim>
 void test_analytic_solution() {
   CAPTURE(Dim);
   // Test factory-creation
-  using Registrar = Registrars::AnalyticSolution<System<Dim>>;
-  const auto boundary_condition_base = TestHelpers::test_creation<
-      std::unique_ptr<BoundaryCondition<Dim, tmpl::list<Registrar>>>>(
-      "AnalyticSolution:\n"
-      "  Field1: Dirichlet\n"
-      "  Field2: Neumann");
-  using BoundaryConditionType =
-      typename Registrar::template f<tmpl::list<Registrar>>;
-  REQUIRE(dynamic_cast<const BoundaryConditionType*>(
-              boundary_condition_base.get()) != nullptr);
+  const auto created =
+      TestHelpers::test_factory_creation<BoundaryCondition<Dim>,
+                                         AnalyticSolution<System<Dim>>>(
+          "AnalyticSolution:\n"
+          "  Field1: Dirichlet\n"
+          "  Field2: Neumann");
+  REQUIRE(dynamic_cast<const AnalyticSolution<System<Dim>>*>(created.get()) !=
+          nullptr);
   const auto& boundary_condition =
-      dynamic_cast<const BoundaryConditionType&>(*boundary_condition_base);
+      dynamic_cast<const AnalyticSolution<System<Dim>>&>(*created);
   {
     INFO("Semantics");
     test_serialization(boundary_condition);
@@ -111,7 +109,8 @@ void test_analytic_solution() {
                          ::Tags::NormalDotFlux<ScalarFieldTag<2>>>>
         vars{face_num_points, std::numeric_limits<double>::max()};
     // Inhomogeneous boundary conditions
-    elliptic::apply_boundary_condition<false>(
+    elliptic::apply_boundary_condition<
+        false, void, tmpl::list<AnalyticSolution<System<Dim>>>>(
         boundary_condition, box, direction,
         make_not_null(&get<ScalarFieldTag<1>>(vars)),
         make_not_null(&get<ScalarFieldTag<2>>(vars)),
@@ -151,7 +150,8 @@ void test_analytic_solution() {
         get(get<::Tags::NormalDotFlux<ScalarFieldTag<2>>>(vars)),
         expected_neumann_field);
     // Homogeneous (linearized) boundary conditions
-    elliptic::apply_boundary_condition<true>(
+    elliptic::apply_boundary_condition<
+        true, void, tmpl::list<AnalyticSolution<System<Dim>>>>(
         boundary_condition, box, direction,
         make_not_null(&get<ScalarFieldTag<1>>(vars)),
         make_not_null(&get<ScalarFieldTag<2>>(vars)),

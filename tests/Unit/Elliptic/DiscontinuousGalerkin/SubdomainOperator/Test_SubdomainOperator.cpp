@@ -49,6 +49,7 @@
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "NumericalAlgorithms/LinearSolver/BuildMatrix.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
@@ -61,6 +62,7 @@
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -114,14 +116,8 @@ template <typename System>
 std::unique_ptr<typename System::boundary_conditions_base>
 make_boundary_condition(
     const elliptic::BoundaryConditionType boundary_condition_type) {
-  using boundary_condition_registrars =
-      typename System::boundary_conditions_base::registrars;
-  using AnalyticSolutionBoundaryCondition =
-      typename elliptic::BoundaryConditions::Registrars::AnalyticSolution<
-          System>::template f<boundary_condition_registrars>;
-  Parallel::register_derived_classes_with_charm<
-      typename System::boundary_conditions_base>();
-  return std::make_unique<AnalyticSolutionBoundaryCondition>(
+  return std::make_unique<
+      elliptic::BoundaryConditions::AnalyticSolution<System>>(
       boundary_condition_type);
 }
 
@@ -385,6 +381,12 @@ struct Metavariables {
   using component_list = tmpl::list<element_array>;
   using const_global_cache_tags = tmpl::list<>;
   enum class Phase { Initialization, Testing, Exit };
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes = tmpl::map<tmpl::pair<
+        elliptic::BoundaryConditions::BoundaryCondition<System::volume_dim>,
+        tmpl::list<elliptic::BoundaryConditions::AnalyticSolution<System>>>>;
+  };
 };
 
 // The test should work for any elliptic system. For systems with fluxes or
@@ -417,6 +419,8 @@ void test_subdomain_operator(
       SubdomainDataTag<Dim, typename fields_tag::tags_list>;
   using subdomain_operator_applied_to_fields_tag =
       typename element_array::subdomain_operator_applied_to_fields_tag;
+
+  Parallel::register_factory_classes_with_charm<metavariables>();
 
   // Select randomly which iteration of the loops below perform expensive tests.
   MAKE_GENERATOR(gen);

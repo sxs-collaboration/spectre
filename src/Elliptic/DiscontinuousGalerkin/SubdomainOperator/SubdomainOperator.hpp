@@ -106,14 +106,19 @@ struct make_neighbor_mortars_tag_impl {
  * Poisson system is used for preconditioning that doesn't have boundary
  * conditions set up in the domain. In these cases, the boundary conditions used
  * for the subdomain operator can be overridden with the
- * `override_boundary_conditions` argument in the constructor. Note that the
- * subdomain operator always applies the _linearized_ boundary conditions.
+ * `override_boundary_conditions` argument in the constructor. If the overriding
+ * boundary conditions are different from those listed in
+ * `Metavariables::factory_creation`, you can supply the list of
+ * boundary-condition classes to the `BoundaryConditionClasses` template
+ * parameter. Note that the subdomain operator always applies the _linearized_
+ * boundary conditions.
  *
  * \warning The subdomain operator hasn't been tested with periodic boundary
  * conditions so far.
  */
 template <typename System, typename OptionsGroup,
-          typename ArgsTagsFromCenter = tmpl::list<>>
+          typename ArgsTagsFromCenter = tmpl::list<>,
+          typename BoundaryConditionClasses = tmpl::list<>>
 struct SubdomainOperator
     : LinearSolver::Schwarz::SubdomainOperator<System::volume_dim> {
  private:
@@ -303,8 +308,9 @@ struct SubdomainOperator
           }();
           elliptic::apply_boundary_condition<
               linearized,
-              tmpl::conditional_t<is_overlap_v, make_overlap_tag, void>>(
-              boundary_condition, box, map_keys, fields_and_fluxes...);
+              tmpl::conditional_t<is_overlap_v, make_overlap_tag, void>,
+              BoundaryConditionClasses>(boundary_condition, box, map_keys,
+                                        fields_and_fluxes...);
         };
 
     // Check if the subdomain data is sparse, i.e. if some elements have zero

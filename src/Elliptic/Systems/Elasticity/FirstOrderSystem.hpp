@@ -7,12 +7,8 @@
 
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
-#include "Elliptic/BoundaryConditions/AnalyticSolution.hpp"
 #include "Elliptic/BoundaryConditions/BoundaryCondition.hpp"
-#include "Elliptic/BoundaryConditions/BoundaryConditionType.hpp"
 #include "Elliptic/Protocols/FirstOrderSystem.hpp"
-#include "Elliptic/Systems/Elasticity/BoundaryConditions/LaserBeam.hpp"
-#include "Elliptic/Systems/Elasticity/BoundaryConditions/Zero.hpp"
 #include "Elliptic/Systems/Elasticity/Equations.hpp"
 #include "Elliptic/Systems/Elasticity/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
@@ -75,18 +71,6 @@ struct FirstOrderSystem
   using sources_computer = Sources<Dim>;
 
   using boundary_conditions_base =
-      elliptic::BoundaryConditions::BoundaryCondition<
-          Dim,
-          tmpl::append<
-              tmpl::list<elliptic::BoundaryConditions::Registrars::
-                             AnalyticSolution<FirstOrderSystem>,
-                         BoundaryConditions::Registrars::Zero<
-                             Dim, elliptic::BoundaryConditionType::Dirichlet>,
-                         BoundaryConditions::Registrars::Zero<
-                             Dim, elliptic::BoundaryConditionType::Neumann>>,
-              tmpl::conditional_t<
-                  Dim == 3,
-                  tmpl::list<BoundaryConditions::Registrars::LaserBeam>,
-                  tmpl::list<>>>>;
+      elliptic::BoundaryConditions::BoundaryCondition<Dim>;
 };
 }  // namespace Elasticity

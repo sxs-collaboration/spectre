@@ -33,7 +33,8 @@ void test_compute_item_in_databox(const DataType& used_for_size) {
           make_not_null(&generator), dist, used_for_size);
 
   const auto box = db::create<
-      db::AddSimpleTags<ScalarWave::Pi, ScalarWave::Phi<SpatialDim>>,
+      db::AddSimpleTags<ScalarWave::Tags::Pi,
+                        ScalarWave::Tags::Phi<SpatialDim>>,
       db::AddComputeTags<ScalarWave::Tags::EnergyDensityCompute<SpatialDim>>>(
       pi, phi);
 

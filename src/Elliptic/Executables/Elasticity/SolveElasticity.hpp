@@ -14,6 +14,7 @@
 #include "Elliptic/Actions/InitializeAnalyticSolution.hpp"
 #include "Elliptic/Actions/InitializeFields.hpp"
 #include "Elliptic/Actions/InitializeFixedSources.hpp"
+#include "Elliptic/BoundaryConditions/BoundaryCondition.hpp"
 #include "Elliptic/DiscontinuousGalerkin/Actions/ApplyOperator.hpp"
 #include "Elliptic/DiscontinuousGalerkin/Actions/InitializeDomain.hpp"
 #include "Elliptic/DiscontinuousGalerkin/DgElementArray.hpp"
@@ -21,6 +22,7 @@
 #include "Elliptic/DiscontinuousGalerkin/SubdomainOperator/SubdomainOperator.hpp"
 #include "Elliptic/SubdomainPreconditioners/MinusLaplacian.hpp"
 #include "Elliptic/SubdomainPreconditioners/RegisterDerived.hpp"
+#include "Elliptic/Systems/Elasticity/BoundaryConditions/Factory.hpp"
 #include "Elliptic/Systems/Elasticity/FirstOrderSystem.hpp"
 #include "Elliptic/Systems/Elasticity/Tags.hpp"
 #include "Elliptic/Tags.hpp"
@@ -192,6 +194,9 @@ struct Metavariables {
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
         tmpl::pair<DomainCreator<volume_dim>, domain_creators<volume_dim>>,
+        tmpl::pair<elliptic::BoundaryConditions::BoundaryCondition<volume_dim>,
+                   Elasticity::BoundaryConditions::standard_boundary_conditions<
+                       system>>,
         tmpl::pair<
             Event,
             tmpl::flatten<tmpl::list<
@@ -329,8 +334,6 @@ static const std::vector<void (*)()> charm_init_node_funcs{
         metavariables::background_tag::type::element_type>,
     &Parallel::register_derived_classes_with_charm<
         metavariables::initial_guess_tag::type::element_type>,
-    &Parallel::register_derived_classes_with_charm<
-        metavariables::system::boundary_conditions_base>,
     &Parallel::register_derived_classes_with_charm<
         metavariables::schwarz_smoother::subdomain_solver>,
     &elliptic::subdomain_preconditioners::register_derived_with_charm,

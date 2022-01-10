@@ -88,8 +88,9 @@ class ScalarWaveGr : public MarkAsAnalyticData {
   // Tags
   template <typename DataType>
   using spacetime_tags = typename BackgroundGrData::template tags<DataType>;
-  using tags = tmpl::append<spacetime_tags<DataVector>,
-                            tmpl::list<Pi, Phi<volume_dim>, Psi>>;
+  using tags =
+      tmpl::append<spacetime_tags<DataVector>,
+                   tmpl::list<Tags::Psi, Tags::Pi, Tags::Phi<volume_dim>>>;
 
   /// Retrieve spacetime variables
   template <
@@ -103,27 +104,29 @@ class ScalarWaveGr : public MarkAsAnalyticData {
   }
 
   /// Retrieve scalar wave variables
-  tuples::TaggedTuple<Pi> variables(const tnsr::I<DataVector, volume_dim>& x,
-                                    tmpl::list<Pi> /*meta*/) const;
-
-  tuples::TaggedTuple<Phi<volume_dim>> variables(
+  tuples::TaggedTuple<Tags::Pi> variables(
       const tnsr::I<DataVector, volume_dim>& x,
-      tmpl::list<Phi<volume_dim>> /*meta*/) const {
+      tmpl::list<Tags::Pi> /*meta*/) const;
+
+  tuples::TaggedTuple<Tags::Phi<volume_dim>> variables(
+      const tnsr::I<DataVector, volume_dim>& x,
+      tmpl::list<Tags::Phi<volume_dim>> /*meta*/) const {
+    constexpr double default_initial_time = 0.;
+    return {std::move(get<ScalarWave::Tags::Phi<volume_dim>>(
+        flat_space_scalar_wave_data_.variables(
+            x, default_initial_time,
+            tmpl::list<ScalarWave::Tags::Psi, ScalarWave::Tags::Pi,
+                       ScalarWave::Tags::Phi<volume_dim>>{})))};
+  }
+  tuples::TaggedTuple<Tags::Psi> variables(
+      const tnsr::I<DataVector, volume_dim>& x,
+      tmpl::list<Tags::Psi> /*meta*/) const {
     constexpr double default_initial_time = 0.;
     return {std::move(
-        get<ScalarWave::Phi<volume_dim>>(flat_space_scalar_wave_data_.variables(
+        get<ScalarWave::Tags::Psi>(flat_space_scalar_wave_data_.variables(
             x, default_initial_time,
-            tmpl::list<ScalarWave::Pi, ScalarWave::Phi<volume_dim>,
-                       ScalarWave::Psi>{})))};
-  }
-  tuples::TaggedTuple<Psi> variables(const tnsr::I<DataVector, volume_dim>& x,
-                                     tmpl::list<Psi> /*meta*/) const {
-    constexpr double default_initial_time = 0.;
-    return {
-        std::move(get<ScalarWave::Psi>(flat_space_scalar_wave_data_.variables(
-            x, default_initial_time,
-            tmpl::list<ScalarWave::Pi, ScalarWave::Phi<volume_dim>,
-                       ScalarWave::Psi>{})))};
+            tmpl::list<ScalarWave::Tags::Psi, ScalarWave::Tags::Pi,
+                       ScalarWave::Tags::Phi<volume_dim>>{})))};
   }
 
   // Retrieve one or more tags

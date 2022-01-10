@@ -12,6 +12,7 @@
 #include "Elliptic/Actions/InitializeAnalyticSolution.hpp"
 #include "Elliptic/Actions/InitializeFields.hpp"
 #include "Elliptic/Actions/InitializeFixedSources.hpp"
+#include "Elliptic/BoundaryConditions/BoundaryCondition.hpp"
 #include "Elliptic/BoundaryConditions/Tags/BoundaryFields.hpp"
 #include "Elliptic/DiscontinuousGalerkin/Actions/ApplyOperator.hpp"
 #include "Elliptic/DiscontinuousGalerkin/Actions/InitializeDomain.hpp"
@@ -20,6 +21,7 @@
 #include "Elliptic/DiscontinuousGalerkin/SubdomainOperator/SubdomainOperator.hpp"
 #include "Elliptic/SubdomainPreconditioners/MinusLaplacian.hpp"
 #include "Elliptic/SubdomainPreconditioners/RegisterDerived.hpp"
+#include "Elliptic/Systems/Xcts/BoundaryConditions/Factory.hpp"
 #include "Elliptic/Systems/Xcts/FirstOrderSystem.hpp"
 #include "Elliptic/Tags.hpp"
 #include "Elliptic/Triggers/Factory.hpp"
@@ -215,6 +217,9 @@ struct Metavariables {
     using factory_classes = tmpl::map<
         tmpl::pair<DomainCreator<volume_dim>, domain_creators<volume_dim>>,
         tmpl::pair<
+            elliptic::BoundaryConditions::BoundaryCondition<volume_dim>,
+            Xcts::BoundaryConditions::standard_boundary_conditions<system>>,
+        tmpl::pair<
             Event,
             tmpl::flatten<tmpl::list<
                 Events::Completion,
@@ -373,8 +378,6 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &Parallel::register_derived_classes_with_charm<
         Xcts::Solutions::AnalyticSolution<
             typename metavariables::analytic_solution_registrars>>,
-    &Parallel::register_derived_classes_with_charm<
-        metavariables::system::boundary_conditions_base>,
     &Parallel::register_derived_classes_with_charm<
         metavariables::schwarz_smoother::subdomain_solver>,
     &elliptic::subdomain_preconditioners::register_derived_with_charm,

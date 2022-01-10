@@ -213,9 +213,10 @@ struct EvolutionMetavars {
                      Actions::UpdateU<>>>,
       tmpl::conditional_t<
           use_filtering,
-          dg::Actions::Filter<Filters::Exponential<0>,
-                              tmpl::list<ScalarWave::Pi, ScalarWave::Psi,
-                                         ScalarWave::Phi<Dim>>>,
+          dg::Actions::Filter<
+              Filters::Exponential<0>,
+              tmpl::list<ScalarWave::Tags::Psi, ScalarWave::Tags::Pi,
+                         ScalarWave::Tags::Phi<Dim>>>,
           tmpl::list<>>>>;
 
   enum class Phase {

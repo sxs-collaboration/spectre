@@ -59,10 +59,10 @@ void test_variables() {
           radius, width, {l, m}};
       const auto sh_res = sh.variables(x, 0., {});
 
-      CHECK_ITERABLE_APPROX(get<CurvedScalarWave::Pi>(sh_res), py_res);
-      CHECK(get<CurvedScalarWave::Phi<3>>(sh_res) ==
+      CHECK_ITERABLE_APPROX(get<CurvedScalarWave::Tags::Pi>(sh_res), py_res);
+      CHECK(get<CurvedScalarWave::Tags::Phi<3>>(sh_res) ==
             make_with_value<tnsr::i<DataVector, 3>>(dv_size, 0.));
-      CHECK(get<CurvedScalarWave::Psi>(sh_res) ==
+      CHECK(get<CurvedScalarWave::Tags::Psi>(sh_res) ==
             make_with_value<Scalar<DataVector>>(dv_size, 0.));
     }
   }

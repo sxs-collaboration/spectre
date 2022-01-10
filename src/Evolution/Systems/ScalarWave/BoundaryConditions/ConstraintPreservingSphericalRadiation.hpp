@@ -213,36 +213,43 @@ class ConstraintPreservingSphericalRadiation final
   void pup(PUP::er& p) override;
 
   using dg_interior_evolved_variables_tags =
-      tmpl::list<ScalarWave::Pi, ScalarWave::Phi<Dim>, ScalarWave::Psi>;
+      tmpl::list<ScalarWave::Tags::Psi, ScalarWave::Tags::Pi,
+                 ScalarWave::Tags::Phi<Dim>>;
   using dg_interior_temporary_tags =
       tmpl::list<domain::Tags::Coordinates<Dim, Frame::Inertial>,
                  Tags::ConstraintGamma2>;
   using dg_interior_dt_vars_tags =
-      tmpl::list<::Tags::dt<ScalarWave::Pi>, ::Tags::dt<ScalarWave::Phi<Dim>>,
-                 ::Tags::dt<ScalarWave::Psi>>;
+      tmpl::list<::Tags::dt<ScalarWave::Tags::Psi>,
+                 ::Tags::dt<ScalarWave::Tags::Pi>,
+                 ::Tags::dt<ScalarWave::Tags::Phi<Dim>>>;
   using dg_interior_deriv_vars_tags = tmpl::list<
-      ::Tags::deriv<ScalarWave::Pi, tmpl::size_t<Dim>, Frame::Inertial>,
-      ::Tags::deriv<ScalarWave::Psi, tmpl::size_t<Dim>, Frame::Inertial>,
-      ::Tags::deriv<ScalarWave::Phi<Dim>, tmpl::size_t<Dim>, Frame::Inertial>>;
+      ::Tags::deriv<ScalarWave::Tags::Psi, tmpl::size_t<Dim>, Frame::Inertial>,
+      ::Tags::deriv<ScalarWave::Tags::Pi, tmpl::size_t<Dim>, Frame::Inertial>,
+      ::Tags::deriv<ScalarWave::Tags::Phi<Dim>, tmpl::size_t<Dim>,
+                    Frame::Inertial>>;
   using dg_gridless_tags = tmpl::list<>;
 
   std::optional<std::string> dg_time_derivative(
+      gsl::not_null<Scalar<DataVector>*> dt_psi_correction,
       gsl::not_null<Scalar<DataVector>*> dt_pi_correction,
       gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*>
           dt_phi_correction,
-      gsl::not_null<Scalar<DataVector>*> dt_psi_correction,
+
       const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
           face_mesh_velocity,
       const tnsr::i<DataVector, Dim, Frame::Inertial>& normal_covector,
-      const Scalar<DataVector>& pi,
+
+      const Scalar<DataVector>& psi, const Scalar<DataVector>& pi,
       const tnsr::i<DataVector, Dim, Frame::Inertial>& phi,
-      const Scalar<DataVector>& psi,
+
       const tnsr::I<DataVector, Dim, Frame::Inertial>& coords,
-      const Scalar<DataVector>& gamma2, const Scalar<DataVector>& dt_pi,
+      const Scalar<DataVector>& gamma2,
+
+      const Scalar<DataVector>& dt_psi, const Scalar<DataVector>& dt_pi,
       const tnsr::i<DataVector, Dim, Frame::Inertial>& dt_phi,
-      const Scalar<DataVector>& dt_psi,
-      const tnsr::i<DataVector, Dim, Frame::Inertial>& d_pi,
+
       const tnsr::i<DataVector, Dim, Frame::Inertial>& d_psi,
+      const tnsr::i<DataVector, Dim, Frame::Inertial>& d_pi,
       const tnsr::ij<DataVector, Dim, Frame::Inertial>& d_phi) const;
 
  private:

@@ -70,18 +70,21 @@ void check_du_dt(const size_t npts, const double time) {
                                const double gamma2, const double constraint) {
     auto box = db::create<db::AddSimpleTags<
         ScalarWave::Tags::ConstraintGamma2, ConstraintGamma2Copy,
-        Tags::dt<ScalarWave::Pi>, Tags::dt<ScalarWave::Phi<Dim>>,
-        Tags::dt<ScalarWave::Psi>, ScalarWave::Pi, ScalarWave::Phi<Dim>,
-        Tags::deriv<ScalarWave::Pi, tmpl::size_t<Dim>, Frame::Inertial>,
-        Tags::deriv<ScalarWave::Psi, tmpl::size_t<Dim>, Frame::Inertial>,
-        Tags::deriv<ScalarWave::Phi<Dim>, tmpl::size_t<Dim>, Frame::Inertial>>>(
+        Tags::dt<ScalarWave::Tags::Psi>, Tags::dt<ScalarWave::Tags::Pi>,
+        Tags::dt<ScalarWave::Tags::Phi<Dim>>, ScalarWave::Tags::Pi,
+        ScalarWave::Tags::Phi<Dim>,
+        Tags::deriv<ScalarWave::Tags::Psi, tmpl::size_t<Dim>, Frame::Inertial>,
+        Tags::deriv<ScalarWave::Tags::Pi, tmpl::size_t<Dim>, Frame::Inertial>,
+        Tags::deriv<ScalarWave::Tags::Phi<Dim>, tmpl::size_t<Dim>,
+                    Frame::Inertial>>>(
         Scalar<DataVector>(pow<Dim>(npts), gamma2),
         Scalar<DataVector>(pow<Dim>(npts), 0.0),
         Scalar<DataVector>(pow<Dim>(npts), 0.0),
-        tnsr::i<DataVector, Dim, Frame::Inertial>(pow<Dim>(npts), 0.0),
         Scalar<DataVector>(pow<Dim>(npts), 0.0),
+        tnsr::i<DataVector, Dim, Frame::Inertial>(pow<Dim>(npts), 0.0),
         Scalar<DataVector>(-1.0 * solution.dpsi_dt(x, time).get()),
         add_scalar_to_tensor_components(solution.dpsi_dx(x, time), constraint),
+        solution.dpsi_dx(x, time),
         [&x, &time, &solution]() {
           auto dpi_dx = solution.d2psi_dtdx(x, time);
           for (size_t i = 0; i < Dim; ++i) {
@@ -89,7 +92,6 @@ void check_du_dt(const size_t npts, const double time) {
           }
           return dpi_dx;
         }(),
-        solution.dpsi_dx(x, time),
         [&npts, &x, &time, &solution]() {
           tnsr::ij<DataVector, Dim, Frame::Inertial> d2psi_dxdx{pow<Dim>(npts),
                                                                 0.0};
@@ -104,25 +106,28 @@ void check_du_dt(const size_t npts, const double time) {
         }());
 
     db::mutate_apply<
-        tmpl::list<Tags::dt<ScalarWave::Pi>, Tags::dt<ScalarWave::Phi<Dim>>,
-                   Tags::dt<ScalarWave::Psi>, ConstraintGamma2Copy>,
+        tmpl::list<Tags::dt<ScalarWave::Tags::Psi>,
+                   Tags::dt<ScalarWave::Tags::Pi>,
+                   Tags::dt<ScalarWave::Tags::Phi<Dim>>, ConstraintGamma2Copy>,
         tmpl::push_front<
             typename ScalarWave::TimeDerivative<Dim>::argument_tags,
-            Tags::deriv<ScalarWave::Pi, tmpl::size_t<Dim>, Frame::Inertial>,
-            Tags::deriv<ScalarWave::Phi<Dim>, tmpl::size_t<Dim>,
+            Tags::deriv<ScalarWave::Tags::Psi, tmpl::size_t<Dim>,
                         Frame::Inertial>,
-            Tags::deriv<ScalarWave::Psi, tmpl::size_t<Dim>, Frame::Inertial>>>(
-        ScalarWave::TimeDerivative<Dim>{}, make_not_null(&box));
+            Tags::deriv<ScalarWave::Tags::Pi, tmpl::size_t<Dim>,
+                        Frame::Inertial>,
+            Tags::deriv<ScalarWave::Tags::Phi<Dim>, tmpl::size_t<Dim>,
+                        Frame::Inertial>>>(ScalarWave::TimeDerivative<Dim>{},
+                                           make_not_null(&box));
 
+    CHECK_ITERABLE_APPROX(db::get<Tags::dt<ScalarWave::Tags::Psi>>(box),
+                          solution.dpsi_dt(x, time));
     CHECK_ITERABLE_APPROX(
-        db::get<Tags::dt<ScalarWave::Pi>>(box),
+        db::get<Tags::dt<ScalarWave::Tags::Pi>>(box),
         Scalar<DataVector>(-1.0 * solution.d2psi_dt2(x, time).get()));
     CHECK_ITERABLE_APPROX(
-        db::get<Tags::dt<ScalarWave::Phi<Dim>>>(box),
+        db::get<Tags::dt<ScalarWave::Tags::Phi<Dim>>>(box),
         add_scalar_to_tensor_components(solution.d2psi_dtdx(x, time),
                                         -gamma2 * constraint));
-    CHECK_ITERABLE_APPROX(db::get<Tags::dt<ScalarWave::Psi>>(box),
-                          solution.dpsi_dt(x, time));
   };
 
   // Test with constraint damping parameter set to zero

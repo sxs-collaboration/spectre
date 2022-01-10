@@ -93,9 +93,9 @@ std::array<Mode, 4> get_modes(const tnsr::I<DataVector, 1>& x,
 }
 }  // namespace
 
-tuples::TaggedTuple<ScalarWave::Pi> SemidiscretizedDg::variables(
+tuples::TaggedTuple<Tags::Pi> SemidiscretizedDg::variables(
     const tnsr::I<DataVector, 1>& x, double t,
-    tmpl::list<ScalarWave::Pi> /*meta*/) const {
+    tmpl::list<Tags::Pi> /*meta*/) const {
   using namespace std::complex_literals;
 
   const auto modes = get_modes(x, harmonic_);
@@ -110,9 +110,9 @@ tuples::TaggedTuple<ScalarWave::Pi> SemidiscretizedDg::variables(
   return {Scalar<DataVector>(std::move(pi))};
 }
 
-tuples::TaggedTuple<ScalarWave::Phi<1>> SemidiscretizedDg::variables(
+tuples::TaggedTuple<Tags::Phi<1>> SemidiscretizedDg::variables(
     const tnsr::I<DataVector, 1>& x, double t,
-    tmpl::list<ScalarWave::Phi<1>> /*meta*/) const {
+    tmpl::list<Tags::Phi<1>> /*meta*/) const {
   using namespace std::complex_literals;
 
   const auto modes = get_modes(x, harmonic_);
@@ -127,9 +127,9 @@ tuples::TaggedTuple<ScalarWave::Phi<1>> SemidiscretizedDg::variables(
   return {tnsr::i<DataVector, 1>{{{std::move(phi)}}}};
 }
 
-tuples::TaggedTuple<ScalarWave::Psi> SemidiscretizedDg::variables(
+tuples::TaggedTuple<Tags::Psi> SemidiscretizedDg::variables(
     const tnsr::I<DataVector, 1>& x, double t,
-    tmpl::list<ScalarWave::Psi> /*meta*/) const {
+    tmpl::list<Tags::Psi> /*meta*/) const {
   using namespace std::complex_literals;
 
   // There are two more modes that are just constant offsets of Psi,

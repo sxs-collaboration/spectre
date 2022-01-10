@@ -38,8 +38,14 @@ struct ZeroHelpString<elliptic::BoundaryConditionType::Neumann> {
       "deform at this boundary.";
 };
 
+}  // namespace detail
+
+/// Impose zero Dirichlet ("fixed") or Neumann ("free") boundary conditions.
 template <size_t Dim, elliptic::BoundaryConditionType BoundaryConditionType>
-struct ZeroImpl {
+class Zero : public elliptic::BoundaryConditions::BoundaryCondition<Dim> {
+ private:
+  using Base = elliptic::BoundaryConditions::BoundaryCondition<Dim>;
+
   static_assert(BoundaryConditionType ==
                         elliptic::BoundaryConditionType::Dirichlet or
                     BoundaryConditionType ==
@@ -47,63 +53,12 @@ struct ZeroImpl {
                 "Unexpected boundary condition type. Supported are Dirichlet "
                 "and Neumann.");
 
+ public:
   static std::string name();
   using options = tmpl::list<>;
   static constexpr Options::String help =
-      ZeroHelpString<BoundaryConditionType>::help;
+      detail::ZeroHelpString<BoundaryConditionType>::help;
 
-  using argument_tags = tmpl::list<>;
-  using volume_tags = tmpl::list<>;
-
-  static void apply(
-      gsl::not_null<tnsr::I<DataVector, Dim>*> displacement,
-      gsl::not_null<tnsr::I<DataVector, Dim>*> n_dot_minus_stress);
-
-  using argument_tags_linearized = tmpl::list<>;
-  using volume_tags_linearized = tmpl::list<>;
-
-  static void apply_linearized(
-      gsl::not_null<tnsr::I<DataVector, Dim>*> displacement,
-      gsl::not_null<tnsr::I<DataVector, Dim>*> n_dot_minus_stress);
-};
-
-template <size_t Dim, elliptic::BoundaryConditionType BoundaryConditionType>
-bool operator==(const ZeroImpl<Dim, BoundaryConditionType>& lhs,
-                const ZeroImpl<Dim, BoundaryConditionType>& rhs);
-
-template <size_t Dim, elliptic::BoundaryConditionType BoundaryConditionType>
-bool operator!=(const ZeroImpl<Dim, BoundaryConditionType>& lhs,
-                const ZeroImpl<Dim, BoundaryConditionType>& rhs);
-
-}  // namespace detail
-
-// The following implements the registration and factory-creation mechanism
-
-/// \cond
-template <size_t Dim, elliptic::BoundaryConditionType BoundaryConditionType,
-          typename Registrars>
-struct Zero;
-
-namespace Registrars {
-template <size_t Dim, elliptic::BoundaryConditionType BoundaryConditionType>
-struct Zero {
-  template <typename Registrars>
-  using f = BoundaryConditions::Zero<Dim, BoundaryConditionType, Registrars>;
-};
-}  // namespace Registrars
-/// \endcond
-
-/// Impose zero Dirichlet ("fixed") or Neumann ("free") boundary conditions.
-template <size_t Dim, elliptic::BoundaryConditionType BoundaryConditionType,
-          typename Registrars =
-              tmpl::list<Registrars::Zero<Dim, BoundaryConditionType>>>
-class Zero
-    : public elliptic::BoundaryConditions::BoundaryCondition<Dim, Registrars>,
-      public detail::ZeroImpl<Dim, BoundaryConditionType> {
- private:
-  using Base = elliptic::BoundaryConditions::BoundaryCondition<Dim, Registrars>;
-
- public:
   Zero() = default;
   Zero(const Zero&) = default;
   Zero& operator=(const Zero&) = default;
@@ -121,13 +76,37 @@ class Zero
       const override {
     return std::make_unique<Zero>(*this);
   }
+
+  using argument_tags = tmpl::list<>;
+  using volume_tags = tmpl::list<>;
+
+  static void apply(
+      gsl::not_null<tnsr::I<DataVector, Dim>*> displacement,
+      gsl::not_null<tnsr::I<DataVector, Dim>*> n_dot_minus_stress);
+
+  using argument_tags_linearized = tmpl::list<>;
+  using volume_tags_linearized = tmpl::list<>;
+
+  static void apply_linearized(
+      gsl::not_null<tnsr::I<DataVector, Dim>*> displacement,
+      gsl::not_null<tnsr::I<DataVector, Dim>*> n_dot_minus_stress);
 };
 
+template <size_t Dim, elliptic::BoundaryConditionType BoundaryConditionType>
+bool operator==(const Zero<Dim, BoundaryConditionType>& /*lhs*/,
+                const Zero<Dim, BoundaryConditionType>& /*rhs*/) {
+  return true;
+}
+
+template <size_t Dim, elliptic::BoundaryConditionType BoundaryConditionType>
+bool operator!=(const Zero<Dim, BoundaryConditionType>& lhs,
+                const Zero<Dim, BoundaryConditionType>& rhs) {
+  return not(lhs == rhs);
+}
+
 /// \cond
-template <size_t Dim, elliptic::BoundaryConditionType BoundaryConditionType,
-          typename Registrars>
-PUP::able::PUP_ID Zero<Dim, BoundaryConditionType,
-                       Registrars>::my_PUP_ID = 0;  // NOLINT
+template <size_t Dim, elliptic::BoundaryConditionType BoundaryConditionType>
+PUP::able::PUP_ID Zero<Dim, BoundaryConditionType>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
 
 }  // namespace Elasticity::BoundaryConditions

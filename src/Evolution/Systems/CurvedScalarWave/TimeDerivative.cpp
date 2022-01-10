@@ -17,9 +17,9 @@
 namespace CurvedScalarWave {
 template <size_t Dim>
 void TimeDerivative<Dim>::apply(
+    const gsl::not_null<Scalar<DataVector>*> dt_psi,
     const gsl::not_null<Scalar<DataVector>*> dt_pi,
     const gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*> dt_phi,
-    const gsl::not_null<Scalar<DataVector>*> dt_psi,
 
     const gsl::not_null<Scalar<DataVector>*> result_lapse,
     const gsl::not_null<tnsr::I<DataVector, Dim>*> result_shift,
@@ -28,9 +28,8 @@ void TimeDerivative<Dim>::apply(
     const gsl::not_null<Scalar<DataVector>*> result_gamma1,
     const gsl::not_null<Scalar<DataVector>*> result_gamma2,
 
-    const tnsr::i<DataVector, Dim>& d_pi,
-    const tnsr::ij<DataVector, Dim>& d_phi,
-    const tnsr::i<DataVector, Dim>& d_psi, const Scalar<DataVector>& pi,
+    const tnsr::i<DataVector, Dim>& d_psi, const tnsr::i<DataVector, Dim>& d_pi,
+    const tnsr::ij<DataVector, Dim>& d_phi, const Scalar<DataVector>& pi,
     const tnsr::i<DataVector, Dim>& phi, const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, Dim>& shift,
     const tnsr::i<DataVector, Dim>& deriv_lapse,

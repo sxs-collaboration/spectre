@@ -12,11 +12,31 @@
 #include "Domain/Tags/Faces.hpp"
 #include "Elliptic/BoundaryConditions/BoundaryCondition.hpp"
 #include "Elliptic/Utilities/ApplyAt.hpp"
+#include "Parallel/Tags/Metavariables.hpp"
 #include "Utilities/FakeVirtual.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace elliptic {
+
+namespace detail {
+// Return the `BoundaryConditionClasses`, or get the list of derived classes
+// from `Metavariables::factory_creation` if `BoundaryConditionClasses` is
+// empty.
+template <typename Base, typename BoundaryConditionClasses, typename DbTagsList>
+struct GetBoundaryConditionClasses {
+  using type = BoundaryConditionClasses;
+};
+template <typename Base, typename DbTagsList>
+struct GetBoundaryConditionClasses<Base, tmpl::list<>, DbTagsList> {
+  using type = tmpl::at<
+      typename std::decay_t<decltype(db::get<Parallel::Tags::Metavariables>(
+          std::declval<db::DataBox<DbTagsList>>()))>::factory_creation::
+          factory_classes,
+      Base>;
+};
+}  // namespace detail
+
 /*!
  * \brief Apply the `boundary_condition` to the `fields_and_fluxes` with
  * arguments from interface tags in the DataBox.
@@ -34,18 +54,26 @@ namespace elliptic {
  * argument tags for the boundary conditions further. It must be compatible with
  * `tmpl::transform`. For example, it may wrap the tags in another prefix. Set
  * it to `void` (default) to apply no transformation.
+ *
+ * The `BoundaryConditionClasses` can be used to list a set of classes derived
+ * from `elliptic::BoundaryConditions::BoundaryCondition` that are iterated to
+ * determine the concrete type of `boundary_condition`. It can be `tmpl::list<>`
+ * (default) to use the classes listed in `Metavariables::factory_creation`
+ * instead.
  */
-template <bool Linearized, typename ArgsTransform = void, size_t Dim,
-          typename Registrars, typename DbTagsList, typename MapKeys,
-          typename... FieldsAndFluxes>
+template <bool Linearized, typename ArgsTransform = void,
+          typename BoundaryConditionClasses = tmpl::list<>, size_t Dim,
+          typename DbTagsList, typename MapKeys, typename... FieldsAndFluxes>
 void apply_boundary_condition(
-    const elliptic::BoundaryConditions::BoundaryCondition<Dim, Registrars>&
+    const elliptic::BoundaryConditions::BoundaryCondition<Dim>&
         boundary_condition,
     const db::DataBox<DbTagsList>& box, const MapKeys& map_keys_to_direction,
     const gsl::not_null<FieldsAndFluxes*>... fields_and_fluxes) {
-  call_with_dynamic_type<
-      void, typename elliptic::BoundaryConditions::BoundaryCondition<
-                Dim, Registrars>::creatable_classes>(
+  using boundary_condition_classes =
+      typename detail::GetBoundaryConditionClasses<
+          elliptic::BoundaryConditions::BoundaryCondition<Dim>,
+          BoundaryConditionClasses, DbTagsList>::type;
+  call_with_dynamic_type<void, boundary_condition_classes>(
       &boundary_condition, [&map_keys_to_direction, &box,
                             &fields_and_fluxes...](const auto* const derived) {
         using Derived = std::decay_t<std::remove_pointer_t<decltype(derived)>>;

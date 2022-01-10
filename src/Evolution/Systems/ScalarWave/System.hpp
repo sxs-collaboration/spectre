@@ -45,9 +45,10 @@ struct System {
   static constexpr bool has_primitive_and_conservative_vars = false;
   static constexpr size_t volume_dim = Dim;
 
-  using variables_tag = ::Tags::Variables<tmpl::list<Pi, Phi<Dim>, Psi>>;
+  using variables_tag =
+      ::Tags::Variables<tmpl::list<Tags::Psi, Tags::Pi, Tags::Phi<Dim>>>;
   using flux_variables = tmpl::list<>;
-  using gradient_variables = tmpl::list<Pi, Phi<Dim>, Psi>;
+  using gradient_variables = tmpl::list<Tags::Psi, Tags::Pi, Tags::Phi<Dim>>;
 
   using compute_volume_time_derivative_terms = TimeDerivative<Dim>;
 

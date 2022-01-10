@@ -16,10 +16,10 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/SegmentId.hpp"
 #include "Domain/Tags.hpp"
-#include "Elliptic/Actions/RandomizeInitialGuess.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
+#include "ParallelAlgorithms/Actions/RandomizeVariables.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -29,9 +29,9 @@ struct ScalarFieldTag : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
 
-struct System {
-  using primal_fields = tmpl::list<ScalarFieldTag>;
-};
+using VariablesTag = ::Tags::Variables<tmpl::list<ScalarFieldTag>>;
+
+struct RandomizeVariables {};
 
 template <typename Metavariables>
 struct ElementArray {
@@ -46,20 +46,19 @@ struct ElementArray {
               tmpl::list<::Tags::Variables<tmpl::list<ScalarFieldTag>>>>>>,
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Testing,
-          tmpl::list<elliptic::Actions::RandomizeInitialGuess<
-              typename Metavariables::system>>>>;
+          tmpl::list<
+              Actions::RandomizeVariables<VariablesTag, RandomizeVariables>>>>;
 };
 
 struct Metavariables {
-  using system = System;
   using component_list = tmpl::list<ElementArray<Metavariables>>;
   using const_global_cache_tags = tmpl::list<>;
   enum class Phase { Initialization, Testing, Exit };
 };
 
-void test_randomize_initial_guess(
-    std::optional<typename elliptic::Actions::RandomizeInitialGuess<
-        System>::RandomParameters>
+void test_randomize_variables(
+    std::optional<typename Actions::RandomizeVariables<
+        VariablesTag, RandomizeVariables>::RandomParameters>
         params) {
   const DataVector used_for_size{5};
 
@@ -101,8 +100,8 @@ void test_randomize_initial_guess(
 
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Elliptic.Actions.RandomizeInitialGuess",
-                  "[Unit][Elliptic][Actions]") {
-  test_randomize_initial_guess({{1.e-2, std::nullopt}});
-  test_randomize_initial_guess(std::nullopt);
+SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.Actions.RandomizeVariables",
+                  "[Unit][ParallelAlgorithms][Actions]") {
+  test_randomize_variables({{1.e-2, std::nullopt}});
+  test_randomize_variables(std::nullopt);
 }

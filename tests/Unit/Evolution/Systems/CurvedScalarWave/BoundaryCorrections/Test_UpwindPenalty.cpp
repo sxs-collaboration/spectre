@@ -37,8 +37,8 @@ void test(const gsl::not_null<std::mt19937*> gen, const size_t num_pts) {
         "dg_package_data_v_plus", "dg_package_data_v_minus",
         "dg_package_data_gamma2", "dg_package_data_interface_unit_normal",
         "dg_package_data_char_speeds"}},
-      {{"dg_boundary_terms_pi", "dg_boundary_terms_phi",
-        "dg_boundary_terms_psi"}},
+      {{"dg_boundary_terms_psi", "dg_boundary_terms_pi",
+        "dg_boundary_terms_phi"}},
       CurvedScalarWave::BoundaryCorrections::UpwindPenalty<Dim>{},
       Mesh<Dim - 1>{num_pts, Spectral::Basis::Legendre,
                     Spectral::Quadrature::Gauss},
@@ -56,8 +56,8 @@ void test(const gsl::not_null<std::mt19937*> gen, const size_t num_pts) {
         "dg_package_data_v_plus", "dg_package_data_v_minus",
         "dg_package_data_gamma2", "dg_package_data_interface_unit_normal",
         "dg_package_data_char_speeds"}},
-      {{"dg_boundary_terms_pi", "dg_boundary_terms_phi",
-        "dg_boundary_terms_psi"}},
+      {{"dg_boundary_terms_psi", "dg_boundary_terms_pi",
+        "dg_boundary_terms_phi"}},
       dynamic_cast<
           const CurvedScalarWave::BoundaryCorrections::UpwindPenalty<Dim>&>(
           *upwind_penalty),
@@ -95,9 +95,9 @@ void test_flat_spacetime(const gsl::not_null<std::mt19937*> gen) {
   auto csw_normal_ext = tnsr::i<DataVector, Dim>(num_pts);
   auto csw_char_speeds_int = tnsr::a<DataVector, 3>(num_pts);
   auto csw_char_speeds_ext = tnsr::a<DataVector, 3>(num_pts);
+  auto csw_psi_bcorr = Scalar<DataVector>(num_pts);
   auto csw_pi_bcorr = Scalar<DataVector>(num_pts);
   auto csw_phi_bcorr = tnsr::i<DataVector, Dim>(num_pts);
-  auto csw_psi_bcorr = Scalar<DataVector>(num_pts);
 
   // variables for SW
   auto sw_char_speed_v_psi_int = Scalar<DataVector>(num_pts);
@@ -116,19 +116,19 @@ void test_flat_spacetime(const gsl::not_null<std::mt19937*> gen) {
   auto sw_char_speed_gamma2_v_psi_ext = Scalar<DataVector>(num_pts);
   auto sw_char_speeds_int = tnsr::i<DataVector, 3>(num_pts);
   auto sw_char_speeds_ext = tnsr::i<DataVector, 3>(num_pts);
+  auto sw_psi_bcorr = Scalar<DataVector>(num_pts);
   auto sw_pi_bcorr = Scalar<DataVector>(num_pts);
   auto sw_phi_bcorr = tnsr::i<DataVector, Dim>(num_pts);
-  auto sw_psi_bcorr = Scalar<DataVector>(num_pts);
 
   // For CSW & SW
+  // create psi
+  const auto psi = make_with_random_values<Scalar<DataVector>>(
+      gen, make_not_null(&uniform_m11_dist), x);
   // create pi
   const auto pi = make_with_random_values<Scalar<DataVector>>(
       gen, make_not_null(&uniform_m11_dist), x);
   // create phi
   const auto phi = make_with_random_values<tnsr::i<DataVector, Dim>>(
-      gen, make_not_null(&uniform_m11_dist), x);
-  // create psi
-  const auto psi = make_with_random_values<Scalar<DataVector>>(
       gen, make_not_null(&uniform_m11_dist), x);
   // create gamma2
   const Scalar<DataVector> gamma2(num_pts, 0.);
@@ -192,19 +192,19 @@ void test_flat_spacetime(const gsl::not_null<std::mt19937*> gen) {
       make_not_null(&csw_v_psi_int), make_not_null(&csw_v_zero_int),
       make_not_null(&csw_v_plus_int), make_not_null(&csw_v_minus_int),
       make_not_null(&csw_gamma2_int), make_not_null(&csw_normal_int),
-      make_not_null(&csw_char_speeds_int), pi, phi, psi, lapse, shift,
+      make_not_null(&csw_char_speeds_int), psi, pi, phi, lapse, shift,
       inverse_spatial_metric, gamma1, gamma2, normal_int, normal_vector_int,
       mesh_velocity, normal_dot_mesh_velociy_int);
   csw_flux_computer.dg_package_data(
       make_not_null(&csw_v_psi_ext), make_not_null(&csw_v_zero_ext),
       make_not_null(&csw_v_plus_ext), make_not_null(&csw_v_minus_ext),
       make_not_null(&csw_gamma2_ext), make_not_null(&csw_normal_ext),
-      make_not_null(&csw_char_speeds_ext), pi, phi, psi, lapse, shift,
+      make_not_null(&csw_char_speeds_ext), psi, pi, phi, lapse, shift,
       inverse_spatial_metric, gamma1, gamma2, normal_ext, normal_vector_ext,
       mesh_velocity, normal_dot_mesh_velociy_ext);
   csw_flux_computer.dg_boundary_terms(
-      make_not_null(&csw_pi_bcorr), make_not_null(&csw_phi_bcorr),
-      make_not_null(&csw_psi_bcorr), csw_v_psi_int, csw_v_zero_int,
+      make_not_null(&csw_psi_bcorr), make_not_null(&csw_pi_bcorr),
+      make_not_null(&csw_phi_bcorr), csw_v_psi_int, csw_v_zero_int,
       csw_v_plus_int, csw_v_minus_int, csw_gamma2_int, csw_normal_int,
       csw_char_speeds_int, csw_v_psi_ext, csw_v_zero_ext, csw_v_plus_ext,
       csw_v_minus_ext, csw_gamma2_ext, csw_normal_ext, csw_char_speeds_ext,
@@ -219,7 +219,7 @@ void test_flat_spacetime(const gsl::not_null<std::mt19937*> gen) {
       make_not_null(&sw_char_speed_n_times_v_plus_int),
       make_not_null(&sw_char_speed_n_times_v_minus_int),
       make_not_null(&sw_char_speed_gamma2_v_psi_int),
-      make_not_null(&sw_char_speeds_int), pi, phi, psi, gamma2, normal_int,
+      make_not_null(&sw_char_speeds_int), psi, pi, phi, gamma2, normal_int,
       mesh_velocity, normal_dot_mesh_velociy_int);
   sw_flux_computer.dg_package_data(
       make_not_null(&sw_char_speed_v_psi_ext),
@@ -229,11 +229,11 @@ void test_flat_spacetime(const gsl::not_null<std::mt19937*> gen) {
       make_not_null(&sw_char_speed_n_times_v_plus_ext),
       make_not_null(&sw_char_speed_n_times_v_minus_ext),
       make_not_null(&sw_char_speed_gamma2_v_psi_ext),
-      make_not_null(&sw_char_speeds_ext), pi, phi, psi, gamma2, normal_ext,
+      make_not_null(&sw_char_speeds_ext), psi, pi, phi, gamma2, normal_ext,
       mesh_velocity, normal_dot_mesh_velociy_ext);
   sw_flux_computer.dg_boundary_terms(
-      make_not_null(&sw_pi_bcorr), make_not_null(&sw_phi_bcorr),
-      make_not_null(&sw_psi_bcorr), sw_char_speed_v_psi_int,
+      make_not_null(&sw_psi_bcorr), make_not_null(&sw_pi_bcorr),
+      make_not_null(&sw_phi_bcorr), sw_char_speed_v_psi_int,
       sw_char_speed_v_zero_int, sw_char_speed_v_plus_int,
       sw_char_speed_v_minus_int, sw_char_speed_n_times_v_plus_int,
       sw_char_speed_n_times_v_minus_int, sw_char_speed_gamma2_v_psi_int,
@@ -243,9 +243,9 @@ void test_flat_spacetime(const gsl::not_null<std::mt19937*> gen) {
       sw_char_speed_gamma2_v_psi_ext, sw_char_speeds_ext,
       dg::Formulation::StrongInertial);
 
+  CHECK_ITERABLE_APPROX(sw_psi_bcorr, csw_psi_bcorr);
   CHECK_ITERABLE_APPROX(sw_pi_bcorr, csw_pi_bcorr);
   CHECK_ITERABLE_APPROX(sw_phi_bcorr, csw_phi_bcorr);
-  CHECK_ITERABLE_APPROX(sw_psi_bcorr, csw_psi_bcorr);
 }
 }  // namespace
 

@@ -132,33 +132,36 @@ class ConstraintPreservingSphericalRadiation final
 
   void pup(PUP::er& p) override;
 
-  using dg_interior_evolved_variables_tags = tmpl::list<Phi<Dim>, Psi>;
+  using dg_interior_evolved_variables_tags =
+      tmpl::list<Tags::Psi, Tags::Phi<Dim>>;
   using dg_interior_temporary_tags =
       tmpl::list<domain::Tags::Coordinates<Dim, Frame::Inertial>,
                  Tags::ConstraintGamma1, Tags::ConstraintGamma2,
                  gr::Tags::Lapse<DataVector>,
                  gr::Tags::Shift<Dim, Frame::Inertial, DataVector>>;
   using dg_interior_dt_vars_tags =
-      tmpl::list<::Tags::dt<Pi>, ::Tags::dt<Phi<Dim>>, ::Tags::dt<Psi>>;
-  using dg_interior_deriv_vars_tags =
-      tmpl::list<::Tags::deriv<Psi, tmpl::size_t<Dim>, Frame::Inertial>,
-                 ::Tags::deriv<Phi<Dim>, tmpl::size_t<Dim>, Frame::Inertial>>;
+      tmpl::list<::Tags::dt<Tags::Psi>, ::Tags::dt<Tags::Pi>,
+                 ::Tags::dt<Tags::Phi<Dim>>>;
+  using dg_interior_deriv_vars_tags = tmpl::list<
+      ::Tags::deriv<Tags::Psi, tmpl::size_t<Dim>, Frame::Inertial>,
+      ::Tags::deriv<Tags::Phi<Dim>, tmpl::size_t<Dim>, Frame::Inertial>>;
   using dg_gridless_tags = tmpl::list<>;
 
   std::optional<std::string> dg_time_derivative(
+      gsl::not_null<Scalar<DataVector>*> dt_psi_correction,
       gsl::not_null<Scalar<DataVector>*> dt_pi_correction,
       gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*>
           dt_phi_correction,
-      gsl::not_null<Scalar<DataVector>*> dt_psi_correction,
       const std::optional<tnsr::I<DataVector, Dim>>& face_mesh_velocity,
       const tnsr::i<DataVector, Dim>& normal_covector,
       const tnsr::I<DataVector, Dim>& normal_vector,
-      const tnsr::i<DataVector, Dim>& phi, const Scalar<DataVector>& psi,
+      const Scalar<DataVector>& psi, const tnsr::i<DataVector, Dim>& phi,
       const tnsr::I<DataVector, Dim, Frame::Inertial>& coords,
       const Scalar<DataVector>& gamma1, const Scalar<DataVector>& gamma2,
       const Scalar<DataVector>& lapse, const tnsr::I<DataVector, Dim>& shift,
-      const Scalar<DataVector>& dt_pi, const tnsr::i<DataVector, Dim>& dt_phi,
-      const Scalar<DataVector>& dt_psi, const tnsr::i<DataVector, Dim>& d_psi,
+      const Scalar<DataVector>& dt_psi, const Scalar<DataVector>& dt_pi,
+      const tnsr::i<DataVector, Dim>& dt_phi,
+      const tnsr::i<DataVector, Dim>& d_psi,
       const tnsr::ij<DataVector, Dim>& d_phi) const;
 };
 }  // namespace CurvedScalarWave::BoundaryConditions

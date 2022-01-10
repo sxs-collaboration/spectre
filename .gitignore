@@ -12,6 +12,11 @@ compile_commands.json
 .idea
 /.devcontainer
 
+# Spack
+/support/spack/
+.spack-env
+/support/DevEnvironments/spack.lock
+
 # Temporary files
 *~
 *.swp

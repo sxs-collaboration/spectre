@@ -10,9 +10,9 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 
-namespace Elasticity::BoundaryConditions::detail {
+namespace Elasticity::BoundaryConditions {
 
-void LaserBeamImpl::apply(
+void LaserBeam::apply(
     const gsl::not_null<tnsr::I<DataVector, 3>*> /*displacement*/,
     const gsl::not_null<tnsr::I<DataVector, 3>*> n_dot_minus_stress,
     const tnsr::I<DataVector, 3>& x,
@@ -29,7 +29,7 @@ void LaserBeamImpl::apply(
   get<2>(*n_dot_minus_stress) = -beam_profile * get<2>(face_normal);
 }
 
-void LaserBeamImpl::apply_linearized(
+void LaserBeam::apply_linearized(
     const gsl::not_null<tnsr::I<DataVector, 3>*> /*displacement*/,
     const gsl::not_null<tnsr::I<DataVector, 3>*> n_dot_minus_stress) {
   get<0>(*n_dot_minus_stress) = 0.;
@@ -37,12 +37,14 @@ void LaserBeamImpl::apply_linearized(
   get<2>(*n_dot_minus_stress) = 0.;
 }
 
-bool operator==(const LaserBeamImpl& lhs, const LaserBeamImpl& rhs) {
+bool operator==(const LaserBeam& lhs, const LaserBeam& rhs) {
   return lhs.beam_width() == rhs.beam_width();
 }
 
-bool operator!=(const LaserBeamImpl& lhs, const LaserBeamImpl& rhs) {
+bool operator!=(const LaserBeam& lhs, const LaserBeam& rhs) {
   return not(lhs == rhs);
 }
 
-}  // namespace Elasticity::BoundaryConditions::detail
+PUP::able::PUP_ID LaserBeam::my_PUP_ID = 0;  // NOLINT
+
+}  // namespace Elasticity::BoundaryConditions

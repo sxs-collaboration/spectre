@@ -122,7 +122,8 @@ EXCLUDE_SYMBOLS        = charm_init_*                                 \
                          YAML*
 
 EXAMPLE_PATH           = @PROJECT_SOURCE_DIR@/tests/ \
-                         @PROJECT_SOURCE_DIR@/src/Executables/Examples/
+                         @PROJECT_SOURCE_DIR@/src/Executables/Examples/ \
+                         @PROJECT_SOURCE_DIR@/support/DevEnvironments/spack.yaml
 
 EXAMPLE_PATTERNS       =
 

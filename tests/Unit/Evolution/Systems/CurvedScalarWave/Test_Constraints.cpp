@@ -62,15 +62,15 @@ void test_constraint_compute_items(const DataVector& used_for_size) {
   // Insert into databox
   const auto box = db::create<
       db::AddSimpleTags<
-          CurvedScalarWave::Phi<SpatialDim>,
-          ::Tags::deriv<CurvedScalarWave::Phi<SpatialDim>,
-                        tmpl::size_t<SpatialDim>, Frame::Inertial>,
-          ::Tags::deriv<CurvedScalarWave::Psi, tmpl::size_t<SpatialDim>,
-                        Frame::Inertial>>,
+          CurvedScalarWave::Tags::Phi<SpatialDim>,
+          ::Tags::deriv<CurvedScalarWave::Tags::Psi, tmpl::size_t<SpatialDim>,
+                        Frame::Inertial>,
+          ::Tags::deriv<CurvedScalarWave::Tags::Phi<SpatialDim>,
+                        tmpl::size_t<SpatialDim>, Frame::Inertial>>,
       db::AddComputeTags<
           CurvedScalarWave::Tags::OneIndexConstraintCompute<SpatialDim>,
           CurvedScalarWave::Tags::TwoIndexConstraintCompute<SpatialDim>>>(
-      phi, d_phi, d_psi);
+      phi, d_psi, d_phi);
 
   // Check compute tag against locally computed quantities
   CHECK(db::get<CurvedScalarWave::Tags::OneIndexConstraint<SpatialDim>>(box) ==

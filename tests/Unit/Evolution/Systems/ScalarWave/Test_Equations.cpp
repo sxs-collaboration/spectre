@@ -62,14 +62,14 @@ void check_normal_dot_fluxes(const size_t npts, const double t) {
     unit_normal.get(d) = x.get(d);
   }
 
-  auto normal_dot_flux_pi = make_with_value<Scalar<DataVector>>(pi, 0.0);
   auto normal_dot_flux_psi = make_with_value<Scalar<DataVector>>(pi, 0.0);
+  auto normal_dot_flux_pi = make_with_value<Scalar<DataVector>>(pi, 0.0);
   auto normal_dot_flux_phi =
       make_with_value<tnsr::i<DataVector, Dim, Frame::Inertial>>(pi, 0.0);
 
   ScalarWave::ComputeNormalDotFluxes<Dim>::apply(
-      make_not_null(&normal_dot_flux_pi), make_not_null(&normal_dot_flux_phi),
-      make_not_null(&normal_dot_flux_psi), pi);
+      make_not_null(&normal_dot_flux_psi), make_not_null(&normal_dot_flux_pi),
+      make_not_null(&normal_dot_flux_phi), pi);
 
   const DataVector expected_normal_dot_fluxes{pow<Dim>(npts), 0.0};
   CHECK(get(normal_dot_flux_psi) == expected_normal_dot_fluxes);

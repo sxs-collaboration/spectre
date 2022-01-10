@@ -9,7 +9,6 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Parallel/CharmPupable.hpp"
-#include "Utilities/Registration.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace elliptic {
@@ -87,14 +86,13 @@ namespace BoundaryConditions {
  * linearly on the field data, since these are the fields the linearization is
  * performed for.
  */
-template <size_t Dim, typename Registrars>
+template <size_t Dim>
 class BoundaryCondition : public domain::BoundaryConditions::BoundaryCondition {
  private:
   using Base = domain::BoundaryConditions::BoundaryCondition;
 
  public:
   static constexpr size_t volume_dim = Dim;
-  using registrars = Registrars;
 
   BoundaryCondition() = default;
   BoundaryCondition(const BoundaryCondition&) = default;
@@ -107,8 +105,6 @@ class BoundaryCondition : public domain::BoundaryConditions::BoundaryCondition {
   explicit BoundaryCondition(CkMigrateMessage* m) : Base(m) {}
   WRAPPED_PUPable_abstract(BoundaryCondition);  // NOLINT
   /// \endcond
-
-  using creatable_classes = Registration::registrants<registrars>;
 };
 
 }  // namespace BoundaryConditions

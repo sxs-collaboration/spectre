@@ -52,18 +52,18 @@ template <size_t Dim>
 struct ComputeNormalDotFluxes {
  public:
   using argument_tags =
-      tmpl::list<Pi, Phi<Dim>, Psi, Tags::ConstraintGamma1,
+      tmpl::list<Tags::Psi, Tags::Pi, Tags::Phi<Dim>, Tags::ConstraintGamma1,
                  Tags::ConstraintGamma2, gr::Tags::Lapse<>,
                  gr::Tags::Shift<Dim>, gr::Tags::InverseSpatialMetric<Dim>,
                  ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<
                      Dim, Frame::Inertial>>>;
 
   static void apply(
+      gsl::not_null<Scalar<DataVector>*> psi_normal_dot_flux,
       gsl::not_null<Scalar<DataVector>*> pi_normal_dot_flux,
       gsl::not_null<tnsr::i<DataVector, Dim>*> phi_normal_dot_flux,
-      gsl::not_null<Scalar<DataVector>*> psi_normal_dot_flux,
-      const Scalar<DataVector>& pi, const tnsr::i<DataVector, Dim>& phi,
-      const Scalar<DataVector>& psi, const Scalar<DataVector>& gamma1,
+      const Scalar<DataVector>& psi, const Scalar<DataVector>& pi,
+      const tnsr::i<DataVector, Dim>& phi, const Scalar<DataVector>& gamma1,
       const Scalar<DataVector>& gamma2, const Scalar<DataVector>& lapse,
       const tnsr::I<DataVector, Dim>& shift,
       const tnsr::II<DataVector, Dim>& inverse_spatial_metric,

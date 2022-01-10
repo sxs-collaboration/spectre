@@ -7,14 +7,13 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 
-namespace CurvedScalarWave {
+/// \brief Tags for the curved scalar wave system
+namespace CurvedScalarWave::Tags {
 struct Psi;
 struct Pi;
 template <size_t Dim>
 struct Phi;
 
-/// \brief Tags for the curved scalar wave system
-namespace Tags {
 struct ConstraintGamma1;
 struct ConstraintGamma2;
 
@@ -31,5 +30,4 @@ template <size_t Dim>
 struct CharacteristicFields;
 template <size_t Dim>
 struct EvolvedFieldsFromCharacteristicFields;
-}  // namespace Tags
-}  // namespace CurvedScalarWave
+}  // namespace CurvedScalarWave::Tags

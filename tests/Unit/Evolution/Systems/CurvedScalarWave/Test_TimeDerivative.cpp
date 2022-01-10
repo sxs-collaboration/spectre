@@ -86,8 +86,8 @@ Scalar<DataVector> make_trace_extrinsic_curvature(
 }
 
 template <size_t Dim>
-Variables<tmpl::list<CurvedScalarWave::Psi, CurvedScalarWave::Pi,
-                     CurvedScalarWave::Phi<Dim>>>
+Variables<tmpl::list<CurvedScalarWave::Tags::Psi, CurvedScalarWave::Tags::Pi,
+                     CurvedScalarWave::Tags::Phi<Dim>>>
 calculate_du_dt(const DataVector& used_for_size) {
   auto dt_psi = make_with_value<Scalar<DataVector>>(used_for_size, 0.);
   auto dt_pi = make_with_value<Scalar<DataVector>>(used_for_size, 0.);
@@ -102,11 +102,11 @@ calculate_du_dt(const DataVector& used_for_size) {
   auto r_gamma1 = make_with_value<Scalar<DataVector>>(used_for_size, 0.);
   auto r_gamma2 = make_with_value<Scalar<DataVector>>(used_for_size, 0.);
   CurvedScalarWave::TimeDerivative<Dim>::apply(
-      make_not_null(&dt_pi), make_not_null(&dt_phi), make_not_null(&dt_psi),
+      make_not_null(&dt_psi), make_not_null(&dt_pi), make_not_null(&dt_phi),
       make_not_null(&r_lapse), make_not_null(&r_shift),
       make_not_null(&r_inv_spatial_metric), make_not_null(&r_gamma1),
-      make_not_null(&r_gamma2), make_d_pi<Dim>(used_for_size),
-      make_d_phi<Dim>(used_for_size), make_d_psi<Dim>(used_for_size),
+      make_not_null(&r_gamma2), make_d_psi<Dim>(used_for_size),
+      make_d_pi<Dim>(used_for_size), make_d_phi<Dim>(used_for_size),
       make_pi(used_for_size), make_phi<Dim>(used_for_size),
       make_lapse(used_for_size), make_shift<Dim>(used_for_size),
       make_deriv_lapse<Dim>(used_for_size),
@@ -116,13 +116,13 @@ calculate_du_dt(const DataVector& used_for_size) {
       make_trace_extrinsic_curvature(used_for_size),
       make_constraint_gamma1(used_for_size),
       make_constraint_gamma2(used_for_size));
-  Variables<tmpl::list<CurvedScalarWave::Psi, CurvedScalarWave::Pi,
-                       CurvedScalarWave::Phi<Dim>>>
+  Variables<tmpl::list<CurvedScalarWave::Tags::Psi, CurvedScalarWave::Tags::Pi,
+                       CurvedScalarWave::Tags::Phi<Dim>>>
       vars(used_for_size.size(), 0.);
 
-  get<CurvedScalarWave::Psi>(vars) = dt_psi;
-  get<CurvedScalarWave::Pi>(vars) = dt_pi;
-  get<CurvedScalarWave::Phi<Dim>>(vars) = dt_phi;
+  get<CurvedScalarWave::Tags::Psi>(vars) = dt_psi;
+  get<CurvedScalarWave::Tags::Pi>(vars) = dt_pi;
+  get<CurvedScalarWave::Tags::Phi<Dim>>(vars) = dt_phi;
   return vars;
 }
 template <size_t Dim>
@@ -131,9 +131,9 @@ void check_du_dt(const DataVector& used_for_size);
 template <>
 void check_du_dt<1>(const DataVector& used_for_size) {
   const auto vars = calculate_du_dt<1>(used_for_size);
-  const auto& dt_psi = get<CurvedScalarWave::Psi>(vars);
-  const auto& dt_pi = get<CurvedScalarWave::Pi>(vars);
-  const auto& dt_phi = get<CurvedScalarWave::Phi<1>>(vars);
+  const auto& dt_psi = get<CurvedScalarWave::Tags::Psi>(vars);
+  const auto& dt_pi = get<CurvedScalarWave::Tags::Pi>(vars);
+  const auto& dt_phi = get<CurvedScalarWave::Tags::Phi<1>>(vars);
   CHECK_ITERABLE_APPROX(dt_psi.get(), (DataVector{used_for_size.size(), 5.3}));
   CHECK_ITERABLE_APPROX(dt_pi.get(), (DataVector{used_for_size.size(), -22.5}));
   CHECK_ITERABLE_APPROX(dt_phi.get(0), (DataVector{used_for_size.size(), 4.}));
@@ -141,9 +141,9 @@ void check_du_dt<1>(const DataVector& used_for_size) {
 template <>
 void check_du_dt<2>(const DataVector& used_for_size) {
   const auto vars = calculate_du_dt<2>(used_for_size);
-  const auto& dt_psi = get<CurvedScalarWave::Psi>(vars);
-  const auto& dt_pi = get<CurvedScalarWave::Pi>(vars);
-  const auto& dt_phi = get<CurvedScalarWave::Phi<2>>(vars);
+  const auto& dt_psi = get<CurvedScalarWave::Tags::Psi>(vars);
+  const auto& dt_pi = get<CurvedScalarWave::Tags::Pi>(vars);
+  const auto& dt_phi = get<CurvedScalarWave::Tags::Phi<2>>(vars);
   CHECK_ITERABLE_APPROX(dt_psi.get(), (DataVector{used_for_size.size(), 68.3}));
   CHECK_ITERABLE_APPROX(dt_pi.get(),
                         (DataVector{used_for_size.size(), -272.15}));
@@ -155,9 +155,9 @@ void check_du_dt<2>(const DataVector& used_for_size) {
 template <>
 void check_du_dt<3>(const DataVector& used_for_size) {
   const auto vars = calculate_du_dt<3>(used_for_size);
-  const auto& dt_psi = get<CurvedScalarWave::Psi>(vars);
-  const auto& dt_pi = get<CurvedScalarWave::Pi>(vars);
-  const auto& dt_phi = get<CurvedScalarWave::Phi<3>>(vars);
+  const auto& dt_psi = get<CurvedScalarWave::Tags::Psi>(vars);
+  const auto& dt_pi = get<CurvedScalarWave::Tags::Pi>(vars);
+  const auto& dt_phi = get<CurvedScalarWave::Tags::Phi<3>>(vars);
   CHECK_ITERABLE_APPROX(dt_psi.get(),
                         (DataVector{used_for_size.size(), 255.8}));
   CHECK_ITERABLE_APPROX(dt_pi.get(),

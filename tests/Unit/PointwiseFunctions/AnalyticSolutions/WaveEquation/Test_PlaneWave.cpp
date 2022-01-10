@@ -102,43 +102,45 @@ void check_solution(
   }
 
   CHECK_ITERABLE_APPROX(
-      get<ScalarWave::Psi>(
+      get<ScalarWave::Tags::Psi>(
           pw.variables(x, t,
-                       tmpl::list<ScalarWave::Pi, ScalarWave::Phi<DimSolution>,
-                                  ScalarWave::Psi>{})),
+                       tmpl::list<ScalarWave::Tags::Psi, ScalarWave::Tags::Pi,
+                                  ScalarWave::Tags::Phi<DimSolution>>{})),
       pw.psi(x, t));
   CHECK_ITERABLE_APPROX(
-      get<ScalarWave::Phi<DimSolution>>(
+      get<ScalarWave::Tags::Phi<DimSolution>>(
           pw.variables(x, t,
-                       tmpl::list<ScalarWave::Pi, ScalarWave::Phi<DimSolution>,
-                                  ScalarWave::Psi>{})),
+                       tmpl::list<ScalarWave::Tags::Psi, ScalarWave::Tags::Pi,
+                                  ScalarWave::Tags::Phi<DimSolution>>{})),
       pw.dpsi_dx(x, t));
   CHECK_ITERABLE_APPROX(
-      get<ScalarWave::Pi>(
+      get<ScalarWave::Tags::Pi>(
           pw.variables(x, t,
-                       tmpl::list<ScalarWave::Pi, ScalarWave::Phi<DimSolution>,
-                                  ScalarWave::Psi>{})),
+                       tmpl::list<ScalarWave::Tags::Psi, ScalarWave::Tags::Pi,
+                                  ScalarWave::Tags::Phi<DimSolution>>{})),
       Scalar<DataVector>(-1.0 * pw.dpsi_dt(x, t).get()));
 
-  CHECK_ITERABLE_APPROX(get<Tags::dt<ScalarWave::Psi>>(pw.variables(
-                            x, t,
-                            tmpl::list<Tags::dt<ScalarWave::Pi>,
-                                       Tags::dt<ScalarWave::Phi<DimSolution>>,
-                                       Tags::dt<ScalarWave::Psi>>{})),
-                        pw.dpsi_dt(x, t));
   CHECK_ITERABLE_APPROX(
-      get<Tags::dt<ScalarWave::Phi<DimSolution>>>(
-          pw.variables(x, t,
-                       tmpl::list<Tags::dt<ScalarWave::Pi>,
-                                  Tags::dt<ScalarWave::Phi<DimSolution>>,
-                                  Tags::dt<ScalarWave::Psi>>{})),
+      get<Tags::dt<ScalarWave::Tags::Psi>>(pw.variables(
+          x, t,
+          tmpl::list<Tags::dt<ScalarWave::Tags::Psi>,
+                     Tags::dt<ScalarWave::Tags::Pi>,
+                     Tags::dt<ScalarWave::Tags::Phi<DimSolution>>>{})),
+      pw.dpsi_dt(x, t));
+  CHECK_ITERABLE_APPROX(
+      get<Tags::dt<ScalarWave::Tags::Phi<DimSolution>>>(pw.variables(
+          x, t,
+          tmpl::list<Tags::dt<ScalarWave::Tags::Psi>,
+                     Tags::dt<ScalarWave::Tags::Pi>,
+                     Tags::dt<ScalarWave::Tags::Phi<DimSolution>>>{})),
       pw.d2psi_dtdx(x, t));
-  CHECK_ITERABLE_APPROX(get<Tags::dt<ScalarWave::Pi>>(pw.variables(
-                            x, t,
-                            tmpl::list<Tags::dt<ScalarWave::Pi>,
-                                       Tags::dt<ScalarWave::Phi<DimSolution>>,
-                                       Tags::dt<ScalarWave::Psi>>{})),
-                        Scalar<DataVector>(-1.0 * pw.d2psi_dt2(x, t).get()));
+  CHECK_ITERABLE_APPROX(
+      get<Tags::dt<ScalarWave::Tags::Pi>>(pw.variables(
+          x, t,
+          tmpl::list<Tags::dt<ScalarWave::Tags::Psi>,
+                     Tags::dt<ScalarWave::Tags::Pi>,
+                     Tags::dt<ScalarWave::Tags::Phi<DimSolution>>>{})),
+      Scalar<DataVector>(-1.0 * pw.d2psi_dt2(x, t).get()));
 }
 
 void test_1d() {
@@ -176,13 +178,13 @@ void test_1d() {
           "Profile:\n"
           "  PowX:\n"
           "    Power: 3");
-  CHECK(
-      created_solution.variables(
-          x, t,
-          tmpl::list<ScalarWave::Pi, ScalarWave::Phi<1>, ScalarWave::Psi>{}) ==
-      pw.variables(
-          x, t,
-          tmpl::list<ScalarWave::Pi, ScalarWave::Phi<1>, ScalarWave::Psi>{}));
+  CHECK(created_solution.variables(
+            x, t,
+            tmpl::list<ScalarWave::Tags::Psi, ScalarWave::Tags::Pi,
+                       ScalarWave::Tags::Phi<1>>{}) ==
+        pw.variables(x, t,
+                     tmpl::list<ScalarWave::Tags::Psi, ScalarWave::Tags::Pi,
+                                ScalarWave::Tags::Phi<1>>{}));
 }
 
 void test_2d() {
@@ -237,13 +239,13 @@ void test_2d() {
           "Profile:\n"
           "  PowX:\n"
           "    Power: 3");
-  CHECK(
-      created_solution.variables(
-          x, t,
-          tmpl::list<ScalarWave::Pi, ScalarWave::Phi<2>, ScalarWave::Psi>{}) ==
-      pw.variables(
-          x, t,
-          tmpl::list<ScalarWave::Pi, ScalarWave::Phi<2>, ScalarWave::Psi>{}));
+  CHECK(created_solution.variables(
+            x, t,
+            tmpl::list<ScalarWave::Tags::Psi, ScalarWave::Tags::Pi,
+                       ScalarWave::Tags::Phi<2>>{}) ==
+        pw.variables(x, t,
+                     tmpl::list<ScalarWave::Tags::Psi, ScalarWave::Tags::Pi,
+                                ScalarWave::Tags::Phi<2>>{}));
 }
 
 void test_3d() {
@@ -316,13 +318,13 @@ void test_3d() {
           "Profile:\n"
           "  PowX:\n"
           "    Power: 3");
-  CHECK(
-      created_solution.variables(
-          x, t,
-          tmpl::list<ScalarWave::Pi, ScalarWave::Phi<3>, ScalarWave::Psi>{}) ==
-      pw.variables(
-          x, t,
-          tmpl::list<ScalarWave::Pi, ScalarWave::Phi<3>, ScalarWave::Psi>{}));
+  CHECK(created_solution.variables(
+            x, t,
+            tmpl::list<ScalarWave::Tags::Psi, ScalarWave::Tags::Pi,
+                       ScalarWave::Tags::Phi<3>>{}) ==
+        pw.variables(x, t,
+                     tmpl::list<ScalarWave::Tags::Psi, ScalarWave::Tags::Pi,
+                                ScalarWave::Tags::Phi<3>>{}));
 }
 }  // namespace
 

@@ -79,6 +79,16 @@ all of these dependencies.
   graph partition based load balancer in charm++.
 * [ffmpeg](https://www.ffmpeg.org/) - for animating 1d simulations with matplotlib
 
+## Clone the SpECTRE repository
+
+First, clone the [SpECTRE repository](https://github.com/sxs-collaboration/spectre)
+to a directory of your choice. In the following we will refer to it as
+SPECTRE_ROOT. You may `git clone` from GitHub, in which case SPECTRE_ROOT will
+be `<your_current_directory>/spectre`. That is, inside SPECTRE_ROOT are `docs`,
+`src`, `support`, `tests` etc. You can also download the source and extract them
+to your desired working directory, making sure not to leave out hidden files
+when you `cp` or `mv` the source files.
+
 ## Using Docker to obtain a SpECTRE environment
 
 A [Docker](https://www.docker.com/) image is available from
@@ -97,20 +107,13 @@ OS. If you receive errors that you do not have permission to access a shared
 directory it is likely that your system has SELinux enabled. One option is to
 disable SELinux at the expense of reducing the security of your system.
 
-To build with the docker image:
+To build with the Docker image:
 
-1. Clone SpECTRE into SPECTRE_ROOT, a directory of your choice.
-   You may `git clone` the [SpECTRE
-   repository](https://github.com/sxs-collaboration/spectre) on GitHub, in which
-   case SPECTRE_ROOT will be `<your_current_directory>/spectre`. That is, inside
-   SPECTRE_ROOT are `docs`, `src`, `support`, `tests` etc. You can also download
-   the source and extract them to your desired working directory. Make sure not
-   to leave out hidden files when you `cp` or `mv` the source files!
-2. Retrieve the docker image (you may need `sudo` in front of this command)
+1. Retrieve the Docker image (you may need `sudo` in front of this command)
    ```
    docker pull sxscollaboration/spectrebuildenv:latest
    ```
-3. Start the docker container (you may need `sudo`)
+2. Start the Docker container (you may need `sudo`)
    ```
    docker run -v SPECTRE_ROOT:SPECTRE_ROOT --name CONTAINER_NAME \
               -i -t sxscollaboration/spectrebuildenv:latest /bin/bash
@@ -140,28 +143,7 @@ To build with the docker image:
    Within the container, the files in SPECTRE_ROOT are available and Charm++ is
    installed in `/work/charm_6_10_2`. For the following steps, stay inside the
    docker container as root.
-4. Make a build directory somewhere inside the container, e.g.
-   `/work/spectre-build-gcc`, and `cd` into it.
-5. Build SpECTRE with
-   ```
-   cmake -D CMAKE_Fortran_COMPILER=gfortran-8 \
-         -D CHARM_ROOT=/work/charm_6_10_2/multicore-linux-x86_64-gcc
-         SPECTRE_ROOT
-   ```
-   To build with clang, the CMake command is
-   ```
-   cmake -D CMAKE_CXX_COMPILER=clang++ \
-         -D CMAKE_C_COMPILER=clang \
-         -D CMAKE_Fortran_COMPILER=gfortran-8 \
-         -D CHARM_ROOT=/work/charm_6_10_2/multicore-linux-x86_64-clang
-         SPECTRE_ROOT
-   ```
-   When cmake configuration is done, you are ready to build target executables.
-   Compile unit tests with `make unit-tests -jN` where `N` is the number of
-   cores to build on in parallel (e.g. `-j4`).
-   * You can see the list of available targets by running `make list`.
-   * Run `make test-executables -jN` to compile the test executables, and
-     `ctest` to run the tests.
+3. Proceed with [building SpECTRE](#building-spectre).
 
 **Notes:**
   * Everything in your build directory is owned by root, and is
@@ -170,8 +152,7 @@ To build with the docker image:
     outside the container, and use the container only for compiling and
     running the code.
   * If you exit the container (e.g. ctrl-d),
-    your compilation directories are still saved, as is the patch
-    that you have applied to `/work/charm_6_10_2` and any other changes to
+    your compilation directories are still saved, as are any other changes to
     the container that you have made.
     To restart the container, try the following commands
     (you may need `sudo`):
@@ -196,12 +177,6 @@ To build with the docker image:
     if your source paths inside and outside the container are different,
     commands like `git commit` run *from outside the container* will die with
     `No such file or directory`.
-  * To compile the Python bindings, add the option
-    `-D BUILD_PYTHON_BINDINGS=ON` to the `cmake` command (see
-    \ref spectre_writing_python_bindings). You can specify the Python version,
-    interpreter and libraries used for compiling and testing the bindings by
-    setting the `-D Python_EXECUTABLE` to an absolute path such as
-    `/usr/bin/python3`.
 
 ## Using Singularity to obtain a SpECTRE environment
 
@@ -235,27 +210,7 @@ To build SpECTRE with Singularity you must:
    using `sudo`.
 4. To start the container run `singularity shell spectre.img` and you
    will be dropped into a bash shell.
-5. `cd` into SPECTRE_ROOT and run `mkdir build && cd build` to set up a build
-   directory.
-6. To build SpECTRE, run
-   ```
-   cmake -D CMAKE_Fortran_COMPILER=gfortran-8 \
-         -D CHARM_ROOT=/work/charm_6_10_2/multicore-linux-x86_64-gcc
-         SPECTRE_ROOT
-   ```
-   To build with clang, the CMake command is
-   ```
-    cmake -D CMAKE_CXX_COMPILER=clang++ \
-          -D CMAKE_C_COMPILER=clang \
-          -D CMAKE_Fortran_COMPILER=gfortran-8 \
-          -D CHARM_ROOT=/work/charm_6_10_2/multicore-linux-x86_64-clang
-          SPECTRE_ROOT
-   ```
-   Compile unit tests with `make unit-tests -jN` where `N` is the number of
-   cores to build on in parallel (e.g. `-j4`).
-   * You can see the list of available targets by running `make list`.
-   * Run `make test-executables -jN` to compile the test executables, and
-     `ctest` to run the tests.
+5. Proceed with [building SpECTRE](#building-spectre).
 
 **Notes:**
 - You should edit source files in SPECTRE_ROOT in a separate terminal
@@ -266,7 +221,7 @@ To build SpECTRE with Singularity you must:
   with git hooks. The Singularity container uses python3.8 by default. Thus, it
   is up to the user to ensure that they are using the same Python version inside
   and outside the container. To use a different Python version in the container
-  add `-D Python_EXECUTABLE=/path/to/python` to the cmake command above where
+  add `-D Python_EXECUTABLE=/path/to/python` to the cmake command where
   `/path/to/python` is usually `/usr/bin/pythonX` and `X` is the version you
   want.
 - Unlike Docker, Singularity does not keep the state between runs. However, it
@@ -281,130 +236,116 @@ To build SpECTRE with Singularity you must:
 ## Using Spack to set up a SpECTRE environment
 
 SpECTRE's dependencies can be installed with
-[Spack](https://github.com/LLNL/spack), a package manager tailored for HPC use.
-Install Spack by cloning it into `SPACK_DIR` (a directory of your choice),
-then add `SPACK_DIR/bin` to your `PATH`.
+[Spack](https://github.com/spack/spack), a package manager tailored for HPC use.
+[Install Spack](https://spack.readthedocs.io/en/latest/getting_started.html) by
+cloning it into `SPACK_DIR` (a directory of your choice). Then, enable Spack's
+shell support with `source SPACK_DIR/share/spack/setup-env.sh`. Consider adding
+this line to your `.bash_profile`, `.bashrc`, or similar. Refer to [Spack's
+getting started guide](https://spack.readthedocs.io/en/latest/getting_started.html)
+for more information.
 
-For security, it is good practice to make Spack use the system's OpenSSL
-rather than allow it to install a new copy — see Spack's documentation for
-[instructions](https://spack.readthedocs.io/en/latest/getting_started.html#openssl).
-You may need to install the development version of OpenSSL:
-* On Ubuntu (16.04), run `sudo apt-get install libssl-dev`
-* On Fedora (27), run `sudo dnf install openssl-devel`
+Once you have Spack installed, one way to install the SpECTRE dependencies is
+with a [Spack environment](https://spack.readthedocs.io/en/latest/environments.html):
 
-Spack works well with a module environment. We recommend
-[LMod](https://github.com/TACC/Lmod), which is available on many systems:
-* On macOS, install LMod from [brew](https://brew.sh/), then source the LMod
-  shell script by adding `. /usr/local/Cellar/lmod/YOUR_VERSION_NUMBER/init/sh`
-  to your `.bash_profile`.
-* On Ubuntu, run `sudo apt-get install -y lmod` and, for Ubuntu 17.04, add
-  `. /etc/profile.d/lmod.sh` to your `.bashrc`. For Ubuntu 16.04, the correct
-  path to add is `. /usr/share/lmod/lmod/init/bash`.
-* On Arch Linux, run `yaourt -Sy lmod` and add `. /etc/profile.d/lmod.sh` to
-  your `.bashrc`,
-* On Fedora/RHEL, GNU Environment Modules comes out-of-the-box and works equally
-  well.
-* Instructions for other Linux distros are available online.
+\include support/DevEnvironments/spack.yaml
 
-To use modules with Spack, enable Spack's shell support by adding
-`. SPACK_DIR/share/spack/setup-env.sh` to your `.bash_profile` or `.bashrc`.
+You can also install the Spack packages listed in the environment file above
+with a plain `spack install` if you prefer.
 
-Once you have Spack installed and configured with OpenSSL and LMod, you can
-install the SpECTRE dependencies using
-```
-spack install blaze@3.7
-spack install brigand@master
-spack install libsharp -openmp -mpi
-spack install catch2
-spack install gsl
-spack install jemalloc # or from your package manager
-spack install libxsmm
-spack install yaml-cpp@develop
-```
-You can also install CMake, OpenBLAS, Boost, and HDF5 from Spack.
-To load the packages you've installed from Spack run `spack load PACKAGE`,
-or (equivalently) use the `module load` command.
+**Notes:**
+- Spack allows very flexible configurations and we recommended you read the
+  [documentation](https://spack.readthedocs.io) if you require features such as
+  packages installed with different compilers.
+- For security, it is good practice to make Spack [use the system's
+  OpenSSL](https://spack.readthedocs.io/en/latest/getting_started.html#openssl)
+  rather than allow it to install a new copy.
+- To avoid reinstalling lots of system-provided packages with Spack, use the
+  `spack external find` feature and the `--reuse` flag to `spack concretize` (or
+  `spack install`). You can also install some of the dependencies with your
+  system's package manager in advance, e.g., with `apt` or `brew`. If they are
+  not picked up by `spack external find` automatically, register them with Spack
+  manually. See the [Spack documentation on external
+  packages](https://spack.readthedocs.io/en/latest/build_settings.html#external-packages)
+  for details.
+- Spack works well with a module environment, such as
+  [LMod](https://github.com/TACC/Lmod). See the [Spack documentation on
+  modules](https://spack.readthedocs.io/en/latest/module_file_support.html) for
+  details.
+- On macOS:
+  - Spack's Charm++ 6.10.2 installation is broken, so install `charmpp@7.0.0` or
+    [build Charm++ manually](#building-charm).
+  - Brigand has an issue with AppleClang 13 when compiling tests (see
+    https://github.com/edouarda/brigand/issues/274). Since it is header-only,
+    you can simply clone the [Brigand repository](https://github.com/edouarda/brigand)
+    instead of installing it with Spack.
 
-**Note**: Spack allows very flexible configurations and
-it is recommended you read the [documentation](https://spack.readthedocs.io) if
-you require features such as packages installed with different compilers.
+## Building Charm++ {#building-charm}
 
-**Note**: On a Mac, you may need to `spack install
-yaml-cpp@develop~shared` (note that is a tilde and not a dash in front
-of shared) in order to force the building of the static libraries in
-order to avoid dynamic linking errors.
+If you are not using a container, haven't installed Charm++ with Spack, or want
+to install Charm++ manually for other reasons, follow the installation
+instructions in the [Charm++ repository](https://github.com/UIUC-PPL/charm)
+and in their [documentation](https://charm.readthedocs.io/en/latest/quickstart.html#installing-charm).
+Here are a few notes:
 
-### Building SpECTRE
+- Once you cloned the [Charm++ repository](https://github.com/UIUC-PPL/charm),
+  run `git checkout v6.10.2` to switch to a supported, stable release of
+  Charm++.
+- Choose the `LIBS` target to compile. This is needed so that we can support the
+  more sophisticated load balancers in SpECTRE executables.
+- On a personal machine the correct target architecture is likely
+  `multicore-linux-x86_64`, or `multicore-darwin-x86_64` on macOS. On an HPC
+  system the correct Charm++ target architecture depends on the machine's
+  inter-node communication architecture. It might take some experimenting to
+  figure out which Charm++ configuration provides the best performance.
+- When compiling Charm++ you can specify the compiler using, for example,
+  ```
+  ./build LIBS ARCH clang
+  ```
 
-After the dependencies have been installed, Charm++ and SpECTRE can be compiled.
+## Building SpECTRE {#building-spectre}
+
+Once you have set up your development environment you can compile SpECTRE.
 Follow these steps:
 
-1.  Clone [SpECTRE](https://github.com/sxs-collaboration/spectre) into
-    `SPECTRE_ROOT`, a directory of your choice.
-2.  Install Charm++:
-  * Clone [Charm++](http://charm.cs.illinois.edu/software) into `CHARM_DIR`,
-    again a directory of your choice.
-  * In `CHARM_DIR`, run
-    `git checkout v6.10.2` to switch to a supported, stable release of Charm++.
-  * Charm++ is compiled by running
-    `./build LIBS ARCH OPTIONS`.
-    To figure out the correct target architecture and options, you can simply
-    run `./build`; the script will then ask you questions to guide you towards
-    the correct settings (see notes below for additional details).
-    Then compile Charm++.
-    The Charm++ build will be located in a new directory,
-    `CHARM_DIR/ARCH_OPTS`, whose name may (or may not) have some of the options
-    appended to the architecture.
-    In addition to the core `charm++` target, you will need to compile either
-    the `LIBS` target or the `everylb` target. This is needed so that we can
-    support the more sophisticated load balancers in SpECTRE executables.
-  * On macOS 10.12 it is necessary to patch the STL implementation. Insert
-    \code
-    #ifndef _MACH_PORT_T
-    #define _MACH_PORT_T
-    #include <sys/_types.h> /* __darwin_mach_port_t */
-    typedef __darwin_mach_port_t mach_port_t;
-    #include <pthread.h>
-    mach_port_t pthread_mach_thread_np(pthread_t);
-    #endif /* _MACH_PORT_T */
-    \endcode
-    into the front of
-    `/Library/Developer/CommandLineTools/usr/include/c++/v1/__threading_support`
-3.  Return to `SPECTRE_ROOT`, and create a build dir by running
-    `mkdir build && cd build`
-4.  Build SpECTRE with
-    `cmake -D CHARM_ROOT=CHARM_DIR/ARCH_OPTS SPECTRE_ROOT`
-    then
-    `make -jN`
-    to compile the code.
-5.  Run the tests with
-    `make test-executables && ctest`.
-
-**Notes**:
-* For more details on building Charm++, see the directions
-  [here](http://charm.cs.illinois.edu/manuals/html/charm++/A.html)
-  The correct target is `charm++` and, for a personal machine, the
-  correct target architecture is likely to be `multicore-linux-x86_64`
-  (or `multicore-darwin-x86_64` on macOS).
-  On an HPC system, the correct Charm++ target architecture depends on the
-  machine's inter-node communication architecture. We will be providing specific
-  instructions for various HPC systems.
-* Both Charm++ and SpECTRE must be compiled using the same compiler,
-  otherwise you will receive undefined reference errors while linking SpECTRE.
-  When compiling Charm++ you can specify the compiler using, for example,
-  ```
-  ./build charm++ ARCH clang
-  ```
-  When compiling SpECTRE you can specify the compiler to CMake using,
-  for example,
-  ```
-  cmake -D CMAKE_CXX_COMPILER=clang++ \
-        -D CMAKE_C_COMPILER=clang \
-        -D CMAKE_Fortran_COMPILER=gfortran \
-        -D CHARM_ROOT=CHARM_DIR/ARCH_OPTS SPECTRE_ROOT
-  ```
-* Inside the SpECTRE build directory, use `make list` to see all available
-  targets. This list can be refreshed by running CMake again.
+1. Create a build directory where you would like to compile SpECTRE. In the
+   Docker container you could create, e.g., `/work/spectre-build`. It can be
+   useful to add a descriptive label to the name of the build directory since
+   you may create more later, e.g., `build-clang-Debug`. Then, `cd` into the
+   build directory.
+2. Determine the location of your Charm++ installation. In the Docker container
+   it is `/work/charm_6_10_2/multicore-linux-x86_64-gcc` for GCC builds and
+   `/work/charm_6_10_2/multicore-linux-x86_64-clang` for clang builds. For Spack
+   installations you can determine it with
+   `spack location --install-dir charmpp`. We refer to the install directory as
+   `CHARM_ROOT` below.
+3. In your new SpECTRE build directory, configure the build with CMake:
+   ```
+   cmake -D CHARM_ROOT=$CHARM_ROOT SPECTRE_ROOT
+   ```
+   Add options to the `cmake` command to to configure the build, select
+   compilers, etc. For instance, to build with clang you may run:
+   ```
+   cmake -D CMAKE_CXX_COMPILER=clang++ \
+         -D CMAKE_C_COMPILER=clang \
+         -D CMAKE_Fortran_COMPILER=gfortran \
+         -D CHARM_ROOT=$CHARM_ROOT \
+         SPECTRE_ROOT
+   ```
+   See \ref common_cmake_flags for documentation on possible configuration
+   options.
+4. When cmake configuration is done, you are ready to build target executables.
+   - You can see the list of available targets by running `make list` (or `ninja
+     list` if you are using the Ninja generator) or by using tab completion.
+     Compile targets with `make -jN TARGET` (or `ninja -jN TARGET`), where `N`
+     is the number of cores to build on in parallel (e.g. `-j4`). Note that the
+     Ninja generator allows you to compile individual source files too.
+   - Compile the `unit-tests` target and run `ctest -L unit` to run unit tests.
+     Compile `test-executables` and run `ctest` to run all tests, including
+     executables. To compile `test-executables` you may have to reduce the
+     number of cores you build on in parallel to avoid running out of memory.
+   - To compile the Python bindings, add the option
+     `-D BUILD_PYTHON_BINDINGS=ON` to the `cmake` command and compile the
+     `all-pybindings` target (see \ref spectre_using_python).
 
 ## Code Coverage Analysis
 

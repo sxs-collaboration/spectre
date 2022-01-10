@@ -12,5 +12,15 @@ add_test_library(
   ${LIBRARY}
   "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/"
   "${LIBRARY_SOURCES}"
-  "GhConstraintDamping;Utilities"
+  ""
   )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  DataStructures
+  GhConstraintDamping
+  GhConstraintDampingHelpers
+  Parallel
+  Utilities
+)

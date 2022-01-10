@@ -59,7 +59,7 @@ struct TimeDerivative {
       Tags::ConstraintGamma1, Tags::ConstraintGamma2>;
 
   using argument_tags = tmpl::list<
-      Pi, Phi<Dim>, gr::Tags::Lapse<DataVector>,
+      Tags::Pi, Tags::Phi<Dim>, gr::Tags::Lapse<DataVector>,
       gr::Tags::Shift<Dim, Frame::Inertial, DataVector>,
       ::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<Dim>,
                     Frame::Inertial>,
@@ -72,9 +72,9 @@ struct TimeDerivative {
       Tags::ConstraintGamma2>;
 
   static void apply(
+      gsl::not_null<Scalar<DataVector>*> dt_psi,
       gsl::not_null<Scalar<DataVector>*> dt_pi,
       gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*> dt_phi,
-      gsl::not_null<Scalar<DataVector>*> dt_psi,
 
       gsl::not_null<Scalar<DataVector>*> result_lapse,
       gsl::not_null<tnsr::I<DataVector, Dim>*> result_shift,
@@ -82,9 +82,9 @@ struct TimeDerivative {
       gsl::not_null<Scalar<DataVector>*> result_gamma1,
       gsl::not_null<Scalar<DataVector>*> result_gamma2,
 
+      const tnsr::i<DataVector, Dim>& d_psi,
       const tnsr::i<DataVector, Dim>& d_pi,
-      const tnsr::ij<DataVector, Dim>& d_phi,
-      const tnsr::i<DataVector, Dim>& d_psi, const Scalar<DataVector>& pi,
+      const tnsr::ij<DataVector, Dim>& d_phi, const Scalar<DataVector>& pi,
       const tnsr::i<DataVector, Dim>& phi, const Scalar<DataVector>& lapse,
       const tnsr::I<DataVector, Dim>& shift,
       const tnsr::i<DataVector, Dim>& deriv_lapse,
