@@ -10,6 +10,7 @@ spectre_target_sources(
   PRIVATE
   ChangeCenterOfStrahlkorper.cpp
   FastFlow.cpp
+  ObjectLabel.cpp
   Strahlkorper.cpp
   StrahlkorperFunctions.cpp
   StrahlkorperGr.cpp
@@ -26,6 +27,7 @@ spectre_target_headers(
   ComputeHorizonVolumeQuantities.tpp
   ComputeItems.hpp
   FastFlow.hpp
+  ObjectLabel.hpp
   Strahlkorper.hpp
   StrahlkorperFunctions.hpp
   StrahlkorperGr.hpp
