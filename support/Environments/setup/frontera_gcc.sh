@@ -171,6 +171,7 @@ else
     echo "Installed Charm++ into $dep_dir/charm"
     cat >$dep_dir/modules/charm <<EOF
 #%Module1.0
+prepend-path PATH "$dep_dir/charm/${charm_config}/bin"
 prepend-path LIBRARY_PATH "$dep_dir/charm/${charm_config}/lib"
 prepend-path LD_LIBRARY_PATH "$dep_dir/charm/${charm_config}/lib"
 prepend-path CPLUS_INCLUDE_PATH "$dep_dir/charm/${charm_config}/include"
