@@ -212,8 +212,12 @@ cmake -D FLAG1=OPT1 ... -D FLAGN=OPTN <SPECTRE_ROOT>
     third-party libraries accidentally end up using different allocators, which
     is undefined behavior and will result in complete chaos.
     (default is `JEMALLOC`)
-- SPECTRE_UNIT_TEST_TIMEOUT_FACTOR, SPECTRE_INPUT_FILE_TEST_TIMEOUT_FACTOR and
-  SPECTRE_PYTHON_TEST_TIMEOUT_FACTOR
+- SPECTRE_TEST_RUNNER
+  - Run test executables through a wrapper.  This might be `charmrun`, for
+    example.  (default is to not use one)
+- SPECTRE_TEST_TIMEOUT_FACTOR (and specific overrides
+  SPECTRE_X_TEST_TIMEOUT_FACTOR for X one of UNIT, STANDALONE, INPUT_FILE, or
+  PYTHON)
   - Multiply the timeout for the respective set of tests by this factor (default
     is `1`).
   - This is useful to run tests on slower machines.

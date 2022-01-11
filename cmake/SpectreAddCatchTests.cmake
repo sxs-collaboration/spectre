@@ -39,9 +39,7 @@
 
 add_custom_target(unit-tests)
 
-option(SPECTRE_UNIT_TEST_TIMEOUT_FACTOR
-  "Multiply timeout for unit tests by this factor"
-  1)
+spectre_define_test_timeout_factor_option(UNIT "unit")
 
 find_package(Python REQUIRED)
 
@@ -205,15 +203,11 @@ function(spectre_parse_file SOURCE_FILE TEST_TARGET)
       math(EXPR TIMEOUT "3 * ${TIMEOUT}")
     endif()
 
-    # Multiply timeout by the user option
-    # Note: "1" is parsed as "ON" by cmake
-    if (NOT "${SPECTRE_UNIT_TEST_TIMEOUT_FACTOR}" STREQUAL ON)
-      math(EXPR TIMEOUT "${SPECTRE_UNIT_TEST_TIMEOUT_FACTOR} * ${TIMEOUT}")
-    endif()
+    spectre_test_timeout(TIMEOUT UNIT ${TIMEOUT})
 
     # Add the test and set its properties
     add_test(NAME ${CTEST_NAME}
-      COMMAND $<TARGET_FILE:${TEST_TARGET}>
+      COMMAND ${SPECTRE_TEST_RUNNER} $<TARGET_FILE:${TEST_TARGET}>
       \"${NAME}\" --durations yes
       --warn NoAssertions
       --name "\"$<CONFIGURATION>.${CTEST_NAME}\"")

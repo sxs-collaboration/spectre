@@ -24,32 +24,24 @@ target_link_libraries(
   Utilities
   )
 
-add_distributed_linear_solver_algorithm_test("MultigridAlgorithm")
+add_standalone_test(
+  "Integration.LinearSolver.MultigridAlgorithm"
+  INPUT_FILE "Test_MultigridAlgorithm.yaml")
+add_standalone_test(
+  "Integration.LinearSolver.MultigridAlgorithmMassive"
+  EXECUTABLE "Test_MultigridAlgorithm"
+  INPUT_FILE "Test_MultigridAlgorithmMassive.yaml")
 target_link_libraries(
-  Test_MultigridAlgorithm
+  "Test_MultigridAlgorithm"
   PRIVATE
-  ParallelMultigrid
-  )
+  "${DISTRIBUTED_INTEGRATION_TEST_LINK_LIBRARIES};ParallelMultigrid")
 
-add_test(
-  NAME Integration.LinearSolver.MultigridAlgorithmMassive
-  COMMAND ${CMAKE_BINARY_DIR}/bin/Test_MultigridAlgorithm --input-file
-  ${CMAKE_CURRENT_SOURCE_DIR}/Test_MultigridAlgorithmMassive.yaml
-  )
-set_tests_properties(
-  Integration.LinearSolver.MultigridAlgorithmMassive
-  PROPERTIES
-  TIMEOUT 5
-  LABELS "integration"
-  ENVIRONMENT "ASAN_OPTIONS=detect_leaks=0")
-
-add_distributed_linear_solver_algorithm_test(
-  "MultigridPreconditionedGmresAlgorithm")
+add_standalone_test(
+  "Integration.LinearSolver.MultigridPreconditionedGmresAlgorithm"
+  INPUT_FILE "Test_MultigridPreconditionedGmresAlgorithm.yaml")
 target_link_libraries(
-  Test_MultigridPreconditionedGmresAlgorithm
+  "Test_MultigridPreconditionedGmresAlgorithm"
   PRIVATE
-  ParallelMultigrid
-  ParallelNonlinearSolver
-  )
+  "${DISTRIBUTED_INTEGRATION_TEST_LINK_LIBRARIES};ParallelMultigrid;ParallelNonlinearSolver")
 
 add_subdirectory(Actions)

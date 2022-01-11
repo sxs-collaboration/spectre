@@ -19,61 +19,24 @@ add_dependencies(
   module_GlobalCache
   )
 
-function(add_linear_solver_algorithm_test TEST_NAME)
-  set(EXECUTABLE_NAME Test_${TEST_NAME})
-  set(TEST_IDENTIFIER Integration.LinearSolver.${TEST_NAME})
+set(INTEGRATION_TEST_LINK_LIBRARIES
+  # Link against Boost::program_options for now until we have proper
+  # dependency handling for header-only libs
+  Boost::program_options
+  DataStructures
+  ErrorHandling
+  IO
+  Informer
+  Parallel
+  ParallelLinearSolver
+  )
 
-  add_spectre_executable(
-    ${EXECUTABLE_NAME}
-    ${EXECUTABLE_NAME}.cpp
-    )
-
-  add_dependencies(
-    ${EXECUTABLE_NAME}
-    module_GlobalCache
-    module_Main
-    )
-
-  target_link_libraries(
-    ${EXECUTABLE_NAME}
-    PUBLIC
-    # Link against Boost::program_options for now until we have proper
-    # dependency handling for header-only libs
-    Boost::program_options
-    DataStructures
-    ErrorHandling
-    IO
-    Informer
-    Parallel
-    ParallelLinearSolver
-    )
-
-  add_dependencies(test-executables ${EXECUTABLE_NAME})
-
-  add_test(
-    NAME ${TEST_IDENTIFIER}
-    COMMAND ${CMAKE_BINARY_DIR}/bin/${EXECUTABLE_NAME} --input-file
-    ${CMAKE_CURRENT_SOURCE_DIR}/${EXECUTABLE_NAME}.yaml
-    )
-
-  set_tests_properties(
-    ${TEST_IDENTIFIER}
-    PROPERTIES
-    TIMEOUT 5
-    LABELS "integration"
-    ENVIRONMENT "ASAN_OPTIONS=detect_leaks=0")
-endfunction()
-
-function(add_distributed_linear_solver_algorithm_test TEST_NAME)
-  add_linear_solver_algorithm_test(${TEST_NAME})
-  target_link_libraries(
-    Test_${TEST_NAME}
-    PRIVATE
-    Domain
-    DomainBoundaryConditionsHelpers
-    DomainCreators
-    )
-endfunction()
+set(DISTRIBUTED_INTEGRATION_TEST_LINK_LIBRARIES
+  ${INTEGRATION_TEST_LINK_LIBRARIES}
+  Domain
+  DomainBoundaryConditionsHelpers
+  DomainCreators
+  )
 
 add_subdirectory(Actions)
 add_subdirectory(AsynchronousSolvers)

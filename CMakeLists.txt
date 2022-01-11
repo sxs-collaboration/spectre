@@ -109,7 +109,6 @@ include(SetupLibsharp)
 include(SetupYamlCpp)
 
 include(SetupLIBCXXCharm)
-include(SpectreSetupPythonPackage)
 # The precompiled header must be setup after all libraries have been found
 include(SetupPch)
 
@@ -132,11 +131,13 @@ include(SetupSphinx)
 include(CodeCoverageDetection)
 include(SpectreAddLibraries)
 
-enable_testing(true)
+include(SpectreSetupTesting)
+include(SpectreSetupPythonPackage)
 include(SetupPypp)
 include(SpectreAddTestLibs)
 include(SpectreAddCatchTests)
 include(AddInputFileTests)
+include(AddStandaloneTests)
 
 include_directories(${CMAKE_SOURCE_DIR}/external)
 include_directories(${CMAKE_SOURCE_DIR}/src)

@@ -5,52 +5,105 @@ add_subdirectory(Actions)
 
 add_subdirectory(PhaseControl)
 
-function(add_algorithm_test EXECUTABLE_NAME)
-  add_spectre_executable(
-    ${EXECUTABLE_NAME}
-    ${EXECUTABLE_NAME}.cpp
-    )
+set(ALGORITHM_TEST_LINK_LIBRARIES
+  # Link against Boost::program_options for now until we have proper
+  # dependency handling for header-only libs
+  Boost::program_options
+  ErrorHandling
+  Informer
+  Options
+  Parallel
+  PhaseControl
+  SystemUtilities
+  Utilities
+  )
 
-  add_dependencies(
-    ${EXECUTABLE_NAME}
-    module_GlobalCache
-    module_Main
-    )
+# Add unit tests. For tests that result in a failure it is necessary to
+# redirect output from stderr to stdout. However, it was necessary at least on
+# some systems to do this redirect inside a shell command.
+find_program(SHELL_EXECUTABLE "sh")
+if (NOT SHELL_EXECUTABLE)
+  message(FATAL_ERROR
+    "Could not find 'sh' shell to execute failure tests of algorithms")
+endif()
 
+# Note that we have a 'balance' here that happens 2.5e4 of times per second just
+# to be completely certain that the desired number of migrations occur during
+# the test (2). This tends to have a lot of fluctuation depending on how quickly
+# the machine manages to execute this fairly short test, and the current balance
+# frequency has been roughly tuned to a) very consistently get at least 5
+# balances (usually gets several dozen), and b) complete the test in a
+# reasonable duration. Balancing too frequently can mean the test time explodes
+# due to balancing so much that the test computation doesn't get much of a
+# chance to execute.
+function(add_algorithm_test_with_balancing TEST_NAME EXECUTABLE_NAME REGEX_TO_MATCH)
+  add_standalone_test_executable("Test_${EXECUTABLE_NAME}")
   target_link_libraries(
-    ${EXECUTABLE_NAME}
+    "Test_${EXECUTABLE_NAME}"
     PRIVATE
-    # Link against Boost::program_options for now until we have proper
-    # dependency handling for header-only libs
-    Boost::program_options
-    ErrorHandling
-    Informer
-    Options
-    Parallel
-    PhaseControl
-    SystemUtilities
-    Utilities
+    "${ALGORITHM_TEST_LINK_LIBRARIES}")
+  add_test(
+    NAME "Unit.Parallel.${TEST_NAME}"
+    COMMAND
+    ${SHELL_EXECUTABLE}
+    -c "${SPECTRE_TEST_RUNNER} ${CMAKE_BINARY_DIR}/bin/Test_${EXECUTABLE_NAME} \
+    +p2 +balancer RotateLB +LBPeriod 4.0e-5 +LBDebug 3 2>&1"
     )
 
-  add_dependencies(unit-tests ${EXECUTABLE_NAME})
+  set_standalone_test_properties("Unit.Parallel.${TEST_NAME}")
+  if("${REGEX_TO_MATCH}" STREQUAL "")
+    set_tests_properties(
+      "Unit.Parallel.${TEST_NAME}"
+      PROPERTIES
+      FAIL_REGULAR_EXPRESSION "ERROR")
+  else()
+    set_tests_properties(
+      "Unit.Parallel.${TEST_NAME}"
+      PROPERTIES
+      PASS_REGULAR_EXPRESSION
+      "${REGEX_TO_MATCH}"
+      FAIL_REGULAR_EXPRESSION "ERROR")
+  endif()
 endfunction()
 
-add_algorithm_test(Test_AlgorithmBadBoxApply)
-add_algorithm_test(Test_AlgorithmCore)
-add_algorithm_test(Test_AlgorithmGlobalCache)
-add_algorithm_test(Test_AlgorithmLocalSyncAction)
-add_algorithm_test(Test_AlgorithmNestedApply1)
-add_algorithm_test(Test_AlgorithmNestedApply2)
-add_algorithm_test(Test_AlgorithmNodelock)
-add_algorithm_test(Test_AlgorithmParallel)
-add_algorithm_test(Test_AlgorithmPhaseControl)
-add_algorithm_test(Test_AlgorithmReduction)
-add_algorithm_test(Test_CheckpointRestart)
-add_algorithm_test(Test_GlobalCache)
-add_algorithm_test(Test_PhaseChangeMain)
-add_algorithm_test(Test_SectionReductions)
+# Run TEST_NAME twice: first with no command-line args, then with the
+# `+restart SpectreCheckpoint0` command-line arg to restart from a Charm++
+# checkpoint named `SpectreCheckpoint0`. The checkpoint file is then deleted
+# to avoid it getting in the way of future test invocations (which would try
+# to overwrite the prior checkpoint file and error).
+function(add_algorithm_test_with_restart_from_checkpoint TEST_NAME)
+  add_standalone_test_executable("Test_${TEST_NAME}")
+  target_link_libraries(
+    "Test_${TEST_NAME}"
+    PRIVATE
+    "${ALGORITHM_TEST_LINK_LIBRARIES}")
+  # Executable writes checkpoint file into the dir where it runs:
+  set(CHECKPOINT
+    "${CMAKE_BINARY_DIR}/tests/Unit/Parallel/SpectreCheckpoint000000")
+  add_test(
+    NAME "Unit.Parallel.${TEST_NAME}"
+    COMMAND
+    ${SHELL_EXECUTABLE}
+    -c
+    "rm -rf ${CHECKPOINT} \
+    && ${SPECTRE_TEST_RUNNER} ${CMAKE_BINARY_DIR}/bin/Test_${TEST_NAME} 2>&1 \
+    && ${SPECTRE_TEST_RUNNER} ${CMAKE_BINARY_DIR}/bin/Test_${TEST_NAME} \
+       +restart ${CHECKPOINT} 2>&1 \
+    && rm -rf ${CHECKPOINT}"
+    )
+  set_standalone_test_properties("Unit.Parallel.${TEST_NAME}")
+endfunction()
+
+function(add_algorithm_test BASE_NAME)
+  add_standalone_test("Unit.Parallel.${BASE_NAME}" ${ARGN})
+  target_link_libraries(
+    "Test_${BASE_NAME}"
+    PRIVATE
+    "${ALGORITHM_TEST_LINK_LIBRARIES}")
+endfunction()
 
 # Test GlobalCache
+add_algorithm_test("GlobalCache")
 add_charm_module(Test_GlobalCache)
 
 add_dependencies(
@@ -63,149 +116,32 @@ add_dependencies(
   module_Test_GlobalCache
   )
 
-# Add unit tests. For tests that result in a failure it is necessary to
-# redirect output from stderr to stdout. However, it was necessary at least on
-# some systems to do this redirect inside a shell command.
-find_program(SHELL_EXECUTABLE "sh")
-if ("${SHELL_EXECUTABLE}" STREQUAL "")
-  message(FATAL_ERROR
-    "Could not find 'sh' shell to execute failure tests of algorithms")
-endif()
-
-function(add_algorithm_test TEST_NAME REGEX_TO_MATCH)
-  add_test(
-    NAME Unit.Parallel.${TEST_NAME}
-    COMMAND
-    ${SHELL_EXECUTABLE}
-    -c
-    "${CMAKE_BINARY_DIR}/bin/Test_${TEST_NAME} 2>&1"
-    )
-
-  if("${REGEX_TO_MATCH}" STREQUAL "")
-    set_tests_properties(
-      Unit.Parallel.${TEST_NAME}
-      PROPERTIES
-      FAIL_REGULAR_EXPRESSION "ERROR"
-      TIMEOUT 10
-      LABELS "unit"
-      ENVIRONMENT "ASAN_OPTIONS=detect_leaks=0")
-  else()
-    set_tests_properties(
-      Unit.Parallel.${TEST_NAME}
-      PROPERTIES
-      PASS_REGULAR_EXPRESSION
-      "${REGEX_TO_MATCH}"
-      TIMEOUT 10
-      LABELS "unit"
-      ENVIRONMENT "ASAN_OPTIONS=detect_leaks=0")
-  endif()
-endfunction()
-
-function(add_algorithm_test_with_input_file TEST_NAME INPUT_FILE_DIR)
-  add_test(
-    NAME "\"Unit.Parallel.${TEST_NAME}\""
-    COMMAND
-    ${SHELL_EXECUTABLE}
-    -c
-    "${CMAKE_BINARY_DIR}/bin/Test_${TEST_NAME} --input-file \
-     ${CMAKE_SOURCE_DIR}/tests/${INPUT_FILE_DIR}/Test_${TEST_NAME}.yaml 2>&1"
-    )
-  set_tests_properties(
-    "\"Unit.Parallel.${TEST_NAME}\""
-    PROPERTIES
-    TIMEOUT 10
-    LABELS "unit"
-    ENVIRONMENT "ASAN_OPTIONS=detect_leaks=0")
-endfunction()
-
-# Note that we have a 'balance' here that happens 2.5e4 of times per second just
-# to be completely certain that the desired number of migrations occur during
-# the test (2). This tends to have a lot of fluctuation depending on how quickly
-# the machine manages to execute this fairly short test, and the current balance
-# frequency has been roughly tuned to a) very consistently get at least 5
-# balances (usually gets several dozen), and b) complete the test in a
-# reasonable duration. Balancing too frequently can mean the test time explodes
-# due to balancing so much that the test computation doesn't get much of a
-# chance to execute.
-function(add_algorithm_test_with_balancing TEST_NAME EXECUTABLE_NAME REGEX_TO_MATCH)
-  add_test(
-    NAME "\"Unit.Parallel.${TEST_NAME}\""
-    COMMAND
-    ${SHELL_EXECUTABLE}
-    -c "${CMAKE_BINARY_DIR}/bin/Test_${EXECUTABLE_NAME} +p2 +balancer \
-     RotateLB +LBPeriod 4.0e-5 +LBDebug 3 2>&1"
-    )
-
-  if("${REGEX_TO_MATCH}" STREQUAL "")
-    set_tests_properties(
-      "\"Unit.Parallel.${TEST_NAME}\""
-      PROPERTIES
-      FAIL_REGULAR_EXPRESSION "ERROR"
-      TIMEOUT 10
-      LABELS "unit"
-      ENVIRONMENT "ASAN_OPTIONS=detect_leaks=0")
-  else()
-    set_tests_properties(
-      "\"Unit.Parallel.${TEST_NAME}\""
-      PROPERTIES
-      PASS_REGULAR_EXPRESSION
-      "${REGEX_TO_MATCH}"
-      FAIL_REGULAR_EXPRESSION "ERROR"
-      TIMEOUT 10
-      LABELS "unit"
-      ENVIRONMENT "ASAN_OPTIONS=detect_leaks=0")
-  endif()
-endfunction()
-
-# Run TEST_NAME twice: first with no command-line args, then with the
-# `+restart SpectreCheckpoint0` command-line arg to restart from a Charm++
-# checkpoint named `SpectreCheckpoint0`. The checkpoint file is then deleted
-# to avoid it getting in the way of future test invocations (which would try
-# to overwrite the prior checkpoint file and error).
-function(add_algorithm_test_with_restart_from_checkpoint TEST_NAME)
-  # Executable writes checkpoint file into the dir where it runs:
-  set(CHECKPOINT
-    "${CMAKE_BINARY_DIR}/tests/Unit/Parallel/SpectreCheckpoint000000")
-  add_test(
-    NAME "\"Unit.Parallel.${TEST_NAME}\""
-    COMMAND
-    ${SHELL_EXECUTABLE}
-    -c
-    "rm -rf ${CHECKPOINT} \
-    && ${CMAKE_BINARY_DIR}/bin/Test_${TEST_NAME} 2>&1 \
-    && ${CMAKE_BINARY_DIR}/bin/Test_${TEST_NAME} +restart ${CHECKPOINT} 2>&1 \
-    && rm -rf ${CHECKPOINT}"
-    )
-  set_tests_properties(
-    "\"Unit.Parallel.${TEST_NAME}\""
-    PROPERTIES
-    TIMEOUT 10
-    LABELS "unit"
-    ENVIRONMENT "ASAN_OPTIONS=detect_leaks=0")
-endfunction()
-
 add_algorithm_test(
   "AlgorithmBadBoxApply"
+  REGEX_TO_MATCH
   "Cannot call apply function of 'error_size_zero' with DataBox \
 type 'db::DataBox<brigand::list<")
-add_algorithm_test("AlgorithmCore" "")
-add_algorithm_test("AlgorithmLocalSyncAction" "")
+add_algorithm_test("AlgorithmCore")
+add_algorithm_test("AlgorithmLocalSyncAction")
 add_algorithm_test(
   "AlgorithmNestedApply1"
+  REGEX_TO_MATCH
   "Already performing an Action and cannot execute additional Actions \
 from inside of an Action. This is only possible if the simple_action \
 function is not invoked via a proxy, which we do not allow.")
 add_algorithm_test(
   "AlgorithmNestedApply2"
+  REGEX_TO_MATCH
   "Already performing an Action and cannot execute additional Actions \
 from inside of an Action. This is only possible if the simple_action \
 function is not invoked via a proxy, which we do not allow.")
-add_algorithm_test("AlgorithmNodelock" "")
-add_algorithm_test("AlgorithmParallel" "")
-add_algorithm_test("AlgorithmReduction" "")
-add_algorithm_test("GlobalCache" "")
-add_algorithm_test("PhaseChangeMain" "")
-add_algorithm_test("SectionReductions"
+add_algorithm_test("AlgorithmNodelock")
+add_algorithm_test("AlgorithmParallel")
+add_algorithm_test("AlgorithmReduction")
+add_algorithm_test("PhaseChangeMain")
+add_algorithm_test(
+  "SectionReductions"
+  REGEX_TO_MATCH
   "Element 0 received reduction: Counted 2 odd elements.")
 
 # macOS builds on Apple Silicon use Charm 7.0.0, which has different
@@ -218,8 +154,12 @@ else()
     "AlgorithmParallel" "Objects migrating: 14")
 endif()
 
-add_algorithm_test_with_input_file("AlgorithmGlobalCache" "Unit/Parallel")
-add_algorithm_test_with_input_file("AlgorithmPhaseControl" "Unit/Parallel")
+add_algorithm_test(
+  "AlgorithmGlobalCache"
+  INPUT_FILE "Test_AlgorithmGlobalCache.yaml")
+add_algorithm_test(
+  "AlgorithmPhaseControl"
+  INPUT_FILE "Test_AlgorithmPhaseControl.yaml")
 
 add_algorithm_test_with_restart_from_checkpoint("CheckpointRestart")
 
