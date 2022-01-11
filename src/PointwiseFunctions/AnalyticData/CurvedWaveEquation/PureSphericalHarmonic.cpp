@@ -38,12 +38,10 @@ PureSphericalHarmonic::PureSphericalHarmonic(const double radius,
   }
 }
 
-tuples::TaggedTuple<CurvedScalarWave::Tags::Pi, CurvedScalarWave::Tags::Phi<3>,
-                    CurvedScalarWave::Tags::Psi>
-PureSphericalHarmonic::variables(
-    const tnsr::I<DataVector, 3>& x, double /*t*/,
-    tmpl::list<CurvedScalarWave::Tags::Pi, CurvedScalarWave::Tags::Phi<3>,
-               CurvedScalarWave::Tags::Psi> /*meta*/) const {
+tuples::TaggedTuple<CurvedScalarWave::Tags::Psi, CurvedScalarWave::Tags::Pi,
+                    CurvedScalarWave::Tags::Phi<3>>
+PureSphericalHarmonic::variables(const tnsr::I<DataVector, 3>& x, double /*t*/,
+                                 tags /*meta*/) const {
   Scalar<DataVector> pi{get(magnitude(x)) - radius_};
   get(pi) = exp(-get(pi) * get(pi) / width_sq_);
   const Spectral::Swsh::SpinWeightedSphericalHarmonic spherical_harmonic(
@@ -52,11 +50,11 @@ PureSphericalHarmonic::variables(
   const auto phi = atan2(x[1], x[0]);
   get(pi) *= real(spherical_harmonic.evaluate(theta, phi, sin(theta / 2.),
                                               cos(theta / 2.)));
-  return tuples::TaggedTuple<CurvedScalarWave::Tags::Pi,
-                             CurvedScalarWave::Tags::Phi<3>,
-                             CurvedScalarWave::Tags::Psi>{
-      std::move(pi), make_with_value<tnsr::i<DataVector, 3>>(x, 0.),
-      make_with_value<Scalar<DataVector>>(x, 0.)};
+  return tuples::TaggedTuple<CurvedScalarWave::Tags::Psi,
+                             CurvedScalarWave::Tags::Pi,
+                             CurvedScalarWave::Tags::Phi<3>>{
+      make_with_value<Scalar<DataVector>>(x, 0.), std::move(pi),
+      make_with_value<tnsr::i<DataVector, 3>>(x, 0.)};
 }
 
 void PureSphericalHarmonic::pup(PUP::er& p) {

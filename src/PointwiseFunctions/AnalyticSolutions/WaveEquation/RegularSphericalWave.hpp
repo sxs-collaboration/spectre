@@ -78,6 +78,10 @@ class RegularSphericalWave : public MarkAsAnalyticSolution {
       "A spherical wave solution of the Euclidean wave equation that is "
       "regular at the origin"};
 
+  using tags =
+      tmpl::list<Tags::Psi, Tags::Pi, Tags::Phi<3>, ::Tags::dt<Tags::Psi>,
+                 ::Tags::dt<Tags::Pi>, ::Tags::dt<Tags::Phi<3>>>;
+
   RegularSphericalWave() = default;
   explicit RegularSphericalWave(
       std::unique_ptr<MathFunction<1, Frame::Inertial>> profile);
