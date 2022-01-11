@@ -53,6 +53,7 @@ spectre_target_headers(
   NoSuchType.hpp
   Numeric.hpp
   OptimizerHacks.hpp
+  OptionalHelpers.hpp
   Overloader.hpp
   PrettyType.hpp
   PrintHelpers.hpp

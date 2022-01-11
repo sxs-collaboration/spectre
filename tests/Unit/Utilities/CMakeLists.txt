@@ -28,6 +28,7 @@ set(LIBRARY_SOURCES
   Test_MakeWithValue.cpp
   Test_Math.cpp
   Test_Numeric.cpp
+  Test_OptionalHelpers.cpp
   Test_Overloader.cpp
   Test_PrettyType.cpp
   Test_ProtocolHelpers.cpp
