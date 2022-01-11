@@ -59,11 +59,16 @@ spectre_run_cmake() {
         return 1
     fi
     spectre_load_modules
+    # Notes:
+    # - Set CMAKE_PREFIX_PATH to pick up packages consistent with the anaconda
+    #   module, such as zlib. The anaconda module on Wheeler does not set this
+    #   automatically.
     cmake -D CHARM_ROOT=$CHARM_ROOT \
           -D CMAKE_BUILD_TYPE=Release \
           -D CMAKE_Fortran_COMPILER=gfortran \
           -D MEMORY_ALLOCATOR=SYSTEM \
           -D BUILD_PYTHON_BINDINGS=on \
+          -D CMAKE_PREFIX_PATH="$PYTHON_HOME" \
           "$@" \
           $SPECTRE_HOME
 }
