@@ -8,10 +8,8 @@ add_spectre_library(${LIBRARY})
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
-  PlaneWave3DKerrSchild.cpp
-  PlaneWaveMinkowski.cpp
   PureSphericalHarmonic.cpp
-  RegularSphericalWave3DKerrSchild.cpp
+  ScalarWaveGr.cpp
   )
 
 spectre_target_headers(
@@ -21,7 +19,6 @@ spectre_target_headers(
   AnalyticData.hpp
   PureSphericalHarmonic.hpp
   ScalarWaveGr.hpp
-  ScalarWaveGr.tpp
   )
 
 target_link_libraries(
