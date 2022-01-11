@@ -12,6 +12,7 @@
 #include "Evolution/Systems/ScalarWave/Tags.hpp"
 #include "Options/Options.hpp"
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
+#include "Utilities/TMPL.hpp"
 
 /// \cond
 namespace PUP {
@@ -27,15 +28,21 @@ namespace AnalyticData {
  * \brief Analytic initial data for scalar waves in curved spacetime
  *
  * \details When evolving a scalar field propagating through curved spacetime,
- * this class provides a method to initialize the scalar-field and spacetime
- * variables using analytic solution(s) of the flat-space scalar-wave equation
- * and of the Einstein equations. Note that the coordinate profile of the scalar
- * field \f$\Psi\f$ in curved spacetime being the same as \f$\Psi\f$ in flat
- * spacetime is our primary identification, allowing it to be initialized using
- * any member class of `ScalarWave::Solutions`. We initialize \f$\Phi_i\f$ in
- * curved spacetime to the coordinate spatial derivative of \f$\Psi\f$ in flat
- * spacetime. The definition of \f$\Pi\f$ comes from requiring it to be the
- * future-directed time derivative of the scalar field in curved spacetime:
+ * this class provides a method to initialize the scalar field and spacetime
+ * variables using
+ *
+ * 1. analytic solution(s) or data of the flat or curved scalar wave equation
+ * for the evolution variables
+ * 2. solutions of the Einstein equations for the spacetime background.
+ *
+ * If the scalar field initial data returns `CurvedScalarWave` tags, \f$\Psi\f$,
+ * \f$\Pi\f$ and \f$\Phi_i\f$ will simply be forwarded from the initial data
+ * class. Alternatively, the scalar field initial data can be provided using any
+ * member class of `ScalarWave::Solutions` which return `ScalarWave` tags. In
+ * this case, \f$\Phi_i\f$ and \f$\Psi\f$ will also be forwarded but
+ * \f$\Pi\f$ will be adjusted to account for the curved background. Its
+ * definition comes from requiring it to be the future-directed time derivative
+ * of the scalar field in curved spacetime:
  *
  * \f{align}
  * \Pi :=& -n^a \partial_a \Psi \\
@@ -53,13 +60,21 @@ class ScalarWaveGr : public MarkAsAnalyticData {
       ScalarFieldData::volume_dim == BackgroundGrData::volume_dim,
       "Scalar field data and background spacetime data should have the same "
       "spatial dimensionality. Currently provided template arguments do not.");
+  static_assert(tmpl::list_contains_v<typename ScalarFieldData::tags,
+                                      ScalarWave::Tags::Psi> or
+                    tmpl::list_contains_v<typename ScalarFieldData::tags,
+                                          CurvedScalarWave::Tags::Psi>,
+                "The scalar field data needs to be able to return either the "
+                "ScalarWave or the CurvedScalarWave evolved variables");
 
  public:
   static constexpr size_t volume_dim = ScalarFieldData::volume_dim;
-
+  static constexpr bool is_curved =
+      tmpl::list_contains_v<typename ScalarFieldData::tags,
+                            CurvedScalarWave::Tags::Psi>;
   struct ScalarField {
     using type = ScalarFieldData;
-    static constexpr Options::String help = {"Flat space scalar field."};
+    static constexpr Options::String help = {"The scalar field system data."};
   };
   struct Background {
     using type = BackgroundGrData;
@@ -73,7 +88,7 @@ class ScalarWaveGr : public MarkAsAnalyticData {
 
   // Construct from options
   ScalarWaveGr(BackgroundGrData background, ScalarFieldData scalar_field)
-      : flat_space_scalar_wave_data_(std::move(scalar_field)),
+      : scalar_wave_data_(std::move(scalar_field)),
         background_gr_data_(std::move(background)) {}
 
   explicit ScalarWaveGr(CkMigrateMessage* /*unused*/) {}
@@ -88,6 +103,17 @@ class ScalarWaveGr : public MarkAsAnalyticData {
   // Tags
   template <typename DataType>
   using spacetime_tags = typename BackgroundGrData::template tags<DataType>;
+  using InitialDataPsi =
+      tmpl::conditional_t<is_curved, CurvedScalarWave::Tags::Psi,
+                          ScalarWave::Tags::Psi>;
+  using InitialDataPi =
+      tmpl::conditional_t<is_curved, CurvedScalarWave::Tags::Pi,
+                          ScalarWave::Tags::Pi>;
+  using InitialDataPhi =
+      tmpl::conditional_t<is_curved, CurvedScalarWave::Tags::Phi<volume_dim>,
+                          ScalarWave::Tags::Phi<volume_dim>>;
+  using evolved_field_vars_tags =
+      tmpl::list<InitialDataPsi, InitialDataPi, InitialDataPhi>;
   using tags =
       tmpl::append<spacetime_tags<DataVector>,
                    tmpl::list<Tags::Psi, Tags::Pi, Tags::Phi<volume_dim>>>;
@@ -103,6 +129,14 @@ class ScalarWaveGr : public MarkAsAnalyticData {
         x, default_initial_time, spacetime_tags<DataType>{})))};
   }
 
+  tuples::TaggedTuple<Tags::Psi> variables(
+      const tnsr::I<DataVector, volume_dim>& x,
+      tmpl::list<Tags::Psi> /*meta*/) const {
+    constexpr double default_initial_time = 0.;
+    return {std::move(get<InitialDataPsi>(scalar_wave_data_.variables(
+        x, default_initial_time, evolved_field_vars_tags{})))};
+  }
+
   /// Retrieve scalar wave variables
   tuples::TaggedTuple<Tags::Pi> variables(
       const tnsr::I<DataVector, volume_dim>& x,
@@ -112,21 +146,8 @@ class ScalarWaveGr : public MarkAsAnalyticData {
       const tnsr::I<DataVector, volume_dim>& x,
       tmpl::list<Tags::Phi<volume_dim>> /*meta*/) const {
     constexpr double default_initial_time = 0.;
-    return {std::move(get<ScalarWave::Tags::Phi<volume_dim>>(
-        flat_space_scalar_wave_data_.variables(
-            x, default_initial_time,
-            tmpl::list<ScalarWave::Tags::Psi, ScalarWave::Tags::Pi,
-                       ScalarWave::Tags::Phi<volume_dim>>{})))};
-  }
-  tuples::TaggedTuple<Tags::Psi> variables(
-      const tnsr::I<DataVector, volume_dim>& x,
-      tmpl::list<Tags::Psi> /*meta*/) const {
-    constexpr double default_initial_time = 0.;
-    return {std::move(
-        get<ScalarWave::Tags::Psi>(flat_space_scalar_wave_data_.variables(
-            x, default_initial_time,
-            tmpl::list<ScalarWave::Tags::Psi, ScalarWave::Tags::Pi,
-                       ScalarWave::Tags::Phi<volume_dim>>{})))};
+    return {std::move(get<InitialDataPhi>(scalar_wave_data_.variables(
+        x, default_initial_time, evolved_field_vars_tags{})))};
   }
 
   // Retrieve one or more tags
@@ -156,7 +177,7 @@ class ScalarWaveGr : public MarkAsAnalyticData {
                                 LocalBackgroundData>& rhs)  // NOLINT
       ;                                                     // NOLINT
 
-  ScalarFieldData flat_space_scalar_wave_data_;
+  ScalarFieldData scalar_wave_data_;
   BackgroundGrData background_gr_data_;
 };
 
