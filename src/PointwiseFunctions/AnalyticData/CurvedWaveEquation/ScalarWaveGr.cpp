@@ -20,7 +20,7 @@ namespace CurvedScalarWave::AnalyticData {
 
 template <typename ScalarFieldData, typename BackgroundGrData>
 void ScalarWaveGr<ScalarFieldData, BackgroundGrData>::pup(PUP::er& p) {
-  p | flat_space_scalar_wave_data_;
+  p | scalar_wave_data_;
   p | background_gr_data_;
 }
 
@@ -30,23 +30,22 @@ ScalarWaveGr<ScalarFieldData, BackgroundGrData>::variables(
     const tnsr::I<DataVector, volume_dim>& x,
     tmpl::list<Tags::Pi> /*meta*/) const {
   constexpr double default_initial_time = 0.;
-  const auto flat_space_scalar_wave_vars =
-      flat_space_scalar_wave_data_.variables(
-          x, default_initial_time,
-          tmpl::list<ScalarWave::Tags::Psi, ScalarWave::Tags::Pi,
-                     ScalarWave::Tags::Phi<volume_dim>>{});
+  const auto scalar_wave_vars = scalar_wave_data_.variables(
+      x, default_initial_time, evolved_field_vars_tags{});
+  if constexpr (is_curved) {
+    return std::move(get<InitialDataPi>(scalar_wave_vars));
+  }
   const auto spacetime_variables = background_gr_data_.variables(
       x, default_initial_time, spacetime_tags<DataVector>{});
   auto result = make_with_value<tuples::TaggedTuple<Tags::Pi>>(x, 0.);
 
-  const auto shift_dot_dpsi = dot_product(
-      get<gr::Tags::Shift<volume_dim, Frame::Inertial, DataVector>>(
-          spacetime_variables),
-      get<ScalarWave::Tags::Phi<volume_dim>>(flat_space_scalar_wave_vars));
+  const auto shift_dot_dpsi =
+      dot_product(get<gr::Tags::Shift<volume_dim, Frame::Inertial, DataVector>>(
+                      spacetime_variables),
+                  get<InitialDataPhi>(scalar_wave_vars));
 
   get(get<Tags::Pi>(result)) =
-      (get(shift_dot_dpsi) +
-       get(get<ScalarWave::Tags::Pi>(flat_space_scalar_wave_vars))) /
+      (get(shift_dot_dpsi) + get(get<InitialDataPi>(scalar_wave_vars))) /
       get(get<gr::Tags::Lapse<DataVector>>(spacetime_variables));
 
   return result;
@@ -85,7 +84,8 @@ GENERATE_INSTANTIATIONS(INSTANTIATE,
                         (gr::Solutions::Minkowski<3>,
                          gr::Solutions::KerrSchild),
                         (ScalarWave::Solutions::PlaneWave<3>,
-                         ScalarWave::Solutions::RegularSphericalWave))
+                         ScalarWave::Solutions::RegularSphericalWave,
+                         CurvedScalarWave::AnalyticData::PureSphericalHarmonic))
 
 #undef BG
 #undef SOL

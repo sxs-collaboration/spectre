@@ -76,6 +76,9 @@ class PlaneWave : public MarkAsAnalyticSolution {
 
   static constexpr Options::String help = {
       "A plane wave solution of the Euclidean wave equation"};
+  using tags =
+      tmpl::list<Tags::Psi, Tags::Pi, Tags::Phi<3>, ::Tags::dt<Tags::Psi>,
+                 ::Tags::dt<Tags::Pi>, ::Tags::dt<Tags::Phi<Dim>>>;
 
   PlaneWave() = default;
   PlaneWave(std::array<double, Dim> wave_vector, std::array<double, Dim> center,
