@@ -156,18 +156,19 @@ fi
 cd $dep_dir
 
 # Set up Charm++ because that can be difficult
+charm_version=6.10.2
 charm_config=ucx-linux-x86_64-smp
 if [ -f $dep_dir/charm/${charm_config}/lib/libck.a ]; then
     echo "Charm++ is already installed"
 else
     echo "Installing Charm++..."
-    wget https://github.com/UIUC-PPL/charm/archive/v6.10.2.tar.gz
-    tar xzf v6.10.2.tar.gz
-    mv charm-6.10.2 charm
+    wget https://github.com/UIUC-PPL/charm/archive/v${charm_version}.tar.gz
+    tar xzf v${charm_version}.tar.gz
+    mv charm-${charm_version} charm
     cd $dep_dir/charm
     ./build LIBS ${charm_config} --with-production -j6
     cd $dep_dir
-    rm v6.10.2.tar.gz
+    rm v${charm_version}.tar.gz
     echo "Installed Charm++ into $dep_dir/charm"
     cat >$dep_dir/modules/charm <<EOF
 #%Module1.0
@@ -176,7 +177,7 @@ prepend-path LIBRARY_PATH "$dep_dir/charm/${charm_config}/lib"
 prepend-path LD_LIBRARY_PATH "$dep_dir/charm/${charm_config}/lib"
 prepend-path CPLUS_INCLUDE_PATH "$dep_dir/charm/${charm_config}/include"
 prepend-path CMAKE_PREFIX_PATH "$dep_dir/charm/${charm_config}/"
-setenv CHARM_VERSION 6.8.2
+setenv CHARM_VERSION ${charm_version}
 setenv CHARM_HOME $dep_dir/charm/${charm_config}
 setenv CHARM_ROOT $dep_dir/charm/${charm_config}
 EOF
