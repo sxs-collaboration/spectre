@@ -3,6 +3,7 @@
 
 #include "NumericalAlgorithms/Spectral/SwshInterpolation.hpp"
 
+#include <algorithm>
 #include <array>
 #include <boost/math/special_functions/binomial.hpp>
 #include <cmath>
@@ -24,7 +25,6 @@
 #include "Utilities/Literals.hpp"
 #include "Utilities/StaticCache.hpp"
 #include "Utilities/TMPL.hpp"
-
 
 namespace Spectral::Swsh {
 
@@ -95,16 +95,13 @@ void SpinWeightedSphericalHarmonic::evaluate(
   result->destructive_resize(theta.size());
   *result = 0.0;
   DataVector theta_factor{theta.size()};
-  for (int r = 0; r <= (static_cast<int>(l_) - spin_); ++r) {
+  for (int r = 0; r <= static_cast<int>(l_) + std::min(m_, -spin_); ++r) {
     if (2 * static_cast<int>(l_) > 2 * r + spin_ - m_) {
       theta_factor = pow(cos_theta_over_2, 2 * r + spin_ - m_) *
                      pow(sin_theta_over_2,
                          2 * static_cast<int>(l_) - (2 * r + spin_ - m_));
-    } else if (2 * static_cast<int>(l_) < 2 * r + spin_ - m_) {
-      theta_factor = pow(cos_theta_over_2 / sin_theta_over_2,
-                         2 * r + spin_ - m_ - 2 * static_cast<int>(l_)) *
-                     pow(cos_theta_over_2, 2 * l_);
     } else {
+      // this branch prevents a possible pow(0,0) when 2r = 2l - s + m
       theta_factor = pow(cos_theta_over_2, 2 * l_);
     }
     *result += gsl::at(r_prefactors_, r) * theta_factor;
@@ -133,16 +130,13 @@ std::complex<double> SpinWeightedSphericalHarmonic::evaluate(
   const double cos_theta_over_two = cos(0.5 * theta);
   const double sin_theta_over_two = sin(0.5 * theta);
   double theta_factor = std::numeric_limits<double>::signaling_NaN();
-  for (int r = 0; r <= (static_cast<int>(l_) - spin_); ++r) {
+  for (int r = 0; r <= static_cast<int>(l_) + std::min(m_, -spin_); ++r) {
     if (2 * static_cast<int>(l_) > 2 * r + spin_ - m_) {
       theta_factor = pow(cos_theta_over_two, 2 * r + spin_ - m_) *
                      pow(sin_theta_over_two,
                          2 * static_cast<int>(l_) - (2 * r + spin_ - m_));
-    } else if (2 * static_cast<int>(l_) < 2 * r + spin_ - m_) {
-      theta_factor = pow(cos_theta_over_two / sin_theta_over_two,
-                         2 * r + spin_ - m_ - 2 * static_cast<int>(l_)) *
-                     pow(cos_theta_over_two, 2 * l_);
     } else {
+      // this branch prevents a possible pow(0,0) when 2r = 2l - s + m
       theta_factor = pow(cos_theta_over_two, 2 * l_);
     }
     accumulator += gsl::at(r_prefactors_, r) *
