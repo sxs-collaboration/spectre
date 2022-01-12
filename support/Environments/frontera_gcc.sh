@@ -39,6 +39,7 @@ spectre_setup_modules() {
 }
 
 spectre_unload_modules() {
+    module unload spectre_python
     module unload charm
     module unload yaml-cpp
     module unload spectre_boost
@@ -62,6 +63,7 @@ spectre_load_modules() {
     module load spectre_boost
     module load yaml-cpp
     module load charm
+    module load spectre_python
 }
 
 spectre_run_cmake() {

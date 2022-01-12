@@ -194,6 +194,17 @@ EOF
 fi
 cd $dep_dir
 
+python3 -m venv --system-site-packages $dep_dir/py_env
+export VIRTUAL_ENV=$dep_dir/py_env
+export PATH=${VIRTUAL_ENV}/bin:${PATH}
+cat >$dep_dir/modules/spectre_python <<EOF
+#%Module1.0
+setenv VIRTUAL_ENV $dep_dir/py_env
+prepend-path PATH ${VIRTUAL_ENV}/bin
+EOF
+HDF5_DIR=$TACC_HDF5_DIR pip install --no-binary=h5py h5py
+pip install yapf==0.29.0
+
 printf "\n\nIMPORTANT!!!\nIn order to be able to use these modules you\n"
 echo "must run:"
 echo "  module use $dep_dir/modules"
