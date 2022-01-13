@@ -244,22 +244,6 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
     }
   }
 
-  // This overload is called when the list of analytic-solution tensors is
-  // empty, i.e. it is clear at compile-time that no analytic solutions are
-  // available
-  template <typename DataBoxType, typename ComputeTagsList,
-            typename Metavariables, typename ParallelComponent>
-  void operator()(const ObservationBox<DataBoxType, ComputeTagsList>& box,
-                  const double observation_value, const Mesh<VolumeDim>& mesh,
-                  const tnsr::I<DataVector, VolumeDim, Frame::Inertial>&
-                      inertial_coordinates,
-                  Parallel::GlobalCache<Metavariables>& cache,
-                  const ElementId<VolumeDim>& array_index,
-                  const ParallelComponent* const component) const {
-    this->operator()(box, observation_value, mesh, inertial_coordinates,
-                     std::nullopt, cache, array_index, component);
-  }
-
   using observation_registration_tags = tmpl::list<>;
   std::pair<observers::TypeOfObservation, observers::ObservationKey>
   get_observation_type_and_key_for_registration() const {
