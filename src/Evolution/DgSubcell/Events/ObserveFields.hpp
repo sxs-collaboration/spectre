@@ -168,10 +168,6 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
 
   using argument_tags =
       tmpl::list<::Tags::ObservationBox, ObservationValueTag,
-                 ::domain::Tags::Mesh<VolumeDim>,
-                 subcell::Tags::Mesh<VolumeDim>, subcell::Tags::ActiveGrid,
-                 ::domain::Tags::Coordinates<VolumeDim, Frame::Grid>,
-                 subcell::Tags::Coordinates<VolumeDim, Frame::Grid>,
                  ::domain::CoordinateMaps::Tags::CoordinateMap<
                      VolumeDim, Frame::Grid, Frame::Inertial>,
                  ::domain::Tags::FunctionsOfTime>;
@@ -180,12 +176,7 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
             typename Metavariables, typename ParallelComponent>
   void operator()(
       const ObservationBox<DataBoxType, ComputeTagsList>& box,
-      const double observation_value, const Mesh<VolumeDim>& dg_mesh,
-      const Mesh<VolumeDim>& subcell_mesh,
-      const subcell::ActiveGrid active_grid,
-      const tnsr::I<DataVector, VolumeDim, Frame::Grid>& dg_grid_coordinates,
-      const tnsr::I<DataVector, VolumeDim, Frame::Grid>&
-          subcell_grid_coordinates,
+      const double observation_value,
       const ::domain::CoordinateMapBase<Frame::Grid, Frame::Inertial,
                                         VolumeDim>& grid_to_inertial_map,
       const std::unordered_map<
@@ -219,7 +210,12 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
             (void)observation_value;
           }
         };
-    if (active_grid == subcell::ActiveGrid::Dg) {
+    if (const subcell::ActiveGrid active_grid =
+            get<subcell::Tags::ActiveGrid>(box);
+        active_grid == subcell::ActiveGrid::Dg) {
+      const auto& dg_mesh = get<::domain::Tags::Mesh<VolumeDim>>(box);
+      const auto& dg_grid_coordinates =
+          get<::domain::Tags::Coordinates<VolumeDim, Frame::Grid>>(box);
       const auto dg_inertial_coords = grid_to_inertial_map(
           dg_grid_coordinates, observation_value, functions_of_time);
       set_analytic_soln(dg_mesh, dg_inertial_coords);
@@ -235,6 +231,9 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
     } else {
       ASSERT(active_grid == subcell::ActiveGrid::Subcell,
              "Active grid must be either Dg or Subcell");
+      const auto& subcell_mesh = get<subcell::Tags::Mesh<VolumeDim>>(box);
+      const auto& subcell_grid_coordinates =
+          get<subcell::Tags::Coordinates<VolumeDim, Frame::Grid>>(box);
       const auto subcell_inertial_coords = grid_to_inertial_map(
           subcell_grid_coordinates, observation_value, functions_of_time);
       set_analytic_soln(subcell_mesh, subcell_inertial_coords);
