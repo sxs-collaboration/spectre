@@ -15,6 +15,7 @@ spectre_target_headers(
   Jacobians.hpp
   Mesh.hpp
   NeighborData.hpp
+  ObserverCoordinates.hpp
   OnSubcellFaces.hpp
   OnSubcells.hpp
   SubcellOptions.hpp
