@@ -754,8 +754,8 @@ struct DimensionfulSpinMagnitudeCompute : DimensionfulSpinMagnitude,
   static constexpr auto function = static_cast<void (*)(
       const gsl::not_null<double*>, const Scalar<DataVector>&,
       const Scalar<DataVector>&, const tnsr::ii<DataVector, 3, Frame>&,
-      const StrahlkorperTags::aliases::Jacobian<Frame>&, const YlmSpherepack&,
-      const Scalar<DataVector>&)>(
+      const StrahlkorperTags::aliases::Jacobian<Frame>&,
+      const Strahlkorper<Frame>&, const Scalar<DataVector>&)>(
       &StrahlkorperGr::dimensionful_spin_magnitude<Frame>);
   using argument_tags =
       tmpl::list<StrahlkorperTags::RicciScalar, SpinFunction,
@@ -801,8 +801,35 @@ template <typename Frame>
 struct ChristodoulouMassCompute : ChristodoulouMass, db::ComputeTag {
   using base = ChristodoulouMass;
   using return_type = double;
-  static constexpr auto function = &StrahlkorperGr::christodoulou_mass;
+  static void function(const gsl::not_null<double*> result,
+                       const double dimensionful_spin_magnitude,
+                       const double irreducible_mass) {
+    *result = ::StrahlkorperGr::christodoulou_mass(dimensionful_spin_magnitude,
+                                                   irreducible_mass);
+  }
+
   using argument_tags = tmpl::list<DimensionfulSpinMagnitude, IrreducibleMass>;
+};
+
+/// The dimensionless spin magnitude of a `Strahlkorper`.
+template <typename Frame>
+struct DimensionlessSpinMagnitude : db::SimpleTag {
+  using type = double;
+};
+
+/// Computes the dimensionless spin magnitude \f$\chi = \frac{S}{M^2}\f$
+/// from the dimensionful spin magnitude \f$S\f$ and the christodoulou
+/// mass \f$M\f$ of a black hole.
+template <typename Frame>
+struct DimensionlessSpinMagnitudeCompute : DimensionlessSpinMagnitude<Frame>,
+                                           db::ComputeTag {
+  using base = DimensionlessSpinMagnitude<Frame>;
+  using return_type = double;
+  static constexpr auto function = static_cast<void (*)(
+      const gsl::not_null<double*>, const double, const double)>(
+      &StrahlkorperGr::dimensionless_spin_magnitude);
+  using argument_tags =
+      tmpl::list<DimensionfulSpinMagnitude, ChristodoulouMass>;
 };
 
 }  // namespace Tags

@@ -692,12 +692,13 @@ void test_dimensionful_spin_magnitude(
       dimensionless_spin);
 
   const double spin_magnitude = StrahlkorperGr::dimensionful_spin_magnitude(
-      ricci_scalar, spin_function, spatial_metric, tangents, ylm, area_element);
+      ricci_scalar, spin_function, spatial_metric, tangents, strahlkorper,
+      area_element);
 
   double spin_magnitude_void = std::numeric_limits<double>::signaling_NaN();
   StrahlkorperGr::dimensionful_spin_magnitude(
       make_not_null(&spin_magnitude_void), ricci_scalar, spin_function,
-      spatial_metric, tangents, ylm, area_element);
+      spatial_metric, tangents, strahlkorper, area_element);
 
   Approx custom_approx = Approx::custom().epsilon(tolerance).scale(1.0);
   CHECK_ITERABLE_CUSTOM_APPROX(spin_magnitude, expected, custom_approx);
@@ -778,6 +779,57 @@ void test_spin_vector(
       ricci_scalar, spin_function, strahlkorper);
 
   CHECK_ITERABLE_APPROX(spin_vector, dimensionless_spin);
+}
+
+template <typename Solution, typename Fr>
+void test_dimensionless_spin_magnitude(const Solution& solution,
+                                       const Strahlkorper<Fr>& strahlkorper,
+                                       const double dimensionful_spin_magnitude,
+                                       const double expected) {
+  const auto box = db::create<
+      db::AddSimpleTags<StrahlkorperTags::items_tags<Frame::Inertial>>,
+      db::AddComputeTags<
+          StrahlkorperTags::compute_items_tags<Frame::Inertial>>>(strahlkorper);
+
+  const double t = 0.0;
+  const auto& cart_coords =
+      db::get<StrahlkorperTags::CartesianCoords<Frame::Inertial>>(box);
+
+  const auto vars = solution.variables(
+      cart_coords, t, typename Solution::template tags<DataVector>{});
+
+  const auto& spatial_metric =
+      get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>(vars);
+
+  const auto& normal_one_form =
+      db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box);
+  const auto& r_hat = db::get<StrahlkorperTags::Rhat<Frame::Inertial>>(box);
+  const auto& radius = db::get<StrahlkorperTags::Radius<Frame::Inertial>>(box);
+  const auto& jacobian =
+      db::get<StrahlkorperTags::Jacobian<Frame::Inertial>>(box);
+
+  const auto area_element = StrahlkorperGr::area_element(
+      spatial_metric, jacobian, normal_one_form, radius, r_hat);
+
+  const double area =
+      strahlkorper.ylm_spherepack().definite_integral(get(area_element).data());
+
+  const double irreducible_mass = StrahlkorperGr::irreducible_mass(area);
+
+  const double christodoulou_mass = StrahlkorperGr::christodoulou_mass(
+      dimensionful_spin_magnitude, irreducible_mass);
+
+  const double dimensionless_spin =
+      StrahlkorperGr::dimensionless_spin_magnitude(dimensionful_spin_magnitude,
+                                                   christodoulou_mass);
+
+  double dimensionless_spin_void = std::numeric_limits<double>::signaling_NaN();
+  StrahlkorperGr::dimensionless_spin_magnitude(
+      make_not_null(&dimensionless_spin_void), dimensionful_spin_magnitude,
+      christodoulou_mass);
+
+  CHECK_ITERABLE_APPROX(dimensionless_spin, expected);
+  CHECK_ITERABLE_APPROX(dimensionless_spin_void, expected);
 }
 
 SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperGr.Expansion",
@@ -1048,4 +1100,43 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperGr.SpinVector",
   test_spin_vector(gr::Solutions::KerrSchild{mass, spin, center}, kerr_horizon,
                    mass, spin, horizon_radius_with_spin_on_z_axis,
                    kerr_horizon_with_spin_on_z_axis.ylm_spherepack());
+}
+
+SPECTRE_TEST_CASE(
+    "Unit.ApparentHorizons.StrahlkorperGr.DimensionlessSpinMagnitude",
+    "[ApparentHorizons][Unit]") {
+  // Set up Kerr solution
+  const double mass = 4.444;
+  const std::array<double, 3> center{{0.0, 0.0, 0.0}};
+  const std::array<double, 3> spin{{0.12, 0.08, 0.04}};
+
+  // Set up Kerr horizon
+  const double l_max = 20;
+  const auto horizon_radius = gr::Solutions::kerr_horizon_radius(
+      Strahlkorper<Frame::Inertial>(l_max, l_max, 2.0, center)
+          .ylm_spherepack()
+          .theta_phi_points(),
+      mass, spin);
+
+  const auto kerr_horizon =
+      Strahlkorper<Frame::Inertial>(l_max, l_max, get(horizon_radius), center);
+
+  // Set up dimensionful spin magnitude
+  const double spin_magnitude = magnitude(spin);
+  const double dimful_spin_magnitude = spin_magnitude * square(mass);
+
+  // Expected dimensionless spin magnitude
+  const double kerr_radius = mass * (1.0 + sqrt(1.0 - square(spin_magnitude)));
+  const double irreducible_mass = sqrt(0.5 * mass * kerr_radius);
+  const double christodoulou_mass =
+      sqrt(square(irreducible_mass) +
+           square(dimful_spin_magnitude) / (4.0 * square(irreducible_mass)));
+
+  const double expected_dimless_spin_magnitude =
+      dimful_spin_magnitude / square(christodoulou_mass);
+
+  // Test function  for dimensionless spin magnitude
+  test_dimensionless_spin_magnitude(
+      gr::Solutions::KerrSchild{mass, spin, center}, kerr_horizon,
+      dimful_spin_magnitude, expected_dimless_spin_magnitude);
 }

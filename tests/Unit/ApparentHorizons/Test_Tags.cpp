@@ -366,6 +366,27 @@ void test_dimensionful_spin_vector_compute_tag() {
             ricci_scalar, spin_function, strahlkorper));
 }
 
+void test_dimensionless_spin_magnitude_compute_tag() {
+  const double dimensionful_spin_magnitude{5.0};
+  const double christodoulou_mass = 4.444;
+
+  const auto box = db::create<
+      db::AddSimpleTags<StrahlkorperGr::Tags::DimensionfulSpinMagnitude,
+                        StrahlkorperGr::Tags::ChristodoulouMass>,
+      db::AddComputeTags<
+          StrahlkorperGr::Tags::DimensionlessSpinMagnitudeCompute<
+              Frame::Inertial>>>(dimensionful_spin_magnitude,
+                                 christodoulou_mass);
+  // LHS of the == in the CHECK is retrieving the computed dimensionless spin
+  // magnitude from your DimensionlessSpinMagnitudeCompute tag and RHS of ==
+  // should be same logic as DimensionlessSpinMagnitudeCompute::function
+  CHECK(db::get<
+            StrahlkorperGr::Tags::DimensionlessSpinMagnitude<Frame::Inertial>>(
+            box) ==
+        StrahlkorperGr::dimensionless_spin_magnitude(
+            dimensionful_spin_magnitude, christodoulou_mass));
+}
+
 struct SomeType {};
 struct SomeTag : db::SimpleTag {
   using type = SomeType;
@@ -381,6 +402,7 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperDataBox",
   test_max_ricci_scalar();
   test_min_ricci_scalar();
   test_dimensionful_spin_vector_compute_tag();
+  test_dimensionless_spin_magnitude_compute_tag();
   TestHelpers::db::test_simple_tag<ah::Tags::FastFlow>("FastFlow");
   TestHelpers::db::test_simple_tag<StrahlkorperGr::Tags::Area>("Area");
   TestHelpers::db::test_simple_tag<StrahlkorperGr::Tags::IrreducibleMass>(
@@ -455,6 +477,9 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperDataBox",
   TestHelpers::db::test_simple_tag<
       StrahlkorperGr::Tags::DimensionfulSpinVector<Frame::Inertial>>(
       "DimensionfulSpinVector");
+  TestHelpers::db::test_simple_tag<
+      StrahlkorperGr::Tags::DimensionlessSpinMagnitude<Frame::Inertial>>(
+      "DimensionlessSpinMagnitude");
   TestHelpers::db::test_compute_tag<
       StrahlkorperTags::ThetaPhiCompute<Frame::Inertial>>("ThetaPhi");
   TestHelpers::db::test_compute_tag<
@@ -548,4 +573,7 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperDataBox",
   TestHelpers::db::test_compute_tag<
       StrahlkorperGr::Tags::DimensionfulSpinVectorCompute<Frame::Inertial>>(
       "DimensionfulSpinVector");
+  TestHelpers::db::test_compute_tag<
+      StrahlkorperGr::Tags::DimensionlessSpinMagnitudeCompute<Frame::Inertial>>(
+      "DimensionlessSpinMagnitude");
 }

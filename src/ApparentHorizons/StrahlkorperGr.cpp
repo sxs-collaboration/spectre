@@ -736,22 +736,27 @@ void dimensionful_spin_magnitude(
     const Scalar<DataVector>& spin_function,
     const tnsr::ii<DataVector, 3, Frame>& spatial_metric,
     const StrahlkorperTags::aliases::Jacobian<Frame>& tangents,
-    const YlmSpherepack& ylm, const Scalar<DataVector>& area_element) {
-  const Scalar<DataVector> sin_theta{sin(ylm.theta_phi_points()[0])};
+    const Strahlkorper<Frame>& strahlkorper,
+    const Scalar<DataVector>& area_element) {
+  const Scalar<DataVector> sin_theta{
+      sin(strahlkorper.ylm_spherepack().theta_phi_points()[0])};
 
   const auto surface_metric =
       get_surface_metric(spatial_metric, tangents, sin_theta);
   const auto inverse_surface_metric =
       determinant_and_inverse(surface_metric).second;
   const auto trace_christoffel_second_kind = get_trace_christoffel_second_kind(
-      surface_metric, inverse_surface_metric, sin_theta, ylm);
+      surface_metric, inverse_surface_metric, sin_theta,
+      strahlkorper.ylm_spherepack());
 
-  const size_t matrix_dimension = get_matrix_dimension(ylm);
+  const size_t matrix_dimension =
+      get_matrix_dimension(strahlkorper.ylm_spherepack());
   Matrix left_matrix(matrix_dimension, matrix_dimension, 0.0);
   Matrix right_matrix(matrix_dimension, matrix_dimension, 0.0);
   get_left_and_right_eigenproblem_matrices(
       &left_matrix, &right_matrix, inverse_surface_metric,
-      trace_christoffel_second_kind, sin_theta, ricci_scalar, ylm);
+      trace_christoffel_second_kind, sin_theta, ricci_scalar,
+      strahlkorper.ylm_spherepack());
 
   DataVector eigenvalues_real_part(matrix_dimension, 0.0);
   DataVector eigenvalues_im_part(matrix_dimension, 0.0);
@@ -761,28 +766,29 @@ void dimensionful_spin_magnitude(
 
   const std::array<DataVector, 3> smallest_eigenvectors =
       get_eigenvectors_for_3_smallest_magnitude_eigenvalues(
-          eigenvalues_real_part, eigenvectors, ylm);
+          eigenvalues_real_part, eigenvectors, strahlkorper.ylm_spherepack());
 
   // Get normalized potentials (Kerr normalization) corresponding to the
   // eigenvectors with three smallest-magnitude eigenvalues.
-  const auto potentials =
-      get_normalized_spin_potentials(smallest_eigenvectors, ylm, area_element);
+  const auto potentials = get_normalized_spin_potentials(
+      smallest_eigenvectors, strahlkorper.ylm_spherepack(), area_element);
 
-  *result = get_spin_magnitude(potentials, spin_function, area_element, ylm);
+  *result = get_spin_magnitude(potentials, spin_function, area_element,
+                               strahlkorper.ylm_spherepack());
 }
 
 template <typename Frame>
 double dimensionful_spin_magnitude(
     const Scalar<DataVector>& ricci_scalar,
-
     const Scalar<DataVector>& spin_function,
     const tnsr::ii<DataVector, 3, Frame>& spatial_metric,
     const StrahlkorperTags::aliases::Jacobian<Frame>& tangents,
-    const YlmSpherepack& ylm, const Scalar<DataVector>& area_element) {
+    const Strahlkorper<Frame>& strahlkorper,
+    const Scalar<DataVector>& area_element) {
   double result{};
   dimensionful_spin_magnitude(make_not_null(&result), ricci_scalar,
-                              spin_function, spatial_metric, tangents, ylm,
-                              area_element);
+                              spin_function, spatial_metric, tangents,
+                              strahlkorper, area_element);
   return result;
 }
 
@@ -868,6 +874,21 @@ double christodoulou_mass(const double dimensionful_spin_magnitude,
   return sqrt(square(irreducible_mass) + (square(dimensionful_spin_magnitude) /
                                           (4.0 * square(irreducible_mass))));
 }
+
+void dimensionless_spin_magnitude(const gsl::not_null<double*> result,
+                                  const double dimensionful_spin_magnitude,
+                                  const double christodoulou_mass) {
+  *result = dimensionful_spin_magnitude / square(christodoulou_mass);
+}
+
+double dimensionless_spin_magnitude(const double dimensionful_spin_magnitude,
+                                    const double christodoulou_mass) {
+  double result{};
+  dimensionless_spin_magnitude(make_not_null(&result),
+                               dimensionful_spin_magnitude, christodoulou_mass);
+  return result;
+}
+
 }  // namespace StrahlkorperGr
 
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(0, data)
@@ -987,13 +1008,15 @@ double christodoulou_mass(const double dimensionful_spin_magnitude,
       const Scalar<DataVector>& spin_function,                              \
       const tnsr::ii<DataVector, 3, FRAME(data)>& spatial_metric,           \
       const StrahlkorperTags::aliases::Jacobian<FRAME(data)>& tangents,     \
-      const YlmSpherepack& ylm, const Scalar<DataVector>& area_element);    \
+      const Strahlkorper<FRAME(data)>& strahlkorper,                        \
+      const Scalar<DataVector>& area_element);                              \
   template double StrahlkorperGr::dimensionful_spin_magnitude<FRAME(data)>( \
       const Scalar<DataVector>& ricci_scalar,                               \
       const Scalar<DataVector>& spin_function,                              \
       const tnsr::ii<DataVector, 3, FRAME(data)>& spatial_metric,           \
       const StrahlkorperTags::aliases::Jacobian<FRAME(data)>& tangents,     \
-      const YlmSpherepack& ylm, const Scalar<DataVector>& area_element);    \
+      const Strahlkorper<FRAME(data)>& strahlkorper,                        \
+      const Scalar<DataVector>& area_element);                              \
   template void StrahlkorperGr::spin_vector<FRAME(data)>(                   \
       const gsl::not_null<std::array<double, 3>*> result,                   \
       const double spin_magnitude, const Scalar<DataVector>& area_element,  \

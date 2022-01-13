@@ -89,6 +89,10 @@ struct DimensionfulSpinMagnitudeCompute;
 struct ChristodoulouMass;
 template <typename Frame>
 struct ChristodoulouMassCompute;
+template <typename Frame>
+struct DimensionlessSpinMagnitude;
+template <typename Frame>
+struct DimensionlessSpinMagnitudeCompute;
 
 }  // namespace Tags
 }  // namespace StrahlkorperGr
