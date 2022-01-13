@@ -53,42 +53,7 @@ class GlobalCache;
 }  // namespace Parallel
 /// \endcond
 
-namespace GeneralizedHarmonic {
-namespace Actions {
-template <size_t Dim>
-struct InitializeConstraints {
-  using frame = Frame::Inertial;
-
-  using compute_tags = tmpl::flatten<db::AddComputeTags<
-      GeneralizedHarmonic::Tags::GaugeConstraintCompute<Dim, frame>,
-      GeneralizedHarmonic::Tags::ThreeIndexConstraintCompute<Dim, frame>,
-      // following tags added to observe constraints
-      ::Tags::PointwiseL2NormCompute<
-          GeneralizedHarmonic::Tags::GaugeConstraint<Dim, frame>>,
-      ::Tags::PointwiseL2NormCompute<
-          GeneralizedHarmonic::Tags::ThreeIndexConstraint<Dim, frame>>,
-      // The 4-index constraint is only implemented in 3d
-      tmpl::conditional_t<
-          Dim == 3,
-          tmpl::list<
-              GeneralizedHarmonic::Tags::FourIndexConstraintCompute<Dim, frame>,
-              ::Tags::PointwiseL2NormCompute<
-                  GeneralizedHarmonic::Tags::FourIndexConstraint<Dim, frame>>>,
-          tmpl::list<>>>>;
-
-  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent>
-  static auto apply(db::DataBox<DbTagsList>& box,
-                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) {
-    return std::make_tuple(std::move(box));
-  }
-};
-
+namespace GeneralizedHarmonic::Actions {
 template <size_t Dim>
 struct InitializeGhAnd3Plus1Variables {
   using frame = Frame::Inertial;
@@ -125,6 +90,4 @@ struct InitializeGhAnd3Plus1Variables {
     return std::make_tuple(std::move(box));
   }
 };
-
-}  // namespace Actions
-}  // namespace GeneralizedHarmonic
+}  // namespace GeneralizedHarmonic::Actions

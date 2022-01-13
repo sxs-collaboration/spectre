@@ -172,25 +172,43 @@ struct GeneralizedHarmonicTemplateBase<
   using initialize_initial_data_dependent_quantities_actions = tmpl::list<
       GeneralizedHarmonic::gauges::Actions::InitializeDampedHarmonic<
           volume_dim, use_damped_harmonic_rollon>,
-      GeneralizedHarmonic::Actions::InitializeConstraints<volume_dim>,
       Parallel::Actions::TerminatePhase>;
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) {}
   using analytic_solution_tag = Tags::AnalyticSolution<BoundaryConditions>;
 
+  using analytic_compute =
+      evolution::Tags::AnalyticSolutionsCompute<volume_dim,
+                                                analytic_solution_fields>;
+  using deriv_compute = ::Tags::DerivCompute<
+      typename system::variables_tag,
+      domain::Tags::InverseJacobian<volume_dim, Frame::ElementLogical,
+                                    Frame::Inertial>,
+      typename system::gradient_variables>;
+  using error_compute = Tags::ErrorsCompute<analytic_solution_fields>;
+  using error_tags = db::wrap_tags_in<Tags::Error, analytic_solution_fields>;
+
   using observe_fields = tmpl::append<
       tmpl::push_back<
           analytic_solution_fields, gr::Tags::Lapse<DataVector>,
-          ::Tags::PointwiseL2Norm<
+          GeneralizedHarmonic::Tags::GaugeConstraintCompute<volume_dim, frame>,
+          GeneralizedHarmonic::Tags::ThreeIndexConstraintCompute<volume_dim,
+                                                                 frame>,
+          // following tags added to observe constraints
+          ::Tags::PointwiseL2NormCompute<
               GeneralizedHarmonic::Tags::GaugeConstraint<volume_dim, frame>>,
-          ::Tags::PointwiseL2Norm<GeneralizedHarmonic::Tags::
-                                      ThreeIndexConstraint<volume_dim, frame>>>,
-      std::conditional_t<volume_dim == 3,
-                         tmpl::list<::Tags::PointwiseL2Norm<
-                             GeneralizedHarmonic::Tags::FourIndexConstraint<
-                                 volume_dim, frame>>>,
-                         tmpl::list<>>>;
+          ::Tags::PointwiseL2NormCompute<
+              GeneralizedHarmonic::Tags::ThreeIndexConstraint<volume_dim,
+                                                              frame>>>,
+      // The 4-index constraint is only implemented in 3d
+      tmpl::conditional_t<
+          volume_dim == 3,
+          tmpl::list<
+              GeneralizedHarmonic::Tags::FourIndexConstraintCompute<3, frame>,
+              ::Tags::PointwiseL2NormCompute<
+                  GeneralizedHarmonic::Tags::FourIndexConstraint<3, frame>>>,
+          tmpl::list<>>>;
 
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
@@ -199,11 +217,13 @@ struct GeneralizedHarmonicTemplateBase<
         tmpl::pair<DomainCreator<volume_dim>, domain_creators<volume_dim>>,
         tmpl::pair<Event, tmpl::flatten<tmpl::list<
                               Events::Completion,
-                              Events::ObserveNorms<::Tags::Time, observe_fields,
-                                                   tmpl::list<>>,
+                              Events::ObserveNorms<
+                                  ::Tags::Time, observe_fields,
+                                  tmpl::list<analytic_compute, error_compute>>,
                               dg::Events::field_observations<
                                   volume_dim, Tags::Time, observe_fields,
-                                  analytic_solution_fields, tmpl::list<>>,
+                                  analytic_solution_fields,
+                                  tmpl::list<analytic_compute, error_compute>>,
                               Events::time_events<system>>>>,
         tmpl::pair<GeneralizedHarmonic::BoundaryConditions::BoundaryCondition<
                        volume_dim>,
@@ -358,9 +378,7 @@ struct GeneralizedHarmonicTemplateBase<
       GeneralizedHarmonic::Actions::InitializeGhAnd3Plus1Variables<volume_dim>,
       Initialization::Actions::AddComputeTags<
           tmpl::push_back<StepChoosers::step_chooser_compute_tags<
-                              GeneralizedHarmonicTemplateBase>,
-                          evolution::Tags::AnalyticSolutionsCompute<
-                              volume_dim, analytic_solution_fields>>>,
+              GeneralizedHarmonicTemplateBase>>>,
       ::evolution::dg::Initialization::Mortars<volume_dim, system>,
       evolution::Actions::InitializeRunEventsAndDenseTriggers,
       Initialization::Actions::RemoveOptionsAndTerminatePhase>;
