@@ -109,6 +109,12 @@ EventsAndTriggers:
 
 EventsAndDenseTriggers:
 
+InterpolationTargets:
+  SphericalSurface:
+    Lmax: 10
+    Center: [0., 0., 0.]
+    Radius: 1.
+
 Observers:
   VolumeFileName: "PlaneWaveMinkowski3DVolume"
   ReductionFileName: "PlaneWaveMinkowski3DReductions"
