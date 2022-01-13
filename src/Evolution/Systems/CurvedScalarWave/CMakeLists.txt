@@ -22,6 +22,7 @@ spectre_target_headers(
   Characteristics.hpp
   Constraints.hpp
   Equations.hpp
+  Initialize.hpp
   System.hpp
   Tags.hpp
   TagsDeclarations.hpp
