@@ -1,0 +1,76 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Regularly scheduled installation test with the Spack package manager
+name: Spack
+
+on:
+  schedule:
+    - cron: '0 0 * * 1' # every Monday morning
+  workflow_dispatch:
+
+concurrency:
+  group: spack
+  cancel-in-progress: true
+
+jobs:
+  spack_install:
+    name: Install
+    strategy:
+      matrix:
+        host: [ubuntu-latest, macos-latest]
+        compiler: [gcc, clang, apple-clang]
+        exclude:
+          - host: ubuntu-latest
+            compiler: apple-clang
+        version:
+          # A non-exhaustive set of versions to test, e.g., versions listed in
+          # published papers.
+          - 'develop'
+          - '2021.12.15'
+      fail-fast: false
+    runs-on: ${{ matrix.host }}
+    env:
+      # This is the configuration ("spec") that we'll install with Spack
+      # - Select the 'multicore' backend for Charm++, since we're running on a
+      #   single node.
+      # - Select HDF5 without MPI to avoid compiling MPI.
+      SPECTRE_SPEC: >-  # Line breaks are spaces, no trailing newline
+        spectre@${{ matrix.version }}
+          +python
+          %${{ matrix.compiler }}
+          ^charmpp backend=multicore
+          ^hdf5~mpi
+      SPACK_COLOR: always
+    steps:
+      - name: Install compiler
+        if: matrix.host == 'macos-latest' && matrix.compiler == 'clang'
+        run: |
+          brew install llvm
+          echo "$(brew --prefix llvm)/bin" >> $GITHUB_PATH
+      - name: Install Spack
+        run: |
+          git clone -c feature.manyFiles=true --depth=1 \
+            https://github.com/spack/spack.git
+          echo $PWD/spack/bin >> $GITHUB_PATH
+      - name: Configure Spack
+        run: |
+          spack debug report
+          spack compiler find
+          spack compiler info ${{ matrix.compiler }}
+          spack external find
+      - name: Configure mixed toolchain
+        if: matrix.host == 'ubuntu-latest' && matrix.compiler == 'clang'
+        # Clang doesn't bundle a fortran compiler, so we specify one
+        run: |
+          export FC=$(which gfortran)
+          export COMPILERS_CONFIG="$HOME/.spack/*/compilers.yaml"
+          sed -i "s|f77: null$|f77: $FC|" $COMPILERS_CONFIG
+          sed -i "s|fc: null$|fc: $FC|" $COMPILERS_CONFIG
+          cat $COMPILERS_CONFIG
+      - name: Print packages to install
+        run: |
+          spack spec -I ${SPECTRE_SPEC}
+      - name: Install SpECTRE
+        run: |
+          spack install --show-log-on-error ${SPECTRE_SPEC}
