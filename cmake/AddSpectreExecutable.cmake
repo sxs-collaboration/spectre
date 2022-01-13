@@ -38,6 +38,7 @@ function(add_spectre_executable TARGET_NAME)
     PRIVATE
     SpectreFlags
     )
+  install(TARGETS ${TARGET_NAME} OPTIONAL)
 endfunction()
 
 # A function to add a SpECTRE executable that uses Charm++
