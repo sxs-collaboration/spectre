@@ -192,6 +192,53 @@ auto partial_derivatives(
                                   tmpl::size_t<Dim>, DerivativeFrame>>;
 /// @}
 
+/// @{
+/// \ingroup NumericalAlgorithmsGroup
+/// \brief Compute the partial derivative of a `Tensor` with respect to
+/// the coordinates of `DerivativeFrame`.
+///
+/// Returns a `Tensor` with a spatial tensor index appended to the front
+/// of the input `Tensor`.
+///
+/// If you have a `Variables` with several tensors you need to differentiate,
+/// you should use the `partial_derivatives` function that operates on
+/// `Variables` since that'll be more efficient.
+template <typename SymmList, typename IndexList, size_t Dim,
+          typename DerivativeFrame>
+void partial_derivative(
+    const gsl::not_null<TensorMetafunctions::prepend_spatial_index<
+        Tensor<DataVector, SymmList, IndexList>, Dim, UpLo::Lo,
+        DerivativeFrame>*>
+        du,
+    const TensorMetafunctions::prepend_spatial_index<
+        Tensor<DataVector, SymmList, IndexList>, Dim, UpLo::Lo,
+        Frame::ElementLogical>& logical_partial_derivative_of_u,
+    const Mesh<Dim>& mesh,
+    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                          DerivativeFrame>& inverse_jacobian);
+
+template <typename SymmList, typename IndexList, size_t Dim,
+          typename DerivativeFrame>
+void partial_derivative(
+    const gsl::not_null<TensorMetafunctions::prepend_spatial_index<
+        Tensor<DataVector, SymmList, IndexList>, Dim, UpLo::Lo,
+        DerivativeFrame>*>
+        du,
+    const Tensor<DataVector, SymmList, IndexList>& u, const Mesh<Dim>& mesh,
+    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                          DerivativeFrame>& inverse_jacobian);
+
+template <typename SymmList, typename IndexList, size_t Dim,
+          typename DerivativeFrame>
+auto partial_derivative(
+    const Tensor<DataVector, SymmList, IndexList>& u, const Mesh<Dim>& mesh,
+    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                          DerivativeFrame>& inverse_jacobian)
+    -> TensorMetafunctions::prepend_spatial_index<
+        Tensor<DataVector, SymmList, IndexList>, Dim, UpLo::Lo,
+        DerivativeFrame>;
+/// @}
+
 namespace Tags {
 
 /*!
