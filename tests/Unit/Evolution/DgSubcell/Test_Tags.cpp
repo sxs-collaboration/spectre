@@ -19,6 +19,7 @@
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/NeighborData.hpp"
 #include "Evolution/DgSubcell/Tags/ObserverCoordinates.hpp"
+#include "Evolution/DgSubcell/Tags/ObserverMesh.hpp"
 #include "Evolution/DgSubcell/Tags/OnSubcellFaces.hpp"
 #include "Evolution/DgSubcell/Tags/OnSubcells.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
@@ -107,6 +108,28 @@ void test() {
           active_coords_box) ==
       tnsr::I<DataVector, 3, Frame::Inertial>{
           {{DataVector{27, 2.0}, DataVector{27, 5.0}, DataVector{27, 11.0}}}});
+
+  auto active_mesh_box = db::create<
+      db::AddSimpleTags<domain::Tags::Mesh<Dim>, subcell::Tags::Mesh<Dim>,
+                        subcell::Tags::ActiveGrid>,
+      db::AddComputeTags<subcell::Tags::ObserverMeshCompute<Dim>>>(
+      Mesh<Dim>{4, Spectral::Basis::Legendre,
+                Spectral::Quadrature::GaussLobatto},
+      Mesh<Dim>{7, Spectral::Basis::FiniteDifference,
+                Spectral::Quadrature::CellCentered},
+      subcell::ActiveGrid::Dg);
+  CHECK(db::get<::Events::Tags::ObserverMesh<Dim>>(active_mesh_box) ==
+        Mesh<Dim>{4, Spectral::Basis::Legendre,
+                  Spectral::Quadrature::GaussLobatto});
+  db::mutate<subcell::Tags::ActiveGrid>(
+      make_not_null(&active_mesh_box), [](const auto active_grid_ptr) {
+        *active_grid_ptr = subcell::ActiveGrid::Subcell;
+      });
+  CHECK(db::get<::Events::Tags::ObserverMesh<Dim>>(active_mesh_box) ==
+        Mesh<Dim>{7, Spectral::Basis::FiniteDifference,
+                  Spectral::Quadrature::CellCentered});
+  TestHelpers::db::test_compute_tag<subcell::Tags::ObserverMeshCompute<Dim>>(
+      "ObserverMesh");
 }
 }  // namespace
 
