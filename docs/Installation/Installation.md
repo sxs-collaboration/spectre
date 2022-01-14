@@ -10,6 +10,32 @@ For instructions on installing SpECTRE on clusters please refer to the
 \subpage versioning_and_releases page for information on specific versions to
 install.
 
+### Install a specific version with Spack
+
+You can install SpECTRE with the [Spack](https://github.com/spack/spack) package
+manager:
+
+```sh
+git clone https://github.com/spack/spack
+source ./spack/share/spack/setup-env.sh
+spack compiler find
+spack external find
+spack install spectre executables=ExportCoordinates3D \
+  ^charmpp backend=multicore
+```
+
+You probably want to customize your installation, e.g., to select a particular
+version of SpECTRE, the executables you want to install, additional options such
+as Python bindings, or the Charm++ backend. You can display all possible options
+with:
+
+```sh
+spack info spectre  # or charmpp, etc.
+```
+
+Refer to the [Spack documentation](https://spack.readthedocs.io/en/latest/) for
+more information.
+
 ### Quick-start guide for code development with Docker and Visual Studio Code
 
 If you're new to writing code for SpECTRE and would like to jump right into a
