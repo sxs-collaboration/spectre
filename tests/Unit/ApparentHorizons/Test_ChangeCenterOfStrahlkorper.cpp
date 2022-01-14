@@ -51,7 +51,8 @@ void test_change_center_of_strahlkorper() {
 
   // Center should have changed
   for (size_t i = 0; i < 3; ++i) {
-    CHECK(gsl::at(new_center, i) == gsl::at(strahlkorper.center(), i));
+    CHECK(gsl::at(new_center, i) ==
+          gsl::at(strahlkorper.expansion_center(), i));
   }
 
   // Physical center should not change (to lowest order only, since physical
@@ -64,13 +65,13 @@ void test_change_center_of_strahlkorper() {
   }
 
   // Now transform back
-  change_expansion_center_of_strahlkorper(make_not_null(&strahlkorper),
-                                          original_strahlkorper.center());
+  change_expansion_center_of_strahlkorper(
+      make_not_null(&strahlkorper), original_strahlkorper.expansion_center());
 
   // The original center and radii should have been restored.
   for (size_t i = 0; i < 3; ++i) {
-    CHECK(gsl::at(original_strahlkorper.center(), i) ==
-          gsl::at(strahlkorper.center(), i));
+    CHECK(gsl::at(original_strahlkorper.expansion_center(), i) ==
+          gsl::at(strahlkorper.expansion_center(), i));
   }
   // Radii are not the same to machine precision, but only to the
   // specified l_max.  If l_max is changed at the top of this file, then the
@@ -90,7 +91,7 @@ void test_change_center_of_strahlkorper_to_physical() {
       make_not_null(&strahlkorper));
 
   const auto new_physical_center = strahlkorper.physical_center();
-  const auto new_center = strahlkorper.center();
+  const auto new_center = strahlkorper.expansion_center();
   for (size_t i = 0; i < 3; ++i) {
     CHECK(approx(gsl::at(new_physical_center, i)) == gsl::at(new_center, i));
   }

@@ -17,7 +17,7 @@ class not_null;
 /// Changes the expansion center of a Strahlkorper, where the
 /// expansion center is defined as the point about which the spectral
 /// basis of the Strahlkorper is expanded, which is the quantity
-/// returned by `Strahlkorper::center()`.
+/// returned by `Strahlkorper::expansion_center()`.
 template <typename Frame>
 void change_expansion_center_of_strahlkorper(
     gsl::not_null<Strahlkorper<Frame>*> strahlkorper,

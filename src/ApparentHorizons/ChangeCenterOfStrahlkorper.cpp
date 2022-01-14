@@ -36,7 +36,7 @@ void change_expansion_center(
     const std::array<double, 3>& new_center,
     const tnsr::i<DataVector, 3, Frame>& r_hat) {
   // Get new_center minus old_center.
-  const auto& old_center = strahlkorper->center();
+  const auto& old_center = strahlkorper->expansion_center();
   const std::array<double, 3> center_difference{
       {new_center[0] - old_center[0], new_center[1] - old_center[1],
        new_center[2] - old_center[2]}};
@@ -126,11 +126,11 @@ void change_expansion_center_of_strahlkorper_to_physical(
   const size_t maxiter = 14;
   for (size_t iter = 0; iter < maxiter; ++iter) {
     const auto phys_center = strahlkorper->physical_center();
-    const auto center = strahlkorper->center();
+    const auto exp_center = strahlkorper->expansion_center();
     const auto average_radius = strahlkorper->average_radius();
-    const double relative_error = sqrt(square(center[0] - phys_center[0]) +
-                                       square(center[1] - phys_center[1]) +
-                                       square(center[2] - phys_center[2])) /
+    const double relative_error = sqrt(square(exp_center[0] - phys_center[0]) +
+                                       square(exp_center[1] - phys_center[1]) +
+                                       square(exp_center[2] - phys_center[2])) /
                                   average_radius;
     if (relative_error <= 2.0 * std::numeric_limits<double>::epsilon()) {
       return;
