@@ -39,6 +39,11 @@ std::optional<std::string> Dirichlet::dg_ghost(
   return {};
 }
 
+void Dirichlet::fd_ghost(const gsl::not_null<Scalar<DataVector>*> u,
+                         const Direction<1>& /*direction*/) const {
+  get(*u) = u_value_;
+}
+
 // NOLINTNEXTLINE
 PUP::able::PUP_ID Dirichlet::my_PUP_ID = 0;
 }  // namespace Burgers::BoundaryConditions
