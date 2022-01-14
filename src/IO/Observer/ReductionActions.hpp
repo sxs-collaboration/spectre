@@ -30,6 +30,7 @@
 #include "Parallel/Reduction.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
+#include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
@@ -245,6 +246,14 @@ void write_data(const std::string& subfile_name,
   std::vector<double> data_to_append{};
   EXPAND_PACK_LEFT_TO_RIGHT(
       append_to_reduction_data(&data_to_append, std::get<Is>(data)));
+
+  if (legend.size() != data_to_append.size()) {
+    ERROR(
+        "There must be one name provided for each piece of data. You provided "
+        << legend.size() << " names: '" << get_output(legend)
+        << "' but there are " << data_to_append.size()
+        << " pieces of data being reduced");
+  }
 
   h5::H5File<h5::AccessType::ReadWrite> h5file(file_prefix + ".h5", true);
   constexpr size_t version_number = 0;
