@@ -196,7 +196,9 @@ function(SPECTRE_PYTHON_ADD_MODULE MODULE_NAME)
       LINK_FLAGS "${PY_LIB_LINK_FLAGS}"
       )
     set(SPECTRE_PYTHON_MODULE_IMPORT "from ._${ARG_LIBRARY_NAME} import *")
-    add_dependencies(test-executables ${ARG_LIBRARY_NAME})
+    if(BUILD_TESTING)
+      add_dependencies(test-executables ${ARG_LIBRARY_NAME})
+    endif()
     add_dependencies(all-pybindings ${ARG_LIBRARY_NAME})
   endif(BUILD_PYTHON_BINDINGS AND NOT "${ARG_SOURCES}" STREQUAL "")
 
