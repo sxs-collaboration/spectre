@@ -17,7 +17,7 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
-  AnalyticSolution.hpp
+  Factory.hpp
   Lorentzian.hpp
   Moustache.hpp
   ProductOfSinusoids.hpp

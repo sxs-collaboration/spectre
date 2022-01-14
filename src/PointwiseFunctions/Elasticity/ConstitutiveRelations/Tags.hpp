@@ -4,11 +4,28 @@
 #pragma once
 
 #include <cstddef>
+#include <memory>
+#include <string>
 
 #include "DataStructures/DataBox/Tag.hpp"
+#include "Options/Options.hpp"
+#include "Parallel/Serialize.hpp"
 #include "PointwiseFunctions/Elasticity/ConstitutiveRelations/ConstitutiveRelation.hpp"
+#include "Utilities/TMPL.hpp"
 
 namespace Elasticity {
+
+namespace OptionTags {
+template <size_t Dim>
+struct ConstitutiveRelation : db::SimpleTag {
+  static std::string name() { return "Material"; }
+  static constexpr Options::String help =
+      "The constitutive relation of the elastic material.";
+  using type =
+      std::unique_ptr<ConstitutiveRelations::ConstitutiveRelation<Dim>>;
+};
+}  // namespace OptionTags
+
 namespace Tags {
 
 /*!
@@ -20,23 +37,11 @@ template <size_t Dim>
 struct ConstitutiveRelation : db::SimpleTag {
   using type =
       std::unique_ptr<ConstitutiveRelations::ConstitutiveRelation<Dim>>;
-};
 
-/*!
- * \brief Reference the constitutive relation provided by the `ProviderTag`
- *
- * \see `Elasticity::Tags::ConstitutiveRelation`
- */
-template <size_t Dim, typename ProviderTag>
-struct ConstitutiveRelationReference : ConstitutiveRelation<Dim>,
-                                       db::ReferenceTag {
-  using base = ConstitutiveRelation<Dim>;
-  using parent_tag = ProviderTag;
-  using argument_tags = tmpl::list<ProviderTag>;
-  template <typename Provider>
-  static const ConstitutiveRelations::ConstitutiveRelation<Dim>& get(
-      const Provider& provider) {
-    return provider.constitutive_relation();
+  using option_tags = tmpl::list<OptionTags::ConstitutiveRelation<Dim>>;
+  static constexpr bool pass_metavariables = false;
+  static type create_from_options(const type& value) {
+    return deserialize<type>(serialize<type>(value).data());
   }
 };
 

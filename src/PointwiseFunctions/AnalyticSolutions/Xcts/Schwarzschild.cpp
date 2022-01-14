@@ -52,7 +52,8 @@ Options::create_from_yaml<Xcts::Solutions::SchwarzschildCoordinates>::create<
                      "'Isotropic'.");
 }
 
-namespace Xcts::Solutions::detail {
+namespace Xcts::Solutions {
+namespace detail {
 
 SchwarzschildImpl::SchwarzschildImpl(
     const double mass, const SchwarzschildCoordinates coordinate_system)
@@ -268,7 +269,11 @@ void SchwarzschildVariables<DataType>::operator()(
 template class SchwarzschildVariables<double>;
 template class SchwarzschildVariables<DataVector>;
 
-}  // namespace Xcts::Solutions::detail
+}  // namespace detail
+
+PUP::able::PUP_ID Schwarzschild::my_PUP_ID = 0;  // NOLINT
+
+}  // namespace Xcts::Solutions
 
 // Instantiate implementations for common variables
 template class Xcts::Solutions::CommonVariables<

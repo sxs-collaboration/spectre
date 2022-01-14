@@ -18,10 +18,12 @@ Background:
     Length: 2.
     Height: 1.
     BendingMoment: 1.
-    Material:
-      # Iron
+    Material: &iron
       BulkModulus: 79.36507936507935
       ShearModulus: 38.75968992248062
+
+Material:
+  IsotropicHomogeneous: *iron
 
 InitialGuess:
   Zero:

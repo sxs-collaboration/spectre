@@ -18,12 +18,13 @@
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Parallel/PupStlCpp17.hpp"
-#include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticData/Xcts/CommonVariables.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/Xcts/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Xcts/Flatness.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags/Conformal.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/Background.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialGuess.hpp"
+#include "Utilities/FakeVirtual.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -209,19 +210,6 @@ struct BinaryVariables
 };
 }  // namespace detail
 
-/// \cond
-template <typename IsolatedObjectRegistrars, typename Registrars>
-class Binary;
-
-namespace Registrars {
-template <typename IsolatedObjectRegistrars>
-struct Binary {
-  template <typename Registrars>
-  using f = Xcts::AnalyticData::Binary<IsolatedObjectRegistrars, Registrars>;
-};
-}  // namespace Registrars
-/// \endcond
-
 /*!
  * \brief Binary compact-object data in general relativity, constructed from
  * superpositions of two isolated objects.
@@ -265,17 +253,10 @@ struct Binary {
  * where \f$\Omega\f$ is the angular-velocity parameter and \f$\dot{a}_0\f$
  * is an expansion parameter. Both control the eccentricity of the orbit.
  */
-template <typename IsolatedObjectRegistrars,
-          typename Registrars = tmpl::list<
-              Xcts::AnalyticData::Registrars::Binary<IsolatedObjectRegistrars>>>
-class Binary : public ::AnalyticData<3, Registrars> {
- private:
-  using Base = ::AnalyticData<3, Registrars>;
-
+template <typename IsolatedObjectBase, typename IsolatedObjectClasses>
+class Binary : public elliptic::analytic_data::Background,
+               public elliptic::analytic_data::InitialGuess {
  public:
-  using IsolatedObjectBase =
-      Xcts::Solutions::AnalyticSolution<IsolatedObjectRegistrars>;
-
   struct XCoords {
     static constexpr Options::String help =
         "The coordinates on the x-axis where the two objects are placed";
@@ -333,7 +314,9 @@ class Binary : public ::AnalyticData<3, Registrars> {
         expansion_(expansion),
         falloff_widths_(falloff_widths) {}
 
-  explicit Binary(CkMigrateMessage* m) : Base(m) {}
+  explicit Binary(CkMigrateMessage* m)
+      : elliptic::analytic_data::Background(m),
+        elliptic::analytic_data::InitialGuess(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Binary);
 
@@ -356,7 +339,8 @@ class Binary : public ::AnalyticData<3, Registrars> {
 
   // NOLINTNEXTLINE
   void pup(PUP::er& p) override {
-    Base::pup(p);
+    elliptic::analytic_data::Background::pup(p);
+    elliptic::analytic_data::InitialGuess::pup(p);
     p | xcoords_;
     p | superposed_objects_;
     p | angular_velocity_;
@@ -378,7 +362,7 @@ class Binary : public ::AnalyticData<3, Registrars> {
  private:
   std::array<double, 2> xcoords_{};
   std::array<std::unique_ptr<IsolatedObjectBase>, 2> superposed_objects_{};
-  Xcts::Solutions::Flatness<> flatness_{};
+  Xcts::Solutions::Flatness flatness_{};
   double angular_velocity_ = std::numeric_limits<double>::signaling_NaN();
   double expansion_ = std::numeric_limits<double>::signaling_NaN();
   std::optional<std::array<double, 2>> falloff_widths_{};
@@ -410,9 +394,8 @@ class Binary : public ::AnalyticData<3, Registrars> {
       } else {
         gsl::at(windows, i) = make_with_value<DataVector>(x, 1.);
       }
-      gsl::at(isolated_vars, i) =
-          gsl::at(superposed_objects_, i)
-              ->variables(gsl::at(x_isolated, i), requested_superposed_tags{});
+      gsl::at(isolated_vars, i) = get_isolated_vars<requested_superposed_tags>(
+          *gsl::at(superposed_objects_, i), gsl::at(x_isolated, i));
     }
     auto flat_vars = flatness_.variables(x, requested_superposed_tags{});
     typename VarsComputer::Cache cache{get_size(*x.begin())};
@@ -428,11 +411,21 @@ class Binary : public ::AnalyticData<3, Registrars> {
                                 std::move(isolated_vars)};
     return {cache.get_var(computer, RequestedTags{})...};
   }
+
+  template <typename TagsList, typename... Args>
+  tuples::tagged_tuple_from_typelist<TagsList> get_isolated_vars(
+      const IsolatedObjectBase& isolated_object, const Args&... args) const {
+    return call_with_dynamic_type<tuples::tagged_tuple_from_typelist<TagsList>,
+                                  IsolatedObjectClasses>(
+        &isolated_object, [&args...](const auto* const derived) {
+          return derived->variables(args..., TagsList{});
+        });
+  }
 };
 
 /// \cond
-template <typename IsolatedObjectRegistrars, typename Registrars>
-PUP::able::PUP_ID Binary<IsolatedObjectRegistrars, Registrars>::my_PUP_ID =
+template <typename IsolatedObjectBase, typename IsolatedObjectClasses>
+PUP::able::PUP_ID Binary<IsolatedObjectBase, IsolatedObjectClasses>::my_PUP_ID =
     0;  // NOLINT
 /// \endcond
 

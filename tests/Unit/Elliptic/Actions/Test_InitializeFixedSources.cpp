@@ -22,7 +22,12 @@
 #include "Elliptic/DiscontinuousGalerkin/Tags.hpp"
 #include "Elliptic/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
+#include "Parallel/CharmPupable.hpp"
+#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/Background.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -36,15 +41,27 @@ struct System {
   using primal_fields = tmpl::list<ScalarFieldTag>;
 };
 
-struct Background {
-  static tuples::TaggedTuple<Tags::FixedSource<ScalarFieldTag>> variables(
+struct Background : elliptic::analytic_data::Background {
+  Background() = default;
+  explicit Background(CkMigrateMessage* m)
+      : elliptic::analytic_data::Background(m) {}
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
+  WRAPPED_PUPable_decl_template(Background);  // NOLINT
+#pragma GCC diagnostic pop
+
+  // NOLINTBEGIN(readability-convert-member-functions-to-static)
+  // [background_vars_fct]
+  tuples::TaggedTuple<Tags::FixedSource<ScalarFieldTag>> variables(  // NOLINT
       const tnsr::I<DataVector, 1>& x,
-      tmpl::list<Tags::FixedSource<ScalarFieldTag>> /*meta*/) {
+      tmpl::list<Tags::FixedSource<ScalarFieldTag>> /*meta*/) const {
+    // [background_vars_fct]
     return {Scalar<DataVector>{get<0>(x)}};
   }
-  // NOLINTNEXTLINE
-  void pup(PUP::er& /*p*/) {}
+  // NOLINTEND(readability-convert-member-functions-to-static)
 };
+
+PUP::able::PUP_ID Background::my_PUP_ID = 0;  // NOLINT
 
 template <typename Metavariables>
 struct ElementArray {
@@ -64,15 +81,22 @@ struct ElementArray {
           typename Metavariables::Phase, Metavariables::Phase::Testing,
           tmpl::list<elliptic::Actions::InitializeFixedSources<
               typename Metavariables::system,
-              elliptic::Tags::Background<Background>>>>>;
+              elliptic::Tags::Background<
+                  elliptic::analytic_data::Background>>>>>;
 };
 
 struct Metavariables {
   using system = System;
   using component_list = tmpl::list<ElementArray<Metavariables>>;
-  using const_global_cache_tags =
-      tmpl::list<elliptic::Tags::Background<Background>>;
+  using const_global_cache_tags = tmpl::list<
+      elliptic::Tags::Background<elliptic::analytic_data::Background>>;
   enum class Phase { Initialization, Testing, Exit };
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes =
+        tmpl::map<tmpl::pair<elliptic::analytic_data::Background,
+                             tmpl::list<Background>>>;
+  };
 };
 
 }  // namespace
@@ -80,17 +104,17 @@ struct Metavariables {
 SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeFixedSources",
                   "[Unit][Elliptic][Actions]") {
   domain::creators::register_derived_with_charm();
+  Parallel::register_factory_classes_with_charm<Metavariables>();
   // Which element we work with does not matter for this test
   const ElementId<1> element_id{0, {{SegmentId{2, 1}}}};
   const domain::creators::Interval domain_creator{{{-0.5}}, {{1.5}},   {{2}},
                                                   {{4}},    {{false}}, nullptr};
 
   using element_array = ElementArray<Metavariables>;
-  ActionTesting::MockRuntimeSystem<Metavariables> runner{
-      tuples::TaggedTuple<elliptic::Tags::Background<Background>,
-                          domain::Tags::Domain<1>, elliptic::dg::Tags::Massive>{
-          std::make_unique<Background>(), domain_creator.create_domain(),
-          false}};
+  ActionTesting::MockRuntimeSystem<Metavariables> runner{tuples::TaggedTuple<
+      elliptic::Tags::Background<elliptic::analytic_data::Background>,
+      domain::Tags::Domain<1>, elliptic::dg::Tags::Massive>{
+      std::make_unique<Background>(), domain_creator.create_domain(), false}};
   ActionTesting::emplace_component_and_initialize<element_array>(
       &runner, element_id,
       {domain_creator.initial_refinement_levels(),

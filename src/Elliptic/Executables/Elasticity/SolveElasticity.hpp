@@ -57,15 +57,13 @@
 #include "ParallelAlgorithms/LinearSolver/Multigrid/Multigrid.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/Schwarz.hpp"
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
-#include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
-#include "PointwiseFunctions/AnalyticData/Elasticity/AnalyticData.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/Elasticity/AnalyticSolution.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/Elasticity/BentBeam.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/Elasticity/HalfSpaceMirror.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/Elasticity/Zero.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/Elasticity/Factory.hpp"
+#include "PointwiseFunctions/Elasticity/ConstitutiveRelations/Factory.hpp"
 #include "PointwiseFunctions/Elasticity/PotentialEnergy.hpp"
 #include "PointwiseFunctions/Elasticity/Strain.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/AnalyticSolution.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/Background.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialGuess.hpp"
 #include "Utilities/Blas.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/Functional.hpp"
@@ -108,26 +106,10 @@ struct Metavariables {
   static constexpr size_t volume_dim = Dim;
   using system = Elasticity::FirstOrderSystem<Dim>;
 
-  // List the possible backgrounds, i.e. the variable-independent part of the
-  // equations that define the problem to solve (along with the boundary
-  // conditions). We currently only have analytic solutions implemented, but
-  // will add non-solution backgrounds ASAP.
-  using analytic_solution_registrars = tmpl::flatten<tmpl::list<
-      tmpl::conditional_t<Dim == 2, Elasticity::Solutions::Registrars::BentBeam,
-                          tmpl::list<>>,
-      tmpl::conditional_t<Dim == 3,
-                          Elasticity::Solutions::Registrars::HalfSpaceMirror,
-                          tmpl::list<>>>>;
-  using background_registrars = analytic_solution_registrars;
-  using background_tag = elliptic::Tags::Background<
-      Elasticity::AnalyticData::AnalyticData<Dim, background_registrars>>;
-
-  // List the possible initial guesses
-  using initial_guess_registrars =
-      tmpl::append<tmpl::list<Elasticity::Solutions::Registrars::Zero<Dim>>,
-                   analytic_solution_registrars>;
-  using initial_guess_tag = elliptic::Tags::InitialGuess<
-      ::AnalyticData<Dim, initial_guess_registrars>>;
+  using background_tag =
+      elliptic::Tags::Background<elliptic::analytic_data::Background>;
+  using initial_guess_tag =
+      elliptic::Tags::InitialGuess<elliptic::analytic_data::InitialGuess>;
 
   static constexpr Options::String help{
       "Find the solution to a linear elasticity problem."};
@@ -188,7 +170,9 @@ struct Metavariables {
 
   // Collect all items to store in the cache.
   using const_global_cache_tags =
-      tmpl::list<background_tag, initial_guess_tag, Tags::EventsAndTriggers>;
+      tmpl::list<background_tag, initial_guess_tag,
+                 Elasticity::Tags::ConstitutiveRelation<volume_dim>,
+                 Tags::EventsAndTriggers>;
 
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
@@ -197,6 +181,16 @@ struct Metavariables {
         tmpl::pair<elliptic::BoundaryConditions::BoundaryCondition<volume_dim>,
                    Elasticity::BoundaryConditions::standard_boundary_conditions<
                        system>>,
+        tmpl::pair<elliptic::analytic_data::Background,
+                   Elasticity::Solutions::all_analytic_solutions<volume_dim>>,
+        tmpl::pair<elliptic::analytic_data::InitialGuess,
+                   Elasticity::Solutions::all_analytic_solutions<volume_dim>>,
+        tmpl::pair<elliptic::analytic_data::AnalyticSolution,
+                   Elasticity::Solutions::all_analytic_solutions<volume_dim>>,
+        tmpl::pair<
+            Elasticity::ConstitutiveRelations::ConstitutiveRelation<volume_dim>,
+            Elasticity::ConstitutiveRelations::standard_constitutive_relations<
+                volume_dim>>,
         tmpl::pair<
             Event,
             tmpl::flatten<tmpl::list<
@@ -233,15 +227,13 @@ struct Metavariables {
       elliptic::Actions::InitializeFields<system, initial_guess_tag>,
       elliptic::Actions::InitializeFixedSources<system, background_tag>,
       Initialization::Actions::AddComputeTags<tmpl::list<
-          Elasticity::Tags::ConstitutiveRelationReference<volume_dim,
-                                                          background_tag>,
           Elasticity::Tags::StrainCompute<volume_dim>,
           Elasticity::Tags::PotentialEnergyDensityCompute<volume_dim>>>,
       elliptic::Actions::InitializeOptionalAnalyticSolution<
           background_tag,
           tmpl::append<typename system::primal_fields,
                        typename system::primal_fluxes>,
-          Elasticity::Solutions::AnalyticSolution<Dim, background_registrars>>,
+          elliptic::analytic_data::AnalyticSolution>,
       elliptic::dg::Actions::initialize_operator<system>,
       elliptic::dg::subdomain_operator::Actions::InitializeSubdomain<
           system, background_tag, typename schwarz_smoother::options_group>,
@@ -330,10 +322,6 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &setup_memory_allocation_failure_reporting,
     &disable_openblas_multithreading,
     &domain::creators::register_derived_with_charm,
-    &Parallel::register_derived_classes_with_charm<
-        metavariables::background_tag::type::element_type>,
-    &Parallel::register_derived_classes_with_charm<
-        metavariables::initial_guess_tag::type::element_type>,
     &Parallel::register_derived_classes_with_charm<
         metavariables::schwarz_smoother::subdomain_solver>,
     &elliptic::subdomain_preconditioners::register_derived_with_charm,

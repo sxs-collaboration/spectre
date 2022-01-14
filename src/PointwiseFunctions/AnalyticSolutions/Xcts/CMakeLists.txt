@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   ConstantDensityStar.cpp
+  Flatness.cpp
   Kerr.cpp
   Schwarzschild.cpp
   )
@@ -17,10 +18,10 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
-  AnalyticSolution.hpp
   CommonVariables.hpp
   CommonVariables.tpp
   ConstantDensityStar.hpp
+  Factory.hpp
   Flatness.hpp
   Kerr.hpp
   Schwarzschild.hpp

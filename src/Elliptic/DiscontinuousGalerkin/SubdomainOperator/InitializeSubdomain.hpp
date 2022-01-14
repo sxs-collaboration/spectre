@@ -34,6 +34,7 @@
 #include "Elliptic/DiscontinuousGalerkin/Initialization.hpp"
 #include "Elliptic/DiscontinuousGalerkin/SubdomainOperator/Tags.hpp"
 #include "Elliptic/Utilities/ApplyAt.hpp"
+#include "Elliptic/Utilities/GetAnalyticData.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -203,6 +204,10 @@ struct InitializeSubdomain {
                   box));
           if constexpr (has_background_fields) {
             // Initialize faces and mortars on overlaps
+            const auto& background = db::get<BackgroundTag>(box);
+            using background_classes = tmpl::at<
+                typename Metavariables::factory_creation::factory_classes,
+                std::decay_t<decltype(background)>>;
             elliptic::util::mutate_apply_at<
                 db::wrap_tags_in<
                     overlaps_tag,
@@ -213,7 +218,7 @@ struct InitializeSubdomain {
                 tmpl::list<>>(InitializeFacesAndMortars{}, make_not_null(&box),
                               overlap_id,
                               db::get<domain::Tags::InitialExtents<Dim>>(box),
-                              db::get<BackgroundTag>(box));
+                              background, background_classes{});
             // Background fields
             initialize_background_fields(make_not_null(&box), overlap_id);
           } else {
@@ -259,16 +264,16 @@ struct InitializeSubdomain {
                        domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
                                                      Frame::Inertial>>>,
         tmpl::list<>>(
-        [&background, &face_background_fields](
+        [&background, &face_background_fields, &box](
             const gsl::not_null<Variables<typename System::background_fields>*>
                 background_fields,
             const tnsr::I<DataVector, Dim>& inertial_coords,
             const Mesh<Dim>& mesh,
             const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
                                   Frame::Inertial>& inv_jacobian) {
-          *background_fields = variables_from_tagged_tuple(
-              background.variables(inertial_coords, mesh, inv_jacobian,
-                                   typename System::background_fields{}));
+          *background_fields = elliptic::util::get_analytic_data<
+              typename System::background_fields>(
+              background, *box, inertial_coords, mesh, inv_jacobian);
           for (const auto& direction : Direction<Dim>::all_directions()) {
             // Slice the background fields to the face instead of evaluating
             // them on the face coords to avoid re-computing them, and because
@@ -343,10 +348,10 @@ struct InitializeSubdomain {
           const auto neighbor_face_inertial_coords =
               neighbor_element_map(interface_logical_coordinates(
                   neighbor_face_mesh, direction_from_neighbor));
-          const auto inv_metric_on_face =
-              get<typename System::inv_metric_tag>(background.variables(
-                  neighbor_face_inertial_coords,
-                  tmpl::list<typename System::inv_metric_tag>{}));
+          const auto inv_metric_on_face = get<typename System::inv_metric_tag>(
+              elliptic::util::get_analytic_data<
+                  tmpl::list<typename System::inv_metric_tag>>(
+                  background, *box, neighbor_face_inertial_coords));
           elliptic::util::mutate_apply_at<
               tmpl::list<neighbor_face_normal_magnitudes_tag>, tmpl::list<>,
               tmpl::list<>>(

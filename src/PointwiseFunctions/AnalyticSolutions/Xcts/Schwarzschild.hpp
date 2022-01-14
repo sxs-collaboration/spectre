@@ -15,10 +15,10 @@
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
 #include "Parallel/CharmPupable.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/Xcts/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Xcts/CommonVariables.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags/Conformal.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/AnalyticSolution.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -256,20 +256,6 @@ struct SchwarzschildVariables
 
 }  // namespace detail
 
-// The following implements the registration and factory-creation mechanism
-
-/// \cond
-template <typename Registrars>
-struct Schwarzschild;
-
-namespace Registrars {
-struct Schwarzschild {
-  template <typename Registrars>
-  using f = Solutions::Schwarzschild<Registrars>;
-};
-}  // namespace Registrars
-/// \endcond
-
 /*!
  * \brief Schwarzschild spacetime in general relativity
  *
@@ -278,13 +264,8 @@ struct Schwarzschild {
  * `Xcts::Solutions::SchwarzschildCoordinates` enum for the available coordinate
  * systems and for the solution variables in the respective coordinates.
  */
-template <typename Registrars =
-              tmpl::list<Solutions::Registrars::Schwarzschild>>
-class Schwarzschild : public AnalyticSolution<Registrars>,
+class Schwarzschild : public elliptic::analytic_data::AnalyticSolution,
                       public detail::SchwarzschildImpl {
- private:
-  using Base = AnalyticSolution<Registrars>;
-
  public:
   Schwarzschild() = default;
   Schwarzschild(const Schwarzschild&) = default;
@@ -296,7 +277,8 @@ class Schwarzschild : public AnalyticSolution<Registrars>,
   using SchwarzschildImpl::SchwarzschildImpl;
 
   /// \cond
-  explicit Schwarzschild(CkMigrateMessage* m) : Base(m) {}
+  explicit Schwarzschild(CkMigrateMessage* m)
+      : elliptic::analytic_data::AnalyticSolution(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Schwarzschild);
   /// \endcond
@@ -326,14 +308,9 @@ class Schwarzschild : public AnalyticSolution<Registrars>,
   }
 
   void pup(PUP::er& p) override {
-    Base::pup(p);
+    elliptic::analytic_data::AnalyticSolution::pup(p);
     detail::SchwarzschildImpl::pup(p);
   }
 };
-
-/// \cond
-template <typename Registrars>
-PUP::able::PUP_ID Schwarzschild<Registrars>::my_PUP_ID = 0;  // NOLINT
-/// \endcond
 
 }  // namespace Xcts::Solutions

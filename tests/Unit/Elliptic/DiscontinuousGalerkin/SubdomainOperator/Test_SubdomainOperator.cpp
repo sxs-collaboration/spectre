@@ -44,6 +44,7 @@
 #include "Elliptic/Systems/Elasticity/FirstOrderSystem.hpp"
 #include "Elliptic/Systems/Poisson/FirstOrderSystem.hpp"
 #include "Elliptic/Systems/Poisson/Geometry.hpp"
+#include "Elliptic/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
@@ -52,6 +53,7 @@
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
+#include "Parallel/CharmPupable.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Actions/SetData.hpp"
@@ -60,6 +62,7 @@
 #include "ParallelAlgorithms/LinearSolver/Schwarz/Tags.hpp"
 #include "PointwiseFunctions/Elasticity/ConstitutiveRelations/IsotropicHomogeneous.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/Background.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
@@ -182,22 +185,34 @@ struct InitializeRandomSubdomainData {
 // data. Instead, we just pick some arbitrary combination of the coordinate
 // values.
 template <size_t Dim>
-struct RandomBackground {
+struct RandomBackground : elliptic::analytic_data::Background {
+  RandomBackground() = default;
+  explicit RandomBackground(CkMigrateMessage* m)
+      : elliptic::analytic_data::Background(m) {}
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
+  WRAPPED_PUPable_decl_template(RandomBackground);  // NOLINT
+#pragma GCC diagnostic pop
+
+  // NOLINTBEGIN(readability-convert-member-functions-to-static)
   template <typename... RequestedTags>
-  static tuples::TaggedTuple<RequestedTags...> variables(
+  tuples::TaggedTuple<RequestedTags...> variables(  // NOLINT
       const tnsr::I<DataVector, Dim>& x,
-      tmpl::list<RequestedTags...> /*meta*/) {
+      tmpl::list<RequestedTags...> /*meta*/) const {
     return {variables(x, RequestedTags{})...};
   }
+  // [background_vars_fct_derivs]
   template <typename... RequestedTags>
-  static tuples::TaggedTuple<RequestedTags...> variables(
+  tuples::TaggedTuple<RequestedTags...> variables(  // NOLINT
       const tnsr::I<DataVector, Dim>& x, const Mesh<Dim>& /*mesh*/,
       const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
                             Frame::Inertial>&
       /*inv_jacobian*/,
-      tmpl::list<RequestedTags...> /*meta*/) {
+      tmpl::list<RequestedTags...> /*meta*/) const {
+    // [background_vars_fct_derivs]
     return variables(x, tmpl::list<RequestedTags...>{});
   }
+  // NOLINTEND(readability-convert-member-functions-to-static)
   static tnsr::II<DataVector, Dim> variables(
       const tnsr::I<DataVector, Dim>& x,
       gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial,
@@ -223,14 +238,10 @@ struct RandomBackground {
     }
     return result;
   }
-  // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& /*p*/) {}
 };
 
 template <size_t Dim>
-struct RandomBackgroundTag : db::SimpleTag {
-  using type = RandomBackground<Dim>;
-};
+PUP::able::PUP_ID RandomBackground<Dim>::my_PUP_ID = 0;  // NOLINT
 
 template <typename SubdomainOperator, typename Fields>
 struct ApplySubdomainOperator {
@@ -334,11 +345,14 @@ struct ElementArray {
                                               fields_tag, fluxes_tag,
                                               operator_applied_to_fields_tag>;
 
+  using background_tag =
+      elliptic::Tags::Background<elliptic::analytic_data::Background>;
+
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementId<Dim>;
   using const_global_cache_tags =
-      tmpl::list<domain::Tags::Domain<Dim>, RandomBackgroundTag<Dim>>;
+      tmpl::list<domain::Tags::Domain<Dim>, background_tag>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
@@ -350,12 +364,12 @@ struct ElementArray {
                              subdomain_operator_applied_to_fields_tag>>,
               Actions::SetupDataBox,
               ::elliptic::dg::Actions::InitializeDomain<Dim>,
-              ::elliptic::dg::Actions::initialize_operator<
-                  System, RandomBackgroundTag<Dim>>,
+              ::elliptic::dg::Actions::initialize_operator<System,
+                                                           background_tag>,
               ::elliptic::dg::subdomain_operator::Actions::InitializeSubdomain<
                   System,
-                  tmpl::conditional_t<has_background_fields,
-                                      RandomBackgroundTag<Dim>, void>,
+                  tmpl::conditional_t<has_background_fields, background_tag,
+                                      void>,
                   DummyOptionsGroup>,
               InitializeRandomSubdomainData<SubdomainOperator,
                                             typename fields_tag::tags_list>,
@@ -383,9 +397,12 @@ struct Metavariables {
   enum class Phase { Initialization, Testing, Exit };
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
-    using factory_classes = tmpl::map<tmpl::pair<
-        elliptic::BoundaryConditions::BoundaryCondition<System::volume_dim>,
-        tmpl::list<elliptic::BoundaryConditions::AnalyticSolution<System>>>>;
+    using factory_classes = tmpl::map<
+        tmpl::pair<
+            elliptic::BoundaryConditions::BoundaryCondition<System::volume_dim>,
+            tmpl::list<elliptic::BoundaryConditions::AnalyticSolution<System>>>,
+        tmpl::pair<elliptic::analytic_data::Background,
+                   tmpl::list<RandomBackground<System::volume_dim>>>>;
   };
 };
 
@@ -440,11 +457,12 @@ void test_subdomain_operator(
     CAPTURE(element_ids.size());
 
     ActionTesting::MockRuntimeSystem<metavariables> runner{tuples::TaggedTuple<
-        domain::Tags::Domain<Dim>, RandomBackgroundTag<Dim>,
+        domain::Tags::Domain<Dim>,
+        elliptic::Tags::Background<elliptic::analytic_data::Background>,
         LinearSolver::Schwarz::Tags::MaxOverlap<DummyOptionsGroup>,
         elliptic::dg::Tags::PenaltyParameter, elliptic::dg::Tags::Massive>{
-        std::move(domain), RandomBackground<Dim>{}, overlap, penalty_parameter,
-        use_massive_dg_operator}};
+        std::move(domain), std::make_unique<RandomBackground<Dim>>(), overlap,
+        penalty_parameter, use_massive_dg_operator}};
 
     // Initialize all elements, generating random subdomain data
     for (const auto& element_id : element_ids) {

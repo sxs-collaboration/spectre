@@ -51,13 +51,10 @@
 #include "ParallelAlgorithms/LinearSolver/Multigrid/Multigrid.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/Schwarz.hpp"
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
-#include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/Poisson/AnalyticSolution.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/Poisson/Lorentzian.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/Poisson/Moustache.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/Poisson/ProductOfSinusoids.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/Poisson/Zero.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/Poisson/Factory.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/AnalyticSolution.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/Background.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialGuess.hpp"
 #include "Utilities/Blas.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/Functional.hpp"
@@ -101,27 +98,10 @@ struct Metavariables {
   using system =
       Poisson::FirstOrderSystem<Dim, Poisson::Geometry::FlatCartesian>;
 
-  // List the possible backgrounds, i.e. the variable-independent part of the
-  // equations that define the problem to solve (along with the boundary
-  // conditions). We'll probably always have an analytic solution for Poisson
-  // problems, so we don't bother supporting non-solution backgrounds for now.
-  using analytic_solution_registrars = tmpl::flatten<tmpl::list<
-      Poisson::Solutions::Registrars::ProductOfSinusoids<Dim>,
-      tmpl::conditional_t<Dim == 1 or Dim == 2,
-                          Poisson::Solutions::Registrars::Moustache<Dim>,
-                          tmpl::list<>>,
-      tmpl::conditional_t<Dim == 3,
-                          Poisson::Solutions::Registrars::Lorentzian<Dim>,
-                          tmpl::list<>>>>;
-  using analytic_solution_tag = elliptic::Tags::Background<
-      Poisson::Solutions::AnalyticSolution<Dim, analytic_solution_registrars>>;
-
-  // List the possible initial guesses
-  using initial_guess_registrars =
-      tmpl::append<tmpl::list<Poisson::Solutions::Registrars::Zero<Dim>>,
-                   analytic_solution_registrars>;
-  using initial_guess_tag = elliptic::Tags::InitialGuess<
-      ::AnalyticData<Dim, initial_guess_registrars>>;
+  using background_tag =
+      elliptic::Tags::Background<elliptic::analytic_data::Background>;
+  using initial_guess_tag =
+      elliptic::Tags::InitialGuess<elliptic::analytic_data::InitialGuess>;
 
   static constexpr Options::String help{
       "Find the solution to a Poisson problem."};
@@ -175,13 +155,18 @@ struct Metavariables {
 
   // Collect all items to store in the cache.
   using const_global_cache_tags =
-      tmpl::list<analytic_solution_tag, initial_guess_tag,
-                 Tags::EventsAndTriggers>;
+      tmpl::list<background_tag, initial_guess_tag, Tags::EventsAndTriggers>;
 
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
         tmpl::pair<DomainCreator<volume_dim>, domain_creators<volume_dim>>,
+        tmpl::pair<elliptic::analytic_data::Background,
+                   Poisson::Solutions::all_analytic_solutions<volume_dim>>,
+        tmpl::pair<elliptic::analytic_data::InitialGuess,
+                   Poisson::Solutions::all_analytic_solutions<volume_dim>>,
+        tmpl::pair<elliptic::analytic_data::AnalyticSolution,
+                   Poisson::Solutions::all_analytic_solutions<volume_dim>>,
         tmpl::pair<
             elliptic::BoundaryConditions::BoundaryCondition<volume_dim>,
             Poisson::BoundaryConditions::standard_boundary_conditions<system>>,
@@ -219,14 +204,15 @@ struct Metavariables {
       Actions::RandomizeVariables<
           ::Tags::Variables<typename system::primal_fields>,
           RandomizeInitialGuess>,
-      elliptic::Actions::InitializeFixedSources<system, analytic_solution_tag>,
-      elliptic::Actions::InitializeAnalyticSolution<
-          analytic_solution_tag, tmpl::append<typename system::primal_fields,
-                                              typename system::primal_fluxes>>,
+      elliptic::Actions::InitializeFixedSources<system, background_tag>,
+      elliptic::Actions::InitializeOptionalAnalyticSolution<
+          background_tag,
+          tmpl::append<typename system::primal_fields,
+                       typename system::primal_fluxes>,
+          elliptic::analytic_data::AnalyticSolution>,
       elliptic::dg::Actions::initialize_operator<system>,
       elliptic::dg::subdomain_operator::Actions::InitializeSubdomain<
-          system, analytic_solution_tag,
-          typename schwarz_smoother::options_group>,
+          system, background_tag, typename schwarz_smoother::options_group>,
       elliptic::dg::Actions::ImposeInhomogeneousBoundaryConditionsOnSource<
           system, fixed_sources_tag>,
       // Apply the DG operator to the initial guess
@@ -311,10 +297,6 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &setup_error_handling, &setup_memory_allocation_failure_reporting,
     &disable_openblas_multithreading,
     &domain::creators::register_derived_with_charm,
-    &Parallel::register_derived_classes_with_charm<
-        metavariables::analytic_solution_tag::type::element_type>,
-    &Parallel::register_derived_classes_with_charm<
-        metavariables::initial_guess_tag::type::element_type>,
     &Parallel::register_derived_classes_with_charm<
         metavariables::schwarz_smoother::subdomain_solver>,
     &Parallel::register_factory_classes_with_charm<metavariables>};

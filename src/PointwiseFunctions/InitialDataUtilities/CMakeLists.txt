@@ -9,7 +9,10 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  AnalyticSolution.hpp
+  Background.hpp
   InitialData.hpp
+  InitialGuess.hpp
   )
 
 target_link_libraries(

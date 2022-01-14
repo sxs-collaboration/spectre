@@ -21,7 +21,8 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 
-namespace Xcts::Solutions::detail {
+namespace Xcts::Solutions {
+namespace detail {
 
 template <typename DataType>
 void KerrVariables<DataType>::operator()(
@@ -255,7 +256,11 @@ void KerrVariables<DataType>::operator()(
 template class KerrVariables<double>;
 template class KerrVariables<DataVector>;
 
-}  // namespace Xcts::Solutions::detail
+}  // namespace detail
+
+PUP::able::PUP_ID Kerr::my_PUP_ID = 0;  // NOLINT
+
+}  // namespace Xcts::Solutions
 
 // Instantiate implementations for common variables
 template class Xcts::Solutions::CommonVariables<

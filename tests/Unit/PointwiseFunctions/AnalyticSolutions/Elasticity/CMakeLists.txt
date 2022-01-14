@@ -13,5 +13,19 @@ add_test_library(
   ${LIBRARY}
   "PointwiseFunctions/AnalyticSolutions/Elasticity/"
   "${LIBRARY_SOURCES}"
-  "ConstitutiveRelations;CoordinateMaps;DataStructures;Domain;Elasticity;ElasticitySolutions;Spectral;Utilities"
+  ""
   )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  ConstitutiveRelations
+  CoordinateMaps
+  DataStructures
+  Domain
+  Elasticity
+  ElasticitySolutions
+  LinearOperators
+  Spectral
+  Utilities
+)

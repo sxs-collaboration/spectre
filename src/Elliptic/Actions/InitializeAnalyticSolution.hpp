@@ -14,6 +14,7 @@
 #include "DataStructures/VariablesTag.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
+#include "Elliptic/Utilities/GetAnalyticData.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
@@ -74,8 +75,9 @@ struct InitializeAnalyticSolution {
     const auto& inertial_coords =
         get<domain::Tags::Coordinates<Dim, Frame::Inertial>>(box);
     const auto& analytic_solution = get<AnalyticSolutionTag>(box);
-    auto analytic_fields = variables_from_tagged_tuple(
-        analytic_solution.variables(inertial_coords, AnalyticSolutionFields{}));
+    auto analytic_fields =
+        elliptic::util::get_analytic_data<AnalyticSolutionFields>(
+            analytic_solution, box, inertial_coords);
     Initialization::mutate_assign<simple_tags>(make_not_null(&box),
                                                std::move(analytic_fields));
     return {std::move(box)};
@@ -107,8 +109,8 @@ struct InitializeOptionalAnalyticSolution {
       const auto& inertial_coords =
           get<domain::Tags::Coordinates<Dim, Frame::Inertial>>(box);
       auto analytic_fields =
-          variables_from_tagged_tuple(analytic_solution->variables(
-              inertial_coords, AnalyticSolutionFields{}));
+          elliptic::util::get_analytic_data<AnalyticSolutionFields>(
+              *analytic_solution, box, inertial_coords);
       Initialization::mutate_assign<simple_tags>(make_not_null(&box),
                                                  std::move(analytic_fields));
     }

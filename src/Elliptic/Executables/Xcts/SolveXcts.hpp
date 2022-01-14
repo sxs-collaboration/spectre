@@ -55,14 +55,11 @@
 #include "ParallelAlgorithms/LinearSolver/Schwarz/Schwarz.hpp"
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
 #include "ParallelAlgorithms/NonlinearSolver/NewtonRaphson/NewtonRaphson.hpp"
-#include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
-#include "PointwiseFunctions/AnalyticData/Xcts/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticData/Xcts/Binary.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/Xcts/AnalyticSolution.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/Xcts/Flatness.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/Xcts/Kerr.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/Xcts/Schwarzschild.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/Xcts/Factory.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/AnalyticSolution.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/Background.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialGuess.hpp"
 #include "PointwiseFunctions/Xcts/SpacetimeQuantities.hpp"
 #include "Utilities/Blas.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
@@ -112,24 +109,10 @@ struct Metavariables {
       Xcts::FirstOrderSystem<Xcts::Equations::HamiltonianLapseAndShift,
                              Xcts::Geometry::Curved, conformal_matter_scale>;
 
-  // List the possible backgrounds, i.e. the variable-independent part of the
-  // equations that define the problem to solve (along with the boundary
-  // conditions)
-  using analytic_solution_registrars =
-      tmpl::list<Xcts::Solutions::Registrars::Schwarzschild,
-                 Xcts::Solutions::Registrars::Kerr>;
-  using analytic_data_registrars = tmpl::list<
-      Xcts::AnalyticData::Registrars::Binary<analytic_solution_registrars>>;
-  using background_tag = elliptic::Tags::Background<
-      ::AnalyticData<volume_dim, tmpl::append<analytic_solution_registrars,
-                                              analytic_data_registrars>>>;
-
-  // List the possible initial guesses
-  using initial_guess_registrars =
-      tmpl::append<tmpl::list<Xcts::Solutions::Registrars::Flatness>,
-                   analytic_solution_registrars, analytic_data_registrars>;
-  using initial_guess_tag = elliptic::Tags::InitialGuess<
-      ::AnalyticData<volume_dim, initial_guess_registrars>>;
+  using background_tag =
+      elliptic::Tags::Background<elliptic::analytic_data::Background>;
+  using initial_guess_tag =
+      elliptic::Tags::InitialGuess<elliptic::analytic_data::InitialGuess>;
 
   static constexpr Options::String help{
       "Find the solution to an XCTS problem."};
@@ -214,8 +197,19 @@ struct Metavariables {
 
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using analytic_solutions_and_data = tmpl::push_back<
+        Xcts::Solutions::all_analytic_solutions,
+        Xcts::AnalyticData::Binary<elliptic::analytic_data::AnalyticSolution,
+                                   Xcts::Solutions::all_analytic_solutions>>;
+
     using factory_classes = tmpl::map<
         tmpl::pair<DomainCreator<volume_dim>, domain_creators<volume_dim>>,
+        tmpl::pair<elliptic::analytic_data::Background,
+                   analytic_solutions_and_data>,
+        tmpl::pair<elliptic::analytic_data::InitialGuess,
+                   analytic_solutions_and_data>,
+        tmpl::pair<elliptic::analytic_data::AnalyticSolution,
+                   Xcts::Solutions::all_analytic_solutions>,
         tmpl::pair<
             elliptic::BoundaryConditions::BoundaryCondition<volume_dim>,
             Xcts::BoundaryConditions::standard_boundary_conditions<system>>,
@@ -255,8 +249,7 @@ struct Metavariables {
       elliptic::Actions::InitializeFixedSources<system, background_tag>,
       elliptic::Actions::InitializeOptionalAnalyticSolution<
           background_tag, analytic_solution_fields,
-          Xcts::Solutions::AnalyticSolution<tmpl::append<
-              analytic_solution_registrars, analytic_data_registrars>>>,
+          elliptic::analytic_data::AnalyticSolution>,
       elliptic::dg::Actions::initialize_operator<system, background_tag>,
       elliptic::dg::subdomain_operator::Actions::InitializeSubdomain<
           system, background_tag, typename schwarz_smoother::options_group>,
@@ -371,13 +364,6 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &setup_memory_allocation_failure_reporting,
     &disable_openblas_multithreading,
     &domain::creators::register_derived_with_charm,
-    &Parallel::register_derived_classes_with_charm<
-        metavariables::background_tag::type::element_type>,
-    &Parallel::register_derived_classes_with_charm<
-        metavariables::initial_guess_tag::type::element_type>,
-    &Parallel::register_derived_classes_with_charm<
-        Xcts::Solutions::AnalyticSolution<
-            typename metavariables::analytic_solution_registrars>>,
     &Parallel::register_derived_classes_with_charm<
         metavariables::schwarz_smoother::subdomain_solver>,
     &elliptic::subdomain_preconditioners::register_derived_with_charm,

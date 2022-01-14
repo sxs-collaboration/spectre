@@ -12,7 +12,7 @@
 #include "Elliptic/Systems/Poisson/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "Options/Options.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/Poisson/AnalyticSolution.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/AnalyticSolution.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -47,19 +47,6 @@ struct LorentzianVariables {
 };
 }  // namespace detail
 
-/// \cond
-template <size_t Dim, typename Registrars>
-struct Lorentzian;
-
-namespace Registrars {
-template <size_t Dim>
-struct Lorentzian {
-  template <typename Registrars>
-  using f = Solutions::Lorentzian<Dim, Registrars>;
-};
-}  // namespace Registrars
-/// \endcond
-
 /*!
  * \brief A Lorentzian solution to the Poisson equation
  *
@@ -72,15 +59,11 @@ struct Lorentzian {
  *
  * \note Corresponding 1D and 2D solutions are not implemented yet.
  */
-template <size_t Dim, typename Registrars =
-                          tmpl::list<Solutions::Registrars::Lorentzian<Dim>>>
-class Lorentzian : public AnalyticSolution<Dim, Registrars> {
+template <size_t Dim>
+class Lorentzian : public elliptic::analytic_data::AnalyticSolution {
   static_assert(
       Dim == 3,
       "This solution is currently implemented in 3 spatial dimensions only");
-
- private:
-  using Base = AnalyticSolution<Dim, Registrars>;
 
  public:
   using options = tmpl::list<>;
@@ -95,7 +78,8 @@ class Lorentzian : public AnalyticSolution<Dim, Registrars> {
   ~Lorentzian() override = default;
 
   /// \cond
-  explicit Lorentzian(CkMigrateMessage* m) : Base(m) {}
+  explicit Lorentzian(CkMigrateMessage* m)
+      : elliptic::analytic_data::AnalyticSolution(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Lorentzian);  // NOLINT
   /// \endcond
@@ -109,25 +93,21 @@ class Lorentzian : public AnalyticSolution<Dim, Registrars> {
     const VarsComputer computer{x};
     return {cache.get_var(computer, RequestedTags{})...};
   }
-
-  // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& /*p*/) override {}
 };
 
 /// \cond
-template <size_t Dim, typename Registrars>
-PUP::able::PUP_ID Lorentzian<Dim, Registrars>::my_PUP_ID = 0;  // NOLINT
+template <size_t Dim>
+PUP::able::PUP_ID Lorentzian<Dim>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
 
-template <size_t Dim, typename Registrars>
-bool operator==(const Lorentzian<Dim, Registrars>& /*lhs*/,
-                const Lorentzian<Dim, Registrars>& /*rhs*/) {
+template <size_t Dim>
+bool operator==(const Lorentzian<Dim>& /*lhs*/,
+                const Lorentzian<Dim>& /*rhs*/) {
   return true;
 }
 
-template <size_t Dim, typename Registrars>
-bool operator!=(const Lorentzian<Dim, Registrars>& lhs,
-                const Lorentzian<Dim, Registrars>& rhs) {
+template <size_t Dim>
+bool operator!=(const Lorentzian<Dim>& lhs, const Lorentzian<Dim>& rhs) {
   return not(lhs == rhs);
 }
 

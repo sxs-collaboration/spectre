@@ -14,12 +14,17 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
 #include "Elliptic/Actions/InitializeAnalyticSolution.hpp"
+#include "Elliptic/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/AnalyticSolution.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/Background.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -31,22 +36,22 @@ struct ScalarFieldTag : db::SimpleTag {
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
-struct AnalyticSolution;
+struct NoAnalyticSolution : elliptic::analytic_data::Background {
+  NoAnalyticSolution() = default;
+  explicit NoAnalyticSolution(CkMigrateMessage* m)
+      : elliptic::analytic_data::Background(m) {}
+  WRAPPED_PUPable_decl_template(NoAnalyticSolution);
 
-struct AnalyticSolutionOrData : PUP::able {
-  AnalyticSolutionOrData() = default;
-  explicit AnalyticSolutionOrData(CkMigrateMessage* m) : PUP::able(m) {}
-  WRAPPED_PUPable_decl(AnalyticSolutionOrData);
-
-  // Base class does _not_ provide variables for all system fields
+  // Does _not_ provide variables for all system fields
 };
 
-PUPable_def(AnalyticSolutionOrData)
+PUP::able::PUP_ID NoAnalyticSolution::my_PUP_ID = 0;  // NOLINT
 
-struct AnalyticSolution : AnalyticSolutionOrData {
+struct AnalyticSolution : elliptic::analytic_data::AnalyticSolution {
   AnalyticSolution() = default;
-  explicit AnalyticSolution(CkMigrateMessage* m) : AnalyticSolutionOrData(m) {}
-  WRAPPED_PUPable_decl(AnalyticSolution);
+  explicit AnalyticSolution(CkMigrateMessage* m)
+      : elliptic::analytic_data::AnalyticSolution(m) {}
+  WRAPPED_PUPable_decl_template(AnalyticSolution);
 
   static tuples::TaggedTuple<ScalarFieldTag> variables(
       const tnsr::I<DataVector, 1>& x, tmpl::list<ScalarFieldTag> /*meta*/) {
@@ -55,16 +60,8 @@ struct AnalyticSolution : AnalyticSolutionOrData {
   }
 };
 
-PUPable_def(AnalyticSolution)
+PUP::able::PUP_ID AnalyticSolution::my_PUP_ID = 0;  // NOLINT
 #pragma GCC diagnostic pop
-
-struct AnalyticSolutionTag : db::SimpleTag {
-  using type = AnalyticSolution;
-};
-
-struct AnalyticSolutionOrDataTag : db::SimpleTag {
-  using type = std::unique_ptr<AnalyticSolutionOrData>;
-};
 
 template <bool Optional, typename Metavariables>
 struct ElementArray {
@@ -79,25 +76,36 @@ struct ElementArray {
 
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Testing,
-          tmpl::list<
-              Actions::SetupDataBox,
-              tmpl::conditional_t<
-                  Optional,
-                  elliptic::Actions::InitializeOptionalAnalyticSolution<
-                      AnalyticSolutionOrDataTag, tmpl::list<ScalarFieldTag>,
-                      AnalyticSolution>,
-                  elliptic::Actions::InitializeAnalyticSolution<
-                      AnalyticSolutionTag, tmpl::list<ScalarFieldTag>>>>>>;
+          tmpl::list<Actions::SetupDataBox,
+                     tmpl::conditional_t<
+                         Optional,
+                         elliptic::Actions::InitializeOptionalAnalyticSolution<
+                             elliptic::Tags::Background<
+                                 elliptic::analytic_data::Background>,
+                             tmpl::list<ScalarFieldTag>,
+                             elliptic::analytic_data::AnalyticSolution>,
+                         elliptic::Actions::InitializeAnalyticSolution<
+                             elliptic::Tags::Background<
+                                 elliptic::analytic_data::AnalyticSolution>,
+                             tmpl::list<ScalarFieldTag>>>>>>;
 };
 
 template <bool Optional>
 struct Metavariables {
   using element_array = ElementArray<Optional, Metavariables>;
-  using const_global_cache_tags =
-      tmpl::list<tmpl::conditional_t<Optional, AnalyticSolutionOrDataTag,
-                                     AnalyticSolutionTag>>;
+  using const_global_cache_tags = tmpl::list<tmpl::conditional_t<
+      Optional, elliptic::Tags::Background<elliptic::analytic_data::Background>,
+      elliptic::Tags::Background<elliptic::analytic_data::AnalyticSolution>>>;
   using component_list = tmpl::list<element_array>;
   enum class Phase { Initialization, Testing, Exit };
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes =
+        tmpl::map<tmpl::pair<elliptic::analytic_data::Background,
+                             tmpl::list<AnalyticSolution, NoAnalyticSolution>>,
+                  tmpl::pair<elliptic::analytic_data::AnalyticSolution,
+                             tmpl::list<AnalyticSolution>>>;
+  };
 };
 
 template <bool Optional>
@@ -106,6 +114,8 @@ void test_initialize_analytic_solution(
     const Scalar<DataVector>& expected_solution) {
   using metavariables = Metavariables<Optional>;
   using element_array = typename metavariables::element_array;
+
+  Parallel::register_factory_classes_with_charm<metavariables>();
 
   const auto initialize_analytic_solution =
       [&inertial_coords](auto analytic_solution_or_data) {
@@ -137,13 +147,13 @@ void test_initialize_analytic_solution(
     }
     {
       INFO("No analytic solution is available");
-      const auto no_analytic_solutions = initialize_analytic_solution(
-          std::make_unique<AnalyticSolutionOrData>());
+      const auto no_analytic_solutions =
+          initialize_analytic_solution(std::make_unique<NoAnalyticSolution>());
       CHECK_FALSE(no_analytic_solutions.has_value());
     }
   } else {
     const auto analytic_solutions =
-        initialize_analytic_solution(AnalyticSolution{});
+        initialize_analytic_solution(std::make_unique<AnalyticSolution>());
     CHECK_ITERABLE_APPROX(
         get(get<::Tags::Analytic<ScalarFieldTag>>(analytic_solutions)),
         get(expected_solution));
@@ -154,9 +164,6 @@ void test_initialize_analytic_solution(
 
 SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeAnalyticSolution",
                   "[Unit][Elliptic][Actions]") {
-  PUPable_reg(AnalyticSolutionOrData);
-  PUPable_reg(AnalyticSolution);
-
   test_initialize_analytic_solution<false>(
       tnsr::I<DataVector, 1>{{{{1., 2., 3., 4.}}}},
       Scalar<DataVector>{{{{2., 4., 6., 8.}}}});

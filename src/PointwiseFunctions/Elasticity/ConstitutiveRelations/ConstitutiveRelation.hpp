@@ -13,15 +13,6 @@
 
 /// \cond
 class DataVector;
-namespace Elasticity {
-namespace ConstitutiveRelations {
-
-struct CubicCrystal;  // IWYU pragma: keep
-
-template <size_t Dim>
-struct IsotropicHomogeneous;  // IWYU pragma: keep
-}  // namespace ConstitutiveRelations
-}  // namespace Elasticity
 /// \endcond
 
 namespace Elasticity {
@@ -57,8 +48,6 @@ class ConstitutiveRelation : public PUP::able {
  public:
   static constexpr size_t volume_dim = Dim;
 
-  using creatable_classes = tmpl::list<CubicCrystal, IsotropicHomogeneous<Dim>>;
-
   ConstitutiveRelation() = default;
   ConstitutiveRelation(const ConstitutiveRelation&) = default;
   ConstitutiveRelation& operator=(const ConstitutiveRelation&) = default;
@@ -86,6 +75,3 @@ class ConstitutiveRelation : public PUP::able {
 
 }  // namespace ConstitutiveRelations
 }  // namespace Elasticity
-
-#include "PointwiseFunctions/Elasticity/ConstitutiveRelations/CubicCrystal.hpp"  // IWYU pragma: keep
-#include "PointwiseFunctions/Elasticity/ConstitutiveRelations/IsotropicHomogeneous.hpp"  // IWYU pragma: keep

@@ -13,11 +13,10 @@
 #include "Elliptic/Systems/Elasticity/Tags.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/Elasticity/AnalyticSolution.hpp"
 #include "PointwiseFunctions/Elasticity/ConstitutiveRelations/IsotropicHomogeneous.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/AnalyticSolution.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
-#include "Utilities/Registration.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -60,15 +59,6 @@ struct HalfSpaceMirrorVariables {
       ::Tags::FixedSource<Tags::Displacement<3>> /*meta*/) const;
 };
 }  // namespace detail
-
-/// \cond
-template <typename Registrars>
-struct HalfSpaceMirror;
-
-namespace Registrars {
-using HalfSpaceMirror = ::Registration::Registrar<Solutions::HalfSpaceMirror>;
-}  // namespace Registrars
-/// \endcond
 
 /*!
  * \brief The solution for a half-space mirror deformed by a laser beam.
@@ -122,9 +112,7 @@ using HalfSpaceMirror = ::Registration::Registrar<Solutions::HalfSpaceMirror>;
  * profile and \f$ \Theta = \mathrm{Tr}(S)\f$ the materials expansion.
  *
  */
-template <typename Registrars =
-              tmpl::list<Solutions::Registrars::HalfSpaceMirror>>
-class HalfSpaceMirror : public AnalyticSolution<3, Registrars> {
+class HalfSpaceMirror : public elliptic::analytic_data::AnalyticSolution {
  public:
   using constitutive_relation_type =
       Elasticity::ConstitutiveRelations::IsotropicHomogeneous<3>;
@@ -184,7 +172,8 @@ class HalfSpaceMirror : public AnalyticSolution<3, Registrars> {
   ~HalfSpaceMirror() override = default;
 
   /// \cond
-  explicit HalfSpaceMirror(CkMigrateMessage* /*unused*/) {}
+  explicit HalfSpaceMirror(CkMigrateMessage* m)
+      : elliptic::analytic_data::AnalyticSolution(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(HalfSpaceMirror);  // NOLINT
   /// \endcond
@@ -205,7 +194,7 @@ class HalfSpaceMirror : public AnalyticSolution<3, Registrars> {
   double absolute_tolerance() const { return absolute_tolerance_; }
   double relative_tolerance() const { return relative_tolerance_; }
 
-  const constitutive_relation_type& constitutive_relation() const override {
+  const constitutive_relation_type& constitutive_relation() const {
     return constitutive_relation_;
   }
 
@@ -231,8 +220,9 @@ class HalfSpaceMirror : public AnalyticSolution<3, Registrars> {
     return {cache.get_var(computer, RequestedTags{})...};
   }
 
-  // clang-tidy: no pass by reference
-  void pup(PUP::er& p) override {  // NOLINT
+  /// NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p) override {
+    elliptic::analytic_data::AnalyticSolution::pup(p);
     p | beam_width_;
     p | constitutive_relation_;
     p | integration_intervals_;
@@ -248,25 +238,7 @@ class HalfSpaceMirror : public AnalyticSolution<3, Registrars> {
   double relative_tolerance_{std::numeric_limits<double>::signaling_NaN()};
 };
 
-/// \cond
-template <typename Registrars>
-PUP::able::PUP_ID HalfSpaceMirror<Registrars>::my_PUP_ID = 0;  // NOLINT
-/// \endcond
-
-template <typename Registrars>
-bool operator==(const HalfSpaceMirror<Registrars>& lhs,
-                const HalfSpaceMirror<Registrars>& rhs) {
-  return lhs.beam_width() == rhs.beam_width() and
-         lhs.constitutive_relation() == rhs.constitutive_relation() and
-         lhs.integration_intervals() == rhs.integration_intervals() and
-         lhs.absolute_tolerance() == rhs.absolute_tolerance() and
-         lhs.relative_tolerance() == rhs.relative_tolerance();
-}
-
-template <typename Registrars>
-bool operator!=(const HalfSpaceMirror<Registrars>& lhs,
-                const HalfSpaceMirror<Registrars>& rhs) {
-  return not(lhs == rhs);
-}
+bool operator==(const HalfSpaceMirror& lhs, const HalfSpaceMirror& rhs);
+bool operator!=(const HalfSpaceMirror& lhs, const HalfSpaceMirror& rhs);
 
 }  // namespace Elasticity::Solutions

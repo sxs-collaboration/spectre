@@ -35,8 +35,8 @@
 
 namespace {
 
-struct HalfSpaceMirrorProxy : Elasticity::Solutions::HalfSpaceMirror<> {
-  using Elasticity::Solutions::HalfSpaceMirror<>::HalfSpaceMirror;
+struct HalfSpaceMirrorProxy : Elasticity::Solutions::HalfSpaceMirror {
+  using Elasticity::Solutions::HalfSpaceMirror::HalfSpaceMirror;
 
   using field_tags =
       tmpl::list<Elasticity::Tags::Displacement<3>, Elasticity::Tags::Strain<3>,
@@ -47,14 +47,13 @@ struct HalfSpaceMirrorProxy : Elasticity::Solutions::HalfSpaceMirror<> {
 
   tuples::tagged_tuple_from_typelist<field_tags> field_variables(
       const tnsr::I<DataVector, 3>& x) const {
-    return Elasticity::Solutions::HalfSpaceMirror<>::variables(x, field_tags{});
+    return Elasticity::Solutions::HalfSpaceMirror::variables(x, field_tags{});
   }
 
   // NOLINTNEXTLINE(readability-convert-member-functions-to-static)
   tuples::tagged_tuple_from_typelist<source_tags> source_variables(
       const tnsr::I<DataVector, 3>& x) const {
-    return Elasticity::Solutions::HalfSpaceMirror<>::variables(x,
-                                                               source_tags{});
+    return Elasticity::Solutions::HalfSpaceMirror::variables(x, source_tags{});
   }
 };
 
@@ -67,10 +66,10 @@ SPECTRE_TEST_CASE(
   // => K = E / (3 * (1 - 2 nu)), mu = E / (2 * (1 + nu))
   const Elasticity::ConstitutiveRelations::IsotropicHomogeneous<3>
       constitutive_relation{36.36363636363637, 30.76923076923077};
-  const Elasticity::Solutions::HalfSpaceMirror<> check_solution{
+  const Elasticity::Solutions::HalfSpaceMirror check_solution{
       0.177, constitutive_relation, 350, 1.e-12, 1.e-10};
   const auto created_solution =
-      TestHelpers::test_creation<Elasticity::Solutions::HalfSpaceMirror<>>(
+      TestHelpers::test_creation<Elasticity::Solutions::HalfSpaceMirror>(
           "BeamWidth: 0.177\n"
           "Material:\n"
           "  BulkModulus: 36.36363636363637\n"

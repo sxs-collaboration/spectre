@@ -19,6 +19,7 @@
 #include "Helpers/PointwiseFunctions/AnalyticSolutions/Xcts/VerifySolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Xcts/Schwarzschild.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags/Conformal.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/AnalyticSolution.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -65,34 +66,34 @@ using derived_tags = tmpl::list<
     Tags::LongitudinalShiftMinusDtConformalMetricSquare<DataVector>,
     Tags::LongitudinalShiftMinusDtConformalMetricOverLapseSquare<DataVector>>;
 
-struct SchwarzschildProxy : Xcts::Solutions::Schwarzschild<> {
-  using Xcts::Solutions::Schwarzschild<>::Schwarzschild;
+struct SchwarzschildProxy : Xcts::Solutions::Schwarzschild {
+  using Xcts::Solutions::Schwarzschild::Schwarzschild;
   tuples::tagged_tuple_from_typelist<
       tmpl::append<field_tags, auxiliary_field_tags>>
   field_variables(const tnsr::I<DataVector, 3, Frame::Inertial>& x) const {
-    return Xcts::Solutions::Schwarzschild<>::variables(
+    return Xcts::Solutions::Schwarzschild::variables(
         x, tmpl::append<field_tags, auxiliary_field_tags>{});
   }
   tuples::tagged_tuple_from_typelist<flux_tags> flux_variables(
       const tnsr::I<DataVector, 3, Frame::Inertial>& x) const {
-    return Xcts::Solutions::Schwarzschild<>::variables(x, flux_tags{});
+    return Xcts::Solutions::Schwarzschild::variables(x, flux_tags{});
   }
   tuples::tagged_tuple_from_typelist<background_tags> background_variables(
       const tnsr::I<DataVector, 3, Frame::Inertial>& x) const {
-    return Xcts::Solutions::Schwarzschild<>::variables(x, background_tags{});
+    return Xcts::Solutions::Schwarzschild::variables(x, background_tags{});
   }
   tuples::tagged_tuple_from_typelist<matter_source_tags>
   matter_source_variables(
       const tnsr::I<DataVector, 3, Frame::Inertial>& x) const {
-    return Xcts::Solutions::Schwarzschild<>::variables(x, matter_source_tags{});
+    return Xcts::Solutions::Schwarzschild::variables(x, matter_source_tags{});
   }
   tuples::tagged_tuple_from_typelist<gr_tags> gr_variables(
       const tnsr::I<DataVector, 3, Frame::Inertial>& x) const {
-    return Xcts::Solutions::Schwarzschild<>::variables(x, gr_tags{});
+    return Xcts::Solutions::Schwarzschild::variables(x, gr_tags{});
   }
   tuples::tagged_tuple_from_typelist<derived_tags> derived_variables(
       const tnsr::I<DataVector, 3, Frame::Inertial>& x) const {
-    return Xcts::Solutions::Schwarzschild<>::variables(x, derived_tags{});
+    return Xcts::Solutions::Schwarzschild::variables(x, derived_tags{});
   }
 };
 
@@ -103,12 +104,10 @@ void test_solution(const double mass,
                    const std::string& options_string) {
   CAPTURE(mass);
   CAPTURE(coords);
-  const auto created = TestHelpers::test_creation<
-      std::unique_ptr<Xcts::Solutions::AnalyticSolution<
-          tmpl::list<Xcts::Solutions::Registrars::Schwarzschild>>>>(
-      options_string);
-  REQUIRE(dynamic_cast<const Schwarzschild<>*>(created.get()) != nullptr);
-  const auto& solution = dynamic_cast<const Schwarzschild<>&>(*created);
+  const auto created = TestHelpers::test_factory_creation<
+      elliptic::analytic_data::AnalyticSolution, Schwarzschild>(options_string);
+  REQUIRE(dynamic_cast<const Schwarzschild*>(created.get()) != nullptr);
+  const auto& solution = dynamic_cast<const Schwarzschild&>(*created);
   {
     INFO("Properties");
     CHECK(solution.mass() == mass);

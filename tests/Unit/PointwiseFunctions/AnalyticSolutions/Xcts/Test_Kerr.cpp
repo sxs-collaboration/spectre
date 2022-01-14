@@ -12,6 +12,7 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/PointwiseFunctions/AnalyticSolutions/Xcts/VerifySolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Xcts/Kerr.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/AnalyticSolution.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace Xcts::Solutions {
@@ -23,11 +24,10 @@ void test_solution(const double mass, const std::array<double, 3> spin,
   CAPTURE(mass);
   CAPTURE(spin);
   CAPTURE(center);
-  const auto created = TestHelpers::test_creation<
-      std::unique_ptr<Xcts::Solutions::AnalyticSolution<
-          tmpl::list<Xcts::Solutions::Registrars::Kerr>>>>(options_string);
-  REQUIRE(dynamic_cast<const Kerr<>*>(created.get()) != nullptr);
-  const auto& solution = dynamic_cast<const Kerr<>&>(*created);
+  const auto created = TestHelpers::test_factory_creation<
+      elliptic::analytic_data::AnalyticSolution, Kerr>(options_string);
+  REQUIRE(dynamic_cast<const Kerr*>(created.get()) != nullptr);
+  const auto& solution = dynamic_cast<const Kerr&>(*created);
   {
     INFO("Properties");
     CHECK(solution.mass() == mass);

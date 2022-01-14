@@ -15,10 +15,10 @@
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/Xcts/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Xcts/CommonVariables.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags/Conformal.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/AnalyticSolution.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -144,20 +144,6 @@ struct KerrVariables : CommonVariables<DataType, KerrVariablesCache<DataType>> {
 
 }  // namespace detail
 
-// The following implements the registration and factory-creation mechanism
-
-/// \cond
-template <typename Registrars>
-struct Kerr;
-
-namespace Registrars {
-struct Kerr {
-  template <typename Registrars>
-  using f = Solutions::Kerr<Registrars>;
-};
-}  // namespace Registrars
-/// \endcond
-
 /*!
  * \brief Kerr spacetime in general relativity
  *
@@ -181,8 +167,7 @@ struct Kerr {
  * initial guess than flatness, such as a superposition of Kerr solutions for
  * black-hole binary initial data.
  */
-template <typename Registrars = tmpl::list<Solutions::Registrars::Kerr>>
-class Kerr : public AnalyticSolution<Registrars>,
+class Kerr : public elliptic::analytic_data::AnalyticSolution,
              public gr::Solutions::KerrSchild {
  public:
   using KerrSchild::KerrSchild;
@@ -221,13 +206,8 @@ class Kerr : public AnalyticSolution<Registrars>,
 
   void pup(PUP::er& p) override {
     gr::Solutions::KerrSchild::pup(p);
-    Xcts::Solutions::AnalyticSolution<Registrars>::pup(p);
+    elliptic::analytic_data::AnalyticSolution::pup(p);
   }
 };
-
-/// \cond
-template <typename Registrars>
-PUP::able::PUP_ID Kerr<Registrars>::my_PUP_ID = 0;  // NOLINT
-/// \endcond
 
 }  // namespace Xcts::Solutions

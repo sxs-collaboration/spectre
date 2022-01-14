@@ -378,7 +378,7 @@ void test_consistency_with_kerr(const bool compute_expansion) {
   std::array<double, 3> rotation =
       -0.5 * dimensionless_spin / horizon_kerrschild_radius;
   CAPTURE(rotation);
-  const Solutions::Kerr<> solution{mass, dimensionless_spin, {{0., 0., 0.}}};
+  const Solutions::Kerr solution{mass, dimensionless_spin, {{0., 0., 0.}}};
   const ApparentHorizon<Xcts::Geometry::Curved> kerr_horizon{
       center, rotation, solution,
       // Check with and without the negative-expansion condition. Either the
