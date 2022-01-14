@@ -33,7 +33,25 @@ is:
 
 You can cite this BibTeX entry in your publication:
 
-- [Find BibTeX entry for this version on Zenodo](https://zenodo.org/record/5815438/export/hx)
+<!-- The BibTeX entry below is updated automatically at releases -->
+<!-- BIBTEX ENTRY -->
+@software{spectrecode,
+    author = "Deppe, Nils and Throwe, William and Kidder, Lawrence E. and
+Fischer, Nils L. and H\'ebert, Fran\c cois and Moxon, Jordan and Armaza,
+Crist\'obal and Bonilla, Gabriel S. and Kumar, Prayush and Lovelace, Geoffrey
+and O'Shea, Eamonn and Pfeiffer, Harald P. and Scheel, Mark A. and Teukolsky,
+Saul A. and others",
+    title = "\texttt{SpECTRE v2022.01.03}",
+    version = "2022.01.03",
+    publisher = "Zenodo",
+    doi = "10.5281/zenodo.5815438",
+    url = "https://spectre-code.org",
+    howpublished = "\href{https://doi.org/10.5281/zenodo.5815438}{10.5281/zenodo.5815438}",
+    license = "MIT",
+    year = "2022",
+    month = "1"
+}
+<!-- BIBTEX ENTRY -->
 
 To aid reproducibility of your scientific results with SpECTRE, we recommend you
 keep track of the version(s) you used and report this information in your
