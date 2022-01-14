@@ -166,6 +166,8 @@ cmake -D FLAG1=OPT1 ... -D FLAGN=OPTN <SPECTRE_ROOT>
 - BUILD_SHARED_LIBS
   - Whether shared libraries are built instead of static libraries
     (default is `OFF`)
+- BUILD_TESTING
+  - Enable building tests. (default is `ON`)
 - CHARM_ROOT
   - The path to the build directory of `Charm++`
 - CMAKE_BUILD_TYPE
@@ -298,6 +300,14 @@ cmake -D FLAG1=OPT1 ... -D FLAGN=OPTN <SPECTRE_ROOT>
 In addition to individual simulation executables, the following targets are
 available to build with `make` or `ninja`:
 
+- unit-tests
+  - Build unit tests, which you can run with `ctest -L unit`. Available if
+    `BUILD_TESTING` is `ON` (the default).
+- test-executables
+  - Build all tests, including executables, so you can run all tests with
+    `ctest`. Available if `BUILD_TESTING` is `ON` (the default). To compile
+    `test-executables` you may have to reduce the number of cores you build on
+    in parallel to avoid running out of memory.
 - all-pybindings
   - Build Python bindings. See \ref spectre_using_python for details.
 - install
