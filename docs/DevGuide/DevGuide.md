@@ -56,6 +56,9 @@ Terms with SpECTRE-specific meanings are defined here.
 - \subpage code_review_guide "Code review guidelines." All code merged into
   develop must follow these requirements.
 
+### Performance and Optimization
+- \subpage general_perf_guide "General performance guidelines"
+
 ### Technical Documentation for Fluent Developers
 Assumes a thorough familiarity and fluency in SpECTRE's usage of TMP.
 - \subpage DataBoxGroup "DataBox"
