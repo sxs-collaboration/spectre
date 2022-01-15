@@ -26,6 +26,9 @@ function(add_single_input_file_test INPUT_FILE EXECUTABLE COMMAND_LINE_ARGS
   # Set tags for the test
   set(TAGS "InputFiles;${EXECUTABLE_DIR_NAME};${CHECK_TYPE}")
   string(TOLOWER "${TAGS}" TAGS)
+  # Add the executable name as label, without converting to lower case. This
+  # allows running all input file tests for a particular executable.
+  list(APPEND TAGS ${EXECUTABLE})
 
   set(
     CTEST_NAME
