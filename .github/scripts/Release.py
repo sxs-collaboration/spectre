@@ -3,6 +3,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+import datetime
 import difflib
 import git
 import logging
@@ -164,7 +165,7 @@ def collect_zenodo_metadata(metadata: dict, github: Github) -> dict:
     # Construct Zenodo metadata
     return dict(title=metadata['Name'],
                 version=metadata['Version'],
-                publication_date=metadata['PublicationDate'],
+                publication_date=metadata['PublicationDate'].isoformat(),
                 doi=metadata['Doi'],
                 description=rendered_description,
                 creators=zenodo_creators,
@@ -290,7 +291,9 @@ def prepare(metadata: dict, version_name: str, metadata_file: str,
     if not match_version_name:
         raise ValueError(f"Version name '{version_name}' doesn't match "
                          f"pattern '{VERSION_PATTERN}'.")
-    publication_date = '{}-{}-{}'.format(*match_version_name.groups()[:3])
+    publication_date = datetime.date(year=int(match_version_name.group(1)),
+                                     month=int(match_version_name.group(2)),
+                                     day=int(match_version_name.group(3)))
 
     if update_only:
         # Don't try to create a new version draft on Zenodo but update the
@@ -373,7 +376,7 @@ def prepare(metadata: dict, version_name: str, metadata_file: str,
         content_new = replace_in_yaml(content_original, 'Version',
                                       version_name, VERSION_PATTERN)
         content_new = replace_in_yaml(content_new, 'PublicationDate',
-                                      publication_date,
+                                      publication_date.isoformat(),
                                       PUBLICATION_DATE_PATTERN)
         content_new = replace_in_yaml(content_new, 'Doi', new_version_doi,
                                       DOI_PATTERN)
