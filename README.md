@@ -35,6 +35,7 @@ You can cite this BibTeX entry in your publication:
 
 <!-- The BibTeX entry below is updated automatically at releases -->
 <!-- BIBTEX ENTRY -->
+```bib
 @software{spectrecode,
     author = "Deppe, Nils and Throwe, William and Kidder, Lawrence E. and
 Fischer, Nils L. and H\'ebert, Fran\c cois and Moxon, Jordan and Armaza,
@@ -51,6 +52,7 @@ Saul A. and others",
     year = "2022",
     month = "1"
 }
+```
 <!-- BIBTEX ENTRY -->
 
 To aid reproducibility of your scientific results with SpECTRE, we recommend you
