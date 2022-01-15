@@ -476,7 +476,7 @@ def prepare(metadata: dict, version_name: str, metadata_file: str,
         return content
 
     def replace_bibtex_entry_in_readme(content, bibtex_entry):
-        bibtex_entry_string = bibtex_entry.to_string('bibtex')
+        bibtex_entry_string = bib_file_content
         # Work around an issue with escaping LaTeX commands
         bibtex_entry_string = bibtex_entry_string.replace("\\", "\\\\")
         FENCE_PATTERN = '<!-- BIBTEX ENTRY -->'
