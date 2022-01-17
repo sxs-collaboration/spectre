@@ -25,7 +25,7 @@ target_link_libraries(
   DataStructures
   ErrorHandling
   EventsAndTriggers
-  Hdf5
+  hdf5::hdf5
   Options
   Spectral
   Utilities
