@@ -46,18 +46,10 @@ if (CLANG_TIDY_BIN)
     clang-tidy
     ${MODULES_TO_DEPEND_ON}
     )
-  set_target_properties(
-      clang-tidy
-      PROPERTIES EXCLUDE_FROM_ALL TRUE
-  )
   add_custom_target(
       clang-tidy-all
       COMMAND ${CMAKE_BINARY_DIR}/ClangTidyAll.sh
       \${NUM_THREADS}
-  )
-  set_target_properties(
-      clang-tidy-all
-      PROPERTIES EXCLUDE_FROM_ALL TRUE
   )
   add_dependencies(
     clang-tidy-all
@@ -70,10 +62,6 @@ if (CLANG_TIDY_BIN)
       ${CMAKE_SOURCE_DIR}
       \${HASH}
       \${NUM_THREADS}
-  )
-  set_target_properties(
-      clang-tidy-hash
-      PROPERTIES EXCLUDE_FROM_ALL TRUE
   )
   add_dependencies(
     clang-tidy-hash
