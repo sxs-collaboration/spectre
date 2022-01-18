@@ -26,4 +26,6 @@ set_target_properties(
   PROPERTIES LINK_FLAGS "-nomain-module -nomain"
   )
 
-add_dependencies(test-executables ${EXECUTABLE})
+if(BUILD_TESTING)
+  add_dependencies(test-executables ${EXECUTABLE})
+endif()

@@ -193,6 +193,9 @@ jobs:
           git fetch upstream develop
       - name: Configure with cmake
         working-directory: /work
+        # Notes on the build configuration:
+        # - Set `BUILD_TESTING=OFF` to test a CMake configuration with tests
+        #   turned off.
         run: >
           mkdir build && cd build
 
@@ -206,6 +209,7 @@ jobs:
           -D USE_CCACHE=OFF
           -D DEBUG_SYMBOLS=OFF
           -D BUILD_PYTHON_BINDINGS=ON
+          -D BUILD_TESTING=OFF
           $GITHUB_WORKSPACE
       - name: Check clang-tidy
         working-directory: /work/build

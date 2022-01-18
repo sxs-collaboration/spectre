@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-enable_testing(true)
+include(CTest)
 
 set(SPECTRE_TEST_RUNNER "" CACHE STRING
   "Run test executables through the given wrapper.")
