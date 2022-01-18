@@ -29,6 +29,7 @@
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Tags.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
@@ -152,6 +153,35 @@ void test_logical_partial_derivative_per_tensor(
         get<gradient_tag>(u);
     const auto non_contiguous_single_du =
         logical_partial_derivative(get<gradient_tag>(u), mesh);
+    CHECK_ITERABLE_APPROX(non_contiguous_single_du, single_du);
+  });
+}
+
+template <typename GradientTags, typename VariableTags, size_t Dim,
+          typename DerivativeFrame>
+void test_partial_derivative_per_tensor(
+    const Variables<GradientTags>& du, const Variables<VariableTags>& u,
+    const Mesh<Dim>& mesh,
+    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                          DerivativeFrame>& inverse_jacobian) {
+  tmpl::for_each<GradientTags>([&du, &mesh, &u,
+                                &inverse_jacobian](auto gradient_tag_v) {
+    using gradient_tag = tmpl::type_from<decltype(gradient_tag_v)>;
+    using var_tag = typename gradient_tag::tag;
+
+    const auto single_du =
+        partial_derivative(get<var_tag>(u), mesh, inverse_jacobian);
+
+    Approx local_approx = Approx::custom().epsilon(1e-13).scale(1.0);
+    CHECK_ITERABLE_CUSTOM_APPROX(single_du, get<gradient_tag>(du),
+                                 local_approx);
+
+    // Check we can do derivatives when the components of `u` aren't contiguous
+    // in memory.
+    // NOLINTNEXTLINE(performance-unnecessary-copy-initialization)
+    const auto non_contiguous_u = get<var_tag>(u);
+    const auto non_contiguous_single_du =
+        partial_derivative(non_contiguous_u, mesh, inverse_jacobian);
     CHECK_ITERABLE_APPROX(non_contiguous_single_du, single_du);
   });
 }
@@ -339,6 +369,10 @@ void test_partial_derivatives_1d(const Mesh<1>& mesh) {
         make_not_null(&du_with_logical),
         logical_partial_derivatives<GradientTags>(u, mesh), inverse_jacobian);
     helper(du_with_logical);
+
+    // We've checked that du is correct, now test that taking derivatives of
+    // individual tensors gets the matching result.
+    test_partial_derivative_per_tensor(du, u, mesh, inverse_jacobian);
   }
 }
 
@@ -389,6 +423,10 @@ void test_partial_derivatives_2d(const Mesh<2>& mesh) {
           make_not_null(&du_with_logical),
           logical_partial_derivatives<GradientTags>(u, mesh), inverse_jacobian);
       helper(du_with_logical);
+
+      // We've checked that du is correct, now test that taking derivatives of
+      // individual tensors gets the matching result.
+      test_partial_derivative_per_tensor(du, u, mesh, inverse_jacobian);
     }
   }
 }
@@ -445,6 +483,10 @@ void test_partial_derivatives_3d(const Mesh<3>& mesh) {
             logical_partial_derivatives<GradientTags>(u, mesh),
             inverse_jacobian);
         helper(du_with_logical);
+
+        // We've checked that du is correct, now test that taking derivatives of
+        // individual tensors gets the matching result.
+        test_partial_derivative_per_tensor(du, u, mesh, inverse_jacobian);
       }
     }
   }
