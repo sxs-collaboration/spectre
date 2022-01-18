@@ -43,9 +43,9 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticData.Burgers.Sinusoid",
           Burgers::AnalyticData::Sinusoid>("Sinusoid:\n");
   const auto deserialized_option_solution =
       serialize_and_deserialize(option_solution);
-  const auto& periodic = dynamic_cast<const Burgers::AnalyticData::Sinusoid&>(
+  const auto& sinusoid = dynamic_cast<const Burgers::AnalyticData::Sinusoid&>(
       *deserialized_option_solution);
-  CHECK(periodic == Burgers::AnalyticData::Sinusoid{});
+  CHECK(sinusoid == Burgers::AnalyticData::Sinusoid{});
   test_move_semantics(Burgers::AnalyticData::Sinusoid{},
                       Burgers::AnalyticData::Sinusoid{});
 
