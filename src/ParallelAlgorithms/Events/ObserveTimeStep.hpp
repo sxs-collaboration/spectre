@@ -164,8 +164,8 @@ class ObserveTimeStep : public Event {
 
   // We obtain the grid size from the variables, rather than the mesh,
   // so that this observer is not DG-specific.
-  using argument_tags =
-      tmpl::list<Tags::Time, Tags::TimeStep, typename System::variables_tag>;
+  using argument_tags = tmpl::list<::Tags::Time, ::Tags::TimeStep,
+                                   typename System::variables_tag>;
 
   template <typename ArrayIndex, typename ParallelComponent,
             typename Metavariables>

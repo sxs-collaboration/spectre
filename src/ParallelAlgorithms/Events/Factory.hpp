@@ -18,7 +18,7 @@ template <size_t VolumeDim, typename TimeTag, typename Fields,
           typename ArraySectionIdTag = void>
 using field_observations = tmpl::flatten<tmpl::list<
     ObserveFields<VolumeDim, TimeTag, Fields, NonTensorComputeTagsList,
-                  SolutionFields, ArraySectionIdTag>,
+                  ArraySectionIdTag>,
     tmpl::conditional_t<
         std::is_same_v<SolutionFields, tmpl::list<>>, tmpl::list<>,
         ObserveErrorNorms<TimeTag, SolutionFields, ArraySectionIdTag>>>>;

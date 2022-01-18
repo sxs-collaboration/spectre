@@ -19,6 +19,7 @@
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Domain/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/ObservationId.hpp"
@@ -179,9 +180,9 @@ struct ScalarVarTimesThreeCompute
 // Test systems
 
 template <template <size_t, class...> class ObservationEvent,
-          typename... ExtraArgs>
+          typename ArraySectionId = void>
 struct ScalarSystem {
-  using extra_args = tmpl::list<ExtraArgs...>;
+  using array_section_id = ArraySectionId;
 
   struct ScalarVar : db::SimpleTag {
     static std::string name() { return "Scalar"; }
@@ -220,29 +221,34 @@ struct ScalarSystem {
       volume_dim, ObservationTimeTag,
       tmpl::push_back<all_vars_for_test,
                       Tags::ScalarVarTimesTwoCompute<ScalarVar>,
-                      Tags::ScalarVarTimesThree>,
-      tmpl::list<Tags::ScalarVarTimesThreeCompute<ScalarVar>>,
-      typename solution_for_test::vars_for_test, ExtraArgs...>;
+                      Tags::ScalarVarTimesThree,
+                      ::domain::Tags::Coordinates<volume_dim, Frame::Inertial>,
+                      ::Tags::Error<ScalarVar>>,
+      tmpl::list<Tags::ScalarVarTimesThreeCompute<ScalarVar>,
+                 ::Tags::ErrorsCompute<tmpl::list<ScalarVar>>>,
+      ArraySectionId>;
   static constexpr auto creation_string_for_test =
       "ObserveFields:\n"
       "  SubfileName: element_data\n"
       "  CoordinatesFloatingPointType: Double\n"
-      "  VariablesToObserve: [Scalar, ScalarVarTimesTwo, ScalarVarTimesThree]\n"
+      "  VariablesToObserve: [Scalar, ScalarVarTimesTwo, ScalarVarTimesThree, "
+      "Error(Scalar)]\n"
       "  FloatingPointTypes: [Double]\n";
   static ObserveEvent make_test_object(
       const std::optional<Mesh<volume_dim>>& interpolating_mesh) {
-    return ObserveEvent{"element_data",
-                        FloatingPointType::Double,
-                        {FloatingPointType::Double},
-                        {"Scalar", "ScalarVarTimesTwo", "ScalarVarTimesThree"},
-                        interpolating_mesh};
+    return ObserveEvent{
+        "element_data",
+        FloatingPointType::Double,
+        {FloatingPointType::Double},
+        {"Scalar", "ScalarVarTimesTwo", "ScalarVarTimesThree", "Error(Scalar)"},
+        interpolating_mesh};
   }
 };
 
 template <template <size_t, class...> class ObservationEvent,
-          typename... ExtraArgs>
+          typename ArraySectionId = void>
 struct ComplicatedSystem {
-  using extra_args = tmpl::list<ExtraArgs...>;
+  using array_section_id = ArraySectionId;
 
   struct ScalarVar : db::SimpleTag {
     static std::string name() { return "Scalar"; }
@@ -332,26 +338,34 @@ struct ComplicatedSystem {
       volume_dim, ObservationTimeTag,
       tmpl::push_back<all_vars_for_test,
                       Tags::ScalarVarTimesTwoCompute<ScalarVar>,
-                      Tags::ScalarVarTimesThree>,
-      tmpl::list<Tags::ScalarVarTimesThreeCompute<ScalarVar>>,
-      typename solution_for_test::vars_for_test, ExtraArgs...>;
+                      Tags::ScalarVarTimesThree,
+                      ::domain::Tags::Coordinates<volume_dim, Frame::Inertial>,
+                      ::Tags::Error<VectorVar>, ::Tags::Error<TensorVar2>>,
+      tmpl::list<
+          Tags::ScalarVarTimesThreeCompute<ScalarVar>,
+          ::Tags::ErrorsCompute<typename primitive_variables_tag::tags_list>>,
+      ArraySectionId>;
   static constexpr auto creation_string_for_test =
       "ObserveFields:\n"
       "  SubfileName: element_data\n"
       "  CoordinatesFloatingPointType: Double\n"
       "  VariablesToObserve: [Scalar, ScalarVarTimesTwo, ScalarVarTimesThree,"
-      "                       Vector, Tensor, Tensor2]\n"
-      "  FloatingPointTypes: [Double, Double, Double, Double, Float, Float]\n";
+      "                       Vector, Tensor, Tensor2,"
+      "                       Error(Vector), Error(Tensor2)]\n"
+      "  FloatingPointTypes: [Double, Double, Double, Double, Float, Float,"
+      "                       Double, Float]\n";
 
   static ObserveEvent make_test_object(
       const std::optional<Mesh<volume_dim>>& interpolating_mesh) {
-    return ObserveEvent("element_data", FloatingPointType::Double,
-                        {FloatingPointType::Double, FloatingPointType::Double,
-                         FloatingPointType::Double, FloatingPointType::Double,
-                         FloatingPointType::Float, FloatingPointType::Float},
-                        {"Scalar", "ScalarVarTimesTwo", "ScalarVarTimesThree",
-                         "Vector", "Tensor", "Tensor2"},
-                        interpolating_mesh);
+    return ObserveEvent(
+        "element_data", FloatingPointType::Double,
+        {FloatingPointType::Double, FloatingPointType::Double,
+         FloatingPointType::Double, FloatingPointType::Double,
+         FloatingPointType::Float, FloatingPointType::Float,
+         FloatingPointType::Double, FloatingPointType::Float},
+        {"Scalar", "ScalarVarTimesTwo", "ScalarVarTimesThree", "Vector",
+         "Tensor", "Tensor2", "Error(Vector)", "Error(Tensor2)"},
+        interpolating_mesh);
   }
 };
 }  // namespace TestHelpers::dg::Events::ObserveFields

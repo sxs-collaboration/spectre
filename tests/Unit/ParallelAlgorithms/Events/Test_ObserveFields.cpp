@@ -40,6 +40,7 @@
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Parallel/Tags/Metavariables.hpp"
 #include "ParallelAlgorithms/Events/ObserveFields.hpp"
+#include "ParallelAlgorithms/Events/Tags.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"  // IWYU pragma: keep
 #include "Utilities/Algorithm.hpp"
@@ -74,6 +75,22 @@ namespace {
 // NOLINTNEXTLINE(google-build-using-namespace)
 using namespace TestHelpers::dg::Events::ObserveFields;
 
+template <typename System, typename = void>
+struct prim_vars_impl {
+  using type = tmpl::list<>;
+  static constexpr bool has_prims = false;
+};
+
+template <typename System>
+struct prim_vars_impl<System,
+                      std::void_t<typename System::primitive_variables_tag>> {
+  using type = typename System::primitive_variables_tag::tags_list;
+  static constexpr bool has_prims = true;
+};
+
+template <typename System>
+using prim_vars_list = typename prim_vars_impl<System>::type;
+
 template <typename System, typename ArraySectionIdTag = void,
           typename ObserveEvent>
 void test_observe(
@@ -96,23 +113,42 @@ void test_observe(
 
   const intrp::RegularGrid interpolant(mesh, interpolating_mesh.value_or(mesh));
   const double observation_time = 2.0;
-  Variables<
-      tmpl::push_back<typename System::all_vars_for_test, coordinates_tag>>
-      vars(mesh.number_of_grid_points());
+  Variables<typename System::variables_tag::tags_list> vars(
+      mesh.number_of_grid_points());
+  Variables<tmpl::list<coordinates_tag>> coordinate_vars(
+      mesh.number_of_grid_points());
+  Variables<prim_vars_list<System>> prim_vars(mesh.number_of_grid_points());
   // Fill the variables with some data.  It doesn't matter much what,
   // but integers are nice in that we don't have to worry about
   // roundoff error.
   // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
   std::iota(vars.data(), vars.data() + vars.size(), 1.0);
+  std::iota(coordinate_vars.data(),
+            coordinate_vars.data() + coordinate_vars.size(),
+            static_cast<double>(vars.size()));
+  if constexpr (not std::is_same_v<tmpl::list<>, prim_vars_list<System>>) {
+    std::iota(prim_vars.data(), prim_vars.data() + prim_vars.size(),
+              static_cast<double>(vars.size() + coordinate_vars.size()));
+  }
 
   const typename System::solution_for_test analytic_solution{};
   using solution_variables = typename System::solution_for_test::vars_for_test;
   const Variables<
       db::wrap_tags_in<::Tags::detail::AnalyticImpl, solution_variables>>
-      solutions{variables_from_tagged_tuple(analytic_solution.variables(
-          get<coordinates_tag>(vars), observation_time, solution_variables{}))};
+      solutions{variables_from_tagged_tuple(
+          analytic_solution.variables(get<coordinates_tag>(coordinate_vars),
+                                      observation_time, solution_variables{}))};
   const Variables<solution_variables> errors =
-      vars.template extract_subset<solution_variables>() - solutions;
+      [&vars, &prim_vars, &solutions]() -> Variables<solution_variables> {
+    if constexpr (prim_vars_impl<System>::has_prims) {
+      (void)vars;
+      return prim_vars.template extract_subset<solution_variables>() -
+             solutions;
+    } else {
+      (void)prim_vars;
+      return vars.template extract_subset<solution_variables>() - solutions;
+    }
+  }();
 
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavariables>;
   MockRuntimeSystem runner(
@@ -123,13 +159,15 @@ void test_observe(
                                                       element_id);
   ActionTesting::emplace_group_component<observer_component>(&runner);
 
-  const auto box = db::create<
-      db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<metavariables>,
-                        ObservationTimeTag, domain::Tags::Mesh<volume_dim>,
-                        ::Tags::Variables<typename decltype(vars)::tags_list>,
-                        ::Tags::AnalyticSolutions<solution_variables>,
-                        observers::Tags::ObservationKey<ArraySectionIdTag>>>(
-      metavariables{}, observation_time, mesh, vars,
+  const auto box = db::create<db::AddSimpleTags<
+      Parallel::Tags::MetavariablesImpl<metavariables>, ObservationTimeTag,
+      domain::Tags::Mesh<volume_dim>,
+      ::Tags::Variables<typename decltype(vars)::tags_list>,
+      ::Tags::Variables<typename decltype(prim_vars)::tags_list>,
+      coordinates_tag, ::Tags::AnalyticSolutions<solution_variables>,
+      observers::Tags::ObservationKey<ArraySectionIdTag>>>(
+      metavariables{}, observation_time, mesh, vars, prim_vars,
+      get<coordinates_tag>(coordinate_vars),
       [&solutions, &has_analytic_solutions]() {
         return has_analytic_solutions ? std::make_optional(solutions)
                                       : std::nullopt;
@@ -137,9 +175,11 @@ void test_observe(
       section);
 
   observe->run(
-      make_observation_box<tmpl::filter<
-          typename System::ObserveEvent::compute_tags_for_observation_box,
-          db::is_compute_tag<tmpl::_1>>>(box),
+      make_observation_box<tmpl::push_back<
+          tmpl::filter<
+              typename System::ObserveEvent::compute_tags_for_observation_box,
+              db::is_compute_tag<tmpl::_1>>,
+          ::Events::Tags::ObserverMeshCompute<volume_dim>>>(box),
       ActionTesting::cache<element_component>(runner, array_index), array_index,
       std::add_pointer_t<element_component>{});
 
@@ -206,23 +246,29 @@ void test_observe(
   for (size_t i = 0; i < volume_dim; ++i) {
     check_component(
         std::string("InertialCoordinates_") + gsl::at({'x', 'y', 'z'}, i),
-        get<coordinates_tag>(vars).get(i));
+        get<coordinates_tag>(coordinate_vars).get(i));
   }
-  System::check_data([&check_component, &vars](const std::string& name,
-                                               auto tag,
-                                               const auto... indices) {
-    if constexpr (std::is_same_v<decltype(tag),
-                                 TestHelpers::dg::Events::ObserveFields::Tags::
-                                     ScalarVarTimesTwo>) {
+  System::check_data([&check_component, &prim_vars, &vars](
+                         const std::string& name, auto tag_v,
+                         const auto... indices) {
+    using tag = decltype(tag_v);
+    if constexpr (std::is_same_v<tag, TestHelpers::dg::Events::ObserveFields::
+                                          Tags::ScalarVarTimesTwo>) {
       check_component(
           name, DataVector{2.0 * get<typename System::ScalarVar>(vars).get()});
-    } else if constexpr (std::is_same_v<decltype(tag),
+    } else if constexpr (std::is_same_v<tag,
                                         TestHelpers::dg::Events::ObserveFields::
                                             Tags::ScalarVarTimesThree>) {
       check_component(
           name, DataVector{3.0 * get<typename System::ScalarVar>(vars).get()});
     } else {
-      check_component(name, get<decltype(tag)>(vars).get(indices...));
+      if constexpr (tmpl::list_contains_v<
+                        typename std::decay_t<decltype(prim_vars)>::tags_list,
+                        tag>) {
+        check_component(name, get<tag>(prim_vars).get(indices...));
+      } else {
+        check_component(name, get<tag>(vars).get(indices...));
+      }
     }
   });
   if (has_analytic_solutions) {
@@ -249,8 +295,7 @@ void test_system(
   INFO(pretty_type::get_name<System>());
   CAPTURE(has_analytic_solutions);
   CAPTURE(mesh_creation_string);
-  using ArraySectionIdTag =
-      tmpl::front<tmpl::push_back<typename System::extra_args, void>>;
+  using ArraySectionIdTag = typename System::array_section_id;
   INFO(pretty_type::get_name<ArraySectionIdTag>());
   CAPTURE(section);
   using metavariables = Metavariables<System, false>;

@@ -39,6 +39,7 @@
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Actions/RandomizeVariables.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
+#include "ParallelAlgorithms/Events/Tags.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Completion.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
@@ -151,7 +152,14 @@ struct Metavariables {
                                          typename system::primal_fluxes>>;
 
   using analytic_solution_fields = typename system::primal_fields;
-  using observe_fields = analytic_solution_fields;
+  using error_compute = ::Tags::ErrorsCompute<analytic_solution_fields>;
+  using error_tags = db::wrap_tags_in<Tags::Error, analytic_solution_fields>;
+  using observe_fields =
+      tmpl::push_back<tmpl::append<analytic_solution_fields, error_tags>,
+                      domain::Tags::Coordinates<volume_dim, Frame::Inertial>>;
+  using non_tensor_compute_tags =
+      tmpl::flatten<tmpl::list<::Events::Tags::ObserverMeshCompute<volume_dim>,
+                               error_compute>>;
 
   // Collect all items to store in the cache.
   using const_global_cache_tags =
@@ -176,7 +184,7 @@ struct Metavariables {
                 Events::Completion,
                 dg::Events::field_observations<
                     volume_dim, linear_solver_iteration_id, observe_fields,
-                    analytic_solution_fields, tmpl::list<>,
+                    analytic_solution_fields, non_tensor_compute_tags,
                     LinearSolver::multigrid::Tags::IsFinestGrid>>>>,
         tmpl::pair<Trigger, elliptic::Triggers::all_triggers<
                                 typename linear_solver::options_group>>>;

@@ -116,7 +116,7 @@ struct ChangeSlabSize {
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
-    const auto& time_step_id = db::get<Tags::TimeStepId>(box);
+    const auto& time_step_id = db::get<::Tags::TimeStepId>(box);
     if (not time_step_id.is_at_slab_boundary()) {
       return {std::move(box), Parallel::AlgorithmExecution::Continue};
     }
@@ -162,17 +162,17 @@ struct ChangeSlabSize {
         *alg::min_element(new_slab_size_inbox.begin()->second);
     new_slab_size_inbox.erase(new_slab_size_inbox.begin());
 
-    const TimeStepper& time_stepper = db::get<Tags::TimeStepper<>>(box);
+    const TimeStepper& time_stepper = db::get<::Tags::TimeStepper<>>(box);
 
     // Sometimes time steppers need to run with a fixed step size.
     // This is generally at the start of an evolution when the history
     // is in an unusual state.
     if (not time_stepper.can_change_step_size(
-            time_step_id, db::get<Tags::HistoryEvolvedVariables<>>(box))) {
+            time_step_id, db::get<::Tags::HistoryEvolvedVariables<>>(box))) {
       return {std::move(box), Parallel::AlgorithmExecution::Continue};
     }
 
-    const auto& current_step = db::get<Tags::TimeStep>(box);
+    const auto& current_step = db::get<::Tags::TimeStep>(box);
     const auto& current_slab = current_step.slab();
 
     const auto new_slab =
@@ -190,8 +190,8 @@ struct ChangeSlabSize {
     const auto new_next_time_step_id =
         time_stepper.next_time_id(new_time_step_id, new_step);
 
-    db::mutate<Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
-               Tags::Next<Tags::TimeStep>, Tags::TimeStepId>(
+    db::mutate<::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep,
+               ::Tags::Next<::Tags::TimeStep>, ::Tags::TimeStepId>(
         make_not_null(&box),
         [&new_next_time_step_id, &new_step, &new_time_step_id](
             const gsl::not_null<TimeStepId*> next_time_step_id,
@@ -262,7 +262,7 @@ class ChangeSlabSize : public Event {
 
   using compute_tags_for_observation_box = tmpl::list<>;
 
-  using argument_tags = tmpl::list<Tags::TimeStepId, Tags::DataBox>;
+  using argument_tags = tmpl::list<::Tags::TimeStepId, ::Tags::DataBox>;
 
   template <typename DbTags, typename Metavariables, typename ArrayIndex,
             typename ParallelComponent>

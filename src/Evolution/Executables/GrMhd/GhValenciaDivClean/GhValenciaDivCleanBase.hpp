@@ -283,12 +283,22 @@ struct GhValenciaDivCleanTemplateBase<
       tmpl::remove_duplicates<tmpl::flatten<tmpl::list<
       typename InterpolationTargetTags::vars_to_interpolate_to_target...>>>;
 
-  using observe_fields =
+  using analytic_compute =
+      evolution::Tags::AnalyticSolutionsCompute<volume_dim,
+                                                analytic_solution_fields>;
+  using error_compute = Tags::ErrorsCompute<analytic_solution_fields>;
+  using error_tags = db::wrap_tags_in<Tags::Error, analytic_solution_fields>;
+  using observe_fields = tmpl::push_back<
       tmpl::append<typename system::variables_tag::tags_list,
                    typename system::primitive_variables_tag::tags_list,
                    tmpl::list<::Tags::PointwiseL2Norm<
                        GeneralizedHarmonic::Tags::GaugeConstraint<
-                           volume_dim, domain_frame>>>>;
+                           volume_dim, domain_frame>>>>,
+      domain::Tags::Coordinates<volume_dim, Frame::Grid>,
+      domain::Tags::Coordinates<volume_dim, Frame::Inertial>>;
+  using non_tensor_compute_tags =
+      tmpl::list<::Events::Tags::ObserverMeshCompute<volume_dim>,
+                 analytic_compute, error_compute>;
 
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
@@ -302,7 +312,7 @@ struct GhValenciaDivCleanTemplateBase<
                     volume_dim, Tags::Time, observe_fields,
                     tmpl::conditional_t<is_analytic_solution_v<initial_data>,
                                         analytic_solution_fields, tmpl::list<>>,
-                    tmpl::list<>>,
+                    non_tensor_compute_tags>,
                 Events::time_events<system>,
                 intrp::Events::Interpolate<3, InterpolationTargetTags,
                                            interpolator_source_vars>...>>>,
@@ -422,11 +432,6 @@ struct GhValenciaDivCleanTemplateBase<
       VariableFixing::Actions::FixVariables<
           VariableFixing::FixToAtmosphere<volume_dim>>,
       GeneralizedHarmonic::Actions::InitializeGhAnd3Plus1Variables<volume_dim>,
-      tmpl::conditional_t<is_analytic_solution_v<initial_data>,
-                          Initialization::Actions::AddComputeTags<tmpl::list<
-                              evolution::Tags::AnalyticSolutionsCompute<
-                                  3, analytic_solution_fields>>>,
-                          tmpl::list<>>,
       Initialization::Actions::AddComputeTags<
           StepChoosers::step_chooser_compute_tags<
               GhValenciaDivCleanTemplateBase>>,

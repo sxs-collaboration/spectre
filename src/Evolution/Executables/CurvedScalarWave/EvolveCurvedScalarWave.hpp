@@ -140,19 +140,32 @@ struct EvolutionMetavars {
   using time_stepper_tag = Tags::TimeStepper<
       tmpl::conditional_t<local_time_stepping, LtsTimeStepper, TimeStepper>>;
 
-  using observe_fields = tmpl::flatten<
-      tmpl::list<typename system::variables_tag::tags_list,
-                 CurvedScalarWave::Tags::OneIndexConstraintCompute<volume_dim>,
-                 CurvedScalarWave::Tags::TwoIndexConstraintCompute<volume_dim>,
-                 ::Tags::PointwiseL2NormCompute<
-                     CurvedScalarWave::Tags::OneIndexConstraint<volume_dim>>,
-                 ::Tags::PointwiseL2NormCompute<
-                     CurvedScalarWave::Tags::TwoIndexConstraint<volume_dim>>>>;
+  using analytic_solution_fields = typename system::variables_tag::tags_list;
   using deriv_compute = ::Tags::DerivCompute<
       typename system::variables_tag,
       domain::Tags::InverseJacobian<volume_dim, Frame::ElementLogical,
                                     Frame::Inertial>,
       typename system::gradient_variables>;
+  using analytic_compute =
+      evolution::Tags::AnalyticSolutionsCompute<Dim, analytic_solution_fields>;
+  using error_compute = Tags::ErrorsCompute<analytic_solution_fields>;
+  using error_tags = db::wrap_tags_in<Tags::Error, analytic_solution_fields>;
+
+  using observe_fields = tmpl::push_back<
+      tmpl::flatten<tmpl::list<
+          tmpl::append<typename system::variables_tag::tags_list,
+                       typename deriv_compute::type::tags_list, error_tags>,
+          CurvedScalarWave::Tags::OneIndexConstraintCompute<volume_dim>,
+          CurvedScalarWave::Tags::TwoIndexConstraintCompute<volume_dim>,
+          ::Tags::PointwiseL2NormCompute<
+              CurvedScalarWave::Tags::OneIndexConstraint<volume_dim>>,
+          ::Tags::PointwiseL2NormCompute<
+              CurvedScalarWave::Tags::TwoIndexConstraint<volume_dim>>>>,
+      domain::Tags::Coordinates<volume_dim, Frame::Grid>,
+      domain::Tags::Coordinates<volume_dim, Frame::Inertial>>;
+  using non_tensor_compute_tags =
+      tmpl::list<::Events::Tags::ObserverMeshCompute<volume_dim>, deriv_compute,
+                 analytic_compute, error_compute>;
 
   static constexpr bool interpolate = volume_dim == 3;
   struct SphericalSurface {
@@ -195,8 +208,9 @@ struct EvolutionMetavars {
                        Events::Completion,
                        Events::ObserveNorms<::Tags::Time, observe_fields>,
                        dg::Events::field_observations<
-                           volume_dim, Tags::Time, observe_fields, tmpl::list<>,
-                           tmpl::list<deriv_compute>>,
+                           volume_dim, Tags::Time,
+                           observe_fields,
+                           tmpl::list<>, non_tensor_compute_tags>,
                        tmpl::conditional_t<
                            interpolate,
                            intrp::Events::InterpolateWithoutInterpComponent<

@@ -286,7 +286,9 @@ struct EvolutionMetavars {
                          volume_dim, ::Frame::Inertial>>,
                  ::Tags::PointwiseL2NormCompute<
                      GeneralizedHarmonic::Tags::ThreeIndexConstraint<
-                         volume_dim, ::Frame::Inertial>>>,
+                         volume_dim, ::Frame::Inertial>>,
+                 ::domain::Tags::Coordinates<volume_dim, Frame::Grid>,
+                 ::domain::Tags::Coordinates<volume_dim, Frame::Inertial>>,
       // The 4-index constraint is only implemented in 3d
       tmpl::conditional_t<
           volume_dim == 3,
@@ -296,6 +298,8 @@ struct EvolutionMetavars {
                          GeneralizedHarmonic::Tags::FourIndexConstraint<
                              3, ::Frame::Inertial>>>,
           tmpl::list<>>>;
+  using non_tensor_compute_tags =
+      tmpl::list<::Events::Tags::ObserverMeshCompute<volume_dim>>;
 
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
@@ -311,7 +315,7 @@ struct EvolutionMetavars {
                 Events::ObserveNorms<::Tags::Time, observe_fields>,
                 dg::Events::field_observations<volume_dim, Tags::Time,
                                                observe_fields, tmpl::list<>,
-                                               tmpl::list<>>,
+                                               non_tensor_compute_tags>,
                 Events::time_events<system>>>>,
         tmpl::pair<GeneralizedHarmonic::BoundaryConditions::BoundaryCondition<
                        volume_dim>,
