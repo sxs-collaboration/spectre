@@ -3,6 +3,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+import datetime
 import difflib
 import git
 import logging
@@ -164,7 +165,7 @@ def collect_zenodo_metadata(metadata: dict, github: Github) -> dict:
     # Construct Zenodo metadata
     return dict(title=metadata['Name'],
                 version=metadata['Version'],
-                publication_date=metadata['PublicationDate'],
+                publication_date=metadata['PublicationDate'].isoformat(),
                 doi=metadata['Doi'],
                 description=rendered_description,
                 creators=zenodo_creators,
@@ -290,7 +291,9 @@ def prepare(metadata: dict, version_name: str, metadata_file: str,
     if not match_version_name:
         raise ValueError(f"Version name '{version_name}' doesn't match "
                          f"pattern '{VERSION_PATTERN}'.")
-    publication_date = '{}-{}-{}'.format(*match_version_name.groups()[:3])
+    publication_date = datetime.date(year=int(match_version_name.group(1)),
+                                     month=int(match_version_name.group(2)),
+                                     day=int(match_version_name.group(3)))
 
     if update_only:
         # Don't try to create a new version draft on Zenodo but update the
@@ -373,7 +376,7 @@ def prepare(metadata: dict, version_name: str, metadata_file: str,
         content_new = replace_in_yaml(content_original, 'Version',
                                       version_name, VERSION_PATTERN)
         content_new = replace_in_yaml(content_new, 'PublicationDate',
-                                      publication_date,
+                                      publication_date.isoformat(),
                                       PUBLICATION_DATE_PATTERN)
         content_new = replace_in_yaml(content_new, 'Doi', new_version_doi,
                                       DOI_PATTERN)
@@ -400,6 +403,23 @@ def prepare(metadata: dict, version_name: str, metadata_file: str,
     metadata['Doi'] = new_version_doi
     metadata['ZenodoId'] = new_version_id
 
+    def write_file_or_check(filename, content_new):
+        with open(filename, 'r' if check_only else 'r+') as open_file:
+            content_original = open_file.read()
+            content_diff = '\n'.join(
+                difflib.context_diff(content_original.split('\n'),
+                                     content_new.split('\n'),
+                                     lineterm='',
+                                     fromfile=filename,
+                                     tofile=filename))
+            if check_only:
+                report_check_only(f"Would apply diff:\n{content_diff}")
+            else:
+                logger.debug(f"Applying diff:\n{content_diff}")
+                open_file.seek(0)
+                open_file.write(content_new)
+                open_file.truncate()
+
     # Write the CITATION.cff file
     citation_data = collect_citation_metadata(metadata)
     citation_file_content = """# Distributed under the MIT License.
@@ -410,12 +430,7 @@ def prepare(metadata: dict, version_name: str, metadata_file: str,
 
 """
     citation_file_content += yaml.safe_dump(citation_data, allow_unicode=True)
-    if check_only:
-        report_check_only("Would write '{}' file:\n{}".format(
-            citation_file, citation_file_content))
-    else:
-        with open(citation_file, 'w') as open_citation_file:
-            open_citation_file.write(citation_file_content)
+    write_file_or_check(citation_file, citation_file_content)
 
     # Get the BibTeX entry and write to file
     bibtex_entry = build_bibtex_entry(metadata)
@@ -427,12 +442,7 @@ def prepare(metadata: dict, version_name: str, metadata_file: str,
     bib_file_content = "\n".join([
         textwrap.fill(line, width=80) for line in bib_file_content.split('\n')
     ])
-    if check_only:
-        report_check_only("Would write '{}' file:\n{}".format(
-            bib_file, bib_file_content))
-    else:
-        with open(bib_file, 'w') as open_bib_file:
-            open_bib_file.write(bib_file_content)
+    write_file_or_check(bib_file, bib_file_content)
 
     # Insert the new version information into the README
     def replace_badge_in_readme(content, key, image_url, link_url):
@@ -466,7 +476,7 @@ def prepare(metadata: dict, version_name: str, metadata_file: str,
         return content
 
     def replace_bibtex_entry_in_readme(content, bibtex_entry):
-        bibtex_entry_string = bibtex_entry.to_string('bibtex')
+        bibtex_entry_string = bib_file_content
         # Work around an issue with escaping LaTeX commands
         bibtex_entry_string = bibtex_entry_string.replace("\\", "\\\\")
         FENCE_PATTERN = '<!-- BIBTEX ENTRY -->'
@@ -481,9 +491,9 @@ def prepare(metadata: dict, version_name: str, metadata_file: str,
         return content
 
     with open(readme_file, 'r' if check_only else 'r+') as open_readme_file:
-        content = open_readme_file.read()
+        content_original = open_readme_file.read()
         content = replace_badge_in_readme(
-            content, 'release',
+            content_original, 'release',
             f'https://img.shields.io/badge/release-v{version_name}-informational',
             'https://github.com/{}/releases/tag/v{}'.format(
                 metadata['GitHub'], version_name))
@@ -495,7 +505,16 @@ def prepare(metadata: dict, version_name: str, metadata_file: str,
         # We don't currently link to the Zenodo BibTeX entry because it isn't
         # very good. Instead, we generate our own.
         content = replace_bibtex_entry_in_readme(content, bibtex_entry)
-        if not check_only:
+        content_diff = '\n'.join(
+            difflib.context_diff(content_original.split('\n'),
+                                 content.split('\n'),
+                                 lineterm='',
+                                 fromfile=readme_file,
+                                 tofile=readme_file))
+        if check_only:
+            report_check_only(f"Would apply diff:\n{content_diff}")
+        else:
+            logger.debug(f"Applying diff:\n{content_diff}")
             open_readme_file.seek(0)
             open_readme_file.write(content)
             open_readme_file.truncate()
