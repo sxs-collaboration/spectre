@@ -11,6 +11,7 @@ spectre_target_sources(
   ChangeCenterOfStrahlkorper.cpp
   FastFlow.cpp
   Strahlkorper.cpp
+  StrahlkorperFunctions.cpp
   StrahlkorperGr.cpp
   StrahlkorperInDifferentFrame.cpp
   Tags.cpp
@@ -26,6 +27,7 @@ spectre_target_headers(
   ComputeItems.hpp
   FastFlow.hpp
   Strahlkorper.hpp
+  StrahlkorperFunctions.hpp
   StrahlkorperGr.hpp
   StrahlkorperInDifferentFrame.hpp
   Tags.hpp

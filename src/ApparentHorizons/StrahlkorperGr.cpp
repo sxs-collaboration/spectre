@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "ApparentHorizons/Strahlkorper.hpp"
+#include "ApparentHorizons/StrahlkorperFunctions.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
@@ -22,6 +23,7 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
@@ -889,6 +891,38 @@ double dimensionless_spin_magnitude(const double dimensionful_spin_magnitude,
   return result;
 }
 
+
+template <typename Frame>
+void radial_distance(const gsl::not_null<Scalar<DataVector>*> radial_distance,
+                     const Strahlkorper<Frame>& strahlkorper_a,
+                     const Strahlkorper<Frame>& strahlkorper_b) {
+  if (strahlkorper_a.center() != strahlkorper_b.center()) {
+    ERROR(
+        "Currently computing the radial distance between two Strahlkorpers "
+        "is only supported if they have the same centers, but the "
+        "strahlkorpers provided have centers "
+        << strahlkorper_a.center() << " and " << strahlkorper_b.center());
+  }
+  get(*radial_distance)
+      .destructive_resize(strahlkorper_a.ylm_spherepack().physical_size());
+  if (strahlkorper_a.l_max() == strahlkorper_b.l_max() and
+      strahlkorper_a.m_max() == strahlkorper_b.m_max()) {
+    get(*radial_distance) = get(StrahlkorperFunctions::radius(strahlkorper_a)) -
+                            get(StrahlkorperFunctions::radius(strahlkorper_b));
+  } else if (strahlkorper_a.l_max() > strahlkorper_b.l_max() or
+             (strahlkorper_a.l_max() == strahlkorper_b.l_max() and
+              strahlkorper_a.m_max() > strahlkorper_b.m_max())) {
+    get(*radial_distance) =
+        get(StrahlkorperFunctions::radius(strahlkorper_a)) -
+        get(StrahlkorperFunctions::radius(Strahlkorper<Frame>(
+            strahlkorper_a.l_max(), strahlkorper_a.m_max(), strahlkorper_b)));
+  } else {
+    get(*radial_distance) =
+        -get(StrahlkorperFunctions::radius(strahlkorper_b)) +
+        get(StrahlkorperFunctions::radius(Strahlkorper<Frame>(
+            strahlkorper_b.l_max(), strahlkorper_b.m_max(), strahlkorper_a)));
+  };
+}
 }  // namespace StrahlkorperGr
 
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(0, data)
@@ -1031,7 +1065,11 @@ double dimensionless_spin_magnitude(const double dimensionful_spin_magnitude,
       const tnsr::i<DataVector, 3, FRAME(data)>& r_hat,                     \
       const Scalar<DataVector>& ricci_scalar,                               \
       const Scalar<DataVector>& spin_function,                              \
-      const Strahlkorper<FRAME(data)>& strahlkorper);
+      const Strahlkorper<FRAME(data)>& strahlkorper);                       \
+  template void StrahlkorperGr::radial_distance<FRAME(data)>(               \
+      const gsl::not_null<Scalar<DataVector>*> radial_distance,             \
+      const Strahlkorper<FRAME(data)>& strahlkorper_a,                      \
+      const Strahlkorper<FRAME(data)>& strahlkorper_b);
 GENERATE_INSTANTIATIONS(INSTANTIATE, (Frame::Grid, Frame::Inertial))
 #undef INSTANTIATE
 #undef FRAME

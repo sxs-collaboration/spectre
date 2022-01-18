@@ -6,6 +6,7 @@
 #include <cmath>
 #include <cstddef>
 
+#include "ApparentHorizons/StrahlkorperFunctions.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/ConstantExpressions.hpp"
@@ -146,8 +147,7 @@ void RadiusCompute<Frame>::function(
     const ::Strahlkorper<Frame>& strahlkorper) {
   get(*radius).destructive_resize(
       strahlkorper.ylm_spherepack().physical_size());
-  get(*radius) =
-      strahlkorper.ylm_spherepack().spec_to_phys(strahlkorper.coefficients());
+  StrahlkorperFunctions::radius(radius, strahlkorper);
 }
 
 template <typename Frame>

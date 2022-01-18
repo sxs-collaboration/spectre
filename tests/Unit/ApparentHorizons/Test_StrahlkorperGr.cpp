@@ -10,6 +10,7 @@
 #include <random>
 
 #include "ApparentHorizons/Strahlkorper.hpp"
+#include "ApparentHorizons/StrahlkorperFunctions.hpp"
 #include "ApparentHorizons/StrahlkorperGr.hpp"
 #include "ApparentHorizons/Tags.hpp"  // IWYU pragma: keep
 #include "DataStructures/DataBox/DataBox.hpp"
@@ -21,6 +22,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/ApparentHorizons/StrahlkorperGrTestHelpers.hpp"
+#include "Helpers/ApparentHorizons/StrahlkorperTestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/YlmSpherepack.hpp"
@@ -1139,4 +1141,69 @@ SPECTRE_TEST_CASE(
   test_dimensionless_spin_magnitude(
       gr::Solutions::KerrSchild{mass, spin, center}, kerr_horizon,
       dimful_spin_magnitude, expected_dimless_spin_magnitude);
+}
+
+SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperGr.RadialDistance",
+                  "[ApparentHorizons][Unit]") {
+  const double y11_amplitude = 1.0;
+  const double radius = 2.0;
+  const std::array<double, 3> center = {{0.1, 0.2, 0.3}};
+  const auto strahlkorper_a =
+      create_strahlkorper_y11(y11_amplitude, radius, center);
+  const auto strahlkorper_b =
+      create_strahlkorper_y11(4.0 * y11_amplitude, radius, center);
+  const Scalar<DataVector> expected_radial_dist_a_minus_b{
+      get(StrahlkorperFunctions::radius(strahlkorper_a)) -
+      get(StrahlkorperFunctions::radius(strahlkorper_b))};
+  const Scalar<DataVector> expected_radial_dist_b_minus_a{
+      -get(expected_radial_dist_a_minus_b)};
+
+  Scalar<DataVector> radial_dist{
+      strahlkorper_a.ylm_spherepack().physical_size()};
+
+  StrahlkorperGr::radial_distance(make_not_null(&radial_dist), strahlkorper_a,
+                                  strahlkorper_b);
+  CHECK_ITERABLE_APPROX(radial_dist, expected_radial_dist_a_minus_b);
+
+  // Check cases where one has more resolution than the other
+  StrahlkorperGr::radial_distance(
+      make_not_null(&radial_dist), strahlkorper_a,
+      Strahlkorper(strahlkorper_b.l_max() - 1, strahlkorper_b.m_max(),
+                   strahlkorper_b));
+  CHECK_ITERABLE_APPROX(radial_dist, expected_radial_dist_a_minus_b);
+  StrahlkorperGr::radial_distance(
+      make_not_null(&radial_dist),
+      Strahlkorper(strahlkorper_b.l_max() - 1, strahlkorper_b.m_max(),
+                   strahlkorper_b),
+      strahlkorper_a);
+  CHECK_ITERABLE_APPROX(radial_dist, expected_radial_dist_b_minus_a);
+  StrahlkorperGr::radial_distance(
+      make_not_null(&radial_dist), strahlkorper_a,
+      Strahlkorper(strahlkorper_b.l_max(), strahlkorper_b.m_max() - 1,
+                   strahlkorper_b));
+  CHECK_ITERABLE_APPROX(radial_dist, expected_radial_dist_a_minus_b);
+  StrahlkorperGr::radial_distance(
+      make_not_null(&radial_dist),
+      Strahlkorper(strahlkorper_b.l_max(), strahlkorper_b.m_max() - 1,
+                   strahlkorper_b),
+      strahlkorper_a);
+  CHECK_ITERABLE_APPROX(radial_dist, expected_radial_dist_b_minus_a);
+}
+
+// [[OutputRegex, Currently computing the radial distance between]]
+SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperGr.RadialDistance.Error",
+                  "[ApparentHorizons][Unit]") {
+  ERROR_TEST();
+  const double y11_amplitude = 1.0;
+  const double radius = 2.0;
+  const std::array<double, 3> center = {{0.1, 0.2, 0.3}};
+  const auto strahlkorper_a =
+      create_strahlkorper_y11(y11_amplitude, radius, center);
+  const std::array<double, 3> different_center{{0.1, 0.4, 0.3}};
+  const auto strahlkorper_b =
+      create_strahlkorper_y11(4.0 * y11_amplitude, radius, different_center);
+  Scalar<DataVector> radial_dist{
+      strahlkorper_a.ylm_spherepack().physical_size()};
+  StrahlkorperGr::radial_distance(make_not_null(&radial_dist), strahlkorper_a,
+                                  strahlkorper_b);
 }
