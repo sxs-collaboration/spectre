@@ -1,0 +1,59 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Add new contributors when their first PR was merged
+name: New contributors
+
+on:
+  pull_request:
+    branches: [develop]
+    types: [closed]
+
+jobs:
+  new_contributors:
+    if: github.event.pull_request.merged == true
+    name: Notify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Check PR author is new
+        id: check_pr_author
+        shell: python
+        run: |
+          import yaml
+
+          def all_authors():
+            authors = yaml.safe_load(open('Metadata.yaml', 'r'))['Authors']
+            for tier in ['Core', 'Developers', 'Contributors']:
+              for author in authors[tier]['List']:
+                yield author['GitHub']
+
+          pr_author = '${{ github.event.pull_request.user.login }}'
+          if pr_author not in all_authors():
+            print('::set-output name=is_new::true')
+      - name: Comment on PR
+        if: steps.check_pr_author.outputs.is_new
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: >  # Newlines are line breaks, body renders as GitHub markdown
+            @${{ github.event.pull_request.user.login }} looks like this is your
+            first contribution to SpECTRE. Welcome! 🎉 Your contribution
+            is much appreciated, and we invite you to add your name to the
+            author list:
+
+
+            1. Edit the [`Metadata.yaml`](https://github.com/${{ github.event.pull_request.user.login }}/spectre/blob/develop/Metadata.yaml)
+            file in the repository.
+
+            2. Add an entry to the list in `Authors.Contributors` with your
+            name, affiliation, etc. Note that the list is ordered
+            alphabetically by last name.
+
+            3. Commit the change on a new branch and open a pull request with
+            the change.
+
+
+            Once the pull request is merged, your name will appear on the
+            [SpECTRE DOI on Zenodo](https://doi.org/10.5281/zenodo.4290404)
+            with the next public release.
