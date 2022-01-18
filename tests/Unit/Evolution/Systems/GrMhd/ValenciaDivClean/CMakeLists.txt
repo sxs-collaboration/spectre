@@ -27,6 +27,7 @@ set(LIBRARY_SOURCES
   Test_Characteristics.cpp
   Test_ConservativeFromPrimitive.cpp
   Test_FixConservatives.cpp
+  Test_Flattener.cpp
   Test_Fluxes.cpp
   Test_PrimitiveFromConservative.cpp
   Test_SetVariablesNeededFixingToFalse.cpp
