@@ -1,0 +1,80 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Automations that run on published releases
+name: Post release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  add_spack_version:
+    name: Add version to Spack
+    # Checksum the new release and send a PR to Spack that adds the new version.
+    # The 'sxs-bot' GitHub account is the author of the commit and the PR.
+    # - This job requires a repository secret named `GH_TOKEN_SXSBOT_SPACK` that
+    #   has write access to the `sxs-bot/spack` repository.
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Spack
+        uses: actions/checkout@v2
+        with:
+          repository: spack/spack
+          fetch-depth: 0
+          token: ${{ secrets.GH_TOKEN_SXSBOT_SPACK }}
+      - name: Add spack-python to path
+        run: |
+          echo "$GITHUB_WORKSPACE/bin" >> $GITHUB_PATH
+      - name: Checksum new version
+        # Download and checksum the release tarball, and add a line to Spack's
+        # `spectre/package.py`` file with the new version.
+        #
+        # The package file defines versions in lines like this:
+        #
+        #    version('develop', branch='develop')
+        #    version('2022.01.03', sha256='872a0d1...')
+        #    ...
+        #
+        # The `spack.stage.get_checksums_for_versions` function returns a string
+        # with lines like this for the new version(s), including the correct
+        # indentation. Therefore, we insert the new lines into the file right
+        # below the 'develop' version.
+        shell: spack-python {0}
+        run: |
+          import spack.stage
+
+          # The tag name includes the 'v' prefix
+          release_name = '${{ github.event.release.tag_name }}'[1:]
+
+          version_lines = spack.stage.get_checksums_for_versions(
+            url_dict={
+              release_name: '${{ github.event.release.tarball_url }}',
+            },
+            name='spectre',
+            batch=True,
+          ).split('\n')
+
+          package_file = './var/spack/repos/builtin/packages/spectre/package.py'
+          with open(package_file, 'r') as open_package_file:
+            package_file_lines = open_package_file.readlines()
+          with open(package_file, 'w') as open_package_file:
+            for line in package_file_lines:
+              open_package_file.write(line)
+              if line.strip().startswith("version('develop'"):
+                for version_line in version_lines:
+                  open_package_file.write(version_line + "\n")
+      - name: Print diff
+        run: |
+          git diff
+      - name: Send pull request to Spack
+        uses: peter-evans/create-pull-request@v3
+        with:
+          token: ${{ secrets.GH_TOKEN_SXSBOT_SPACK }}
+          commit-message: "spectre: add ${{ github.event.release.tag_name }}"
+          committer: "sxs-bot <sxs-bot@black-holes.org>"
+          branch: "spectre-${{ github.event.release.tag_name }}"
+          delete-branch: true
+          push-to-fork: sxs-bot/spack
+          title: "spectre: add ${{ github.event.release.tag_name }}"
+          body: ""
