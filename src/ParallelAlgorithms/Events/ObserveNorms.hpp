@@ -34,6 +34,7 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/Numeric.hpp"
+#include "Utilities/OptionalHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace Events {
@@ -336,9 +337,17 @@ operator()(const typename ObservationValueTag::type& observation_value,
     const std::string tensor_name = db::tag_name<tag>();
     for (size_t i = 0; i < tensor_names_.size(); ++i) {
       if (tensor_name == tensor_names_[i]) {
+        if (UNLIKELY(not has_value(get<tag>(box)))) {
+          ERROR("Cannot observe a norm of '"
+                << tensor_name
+                << "' because it is a std::optional and wasn't able to be "
+                   "computed. This can happen when you try to observe errors "
+                   "without an analytic solution.");
+        }
+        const auto& tensor = value(get<tag>(box));
+
         auto& [values, names] = norm_values_and_names[tensor_norm_types_[i]];
-        const auto [component_names, components] =
-            get<tag>(box).get_vector_of_data();
+        const auto [component_names, components] = tensor.get_vector_of_data();
         if (number_of_points != 0 and
             components[0].size() != number_of_points) {
           ERROR("The number of grid points previously was "

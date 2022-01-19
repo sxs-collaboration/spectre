@@ -5,6 +5,7 @@
 
 #include <cstddef>
 #include <memory>
+#include <optional>
 #include <string>
 #include <tuple>
 #include <utility>
@@ -45,16 +46,17 @@ struct Var1 : db::SimpleTag {
 };
 
 struct Var0TimesTwo : db::SimpleTag {
-  using type = Scalar<DataVector>;
+  using type = std::optional<Scalar<DataVector>>;
 };
 
 struct Var0TimesTwoCompute : db::ComputeTag, Var0TimesTwo {
   using base = Var0TimesTwo;
-  using return_type = Scalar<DataVector>;
+  using return_type = std::optional<Scalar<DataVector>>;
   using argument_tags = tmpl::list<Var0>;
-  static void function(const gsl::not_null<Scalar<DataVector>*> result,
-                       const Scalar<DataVector>& scalar_var) {
-    get(*result) = 2.0 * get(scalar_var);
+  static void function(
+      const gsl::not_null<std::optional<Scalar<DataVector>>*> result,
+      const Scalar<DataVector>& scalar_var) {
+    *result = Scalar<DataVector>{DataVector{2.0 * get(scalar_var)}};
   }
 };
 
