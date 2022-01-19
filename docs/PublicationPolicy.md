@@ -54,8 +54,10 @@ the developers of code that enabled them.
   [SXS policies](https://github.com/sxs-collaboration/WelcomeToSXS/blob/master/SxsPolicies.md).
 - To obtain the list of co-authors, reach out to any of the people listed in the
   [SpECTRE core developers](https://github.com/orgs/sxs-collaboration/teams/spectre-core-devs/members)
-  team on GitHub. Use a communication channel of your choice, here are a few
-  possibilities:
+  team on GitHub. Do this as early as possible, e.g., when you are setting up a
+  paper repository to share early drafts and results with other co-authors.
+  To contact the SpECTRE core developers, use a communication channel of your
+  choice. Here are a few possibilities:
 
   - Send a message on Slack.
   - Knock on their office door.
@@ -77,8 +79,17 @@ the developers of code that enabled them.
     > Best regards,
     > [you]
 
+  If you already have a draft or outline of your paper available, please feel
+  free to attach it, to give the core developers a better idea of the ways you
+  are using SpECTRE.
+
   The core developers will discuss among themselves, following the guidelines
   listed below, and will get back to you with a list of authors.
+- Please make the paper draft available to all co-authors as early as possible,
+  e.g, by sharing access to a Git repository. This allows the co-authors to
+  contribute their technical expertise to the SpECTRE-related part of the paper,
+  and it also makes them aware of the ongoing work, in the spirit of
+  transparency and collaboration within SXS.
 
 ## Guidelines to decide who has authorship rights on SXS science papers that use SpECTRE
 
