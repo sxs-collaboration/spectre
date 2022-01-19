@@ -28,10 +28,6 @@ function(add_iwyu_tool_targets IWYU_TOOL)
     iwyu
     ${MODULES_TO_DEPEND_ON}
     )
-  set_target_properties(
-    iwyu
-    PROPERTIES EXCLUDE_FROM_ALL TRUE
-    )
 
   # IWYU for all files modified between two hashes
   add_custom_target(
@@ -47,10 +43,6 @@ function(add_iwyu_tool_targets IWYU_TOOL)
   add_dependencies(
     iwyu-hash
     ${MODULES_TO_DEPEND_ON}
-    )
-  set_target_properties(
-    iwyu-hash
-    PROPERTIES EXCLUDE_FROM_ALL TRUE
     )
 endfunction(add_iwyu_tool_targets IWYU_TOOL)
 

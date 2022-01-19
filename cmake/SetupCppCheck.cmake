@@ -44,5 +44,4 @@ if(CPPCHECK_EXECUTABLE)
       ${CMAKE_BINARY_DIR}/.cppcheck_run.sh
       WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
   )
-  set_target_properties(cppcheck PROPERTIES EXCLUDE_FROM_ALL TRUE)
 endif()

@@ -38,7 +38,8 @@ function(add_spectre_executable TARGET_NAME)
     PRIVATE
     SpectreFlags
     )
-  install(TARGETS ${TARGET_NAME} OPTIONAL)
+  install(TARGETS ${TARGET_NAME} OPTIONAL
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 endfunction()
 
 # A function to add a SpECTRE executable that uses Charm++

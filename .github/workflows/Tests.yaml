@@ -331,6 +331,10 @@ jobs:
           - compiler: gcc-8
             build_type: Debug
             PYTHON_EXECUTABLE: /usr/bin/python2
+          # Test compatibility with oldest supported CMake version
+          - compiler: gcc-9
+            build_type: Debug
+            CMAKE_EXECUTABLE: /opt/local/cmake/3.12.4/bin/cmake
           # Test building with static libraries. Do so with clang in release
           # mode because these builds use up little disk space compared to GCC
           # builds or clang Debug builds
@@ -417,6 +421,7 @@ ${{ env.CACHE_KEY_SUFFIX }}"
           BUILD_PYTHON_BINDINGS=${{ matrix.BUILD_PYTHON_BINDINGS }}
           BUILD_SHARED_LIBS=${{ matrix.BUILD_SHARED_LIBS }}
           PYTHON_EXECUTABLE=${{ matrix.PYTHON_EXECUTABLE }}
+          CMAKE_EXECUTABLE=${{ matrix.CMAKE_EXECUTABLE }}
           ASAN=${{ matrix.ASAN }}
           MEMORY_ALLOCATOR=${{ matrix.MEMORY_ALLOCATOR }}
           UBSAN_UNDEFINED=${{ matrix.UBSAN_UNDEFINED }}
@@ -425,7 +430,7 @@ ${{ env.CACHE_KEY_SUFFIX }}"
           COVERAGE=${{ matrix.COVERAGE }}
           TEST_TIMEOUT_FACTOR=${{ matrix.TEST_TIMEOUT_FACTOR }}
 
-          cmake
+          ${CMAKE_EXECUTABLE:-'cmake'}
           -D CMAKE_C_COMPILER=${CC}
           -D CMAKE_CXX_COMPILER=${CXX}
           -D CMAKE_Fortran_COMPILER=${FC}

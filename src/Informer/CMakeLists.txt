@@ -34,13 +34,15 @@ spectre_target_headers(
 # The Darwin linker is not OK with undefined symbols at link time of the
 # library, so we need to appease it. This is needed so compiling InfoAtLink.cpp
 # can be deferred until we link an executable.
-target_link_options(
-  ${LIBRARY}
-  PUBLIC
-  "$<$<PLATFORM_ID:Darwin>:-Wl,-U,_git_branch>"
-  "$<$<PLATFORM_ID:Darwin>:-Wl,-U,_git_description>"
-  "$<$<PLATFORM_ID:Darwin>:-Wl,-U,_link_date>"
-  )
+if(CMAKE_VERSION GREATER_EQUAL 3.13)
+  target_link_options(
+    ${LIBRARY}
+    PUBLIC
+    "$<$<PLATFORM_ID:Darwin>:-Wl,-U,_git_branch>"
+    "$<$<PLATFORM_ID:Darwin>:-Wl,-U,_git_description>"
+    "$<$<PLATFORM_ID:Darwin>:-Wl,-U,_link_date>"
+    )
+endif()
 
 target_link_libraries(
   ${LIBRARY}
