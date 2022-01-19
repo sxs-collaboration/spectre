@@ -106,8 +106,27 @@ LinearSolver:
 
 EventsAndTriggers:
   ? HasConverged
-  : - ObserveErrorNorms:
+  : - ObserveNorms:
         SubfileName: ErrorNorms
+        TensorsToObserve:
+          - Name: Error(ConformalFactor)
+            NormType: L2Norm
+            Components: Sum
+          - Name: Error(LapseTimesConformalFactor)
+            NormType: L2Norm
+            Components: Sum
+          - Name: Error(ShiftExcess)
+            NormType: L2Norm
+            Components: Sum
+          - Name: Error(Flux(ConformalFactor))
+            NormType: L2Norm
+            Components: Sum
+          - Name: Error(Flux(LapseTimesConformalFactor))
+            NormType: L2Norm
+            Components: Sum
+          - Name: Error(LongitudinalShiftExcess)
+            NormType: L2Norm
+            Components: Sum
     - ObserveNorms:
         SubfileName: Norms
         TensorsToObserve:

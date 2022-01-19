@@ -166,16 +166,12 @@ struct EvolutionMetavars {
     using factory_classes = tmpl::map<
         tmpl::pair<DenseTrigger, DenseTriggers::standard_dense_triggers>,
         tmpl::pair<DomainCreator<volume_dim>, domain_creators<volume_dim>>,
-        tmpl::pair<
-            Event,
-            tmpl::flatten<tmpl::list<
-                Events::Completion,
-                dg::Events::field_observations<
-                    volume_dim, Tags::Time, observe_fields,
-                    tmpl::conditional_t<is_analytic_solution_v<initial_data>,
-                                        analytic_variables_tags, tmpl::list<>>,
-                    non_tensor_compute_tags>,
-                Events::time_events<system>>>>,
+        tmpl::pair<Event, tmpl::flatten<tmpl::list<
+                              Events::Completion,
+                              dg::Events::field_observations<
+                                  volume_dim, Tags::Time, observe_fields,
+                                  non_tensor_compute_tags>,
+                              Events::time_events<system>>>>,
         tmpl::pair<RelativisticEuler::Valencia::BoundaryConditions::
                        BoundaryCondition<volume_dim>,
                    RelativisticEuler::Valencia::BoundaryConditions::

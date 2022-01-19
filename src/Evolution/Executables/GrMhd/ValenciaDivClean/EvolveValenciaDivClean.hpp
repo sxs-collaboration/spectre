@@ -265,28 +265,15 @@ struct EvolutionMetavars {
     using factory_classes = tmpl::map<
         tmpl::pair<DenseTrigger, DenseTriggers::standard_dense_triggers>,
         tmpl::pair<DomainCreator<volume_dim>, domain_creators<volume_dim>>,
-        tmpl::pair<Event,
-                   tmpl::flatten<tmpl::list<
-                       Events::Completion,
-                       Events::ObserveNorms<
-                           ::Tags::Time,
-                           tmpl::list<hydro::Tags::RestMassDensity<DataVector>>,
-                           tmpl::list<>>,
-                       tmpl::conditional_t<
-                           use_dg_subcell,
-                           dg::Events::ObserveFields<volume_dim, Tags::Time,
-                                                     observe_fields,
-                                                     non_tensor_compute_tags>,
-                           dg::Events::field_observations<
-                               volume_dim, Tags::Time, observe_fields,
-                               tmpl::conditional_t<
-                                   is_analytic_solution_v<initial_data>,
-                                   analytic_variables_tags, tmpl::list<>>,
-                               non_tensor_compute_tags>>,
-                       Events::time_events<system>,
-                       intrp::Events::InterpolateWithoutInterpComponent<
-                           3, InterpolationTargetTags, EvolutionMetavars,
-                           interpolator_source_vars>...>>>,
+        tmpl::pair<Event, tmpl::flatten<tmpl::list<
+                              Events::Completion,
+                              dg::Events::field_observations<
+                                  volume_dim, Tags::Time, observe_fields,
+                                  non_tensor_compute_tags>,
+                              Events::time_events<system>,
+                              intrp::Events::InterpolateWithoutInterpComponent<
+                                  3, InterpolationTargetTags, EvolutionMetavars,
+                                  interpolator_source_vars>...>>>,
         tmpl::pair<
             grmhd::ValenciaDivClean::BoundaryConditions::BoundaryCondition,
             grmhd::ValenciaDivClean::BoundaryConditions::

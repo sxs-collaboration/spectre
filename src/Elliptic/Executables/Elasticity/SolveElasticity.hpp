@@ -199,20 +199,19 @@ struct Metavariables {
             Elasticity::ConstitutiveRelations::ConstitutiveRelation<volume_dim>,
             Elasticity::ConstitutiveRelations::standard_constitutive_relations<
                 volume_dim>>,
-        tmpl::pair<
-            Event,
-            tmpl::flatten<tmpl::list<
-                Events::Completion,
-                dg::Events::field_observations<
-                    volume_dim, linear_solver_iteration_id, observe_fields,
-                    analytic_solution_fields, non_tensor_compute_tags,
-                    LinearSolver::multigrid::Tags::IsFinestGrid>,
-                dg::Events::ObserveVolumeIntegrals<
-                    volume_dim, linear_solver_iteration_id,
-                    tmpl::list<
-                        Elasticity::Tags::PotentialEnergyDensity<volume_dim>>,
-                    tmpl::list<>,
-                    LinearSolver::multigrid::Tags::IsFinestGrid>>>>,
+        tmpl::pair<Event,
+                   tmpl::flatten<tmpl::list<
+                       Events::Completion,
+                       dg::Events::field_observations<
+                           volume_dim, linear_solver_iteration_id,
+                           observe_fields, non_tensor_compute_tags,
+                           LinearSolver::multigrid::Tags::IsFinestGrid>,
+                       dg::Events::ObserveVolumeIntegrals<
+                           volume_dim, linear_solver_iteration_id,
+                           tmpl::list<Elasticity::Tags::PotentialEnergyDensity<
+                               volume_dim>>,
+                           tmpl::list<>,
+                           LinearSolver::multigrid::Tags::IsFinestGrid>>>>,
         tmpl::pair<Trigger, elliptic::Triggers::all_triggers<
                                 typename linear_solver::options_group>>>;
   };

@@ -71,10 +71,6 @@
 #include "Parallel/Reduction.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
-#include "ParallelAlgorithms/Events/ObserveErrorNorms.hpp"
-#include "ParallelAlgorithms/Events/ObserveFields.hpp"
-#include "ParallelAlgorithms/Events/ObserveNorms.hpp"
-#include "ParallelAlgorithms/Events/ObserveTimeStep.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Completion.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
@@ -312,9 +308,8 @@ struct EvolutionMetavars {
                 intrp::Events::Interpolate<3, AhA, interpolator_source_vars>,
                 intrp::Events::Interpolate<3, AhB, interpolator_source_vars>,
                 Events::Completion,
-                Events::ObserveNorms<::Tags::Time, observe_fields>,
                 dg::Events::field_observations<volume_dim, Tags::Time,
-                                               observe_fields, tmpl::list<>,
+                                               observe_fields,
                                                non_tensor_compute_tags>,
                 Events::time_events<system>>>>,
         tmpl::pair<GeneralizedHarmonic::BoundaryConditions::BoundaryCondition<

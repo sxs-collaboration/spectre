@@ -82,9 +82,6 @@
 #include "Parallel/Reduction.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
-#include "ParallelAlgorithms/Events/ObserveErrorNorms.hpp"
-#include "ParallelAlgorithms/Events/ObserveFields.hpp"
-#include "ParallelAlgorithms/Events/ObserveTimeStep.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/EventsAndTriggers/Completion.hpp"
@@ -291,6 +288,7 @@ struct GhValenciaDivCleanTemplateBase<
   using observe_fields = tmpl::push_back<
       tmpl::append<typename system::variables_tag::tags_list,
                    typename system::primitive_variables_tag::tags_list,
+                   error_tags,
                    tmpl::list<::Tags::PointwiseL2Norm<
                        GeneralizedHarmonic::Tags::GaugeConstraint<
                            volume_dim, domain_frame>>>>,
@@ -308,11 +306,9 @@ struct GhValenciaDivCleanTemplateBase<
             Event,
             tmpl::flatten<tmpl::list<
                 Events::Completion,
-                dg::Events::field_observations<
-                    volume_dim, Tags::Time, observe_fields,
-                    tmpl::conditional_t<is_analytic_solution_v<initial_data>,
-                                        analytic_solution_fields, tmpl::list<>>,
-                    non_tensor_compute_tags>,
+                dg::Events::field_observations<volume_dim, Tags::Time,
+                                               observe_fields,
+                                               non_tensor_compute_tags>,
                 Events::time_events<system>,
                 intrp::Events::Interpolate<3, InterpolationTargetTags,
                                            interpolator_source_vars>...>>>,

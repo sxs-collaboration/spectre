@@ -178,14 +178,13 @@ struct Metavariables {
         tmpl::pair<
             elliptic::BoundaryConditions::BoundaryCondition<volume_dim>,
             Poisson::BoundaryConditions::standard_boundary_conditions<system>>,
-        tmpl::pair<
-            Event,
-            tmpl::flatten<tmpl::list<
-                Events::Completion,
-                dg::Events::field_observations<
-                    volume_dim, linear_solver_iteration_id, observe_fields,
-                    analytic_solution_fields, non_tensor_compute_tags,
-                    LinearSolver::multigrid::Tags::IsFinestGrid>>>>,
+        tmpl::pair<Event,
+                   tmpl::flatten<tmpl::list<
+                       Events::Completion,
+                       dg::Events::field_observations<
+                           volume_dim, linear_solver_iteration_id,
+                           observe_fields, non_tensor_compute_tags,
+                           LinearSolver::multigrid::Tags::IsFinestGrid>>>>,
         tmpl::pair<Trigger, elliptic::Triggers::all_triggers<
                                 typename linear_solver::options_group>>>;
   };

@@ -38,13 +38,7 @@
 #include "Utilities/TMPL.hpp"
 
 namespace Events {
-/// \cond
-template <typename ObservationValueTag, typename ObservableTensorTagsList,
-          typename NonTensorComputeTagsList = tmpl::list<>,
-          typename ArraySectionIdTag = void>
-class ObserveNorms;
-/// \endcond
-
+/// @{
 /*!
  * \brief Compute norms of tensors in the DataBox and write them to disk.
  *
@@ -79,6 +73,11 @@ class ObserveNorms;
  * available in the DataBox. It identifies the section and is used as a suffix
  * for the path in the output file.
  */
+template <typename ObservationValueTag, typename ObservableTensorTagsList,
+          typename NonTensorComputeTagsList = tmpl::list<>,
+          typename ArraySectionIdTag = void>
+class ObserveNorms;
+
 template <typename ObservationValueTag, typename... ObservableTensorTags,
           typename... NonTensorComputeTags, typename ArraySectionIdTag>
 class ObserveNorms<ObservationValueTag, tmpl::list<ObservableTensorTags...>,
@@ -171,11 +170,9 @@ class ObserveNorms<ObservationValueTag, tmpl::list<ObservableTensorTags...>,
         "List specifying each tensor to observe and how it is reduced."};
   };
 
-  /// \cond
   explicit ObserveNorms(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ObserveNorms);  // NOLINT
-  /// \endcond
 
   using options = tmpl::list<SubfileName, TensorsToObserve>;
 
@@ -248,6 +245,7 @@ class ObserveNorms<ObservationValueTag, tmpl::list<ObservableTensorTags...>,
   std::vector<std::string> tensor_norm_types_{};
   std::vector<std::string> tensor_components_{};
 };
+/// @}
 
 /// \cond
 template <typename ObservationValueTag, typename... ObservableTensorTags,

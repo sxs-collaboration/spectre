@@ -206,11 +206,9 @@ struct EvolutionMetavars {
         tmpl::pair<Event,
                    tmpl::flatten<tmpl::list<
                        Events::Completion,
-                       Events::ObserveNorms<::Tags::Time, observe_fields>,
-                       dg::Events::field_observations<
-                           volume_dim, Tags::Time,
-                           observe_fields,
-                           tmpl::list<>, non_tensor_compute_tags>,
+                       dg::Events::field_observations<volume_dim, Tags::Time,
+                                                      observe_fields,
+                                                      non_tensor_compute_tags>,
                        tmpl::conditional_t<
                            interpolate,
                            intrp::Events::InterpolateWithoutInterpComponent<

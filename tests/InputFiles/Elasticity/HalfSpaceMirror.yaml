@@ -99,8 +99,12 @@ LinearSolver:
 
 EventsAndTriggers:
   ? HasConverged
-  : - ObserveErrorNorms:
+  : - ObserveNorms:
         SubfileName: ErrorNorms
+        TensorsToObserve:
+          - Name: Error(Displacement)
+            NormType: L2Norm
+            Components: Sum
     - ObserveVolumeIntegrals:
         SubfileName: VolumeIntegrals
     - ObserveFields:

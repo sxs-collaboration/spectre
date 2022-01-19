@@ -163,9 +163,9 @@ struct EvolutionMetavars {
         tmpl::pair<Event,
                    tmpl::flatten<tmpl::list<
                        Events::Completion,
-                       dg::Events::field_observations<
-                           volume_dim, Tags::Time, observe_fields,
-                           analytic_solution_fields, non_tensor_compute_tags>,
+                       dg::Events::field_observations<volume_dim, Tags::Time,
+                                                      observe_fields,
+                                                      non_tensor_compute_tags>,
                        dg::Events::ObserveVolumeIntegrals<
                            volume_dim, Tags::Time,
                            tmpl::list<ScalarWave::Tags::EnergyDensityCompute<

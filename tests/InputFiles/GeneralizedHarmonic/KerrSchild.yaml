@@ -99,8 +99,18 @@ EventsAndTriggers:
       EvenlySpaced:
         Interval: 2
         Offset: 0
-  : - ObserveErrorNorms:
+  : - ObserveNorms:
         SubfileName: Errors
+        TensorsToObserve:
+          - Name: Error(SpacetimeMetric)
+            NormType: L2Norm
+            Components: Sum
+          - Name: Error(Pi)
+            NormType: L2Norm
+            Components: Sum
+          - Name: Error(Phi)
+            NormType: L2Norm
+            Components: Sum
   ? Slabs:
       EvenlySpaced:
         Interval: 2

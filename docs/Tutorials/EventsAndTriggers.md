@@ -20,7 +20,7 @@ some task that (with the exception of the \ref Events::Completion
 "Completion" event) does not directly affect the execution of the
 algorithm on the element.  The effects of events are limited to
 sending messages.  The most commonly used events (such as the \ref
-dg::Events::ObserveErrorNorms "ObserveErrorNorms" event) send data to
+::Events::ObserveNorms "ObserveNorms" event) send data to
 be written to disk, but have no long-term effects on the simulation
 state.  Others (such as \ref Events::ChangeSlabSize "ChangeSlabSize")
 can have indirect effects when \ref dev_guide_parallelization_actions
@@ -67,7 +67,7 @@ by more `-` characters can appear afterwards:
 
 In this example, we are using the \ref Triggers::Slabs "Slabs" trigger
 to run two events every 10 slabs: ObserveFields and \ref
-dg::Events::ObserveErrorNorms "ObserveErrorNorms".
+::Events::ObserveNorms "ObserveNorms".
 
 If an event and trigger both took no options, the syntax
 
