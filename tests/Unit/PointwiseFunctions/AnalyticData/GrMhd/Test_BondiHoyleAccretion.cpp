@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <memory>
 #include <string>
 #include <tuple>
 
@@ -15,8 +16,11 @@
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/BondiHoyleAccretion.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -54,15 +58,25 @@ struct BondiHoyleAccretionProxy : grmhd::AnalyticData::BondiHoyleAccretion {
 };
 
 void test_create_from_options() {
-  const auto accretion =
-      TestHelpers::test_creation<grmhd::AnalyticData::BondiHoyleAccretion>(
-          "BhMass: 1.0\n"
-          "BhDimlessSpin: 0.23\n"
-          "RestMassDensity: 2.7\n"
-          "FlowSpeed: 0.34\n"
-          "MagFieldStrength: 5.76\n"
-          "PolytropicConstant: 30.0\n"
-          "PolytropicExponent: 1.5");
+  Parallel::register_classes_with_charm<
+      grmhd::AnalyticData::BondiHoyleAccretion>();
+  const std::unique_ptr<evolution::initial_data::InitialData> option_solution =
+      TestHelpers::test_option_tag_factory_creation<
+          evolution::initial_data::OptionTags::InitialData,
+          grmhd::AnalyticData::BondiHoyleAccretion>(
+          "BondiHoyleAccretion:\n"
+          "  BhMass: 1.0\n"
+          "  BhDimlessSpin: 0.23\n"
+          "  RestMassDensity: 2.7\n"
+          "  FlowSpeed: 0.34\n"
+          "  MagFieldStrength: 5.76\n"
+          "  PolytropicConstant: 30.0\n"
+          "  PolytropicExponent: 1.5");
+  const auto deserialized_option_solution =
+      serialize_and_deserialize(option_solution);
+  const auto& accretion =
+      dynamic_cast<const grmhd::AnalyticData::BondiHoyleAccretion&>(
+          *deserialized_option_solution);
   CHECK(accretion == grmhd::AnalyticData::BondiHoyleAccretion(
                          1.0, 0.23, 2.7, 0.34, 5.76, 30.0, 1.5));
 }

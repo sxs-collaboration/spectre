@@ -39,9 +39,10 @@ RiemannProblem::RiemannProblem(
       lapse_(lapse),
       shift_(shift) {}
 
-RiemannProblem::RiemannProblem(CkMigrateMessage* /*unused*/) {}
+RiemannProblem::RiemannProblem(CkMigrateMessage* msg) : InitialData(msg) {}
 
 void RiemannProblem::pup(PUP::er& p) {
+  InitialData::pup(p);
   p | equation_of_state_;
   p | background_spacetime_;
   p | adiabatic_index_;
@@ -189,6 +190,8 @@ RiemannProblem::variables(
   get<0>(shift) = shift_;
   return {std::move(shift)};
 }
+
+PUP::able::PUP_ID RiemannProblem::my_PUP_ID = 0;
 
 bool operator==(const RiemannProblem& lhs, const RiemannProblem& rhs) {
   return lhs.adiabatic_index_ == rhs.adiabatic_index_ and

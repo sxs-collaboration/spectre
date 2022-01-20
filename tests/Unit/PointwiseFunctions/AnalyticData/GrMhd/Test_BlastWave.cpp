@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <array>
 #include <limits>
+#include <memory>
 #include <tuple>
 
 #include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
@@ -16,8 +17,11 @@
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/BlastWave.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
@@ -59,17 +63,27 @@ struct BlastWaveProxy : grmhd::AnalyticData::BlastWave {
 };
 
 void test_create_from_options() {
-  const auto cylindrical_blast_wave =
-      TestHelpers::test_creation<grmhd::AnalyticData::BlastWave>(
-          "InnerRadius: 0.8\n"
-          "OuterRadius: 1.0\n"
-          "InnerDensity: 1.0e-2\n"
-          "OuterDensity: 1.0e-4\n"
-          "InnerPressure: 1.0\n"
-          "OuterPressure: 5.0e-4\n"
-          "MagneticField: [0.1, 0.0, 0.0]\n"
-          "AdiabaticIndex: 1.3333333333333333333\n"
-          "Geometry: Cylindrical\n");
+  Parallel::register_classes_with_charm<grmhd::AnalyticData::BlastWave>();
+  const std::unique_ptr<evolution::initial_data::InitialData> option_solution =
+      TestHelpers::test_option_tag_factory_creation<
+          evolution::initial_data::OptionTags::InitialData,
+          grmhd::AnalyticData::BlastWave>(
+          "BlastWave:\n"
+          "  InnerRadius: 0.8\n"
+          "  OuterRadius: 1.0\n"
+          "  InnerDensity: 1.0e-2\n"
+          "  OuterDensity: 1.0e-4\n"
+          "  InnerPressure: 1.0\n"
+          "  OuterPressure: 5.0e-4\n"
+          "  MagneticField: [0.1, 0.0, 0.0]\n"
+          "  AdiabaticIndex: 1.3333333333333333333\n"
+          "  Geometry: Cylindrical\n");
+  const auto deserialized_option_solution =
+      serialize_and_deserialize(option_solution);
+  const auto& cylindrical_blast_wave =
+      dynamic_cast<const grmhd::AnalyticData::BlastWave&>(
+          *deserialized_option_solution);
+
   CHECK(cylindrical_blast_wave ==
         grmhd::AnalyticData::BlastWave(
             0.8, 1.0, 1.0e-2, 1.0e-4, 1.0, 5.0e-4,

@@ -5,6 +5,7 @@
 
 #include <array>
 #include <limits>
+#include <memory>
 #include <string>
 
 #include "DataStructures/DataVector.hpp"
@@ -13,9 +14,12 @@
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/OrszagTangVortex.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
@@ -45,7 +49,7 @@ void test_variables(const DataType& used_for_size) {
     using Tag = tmpl::type_from<decltype(tag)>;
     pypp::check_with_random_values<1>(
         +[](const tnsr::I<DataType, 3>& x) {
-          const auto result =
+          auto result =
               get<Tag>(OrszagTangVortex{}.variables(x, tmpl::list<Tag>{}));
           CHECK(result == get<Tag>(OrszagTangVortex{}.variables(x, tags{})));
           return result;
@@ -73,4 +77,17 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticData.GrMhd.OrszagTangVortex",
 
   test_serialization(OrszagTangVortex{});
   TestHelpers::test_creation<OrszagTangVortex>("");
+
+  Parallel::register_classes_with_charm<
+      grmhd::AnalyticData::OrszagTangVortex>();
+  const std::unique_ptr<evolution::initial_data::InitialData> option_solution =
+      TestHelpers::test_option_tag_factory_creation<
+          evolution::initial_data::OptionTags::InitialData,
+          grmhd::AnalyticData::OrszagTangVortex>("OrszagTangVortex:\n");
+  const auto deserialized_option_solution =
+      serialize_and_deserialize(option_solution);
+  const auto& solution =
+      dynamic_cast<const grmhd::AnalyticData::OrszagTangVortex&>(
+          *deserialized_option_solution);
+  CHECK(solution == grmhd::AnalyticData::OrszagTangVortex{});
 }

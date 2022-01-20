@@ -8,11 +8,13 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Options/Options.hpp"
+#include "Parallel/CharmPupable.hpp"
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/AnalyticData.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -24,8 +26,7 @@ class er;  // IWYU pragma: keep
 }  // namespace PUP
 /// \endcond
 
-namespace grmhd {
-namespace AnalyticData {
+namespace grmhd::AnalyticData {
 
 /*!
  * \brief Analytic initial data for a magnetic rotor.
@@ -64,7 +65,9 @@ namespace AnalyticData {
  *
  * The magnetic field in the disk should rotate by about 90 degrees by t = 0.4.
  */
-class MagneticRotor : public MarkAsAnalyticData, public AnalyticDataBase {
+class MagneticRotor : public evolution::initial_data::InitialData,
+                      public MarkAsAnalyticData,
+                      public AnalyticDataBase {
  public:
   using equation_of_state_type = EquationsOfState::IdealFluid<true>;
 
@@ -121,8 +124,8 @@ class MagneticRotor : public MarkAsAnalyticData, public AnalyticDataBase {
       "Magnetic rotor analytic initial data."};
 
   MagneticRotor() = default;
-  MagneticRotor(const MagneticRotor& /*rhs*/) = delete;
-  MagneticRotor& operator=(const MagneticRotor& /*rhs*/) = delete;
+  MagneticRotor(const MagneticRotor& /*rhs*/) = default;
+  MagneticRotor& operator=(const MagneticRotor& /*rhs*/) = default;
   MagneticRotor(MagneticRotor&& /*rhs*/) = default;
   MagneticRotor& operator=(MagneticRotor&& /*rhs*/) = default;
   ~MagneticRotor() = default;
@@ -133,7 +136,11 @@ class MagneticRotor : public MarkAsAnalyticData, public AnalyticDataBase {
                 const std::array<double, 3>& magnetic_field,
                 double adiabatic_index, const Options::Context& context = {});
 
-  explicit MagneticRotor(CkMigrateMessage* /*unused*/) {}
+  /// \cond
+  explicit MagneticRotor(CkMigrateMessage* msg);
+  using PUP::able::register_constructor;
+  WRAPPED_PUPable_decl_template(MagneticRotor);
+  /// \endcond
 
   /// @{
   /// Retrieve the GRMHD variables at a given position.
@@ -224,5 +231,4 @@ class MagneticRotor : public MarkAsAnalyticData, public AnalyticDataBase {
   friend bool operator!=(const MagneticRotor& lhs, const MagneticRotor& rhs);
 };
 
-}  // namespace AnalyticData
-}  // namespace grmhd
+}  // namespace grmhd::AnalyticData

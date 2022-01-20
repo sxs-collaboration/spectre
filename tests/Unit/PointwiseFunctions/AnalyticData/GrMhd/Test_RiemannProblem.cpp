@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <array>
 #include <limits>
+#include <memory>
 #include <tuple>
 
 #include "DataStructures/DataBox/Prefixes.hpp"
@@ -15,8 +16,11 @@
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/RiemannProblem.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -55,19 +59,29 @@ struct RiemannProblemProxy : grmhd::AnalyticData::RiemannProblem {
 };
 
 void test_create_from_options() {
-  const auto riemann_problem =
-      TestHelpers::test_creation<grmhd::AnalyticData::RiemannProblem>(
-          "AdiabaticIndex: 2.0\n"
-          "LeftDensity: 1.0\n"
-          "LeftPressure: 1.0\n"
-          "LeftVelocity: [0.0, 0.0, 0.0]\n"
-          "LeftMagneticField: [0.5, 1.0, 0.0]\n"
-          "RightDensity: 0.125\n"
-          "RightPressure: 0.1\n"
-          "RightVelocity: [0.0, 0.0, 0.0]\n"
-          "RightMagneticField: [0.5, -1.0, 0.0]\n"
-          "Lapse: 2.0\n"
-          "ShiftX: 0.4\n");
+  Parallel::register_classes_with_charm<grmhd::AnalyticData::RiemannProblem>();
+  const std::unique_ptr<evolution::initial_data::InitialData> option_solution =
+      TestHelpers::test_option_tag_factory_creation<
+          evolution::initial_data::OptionTags::InitialData,
+          grmhd::AnalyticData::RiemannProblem>(
+          "RiemannProblem:\n"
+          "  AdiabaticIndex: 2.0\n"
+          "  LeftDensity: 1.0\n"
+          "  LeftPressure: 1.0\n"
+          "  LeftVelocity: [0.0, 0.0, 0.0]\n"
+          "  LeftMagneticField: [0.5, 1.0, 0.0]\n"
+          "  RightDensity: 0.125\n"
+          "  RightPressure: 0.1\n"
+          "  RightVelocity: [0.0, 0.0, 0.0]\n"
+          "  RightMagneticField: [0.5, -1.0, 0.0]\n"
+          "  Lapse: 2.0\n"
+          "  ShiftX: 0.4\n");
+  const auto deserialized_option_solution =
+      serialize_and_deserialize(option_solution);
+  const auto& riemann_problem =
+      dynamic_cast<const grmhd::AnalyticData::RiemannProblem&>(
+          *deserialized_option_solution);
+
   CHECK(riemann_problem ==
         grmhd::AnalyticData::RiemannProblem(
             2.0, 1.0, 0.125, 1.0, 0.1, std::array{0.0, 0.0, 0.0},

@@ -8,7 +8,9 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/Systems/ScalarWave/Tags.hpp"  // IWYU pragma: keep
 #include "Options/Options.hpp"
+#include "Parallel/CharmPupable.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -20,8 +22,7 @@ class er;
 }  // namespace PUP
 /// \endcond
 
-namespace ScalarWave {
-namespace Solutions {
+namespace ScalarWave::Solutions {
 /*!
  * \brief An exact solution to the semidiscretized DG ScalarWave
  * system with an upwind flux
@@ -35,7 +36,8 @@ namespace Solutions {
  * periodic domain of length \f$2 \pi\f$ (or an integer multiple) with
  * equally sized linear elements.
  */
-class SemidiscretizedDg : public MarkAsAnalyticSolution {
+class SemidiscretizedDg : public evolution::initial_data::InitialData,
+                          public MarkAsAnalyticSolution {
  public:
   using tags = tmpl::list<Tags::Pi, Tags::Phi<1>, Tags::Psi>;
 
@@ -60,6 +62,12 @@ class SemidiscretizedDg : public MarkAsAnalyticSolution {
   SemidiscretizedDg(int harmonic, const std::array<double, 4>& amplitudes);
 
   SemidiscretizedDg() = default;
+
+  /// \cond
+  explicit SemidiscretizedDg(CkMigrateMessage* msg);
+  using PUP::able::register_constructor;
+  WRAPPED_PUPable_decl_template(SemidiscretizedDg);
+  /// \endcond
 
   /// Retrieve the evolution variables at time `t` and spatial coordinates `x`
   template <typename... Tags>
@@ -91,8 +99,11 @@ class SemidiscretizedDg : public MarkAsAnalyticSolution {
   void pup(PUP::er& p);
 
  private:
-  int harmonic_;
-  std::array<double, 4> amplitudes_;
+  int harmonic_{std::numeric_limits<int>::max()};
+  std::array<double, 4> amplitudes_{
+      {std::numeric_limits<double>::signaling_NaN(),
+       std::numeric_limits<double>::signaling_NaN(),
+       std::numeric_limits<double>::signaling_NaN(),
+       std::numeric_limits<double>::signaling_NaN()}};
 };
-}  // namespace Solutions
-}  // namespace ScalarWave
+}  // namespace ScalarWave::Solutions

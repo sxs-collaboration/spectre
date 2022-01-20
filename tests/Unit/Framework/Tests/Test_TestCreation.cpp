@@ -232,6 +232,15 @@ void test_test_creation() {
             .value == 24);
 }
 
+// [test_option_tag_factory_creation_tag]
+namespace OptionTags {
+struct BaseClass {
+  static constexpr Options::String help = "Halp";
+  using type = std::unique_ptr<::BaseClass>;
+};
+}  // namespace OptionTags
+// [test_option_tag_factory_creation_tag]
+
 void test_test_factory_creation() {
   // [test_factory_creation]
   CHECK(TestHelpers::test_factory_creation<BaseClass, DerivedClass>(
@@ -239,6 +248,14 @@ void test_test_factory_creation() {
             "  SizeT: 5")
             ->get_value() == 5);
   // [test_factory_creation]
+
+  // [test_option_tag_factory_creation]
+  CHECK(TestHelpers::test_option_tag_factory_creation<OptionTags::BaseClass,
+                                                      DerivedClass>(
+            "DerivedClass:\n"
+            "  SizeT: 5")
+            ->get_value() == 5);
+  // [test_option_tag_factory_creation]
 }
 
 void test_test_enum_creation() {

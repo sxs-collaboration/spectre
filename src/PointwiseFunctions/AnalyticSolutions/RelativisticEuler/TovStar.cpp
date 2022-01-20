@@ -19,6 +19,9 @@
 namespace RelativisticEuler::Solutions {
 
 template <typename RadialSolution>
+TovStar<RadialSolution>::TovStar(CkMigrateMessage* msg) : InitialData(msg) {}
+
+template <typename RadialSolution>
 TovStar<RadialSolution>::TovStar(const double central_rest_mass_density,
                                  const double polytropic_constant,
                                  const double polytropic_exponent)
@@ -29,6 +32,7 @@ TovStar<RadialSolution>::TovStar(const double central_rest_mass_density,
 
 template <typename RadialSolution>
 void TovStar<RadialSolution>::pup(PUP::er& p) {
+  InitialData::pup(p);
   p | central_rest_mass_density_;
   p | polytropic_constant_;
   p | polytropic_exponent_;
@@ -290,6 +294,9 @@ tuples::TaggedTuple<::Tags::dt<Tag>> TovStar<RadialSolution>::variables(
     const RadialVariables<DataType>& /*radial_vars*/) const {
   return make_with_value<typename ::Tags::dt<Tag>::type>(get<0>(x), 0.0);
 }
+
+template <typename RadialSolution>
+PUP::able::PUP_ID TovStar<RadialSolution>::my_PUP_ID = 0;
 
 template <typename LocalRadialSolution>
 bool operator==(const TovStar<LocalRadialSolution>& lhs,

@@ -21,9 +21,12 @@
 #include "Helpers/PointwiseFunctions/AnalyticSolutions/GrMhd/VerifyGrMhdSolution.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GrMhd/SmoothFlow.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/TMPL.hpp"
@@ -154,8 +157,22 @@ void test_variables(const DataType& used_for_size) {
 }
 
 void test_solution() {
-  grmhd::Solutions::SmoothFlow solution(
-      {{0.1, -0.2, 0.3}}, {{-0.13, -0.54, 0.04}}, 1.23, 1.4, 0.75);
+  Parallel::register_classes_with_charm<grmhd::Solutions::SmoothFlow>();
+  const std::unique_ptr<evolution::initial_data::InitialData> option_solution =
+      TestHelpers::test_option_tag_factory_creation<
+          evolution::initial_data::OptionTags::InitialData,
+          grmhd::Solutions::SmoothFlow>(
+          "SmoothFlow:\n"
+          "  MeanVelocity: [0.1, -0.2, 0.3]\n"
+          "  WaveVector: [-0.13, -0.54, 0.04]\n"
+          "  Pressure: 1.23\n"
+          "  AdiabaticIndex: 1.4\n"
+          "  PerturbationSize: 0.75\n");
+  const auto deserialized_option_solution =
+      serialize_and_deserialize(option_solution);
+  const auto& solution = dynamic_cast<const grmhd::Solutions::SmoothFlow&>(
+      *deserialized_option_solution);
+
   const std::array<double, 3> x{{4.0, 4.0, 4.0}};
   const std::array<double, 3> dx{{1.e-3, 1.e-3, 1.e-3}};
 

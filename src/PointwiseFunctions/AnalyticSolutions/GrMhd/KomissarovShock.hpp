@@ -9,11 +9,13 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Options/Options.hpp"
+#include "Parallel/CharmPupable.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GrMhd/Solutions.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -25,8 +27,7 @@ class er;  // IWYU pragma: keep
 }  // namespace PUP
 /// \endcond
 
-namespace grmhd {
-namespace Solutions {
+namespace grmhd::Solutions {
 
 /*!
  * \brief A one-dimensional shock solution for an ideal fluid in Minkowski
@@ -42,7 +43,9 @@ namespace Solutions {
  * be represented by a single element with periodic boundary conditions in the
  * \f$y\f$ and \f$z\f$ directions.
  */
-class KomissarovShock : public AnalyticSolution, public MarkAsAnalyticSolution {
+class KomissarovShock : public evolution::initial_data::InitialData,
+                        public AnalyticSolution,
+                        public MarkAsAnalyticSolution {
  public:
   using equation_of_state_type = EquationsOfState::IdealFluid<true>;
 
@@ -116,8 +119,8 @@ class KomissarovShock : public AnalyticSolution, public MarkAsAnalyticSolution {
       "x=0."};
 
   KomissarovShock() = default;
-  KomissarovShock(const KomissarovShock& /*rhs*/) = delete;
-  KomissarovShock& operator=(const KomissarovShock& /*rhs*/) = delete;
+  KomissarovShock(const KomissarovShock& /*rhs*/) = default;
+  KomissarovShock& operator=(const KomissarovShock& /*rhs*/) = default;
   KomissarovShock(KomissarovShock&& /*rhs*/) = default;
   KomissarovShock& operator=(KomissarovShock&& /*rhs*/) = default;
   ~KomissarovShock() = default;
@@ -131,7 +134,11 @@ class KomissarovShock : public AnalyticSolution, public MarkAsAnalyticSolution {
                   const std::array<double, 3>& right_magnetic_field,
                   double shock_speed);
 
-  explicit KomissarovShock(CkMigrateMessage* /*unused*/) {}
+  /// \cond
+  explicit KomissarovShock(CkMigrateMessage* msg);
+  using PUP::able::register_constructor;
+  WRAPPED_PUPable_decl_template(KomissarovShock);
+  /// \endcond
 
   /// @{
   /// Retrieve the GRMHD variables at a given position.
@@ -238,5 +245,4 @@ class KomissarovShock : public AnalyticSolution, public MarkAsAnalyticSolution {
                          const KomissarovShock& rhs);
 };
 
-}  // namespace Solutions
-}  // namespace grmhd
+}  // namespace grmhd::Solutions

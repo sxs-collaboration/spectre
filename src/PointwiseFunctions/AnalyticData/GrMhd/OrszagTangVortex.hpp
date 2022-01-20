@@ -5,10 +5,12 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Options/Options.hpp"
+#include "Parallel/CharmPupable.hpp"
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -21,8 +23,7 @@ class er;
 }  // namespace PUP
 /// \endcond
 
-namespace grmhd {
-namespace AnalyticData {
+namespace grmhd::AnalyticData {
 
 /*!
  * \brief Analytic initial data for the relativistic Orszag-Tang vortex.
@@ -57,7 +58,8 @@ namespace AnalyticData {
  * problem as presented here.
  * \endparblock
  */
-class OrszagTangVortex : public MarkAsAnalyticData {
+class OrszagTangVortex : public evolution::initial_data::InitialData,
+                         public MarkAsAnalyticData {
  public:
   using equation_of_state_type = EquationsOfState::IdealFluid<true>;
 
@@ -67,6 +69,17 @@ class OrszagTangVortex : public MarkAsAnalyticData {
       "The relativistic Orszag-Tang vortex"};
 
   OrszagTangVortex();
+  OrszagTangVortex(const OrszagTangVortex& /*rhs*/) = default;
+  OrszagTangVortex& operator=(const OrszagTangVortex& /*rhs*/) = default;
+  OrszagTangVortex(OrszagTangVortex&& /*rhs*/) = default;
+  OrszagTangVortex& operator=(OrszagTangVortex&& /*rhs*/) = default;
+  ~OrszagTangVortex() = default;
+
+  /// \cond
+  explicit OrszagTangVortex(CkMigrateMessage* msg);
+  using PUP::able::register_constructor;
+  WRAPPED_PUPable_decl_template(OrszagTangVortex);
+  /// \endcond
 
   /// @{
   /// Retrieve hydro variable at `x`
@@ -148,5 +161,4 @@ bool operator==(const OrszagTangVortex& lhs, const OrszagTangVortex& rhs);
 
 bool operator!=(const OrszagTangVortex& lhs, const OrszagTangVortex& rhs);
 
-}  // namespace AnalyticData
-}  // namespace grmhd
+}  // namespace grmhd::AnalyticData

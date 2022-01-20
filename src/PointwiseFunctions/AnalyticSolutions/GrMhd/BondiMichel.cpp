@@ -75,7 +75,10 @@ BondiMichel::BondiMichel(const double mass, const double sonic_radius,
                            1.0 / gamma_minus_one);
 }
 
+BondiMichel::BondiMichel(CkMigrateMessage* msg) : InitialData(msg) {}
+
 void BondiMichel::pup(PUP::er& p) {
+  InitialData::pup(p);
   p | mass_;
   p | sonic_radius_;
   p | sonic_density_;
@@ -293,6 +296,8 @@ BondiMichel::variables(
   result.get(2) = mag_field_strength_factor * x.get(2);
   return result;
 }
+
+PUP::able::PUP_ID BondiMichel::my_PUP_ID = 0;
 
 bool operator==(const BondiMichel& lhs, const BondiMichel& rhs) {
   // there is no comparison operator for the EoS, but should be okay as

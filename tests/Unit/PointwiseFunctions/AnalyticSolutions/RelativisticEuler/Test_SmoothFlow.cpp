@@ -6,6 +6,7 @@
 #include <array>
 #include <cstddef>
 #include <limits>
+#include <memory>
 #include <string>
 #include <tuple>
 #include <utility>
@@ -18,10 +19,13 @@
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Options/ParseOptions.hpp"
+#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/SmoothFlow.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/TMPL.hpp"
@@ -100,16 +104,28 @@ void test_solution(const DataType& used_for_size,
                              tmpl::list<gr::Tags::SpatialMetric<
                                  Dim, Frame::Inertial, DataType>>{}))));
 
-  const auto solution_from_options =
-      TestHelpers::test_creation<RelativisticEuler::Solutions::SmoothFlow<Dim>>(
-          "MeanVelocity: " + mean_velocity_opt +
+  Parallel::register_classes_with_charm<
+      RelativisticEuler::Solutions::SmoothFlow<Dim>>();
+  const std::unique_ptr<evolution::initial_data::InitialData> option_solution =
+      TestHelpers::test_option_tag_factory_creation<
+          evolution::initial_data::OptionTags::InitialData,
+          RelativisticEuler::Solutions::SmoothFlow<Dim>>(
+          "SmoothFlow:\n"
+          "  MeanVelocity: " +
+          mean_velocity_opt +
           "\n"
-          "WaveVector: " +
+          "  WaveVector: " +
           wave_vector_opt +
           "\n"
-          "Pressure: 1.23\n"
-          "AdiabaticIndex: 1.3334\n"
-          "PerturbationSize: 0.78");
+          "  Pressure: 1.23\n"
+          "  AdiabaticIndex: 1.3334\n"
+          "  PerturbationSize: 0.78\n");
+  const auto deserialized_option_solution =
+      serialize_and_deserialize(option_solution);
+  const auto& solution_from_options =
+      dynamic_cast<const RelativisticEuler::Solutions::SmoothFlow<Dim>&>(
+          *deserialized_option_solution);
+
   CHECK(solution == solution_from_options);
 
   RelativisticEuler::Solutions::SmoothFlow<Dim> solution_to_move(

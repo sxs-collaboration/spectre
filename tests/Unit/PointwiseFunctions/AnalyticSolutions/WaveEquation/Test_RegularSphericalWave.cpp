@@ -11,8 +11,12 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/Systems/ScalarWave/Tags.hpp"  // IWYU pragma: keep
 #include "Framework/TestCreation.hpp"
+#include "Framework/TestHelpers.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
+#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/WaveEquation/RegularSphericalWave.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
 #include "PointwiseFunctions/MathFunctions/Gaussian.hpp"
 #include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
@@ -25,13 +29,16 @@ struct Metavariables {
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
         tmpl::pair<MathFunction<1, Frame::Inertial>,
-                   tmpl::list<MathFunctions::Gaussian<1, Frame::Inertial>>>>;
+                   tmpl::list<MathFunctions::Gaussian<1, Frame::Inertial>>>,
+        tmpl::pair<evolution::initial_data::InitialData,
+                   tmpl::list<ScalarWave::Solutions::RegularSphericalWave>>>;
   };
 };
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.AnalyticSolutions.WaveEquation.RegularSphericalWave",
                   "[PointwiseFunctions][Unit]") {
+  Parallel::register_factory_classes_with_charm<Metavariables>();
   const ScalarWave::Solutions::RegularSphericalWave solution{
       std::make_unique<MathFunctions::Gaussian<1, Frame::Inertial>>(1., 1.,
                                                                     0.)};
@@ -80,14 +87,21 @@ SPECTRE_TEST_CASE("Unit.AnalyticSolutions.WaveEquation.RegularSphericalWave",
   CHECK_ITERABLE_APPROX(get<Tags::dt<ScalarWave::Tags::Phi<3>>>(dt_vars).get(2),
                         DataVector({{0., 0., 0., 0.}}));
 
-  const auto created_solution =
-      TestHelpers::test_creation<ScalarWave::Solutions::RegularSphericalWave,
-                                 Metavariables>(
-          "Profile:\n"
-          "  Gaussian:\n"
-          "    Amplitude: 1.\n"
-          "    Width: 1.\n"
-          "    Center: 0.\n");
+  const std::unique_ptr<evolution::initial_data::InitialData> option_solution =
+      TestHelpers::test_option_tag<
+          evolution::initial_data::OptionTags::InitialData, Metavariables>(
+          "RegularSphericalWave:\n"
+          "  Profile:\n"
+          "    Gaussian:\n"
+          "      Amplitude: 1.\n"
+          "      Width: 1.\n"
+          "      Center: 0.\n");
+  const auto deserialized_option_solution =
+      serialize_and_deserialize(option_solution);
+  const auto& created_solution =
+      dynamic_cast<const ScalarWave::Solutions::RegularSphericalWave&>(
+          *deserialized_option_solution);
+
   CHECK(created_solution.variables(
             x, 1.,
             tmpl::list<ScalarWave::Tags::Psi, ScalarWave::Tags::Pi,

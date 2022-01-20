@@ -9,10 +9,12 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Options/Options.hpp"
+#include "Parallel/CharmPupable.hpp"
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -116,7 +118,8 @@ namespace grmhd::AnalyticData {
  *  - ShiftX: 0.0
  *  - Final time: 0.55
  */
-class RiemannProblem : public MarkAsAnalyticData {
+class RiemannProblem : public evolution::initial_data::InitialData,
+                       public MarkAsAnalyticData {
  public:
   using equation_of_state_type = EquationsOfState::IdealFluid<true>;
 
@@ -198,8 +201,8 @@ class RiemannProblem : public MarkAsAnalyticData {
       "x=0."};
 
   RiemannProblem() = default;
-  RiemannProblem(const RiemannProblem& /*rhs*/) = delete;
-  RiemannProblem& operator=(const RiemannProblem& /*rhs*/) = delete;
+  RiemannProblem(const RiemannProblem& /*rhs*/) = default;
+  RiemannProblem& operator=(const RiemannProblem& /*rhs*/) = default;
   RiemannProblem(RiemannProblem&& /*rhs*/) = default;
   RiemannProblem& operator=(RiemannProblem&& /*rhs*/) = default;
   ~RiemannProblem() = default;
@@ -213,7 +216,11 @@ class RiemannProblem : public MarkAsAnalyticData {
                  const std::array<double, 3>& right_magnetic_field,
                  double lapse, double shift);
 
-  explicit RiemannProblem(CkMigrateMessage* /*unused*/);
+  /// \cond
+  explicit RiemannProblem(CkMigrateMessage* msg);
+  using PUP::able::register_constructor;
+  WRAPPED_PUPable_decl_template(RiemannProblem);
+  /// \endcond
 
   /// @{
   /// Retrieve the GRMHD variables at a given position.

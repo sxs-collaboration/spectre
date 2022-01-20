@@ -37,6 +37,8 @@ MagnetizedTovStar::MagnetizedTovStar(const double central_rest_mass_density,
                            Scalar<double>{central_rest_mass_density}))),
       vector_potential_amplitude_(vector_potential_amplitude) {}
 
+MagnetizedTovStar::MagnetizedTovStar(CkMigrateMessage* msg) : tov_star(msg) {}
+
 void MagnetizedTovStar::pup(PUP::er& p) {
   tov_star::pup(p);
   p | pressure_exponent_;
@@ -99,6 +101,8 @@ MagnetizedTovStar::variables(
   }
   return magnetic_field;
 }
+
+PUP::able::PUP_ID MagnetizedTovStar::my_PUP_ID = 0;
 
 bool operator==(const MagnetizedTovStar& lhs, const MagnetizedTovStar& rhs) {
   return static_cast<const typename MagnetizedTovStar::tov_star&>(lhs) ==

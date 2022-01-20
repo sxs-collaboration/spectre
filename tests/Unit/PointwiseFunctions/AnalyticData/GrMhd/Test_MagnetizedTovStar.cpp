@@ -3,16 +3,21 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <memory>
+
 #include "Domain/LogicalCoordinates.hpp"
 #include "Evolution/TypeTraits.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/LinearOperators/Divergence.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/MagnetizedTovStar.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/TovStar.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
 
 static_assert(
     not evolution::is_analytic_solution_v<
@@ -24,14 +29,25 @@ static_assert(
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticData.GrMhd.MagTovStar",
                   "[Unit][PointwiseFunctions]") {
-  const auto mag_tov_opts =
-      TestHelpers::test_creation<grmhd::AnalyticData::MagnetizedTovStar>(
-          "CentralDensity: 1.28e-3\n"
-          "PolytropicConstant: 100.0\n"
-          "PolytropicExponent: 2.0\n"
-          "PressureExponent: 2\n"
-          "VectorPotentialAmplitude: 2500\n"
-          "CutoffPressureFraction: 0.04\n");
+  Parallel::register_classes_with_charm<
+      grmhd::AnalyticData::MagnetizedTovStar>();
+  const std::unique_ptr<evolution::initial_data::InitialData> option_solution =
+      TestHelpers::test_option_tag_factory_creation<
+          evolution::initial_data::OptionTags::InitialData,
+          grmhd::AnalyticData::MagnetizedTovStar>(
+          "MagnetizedTovStar:\n"
+          "  CentralDensity: 1.28e-3\n"
+          "  PolytropicConstant: 100.0\n"
+          "  PolytropicExponent: 2.0\n"
+          "  PressureExponent: 2\n"
+          "  VectorPotentialAmplitude: 2500\n"
+          "  CutoffPressureFraction: 0.04\n");
+  const auto deserialized_option_solution =
+      serialize_and_deserialize(option_solution);
+  const auto& mag_tov_opts =
+      dynamic_cast<const grmhd::AnalyticData::MagnetizedTovStar&>(
+          *deserialized_option_solution);
+
   const RelativisticEuler::Solutions::TovStar<gr::Solutions::TovSolution> tov{
       1.28e-3, 100.0, 2.0};
   const auto mag_tov = serialize_and_deserialize(mag_tov_opts);

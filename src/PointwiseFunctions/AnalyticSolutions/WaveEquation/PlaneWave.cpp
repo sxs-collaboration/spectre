@@ -26,6 +26,9 @@ PlaneWave<Dim>::PlaneWave(
       omega_(magnitude(wave_vector_)) {}
 
 template <size_t Dim>
+PlaneWave<Dim>::PlaneWave(CkMigrateMessage* msg) : InitialData(msg) {}
+
+template <size_t Dim>
 template <typename T>
 Scalar<T> PlaneWave<Dim>::psi(const tnsr::I<T, Dim>& x, const double t) const {
   return Scalar<T>(profile_->operator()(u(x, t)));
@@ -111,6 +114,7 @@ PlaneWave<Dim>::variables(
 
 template <size_t Dim>
 void PlaneWave<Dim>::pup(PUP::er& p) {
+  InitialData::pup(p);
   p | wave_vector_;
   p | center_;
   p | profile_;
@@ -127,6 +131,8 @@ T PlaneWave<Dim>::u(const tnsr::I<T, Dim>& x, const double t) const {
   return result;
 }
 
+template <size_t Dim>
+PUP::able::PUP_ID PlaneWave<Dim>::my_PUP_ID = 0;
 }  // namespace ScalarWave::Solutions
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)

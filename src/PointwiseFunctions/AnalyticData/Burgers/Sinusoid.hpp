@@ -7,7 +7,9 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/Burgers/Tags.hpp"  // IWYU pragma: keep
 #include "Options/Options.hpp"
+#include "Parallel/CharmPupable.hpp"
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -19,8 +21,7 @@ class er;
 }  // namespace PUP
 /// \endcond
 
-namespace Burgers {
-namespace AnalyticData {
+namespace Burgers::AnalyticData {
 /*!
  * \brief Analytic data (with an "exact" solution known) that is periodic over
  * the interval \f$[0,2\pi]\f$.
@@ -87,7 +88,8 @@ namespace AnalyticData {
        return np.asarray(results)
  * \endcode
  */
-class Sinusoid : public MarkAsAnalyticData {
+class Sinusoid : public evolution::initial_data::InitialData,
+                 public MarkAsAnalyticData {
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help{
@@ -102,6 +104,12 @@ class Sinusoid : public MarkAsAnalyticData {
   Sinusoid& operator=(Sinusoid&&) = default;
   ~Sinusoid() = default;
 
+  /// \cond
+  explicit Sinusoid(CkMigrateMessage* msg);
+  using PUP::able::register_constructor;
+  WRAPPED_PUPable_decl_template(Sinusoid);
+  /// \endcond
+
   template <typename T>
   Scalar<T> u(const tnsr::I<T, 1>& x) const;
 
@@ -115,5 +123,4 @@ class Sinusoid : public MarkAsAnalyticData {
 bool operator==(const Sinusoid& /*lhs*/, const Sinusoid& /*rhs*/);
 
 bool operator!=(const Sinusoid& lhs, const Sinusoid& rhs);
-}  // namespace AnalyticData
-}  // namespace Burgers
+}  // namespace Burgers::AnalyticData

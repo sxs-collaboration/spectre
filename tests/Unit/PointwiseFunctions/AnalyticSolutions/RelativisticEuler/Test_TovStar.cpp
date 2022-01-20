@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <array>
 #include <cstddef>
+#include <memory>
 #include <pup.h>
 #include <random>
 #include <vector>
@@ -18,9 +19,12 @@
 #include "Helpers/PointwiseFunctions/AnalyticSolutions/GrMhd/VerifyGrMhdSolution.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Tov.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/TovStar.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 
@@ -72,8 +76,22 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.RelEuler.Tov",
   test_serialize();
   test_move();
 
-  RelativisticEuler::Solutions::TovStar<gr::Solutions::TovSolution> solution(
-      1.0e-3, 100.0, 2.0);
+  Parallel::register_classes_with_charm<
+      RelativisticEuler::Solutions::TovStar<gr::Solutions::TovSolution>>();
+  const std::unique_ptr<evolution::initial_data::InitialData> option_solution =
+      TestHelpers::test_option_tag_factory_creation<
+          evolution::initial_data::OptionTags::InitialData,
+          RelativisticEuler::Solutions::TovStar<gr::Solutions::TovSolution>>(
+          "TovStar:\n"
+          "  CentralDensity: 1.0e-3\n"
+          "  PolytropicConstant: 100.0\n"
+          "  PolytropicExponent: 2.0\n");
+  const auto deserialized_option_solution =
+      serialize_and_deserialize(option_solution);
+  const auto& solution = dynamic_cast<
+      const RelativisticEuler::Solutions::TovStar<gr::Solutions::TovSolution>&>(
+      *deserialized_option_solution);
+
   const double radius_of_star = 10.04735006833273303;
   verify_solution(solution, {{0.0, 0.0, 0.0}});
   verify_solution(solution, {{0.0, 0.0, 0.5 * radius_of_star}});

@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <array>
 #include <limits>
+#include <memory>
 #include <tuple>
 
 #include "DataStructures/DataBox/Prefixes.hpp"    // IWYU pragma: keep
@@ -15,8 +16,11 @@
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/MagneticRotor.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -57,15 +61,25 @@ struct MagneticRotorProxy : grmhd::AnalyticData::MagneticRotor {
 };
 
 void test_create_from_options() {
-  const auto magnetic_rotor =
-      TestHelpers::test_creation<grmhd::AnalyticData::MagneticRotor>(
-          "RotorRadius: 0.1\n"
-          "RotorDensity: 10.0\n"
-          "BackgroundDensity: 1.0\n"
-          "Pressure: 1.0\n"
-          "AngularVelocity: 9.95\n"
-          "MagneticField: [3.5449077018, 0.0, 0.0]\n"
-          "AdiabaticIndex: 1.6666666666666666");
+  Parallel::register_classes_with_charm<grmhd::AnalyticData::MagneticRotor>();
+  const std::unique_ptr<evolution::initial_data::InitialData> option_solution =
+      TestHelpers::test_option_tag_factory_creation<
+          evolution::initial_data::OptionTags::InitialData,
+          grmhd::AnalyticData::MagneticRotor>(
+          "MagneticRotor:\n"
+          "  RotorRadius: 0.1\n"
+          "  RotorDensity: 10.0\n"
+          "  BackgroundDensity: 1.0\n"
+          "  Pressure: 1.0\n"
+          "  AngularVelocity: 9.95\n"
+          "  MagneticField: [3.5449077018, 0.0, 0.0]\n"
+          "  AdiabaticIndex: 1.6666666666666666");
+  const auto deserialized_option_solution =
+      serialize_and_deserialize(option_solution);
+  const auto& magnetic_rotor =
+      dynamic_cast<const grmhd::AnalyticData::MagneticRotor&>(
+          *deserialized_option_solution);
+
   CHECK(magnetic_rotor == grmhd::AnalyticData::MagneticRotor(
                               0.1, 10.0, 1.0, 1.0, 9.95,
                               std::array<double, 3>{{3.5449077018, 0.0, 0.0}},

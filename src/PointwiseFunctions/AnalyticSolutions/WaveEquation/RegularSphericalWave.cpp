@@ -25,6 +25,9 @@ RegularSphericalWave::RegularSphericalWave(
     std::unique_ptr<MathFunction<1, Frame::Inertial>> profile)
     : profile_(std::move(profile)) {}
 
+RegularSphericalWave::RegularSphericalWave(CkMigrateMessage* msg)
+    : InitialData(msg) {}
+
 tuples::TaggedTuple<Tags::Psi, Tags::Pi, Tags::Phi<3>>
 RegularSphericalWave::variables(
     const tnsr::I<DataVector, 3>& x, double t,
@@ -105,6 +108,10 @@ RegularSphericalWave::variables(
   return dt_variables;
 }
 
-void RegularSphericalWave::pup(PUP::er& p) { p | profile_; }
+void RegularSphericalWave::pup(PUP::er& p) {
+  InitialData::pup(p);
+  p | profile_;
+}
 
+PUP::able::PUP_ID RegularSphericalWave::my_PUP_ID = 0;
 }  // namespace ScalarWave::Solutions

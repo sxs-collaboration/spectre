@@ -13,11 +13,12 @@
 
 // IWYU pragma: no_forward_declare Tensor
 
-namespace Burgers {
-namespace Solutions {
+namespace Burgers::Solutions {
 
 Bump::Bump(const double half_width, const double height, const double center)
     : half_width_(half_width), height_(height), center_(center) {}
+
+Bump::Bump(CkMigrateMessage* msg) : InitialData(msg) {}
 
 template <typename T>
 Scalar<T> Bump::u(const tnsr::I<T, 1>& x, double t) const {
@@ -64,13 +65,14 @@ tuples::TaggedTuple<::Tags::dt<Tags::U>> Bump::variables(
 }
 
 void Bump::pup(PUP::er& p) {
+  InitialData::pup(p);
   p | half_width_;
   p | height_;
   p | center_;
 }
 
-}  // namespace Solutions
-}  // namespace Burgers
+PUP::able::PUP_ID Bump::my_PUP_ID = 0;
+}  // namespace Burgers::Solutions
 
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 

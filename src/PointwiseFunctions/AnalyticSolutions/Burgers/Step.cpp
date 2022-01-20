@@ -13,8 +13,7 @@
 
 // IWYU pragma: no_forward_declare Tensor
 
-namespace Burgers {
-namespace Solutions {
+namespace Burgers::Solutions {
 
 Step::Step(const double left_value, const double right_value,
            const double initial_shock_position, const Options::Context& context)
@@ -25,6 +24,8 @@ Step::Step(const double left_value, const double right_value,
     PARSE_ERROR(context, "Shock solution expects left_value > right_value");
   }
 }
+
+Step::Step(CkMigrateMessage* msg) : InitialData(msg) {}
 
 template <typename T>
 Scalar<T> Step::u(const tnsr::I<T, 1>& x, const double t) const {
@@ -53,13 +54,14 @@ tuples::TaggedTuple<::Tags::dt<Tags::U>> Step::variables(
 }
 
 void Step::pup(PUP::er& p) {
+  InitialData::pup(p);
   p | left_value_;
   p | right_value_;
   p | initial_shock_position_;
 }
 
-}  // namespace Solutions
-}  // namespace Burgers
+PUP::able::PUP_ID Step::my_PUP_ID = 0;
+}  // namespace Burgers::Solutions
 
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 

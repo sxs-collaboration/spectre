@@ -21,8 +21,11 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Options/Options.hpp"  // IWYU pragma: keep
+#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GrMhd/KomissarovShock.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -191,11 +194,27 @@ void test_variables(const DataType& used_for_size) {
 }
 
 void test_solution() {
-  grmhd::Solutions::KomissarovShock solution(
-      1.33, 1., 3.323, 10., 55.36, std::array<double, 3>{{0.83, 0., 0.}},
-      std::array<double, 3>{{0.62, -0.44, 0.}},
-      std::array<double, 3>{{10., 18.28, 0.}},
-      std::array<double, 3>{{10., 14.49, 0.}}, 0.5);
+  Parallel::register_classes_with_charm<grmhd::Solutions::KomissarovShock>();
+  const std::unique_ptr<evolution::initial_data::InitialData> option_solution =
+      TestHelpers::test_option_tag_factory_creation<
+          evolution::initial_data::OptionTags::InitialData,
+          grmhd::Solutions::KomissarovShock>(
+          "KomissarovShock:\n"
+          "  AdiabaticIndex: 1.33\n"
+          "  LeftDensity: 1.\n"
+          "  RightDensity: 3.323\n"
+          "  LeftPressure: 10.\n"
+          "  RightPressure: 55.36\n"
+          "  LeftVelocity: [0.83, 0., 0.]\n"
+          "  RightVelocity: [0.62, -0.44, 0.]\n"
+          "  LeftMagneticField: [10., 18.28, 0.]\n"
+          "  RightMagneticField: [10., 14.49, 0.]\n"
+          "  ShockSpeed: 0.5\n");
+  const auto deserialized_option_solution =
+      serialize_and_deserialize(option_solution);
+  const auto& solution = dynamic_cast<const grmhd::Solutions::KomissarovShock&>(
+      *deserialized_option_solution);
+
   const std::array<double, 3> x{{1.0, 2.3, -0.4}};
   const std::array<double, 3> dx{{1.e-1, 1.e-1, 1.e-1}};
 

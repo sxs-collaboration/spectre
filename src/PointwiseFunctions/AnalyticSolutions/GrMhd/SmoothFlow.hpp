@@ -8,6 +8,7 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Options/Options.hpp"
+#include "Parallel/CharmPupable.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GrMhd/Solutions.hpp"
@@ -16,8 +17,7 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
-namespace grmhd {
-namespace Solutions {
+namespace grmhd::Solutions {
 
 /*!
  * \brief Periodic GrMhd solution in Minkowski spacetime.
@@ -48,8 +48,8 @@ class SmoothFlow : virtual public MarkAsAnalyticSolution,
       "Periodic smooth flow in Minkowski spacetime with zero magnetic field."};
 
   SmoothFlow() = default;
-  SmoothFlow(const SmoothFlow& /*rhs*/) = delete;
-  SmoothFlow& operator=(const SmoothFlow& /*rhs*/) = delete;
+  SmoothFlow(const SmoothFlow& /*rhs*/) = default;
+  SmoothFlow& operator=(const SmoothFlow& /*rhs*/) = default;
   SmoothFlow(SmoothFlow&& /*rhs*/) = default;
   SmoothFlow& operator=(SmoothFlow&& /*rhs*/) = default;
   ~SmoothFlow() = default;
@@ -57,6 +57,12 @@ class SmoothFlow : virtual public MarkAsAnalyticSolution,
   SmoothFlow(const std::array<double, 3>& mean_velocity,
              const std::array<double, 3>& wavevector, double pressure,
              double adiabatic_index, double perturbation_size);
+
+  /// \cond
+  explicit SmoothFlow(CkMigrateMessage* msg);
+  using PUP::able::register_constructor;
+  WRAPPED_PUPable_decl_template(SmoothFlow);
+  /// \endcond
 
   using smooth_flow::equation_of_state;
   using smooth_flow::equation_of_state_type;
@@ -97,5 +103,4 @@ class SmoothFlow : virtual public MarkAsAnalyticSolution,
 };
 
 bool operator!=(const SmoothFlow& lhs, const SmoothFlow& rhs);
-}  // namespace Solutions
-}  // namespace grmhd
+}  // namespace grmhd::Solutions

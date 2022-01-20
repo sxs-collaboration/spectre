@@ -55,7 +55,10 @@ KhInstability::KhInstability(
              << strip_thickness << ".");
 }
 
+KhInstability::KhInstability(CkMigrateMessage* msg) : InitialData(msg) {}
+
 void KhInstability::pup(PUP::er& p) {
+  InitialData::pup(p);
   p | adiabatic_index_;
   p | strip_bimedian_height_;
   p | strip_half_thickness_;
@@ -178,6 +181,8 @@ KhInstability::variables(
       get<hydro::Tags::SpecificInternalEnergy<DataType>>(variables(
           x, tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>>{})));
 }
+
+PUP::able::PUP_ID KhInstability::my_PUP_ID = 0;
 
 bool operator==(const KhInstability& lhs, const KhInstability& rhs) {
   // No comparison for equation_of_state_. Comparing adiabatic_index_ should

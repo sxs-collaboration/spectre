@@ -23,6 +23,9 @@ SemidiscretizedDg::SemidiscretizedDg(const int harmonic,
                                      const std::array<double, 4>& amplitudes)
     : harmonic_(harmonic), amplitudes_(amplitudes) {}
 
+SemidiscretizedDg::SemidiscretizedDg(CkMigrateMessage* msg)
+    : InitialData(msg) {}
+
 namespace {
 struct Mode {
   std::complex<double> frequency;
@@ -152,7 +155,10 @@ tuples::TaggedTuple<Tags::Psi> SemidiscretizedDg::variables(
 }
 
 void SemidiscretizedDg::pup(PUP::er& p) {
+  InitialData::pup(p);
   p | harmonic_;
   p | amplitudes_;
 }
+
+PUP::able::PUP_ID SemidiscretizedDg::my_PUP_ID = 0;
 }  // namespace ScalarWave::Solutions

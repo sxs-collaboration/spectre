@@ -72,7 +72,10 @@ AlfvenWave::AlfvenWave(const double wavenumber, const double pressure,
   fluid_speed_ = -auxiliary_speed_b1 * one_over_speed_denominator;
 }
 
+AlfvenWave::AlfvenWave(CkMigrateMessage* msg) : InitialData(msg) {}
+
 void AlfvenWave::pup(PUP::er& p) {
+  InitialData::pup(p);
   p | wavenumber_;
   p | pressure_;
   p | rest_mass_density_;
@@ -187,6 +190,8 @@ AlfvenWave::variables(
   get(specific_internal_energy) += 1.0;
   return {std::move(specific_internal_energy)};
 }
+
+PUP::able::PUP_ID AlfvenWave::my_PUP_ID = 0;
 
 bool operator==(const AlfvenWave& lhs, const AlfvenWave& rhs) {
   // there is no comparison operator for the EoS, but should be okay as

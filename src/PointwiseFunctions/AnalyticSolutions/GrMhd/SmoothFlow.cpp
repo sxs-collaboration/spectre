@@ -21,6 +21,9 @@ SmoothFlow::SmoothFlow(const std::array<double, 3>& mean_velocity,
                                                   pressure, adiabatic_index,
                                                   perturbation_size) {}
 
+SmoothFlow::SmoothFlow(CkMigrateMessage* msg)
+    : RelativisticEuler::Solutions::SmoothFlow<3>(msg) {}
+
 void SmoothFlow::pup(PUP::er& p) {
   RelativisticEuler::Solutions::SmoothFlow<3>::pup(p);
 }
@@ -40,6 +43,8 @@ SmoothFlow::variables(
     tmpl::list<hydro::Tags::DivergenceCleaningField<DataType>> /*meta*/) const {
   return {make_with_value<Scalar<DataType>>(x, 0.0)};
 }
+
+PUP::able::PUP_ID SmoothFlow::my_PUP_ID = 0;
 
 bool operator==(const SmoothFlow& lhs, const SmoothFlow& rhs) {
   using smooth_flow = RelativisticEuler::Solutions::SmoothFlow<3>;

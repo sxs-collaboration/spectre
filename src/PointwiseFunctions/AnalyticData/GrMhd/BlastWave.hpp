@@ -8,11 +8,13 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Options/Options.hpp"
+#include "Parallel/CharmPupable.hpp"
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -57,7 +59,9 @@ namespace grmhd::AnalyticData {
  * \cite CerdaDuran2007 \cite CerdaDuran2008 \cite Cipolletta2019. The magnetic
  * field is chosen to be in the z-direction instead of the x-direction.
  */
-class BlastWave : public MarkAsAnalyticData, public AnalyticDataBase {
+class BlastWave : public evolution::initial_data::InitialData,
+                  public MarkAsAnalyticData,
+                  public AnalyticDataBase {
  public:
   using equation_of_state_type = EquationsOfState::IdealFluid<true>;
 
@@ -134,8 +138,8 @@ class BlastWave : public MarkAsAnalyticData, public AnalyticDataBase {
       "Cylindrical or spherical blast wave analytic initial data."};
 
   BlastWave() = default;
-  BlastWave(const BlastWave& /*rhs*/) = delete;
-  BlastWave& operator=(const BlastWave& /*rhs*/) = delete;
+  BlastWave(const BlastWave& /*rhs*/) = default;
+  BlastWave& operator=(const BlastWave& /*rhs*/) = default;
   BlastWave(BlastWave&& /*rhs*/) = default;
   BlastWave& operator=(BlastWave&& /*rhs*/) = default;
   ~BlastWave() = default;
@@ -145,7 +149,11 @@ class BlastWave : public MarkAsAnalyticData, public AnalyticDataBase {
             const std::array<double, 3>& magnetic_field, double adiabatic_index,
             Geometry geometry, const Options::Context& context = {});
 
-  explicit BlastWave(CkMigrateMessage* /*unused*/) {}
+  /// \cond
+  explicit BlastWave(CkMigrateMessage* msg);
+  using PUP::able::register_constructor;
+  WRAPPED_PUPable_decl_template(BlastWave);
+  /// \endcond
 
   /// @{
   /// Retrieve the GRMHD variables at a given position.

@@ -58,7 +58,10 @@ MagneticRotor::MagneticRotor(
   }
 }
 
+MagneticRotor::MagneticRotor(CkMigrateMessage* msg) : InitialData(msg) {}
+
 void MagneticRotor::pup(PUP::er& p) {
+  InitialData::pup(p);
   p | rotor_radius_;
   p | rotor_density_;
   p | background_density_;
@@ -154,6 +157,8 @@ MagneticRotor::variables(
       get<hydro::Tags::SpecificInternalEnergy<DataType>>(variables(
           x, tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>>{})));
 }
+
+PUP::able::PUP_ID MagneticRotor::my_PUP_ID = 0;
 
 bool operator==(const MagneticRotor& lhs, const MagneticRotor& rhs) {
   // there is no comparison operator for the EoS, but should be okay as

@@ -12,7 +12,9 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Options/Options.hpp"
+#include "Parallel/CharmPupable.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
@@ -38,8 +40,7 @@ class er;
 }  // namespace PUP
 /// \endcond
 
-namespace ScalarWave {
-namespace Solutions {
+namespace ScalarWave::Solutions {
 /*!
  * \brief A plane wave solution to the Euclidean wave equation
  *
@@ -52,7 +53,8 @@ namespace Solutions {
  * \tparam Dim the spatial dimension of the solution
  */
 template <size_t Dim>
-class PlaneWave : public MarkAsAnalyticSolution {
+class PlaneWave : public evolution::initial_data::InitialData,
+                  public MarkAsAnalyticSolution {
  public:
   static constexpr size_t volume_dim = Dim;
   struct WaveVector {
@@ -88,6 +90,12 @@ class PlaneWave : public MarkAsAnalyticSolution {
   PlaneWave(PlaneWave&&) = default;
   PlaneWave& operator=(PlaneWave&&) = default;
   ~PlaneWave() = default;
+
+  /// \cond
+  explicit PlaneWave(CkMigrateMessage* msg);
+  using PUP::able::register_constructor;
+  WRAPPED_PUPable_decl_template(PlaneWave);
+  /// \endcond
 
   /// The value of the scalar field
   template <typename T>
@@ -141,5 +149,4 @@ class PlaneWave : public MarkAsAnalyticSolution {
   std::unique_ptr<MathFunction<1, Frame::Inertial>> profile_;
   double omega_{};
 };
-}  // namespace Solutions
-}  // namespace ScalarWave
+}  // namespace ScalarWave::Solutions

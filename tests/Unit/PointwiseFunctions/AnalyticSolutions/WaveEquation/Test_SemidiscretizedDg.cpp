@@ -45,10 +45,13 @@
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/CollectDataForFluxes.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/FluxCommunication.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/WaveEquation/SemidiscretizedDg.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
@@ -294,8 +297,19 @@ SPECTRE_TEST_CASE(
     check_solution({harmonic, {{1.2, 2.3, 3.4, 4.5}}});
   }
 
-  check_solution(
-      TestHelpers::test_creation<ScalarWave::Solutions::SemidiscretizedDg>(
-          "Harmonic: 1\n"
-          "Amplitudes: [1.2, 2.3, 3.4, 4.5]"));
+  Parallel::register_classes_with_charm<
+      ScalarWave::Solutions::SemidiscretizedDg>();
+  const std::unique_ptr<evolution::initial_data::InitialData> option_solution =
+      TestHelpers::test_option_tag_factory_creation<
+          evolution::initial_data::OptionTags::InitialData,
+          ScalarWave::Solutions::SemidiscretizedDg>(
+          "SemidiscretizedDg:\n"
+          "  Harmonic: 1\n"
+          "  Amplitudes: [1.2, 2.3, 3.4, 4.5]\n");
+  const auto deserialized_option_solution =
+      serialize_and_deserialize(option_solution);
+  const auto& solution =
+      dynamic_cast<const ScalarWave::Solutions::SemidiscretizedDg&>(
+          *deserialized_option_solution);
+  check_solution(solution);
 }
