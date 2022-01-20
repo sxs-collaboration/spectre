@@ -104,7 +104,8 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTimeAreReady", "[Domain][Unit]") {
         cache, 0, component_p, 0.5, std::array{"OtherA"s}));
 
     // Make OtherA ready
-    Parallel::mutate<OtherFunctionsOfTime, UpdateFoT>(cache, "OtherA"s, 123.0);
+    ActionTesting::mutate<OtherFunctionsOfTime, UpdateFoT>(cache, "OtherA"s,
+                                                           123.0);
 
     CHECK(domain::functions_of_time_are_ready<OtherFunctionsOfTime>(
         cache, 0, component_p, 0.5, std::array{"OtherA"s}));
@@ -112,7 +113,8 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTimeAreReady", "[Domain][Unit]") {
         cache, 0, component_p, 0.5, std::array{"OtherA"s, "OtherB"s}));
 
     // Make OtherB ready
-    Parallel::mutate<OtherFunctionsOfTime, UpdateFoT>(cache, "OtherB"s, 456.0);
+    ActionTesting::mutate<OtherFunctionsOfTime, UpdateFoT>(cache, "OtherB"s,
+                                                           456.0);
 
     CHECK(domain::functions_of_time_are_ready<OtherFunctionsOfTime>(
         cache, 0, component_p, 0.5, std::array{"OtherA"s, "OtherB"s}));
@@ -128,14 +130,14 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTimeAreReady", "[Domain][Unit]") {
         make_not_null(&runner), 0));
 
     // Make OtherA ready
-    Parallel::mutate<domain::Tags::FunctionsOfTime, UpdateFoT>(
+    ActionTesting::mutate<domain::Tags::FunctionsOfTime, UpdateFoT>(
         cache, "FunctionA"s, 5.0);
 
     CHECK(not ActionTesting::next_action_if_ready<component>(
         make_not_null(&runner), 0));
 
     // Make OtherB ready
-    Parallel::mutate<domain::Tags::FunctionsOfTime, UpdateFoT>(
+    ActionTesting::mutate<domain::Tags::FunctionsOfTime, UpdateFoT>(
         cache, "FunctionB"s, 10.0);
 
     CHECK(ActionTesting::next_action_if_ready<component>(make_not_null(&runner),

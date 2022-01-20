@@ -618,26 +618,6 @@ bool mutable_cache_item_is_ready(GlobalCache<Metavariables>& cache,
 }
 
 /// \ingroup ParallelGroup
-/// \brief Mutates non-const data in the cache, by calling `Function::apply()`
-///
-/// \requires `GlobalCacheTag` is a tag in the `mutable_global_cache_tags`
-/// defined by the Metavariables and in Actions.
-/// \requires `Function` is a struct with a static void `apply()`
-/// function that mutates the object. `Function::apply()` takes as its
-/// first argument a `gsl::not_null` pointer to the object named by
-/// the `GlobalCacheTag`, and takes `args` as
-/// subsequent arguments.
-///
-/// This is the version that takes a GlobalCache<Metavariables>. Used only
-/// for tests.
-template <typename GlobalCacheTag, typename Function, typename Metavariables,
-          typename... Args>
-void mutate(GlobalCache<Metavariables>& cache, Args&&... args) {
-  cache.template mutate<GlobalCacheTag, Function>(
-      std::make_tuple<Args...>(std::forward<Args>(args)...));
-}
-
-/// \ingroup ParallelGroup
 ///
 /// \brief Mutates non-const data in the cache, by calling `Function::apply()`
 ///
@@ -647,8 +627,6 @@ void mutate(GlobalCache<Metavariables>& cache, Args&&... args) {
 /// first argument a `gsl::not_null` pointer to the object named by
 /// the `GlobalCacheTag`, and takes `args` as
 /// subsequent arguments.
-///
-/// This is the version that takes a charm++ proxy to the GlobalCache.
 template <typename GlobalCacheTag, typename Function, typename Metavariables,
           typename... Args>
 void mutate(CProxy_GlobalCache<Metavariables>& cache_proxy, Args&&... args) {

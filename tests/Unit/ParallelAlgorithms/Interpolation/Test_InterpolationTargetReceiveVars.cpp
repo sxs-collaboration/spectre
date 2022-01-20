@@ -560,8 +560,8 @@ void test_interpolation_target_receive_vars() {
 
       // Now mutate the FunctionsOfTime.
       auto& cache = ActionTesting::cache<target_component>(runner, 0_st);
-      Parallel::mutate<domain::Tags::FunctionsOfTime,
-                       control_system::ResetFunctionOfTimeExpirationTime>(
+      ActionTesting::mutate<domain::Tags::FunctionsOfTime,
+                            control_system::ResetFunctionOfTimeExpirationTime>(
           cache, f_of_t_name, new_expiration_time);
 
       // The callback should have queued a single simple action,
