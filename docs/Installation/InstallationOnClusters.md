@@ -43,6 +43,14 @@ Use `compute_canada` as the `SYSTEM_TO_RUN_ON` in the general instructions.
 
 Follow the general instructions, using `frontera` for `SYSTEM_TO_RUN_ON`.
 
+Processes running on the head nodes have restrictions on memory use
+that will prevent linking the main executables.  It is better to
+compile on an interactive node.  Interactive nodes can be requested
+with the `idev` command.
+
+For unknown reasons, incremental builds work poorly on frontera.
+Running `make` will often unnecessarily recompile SpECTRE libraries.
+
 ## Wheeler at Caltech
 
 Follow the general instructions using `wheeler` for `SYSTEM_TO_RUN_ON`, except

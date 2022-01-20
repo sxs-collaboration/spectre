@@ -2,7 +2,7 @@
 #SBATCH -J MyJobName       # Job name
 #SBATCH -o MyJobName.o%j   # Name of stdout output file
 #SBATCH -e MyJobName.e%j   # Name of stderr error file
-#SBATCH -p normal          # Queue (partition) name
+#SBATCH -p small           # Queue (partition) name - for 3+ nodes use 'normal'
 #SBATCH -N 2               # Total # of nodes
 #SBATCH -n 2               # Total # of tasks, must be number of nodes
 #SBATCH -t 00:30:00        # Run time (hh:mm:ss)
