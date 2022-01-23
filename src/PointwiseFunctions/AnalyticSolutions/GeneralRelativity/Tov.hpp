@@ -61,6 +61,46 @@ class TovSolution {
   /// The total mass \f$m(R)\f$, where \f$R\f$ is the outer radius.
   double total_mass() const { return total_mass_; }
 
+  /*!
+   * \brief The injection energy \f$\mathcal{E}=\alpha(r=R)=\sqrt{1-2M/R}\f$.
+   *
+   * The injection energy of the TOV solution is
+   *
+   * \f{equation}
+   * \mathcal{E} = -h k^a u_a = h \alpha
+   * \text{,}
+   * \f}
+   *
+   * where \f$\boldsymbol{k} = \partial_t\f$ is a Killing vector of the static
+   * solution, \f$h\f$ is the specific enthalpy, \f$u_a\f$ is the fluid
+   * four-velocity, and \f$\alpha\f$ is the lapse (see, e.g., Eqs. (2.19) and
+   * (4.2) in \cite Moldenhauer2014yaa). Since the TOV solution is static, the
+   * injection energy is conserved not only along stream lines but throughout
+   * the star,
+   *
+   * \f{equation}
+   * \nabla_a \mathcal{E} = 0
+   * \text{.}
+   * \f}
+   *
+   * Therefore,
+   *
+   * \f{equation}
+   * \mathcal{E} = \alpha(r=R) = \sqrt{1 - 2M/R}
+   * \f}
+   *
+   * by evaluating the injection energy at the outer radius \f$R\f$, where
+   * \f$h=1\f$ and where we match the lapse to the outer Schwarzschild
+   * solution. The conservation also implies
+   *
+   * \f{equation}
+   * \alpha = \mathcal{E} / h
+   * \f}
+   *
+   * throughout the star.
+   */
+  double injection_energy() const { return injection_energy_; }
+
   /// \brief The mass inside the given radius over the radius
   /// \f$\frac{m(r)}{r}\f$
   ///
@@ -80,6 +120,7 @@ class TovSolution {
  private:
   double outer_radius_{std::numeric_limits<double>::signaling_NaN()};
   double total_mass_{std::numeric_limits<double>::signaling_NaN()};
+  double injection_energy_{std::numeric_limits<double>::signaling_NaN()};
   intrp::BarycentricRational mass_over_radius_interpolant_;
   intrp::BarycentricRational log_enthalpy_interpolant_;
 };

@@ -22,6 +22,7 @@ void bind_tov(py::module& m) {  // NOLINT
            py::arg("relative_tolerance") = 1.e-14)
       .def("outer_radius", &TovSolution::outer_radius)
       .def("total_mass", &TovSolution::total_mass)
+      .def("injection_energy", &TovSolution::injection_energy)
       .def("mass_over_radius",
            py::vectorize(&TovSolution::mass_over_radius<double>))
       .def("log_specific_enthalpy",

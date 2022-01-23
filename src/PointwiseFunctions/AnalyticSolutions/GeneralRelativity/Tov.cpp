@@ -123,6 +123,7 @@ TovSolution::TovSolution(
   outer_radius_ = observer.radius.back();
   const double total_mass_over_radius = observer.mass_over_radius.back();
   total_mass_ = total_mass_over_radius * outer_radius_;
+  injection_energy_ = sqrt(1. - 2. * total_mass_ / outer_radius_);
   mass_over_radius_interpolant_ =
       intrp::BarycentricRational(observer.radius, observer.mass_over_radius, 5);
   // log_enthalpy(radius) is almost linear so an interpolant of order 3
@@ -160,6 +161,7 @@ DataType TovSolution::log_specific_enthalpy(const DataType& r) const {
 void TovSolution::pup(PUP::er& p) {  // NOLINT
   p | outer_radius_;
   p | total_mass_;
+  p | injection_energy_;
   p | mass_over_radius_interpolant_;
   p | log_enthalpy_interpolant_;
 }

@@ -144,8 +144,7 @@ void TovVariables<DataType, Region>::operator()(
     const auto& log_specific_enthalpy =
         get(cache->get_var(*this, Tags::LogSpecificEnthalpy<DataType>{}));
     const double log_lapse_at_outer_radius =
-        0.5 * log(1. - 2. * radial_solution.total_mass() /
-                           radial_solution.outer_radius());
+        log(radial_solution.injection_energy());
     get(*metric_time_potential) =
         log_lapse_at_outer_radius - log_specific_enthalpy;
   }

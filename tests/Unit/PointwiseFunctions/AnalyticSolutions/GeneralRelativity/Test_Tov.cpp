@@ -68,6 +68,9 @@ void test_tov(
     CHECK(expected_relativistic_radius == custom_approx(final_radius));
     CHECK(expected_relativistic_mass == custom_approx(final_mass));
   }
+  CHECK(tov_out_full.injection_energy() ==
+        approx(sqrt(1. - 2. * tov_out_full.total_mass() /
+                             tov_out_full.outer_radius())));
 
   // Integrate only to some intermediate value, not the surface. Then compare to
   // interpolated values.

@@ -22,6 +22,9 @@ class TestTov(unittest.TestCase):
         expected_mass = 0.0531036941
         self.assertAlmostEqual(tov.total_mass(), expected_mass)
         self.assertAlmostEqual(
+            tov.injection_energy(),
+            np.sqrt(1. - 2. * tov.total_mass() / outer_radius))
+        self.assertAlmostEqual(
             tov.mass_over_radius(outer_radius) * outer_radius, expected_mass)
         self.assertAlmostEqual(tov.log_specific_enthalpy(outer_radius), 0.)
         # Test vectorization of member functions
