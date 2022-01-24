@@ -23,7 +23,7 @@ is:
 
 You can cite this BibTeX entry in your publication:
 
-- [Find BibTeX entry for this version on Zenodo](https://zenodo.org/record/\spectrezenodoid/export/hx)
+\include citation.bib
 
 To aid reproducibility of your scientific results with SpECTRE, we recommend you
 keep track of the version(s) you used and report this information in your
