@@ -47,7 +47,7 @@ add_grmhd_executable(
 
 add_grmhd_executable(
   TovStar
-  RelativisticEuler::Solutions::TovStar<gr::Solutions::TovSolution>,CenterOfStar
+  RelativisticEuler::Solutions::TovStar,CenterOfStar
   "${LIBS_TO_LINK}"
   )
 

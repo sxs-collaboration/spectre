@@ -13,5 +13,19 @@ add_test_library(
   ${LIBRARY}
   "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/"
   "${LIBRARY_SOURCES}"
-  "RelativisticEulerSolutions;Options;Utilities"
+  ""
   )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  DataStructures
+  Domain
+  DomainCreators
+  Hydro
+  RelativisticEulerSolutions
+  Options
+  Spectral
+  Utilities
+  ValenciaDivClean
+)

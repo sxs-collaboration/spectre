@@ -119,6 +119,8 @@ SPECTRE_TEST_CASE("Unit.Utilities.ContainerHelpers", "[Unit][Utilities]") {
     CHECK(get_element(array_of_arrays, i, ArrayOfArraysIndexFunctor{}) ==
           static_cast<double>(i));
   }
+  CHECK(min(constant_spectre_vector) == min(2.0));
+  CHECK(max(constant_spectre_vector) == max(2.0));
 
   // Check the destructive resize function applied to tensors
   tnsr::i<DataVector, 3> rank_one{static_cast<size_t>(4)};

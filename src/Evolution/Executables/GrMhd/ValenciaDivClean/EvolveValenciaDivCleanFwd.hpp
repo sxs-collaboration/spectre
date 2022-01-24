@@ -4,16 +4,9 @@
 #pragma once
 
 /// \cond
-namespace gr {
-namespace Solutions {
-class TovSolution;
-}  // namespace Solutions
-}  // namespace gr
-
 namespace RelativisticEuler {
 namespace Solutions {
 class FishboneMoncriefDisk;
-template <typename RadialSolution>
 class TovStar;
 }  // namespace Solutions
 }  // namespace RelativisticEuler

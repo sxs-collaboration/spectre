@@ -35,7 +35,6 @@
 #include "NumericalAlgorithms/Interpolation/IrregularInterpolant.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Tov.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/TovStar.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "PointwiseFunctions/MathFunctions/MathFunction.hpp"  // IWYU pragma: keep
@@ -351,8 +350,7 @@ void test_tov() {
         ElementId<3>{0}, cube.stationary_map().get_clone()};
     const auto x = element_map(xi);
 
-    RelativisticEuler::Solutions::TovStar<gr::Solutions::TovSolution> tov_star(
-        central_density, 100.0, 2.0);
+    RelativisticEuler::Solutions::TovStar tov_star(central_density, 100.0, 2.0);
 
     using rho_tag = hydro::Tags::RestMassDensity<DataVector>;
     auto vars = variables_from_tagged_tuple(

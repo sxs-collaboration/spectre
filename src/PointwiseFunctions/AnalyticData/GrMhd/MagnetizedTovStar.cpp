@@ -46,61 +46,65 @@ void MagnetizedTovStar::pup(PUP::er& p) {
   p | vector_potential_amplitude_;
 }
 
-template <typename DataType>
-tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>>
-MagnetizedTovStar::variables(
-    const tnsr::I<DataType, 3>& coords,
-    tmpl::list<
-        hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>> /*meta*/,
-    const RadialVariables<DataType>& radial_vars) const {
+namespace magnetized_tov_detail {
+template <typename DataType, StarRegion Region>
+void MagnetizedTovVariables<DataType, Region>::operator()(
+    const gsl::not_null<tnsr::I<DataType, 3>*> magnetic_field,
+    const gsl::not_null<Cache*> cache,
+    hydro::Tags::MagneticField<DataType, 3> /*meta*/) const {
   const size_t num_pts = get_size(get<0>(coords));
-  auto magnetic_field =
-      make_with_value<tnsr::I<DataType, 3, Frame::Inertial>>(num_pts, 0.0);
-  using std::max;
-  const auto sqrt_det_spatial_metric =
-      get<gr::Tags::SqrtDetSpatialMetric<DataType>>(variables(
-          coords, tmpl::list<gr::Tags::SqrtDetSpatialMetric<DataType>>{},
-          radial_vars));
+  const auto& pressure_profile =
+      get(cache->get_var(*this, hydro::Tags::Pressure<DataType>{}));
+  const auto& dr_pressure_profile = get(cache->get_var(
+      *this,
+      RelativisticEuler::Solutions::tov_detail::Tags::DrPressure<DataType>{}));
+  const auto& sqrt_det_spatial_metric =
+      get(cache->get_var(*this, gr::Tags::SqrtDetSpatialMetric<DataType>{}));
   for (size_t i = 0; i < num_pts; ++i) {
-    const double pressure = get_element(get(radial_vars.pressure), i);
-    if (LIKELY(get_element(radial_vars.radial_coordinate, i) > 1.0e-16)) {
-      if (pressure < cutoff_pressure_) {
+    const double pressure = get_element(pressure_profile, i);
+    if (LIKELY(get_element(radius, i) > 1.0e-16)) {
+      if (pressure < cutoff_pressure) {
+        get_element(get<0>(*magnetic_field), i) = 0.0;
+        get_element(get<1>(*magnetic_field), i) = 0.0;
+        get_element(get<2>(*magnetic_field), i) = 0.0;
         continue;
       }
 
       const double x = get_element(get<0>(coords), i);
       const double y = get_element(get<1>(coords), i);
       const double z = get_element(get<2>(coords), i);
-      const double radius = get_element(radial_vars.radial_coordinate, i);
-      const double dr_pressure = get_element(radial_vars.dr_pressure, i);
+      const double radius_i = get_element(radius, i);
+      const double dr_pressure = get_element(dr_pressure_profile, i);
       const double pressure_term =
-          pow(pressure - cutoff_pressure_, pressure_exponent_);
+          pow(pressure - cutoff_pressure, pressure_exponent);
       const double deriv_pressure_term =
-          pressure_exponent_ *
-          pow(pressure - cutoff_pressure_,
-              static_cast<int>(pressure_exponent_) - 1) *
+          pressure_exponent *
+          pow(pressure - cutoff_pressure,
+              static_cast<int>(pressure_exponent) - 1) *
           dr_pressure;
 
-      get_element(get<0>(magnetic_field), i) =
-          x * z / radius * deriv_pressure_term;
+      get_element(get<0>(*magnetic_field), i) =
+          x * z / radius_i * deriv_pressure_term;
 
-      get_element(get<1>(magnetic_field), i) =
-          y * z / radius * deriv_pressure_term;
+      get_element(get<1>(*magnetic_field), i) =
+          y * z / radius_i * deriv_pressure_term;
 
-      get_element(get<2>(magnetic_field), i) =
+      get_element(get<2>(*magnetic_field), i) =
           (-2.0 * pressure_term +
-           (square(x) + square(y)) / radius * deriv_pressure_term);
+           (square(x) + square(y)) / radius_i * deriv_pressure_term);
     } else {
-      get_element(get<2>(magnetic_field), i) =
-          (-2.0 * pow(pressure - cutoff_pressure_, pressure_exponent_));
+      get_element(get<0>(*magnetic_field), i) = 0.0;
+      get_element(get<1>(*magnetic_field), i) = 0.0;
+      get_element(get<2>(*magnetic_field), i) =
+          (-2.0 * pow(pressure - cutoff_pressure, pressure_exponent));
     }
   }
   for (size_t i = 0; i < 3; ++i) {
-    magnetic_field.get(i) *=
-        vector_potential_amplitude_ / get(sqrt_det_spatial_metric);
+    magnetic_field->get(i) *=
+        vector_potential_amplitude / sqrt_det_spatial_metric;
   }
-  return magnetic_field;
 }
+}  // namespace magnetized_tov_detail
 
 PUP::able::PUP_ID MagnetizedTovStar::my_PUP_ID = 0;
 
@@ -117,18 +121,18 @@ bool operator!=(const MagnetizedTovStar& lhs, const MagnetizedTovStar& rhs) {
 }
 
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define REGION(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATE(_, data)                                            \
-  template tuples::TaggedTuple<                                         \
-      hydro::Tags::MagneticField<DTYPE(data), 3, Frame::Inertial>>      \
-  MagnetizedTovStar::variables(                                         \
-      const tnsr::I<DTYPE(data), 3>& coords,                            \
-      tmpl::list<hydro::Tags::MagneticField<DTYPE(data), 3,             \
-                                            Frame::Inertial>> /*meta*/, \
-      const RadialVariables<DTYPE(data)>& radial_vars) const;
+#define INSTANTIATE(_, data)                                                \
+  template class magnetized_tov_detail::MagnetizedTovVariables<DTYPE(data), \
+                                                               REGION(data)>;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector),
+                        (magnetized_tov_detail::StarRegion::Center,
+                         magnetized_tov_detail::StarRegion::Interior,
+                         magnetized_tov_detail::StarRegion::Exterior))
 
 #undef INSTANTIATE
 #undef DTYPE
+#undef REGION
 }  // namespace grmhd::AnalyticData

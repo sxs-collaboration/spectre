@@ -6,7 +6,6 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Helpers/PointwiseFunctions/AnalyticSolutions/GeneralRelativity/CheckWrappedGrConsistency.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Tov.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/WrappedGr.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/FishboneMoncriefDisk.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/SmoothFlow.hpp"
@@ -59,9 +58,6 @@ SPECTRE_TEST_CASE(
 
   check_wrapped_gr_solution_consistency(
       GeneralizedHarmonic::Solutions::WrappedGr<
-          RelativisticEuler::Solutions::TovStar<gr::Solutions::TovSolution>>{
-          1.e-3, 8.0, 2.0},
-      RelativisticEuler::Solutions::TovStar<gr::Solutions::TovSolution>{
-          1.e-3, 8.0, 2.0},
-      x_3d, t);
+          RelativisticEuler::Solutions::TovStar>{1.e-3, 8.0, 2.0},
+      RelativisticEuler::Solutions::TovStar{1.e-3, 8.0, 2.0}, x_3d, t);
 }

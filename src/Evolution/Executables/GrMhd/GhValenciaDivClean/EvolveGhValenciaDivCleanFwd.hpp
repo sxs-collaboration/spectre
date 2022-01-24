@@ -19,18 +19,10 @@ template <typename GrSolution>
 struct WrappedGr;
 }  // namespace Solutions
 }  // namespace GeneralizedHarmonic
-namespace gr {
-namespace Solutions {
-class TovSolution;
-}  // namespace Solutions
-}  // namespace gr
 
-namespace RelativisticEuler {
-namespace Solutions {
-template <typename RadialSolution>
+namespace RelativisticEuler::Solutions {
 class TovStar;
-}  // namespace Solutions
-}  // namespace RelativisticEuler
+}  // namespace RelativisticEuler::Solutions
 
 namespace grmhd {
 namespace Solutions {
@@ -47,6 +39,6 @@ class OrszagTangVortex;
 }  // namespace grmhd
 
 struct KerrHorizon;
-template <typename InitialData, typename...InterpolationTargetTags>
+template <typename InitialData, typename... InterpolationTargetTags>
 struct EvolutionMetavars;
 /// \endcond

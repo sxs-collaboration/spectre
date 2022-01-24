@@ -32,7 +32,6 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/GrTagsForHydro.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/System.hpp"
 #include "Framework/TestHelpers.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Tov.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/TovStar.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "Utilities/CloneUniquePtrs.hpp"
@@ -53,8 +52,7 @@ SPECTRE_TEST_CASE(
 
   using Translation = domain::CoordinateMaps::TimeDependent::Translation<1>;
   using Identity2D = domain::CoordinateMaps::Identity<2>;
-  using Solution =
-      RelativisticEuler::Solutions::TovStar<gr::Solutions::TovSolution>;
+  using Solution = RelativisticEuler::Solutions::TovStar;
   const Mesh<3> subcell_mesh{5, Spectral::Basis::FiniteDifference,
                              Spectral::Quadrature::CellCentered};
   const double time = 0.1;

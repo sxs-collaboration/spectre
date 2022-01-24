@@ -20,7 +20,6 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Tov.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/TovStar.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
@@ -28,36 +27,31 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 
+namespace RelativisticEuler::Solutions {
 namespace {
 
 void test_create_from_options() {
-  const auto star = TestHelpers::test_creation<
-      RelativisticEuler::Solutions::TovStar<gr::Solutions::TovSolution>>(
+  const auto star = TestHelpers::test_creation<TovStar>(
       "CentralDensity: 1.0e-5\n"
       "PolytropicConstant: 0.001\n"
       "PolytropicExponent: 1.4");
-  CHECK(star ==
-        RelativisticEuler::Solutions::TovStar<gr::Solutions::TovSolution>(
-            0.00001, 0.001, 1.4));
+  CHECK(star == TovStar{0.00001, 0.001, 1.4});
 }
 
 void test_move() {
-  RelativisticEuler::Solutions::TovStar<gr::Solutions::TovSolution> star(
-      1.e-4, 4.0, 2.5);
-  RelativisticEuler::Solutions::TovStar<gr::Solutions::TovSolution> star_copy(
-      1.e-4, 4.0, 2.5);
+  TovStar star{1.e-4, 4.0, 2.5};
+  TovStar star_copy{1.e-4, 4.0, 2.5};
   test_move_semantics(std::move(star), star_copy);  //  NOLINT
 }
 
 void test_serialize() {
-  RelativisticEuler::Solutions::TovStar<gr::Solutions::TovSolution> star(
-      1.e-3, 8.0, 2.0);
+  TovStar star{1.e-3, 8.0, 2.0};
   test_serialization(star);
+  Approx custom_approx = Approx::custom().epsilon(1.0e-08).scale(1.0);
+  CHECK(star.radial_solution().outer_radius() == custom_approx(3.4685521362));
 }
 
-void verify_solution(const RelativisticEuler::Solutions::TovStar<
-                         gr::Solutions::TovSolution>& solution,
-                     const std::array<double, 3>& x) {
+void verify_solution(const TovStar& solution, const std::array<double, 3>& x) {
   const std::array<double, 3> dx{{1.e-4, 1.e-4, 1.e-4}};
   domain::creators::Brick brick(x - dx, x + dx, {{0, 0, 0}}, {{5, 5, 5}},
                                 {{false, false, false}});
@@ -77,22 +71,23 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.RelEuler.Tov",
   test_move();
 
   Parallel::register_classes_with_charm<
-      RelativisticEuler::Solutions::TovStar<gr::Solutions::TovSolution>>();
+      RelativisticEuler::Solutions::TovStar>();
   const std::unique_ptr<evolution::initial_data::InitialData> option_solution =
       TestHelpers::test_option_tag_factory_creation<
           evolution::initial_data::OptionTags::InitialData,
-          RelativisticEuler::Solutions::TovStar<gr::Solutions::TovSolution>>(
+          RelativisticEuler::Solutions::TovStar>(
           "TovStar:\n"
           "  CentralDensity: 1.0e-3\n"
           "  PolytropicConstant: 100.0\n"
           "  PolytropicExponent: 2.0\n");
   const auto deserialized_option_solution =
       serialize_and_deserialize(option_solution);
-  const auto& solution = dynamic_cast<
-      const RelativisticEuler::Solutions::TovStar<gr::Solutions::TovSolution>&>(
-      *deserialized_option_solution);
+  const auto& solution =
+      dynamic_cast<const RelativisticEuler::Solutions::TovStar&>(
+          *deserialized_option_solution);
 
   const double radius_of_star = 10.04735006833273303;
+  CHECK(solution.radial_solution().outer_radius() == approx(radius_of_star));
   verify_solution(solution, {{0.0, 0.0, 0.0}});
   verify_solution(solution, {{0.0, 0.0, 0.5 * radius_of_star}});
   verify_solution(solution, {{0.0, radius_of_star, 0.0}});
@@ -106,3 +101,5 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.RelEuler.Tov",
   }
   verify_solution(solution, random_point);
 }
+
+}  // namespace RelativisticEuler::Solutions

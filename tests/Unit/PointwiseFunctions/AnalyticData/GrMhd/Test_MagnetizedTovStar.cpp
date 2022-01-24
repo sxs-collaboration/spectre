@@ -48,8 +48,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticData.GrMhd.MagTovStar",
       dynamic_cast<const grmhd::AnalyticData::MagnetizedTovStar&>(
           *deserialized_option_solution);
 
-  const RelativisticEuler::Solutions::TovStar<gr::Solutions::TovSolution> tov{
-      1.28e-3, 100.0, 2.0};
+  const RelativisticEuler::Solutions::TovStar tov{1.28e-3, 100.0, 2.0};
   const auto mag_tov = serialize_and_deserialize(mag_tov_opts);
   CHECK(mag_tov == grmhd::AnalyticData::MagnetizedTovStar(1.28e-3, 100.0, 2.0,
                                                           2, 0.04, 2500.0));
@@ -69,18 +68,19 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticData.GrMhd.MagTovStar",
   std::unique_ptr<EquationsOfState::EquationOfState<true, 1>> eos =
       std::make_unique<EquationsOfState::PolytropicFluid<true>>(100.0, 2.0);
 
-  const gr::Solutions::TovSolution tov_soln{*eos, 1.28e-3};
-  const Mesh<3> mesh{{{5, 5, 5}},
-                     {{Spectral::Basis::Legendre, Spectral::Basis::Legendre,
-                       Spectral::Basis::Legendre}},
-                     {{Spectral::Quadrature::Gauss, Spectral::Quadrature::Gauss,
-                       Spectral::Quadrature::Gauss}}};
+  const Mesh<3> mesh{
+      {{5, 5, 5}},
+      {{Spectral::Basis::Legendre, Spectral::Basis::Legendre,
+        Spectral::Basis::Legendre}},
+      {{Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::GaussLobatto,
+        Spectral::Quadrature::GaussLobatto}}};
   const auto log_coords = logical_coordinates(mesh);
 
+  // Coordinates where we check the data. Includes the origin.
   tnsr::I<DataVector, 3, Frame::Inertial> in_coords{
       mesh.number_of_grid_points(), 0.0};
   const double scale = 1.0e-2;
-  in_coords.get(0) = scale * (log_coords.get(0) + 1.1);
+  in_coords.get(0) = scale * (log_coords.get(0) + 1.);
   InverseJacobian<DataVector, 3, Frame::ElementLogical, Frame::Inertial>
       inv_jac{mesh.number_of_grid_points(), 0.0};
   for (size_t i = 0; i < 3; ++i) {
@@ -100,19 +100,25 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticData.GrMhd.MagTovStar",
       });
 
   // Verify that the resulting magnetic field has (approximately) vanishing
-  // covariant divergence
-  const auto b_field =
-      get<hydro::Tags::MagneticField<DataVector, 3, Frame::Inertial>>(
-          mag_tov.variables(in_coords, tmpl::list<hydro::Tags::MagneticField<
-                                           DataVector, 3, Frame::Inertial>>{}));
-  const auto sqrt_det_spatial_metric =
-      get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(mag_tov.variables(
-          in_coords, tmpl::list<gr::Tags::SqrtDetSpatialMetric<DataVector>>{}));
+  // covariant divergence, but is non-zero overall.
+  INFO("Check magnetic field");
+  const auto vars = mag_tov.variables(
+      in_coords,
+      tmpl::list<hydro::Tags::MagneticField<DataVector, 3, Frame::Inertial>,
+                 gr::Tags::SqrtDetSpatialMetric<DataVector>>{});
+  const auto& b_field =
+      get<hydro::Tags::MagneticField<DataVector, 3, Frame::Inertial>>(vars);
+  const auto& sqrt_det_spatial_metric =
+      get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(vars);
   auto tilde_b = b_field;
+  double b_field_l2norm = 0.;
   for (size_t i = 0; i < 3; ++i) {
     tilde_b.get(i) *= get(sqrt_det_spatial_metric);
+    b_field_l2norm += sum(square(b_field.get(i)));
   }
 
+  b_field_l2norm = sqrt(b_field_l2norm);
+  CHECK(b_field_l2norm != approx(0.));
   const auto div_tilde_b = divergence(tilde_b, mesh, inv_jac);
   CHECK(max(abs(get(div_tilde_b))) < 1.0e-14);
 }

@@ -17,10 +17,12 @@
 #include <vector>
 
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
+#include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
@@ -83,85 +85,6 @@ class Observer {
   std::vector<double> log_enthalpy;
 };
 
-template <typename DataType>
-RelativisticEuler::Solutions::TovStar<
-    gr::Solutions::TovSolution>::RadialVariables<DataType>
-interior_solution(
-    const EquationsOfState::EquationOfState<true, 1>& equation_of_state,
-    const DataType& radius, const DataType& mass_over_radius,
-    const DataType& log_specific_enthalpy,
-    const double log_lapse_at_outer_radius) {
-  RelativisticEuler::Solutions::TovStar<
-      gr::Solutions::TovSolution>::RadialVariables<DataType>
-      result(radius);
-  result.specific_enthalpy = Scalar<DataType>{exp(log_specific_enthalpy)};
-  result.rest_mass_density = equation_of_state.rest_mass_density_from_enthalpy(
-      result.specific_enthalpy);
-  result.pressure =
-      equation_of_state.pressure_from_density(result.rest_mass_density);
-  result.specific_internal_energy =
-      equation_of_state.specific_internal_energy_from_density(
-          result.rest_mass_density);
-  // From the TOV equation, write radial derivative of the pressure as
-  //   - (rho(1.0+epsilon)+P)*((m/r)+4*pi r^2 P) / (r - 2 * r (m/r))
-  // where rho is the rest-mass density and epsilon the specific internal
-  // energy.
-  for (size_t i = 0; i < get_size(radius); ++i) {
-    if (get_element(radius, i) > 0.0) {
-      get_element(result.dr_pressure, i) =
-          -(get_element(get(result.rest_mass_density), i) *
-                (1.0 + get_element(get(result.specific_internal_energy), i)) +
-            get_element(get(result.pressure), i)) *
-          (get_element(mass_over_radius, i) +
-           4.0 * M_PI * get_element(get(result.pressure), i) *
-               square(get_element(radius, i))) /
-          (get_element(radius, i) *
-           (1.0 - 2.0 * get_element(mass_over_radius, i)));
-    } else {
-      get_element(result.dr_pressure, i) = 0.0;
-    }
-  }
-  result.metric_time_potential =
-      log_lapse_at_outer_radius - log_specific_enthalpy;
-  result.dr_metric_time_potential =
-      (mass_over_radius / radius + 4.0 * M_PI * get(result.pressure) * radius) /
-      (1.0 - 2.0 * mass_over_radius);
-  result.metric_radial_potential = -0.5 * log(1.0 - 2.0 * mass_over_radius);
-  result.dr_metric_radial_potential =
-      (4.0 * M_PI * radius *
-           (get(result.specific_enthalpy) * get(result.rest_mass_density) -
-            get(result.pressure)) -
-       mass_over_radius / radius) /
-      (1.0 - 2.0 * mass_over_radius);
-  result.metric_angular_potential = make_with_value<DataType>(radius, 0.0);
-  result.dr_metric_angular_potential = make_with_value<DataType>(radius, 0.0);
-  return result;
-}
-
-template <typename DataType>
-RelativisticEuler::Solutions::TovStar<
-    gr::Solutions::TovSolution>::RadialVariables<DataType>
-vacuum_solution(const DataType& radius, const double total_mass) {
-  RelativisticEuler::Solutions::TovStar<
-      gr::Solutions::TovSolution>::RadialVariables<DataType>
-      result(radius);
-  result.specific_enthalpy = make_with_value<Scalar<DataType>>(radius, 1.0);
-  result.rest_mass_density = make_with_value<Scalar<DataType>>(radius, 0.0);
-  result.pressure = make_with_value<Scalar<DataType>>(radius, 0.0);
-  result.specific_internal_energy =
-      make_with_value<Scalar<DataType>>(radius, 0.0);
-  result.dr_pressure = make_with_value<DataType>(radius, 0.0);
-  const DataType one_minus_two_m_over_r = 1.0 - 2.0 * total_mass / radius;
-  result.metric_time_potential = 0.5 * log(one_minus_two_m_over_r);
-  result.dr_metric_time_potential =
-      total_mass / square(radius) / one_minus_two_m_over_r;
-  result.metric_radial_potential = -result.metric_time_potential;
-  result.dr_metric_radial_potential = -result.dr_metric_time_potential;
-  result.metric_angular_potential = make_with_value<DataType>(radius, 0.0);
-  result.dr_metric_angular_potential = make_with_value<DataType>(radius, 0.0);
-  return result;
-}
-
 }  // namespace
 
 namespace gr::Solutions {
@@ -200,7 +123,7 @@ TovSolution::TovSolution(
   outer_radius_ = observer.radius.back();
   const double total_mass_over_radius = observer.mass_over_radius.back();
   total_mass_ = total_mass_over_radius * outer_radius_;
-  log_lapse_at_outer_radius_ = 0.5 * log(1.0 - 2.0 * total_mass_over_radius);
+  injection_energy_ = sqrt(1. - 2. * total_mass_ / outer_radius_);
   mass_over_radius_interpolant_ =
       intrp::BarycentricRational(observer.radius, observer.mass_over_radius, 5);
   // log_enthalpy(radius) is almost linear so an interpolant of order 3
@@ -209,97 +132,50 @@ TovSolution::TovSolution(
       intrp::BarycentricRational(observer.radius, observer.log_enthalpy, 3);
 }
 
-double TovSolution::outer_radius() const { return outer_radius_; }
-
-double TovSolution::mass_over_radius(const double r) const {
-  ASSERT(r >= 0.0 and r <= outer_radius_,
-         "Invalid radius: " << r << " not in [0.0, " << outer_radius_ << "]\n");
-  return mass_over_radius_interpolant_(r);
+template <typename DataType>
+DataType TovSolution::mass_over_radius(const DataType& r) const {
+  // Possible optimization: Support DataVector in intrp::BarycentricRational
+  auto result = make_with_value<DataType>(r, 0.);
+  for (size_t i = 0; i < get_size(r); ++i) {
+    ASSERT(
+        get_element(r, i) >= 0.0 and get_element(r, i) <= outer_radius_,
+        "Invalid radius: " << r << " not in [0.0, " << outer_radius_ << "]\n");
+    get_element(result, i) = mass_over_radius_interpolant_(get_element(r, i));
+  }
+  return result;
 }
 
-double TovSolution::mass(const double r) const {
-  return mass_over_radius(r) * r;
-}
-
-double TovSolution::log_specific_enthalpy(const double r) const {
-  ASSERT(r >= 0.0 and r <= outer_radius_,
-         "Invalid radius: " << r << " not in [0.0, " << outer_radius_ << "]\n");
-  return log_enthalpy_interpolant_(r);
-}
-
-template <>
-RelativisticEuler::Solutions::TovStar<TovSolution>::RadialVariables<double>
-TovSolution::radial_variables(
-    const EquationsOfState::EquationOfState<true, 1>& equation_of_state,
-    const tnsr::I<double, 3>& x) const {
-  // add small number to avoid FPEs at origin
-  const double radius = get(magnitude(x)) + 1.e-30 * outer_radius_;
-  if (radius >= outer_radius_) {
-    return vacuum_solution(radius, total_mass_);
+template <typename DataType>
+DataType TovSolution::log_specific_enthalpy(const DataType& r) const {
+  // Possible optimization: Support DataVector in intrp::BarycentricRational
+  auto result = make_with_value<DataType>(r, 0.);
+  for (size_t i = 0; i < get_size(r); ++i) {
+    ASSERT(
+        get_element(r, i) >= 0.0 and get_element(r, i) <= outer_radius_,
+        "Invalid radius: " << r << " not in [0.0, " << outer_radius_ << "]\n");
+    get_element(result, i) = log_enthalpy_interpolant_(get_element(r, i));
   }
-  return interior_solution(equation_of_state, radius, mass_over_radius(radius),
-                           log_specific_enthalpy(radius),
-                           log_lapse_at_outer_radius_);
-}
-
-template <>
-RelativisticEuler::Solutions::TovStar<TovSolution>::RadialVariables<DataVector>
-TovSolution::radial_variables(
-    const EquationsOfState::EquationOfState<true, 1>& equation_of_state,
-    const tnsr::I<DataVector, 3>& x) const {
-  // add small number to avoid FPEs at origin
-  const DataVector radius = get(magnitude(x)) + 1.e-30 * outer_radius_;
-  if (min(radius) >= outer_radius_) {
-    return vacuum_solution(radius, total_mass_);
-  }
-  if (max(radius) <= outer_radius_) {
-    DataVector mass_over_radius_data(radius.size());
-    DataVector log_of_specific_enthalpy(radius.size());
-    for (size_t i = 0; i < get_size(radius); i++) {
-      const double r = get_element(radius, i);
-      get_element(mass_over_radius_data, i) = mass_over_radius(r);
-      get_element(log_of_specific_enthalpy, i) = log_specific_enthalpy(r);
-    }
-    return interior_solution(equation_of_state, radius, mass_over_radius_data,
-                             log_of_specific_enthalpy,
-                             log_lapse_at_outer_radius_);
-  }
-  RelativisticEuler::Solutions::TovStar<TovSolution>::RadialVariables<
-      DataVector>
-      result(radius);
-  for (size_t i = 0; i < radius.size(); i++) {
-    const double r = radius[i];
-    auto radial_vars_at_r =
-        (r <= outer_radius_
-             ? interior_solution(equation_of_state, r, mass_over_radius(r),
-                                 log_specific_enthalpy(r),
-                                 log_lapse_at_outer_radius_)
-             : vacuum_solution(r, total_mass_));
-    get(result.rest_mass_density)[i] = get(radial_vars_at_r.rest_mass_density);
-    get(result.pressure)[i] = get(radial_vars_at_r.pressure);
-    get(result.specific_internal_energy)[i] =
-        get(radial_vars_at_r.specific_internal_energy);
-    get(result.specific_enthalpy)[i] = get(radial_vars_at_r.specific_enthalpy);
-    result.dr_pressure[i] = radial_vars_at_r.dr_pressure;
-    result.metric_time_potential[i] = radial_vars_at_r.metric_time_potential;
-    result.dr_metric_time_potential[i] =
-        radial_vars_at_r.dr_metric_time_potential;
-    result.metric_radial_potential[i] =
-        radial_vars_at_r.metric_radial_potential;
-    result.dr_metric_radial_potential[i] =
-        radial_vars_at_r.dr_metric_radial_potential;
-  }
-  result.metric_angular_potential = make_with_value<DataVector>(radius, 0.0);
-  result.dr_metric_angular_potential = make_with_value<DataVector>(radius, 0.0);
   return result;
 }
 
 void TovSolution::pup(PUP::er& p) {  // NOLINT
   p | outer_radius_;
   p | total_mass_;
-  p | log_lapse_at_outer_radius_;
+  p | injection_energy_;
   p | mass_over_radius_interpolant_;
   p | log_enthalpy_interpolant_;
 }
+
+#define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
+
+#define INSTANTIATE(_, data)                                                \
+  template DTYPE(data) TovSolution::mass_over_radius(const DTYPE(data) & r) \
+      const;                                                                \
+  template DTYPE(data)                                                      \
+      TovSolution::log_specific_enthalpy(const DTYPE(data) & r) const;
+
+GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
+
+#undef DTYPE
 
 }  // namespace gr::Solutions
