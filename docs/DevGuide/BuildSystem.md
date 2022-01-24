@@ -312,8 +312,7 @@ available to build with `make` or `ninja`:
   - Build Python bindings. See \ref spectre_using_python for details.
 - install
   - Install targets that have been built to the `CMAKE_INSTALL_PREFIX`. Doesn't
-    try to build anything else. Only supports static libraries so far, i.e.
-    builds with `BUILD_SHARED_LIBS=OFF`.
+    try to build anything else.
 
 ## Checking Dependencies
 
