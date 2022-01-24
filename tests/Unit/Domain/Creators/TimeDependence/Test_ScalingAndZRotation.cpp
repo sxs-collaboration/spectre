@@ -140,9 +140,6 @@ void test_impl(
 
   const auto functions_of_time = time_dep_unique_ptr->functions_of_time();
 
-  // Test map for composition
-  CHECK(time_dep->map_for_composition() == expected_block_map);
-
   // For a random point at a random time check that the values agree. This is to
   // check that the internals were assigned the correct function of times.
   TIME_DEPENDENCE_GENERATE_COORDS(make_not_null(&gen), MeshDim, -1.0, 1.0);

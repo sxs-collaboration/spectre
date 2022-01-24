@@ -62,7 +62,7 @@ CubicScale<MeshDim>::block_maps(const size_t number_of_blocks) const {
   std::vector<std::unique_ptr<
       domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, MeshDim>>>
       result{number_of_blocks};
-  result[0] = std::make_unique<MapForComposition>(map_for_composition());
+  result[0] = std::make_unique<GridToInertialMap>(grid_to_inertial_map());
   for (size_t i = 1; i < number_of_blocks; ++i) {
     result[i] = result[0]->get_clone();
   }
@@ -112,8 +112,8 @@ CubicScale<MeshDim>::functions_of_time(
 }
 
 template <size_t MeshDim>
-auto CubicScale<MeshDim>::map_for_composition() const -> MapForComposition {
-  return MapForComposition{CubicScaleMap{outer_boundary_,
+auto CubicScale<MeshDim>::grid_to_inertial_map() const -> GridToInertialMap {
+  return GridToInertialMap{CubicScaleMap{outer_boundary_,
                                          functions_of_time_names_[0],
                                          functions_of_time_names_[1]}};
 }
