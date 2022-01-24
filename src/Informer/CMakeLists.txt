@@ -70,7 +70,7 @@ set_target_properties(
   ${INFO_AT_LINK_LIB}
   PROPERTIES
   CXX_COMPILER_LAUNCHER
-  ${CMAKE_BINARY_DIR}/Informer/InfoAtLinkExtractFlags.py
+  "${Python_EXECUTABLE};${CMAKE_BINARY_DIR}/Informer/InfoAtLinkExtractFlags.py"
   )
 if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.15)
   set_target_properties(
