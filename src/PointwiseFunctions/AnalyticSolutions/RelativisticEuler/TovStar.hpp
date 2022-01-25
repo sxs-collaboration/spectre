@@ -46,6 +46,22 @@ struct LogSpecificEnthalpy : db::SimpleTag {
   using type = Scalar<DataType>;
 };
 template <typename DataType>
+struct ConformalFactor : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
+template <typename DataType>
+struct DrConformalFactor : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
+template <typename DataType>
+struct ArealRadius : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
+template <typename DataType>
+struct DrArealRadius : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
+template <typename DataType>
 struct DrPressure : db::SimpleTag {
   using type = Scalar<DataType>;
 };
@@ -78,6 +94,8 @@ struct DrMetricAngularPotential : db::SimpleTag {
 template <typename DataType>
 using TovVariablesCache = cached_temp_buffer_from_typelist<tmpl::list<
     Tags::MassOverRadius<DataType>, Tags::LogSpecificEnthalpy<DataType>,
+    Tags::ConformalFactor<DataType>, Tags::DrConformalFactor<DataType>,
+    Tags::ArealRadius<DataType>, Tags::DrArealRadius<DataType>,
     hydro::Tags::SpecificEnthalpy<DataType>,
     hydro::Tags::RestMassDensity<DataType>, hydro::Tags::Pressure<DataType>,
     Tags::DrPressure<DataType>, hydro::Tags::SpecificInternalEnergy<DataType>,
@@ -135,6 +153,18 @@ struct TovVariables {
   void operator()(gsl::not_null<Scalar<DataType>*> log_specific_enthalpy,
                   gsl::not_null<Cache*> cache,
                   Tags::LogSpecificEnthalpy<DataType> /*meta*/) const;
+  void operator()(gsl::not_null<Scalar<DataType>*> conformal_factor,
+                  gsl::not_null<Cache*> cache,
+                  Tags::ConformalFactor<DataType> /*meta*/) const;
+  void operator()(gsl::not_null<Scalar<DataType>*> dr_conformal_factor,
+                  gsl::not_null<Cache*> cache,
+                  Tags::DrConformalFactor<DataType> /*meta*/) const;
+  void operator()(gsl::not_null<Scalar<DataType>*> areal_radius,
+                  gsl::not_null<Cache*> cache,
+                  Tags::ArealRadius<DataType> /*meta*/) const;
+  void operator()(gsl::not_null<Scalar<DataType>*> dr_areal_radius,
+                  gsl::not_null<Cache*> cache,
+                  Tags::DrArealRadius<DataType> /*meta*/) const;
   void operator()(gsl::not_null<Scalar<DataType>*> specific_enthalpy,
                   gsl::not_null<Cache*> cache,
                   hydro::Tags::SpecificEnthalpy<DataType> /*meta*/) const;
@@ -265,6 +295,17 @@ struct TovVariables {
  * e^{\Phi_r} &= \left(1 - \frac{2m}{r}\right)^{-1} \\
  * e^{\Phi_\Omega} &= 1
  * \f}
+ *
+ * In isotropic coordinates the spatial metric potentials are
+ *
+ * \begin{equation}
+ * e^{2\Phi_r} = e^{2\Phi_\Omega} = \psi^4
+ * \text{,}
+ * \end{equation}
+ *
+ * where $\psi = \sqrt{r / \bar{r}}$ is the conformal factor, $r$ is the areal
+ * (Schwarzschild) radius and $\bar{r}$ is the isotropic radius. See
+ * `gr::Solutions::TovSolution` for details.
  */
 class TovStar : public virtual evolution::initial_data::InitialData,
                 public MarkAsAnalyticSolution,
@@ -296,10 +337,17 @@ class TovStar : public virtual evolution::initial_data::InitialData,
     static type lower_bound() { return 1.; }
   };
 
+  /// Areal (Schwarzschild) or isotropic coordinates
+  struct Coordinates {
+    using type = gr::Solutions::TovCoordinates;
+    static constexpr Options::String help = {
+        "Areal ('Schwarzschild') or 'Isotropic' coordinates."};
+  };
+
   static constexpr size_t volume_dim = 3_st;
 
-  using options =
-      tmpl::list<CentralDensity, PolytropicConstant, PolytropicExponent>;
+  using options = tmpl::list<CentralDensity, PolytropicConstant,
+                             PolytropicExponent, Coordinates>;
 
   static constexpr Options::String help = {
       "A static, spherically-symmetric star found by solving the \n"
@@ -314,7 +362,9 @@ class TovStar : public virtual evolution::initial_data::InitialData,
   ~TovStar() = default;
 
   TovStar(double central_rest_mass_density, double polytropic_constant,
-          double polytropic_exponent);
+          double polytropic_exponent,
+          const gr::Solutions::TovCoordinates coordinate_system =
+              gr::Solutions::TovCoordinates::Schwarzschild);
 
   /// \cond
   explicit TovStar(CkMigrateMessage* msg);
@@ -330,8 +380,8 @@ class TovStar : public virtual evolution::initial_data::InitialData,
     return variables_impl<tov_detail::TovVariables>(x, tmpl::list<Tags...>{});
   }
 
-  // clang-tidy: no runtime references
-  void pup(PUP::er& /*p*/);  //  NOLINT
+  /// NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& /*p*/);
 
   const EquationsOfState::PolytropicFluid<true>& equation_of_state() const {
     return equation_of_state_;
@@ -446,6 +496,10 @@ class TovStar : public virtual evolution::initial_data::InitialData,
           // Remove internal tags, which may not be available in the full domain
           tov_detail::Tags::MassOverRadius<DataType>,
           tov_detail::Tags::LogSpecificEnthalpy<DataType>,
+          tov_detail::Tags::ConformalFactor<DataType>,
+          tov_detail::Tags::DrConformalFactor<DataType>,
+          tov_detail::Tags::ArealRadius<DataType>,
+          tov_detail::Tags::DrArealRadius<DataType>,
           tov_detail::Tags::DrPressure<DataType>,
           tov_detail::Tags::MetricTimePotential<DataType>,
           tov_detail::Tags::DrMetricTimePotential<DataType>,
@@ -462,6 +516,7 @@ class TovStar : public virtual evolution::initial_data::InitialData,
   double polytropic_constant_ = std::numeric_limits<double>::signaling_NaN();
   double polytropic_exponent_ = std::numeric_limits<double>::signaling_NaN();
   EquationsOfState::PolytropicFluid<true> equation_of_state_{};
+  gr::Solutions::TovCoordinates coordinate_system_{};
   gr::Solutions::TovSolution radial_solution_{};
 };
 

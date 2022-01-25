@@ -21,12 +21,15 @@ TovStar::TovStar(CkMigrateMessage* msg) : InitialData(msg) {}
 
 TovStar::TovStar(const double central_rest_mass_density,
                  const double polytropic_constant,
-                 const double polytropic_exponent)
+                 const double polytropic_exponent,
+                 const gr::Solutions::TovCoordinates coordinate_system)
     : central_rest_mass_density_(central_rest_mass_density),
       polytropic_constant_(polytropic_constant),
       polytropic_exponent_(polytropic_exponent),
       equation_of_state_{polytropic_constant_, polytropic_exponent_},
-      radial_solution_(equation_of_state_, central_rest_mass_density_) {}
+      coordinate_system_(coordinate_system),
+      radial_solution_(equation_of_state_, central_rest_mass_density_,
+                       coordinate_system_) {}
 
 void TovStar::pup(PUP::er& p) {
   InitialData::pup(p);
@@ -34,6 +37,7 @@ void TovStar::pup(PUP::er& p) {
   p | polytropic_constant_;
   p | polytropic_exponent_;
   p | equation_of_state_;
+  p | coordinate_system_;
   p | radial_solution_;
 }
 
@@ -83,6 +87,99 @@ void TovVariables<DataType, Region>::operator()(
     const auto& log_specific_enthalpy =
         get(cache->get_var(*this, Tags::LogSpecificEnthalpy<DataType>{}));
     get(*specific_enthalpy) = exp(log_specific_enthalpy);
+  }
+}
+
+template <typename DataType, StarRegion Region>
+void TovVariables<DataType, Region>::operator()(
+    const gsl::not_null<Scalar<DataType>*> conformal_factor,
+    const gsl::not_null<Cache*> /*cache*/,
+    Tags::ConformalFactor<DataType> /*meta*/) const {
+  if (radial_solution.coordinate_system() ==
+      gr::Solutions::TovCoordinates::Isotropic) {
+    if constexpr (Region == StarRegion::Exterior) {
+      get(*conformal_factor) = 1. + 0.5 * radial_solution.total_mass() / radius;
+    } else {
+      get(*conformal_factor) = radial_solution.conformal_factor(radius);
+    }
+  } else {
+    ERROR(
+        "The conformal factor should not be needed in Schwarzschild "
+        "coordinates.");
+  }
+}
+
+template <typename DataType, StarRegion Region>
+void TovVariables<DataType, Region>::operator()(
+    [[maybe_unused]] const gsl::not_null<Scalar<DataType>*> dr_conformal_factor,
+    [[maybe_unused]] const gsl::not_null<Cache*> cache,
+    Tags::DrConformalFactor<DataType> /*meta*/) const {
+  if (radial_solution.coordinate_system() ==
+      gr::Solutions::TovCoordinates::Isotropic) {
+    if constexpr (Region == StarRegion::Exterior) {
+      get(*dr_conformal_factor) =
+          -0.5 * radial_solution.total_mass() / square(radius);
+    } else if constexpr (Region == StarRegion::Center) {
+      ERROR("The 'DrConformalFactor' should not be needed at the star center.");
+    } else {
+      const auto& conformal_factor =
+          get(cache->get_var(*this, Tags::ConformalFactor<DataType>{}));
+      const auto& mass_over_areal_radius =
+          get(cache->get_var(*this, Tags::MassOverRadius<DataType>{}));
+      get(*dr_conformal_factor) = 0.5 * conformal_factor / radius *
+                                  (sqrt(1. - 2. * mass_over_areal_radius) - 1.);
+    }
+  } else {
+    ERROR(
+        "The conformal factor should not be needed in Schwarzschild "
+        "coordinates.");
+  }
+}
+
+template <typename DataType, StarRegion Region>
+void TovVariables<DataType, Region>::operator()(
+    const gsl::not_null<Scalar<DataType>*> areal_radius,
+    const gsl::not_null<Cache*> cache,
+    Tags::ArealRadius<DataType> /*meta*/) const {
+  if (radial_solution.coordinate_system() ==
+      gr::Solutions::TovCoordinates::Isotropic) {
+    const auto& conformal_factor =
+        get(cache->get_var(*this, Tags::ConformalFactor<DataType>{}));
+    get(*areal_radius) = square(conformal_factor) * radius;
+  } else {
+    ERROR(
+        "No need to compute the areal radius in Schwarzschild coordinates, "
+        "just use 'radius'.");
+  }
+}
+
+template <typename DataType, StarRegion Region>
+void TovVariables<DataType, Region>::operator()(
+    [[maybe_unused]] const gsl::not_null<Scalar<DataType>*> dr_areal_radius,
+    [[maybe_unused]] const gsl::not_null<Cache*> cache,
+    Tags::DrArealRadius<DataType> /*meta*/) const {
+  if (radial_solution.coordinate_system() ==
+      gr::Solutions::TovCoordinates::Isotropic) {
+    if constexpr (Region == StarRegion::Exterior) {
+      const auto& areal_radius =
+          get(cache->get_var(*this, Tags::ArealRadius<DataType>{}));
+      get(*dr_areal_radius) =
+          areal_radius / radius *
+          sqrt(1. - 2. * radial_solution.total_mass() / areal_radius);
+    } else if constexpr (Region == StarRegion::Center) {
+      ERROR("The 'DrArealRadius' should not be needed at the star center.");
+    } else {
+      const auto& areal_radius =
+          get(cache->get_var(*this, Tags::ArealRadius<DataType>{}));
+      const auto& mass_over_radius =
+          get(cache->get_var(*this, Tags::MassOverRadius<DataType>{}));
+      get(*dr_areal_radius) =
+          areal_radius / radius * sqrt(1. - 2. * mass_over_radius);
+    }
+  } else {
+    ERROR(
+        "No need to compute the areal radius in Schwarzschild coordinates, "
+        "just use 'radius'.");
   }
 }
 
@@ -138,8 +235,13 @@ void TovVariables<DataType, Region>::operator()(
   // the lapse:
   //   lapse = e^phi
   if constexpr (Region == StarRegion::Exterior) {
+    const auto& areal_radius =
+        radial_solution.coordinate_system() ==
+                gr::Solutions::TovCoordinates::Isotropic
+            ? get(cache->get_var(*this, Tags::ArealRadius<DataType>{}))
+            : radius;
     get(*metric_time_potential) =
-        0.5 * log(1. - 2. * radial_solution.total_mass() / radius);
+        0.5 * log(1. - 2. * radial_solution.total_mass() / areal_radius);
   } else {
     const auto& log_specific_enthalpy =
         get(cache->get_var(*this, Tags::LogSpecificEnthalpy<DataType>{}));
@@ -156,9 +258,20 @@ void TovVariables<DataType, Region>::operator()(
     [[maybe_unused]] const gsl::not_null<Cache*> cache,
     Tags::DrMetricTimePotential<DataType> /*meta*/) const {
   if constexpr (Region == StarRegion::Exterior) {
+    const auto& areal_radius =
+        radial_solution.coordinate_system() ==
+                gr::Solutions::TovCoordinates::Isotropic
+            ? get(cache->get_var(*this, Tags::ArealRadius<DataType>{}))
+            : radius;
     get(*dr_metric_time_potential) =
-        radial_solution.total_mass() / square(radius) /
-        (1. - 2. * radial_solution.total_mass() / radius);
+        radial_solution.total_mass() / square(areal_radius) /
+        (1. - 2. * radial_solution.total_mass() / areal_radius);
+    if (radial_solution.coordinate_system() ==
+        gr::Solutions::TovCoordinates::Isotropic) {
+      const auto& dr_areal_radius =
+          get(cache->get_var(*this, Tags::DrArealRadius<DataType>{}));
+      get(*dr_metric_time_potential) *= dr_areal_radius;
+    }
   } else if constexpr (Region == StarRegion::Center) {
     get(*dr_metric_time_potential) = 0.;
   } else {
@@ -168,9 +281,20 @@ void TovVariables<DataType, Region>::operator()(
         get(cache->get_var(*this, Tags::MassOverRadius<DataType>{}));
     const auto& pressure =
         get(cache->get_var(*this, hydro::Tags::Pressure<DataType>{}));
-    get(*dr_metric_time_potential) =
-        (mass_over_radius / radius + 4. * M_PI * pressure * radius) /
-        (1. - 2. * mass_over_radius);
+    const auto& areal_radius =
+        radial_solution.coordinate_system() ==
+                gr::Solutions::TovCoordinates::Isotropic
+            ? get(cache->get_var(*this, Tags::ArealRadius<DataType>{}))
+            : radius;
+    get(*dr_metric_time_potential) = (mass_over_radius / areal_radius +
+                                      4. * M_PI * pressure * areal_radius) /
+                                     (1. - 2. * mass_over_radius);
+    if (radial_solution.coordinate_system() ==
+        gr::Solutions::TovCoordinates::Isotropic) {
+      const auto& dr_areal_radius =
+          get(cache->get_var(*this, Tags::DrArealRadius<DataType>{}));
+      get(*dr_metric_time_potential) *= dr_areal_radius;
+    }
   }
 }
 
@@ -180,15 +304,22 @@ void TovVariables<DataType, Region>::operator()(
     const gsl::not_null<Cache*> cache,
     Tags::MetricRadialPotential<DataType> /*meta*/) const {
   // Compute lambda in Eq. (1.73) in BaumgarteShapiro
-  if constexpr (Region == StarRegion::Exterior) {
-    const auto& metric_time_potential =
-        get(cache->get_var(*this, Tags::MetricTimePotential<DataType>{}));
-    get(*metric_radial_potential) = -metric_time_potential;
+  if (radial_solution.coordinate_system() ==
+      gr::Solutions::TovCoordinates::Isotropic) {
+    const auto& conformal_factor =
+        get(cache->get_var(*this, Tags::ConformalFactor<DataType>{}));
+    get(*metric_radial_potential) = 2. * log(conformal_factor);
   } else {
-    const auto& mass_over_radius =
-        get(cache->get_var(*this, Tags::MassOverRadius<DataType>{}));
-    // Eq. (1.76) in BaumgarteShapiro (equation in book is missing a sqrt)
-    get(*metric_radial_potential) = -0.5 * log(1. - 2. * mass_over_radius);
+    if constexpr (Region == StarRegion::Exterior) {
+      const auto& metric_time_potential =
+          get(cache->get_var(*this, Tags::MetricTimePotential<DataType>{}));
+      get(*metric_radial_potential) = -metric_time_potential;
+    } else {
+      const auto& mass_over_radius =
+          get(cache->get_var(*this, Tags::MassOverRadius<DataType>{}));
+      // Eq. (1.76) in BaumgarteShapiro (equation in book is missing a sqrt)
+      get(*metric_radial_potential) = -0.5 * log(1. - 2. * mass_over_radius);
+    }
   }
 }
 
@@ -197,45 +328,69 @@ void TovVariables<DataType, Region>::operator()(
     const gsl::not_null<Scalar<DataType>*> dr_metric_radial_potential,
     [[maybe_unused]] const gsl::not_null<Cache*> cache,
     Tags::DrMetricRadialPotential<DataType> /*meta*/) const {
-  if constexpr (Region == StarRegion::Exterior) {
-    const auto& dr_metric_time_potential =
-        get(cache->get_var(*this, Tags::DrMetricTimePotential<DataType>{}));
-    get(*dr_metric_radial_potential) = -dr_metric_time_potential;
-  } else if constexpr (Region == StarRegion::Center) {
-    get(*dr_metric_radial_potential) = 0.;
-  } else {
-    const auto& mass_over_radius =
-        get(cache->get_var(*this, Tags::MassOverRadius<DataType>{}));
-    const auto& specific_enthalpy =
-        get(cache->get_var(*this, hydro::Tags::SpecificEnthalpy<DataType>{}));
-    const auto& rest_mass_density =
-        get(cache->get_var(*this, hydro::Tags::RestMassDensity<DataType>{}));
-    const auto& pressure =
-        get(cache->get_var(*this, hydro::Tags::Pressure<DataType>{}));
-    // Compute dm/dr from the TOV equations, e.g. Eq. (1.77) in
-    // BaumgarteShapiro.
+  if (radial_solution.coordinate_system() ==
+      gr::Solutions::TovCoordinates::Isotropic) {
+    const auto& conformal_factor =
+        get(cache->get_var(*this, Tags::ConformalFactor<DataType>{}));
+    const auto& dr_conformal_factor =
+        get(cache->get_var(*this, Tags::DrConformalFactor<DataType>{}));
     get(*dr_metric_radial_potential) =
-        (4. * M_PI * radius *
-             (specific_enthalpy * rest_mass_density - pressure) -
-         mass_over_radius / radius) /
-        (1. - 2. * mass_over_radius);
+        2. / conformal_factor * dr_conformal_factor;
+  } else {
+    if constexpr (Region == StarRegion::Exterior) {
+      const auto& dr_metric_time_potential =
+          get(cache->get_var(*this, Tags::DrMetricTimePotential<DataType>{}));
+      get(*dr_metric_radial_potential) = -dr_metric_time_potential;
+    } else if constexpr (Region == StarRegion::Center) {
+      get(*dr_metric_radial_potential) = 0.;
+    } else {
+      const auto& mass_over_radius =
+          get(cache->get_var(*this, Tags::MassOverRadius<DataType>{}));
+      const auto& specific_enthalpy =
+          get(cache->get_var(*this, hydro::Tags::SpecificEnthalpy<DataType>{}));
+      const auto& rest_mass_density =
+          get(cache->get_var(*this, hydro::Tags::RestMassDensity<DataType>{}));
+      const auto& pressure =
+          get(cache->get_var(*this, hydro::Tags::Pressure<DataType>{}));
+      // Compute dm/dr from the TOV equations, e.g. Eq. (1.77) in
+      // BaumgarteShapiro.
+      get(*dr_metric_radial_potential) =
+          (4. * M_PI * radius *
+               (specific_enthalpy * rest_mass_density - pressure) -
+           mass_over_radius / radius) /
+          (1. - 2. * mass_over_radius);
+    }
   }
 }
 
 template <typename DataType, StarRegion Region>
 void TovVariables<DataType, Region>::operator()(
     const gsl::not_null<Scalar<DataType>*> metric_angular_potential,
-    const gsl::not_null<Cache*> /*cache*/,
+    const gsl::not_null<Cache*> cache,
     Tags::MetricAngularPotential<DataType> /*meta*/) const {
-  get(*metric_angular_potential) = 0.;
+  if (radial_solution.coordinate_system() ==
+      gr::Solutions::TovCoordinates::Isotropic) {
+    const auto& metric_radial_potential =
+        cache->get_var(*this, Tags::MetricRadialPotential<DataType>{});
+    *metric_angular_potential = metric_radial_potential;
+  } else {
+    get(*metric_angular_potential) = 0.;
+  }
 }
 
 template <typename DataType, StarRegion Region>
 void TovVariables<DataType, Region>::operator()(
     const gsl::not_null<Scalar<DataType>*> dr_metric_angular_potential,
-    const gsl::not_null<Cache*> /*cache*/,
+    const gsl::not_null<Cache*> cache,
     Tags::DrMetricAngularPotential<DataType> /*meta*/) const {
-  get(*dr_metric_angular_potential) = 0.;
+  if (radial_solution.coordinate_system() ==
+      gr::Solutions::TovCoordinates::Isotropic) {
+    const auto& dr_metric_radial_potential =
+        cache->get_var(*this, Tags::DrMetricRadialPotential<DataType>{});
+    *dr_metric_angular_potential = dr_metric_radial_potential;
+  } else {
+    get(*dr_metric_angular_potential) = 0.;
+  }
 }
 
 template <typename DataType, StarRegion Region>
@@ -525,7 +680,8 @@ bool operator==(const TovStar& lhs, const TovStar& rhs) {
   // the `polytropic_exponent`s and `polytropic_constant`s are compared
   return lhs.central_rest_mass_density_ == rhs.central_rest_mass_density_ and
          lhs.polytropic_constant_ == rhs.polytropic_constant_ and
-         lhs.polytropic_exponent_ == rhs.polytropic_exponent_;
+         lhs.polytropic_exponent_ == rhs.polytropic_exponent_ and
+         lhs.coordinate_system_ == rhs.coordinate_system_;
 }
 
 bool operator!=(const TovStar& lhs, const TovStar& rhs) {
