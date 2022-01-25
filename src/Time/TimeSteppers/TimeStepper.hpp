@@ -30,6 +30,10 @@ class History;
 /// Holds classes that take time steps.
 namespace TimeSteppers {
 class AdamsBashforthN;  // IWYU pragma: keep
+class Cerk2;
+class Cerk3;
+class Cerk4;
+class Cerk5;
 class DormandPrince5;
 class RungeKutta3;  // IWYU pragma: keep
 class RungeKutta4;
@@ -50,8 +54,10 @@ class TimeStepper : public PUP::able {
       TimeStepper_detail::FakeVirtualInherit_dense_update_u<
           TimeStepper_detail::FakeVirtualInherit_update_u<TimeStepper>>>;
   using creatable_classes =
-      tmpl::list<TimeSteppers::AdamsBashforthN, TimeSteppers::DormandPrince5,
-                 TimeSteppers::RungeKutta3, TimeSteppers::RungeKutta4>;
+      tmpl::list<TimeSteppers::AdamsBashforthN, TimeSteppers::Cerk2,
+                 TimeSteppers::Cerk3, TimeSteppers::Cerk4, TimeSteppers::Cerk5,
+                 TimeSteppers::DormandPrince5, TimeSteppers::RungeKutta3,
+                 TimeSteppers::RungeKutta4>;
 
   WRAPPED_PUPable_abstract(TimeStepper);  // NOLINT
 
@@ -241,6 +247,10 @@ class LtsTimeStepper : public TimeStepper::Inherit {
 
 
 #include "Time/TimeSteppers/AdamsBashforthN.hpp"  // IWYU pragma: keep
+#include "Time/TimeSteppers/Cerk2.hpp"
+#include "Time/TimeSteppers/Cerk3.hpp"
+#include "Time/TimeSteppers/Cerk4.hpp"
+#include "Time/TimeSteppers/Cerk5.hpp"
 #include "Time/TimeSteppers/DormandPrince5.hpp"
 #include "Time/TimeSteppers/RungeKutta3.hpp"  // IWYU pragma: keep
 #include "Time/TimeSteppers/RungeKutta4.hpp"  // IWYU pragma: keep
