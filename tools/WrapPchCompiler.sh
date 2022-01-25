@@ -18,6 +18,6 @@ while [ $# -ne 0 ] ; do
   esac
 done
 
-"${pch_args[@]}" @SPECTRE_PCH_HEADER_PATH@ -o @SPECTRE_PCH_PATH@
+"${pch_args[@]}" -c @SPECTRE_PCH_HEADER_PATH@ -o @SPECTRE_PCH_PATH@
 
 "${compiler_invokation[@]}"
