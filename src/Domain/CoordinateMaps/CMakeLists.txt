@@ -11,6 +11,7 @@ spectre_target_sources(
   Affine.cpp
   BulgedCube.cpp
   CylindricalEndcap.cpp
+  CylindricalEndcapHelpers.cpp
   CylindricalFlatEndcap.cpp
   CylindricalFlatSide.cpp
   CylindricalSide.cpp
@@ -30,6 +31,7 @@ spectre_target_sources(
   KerrHorizonConforming.cpp
   Rotation.cpp
   SpecialMobius.cpp
+  UniformCylindricalEndcap.cpp
   Wedge.cpp
   )
 
@@ -43,6 +45,7 @@ spectre_target_headers(
   CoordinateMap.tpp
   CoordinateMapHelpers.hpp
   CylindricalEndcap.hpp
+  CylindricalEndcapHelpers.hpp
   CylindricalFlatEndcap.hpp
   CylindricalFlatSide.hpp
   CylindricalSide.hpp
@@ -67,6 +70,7 @@ spectre_target_headers(
   SpecialMobius.hpp
   Tags.hpp
   TimeDependentHelpers.hpp
+  UniformCylindricalEndcap.hpp
   Wedge.hpp
   )
 
