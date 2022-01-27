@@ -292,7 +292,7 @@ foreach(CHARM_LIB_NAME IN LISTS CHARM_LIBS_TO_FIND)
   # Second, fall back to a wider search on the system
   find_library(CHARM_LIB_${CHARM_LIB_NAME}
     NAMES ${CHARM_LIB_NAME}
-    ENV LIBRARY_PATH
+    HINTS ENV LIBRARY_PATH
     )
   if ("${CHARM_LIB_${CHARM_LIB_NAME}}"
         STREQUAL "CHARM_LIB_${CHARM_LIB_NAME}-NOTFOUND")
