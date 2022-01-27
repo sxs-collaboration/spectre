@@ -44,5 +44,6 @@ target_link_libraries(
   )
 
 add_subdirectory(Actions)
+add_subdirectory(ApparentHorizons)
 add_subdirectory(Protocols)
 add_subdirectory(Tags)

@@ -9,7 +9,7 @@ set(LIBRARY_SOURCES
   Test_ElementReceiveInterpPoints.cpp
   Test_InitializeInterpolationTarget.cpp
   Test_InitializeInterpolator.cpp
-  Test_InterpolateEvent.cpp
+  Test_Interpolate.cpp
   Test_InterpolateWithoutInterpComponent.cpp
   Test_InterpolationTargetApparentHorizon.cpp
   Test_InterpolationTargetKerrHorizon.cpp
