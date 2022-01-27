@@ -197,6 +197,10 @@ if (USE_PCH)
     PUBLIC
     SpectreFlags
     )
+  if(BUILD_SHARED_LIBS)
+    install(TARGETS ${SPECTRE_PCH_LIB} OPTIONAL
+      LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+  endif()
 
   # Make the source file ${SPECTRE_PCH_DEP_SOURCE_PATH} depend on
   # ${SPECTRE_PCH_COMPILER_WRAPPER} and set the source file to produce
