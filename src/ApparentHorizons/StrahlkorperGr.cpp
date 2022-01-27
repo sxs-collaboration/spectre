@@ -896,12 +896,13 @@ template <typename Frame>
 void radial_distance(const gsl::not_null<Scalar<DataVector>*> radial_distance,
                      const Strahlkorper<Frame>& strahlkorper_a,
                      const Strahlkorper<Frame>& strahlkorper_b) {
-  if (strahlkorper_a.center() != strahlkorper_b.center()) {
+  if (strahlkorper_a.expansion_center() != strahlkorper_b.expansion_center()) {
     ERROR(
         "Currently computing the radial distance between two Strahlkorpers "
         "is only supported if they have the same centers, but the "
         "strahlkorpers provided have centers "
-        << strahlkorper_a.center() << " and " << strahlkorper_b.center());
+        << strahlkorper_a.expansion_center() << " and "
+        << strahlkorper_b.expansion_center());
   }
   get(*radial_distance)
       .destructive_resize(strahlkorper_a.ylm_spherepack().physical_size());
