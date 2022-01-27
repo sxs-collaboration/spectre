@@ -520,12 +520,14 @@ YlmSpherepack::first_and_second_derivative(
 
 template <typename T>
 YlmSpherepack::InterpolationInfo<T>::InterpolationInfo(
-    const size_t m_max, const std::vector<double>& pmm,
+    const size_t l_max, const size_t m_max, const std::vector<double>& pmm,
     const std::array<T, 2>& target_points)
     : cos_theta(cos(target_points[0])),
       cos_m_phi(DynamicBuffer<T>(m_max + 1, get_size(target_points[0]))),
       sin_m_phi(DynamicBuffer<T>(m_max + 1, get_size(target_points[0]))),
       pbar_factor(DynamicBuffer<T>(m_max + 1, get_size(target_points[0]))),
+      l_max_(l_max),
+      m_max_(m_max),
       num_points_(get_size(target_points[0])) {
   const auto& theta = target_points[0];
   const auto& phi = target_points[1];
@@ -538,7 +540,7 @@ YlmSpherepack::InterpolationInfo<T>::InterpolationInfo(
   }
 
   // `DataVectors` for working. `pbar_factor` is guaranteed to be at least size
-  // 3 as demanded by the `YlmSpherePack` constructor
+  // 3 as demanded by the `YlmSpherepack` constructor
   auto& alpha = pbar_factor.at(0);
   auto& beta = pbar_factor.at(1);
   auto& deltasinmphi = pbar_factor.at(2);
@@ -581,108 +583,11 @@ YlmSpherepack::InterpolationInfo<T>::InterpolationInfo(
 template <typename T>
 YlmSpherepack::InterpolationInfo<T> YlmSpherepack::set_up_interpolation_info(
     const std::array<T, 2>& target_points) const {
-  // SPHEREPACK expands f(theta,phi) as
-  //
-  // f(theta,phi) =
-  // 1/2 Sum_{l=0}^{l_max} Pbar(l,0) a(0,l)
-  //   + Sum_{m=1}^{m_max} Sum_{l=m}^{l_max} Pbar(l,m)(  a(m,l) cos(m phi)
-  //                                                   - b(m,l) sin(m phi))
-  //
-  // where Pbar(l,m) are unit-orthonormal Associated Legendre
-  // polynomials (which are functions of x = cos(theta)), and a(m,l)
-  // and b(m,l) are the SPHEREPACK spectral coefficients.
-  //
-  // Note that Pbar(l,m) = sqrt((2l+1)(l-m)!/(2(l+m)!)) P_l^m.
-  // and that Integral_{-1}^{+1} Pbar(k,m)(x) Pbar(l,m)(x) = delta_kl
-  //
-  // We will interpolate via Clenshaw's recurrence formula in l, for fixed m.
-  //
-  // The recursion relation between Associated Legendre polynomials is
-  // Pbar(l+1)(m) = alpha(l,x) Pbar(l)(m) + beta(l,x) Pbar(l-1)(m)
-  // where alpha(l,x) = x sqrt((2l+3)(2l+1)/((l+1-m)(l+1+m)))
-  // where beta(l,x)  = - sqrt((2l+3)(l-m)(l+m)/((l+1-m)(l+1+m)(2l-1)))
-  //
-  // The Clenshaw recurrence formula for
-  // f(x) = Sum_{l=m}^{l_max} c_(l)(m) Pbar(l)(m) is
-  // y_{l_max+1} = y_{l_max+2} = 0
-  // y_k  = alpha(k,x) y_{k+1} + beta(k+1,x) y_{k+2} + c_(k)(m)  (m<k<=l_max)
-  // f(x) = beta(m+1,x) Pbar(m,m) y_{m+2} + Pbar(m+1,m) y_{m+1}
-  //      + Pbar(m,m) c_(m)(m).
-  //
-  // So we will compute and store alpha(l,x)/x in 'alpha' and
-  // beta(l+1,x) [NOT beta(l,x)] in 'beta'.  We will also compute and
-  // store the x-independent piece of Pbar(m)(m) in 'pmm' and we
-  // will compute and store the x-independent piece of Pbar(m+1)(m)/Pbar(m)(m)
-  // in a component of 'alpha'. See below for storage.
-  // Note Pbar(m)(m)   is (2m-1)!! (1-x^2)^(n/2) sqrt((2m+1)/(2 (2m)!))
-  // and  Pbar(m+1)(m) is (2m+1)!! x(1-x^2)^(n/2)sqrt((2m+3)/(2(2m+1)!))
-  //  Ratio Pbar(m+1)(m)/Pbar(m)(m)   = x sqrt(2m+3)
-  //  Ratio Pbar(m+1)(m+1)/Pbar(m)(m) = sqrt(1-x^2) sqrt((2m+3)/(2m+2))
-
-  const size_t l1 = m_max_ + 1;
-
-  auto& alpha = storage_.work_interp_alpha;
-  auto& beta = storage_.work_interp_beta;
-  auto& pmm = storage_.work_interp_pmm;
-  auto& index = storage_.work_interp_index;
-  if (alpha.empty()) {
-    // We need to compute alpha, beta, index, and pmm only once.
-    const size_t array_size = n_theta_ * l1 - l1 * (l1 - 1) / 2;
-    index.resize(array_size);
-    alpha.resize(array_size);
-    beta.resize(array_size);
-    pmm.resize(l1);
-
-    // Fill alpha,beta,index arrays in the same order as the Clenshaw
-    // recurrence, so that we can index them easier during the recurrence.
-    // First do m=0.
-    size_t idx = 0;
-    for (size_t n = n_theta_ - 1; n > 0; --n, ++idx) {
-      const auto n_dbl = static_cast<double>(n);
-      const double tnp1 = 2.0 * n_dbl + 1;
-      const double np1sq = n_dbl * n_dbl + 2.0 * n_dbl + 1.0;
-      alpha[idx] = sqrt(tnp1 * (tnp1 + 2.0) / np1sq);
-      beta[idx] = -sqrt((tnp1 + 4.0) / tnp1 * np1sq / (np1sq + 2 * n_dbl + 3));
-      index[idx] = n_dbl * l1;
-    }
-    // The next value of beta stores beta(n=1,m=0).
-    // The next value of alpha stores Pbar(n=1,m=0)/(x*Pbar(n=0,m=0)).
-    // These two values are needed for the final Clenshaw recurrence formula.
-    beta[idx] = -0.5 * sqrt(5.0);
-    alpha[idx] = sqrt(3.0);
-    index[idx] = 0;  // Index of coef in the final recurrence formula
-    ++idx;
-
-    // Now do other m.
-    for (size_t m = 1; m < l1; ++m) {
-      for (size_t n = n_theta_ - 1; n > m; --n, ++idx) {
-        const double tnp1 = 2.0 * n + 1;
-        const double np1sqmmsq = (n + 1.0 + m) * (n + 1.0 - m);
-        alpha[idx] = sqrt(tnp1 * (tnp1 + 2.0) / np1sqmmsq);
-        beta[idx] =
-            -sqrt((tnp1 + 4.0) / tnp1 * np1sqmmsq / (np1sqmmsq + 2. * n + 3.));
-        index[idx] = m + n * l1;
-      }
-      // The next value of beta stores beta(n=m+1,m).
-      // The next value of alpha stores Pbar(n=m+1,m)/(x*Pbar(n=m,m)).
-      // These two values are needed for the final Clenshaw recurrence formula.
-      beta[idx] = -0.5 * sqrt((2.0 * m + 5) / (m + 1.0));
-      alpha[idx] = sqrt(2.0 * m + 3);
-      index[idx] =
-          m + m * l1;  // Index of coef in the final recurrence formula.
-      ++idx;
-    }
-    ASSERT(idx == index.size(),
-           "Wrong size " << idx << ", expected " << index.size());
-
-    // Now do pmm, which stores Pbar(m,m).
-    pmm[0] = M_SQRT1_2;  // 1/sqrt(2) = Pbar(0)(0)
-    for (size_t m = 1; m < l1; ++m) {
-      pmm[m] = pmm[m - 1] * sqrt((2.0 * m + 1.0) / (2.0 * m));
-    }
+  if (storage_.work_interp_alpha.empty()) {
+    calculate_interpolation_data();
   }
-
-  return InterpolationInfo(m_max_, pmm, target_points);
+  return InterpolationInfo(l_max_, m_max_, storage_.work_interp_pmm,
+                           target_points);
 }
 
 template <typename T>
@@ -706,6 +611,19 @@ void YlmSpherepack::interpolate_from_coefs(
     const gsl::not_null<T*> result, const R& spectral_coefs,
     const InterpolationInfo<T>& interpolation_info,
     const size_t spectral_stride, const size_t spectral_offset) const {
+  if (storage_.work_interp_alpha.empty()) {
+    if (m_max_ != interpolation_info.m_max()) {
+      ERROR("Different m_max for InterpolationInfo ("
+            << interpolation_info.m_max() << ") and YlmSpherepack instance ("
+            << m_max_ << ")");
+    };
+    if (l_max_ != interpolation_info.l_max()) {
+      ERROR("Different l_max for InterpolationInfo ("
+            << interpolation_info.l_max() << ") and YlmSpherepack instance ("
+            << l_max_ << ")");
+    };
+    calculate_interpolation_data();
+  }
   const auto& alpha = storage_.work_interp_alpha;
   const auto& beta = storage_.work_interp_beta;
   const auto& index = storage_.work_interp_index;
@@ -812,6 +730,106 @@ T YlmSpherepack::interpolate_from_coefs(
   interpolate_from_coefs<T>(&result, spectral_coefs,
                             set_up_interpolation_info<T>(target_points));
   return result;
+}
+
+void YlmSpherepack::calculate_interpolation_data() const {
+  // SPHEREPACK expands f(theta,phi) as
+  //
+  // f(theta,phi) =
+  // 1/2 Sum_{l=0}^{l_max} Pbar(l,0) a(0,l)
+  //   + Sum_{m=1}^{m_max} Sum_{l=m}^{l_max} Pbar(l,m)(  a(m,l) cos(m phi)
+  //                                                   - b(m,l) sin(m phi))
+  //
+  // where Pbar(l,m) are unit-orthonormal Associated Legendre
+  // polynomials (which are functions of x = cos(theta)), and a(m,l)
+  // and b(m,l) are the SPHEREPACK spectral coefficients.
+  //
+  // Note that Pbar(l,m) = sqrt((2l+1)(l-m)!/(2(l+m)!)) P_l^m.
+  // and that Integral_{-1}^{+1} Pbar(k,m)(x) Pbar(l,m)(x) = delta_kl
+  //
+  // We will interpolate via Clenshaw's recurrence formula in l, for fixed m.
+  //
+  // The recursion relation between Associated Legendre polynomials is
+  // Pbar(l+1)(m) = alpha(l,x) Pbar(l)(m) + beta(l,x) Pbar(l-1)(m)
+  // where alpha(l,x) = x sqrt((2l+3)(2l+1)/((l+1-m)(l+1+m)))
+  // where beta(l,x)  = - sqrt((2l+3)(l-m)(l+m)/((l+1-m)(l+1+m)(2l-1)))
+  //
+  // The Clenshaw recurrence formula for
+  // f(x) = Sum_{l=m}^{l_max} c_(l)(m) Pbar(l)(m) is
+  // y_{l_max+1} = y_{l_max+2} = 0
+  // y_k  = alpha(k,x) y_{k+1} + beta(k+1,x) y_{k+2} + c_(k)(m)  (m<k<=l_max)
+  // f(x) = beta(m+1,x) Pbar(m,m) y_{m+2} + Pbar(m+1,m) y_{m+1}
+  //      + Pbar(m,m) c_(m)(m).
+  //
+  // So we will compute and store alpha(l,x)/x in 'alpha' and
+  // beta(l+1,x) [NOT beta(l,x)] in 'beta'.  We will also compute and
+  // store the x-independent piece of Pbar(m)(m) in 'pmm' and we
+  // will compute and store the x-independent piece of Pbar(m+1)(m)/Pbar(m)(m)
+  // in a component of 'alpha'. See below for storage.
+  // Note Pbar(m)(m)   is (2m-1)!! (1-x^2)^(n/2) sqrt((2m+1)/(2 (2m)!))
+  // and  Pbar(m+1)(m) is (2m+1)!! x(1-x^2)^(n/2)sqrt((2m+3)/(2(2m+1)!))
+  //  Ratio Pbar(m+1)(m)/Pbar(m)(m)   = x sqrt(2m+3)
+  //  Ratio Pbar(m+1)(m+1)/Pbar(m)(m) = sqrt(1-x^2) sqrt((2m+3)/(2m+2))
+
+  const size_t l1 = m_max_ + 1;
+
+  auto& alpha = storage_.work_interp_alpha;
+  auto& beta = storage_.work_interp_beta;
+  auto& pmm = storage_.work_interp_pmm;
+  auto& index = storage_.work_interp_index;
+  // We need to compute alpha, beta, index, and pmm only once.
+  const size_t array_size = n_theta_ * l1 - l1 * (l1 - 1) / 2;
+  index.resize(array_size);
+  alpha.resize(array_size);
+  beta.resize(array_size);
+  pmm.resize(l1);
+
+  // Fill alpha,beta,index arrays in the same order as the Clenshaw
+  // recurrence, so that we can index them easier during the recurrence.
+  // First do m=0.
+  size_t idx = 0;
+  for (size_t n = n_theta_ - 1; n > 0; --n, ++idx) {
+    const auto n_dbl = static_cast<double>(n);
+    const double tnp1 = 2.0 * n_dbl + 1;
+    const double np1sq = n_dbl * n_dbl + 2.0 * n_dbl + 1.0;
+    alpha[idx] = sqrt(tnp1 * (tnp1 + 2.0) / np1sq);
+    beta[idx] = -sqrt((tnp1 + 4.0) / tnp1 * np1sq / (np1sq + 2 * n_dbl + 3));
+    index[idx] = n_dbl * l1;
+  }
+  // The next value of beta stores beta(n=1,m=0).
+  // The next value of alpha stores Pbar(n=1,m=0)/(x*Pbar(n=0,m=0)).
+  // These two values are needed for the final Clenshaw recurrence formula.
+  beta[idx] = -0.5 * sqrt(5.0);
+  alpha[idx] = sqrt(3.0);
+  index[idx] = 0;  // Index of coef in the final recurrence formula
+  ++idx;
+
+  // Now do other m.
+  for (size_t m = 1; m < l1; ++m) {
+    for (size_t n = n_theta_ - 1; n > m; --n, ++idx) {
+      const double tnp1 = 2.0 * n + 1;
+      const double np1sqmmsq = (n + 1.0 + m) * (n + 1.0 - m);
+      alpha[idx] = sqrt(tnp1 * (tnp1 + 2.0) / np1sqmmsq);
+      beta[idx] =
+          -sqrt((tnp1 + 4.0) / tnp1 * np1sqmmsq / (np1sqmmsq + 2. * n + 3.));
+      index[idx] = m + n * l1;
+    }
+    // The next value of beta stores beta(n=m+1,m).
+    // The next value of alpha stores Pbar(n=m+1,m)/(x*Pbar(n=m,m)).
+    // These two values are needed for the final Clenshaw recurrence formula.
+    beta[idx] = -0.5 * sqrt((2.0 * m + 5) / (m + 1.0));
+    alpha[idx] = sqrt(2.0 * m + 3);
+    index[idx] = m + m * l1;  // Index of coef in the final recurrence formula.
+    ++idx;
+  }
+  ASSERT(idx == index.size(),
+         "Wrong size " << idx << ", expected " << index.size());
+
+  // Now do pmm, which stores Pbar(m,m).
+  pmm[0] = M_SQRT1_2;  // 1/sqrt(2) = Pbar(0)(0)
+  for (size_t m = 1; m < l1; ++m) {
+    pmm[m] = pmm[m - 1] * sqrt((2.0 * m + 1.0) / (2.0 * m));
+  }
 }
 
 void YlmSpherepack::fill_vector_work_arrays() const {
@@ -936,23 +954,24 @@ bool operator!=(const YlmSpherepack& lhs, const YlmSpherepack& rhs) {
 // Explicit instantiations
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                                  \
-  template YlmSpherepack::InterpolationInfo<DTYPE(data)>::InterpolationInfo(  \
-      size_t, const std::vector<double>&, const std::array<DTYPE(data), 2>&); \
-  template YlmSpherepack::InterpolationInfo<DTYPE(data)>                      \
-  YlmSpherepack::set_up_interpolation_info(                                   \
-      const std::array<DTYPE(data), 2>& target_points) const;                 \
-  template void YlmSpherepack::interpolate(                                   \
-      gsl::not_null<DTYPE(data)*> result, gsl::not_null<const double*>,       \
-      const YlmSpherepack::InterpolationInfo<DTYPE(data)>&, size_t, size_t)   \
-      const;                                                                  \
-  template void YlmSpherepack::interpolate_from_coefs(                        \
-      gsl::not_null<DTYPE(data)*> result, const DataVector&,                  \
-      const YlmSpherepack::InterpolationInfo<DTYPE(data)>&, size_t, size_t)   \
-      const;                                                                  \
-  template DTYPE(data) YlmSpherepack::interpolate(                            \
-      const DataVector&, const std::array<DTYPE(data), 2>&) const;            \
-  template DTYPE(data) YlmSpherepack::interpolate_from_coefs(                 \
+#define INSTANTIATE(_, data)                                                 \
+  template YlmSpherepack::InterpolationInfo<DTYPE(data)>::InterpolationInfo( \
+      size_t, size_t, const std::vector<double>&,                            \
+      const std::array<DTYPE(data), 2>&);                                    \
+  template YlmSpherepack::InterpolationInfo<DTYPE(data)>                     \
+  YlmSpherepack::set_up_interpolation_info(                                  \
+      const std::array<DTYPE(data), 2>& target_points) const;                \
+  template void YlmSpherepack::interpolate(                                  \
+      gsl::not_null<DTYPE(data)*> result, gsl::not_null<const double*>,      \
+      const YlmSpherepack::InterpolationInfo<DTYPE(data)>&, size_t, size_t)  \
+      const;                                                                 \
+  template void YlmSpherepack::interpolate_from_coefs(                       \
+      gsl::not_null<DTYPE(data)*> result, const DataVector&,                 \
+      const YlmSpherepack::InterpolationInfo<DTYPE(data)>&, size_t, size_t)  \
+      const;                                                                 \
+  template DTYPE(data) YlmSpherepack::interpolate(                           \
+      const DataVector&, const std::array<DTYPE(data), 2>&) const;           \
+  template DTYPE(data) YlmSpherepack::interpolate_from_coefs(                \
       const DataVector&, const std::array<DTYPE(data), 2>&) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))

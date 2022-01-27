@@ -446,6 +446,9 @@ void test_interpolation(
     const size_t spectral_stride,
     const YlmTestFunctions::ScalarFunctionWithDerivs& func) {
   YlmSpherepack ylm_spherepack(l_max, m_max);
+  // test with a seperate instance if it can use interpolation_info from the
+  // first one.
+  YlmSpherepack ylm_spherepack_2(l_max, m_max);
   const size_t physical_size = ylm_spherepack.physical_size() * physical_stride;
   const size_t spectral_size = ylm_spherepack.spectral_size() * spectral_stride;
 
@@ -513,10 +516,18 @@ void test_interpolation(
     DataVector uintPhys(interpolation_info.size());
     DataVector uintSpec(interpolation_info.size());
 
+    DataVector uintPhys2(interpolation_info.size());
+    DataVector uintSpec2(interpolation_info.size());
+
     ylm_spherepack.interpolate(make_not_null(&uintPhys), u.data(),
                                interpolation_info, physical_stride, 0);
     ylm_spherepack.interpolate_from_coefs(make_not_null(&uintSpec), u_spec,
                                           interpolation_info, spectral_stride);
+
+    ylm_spherepack_2.interpolate(make_not_null(&uintPhys2), u.data(),
+                                 interpolation_info, physical_stride, 0);
+    ylm_spherepack_2.interpolate_from_coefs(
+        make_not_null(&uintSpec2), u_spec, interpolation_info, spectral_stride);
 
     // Test vs analytic solution
     DataVector uintanal(interpolation_info.size());
@@ -524,6 +535,9 @@ void test_interpolation(
       func.func(&uintanal, 1, s, {points[0][s]}, {points[1][s]});
       CHECK(uintanal[s] == approx(uintPhys[s]));
       CHECK(uintanal[s] == approx(uintSpec[s]));
+
+      CHECK(uintanal[s] == approx(uintPhys2[s]));
+      CHECK(uintanal[s] == approx(uintSpec2[s]));
     }
 
     // Test for angles out of range.
@@ -534,28 +548,42 @@ void test_interpolation(
       CHECK(uintPhys[5 * s + 2] == approx(uintPhys[5 * s]));
       CHECK(uintPhys[5 * s + 3] == approx(uintPhys[5 * s]));
       CHECK(uintPhys[5 * s + 4] == approx(uintPhys[5 * s]));
+
+      CHECK(uintPhys2[5 * s + 1] == approx(uintPhys2[5 * s]));
+      CHECK(uintPhys2[5 * s + 2] == approx(uintPhys2[5 * s]));
+      CHECK(uintPhys2[5 * s + 3] == approx(uintPhys2[5 * s]));
+      CHECK(uintPhys2[5 * s + 4] == approx(uintPhys2[5 * s]));
     }
 
     // Tests default values of stride and offset.
     if (physical_stride == 1 && spectral_stride == 1) {
       ylm_spherepack.interpolate(make_not_null(&uintPhys), u.data(),
                                  interpolation_info);
+      ylm_spherepack_2.interpolate(make_not_null(&uintPhys2), u.data(),
+                                   interpolation_info);
       for (size_t s = 0; s < uintanal.size(); ++s) {
         CHECK(uintanal[s] == approx(uintPhys[s]));
+        CHECK(uintanal[s] == approx(uintPhys2[s]));
       }
     }
 
     // Test simplified interpolation interface
     if (physical_stride == 1) {
       auto test_interp = ylm_spherepack.interpolate(u, points);
+      auto test_interp_2 = ylm_spherepack_2.interpolate(u, points);
+
       for (size_t s = 0; s < uintanal.size(); ++s) {
         CHECK(uintanal[s] == approx(test_interp[s]));
+        CHECK(uintanal[s] == approx(test_interp_2[s]));
       }
     }
     if (spectral_stride == 1) {
       auto test_interp = ylm_spherepack.interpolate_from_coefs(u_spec, points);
+      auto test_interp_2 =
+          ylm_spherepack_2.interpolate_from_coefs(u_spec, points);
       for (size_t s = 0; s < uintanal.size(); ++s) {
         CHECK(uintanal[s] == approx(test_interp[s]));
+        CHECK(uintanal[s] == approx(test_interp_2[s]));
       }
     }
   }
@@ -715,4 +743,44 @@ SPECTRE_TEST_CASE("Unit.SphericalHarmonics.YlmSpherepack.too_few_phi_pts",
                   "[NumericalAlgorithms][Unit]") {
   ERROR_TEST();
   YlmSpherepack ylm(2, 1);
+}
+
+// [[OutputRegex, Different l_max for InterpolationInfo \(4\) and YlmSpherepack
+// instance \(5\)]]
+[[noreturn]] SPECTRE_TEST_CASE(
+    "Unit.SphericalHarmonics.YlmSpherepack.wrong_l_max_interpolation",
+    "[NumericalAlgorithms][Unit]") {
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  YlmSpherepack ylm(4, 3);
+  const auto interp_info = ylm.set_up_interpolation_info(
+      std::array<DataVector, 2>{DataVector{0.1, 0.3}, DataVector{0.2, 0.3}});
+  YlmSpherepack ylm_wrong_l_max(5, 3);
+  DataVector res{2};
+  // no need to initialize as the values should not be accessed
+  const DataVector spectral_values{ylm_wrong_l_max.spectral_size()};
+  ylm_wrong_l_max.interpolate_from_coefs(make_not_null(&res), spectral_values,
+                                         interp_info);
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
+}
+
+// [[OutputRegex, Different m_max for InterpolationInfo \(3\) and YlmSpherepack
+// instance \(4\)]]
+[[noreturn]] SPECTRE_TEST_CASE(
+    "Unit.SphericalHarmonics.YlmSpherepack.wrong_m_max_interpolation",
+    "[NumericalAlgorithms][Unit]") {
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  YlmSpherepack ylm(4, 3);
+  const auto interp_info = ylm.set_up_interpolation_info(
+      std::array<DataVector, 2>{DataVector{0.1, 0.3}, DataVector{0.2, 0.3}});
+  YlmSpherepack ylm_wrong_m_max(4, 4);
+  DataVector res{2};
+  // no need to initialize as the values should not be accessed
+  const DataVector spectral_values{ylm_wrong_m_max.spectral_size()};
+  ylm_wrong_m_max.interpolate_from_coefs(make_not_null(&res), spectral_values,
+                                         interp_info);
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
 }
