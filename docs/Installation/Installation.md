@@ -323,6 +323,10 @@ Here are a few notes:
   system the correct Charm++ target architecture depends on the machine's
   inter-node communication architecture. It might take some experimenting to
   figure out which Charm++ configuration provides the best performance.
+- Compile Charm++ with support for shared libraries by appending the option
+  `--build-shared` to the `./build` command or pass `BUILD_SHARED=ON` to the
+  CMake configuration (see the [Charm++ installation
+  instructions](https://github.com/UIUC-PPL/charm#building-dynamic-libraries)).
 - When compiling Charm++ you can specify the compiler using, for example,
   ```
   ./build LIBS ARCH clang

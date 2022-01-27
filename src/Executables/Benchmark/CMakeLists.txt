@@ -24,9 +24,4 @@ if("${GoogleBenchmark_FOUND}" AND NOT "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
     GoogleBenchmark
     Spectral
     )
-
-  set_target_properties(
-    ${executable}
-    PROPERTIES LINK_FLAGS "-nomain-module -nomain"
-    )
 endif()

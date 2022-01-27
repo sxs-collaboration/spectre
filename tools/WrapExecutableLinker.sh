@@ -4,7 +4,7 @@
 # See LICENSE.txt for details.
 
 temp_files=()
-trap 'rm -r "${temp_files[@]}"' EXIT
+trap 'rm -rf "${temp_files[@]}"' EXIT
 
 pushd @CMAKE_SOURCE_DIR@ >/dev/null
 git_description="@GIT_DESCRIPTION_COMMAND@"
@@ -17,13 +17,8 @@ if [ ! -z "${git_branch}" ]; then
 fi
 popd >/dev/null
 
-# Create a copy of InfoAtLink.cpp based on the output filename.
-# When compiling an executable from a cpp file, charmc writes a
-# temporary file called ${basename}.o to the current directory, so we
-# need all the compilations that might run in parallel in one
-# directory to have different base names for cpp files.
-oindex=
 # Find the index of "-o" in the argument list
+oindex=
 for (( i=1 ; i<$# ; ++i )) ; do
     [ "${!i}" = -o ] && { oindex=$i ; break ; }
 done
@@ -33,24 +28,24 @@ if [ -z "${oindex}" ] ; then
 fi
 # Construct a filename from the next argument
 let ++oindex
-InfoAtLink_file=@CMAKE_BINARY_DIR@/tmp/\
-$(basename "${!oindex}")_InfoAtLink.cpp
-temp_files+=("${InfoAtLink_file}")
-cp @CMAKE_SOURCE_DIR@/src/Informer/InfoAtLink.cpp "${InfoAtLink_file}"
+
+# We compile the InfoAtLink.cpp file into the executable at link time
+InfoAtLink_file=@CMAKE_SOURCE_DIR@/src/Informer/InfoAtLink.cpp
+# Read the appropriate flags for compiling InfoAtLink.cpp from the generated
+# file
+InfoAtLink_flags=`cat @CMAKE_BINARY_DIR@/Informer/InfoAtLink_flags.txt`
 
 # - Formaline through the linker doesn't work on macOS and since we won't
 #   be doing production runs on macOS we disable it.
-# - Since InfoAtLink.cpp depends on Boost headers but is not part of the build
-#   system, we pass the Boost include directory explicitly.
 if [ -f @CMAKE_BINARY_DIR@/tmp/Formaline.sh ]; then
     . @CMAKE_BINARY_DIR@/tmp/Formaline.sh $(basename "${!oindex}")
     temp_files+=("${formaline_output}" "${formaline_object_output}")
     "$@" -DGIT_DESCRIPTION=$git_description -DGIT_BRANCH=$git_branch \
-         -I@CMAKE_SOURCE_DIR@/src -I@Boost_INCLUDE_DIRS@ "${InfoAtLink_file}" \
-         "${formaline_output}" ${formaline_object_output}
+         ${InfoAtLink_flags} "${InfoAtLink_file}" "${formaline_output}" \
+         ${formaline_object_output}
 else
     "$@" -DGIT_DESCRIPTION=$git_description -DGIT_BRANCH=$git_branch \
-         -I@CMAKE_SOURCE_DIR@/src -I@Boost_INCLUDE_DIRS@ "${InfoAtLink_file}"
+         ${InfoAtLink_flags} "${InfoAtLink_file}"
 fi
 
 if @WRAP_EXECUTABLE_LINKER_USE_STUB_OBJECT_FILES@; then

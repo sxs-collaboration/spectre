@@ -46,6 +46,8 @@ target_link_libraries(
   ${EXECUTABLE}
   PRIVATE
   Boost::program_options
+  Charmxx::charmxx
+  Charmxx::main
   DataStructures
   ErrorHandling
   Framework
