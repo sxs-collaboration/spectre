@@ -57,7 +57,8 @@ std::unique_ptr<TimeDependence<3>> SphericalCompression::get_clone() const {
 
 std::vector<
     std::unique_ptr<domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, 3>>>
-SphericalCompression::block_maps(const size_t number_of_blocks) const {
+SphericalCompression::block_maps_grid_to_inertial(
+    const size_t number_of_blocks) const {
   ASSERT(number_of_blocks > 0,
          "Must have at least one block on which to create a map.");
   std::vector<std::unique_ptr<

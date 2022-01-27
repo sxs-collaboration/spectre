@@ -663,8 +663,8 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
   if (not time_dependence_->is_none()) {
     for (size_t block = 0; block < number_of_blocks_; ++block) {
       domain.inject_time_dependent_map_for_block(
-          block,
-          std::move(time_dependence_->block_maps(number_of_blocks_)[block]));
+          block, std::move(time_dependence_->block_maps_grid_to_inertial(
+                     number_of_blocks_)[block]));
     }
   }
   return domain;

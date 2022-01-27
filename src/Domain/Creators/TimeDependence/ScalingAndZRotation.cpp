@@ -60,12 +60,46 @@ ScalingAndZRotation<MeshDim>::get_clone() const {
 template <size_t MeshDim>
 std::vector<std::unique_ptr<
     domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, MeshDim>>>
-ScalingAndZRotation<MeshDim>::block_maps(const size_t number_of_blocks) const {
+ScalingAndZRotation<MeshDim>::block_maps_grid_to_inertial(
+    const size_t number_of_blocks) const {
   ASSERT(number_of_blocks > 0, "Must have at least one block to create.");
   std::vector<std::unique_ptr<
       domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, MeshDim>>>
       result{number_of_blocks};
   result[0] = std::make_unique<GridToInertialMap>(grid_to_inertial_map());
+  for (size_t i = 1; i < number_of_blocks; ++i) {
+    result[i] = result[0]->get_clone();
+  }
+  return result;
+}
+
+template <size_t MeshDim>
+std::vector<std::unique_ptr<
+    domain::CoordinateMapBase<Frame::Grid, Frame::Distorted, MeshDim>>>
+ScalingAndZRotation<MeshDim>::block_maps_grid_to_distorted(
+    const size_t number_of_blocks) const {
+  ASSERT(number_of_blocks > 0, "Must have at least one block to create.");
+  std::vector<std::unique_ptr<
+      domain::CoordinateMapBase<Frame::Grid, Frame::Distorted, MeshDim>>>
+      result{number_of_blocks};
+  result[0] = std::make_unique<GridToDistortedMap>(grid_to_distorted_map());
+  for (size_t i = 1; i < number_of_blocks; ++i) {
+    result[i] = result[0]->get_clone();
+  }
+  return result;
+}
+
+template <size_t MeshDim>
+std::vector<std::unique_ptr<
+    domain::CoordinateMapBase<Frame::Distorted, Frame::Inertial, MeshDim>>>
+ScalingAndZRotation<MeshDim>::block_maps_distorted_to_inertial(
+    const size_t number_of_blocks) const {
+  ASSERT(number_of_blocks > 0, "Must have at least one block to create.");
+  std::vector<std::unique_ptr<
+      domain::CoordinateMapBase<Frame::Distorted, Frame::Inertial, MeshDim>>>
+      result{number_of_blocks};
+  result[0] =
+      std::make_unique<DistortedToInertialMap>(distorted_to_inertial_map());
   for (size_t i = 1; i < number_of_blocks; ++i) {
     result[i] = result[0]->get_clone();
   }
@@ -137,6 +171,35 @@ auto ScalingAndZRotation<3>::grid_to_inertial_map() const -> GridToInertialMap {
   return GridToInertialMap{
       CubicScaleMap{outer_boundary_, functions_of_time_names_[0],
                     functions_of_time_names_[1]},
+      ProductRotationMap{domain::CoordinateMaps::TimeDependent::Rotation<2>{
+                             functions_of_time_names_[2]},
+                         domain::CoordinateMaps::Identity<1>{}}};
+}
+
+template <size_t MeshDim>
+auto ScalingAndZRotation<MeshDim>::grid_to_distorted_map() const
+    -> GridToDistortedMap {
+  return GridToDistortedMap{CubicScaleMap{outer_boundary_,
+                                          functions_of_time_names_[0],
+                                          functions_of_time_names_[1]}};
+}
+
+template <>
+auto ScalingAndZRotation<2>::distorted_to_inertial_map() const
+    -> DistortedToInertialMap {
+  return DistortedToInertialMap{
+      domain::CoordinateMaps::TimeDependent::Rotation<2>{
+          functions_of_time_names_[2]}};
+}
+
+template <>
+auto ScalingAndZRotation<3>::distorted_to_inertial_map() const
+    -> DistortedToInertialMap {
+  using ProductRotationMap =
+      domain::CoordinateMaps::TimeDependent::ProductOf2Maps<
+          domain::CoordinateMaps::TimeDependent::Rotation<2>,
+          domain::CoordinateMaps::Identity<1>>;
+  return DistortedToInertialMap{
       ProductRotationMap{domain::CoordinateMaps::TimeDependent::Rotation<2>{
                              functions_of_time_names_[2]},
                          domain::CoordinateMaps::Identity<1>{}}};

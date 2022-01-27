@@ -57,7 +57,8 @@ std::unique_ptr<TimeDependence<MeshDim>> CubicScale<MeshDim>::get_clone()
 template <size_t MeshDim>
 std::vector<std::unique_ptr<
     domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, MeshDim>>>
-CubicScale<MeshDim>::block_maps(const size_t number_of_blocks) const {
+CubicScale<MeshDim>::block_maps_grid_to_inertial(
+    const size_t number_of_blocks) const {
   ASSERT(number_of_blocks > 0, "Must have at least one block to create.");
   std::vector<std::unique_ptr<
       domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, MeshDim>>>

@@ -10,28 +10,18 @@ namespace domain {
 template <typename SourceFrame, typename TargetFrame, typename... Maps>
 class CoordinateMap;
 }  // namespace domain
-namespace Frame {
-struct Grid;
-struct Inertial;
-}  // namespace Frame
 /// \endcond
 
-namespace domain {
-namespace creators {
-namespace time_dependence {
-namespace detail {
-template <typename MapsList>
+namespace domain::creators::time_dependence::detail {
+template <typename SourceFrame, typename TargetFrame, typename MapsList>
 struct generate_coordinate_map;
 
-template <typename... Maps>
-struct generate_coordinate_map<tmpl::list<Maps...>> {
-  using type = domain::CoordinateMap<Frame::Grid, Frame::Inertial, Maps...>;
+template <typename SourceFrame, typename TargetFrame, typename... Maps>
+struct generate_coordinate_map<SourceFrame, TargetFrame, tmpl::list<Maps...>> {
+  using type = domain::CoordinateMap<SourceFrame, TargetFrame, Maps...>;
 };
 
-template <typename MapsList>
+template <typename SourceFrame, typename TargetFrame, typename MapsList>
 using generate_coordinate_map_t =
-    typename generate_coordinate_map<MapsList>::type;
-}  // namespace detail
-}  // namespace time_dependence
-}  // namespace creators
-}  // namespace domain
+    typename generate_coordinate_map<SourceFrame, TargetFrame, MapsList>::type;
+}  // namespace domain::creators::time_dependence::detail

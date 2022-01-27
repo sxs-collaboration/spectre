@@ -34,6 +34,7 @@ class CoordinateMap;
 }  // namespace domain
 
 namespace Frame {
+struct Distorted;
 struct Grid;
 struct Inertial;
 }  // namespace Frame
@@ -54,6 +55,10 @@ namespace domain::creators::time_dependence {
  * The expansion is done by the
  * `domain::CoordinateMaps::TimeDependent::CubicScale` map. A linear
  * radial scaling can be used by specifying the `UseLinearScaling` bool.
+ *
+ * For this map, the cubic scaling goes from the grid frame to the distorted
+ * frame, and the rotation goes from the distorted frame to the inertial frame.
+ *
  */
 template <size_t MeshDim>
 class ScalingAndZRotation final : public TimeDependence<MeshDim> {
@@ -121,11 +126,19 @@ class ScalingAndZRotation final : public TimeDependence<MeshDim> {
   };
 
   using GridToInertialMap = detail::generate_coordinate_map_t<
+      Frame::Grid, Frame::Inertial,
       tmpl::list<CubicScaleMap,
                  tmpl::conditional_t<MeshDim == 2, Rotation,
                                      domain::CoordinateMaps::TimeDependent::
                                          ProductOf2Maps<Rotation, Identity>>>>;
+  using GridToDistortedMap =
+      domain::CoordinateMap<Frame::Grid, Frame::Distorted, CubicScaleMap>;
 
+  using DistortedToInertialMap = detail::generate_coordinate_map_t<
+      Frame::Distorted, Frame::Inertial,
+      tmpl::list<tmpl::conditional_t<MeshDim == 2, Rotation,
+                                     domain::CoordinateMaps::TimeDependent::
+                                         ProductOf2Maps<Rotation, Identity>>>>;
   using options =
       tmpl::list<InitialTime, AngularVelocity, OuterBoundary, UseLinearScaling,
                  InitialExpansion, Velocity, Acceleration>;
@@ -154,9 +167,17 @@ class ScalingAndZRotation final : public TimeDependence<MeshDim> {
 
   auto get_clone() const -> std::unique_ptr<TimeDependence<MeshDim>> override;
 
-  auto block_maps(size_t number_of_blocks) const
+  auto block_maps_grid_to_inertial(size_t number_of_blocks) const
       -> std::vector<std::unique_ptr<domain::CoordinateMapBase<
           Frame::Grid, Frame::Inertial, MeshDim>>> override;
+
+  auto block_maps_grid_to_distorted(size_t number_of_blocks) const
+      -> std::vector<std::unique_ptr<domain::CoordinateMapBase<
+          Frame::Grid, Frame::Distorted, MeshDim>>> override;
+
+  auto block_maps_distorted_to_inertial(size_t number_of_blocks) const
+      -> std::vector<std::unique_ptr<domain::CoordinateMapBase<
+          Frame::Distorted, Frame::Inertial, MeshDim>>> override;
 
   auto functions_of_time(const std::unordered_map<std::string, double>&
                              initial_expiration_times = {}) const
@@ -171,6 +192,8 @@ class ScalingAndZRotation final : public TimeDependence<MeshDim> {
                          const ScalingAndZRotation<LocalDim>& rhs);
 
   GridToInertialMap grid_to_inertial_map() const;
+  GridToDistortedMap grid_to_distorted_map() const;
+  DistortedToInertialMap distorted_to_inertial_map() const;
 
   double initial_time_{std::numeric_limits<double>::signaling_NaN()};
   double angular_velocity_{std::numeric_limits<double>::signaling_NaN()};

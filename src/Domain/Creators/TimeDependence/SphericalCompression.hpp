@@ -22,19 +22,20 @@
 #include "Utilities/TMPL.hpp"
 
 /// \cond
-namespace domain {
-namespace FunctionsOfTime {
+namespace domain::FunctionsOfTime {
 class FunctionOfTime;
-}  // namespace FunctionsOfTime
-namespace CoordinateMaps::TimeDependent {
+}  // namespace domain::FunctionsOfTime
+namespace domain::CoordinateMaps::TimeDependent {
 template <bool InertiorMap>
 class SphericalCompression;
-}  // namespace CoordinateMaps::TimeDependent
+}  // namespace domain::CoordinateMaps::TimeDependent
+namespace domain {
 template <typename SourceFrame, typename TargetFrame, typename... Maps>
 class CoordinateMap;
 }  // namespace domain
 
 namespace Frame {
+struct Distorted;
 struct Grid;
 struct Inertial;
 }  // namespace Frame
@@ -107,7 +108,8 @@ class SphericalCompression final : public TimeDependence<3> {
   };
 
   using GridToInertialMap =
-      detail::generate_coordinate_map_t<tmpl::list<SphericalCompressionMap>>;
+        detail::generate_coordinate_map_t<Frame::Grid, Frame::Inertial,
+                                          tmpl::list<SphericalCompressionMap>>;
 
   using options =
       tmpl::list<InitialTime, MinRadius, MaxRadius, Center, InitialValue,
@@ -130,9 +132,25 @@ class SphericalCompression final : public TimeDependence<3> {
 
   auto get_clone() const -> std::unique_ptr<TimeDependence<mesh_dim>> override;
 
-  auto block_maps(size_t number_of_blocks) const
+  auto block_maps_grid_to_inertial(size_t number_of_blocks) const
       -> std::vector<std::unique_ptr<domain::CoordinateMapBase<
           Frame::Grid, Frame::Inertial, mesh_dim>>> override;
+
+  auto block_maps_grid_to_distorted(size_t number_of_blocks) const
+      -> std::vector<std::unique_ptr<domain::CoordinateMapBase<
+          Frame::Grid, Frame::Distorted, mesh_dim>>> override {
+    using ptr_type =
+        domain::CoordinateMapBase<Frame::Grid, Frame::Distorted, mesh_dim>;
+    return std::vector<std::unique_ptr<ptr_type>>(number_of_blocks);
+  }
+
+  auto block_maps_distorted_to_inertial(size_t number_of_blocks) const
+      -> std::vector<std::unique_ptr<domain::CoordinateMapBase<
+          Frame::Distorted, Frame::Inertial, mesh_dim>>> override {
+    using ptr_type =
+        domain::CoordinateMapBase<Frame::Distorted, Frame::Inertial, mesh_dim>;
+    return std::vector<std::unique_ptr<ptr_type>>(number_of_blocks);
+  }
 
   auto functions_of_time(const std::unordered_map<std::string, double>&
                              initial_expiration_times = {}) const

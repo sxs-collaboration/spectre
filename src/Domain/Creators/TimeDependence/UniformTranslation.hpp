@@ -22,32 +22,28 @@
 #include "Utilities/TMPL.hpp"
 
 /// \cond
-namespace domain {
-namespace FunctionsOfTime {
+namespace domain::FunctionsOfTime {
 class FunctionOfTime;
-}  // namespace FunctionsOfTime
-namespace CoordinateMaps {
-namespace TimeDependent {
+}  // namespace domain::FunctionsOfTime
+namespace domain::CoordinateMaps::TimeDependent {
 template <typename Map1, typename Map2, typename Map3>
 class ProductOf3Maps;
 template <typename Map1, typename Map2>
 class ProductOf2Maps;
-}  // namespace TimeDependent
-}  // namespace CoordinateMaps
-
+}  // namespace domain::CoordinateMaps::TimeDependent
+namespace domain {
 template <typename SourceFrame, typename TargetFrame, typename... Maps>
 class CoordinateMap;
 }  // namespace domain
 
 namespace Frame {
+struct Distorted;
 struct Grid;
 struct Inertial;
 }  // namespace Frame
 /// \endcond
 
-namespace domain {
-namespace creators {
-namespace time_dependence {
+namespace domain::creators::time_dependence {
 /*!
  * \brief A uniform translation in the \f$x-, y-\f$ and \f$z-\f$direction.
  *
@@ -87,7 +83,8 @@ class UniformTranslation final : public TimeDependence<MeshDim> {
   };
 
   using GridToInertialMap =
-      detail::generate_coordinate_map_t<tmpl::list<TranslationMap>>;
+      detail::generate_coordinate_map_t<Frame::Grid, Frame::Inertial,
+                                        tmpl::list<TranslationMap>>;
 
   using options = tmpl::list<InitialTime, Velocity>;
 
@@ -106,9 +103,25 @@ class UniformTranslation final : public TimeDependence<MeshDim> {
 
   auto get_clone() const -> std::unique_ptr<TimeDependence<MeshDim>> override;
 
-  auto block_maps(size_t number_of_blocks) const
+  auto block_maps_grid_to_inertial(size_t number_of_blocks) const
       -> std::vector<std::unique_ptr<domain::CoordinateMapBase<
           Frame::Grid, Frame::Inertial, MeshDim>>> override;
+
+  auto block_maps_grid_to_distorted(size_t number_of_blocks) const
+      -> std::vector<std::unique_ptr<domain::CoordinateMapBase<
+          Frame::Grid, Frame::Distorted, MeshDim>>> override {
+    using ptr_type =
+        domain::CoordinateMapBase<Frame::Grid, Frame::Distorted, MeshDim>;
+    return std::vector<std::unique_ptr<ptr_type>>(number_of_blocks);
+  }
+
+  auto block_maps_distorted_to_inertial(size_t number_of_blocks) const
+      -> std::vector<std::unique_ptr<domain::CoordinateMapBase<
+          Frame::Distorted, Frame::Inertial, MeshDim>>> override {
+    using ptr_type =
+        domain::CoordinateMapBase<Frame::Distorted, Frame::Inertial, MeshDim>;
+    return std::vector<std::unique_ptr<ptr_type>>(number_of_blocks);
+  }
 
   auto functions_of_time(const std::unordered_map<std::string, double>&
                              initial_expiration_times = {}) const
@@ -141,6 +154,4 @@ bool operator==(const UniformTranslation<Dim, Index>& lhs,
 template <size_t Dim, size_t Index>
 bool operator!=(const UniformTranslation<Dim, Index>& lhs,
                 const UniformTranslation<Dim, Index>& rhs);
-}  // namespace time_dependence
-}  // namespace creators
-}  // namespace domain
+}  // namespace domain::creators::time_dependence

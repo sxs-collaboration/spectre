@@ -47,10 +47,24 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.TimeDependence.None",
 }
 
 template <size_t MeshDim>
-void test_error_block_maps() {
+void test_error_block_maps_grid_to_inertial() {
   const std::unique_ptr<TimeDependence<MeshDim>> time_dep =
       std::make_unique<None<MeshDim>>();
-  (void)time_dep->block_maps(5);
+  (void)time_dep->block_maps_grid_to_inertial(5);
+}
+
+template <size_t MeshDim>
+void test_error_block_maps_grid_to_distorted() {
+  const std::unique_ptr<TimeDependence<MeshDim>> time_dep =
+      std::make_unique<None<MeshDim>>();
+  (void)time_dep->block_maps_grid_to_distorted(5);
+}
+
+template <size_t MeshDim>
+void test_error_block_maps_distorted_to_inertial() {
+  const std::unique_ptr<TimeDependence<MeshDim>> time_dep =
+      std::make_unique<None<MeshDim>>();
+  (void)time_dep->block_maps_distorted_to_inertial(5);
 }
 
 template <size_t MeshDim>
@@ -60,9 +74,9 @@ void test_error_functions_of_time() {
   (void)time_dep->functions_of_time();
 }
 
-// [[OutputRegex, The 'block_maps' function of the 'None']]
+// [[OutputRegex, The 'block_maps_grid_to_inertial' function of the 'None']]
 [[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.Domain.Creators.TimeDependence.None.ErrorBlockMaps",
+    "Unit.Domain.Creators.TimeDependence.None.ErrorBlockMaps0",
     "[Domain][Unit]") {
   ERROR_TEST();
 
@@ -71,11 +85,51 @@ void test_error_functions_of_time() {
   const size_t mesh_dim = dist_size_t(gen);
 
   if (mesh_dim == 1) {
-    test_error_block_maps<1>();
+    test_error_block_maps_grid_to_inertial<1>();
   } else if (mesh_dim == 2) {
-    test_error_block_maps<2>();
+    test_error_block_maps_grid_to_inertial<2>();
   } else if (mesh_dim == 3) {
-    test_error_block_maps<3>();
+    test_error_block_maps_grid_to_inertial<3>();
+  }
+  ERROR("Bad MeshDim in test: " << mesh_dim);
+}
+
+// [[OutputRegex, The 'block_maps_grid_to_distorted' function of the 'None']]
+[[noreturn]] SPECTRE_TEST_CASE(
+    "Unit.Domain.Creators.TimeDependence.None.ErrorBlockMaps1",
+    "[Domain][Unit]") {
+  ERROR_TEST();
+
+  MAKE_GENERATOR(gen);
+  UniformCustomDistribution<size_t> dist_size_t{1, 3};
+  const size_t mesh_dim = dist_size_t(gen);
+
+  if (mesh_dim == 1) {
+    test_error_block_maps_grid_to_distorted<1>();
+  } else if (mesh_dim == 2) {
+    test_error_block_maps_grid_to_distorted<2>();
+  } else if (mesh_dim == 3) {
+    test_error_block_maps_grid_to_distorted<3>();
+  }
+  ERROR("Bad MeshDim in test: " << mesh_dim);
+}
+
+// [[OutputRegex, The 'block_maps_distorted_to_inertial' function of the ]]
+[[noreturn]] SPECTRE_TEST_CASE(
+    "Unit.Domain.Creators.TimeDependence.None.ErrorBlockMaps2",
+    "[Domain][Unit]") {
+  ERROR_TEST();
+
+  MAKE_GENERATOR(gen);
+  UniformCustomDistribution<size_t> dist_size_t{1, 3};
+  const size_t mesh_dim = dist_size_t(gen);
+
+  if (mesh_dim == 1) {
+    test_error_block_maps_distorted_to_inertial<1>();
+  } else if (mesh_dim == 2) {
+    test_error_block_maps_distorted_to_inertial<2>();
+  } else if (mesh_dim == 3) {
+    test_error_block_maps_distorted_to_inertial<3>();
   }
   ERROR("Bad MeshDim in test: " << mesh_dim);
 }

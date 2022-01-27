@@ -41,7 +41,7 @@ UniformTranslation<MeshDim, Index>::get_clone() const {
 template <size_t MeshDim, size_t Index>
 std::vector<std::unique_ptr<
     domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, MeshDim>>>
-UniformTranslation<MeshDim, Index>::block_maps(
+UniformTranslation<MeshDim, Index>::block_maps_grid_to_inertial(
     const size_t number_of_blocks) const {
   ASSERT(number_of_blocks > 0, "Must have at least one block to create.");
   std::vector<std::unique_ptr<
