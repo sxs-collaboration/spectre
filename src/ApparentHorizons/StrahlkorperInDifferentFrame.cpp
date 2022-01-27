@@ -121,7 +121,7 @@ void strahlkorper_in_different_frame(
     return center;
   }();
 
-  const auto center_src = src_strahlkorper.center();
+  const auto center_src = src_strahlkorper.expansion_center();
 
   // Find the coordinate radius of the destination surface at each of
   // the angular collocation points of the destination surface. To do

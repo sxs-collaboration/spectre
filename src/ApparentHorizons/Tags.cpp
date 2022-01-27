@@ -164,8 +164,8 @@ void CartesianCoordsCompute<Frame>::function(
     const aliases::OneForm<Frame>& r_hat) {
   destructive_resize_components(coords, get(radius).size());
   for (size_t d = 0; d < 3; ++d) {
-    coords->get(d) =
-        gsl::at(strahlkorper.center(), d) + r_hat.get(d) * get(radius);
+    coords->get(d) = gsl::at(strahlkorper.expansion_center(), d) +
+                     r_hat.get(d) * get(radius);
   }
 }
 

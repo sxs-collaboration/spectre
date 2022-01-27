@@ -125,7 +125,7 @@ class Strahlkorper {
   /// The center is given in the frame in which the Strahlkorper is defined.
   /// This center must be somewhere inside the Strahlkorper, but in principle
   /// it can be anywhere.  See `physical_center()` for a different measure.
-  SPECTRE_ALWAYS_INLINE const std::array<double, 3>& center() const {
+  SPECTRE_ALWAYS_INLINE const std::array<double, 3>& expansion_center() const {
     return center_;
   }
 
@@ -179,7 +179,7 @@ template <typename Frame>
 bool operator==(const Strahlkorper<Frame>& lhs,
                 const Strahlkorper<Frame>& rhs) {
   return lhs.l_max() == rhs.l_max() and lhs.m_max() == rhs.m_max() and
-         lhs.center() == rhs.center() and
+         lhs.expansion_center() == rhs.expansion_center() and
          lhs.coefficients() == rhs.coefficients();
 }
 
