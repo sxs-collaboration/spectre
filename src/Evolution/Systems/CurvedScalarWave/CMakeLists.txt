@@ -23,6 +23,7 @@ spectre_target_headers(
   Constraints.hpp
   Equations.hpp
   Initialize.hpp
+  PsiSquared.hpp
   System.hpp
   Tags.hpp
   TagsDeclarations.hpp
