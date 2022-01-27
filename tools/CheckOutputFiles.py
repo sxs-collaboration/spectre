@@ -47,6 +47,12 @@ class H5Check:
         self.h5_glob = h5_glob
         self.test_h5_label = test_h5_label
         self.test_h5_entity = test_h5_entity
+        # The `expected` entity, if specified, is what the `test` entity is
+        # compared to. For example, one may wish to compare the L2Norm of the
+        # scalar field to an expected value from an analytic solution. If an
+        # `expected` entity is not specified then the `test` entity is compared
+        # to 0.0. This is what would be typically done for error measures, for
+        # example.
         self.expected_h5_entity = expected_h5_entity
         self.absolute_tolerance = float(absolute_tolerance)
         self.relative_tolerance = (0.0 if relative_tolerance is None else
@@ -136,17 +142,27 @@ class H5Check:
         failure to produce any of the anticipated data should be regarded
         as an error in the executable.
         """
-        checks_performed = False
+        found_test_entity = False
+        found_expected_entity = False
+        files_and_entities = ""
         logging.info("Performing checks: " +
                      os.path.join(run_directory, self.h5_glob))
         for filename in glob.glob(os.path.join(run_directory, self.h5_glob)):
             logging.info("Checking file: " + filename)
             with self.unit_test.subTest(filename=filename):
                 with h5py.File(filename, 'r') as check_h5:
+                    files_and_entities = (files_and_entities + filename +
+                                          ": " + str(list(check_h5.keys())) +
+                                          "\n")
+                    found_test_entity = found_test_entity or (
+                        self.test_h5_entity in check_h5)
+                    found_expected_entity = found_expected_entity or (
+                        self.expected_h5_entity is not None
+                        and self.expected_h5_entity in check_h5)
+
                     if self.test_h5_entity in check_h5 or (
                             self.expected_h5_entity is not None
                             and self.expected_h5_entity in check_h5):
-                        checks_performed = True
                         self.unit_test.assertTrue(
                             self.test_h5_entity in check_h5)
                         self.unit_test.assertTrue(
@@ -155,8 +171,18 @@ class H5Check:
                         self.check_h5_file(check_h5, self.test_h5_entity,
                                            self.expected_h5_entity)
         self.unit_test.assertTrue(
-            checks_performed, "No checks performed for glob: " +
-            os.path.join(run_directory, self.h5_glob))
+            found_test_entity,
+            "Failed to find the subfile '" + self.test_h5_entity +
+            "' using glob:\n" + os.path.join(run_directory, self.h5_glob) +
+            "\nFiles and entities:\n" + files_and_entities)
+        if self.expected_h5_entity is not None:
+            self.unit_test.assertTrue(
+                found_expected_entity,
+                "Failed to find the expected entity/subfile (i.e. the data set "
+                "to which the test data is compared to) '" +
+                self.expected_h5_entity + "' using glob:\n" +
+                os.path.join(run_directory, self.h5_glob) +
+                "\nFiles and entities:\n" + files_and_entities)
 
 
 def read_h5_checks_config_lines(input_filename):
