@@ -16,7 +16,7 @@ add_test_library(
   ${LIBRARY}
   "Evolution/Systems/Cce/AnalyticSolutions/"
   "${LIBRARY_SOURCES}"
-  "CceAnalyticSolutions"
+  ""
   )
 
 target_link_libraries(

@@ -32,7 +32,6 @@ target_link_libraries(
   ${LIBRARY}
   PRIVATE
   Cce
-  CceAnalyticSolutions
   GeneralRelativitySolutions
   Interpolation
   )
