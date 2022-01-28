@@ -32,12 +32,16 @@ jobs:
     runs-on: ${{ matrix.host }}
     env:
       # This is the configuration ("spec") that we'll install with Spack
+      # - Build a subset of executables, and Python bindings
+      # - Disable debug symbols to fit in the memory of the GitHub Actions VM
       # - Select the 'multicore' backend for Charm++, since we're running on a
       #   single node.
       # - Select HDF5 without MPI to avoid compiling MPI.
       SPECTRE_SPEC: >-  # Line breaks are spaces, no trailing newline
         spectre@${{ matrix.version }}
+          executables=SolvePoisson1D
           +python
+          ~debug_symbols
           %${{ matrix.compiler }}
           ^charmpp backend=multicore
           ^hdf5~mpi
