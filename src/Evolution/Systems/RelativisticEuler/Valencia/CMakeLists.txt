@@ -38,12 +38,21 @@ target_link_libraries(
   ${LIBRARY}
   PUBLIC
   DataStructures
+  DiscontinuousGalerkin
+  Domain
+  DomainBoundaryConditions
   ErrorHandling
+  Evolution
   GeneralRelativity
   Hydro
   Limiters
+  LinearOperators
   Options
+  Parallel
+  Utilities
   VariableFixing
+  PRIVATE
+  RootFinding
   )
 
 add_subdirectory(BoundaryConditions)
