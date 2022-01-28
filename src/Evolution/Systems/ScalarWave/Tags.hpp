@@ -26,19 +26,10 @@ struct Psi : db::SimpleTag {
 };
 
 /*!
- * \brief The conjugate momentum of the scalar field.
- *
- * \details Its definition comes from requiring it to be the future-directed
- * time derivative of the scalar field \f$\Psi\f$ in curved spacetime, see
- * \cite Scheel2003vs , Eq. 2.16:
- *
- * \f{align}
- * \Pi :=& -n^a \partial_a \Psi \\
- *     =&  \frac{1}{\alpha}\left(\beta^k \Phi_k - {\partial_t\Psi}\right),\\
- * \f}
- *
- * where \f$n^a\f$ is the unit normal to spatial slices of the spacetime
- * foliation, \f$\alpha\f$ is the lapse and \f$\beta^i\f$ is the shift vector.
+ * \brief Auxiliary variable which is analytically the time derivative of the
+ * scalar field.
+ * \details If \f$\Psi\f$ is the scalar field then we define
+ * \f$\Pi = \partial_t \Psi\f$
  */
 struct Pi : db::SimpleTag {
   using type = Scalar<DataVector>;
