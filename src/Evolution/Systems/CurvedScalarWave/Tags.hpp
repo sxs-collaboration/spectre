@@ -20,14 +20,39 @@ class Variables;
 /// \endcond
 
 namespace CurvedScalarWave::Tags {
+
+/*!
+ * \brief The scalar field.
+ */
 struct Psi : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
 
+/*!
+ * \brief The conjugate momentum of the scalar field.
+ *
+ * \details Its definition comes from requiring it to be the future-directed
+ * time derivative of the scalar field \f$\Psi\f$ in curved spacetime, see
+ * \cite Scheel2003vs , Eq. 2.16:
+ *
+ * \f{align}
+ * \Pi :=& -n^a \partial_a \Psi \\
+ *     =&  \frac{1}{\alpha}\left(\beta^k \partial_k \Psi -
+ * {\partial_t\Psi}\right),\\ \f}
+ *
+ * where \f$n^a\f$ is the unit normal to spatial slices of the spacetime
+ * foliation, \f$\alpha\f$ is the lapse and \f$\beta^i\f$ is the shift vector.
+ */
 struct Pi : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
 
+/*!
+ * \brief Auxiliary variable which is analytically the spatial derivative of the
+ * scalar field.
+ * \details If \f$\Psi\f$ is the scalar field then we define
+ * \f$\Phi_{i} = \partial_i \Psi\f$
+ */
 template <size_t SpatialDim>
 struct Phi : db::SimpleTag {
   using type = tnsr::i<DataVector, SpatialDim>;
