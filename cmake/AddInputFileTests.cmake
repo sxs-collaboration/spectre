@@ -5,6 +5,15 @@ spectre_define_test_timeout_factor_option(INPUT_FILE "input file")
 
 find_package(Python REQUIRED)
 
+# Environment variables for test
+set(_TEST_ENV_VARS "")
+# - Disable ASAN's leak sanitizer because Charm++ has false positives
+list(APPEND _TEST_ENV_VARS "ASAN_OPTIONS=detect_leaks=0")
+# - Set PYTHONPATH to find Python modules
+if(DEFINED ENV{PYTHONPATH})
+  list(APPEND _TEST_ENV_VARS "PYTHONPATH=$ENV{PYTHONPATH}")
+endif()
+
 function(add_single_input_file_test INPUT_FILE EXECUTABLE COMMAND_LINE_ARGS
                                     CHECK_TYPE TIMEOUT)
   # Extract just the name of the input file
@@ -80,7 +89,7 @@ function(add_single_input_file_test INPUT_FILE EXECUTABLE COMMAND_LINE_ARGS
     FAIL_REGULAR_EXPRESSION "ERROR"
     TIMEOUT ${TIMEOUT}
     LABELS "${TAGS}"
-    ENVIRONMENT "ASAN_OPTIONS=detect_leaks=0")
+    ENVIRONMENT "${_TEST_ENV_VARS}")
 endfunction()
 
 # Searches the directory INPUT_FILE_DIR for .yaml files and adds a
