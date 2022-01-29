@@ -438,6 +438,9 @@ def prepare(metadata: dict, version_name: str, metadata_file: str,
         'bibtex',
         # LaTeX-encode special characters, instead of writing unicode symbols
         encoding='ASCII')
+    # Fix an issue with encoded accents (a space in the author list is
+    # recognized as delimiter between names)
+    bib_file_content = bib_file_content.replace(r'\c c', r'\c{c}')
     # Wrap long lines in BibTeX output
     bib_file_content = "\n".join([
         textwrap.fill(line, width=80) for line in bib_file_content.split('\n')
