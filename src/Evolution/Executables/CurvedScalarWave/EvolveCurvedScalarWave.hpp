@@ -34,6 +34,7 @@
 #include "Evolution/Systems/CurvedScalarWave/Constraints.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Equations.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Initialize.hpp"
+#include "Evolution/Systems/CurvedScalarWave/PsiSquared.hpp"
 #include "Evolution/Systems/CurvedScalarWave/System.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Tags.hpp"
 #include "Evolution/TypeTraits.hpp"
@@ -70,8 +71,18 @@
 #include "ParallelAlgorithms/Initialization/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/AddSimpleTags.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
+#include "ParallelAlgorithms/Interpolation/Actions/ElementInitInterpPoints.hpp"
+#include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolationTarget.hpp"
+#include "ParallelAlgorithms/Interpolation/Callbacks/ObserveTimeSeriesOnSurface.hpp"
+#include "ParallelAlgorithms/Interpolation/Events/InterpolateWithoutInterpComponent.hpp"
+#include "ParallelAlgorithms/Interpolation/InterpolationTarget.hpp"
+#include "ParallelAlgorithms/Interpolation/Tags.hpp"
+#include "ParallelAlgorithms/Interpolation/Targets/Sphere.hpp"
+#include "PointwiseFunctions/AnalyticData/CurvedWaveEquation/PureSphericalHarmonic.hpp"
 #include "PointwiseFunctions/AnalyticData/CurvedWaveEquation/ScalarWaveGr.hpp"
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrHorizon.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/WaveEquation/PlaneWave.hpp"
@@ -142,6 +153,33 @@ struct EvolutionMetavars {
                                     Frame::Inertial>,
       typename system::gradient_variables>;
 
+  static constexpr bool interpolate = volume_dim == 3;
+  struct SphericalSurface {
+    using temporal_id = ::Tags::Time;
+    using vars_to_interpolate_to_target =
+        tmpl::list<gr::Tags::SpatialMetric<Dim, ::Frame::Inertial, DataVector>,
+                   CurvedScalarWave::Tags::Psi>;
+    using compute_items_on_source = tmpl::list<>;
+    using compute_items_on_target =
+        tmpl::list<CurvedScalarWave::Tags::PsiSquaredCompute,
+                   StrahlkorperGr::Tags::AreaElementCompute<::Frame::Inertial>,
+                   StrahlkorperGr::Tags::SurfaceIntegralCompute<
+                       CurvedScalarWave::Tags::PsiSquared, ::Frame::Inertial>>;
+    using compute_target_points =
+        intrp::TargetPoints::Sphere<SphericalSurface, ::Frame::Inertial>;
+    using post_interpolation_callback =
+        intrp::callbacks::ObserveTimeSeriesOnSurface<
+            tmpl::list<StrahlkorperGr::Tags::SurfaceIntegralCompute<
+                CurvedScalarWave::Tags::PsiSquared, ::Frame::Inertial>>,
+            SphericalSurface, SphericalSurface>;
+    template <typename metavariables>
+    using interpolating_component = typename metavariables::dg_element_array;
+  };
+
+  using interpolation_target_tags = tmpl::list<SphericalSurface>;
+  using interpolator_source_vars = tmpl::list<
+      gr::Tags::SpatialMetric<volume_dim, ::Frame::Inertial, DataVector>,
+      CurvedScalarWave::Tags::Psi>;
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
@@ -158,6 +196,12 @@ struct EvolutionMetavars {
                        dg::Events::field_observations<
                            volume_dim, Tags::Time, observe_fields, tmpl::list<>,
                            tmpl::list<deriv_compute>>,
+                       tmpl::conditional_t<
+                           interpolate,
+                           intrp::Events::InterpolateWithoutInterpComponent<
+                               volume_dim, SphericalSurface, EvolutionMetavars,
+                               interpolator_source_vars>,
+                           tmpl::list<>>,
                        Events::time_events<system>>>>,
         tmpl::pair<MathFunction<1, Frame::Inertial>,
                    MathFunctions::all_math_functions<1, Frame::Inertial>>,
@@ -181,7 +225,8 @@ struct EvolutionMetavars {
 
   using observed_reduction_data_tags =
       observers::collect_reduction_data_tags<tmpl::flatten<tmpl::list<
-          tmpl::at<typename factory_creation::factory_classes, Event>>>>;
+          tmpl::at<typename factory_creation::factory_classes, Event>,
+          typename SphericalSurface::post_interpolation_callback>>>;
 
   static constexpr bool use_filtering = true;
 
@@ -207,7 +252,7 @@ struct EvolutionMetavars {
 
   enum class Phase {
     Initialization,
-    RegisterWithObserver,
+    Register,
     InitializeTimeStepperHistory,
     LoadBalancing,
     WriteCheckpoint,
@@ -270,6 +315,8 @@ struct EvolutionMetavars {
           tmpl::list<StepChoosers::step_chooser_compute_tags<EvolutionMetavars>,
                      gr_compute_tags>>>,
       ::evolution::dg::Initialization::Mortars<volume_dim, system>,
+      intrp::Actions::ElementInitInterpPoints<
+          intrp::Tags::InterpPointInfo<EvolutionMetavars>>,
       evolution::Actions::InitializeRunEventsAndDenseTriggers,
       Initialization::Actions::RemoveOptionsAndTerminatePhase>;
 
@@ -281,7 +328,7 @@ struct EvolutionMetavars {
           Parallel::PhaseActions<
               Phase, Phase::InitializeTimeStepperHistory,
               SelfStart::self_start_procedure<step_actions, system>>,
-          Parallel::PhaseActions<Phase, Phase::RegisterWithObserver,
+          Parallel::PhaseActions<Phase, Phase::Register,
                                  tmpl::list<dg_registration_list,
                                             Parallel::Actions::TerminatePhase>>,
           Parallel::PhaseActions<
@@ -298,10 +345,14 @@ struct EvolutionMetavars {
                            dg_registration_list, tmpl::list<>>;
   };
 
-  using component_list =
+  using component_list = tmpl::flatten<
       tmpl::list<observers::Observer<EvolutionMetavars>,
                  observers::ObserverWriter<EvolutionMetavars>,
-                 dg_element_array>;
+                 tmpl::conditional_t<interpolate,
+                                     intrp::InterpolationTarget<
+                                         EvolutionMetavars, SphericalSurface>,
+                                     tmpl::list<>>,
+                 dg_element_array>>;
 
   static constexpr Options::String help{
       "Evolve a scalar wave in Dim spatial dimension on a curved background "
@@ -327,8 +378,8 @@ struct EvolutionMetavars {
       case Phase::Initialization:
         return Phase::InitializeTimeStepperHistory;
       case Phase::InitializeTimeStepperHistory:
-        return Phase::RegisterWithObserver;
-      case Phase::RegisterWithObserver:
+        return Phase::Register;
+      case Phase::Register:
         return Phase::Evolve;
       case Phase::Evolve:
         return Phase::Exit;

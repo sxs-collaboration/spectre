@@ -11,6 +11,7 @@ set(LIBRARY_SOURCES
   Test_Characteristics.cpp
   Test_InitializeConstraintDampingGammas.cpp
   Test_InitializeGrVars.cpp
+  Test_PsiSquared.cpp
   Test_Tags.cpp
   Test_TimeDerivative.cpp
   )

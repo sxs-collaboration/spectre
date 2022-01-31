@@ -17,6 +17,7 @@ set(LIBRARY_SOURCES
   Test_InterpolationTargetReceiveVars.cpp
   Test_InterpolationTargetVarsFromElement.cpp
   Test_InterpolationTargetSpecifiedPoints.cpp
+  Test_InterpolationTargetSphere.cpp
   Test_InterpolationTargetWedgeSectionTorus.cpp
   Test_InterpolatorReceivePoints.cpp
   Test_InterpolatorReceiveVolumeData.cpp

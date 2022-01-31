@@ -7,6 +7,7 @@
 #include <pup.h>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "Domain/ElementLogicalCoordinates.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
