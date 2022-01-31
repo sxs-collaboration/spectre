@@ -18,6 +18,7 @@
 #include "Evolution/Systems/RelativisticEuler/Valencia/ConservativeFromPrimitive.hpp"
 #include "Evolution/Systems/RelativisticEuler/Valencia/Fluxes.hpp"
 #include "Evolution/Systems/RelativisticEuler/Valencia/Tags.hpp"
+#include "Evolution/TypeTraits.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
@@ -106,8 +107,7 @@ class DirichletAnalytic final : public BoundaryCondition<Dim> {
       const double time,
       const AnalyticSolutionOrData& analytic_solution_or_data) const {
     auto boundary_values = [&analytic_solution_or_data, &coords, &time]() {
-      if constexpr (std::is_base_of_v<MarkAsAnalyticSolution,
-                                      AnalyticSolutionOrData>) {
+      if constexpr (evolution::is_analytic_solution_v<AnalyticSolutionOrData>) {
         return analytic_solution_or_data.variables(
             coords, time,
             tmpl::list<hydro::Tags::RestMassDensity<DataVector>,

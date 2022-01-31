@@ -17,6 +17,7 @@
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/BoundaryCondition.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
+#include "Evolution/TypeTraits.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
@@ -98,8 +99,7 @@ class DirichletAnalytic final : public BoundaryCondition<Dim> {
     *gamma1 = interior_gamma1;
     *gamma2 = interior_gamma2;
     auto boundary_values = [&analytic_solution_or_data, &coords, &time]() {
-      if constexpr (std::is_base_of_v<MarkAsAnalyticSolution,
-                                      AnalyticSolutionOrData>) {
+      if constexpr (evolution::is_analytic_solution_v<AnalyticSolutionOrData>) {
         return analytic_solution_or_data.variables(
             coords, time,
             tmpl::list<
