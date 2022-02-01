@@ -115,6 +115,10 @@ struct SubdomainOperatorAppliedToDataTag : db::SimpleTag {
       Dim, db::wrap_tags_in<DgOperatorAppliedTo, Fields>>;
 };
 
+struct OverrideBoundaryConditionsTag : db::SimpleTag {
+  using type = bool;
+};
+
 template <typename System>
 std::unique_ptr<typename System::boundary_conditions_base>
 make_boundary_condition(
@@ -255,13 +259,34 @@ struct ApplySubdomainOperator {
       const ParallelComponent* const /*meta*/) {
     const auto& subdomain_data = db::get<SubdomainDataTag<Dim, Fields>>(box);
 
+    // Override boundary conditions
+    using system = typename SubdomainOperator::system;
+    using BoundaryConditionsBase = typename system::boundary_conditions_base;
+    std::unique_ptr<BoundaryConditionsBase> bc_override{};
+    std::unordered_map<std::pair<size_t, Direction<Dim>>,
+                       const BoundaryConditionsBase&,
+                       boost::hash<std::pair<size_t, Direction<Dim>>>>
+        override_boundary_conditions{};
+    if (db::get<OverrideBoundaryConditionsTag>(box)) {
+      bc_override = make_boundary_condition<system>(
+          elliptic::BoundaryConditionType::Dirichlet);
+      for (const auto& block :
+           db::get<domain::Tags::Domain<Dim>>(box).blocks()) {
+        for (const auto& direction : block.external_boundaries()) {
+          override_boundary_conditions.emplace(
+              std::make_pair(block.id(), direction), *bc_override);
+        }
+      }
+    }
+
     // Apply the subdomain operator
     const auto& subdomain_operator =
         db::get<SubdomainOperatorTag<SubdomainOperator>>(box);
     auto subdomain_result = make_with_value<
         typename SubdomainOperatorAppliedToDataTag<Dim, Fields>::type>(
         subdomain_data, 0.);
-    subdomain_operator(make_not_null(&subdomain_result), subdomain_data, box);
+    subdomain_operator(make_not_null(&subdomain_result), subdomain_data, box,
+                       override_boundary_conditions);
 
     // Store result in the DataBox for checks
     db::mutate<SubdomainOperatorAppliedToDataTag<Dim, Fields>>(
@@ -361,7 +386,8 @@ struct ElementArray {
                   tmpl::list<domain::Tags::InitialRefinementLevels<Dim>,
                              domain::Tags::InitialExtents<Dim>,
                              SubdomainOperatorTag<SubdomainOperator>,
-                             subdomain_operator_applied_to_fields_tag>>,
+                             subdomain_operator_applied_to_fields_tag,
+                             OverrideBoundaryConditionsTag>>,
               Actions::SetupDataBox,
               ::elliptic::dg::Actions::InitializeDomain<Dim>,
               ::elliptic::dg::Actions::initialize_operator<System,
@@ -469,13 +495,9 @@ void test_subdomain_operator(
       CAPTURE(element_id);
       ActionTesting::emplace_component_and_initialize<element_array>(
           &runner, element_id,
-          {initial_ref_levs, initial_extents,
-           SubdomainOperator{
-               override_boundary_conditions
-                   ? std::make_optional(make_boundary_condition<System>(
-                         elliptic::BoundaryConditionType::Dirichlet))
-                   : std::nullopt},
-           typename subdomain_operator_applied_to_fields_tag::type{}});
+          {initial_ref_levs, initial_extents, SubdomainOperator{},
+           typename subdomain_operator_applied_to_fields_tag::type{},
+           override_boundary_conditions});
       while (
           not ActionTesting::get_terminate<element_array>(runner, element_id)) {
         ActionTesting::next_action<element_array>(make_not_null(&runner),

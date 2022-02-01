@@ -7,9 +7,12 @@
 #include <memory>
 #include <pup.h>
 #include <string>
+#include <vector>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Elliptic/BoundaryConditions/BoundaryCondition.hpp"
+#include "Elliptic/BoundaryConditions/BoundaryConditionType.hpp"
+#include "Elliptic/Systems/Xcts/FluxesAndSources.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Utilities/Gsl.hpp"
@@ -30,7 +33,10 @@ namespace Xcts::BoundaryConditions {
  * is the shift excess (see `Xcts::Tags::ShiftExcess` for details on the split
  * of the shift in background and excess). Note that this choice only truly
  * represents flatness if the conformal background metric is flat.
+ *
+ * \tparam EnabledEquations The subset of XCTS equations that are being solved
  */
+template <Xcts::Equations EnabledEquations>
 class Flatness : public elliptic::BoundaryConditions::BoundaryCondition<3> {
  private:
   using Base = elliptic::BoundaryConditions::BoundaryCondition<3>;
@@ -56,6 +62,21 @@ class Flatness : public elliptic::BoundaryConditions::BoundaryCondition<3> {
   std::unique_ptr<domain::BoundaryConditions::BoundaryCondition> get_clone()
       const override {
     return std::make_unique<Flatness>(*this);
+  }
+
+  std::vector<elliptic::BoundaryConditionType> boundary_condition_types()
+      const override {
+    return {[]() {
+              if constexpr (EnabledEquations == Xcts::Equations::Hamiltonian) {
+                return 1;
+              } else if constexpr (EnabledEquations ==
+                                   Xcts::Equations::HamiltonianAndLapse) {
+                return 2;
+              } else {
+                return 5;
+              }
+            }(),
+            elliptic::BoundaryConditionType::Dirichlet};
   }
 
   using argument_tags = tmpl::list<>;
@@ -111,8 +132,12 @@ class Flatness : public elliptic::BoundaryConditions::BoundaryCondition<3> {
           n_dot_longitudinal_shift_excess_correction);
 };
 
-bool operator==(const Flatness& lhs, const Flatness& rhs);
+template <Xcts::Equations EnabledEquations>
+bool operator==(const Flatness<EnabledEquations>& lhs,
+                const Flatness<EnabledEquations>& rhs);
 
-bool operator!=(const Flatness& lhs, const Flatness& rhs);
+template <Xcts::Equations EnabledEquations>
+bool operator!=(const Flatness<EnabledEquations>& lhs,
+                const Flatness<EnabledEquations>& rhs);
 
 }  // namespace Xcts::BoundaryConditions

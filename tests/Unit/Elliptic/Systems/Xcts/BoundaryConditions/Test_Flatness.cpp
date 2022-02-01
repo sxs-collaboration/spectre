@@ -15,7 +15,9 @@
 #include "Domain/Tags.hpp"
 #include "Elliptic/BoundaryConditions/ApplyBoundaryCondition.hpp"
 #include "Elliptic/BoundaryConditions/BoundaryCondition.hpp"
+#include "Elliptic/BoundaryConditions/BoundaryConditionType.hpp"
 #include "Elliptic/Systems/Xcts/BoundaryConditions/Flatness.hpp"
+#include "Elliptic/Systems/Xcts/FluxesAndSources.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Utilities/Gsl.hpp"
@@ -24,16 +26,17 @@
 namespace Xcts::BoundaryConditions {
 
 namespace {
-template <size_t EnabledEquations, bool Linearized>
-void test_flatness(const Flatness& boundary_condition) {
+template <Xcts::Equations EnabledEquations, bool Linearized>
+void test_flatness(const Flatness<EnabledEquations>& boundary_condition) {
   const size_t num_points = 3;
   const auto box = db::create<db::AddSimpleTags<>>();
   Scalar<DataVector> conformal_factor{
       num_points, std::numeric_limits<double>::signaling_NaN()};
   Scalar<DataVector> n_dot_conformal_factor_gradient{
       num_points, std::numeric_limits<double>::signaling_NaN()};
-  if constexpr (EnabledEquations == 1) {
-    elliptic::apply_boundary_condition<Linearized, void, tmpl::list<Flatness>>(
+  if constexpr (EnabledEquations == Xcts::Equations::Hamiltonian) {
+    elliptic::apply_boundary_condition<Linearized, void,
+                                       tmpl::list<Flatness<EnabledEquations>>>(
         boundary_condition, box, Direction<3>::lower_xi(),
         make_not_null(&conformal_factor),
         make_not_null(&n_dot_conformal_factor_gradient));
@@ -42,9 +45,9 @@ void test_flatness(const Flatness& boundary_condition) {
         num_points, std::numeric_limits<double>::signaling_NaN()};
     Scalar<DataVector> n_dot_lapse_times_conformal_factor_gradient{
         num_points, std::numeric_limits<double>::signaling_NaN()};
-    if constexpr (EnabledEquations == 2) {
-      elliptic::apply_boundary_condition<Linearized, void,
-                                         tmpl::list<Flatness>>(
+    if constexpr (EnabledEquations == Xcts::Equations::HamiltonianAndLapse) {
+      elliptic::apply_boundary_condition<
+          Linearized, void, tmpl::list<Flatness<EnabledEquations>>>(
           boundary_condition, box, Direction<3>::lower_xi(),
           make_not_null(&conformal_factor),
           make_not_null(&lapse_times_conformal_factor),
@@ -55,8 +58,8 @@ void test_flatness(const Flatness& boundary_condition) {
           num_points, std::numeric_limits<double>::signaling_NaN()};
       tnsr::I<DataVector, 3> n_dot_longitudinal_shift_excess{
           num_points, std::numeric_limits<double>::signaling_NaN()};
-      elliptic::apply_boundary_condition<Linearized, void,
-                                         tmpl::list<Flatness>>(
+      elliptic::apply_boundary_condition<
+          Linearized, void, tmpl::list<Flatness<EnabledEquations>>>(
           boundary_condition, box, Direction<3>::lower_xi(),
           make_not_null(&conformal_factor),
           make_not_null(&lapse_times_conformal_factor),
@@ -73,14 +76,17 @@ void test_flatness(const Flatness& boundary_condition) {
   }
   CHECK(get(conformal_factor) == DataVector(num_points, Linearized ? 0. : 1.));
 }
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.Xcts.BoundaryConditions.Flatness", "[Unit][Elliptic]") {
+template <Xcts::Equations EnabledEquations>
+void test_suite() {
   // Test factory-creation
   const auto created = TestHelpers::test_factory_creation<
-      elliptic::BoundaryConditions::BoundaryCondition<3>, Flatness>("Flatness");
-  REQUIRE(dynamic_cast<const Flatness*>(created.get()) != nullptr);
-  const auto& boundary_condition = dynamic_cast<const Flatness&>(*created);
+      elliptic::BoundaryConditions::BoundaryCondition<3>,
+      Flatness<EnabledEquations>>("Flatness");
+  REQUIRE(dynamic_cast<const Flatness<EnabledEquations>*>(created.get()) !=
+          nullptr);
+  const auto& boundary_condition =
+      dynamic_cast<const Flatness<EnabledEquations>&>(*created);
   {
     INFO("Semantics");
     test_serialization(boundary_condition);
@@ -88,12 +94,33 @@ SPECTRE_TEST_CASE("Unit.Xcts.BoundaryConditions.Flatness", "[Unit][Elliptic]") {
     auto move_boundary_condition = boundary_condition;
     test_move_semantics(std::move(move_boundary_condition), boundary_condition);
   }
-  test_flatness<1, false>(boundary_condition);
-  test_flatness<1, true>(boundary_condition);
-  test_flatness<2, false>(boundary_condition);
-  test_flatness<2, true>(boundary_condition);
-  test_flatness<3, false>(boundary_condition);
-  test_flatness<3, true>(boundary_condition);
+  {
+    INFO("Properties");
+    if constexpr (EnabledEquations == Xcts::Equations::Hamiltonian) {
+      CHECK(boundary_condition.boundary_condition_types() ==
+            std::vector<elliptic::BoundaryConditionType>{
+                1, elliptic::BoundaryConditionType::Dirichlet});
+    } else if constexpr (EnabledEquations ==
+                         Xcts::Equations::HamiltonianAndLapse) {
+      CHECK(boundary_condition.boundary_condition_types() ==
+            std::vector<elliptic::BoundaryConditionType>{
+                2, elliptic::BoundaryConditionType::Dirichlet});
+    } else if constexpr (EnabledEquations ==
+                         Xcts::Equations::HamiltonianLapseAndShift) {
+      CHECK(boundary_condition.boundary_condition_types() ==
+            std::vector<elliptic::BoundaryConditionType>{
+                5, elliptic::BoundaryConditionType::Dirichlet});
+    }
+  }
+  test_flatness<EnabledEquations, false>(boundary_condition);
+  test_flatness<EnabledEquations, true>(boundary_condition);
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Xcts.BoundaryConditions.Flatness", "[Unit][Elliptic]") {
+  test_suite<Xcts::Equations::Hamiltonian>();
+  test_suite<Xcts::Equations::HamiltonianAndLapse>();
+  test_suite<Xcts::Equations::HamiltonianLapseAndShift>();
 }
 
 }  // namespace Xcts::BoundaryConditions

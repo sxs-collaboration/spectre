@@ -5,9 +5,11 @@
 
 #include <cstddef>
 #include <pup.h>
+#include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
+#include "Elliptic/BoundaryConditions/BoundaryConditionType.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -105,6 +107,13 @@ class BoundaryCondition : public domain::BoundaryConditions::BoundaryCondition {
   explicit BoundaryCondition(CkMigrateMessage* m) : Base(m) {}
   WRAPPED_PUPable_abstract(BoundaryCondition);  // NOLINT
   /// \endcond
+
+  // The type of boundary condition (Dirichlet or Neumann) for every tensor
+  // component. For example, if the derived class imposes Neumann-type
+  // conditions on a Scalar and Dirichlet-type conditions on a 2D vector, then
+  // it should return `{Dirichlet, Neumann, Neumann}`.
+  virtual std::vector<elliptic::BoundaryConditionType>
+  boundary_condition_types() const = 0;
 };
 
 }  // namespace BoundaryConditions

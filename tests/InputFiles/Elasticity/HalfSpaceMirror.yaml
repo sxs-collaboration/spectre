@@ -92,6 +92,7 @@ LinearSolver:
         Preconditioner:
           MinusLaplacian:
             Solver: ExplicitInverse
+            BoundaryConditions: Auto
     ObservePerCoreReductions: False
 
 EventsAndTriggers:

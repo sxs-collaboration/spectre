@@ -7,6 +7,7 @@
 #include <ostream>
 #include <pup.h>
 #include <string>
+#include <vector>
 
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Slice.hpp"
@@ -90,8 +91,21 @@ class AnalyticSolution<System, Dim, tmpl::list<FieldTags...>,
     return std::make_unique<AnalyticSolution>(*this);
   }
 
-  const auto& boundary_condition_types() const {
-    return boundary_condition_types_;
+  std::vector<elliptic::BoundaryConditionType> boundary_condition_types()
+      const override {
+    std::vector<elliptic::BoundaryConditionType> result{};
+    const auto collect = [&result](
+                             const auto tag_v,
+                             const elliptic::BoundaryConditionType bc_type) {
+      using tag = std::decay_t<decltype(tag_v)>;
+      for (size_t i = 0; i < tag::type::size(); ++i) {
+        result.push_back(bc_type);
+      }
+    };
+    EXPAND_PACK_LEFT_TO_RIGHT(collect(
+        FieldTags{}, get<elliptic::Tags::BoundaryConditionType<FieldTags>>(
+                         boundary_condition_types_)));
+    return result;
   }
 
   using argument_tags =
@@ -137,7 +151,7 @@ class AnalyticSolution<System, Dim, tmpl::list<FieldTags...>,
       using field_tag = decltype(field_tag_v);
       using flux_tag = decltype(flux_tag_v);
       switch (get<elliptic::Tags::BoundaryConditionType<field_tag>>(
-          boundary_condition_types())) {
+          boundary_condition_types_)) {
         case elliptic::BoundaryConditionType::Dirichlet:
           data_on_slice(
               field, get<::Tags::Analytic<field_tag>>(analytic_solutions),
@@ -153,7 +167,7 @@ class AnalyticSolution<System, Dim, tmpl::list<FieldTags...>,
         default:
           ERROR("Unsupported boundary condition type: "
                 << get<elliptic::Tags::BoundaryConditionType<field_tag>>(
-                       boundary_condition_types()));
+                       boundary_condition_types_));
       }
     };
     EXPAND_PACK_LEFT_TO_RIGHT(impose_boundary_condition(FieldTags{}, FluxTags{},
@@ -171,7 +185,7 @@ class AnalyticSolution<System, Dim, tmpl::list<FieldTags...>,
                                                   const auto n_dot_flux) {
       using field_tag = decltype(field_tag_v);
       switch (get<elliptic::Tags::BoundaryConditionType<field_tag>>(
-          boundary_condition_types())) {
+          boundary_condition_types_)) {
         case elliptic::BoundaryConditionType::Dirichlet:
           for (auto& field_component : *field) {
             field_component = 0.;
@@ -185,7 +199,7 @@ class AnalyticSolution<System, Dim, tmpl::list<FieldTags...>,
         default:
           ERROR("Unsupported boundary condition type: "
                 << get<elliptic::Tags::BoundaryConditionType<field_tag>>(
-                       boundary_condition_types()));
+                       boundary_condition_types_));
       }
     };
     EXPAND_PACK_LEFT_TO_RIGHT(

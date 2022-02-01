@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -25,6 +26,7 @@
 #include "Domain/Tags/Faces.hpp"
 #include "Elliptic/BoundaryConditions/ApplyBoundaryCondition.hpp"
 #include "Elliptic/BoundaryConditions/BoundaryCondition.hpp"
+#include "Elliptic/BoundaryConditions/BoundaryConditionType.hpp"
 #include "Elliptic/Systems/Xcts/BoundaryConditions/ApparentHorizon.hpp"
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
@@ -282,6 +284,15 @@ void test_creation(
       CHECK(*boundary_condition.kerr_solution_for_negative_expansion() ==
             *kerr_solution_for_negative_expansion);
     }
+    CHECK(boundary_condition.boundary_condition_types() ==
+          std::vector<elliptic::BoundaryConditionType>{
+              elliptic::BoundaryConditionType::Neumann,
+              kerr_solution_for_lapse.has_value()
+                  ? elliptic::BoundaryConditionType::Dirichlet
+                  : elliptic::BoundaryConditionType::Neumann,
+              elliptic::BoundaryConditionType::Dirichlet,
+              elliptic::BoundaryConditionType::Dirichlet,
+              elliptic::BoundaryConditionType::Dirichlet});
   }
   {
     INFO("Semantics");

@@ -30,7 +30,11 @@ target_link_libraries(
   INTERFACE
   Convergence
   DataStructures
+  Domain
+  DomainStructure
+  Elliptic
   EllipticDgSubdomainOperator
+  ErrorHandling
   Logging
   Options
   PoissonBoundaryConditions
