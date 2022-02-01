@@ -18,6 +18,21 @@ if(NOT EXISTS "${SPECTRE_PYTHON_PREFIX}/__init__.py")
     "__all__ = []")
 endif()
 
+# Create the root __main__.py entry point
+configure_file(
+  "${CMAKE_SOURCE_DIR}/support/Python/__main__.py"
+  "${SPECTRE_PYTHON_PREFIX}/__main__.py"
+)
+# Also link the main entry point to bin/
+set(PYTHON_SCRIPT_LOCATION "spectre")
+configure_file(
+  "${CMAKE_SOURCE_DIR}/cmake/SpectrePythonExecutable.sh"
+  "${CMAKE_BINARY_DIR}/tmp/spectre")
+file(COPY "${CMAKE_BINARY_DIR}/tmp/spectre"
+  DESTINATION "${CMAKE_BINARY_DIR}/bin"
+  FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
+    GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+
 # Write configuration files for installing the Python modules
 configure_file(
   "${CMAKE_SOURCE_DIR}/src/PythonBindings/pyproject.toml"
