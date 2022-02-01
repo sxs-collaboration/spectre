@@ -32,11 +32,17 @@ spectre_target_headers(
 
 target_link_libraries(
   ${LIBRARY}
-  PUBLIC DataStructures
-  INTERFACE GeneralRelativity
-  INTERFACE Hydro
-  INTERFACE RootFinding
-  INTERFACE Utilities
+  PUBLIC
+  DataStructures
+  GeneralRelativity
+  Hydro
+  LinearOperators
+  Utilities
+  INTERFACE
+  Parallel
+  Initialization
+  PRIVATE
+  RootFinding
   )
 
 add_subdirectory(BoundaryConditions)

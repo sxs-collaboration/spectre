@@ -54,6 +54,7 @@ target_link_libraries(
   DgSubcell
   DiscontinuousGalerkin
   ErrorHandling
+  Evolution
   FiniteDifference
   GeneralRelativity
   Hydro

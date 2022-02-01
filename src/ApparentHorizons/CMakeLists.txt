@@ -46,4 +46,7 @@ target_link_libraries(
   LinearAlgebra
   Options
   SphericalHarmonics
+  PRIVATE
+  CoordinateMaps
+  Domain
   )

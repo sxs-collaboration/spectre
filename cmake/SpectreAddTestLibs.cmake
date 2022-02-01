@@ -26,6 +26,13 @@
 set_property(GLOBAL PROPERTY SPECTRE_TESTS_LIB_FUNCTIONS_PROPERTY "")
 set_property(GLOBAL PROPERTY SPECTRE_TESTS_LIBS_PROPERTY "")
 
+# Shared test libs are currently unsupported on macOS, since the
+# `SPECTRE_TEST_REGISTER_FUNCTION` mechanism (documented below) doesn't work.
+set(SPECTRE_TEST_LIBS_TYPE "")
+if(APPLE)
+  set(SPECTRE_TEST_LIBS_TYPE STATIC)
+endif()
+
 # Adds the library LIBRARY as testing library. The FOLDER should be the
 # subdirectories of ${CMAKE_SOURCE_DIR}/tests/Unit, e.g. DataStructures
 # for the DataStructures library, or Evolution/Systems/ScalarWave for
@@ -88,6 +95,7 @@ function(add_test_library LIBRARY FOLDER LIBRARY_SOURCES LINK_LIBS)
   # to the `libs` target, which should not include tests.
   add_library(
     ${LIBRARY}
+    ${SPECTRE_TEST_LIBS_TYPE}
     ${LIBRARY_SOURCES}
     )
 

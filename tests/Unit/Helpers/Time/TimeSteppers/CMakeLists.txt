@@ -7,7 +7,7 @@ set(LIBRARY_SOURCES
   TimeStepperTestUtils.cpp
   )
 
-add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
+add_spectre_library(${LIBRARY} ${SPECTRE_TEST_LIBS_TYPE} ${LIBRARY_SOURCES})
 
 target_link_libraries(
   ${LIBRARY}
@@ -16,4 +16,5 @@ target_link_libraries(
   Utilities
   PRIVATE
   ErrorHandling
+  Framework
   )

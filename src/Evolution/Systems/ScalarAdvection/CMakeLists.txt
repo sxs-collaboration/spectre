@@ -30,11 +30,21 @@ spectre_target_headers(
 target_link_libraries(
   ${LIBRARY}
   PUBLIC
+  Boost::boost
+  CoordinateMaps
   DataStructures
+  DiscontinuousGalerkin
+  Domain
+  DomainBoundaryConditions
+  DomainStructure
   DgSubcell
-  FiniteDifference
-  INTERFACE
   ErrorHandling
+  Evolution
+  FiniteDifference
+  Options
+  Parallel
+  Spectral
+  Utilities
   )
 
 add_subdirectory(BoundaryConditions)
