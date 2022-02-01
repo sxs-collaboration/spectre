@@ -23,10 +23,13 @@ if(NOT EXISTS "${SPECTRE_PYTHON_PREFIX}/__init__.py")
     "__all__ = []")
 endif()
 
-# Write a file for installing the Python modules
+# Write configuration files for installing the Python modules
 configure_file(
-  "${CMAKE_SOURCE_DIR}/src/PythonBindings/setup.py"
-  "${SPECTRE_PYTHON_PREFIX_PARENT}/setup.py")
+  "${CMAKE_SOURCE_DIR}/src/PythonBindings/pyproject.toml"
+  "${SPECTRE_PYTHON_PREFIX_PARENT}/pyproject.toml")
+configure_file(
+  "${CMAKE_SOURCE_DIR}/src/PythonBindings/setup.cfg"
+  "${SPECTRE_PYTHON_PREFIX_PARENT}/setup.cfg")
 
 set(_JEMALLOC_MESSAGE "")
 if(BUILD_PYTHON_BINDINGS AND "${JEMALLOC_LIB_TYPE}" STREQUAL SHARED)
