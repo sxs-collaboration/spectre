@@ -198,10 +198,6 @@ cmake -D FLAG1=OPT1 ... -D FLAGN=OPTN <SPECTRE_ROOT>
   - Location where the `install` target copies executables, libraries, etc. Make
     sure to set this variable before you `install`, or a default location such
     as `/usr/local` is used.
-- SPECTRE_PYTHON_INSTALL_LIBDIR
-  - Location where the `install` target copies the SpECTRE Python package.
-    Defaults to `CMAKE_INSTALL_PREFIX/lib/pythonX.Y/site-packages/`, which is a
-    location where Python packages are often expected.
 - DEBUG_SYMBOLS
   - Whether or not to use debug symbols (default is `ON`)
   - Disabling debug symbols will reduce compile time and total size of the build
