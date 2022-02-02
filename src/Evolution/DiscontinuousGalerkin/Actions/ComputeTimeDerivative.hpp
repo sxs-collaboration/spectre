@@ -302,25 +302,6 @@ struct ComputeTimeDerivative {
       const ParallelComponent* /*meta*/);  // NOLINT const
 
  private:
-  // The below functions will be removed once we've finished writing the new
-  // method of handling boundaries.
-  template <typename... NormalDotFluxTags, typename... Args>
-  static void apply_flux(
-      gsl::not_null<Variables<tmpl::list<NormalDotFluxTags...>>*> boundary_flux,
-      const Args&... boundary_variables) {
-    Metavariables::system::normal_dot_fluxes::apply(
-        make_not_null(&get<NormalDotFluxTags>(*boundary_flux))...,
-        boundary_variables...);
-  }
-
-  template <typename DbTagsList>
-  static void boundary_terms_nonconservative_products(
-      gsl::not_null<db::DataBox<DbTagsList>*> box);
-
-  template <size_t VolumeDim, typename BoundaryScheme, typename DbTagsList>
-  static void fill_mortar_data_for_internal_boundaries(
-      gsl::not_null<db::DataBox<DbTagsList>*> box);
-
   template <typename ParallelComponent, typename DbTagsList>
   static void send_data_for_fluxes(
       gsl::not_null<Parallel::GlobalCache<Metavariables>*> cache,
