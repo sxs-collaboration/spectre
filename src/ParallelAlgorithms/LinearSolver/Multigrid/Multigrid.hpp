@@ -8,6 +8,7 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "IO/Observer/Actions/RegisterWithObservers.hpp"
 #include "IO/Observer/Helpers.hpp"
+#include "Parallel/Actions/Goto.hpp"
 #include "ParallelAlgorithms/LinearSolver/AsynchronousSolvers/ElementActions.hpp"
 #include "ParallelAlgorithms/LinearSolver/Multigrid/ElementActions.hpp"
 #include "ParallelAlgorithms/LinearSolver/Multigrid/ObserveVolumeData.hpp"
@@ -93,15 +94,19 @@ struct VcycleUpLabel {};
  * Every iteration of the multigrid algorithm performs a V-cycle over the grid
  * hierarchy. One V-cycle consists of first "going down" the grid hierarchy,
  * from the finest to successively coarser grids, smoothing on every level
- * ("pre-smoothing"), and then "going up" the grid hierarchy again, smoothing on
+ * ("pre-smoothing", can be controlled by the option
+ * `LinearSolver::multigrid::Tags::EnablePreSmoothing`),
+ * and then "going up" the grid hierarchy again, smoothing on
  * every level again ("post-smoothing"). When going down, the algorithm projects
  * the remaining residual of the smoother to the next-coarser grid, setting it
  * as the source for the smoother on the coarser grid. When going up again, the
  * algorithm projects the solution of the smoother to the next-finer grid,
  * adding it to the solution on the finer grid as a correction. The bottom-most
- * coarsest grid (the "tip" of the V-cycle) skips the post-smoothing, so the
- * result of the pre-smoother is immediately projected up to the finer grid. On
- * the top-most finest grid (the "original" grid that represents the overall
+ * coarsest grid (the "tip" of the V-cycle) may skip the post-smoothing, so the
+ * result of the pre-smoother is immediately projected up to the finer grid
+ * (controlled by the
+ * `LinearSolver::multigrid::Tags::EnablePostSmoothingAtBottom` option). On the
+ * top-most finest grid (the "original" grid that represents the overall
  * solution) the algorithm applies the smoothing and the corrections from the
  * coarser grids directly to the solution fields.
  */
@@ -155,7 +160,7 @@ struct Multigrid {
                                         ResidualIsMassiveTag, SourceTag>,
       detail::ReceiveCorrectionFromCoarserGrid<Dim, FieldsTag, OptionsGroup,
                                                SourceTag>,
-      ApplyOperatorActions,
+      ApplyOperatorActions, ::Actions::Label<detail::PostSmoothingBeginLabel>,
       PostSmootherActions,
       detail::SendCorrectionToFinerGrid<FieldsTag, OptionsGroup, SourceTag>,
       detail::ObserveVolumeData<FieldsTag, OptionsGroup, SourceTag>,

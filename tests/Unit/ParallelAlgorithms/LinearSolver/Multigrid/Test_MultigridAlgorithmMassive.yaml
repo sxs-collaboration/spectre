@@ -49,6 +49,8 @@ MultigridSolver:
   Iterations: 4
   Verbosity: Verbose
   MaxLevels: Auto
+  PreSmoothing: True
+  PostSmoothingAtBottom: False
   OutputVolumeData: True
 
 RichardsonSmoother:

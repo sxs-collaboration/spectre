@@ -43,6 +43,34 @@ struct OutputVolumeData {
   static bool suggested_value() { return false; }
 };
 
+template <typename OptionsGroup>
+struct EnablePreSmoothing {
+  static std::string name() { return "PreSmoothing"; }
+  using type = bool;
+  static constexpr Options::String help =
+      "Set to 'False' to disable pre-smoothing altogether (\"cascading "
+      "multigrid\"). Note that pre-smoothing can be necessary to remove "
+      "high-frequency modes in the data that get restricted to coarser grids, "
+      "since such high-frequency modes can introduce aliasing. However, when "
+      "running only a single V-cycle as preconditioner, the initial field is "
+      "typically zero, so pre-smoothing may not be worthwile.";
+  using group = OptionsGroup;
+};
+
+template <typename OptionsGroup>
+struct EnablePostSmoothingAtBottom {
+  static std::string name() { return "PostSmoothingAtBottom"; }
+  using type = bool;
+  static constexpr Options::String help =
+      "Set to 'False' to skip post-smoothing on the coarsest grid. This means "
+      "only pre-smoothing runs on the coarsest grid, so the coarsest grid "
+      "experiences less smoothing altogether. This is typically only "
+      "desirable if the coarsest grid covers the domain with a single "
+      "element, or very few, so pre-smoothing is already exceptionally "
+      "effective and hence post-smoothing is unnecessary on the coarsest grid.";
+  using group = OptionsGroup;
+};
+
 }  // namespace OptionTags
 
 /// DataBox tags for the `LinearSolver::multigrid::Multigrid` linear solver
@@ -97,6 +125,35 @@ struct OutputVolumeData : db::SimpleTag {
   static type create_from_options(const type value) { return value; };
   static std::string name() {
     return "OutputVolumeData(" + Options::name<OptionsGroup>() + ")";
+  }
+};
+
+/// Enable pre-smoothing. A value of `false` means that pre-smoothing is skipped
+/// altogether ("cascading multigrid").
+template <typename OptionsGroup>
+struct EnablePreSmoothing : db::SimpleTag {
+  using type = bool;
+  static constexpr bool pass_metavariables = false;
+  using option_tags =
+      tmpl::list<OptionTags::EnablePreSmoothing<OptionsGroup>>;
+  static type create_from_options(const type value) { return value; };
+  static std::string name() {
+    return "EnablePreSmoothing(" + Options::name<OptionsGroup>() + ")";
+  }
+};
+
+/// Enable post-smoothing on the coarsest grid. A value of `false` means that
+/// post-smoothing is skipped on the coarsest grid, so it runs only
+/// pre-smoothing.
+template <typename OptionsGroup>
+struct EnablePostSmoothingAtBottom : db::SimpleTag {
+  using type = bool;
+  static constexpr bool pass_metavariables = false;
+  using option_tags =
+      tmpl::list<OptionTags::EnablePostSmoothingAtBottom<OptionsGroup>>;
+  static type create_from_options(const type value) { return value; };
+  static std::string name() {
+    return "EnablePostSmoothingAtBottom(" + Options::name<OptionsGroup>() + ")";
   }
 };
 
