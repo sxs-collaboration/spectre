@@ -163,8 +163,7 @@ struct PreparePreSmoothing {
              const auto& source) {
             *fields = make_with_value<typename fields_tag::type>(source, 0.);
             // We can set the linear operator applied to the initial fields to
-            // zero as well, since it's linear. This may save the smoother an
-            // operator application on coarser grids if it's optimized for this.
+            // zero as well, since it's linear
             *operator_applied_to_fields =
                 make_with_value<typename operator_applied_to_fields_tag::type>(
                     source, 0.);

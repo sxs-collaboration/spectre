@@ -78,8 +78,10 @@ struct VcycleUpLabel {};
  * `solve` leave the `smooth_fields_tag` in a state that represents an
  * approximate solution to the `smooth_source_tag`, and that
  * `db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo,
- * smooth_fields_tag>` is left up-to-date as well. Here's an example of setting
- * up a smoother for the multigrid solver:
+ * smooth_fields_tag>` is left up-to-date as well.
+ * The smoother can assume that, on entry, these two tags represent the initial
+ * fields and the linear operator applied to the initial fields, respectively.
+ * Here's an example of setting up a smoother for the multigrid solver:
  *
  * \snippet Test_MultigridAlgorithm.cpp setup_smoother
  *
@@ -132,20 +134,28 @@ struct Multigrid {
                  observers::Actions::RegisterWithObservers<
                      detail::RegisterWithVolumeObserver<OptionsGroup>>>;
 
-  template <typename PreSmootherActions, typename PostSmootherActions,
-            typename Label = OptionsGroup>
+  template <typename ApplyOperatorActions, typename PreSmootherActions,
+            typename PostSmootherActions, typename Label = OptionsGroup>
   using solve = tmpl::list<
       async_solvers::PrepareSolve<FieldsTag, OptionsGroup, SourceTag, Label,
                                   Tags::IsFinestGrid, false>,
       detail::ReceiveResidualFromFinerGrid<Dim, FieldsTag, OptionsGroup,
                                            SourceTag>,
       detail::PreparePreSmoothing<FieldsTag, OptionsGroup, SourceTag>,
+      // No need to apply the linear operator here:
+      // - On the finest grid, the operator applied to the fields should have
+      //   already been computed at this point, either applied to the initial
+      //   fields before the multigrid solver is invoked, or by the smoother at
+      //   the end of the previous V-cycle.
+      // - On coarser grids, the initial fields are zero, so the operator
+      //   applied to them is also zero.
       PreSmootherActions,
       detail::SkipPostsmoothingAtBottom<FieldsTag, OptionsGroup, SourceTag>,
       detail::SendResidualToCoarserGrid<FieldsTag, OptionsGroup,
                                         ResidualIsMassiveTag, SourceTag>,
       detail::ReceiveCorrectionFromCoarserGrid<Dim, FieldsTag, OptionsGroup,
                                                SourceTag>,
+      ApplyOperatorActions,
       PostSmootherActions,
       detail::SendCorrectionToFinerGrid<FieldsTag, OptionsGroup, SourceTag>,
       detail::ObserveVolumeData<FieldsTag, OptionsGroup, SourceTag>,
