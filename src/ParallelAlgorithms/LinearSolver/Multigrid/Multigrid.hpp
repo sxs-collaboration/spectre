@@ -155,7 +155,7 @@ struct Multigrid {
       // - On coarser grids, the initial fields are zero, so the operator
       //   applied to them is also zero.
       PreSmootherActions,
-      detail::SkipPostsmoothingAtBottom<FieldsTag, OptionsGroup, SourceTag>,
+      detail::SkipPostSmoothingAtBottom<FieldsTag, OptionsGroup, SourceTag>,
       detail::SendResidualToCoarserGrid<FieldsTag, OptionsGroup,
                                         ResidualIsMassiveTag, SourceTag>,
       detail::ReceiveCorrectionFromCoarserGrid<Dim, FieldsTag, OptionsGroup,

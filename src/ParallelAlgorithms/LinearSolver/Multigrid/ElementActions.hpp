@@ -40,7 +40,7 @@ namespace LinearSolver::multigrid::detail {
 template <typename FieldsTag, typename OptionsGroup, typename SourceTag>
 struct SendCorrectionToFinerGrid;
 template <typename FieldsTag, typename OptionsGroup, typename SourceTag>
-struct SkipPostsmoothingAtBottom;
+struct SkipPostSmoothingAtBottom;
 /// \endcond
 
 struct PostSmoothingBeginLabel {};
@@ -201,7 +201,7 @@ struct PreparePreSmoothing {
     // Skip pre-smoothing, if requested
     const size_t first_action_after_pre_smoothing_index = tmpl::index_of<
         ActionList,
-        SkipPostsmoothingAtBottom<FieldsTag, OptionsGroup, SourceTag>>::value;
+        SkipPostSmoothingAtBottom<FieldsTag, OptionsGroup, SourceTag>>::value;
     const size_t this_action_index =
         tmpl::index_of<ActionList, PreparePreSmoothing>::value;
     return {
@@ -217,7 +217,7 @@ struct PreparePreSmoothing {
 // Once the pre-smoothing is done, we skip the second smoothing step on the
 // coarsest grid, i.e. at the "tip" of the V-cycle.
 template <typename FieldsTag, typename OptionsGroup, typename SourceTag>
-struct SkipPostsmoothingAtBottom {
+struct SkipPostSmoothingAtBottom {
  private:
   using fields_tag = FieldsTag;
   using residual_tag =
@@ -265,7 +265,7 @@ struct SkipPostsmoothingAtBottom {
         ActionList,
         ::Actions::Label<PostSmoothingBeginLabel>>::value + 1;
     const size_t this_action_index =
-        tmpl::index_of<ActionList, SkipPostsmoothingAtBottom>::value;
+        tmpl::index_of<ActionList, SkipPostSmoothingAtBottom>::value;
     return {std::move(box), Parallel::AlgorithmExecution::Continue,
             is_coarsest_grid
                 ? (db::get<LinearSolver::multigrid::Tags::
@@ -371,7 +371,7 @@ struct ReceiveCorrectionFromCoarserGrid {
     const auto& parent_id = db::get<Tags::ParentId<Dim>>(box);
     // We should always have a `parent_id` at this point because we skip this
     // part of the algorithm on the coarsest grid with the
-    // `SkipPostsmoothingAtBottom` action
+    // `SkipPostSmoothingAtBottom` action
     ASSERT(parent_id.has_value(),
            "Trying to receive data from parent but no parent is set on element "
                << element_id << ".");
