@@ -21,6 +21,7 @@
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Printf.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/SendPointsToInterpolator.hpp"
+#include "ParallelAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
@@ -233,11 +234,12 @@ struct FindApparentHorizon {
       if (verbosity > ::Verbosity::Quiet or
           (verbosity > ::Verbosity::Silent and has_converged)) {
         Parallel::printf(
-            "%s: its=%d: %.1e<R<%.0e, |R|=%.1g, "
+            "%s: t=%.6g: its=%d: %.1e<R<%.0e, |R|=%.1g, "
             "|R_grid|=%.1g, %.4g<r<%.4g\n",
-            pretty_type::short_name<InterpolationTargetTag>(), info.iteration,
-            info.min_residual, info.max_residual, info.residual_ylm,
-            info.residual_mesh, info.r_min, info.r_max);
+            pretty_type::short_name<InterpolationTargetTag>(),
+            InterpolationTarget_detail::get_temporal_id_value(temporal_id),
+            info.iteration, info.min_residual, info.max_residual,
+            info.residual_ylm, info.residual_mesh, info.r_min, info.r_max);
       }
 
       if (status == FastFlow::Status::SuccessfulIteration) {
