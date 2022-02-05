@@ -7,6 +7,7 @@
 #include <array>
 #include <cstddef>
 #include <set>
+#include <unordered_set>
 #include <vector>
 
 #include "Domain/ElementDistribution.hpp"
@@ -58,10 +59,11 @@ size_t number_of_elements_in_block(
 template <size_t Dim>
 std::vector<std::vector<size_t>> make_proc_map_for_domain(
     const size_t number_of_blocks, const size_t number_of_procs,
-    const std::vector<std::array<size_t, Dim>>& refinement_levels_by_block) {
+    const std::vector<std::array<size_t, Dim>>& refinement_levels_by_block,
+    const std::unordered_set<size_t>& procs_to_ignore) {
   std::vector<std::vector<size_t>> proc_map(number_of_blocks);
   const domain::BlockZCurveProcDistribution distribution{
-      number_of_procs, refinement_levels_by_block};
+      number_of_procs, refinement_levels_by_block, procs_to_ignore};
   for (size_t block = 0; block < number_of_blocks; ++block) {
     const size_t number_of_elements =
         number_of_elements_in_block(gsl::at(refinement_levels_by_block, block));
@@ -74,6 +76,8 @@ std::vector<std::vector<size_t>> make_proc_map_for_domain(
               gsl::at(refinement_levels_by_block, block), element_index)};
       proc_map.at(block).at(element_index) =
           distribution.get_proc_for_element(element_id);
+      // Check that we ignored the correct proc
+      CHECK(not procs_to_ignore.count(proc_map.at(block).at(element_index)));
     }
   }
   return proc_map;
@@ -86,10 +90,11 @@ void check_element_distribution_uniformity(
     const std::vector<std::vector<size_t>>& proc_map,
     const size_t number_of_procs,
     const std::vector<std::array<size_t, Dim>>& refinement_levels_by_block) {
-  std::vector<size_t> elements_per_proc(number_of_procs);
+  // size_t, size_t = proc, number of elements
+  std::unordered_map<size_t, size_t> elements_per_proc{};
   for (const auto& block_proc_map : proc_map) {
     for (const size_t proc : block_proc_map) {
-      ++elements_per_proc.at(proc);
+      ++elements_per_proc[proc];
     }
   }
   const size_t number_of_elements = std::accumulate(
@@ -97,7 +102,8 @@ void check_element_distribution_uniformity(
       0_st, [](const size_t lhs, const std::array<size_t, Dim>& rhs) {
         return lhs + number_of_elements_in_block(rhs);
       });
-  for (const size_t element_count : elements_per_proc) {
+  for (const auto& [proc, element_count] : elements_per_proc) {
+    (void)proc;
     CHECK((element_count == number_of_elements / number_of_procs or
            element_count == number_of_elements / number_of_procs + 1));
   }
@@ -111,7 +117,8 @@ void check_element_distribution_cohesion(
     const size_t number_of_procs,
     const std::vector<std::array<size_t, Dim>>& refinement_levels_by_block,
     const bool nonuniform_block = false) {
-  std::vector<std::set<size_t>> block_set_per_proc(number_of_procs);
+  // size_t, std::set<size_t> = proc, block set
+  std::unordered_map<size_t, std::set<size_t>> block_set_per_proc{};
   for (size_t block = 0; block < proc_map.size(); ++block) {
     std::array<size_t, Dim> strides{};
     strides[0] = 1;
@@ -120,15 +127,16 @@ void check_element_distribution_cohesion(
                       two_to_the(gsl::at(
                           gsl::at(refinement_levels_by_block, block), i - 1));
     }
-    std::vector<size_t> number_of_clusters_per_proc(number_of_procs, 0_st);
+    // size_t, size_t = proc, number of clusters of elements
+    std::unordered_map<size_t, size_t> number_of_clusters_per_proc{};
     std::vector<bool> seen(gsl::at(proc_map, block).size(), false);
     for (size_t start_element = 0;
          start_element < gsl::at(proc_map, block).size(); ++start_element) {
       if (not seen.at(start_element)) {
         const size_t current_proc =
             gsl::at(gsl::at(proc_map, block), start_element);
-        block_set_per_proc.at(current_proc).insert(block);
-        ++number_of_clusters_per_proc.at(current_proc);
+        block_set_per_proc[current_proc].insert(block);
+        ++number_of_clusters_per_proc[current_proc];
         seen.at(start_element) = true;
         // perform a bredth-first search to get all elements in the cluster that
         // share a proc and mark them seen
@@ -172,7 +180,8 @@ void check_element_distribution_cohesion(
     }
     // verify that the distribution is well-clustered -- the Z-curve should
     // ensure no more than 2 clusters for each core
-    for (const size_t number_of_clusters : number_of_clusters_per_proc) {
+    for (const auto& [proc, number_of_clusters] : number_of_clusters_per_proc) {
+      (void)proc;
       CHECK(number_of_clusters < 3);
     }
   }
@@ -183,7 +192,8 @@ void check_element_distribution_cohesion(
   // upper bound calculation simple -- the algorithm still works to keep the
   // number of blocks in which a given processor participates low for more
   // intricate cases, but the upper bound becomes more complicated to write out.
-  for (const auto& blocks : block_set_per_proc) {
+  for (const auto& [proc, blocks] : block_set_per_proc) {
+    (void)proc;
     CHECK(blocks.size() <=
           static_cast<size_t>(
               std::ceil(static_cast<double>(refinement_levels_by_block.size()) /
@@ -199,9 +209,11 @@ void test_single_block_domain() {
   for (size_t i = 0; i < Dim; ++i) {
     refinement_levels_by_block.at(0).at(i) = 3;
   }
+  // Ignore the Dim'th proc (this proc is guaranteed to always exist)
+  std::unordered_set<size_t> procs_to_ignore = {Dim};
 
-  std::vector<std::vector<size_t>> proc_map =
-      make_proc_map_for_domain(1, two_to_the(Dim), refinement_levels_by_block);
+  std::vector<std::vector<size_t>> proc_map = make_proc_map_for_domain(
+      1, two_to_the(Dim), refinement_levels_by_block, procs_to_ignore);
   // check that the domain is segmented into 4x4x4 cubes
   std::set<size_t> procs_seen;
   for (size_t cube_index = 0; cube_index < two_to_the(Dim); ++cube_index) {
@@ -240,8 +252,11 @@ void test_single_block_domain() {
     }
   }
 
+  // Ignore another proc common to all Dims for this upcoming case
+  procs_to_ignore.insert(4);
   // test a more scattered distribution because of the prime number of procs
-  proc_map = make_proc_map_for_domain(1, 5, refinement_levels_by_block);
+  proc_map = make_proc_map_for_domain(1, 5, refinement_levels_by_block,
+                                      procs_to_ignore);
   check_element_distribution_uniformity(proc_map, 5,
                                         refinement_levels_by_block);
   check_element_distribution_cohesion(proc_map, 5, refinement_levels_by_block);
@@ -262,8 +277,11 @@ void general_test(const size_t number_of_blocks, const size_t number_of_procs,
       refinement_levels_by_block.at(0).at(j) = j % 2 == 0 ? 1 : 2;
     }
   }
-  const std::vector<std::vector<size_t>> proc_map = make_proc_map_for_domain(
-      number_of_blocks, number_of_procs, refinement_levels_by_block);
+  // Ignore only one proc
+  const std::unordered_set<size_t> procs_to_ignore = {1};
+  const std::vector<std::vector<size_t>> proc_map =
+      make_proc_map_for_domain(number_of_blocks, number_of_procs,
+                               refinement_levels_by_block, procs_to_ignore);
   check_element_distribution_uniformity(proc_map, number_of_procs,
                                         refinement_levels_by_block);
   check_element_distribution_cohesion(
