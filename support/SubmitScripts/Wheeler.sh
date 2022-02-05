@@ -31,6 +31,9 @@ export RUN_DIR=/panfs/ds08/sxs/run/dir
 export SPECTRE_EXECUTABLE=EvolveScalarWave3D
 export SPECTRE_INPUT_FILE=./Input3DPeriodic.yaml
 
+echo "Running on the following nodes:"
+echo ${SLURM_NODELIST}
+
 ############################################################################
 # Set desired permissions for files created with this script
 umask 0022
