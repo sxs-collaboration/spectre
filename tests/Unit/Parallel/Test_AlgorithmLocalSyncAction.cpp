@@ -7,6 +7,7 @@
 
 #include <cstddef>
 #include <tuple>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -218,7 +219,8 @@ struct ArrayComponent {
   static void allocate_array(
       Parallel::CProxy_GlobalCache<Metavariables>& global_cache,
       const tuples::tagged_tuple_from_typelist<initialization_tags>&
-      /*initialization_items*/) {
+      /*initialization_items*/,
+      const std::unordered_set<size_t>& /*procs_to_ignore*/ = {}) {
     auto& local_cache = *Parallel::local_branch(global_cache);
     auto& array_proxy =
         Parallel::get_parallel_component<ArrayComponent>(local_cache);

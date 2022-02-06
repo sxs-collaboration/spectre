@@ -8,6 +8,7 @@
 #include <cstddef>
 #include <string>
 #include <tuple>
+#include <unordered_set>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
@@ -130,13 +131,18 @@ struct ArrayComponent {
   static void allocate_array(
       Parallel::CProxy_GlobalCache<Metavariables>& global_cache,
       const tuples::tagged_tuple_from_typelist<initialization_tags>&
-      /*initialization_items*/) {
+      /*initialization_items*/,
+      const std::unordered_set<size_t>& procs_to_ignore = {}) {
     auto& local_cache = *Parallel::local_branch(global_cache);
     auto& array_proxy =
         Parallel::get_parallel_component<ArrayComponent>(local_cache);
 
-    for (int i = 0, which_proc = 0, number_of_procs = sys::number_of_procs();
-         i < 2; ++i) {
+    const size_t number_of_procs = static_cast<size_t>(sys::number_of_procs());
+    size_t which_proc = 0;
+    for (int i = 0; i < 2; ++i) {
+      while (procs_to_ignore.find(which_proc) != procs_to_ignore.end()) {
+        which_proc = which_proc + 1 == number_of_procs ? 0 : which_proc + 1;
+      }
       array_proxy[i].insert(global_cache, {}, which_proc);
       which_proc = which_proc + 1 == number_of_procs ? 0 : which_proc + 1;
     }

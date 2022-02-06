@@ -11,6 +11,7 @@
 #include <ostream>
 #include <string>
 #include <tuple>
+#include <unordered_set>
 #include <vector>
 
 #include "DataStructures/DataBox/Tag.hpp"
@@ -365,14 +366,18 @@ struct ElementArray {
   static void allocate_array(
       Parallel::CProxy_GlobalCache<Metavariables>& global_cache,
       const tuples::tagged_tuple_from_typelist<initialization_tags>&
-          initialization_items) {
+          initialization_items,
+      const std::unordered_set<size_t>& procs_to_ignore = {}) {
     auto& array_proxy = Parallel::get_parallel_component<ElementArray>(
         *Parallel::local_branch(global_cache));
 
-    for (size_t i = 0, which_proc = 0,
-                number_of_procs = static_cast<size_t>(sys::number_of_procs());
-         i < number_of_elements<TheGrid>; i++) {
+    const size_t number_of_procs = static_cast<size_t>(sys::number_of_procs());
+    size_t which_proc = 0;
+    for (size_t i = 0; i < number_of_elements<TheGrid>; i++) {
       ElementId<Dim> element_index{i};
+      while (procs_to_ignore.find(which_proc) != procs_to_ignore.end()) {
+        which_proc = which_proc + 1 == number_of_procs ? 0 : which_proc + 1;
+      }
       array_proxy[element_index].insert(global_cache, initialization_items,
                                         which_proc);
       which_proc = which_proc + 1 == number_of_procs ? 0 : which_proc + 1;
