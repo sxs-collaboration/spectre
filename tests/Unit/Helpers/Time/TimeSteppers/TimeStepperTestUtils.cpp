@@ -439,7 +439,7 @@ void check_convergence_order(const TimeStepper& stepper) {
   };
   const int32_t large_steps = 10;
   // The high-order solvers have round-off error around here
-  const int32_t small_steps = 40;
+  const int32_t small_steps = 30;
   CHECK(convergence_rate(large_steps, small_steps, do_integral) ==
         approx(stepper.order()).margin(0.4));
 }
@@ -523,7 +523,7 @@ void check_dense_output(const TimeStepper& stepper,
   {
     const int32_t large_steps = 10;
     // The high-order solvers have round-off error around here
-    const int32_t small_steps = 40;
+    const int32_t small_steps = 30;
 
     const auto error = [&get_dense](const int32_t steps) {
       const Slab slab(0., 1.);
