@@ -598,7 +598,6 @@ struct CenterOfStar : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
   using compute_target_points =
       intrp::TargetPoints::SpecifiedPoints<CenterOfStar, 3>;
   using compute_items_on_target = tags_to_observe;
-  using compute_items_on_source = tmpl::list<>;
 
   template <typename Metavariables>
   using interpolating_component =
@@ -610,7 +609,6 @@ struct KerrHorizon : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
   using tags_to_observe =
       tmpl::list<StrahlkorperTags::EuclideanSurfaceIntegralVectorCompute<
           hydro::Tags::MassFlux<DataVector, 3>, ::Frame::Inertial>>;
-  using compute_items_on_source = tmpl::list<>;
   using vars_to_interpolate_to_target =
       tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
                  hydro::Tags::SpatialVelocity<DataVector, 3>,

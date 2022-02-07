@@ -8,6 +8,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Domain/ElementLogicalCoordinates.hpp"
+#include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
@@ -108,8 +109,7 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
     const auto element_coord_holders =
         element_logical_coordinates(element_ids, block_logical_coords);
 
-    // There is exactly one element_id in the list of element_ids.
-    if (element_coord_holders.count(element_ids[0]) == 0) {
+    if (element_coord_holders.count(array_index) == 0) {
       // There are no target points in this element, so we don't need
       // to do anything.
       return;
@@ -118,17 +118,53 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
     // There are points in this element, so interpolate to them and
     // send the interpolated data to the target.  This is done
     // in several steps:
-    const auto& element_coord_holder = element_coord_holders.at(element_ids[0]);
+    const auto& element_coord_holder = element_coord_holders.at(array_index);
 
     // 1. Get the list of variables
     Variables<typename InterpolationTargetTag::vars_to_interpolate_to_target>
         interp_vars(mesh.number_of_grid_points());
 
-    // Clang-tidy wants extra braces for `if constexpr`
-    if constexpr (std::is_same_v<tmpl::list<>, typename InterpolationTargetTag::
-                                                   compute_items_on_source>) {
-      // 1.a Copy the tensors directly into the variables; no need to
-      // make a DataBox because we have no ComputeItems.
+    if constexpr (InterpolationTarget_detail::has_compute_vars_to_interpolate_v<
+                      InterpolationTargetTag>) {
+      // 1a. Call compute_vars_to_interpolate.  Need the source in a
+      // Variables, so copy the variables here.
+      // This copy would be unnecessary if we passed a Variables into
+      // InterpolateWithoutInterpComponent instead of passing
+      // individual Tensors, which would require that this Variables is
+      // something in the DataBox. (Note that
+      // InterpolationTarget_detail::compute_dest_vars_from_source_vars
+      // allows the source variables to be different from the
+      // destination variables).
+      Variables<tmpl::list<Tensors...>> source_vars(
+          mesh.number_of_grid_points());
+      [[maybe_unused]] const auto copy_to_variables =
+          [&source_vars](const auto tensor_tag_v, const auto& tensor) {
+            using tensor_tag = tmpl::type_from<decltype(tensor_tag_v)>;
+            get<tensor_tag>(source_vars) = tensor;
+            return 0;
+          };
+      expand_pack(copy_to_variables(tmpl::type_<Tensors>{}, tensors)...);
+
+      InterpolationTarget_detail::compute_dest_vars_from_source_vars<
+          InterpolationTargetTag>(
+          make_not_null(&interp_vars), source_vars,
+          get<domain::Tags::Domain<VolumeDim>>(cache), mesh,
+          array_index, cache, temporal_id);
+    } else {
+      // 1b. There is no compute_vars_to_interpolate. So copy the
+      // tensors directly into the variables.
+      // This copy would be unnecessary if:
+      //   - We passed a Variables into InterpolateWithoutInterpComponent
+      //     instead of passing individual Tensors.
+      //  and
+      //   - This Variables was actually something in the DataBox.
+      //  and
+      //   - Either the passed-in Variables was exactly the same as
+      //     InterpolationTargetTag::vars_to_interpolate_to_target,
+      //     or IrregularInterpolant::interpolate had the ability to
+      //     interpolate only a subset of the Variables passed into it,
+      //     or IrregularInterpolant::interpolate can interpolate individual
+      //     DataVectors.
       [[maybe_unused]] const auto copy_to_variables =
           [&interp_vars](const auto tensor_tag_v, const auto& tensor) {
             using tensor_tag = tmpl::type_from<decltype(tensor_tag_v)>;
@@ -136,20 +172,6 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
             return 0;
           };
       expand_pack(copy_to_variables(tmpl::type_<Tensors>{}, tensors)...);
-    } else {
-      // 1.b Make a DataBox and insert ComputeItems
-      const auto box = db::create<
-          db::AddSimpleTags<Tensors...>,
-          db::AddComputeTags<
-              typename InterpolationTargetTag::compute_items_on_source>>(
-          tensors...);
-      // Copy vars_to_interpolate_to_target from databox to vars
-      tmpl::for_each<
-          typename InterpolationTargetTag::vars_to_interpolate_to_target>(
-          [&box, &interp_vars](auto tag_v) {
-            using tag = typename decltype(tag_v)::type;
-            get<tag>(interp_vars) = db::get<tag>(box);
-          });
     }
 
     // 2. Set up interpolator

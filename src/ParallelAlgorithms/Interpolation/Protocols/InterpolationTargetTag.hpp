@@ -70,13 +70,7 @@ constexpr bool if_alias_exists_assert_conforms_to_v =
  * - a type alias `compute_vars_to_interpolate` that conforms to the
  *   intrp::protocols::ComputeVarsToInterpolate protocol. This is a struct that
  *   computes quantities in the volume that are required to compute different
- *   quantities on the surface we are interpolating to. Used only *with* the
- *   Interpolator ParallelComponent.
- *
- * - a type alias `compute_items_on_source` which is a `tmpl::list` of compute
- *   items that uses `Metavariables::interpolator_source_vars` as input and
- *   computes the `Variables` defined by `vars_to_interpolate_to_target`. Used
- *   only *without* the Interpolator ParallelComponent.
+ *   quantities on the surface we are interpolating to.
  *
  * - a type alias `interpolating_component` to the parallel component that will
  *   be interpolating to the interpolation target. Only needed when *not* using
