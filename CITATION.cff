@@ -22,7 +22,7 @@ authors:
   orcid: https://orcid.org/0000-0001-5392-7342
 - affiliation: Max Planck Institute for Gravitational Physics (Albert Einstein Institute),
     Am Mühlenberg 1, Potsdam 14476, Germany
-  family-names: Fischer
+  family-names: Vu
   given-names: Nils L.
   orcid: https://orcid.org/0000-0002-5767-3949
 - affiliation: Theoretical Astrophysics, Walter Burke Institute for Theoretical Physics,
@@ -194,8 +194,8 @@ authors:
   given-names: Tom
   orcid: https://orcid.org/0000-0003-0005-348X
 cff-version: 1.1.0
-date-released: '2022-01-03'
-doi: 10.5281/zenodo.5815438
+date-released: 2022-02-08
+doi: 10.5281/zenodo.6012996
 keywords:
 - Software
 - Astrophysics
@@ -212,5 +212,5 @@ message: Please cite SpECTRE in any publications that make use of its code or da
   version is listed below.
 repository-code: https://github.com/sxs-collaboration/spectre
 title: SpECTRE
-url: https://spectre-code.org/
-version: 2022.01.03
+url: https://spectre-code.org
+version: 2022.02.08
