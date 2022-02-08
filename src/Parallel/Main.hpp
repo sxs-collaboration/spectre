@@ -27,6 +27,8 @@
 #include "Parallel/PhaseControlReductionHelpers.hpp"
 #include "Parallel/Printf.hpp"
 #include "Parallel/Reduction.hpp"
+#include "Parallel/ResourceInfo.hpp"
+#include "Parallel/Tags/ResourceInfo.hpp"
 #include "Parallel/TypeTraits.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/FileSystem.hpp"
@@ -75,9 +77,9 @@ class Main : public CBase_Main<Metavariables> {
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override;
 
-  /// Allocate the initial elements of array components, and then execute the
-  /// initialization phase on each component
-  void allocate_array_components_and_execute_initialization_phase();
+  /// Allocate singleton components and the initial elements of array
+  /// components, then execute the initialization phase on each component
+  void allocate_remaining_components_and_execute_initialization_phase();
 
   /// Determine the next phase of the simulation and execute it.
   void execute_next_phase();
@@ -146,6 +148,8 @@ class Main : public CBase_Main<Metavariables> {
       tmpl::filter<component_list,
                    tmpl::and_<Parallel::is_array<tmpl::_1>,
                               Parallel::is_bound_array<tmpl::_1>>>;
+  using singleton_component_list =
+      tmpl::filter<component_list, Parallel::is_singleton<tmpl::_1>>;
 
   typename Metavariables::Phase current_phase_{
       Metavariables::Phase::Initialization};
@@ -161,6 +165,7 @@ class Main : public CBase_Main<Metavariables> {
   tuples::tagged_tuple_from_typelist<phase_change_tags_and_combines_list>
       phase_change_decision_data_;
   size_t checkpoint_dir_counter_ = 0_st;
+  Parallel::ResourceInfo<Metavariables> resource_info_{};
 };
 
 namespace detail {
@@ -387,6 +392,16 @@ Main<Metavariables>::Main(CkArgMsg* msg) {
           return tuples::tagged_tuple_from_typelist<option_list>(
               std::move(args)...);
         });
+
+    // If any component specified that it needs resource information from
+    // options, use the ResourceInfo created from options rather than the
+    // default
+    if constexpr (Parallel::detail::using_resource_info<Metavariables>) {
+      resource_info_ =
+          tuples::get<Parallel::OptionTags::ResourceInfo<Metavariables>>(
+              options_);
+    }
+
     Parallel::printf("\nOption parsing completed.\n");
   } catch (const bpo::error& e) {
     ERROR(e.what());
@@ -411,6 +426,15 @@ Main<Metavariables>::Main(CkArgMsg* msg) {
                                                    const_global_cache_tags{}),
       mutable_global_cache_proxy_, this->thisProxy,
       &mutable_global_cache_dependency);
+
+  // Now that the GlobalCache has been built, create the singleton map which
+  // will be used to allocate all the singletons. We need to be careful here
+  // because the parallel components have not been set at this point, so if we
+  // try to Parallel::get_parallel_component here, an error will occur. This
+  // call is OK though because build_singleton_map() only uses the parallel info
+  // functions from the GlobalCache (like cache.number_of_procs()).
+  resource_info_.build_singleton_map(
+      *Parallel::local_branch(global_cache_proxy_));
 
   if constexpr (Algorithm_detail::has_LoadBalancing_v<
                     typename Metavariables::Phase>) {
@@ -498,12 +522,21 @@ Main<Metavariables>::Main(CkArgMsg* msg) {
         ParallelComponentProxy::ckNew(opts);
   });
 
+  // Create proxies for singletons (which are single-element charm++ arrays)
+  tmpl::for_each<singleton_component_list>([&the_parallel_components](
+                                               auto parallel_component) {
+    using ParallelComponentProxy = Parallel::proxy_from_parallel_component<
+        tmpl::type_from<decltype(parallel_component)>>;
+    tuples::get<tmpl::type_<ParallelComponentProxy>>(the_parallel_components) =
+        ParallelComponentProxy::ckNew();
+  });
+
   // Send the complete list of parallel_components to the GlobalCache on
   // each Charm++ node.  After all nodes have finished, the callback is
   // executed.
   CkCallback callback(
       CkIndex_Main<Metavariables>::
-          allocate_array_components_and_execute_initialization_phase(),
+          allocate_remaining_components_and_execute_initialization_phase(),
       this->thisProxy);
   global_cache_proxy_.set_parallel_components(the_parallel_components,
                                               callback);
@@ -531,6 +564,7 @@ void Main<Metavariables>::pup(PUP::er& p) {  // NOLINT
   p | phase_change_decision_data_;
 
   p | checkpoint_dir_counter_;
+  p | resource_info_;
   if constexpr (Algorithm_detail::has_WriteCheckpoint_v<
                     typename Metavariables::Phase>) {
     if (p.isUnpacking()) {
@@ -568,43 +602,36 @@ void Main<Metavariables>::pup(PUP::er& p) {  // NOLINT
 
 template <typename Metavariables>
 void Main<Metavariables>::
-    allocate_array_components_and_execute_initialization_phase() {
+    allocate_remaining_components_and_execute_initialization_phase() {
   ASSERT(current_phase_ == Metavariables::Phase::Initialization,
          "Must be in the Initialization phase.");
-  // Put each singleton on a different proc. In the future, this should be
-  // changed so that no DG elements get placed on these procs so singletons have
-  // their own procs.
-  int singleton_which_proc = 0;
-  const int number_of_procs = sys::number_of_procs();
-  tmpl::for_each<all_array_component_list>([this, &singleton_which_proc,
-                                            &number_of_procs](
-                                               auto parallel_component_v) {
+
+  // Since singletons are actually single-element Charm++ arrays, we have to
+  // allocate them here along with the other Charm++ arrays.
+  tmpl::for_each<singleton_component_list>([this](auto singleton_component_v) {
+    using singleton_component =
+        tmpl::type_from<decltype(singleton_component_v)>;
+    auto& local_cache = *Parallel::local_branch(global_cache_proxy_);
+    auto& singleton_proxy =
+        Parallel::get_parallel_component<singleton_component>(local_cache);
+    auto options = Parallel::create_from_options<Metavariables>(
+        options_, typename singleton_component::initialization_tags{});
+
+    const size_t proc = resource_info_.template proc_for<singleton_component>();
+    singleton_proxy[0].insert(global_cache_proxy_, std::move(options), proc);
+    singleton_proxy.doneInserting();
+  });
+
+  // These are Spectre array components built on Charm++ array chares. Each
+  // component is in charge of allocating and distributing its elements over the
+  // computing system.
+  tmpl::for_each<all_array_component_list>([this](auto parallel_component_v) {
     using parallel_component = tmpl::type_from<decltype(parallel_component_v)>;
-    if constexpr (std::is_same<typename parallel_component::chare_type,
-                               Parallel::Algorithms::Singleton>::value) {
-      // This is a Spectre singleton component built on a Charm++ array chare,
-      // so we allocate a single element.
-      auto& local_cache = *Parallel::local_branch(global_cache_proxy_);
-      auto& array_proxy =
-          Parallel::get_parallel_component<parallel_component>(local_cache);
-      array_proxy[0].insert(
-          global_cache_proxy_,
-          Parallel::create_from_options<Metavariables>(
-              options_, typename parallel_component::initialization_tags{}),
-          singleton_which_proc);
-      array_proxy.doneInserting();
-      singleton_which_proc = singleton_which_proc + 1 == number_of_procs
-                                 ? 0
-                                 : singleton_which_proc + 1;
-    } else {
-      // This is a Spectre array component built on a Charm++ array chare. The
-      // component is in charge of allocating and distributing its elements over
-      // the computing system.
-      parallel_component::allocate_array(
-          global_cache_proxy_,
-          Parallel::create_from_options<Metavariables>(
-              options_, typename parallel_component::initialization_tags{}));
-    }
+    parallel_component::allocate_array(
+        global_cache_proxy_,
+        Parallel::create_from_options<Metavariables>(
+            options_, typename parallel_component::initialization_tags{}),
+        resource_info_.procs_to_ignore());
   });
 
   // Free any resources from the initial option parsing.
