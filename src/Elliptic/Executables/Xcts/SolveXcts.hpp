@@ -184,12 +184,16 @@ struct Metavariables {
 
   using analytic_solution_fields = tmpl::append<typename system::primal_fields,
                                                 typename system::primal_fluxes>;
-  using constraint_fields =
+  using spacetime_quantities_compute = Xcts::Tags::SpacetimeQuantitiesCompute<
       tmpl::list<gr::Tags::HamiltonianConstraint<DataVector>,
-                 gr::Tags::MomentumConstraint<3, Frame::Inertial, DataVector>>;
+                 gr::Tags::MomentumConstraint<3, Frame::Inertial, DataVector>,
+                 gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
+                 gr::Tags::Lapse<DataVector>,
+                 gr::Tags::Shift<3, Frame::Inertial, DataVector>,
+                 gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataVector>>>;
   using observe_fields =
       tmpl::append<analytic_solution_fields, typename system::background_fields,
-                   constraint_fields>;
+                   typename spacetime_quantities_compute::tags_list>;
 
   // Collect all items to store in the cache.
   using const_global_cache_tags =
@@ -213,18 +217,18 @@ struct Metavariables {
         tmpl::pair<
             elliptic::BoundaryConditions::BoundaryCondition<volume_dim>,
             Xcts::BoundaryConditions::standard_boundary_conditions<system>>,
-        tmpl::pair<
-            Event,
-            tmpl::flatten<tmpl::list<
-                Events::Completion,
-                dg::Events::field_observations<
-                    volume_dim, nonlinear_solver_iteration_id, observe_fields,
-                    analytic_solution_fields, tmpl::list<>,
-                    LinearSolver::multigrid::Tags::IsFinestGrid>,
-                Events::ObserveNorms<
-                    nonlinear_solver_iteration_id, constraint_fields,
-                    tmpl::list<>,
-                    LinearSolver::multigrid::Tags::IsFinestGrid>>>>,
+        tmpl::pair<Event,
+                   tmpl::flatten<tmpl::list<
+                       Events::Completion,
+                       dg::Events::field_observations<
+                           volume_dim, nonlinear_solver_iteration_id,
+                           observe_fields, analytic_solution_fields,
+                           tmpl::list<spacetime_quantities_compute>,
+                           LinearSolver::multigrid::Tags::IsFinestGrid>,
+                       Events::ObserveNorms<
+                           nonlinear_solver_iteration_id, observe_fields,
+                           tmpl::list<spacetime_quantities_compute>,
+                           LinearSolver::multigrid::Tags::IsFinestGrid>>>>,
         tmpl::pair<Trigger, elliptic::Triggers::all_triggers<
                                 typename nonlinear_solver::options_group>>>;
   };
@@ -254,8 +258,6 @@ struct Metavariables {
       elliptic::dg::subdomain_operator::Actions::InitializeSubdomain<
           system, background_tag, typename schwarz_smoother::options_group>,
       ::Initialization::Actions::AddComputeTags<tmpl::list<
-          // Constraint norms
-          Xcts::Tags::SpacetimeQuantitiesCompute<constraint_fields>,
           // For linearized boundary conditions
           elliptic::Tags::BoundaryFieldsCompute<volume_dim, fields_tag>,
           elliptic::Tags::BoundaryFluxesCompute<volume_dim, fields_tag,
