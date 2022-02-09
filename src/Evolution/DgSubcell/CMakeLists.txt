@@ -26,6 +26,7 @@ spectre_target_headers(
   ReconstructionMethod.hpp
   SliceData.hpp
   SliceTensor.hpp
+  SliceVariable.hpp
   SubcellOptions.hpp
   TciStatus.hpp
   TwoMeshRdmpTci.hpp
