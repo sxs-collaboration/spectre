@@ -19,6 +19,7 @@
 #include "NumericalAlgorithms/Convergence/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Parallel/Actions/Goto.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InboxInserters.hpp"
 #include "Parallel/Invoke.hpp"
@@ -38,7 +39,11 @@ namespace LinearSolver::multigrid::detail {
 /// \cond
 template <typename FieldsTag, typename OptionsGroup, typename SourceTag>
 struct SendCorrectionToFinerGrid;
+template <typename FieldsTag, typename OptionsGroup, typename SourceTag>
+struct SkipPostSmoothingAtBottom;
 /// \endcond
+
+struct PostSmoothingBeginLabel {};
 
 template <size_t Dim, typename FieldsTag, typename OptionsGroup,
           typename SourceTag>
@@ -137,14 +142,18 @@ struct PreparePreSmoothing {
   using source_tag = SourceTag;
 
  public:
+  using const_global_cache_tags = tmpl::list<
+      LinearSolver::multigrid::Tags::EnablePreSmoothing<OptionsGroup>>;
+
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             size_t Dim, typename ActionList, typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagsList>&&> apply(
-      db::DataBox<DbTagsList>& box,
-      tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ElementId<Dim>& element_id, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) {
+  static std::tuple<db::DataBox<DbTagsList>&&, Parallel::AlgorithmExecution,
+                    size_t>
+  apply(db::DataBox<DbTagsList>& box,
+        tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+        const Parallel::GlobalCache<Metavariables>& /*cache*/,
+        const ElementId<Dim>& element_id, const ActionList /*meta*/,
+        const ParallelComponent* const /*meta*/) {
     const size_t iteration_id =
         db::get<Convergence::Tags::IterationId<OptionsGroup>>(box);
     if (UNLIKELY(db::get<logging::Tags::Verbosity<OptionsGroup>>(box) >=
@@ -163,8 +172,7 @@ struct PreparePreSmoothing {
              const auto& source) {
             *fields = make_with_value<typename fields_tag::type>(source, 0.);
             // We can set the linear operator applied to the initial fields to
-            // zero as well, since it's linear. This may save the smoother an
-            // operator application on coarser grids if it's optimized for this.
+            // zero as well, since it's linear
             *operator_applied_to_fields =
                 make_with_value<typename operator_applied_to_fields_tag::type>(
                     source, 0.);
@@ -190,20 +198,35 @@ struct PreparePreSmoothing {
           db::get<fields_tag>(box), db::get<source_tag>(box));
     }
 
-    return {std::move(box)};
+    // Skip pre-smoothing, if requested
+    const size_t first_action_after_pre_smoothing_index = tmpl::index_of<
+        ActionList,
+        SkipPostSmoothingAtBottom<FieldsTag, OptionsGroup, SourceTag>>::value;
+    const size_t this_action_index =
+        tmpl::index_of<ActionList, PreparePreSmoothing>::value;
+    return {
+        std::move(box), Parallel::AlgorithmExecution::Continue,
+        db::get<
+            LinearSolver::multigrid::Tags::EnablePreSmoothing<OptionsGroup>>(
+            box)
+            ? (this_action_index + 1)
+            : first_action_after_pre_smoothing_index};
   }
 };
 
 // Once the pre-smoothing is done, we skip the second smoothing step on the
 // coarsest grid, i.e. at the "tip" of the V-cycle.
 template <typename FieldsTag, typename OptionsGroup, typename SourceTag>
-struct SkipPostsmoothingAtBottom {
+struct SkipPostSmoothingAtBottom {
  private:
   using fields_tag = FieldsTag;
   using residual_tag =
       db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>;
 
  public:
+  using const_global_cache_tags = tmpl::list<
+      LinearSolver::multigrid::Tags::EnablePostSmoothingAtBottom<OptionsGroup>>;
+
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             size_t Dim, typename ActionList, typename ParallelComponent>
   static std::tuple<db::DataBox<DbTagsList>&&, Parallel::AlgorithmExecution,
@@ -234,15 +257,22 @@ struct SkipPostsmoothingAtBottom {
           db::get<fields_tag>(box), db::get<residual_tag>(box));
     }
 
-    // Skip the second smoothing step on the coarsest grid
+    // Skip post-smoothing on the coarsest grid, if requested
     const size_t first_action_after_post_smoothing_index = tmpl::index_of<
         ActionList,
         SendCorrectionToFinerGrid<FieldsTag, OptionsGroup, SourceTag>>::value;
+    const size_t post_smoothing_begin_index = tmpl::index_of<
+        ActionList,
+        ::Actions::Label<PostSmoothingBeginLabel>>::value + 1;
     const size_t this_action_index =
-        tmpl::index_of<ActionList, SkipPostsmoothingAtBottom>::value;
+        tmpl::index_of<ActionList, SkipPostSmoothingAtBottom>::value;
     return {std::move(box), Parallel::AlgorithmExecution::Continue,
-            is_coarsest_grid ? first_action_after_post_smoothing_index
-                             : (this_action_index + 1)};
+            is_coarsest_grid
+                ? (db::get<LinearSolver::multigrid::Tags::
+                               EnablePostSmoothingAtBottom<OptionsGroup>>(box)
+                       ? post_smoothing_begin_index
+                       : first_action_after_post_smoothing_index)
+                : (this_action_index + 1)};
   }
 };
 
@@ -341,7 +371,7 @@ struct ReceiveCorrectionFromCoarserGrid {
     const auto& parent_id = db::get<Tags::ParentId<Dim>>(box);
     // We should always have a `parent_id` at this point because we skip this
     // part of the algorithm on the coarsest grid with the
-    // `SkipPostsmoothingAtBottom` action
+    // `SkipPostSmoothingAtBottom` action
     ASSERT(parent_id.has_value(),
            "Trying to receive data from parent but no parent is set on element "
                << element_id << ".");

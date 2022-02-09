@@ -94,13 +94,13 @@ struct Metavariables {
 
   // [action_list]
   template <typename Label>
-  using smooth_actions = tmpl::list<
-      compute_operator_action<typename smoother::fields_tag>,
-      typename smoother::template solve<
-          compute_operator_action<typename smoother::operand_tag>, Label>>;
+  using smooth_actions = typename smoother::template solve<
+      compute_operator_action<typename smoother::operand_tag>, Label>;
 
   using solve_actions =
-      tmpl::list<typename multigrid::template solve<
+      tmpl::list<compute_operator_action<typename multigrid::fields_tag>,
+                 typename multigrid::template solve<
+                     compute_operator_action<typename smoother::fields_tag>,
                      smooth_actions<LinearSolver::multigrid::VcycleDownLabel>,
                      smooth_actions<LinearSolver::multigrid::VcycleUpLabel>>,
                  Parallel::Actions::TerminatePhase>;

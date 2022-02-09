@@ -121,17 +121,15 @@ struct Metavariables {
                              OperandTag>>>;
 
   template <typename Label>
-  using smooth_actions = tmpl::list<
-      compute_operator_action<typename smoother::fields_tag, true>,
-      typename smoother::template solve<
-          compute_operator_action<typename smoother::operand_tag, true>,
-          Label>>;
+  using smooth_actions = typename smoother::template solve<
+      compute_operator_action<typename smoother::operand_tag, true>, Label>;
 
   using solve_actions = tmpl::list<
       typename nonlinear_solver::template solve<
           compute_operator_action<typename nonlinear_solver::fields_tag, false>,
           typename linear_solver::template solve<tmpl::list<
               typename multigrid::template solve<
+                  compute_operator_action<typename smoother::fields_tag, true>,
                   smooth_actions<LinearSolver::multigrid::VcycleDownLabel>,
                   smooth_actions<LinearSolver::multigrid::VcycleUpLabel>>,
               LinearSolver::Actions::make_identity_if_skipped<

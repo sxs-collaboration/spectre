@@ -8,6 +8,7 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "IO/Observer/Actions/RegisterWithObservers.hpp"
 #include "IO/Observer/Helpers.hpp"
+#include "Parallel/Actions/Goto.hpp"
 #include "ParallelAlgorithms/LinearSolver/AsynchronousSolvers/ElementActions.hpp"
 #include "ParallelAlgorithms/LinearSolver/Multigrid/ElementActions.hpp"
 #include "ParallelAlgorithms/LinearSolver/Multigrid/ObserveVolumeData.hpp"
@@ -78,8 +79,10 @@ struct VcycleUpLabel {};
  * `solve` leave the `smooth_fields_tag` in a state that represents an
  * approximate solution to the `smooth_source_tag`, and that
  * `db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo,
- * smooth_fields_tag>` is left up-to-date as well. Here's an example of setting
- * up a smoother for the multigrid solver:
+ * smooth_fields_tag>` is left up-to-date as well.
+ * The smoother can assume that, on entry, these two tags represent the initial
+ * fields and the linear operator applied to the initial fields, respectively.
+ * Here's an example of setting up a smoother for the multigrid solver:
  *
  * \snippet Test_MultigridAlgorithm.cpp setup_smoother
  *
@@ -91,15 +94,19 @@ struct VcycleUpLabel {};
  * Every iteration of the multigrid algorithm performs a V-cycle over the grid
  * hierarchy. One V-cycle consists of first "going down" the grid hierarchy,
  * from the finest to successively coarser grids, smoothing on every level
- * ("pre-smoothing"), and then "going up" the grid hierarchy again, smoothing on
+ * ("pre-smoothing", can be controlled by the option
+ * `LinearSolver::multigrid::Tags::EnablePreSmoothing`),
+ * and then "going up" the grid hierarchy again, smoothing on
  * every level again ("post-smoothing"). When going down, the algorithm projects
  * the remaining residual of the smoother to the next-coarser grid, setting it
  * as the source for the smoother on the coarser grid. When going up again, the
  * algorithm projects the solution of the smoother to the next-finer grid,
  * adding it to the solution on the finer grid as a correction. The bottom-most
- * coarsest grid (the "tip" of the V-cycle) skips the post-smoothing, so the
- * result of the pre-smoother is immediately projected up to the finer grid. On
- * the top-most finest grid (the "original" grid that represents the overall
+ * coarsest grid (the "tip" of the V-cycle) may skip the post-smoothing, so the
+ * result of the pre-smoother is immediately projected up to the finer grid
+ * (controlled by the
+ * `LinearSolver::multigrid::Tags::EnablePostSmoothingAtBottom` option). On the
+ * top-most finest grid (the "original" grid that represents the overall
  * solution) the algorithm applies the smoothing and the corrections from the
  * coarser grids directly to the solution fields.
  */
@@ -132,20 +139,28 @@ struct Multigrid {
                  observers::Actions::RegisterWithObservers<
                      detail::RegisterWithVolumeObserver<OptionsGroup>>>;
 
-  template <typename PreSmootherActions, typename PostSmootherActions,
-            typename Label = OptionsGroup>
+  template <typename ApplyOperatorActions, typename PreSmootherActions,
+            typename PostSmootherActions, typename Label = OptionsGroup>
   using solve = tmpl::list<
       async_solvers::PrepareSolve<FieldsTag, OptionsGroup, SourceTag, Label,
                                   Tags::IsFinestGrid, false>,
       detail::ReceiveResidualFromFinerGrid<Dim, FieldsTag, OptionsGroup,
                                            SourceTag>,
       detail::PreparePreSmoothing<FieldsTag, OptionsGroup, SourceTag>,
+      // No need to apply the linear operator here:
+      // - On the finest grid, the operator applied to the fields should have
+      //   already been computed at this point, either applied to the initial
+      //   fields before the multigrid solver is invoked, or by the smoother at
+      //   the end of the previous V-cycle.
+      // - On coarser grids, the initial fields are zero, so the operator
+      //   applied to them is also zero.
       PreSmootherActions,
-      detail::SkipPostsmoothingAtBottom<FieldsTag, OptionsGroup, SourceTag>,
+      detail::SkipPostSmoothingAtBottom<FieldsTag, OptionsGroup, SourceTag>,
       detail::SendResidualToCoarserGrid<FieldsTag, OptionsGroup,
                                         ResidualIsMassiveTag, SourceTag>,
       detail::ReceiveCorrectionFromCoarserGrid<Dim, FieldsTag, OptionsGroup,
                                                SourceTag>,
+      ApplyOperatorActions, ::Actions::Label<detail::PostSmoothingBeginLabel>,
       PostSmootherActions,
       detail::SendCorrectionToFinerGrid<FieldsTag, OptionsGroup, SourceTag>,
       detail::ObserveVolumeData<FieldsTag, OptionsGroup, SourceTag>,

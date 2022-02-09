@@ -59,6 +59,8 @@ LinearSolver:
   Multigrid:
     Iterations: 1
     MaxLevels: Auto
+    PreSmoothing: True
+    PostSmoothingAtBottom: False
     Verbosity: Quiet
     OutputVolumeData: False
 

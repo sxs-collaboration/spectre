@@ -256,14 +256,15 @@ struct Metavariables {
                  Parallel::Actions::TerminatePhase>;
 
   template <typename Label>
-  using smooth_actions = tmpl::list<build_linear_operator_actions,
-                                    typename schwarz_smoother::template solve<
-                                        build_linear_operator_actions, Label>>;
+  using smooth_actions =
+      typename schwarz_smoother::template solve<build_linear_operator_actions,
+                                                Label>;
 
   using solve_actions = tmpl::list<
       typename linear_solver::template solve<tmpl::list<
           Actions::RunEventsAndTriggers,
           typename multigrid::template solve<
+              build_linear_operator_actions,
               smooth_actions<LinearSolver::multigrid::VcycleDownLabel>,
               smooth_actions<LinearSolver::multigrid::VcycleUpLabel>>,
           ::LinearSolver::Actions::make_identity_if_skipped<
