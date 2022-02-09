@@ -11,6 +11,8 @@
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/PrefixHelpers.hpp"
+#include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Structure/ElementId.hpp"
@@ -43,6 +45,24 @@ struct ReadAllVolumeDataAndDistribute;
 }  // namespace Actions
 }  // namespace importers
 /// \endcond
+
+namespace importers::Tags {
+/*!
+ * \brief Indicates an available tensor field is selected for importing, along
+ * with the name of the dataset in the volume data file.
+ *
+ * Set the value to a dataset name to import the `FieldTag` from that dataset,
+ * or to `std::nullopt` to skip importing the `FieldTag`. The dataset name
+ * excludes tensor component suffixes like "_x" or "_xy". These suffixes will be
+ * added automatically. A sensible value for the dataset name is often
+ * `db::tag_name<FieldTag>()`, but the user should generally be given the
+ * opportunity to set the dataset name in the input file.
+ */
+template <typename FieldTag>
+struct Selected : db::SimpleTag {
+  using type = std::optional<std::string>;
+};
+}  // namespace importers::Tags
 
 namespace importers::Actions {
 
@@ -123,10 +143,14 @@ struct ReadVolumeData {
  *   - `importers::OptionTags::Subgroup`
  *   - `importers::OptionTags::ObservationValue`
  * - The `FieldTagsList` parameter specifies a typelist of tensor tags that
- * are read from the file and provided to each element. It is assumed that the
- * tensor data is stored in datasets named `db::tag_name<Tag>() + suffix`, where
- * the `suffix` is empty for scalars or `"_"` followed by the
- * `Tensor::component_name` for each independent tensor component.
+ * can be read from the file and provided to each element. The subset of tensors
+ * that will actually be read and distributed can be selected at runtime with
+ * the `selected_fields` argument that is passed to this simple action. See
+ * importers::Tags::Selected for details. By default, all tensors in the
+ * `FieldTagsList` are selected, and read from datasets named
+ * `db::tag_name<Tag>() + suffix`, where the `suffix` is empty for scalars, or
+ * `"_"` followed by the `Tensor::component_name` for each independent tensor
+ * component.
  * - `Parallel::receive_data` is invoked on each registered element of the
  * `ReceiveComponent` to populate `importers::Tags::VolumeData` in the element's
  * inbox with a `tuples::tagged_tuple_from_typelist<FieldTagsList>` containing
@@ -146,7 +170,10 @@ struct ReadAllVolumeDataAndDistribute {
                db::tag_is_retrievable_v<Tags::ElementDataAlreadyRead,
                                         DataBox>> = nullptr>
   static void apply(DataBox& box, Parallel::GlobalCache<Metavariables>& cache,
-                    const ArrayIndex& /*array_index*/) {
+                    const ArrayIndex& /*array_index*/,
+                    tuples::tagged_tuple_from_typelist<
+                        db::wrap_tags_in<Tags::Selected, FieldTagsList>>
+                        selected_fields = select_all_fields(FieldTagsList{})) {
     // Only read and distribute the volume data once
     // This action will be invoked by `importers::Actions::ReadVolumeData` from
     // every element on the node, but only the first invocation reads the file
@@ -217,14 +244,19 @@ struct ReadAllVolumeDataAndDistribute {
       // stored in the file
       tuples::tagged_tuple_from_typelist<FieldTagsList> all_tensor_data{};
       tmpl::for_each<FieldTagsList>([&all_tensor_data, &volume_file,
-                                     &observation_id](auto field_tag_v) {
+                                     &observation_id,
+                                     &selected_fields](auto field_tag_v) {
         using field_tag = tmpl::type_from<decltype(field_tag_v)>;
+        const auto& selection = get<Tags::Selected<field_tag>>(selected_fields);
+        if (not selection.has_value()) {
+          return;
+        }
         auto& tensor_data = get<field_tag>(all_tensor_data);
         for (size_t i = 0; i < tensor_data.size(); i++) {
           tensor_data[i] = volume_file.get_tensor_component(
               observation_id,
-              db::tag_name<field_tag>() + tensor_data.component_suffix(
-                                              tensor_data.get_tensor_index(i)));
+              selection.value() + tensor_data.component_suffix(
+                                      tensor_data.get_tensor_index(i)));
         }
       });
       // Retrieve the information needed to reconstruct which element the data
@@ -263,8 +295,14 @@ struct ReadAllVolumeDataAndDistribute {
         tuples::tagged_tuple_from_typelist<FieldTagsList> element_data{};
         tmpl::for_each<FieldTagsList>([&element_data,
                                        &element_data_offset_and_length,
-                                       &all_tensor_data](auto field_tag_v) {
+                                       &all_tensor_data,
+                                       &selected_fields](auto field_tag_v) {
           using field_tag = tmpl::type_from<decltype(field_tag_v)>;
+          const auto& selection =
+              get<Tags::Selected<field_tag>>(selected_fields);
+          if (not selection.has_value()) {
+            return;
+          }
           auto& element_tensor_data = get<field_tag>(element_data);
           // Iterate independent components of the tensor
           for (size_t i = 0; i < element_tensor_data.size(); i++) {
@@ -295,6 +333,13 @@ struct ReadAllVolumeDataAndDistribute {
             0_st, std::move(element_data));
       }
     }
+  }
+
+ private:
+  template <typename... LocalFieldTags>
+  static tuples::TaggedTuple<Tags::Selected<LocalFieldTags>...>
+  select_all_fields(tmpl::list<LocalFieldTags...> /*meta*/) {
+    return {db::tag_name<LocalFieldTags>()...};
   }
 };
 
