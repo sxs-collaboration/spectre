@@ -50,6 +50,14 @@ def dt_spacetime_metric(lapse, dt_lapse, shift, dt_shift, spatial_metric,
     return dt_psi
 
 
+def dt_spatial_metric(lapse, shift, deriv_shift, spatial_metric,
+                      deriv_spatial_metric, extrinsic_curvature):
+    return (-2. * lapse * extrinsic_curvature +
+            np.einsum("k,kij", shift, deriv_spatial_metric) +
+            np.einsum("ik,jk", spatial_metric, deriv_shift) +
+            np.einsum("jk,ik", spatial_metric, deriv_shift))
+
+
 def spatial_deriv_spacetime_metric(lapse, deriv_lapse, shift, deriv_shift,
                                    spatial_metric, deriv_spatial_metric):
     dim = shift.size

@@ -23,5 +23,23 @@ add_test_library(
   ${LIBRARY}
   "PointwiseFunctions/GeneralRelativity/"
   "${LIBRARY_SOURCES}"
-  "GeneralRelativityHelpers"
+  ""
   )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  CoordinateMaps
+  DataBoxTestHelpers
+  DataStructures
+  DataStructuresHelpers
+  Domain
+  DomainStructure
+  GeneralizedHarmonic
+  GeneralRelativity
+  GeneralRelativityHelpers
+  GeneralRelativitySolutions
+  LinearOperators
+  Spectral
+  Utilities
+)
