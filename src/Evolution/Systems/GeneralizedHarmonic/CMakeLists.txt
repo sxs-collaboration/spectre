@@ -39,6 +39,8 @@ target_link_libraries(
   ErrorHandling
   GeneralRelativity
   GeneralRelativitySolutions
+  IO
+  LinearOperators
   Options
   Spectral
   Utilities
@@ -47,6 +49,7 @@ target_link_libraries(
   Parallel
   )
 
+add_subdirectory(Actions)
 add_subdirectory(BoundaryConditions)
 add_subdirectory(BoundaryCorrections)
 add_subdirectory(ConstraintDamping)

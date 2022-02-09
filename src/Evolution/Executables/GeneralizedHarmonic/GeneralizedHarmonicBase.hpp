@@ -31,6 +31,7 @@
 #include "Evolution/Initialization/NonconservativeSystem.hpp"
 #include "Evolution/Initialization/SetVariables.hpp"
 #include "Evolution/NumericInitialData.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/Actions/NumericInitialData.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/Factory.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Equations.hpp"
@@ -39,8 +40,6 @@
 #include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Evolution/TypeTraits.hpp"
-#include "IO/Importers/Actions/ReadVolumeData.hpp"
-#include "IO/Importers/Actions/ReceiveVolumeData.hpp"
 #include "IO/Importers/Actions/RegisterWithElementDataReader.hpp"
 #include "IO/Importers/ElementDataReader.hpp"
 #include "IO/Observer/Actions/ObserverRegistration.hpp"
@@ -398,13 +397,12 @@ struct GeneralizedHarmonicTemplateBase<
                           Parallel::Actions::TerminatePhase>>,
                   Parallel::PhaseActions<
                       Phase, Phase::ImportInitialData,
-                      tmpl::list<importers::Actions::ReadVolumeData<
-                                     evolution::OptionTags::NumericInitialData,
-                                     typename system::variables_tag::tags_list>,
-                                 importers::Actions::ReceiveVolumeData<
-                                     evolution::OptionTags::NumericInitialData,
-                                     typename system::variables_tag::tags_list>,
-                                 Parallel::Actions::TerminatePhase>>>,
+                      tmpl::list<
+                          GeneralizedHarmonic::Actions::ReadNumericInitialData<
+                              evolution::OptionTags::NumericInitialData>,
+                          GeneralizedHarmonic::Actions::SetNumericInitialData<
+                              evolution::OptionTags::NumericInitialData>,
+                          Parallel::Actions::TerminatePhase>>>,
               tmpl::list<>>,
           Parallel::PhaseActions<
               Phase, Phase::InitializeInitialDataDependentQuantities,

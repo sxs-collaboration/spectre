@@ -7,6 +7,7 @@ add_subdirectory(ConstraintDamping)
 set(LIBRARY "Test_GeneralizedHarmonic")
 
 set(LIBRARY_SOURCES
+  Actions/Test_NumericInitialData.cpp
   BoundaryConditions/Test_Bjorhus.cpp
   BoundaryConditions/Test_BjorhusImpl.cpp
   BoundaryConditions/Test_DirichletAnalytic.cpp
@@ -26,5 +27,21 @@ add_test_library(
   ${LIBRARY}
   "Evolution/Systems/GeneralizedHarmonic/"
   "${LIBRARY_SOURCES}"
-  "GeneralRelativityHelpers;GeneralizedHarmonic;Test_GeneralRelativity"
+  ""
   )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  CoordinateMaps
+  DataBoxTestHelpers
+  DataStructures
+  DataStructuresHelpers
+  Domain
+  GeneralizedHarmonic
+  GeneralRelativity
+  GeneralRelativityHelpers
+  Importers
+  Spectral
+  Utilities
+)
