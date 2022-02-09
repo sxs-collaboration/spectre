@@ -25,15 +25,15 @@ struct not_null;
 namespace StrahlkorperFunctions {
 /// @{
 /*!
- * The physical radius at each collocation point, obtained by
- * transforming the coefficients to physical space.
+ * (Euclidean) distance \f$r_{\rm surf}(\theta,\phi)\f$ from the
+ * expansion center to each point of the Strahlkorper surface.
  */
 template <typename Fr>
 Scalar<DataVector> radius(const Strahlkorper<Fr>& strahlkorper);
 
 /*!
- * The physical radius at each collocation point, obtained by
- * transforming the coefficients to physical space.
+ * (Euclidean) distance \f$r_{\rm surf}(\theta,\phi)\f$ from the
+ * expansion center to each point of the Strahlkorper surface.
  */
 template <typename Fr>
 void radius(const gsl::not_null<Scalar<DataVector>*> result,
