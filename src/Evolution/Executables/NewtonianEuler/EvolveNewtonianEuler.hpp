@@ -315,6 +315,8 @@ struct EvolutionMetavars {
 
   struct SubcellOptions {
     static constexpr bool subcell_enabled = use_dg_subcell;
+    static constexpr bool subcell_enabled_at_external_boundary = false;
+
     // We send `ghost_zone_size` cell-centered grid points for variable
     // reconstruction, of which we need `ghost_zone_size-1` for reconstruction
     // to the internal side of the element face, and `ghost_zone_size` for

@@ -41,8 +41,9 @@ namespace evolution::dg::subcell::Actions {
  * `subcell_options.always_use_subcells()` is `true` or if
  * `Metavariables::SubcellOptions::DgInitialDataTci::apply` reports that the
  * initial data is not well represented on the DG grid for that cell. Exterior
- * cells are never marked as troubled, because subcell doesn't yet support
- * boundary conditions.
+ * cells are marked as troubled only if
+ * `Metavariables::SubcellOptions::subcell_enabled_at_external_boundary` is
+ * `true`.
  *
  * If the cell is troubled then `Tags::ActiveGrid` is set to
  * `subcell::ActiveGrid::Subcell`, the `System::variables_tag` become the
@@ -122,15 +123,18 @@ struct Initialize {
     const SubcellOptions& subcell_options = db::get<Tags::SubcellOptions>(box);
     const Mesh<Dim>& dg_mesh = db::get<::domain::Tags::Mesh<Dim>>(box);
     const Mesh<Dim> subcell_mesh = fd::mesh(dg_mesh);
-    // Note: we currently cannot do subcell at boundaries, so only set on
-    // interior elements.
+
     const bool cell_is_not_on_external_boundary =
         db::get<::domain::Tags::Element<Dim>>(box)
             .external_boundaries()
             .empty();
 
+    constexpr bool subcell_enabled_at_external_boundary =
+        Metavariables::SubcellOptions::subcell_enabled_at_external_boundary;
+
     bool cell_is_troubled = subcell_options.always_use_subcells() and
-                            cell_is_not_on_external_boundary;
+                            (cell_is_not_on_external_boundary or
+                             subcell_enabled_at_external_boundary);
 
     db::mutate_apply<tmpl::list<subcell::Tags::Mesh<Dim>, Tags::ActiveGrid,
                                 Tags::DidRollback,
@@ -154,9 +158,12 @@ struct Initialize {
           fd::project(inactive_vars_ptr, *active_vars_ptr, dg_mesh,
                       subcell_mesh.extents());
           // Now check if the DG solution is admissible
-          // No need to check if always using subcell or the cell is
-          // on an external boundary
-          if (not cell_is_troubled and cell_is_not_on_external_boundary) {
+          // No need to check if
+          //  - always using subcell, or
+          //  - the element is at external boundary and
+          //  `subcell_enabled_at_external_boundary` is set to `false`.
+          if (not cell_is_troubled and (cell_is_not_on_external_boundary or
+                                        subcell_enabled_at_external_boundary)) {
             cell_is_troubled |= TciMutator::apply(
                 *active_vars_ptr, *inactive_vars_ptr,
                 subcell_options.initial_data_rdmp_delta0(),

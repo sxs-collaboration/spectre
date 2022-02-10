@@ -129,6 +129,10 @@ struct Metavariables {
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
   static bool tci_invoked;
 
+  struct SubcellOptions {
+    static constexpr bool subcell_enabled_at_external_boundary = false;
+  };
+
   struct TciOnDgGrid {
     using return_tags = tmpl::list<>;
     using argument_tags =

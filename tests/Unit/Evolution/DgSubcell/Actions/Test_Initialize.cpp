@@ -125,6 +125,10 @@ struct Metavariables {
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) {}
 
+  struct SubcellOptions {
+    static constexpr bool subcell_enabled_at_external_boundary = false;
+  };
+
   struct DgInitialDataTci {
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
     static bool invoked;

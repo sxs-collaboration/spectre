@@ -49,8 +49,9 @@ namespace evolution::dg::subcell::Actions {
  * Interior cells are marked as troubled if
  * `subcell_options.always_use_subcells()` is `true`, or if either the RDMP
  * troubled-cell indicator (TCI) or the TciMutator reports the cell is
- * troubled.  Exterior cells are never marked as troubled, because subcell
- * doesn't yet support boundary conditions.
+ * troubled. Exterior cells are marked as troubled only if
+ * `Metavariables::SubcellOptions::subcell_enabled_at_external_boundary` is
+ * `true`.
  *
  * The troubled-cell indicator (TCI) given by the mutator `TciMutator` can
  * mutate tags in the DataBox, but should do so cautiously. The main reason that
@@ -101,14 +102,16 @@ struct TciAndRollback {
     ASSERT(active_grid == ActiveGrid::Dg,
            "Must be using DG when calling TciAndRollback action.");
 
-    // Note: we currently cannot do subcell at boundaries, so only set on
-    // interior elements.
     const bool cell_is_not_on_external_boundary =
         db::get<::domain::Tags::Element<Dim>>(box)
             .external_boundaries()
             .empty();
 
-    if (cell_is_not_on_external_boundary) {
+    constexpr bool subcell_enabled_at_external_boundary =
+        Metavariables::SubcellOptions::subcell_enabled_at_external_boundary;
+
+    if (cell_is_not_on_external_boundary or
+        subcell_enabled_at_external_boundary) {
       const Mesh<Dim>& dg_mesh = db::get<::domain::Tags::Mesh<Dim>>(box);
       const Mesh<Dim>& subcell_mesh = db::get<Tags::Mesh<Dim>>(box);
 
