@@ -70,7 +70,8 @@ namespace Xcts::Solutions {
  * \frac{\beta}{R} + 1 = C u_\alpha(R)
  * \f]
  *
- * This solution is described in detail in \cite Baumgarte2006ug since it
+ * This solution is described in detail in \cite Baumgarte2006ug , and also in
+ * Exercise 3.8 in \cite BaumgarteShapiro , since it
  * exhibits the non-uniqueness properties that are typical for the XCTS system.
  * In the simple case of the constant-density star the non-uniqueness is
  * apparent from the function \f$f(\alpha)\f$, which has two solutions for any
