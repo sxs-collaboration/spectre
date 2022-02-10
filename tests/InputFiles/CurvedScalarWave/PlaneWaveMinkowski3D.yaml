@@ -16,6 +16,10 @@
 
 ResourceInfo:
   AvoidGlobalProc0: false
+  Singletons:
+    SphericalSurface:
+      Proc: Auto
+      Exclusive: false
 
 AnalyticData:
   ScalarWaveGr:

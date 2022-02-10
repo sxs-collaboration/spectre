@@ -16,6 +16,10 @@
 
 ResourceInfo:
   AvoidGlobalProc0: false
+  Singletons:
+    AhA:
+      Proc: Auto
+      Exclusive: false
 
 Evolution:
   InitialTime: 0.0
