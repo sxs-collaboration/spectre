@@ -6,6 +6,9 @@
 # ExpectedOutput:
 #   M1GreyReductions.h5
 
+ResourceInfo:
+  AvoidGlobalProc0: false
+
 Evolution:
   InitialTime: 0.0
   InitialTimeStep: 0.01

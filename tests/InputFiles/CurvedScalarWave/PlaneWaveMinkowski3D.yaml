@@ -14,6 +14,9 @@
 #     SkipColumns: [0, 1, 2]
 #     AbsoluteTolerance: 0.02
 
+ResourceInfo:
+  AvoidGlobalProc0: false
+
 AnalyticData:
   ScalarWaveGr:
     Background:

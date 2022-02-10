@@ -7,6 +7,9 @@
 #   ExportTimeDependentCoordinates3DVolume0.h5
 #   ExportTimeDependentCoordinates3DReductions.h5
 
+ResourceInfo:
+  AvoidGlobalProc0: false
+
 DomainCreator:
   # Parameters are chosen for an equal-mass, non-spinning binary black hole
   # using superposed-Kerr-Schild initial data created with the

@@ -4,6 +4,9 @@
 # Executable: EvolveCurvedScalarWavePlaneWaveMinkowski2D
 # Check: parse;execute
 
+ResourceInfo:
+  AvoidGlobalProc0: false
+
 AnalyticData:
   ScalarWaveGr:
     Background:

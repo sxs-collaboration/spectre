@@ -4,6 +4,9 @@
 # Executable: EvolveScalarWavePlaneWave3D
 # Check: parse;execute
 
+ResourceInfo:
+  AvoidGlobalProc0: false
+
 AnalyticSolution:
   PlaneWave:
     WaveVector: [1.0, 1.0, 1.0]

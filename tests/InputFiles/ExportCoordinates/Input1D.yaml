@@ -7,6 +7,9 @@
 #   ExportCoordinates1DVolume0.h5
 #   ExportCoordinates1DReductions.h5
 
+ResourceInfo:
+  AvoidGlobalProc0: false
+
 DomainCreator:
   Interval:
     LowerBound: [0]

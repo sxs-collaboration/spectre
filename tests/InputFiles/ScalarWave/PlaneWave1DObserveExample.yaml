@@ -7,6 +7,9 @@
 #   ScalarWavePlaneWave1DObserveExampleVolume.h5
 #   ScalarWavePlaneWave1DObserveExampleReductions.h5
 
+ResourceInfo:
+  AvoidGlobalProc0: false
+
 AnalyticSolution:
   PlaneWave:
     WaveVector: [1.0]

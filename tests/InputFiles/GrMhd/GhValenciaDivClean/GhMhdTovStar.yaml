@@ -8,6 +8,9 @@
 #   GhMhdTovStarVolume0.h5
 #   GhMhdTovStarReductions.h5
 
+ResourceInfo:
+  AvoidGlobalProc0: false
+
 Evolution:
   InitialTime: 0.0
   InitialTimeStep: 0.0001

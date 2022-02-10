@@ -8,6 +8,9 @@
 #   GhGaugeWave1DVolume0.h5
 #   GhGaugeWave1DReductions.h5
 
+ResourceInfo:
+  AvoidGlobalProc0: false
+
 Evolution:
   InitialTime: 0.0
   InitialTimeStep: 0.002
