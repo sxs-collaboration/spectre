@@ -12,6 +12,9 @@
 # - Mass-lumping: inverse mass matrix is approximated by diagonal
 # - Internal penalty flux with sigma = 1.5 * (N_points - 1)^2 / h
 
+ResourceInfo:
+  AvoidGlobalProc0: false
+
 DomainCreator:
   Interval:
     LowerBound: [0]

@@ -4,6 +4,9 @@
 # This test problem is the same as detailed in `Test_MultigridAlgorithmMassive.yaml`,
 # but the multigrid solver is used to precondition a GMRES solver.
 
+ResourceInfo:
+  AvoidGlobalProc0: false
+
 DomainCreator:
   Interval:
     LowerBound: [0]

@@ -13,6 +13,9 @@
 # - The operator is symmetric, which helps the Richardson preconditioner
 #   converge.
 
+ResourceInfo:
+  AvoidGlobalProc0: false
+
 DomainCreator:
   Interval:
     LowerBound: [0]

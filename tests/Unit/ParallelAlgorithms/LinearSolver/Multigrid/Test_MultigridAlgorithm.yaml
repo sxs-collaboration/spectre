@@ -14,6 +14,9 @@
 #   restriction operation.
 # - Internal penalty flux with sigma = 1.5 * N_points^2 / h
 
+ResourceInfo:
+  AvoidGlobalProc0: false
+
 DomainCreator:
   Interval:
     LowerBound: [0]
