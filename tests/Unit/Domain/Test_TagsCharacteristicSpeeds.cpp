@@ -19,7 +19,7 @@
 #include "Domain/InterfaceComputeTags.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Tags.hpp"
-#include "Domain/TagsCharacteresticSpeeds.hpp"
+#include "Domain/TagsCharacteristicSpeeds.hpp"
 #include "Domain/TagsTimeDependent.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
@@ -149,7 +149,7 @@ void test_tags() {
   }
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.TagsCharacteresticSpeeds", "[Unit][Actions]") {
+SPECTRE_TEST_CASE("Unit.Domain.TagsCharacteristicSpeeds", "[Unit][Actions]") {
   test_tags<1, true>();
   test_tags<2, true>();
   test_tags<3, true>();

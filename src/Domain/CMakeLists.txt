@@ -44,7 +44,7 @@ spectre_target_headers(
   OptionTags.hpp
   SizeOfElement.hpp
   Tags.hpp
-  TagsCharacteresticSpeeds.hpp
+  TagsCharacteristicSpeeds.hpp
   TagsTimeDependent.hpp
   )
 
