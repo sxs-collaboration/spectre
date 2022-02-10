@@ -6,6 +6,7 @@
 #include <algorithm>
 
 #include "Time/TimeStepId.hpp"
+#include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/Math.hpp"
 
 namespace TimeSteppers {
@@ -52,8 +53,10 @@ std::vector<double> AdamsBashforthN::get_coefficients_impl(
     const std::vector<double>& steps) {
   const size_t order = steps.size();
   ASSERT(order >= 1 and order <= maximum_order, "Bad order" << order);
-  if (std::all_of(steps.begin(), steps.end(),
-                  [&steps](const double s) { return s == steps[0]; })) {
+  if (std::all_of(steps.begin(), steps.end(), [&steps](const double s) {
+        return equal_within_roundoff(
+            s, steps[0], 10.0 * std::numeric_limits<double>::epsilon(), 0.0);
+      })) {
     return constant_coefficients(order);
   }
 
