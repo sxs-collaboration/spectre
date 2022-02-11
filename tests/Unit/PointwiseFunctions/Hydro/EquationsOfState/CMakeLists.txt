@@ -7,6 +7,7 @@ set(LIBRARY_SOURCES
   Test_DarkEnergyFluid.cpp
   Test_IdealFluid.cpp
   Test_PolytropicFluid.cpp
+  Test_SpectralEoS.cpp
   )
 
 add_test_library(

@@ -24,6 +24,7 @@ template <bool IsRelativistic>
 class IdealFluid;
 template <bool IsRelativistic>
 class PolytropicFluid;
+class Spectral;
 }  // namespace EquationsOfState
 /// \endcond
 
@@ -32,11 +33,16 @@ namespace EquationsOfState {
 
 namespace detail {
 template <bool IsRelativistic, size_t ThermodynamicDim>
-struct DerivedClasses;
+struct DerivedClasses {};
 
-template <bool IsRelativistic>
-struct DerivedClasses<IsRelativistic, 1> {
-  using type = tmpl::list<PolytropicFluid<IsRelativistic>>;
+template <>
+struct DerivedClasses<true, 1> {
+  using type = tmpl::list<Spectral, PolytropicFluid<true>>;
+};
+
+template <>
+struct DerivedClasses<false, 1> {
+  using type = tmpl::list<PolytropicFluid<false>>;
 };
 
 template <>
@@ -48,6 +54,7 @@ template <>
 struct DerivedClasses<false, 2> {
   using type = tmpl::list<IdealFluid<false>>;
 };
+
 }  // namespace detail
 
 /*!
@@ -404,3 +411,4 @@ class EquationOfState<IsRelativistic, 2>
 #include "PointwiseFunctions/Hydro/EquationsOfState/DarkEnergyFluid.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/Spectral.hpp"
