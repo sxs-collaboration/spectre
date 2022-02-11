@@ -146,37 +146,57 @@ phase-dependent action lists (PDALs, pronounced "pedals").
 
 # Parallel Components {#dev_guide_parallelization_parallel_components}
 
+Building off the introduction, a %Parallel Component is essentially a wrapper
+around Charm++ chares that makes it easy for a user to add parallel objects into
+their program. Charm++ chares can be confusing to work with which is why we wrap
+them. Each parallel component runs its own \ref
+dev_guide_parallelization_core_algorithm "Algorithm". Data can be sent from one
+parallel component to another and the receiving parallel components' Algorithm
+will be able to take that data and continue the program.
+
+## 1. Types of Parallel Components {#dev_guide_parallelization_component_types}
+
+There are four types of %Parallel Components in SpECTRE:
+
+1. `Parallel::Algorithms::Singleton`s have one object in the entire execution of
+   the program. They are implemented as single element Charm++ chare arrays.
+   Charm++ does offer a distributed object called a singleton, however, we
+   explicitly don't use this for various reasons (see
+   Parallel::Algorithms::Singleton). Henceforth and throughout SpECTRE, a
+   `singleton` will refer to Parallel::Algorithms::Singleton and *not* a Charm++
+   singleton.
+2. `Parallel::Algorithms::Array`s hold zero or more elements, each of which is
+   an object distributed to some core. An array can grow and shrink in size
+   dynamically if need be and can also be bound to another array. A bound array
+   has the same number of elements as the array it is bound to, and elements
+   with the same ID are on the same core. See Charm++'s chare arrays for
+   details.
+3. `Parallel::Algorithms::Group`s are arrays with one element per core which are
+   not able to be moved around between cores. These are typically useful for
+   gathering data from elements of a Parallel::Algorithms::Array on their core,
+   and then processing or reducing the data further. See
+   [Charm++'s](http://charm.cs.illinois.edu/help) group chares for details.
+4. `Parallel::Algorithms::Nodegroup`s are similar to groups except that there is
+   one element per node. See [parallel component
+   placement](#dev_guide_parallelization_component_placement) for the definition
+   of a cores and nodes. We ensure that all entry method calls done through the
+   Algorithm's `simple_action` and `receive_data` functions are threadsafe.
+   User-controlled threading is possible by calling the entry method member
+   function `threaded_action`, which is like `simple_action` except it passes a
+   node lock to the `Action`'s apply function. Note that unlike
+   `simple_action`s, multiple `threaded_action`s can be executing simultaneously
+   on the same chare, but on different cores of the node.
+
+\note Technically there is a fifth type of parallel component called a MainChare
+which is placed and executed on the global zeroth core. However, there can only
+be one of these in a executable, it is entirely different from a Singleton, and
+it is not specifiable by the user so we omit it from the count here.
+
+## 2. Requirements {#dev_guide_parallelization_component_requirements}
+
 Each %Parallel Component struct must have the following type aliases:
-1. `using chare_type` is set to one of:
-   1. `Parallel::Algorithms::Singleton`s have one object in the entire execution
-      of the program. They are implemented as single element Charm++ chare
-      arrays. Charm++ does offer a distributed object called a singleton,
-      however, we explicitely don't use this for various reasons (see
-      Parallel::Algorithms::Singleton). Henceforth and throughout SpECTRE, a
-      `singleton` will refer to Parallel::Algorithms::Singleton and *not* a
-      Charm++ singleton.
-   2. `Parallel::Algorithms::Array`s hold zero or more elements, each of which
-      is an object distributed to some core. An array can grow and shrink in
-      size dynamically if need be and can also be bound to another array. A
-      bound array has the same number of elements as the array it is bound to,
-      and elements with the same ID are on the same core. See Charm++'s chare
-      arrays for details.
-   3. `Parallel::Algorithms::Group`s are arrays with
-      one element per core which are not able to be moved around between
-      cores. These are typically useful for gathering data from array elements
-      on their core, and then processing or reducing the data further. See
-      [Charm++'s](http://charm.cs.illinois.edu/help) group chares for details.
-   4. `Parallel::Algorithms::Nodegroup`s are similar to
-      groups except that there is one element per node. For Charm++ SMP (shared
-      memory parallelism) builds, a node corresponds to the usual definition of
-      a node on a supercomputer. However, for non-SMP builds nodes and cores are
-      equivalent. We ensure that all entry method calls done through the
-      Algorithm's `simple_action` and `receive_data` functions are
-      threadsafe. User-controlled threading is possible by calling the entry
-      method member function `threaded_action`, which is like `simple_action`
-      except it passes a node lock to the `Action`'s apply function. Note
-      that unlike `simple_action`s, multiple `threaded_action`s can be
-      executing simultaneously on the same chare.
+1. `using chare_type` is set to one of the four \ref
+   dev_guide_parallelization_component_types "types of Parallel Components".
 2. `using metavariables` is set to the Metavariables struct that stores the
    global metavariables. It is often easiest to have the %Parallel
    Component struct have a template parameter `Metavariables` that is the
@@ -222,6 +242,7 @@ Each %Parallel Component struct must have the following type aliases:
    Parallel::GlobalCache (of which there is one copy per Charm++
    core).  The alias can be omitted if the list is empty.
 
+\parblock
 \note Array parallel components must also specify the type alias `using
 array_index`, which is set to the type that indexes the %Parallel Component
 Array. Charm++ allows arrays to be 1 through 6 dimensional or be indexed by a
@@ -233,6 +254,12 @@ that provides this functionality (see `Parallel::ArrayIndex`); all that you need
 to provide is a plain-old-data
 ([POD](http://en.cppreference.com/w/cpp/concept/PODType)) struct of the size of
 at most 3 integers.
+\endparblock
+
+\parblock
+\note Singletons use an `array_index` of type `int`, but users need not specify
+this. It is already specified in the implementation of a singleton.
+\endparblock
 
 %Parallel array components have a static `allocate_array` function
 that is used to construct the elements of the array. The
@@ -275,18 +302,119 @@ during the next phase. Typically the `execute_next_phase` function should just
 call `start_phase(phase)` on the parallel component. In the future
 `execute_next_phase` may be removed.
 
+## 3. Examples {#dev_guide_parallelization_component_examples}
+
 An example of a singleton parallel component is:
 \snippet Test_AlgorithmParallel.cpp singleton_parallel_component
 
 An example of an array parallel component is:
 \snippet Test_AlgorithmParallel.cpp array_parallel_component
-Elements are inserted into the array by using the Charm++ `insert` member
-function of the CProxy for the array. The `insert` function is documented in
-the Charm++ manual. In the above Array example `array_proxy` is a `CProxy` and
-so all the documentation for Charm++ array proxies applies. SpECTRE always
-creates empty arrays with the constructor and requires users to insert however
-many elements they want and on which cores they want them to be placed. Note
-that load balancing calls may result in array elements being moved.
+
+There are some parallel components that are common to many executables.
+
+- Parallel::GlobalCache (a Parallel::Algorithms::Nodegroup)
+- Parallel::MutableGlobalCache (a Parallel::Algorithms::Group)
+- DgElementArray (a Parallel::Algorithms::Array)
+- observers::Observer (a Parallel::Algorithms::Group)
+- observers::ObserverWriter (a Parallel::Algorithms::Nodegroup)
+
+The MutableGlobalCache deserves special mention, which is why is has its own
+section with instructions on how to use it. See [Mutable items in the
+GlobalCache](#dev_guide_parallelization_mutable_global_cache).
+
+## 4. Placement {#dev_guide_parallelization_component_placement}
+
+The user has some control over where parallel components get placed on the
+resources it is running on. Here is a figure that illustrates how one may place
+parallel components.
+
+\image html charm_node_structure.png "Parallel component placement."
+
+In this example we are running on three (3) nodes that have four (4) cores each.
+For all our executables, we reserve one core of each node purely for
+communication purposes. Nothing else is run on this core. Because of this, what
+Charm++ calls a node, doesn't correspond to a full node on a supercomputer. A
+charm-node simply corresponds to a collection of cores on a physical node. In
+our case, a charm-node is represented by the remaining cores on a node not used
+for communication (i.e. the first charm-node corresponds to cores 1-3 on the
+first physical node). Also the definition of a charm-core doesn't necessarily
+have to correspond to an actual core (it could correspond to a hyperthreaded
+virtual core), however, for our purposes, it does.
+
+SpECTRE offers wrappers around Charm++ functions that will tell you the total
+number of charm-nodes/cores in an executable and what charm-node/core a parallel
+component is on. (In the following examples, the type `T` is an `int` or a
+`size_t`)
+
+- `Parallel::my_node<T>()` returns the charm-node that the parallel component is
+  on. In the figure, `Sing. 4` would return `2`.
+- `Parallel::my_proc<T>()` returns the charm-core that the parallel component is
+  on. In the figure, `Sing. 4` would return `6` (*not* `9`).
+- `Parallel::number_of_nodes<T>()` returns the total number of charm-nodes in an
+  executable. The above figure would have `3` charm-nodes.
+- `Parallel::number_of_procs<T>()` returns the total number of charm-cores in an
+  executable. The above figure would have `9` charm-cores (*not* `12`).
+
+\note For Charm++ SMP (shared memory parallelism) builds, a node corresponds to
+a collection of cores on a physical node, and a core corresponds to a processor
+on that physical node. However, for non-SMP builds, nodes and cores are
+equivalent. All of our builds are done with Charm++ SMP so nodes and cores have
+their usual definitions.
+
+The placement of Groups and Nodegroups are determined by Charm++. This is
+because a Group is on every charm-core and a Nodegroup is on every charm-node.
+Even though Nodegroups are one per charm-node, the user can't choose which core
+is used on the charm-node. They run on the next available charm-core on the
+charm-node.
+
+The Elements of an Array, however, can be placed on specific charm-cores. They
+are inserted into the Array by using the Charm++ `insert` member function of the
+CProxy for the Array. The `insert` function is documented in the Charm++ manual.
+In the Array example in the
+[Examples](#dev_guide_parallelization_component_examples) section, `array_proxy`
+is a `CProxy` and so all the documentation for Charm++ array proxies applies.
+SpECTRE always creates empty arrays with the constructor and requires users to
+insert however many elements they want and on which charm-cores they want them
+to be placed. Note that load balancing calls may result in array elements being
+moved.
+
+In a similar fashion, Singletons can also be placed on specific charm-cores.
+This can be specified in the input file.
+
+From an input file, there are two ways to specify where Array/Singleton parallel
+components can be placed.
+
+```yaml
+ResourceInfo:
+  AvoidGlobalProc0: true
+  Singletons:
+    AhA:
+      Proc: 12
+      Exclusive: true
+    AhB:
+      Proc: Auto
+      Exclusive: false
+```
+
+First is the `AvoidGlobalProc0` option. This will be available if any Array or
+Singleton component adds the `Parallel::Tags::AvoidGlobalProc0` tag to its
+`initialization_tags` type alias. This option will tell the program to not put
+*any* Array Elements or Singletons on the global zeroth charm-core. This core
+is sometimes used to write data to disk which is typically much slower than the
+program execution. The second is the `Singletons:` option. This will be
+available for every Singleton that adds the `Parallel::Tags::SingletonInfo` tag
+to its `initialization_tags` type alias. `AhA` is the `pretty_type::name()` of
+a Singleton in the program and the user has a choice of which proc to place the
+Singleton on (`Auto` will let the program decide) and whether to exclude Array
+Elements or other Singletons from being put on this core. This is useful in
+case the Singleton does some expensive computation that shouldn't be slowed
+down by having lots of Array Elements on the same core. In the figure above,
+`AvoidGlobalProc0` is true, and `Sing. 2` requested to be exclusively on core
+`2`.
+
+\note If there are Singletons in your executable that don't have the
+`Parallel::Tags::SingletonInfo` tag, by default their proc will be chosen
+automatically and they won't be exclusive.
 
 # Actions {#dev_guide_parallelization_actions}
 
@@ -607,7 +735,7 @@ And the corresponding invocation:
 
 \snippet Test_AlgorithmLocalSyncAction.cpp synchronous_action_invocation_example
 
-# Mutable items in the GlobalCache
+# Mutable items in the GlobalCache {#dev_guide_parallelization_mutable_global_cache}
 
 Most items in the GlobalCache are constant, and are specified
 by type aliases called `const_global_cache_tags` as
