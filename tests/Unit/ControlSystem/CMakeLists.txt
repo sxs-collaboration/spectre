@@ -15,6 +15,7 @@ set(LIBRARY_SOURCES
   Test_TimescaleTuner.cpp
   Test_Trigger.cpp
   Test_UpdateFunctionOfTime.cpp
+  Test_WriteData.cpp
   )
 
 add_subdirectory(Actions)
