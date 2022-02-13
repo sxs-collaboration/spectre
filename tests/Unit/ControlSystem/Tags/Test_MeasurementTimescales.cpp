@@ -89,7 +89,7 @@ void test_measurement_tag() {
     const TimescaleTuner tuner2({timescale2}, 10.0, 1.0e-3, 1.0e-2, 1.0e-4,
                                 1.01, 0.99);
     const double averaging_fraction = 0.25;
-    const Averager<2> averager(averaging_fraction, true);
+    const Averager<1> averager(averaging_fraction, true);
     const double update_fraction = 0.3;
     const Controller<2> controller(update_fraction);
     const control_system::TestHelpers::ControlError control_error{};
@@ -159,7 +159,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Tags.MeasurementTimescales.Backwards",
   ERROR_TEST();
   const TimescaleTuner tuner1({27.0}, 10.0, 1.0e-3, 1.0e-2, 1.0e-4, 1.01, 0.99);
   const TimescaleTuner tuner2({0.1}, 10.0, 1.0e-3, 1.0e-2, 1.0e-4, 1.01, 0.99);
-  const Averager<2> averager(0.25, true);
+  const Averager<1> averager(0.25, true);
   const Controller<2> controller(0.3);
   const control_system::TestHelpers::ControlError control_error{};
 

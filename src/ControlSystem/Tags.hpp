@@ -24,6 +24,9 @@ namespace control_system {
 template <typename ControlSystem>
 struct OptionHolder;
 }  // namespace control_system
+namespace OptionTags {
+struct InitialTime;
+}  // namespace OptionTags
 /// \endcond
 
 namespace control_system {
@@ -93,13 +96,6 @@ using inputs =
 namespace Tags {
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ControlSystemGroup
-/// DataBox tag for the name of a control system
-struct ControlSystemName : db::SimpleTag {
-  using type = std::string;
-};
-
-/// \ingroup DataBoxTagsGroup
-/// \ingroup ControlSystemGroup
 /// DataBox tag for writing control system data to disk
 struct WriteDataToDisk : db::SimpleTag {
   using type = bool;
@@ -111,42 +107,61 @@ struct WriteDataToDisk : db::SimpleTag {
 
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ControlSystemGroup
-/// DataBox tag for all options of a single control system.
+/// DataBox tag for the averager
 ///
-/// Only intended to be used during the initialization phase as a way of getting
-/// options from multiple control systems into their corresponding components
-/// DataBox.
+/// To compute the `deriv_order`th derivative of a control error, the max
+/// derivative we need from the averager is the `deriv_order - 1`st derivative.
 template <typename ControlSystem>
-struct ControlSystemInputs : db::SimpleTag {
-  using type = control_system::OptionHolder<ControlSystem>;
+struct Averager : db::SimpleTag {
+  using type = ::Averager<ControlSystem::deriv_order - 1>;
+
   using option_tags =
       tmpl::list<OptionTags::ControlSystemInputs<ControlSystem>>;
-
   static constexpr bool pass_metavariables = false;
-  static type create_from_options(const type& option) { return option; }
-};
-
-/// \ingroup DataBoxTagsGroup
-/// \ingroup ControlSystemGroup
-/// DataBox tag for the averager
-template <size_t DerivOrder>
-struct Averager : db::SimpleTag {
-  using type = ::Averager<DerivOrder>;
+  static type create_from_options(
+      const control_system::OptionHolder<ControlSystem>& option_holder) {
+    return option_holder.averager;
+  }
 };
 
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ControlSystemGroup
 /// DataBox tag for the timescale tuner
+template <typename ControlSystem>
 struct TimescaleTuner : db::SimpleTag {
   using type = ::TimescaleTuner;
+
+  using option_tags =
+      tmpl::list<OptionTags::ControlSystemInputs<ControlSystem>>;
+  static constexpr bool pass_metavariables = false;
+  static type create_from_options(
+      const control_system::OptionHolder<ControlSystem>& option_holder) {
+    return option_holder.tuner;
+  }
 };
 
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ControlSystemGroup
 /// DataBox tag for the controller
-template <size_t DerivOrder>
+template <typename ControlSystem>
 struct Controller : db::SimpleTag {
-  using type = ::Controller<DerivOrder>;
+  using type = ::Controller<ControlSystem::deriv_order>;
+
+  using option_tags =
+      tmpl::list<::OptionTags::InitialTime,
+                 OptionTags::ControlSystemInputs<ControlSystem>>;
+  static constexpr bool pass_metavariables = false;
+  static type create_from_options(
+      const double initial_time,
+      const control_system::OptionHolder<ControlSystem>& option_holder) {
+    type controller = option_holder.controller;
+    const ::TimescaleTuner tuner = option_holder.tuner;
+
+    controller.set_initial_update_time(initial_time);
+    controller.assign_time_between_updates(min(tuner.current_timescale()));
+
+    return controller;
+  }
 };
 
 /// \ingroup DataBoxTagsGroup
@@ -155,6 +170,14 @@ struct Controller : db::SimpleTag {
 template <typename ControlSystem>
 struct ControlError : db::SimpleTag {
   using type = typename ControlSystem::control_error;
+
+  using option_tags =
+      tmpl::list<OptionTags::ControlSystemInputs<ControlSystem>>;
+  static constexpr bool pass_metavariables = false;
+  static type create_from_options(
+      const control_system::OptionHolder<ControlSystem>& option_holder) {
+    return option_holder.control_error;
+  }
 };
 }  // namespace Tags
 
@@ -171,7 +194,7 @@ struct OptionHolder {
   using control_system = ControlSystem;
   static constexpr size_t deriv_order = control_system::deriv_order;
   struct Averager {
-    using type = ::Averager<deriv_order>;
+    using type = ::Averager<deriv_order - 1>;
     static constexpr Options::String help = {
         "Averages the derivatives of the control error and possibly the "
         "control error itself."};
@@ -202,7 +225,7 @@ struct OptionHolder {
       tmpl::list<Averager, Controller, TimescaleTuner, ControlError>;
   static constexpr Options::String help = {"Options for a control system."};
 
-  OptionHolder(::Averager<deriv_order> input_averager,
+  OptionHolder(::Averager<deriv_order - 1> input_averager,
                ::Controller<deriv_order> input_controller,
                ::TimescaleTuner input_tuner,
                typename ControlSystem::control_error input_control_error)
@@ -228,7 +251,7 @@ struct OptionHolder {
 
   // These members are specifically made public for easy access during
   // initialization
-  ::Averager<deriv_order> averager{};
+  ::Averager<deriv_order - 1> averager{};
   ::Controller<deriv_order> controller{};
   ::TimescaleTuner tuner{};
   typename ControlSystem::control_error control_error{};

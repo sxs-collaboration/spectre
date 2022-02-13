@@ -180,7 +180,7 @@ void test_functions_of_time_tag() {
   const TimescaleTuner tuner1({timescale}, 10.0, 1.0e-3, 1.0e-2, 1.0e-4, 1.01,
                               0.99);
   const TimescaleTuner tuner2({0.1}, 10.0, 1.0e-3, 1.0e-2, 1.0e-4, 1.01, 0.99);
-  const Averager<2> averager(0.25, true);
+  const Averager<1> averager(0.25, true);
   const double update_fraction = 0.3;
   const Controller<2> controller(update_fraction);
   const control_system::TestHelpers::ControlError control_error{};
@@ -227,7 +227,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Tags.FunctionsOfTimeInitialize",
 
         const TimescaleTuner tuner({1.0}, 10.0, 1.0e-3, 1.0e-2, 1.0e-4, 1.01,
                                    0.99);
-        const Averager<2> averager(0.25, true);
+        const Averager<1> averager(0.25, true);
         const double update_fraction = 0.3;
         const Controller<2> controller(update_fraction);
         const control_system::TestHelpers::ControlError control_error{};
@@ -258,7 +258,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Tags.FunctionsOfTimeInitialize",
 
         const TimescaleTuner tuner({1.0}, 10.0, 1.0e-3, 1.0e-2, 1.0e-4, 1.01,
                                    0.99);
-        const Averager<2> averager(0.25, true);
+        const Averager<1> averager(0.25, true);
         const double update_fraction = 0.3;
         const Controller<2> controller(update_fraction);
         const control_system::TestHelpers::ControlError control_error{};
