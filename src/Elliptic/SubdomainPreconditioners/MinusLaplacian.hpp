@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include <boost/container_hash/hash.hpp>
 #include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <map>
