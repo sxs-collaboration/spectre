@@ -5,6 +5,7 @@
 
 #include <cstddef>
 
+#include "DataStructures/ApplyMatrices.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
 #include "Evolution/DgSubcell/Matrices.hpp"
@@ -21,13 +22,16 @@ template <size_t Dim>
 void project_impl(gsl::span<double> subcell_u,
                   const gsl::span<const double> dg_u, const Mesh<Dim>& dg_mesh,
                   const Index<Dim>& subcell_extents) {
-  const size_t number_of_components =
-      dg_u.size() / dg_mesh.number_of_grid_points();
-  const Matrix& proj_matrix = projection_matrix(dg_mesh, subcell_extents);
-  dgemm_<true>('N', 'N', proj_matrix.rows(), number_of_components,
-               proj_matrix.columns(), 1.0, proj_matrix.data(),
-               proj_matrix.rows(), dg_u.data(), proj_matrix.columns(), 0.0,
-               subcell_u.data(), proj_matrix.rows());
+  const Matrix empty{};
+  auto projection_mat = make_array<Dim>(std::cref(empty));
+  for (size_t d = 0; d < Dim; d++) {
+    gsl::at(projection_mat, d) = std::cref(
+        projection_matrix(dg_mesh.slice_through(d), subcell_extents[d]));
+  }
+  DataVector result{subcell_u.data(), subcell_u.size()};
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+  const DataVector u{const_cast<double*>(dg_u.data()), dg_u.size()};
+  apply_matrices(make_not_null(&result), projection_mat, u, dg_mesh.extents());
 }
 }  // namespace detail
 

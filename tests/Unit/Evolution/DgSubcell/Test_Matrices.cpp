@@ -7,10 +7,11 @@
 #include <array>
 #include <cstddef>
 
+#include "DataStructures/ApplyMatrices.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Matrix.hpp"
-#include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/LogicalCoordinates.hpp"
 #include "Evolution/DgSubcell/Matrices.hpp"
 #include "Helpers/Evolution/DgSubcell/ProjectionTestHelpers.hpp"
@@ -45,13 +46,15 @@ void test_projection_matrix() {
         TestHelpers::evolution::dg::subcell::cell_values(dg_mesh.extents(0) - 2,
                                                          logical_coords);
 
-    const Matrix& proj_matrix =
-        projection_matrix(dg_mesh, subcell_mesh.extents());
-
+    Matrix empty{};
+    auto projection_mat = make_array<Dim>(std::cref(empty));
+    for (size_t d = 0; d < Dim; ++d) {
+      gsl::at(projection_mat, d) = std::cref(projection_matrix(
+          dg_mesh.slice_through(d), subcell_mesh.extents()[d]));
+    }
     DataVector cell_centered_values(num_subcells, 0.0);
-    dgemv_('N', proj_matrix.rows(), proj_matrix.columns(), 1.0,
-           proj_matrix.data(), proj_matrix.rows(), nodal_coeffs.data(), 1, 0.0,
-           cell_centered_values.data(), 1);
+    apply_matrices(make_not_null(&cell_centered_values), projection_mat,
+                   nodal_coeffs, dg_mesh.extents());
 
     CHECK_ITERABLE_APPROX(
         cell_centered_values,
