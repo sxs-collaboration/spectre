@@ -39,6 +39,7 @@ set(LIBRARY_SOURCES
   Test_StdHelpers.cpp
   Test_TaggedTuple.cpp
   Test_TMPL.cpp
+  Test_TMPLDocumentation.cpp
   Test_Tuple.cpp
   Test_TupleSlice.cpp
   Test_VectorAlgebra.cpp
