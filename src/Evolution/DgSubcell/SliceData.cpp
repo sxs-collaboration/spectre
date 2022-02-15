@@ -11,6 +11,7 @@
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/Side.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 
@@ -86,8 +87,17 @@ DirectionMap<Dim, std::vector<double>> slice_data_impl(
   const size_t number_of_components = volume_subcell_vars.size() / num_pts;
   std::array<size_t, Dim> result_grid_points{};
   for (size_t d = 0; d < Dim; ++d) {
-    gsl::at(result_grid_points, d) =
+    const size_t num_sliced_pts =
         number_of_ghost_points * subcell_extents.slice_away(d).product();
+
+    ASSERT(num_sliced_pts <= num_pts,
+           "Number of ghost points (" << number_of_ghost_points
+                                      << ") is larger than the subcell mesh "
+                                         "extent to the slicing direction ("
+                                      << subcell_extents.indices().at(d)
+                                      << ") ");
+
+    gsl::at(result_grid_points, d) = num_sliced_pts;
   }
   DirectionMap<Dim, std::vector<double>> result{};
   for (const auto& [dir, should_slice] : directions_to_slice) {
