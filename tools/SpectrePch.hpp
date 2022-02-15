@@ -14,9 +14,10 @@
 #include <utility>
 #include <vector>
 
-#include <Utilities/Blaze.hpp>
 #include <Utilities/ErrorHandling/Assert.hpp>
 #include <blaze/math/CustomVector.h>
+#include <blaze/math/DenseVector.h>
+#include <blaze/math/GroupTag.h>
 #include <blaze/math/typetraits/IsVector.h>
 #include <blaze/system/Optimizations.h>
 #include <blaze/system/Version.h>

@@ -10,7 +10,6 @@
 
 #include "DataStructures/Variables.hpp"
 #include "Utilities/Blas.hpp"
-#include "Utilities/Blaze.hpp"
 #include "Utilities/ForceInline.hpp"
 
 namespace LinearSolver {

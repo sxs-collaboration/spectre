@@ -6,16 +6,13 @@
 
 #pragma once
 
+#include <blaze/math/DynamicVector.h>
 #include <pup.h>  // IWYU pragma: keep
 
 #include "Options/Options.hpp"
-#include "Utilities/Blaze.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TypeTraits.hpp"
-
-#include <blaze/math/DynamicVector.h>
-#include <blaze/system/Version.h>
 
 /*!
  * \ingroup DataStructuresGroup

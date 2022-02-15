@@ -3,7 +3,8 @@
 
 #pragma once
 
-#include "Utilities/Blaze.hpp"
+#include <blaze/math/traits/MultTrait.h>
+
 #include "Utilities/Gsl.hpp"
 
 /// @{
