@@ -20,6 +20,7 @@
 #include <pup.h>
 #include <type_traits>
 
+#include "DataStructures/Blaze/StepFunction.hpp"
 #include "Utilities/Blaze.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ForceInline.hpp"

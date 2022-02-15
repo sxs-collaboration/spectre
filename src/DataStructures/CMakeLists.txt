@@ -73,6 +73,7 @@ target_link_libraries(
   Utilities
   )
 
+add_subdirectory(Blaze)
 add_subdirectory(DataBox)
 add_subdirectory(Python)
 add_subdirectory(Tags)
