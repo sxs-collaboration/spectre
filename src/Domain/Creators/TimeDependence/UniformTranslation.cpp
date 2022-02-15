@@ -47,7 +47,7 @@ UniformTranslation<MeshDim, Index>::block_maps(
   std::vector<std::unique_ptr<
       domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, MeshDim>>>
       result{number_of_blocks};
-  result[0] = std::make_unique<MapForComposition>(map_for_composition());
+  result[0] = std::make_unique<GridToInertialMap>(grid_to_inertial_map());
   for (size_t i = 1; i < number_of_blocks; ++i) {
     result[i] = result[0]->get_clone();
   }
@@ -89,9 +89,9 @@ UniformTranslation<MeshDim, Index>::functions_of_time(
 }
 
 template <size_t MeshDim, size_t Index>
-auto UniformTranslation<MeshDim, Index>::map_for_composition() const
-    -> MapForComposition {
-  return MapForComposition{
+auto UniformTranslation<MeshDim, Index>::grid_to_inertial_map() const
+    -> GridToInertialMap {
+  return GridToInertialMap{
       domain::CoordinateMaps::TimeDependent::Translation<MeshDim>{
           function_of_time_name_}};
 }

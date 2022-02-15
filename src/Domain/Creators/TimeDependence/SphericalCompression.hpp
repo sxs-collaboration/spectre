@@ -106,7 +106,7 @@ class SphericalCompression final : public TimeDependence<3> {
         "Spherical compression initial radial acceleration."};
   };
 
-  using MapForComposition =
+  using GridToInertialMap =
       detail::generate_coordinate_map_t<tmpl::list<SphericalCompressionMap>>;
 
   using options =
@@ -140,14 +140,12 @@ class SphericalCompression final : public TimeDependence<3> {
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;
 
-  /// Returns the map for each block to be used in a composition of
-  /// `TimeDependence`s.
-  MapForComposition map_for_composition() const;
-
  private:
   // NOLINTNEXTLINE(readability-redundant-declaration)
   friend bool operator==(const SphericalCompression& lhs,
                          const SphericalCompression& rhs);
+
+  GridToInertialMap grid_to_inertial_map() const;
 
   double initial_time_{std::numeric_limits<double>::signaling_NaN()};
   double min_radius_{std::numeric_limits<double>::signaling_NaN()};

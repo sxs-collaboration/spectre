@@ -91,7 +91,7 @@ class UniformRotationAboutZAxis final : public TimeDependence<MeshDim> {
         "The angular velocity of the map."};
   };
 
-  using MapForComposition = detail::generate_coordinate_map_t<
+  using GridToInertialMap = detail::generate_coordinate_map_t<
       tmpl::list<tmpl::conditional_t<MeshDim == 2, Rotation,
                                      domain::CoordinateMaps::TimeDependent::
                                          ProductOf2Maps<Rotation, Identity>>>>;
@@ -124,15 +124,13 @@ class UniformRotationAboutZAxis final : public TimeDependence<MeshDim> {
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;
 
-  /// Returns the map for each block to be used in a composition of
-  /// `TimeDependence`s.
-  MapForComposition map_for_composition() const;
-
  private:
   template <size_t LocalDim>
   // NOLINTNEXTLINE(readability-redundant-declaration)
   friend bool operator==(const UniformRotationAboutZAxis<LocalDim>& lhs,
                          const UniformRotationAboutZAxis<LocalDim>& rhs);
+
+  GridToInertialMap grid_to_inertial_map() const;
 
   double initial_time_{std::numeric_limits<double>::signaling_NaN()};
   double angular_velocity_{std::numeric_limits<double>::signaling_NaN()};

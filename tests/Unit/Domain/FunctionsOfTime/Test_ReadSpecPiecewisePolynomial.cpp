@@ -196,17 +196,14 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.ReadSpecPiecewisePolynomial",
       "  InitialRefinement: [0, 0, 0]\n"
       "  InitialGridPoints: [5, 5, 5]\n"
       "  TimeDependence:\n"
-      "    Composition:\n"
-      "      CubicScale:\n"
-      "        InitialTime: 0.0\n"
-      "        InitialExpansion: [1.0, 1.0]\n"
-      "        UseLinearScaling: false\n"
-      "        Velocity: [0.0, 0.0]\n"
-      "        Acceleration: [0.0, 0.0]\n"
-      "        OuterBoundary: 839.661030811156\n"
-      "      UniformRotationAboutZAxis:\n"
-      "        InitialTime: 0.0\n"
-      "        AngularVelocity: 0.0\n");
+      "    ScalingAndZRotation:\n"
+      "      InitialTime: 0.0\n"
+      "      InitialExpansion: [1.0, 1.0]\n"
+      "      UseLinearScaling: false\n"
+      "      Velocity: [0.0, 0.0]\n"
+      "      Acceleration: [0.0, 0.0]\n"
+      "      OuterBoundary: 839.661030811156\n"
+      "      AngularVelocity: 0.0\n");
   const auto created_function_of_time_file = TestHelpers::test_option_tag<
       domain::FunctionsOfTime::OptionTags::FunctionOfTimeFile>(test_filename);
   const auto created_function_of_time_name_map = TestHelpers::test_option_tag<

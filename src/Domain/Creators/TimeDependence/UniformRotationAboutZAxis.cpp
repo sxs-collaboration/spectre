@@ -50,7 +50,7 @@ UniformRotationAboutZAxis<MeshDim>::block_maps(
   std::vector<std::unique_ptr<
       domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, MeshDim>>>
       result{number_of_blocks};
-  result[0] = std::make_unique<MapForComposition>(map_for_composition());
+  result[0] = std::make_unique<GridToInertialMap>(grid_to_inertial_map());
   for (size_t i = 1; i < number_of_blocks; ++i) {
     result[i] = result[0]->get_clone();
   }
@@ -87,19 +87,19 @@ UniformRotationAboutZAxis<MeshDim>::functions_of_time(
 }
 
 template <>
-auto UniformRotationAboutZAxis<2>::map_for_composition() const
-    -> MapForComposition {
-  return MapForComposition{domain::CoordinateMaps::TimeDependent::Rotation<2>{
+auto UniformRotationAboutZAxis<2>::grid_to_inertial_map() const
+    -> GridToInertialMap {
+  return GridToInertialMap{domain::CoordinateMaps::TimeDependent::Rotation<2>{
       function_of_time_name_}};
 }
 
 template <>
-auto UniformRotationAboutZAxis<3>::map_for_composition() const
-    -> MapForComposition {
+auto UniformRotationAboutZAxis<3>::grid_to_inertial_map() const
+    -> GridToInertialMap {
   using ProductMap = domain::CoordinateMaps::TimeDependent::ProductOf2Maps<
       domain::CoordinateMaps::TimeDependent::Rotation<2>,
       domain::CoordinateMaps::Identity<1>>;
-  return MapForComposition{
+  return GridToInertialMap{
       ProductMap{domain::CoordinateMaps::TimeDependent::Rotation<2>{
                      function_of_time_name_},
                  domain::CoordinateMaps::Identity<1>{}}};

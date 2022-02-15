@@ -63,7 +63,7 @@ SphericalCompression::block_maps(const size_t number_of_blocks) const {
   std::vector<std::unique_ptr<
       domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, 3>>>
       result{number_of_blocks};
-  result[0] = std::make_unique<MapForComposition>(map_for_composition());
+  result[0] = std::make_unique<GridToInertialMap>(grid_to_inertial_map());
   for (size_t i = 1; i < number_of_blocks; ++i) {
     result[i] = result[0]->get_clone();
   }
@@ -99,8 +99,8 @@ SphericalCompression::functions_of_time(
   return result;
 }
 
-auto SphericalCompression::map_for_composition() const -> MapForComposition {
-  return MapForComposition{SphericalCompressionMap{
+auto SphericalCompression::grid_to_inertial_map() const -> GridToInertialMap {
+  return GridToInertialMap{SphericalCompressionMap{
       function_of_time_name_, min_radius_, max_radius_, center_}};
 }
 

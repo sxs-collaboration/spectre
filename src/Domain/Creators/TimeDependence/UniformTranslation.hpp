@@ -86,7 +86,7 @@ class UniformTranslation final : public TimeDependence<MeshDim> {
     static constexpr Options::String help = {"The velocity of the map."};
   };
 
-  using MapForComposition =
+  using GridToInertialMap =
       detail::generate_coordinate_map_t<tmpl::list<TranslationMap>>;
 
   using options = tmpl::list<InitialTime, Velocity>;
@@ -116,10 +116,6 @@ class UniformTranslation final : public TimeDependence<MeshDim> {
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;
 
-  /// Returns the map for each block to be used in a composition of
-  /// `TimeDependence`s.
-  MapForComposition map_for_composition() const;
-
   static std::string name() {
     return "UniformTranslation" + (Index == 0 ? "" : get_output(Index));
   }
@@ -129,6 +125,8 @@ class UniformTranslation final : public TimeDependence<MeshDim> {
   // NOLINTNEXTLINE(readability-redundant-declaration)
   friend bool operator==(const UniformTranslation<LocalDim, LocalIndex>& lhs,
                          const UniformTranslation<LocalDim, LocalIndex>& rhs);
+
+  GridToInertialMap grid_to_inertial_map() const;
 
   double initial_time_{std::numeric_limits<double>::signaling_NaN()};
   std::array<double, MeshDim> velocity_{};

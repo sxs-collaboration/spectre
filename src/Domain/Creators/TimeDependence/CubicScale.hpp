@@ -101,7 +101,7 @@ class CubicScale final : public TimeDependence<MeshDim> {
       "If the two functions of time have the same name then the scaling is a\n"
       "linear radial scaling."};
 
-  using MapForComposition =
+  using GridToInertialMap =
       domain::CoordinateMap<Frame::Grid, Frame::Inertial, CubicScaleMap>;
 
   CubicScale() = default;
@@ -129,15 +129,13 @@ class CubicScale final : public TimeDependence<MeshDim> {
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;
 
-  /// Returns the map for each block to be used in a composition of
-  /// `TimeDependence`s.
-  MapForComposition map_for_composition() const;
-
  private:
   template <size_t LocalDim>
   // NOLINTNEXTLINE(readability-redundant-declaration)
   friend bool operator==(const CubicScale<LocalDim>& lhs,
                          const CubicScale<LocalDim>& rhs);
+
+  GridToInertialMap grid_to_inertial_map() const;
 
   double initial_time_{std::numeric_limits<double>::signaling_NaN()};
   double outer_boundary_{std::numeric_limits<double>::signaling_NaN()};

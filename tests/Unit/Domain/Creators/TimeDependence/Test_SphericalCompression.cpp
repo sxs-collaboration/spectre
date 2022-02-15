@@ -101,9 +101,6 @@ void test(const std::unique_ptr<TimeDependence<3>>& time_dep_unique_ptr,
 
   const auto functions_of_time = time_dep_unique_ptr->functions_of_time();
 
-  // Test map for composition
-  CHECK(time_dep->map_for_composition() == expected_block_map);
-
   // For a random point at a random time check that the values agree. This is
   // to check that the internals were assigned the correct function of times.
   // The points are are drawn from the positive x/y/z quadrant in a that

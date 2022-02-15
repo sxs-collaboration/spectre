@@ -29,15 +29,13 @@ template <size_t MeshDim>
 class CubicScale;
 template <size_t MeshDim>
 class None;
+template <size_t MeshDim>
+class ScalingAndZRotation;
 class SphericalCompression;
 template <size_t MeshDim>
 class UniformRotationAboutZAxis;
 template <size_t MeshDim, size_t Index = 0>
 class UniformTranslation;
-template <typename TimeDependenceCompTag0, typename... TimeDependenceCompTags>
-class Composition;
-template <typename TimeDep>
-struct TimeDependenceCompositionTag;
 }  // namespace domain::creators::time_dependence
 /// \endcond
 
@@ -57,11 +55,11 @@ template <size_t MeshDim>
 struct TimeDependence {
  private:
   using creatable_classes_1d = tmpl::list<>;
-  using creatable_classes_2d = tmpl::list<UniformRotationAboutZAxis<2>>;
-  using creatable_classes_3d = tmpl::list<
-      SphericalCompression, UniformRotationAboutZAxis<3>,
-      Composition<TimeDependenceCompositionTag<CubicScale<3>>,
-                  TimeDependenceCompositionTag<UniformRotationAboutZAxis<3>>>>;
+  using creatable_classes_2d =
+      tmpl::list<UniformRotationAboutZAxis<2>, ScalingAndZRotation<2>>;
+  using creatable_classes_3d =
+      tmpl::list<SphericalCompression, UniformRotationAboutZAxis<3>,
+                 ScalingAndZRotation<3>>;
   using creatable_classes_any_dim =
       tmpl::list<CubicScale<MeshDim>, None<MeshDim>,
                  UniformTranslation<MeshDim>>;
@@ -112,9 +110,9 @@ TimeDependence<MeshDim>::~TimeDependence() = default;
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/TimeDependent/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/ProductMaps.tpp"
-#include "Domain/Creators/TimeDependence/Composition.hpp"
 #include "Domain/Creators/TimeDependence/CubicScale.hpp"
 #include "Domain/Creators/TimeDependence/None.hpp"
+#include "Domain/Creators/TimeDependence/ScalingAndZRotation.hpp"
 #include "Domain/Creators/TimeDependence/SphericalCompression.hpp"
 #include "Domain/Creators/TimeDependence/UniformRotationAboutZAxis.hpp"
 #include "Domain/Creators/TimeDependence/UniformTranslation.hpp"
