@@ -10,6 +10,7 @@
 #include <blaze/math/AlignmentFlag.h>
 #include <blaze/math/CustomVector.h>
 #include <blaze/math/DenseVector.h>
+#include <blaze/math/GroupTag.h>
 #include <blaze/math/PaddingFlag.h>
 #include <blaze/math/TransposeFlag.h>
 #include <blaze/math/Vector.h>
@@ -121,7 +122,7 @@ class Variables<tmpl::list<Tags...>> {
   using pointer_type =
       blaze::CustomVector<value_type, blaze::AlignmentFlag::unaligned,
                           blaze::PaddingFlag::unpadded, transpose_flag,
-                          blaze_default_group, vector_type>;
+                          blaze::GroupTag<0>, vector_type>;
 
   static_assert(
       std::is_fundamental_v<value_type> or tt::is_a_v<std::complex, value_type>,

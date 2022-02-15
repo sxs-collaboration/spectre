@@ -9,5 +9,3 @@
 #include <blaze/math/CustomVector.h>
 #include <blaze/math/DenseVector.h>
 #include <blaze/math/GroupTag.h>
-
-using blaze_default_group = blaze::GroupTag<0>;

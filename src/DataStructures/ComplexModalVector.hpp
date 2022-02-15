@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <blaze/math/GroupTag.h>
+
 #include "DataStructures/VectorImpl.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -151,7 +153,7 @@ template <typename Abs, typename Power>
 struct DVecNormHelper<
     blaze::CustomVector<std::complex<double>, blaze::AlignmentFlag::unaligned,
                         blaze::PaddingFlag::unpadded,
-                        blaze::defaultTransposeFlag, blaze_default_group,
+                        blaze::defaultTransposeFlag, blaze::GroupTag<0>,
                         ComplexModalVector>,
     Abs, Power> {};
 }  // namespace blaze

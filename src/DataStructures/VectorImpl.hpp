@@ -8,6 +8,7 @@
 #include <blaze/math/AlignmentFlag.h>
 #include <blaze/math/CustomVector.h>
 #include <blaze/math/DenseVector.h>
+#include <blaze/math/GroupTag.h>
 #include <blaze/math/PaddingFlag.h>
 #include <blaze/math/TransposeFlag.h>
 #include <cstddef>
@@ -21,7 +22,6 @@
 #include <type_traits>
 
 #include "DataStructures/Blaze/StepFunction.hpp"
-#include "Utilities/Blaze.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
@@ -78,14 +78,14 @@ template <typename T, typename VectorType>
 class VectorImpl
     : public blaze::CustomVector<
           T, blaze::AlignmentFlag::unaligned, blaze::PaddingFlag::unpadded,
-          blaze::defaultTransposeFlag, blaze_default_group, VectorType> {
+          blaze::defaultTransposeFlag, blaze::GroupTag<0>, VectorType> {
  public:
   using value_type = T;
   using size_type = size_t;
   using difference_type = std::ptrdiff_t;
   using BaseType = blaze::CustomVector<
       T, blaze::AlignmentFlag::unaligned, blaze::PaddingFlag::unpadded,
-      blaze::defaultTransposeFlag, blaze_default_group, VectorType>;
+      blaze::defaultTransposeFlag, blaze::GroupTag<0>, VectorType>;
   static constexpr bool transpose_flag = blaze::defaultTransposeFlag;
 
   using ElementType = T;
