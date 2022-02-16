@@ -254,6 +254,9 @@ set(CHARM_INCLUDE_EXTRA ${CHARM_CXX_FLAGS})
 list(FILTER CHARM_INCLUDE_EXTRA INCLUDE REGEX "^-I.+")
 list(FILTER CHARM_CXX_FLAGS EXCLUDE REGEX "^-I.+")
 list(TRANSFORM CHARM_INCLUDE_EXTRA REPLACE "^-I" "")
+# Filter out relative paths to `./proc_management` that are added for some
+# backends (ucx and ofi), since those paths don't seem to exist
+list(FILTER CHARM_INCLUDE_EXTRA EXCLUDE REGEX "^[.]/proc_management")
 list(APPEND CHARM_INCLUDE_DIRS ${CHARM_INCLUDE_EXTRA})
 # - Remove the rpath linker argument, since CMake adds it automatically.
 list(FILTER CHARM_LDXX_FLAGS EXCLUDE REGEX "^-Wl,-rpath,${CHARM_LIBRARIES}/?$")
