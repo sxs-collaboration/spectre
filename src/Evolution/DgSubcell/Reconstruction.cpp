@@ -32,11 +32,11 @@ void reconstruct_impl(
   if (reconstruction_method == ReconstructionMethod::AllDimsAtOnce) {
     const Matrix& recons_matrix =
         reconstruction_matrix(dg_mesh, subcell_extents);
-    dgemm_<true>('N', 'N', recons_matrix.rows(), number_of_components,
-                 recons_matrix.columns(), 1.0, recons_matrix.data(),
-                 recons_matrix.rows(), subcell_u_times_projected_det_jac.data(),
-                 recons_matrix.columns(), 0.0, dg_u.data(),
-                 recons_matrix.rows());
+    dgemm_<true>(
+        'N', 'N', recons_matrix.rows(), number_of_components,
+        recons_matrix.columns(), 1.0, recons_matrix.data(),
+        recons_matrix.spacing(), subcell_u_times_projected_det_jac.data(),
+        recons_matrix.columns(), 0.0, dg_u.data(), recons_matrix.rows());
   } else {
     ASSERT(reconstruction_method == ReconstructionMethod::DimByDim,
            "reconstruction_method must be either DimByDim or AllDimsAtOnce");
