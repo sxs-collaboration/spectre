@@ -153,7 +153,7 @@ void test_radius_and_derivs() {
   }
   const auto& strahlkorper_laplacian =
       db::get<StrahlkorperTags::LaplacianRadius<Frame::Inertial>>(box);
-  CHECK_ITERABLE_APPROX(strahlkorper_laplacian, expected_laplacian);
+  CHECK_ITERABLE_APPROX(get(strahlkorper_laplacian), expected_laplacian);
 }
 
 void test_normals() {
