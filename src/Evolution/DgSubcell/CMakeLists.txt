@@ -23,6 +23,7 @@ spectre_target_headers(
   RdmpTci.hpp
   RdmpTciData.hpp
   Reconstruction.hpp
+  ReconstructionMethod.hpp
   SliceData.hpp
   SliceTensor.hpp
   SubcellOptions.hpp
@@ -41,6 +42,7 @@ spectre_target_sources(
   Projection.cpp
   RdmpTciData.cpp
   Reconstruction.cpp
+  ReconstructionMethod.cpp
   SliceData.cpp
   SubcellOptions.cpp
   TciStatus.cpp
