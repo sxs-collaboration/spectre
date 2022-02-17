@@ -43,15 +43,12 @@ target_compile_definitions(Blaze
   #   functions are implemented for column-major layout. This default reduces
   #   conversions.
   BLAZE_DEFAULT_STORAGE_ORDER=blaze::columnMajor
-  # Override SMP configurations
+  # - Disable SMP parallelization. This disables SMP parallelization for all
+  #   possible backends (OpenMP, C++11 threads, Boost, HPX):
+  #   https://bitbucket.org/blaze-lib/blaze/wiki/Serial%20Execution#!option-3-deactivation-of-parallel-execution
   BLAZE_USE_SHARED_MEMORY_PARALLELIZATION=0
-  BLAZE_OPENMP_PARALLEL_MODE=0
-  BLAZE_CPP_THREADS_PARALLEL_MODE=0
-  BLAZE_BOOST_THREADS_PARALLEL_MODE=0
-  # Disable MPI parallelization
+  # - Disable MPI parallelization
   BLAZE_MPI_PARALLEL_MODE=0
-  # Disable HPX parallelization
-  BLAZE_HPX_PARALLEL_MODE=0
   BLAZE_USE_PADDING=0
   # Enable non-temporal stores for cache optimization of large data structures
   BLAZE_USE_STREAMING=1
