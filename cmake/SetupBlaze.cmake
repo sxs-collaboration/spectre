@@ -27,7 +27,8 @@ target_link_libraries(
   Lapack
   )
 
-# Configure Blaze. See documentation:
+# Configure Blaze. Some of the Blaze configuration options could be optimized
+# for the machine we are running on. See documentation:
 # https://bitbucket.org/blaze-lib/blaze/wiki/Configuration%20and%20Installation#!step-2-configuration
 target_compile_definitions(Blaze
   INTERFACE
@@ -49,6 +50,10 @@ target_compile_definitions(Blaze
   BLAZE_USE_SHARED_MEMORY_PARALLELIZATION=0
   # - Disable MPI parallelization
   BLAZE_MPI_PARALLEL_MODE=0
+  # - Using the default cache size, which may have been configured automatically
+  #   by the Blaze CMake configuration for the machine we are running on. We
+  #   could override it here explicitly to tune performance.
+  # BLAZE_CACHE_SIZE
   BLAZE_USE_PADDING=0
   # Enable non-temporal stores for cache optimization of large data structures
   BLAZE_USE_STREAMING=1

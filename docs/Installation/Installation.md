@@ -59,7 +59,9 @@ all of these dependencies.
 * [Charm++](http://charm.cs.illinois.edu/) 6.10.2, or 7.0.0 or later (experimental)
 * [Git](https://git-scm.com/)
 * BLAS (e.g. [OpenBLAS](http://www.openblas.net))
-* [Blaze](https://bitbucket.org/blaze-lib/blaze/overview) v3.8
+* [Blaze](https://bitbucket.org/blaze-lib/blaze/overview) v3.8. It can be
+  beneficial to install Blaze with CMake so some configuration options are
+  determined automatically, such as cache sizes.
 * [Boost](http://www.boost.org/) 1.60.0 or later
 * [Brigand](https://github.com/edouarda/brigand) at commit 1c398e4f1e817ab195e4cd6fbb03c18cb386eea3 (late 2020) or later
 * [Catch](https://github.com/catchorg/Catch2) 2.8.0 or later, but not 3.x as SpECTRE doesn't support v3 yet (If installing from source, it is easiest to use single-header installation)
