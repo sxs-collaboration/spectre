@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "ApparentHorizons/FastFlow.hpp"
-#include "ApparentHorizons/Strahlkorper.hpp"
 #include "ApparentHorizons/Tags.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
@@ -15,6 +14,7 @@
 #include "DataStructures/Variables.hpp"
 #include "IO/Logging/Tags.hpp"
 #include "IO/Logging/Verbosity.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"

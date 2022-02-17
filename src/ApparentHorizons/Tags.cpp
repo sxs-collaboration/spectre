@@ -6,9 +6,9 @@
 #include <cmath>
 #include <cstddef>
 
-#include "ApparentHorizons/StrahlkorperFunctions.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/StrahlkorperFunctions.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"

@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "ApparentHorizons/FastFlow.hpp"
-#include "ApparentHorizons/Strahlkorper.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/BlockLogicalCoordinates.hpp"
@@ -22,6 +21,7 @@
 #include "Helpers/ParallelAlgorithms/Interpolation/InterpolationTargetTestHelpers.hpp"
 #include "IO/Logging/Tags.hpp"  // IWYU pragma: keep
 #include "IO/Logging/Verbosity.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/ApparentHorizon.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/Tags.hpp"

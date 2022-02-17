@@ -6,11 +6,11 @@
 #include <array>
 #include <random>
 
-#include "ApparentHorizons/ChangeCenterOfStrahlkorper.hpp"
-#include "ApparentHorizons/Strahlkorper.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/ChangeCenterOfStrahlkorper.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace Frame {

@@ -9,8 +9,6 @@
 #include <cstddef>
 #include <random>
 
-#include "ApparentHorizons/Strahlkorper.hpp"
-#include "ApparentHorizons/StrahlkorperFunctions.hpp"
 #include "ApparentHorizons/StrahlkorperGr.hpp"
 #include "ApparentHorizons/Tags.hpp"  // IWYU pragma: keep
 #include "DataStructures/DataBox/DataBox.hpp"
@@ -25,6 +23,8 @@
 #include "Helpers/ApparentHorizons/StrahlkorperTestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/StrahlkorperFunctions.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/YlmSpherepack.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrHorizon.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
