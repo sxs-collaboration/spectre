@@ -55,10 +55,12 @@ target_compile_definitions(Blaze
   #   could override it here explicitly to tune performance.
   # BLAZE_CACHE_SIZE
   BLAZE_USE_PADDING=0
-  # Enable non-temporal stores for cache optimization of large data structures
+  # - Always enable non-temporal stores for cache optimization of large data
+  #   structures: https://bitbucket.org/blaze-lib/blaze/wiki/Configuration%20Files#!streaming-non-temporal-stores
   BLAZE_USE_STREAMING=1
-  BLAZE_USE_OPTIMIZED_KERNELS=1
-  # Skip initializing default-constructed structures for fundamental types
+  # - We could use SLEEF for vectorized implementations of sin, cos, exp, etc.:
+  # BLAZE_USE_SLEEF
+  # - Skip initializing default-constructed structures for fundamental types
   BLAZE_USE_DEFAULT_INITIALIZATON=0
   )
 
