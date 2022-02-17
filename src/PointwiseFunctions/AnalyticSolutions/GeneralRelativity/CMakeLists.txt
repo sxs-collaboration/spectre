@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   GaugeWave.cpp
+  HarmonicSchwarzschild.cpp
   KerrHorizon.cpp
   KerrSchild.cpp
   Minkowski.cpp
@@ -21,6 +22,7 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   GaugeWave.hpp
+  HarmonicSchwarzschild.hpp
   KerrHorizon.hpp
   KerrSchild.hpp
   Minkowski.hpp
