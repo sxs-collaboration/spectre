@@ -12,6 +12,13 @@ file(APPEND
   "GSL version: ${GSL_VERSION}\n"
   )
 
+# Link external BLAS library. We don't need the GSL::gslcblas target.
+target_link_libraries(
+  GSL::gsl
+  INTERFACE
+  Blas
+  )
+
 set_property(
   GLOBAL APPEND PROPERTY SPECTRE_THIRD_PARTY_LIBS
   GSL::gsl GSL::gslcblas
