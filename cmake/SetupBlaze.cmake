@@ -39,6 +39,10 @@ target_compile_definitions(Blaze
   #   with the GSL header. Since we use GSL anyway, it's easier to use their
   #   BLAS header.
   BLAZE_BLAS_INCLUDE_FILE=<gsl/gsl_cblas.h>
+  # - Set default matrix storage order to column-major, since many of our
+  #   functions are implemented for column-major layout. This default reduces
+  #   conversions.
+  BLAZE_DEFAULT_STORAGE_ORDER=blaze::columnMajor
   # Override SMP configurations
   BLAZE_USE_SHARED_MEMORY_PARALLELIZATION=0
   BLAZE_OPENMP_PARALLEL_MODE=0
