@@ -18,7 +18,6 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
-#include "Utilities/TypeTraits/CreateHasTypeAlias.hpp"
 
 /// \cond
 namespace intrp {
@@ -34,23 +33,6 @@ struct InterpolationTargetReceiveVars;
 namespace intrp {
 
 namespace interpolator_detail {
-
-namespace detail {
-
-CREATE_HAS_TYPE_ALIAS(compute_vars_to_interpolate)
-CREATE_HAS_TYPE_ALIAS_V(compute_vars_to_interpolate)
-
-template <typename Tag, typename Frame>
-using any_index_in_frame_impl =
-    TensorMetafunctions::any_index_in_frame<typename Tag::type, Frame>;
-}  // namespace detail
-
-// Returns true if any of the tensors in TagList have any of their
-// indices in the given frame.
-template <typename TagList, typename Frame>
-constexpr bool any_index_in_frame_v =
-    tmpl::any<TagList, tmpl::bind<detail::any_index_in_frame_impl, tmpl::_1,
-                                  Frame>>::value;
 
 // Interpolates data onto a set of points desired by an InterpolationTarget.
 template <typename InterpolationTargetTag, typename Metavariables,
@@ -116,54 +98,20 @@ void interpolate_data(
                 get<::intrp::Tags::VarsToInterpolateToTarget<
                     InterpolationTargetTag>>(volume_info.vars_to_interpolate);
 
-            if constexpr (detail::has_compute_vars_to_interpolate_v<
-                              InterpolationTargetTag>) {
+            if constexpr (InterpolationTarget_detail::
+                              has_compute_vars_to_interpolate_v<
+                                  InterpolationTargetTag>) {
               if (vars_to_interpolate.size() == 0) {
                 // vars_to_interpolate has not been filled for
-                // this element at this temporal_id.  So fill it. How we
-                // fill it will depend on whether we need to change frames.
+                // this element at this temporal_id.  So fill it.
                 vars_to_interpolate.initialize(
                     volume_info.vars_from_element.number_of_grid_points());
 
-                if constexpr (any_index_in_frame_v<typename Metavariables::
-                                                       interpolator_source_vars,
-                                                   Frame::Inertial> and
-                              any_index_in_frame_v<
-                                  typename InterpolationTargetTag::
-                                      vars_to_interpolate_to_target,
-                                  Frame::Grid>) {
-                  // Need to do frame transformations.
-
-                  // The functions of time are always guaranteed to be
-                  // up-to-date here, because they are guaranteed to be
-                  // up-to-date before calling SendPointsToInterpolator
-                  // (which is guaranteed to be called before
-                  // interpolate_data is called).
-                  const auto& functions_of_time =
-                      get<domain::Tags::FunctionsOfTime>(cache);
-                  const auto& block = domain.blocks().at(element_id.block_id());
-                  ElementMap<3, ::Frame::Grid> map_logical_to_grid{
-                      element_id,
-                      block.moving_mesh_logical_to_grid_map().get_clone()};
-                  const auto invjac_logical_to_grid =
-                      map_logical_to_grid.inv_jacobian(
-                          logical_coordinates(volume_info.mesh));
-                  const auto jac_grid_to_inertial =
-                      block.moving_mesh_grid_to_inertial_map().jacobian(
-                          map_logical_to_grid(
-                              logical_coordinates(volume_info.mesh)),
-                          InterpolationTarget_detail::
-                              evaluate_temporal_id_for_expiration(temporal_id),
-                          functions_of_time);
-                  InterpolationTargetTag::compute_vars_to_interpolate::apply(
-                      make_not_null(&vars_to_interpolate),
-                      volume_info.vars_from_element, volume_info.mesh,
-                      jac_grid_to_inertial, invjac_logical_to_grid);
-                } else {
-                  InterpolationTargetTag::compute_vars_to_interpolate::apply(
-                      make_not_null(&vars_to_interpolate),
-                      volume_info.vars_from_element, volume_info.mesh);
-                }
+                InterpolationTarget_detail::compute_dest_vars_from_source_vars<
+                    InterpolationTargetTag>(make_not_null(&vars_to_interpolate),
+                                            volume_info.vars_from_element,
+                                            domain, volume_info.mesh,
+                                            element_id, cache, temporal_id);
               }
             }
 
@@ -171,8 +119,9 @@ void interpolate_data(
             const auto& element_coord_holder = element_coord_pair.second;
             intrp::Irregular<Metavariables::volume_dim> interpolator(
                 volume_info.mesh, element_coord_holder.element_logical_coords);
-            if constexpr (detail::has_compute_vars_to_interpolate_v<
-                              InterpolationTargetTag>) {
+            if constexpr (InterpolationTarget_detail::
+                              has_compute_vars_to_interpolate_v<
+                                  InterpolationTargetTag>) {
               interp_info.vars.emplace_back(
                   interpolator.interpolate(vars_to_interpolate));
             } else {
