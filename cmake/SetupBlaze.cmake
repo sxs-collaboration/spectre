@@ -19,9 +19,26 @@ set_property(TARGET Blaze PROPERTY
   INTERFACE_INCLUDE_DIRECTORIES ${BLAZE_INCLUDE_DIR})
 set_property(TARGET Blaze PROPERTY
   INTERFACE_LINK_LIBRARIES Lapack)
+target_link_libraries(
+  Blaze
+  INTERFACE
+  Blas
+  GSL::gsl # for BLAS header
+  Lapack
+  )
 
+# Configure Blaze. See documentation:
+# https://bitbucket.org/blaze-lib/blaze/wiki/Configuration%20and%20Installation#!step-2-configuration
 target_compile_definitions(Blaze
   INTERFACE
+  # - Enable external BLAS kernels
+  BLAZE_BLAS_MODE=1
+  # - Use BLAS header from GSL. We could also find and include a <cblas.h> (or
+  #   similarly named) header that may be distributed with the BLAS
+  #   implementation, but it's not guaranteed to be available and may conflict
+  #   with the GSL header. Since we use GSL anyway, it's easier to use their
+  #   BLAS header.
+  BLAZE_BLAS_INCLUDE_FILE=<gsl/gsl_cblas.h>
   # Override SMP configurations
   BLAZE_USE_SHARED_MEMORY_PARALLELIZATION=0
   BLAZE_OPENMP_PARALLEL_MODE=0
