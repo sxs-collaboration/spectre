@@ -130,6 +130,13 @@ target_compile_definitions(Blaze
   #   by the Blaze CMake configuration for the machine we are running on. We
   #   could override it here explicitly to tune performance.
   # BLAZE_CACHE_SIZE
+  # - Disable padding for dynamic matrices.
+  #   Blaze warns that this may decrease performance:
+  #   https://bitbucket.org/blaze-lib/blaze/src/c4d9e85414370e880e5e79c86e3c8d4d38dcde7a/blaze/config/Optimizations.h#lines-52
+  #   We haven't tested this much, so we may want to try enabling padding again.
+  #   To support padding, explicit calls to LAPACK functions need to pass
+  #   `.spacing()` instead of `.rows()/.columns()` to the `LDA`, `LDB`, etc.
+  #   parameters (see `[matrix_spacing]` in `Test_Spectral.cpp`).
   BLAZE_USE_PADDING=0
   # - Always enable non-temporal stores for cache optimization of large data
   #   structures: https://bitbucket.org/blaze-lib/blaze/wiki/Configuration%20Files#!streaming-non-temporal-stores
