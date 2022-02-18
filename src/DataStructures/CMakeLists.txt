@@ -28,11 +28,15 @@ spectre_target_headers(
   ComplexDataVector.hpp
   ComplexDiagonalModalOperator.hpp
   ComplexModalVector.hpp
+  CompressedMatrix.hpp
+  CompressedVector.hpp
   DataVector.hpp
   DenseMatrix.hpp
   DenseVector.hpp
   DiagonalModalOperator.hpp
   DynamicBuffer.hpp
+  DynamicMatrix.hpp
+  DynamicVector.hpp
   FixedHashMap.hpp
   FloatingPointType.hpp
   GeneralIndexIterator.hpp
@@ -47,6 +51,8 @@ spectre_target_headers(
   SliceTensorToVariables.hpp
   SliceVariables.hpp
   SpinWeighted.hpp
+  StaticMatrix.hpp
+  StaticVector.hpp
   StripeIterator.hpp
   Tags.hpp
   TempBuffer.hpp
