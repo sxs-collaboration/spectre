@@ -4,6 +4,7 @@
 set(LIBRARY "SphericalHarmonicsHelpers")
 
 set(LIBRARY_SOURCES
+  StrahlkorperTestHelpers.cpp
   YlmTestFunctions.cpp
   )
 

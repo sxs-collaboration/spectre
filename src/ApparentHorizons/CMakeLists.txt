@@ -12,7 +12,6 @@ spectre_target_sources(
   ObjectLabel.cpp
   StrahlkorperGr.cpp
   StrahlkorperInDifferentFrame.cpp
-  Tags.cpp
   )
 
 spectre_target_headers(
@@ -28,7 +27,6 @@ spectre_target_headers(
   StrahlkorperInDifferentFrame.hpp
   Tags.hpp
   TagsDeclarations.hpp
-  TagsTypeAliases.hpp
   )
 
 target_link_libraries(

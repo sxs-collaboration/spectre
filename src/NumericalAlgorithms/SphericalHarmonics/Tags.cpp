@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "ApparentHorizons/Tags.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/Tags.hpp"
 
 #include <cmath>
 #include <cstddef>

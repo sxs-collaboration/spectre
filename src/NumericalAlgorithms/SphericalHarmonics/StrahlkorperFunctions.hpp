@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "ApparentHorizons/TagsTypeAliases.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/TagsTypeAliases.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 

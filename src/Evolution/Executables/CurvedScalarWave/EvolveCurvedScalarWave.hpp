@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <vector>
 
+#include "ApparentHorizons/Tags.hpp"
 #include "DataStructures/Tensor/EagerMath/Norms.hpp"
 #include "Domain/Creators/Factory1D.hpp"
 #include "Domain/Creators/Factory2D.hpp"

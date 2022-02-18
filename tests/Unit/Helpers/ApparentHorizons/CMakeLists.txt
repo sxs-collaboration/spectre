@@ -5,7 +5,6 @@ set(LIBRARY "ApparentHorizonsHelpers")
 
 set(LIBRARY_SOURCES
   StrahlkorperGrTestHelpers.cpp
-  StrahlkorperTestHelpers.cpp
   )
 
 add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
