@@ -4,6 +4,9 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <array>
+#include <blaze/math/CompressedMatrix.h>
+#include <blaze/math/StaticMatrix.h>
+#include <blaze/math/StaticVector.h>
 #include <utility>
 
 #include "DataStructures/ApplyMatrices.hpp"
@@ -37,7 +40,7 @@ namespace LinearSolver::Serial {
 SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.BuildMatrix",
                   "[Unit][NumericalAlgorithms][LinearSolver]") {
   {
-    INFO("Build a simple matrix");
+    INFO("Build a simple dense matrix");
     const DenseMatrix<double> matrix{{4., 1.}, {3., 1.}};
     const helpers::ApplyMatrix linear_operator{matrix};
     DenseMatrix<double> matrix_representation(2, 2);
@@ -48,6 +51,27 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.BuildMatrix",
                  linear_operator);
     CHECK_MATRIX_APPROX(matrix_representation, matrix);
     CHECK(linear_operator.invocations == 2);
+  }
+  {
+    INFO("Build a simple sparse matrix");
+    const blaze::StaticMatrix<double, 2, 2> matrix{{4., 0.}, {3., 0.}};
+    size_t operator_invocations = 0;
+    const auto linear_operator =
+        [&matrix, &operator_invocations](
+            const gsl::not_null<blaze::StaticVector<double, 2>*> local_result,
+            const blaze::StaticVector<double, 2>& local_operand) {
+          *local_result = matrix * local_operand;
+          ++operator_invocations;
+        };
+    blaze::CompressedMatrix<double> matrix_representation(2, 2);
+    blaze::StaticVector<double, 2> operand_buffer(0.);
+    blaze::StaticVector<double, 2> result_buffer(0.);
+    build_matrix(make_not_null(&matrix_representation),
+                 make_not_null(&operand_buffer), make_not_null(&result_buffer),
+                 linear_operator);
+    CHECK(matrix_representation == matrix);
+    CHECK(operator_invocations == 2);
+    CHECK(matrix_representation.nonZeros() == 2);
   }
   {
     INFO("Build matrix from a heterogeneous data structure");

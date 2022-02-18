@@ -142,6 +142,8 @@ class ExplicitInverse : public LinearSolver<LinearSolverRegistrars> {
  private:
   // Caches for successive solves of the same operator
   mutable size_t size_ = std::numeric_limits<size_t>::max();
+  // We currently store the matrix representation in a dense matrix because
+  // Blaze doesn't support the inversion of sparse matrices (yet).
   mutable DenseMatrix<double, blaze::columnMajor> inverse_{};
 
   // Buffers to avoid re-allocating memory for applying the operator

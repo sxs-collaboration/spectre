@@ -4,10 +4,14 @@
 #pragma once
 
 #include <algorithm>
+#include <blaze/math/Column.h>
+#include <blaze/math/Matrix.h>
+#include <blaze/math/typetraits/IsDenseMatrix.h>
+#include <blaze/math/typetraits/IsSparseMatrix.h>
 #include <cstddef>
 #include <tuple>
 
-#include "DataStructures/DenseMatrix.hpp"
+#include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TypeTraits/CreateIsCallable.hpp"
 
@@ -22,11 +26,8 @@ CREATE_IS_CALLABLE_V(reset)
  * \brief Construct an explicit matrix representation by "sniffing out" the
  * linear operator, i.e. feeding it unit vectors.
  *
- * We currently store the matrix representation in a `DenseMatrix` because Blaze
- * doesn't support the inversion of sparse matrices (yet).
- *
  * \param matrix Output buffer for the operator matrix. Must be sized correctly
- * on entry.
+ * on entry. Can be any dense or sparse Blaze matrix.
  * \param operand_buffer Memory buffer that can hold operand data for the
  * `linear_operator`. Must be sized correctly on entry, and must be filled with
  * zeros.
@@ -39,13 +40,18 @@ CREATE_IS_CALLABLE_V(reset)
  * `linear_operator` when it is applied to an operand.
  */
 template <typename LinearOperator, typename OperandType, typename ResultType,
-          typename... OperatorArgs>
-void build_matrix(
-    const gsl::not_null<DenseMatrix<double, blaze::columnMajor>*> matrix,
-    const gsl::not_null<OperandType*> operand_buffer,
-    const gsl::not_null<ResultType*> result_buffer,
-    const LinearOperator& linear_operator,
-    const std::tuple<OperatorArgs...>& operator_args = {}) {
+          typename MatrixType, typename... OperatorArgs>
+void build_matrix(const gsl::not_null<MatrixType*> matrix,
+                  const gsl::not_null<OperandType*> operand_buffer,
+                  const gsl::not_null<ResultType*> result_buffer,
+                  const LinearOperator& linear_operator,
+                  const std::tuple<OperatorArgs...>& operator_args = {}) {
+  static_assert(
+      blaze::IsSparseMatrix_v<MatrixType> or blaze::IsDenseMatrix_v<MatrixType>,
+      "Unexpected matrix type");
+  if constexpr (blaze::IsSparseMatrix_v<MatrixType>) {
+    matrix->reset();
+  }
   size_t i = 0;
   // Re-using the iterators for all operator invocations
   auto result_iterator_begin = result_buffer->begin();
@@ -70,8 +76,19 @@ void build_matrix(
       result_iterator_end = result_buffer->end();
     }
     // Store the result in column i of the matrix
-    std::copy(result_iterator_begin, result_iterator_end,
-              column(*matrix, i).begin());
+    auto col = column(*matrix, i);
+    if constexpr (blaze::IsSparseMatrix_v<MatrixType>) {
+      size_t k = 0;
+      while (result_iterator_begin != result_iterator_end) {
+        if (not equal_within_roundoff(*result_iterator_begin, 0.)) {
+          col[k] = *result_iterator_begin;
+        }
+        ++result_iterator_begin;
+        ++k;
+      }
+    } else {
+      std::copy(result_iterator_begin, result_iterator_end, col.begin());
+    }
     ++i;
   }
 }
