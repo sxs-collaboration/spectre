@@ -173,6 +173,10 @@ Authors:
         Orcid: 0000-0003-4502-528X
         Affiliations: [*cornell]
         GitHub: gsb76
+      - Name: Kim, Yoonsoo
+        Orcid: 0000-0002-4305-6026
+        Affiliations: [*caltech]
+        GitHub: yoonso0-0
       - Name: Kumar, Prayush
         Orcid: 0000-0001-5523-4603
         Affiliations: [*cornell]
@@ -181,6 +185,14 @@ Authors:
         Orcid: 0000-0002-7084-1070
         Affiliations: [*fullerton]
         GitHub: geoffrey4444
+      - Name: Macedo, Alexandra
+        Orcid: 0000-0001-5139-9013
+        Affiliations: [*fullerton]
+        GitHub: macedo22
+      - Name: Nelli, Kyle C.
+        Orcid: 0000-0003-2426-8768
+        Affiliations: [*caltech]
+        GitHub: knelli2
       - Name: O'Shea, Eamonn
         Affiliations: [*cornell]
         GitHub: osheamonn
@@ -196,6 +208,10 @@ Authors:
         Orcid: 0000-0001-9765-4526
         Affiliations: [*caltech, *cornell]
         GitHub: teukolsky
+      - Name: Wittek, Nikolas A.
+        Orcid: 0000-0001-8575-5450
+        Affiliations: [*aei]
+        GitHub: nikwit
 
   Contributors:
     Description: |
@@ -232,6 +248,10 @@ Authors:
         Orcid: 0000-0002-5075-5116
         Affiliations: [*cornell]
         GitHub: moble
+      - Name: Carpenter, Alexander
+        Orcid: 0000-0002-9183-8006
+        Affiliations: [*fullerton]
+        GitHub: AlexCarpenter46
       - Name: Chaudhary, Himanshu
         Orcid: 0000-0002-4101-0534
         Affiliations: [*caltech]
@@ -240,6 +260,10 @@ Authors:
         Orcid: 0000-0003-4617-4738
         Affiliations: [*new_hampshire]
         GitHub: ffoucart
+      - Name: Ghadiri, Noora
+        Orcid: 0000-0001-9162-4449
+        Affiliations: [*fullerton]
+        GitHub: noora-gn
       - Name: Giesler, Matthew
         Orcid: 0000-0003-2300-893X
         Affiliations: [*cornell]
@@ -251,10 +275,6 @@ Authors:
         Orcid: 0000-0002-7244-1900
         Affiliations: [*cornell]
         GitHub: "10220"
-      - Name: Kim, Yoonsoo
-        Orcid: 0000-0002-4305-6026
-        Affiliations: [*caltech]
-        GitHub: yoonso0-0
       - Name: Legred, Isaac
         Orcid: 0000-0002-9523-9617
         Affiliations: [*caltech]
@@ -267,10 +287,6 @@ Authors:
         Orcid: 0000-0002-4645-453X
         Affiliations: [*caltech]
         GitHub: Sizheng-Ma
-      - Name: Macedo, Alexandra
-        Orcid: 0000-0001-5139-9013
-        Affiliations: [*fullerton]
-        GitHub: macedo22
       - Name: Melchor, Denyz
         Orcid: 0000-0002-7854-1953
         Affiliations: [*fullerton]
@@ -279,10 +295,6 @@ Authors:
         Orcid: 0000-0002-0593-4318
         Affiliations: [*fullerton]
         GitHub: MarloMo
-      - Name: Nelli, Kyle C.
-        Orcid: 0000-0003-2426-8768
-        Affiliations: [*caltech]
-        GitHub: knelli2
       - Name: Ramirez, Teresita
         Orcid: 0000-0003-0994-115X
         Affiliations: [*fullerton]
@@ -303,10 +315,6 @@ Authors:
         Orcid: 0000-0001-8019-0390
         Affiliations: [*cornell, *koln]
         GitHub: dkvieira
-      - Name: Wittek, Nikolas A.
-        Orcid: 0000-0001-8575-5450
-        Affiliations: [*aei]
-        GitHub: nikwit
       - Name: Wlodarczyk, Tom
         Orcid: 0000-0003-0005-348X
         Affiliations: [*aei]
