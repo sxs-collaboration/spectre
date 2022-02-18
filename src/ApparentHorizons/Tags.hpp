@@ -58,13 +58,13 @@ struct Strahlkorper : db::SimpleTag {
 /// Doesn't depend on the shape of the surface.
 template <typename Frame>
 struct ThetaPhi : db::SimpleTag {
-  using type = aliases::ThetaPhi<Frame>;
+  using type = tnsr::i<DataVector, 2, ::Frame::Spherical<Frame>>;
 };
 
 template <typename Frame>
 struct ThetaPhiCompute : ThetaPhi<Frame>, db::ComputeTag {
   using base = ThetaPhi<Frame>;
-  using return_type = aliases::ThetaPhi<Frame>;
+  using return_type = tnsr::i<DataVector, 2, ::Frame::Spherical<Frame>>;
   static constexpr auto function = static_cast<void (*)(
       const gsl::not_null<tnsr::i<DataVector, 2, ::Frame::Spherical<Frame>>*>,
       const ::Strahlkorper<Frame>&)>(
@@ -78,13 +78,13 @@ struct ThetaPhiCompute : ThetaPhi<Frame>, db::ComputeTag {
 /// Doesn't depend on the shape of the surface.
 template <typename Frame>
 struct Rhat : db::SimpleTag {
-  using type = aliases::OneForm<Frame>;
+  using type = tnsr::i<DataVector, 3, Frame>;
 };
 
 template <typename Frame>
 struct RhatCompute : Rhat<Frame>, db::ComputeTag {
   using base = Rhat<Frame>;
-  using return_type = aliases::OneForm<Frame>;
+  using return_type = tnsr::i<DataVector, 3, Frame>;
   static constexpr auto function = static_cast<void (*)(
       const gsl::not_null<tnsr::i<DataVector, 3, Frame>*>,
       const tnsr::i<DataVector, 2, ::Frame::Spherical<Frame>>&)>(
@@ -203,13 +203,13 @@ struct PhysicalCenterCompute : PhysicalCenter<Frame>, db::ComputeTag {
 /// on the surface.
 template <typename Frame>
 struct CartesianCoords : db::SimpleTag {
-  using type = aliases::Vector<Frame>;
+  using type = tnsr::I<DataVector, 3, Frame>;
 };
 
 template <typename Frame>
 struct CartesianCoordsCompute : CartesianCoords<Frame>, db::ComputeTag {
   using base = CartesianCoords<Frame>;
-  using return_type = aliases::Vector<Frame>;
+  using return_type = tnsr::I<DataVector, 3, Frame>;
   static constexpr auto function = static_cast<void (*)(
       const gsl::not_null<tnsr::I<DataVector, 3, Frame>*> coords,
       const ::Strahlkorper<Frame>& strahlkorper,
@@ -230,13 +230,13 @@ struct CartesianCoordsCompute : CartesianCoords<Frame>, db::ComputeTag {
 /// for this operation.
 template <typename Frame>
 struct DxRadius : db::SimpleTag {
-  using type = aliases::OneForm<Frame>;
+  using type = tnsr::i<DataVector, 3, Frame>;
 };
 
 template <typename Frame>
 struct DxRadiusCompute : DxRadius<Frame>, db::ComputeTag {
   using base = DxRadius<Frame>;
-  using return_type = aliases::OneForm<Frame>;
+  using return_type = tnsr::i<DataVector, 3, Frame>;
   static constexpr auto function = static_cast<void (*)(
       const gsl::not_null<tnsr::i<DataVector, 3, Frame>*> dx_radius,
       const Scalar<DataVector>& scalar,
@@ -259,13 +259,13 @@ struct DxRadiusCompute : DxRadius<Frame>, db::ComputeTag {
 /// for this operation.
 template <typename Frame>
 struct D2xRadius : db::SimpleTag {
-  using type = aliases::SecondDeriv<Frame>;
+  using type = tnsr::ii<DataVector, 3, Frame>;
 };
 
 template <typename Frame>
 struct D2xRadiusCompute : D2xRadius<Frame>, db::ComputeTag {
   using base = D2xRadius<Frame>;
-  using return_type = aliases::SecondDeriv<Frame>;
+  using return_type = tnsr::ii<DataVector, 3, Frame>;
   static constexpr auto function = static_cast<void (*)(
       gsl::not_null<tnsr::ii<DataVector, 3, Frame>*> d2x_radius,
       const Scalar<DataVector>& scalar,
@@ -316,13 +316,13 @@ struct LaplacianRadiusCompute : LaplacianRadius<Frame>, db::ComputeTag {
 /// (it is not "normalized"; normalization requires a metric).
 template <typename Frame>
 struct NormalOneForm : db::SimpleTag {
-  using type = aliases::OneForm<Frame>;
+  using type = tnsr::i<DataVector, 3, Frame>;
 };
 
 template <typename Frame>
 struct NormalOneFormCompute : NormalOneForm<Frame>, db::ComputeTag {
   using base = NormalOneForm<Frame>;
-  using return_type = aliases::OneForm<Frame>;
+  using return_type = tnsr::i<DataVector, 3, Frame>;
   static constexpr auto function = static_cast<void (*)(
       gsl::not_null<tnsr::i<DataVector, 3, Frame>*> one_form,
       const tnsr::i<DataVector, 3, Frame>& dx_radius,
