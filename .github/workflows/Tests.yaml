@@ -645,10 +645,6 @@ ${{ env.CACHE_KEY_SUFFIX }}"
 ${{ env.CACHE_KEY_SUFFIX }}"
           restore-keys: |
             dependencies-macos-refs/heads/develop-
-      - name: Setup dependency cache directory
-        if: steps.restore-dependencies.outputs.cache-hit != 'true'
-        run: |
-          mkdir -p $HOME/dependencies/spack
       - name: Install Spack
         run: |
           cd $HOME
@@ -723,8 +719,10 @@ ${{ env.CACHE_KEY_SUFFIX }}"
             $GITHUB_WORKSPACE
       - name: Build tests
         working-directory: build
+        # Build on 3 threads because GitHub's macOS VMs have 3 cores:
+        # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
         run: |
-          make -j2 RunTests
+          make -j3 RunTests
       - name: Build executables
         working-directory: build
         run: |
@@ -740,7 +738,7 @@ ${{ env.CACHE_KEY_SUFFIX }}"
       - name: Run unit tests
         working-directory: build
         run: |
-          ctest --repeat after-timeout:3 --output-on-failure
+          ctest -j3 --repeat after-timeout:3 --output-on-failure
       # Retain caches only on the 'develop' branch (see unit_tests job)
       - name: Clear caches
         if: github.ref != 'refs/heads/develop'
@@ -752,7 +750,13 @@ ${{ env.CACHE_KEY_SUFFIX }}"
         if: github.ref == 'refs/heads/develop'
         run: |
           source $HOME/spack/share/spack/setup-env.sh
+          # Clear existing buildcache so we don't accumulate old versions of
+          # packages in the cache
+          rm -rf $HOME/dependencies
           spack buildcache create -ufa -m dependencies $SPECTRE_SPACK_DEPS
+        # Allow the buildcache creation to fail without failing the job, since
+        # it sometimes runs out of memory
+        continue-on-error: true
 
   # Release a new version on manual events when requested and the tests pass.
   # Only enable this on the `sxs-collaboration/spectre` repository (not on
