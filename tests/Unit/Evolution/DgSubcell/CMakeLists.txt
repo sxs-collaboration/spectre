@@ -25,6 +25,7 @@ set(LIBRARY_SOURCES
   Test_RdmpTciData.cpp
   Test_Reconstruction.cpp
   Test_SliceData.cpp
+  Test_SliceTensor.cpp
   Test_SubcellOptions.cpp
   Test_Tags.cpp
   Test_TciStatus.cpp
