@@ -1,0 +1,53 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Executable: FindHorizons3D
+# Check: parse
+
+ResourceInfo:
+  AvoidGlobalProc0: false
+  Singletons:
+    AhA:
+      Proc: Auto
+      Exclusive: true
+
+DomainCreator:
+  Shell:
+    InnerRadius: 1.9
+    OuterRadius: 10.
+    InitialRefinement: 0
+    InitialGridPoints: [8, 8]
+    UseEquiangularMap: True
+    EquatorialCompression: None
+    WhichWedges: All
+    RadialPartitioning: []
+    RadialDistribution: [Logarithmic]
+    TimeDependence: None
+
+Importers:
+  VolumeData:
+    FileGlob: "KerrVolume*.h5"
+    Subgroup: "VolumeData"
+    ObservationValue: Last
+
+ApparentHorizons:
+  AhA:
+    InitialGuess:
+      Lmax: 10
+      Radius: 2.
+      Center: [0., 0., 0.]
+    FastFlow:
+      Flow: Fast
+      Alpha: 1.
+      Beta: 0.5
+      AbsTol: 1.e-12
+      TruncationTol: 0.01
+      DivergenceTol: 1.2
+      DivergenceIter: 5
+      MaxIts: 100
+    Verbosity: Verbose
+
+Observers:
+  VolumeFileName: "FindHorizons3DVolume"
+  ReductionFileName: "FindHorizons3DReductions"
+  SurfaceFileName: "FindHorizons3DSurfaces"
