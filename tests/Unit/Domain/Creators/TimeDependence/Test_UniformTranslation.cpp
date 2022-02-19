@@ -64,13 +64,20 @@ void test(const std::unique_ptr<TimeDependence<MeshDim>>& time_dep_unique_ptr,
 
   const auto expected_block_map = create_coord_map<MeshDim>(f_of_t_name);
 
-  const auto block_maps = time_dep_unique_ptr->block_maps(num_blocks);
+  const auto block_maps =
+      time_dep_unique_ptr->block_maps_grid_to_inertial(num_blocks);
   for (const auto& block_map_unique_ptr : block_maps) {
     const auto* const block_map =
         dynamic_cast<const ConcreteMap<MeshDim>*>(block_map_unique_ptr.get());
     REQUIRE(block_map != nullptr);
     CHECK(*block_map == expected_block_map);
   }
+
+  // Check that maps involving distorted frame are empty.
+  CHECK(time_dep_unique_ptr->block_maps_grid_to_distorted(1)[0].get() ==
+        nullptr);
+  CHECK(time_dep_unique_ptr->block_maps_distorted_to_inertial(1)[0].get() ==
+        nullptr);
 
   // Test functions of time without expiration times
   {

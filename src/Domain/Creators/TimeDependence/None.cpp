@@ -22,11 +22,34 @@ std::unique_ptr<TimeDependence<MeshDim>> None<MeshDim>::get_clone() const {
 template <size_t MeshDim>
 [[noreturn]] std::vector<std::unique_ptr<
     domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, MeshDim>>>
-None<MeshDim>::block_maps(const size_t /*number_of_blocks*/) const {
+None<MeshDim>::block_maps_grid_to_inertial(
+    const size_t /*number_of_blocks*/) const {
   ERROR(
-      "The 'block_maps' function of the 'None' TimeDependence should never be "
-      "called because 'None' is only used as a place holder class to mark that "
-      "the mesh is time-independent.");
+      "The 'block_maps_grid_to_inertial' function of the 'None' TimeDependence "
+      "should never be called because 'None' is only used as a place holder "
+      "class to mark that the mesh is time-independent.");
+}
+
+template <size_t MeshDim>
+[[noreturn]] std::vector<std::unique_ptr<
+    domain::CoordinateMapBase<Frame::Grid, Frame::Distorted, MeshDim>>>
+None<MeshDim>::block_maps_grid_to_distorted(
+    const size_t /*number_of_blocks*/) const {
+  ERROR(
+      "The 'block_maps_grid_to_distorted' function of the 'None' "
+      "TimeDependence should never be called because 'None' is only used as a "
+      "place holder class to mark that the mesh is time-independent.");
+}
+
+template <size_t MeshDim>
+[[noreturn]] std::vector<std::unique_ptr<
+    domain::CoordinateMapBase<Frame::Distorted, Frame::Inertial, MeshDim>>>
+None<MeshDim>::block_maps_distorted_to_inertial(
+    const size_t /*number_of_blocks*/) const {
+  ERROR(
+      "The 'block_maps_distorted_to_inertial' function of the 'None' "
+      "TimeDependence should never be called because 'None' is only used as a "
+      "place holder class to mark that the mesh is time-independent.");
 }
 
 template <size_t MeshDim>

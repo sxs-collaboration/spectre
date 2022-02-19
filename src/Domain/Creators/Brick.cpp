@@ -127,7 +127,9 @@ Domain<3> Brick::create_domain() const {
 
   if (not time_dependence_->is_none()) {
     domain.inject_time_dependent_map_for_block(
-        0, std::move(time_dependence_->block_maps(1)[0]));
+        0, std::move(time_dependence_->block_maps_grid_to_inertial(1)[0]),
+        std::move(time_dependence_->block_maps_grid_to_distorted(1)[0]),
+        std::move(time_dependence_->block_maps_distorted_to_inertial(1)[0]));
   }
   return domain;
 }

@@ -41,30 +41,70 @@ using CubicScaleMap =
     domain::CoordinateMaps::TimeDependent::CubicScale<MeshDim>;
 
 template <size_t MeshDim>
-using ConcreteMap = detail::generate_coordinate_map_t<
+using GridToInertialMap = detail::generate_coordinate_map_t<
+    Frame::Grid, Frame::Inertial,
     tmpl::list<CubicScaleMap<MeshDim>,
                tmpl::conditional_t<MeshDim == 2, Rotation,
                                    domain::CoordinateMaps::TimeDependent::
                                        ProductOf2Maps<Rotation, Identity>>>>;
 
 template <size_t MeshDim>
-ConcreteMap<MeshDim> create_coord_map(const double outer_boundary,
+GridToInertialMap<MeshDim> create_grid_to_inertial_map(
+    const double outer_boundary,
     const std::array<std::string, 3>& f_of_t_names);
 
 template <>
-ConcreteMap<2> create_coord_map<2>(const double outer_boundary,
+GridToInertialMap<2> create_grid_to_inertial_map<2>(
+    const double outer_boundary,
     const std::array<std::string, 3>& f_of_t_names) {
-  return ConcreteMap<2>{
+  return GridToInertialMap<2>{
       CubicScaleMap<2>{outer_boundary, f_of_t_names[0], f_of_t_names[1]},
       Rotation{f_of_t_names[2]}};
 }
 
 template <>
-ConcreteMap<3> create_coord_map<3>(const double outer_boundary,
+GridToInertialMap<3> create_grid_to_inertial_map<3>(
+    const double outer_boundary,
     const std::array<std::string, 3>& f_of_t_names) {
-  return ConcreteMap<3>{
+  return GridToInertialMap<3>{
       CubicScaleMap<3>{outer_boundary, f_of_t_names[0], f_of_t_names[1]},
       {Rotation{f_of_t_names[2]}, Identity{}}};
+}
+
+template <size_t MeshDim>
+using GridToDistortedMap =
+    detail::generate_coordinate_map_t<Frame::Grid, Frame::Distorted,
+                                      tmpl::list<CubicScaleMap<MeshDim>>>;
+
+template <size_t MeshDim>
+GridToDistortedMap<MeshDim> create_grid_to_distorted_map(
+    const double outer_boundary,
+    const std::array<std::string, 3>& f_of_t_names) {
+  return GridToDistortedMap<MeshDim>{
+      CubicScaleMap<MeshDim>{outer_boundary, f_of_t_names[0], f_of_t_names[1]}};
+}
+
+template <size_t MeshDim>
+using DistortedToInertialMap = detail::generate_coordinate_map_t<
+    Frame::Distorted, Frame::Inertial,
+    tmpl::list<tmpl::conditional_t<MeshDim == 2, Rotation,
+                                   domain::CoordinateMaps::TimeDependent::
+                                       ProductOf2Maps<Rotation, Identity>>>>;
+
+template <size_t MeshDim>
+DistortedToInertialMap<MeshDim> create_distorted_to_inertial_map(
+    const std::array<std::string, 3>& f_of_t_names);
+
+template <>
+DistortedToInertialMap<2> create_distorted_to_inertial_map<2>(
+    const std::array<std::string, 3>& f_of_t_names) {
+  return DistortedToInertialMap<2>{Rotation{f_of_t_names[2]}};
+}
+
+template <>
+DistortedToInertialMap<3> create_distorted_to_inertial_map<3>(
+    const std::array<std::string, 3>& f_of_t_names) {
+  return DistortedToInertialMap<3>{{Rotation{f_of_t_names[2]}, Identity{}}};
 }
 
 template <size_t MeshDim>
@@ -94,15 +134,43 @@ void test_impl(
   const size_t num_blocks = dist_size_t(gen);
   CAPTURE(num_blocks);
 
-  const auto expected_block_map =
-      create_coord_map<MeshDim>(outer_boundary, f_of_t_names);
+  const auto expected_grid_to_inertial_map =
+      create_grid_to_inertial_map<MeshDim>(outer_boundary, f_of_t_names);
 
-  const auto block_maps = time_dep_unique_ptr->block_maps(num_blocks);
-  for (const auto& block_map_unique_ptr : block_maps) {
+  const auto block_maps_grid_to_inertial =
+      time_dep_unique_ptr->block_maps_grid_to_inertial(num_blocks);
+  for (const auto& block_map_unique_ptr : block_maps_grid_to_inertial) {
     const auto* const block_map =
-        dynamic_cast<const ConcreteMap<MeshDim>*>(block_map_unique_ptr.get());
+        dynamic_cast<const GridToInertialMap<MeshDim>*>(
+            block_map_unique_ptr.get());
     REQUIRE(block_map != nullptr);
-    CHECK(*block_map == expected_block_map);
+    CHECK(*block_map == expected_grid_to_inertial_map);
+  }
+
+  const auto expected_grid_to_distorted_map =
+      create_grid_to_distorted_map<MeshDim>(outer_boundary, f_of_t_names);
+
+  const auto block_maps_grid_to_distorted =
+      time_dep_unique_ptr->block_maps_grid_to_distorted(num_blocks);
+  for (const auto& block_map_unique_ptr : block_maps_grid_to_distorted) {
+    const auto* const block_map =
+        dynamic_cast<const GridToDistortedMap<MeshDim>*>(
+            block_map_unique_ptr.get());
+    REQUIRE(block_map != nullptr);
+    CHECK(*block_map == expected_grid_to_distorted_map);
+  }
+
+  const auto expected_distorted_to_inertial_map =
+      create_distorted_to_inertial_map<MeshDim>(f_of_t_names);
+
+  const auto block_maps_distorted_to_inertial =
+      time_dep_unique_ptr->block_maps_distorted_to_inertial(num_blocks);
+  for (const auto& block_map_unique_ptr : block_maps_distorted_to_inertial) {
+    const auto* const block_map =
+        dynamic_cast<const DistortedToInertialMap<MeshDim>*>(
+            block_map_unique_ptr.get());
+    REQUIRE(block_map != nullptr);
+    CHECK(*block_map == expected_distorted_to_inertial_map);
   }
 
   // Test functions of time without expiration times
@@ -144,48 +212,48 @@ void test_impl(
   // check that the internals were assigned the correct function of times.
   TIME_DEPENDENCE_GENERATE_COORDS(make_not_null(&gen), MeshDim, -1.0, 1.0);
 
-  for (const auto& block_map : block_maps) {
+  for (const auto& block_map : block_maps_grid_to_inertial) {
     // We've checked equivalence above
-    // (CHECK(*block_map == expected_block_map);), but have sometimes been
-    // burned by incorrect operator== implementations so we check that the
+    // (CHECK(*block_map == expected_grid_to_inertial_map);), but have sometimes
+    // been burned by incorrect operator== implementations so we check that the
     // mappings behave as expected.
     const double time_offset = dist(gen) + 1.2;
     CHECK_ITERABLE_APPROX(
-        expected_block_map(grid_coords_dv, initial_time + time_offset,
-                           functions_of_time),
+        expected_grid_to_inertial_map(
+            grid_coords_dv, initial_time + time_offset, functions_of_time),
         (*block_map)(grid_coords_dv, initial_time + time_offset,
                      functions_of_time));
     CHECK_ITERABLE_APPROX(
-        expected_block_map(grid_coords_double, initial_time + time_offset,
-                           functions_of_time),
+        expected_grid_to_inertial_map(
+            grid_coords_double, initial_time + time_offset, functions_of_time),
         (*block_map)(grid_coords_double, initial_time + time_offset,
                      functions_of_time));
 
     CHECK_ITERABLE_APPROX(
-        *expected_block_map.inverse(inertial_coords_double,
-                                    initial_time + time_offset,
-                                    functions_of_time),
+        *expected_grid_to_inertial_map.inverse(inertial_coords_double,
+                                               initial_time + time_offset,
+                                               functions_of_time),
         *block_map->inverse(inertial_coords_double, initial_time + time_offset,
                             functions_of_time));
 
     CHECK_ITERABLE_APPROX(
-        expected_block_map.inv_jacobian(
+        expected_grid_to_inertial_map.inv_jacobian(
             grid_coords_dv, initial_time + time_offset, functions_of_time),
         block_map->inv_jacobian(grid_coords_dv, initial_time + time_offset,
                                 functions_of_time));
     CHECK_ITERABLE_APPROX(
-        expected_block_map.inv_jacobian(
+        expected_grid_to_inertial_map.inv_jacobian(
             grid_coords_double, initial_time + time_offset, functions_of_time),
         block_map->inv_jacobian(grid_coords_double, initial_time + time_offset,
                                 functions_of_time));
 
     CHECK_ITERABLE_APPROX(
-        expected_block_map.jacobian(grid_coords_dv, initial_time + time_offset,
-                                    functions_of_time),
+        expected_grid_to_inertial_map.jacobian(
+            grid_coords_dv, initial_time + time_offset, functions_of_time),
         block_map->jacobian(grid_coords_dv, initial_time + time_offset,
                             functions_of_time));
     CHECK_ITERABLE_APPROX(
-        expected_block_map.jacobian(
+        expected_grid_to_inertial_map.jacobian(
             grid_coords_double, initial_time + time_offset, functions_of_time),
         block_map->jacobian(grid_coords_double, initial_time + time_offset,
                             functions_of_time));

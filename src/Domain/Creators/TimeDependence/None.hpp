@@ -15,21 +15,18 @@
 #include "Utilities/TMPL.hpp"
 
 /// \cond
-namespace domain {
-namespace FunctionsOfTime {
+namespace domain::FunctionsOfTime {
 class FunctionOfTime;
-}  // namespace FunctionsOfTime
-}  // namespace domain
+}  // namespace domain::FunctionsOfTime
 
 namespace Frame {
+struct Distorted;
 struct Grid;
 struct Inertial;
 }  // namespace Frame
 /// \endcond
 
-namespace domain {
-namespace creators {
-namespace time_dependence {
+namespace domain::creators::time_dependence {
 /// \brief Make the mesh time independent so that it isn't moving.
 ///
 /// \warning Calling the `block_maps` and `functions_of_time` functions causes
@@ -54,9 +51,17 @@ class None final : public TimeDependence<MeshDim> {
 
   auto get_clone() const -> std::unique_ptr<TimeDependence<MeshDim>> override;
 
-  [[noreturn]] auto block_maps(size_t number_of_blocks) const
+  [[noreturn]] auto block_maps_grid_to_inertial(size_t number_of_blocks) const
       -> std::vector<std::unique_ptr<domain::CoordinateMapBase<
           Frame::Grid, Frame::Inertial, MeshDim>>> override;
+
+  [[noreturn]] auto block_maps_grid_to_distorted(size_t number_of_blocks) const
+      -> std::vector<std::unique_ptr<domain::CoordinateMapBase<
+          Frame::Grid, Frame::Distorted, MeshDim>>> override;
+
+  [[noreturn]] auto block_maps_distorted_to_inertial(size_t number_of_blocks)
+      const -> std::vector<std::unique_ptr<domain::CoordinateMapBase<
+          Frame::Distorted, Frame::Inertial, MeshDim>>> override;
 
   [[noreturn]] auto functions_of_time(
       const std::unordered_map<std::string, double>& initial_expiration_times =
@@ -71,6 +76,4 @@ bool operator==(const None<Dim>& lhs, const None<Dim>& rhs);
 
 template <size_t Dim>
 bool operator!=(const None<Dim>& lhs, const None<Dim>& rhs);
-}  // namespace time_dependence
-}  // namespace creators
-}  // namespace domain
+}  // namespace domain::creators::time_dependence

@@ -174,10 +174,17 @@ Domain<3> Shell::create_domain() const {
 
   if (not time_dependence_->is_none()) {
     const size_t number_of_blocks = domain.blocks().size();
-    auto block_maps = time_dependence_->block_maps(number_of_blocks);
+    auto block_maps_grid_to_inertial =
+        time_dependence_->block_maps_grid_to_inertial(number_of_blocks);
+    auto block_maps_grid_to_distorted =
+        time_dependence_->block_maps_grid_to_distorted(number_of_blocks);
+    auto block_maps_distorted_to_inertial =
+        time_dependence_->block_maps_distorted_to_inertial(number_of_blocks);
     for (size_t block_id = 0; block_id < number_of_blocks; ++block_id) {
       domain.inject_time_dependent_map_for_block(
-          block_id, std::move(block_maps[block_id]));
+          block_id, std::move(block_maps_grid_to_inertial[block_id]),
+          std::move(block_maps_grid_to_distorted[block_id]),
+          std::move(block_maps_distorted_to_inertial[block_id]));
     }
   }
   return domain;

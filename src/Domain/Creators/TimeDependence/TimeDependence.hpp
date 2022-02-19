@@ -20,6 +20,7 @@ class FunctionOfTime;
 }  // namespace FunctionsOfTime
 }  // namespace domain
 namespace Frame {
+struct Distorted;
 struct Grid;
 struct Inertial;
 }  // namespace Frame
@@ -84,9 +85,23 @@ struct TimeDependence {
 
   /// Returns the coordinate maps from the `Frame::Grid` to the
   /// `Frame::Inertial` frame for each block.
-  virtual auto
-  block_maps(size_t number_of_blocks) const -> std::vector<std::unique_ptr<
-      domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, MeshDim>>> = 0;
+  virtual auto block_maps_grid_to_inertial(size_t number_of_blocks) const
+      -> std::vector<std::unique_ptr<domain::CoordinateMapBase<
+          Frame::Grid, Frame::Inertial, MeshDim>>> = 0;
+
+  /// Returns the coordinate maps from the `Frame::Grid` to the
+  /// `Frame::Distorted` frame for each block.
+  /// Returns vector of nullptr if there is no distorted frame.
+  virtual auto block_maps_grid_to_distorted(size_t number_of_blocks) const
+      -> std::vector<std::unique_ptr<domain::CoordinateMapBase<
+          Frame::Grid, Frame::Distorted, MeshDim>>> = 0;
+
+  /// Returns the coordinate maps from the `Frame::Distorted` to the
+  /// `Frame::Inertial` frame for each block.
+  /// Returns vector of nullptr if is no distorted frame.
+  virtual auto block_maps_distorted_to_inertial(size_t number_of_blocks) const
+      -> std::vector<std::unique_ptr<domain::CoordinateMapBase<
+          Frame::Distorted, Frame::Inertial, MeshDim>>> = 0;
 
   /// Returns the functions of time for the domain.
   virtual auto functions_of_time(const std::unordered_map<std::string, double>&
