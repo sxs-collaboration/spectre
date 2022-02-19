@@ -112,7 +112,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Initialization",
   CHECK(box_tuner != tuner);
   CHECK(box_controlsys_name != controlsys_name);
   // We don't check the controller now because one of its members is
-  // inititalized with signaling_NaN() so comparing now would throw an FPE.
+  // initialized with signaling_NaN() so comparing now would throw an FPE.
 
   // Now initialize everything
   runner.next_action<component>(0);
