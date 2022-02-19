@@ -11,6 +11,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/IdPair.hpp"
+#include "DataStructures/Tensor/Metafunctions.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "Domain/BlockLogicalCoordinates.hpp"
 #include "Domain/Tags.hpp"
@@ -26,6 +27,7 @@
 #include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "Utilities/TypeTraits/CreateHasStaticMemberVariable.hpp"
+#include "Utilities/TypeTraits/CreateHasTypeAlias.hpp"
 
 /// \cond
 // IWYU pragma: no_forward_declare db::DataBox
@@ -604,5 +606,72 @@ void set_up_interpolation(
         }
       });
 }
+
+CREATE_HAS_TYPE_ALIAS(compute_vars_to_interpolate)
+CREATE_HAS_TYPE_ALIAS_V(compute_vars_to_interpolate)
+
+namespace detail {
+template <typename Tag, typename Frame>
+using any_index_in_frame_impl =
+    TensorMetafunctions::any_index_in_frame<typename Tag::type, Frame>;
+}  // namespace detail
+
+/// Returns true if any of the tensors in TagList have any of their
+/// indices in the given frame.
+template <typename TagList, typename Frame>
+constexpr bool any_index_in_frame_v =
+    tmpl::any<TagList, tmpl::bind<detail::any_index_in_frame_impl, tmpl::_1,
+                                  Frame>>::value;
+
+/// Calls compute_vars_to_interpolate to compute
+/// InterpolationTargetTag::vars_to_interpolate_to_target from the source
+/// variables.  Does any frame tranformations needed.
+template <typename InterpolationTargetTag, typename SourceTags,
+          typename Metavariables, typename ElementId>
+void compute_dest_vars_from_source_vars(
+    const gsl::not_null<Variables<
+        typename InterpolationTargetTag::vars_to_interpolate_to_target>*>
+        dest_vars,
+    const Variables<SourceTags>& source_vars,
+    const Domain<Metavariables::volume_dim>& domain,
+    const Mesh<Metavariables::volume_dim>& mesh, const ElementId& element_id,
+    const Parallel::GlobalCache<Metavariables>& cache,
+    const typename InterpolationTargetTag::temporal_id::type& temporal_id) {
+  if constexpr (any_index_in_frame_v<SourceTags, Frame::Inertial> and
+                any_index_in_frame_v<typename InterpolationTargetTag::
+                                         vars_to_interpolate_to_target,
+                                     Frame::Grid>) {
+    // Need to do frame transformations.
+
+    // The functions of time are always guaranteed to be
+    // up-to-date here.
+    // For interpolation without an Interpolator ParallelComponent,
+    // this is because the InterpWithoutInterpComponent event will be called
+    // after the Action that keeps functions of time up to date.
+    // For interpolation with an Interpolator ParallelCompoent,
+    // this is because the functions of time are made up to date before
+    // calling SendPointsToInterpolator.
+    const auto& functions_of_time = get<domain::Tags::FunctionsOfTime>(cache);
+    const auto& block = domain.blocks().at(element_id.block_id());
+    ElementMap<3, ::Frame::Grid> map_logical_to_grid{
+        element_id, block.moving_mesh_logical_to_grid_map().get_clone()};
+    const auto invjac_logical_to_grid =
+        map_logical_to_grid.inv_jacobian(logical_coordinates(mesh));
+    const auto jac_grid_to_inertial =
+        block.moving_mesh_grid_to_inertial_map().jacobian(
+            map_logical_to_grid(logical_coordinates(mesh)),
+            InterpolationTarget_detail::evaluate_temporal_id_for_expiration(
+                temporal_id),
+            functions_of_time);
+    InterpolationTargetTag::compute_vars_to_interpolate::apply(
+        dest_vars, source_vars, mesh, jac_grid_to_inertial,
+        invjac_logical_to_grid);
+  } else {
+    // No frame transformations needed.
+    InterpolationTargetTag::compute_vars_to_interpolate::apply(
+        dest_vars, source_vars, mesh);
+  }
+}
+
 }  // namespace InterpolationTarget_detail
 }  // namespace intrp
