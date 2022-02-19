@@ -46,6 +46,16 @@ struct ControlSystemInputs {
   static std::string name() { return ControlSystem::name(); }
   using group = ControlSystemGroup;
 };
+
+/// \ingroup OptionTagsGroup
+/// \ingroup ControlSystemGroup
+/// Option tag on whether to write data to disk.
+struct WriteDataToDisk {
+  using type = bool;
+  static constexpr Options::String help = {
+      "Whether control system data should be saved during an evolution."};
+  using group = ControlSystemGroup;
+};
 }  // namespace OptionTags
 
 /// \ingroup ControlSystemGroup
@@ -65,6 +75,17 @@ namespace Tags {
 /// DataBox tag for the name of a control system
 struct ControlSystemName : db::SimpleTag {
   using type = std::string;
+};
+
+/// \ingroup DataBoxTagsGroup
+/// \ingroup ControlSystemGroup
+/// DataBox tag for writing control system data to disk
+struct WriteDataToDisk : db::SimpleTag {
+  using type = bool;
+  using option_tags = tmpl::list<OptionTags::WriteDataToDisk>;
+
+  static constexpr bool pass_metavariables = false;
+  static type create_from_options(const type& option) { return option; }
 };
 
 /// \ingroup DataBoxTagsGroup

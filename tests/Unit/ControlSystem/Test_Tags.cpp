@@ -28,6 +28,8 @@ void test_all_tags() {
   INFO("Test all tags");
   using name_tag = control_system::Tags::ControlSystemName;
   TestHelpers::db::test_simple_tag<name_tag>("ControlSystemName");
+  using write_tag = control_system::Tags::WriteDataToDisk;
+  TestHelpers::db::test_simple_tag<write_tag>("WriteDataToDisk");
   using averager_tag = control_system::Tags::Averager<2>;
   TestHelpers::db::test_simple_tag<averager_tag>("Averager");
   using timescaletuner_tag = control_system::Tags::TimescaleTuner;
@@ -89,6 +91,11 @@ void test_control_sys_inputs() {
   CHECK(expected_tuner == input_holder.tuner);
   CHECK(expected_name ==
         std::decay_t<decltype(input_holder)>::control_system::name());
+
+  const auto write_data =
+      TestHelpers::test_option_tag<control_system::OptionTags::WriteDataToDisk>(
+          "true");
+  CHECK(write_data);
 }
 }  // namespace
 
