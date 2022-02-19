@@ -194,6 +194,7 @@ long_lines() {
               '.css$' \
               '.h5$' \
               '.html$' \
+              '.ipynb$' \
               '.js$' \
               '.json$' \
               '.min.js$' \
