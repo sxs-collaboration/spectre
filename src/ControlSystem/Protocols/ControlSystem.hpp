@@ -22,6 +22,12 @@ namespace control_system::protocols {
 ///   corresponds to the name of the FunctionOfTime controlled by this
 ///   system.
 ///
+/// - a static function `component_name` returning a `std::string`.  This
+///   gives a name associated to each component of the FunctionOfTime that is
+///   being controlled. E.g. a FunctionOfTime controlling translation will have
+///   three components with names "X", "Y", and "Z". This is useful when writing
+///   data to disk.
+///
 /// - a type alias `measurement` to a struct implementing the
 ///   Measurement protocol.
 ///
@@ -67,6 +73,10 @@ struct ControlSystem {
   template <typename ConformingType>
   struct test {
     static_assert(std::is_same_v<std::decay_t<decltype(ConformingType::name())>,
+                                 std::string>);
+
+    static_assert(std::is_same_v<decltype(ConformingType::component_name(
+                                     std::declval<const size_t>())),
                                  std::string>);
 
     using measurement = typename ConformingType::measurement;

@@ -13,6 +13,7 @@
 #include "ControlSystem/TimescaleTuner.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Helpers/ControlSystem/TestStructs.hpp"
+#include "Utilities/GetOutput.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
@@ -25,6 +26,7 @@ template <typename Label, typename Measurement>
 struct MockControlSystem
     : tt::ConformsTo<control_system::protocols::ControlSystem> {
   static std::string name() { return pretty_type::short_name<Label>(); }
+  static std::string component_name(const size_t i) { return get_output(i); }
   using measurement = Measurement;
   static constexpr size_t deriv_order = 2;
   using simple_tags = tmpl::list<>;

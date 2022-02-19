@@ -94,6 +94,9 @@ struct ExampleMeasurement
 struct ExampleControlSystem
     : tt::ConformsTo<control_system::protocols::ControlSystem> {
   static std::string name() { return "ExampleControlSystem"; }
+  static std::string component_name(const size_t i) {
+    return i == 0 ? "X" : (i == 1 ? "Y" : "Z");
+  }
   using measurement = ExampleMeasurement;
 
   using simple_tags = tmpl::list<>;
