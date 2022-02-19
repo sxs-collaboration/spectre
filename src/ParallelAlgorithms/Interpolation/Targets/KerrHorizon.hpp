@@ -6,12 +6,12 @@
 #include <array>
 #include <cstddef>
 
-#include "ApparentHorizons/Strahlkorper.hpp"
 #include "ApparentHorizons/Tags.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Transpose.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/YlmSpherepack.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/GlobalCache.hpp"

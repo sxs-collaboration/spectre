@@ -7,7 +7,7 @@
 #include <cmath>
 #include <cstddef>
 
-#include "ApparentHorizons/Strahlkorper.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
 
 Strahlkorper<Frame::Inertial> create_strahlkorper_y11(

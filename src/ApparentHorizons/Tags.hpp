@@ -8,8 +8,6 @@
 #include <string>
 #include <utility>
 
-#include "ApparentHorizons/Strahlkorper.hpp"
-#include "ApparentHorizons/StrahlkorperFunctions.hpp"
 #include "ApparentHorizons/StrahlkorperGr.hpp"
 #include "ApparentHorizons/TagsDeclarations.hpp"  // IWYU pragma: keep
 #include "ApparentHorizons/TagsTypeAliases.hpp"
@@ -18,6 +16,8 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/StrahlkorperFunctions.hpp"
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"  // IWYU pragma: keep
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
