@@ -33,7 +33,7 @@ struct Group {
  * \brief The file to read data from.
  */
 template <typename ImporterOptionsGroup>
-struct FileName {
+struct FileGlob {
   static_assert(
       std::is_same_v<typename ImporterOptionsGroup::group, Group>,
       "The importer options should be placed in the 'Importers' option "
@@ -83,12 +83,12 @@ namespace Tags {
  * \brief The file to read data from.
  */
 template <typename ImporterOptionsGroup>
-struct FileName : db::SimpleTag {
+struct FileGlob : db::SimpleTag {
   static std::string name() {
-    return "FileName(" + Options::name<ImporterOptionsGroup>() + ")";
+    return "FileGlob(" + Options::name<ImporterOptionsGroup>() + ")";
   }
   using type = std::string;
-  using option_tags = tmpl::list<OptionTags::FileName<ImporterOptionsGroup>>;
+  using option_tags = tmpl::list<OptionTags::FileGlob<ImporterOptionsGroup>>;
 
   static constexpr bool pass_metavariables = false;
   static type create_from_options(const type& file_name) { return file_name; }

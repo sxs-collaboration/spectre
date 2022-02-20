@@ -66,7 +66,7 @@ namespace importers::Actions {
 template <typename ImporterOptionsGroup, typename FieldTagsList>
 struct ReadVolumeData {
   using const_global_cache_tags =
-      tmpl::list<Tags::FileName<ImporterOptionsGroup>,
+      tmpl::list<Tags::FileGlob<ImporterOptionsGroup>,
                  Tags::Subgroup<ImporterOptionsGroup>,
                  Tags::ObservationValue<ImporterOptionsGroup>>;
 
@@ -111,7 +111,7 @@ struct ReadVolumeData {
  * - The `ImporterOptionsGroup` parameter specifies the \ref OptionGroupsGroup
  * "options group" in the input file that provides the following run-time
  * options:
- *   - `importers::OptionTags::FileName`
+ *   - `importers::OptionTags::FileGlob`
  *   - `importers::OptionTags::Subgroup`
  *   - `importers::OptionTags::ObservationValue`
  * - The `FieldTagsList` parameter specifies a typelist of tensor tags that
@@ -164,7 +164,7 @@ struct ReadAllVolumeDataAndDistribute {
 
     // Open the volume data file
     h5::H5File<h5::AccessType::ReadOnly> h5file(
-        Parallel::get<Tags::FileName<ImporterOptionsGroup>>(cache));
+        Parallel::get<Tags::FileGlob<ImporterOptionsGroup>>(cache));
     constexpr size_t version_number = 0;
     const auto& volume_file = h5file.get<h5::VolumeData>(
         "/" + Parallel::get<Tags::Subgroup<ImporterOptionsGroup>>(cache),
